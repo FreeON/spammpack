@@ -8,7 +8,7 @@ int
 main ()
 {
   int M, N;
-  matrix_t *A = NULL;
+  lal_matrix_t *A = NULL;
 
   M = (int) (100+rand()/((double) (RAND_MAX))*100);
   N = (int) (100+rand()/((double) (RAND_MAX))*100);

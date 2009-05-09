@@ -6,7 +6,7 @@
 int
 main ()
 {
-  matrix_t *A = NULL;
+  lal_matrix_t *A = NULL;
 
   lal_allocate(10, 10, &A);
 

@@ -5,13 +5,13 @@
 #include <stdlib.h>
 
 int
-lal_allocate (const int M, const int N, matrix_t **A)
+lal_allocate (const int M, const int N, lal_matrix_t **A)
 {
   assert(M > 0);
   assert(N > 0);
 
   /* Allocate space for matrix object structure. */
-  *A = (matrix_t*) (malloc(sizeof(matrix_t)));
+  *A = (lal_matrix_t*) (malloc(sizeof(lal_matrix_t)));
 
   /* Set dimensions. */
   (*A)->M = M;

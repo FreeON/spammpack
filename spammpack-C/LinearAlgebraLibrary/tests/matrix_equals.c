@@ -10,8 +10,8 @@ main ()
 
   int i, j;
 
-  matrix_t *A = NULL;
-  matrix_t *B = NULL;
+  lal_matrix_t *A = NULL;
+  lal_matrix_t *B = NULL;
 
   lal_allocate(M, N, &A);
   lal_allocate(M, N, &B);
