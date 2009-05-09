@@ -11,6 +11,9 @@ lal_matrix_t;
 int
 lal_allocate (const int M, const int N, lal_matrix_t **A);
 
+void
+lal_free (lal_matrix_t **A);
+
 double
 lal_get (const int i, const int j, const lal_matrix_t *A);
 
@@ -28,6 +31,9 @@ lal_rand (lal_matrix_t *A);
 
 void
 lal_print (lal_matrix_t *A);
+
+lal_matrix_t *
+lal_transpose (lal_matrix_t *A);
 
 void
 lal_dgemm (const char *transA, const char *transB, const int M, const int N,
