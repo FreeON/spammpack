@@ -11,10 +11,10 @@ main ()
 
   int i, j, k;
 
-  matrix_t *A = NULL;
-  matrix_t *B = NULL;
-  matrix_t *C = NULL;
-  matrix_t *C_reference = NULL;
+  lal_matrix_t *A = NULL;
+  lal_matrix_t *B = NULL;
+  lal_matrix_t *C = NULL;
+  lal_matrix_t *C_reference = NULL;
 
   if (lal_allocate(M, N, &A) != 0) { return 1; }
   if (lal_allocate(M, N, &B) != 0) { return 1; }

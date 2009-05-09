@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 void
-lal_rand (matrix_t *A)
+lal_rand (lal_matrix_t *A)
 {
   int i, j;
 

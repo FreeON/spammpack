@@ -7,7 +7,7 @@
  */
 
 int
-lal_equals (matrix_t *A, matrix_t *B)
+lal_equals (lal_matrix_t *A, lal_matrix_t *B)
 {
   int i, j;
 

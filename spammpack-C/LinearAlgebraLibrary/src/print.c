@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 void
-lal_print (matrix_t *A)
+lal_print (lal_matrix_t *A)
 {
   int i, j;
 

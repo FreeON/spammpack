@@ -1,7 +1,7 @@
 #include "lal.h"
 
 void
-lal_zero (matrix_t *A)
+lal_zero (lal_matrix_t *A)
 {
   int i, j;
 
