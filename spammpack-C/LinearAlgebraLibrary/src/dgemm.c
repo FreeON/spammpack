@@ -97,7 +97,6 @@
  *           Unchanged on exit.
  */
 
-#include "config.h"
 #include "lal.h"
 
 #include <assert.h>
@@ -110,17 +109,25 @@ lal_dgemm (const char *transA, const char *transB, const int M, const int N,
 {
   int i, j, k;
 
-  assert(transA[0] == 'N' || transA[0] == 'n');
-  assert(transB[0] == 'N' || transB[0] == 'n');
+  assert(transA[0] == 'N' || transA[0] == 'n' ||
+      transA[0] == 'T' || transA[0] == 't' ||
+      transA[0] == 'C' || transA[0] == 'c');
+  assert(transB[0] == 'N' || transB[0] == 'n' ||
+      transB[0] == 'T' || transB[0] == 't' ||
+      transB[0] == 'C' || transB[0] == 'c');
   assert(M > 0 && N > 0 && K > 0);
 
+  /* Apply possible operation to input matrices. */
+  if (transA[0] == 'T' || transA[0] == 't')
+  {
+  }
+
   /* Braindead implementation. */
-  lal_zero(C);
   for (i = 0; i < M; ++i) {
     for (j = 0; j < N; ++j) {
       for (k = 0; k < M; ++k)
       {
-        lal_set(i, j, lal_get(i, j, C)+lal_get(i, k, A)*lal_get(k, j, B), C);
+        lal_set(i, j, alpha*lal_get(i, k, A)*lal_get(k, j, B)+beta*lal_get(i, j, C), C);
       }
     }
   }
