@@ -100,6 +100,8 @@
 #include "lal.h"
 
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void
 lal_dgemm (const char *transA, const char *transB, const int M, const int N,
@@ -120,6 +122,26 @@ lal_dgemm (const char *transA, const char *transB, const int M, const int N,
   /* Apply possible operation to input matrices. */
   if (transA[0] == 'T' || transA[0] == 't')
   {
+    printf("[dgemm] T not implemented yet\n");
+    exit(1);
+  }
+
+  if (transB[0] == 'T' || transB[0] == 't')
+  {
+    printf("[dgemm] T not implemented yet\n");
+    exit(1);
+  }
+
+  if (transA[0] == 'C' || transA[0] == 'c')
+  {
+    printf("[dgemm] C not implemented yet\n");
+    exit(1);
+  }
+
+  if (transB[0] == 'C' || transB[0] == 'c')
+  {
+    printf("[dgemm] C not implemented yet\n");
+    exit(1);
   }
 
   /* Braindead implementation. */
