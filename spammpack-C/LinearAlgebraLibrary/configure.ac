@@ -3,6 +3,7 @@ AM_INIT_AUTOMAKE
 
 # Identify compilers.
 AC_PROG_CC
+AC_PROG_FC
 
 # Find libtool.
 AC_PROG_LIBTOOL
