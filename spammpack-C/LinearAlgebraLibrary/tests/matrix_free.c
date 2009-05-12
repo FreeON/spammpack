@@ -8,4 +8,6 @@ main ()
   lal_allocate(100, 100, &A);
 
   lal_free(&A);
+
+  return 0;
 }

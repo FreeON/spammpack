@@ -24,7 +24,7 @@ lal_allocate (const int M, const int N, lal_matrix_t **A)
 
   if ((*A)->data == NULL)
   {
-    fprintf(stderr, "[lal_allocate]", "error allocating matrix\n");
+    fprintf(stderr, "[lal_allocate] error allocating matrix\n");
     return -1;
   }
 
