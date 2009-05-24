@@ -1,0 +1,13 @@
+! vim: syntax=fortran
+
+#include <config.h>
+
+module lal_types
+
+  integer, parameter :: double = kind(0.d0)
+
+  type lal_matrix
+    integer, dimension(POINTER_LENGTH) :: address
+  end type lal_matrix
+
+end module lal_types
