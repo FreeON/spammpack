@@ -10,6 +10,7 @@ noinst_PROGRAMS = \
   matrix_free \
   get_element \
   set_element \
+  set_element_f90 \
   matrix_equals \
   matrix_transpose \
   matrix_add \
@@ -20,8 +21,8 @@ matrix_allocation_LDADD = $(top_builddir)/src/liblal.la
 
 matrix_allocation_f90_SOURCES = matrix_allocation_f90.f90
 matrix_allocation_f90_FCFLAGS = -I$(top_builddir)/interface/f90
-matrix_allocation_f90_LDADD = $(top_builddir)/src/liblal.la $(top_builddir)/interface/f90/liblalf90.la
-matrix_allocation_f90_LDFLAGS = -static
+matrix_allocation_f90_LDADD = $(top_builddir)/interface/f90/liblalf90.la $(top_builddir)/src/liblal.la
+#matrix_allocation_f90_LDFLAGS = -static
 
 matrix_free_SOURCES = matrix_free.c
 matrix_free_LDADD = $(top_builddir)/src/liblal.la
@@ -33,6 +34,10 @@ get_element_LDADD = $(top_builddir)/src/liblal.la
 
 set_element_SOURCES = set_element.c
 set_element_LDADD = $(top_builddir)/src/liblal.la
+
+set_element_f90_SOURCES = set_element_f90.f90
+set_element_f90_FCFLAGS = -I$(top_builddir)/interface/f90
+set_element_f90_LDADD = $(top_builddir)/interface/f90/liblalf90.la $(top_builddir)/src/liblal.la
 
 matrix_equals_SOURCES = matrix_equals.c
 matrix_equals_LDADD = $(top_builddir)/src/liblal.la

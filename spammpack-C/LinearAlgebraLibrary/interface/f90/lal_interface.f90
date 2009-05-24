@@ -1,19 +1,35 @@
 module lal
 
-  type lal_matrix
-    character(len=4) :: address
-  end type lal_matrix
+  use lal_types
 
-  contains
+  interface
 
-  function lal_get (i, j, A)
-    integer          :: i, j
-    type(lal_matrix) :: A
-  end function lal_get
+    function f90_lal_get (i, j, A)
+      use lal_types
+      integer, intent(in)           :: i, j
+      type(lal_matrix), intent(in)  :: A
+      real(double)                  :: f90_lal_get
+    end function f90_lal_get
 
-  subroutine lal_allocate (i, j, A)
-    integer          :: i, j
-    type(lal_matrix) :: A
-  end subroutine lal_allocate
+    subroutine f90_lal_set (i, j, Aij, A)
+      use lal_types
+      integer, intent(in)           :: i, j
+      real(double), intent(in)      :: Aij
+      type(lal_matrix), intent(in)  :: A
+    end subroutine f90_lal_set
+
+    function f90_lal_allocate (M, N, A)
+      use lal_types
+      integer, intent(in)             :: M, N
+      type(lal_matrix), intent(inout) :: A
+      integer                         :: f90_lal_allocate
+    end function f90_lal_allocate
+
+    subroutine f90_lal_zero (A)
+      use lal_types
+      type(lal_matrix), intent(inout) :: A
+    end subroutine f90_lal_zero
+
+  end interface
 
 end module lal

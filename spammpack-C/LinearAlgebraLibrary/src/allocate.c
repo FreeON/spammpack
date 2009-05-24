@@ -10,8 +10,6 @@ lal_allocate (const int M, const int N, lal_matrix_t **A)
   assert(M > 0);
   assert(N > 0);
 
-  printf("[allocate] allocating %ix%i matrix\n", M, N);
-
   /* Allocate space for matrix object structure. */
   *A = (lal_matrix_t*) (malloc(sizeof(lal_matrix_t)));
 

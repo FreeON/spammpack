@@ -43,3 +43,9 @@ lal_dgemm (const char *transA, const char *transB, const int M, const int N,
     const int K, const double alpha, const lal_matrix_t *A, const int lda,
     const lal_matrix_t *B, const int ldb, const double beta, lal_matrix_t *C,
     const int ldc);
+
+void
+lal_pointer_to_integer (int *f90_A, struct lal_matrix_t *A);
+
+void
+lal_integer_to_pointer (int *f90_A, struct lal_matrix_t **A);

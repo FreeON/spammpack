@@ -10,6 +10,8 @@ program matrix_allocation
   i = 10
   j = 10
 
-  call lal_allocate(i, j, A)
+  if(f90_lal_allocate(i, j, A) /= 0) then
+    call exit(-1)
+  endif
 
 end program
