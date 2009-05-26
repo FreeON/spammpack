@@ -40,7 +40,7 @@ program matrix_multiply
   ! Multiply by library.
   call f90_lal_dgemm("N", "N", M, N, N, 1.0d0, A, N, B, M, 1.0d0, C, N)
 
-  if(f90_lal_equals(C, C_reference) /= 0) then
+  if(f90_lal_equals(C, C_reference, 1.0d-14) /= 0) then
     write(*,"(A)") "[f90_matrix_multiply] C is not equal to C_reference"
     write(*,"(A)") "[f90_matrix_multiply] C ="
     call f90_lal_print(C)

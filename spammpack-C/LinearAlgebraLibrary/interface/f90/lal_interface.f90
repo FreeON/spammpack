@@ -40,9 +40,10 @@ module lal
       type(lal_matrix), intent(inout) :: A
     end subroutine f90_lal_rand
 
-    function f90_lal_equals (A, B)
+    function f90_lal_equals (A, B, tolerance)
       use lal_types
       type(lal_matrix), intent(in) :: A, B
+      real(double)                 :: tolerance
       integer                      :: f90_lal_equals
     end function f90_lal_equals
 

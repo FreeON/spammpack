@@ -1,5 +1,7 @@
 #include "lal.h"
 
+#include <math.h>
+
 /* Compare 2 matrices and return:
  *
  * 0  - if the 2 are identical.
@@ -7,7 +9,7 @@
  */
 
 int
-lal_equals (lal_matrix_t *A, lal_matrix_t *B)
+lal_equals (lal_matrix_t *A, lal_matrix_t *B, const double tolerance)
 {
   int i, j;
 
@@ -17,7 +19,7 @@ lal_equals (lal_matrix_t *A, lal_matrix_t *B)
   for (i = 0; i < A->M; ++i) {
     for (j = 0; j < A->N; ++j)
     {
-      if (lal_get(i, j, A) != lal_get(i, j, B)) { return -1; }
+      if (fabs(lal_get(i, j, A)-lal_get(i, j, B)) > tolerance) { return -1; }
     }
   }
 

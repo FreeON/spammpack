@@ -21,7 +21,7 @@ void
 lal_set (const int i, const int j, const double Aij, lal_matrix_t *A);
 
 int
-lal_equals (lal_matrix_t *A, lal_matrix_t *B);
+lal_equals (lal_matrix_t *A, lal_matrix_t *B, const double tolerance);
 
 void
 lal_zero (lal_matrix_t *A);

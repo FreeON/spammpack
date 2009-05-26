@@ -10,6 +10,8 @@ noinst_PROGRAMS = \
   f90_set_element \
   f90_matrix_multiply
 
+AM_LIBTOOLFLAGS = --tag=F77
+
 f90_matrix_allocation_SOURCES = f90_matrix_allocation.f90
 f90_matrix_allocation_FCFLAGS = -I$(top_builddir)/interface/f90
 f90_matrix_allocation_LDADD = $(top_builddir)/interface/f90/liblalf90.la $(top_builddir)/src/liblal.la
