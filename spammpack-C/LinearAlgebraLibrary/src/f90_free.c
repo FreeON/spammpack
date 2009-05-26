@@ -3,11 +3,13 @@
 #include <stdlib.h>
 
 void
-f90_lal_set_ (int *i, int *j, double *Aij, int *f90_A)
+f90_lal_free_ (int *f90_A)
 {
   struct lal_matrix_t *A = NULL;
 
   lal_integer_to_pointer(f90_A, &A);
 
-  lal_set((*i)-1, (*j)-1, *Aij, A);
+  lal_free(&A);
+
+  lal_pointer_to_integer(f90_A, A);
 }

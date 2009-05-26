@@ -1,6 +1,6 @@
 #include "lal.h"
 
-#include <stdio.h>
+#include <stdlib.h>
 
 int
 f90_lal_allocate_ (int *M, int *N, int *f90_A)

@@ -38,5 +38,15 @@ main ()
   /* Multiply by library. */
   lal_dgemm("N", "N", M, N, N, 1.0, A, N, B, M, 1.0, C, N);
 
-  return lal_equals(C, C_reference);
+  if (lal_equals(C, C_reference) != 0)
+  {
+    printf("[matrix_multiply] C is not equal to C_reference\n");
+    printf("[matrix_multiply] C =\n");
+    lal_print(C);
+    printf("[matrix_multiply] C_reference =\n");
+    lal_print(C_reference);
+    return -1;
+  }
+
+  else { return 0; }
 }
