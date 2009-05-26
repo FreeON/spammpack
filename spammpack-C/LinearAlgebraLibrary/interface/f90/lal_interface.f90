@@ -25,10 +25,39 @@ module lal
       integer                         :: f90_lal_allocate
     end function f90_lal_allocate
 
+    subroutine f90_lal_free (A)
+      use lal_types
+      type(lal_matrix) :: A
+    end subroutine f90_lal_free
+
     subroutine f90_lal_zero (A)
       use lal_types
       type(lal_matrix), intent(inout) :: A
     end subroutine f90_lal_zero
+
+    subroutine f90_lal_rand (A)
+      use lal_types
+      type(lal_matrix), intent(inout) :: A
+    end subroutine f90_lal_rand
+
+    function f90_lal_equals (A, B)
+      use lal_types
+      type(lal_matrix), intent(in) :: A, B
+      integer                      :: f90_lal_equals
+    end function f90_lal_equals
+
+    subroutine f90_lal_dgemm (transA, transB, M, N, K, alpha, A, lda, B, ldb, beta, C, ldc)
+      use lal_types
+      character        :: transA, transB
+      integer          :: M, N, K, lda, ldb, ldc
+      real(double)     :: alpha, beta
+      type(lal_matrix) :: A, B, C
+    end subroutine f90_lal_dgemm
+
+    subroutine f90_lal_print (A)
+      use lal_types
+      type(lal_matrix) :: A
+    end subroutine f90_lal_print
 
   end interface
 

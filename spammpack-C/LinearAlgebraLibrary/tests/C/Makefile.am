@@ -19,11 +19,9 @@ matrix_allocation_LDADD = $(top_builddir)/src/liblal.la
 
 matrix_free_SOURCES = matrix_free.c
 matrix_free_LDADD = $(top_builddir)/src/liblal.la
-#matrix_free_LDFLAGS = -static
 
 get_element_SOURCES = get_element.c
 get_element_LDADD = $(top_builddir)/src/liblal.la
-#get_element_LDFLAGS = -static
 
 set_element_SOURCES = set_element.c
 set_element_LDADD = $(top_builddir)/src/liblal.la
