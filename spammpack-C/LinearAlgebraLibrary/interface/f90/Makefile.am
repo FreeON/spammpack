@@ -1,8 +1,10 @@
-CLEANFILES = *~
+CLEANFILES = *~ lal_types.f90
 
 lib_LTLIBRARIES = liblalf90.la
 
 liblalf90_la_SOURCES = lal_types.source lal_interface.f90
+
+AM_LIBTOOLFLAGS = --tag=F77
 
 include_HEADERS = lal.mod
 

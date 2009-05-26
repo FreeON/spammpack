@@ -26,5 +26,5 @@ main ()
     }
   }
 
-  return lal_equals(A, B);
+  return lal_equals(A, B, 0.0);
 }
