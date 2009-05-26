@@ -54,6 +54,8 @@ interface/Makefile
 interface/f90/Makefile
 src/Makefile
 tests/Makefile
+tests/C/Makefile
+tests/f90/Makefile
 ])
 
 AC_OUTPUT
