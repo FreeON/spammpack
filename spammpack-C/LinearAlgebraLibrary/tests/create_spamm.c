@@ -5,13 +5,13 @@
 int
 main ()
 {
-  int M = 10;
-  int N = 10;
+  int M = 1000;
+  int N = 1000;
 
-  int M_block = 1;
-  int N_block = 1;
+  int M_block[10] = { 1, 1, 1, 2, 2, 2, 5, 8, 8, 10 };
+  int N_block[10] = { 1, 2, 3, 1, 2, 5, 2, 8, 2, 10 };
 
-  int i, j;
+  int i, j, k;
   double *A_dense;
   struct spamm_t A;
 
@@ -23,12 +23,25 @@ main ()
     }
   }
 
-  spamm_new(M, N, M_block, N_block, &A);
-  spamm_dense_to_spamm(M, N, M_block, N_block, A_dense, &A);
+  for (k = 0; k < 10; ++k)
+  {
+    spamm_new(M, N, M_block[k], N_block[k], &A);
+    spamm_dense_to_spamm(M, N, M_block[k], N_block[k], A_dense, &A);
 
-  printf("A (dense) =\n");
-  spamm_print_dense(M, N, A_dense);
+    for (i = 0; i < M; ++i) {
+      for (j = 0; j < N; ++j)
+      {
+        if (A_dense[spamm_dense_index(i, j, N)] != spamm_get(i, j, &A))
+        {
+          printf("mismatch: A_dense[%i][%i] = %f != A[%i][%i] = %f\n", i, j, A_dense[spamm_dense_index(i, j, N)], i, j, spamm_get(i, j, &A));
+          exit(1);
+        }
+      }
+    }
 
-  printf("A (SpAMM) =\n");
-  spamm_print_spamm(&A);
+    spamm_delete(&A);
+  }
+
+  fprintf(stderr, "test ok\n");
+  return 0;
 }
