@@ -13,17 +13,17 @@ spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
 
   else
   {
-    if (i < (node->M_upper-node->M_lower)/2 && j < (node->N_upper-node->N_lower)/2)
+    if (i < (node->M_lower+(node->M_upper-node->M_lower)/2) && j < (node->N_lower+(node->N_upper-node->N_lower)/2))
     {
       return spamm_get_element(i, j, node->child[spamm_dense_index(0, 0, 2)]);
     }
 
-    else if (i < (node->M_upper-node->M_lower)/2)
+    else if (i < (node->M_lower+(node->M_upper-node->M_lower)/2))
     {
       return spamm_get_element(i, j, node->child[spamm_dense_index(0, 1, 2)]);
     }
 
-    else if (j < (node->N_upper-node->N_lower)/2)
+    else if (j < (node->N_lower+(node->N_upper-node->N_lower)/2))
     {
       return spamm_get_element(i, j, node->child[spamm_dense_index(1, 0, 2)]);
     }
