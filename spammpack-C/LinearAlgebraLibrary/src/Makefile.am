@@ -14,6 +14,7 @@ libspamm_la_SOURCES = \
   spamm_print_dense.c \
   spamm_print_spamm.c \
   spamm_print_node.c \
+  spamm_print_tree.c \
   spamm_dense_index.c
 
 tags :
