@@ -5,6 +5,10 @@
 double
 spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
 {
+  assert(node != NULL);
+
+  int l, k;
+
   /* Test whether we are at a leaf node. */
   if (node->block_dense != NULL)
   {
@@ -13,24 +17,17 @@ spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
 
   else
   {
-    if (i < (node->M_lower+(node->M_upper-node->M_lower)/2) && j < (node->N_lower+(node->N_upper-node->N_lower)/2))
-    {
-      return spamm_get_element(i, j, node->child[spamm_dense_index(0, 0, 2)]);
-    }
-
-    else if (i < (node->M_lower+(node->M_upper-node->M_lower)/2))
-    {
-      return spamm_get_element(i, j, node->child[spamm_dense_index(0, 1, 2)]);
-    }
-
-    else if (j < (node->N_lower+(node->N_upper-node->N_lower)/2))
-    {
-      return spamm_get_element(i, j, node->child[spamm_dense_index(1, 0, 2)]);
-    }
-
-    else
-    {
-      return spamm_get_element(i, j, node->child[spamm_dense_index(1, 1, 2)]);
+    for (l = 0; l < node->M_child; ++l) {
+      for (k = 0; k < node->N_child; ++k)
+      {
+        if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/node->M_child) &&
+            i < (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/node->M_child) &&
+            j >= (node->N_lower+(node->N_upper-node->N_lower)*k/node->N_child) &&
+            j < (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/node->N_child))
+        {
+          return spamm_get_element(i, j, node->child[spamm_dense_index(l, k, node->N_child)]);
+        }
+      }
     }
   }
 }

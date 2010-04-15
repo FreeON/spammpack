@@ -3,24 +3,24 @@
 #include <stdlib.h>
 
 void
-spamm_dense_to_spamm (const int M, const int N, const int M_block, const int N_block, const double *A_dense, struct spamm_t *A)
+spamm_dense_to_spamm (const int M, const int N, const int M_block, const int N_block, const int M_child, const int N_child, const double *A_dense, struct spamm_t *A)
 {
   assert(A_dense != NULL);
   assert(A != NULL);
 
   int i, j;
 
-  if (M != A->M && N != A->N)
+  if (M != A->M && N != A->N || M_block != A->M_block || N_block != A->N_block || M_child != A->M_child || N_child != A->N_child)
   {
     /* De- and re-allocate A with the correct dimensions. */
     spamm_delete(A);
-    spamm_new(M, N, M_block, N_block, A);
+    spamm_new(M, N, M_block, N_block, M_child, N_child, A);
   }
 
   for (i = 0; i < M; ++i) {
     for (j = 0; j < N; ++j)
     {
-      spamm_set(i, j, A_dense[spamm_dense_index(i, j, M)], A);
+      spamm_set(i, j, A_dense[spamm_dense_index(i, j, N)], A);
     }
   }
 }

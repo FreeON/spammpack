@@ -9,13 +9,9 @@ spamm_set_element (const int i, const int j, const double Aij, struct spamm_node
 
   int l, k;
 
-  //spamm_log("node [%i-%i[ x [%i-%i[\n", __FILE__, __LINE__, node->M_lower, node->M_upper, node->N_lower, node->N_upper);
-  //spamm_print_node(node);
-
   /* Check if we are at the block level. */
   if ((node->M_upper-node->M_lower) == node->M_block && (node->N_upper-node->N_lower) == node->N_block)
   {
-    //spamm_log("reached block level\n", __FILE__, __LINE__);
     if (node->block_dense == NULL)
     {
       node->block_dense = (double*) malloc(sizeof(double)*node->M_block*node->N_block);
@@ -27,50 +23,47 @@ spamm_set_element (const int i, const int j, const double Aij, struct spamm_node
       }
     }
 
-    //spamm_log("storing A[%i][%i] in block_dense[%i][%i]\n", __FILE__, __LINE__, i, j, i-node->M_lower, j-node->N_lower);
     node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, node->N_block)] = Aij;
   }
 
   else
   {
-    if (node->child[0] == NULL)
+    if (node->child == NULL)
     {
-      /* Create children nodes. */
-      //spamm_log("creating children\n", __FILE__, __LINE__);
-      for (l = 0; l < 2; ++l) {
-        for (k = 0; k < 2; ++k)
-        {
-          spamm_new_node(&(node->child[spamm_dense_index(l, k, 2)]));
-          node->child[spamm_dense_index(l, k, 2)]->M_lower = node->M_lower+l*(node->M_upper-node->M_lower)/2;
-          node->child[spamm_dense_index(l, k, 2)]->M_upper = node->M_lower+(l+1)*(node->M_upper-node->M_lower)/2;
-          node->child[spamm_dense_index(l, k, 2)]->N_lower = node->N_lower+k*(node->N_upper-node->N_lower)/2;
-          node->child[spamm_dense_index(l, k, 2)]->N_upper = node->N_lower+(k+1)*(node->N_upper-node->N_lower)/2;
+      /* Allocate children nodes. */
+      node->child = (struct spamm_node_t**) malloc(sizeof(struct spamm_node_t*)*node->M_child*node->N_child);
 
-          node->child[spamm_dense_index(l, k, 2)]->M_block = node->M_block;
-          node->child[spamm_dense_index(l, k, 2)]->N_block = node->N_block;
+      /* Create children nodes. */
+      for (l = 0; l < node->M_child; ++l) {
+        for (k = 0; k < node->N_child; ++k)
+        {
+          spamm_new_node(&(node->child[spamm_dense_index(l, k, node->N_child)]));
+          node->child[spamm_dense_index(l, k, node->N_child)]->M_lower = node->M_lower+l*(node->M_upper-node->M_lower)/node->M_child;
+          node->child[spamm_dense_index(l, k, node->N_child)]->M_upper = node->M_lower+(l+1)*(node->M_upper-node->M_lower)/node->M_child;
+          node->child[spamm_dense_index(l, k, node->N_child)]->N_lower = node->N_lower+k*(node->N_upper-node->N_lower)/node->N_child;
+          node->child[spamm_dense_index(l, k, node->N_child)]->N_upper = node->N_lower+(k+1)*(node->N_upper-node->N_lower)/node->N_child;
+
+          node->child[spamm_dense_index(l, k, node->N_child)]->M_child = node->M_child;
+          node->child[spamm_dense_index(l, k, node->N_child)]->N_child = node->N_child;
+
+          node->child[spamm_dense_index(l, k, node->N_child)]->M_block = node->M_block;
+          node->child[spamm_dense_index(l, k, node->N_child)]->N_block = node->N_block;
         }
       }
     }
 
     /* Recurse. */
-    if (i < (node->M_lower+(node->M_upper-node->M_lower)/2) && j < (node->N_lower+(node->N_upper-node->N_lower)/2))
-    {
-      return spamm_set_element(i, j, Aij, node->child[spamm_dense_index(0, 0, 2)]);
-    }
-
-    else if (i < (node->M_lower+(node->M_upper-node->M_lower)/2))
-    {
-      return spamm_set_element(i, j, Aij, node->child[spamm_dense_index(0, 1, 2)]);
-    }
-
-    else if (j < (node->N_lower+(node->N_upper-node->N_lower)/2))
-    {
-      return spamm_set_element(i, j, Aij, node->child[spamm_dense_index(1, 0, 2)]);
-    }
-
-    else
-    {
-      return spamm_set_element(i, j, Aij, node->child[spamm_dense_index(1, 1, 2)]);
+    for (l = 0; l < node->M_child; ++l) {
+      for (k = 0; k < node->N_child; ++k)
+      {
+        if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/node->M_child) &&
+            i < (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/node->M_child) &&
+            j >= (node->N_lower+(node->N_upper-node->N_lower)*k/node->N_child) &&
+            j < (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/node->N_child))
+        {
+          return spamm_set_element(i, j, Aij, node->child[spamm_dense_index(l, k, node->N_child)]);
+        }
+      }
     }
   }
 }
@@ -88,16 +81,18 @@ spamm_set (const int i, const int j, const double Aij, struct spamm_t *A)
   /* Recursively find the leaf node that stores this element. */
   if (A->root == NULL)
   {
-    //spamm_log("creating new root node\n", __FILE__, __LINE__);
     spamm_new_node(&(A->root));
     A->root->M_lower = 0;
     A->root->M_upper = A->M_padded;
     A->root->N_lower = 0;
     A->root->N_upper = A->N_padded;
+
+    A->root->M_child = A->M_child;
+    A->root->N_child = A->N_child;
+
     A->root->M_block = A->M_block;
     A->root->N_block = A->N_block;
   }
 
-  //spamm_log("recursing to root node to store A[%i][%i] = %f\n", __FILE__, __LINE__, i, j, Aij);
   spamm_set_element(i, j, Aij, A->root);
 }
