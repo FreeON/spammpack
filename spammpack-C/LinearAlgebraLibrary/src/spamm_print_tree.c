@@ -26,6 +26,7 @@ spamm_print_tree (const struct spamm_t *A)
   printf("M_padded = %i, N_padded = %i, ", A->M_padded, A->N_padded);
   printf("M_block = %i, N_block = %i, ", A->M_block, A->N_block);
   printf("M_child = %i, N_child = %i, ", A->M_child, A->N_child);
+  printf("threshold = %7.1e, ", A->threshold);
   printf("root = %p\n", (void*) A->root);
 
   if (A->root != NULL)

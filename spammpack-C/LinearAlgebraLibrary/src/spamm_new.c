@@ -4,7 +4,9 @@
 #include <stdlib.h>
 
 void
-spamm_new (const int M, const int N, const int M_block, const int N_block, const int M_child, const int N_child, struct spamm_t *A)
+spamm_new (const int M, const int N, const int M_block, const int N_block,
+    const int M_child, const int N_child, const double threshold,
+    struct spamm_t *A)
 {
   assert(A != NULL);
 
@@ -30,6 +32,8 @@ spamm_new (const int M, const int N, const int M_block, const int N_block, const
   A->N_padded = (int) (N_block*pow(N_child, ceil(x)));
 
   //spamm_log("padding matrix from %ix%i to %ix%i\n", __FILE__, __LINE__, M, N, A->M_padded, A->N_padded);
+
+  A->threshold = threshold;
 
   A->root = NULL;
 }
