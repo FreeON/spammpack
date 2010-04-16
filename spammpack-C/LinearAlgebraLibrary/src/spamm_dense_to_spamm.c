@@ -3,7 +3,9 @@
 #include <stdlib.h>
 
 void
-spamm_dense_to_spamm (const int M, const int N, const int M_block, const int N_block, const int M_child, const int N_child, const double *A_dense, struct spamm_t *A)
+spamm_dense_to_spamm (const int M, const int N, const int M_block,
+    const int N_block, const int M_child, const int N_child,
+    const double threshold, const double *A_dense, struct spamm_t *A)
 {
   assert(A_dense != NULL);
   assert(A != NULL);
@@ -14,7 +16,7 @@ spamm_dense_to_spamm (const int M, const int N, const int M_block, const int N_b
   {
     /* De- and re-allocate A with the correct dimensions. */
     spamm_delete(A);
-    spamm_new(M, N, M_block, N_block, M_child, N_child, A);
+    spamm_new(M, N, M_block, N_block, M_child, N_child, threshold, A);
   }
 
   for (i = 0; i < M; ++i) {
