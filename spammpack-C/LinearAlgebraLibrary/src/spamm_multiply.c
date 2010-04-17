@@ -11,10 +11,83 @@ spamm_multiply_node (const double alpha, const struct spamm_node_t *A_node, cons
 {
   int i, j, k;
 
-  for (i = 0; i < (*C_node)->M_child; ++i) {
-    for (j = 0; j < (*C_node)->N_child; ++j) {
-      for (k = 0; k < A_node->N_child; ++k)
-      {
+  if (*C_node == NULL)
+  {
+    /* Create new node. */
+    spamm_new_node(C_node);
+    (*C_node)->M_lower = A_node->M_lower;
+    (*C_node)->M_upper = A_node->M_upper;
+    (*C_node)->N_lower = B_node->N_lower;
+    (*C_node)->N_upper = B_node->N_upper;
+
+    (*C_node)->M_child = A_node->M_child;
+    (*C_node)->N_child = B_node->N_child;
+
+    (*C_node)->threshold = A_node->threshold;
+
+    (*C_node)->M_block = A_node->M_block;
+    (*C_node)->N_block = B_node->N_block;
+  }
+
+  if (A_node->child != NULL && B_node->child != NULL)
+  {
+    if ((*C_node)->child == NULL)
+    {
+      (*C_node)->child = (struct spamm_node_t**) malloc(sizeof(struct spamm_node_t*)*(*C_node)->M_child*(*C_node)->N_child);
+      for (i = 0; i < (*C_node)->M_child; ++i) {
+        for (j = 0; j < (*C_node)->N_child; ++j)
+        {
+          spamm_new_node(&((*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]));
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
+
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->M_child = (*C_node)->M_child;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->N_child = (*C_node)->N_child;
+
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->threshold = (*C_node)->threshold;
+
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->M_block = (*C_node)->M_block;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->N_block = (*C_node)->N_block;
+        }
+      }
+    }
+
+    for (i = 0; i < (*C_node)->M_child; ++i) {
+      for (j = 0; j < (*C_node)->N_child; ++j) {
+        for (k = 0; k < A_node->N_child; ++k)
+        {
+          spamm_multiply_node(alpha, A_node->child[spamm_dense_index(i, k, A_node->N_child)],
+              B_node->child[spamm_dense_index(k, j, B_node->N_child)], beta,
+              &(*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]);
+        }
+      }
+    }
+  }
+
+  if (A_node->block_dense != NULL && B_node->block_dense != NULL)
+  {
+    if ((*C_node)->block_dense == NULL)
+    {
+      /* Create empty dense block. */
+      (*C_node)->block_dense = (double*) malloc(sizeof(double)*(*C_node)->M_block*(*C_node)->N_block);
+      for (i = 0; i < (*C_node)->M_block; ++i) {
+        for (j = 0; j < (*C_node)->N_block; ++j)
+        {
+          (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->N_block)] = 0;
+        }
+      }
+    }
+
+    for (i = 0; i < (*C_node)->M_block; ++i) {
+      for (j = 0; j < (*C_node)->N_block; ++j) {
+        for (k = 0; k < A_node->M_block; ++k)
+        {
+          (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->N_block)]
+            = alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->N_block)]*B_node->block_dense[spamm_dense_index(k, j, B_node->N_block)]
+            + beta*(*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->N_block)];
+        }
       }
     }
   }
@@ -85,15 +158,16 @@ spamm_multiply (const double alpha, const struct spamm_t *A, const struct spamm_
     exit(1);
   }
 
-  if (alpha == 0.0 || A->root == NULL || B->root == NULL)
+  if ((A->root == NULL || B->root == NULL) && C->root == NULL)
   {
-    /* Only multiply C by beta. */
-    spamm_log("[FIXME]", __FILE__, __LINE__);
-    exit(1);
+    /* Nothing to be done. */
+    return;
   }
 
-  else
+  else if ((A->root == NULL || B->root == NULL) && C->root != NULL)
   {
-    spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root));
+    spamm_add_node(0.0, NULL, beta, &(C->root));
   }
+
+  spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root));
 }
