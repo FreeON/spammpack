@@ -60,6 +60,16 @@ struct spamm_tree_stats_t
   int memory_dense_blocks;
 };
 
+struct spamm_linked_list_t
+{
+  /* Links to the previous and the next element. */
+  struct spamm_linked_list_t *previous;
+  struct spamm_linked_list_t *next;
+
+  /* The data. */
+  void *data;
+};
+
 void
 spamm_log (const char *format, const char *filename, const int linenumber, ...);
 
@@ -81,6 +91,9 @@ void
 spamm_dense_to_spamm (const int M, const int N, const int M_block,
     const int N_block, const int M_child, const int N_child,
     const double threshold, const double *A_dense, struct spamm_t *A);
+
+void
+spamm_spamm_to_dense (const struct spamm_t *A, double **A_dense);
 
 double
 spamm_get (const int i, const int j, const struct spamm_t *A);
@@ -108,3 +121,11 @@ spamm_multiply (const double alpha, const struct spamm_t *A, const struct spamm_
 
 void
 spamm_tree_stats (struct spamm_tree_stats_t *stats, const struct spamm_t *A);
+
+void
+spamm_read_MM (const char *filename, const int M_block, const int N_block,
+    const int M_child, const int N_child, const double threshold,
+    struct spamm_t *A);
+
+void
+spamm_bz2_open (const char *filename);
