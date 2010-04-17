@@ -20,6 +20,24 @@ AC_CHECK_LIB([m], [ceil],
              [AC_MSG_FAILURE([ceil() not found])],
              [])
 
+dnl Check for bzip2 library (for tests).
+AC_CHECK_HEADERS([bzlib.h])
+AC_CHECK_LIB([bz2], [BZ2_bzopen], [], [], [])
+
+dnl Check for blas.
+AC_CHECK_LIB([blas], [dgemm],
+             [LIBS="-lblas ${LIBS}"
+              AC_DEFINE([DGEMM], [dgemm], [We have dgemm().])],
+              [], [])
+AC_CHECK_LIB([blas], [dgemm_],
+             [LIBS="-lblas ${LIBS}"
+              AC_DEFINE([DGEMM], [dgemm_], [We have dgemm_().])],
+              [], [])
+AC_CHECK_LIB([blas], [dgemm__],
+             [LIBS="-lblas ${LIBS}"
+              AC_DEFINE([DGEMM], [dgemm__], [We have dgemm__().])],
+              [], [])
+
 dnl Check for stdarg.h.
 AC_CHECK_HEADERS([stdarg.h])
 
