@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define THRESHOLD 1e-14
+
 int
 main ()
 {
@@ -95,9 +97,10 @@ main ()
             }
           }
 
-          if (max_diff > 0)
+          if (max_diff > THRESHOLD)
           {
-            printf("[multiply_spamm] biggest mismatch: (C_test[%i][%i] = %e) != (C[%i][%i] = %e), |diff| = %e\n",
+            printf("[multiply_spamm] biggest mismatch above threshold of %e: (C_test[%i][%i] = %e) != (C[%i][%i] = %e), |diff| = %e\n",
+                THRESHOLD,
                 max_diff_i, max_diff_j, spamm_get(max_diff_i, max_diff_j, &C_test),
                 max_diff_i, max_diff_j, spamm_get(max_diff_i, max_diff_j, &C),
                 fabs(spamm_get(max_diff_i, max_diff_j, &C_test)-spamm_get(max_diff_i, max_diff_j, &C)));
