@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 struct spamm_t
 {
   /* Matrix dimensions. */
@@ -126,6 +128,3 @@ void
 spamm_read_MM (const char *filename, const int M_block, const int N_block,
     const int M_child, const int N_child, const double threshold,
     struct spamm_t *A);
-
-void
-spamm_bz2_open (const char *filename);
