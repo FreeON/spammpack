@@ -5,7 +5,6 @@ lib_LTLIBRARIES = libspamm.la
 libspamm_la_SOURCES = \
   spamm.h \
   spamm_add.c \
-  spamm_bz2.c \
   spamm_delete.c \
   spamm_dense_index.c \
   spamm_dense_to_spamm.c \

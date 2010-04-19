@@ -25,7 +25,7 @@ spamm_read_MM (const char *filename, const int M_block, const int N_block,
   fd = fopen(filename, "r");
   if (fd == NULL)
   {
-    spamm_log("can not open file for reading: %s\n", __FILE__, __LINE__, strerror(errno));
+    spamm_log("can not open file %s for reading: %s\n", __FILE__, __LINE__, filename, strerror(errno));
     exit(1);
   }
 
