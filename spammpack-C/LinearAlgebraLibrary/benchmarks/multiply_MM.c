@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define THRESHOLD 1e-14
+
 int
 main ()
 {
@@ -76,9 +78,10 @@ main ()
     }
   }
 
-  if (max_diff > 0)
+  if (max_diff > THRESHOLD)
   {
-    printf("[multiply_spamm] biggest mismatch: (A2[%i][%i] = %e) != (A2_dense[%i][%i] = %e), |diff| = %e\n",
+    printf("[multiply_spamm] biggest mismatch above threshold of %e: (A2[%i][%i] = %e) != (A2_dense[%i][%i] = %e), |diff| = %e\n",
+        THRESHOLD,
         max_diff_i, max_diff_j, spamm_get(max_diff_i, max_diff_j, &A2),
         max_diff_i, max_diff_j, A2_dense[spamm_dense_index(max_diff_i, max_diff_j, A.M, A.N)],
         fabs(spamm_get(max_diff_i, max_diff_j, &A2)-A2_dense[spamm_dense_index(max_diff_i, max_diff_j, A.M, A.N)]));
