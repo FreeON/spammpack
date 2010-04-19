@@ -32,8 +32,6 @@ main ()
       __FILE__, __LINE__, A.M, A.N, stats.number_nodes, stats.number_dense_blocks,
       stats.memory_tree, stats.memory_dense_blocks, (stats.memory_tree+stats.memory_dense_blocks)/(double) (A.M*A.N*sizeof(double))*100);
 
-  spamm_new(A.M, A.N, A.M_block, A.N_block, A.M_child, A.N_child, A.threshold, &A2);
-
   spamm_log("converting tree to dense\n", __FILE__, __LINE__);
   spamm_spamm_to_dense(&A, &A_dense);
   A2_dense = (double*) malloc(sizeof(double)*A.M*A.N);
@@ -62,6 +60,7 @@ main ()
 #endif
 
   spamm_log("multiplying matrix with spamm\n", __FILE__, __LINE__);
+  spamm_new(A.M, A.N, A.M_block, A.N_block, A.M_child, A.N_child, A.threshold, &A2);
   spamm_multiply(1.0, &A, &A, 1.0, &A2);
 
   spamm_log("comparing matrices\n", __FILE__, __LINE__);

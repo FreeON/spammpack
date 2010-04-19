@@ -165,6 +165,18 @@ spamm_multiply (const double alpha, const struct spamm_t *A, const struct spamm_
     exit(1);
   }
 
+  if (C->root != NULL)
+  {
+    spamm_log("[FIXME] can not handle pre-existing C\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  if (beta != 1.0)
+  {
+    spamm_log("[FIXME] can not handle (beta = %e) != 1.0\n", __FILE__, __LINE__, beta);
+    exit(1);
+  }
+
   if ((A->root == NULL || B->root == NULL) && C->root == NULL)
   {
     /* Nothing to be done. */
