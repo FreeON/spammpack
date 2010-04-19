@@ -14,7 +14,7 @@ spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
   {
     if (node->block_dense != NULL)
     {
-      return node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, node->N_block)];
+      return node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, node->M_block, node->N_block)];
     }
 
     else { return 0.0; }
@@ -30,7 +30,7 @@ spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
             j >= (node->N_lower+(node->N_upper-node->N_lower)*k/node->N_child) &&
             j <  (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/node->N_child))
         {
-          return spamm_get_element(i, j, node->child[spamm_dense_index(l, k, node->N_child)]);
+          return spamm_get_element(i, j, node->child[spamm_dense_index(l, k, node->M_child, node->N_child)]);
         }
       }
     }

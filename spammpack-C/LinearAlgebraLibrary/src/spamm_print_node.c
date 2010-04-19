@@ -27,7 +27,7 @@ spamm_print_node (const struct spamm_node_t *node)
       for (i = 0; i < node->M_child; ++i) {
         for (j = 0; j < node->N_child; ++j)
         {
-          printf("%p", (void*) node->child[spamm_dense_index(i, j, node->N_child)]);
+          printf("%p", (void*) node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
           if (j < node->N_child-1) { printf(", "); }
         }
         if (i < node->M_child-1) { printf(", "); }
@@ -41,7 +41,7 @@ spamm_print_node (const struct spamm_node_t *node)
       for (i = 0; i < node->M_block; ++i) {
         for (j = 0; j < node->N_block; ++j)
         {
-          printf("%f", node->block_dense[spamm_dense_index(i, j, node->N_block)]);
+          printf("%f", node->block_dense[spamm_dense_index(i, j, node->M_block, node->N_block)]);
           if (j < node->N_block-1) { printf(", "); }
         }
         if (i < node->M_block-1) { printf(", "); }

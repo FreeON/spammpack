@@ -11,6 +11,7 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
 {
   int i, j;
 
+  //spamm_log("entering\n", __FILE__, __LINE__);
   //spamm_log("A_node:\n", __FILE__, __LINE__);
   //spamm_print_node(A_node);
   //spamm_log("B_node:\n", __FILE__, __LINE__);
@@ -40,28 +41,36 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
 
     (*B_node)->M_block = A_node->M_block;
     (*B_node)->N_block = A_node->N_block;
+
+    //spamm_print_node(*B_node);
   }
 
   if (A_node != NULL && A_node->child != NULL && (*B_node)->child == NULL)
   {
     //spamm_log("A_node->child != NULL && B_node->child == NULL\n", __FILE__, __LINE__);
+    //spamm_log("B_node:\n", __FILE__, __LINE__);
+    //spamm_print_node(*B_node);
     (*B_node)->child = (struct spamm_node_t**) malloc(sizeof(struct spamm_node_t*)*(*B_node)->M_child*(*B_node)->N_child);
     for (i = 0; i < A_node->M_child; ++i) {
       for (j = 0; j < A_node->N_child; ++j)
       {
-        spamm_new_node(&((*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]));
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]->M_lower = (*B_node)->M_lower+i*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]->M_upper = (*B_node)->M_lower+(i+1)*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]->N_lower = (*B_node)->N_lower+j*((*B_node)->N_upper-(*B_node)->N_lower)/(*B_node)->N_child;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]->N_upper = (*B_node)->N_lower+(j+1)*((*B_node)->N_upper-(*B_node)->N_lower)/(*B_node)->N_child;
+        spamm_new_node(&((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]));
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_lower = (*B_node)->M_lower+i*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_upper = (*B_node)->M_lower+(i+1)*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_lower = (*B_node)->N_lower+j*((*B_node)->N_upper-(*B_node)->N_lower)/(*B_node)->N_child;
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_upper = (*B_node)->N_lower+(j+1)*((*B_node)->N_upper-(*B_node)->N_lower)/(*B_node)->N_child;
 
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]->M_child = (*B_node)->M_child;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]->N_child = (*B_node)->N_child;
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_child = (*B_node)->M_child;
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_child = (*B_node)->N_child;
 
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]->threshold = (*B_node)->threshold;
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->threshold = (*B_node)->threshold;
 
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]->M_block = (*B_node)->M_block;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]->N_block = (*B_node)->N_block;
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_block = (*B_node)->M_block;
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_block = (*B_node)->N_block;
+
+        //spamm_log("created new B_node->child\n", __FILE__, __LINE__);
+        //spamm_log("B_node->child[%i][%i]:\n", __FILE__, __LINE__, i, j);
+        //spamm_print_node((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]);
       }
     }
   }
@@ -69,11 +78,12 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
   if (A_node != NULL && A_node->block_dense != NULL && (*B_node)->block_dense == NULL)
   {
     /* Create empty dense block. */
+    //spamm_log("A_node != NULL && A_node->block_dense != NULL && (*B_node)->block_dense == NULL\n", __FILE__, __LINE__);
     (*B_node)->block_dense = (double*) malloc(sizeof(double)*(*B_node)->M_block*(*B_node)->N_block);
     for (i = 0; i < (*B_node)->M_block; ++i) {
       for (j = 0; j < (*B_node)->N_block; ++j)
       {
-        (*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->N_block)] = 0;
+        (*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->M_block, (*B_node)->N_block)] = 0;
       }
     }
   }
@@ -84,13 +94,18 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
   if ((*B_node)->child != NULL)
   {
     /* Recurse further down in A & B. */
-    //spamm_log("B_node->child != NULL:\n", __FILE__, __LINE__);
+    //spamm_log("B_node->child != NULL\n", __FILE__, __LINE__);
     if (A_node != NULL && A_node->child != NULL)
     {
       for (i = 0; i < A_node->M_child; ++i) {
         for (j = 0; j < A_node->N_child; ++j)
         {
-          spamm_add_node(alpha, A_node->child[spamm_dense_index(i, j, A_node->N_child)], beta, &((*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]));
+          //spamm_log("recursing\n", __FILE__, __LINE__);
+          //spamm_log("A_node->child[%i][%i]:\n", __FILE__, __LINE__, i, j);
+          //spamm_print_node(A_node->child[spamm_dense_index(i, j, A_node->M_child, A_node->N_child)]);
+          //spamm_log("B_node->child[%i][%i]:\n", __FILE__, __LINE__, i, j);
+          //spamm_print_node((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]);
+          spamm_add_node(alpha, A_node->child[spamm_dense_index(i, j, A_node->M_child, A_node->N_child)], beta, &((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]));
         }
       }
     }
@@ -100,7 +115,7 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
       for (i = 0; i < (*B_node)->M_child; ++i) {
         for (j = 0; j < (*B_node)->N_child; ++j)
         {
-          spamm_add_node(alpha, NULL, beta, &((*B_node)->child[spamm_dense_index(i, j, (*B_node)->N_child)]));
+          spamm_add_node(alpha, NULL, beta, &((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]));
         }
       }
     }
@@ -109,14 +124,14 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
   else if ((*B_node)->block_dense != NULL)
   {
     /* Add dense blocks. */
-    //spamm_log("B_node->block_dense != NULL:\n", __FILE__, __LINE__);
+    //spamm_log("B_node->block_dense != NULL\n", __FILE__, __LINE__);
     if (A_node != NULL && A_node->block_dense != NULL)
     {
       for (i = 0; i < (*B_node)->M_block; ++i) {
         for (j = 0; j < (*B_node)->N_block; ++j)
         {
-          (*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->N_block)] = alpha*A_node->block_dense[spamm_dense_index(i, j, A_node->N_block)]
-            + beta*(*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->N_block)];
+          (*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->M_block, (*B_node)->N_block)] = alpha*A_node->block_dense[spamm_dense_index(i, j, A_node->M_block, A_node->N_block)]
+            + beta*(*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->M_block, (*B_node)->N_block)];
         }
       }
     }
@@ -126,7 +141,7 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
       for (i = 0; i < (*B_node)->M_block; ++i) {
         for (j = 0; j < (*B_node)->N_block; ++j)
         {
-          (*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->N_block)] = beta*(*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->N_block)];
+          (*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->M_block, (*B_node)->N_block)] = beta*(*B_node)->block_dense[spamm_dense_index(i, j, (*B_node)->M_block, (*B_node)->N_block)];
         }
       }
     }
@@ -136,6 +151,8 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
   {
     //spamm_log("else?\n", __FILE__, __LINE__);
   }
+
+  //spamm_log("exiting\n", __FILE__, __LINE__);
 }
 
 /* Calculate

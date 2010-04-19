@@ -38,19 +38,19 @@ spamm_multiply_node (const double alpha, const struct spamm_node_t *A_node, cons
       for (i = 0; i < (*C_node)->M_child; ++i) {
         for (j = 0; j < (*C_node)->N_child; ++j)
         {
-          spamm_new_node(&((*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]));
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
+          spamm_new_node(&((*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]));
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
 
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->M_child = (*C_node)->M_child;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->N_child = (*C_node)->N_child;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->M_child = (*C_node)->M_child;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->N_child = (*C_node)->N_child;
 
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->threshold = (*C_node)->threshold;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->threshold = (*C_node)->threshold;
 
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->M_block = (*C_node)->M_block;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]->N_block = (*C_node)->N_block;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->M_block = (*C_node)->M_block;
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->N_block = (*C_node)->N_block;
         }
       }
     }
@@ -59,9 +59,9 @@ spamm_multiply_node (const double alpha, const struct spamm_node_t *A_node, cons
       for (j = 0; j < (*C_node)->N_child; ++j) {
         for (k = 0; k < A_node->N_child; ++k)
         {
-          spamm_multiply_node(alpha, A_node->child[spamm_dense_index(i, k, A_node->N_child)],
-              B_node->child[spamm_dense_index(k, j, B_node->N_child)], beta,
-              &(*C_node)->child[spamm_dense_index(i, j, (*C_node)->N_child)]);
+          spamm_multiply_node(alpha, A_node->child[spamm_dense_index(i, k, A_node->M_child, A_node->N_child)],
+              B_node->child[spamm_dense_index(k, j, B_node->M_child, B_node->N_child)], beta,
+              &(*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]);
         }
       }
     }
@@ -76,21 +76,27 @@ spamm_multiply_node (const double alpha, const struct spamm_node_t *A_node, cons
       for (i = 0; i < (*C_node)->M_block; ++i) {
         for (j = 0; j < (*C_node)->N_block; ++j)
         {
-          (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->N_block)] = 0;
+          (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] = 0;
         }
       }
     }
 
+#ifdef DGEMM
+    DGEMM("N", "N", &(A_node->M_block), &(B_node->N_block), &(A_node->N_block),
+        &alpha, A_node->block_dense, &(A_node->M_block), B_node->block_dense, &(B_node->M_block),
+        &beta, (*C_node)->block_dense, &((*C_node)->M_block));
+#else
     for (i = 0; i < (*C_node)->M_block; ++i) {
       for (j = 0; j < (*C_node)->N_block; ++j) {
         for (k = 0; k < A_node->M_block; ++k)
         {
-          (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->N_block)]
-            = alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->N_block)]*B_node->block_dense[spamm_dense_index(k, j, B_node->N_block)]
-            + beta*(*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->N_block)];
+          (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)]
+            = alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]*B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)]
+            + beta*(*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)];
         }
       }
     }
+#endif
   }
 }
 

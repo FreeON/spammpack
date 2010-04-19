@@ -1,5 +1,6 @@
 #include "config.h"
 #include <spamm.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -15,7 +16,12 @@ main ()
 
   struct spamm_tree_stats_t stats;
 
+  double max_diff;
+  int max_diff_i, max_diff_j;
+
   int i, j, k;
+
+  int result = 0;
 
   spamm_log("loading matrix\n", __FILE__, __LINE__);
   spamm_read_MM("e20r0000.mtx", 10, 10, 2, 2, 1e-10, &A);
@@ -32,7 +38,7 @@ main ()
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j)
     {
-      A2_dense[spamm_dense_index(i, j, A.N)] = 0.0;
+      A2_dense[spamm_dense_index(i, j, A.M, A.N)] = 0.0;
     }
   }
 
@@ -47,26 +53,37 @@ main ()
     for (j = 0; j < A.N; ++j) {
       for (k = 0; k < A.M; ++k)
       {
-        A2_dense[spamm_dense_index(i, j, A.N)] += A_dense[spamm_dense_index(i, k, A.N)]*A_dense[spamm_dense_index(k, j, A.N)];
+        A2_dense[spamm_dense_index(i, j, A.M, A.N)] += A_dense[spamm_dense_index(i, k, A.M, A.N)]*A_dense[spamm_dense_index(k, j, A.M, A.N)];
       }
     }
   }
 #endif
 
   spamm_log("multiplying matrix with spamm\n", __FILE__, __LINE__);
-  spamm_multiply(1.0, &A, &A, 0.0, &A2);
+  spamm_multiply(1.0, &A, &A, 1.0, &A2);
 
   spamm_log("comparing matrices\n", __FILE__, __LINE__);
+  max_diff = 0;
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j)
     {
-      if (spamm_get(i, j, &A2) != A2_dense[spamm_dense_index(i, j, A.N)])
+      if (fabs(spamm_get(i, j, &A2)-A2_dense[spamm_dense_index(i, j, A.M, A.N)]) > max_diff)
       {
-        printf("[multiply_spamm] mismatch: (A2[%i][%i] = %e) != (A2_dense[%i][%i] = %e)\n", i, j, spamm_get(i, j, &A2), i, j, A2_dense[spamm_dense_index(i, j, A.N)]);
-        exit(1);
+        max_diff = fabs(spamm_get(i, j, &A2)-A2_dense[spamm_dense_index(i, j, A.M, A.N)]);
+        max_diff_i = i;
+        max_diff_j = j;
       }
     }
   }
 
-  return 0;
+  if (max_diff > 0)
+  {
+    printf("[multiply_spamm] biggest mismatch: (A2[%i][%i] = %e) != (A2_dense[%i][%i] = %e), |diff| = %e\n",
+        max_diff_i, max_diff_j, spamm_get(max_diff_i, max_diff_j, &A2),
+        max_diff_i, max_diff_j, A2_dense[spamm_dense_index(max_diff_i, max_diff_j, A.M, A.N)],
+        fabs(spamm_get(max_diff_i, max_diff_j, &A2)-A2_dense[spamm_dense_index(max_diff_i, max_diff_j, A.M, A.N)]));
+    result = 1;
+  }
+
+  return result;
 }

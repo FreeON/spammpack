@@ -21,6 +21,7 @@ spamm_log (const char *format, const char *filename, const int linenumber, ...)
   snprintf(new_format, size, "[%s:%i] %s", filename, linenumber, format);
 
   vprintf(new_format, ap);
+  fflush(stdout);
 
   free(new_format);
   va_end(ap);

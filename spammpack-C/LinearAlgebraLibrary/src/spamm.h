@@ -74,7 +74,7 @@ void
 spamm_log (const char *format, const char *filename, const int linenumber, ...);
 
 int
-spamm_dense_index (const int i, const int j, const int stride);
+spamm_dense_index (const int i, const int j, const int M, const int N);
 
 void
 spamm_new (const int M, const int N, const int M_block, const int N_block,

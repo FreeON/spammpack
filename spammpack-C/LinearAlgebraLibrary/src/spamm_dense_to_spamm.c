@@ -22,7 +22,7 @@ spamm_dense_to_spamm (const int M, const int N, const int M_block,
   for (i = 0; i < M; ++i) {
     for (j = 0; j < N; ++j)
     {
-      spamm_set(i, j, A_dense[spamm_dense_index(i, j, N)], A);
+      spamm_set(i, j, A_dense[spamm_dense_index(i, j, M, N)], A);
     }
   }
 }
