@@ -6,8 +6,8 @@ int
 main ()
 {
   int max_size = 5;
-  int M[5] = { 2, 10, 15, 400, 600 };
-  int N[5] = { 2, 10,  8, 400, 300 };
+  int M[5] = { 2, 10, 15, 200, 300 };
+  int N[5] = { 2, 10,  8, 200, 100 };
 
   int max_block = 11;
   int M_block[11] = { 1, 1, 1, 2, 2, 2, 5, 8, 8, 10, 100 };
@@ -18,7 +18,7 @@ main ()
   int N_child[5] = { 2, 3, 4, 3, 4 };
 
   int max_fill = 4;
-  double fill[4] = { 0.1, 0.2, 0.5, 1.0 };
+  double fill[4] = { 0.01, 0.2, 0.5, 1.0 };
 
   int i, j;
   int i_size;
@@ -30,23 +30,29 @@ main ()
   struct spamm_t A;
   struct spamm_tree_stats_t stats;
 
-  for (i_fill = 0; i_fill < max_fill; ++i_fill) {
+  for (i_fill = 0; i_fill < max_fill; ++i_fill)
+  {
+    //i_fill = 3;
     for (i_size = 0; i_size < max_size; ++i_size)
     {
+      //i_size = 1;
       A_dense = (double*) malloc(sizeof(double)*M[i_size]*N[i_size]);
       for (i = 0; i < M[i_size]; ++i) {
         for (j = 0; j < N[i_size]; ++j)
         {
-          A_dense[spamm_dense_index(i, j, N[i_size])] = (rand()/(double) RAND_MAX > (1-fill[i_fill]) ? rand()/(double) RAND_MAX : 0.0);
+          A_dense[spamm_dense_index(i, j, M[i_size], N[i_size])] = (rand()/(double) RAND_MAX > (1-fill[i_fill]) ? rand()/(double) RAND_MAX : 0.0);
         }
       }
 
       //printf("A_dense =\n");
       //spamm_print_dense(M[i_size], N[i_size], A_dense);
 
-      for (i_block = 0; i_block < max_block; ++i_block) {
+      for (i_block = 0; i_block < max_block; ++i_block)
+      {
+        //i_block = 0;
         for (i_child = 0; i_child < max_child; ++i_child)
         {
+          //i_child = 1;
           spamm_new(M[i_size], N[i_size], M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child], 1e-10, &A);
           printf("[create_spamm] %ix%i matrix, %.1f%% full, padded %ix%i, i_block dimensions %ix%i, i_child dimensions %ix%i, ",
               M[i_size], N[i_size], fill[i_fill]*100, A.M_padded, A.N_padded, M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child]);
@@ -60,12 +66,14 @@ main ()
           //printf("A =\n");
           //spamm_print_spamm(&A);
 
+          //printf("i_fill = %i, i_size = %i, i_block = %i, i_child = %i\n", i_fill, i_size, i_block, i_child);
+
           for (i = 0; i < M[i_size]; ++i) {
             for (j = 0; j < N[i_size]; ++j)
             {
-              if (A_dense[spamm_dense_index(i, j, N[i_size])] != spamm_get(i, j, &A))
+              if (A_dense[spamm_dense_index(i, j, M[i_size], N[i_size])] != spamm_get(i, j, &A))
               {
-                printf("[create_spamm] mismatch: (A_dense[%i][%i] = %e) != (A[%i][%i] = %e)\n", i, j, A_dense[spamm_dense_index(i, j, N[i_size])], i, j, spamm_get(i, j, &A));
+                printf("[create_spamm] mismatch: (A_dense[%i][%i] = %e) != (A[%i][%i] = %e)\n", i, j, A_dense[spamm_dense_index(i, j, M[i_size], N[i_size])], i, j, spamm_get(i, j, &A));
                 exit(1);
               }
             }

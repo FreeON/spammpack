@@ -18,9 +18,9 @@ spamm_delete_node (struct spamm_node_t *node)
     for (i = 0; i < node->M_child; ++i) {
       for (j = 0; j < node->N_child; ++j)
       {
-        spamm_delete_node(node->child[spamm_dense_index(i, j, node->N_child)]);
-        free(node->child[spamm_dense_index(i, j, node->N_child)]);
-        node->child[spamm_dense_index(i, j, node->N_child)] = NULL;
+        spamm_delete_node(node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+        free(node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+        node->child[spamm_dense_index(i, j, node->M_child, node->N_child)] = NULL;
       }
     }
     free(node->child);

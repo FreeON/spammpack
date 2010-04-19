@@ -15,7 +15,7 @@ spamm_spamm_to_dense (const struct spamm_t *A, double **A_dense)
   for (i = 0; i < A->M; ++i) {
     for (j = 0; j < A->N; ++j)
     {
-      (*A_dense)[spamm_dense_index(i, j, A->N)] = spamm_get(i, j, A);
+      (*A_dense)[spamm_dense_index(i, j, A->M, A->N)] = spamm_get(i, j, A);
     }
   }
 }

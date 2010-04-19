@@ -20,7 +20,7 @@ spamm_set_element (const int i, const int j, const double Aij, struct spamm_node
       exit(1);
     }
 
-    node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, node->N_block)] = Aij;
+    node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, node->M_block, node->N_block)] = Aij;
   }
 
   else
@@ -34,8 +34,8 @@ spamm_set_element (const int i, const int j, const double Aij, struct spamm_node
       for (l = 0; l < node->M_child; ++l) {
         for (k = 0; k < node->N_child; ++k)
         {
-          spamm_new_node(&(node->child[spamm_dense_index(l, k, node->N_child)]));
-          child_node = node->child[spamm_dense_index(l, k, node->N_child)];
+          spamm_new_node(&(node->child[spamm_dense_index(l, k, node->M_child, node->N_child)]));
+          child_node = node->child[spamm_dense_index(l, k, node->M_child, node->N_child)];
 
           child_node->M_lower = node->M_lower+l*(node->M_upper-node->M_lower)/node->M_child;
           child_node->M_upper = node->M_lower+(l+1)*(node->M_upper-node->M_lower)/node->M_child;
@@ -57,7 +57,7 @@ spamm_set_element (const int i, const int j, const double Aij, struct spamm_node
             for (m = 0; m < child_node->M_block; ++m) {
               for (n = 0; n < child_node->N_block; ++n)
               {
-                child_node->block_dense[spamm_dense_index(m, n, child_node->N_block)] = 0.0;
+                child_node->block_dense[spamm_dense_index(m, n, child_node->M_block, child_node->N_block)] = 0.0;
               }
             }
           }
@@ -74,7 +74,7 @@ spamm_set_element (const int i, const int j, const double Aij, struct spamm_node
             j >= (node->N_lower+(node->N_upper-node->N_lower)*k/node->N_child) &&
             j < (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/node->N_child))
         {
-          return spamm_set_element(i, j, Aij, node->child[spamm_dense_index(l, k, node->N_child)]);
+          return spamm_set_element(i, j, Aij, node->child[spamm_dense_index(l, k, node->M_child, node->N_child)]);
         }
       }
     }
@@ -119,7 +119,7 @@ spamm_set (const int i, const int j, const double Aij, struct spamm_t *A)
         for (l = 0; l < A->root->M_block; ++l) {
           for (k = 0; k < A->root->N_block; ++k)
           {
-            A->root->block_dense[spamm_dense_index(l, k, A->root->N_block)] = 0.0;
+            A->root->block_dense[spamm_dense_index(l, k, A->root->M_block, A->root->N_block)] = 0.0;
           }
         }
       }

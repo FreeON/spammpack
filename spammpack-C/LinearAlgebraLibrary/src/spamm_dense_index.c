@@ -2,7 +2,14 @@
 #include <assert.h>
 
 int
-spamm_dense_index (const int i, const int j, const int stride)
+spamm_dense_index (const int i, const int j, const int M, const int N)
 {
-  return i*stride+j;
+  /* Row-Major format. */
+  //return i*N+j;
+
+  /* Column-Major format.
+   *
+   * When using dgemm, we need column-major storage.
+   */
+  return i+j*M;
 }

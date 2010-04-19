@@ -25,18 +25,27 @@ AC_CHECK_HEADERS([bzlib.h])
 AC_CHECK_LIB([bz2], [BZ2_bzopen], [], [], [])
 
 dnl Check for blas.
-AC_CHECK_LIB([blas], [dgemm],
-             [LIBS="-lblas ${LIBS}"
-              AC_DEFINE([DGEMM], [dgemm], [We have dgemm().])],
-              [], [])
-AC_CHECK_LIB([blas], [dgemm_],
-             [LIBS="-lblas ${LIBS}"
-              AC_DEFINE([DGEMM], [dgemm_], [We have dgemm_().])],
-              [], [])
-AC_CHECK_LIB([blas], [dgemm__],
-             [LIBS="-lblas ${LIBS}"
-              AC_DEFINE([DGEMM], [dgemm__], [We have dgemm__().])],
-              [], [])
+AC_MSG_CHECKING([whether to use BLAS])
+AC_ARG_ENABLE([blas], [AS_HELP_STRING([--enable-blas], [enables the use of BLAS routines])],
+              [], [enable_blas="no"])
+
+if test "${enable_blas}" = "yes"; then
+  AC_MSG_RESULT([yes])
+  AC_CHECK_LIB([blas], [dgemm],
+               [LIBS="-lblas ${LIBS}"
+                AC_DEFINE([DGEMM], [dgemm], [How many underscores are in dgemm()?])],
+                [], [])
+  AC_CHECK_LIB([blas], [dgemm_],
+               [LIBS="-lblas ${LIBS}"
+                AC_DEFINE([DGEMM], [dgemm_], [How many underscores are in dgemm()?])],
+                [], [])
+  AC_CHECK_LIB([blas], [dgemm__],
+               [LIBS="-lblas ${LIBS}"
+                AC_DEFINE([DGEMM], [dgemm__], [How many underscores are in dgemm()?])],
+                [], [])
+else
+  AC_MSG_RESULT([no])
+fi
 
 dnl Check for stdarg.h.
 AC_CHECK_HEADERS([stdarg.h])
@@ -47,6 +56,7 @@ AC_CONFIG_FILES([
 Makefile
 src/Makefile
 tests/Makefile
+benchmarks/Makefile
 ])
 
 AC_OUTPUT

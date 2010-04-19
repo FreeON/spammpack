@@ -15,7 +15,7 @@ spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *n
       for (j = 0; j < node->N_child; ++j)
       {
         stats->number_nodes++;
-        spamm_node_stats(stats, node->child[spamm_dense_index(i, j, node->N_child)]);
+        spamm_node_stats(stats, node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
       }
     }
   }
