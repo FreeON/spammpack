@@ -53,6 +53,8 @@ Makefile
 src/Makefile
 tests/Makefile
 benchmarks/Makefile
+prototype/Makefile
+prototype/cublas/Makefile
 ])
 
 AC_OUTPUT
