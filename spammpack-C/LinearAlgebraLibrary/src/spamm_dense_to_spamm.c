@@ -5,7 +5,7 @@
 void
 spamm_dense_to_spamm (const int M, const int N, const int M_block,
     const int N_block, const int M_child, const int N_child,
-    const double threshold, const double *A_dense, struct spamm_t *A)
+    const float_t threshold, const float_t *A_dense, struct spamm_t *A)
 {
   assert(A_dense != NULL);
   assert(A != NULL);

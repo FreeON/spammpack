@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-double
+float_t
 spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
 {
   assert(node != NULL);
@@ -37,7 +37,7 @@ spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
   }
 }
 
-double
+float_t
 spamm_get (const int i, const int j, const struct spamm_t *A)
 {
   assert(A != NULL);

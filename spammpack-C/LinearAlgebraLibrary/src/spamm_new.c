@@ -5,7 +5,7 @@
 
 void
 spamm_new (const int M, const int N, const int M_block, const int N_block,
-    const int M_child, const int N_child, const double threshold,
+    const int M_child, const int N_child, const float_t threshold,
     struct spamm_t *A)
 {
   assert(A != NULL);

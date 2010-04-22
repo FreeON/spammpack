@@ -1,1 +1,1 @@
-SUBDIRS = cublas
+SUBDIRS = cublas cuda_gemm_kernel

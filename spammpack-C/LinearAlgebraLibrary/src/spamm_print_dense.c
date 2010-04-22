@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 void
-spamm_print_dense (const int M, const int N, const double *A_dense)
+spamm_print_dense (const int M, const int N, const float_t *A_dense)
 {
   assert(A_dense != NULL);
   assert(M > 0 && N > 0);

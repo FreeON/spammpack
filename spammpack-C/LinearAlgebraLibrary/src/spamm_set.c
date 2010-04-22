@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 void
-spamm_set_element (const int i, const int j, const double Aij, struct spamm_node_t *node)
+spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_node_t *node)
 {
   assert(node != NULL);
 
@@ -53,7 +53,7 @@ spamm_set_element (const int i, const int j, const double Aij, struct spamm_node
           /* Check if we are at the block level. */
           if ((child_node->M_upper-child_node->M_lower) == child_node->M_block && (child_node->N_upper-child_node->N_lower) == child_node->N_block)
           {
-            child_node->block_dense = (double*) malloc(sizeof(double)*child_node->M_block*child_node->N_block);
+            child_node->block_dense = (float_t*) malloc(sizeof(float_t)*child_node->M_block*child_node->N_block);
             for (m = 0; m < child_node->M_block; ++m) {
               for (n = 0; n < child_node->N_block; ++n)
               {
@@ -82,7 +82,7 @@ spamm_set_element (const int i, const int j, const double Aij, struct spamm_node
 }
 
 void
-spamm_set (const int i, const int j, const double Aij, struct spamm_t *A)
+spamm_set (const int i, const int j, const float_t Aij, struct spamm_t *A)
 {
   assert(A != NULL);
 
@@ -115,7 +115,7 @@ spamm_set (const int i, const int j, const double Aij, struct spamm_t *A)
       /* Check if we are at the block level. */
       if ((A->root->M_upper-A->root->M_lower) == A->root->M_block && (A->root->N_upper-A->root->N_lower) == A->root->N_block)
       {
-        A->root->block_dense = (double*) malloc(sizeof(double)*A->root->M_block*A->root->N_block);
+        A->root->block_dense = (float_t*) malloc(sizeof(float_t)*A->root->M_block*A->root->N_block);
         for (l = 0; l < A->root->M_block; ++l) {
           for (k = 0; k < A->root->N_block; ++k)
           {
