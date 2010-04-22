@@ -12,9 +12,9 @@ main ()
   struct spamm_t A;
   struct spamm_t A2;
 
-  double *A_dense;
-  double *A2_dense;
-  double alpha, beta;
+  float_t *A_dense;
+  float_t *A2_dense;
+  float_t alpha, beta;
 
   struct spamm_tree_stats_t stats;
 
@@ -34,7 +34,7 @@ main ()
 
   spamm_log("converting tree to dense\n", __FILE__, __LINE__);
   spamm_spamm_to_dense(&A, &A_dense);
-  A2_dense = (double*) malloc(sizeof(double)*A.M*A.N);
+  A2_dense = (float_t*) malloc(sizeof(float_t)*A.M*A.N);
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j)
     {
