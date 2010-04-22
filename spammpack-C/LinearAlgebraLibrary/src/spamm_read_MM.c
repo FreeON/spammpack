@@ -9,7 +9,7 @@
 
 void
 spamm_read_MM (const char *filename, const int M_block, const int N_block,
-    const int M_child, const int N_child, const double threshold,
+    const int M_child, const int N_child, const float_t threshold,
     struct spamm_t *A)
 {
   assert(A != NULL);
@@ -18,7 +18,7 @@ spamm_read_MM (const char *filename, const int M_block, const int N_block,
   FILE *fd;
   int linenumber;
   int i, j, M, N;
-  double Aij;
+  float_t Aij;
   char line[LINE_MAX];
   char *token;
 

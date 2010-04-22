@@ -1,3 +1,7 @@
+#include "config.h"
+
+#ifdef HAVE_LIBCUBLAS
+
 #include <cublas.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -204,3 +208,12 @@ main (int argc, char **argv)
   }
 #endif
 }
+
+#else
+
+int
+main (int argc, char **argv)
+{
+}
+
+#endif

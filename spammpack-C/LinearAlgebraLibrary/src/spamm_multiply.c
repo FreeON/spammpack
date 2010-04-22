@@ -3,14 +3,23 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#if defined(HAVE_LIBCUBLAS)
+#include <cublas.h>
+#endif
+
 /* Computes
  *
  * C_node = alpha*A_node*B_node + beta*C_node
  */
 void
-spamm_multiply_node (const double alpha, const struct spamm_node_t *A_node, const struct spamm_node_t *B_node, const double beta, struct spamm_node_t **C_node)
+spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node, const struct spamm_node_t *B_node, const float_t beta, struct spamm_node_t **C_node)
 {
   int i, j, k;
+
+#if defined(HAVE_LIBCUBLAS)
+  cublasStatus status;
+  void *d_A, *d_B, *d_C;
+#endif
 
   if (*C_node == NULL)
   {
@@ -72,7 +81,7 @@ spamm_multiply_node (const double alpha, const struct spamm_node_t *A_node, cons
     if ((*C_node)->block_dense == NULL)
     {
       /* Create empty dense block. */
-      (*C_node)->block_dense = (double*) malloc(sizeof(double)*(*C_node)->M_block*(*C_node)->N_block);
+      (*C_node)->block_dense = (float_t*) malloc(sizeof(float_t)*(*C_node)->M_block*(*C_node)->N_block);
       for (i = 0; i < (*C_node)->M_block; ++i) {
         for (j = 0; j < (*C_node)->N_block; ++j)
         {
@@ -85,6 +94,21 @@ spamm_multiply_node (const double alpha, const struct spamm_node_t *A_node, cons
     DGEMM("N", "N", &(A_node->M_block), &(B_node->N_block), &(A_node->N_block),
         &alpha, A_node->block_dense, &(A_node->M_block), B_node->block_dense, &(B_node->M_block),
         &beta, (*C_node)->block_dense, &((*C_node)->M_block));
+#elif defined(HAVE_LIBCUBLAS)
+    cublasAlloc(A_node->M_block*A_node->N_block,       sizeof(float_t), &d_A);
+    cublasAlloc(B_node->M_block*B_node->N_block,       sizeof(float_t), &d_B);
+    cublasAlloc((*C_node)->M_block*(*C_node)->N_block, sizeof(float_t), &d_C);
+
+    cublasSetMatrix(A_node->M_block,    A_node->N_block,    sizeof(float_t), (void*) A_node->block_dense,    A_node->M_block,    d_A, A_node->M_block);
+    cublasSetMatrix(B_node->M_block,    B_node->N_block,    sizeof(float_t), (void*) B_node->block_dense,    B_node->M_block,    d_B, B_node->M_block);
+    cublasSetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(float_t), (void*) (*C_node)->block_dense, (*C_node)->M_block, d_C, (*C_node)->M_block);
+
+    cublasSgemm('N', 'N', A_node->M_block, B_node->N_block, A_node->N_block, alpha, d_A, A_node->M_block, d_B, B_node->M_block, beta, d_C, (*C_node)->M_block);
+    cublasGetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(float_t), (void*) d_C, (*C_node)->M_block, (void*) (*C_node)->block_dense, (*C_node)->M_block);
+
+    cublasFree(d_A);
+    cublasFree(d_B);
+    cublasFree(d_C);
 #else
     for (i = 0; i < (*C_node)->M_block; ++i) {
       for (j = 0; j < (*C_node)->N_block; ++j) {
@@ -105,7 +129,7 @@ spamm_multiply_node (const double alpha, const struct spamm_node_t *A_node, cons
  * C = alpha*A*B + beta*C
  */
 void
-spamm_multiply (const double alpha, const struct spamm_t *A, const struct spamm_t *B, const double beta, struct spamm_t *C)
+spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm_t *B, const float_t beta, struct spamm_t *C)
 {
   assert(A != NULL);
   assert(B != NULL);

@@ -7,7 +7,7 @@
  * B = alpha*A + beta*B
  */
 void
-spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const double beta, struct spamm_node_t **B_node)
+spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node)
 {
   int i, j;
 
@@ -79,7 +79,7 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
   {
     /* Create empty dense block. */
     //spamm_log("A_node != NULL && A_node->block_dense != NULL && (*B_node)->block_dense == NULL\n", __FILE__, __LINE__);
-    (*B_node)->block_dense = (double*) malloc(sizeof(double)*(*B_node)->M_block*(*B_node)->N_block);
+    (*B_node)->block_dense = (float_t*) malloc(sizeof(float_t)*(*B_node)->M_block*(*B_node)->N_block);
     for (i = 0; i < (*B_node)->M_block; ++i) {
       for (j = 0; j < (*B_node)->N_block; ++j)
       {
@@ -160,7 +160,7 @@ spamm_add_node (const double alpha, const struct spamm_node_t *A_node, const dou
  * B = alpha*A + beta*B
  */
 void
-spamm_add (const double alpha, const struct spamm_t *A, const double beta, struct spamm_t *B)
+spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, struct spamm_t *B)
 {
   assert(A != NULL);
   assert(B != NULL);

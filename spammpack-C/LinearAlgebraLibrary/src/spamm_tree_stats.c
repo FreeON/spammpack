@@ -23,7 +23,7 @@ spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *n
   if (node->block_dense != NULL)
   {
     stats->number_dense_blocks++;
-    stats->memory_dense_blocks += node->M_block*node->N_block*sizeof(double);
+    stats->memory_dense_blocks += node->M_block*node->N_block*sizeof(float_t);
   }
 }
 
