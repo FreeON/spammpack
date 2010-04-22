@@ -25,6 +25,11 @@ struct spamm_t
   struct spamm_node_t *root;
 };
 
+enum spamm_block_ordering_t
+{
+  P, Q, R, S
+};
+
 struct spamm_node_t
 {
   /* The dimensions covered in the padded matrix in this node. The indices are
@@ -45,6 +50,9 @@ struct spamm_node_t
 
   /* The linear index of this block along the curve. */
   unsigned int index;
+
+  /* The name of the block ordering pattern. */
+  enum spamm_block_ordering_t ordering;
 
   /* At the non-block level, pointers to the children nodes. */
   struct spamm_node_t **child;
