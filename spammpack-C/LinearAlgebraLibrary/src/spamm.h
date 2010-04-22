@@ -43,6 +43,9 @@ struct spamm_node_t
    * stored. */
   float_t threshold;
 
+  /* The linear index of this block along the curve. */
+  unsigned int index;
+
   /* At the non-block level, pointers to the children nodes. */
   struct spamm_node_t **child;
 
@@ -65,14 +68,28 @@ struct spamm_tree_stats_t
   int memory_dense_blocks;
 };
 
-struct spamm_linked_list_t
+struct spamm_multiply_stream_t
+{
+  /* Links to the first and last node in list. */
+  struct spamm_multiply_stream_node_t *first;
+  struct spamm_multiply_stream_node_t *last;
+};
+
+struct spamm_multiply_stream_node_t
 {
   /* Links to the previous and the next element. */
-  struct spamm_linked_list_t *previous;
-  struct spamm_linked_list_t *next;
+  struct spamm_multiply_stream_node_t *previous;
+  struct spamm_multiply_stream_node_t *next;
 
-  /* The data. */
-  void *data;
+  /* Index triple of matrices. */
+  unsigned int A_index;
+  unsigned int B_index;
+  unsigned int C_index;
+
+  /* Pointers into nodes corresponding to indices. */
+  const struct spamm_node_t *A_node;
+  const struct spamm_node_t *B_node;
+  const struct spamm_node_t *C_node;
 };
 
 void
@@ -131,3 +148,21 @@ void
 spamm_read_MM (const char *filename, const int M_block, const int N_block,
     const int M_child, const int N_child, const float_t threshold,
     struct spamm_t *A);
+
+void
+spamm_ll_new (struct spamm_multiply_stream_t *list);
+
+void
+spamm_ll_delete (struct spamm_multiply_stream_t *list);
+
+void
+spamm_ll_append (const unsigned int A_index, const struct spamm_node_t *A_node,
+    const unsigned int B_index, const struct spamm_node_t *B_node,
+    const unsigned int C_index, const struct spamm_node_t *C_node,
+    struct spamm_multiply_stream_t *list);
+
+void
+spamm_ll_sort (struct spamm_multiply_stream_t *list);
+
+void
+spamm_ll_print (struct spamm_multiply_stream_t *list);

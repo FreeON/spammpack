@@ -6,9 +6,9 @@
 void
 spamm_print_spamm (const struct spamm_t *A)
 {
-  assert(A != NULL);
-
   int i, j;
+
+  assert(A != NULL);
 
   for (i = 0; i < A->M; ++i) {
     for (j = 0; j < A->N; ++j)

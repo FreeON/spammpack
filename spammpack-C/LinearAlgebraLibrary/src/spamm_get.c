@@ -5,9 +5,9 @@
 float_t
 spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
 {
-  assert(node != NULL);
-
   int l, k;
+
+  assert(node != NULL);
 
   /* Test whether we are at a leaf node. */
   if (node->child == NULL)

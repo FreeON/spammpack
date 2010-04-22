@@ -5,10 +5,10 @@
 void
 spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense)
 {
+  int i, j;
+
   assert(A != NULL);
   assert(A_dense != NULL);
-
-  int i, j;
 
   *A_dense = (float_t*) malloc(sizeof(float_t)*A->M*A->N);
 

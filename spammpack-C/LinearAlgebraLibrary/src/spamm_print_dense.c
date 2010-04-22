@@ -6,10 +6,10 @@
 void
 spamm_print_dense (const int M, const int N, const float_t *A_dense)
 {
+  int i, j;
+
   assert(A_dense != NULL);
   assert(M > 0 && N > 0);
-
-  int i, j;
 
   for (i = 0; i < M; ++i) {
     for (j = 0; j < N; ++j)

@@ -1,1 +1,1 @@
-SUBDIRS = cublas cuda_gemm_kernel
+SUBDIRS = cublas cuda_gemm_kernel kernel_comparison

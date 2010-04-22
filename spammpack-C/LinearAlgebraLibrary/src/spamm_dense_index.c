@@ -1,5 +1,4 @@
 #include "spamm.h"
-#include <assert.h>
 
 int
 spamm_dense_index (const int i, const int j, const int M, const int N)

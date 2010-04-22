@@ -12,15 +12,15 @@ spamm_read_MM (const char *filename, const int M_block, const int N_block,
     const int M_child, const int N_child, const float_t threshold,
     struct spamm_t *A)
 {
-  assert(A != NULL);
-  assert(filename != NULL);
-
   FILE *fd;
   int linenumber;
   int i, j, M, N;
   float_t Aij;
   char line[LINE_MAX];
   char *token;
+
+  assert(A != NULL);
+  assert(filename != NULL);
 
   fd = fopen(filename, "r");
   if (fd == NULL)
