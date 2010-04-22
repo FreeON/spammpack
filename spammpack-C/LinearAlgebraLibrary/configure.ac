@@ -43,15 +43,18 @@ if test "${enable_blas}" = "yes"; then
 
   AC_CHECK_LIB([blas], [sgemm],
                [LIBS="-lblas ${LIBS}"
-                AC_DEFINE([DGEMM], [sgemm], [How many underscores are in sgemm()?])],
+                AC_DEFINE([DGEMM], [sgemm], [How many underscores are in sgemm()?])
+                AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
                 [], [])
   AC_CHECK_LIB([blas], [sgemm_],
                [LIBS="-lblas ${LIBS}"
-                AC_DEFINE([DGEMM], [sgemm_], [How many underscores are in sgemm()?])],
+                AC_DEFINE([DGEMM], [sgemm_], [How many underscores are in sgemm()?])
+                AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
                 [], [])
   AC_CHECK_LIB([blas], [sgemm__],
                [LIBS="-lblas ${LIBS}"
-                AC_DEFINE([DGEMM], [sgemm__], [How many underscores are in sgemm()?])],
+                AC_DEFINE([DGEMM], [sgemm__], [How many underscores are in sgemm()?])
+                AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
                 [], [])
 else
   AC_MSG_RESULT([no])
@@ -67,17 +70,27 @@ AC_ARG_ENABLE([cuda], [AS_HELP_STRING([--enable-cuda=path_to_sdk], [Enable
 
 if test "${enable_cuda}" != "no"; then
   AC_MSG_RESULT([yes, using cuda path ${enable_cuda}])
+  have_cuda="yes"
   old_CPPFLAGS=${CPPFLAGS}
   CPPFLAGS="${CPPFLAGS} -I${enable_cuda}/include"
-  AC_CHECK_HEADERS([cublas.h], [], [CPPFLAGS=${old_CPPFLAGS}])
+  AC_CHECK_HEADERS([cublas.h], [],
+                   [CPPFLAGS=${old_CPPFLAGS}
+                    unset have_cuda])
   old_LDFLAGS=${LDFLAGS}
   LDFLAGS="${LDFLAGS} -L${enable_cuda}/lib64 -L${enable_cuda}/lib"
-  AC_CHECK_LIB([cublas], [cublasSgemm], [], [LDFLAGS=${old_LDFLAGS}], [])
+  AC_CHECK_LIB([cublas], [cublasSgemm], [],
+               [LDFLAGS=${old_LDFLAGS}
+                unset have_cuda], [])
   unset old_CPPFLAGS
   unset old_LDFLAGS
+  if test "${have_cuda}" = "yes"; then
+    AC_DEFINE([HAVE_CUDA], [1], [whether we can use cuda])
+  fi
 else
   AC_MSG_RESULT([no])
 fi
+
+AM_CONDITIONAL([HAVE_CUDA], [test "${have_cuda}" = "yes"])
 
 dnl Check for stdarg.h.
 AC_CHECK_HEADERS([stdarg.h])
