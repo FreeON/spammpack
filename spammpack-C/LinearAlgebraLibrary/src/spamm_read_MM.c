@@ -41,6 +41,7 @@ spamm_read_MM (const char *filename, const int M_block, const int N_block,
     if (linenumber == 1)
     {
       /* Load header line. */
+      spamm_log("header: %s", __FILE__, __LINE__, line);
       continue;
     }
 

@@ -63,6 +63,9 @@ spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_nod
           }
         }
       }
+
+      if (node->M_child == 3 && node->N_child == 3)
+
     }
 
     /* Recurse. */
