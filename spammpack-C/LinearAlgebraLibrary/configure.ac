@@ -96,6 +96,7 @@ benchmarks/Makefile
 prototype/Makefile
 prototype/cublas/Makefile
 prototype/cuda_gemm_kernel/Makefile
+prototype/kernel_comparison/Makefile
 ])
 
 AC_OUTPUT

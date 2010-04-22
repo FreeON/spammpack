@@ -26,7 +26,7 @@ main ()
   int i_child;
   int i_fill;
 
-  double *A_dense;
+  float_t *A_dense;
   struct spamm_t A;
   struct spamm_tree_stats_t stats;
 
@@ -36,11 +36,11 @@ main ()
     for (i_size = 0; i_size < max_size; ++i_size)
     {
       //i_size = 1;
-      A_dense = (double*) malloc(sizeof(double)*M[i_size]*N[i_size]);
+      A_dense = (float_t*) malloc(sizeof(float_t)*M[i_size]*N[i_size]);
       for (i = 0; i < M[i_size]; ++i) {
         for (j = 0; j < N[i_size]; ++j)
         {
-          A_dense[spamm_dense_index(i, j, M[i_size], N[i_size])] = (rand()/(double) RAND_MAX > (1-fill[i_fill]) ? rand()/(double) RAND_MAX : 0.0);
+          A_dense[spamm_dense_index(i, j, M[i_size], N[i_size])] = (rand()/(float_t) RAND_MAX > (1-fill[i_fill]) ? rand()/(float_t) RAND_MAX : 0.0);
         }
       }
 

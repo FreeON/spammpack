@@ -21,6 +21,8 @@ spamm_new_node (struct spamm_node_t **node)
 
   (*node)->threshold = 0.0;
 
+  (*node)->index = 0;
+
   (*node)->child = NULL;
   (*node)->block_dense = NULL;
 }

@@ -6,10 +6,10 @@
 void
 spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_node_t *node)
 {
-  assert(node != NULL);
-
   int l, k, m, n;
   struct spamm_node_t *child_node;
+
+  assert(node != NULL);
 
   /* Check if we are at the block level. */
   if ((node->M_upper-node->M_lower) == node->M_block && (node->N_upper-node->N_lower) == node->N_block)
@@ -84,9 +84,9 @@ spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_nod
 void
 spamm_set (const int i, const int j, const float_t Aij, struct spamm_t *A)
 {
-  assert(A != NULL);
-
   int l, k;
+
+  assert(A != NULL);
 
   if (i < 0)     { spamm_log("(i = %i) < 0\n",  __FILE__, __LINE__, i); exit(1); }
   if (j < 0)     { spamm_log("(j = %i) < 0\n",  __FILE__, __LINE__, j); exit(1); }

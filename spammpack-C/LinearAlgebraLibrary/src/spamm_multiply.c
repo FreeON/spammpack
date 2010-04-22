@@ -12,7 +12,9 @@
  * C_node = alpha*A_node*B_node + beta*C_node
  */
 void
-spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node, const struct spamm_node_t *B_node, const float_t beta, struct spamm_node_t **C_node)
+spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node,
+    const struct spamm_node_t *B_node, const float_t beta,
+    struct spamm_node_t **C_node, struct spamm_multiply_stream_t *multiply_stream)
 {
   int i, j, k;
 
@@ -70,7 +72,8 @@ spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node, con
         {
           spamm_multiply_node(alpha, A_node->child[spamm_dense_index(i, k, A_node->M_child, A_node->N_child)],
               B_node->child[spamm_dense_index(k, j, B_node->M_child, B_node->N_child)], beta,
-              &(*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]);
+              &(*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)],
+              multiply_stream);
         }
       }
     }
@@ -89,6 +92,9 @@ spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node, con
         }
       }
     }
+
+    /* Append this triple to the multiply stream. */
+    spamm_ll_append(A_node->index, A_node, B_node->index, B_node, (*C_node)->index, *C_node, multiply_stream);
 
 #ifdef DGEMM
     DGEMM("N", "N", &(A_node->M_block), &(B_node->N_block), &(A_node->N_block),
@@ -131,6 +137,8 @@ spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node, con
 void
 spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm_t *B, const float_t beta, struct spamm_t *C)
 {
+  struct spamm_multiply_stream_t multiply_stream;
+
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
@@ -212,5 +220,9 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
     spamm_add_node(0.0, NULL, beta, &(C->root));
   }
 
-  spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root));
+  spamm_ll_new(&multiply_stream);
+  spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
+  spamm_ll_sort(&multiply_stream);
+  spamm_ll_print(&multiply_stream);
+  spamm_ll_delete(&multiply_stream);
 }
