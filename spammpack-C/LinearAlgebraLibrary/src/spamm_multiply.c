@@ -45,7 +45,10 @@ spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node,
   {
     if ((*C_node)->child == NULL)
     {
+      /* Allocate children nodes. */
       (*C_node)->child = (struct spamm_node_t**) malloc(sizeof(struct spamm_node_t*)*(*C_node)->M_child*(*C_node)->N_child);
+
+      /* Create children nodes. */
       for (i = 0; i < (*C_node)->M_child; ++i) {
         for (j = 0; j < (*C_node)->N_child; ++j)
         {
@@ -62,6 +65,40 @@ spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node,
 
           (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->M_block = (*C_node)->M_block;
           (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->N_block = (*C_node)->N_block;
+        }
+      }
+
+      if ((*C_node)->M_child == 2 && (*C_node)->N_child == 2)
+      {
+        /* Z-curve curve ordering. */
+        switch ((*C_node)->ordering)
+        {
+          case none:
+            (*C_node)->child[spamm_dense_index(0, 0, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
+            (*C_node)->child[spamm_dense_index(0, 0, (*C_node)->M_child, (*C_node)->N_child)]->index = 0;
+            (*C_node)->child[spamm_dense_index(0, 1, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
+            (*C_node)->child[spamm_dense_index(0, 1, (*C_node)->M_child, (*C_node)->N_child)]->index = 1;
+            (*C_node)->child[spamm_dense_index(1, 0, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
+            (*C_node)->child[spamm_dense_index(1, 0, (*C_node)->M_child, (*C_node)->N_child)]->index = 2;
+            (*C_node)->child[spamm_dense_index(1, 1, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
+            (*C_node)->child[spamm_dense_index(1, 1, (*C_node)->M_child, (*C_node)->N_child)]->index = 3;
+            break;
+
+          case P:
+            (*C_node)->child[spamm_dense_index(0, 0, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
+            (*C_node)->child[spamm_dense_index(0, 0, (*C_node)->M_child, (*C_node)->N_child)]->index = (*C_node)->index*4+0;
+            (*C_node)->child[spamm_dense_index(0, 1, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
+            (*C_node)->child[spamm_dense_index(0, 1, (*C_node)->M_child, (*C_node)->N_child)]->index = (*C_node)->index*4+1;
+            (*C_node)->child[spamm_dense_index(1, 0, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
+            (*C_node)->child[spamm_dense_index(1, 0, (*C_node)->M_child, (*C_node)->N_child)]->index = (*C_node)->index*4+2;
+            (*C_node)->child[spamm_dense_index(1, 1, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
+            (*C_node)->child[spamm_dense_index(1, 1, (*C_node)->M_child, (*C_node)->N_child)]->index = (*C_node)->index*4+3;
+            break;
+
+          default:
+            spamm_log("bug?\n", __FILE__, __LINE__);
+            exit(1);
+            break;
         }
       }
     }
@@ -128,6 +165,12 @@ spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node,
     }
 #endif
   }
+}
+
+void
+spamm_multiply_stream (const struct spamm_multiply_stream_t *multiply_stream)
+{
+  const int stream_length = 5; /* The number of nodes held in GPU. */
 }
 
 /* Computes
@@ -223,6 +266,7 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
   spamm_ll_new(&multiply_stream);
   spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
   spamm_ll_sort(&multiply_stream);
-  spamm_ll_print(&multiply_stream);
+  spamm_ll_print_matlab(&multiply_stream);
+  spamm_multiply_stream(&multiply_stream);
   spamm_ll_delete(&multiply_stream);
 }

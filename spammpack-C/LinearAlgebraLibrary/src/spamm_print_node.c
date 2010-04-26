@@ -20,6 +20,7 @@ spamm_print_node (const struct spamm_node_t *node)
     printf("M_block = %i, N_block = %i, ", node->M_block, node->N_block);
     printf("M_child = %i, N_child = %i, ", node->M_child, node->N_child);
     printf("threshold = %7.1e, ", node->threshold);
+    printf("index = %u, ", node->index);
     printf("child = %p, ", (void*) node->child);
     if (node->child != NULL)
     {

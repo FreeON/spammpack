@@ -64,8 +64,39 @@ spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_nod
         }
       }
 
-      if (node->M_child == 3 && node->N_child == 3)
+      if (node->M_child == 2 && node->N_child == 2)
+      {
+        /* Z-curve curve ordering. */
+        switch (node->ordering)
+        {
+          case none:
+            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->ordering = P;
+            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->index = 0;
+            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->ordering = P;
+            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->index = 1;
+            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->ordering = P;
+            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->index = 2;
+            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->ordering = P;
+            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->index = 3;
+            break;
 
+          case P:
+            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->ordering = P;
+            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->index = node->index*4+0;
+            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->ordering = P;
+            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->index = node->index*4+1;
+            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->ordering = P;
+            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->index = node->index*4+2;
+            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->ordering = P;
+            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->index = node->index*4+3;
+            break;
+
+          default:
+            spamm_log("bug?\n", __FILE__, __LINE__);
+            exit(1);
+            break;
+        }
+      }
     }
 
     /* Recurse. */
