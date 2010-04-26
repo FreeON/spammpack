@@ -129,13 +129,8 @@ spamm_ll_swap (struct spamm_multiply_stream_node_t **node1,
   assert(*node2 != NULL);
 
   spamm_log("swapping\n", __FILE__, __LINE__);
-  //spamm_log("list: first = %p, last = %p\n", __FILE__, __LINE__, list->first, list->last);
   spamm_ll_print_node_debug("node1", *node1);
   spamm_ll_print_node_debug("node2", *node2);
-  //spamm_ll_print_node_debug("node1_previous", node1_previous);
-  //spamm_ll_print_node_debug("node2_previous", node2_previous);
-  //spamm_ll_print_node_debug("node1_next", node1_next);
-  //spamm_ll_print_node_debug("node2_next", node2_next);
 
   /* Swap out first and last link. */
   if      (list->first == *node1) { list->first = *node2; }
@@ -154,17 +149,7 @@ spamm_ll_swap (struct spamm_multiply_stream_node_t **node1,
   temp = (*node1)->next; (*node1)->next = (*node2)->next; (*node2)->next = temp;
 
   /* Swap nodes. */
-  temp = node1; node1 = node2; node2 = temp;
-
-  //spamm_log("list: first = %p, last = %p\n", __FILE__, __LINE__, list->first, list->last);
-  //spamm_ll_print_node_debug("node1", *node1);
-  //spamm_ll_print_node_debug("node2", *node2);
-  //spamm_ll_print_node_debug("node1_previous", node1_previous);
-  //spamm_ll_print_node_debug("node2_previous", node2_previous);
-  //spamm_ll_print_node_debug("node1_next", node1_next);
-  //spamm_ll_print_node_debug("node2_next", node2_next);
-
-  //exit(1);
+  temp = *node1; *node1 = *node2; *node2 = temp;
 }
 
 void
@@ -180,23 +165,30 @@ spamm_ll_sort (struct spamm_multiply_stream_t *list)
 
   spamm_ll_print(list);
 
-  for (i = 0; i < list->number_elements-1; ++i)
-  {
-    node1 = spamm_ll_get(i, list);
-    if (node1 == NULL)
+  for (node1 = list->first; node1 != list->last && node1 != NULL; node1 = node1->next) {
+    for (node2 = node1->next; node2 != NULL; node2 = node2->next)
     {
-      spamm_log("node1 == NULL?\n", __FILE__, __LINE__);
-      exit(1);
-    }
 
-    for (j = i+1; j < list->number_elements; ++j)
-    {
-      node2 = spamm_ll_get(j, list);
-      if (node2 == NULL)
-      {
-        spamm_log("node2 == NULL?\n", __FILE__, __LINE__);
-        exit(1);
-      }
+  //for (i = 0; i < list->number_elements-1; ++i)
+  //{
+  //  node1 = spamm_ll_get(i, list);
+  //  if (node1 == NULL)
+  //  {
+  //    spamm_log("node1 == NULL?\n", __FILE__, __LINE__);
+  //    exit(1);
+  //  }
+
+  //  for (j = i+1; j < list->number_elements; ++j)
+  //  {
+  //    node2 = spamm_ll_get(j, list);
+  //    if (node2 == NULL)
+  //    {
+  //      spamm_log("node2 == NULL?\n", __FILE__, __LINE__);
+  //      exit(1);
+  //    }
+
+      spamm_ll_print_node_debug("node1", node1);
+      spamm_ll_print_node_debug("node2", node2);
 
       if (node1->A_index > node2->A_index)
       {
