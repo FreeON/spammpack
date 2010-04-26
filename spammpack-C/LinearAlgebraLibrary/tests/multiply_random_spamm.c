@@ -11,8 +11,8 @@ main ()
   struct spamm_t A, B, C, C_test;
 
   int max_size = 4;
-  int M[4] = { 2, 10, 15, 100 };
-  int N[4] = { 2, 10, 15, 100 };
+  int M[4] = { 4, 10, 15, 100 };
+  int N[4] = { 4, 10, 15, 100 };
 
   int max_block = 4;
   int M_block[4] = { 1, 2, 10, 25 };
@@ -36,15 +36,15 @@ main ()
 
   int result = 0;
 
-  for (i_fill = 0; i_fill < max_fill; ++i_fill) {
-    for (i_size = 0; i_size < max_size; ++i_size) {
-      for (i_block = 0; i_block < max_block; ++i_block) {
-        for (i_child = 0; i_child < max_child; ++i_child)
-        {
-          //i_fill = 3;
-          //i_size = 0;
-          //i_block = 1;
-          //i_child = 0;
+  //for (i_fill = 0; i_fill < max_fill; ++i_fill) {
+    //for (i_size = 0; i_size < max_size; ++i_size) {
+      //for (i_block = 0; i_block < max_block; ++i_block) {
+        //for (i_child = 0; i_child < max_child; ++i_child)
+        //{
+          i_fill = 3;
+          i_size = 0;
+          i_block = 0;
+          i_child = 0;
 
           spamm_new(M[i_size], N[i_size], M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child], 1e-10, &A);
           spamm_new(M[i_size], N[i_size], M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child], 1e-10, &B);
@@ -62,10 +62,12 @@ main ()
             }
           }
 
-          //printf("A =\n");
-          //spamm_print_spamm(&A);
-          //printf("B =\n");
-          //spamm_print_spamm(&B);
+          printf("A =\n");
+          spamm_print_spamm(&A);
+          spamm_print_tree(&A);
+          printf("B =\n");
+          spamm_print_spamm(&B);
+          spamm_print_tree(&B);
 
           for (i = 0; i < M[i_size]; ++i) {
             for (j = 0; j < N[i_size]; ++j) {
@@ -111,10 +113,10 @@ main ()
           spamm_delete(&B);
           spamm_delete(&C);
           spamm_delete(&C_test);
-        }
-      }
-    }
-  }
+        //}
+      //}
+    //}
+  //}
 
   return result;
 }

@@ -27,7 +27,7 @@ struct spamm_t
 
 enum spamm_block_ordering_t
 {
-  P, Q, R, S
+  none, P, Q, R, S
 };
 
 struct spamm_node_t
@@ -78,6 +78,9 @@ struct spamm_tree_stats_t
 
 struct spamm_multiply_stream_t
 {
+  /* Number of elements. */
+  unsigned int number_elements;
+
   /* Links to the first and last node in list. */
   struct spamm_multiply_stream_node_t *first;
   struct spamm_multiply_stream_node_t *last;
@@ -169,8 +172,25 @@ spamm_ll_append (const unsigned int A_index, const struct spamm_node_t *A_node,
     const unsigned int C_index, const struct spamm_node_t *C_node,
     struct spamm_multiply_stream_t *list);
 
+struct spamm_multiply_stream_node_t *
+spamm_ll_get (const unsigned int i, const struct spamm_multiply_stream_t *list);
+
+void
+spamm_ll_swap (struct spamm_multiply_stream_node_t **node1,
+    struct spamm_multiply_stream_node_t **node2,
+    struct spamm_multiply_stream_t *list);
+
 void
 spamm_ll_sort (struct spamm_multiply_stream_t *list);
 
 void
-spamm_ll_print (struct spamm_multiply_stream_t *list);
+spamm_ll_print_node_debug (const char *name, const struct spamm_multiply_stream_node_t *node);
+
+void
+spamm_ll_print_node (const struct spamm_multiply_stream_node_t *node);
+
+void
+spamm_ll_print (const struct spamm_multiply_stream_t *list);
+
+void
+spamm_ll_print_matlab (const struct spamm_multiply_stream_t *list);
