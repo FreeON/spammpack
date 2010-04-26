@@ -24,6 +24,8 @@ spamm_new_node (struct spamm_node_t **node)
   (*node)->index = 0;
   (*node)->ordering = none;
 
+  (*node)->block_loaded_in_GPU = 0;
+
   (*node)->child = NULL;
   (*node)->block_dense = NULL;
 }

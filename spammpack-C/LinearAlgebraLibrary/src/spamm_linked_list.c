@@ -50,9 +50,9 @@ spamm_ll_new_node (struct spamm_multiply_stream_node_t **node)
 }
 
 void
-spamm_ll_append (const unsigned int A_index, const struct spamm_node_t *A_node,
-    const unsigned int B_index, const struct spamm_node_t *B_node,
-    const unsigned int C_index, const struct spamm_node_t *C_node,
+spamm_ll_append (const unsigned int A_index, struct spamm_node_t *A_node,
+    const unsigned int B_index, struct spamm_node_t *B_node,
+    const unsigned int C_index, struct spamm_node_t *C_node,
     struct spamm_multiply_stream_t *list)
 {
   struct spamm_multiply_stream_node_t *node;
@@ -128,9 +128,9 @@ spamm_ll_swap (struct spamm_multiply_stream_node_t **node1,
   assert(*node1 != NULL);
   assert(*node2 != NULL);
 
-  spamm_log("swapping\n", __FILE__, __LINE__);
-  spamm_ll_print_node_debug("node1", *node1);
-  spamm_ll_print_node_debug("node2", *node2);
+  //spamm_log("swapping\n", __FILE__, __LINE__);
+  //spamm_ll_print_node_debug("node1", *node1);
+  //spamm_ll_print_node_debug("node2", *node2);
 
   /* Swap out first and last link. */
   if      (list->first == *node1) { list->first = *node2; }
@@ -163,55 +163,18 @@ spamm_ll_sort (struct spamm_multiply_stream_t *list)
 
   assert(list != NULL);
 
-  spamm_ll_print(list);
+  //spamm_ll_print(list);
 
   for (node1 = list->first; node1 != list->last && node1 != NULL; node1 = node1->next) {
     for (node2 = node1->next; node2 != NULL; node2 = node2->next)
     {
+      //spamm_ll_print_node_debug("node1", node1);
+      //spamm_ll_print_node_debug("node2", node2);
 
-  //for (i = 0; i < list->number_elements-1; ++i)
-  //{
-  //  node1 = spamm_ll_get(i, list);
-  //  if (node1 == NULL)
-  //  {
-  //    spamm_log("node1 == NULL?\n", __FILE__, __LINE__);
-  //    exit(1);
-  //  }
-
-  //  for (j = i+1; j < list->number_elements; ++j)
-  //  {
-  //    node2 = spamm_ll_get(j, list);
-  //    if (node2 == NULL)
-  //    {
-  //      spamm_log("node2 == NULL?\n", __FILE__, __LINE__);
-  //      exit(1);
-  //    }
-
-      spamm_ll_print_node_debug("node1", node1);
-      spamm_ll_print_node_debug("node2", node2);
-
-      if (node1->A_index > node2->A_index)
+      if ((node1->A_index+node1->B_index+node1->C_index) > (node2->A_index+node2->B_index+node2->C_index))
       {
         spamm_ll_swap(&node1, &node2, list);
-        spamm_ll_print(list);
-      }
-
-      else if (node1->A_index == node2->A_index)
-      {
-        if (node1->B_index > node2->B_index)
-        {
-          spamm_ll_swap(&node1, &node2, list);
-          spamm_ll_print(list);
-        }
-
-        else if (node1->B_index == node2->B_index)
-        {
-          if (node1->C_index > node2->C_index)
-          {
-            spamm_ll_swap(&node1, &node2, list);
-            spamm_ll_print(list);
-          }
-        }
+        //spamm_ll_print(list);
       }
     }
   }

@@ -12,8 +12,8 @@
  * C_node = alpha*A_node*B_node + beta*C_node
  */
 void
-spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node,
-    const struct spamm_node_t *B_node, const float_t beta,
+spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
+    struct spamm_node_t *B_node, const float_t beta,
     struct spamm_node_t **C_node, struct spamm_multiply_stream_t *multiply_stream)
 {
   int i, j, k;
@@ -158,7 +158,8 @@ spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node,
         for (k = 0; k < A_node->M_block; ++k)
         {
           (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)]
-            = alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]*B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)]
+            = alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]
+            *B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)]
             + beta*(*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)];
         }
       }
@@ -170,7 +171,61 @@ spamm_multiply_node (const float_t alpha, const struct spamm_node_t *A_node,
 void
 spamm_multiply_stream (const struct spamm_multiply_stream_t *multiply_stream)
 {
-  const int stream_length = 5; /* The number of nodes held in GPU. */
+  unsigned int stream_length; /* The number of nodes held in GPU. */
+
+  unsigned int head_tail_distance;
+
+  unsigned int number_A_blocks_loaded;
+  unsigned int number_B_blocks_loaded;
+  unsigned int number_C_blocks_loaded;
+
+  struct spamm_multiply_stream_node_t *node, *tailnode;
+
+  assert(multiply_stream != NULL);
+
+  for (stream_length = 1; stream_length <= multiply_stream->number_elements; ++stream_length)
+  {
+    number_A_blocks_loaded = 0;
+    number_B_blocks_loaded = 0;
+    number_C_blocks_loaded = 0;
+    head_tail_distance = 0;
+    for (node = tailnode = multiply_stream->first; node != NULL; node = node->next)
+    {
+      if (head_tail_distance >= stream_length)
+      {
+        tailnode->A_node->block_loaded_in_GPU = 0;
+        tailnode->B_node->block_loaded_in_GPU = 0;
+        tailnode->C_node->block_loaded_in_GPU = 0;
+        tailnode = tailnode->next;
+        head_tail_distance--;
+      }
+
+      if (node->A_node->block_loaded_in_GPU == 0)
+      {
+        number_A_blocks_loaded++;
+        node->A_node->block_loaded_in_GPU = 1;
+      }
+
+      if (node->B_node->block_loaded_in_GPU == 0)
+      {
+        number_B_blocks_loaded++;
+        node->B_node->block_loaded_in_GPU = 1;
+      }
+
+      if (node->C_node->block_loaded_in_GPU == 0)
+      {
+        number_C_blocks_loaded++;
+        node->C_node->block_loaded_in_GPU = 1;
+      }
+
+      head_tail_distance++;
+    }
+
+    spamm_log("blocks loaded: stream_length = %3u A = %3u B = %3u C = %3u total = %4u\n", __FILE__, __LINE__,
+        stream_length,
+        number_A_blocks_loaded, number_B_blocks_loaded, number_C_blocks_loaded,
+        number_A_blocks_loaded+number_B_blocks_loaded+number_C_blocks_loaded);
+  }
 }
 
 /* Computes
@@ -265,8 +320,13 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
 
   spamm_ll_new(&multiply_stream);
   spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
-  spamm_ll_sort(&multiply_stream);
+  spamm_log("multiply stream before sorting\n", __FILE__, __LINE__);
+  spamm_ll_print(&multiply_stream);
   spamm_ll_print_matlab(&multiply_stream);
+  //spamm_ll_sort(&multiply_stream);
+  //spamm_log("multiply stream after sorting\n", __FILE__, __LINE__);
+  //spamm_ll_print(&multiply_stream);
+  //spamm_ll_print_matlab(&multiply_stream);
   spamm_multiply_stream(&multiply_stream);
   spamm_ll_delete(&multiply_stream);
 }
