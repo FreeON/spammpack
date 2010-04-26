@@ -54,6 +54,9 @@ struct spamm_node_t
   /* The name of the block ordering pattern. */
   enum spamm_block_ordering_t ordering;
 
+  /* Is this block loaded into the GPU? */
+  char block_loaded_in_GPU;
+
   /* At the non-block level, pointers to the children nodes. */
   struct spamm_node_t **child;
 
@@ -98,9 +101,9 @@ struct spamm_multiply_stream_node_t
   unsigned int C_index;
 
   /* Pointers into nodes corresponding to indices. */
-  const struct spamm_node_t *A_node;
-  const struct spamm_node_t *B_node;
-  const struct spamm_node_t *C_node;
+  struct spamm_node_t *A_node;
+  struct spamm_node_t *B_node;
+  struct spamm_node_t *C_node;
 };
 
 void
@@ -167,9 +170,9 @@ void
 spamm_ll_delete (struct spamm_multiply_stream_t *list);
 
 void
-spamm_ll_append (const unsigned int A_index, const struct spamm_node_t *A_node,
-    const unsigned int B_index, const struct spamm_node_t *B_node,
-    const unsigned int C_index, const struct spamm_node_t *C_node,
+spamm_ll_append (const unsigned int A_index, struct spamm_node_t *A_node,
+    const unsigned int B_index, struct spamm_node_t *B_node,
+    const unsigned int C_index, struct spamm_node_t *C_node,
     struct spamm_multiply_stream_t *list);
 
 struct spamm_multiply_stream_node_t *
