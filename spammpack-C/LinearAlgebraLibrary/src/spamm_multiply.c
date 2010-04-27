@@ -2,6 +2,7 @@
 #include "config.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #if defined(HAVE_CUDA)
 #include <cublas.h>
@@ -285,6 +286,7 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multi
 void
 spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm_t *B, const float_t beta, struct spamm_t *C)
 {
+  struct timeval start, stop;
   struct spamm_multiply_stream_t multiply_stream;
 
   assert(A != NULL);
@@ -369,7 +371,16 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
   }
 
   spamm_ll_new(&multiply_stream);
+
+  gettimeofday(&start, NULL);
   spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
+  gettimeofday(&stop, NULL);
+  spamm_log("tree recursion: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+
+  gettimeofday(&start, NULL);
   spamm_multiply_stream(30000, &multiply_stream);
+  gettimeofday(&stop, NULL);
+  spamm_log("stream multiply: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+
   spamm_ll_delete(&multiply_stream);
 }
