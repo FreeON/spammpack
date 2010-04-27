@@ -6,6 +6,7 @@ float_t
 spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
 {
   int l, k;
+  float_t result = 0.0;
 
   assert(node != NULL);
 
@@ -30,11 +31,13 @@ spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
             j >= (node->N_lower+(node->N_upper-node->N_lower)*k/node->N_child) &&
             j <  (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/node->N_child))
         {
-          return spamm_get_element(i, j, node->child[spamm_dense_index(l, k, node->M_child, node->N_child)]);
+          result = spamm_get_element(i, j, node->child[spamm_dense_index(l, k, node->M_child, node->N_child)]);
         }
       }
     }
   }
+
+  return result;
 }
 
 float_t

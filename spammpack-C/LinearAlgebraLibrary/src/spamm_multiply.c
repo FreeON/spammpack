@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#if defined(HAVE_LIBCUBLAS)
+#if defined(HAVE_CUDA)
 #include <cublas.h>
 #endif
 
@@ -17,11 +17,6 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
     struct spamm_node_t **C_node, struct spamm_multiply_stream_t *multiply_stream)
 {
   int i, j, k;
-
-#if defined(HAVE_LIBCUBLAS)
-  cublasStatus status;
-  void *d_A, *d_B, *d_C;
-#endif
 
   if (*C_node == NULL)
   {
@@ -131,47 +126,14 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
     }
 
     /* Append this triple to the multiply stream. */
-    spamm_ll_append(A_node->index, A_node, B_node->index, B_node, (*C_node)->index, *C_node, multiply_stream);
-
-#ifdef DGEMM
-    DGEMM("N", "N", &(A_node->M_block), &(B_node->N_block), &(A_node->N_block),
-        &alpha, A_node->block_dense, &(A_node->M_block), B_node->block_dense, &(B_node->M_block),
-        &beta, (*C_node)->block_dense, &((*C_node)->M_block));
-#elif defined(HAVE_LIBCUBLAS)
-    cublasAlloc(A_node->M_block*A_node->N_block,       sizeof(float_t), &d_A);
-    cublasAlloc(B_node->M_block*B_node->N_block,       sizeof(float_t), &d_B);
-    cublasAlloc((*C_node)->M_block*(*C_node)->N_block, sizeof(float_t), &d_C);
-
-    cublasSetMatrix(A_node->M_block,    A_node->N_block,    sizeof(float_t), (void*) A_node->block_dense,    A_node->M_block,    d_A, A_node->M_block);
-    cublasSetMatrix(B_node->M_block,    B_node->N_block,    sizeof(float_t), (void*) B_node->block_dense,    B_node->M_block,    d_B, B_node->M_block);
-    cublasSetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(float_t), (void*) (*C_node)->block_dense, (*C_node)->M_block, d_C, (*C_node)->M_block);
-
-    cublasSgemm('N', 'N', A_node->M_block, B_node->N_block, A_node->N_block, alpha, d_A, A_node->M_block, d_B, B_node->M_block, beta, d_C, (*C_node)->M_block);
-    cublasGetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(float_t), (void*) d_C, (*C_node)->M_block, (void*) (*C_node)->block_dense, (*C_node)->M_block);
-
-    cublasFree(d_A);
-    cublasFree(d_B);
-    cublasFree(d_C);
-#else
-    for (i = 0; i < (*C_node)->M_block; ++i) {
-      for (j = 0; j < (*C_node)->N_block; ++j) {
-        for (k = 0; k < A_node->M_block; ++k)
-        {
-          (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)]
-            = alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]
-            *B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)]
-            + beta*(*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)];
-        }
-      }
-    }
-#endif
+    spamm_ll_append(alpha, beta, A_node->index, A_node, B_node->index, B_node, (*C_node)->index, *C_node, multiply_stream);
   }
 }
 
 void
-spamm_multiply_stream (const struct spamm_multiply_stream_t *multiply_stream)
+spamm_multiply_stream (const unsigned int stream_length, const struct spamm_multiply_stream_t *multiply_stream)
 {
-  unsigned int stream_length; /* The number of nodes held in GPU. */
+  int i, j, k;
 
   unsigned int head_tail_distance;
 
@@ -183,48 +145,145 @@ spamm_multiply_stream (const struct spamm_multiply_stream_t *multiply_stream)
 
   assert(multiply_stream != NULL);
 
-  for (stream_length = 1; stream_length <= multiply_stream->number_elements; ++stream_length)
+  number_A_blocks_loaded = 0;
+  number_B_blocks_loaded = 0;
+  number_C_blocks_loaded = 0;
+  head_tail_distance = 0;
+  tailnode = multiply_stream->first;
+  for (node = multiply_stream->first; node != NULL; node = node->next)
   {
-    number_A_blocks_loaded = 0;
-    number_B_blocks_loaded = 0;
-    number_C_blocks_loaded = 0;
-    head_tail_distance = 0;
-    for (node = tailnode = multiply_stream->first; node != NULL; node = node->next)
+    if (head_tail_distance >= stream_length)
     {
-      if (head_tail_distance >= stream_length)
+      //spamm_log("unloading from GPU\n", __FILE__, __LINE__);
+      //spamm_ll_print_node_debug("unloading tailnode", tailnode);
+      if (tailnode->A_node->block_loaded_in_GPU == 1)
       {
+        //spamm_log("unloading A: %f\n", __FILE__, __LINE__, tailnode->A_node->block_dense[0]);
         tailnode->A_node->block_loaded_in_GPU = 0;
+#ifdef HAVE_CUDA
+        cublasFree(tailnode->A_node->device_pointer);
+#endif
+      }
+
+      if (tailnode->B_node->block_loaded_in_GPU == 1)
+      {
+        //spamm_log("unloading B: %f\n", __FILE__, __LINE__, tailnode->B_node->block_dense[0]);
         tailnode->B_node->block_loaded_in_GPU = 0;
+#ifdef HAVE_CUDA
+        cublasFree(tailnode->B_node->device_pointer);
+#endif
+      }
+
+      if (tailnode->C_node->block_loaded_in_GPU == 1)
+      {
         tailnode->C_node->block_loaded_in_GPU = 0;
-        tailnode = tailnode->next;
-        head_tail_distance--;
+#ifdef HAVE_CUDA
+        cublasGetMatrix(tailnode->C_node->M_block, tailnode->C_node->N_block, sizeof(float_t), (void*) tailnode->C_node->device_pointer,
+            tailnode->C_node->M_block, (void*) tailnode->C_node->block_dense, tailnode->C_node->M_block);
+        cublasFree(tailnode->C_node->device_pointer);
+        //spamm_log("unloading C: %f\n", __FILE__, __LINE__, tailnode->C_node->block_dense[0]);
+#endif
       }
 
-      if (node->A_node->block_loaded_in_GPU == 0)
-      {
-        number_A_blocks_loaded++;
-        node->A_node->block_loaded_in_GPU = 1;
-      }
-
-      if (node->B_node->block_loaded_in_GPU == 0)
-      {
-        number_B_blocks_loaded++;
-        node->B_node->block_loaded_in_GPU = 1;
-      }
-
-      if (node->C_node->block_loaded_in_GPU == 0)
-      {
-        number_C_blocks_loaded++;
-        node->C_node->block_loaded_in_GPU = 1;
-      }
-
-      head_tail_distance++;
+      tailnode = tailnode->next;
+      head_tail_distance--;
     }
 
-    spamm_log("blocks loaded: stream_length = %3u A = %3u B = %3u C = %3u total = %4u\n", __FILE__, __LINE__,
-        stream_length,
-        number_A_blocks_loaded, number_B_blocks_loaded, number_C_blocks_loaded,
-        number_A_blocks_loaded+number_B_blocks_loaded+number_C_blocks_loaded);
+    //spamm_ll_print_node_debug("loading node", node);
+
+    if (node->A_node->block_loaded_in_GPU == 0)
+    {
+      number_A_blocks_loaded++;
+      node->A_node->block_loaded_in_GPU = 1;
+#ifdef HAVE_CUDA
+      //spamm_log("loading A: %f\n", __FILE__, __LINE__, node->A_node->block_dense[0]);
+      cublasAlloc(node->A_node->M_block*node->A_node->N_block, sizeof(float_t), &(node->A_node->device_pointer));
+      cublasSetMatrix(node->A_node->M_block, node->A_node->N_block, sizeof(float_t), (void*) node->A_node->block_dense, node->A_node->M_block, node->A_node->device_pointer, node->A_node->M_block);
+#endif
+    }
+
+    if (node->B_node->block_loaded_in_GPU == 0)
+    {
+      number_B_blocks_loaded++;
+      node->B_node->block_loaded_in_GPU = 1;
+#ifdef HAVE_CUDA
+      //spamm_log("loading B: %f\n", __FILE__, __LINE__, node->B_node->block_dense[0]);
+      cublasAlloc(node->B_node->M_block*node->B_node->N_block, sizeof(float_t), &(node->B_node->device_pointer));
+      cublasSetMatrix(node->B_node->M_block, node->B_node->N_block, sizeof(float_t), (void*) node->B_node->block_dense, node->B_node->M_block, node->B_node->device_pointer, node->B_node->M_block);
+#endif
+    }
+
+    if (node->C_node->block_loaded_in_GPU == 0)
+    {
+      number_C_blocks_loaded++;
+      node->C_node->block_loaded_in_GPU = 1;
+#ifdef HAVE_CUDA
+      //spamm_log("loading C: %f\n", __FILE__, __LINE__, node->C_node->block_dense[0]);
+      cublasAlloc(node->C_node->M_block*node->C_node->N_block, sizeof(float_t), &(node->C_node->device_pointer));
+      cublasSetMatrix(node->C_node->M_block, node->C_node->N_block, sizeof(float_t), (void*) node->C_node->block_dense, node->C_node->M_block, node->C_node->device_pointer, node->C_node->M_block);
+#endif
+    }
+
+#if defined(HAVE_CUDA)
+    cublasSgemm('N', 'N', node->A_node->M_block, node->B_node->N_block, node->A_node->N_block,
+        node->alpha, node->A_node->device_pointer, node->A_node->M_block, node->B_node->device_pointer, node->B_node->M_block,
+        node->beta, node->C_node->device_pointer, node->C_node->M_block);
+#elif defined(DGEMM)
+    DGEMM("N", "N", &(node->A_node->M_block), &(node->B_node->N_block), &(node->A_node->N_block),
+        &(node->alpha), node->A_node->block_dense, &(node->A_node->M_block), node->B_node->block_dense, &(node->B_node->M_block),
+        &(node->beta), node->C_node->block_dense, &(node->C_node->M_block));
+#else
+    for (i = 0; i < node->C_node->M_block; ++i) {
+      for (j = 0; j < node->C_node->N_block; ++j) {
+        for (k = 0; k < node->A_node->M_block; ++k)
+        {
+          node->C_node->block_dense[spamm_dense_index(i, j, node->C_node->M_block, node->C_node->N_block)]
+            = node->alpha*node->A_node->block_dense[spamm_dense_index(i, k, node->A_node->M_block, node->A_node->N_block)]
+            *node->B_node->block_dense[spamm_dense_index(k, j, node->B_node->M_block, node->B_node->N_block)]
+            + node->beta*node->C_node->block_dense[spamm_dense_index(i, j, node->C_node->M_block, node->C_node->N_block)];
+        }
+      }
+    }
+#endif
+
+    head_tail_distance++;
+  }
+
+  /* Unload the remaining C bocks. */
+  //spamm_log("unloading cache\n", __FILE__, __LINE__);
+  while (tailnode != NULL)
+  {
+    //spamm_ll_print_node_debug("unloading tailnode", tailnode);
+    if (tailnode->A_node->block_loaded_in_GPU == 1)
+    {
+      //spamm_log("unloading A: %f\n", __FILE__, __LINE__, tailnode->A_node->block_dense[0]);
+      tailnode->A_node->block_loaded_in_GPU = 0;
+#ifdef HAVE_CUDA
+      cublasFree(tailnode->A_node->device_pointer);
+#endif
+    }
+
+    if (tailnode->B_node->block_loaded_in_GPU == 1)
+    {
+      //spamm_log("unloading B: %f\n", __FILE__, __LINE__, tailnode->B_node->block_dense[0]);
+      tailnode->B_node->block_loaded_in_GPU = 0;
+#ifdef HAVE_CUDA
+      cublasFree(tailnode->B_node->device_pointer);
+#endif
+    }
+
+    if (tailnode->C_node->block_loaded_in_GPU == 1)
+    {
+      tailnode->C_node->block_loaded_in_GPU = 0;
+#ifdef HAVE_CUDA
+      cublasGetMatrix(tailnode->C_node->M_block, tailnode->C_node->N_block, sizeof(float_t), (void*) tailnode->C_node->device_pointer,
+          tailnode->C_node->M_block, (void*) tailnode->C_node->block_dense, tailnode->C_node->M_block);
+      cublasFree(tailnode->C_node->device_pointer);
+      //spamm_log("unloading C: %f\n", __FILE__, __LINE__, tailnode->C_node->block_dense[0]);
+#endif
+    }
+
+    tailnode = tailnode->next;
   }
 }
 
@@ -320,13 +379,6 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
 
   spamm_ll_new(&multiply_stream);
   spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
-  spamm_log("multiply stream before sorting\n", __FILE__, __LINE__);
-  spamm_ll_print(&multiply_stream);
-  spamm_ll_print_matlab(&multiply_stream);
-  //spamm_ll_sort(&multiply_stream);
-  //spamm_log("multiply stream after sorting\n", __FILE__, __LINE__);
-  //spamm_ll_print(&multiply_stream);
-  //spamm_ll_print_matlab(&multiply_stream);
-  spamm_multiply_stream(&multiply_stream);
+  spamm_multiply_stream(500, &multiply_stream);
   spamm_ll_delete(&multiply_stream);
 }

@@ -11,23 +11,15 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
 {
   int i, j;
 
-  //spamm_log("entering\n", __FILE__, __LINE__);
-  //spamm_log("A_node:\n", __FILE__, __LINE__);
-  //spamm_print_node(A_node);
-  //spamm_log("B_node:\n", __FILE__, __LINE__);
-  //spamm_print_node(*B_node);
-
   if (A_node == NULL && *B_node == NULL)
   {
     /* We are done here. */
-    //spamm_log("both nodes are NULL, returning\n", __FILE__, __LINE__);
     return;
   }
 
   if (A_node != NULL && *B_node == NULL)
   {
     /* We need to add to B. */
-    //spamm_log("A_node != NULL && B_node == NULL\n", __FILE__, __LINE__);
     spamm_new_node(B_node);
     (*B_node)->M_lower = A_node->M_lower;
     (*B_node)->M_upper = A_node->M_upper;
@@ -41,15 +33,10 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
 
     (*B_node)->M_block = A_node->M_block;
     (*B_node)->N_block = A_node->N_block;
-
-    //spamm_print_node(*B_node);
   }
 
   if (A_node != NULL && A_node->child != NULL && (*B_node)->child == NULL)
   {
-    //spamm_log("A_node->child != NULL && B_node->child == NULL\n", __FILE__, __LINE__);
-    //spamm_log("B_node:\n", __FILE__, __LINE__);
-    //spamm_print_node(*B_node);
     (*B_node)->child = (struct spamm_node_t**) malloc(sizeof(struct spamm_node_t*)*(*B_node)->M_child*(*B_node)->N_child);
     for (i = 0; i < A_node->M_child; ++i) {
       for (j = 0; j < A_node->N_child; ++j)
@@ -67,10 +54,6 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
 
         (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_block = (*B_node)->M_block;
         (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_block = (*B_node)->N_block;
-
-        //spamm_log("created new B_node->child\n", __FILE__, __LINE__);
-        //spamm_log("B_node->child[%i][%i]:\n", __FILE__, __LINE__, i, j);
-        //spamm_print_node((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]);
       }
     }
   }
@@ -78,7 +61,6 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   if (A_node != NULL && A_node->block_dense != NULL && (*B_node)->block_dense == NULL)
   {
     /* Create empty dense block. */
-    //spamm_log("A_node != NULL && A_node->block_dense != NULL && (*B_node)->block_dense == NULL\n", __FILE__, __LINE__);
     (*B_node)->block_dense = (float_t*) malloc(sizeof(float_t)*(*B_node)->M_block*(*B_node)->N_block);
     for (i = 0; i < (*B_node)->M_block; ++i) {
       for (j = 0; j < (*B_node)->N_block; ++j)
@@ -88,23 +70,14 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
     }
   }
 
-  //spamm_log("B_node:\n", __FILE__, __LINE__);
-  //spamm_print_node(*B_node);
-
   if ((*B_node)->child != NULL)
   {
     /* Recurse further down in A & B. */
-    //spamm_log("B_node->child != NULL\n", __FILE__, __LINE__);
     if (A_node != NULL && A_node->child != NULL)
     {
       for (i = 0; i < A_node->M_child; ++i) {
         for (j = 0; j < A_node->N_child; ++j)
         {
-          //spamm_log("recursing\n", __FILE__, __LINE__);
-          //spamm_log("A_node->child[%i][%i]:\n", __FILE__, __LINE__, i, j);
-          //spamm_print_node(A_node->child[spamm_dense_index(i, j, A_node->M_child, A_node->N_child)]);
-          //spamm_log("B_node->child[%i][%i]:\n", __FILE__, __LINE__, i, j);
-          //spamm_print_node((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]);
           spamm_add_node(alpha, A_node->child[spamm_dense_index(i, j, A_node->M_child, A_node->N_child)], beta, &((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]));
         }
       }
@@ -124,7 +97,6 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   else if ((*B_node)->block_dense != NULL)
   {
     /* Add dense blocks. */
-    //spamm_log("B_node->block_dense != NULL\n", __FILE__, __LINE__);
     if (A_node != NULL && A_node->block_dense != NULL)
     {
       for (i = 0; i < (*B_node)->M_block; ++i) {
@@ -151,8 +123,6 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   {
     //spamm_log("else?\n", __FILE__, __LINE__);
   }
-
-  //spamm_log("exiting\n", __FILE__, __LINE__);
 }
 
 /* Calculate

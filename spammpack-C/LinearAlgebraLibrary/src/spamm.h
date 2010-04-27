@@ -55,7 +55,12 @@ struct spamm_node_t
   enum spamm_block_ordering_t ordering;
 
   /* Is this block loaded into the GPU? */
-  char block_loaded_in_GPU;
+  short unsigned int block_loaded_in_GPU;
+
+  /* Device pointers. */
+#if defined(HAVE_CUDA)
+  void *device_pointer;
+#endif
 
   /* At the non-block level, pointers to the children nodes. */
   struct spamm_node_t **child;
@@ -94,6 +99,10 @@ struct spamm_multiply_stream_node_t
   /* Links to the previous and the next element. */
   struct spamm_multiply_stream_node_t *previous;
   struct spamm_multiply_stream_node_t *next;
+
+  /* Values of alpha and beta. */
+  float_t alpha;
+  float_t beta;
 
   /* Index triple of matrices. */
   unsigned int A_index;
@@ -150,6 +159,9 @@ void
 spamm_print_tree (const struct spamm_t *A);
 
 void
+spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node);
+
+void
 spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, struct spamm_t *B);
 
 void
@@ -170,7 +182,8 @@ void
 spamm_ll_delete (struct spamm_multiply_stream_t *list);
 
 void
-spamm_ll_append (const unsigned int A_index, struct spamm_node_t *A_node,
+spamm_ll_append (const float_t alpha, const float_t beta,
+    const unsigned int A_index, struct spamm_node_t *A_node,
     const unsigned int B_index, struct spamm_node_t *B_node,
     const unsigned int C_index, struct spamm_node_t *C_node,
     struct spamm_multiply_stream_t *list);
