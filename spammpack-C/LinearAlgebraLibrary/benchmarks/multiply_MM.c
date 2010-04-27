@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #define THRESHOLD 1e-14
 
@@ -25,6 +26,8 @@ main ()
 
   int result = 0;
 
+  struct timeval start, stop;
+
   spamm_log("loading matrix\n", __FILE__, __LINE__);
   spamm_read_MM("e20r0000.mtx", 32, 32, 2, 2, 1e-10, &A);
   //spamm_read_MM("sparseHamiltonian.mtx", 32, 32, 2, 2, 1e-10, &A);
@@ -34,7 +37,12 @@ main ()
       stats.memory_tree, stats.memory_dense_blocks, (stats.memory_tree+stats.memory_dense_blocks)/(double) (A.M*A.N*sizeof(double))*100);
 
   spamm_log("converting tree to dense\n", __FILE__, __LINE__);
+  gettimeofday(&start, NULL);
   spamm_spamm_to_dense(&A, &A_dense);
+  gettimeofday(&stop, NULL);
+  spamm_log("time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+
+  spamm_log("allocating A2_dense\n", __FILE__, __LINE__);
   A2_dense = (float_t*) malloc(sizeof(float_t)*A.M*A.N);
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j)
@@ -47,9 +55,13 @@ main ()
   spamm_log("multiplying matrix with BLAS to get reference product\n", __FILE__, __LINE__);
   alpha = 1.0;
   beta = 0.0;
+  gettimeofday(&start, NULL);
   DGEMM("N", "N", &A.M, &A.N, &A.M, &alpha, A_dense, &A.M, A_dense, &A.N, &beta, A2_dense, &A.M);
+  gettimeofday(&stop, NULL);
+  spamm_log("time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 #else
   spamm_log("multiplying matrix directly to get reference product\n", __FILE__, __LINE__);
+  gettimeofday(&start, NULL);
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j) {
       for (k = 0; k < A.M; ++k)
@@ -58,11 +70,16 @@ main ()
       }
     }
   }
+  gettimeofday(&stop, NULL);
+  spamm_log("time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 #endif
 
   spamm_log("multiplying matrix with spamm\n", __FILE__, __LINE__);
   spamm_new(A.M, A.N, A.M_block, A.N_block, A.M_child, A.N_child, A.threshold, &A2);
+  gettimeofday(&start, NULL);
   spamm_multiply(1.0, &A, &A, 1.0, &A2);
+  gettimeofday(&stop, NULL);
+  spamm_log("time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
   spamm_log("comparing matrices\n", __FILE__, __LINE__);
   max_diff = 0;
