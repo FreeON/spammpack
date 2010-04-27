@@ -27,7 +27,9 @@ main ()
   int i_fill;
 
   struct spamm_t A, B, B_test;
-  struct spamm_tree_stats_t stats;
+  //struct spamm_tree_stats_t stats;
+
+  int result = 0;
 
   for (i_fill = 0; i_fill < max_fill; ++i_fill) {
     for (i_size = 0; i_size < max_size; ++i_size) {
@@ -89,7 +91,7 @@ main ()
               if (spamm_get(i, j, &B) != spamm_get(i, j, &B_test))
               {
                 printf("[add_spamm] mismatch: (B_test[%i][%i] = %e) != (B[%i][%i] = %e)\n", i, j, spamm_get(i, j, &B_test), i, j, spamm_get(i, j, &B));
-                exit(1);
+                result = 1;
               }
             }
           }
@@ -102,5 +104,5 @@ main ()
     }
   }
 
-  return 0;
+  return result;
 }

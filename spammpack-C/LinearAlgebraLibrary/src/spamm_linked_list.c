@@ -44,18 +44,21 @@ spamm_ll_new_node (struct spamm_multiply_stream_node_t **node)
   (*node)->B_index = 0;
   (*node)->C_index = 0;
 
+  (*node)->alpha = 0;
+  (*node)->beta = 0;
+
   (*node)->A_node = NULL;
   (*node)->B_node = NULL;
   (*node)->C_node = NULL;
 }
 
 void
-spamm_ll_append (const unsigned int A_index, struct spamm_node_t *A_node,
+spamm_ll_append (const float_t alpha, const float_t beta,
+    const unsigned int A_index, struct spamm_node_t *A_node,
     const unsigned int B_index, struct spamm_node_t *B_node,
     const unsigned int C_index, struct spamm_node_t *C_node,
     struct spamm_multiply_stream_t *list)
 {
-  struct spamm_multiply_stream_node_t *node;
   struct spamm_multiply_stream_node_t *new_node;
 
   assert(list != NULL);
@@ -71,6 +74,9 @@ spamm_ll_append (const unsigned int A_index, struct spamm_node_t *A_node,
   new_node->A_node  = A_node;
   new_node->B_node  = B_node;
   new_node->C_node  = C_node;
+
+  new_node->alpha = alpha;
+  new_node->beta = beta;
 
   /* Append new node to list. */
   new_node->previous = list->last;
@@ -128,10 +134,6 @@ spamm_ll_swap (struct spamm_multiply_stream_node_t **node1,
   assert(*node1 != NULL);
   assert(*node2 != NULL);
 
-  //spamm_log("swapping\n", __FILE__, __LINE__);
-  //spamm_ll_print_node_debug("node1", *node1);
-  //spamm_ll_print_node_debug("node2", *node2);
-
   /* Swap out first and last link. */
   if      (list->first == *node1) { list->first = *node2; }
   else if (list->first == *node2) { list->first = *node1; }
@@ -158,23 +160,16 @@ spamm_ll_sort (struct spamm_multiply_stream_t *list)
   /* We optimize locality by sorting the stream so as to minimize the change
    * of any of the indices. */
 
-  int i, j;
   struct spamm_multiply_stream_node_t *node1, *node2;
 
   assert(list != NULL);
 
-  //spamm_ll_print(list);
-
   for (node1 = list->first; node1 != list->last && node1 != NULL; node1 = node1->next) {
     for (node2 = node1->next; node2 != NULL; node2 = node2->next)
     {
-      //spamm_ll_print_node_debug("node1", node1);
-      //spamm_ll_print_node_debug("node2", node2);
-
       if ((node1->A_index+node1->B_index+node1->C_index) > (node2->A_index+node2->B_index+node2->C_index))
       {
         spamm_ll_swap(&node1, &node2, list);
-        //spamm_ll_print(list);
       }
     }
   }
@@ -185,7 +180,9 @@ spamm_ll_print_node_debug (const char *name, const struct spamm_multiply_stream_
 {
   assert(node != NULL);
 
-  printf("%s (%p): previous = %p, next = %p, (%u,%u,%u)\n", name, node, node->previous, node->next, node->A_index, node->B_index, node->C_index);
+  printf("%s (%p): previous = %p, next = %p, (%u,%u,%u), alpha = %f, beta = %f\n",
+      name, node, node->previous, node->next, node->A_index, node->B_index, node->C_index,
+      node->alpha, node->beta);
 }
 
 void

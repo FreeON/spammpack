@@ -4,8 +4,6 @@
 void
 spamm_new_node (struct spamm_node_t **node)
 {
-  int i;
-
   *node = (struct spamm_node_t*) malloc(sizeof(struct spamm_node_t));
 
   (*node)->M_upper = 0;

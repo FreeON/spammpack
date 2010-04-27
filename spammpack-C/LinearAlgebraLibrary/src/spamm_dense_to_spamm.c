@@ -12,7 +12,7 @@ spamm_dense_to_spamm (const int M, const int N, const int M_block,
   assert(A_dense != NULL);
   assert(A != NULL);
 
-  if (M != A->M && N != A->N || M_block != A->M_block || N_block != A->N_block || M_child != A->M_child || N_child != A->N_child)
+  if (M != A->M || N != A->N || M_block != A->M_block || N_block != A->N_block || M_child != A->M_child || N_child != A->N_child)
   {
     /* De- and re-allocate A with the correct dimensions. */
     spamm_delete(A);

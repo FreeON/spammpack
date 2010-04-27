@@ -26,8 +26,8 @@ main ()
   int result = 0;
 
   spamm_log("loading matrix\n", __FILE__, __LINE__);
-  //spamm_read_MM("e20r0000.mtx", 10, 10, 2, 2, 1e-10, &A);
-  spamm_read_MM("sparseHamiltonian.mtx", 32, 32, 2, 2, 1e-10, &A);
+  spamm_read_MM("e20r0000.mtx", 32, 32, 2, 2, 1e-10, &A);
+  //spamm_read_MM("sparseHamiltonian.mtx", 32, 32, 2, 2, 1e-10, &A);
   spamm_tree_stats(&stats, &A);
   spamm_log("read %ix%i matrix, %i nodes, %i dense blocks, tree = %i bytes, blocks = %i bytes (%1.1f%%)\n",
       __FILE__, __LINE__, A.M, A.N, stats.number_nodes, stats.number_dense_blocks,

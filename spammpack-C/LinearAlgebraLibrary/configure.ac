@@ -78,6 +78,7 @@ if test "${enable_cuda}" != "no"; then
                     unset have_cuda])
   old_LDFLAGS=${LDFLAGS}
   LDFLAGS="${LDFLAGS} -L${enable_cuda}/lib64 -L${enable_cuda}/lib"
+  #LDFLAGS="${LDFLAGS} -L${enable_cuda}/lib64"
   AC_CHECK_LIB([cublas], [cublasSgemm], [],
                [LDFLAGS=${old_LDFLAGS}
                 unset have_cuda], [])

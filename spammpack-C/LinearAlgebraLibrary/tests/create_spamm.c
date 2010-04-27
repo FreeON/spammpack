@@ -30,6 +30,8 @@ main ()
   struct spamm_t A;
   struct spamm_tree_stats_t stats;
 
+  int result = 0;
+
   for (i_fill = 0; i_fill < max_fill; ++i_fill)
   {
     //i_fill = 3;
@@ -74,7 +76,7 @@ main ()
               if (A_dense[spamm_dense_index(i, j, M[i_size], N[i_size])] != spamm_get(i, j, &A))
               {
                 printf("[create_spamm] mismatch: (A_dense[%i][%i] = %e) != (A[%i][%i] = %e)\n", i, j, A_dense[spamm_dense_index(i, j, M[i_size], N[i_size])], i, j, spamm_get(i, j, &A));
-                exit(1);
+                result = 1;
               }
             }
           }
@@ -87,6 +89,5 @@ main ()
     }
   }
 
-  fprintf(stderr, "test ok\n");
-  return 0;
+  return result;
 }
