@@ -69,5 +69,7 @@ spamm_new (const int M, const int N, const int M_block, const int N_block,
 
   A->threshold = threshold;
 
+  A->number_nonzero_blocks = 0;
+
   A->root = NULL;
 }

@@ -21,6 +21,9 @@ struct spamm_t
    * stored. */
   float_t threshold;
 
+  /* The number of non-zero blocks. */
+  unsigned int number_nonzero_blocks;
+
   /* The root node. */
   struct spamm_node_t *root;
 };

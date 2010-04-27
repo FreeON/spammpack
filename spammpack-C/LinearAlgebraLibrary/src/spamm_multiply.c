@@ -131,7 +131,7 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
 }
 
 void
-spamm_multiply_stream (const unsigned int stream_length, const struct spamm_multiply_stream_t *multiply_stream)
+spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multiply_stream_t *multiply_stream)
 {
   int i, j, k;
 
@@ -152,13 +152,10 @@ spamm_multiply_stream (const unsigned int stream_length, const struct spamm_mult
   tailnode = multiply_stream->first;
   for (node = multiply_stream->first; node != NULL; node = node->next)
   {
-    if (head_tail_distance >= stream_length)
+    if (head_tail_distance >= cache_length)
     {
-      //spamm_log("unloading from GPU\n", __FILE__, __LINE__);
-      //spamm_ll_print_node_debug("unloading tailnode", tailnode);
       if (tailnode->A_node->block_loaded_in_GPU == 1)
       {
-        //spamm_log("unloading A: %f\n", __FILE__, __LINE__, tailnode->A_node->block_dense[0]);
         tailnode->A_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
         cublasFree(tailnode->A_node->device_pointer);
@@ -167,7 +164,6 @@ spamm_multiply_stream (const unsigned int stream_length, const struct spamm_mult
 
       if (tailnode->B_node->block_loaded_in_GPU == 1)
       {
-        //spamm_log("unloading B: %f\n", __FILE__, __LINE__, tailnode->B_node->block_dense[0]);
         tailnode->B_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
         cublasFree(tailnode->B_node->device_pointer);
@@ -181,7 +177,6 @@ spamm_multiply_stream (const unsigned int stream_length, const struct spamm_mult
         cublasGetMatrix(tailnode->C_node->M_block, tailnode->C_node->N_block, sizeof(float_t), (void*) tailnode->C_node->device_pointer,
             tailnode->C_node->M_block, (void*) tailnode->C_node->block_dense, tailnode->C_node->M_block);
         cublasFree(tailnode->C_node->device_pointer);
-        //spamm_log("unloading C: %f\n", __FILE__, __LINE__, tailnode->C_node->block_dense[0]);
 #endif
       }
 
@@ -189,14 +184,11 @@ spamm_multiply_stream (const unsigned int stream_length, const struct spamm_mult
       head_tail_distance--;
     }
 
-    //spamm_ll_print_node_debug("loading node", node);
-
     if (node->A_node->block_loaded_in_GPU == 0)
     {
       number_A_blocks_loaded++;
       node->A_node->block_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
-      //spamm_log("loading A: %f\n", __FILE__, __LINE__, node->A_node->block_dense[0]);
       cublasAlloc(node->A_node->M_block*node->A_node->N_block, sizeof(float_t), &(node->A_node->device_pointer));
       cublasSetMatrix(node->A_node->M_block, node->A_node->N_block, sizeof(float_t), (void*) node->A_node->block_dense, node->A_node->M_block, node->A_node->device_pointer, node->A_node->M_block);
 #endif
@@ -207,7 +199,6 @@ spamm_multiply_stream (const unsigned int stream_length, const struct spamm_mult
       number_B_blocks_loaded++;
       node->B_node->block_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
-      //spamm_log("loading B: %f\n", __FILE__, __LINE__, node->B_node->block_dense[0]);
       cublasAlloc(node->B_node->M_block*node->B_node->N_block, sizeof(float_t), &(node->B_node->device_pointer));
       cublasSetMatrix(node->B_node->M_block, node->B_node->N_block, sizeof(float_t), (void*) node->B_node->block_dense, node->B_node->M_block, node->B_node->device_pointer, node->B_node->M_block);
 #endif
@@ -218,7 +209,6 @@ spamm_multiply_stream (const unsigned int stream_length, const struct spamm_mult
       number_C_blocks_loaded++;
       node->C_node->block_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
-      //spamm_log("loading C: %f\n", __FILE__, __LINE__, node->C_node->block_dense[0]);
       cublasAlloc(node->C_node->M_block*node->C_node->N_block, sizeof(float_t), &(node->C_node->device_pointer));
       cublasSetMatrix(node->C_node->M_block, node->C_node->N_block, sizeof(float_t), (void*) node->C_node->block_dense, node->C_node->M_block, node->C_node->device_pointer, node->C_node->M_block);
 #endif
@@ -250,13 +240,10 @@ spamm_multiply_stream (const unsigned int stream_length, const struct spamm_mult
   }
 
   /* Unload the remaining C bocks. */
-  //spamm_log("unloading cache\n", __FILE__, __LINE__);
   while (tailnode != NULL)
   {
-    //spamm_ll_print_node_debug("unloading tailnode", tailnode);
     if (tailnode->A_node->block_loaded_in_GPU == 1)
     {
-      //spamm_log("unloading A: %f\n", __FILE__, __LINE__, tailnode->A_node->block_dense[0]);
       tailnode->A_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
       cublasFree(tailnode->A_node->device_pointer);
@@ -265,7 +252,6 @@ spamm_multiply_stream (const unsigned int stream_length, const struct spamm_mult
 
     if (tailnode->B_node->block_loaded_in_GPU == 1)
     {
-      //spamm_log("unloading B: %f\n", __FILE__, __LINE__, tailnode->B_node->block_dense[0]);
       tailnode->B_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
       cublasFree(tailnode->B_node->device_pointer);
@@ -279,12 +265,17 @@ spamm_multiply_stream (const unsigned int stream_length, const struct spamm_mult
       cublasGetMatrix(tailnode->C_node->M_block, tailnode->C_node->N_block, sizeof(float_t), (void*) tailnode->C_node->device_pointer,
           tailnode->C_node->M_block, (void*) tailnode->C_node->block_dense, tailnode->C_node->M_block);
       cublasFree(tailnode->C_node->device_pointer);
-      //spamm_log("unloading C: %f\n", __FILE__, __LINE__, tailnode->C_node->block_dense[0]);
 #endif
     }
 
     tailnode = tailnode->next;
   }
+
+  /* Print statistics. */
+  spamm_log("blocks loaded: stream length = %3u cache = %3u A = %3u B = %3u C = %3u total = %4u\n", __FILE__, __LINE__,
+      multiply_stream->number_elements, cache_length,
+      number_A_blocks_loaded, number_B_blocks_loaded, number_C_blocks_loaded,
+      number_A_blocks_loaded+number_B_blocks_loaded+number_C_blocks_loaded);
 }
 
 /* Computes
@@ -379,6 +370,6 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
 
   spamm_ll_new(&multiply_stream);
   spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
-  spamm_multiply_stream(500, &multiply_stream);
+  spamm_multiply_stream(30000, &multiply_stream);
   spamm_ll_delete(&multiply_stream);
 }
