@@ -36,11 +36,11 @@ main ()
       __FILE__, __LINE__, A.M, A.N, stats.number_nodes, stats.number_dense_blocks,
       stats.memory_tree, stats.memory_dense_blocks, (stats.memory_tree+stats.memory_dense_blocks)/(double) (A.M*A.N*sizeof(double))*100);
 
-  spamm_log("converting tree to dense\n", __FILE__, __LINE__);
+  spamm_log("converting tree to dense... ", __FILE__, __LINE__);
   gettimeofday(&start, NULL);
   spamm_spamm_to_dense(&A, &A_dense);
   gettimeofday(&stop, NULL);
-  spamm_log("time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
   spamm_log("allocating A2_dense\n", __FILE__, __LINE__);
   A2_dense = (float_t*) malloc(sizeof(float_t)*A.M*A.N);
@@ -52,15 +52,15 @@ main ()
   }
 
 #ifdef DGEMM
-  spamm_log("multiplying matrix with BLAS to get reference product\n", __FILE__, __LINE__);
+  spamm_log("multiplying matrix with BLAS to get reference product... ", __FILE__, __LINE__);
   alpha = 1.0;
   beta = 0.0;
   gettimeofday(&start, NULL);
   DGEMM("N", "N", &A.M, &A.N, &A.M, &alpha, A_dense, &A.M, A_dense, &A.N, &beta, A2_dense, &A.M);
   gettimeofday(&stop, NULL);
-  spamm_log("time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 #else
-  spamm_log("multiplying matrix directly to get reference product\n", __FILE__, __LINE__);
+  spamm_log("multiplying matrix directly to get reference product... ", __FILE__, __LINE__);
   gettimeofday(&start, NULL);
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j) {
@@ -71,7 +71,7 @@ main ()
     }
   }
   gettimeofday(&stop, NULL);
-  spamm_log("time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 #endif
 
   spamm_log("multiplying matrix with spamm\n", __FILE__, __LINE__);
@@ -79,7 +79,7 @@ main ()
   gettimeofday(&start, NULL);
   spamm_multiply(1.0, &A, &A, 1.0, &A2);
   gettimeofday(&stop, NULL);
-  spamm_log("time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  spamm_log("total spamm time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
   spamm_log("comparing matrices\n", __FILE__, __LINE__);
   max_diff = 0;
