@@ -1,6 +1,6 @@
 #include "config.h"
 
-#ifdef HAVE_LIBCUBLAS
+#ifdef HAVE_CUDA
 
 #include <cublas.h>
 #include <stdio.h>
