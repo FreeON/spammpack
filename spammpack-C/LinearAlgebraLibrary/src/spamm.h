@@ -213,3 +213,6 @@ spamm_ll_print (const struct spamm_multiply_stream_t *list);
 
 void
 spamm_ll_print_matlab (const struct spamm_multiply_stream_t *list);
+
+unsigned int
+spamm_number_nonzero (const struct spamm_t *A);

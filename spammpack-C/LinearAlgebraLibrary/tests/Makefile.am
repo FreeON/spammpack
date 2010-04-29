@@ -5,8 +5,13 @@ AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 
 TESTS = $(noinst_PROGRAMS)
 
-noinst_PROGRAMS = create_spamm add_spamm multiply_random_spamm
+noinst_PROGRAMS = \
+  create_spamm \
+  nonzero_spamm \
+  add_spamm \
+  multiply_random_spamm
 
 create_spamm_SOURCES = create_spamm.c
 add_spamm_SOURCES = add_spamm.c
 multiply_random_spamm_SOURCES = multiply_random_spamm.c
+nonzero_spamm_SOURCES = nonzero_spamm.c

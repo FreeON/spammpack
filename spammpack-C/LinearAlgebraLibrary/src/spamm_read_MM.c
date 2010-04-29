@@ -14,6 +14,7 @@ spamm_read_MM (const char *filename, const int M_block, const int N_block,
 {
   FILE *fd;
   int linenumber;
+  int number_nonzero;
   int i, j, M, N;
   float_t Aij;
   char line[LINE_MAX];
@@ -34,6 +35,7 @@ spamm_read_MM (const char *filename, const int M_block, const int N_block,
   N = -1;
 
   linenumber = 0;
+  number_nonzero = 0;
   while (fgets(line, LINE_MAX, fd) != NULL)
   {
     linenumber++;
@@ -82,7 +84,9 @@ spamm_read_MM (const char *filename, const int M_block, const int N_block,
     if (token == NULL) { spamm_log("syntax error, line %i\n", __FILE__, __LINE__, linenumber); }
     Aij = strtod(token, NULL);
     spamm_set(i, j, Aij, A);
+    number_nonzero++;
   }
 
+  spamm_log("loaded %i nonzero elements\n", __FILE__, __LINE__, number_nonzero);
   fclose(fd);
 }
