@@ -11,6 +11,7 @@ libsparsekit_la_SOURCES = amask.f \
   csrssk.f \
   diacsr.f \
   dnscsr.f \
+  dnscsr_single.f \
   ellcsr.f \
   filter.f \
   getdia.f \
@@ -43,6 +44,7 @@ libsparsekit_la_SOURCES = amask.f \
   rscal.f \
   transp.f \
   amub.f \
+  amub_single.f \
   aplb1.f \
   aplsbt.f \
   blkchk.f \

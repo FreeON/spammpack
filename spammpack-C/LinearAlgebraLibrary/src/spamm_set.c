@@ -115,10 +115,11 @@ spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_nod
   }
 }
 
-void
+int
 spamm_set (const int i, const int j, const float_t Aij, struct spamm_t *A)
 {
   int l, k;
+  int result = 0;
 
   assert(A != NULL);
 
@@ -161,4 +162,11 @@ spamm_set (const int i, const int j, const float_t Aij, struct spamm_t *A)
 
     spamm_set_element(i, j, Aij, A->root);
   }
+
+  else
+  {
+    result = -1;
+  }
+
+  return result;
 }

@@ -146,7 +146,7 @@ spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense);
 float_t
 spamm_get (const int i, const int j, const struct spamm_t *A);
 
-void
+int
 spamm_set (const int i, const int j, const float_t Aij, struct spamm_t *A);
 
 void
