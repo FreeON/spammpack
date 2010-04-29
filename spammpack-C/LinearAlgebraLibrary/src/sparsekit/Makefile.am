@@ -34,7 +34,6 @@ libsparsekit_la_SOURCES = amask.f \
   diamua.f \
   dperm.f \
   estif3.f \
-  gen57bl.f \
   getelm.f \
   hsourc.f \
   ldsolc.f \
@@ -47,7 +46,6 @@ libsparsekit_la_SOURCES = amask.f \
   aplb1.f \
   aplsbt.f \
   blkchk.f \
-  bsten.f \
   cooell.f \
   csrbsr.f \
   csrjad.f \
@@ -55,7 +53,6 @@ libsparsekit_la_SOURCES = amask.f \
   diapos.f \
   dscaldg.f \
   exphes.f \
-  gen57pt.f \
   getl.f \
   ilu0.f \
   ldsol.f \
@@ -74,9 +71,7 @@ libsparsekit_la_SOURCES = amask.f \
   dcn.f \
   dinfo1.f \
   dump.f \
-  expprod.f \
   genfea.f \
-  getsten.f \
   ilut.f \
   ldsoll.f \
   markgen.f \

@@ -8,7 +8,7 @@
 #define THRESHOLD 1e-14
 
 int
-main ()
+main (int argc, char **argv)
 {
   struct spamm_t A;
   struct spamm_t A2;
@@ -16,6 +16,9 @@ main ()
   float_t *A_dense;
   float_t *A2_dense;
   float_t alpha, beta;
+
+  float_t *A_CSR;
+  int *i_CSR, *j_CSR;
 
   struct spamm_tree_stats_t stats;
 
@@ -28,9 +31,15 @@ main ()
 
   struct timeval start, stop;
 
+
+  if (argc != 2)
+  {
+    spamm_log("what file should I load?\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
   spamm_log("loading matrix\n", __FILE__, __LINE__);
-  spamm_read_MM("e20r0000.mtx", 32, 32, 2, 2, 1e-10, &A);
-  //spamm_read_MM("sparseHamiltonian.mtx", 32, 32, 2, 2, 1e-10, &A);
+  spamm_read_MM(argv[1], 32, 32, 2, 2, 1e-10, &A);
   spamm_tree_stats(&stats, &A);
   spamm_log("read %ix%i matrix, %i nodes, %i dense blocks, tree = %i bytes, blocks = %i bytes (%1.1f%%)\n",
       __FILE__, __LINE__, A.M, A.N, stats.number_nodes, stats.number_dense_blocks,
@@ -41,6 +50,13 @@ main ()
   spamm_spamm_to_dense(&A, &A_dense);
   gettimeofday(&stop, NULL);
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+
+  spamm_log("converting dense to CSR\n", __FILE__, __LINE__);
+  A_CSR = (float_t*) malloc(sizeof(float_t)*spamm_number_nonzero(&A));
+  j_CSR = (int*) malloc(sizeof(int)*spamm_number_nonzero(&A));
+  i_CSR = (int*) malloc(sizeof(int)*A.M);
+  spamm_log("found %u nonzero elements\n", __FILE__, __LINE__, spamm_number_nonzero(&A));
+  dnscsr_();
 
   spamm_log("allocating A2_dense\n", __FILE__, __LINE__);
   A2_dense = (float_t*) malloc(sizeof(float_t)*A.M*A.N);
