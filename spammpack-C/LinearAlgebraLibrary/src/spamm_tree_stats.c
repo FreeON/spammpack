@@ -2,6 +2,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+/** @file */
+
+/** \private Statistics of a node.
+ */
 void
 spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *node)
 {
@@ -41,7 +45,7 @@ spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *n
   }
 }
 
-/** Get statistics about the tree.
+/** \public Get statistics about the tree.
  *
  * This function returns a struct spamm_tree_stats_t with information about
  * the tree.
