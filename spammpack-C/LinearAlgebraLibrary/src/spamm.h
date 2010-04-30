@@ -1,6 +1,28 @@
 #include "config.h"
 #include <stdio.h>
 
+/** @file */
+
+/** \mainpage Documentation of the Sparse Approximate Matrix-Matrix (SpAMM) library.
+ *
+ * SpAMM is a...
+ *
+ * \author Nicolas Bock <nicolasbock@gmail.com>
+ * \author Matt Challacombe <matt.challacombe@gmail.com>.
+ */
+
+/** \package SpAMM
+ *
+ * \brief Sparse Approximate Matrix Multiply (SpAMM) library.
+ *
+ * SpAMM is...
+ *
+ * \bug Can't multiply.
+ *
+ * \author Nicolas Bock <nicolasbock@gmail.com>
+ * \author Matt Challacombe <matt.challacombe@gmail.com>.
+ */
+
 /** Definition of global floating point precision. */
 typedef FLOATING_PRECISION float_t;
 
@@ -52,9 +74,20 @@ struct spamm_t
  */
 enum spamm_block_ordering_t
 {
-  none, /** No ordering. This is the default for new nodes. */
-  P, /** P type ordering, which is the basic ordering pattern without rotation. */
-  Q, R, S
+  /** No ordering. This is the default for new nodes. */
+  none,
+
+  /** P type ordering, which is the basic ordering pattern without rotation. */
+  P,
+
+  /** Q type ordering. */
+  Q,
+
+  /** R type ordering. */
+  R,
+
+  /** S type ordering. */
+  S
 };
 
 /** A node in the tree.
