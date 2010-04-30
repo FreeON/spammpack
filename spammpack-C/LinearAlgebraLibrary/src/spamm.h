@@ -57,21 +57,51 @@ enum spamm_block_ordering_t
   Q, R, S
 };
 
+/** A node in the tree.
+ *
+ * This structure describes a node in the tree.
+ */
 struct spamm_node_t
 {
-  /** The dimensions covered in the padded matrix in this node.
+  /** The rows of the padded matrix covered in this node.
    *
    * The indices are meant as [M_lower, M_upper[, i.e. the upper limit is not
    * included in the interval.
    */
-  int M_lower, M_upper;
-  int N_lower, N_upper;
+  int M_lower;
 
-  /** The dimensions of the data blocks at the leaf level. */
-  int M_block, N_block;
+  /** The rows of the padded matrix covered in this node.
+   *
+   * The indices are meant as [M_lower, M_upper[, i.e. the upper limit is not
+   * included in the interval.
+   */
+  int M_upper;
 
-  /** The dimensions of subdivisions on each child node. */
-  int M_child, N_child;
+  /** The columns of the padded matrix covered in this node.
+   *
+   * The indices are meant as [N_lower, N_upper[, i.e. the upper limit is not
+   * included in the interval.
+   */
+  int N_lower;
+
+  /** The columns of the padded matrix covered in this node.
+   *
+   * The indices are meant as [N_lower, N_upper[, i.e. the upper limit is not
+   * included in the interval.
+   */
+  int N_upper;
+
+  /** The number of rows stored in the data blocks at the leaf level. */
+  int M_block;
+
+  /** The number of columns stored in the data blocks at the leaf level. */
+  int N_block;
+
+  /** The number of rows of subdivisions on each child node. */
+  int M_child;
+
+  /** The number of rows of subdivisions on each child node. */
+  int N_child;
 
   /** The matrix element threshold.
    *
@@ -100,6 +130,10 @@ struct spamm_node_t
   float_t *block_dense;
 };
 
+/** Tree statistics.
+ *
+ * This structure is the result of a call to spamm_tree_stats().
+ */
 struct spamm_tree_stats_t
 {
   /** The number of nodes. */
@@ -113,36 +147,59 @@ struct spamm_tree_stats_t
 
   /** The memory consumption of the dense blocks. */
   int memory_dense_blocks;
+
+  /** The average sparsity of the dense blocks. */
+  float_t average_sparsity;
 };
 
+/** The multiply stream.
+ *
+ * The multiplication is mapped onto a linear stream of products.
+ */
 struct spamm_multiply_stream_t
 {
   /** Number of elements. */
   unsigned int number_elements;
 
-  /** Links to the first and last node in list. */
+  /** Links to the first node in list. */
   struct spamm_multiply_stream_node_t *first;
+
+  /** Links to the last node in list. */
   struct spamm_multiply_stream_node_t *last;
 };
 
+/** A node in the multiply stream.
+ */
 struct spamm_multiply_stream_node_t
 {
-  /** Links to the previous and the next element. */
+  /** Link to the previous element. */
   struct spamm_multiply_stream_node_t *previous;
+
+  /** Link to the next element. */
   struct spamm_multiply_stream_node_t *next;
 
-  /** Values of alpha and beta. */
+  /** Value of alpha. */
   float_t alpha;
+
+  /** Value of beta. */
   float_t beta;
 
-  /** Index triple of matrices. */
+  /** Index of matrix A. */
   unsigned int A_index;
+
+  /** Index of matrix B. */
   unsigned int B_index;
+
+  /** Index of matrix C. */
   unsigned int C_index;
 
-  /** Pointers into nodes corresponding to indices. */
+  /** Pointer to node corresponding to index of matrix A. */
   struct spamm_node_t *A_node;
+
+  /** Pointer to node corresponding to index of matrix B. */
   struct spamm_node_t *B_node;
+
+  /** Pointer to node corresponding to index of matrix C. */
   struct spamm_node_t *C_node;
 };
 
