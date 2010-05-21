@@ -1,3 +1,5 @@
+/** @file */
+
 #include "spamm.h"
 #include "config.h"
 #include <assert.h>
@@ -8,7 +10,7 @@
 #include <cublas.h>
 #endif
 
-/* Computes
+/** \private Computes
  *
  * C_node = alpha*A_node*B_node + beta*C_node
  */
@@ -131,6 +133,11 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
   }
 }
 
+/** Go through the multiply stream and calculate product.
+ *
+ * @param cache_length Determines the number of blocks kept in the GPU.
+ * @param multiply_stream The multiply stream.
+ */
 void
 spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multiply_stream_t *multiply_stream)
 {
@@ -279,9 +286,15 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multi
       number_A_blocks_loaded+number_B_blocks_loaded+number_C_blocks_loaded);
 }
 
-/* Computes
+/** Computes the product
  *
  * C = alpha*A*B + beta*C
+ *
+ * @param alpha the scalar factor multiplying A*B.
+ * @param A the matrix A.
+ * @param B the matrix B.
+ * @param beta the scalar factor multiplying C.
+ * @param C the matrix C.
  */
 void
 spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm_t *B, const float_t beta, struct spamm_t *C)

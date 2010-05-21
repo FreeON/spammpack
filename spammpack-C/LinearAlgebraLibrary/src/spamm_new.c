@@ -1,8 +1,12 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
+/** Initialize new matrix object.
+ */
 void
 spamm_new (const int M, const int N, const int M_block, const int N_block,
     const int M_child, const int N_child, const float_t threshold,

@@ -28,6 +28,3 @@ libspamm_la_SOURCES = \
 
 tags :
 	ctags *.h *.c
-
-docs :
-	doxygen
