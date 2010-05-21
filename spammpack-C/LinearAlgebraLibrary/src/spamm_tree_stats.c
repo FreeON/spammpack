@@ -1,8 +1,8 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <stdio.h>
-
-/** @file */
 
 /** \private Statistics of a node.
  */

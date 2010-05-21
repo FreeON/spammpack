@@ -1,11 +1,11 @@
+/** @file */
+
 #include "config.h"
 #include <stdio.h>
 
-/** @file */
-
 /** \mainpage Documentation of the Sparse Approximate Matrix-Matrix (SpAMM) library.
  *
- * SpAMM is a...
+ * SpAMM is a library for spare approximate matrices.
  *
  * \author Nicolas Bock <nicolasbock@gmail.com>
  * \author Matt Challacombe <matt.challacombe@gmail.com>.
@@ -15,9 +15,9 @@
  *
  * \brief Sparse Approximate Matrix Multiply (SpAMM) library.
  *
- * SpAMM is...
+ * SpAMM is a library for spare approximate matrices.
  *
- * \bug Can't multiply.
+ * \bug Can't multiply yet.
  *
  * \author Nicolas Bock <nicolasbock@gmail.com>
  * \author Matt Challacombe <matt.challacombe@gmail.com>.
@@ -187,7 +187,8 @@ struct spamm_tree_stats_t
 
 /** The multiply stream.
  *
- * The multiplication is mapped onto a linear stream of products.
+ * The multiplication is mapped onto a linear stream of products, which can
+ * then be evaluated by spamm_multiply_stream().
  */
 struct spamm_multiply_stream_t
 {
