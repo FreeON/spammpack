@@ -1,8 +1,16 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+/** Print out a dense matrix.
+ *
+ * @param M Number of rows of dense matrix.
+ * @param N Number of columns of dense matrix.
+ * @param A_dense The dense matrix.
+ */
 void
 spamm_print_dense (const int M, const int N, const float_t *A_dense)
 {

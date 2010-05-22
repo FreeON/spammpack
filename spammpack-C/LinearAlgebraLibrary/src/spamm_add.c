@@ -1,10 +1,19 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <stdlib.h>
 
-/* Calculate
+/** \private Calculate
  *
- * B = alpha*A + beta*B
+ * B_node = alpha*A_node + beta*B_node
+ *
+ * This is the recursive part. Use spamm_add() instead.
+ *
+ * @param alpha The factor alpha.
+ * @param A_node Matrix node A.
+ * @param beta The factor beta.
+ * @param B_node Matrix node B.
  */
 void
 spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node)
@@ -125,9 +134,15 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   }
 }
 
-/* Calculate
+/** Calculate
  *
  * B = alpha*A + beta*B
+ *
+ *
+ * @param alpha The factor alpha.
+ * @param A Matrix A.
+ * @param beta The factor beta.
+ * @param B Matrix B.
  */
 void
 spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, struct spamm_t *B)

@@ -1,8 +1,20 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
+/** \private Set an element in a matrix.
+ *
+ * This is the recursive part and is not called directly. Use spamm_set()
+ * instead.
+ *
+ * @param i Row index of element.
+ * @param j Column index of element.
+ * @param Aij Value to set the matrix element to.
+ * @param node The matrix node.
+ */
 void
 spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_node_t *node)
 {
@@ -115,6 +127,13 @@ spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_nod
   }
 }
 
+/** Set an element in a matrix.
+ *
+ * @param i Row index of element.
+ * @param j Column index of element.
+ * @param Aij Value to set the matrix element to.
+ * @param A The matrix.
+ */
 int
 spamm_set (const int i, const int j, const float_t Aij, struct spamm_t *A)
 {

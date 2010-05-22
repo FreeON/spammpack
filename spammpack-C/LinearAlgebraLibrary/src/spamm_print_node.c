@@ -1,3 +1,5 @@
+/** @file */
+
 #include "spamm.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +8,8 @@
  *
  * This function prints detailed information of a tree node. If prints out the
  * values of all fields in struct spamm_node_t.
+ *
+ * @param node The matrix node.
  */
 void
 spamm_print_node (const struct spamm_node_t *node)

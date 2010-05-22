@@ -1,3 +1,5 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <errno.h>
@@ -5,8 +7,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+/** The maximum number of characters per input line.
+ */
 #define LINE_MAX 2000
 
+/** Read a matrix from file in MatrixMarket format.
+ *
+ * @param filename The filename of the matrix to read.
+ * @param M_block Number of rows of matrix blocks in output matrix.
+ * @param N_block Number of columns of matrix blocks in output matrix.
+ * @param M_child Number of rows of children per node in matrix.
+ * @param N_child Number of columns of children per node in matrix.
+ * @param threshold The matrix threshold below which elements are considered
+ *        zero.
+ * @param A The output matrix.
+ */
 void
 spamm_read_MM (const char *filename, const int M_block, const int N_block,
     const int M_child, const int N_child, const float_t threshold,

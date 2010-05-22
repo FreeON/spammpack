@@ -1,8 +1,14 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+/** Print out a SpAMM matrix.
+ *
+ * @param A The matrix.
+ */
 void
 spamm_print_spamm (const struct spamm_t *A)
 {

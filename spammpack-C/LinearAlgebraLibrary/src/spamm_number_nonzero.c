@@ -1,7 +1,11 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <stdlib.h>
 
+/** \private Count how many nonzero nodes exist in matrix tree.
+ */
 unsigned int
 spamm_number_nonzero_node (const struct spamm_node_t *node)
 {
@@ -39,6 +43,8 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
   return result;
 }
 
+/** Count how many non-zero nodes are in matrix tree.
+ */
 unsigned int
 spamm_number_nonzero (const struct spamm_t *A)
 {

@@ -5,6 +5,8 @@
 #include <stdio.h>
 
 /** \private Statistics of a node.
+ *
+ * This is the recursive part, use spamm_tree_stats() instead.
  */
 void
 spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *node)
@@ -45,7 +47,7 @@ spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *n
   }
 }
 
-/** \public Get statistics about the tree.
+/** Get statistics about the tree.
  *
  * This function returns a struct spamm_tree_stats_t with information about
  * the tree.
