@@ -1,7 +1,13 @@
+/* @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <stdlib.h>
 
+/** \private Delete a node, and recursively all children nodes.
+ *
+ * This is the recursive part. Call spamm_delete() instead.
+ */
 void
 spamm_delete_node (struct spamm_node_t *node)
 {
@@ -28,6 +34,8 @@ spamm_delete_node (struct spamm_node_t *node)
   }
 }
 
+/** Delete a matrix.
+ */
 void
 spamm_delete (struct spamm_t *A)
 {

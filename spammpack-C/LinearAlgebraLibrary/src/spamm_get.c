@@ -1,7 +1,17 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <stdlib.h>
 
+/** \private Get an element from a matrix tree.
+ *
+ * This is the recursive part and is not called directly. Use spamm_get().
+ *
+ * @param i Row index.
+ * @param j Column index.
+ * @param node The matrix node.
+ */
 float_t
 spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
 {
@@ -40,6 +50,12 @@ spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
   return result;
 }
 
+/** Get an element from a matrix tree.
+ *
+ * @param i Row index.
+ * @param j Column index.
+ * @param A The matrix tree.
+ */
 float_t
 spamm_get (const int i, const int j, const struct spamm_t *A)
 {

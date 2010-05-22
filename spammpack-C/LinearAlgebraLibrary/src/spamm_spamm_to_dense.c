@@ -1,7 +1,17 @@
+/** @file */
+
 #include "spamm.h"
 #include <assert.h>
 #include <stdlib.h>
 
+/** Convert a spamm_t matrix into a dense matrix.
+ *
+ * This function allocates the memory for A_dense. The caller needs to take
+ * care of free()'ing that memory.
+ *
+ * @param A The spamm_t matrix.
+ * @param A_dense The dense matrix.
+ */
 void
 spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense)
 {

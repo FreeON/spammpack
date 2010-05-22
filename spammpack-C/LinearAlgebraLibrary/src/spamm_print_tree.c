@@ -1,7 +1,13 @@
+/** @file */
+
 #include "spamm.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+/** \private Print out a tree node and its children nodes.
+ *
+ * This is the recursive part of spamm_print_tree().
+ */
 void
 spamm_print_tree_node (const struct spamm_node_t *node)
 {
@@ -19,6 +25,10 @@ spamm_print_tree_node (const struct spamm_node_t *node)
   }
 }
 
+/** Print out the tree structure of a SpAMM matrix.
+ *
+ * @param A The matrix.
+ */
 void
 spamm_print_tree (const struct spamm_t *A)
 {

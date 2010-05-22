@@ -3,15 +3,7 @@
 #include "config.h"
 #include <stdio.h>
 
-/** \mainpage Documentation of the Sparse Approximate Matrix-Matrix (SpAMM) library.
- *
- * SpAMM is a library for spare approximate matrices.
- *
- * \author Nicolas Bock <nicolasbock@gmail.com>
- * \author Matt Challacombe <matt.challacombe@gmail.com>.
- */
-
-/** \package SpAMM
+/** \mainpage SpAMM
  *
  * \brief Sparse Approximate Matrix Multiply (SpAMM) library.
  *
