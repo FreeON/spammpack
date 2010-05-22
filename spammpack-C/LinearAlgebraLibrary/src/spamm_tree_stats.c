@@ -43,7 +43,7 @@ spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *n
         }
       }
     }
-    stats->average_sparsity += (float_t) nonzero / (float_t) (node->M_block*node->N_block);
+    stats->average_sparsity += 1 - (float_t) nonzero / (float_t) (node->M_block*node->N_block);
   }
 }
 
