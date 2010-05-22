@@ -49,6 +49,8 @@ spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_nod
           spamm_new_node(&(node->child[spamm_dense_index(l, k, node->M_child, node->N_child)]));
           child_node = node->child[spamm_dense_index(l, k, node->M_child, node->N_child)];
 
+          child_node->tier = node->tier+1;
+
           child_node->M_lower = node->M_lower+l*(node->M_upper-node->M_lower)/node->M_child;
           child_node->M_upper = node->M_lower+(l+1)*(node->M_upper-node->M_lower)/node->M_child;
           child_node->N_lower = node->N_lower+k*(node->N_upper-node->N_lower)/node->N_child;
@@ -94,13 +96,13 @@ spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_nod
 
           case P:
             node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->index = node->index*4+0;
+            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->index = (node->index << 2)+0;
             node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->index = node->index*4+1;
+            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->index = (node->index << 2)+1;
             node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->index = node->index*4+2;
+            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->index = (node->index << 2)+2;
             node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->index = node->index*4+3;
+            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->index = (node->index << 2)+3;
             break;
 
           default:

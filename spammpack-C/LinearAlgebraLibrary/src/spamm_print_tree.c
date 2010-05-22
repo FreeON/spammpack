@@ -7,9 +7,12 @@
 /** \private Print out a tree node and its children nodes.
  *
  * This is the recursive part of spamm_print_tree().
+ *
+ * @param node The node to print.
+ * @param width The width of the binary representation of the linear index.
  */
 void
-spamm_print_tree_node (const struct spamm_node_t *node)
+spamm_print_tree_node (const struct spamm_node_t *node, const int width)
 {
   int i, j;
 
@@ -19,7 +22,7 @@ spamm_print_tree_node (const struct spamm_node_t *node)
     for (i = 0; i < node->M_child; ++i) {
       for (j = 0; j < node->N_child; ++j)
       {
-        spamm_print_tree_node(node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+        spamm_print_tree_node(node->child[spamm_dense_index(i, j, node->M_child, node->N_child)], width);
       }
     }
   }
@@ -36,11 +39,12 @@ spamm_print_tree (const struct spamm_t *A)
   printf("M_padded = %i, N_padded = %i, ", A->M_padded, A->N_padded);
   printf("M_block = %i, N_block = %i, ", A->M_block, A->N_block);
   printf("M_child = %i, N_child = %i, ", A->M_child, A->N_child);
+  printf("tree depth = %u, ", A->tree_depth);
   printf("threshold = %7.1e, ", A->threshold);
   printf("root = %p\n", (void*) A->root);
 
   if (A->root != NULL)
   {
-    spamm_print_tree_node(A->root);
+    spamm_print_tree_node(A->root, A->tree_depth*2);
   }
 }

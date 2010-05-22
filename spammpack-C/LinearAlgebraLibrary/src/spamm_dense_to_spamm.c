@@ -6,6 +6,10 @@
 
 /** Convert a dense matrix into a SpAMM matrix.
  *
+ * If the spamm_t matrix A is already initialized, then it is checked whether
+ * its parameters are identical to the parameters requested. If not, the
+ * matrix is deleted and re-initialized.
+ *
  * @param M Number of rows of dense input matrix.
  * @param N Number of columns of dense input matrix.
  * @param M_block Number of rows of matrix block in spamm_t.

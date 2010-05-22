@@ -30,6 +30,9 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   {
     /* We need to add to B. */
     spamm_new_node(B_node);
+
+    (*B_node)->tier = A_node->tier;
+
     (*B_node)->M_lower = A_node->M_lower;
     (*B_node)->M_upper = A_node->M_upper;
     (*B_node)->N_lower = A_node->N_lower;
@@ -51,6 +54,9 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
       for (j = 0; j < A_node->N_child; ++j)
       {
         spamm_new_node(&((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]));
+
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->tier = (*B_node)->tier+1;
+
         (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_lower = (*B_node)->M_lower+i*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
         (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_upper = (*B_node)->M_lower+(i+1)*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
         (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_lower = (*B_node)->N_lower+j*((*B_node)->N_upper-(*B_node)->N_lower)/(*B_node)->N_child;

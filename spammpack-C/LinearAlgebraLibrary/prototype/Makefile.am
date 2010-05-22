@@ -4,4 +4,4 @@ else
 cudadirs =
 endif
 
-SUBDIRS = $(cudadirs)
+SUBDIRS = $(cudadirs) linear_quadtree
