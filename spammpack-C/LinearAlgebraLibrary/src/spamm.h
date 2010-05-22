@@ -52,6 +52,9 @@ struct spamm_t
    */
   float_t threshold;
 
+  /** The depth of the tree. */
+  unsigned int tree_depth;
+
   /** The number of non-zero blocks. */
   unsigned int number_nonzero_blocks;
 
@@ -88,6 +91,12 @@ enum spamm_block_ordering_t
  */
 struct spamm_node_t
 {
+  /** The tree tier.
+   *
+   * The root is tier 0, the last tier is equal to the tree_depth.
+   */
+  int tier;
+
   /** The rows of the padded matrix covered in this node.
    *
    * The indices are meant as [M_lower, M_upper[, i.e. the upper limit is not

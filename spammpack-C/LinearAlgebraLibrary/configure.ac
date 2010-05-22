@@ -112,6 +112,7 @@ prototype/Makefile
 prototype/cublas/Makefile
 prototype/cuda_gemm_kernel/Makefile
 prototype/kernel_comparison/Makefile
+prototype/linear_quadtree/Makefile
 ])
 
 AC_OUTPUT
