@@ -13,9 +13,9 @@
  * @param node The matrix node.
  */
 float_t
-spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
+spamm_get_element (const unsigned int i, const unsigned int j, const struct spamm_node_t *node)
 {
-  int l, k;
+  unsigned int l, k;
   float_t result = 0.0;
 
   assert(node != NULL);
@@ -57,12 +57,10 @@ spamm_get_element (const int i, const int j, const struct spamm_node_t *node)
  * @param A The matrix tree.
  */
 float_t
-spamm_get (const int i, const int j, const struct spamm_t *A)
+spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
 {
   assert(A != NULL);
 
-  if (i < 0)     { spamm_log("(i = %i) < 0\n",  __FILE__, __LINE__, i); exit(1); }
-  if (j < 0)     { spamm_log("(j = %i) < 0\n",  __FILE__, __LINE__, j); exit(1); }
   if (i >= A->M) { spamm_log("(i = %i) >= (M = %i)\n", __FILE__, __LINE__, i, A->M); exit(1); }
   if (j >= A->N) { spamm_log("(j = %i) >= (N = %i)\n", __FILE__, __LINE__, j, A->N); exit(1); }
 

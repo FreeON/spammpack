@@ -42,4 +42,6 @@ main ()
   /* Free quadtree. */
   free(linear_A);
   spamm_delete(&A);
+
+  return 0;
 }

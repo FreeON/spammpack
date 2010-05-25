@@ -3,6 +3,7 @@
 #include "spamm.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /** \private Convert an integer to string in binary.
  *
@@ -69,6 +70,7 @@ spamm_print_node (const struct spamm_node_t *node)
     empty_header[strlen(header)] = '\0';
     printf("%s", header);
     printf("tier = %i, ", node->tier);
+    printf("linear = %i, ", node->linear_tiers);
     printf("M_lower = %i, M_upper = %i, ", node->M_lower, node->M_upper);
     printf("N_lower = %i, N_upper = %i, ", node->N_lower, node->N_upper);
     printf("M_block = %i, N_block = %i, ", node->M_block, node->N_block);

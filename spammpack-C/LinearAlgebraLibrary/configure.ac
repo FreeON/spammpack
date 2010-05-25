@@ -7,6 +7,10 @@ dnl Identify compilers.
 AC_PROG_CC
 AC_PROG_F77
 
+dnl Add some default flags to the compiler arguments.
+CFLAGS="${CFLAGS} -Wall"
+FFLAGS="${FFLAGS} -Wall"
+
 dnl Find libtool.
 AC_PROG_LIBTOOL
 

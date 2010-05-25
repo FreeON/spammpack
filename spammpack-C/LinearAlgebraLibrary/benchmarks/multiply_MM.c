@@ -26,9 +26,15 @@ main (int argc, char **argv)
   struct spamm_tree_stats_t stats;
 
   double max_diff;
-  int max_diff_i, max_diff_j;
+  int max_diff_i = 0;
+  int max_diff_j = 0;
 
-  int i, j, k;
+  int i, j;
+
+#if ! defined(DGEMM)
+  int k;
+#endif
+
   int nonzero, C_nonzero;
 
   int ierr, job;
