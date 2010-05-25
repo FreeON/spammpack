@@ -147,7 +147,9 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
 void
 spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multiply_stream_t *multiply_stream)
 {
+#if ! defined(HAVE_CUDA) && ! defined(DGEMM)
   int i, j, k;
+#endif
 
   unsigned int head_tail_distance;
 

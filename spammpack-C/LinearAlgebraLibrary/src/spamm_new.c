@@ -70,6 +70,9 @@ spamm_new (const int M, const int N, const int M_block, const int N_block,
 
   A->tree_depth = (unsigned int) ceil(x);
 
+  A->linear_tiers = 0;
+  A->number_nonzero_blocks = 0;
+
   A->M_padded = (int) (M_block*pow(M_child, ceil(x)));
   A->N_padded = (int) (N_block*pow(N_child, ceil(x)));
 
@@ -88,6 +91,7 @@ spamm_new_node (struct spamm_node_t **node)
   *node = (struct spamm_node_t*) malloc(sizeof(struct spamm_node_t));
 
   (*node)->tier = 0;
+  (*node)->linear_tiers = 0;
 
   (*node)->M_upper = 0;
   (*node)->M_lower = 0;

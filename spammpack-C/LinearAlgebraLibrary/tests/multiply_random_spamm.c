@@ -26,7 +26,8 @@ main ()
   double fill[4] = { 0.01, 0.2, 0.5, 1.0 };
 
   double max_diff;
-  int max_diff_i, max_diff_j;
+  int max_diff_i = 0;
+  int max_diff_j = 0;
 
   int i, j, k;
   int i_size;

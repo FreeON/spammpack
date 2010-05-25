@@ -9,7 +9,7 @@
  *
  * SpAMM is a library for spare approximate matrices.
  *
- * \bug Can't multiply yet.
+ * \bug In spamm_multiply(): A pre-existing C matrix will not work right now.
  *
  * \author Nicolas Bock <nicolasbock@gmail.com>
  * \author Matt Challacombe <matt.challacombe@gmail.com>.
@@ -23,28 +23,28 @@ typedef FLOATING_PRECISION float_t;
 struct spamm_t
 {
   /** Number of rows of matrix. */
-  int M;
+  unsigned int M;
 
   /** Number of columns of matrix. */
-  int N;
+  unsigned int N;
 
   /** Padded number of rows. */
-  int M_padded;
+  unsigned int M_padded;
 
   /** Padded number of columns. */
-  int N_padded;
+  unsigned int N_padded;
 
   /** Number of rows of the dense data block at the leaf level. */
-  int M_block;
+  unsigned int M_block;
 
   /** Number of columns of the dense data block at the leaf level. */
-  int N_block;
+  unsigned int N_block;
 
   /** Number of rows of subdivisions on each child node. */
-  int M_child;
+  unsigned int M_child;
 
   /** Number of columns of subdivisions on each child node. */
-  int N_child;
+  unsigned int N_child;
 
   /** The matrix element threshold.
    *
@@ -54,6 +54,15 @@ struct spamm_t
 
   /** The depth of the tree. */
   unsigned int tree_depth;
+
+  /** Contiguous linear quadtree storage.
+   *
+   * The last linear_tiers tiers are stored in linear quadtree format and
+   * allocated in contiguous chunks. This helps with the bankdwidth/latency
+   * tradeoff during parallel data distribution. Legal value range:
+   * linear_tiers >= 0.
+   */
+  unsigned int linear_tiers;
 
   /** The number of non-zero blocks. */
   unsigned int number_nonzero_blocks;
@@ -95,47 +104,56 @@ struct spamm_node_t
    *
    * The root is tier 0, the last tier is equal to the tree_depth.
    */
-  int tier;
+  unsigned int tier;
+
+  /** Contiguous linear quadtree storage.
+   *
+   * The last linear_tiers tiers are stored in linear quadtree format and
+   * allocated in contiguous chunks. This helps with the bankdwidth/latency
+   * tradeoff during parallel data distribution. Legal value range:
+   * linear_tiers >= 0.
+   */
+  unsigned int linear_tiers;
 
   /** The rows of the padded matrix covered in this node.
    *
    * The indices are meant as [M_lower, M_upper[, i.e. the upper limit is not
    * included in the interval.
    */
-  int M_lower;
+  unsigned int M_lower;
 
   /** The rows of the padded matrix covered in this node.
    *
    * The indices are meant as [M_lower, M_upper[, i.e. the upper limit is not
    * included in the interval.
    */
-  int M_upper;
+  unsigned int M_upper;
 
   /** The columns of the padded matrix covered in this node.
    *
    * The indices are meant as [N_lower, N_upper[, i.e. the upper limit is not
    * included in the interval.
    */
-  int N_lower;
+  unsigned int N_lower;
 
   /** The columns of the padded matrix covered in this node.
    *
    * The indices are meant as [N_lower, N_upper[, i.e. the upper limit is not
    * included in the interval.
    */
-  int N_upper;
+  unsigned int N_upper;
 
   /** The number of rows stored in the data blocks at the leaf level. */
-  int M_block;
+  unsigned int M_block;
 
   /** The number of columns stored in the data blocks at the leaf level. */
-  int N_block;
+  unsigned int N_block;
 
   /** The number of rows of subdivisions on each child node. */
-  int M_child;
+  unsigned int M_child;
 
   /** The number of rows of subdivisions on each child node. */
-  int N_child;
+  unsigned int N_child;
 
   /** The matrix element threshold.
    *
@@ -171,16 +189,16 @@ struct spamm_node_t
 struct spamm_tree_stats_t
 {
   /** The number of nodes. */
-  int number_nodes;
+  unsigned int number_nodes;
 
   /** The number of dense blocks. */
-  int number_dense_blocks;
+  unsigned int number_dense_blocks;
 
   /** The memory consumption of the tree. */
-  int memory_tree;
+  unsigned int memory_tree;
 
   /** The memory consumption of the dense blocks. */
-  int memory_dense_blocks;
+  unsigned int memory_dense_blocks;
 
   /** The average sparsity of the dense blocks. */
   float_t average_sparsity;
@@ -264,10 +282,10 @@ void
 spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense);
 
 float_t
-spamm_get (const int i, const int j, const struct spamm_t *A);
+spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
 
 int
-spamm_set (const int i, const int j, const float_t Aij, struct spamm_t *A);
+spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_t *A);
 
 void
 spamm_print_dense (const int M, const int N, const float_t *A_dense);

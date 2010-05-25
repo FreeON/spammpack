@@ -16,7 +16,7 @@
  * @param node The matrix node.
  */
 void
-spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_node_t *node)
+spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_node_t *node)
 {
   int l, k, m, n;
   struct spamm_node_t *child_node;
@@ -137,15 +137,13 @@ spamm_set_element (const int i, const int j, const float_t Aij, struct spamm_nod
  * @param A The matrix.
  */
 int
-spamm_set (const int i, const int j, const float_t Aij, struct spamm_t *A)
+spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_t *A)
 {
   int l, k;
   int result = 0;
 
   assert(A != NULL);
 
-  if (i < 0)     { spamm_log("(i = %i) < 0\n",  __FILE__, __LINE__, i); exit(1); }
-  if (j < 0)     { spamm_log("(j = %i) < 0\n",  __FILE__, __LINE__, j); exit(1); }
   if (i >= A->M) { spamm_log("(i = %i) >= (M = %i)\n", __FILE__, __LINE__, i, A->M); exit(1); }
   if (j >= A->N) { spamm_log("(j = %i) >= (N = %i)\n", __FILE__, __LINE__, j, A->N); exit(1); }
 
