@@ -61,6 +61,8 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
 
           child_node->threshold = node->threshold;
 
+          child_node->linear_tier = node->linear_tier;
+
           child_node->M_block = node->M_block;
           child_node->N_block = node->N_block;
 
@@ -135,12 +137,16 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
  * @param j Column index of element.
  * @param Aij Value to set the matrix element to.
  * @param A The matrix.
+ *
+ * @return #SPAMM_RESULT_OK indicates that everything went fine.
+ * @return #SPAMM_RESULT_BELOW_THRESHOLD indicates that the matrix element was
+ *         smaller than the matrix threshold and was not stored.
  */
 int
 spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_t *A)
 {
   int l, k;
-  int result = 0;
+  int result = SPAMM_RESULT_OK;
 
   assert(A != NULL);
 
@@ -163,6 +169,8 @@ spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct
 
       A->root->threshold = A->threshold;
 
+      A->root->linear_tier = A->linear_tier;
+
       A->root->M_block = A->M_block;
       A->root->N_block = A->N_block;
 
@@ -184,7 +192,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct
 
   else
   {
-    result = -1;
+    result = SPAMM_RESULT_BELOW_THRESHOLD;
   }
 
   return result;

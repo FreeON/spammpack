@@ -9,14 +9,52 @@
  *
  * SpAMM is a library for spare approximate matrices.
  *
+ * The public functions of this library are all declared in spamm.h.
+ *
+ * \section Introduction
+ *
+ * A spamm_t matrix is defined as an \f$ N \f$-tree on the 2-dimensional
+ * matrix elements. The matrix elements at the lowest level are stored in
+ * dense matrix blocks. The matrix is padded with zeros so that the tree depth
+ * \f$ d \f$ is integer according to
+ *
+ * \f[
+ * M = M_{\mathrm{block}} M_{\mathrm{child}}^d
+ * \]
+ * \[
+ * N = N_{\mathrm{block}} N_{\mathrm{child}}^d
+ * \f]
+ *
+ * where \f$ M \f$ (\f$ N \f$) is the number of rows (columns) of the matrix,
+ * \f$ M_{\mathrm{block}} \f$ (\f$ N_{\mathrm{block}} \f$) is the number of
+ * rows (columns) of the dense matrix blocks at the lowest tree level, \f$
+ * M_{\mathrm{child}} \f$ (\f$ N_{\mathrm{child}} \f$) is the number of rows
+ * (columns) of the children nodes per node in the matrix tree, and \f$ d \f$
+ * is the depth of the tree. This means that the matrix tree is a quadtree for
+ * \f$ M_{\mathrm{child}} = N_{\mathrm{child}} = 2 \f$.
+ *
  * \bug In spamm_multiply(): A pre-existing C matrix will not work right now.
  *
  * \author Nicolas Bock <nicolasbock@gmail.com>
  * \author Matt Challacombe <matt.challacombe@gmail.com>.
  */
 
-/** Definition of global floating point precision. */
+/** Definition of global floating point precision.
+ *
+ * This is either float or double, as defined by the configure script.
+ */
 typedef FLOATING_PRECISION float_t;
+
+/* Definition of return codes. */
+
+/** Return code: Everything went fine. */
+#define SPAMM_RESULT_OK 0
+
+/** Return code: Something went wrong. */
+#define SPAMM_RESULT_FAILED -1
+
+/** Return code: Something went wrong. */
+#define SPAMM_RESULT_BELOW_THRESHOLD 1
 
 /** The basic matrix data type.
  */
@@ -57,12 +95,12 @@ struct spamm_t
 
   /** Contiguous linear quadtree storage.
    *
-   * The last linear_tiers tiers are stored in linear quadtree format and
+   * Nodes in tier >= linear_tier are stored in linear quadtree format and
    * allocated in contiguous chunks. This helps with the bankdwidth/latency
    * tradeoff during parallel data distribution. Legal value range:
-   * linear_tiers >= 0.
+   * linear_tier > 0.
    */
-  unsigned int linear_tiers;
+  unsigned int linear_tier;
 
   /** The number of non-zero blocks. */
   unsigned int number_nonzero_blocks;
@@ -108,12 +146,12 @@ struct spamm_node_t
 
   /** Contiguous linear quadtree storage.
    *
-   * The last linear_tiers tiers are stored in linear quadtree format and
+   * Nodes in tier >= linear_tier are stored in linear quadtree format and
    * allocated in contiguous chunks. This helps with the bankdwidth/latency
    * tradeoff during parallel data distribution. Legal value range:
-   * linear_tiers >= 0.
+   * linear_tier > 0.
    */
-  unsigned int linear_tiers;
+  unsigned int linear_tier;
 
   /** The rows of the padded matrix covered in this node.
    *
@@ -163,6 +201,38 @@ struct spamm_node_t
 
   /** The linear index of this block along the curve. */
   unsigned int index;
+
+  /** Link to previous spamm_node_t in linear quadtree in i sorting.
+   *
+   * In tier >= linear_tier the tree nodes are also linked in a linear
+   * quadtree. The linear tree is sorted on i and on j. This is the i part of
+   * the links.
+   */
+  struct spamm_node_t *previous_i;
+
+  /** Link to next spamm_node_t in linear quadtree in i sorting.
+   *
+   * In tier >= linear_tier the tree nodes are also linked in a linear
+   * quadtree. The linear tree is sorted on i and on j. This is the i part of
+   * the links.
+   */
+  struct spamm_node_t *next_i;
+
+  /** Link to previous spamm_node_t in linear quadtree in j sorting.
+   *
+   * In tier >= linear_tier the tree nodes are also linked in a linear
+   * quadtree. The linear tree is sorted on i and on j. This is the j part of
+   * the links.
+   */
+  struct spamm_node_t *previous_j;
+
+  /** Link to next spamm_node_t in linear quadtree in j sorting.
+   *
+   * In tier >= linear_tier the tree nodes are also linked in a linear
+   * quadtree. The linear tree is sorted on i and on j. This is the j part of
+   * the links.
+   */
+  struct spamm_node_t *next_j;
 
   /** The name of the block ordering pattern. */
   enum spamm_block_ordering_t ordering;
@@ -257,14 +327,17 @@ struct spamm_multiply_stream_node_t
 };
 
 void
-spamm_log (const char *format, const char *filename, const int linenumber, ...);
+spamm_log (const char *format, const char *filename, const unsigned int linenumber, ...);
 
 int
-spamm_dense_index (const int i, const int j, const int M, const int N);
+spamm_dense_index (const unsigned int i, const unsigned int j,
+    const unsigned int M, const unsigned int N);
 
 void
-spamm_new (const int M, const int N, const int M_block, const int N_block,
-    const int M_child, const int N_child, const float_t threshold,
+spamm_new (const unsigned int M, const unsigned int N,
+    const unsigned int M_block, const unsigned int N_block,
+    const unsigned int M_child, const unsigned int N_child,
+    const float_t threshold, const unsigned int linear_tier,
     struct spamm_t *A);
 
 void
@@ -274,9 +347,11 @@ void
 spamm_delete (struct spamm_t *A);
 
 void
-spamm_dense_to_spamm (const int M, const int N, const int M_block,
-    const int N_block, const int M_child, const int N_child,
-    const float_t threshold, const float_t *A_dense, struct spamm_t *A);
+spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
+    const unsigned int M_block, const unsigned int N_block,
+    const unsigned int M_child, const unsigned int N_child,
+    const unsigned linear_tier, const float_t threshold,
+    const float_t *A_dense, struct spamm_t *A);
 
 void
 spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense);
@@ -288,7 +363,7 @@ int
 spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_t *A);
 
 void
-spamm_print_dense (const int M, const int N, const float_t *A_dense);
+spamm_print_dense (const unsigned int M, const unsigned int N, const float_t *A_dense);
 
 void
 spamm_print_spamm (const struct spamm_t *A);
@@ -312,8 +387,10 @@ void
 spamm_tree_stats (struct spamm_tree_stats_t *stats, const struct spamm_t *A);
 
 void
-spamm_read_MM (const char *filename, const int M_block, const int N_block,
-    const int M_child, const int N_child, const float_t threshold,
+spamm_read_MM (const char *filename,
+    const unsigned int M_block, const unsigned int N_block,
+    const unsigned int M_child, const unsigned int N_child,
+    const float_t threshold, const unsigned linear_tier,
     struct spamm_t *A);
 
 void

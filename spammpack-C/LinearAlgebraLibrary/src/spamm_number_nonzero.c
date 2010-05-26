@@ -5,6 +5,10 @@
 #include <stdlib.h>
 
 /** \private Count how many nonzero nodes exist in matrix tree.
+ *
+ * @param node The node to count.
+ *
+ * @returns The number of nonzero nodes of this node and below.
  */
 unsigned int
 spamm_number_nonzero_node (const struct spamm_node_t *node)
@@ -44,6 +48,10 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
 }
 
 /** Count how many non-zero nodes are in matrix tree.
+ *
+ * @param A The matrix.
+ *
+ * @return The number of non-zero blocks in this matrix.
  */
 unsigned int
 spamm_number_nonzero (const struct spamm_t *A)

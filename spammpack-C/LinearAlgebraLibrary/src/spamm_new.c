@@ -6,10 +6,22 @@
 #include <stdlib.h>
 
 /** Initialize new matrix object.
+ *
+ * @param M Number of rows of dense input matrix.
+ * @param N Number of columns of dense input matrix.
+ * @param M_block Number of rows of matrix block in spamm_t.
+ * @param N_block Number of columns of matrix block in spamm_t.
+ * @param M_child Number of rows of children array in spamm_node_t.
+ * @param N_child Number of columns of children array in spamm_node_t.
+ * @param threshold Threshold below which matrix elements are considered zero.
+ * @param linear_tier The tier of linear quadtree storage.
+ * @param A The spamm_t matrix.
  */
 void
-spamm_new (const int M, const int N, const int M_block, const int N_block,
-    const int M_child, const int N_child, const float_t threshold,
+spamm_new (const unsigned int M, const unsigned int N,
+    const unsigned int M_block, const unsigned int N_block,
+    const unsigned int M_child, const unsigned int N_child,
+    const float_t threshold, const unsigned int linear_tier,
     struct spamm_t *A)
 {
   assert(A != NULL);
@@ -70,7 +82,7 @@ spamm_new (const int M, const int N, const int M_block, const int N_block,
 
   A->tree_depth = (unsigned int) ceil(x);
 
-  A->linear_tiers = 0;
+  A->linear_tier = 0;
   A->number_nonzero_blocks = 0;
 
   A->M_padded = (int) (M_block*pow(M_child, ceil(x)));
@@ -78,12 +90,16 @@ spamm_new (const int M, const int N, const int M_block, const int N_block,
 
   A->threshold = threshold;
 
+  A->linear_tier = linear_tier;
+
   A->number_nonzero_blocks = 0;
 
   A->root = NULL;
 }
 
 /** Initialize new node of matrix.
+ *
+ * @param node The spamm_node_t node to initialize.
  */
 void
 spamm_new_node (struct spamm_node_t **node)
@@ -91,7 +107,7 @@ spamm_new_node (struct spamm_node_t **node)
   *node = (struct spamm_node_t*) malloc(sizeof(struct spamm_node_t));
 
   (*node)->tier = 0;
-  (*node)->linear_tiers = 0;
+  (*node)->linear_tier = 0;
 
   (*node)->M_upper = 0;
   (*node)->M_lower = 0;
@@ -107,6 +123,12 @@ spamm_new_node (struct spamm_node_t **node)
   (*node)->threshold = 0.0;
 
   (*node)->index = 0;
+
+  (*node)->previous_i = NULL;
+  (*node)->next_i = NULL;
+  (*node)->previous_j = NULL;
+  (*node)->next_j = NULL;
+
   (*node)->ordering = none;
 
   (*node)->block_loaded_in_GPU = 0;

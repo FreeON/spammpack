@@ -17,13 +17,16 @@
  * @param M_child Number of rows of children array in spamm_node_t.
  * @param N_child Number of columns of children array in spamm_node_t.
  * @param threshold Threshold below which matrix elements are considered zero.
+ * @param linear_tier The tier of linear quadtree storage.
  * @param A_dense The dense input matrix.
  * @param A The spamm_t output matrix.
  */
 void
-spamm_dense_to_spamm (const int M, const int N, const int M_block,
-    const int N_block, const int M_child, const int N_child,
-    const float_t threshold, const float_t *A_dense, struct spamm_t *A)
+spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
+    const unsigned int M_block, const unsigned int N_block,
+    const unsigned int M_child, const unsigned int N_child,
+    const unsigned linear_tier, const float_t threshold,
+    const float_t *A_dense, struct spamm_t *A)
 {
   int i, j;
 
@@ -34,7 +37,7 @@ spamm_dense_to_spamm (const int M, const int N, const int M_block,
   {
     /* De- and re-allocate A with the correct dimensions. */
     spamm_delete(A);
-    spamm_new(M, N, M_block, N_block, M_child, N_child, threshold, A);
+    spamm_new(M, N, M_block, N_block, M_child, N_child, threshold, linear_tier, A);
   }
 
   for (i = 0; i < M; ++i) {

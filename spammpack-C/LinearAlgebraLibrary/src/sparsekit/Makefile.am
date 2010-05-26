@@ -1,125 +1,126 @@
 lib_LTLIBRARIES = libsparsekit.la
 
 libsparsekit_la_SOURCES = amask.f \
-  amux.f \
-  aplsb1.f \
-  assmbo.f \
-  bsort2.f \
-  coicsr.f \
-  csort.f \
-  csrdns.f \
-  csrssk.f \
-  diacsr.f \
-  dnscsr.f \
-  dnscsr_single.f \
-  ellcsr.f \
-  filter.f \
-  getdia.f \
-  hes.f \
-  jadcsr.f \
-  lsolc.f \
-  milu0.f \
-  project.f \
-  rperm.f \
-  timestamp.f \
-  usol.f \
   amubdg.f \
-  amuxj.f \
-  aplsb.f \
-  atmux.f \
-  bsrcsr.f \
-  coocsr.f \
-  csrbnd.f \
-  csrell.f \
-  csrssr.f \
-  diamua.f \
-  dperm.f \
-  estif3.f \
-  getelm.f \
-  hsourc.f \
-  ldsolc.f \
-  lsol.f \
-  msrcsr.f \
-  prtmt.f \
-  rscal.f \
-  transp.f \
   amub.f \
   amub_single.f \
-  aplb1.f \
-  aplsbt.f \
-  blkchk.f \
-  cooell.f \
-  csrbsr.f \
-  csrjad.f \
-  daxpy.f \
-  diapos.f \
-  dscaldg.f \
-  exphes.f \
-  getl.f \
-  ilu0.f \
-  ldsol.f \
-  lusol0.f \
-  ope.f \
-  readmt.f \
-  udsolc.f \
   amudia.f \
-  aplbdg.f \
-  aplsca.f \
-  blkfnd.f \
-  checkref.f \
-  copmat.f \
-  csrcoo.f \
-  csrlnk.f \
-  dcn.f \
-  dinfo1.f \
-  dump.f \
-  genfea.f \
-  ilut.f \
-  ldsoll.f \
-  markgen.f \
-  pgmres.f \
-  refall.f \
-  sskssr.f \
-  udsol.f \
   amuxd.f \
-  aplb.f \
-  apmbt.f \
-  bndcsr.f \
-  chkelmt.f \
-  cperm.f \
-  csrcsc.f \
-  csrmsr.f \
-  dcsort.f \
-  diric.f \
-  dvperm.f \
-  exppro.f \
-  genfeu.f \
-  getu.f \
-  infdia.f \
-  levels.f \
-  matrf2.f \
-  pltmt.f \
-  retmx.f \
-  ssrcsr.f \
-  unassbl.f \
   amuxe.f \
+  amux.f \
+  amuxj.f \
+  aplb1.f \
+  aplbdg.f \
+  aplb.f \
   apldia.f \
+  aplsb1.f \
+  aplsb.f \
+  aplsbt.f \
+  aplsca.f \
+  apmbt.f \
   assmb1.f \
+  assmbo.f \
+  atmux.f \
+  blkchk.f \
+  blkfnd.f \
+  bndcsr.f \
   bound.f \
+  bsort2.f \
+  bsrcsr.f \
+  checkref.f \
+  chkelmt.f \
   cnrms.f \
+  coicsr.f \
+  coocsr.f \
+  cooell.f \
+  copmat.f \
+  cperm.f \
   cscal.f \
+  csort.f \
+  csrbnd.f \
+  csrbsr.f \
+  csrcoo.f \
+  csrcsc.f \
   csrdia.f \
+  csrdns.f \
+  csrell.f \
+  csrjad.f \
+  csrlnk.f \
+  csrmsr.f \
   csrncf.f \
+  csrssk.f \
+  csrssr.f \
+  daxpy.f \
+  dcn.f \
+  dcsort.f \
   ddot.f \
+  diacsr.f \
+  diamua.f \
+  diapos.f \
+  dinfo1.f \
+  diric.f \
   dlauny.f \
+  dnscsr.f \
+  dnscsr_single.f \
+  dperm.f \
+  dscaldg.f \
+  dump.f \
+  dvperm.f \
   ecn.f \
+  ellcsr.f \
+  estif3.f \
+  exphes.f \
+  exppro.f \
   extbdg.f \
+  filter.f \
+  genfea.f \
+  genfeu.f \
   getbwd.f \
+  getdia.f \
+  getelm.f \
+  getl.f \
+  getu.f \
   gradi3.f \
+  hes.f \
+  hsourc.f \
+  ilu0.f \
+  ilut.f \
+  infdia.f \
   ivperm.f \
+  jadcsr.f \
+  ldsolc.f \
+  ldsol.f \
+  ldsoll.f \
+  levels.f \
   lnkcsr.f \
+  lsolc.f \
+  lsol.f \
+  lusol0.f \
+  markgen.f \
+  matrf2.f \
   mgsr.f \
+  milu0.f \
+  msrcsr.f \
+  ope.f \
+  pgmres.f \
+  pltmt.f \
   pltmtps.f \
+  project.f \
+  prtmt.f \
+  readmt.f \
+  refall.f \
+  retmx.f \
   rnrms.f \
+  rperm.f \
+  rscal.f \
+  sparsekit.h \
+  sskssr.f \
+  ssrcsr.f \
   submat.f \
-  usolc.f
+  timestamp.f \
+  transp.f \
+  udsolc.f \
+  udsol.f \
+  unassbl.f \
+  usolc.f \
+  usol.f
