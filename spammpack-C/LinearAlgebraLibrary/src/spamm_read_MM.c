@@ -20,11 +20,14 @@
  * @param N_child Number of columns of children per node in matrix.
  * @param threshold The matrix threshold below which elements are considered
  *        zero.
+ * @param linear_tier The tier of linear quadtree storage.
  * @param A The output matrix.
  */
 void
-spamm_read_MM (const char *filename, const int M_block, const int N_block,
-    const int M_child, const int N_child, const float_t threshold,
+spamm_read_MM (const char *filename,
+    const unsigned int M_block, const unsigned int N_block,
+    const unsigned int M_child, const unsigned int N_child,
+    const float_t threshold, const unsigned linear_tier,
     struct spamm_t *A)
 {
   FILE *fd;
@@ -86,7 +89,7 @@ spamm_read_MM (const char *filename, const int M_block, const int N_block,
       token = strtok(NULL, " \t");
       if (token == NULL) { spamm_log("syntax error, line %i\n", __FILE__, __LINE__, linenumber); }
       N = strtol(token, NULL, 10);
-      spamm_new(M, N, M_block, N_block, M_child, N_child, threshold, A);
+      spamm_new(M, N, M_block, N_block, M_child, N_child, threshold, linear_tier, A);
       continue;
     }
 

@@ -118,6 +118,9 @@ spamm_ll_append (const float_t alpha, const float_t beta,
  *
  * @param i Index of element to get. Counting starts with 0.
  * @param list The linked list.
+ *
+ * @return The element of the linked list. A return value of NULL means that
+ *         the element was not found in the list.
  */
 struct spamm_multiply_stream_node_t *
 spamm_ll_get (const unsigned int i, const struct spamm_multiply_stream_t *list)

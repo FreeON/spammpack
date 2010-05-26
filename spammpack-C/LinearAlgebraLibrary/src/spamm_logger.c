@@ -19,7 +19,7 @@
  * @param linenumber The linenumber of the caller.
  */
 void
-spamm_log (const char *format, const char *filename, const int linenumber, ...)
+spamm_log (const char *format, const char *filename, const unsigned int linenumber, ...)
 {
   char *new_format;
   int size;
@@ -32,7 +32,7 @@ spamm_log (const char *format, const char *filename, const int linenumber, ...)
    * characters. */
   size = sizeof(char)*(strlen(format)+2000);
   new_format = (char*) malloc(size);
-  snprintf(new_format, size, "[%s:%i] %s", filename, linenumber, format);
+  snprintf(new_format, size, "[%s:%u] %s", filename, linenumber, format);
 
   vprintf(new_format, ap);
   fflush(stdout);

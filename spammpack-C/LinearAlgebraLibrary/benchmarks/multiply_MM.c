@@ -1,5 +1,6 @@
 #include "config.h"
 #include <spamm.h>
+#include <sparsekit.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +16,10 @@ main (int argc, char **argv)
 
   float_t *A_dense;
   float_t *A2_dense;
+
+#ifdef DGEMM
   float_t alpha, beta;
+#endif
 
   float_t *A_CSR;
   int *A_i_CSR, *A_j_CSR;
@@ -50,7 +54,7 @@ main (int argc, char **argv)
   }
 
   spamm_log("loading matrix\n", __FILE__, __LINE__);
-  spamm_read_MM(argv[1], 8, 8, 2, 2, 1e-10, &A);
+  spamm_read_MM(argv[1], 8, 8, 2, 2, 1e-10, 0, &A);
   spamm_tree_stats(&stats, &A);
   spamm_log("read %ix%i matrix, %ix%i blocks, %i nodes, %i dense blocks, depth = %i, tree = %i bytes, blocks = %i bytes (%1.1f%%), ",
       __FILE__, __LINE__, A.M, A.N, A.M_block, A.N_block, stats.number_nodes, stats.number_dense_blocks, A.tree_depth,
@@ -118,7 +122,7 @@ main (int argc, char **argv)
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
   spamm_log("multiplying matrix with spamm\n", __FILE__, __LINE__);
-  spamm_new(A.M, A.N, A.M_block, A.N_block, A.M_child, A.N_child, A.threshold, &A2);
+  spamm_new(A.M, A.N, A.M_block, A.N_block, A.M_child, A.N_child, A.threshold, 0, &A2);
   gettimeofday(&start, NULL);
   spamm_multiply(1.0, &A, &A, 1.0, &A2);
   spamm_log("product has %u nonzero elements\n", __FILE__, __LINE__, spamm_number_nonzero(&A2));

@@ -11,6 +11,8 @@
  * @param i Row index.
  * @param j Column index.
  * @param node The matrix node.
+ *
+ * @return The matrix element.
  */
 float_t
 spamm_get_element (const unsigned int i, const unsigned int j, const struct spamm_node_t *node)
@@ -55,6 +57,8 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
  * @param i Row index.
  * @param j Column index.
  * @param A The matrix tree.
+ *
+ * @return The matrix element.
  */
 float_t
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)

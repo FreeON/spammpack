@@ -8,3 +8,4 @@ SUBDIRS = src tests benchmarks prototype
 
 docs :
 	doxygen
+	make -C latex

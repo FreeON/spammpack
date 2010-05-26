@@ -43,6 +43,8 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
 
     (*B_node)->threshold = A_node->threshold;
 
+    (*B_node)->linear_tier = A_node->linear_tier;
+
     (*B_node)->M_block = A_node->M_block;
     (*B_node)->N_block = A_node->N_block;
   }
@@ -66,6 +68,8 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
         (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_child = (*B_node)->N_child;
 
         (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->threshold = (*B_node)->threshold;
+
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->linear_tier = (*B_node)->linear_tier;
 
         (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_block = (*B_node)->M_block;
         (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_block = (*B_node)->N_block;
