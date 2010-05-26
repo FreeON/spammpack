@@ -6,6 +6,11 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src tests benchmarks prototype
 
+dist_data_DATA = latex/refman.pdf
+
 docs :
 	doxygen
-	make -C latex
+	$(MAKE) -C latex
+
+dist-hook:
+	$(MAKE) docs
