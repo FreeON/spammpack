@@ -3,6 +3,18 @@
 #include <assert.h>
 #include <stdlib.h>
 
+/** \private Convert data into string.
+ */
+char *
+data_to_string (const void *data)
+{
+  char *result = NULL;
+
+  result = (char*) malloc(sizeof(char));
+  result[0] = '\0';
+  return result;
+}
+
 /** Get an element from a linked list.
  *
  * @param i Index of element to get. Counting starts with 0.
@@ -34,7 +46,7 @@ spamm_ll_get (const unsigned int i, const struct spamm_ll_t *list)
   if (j < list->number_elements && node == NULL)
   {
     LOG("bug? i = %i, j = %i\n", i, j);
-    spamm_ll_print(list);
+    spamm_ll_print(data_to_string, list);
     exit(1);
   }
 
