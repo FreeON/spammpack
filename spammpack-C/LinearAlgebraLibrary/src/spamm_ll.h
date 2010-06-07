@@ -58,7 +58,7 @@ spamm_ll_delete (struct spamm_ll_t *list);
 void
 spamm_ll_append (void *data, struct spamm_ll_t *list);
 
-struct spamm_ll_node_t *
+void *
 spamm_ll_get (const unsigned int i, const struct spamm_ll_t *list);
 
 void
