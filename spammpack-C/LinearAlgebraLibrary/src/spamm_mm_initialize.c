@@ -1,4 +1,5 @@
 #include "spamm.h"
+#include "spamm_ll.h"
 #include "spamm_mm.h"
 #include <stdlib.h>
 
@@ -6,25 +7,30 @@
  *
  * @param chunksize The size of contigueous chunks.
  *
- * @return A pointer to the allocated memory. A return value of NULL indicates
- *         that allocation failed.
+ * @return A pointer to a linked list that contains the allocated memory. A
+ *         return value of NULL indicates that allocation failed.
  */
-struct spamm_mm_t *
+struct spamm_ll_t *
 spamm_mm_initialize (const unsigned int chunksize)
 {
-  struct spamm_mm_t *result;
+  struct spamm_ll_t *result = NULL;
 
-  LOG("allocating chunk of %u bytes\n", chunksize);
-  result = (struct spamm_mm_t*) malloc(sizeof(struct spamm_mm_t));
-
+  //LOG("allocating chunk of %u bytes\n", chunksize);
+  result = (struct spamm_ll_t*) malloc(sizeof(struct spamm_ll_t));
   if (result != NULL)
   {
-    result->next = NULL;
-    result->previous = NULL;
-    result->chunksize = chunksize;
-    result->bytes_allocated = 0;
-    result->data = NULL;
+    spamm_ll_initialize(result);
+
+    /* Allocate memory for data chunk bookkeeping structure. */
+    if (spamm_mm_grow(chunksize, result) == NULL)
+    {
+      spamm_log("failed to grow memory\n", __FILE__, __LINE__);
+      return NULL;
+    }
   }
+
+  /* Debug. */
+  //spamm_mm_print(result);
 
   return result;
 }

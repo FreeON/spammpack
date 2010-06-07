@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 AM_CFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/sparsekit
-AM_LDFLAGS = $(top_builddir)/src/libspamm.la $(top_builddir)/src/libspamm_ll.la $(top_builddir)/src/sparsekit/libsparsekit.la
+AM_LDFLAGS = $(top_builddir)/src/libspamm.la $(top_builddir)/src/sparsekit/libsparsekit.la
 
 EXTRA_DIST = e20r0000.mtx
 

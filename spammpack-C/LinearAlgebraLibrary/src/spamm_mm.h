@@ -1,13 +1,12 @@
 /** @file */
 
-#if defined(__SPAMM_MM_H)
-#warn Already included spamm_mm.h
-#else
+#if ! defined(__SPAMM_MM_H)
 
 /** Define in case spamm_mm.h has been included. */
 #define __SPAMM_MM_H 1
 
 #include "config.h"
+#include "spamm_ll.h"
 
 /** \page page_mm The SpAMM memory manager.
  *
@@ -33,26 +32,34 @@
  */
 struct spamm_mm_t
 {
-  /** Link to previous chunk. */
-  struct spamm_mm_t *previous;
-
-  /** Link to next chunk. */
-  struct spamm_mm_t *next;
-
-  /** How large are the chunks? */
+  /** How large is this chunk? */
   unsigned int chunksize;
 
   /** How many bytes are already allocated in this chunk? */
   unsigned int bytes_allocated;
 
+  /** A list of pointers to start of "allocated" pieces of memory in the data
+   * chunk. */
+  struct spamm_ll_t allocated_start;
+
+  /** A list of pointers to end of "allocated" pieces of memory in the data
+   * chunk. */
+  struct spamm_ll_t allocated_end;
+
   /** The data. */
   void *data;
 };
 
-struct spamm_mm_t *
+void *
+spamm_mm_grow (const unsigned int chunksize, struct spamm_ll_t *memory);
+
+struct spamm_ll_t *
 spamm_mm_initialize (const unsigned int chunksize);
 
 void *
-spamm_mm_allocate (const unsigned int size, struct spamm_mm_t *memory);
+spamm_mm_allocate (const unsigned int size, struct spamm_ll_t *memory);
+
+void
+spamm_mm_print (const struct spamm_ll_t *memory);
 
 #endif

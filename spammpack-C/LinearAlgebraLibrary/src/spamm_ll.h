@@ -1,8 +1,6 @@
 /** @file */
 
-#if defined(__SPAMM_LL_H)
-#warn Already included spamm_ll.h
-#else
+#if ! defined(__SPAMM_LL_H)
 
 /** Define in case spamm_ll.h has been included. */
 #define __SPAMM_LL_H 1
