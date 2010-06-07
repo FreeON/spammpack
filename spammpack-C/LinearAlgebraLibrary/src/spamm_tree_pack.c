@@ -17,7 +17,7 @@
  */
 void
 spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chunksize,
-    const enum spamm_linear_mask_t mask, struct spamm_mm_t *linear_tree,
+    const enum spamm_linear_mask_t mask, struct spamm_ll_t *linear_tree,
     struct spamm_node_t *node)
 {
   int i, j;
@@ -29,7 +29,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
   {
     /* Pack. */
     LOG("reached tier %u, packing\n", node->tier);
-    //linear_tree = spamm_mm_initialize(chunksize);
+    linear_tree = spamm_mm_initialize(chunksize);
   }
 
   /* Recurse more. */
@@ -48,11 +48,18 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
     if (node->block_dense != NULL)
     {
       /* Copy data into linear tree. */
-      //linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+node->M_block*node->N_block*sizeof(float_t), linear_tree);
-      LOG("storing datablock with index %u\n", node->index);
-      linear_block = (struct spamm_linear_quadtree_t*) malloc(sizeof(struct spamm_linear_quadtree_t));
-      linear_block->block_dense = (float_t*) malloc(sizeof(float_t)*node->M_block*node->N_block);
+      LOG("tier %u, storing datablock with index %u\n", node->tier, node->index);
+      linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+node->M_block*node->N_block*sizeof(float_t)+8, linear_tree);
+
+      /* Move linear_block->block_dense pointer to just after the pointer
+       * itself. Since we allocated enough space in spamm_mm_allocate() to fit
+       * the pointer and the dense matrix block, we can do that without having
+       * to allocate the dense data block separately.
+       */
+      linear_block->block_dense = (float_t*) (&(linear_block->block_dense)+1);
       linear_block->index = node->index;
+
+      /* Copy data. */
       for (i = 0; i < node->M_block; ++i) {
         for (j = 0; j < node->N_block; ++j)
         {

@@ -1,0 +1,44 @@
+#include "spamm_ll.h"
+#include "spamm_mm.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+/** \private Convert spamm_mm_t to string.
+ *
+ * @param data The data to convert.
+ *
+ * @return A string representing the data.
+ */
+char *
+spamm_mm_print_data_to_string (const void *data)
+{
+  char *result = (char*) malloc(sizeof(char)*1000);
+
+  snprintf(result, 1000, "%p", data);
+  return result;
+}
+
+/** Print details of memory.
+ *
+ * @param memory The memory to print information about
+ */
+void
+spamm_mm_print (const struct spamm_ll_t *memory)
+{
+  unsigned int i;
+  struct spamm_ll_node_t *node;
+  struct spamm_mm_t *chunk;
+
+  printf("details on memory: ");
+  printf("%u chunks allocated\n", memory->number_elements);
+  for (i = 0, node = memory->first; node != NULL; node = node->next)
+  {
+    chunk = node->data;
+    printf("chunk %u: chunksize = %u bytes, ", i++, chunk->chunksize);
+    printf("allocated = %u bytes\n", chunk->bytes_allocated);
+    printf("allocated_start ");
+    spamm_ll_print(spamm_mm_print_data_to_string, &chunk->allocated_start);
+    printf("allocated_end   ");
+    spamm_ll_print(spamm_mm_print_data_to_string, &chunk->allocated_end);
+  }
+}

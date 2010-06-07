@@ -2,7 +2,7 @@ SUBDIRS = sparsekit
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
-lib_LTLIBRARIES = libspamm.la libspamm_ll.la libspamm_mm.la
+lib_LTLIBRARIES = libspamm.la
 
 libspamm_la_SOURCES = \
   spamm.h \
@@ -23,9 +23,11 @@ libspamm_la_SOURCES = \
   spamm_set.c \
   spamm_spamm_to_dense.c \
   spamm_tree_pack.c \
-  spamm_tree_stats.c
+  spamm_tree_stats.c \
+	$(linked_list_sources) \
+	$(memory_manager_sources)
 
-libspamm_ll_la_SOURCES = \
+linked_list_sources = \
   spamm_ll.h \
   spamm_ll_append.c \
   spamm_ll_delete.c \
@@ -37,10 +39,12 @@ libspamm_ll_la_SOURCES = \
   spamm_ll_sort.c \
   spamm_ll_swap.c
 
-libspamm_mm_la_SOURCES = \
+memory_manager_sources = \
   spamm_mm.h \
   spamm_mm_allocate.c \
-  spamm_mm_initialize.c
+  spamm_mm_grow.c \
+  spamm_mm_initialize.c \
+  spamm_mm_print.c
 
 tags :
 	ctags *.h *.c
