@@ -144,6 +144,7 @@ main (int argc, char **argv)
   cublasFree(d_C);
   cublasShutdown();
 
+#ifdef DGEMM
   printf("timing blas...\n");
   fflush(stdout);
   gettimeofday(&startBlas, NULL);
@@ -152,6 +153,9 @@ main (int argc, char **argv)
     sgemm_("N", "N", &N, &N, &N, &alpha, A, &N, B, &N, &beta, C_blas, &N);
   }
   gettimeofday(&stopBlas, NULL);
+#else
+#warning Need blas.
+#endif
 
   printf("comparing...\n");
   fflush(stdout);
