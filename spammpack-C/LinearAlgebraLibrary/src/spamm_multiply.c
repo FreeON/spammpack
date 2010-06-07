@@ -1,6 +1,7 @@
 /** @file */
 
 #include "spamm.h"
+#include "spamm_ll.h"
 #include "config.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -13,13 +14,21 @@
 /** \private Computes
  *
  * C_node = alpha*A_node*B_node + beta*C_node
+ *
+ * @param alpha the scalar factor multiplying A*B.
+ * @param A_node the node of matrix A.
+ * @param B_node the node of matrix B.
+ * @param beta the scalar factor multiplying C.
+ * @param C_node the node of matrix C.
+ * @param multiply_stream The multiply stream.
  */
 void
 spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
     struct spamm_node_t *B_node, const float_t beta,
-    struct spamm_node_t **C_node, struct spamm_multiply_stream_t *multiply_stream)
+    struct spamm_node_t **C_node, struct spamm_ll_t *multiply_stream)
 {
   int i, j, k;
+  struct spamm_multiply_stream_element_t *multiply_stream_element;
 
   if (*C_node == NULL)
   {
@@ -139,7 +148,17 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
     }
 
     /* Append this triple to the multiply stream. */
-    spamm_ll_append(alpha, beta, A_node->index, A_node, B_node->index, B_node, (*C_node)->index, *C_node, multiply_stream);
+    multiply_stream_element = (struct spamm_multiply_stream_element_t*) malloc(sizeof(struct spamm_multiply_stream_element_t));
+    multiply_stream_element->alpha = alpha;
+    multiply_stream_element->beta = beta;
+    multiply_stream_element->A_index = A_node->index;
+    multiply_stream_element->B_index = B_node->index;
+    multiply_stream_element->C_index = (*C_node)->index;
+    multiply_stream_element->A_node = A_node;
+    multiply_stream_element->B_node = B_node;
+    multiply_stream_element->C_node = *C_node;
+
+    spamm_ll_append(multiply_stream_element, multiply_stream);
   }
 }
 
@@ -149,7 +168,7 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
  * @param multiply_stream The multiply stream.
  */
 void
-spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multiply_stream_t *multiply_stream)
+spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t *multiply_stream)
 {
 #if ! defined(HAVE_CUDA) && ! defined(DGEMM)
   int i, j, k;
@@ -161,7 +180,8 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multi
   unsigned int number_B_blocks_loaded;
   unsigned int number_C_blocks_loaded;
 
-  struct spamm_multiply_stream_node_t *node, *tailnode;
+  struct spamm_ll_node_t *node, *tailnode;
+  struct spamm_multiply_stream_element_t *nodedata;
 
   assert(multiply_stream != NULL);
 
@@ -174,29 +194,31 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multi
   {
     if (head_tail_distance >= cache_length)
     {
-      if (tailnode->A_node->block_loaded_in_GPU == 1)
+      nodedata = (struct spamm_multiply_stream_element_t*) tailnode->data;
+      if (nodedata->A_node->block_loaded_in_GPU == 1)
       {
-        tailnode->A_node->block_loaded_in_GPU = 0;
+        nodedata->A_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
-        cublasFree(tailnode->A_node->device_pointer);
+        cublasFree(nodedata->A_node->device_pointer);
 #endif
       }
 
-      if (tailnode->B_node->block_loaded_in_GPU == 1)
+      if (nodedata->B_node->block_loaded_in_GPU == 1)
       {
-        tailnode->B_node->block_loaded_in_GPU = 0;
+        nodedata->B_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
-        cublasFree(tailnode->B_node->device_pointer);
+        cublasFree(nodedata->B_node->device_pointer);
 #endif
       }
 
-      if (tailnode->C_node->block_loaded_in_GPU == 1)
+      if (nodedata->C_node->block_loaded_in_GPU == 1)
       {
-        tailnode->C_node->block_loaded_in_GPU = 0;
+        nodedata->C_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
-        cublasGetMatrix(tailnode->C_node->M_block, tailnode->C_node->N_block, sizeof(float_t), (void*) tailnode->C_node->device_pointer,
-            tailnode->C_node->M_block, (void*) tailnode->C_node->block_dense, tailnode->C_node->M_block);
-        cublasFree(tailnode->C_node->device_pointer);
+        cublasGetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(float_t),
+            (void*) nodedata->C_node->device_pointer, nodedata->C_node->M_block,
+            (void*) nodedata->C_node->block_dense, nodedata->C_node->M_block);
+        cublasFree(nodedata->C_node->device_pointer);
 #endif
       }
 
@@ -204,33 +226,40 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multi
       head_tail_distance--;
     }
 
-    if (node->A_node->block_loaded_in_GPU == 0)
+    nodedata = (struct spamm_multiply_stream_element_t*) node->data;
+    if (nodedata->A_node->block_loaded_in_GPU == 0)
     {
       number_A_blocks_loaded++;
-      node->A_node->block_loaded_in_GPU = 1;
+      nodedata->A_node->block_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
-      cublasAlloc(node->A_node->M_block*node->A_node->N_block, sizeof(float_t), &(node->A_node->device_pointer));
-      cublasSetMatrix(node->A_node->M_block, node->A_node->N_block, sizeof(float_t), (void*) node->A_node->block_dense, node->A_node->M_block, node->A_node->device_pointer, node->A_node->M_block);
+      cublasAlloc(nodedata->A_node->M_block*nodedata->A_node->N_block, sizeof(float_t), &(nodedata->A_node->device_pointer));
+      cublasSetMatrix(nodedata->A_node->M_block, nodedata->A_node->N_block, sizeof(float_t),
+          (void*) nodedata->A_node->block_dense, nodedata->A_node->M_block,
+          nodedata->A_node->device_pointer, nodedata->A_node->M_block);
 #endif
     }
 
-    if (node->B_node->block_loaded_in_GPU == 0)
+    if (nodedata->B_node->block_loaded_in_GPU == 0)
     {
       number_B_blocks_loaded++;
-      node->B_node->block_loaded_in_GPU = 1;
+      nodedata->B_node->block_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
-      cublasAlloc(node->B_node->M_block*node->B_node->N_block, sizeof(float_t), &(node->B_node->device_pointer));
-      cublasSetMatrix(node->B_node->M_block, node->B_node->N_block, sizeof(float_t), (void*) node->B_node->block_dense, node->B_node->M_block, node->B_node->device_pointer, node->B_node->M_block);
+      cublasAlloc(nodedata->B_node->M_block*nodedata->B_node->N_block, sizeof(float_t), &(nodedata->B_node->device_pointer));
+      cublasSetMatrix(nodedata->B_node->M_block, nodedata->B_node->N_block, sizeof(float_t),
+          (void*) nodedata->B_node->block_dense, nodedata->B_node->M_block,
+          nodedata->B_node->device_pointer, nodedata->B_node->M_block);
 #endif
     }
 
-    if (node->C_node->block_loaded_in_GPU == 0)
+    if (nodedata->C_node->block_loaded_in_GPU == 0)
     {
       number_C_blocks_loaded++;
-      node->C_node->block_loaded_in_GPU = 1;
+      nodedata->C_node->block_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
-      cublasAlloc(node->C_node->M_block*node->C_node->N_block, sizeof(float_t), &(node->C_node->device_pointer));
-      cublasSetMatrix(node->C_node->M_block, node->C_node->N_block, sizeof(float_t), (void*) node->C_node->block_dense, node->C_node->M_block, node->C_node->device_pointer, node->C_node->M_block);
+      cublasAlloc(nodedata->C_node->M_block*nodedata->C_node->N_block, sizeof(float_t), &(nodedata->C_node->device_pointer));
+      cublasSetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(float_t),
+          (void*) nodedata->C_node->block_dense, nodedata->C_node->M_block,
+          nodedata->C_node->device_pointer, nodedata->C_node->M_block);
 #endif
     }
 
@@ -243,14 +272,14 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multi
         &(node->alpha), node->A_node->block_dense, &(node->A_node->M_block), node->B_node->block_dense, &(node->B_node->M_block),
         &(node->beta), node->C_node->block_dense, &(node->C_node->M_block));
 #else
-    for (i = 0; i < node->C_node->M_block; ++i) {
-      for (j = 0; j < node->C_node->N_block; ++j) {
-        for (k = 0; k < node->A_node->M_block; ++k)
+    for (i = 0; i < nodedata->C_node->M_block; ++i) {
+      for (j = 0; j < nodedata->C_node->N_block; ++j) {
+        for (k = 0; k < nodedata->A_node->M_block; ++k)
         {
-          node->C_node->block_dense[spamm_dense_index(i, j, node->C_node->M_block, node->C_node->N_block)]
-            = node->alpha*node->A_node->block_dense[spamm_dense_index(i, k, node->A_node->M_block, node->A_node->N_block)]
-            *node->B_node->block_dense[spamm_dense_index(k, j, node->B_node->M_block, node->B_node->N_block)]
-            + node->beta*node->C_node->block_dense[spamm_dense_index(i, j, node->C_node->M_block, node->C_node->N_block)];
+          nodedata->C_node->block_dense[spamm_dense_index(i, j, nodedata->C_node->M_block, nodedata->C_node->N_block)]
+            = nodedata->alpha*nodedata->A_node->block_dense[spamm_dense_index(i, k, nodedata->A_node->M_block, nodedata->A_node->N_block)]
+            *nodedata->B_node->block_dense[spamm_dense_index(k, j, nodedata->B_node->M_block, nodedata->B_node->N_block)]
+            + nodedata->beta*nodedata->C_node->block_dense[spamm_dense_index(i, j, nodedata->C_node->M_block, nodedata->C_node->N_block)];
         }
       }
     }
@@ -262,29 +291,30 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multi
   /* Unload the remaining C bocks. */
   while (tailnode != NULL)
   {
-    if (tailnode->A_node->block_loaded_in_GPU == 1)
+    nodedata = (struct spamm_multiply_stream_element_t*) tailnode->data;
+    if (nodedata->A_node->block_loaded_in_GPU == 1)
     {
-      tailnode->A_node->block_loaded_in_GPU = 0;
+      nodedata->A_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
-      cublasFree(tailnode->A_node->device_pointer);
+      cublasFree(nodedata->A_node->device_pointer);
 #endif
     }
 
-    if (tailnode->B_node->block_loaded_in_GPU == 1)
+    if (nodedata->B_node->block_loaded_in_GPU == 1)
     {
-      tailnode->B_node->block_loaded_in_GPU = 0;
+      nodedata->B_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
-      cublasFree(tailnode->B_node->device_pointer);
+      cublasFree(nodedata->B_node->device_pointer);
 #endif
     }
 
-    if (tailnode->C_node->block_loaded_in_GPU == 1)
+    if (nodedata->C_node->block_loaded_in_GPU == 1)
     {
-      tailnode->C_node->block_loaded_in_GPU = 0;
+      nodedata->C_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
-      cublasGetMatrix(tailnode->C_node->M_block, tailnode->C_node->N_block, sizeof(float_t), (void*) tailnode->C_node->device_pointer,
-          tailnode->C_node->M_block, (void*) tailnode->C_node->block_dense, tailnode->C_node->M_block);
-      cublasFree(tailnode->C_node->device_pointer);
+      cublasGetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(float_t), (void*) nodedata->C_node->device_pointer,
+          nodedata->C_node->M_block, (void*) nodedata->C_node->block_dense, nodedata->C_node->M_block);
+      cublasFree(nodedata->C_node->device_pointer);
 #endif
     }
 
@@ -292,7 +322,7 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_multi
   }
 
   /* Print statistics. */
-  spamm_log("blocks loaded: stream length = %3u cache = %3u A = %3u B = %3u C = %3u total = %4u\n", __FILE__, __LINE__,
+  LOG("blocks loaded: stream length = %3u cache = %3u A = %3u B = %3u C = %3u total = %4u\n",
       multiply_stream->number_elements, cache_length,
       number_A_blocks_loaded, number_B_blocks_loaded, number_C_blocks_loaded,
       number_A_blocks_loaded+number_B_blocks_loaded+number_C_blocks_loaded);
@@ -312,7 +342,7 @@ void
 spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm_t *B, const float_t beta, struct spamm_t *C)
 {
   struct timeval start, stop;
-  struct spamm_multiply_stream_t multiply_stream;
+  struct spamm_ll_t multiply_stream;
 
   assert(A != NULL);
   assert(B != NULL);
@@ -320,55 +350,55 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
 
   if (A->N != B->M)
   {
-    spamm_log("matrix size mismatch, A->N = %i, B->M = %i\n", __FILE__, __LINE__, A->N, B->M);
+    LOG("matrix size mismatch, A->N = %i, B->M = %i\n", A->N, B->M);
     exit(1);
   }
 
   if (A->M != C->M)
   {
-    spamm_log("matrix size mismatch, A->M = %i, C->M = %i\n", __FILE__, __LINE__, A->M, C->M);
+    LOG("matrix size mismatch, A->M = %i, C->M = %i\n", A->M, C->M);
     exit(1);
   }
 
   if (B->N != C->N)
   {
-    spamm_log("matrix size mismatch, B->N = %i, C->N = %i\n", __FILE__, __LINE__, B->N, C->N);
+    LOG("matrix size mismatch, B->N = %i, C->N = %i\n", B->N, C->N);
     exit(1);
   }
 
   if (A->N_child != B->M_child)
   {
-    spamm_log("matrix child size mismatch, A->N_child = %i, B_child->M = %i\n", __FILE__, __LINE__, A->N_child, B->M_child);
+    LOG("matrix child size mismatch, A->N_child = %i, B_child->M = %i\n", A->N_child, B->M_child);
     exit(1);
   }
 
   if (A->M_child != C->M_child)
   {
-    spamm_log("matrix child size mismatch, A->M_child = %i, C->M_child = %i\n", __FILE__, __LINE__, A->M_child, C->M_child);
+    LOG("matrix child size mismatch, A->M_child = %i, C->M_child = %i\n", A->M_child, C->M_child);
     exit(1);
   }
 
   if (B->N_child != C->N_child)
   {
-    spamm_log("matrix child size mismatch, B->N_child = %i, C->N_child = %i\n", __FILE__, __LINE__, B->N_child, C->N_child);
+    LOG("matrix child size mismatch, B->N_child = %i, C->N_child = %i\n", B->N_child, C->N_child);
     exit(1);
   }
 
   if (A->N_block != B->M_block)
   {
-    spamm_log("matrix block size mismatch, A->N_block = %i, B_block->M = %i\n", __FILE__, __LINE__, A->N_block, B->M_block);
+    LOG("matrix block size mismatch, A->N_block = %i, B_block->M = %i\n", A->N_block, B->M_block);
     exit(1);
   }
 
   if (A->M_block != C->M_block)
   {
-    spamm_log("matrix block size mismatch, A->M_block = %i, C->M_block = %i\n", __FILE__, __LINE__, A->M_block, C->M_block);
+    LOG("matrix block size mismatch, A->M_block = %i, C->M_block = %i\n", A->M_block, C->M_block);
     exit(1);
   }
 
   if (B->N_block != C->N_block)
   {
-    spamm_log("matrix block size mismatch, B->N_block = %i, C->N_block = %i\n", __FILE__, __LINE__, B->N_block, C->N_block);
+    LOG("matrix block size mismatch, B->N_block = %i, C->N_block = %i\n", B->N_block, C->N_block);
     exit(1);
   }
 
@@ -380,7 +410,7 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
 
   if (beta != 1.0)
   {
-    spamm_log("[FIXME] can not handle (beta = %e) != 1.0\n", __FILE__, __LINE__, beta);
+    LOG("[FIXME] can not handle (beta = %e) != 1.0\n", beta);
     exit(1);
   }
 
@@ -395,17 +425,17 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
     spamm_add_node(0.0, NULL, beta, &(C->root));
   }
 
-  spamm_ll_new(&multiply_stream);
+  spamm_ll_initialize(&multiply_stream);
 
   gettimeofday(&start, NULL);
   spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
   gettimeofday(&stop, NULL);
-  spamm_log("tree recursion: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  LOG("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
   gettimeofday(&start, NULL);
   spamm_multiply_stream(30000, &multiply_stream);
   gettimeofday(&stop, NULL);
-  spamm_log("stream multiply: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  LOG("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
   spamm_ll_delete(&multiply_stream);
 }

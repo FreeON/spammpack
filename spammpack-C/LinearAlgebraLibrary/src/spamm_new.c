@@ -14,15 +14,13 @@
  * @param M_child Number of rows of children array in spamm_node_t.
  * @param N_child Number of columns of children array in spamm_node_t.
  * @param threshold Threshold below which matrix elements are considered zero.
- * @param linear_tier The tier of linear quadtree storage.
  * @param A The spamm_t matrix.
  */
 void
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, const unsigned int linear_tier,
-    struct spamm_t *A)
+    const float_t threshold, struct spamm_t *A)
 {
   assert(A != NULL);
 
@@ -82,15 +80,12 @@ spamm_new (const unsigned int M, const unsigned int N,
 
   A->tree_depth = (unsigned int) ceil(x);
 
-  A->linear_tier = 0;
   A->number_nonzero_blocks = 0;
 
   A->M_padded = (int) (M_block*pow(M_child, ceil(x)));
   A->N_padded = (int) (N_block*pow(N_child, ceil(x)));
 
   A->threshold = threshold;
-
-  A->linear_tier = linear_tier;
 
   A->number_nonzero_blocks = 0;
 

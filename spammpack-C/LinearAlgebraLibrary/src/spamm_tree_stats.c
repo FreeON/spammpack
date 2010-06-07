@@ -7,6 +7,9 @@
 /** \private Statistics of a node.
  *
  * This is the recursive part, use spamm_tree_stats() instead.
+ *
+ * @param stats The spamm_tree_stats_t structure with the result.
+ * @param node The node to check.
  */
 void
 spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *node)
@@ -51,6 +54,9 @@ spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *n
  *
  * This function returns a struct spamm_tree_stats_t with information about
  * the tree.
+ *
+ * @param stats The spamm_tree_stats_t structure with the result.
+ * @param A The matrix to check.
  */
 void
 spamm_tree_stats (struct spamm_tree_stats_t *stats, const struct spamm_t *A)

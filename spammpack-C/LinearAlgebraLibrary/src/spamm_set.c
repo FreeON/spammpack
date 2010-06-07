@@ -150,8 +150,8 @@ spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct
 
   assert(A != NULL);
 
-  if (i >= A->M) { spamm_log("(i = %i) >= (M = %i)\n", __FILE__, __LINE__, i, A->M); exit(1); }
-  if (j >= A->N) { spamm_log("(j = %i) >= (N = %i)\n", __FILE__, __LINE__, j, A->N); exit(1); }
+  if (i >= A->M) { LOG("(i = %i) >= (M = %i)\n", i, A->M); exit(1); }
+  if (j >= A->N) { LOG("(j = %i) >= (N = %i)\n", j, A->N); exit(1); }
 
   if (fabs(Aij) > A->threshold)
   {
