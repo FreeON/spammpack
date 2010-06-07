@@ -8,10 +8,10 @@
  * @param i Index of element to get. Counting starts with 0.
  * @param list The linked list.
  *
- * @return The element of the linked list. A return value of NULL means that
- *         the element was not found in the list.
+ * @return The data of the requested element of the linked list. A return
+ *         value of NULL means that the element was not found in the list.
  */
-struct spamm_ll_node_t *
+void *
 spamm_ll_get (const unsigned int i, const struct spamm_ll_t *list)
 {
   int j;
@@ -38,5 +38,5 @@ spamm_ll_get (const unsigned int i, const struct spamm_ll_t *list)
     exit(1);
   }
 
-  return node;
+  return node->data;
 }
