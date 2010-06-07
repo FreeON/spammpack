@@ -10,9 +10,9 @@
 
 /** \page page_mm The SpAMM memory manager.
  *
- * \brief A memory manager to manage contigueous memory allocation.
+ * \brief A memory manager to manage contiguous memory allocation.
  *
- * In order to allow for dynamic memory allocation in a contigueous chunk of
+ * In order to allow for dynamic memory allocation in a contiguous chunk of
  * memory, the SpAMM memory manager provides some basic functions. Details can
  * be found in spamm_mm.h.
  *

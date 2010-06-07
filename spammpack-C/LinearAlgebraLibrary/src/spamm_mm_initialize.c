@@ -5,7 +5,7 @@
 
 /** Initialize a new dynamic memory region.
  *
- * @param chunksize The size of contigueous chunks.
+ * @param chunksize The size of contiguous chunks.
  *
  * @return A pointer to a linked list that contains the allocated memory. A
  *         return value of NULL indicates that allocation failed.
