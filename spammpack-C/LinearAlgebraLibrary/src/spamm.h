@@ -1,5 +1,12 @@
 /** @file */
 
+#if defined(__SPAMM_H)
+#warn Already included spamm.h
+#else
+
+/** Define in case spamm.h has been included. */
+#define __SPAMM_H 1
+
 #include "config.h"
 #include <stdio.h>
 
@@ -9,7 +16,8 @@
  *
  * SpAMM is a library for spare approximate matrices.
  *
- * The public functions of this library are all declared in spamm.h.
+ * The public functions of this library are all declared in spamm.h. Useful
+ * helper functions are documented in spamm_ll.h and spamm_mm.h.
  *
  * \section Introduction
  *
@@ -44,6 +52,19 @@
  * This is either float or double, as defined by the configure script.
  */
 typedef FLOATING_PRECISION float_t;
+
+/** Define shortcut macro for logging.
+ *
+ * Typical use of this macro:
+ *
+ * <code>LOG("opening new file: %s", filename);</code>
+ *
+ * Compare to spamm_log().
+ *
+ * @param format Format string. See printf() for a detailed description of its
+ *               syntax.
+ */
+#define LOG(format, ...) spamm_log(format, __FILE__, __LINE__, __VA_ARGS__)
 
 /* Definition of return codes. */
 
@@ -130,6 +151,17 @@ enum spamm_block_ordering_t
 
   /** S type ordering. */
   S
+};
+
+/** The mask to apply to the linear matrix block index.
+ */
+enum spamm_linear_mask_t
+{
+  /** Apply i-Mask, i.e. remove the j component. */
+  i_mask,
+
+  /** Apply j-Mask, i.e. remove the i component. */
+  j_mask
 };
 
 /** A node in the tree.
@@ -252,6 +284,19 @@ struct spamm_node_t
   float_t *block_dense;
 };
 
+/** Linear quadtree.
+ */
+struct spamm_linear_quadtree_t
+{
+  /** The linear quadtree index of this data block.
+   */
+  unsigned int index;
+
+  /** The data.
+   */
+  float_t *block_dense;
+};
+
 /** Tree statistics.
  *
  * This structure is the result of a call to spamm_tree_stats().
@@ -279,28 +324,8 @@ struct spamm_tree_stats_t
  * The multiplication is mapped onto a linear stream of products, which can
  * then be evaluated by spamm_multiply_stream().
  */
-struct spamm_multiply_stream_t
+struct spamm_multiply_stream_element_t
 {
-  /** Number of elements. */
-  unsigned int number_elements;
-
-  /** Links to the first node in list. */
-  struct spamm_multiply_stream_node_t *first;
-
-  /** Links to the last node in list. */
-  struct spamm_multiply_stream_node_t *last;
-};
-
-/** A node in the multiply stream.
- */
-struct spamm_multiply_stream_node_t
-{
-  /** Link to the previous element. */
-  struct spamm_multiply_stream_node_t *previous;
-
-  /** Link to the next element. */
-  struct spamm_multiply_stream_node_t *next;
-
   /** Value of alpha. */
   float_t alpha;
 
@@ -337,8 +362,7 @@ void
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, const unsigned int linear_tier,
-    struct spamm_t *A);
+    const float_t threshold, struct spamm_t *A);
 
 void
 spamm_new_node (struct spamm_node_t **node);
@@ -350,8 +374,8 @@ void
 spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const unsigned linear_tier, const float_t threshold,
-    const float_t *A_dense, struct spamm_t *A);
+    const float_t threshold, const float_t *A_dense,
+    struct spamm_t *A);
 
 void
 spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense);
@@ -390,44 +414,13 @@ void
 spamm_read_MM (const char *filename,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, const unsigned linear_tier,
-    struct spamm_t *A);
-
-void
-spamm_ll_new (struct spamm_multiply_stream_t *list);
-
-void
-spamm_ll_delete (struct spamm_multiply_stream_t *list);
-
-void
-spamm_ll_append (const float_t alpha, const float_t beta,
-    const unsigned int A_index, struct spamm_node_t *A_node,
-    const unsigned int B_index, struct spamm_node_t *B_node,
-    const unsigned int C_index, struct spamm_node_t *C_node,
-    struct spamm_multiply_stream_t *list);
-
-struct spamm_multiply_stream_node_t *
-spamm_ll_get (const unsigned int i, const struct spamm_multiply_stream_t *list);
-
-void
-spamm_ll_swap (struct spamm_multiply_stream_node_t **node1,
-    struct spamm_multiply_stream_node_t **node2,
-    struct spamm_multiply_stream_t *list);
-
-void
-spamm_ll_sort (struct spamm_multiply_stream_t *list);
-
-void
-spamm_ll_print_node_debug (const char *name, const struct spamm_multiply_stream_node_t *node);
-
-void
-spamm_ll_print_node (const struct spamm_multiply_stream_node_t *node);
-
-void
-spamm_ll_print (const struct spamm_multiply_stream_t *list);
-
-void
-spamm_ll_print_matlab (const struct spamm_multiply_stream_t *list);
+    const float_t threshold, struct spamm_t *A);
 
 unsigned int
 spamm_number_nonzero (const struct spamm_t *A);
+
+void
+spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
+    const enum spamm_linear_mask_t mask, struct spamm_t *A);
+
+#endif

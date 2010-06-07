@@ -140,7 +140,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
 
   else
   {
-    //spamm_log("else?\n", __FILE__, __LINE__);
+    //LOG("else?\n");
   }
 }
 
@@ -162,37 +162,37 @@ spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, str
 
   if (A->M != B->M)
   {
-    spamm_log("matrix size mismatch, A->M = %i, B->M = %i\n", __FILE__, __LINE__, A->M, B->M);
+    LOG("matrix size mismatch, A->M = %i, B->M = %i\n", A->M, B->M);
     exit(1);
   }
 
   if (A->N != B->N)
   {
-    spamm_log("matrix size mismatch, A->N = %i, B->N = %i\n", __FILE__, __LINE__, A->N, B->N);
+    LOG("matrix size mismatch, A->N = %i, B->N = %i\n", A->N, B->N);
     exit(1);
   }
 
   if (A->M_child != B->M_child)
   {
-    spamm_log("matrix child size mismatch, A->M_child = %i, B->M_child = %i\n", __FILE__, __LINE__, A->M_child, B->M_child);
+    LOG("matrix child size mismatch, A->M_child = %i, B->M_child = %i\n", A->M_child, B->M_child);
     exit(1);
   }
 
   if (A->N_child != B->N_child)
   {
-    spamm_log("matrix child size mismatch, A->N_child = %i, B->N_child = %i\n", __FILE__, __LINE__, A->N_child, B->N_child);
+    LOG("matrix child size mismatch, A->N_child = %i, B->N_child = %i\n", A->N_child, B->N_child);
     exit(1);
   }
 
   if (A->M_block != B->M_block)
   {
-    spamm_log("matrix block size mismatch, A->M_block = %i, B->M_block = %i\n", __FILE__, __LINE__, A->M_block, B->M_block);
+    LOG("matrix block size mismatch, A->M_block = %i, B->M_block = %i\n", A->M_block, B->M_block);
     exit(1);
   }
 
   if (A->N_block != B->N_block)
   {
-    spamm_log("matrix block size mismatch, A->N_block = %i, B->N_block = %i\n", __FILE__, __LINE__, A->N_block, B->N_block);
+    LOG("matrix block size mismatch, A->N_block = %i, B->N_block = %i\n", A->N_block, B->N_block);
     exit(1);
   }
 
