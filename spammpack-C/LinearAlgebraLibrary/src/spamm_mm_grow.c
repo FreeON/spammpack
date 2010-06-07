@@ -5,7 +5,7 @@
 
 /** Grow memory by one chunk.
  *
- * @param chunksize The size of contigueous chunks.
+ * @param chunksize The size of contiguous chunks.
  * @param memory The linked list of memory chunks.
  */
 void *

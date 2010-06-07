@@ -115,7 +115,7 @@ struct spamm_t
   /** Contiguous linear quadtree storage.
    *
    * Nodes in tier >= linear_tier are stored in linear quadtree format and
-   * allocated in contiguous chunks. This helps with the bankdwidth/latency
+   * allocated in contiguous chunks. This helps with the bandwidth/latency
    * tradeoff during parallel data distribution. Legal value range:
    * linear_tier > 0.
    */
@@ -177,7 +177,7 @@ struct spamm_node_t
   /** Contiguous linear quadtree storage.
    *
    * Nodes in tier >= linear_tier are stored in linear quadtree format and
-   * allocated in contiguous chunks. This helps with the bankdwidth/latency
+   * allocated in contiguous chunks. This helps with the bandwidth/latency
    * tradeoff during parallel data distribution. Legal value range:
    * linear_tier > 0.
    */
