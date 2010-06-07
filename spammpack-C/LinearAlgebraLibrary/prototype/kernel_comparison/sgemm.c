@@ -50,10 +50,14 @@ main (int argc, char **argv)
   }
 
   gettimeofday(&startBlas, NULL);
+#ifdef DGEMM
   for (loop = 0; loop < loops; ++loop)
   {
     DGEMM("N", "N", &N, &N, &N, &alpha, A, &N, B, &N, &beta, C, &N);
   }
+#else
+#warning Need blas
+#endif
   gettimeofday(&stopBlas, NULL);
   timeBlas = stopBlas.tv_sec-startBlas.tv_sec+(stopBlas.tv_usec-startBlas.tv_usec)/1.0e6;
   printf("%ix%i matrix (%i loop)\n", N, N, loops);

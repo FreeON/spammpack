@@ -50,6 +50,8 @@ main (int argc, char **argv)
 
   printf("time elapsed: %e s\n", time_elapsed);
   printf("time elapsed per iteration: %e s\n", time_elapsed/(double) number_tests);
+
+  return 0;
 }
 
 #else

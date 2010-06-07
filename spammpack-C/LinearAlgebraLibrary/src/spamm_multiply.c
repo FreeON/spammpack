@@ -264,13 +264,13 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
     }
 
 #if defined(HAVE_CUDA)
-    cublasSgemm('N', 'N', node->A_node->M_block, node->B_node->N_block, node->A_node->N_block,
-        node->alpha, node->A_node->device_pointer, node->A_node->M_block, node->B_node->device_pointer, node->B_node->M_block,
-        node->beta, node->C_node->device_pointer, node->C_node->M_block);
+    cublasSgemm('N', 'N', nodedata->A_node->M_block, nodedata->B_node->N_block, nodedata->A_node->N_block,
+        nodedata->alpha, nodedata->A_node->device_pointer, nodedata->A_node->M_block, nodedata->B_node->device_pointer, nodedata->B_node->M_block,
+        nodedata->beta, nodedata->C_node->device_pointer, nodedata->C_node->M_block);
 #elif defined(DGEMM)
-    DGEMM("N", "N", &(node->A_node->M_block), &(node->B_node->N_block), &(node->A_node->N_block),
-        &(node->alpha), node->A_node->block_dense, &(node->A_node->M_block), node->B_node->block_dense, &(node->B_node->M_block),
-        &(node->beta), node->C_node->block_dense, &(node->C_node->M_block));
+    DGEMM("N", "N", &(nodedata->A_node->M_block), &(nodedata->B_node->N_block), &(nodedata->A_node->N_block),
+        &(nodedata->alpha), nodedata->A_node->block_dense, &(nodedata->A_node->M_block), nodedata->B_node->block_dense, &(nodedata->B_node->M_block),
+        &(nodedata->beta), nodedata->C_node->block_dense, &(nodedata->C_node->M_block));
 #else
     for (i = 0; i < nodedata->C_node->M_block; ++i) {
       for (j = 0; j < nodedata->C_node->N_block; ++j) {
