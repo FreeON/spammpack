@@ -69,9 +69,9 @@ void
 spamm_ll_sort (int (*compare) (const void *data1, const void *data2), struct spamm_ll_t *list);
 
 void
-spamm_ll_print_node (const struct spamm_ll_node_t *node);
+spamm_ll_print_node (char *(*data_to_string) (const void *data), const struct spamm_ll_node_t *node);
 
 void
-spamm_ll_print (const struct spamm_ll_t *list);
+spamm_ll_print (char *(*data_to_string) (const void *data), const struct spamm_ll_t *list);
 
 #endif

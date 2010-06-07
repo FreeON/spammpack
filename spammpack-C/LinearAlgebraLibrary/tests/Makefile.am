@@ -7,6 +7,7 @@ TESTS = $(noinst_PROGRAMS)
 
 noinst_PROGRAMS = \
   ll_append \
+  ll_sort \
   create_spamm \
   nonzero_spamm \
   add_spamm \
@@ -14,6 +15,7 @@ noinst_PROGRAMS = \
   tree_pack
 
 ll_append_SOURCES = ll_append.c
+ll_sort_SOURCES = ll_sort.c
 create_spamm_SOURCES = create_spamm.c
 nonzero_spamm_SOURCES = nonzero_spamm.c
 add_spamm_SOURCES = add_spamm.c
