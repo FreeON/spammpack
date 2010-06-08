@@ -23,9 +23,6 @@
  * requested, the memory manager might allocate more chunks, but links them
  * with the first one. The management of what chunk holds the data is done by
  * the memory manager.
- *
- * \author Nicolas Bock <nicolasbock@gmail.com>
- * \author Matt Challacombe <matt.challacombe@gmail.com>.
  */
 
 /** A memory chunk.

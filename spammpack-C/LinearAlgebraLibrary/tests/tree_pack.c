@@ -28,5 +28,7 @@ main ()
 
   spamm_tree_pack(0, 100, i_mask, &A);
 
+  spamm_print_spamm(&A);
+
   return 0;
 }
