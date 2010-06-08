@@ -30,6 +30,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
     /* Pack. */
     LOG("reached tier %u, packing\n", node->tier);
     linear_tree = spamm_mm_initialize(chunksize);
+    node->linear_quadtree = linear_tree;
   }
 
   /* Recurse more. */
@@ -67,6 +68,13 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
         }
       }
     }
+  }
+
+  if (node->tier == linear_tier)
+  {
+    /* Delete tree, which is replaced now by linear quadtree. */
+    spamm_log("done packing, deleting original tree\n", __FILE__, __LINE__);
+    spamm_delete_node(node);
   }
 }
 

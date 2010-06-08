@@ -11,9 +11,6 @@
  *
  * Some functions for dealing with linked lists. Details can be found in
  * spamm_ll.h.
- *
- * \author Nicolas Bock <nicolasbock@gmail.com>
- * \author Matt Challacombe <matt.challacombe@gmail.com>.
  */
 
 /** The linked list.

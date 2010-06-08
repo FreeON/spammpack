@@ -1,5 +1,3 @@
-/** @file */
-
 #include "spamm.h"
 #include <assert.h>
 #include <math.h>
@@ -129,5 +127,7 @@ spamm_new_node (struct spamm_node_t **node)
   (*node)->block_loaded_in_GPU = 0;
 
   (*node)->child = NULL;
+
+  (*node)->linear_quadtree = NULL;
   (*node)->block_dense = NULL;
 }

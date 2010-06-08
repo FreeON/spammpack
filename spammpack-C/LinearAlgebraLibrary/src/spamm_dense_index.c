@@ -1,5 +1,3 @@
-/** @file */
-
 #include "spamm.h"
 
 /** Computes a 1-D index from a 2-D index pair.

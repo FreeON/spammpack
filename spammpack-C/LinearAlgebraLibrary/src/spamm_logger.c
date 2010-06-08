@@ -1,5 +1,3 @@
-/** @file */
-
 #include "spamm.h"
 #include <stdarg.h>
 #include <stdio.h>

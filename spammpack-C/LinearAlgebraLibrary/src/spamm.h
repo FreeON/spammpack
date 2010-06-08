@@ -41,6 +41,8 @@
  *
  * \bug In spamm_multiply(): A pre-existing C matrix will not work right now.
  *
+ * \version 2010-04-19
+ *
  * \author Nicolas Bock <nicolasbock@gmail.com>
  * \author Matt Challacombe <matt.challacombe@gmail.com>.
  */
@@ -266,6 +268,13 @@ struct spamm_node_t
 
   /** The name of the block ordering pattern. */
   enum spamm_block_ordering_t ordering;
+
+  /** The linear quadtree.
+   *
+   * A packed tree stores a linear quadtree at the linear_tier, replacing the
+   * quadtree that was there before.
+   */
+  struct spamm_ll_t *linear_quadtree;
 
   /** Is this block loaded into the GPU? */
   short unsigned int block_loaded_in_GPU;
