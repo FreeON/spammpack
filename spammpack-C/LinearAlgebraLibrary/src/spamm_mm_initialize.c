@@ -1,6 +1,4 @@
 #include "spamm.h"
-#include "spamm_ll.h"
-#include "spamm_mm.h"
 #include <stdlib.h>
 
 /** Initialize a new dynamic memory region.

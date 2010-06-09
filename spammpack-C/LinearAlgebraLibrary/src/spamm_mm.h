@@ -5,9 +5,6 @@
 /** Define in case spamm_mm.h has been included. */
 #define __SPAMM_MM_H 1
 
-#include "config.h"
-#include "spamm_ll.h"
-
 /** \page page_mm The SpAMM memory manager.
  *
  * \brief A memory manager to manage contiguous memory allocation.

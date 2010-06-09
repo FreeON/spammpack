@@ -1,5 +1,4 @@
 #include <spamm.h>
-#include <spamm_mm.h>
 #include <stdio.h>
 #include <stdlib.h>
 

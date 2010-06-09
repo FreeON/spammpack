@@ -5,7 +5,8 @@ AM_LDFLAGS = $(top_builddir)/src/libspamm.la $(top_builddir)/src/sparsekit/libsp
 
 EXTRA_DIST = e20r0000.mtx
 
-noinst_PROGRAMS = multiply_MM latency
+noinst_PROGRAMS = multiply_MM SP2_MM latency
 
 multiply_MM_SOURCES = multiply_MM.c
+SP2_MM_SOURCES = SP2_MM.c
 latency_SOURCES = latency.c

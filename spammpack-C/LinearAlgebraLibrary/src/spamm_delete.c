@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-/** \private Delete a node, and recursively all children nodes.
+/** Delete a node, and recursively all children nodes.
  *
  * This is the recursive part. Call spamm_delete() instead.
  *

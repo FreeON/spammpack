@@ -1,5 +1,4 @@
 #include "spamm.h"
-#include "spamm_ll.h"
 #include "config.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -335,6 +334,8 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
  * @param B the matrix B.
  * @param beta the scalar factor multiplying C.
  * @param C the matrix C.
+ *
+ * \bug A pre-existing C matrix will not work right now.
  */
 void
 spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm_t *B, const float_t beta, struct spamm_t *C)

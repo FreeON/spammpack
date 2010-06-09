@@ -6,6 +6,8 @@
 #define __SPAMM_H 1
 
 #include "config.h"
+#include "spamm_ll.h"
+#include "spamm_mm.h"
 #include <stdio.h>
 
 /** \mainpage SpAMM
@@ -38,8 +40,6 @@
  * (columns) of the children nodes per node in the matrix tree, and \f$ d \f$
  * is the depth of the tree. This means that the matrix tree is a quadtree for
  * \f$ M_{\mathrm{child}} = N_{\mathrm{child}} = 2 \f$.
- *
- * \bug In spamm_multiply(): A pre-existing C matrix will not work right now.
  *
  * \version 2010-04-19
  *
@@ -373,6 +373,9 @@ spamm_new (const unsigned int M, const unsigned int N,
 
 void
 spamm_new_node (struct spamm_node_t **node);
+
+void
+spamm_delete_node (struct spamm_node_t *node);
 
 void
 spamm_delete (struct spamm_t *A);
