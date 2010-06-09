@@ -41,7 +41,7 @@
  * is the depth of the tree. This means that the matrix tree is a quadtree for
  * \f$ M_{\mathrm{child}} = N_{\mathrm{child}} = 2 \f$.
  *
- * \version 2010-04-19
+ * \version 2010-06-09
  *
  * \author Nicolas Bock <nicolasbock@gmail.com>
  * \author Matt Challacombe <matt.challacombe@gmail.com>.

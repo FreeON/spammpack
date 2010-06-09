@@ -1,4 +1,4 @@
-AC_INIT([SpAMM], [2010-04-19], [nbock@lanl.gov])
+AC_INIT([SpAMM], [2010-06-09], [nbock@lanl.gov])
 AM_INIT_AUTOMAKE
 
 AC_CONFIG_MACRO_DIR([m4])
