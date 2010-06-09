@@ -5,8 +5,6 @@
 /** Define in case spamm_ll.h has been included. */
 #define __SPAMM_LL_H 1
 
-#include "config.h"
-
 /** \page page_ll The SpAMM linked list.
  *
  * Some functions for dealing with linked lists. Details can be found in

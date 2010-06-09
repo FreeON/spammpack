@@ -1,5 +1,4 @@
 #include "spamm.h"
-#include "spamm_ll.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,5 +1,4 @@
 #include "spamm.h"
-#include "spamm_mm.h"
 #include <assert.h>
 #include <stdlib.h>
 
@@ -88,6 +87,9 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
  * @param chunksize The size in bytes of the data chunks.
  * @param mask The mask to apply to the linear index before sorting.
  * @param A The matrix to pack.
+ *
+ * \bug Support for the linear quadtree is not implemented everywhere yet.
+ *      Trees that are packed can not not be used in other functions.
  */
 void
 spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
