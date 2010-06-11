@@ -10,3 +10,6 @@ noinst_PROGRAMS = multiply_MM SP2_MM latency
 multiply_MM_SOURCES = multiply_MM.c
 SP2_MM_SOURCES = SP2_MM.c
 latency_SOURCES = latency.c
+
+tags :
+	ctags ../src/*.{c,h}
