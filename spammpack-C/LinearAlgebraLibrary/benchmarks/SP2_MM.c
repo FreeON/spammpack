@@ -1,14 +1,18 @@
 #include <spamm.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 int
 main (int argc, char **argv)
 {
-  struct spamm_t *A;
-  struct spamm_t *A2;
+  struct spamm_t A;
+  struct spamm_t A2;
 
   float_t *A_dense;
   float_t *A2_dense;
+
+  struct spamm_tree_stats_t stats;
+  struct timeval start, stop;
 
   int result = 0;
 
@@ -31,6 +35,17 @@ main (int argc, char **argv)
   spamm_spamm_to_dense(&A, &A_dense);
   gettimeofday(&stop, NULL);
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+
+  /* Purify using SP2. */
+  spamm_log("SP2 on SpAMM... ", __FILE__, __LINE__);
+  gettimeofday(&start, NULL);
+
+  gettimeofday(&stop, NULL);
+  printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+
+  /* Release memory. */
+  spamm_delete(&A);
+  free(A_dense);
 
   return result;
 }
