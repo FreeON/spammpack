@@ -46,5 +46,7 @@ memory_manager_sources = \
   spamm_mm_initialize.c \
   spamm_mm_print.c
 
+EXTRA_DIST = spamm_mainpage.h.in
+
 tags :
 	ctags *.h *.c
