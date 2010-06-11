@@ -99,7 +99,7 @@ spamm_read_MM (const char *filename,
     token = strtok(NULL, " \t");
     if (token == NULL) { LOG("syntax error, line %i\n", linenumber); }
     Aij = strtod(token, NULL);
-    if (spamm_set(i, j, Aij, A) < 0) { number_dropped++; }
+    if (spamm_set(i, j, Aij, A) != SPAMM_RESULT_OK) { number_dropped++; }
     number_nonzero++;
   }
 
