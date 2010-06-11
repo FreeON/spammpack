@@ -107,19 +107,19 @@ main (int argc, char **argv)
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 #endif
 
-  spamm_log("multiplying matrix with sparsekit... ", __FILE__, __LINE__);
-  gettimeofday(&start, NULL);
-  degree = (int*) malloc(sizeof(int)*A.M);
-  work = (int*) malloc(sizeof(int)*A.N);
-  amubdg_(&A.M, &A.N, &A.N, A_j_CSR, A_i_CSR, A_j_CSR, A_i_CSR, degree, &C_nonzero, work);
-  printf("need %i nonzeros in product... ", C_nonzero);
-  C_CSR = (float_t*) malloc(sizeof(float_t)*C_nonzero);
-  C_j_CSR = (int*) malloc(sizeof(int)*C_nonzero);
-  C_i_CSR = (int*) malloc(sizeof(int)*A.M);
-  job = 1;
-  amub_single_(&A.M, &A.N, &job, A_CSR, A_j_CSR, A_i_CSR, A_CSR, A_j_CSR, A_i_CSR, C_CSR, C_j_CSR, C_i_CSR, &C_nonzero, work, &ierr);
-  gettimeofday(&stop, NULL);
-  printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  //spamm_log("multiplying matrix with sparsekit... ", __FILE__, __LINE__);
+  //gettimeofday(&start, NULL);
+  //degree = (int*) malloc(sizeof(int)*A.M);
+  //work = (int*) malloc(sizeof(int)*A.N);
+  //amubdg_(&A.M, &A.N, &A.N, A_j_CSR, A_i_CSR, A_j_CSR, A_i_CSR, degree, &C_nonzero, work);
+  //printf("need %i nonzeros in product... ", C_nonzero);
+  //C_CSR = (float_t*) malloc(sizeof(float_t)*C_nonzero);
+  //C_j_CSR = (int*) malloc(sizeof(int)*C_nonzero);
+  //C_i_CSR = (int*) malloc(sizeof(int)*A.M);
+  //job = 1;
+  //amub_single_(&A.M, &A.N, &job, A_CSR, A_j_CSR, A_i_CSR, A_CSR, A_j_CSR, A_i_CSR, C_CSR, C_j_CSR, C_i_CSR, &C_nonzero, work, &ierr);
+  //gettimeofday(&stop, NULL);
+  //printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
   spamm_log("multiplying matrix with spamm\n", __FILE__, __LINE__);
   spamm_new(A.M, A.N, A.M_block, A.N_block, A.M_child, A.N_child, A.threshold, &A2);
