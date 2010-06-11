@@ -98,13 +98,18 @@ AC_CHECK_HEADERS([stdarg.h])
 
 dnl Define precision.
 AC_DEFINE([FLOATING_PRECISION], [float], [Define the floating point number type])
-#AC_DEFINE([FLOATING_PRECISION], [double])
+#AC_DEFINE([FLOATING_PRECISION], [double], [Define the floating point number type])
+
+dnl Fix the package version everywhere.
+AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
 
 dnl Write results.
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
+Doxyfile
 Makefile
 src/Makefile
+src/spamm_mainpage.h
 src/sparsekit/Makefile
 tests/Makefile
 benchmarks/Makefile

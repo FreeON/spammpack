@@ -10,43 +10,6 @@
 #include "spamm_mm.h"
 #include <stdio.h>
 
-/** \mainpage SpAMM
- *
- * \brief Sparse Approximate Matrix Multiply (SpAMM) library.
- *
- * SpAMM is a library for spare approximate matrices.
- *
- * The public functions of this library are all declared in spamm.h. Useful
- * helper functions are documented in spamm_ll.h and spamm_mm.h.
- *
- * \section Introduction
- *
- * A spamm_t matrix is defined as an \f$ N \f$-tree on the 2-dimensional
- * matrix elements. The matrix elements at the lowest level are stored in
- * dense matrix blocks. The matrix is padded with zeros so that the tree depth
- * \f$ d \f$ is integer according to
- *
- * \f[
- * M = M_{\mathrm{block}} M_{\mathrm{child}}^d
- * \]
- * \[
- * N = N_{\mathrm{block}} N_{\mathrm{child}}^d
- * \f]
- *
- * where \f$ M \f$ (\f$ N \f$) is the number of rows (columns) of the matrix,
- * \f$ M_{\mathrm{block}} \f$ (\f$ N_{\mathrm{block}} \f$) is the number of
- * rows (columns) of the dense matrix blocks at the lowest tree level, \f$
- * M_{\mathrm{child}} \f$ (\f$ N_{\mathrm{child}} \f$) is the number of rows
- * (columns) of the children nodes per node in the matrix tree, and \f$ d \f$
- * is the depth of the tree. This means that the matrix tree is a quadtree for
- * \f$ M_{\mathrm{child}} = N_{\mathrm{child}} = 2 \f$.
- *
- * \version 2010-06-09
- *
- * \author Nicolas Bock <nicolasbock@gmail.com>
- * \author Matt Challacombe <matt.challacombe@gmail.com>.
- */
-
 /** Definition of global floating point precision.
  *
  * This is either float or double, as defined by the configure script.
