@@ -25,7 +25,8 @@ libspamm_la_SOURCES = \
   spamm_tree_pack.c \
   spamm_tree_stats.c \
 	$(linked_list_sources) \
-	$(memory_manager_sources)
+	$(memory_manager_sources) \
+  $(matrix_kernel_sources)
 
 linked_list_sources = \
   spamm_ll.h \
@@ -45,6 +46,9 @@ memory_manager_sources = \
   spamm_mm_grow.c \
   spamm_mm_initialize.c \
   spamm_mm_print.c
+
+matrix_kernel_sources = \
+  spamm_dummy_kernel.c
 
 EXTRA_DIST = spamm_mainpage.h.in
 

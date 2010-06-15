@@ -82,7 +82,7 @@ main ()
           //printf("C_test =\n");
           //spamm_print_spamm(&C_test);
 
-          spamm_multiply(1.0, &A, &B, 1.0, &C);
+          spamm_multiply(tree, 1.0, &A, &B, 1.0, &C);
 
           //printf("C =\n");
           //spamm_print_spamm(&C);

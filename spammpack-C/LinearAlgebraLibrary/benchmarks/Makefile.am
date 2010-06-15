@@ -9,9 +9,14 @@ EXTRA_DIST = \
   generateMatrix.py \
   README
 
-noinst_PROGRAMS = multiply_MM SP2_MM latency
+noinst_PROGRAMS = \
+  multiply_MM \
+  multiply_random \
+  SP2_MM \
+  latency
 
 multiply_MM_SOURCES = multiply_MM.c
+multiply_random_SOURCES = multiply_random.c
 SP2_MM_SOURCES = SP2_MM.c
 latency_SOURCES = latency.c
 

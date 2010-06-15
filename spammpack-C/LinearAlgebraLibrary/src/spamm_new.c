@@ -3,6 +3,48 @@
 #include <math.h>
 #include <stdlib.h>
 
+/** Initialize new node of matrix.
+ *
+ * @param node The spamm_node_t node to initialize.
+ */
+void
+spamm_new_node (struct spamm_node_t **node)
+{
+  *node = (struct spamm_node_t*) malloc(sizeof(struct spamm_node_t));
+
+  (*node)->tier = 0;
+  (*node)->linear_tier = 0;
+
+  (*node)->M_upper = 0;
+  (*node)->M_lower = 0;
+  (*node)->N_upper = 0;
+  (*node)->N_lower = 0;
+
+  (*node)->M_child = 0;
+  (*node)->N_child = 0;
+
+  (*node)->M_block = 0;
+  (*node)->N_block = 0;
+
+  (*node)->threshold = 0.0;
+
+  (*node)->index = 0;
+
+  (*node)->previous_i = NULL;
+  (*node)->next_i = NULL;
+  (*node)->previous_j = NULL;
+  (*node)->next_j = NULL;
+
+  (*node)->ordering = none;
+
+  (*node)->block_loaded_in_GPU = 0;
+
+  (*node)->child = NULL;
+
+  (*node)->linear_quadtree = NULL;
+  (*node)->block_dense = NULL;
+}
+
 /** Initialize new matrix object.
  *
  * @param M Number of rows of dense input matrix.
@@ -88,46 +130,4 @@ spamm_new (const unsigned int M, const unsigned int N,
   A->number_nonzero_blocks = 0;
 
   A->root = NULL;
-}
-
-/** Initialize new node of matrix.
- *
- * @param node The spamm_node_t node to initialize.
- */
-void
-spamm_new_node (struct spamm_node_t **node)
-{
-  *node = (struct spamm_node_t*) malloc(sizeof(struct spamm_node_t));
-
-  (*node)->tier = 0;
-  (*node)->linear_tier = 0;
-
-  (*node)->M_upper = 0;
-  (*node)->M_lower = 0;
-  (*node)->N_upper = 0;
-  (*node)->N_lower = 0;
-
-  (*node)->M_child = 0;
-  (*node)->N_child = 0;
-
-  (*node)->M_block = 0;
-  (*node)->N_block = 0;
-
-  (*node)->threshold = 0.0;
-
-  (*node)->index = 0;
-
-  (*node)->previous_i = NULL;
-  (*node)->next_i = NULL;
-  (*node)->previous_j = NULL;
-  (*node)->next_j = NULL;
-
-  (*node)->ordering = none;
-
-  (*node)->block_loaded_in_GPU = 0;
-
-  (*node)->child = NULL;
-
-  (*node)->linear_quadtree = NULL;
-  (*node)->block_dense = NULL;
 }

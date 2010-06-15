@@ -116,6 +116,17 @@ enum spamm_block_ordering_t
   S
 };
 
+/** Multiply algorithm.
+ */
+enum spamm_multiply_algorithm_t
+{
+  /** Only tree. */
+  tree,
+
+  /** Generate cached multiply stream. */
+  cache
+};
+
 /** The mask to apply to the linear matrix block index.
  */
 enum spamm_linear_mask_t
@@ -378,7 +389,9 @@ void
 spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, struct spamm_t *B);
 
 void
-spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm_t *B, const float_t beta, struct spamm_t *C);
+spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
+    const float_t alpha, const struct spamm_t *A,
+    const struct spamm_t *B, const float_t beta, struct spamm_t *C);
 
 void
 spamm_tree_stats (struct spamm_tree_stats_t *stats, const struct spamm_t *A);
