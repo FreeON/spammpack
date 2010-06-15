@@ -12,19 +12,22 @@
  *
  * C_node = alpha*A_node*B_node + beta*C_node
  *
- * @param alpha the scalar factor multiplying A*B.
- * @param A_node the node of matrix A.
- * @param B_node the node of matrix B.
- * @param beta the scalar factor multiplying C.
- * @param C_node the node of matrix C.
+ * @param algorithm The algorithm to use.
+ * @param alpha The scalar factor multiplying A*B.
+ * @param A_node The node of matrix A.
+ * @param B_node The node of matrix B.
+ * @param beta The scalar factor multiplying C.
+ * @param C_node The node of matrix C.
  * @param multiply_stream The multiply stream.
  */
 void
-spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
+spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
+    const float_t alpha, struct spamm_node_t *A_node,
     struct spamm_node_t *B_node, const float_t beta,
     struct spamm_node_t **C_node, struct spamm_ll_t *multiply_stream)
 {
   int i, j, k;
+  struct spamm_node_t *C_child_node;
   struct spamm_multiply_stream_element_t *multiply_stream_element;
 
   if (*C_node == NULL)
@@ -63,22 +66,23 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
         {
           spamm_new_node(&((*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]));
 
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->tier = (*C_node)->tier+1;
+          C_child_node = (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)];
+          C_child_node->tier = (*C_node)->tier+1;
 
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
+          C_child_node->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
+          C_child_node->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
+          C_child_node->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
+          C_child_node->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
 
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->M_child = (*C_node)->M_child;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->N_child = (*C_node)->N_child;
+          C_child_node->M_child = (*C_node)->M_child;
+          C_child_node->N_child = (*C_node)->N_child;
 
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->threshold = (*C_node)->threshold;
+          C_child_node->threshold = (*C_node)->threshold;
 
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->linear_tier = (*C_node)->linear_tier;
+          C_child_node->linear_tier = (*C_node)->linear_tier;
 
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->M_block = (*C_node)->M_block;
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]->N_block = (*C_node)->N_block;
+          C_child_node->M_block = (*C_node)->M_block;
+          C_child_node->N_block = (*C_node)->N_block;
         }
       }
 
@@ -117,11 +121,12 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
       }
     }
 
+    /* Recurse down the tree. */
     for (i = 0; i < (*C_node)->M_child; ++i) {
       for (j = 0; j < (*C_node)->N_child; ++j) {
         for (k = 0; k < A_node->N_child; ++k)
         {
-          spamm_multiply_node(alpha, A_node->child[spamm_dense_index(i, k, A_node->M_child, A_node->N_child)],
+          spamm_multiply_node(algorithm, alpha, A_node->child[spamm_dense_index(i, k, A_node->M_child, A_node->N_child)],
               B_node->child[spamm_dense_index(k, j, B_node->M_child, B_node->N_child)], beta,
               &(*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)],
               multiply_stream);
@@ -144,18 +149,62 @@ spamm_multiply_node (const float_t alpha, struct spamm_node_t *A_node,
       }
     }
 
-    /* Append this triple to the multiply stream. */
-    multiply_stream_element = (struct spamm_multiply_stream_element_t*) malloc(sizeof(struct spamm_multiply_stream_element_t));
-    multiply_stream_element->alpha = alpha;
-    multiply_stream_element->beta = beta;
-    multiply_stream_element->A_index = A_node->index;
-    multiply_stream_element->B_index = B_node->index;
-    multiply_stream_element->C_index = (*C_node)->index;
-    multiply_stream_element->A_node = A_node;
-    multiply_stream_element->B_node = B_node;
-    multiply_stream_element->C_node = *C_node;
+    switch (algorithm)
+    {
+      case tree:
+#ifdef DGEMM
+        DGEMM("N", "N", &(A_node->M_block), &(B_node->N_block), &(A_node->N_block),
+            &alpha, A_node->block_dense, &(A_node->M_block), B_node->block_dense, &(B_node->M_block),
+            &beta, (*C_node)->block_dense, &((*C_node)->M_block));
+#elif defined(HAVE_CUDA)
+        cublasAlloc(A_node->M_block*A_node->N_block,       sizeof(float_t), &d_A);
+        cublasAlloc(B_node->M_block*B_node->N_block,       sizeof(float_t), &d_B);
+        cublasAlloc((*C_node)->M_block*(*C_node)->N_block, sizeof(float_t), &d_C);
 
-    spamm_ll_append(multiply_stream_element, multiply_stream);
+        cublasSetMatrix(A_node->M_block,    A_node->N_block,    sizeof(float_t), (void*) A_node->block_dense,    A_node->M_block,    d_A, A_node->M_block);
+        cublasSetMatrix(B_node->M_block,    B_node->N_block,    sizeof(float_t), (void*) B_node->block_dense,    B_node->M_block,    d_B, B_node->M_block);
+        cublasSetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(float_t), (void*) (*C_node)->block_dense, (*C_node)->M_block, d_C, (*C_node)->M_block);
+
+        cublasSgemm('N', 'N', A_node->M_block, B_node->N_block, A_node->N_block, alpha, d_A, A_node->M_block, d_B, B_node->M_block, beta, d_C, (*C_node)->M_block);
+        cublasGetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(float_t), (void*) d_C, (*C_node)->M_block, (void*) (*C_node)->block_dense, (*C_node)->M_block);
+
+        cublasFree(d_A);
+        cublasFree(d_B);
+        cublasFree(d_C);
+#else
+        for (i = 0; i < (*C_node)->M_block; ++i) {
+          for (j = 0; j < (*C_node)->N_block; ++j) {
+            for (k = 0; k < A_node->M_block; ++k)
+            {
+              (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)]
+                = alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]*B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)]
+                + beta*(*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)];
+            }
+          }
+        }
+#endif
+        break;
+
+      case cache:
+        /* Append this triple to the multiply stream. */
+        multiply_stream_element = (struct spamm_multiply_stream_element_t*) malloc(sizeof(struct spamm_multiply_stream_element_t));
+        multiply_stream_element->alpha = alpha;
+        multiply_stream_element->beta = beta;
+        multiply_stream_element->A_index = A_node->index;
+        multiply_stream_element->B_index = B_node->index;
+        multiply_stream_element->C_index = (*C_node)->index;
+        multiply_stream_element->A_node = A_node;
+        multiply_stream_element->B_node = B_node;
+        multiply_stream_element->C_node = *C_node;
+
+        spamm_ll_append(multiply_stream_element, multiply_stream);
+        break;
+
+      default:
+        spamm_log("unknown algorithm\n", __FILE__, __LINE__);
+        exit(1);
+        break;
+    }
   }
 }
 
@@ -329,16 +378,19 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
  *
  * C = alpha*A*B + beta*C
  *
- * @param alpha the scalar factor multiplying A*B.
- * @param A the matrix A.
- * @param B the matrix B.
- * @param beta the scalar factor multiplying C.
- * @param C the matrix C.
+ * @param algorithm The algorithm to use.
+ * @param alpha The scalar factor multiplying A*B.
+ * @param A The matrix A.
+ * @param B The matrix B.
+ * @param beta The scalar factor multiplying C.
+ * @param C The matrix C.
  *
  * \bug A pre-existing C matrix will not work right now.
  */
 void
-spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm_t *B, const float_t beta, struct spamm_t *C)
+spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
+    const float_t alpha, const struct spamm_t *A,
+    const struct spamm_t *B, const float_t beta, struct spamm_t *C)
 {
   struct timeval start, stop;
   struct spamm_ll_t multiply_stream;
@@ -424,17 +476,31 @@ spamm_multiply (const float_t alpha, const struct spamm_t *A, const struct spamm
     spamm_add_node(0.0, NULL, beta, &(C->root));
   }
 
-  spamm_ll_initialize(&multiply_stream);
+  switch (algorithm)
+  {
+    case tree:
+      spamm_multiply_node(algorithm, alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
+      break;
 
-  gettimeofday(&start, NULL);
-  spamm_multiply_node(alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
-  gettimeofday(&stop, NULL);
-  LOG("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+    case cache:
+      spamm_ll_initialize(&multiply_stream);
 
-  gettimeofday(&start, NULL);
-  spamm_multiply_stream(30000, &multiply_stream);
-  gettimeofday(&stop, NULL);
-  LOG("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+      gettimeofday(&start, NULL);
+      spamm_multiply_node(algorithm, alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
+      gettimeofday(&stop, NULL);
+      LOG("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-  spamm_ll_delete(&multiply_stream);
+      gettimeofday(&start, NULL);
+      spamm_multiply_stream(30000, &multiply_stream);
+      gettimeofday(&stop, NULL);
+      LOG("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+
+      spamm_ll_delete(&multiply_stream);
+      break;
+
+    default:
+      spamm_log("unknown algorithm\n", __FILE__, __LINE__);
+      exit(1);
+      break;
+  }
 }

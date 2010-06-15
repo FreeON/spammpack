@@ -60,6 +60,20 @@ else
   AC_MSG_RESULT([no])
 fi
 
+dnl Check for whether to use dummy kernel. This can be useful to time the tree
+dnl work overhead.
+AC_MSG_CHECKING([whether to use dummy kernel])
+AC_ARG_ENABLE([dummy-kernel], [AS_HELP_STRING([--enable-dummy-kernel],
+              [enables the dummy matrix-matrix multiply kernel])],
+              [], [enable_dummy_kernel="no"])
+
+if test "${enable_dummy_kernel}" = "yes"; then
+  AC_MSG_RESULT([yes])
+  AC_DEFINE([DGEMM], [spamm_sgemm_dummy], [The dummy matrix kernel])
+else
+  AC_MSG_RESULT([no])
+fi
+
 dnl Check for location of cuda.
 AC_MSG_CHECKING([whether to enable cuda])
 AC_ARG_ENABLE([cuda], [AS_HELP_STRING([--enable-cuda=path_to_sdk], [Enable
