@@ -121,7 +121,12 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
       }
     }
 
-    /* Recurse down the tree. */
+    /* Recurse down the tree.
+     *
+     * [FIXME] This should be done in index ordering, i.e. in case we have
+     * Z-curve ordering, we should recurse in that order and not simply on
+     * child_{ij} with 2 nested loops.
+     */
     for (i = 0; i < (*C_node)->M_child; ++i) {
       for (j = 0; j < (*C_node)->N_child; ++j) {
         for (k = 0; k < A_node->N_child; ++k)

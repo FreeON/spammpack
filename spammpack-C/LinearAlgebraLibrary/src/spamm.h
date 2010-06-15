@@ -258,7 +258,13 @@ struct spamm_node_t
   void *device_pointer;
 #endif
 
-  /** At the non-block level, pointers to the children nodes. */
+  /** At the non-block level, pointers to the children nodes.
+   *
+   * The pointers can be accessed in 2 ways:
+   *
+   * - As a 2-D array using spamm_dense_index()
+   * - As a 1-D array which is sorted on the index.
+   */
   struct spamm_node_t **child;
 
   /** At the block level, the dense matrix data. */

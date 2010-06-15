@@ -11,8 +11,8 @@ int
 main (int argc, char **argv)
 {
   unsigned int N = 1000;
-  unsigned int M_block = 100;
-  unsigned int N_block = 100;
+  unsigned int M_block = 20;
+  unsigned int N_block = 20;
 
   int parse;
   int result = 0;
