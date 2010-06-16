@@ -33,11 +33,11 @@ spamm_mm_print (const struct spamm_ll_t *memory)
   for (i = 0, node = memory->first; node != NULL; node = node->next)
   {
     chunk = node->data;
-    printf("chunk %u: chunksize = %u bytes, ", i++, chunk->chunksize);
+    printf("chunk %u: chunksize = %u bytes, data from %p to %p, ", i++, chunk->chunksize, chunk->data, ((char*) chunk->data)+chunk->chunksize);
     printf("allocated = %u bytes\n", chunk->bytes_allocated);
     printf("allocated_start ");
-    spamm_ll_print(spamm_mm_print_data_to_string, &chunk->allocated_start);
+    spamm_ll_print(NULL, &chunk->allocated_start);
     printf("allocated_end   ");
-    spamm_ll_print(spamm_mm_print_data_to_string, &chunk->allocated_end);
+    spamm_ll_print(NULL, &chunk->allocated_end);
   }
 }

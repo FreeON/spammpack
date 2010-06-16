@@ -13,6 +13,7 @@ spamm_new_node (struct spamm_node_t **node)
   *node = (struct spamm_node_t*) malloc(sizeof(struct spamm_node_t));
 
   (*node)->tier = 0;
+  (*node)->tree_depth = 0;
   (*node)->linear_tier = 0;
 
   (*node)->M_upper = 0;

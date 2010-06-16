@@ -22,7 +22,17 @@ spamm_ll_print (char *(*data_to_string) (const void *data), const struct spamm_l
   i = 0;
   for (node = list->first; node != NULL; node = node->next)
   {
-    data_string = data_to_string(node->data);
+    if (data_to_string != NULL)
+    {
+      data_string = data_to_string(node->data);
+    }
+
+    else
+    {
+      data_string = (char*) malloc(sizeof(char));
+      data_string[0] = '\0';
+    }
+
     if (strlen(data_string) > 0)
     {
       printf("%u:%p (%s) ", ++i, node->data, data_string);

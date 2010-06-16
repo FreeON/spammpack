@@ -13,7 +13,9 @@ spamm_mm_initialize (const unsigned int chunksize)
 {
   struct spamm_ll_t *result = NULL;
 
-  //LOG("allocating chunk of %u bytes\n", chunksize);
+#ifdef SPAMM_MM_DEBUG
+  LOG("allocating memory with chunks of %u bytes\n", chunksize);
+#endif
   result = (struct spamm_ll_t*) malloc(sizeof(struct spamm_ll_t));
   if (result != NULL)
   {
@@ -28,7 +30,9 @@ spamm_mm_initialize (const unsigned int chunksize)
   }
 
   /* Debug. */
-  //spamm_mm_print(result);
+#ifdef SPAMM_MM_DEBUG
+  spamm_mm_print(result);
+#endif
 
   return result;
 }

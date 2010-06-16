@@ -150,6 +150,9 @@ struct spamm_node_t
    */
   unsigned int tier;
 
+  /** The depth of the tree. */
+  unsigned int tree_depth;
+
   /** Contiguous linear quadtree storage.
    *
    * Nodes in tier >= linear_tier are stored in linear quadtree format and

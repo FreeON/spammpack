@@ -11,8 +11,8 @@ int
 main (int argc, char **argv)
 {
   unsigned int N = 1000;
-  unsigned int M_block = 20;
-  unsigned int N_block = 20;
+  unsigned int M_block = 100;
+  unsigned int N_block = 100;
 
   int parse;
   int result = 0;
@@ -28,6 +28,7 @@ main (int argc, char **argv)
 #endif
 
   struct timeval start, stop;
+  double timing_blas, timing_spamm;
 
   float_t *A_dense;
   float_t *B_dense;
@@ -61,7 +62,7 @@ main (int argc, char **argv)
         break;
     }
   }
-  LOG("generating 2 random %ix%i matrices\n", N, N);
+  LOG("generating 2 random %ix%i matrices with %ix%i blocks\n", N, N, M_block, N_block);
 
   A_dense = (float_t*) malloc(sizeof(float_t)*N*N);
   B_dense = (float_t*) malloc(sizeof(float_t)*N*N);
@@ -84,7 +85,8 @@ main (int argc, char **argv)
   gettimeofday(&start, NULL);
   DGEMM("N", "N", &N, &N, &N, &alpha, A_dense, &N, B_dense, &N, &beta, C_dense, &N);
   gettimeofday(&stop, NULL);
-  printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  timing_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
+  printf("time elapsed: %f s\n", timing_blas);
 #else
   spamm_log("multiplying matrix directly to get reference product... ", __FILE__, __LINE__);
   gettimeofday(&start, NULL);
@@ -97,7 +99,8 @@ main (int argc, char **argv)
     }
   }
   gettimeofday(&stop, NULL);
-  printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  timing_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
+  printf("time elapsed: %f s\n", timing_blas);
 #endif
 
   /* Convert to SpAMM. */
@@ -116,8 +119,12 @@ main (int argc, char **argv)
   gettimeofday(&start, NULL);
   spamm_multiply(cache, 1.0, &A, &B, 1.0, &C);
   gettimeofday(&stop, NULL);
-  spamm_log("product has %u nonzero elements\n", __FILE__, __LINE__, spamm_number_nonzero(&C));
-  spamm_log("total spamm time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  timing_spamm = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
+  LOG("product has %u nonzero elements\n", spamm_number_nonzero(&C));
+  LOG("total spamm time elapsed: %f s\n", timing_spamm);
+
+  /* Print out some exciting results. */
+  LOG("ratio between SpAMM and BLAS: %f\n", timing_spamm/timing_blas);
 
   spamm_log("comparing matrices\n", __FILE__, __LINE__);
   max_diff = 0;

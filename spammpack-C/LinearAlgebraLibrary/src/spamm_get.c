@@ -16,6 +16,8 @@ float_t
 spamm_get_element (const unsigned int i, const unsigned int j, const struct spamm_node_t *node)
 {
   unsigned int l, k;
+  struct spamm_ll_node_t *linear_tree_node_outer, *linear_tree_node_inner;
+  struct spamm_linear_quadtree_t *linear_element;
   float_t result = 0.0;
 
   assert(node != NULL);
@@ -25,7 +27,28 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
   {
     if (node->block_dense != NULL)
     {
+      /* Read directly from dense block. */
       return node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, node->M_block, node->N_block)];
+    }
+
+    else if (node->linear_quadtree != NULL)
+    {
+      /* Read from linear tree. */
+      for (linear_tree_node_outer = node->linear_quadtree->first; linear_tree_node_outer != NULL; linear_tree_node_outer = linear_tree_node_outer->next) {
+        for (linear_tree_node_inner = ((struct spamm_mm_t*) linear_tree_node_outer->data)->allocated_start.first; linear_tree_node_inner != NULL; linear_tree_node_inner = linear_tree_node_inner->next)
+        {
+          linear_element = linear_tree_node_inner->data;
+          LOG("looking at memory starting at %p with index %o\n", linear_element, linear_element->index);
+
+          /* [FIXME] We need to translate (i,j) into a linear index by bit
+           * interleaving. Then we can identify the linear_element we really
+           * want and what matrix element inside its dense matrix we need.
+           */
+          for (l = node->tier; l < node->tree_depth; ++l)
+          {
+          }
+        }
+      }
     }
 
     else { return 0.0; }
@@ -33,6 +56,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
 
   else
   {
+    /* Recurse down the tree. */
     for (l = 0; l < node->M_child; ++l) {
       for (k = 0; k < node->N_child; ++k)
       {

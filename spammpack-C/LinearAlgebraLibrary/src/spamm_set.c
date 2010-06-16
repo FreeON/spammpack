@@ -48,6 +48,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
           child_node = node->child[spamm_dense_index(l, k, node->M_child, node->N_child)];
 
           child_node->tier = node->tier+1;
+          child_node->tree_depth = node->tree_depth;
 
           child_node->M_lower = node->M_lower+l*(node->M_upper-node->M_lower)/node->M_child;
           child_node->M_upper = node->M_lower+(l+1)*(node->M_upper-node->M_lower)/node->M_child;
@@ -157,6 +158,9 @@ spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct
     if (A->root == NULL)
     {
       spamm_new_node(&(A->root));
+
+      A->root->tree_depth = A->tree_depth;
+
       A->root->M_lower = 0;
       A->root->M_upper = A->M_padded;
       A->root->N_lower = 0;
