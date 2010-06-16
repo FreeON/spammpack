@@ -68,6 +68,7 @@ spamm_print_node (const struct spamm_node_t *node)
     empty_header[strlen(header)] = '\0';
     printf("%s", header);
     printf("tier = %i, ", node->tier);
+    printf("depth = %i, ", node->tree_depth);
     printf("linear = %i, ", node->linear_tier);
     printf("M_lower = %i, M_upper = %i, ", node->M_lower, node->M_upper);
     printf("N_lower = %i, N_upper = %i, ", node->N_lower, node->N_upper);
@@ -94,6 +95,7 @@ spamm_print_node (const struct spamm_node_t *node)
       printf(" }\n");
       printf("%s", empty_header);
     }
+    printf("linear = %p, ", (void*) node->linear_quadtree);
     printf("block_dense = %p", (void*) node->block_dense);
     if (node->block_dense != NULL)
     {

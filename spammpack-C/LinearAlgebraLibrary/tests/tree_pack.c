@@ -21,12 +21,18 @@ main ()
     }
   }
 
-  //spamm_print_tree(&A);
+  printf("A (tree)\n");
+  spamm_print_tree(&A);
+
   printf("A =\n");
   spamm_print_spamm(&A);
 
   spamm_tree_pack(0, 100, i_mask, &A);
 
+  printf("A (tree)\n");
+  spamm_print_tree(&A);
+
+  printf("A =\n");
   spamm_print_spamm(&A);
 
   return 0;

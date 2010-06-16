@@ -31,7 +31,9 @@ spamm_mm_grow (const unsigned int chunksize, struct spamm_ll_t *memory)
       return NULL;
     }
 
-    //LOG("allocated chunk of %u bytes at %p --> %p\n", chunksize, chunk->data, ((char*) chunk->data)+chunksize);
+#ifdef SPAMM_MM_DEBUG
+    LOG("allocated chunk of %u bytes from %p to %p\n", chunksize, chunk->data, ((char*) chunk->data)+chunksize);
+#endif
   }
 
   else

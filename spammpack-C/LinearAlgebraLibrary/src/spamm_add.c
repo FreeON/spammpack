@@ -17,6 +17,7 @@ void
 spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node)
 {
   int i, j;
+  struct spamm_node_t *new_node;
 
   if (A_node == NULL && *B_node == NULL)
   {
@@ -30,6 +31,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
     spamm_new_node(B_node);
 
     (*B_node)->tier = A_node->tier;
+    (*B_node)->tree_depth = A_node->tree_depth;
 
     (*B_node)->M_lower = A_node->M_lower;
     (*B_node)->M_upper = A_node->M_upper;
@@ -54,23 +56,25 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
       for (j = 0; j < A_node->N_child; ++j)
       {
         spamm_new_node(&((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]));
+        new_node = (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)];
 
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->tier = (*B_node)->tier+1;
+        new_node->tier = (*B_node)->tier+1;
+        new_node->tree_depth = (*B_node)->tree_depth;
 
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_lower = (*B_node)->M_lower+i*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_upper = (*B_node)->M_lower+(i+1)*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_lower = (*B_node)->N_lower+j*((*B_node)->N_upper-(*B_node)->N_lower)/(*B_node)->N_child;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_upper = (*B_node)->N_lower+(j+1)*((*B_node)->N_upper-(*B_node)->N_lower)/(*B_node)->N_child;
+        new_node->M_lower = (*B_node)->M_lower+i*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
+        new_node->M_upper = (*B_node)->M_lower+(i+1)*((*B_node)->M_upper-(*B_node)->M_lower)/(*B_node)->M_child;
+        new_node->N_lower = (*B_node)->N_lower+j*((*B_node)->N_upper-(*B_node)->N_lower)/(*B_node)->N_child;
+        new_node->N_upper = (*B_node)->N_lower+(j+1)*((*B_node)->N_upper-(*B_node)->N_lower)/(*B_node)->N_child;
 
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_child = (*B_node)->M_child;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_child = (*B_node)->N_child;
+        new_node->M_child = (*B_node)->M_child;
+        new_node->N_child = (*B_node)->N_child;
 
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->threshold = (*B_node)->threshold;
+        new_node->threshold = (*B_node)->threshold;
 
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->linear_tier = (*B_node)->linear_tier;
+        new_node->linear_tier = (*B_node)->linear_tier;
 
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->M_block = (*B_node)->M_block;
-        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]->N_block = (*B_node)->N_block;
+        new_node->M_block = (*B_node)->M_block;
+        new_node->N_block = (*B_node)->N_block;
       }
     }
   }

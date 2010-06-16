@@ -30,11 +30,13 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
     LOG("reached tier %u, packing\n", node->tier);
     linear_tree = spamm_mm_initialize(chunksize);
     node->linear_quadtree = linear_tree;
+    LOG("linear_tree at %p\n", linear_tree);
   }
 
   /* Recurse more. */
   if (node->child != NULL)
   {
+    LOG("linear_tree at %p\n", linear_tree);
     for (i = 0; i < node->M_child; ++i) {
       for (j = 0; j < node->N_child; ++j)
       {
@@ -45,11 +47,14 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
 
   else
   {
+    LOG("linear_tree at %p\n", linear_tree);
     if (node->block_dense != NULL)
     {
       /* Copy data into linear tree. */
       LOG("tier %u, storing datablock with index %u\n", node->tier, node->index);
       linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+node->M_block*node->N_block*sizeof(float_t)+8, linear_tree);
+
+      LOG("linear_block at %p\n", linear_block);
 
       /* Move linear_block->block_dense pointer to just after the pointer
        * itself. Since we allocated enough space in spamm_mm_allocate() to fit
