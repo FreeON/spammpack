@@ -3,40 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/** \private Convert an integer to string in binary.
- *
- * @param integer The integer to convert.
- * @param width The width of the string, i.e. how many bits should be printed.
- * @param binary_string The string.
- */
-void
-spamm_int_to_binary (const unsigned int integer, const int width, char *binary_string)
-{
-  int i;
-  unsigned int mask = 1;
-
-  if (width == 0)
-  {
-    binary_string[0] = '0';
-    binary_string[1] = '\0';
-  }
-
-  else
-  {
-    for (i = 0; i < width; ++i)
-    {
-      binary_string[i] = '0';
-    }
-    binary_string[width] = '\0';
-
-    for (i = 0; i < width; ++i)
-    {
-      if (mask & integer) { binary_string[width-1-i] = '1'; }
-      mask = mask << 1;
-    }
-  }
-}
-
 /** Print detailed information of a tree node.
  *
  * This function prints detailed information of a tree node. If prints out the

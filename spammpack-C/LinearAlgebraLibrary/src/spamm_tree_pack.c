@@ -27,16 +27,20 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
   if (node->tier == linear_tier)
   {
     /* Pack. */
-    LOG("reached tier %u, packing\n", node->tier);
     linear_tree = spamm_mm_initialize(chunksize);
     node->linear_quadtree = linear_tree;
+#ifdef SPAMM_DEBUG
+    LOG("reached tier %u, packing\n", node->tier);
     LOG("linear_tree at %p\n", linear_tree);
+#endif
   }
 
   /* Recurse more. */
   if (node->child != NULL)
   {
+#ifdef SPAMM_DEBUG
     LOG("linear_tree at %p\n", linear_tree);
+#endif
     for (i = 0; i < node->M_child; ++i) {
       for (j = 0; j < node->N_child; ++j)
       {
@@ -47,14 +51,20 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
 
   else
   {
+#ifdef SPAMM_DEBUG
     LOG("linear_tree at %p\n", linear_tree);
+#endif
     if (node->block_dense != NULL)
     {
       /* Copy data into linear tree. */
+#ifdef SPAMM_DEBUG
       LOG("tier %u, storing datablock with index %u\n", node->tier, node->index);
+#endif
       linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+node->M_block*node->N_block*sizeof(float_t)+8, linear_tree);
 
+#ifdef SPAMM_DEBUG
       LOG("linear_block at %p\n", linear_block);
+#endif
 
       /* Move linear_block->block_dense pointer to just after the pointer
        * itself. Since we allocated enough space in spamm_mm_allocate() to fit
@@ -77,7 +87,9 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
   if (node->tier == linear_tier)
   {
     /* Delete tree, which is replaced now by linear quadtree. */
+#ifdef SPAMM_DEBUG
     spamm_log("done packing, deleting original tree\n", __FILE__, __LINE__);
+#endif
     spamm_delete_node(node);
   }
 }
@@ -109,7 +121,9 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
   }
   A->linear_tier = linear_tier;
 
+#ifdef SPAMM_DEBUG
   spamm_log("packing tree\n", __FILE__, __LINE__);
+#endif
 
   /* Recurse tree and convert to linear trees any subtrees below linear_tier.
    */
