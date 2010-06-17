@@ -124,7 +124,7 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
 
   if (linear_tier > A->tree_depth)
   {
-    LOG("tree depth is only %u, while linear_tier is %u\n", A->tree_depth, linear_tier);
+    //LOG("tree depth is only %u, while linear_tier is %u\n", A->tree_depth, linear_tier);
     return;
   }
   A->linear_tier = linear_tier;

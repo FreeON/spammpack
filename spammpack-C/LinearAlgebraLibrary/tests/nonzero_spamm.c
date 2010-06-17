@@ -39,9 +39,9 @@ main ()
           spamm_new(M[i_size], N[i_size], M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child], 1e-10, &A);
           number_nonzero = (int) (M[i_size]*N[i_size]*fill[i_fill]);
 
-          printf("[nonzero_spamm] %ix%i matrix, %.1f%% full, padded %ix%i, i_block dimensions %ix%i, i_child dimensions %ix%i, %i nonzeros\n",
-              M[i_size], N[i_size], fill[i_fill]*100, A.M_padded, A.N_padded, M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child],
-              number_nonzero);
+          //printf("[nonzero_spamm] %ix%i matrix, %.1f%% full, padded %ix%i, i_block dimensions %ix%i, i_child dimensions %ix%i, %i nonzeros\n",
+          //    M[i_size], N[i_size], fill[i_fill]*100, A.M_padded, A.N_padded, M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child],
+          //    number_nonzero);
 
           for (k = 0; k < number_nonzero; ++k)
           {

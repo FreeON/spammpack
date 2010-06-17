@@ -29,8 +29,8 @@ main ()
         for (i_chunk = 0; i_chunk < number_chunks; ++i_chunk)
         {
           spamm_new(M[i_size], N[i_size], M_block[i_block], N_block[i_block], 2, 2, 0.0, &A);
-          LOG("%ux%u matrix, %ux%u blocks, linear tier = %u, chunksize = %u bytes, depth = %u\n",
-              M[i_size], N[i_size], M_block[i_block], N_block[i_block], linear_tier[i_linear], chunksize[i_chunk], A.tree_depth);
+          //LOG("%ux%u matrix, %ux%u blocks, linear tier = %u, chunksize = %u bytes, depth = %u\n",
+          //    M[i_size], N[i_size], M_block[i_block], N_block[i_block], linear_tier[i_linear], chunksize[i_chunk], A.tree_depth);
 
           for (i = 0; i < M[i_size]; ++i) {
             for (j = 0; j < N[i_size]; ++j)
