@@ -253,6 +253,10 @@ struct spamm_node_t
    */
   struct spamm_ll_t *linear_quadtree;
 
+  /** The memory that holds the linear quadtree.
+   */
+  struct spamm_mm_t *linear_quadtree_memory;
+
   /** Is this block loaded into the GPU? */
   short unsigned int block_loaded_in_GPU;
 

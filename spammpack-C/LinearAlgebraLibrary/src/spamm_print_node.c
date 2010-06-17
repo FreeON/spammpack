@@ -42,7 +42,7 @@ spamm_print_node (const struct spamm_node_t *node)
     printf("M_child = %i, N_child = %i\n", node->M_child, node->N_child);
     printf("%s", empty_header);
     printf("threshold = %7.1e, ", node->threshold);
-    binary_string = (char*) malloc(sizeof(char)*(node->tier*2+1));
+    binary_string = (char*) malloc(sizeof(char)*(node->tier*2+2));
     spamm_int_to_binary(node->index, node->tier*2, binary_string);
     printf("index = 0b%s (%u), ", binary_string, node->index);
     free(binary_string);
@@ -61,7 +61,18 @@ spamm_print_node (const struct spamm_node_t *node)
       printf(" }\n");
       printf("%s", empty_header);
     }
-    printf("linear = %p, ", (void*) node->linear_quadtree);
+    printf("linear = %p", (void*) node->linear_quadtree);
+    if (node->linear_quadtree != NULL)
+    {
+      printf(" ");
+      spamm_ll_print(NULL, node->linear_quadtree);
+      printf("%s", empty_header);
+    }
+    else
+    {
+      printf("\n");
+      printf("%s", empty_header);
+    }
     printf("block_dense = %p", (void*) node->block_dense);
     if (node->block_dense != NULL)
     {

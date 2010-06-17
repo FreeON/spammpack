@@ -5,6 +5,12 @@ ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 lib_LTLIBRARIES = libspamm.la
 
 libspamm_la_SOURCES = \
+  $(matrix_tree_sources) \
+  $(linked_list_sources) \
+  $(memory_manager_sources) \
+  $(matrix_kernel_sources)
+
+matrix_tree_sources = \
   spamm.h \
   spamm_add.c \
   spamm_delete.c \
@@ -25,18 +31,19 @@ libspamm_la_SOURCES = \
   spamm_set.c \
   spamm_spamm_to_dense.c \
   spamm_tree_pack.c \
-  spamm_tree_stats.c \
-	$(linked_list_sources) \
-	$(memory_manager_sources) \
-  $(matrix_kernel_sources)
+  spamm_tree_stats.c
 
 linked_list_sources = \
   spamm_ll.h \
   spamm_ll_append.c \
   spamm_ll_delete.c \
   spamm_ll_get.c \
-  spamm_ll_initialize.c \
-  spamm_ll_initialize_node.c \
+  spamm_ll_iterator_delete.c \
+  spamm_ll_iterator_first.c \
+  spamm_ll_iterator_new.c \
+  spamm_ll_iterator_next.c \
+  spamm_ll_new.c \
+  spamm_ll_new_node.c \
   spamm_ll_print.c \
   spamm_ll_print_node.c \
   spamm_ll_sort.c \
@@ -45,8 +52,10 @@ linked_list_sources = \
 memory_manager_sources = \
   spamm_mm.h \
   spamm_mm_allocate.c \
+  spamm_mm_delete.c \
   spamm_mm_grow.c \
-  spamm_mm_initialize.c \
+  spamm_mm_new.c \
+  spamm_mm_new_chunk.c \
   spamm_mm_print.c
 
 matrix_kernel_sources = \

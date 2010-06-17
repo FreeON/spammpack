@@ -16,17 +16,47 @@
  * \section Introduction
  *
  * The SpAMM memory manager will allocate dynamic memory in chunks of a
- * certain size. At first, only one chunk is allocated. As more memory is
- * requested, the memory manager might allocate more chunks, but links them
- * with the first one. The management of what chunk holds the data is done by
- * the memory manager.
+ * certain size. The spamm_mm_allocate() API is just like malloc(). The
+ * function returns a pointer to the start of a memory region of the requested
+ * size. Different to malloc() however, spamm_mm_alloc() allocates memory in a
+ * larger contiguous chunk. This ensures that several spamm_mm_allocate()
+ * request are contiguous with respect to each other, resulting in packed
+ * memory of chunks of chunksize bytes.
+ *
+ * The memory manager internally does this by first allocating a chunk of
+ * memory of chunksize bytes. As this chunk is filled by calls to
+ * spamm_mm_allocate(), the memory manager might allocate more chunks, but
+ * links them with the first one. The management of what chunk holds the data
+ * is done by the memory manager.
+ *
+ * \section Typical usage
+ *
+ * First, a new memory manager object has to be created with spamm_mm_new().
+ * The chunksize has to be chosen. Currently the chunksize has to be larger
+ * than the largest memory block one anticipates to ever allocate. The reason
+ * is simply that the chunks themselves are not allocated contiguously, and
+ * hence, a block that larger than the chunksize would not fit into a
+ * contiguous chunk. The whole point of the memory manager however is to
+ * guarantee contiguous allocation of several memory block. Blocks are
+ * allocated with a call to spamm_mm_allocate(). A pointer is returned to the
+ * start of the allocated memory block.
  */
+
+/** Memory managed by this memory manager. */
+struct spamm_mm_t
+{
+  /** The chunksize of this memory. */
+  unsigned int chunksize;
+
+  /** A linked list of memory chunks. */
+  struct spamm_ll_t *chunks;
+};
 
 /** A memory chunk.
  */
-struct spamm_mm_t
+struct spamm_mm_chunk_t
 {
-  /** How large is this chunk? */
+  /** The chunksize of this memory. */
   unsigned int chunksize;
 
   /** How many bytes are already allocated in this chunk? */
@@ -34,26 +64,32 @@ struct spamm_mm_t
 
   /** A list of pointers to start of "allocated" pieces of memory in the data
    * chunk. */
-  struct spamm_ll_t allocated_start;
+  struct spamm_ll_t *allocated_start;
 
   /** A list of pointers to end of "allocated" pieces of memory in the data
    * chunk. */
-  struct spamm_ll_t allocated_end;
+  struct spamm_ll_t *allocated_end;
 
   /** The data. */
   void *data;
 };
 
 void *
-spamm_mm_allocate (const unsigned int size, struct spamm_ll_t *memory);
-
-void *
-spamm_mm_grow (const unsigned int chunksize, struct spamm_ll_t *memory);
-
-struct spamm_ll_t *
-spamm_mm_initialize (const unsigned int chunksize);
+spamm_mm_allocate (const unsigned int size, struct spamm_mm_t *memory);
 
 void
-spamm_mm_print (const struct spamm_ll_t *memory);
+spamm_mm_delete (struct spamm_mm_t *memory);
+
+void *
+spamm_mm_grow (const unsigned int chunksize, struct spamm_mm_t *memory);
+
+struct spamm_mm_t *
+spamm_mm_new (const unsigned int chunksize);
+
+struct spamm_mm_chunk_t *
+spamm_mm_new_chunk (const unsigned int chunksize);
+
+void
+spamm_mm_print (const struct spamm_mm_t *memory);
 
 #endif

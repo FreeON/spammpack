@@ -400,7 +400,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     const struct spamm_t *B, const float_t beta, struct spamm_t *C)
 {
   struct timeval start, stop;
-  struct spamm_ll_t multiply_stream;
+  struct spamm_ll_t *multiply_stream;
 
   assert(A != NULL);
   assert(B != NULL);
@@ -486,23 +486,23 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
   switch (algorithm)
   {
     case tree:
-      spamm_multiply_node(algorithm, alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
+      spamm_multiply_node(algorithm, alpha, A->root, B->root, beta, &(C->root), multiply_stream);
       break;
 
     case cache:
-      spamm_ll_initialize(&multiply_stream);
+      multiply_stream = spamm_ll_new();
 
       gettimeofday(&start, NULL);
-      spamm_multiply_node(algorithm, alpha, A->root, B->root, beta, &(C->root), &multiply_stream);
+      spamm_multiply_node(algorithm, alpha, A->root, B->root, beta, &(C->root), multiply_stream);
       gettimeofday(&stop, NULL);
       LOG("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
       gettimeofday(&start, NULL);
-      spamm_multiply_stream(30000, &multiply_stream);
+      spamm_multiply_stream(30000, multiply_stream);
       gettimeofday(&stop, NULL);
       LOG("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-      spamm_ll_delete(&multiply_stream);
+      spamm_ll_delete(multiply_stream);
       break;
 
     default:

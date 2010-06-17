@@ -17,7 +17,7 @@
 void
 spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chunksize,
     const enum spamm_linear_mask_t mask, struct spamm_ll_t *linear_tree,
-    struct spamm_node_t *node)
+    struct spamm_mm_t *linear_tree_memory, struct spamm_node_t *node)
 {
   int i, j;
   struct spamm_linear_quadtree_t *linear_block;
@@ -27,11 +27,13 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
   if (node->tier == linear_tier)
   {
     /* Pack. */
-    linear_tree = spamm_mm_initialize(chunksize);
-    node->linear_quadtree = linear_tree;
+    node->linear_quadtree_memory = spamm_mm_new(chunksize);
+    node->linear_quadtree = spamm_ll_new();
+    linear_tree_memory = node->linear_quadtree_memory;
+    linear_tree = node->linear_quadtree;
 #ifdef SPAMM_DEBUG
     LOG("reached tier %u, packing\n", node->tier);
-    LOG("linear_tree at %p\n", linear_tree);
+    LOG("linear_tree_memory at %p, linear_tree at %p\n", linear_tree_memory, linear_tree);
 #endif
   }
 
@@ -44,7 +46,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
     for (i = 0; i < node->M_child; ++i) {
       for (j = 0; j < node->N_child; ++j)
       {
-        spamm_tree_pack_subtree(linear_tier, chunksize, mask, linear_tree, node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+        spamm_tree_pack_subtree(linear_tier, chunksize, mask, linear_tree, linear_tree_memory, node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
       }
     }
   }
@@ -60,18 +62,24 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
 #ifdef SPAMM_DEBUG
       LOG("tier %u, storing datablock with index %u\n", node->tier, node->index);
 #endif
-      linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+node->M_block*node->N_block*sizeof(float_t)+8, linear_tree);
+      /* Allocate new linear quadtree entry. The memory required is the size
+       * of the struct plus the size of the dense matrix block plus some
+       * padding.
+       */
+      linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+node->M_block*node->N_block*sizeof(float_t)+8, linear_tree_memory);
+      spamm_ll_append(linear_block, linear_tree);
 
 #ifdef SPAMM_DEBUG
       LOG("linear_block at %p\n", linear_block);
+      spamm_ll_print(NULL, linear_tree);
 #endif
 
-      /* Move linear_block->block_dense pointer to just after the pointer
+      /* Set the linear_block->block_dense pointer to just after the pointer
        * itself. Since we allocated enough space in spamm_mm_allocate() to fit
        * the pointer and the dense matrix block, we can do that without having
        * to allocate the dense data block separately.
        */
-      linear_block->block_dense = (float_t*) (&(linear_block->block_dense)+1);
+      linear_block->block_dense = (float_t*) (((void*) linear_block)+sizeof(struct spamm_linear_quadtree_t));
       linear_block->index = node->index;
 
       /* Copy data. */
@@ -90,7 +98,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
 #ifdef SPAMM_DEBUG
     spamm_log("done packing, deleting original tree\n", __FILE__, __LINE__);
 #endif
-    spamm_delete_node(node);
+    //spamm_delete_node(node);
   }
 }
 
@@ -117,7 +125,7 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
   if (linear_tier > A->tree_depth)
   {
     LOG("tree depth is only %u, while linear_tier is %u\n", A->tree_depth, linear_tier);
-    exit(1);
+    return;
   }
   A->linear_tier = linear_tier;
 
@@ -129,7 +137,7 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
    */
   if (A->root != NULL)
   {
-    spamm_tree_pack_subtree(linear_tier, chunksize, mask, NULL, A->root);
+    spamm_tree_pack_subtree(linear_tier, chunksize, mask, NULL, NULL, A->root);
   }
 
   else

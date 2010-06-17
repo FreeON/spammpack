@@ -5,9 +5,9 @@
 int
 main ()
 {
-  int number_sizes = 3;
-  int M[] = { 6, 10, 100 };
-  int N[] = { 6, 6,   85 };
+  int number_sizes = 4;
+  int M[] = { 2, 6, 10, 100 };
+  int N[] = { 2, 6, 6,   85 };
 
   int number_blocks = 2;
   int M_block[] = { 1, 2 };
@@ -65,6 +65,7 @@ main ()
           }
 
           spamm_delete(&A);
+          //exit(0);
         }
       }
     }

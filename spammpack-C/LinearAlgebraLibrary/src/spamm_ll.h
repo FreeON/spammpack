@@ -39,6 +39,16 @@ struct spamm_ll_node_t
   void *data;
 };
 
+/** An iterator object. */
+struct spamm_ll_iterator_t
+{
+  /** The list this iterator is applied to. */
+  struct spamm_ll_t *list;
+
+  /** The last node returned. */
+  struct spamm_ll_node_t *last_node;
+};
+
 void
 spamm_ll_append (void *data, struct spamm_ll_t *list);
 
@@ -49,10 +59,22 @@ void *
 spamm_ll_get (const unsigned int i, const struct spamm_ll_t *list);
 
 void
-spamm_ll_initialize (struct spamm_ll_t *list);
+spamm_ll_iterator_delete (struct spamm_ll_iterator_t **iterator);
 
-void
-spamm_ll_initialize_node (struct spamm_ll_node_t **node);
+struct spamm_ll_node_t *
+spamm_ll_iterator_first (struct spamm_ll_iterator_t *iterator);
+
+struct spamm_ll_iterator_t *
+spamm_ll_iterator_new (struct spamm_ll_t *list);
+
+struct spamm_ll_node_t *
+spamm_ll_iterator_next (struct spamm_ll_iterator_t *iterator);
+
+struct spamm_ll_t *
+spamm_ll_new ();
+
+struct spamm_ll_node_t *
+spamm_ll_new_node ();
 
 void
 spamm_ll_print (char *(*data_to_string) (const void *data), const struct spamm_ll_t *list);

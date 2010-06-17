@@ -18,10 +18,11 @@ spamm_delete_node (struct spamm_node_t *node)
     node->block_dense = NULL;
   }
 
-  //if (node->linear_quadtree != NULL)
-  //{
-  //  spamm_ll_delete(node->linear_quadtree);
-  //}
+  if (node->linear_quadtree != NULL)
+  {
+    spamm_ll_delete(node->linear_quadtree);
+    spamm_mm_delete(node->linear_quadtree_memory);
+  }
 
   if (node->child != NULL)
   {
