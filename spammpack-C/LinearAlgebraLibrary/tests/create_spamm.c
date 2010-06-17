@@ -56,12 +56,12 @@ main ()
         {
           //i_child = 1;
           spamm_new(M[i_size], N[i_size], M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child], 1e-10, &A);
-          printf("[create_spamm] %ix%i matrix, %.1f%% full, padded %ix%i, i_block dimensions %ix%i, i_child dimensions %ix%i, ",
-              M[i_size], N[i_size], fill[i_fill]*100, A.M_padded, A.N_padded, M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child]);
+          //printf("[create_spamm] %ix%i matrix, %.1f%% full, padded %ix%i, i_block dimensions %ix%i, i_child dimensions %ix%i, ",
+          //    M[i_size], N[i_size], fill[i_fill]*100, A.M_padded, A.N_padded, M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child]);
           spamm_dense_to_spamm(M[i_size], N[i_size], M_block[i_block], N_block[i_block], M_child[i_child], N_child[i_child], 1e-10, A_dense, &A);
           spamm_tree_stats(&stats, &A);
-          printf("nodes = %i, blocks = %i, tree = %i bytes, blocks = %i bytes (%1.1f%%)\n", stats.number_nodes, stats.number_dense_blocks,
-              stats.memory_tree, stats.memory_dense_blocks, (stats.memory_tree+stats.memory_dense_blocks)/(double) (M[i_size]*N[i_size]*sizeof(double))*100);
+          //printf("nodes = %i, blocks = %i, tree = %i bytes, blocks = %i bytes (%1.1f%%)\n", stats.number_nodes, stats.number_dense_blocks,
+          //    stats.memory_tree, stats.memory_dense_blocks, (stats.memory_tree+stats.memory_dense_blocks)/(double) (M[i_size]*N[i_size]*sizeof(double))*100);
 
           //printf("A tree =\n");
           //spamm_print_tree(&A);
