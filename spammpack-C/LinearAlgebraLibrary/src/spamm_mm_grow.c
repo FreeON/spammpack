@@ -7,30 +7,15 @@
  * @param memory The linked list of memory chunks.
  */
 void *
-spamm_mm_grow (const unsigned int chunksize, struct spamm_ll_t *memory)
+spamm_mm_grow (const unsigned int chunksize, struct spamm_mm_t *memory)
 {
-  struct spamm_mm_t *chunk = NULL;
+  struct spamm_mm_chunk_t *chunk;
 
-  chunk = (struct spamm_mm_t*) malloc(sizeof(struct spamm_mm_t));
+  chunk = spamm_mm_new_chunk(chunksize);
 
   if (chunk != NULL)
   {
-    spamm_ll_append(chunk, memory);
-    chunk->chunksize = chunksize;
-    chunk->bytes_allocated = 0;
-
-    /* Reset list of allocated pointers. */
-    spamm_ll_initialize(&chunk->allocated_start);
-    spamm_ll_initialize(&chunk->allocated_end);
-
-    /* Allocate memory for data in chunk. */
-    chunk->data = malloc(chunksize);
-    if (chunk->data == NULL)
-    {
-      spamm_log("failed to allocate data\n", __FILE__, __LINE__);
-      return NULL;
-    }
-
+    spamm_ll_append(chunk, memory->chunks);
 #ifdef SPAMM_MM_DEBUG
     LOG("allocated chunk of %u bytes from %p to %p\n", chunksize, chunk->data, ((char*) chunk->data)+chunksize);
 #endif
@@ -39,7 +24,6 @@ spamm_mm_grow (const unsigned int chunksize, struct spamm_ll_t *memory)
   else
   {
     spamm_log("failed to allocate chunk\n", __FILE__, __LINE__);
-    return NULL;
   }
 
   return chunk;

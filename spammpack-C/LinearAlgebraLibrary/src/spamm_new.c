@@ -43,6 +43,7 @@ spamm_new_node (struct spamm_node_t **node)
   (*node)->child = NULL;
 
   (*node)->linear_quadtree = NULL;
+  (*node)->linear_quadtree_memory = NULL;
   (*node)->block_dense = NULL;
 }
 

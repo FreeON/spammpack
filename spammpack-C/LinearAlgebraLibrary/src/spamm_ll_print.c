@@ -18,7 +18,7 @@ spamm_ll_print (char *(*data_to_string) (const void *data), const struct spamm_l
 
   struct spamm_ll_node_t *node;
 
-  printf("linked list: [ ");
+  printf("linked list (%u): [ ", list->number_elements);
   i = 0;
   for (node = list->first; node != NULL; node = node->next)
   {

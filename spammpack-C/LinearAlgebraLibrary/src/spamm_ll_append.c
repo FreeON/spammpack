@@ -12,7 +12,7 @@ spamm_ll_append (void *data, struct spamm_ll_t *list)
 {
   struct spamm_ll_node_t *new_node = NULL;
 
-  spamm_ll_initialize_node(&new_node);
+  new_node = spamm_ll_new_node();
 
   /* Append new node to list. */
   new_node->previous = list->last;

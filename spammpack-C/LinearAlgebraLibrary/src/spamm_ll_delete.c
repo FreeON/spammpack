@@ -20,5 +20,9 @@ spamm_ll_delete (struct spamm_ll_t *list)
 
     free(node2);
   }
-  spamm_ll_initialize(list);
+
+  /* Reset list. */
+  list->number_elements = 0;
+  list->first = NULL;
+  list->last = NULL;
 }

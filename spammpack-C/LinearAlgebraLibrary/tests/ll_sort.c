@@ -27,27 +27,27 @@ main ()
 {
   int i;
   int *data;
-  struct spamm_ll_t list;
+  struct spamm_ll_t *list;
 
-  spamm_ll_initialize(&list);
+  list = spamm_ll_new();
 
   for (i = 0; i < 100; ++i)
   {
     data = (int*) malloc(sizeof(int));
     *data = 99-i;
-    spamm_ll_append(data, &list);
+    spamm_ll_append(data, list);
   }
 
-  //spamm_ll_print(data_to_string, &list);
+  //spamm_ll_print(data_to_string, list);
 
   /* Sort. */
-  spamm_ll_sort(compare, &list);
+  spamm_ll_sort(compare, list);
 
-  //spamm_ll_print(data_to_string, &list);
+  //spamm_ll_print(data_to_string, list);
 
   for (i = 0; i < 100; ++i)
   {
-    data = spamm_ll_get(i, &list);
+    data = spamm_ll_get(i, list);
     if (*data != i)
     {
       LOG("element %i should be %i but is %i\n", i, i, *data);
@@ -56,7 +56,7 @@ main ()
   }
 
   /* Free memory. */
-  spamm_ll_delete(&list);
+  spamm_ll_delete(list);
 
   return 0;
 }
