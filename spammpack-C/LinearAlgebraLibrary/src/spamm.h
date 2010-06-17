@@ -341,12 +341,44 @@ struct spamm_multiply_stream_element_t
   struct spamm_node_t *C_node;
 };
 
+/* Function declarations. */
+
 void
-spamm_log (const char *format, const char *filename, const unsigned int linenumber, ...);
+spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, struct spamm_t *B);
+
+void
+spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node);
+
+void
+spamm_delete (struct spamm_t *A);
+
+void
+spamm_delete_node (struct spamm_node_t *node);
 
 int
 spamm_dense_index (const unsigned int i, const unsigned int j,
     const unsigned int M, const unsigned int N);
+
+void
+spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
+    const unsigned int M_block, const unsigned int N_block,
+    const unsigned int M_child, const unsigned int N_child,
+    const float_t threshold, const float_t *A_dense,
+    struct spamm_t *A);
+
+float_t
+spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
+
+void
+spamm_int_to_binary (const unsigned int integer, const int width, char *binary_string);
+
+void
+spamm_log (const char *format, const char *filename, const unsigned int linenumber, ...);
+
+void
+spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
+    const float_t alpha, const struct spamm_t *A,
+    const struct spamm_t *B, const float_t beta, struct spamm_t *C);
 
 void
 spamm_new (const unsigned int M, const unsigned int N,
@@ -357,53 +389,20 @@ spamm_new (const unsigned int M, const unsigned int N,
 void
 spamm_new_node (struct spamm_node_t **node);
 
-void
-spamm_delete_node (struct spamm_node_t *node);
-
-void
-spamm_delete (struct spamm_t *A);
-
-void
-spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
-    const unsigned int M_block, const unsigned int N_block,
-    const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, const float_t *A_dense,
-    struct spamm_t *A);
-
-void
-spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense);
-
-float_t
-spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
-
-int
-spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_t *A);
+unsigned int
+spamm_number_nonzero (const struct spamm_t *A);
 
 void
 spamm_print_dense (const unsigned int M, const unsigned int N, const float_t *A_dense);
 
 void
-spamm_print_spamm (const struct spamm_t *A);
-
-void
 spamm_print_node (const struct spamm_node_t *node);
 
 void
+spamm_print_spamm (const struct spamm_t *A);
+
+void
 spamm_print_tree (const struct spamm_t *A);
-
-void
-spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node);
-
-void
-spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, struct spamm_t *B);
-
-void
-spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
-    const float_t alpha, const struct spamm_t *A,
-    const struct spamm_t *B, const float_t beta, struct spamm_t *C);
-
-void
-spamm_tree_stats (struct spamm_tree_stats_t *stats, const struct spamm_t *A);
 
 void
 spamm_read_MM (const char *filename,
@@ -411,11 +410,17 @@ spamm_read_MM (const char *filename,
     const unsigned int M_child, const unsigned int N_child,
     const float_t threshold, struct spamm_t *A);
 
-unsigned int
-spamm_number_nonzero (const struct spamm_t *A);
+int
+spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_t *A);
+
+void
+spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense);
 
 void
 spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
     const enum spamm_linear_mask_t mask, struct spamm_t *A);
+
+void
+spamm_tree_stats (struct spamm_tree_stats_t *stats, const struct spamm_t *A);
 
 #endif

@@ -106,12 +106,6 @@ spamm_new (const unsigned int M, const unsigned int N,
   A->M = M;
   A->N = N;
 
-  A->M_block = M_block;
-  A->N_block = N_block;
-
-  A->M_child = M_child;
-  A->N_child = N_child;
-
   /* Pad to powers of M_child x N_child. */
   x_M = fabs(log(M)-log(M_block))/log(M_child);
   x_N = fabs(log(N)-log(N_block))/log(N_child);
@@ -119,14 +113,24 @@ spamm_new (const unsigned int M, const unsigned int N,
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
 
-  A->tree_depth = (unsigned int) ceil(x);
-
   A->number_nonzero_blocks = 0;
 
   A->M_padded = (int) (M_block*pow(M_child, ceil(x)));
   A->N_padded = (int) (N_block*pow(N_child, ceil(x)));
 
+  A->M_block = M_block;
+  A->N_block = N_block;
+
+  A->M_child = M_child;
+  A->N_child = N_child;
+
   A->threshold = threshold;
+
+  A->tree_depth = (unsigned int) ceil(x);
+
+  /* Set the linear tier to depth+1 to indicate that we don't have any linear
+   * trees anywhere. */
+  A->linear_tier = A->tree_depth+1;
 
   A->number_nonzero_blocks = 0;
 

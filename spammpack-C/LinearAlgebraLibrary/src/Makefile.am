@@ -8,9 +8,11 @@ libspamm_la_SOURCES = \
   spamm.h \
   spamm_add.c \
   spamm_delete.c \
+  spamm_delete_node.c \
   spamm_dense_index.c \
   spamm_dense_to_spamm.c \
   spamm_get.c \
+  spamm_int_to_binary.c \
   spamm_logger.c \
   spamm_multiply.c \
   spamm_new.c \
