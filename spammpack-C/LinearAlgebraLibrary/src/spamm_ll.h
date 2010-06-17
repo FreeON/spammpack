@@ -40,31 +40,31 @@ struct spamm_ll_node_t
 };
 
 void
+spamm_ll_append (void *data, struct spamm_ll_t *list);
+
+void
+spamm_ll_delete (struct spamm_ll_t *list);
+
+void *
+spamm_ll_get (const unsigned int i, const struct spamm_ll_t *list);
+
+void
 spamm_ll_initialize (struct spamm_ll_t *list);
 
 void
 spamm_ll_initialize_node (struct spamm_ll_node_t **node);
 
 void
-spamm_ll_delete (struct spamm_ll_t *list);
-
-void
-spamm_ll_append (void *data, struct spamm_ll_t *list);
-
-void *
-spamm_ll_get (const unsigned int i, const struct spamm_ll_t *list);
-
-void
-spamm_ll_swap (struct spamm_ll_node_t **node1, struct spamm_ll_node_t **node2,
-    struct spamm_ll_t *list);
-
-void
-spamm_ll_sort (int (*compare) (const void *data1, const void *data2), struct spamm_ll_t *list);
+spamm_ll_print (char *(*data_to_string) (const void *data), const struct spamm_ll_t *list);
 
 void
 spamm_ll_print_node (char *(*data_to_string) (const void *data), const struct spamm_ll_node_t *node);
 
 void
-spamm_ll_print (char *(*data_to_string) (const void *data), const struct spamm_ll_t *list);
+spamm_ll_sort (int (*compare) (const void *data1, const void *data2), struct spamm_ll_t *list);
+
+void
+spamm_ll_swap (struct spamm_ll_node_t **node1, struct spamm_ll_node_t **node2,
+    struct spamm_ll_t *list);
 
 #endif
