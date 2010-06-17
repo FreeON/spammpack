@@ -45,13 +45,13 @@ struct spamm_mm_t
 };
 
 void *
+spamm_mm_allocate (const unsigned int size, struct spamm_ll_t *memory);
+
+void *
 spamm_mm_grow (const unsigned int chunksize, struct spamm_ll_t *memory);
 
 struct spamm_ll_t *
 spamm_mm_initialize (const unsigned int chunksize);
-
-void *
-spamm_mm_allocate (const unsigned int size, struct spamm_ll_t *memory);
 
 void
 spamm_mm_print (const struct spamm_ll_t *memory);
