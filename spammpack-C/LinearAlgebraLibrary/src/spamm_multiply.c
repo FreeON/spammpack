@@ -383,16 +383,16 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
 
 /** Computes the product
  *
- * C = alpha*A*B + beta*C
+ * \f$C = \alpha A \times B + \beta C\f$
  *
  * @param algorithm The algorithm to use.
- * @param alpha The scalar factor multiplying A*B.
- * @param A The matrix A.
- * @param B The matrix B.
- * @param beta The scalar factor multiplying C.
- * @param C The matrix C.
+ * @param alpha The scalar factor \f$\alpha\f$.
+ * @param A The matrix \f$A\f$.
+ * @param B The matrix \f$B\f$.
+ * @param beta The scalar factor \f$\beta\f$.
+ * @param C The matrix \f$C\f$.
  *
- * \bug A pre-existing C matrix will not work right now.
+ * \bug A pre-existing \f$C\f$ matrix will not work right now.
  */
 void
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,

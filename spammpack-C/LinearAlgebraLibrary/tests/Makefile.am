@@ -11,9 +11,10 @@ noinst_PROGRAMS = \
   mm_allocate \
   create_spamm \
   nonzero_spamm \
+  tree_pack \
   add_spamm \
-  multiply_random_spamm \
-  tree_pack
+  add_spamm_linear \
+  multiply_random_spamm
 
 ll_append_SOURCES = ll_append.c
 ll_sort_SOURCES = ll_sort.c
@@ -21,6 +22,7 @@ mm_allocate_SOURCES = mm_allocate.c
 create_spamm_SOURCES = create_spamm.c
 nonzero_spamm_SOURCES = nonzero_spamm.c
 add_spamm_SOURCES = add_spamm.c
+add_spamm_linear_SOURCES = add_spamm_linear.c
 multiply_random_spamm_SOURCES = multiply_random_spamm.c
 tree_pack_SOURCES = tree_pack.c
 
