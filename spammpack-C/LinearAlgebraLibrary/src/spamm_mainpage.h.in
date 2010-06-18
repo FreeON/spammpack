@@ -7,7 +7,7 @@
  * The public functions of this library are all declared in spamm.h. Useful
  * helper functions are documented in spamm_ll.h and spamm_mm.h.
  *
- * \section Introduction
+ * \section introduction Introduction
  *
  * A spamm_t matrix is defined as an \f$ N \f$-tree on the 2-dimensional
  * matrix elements. The matrix elements at the lowest level are stored in
@@ -28,6 +28,18 @@
  * (columns) of the children nodes per node in the matrix tree, and \f$ d \f$
  * is the depth of the tree. This means that the matrix tree is a quadtree for
  * \f$ M_{\mathrm{child}} = N_{\mathrm{child}} = 2 \f$.
+ *
+ * \section future_milestones Future Milestones
+ *
+ * - Make spamm_add() aware of linear quadtree.
+ * - Make spamm_multiply() aware of linear quadtree.
+ * - Fix bug in spamm_multiply() that pre-existing matrix C does not work
+ *   properly.
+ *
+ * \section achieved_milestones Achieved Milestones
+ *
+ * 2010-06-18: Finished implementing spamm_tree_pack(). Added test for this
+ * function.
  *
  * \version @PACKAGE_VERSION_STRING@
  *

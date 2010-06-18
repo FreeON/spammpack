@@ -19,6 +19,12 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   int i, j;
   struct spamm_node_t *new_node;
 
+  /* We distinguish between the following cases:
+   *
+   * (1) neither A nor B exist --> We are done.
+   * (2) A exists but B doesn't --> We need to create a new node in B.
+   */
+
   if (A_node == NULL && *B_node == NULL)
   {
     /* We are done here. */
@@ -48,6 +54,10 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
     (*B_node)->M_block = A_node->M_block;
     (*B_node)->N_block = A_node->N_block;
   }
+
+  /* Decide on how to recurse further.
+   *
+   */
 
   if (A_node != NULL && A_node->child != NULL && (*B_node)->child == NULL)
   {
@@ -104,6 +114,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
       }
     }
 
+    /* A doesn't exist, only multiply B with beta. */
     else
     {
       for (i = 0; i < (*B_node)->M_child; ++i) {
