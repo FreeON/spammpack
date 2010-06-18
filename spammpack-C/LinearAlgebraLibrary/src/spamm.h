@@ -390,8 +390,8 @@ spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int M_child, const unsigned int N_child,
     const float_t threshold, struct spamm_t *A);
 
-void
-spamm_new_node (struct spamm_node_t **node);
+struct spamm_node_t *
+spamm_new_node ();
 
 unsigned int
 spamm_number_nonzero (const struct spamm_t *A);

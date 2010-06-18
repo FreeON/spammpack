@@ -9,15 +9,15 @@ main ()
   int M[] = { 2, 6, 10, 100 };
   int N[] = { 2, 6, 6,   85 };
 
-  int number_blocks = 2;
-  int M_block[] = { 1, 2 };
-  int N_block[] = { 1, 1 };
+  int number_blocks = 3;
+  int M_block[] = { 1, 2, 2 };
+  int N_block[] = { 1, 1, 2 };
 
   int number_linear_tiers = 3;
   int linear_tier[] = { 0, 1, 3 };
 
-  int number_chunks = 2;
-  int chunksize[] = { 100, 1000 };
+  int number_chunks = 3;
+  int chunksize[] = { 100, 1000, 10000 };
 
   int i, j;
   int i_size, i_block, i_linear, i_chunk;

@@ -22,6 +22,7 @@ matrix_tree_sources = \
   spamm_logger.c \
   spamm_multiply.c \
   spamm_new.c \
+  spamm_new_node.c \
   spamm_number_nonzero.c \
   spamm_print_dense.c \
   spamm_print_node.c \

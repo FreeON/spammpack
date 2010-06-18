@@ -44,7 +44,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
       for (l = 0; l < node->M_child; ++l) {
         for (k = 0; k < node->N_child; ++k)
         {
-          spamm_new_node(&(node->child[spamm_dense_index(l, k, node->M_child, node->N_child)]));
+          node->child[spamm_dense_index(l, k, node->M_child, node->N_child)] = spamm_new_node();
           child_node = node->child[spamm_dense_index(l, k, node->M_child, node->N_child)];
 
           child_node->tier = node->tier+1;
@@ -157,7 +157,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct
     /* Recursively find the leaf node that stores this element. */
     if (A->root == NULL)
     {
-      spamm_new_node(&(A->root));
+      A->root = spamm_new_node();
 
       A->root->tree_depth = A->tree_depth;
 

@@ -28,7 +28,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   if (A_node != NULL && *B_node == NULL)
   {
     /* We need to add to B. */
-    spamm_new_node(B_node);
+    *B_node = spamm_new_node();
 
     (*B_node)->tier = A_node->tier;
     (*B_node)->tree_depth = A_node->tree_depth;
@@ -55,7 +55,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
     for (i = 0; i < A_node->M_child; ++i) {
       for (j = 0; j < A_node->N_child; ++j)
       {
-        spamm_new_node(&((*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)]));
+        (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)] = spamm_new_node();
         new_node = (*B_node)->child[spamm_dense_index(i, j, (*B_node)->M_child, (*B_node)->N_child)];
 
         new_node->tier = (*B_node)->tier+1;
