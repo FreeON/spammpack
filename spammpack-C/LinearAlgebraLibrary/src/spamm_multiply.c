@@ -502,7 +502,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       gettimeofday(&stop, NULL);
       LOG("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-      spamm_ll_delete(multiply_stream);
+      spamm_ll_delete(free, &multiply_stream);
       break;
 
     default:

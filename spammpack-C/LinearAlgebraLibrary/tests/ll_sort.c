@@ -56,7 +56,7 @@ main ()
   }
 
   /* Free memory. */
-  spamm_ll_delete(list);
+  spamm_ll_delete(free, &list);
 
   return 0;
 }
