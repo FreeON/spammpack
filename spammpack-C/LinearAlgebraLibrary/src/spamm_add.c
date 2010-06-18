@@ -4,14 +4,14 @@
 
 /** \private Calculate
  *
- * B_node = alpha*A_node + beta*B_node
+ * \f$B_{\mathrm node} = \alpha A_{\mathrm node} + \beta B_{\mathrm node}\f$
  *
  * This is the recursive part. Use spamm_add() instead.
  *
- * @param alpha The factor alpha.
- * @param A_node Matrix node A.
- * @param beta The factor beta.
- * @param B_node Matrix node B.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param A_node Matrix node \f$A\f$.
+ * @param beta The factor \f$\beta\f$.
+ * @param B_node Matrix node \f$B\f$.
  */
 void
 spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node)
@@ -139,22 +139,16 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
       }
     }
   }
-
-  else
-  {
-    //LOG2("else?\n");
-  }
 }
 
 /** Calculate
  *
- * B = alpha*A + beta*B
+ * \f$B = \alpha A + \beta B\f$
  *
- *
- * @param alpha The factor alpha.
- * @param A Matrix A.
- * @param beta The factor beta.
- * @param B Matrix B.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param A Matrix \f$A\f$.
+ * @param beta The factor \f$\beta\f$.
+ * @param B Matrix \f$B\f$.
  */
 void
 spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, struct spamm_t *B)

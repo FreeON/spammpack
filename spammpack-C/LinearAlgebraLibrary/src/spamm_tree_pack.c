@@ -160,6 +160,6 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
 
   else
   {
-    LOG2("A is empty, nothing to pack\n");
+    //LOG2("A is empty, nothing to pack\n");
   }
 }
