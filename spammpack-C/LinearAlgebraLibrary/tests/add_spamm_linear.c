@@ -39,6 +39,8 @@ main ()
 
   int result = 0;
 
+  spamm_set_loglevel(debug);
+
   for (i_fill = 0; i_fill < max_fill; ++i_fill) {
     for (i_size = 0; i_size < max_size; ++i_size) {
       for (i_block = 0; i_block < max_block; ++i_block) {
@@ -70,6 +72,7 @@ main ()
 
               /* Pack linear quadtrees. */
               spamm_tree_pack(linear_tier[i_linear], chunksize[i_chunk], i_mask, &A);
+              spamm_tree_pack(linear_tier[i_linear], chunksize[i_chunk], i_mask, &B);
 
               //printf("B =\n");
               //spamm_print_tree(&B);
@@ -103,8 +106,8 @@ main ()
                 {
                   if (spamm_get(i, j, &B) != spamm_get(i, j, &B_test))
                   {
-                    printf("[add_spamm] mismatch: (B_test[%i][%i] = %e) != (B[%i][%i] = %e)\n", i, j, spamm_get(i, j, &B_test), i, j, spamm_get(i, j, &B));
-                    result = 1;
+                    LOG_FATAL("mismatch: (B_test[%i][%i] = %e) != (B[%i][%i] = %e)\n", i, j, spamm_get(i, j, &B_test), i, j, spamm_get(i, j, &B));
+                    return -1;
                   }
                 }
               }

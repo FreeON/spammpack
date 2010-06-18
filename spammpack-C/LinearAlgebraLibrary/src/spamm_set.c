@@ -26,7 +26,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
   {
     if (node->block_dense == NULL)
     {
-      LOG2("bug!\n");
+      LOG2_FATAL("bug!\n");
       exit(1);
     }
 
@@ -107,7 +107,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
             break;
 
           default:
-            LOG2("bug?\n");
+            LOG2_FATAL("bug?\n");
             exit(1);
             break;
         }
@@ -149,8 +149,8 @@ spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct
 
   assert(A != NULL);
 
-  if (i >= A->M) { LOG("(i = %i) >= (M = %i)\n", i, A->M); exit(1); }
-  if (j >= A->N) { LOG("(j = %i) >= (N = %i)\n", j, A->N); exit(1); }
+  if (i >= A->M) { LOG_FATAL("(i = %i) >= (M = %i)\n", i, A->M); exit(1); }
+  if (j >= A->N) { LOG_FATAL("(j = %i) >= (N = %i)\n", j, A->N); exit(1); }
 
   if (fabs(Aij) > A->threshold)
   {

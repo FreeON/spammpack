@@ -57,12 +57,12 @@ main (int argc, char **argv)
         break;
 
       default:
-        spamm_log("unknown command line option\n", __FILE__, __LINE__);
+        LOG2_FATAL("unknown command line option\n");
         return -1;
         break;
     }
   }
-  LOG("generating 2 random %ix%i matrices with %ix%i blocks\n", N, N, M_block, N_block);
+  LOG_INFO("generating 2 random %ix%i matrices with %ix%i blocks\n", N, N, M_block, N_block);
 
   A_dense = (float_t*) malloc(sizeof(float_t)*N*N);
   B_dense = (float_t*) malloc(sizeof(float_t)*N*N);
@@ -79,7 +79,7 @@ main (int argc, char **argv)
   }
 
 #if defined(DGEMM)
-  spamm_log("multiplying matrix with BLAS to get reference product... ", __FILE__, __LINE__);
+  LOG2_INFO("multiplying matrix with BLAS to get reference product... ");
   alpha = 1.0;
   beta = 0.0;
   gettimeofday(&start, NULL);
@@ -88,7 +88,7 @@ main (int argc, char **argv)
   timing_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
   printf("time elapsed: %f s\n", timing_blas);
 #else
-  spamm_log("multiplying matrix directly to get reference product... ", __FILE__, __LINE__);
+  LOG2_INFO("multiplying matrix directly to get reference product... ");
   gettimeofday(&start, NULL);
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
@@ -108,25 +108,25 @@ main (int argc, char **argv)
   spamm_new(N, N, M_block, N_block, 2, 2, 0.0, &B);
   spamm_new(N, N, M_block, N_block, 2, 2, 0.0, &C);
 
-  spamm_log("converting dense to spamm... ", __FILE__, __LINE__);
+  LOG2_INFO("converting dense to spamm... ");
   gettimeofday(&start, NULL);
   spamm_dense_to_spamm(N, N, M_block, N_block, 2, 2, 0.0, A_dense, &A);
   spamm_dense_to_spamm(N, N, M_block, N_block, 2, 2, 0.0, B_dense, &B);
   gettimeofday(&stop, NULL);
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-  spamm_log("multiplying matrix with spamm\n", __FILE__, __LINE__);
+  LOG2_INFO("multiplying matrix with spamm\n");
   gettimeofday(&start, NULL);
   spamm_multiply(cache, 1.0, &A, &B, 1.0, &C);
   gettimeofday(&stop, NULL);
   timing_spamm = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
-  LOG("product has %u nonzero elements\n", spamm_number_nonzero(&C));
-  LOG("total spamm time elapsed: %f s\n", timing_spamm);
+  LOG_INFO("product has %u nonzero elements\n", spamm_number_nonzero(&C));
+  LOG_INFO("total spamm time elapsed: %f s\n", timing_spamm);
 
   /* Print out some exciting results. */
-  LOG("ratio between SpAMM and BLAS: %f\n", timing_spamm/timing_blas);
+  LOG_INFO("ratio between SpAMM and BLAS: %f\n", timing_spamm/timing_blas);
 
-  spamm_log("comparing matrices\n", __FILE__, __LINE__);
+  LOG2_INFO("comparing matrices\n");
   max_diff = 0;
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j)

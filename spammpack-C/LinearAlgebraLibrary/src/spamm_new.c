@@ -24,37 +24,37 @@ spamm_new (const unsigned int M, const unsigned int N,
 
   if (M <= 0)
   {
-    LOG2("M <= 0\n");
+    LOG2_FATAL("M <= 0\n");
     exit(1);
   }
 
   if (N <= 0)
   {
-    LOG2("N <= 0\n");
+    LOG2_FATAL("N <= 0\n");
     exit(1);
   }
 
   if (M_block <= 0)
   {
-    LOG2("M_block <= 0\n");
+    LOG2_FATAL("M_block <= 0\n");
     exit(1);
   }
 
   if (N_block <= 0)
   {
-    LOG2("N_block <= 0\n");
+    LOG2_FATAL("N_block <= 0\n");
     exit(1);
   }
 
   if (M_child <= 0)
   {
-    LOG2("M_child <= 0\n");
+    LOG2_FATAL("M_child <= 0\n");
     exit(1);
   }
 
   if (N_child <= 0)
   {
-    LOG2("N_child <= 0\n");
+    LOG2_FATAL("N_child <= 0\n");
     exit(1);
   }
 

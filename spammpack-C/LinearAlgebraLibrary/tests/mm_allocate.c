@@ -35,7 +35,7 @@ main ()
     {
       if (i != *(i_pointer[i]))
       {
-        LOG("value mismatch: found %i but should be %i\n", *(i_pointer[i]), i);
+        LOG_FATAL("value mismatch: found %i but should be %i\n", *(i_pointer[i]), i);
         return -1;
       }
       i++;

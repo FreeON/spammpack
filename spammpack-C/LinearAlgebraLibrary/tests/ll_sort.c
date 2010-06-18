@@ -50,7 +50,7 @@ main ()
     data = spamm_ll_get(i, list);
     if (*data != i)
     {
-      LOG("element %i should be %i but is %i\n", i, i, *data);
+      LOG_FATAL("element %i should be %i but is %i\n", i, i, *data);
       return -1;
     }
   }

@@ -22,7 +22,7 @@ spamm_ll_iterator_new (struct spamm_ll_t *list)
 
   else
   {
-    LOG2("failed to allocate iterator\n");
+    LOG2_FATAL("failed to allocate iterator\n");
   }
 
   return result;

@@ -17,13 +17,13 @@ spamm_mm_grow (const unsigned int chunksize, struct spamm_mm_t *memory)
   {
     spamm_ll_append(chunk, memory->chunks);
 #ifdef SPAMM_MM_DEBUG
-    LOG("allocated chunk of %u bytes from %p to %p\n", chunksize, chunk->data, ((char*) chunk->data)+chunksize);
+    LOG_DEBUG("allocated chunk of %u bytes from %p to %p\n", chunksize, chunk->data, ((char*) chunk->data)+chunksize);
 #endif
   }
 
   else
   {
-    LOG2("failed to allocate chunk\n");
+    LOG2_FATAL("failed to allocate chunk\n");
   }
 
   return chunk;
