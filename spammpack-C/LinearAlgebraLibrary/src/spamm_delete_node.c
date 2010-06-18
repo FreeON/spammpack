@@ -20,7 +20,7 @@ spamm_delete_node (struct spamm_node_t *node)
 
   if (node->linear_quadtree != NULL)
   {
-    spamm_ll_delete(node->linear_quadtree);
+    spamm_ll_delete(NULL, &node->linear_quadtree);
     spamm_mm_delete(node->linear_quadtree_memory);
   }
 
