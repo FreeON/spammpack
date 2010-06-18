@@ -17,6 +17,7 @@ void
 spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node)
 {
   int i, j;
+  char binary_string[100];
   struct spamm_node_t *new_node;
   struct spamm_ll_iterator_t *iterator_A, *iterator_B;
   struct spamm_ll_node_t *linear_node_A, *linear_node_B;
@@ -31,12 +32,14 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   if (A_node == NULL && *B_node == NULL)
   {
     /* We are done here. */
+    LOG2_DEBUG("A and B are NULL\n");
     return;
   }
 
   if (A_node != NULL && *B_node == NULL)
   {
     /* We need to add to B. */
+    LOG2_DEBUG("A != NULL && B == NULL: creating new tree node in B\n");
     *B_node = spamm_new_node();
 
     (*B_node)->tier = A_node->tier;
@@ -64,6 +67,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
     /* We need to recurse further. A still has children nodes, but B doesn't.
      * We therefore create children nodes in B.
      */
+    LOG2_DEBUG("A has children, B does not. Creating children in B to recurse.\n");
     (*B_node)->child = (struct spamm_node_t**) malloc(sizeof(struct spamm_node_t*)*(*B_node)->M_child*(*B_node)->N_child);
     for (i = 0; i < A_node->M_child; ++i) {
       for (j = 0; j < A_node->N_child; ++j)
@@ -96,6 +100,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   {
     /* We can stop recursing. A has a dense block but B doesn't. We therefore
      * create an empty dense block in B. */
+    LOG2_DEBUG("A and B have a dense block here.\n");
     (*B_node)->block_dense = (float_t*) malloc(sizeof(float_t)*(*B_node)->M_block*(*B_node)->N_block);
     for (i = 0; i < (*B_node)->M_block; ++i) {
       for (j = 0; j < (*B_node)->N_block; ++j)
@@ -108,12 +113,15 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
   if (A_node != NULL && A_node->linear_quadtree != NULL && (*B_node)->linear_quadtree == NULL)
   {
     /* Create a new linear quadtree in B. */
+    LOG2_DEBUG("A has linear quadtree, B does not.\n");
     (*B_node)->linear_quadtree = spamm_ll_new();
     (*B_node)->linear_quadtree_memory = spamm_mm_new(A_node->linear_quadtree_memory->chunksize);
   }
 
   if ((*B_node)->child != NULL)
   {
+    LOG2_DEBUG("B has children, recursing further.\n");
+
     /* Recurse further down in A & B. */
     if (A_node != NULL && A_node->child != NULL)
     {
@@ -139,6 +147,8 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
 
   else if ((*B_node)->block_dense != NULL)
   {
+    LOG2_DEBUG("B has a dense block.\n");
+
     /* Add dense blocks. */
     if (A_node != NULL && A_node->block_dense != NULL)
     {
@@ -165,6 +175,8 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
 
   else if ((*B_node)->linear_quadtree != NULL)
   {
+    LOG2_DEBUG("B has a linear quadtree.\n");
+
     /* Multiply B with beta. */
     iterator_B = spamm_ll_iterator_new((*B_node)->linear_quadtree);
     for (linear_node_B = spamm_ll_iterator_first(iterator_B); linear_node_B != NULL; linear_node_B = spamm_ll_iterator_next(iterator_B))
@@ -182,10 +194,15 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
     /* Add to B to A. */
     if (A_node != NULL && A_node->linear_quadtree != NULL)
     {
+      LOG2_DEBUG("adding existing linear quadtree of A to B.\n");
+
       iterator_A = spamm_ll_iterator_new(A_node->linear_quadtree);
       for (linear_node_A = spamm_ll_iterator_first(iterator_A); linear_node_A != NULL; linear_node_A = spamm_ll_iterator_next(iterator_A))
       {
         linear_A = linear_node_A->data;
+
+        spamm_int_to_binary(linear_A->index, A_node->tree_depth*2, binary_string);
+        LOG_DEBUG("found block in A: %s\n", binary_string);
 
         /* Search B to find whether we have a matching block that we can add.
          * If not, we need to create a new one.
@@ -198,6 +215,8 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
           if (linear_A->index == linear_B->index)
           {
             /* Found matching block in B. */
+            spamm_int_to_binary(linear_A->index, A_node->tree_depth*2, binary_string);
+            LOG_DEBUG("found matching block in B: index = %s\n", binary_string);
             break;
           }
         }
@@ -206,6 +225,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
         if (linear_B == NULL || (linear_B != NULL && linear_A->index != linear_B->index))
         {
           /* We didn't find a matching block in B. Create a new one. */
+          LOG2_DEBUG("could not find matching block in B. Creating new one.\n");
           linear_B = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+(*B_node)->M_block*(*B_node)->N_block*sizeof(float_t)+8, (*B_node)->linear_quadtree_memory);
           spamm_ll_append(linear_B, (*B_node)->linear_quadtree);
           linear_B->block_dense = (float_t*) (((void*) linear_B)+sizeof(struct spamm_linear_quadtree_t));
@@ -219,6 +239,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
         }
 
         /* Add blocks of A and B. */
+        LOG2_DEBUG("adding A and B blocks\n");
         for (i = 0; i < (*B_node)->M_block; ++i) {
           for (j = 0; j < (*B_node)->N_block; ++j)
           {
@@ -288,5 +309,7 @@ spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, str
     exit(1);
   }
 
+  LOG2_DEBUG("starting to add...\n");
   spamm_add_node(alpha, A->root, beta, &(B->root));
+  LOG2_DEBUG("done.\n");
 }
