@@ -40,6 +40,20 @@
  * guarantee contiguous allocation of several memory block. Blocks are
  * allocated with a call to spamm_mm_allocate(). A pointer is returned to the
  * start of the allocated memory block.
+ *
+ * A typical code fragment:
+ *
+ * \code
+ * struct spamm_mm_t *memory;
+ * int *i;
+ *
+ * memory = spamm_mm_new(chunksize);
+ * i = spamm_mm_allocate(sizeof(int), memory);
+ *
+ * *i = 1;
+ *
+ * spamm_mm_delete(&memory);
+ * \endcode
  */
 
 /** Memory managed by this memory manager. */

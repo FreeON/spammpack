@@ -46,6 +46,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
       /* Read from linear tree. */
       linear_iterator = spamm_ll_iterator_new(node->linear_quadtree);
 
+      LOG2_DEBUG("walking through linear quadtree\n");
       for (linear_tree_node = spamm_ll_iterator_first(linear_iterator); linear_tree_node != NULL; linear_tree_node = spamm_ll_iterator_next(linear_iterator))
       {
         linear_element = linear_tree_node->data;
@@ -108,6 +109,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
         }
       }
       spamm_ll_iterator_delete(&linear_iterator);
+      return 0.0;
     }
 
     else { return 0.0; }
@@ -150,6 +152,7 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
   /* Recurse down to find the element. */
   if (A->root != NULL)
   {
+    LOG_DEBUG("getting element A(%u,%u)\n", i, j);
     return spamm_get_element(i, j, A->root);
   }
 
