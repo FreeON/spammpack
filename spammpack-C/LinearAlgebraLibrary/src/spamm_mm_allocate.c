@@ -17,7 +17,7 @@ spamm_mm_allocate (const unsigned int size, struct spamm_mm_t *memory)
   assert(memory != NULL);
 
 #ifdef SPAMM_MM_DEBUG
-  spamm_log("starting...\n", __FILE__, __LINE__);
+  LOG2("starting...\n");
   spamm_mm_print(memory);
 #endif
 
@@ -28,7 +28,7 @@ spamm_mm_allocate (const unsigned int size, struct spamm_mm_t *memory)
 
   if (size > chunksize)
   {
-    spamm_log("requested size is larger than chunksize\n", __FILE__, __LINE__);
+    LOG2("requested size is larger than chunksize\n");
   }
 
   else
@@ -57,7 +57,7 @@ spamm_mm_allocate (const unsigned int size, struct spamm_mm_t *memory)
     if (chunk->allocated_start->number_elements == 0)
     {
 #ifdef SPAMM_MM_DEBUG
-      spamm_log("allocating first memory block\n", __FILE__, __LINE__);
+      LOG2("allocating first memory block\n");
 #endif
       spamm_ll_append(((char*) chunk->data), chunk->allocated_start);
       spamm_ll_append(((char*) chunk->data)+size-1, chunk->allocated_end);
@@ -66,7 +66,7 @@ spamm_mm_allocate (const unsigned int size, struct spamm_mm_t *memory)
     else
     {
 #ifdef SPAMM_MM_DEBUG
-      spamm_log("allocating memory block\n", __FILE__, __LINE__);
+      LOG2("allocating memory block\n");
 #endif
       spamm_ll_append(((char*) chunk->allocated_end->last->data)+1, chunk->allocated_start);
       spamm_ll_append(((char*) chunk->allocated_end->last->data)+1+size-1, chunk->allocated_end);
@@ -80,7 +80,7 @@ spamm_mm_allocate (const unsigned int size, struct spamm_mm_t *memory)
   }
 
 #ifdef SPAMM_MM_DEBUG
-  spamm_log("done.\n", __FILE__, __LINE__);
+  LOG2("done.\n");
   spamm_mm_print(memory);
 #endif
 

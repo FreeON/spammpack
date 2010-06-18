@@ -142,7 +142,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
 
   else
   {
-    //LOG("else?\n");
+    //LOG2("else?\n");
   }
 }
 

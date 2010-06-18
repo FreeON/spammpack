@@ -25,7 +25,7 @@ spamm_ll_new ()
 
   else
   {
-    spamm_log("error allocating new list\n", __FILE__, __LINE__);
+    LOG2("error allocating new list\n");
   }
 
   return result;

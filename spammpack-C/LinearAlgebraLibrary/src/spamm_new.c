@@ -24,37 +24,37 @@ spamm_new (const unsigned int M, const unsigned int N,
 
   if (M <= 0)
   {
-    spamm_log("M <= 0\n", __FILE__, __LINE__);
+    LOG2("M <= 0\n");
     exit(1);
   }
 
   if (N <= 0)
   {
-    spamm_log("N <= 0\n", __FILE__, __LINE__);
+    LOG2("N <= 0\n");
     exit(1);
   }
 
   if (M_block <= 0)
   {
-    spamm_log("M_block <= 0\n", __FILE__, __LINE__);
+    LOG2("M_block <= 0\n");
     exit(1);
   }
 
   if (N_block <= 0)
   {
-    spamm_log("N_block <= 0\n", __FILE__, __LINE__);
+    LOG2("N_block <= 0\n");
     exit(1);
   }
 
   if (M_child <= 0)
   {
-    spamm_log("M_child <= 0\n", __FILE__, __LINE__);
+    LOG2("M_child <= 0\n");
     exit(1);
   }
 
   if (N_child <= 0)
   {
-    spamm_log("N_child <= 0\n", __FILE__, __LINE__);
+    LOG2("N_child <= 0\n");
     exit(1);
   }
 

@@ -20,7 +20,7 @@ typedef FLOATING_PRECISION float_t;
  *
  * Typical use of this macro:
  *
- * <code>LOG("opening new file: %s", filename);</code>
+ * <code>LOG("opening new file: %s\n", filename);</code>
  *
  * Compare to spamm_log().
  *
@@ -28,6 +28,19 @@ typedef FLOATING_PRECISION float_t;
  *               syntax.
  */
 #define LOG(format, ...) spamm_log(format, __FILE__, __LINE__, __VA_ARGS__)
+
+/** Define shortcut macro for logging.
+ *
+ * Typical use of this macro:
+ *
+ * <code>LOG2("a message without arguments\n");</code>
+ *
+ * Compare to spamm_log().
+ *
+ * @param format Format string. See printf() for a detailed description of its
+ *               syntax.
+ */
+#define LOG2(format) spamm_log(format, __FILE__, __LINE__)
 
 /* Definition of return codes. */
 
