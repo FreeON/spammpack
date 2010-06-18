@@ -21,7 +21,7 @@ spamm_ll_new_node ()
 
   else
   {
-    spamm_log("failed to allocated new node\n", __FILE__, __LINE__);
+    LOG2("failed to allocated new node\n");
   }
 
   return result;

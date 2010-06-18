@@ -98,7 +98,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
   {
     /* Delete tree, which is replaced now by linear quadtree. */
 #ifdef SPAMM_DEBUG
-    spamm_log("done packing, deleting original tree\n", __FILE__, __LINE__);
+    LOG2("done packing, deleting original tree\n");
 #endif
     if (node->block_dense != NULL)
     {
@@ -148,7 +148,7 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
   A->linear_tier = linear_tier;
 
 #ifdef SPAMM_DEBUG
-  spamm_log("packing tree\n", __FILE__, __LINE__);
+  LOG2("packing tree\n");
 #endif
 
   /* Recurse tree and convert to linear trees any subtrees below linear_tier.
@@ -160,6 +160,6 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
 
   else
   {
-    spamm_log("A is empty, nothing to pack\n", __FILE__, __LINE__);
+    LOG2("A is empty, nothing to pack\n");
   }
 }

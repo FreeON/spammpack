@@ -23,7 +23,7 @@ spamm_mm_grow (const unsigned int chunksize, struct spamm_mm_t *memory)
 
   else
   {
-    spamm_log("failed to allocate chunk\n", __FILE__, __LINE__);
+    LOG2("failed to allocate chunk\n");
   }
 
   return chunk;

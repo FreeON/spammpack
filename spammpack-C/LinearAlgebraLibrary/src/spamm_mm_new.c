@@ -30,7 +30,7 @@ spamm_mm_new (const unsigned int chunksize)
       /* Allocate memory for data chunk bookkeeping structure. */
       if (spamm_mm_grow(chunksize, result) == NULL)
       {
-        spamm_log("failed to grow memory\n", __FILE__, __LINE__);
+        LOG2("failed to grow memory\n");
         return NULL;
       }
     }
@@ -39,7 +39,7 @@ spamm_mm_new (const unsigned int chunksize)
     {
       /* Allocation error occurred while trying to get memory for the linked
        * list. */
-      spamm_log("allocation of linked list failed\n", __FILE__, __LINE__);
+      LOG2("allocation of linked list failed\n");
       free(result);
       result = NULL;
     }

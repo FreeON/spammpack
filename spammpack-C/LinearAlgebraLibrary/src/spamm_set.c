@@ -26,7 +26,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
   {
     if (node->block_dense == NULL)
     {
-      spamm_log("bug!\n", __FILE__, __LINE__);
+      LOG2("bug!\n");
       exit(1);
     }
 
@@ -107,7 +107,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
             break;
 
           default:
-            spamm_log("bug?\n", __FILE__, __LINE__);
+            LOG2("bug?\n");
             exit(1);
             break;
         }

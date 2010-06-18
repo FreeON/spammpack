@@ -22,7 +22,7 @@ spamm_ll_iterator_new (struct spamm_ll_t *list)
 
   else
   {
-    spamm_log("failed to allocate iterator\n", __FILE__, __LINE__);
+    LOG2("failed to allocate iterator\n");
   }
 
   return result;

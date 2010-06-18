@@ -116,7 +116,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
             break;
 
           default:
-            spamm_log("bug?\n", __FILE__, __LINE__);
+            LOG2("bug?\n");
             exit(1);
             break;
         }
@@ -208,7 +208,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         break;
 
       default:
-        spamm_log("unknown algorithm\n", __FILE__, __LINE__);
+        LOG2("unknown algorithm\n");
         exit(1);
         break;
     }
@@ -462,7 +462,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
 
   if (C->root != NULL)
   {
-    spamm_log("[FIXME] can not handle pre-existing C\n", __FILE__, __LINE__);
+    LOG2("[FIXME] can not handle pre-existing C\n");
     exit(1);
   }
 
@@ -506,7 +506,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       break;
 
     default:
-      spamm_log("unknown algorithm\n", __FILE__, __LINE__);
+      LOG2("unknown algorithm\n");
       exit(1);
       break;
   }
