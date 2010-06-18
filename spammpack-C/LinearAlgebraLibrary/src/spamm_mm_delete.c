@@ -7,7 +7,11 @@
  * @param memory The managed memory.
  */
 void
-spamm_mm_delete (struct spamm_mm_t *memory)
+spamm_mm_delete (struct spamm_mm_t **memory)
 {
-  assert(memory != NULL);
+  assert(*memory != NULL);
+
+  spamm_ll_delete(spamm_mm_delete_chunk, &(*memory)->chunks);
+  free(*memory);
+  *memory = NULL;
 }

@@ -78,7 +78,10 @@ void *
 spamm_mm_allocate (const unsigned int size, struct spamm_mm_t *memory);
 
 void
-spamm_mm_delete (struct spamm_mm_t *memory);
+spamm_mm_delete (struct spamm_mm_t **memory);
+
+void
+spamm_mm_delete_chunk (void *data);
 
 void *
 spamm_mm_grow (const unsigned int chunksize, struct spamm_mm_t *memory);
