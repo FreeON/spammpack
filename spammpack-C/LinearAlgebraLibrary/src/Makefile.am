@@ -54,6 +54,7 @@ memory_manager_sources = \
   spamm_mm.h \
   spamm_mm_allocate.c \
   spamm_mm_delete.c \
+  spamm_mm_delete_chunk.c \
   spamm_mm_grow.c \
   spamm_mm_new.c \
   spamm_mm_new_chunk.c \

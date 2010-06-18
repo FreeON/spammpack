@@ -15,11 +15,8 @@ spamm_delete (struct spamm_t *A)
   //LOG("deleting matrix\n");
   if (A->root != NULL)
   {
-    spamm_delete_node(A->root);
+    spamm_delete_node(&A->root);
   }
-
-  free(A->root);
-  A->root = NULL;
 
   A->M = 0;
   A->N = 0;

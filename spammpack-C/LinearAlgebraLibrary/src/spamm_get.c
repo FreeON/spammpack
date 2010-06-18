@@ -103,6 +103,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
 
         if (i >= M_lower && i < M_upper && j >= N_lower && j < N_upper)
         {
+          spamm_ll_iterator_delete(&linear_iterator);
           return linear_element->block_dense[spamm_dense_index(i-M_lower, j-N_lower, node->M_block, node->N_block)];
         }
       }

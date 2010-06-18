@@ -357,7 +357,7 @@ void
 spamm_delete (struct spamm_t *A);
 
 void
-spamm_delete_node (struct spamm_node_t *node);
+spamm_delete_node (struct spamm_node_t **node);
 
 int
 spamm_dense_index (const unsigned int i, const unsigned int j,

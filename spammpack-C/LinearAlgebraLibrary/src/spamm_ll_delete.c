@@ -29,4 +29,5 @@ spamm_ll_delete (void (*delete_data) (void*), struct spamm_ll_t **list)
   }
 
   free(*list);
+  *list = NULL;
 }

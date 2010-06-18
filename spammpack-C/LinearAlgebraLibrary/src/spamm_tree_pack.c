@@ -22,6 +22,8 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
   int i, j;
   struct spamm_linear_quadtree_t *linear_block;
 
+  assert(node != NULL);
+
   node->linear_tier = linear_tier;
 
   if (node->tier == linear_tier)
@@ -98,7 +100,23 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
 #ifdef SPAMM_DEBUG
     spamm_log("done packing, deleting original tree\n", __FILE__, __LINE__);
 #endif
-    //spamm_delete_node(node);
+    if (node->block_dense != NULL)
+    {
+      free(node->block_dense);
+      node->block_dense = NULL;
+    }
+
+    if (node->child != NULL)
+    {
+      for (i = 0; i < node->M_child; ++i) {
+        for (j = 0; j < node->N_child; ++j)
+        {
+          spamm_delete_node(&node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+        }
+      }
+      free(node->child);
+      node->child = NULL;
+    }
   }
 }
 
