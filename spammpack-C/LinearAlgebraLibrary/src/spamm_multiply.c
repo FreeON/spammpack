@@ -33,7 +33,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   if (*C_node == NULL)
   {
     /* Create new node. */
-    spamm_new_node(C_node);
+    *C_node = spamm_new_node();
 
     (*C_node)->tier = A_node->tier+1;
     (*C_node)->tree_depth = A_node->tree_depth;
@@ -65,7 +65,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
       for (i = 0; i < (*C_node)->M_child; ++i) {
         for (j = 0; j < (*C_node)->N_child; ++j)
         {
-          spamm_new_node(&((*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)]));
+          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)] = spamm_new_node();
 
           C_child_node = (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)];
           C_child_node->tier = (*C_node)->tier+1;
