@@ -52,7 +52,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
 
 #ifdef SPAMM_DEBUG
         spamm_int_to_binary(linear_element->index, node->tree_depth*2, binary_string_1);
-        LOG("looking at memory starting at %p with index %o (%s)\n", linear_element, linear_element->index, binary_string_1);
+        LOG_DEBUG("looking at memory starting at %p with index %o (%s)\n", linear_element, linear_element->index, binary_string_1);
 #endif
 
         /* Reconstruct matrix indices from linear index. */
@@ -68,7 +68,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
         spamm_int_to_binary(mask_i, node->tree_depth*2, binary_string_1);
         spamm_int_to_binary(mask_j, node->tree_depth*2, binary_string_2);
         spamm_print_node(node);
-        LOG("mask_i = %s, mask_j = %s\n", binary_string_1, binary_string_2);
+        LOG_DEBUG("mask_i = %s, mask_j = %s\n", binary_string_1, binary_string_2);
 #endif
 
         for (l = node->tier; l < node->tree_depth; ++l)
@@ -76,18 +76,18 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
 #ifdef SPAMM_DEBUG
           spamm_int_to_binary(linear_element->index & mask_i, node->tree_depth*2, binary_string_1);
           spamm_int_to_binary(linear_element->index & mask_j, node->tree_depth*2, binary_string_2);
-          LOG("applying mask_i = %s\n", binary_string_1);
-          LOG("applying mask_j = %s\n", binary_string_2);
+          LOG_DEBUG("applying mask_i = %s\n", binary_string_1);
+          LOG_DEBUG("applying mask_j = %s\n", binary_string_2);
 
-          LOG("bit_i = %u\n", ((linear_element->index & mask_i) != 0 ? 1 : 0));
-          LOG("bit_j = %u\n", ((linear_element->index & mask_j) != 0 ? 1 : 0));
+          LOG_DEBUG("bit_i = %u\n", ((linear_element->index & mask_i) != 0 ? 1 : 0));
+          LOG_DEBUG("bit_j = %u\n", ((linear_element->index & mask_j) != 0 ? 1 : 0));
 #endif
 
           M_lower += ((linear_element->index & mask_i) != 0 ? 1 : 0)*(node->M_upper-node->M_lower)/(1 << (l+1-node->tier));
           N_lower += ((linear_element->index & mask_j) != 0 ? 1 : 0)*(node->N_upper-node->N_lower)/(1 << (l+1-node->tier));
 
 #ifdef SPAMM_DEBUG
-          LOG("M_lower = %u, N_lower = %u\n", M_lower, N_lower);
+          LOG_DEBUG("M_lower = %u, N_lower = %u\n", M_lower, N_lower);
 #endif
 
           mask_i = mask_i >> 2;
@@ -98,7 +98,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
         N_upper = N_lower+node->N_block;
 
 #ifdef SPAMM_DEBUG
-        LOG("M_lower = %u, M_upper = %u, N_lower = %u, N_upper = %u\n", M_lower, M_upper, N_lower, N_upper);
+        LOG_DEBUG("M_lower = %u, M_upper = %u, N_lower = %u, N_upper = %u\n", M_lower, M_upper, N_lower, N_upper);
 #endif
 
         if (i >= M_lower && i < M_upper && j >= N_lower && j < N_upper)
@@ -144,8 +144,8 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
 {
   assert(A != NULL);
 
-  if (i >= A->M) { LOG("(i = %i) >= (M = %i)\n", i, A->M); exit(1); }
-  if (j >= A->N) { LOG("(j = %i) >= (N = %i)\n", j, A->N); exit(1); }
+  if (i >= A->M) { LOG_FATAL("(i = %i) >= (M = %i)\n", i, A->M); exit(1); }
+  if (j >= A->N) { LOG_FATAL("(j = %i) >= (N = %i)\n", j, A->N); exit(1); }
 
   /* Recurse down to find the element. */
   if (A->root != NULL)

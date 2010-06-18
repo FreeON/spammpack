@@ -19,7 +19,7 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
   //spamm_print_node(node);
   if (node->block_dense != NULL)
   {
-    //LOG("counting dense block\n");
+    LOG2_DEBUG("counting dense block\n");
     for (i = 0; i < node->M_block; ++i) {
       for (j = 0; j < node->N_block; ++j)
       {
@@ -29,7 +29,7 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
         }
       }
     }
-    //LOG("counted %u nonzero elements in this block\n", result);
+    LOG_DEBUG("counted %u nonzero elements in this block\n", result);
   }
 
   else if (node->child != NULL)
@@ -58,7 +58,7 @@ spamm_number_nonzero (const struct spamm_t *A)
 
   assert(A != NULL);
 
-  //LOG("starting to recurse\n");
+  LOG2_DEBUG("starting to recurse\n");
   if (A->root != NULL)
   {
     result = spamm_number_nonzero_node (A->root);

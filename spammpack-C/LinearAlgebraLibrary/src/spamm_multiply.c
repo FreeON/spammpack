@@ -116,7 +116,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
             break;
 
           default:
-            LOG2("bug?\n");
+            LOG2_FATAL("bug?\n");
             exit(1);
             break;
         }
@@ -208,7 +208,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         break;
 
       default:
-        LOG2("unknown algorithm\n");
+        LOG2_FATAL("unknown algorithm\n");
         exit(1);
         break;
     }
@@ -375,7 +375,7 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
   }
 
   /* Print statistics. */
-  LOG("blocks loaded: stream length = %3u cache = %3u A = %3u B = %3u C = %3u total = %4u\n",
+  LOG_DEBUG("blocks loaded: stream length = %3u cache = %3u A = %3u B = %3u C = %3u total = %4u\n",
       multiply_stream->number_elements, cache_length,
       number_A_blocks_loaded, number_B_blocks_loaded, number_C_blocks_loaded,
       number_A_blocks_loaded+number_B_blocks_loaded+number_C_blocks_loaded);
@@ -408,67 +408,67 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
 
   if (A->N != B->M)
   {
-    LOG("matrix size mismatch, A->N = %i, B->M = %i\n", A->N, B->M);
+    LOG_FATAL("matrix size mismatch, A->N = %i, B->M = %i\n", A->N, B->M);
     exit(1);
   }
 
   if (A->M != C->M)
   {
-    LOG("matrix size mismatch, A->M = %i, C->M = %i\n", A->M, C->M);
+    LOG_FATAL("matrix size mismatch, A->M = %i, C->M = %i\n", A->M, C->M);
     exit(1);
   }
 
   if (B->N != C->N)
   {
-    LOG("matrix size mismatch, B->N = %i, C->N = %i\n", B->N, C->N);
+    LOG_FATAL("matrix size mismatch, B->N = %i, C->N = %i\n", B->N, C->N);
     exit(1);
   }
 
   if (A->N_child != B->M_child)
   {
-    LOG("matrix child size mismatch, A->N_child = %i, B_child->M = %i\n", A->N_child, B->M_child);
+    LOG_FATAL("matrix child size mismatch, A->N_child = %i, B_child->M = %i\n", A->N_child, B->M_child);
     exit(1);
   }
 
   if (A->M_child != C->M_child)
   {
-    LOG("matrix child size mismatch, A->M_child = %i, C->M_child = %i\n", A->M_child, C->M_child);
+    LOG_FATAL("matrix child size mismatch, A->M_child = %i, C->M_child = %i\n", A->M_child, C->M_child);
     exit(1);
   }
 
   if (B->N_child != C->N_child)
   {
-    LOG("matrix child size mismatch, B->N_child = %i, C->N_child = %i\n", B->N_child, C->N_child);
+    LOG_FATAL("matrix child size mismatch, B->N_child = %i, C->N_child = %i\n", B->N_child, C->N_child);
     exit(1);
   }
 
   if (A->N_block != B->M_block)
   {
-    LOG("matrix block size mismatch, A->N_block = %i, B_block->M = %i\n", A->N_block, B->M_block);
+    LOG_FATAL("matrix block size mismatch, A->N_block = %i, B_block->M = %i\n", A->N_block, B->M_block);
     exit(1);
   }
 
   if (A->M_block != C->M_block)
   {
-    LOG("matrix block size mismatch, A->M_block = %i, C->M_block = %i\n", A->M_block, C->M_block);
+    LOG_FATAL("matrix block size mismatch, A->M_block = %i, C->M_block = %i\n", A->M_block, C->M_block);
     exit(1);
   }
 
   if (B->N_block != C->N_block)
   {
-    LOG("matrix block size mismatch, B->N_block = %i, C->N_block = %i\n", B->N_block, C->N_block);
+    LOG_FATAL("matrix block size mismatch, B->N_block = %i, C->N_block = %i\n", B->N_block, C->N_block);
     exit(1);
   }
 
   if (C->root != NULL)
   {
-    LOG2("[FIXME] can not handle pre-existing C\n");
+    LOG2_FATAL("[FIXME] can not handle pre-existing C\n");
     exit(1);
   }
 
   if (beta != 1.0)
   {
-    LOG("[FIXME] can not handle (beta = %e) != 1.0\n", beta);
+    LOG_FATAL("[FIXME] can not handle (beta = %e) != 1.0\n", beta);
     exit(1);
   }
 
@@ -495,18 +495,18 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       gettimeofday(&start, NULL);
       spamm_multiply_node(algorithm, alpha, A->root, B->root, beta, &(C->root), multiply_stream);
       gettimeofday(&stop, NULL);
-      LOG("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+      LOG_DEBUG("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
       gettimeofday(&start, NULL);
       spamm_multiply_stream(30000, multiply_stream);
       gettimeofday(&stop, NULL);
-      LOG("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+      LOG_DEBUG("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
       spamm_ll_delete(free, &multiply_stream);
       break;
 
     default:
-      LOG2("unknown algorithm\n");
+      LOG2_FATAL("unknown algorithm\n");
       exit(1);
       break;
   }

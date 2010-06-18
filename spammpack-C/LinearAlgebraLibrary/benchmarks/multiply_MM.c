@@ -49,33 +49,35 @@ main (int argc, char **argv)
 
   if (argc != 2)
   {
-    spamm_log("what file should I load?\n", __FILE__, __LINE__);
+    LOG2_FATAL("what file should I load?\n");
     exit(1);
   }
 
-  spamm_log("loading matrix\n", __FILE__, __LINE__);
+  LOG2_INFO("loading matrix\n");
   spamm_read_MM(argv[1], 8, 8, 2, 2, 1e-10, &A);
   spamm_tree_stats(&stats, &A);
-  spamm_log("read %ix%i matrix, %ix%i blocks, %i nodes, %i dense blocks, depth = %i, tree = %i bytes, blocks = %i bytes (%1.1f%%), ",
-      __FILE__, __LINE__, A.M, A.N, A.M_block, A.N_block, stats.number_nodes, stats.number_dense_blocks, A.tree_depth,
-      stats.memory_tree, stats.memory_dense_blocks, (stats.memory_tree+stats.memory_dense_blocks)/(double) (A.M*A.N*sizeof(double))*100);
+  LOG_INFO("read %ix%i matrix, %ix%i blocks, %i nodes, %i dense blocks, depth = %i, tree = %i bytes, blocks = %i bytes (%1.1f%%), ",
+      A.M, A.N, A.M_block, A.N_block, stats.number_nodes,
+      stats.number_dense_blocks, A.tree_depth, stats.memory_tree,
+      stats.memory_dense_blocks,
+      (stats.memory_tree+stats.memory_dense_blocks)/(double) (A.M*A.N*sizeof(double))*100);
   printf("avg. sparsity = %1.1f%%\n", stats.average_sparsity*100);
 
-  spamm_log("converting tree to dense... ", __FILE__, __LINE__);
+  LOG2_INFO("converting tree to dense... ");
   gettimeofday(&start, NULL);
   spamm_spamm_to_dense(&A, &A_dense);
   gettimeofday(&stop, NULL);
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-  spamm_log("converting dense to CSR\n", __FILE__, __LINE__);
+  LOG2_INFO("converting dense to CSR\n");
   A_CSR = (float_t*) malloc(sizeof(float_t)*spamm_number_nonzero(&A));
   A_j_CSR = (int*) malloc(sizeof(int)*spamm_number_nonzero(&A));
   A_i_CSR = (int*) malloc(sizeof(int)*A.M);
-  spamm_log("found %u nonzero elements\n", __FILE__, __LINE__, spamm_number_nonzero(&A));
+  LOG_INFO("found %u nonzero elements\n", spamm_number_nonzero(&A));
   nonzero = spamm_number_nonzero(&A);
   dnscsr_single_(&A.M, &A.N, &nonzero, A_dense, &A.M, A_CSR, A_j_CSR, A_i_CSR, &ierr);
 
-  spamm_log("allocating A2_dense\n", __FILE__, __LINE__);
+  LOG2_INFO("allocating A2_dense\n");
   A2_dense = (float_t*) malloc(sizeof(float_t)*A.M*A.N);
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j)
@@ -85,7 +87,7 @@ main (int argc, char **argv)
   }
 
 #ifdef DGEMM
-  spamm_log("multiplying matrix with BLAS to get reference product... ", __FILE__, __LINE__);
+  LOG2_INFO("multiplying matrix with BLAS to get reference product... ");
   alpha = 1.0;
   beta = 0.0;
   gettimeofday(&start, NULL);
@@ -93,7 +95,7 @@ main (int argc, char **argv)
   gettimeofday(&stop, NULL);
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 #else
-  spamm_log("multiplying matrix directly to get reference product... ", __FILE__, __LINE__);
+  LOG2_INFO("multiplying matrix directly to get reference product... ");
   gettimeofday(&start, NULL);
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j) {
@@ -107,7 +109,7 @@ main (int argc, char **argv)
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 #endif
 
-  spamm_log("multiplying matrix with sparsekit... ", __FILE__, __LINE__);
+  LOG2_INFO("multiplying matrix with sparsekit... ");
   gettimeofday(&start, NULL);
   degree = (int*) malloc(sizeof(int)*A.M);
   work = (int*) malloc(sizeof(int)*A.N);
@@ -121,15 +123,15 @@ main (int argc, char **argv)
   gettimeofday(&stop, NULL);
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-  spamm_log("multiplying matrix with spamm\n", __FILE__, __LINE__);
+  LOG2_INFO("multiplying matrix with spamm\n");
   spamm_new(A.M, A.N, A.M_block, A.N_block, A.M_child, A.N_child, A.threshold, &A2);
   gettimeofday(&start, NULL);
   spamm_multiply(tree, 1.0, &A, &A, 1.0, &A2);
-  spamm_log("product has %u nonzero elements\n", __FILE__, __LINE__, spamm_number_nonzero(&A2));
+  LOG_INFO("product has %u nonzero elements\n", spamm_number_nonzero(&A2));
   gettimeofday(&stop, NULL);
-  spamm_log("total spamm time elapsed: %f s\n", __FILE__, __LINE__, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  LOG_INFO("total spamm time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-  spamm_log("comparing matrices\n", __FILE__, __LINE__);
+  LOG2_INFO("comparing matrices\n");
   max_diff = 0;
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j)

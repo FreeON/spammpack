@@ -12,7 +12,7 @@ spamm_delete (struct spamm_t *A)
   assert(A != NULL);
 
   /* Recurse down and free() nodes. */
-  //LOG("deleting matrix\n");
+  LOG2_INFO("deleting matrix\n");
   if (A->root != NULL)
   {
     spamm_delete_node(&A->root);

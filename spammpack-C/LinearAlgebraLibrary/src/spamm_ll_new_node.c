@@ -21,7 +21,7 @@ spamm_ll_new_node ()
 
   else
   {
-    LOG2("failed to allocated new node\n");
+    LOG2_FATAL("failed to allocated new node\n");
   }
 
   return result;

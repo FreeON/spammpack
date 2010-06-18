@@ -16,31 +16,99 @@
  */
 typedef FLOATING_PRECISION float_t;
 
-/** Define shortcut macro for logging.
- *
- * Typical use of this macro:
- *
- * <code>LOG("opening new file: %s\n", filename);</code>
- *
- * Compare to spamm_log().
- *
- * @param format Format string. See printf() for a detailed description of its
- *               syntax.
+/** The severity levels for the logger.
  */
-#define LOG(format, ...) spamm_log(format, __FILE__, __LINE__, __VA_ARGS__)
+enum spamm_log_severity_t
+{
+  /** A fatal message that should always be displayed. */
+  fatal,
+
+  /** A message that might be printed if the global loglevel is set to at
+   * least info. */
+  info,
+
+  /** A message that only gets printed if the global loglevel is set to debug.
+   */
+  debug
+};
 
 /** Define shortcut macro for logging.
  *
  * Typical use of this macro:
  *
- * <code>LOG2("a message without arguments\n");</code>
+ * <code>LOG_FATAL("opening new file: %s\n", filename);</code>
  *
  * Compare to spamm_log().
  *
  * @param format Format string. See printf() for a detailed description of its
  *               syntax.
  */
-#define LOG2(format) spamm_log(format, __FILE__, __LINE__)
+#define LOG_FATAL(format, ...) spamm_log(fatal, format, __FILE__, __LINE__, __VA_ARGS__)
+
+/** Define shortcut macro for logging.
+ *
+ * Typical use of this macro:
+ *
+ * <code>LOG2_FATAL("a message without arguments\n");</code>
+ *
+ * Compare to spamm_log().
+ *
+ * @param format Format string. See printf() for a detailed description of its
+ *               syntax.
+ */
+#define LOG2_FATAL(format) spamm_log(fatal, format, __FILE__, __LINE__)
+
+/** Define shortcut macro for logging.
+ *
+ * Typical use of this macro:
+ *
+ * <code>LOG_INFO("opening new file: %s\n", filename);</code>
+ *
+ * Compare to spamm_log().
+ *
+ * @param format Format string. See printf() for a detailed description of its
+ *               syntax.
+ */
+#define LOG_INFO(format, ...) spamm_log(info, format, __FILE__, __LINE__, __VA_ARGS__)
+
+/** Define shortcut macro for logging.
+ *
+ * Typical use of this macro:
+ *
+ * <code>LOG2_INFO("a message without arguments\n");</code>
+ *
+ * Compare to spamm_log().
+ *
+ * @param format Format string. See printf() for a detailed description of its
+ *               syntax.
+ */
+#define LOG2_INFO(format) spamm_log(info, format, __FILE__, __LINE__)
+
+/** Define shortcut macro for logging.
+ *
+ * Typical use of this macro:
+ *
+ * <code>LOG_DEBUG("opening new file: %s\n", filename);</code>
+ *
+ * Compare to spamm_log().
+ *
+ * @param format Format string. See printf() for a detailed description of its
+ *               syntax.
+ */
+#define LOG_DEBUG(format, ...) spamm_log(debug, format, __FILE__, __LINE__, __VA_ARGS__)
+
+/** Define shortcut macro for logging.
+ *
+ * Typical use of this macro:
+ *
+ * <code>LOG2_DEBUG("a message without arguments\n");</code>
+ *
+ * Compare to spamm_log().
+ *
+ * @param format Format string. See printf() for a detailed description of its
+ *               syntax.
+ */
+#define LOG2_DEBUG(format) spamm_log(debug, format, __FILE__, __LINE__)
 
 /* Definition of return codes. */
 
@@ -390,7 +458,8 @@ void
 spamm_int_to_binary (const unsigned int integer, const int width, char *binary_string);
 
 void
-spamm_log (const char *format, const char *filename, const unsigned int linenumber, ...);
+spamm_log (const enum spamm_log_severity_t severity, const char *format,
+    const char *filename, const unsigned int linenumber, ...);
 
 void
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
@@ -429,6 +498,9 @@ spamm_read_MM (const char *filename,
 
 int
 spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_t *A);
+
+void
+spamm_set_loglevel (const enum spamm_log_severity_t loglevel);
 
 void
 spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense);

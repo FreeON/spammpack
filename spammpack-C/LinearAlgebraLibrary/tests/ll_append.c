@@ -19,7 +19,7 @@ main ()
 
   if (list->number_elements != 100)
   {
-    LOG("wrong number of elements, should be 100, is reported to be %u\n", list->number_elements);
+    LOG_FATAL("wrong number of elements, should be 100, is reported to be %u\n", list->number_elements);
     return -1;
   }
 
@@ -28,7 +28,7 @@ main ()
     data = spamm_ll_get(i, list);
     if (i != *data)
     {
-      LOG("wrong element %i != %i\n", i, *data);
+      LOG_FATAL("wrong element %i != %i\n", i, *data);
       return -1;
     }
   }

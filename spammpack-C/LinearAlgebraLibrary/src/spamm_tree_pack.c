@@ -34,8 +34,8 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
     linear_tree_memory = node->linear_quadtree_memory;
     linear_tree = node->linear_quadtree;
 #ifdef SPAMM_DEBUG
-    LOG("reached tier %u, packing\n", node->tier);
-    LOG("linear_tree_memory at %p, linear_tree at %p\n", linear_tree_memory, linear_tree);
+    LOG_DEBUG("reached tier %u, packing\n", node->tier);
+    LOG_DEBUG("linear_tree_memory at %p, linear_tree at %p\n", linear_tree_memory, linear_tree);
 #endif
   }
 
@@ -43,7 +43,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
   if (node->child != NULL)
   {
 #ifdef SPAMM_DEBUG
-    LOG("linear_tree at %p\n", linear_tree);
+    LOG_DEBUG("linear_tree at %p\n", linear_tree);
 #endif
     for (i = 0; i < node->M_child; ++i) {
       for (j = 0; j < node->N_child; ++j)
@@ -56,13 +56,13 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
   else
   {
 #ifdef SPAMM_DEBUG
-    LOG("linear_tree at %p\n", linear_tree);
+    LOG_DEBUG("linear_tree at %p\n", linear_tree);
 #endif
     if (node->block_dense != NULL)
     {
       /* Copy data into linear tree. */
 #ifdef SPAMM_DEBUG
-      LOG("tier %u, storing datablock with index %u\n", node->tier, node->index);
+      LOG_DEBUG("tier %u, storing datablock with index %u\n", node->tier, node->index);
 #endif
       /* Allocate new linear quadtree entry. The memory required is the size
        * of the struct plus the size of the dense matrix block plus some
@@ -72,7 +72,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
       spamm_ll_append(linear_block, linear_tree);
 
 #ifdef SPAMM_DEBUG
-      LOG("linear_block at %p\n", linear_block);
+      LOG_DEBUG("linear_block at %p\n", linear_block);
       spamm_ll_print(NULL, linear_tree);
 #endif
 
@@ -98,7 +98,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
   {
     /* Delete tree, which is replaced now by linear quadtree. */
 #ifdef SPAMM_DEBUG
-    LOG2("done packing, deleting original tree\n");
+    LOG2_DEBUG("done packing, deleting original tree\n");
 #endif
     if (node->block_dense != NULL)
     {
@@ -142,13 +142,13 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
 
   if (linear_tier > A->tree_depth)
   {
-    //LOG("tree depth is only %u, while linear_tier is %u\n", A->tree_depth, linear_tier);
+    LOG_DEBUG("tree depth is only %u, while linear_tier is %u\n", A->tree_depth, linear_tier);
     return;
   }
   A->linear_tier = linear_tier;
 
 #ifdef SPAMM_DEBUG
-  LOG2("packing tree\n");
+  LOG2_DEBUG("packing tree\n");
 #endif
 
   /* Recurse tree and convert to linear trees any subtrees below linear_tier.
@@ -160,6 +160,6 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
 
   else
   {
-    //LOG2("A is empty, nothing to pack\n");
+    LOG2_DEBUG("A is empty, nothing to pack\n");
   }
 }

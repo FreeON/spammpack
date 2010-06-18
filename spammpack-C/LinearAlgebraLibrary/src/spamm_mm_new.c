@@ -18,7 +18,7 @@ spamm_mm_new (const unsigned int chunksize)
   struct spamm_mm_t *result;
 
 #ifdef SPAMM_MM_DEBUG
-  LOG("allocating memory with chunks of %u bytes\n", chunksize);
+  LOG_DEBUG("allocating memory with chunks of %u bytes\n", chunksize);
 #endif
   result = (struct spamm_mm_t*) malloc(sizeof(struct spamm_mm_t));
   if (result != NULL)
@@ -30,7 +30,7 @@ spamm_mm_new (const unsigned int chunksize)
       /* Allocate memory for data chunk bookkeeping structure. */
       if (spamm_mm_grow(chunksize, result) == NULL)
       {
-        LOG2("failed to grow memory\n");
+        LOG2_FATAL("failed to grow memory\n");
         return NULL;
       }
     }
@@ -39,7 +39,7 @@ spamm_mm_new (const unsigned int chunksize)
     {
       /* Allocation error occurred while trying to get memory for the linked
        * list. */
-      LOG2("allocation of linked list failed\n");
+      LOG2_FATAL("allocation of linked list failed\n");
       free(result);
       result = NULL;
     }

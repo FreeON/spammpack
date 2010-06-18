@@ -44,7 +44,7 @@ spamm_ll_get (const unsigned int i, const struct spamm_ll_t *list)
 
   if (j < list->number_elements && node == NULL)
   {
-    LOG("bug? i = %i, j = %i\n", i, j);
+    LOG_FATAL("bug? i = %i, j = %i\n", i, j);
     spamm_ll_print(spamm_ll_get_data_to_string, list);
     exit(1);
   }

@@ -25,7 +25,7 @@ spamm_mm_new_chunk (const unsigned int chunksize)
 
   else
   {
-    LOG2("error allocating new chunk\n");
+    LOG2_FATAL("error allocating new chunk\n");
   }
 
   return result;

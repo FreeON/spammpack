@@ -41,7 +41,7 @@ spamm_read_MM (const char *filename,
   fd = fopen(filename, "r");
   if (fd == NULL)
   {
-    LOG("can not open file %s for reading: %s\n", filename, strerror(errno));
+    LOG_FATAL("can not open file %s for reading: %s\n", filename, strerror(errno));
     exit(1);
   }
 
@@ -59,7 +59,7 @@ spamm_read_MM (const char *filename,
     if (linenumber == 1)
     {
       /* Load header line. */
-      LOG("header: %s", line);
+      LOG_INFO("header: %s", line);
       continue;
     }
 
@@ -80,10 +80,10 @@ spamm_read_MM (const char *filename,
     {
       /* Figure out matrix size. */
       token = strtok(line, " \t");
-      if (token == NULL) { LOG("syntax error, line %i\n", linenumber); }
+      if (token == NULL) { LOG_INFO("syntax error, line %i\n", linenumber); }
       M = strtol(token, NULL, 10);
       token = strtok(NULL, " \t");
-      if (token == NULL) { LOG("syntax error, line %i\n", linenumber); }
+      if (token == NULL) { LOG_INFO("syntax error, line %i\n", linenumber); }
       N = strtol(token, NULL, 10);
       spamm_new(M, N, M_block, N_block, M_child, N_child, threshold, A);
       continue;
@@ -91,18 +91,18 @@ spamm_read_MM (const char *filename,
 
     /* Load elements. */
     token = strtok(line, " \t");
-    if (token == NULL) { LOG("syntax error, line %i\n", linenumber); }
+    if (token == NULL) { LOG_INFO("syntax error, line %i\n", linenumber); }
     i = strtol(token, NULL, 10)-1;
     token = strtok(NULL, " \t");
-    if (token == NULL) { LOG("syntax error, line %i\n", linenumber); }
+    if (token == NULL) { LOG_INFO("syntax error, line %i\n", linenumber); }
     j = strtol(token, NULL, 10)-1;
     token = strtok(NULL, " \t");
-    if (token == NULL) { LOG("syntax error, line %i\n", linenumber); }
+    if (token == NULL) { LOG_INFO("syntax error, line %i\n", linenumber); }
     Aij = strtod(token, NULL);
     if (spamm_set(i, j, Aij, A) != SPAMM_RESULT_OK) { number_dropped++; }
     number_nonzero++;
   }
 
-  LOG("loaded %i nonzero elements, %i dropped below threshold of %e\n", number_nonzero, number_dropped, threshold);
+  LOG_INFO("loaded %i nonzero elements, %i dropped below threshold of %e\n", number_nonzero, number_dropped, threshold);
   fclose(fd);
 }

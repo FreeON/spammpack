@@ -101,7 +101,7 @@ main ()
               {
                 if (spamm_get(i, j, &B) != spamm_get(i, j, &B_test))
                 {
-                  printf("[add_spamm] mismatch: (B_test[%i][%i] = %e) != (B[%i][%i] = %e)\n", i, j, spamm_get(i, j, &B_test), i, j, spamm_get(i, j, &B));
+                  LOG_FATAL("mismatch: (B_test[%i][%i] = %e) != (B[%i][%i] = %e)\n", i, j, spamm_get(i, j, &B_test), i, j, spamm_get(i, j, &B));
                   result = 1;
                 }
               }

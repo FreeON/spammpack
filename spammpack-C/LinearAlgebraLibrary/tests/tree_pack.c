@@ -29,7 +29,7 @@ main ()
         for (i_chunk = 0; i_chunk < number_chunks; ++i_chunk)
         {
           spamm_new(M[i_size], N[i_size], M_block[i_block], N_block[i_block], 2, 2, 0.0, &A);
-          //LOG("%ux%u matrix, %ux%u blocks, linear tier = %u, chunksize = %u bytes, depth = %u\n",
+          //LOG_INFO("%ux%u matrix, %ux%u blocks, linear tier = %u, chunksize = %u bytes, depth = %u\n",
           //    M[i_size], N[i_size], M_block[i_block], N_block[i_block], linear_tier[i_linear], chunksize[i_chunk], A.tree_depth);
 
           for (i = 0; i < M[i_size]; ++i) {
@@ -58,7 +58,7 @@ main ()
             {
               if (spamm_get(i, j, &A) != spamm_dense_index(i, j, M[i_size], N[i_size]))
               {
-                LOG("element mismatch A(%i,%i) = %f but should be %u\n", i, j, spamm_get(i, j, &A), spamm_dense_index(i, j, M[i_size], N[i_size]));
+                LOG_FATAL("element mismatch A(%i,%i) = %f but should be %u\n", i, j, spamm_get(i, j, &A), spamm_dense_index(i, j, M[i_size], N[i_size]));
                 return -1;
               }
             }

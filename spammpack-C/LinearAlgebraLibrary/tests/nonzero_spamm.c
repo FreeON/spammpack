@@ -59,7 +59,7 @@ main ()
 
           if (spamm_number_nonzero(&A) != number_nonzero)
           {
-            spamm_log("set %i nonzeros, but found %i\n", __FILE__, __LINE__, number_nonzero, spamm_number_nonzero(&A));
+            LOG_FATAL("set %i nonzeros, but found %i\n", __FILE__, __LINE__, number_nonzero, spamm_number_nonzero(&A));
             result = 1;
           }
         }
