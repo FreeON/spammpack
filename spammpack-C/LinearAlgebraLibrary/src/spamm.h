@@ -463,6 +463,9 @@ spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
 float_t
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
 
+enum spamm_log_severity_t
+spamm_get_loglevel ();
+
 void
 spamm_int_to_binary (const unsigned int integer, const int width, char *binary_string);
 
