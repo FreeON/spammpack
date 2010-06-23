@@ -367,6 +367,12 @@ struct spamm_linear_quadtree_t
    */
   unsigned int index;
 
+  /** The number of rows of the dense matrix block. */
+  unsigned int M;
+
+  /** The number of columns of the dense data block. */
+  unsigned int N;
+
   /** The data.
    */
   float_t *block_dense;
@@ -434,6 +440,9 @@ spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, str
 void
 spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node);
 
+int
+spamm_compare_int (const void *integer1, const void *integer2);
+
 void
 spamm_delete (struct spamm_t *A);
 
@@ -458,8 +467,17 @@ void
 spamm_int_to_binary (const unsigned int integer, const int width, char *binary_string);
 
 void
+spamm_linear_to_coordinates (const unsigned int index, unsigned int *i,
+    unsigned int *j, const unsigned int M, const unsigned int N,
+    const unsigned int M_block, const unsigned int N_block);
+
+void
 spamm_log (const enum spamm_log_severity_t severity, const char *format,
     const char *filename, const unsigned int linenumber, ...);
+
+unsigned int
+spamm_mask (const unsigned int index, const unsigned int width,
+    const enum spamm_linear_mask_t mask);
 
 void
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
@@ -471,6 +489,10 @@ spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
     const float_t threshold, struct spamm_t *A);
+
+struct spamm_linear_quadtree_t*
+spamm_new_linear_quadtree_node (const unsigned int M, const unsigned int N,
+    struct spamm_mm_t *memory);
 
 struct spamm_node_t *
 spamm_new_node ();
@@ -504,6 +526,9 @@ spamm_set_loglevel (const enum spamm_log_severity_t loglevel);
 
 void
 spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense);
+
+void
+spamm_swap_linear_quadtree (void *data1, void *data2);
 
 void
 spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,

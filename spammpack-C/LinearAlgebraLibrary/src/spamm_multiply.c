@@ -27,15 +27,23 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     struct spamm_node_t **C_node, struct spamm_ll_t *multiply_stream)
 {
   int i, j, k;
+  char bitstring_A[100];
+  char bitstring_B[100];
+  char bitstring_C[100];
+  unsigned int mask_A, mask_B, mask_C;
+  unsigned int bit_A, bit_B, match;
   struct spamm_node_t *C_child_node;
   struct spamm_multiply_stream_element_t *multiply_stream_element;
+  struct spamm_ll_iterator_t *iterator_A, *iterator_B, *iterator_C;
+  struct spamm_ll_node_t *linear_node_A, *linear_node_B, *linear_node_C;
+  struct spamm_linear_quadtree_t *linear_A, *linear_B, *linear_C, *linear_C_next;
 
+  /* Create new node. */
   if (*C_node == NULL)
   {
-    /* Create new node. */
     *C_node = spamm_new_node();
 
-    (*C_node)->tier = A_node->tier+1;
+    (*C_node)->tier = A_node->tier;
     (*C_node)->tree_depth = A_node->tree_depth;
 
     (*C_node)->M_lower = A_node->M_lower;
@@ -88,6 +96,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         }
       }
 
+      /* Space-Filling curve ordering. */
       if ((*C_node)->M_child == 2 && (*C_node)->N_child == 2)
       {
         /* Z-curve curve ordering. */
@@ -211,6 +220,112 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         LOG2_FATAL("unknown algorithm\n");
         exit(1);
         break;
+    }
+  }
+
+  if (A_node->linear_quadtree != NULL && B_node->linear_quadtree != NULL)
+  {
+    LOG2_DEBUG("entering linear tree...\n");
+
+    /* Create new linear tree in C. */
+    if ((*C_node)->linear_quadtree == NULL)
+    {
+      LOG2_DEBUG("creating new linear quadtree in C\n");
+      (*C_node)->linear_quadtree = spamm_ll_new();
+      (*C_node)->linear_quadtree_memory = spamm_mm_new(A_node->linear_quadtree_memory->chunksize);
+    }
+
+    /* Create convolution of A and B. */
+    iterator_A = spamm_ll_iterator_new(A_node->linear_quadtree);
+    for (linear_node_A = spamm_ll_iterator_first(iterator_A); linear_node_A != NULL; linear_node_A = spamm_ll_iterator_next(iterator_A))
+    {
+      linear_A = linear_node_A->data;
+
+      spamm_int_to_binary(linear_A->index, A_node->tree_depth*2, bitstring_A);
+      LOG_DEBUG("looking at A: %s\n", bitstring_A);
+
+      /* Loop through B to find matching blocks. */
+      iterator_B = spamm_ll_iterator_new(B_node->linear_quadtree);
+      for (linear_node_B = spamm_ll_iterator_first(iterator_B); linear_node_B != NULL; linear_node_B = spamm_ll_iterator_next(iterator_B))
+      {
+        linear_B = linear_node_B->data;
+
+        spamm_int_to_binary(linear_A->index, A_node->tree_depth*2, bitstring_A);
+        spamm_int_to_binary(linear_B->index, B_node->tree_depth*2, bitstring_B);
+
+        LOG_DEBUG("trying to match A: %s and B: %s\n", bitstring_A, bitstring_B);
+
+        /* We only need to compare the tiers below linear_tier. */
+        mask_A = spamm_mask(linear_A->index, A_node->tree_depth*2, j_mask);
+        mask_B = spamm_mask(linear_B->index, B_node->tree_depth*2, i_mask);
+
+        spamm_int_to_binary(mask_A, A_node->tree_depth*2, bitstring_A);
+        spamm_int_to_binary(mask_B, B_node->tree_depth*2, bitstring_B);
+
+        LOG_DEBUG("mask_j(A) = %s and mask_i(B) = %s\n", bitstring_A, bitstring_B);
+
+        if (mask_A == (mask_B >> 1))
+        {
+          mask_A = spamm_mask(linear_A->index, A_node->tree_depth*2, i_mask);
+          mask_B = spamm_mask(linear_B->index, B_node->tree_depth*2, j_mask);
+          mask_C = mask_A | mask_B;
+          spamm_int_to_binary(mask_A, A_node->tree_depth*2, bitstring_A);
+          spamm_int_to_binary(mask_B, B_node->tree_depth*2, bitstring_B);
+          spamm_int_to_binary(mask_C, A_node->tree_depth*2, bitstring_C);
+
+          LOG_DEBUG("found matching blocks in A and B: mask_i(A) = %s, mask_j(B) = %s, C = %s\n", bitstring_A, bitstring_B, bitstring_C);
+
+          /* Create new block for C. */
+          linear_C = spamm_new_linear_quadtree_node((*C_node)->M_block, (*C_node)->N_block, (*C_node)->linear_quadtree_memory);
+          linear_C->index = mask_C;
+          spamm_ll_append(linear_C, (*C_node)->linear_quadtree);
+
+          /* Multiply blocks. */
+          for (i = 0; i < A_node->M_block; ++i) {
+            for (j = 0; j < B_node->N_block; ++j)
+            {
+              linear_C->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] = 0.0;
+
+              for (k = 0; k < A_node->N_block; ++k)
+              {
+                linear_C->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] +=
+                  linear_A->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]
+                  *linear_B->block_dense[spamm_dense_index(i, k, B_node->M_block, B_node->N_block)];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /* Sort blocks in C. */
+    spamm_ll_sort_data(spamm_compare_int, spamm_swap_linear_quadtree, (*C_node)->linear_quadtree);
+
+    /* Find duplicate blocks in C and sum them. */
+    iterator_C = spamm_ll_iterator_new((*C_node)->linear_quadtree);
+    for (linear_node_C = spamm_ll_iterator_first(iterator_C); linear_node_C != NULL; linear_node_C = spamm_ll_iterator_next(iterator_C))
+    {
+      linear_C = linear_node_C->data;
+      if (linear_node_C->next != NULL)
+      {
+        linear_C_next = linear_node_C->next->data;
+      }
+
+      else
+      {
+        linear_C_next = NULL;
+      }
+
+      if (linear_C_next != NULL && linear_C_next->index == linear_C->index)
+      {
+        /* Sum blocks. */
+        LOG_DEBUG("found 2 C blocks to sum: index = %u\n", linear_C->index);
+        for (i = 0; i < linear_C->M*linear_C->N; ++i)
+        {
+          linear_C->block_dense[i] += linear_C_next->block_dense[i];
+        }
+        spamm_ll_delete_node(linear_node_C->next, (*C_node)->linear_quadtree);
+      }
     }
   }
 }
