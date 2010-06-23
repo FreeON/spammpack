@@ -13,15 +13,19 @@ libspamm_la_SOURCES = \
 matrix_tree_sources = \
   spamm.h \
   spamm_add.c \
+  spamm_compare_int.c \
   spamm_delete.c \
   spamm_delete_node.c \
   spamm_dense_index.c \
   spamm_dense_to_spamm.c \
   spamm_get.c \
   spamm_int_to_binary.c \
+  spamm_linear_to_coordinates.c \
   spamm_logger.c \
+  spamm_mask.c \
   spamm_multiply.c \
   spamm_new.c \
+  spamm_new_linear_quadtree_node.c \
   spamm_new_node.c \
   spamm_number_nonzero.c \
   spamm_print_dense.c \
@@ -31,6 +35,7 @@ matrix_tree_sources = \
   spamm_read_MM.c \
   spamm_set.c \
   spamm_spamm_to_dense.c \
+  spamm_swap_linear_quadtree.c \
   spamm_tree_pack.c \
   spamm_tree_stats.c \
   spamm_version.c
@@ -39,6 +44,7 @@ linked_list_sources = \
   spamm_ll.h \
   spamm_ll_append.c \
   spamm_ll_delete.c \
+  spamm_ll_delete_node.c \
   spamm_ll_get.c \
   spamm_ll_iterator_delete.c \
   spamm_ll_iterator_first.c \
@@ -49,6 +55,7 @@ linked_list_sources = \
   spamm_ll_print.c \
   spamm_ll_print_node.c \
   spamm_ll_sort.c \
+  spamm_ll_sort_data.c \
   spamm_ll_swap.c
 
 memory_manager_sources = \

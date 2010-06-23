@@ -83,6 +83,8 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
        */
       linear_block->block_dense = (float_t*) (((void*) linear_block)+sizeof(struct spamm_linear_quadtree_t));
       linear_block->index = node->index;
+      linear_block->M = node->M_block;
+      linear_block->N = node->N_block;
 
       /* Copy data. */
       for (i = 0; i < node->M_block; ++i) {

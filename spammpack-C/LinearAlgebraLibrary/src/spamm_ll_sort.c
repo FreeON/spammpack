@@ -4,6 +4,10 @@
 
 /** Sort a linked list.
  *
+ * The sort is done on the link structure, i.e. the data behind the linked
+ * list is not moved around, but the links connecting the list elements are
+ * changed.
+ *
  * @param compare A function that compares data1 and data2 and returns -1 for
  *                data1 < data2, 0 for data1 == data2, and +1 for data1 >
  *                data2.
@@ -12,8 +16,6 @@
 void
 spamm_ll_sort (int (*compare) (const void *data1, const void *data2), struct spamm_ll_t *list)
 {
-  /* We optimize locality by sorting the stream so as to minimize the change
-   * of any of the indices. */
   struct spamm_ll_node_t *node1, *node2;
 
   assert(list != NULL);

@@ -61,6 +61,9 @@ spamm_ll_get (const unsigned int i, const struct spamm_ll_t *list);
 void
 spamm_ll_iterator_delete (struct spamm_ll_iterator_t **iterator);
 
+void
+spamm_ll_delete_node (struct spamm_ll_node_t *node, struct spamm_ll_t *list);
+
 struct spamm_ll_node_t *
 spamm_ll_iterator_first (struct spamm_ll_iterator_t *iterator);
 
@@ -84,6 +87,10 @@ spamm_ll_print_node (char *(*data_to_string) (const void *data), const struct sp
 
 void
 spamm_ll_sort (int (*compare) (const void *data1, const void *data2), struct spamm_ll_t *list);
+
+void
+spamm_ll_sort_data (int (*compare) (const void *data1, const void *data2),
+    void (*swap) (void *data1, void *data2), struct spamm_ll_t *list);
 
 void
 spamm_ll_swap (struct spamm_ll_node_t **node1, struct spamm_ll_node_t **node2,

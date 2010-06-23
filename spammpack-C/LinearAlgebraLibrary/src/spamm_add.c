@@ -226,10 +226,10 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
         {
           /* We didn't find a matching block in B. Create a new one. */
           LOG2_DEBUG("could not find matching block in B. Creating new one.\n");
-          linear_B = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+(*B_node)->M_block*(*B_node)->N_block*sizeof(float_t)+8, (*B_node)->linear_quadtree_memory);
-          spamm_ll_append(linear_B, (*B_node)->linear_quadtree);
-          linear_B->block_dense = (float_t*) (((void*) linear_B)+sizeof(struct spamm_linear_quadtree_t));
+          linear_B = spamm_new_linear_quadtree_node((*B_node)->M_block, (*B_node)->N_block, (*B_node)->linear_quadtree_memory);
           linear_B->index = linear_A->index;
+          spamm_ll_append(linear_B, (*B_node)->linear_quadtree);
+
           for (i = 0; i < (*B_node)->M_block; ++i) {
             for (j = 0; j < (*B_node)->N_block; ++j)
             {
