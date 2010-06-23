@@ -31,15 +31,16 @@
  *
  * \section future_milestones Future Milestones
  *
- * - Make spamm_multiply() aware of linear quadtree.
  * - Fix bug in spamm_multiply() that pre-existing matrix C does not work
  *   properly.
  *
  * \section achieved_milestones Achieved Milestones
  *
  * - 2010-06-18: Finished implementing spamm_tree_pack(). Added test for this
- *   function.
+ *               function.
  * - 2010-06-18: Finished implementing linear quadtree support in spamm_add().
+ * - 2010-06-23: Finished implementing linear quadtree support in
+ *               spamm_multiply().
  *
  * \version @PACKAGE_VERSION_STRING@
  *
