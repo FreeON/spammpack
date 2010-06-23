@@ -35,7 +35,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   struct spamm_node_t *C_child_node;
   struct spamm_multiply_stream_element_t *multiply_stream_element;
   struct spamm_ll_iterator_t *iterator_A, *iterator_B, *iterator_C;
-  struct spamm_ll_node_t *linear_node_A, *linear_node_B, *linear_node_C;
+  struct spamm_ll_node_t *linear_node_A, *linear_node_B, *linear_node_C, *linear_node_C_next;
   struct spamm_linear_quadtree_t *linear_A, *linear_B, *linear_C, *linear_C_next;
 
   /* Create new node. */
@@ -236,6 +236,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     }
 
     /* Create convolution of A and B. */
+    LOG2_INFO("creating convolution\n");
     iterator_A = spamm_ll_iterator_new(A_node->linear_quadtree);
     for (linear_node_A = spamm_ll_iterator_first(iterator_A); linear_node_A != NULL; linear_node_A = spamm_ll_iterator_next(iterator_A))
     {
@@ -281,6 +282,12 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
           spamm_ll_append(linear_C, (*C_node)->linear_quadtree);
 
           /* Multiply blocks. */
+          LOG2_DEBUG("multiplying blocks\n");
+          LOG2_DEBUG("A:\n");
+          if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_A->M, linear_A->N, linear_A->block_dense); }
+          LOG2_DEBUG("B:\n");
+          if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_B->M, linear_B->N, linear_B->block_dense); }
+
           for (i = 0; i < A_node->M_block; ++i) {
             for (j = 0; j < B_node->N_block; ++j)
             {
@@ -290,43 +297,57 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
               {
                 linear_C->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] +=
                   linear_A->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]
-                  *linear_B->block_dense[spamm_dense_index(i, k, B_node->M_block, B_node->N_block)];
+                  *linear_B->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)];
               }
             }
           }
+          LOG2_DEBUG("C:\n");
+          if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C->M, linear_C->N, linear_C->block_dense); }
         }
       }
     }
 
     /* Sort blocks in C. */
+    LOG_INFO("sorting linear tree in C (has %u elements)\n", (*C_node)->linear_quadtree->number_elements);
     spamm_ll_sort_data(spamm_compare_int, spamm_swap_linear_quadtree, (*C_node)->linear_quadtree);
 
     /* Find duplicate blocks in C and sum them. */
+    LOG2_INFO("adding duplicate blocks in C\n");
     iterator_C = spamm_ll_iterator_new((*C_node)->linear_quadtree);
     for (linear_node_C = spamm_ll_iterator_first(iterator_C); linear_node_C != NULL; linear_node_C = spamm_ll_iterator_next(iterator_C))
     {
+      linear_node_C_next = linear_node_C->next;
+
       linear_C = linear_node_C->data;
-      if (linear_node_C->next != NULL)
+      while (linear_node_C_next != NULL)
       {
         linear_C_next = linear_node_C->next->data;
-      }
 
-      else
-      {
-        linear_C_next = NULL;
-      }
-
-      if (linear_C_next != NULL && linear_C_next->index == linear_C->index)
-      {
-        /* Sum blocks. */
-        LOG_DEBUG("found 2 C blocks to sum: index = %u\n", linear_C->index);
-        for (i = 0; i < linear_C->M*linear_C->N; ++i)
+        if (linear_C_next->index == linear_C->index)
         {
-          linear_C->block_dense[i] += linear_C_next->block_dense[i];
+          /* Sum blocks. */
+          spamm_int_to_binary(linear_C->index, (*C_node)->tree_depth*2, bitstring_C);
+          LOG_DEBUG("found 2 C blocks to sum: index = %s\n", bitstring_C);
+          LOG2_DEBUG("linear_C before:\n");
+          if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C->M, linear_C->N, linear_C->block_dense); }
+          LOG2_DEBUG("linear_C_next:\n");
+          if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C_next->M, linear_C_next->N, linear_C_next->block_dense); }
+          for (i = 0; i < linear_C->M*linear_C->N; ++i)
+          {
+            linear_C->block_dense[i] += linear_C_next->block_dense[i];
+          }
+          linear_node_C_next = linear_node_C_next->next;
+          spamm_ll_delete_node(linear_node_C->next, (*C_node)->linear_quadtree);
+
+          LOG2_DEBUG("linear_C after:\n");
+          if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C->M, linear_C->N, linear_C->block_dense); }
         }
-        spamm_ll_delete_node(linear_node_C->next, (*C_node)->linear_quadtree);
+
+        else { break; }
       }
     }
+
+    LOG_INFO("done, C now has %u elements\n", (*C_node)->linear_quadtree->number_elements);
   }
 }
 

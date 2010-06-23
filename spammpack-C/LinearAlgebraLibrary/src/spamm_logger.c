@@ -27,6 +27,16 @@ spamm_set_loglevel (const enum spamm_log_severity_t loglevel)
   }
 }
 
+/** Get the global loglevel.
+ *
+ * @return The loglevel.
+ */
+enum spamm_log_severity_t
+spamm_get_loglevel ()
+{
+  return spamm_loglevel;
+}
+
 /** Logging function.
  *
  * Use spamm_log() to print out messages. The messages are prepended with
