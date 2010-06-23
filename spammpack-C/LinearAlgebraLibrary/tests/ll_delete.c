@@ -16,7 +16,7 @@ main (int argc, char **argv)
 
   list = spamm_ll_new();
 
-  spamm_set_loglevel(debug);
+  //spamm_set_loglevel(debug);
 
   for (i = 0; i < N; ++i)
   {
