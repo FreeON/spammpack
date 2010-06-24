@@ -126,6 +126,7 @@ src/Makefile
 src/spamm_mainpage.h
 src/sparsekit/Makefile
 tests/Makefile
+tests/add/Makefile
 tests/multiply/Makefile
 benchmarks/Makefile
 prototype/Makefile

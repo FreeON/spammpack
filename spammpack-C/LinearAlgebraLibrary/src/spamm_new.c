@@ -67,6 +67,8 @@ spamm_new (const unsigned int M, const unsigned int N,
   x_M = fabs(log(M)-log(M_block))/log(M_child);
   x_N = fabs(log(N)-log(N_block))/log(N_child);
 
+  LOG_DEBUG("x_M = %f, x_N = %f\n", x_M, x_N);
+
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
 

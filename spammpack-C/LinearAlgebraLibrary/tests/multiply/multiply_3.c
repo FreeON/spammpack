@@ -24,9 +24,9 @@ main ()
   unsigned int M = 4;
   unsigned int N = 4;
 
-  unsigned int L_block = 1;
-  unsigned int M_block = 1;
-  unsigned int N_block = 1;
+  unsigned int L_block = 2;
+  unsigned int M_block = 3;
+  unsigned int N_block = 2;
 
   unsigned int M_child = 2;
   unsigned int N_child = 2;
