@@ -1,4 +1,4 @@
-SUBDIRS = multiply
+SUBDIRS = add multiply
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 

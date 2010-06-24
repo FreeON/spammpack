@@ -6,6 +6,6 @@ AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 TESTS = $(noinst_PROGRAMS)
 
 noinst_PROGRAMS = \
-  multiply_1 \
-  multiply_2 \
-  multiply_3
+  add_1 \
+  add_2 \
+  add_3

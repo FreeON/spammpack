@@ -20,9 +20,9 @@ main ()
   float_t alpha = 1.2;
   float_t beta = 0.5;
 
-  unsigned int L = 4;
-  unsigned int M = 4;
-  unsigned int N = 4;
+  unsigned int L = 5;
+  unsigned int M = 7;
+  unsigned int N = 9;
 
   unsigned int L_block = 1;
   unsigned int M_block = 1;

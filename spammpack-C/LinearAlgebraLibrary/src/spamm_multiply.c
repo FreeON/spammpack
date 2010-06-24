@@ -190,7 +190,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
 #else
         for (i = 0; i < (*C_node)->M_block; ++i) {
           for (j = 0; j < (*C_node)->N_block; ++j) {
-            for (k = 0; k < A_node->M_block; ++k)
+            for (k = 0; k < A_node->N_block; ++k)
             {
               (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)]
                 += alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]*B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)];
@@ -526,6 +526,8 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
  * @param B The matrix \f$B\f$.
  * @param beta The scalar factor \f$\beta\f$.
  * @param C The matrix \f$C\f$.
+ *
+ * \bug Can not handle multiply of trees with different depths.
  */
 void
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
@@ -590,6 +592,12 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
   if (B->N_block != C->N_block)
   {
     LOG_FATAL("matrix block size mismatch, B->N_block = %i, C->N_block = %i\n", B->N_block, C->N_block);
+    exit(1);
+  }
+
+  if (A->tree_depth != B->tree_depth || A->tree_depth != C->tree_depth)
+  {
+    LOG2_FATAL("trees have different depths.\n");
     exit(1);
   }
 
