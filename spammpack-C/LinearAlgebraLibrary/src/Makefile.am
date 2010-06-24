@@ -24,6 +24,7 @@ matrix_tree_sources = \
   spamm_logger.c \
   spamm_mask.c \
   spamm_multiply.c \
+  spamm_multiply_scalar.c \
   spamm_new.c \
   spamm_new_linear_quadtree_node.c \
   spamm_new_node.c \
