@@ -1,3 +1,5 @@
+SUBDIRS = multiply
+
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 AM_CFLAGS = -I$(top_srcdir)/src

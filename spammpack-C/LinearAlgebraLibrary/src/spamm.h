@@ -488,6 +488,9 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     const struct spamm_t *B, const float_t beta, struct spamm_t *C);
 
 void
+spamm_multiply_scalar (const float_t alpha, struct spamm_t *A);
+
+void
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,

@@ -10,22 +10,22 @@
 
 /** \private Computes
  *
- * C_node = alpha*A_node*B_node + beta*C_node
+ * C_node = alpha*A_node*B_node + C_node
  *
  * @param algorithm The algorithm to use.
  * @param alpha The scalar factor multiplying A*B.
  * @param A_node The node of matrix A.
  * @param B_node The node of matrix B.
- * @param beta The scalar factor multiplying C.
  * @param C_node The node of matrix C.
  * @param multiply_stream The multiply stream.
  */
 void
 spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     const float_t alpha, struct spamm_node_t *A_node,
-    struct spamm_node_t *B_node, const float_t beta,
-    struct spamm_node_t **C_node, struct spamm_ll_t *multiply_stream)
+    struct spamm_node_t *B_node, struct spamm_node_t **C_node,
+    struct spamm_ll_t *multiply_stream)
 {
+  float_t beta = 1.0;
   int i, j, k;
   char bitstring_A[100];
   char bitstring_B[100];
@@ -143,7 +143,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         for (k = 0; k < A_node->N_child; ++k)
         {
           spamm_multiply_node(algorithm, alpha, A_node->child[spamm_dense_index(i, k, A_node->M_child, A_node->N_child)],
-              B_node->child[spamm_dense_index(k, j, B_node->M_child, B_node->N_child)], beta,
+              B_node->child[spamm_dense_index(k, j, B_node->M_child, B_node->N_child)],
               &(*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)],
               multiply_stream);
         }
@@ -193,8 +193,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
             for (k = 0; k < A_node->M_block; ++k)
             {
               (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)]
-                = alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]*B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)]
-                + beta*(*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)];
+                += alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]*B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)];
             }
           }
         }
@@ -527,8 +526,6 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
  * @param B The matrix \f$B\f$.
  * @param beta The scalar factor \f$\beta\f$.
  * @param C The matrix \f$C\f$.
- *
- * \bug A pre-existing \f$C\f$ matrix will not work right now.
  */
 void
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
@@ -596,16 +593,10 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     exit(1);
   }
 
-  if (C->root != NULL)
-  {
-    LOG2_FATAL("[FIXME] can not handle pre-existing C\n");
-    exit(1);
-  }
-
   if (beta != 1.0)
   {
-    LOG_FATAL("[FIXME] can not handle (beta = %e) != 1.0\n", beta);
-    exit(1);
+    /* Multiply existing C. */
+    spamm_multiply_scalar(beta, C);
   }
 
   if ((A->root == NULL || B->root == NULL) && C->root == NULL)
@@ -614,22 +605,17 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     return;
   }
 
-  else if ((A->root == NULL || B->root == NULL) && C->root != NULL)
-  {
-    spamm_add_node(0.0, NULL, beta, &(C->root));
-  }
-
   switch (algorithm)
   {
     case tree:
-      spamm_multiply_node(algorithm, alpha, A->root, B->root, beta, &(C->root), multiply_stream);
+      spamm_multiply_node(algorithm, alpha, A->root, B->root, &(C->root), multiply_stream);
       break;
 
     case cache:
       multiply_stream = spamm_ll_new();
 
       gettimeofday(&start, NULL);
-      spamm_multiply_node(algorithm, alpha, A->root, B->root, beta, &(C->root), multiply_stream);
+      spamm_multiply_node(algorithm, alpha, A->root, B->root, &(C->root), multiply_stream);
       gettimeofday(&stop, NULL);
       LOG_DEBUG("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
