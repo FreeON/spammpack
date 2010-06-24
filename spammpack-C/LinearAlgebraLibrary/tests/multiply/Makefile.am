@@ -8,4 +8,7 @@ TESTS = $(noinst_PROGRAMS)
 noinst_PROGRAMS = \
   multiply_1 \
   multiply_2 \
-  multiply_3
+  multiply_3 \
+  multiply_4 \
+  multiply_5 \
+  multiply_6

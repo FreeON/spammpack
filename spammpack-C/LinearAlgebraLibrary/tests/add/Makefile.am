@@ -8,4 +8,7 @@ TESTS = $(noinst_PROGRAMS)
 noinst_PROGRAMS = \
   add_1 \
   add_2 \
-  add_3
+  add_3 \
+  add_4 \
+  add_5 \
+  add_6
