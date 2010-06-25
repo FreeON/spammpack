@@ -22,7 +22,7 @@ main ()
 
   unsigned int L = 5;
   unsigned int M = 7;
-  unsigned int N = 9;
+  unsigned int N = 8;
 
   unsigned int L_block = 1;
   unsigned int M_block = 1;

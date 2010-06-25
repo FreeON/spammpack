@@ -31,7 +31,10 @@ main ()
   unsigned int M_child = 2;
   unsigned int N_child = 2;
 
-  double fill = 0.2;
+  unsigned int linear_tier = 0;
+  unsigned int chunksize = 100;
+
+  double fill = 1.0;
 
   /* Allocate memory. */
   spamm_new(L, M, L_block, M_block, M_child, N_child, 0.0, &A);
@@ -77,6 +80,11 @@ main ()
   spamm_dense_to_spamm(L, M, L_block, M_block, M_child, N_child, 0.0, A_dense, &A);
   spamm_dense_to_spamm(M, N, M_block, N_block, M_child, N_child, 0.0, B_dense, &B);
   spamm_dense_to_spamm(L, N, L_block, N_block, M_child, N_child, 0.0, C_dense, &C);
+
+  /* Pack trees. */
+  spamm_tree_pack(linear_tier, chunksize, i_mask, &A);
+  spamm_tree_pack(linear_tier, chunksize, i_mask, &B);
+  spamm_tree_pack(linear_tier, chunksize, i_mask, &C);
 
 #ifdef TEST_DEBUG
   printf("A (SpAMM):\n");
