@@ -210,7 +210,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         /* Append this triple to the multiply stream. */
         multiply_stream_element = (struct spamm_multiply_stream_element_t*) malloc(sizeof(struct spamm_multiply_stream_element_t));
         multiply_stream_element->alpha = alpha;
-        multiply_stream_element->beta = beta;
+        multiply_stream_element->beta = 1.0;
         multiply_stream_element->A_index = A_node->index;
         multiply_stream_element->B_index = B_node->index;
         multiply_stream_element->C_index = (*C_node)->index;
@@ -469,14 +469,13 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
         &(nodedata->alpha), nodedata->A_node->block_dense, &(nodedata->A_node->M_block), nodedata->B_node->block_dense, &(nodedata->B_node->M_block),
         &(nodedata->beta), nodedata->C_node->block_dense, &(nodedata->C_node->M_block));
 #else
-    for (i = 0; i < nodedata->C_node->M_block; ++i) {
-      for (j = 0; j < nodedata->C_node->N_block; ++j) {
-        for (k = 0; k < nodedata->A_node->M_block; ++k)
+    for (i = 0; i < nodedata->A_node->M_block; ++i) {
+      for (j = 0; j < nodedata->B_node->N_block; ++j) {
+        for (k = 0; k < nodedata->A_node->N_block; ++k)
         {
           nodedata->C_node->block_dense[spamm_dense_index(i, j, nodedata->C_node->M_block, nodedata->C_node->N_block)]
-            = nodedata->alpha*nodedata->A_node->block_dense[spamm_dense_index(i, k, nodedata->A_node->M_block, nodedata->A_node->N_block)]
-            *nodedata->B_node->block_dense[spamm_dense_index(k, j, nodedata->B_node->M_block, nodedata->B_node->N_block)]
-            + nodedata->beta*nodedata->C_node->block_dense[spamm_dense_index(i, j, nodedata->C_node->M_block, nodedata->C_node->N_block)];
+            += nodedata->alpha*nodedata->A_node->block_dense[spamm_dense_index(i, k, nodedata->A_node->M_block, nodedata->A_node->N_block)]
+            *nodedata->B_node->block_dense[spamm_dense_index(k, j, nodedata->B_node->M_block, nodedata->B_node->N_block)];
         }
       }
     }
