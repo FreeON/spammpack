@@ -1,7 +1,7 @@
 #include <spamm.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <getopt.h>
 #include <math.h>
 #include <sys/time.h>
 
@@ -40,22 +40,42 @@ main (int argc, char **argv)
   unsigned int max_diff_i = 0;
   unsigned int max_diff_j = 0;
 
+  char *short_options = "hN:1:2:";
+  struct option long_options[] = {
+    { "help", no_argument, NULL, 'h' },
+    { "N", required_argument, NULL, 'N' },
+    { "N_block", required_argument, NULL, '1' },
+    { "M_block", required_argument, NULL, '2' },
+    { NULL, 0, NULL, 0 }
+  };
+  int longindex;
+
   spamm_set_loglevel(info);
 
-  while ((parse = getopt(argc, argv, "hN:")) != -1)
+  while ((parse = getopt_long(argc, argv, short_options, long_options, &longindex)) != -1)
   {
     switch (parse)
     {
       case 'h':
         printf("Usage:\n");
         printf("\n");
-        printf("-h      This help\n");
-        printf("-N N    Set the size of the matrix to N\n");
+        printf("-h             This help\n");
+        printf("-N N           Set the size of the matrix to N\n");
+        printf("--N_block N    Set the size of the number of rows of the matrix blocks to N\n");
+        printf("--M_block M    Set the size of the number of columns of the matrix blocks to M\n");
         return result;
         break;
 
       case 'N':
         N = strtol(optarg, NULL, 10);
+        break;
+
+      case '1':
+        M_block = strtol(optarg, NULL, 10);
+        break;
+
+      case '2':
+        N_block = strtol(optarg, NULL, 10);
         break;
 
       default:
@@ -69,7 +89,6 @@ main (int argc, char **argv)
   A_dense = (float_t*) malloc(sizeof(float_t)*N*N);
   B_dense = (float_t*) malloc(sizeof(float_t)*N*N);
   C_dense = (float_t*) malloc(sizeof(float_t)*N*N);
-
 
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j)
@@ -107,13 +126,13 @@ main (int argc, char **argv)
 
   /* Convert to SpAMM. */
   spamm_new(N, N, M_block, N_block, 2, 2, 0.0, &A);
-  spamm_new(N, N, M_block, N_block, 2, 2, 0.0, &B);
-  spamm_new(N, N, M_block, N_block, 2, 2, 0.0, &C);
+  spamm_new(N, N, N_block, M_block, 2, 2, 0.0, &B);
+  spamm_new(N, N, M_block, M_block, 2, 2, 0.0, &C);
 
   LOG2_INFO("converting dense to spamm... ");
   gettimeofday(&start, NULL);
   spamm_dense_to_spamm(N, N, M_block, N_block, 2, 2, 0.0, A_dense, &A);
-  spamm_dense_to_spamm(N, N, M_block, N_block, 2, 2, 0.0, B_dense, &B);
+  spamm_dense_to_spamm(N, N, N_block, M_block, 2, 2, 0.0, B_dense, &B);
   gettimeofday(&stop, NULL);
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
