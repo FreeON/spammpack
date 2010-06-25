@@ -31,7 +31,6 @@
  *
  * \section future_milestones Future Milestones
  *
- * - Reorganize test cases.
  * - Add benchmarks for generic matrices.
  *   - diagonal matrix
  *   - banded matrix with exponential decay
@@ -43,6 +42,7 @@
  * - 2010-06-18: Implemented linear quadtree support in spamm_add().
  * - 2010-06-23: Implemented linear quadtree support in spamm_multiply().
  * - 2010-06-24: Implemented full multiply including beta != 1.0.
+ * - 2010-06-25: Added more testcases and organized them.
  *
  * \version @PACKAGE_VERSION_STRING@
  *

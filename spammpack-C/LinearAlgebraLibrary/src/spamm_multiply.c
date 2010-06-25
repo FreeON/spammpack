@@ -310,7 +310,9 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
           if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C->M, linear_C->N, linear_C->block_dense); }
         }
       }
+      spamm_ll_iterator_delete(&iterator_B);
     }
+    spamm_ll_iterator_delete(&iterator_A);
 
     /* Sort blocks in C. */
     LOG_INFO("sorting linear tree in C (has %u elements)\n", (*C_node)->linear_quadtree->number_elements);
@@ -342,7 +344,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
             linear_C->block_dense[i] += linear_C_next->block_dense[i];
           }
           linear_node_C_next = linear_node_C_next->next;
-          spamm_ll_delete_node(linear_node_C->next, (*C_node)->linear_quadtree);
+          spamm_ll_delete_node(NULL, linear_node_C->next, (*C_node)->linear_quadtree);
 
           LOG2_DEBUG("linear_C after:\n");
           if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C->M, linear_C->N, linear_C->block_dense); }
@@ -351,6 +353,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         else { break; }
       }
     }
+    spamm_ll_iterator_delete(&iterator_C);
 
     LOG_INFO("done, C now has %u elements\n", (*C_node)->linear_quadtree->number_elements);
   }

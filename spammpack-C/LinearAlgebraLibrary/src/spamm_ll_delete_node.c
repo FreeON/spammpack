@@ -4,6 +4,8 @@
 
 /** Delete an element of a linked list.
  *
+ * @param delete_data A function that takes care of deleting the data. In a
+ *                    simple case this could be free().
  * @param node The node to delete.
  * @param list The list from which to delete the node.
  *
@@ -11,7 +13,8 @@
  *      or not.
  */
 void
-spamm_ll_delete_node (struct spamm_ll_node_t *node, struct spamm_ll_t *list)
+spamm_ll_delete_node (void (*delete_data) (void*),
+    struct spamm_ll_node_t *node, struct spamm_ll_t *list)
 {
   assert(node != NULL);
   assert(list != NULL);
@@ -43,6 +46,12 @@ spamm_ll_delete_node (struct spamm_ll_node_t *node, struct spamm_ll_t *list)
   {
     node->next->previous = node->previous;
   }
+
+  if (delete_data != NULL)
+  {
+    delete_data(node->data);
+  }
+  free(node);
 
   list->number_elements--;
 }

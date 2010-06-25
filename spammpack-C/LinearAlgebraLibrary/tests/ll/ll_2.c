@@ -59,10 +59,11 @@ main (int argc, char **argv)
         break;
       }
     }
+    spamm_ll_iterator_delete(&iterator);
 
     if (node != NULL)
     {
-      spamm_ll_delete_node(node, list);
+      spamm_ll_delete_node(free, node, list);
       LOG_DEBUG("list has %u elements\n", list->number_elements);
     }
 
@@ -71,6 +72,12 @@ main (int argc, char **argv)
       LOG2_FATAL("node == NULL?\n");
       return -1;
     }
+  }
+
+  if (list->number_elements != 0)
+  {
+    LOG2_FATAL("list still has elements\n");
+    return -1;
   }
 
   free(removal);
