@@ -62,7 +62,8 @@ void
 spamm_ll_iterator_delete (struct spamm_ll_iterator_t **iterator);
 
 void
-spamm_ll_delete_node (struct spamm_ll_node_t *node, struct spamm_ll_t *list);
+spamm_ll_delete_node (void (*delete_data) (void*),
+    struct spamm_ll_node_t *node, struct spamm_ll_t *list);
 
 struct spamm_ll_node_t *
 spamm_ll_iterator_first (struct spamm_ll_iterator_t *iterator);

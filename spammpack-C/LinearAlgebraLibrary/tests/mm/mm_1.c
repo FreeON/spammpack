@@ -41,6 +41,11 @@ main ()
       i++;
     }
   }
+  spamm_ll_iterator_delete(&iterator);
+
+  /* Free memory. */
+  free(i_pointer);
+  spamm_mm_delete(&memory);
 
   return 0;
 }

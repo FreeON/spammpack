@@ -130,5 +130,13 @@ main ()
     }
   }
 
+  /* Free memory. */
+  free(A_dense);
+  free(B_dense);
+  free(C_dense);
+  spamm_delete(&A);
+  spamm_delete(&B);
+  spamm_delete(&C);
+
   return 0;
 }

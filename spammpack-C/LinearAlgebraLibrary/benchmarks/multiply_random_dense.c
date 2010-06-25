@@ -40,6 +40,8 @@ main (int argc, char **argv)
   unsigned int max_diff_i = 0;
   unsigned int max_diff_j = 0;
 
+  spamm_set_loglevel(info);
+
   while ((parse = getopt(argc, argv, "hN:")) != -1)
   {
     switch (parse)
