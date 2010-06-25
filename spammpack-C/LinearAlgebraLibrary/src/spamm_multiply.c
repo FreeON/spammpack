@@ -142,7 +142,8 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
       for (j = 0; j < (*C_node)->N_child; ++j) {
         for (k = 0; k < A_node->N_child; ++k)
         {
-          spamm_multiply_node(algorithm, alpha, A_node->child[spamm_dense_index(i, k, A_node->M_child, A_node->N_child)],
+          spamm_multiply_node(algorithm, alpha,
+              A_node->child[spamm_dense_index(i, k, A_node->M_child, A_node->N_child)],
               B_node->child[spamm_dense_index(k, j, B_node->M_child, B_node->N_child)],
               &(*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)],
               multiply_stream);
@@ -168,6 +169,11 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     switch (algorithm)
     {
       case tree:
+        LOG_DEBUG("multiplying C(%u:%u,%u:%u) += %f*A(%u:%u,%u:%u)*B(%u:%u,%u:%u)\n",
+            (*C_node)->M_lower, (*C_node)->M_upper-1, (*C_node)->N_lower, (*C_node)->N_upper-1,
+            alpha,
+            A_node->M_lower, A_node->M_upper-1, A_node->N_lower, A_node->N_upper-1,
+            B_node->M_lower, B_node->M_upper-1, B_node->N_lower, B_node->N_upper-1);
 #ifdef DGEMM
         DGEMM("N", "N", &(A_node->M_block), &(B_node->N_block), &(A_node->N_block),
             &alpha, A_node->block_dense, &(A_node->M_block), B_node->block_dense, &(B_node->M_block),
@@ -597,6 +603,12 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
 
   if (A->tree_depth != B->tree_depth || A->tree_depth != C->tree_depth)
   {
+    /* The basic problem is that different tree depths means different amount
+     * of padding and it is not clear to me how to recursively match up the
+     * right matrix elements when the padded matrix sizes do not match. If we
+     * really need this feature, a way around this would be to repad the
+     * more shallow trees so that all have the same depth.
+     */
     LOG2_FATAL("trees have different depths.\n");
     exit(1);
   }
