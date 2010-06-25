@@ -20,9 +20,9 @@ main ()
   float_t alpha = 1.2;
   float_t beta = 0.5;
 
-  unsigned int L = 5;
-  unsigned int M = 7;
-  unsigned int N = 8;
+  unsigned int L = 4;
+  unsigned int M = 4;
+  unsigned int N = 4;
 
   unsigned int L_block = 1;
   unsigned int M_block = 1;
@@ -30,6 +30,9 @@ main ()
 
   unsigned int M_child = 2;
   unsigned int N_child = 2;
+
+  unsigned int linear_tier = 0;
+  unsigned int chunksize = 100;
 
   double fill = 0.2;
 
@@ -77,6 +80,11 @@ main ()
   spamm_dense_to_spamm(L, M, L_block, M_block, M_child, N_child, 0.0, A_dense, &A);
   spamm_dense_to_spamm(M, N, M_block, N_block, M_child, N_child, 0.0, B_dense, &B);
   spamm_dense_to_spamm(L, N, L_block, N_block, M_child, N_child, 0.0, C_dense, &C);
+
+  /* Pack trees. */
+  spamm_tree_pack(linear_tier, chunksize, i_mask, &A);
+  spamm_tree_pack(linear_tier, chunksize, i_mask, &B);
+  spamm_tree_pack(linear_tier, chunksize, i_mask, &C);
 
 #ifdef TEST_DEBUG
   printf("A (SpAMM):\n");

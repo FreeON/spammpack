@@ -301,7 +301,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
               for (k = 0; k < A_node->N_block; ++k)
               {
                 linear_C->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] +=
-                  linear_A->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]
+                  alpha*linear_A->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]
                   *linear_B->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)];
               }
             }

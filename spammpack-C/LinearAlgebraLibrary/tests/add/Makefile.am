@@ -11,4 +11,10 @@ noinst_PROGRAMS = \
   add_3 \
   add_4 \
   add_5 \
-  add_6
+  add_6 \
+  add_7 \
+  add_8 \
+  add_9 \
+  add_10 \
+  add_11 \
+  add_12
