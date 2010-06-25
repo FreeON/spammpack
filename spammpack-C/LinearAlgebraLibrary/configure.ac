@@ -117,6 +117,16 @@ AC_DEFINE([FLOATING_PRECISION], [float], [Define the floating point number type]
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
 
+dnl Load git commit ID and set.
+if test -f ${srcdir}/localversion; then
+  . ${srcdir}/localversion
+else
+  branch="unknown"
+  localversion="unknown"
+fi
+AC_SUBST(LOCAL_VERSION, [${branch}:${localversion}])
+AC_MSG_NOTICE([configuring local version ${branch}:${localversion}])
+
 dnl Write results.
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
