@@ -12,13 +12,10 @@ EXTRA_DIST = \
 noinst_PROGRAMS = \
   multiply_MM \
   multiply_random_dense \
+  multiply_column_row \
+  multiply_diagonal \
   SP2_MM \
   latency
-
-multiply_MM_SOURCES = multiply_MM.c
-multiply_random_dense_SOURCES = multiply_random_dense.c
-SP2_MM_SOURCES = SP2_MM.c
-latency_SOURCES = latency.c
 
 tags :
 	ctags ../src/*.{c,h}

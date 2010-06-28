@@ -16,6 +16,7 @@ main (int argc, char **argv)
   unsigned int N = 1000;
   unsigned int M_block = 100;
   unsigned int N_block = 100;
+  double gamma = 0.46;
 
 #ifdef DGEMM
   float_t alpha, beta;
@@ -42,12 +43,13 @@ main (int argc, char **argv)
   unsigned int max_diff_i = 0;
   unsigned int max_diff_j = 0;
 
-  char *short_options = "hN:1:2:";
+  char *short_options = "hN:1:2:g:";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
     { "N_block", required_argument, NULL, '1' },
     { "M_block", required_argument, NULL, '2' },
+    { "gamma", required_argument, NULL, 'g' },
     { NULL, 0, NULL, 0 }
   };
   int longindex;
@@ -65,6 +67,7 @@ main (int argc, char **argv)
         printf("-N N           Set the size of the matrix to N\n");
         printf("--N_block N    Set the size of the number of rows of the matrix blocks to N\n");
         printf("--M_block M    Set the size of the number of columns of the matrix blocks to M\n");
+        printf("-g gamma       Set the decay constant gamma for exp(-gamma |i-j|)\n");
         return result;
         break;
 
@@ -80,23 +83,36 @@ main (int argc, char **argv)
         N_block = strtol(optarg, NULL, 10);
         break;
 
+      case 'g':
+        gamma = strtod(optarg, NULL);
+        break;
+
       default:
         LOG2_FATAL("unknown command line option\n");
         return -1;
         break;
     }
   }
-  LOG_INFO("generating 2 random %ix%i matrices with %ix%i blocks\n", N, N, M_block, N_block);
+  LOG_INFO("generating 2 random %ix%i matrices with %ix%i blocks, gamma = %f\n", N, N, M_block, N_block, gamma);
 
   A_dense = (float_t*) malloc(sizeof(float_t)*N*N);
   B_dense = (float_t*) malloc(sizeof(float_t)*N*N);
   C_dense = (float_t*) malloc(sizeof(float_t)*N*N);
 
+  for (i = 0; i < N; i++)
+  {
+    A_dense[spamm_dense_index(i, i, N, N)] = rand()/(float_t) RAND_MAX;
+    B_dense[spamm_dense_index(i, i, N, N)] = rand()/(float_t) RAND_MAX;
+  }
+
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      A_dense[spamm_dense_index(i, j, N, N)] = rand()/(float_t) RAND_MAX;
-      B_dense[spamm_dense_index(i, j, N, N)] = rand()/(float_t) RAND_MAX;
+      if (i != j)
+      {
+        A_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*A_dense[spamm_dense_index(i, i, N, N)]*A_dense[spamm_dense_index(j, j, N, N)];
+        B_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*B_dense[spamm_dense_index(i, i, N, N)]*B_dense[spamm_dense_index(j, j, N, N)];
+      }
       C_dense[spamm_dense_index(i, j, N, N)] = 0.0;
     }
   }

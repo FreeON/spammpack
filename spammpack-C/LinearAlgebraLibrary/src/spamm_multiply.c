@@ -518,7 +518,7 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
   }
 
   /* Print statistics. */
-  LOG_DEBUG("blocks loaded: stream length = %3u cache = %3u A = %3u B = %3u C = %3u total = %4u\n",
+  LOG_INFO("blocks loaded: stream length = %3u cache = %3u A = %3u B = %3u C = %3u total = %4u\n",
       multiply_stream->number_elements, cache_length,
       number_A_blocks_loaded, number_B_blocks_loaded, number_C_blocks_loaded,
       number_A_blocks_loaded+number_B_blocks_loaded+number_C_blocks_loaded);
@@ -630,21 +630,23 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
   switch (algorithm)
   {
     case tree:
+      LOG2_INFO("using tree algorithm\n");
       spamm_multiply_node(algorithm, alpha, A->root, B->root, &(C->root), multiply_stream);
       break;
 
     case cache:
+      LOG2_INFO("using cache algorithm\n");
       multiply_stream = spamm_ll_new();
 
       gettimeofday(&start, NULL);
       spamm_multiply_node(algorithm, alpha, A->root, B->root, &(C->root), multiply_stream);
       gettimeofday(&stop, NULL);
-      LOG_DEBUG("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+      LOG_INFO("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
       gettimeofday(&start, NULL);
       spamm_multiply_stream(30000, multiply_stream);
       gettimeofday(&stop, NULL);
-      LOG_DEBUG("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+      LOG_INFO("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
       spamm_ll_delete(free, &multiply_stream);
       break;

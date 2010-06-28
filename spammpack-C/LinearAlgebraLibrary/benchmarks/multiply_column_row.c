@@ -92,11 +92,29 @@ main (int argc, char **argv)
   B_dense = (float_t*) malloc(sizeof(float_t)*N*N);
   C_dense = (float_t*) malloc(sizeof(float_t)*N*N);
 
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
+  for (i = 0; i < N; ++i) {
+    for (j = 0; j < N; ++j)
     {
-      A_dense[spamm_dense_index(i, j, N, N)] = rand()/(float_t) RAND_MAX;
-      B_dense[spamm_dense_index(i, j, N, N)] = rand()/(float_t) RAND_MAX;
+      if (j == 0)
+      {
+        A_dense[spamm_dense_index(i, j, N, N)] = rand()/(float_t) RAND_MAX;
+      }
+
+      else
+      {
+        A_dense[spamm_dense_index(i, j, N, N)] = 0.0;
+      }
+
+      if (i == 0)
+      {
+        B_dense[spamm_dense_index(i, j, N, N)] = rand()/(float_t) RAND_MAX;
+      }
+
+      else
+      {
+        B_dense[spamm_dense_index(i, j, N, N)] = 0.0;
+      }
+
       C_dense[spamm_dense_index(i, j, N, N)] = 0.0;
     }
   }
