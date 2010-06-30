@@ -35,9 +35,8 @@ main (int argc, char **argv)
   float_t threshold = 0.0;
   float_t gamma = 0.46;
 
-#ifdef DGEMM
-  float_t alpha, beta;
-#endif
+  float_t alpha = 1.2;
+  float_t beta = 0.5;
 
   unsigned int i, j;
 
@@ -62,7 +61,7 @@ main (int argc, char **argv)
   unsigned int max_diff_i = 0;
   unsigned int max_diff_j = 0;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:t:p";
+  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:p";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "M", required_argument, NULL, 'M' },
@@ -72,6 +71,8 @@ main (int argc, char **argv)
     { "N_block", required_argument, NULL, '2' },
     { "K_block", required_argument, NULL, '3' },
     { "gamma", required_argument, NULL, 'g' },
+    { "alpha", required_argument, NULL, 'a' },
+    { "beta", required_argument, NULL, 'b' },
     { "thresh", required_argument, NULL, 'e' },
     { "type", required_argument, NULL, 't' },
     { "print", no_argument, NULL, 'p' },
@@ -98,6 +99,8 @@ main (int argc, char **argv)
         printf("--K_block K             Set the number of columns of the matrix blocks of A\n");
         printf("                        and the number of rows of the matrix blocks of B\n");
         printf("{ -g | --gamma } gamma  Set the decay constant gamma for exp(-gamma |i-j|)\n");
+        printf("{ -a | --alpha } alpha  Set alpha in C = alpha*A*B + beta*C\n");
+        printf("{ -b | --beta } beta    Set beta in C = alpha*A*B + beta*C\n");
         printf("{ -e | --thresh } eps   Set the threshold, i.e. no random number will be used below\n");
         printf("                        this threshold\n");
         printf("--print                 Print the matrices\n");
@@ -133,6 +136,14 @@ main (int argc, char **argv)
         gamma = strtod(optarg, NULL);
         break;
 
+      case 'a':
+        alpha = strtod(optarg, NULL);
+        break;
+
+      case 'b':
+        beta = strtod(optarg, NULL);
+        break;
+
       case 'e':
         threshold = strtod(optarg, NULL);
         break;
@@ -159,17 +170,22 @@ main (int argc, char **argv)
   }
 
   LOG_INFO("matrix mode: %s\n", matrix_type_name[matrix_type]);
+  LOG_INFO("alpha = %f, beta = %f\n", alpha, beta);
   switch (matrix_type)
   {
     case dense:
     case column_row:
-      LOG_INFO("generating 2 random %ix%i matrices with %ix%i blocks\n", M, N, M_block, N_block);
+      LOG_INFO("generating random %ix%i matrix A with %ix%i blocks\n", M, K, M_block, K_block);
+      LOG_INFO("generating random %ix%i matrix B with %ix%i blocks\n", K, N, K_block, N_block);
+      LOG_INFO("generating random %ix%i matrix C with %ix%i blocks\n", M, N, M_block, N_block);
       break;
 
     case diagonal:
       if (M == N && N == K && M == K)
       {
-        LOG_INFO("generating 2 random %ix%i matrices with %ix%i blocks, gamma = %f\n", M, N, M_block, N_block, gamma);
+        LOG_INFO("generating random %ix%i matrix A with %ix%i blocks, gamma = %f\n", M, K, M_block, K_block, gamma);
+        LOG_INFO("generating random %ix%i matrix B with %ix%i blocks, gamma = %f\n", K, N, K_block, N_block, gamma);
+        LOG_INFO("generating random %ix%i matrix C with %ix%i blocks, gamma = %f\n", M, N, M_block, N_block, gamma);
       }
 
       else
@@ -208,7 +224,7 @@ main (int argc, char **argv)
       for (i = 0; i < M; i++) {
         for (j = 0; j < N; j++)
         {
-          C_dense[spamm_dense_index(i, j, M, N)] = 0.0;
+          C_dense[spamm_dense_index(i, j, K, N)] = rand()/(float_t) RAND_MAX + threshold;
         }
       }
       break;
@@ -218,6 +234,7 @@ main (int argc, char **argv)
       {
         A_dense[spamm_dense_index(i, i, N, N)] = rand()/(float_t) RAND_MAX + threshold;
         B_dense[spamm_dense_index(i, i, N, N)] = rand()/(float_t) RAND_MAX + threshold;
+        C_dense[spamm_dense_index(i, i, N, N)] = rand()/(float_t) RAND_MAX + threshold;
       }
 
       for (i = 0; i < N; i++) {
@@ -227,8 +244,8 @@ main (int argc, char **argv)
           {
             A_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*A_dense[spamm_dense_index(i, i, N, N)]*A_dense[spamm_dense_index(j, j, N, N)];
             B_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*B_dense[spamm_dense_index(i, i, N, N)]*B_dense[spamm_dense_index(j, j, N, N)];
+            C_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*C_dense[spamm_dense_index(i, i, N, N)]*C_dense[spamm_dense_index(j, j, N, N)];
           }
-          C_dense[spamm_dense_index(i, j, N, N)] = 0.0;
         }
       }
       break;
@@ -263,45 +280,23 @@ main (int argc, char **argv)
           }
         }
       }
+
       for (i = 0; i < M; ++i) {
         for (j = 0; j < N; ++j)
         {
-          C_dense[spamm_dense_index(i, j, M, N)] = 0.0;
+          if (i == 0)
+          {
+            C_dense[spamm_dense_index(i, j, M, N)] = rand()/(float_t) RAND_MAX + threshold;
+          }
+
+          else
+          {
+            C_dense[spamm_dense_index(i, j, M, N)] = 0.0;
+          }
         }
       }
       break;
   }
-
-#if defined(DGEMM)
-  LOG2_INFO("multiplying matrix with BLAS to get reference product... ");
-  alpha = 1.0;
-  beta = 0.0;
-  gettimeofday(&start, NULL);
-  getrusage(RUSAGE_SELF, &rusage_start);
-  DGEMM("N", "N", &M, &N, &K, &alpha, A_dense, &M, B_dense, &K, &beta, C_dense, &M);
-  getrusage(RUSAGE_SELF, &rusage_stop);
-  gettimeofday(&stop, NULL);
-  walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
-  usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-  printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
-#else
-  LOG2_INFO("multiplying matrix directly to get reference product... ");
-  gettimeofday(&start, NULL);
-  getrusage(RUSAGE_SELF, &rusage_start);
-  for (i = 0; i < M; ++i) {
-    for (j = 0; j < N; ++j) {
-      for (k = 0; k < K; ++k)
-      {
-        C_dense[spamm_dense_index(i, j, M, N)] += A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)];
-      }
-    }
-  }
-  getrusage(RUSAGE_SELF, &rusage_stop);
-  gettimeofday(&stop, NULL);
-  walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
-  usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-  printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
-#endif
 
   if (print_matrix)
   {
@@ -322,6 +317,7 @@ main (int argc, char **argv)
   gettimeofday(&start, NULL);
   spamm_dense_to_spamm(M, K, M_block, K_block, 2, 2, 0.0, A_dense, &A);
   spamm_dense_to_spamm(K, N, K_block, N_block, 2, 2, 0.0, B_dense, &B);
+  spamm_dense_to_spamm(M, N, M_block, N_block, 2, 2, 0.0, C_dense, &C);
   gettimeofday(&stop, NULL);
   printf("walltime %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
@@ -329,6 +325,8 @@ main (int argc, char **argv)
   LOG_INFO("A: avg. sparsity = %1.1f%%, dense blocks = %u\n", tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
   spamm_tree_stats(&tree_stats, &B);
   LOG_INFO("B: avg. sparsity = %1.1f%%, dense blocks = %u\n", tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+  spamm_tree_stats(&tree_stats, &C);
+  LOG_INFO("C: avg. sparsity = %1.1f%%, dense blocks = %u\n", tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
 
   if (print_matrix)
   {
@@ -336,6 +334,46 @@ main (int argc, char **argv)
     spamm_print_spamm(&A);
     printf("B:\n");
     spamm_print_spamm(&B);
+    printf("C:\n");
+    spamm_print_spamm(&C);
+  }
+
+#if defined(DGEMM)
+  LOG2_INFO("multiplying matrix with BLAS to get reference product... ");
+  alpha = 1.0;
+  beta = 0.0;
+  gettimeofday(&start, NULL);
+  getrusage(RUSAGE_SELF, &rusage_start);
+  DGEMM("N", "N", &M, &N, &K, &alpha, A_dense, &M, B_dense, &K, &beta, C_dense, &M);
+  getrusage(RUSAGE_SELF, &rusage_stop);
+  gettimeofday(&stop, NULL);
+  walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
+  usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
+  printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
+#else
+  LOG2_INFO("multiplying matrix directly to get reference product... ");
+  gettimeofday(&start, NULL);
+  getrusage(RUSAGE_SELF, &rusage_start);
+  for (i = 0; i < M; i++) {
+    for (j = 0; j < N; j++) {
+      C_dense[spamm_dense_index(i, j, M, N)] *= beta;
+      for (k = 0; k < K; k++)
+      {
+        C_dense[spamm_dense_index(i, j, M, N)] += alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)];
+      }
+    }
+  }
+  getrusage(RUSAGE_SELF, &rusage_stop);
+  gettimeofday(&stop, NULL);
+  walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
+  usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
+  printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
+#endif
+
+  if (print_matrix)
+  {
+    printf("C (dense):\n");
+    spamm_print_dense(M, N, C_dense);
   }
 
   LOG2_INFO("multiplying matrix with spamm\n");
@@ -354,8 +392,8 @@ main (int argc, char **argv)
 
   LOG2_INFO("comparing matrices\n");
   max_diff = 0;
-  for (i = 0; i < C.M; ++i) {
-    for (j = 0; j < C.N; ++j)
+  for (i = 0; i < C.M; i++) {
+    for (j = 0; j < C.N; j++)
     {
       if (fabs(spamm_get(i, j, &C)-C_dense[spamm_dense_index(i, j, C.M, C.N)]) > max_diff)
       {
