@@ -11,9 +11,7 @@ EXTRA_DIST = \
 
 noinst_PROGRAMS = \
   multiply_MM \
-  multiply_random_dense \
-  multiply_column_row \
-  multiply_diagonal \
+  multiply \
   SP2_MM \
   latency
 
