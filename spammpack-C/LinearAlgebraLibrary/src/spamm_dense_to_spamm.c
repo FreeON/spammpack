@@ -22,7 +22,7 @@ void
 spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, const float_t *A_dense,
+    const floating_point_t threshold, const floating_point_t *A_dense,
     struct spamm_t *A)
 {
   int i, j;

@@ -10,7 +10,7 @@
  * @param A_dense The dense matrix.
  */
 void
-spamm_print_dense (const unsigned int M, const unsigned int N, const float_t *A_dense)
+spamm_print_dense (const unsigned int M, const unsigned int N, const floating_point_t *A_dense)
 {
   int i, j;
 

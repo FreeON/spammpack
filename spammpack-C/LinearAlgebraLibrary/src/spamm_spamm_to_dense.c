@@ -11,14 +11,14 @@
  * @param A_dense The dense matrix.
  */
 void
-spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense)
+spamm_spamm_to_dense (const struct spamm_t *A, floating_point_t **A_dense)
 {
   int i, j;
 
   assert(A != NULL);
   assert(A_dense != NULL);
 
-  *A_dense = (float_t*) malloc(sizeof(float_t)*A->M*A->N);
+  *A_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*A->M*A->N);
 
   for (i = 0; i < A->M; ++i) {
     for (j = 0; j < A->N; ++j)

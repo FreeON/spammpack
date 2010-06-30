@@ -18,7 +18,7 @@ void
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, struct spamm_t *A)
+    const floating_point_t threshold, struct spamm_t *A)
 {
   assert(A != NULL);
 

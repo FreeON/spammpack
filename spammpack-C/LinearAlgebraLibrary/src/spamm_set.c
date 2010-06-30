@@ -14,7 +14,7 @@
  * @param node The matrix node.
  */
 void
-spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_node_t *node)
+spamm_set_element (const unsigned int i, const unsigned int j, const floating_point_t Aij, struct spamm_node_t *node)
 {
   int l, k, m, n;
   struct spamm_node_t *child_node;
@@ -68,7 +68,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
           /* Check if we are at the block level. */
           if ((child_node->M_upper-child_node->M_lower) == child_node->M_block && (child_node->N_upper-child_node->N_lower) == child_node->N_block)
           {
-            child_node->block_dense = (float_t*) malloc(sizeof(float_t)*child_node->M_block*child_node->N_block);
+            child_node->block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*child_node->M_block*child_node->N_block);
             for (m = 0; m < child_node->M_block; ++m) {
               for (n = 0; n < child_node->N_block; ++n)
               {
@@ -142,7 +142,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const float_t Aij
  *         smaller than the matrix threshold and was not stored.
  */
 int
-spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_t *A)
+spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Aij, struct spamm_t *A)
 {
   int l, k;
   int result = SPAMM_RESULT_OK;
@@ -179,7 +179,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct
       /* Check if we are at the block level. */
       if ((A->root->M_upper-A->root->M_lower) == A->root->M_block && (A->root->N_upper-A->root->N_lower) == A->root->N_block)
       {
-        A->root->block_dense = (float_t*) malloc(sizeof(float_t)*A->root->M_block*A->root->N_block);
+        A->root->block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*A->root->M_block*A->root->N_block);
         for (l = 0; l < A->root->M_block; ++l) {
           for (k = 0; k < A->root->N_block; ++k)
           {

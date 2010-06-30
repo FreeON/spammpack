@@ -9,16 +9,16 @@ main ()
   struct spamm_t B;
   struct spamm_t C;
 
-  float_t *A_dense;
-  float_t *B_dense;
-  float_t *C_dense;
+  floating_point_t *A_dense;
+  floating_point_t *B_dense;
+  floating_point_t *C_dense;
 
   int i, j, k;
 
   double tolerance = 1e-5;
 
-  float_t alpha = 1.2;
-  float_t beta = 0.5;
+  floating_point_t alpha = 1.2;
+  floating_point_t beta = 0.5;
 
   unsigned int L = 4;
   unsigned int M = 4;
@@ -41,9 +41,9 @@ main ()
   spamm_new(M, N, M_block, N_block, M_child, N_child, 0.0, &B);
   spamm_new(L, N, L_block, N_block, M_child, N_child, 0.0, &C);
 
-  A_dense = (float_t*) malloc(sizeof(float_t)*L*M);
-  B_dense = (float_t*) malloc(sizeof(float_t)*M*N);
-  C_dense = (float_t*) malloc(sizeof(float_t)*L*N);
+  A_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*L*M);
+  B_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*M*N);
+  C_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*L*N);
 
   /* Fill matrices with random data. */
   for (i = 0; i < L; ++i) {

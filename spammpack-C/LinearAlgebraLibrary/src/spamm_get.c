@@ -12,7 +12,7 @@
  *
  * @return The matrix element.
  */
-float_t
+floating_point_t
 spamm_get_element (const unsigned int i, const unsigned int j, const struct spamm_node_t *node)
 {
   unsigned int l, k;
@@ -23,7 +23,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
   struct spamm_ll_node_t *linear_tree_node;
 
   struct spamm_linear_quadtree_t *linear_element;
-  float_t result = 0.0;
+  floating_point_t result = 0.0;
 
 #ifdef SPAMM_DEBUG
   char binary_string_1[129];
@@ -141,7 +141,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
  *
  * @return The matrix element.
  */
-float_t
+floating_point_t
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
 {
   assert(A != NULL);
