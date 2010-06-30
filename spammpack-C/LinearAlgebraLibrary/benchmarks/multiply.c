@@ -61,6 +61,9 @@ main (int argc, char **argv)
   unsigned int max_diff_i = 0;
   unsigned int max_diff_j = 0;
 
+  /* For the Kahan summation algorithm. */
+  float_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
+
   char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:p";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
@@ -354,13 +357,21 @@ main (int argc, char **argv)
   LOG2_INFO("multiplying matrix directly to get reference product... ");
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
+  error_compensation_max = 0;
   for (i = 0; i < M; i++) {
     for (j = 0; j < N; j++) {
       C_dense[spamm_dense_index(i, j, M, N)] *= beta;
+      sum = C_dense[spamm_dense_index(i, j, M, N)];
+      error_compensation = 0;
       for (k = 0; k < K; k++)
       {
-        C_dense[spamm_dense_index(i, j, M, N)] += alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)];
+        Kahan_y = alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)] - error_compensation;
+        Kahan_t = sum + Kahan_y;
+        error_compensation = (Kahan_t - sum) - Kahan_y;
+        if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
+        sum = Kahan_t;
       }
+      C_dense[spamm_dense_index(i, j, M, N)] = sum;
     }
   }
   getrusage(RUSAGE_SELF, &rusage_stop);
@@ -368,18 +379,21 @@ main (int argc, char **argv)
   walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
   usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
   printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
+  LOG_INFO("max error_compensation = %f\n", error_compensation_max);
 #endif
 
   if (print_matrix)
   {
     printf("C (dense):\n");
     spamm_print_dense(M, N, C_dense);
+    printf("C:\n");
+    spamm_print_spamm(&C);
   }
 
   LOG2_INFO("multiplying matrix with spamm\n");
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
-  spamm_multiply(cache, 1.0, &A, &B, 1.0, &C);
+  spamm_multiply(cache, alpha, &A, &B, beta, &C);
   getrusage(RUSAGE_SELF, &rusage_stop);
   gettimeofday(&stop, NULL);
   walltime_spamm = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
