@@ -14,8 +14,8 @@ spamm_new_linear_quadtree_node (const unsigned int M, const unsigned int N,
 {
   struct spamm_linear_quadtree_t *node;
 
-  node = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+M*N*sizeof(float_t)+8, memory);
-  node->block_dense = (float_t*) (((void*) node)+sizeof(struct spamm_linear_quadtree_t));
+  node = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+M*N*sizeof(floating_point_t)+8, memory);
+  node->block_dense = (floating_point_t*) (((void*) node)+sizeof(struct spamm_linear_quadtree_t));
   node->M = M;
   node->N = N;
 

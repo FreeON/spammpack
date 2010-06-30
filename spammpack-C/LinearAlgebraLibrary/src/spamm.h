@@ -14,7 +14,7 @@
  *
  * This is either float or double, as defined by the configure script.
  */
-typedef FLOATING_PRECISION float_t;
+typedef FLOATING_PRECISION floating_point_t;
 
 /** The severity levels for the logger.
  */
@@ -153,7 +153,7 @@ struct spamm_t
    *
    * Elements below this threshold are not stored.
    */
-  float_t threshold;
+  floating_point_t threshold;
 
   /** The depth of the tree. */
   unsigned int tree_depth;
@@ -287,7 +287,7 @@ struct spamm_node_t
    *
    * Elements below this threshold are not stored.
    */
-  float_t threshold;
+  floating_point_t threshold;
 
   /** The linear index of this block along the curve. */
   unsigned int index;
@@ -356,7 +356,7 @@ struct spamm_node_t
   struct spamm_node_t **child;
 
   /** At the block level, the dense matrix data. */
-  float_t *block_dense;
+  floating_point_t *block_dense;
 };
 
 /** Linear quadtree.
@@ -375,7 +375,7 @@ struct spamm_linear_quadtree_t
 
   /** The data.
    */
-  float_t *block_dense;
+  floating_point_t *block_dense;
 };
 
 /** Tree statistics.
@@ -397,7 +397,7 @@ struct spamm_tree_stats_t
   unsigned int memory_dense_blocks;
 
   /** The average sparsity of the dense blocks. */
-  float_t average_sparsity;
+  floating_point_t average_sparsity;
 };
 
 /** The multiply stream.
@@ -408,10 +408,10 @@ struct spamm_tree_stats_t
 struct spamm_multiply_stream_element_t
 {
   /** Value of alpha. */
-  float_t alpha;
+  floating_point_t alpha;
 
   /** Value of beta. */
-  float_t beta;
+  floating_point_t beta;
 
   /** Index of matrix A. */
   unsigned int A_index;
@@ -435,10 +435,10 @@ struct spamm_multiply_stream_element_t
 /* Function declarations. */
 
 void
-spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, struct spamm_t *B);
+spamm_add (const floating_point_t alpha, const struct spamm_t *A, const floating_point_t beta, struct spamm_t *B);
 
 void
-spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node);
+spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node, const floating_point_t beta, struct spamm_node_t **B_node);
 
 int
 spamm_compare_int (const void *integer1, const void *integer2);
@@ -457,10 +457,10 @@ void
 spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, const float_t *A_dense,
+    const floating_point_t threshold, const floating_point_t *A_dense,
     struct spamm_t *A);
 
-float_t
+floating_point_t
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
 
 enum spamm_log_severity_t
@@ -484,17 +484,17 @@ spamm_mask (const unsigned int index, const unsigned int width,
 
 void
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
-    const float_t alpha, const struct spamm_t *A,
-    const struct spamm_t *B, const float_t beta, struct spamm_t *C);
+    const floating_point_t alpha, const struct spamm_t *A,
+    const struct spamm_t *B, const floating_point_t beta, struct spamm_t *C);
 
 void
-spamm_multiply_scalar (const float_t alpha, struct spamm_t *A);
+spamm_multiply_scalar (const floating_point_t alpha, struct spamm_t *A);
 
 void
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, struct spamm_t *A);
+    const floating_point_t threshold, struct spamm_t *A);
 
 struct spamm_linear_quadtree_t*
 spamm_new_linear_quadtree_node (const unsigned int M, const unsigned int N,
@@ -507,7 +507,7 @@ unsigned int
 spamm_number_nonzero (const struct spamm_t *A);
 
 void
-spamm_print_dense (const unsigned int M, const unsigned int N, const float_t *A_dense);
+spamm_print_dense (const unsigned int M, const unsigned int N, const floating_point_t *A_dense);
 
 void
 spamm_print_node (const struct spamm_node_t *node);
@@ -522,16 +522,16 @@ void
 spamm_read_MM (const char *filename,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, struct spamm_t *A);
+    const floating_point_t threshold, struct spamm_t *A);
 
 int
-spamm_set (const unsigned int i, const unsigned int j, const float_t Aij, struct spamm_t *A);
+spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Aij, struct spamm_t *A);
 
 void
 spamm_set_loglevel (const enum spamm_log_severity_t loglevel);
 
 void
-spamm_spamm_to_dense (const struct spamm_t *A, float_t **A_dense);
+spamm_spamm_to_dense (const struct spamm_t *A, floating_point_t **A_dense);
 
 void
 spamm_swap_linear_quadtree (void *data1, void *data2);

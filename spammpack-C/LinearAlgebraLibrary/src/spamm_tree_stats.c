@@ -31,7 +31,7 @@ spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *n
   if (node->block_dense != NULL)
   {
     stats->number_dense_blocks++;
-    stats->memory_dense_blocks += node->M_block*node->N_block*sizeof(float_t);
+    stats->memory_dense_blocks += node->M_block*node->N_block*sizeof(floating_point_t);
 
     /* Calculate sparsity of dense block. */
     nonzero = 0;
@@ -44,7 +44,7 @@ spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *n
         }
       }
     }
-    stats->average_sparsity += 1 - (float_t) nonzero / (float_t) (node->M_block*node->N_block);
+    stats->average_sparsity += 1 - (floating_point_t) nonzero / (floating_point_t) (node->M_block*node->N_block);
   }
 }
 
@@ -73,6 +73,6 @@ spamm_tree_stats (struct spamm_tree_stats_t *stats, const struct spamm_t *A)
   {
     stats->number_nodes++;
     spamm_node_stats(stats, A->root);
-    stats->average_sparsity /= (float_t) stats->number_dense_blocks;
+    stats->average_sparsity /= (floating_point_t) stats->number_dense_blocks;
   }
 }

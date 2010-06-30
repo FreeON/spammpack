@@ -15,7 +15,7 @@ spamm_swap_linear_quadtree (void *data1, void *data2)
   struct spamm_linear_quadtree_t *linear2 = data2;
 
   unsigned int temp_index;
-  float_t temp_A;
+  floating_point_t temp_A;
 
   if (linear1->M != linear2->M)
   {

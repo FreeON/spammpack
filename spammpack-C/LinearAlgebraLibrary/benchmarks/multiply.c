@@ -32,11 +32,13 @@ main (int argc, char **argv)
 
   int print_matrix = 0;
 
-  float_t threshold = 0.0;
-  float_t gamma = 0.46;
+  int use_kahan = 0;
 
-  float_t alpha = 1.2;
-  float_t beta = 0.5;
+  floating_point_t threshold = 0.0;
+  floating_point_t gamma = 0.46;
+
+  floating_point_t alpha = 1.2;
+  floating_point_t beta = 0.5;
 
   unsigned int i, j;
 
@@ -49,22 +51,24 @@ main (int argc, char **argv)
   double walltime_blas, walltime_spamm;
   double usertime_blas, usertime_spamm;
 
-  float_t *A_dense;
-  float_t *B_dense;
-  float_t *C_dense;
+  floating_point_t *A_dense;
+  floating_point_t *B_dense;
+  floating_point_t *C_dense;
 
   struct spamm_t A, B, C;
 
   struct spamm_tree_stats_t tree_stats;
 
-  float_t max_diff;
+  floating_point_t max_diff;
   unsigned int max_diff_i = 0;
   unsigned int max_diff_j = 0;
 
-  /* For the Kahan summation algorithm. */
-  float_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
+  floating_point_t temp;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:p";
+  /* For the Kahan summation algorithm. */
+  floating_point_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
+
+  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:pk";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "M", required_argument, NULL, 'M' },
@@ -79,6 +83,7 @@ main (int argc, char **argv)
     { "thresh", required_argument, NULL, 'e' },
     { "type", required_argument, NULL, 't' },
     { "print", no_argument, NULL, 'p' },
+    { "kahan", no_argument, NULL, 'k' },
     { NULL, 0, NULL, 0 }
   };
   int longindex;
@@ -107,6 +112,7 @@ main (int argc, char **argv)
         printf("{ -e | --thresh } eps   Set the threshold, i.e. no random number will be used below\n");
         printf("                        this threshold\n");
         printf("--print                 Print the matrices\n");
+        printf("--kahan                 Use Kahan summation algorithm\n");
         printf("{ -t | --type } type    The calculation type (dense, diagonal, column_row)\n");
         return result;
         break;
@@ -165,6 +171,10 @@ main (int argc, char **argv)
         print_matrix = 1;
         break;
 
+      case 'k':
+        use_kahan = 1;
+        break;
+
       default:
         LOG2_FATAL("unknown command line option\n");
         return -1;
@@ -174,6 +184,11 @@ main (int argc, char **argv)
 
   LOG_INFO("matrix mode: %s\n", matrix_type_name[matrix_type]);
   LOG_INFO("alpha = %f, beta = %f\n", alpha, beta);
+  if (use_kahan)
+  {
+    LOG2_INFO("using Kahan summation algorithm\n");
+  }
+
   switch (matrix_type)
   {
     case dense:
@@ -204,9 +219,9 @@ main (int argc, char **argv)
       break;
   }
 
-  A_dense = (float_t*) malloc(sizeof(float_t)*M*K);
-  B_dense = (float_t*) malloc(sizeof(float_t)*K*N);
-  C_dense = (float_t*) malloc(sizeof(float_t)*M*N);
+  A_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*M*K);
+  B_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*K*N);
+  C_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*M*N);
 
   /* Initialize matrices. */
   switch (matrix_type)
@@ -215,19 +230,19 @@ main (int argc, char **argv)
       for (i = 0; i < M; i++) {
         for (j = 0; j < K; j++)
         {
-          A_dense[spamm_dense_index(i, j, M, K)] = rand()/(float_t) RAND_MAX + threshold;
+          A_dense[spamm_dense_index(i, j, M, K)] = rand()/(floating_point_t) RAND_MAX + threshold;
         }
       }
       for (i = 0; i < K; i++) {
         for (j = 0; j < N; j++)
         {
-          B_dense[spamm_dense_index(i, j, K, N)] = rand()/(float_t) RAND_MAX + threshold;
+          B_dense[spamm_dense_index(i, j, K, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
         }
       }
       for (i = 0; i < M; i++) {
         for (j = 0; j < N; j++)
         {
-          C_dense[spamm_dense_index(i, j, K, N)] = rand()/(float_t) RAND_MAX + threshold;
+          C_dense[spamm_dense_index(i, j, M, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
         }
       }
       break;
@@ -235,9 +250,9 @@ main (int argc, char **argv)
     case diagonal:
       for (i = 0; i < N; i++)
       {
-        A_dense[spamm_dense_index(i, i, N, N)] = rand()/(float_t) RAND_MAX + threshold;
-        B_dense[spamm_dense_index(i, i, N, N)] = rand()/(float_t) RAND_MAX + threshold;
-        C_dense[spamm_dense_index(i, i, N, N)] = rand()/(float_t) RAND_MAX + threshold;
+        A_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+        B_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+        C_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
       }
 
       for (i = 0; i < N; i++) {
@@ -259,7 +274,7 @@ main (int argc, char **argv)
         {
           if (j == 0)
           {
-            A_dense[spamm_dense_index(i, j, M, K)] = rand()/(float_t) RAND_MAX + threshold;
+            A_dense[spamm_dense_index(i, j, M, K)] = rand()/(floating_point_t) RAND_MAX + threshold;
           }
 
           else
@@ -274,7 +289,7 @@ main (int argc, char **argv)
         {
           if (i == 0)
           {
-            B_dense[spamm_dense_index(i, j, K, N)] = rand()/(float_t) RAND_MAX + threshold;
+            B_dense[spamm_dense_index(i, j, K, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
           }
 
           else
@@ -289,7 +304,7 @@ main (int argc, char **argv)
         {
           if (i == 0)
           {
-            C_dense[spamm_dense_index(i, j, M, N)] = rand()/(float_t) RAND_MAX + threshold;
+            C_dense[spamm_dense_index(i, j, M, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
           }
 
           else
@@ -361,17 +376,35 @@ main (int argc, char **argv)
   for (i = 0; i < M; i++) {
     for (j = 0; j < N; j++) {
       C_dense[spamm_dense_index(i, j, M, N)] *= beta;
-      sum = C_dense[spamm_dense_index(i, j, M, N)];
-      error_compensation = 0;
+
+      if (use_kahan)
+      {
+        sum = C_dense[spamm_dense_index(i, j, M, N)];
+        error_compensation = 0;
+      }
+
       for (k = 0; k < K; k++)
       {
-        Kahan_y = alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)] - error_compensation;
-        Kahan_t = sum + Kahan_y;
-        error_compensation = (Kahan_t - sum) - Kahan_y;
-        if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
-        sum = Kahan_t;
+        if (use_kahan)
+        {
+          C_dense[spamm_dense_index(i, j, M, N)] += rand()*rand();
+          Kahan_y = alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)] - error_compensation;
+          Kahan_t = sum + Kahan_y;
+          error_compensation = (Kahan_t - sum) - Kahan_y;
+          if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
+          sum = Kahan_t;
+        }
+
+        else
+        {
+          C_dense[spamm_dense_index(i, j, M, N)] += alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)];
+        }
       }
-      C_dense[spamm_dense_index(i, j, M, N)] = sum;
+
+      if (use_kahan)
+      {
+        C_dense[spamm_dense_index(i, j, M, N)] = sum;
+      }
     }
   }
   getrusage(RUSAGE_SELF, &rusage_stop);
@@ -379,7 +412,10 @@ main (int argc, char **argv)
   walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
   usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
   printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
-  LOG_INFO("max error_compensation = %f\n", error_compensation_max);
+  if (use_kahan)
+  {
+    LOG_INFO("max error_compensation = %f\n", error_compensation_max);
+  }
 #endif
 
   if (print_matrix)

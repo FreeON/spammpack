@@ -8,8 +8,8 @@ main (int argc, char **argv)
   struct spamm_t A;
   struct spamm_t A2;
 
-  float_t *A_dense;
-  float_t *A2_dense;
+  floating_point_t *A_dense;
+  floating_point_t *A2_dense;
 
   struct spamm_tree_stats_t stats;
   struct timeval start, stop;

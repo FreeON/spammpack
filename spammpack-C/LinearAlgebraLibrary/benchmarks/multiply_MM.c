@@ -14,17 +14,17 @@ main (int argc, char **argv)
   struct spamm_t A;
   struct spamm_t A2;
 
-  float_t *A_dense;
-  float_t *A2_dense;
+  floating_point_t *A_dense;
+  floating_point_t *A2_dense;
 
 #ifdef DGEMM
-  float_t alpha, beta;
+  floating_point_t alpha, beta;
 #endif
 
-  float_t *A_CSR;
+  floating_point_t *A_CSR;
   int *A_i_CSR, *A_j_CSR;
 
-  float_t *C_CSR;
+  floating_point_t *C_CSR;
   int *C_i_CSR, *C_j_CSR, *work, *degree;
 
   struct spamm_tree_stats_t stats;
@@ -70,7 +70,7 @@ main (int argc, char **argv)
   printf("time elapsed: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
   LOG2_INFO("converting dense to CSR\n");
-  A_CSR = (float_t*) malloc(sizeof(float_t)*spamm_number_nonzero(&A));
+  A_CSR = (floating_point_t*) malloc(sizeof(floating_point_t)*spamm_number_nonzero(&A));
   A_j_CSR = (int*) malloc(sizeof(int)*spamm_number_nonzero(&A));
   A_i_CSR = (int*) malloc(sizeof(int)*A.M);
   LOG_INFO("found %u nonzero elements\n", spamm_number_nonzero(&A));
@@ -78,7 +78,7 @@ main (int argc, char **argv)
   dnscsr_single_(&A.M, &A.N, &nonzero, A_dense, &A.M, A_CSR, A_j_CSR, A_i_CSR, &ierr);
 
   LOG2_INFO("allocating A2_dense\n");
-  A2_dense = (float_t*) malloc(sizeof(float_t)*A.M*A.N);
+  A2_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*A.M*A.N);
   for (i = 0; i < A.M; ++i) {
     for (j = 0; j < A.N; ++j)
     {
@@ -115,7 +115,7 @@ main (int argc, char **argv)
   work = (int*) malloc(sizeof(int)*A.N);
   amubdg_(&A.M, &A.N, &A.N, A_j_CSR, A_i_CSR, A_j_CSR, A_i_CSR, degree, &C_nonzero, work);
   printf("need %i nonzeros in product... ", C_nonzero);
-  C_CSR = (float_t*) malloc(sizeof(float_t)*C_nonzero);
+  C_CSR = (floating_point_t*) malloc(sizeof(floating_point_t)*C_nonzero);
   C_j_CSR = (int*) malloc(sizeof(int)*C_nonzero);
   C_i_CSR = (int*) malloc(sizeof(int)*A.M);
   job = 1;

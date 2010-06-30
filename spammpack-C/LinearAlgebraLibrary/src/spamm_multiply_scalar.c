@@ -6,7 +6,7 @@
  * node.
  */
 void
-spamm_multiply_scalar_node (const float_t alpha, struct spamm_node_t *node)
+spamm_multiply_scalar_node (const floating_point_t alpha, struct spamm_node_t *node)
 {
   int i, j;
   struct spamm_ll_iterator_t *iterator;
@@ -58,7 +58,7 @@ spamm_multiply_scalar_node (const float_t alpha, struct spamm_node_t *node)
  * @param A The matrix.
  */
 void
-spamm_multiply_scalar (const float_t alpha, struct spamm_t *A)
+spamm_multiply_scalar (const floating_point_t alpha, struct spamm_t *A)
 {
   assert(A != NULL);
 

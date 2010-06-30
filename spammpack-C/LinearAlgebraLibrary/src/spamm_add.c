@@ -14,7 +14,7 @@
  * @param B_node Matrix node \f$B\f$.
  */
 void
-spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const float_t beta, struct spamm_node_t **B_node)
+spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node, const floating_point_t beta, struct spamm_node_t **B_node)
 {
   int i, j;
   char binary_string[100];
@@ -101,7 +101,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
     /* We can stop recursing. A has a dense block but B doesn't. We therefore
      * create an empty dense block in B. */
     LOG2_DEBUG("A and B have a dense block here.\n");
-    (*B_node)->block_dense = (float_t*) malloc(sizeof(float_t)*(*B_node)->M_block*(*B_node)->N_block);
+    (*B_node)->block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*(*B_node)->M_block*(*B_node)->N_block);
     for (i = 0; i < (*B_node)->M_block; ++i) {
       for (j = 0; j < (*B_node)->N_block; ++j)
       {
@@ -262,7 +262,7 @@ spamm_add_node (const float_t alpha, const struct spamm_node_t *A_node, const fl
  * @param B Matrix \f$B\f$.
  */
 void
-spamm_add (const float_t alpha, const struct spamm_t *A, const float_t beta, struct spamm_t *B)
+spamm_add (const floating_point_t alpha, const struct spamm_t *A, const floating_point_t beta, struct spamm_t *B)
 {
   assert(A != NULL);
   assert(B != NULL);

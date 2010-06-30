@@ -68,7 +68,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
        * of the struct plus the size of the dense matrix block plus some
        * padding.
        */
-      linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+node->M_block*node->N_block*sizeof(float_t)+8, linear_tree_memory);
+      linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+node->M_block*node->N_block*sizeof(floating_point_t)+8, linear_tree_memory);
       spamm_ll_append(linear_block, linear_tree);
 
 #ifdef SPAMM_DEBUG
@@ -81,7 +81,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
        * the pointer and the dense matrix block, we can do that without having
        * to allocate the dense data block separately.
        */
-      linear_block->block_dense = (float_t*) (((void*) linear_block)+sizeof(struct spamm_linear_quadtree_t));
+      linear_block->block_dense = (floating_point_t*) (((void*) linear_block)+sizeof(struct spamm_linear_quadtree_t));
       linear_block->index = node->index;
       linear_block->M = node->M_block;
       linear_block->N = node->N_block;

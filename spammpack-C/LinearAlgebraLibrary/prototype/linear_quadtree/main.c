@@ -5,14 +5,14 @@
 struct linear_t
 {
   unsigned int index;
-  float_t *block_dense;
+  floating_point_t *block_dense;
 };
 
 int
 main ()
 {
   int i, j;
-  float_t A_dense[16] = {
+  floating_point_t A_dense[16] = {
     1, 5, 9,  13,
     2, 6, 10, 14,
     3, 7, 11, 15,

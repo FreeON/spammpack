@@ -21,11 +21,11 @@
  */
 void
 spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
-    const float_t alpha, struct spamm_node_t *A_node,
+    const floating_point_t alpha, struct spamm_node_t *A_node,
     struct spamm_node_t *B_node, struct spamm_node_t **C_node,
     struct spamm_ll_t *multiply_stream)
 {
-  float_t beta = 1.0;
+  floating_point_t beta = 1.0;
   int i, j, k;
   char bitstring_A[100];
   char bitstring_B[100];
@@ -157,7 +157,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     if ((*C_node)->block_dense == NULL)
     {
       /* Create empty dense block. */
-      (*C_node)->block_dense = (float_t*) malloc(sizeof(float_t)*(*C_node)->M_block*(*C_node)->N_block);
+      (*C_node)->block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*(*C_node)->M_block*(*C_node)->N_block);
       for (i = 0; i < (*C_node)->M_block; ++i) {
         for (j = 0; j < (*C_node)->N_block; ++j)
         {
@@ -179,16 +179,16 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
             &alpha, A_node->block_dense, &(A_node->M_block), B_node->block_dense, &(B_node->M_block),
             &beta, (*C_node)->block_dense, &((*C_node)->M_block));
 #elif defined(HAVE_CUDA)
-        cublasAlloc(A_node->M_block*A_node->N_block,       sizeof(float_t), &d_A);
-        cublasAlloc(B_node->M_block*B_node->N_block,       sizeof(float_t), &d_B);
-        cublasAlloc((*C_node)->M_block*(*C_node)->N_block, sizeof(float_t), &d_C);
+        cublasAlloc(A_node->M_block*A_node->N_block,       sizeof(floating_point_t), &d_A);
+        cublasAlloc(B_node->M_block*B_node->N_block,       sizeof(floating_point_t), &d_B);
+        cublasAlloc((*C_node)->M_block*(*C_node)->N_block, sizeof(floating_point_t), &d_C);
 
-        cublasSetMatrix(A_node->M_block,    A_node->N_block,    sizeof(float_t), (void*) A_node->block_dense,    A_node->M_block,    d_A, A_node->M_block);
-        cublasSetMatrix(B_node->M_block,    B_node->N_block,    sizeof(float_t), (void*) B_node->block_dense,    B_node->M_block,    d_B, B_node->M_block);
-        cublasSetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(float_t), (void*) (*C_node)->block_dense, (*C_node)->M_block, d_C, (*C_node)->M_block);
+        cublasSetMatrix(A_node->M_block,    A_node->N_block,    sizeof(floating_point_t), (void*) A_node->block_dense,    A_node->M_block,    d_A, A_node->M_block);
+        cublasSetMatrix(B_node->M_block,    B_node->N_block,    sizeof(floating_point_t), (void*) B_node->block_dense,    B_node->M_block,    d_B, B_node->M_block);
+        cublasSetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(floating_point_t), (void*) (*C_node)->block_dense, (*C_node)->M_block, d_C, (*C_node)->M_block);
 
         cublasSgemm('N', 'N', A_node->M_block, B_node->N_block, A_node->N_block, alpha, d_A, A_node->M_block, d_B, B_node->M_block, beta, d_C, (*C_node)->M_block);
-        cublasGetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(float_t), (void*) d_C, (*C_node)->M_block, (void*) (*C_node)->block_dense, (*C_node)->M_block);
+        cublasGetMatrix((*C_node)->M_block, (*C_node)->N_block, sizeof(floating_point_t), (void*) d_C, (*C_node)->M_block, (void*) (*C_node)->block_dense, (*C_node)->M_block);
 
         cublasFree(d_A);
         cublasFree(d_B);
@@ -412,7 +412,7 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
       {
         nodedata->C_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
-        cublasGetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(float_t),
+        cublasGetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(floating_point_t),
             (void*) nodedata->C_node->device_pointer, nodedata->C_node->M_block,
             (void*) nodedata->C_node->block_dense, nodedata->C_node->M_block);
         cublasFree(nodedata->C_node->device_pointer);
@@ -429,8 +429,8 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
       number_A_blocks_loaded++;
       nodedata->A_node->block_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
-      cublasAlloc(nodedata->A_node->M_block*nodedata->A_node->N_block, sizeof(float_t), &(nodedata->A_node->device_pointer));
-      cublasSetMatrix(nodedata->A_node->M_block, nodedata->A_node->N_block, sizeof(float_t),
+      cublasAlloc(nodedata->A_node->M_block*nodedata->A_node->N_block, sizeof(floating_point_t), &(nodedata->A_node->device_pointer));
+      cublasSetMatrix(nodedata->A_node->M_block, nodedata->A_node->N_block, sizeof(floating_point_t),
           (void*) nodedata->A_node->block_dense, nodedata->A_node->M_block,
           nodedata->A_node->device_pointer, nodedata->A_node->M_block);
 #endif
@@ -441,8 +441,8 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
       number_B_blocks_loaded++;
       nodedata->B_node->block_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
-      cublasAlloc(nodedata->B_node->M_block*nodedata->B_node->N_block, sizeof(float_t), &(nodedata->B_node->device_pointer));
-      cublasSetMatrix(nodedata->B_node->M_block, nodedata->B_node->N_block, sizeof(float_t),
+      cublasAlloc(nodedata->B_node->M_block*nodedata->B_node->N_block, sizeof(floating_point_t), &(nodedata->B_node->device_pointer));
+      cublasSetMatrix(nodedata->B_node->M_block, nodedata->B_node->N_block, sizeof(floating_point_t),
           (void*) nodedata->B_node->block_dense, nodedata->B_node->M_block,
           nodedata->B_node->device_pointer, nodedata->B_node->M_block);
 #endif
@@ -453,8 +453,8 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
       number_C_blocks_loaded++;
       nodedata->C_node->block_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
-      cublasAlloc(nodedata->C_node->M_block*nodedata->C_node->N_block, sizeof(float_t), &(nodedata->C_node->device_pointer));
-      cublasSetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(float_t),
+      cublasAlloc(nodedata->C_node->M_block*nodedata->C_node->N_block, sizeof(floating_point_t), &(nodedata->C_node->device_pointer));
+      cublasSetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(floating_point_t),
           (void*) nodedata->C_node->block_dense, nodedata->C_node->M_block,
           nodedata->C_node->device_pointer, nodedata->C_node->M_block);
 #endif
@@ -508,7 +508,7 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
     {
       nodedata->C_node->block_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
-      cublasGetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(float_t), (void*) nodedata->C_node->device_pointer,
+      cublasGetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(floating_point_t), (void*) nodedata->C_node->device_pointer,
           nodedata->C_node->M_block, (void*) nodedata->C_node->block_dense, nodedata->C_node->M_block);
       cublasFree(nodedata->C_node->device_pointer);
 #endif
@@ -539,8 +539,8 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
  */
 void
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
-    const float_t alpha, const struct spamm_t *A,
-    const struct spamm_t *B, const float_t beta, struct spamm_t *C)
+    const floating_point_t alpha, const struct spamm_t *A,
+    const struct spamm_t *B, const floating_point_t beta, struct spamm_t *C)
 {
   struct timeval start, stop;
   struct spamm_ll_t *multiply_stream;

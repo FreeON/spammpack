@@ -24,14 +24,14 @@ void
 spamm_read_MM (const char *filename,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_child, const unsigned int N_child,
-    const float_t threshold, struct spamm_t *A)
+    const floating_point_t threshold, struct spamm_t *A)
 {
   FILE *fd;
   int linenumber;
   int number_nonzero;
   int number_dropped;
   int i, j, M, N;
-  float_t Aij;
+  floating_point_t Aij;
   char line[LINE_MAX];
   char *token;
 
