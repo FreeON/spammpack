@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <math.h>
+//#include <fenv.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
 #define THRESHOLD 1e-14
+
+//#pragma STDC FENV_ACCESS ON
 
 enum matrix_t
 {
@@ -30,9 +33,13 @@ main (int argc, char **argv)
   unsigned int N_block = 100;
   unsigned int K_block = 100;
 
+  unsigned int number_nonzeros;
+
   int print_matrix = 0;
 
   int use_kahan = 0;
+
+  //int fpe_raised;
 
   floating_point_t threshold = 0.0;
   floating_point_t gamma = 0.46;
@@ -189,6 +196,9 @@ main (int argc, char **argv)
     LOG2_INFO("using Kahan summation algorithm\n");
   }
 
+  /* Clear floating point exceptions. */
+  //feclearexcept(FE_ALL_EXCEPT);
+
   switch (matrix_type)
   {
     case dense:
@@ -253,6 +263,9 @@ main (int argc, char **argv)
         A_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
         B_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
         C_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+        //A_dense[spamm_dense_index(i, i, N, N)] = 0.1;
+        //B_dense[spamm_dense_index(i, i, N, N)] = 0.1;
+        //C_dense[spamm_dense_index(i, i, N, N)] = 0.1;
       }
 
       for (i = 0; i < N; i++) {
@@ -263,6 +276,12 @@ main (int argc, char **argv)
             A_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*A_dense[spamm_dense_index(i, i, N, N)]*A_dense[spamm_dense_index(j, j, N, N)];
             B_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*B_dense[spamm_dense_index(i, i, N, N)]*B_dense[spamm_dense_index(j, j, N, N)];
             C_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*C_dense[spamm_dense_index(i, i, N, N)]*C_dense[spamm_dense_index(j, j, N, N)];
+            //if (fabs((int) i - (int) j) < gamma)
+            //{
+            //  A_dense[spamm_dense_index(i, j, N, N)] = 0.1;
+            //  B_dense[spamm_dense_index(i, j, N, N)] = 0.1;
+            //  C_dense[spamm_dense_index(i, j, N, N)] = 0.1;
+            //}
           }
         }
       }
@@ -326,6 +345,36 @@ main (int argc, char **argv)
     spamm_print_dense(M, N, C_dense);
   }
 
+  number_nonzeros = 0;
+  for (i = 0; i < M; i++) {
+    for (j = 0; j < K; j++)
+    {
+      if (A_dense[spamm_dense_index(i, j, M, K)] != 0.0) { number_nonzeros++; }
+    }
+  }
+  LOG_INFO("A has %u nonzeros, avg. of %1.2f nonzeros per row, %1.2f%% sparsity:\n",
+      number_nonzeros, number_nonzeros/(double) M, (1-number_nonzeros/(double) (M*K))*100);
+
+  number_nonzeros = 0;
+  for (i = 0; i < K; i++) {
+    for (j = 0; j < N; j++)
+    {
+      if (B_dense[spamm_dense_index(i, j, K, N)] != 0.0) { number_nonzeros++; }
+    }
+  }
+  LOG_INFO("B has %u nonzeros, avg. of %1.2f nonzeros per row, %1.2f%% sparsity:\n",
+      number_nonzeros, number_nonzeros/(double) K, (1-number_nonzeros/(double) (K*N))*100);
+
+  number_nonzeros = 0;
+  for (i = 0; i < M; i++) {
+    for (j = 0; j < N; j++)
+    {
+      if (C_dense[spamm_dense_index(i, j, M, N)] != 0.0) { number_nonzeros++; }
+    }
+  }
+  LOG_INFO("C has %u nonzeros, avg. of %1.2f nonzeros per row, %1.2f%% sparsity:\n",
+      number_nonzeros, number_nonzeros/(double) M, (1-number_nonzeros/(double) (M*N))*100);
+
   /* Convert to SpAMM. */
   spamm_new(M, K, M_block, K_block, 2, 2, 0.0, &A);
   spamm_new(K, N, K_block, N_block, 2, 2, 0.0, &B);
@@ -369,6 +418,17 @@ main (int argc, char **argv)
   usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
   printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
 #else
+  /* Clear floating point exceptions. */
+  //fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+  //LOG_INFO("fp exceptions raised: %u = ", fpe_raised);
+  //if (FE_DIVBYZERO | fpe_raised) { printf("DIVBYZERO "); }
+  //if (FE_INEXACT | fpe_raised) { printf("INEXACT "); }
+  //if (FE_INVALID | fpe_raised) { printf("INVALID "); }
+  //if (FE_OVERFLOW | fpe_raised) { printf("OVERFLOW "); }
+  //if (FE_UNDERFLOW | fpe_raised) { printf("UNDERFLOW "); }
+  //printf("\n");
+  //feclearexcept(FE_ALL_EXCEPT);
+
   LOG2_INFO("multiplying matrix directly to get reference product... ");
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
@@ -393,6 +453,9 @@ main (int argc, char **argv)
           error_compensation = (Kahan_t - sum) - Kahan_y;
           if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
           sum = Kahan_t;
+
+          /* Check for floating point exceptions. */
+          //feclearexcept(FE_ALL_EXCEPT);
         }
 
         else
