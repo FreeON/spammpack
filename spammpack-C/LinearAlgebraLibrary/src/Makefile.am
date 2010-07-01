@@ -70,7 +70,7 @@ memory_manager_sources = \
   spamm_mm_print.c
 
 matrix_kernel_sources = \
-  spamm_dummy_kernel.c
+  spamm_trivial_kernel.c
 
 EXTRA_DIST = spamm_mainpage.h.in
 

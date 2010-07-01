@@ -531,6 +531,12 @@ void
 spamm_set_loglevel (const enum spamm_log_severity_t loglevel);
 
 void
+spamm_sgemm_trivial (const floating_point_t alpha,
+    const struct spamm_node_t *A_node,
+    const struct spamm_node_t *B_node,
+    struct spamm_node_t *C_node);
+
+void
 spamm_spamm_to_dense (const struct spamm_t *A, floating_point_t **A_dense);
 
 void
