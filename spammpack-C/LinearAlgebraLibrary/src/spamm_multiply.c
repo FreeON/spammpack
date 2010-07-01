@@ -469,16 +469,7 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
         &(nodedata->alpha), nodedata->A_node->block_dense, &(nodedata->A_node->M_block), nodedata->B_node->block_dense, &(nodedata->B_node->M_block),
         &(nodedata->beta), nodedata->C_node->block_dense, &(nodedata->C_node->M_block));
 #else
-    for (i = 0; i < nodedata->A_node->M_block; ++i) {
-      for (j = 0; j < nodedata->B_node->N_block; ++j) {
-        for (k = 0; k < nodedata->A_node->N_block; ++k)
-        {
-          nodedata->C_node->block_dense[spamm_dense_index(i, j, nodedata->C_node->M_block, nodedata->C_node->N_block)]
-            += nodedata->alpha*nodedata->A_node->block_dense[spamm_dense_index(i, k, nodedata->A_node->M_block, nodedata->A_node->N_block)]
-            *nodedata->B_node->block_dense[spamm_dense_index(k, j, nodedata->B_node->M_block, nodedata->B_node->N_block)];
-        }
-      }
-    }
+    spamm_sgemm_trivial(nodedata->alpha, nodedata->A_node, nodedata->B_node, nodedata->C_node);
 #endif
 
     head_tail_distance++;
