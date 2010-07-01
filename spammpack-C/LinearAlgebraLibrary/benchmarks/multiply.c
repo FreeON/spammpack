@@ -39,6 +39,8 @@ main (int argc, char **argv)
 
   int use_kahan = 0;
 
+  int verify_spamm = 0;
+
   //int fpe_raised;
 
   floating_point_t threshold = 0.0;
@@ -75,7 +77,7 @@ main (int argc, char **argv)
   /* For the Kahan summation algorithm. */
   floating_point_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:pk";
+  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:pkv";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "M", required_argument, NULL, 'M' },
@@ -91,6 +93,7 @@ main (int argc, char **argv)
     { "type", required_argument, NULL, 't' },
     { "print", no_argument, NULL, 'p' },
     { "kahan", no_argument, NULL, 'k' },
+    { "verify", no_argument, NULL, 'v' },
     { NULL, 0, NULL, 0 }
   };
   int longindex;
@@ -120,6 +123,7 @@ main (int argc, char **argv)
         printf("                        this threshold\n");
         printf("--print                 Print the matrices\n");
         printf("--kahan                 Use Kahan summation algorithm\n");
+        printf("--verify                Verify SpAMM by multiplying dense matrices\n");
         printf("{ -t | --type } type    The calculation type (dense, diagonal, column_row)\n");
         return result;
         break;
@@ -180,6 +184,10 @@ main (int argc, char **argv)
 
       case 'k':
         use_kahan = 1;
+        break;
+
+      case 'v':
+        verify_spamm = 1;
         break;
 
       default:
@@ -405,88 +413,89 @@ main (int argc, char **argv)
     spamm_print_spamm(&C);
   }
 
+  if (verify_spamm)
+  {
 #if defined(DGEMM)
-  LOG2_INFO("multiplying matrix with BLAS to get reference product... ");
-  alpha = 1.0;
-  beta = 0.0;
-  gettimeofday(&start, NULL);
-  getrusage(RUSAGE_SELF, &rusage_start);
-  DGEMM("N", "N", &M, &N, &K, &alpha, A_dense, &M, B_dense, &K, &beta, C_dense, &M);
-  getrusage(RUSAGE_SELF, &rusage_stop);
-  gettimeofday(&stop, NULL);
-  walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
-  usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-  printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
+    LOG2_INFO("multiplying matrix with BLAS to get reference product... ");
+    alpha = 1.0;
+    beta = 0.0;
+    gettimeofday(&start, NULL);
+    getrusage(RUSAGE_SELF, &rusage_start);
+    DGEMM("N", "N", &M, &N, &K, &alpha, A_dense, &M, B_dense, &K, &beta, C_dense, &M);
+    getrusage(RUSAGE_SELF, &rusage_stop);
+    gettimeofday(&stop, NULL);
+    walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
+    usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
+    printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
 #else
-  /* Clear floating point exceptions. */
-  //fpe_raised = fetestexcept(FE_ALL_EXCEPT);
-  //LOG_INFO("fp exceptions raised: %u = ", fpe_raised);
-  //if (FE_DIVBYZERO | fpe_raised) { printf("DIVBYZERO "); }
-  //if (FE_INEXACT | fpe_raised) { printf("INEXACT "); }
-  //if (FE_INVALID | fpe_raised) { printf("INVALID "); }
-  //if (FE_OVERFLOW | fpe_raised) { printf("OVERFLOW "); }
-  //if (FE_UNDERFLOW | fpe_raised) { printf("UNDERFLOW "); }
-  //printf("\n");
-  //feclearexcept(FE_ALL_EXCEPT);
+    /* Clear floating point exceptions. */
+    //fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    //LOG_INFO("fp exceptions raised: %u = ", fpe_raised);
+    //if (FE_DIVBYZERO | fpe_raised) { printf("DIVBYZERO "); }
+    //if (FE_INEXACT | fpe_raised) { printf("INEXACT "); }
+    //if (FE_INVALID | fpe_raised) { printf("INVALID "); }
+    //if (FE_OVERFLOW | fpe_raised) { printf("OVERFLOW "); }
+    //if (FE_UNDERFLOW | fpe_raised) { printf("UNDERFLOW "); }
+    //printf("\n");
+    //feclearexcept(FE_ALL_EXCEPT);
 
-  LOG2_INFO("multiplying matrix directly to get reference product... ");
-  gettimeofday(&start, NULL);
-  getrusage(RUSAGE_SELF, &rusage_start);
-  error_compensation_max = 0;
-  for (i = 0; i < M; i++) {
-    for (j = 0; j < N; j++) {
-      C_dense[spamm_dense_index(i, j, M, N)] *= beta;
+    LOG2_INFO("multiplying matrix directly to get reference product... ");
+    gettimeofday(&start, NULL);
+    getrusage(RUSAGE_SELF, &rusage_start);
+    error_compensation_max = 0;
+    for (i = 0; i < M; i++) {
+      for (j = 0; j < N; j++) {
+        C_dense[spamm_dense_index(i, j, M, N)] *= beta;
 
-      if (use_kahan)
-      {
-        sum = C_dense[spamm_dense_index(i, j, M, N)];
-        error_compensation = 0;
-      }
-
-      for (k = 0; k < K; k++)
-      {
         if (use_kahan)
         {
-          C_dense[spamm_dense_index(i, j, M, N)] += rand()*rand();
-          Kahan_y = alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)] - error_compensation;
-          Kahan_t = sum + Kahan_y;
-          error_compensation = (Kahan_t - sum) - Kahan_y;
-          if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
-          sum = Kahan_t;
-
-          /* Check for floating point exceptions. */
-          //feclearexcept(FE_ALL_EXCEPT);
+          sum = C_dense[spamm_dense_index(i, j, M, N)];
+          error_compensation = 0;
         }
 
-        else
+        for (k = 0; k < K; k++)
         {
-          C_dense[spamm_dense_index(i, j, M, N)] += alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)];
-        }
-      }
+          if (use_kahan)
+          {
+            C_dense[spamm_dense_index(i, j, M, N)] += rand()*rand();
+            Kahan_y = alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)] - error_compensation;
+            Kahan_t = sum + Kahan_y;
+            error_compensation = (Kahan_t - sum) - Kahan_y;
+            if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
+            sum = Kahan_t;
 
-      if (use_kahan)
-      {
-        C_dense[spamm_dense_index(i, j, M, N)] = sum;
+            /* Check for floating point exceptions. */
+            //feclearexcept(FE_ALL_EXCEPT);
+          }
+
+          else
+          {
+            C_dense[spamm_dense_index(i, j, M, N)] += alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)];
+          }
+        }
+
+        if (use_kahan)
+        {
+          C_dense[spamm_dense_index(i, j, M, N)] = sum;
+        }
       }
     }
-  }
-  getrusage(RUSAGE_SELF, &rusage_stop);
-  gettimeofday(&stop, NULL);
-  walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
-  usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-  printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
-  if (use_kahan)
-  {
-    LOG_INFO("max error_compensation = %f\n", error_compensation_max);
-  }
+    getrusage(RUSAGE_SELF, &rusage_stop);
+    gettimeofday(&stop, NULL);
+    walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
+    usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
+    printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
+    if (use_kahan)
+    {
+      LOG_INFO("max error_compensation = %f\n", error_compensation_max);
+    }
 #endif
 
-  if (print_matrix)
-  {
-    printf("C (dense):\n");
-    spamm_print_dense(M, N, C_dense);
-    printf("C:\n");
-    spamm_print_spamm(&C);
+    if (print_matrix)
+    {
+      printf("C (dense):\n");
+      spamm_print_dense(M, N, C_dense);
+    }
   }
 
   LOG2_INFO("multiplying matrix with spamm\n");
@@ -500,36 +509,45 @@ main (int argc, char **argv)
   LOG_INFO("product has %u nonzero elements\n", spamm_number_nonzero(&C));
   LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s\n", walltime_spamm, usertime_spamm);
 
-  /* Print out some exciting results. */
-  LOG_INFO("ratio between SpAMM and BLAS: SpAMM = %f x BLAS\n", walltime_spamm/walltime_blas);
+  if (print_matrix)
+  {
+    printf("C:\n");
+    spamm_print_spamm(&C);
+  }
 
-  LOG2_INFO("comparing matrices\n");
-  max_diff = 0;
-  for (i = 0; i < C.M; i++) {
-    for (j = 0; j < C.N; j++)
-    {
-      if (fabs(spamm_get(i, j, &C)-C_dense[spamm_dense_index(i, j, C.M, C.N)]) > max_diff)
+  if (verify_spamm)
+  {
+    /* Print out some exciting results. */
+    LOG_INFO("ratio between SpAMM and BLAS: SpAMM = %f x BLAS\n", walltime_spamm/walltime_blas);
+
+    LOG2_INFO("comparing matrices\n");
+    max_diff = 0;
+    for (i = 0; i < C.M; i++) {
+      for (j = 0; j < C.N; j++)
       {
-        max_diff = fabs(spamm_get(i, j, &C)-C_dense[spamm_dense_index(i, j, C.M, C.N)]);
-        max_diff_i = i;
-        max_diff_j = j;
+        if (fabs(spamm_get(i, j, &C)-C_dense[spamm_dense_index(i, j, C.M, C.N)]) > max_diff)
+        {
+          max_diff = fabs(spamm_get(i, j, &C)-C_dense[spamm_dense_index(i, j, C.M, C.N)]);
+          max_diff_i = i;
+          max_diff_j = j;
+        }
       }
     }
-  }
 
-  if (max_diff > THRESHOLD)
-  {
-    printf("[multiply_spamm] biggest mismatch above threshold of %e: (C[%i][%i] = %e) != (C_dense[%i][%i] = %e), |diff| = %e\n",
-        THRESHOLD,
-        max_diff_i, max_diff_j, spamm_get(max_diff_i, max_diff_j, &C),
-        max_diff_i, max_diff_j, C_dense[spamm_dense_index(max_diff_i, max_diff_j, C.M, C.N)],
-        fabs(spamm_get(max_diff_i, max_diff_j, &C)-C_dense[spamm_dense_index(max_diff_i, max_diff_j, C.M, C.N)]));
-    result = 1;
-  }
+    if (max_diff > THRESHOLD)
+    {
+      printf("[multiply_spamm] biggest mismatch above threshold of %e: (C[%i][%i] = %e) != (C_dense[%i][%i] = %e), |diff| = %e\n",
+          THRESHOLD,
+          max_diff_i, max_diff_j, spamm_get(max_diff_i, max_diff_j, &C),
+          max_diff_i, max_diff_j, C_dense[spamm_dense_index(max_diff_i, max_diff_j, C.M, C.N)],
+          fabs(spamm_get(max_diff_i, max_diff_j, &C)-C_dense[spamm_dense_index(max_diff_i, max_diff_j, C.M, C.N)]));
+      result = 1;
+    }
 
-  if (result == 0)
-  {
-    LOG2_INFO("comparison ok, matrices are identical\n");
+    if (result == 0)
+    {
+      LOG2_INFO("comparison ok, matrices are identical\n");
+    }
   }
 
   /* Free memory. */
