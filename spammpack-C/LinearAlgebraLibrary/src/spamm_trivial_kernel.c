@@ -15,6 +15,9 @@ spamm_sgemm_trivial (const floating_point_t alpha,
         C_node->block_dense[spamm_dense_index(i, j, C_node->M_block, C_node->N_block)]
           += alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]
           *B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)];
+        //C_node->block_dense[i+j*C_node->M_block]
+        //  += alpha*A_node->block_dense[i+k*A_node->M_block]
+        //  *B_node->block_dense[k+j*B_node->M_block];
       }
     }
   }

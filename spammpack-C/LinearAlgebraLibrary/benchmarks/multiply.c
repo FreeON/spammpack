@@ -29,17 +29,18 @@ main (int argc, char **argv)
   unsigned int M = 1000;
   unsigned int N = 1000;
   unsigned int K = 1000;
-  unsigned int M_block = 100;
-  unsigned int N_block = 100;
-  unsigned int K_block = 100;
+  unsigned int M_block = 2;
+  unsigned int N_block = 2;
+  unsigned int K_block = 2;
 
   unsigned int number_nonzeros;
 
   int print_matrix = 0;
-
   int use_kahan = 0;
-
   int verify_spamm = 0;
+
+  int linear_tier = -1;
+  unsigned int chunksize = 100;
 
   //int fpe_raised;
 
@@ -77,7 +78,7 @@ main (int argc, char **argv)
   /* For the Kahan summation algorithm. */
   floating_point_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:pkv";
+  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:l:c:pkv";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "M", required_argument, NULL, 'M' },
@@ -91,6 +92,8 @@ main (int argc, char **argv)
     { "beta", required_argument, NULL, 'b' },
     { "thresh", required_argument, NULL, 'e' },
     { "type", required_argument, NULL, 't' },
+    { "linear", required_argument, NULL, 'l' },
+    { "chunk", required_argument, NULL, 'c' },
     { "print", no_argument, NULL, 'p' },
     { "kahan", no_argument, NULL, 'k' },
     { "verify", no_argument, NULL, 'v' },
@@ -121,10 +124,12 @@ main (int argc, char **argv)
         printf("{ -b | --beta } beta    Set beta in C = alpha*A*B + beta*C\n");
         printf("{ -e | --thresh } eps   Set the threshold, i.e. no random number will be used below\n");
         printf("                        this threshold\n");
+        printf("{ -t | --type } type    The calculation type (dense, diagonal, column_row)\n");
+        printf("{ -l | --linear } n     Convert to linear trees at tier n\n");
+        printf("{ -c | --chunk } s      Use chunks of s bytes for linear tree\n");
         printf("--print                 Print the matrices\n");
         printf("--kahan                 Use Kahan summation algorithm\n");
         printf("--verify                Verify SpAMM by multiplying dense matrices\n");
-        printf("{ -t | --type } type    The calculation type (dense, diagonal, column_row)\n");
         return result;
         break;
 
@@ -178,6 +183,14 @@ main (int argc, char **argv)
         }
         break;
 
+      case 'l':
+        linear_tier = strtol(optarg, NULL, 10);
+        break;
+
+      case 'c':
+        chunksize = strtol(optarg, NULL, 10);
+        break;
+
       case 'p':
         print_matrix = 1;
         break;
@@ -199,6 +212,12 @@ main (int argc, char **argv)
 
   LOG_INFO("matrix mode: %s\n", matrix_type_name[matrix_type]);
   LOG_INFO("alpha = %f, beta = %f\n", alpha, beta);
+
+  if (linear_tier >= 0)
+  {
+    LOG_INFO("linear tier at %i, chunks of %u bytes\n", linear_tier, chunksize);
+  }
+
   if (use_kahan)
   {
     LOG2_INFO("using Kahan summation algorithm\n");
@@ -271,9 +290,6 @@ main (int argc, char **argv)
         A_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
         B_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
         C_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
-        //A_dense[spamm_dense_index(i, i, N, N)] = 0.1;
-        //B_dense[spamm_dense_index(i, i, N, N)] = 0.1;
-        //C_dense[spamm_dense_index(i, i, N, N)] = 0.1;
       }
 
       for (i = 0; i < N; i++) {
@@ -284,12 +300,6 @@ main (int argc, char **argv)
             A_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*A_dense[spamm_dense_index(i, i, N, N)]*A_dense[spamm_dense_index(j, j, N, N)];
             B_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*B_dense[spamm_dense_index(i, i, N, N)]*B_dense[spamm_dense_index(j, j, N, N)];
             C_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*C_dense[spamm_dense_index(i, i, N, N)]*C_dense[spamm_dense_index(j, j, N, N)];
-            //if (fabs((int) i - (int) j) < gamma)
-            //{
-            //  A_dense[spamm_dense_index(i, j, N, N)] = 0.1;
-            //  B_dense[spamm_dense_index(i, j, N, N)] = 0.1;
-            //  C_dense[spamm_dense_index(i, j, N, N)] = 0.1;
-            //}
           }
         }
       }
@@ -395,6 +405,13 @@ main (int argc, char **argv)
   spamm_dense_to_spamm(M, N, M_block, N_block, 2, 2, 0.0, C_dense, &C);
   gettimeofday(&stop, NULL);
   printf("walltime %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+
+  if (linear_tier >= 0)
+  {
+    spamm_tree_pack(linear_tier, chunksize, i_mask, &A);
+    spamm_tree_pack(linear_tier, chunksize, i_mask, &B);
+    spamm_tree_pack(linear_tier, chunksize, i_mask, &C);
+  }
 
   spamm_tree_stats(&tree_stats, &A);
   LOG_INFO("A: avg. sparsity = %1.1f%%, dense blocks = %u\n", tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
