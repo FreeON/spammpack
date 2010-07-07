@@ -29,12 +29,27 @@
  * is the depth of the tree. This means that the matrix tree is a quadtree for
  * \f$ M_{\mathrm{child}} = N_{\mathrm{child}} = 2 \f$.
  *
+ * \section algorithm Algorithm
+ *
+ * The multiplication is divided into a symbolic part and a multiplication
+ * part. The symbolic part constructs the matrix product convolution such that
+ * it creates up to N copies of each \f$ C_{ij} \f$ block to allow for full
+ * parallelism in the multiplication part. This data redundancy circumvents
+ * possible race conditions in \f$ C \f$ and we can take full advantage of SMP
+ * in the multiply. The multiplication part then works through the convolution
+ * stream and parallelizes multiplies if possible (i.e. if we are running on
+ * SMP). In a final stage, the redundant \f$ C \f$ blocks are summed and the
+ * final \f$ C \f$ matrix is constructed.
+ *
+ * -# Symbolic: Construct convolution with redundant \f$ C_{ij} \f$ blocks.
+ * -# Multiplication: Work through convolution and parallelize work as much as
+ *  possible.
+ * -# Sum: Sum redundant \f$ C_{ij} \f$ blocks to construct final \f$ C \f$
+ *   matrix.
+ *
  * \section future_milestones Future Milestones
  *
- * - Add benchmarks for generic matrices.
- *   - diagonal matrix
- *   - banded matrix with exponential decay
- *   - (one column) x (one row)
+ * - Clean up spamm_multiply.
  *
  * \section achieved_milestones Achieved Milestones
  *
@@ -43,6 +58,8 @@
  * - 2010-06-23: Implemented linear quadtree support in spamm_multiply().
  * - 2010-06-24: Implemented full multiply including beta != 1.0.
  * - 2010-06-25: Added more testcases and organized them.
+ * - 2010-07-02: Consolidated 3 benchmark testcase: dense, diagonal, and
+ *   column_row. All are combined in the multiply benchmark.
  *
  * \version @PACKAGE_VERSION_STRING@ (@LOCAL_VERSION@)
  *

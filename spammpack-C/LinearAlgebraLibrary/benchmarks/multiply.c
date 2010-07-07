@@ -60,6 +60,7 @@ main (int argc, char **argv)
   struct rusage rusage_start, rusage_stop;
   double walltime_blas, walltime_spamm;
   double usertime_blas, usertime_spamm;
+  double systime_blas, systime_spamm;
 
   floating_point_t *A_dense;
   floating_point_t *B_dense;
@@ -443,7 +444,8 @@ main (int argc, char **argv)
     gettimeofday(&stop, NULL);
     walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
     usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-    printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
+    systime_blas = (rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6;
+    printf("walltime: %f s, user time: %f s + system time: %f s = %f s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas);
 #else
     /* Clear floating point exceptions. */
     //fpe_raised = fetestexcept(FE_ALL_EXCEPT);
@@ -501,7 +503,8 @@ main (int argc, char **argv)
     gettimeofday(&stop, NULL);
     walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
     usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-    printf("walltime: %f s, user time: %f s\n", walltime_blas, usertime_blas);
+    systime_blas = (rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6;
+    printf("walltime: %f s, user time: %f s + system time: %f s = %f s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas);
     if (use_kahan)
     {
       LOG_INFO("max error_compensation = %f\n", error_compensation_max);
@@ -523,8 +526,9 @@ main (int argc, char **argv)
   gettimeofday(&stop, NULL);
   walltime_spamm = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
   usertime_spamm = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
+  systime_spamm = (rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6;
   LOG_INFO("product has %u nonzero elements\n", spamm_number_nonzero(&C));
-  LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s\n", walltime_spamm, usertime_spamm);
+  LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s\n", walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm);
 
   if (print_matrix)
   {

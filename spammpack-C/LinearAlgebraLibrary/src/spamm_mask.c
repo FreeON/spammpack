@@ -1,4 +1,5 @@
 #include "spamm.h"
+#include <stdlib.h>
 
 /** Mask index i or j out of linear index.
  *
@@ -42,7 +43,7 @@ spamm_mask (const unsigned int index, const unsigned int width,
     const enum spamm_linear_mask_t mask)
 {
   int i;
-  unsigned int bitmask;
+  unsigned int bitmask = 0;
   unsigned int result = 0;
 
   switch (mask)
@@ -53,6 +54,11 @@ spamm_mask (const unsigned int index, const unsigned int width,
 
     case j_mask:
       bitmask = 1;
+      break;
+
+    default:
+      LOG2_FATAL("unknown mask\n");
+      exit(1);
       break;
   }
 
