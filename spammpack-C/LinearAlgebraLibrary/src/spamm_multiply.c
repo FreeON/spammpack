@@ -31,7 +31,6 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   char bitstring_B[100];
   char bitstring_C[100];
   unsigned int mask_A, mask_B, mask_C;
-  unsigned int bit_A, bit_B, match;
   struct spamm_node_t *C_child_node;
   struct spamm_multiply_stream_element_t *multiply_stream_element;
   struct spamm_ll_iterator_t *iterator_A, *iterator_B, *iterator_C;
@@ -64,6 +63,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
 
   if (A_node->child != NULL && B_node->child != NULL)
   {
+    /* Create new children nodes. */
     if ((*C_node)->child == NULL)
     {
       /* Allocate children nodes. */
@@ -154,6 +154,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
 
   if (A_node->block_dense != NULL && B_node->block_dense != NULL)
   {
+    /* Create new dense block in C. */
     if ((*C_node)->block_dense == NULL)
     {
       /* Create empty dense block. */
@@ -194,29 +195,52 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         cublasFree(d_B);
         cublasFree(d_C);
 #else
-        for (i = 0; i < (*C_node)->M_block; ++i) {
-          for (j = 0; j < (*C_node)->N_block; ++j) {
-            for (k = 0; k < A_node->N_block; ++k)
-            {
-              (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)]
-                += alpha*A_node->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]*B_node->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)];
-            }
-          }
-        }
+        spamm_sgemm_trivial('N', 'N', (*C_node)->M_block, (*C_node)->N_block,
+            A_node->N_block, alpha, A_node->block_dense, A_node->M_block,
+            B_node->block_dense, B_node->M_block, beta,
+            (*C_node)->block_dense, (*C_node)->M_block);
 #endif
         break;
 
       case cache:
+        /* Create a new C block so that we can multiply the stream in parallel
+         * without having to worry about race-conditions.
+         */
+        if ((*C_node)->linear_quadtree == NULL)
+        {
+          (*C_node)->linear_quadtree = spamm_ll_new();
+          (*C_node)->linear_quadtree_memory = spamm_mm_new((*C_node)->linear_quadtree_default_chunksize);
+        }
+        linear_C = spamm_new_linear_quadtree_node((*C_node)->M_block, (*C_node)->N_block, (*C_node)->linear_quadtree_memory);
+        linear_C->index = (*C_node)->index;
+        spamm_ll_append(linear_C, (*C_node)->linear_quadtree);
+
+        for (i = 0; i < A_node->M_block; ++i) {
+          for (j = 0; j < B_node->N_block; ++j)
+          {
+            linear_C->block_dense[spamm_dense_index(i, j, linear_C->M, linear_C->N)] = 0.0;
+          }
+        }
+
         /* Append this triple to the multiply stream. */
         multiply_stream_element = (struct spamm_multiply_stream_element_t*) malloc(sizeof(struct spamm_multiply_stream_element_t));
         multiply_stream_element->alpha = alpha;
         multiply_stream_element->beta = 1.0;
         multiply_stream_element->A_index = A_node->index;
         multiply_stream_element->B_index = B_node->index;
-        multiply_stream_element->C_index = (*C_node)->index;
-        multiply_stream_element->A_node = A_node;
-        multiply_stream_element->B_node = B_node;
-        multiply_stream_element->C_node = *C_node;
+        multiply_stream_element->C_index = linear_C->index;
+        multiply_stream_element->M_A = A_node->M_block;
+        multiply_stream_element->N_A = A_node->N_block;
+        multiply_stream_element->M_B = B_node->M_block;
+        multiply_stream_element->N_B = B_node->N_block;
+        multiply_stream_element->M_C = linear_C->M;
+        multiply_stream_element->N_C = linear_C->N;
+        multiply_stream_element->block_A_loaded_in_GPU = 0;
+        multiply_stream_element->block_B_loaded_in_GPU = 0;
+        multiply_stream_element->block_C_loaded_in_GPU = 0;
+        multiply_stream_element->A_block_dense = A_node->block_dense;
+        multiply_stream_element->B_block_dense = B_node->block_dense;
+        multiply_stream_element->C_block_dense = linear_C->block_dense;
 
         spamm_ll_append(multiply_stream_element, multiply_stream);
         break;
@@ -296,11 +320,11 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
           for (i = 0; i < A_node->M_block; ++i) {
             for (j = 0; j < B_node->N_block; ++j)
             {
-              linear_C->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] = 0.0;
+              linear_C->block_dense[spamm_dense_index(i, j, linear_C->M, linear_C->N)] = 0.0;
 
               for (k = 0; k < A_node->N_block; ++k)
               {
-                linear_C->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] +=
+                linear_C->block_dense[spamm_dense_index(i, j, linear_C->M, linear_C->N)] +=
                   alpha*linear_A->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]
                   *linear_B->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)];
               }
@@ -367,10 +391,6 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
 void
 spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t *multiply_stream)
 {
-#if ! defined(HAVE_CUDA) && ! defined(DGEMM)
-  int i, j, k;
-#endif
-
   unsigned int head_tail_distance;
 
   unsigned int number_A_blocks_loaded;
@@ -392,25 +412,25 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
     if (head_tail_distance >= cache_length)
     {
       nodedata = (struct spamm_multiply_stream_element_t*) tailnode->data;
-      if (nodedata->A_node->block_loaded_in_GPU == 1)
+      if (nodedata->block_A_loaded_in_GPU == 1)
       {
-        nodedata->A_node->block_loaded_in_GPU = 0;
+        nodedata->block_A_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
         cublasFree(nodedata->A_node->device_pointer);
 #endif
       }
 
-      if (nodedata->B_node->block_loaded_in_GPU == 1)
+      if (nodedata->block_B_loaded_in_GPU == 1)
       {
-        nodedata->B_node->block_loaded_in_GPU = 0;
+        nodedata->block_B_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
         cublasFree(nodedata->B_node->device_pointer);
 #endif
       }
 
-      if (nodedata->C_node->block_loaded_in_GPU == 1)
+      if (nodedata->block_C_loaded_in_GPU == 1)
       {
-        nodedata->C_node->block_loaded_in_GPU = 0;
+        nodedata->block_C_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
         cublasGetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(floating_point_t),
             (void*) nodedata->C_node->device_pointer, nodedata->C_node->M_block,
@@ -424,10 +444,10 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
     }
 
     nodedata = (struct spamm_multiply_stream_element_t*) node->data;
-    if (nodedata->A_node->block_loaded_in_GPU == 0)
+    if (nodedata->block_A_loaded_in_GPU == 0)
     {
       number_A_blocks_loaded++;
-      nodedata->A_node->block_loaded_in_GPU = 1;
+      nodedata->block_A_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
       cublasAlloc(nodedata->A_node->M_block*nodedata->A_node->N_block, sizeof(floating_point_t), &(nodedata->A_node->device_pointer));
       cublasSetMatrix(nodedata->A_node->M_block, nodedata->A_node->N_block, sizeof(floating_point_t),
@@ -436,10 +456,10 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
 #endif
     }
 
-    if (nodedata->B_node->block_loaded_in_GPU == 0)
+    if (nodedata->block_B_loaded_in_GPU == 0)
     {
       number_B_blocks_loaded++;
-      nodedata->B_node->block_loaded_in_GPU = 1;
+      nodedata->block_B_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
       cublasAlloc(nodedata->B_node->M_block*nodedata->B_node->N_block, sizeof(floating_point_t), &(nodedata->B_node->device_pointer));
       cublasSetMatrix(nodedata->B_node->M_block, nodedata->B_node->N_block, sizeof(floating_point_t),
@@ -448,10 +468,10 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
 #endif
     }
 
-    if (nodedata->C_node->block_loaded_in_GPU == 0)
+    if (nodedata->block_C_loaded_in_GPU == 0)
     {
       number_C_blocks_loaded++;
-      nodedata->C_node->block_loaded_in_GPU = 1;
+      nodedata->block_C_loaded_in_GPU = 1;
 #ifdef HAVE_CUDA
       cublasAlloc(nodedata->C_node->M_block*nodedata->C_node->N_block, sizeof(floating_point_t), &(nodedata->C_node->device_pointer));
       cublasSetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(floating_point_t),
@@ -469,7 +489,10 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
         &(nodedata->alpha), nodedata->A_node->block_dense, &(nodedata->A_node->M_block), nodedata->B_node->block_dense, &(nodedata->B_node->M_block),
         &(nodedata->beta), nodedata->C_node->block_dense, &(nodedata->C_node->M_block));
 #else
-    spamm_sgemm_trivial(nodedata->alpha, nodedata->A_node, nodedata->B_node, nodedata->C_node);
+    spamm_sgemm_trivial('N', 'N', nodedata->M_A, nodedata->N_B, nodedata->N_A,
+        nodedata->alpha, nodedata->A_block_dense, nodedata->M_A,
+        nodedata->B_block_dense, nodedata->M_B, nodedata->beta,
+        nodedata->C_block_dense, nodedata->M_C);
 #endif
 
     head_tail_distance++;
@@ -479,25 +502,25 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
   while (tailnode != NULL)
   {
     nodedata = (struct spamm_multiply_stream_element_t*) tailnode->data;
-    if (nodedata->A_node->block_loaded_in_GPU == 1)
+    if (nodedata->block_A_loaded_in_GPU == 1)
     {
-      nodedata->A_node->block_loaded_in_GPU = 0;
+      nodedata->block_A_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
       cublasFree(nodedata->A_node->device_pointer);
 #endif
     }
 
-    if (nodedata->B_node->block_loaded_in_GPU == 1)
+    if (nodedata->block_B_loaded_in_GPU == 1)
     {
-      nodedata->B_node->block_loaded_in_GPU = 0;
+      nodedata->block_B_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
       cublasFree(nodedata->B_node->device_pointer);
 #endif
     }
 
-    if (nodedata->C_node->block_loaded_in_GPU == 1)
+    if (nodedata->block_C_loaded_in_GPU == 1)
     {
-      nodedata->C_node->block_loaded_in_GPU = 0;
+      nodedata->block_C_loaded_in_GPU = 0;
 #ifdef HAVE_CUDA
       cublasGetMatrix(nodedata->C_node->M_block, nodedata->C_node->N_block, sizeof(floating_point_t), (void*) nodedata->C_node->device_pointer,
           nodedata->C_node->M_block, (void*) nodedata->C_node->block_dense, nodedata->C_node->M_block);
@@ -509,10 +532,62 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
   }
 
   /* Print statistics. */
-  LOG_INFO("blocks loaded: stream length = %3u cache = %3u A = %3u B = %3u C = %3u total = %4u\n",
+  LOG_INFO("blocks loaded (stream length = %3u, cache = %3u): A = %3u, B = %3u, C = %3u, total = %4u\n",
       multiply_stream->number_elements, cache_length,
       number_A_blocks_loaded, number_B_blocks_loaded, number_C_blocks_loaded,
       number_A_blocks_loaded+number_B_blocks_loaded+number_C_blocks_loaded);
+}
+
+/** Go through the multiply stream and resum duplicate C blocks.
+ *
+ * @param cache_length Determines the number of blocks kept in the GPU.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_resum_stream (const unsigned int cache_length, struct spamm_ll_t *multiply_stream)
+{
+  struct spamm_ll_iterator_t iterator_C;
+
+  /* Sort stream on C block index. */
+  LOG_INFO("sorting multiply stream in C (has %u elements)\n", multiply_stream->number_elements);
+  spamm_ll_sort_data(spamm_compare_int, spamm_swap_multiply_stream, multiply_stream);
+
+  /* Find duplicate blocks in C and sum them. */
+  LOG2_INFO("adding duplicate blocks in C\n");
+  iterator_C = spamm_ll_iterator_new((*C_node)->linear_quadtree);
+  for (linear_node_C = spamm_ll_iterator_first(iterator_C); linear_node_C != NULL; linear_node_C = spamm_ll_iterator_next(iterator_C))
+  {
+    linear_node_C_next = linear_node_C->next;
+
+    linear_C = linear_node_C->data;
+    while (linear_node_C_next != NULL)
+    {
+      linear_C_next = linear_node_C->next->data;
+
+      if (linear_C_next->index == linear_C->index)
+      {
+        /* Sum blocks. */
+        spamm_int_to_binary(linear_C->index, (*C_node)->tree_depth*2, bitstring_C);
+        LOG_DEBUG("found 2 C blocks to sum: index = %s\n", bitstring_C);
+        LOG2_DEBUG("linear_C before:\n");
+        if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C->M, linear_C->N, linear_C->block_dense); }
+        LOG2_DEBUG("linear_C_next:\n");
+        if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C_next->M, linear_C_next->N, linear_C_next->block_dense); }
+        for (i = 0; i < linear_C->M*linear_C->N; ++i)
+        {
+          linear_C->block_dense[i] += linear_C_next->block_dense[i];
+        }
+        linear_node_C_next = linear_node_C_next->next;
+        spamm_ll_delete_node(NULL, linear_node_C->next, (*C_node)->linear_quadtree);
+
+        LOG2_DEBUG("linear_C after:\n");
+        if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C->M, linear_C->N, linear_C->block_dense); }
+      }
+
+      else { break; }
+    }
+  }
+  spamm_ll_iterator_delete(&iterator_C);
 }
 
 /** Computes the product
@@ -635,9 +710,14 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       LOG_INFO("tree recursion: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
       gettimeofday(&start, NULL);
-      spamm_multiply_stream(30000, multiply_stream);
+      spamm_multiply_stream(multiply_stream->number_elements, multiply_stream);
       gettimeofday(&stop, NULL);
       LOG_INFO("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+
+      gettimeofday(&start, NULL);
+      spamm_resum_stream(multiply_stream->number_elements, multiply_stream);
+      gettimeofday(&stop, NULL);
+      LOG_INFO("resum stream %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
       spamm_ll_delete(free, &multiply_stream);
       break;

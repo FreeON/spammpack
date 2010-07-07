@@ -37,6 +37,7 @@ matrix_tree_sources = \
   spamm_set.c \
   spamm_spamm_to_dense.c \
   spamm_swap_linear_quadtree.c \
+  spamm_swap_multiply_stream.c \
   spamm_tree_pack.c \
   spamm_tree_stats.c \
   spamm_version.c

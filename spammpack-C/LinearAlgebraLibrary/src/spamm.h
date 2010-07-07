@@ -330,16 +330,21 @@ struct spamm_node_t
   /** The linear quadtree.
    *
    * A packed tree stores a linear quadtree at the linear_tier, replacing the
-   * quadtree that was there before.
+   * quadtree that was there before. The elements of the linked list at
+   * linear_quadtree are of type spamm_linear_quadtree_t.
    */
   struct spamm_ll_t *linear_quadtree;
+
+  /** The linear quadtree memory chunksize.
+   *
+   * This is set here to provide a default value for the creation of linear
+   * quadtrees. Possibly should be moved someplace else.
+   */
+  unsigned int linear_quadtree_default_chunksize;
 
   /** The memory that holds the linear quadtree.
    */
   struct spamm_mm_t *linear_quadtree_memory;
-
-  /** Is this block loaded into the GPU? */
-  short unsigned int block_loaded_in_GPU;
 
 #if defined(HAVE_CUDA)
   /** Device pointers. */
@@ -422,14 +427,41 @@ struct spamm_multiply_stream_element_t
   /** Index of matrix C. */
   unsigned int C_index;
 
-  /** Pointer to node corresponding to index of matrix A. */
-  struct spamm_node_t *A_node;
+  /** Number of rows of dense matrix block of A. */
+  unsigned int M_A;
 
-  /** Pointer to node corresponding to index of matrix B. */
-  struct spamm_node_t *B_node;
+  /** Number of columns of dense matrix block of A. */
+  unsigned int N_A;
 
-  /** Pointer to node corresponding to index of matrix C. */
-  struct spamm_node_t *C_node;
+  /** Number of rows of dense matrix block of B. */
+  unsigned int M_B;
+
+  /** Number of columns of dense matrix block of B. */
+  unsigned int N_B;
+
+  /** Number of rows of dense matrix block of C. */
+  unsigned int M_C;
+
+  /** Number of columns of dense matrix block of C. */
+  unsigned int N_C;
+
+  /** Is block A loaded into the GPU? */
+  short unsigned int block_A_loaded_in_GPU;
+
+  /** Is block B loaded into the GPU? */
+  short unsigned int block_B_loaded_in_GPU;
+
+  /** Is block C loaded into the GPU? */
+  short unsigned int block_C_loaded_in_GPU;
+
+  /** Pointer to dense matrix block of A. */
+  floating_point_t *A_block_dense;
+
+  /** Pointer to dense matrix block of B. */
+  floating_point_t *B_block_dense;
+
+  /** Pointer to dense matrix block of C. */
+  floating_point_t *C_block_dense;
 };
 
 /* Function declarations. */
@@ -531,16 +563,25 @@ void
 spamm_set_loglevel (const enum spamm_log_severity_t loglevel);
 
 void
-spamm_sgemm_trivial (const floating_point_t alpha,
-    const struct spamm_node_t *A_node,
-    const struct spamm_node_t *B_node,
-    struct spamm_node_t *C_node);
+spamm_sgemm_trivial (const char opA, const char opB,
+    const unsigned int M, const unsigned int N, const unsigned int K,
+    const floating_point_t alpha,
+    const floating_point_t *A_block_dense,
+    const unsigned int lda,
+    const floating_point_t *B_block_dense,
+    const unsigned int ldb,
+    const floating_point_t beta,
+    floating_point_t *C_block_dense,
+    const unsigned int ldc);
 
 void
 spamm_spamm_to_dense (const struct spamm_t *A, floating_point_t **A_dense);
 
 void
 spamm_swap_linear_quadtree (void *data1, void *data2);
+
+void
+spamm_swap_multiply_stream (void *data1, void *data2);
 
 void
 spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
