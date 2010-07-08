@@ -23,4 +23,10 @@ noinst_PROGRAMS = \
   multiply_15 \
   multiply_16 \
   multiply_17 \
-  multiply_18
+  multiply_18 \
+  multiply_19 \
+  multiply_20 \
+  multiply_21 \
+  multiply_22 \
+  multiply_23 \
+  multiply_24

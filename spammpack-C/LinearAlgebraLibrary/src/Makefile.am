@@ -14,6 +14,7 @@ matrix_tree_sources = \
   spamm.h \
   spamm_add.c \
   spamm_compare_int.c \
+  spamm_compare_multiply_stream_element.c \
   spamm_delete.c \
   spamm_delete_node.c \
   spamm_dense_index.c \
@@ -30,6 +31,7 @@ matrix_tree_sources = \
   spamm_new_node.c \
   spamm_number_nonzero.c \
   spamm_print_dense.c \
+  spamm_print_multiply_stream.c \
   spamm_print_node.c \
   spamm_print_spamm.c \
   spamm_print_tree.c \
