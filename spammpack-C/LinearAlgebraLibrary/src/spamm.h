@@ -578,10 +578,25 @@ void
 spamm_spamm_to_dense (const struct spamm_t *A, floating_point_t **A_dense);
 
 void
+spamm_swap_block_dense (const unsigned int M, const unsigned int N, floating_point_t *A, floating_point_t *B);
+
+void
+spamm_swap_floating_point_t (floating_point_t *a, floating_point_t *b);
+
+void
+spamm_swap_floating_point_t_pointer (floating_point_t **a, floating_point_t **b);
+
+void
 spamm_swap_linear_quadtree (void *data1, void *data2);
 
 void
 spamm_swap_multiply_stream (void *data1, void *data2);
+
+void
+spamm_swap_short_unsigned_int (short unsigned int *a, short unsigned int *b);
+
+void
+spamm_swap_unsigned_int (unsigned int *a, unsigned int *b);
 
 void
 spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,

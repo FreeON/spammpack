@@ -9,13 +9,8 @@
 void
 spamm_swap_linear_quadtree (void *data1, void *data2)
 {
-  unsigned int i;
-
   struct spamm_linear_quadtree_t *linear1 = data1;
   struct spamm_linear_quadtree_t *linear2 = data2;
-
-  unsigned int temp_index;
-  floating_point_t temp_A;
 
   if (linear1->M != linear2->M)
   {
@@ -29,14 +24,6 @@ spamm_swap_linear_quadtree (void *data1, void *data2)
     exit(1);
   }
 
-  temp_index = linear1->index;
-  linear1->index = linear2->index;
-  linear2->index = temp_index;
-
-  for (i = 0; i < linear1->M*linear1->N; ++i)
-  {
-    temp_A = linear1->block_dense[i];
-    linear1->block_dense[i] = linear2->block_dense[i];
-    linear2->block_dense[i] = temp_A;
-  }
+  spamm_swap_unsigned_int(&linear1->index, &linear2->index);
+  spamm_swap_block_dense(linear1->M, linear1->N, linear1->block_dense, linear2->block_dense);
 }
