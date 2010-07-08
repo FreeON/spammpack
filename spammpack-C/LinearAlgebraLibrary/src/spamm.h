@@ -475,6 +475,9 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
 int
 spamm_compare_int (const void *integer1, const void *integer2);
 
+int
+spamm_compare_multiply_stream_element (const void *element1, const void *element2);
+
 void
 spamm_delete (struct spamm_t *A);
 
@@ -540,6 +543,9 @@ spamm_number_nonzero (const struct spamm_t *A);
 
 void
 spamm_print_dense (const unsigned int M, const unsigned int N, const floating_point_t *A_dense);
+
+void
+spamm_print_multiply_stream (const struct spamm_ll_t *stream);
 
 void
 spamm_print_node (const struct spamm_node_t *node);
