@@ -546,7 +546,10 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
 void
 spamm_resum_stream (const unsigned int cache_length, struct spamm_ll_t *multiply_stream)
 {
-  struct spamm_ll_iterator_t iterator_C;
+  unsigned int i;
+  struct spamm_ll_iterator_t *iterator;
+  struct spamm_ll_node_t *stream_node, *next_stream_node;
+  struct spamm_multiply_stream_element_t *stream_element, *next_stream_element;
 
   /* Sort stream on C block index. */
   LOG_INFO("sorting multiply stream in C (has %u elements)\n", multiply_stream->number_elements);
@@ -554,40 +557,30 @@ spamm_resum_stream (const unsigned int cache_length, struct spamm_ll_t *multiply
 
   /* Find duplicate blocks in C and sum them. */
   LOG2_INFO("adding duplicate blocks in C\n");
-  iterator_C = spamm_ll_iterator_new((*C_node)->linear_quadtree);
-  for (linear_node_C = spamm_ll_iterator_first(iterator_C); linear_node_C != NULL; linear_node_C = spamm_ll_iterator_next(iterator_C))
+  iterator = spamm_ll_iterator_new(multiply_stream);
+  for (stream_node = spamm_ll_iterator_first(iterator); stream_node != NULL; stream_node = spamm_ll_iterator_next(iterator))
   {
-    linear_node_C_next = linear_node_C->next;
-
-    linear_C = linear_node_C->data;
-    while (linear_node_C_next != NULL)
+    next_stream_node = stream_node->next;
+    stream_element = stream_node->data;
+    while (next_stream_node != NULL)
     {
-      linear_C_next = linear_node_C->next->data;
+      next_stream_element = stream_node->next->data;
 
-      if (linear_C_next->index == linear_C->index)
+      if (next_stream_element->C_index == stream_element->C_index)
       {
         /* Sum blocks. */
-        spamm_int_to_binary(linear_C->index, (*C_node)->tree_depth*2, bitstring_C);
-        LOG_DEBUG("found 2 C blocks to sum: index = %s\n", bitstring_C);
-        LOG2_DEBUG("linear_C before:\n");
-        if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C->M, linear_C->N, linear_C->block_dense); }
-        LOG2_DEBUG("linear_C_next:\n");
-        if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C_next->M, linear_C_next->N, linear_C_next->block_dense); }
-        for (i = 0; i < linear_C->M*linear_C->N; ++i)
+        for (i = 0; i < stream_element->M_C*stream_element->N_C; ++i)
         {
-          linear_C->block_dense[i] += linear_C_next->block_dense[i];
+          stream_element->C_block_dense[i] += next_stream_element->C_block_dense[i];
         }
-        linear_node_C_next = linear_node_C_next->next;
-        spamm_ll_delete_node(NULL, linear_node_C->next, (*C_node)->linear_quadtree);
-
-        LOG2_DEBUG("linear_C after:\n");
-        if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_C->M, linear_C->N, linear_C->block_dense); }
+        next_stream_node = next_stream_node->next;
+        spamm_ll_delete_node(NULL, stream_node->next, multiply_stream);
       }
 
       else { break; }
     }
   }
-  spamm_ll_iterator_delete(&iterator_C);
+  spamm_ll_iterator_delete(&iterator);
 }
 
 /** Computes the product
