@@ -6,15 +6,15 @@ AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 TESTS = $(noinst_PROGRAMS)
 
 noinst_PROGRAMS = \
-  add_1 \
-  add_2 \
-  add_3 \
-  add_4 \
-  add_5 \
-  add_6 \
-  add_7 \
-  add_8 \
-  add_9 \
+  add_01 \
+  add_02 \
+  add_03 \
+  add_04 \
+  add_05 \
+  add_06 \
+  add_07 \
+  add_08 \
+  add_09 \
   add_10 \
   add_11 \
   add_12

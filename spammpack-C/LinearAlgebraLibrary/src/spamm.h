@@ -401,6 +401,9 @@ struct spamm_tree_stats_t
   /** The memory consumption of the dense blocks. */
   unsigned int memory_dense_blocks;
 
+  /** The memory consumption total. */
+  unsigned int memory_total;
+
   /** The average sparsity of the dense blocks. */
   floating_point_t average_sparsity;
 };
@@ -616,5 +619,8 @@ spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,
 
 void
 spamm_tree_stats (struct spamm_tree_stats_t *stats, const struct spamm_t *A);
+
+char *
+spamm_version ();
 
 #endif

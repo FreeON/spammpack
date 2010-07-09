@@ -18,13 +18,19 @@ enum matrix_t
 const int number_matrix_types = 3;
 const char *matrix_type_name[] = { "dense", "diagonal", "column_row" };
 
+const int number_mul_types = 2;
+const char *mul_type_name[] = { "tree", "cache" };
+
 int
 main (int argc, char **argv)
 {
   int parse;
   int result = 0;
 
+  char *version_string;
+
   enum matrix_t matrix_type = dense;
+  enum spamm_multiply_algorithm_t mul_type = cache;
 
   unsigned int M = 1000;
   unsigned int N = 1000;
@@ -80,7 +86,7 @@ main (int argc, char **argv)
   /* For the Kahan summation algorithm. */
   floating_point_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:l:c:pkvn";
+  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:m:l:c:pkvn";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "M", required_argument, NULL, 'M' },
@@ -94,6 +100,7 @@ main (int argc, char **argv)
     { "beta", required_argument, NULL, 'b' },
     { "thresh", required_argument, NULL, 'e' },
     { "type", required_argument, NULL, 't' },
+    { "multype", required_argument, NULL, 'm' },
     { "linear", required_argument, NULL, 'l' },
     { "chunk", required_argument, NULL, 'c' },
     { "print", no_argument, NULL, 'p' },
@@ -113,27 +120,28 @@ main (int argc, char **argv)
       case 'h':
         printf("Usage:\n");
         printf("\n");
-        printf("-h                      This help\n");
-        printf("-M M                    Set the number or rows of matrix A and C\n");
-        printf("-N N                    Set the number of columns of matrix B and C\n");
-        printf("-K K                    Set the number of columns of matrix A and the\n");
-        printf("                        number or rows of matrix B\n");
-        printf("--M_block M             Set the number of rows of the matrix blocks of A and C\n");
-        printf("--N_block N             Set the number of columns of the matrix blocks of B and C\n");
-        printf("--K_block K             Set the number of columns of the matrix blocks of A\n");
-        printf("                        and the number of rows of the matrix blocks of B\n");
-        printf("{ -g | --gamma } gamma  Set the decay constant gamma for exp(-gamma |i-j|)\n");
-        printf("{ -a | --alpha } alpha  Set alpha in C = alpha*A*B + beta*C\n");
-        printf("{ -b | --beta } beta    Set beta in C = alpha*A*B + beta*C\n");
-        printf("{ -e | --thresh } eps   Set the threshold, i.e. no random number will be used below\n");
-        printf("                        this threshold\n");
-        printf("{ -t | --type } type    The calculation type (dense, diagonal, column_row)\n");
-        printf("{ -l | --linear } n     Convert to linear trees at tier n\n");
-        printf("{ -c | --chunk } s      Use chunks of s bytes for linear tree\n");
-        printf("--print                 Print the matrices\n");
-        printf("--kahan                 Use Kahan summation algorithm\n");
-        printf("--verify                Verify SpAMM by multiplying dense matrices\n");
-        printf("--no-random             Fill matrices with linear index as opposed to random values\n");
+        printf("-h                        This help\n");
+        printf("-M M                      Set the number or rows of matrix A and C\n");
+        printf("-N N                      Set the number of columns of matrix B and C\n");
+        printf("-K K                      Set the number of columns of matrix A and the\n");
+        printf("                          number or rows of matrix B\n");
+        printf("--M_block M               Set the number of rows of the matrix blocks of A and C\n");
+        printf("--N_block N               Set the number of columns of the matrix blocks of B and C\n");
+        printf("--K_block K               Set the number of columns of the matrix blocks of A\n");
+        printf("                          and the number of rows of the matrix blocks of B\n");
+        printf("{ -g | --gamma } gamma    Set the decay constant gamma for exp(-gamma |i-j|)\n");
+        printf("{ -a | --alpha } alpha    Set alpha in C = alpha*A*B + beta*C\n");
+        printf("{ -b | --beta } beta      Set beta in C = alpha*A*B + beta*C\n");
+        printf("{ -e | --thresh } eps     Set the threshold, i.e. no random number will be used below\n");
+        printf("                          this threshold\n");
+        printf("{ -t | --type } type      The calculation type (dense, diagonal, column_row)\n");
+        printf("{ -m | --multype } type   The multiplication algorithm (tree, cache)\n");
+        printf("{ -l | --linear } n       Convert to linear trees at tier n\n");
+        printf("{ -c | --chunk } s        Use chunks of s bytes for linear tree\n");
+        printf("--print                   Print the matrices\n");
+        printf("--kahan                   Use Kahan summation algorithm\n");
+        printf("--verify                  Verify SpAMM by multiplying dense matrices\n");
+        printf("--no-random               Fill matrices with linear index as opposed to random values\n");
         return result;
         break;
 
@@ -187,6 +195,16 @@ main (int argc, char **argv)
         }
         break;
 
+      case 'm':
+        for (i = 0; i < number_mul_types; i++)
+        {
+          if (strcasecmp(mul_type_name[i], optarg) == 0)
+          {
+            mul_type = i;
+          }
+        }
+        break;
+
       case 'l':
         linear_tier = strtol(optarg, NULL, 10);
         break;
@@ -217,6 +235,10 @@ main (int argc, char **argv)
         break;
     }
   }
+
+  version_string = spamm_version();
+  LOG_INFO("using SpAMM version: %s\n", version_string);
+  free(version_string);
 
   LOG_INFO("matrix mode: %s\n", matrix_type_name[matrix_type]);
   LOG_INFO("alpha = %f, beta = %f\n", alpha, beta);
@@ -422,11 +444,11 @@ main (int argc, char **argv)
   }
 
   spamm_tree_stats(&tree_stats, &A);
-  LOG_INFO("A: avg. sparsity = %1.1f%%, dense blocks = %u\n", tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+  LOG_INFO("A: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", A.M, A.N, A.M_padded, A.N_padded, A.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
   spamm_tree_stats(&tree_stats, &B);
-  LOG_INFO("B: avg. sparsity = %1.1f%%, dense blocks = %u\n", tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+  LOG_INFO("B: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", B.M, B.N, B.M_padded, B.N_padded, B.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
   spamm_tree_stats(&tree_stats, &C);
-  LOG_INFO("C: avg. sparsity = %1.1f%%, dense blocks = %u\n", tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+  LOG_INFO("C: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", C.M, C.N, C.M_padded, C.N_padded, C.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
 
   if (print_matrix)
   {
@@ -528,7 +550,7 @@ main (int argc, char **argv)
   LOG2_INFO("multiplying matrix with spamm\n");
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
-  spamm_multiply(cache, alpha, &A, &B, beta, &C);
+  spamm_multiply(mul_type, alpha, &A, &B, beta, &C);
   getrusage(RUSAGE_SELF, &rusage_stop);
   gettimeofday(&stop, NULL);
   walltime_spamm = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;

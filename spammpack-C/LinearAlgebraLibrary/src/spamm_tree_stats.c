@@ -75,4 +75,6 @@ spamm_tree_stats (struct spamm_tree_stats_t *stats, const struct spamm_t *A)
     spamm_node_stats(stats, A->root);
     stats->average_sparsity /= (floating_point_t) stats->number_dense_blocks;
   }
+
+  stats->memory_total = stats->memory_tree+stats->memory_dense_blocks;
 }
