@@ -69,4 +69,6 @@ spamm_swap_multiply_stream (void *data1, void *data2)
   spamm_swap_floating_point_t_pointer(&linear1->A_block_dense, &linear2->A_block_dense);
   spamm_swap_floating_point_t_pointer(&linear1->B_block_dense, &linear2->B_block_dense);
   spamm_swap_floating_point_t_pointer(&linear1->C_block_dense, &linear2->C_block_dense);
+
+  spamm_swap_spamm_node_t_pointer(&linear1->C_node, &linear2->C_node);
 }

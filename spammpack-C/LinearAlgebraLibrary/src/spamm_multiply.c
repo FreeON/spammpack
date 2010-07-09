@@ -203,44 +203,34 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         break;
 
       case cache:
-        /* Create a new C block so that we can multiply the stream in parallel
-         * without having to worry about race-conditions.
-         */
-        if ((*C_node)->linear_quadtree == NULL)
-        {
-          (*C_node)->linear_quadtree = spamm_ll_new();
-          (*C_node)->linear_quadtree_memory = spamm_mm_new((*C_node)->linear_quadtree_default_chunksize);
-        }
-        linear_C = spamm_new_linear_quadtree_node((*C_node)->M_block, (*C_node)->N_block, (*C_node)->linear_quadtree_memory);
-        linear_C->index = (*C_node)->index;
-        spamm_ll_append(linear_C, (*C_node)->linear_quadtree);
-
-        for (i = 0; i < A_node->M_block; ++i) {
-          for (j = 0; j < B_node->N_block; ++j)
-          {
-            linear_C->block_dense[spamm_dense_index(i, j, linear_C->M, linear_C->N)] = 0.0;
-          }
-        }
-
         /* Append this triple to the multiply stream. */
         multiply_stream_element = (struct spamm_multiply_stream_element_t*) malloc(sizeof(struct spamm_multiply_stream_element_t));
         multiply_stream_element->alpha = alpha;
         multiply_stream_element->beta = 1.0;
         multiply_stream_element->A_index = A_node->index;
         multiply_stream_element->B_index = B_node->index;
-        multiply_stream_element->C_index = linear_C->index;
+        multiply_stream_element->C_index = (*C_node)->index;
         multiply_stream_element->M_A = A_node->M_block;
         multiply_stream_element->N_A = A_node->N_block;
         multiply_stream_element->M_B = B_node->M_block;
         multiply_stream_element->N_B = B_node->N_block;
-        multiply_stream_element->M_C = linear_C->M;
-        multiply_stream_element->N_C = linear_C->N;
+        multiply_stream_element->M_C = (*C_node)->M_block;
+        multiply_stream_element->N_C = (*C_node)->N_block;
         multiply_stream_element->block_A_loaded_in_GPU = 0;
         multiply_stream_element->block_B_loaded_in_GPU = 0;
         multiply_stream_element->block_C_loaded_in_GPU = 0;
         multiply_stream_element->A_block_dense = A_node->block_dense;
         multiply_stream_element->B_block_dense = B_node->block_dense;
-        multiply_stream_element->C_block_dense = linear_C->block_dense;
+        multiply_stream_element->C_node = *C_node;
+        multiply_stream_element->C_block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*(*C_node)->M_block*(*C_node)->N_block);
+
+        /* Set new C dense block to zero. */
+        for (i = 0; i < (*C_node)->M_block; i++) {
+          for (j = 0; j < (*C_node)->N_block; j++)
+          {
+            multiply_stream_element->C_block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] = 0.0;
+          }
+        }
 
         spamm_ll_append(multiply_stream_element, multiply_stream);
         break;
@@ -584,6 +574,18 @@ spamm_resum_stream (const unsigned int cache_length, struct spamm_ll_t *multiply
       else { break; }
     }
   }
+
+  LOG2_INFO("adding multiply stream to C\n");
+  for (stream_node = spamm_ll_iterator_first(iterator); stream_node != NULL; stream_node = spamm_ll_iterator_next(iterator))
+  {
+    stream_element = stream_node->data;
+    for (i = 0; i < stream_element->M_C*stream_element->N_C; ++i)
+    {
+      stream_element->C_node->block_dense[i] += stream_element->C_block_dense[i];
+    }
+  }
+
+  /* Free memory. */
   spamm_ll_iterator_delete(&iterator);
   //spamm_print_multiply_stream(multiply_stream);
 }
@@ -695,7 +697,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
   {
     case tree:
       LOG2_INFO("using tree algorithm\n");
-      spamm_multiply_node(algorithm, alpha, A->root, B->root, &(C->root), multiply_stream);
+      spamm_multiply_node(algorithm, alpha, A->root, B->root, &(C->root), NULL);
       break;
 
     case cache:

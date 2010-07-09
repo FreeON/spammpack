@@ -335,7 +335,7 @@ struct spamm_node_t
    */
   struct spamm_ll_t *linear_quadtree;
 
-  /** The linear quadtree memory chunksize.
+  /** The linear quadtree default memory chunksize.
    *
    * This is set here to provide a default value for the creation of linear
    * quadtrees. Possibly should be moved someplace else.
@@ -459,6 +459,9 @@ struct spamm_multiply_stream_element_t
 
   /** Pointer to dense matrix block of B. */
   floating_point_t *B_block_dense;
+
+  /** Pointer to node of matrix C. */
+  struct spamm_node_t *C_node;
 
   /** Pointer to dense matrix block of C. */
   floating_point_t *C_block_dense;
@@ -600,6 +603,9 @@ spamm_swap_multiply_stream (void *data1, void *data2);
 
 void
 spamm_swap_short_unsigned_int (short unsigned int *a, short unsigned int *b);
+
+void
+spamm_swap_spamm_node_t_pointer (struct spamm_node_t **a, struct spamm_node_t **b);
 
 void
 spamm_swap_unsigned_int (unsigned int *a, unsigned int *b);
