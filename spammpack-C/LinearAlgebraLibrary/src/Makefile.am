@@ -44,6 +44,7 @@ matrix_tree_sources = \
   spamm_swap_linear_quadtree.c \
   spamm_swap_multiply_stream.c \
   spamm_swap_short_unsigned_int.c \
+  spamm_swap_spamm_node_t_pointer.c \
   spamm_swap_unsigned_int.c \
   spamm_tree_pack.c \
   spamm_tree_stats.c \

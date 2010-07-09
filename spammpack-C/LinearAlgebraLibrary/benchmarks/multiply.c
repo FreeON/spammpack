@@ -35,6 +35,7 @@ main (int argc, char **argv)
 
   unsigned int number_nonzeros;
 
+  int random_elements = 1;
   int print_matrix = 0;
   int use_kahan = 0;
   int verify_spamm = 0;
@@ -79,7 +80,7 @@ main (int argc, char **argv)
   /* For the Kahan summation algorithm. */
   floating_point_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:l:c:pkv";
+  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:l:c:pkvn";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "M", required_argument, NULL, 'M' },
@@ -98,6 +99,7 @@ main (int argc, char **argv)
     { "print", no_argument, NULL, 'p' },
     { "kahan", no_argument, NULL, 'k' },
     { "verify", no_argument, NULL, 'v' },
+    { "no-random", no_argument, NULL, 'n' },
     { NULL, 0, NULL, 0 }
   };
   int longindex;
@@ -131,6 +133,7 @@ main (int argc, char **argv)
         printf("--print                 Print the matrices\n");
         printf("--kahan                 Use Kahan summation algorithm\n");
         printf("--verify                Verify SpAMM by multiplying dense matrices\n");
+        printf("--no-random             Fill matrices with linear index as opposed to random values\n");
         return result;
         break;
 
@@ -204,6 +207,10 @@ main (int argc, char **argv)
         verify_spamm = 1;
         break;
 
+      case 'n':
+        random_elements = 0;
+        break;
+
       default:
         LOG2_FATAL("unknown command line option\n");
         return -1;
@@ -268,19 +275,19 @@ main (int argc, char **argv)
       for (i = 0; i < M; i++) {
         for (j = 0; j < K; j++)
         {
-          A_dense[spamm_dense_index(i, j, M, K)] = rand()/(floating_point_t) RAND_MAX + threshold;
+          A_dense[spamm_dense_index(i, j, M, K)] = (random_elements ? rand()/(floating_point_t) RAND_MAX + threshold : spamm_dense_index(i, j, M, K));
         }
       }
       for (i = 0; i < K; i++) {
         for (j = 0; j < N; j++)
         {
-          B_dense[spamm_dense_index(i, j, K, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+          B_dense[spamm_dense_index(i, j, K, N)] = (random_elements ? rand()/(floating_point_t) RAND_MAX + threshold : spamm_dense_index(i, j, K, N));
         }
       }
       for (i = 0; i < M; i++) {
         for (j = 0; j < N; j++)
         {
-          C_dense[spamm_dense_index(i, j, M, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+          C_dense[spamm_dense_index(i, j, M, N)] = (random_elements ? rand()/(floating_point_t) RAND_MAX + threshold : spamm_dense_index(i, j, M, N));
         }
       }
       break;
@@ -513,7 +520,7 @@ main (int argc, char **argv)
 
     if (print_matrix)
     {
-      printf("C (dense):\n");
+      printf("result C (dense):\n");
       spamm_print_dense(M, N, C_dense);
     }
   }
@@ -532,7 +539,7 @@ main (int argc, char **argv)
 
   if (print_matrix)
   {
-    printf("C:\n");
+    printf("result C:\n");
     spamm_print_spamm(&C);
   }
 
