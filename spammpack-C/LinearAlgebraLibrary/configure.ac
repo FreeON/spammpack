@@ -111,18 +111,19 @@ dnl Check for stdarg.h.
 AC_CHECK_HEADERS([stdarg.h])
 
 dnl Define precision.
-AC_ARG_ENABLE([single-precision],
-              [AS_HELP_STRING([--disable-single-precision], [if enable (the
-               defaul), use single precision floating point numbers, if
-               disabled, use double precision floating point numbers])],
-              [], [enable_single_precision="yes"])
+AC_ARG_WITH([precision],
+            [AS_HELP_STRING([--with-precision], [set the precision of floating
+             point numbers to single or double [default=single]])],
+             [], [with_precision="single"])
 
-if test "${enable_single_precision}" = "yes"; then
+if test "${with_precision}" = "single"; then
   AC_MSG_NOTICE([using single precision])
   AC_DEFINE([FLOATING_PRECISION], [float], [Define the floating point number type])
-else
+elif test "${with_precision}" = "double"; then
   AC_MSG_NOTICE([using double precision])
   AC_DEFINE([FLOATING_PRECISION], [double], [Define the floating point number type])
+else
+  AC_MSG_FAILURE([unknown precision: ${with_precision}])
 fi
 
 dnl Fix the package version everywhere.
