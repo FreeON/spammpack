@@ -1,5 +1,3 @@
-SUBDIRS = sparsekit
-
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 lib_LTLIBRARIES = libspamm.la
