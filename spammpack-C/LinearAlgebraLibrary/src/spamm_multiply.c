@@ -225,12 +225,12 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         multiply_stream_element->C_block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*(*C_node)->M_block*(*C_node)->N_block);
 
         /* Set new C dense block to zero. */
-        for (i = 0; i < (*C_node)->M_block; i++) {
-          for (j = 0; j < (*C_node)->N_block; j++)
-          {
-            multiply_stream_element->C_block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] = 0.0;
-          }
-        }
+        //for (i = 0; i < (*C_node)->M_block; i++) {
+        //  for (j = 0; j < (*C_node)->N_block; j++)
+        //  {
+        //    multiply_stream_element->C_block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] = 0.0;
+        //  }
+        //}
 
         spamm_ll_append(multiply_stream_element, multiply_stream);
         break;
@@ -475,9 +475,10 @@ spamm_multiply_stream (const unsigned int cache_length, const struct spamm_ll_t 
         nodedata->alpha, nodedata->A_node->device_pointer, nodedata->A_node->M_block, nodedata->B_node->device_pointer, nodedata->B_node->M_block,
         nodedata->beta, nodedata->C_node->device_pointer, nodedata->C_node->M_block);
 #elif defined(DGEMM)
-    DGEMM("N", "N", &(nodedata->A_node->M_block), &(nodedata->B_node->N_block), &(nodedata->A_node->N_block),
-        &(nodedata->alpha), nodedata->A_node->block_dense, &(nodedata->A_node->M_block), nodedata->B_node->block_dense, &(nodedata->B_node->M_block),
-        &(nodedata->beta), nodedata->C_node->block_dense, &(nodedata->C_node->M_block));
+    DGEMM("N", "N", &(nodedata->M_A), &(nodedata->N_B), &(nodedata->N_A),
+        &(nodedata->alpha), nodedata->A_block_dense, &(nodedata->M_A),
+        nodedata->B_block_dense, &(nodedata->M_B), &(nodedata->beta),
+        nodedata->C_block_dense, &(nodedata->M_C));
 #else
     spamm_sgemm_trivial('N', 'N', nodedata->M_A, nodedata->N_B, nodedata->N_A,
         nodedata->alpha, nodedata->A_block_dense, nodedata->M_A,
@@ -543,16 +544,16 @@ spamm_resum_stream (const unsigned int cache_length, struct spamm_ll_t *multiply
   struct timeval start, stop;
 
   /* Sort stream on C block index. */
-  LOG_INFO("sorting multiply stream in C (has %u elements)\n", multiply_stream->number_elements);
+  LOG_INFO("resum: sorting multiply stream in C (has %u elements)\n", multiply_stream->number_elements);
   //spamm_print_multiply_stream(multiply_stream);
   gettimeofday(&start, NULL);
   spamm_ll_sort_data(spamm_compare_multiply_stream_element, spamm_swap_multiply_stream, multiply_stream);
   gettimeofday(&stop, NULL);
-  LOG_INFO("sorting multiply stream: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+  LOG_INFO("resum: sorting multiply stream: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
   //spamm_print_multiply_stream(multiply_stream);
 
   /* Find duplicate blocks in C and sum them. */
-  LOG2_INFO("adding duplicate blocks in C\n");
+  LOG2_INFO("resum: adding duplicate blocks in C\n");
   iterator = spamm_ll_iterator_new(multiply_stream);
   for (stream_node = spamm_ll_iterator_first(iterator); stream_node != NULL; stream_node = spamm_ll_iterator_next(iterator))
   {
@@ -597,7 +598,7 @@ spamm_add_stream (const unsigned int cache_length, struct spamm_ll_t *multiply_s
   struct spamm_ll_node_t *stream_node, *next_stream_node;
   struct spamm_multiply_stream_element_t *stream_element, *next_stream_element;
 
-  LOG_INFO("adding multiply stream to C (has %u elements)\n", multiply_stream->number_elements);
+  LOG_INFO("add: adding multiply stream to C (has %u elements)\n", multiply_stream->number_elements);
   iterator = spamm_ll_iterator_new(multiply_stream);
   for (stream_node = spamm_ll_iterator_first(iterator); stream_node != NULL; stream_node = spamm_ll_iterator_next(iterator))
   {
@@ -631,6 +632,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     const struct spamm_t *B, const floating_point_t beta, struct spamm_t *C)
 {
   struct timeval start, stop;
+  struct timeval total_start, total_stop;
   struct spamm_ll_t *multiply_stream;
 
   assert(A != NULL);
@@ -724,6 +726,8 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
 
     case cache:
       LOG2_INFO("using cache algorithm\n");
+
+      gettimeofday(&total_start, NULL);
       multiply_stream = spamm_ll_new();
 
       gettimeofday(&start, NULL);
@@ -747,6 +751,9 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       LOG_INFO("add stream: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
       spamm_ll_delete(free, &multiply_stream);
+
+      gettimeofday(&total_stop, NULL);
+      LOG_INFO("total time for multiply: %f s\n", (total_stop.tv_sec-total_start.tv_sec)+(total_stop.tv_usec-total_start.tv_usec)/(double) 1e6);
       break;
 
     default:

@@ -45,6 +45,7 @@ main (int argc, char **argv)
   int print_matrix = 0;
   int use_kahan = 0;
   int verify_spamm = 0;
+  int use_spamm = 1;
 
   int linear_tier = -1;
   unsigned int chunksize = 100;
@@ -86,7 +87,7 @@ main (int argc, char **argv)
   /* For the Kahan summation algorithm. */
   floating_point_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:m:l:c:pkvn";
+  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:m:l:c:pkvsn";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "M", required_argument, NULL, 'M' },
@@ -106,6 +107,7 @@ main (int argc, char **argv)
     { "print", no_argument, NULL, 'p' },
     { "kahan", no_argument, NULL, 'k' },
     { "verify", no_argument, NULL, 'v' },
+    { "no-spamm", no_argument, NULL, 's' },
     { "no-random", no_argument, NULL, 'n' },
     { NULL, 0, NULL, 0 }
   };
@@ -141,6 +143,7 @@ main (int argc, char **argv)
         printf("--print                   Print the matrices\n");
         printf("--kahan                   Use Kahan summation algorithm\n");
         printf("--verify                  Verify SpAMM by multiplying dense matrices\n");
+        printf("--no-spamm                Run without any spamm operations\n");
         printf("--no-random               Fill matrices with linear index as opposed to random values\n");
         return result;
         break;
@@ -223,6 +226,10 @@ main (int argc, char **argv)
 
       case 'v':
         verify_spamm = 1;
+        break;
+
+      case 's':
+        use_spamm = 0;
         break;
 
       case 'n':
@@ -423,49 +430,50 @@ main (int argc, char **argv)
   LOG_INFO("C has %u nonzeros, avg. of %1.2f nonzeros per row, %1.2f%% sparsity:\n",
       number_nonzeros, number_nonzeros/(double) M, (1-number_nonzeros/(double) (M*N))*100);
 
-  /* Convert to SpAMM. */
-  spamm_new(M, K, M_block, K_block, 2, 2, 0.0, &A);
-  spamm_new(K, N, K_block, N_block, 2, 2, 0.0, &B);
-  spamm_new(M, N, M_block, N_block, 2, 2, 0.0, &C);
-
-  LOG2_INFO("converting dense to spamm... ");
-  gettimeofday(&start, NULL);
-  spamm_dense_to_spamm(M, K, M_block, K_block, 2, 2, 0.0, A_dense, &A);
-  spamm_dense_to_spamm(K, N, K_block, N_block, 2, 2, 0.0, B_dense, &B);
-  spamm_dense_to_spamm(M, N, M_block, N_block, 2, 2, 0.0, C_dense, &C);
-  gettimeofday(&stop, NULL);
-  printf("walltime %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
-
-  if (linear_tier >= 0)
+  if (use_spamm)
   {
-    spamm_tree_pack(linear_tier, chunksize, i_mask, &A);
-    spamm_tree_pack(linear_tier, chunksize, i_mask, &B);
-    spamm_tree_pack(linear_tier, chunksize, i_mask, &C);
-  }
+    /* Convert to SpAMM. */
+    spamm_new(M, K, M_block, K_block, 2, 2, 0.0, &A);
+    spamm_new(K, N, K_block, N_block, 2, 2, 0.0, &B);
+    spamm_new(M, N, M_block, N_block, 2, 2, 0.0, &C);
 
-  spamm_tree_stats(&tree_stats, &A);
-  LOG_INFO("A: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", A.M, A.N, A.M_padded, A.N_padded, A.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
-  spamm_tree_stats(&tree_stats, &B);
-  LOG_INFO("B: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", B.M, B.N, B.M_padded, B.N_padded, B.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
-  spamm_tree_stats(&tree_stats, &C);
-  LOG_INFO("C: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", C.M, C.N, C.M_padded, C.N_padded, C.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+    LOG2_INFO("converting dense to spamm... ");
+    gettimeofday(&start, NULL);
+    spamm_dense_to_spamm(M, K, M_block, K_block, 2, 2, 0.0, A_dense, &A);
+    spamm_dense_to_spamm(K, N, K_block, N_block, 2, 2, 0.0, B_dense, &B);
+    spamm_dense_to_spamm(M, N, M_block, N_block, 2, 2, 0.0, C_dense, &C);
+    gettimeofday(&stop, NULL);
+    printf("walltime %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-  if (print_matrix)
-  {
-    printf("A:\n");
-    spamm_print_spamm(&A);
-    printf("B:\n");
-    spamm_print_spamm(&B);
-    printf("C:\n");
-    spamm_print_spamm(&C);
+    if (linear_tier >= 0)
+    {
+      spamm_tree_pack(linear_tier, chunksize, i_mask, &A);
+      spamm_tree_pack(linear_tier, chunksize, i_mask, &B);
+      spamm_tree_pack(linear_tier, chunksize, i_mask, &C);
+    }
+
+    spamm_tree_stats(&tree_stats, &A);
+    LOG_INFO("A: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", A.M, A.N, A.M_padded, A.N_padded, A.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+    spamm_tree_stats(&tree_stats, &B);
+    LOG_INFO("B: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", B.M, B.N, B.M_padded, B.N_padded, B.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+    spamm_tree_stats(&tree_stats, &C);
+    LOG_INFO("C: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", C.M, C.N, C.M_padded, C.N_padded, C.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+
+    if (print_matrix)
+    {
+      printf("A:\n");
+      spamm_print_spamm(&A);
+      printf("B:\n");
+      spamm_print_spamm(&B);
+      printf("C:\n");
+      spamm_print_spamm(&C);
+    }
   }
 
   if (verify_spamm)
   {
 #if defined(DGEMM)
     LOG2_INFO("multiplying matrix with BLAS to get reference product... ");
-    alpha = 1.0;
-    beta = 0.0;
     gettimeofday(&start, NULL);
     getrusage(RUSAGE_SELF, &rusage_start);
     DGEMM("N", "N", &M, &N, &K, &alpha, A_dense, &M, B_dense, &K, &beta, C_dense, &M);
@@ -547,25 +555,28 @@ main (int argc, char **argv)
     }
   }
 
-  LOG2_INFO("multiplying matrix with spamm\n");
-  gettimeofday(&start, NULL);
-  getrusage(RUSAGE_SELF, &rusage_start);
-  spamm_multiply(mul_type, alpha, &A, &B, beta, &C);
-  getrusage(RUSAGE_SELF, &rusage_stop);
-  gettimeofday(&stop, NULL);
-  walltime_spamm = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
-  usertime_spamm = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-  systime_spamm = (rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6;
-  LOG_INFO("product has %u nonzero elements\n", spamm_number_nonzero(&C));
-  LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s\n", walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm);
-
-  if (print_matrix)
+  if (use_spamm)
   {
-    printf("result C:\n");
-    spamm_print_spamm(&C);
+    LOG2_INFO("multiplying matrix with spamm\n");
+    gettimeofday(&start, NULL);
+    getrusage(RUSAGE_SELF, &rusage_start);
+    spamm_multiply(mul_type, alpha, &A, &B, beta, &C);
+    getrusage(RUSAGE_SELF, &rusage_stop);
+    gettimeofday(&stop, NULL);
+    walltime_spamm = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
+    usertime_spamm = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
+    systime_spamm = (rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6;
+    LOG_INFO("product has %u nonzero elements\n", spamm_number_nonzero(&C));
+    LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s\n", walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm);
+
+    if (print_matrix)
+    {
+      printf("result C:\n");
+      spamm_print_spamm(&C);
+    }
   }
 
-  if (verify_spamm)
+  if (verify_spamm && use_spamm)
   {
     /* Print out some exciting results. */
     LOG_INFO("ratio between SpAMM and BLAS: SpAMM = %f x BLAS\n", walltime_spamm/walltime_blas);
