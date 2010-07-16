@@ -47,6 +47,10 @@ main (int argc, char **argv)
   int verify_spamm = 0;
   int use_spamm = 1;
 
+  unsigned int repeat;
+  unsigned int repeat_counter_blas = 1;
+  unsigned int repeat_counter_spamm = 1;
+
   int linear_tier = -1;
   unsigned int chunksize = 100;
 
@@ -69,6 +73,7 @@ main (int argc, char **argv)
   double walltime_blas, walltime_spamm;
   double usertime_blas, usertime_spamm;
   double systime_blas, systime_spamm;
+  double flops_blas, flops_spamm;
 
   floating_point_t *A_dense;
   floating_point_t *B_dense;
@@ -87,7 +92,7 @@ main (int argc, char **argv)
   /* For the Kahan summation algorithm. */
   floating_point_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:m:l:c:pkvsn";
+  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:m:l:c:pkvsn4:5:";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "M", required_argument, NULL, 'M' },
@@ -109,6 +114,8 @@ main (int argc, char **argv)
     { "verify", no_argument, NULL, 'v' },
     { "no-spamm", no_argument, NULL, 's' },
     { "no-random", no_argument, NULL, 'n' },
+    { "repeat-blas", required_argument, NULL, '4' },
+    { "repeat-spamm", required_argument, NULL, '5' },
     { NULL, 0, NULL, 0 }
   };
   int longindex;
@@ -145,6 +152,8 @@ main (int argc, char **argv)
         printf("--verify                  Verify SpAMM by multiplying dense matrices\n");
         printf("--no-spamm                Run without any spamm operations\n");
         printf("--no-random               Fill matrices with linear index as opposed to random values\n");
+        printf("--repeat-blas N           Repeat the dense matrix product N times\n");
+        printf("--repeat-spamm N          Repeat the spamm matrix product N times\n");
         return result;
         break;
 
@@ -236,6 +245,14 @@ main (int argc, char **argv)
         random_elements = 0;
         break;
 
+      case '4':
+        repeat_counter_blas = strtol(optarg, NULL, 10);
+        break;
+
+      case '5':
+        repeat_counter_spamm = strtol(optarg, NULL, 10);
+        break;
+
       default:
         LOG2_FATAL("unknown command line option\n");
         return -1;
@@ -249,6 +266,16 @@ main (int argc, char **argv)
 
   LOG_INFO("matrix mode: %s\n", matrix_type_name[matrix_type]);
   LOG_INFO("alpha = %f, beta = %f\n", alpha, beta);
+
+  if (use_spamm)
+  {
+    LOG_INFO("running spamm multiply %u times\n", repeat_counter_spamm);
+  }
+
+  if (verify_spamm)
+  {
+    LOG_INFO("running dense multiply %u times\n", repeat_counter_blas);
+  }
 
   if (linear_tier >= 0)
   {
@@ -476,13 +503,24 @@ main (int argc, char **argv)
     LOG2_INFO("multiplying matrix with BLAS to get reference product... ");
     gettimeofday(&start, NULL);
     getrusage(RUSAGE_SELF, &rusage_start);
-    DGEMM("N", "N", &M, &N, &K, &alpha, A_dense, &M, B_dense, &K, &beta, C_dense, &M);
+    for (repeat = 0; repeat < repeat_counter_blas; repeat++)
+    {
+      DGEMM("N", "N", &M, &N, &K, &alpha, A_dense, &M, B_dense, &K, &beta, C_dense, &M);
+    }
     getrusage(RUSAGE_SELF, &rusage_stop);
     gettimeofday(&stop, NULL);
-    walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
-    usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-    systime_blas = (rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6;
-    printf("walltime: %f s, user time: %f s + system time: %f s = %f s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas);
+    walltime_blas = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_blas;
+    usertime_blas = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_blas;
+    systime_blas = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_blas;
+    flops_blas = M*N*(2*K+1)/walltime_blas;
+    if (flops_blas < 1000*1000*1000)
+    {
+      printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Mflop/s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas, flops_blas/1000./1000.);
+    }
+    else
+    {
+      printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Gflop/s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas, flops_blas/1000./1000./1000.);
+    }
 #else
     /* Clear floating point exceptions. */
     //fpe_raised = fetestexcept(FE_ALL_EXCEPT);
@@ -498,53 +536,60 @@ main (int argc, char **argv)
     LOG2_INFO("multiplying matrix directly to get reference product... ");
     gettimeofday(&start, NULL);
     getrusage(RUSAGE_SELF, &rusage_start);
-    error_compensation_max = 0;
-    for (i = 0; i < M; i++) {
-      for (j = 0; j < N; j++) {
-        C_dense[spamm_dense_index(i, j, M, N)] *= beta;
+    for (repeat = 0; repeat < repeat_counter_blas; repeat++)
+    {
+      error_compensation_max = 0;
+      for (i = 0; i < M; i++) {
+        for (j = 0; j < N; j++) {
+          C_dense[spamm_dense_index(i, j, M, N)] *= beta;
 
-        if (use_kahan)
-        {
-          sum = C_dense[spamm_dense_index(i, j, M, N)];
-          error_compensation = 0;
-        }
-
-        for (k = 0; k < K; k++)
-        {
           if (use_kahan)
           {
-            C_dense[spamm_dense_index(i, j, M, N)] += rand()*rand();
-            Kahan_y = alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)] - error_compensation;
-            Kahan_t = sum + Kahan_y;
-            error_compensation = (Kahan_t - sum) - Kahan_y;
-            if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
-            sum = Kahan_t;
-
-            /* Check for floating point exceptions. */
-            //feclearexcept(FE_ALL_EXCEPT);
+            sum = C_dense[spamm_dense_index(i, j, M, N)];
+            error_compensation = 0;
           }
 
-          else
+          for (k = 0; k < K; k++)
           {
-            C_dense[spamm_dense_index(i, j, M, N)] += alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)];
-          }
-        }
+            if (use_kahan)
+            {
+              C_dense[spamm_dense_index(i, j, M, N)] += rand()*rand();
+              Kahan_y = alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)] - error_compensation;
+              Kahan_t = sum + Kahan_y;
+              error_compensation = (Kahan_t - sum) - Kahan_y;
+              if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
+              sum = Kahan_t;
 
-        if (use_kahan)
-        {
-          C_dense[spamm_dense_index(i, j, M, N)] = sum;
+              /* Check for floating point exceptions. */
+              //feclearexcept(FE_ALL_EXCEPT);
+            }
+
+            else
+            {
+              C_dense[spamm_dense_index(i, j, M, N)] += alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)];
+            }
+          }
+
+          if (use_kahan)
+          {
+            C_dense[spamm_dense_index(i, j, M, N)] = sum;
+          }
         }
       }
     }
     getrusage(RUSAGE_SELF, &rusage_stop);
     gettimeofday(&stop, NULL);
-    walltime_blas = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
-    usertime_blas = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-    systime_blas = (rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6;
-    printf("walltime: %f s, user time: %f s + system time: %f s = %f s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas);
-    if (use_kahan)
+    walltime_blas = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_blas;
+    usertime_blas = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_blas;
+    systime_blas = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_blas;
+    flops_blas = M*N*(2*K+1)/walltime_blas;
+    if (flops_blas < 1000*1000*1000)
     {
-      LOG_INFO("max error_compensation = %f\n", error_compensation_max);
+      printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Mflop/s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas, flops_blas/1000./1000.);
+    }
+    else
+    {
+      printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Gflop/s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas, flops_blas/1000./1000./1000.);
     }
 #endif
 
@@ -560,14 +605,27 @@ main (int argc, char **argv)
     LOG2_INFO("multiplying matrix with spamm\n");
     gettimeofday(&start, NULL);
     getrusage(RUSAGE_SELF, &rusage_start);
-    spamm_multiply(mul_type, alpha, &A, &B, beta, &C);
+    for (repeat = 0; repeat < repeat_counter_spamm; repeat++)
+    {
+      spamm_multiply(mul_type, alpha, &A, &B, beta, &C);
+    }
     getrusage(RUSAGE_SELF, &rusage_stop);
     gettimeofday(&stop, NULL);
-    walltime_spamm = (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6;
-    usertime_spamm = (rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6;
-    systime_spamm = (rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6;
+    walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm;
+    usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
+    systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
+    flops_spamm = M*N*(2*K+1)/walltime_spamm;
+    if (flops_spamm < 1000*1000*1000)
+    {
+      LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
+          walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000.);
+    }
+    else
+    {
+      LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Gflop/s\n",
+          walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000./1000.);
+    }
     LOG_INFO("product has %u nonzero elements\n", spamm_number_nonzero(&C));
-    LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s\n", walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm);
 
     if (print_matrix)
     {

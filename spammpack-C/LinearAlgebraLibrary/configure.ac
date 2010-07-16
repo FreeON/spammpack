@@ -13,6 +13,22 @@ AC_PROG_LIBTOOL
 dnl Check for assert macros.
 AC_HEADER_ASSERT
 
+dnl Define precision.
+AC_ARG_WITH([precision],
+            [AS_HELP_STRING([--with-precision], [set the precision of floating
+             point numbers to single or double [default=single]])],
+             [], [with_precision="single"])
+
+if test "${with_precision}" = "single"; then
+  AC_MSG_NOTICE([using single precision])
+  AC_DEFINE([FLOATING_PRECISION], [float], [Define the floating point number type])
+elif test "${with_precision}" = "double"; then
+  AC_MSG_NOTICE([using double precision])
+  AC_DEFINE([FLOATING_PRECISION], [double], [Define the floating point number type])
+else
+  AC_MSG_FAILURE([unknown precision: ${with_precision}])
+fi
+
 dnl Check for math library.
 AC_CHECK_HEADERS([math.h])
 AC_CHECK_LIB([m], [ceil],
@@ -28,34 +44,41 @@ AC_ARG_ENABLE([blas], [AS_HELP_STRING([--enable-blas], [enables the use of BLAS 
 if test "${enable_blas}" = "yes"; then
   AC_MSG_RESULT([yes])
 
-  #AC_CHECK_LIB([blas], [dgemm],
-  #             [LIBS="-lblas ${LIBS}"
-  #              AC_DEFINE([DGEMM], [dgemm], [How many underscores are in dgemm()?])],
-  #              [], [])
-  #AC_CHECK_LIB([blas], [dgemm_],
-  #             [LIBS="-lblas ${LIBS}"
-  #              AC_DEFINE([DGEMM], [dgemm_], [How many underscores are in dgemm()?])],
-  #              [], [])
-  #AC_CHECK_LIB([blas], [dgemm__],
-  #             [LIBS="-lblas ${LIBS}"
-  #              AC_DEFINE([DGEMM], [dgemm__], [How many underscores are in dgemm()?])],
-  #              [], [])
-
-  AC_CHECK_LIB([blas], [sgemm],
-               [LIBS="-lblas ${LIBS}"
-                AC_DEFINE([DGEMM], [sgemm], [How many underscores are in sgemm()?])
-                AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
-                [], [])
-  AC_CHECK_LIB([blas], [sgemm_],
-               [LIBS="-lblas ${LIBS}"
-                AC_DEFINE([DGEMM], [sgemm_], [How many underscores are in sgemm()?])
-                AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
-                [], [])
-  AC_CHECK_LIB([blas], [sgemm__],
-               [LIBS="-lblas ${LIBS}"
-                AC_DEFINE([DGEMM], [sgemm__], [How many underscores are in sgemm()?])
-                AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
-                [], [])
+  if test "${with_precision}" = "double"; then
+    AC_CHECK_LIB([blas], [dgemm],
+                 [LIBS="-lblas ${LIBS}"
+                  AC_DEFINE([DGEMM], [dgemm], [How many underscores are in dgemm()?])
+                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  [], [])
+    AC_CHECK_LIB([blas], [dgemm_],
+                 [LIBS="-lblas ${LIBS}"
+                  AC_DEFINE([DGEMM], [dgemm_], [How many underscores are in dgemm()?])
+                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  [], [])
+    AC_CHECK_LIB([blas], [dgemm__],
+                 [LIBS="-lblas ${LIBS}"
+                  AC_DEFINE([DGEMM], [dgemm__], [How many underscores are in dgemm()?])
+                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  [], [])
+  elif test "${with_precision}" = "single"; then
+    AC_CHECK_LIB([blas], [sgemm],
+                 [LIBS="-lblas ${LIBS}"
+                  AC_DEFINE([DGEMM], [sgemm], [How many underscores are in sgemm()?])
+                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  [], [])
+    AC_CHECK_LIB([blas], [sgemm_],
+                 [LIBS="-lblas ${LIBS}"
+                  AC_DEFINE([DGEMM], [sgemm_], [How many underscores are in sgemm()?])
+                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  [], [])
+    AC_CHECK_LIB([blas], [sgemm__],
+                 [LIBS="-lblas ${LIBS}"
+                  AC_DEFINE([DGEMM], [sgemm__], [How many underscores are in sgemm()?])
+                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  [], [])
+  else
+    AC_MSG_FAILURE([unknown precision])
+  fi
 else
   AC_MSG_RESULT([no])
 fi
@@ -109,22 +132,6 @@ AM_CONDITIONAL([HAVE_CUDA], [test "${have_cuda}" = "yes"])
 
 dnl Check for stdarg.h.
 AC_CHECK_HEADERS([stdarg.h])
-
-dnl Define precision.
-AC_ARG_WITH([precision],
-            [AS_HELP_STRING([--with-precision], [set the precision of floating
-             point numbers to single or double [default=single]])],
-             [], [with_precision="single"])
-
-if test "${with_precision}" = "single"; then
-  AC_MSG_NOTICE([using single precision])
-  AC_DEFINE([FLOATING_PRECISION], [float], [Define the floating point number type])
-elif test "${with_precision}" = "double"; then
-  AC_MSG_NOTICE([using double precision])
-  AC_DEFINE([FLOATING_PRECISION], [double], [Define the floating point number type])
-else
-  AC_MSG_FAILURE([unknown precision: ${with_precision}])
-fi
 
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
