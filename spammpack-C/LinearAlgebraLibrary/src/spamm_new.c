@@ -20,6 +20,8 @@ spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int M_child, const unsigned int N_child,
     const floating_point_t threshold, struct spamm_t *A)
 {
+  double max_memory = 0;
+
   assert(A != NULL);
 
   if (M <= 0)
@@ -94,4 +96,27 @@ spamm_new (const unsigned int M, const unsigned int N,
   A->number_nonzero_blocks = 0;
 
   A->root = NULL;
+
+  max_memory = (double) sizeof(struct spamm_t)
+    + sizeof(struct spamm_node_t)*pow(A->M_child*A->N_child, (double) A->tree_depth)
+    + A->M_padded*A->N_padded*sizeof(floating_point_t);
+  if (max_memory < 1024)
+  {
+    LOG_INFO("max memory for this matrix: %1.2f bytes\n", max_memory);
+  }
+
+  else if (max_memory < 1024*1024)
+  {
+    LOG_INFO("max memory for this matrix: %1.2f kB\n", max_memory/1024.);
+  }
+
+  else if (max_memory < 1024*1024*1024)
+  {
+    LOG_INFO("max memory for this matrix: %1.2f MB\n", max_memory/1024./1024.);
+  }
+
+  else
+  {
+    LOG_INFO("max memory for this matrix: %1.2f GB\n", max_memory/1024./1024./1024.);
+  }
 }

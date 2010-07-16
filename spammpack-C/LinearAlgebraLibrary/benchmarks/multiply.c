@@ -18,8 +18,8 @@ enum matrix_t
 const int number_matrix_types = 3;
 const char *matrix_type_name[] = { "dense", "diagonal", "column_row" };
 
-const int number_mul_types = 2;
-const char *mul_type_name[] = { "tree", "cache" };
+const int number_mul_types = 3;
+const char *mul_type_name[] = { "tree", "cache", "cache_redundant" };
 
 int
 main (int argc, char **argv)
@@ -137,7 +137,7 @@ main (int argc, char **argv)
         printf("{ -e | --thresh } eps     Set the threshold, i.e. no random number will be used below\n");
         printf("                          this threshold\n");
         printf("{ -t | --type } type      The calculation type (dense, diagonal, column_row)\n");
-        printf("{ -m | --multype } type   The multiplication algorithm (tree, cache)\n");
+        printf("{ -m | --multype } type   The multiplication algorithm (tree, cache, cache_redundant)\n");
         printf("{ -l | --linear } n       Convert to linear trees at tier n\n");
         printf("{ -c | --chunk } s        Use chunks of s bytes for linear tree\n");
         printf("--print                   Print the matrices\n");

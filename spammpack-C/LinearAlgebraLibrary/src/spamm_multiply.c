@@ -1,6 +1,7 @@
 #include "spamm.h"
 #include "config.h"
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <sys/time.h>
 
@@ -203,6 +204,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         break;
 
       case cache:
+      case cache_redundant:
         /* Append this triple to the multiply stream. */
         multiply_stream_element = (struct spamm_multiply_stream_element_t*) malloc(sizeof(struct spamm_multiply_stream_element_t));
         multiply_stream_element->alpha = alpha;
@@ -222,15 +224,15 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         multiply_stream_element->A_block_dense = A_node->block_dense;
         multiply_stream_element->B_block_dense = B_node->block_dense;
         multiply_stream_element->C_node = *C_node;
-        multiply_stream_element->C_block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*(*C_node)->M_block*(*C_node)->N_block);
+        if (algorithm == cache_redundant)
+        {
+          multiply_stream_element->C_block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*(*C_node)->M_block*(*C_node)->N_block);
+        }
 
-        /* Set new C dense block to zero. */
-        //for (i = 0; i < (*C_node)->M_block; i++) {
-        //  for (j = 0; j < (*C_node)->N_block; j++)
-        //  {
-        //    multiply_stream_element->C_block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] = 0.0;
-        //  }
-        //}
+        else
+        {
+          multiply_stream_element->C_block_dense = (*C_node)->block_dense;
+        }
 
         spamm_ll_append(multiply_stream_element, multiply_stream);
         break;
@@ -635,6 +637,8 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
   struct timeval total_start, total_stop;
   struct spamm_ll_t *multiply_stream;
 
+  double max_memory;
+
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
@@ -726,6 +730,30 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
 
     case cache:
       LOG2_INFO("using cache algorithm\n");
+    case cache_redundant:
+      LOG2_INFO("using cache (redundant) algorithm\n");
+
+      max_memory = pow(C->M_child, C->tree_depth)*pow(C->N_child, C->tree_depth)*pow(A->N_child, A->tree_depth)
+        *(sizeof(struct spamm_multiply_stream_element_t)+C->M_block*C->N_block*sizeof(floating_point_t));
+      if (max_memory < 1024)
+      {
+        LOG_INFO("max memory usage for multiply stream: %1.2f bytes\n", max_memory);
+      }
+
+      else if (max_memory < 1024*1024)
+      {
+        LOG_INFO("max memory usage for multiply stream: %1.2f kB\n", max_memory/1024.);
+      }
+
+      else if (max_memory < 1024*1024*1024)
+      {
+        LOG_INFO("max memory usage for multiply stream: %1.2f MB\n", max_memory/1024./1024.);
+      }
+
+      else
+      {
+        LOG_INFO("max memory usage for multiply stream: %1.2f GB\n", max_memory/1024./1024./1024.);
+      }
 
       gettimeofday(&total_start, NULL);
       multiply_stream = spamm_ll_new();
@@ -740,17 +768,20 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       gettimeofday(&stop, NULL);
       LOG_INFO("stream multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-      gettimeofday(&start, NULL);
-      spamm_resum_stream(multiply_stream->number_elements, multiply_stream);
-      gettimeofday(&stop, NULL);
-      LOG_INFO("resum stream: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+      //gettimeofday(&start, NULL);
+      //spamm_resum_stream(multiply_stream->number_elements, multiply_stream);
+      //gettimeofday(&stop, NULL);
+      //LOG_INFO("resum stream: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
-      gettimeofday(&start, NULL);
-      spamm_add_stream(multiply_stream->number_elements, multiply_stream);
-      gettimeofday(&stop, NULL);
-      LOG_INFO("add stream: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+      if (algorithm == cache_redundant)
+      {
+        gettimeofday(&start, NULL);
+        spamm_add_stream(multiply_stream->number_elements, multiply_stream);
+        gettimeofday(&stop, NULL);
+        LOG_INFO("add stream: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
+      }
 
-      spamm_ll_delete(free, &multiply_stream);
+      spamm_ll_delete(spamm_delete_multiply_stream_element, &multiply_stream);
 
       gettimeofday(&total_stop, NULL);
       LOG_INFO("total time for multiply: %f s\n", (total_stop.tv_sec-total_start.tv_sec)+(total_stop.tv_usec-total_start.tv_usec)/(double) 1e6);
