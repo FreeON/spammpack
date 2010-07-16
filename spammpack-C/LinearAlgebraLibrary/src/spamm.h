@@ -205,7 +205,12 @@ enum spamm_multiply_algorithm_t
   tree,
 
   /** Generate cached multiply stream. */
-  cache
+  cache,
+
+  /** Generate cached multiply stream with redundant copies of C matrix
+   * blocks.
+   */
+  cache_redundant
 };
 
 /** The mask to apply to the linear matrix block index.
@@ -466,7 +471,7 @@ struct spamm_multiply_stream_element_t
   /** Pointer to node of matrix C. */
   struct spamm_node_t *C_node;
 
-  /** Pointer to dense matrix block of C. */
+  /** Pointer to (possibly redundant) dense matrix block of C. */
   floating_point_t *C_block_dense;
 };
 
@@ -486,6 +491,9 @@ spamm_compare_multiply_stream_element (const void *element1, const void *element
 
 void
 spamm_delete (struct spamm_t *A);
+
+void
+spamm_delete_multiply_stream_element (void *data);
 
 void
 spamm_delete_node (struct spamm_node_t **node);
