@@ -1,4 +1,5 @@
 #include <spamm.h>
+#include <sparsekit.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <math.h>
@@ -46,10 +47,12 @@ main (int argc, char **argv)
   int use_kahan = 0;
   int verify_spamm = 0;
   int use_spamm = 1;
+  int use_sparsekit = 0;
 
   unsigned int repeat;
   unsigned int repeat_counter_blas = 1;
   unsigned int repeat_counter_spamm = 1;
+  unsigned int repeat_counter_sparsekit = 1;
 
   int linear_tier = -1;
   unsigned int chunksize = 100;
@@ -70,14 +73,28 @@ main (int argc, char **argv)
 
   struct timeval start, stop;
   struct rusage rusage_start, rusage_stop;
-  double walltime_blas, walltime_spamm;
-  double usertime_blas, usertime_spamm;
-  double systime_blas, systime_spamm;
-  double flops_blas, flops_spamm;
+  double walltime_blas, walltime_spamm, walltime_sparsekit;
+  double usertime_blas, usertime_spamm, usertime_sparsekit;
+  double systime_blas, systime_spamm, systime_sparsekit;
+  double flops_blas, flops_spamm, flops_sparsekit;
 
   floating_point_t *A_dense;
   floating_point_t *B_dense;
   floating_point_t *C_dense;
+
+  floating_point_t *A_CSR;
+  int *A_i_CSR, *A_j_CSR;
+
+  floating_point_t *B_CSR;
+  int *B_i_CSR, *B_j_CSR;
+
+  floating_point_t *C_CSR;
+  int *C_i_CSR, *C_j_CSR;
+
+  int nonzero, C_nonzero;
+  int ierr, job;
+
+  int *CSR_work, *CSR_degree;
 
   struct spamm_t A, B, C;
 
@@ -92,7 +109,7 @@ main (int argc, char **argv)
   /* For the Kahan summation algorithm. */
   floating_point_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:m:l:c:pkvsn4:5:";
+  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:m:l:c:pkv6sn4:5:";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "M", required_argument, NULL, 'M' },
@@ -112,6 +129,7 @@ main (int argc, char **argv)
     { "print", no_argument, NULL, 'p' },
     { "kahan", no_argument, NULL, 'k' },
     { "verify", no_argument, NULL, 'v' },
+    { "sparsekit", no_argument, NULL, '6' },
     { "no-spamm", no_argument, NULL, 's' },
     { "no-random", no_argument, NULL, 'n' },
     { "repeat-blas", required_argument, NULL, '4' },
@@ -150,6 +168,7 @@ main (int argc, char **argv)
         printf("--print                   Print the matrices\n");
         printf("--kahan                   Use Kahan summation algorithm\n");
         printf("--verify                  Verify SpAMM by multiplying dense matrices\n");
+        printf("--sparsekit               Multiply also with sparsekit\n");
         printf("--no-spamm                Run without any spamm operations\n");
         printf("--no-random               Fill matrices with linear index as opposed to random values\n");
         printf("--repeat-blas N           Repeat the dense matrix product N times\n");
@@ -235,6 +254,10 @@ main (int argc, char **argv)
 
       case 'v':
         verify_spamm = 1;
+        break;
+
+      case '6':
+        use_sparsekit = 1;
         break;
 
       case 's':
@@ -497,6 +520,33 @@ main (int argc, char **argv)
     }
   }
 
+  if (use_sparsekit && use_spamm)
+  {
+    LOG2_INFO("converting dense A to CSR\n");
+    A_CSR = (floating_point_t*) malloc(sizeof(floating_point_t)*spamm_number_nonzero(&A));
+    A_j_CSR = (int*) malloc(sizeof(int)*spamm_number_nonzero(&A));
+    A_i_CSR = (int*) malloc(sizeof(int)*A.M);
+    LOG_INFO("found %u nonzero elements\n", spamm_number_nonzero(&A));
+    nonzero = spamm_number_nonzero(&A);
+    dnscsr_single_(&A.M, &A.N, &nonzero, A_dense, &A.M, A_CSR, A_j_CSR, A_i_CSR, &ierr);
+
+    LOG2_INFO("converting dense B to CSR\n");
+    B_CSR = (floating_point_t*) malloc(sizeof(floating_point_t)*spamm_number_nonzero(&B));
+    B_j_CSR = (int*) malloc(sizeof(int)*spamm_number_nonzero(&B));
+    B_i_CSR = (int*) malloc(sizeof(int)*B.M);
+    LOG_INFO("found %u nonzero elements\n", spamm_number_nonzero(&B));
+    nonzero = spamm_number_nonzero(&B);
+    dnscsr_single_(&B.M, &B.N, &nonzero, B_dense, &B.M, B_CSR, B_j_CSR, B_i_CSR, &ierr);
+
+    LOG2_INFO("converting dense C to CSR\n");
+    C_CSR = (floating_point_t*) malloc(sizeof(floating_point_t)*spamm_number_nonzero(&C));
+    C_j_CSR = (int*) malloc(sizeof(int)*spamm_number_nonzero(&C));
+    C_i_CSR = (int*) malloc(sizeof(int)*C.M);
+    LOG_INFO("found %u nonzero elements\n", spamm_number_nonzero(&C));
+    nonzero = spamm_number_nonzero(&C);
+    dnscsr_single_(&C.M, &C.N, &nonzero, C_dense, &C.M, C_CSR, C_j_CSR, C_i_CSR, &ierr);
+  }
+
   if (verify_spamm)
   {
 #if defined(DGEMM)
@@ -512,7 +562,7 @@ main (int argc, char **argv)
     walltime_blas = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_blas;
     usertime_blas = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_blas;
     systime_blas = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_blas;
-    flops_blas = M*N*(2*K+1)/walltime_blas;
+    flops_blas = ((double) M)*((double) N)*(2.0*K+1.0)/walltime_blas;
     if (flops_blas < 1000*1000*1000)
     {
       printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Mflop/s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas, flops_blas/1000./1000.);
@@ -582,7 +632,7 @@ main (int argc, char **argv)
     walltime_blas = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_blas;
     usertime_blas = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_blas;
     systime_blas = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_blas;
-    flops_blas = M*N*(2*K+1)/walltime_blas;
+    flops_blas = ((double) M)*((double) N)*(2.0*K+1.0)/walltime_blas;
     if (flops_blas < 1000*1000*1000)
     {
       printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Mflop/s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas, flops_blas/1000./1000.);
@@ -600,6 +650,34 @@ main (int argc, char **argv)
     }
   }
 
+  if (use_sparsekit)
+  {
+    LOG2_INFO("multiplying matrix with sparsekit... ");
+    gettimeofday(&start, NULL);
+    CSR_degree = (int*) malloc(sizeof(int)*A.M);
+    CSR_work = (int*) malloc(sizeof(int)*A.N);
+    amubdg_(&A.M, &A.N, &A.N, A_j_CSR, A_i_CSR, A_j_CSR, A_i_CSR, CSR_degree, &C_nonzero, CSR_work);
+    printf("need %i nonzeros in product... ", C_nonzero);
+    C_CSR = (floating_point_t*) malloc(sizeof(floating_point_t)*C_nonzero);
+    C_j_CSR = (int*) malloc(sizeof(int)*C_nonzero);
+    C_i_CSR = (int*) malloc(sizeof(int)*A.M);
+    job = 1;
+    amub_single_(&A.M, &A.N, &job, A_CSR, A_j_CSR, A_i_CSR, A_CSR, A_j_CSR, A_i_CSR, C_CSR, C_j_CSR, C_i_CSR, &C_nonzero, CSR_work, &ierr);
+    gettimeofday(&stop, NULL);
+    walltime_sparsekit = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_sparsekit;
+    usertime_sparsekit = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_sparsekit;
+    systime_sparsekit = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_sparsekit;
+    flops_sparsekit = ((double) M)*((double) N)*(2.0*K+1.0)/walltime_sparsekit;
+    if (flops_sparsekit < 1000*1000*1000)
+    {
+      printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Mflop/s\n", walltime_sparsekit, usertime_sparsekit, systime_sparsekit, usertime_sparsekit+systime_sparsekit, flops_sparsekit/1000./1000.);
+    }
+    else
+    {
+      printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Gflop/s\n", walltime_sparsekit, usertime_sparsekit, systime_sparsekit, usertime_sparsekit+systime_sparsekit, flops_sparsekit/1000./1000./1000.);
+    }
+  }
+
   if (use_spamm)
   {
     LOG2_INFO("multiplying matrix with spamm\n");
@@ -614,7 +692,7 @@ main (int argc, char **argv)
     walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm;
     usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
     systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
-    flops_spamm = M*N*(2*K+1)/walltime_spamm;
+    flops_spamm = ((double) M)*((double) N)*(2.0*K+1.0)/walltime_spamm;
     if (flops_spamm < 1000*1000*1000)
     {
       LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",

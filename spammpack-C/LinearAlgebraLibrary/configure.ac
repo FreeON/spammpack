@@ -152,6 +152,7 @@ AC_CONFIG_FILES([
 Doxyfile
 Makefile
 benchmarks/Makefile
+figures/Makefile
 prototype/Makefile
 prototype/cublas/Makefile
 prototype/cuda_gemm_kernel/Makefile

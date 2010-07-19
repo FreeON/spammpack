@@ -13,7 +13,7 @@
  * memory, the SpAMM memory manager provides some basic functions. Details can
  * be found in spamm_mm.h.
  *
- * \section introduction Introduction
+ * \section spamm_mm_sec_introduction Introduction
  *
  * The SpAMM memory manager will allocate dynamic memory in chunks of a
  * certain size. The spamm_mm_allocate() API is just like malloc(). The
@@ -29,7 +29,7 @@
  * links them with the first one. The management of what chunk holds the data
  * is done by the memory manager.
  *
- * \section typical_usage Typical usage
+ * \section spamm_mm_sec_typical_usage Typical usage
  *
  * First, a new memory manager object has to be created with spamm_mm_new().
  * The chunksize has to be chosen. Currently the chunksize has to be larger

@@ -7,7 +7,21 @@
  * The public functions of this library are all declared in spamm.h. Useful
  * helper functions are documented in spamm_ll.h and spamm_mm.h.
  *
- * \section introduction Introduction
+ * The documentation is organized into the following chapters:
+ *
+ * - \subpage spamm_introduction "Introduction"
+ * - \subpage spamm_algorithm "Algorithm"
+ * - \subpage spamm_milestones "Future Milestones"
+ * - \subpage spamm_design_goals "SpAMM Design Goals"
+ * - \subpage spamm_performance "SpAMM Performance"
+ *
+ * \version @PACKAGE_VERSION_STRING@ (@LOCAL_VERSION@)
+ *
+ * \author Nicolas Bock <nicolasbock@gmail.com>
+ * \author Matt Challacombe <matt.challacombe@gmail.com>
+ */
+
+/** \page spamm_introduction SpAMM - Introduction
  *
  * A spamm_t matrix is defined as an \f$ N \f$-tree on the 2-dimensional
  * matrix elements. The matrix elements at the lowest level are stored in
@@ -29,7 +43,11 @@
  * is the depth of the tree. This means that the matrix tree is a quadtree for
  * \f$ M_{\mathrm{child}} = N_{\mathrm{child}} = 2 \f$.
  *
- * \section algorithm Algorithm
+ * More details can be found in the \ref spamm_algorithm "Algorithm" section
+ * of this manual.
+ */
+
+/** \page spamm_algorithm SpAMM - Algorithm
  *
  * The multiplication is divided into a symbolic part and a multiplication
  * part. The symbolic part constructs the matrix product convolution such that
@@ -46,12 +64,19 @@
  *  possible.
  * -# Sum: Sum redundant \f$ C_{ij} \f$ blocks to construct final \f$ C \f$
  *   matrix.
+ */
+
+/** \page spamm_milestones SpAMM - Milestones
  *
- * \section future_milestones Future Milestones
+ * This chapter summarizes achieved and planned future milestones.
+ *
+ * \section spamm_sec_future_milestones Future Milestones
  *
  * - Clean up spamm_multiply.
+ * - Benchmark for now with standard lapack (netlib) _not_ using SSE.
+ * - Check proper ordering of matrix elements and multiply.
  *
- * \section achieved_milestones Achieved Milestones
+ * \section spamm_sec_achieved_milestones Achieved Milestones
  *
  * - 2010-06-18: Implemented spamm_tree_pack(). Added test for this function.
  * - 2010-06-18: Implemented linear quadtree support in spamm_add().
@@ -60,9 +85,31 @@
  * - 2010-06-25: Added more testcases and organized them.
  * - 2010-07-02: Consolidated 3 benchmark testcase: dense, diagonal, and
  *   column_row. All are combined in the multiply benchmark.
+ */
+
+/** \page spamm_design_goals SpAMM Design Goals
  *
- * \version @PACKAGE_VERSION_STRING@ (@LOCAL_VERSION@)
+ * - Serial execution
+ *   - Use standard gemm kernel from BLAS (Goto)
+ *   - Use small self-made kernel: SpAMM kernel (for instance on 9x9 blocks
+ *     with Peano curve ordering)
+ * - SMP execution
+ *   - Use standard gemm kernel (Goto)
+ *   - Use SpAMM kernel
+ * - GPU execution
+ * - Combined execution with work queue. In this case we put the multiply
+ *   curve in a queue and allow for SMP and GPU execution. Chunks are
+ *   processed to involve all components.
  *
- * \author Nicolas Bock <nicolasbock@gmail.com>
- * \author Matt Challacombe <matt.challacombe@gmail.com>
+ * See also section \ref spamm_milestones "Milestones" for a detailed
+ * break-down of these goals.
+ */
+
+/** \page spamm_performance SpAMM Performance Results
+ *
+ * - How close can the stream multiply performance be pushed to match GotoBLAS
+ *   large N perfmance? If stream is slower, why? Understand better what Goto
+ *   does to make his multiply fast.
+ *
+ * \image latex GotoBLAS_on_Q8200.eps "The measured performance of GotoBLAS single precision sgemm() on Intel Core2 Q8200." width=\linewidth
  */
