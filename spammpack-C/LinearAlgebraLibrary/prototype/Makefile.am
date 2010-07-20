@@ -1,7 +1,13 @@
 if HAVE_CUDA
-cudadirs = cublas cuda_gemm_kernel kernel_comparison
+cudadirs = cublas cuda_gemm_kernel
 else
 cudadirs =
 endif
 
-SUBDIRS = $(cudadirs) linear_quadtree
+if HAVE_BLAS
+blasdirs = kernel_comparison
+else
+blasdirs =
+endif
+
+SUBDIRS = $(cudadirs) $(blasdirs) linear_quadtree Z_curve

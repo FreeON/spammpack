@@ -73,10 +73,21 @@ main (int argc, char **argv)
 
   struct timeval start, stop;
   struct rusage rusage_start, rusage_stop;
-  double walltime_blas, walltime_spamm, walltime_sparsekit;
-  double usertime_blas, usertime_spamm, usertime_sparsekit;
-  double systime_blas, systime_spamm, systime_sparsekit;
-  double flops_blas, flops_spamm, flops_sparsekit;
+
+  double walltime_blas;
+  double usertime_blas;
+  double systime_blas;
+  double flops_blas;
+
+  double walltime_spamm;
+  double usertime_spamm;
+  double systime_spamm;
+  double flops_spamm;
+
+  double walltime_sparsekit;
+  double usertime_sparsekit;
+  double systime_sparsekit;
+  double flops_sparsekit;
 
   floating_point_t *A_dense;
   floating_point_t *B_dense;
