@@ -47,32 +47,38 @@ if test "${enable_blas}" = "yes"; then
   if test "${with_precision}" = "double"; then
     AC_CHECK_LIB([blas], [dgemm],
                  [LIBS="-lblas ${LIBS}"
+                  have_blas="yes"
                   AC_DEFINE([DGEMM], [dgemm], [How many underscores are in dgemm()?])
                   AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
                   [], [])
     AC_CHECK_LIB([blas], [dgemm_],
                  [LIBS="-lblas ${LIBS}"
+                  have_blas="yes"
                   AC_DEFINE([DGEMM], [dgemm_], [How many underscores are in dgemm()?])
                   AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
                   [], [])
     AC_CHECK_LIB([blas], [dgemm__],
                  [LIBS="-lblas ${LIBS}"
+                  have_blas="yes"
                   AC_DEFINE([DGEMM], [dgemm__], [How many underscores are in dgemm()?])
                   AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
                   [], [])
   elif test "${with_precision}" = "single"; then
     AC_CHECK_LIB([blas], [sgemm],
                  [LIBS="-lblas ${LIBS}"
+                  have_blas="yes"
                   AC_DEFINE([DGEMM], [sgemm], [How many underscores are in sgemm()?])
                   AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
                   [], [])
     AC_CHECK_LIB([blas], [sgemm_],
                  [LIBS="-lblas ${LIBS}"
+                  have_blas="yes"
                   AC_DEFINE([DGEMM], [sgemm_], [How many underscores are in sgemm()?])
                   AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
                   [], [])
     AC_CHECK_LIB([blas], [sgemm__],
                  [LIBS="-lblas ${LIBS}"
+                  have_blas="yes"
                   AC_DEFINE([DGEMM], [sgemm__], [How many underscores are in sgemm()?])
                   AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
                   [], [])
@@ -92,10 +98,13 @@ AC_ARG_ENABLE([dummy-kernel], [AS_HELP_STRING([--enable-dummy-kernel],
 
 if test "${enable_dummy_kernel}" = "yes"; then
   AC_MSG_RESULT([yes])
+  have_blas="yes"
   AC_DEFINE([DGEMM], [spamm_sgemm_dummy], [The dummy matrix kernel])
 else
   AC_MSG_RESULT([no])
 fi
+
+AM_CONDITIONAL([HAVE_BLAS], [test "${have_blas}" = "yes"])
 
 dnl Check for location of cuda.
 AC_MSG_CHECKING([whether to enable cuda])
@@ -154,6 +163,7 @@ Makefile
 benchmarks/Makefile
 figures/Makefile
 prototype/Makefile
+prototype/Z_curve/Makefile
 prototype/cublas/Makefile
 prototype/cuda_gemm_kernel/Makefile
 prototype/kernel_comparison/Makefile
