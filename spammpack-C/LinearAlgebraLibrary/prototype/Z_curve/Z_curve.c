@@ -6,7 +6,7 @@
 #include <sys/resource.h>
 
 /* Fill matrix with random elements. */
-#define DEBUG_RANDOM_ELEMENTS
+//#define DEBUG_RANDOM_ELEMENTS
 
 /* Print matrix for debugging. */
 //#define DEBUG_PRINT_MATRIX
@@ -14,24 +14,44 @@
 /* Print a lot within the multiply function. */
 //#define DEBUG_PRINT
 
+/* Randomize stream. */
+//#define RANDOMIZE_STREAM
+
+/* The blocksize. */
+#define N_BLOCK 4
+
+unsigned int
+get_block_index (const unsigned i, const unsigned j)
+{
+  return i*N_BLOCK+j;
+}
+
 /* Convert the matrix indices i, j to a linear index for a NxN matrix. */
 unsigned int
 get_index (const unsigned int i, const unsigned int j, const unsigned int N)
 {
+  unsigned int i_block, j_block;
   unsigned int index = 0;
+
+  i_block = i/N_BLOCK;
+  j_block = j/N_BLOCK;
+
+#ifdef RANDOMIZE_STREAM
+  return N_BLOCK*(i_block*N+N_BLOCK*j_block)+get_block_index(i%N_BLOCK, j%N_BLOCK);
+#else
   unsigned int bit_i, bitmask, bitset;
 
   bitmask = 1;
   bitset = 1;
   for (bit_i = 0; bit_i < sizeof(unsigned int)*8; bit_i++)
   {
-    if (bitmask & j)
+    if (bitmask & j_block)
     {
       index |= bitset;
     }
     bitset <<= 1;
 
-    if (bitmask & i)
+    if (bitmask & i_block)
     {
       index |= bitset;
     }
@@ -40,7 +60,8 @@ get_index (const unsigned int i, const unsigned int j, const unsigned int N)
     bitmask <<= 1;
   }
 
-  return index;
+  return N_BLOCK*N_BLOCK*index+get_block_index(i%N_BLOCK, j%N_BLOCK);
+#endif
 }
 
 /* Print a dense matrix. */
@@ -66,7 +87,7 @@ print_matrix (const float *A, const unsigned int N)
 }
 
 void
-multiply (const float alpha,
+multiply_symbolic (const float alpha,
     const unsigned int N,
     unsigned int A_M_lower, unsigned int A_M_upper,
     unsigned int A_N_lower, unsigned int A_N_upper,
@@ -77,7 +98,9 @@ multiply (const float alpha,
     const float beta,
     unsigned int C_M_lower, unsigned int C_M_upper,
     unsigned int C_N_lower, unsigned int C_N_upper,
-    float *C)
+    float *C,
+    unsigned int *stream_index,
+    unsigned int *stream_A, unsigned int *stream_B, unsigned int *stream_C)
 {
   unsigned int i, j;
 
@@ -88,7 +111,7 @@ multiply (const float alpha,
       C_M_lower, C_M_upper, C_N_lower, C_N_upper);
 #endif
 
-  if (A_M_upper-A_M_lower == 1)
+  if (A_M_upper-A_M_lower == N_BLOCK)
   {
     /* We have reached the block-level. */
 #ifdef DEBUG_PRINT
@@ -103,7 +126,11 @@ multiply (const float alpha,
         get_index(A_M_lower, A_N_lower, N),
         get_index(B_M_lower, B_N_lower, N));
 #endif
-    C[get_index(C_M_lower, C_N_lower, N)] += alpha*A[get_index(A_M_lower, A_N_lower, N)]*B[get_index(B_M_lower, B_N_lower, N)];
+    //C[get_index(C_M_lower, C_N_lower, N)] += alpha*A[get_index(A_M_lower, A_N_lower, N)]*B[get_index(B_M_lower, B_N_lower, N)];
+    stream_A[*stream_index] = get_index(A_M_lower, A_N_lower, N);
+    stream_B[*stream_index] = get_index(B_M_lower, B_N_lower, N);
+    stream_C[*stream_index] = get_index(C_M_lower, C_N_lower, N);
+    *stream_index += 1;
   }
 
   else
@@ -112,7 +139,7 @@ multiply (const float alpha,
 #ifdef DEBUG_PRINT
     printf("1: ");
 #endif
-    multiply(alpha, N,
+    multiply_symbolic(alpha, N,
         A_M_lower+(A_M_upper-A_M_lower)/2*0, A_M_lower+(A_M_upper-A_M_lower)/2*1,
         A_N_lower+(A_N_upper-A_N_lower)/2*0, A_N_lower+(A_N_upper-A_N_lower)/2*1,
         A,
@@ -122,12 +149,13 @@ multiply (const float alpha,
         beta,
         C_M_lower+(C_M_upper-C_M_lower)/2*0, C_M_lower+(C_M_upper-C_M_lower)/2*1,
         C_N_lower+(C_N_upper-C_N_lower)/2*0, C_N_lower+(C_N_upper-C_N_lower)/2*1,
-        C);
+        C,
+        stream_index, stream_A, stream_B, stream_C);
 
 #ifdef DEBUG_PRINT
     printf("2: ");
 #endif
-    multiply(alpha, N,
+    multiply_symbolic(alpha, N,
         A_M_lower+(A_M_upper-A_M_lower)/2*0, A_M_lower+(A_M_upper-A_M_lower)/2*1,
         A_N_lower+(A_N_upper-A_N_lower)/2*1, A_N_lower+(A_N_upper-A_N_lower)/2*2,
         A,
@@ -137,12 +165,13 @@ multiply (const float alpha,
         beta,
         C_M_lower+(C_M_upper-C_M_lower)/2*0, C_M_lower+(C_M_upper-C_M_lower)/2*1,
         C_N_lower+(C_N_upper-C_N_lower)/2*0, C_N_lower+(C_N_upper-C_N_lower)/2*1,
-        C);
+        C,
+        stream_index, stream_A, stream_B, stream_C);
 
 #ifdef DEBUG_PRINT
     printf("3: ");
 #endif
-    multiply(alpha, N,
+    multiply_symbolic(alpha, N,
         A_M_lower+(A_M_upper-A_M_lower)/2*0, A_M_lower+(A_M_upper-A_M_lower)/2*1,
         A_N_lower+(A_N_upper-A_N_lower)/2*0, A_N_lower+(A_N_upper-A_N_lower)/2*1,
         A,
@@ -152,12 +181,13 @@ multiply (const float alpha,
         beta,
         C_M_lower+(C_M_upper-C_M_lower)/2*0, C_M_lower+(C_M_upper-C_M_lower)/2*1,
         C_N_lower+(C_N_upper-C_N_lower)/2*1, C_N_lower+(C_N_upper-C_N_lower)/2*2,
-        C);
+        C,
+        stream_index, stream_A, stream_B, stream_C);
 
 #ifdef DEBUG_PRINT
     printf("4: ");
 #endif
-    multiply(alpha, N,
+    multiply_symbolic(alpha, N,
         A_M_lower+(A_M_upper-A_M_lower)/2*0, A_M_lower+(A_M_upper-A_M_lower)/2*1,
         A_N_lower+(A_N_upper-A_N_lower)/2*1, A_N_lower+(A_N_upper-A_N_lower)/2*2,
         A,
@@ -167,12 +197,13 @@ multiply (const float alpha,
         beta,
         C_M_lower+(C_M_upper-C_M_lower)/2*0, C_M_lower+(C_M_upper-C_M_lower)/2*1,
         C_N_lower+(C_N_upper-C_N_lower)/2*1, C_N_lower+(C_N_upper-C_N_lower)/2*2,
-        C);
+        C,
+        stream_index, stream_A, stream_B, stream_C);
 
 #ifdef DEBUG_PRINT
     printf("5: ");
 #endif
-    multiply(alpha, N,
+    multiply_symbolic(alpha, N,
         A_M_lower+(A_M_upper-A_M_lower)/2*1, A_M_lower+(A_M_upper-A_M_lower)/2*2,
         A_N_lower+(A_N_upper-A_N_lower)/2*0, A_N_lower+(A_N_upper-A_N_lower)/2*1,
         A,
@@ -182,12 +213,13 @@ multiply (const float alpha,
         beta,
         C_M_lower+(C_M_upper-C_M_lower)/2*1, C_M_lower+(C_M_upper-C_M_lower)/2*2,
         C_N_lower+(C_N_upper-C_N_lower)/2*0, C_N_lower+(C_N_upper-C_N_lower)/2*1,
-        C);
+        C,
+        stream_index, stream_A, stream_B, stream_C);
 
 #ifdef DEBUG_PRINT
     printf("6: ");
 #endif
-    multiply(alpha, N,
+    multiply_symbolic(alpha, N,
         A_M_lower+(A_M_upper-A_M_lower)/2*1, A_M_lower+(A_M_upper-A_M_lower)/2*2,
         A_N_lower+(A_N_upper-A_N_lower)/2*1, A_N_lower+(A_N_upper-A_N_lower)/2*2,
         A,
@@ -197,12 +229,13 @@ multiply (const float alpha,
         beta,
         C_M_lower+(C_M_upper-C_M_lower)/2*1, C_M_lower+(C_M_upper-C_M_lower)/2*2,
         C_N_lower+(C_N_upper-C_N_lower)/2*0, C_N_lower+(C_N_upper-C_N_lower)/2*1,
-        C);
+        C,
+        stream_index, stream_A, stream_B, stream_C);
 
 #ifdef DEBUG_PRINT
     printf("7: ");
 #endif
-    multiply(alpha, N,
+    multiply_symbolic(alpha, N,
         A_M_lower+(A_M_upper-A_M_lower)/2*1, A_M_lower+(A_M_upper-A_M_lower)/2*2,
         A_N_lower+(A_N_upper-A_N_lower)/2*0, A_N_lower+(A_N_upper-A_N_lower)/2*1,
         A,
@@ -212,12 +245,13 @@ multiply (const float alpha,
         beta,
         C_M_lower+(C_M_upper-C_M_lower)/2*1, C_M_lower+(C_M_upper-C_M_lower)/2*2,
         C_N_lower+(C_N_upper-C_N_lower)/2*1, C_N_lower+(C_N_upper-C_N_lower)/2*2,
-        C);
+        C,
+        stream_index, stream_A, stream_B, stream_C);
 
 #ifdef DEBUG_PRINT
     printf("8: ");
 #endif
-    multiply(alpha, N,
+    multiply_symbolic(alpha, N,
         A_M_lower+(A_M_upper-A_M_lower)/2*1, A_M_lower+(A_M_upper-A_M_lower)/2*2,
         A_N_lower+(A_N_upper-A_N_lower)/2*1, A_N_lower+(A_N_upper-A_N_lower)/2*2,
         A,
@@ -227,18 +261,54 @@ multiply (const float alpha,
         beta,
         C_M_lower+(C_M_upper-C_M_lower)/2*1, C_M_lower+(C_M_upper-C_M_lower)/2*2,
         C_N_lower+(C_N_upper-C_N_lower)/2*1, C_N_lower+(C_N_upper-C_N_lower)/2*2,
-        C);
+        C,
+        stream_index, stream_A, stream_B, stream_C);
   }
+}
+
+void
+multiply_stream (const float alpha, const unsigned int stream_length,
+    unsigned int *stream_A, unsigned int *stream_B, unsigned int *stream_C,
+    const float *A, const float *B, float *C)
+{
+  unsigned int i, i_block, j_block, k_block;
+  float x, y, z;
+
+  //x = 1.5;
+  //y = 2.5;
+  //z = 0;
+
+  for (i = 0; i < stream_length; i++) {
+    for (i_block = 0; i_block < N_BLOCK; i_block++) {
+      for (j_block = 0; j_block < N_BLOCK; j_block++) {
+        for (k_block = 0; k_block < N_BLOCK; k_block++)
+        {
+          //printf("multiplying C[%i] += alpha*A[%i]*B[%i]\n", stream_C[i], stream_A[i], stream_B[i]);
+          //C[stream_C[i]+get_block_index(i_block, j_block)] += alpha*A[stream_A[i]+get_block_index(i_block, k_block)]*B[stream_B[i]+get_block_index(k_block, j_block)];
+          C[stream_C[i]+i_block*N_BLOCK+j_block] += alpha*A[stream_A[i]+i_block*N_BLOCK+k_block]*B[stream_B[i]+k_block*N_BLOCK+j_block];
+          //C[0] += alpha*A[0]*B[0];
+          //z += alpha*x*y;
+        }
+      }
+    }
+  }
+
+  //printf("z = %e\n", z);
 }
 
 int
 main (int argc, char **argv)
 {
   unsigned int N = 4;
+  unsigned int N_padded;
 
+  unsigned int temp;
   unsigned int i, j, k;
 
   float *A, *B, *C, *D;
+
+  unsigned int stream_index;
+  unsigned int *stream_A, *stream_B, *stream_C;
 
   float alpha = 1.2;
   float beta = 0.5;
@@ -257,6 +327,7 @@ main (int argc, char **argv)
   char *short_options = "hN:";
   struct option long_options[] = {
     { "N", required_argument, NULL, 'N' },
+    { "repeat", required_argument, NULL, 'r' },
     { NULL, 0, NULL, 0 }
   };
   int parse;
@@ -269,13 +340,18 @@ main (int argc, char **argv)
       case 'h':
         printf("Usage:\n");
         printf("\n");
-        printf("-h        This help\n");
-        printf("-N N      Test NxN matrices\n");
+        printf("-h           This help\n");
+        printf("-N N         Test NxN matrices\n");
+        printf("--repeat N   Repeat SpAMM test N times\n");
         return 0;
         break;
 
       case 'N':
         N = strtol(optarg, NULL, 10);
+        break;
+
+      case 'r':
+        repeat_counter_spamm = strtol(optarg, NULL, 10);
         break;
 
       default:
@@ -285,13 +361,18 @@ main (int argc, char **argv)
     }
   }
 
-  if (pow(2, (int) ceil(log(N)/log(2))) != N)
+  N_padded = (int) N_BLOCK*pow(2, (int) ceil(log(N/(double) N_BLOCK)/log(2)));
+  if (N_padded != N)
   {
-    printf("N needs to be a power of 2\n");
+    printf("N needs to be a power of 2, next larger matrix with %ix%i blocks would be %ix%i\n", N_BLOCK, N_BLOCK, N_padded, N_padded);
     return -1;
   }
 
-  printf("testing %ix%i matrices\n", N, N);
+  printf("testing %ix%i matrices with a blocksize of %ix%i\n", N, N, N_BLOCK, N_BLOCK);
+
+#ifdef RANDOMIZE_STREAM
+  printf("randomizing stream\n");
+#endif
 
   /* Create dense NxN matrix. */
   A = (float*) malloc(sizeof(float)*N*N);
@@ -333,6 +414,11 @@ main (int argc, char **argv)
   print_matrix(D, N);
 #endif
 
+  /* Allocate multiply stream. */
+  stream_A = (unsigned int*) malloc(sizeof(unsigned int)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK);
+  stream_B = (unsigned int*) malloc(sizeof(unsigned int)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK);
+  stream_C = (unsigned int*) malloc(sizeof(unsigned int)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK);
+
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
   for (repeat = 0; repeat < repeat_counter_spamm; repeat++)
@@ -342,7 +428,8 @@ main (int argc, char **argv)
         C[get_index(i, j, N)] *= beta;
       }
     }
-    multiply(alpha, N, 0, N, 0, N, A, 0, N, 0, N, B, beta, 0, N, 0, N, C);
+    stream_index = 0;
+    multiply_symbolic(alpha, N, 0, N, 0, N, A, 0, N, 0, N, B, beta, 0, N, 0, N, C, &stream_index, stream_A, stream_B, stream_C);
   }
   getrusage(RUSAGE_SELF, &rusage_stop);
   gettimeofday(&stop, NULL);
@@ -352,15 +439,39 @@ main (int argc, char **argv)
   flops_spamm = ((double) N)*((double) N)*(2.0*N+1.0)/walltime_spamm;
   if (flops_spamm < 1000*1000*1000)
   {
-    printf("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
+    printf("symbolic: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
         walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000.);
   }
   else
   {
-    printf("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Gflop/s\n",
+    printf("symbolic: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Gflop/s\n",
         walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000./1000.);
   }
 
+  gettimeofday(&start, NULL);
+  getrusage(RUSAGE_SELF, &rusage_start);
+  for (repeat = 0; repeat < repeat_counter_spamm; repeat++)
+  {
+    multiply_stream(alpha, N/N_BLOCK*N/N_BLOCK*N/N_BLOCK, stream_A, stream_B, stream_C, A, B, C);
+  }
+  getrusage(RUSAGE_SELF, &rusage_stop);
+  gettimeofday(&stop, NULL);
+  walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm;
+  usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
+  systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
+  flops_spamm = ((double) N)*((double) N)*(2.0*N+1.0)/walltime_spamm;
+  if (flops_spamm < 1000*1000*1000)
+  {
+    printf("numeric: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
+        walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000.);
+  }
+  else
+  {
+    printf("numeric: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Gflop/s\n",
+        walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000./1000.);
+  }
+
+  printf("multiplying by hand for verification\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++) {
       D[get_index(i, j, N)] *= beta;
@@ -379,12 +490,15 @@ main (int argc, char **argv)
 #endif
 
   /* Compare result. */
+  printf("verifying result\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
       if (fabs(C[get_index(i, j, N)]-D[get_index(i, j, N)]) > 1e-10)
       {
-        printf("mismatch C[%i][%i] != D[%i][%i] (%e != %e)\n", i, j, i, j, C[get_index(i, j, N)], D[get_index(i, j, N)]);
+        printf("mismatch C[%i][%i] != D[%i][%i] (%e != %e, |diff| = %e)\n",
+            i, j, i, j, C[get_index(i, j, N)], D[get_index(i, j, N)],
+            fabs(C[get_index(i, j, N)]-D[get_index(i, j, N)]));
         return -1;
       }
     }
@@ -394,6 +508,9 @@ main (int argc, char **argv)
   free(B);
   free(C);
   free(D);
+  free(stream_A);
+  free(stream_B);
+  free(stream_C);
 
   return 0;
 }
