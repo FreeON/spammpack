@@ -107,6 +107,25 @@
 
 /** \page spamm_performance SpAMM Performance Results
  *
+ * Performance \f$ p \f$ is measured by measuring walltime (or user time from
+ * getrusage()) \f$ t \f$ as
+ *
+ * \f[
+ * p = M \times N \times ( 2 K + 1 ) / t
+ * \f]
+ *
+ * because the matrix product
+ *
+ * \f[
+ * C_{ij} = \beta C_{ij} + \sum_{k} \alpha A_{ik} B_{kj}
+ * \f]
+ *
+ * involves 2 multiply and 1 add operation per term in the sum over \f$ k \f$.
+ * There are \f$ M \times N \f$ elements in matrix \f$ C \f$. The first term
+ * \f$ \beta C_{ij} \f$ contributes \f$ M \times N \f$ multiplies.
+ *
+ * Open questions:
+ *
  * - How close can the stream multiply performance be pushed to match GotoBLAS
  *   large N perfmance? If stream is slower, why? Understand better what Goto
  *   does to make his multiply fast.
