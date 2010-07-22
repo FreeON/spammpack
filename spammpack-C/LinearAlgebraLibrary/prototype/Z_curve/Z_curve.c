@@ -6,7 +6,7 @@
 #include <sys/resource.h>
 
 /* Fill matrix with random elements. */
-//#define DEBUG_RANDOM_ELEMENTS
+#define DEBUG_RANDOM_ELEMENTS
 
 /* Print matrix for debugging. */
 //#define DEBUG_PRINT_MATRIX
@@ -15,29 +15,19 @@
 //#define DEBUG_PRINT
 
 /* Randomize stream. */
-//#define RANDOMIZE_STREAM
+#define RANDOMIZE_STREAM
 
 /* The blocksize. */
 #define N_BLOCK 4
-
-unsigned int
-get_block_index (const unsigned i, const unsigned j)
-{
-  return i*N_BLOCK+j;
-}
 
 /* Convert the matrix indices i, j to a linear index for a NxN matrix. */
 unsigned int
 get_index (const unsigned int i, const unsigned int j, const unsigned int N)
 {
-  unsigned int i_block, j_block;
   unsigned int index = 0;
 
-  i_block = i/N_BLOCK;
-  j_block = j/N_BLOCK;
-
 #ifdef RANDOMIZE_STREAM
-  return N_BLOCK*(i_block*N+N_BLOCK*j_block)+get_block_index(i%N_BLOCK, j%N_BLOCK);
+  return i*N+j;
 #else
   unsigned int bit_i, bitmask, bitset;
 
@@ -45,13 +35,13 @@ get_index (const unsigned int i, const unsigned int j, const unsigned int N)
   bitset = 1;
   for (bit_i = 0; bit_i < sizeof(unsigned int)*8; bit_i++)
   {
-    if (bitmask & j_block)
+    if (bitmask & j)
     {
       index |= bitset;
     }
     bitset <<= 1;
 
-    if (bitmask & i_block)
+    if (bitmask & i)
     {
       index |= bitset;
     }
@@ -60,28 +50,35 @@ get_index (const unsigned int i, const unsigned int j, const unsigned int N)
     bitmask <<= 1;
   }
 
-  return N_BLOCK*N_BLOCK*index+get_block_index(i%N_BLOCK, j%N_BLOCK);
+  return index;
 #endif
 }
 
 /* Print a dense matrix. */
 void
-print_matrix (const float *A, const unsigned int N)
+print_matrix (float (*A)[N_BLOCK][N_BLOCK], const unsigned int N)
 {
+  unsigned int i_block, j_block;
   unsigned int i, j;
+  float *A_linear;
 
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
-    {
-      printf("% 1.3f ", A[get_index(i, j, N)]);
+  for (i = 0; i < N/N_BLOCK; i++) {
+    for (i_block = 0; i_block < N_BLOCK; i_block++) {
+      for (j = 0; j < N/N_BLOCK; j++) {
+        for (j_block = 0; j_block < N_BLOCK; j_block++)
+        {
+          printf("% 1.3f ", A[get_index(i, j, N/N_BLOCK)][i_block][j_block]);
+        }
+      }
+      printf("\n");
     }
-    printf("\n");
   }
 
   printf("memory layout, linear: ");
+  A_linear = &(A[0][0][0]);
   for (i = 0; i < N*N; ++i)
   {
-    printf("% 1.3f ", A[i]);
+    printf("% 1.3f ", A_linear[i]);
   }
   printf("\n");
 }
@@ -91,14 +88,14 @@ multiply_symbolic (const float alpha,
     const unsigned int N,
     unsigned int A_M_lower, unsigned int A_M_upper,
     unsigned int A_N_lower, unsigned int A_N_upper,
-    const float *A,
+    float (*A)[N_BLOCK][N_BLOCK],
     unsigned int B_M_lower, unsigned int B_M_upper,
     unsigned int B_N_lower, unsigned int B_N_upper,
-    const float *B,
+    float (*B)[N_BLOCK][N_BLOCK],
     const float beta,
     unsigned int C_M_lower, unsigned int C_M_upper,
     unsigned int C_N_lower, unsigned int C_N_upper,
-    float *C,
+    float (*C)[N_BLOCK][N_BLOCK],
     unsigned int *stream_index,
     unsigned int *stream_A, unsigned int *stream_B, unsigned int *stream_C)
 {
@@ -111,7 +108,7 @@ multiply_symbolic (const float alpha,
       C_M_lower, C_M_upper, C_N_lower, C_N_upper);
 #endif
 
-  if (A_M_upper-A_M_lower == N_BLOCK)
+  if (A_M_upper-A_M_lower == 1)
   {
     /* We have reached the block-level. */
 #ifdef DEBUG_PRINT
@@ -269,31 +266,116 @@ multiply_symbolic (const float alpha,
 void
 multiply_stream (const float alpha, const unsigned int stream_length,
     unsigned int *stream_A, unsigned int *stream_B, unsigned int *stream_C,
-    const float *A, const float *B, float *C)
+    float (*A)[N_BLOCK][N_BLOCK],
+    float (*B)[N_BLOCK][N_BLOCK],
+    float (*C)[N_BLOCK][N_BLOCK])
 {
   unsigned int i, i_block, j_block, k_block;
+  unsigned int i_A, i_B, i_C;
   float x, y, z;
 
-  //x = 1.5;
-  //y = 2.5;
-  //z = 0;
+  for (i = 0; i < stream_length; i++)
+  {
+    i_A = stream_A[i];
+    i_B = stream_B[i];
+    i_C = stream_C[i];
 
-  for (i = 0; i < stream_length; i++) {
-    for (i_block = 0; i_block < N_BLOCK; i_block++) {
-      for (j_block = 0; j_block < N_BLOCK; j_block++) {
-        for (k_block = 0; k_block < N_BLOCK; k_block++)
-        {
-          //printf("multiplying C[%i] += alpha*A[%i]*B[%i]\n", stream_C[i], stream_A[i], stream_B[i]);
-          //C[stream_C[i]+get_block_index(i_block, j_block)] += alpha*A[stream_A[i]+get_block_index(i_block, k_block)]*B[stream_B[i]+get_block_index(k_block, j_block)];
-          C[stream_C[i]+i_block*N_BLOCK+j_block] += alpha*A[stream_A[i]+i_block*N_BLOCK+k_block]*B[stream_B[i]+k_block*N_BLOCK+j_block];
-          //C[0] += alpha*A[0]*B[0];
-          //z += alpha*x*y;
-        }
-      }
-    }
+    C[i_C][0][0] += alpha*(
+        A[i_A][0][0]*B[i_B][0][0] +
+        A[i_A][0][1]*B[i_B][1][0] +
+        A[i_A][0][2]*B[i_B][2][0] +
+        A[i_A][0][3]*B[i_B][3][0]);
+
+    C[i_C][0][1] += alpha*(
+        A[i_A][0][0]*B[i_B][0][1] +
+        A[i_A][0][1]*B[i_B][1][1] +
+        A[i_A][0][2]*B[i_B][2][1] +
+        A[i_A][0][3]*B[i_B][3][1]);
+
+    C[i_C][0][2] += alpha*(
+        A[i_A][0][0]*B[i_B][0][2] +
+        A[i_A][0][1]*B[i_B][1][2] +
+        A[i_A][0][2]*B[i_B][2][2] +
+        A[i_A][0][3]*B[i_B][3][2]);
+
+    C[i_C][0][3] += alpha*(
+        A[i_A][0][0]*B[i_B][0][3] +
+        A[i_A][0][1]*B[i_B][1][3] +
+        A[i_A][0][2]*B[i_B][2][3] +
+        A[i_A][0][3]*B[i_B][3][3]);
+
+    C[i_C][1][0] += alpha*(
+        A[i_A][1][0]*B[i_B][0][0] +
+        A[i_A][1][1]*B[i_B][1][0] +
+        A[i_A][1][2]*B[i_B][2][0] +
+        A[i_A][1][3]*B[i_B][3][0]);
+
+    C[i_C][1][1] += alpha*(
+        A[i_A][1][0]*B[i_B][0][1] +
+        A[i_A][1][1]*B[i_B][1][1] +
+        A[i_A][1][2]*B[i_B][2][1] +
+        A[i_A][1][3]*B[i_B][3][1]);
+
+    C[i_C][1][2] += alpha*(
+        A[i_A][1][0]*B[i_B][0][2] +
+        A[i_A][1][1]*B[i_B][1][2] +
+        A[i_A][1][2]*B[i_B][2][2] +
+        A[i_A][1][3]*B[i_B][3][2]);
+
+    C[i_C][1][3] += alpha*(
+        A[i_A][1][0]*B[i_B][0][3] +
+        A[i_A][1][1]*B[i_B][1][3] +
+        A[i_A][1][2]*B[i_B][2][3] +
+        A[i_A][1][3]*B[i_B][3][3]);
+
+    C[i_C][2][0] += alpha*(
+        A[i_A][2][0]*B[i_B][0][0] +
+        A[i_A][2][1]*B[i_B][1][0] +
+        A[i_A][2][2]*B[i_B][2][0] +
+        A[i_A][2][3]*B[i_B][3][0]);
+
+    C[i_C][2][1] += alpha*(
+        A[i_A][2][0]*B[i_B][0][1] +
+        A[i_A][2][1]*B[i_B][1][1] +
+        A[i_A][2][2]*B[i_B][2][1] +
+        A[i_A][2][3]*B[i_B][3][1]);
+
+    C[i_C][2][2] += alpha*(
+        A[i_A][2][0]*B[i_B][0][2] +
+        A[i_A][2][1]*B[i_B][1][2] +
+        A[i_A][2][2]*B[i_B][2][2] +
+        A[i_A][2][3]*B[i_B][3][2]);
+
+    C[i_C][2][3] += alpha*(
+        A[i_A][2][0]*B[i_B][0][3] +
+        A[i_A][2][1]*B[i_B][1][3] +
+        A[i_A][2][2]*B[i_B][2][3] +
+        A[i_A][2][3]*B[i_B][3][3]);
+
+    C[i_C][3][0] += alpha*(
+        A[i_A][3][0]*B[i_B][0][0] +
+        A[i_A][3][1]*B[i_B][1][0] +
+        A[i_A][3][2]*B[i_B][2][0] +
+        A[i_A][3][3]*B[i_B][3][0]);
+
+    C[i_C][3][1] += alpha*(
+        A[i_A][3][0]*B[i_B][0][1] +
+        A[i_A][3][1]*B[i_B][1][1] +
+        A[i_A][3][2]*B[i_B][2][1] +
+        A[i_A][3][3]*B[i_B][3][1]);
+
+    C[i_C][3][2] += alpha*(
+        A[i_A][3][0]*B[i_B][0][2] +
+        A[i_A][3][1]*B[i_B][1][2] +
+        A[i_A][3][2]*B[i_B][2][2] +
+        A[i_A][3][3]*B[i_B][3][2]);
+
+    C[i_C][3][3] += alpha*(
+        A[i_A][3][0]*B[i_B][0][3] +
+        A[i_A][3][1]*B[i_B][1][3] +
+        A[i_A][3][2]*B[i_B][2][3] +
+        A[i_A][3][3]*B[i_B][3][3]);
   }
-
-  //printf("z = %e\n", z);
 }
 
 int
@@ -304,8 +386,12 @@ main (int argc, char **argv)
 
   unsigned int temp;
   unsigned int i, j, k;
+  unsigned int i_block, j_block, k_block;
 
-  float *A, *B, *C, *D;
+  float (*A)[N_BLOCK][N_BLOCK];
+  float (*B)[N_BLOCK][N_BLOCK];
+  float (*C)[N_BLOCK][N_BLOCK];
+  float (*D)[N_BLOCK][N_BLOCK];
 
   unsigned int stream_index;
   unsigned int *stream_A, *stream_B, *stream_C;
@@ -317,7 +403,8 @@ main (int argc, char **argv)
   struct rusage rusage_start, rusage_stop;
 
   unsigned int repeat;
-  unsigned int repeat_counter_spamm = 1;
+  unsigned int repeat_counter_spamm_symbolic = 1;
+  unsigned int repeat_counter_spamm_numeric = 1;
 
   double walltime_spamm;
   double usertime_spamm;
@@ -327,7 +414,8 @@ main (int argc, char **argv)
   char *short_options = "hN:";
   struct option long_options[] = {
     { "N", required_argument, NULL, 'N' },
-    { "repeat", required_argument, NULL, 'r' },
+    { "repeat-symbolic", required_argument, NULL, '1' },
+    { "repeat-numeric", required_argument, NULL, '2' },
     { NULL, 0, NULL, 0 }
   };
   int parse;
@@ -340,9 +428,10 @@ main (int argc, char **argv)
       case 'h':
         printf("Usage:\n");
         printf("\n");
-        printf("-h           This help\n");
-        printf("-N N         Test NxN matrices\n");
-        printf("--repeat N   Repeat SpAMM test N times\n");
+        printf("-h                    This help\n");
+        printf("-N N                  Test NxN matrices\n");
+        printf("--repeat-symbolic N   Repeat symbolic part of SpAMM test N times\n");
+        printf("--repeat-numeric N    Repeat symbolic part of SpAMM test N times\n");
         return 0;
         break;
 
@@ -350,8 +439,12 @@ main (int argc, char **argv)
         N = strtol(optarg, NULL, 10);
         break;
 
-      case 'r':
-        repeat_counter_spamm = strtol(optarg, NULL, 10);
+      case '1':
+        repeat_counter_spamm_symbolic = strtol(optarg, NULL, 10);
+        break;
+
+      case '2':
+        repeat_counter_spamm_numeric = strtol(optarg, NULL, 10);
         break;
 
       default:
@@ -375,31 +468,39 @@ main (int argc, char **argv)
 #endif
 
   /* Create dense NxN matrix. */
-  A = (float*) malloc(sizeof(float)*N*N);
-  B = (float*) malloc(sizeof(float)*N*N);
-  C = (float*) malloc(sizeof(float)*N*N);
-  D = (float*) malloc(sizeof(float)*N*N);
+  A = (float (*)[N_BLOCK][N_BLOCK]) malloc(sizeof(float[N_BLOCK][N_BLOCK])*N/N_BLOCK*N/N_BLOCK);
+  B = (float (*)[N_BLOCK][N_BLOCK]) malloc(sizeof(float[N_BLOCK][N_BLOCK])*N/N_BLOCK*N/N_BLOCK);
+  C = (float (*)[N_BLOCK][N_BLOCK]) malloc(sizeof(float[N_BLOCK][N_BLOCK])*N/N_BLOCK*N/N_BLOCK);
+  D = (float (*)[N_BLOCK][N_BLOCK]) malloc(sizeof(float[N_BLOCK][N_BLOCK])*N/N_BLOCK*N/N_BLOCK);
 
   /* Fill with random stuff. */
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
-    {
+  for (i = 0; i < N/N_BLOCK; i++) {
+    for (i_block = 0; i_block < N_BLOCK; i_block++) {
+      for (j = 0; j < N/N_BLOCK; j++) {
+        for (j_block = 0; j_block < N_BLOCK; j_block++)
+        {
 #ifdef DEBUG_RANDOM_ELEMENTS
-      A[get_index(i, j, N)] = rand()/(float) RAND_MAX;
-      B[get_index(i, j, N)] = rand()/(float) RAND_MAX;
-      C[get_index(i, j, N)] = rand()/(float) RAND_MAX;
+          A[get_index(i, j, N/N_BLOCK)][i_block][j_block] = rand()/(float) RAND_MAX;
+          B[get_index(i, j, N/N_BLOCK)][i_block][j_block] = rand()/(float) RAND_MAX;
+          C[get_index(i, j, N/N_BLOCK)][i_block][j_block] = rand()/(float) RAND_MAX;
 #else
-      A[get_index(i, j, N)] = get_index(i, j, N);
-      B[get_index(i, j, N)] = get_index(i, j, N);
-      C[get_index(i, j, N)] = get_index(i, j, N);
+          A[get_index(i, j, N/N_BLOCK)][i_block][j_block] = N_BLOCK*N_BLOCK*get_index(i, j, N/N_BLOCK)+i_block*N_BLOCK+j_block;
+          B[get_index(i, j, N/N_BLOCK)][i_block][j_block] = N_BLOCK*N_BLOCK*get_index(i, j, N/N_BLOCK)+i_block*N_BLOCK+j_block;
+          C[get_index(i, j, N/N_BLOCK)][i_block][j_block] = N_BLOCK*N_BLOCK*get_index(i, j, N/N_BLOCK)+i_block*N_BLOCK+j_block;
 #endif
+        }
+      }
     }
   }
 
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
-    {
-      D[get_index(i, j, N)] = C[get_index(i, j, N)];
+  for (i = 0; i < N/N_BLOCK; i++) {
+    for (i_block = 0; i_block < N_BLOCK; i_block++) {
+      for (j = 0; j < N/N_BLOCK; j++) {
+        for (j_block = 0; j_block < N_BLOCK; j_block++)
+        {
+          D[get_index(i, j, N/N_BLOCK)][i_block][j_block] = C[get_index(i, j, N/N_BLOCK)][i_block][j_block];
+        }
+      }
     }
   }
 
@@ -421,22 +522,27 @@ main (int argc, char **argv)
 
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
-  for (repeat = 0; repeat < repeat_counter_spamm; repeat++)
+  for (repeat = 0; repeat < repeat_counter_spamm_symbolic; repeat++)
   {
-    for (i = 0; i < N; i++) {
-      for (j = 0; j < N; j++) {
-        C[get_index(i, j, N)] *= beta;
+    for (i = 0; i < N/N_BLOCK; i++) {
+      for (i_block = 0; i_block < N_BLOCK; i_block++) {
+        for (j = 0; j < N/N_BLOCK; j++) {
+          for (j_block = 0; j_block < N_BLOCK; j_block++)
+          {
+            C[get_index(i, j, N/N_BLOCK)][i_block][j_block] *= beta;
+          }
+        }
       }
     }
     stream_index = 0;
-    multiply_symbolic(alpha, N, 0, N, 0, N, A, 0, N, 0, N, B, beta, 0, N, 0, N, C, &stream_index, stream_A, stream_B, stream_C);
+    multiply_symbolic(alpha, N/N_BLOCK, 0, N/N_BLOCK, 0, N/N_BLOCK, A, 0, N/N_BLOCK, 0, N/N_BLOCK, B, beta, 0, N/N_BLOCK, 0, N/N_BLOCK, C, &stream_index, stream_A, stream_B, stream_C);
   }
   getrusage(RUSAGE_SELF, &rusage_stop);
   gettimeofday(&stop, NULL);
-  walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm;
-  usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
-  systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
-  flops_spamm = ((double) N)*((double) N)*(2.0*N+1.0)/walltime_spamm;
+  walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm_symbolic;
+  usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm_symbolic;
+  systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm_symbolic;
+  flops_spamm = ((double) N)*((double) N)*(2.0*N+1.0)/usertime_spamm;
   if (flops_spamm < 1000*1000*1000)
   {
     printf("symbolic: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
@@ -450,16 +556,16 @@ main (int argc, char **argv)
 
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
-  for (repeat = 0; repeat < repeat_counter_spamm; repeat++)
+  for (repeat = 0; repeat < repeat_counter_spamm_numeric; repeat++)
   {
     multiply_stream(alpha, N/N_BLOCK*N/N_BLOCK*N/N_BLOCK, stream_A, stream_B, stream_C, A, B, C);
   }
   getrusage(RUSAGE_SELF, &rusage_stop);
   gettimeofday(&stop, NULL);
-  walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm;
-  usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
-  systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
-  flops_spamm = ((double) N)*((double) N)*(2.0*N+1.0)/walltime_spamm;
+  walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm_numeric;
+  usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm_numeric;
+  systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm_numeric;
+  flops_spamm = ((double) N)*((double) N)*(2.0*N+1.0)/usertime_spamm;
   if (flops_spamm < 1000*1000*1000)
   {
     printf("numeric: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
@@ -472,12 +578,19 @@ main (int argc, char **argv)
   }
 
   printf("multiplying by hand for verification\n");
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++) {
-      D[get_index(i, j, N)] *= beta;
-      for (k = 0; k < N; k++)
-      {
-        D[get_index(i, j, N)] += alpha*A[get_index(i, k, N)]*B[get_index(k, j, N)];
+  for (i = 0; i < N/N_BLOCK; i++) {
+    for (i_block = 0; i_block < N_BLOCK; i_block++) {
+      for (j = 0; j < N/N_BLOCK; j++) {
+        for (j_block = 0; j_block < N_BLOCK; j_block++)
+        {
+          D[get_index(i, j, N/N_BLOCK)][i_block][j_block] *= beta;
+          for (k = 0; k < N/N_BLOCK; k++) {
+            for (k_block = 0; k_block < N_BLOCK; k_block++)
+            {
+              D[get_index(i, j, N/N_BLOCK)][i_block][j_block] += alpha*A[get_index(i, k, N/N_BLOCK)][i_block][k_block]*B[get_index(k, j, N/N_BLOCK)][k_block][j_block];
+            }
+          }
+        }
       }
     }
   }
@@ -491,15 +604,19 @@ main (int argc, char **argv)
 
   /* Compare result. */
   printf("verifying result\n");
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
-    {
-      if (fabs(C[get_index(i, j, N)]-D[get_index(i, j, N)]) > 1e-10)
-      {
-        printf("mismatch C[%i][%i] != D[%i][%i] (%e != %e, |diff| = %e)\n",
-            i, j, i, j, C[get_index(i, j, N)], D[get_index(i, j, N)],
-            fabs(C[get_index(i, j, N)]-D[get_index(i, j, N)]));
-        return -1;
+  for (i = 0; i < N/N_BLOCK; i++) {
+    for (i_block = 0; i_block < N_BLOCK; i_block++) {
+      for (j = 0; j < N/N_BLOCK; j++) {
+        for (j_block = 0; j_block < N_BLOCK; j_block++)
+        {
+          if (fabs(C[get_index(i, j, N/N_BLOCK)][i_block][j_block]-D[get_index(i, j, N/N_BLOCK)][i_block][j_block]) > 1e-10)
+          {
+            printf("mismatch C[%i][%i] != D[%i][%i] (%e != %e, |diff| = %e)\n",
+                i, j, i, j, C[get_index(i, j, N/N_BLOCK)][i_block][j_block], D[get_index(i, j, N/N_BLOCK)][i_block][j_block],
+                fabs(C[get_index(i, j, N/N_BLOCK)][i_block][j_block]-D[get_index(i, j, N/N_BLOCK)][i_block][j_block]));
+            return -1;
+          }
+        }
       }
     }
   }
