@@ -1,4 +1,5 @@
 #include "config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -21,6 +22,7 @@ multiply (const unsigned int loops,
   unsigned int i, j, k;
 
   float *D = (float*) malloc(sizeof(float)*4*4);
+  float max_diff = 0;
 
   for (loop = 0; loop < loops; loop++)
   {
@@ -45,7 +47,7 @@ multiply (const unsigned int loops,
     //printf("A(1,1:4) = [ %f %f %f %f ]\n", A[0], A[1], A[2], A[3]);
     //printf("B(1,1:4) = [ %f %f %f %f ]\n", B[0], B[1], B[2], B[3]);
 
-    ///* Assume B is transposed. */
+    /* Assume B is transposed. */
     //for (i = 0; i < 4; i++) {
     //  for (j = 0; j < 4; j++)
     //  {
@@ -63,6 +65,10 @@ multiply (const unsigned int loops,
         "movaps   xmm0, [%0]\n\t"             /* Load A(1,1:4) into xmm0. */
 
         "movaps   xmm1, [%1]\n\t"             /* Load B(1,1:4) into xmm1. */
+        "movaps   xmm3, [%1+1*4*4]\n\t"       /* Load B(2,1:4) into xmm3. */
+        "movaps   xmm5, [%1+2*4*4]\n\t"       /* Load B(3,1:4) into xmm5. */
+        "movaps   xmm7, [%1+3*4*4]\n\t"       /* Load B(4,1:4) into xmm7. */
+
         "mulps    xmm1, xmm0\n\t"             /* Multiply A(1,1:4).*B(1,1:4) and store result in xmm1. */
         "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
         "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
@@ -70,33 +76,34 @@ multiply (const unsigned int loops,
         "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
         "movss    [%2], xmm1\n\t"             /* Store C(1,1). */
 
-        "movaps   xmm1, [%1+1*4*4]\n\t"       /* Load B(2,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(1,1:4).*B(2,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+1*4], xmm1\n\t"         /* Store C(1,2). */
+        "mulps    xmm3, xmm0\n\t"             /* Multiply A(1,1:4).*B(2,1:4) and store result in xmm3. */
+        "movhlps  xmm4, xmm3\n\t"             /* Move upper 2 floats of xmm3 to lower xmm4. */
+        "addps    xmm3, xmm4\n\t"             /* Add lower 2 floats and store results in xmm3. */
+        "pshufd   xmm4, xmm3, 1\n\t"          /* Move second term from xmm3 to xmm4. */
+        "addss    xmm3, xmm4\n\t"             /* Add lowest float in xmm4 to xmm3 and store result in xmm3. */
+        "movss    [%2+1*4], xmm3\n\t"         /* Store C(1,2). */
 
-        "movaps   xmm1, [%1+2*4*4]\n\t"       /* Load B(3,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(1,1:4).*B(3,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+2*4], xmm1\n\t"         /* Store C(1,3). */
+        "mulps    xmm5, xmm0\n\t"             /* Multiply A(1,1:4).*B(3,1:4) and store result in xmm5. */
+        "movhlps  xmm6, xmm5\n\t"             /* Move upper 2 floats of xmm5 to lower xmm6. */
+        "addps    xmm5, xmm6\n\t"             /* Add lower 2 floats and store results in xmm5. */
+        "pshufd   xmm6, xmm5, 1\n\t"          /* Move second term from xmm5 to xmm6. */
+        "addss    xmm5, xmm6\n\t"             /* Add lowest float in xmm6 to xmm5 and store result in xmm5. */
+        "movss    [%2+2*4], xmm5\n\t"         /* Store C(1,3). */
 
-        "movaps   xmm1, [%1+3*4*4]\n\t"       /* Load B(4,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(1,1:4).*B(4,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+3*4], xmm1\n\t"         /* Store C(1,4). */
+        "mulps    xmm7, xmm0\n\t"             /* Multiply A(1,1:4).*B(4,1:4) and store result in xmm7. */
+        "movhlps  xmm8, xmm7\n\t"             /* Move upper 2 floats of xmm7 to lower xmm8. */
+        "addps    xmm7, xmm8\n\t"             /* Add lower 2 floats and store results in xmm7. */
+        "pshufd   xmm8, xmm7, 1\n\t"          /* Move second term from xmm7 to xmm8. */
+        "addss    xmm7, xmm8\n\t"             /* Add lowest float in xmm8 to xmm7 and store result in xmm7. */
+        "movss    [%2+3*4], xmm7\n\t"         /* Store C(1,4). */
 
         "movaps   xmm0, [%0+1*4*4]\n\t"       /* Load A(2,1:4) into xmm0. */
 
         "movaps   xmm1, [%1]\n\t"             /* Load B(1,1:4) into xmm1. */
+        "movaps   xmm3, [%1+1*4*4]\n\t"       /* Load B(2,1:4) into xmm3. */
+        "movaps   xmm5, [%1+2*4*4]\n\t"       /* Load B(3,1:4) into xmm5. */
+        "movaps   xmm7, [%1+3*4*4]\n\t"       /* Load B(4,1:4) into xmm7. */
+
         "mulps    xmm1, xmm0\n\t"             /* Multiply A(2,1:4).*B(1,1:4) and store result in xmm1. */
         "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
         "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
@@ -104,33 +111,34 @@ multiply (const unsigned int loops,
         "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
         "movss    [%2+1*4*4], xmm1\n\t"       /* Store C(2,1). */
 
-        "movaps   xmm1, [%1+1*4*4]\n\t"       /* Load B(2,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(2,1:4).*B(2,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+1*4*4+1*4], xmm1\n\t"   /* Store C(2,2). */
+        "mulps    xmm3, xmm0\n\t"             /* Multiply A(2,1:4).*B(2,1:4) and store result in xmm3. */
+        "movhlps  xmm4, xmm3\n\t"             /* Move upper 2 floats of xmm3 to lower xmm4. */
+        "addps    xmm3, xmm4\n\t"             /* Add lower 2 floats and store results in xmm3. */
+        "pshufd   xmm4, xmm3, 1\n\t"          /* Move second term from xmm3 to xmm4. */
+        "addss    xmm3, xmm4\n\t"             /* Add lowest float in xmm4 to xmm3 and store result in xmm3. */
+        "movss    [%2+1*4*4+1*4], xmm3\n\t"   /* Store C(2,2). */
 
-        "movaps   xmm1, [%1+2*4*4]\n\t"       /* Load B(3,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(2,1:4).*B(3,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+1*4*4+2*4], xmm1\n\t"   /* Store C(2,3). */
+        "mulps    xmm5, xmm0\n\t"             /* Multiply A(2,1:4).*B(3,1:4) and store result in xmm5. */
+        "movhlps  xmm6, xmm5\n\t"             /* Move upper 2 floats of xmm5 to lower xmm6. */
+        "addps    xmm5, xmm6\n\t"             /* Add lower 2 floats and store results in xmm5. */
+        "pshufd   xmm6, xmm5, 1\n\t"          /* Move second term from xmm5 to xmm6. */
+        "addss    xmm5, xmm6\n\t"             /* Add lowest float in xmm6 to xmm5 and store result in xmm5. */
+        "movss    [%2+1*4*4+2*4], xmm5\n\t"   /* Store C(2,3). */
 
-        "movaps   xmm1, [%1+3*4*4]\n\t"       /* Load B(4,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(2,1:4).*B(4,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+1*4*4+3*4], xmm1\n\t"   /* Store C(2,4). */
+        "mulps    xmm7, xmm0\n\t"             /* Multiply A(2,1:4).*B(4,1:4) and store result in xmm7. */
+        "movhlps  xmm8, xmm7\n\t"             /* Move upper 2 floats of xmm7 to lower xmm8. */
+        "addps    xmm7, xmm8\n\t"             /* Add lower 2 floats and store results in xmm7. */
+        "pshufd   xmm8, xmm7, 1\n\t"          /* Move second term from xmm7 to xmm8. */
+        "addss    xmm7, xmm8\n\t"             /* Add lowest float in xmm8 to xmm7 and store result in xmm7. */
+        "movss    [%2+1*4*4+3*4], xmm7\n\t"   /* Store C(2,4). */
 
         "movaps   xmm0, [%0+2*4*4]\n\t"       /* Load A(3,1:4) into xmm0. */
 
         "movaps   xmm1, [%1]\n\t"             /* Load B(1,1:4) into xmm1. */
+        "movaps   xmm3, [%1+1*4*4]\n\t"       /* Load B(2,1:4) into xmm3. */
+        "movaps   xmm5, [%1+2*4*4]\n\t"       /* Load B(3,1:4) into xmm5. */
+        "movaps   xmm7, [%1+3*4*4]\n\t"       /* Load B(4,1:4) into xmm7. */
+
         "mulps    xmm1, xmm0\n\t"             /* Multiply A(3,1:4).*B(1,1:4) and store result in xmm1. */
         "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
         "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
@@ -138,33 +146,34 @@ multiply (const unsigned int loops,
         "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
         "movss    [%2+2*4*4], xmm1\n\t"       /* Store C(3,1). */
 
-        "movaps   xmm1, [%1+1*4*4]\n\t"       /* Load B(2,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(3,1:4).*B(2,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+2*4*4+1*4], xmm1\n\t"   /* Store C(3,2). */
+        "mulps    xmm3, xmm0\n\t"             /* Multiply A(3,1:4).*B(2,1:4) and store result in xmm3. */
+        "movhlps  xmm4, xmm3\n\t"             /* Move upper 2 floats of xmm3 to lower xmm4. */
+        "addps    xmm3, xmm4\n\t"             /* Add lower 2 floats and store results in xmm3. */
+        "pshufd   xmm4, xmm3, 1\n\t"          /* Move second term from xmm3 to xmm4. */
+        "addss    xmm3, xmm4\n\t"             /* Add lowest float in xmm4 to xmm3 and store result in xmm3. */
+        "movss    [%2+2*4*4+1*4], xmm3\n\t"   /* Store C(3,2). */
 
-        "movaps   xmm1, [%1+2*4*4]\n\t"       /* Load B(3,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(3,1:4).*B(3,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+2*4*4+2*4], xmm1\n\t"   /* Store C(3,3). */
+        "mulps    xmm5, xmm0\n\t"             /* Multiply A(3,1:4).*B(3,1:4) and store result in xmm5. */
+        "movhlps  xmm6, xmm5\n\t"             /* Move upper 2 floats of xmm5 to lower xmm6. */
+        "addps    xmm5, xmm6\n\t"             /* Add lower 2 floats and store results in xmm5. */
+        "pshufd   xmm6, xmm5, 1\n\t"          /* Move second term from xmm5 to xmm6. */
+        "addss    xmm5, xmm6\n\t"             /* Add lowest float in xmm6 to xmm5 and store result in xmm5. */
+        "movss    [%2+2*4*4+2*4], xmm5\n\t"   /* Store C(3,3). */
 
-        "movaps   xmm1, [%1+3*4*4]\n\t"       /* Load B(4,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(3,1:4).*B(4,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+2*4*4+3*4], xmm1\n\t"   /* Store C(3,4). */
+        "mulps    xmm7, xmm0\n\t"             /* Multiply A(3,1:4).*B(4,1:4) and store result in xmm7. */
+        "movhlps  xmm8, xmm7\n\t"             /* Move upper 2 floats of xmm7 to lower xmm8. */
+        "addps    xmm7, xmm8\n\t"             /* Add lower 2 floats and store results in xmm7. */
+        "pshufd   xmm8, xmm7, 1\n\t"          /* Move second term from xmm7 to xmm8. */
+        "addss    xmm7, xmm8\n\t"             /* Add lowest float in xmm8 to xmm7 and store result in xmm7. */
+        "movss    [%2+2*4*4+3*4], xmm7\n\t"   /* Store C(3,4). */
 
         "movaps   xmm0, [%0+3*4*4]\n\t"       /* Load A(4,1:4) into xmm0. */
 
         "movaps   xmm1, [%1]\n\t"             /* Load B(1,1:4) into xmm1. */
+        "movaps   xmm3, [%1+1*4*4]\n\t"       /* Load B(2,1:4) into xmm3. */
+        "movaps   xmm5, [%1+2*4*4]\n\t"       /* Load B(3,1:4) into xmm5. */
+        "movaps   xmm7, [%1+3*4*4]\n\t"       /* Load B(4,1:4) into xmm7. */
+
         "mulps    xmm1, xmm0\n\t"             /* Multiply A(4,1:4).*B(1,1:4) and store result in xmm1. */
         "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
         "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
@@ -172,29 +181,26 @@ multiply (const unsigned int loops,
         "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
         "movss    [%2+3*4*4], xmm1\n\t"       /* Store C(4,1). */
 
-        "movaps   xmm1, [%1+1*4*4]\n\t"       /* Load B(2,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(4,1:4).*B(2,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+3*4*4+1*4], xmm1\n\t"   /* Store C(4,2). */
+        "mulps    xmm3, xmm0\n\t"             /* Multiply A(4,1:4).*B(2,1:4) and store result in xmm3. */
+        "movhlps  xmm4, xmm3\n\t"             /* Move upper 2 floats of xmm3 to lower xmm4. */
+        "addps    xmm3, xmm4\n\t"             /* Add lower 2 floats and store results in xmm3. */
+        "pshufd   xmm4, xmm3, 1\n\t"          /* Move second term from xmm3 to xmm4. */
+        "addss    xmm3, xmm4\n\t"             /* Add lowest float in xmm4 to xmm3 and store result in xmm3. */
+        "movss    [%2+3*4*4+1*4], xmm3\n\t"   /* Store C(4,2). */
 
-        "movaps   xmm1, [%1+2*4*4]\n\t"       /* Load B(3,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(4,1:4).*B(3,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+3*4*4+2*4], xmm1\n\t"   /* Store C(4,3). */
+        "mulps    xmm5, xmm0\n\t"             /* Multiply A(4,1:4).*B(3,1:4) and store result in xmm5. */
+        "movhlps  xmm6, xmm5\n\t"             /* Move upper 2 floats of xmm5 to lower xmm6. */
+        "addps    xmm5, xmm6\n\t"             /* Add lower 2 floats and store results in xmm5. */
+        "pshufd   xmm6, xmm5, 1\n\t"          /* Move second term from xmm5 to xmm6. */
+        "addss    xmm5, xmm6\n\t"             /* Add lowest float in xmm6 to xmm5 and store result in xmm5. */
+        "movss    [%2+3*4*4+2*4], xmm5\n\t"   /* Store C(4,3). */
 
-        "movaps   xmm1, [%1+3*4*4]\n\t"       /* Load B(4,1:4) into xmm1. */
-        "mulps    xmm1, xmm0\n\t"             /* Multiply A(4,1:4).*B(4,1:4) and store result in xmm1. */
-        "movhlps  xmm2, xmm1\n\t"             /* Move upper 2 floats of xmm1 to lower xmm2. */
-        "addps    xmm1, xmm2\n\t"             /* Add lower 2 floats and store results in xmm1. */
-        "pshufd   xmm2, xmm1, 1\n\t"          /* Move second term from xmm1 to xmm2. */
-        "addss    xmm1, xmm2\n\t"             /* Add lowest float in xmm2 to xmm1 and store result in xmm1. */
-        "movss    [%2+3*4*4+3*4], xmm1\n\t"   /* Store C(4,4). */
+        "mulps    xmm7, xmm0\n\t"             /* Multiply A(4,1:4).*B(4,1:4) and store result in xmm7. */
+        "movhlps  xmm8, xmm7\n\t"             /* Move upper 2 floats of xmm7 to lower xmm8. */
+        "addps    xmm7, xmm8\n\t"             /* Add lower 2 floats and store results in xmm7. */
+        "pshufd   xmm8, xmm7, 1\n\t"          /* Move second term from xmm7 to xmm8. */
+        "addss    xmm7, xmm8\n\t"             /* Add lowest float in xmm8 to xmm7 and store result in xmm7. */
+        "movss    [%2+3*4*4+3*4], xmm7\n\t"   /* Store C(4,4). */
 
         ".att_syntax prefix\n\t"
 
@@ -202,16 +208,39 @@ multiply (const unsigned int loops,
         : /* The input. */
         "r" (A), "r" (B), "r" (C), "r" (alpha), "r" (beta)
         : /* Clobbered registers. */
-        "xmm0", "xmm1", "xmm2", "xmm3", "xmm4"
+        "xmm0", "xmm1", "xmm2", "xmm3", "xmm4",
+        "xmm5", "xmm6", "xmm7", "xmm8"
         );
-    //printf("C(1,1:4) = [ %f %f %f %f ]\n", C[0], C[1], C[2], C[3]);
-    //printf("C(2,1:4) = [ %f %f %f %f ]\n", C[4], C[5], C[6], C[7]);
-    //printf("C(3,1:4) = [ %f %f %f %f ]\n", C[8], C[9], C[10], C[11]);
-    //printf("C(4,1:4) = [ %f %f %f %f ]\n", C[12], C[13], C[14], C[15]);
-    //printf("D(1,1:4) = [ %f %f %f %f ]\n", D[0], D[1], D[2], D[3]);
-    //printf("D(2,1:4) = [ %f %f %f %f ]\n", D[4], D[5], D[6], D[7]);
-    //printf("D(3,1:4) = [ %f %f %f %f ]\n", D[8], D[9], D[10], D[11]);
-    //printf("D(4,1:4) = [ %f %f %f %f ]\n", D[12], D[13], D[14], D[15]);
+
+    //printf("C =\n");
+    //for (i = 0; i < 4; i++) {
+    //  for (j = 0; j < 4; j++)
+    //  {
+    //    printf(" %f", C[i*4+j]);
+    //  }
+    //  printf("\n");
+    //}
+
+    //printf("D =\n");
+    //for (i = 0; i < 4; i++) {
+    //  for (j = 0; j < 4; j++)
+    //  {
+    //    printf(" %f", D[i*4+j]);
+    //  }
+    //  printf("\n");
+    //}
+
+    //for (i = 0; i < 4; i++) {
+    //  for (j = 0; j < 4; j++)
+    //  {
+    //    if (fabs(C[i*4+j]-D[i*4+j]) > max_diff)
+    //    {
+    //      max_diff = fabs(C[i*4+j]-D[i*4+j]);
+    //    }
+    //  }
+    //}
+    //printf("max diff = %f\n", max_diff);
+
     //exit(0);
 #endif
 
