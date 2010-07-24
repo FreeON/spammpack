@@ -246,9 +246,23 @@ main (int argc, char **argv)
   }
 #endif
 
-  A = (float*) malloc(sizeof(float)*N*N);
-  B = (float*) malloc(sizeof(float)*N*N);
-  C = (float*) malloc(sizeof(float)*N*N);
+  if (posix_memalign((void**) &A, 64, sizeof(float)*N*N) != 0)
+  {
+    printf("error allocating matrix memory\n");
+    exit(1);
+  }
+
+  if (posix_memalign((void**) &B, 64, sizeof(float)*N*N) != 0)
+  {
+    printf("error allocating matrix memory\n");
+    exit(1);
+  }
+
+  if (posix_memalign((void**) &C, 64, sizeof(float)*N*N) != 0)
+  {
+    printf("error allocating matrix memory\n");
+    exit(1);
+  }
 
   for (j = 0; j < N; ++j) {
     for (i = 0; i < N; ++i)
