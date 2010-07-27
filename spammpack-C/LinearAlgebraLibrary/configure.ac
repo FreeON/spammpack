@@ -4,7 +4,7 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Identify compilers.
-AC_PROG_CC
+AC_PROG_CC_STDC
 AC_PROG_F77
 
 dnl Find libtool.
@@ -141,6 +141,24 @@ AM_CONDITIONAL([HAVE_CUDA], [test "${have_cuda}" = "yes"])
 
 dnl Check for stdarg.h.
 AC_CHECK_HEADERS([stdarg.h])
+
+dnl Check for PAPI.
+AC_MSG_CHECKING([whether to enable PAPI profiling interface])
+AC_ARG_ENABLE([PAPI], [AS_HELP_STRING([--enable-PAPI],
+              [enables the PAPI profiling interface])],
+              [], [enable_PAPI="no"])
+
+if test "${enable_PAPI}" = "yes"; then
+  AC_MSG_RESULT([yes])
+  have_PAPI="yes"
+  AC_CHECK_HEADERS([papi.h], [], [unset have_PAPI])
+  AC_CHECK_LIB([papi], [PAPI_library_init], [], [unset have_PAPI])
+  if test "${have_PAPI}" = "yes"; then
+    AC_DEFINE([HAVE_PAPI], [1], [whether we should use the PAPI profiling interface])
+  fi
+else
+  AC_MSG_RESULT([no])
+fi
 
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])

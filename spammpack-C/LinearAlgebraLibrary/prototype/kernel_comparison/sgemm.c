@@ -6,17 +6,21 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#ifdef HAVE_PAPI
+#include <papi.h>
+#endif
+
 #include <xmmintrin.h>
 
 //#define EXTERNAL_BLAS
 //#define NAIVE_4x4_KERNEL
-#define SSE_4x4_KERNEL
+//#define SSE_4x4_KERNEL
 
 void
 multiply (const unsigned int loops,
     const unsigned int N,
-    float alpha, float *A, float *B,
-    float beta, float *C)
+    float alpha, float *restrict A, float *restrict B,
+    float beta, float *restrict C)
 {
   unsigned int loop;
   unsigned int i, j, k;
@@ -191,6 +195,13 @@ main (int argc, char **argv)
 
   int i, j, loop;
 
+#ifdef HAVE_PAPI
+  float papi_rtime;
+  float papi_ptime;
+  long_long papi_flpins;
+  float papi_mflips;
+#endif
+
   float alpha = 1.2;
   float beta = 0.5;
   float *A, *B, *C;
@@ -264,6 +275,16 @@ main (int argc, char **argv)
     exit(1);
   }
 
+#ifdef HAVE_PAPI
+  /* Do some PAPI. */
+  if (PAPI_library_init(PAPI_VER_CURRENT) != PAPI_VER_CURRENT)
+  {
+    printf("can not initialize PAPI\n");
+    exit(1);
+  }
+#endif
+
+  printf("filling matrices with random matrix elements\n");
   for (j = 0; j < N; ++j) {
     for (i = 0; i < N; ++i)
     {
@@ -275,7 +296,14 @@ main (int argc, char **argv)
 
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
+#ifdef HAVE_PAPI
+  PAPI_flops(&papi_rtime, &papi_ptime, &papi_flpins, &papi_mflips);
+#endif
   multiply(loops, N, alpha, A, B, beta, C);
+#ifdef HAVE_PAPI
+  PAPI_flops(&papi_rtime, &papi_ptime, &papi_flpins, &papi_mflips);
+  printf("PAPI - %lli flop\n", papi_flpins);
+#endif
   getrusage(RUSAGE_SELF, &rusage_stop);
   gettimeofday(&stop, NULL);
   walltime = (stop.tv_sec-start.tv_sec+(stop.tv_usec-start.tv_usec)/1.0e6)/loops;
