@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <math.h>
+#include <string.h>
 //#include <fenv.h>
 #include <sys/time.h>
 #include <sys/resource.h>
