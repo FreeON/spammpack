@@ -37,6 +37,17 @@ AC_CHECK_LIB([m], [ceil],
              [AC_MSG_FAILURE([ceil() not found])],
              [])
 
+dnl Check for malloc with alignment.
+AC_CHECK_DECL([posix_memalign],
+              [declared_posix_memalign="yes"],
+              [declared_posix_memalign="no"], [])
+
+if test "${declared_posix_memalign}" = "yes"; then
+  AC_CHECK_LIB([c], [posix_memalign],
+               [AC_DEFINE([HAVE_POSIX_MEMALIGN], [1], [We can allocate aligned
+                memory])], [], [])
+fi
+
 dnl Check for blas.
 AC_MSG_CHECKING([whether to use BLAS])
 AC_ARG_ENABLE([blas], [AS_HELP_STRING([--enable-blas], [enables the use of BLAS routines])],
