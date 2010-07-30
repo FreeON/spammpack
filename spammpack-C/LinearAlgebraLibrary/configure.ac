@@ -6,6 +6,7 @@ AC_CONFIG_MACRO_DIR([m4])
 dnl Identify compilers.
 AC_PROG_CC_STDC
 AC_PROG_F77
+AM_PROG_AS
 
 dnl Find libtool.
 AC_PROG_LIBTOOL
