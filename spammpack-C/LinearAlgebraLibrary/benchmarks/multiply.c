@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <math.h>
-#include <string.h>
+#include <strings.h>
 //#include <fenv.h>
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -233,7 +233,7 @@ main (int argc, char **argv)
         {
           if (strcasecmp(matrix_type_name[i], optarg) == 0)
           {
-            matrix_type = i;
+            matrix_type = (enum matrix_t) i;
           }
         }
         break;
@@ -243,7 +243,7 @@ main (int argc, char **argv)
         {
           if (strcasecmp(mul_type_name[i], optarg) == 0)
           {
-            mul_type = i;
+            mul_type = (enum spamm_multiply_algorithm_t) i;
           }
         }
         break;
