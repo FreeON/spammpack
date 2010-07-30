@@ -20,6 +20,21 @@
 /* The blocksize. */
 #define N_BLOCK 4
 
+/* Use the C-code block kernel. */
+//#define BLOCK_MULTIPLY_HANDCODED
+
+/* Use the external assembly kernel. */
+#define EXTERNAL_SGEMM_KERNEL_1
+
+#if defined(EXTERNAL_SGEMM_KERNEL_1)
+void
+sgemm_kernel_1 (const float alpha,
+    const float *restrict A,
+    const float *restrict B,
+    const float beta,
+    float *restrict C);
+#endif
+
 /* Convert the matrix indices i, j to a linear index for a NxN matrix. */
 unsigned int
 get_index (const unsigned int i, const unsigned int j, const unsigned int N)
@@ -67,7 +82,7 @@ print_matrix (float (*A)[N_BLOCK][N_BLOCK], const unsigned int N)
       for (j = 0; j < N/N_BLOCK; j++) {
         for (j_block = 0; j_block < N_BLOCK; j_block++)
         {
-          printf("% 1.3f ", A[get_index(i, j, N/N_BLOCK)][i_block][j_block]);
+          printf("% 1.4f ", A[get_index(i, j, N/N_BLOCK)][i_block][j_block]);
         }
       }
       printf("\n");
@@ -264,7 +279,8 @@ multiply_symbolic (const float alpha,
 }
 
 void
-multiply_stream (const float alpha, const unsigned int stream_length,
+multiply_stream (const float alpha, const float beta,
+    const unsigned int stream_length,
     unsigned int *stream_A, unsigned int *stream_B, unsigned int *stream_C,
     float (*A)[N_BLOCK][N_BLOCK],
     float (*B)[N_BLOCK][N_BLOCK],
@@ -276,6 +292,7 @@ multiply_stream (const float alpha, const unsigned int stream_length,
 
   for (i = 0; i < stream_length; i++)
   {
+#if defined(BLOCK_MULTIPLY_HANDCODED)
     i_A = stream_A[i];
     i_B = stream_B[i];
     i_C = stream_C[i];
@@ -375,6 +392,24 @@ multiply_stream (const float alpha, const unsigned int stream_length,
         A[i_A][3][1]*B[i_B][1][3] +
         A[i_A][3][2]*B[i_B][2][3] +
         A[i_A][3][3]*B[i_B][3][3]);
+
+#elif defined(EXTERNAL_SGEMM_KERNEL_1)
+    i_A = stream_A[i];
+    i_B = stream_B[i];
+    i_C = stream_C[i];
+
+    //printf("A[%u] =\n", i_A);
+    //print_matrix((float (*)[4][4]) A[i_A], 4);
+    //printf("B[%u] =\n", i_B);
+    //print_matrix((float (*)[4][4]) B[i_B], 4);
+    //printf("C[%u] =\n", i_C);
+    //print_matrix((float (*)[4][4]) C[i_C], 4);
+    sgemm_kernel_1(alpha, (float*) &A[i_A], (float*) &B[i_B], 1.0, (float*) &C[i_C]);
+    //printf("C[%u] =\n", i_C);
+    //print_matrix((float (*)[4][4]) C[i_C], 4);
+    //exit(0);
+
+#endif
   }
 }
 
@@ -404,12 +439,25 @@ main (int argc, char **argv)
 
   unsigned int repeat;
   unsigned int repeat_counter_spamm_symbolic = 1;
+  unsigned int repeat_counter_apply_beta = 1;
   unsigned int repeat_counter_spamm_numeric = 1;
 
-  double walltime_spamm;
-  double usertime_spamm;
-  double systime_spamm;
-  double flops_spamm;
+  double walltime_spamm_symbolic;
+  double usertime_spamm_symbolic;
+  double systime_spamm_symbolic;
+  double flops_spamm_symbolic;
+
+  double walltime_apply_beta;
+  double usertime_apply_beta;
+  double systime_apply_beta;
+  double flops_apply_beta;
+
+  double walltime_spamm_numeric;
+  double usertime_spamm_numeric;
+  double systime_spamm_numeric;
+  double flops_spamm_numeric;
+
+  double flops_spamm_total;
 
   char *short_options = "hN:";
   struct option long_options[] = {
@@ -458,7 +506,7 @@ main (int argc, char **argv)
   if (N_padded != N)
   {
     printf("N needs to be a power of 2, next larger matrix with %ix%i blocks would be %ix%i\n", N_BLOCK, N_BLOCK, N_padded, N_padded);
-    return -1;
+    N = N_padded;
   }
 
   printf("testing %ix%i matrices with a blocksize of %ix%i\n", N, N, N_BLOCK, N_BLOCK);
@@ -524,6 +572,30 @@ main (int argc, char **argv)
   getrusage(RUSAGE_SELF, &rusage_start);
   for (repeat = 0; repeat < repeat_counter_spamm_symbolic; repeat++)
   {
+    stream_index = 0;
+    multiply_symbolic(alpha, N/N_BLOCK, 0, N/N_BLOCK, 0, N/N_BLOCK, A, 0, N/N_BLOCK, 0, N/N_BLOCK, B, beta, 0, N/N_BLOCK, 0, N/N_BLOCK, C, &stream_index, stream_A, stream_B, stream_C);
+  }
+  getrusage(RUSAGE_SELF, &rusage_stop);
+  gettimeofday(&stop, NULL);
+  walltime_spamm_symbolic = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm_symbolic;
+  usertime_spamm_symbolic = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm_symbolic;
+  systime_spamm_symbolic = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm_symbolic;
+  flops_spamm_symbolic = ((double) N)*((double) N)*(2.0*N+1.0)/usertime_spamm_symbolic;
+  if (flops_spamm_symbolic < 1000*1000*1000)
+  {
+    printf("symbolic: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
+        walltime_spamm_symbolic, usertime_spamm_symbolic, systime_spamm_symbolic, usertime_spamm_symbolic+systime_spamm_symbolic, flops_spamm_symbolic/1000./1000.);
+  }
+  else
+  {
+    printf("symbolic: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Gflop/s\n",
+        walltime_spamm_symbolic, usertime_spamm_symbolic, systime_spamm_symbolic, usertime_spamm_symbolic+systime_spamm_symbolic, flops_spamm_symbolic/1000./1000./1000.);
+  }
+
+  gettimeofday(&start, NULL);
+  getrusage(RUSAGE_SELF, &rusage_start);
+  for (repeat = 0; repeat < repeat_counter_apply_beta; repeat++)
+  {
     for (i = 0; i < N/N_BLOCK; i++) {
       for (i_block = 0; i_block < N_BLOCK; i_block++) {
         for (j = 0; j < N/N_BLOCK; j++) {
@@ -534,47 +606,55 @@ main (int argc, char **argv)
         }
       }
     }
-    stream_index = 0;
-    multiply_symbolic(alpha, N/N_BLOCK, 0, N/N_BLOCK, 0, N/N_BLOCK, A, 0, N/N_BLOCK, 0, N/N_BLOCK, B, beta, 0, N/N_BLOCK, 0, N/N_BLOCK, C, &stream_index, stream_A, stream_B, stream_C);
   }
   getrusage(RUSAGE_SELF, &rusage_stop);
   gettimeofday(&stop, NULL);
-  walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm_symbolic;
-  usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm_symbolic;
-  systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm_symbolic;
-  flops_spamm = ((double) N)*((double) N)*(2.0*N+1.0)/usertime_spamm;
-  if (flops_spamm < 1000*1000*1000)
+  walltime_apply_beta = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_apply_beta;
+  usertime_apply_beta = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_apply_beta;
+  systime_apply_beta = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_apply_beta;
+  flops_apply_beta = ((double) N)*((double) N)*(2.0*N+1.0)/usertime_apply_beta;
+  if (flops_apply_beta < 1000*1000*1000)
   {
-    printf("symbolic: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
-        walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000.);
+    printf("apply beta: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
+        walltime_apply_beta, usertime_apply_beta, systime_apply_beta, usertime_apply_beta+systime_apply_beta, flops_apply_beta/1000./1000.);
   }
   else
   {
-    printf("symbolic: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Gflop/s\n",
-        walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000./1000.);
+    printf("apply beta: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Gflop/s\n",
+        walltime_apply_beta, usertime_apply_beta, systime_apply_beta, usertime_apply_beta+systime_apply_beta, flops_apply_beta/1000./1000./1000.);
   }
 
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
   for (repeat = 0; repeat < repeat_counter_spamm_numeric; repeat++)
   {
-    multiply_stream(alpha, N/N_BLOCK*N/N_BLOCK*N/N_BLOCK, stream_A, stream_B, stream_C, A, B, C);
+    multiply_stream(alpha, beta, N/N_BLOCK*N/N_BLOCK*N/N_BLOCK, stream_A, stream_B, stream_C, A, B, C);
   }
   getrusage(RUSAGE_SELF, &rusage_stop);
   gettimeofday(&stop, NULL);
-  walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm_numeric;
-  usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm_numeric;
-  systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm_numeric;
-  flops_spamm = ((double) N)*((double) N)*(2.0*N+1.0)/usertime_spamm;
-  if (flops_spamm < 1000*1000*1000)
+  walltime_spamm_numeric = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm_numeric;
+  usertime_spamm_numeric = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm_numeric;
+  systime_spamm_numeric = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm_numeric;
+  flops_spamm_numeric = ((double) N)*((double) N)*(2.0*N+1.0)/usertime_spamm_numeric;
+  if (flops_spamm_numeric < 1000*1000*1000)
   {
     printf("numeric: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
-        walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000.);
+        walltime_spamm_numeric, usertime_spamm_numeric, systime_spamm_numeric, usertime_spamm_numeric+systime_spamm_numeric, flops_spamm_numeric/1000./1000.);
   }
   else
   {
     printf("numeric: time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Gflop/s\n",
-        walltime_spamm, usertime_spamm, systime_spamm, usertime_spamm+systime_spamm, flops_spamm/1000./1000./1000.);
+        walltime_spamm_numeric, usertime_spamm_numeric, systime_spamm_numeric, usertime_spamm_numeric+systime_spamm_numeric, flops_spamm_numeric/1000./1000./1000.);
+  }
+
+  flops_spamm_total = ((double) N)*((double) N)*(2.0*N+1.0)/(usertime_spamm_numeric+usertime_apply_beta+usertime_spamm_symbolic);
+  if (flops_spamm_total < 1000*1000*1000)
+  {
+    printf("total: %1.2f Mflop/s\n", flops_spamm_total/1000./1000.);
+  }
+  else
+  {
+    printf("total: %1.2f Gflop/s\n", flops_spamm_total/1000./1000./1000.);
   }
 
   printf("multiplying by hand for verification\n");
