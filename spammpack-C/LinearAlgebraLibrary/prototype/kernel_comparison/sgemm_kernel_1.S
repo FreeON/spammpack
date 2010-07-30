@@ -14,18 +14,18 @@
 
 sgemm_kernel_1:
 
-  /* Copy B into buffer. We will copy each matrix element of B 4 times
+  /* Copy A into buffer. We will copy each matrix element of A 4 times
    * and arrange the elements in the buffer according to the following
    * storage layout:
    *
-   * B_{11} B_{12} B_{13} B_{14}
-   * B_{21} B_{22} B_{23} ...
+   * A_{11} A_{12} A_{13} A_{14}
+   * A_{21} A_{22} A_{23} ...
    *
    * Copied to buffer as:
    *
-   * B_{11} B_{11} B_{11} B_{11}
-   * B_{12} B_{12} B_{12} B_{12}
-   * B_{13} B_{13} ...
+   * A_{11} A_{11} A_{11} A_{11}
+   * A_{12} A_{12} A_{12} A_{12}
+   * A_{13} A_{13} ...
    */
 
   /* Make space for the buffer for B on the stack. */
@@ -33,12 +33,40 @@ sgemm_kernel_1:
   subq $(64 * 4), %rsp
   andq $-4096, %rsp /* Align stack on a page boundary. */
 
+  /* First we copy the first double word to the other double words in xmm0 and
+   * xmm1. */
+  pshufd $0x00, alpha, alpha
+  pshufd $0x00, beta, beta
+
+  /* Apply beta to C. */
+  movaps 0*4*4(C), %xmm2
+  movaps 1*4*4(C), %xmm3
+  movaps 2*4*4(C), %xmm4
+  movaps 3*4*4(C), %xmm5
+
+  mulps beta, %xmm2
+  mulps beta, %xmm3
+  mulps beta, %xmm4
+  mulps beta, %xmm5
+
+  movaps %xmm2, 0*4*4(C)
+  movaps %xmm3, 1*4*4(C)
+  movaps %xmm4, 2*4*4(C)
+  movaps %xmm5, 3*4*4(C)
+
   /* Copy matrix elements of A into SSE registers. */
   movaps 0*4*4(A), %xmm3
   movaps 1*4*4(A), %xmm7
   movaps 2*4*4(A), %xmm11
   movaps 3*4*4(A), %xmm15
 
+  /* Apply alpha. */
+  mulps alpha, %xmm3
+  mulps alpha, %xmm7
+  mulps alpha, %xmm11
+  mulps alpha, %xmm15
+
+  /* Dilate A. */
   pshufd $0x00, %xmm3, %xmm0
   pshufd $0x55, %xmm3, %xmm1
   pshufd $0xaa, %xmm3, %xmm2
@@ -93,16 +121,14 @@ sgemm_kernel_1:
   movaps  8*4*4(%rsp), %xmm4 /* A_{31} A_{31} A_{31} A_{31} */
   movaps 12*4*4(%rsp), %xmm5 /* A_{41} A_{41} A_{41} A_{41} */
 
-  /* Multiply A*B. */
+  /* Multiply A*B and store in C. */
   mulps %xmm0, %xmm2
-  mulps %xmm0, %xmm3
-  mulps %xmm0, %xmm4
-  mulps %xmm0, %xmm5
-
-  /* And store in C. */
   addps %xmm2, %xmm8
+  mulps %xmm0, %xmm3
   addps %xmm3, %xmm9
+  mulps %xmm0, %xmm4
   addps %xmm4, %xmm10
+  mulps %xmm0, %xmm5
   addps %xmm5, %xmm11
 
   /* Load elements. */
@@ -112,16 +138,14 @@ sgemm_kernel_1:
   movaps  9*4*4(%rsp), %xmm4 /* A_{32} A_{32} A_{32} A_{32} */
   movaps 13*4*4(%rsp), %xmm5 /* A_{42} A_{42} A_{42} A_{42} */
 
-  /* Multiply A*B. */
+  /* Multiply A*B and store in C. */
   mulps %xmm0, %xmm2
-  mulps %xmm0, %xmm3
-  mulps %xmm0, %xmm4
-  mulps %xmm0, %xmm5
-
-  /* And store in C. */
   addps %xmm2, %xmm8
+  mulps %xmm0, %xmm3
   addps %xmm3, %xmm9
+  mulps %xmm0, %xmm4
   addps %xmm4, %xmm10
+  mulps %xmm0, %xmm5
   addps %xmm5, %xmm11
 
   /* Load elements. */
@@ -131,16 +155,14 @@ sgemm_kernel_1:
   movaps 10*4*4(%rsp), %xmm4 /* A_{33} A_{33} A_{33} A_{33} */
   movaps 14*4*4(%rsp), %xmm5 /* A_{43} A_{43} A_{43} A_{43} */
 
-  /* Multiply A*B. */
+  /* Multiply A*B and store in C. */
   mulps %xmm0, %xmm2
-  mulps %xmm0, %xmm3
-  mulps %xmm0, %xmm4
-  mulps %xmm0, %xmm5
-
-  /* And store in C. */
   addps %xmm2, %xmm8
+  mulps %xmm0, %xmm3
   addps %xmm3, %xmm9
+  mulps %xmm0, %xmm4
   addps %xmm4, %xmm10
+  mulps %xmm0, %xmm5
   addps %xmm5, %xmm11
 
   /* Load elements. */
@@ -150,19 +172,27 @@ sgemm_kernel_1:
   movaps 11*4*4(%rsp), %xmm4 /* A_{34} A_{34} A_{34} A_{34} */
   movaps 15*4*4(%rsp), %xmm5 /* A_{44} A_{44} A_{44} A_{44} */
 
-  /* Multiply A*B. */
+  /* Multiply A*B and store in C. */
   mulps %xmm0, %xmm2
-  mulps %xmm0, %xmm3
-  mulps %xmm0, %xmm4
-  mulps %xmm0, %xmm5
-
-  /* And store in C. */
   addps %xmm2, %xmm8
+  mulps %xmm0, %xmm3
   addps %xmm3, %xmm9
+  mulps %xmm0, %xmm4
   addps %xmm4, %xmm10
+  mulps %xmm0, %xmm5
   addps %xmm5, %xmm11
 
-  /* Store C from registers back into memory. */
+  /* Add C from registers back into memory. */
+  movaps 0*4*4(C), %xmm0
+  movaps 1*4*4(C), %xmm1
+  movaps 2*4*4(C), %xmm2
+  movaps 3*4*4(C), %xmm3
+
+  addps %xmm0, %xmm8
+  addps %xmm1, %xmm9
+  addps %xmm2, %xmm10
+  addps %xmm3, %xmm11
+
   movaps %xmm8,  0*4*4(C)
   movaps %xmm9,  1*4*4(C)
   movaps %xmm10, 2*4*4(C)
