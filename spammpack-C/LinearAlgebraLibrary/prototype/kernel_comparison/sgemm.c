@@ -16,7 +16,8 @@
 //#define EXTERNAL_SSE_4x4_KERNEL_1
 //#define INLINE_SSE_4x4_KERNEL_2
 //#define EXTERNAL_SSE_4x4_KERNEL_2
-#define EXTERNAL_SSE_4x4_KERNEL_3
+//#define EXTERNAL_SSE_4x4_KERNEL_3
+#define EXTERNAL_SSE_4x4_KERNEL_4
 
 #if defined(EXTERNAL_SSE_4x4_KERNEL_1)
 void
@@ -37,6 +38,16 @@ sgemm_kernel_2 (const unsigned int loops,
 #if defined(EXTERNAL_SSE_4x4_KERNEL_3)
 void
 sgemm_kernel_3 (const unsigned int N,
+    float alpha,
+    float *restrict A_dilated,
+    float *restrict B,
+    float *restrict C);
+#endif
+
+#if defined(EXTERNAL_SSE_4x4_KERNEL_4)
+void
+sgemm_kernel_4 (const unsigned int loops,
+    const unsigned int N,
     float alpha,
     float *restrict A_dilated,
     float *restrict B,
@@ -74,7 +85,7 @@ multiply (const unsigned int loops,
   long long *papi_values;
 #endif
 
-#if defined(EXTERNAL_SSE_4x4_KERNEL_3)
+#if defined(EXTERNAL_SSE_4x4_KERNEL_3) || defined(EXTERNAL_SSE_4x4_KERNEL_4)
   /* Create dilated copy of A. */
   unsigned int i, j, i_dilated;
 
@@ -119,13 +130,16 @@ multiply (const unsigned int loops,
   PAPI_start(papi_events);
 #endif
 
+#if defined(EXTERNAL_BLAS)
   for (loop = 0; loop < loops; loop++)
   {
-#if defined(EXTERNAL_BLAS)
     /* Use a standard external sgemm() from BLAS. */
     sgemm_("N", "N", &N, &N, &N, &alpha, A, &N, B, &N, &beta, C, &N);
+  }
 
 #elif defined(NAIVE_4x4_KERNEL)
+  for (loop = 0; loop < loops; loop++)
+  {
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 4; ++j)
       {
@@ -141,8 +155,11 @@ multiply (const unsigned int loops,
         }
       }
     }
+  }
 
 #elif defined(INLINE_SSE_4x4_KERNEL_1)
+  for (loop = 0; loop < loops; loop++)
+  {
     __asm__(
         /* Copy A into buffer. We will copy each matrix element of A 4 times
          * and arrange the elements in the buffer according to the following
@@ -355,8 +372,11 @@ multiply (const unsigned int loops,
         "r11", "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7",
         "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15"
            );
+  }
 
 #elif defined(INLINE_SSE_4x4_KERNEL_2)
+  for (loop = 0; loop < loops; loop++)
+  {
     __asm__(
         ".intel_syntax noprefix\n\t"
 
@@ -444,14 +464,30 @@ multiply (const unsigned int loops,
           "xmm0", "xmm1", "xmm2", "xmm3", "xmm4",
           "xmm5", "xmm6"
            );
-#elif defined(EXTERNAL_SSE_4x4_KERNEL_1)
-    sgemm_kernel_1(loops, N, alpha, A, B, beta, C);
-#elif defined(EXTERNAL_SSE_4x4_KERNEL_2)
-    sgemm_kernel_2(loops, N, alpha, A, B, beta, C);
-#elif defined(EXTERNAL_SSE_4x4_KERNEL_3)
-    sgemm_kernel_3(N, alpha, A_dilated, B, C);
-#endif
   }
+
+#elif defined(EXTERNAL_SSE_4x4_KERNEL_1)
+  for (loop = 0; loop < loops; loop++)
+  {
+    sgemm_kernel_1(loops, N, alpha, A, B, beta, C);
+  }
+
+#elif defined(EXTERNAL_SSE_4x4_KERNEL_2)
+  for (loop = 0; loop < loops; loop++)
+  {
+    sgemm_kernel_2(loops, N, alpha, A, B, beta, C);
+  }
+
+#elif defined(EXTERNAL_SSE_4x4_KERNEL_3)
+  for (loop = 0; loop < loops; loop++)
+  {
+    sgemm_kernel_3(N, alpha, A_dilated, B, C);
+  }
+
+#elif defined(EXTERNAL_SSE_4x4_KERNEL_4)
+  sgemm_kernel_4(loops, N, alpha, A_dilated, B, C);
+
+#endif
 
 #ifdef HAVE_PAPI
   PAPI_stop(papi_events, papi_values);
@@ -548,6 +584,8 @@ main (int argc, char **argv)
   printf("external sgemm_kernel_2\n");
 #elif defined(EXTERNAL_SSE_4x4_KERNEL_3)
   printf("external sgemm_kernel_3\n");
+#elif defined(EXTERNAL_SSE_4x4_KERNEL_4)
+  printf("external sgemm_kernel_4\n");
 #endif
 
   printf("alpha = %f, beta = %f\n", alpha, beta);
@@ -563,7 +601,8 @@ main (int argc, char **argv)
   defined(INLINE_SSE_4x4_KERNEL_2) || \
   defined(EXTERNAL_SSE_4x4_KERNEL_1) || \
   defined(EXTERNAL_SSE_4x4_KERNEL_2) || \
-  defined(EXTERNAL_SSE_4x4_KERNEL_3)
+  defined(EXTERNAL_SSE_4x4_KERNEL_3) || \
+  defined(EXTERNAL_SSE_4x4_KERNEL_4)
   if (N != 4)
   {
     printf("This kernel only works with 4x4 matrices\n");

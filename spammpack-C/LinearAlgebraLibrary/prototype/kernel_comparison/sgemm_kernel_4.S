@@ -1,28 +1,35 @@
-#define N         %rdi
+#define loops     %rdi
+#define N         %rsi
 #define alpha     %xmm0
-#define A_dilated %rsi
-#define B         %rdx
-#define C         %rcx
+#define A_dilated %rdx
+#define B         %rcx
+#define C         %r8
 
   .text
   .align 256
-  .global sgemm_kernel_3
-  .type sgemm_kernel_3, @function
+  .global sgemm_kernel_4
+  .type sgemm_kernel_4, @function
 
   /* Function declaration in C.
    *
    * void
-   * sgemm_kernel_3 (const unsigned int N,
+   * sgemm_kernel_4 (const unsigned int loops,
+   *     const unsigned int N,
    *     float alpha,
    *     float *restrict A_dilated,
    *     float *restrict B,
    *     float *restrict C);
    */
 
-sgemm_kernel_3:
+sgemm_kernel_4:
 
   /* First we copy the first double word to the other double words in xmm0. */
   pshufd $0x00, alpha, alpha
+
+  /* Loop. */
+  movq loops, %rax
+
+loop:
 
   /* Zero out result matrix. */
   pxor %xmm8,  %xmm8
@@ -117,24 +124,27 @@ sgemm_kernel_3:
   mulps %xmm0, %xmm11
 
   /* Add C from registers back into memory. */
-  movaps 0*4*4(C), %xmm0
-  addps %xmm0, %xmm8
+  movaps 0*4*4(C), %xmm1
+  addps %xmm1, %xmm8
 
-  movaps 1*4*4(C), %xmm1
-  addps %xmm1, %xmm9
+  movaps 1*4*4(C), %xmm2
+  addps %xmm2, %xmm9
 
-  movaps 2*4*4(C), %xmm2
-  addps %xmm2, %xmm10
+  movaps 2*4*4(C), %xmm3
+  addps %xmm3, %xmm10
 
-  movaps 3*4*4(C), %xmm3
-  addps %xmm3, %xmm11
+  movaps 3*4*4(C), %xmm4
+  addps %xmm4, %xmm11
 
   movaps %xmm8,  0*4*4(C)
   movaps %xmm9,  1*4*4(C)
   movaps %xmm10, 2*4*4(C)
   movaps %xmm11, 3*4*4(C)
 
+  sub $1, %rax
+  jg loop
+
   /* We are done. */
   ret
 
-  .size sgemm_kernel_3, .-sgemm_kernel_3
+  .size sgemm_kernel_4, .-sgemm_kernel_4
