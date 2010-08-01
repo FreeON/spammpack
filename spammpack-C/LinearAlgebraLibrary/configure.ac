@@ -167,6 +167,8 @@ if test "${enable_PAPI}" = "yes"; then
   AC_CHECK_LIB([papi], [PAPI_library_init], [], [unset have_PAPI])
   if test "${have_PAPI}" = "yes"; then
     AC_DEFINE([HAVE_PAPI], [1], [whether we should use the PAPI profiling interface])
+  else
+    AC_MSG_FAILURE([PAPI is not available])
   fi
 else
   AC_MSG_RESULT([no])
