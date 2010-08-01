@@ -29,6 +29,7 @@ sgemm_kernel_1:
    */
 
   /* Make space for the buffer for B on the stack. */
+  prefetcht0 0(C)
   movq %rsp, OLD_STACK /* Save old stack. */
   subq $(64 * 4), %rsp
   andq $-4096, %rsp /* Align stack on a page boundary. */
@@ -39,6 +40,7 @@ sgemm_kernel_1:
   pshufd $0x00, beta, beta
 
   /* Apply beta to C. */
+  prefetcht0 0(A)
   movaps 0*4*4(C), %xmm2
   movaps 1*4*4(C), %xmm3
   movaps 2*4*4(C), %xmm4
@@ -49,24 +51,28 @@ sgemm_kernel_1:
   mulps beta, %xmm4
   mulps beta, %xmm5
 
+  prefetcht0 0(%rsp)
   movaps %xmm2, 0*4*4(C)
   movaps %xmm3, 1*4*4(C)
   movaps %xmm4, 2*4*4(C)
   movaps %xmm5, 3*4*4(C)
 
   /* Copy matrix elements of A into SSE registers. */
+  prefetcht0 64(%rsp)
   movaps 0*4*4(A), %xmm3
   movaps 1*4*4(A), %xmm7
   movaps 2*4*4(A), %xmm11
   movaps 3*4*4(A), %xmm15
 
   /* Apply alpha. */
+  prefetcht0 128(%rsp)
   mulps alpha, %xmm3
   mulps alpha, %xmm7
   mulps alpha, %xmm11
   mulps alpha, %xmm15
 
   /* Dilate A. */
+  prefetcht0 0(B)
   pshufd $0x00, %xmm3, %xmm0
   pshufd $0x55, %xmm3, %xmm1
   pshufd $0xaa, %xmm3, %xmm2
@@ -88,6 +94,7 @@ sgemm_kernel_1:
   pshufd $0xff, %xmm15, %xmm15
 
   /* Copy reordered A elements into buffer. */
+  prefetcht0 192(%rsp)
   movaps %xmm0,   0*4*4(%rsp) /* A_{11} */
   movaps %xmm1,   1*4*4(%rsp) /* A_{12} */
   movaps %xmm2,   2*4*4(%rsp) /* A_{13} */

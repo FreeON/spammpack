@@ -13,9 +13,10 @@
 //#define EXTERNAL_BLAS
 //#define NAIVE_4x4_KERNEL
 //#define INLINE_SSE_4x4_KERNEL_1
-#define EXTERNAL_SSE_4x4_KERNEL_1
+//#define EXTERNAL_SSE_4x4_KERNEL_1
 //#define INLINE_SSE_4x4_KERNEL_2
 //#define EXTERNAL_SSE_4x4_KERNEL_2
+#define EXTERNAL_SSE_4x4_KERNEL_3
 
 #if defined(EXTERNAL_SSE_4x4_KERNEL_1)
 void
@@ -31,6 +32,15 @@ sgemm_kernel_2 (const unsigned int loops,
     const unsigned int N,
     float alpha, float *restrict A, float *restrict B,
     float beta, float *restrict C);
+#endif
+
+#if defined(EXTERNAL_SSE_4x4_KERNEL_3)
+void
+sgemm_kernel_3 (const unsigned int N,
+    float alpha,
+    float *restrict A_dilated,
+    float *restrict B,
+    float *restrict C);
 #endif
 
 void
@@ -61,22 +71,56 @@ multiply (const unsigned int loops,
 
 #ifdef HAVE_PAPI
   int papi_events = PAPI_NULL;
-  float papi_rtime;
-  float papi_ptime;
-  long_long papi_flpins;
-  float papi_mflops;
-  long long papi_ins;
-  float papi_ipc;
+  long long *papi_values;
+#endif
+
+#if defined(EXTERNAL_SSE_4x4_KERNEL_3)
+  /* Create dilated copy of A. */
+  unsigned int i, j, i_dilated;
+
+#ifdef HAVE_POSIX_MEMALIGN
+  float* A_dilated;
+  if (posix_memalign((void**) &A_dilated, 64, sizeof(float)*4*N*N) != 0)
+  {
+    printf("error allocating matrix memory for A_dilated\n");
+    exit(1);
+  }
+#else
+  float* A_dilated = (float*) malloc(sizeof(float)*4*N*N);
+#endif
+
+  i_dilated = 0;
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      A_dilated[i_dilated++] = A[i*N+j];
+      A_dilated[i_dilated++] = A[i*N+j];
+      A_dilated[i_dilated++] = A[i*N+j];
+      A_dilated[i_dilated++] = A[i*N+j];
+    }
+  }
+
+  /* Apply beta to C. */
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      C[i*N+j] *= beta;
+    }
+  }
+#endif
+
+#ifdef HAVE_PAPI
+  papi_values = (long long*) malloc(sizeof(long long)*4);
+  PAPI_create_eventset(&papi_events);
+  PAPI_add_event(papi_events, PAPI_TOT_INS);
+  PAPI_add_event(papi_events, PAPI_TOT_CYC);
+  PAPI_add_event(papi_events, PAPI_L1_TCM);
+  PAPI_add_event(papi_events, PAPI_L2_TCM);
+  PAPI_start(papi_events);
 #endif
 
   for (loop = 0; loop < loops; loop++)
   {
-#ifdef HAVE_PAPI
-    PAPI_create_eventset(&papi_events);
-    PAPI_add_event(papi_events, PAPI_TOT_INS);
-    PAPI_start(papi_events);
-#endif
-
 #if defined(EXTERNAL_BLAS)
     /* Use a standard external sgemm() from BLAS. */
     sgemm_("N", "N", &N, &N, &N, &alpha, A, &N, B, &N, &beta, C, &N);
@@ -404,15 +448,25 @@ multiply (const unsigned int loops,
     sgemm_kernel_1(loops, N, alpha, A, B, beta, C);
 #elif defined(EXTERNAL_SSE_4x4_KERNEL_2)
     sgemm_kernel_2(loops, N, alpha, A, B, beta, C);
-#endif
-
-#ifdef HAVE_PAPI
-    PAPI_stop(papi_events, &papi_ins);
-    printf("PAPI (in loop) - %lli total instructions\n", papi_ins);
-    PAPI_cleanup_eventset(papi_events);
-    PAPI_destroy_eventset(&papi_events);
+#elif defined(EXTERNAL_SSE_4x4_KERNEL_3)
+    sgemm_kernel_3(N, alpha, A_dilated, B, C);
 #endif
   }
+
+#ifdef HAVE_PAPI
+  PAPI_stop(papi_events, papi_values);
+  printf("[PAPI] %lli total instructions\n", papi_values[0]);
+  printf("[PAPI] %lli total cycles\n", papi_values[1]);
+  printf("[PAPI] %lli total L1 misses\n", papi_values[2]);
+  printf("[PAPI] %lli total L2 misses\n", papi_values[3]);
+  PAPI_cleanup_eventset(papi_events);
+  PAPI_destroy_eventset(&papi_events);
+  free(papi_values);
+#endif
+
+#if defined(EXTERNAL_SSE_4x4_KERNEL_3)
+  free(A_dilated);
+#endif
 }
 
 int
@@ -492,6 +546,8 @@ main (int argc, char **argv)
   printf("inline sgemm_kernel_2\n");
 #elif defined(EXTERNAL_SSE_4x4_KERNEL_2)
   printf("external sgemm_kernel_2\n");
+#elif defined(EXTERNAL_SSE_4x4_KERNEL_3)
+  printf("external sgemm_kernel_3\n");
 #endif
 
   printf("alpha = %f, beta = %f\n", alpha, beta);
@@ -502,7 +558,12 @@ main (int argc, char **argv)
     verify = 0;
   }
 
-#if defined(NAIVE_4x4_KERNEL) || defined(INLINE_SSE_4x4_KERNEL_1) || defined(INLINE_SSE_4x4_KERNEL_2) || defined(EXTERNAL_SSE_4x4_KERNEL_1) || defined(EXTERNAL_SSE_4x4_KERNEL_2)
+#if defined(NAIVE_4x4_KERNEL) || \
+  defined(INLINE_SSE_4x4_KERNEL_1) || \
+  defined(INLINE_SSE_4x4_KERNEL_2) || \
+  defined(EXTERNAL_SSE_4x4_KERNEL_1) || \
+  defined(EXTERNAL_SSE_4x4_KERNEL_2) || \
+  defined(EXTERNAL_SSE_4x4_KERNEL_3)
   if (N != 4)
   {
     printf("This kernel only works with 4x4 matrices\n");
@@ -569,7 +630,7 @@ main (int argc, char **argv)
     }
   }
 
-  printf("looping %u times\n", loops);
+  printf("%ix%i matrix (repeated %i times)\n", N, N, loops);
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
   multiply(loops, N, alpha, A, B, beta, C);
@@ -579,7 +640,6 @@ main (int argc, char **argv)
   usertime = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/loops;
   systime = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/loops;
   flops = ((double) N)*((double) N)*(2.*N+1.)/usertime;
-  printf("%ix%i matrix (repeated %i times)\n", N, N, loops);
   if (flops < 1000*1000*1000)
   {
     printf("performance: total walltime %f s, usertime %f s, systime %f s, per iteration walltime %e s, usertime %e s, systime %e s, %1.2f Mflop/s\n",
