@@ -17,7 +17,8 @@
 //#define INLINE_SSE_4x4_KERNEL_2
 //#define EXTERNAL_SSE_4x4_KERNEL_2
 //#define EXTERNAL_SSE_4x4_KERNEL_3
-#define EXTERNAL_SSE_4x4_KERNEL_4
+//#define EXTERNAL_SSE_4x4_KERNEL_4
+#define EXTERNAL_SSE_4x4_KERNEL_5
 
 #if defined(EXTERNAL_SSE_4x4_KERNEL_1)
 void
@@ -47,6 +48,16 @@ sgemm_kernel_3 (const unsigned int N,
 #if defined(EXTERNAL_SSE_4x4_KERNEL_4)
 void
 sgemm_kernel_4 (const unsigned int loops,
+    const unsigned int N,
+    float alpha,
+    float *restrict A_dilated,
+    float *restrict B,
+    float *restrict C);
+#endif
+
+#if defined(EXTERNAL_SSE_4x4_KERNEL_5)
+void
+sgemm_kernel_5 (const unsigned int loops,
     const unsigned int N,
     float alpha,
     float *restrict A_dilated,
@@ -85,7 +96,9 @@ multiply (const unsigned int loops,
   long long *papi_values;
 #endif
 
-#if defined(EXTERNAL_SSE_4x4_KERNEL_3) || defined(EXTERNAL_SSE_4x4_KERNEL_4)
+#if defined(EXTERNAL_SSE_4x4_KERNEL_3) || \
+  defined(EXTERNAL_SSE_4x4_KERNEL_4) || \
+  defined(EXTERNAL_SSE_4x4_KERNEL_5)
   /* Create dilated copy of A. */
   unsigned int i, j, i_dilated;
 
@@ -487,6 +500,9 @@ multiply (const unsigned int loops,
 #elif defined(EXTERNAL_SSE_4x4_KERNEL_4)
   sgemm_kernel_4(loops, N, alpha, A_dilated, B, C);
 
+#elif defined(EXTERNAL_SSE_4x4_KERNEL_5)
+  sgemm_kernel_5(loops, N, alpha, A_dilated, B, C);
+
 #endif
 
 #ifdef HAVE_PAPI
@@ -586,6 +602,8 @@ main (int argc, char **argv)
   printf("external sgemm_kernel_3\n");
 #elif defined(EXTERNAL_SSE_4x4_KERNEL_4)
   printf("external sgemm_kernel_4\n");
+#elif defined(EXTERNAL_SSE_4x4_KERNEL_5)
+  printf("external sgemm_kernel_5\n");
 #endif
 
   printf("alpha = %f, beta = %f\n", alpha, beta);
@@ -602,7 +620,8 @@ main (int argc, char **argv)
   defined(EXTERNAL_SSE_4x4_KERNEL_1) || \
   defined(EXTERNAL_SSE_4x4_KERNEL_2) || \
   defined(EXTERNAL_SSE_4x4_KERNEL_3) || \
-  defined(EXTERNAL_SSE_4x4_KERNEL_4)
+  defined(EXTERNAL_SSE_4x4_KERNEL_4) || \
+  defined(EXTERNAL_SSE_4x4_KERNEL_5)
   if (N != 4)
   {
     printf("This kernel only works with 4x4 matrices\n");
