@@ -10,4 +10,4 @@ else
 blasdirs =
 endif
 
-SUBDIRS = $(cudadirs) $(blasdirs) linear_quadtree Z_curve
+SUBDIRS = $(cudadirs) $(blasdirs) linear_quadtree Z_curve stream_multiply
