@@ -2,6 +2,9 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #define CACHELINE_SIZE 64
 #define N_BLOCK 4
@@ -68,7 +71,25 @@ print_matrix (unsigned int N, float *restrict A)
 }
 
 void
-stream_multiply (const unsigned int number_stream_elements, const float alpha, struct multiply_stream_t *multiply_stream)
+stream_multiply_verify (const unsigned int N, const float alpha,
+    const float *restrict A, const float *restrict B, float *restrict C)
+{
+  unsigned int stream_index;
+  unsigned int i, j, k;
+
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++) {
+      for (k = 0; k < N; k++)
+      {
+        C[get_index(N, i, j)] += alpha*A[get_index(N, i, k)]*B[get_index(N, k, j)];
+      }
+    }
+  }
+}
+
+void
+stream_multiply (const unsigned int number_stream_elements, const float alpha,
+    struct multiply_stream_t *multiply_stream)
 {
   unsigned int stream_index;
   unsigned int i, j, k;
@@ -89,13 +110,33 @@ stream_multiply (const unsigned int number_stream_elements, const float alpha, s
       }
     }
   }
+
 #endif
 }
 
-int
-main ()
+double
+compare_matrix (const unsigned int N, const float *restrict A, const float *restrict B)
 {
-  unsigned int N = 8;
+  unsigned int i, j;
+  double max_diff = 0;
+
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      if (fabs(A[get_index(N, i, j)]-B[get_index(N, i, j)]) > max_diff)
+      {
+        max_diff = fabs(A[get_index(N, i, j)]-B[get_index(N, i, j)]);
+      }
+    }
+  }
+
+  return max_diff;
+}
+
+int
+main (int argc, char **argv)
+{
+  unsigned int N = 1024;
   unsigned int N_padded = N;
 
   unsigned int i, j, k;
@@ -104,10 +145,64 @@ main ()
   float alpha = 1.2;
   float beta = 0.5;
 
-  float *A, *B, *C;
+  int verify = 0;
+  double max_diff;
+
+  unsigned int loop;
+  unsigned int loops = 1;
+  struct timeval start, stop;
+  struct rusage rusage_start, rusage_stop;
+  double walltime, usertime, systime, flops;
+
+  float *A, *B, *C, *D;
   float *A_blocked, *B_blocked, *C_blocked;
 
   struct multiply_stream_t *multiply_stream;
+
+  int parse;
+  int longindex;
+  char *short_options = "hN:l:v";
+  struct option long_options[] = {
+    { "help", no_argument, NULL, 'h' },
+    { "N", required_argument, NULL, 'N' },
+    { "loops", required_argument, NULL, 'l' },
+    { "verify", no_argument, NULL, 'v' },
+    { NULL, 0, NULL, 0 }
+  };
+
+  /* Read command line. */
+  while ((parse = getopt_long(argc, argv, short_options, long_options, &longindex)) != -1)
+  {
+    switch (parse)
+    {
+      case 'h':
+        printf("Usage:\n");
+        printf("\n");
+        printf("-h            This help\n");
+        printf("-N N          Use NxN matrix blocks\n");
+        printf("--loops N     Repeat each multiply N times\n");
+        printf("--verify      Verify result\n");
+        return 0;
+        break;
+
+      case 'N':
+        N = strtol(optarg, NULL, 10);
+        break;
+
+      case 'l':
+        loops = strtol(optarg, NULL, 10);
+        break;
+
+      case 'v':
+        verify = 1;
+        break;
+
+      default:
+        printf("unknown command line argument\n");
+        return -1;
+        break;
+    }
+  }
 
   /* Check input. */
   N_padded = (int) N_BLOCK*pow(2, (int) ceil(log(N/(double) N_BLOCK)/log(2)));
@@ -136,6 +231,11 @@ main ()
     printf("error allocating C\n");
     exit(1);
   }
+  if (posix_memalign((void**) &D, CACHELINE_SIZE, sizeof(float)*N*N) != 0)
+  {
+    printf("error allocating D\n");
+    exit(1);
+  }
 #else
   printf("can not allocated aligned memory for matrices\n");
   if ((A = (float*) malloc(sizeof(float)*N*N)) == NULL)
@@ -153,6 +253,11 @@ main ()
     printf("error allocating C\n");
     exit(1);
   }
+  if ((D = (float*) malloc(sizeof(float)*N*N)) == NULL)
+  {
+    printf("error allocating D\n");
+    exit(1);
+  }
 #endif
 
   /* Fill matrices with random data. */
@@ -162,29 +267,13 @@ main ()
       A[get_index(N, i, j)] = rand()/(float) RAND_MAX;
       B[get_index(N, i, j)] = rand()/(float) RAND_MAX;
       C[get_index(N, i, j)] = rand()/(float) RAND_MAX;
+      D[get_index(N, i, j)] = C[get_index(N, i, j)];
 
       //A[get_index(N, i, j)] = get_index(N, i, j)+1;
       //B[get_index(N, i, j)] = get_index(N, i, j)+1;
       //C[get_index(N, i, j)] = get_index(N, i, j)+1;
-
-      //printf("get_index(%u, %u, %u) = %u\n", N, i, j, get_index(N, i, j));
     }
   }
-
-  //for (i = 0; i < N*N; i++)
-  //{
-  //  printf(" %i", (int) A[i]);
-  //}
-  //printf("\n");
-
-  printf("A =\n");
-  print_matrix(N, A);
-
-  printf("B =\n");
-  print_matrix(N, B);
-
-  printf("C =\n");
-  print_matrix(N, C);
 
   /* Allocate stream. */
   number_stream_elements = N/N_BLOCK*N/N_BLOCK*N/N_BLOCK;
@@ -244,15 +333,51 @@ main ()
   for (i = 0; i < N*N; i++)
   {
     C[i] *= beta;
+    if (verify) { D[i] *= beta; }
+  }
+  printf("applied beta\n");
+
+  gettimeofday(&start, NULL);
+  getrusage(RUSAGE_SELF, &rusage_start);
+  for (loop = 0; loop < loops; loop++)
+  {
+    stream_multiply(number_stream_elements, alpha, multiply_stream);
+  }
+  getrusage(RUSAGE_SELF, &rusage_stop);
+  gettimeofday(&stop, NULL);
+  walltime = (stop.tv_sec-start.tv_sec+(stop.tv_usec-start.tv_usec)/1.0e6)/loops;
+  usertime = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/loops;
+  systime = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/loops;
+  flops = ((double) N)*((double) N)*(2.*N+1.)/usertime;
+  if (flops < 1000*1000*1000)
+  {
+    printf("performance: total walltime %f s, usertime %f s, systime %f s, per iteration walltime %e s, usertime %e s, systime %e s, %1.2f Mflop/s\n",
+        walltime*loops, usertime*loops, systime*loops,
+        walltime, usertime, systime,
+        flops/1000./1000.);
   }
 
-  stream_multiply(number_stream_elements, alpha, multiply_stream);
+  else
+  {
+    printf("performance: total walltime %f s, usertime %f s, systime %f s, per iteration walltime %e s, usertime %e s, systime %e s, %1.2f Gflop/s\n",
+        walltime*loops, usertime*loops, systime*loops,
+        walltime, usertime, systime,
+        flops/1000./1000./1000.);
+  }
 
-  printf("C =\n");
-  print_matrix(N, C);
+  if (verify)
+  {
+    printf("verify\n");
+    stream_multiply_verify(N, alpha, A, B, D);
+
+    max_diff = compare_matrix(N, C, D);
+    printf("max diff = %e\n", max_diff);
+  }
 
   /* Free memory. */
   free(A);
   free(B);
   free(C);
+  free(D);
+  free(multiply_stream);
 }
