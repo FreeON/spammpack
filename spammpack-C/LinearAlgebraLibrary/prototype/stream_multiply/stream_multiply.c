@@ -6,12 +6,17 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#ifdef HAVE_PAPI
+#include <papi.h>
+#endif
+
 #define CACHELINE_SIZE 64
 #define N_BLOCK 4
 
 //#undef HAVE_POSIX_MEMALIGN
 
-#define STREAM_KERNEL_1
+//#define STREAM_KERNEL_1
+#define STREAM_KERNEL_2
 
 struct multiply_stream_t
 {
@@ -27,18 +32,31 @@ stream_kernel_1 (const unsigned int number_stream_elements,
     struct multiply_stream_t *multiply_stream);
 #endif
 
+#ifdef STREAM_KERNEL_2
+void
+stream_kernel_2 (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+/* Returns the Morton-ordered index of a NxN matrix. */
 unsigned int
 get_Morton_index (const unsigned int N, const unsigned int i, const unsigned int j)
 {
   return i*N+j;
 }
 
+/* Returns the linear index of a submatrix block in a (N*N_BLOCK)x(N*N_BLOCK)
+ * matrix. The blocks can be arranged in any order, the stream_kernel() does
+ * not need to know what order this is.
+ */
 unsigned int
 get_block_index (const unsigned int N, const unsigned int i, const unsigned int j)
 {
   return get_Morton_index(N, i, j);
 }
 
+/* Returns linear index in a NxN matrix of the submatrix block. */
 unsigned int
 get_blocked_index (const unsigned int N, const unsigned int i, const unsigned int j)
 {
@@ -50,6 +68,7 @@ get_blocked_index (const unsigned int N, const unsigned int i, const unsigned in
   return get_Morton_index(N/N_BLOCK, i_block, j_block)*N_BLOCK*N_BLOCK;
 }
 
+/* Returns the linear index of a matrix element in a blocked NxN matrix. */
 unsigned int
 get_index (const unsigned int N, const unsigned int i, const unsigned int j)
 {
@@ -96,6 +115,9 @@ stream_multiply (const unsigned int number_stream_elements, const float alpha,
 
 #if defined(STREAM_KERNEL_1)
   stream_kernel_1(number_stream_elements, alpha, multiply_stream);
+
+#elif defined(STREAM_KERNEL_2)
+  stream_kernel_2(number_stream_elements, alpha, multiply_stream);
 
 #else
   /* Multiply stream. */
@@ -154,6 +176,11 @@ main (int argc, char **argv)
   struct rusage rusage_start, rusage_stop;
   double walltime, usertime, systime, flops;
 
+#ifdef HAVE_PAPI
+  int papi_events = PAPI_NULL;
+  long long *papi_values;
+#endif
+
   float *A, *B, *C, *D;
   float *A_blocked, *B_blocked, *C_blocked;
 
@@ -203,6 +230,15 @@ main (int argc, char **argv)
         break;
     }
   }
+
+#ifdef HAVE_PAPI
+  /* Do some PAPI. */
+  if (PAPI_library_init(PAPI_VER_CURRENT) != PAPI_VER_CURRENT)
+  {
+    printf("can not initialize PAPI\n");
+    exit(1);
+  }
+#endif
 
   /* Check input. */
   N_padded = (int) N_BLOCK*pow(2, (int) ceil(log(N/(double) N_BLOCK)/log(2)));
@@ -339,10 +375,36 @@ main (int argc, char **argv)
 
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
+
+#ifdef HAVE_PAPI
+  papi_values = (long long*) malloc(sizeof(long long)*5);
+  PAPI_set_granularity(PAPI_GRN_MIN);
+  PAPI_create_eventset(&papi_events);
+  PAPI_add_event(papi_events, PAPI_TOT_INS);
+  PAPI_add_event(papi_events, PAPI_TOT_CYC);
+  PAPI_add_event(papi_events, PAPI_L1_TCM);
+  PAPI_add_event(papi_events, PAPI_L2_TCM);
+  PAPI_add_event(papi_events, PAPI_TLB_DM);
+  PAPI_start(papi_events);
+#endif
+
   for (loop = 0; loop < loops; loop++)
   {
     stream_multiply(number_stream_elements, alpha, multiply_stream);
   }
+
+#ifdef HAVE_PAPI
+  PAPI_stop(papi_events, papi_values);
+  printf("[PAPI] %lli total instructions\n",    papi_values[0]);
+  printf("[PAPI] %lli total cycles\n",          papi_values[1]);
+  printf("[PAPI] %lli total L1 misses\n",       papi_values[2]);
+  printf("[PAPI] %lli total L2 misses\n",       papi_values[3]);
+  printf("[PAPI] %lli total data TLB misses\n", papi_values[4]);
+  PAPI_cleanup_eventset(papi_events);
+  PAPI_destroy_eventset(&papi_events);
+  free(papi_values);
+#endif
+
   getrusage(RUSAGE_SELF, &rusage_stop);
   gettimeofday(&stop, NULL);
   walltime = (stop.tv_sec-start.tv_sec+(stop.tv_usec-start.tv_usec)/1.0e6)/loops;
