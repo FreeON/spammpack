@@ -127,8 +127,16 @@
  * Open questions:
  *
  * - How close can the stream multiply performance be pushed to match GotoBLAS
- *   large N perfmance? If stream is slower, why? Understand better what Goto
- *   does to make his multiply fast.
+ *   large N performance? If stream is slower, why? Understand better what
+ *   Goto does to make his multiply fast.
+ *
+ * - The 4x4 SSE kernel in <tt>prototype/kernel_comparison</tt> is performing
+ *   at around 80\% of Goto neglecting cache misses. Presumably one has to
+ *   stream through more data to achieve higher throughput than this. We are
+ *   now integrating this SSE kernel into a stream multiply that will achieve
+ *   this.
  *
  * \image latex GotoBLAS_on_Q8200.eps "The measured performance of GotoBLAS single precision sgemm() on Intel Core2 Q8200." width=\linewidth
+ *
+ * \image latex stream_performance.eps "The performance of the streaming 4x4 kernel compared to GotoBLAS single precision sgemm() on Intel Core2 Q8200." width=\linewidth
  */

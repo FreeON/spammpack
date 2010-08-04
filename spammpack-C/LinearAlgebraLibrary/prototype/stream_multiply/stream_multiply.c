@@ -15,6 +15,7 @@
 
 //#undef HAVE_POSIX_MEMALIGN
 
+//#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 #define STREAM_KERNEL_2
 
@@ -240,6 +241,20 @@ main (int argc, char **argv)
   }
 #endif
 
+#if defined(EXTERNAL_BLAS)
+  printf("external blas\n");
+
+#elif defined(STREAM_KERNEL_1)
+  printf("using stream_kernel_1\n");
+
+#elif defined(STREAM_KERNEL_2)
+  printf("using stream_kernel_1\n");
+
+#else
+  printf("using C stream kernel\n");
+
+#endif
+
   /* Check input. */
   N_padded = (int) N_BLOCK*pow(2, (int) ceil(log(N/(double) N_BLOCK)/log(2)));
   if (N_padded != N)
@@ -390,7 +405,13 @@ main (int argc, char **argv)
 
   for (loop = 0; loop < loops; loop++)
   {
+#if defined(EXTERNAL_BLAS)
+    sgemm_("N", "N", &N, &N, &N, &alpha, A, &N, B, &N, &beta, C, &N);
+
+#else
     stream_multiply(number_stream_elements, alpha, multiply_stream);
+
+#endif
   }
 
 #ifdef HAVE_PAPI
