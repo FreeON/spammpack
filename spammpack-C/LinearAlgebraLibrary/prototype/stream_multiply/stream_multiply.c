@@ -470,6 +470,7 @@ main (int argc, char **argv)
 
 #else
     stream_multiply(number_stream_elements, alpha, multiply_stream);
+    //stream_multiply(loops, alpha, multiply_stream);
 
 #endif
   }
