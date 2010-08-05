@@ -5,13 +5,16 @@
 #define stacksize  64
 
 #define index     %rax
-#define end_index %rcx
-#define old_stack %rdx
-#define A         %r10
-#define B         %r11
-#define C         %r12
+#define end_index %r10
+#define old_stack %r11
+#define A_dilated %rdx
+#define A         %r12
+#define B         %rcx
+#define C         %r8
 
-#define A_dilated %r13
+#define DILATE_A
+#define UPDATE_POINTERS
+#define MULTIPLY
 
   .text
   .align 256
@@ -63,10 +66,13 @@ stream_kernel_3:
   .align 16
 loop_multiply:
 
+#ifdef UPDATE_POINTERS
   movq  0(multiply_stream, index, 1), A
   movq  8(multiply_stream, index, 1), B
   movq 16(multiply_stream, index, 1), C
+#endif
 
+#ifdef DILATE_A
   movaps (A),     %xmm3
   movaps 4*4(A),  %xmm7
   movaps 8*4(A),  %xmm11
@@ -113,7 +119,9 @@ loop_multiply:
   movaps %xmm15, 15*4*4(A_dilated)
 
   movaps (%rsp), %xmm0
+#endif
 
+#ifdef MULTIPLY
   movaps 0*4*4(B), %xmm1 /* B_{11} B_{12} B_{13} B_{14} */
   movaps 0*4*4(A_dilated), %xmm12 /* A_{11} A_{11} A_{11} A_{11} */
   mulps %xmm1, %xmm12
@@ -200,6 +208,7 @@ loop_multiply:
 
   movaps %xmm14, 2*4*4(C)
   movaps %xmm15, 3*4*4(C)
+#endif
 
   addq $(3*8), index
   cmp end_index, index

@@ -5,6 +5,8 @@
 #define B         %rcx
 #define C         %r8
 
+#define MULTIPLY
+
   .text
   .align 256
   .global sgemm_kernel_5
@@ -31,6 +33,7 @@ sgemm_kernel_5:
 
 loop:
 
+#ifdef MULTIPLY
   movaps 0*4*4(B), %xmm1 /* B_{11} B_{12} B_{13} B_{14} */
   movaps 0*4*4(A_dilated), %xmm12 /* A_{11} A_{11} A_{11} A_{11} */
   mulps %xmm1, %xmm12
@@ -117,6 +120,7 @@ loop:
 
   movaps %xmm14, 2*4*4(C)
   movaps %xmm15, 3*4*4(C)
+#endif
 
   sub $1, %rax
   jg loop
