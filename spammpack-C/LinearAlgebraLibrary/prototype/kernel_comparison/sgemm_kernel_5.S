@@ -111,7 +111,6 @@ loop:
   addps %xmm2, %xmm13
   movaps %xmm12, 0*4*4(C)
 
-
   addps %xmm3, %xmm14
   addps %xmm4, %xmm15
   movaps %xmm13, 1*4*4(C)
