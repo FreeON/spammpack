@@ -20,19 +20,20 @@
   .global stream_kernel_2
   .type stream_kernel_2, @function
 
-#  Function declaration in C.
-#
-#  struct multiply_stream_t
-#  {
-#    float *A_block;
-#    float *B_block;
-#    float *C_block;
-#  };
-#
-#  void
-#  stream_kernel_2 (const unsigned int number_stream_elements,
-#      float alpha,
-#      struct multiply_stream_t *multiply_stream);
+  /* Function declaration in C.
+   *
+   *  struct multiply_stream_t
+   *  {
+   *    float *A_block;
+   *    float *B_block;
+   *    float *C_block;
+   *  };
+   *
+   *  void
+   *  stream_kernel_2 (const unsigned int number_stream_elements,
+   *      float alpha,
+   *      struct multiply_stream_t *multiply_stream);
+   */
 
 stream_kernel_2:
 
@@ -48,25 +49,23 @@ stream_kernel_2:
 
   /* Create buffer on stack. */
   subq $(buffer_size+16), %rsp
-  andq $-4096, %rsp /* Aling buffer on page boundary. */
+  andq $-64, %rsp /* Align buffer on cache line. */
 
   /* First we copy the first double word to the other double words in xmm0. */
   pshufd $0x00, alpha_arg, alpha_arg
   movaps alpha_arg, alpha
 
   /* Loop. */
-  movq $0, stream_index
-  leaq (multiply_stream), stream_element
+  movq number_stream_elements, stream_index
+  movq multiply_stream, stream_element
 
+  .align 16
 loop:
 
   /* Calculate effective addresses of matrix blocks. */
   movq 0*8(stream_element), A
-  leaq (A), A
   movq 1*8(stream_element), B
-  leaq (B), B
   movq 2*8(stream_element), C
-  leaq (C), C
 
   /* Dilate A into buffer. */
   movaps (A),     %xmm3
@@ -74,15 +73,15 @@ loop:
   movaps 8*4(A),  %xmm11
   movaps 12*4(A), %xmm15
 
-  pshufd $0x00, %xmm3, %xmm0
-  pshufd $0x55, %xmm3, %xmm1
-  pshufd $0xaa, %xmm3, %xmm2
-  pshufd $0xff, %xmm3, %xmm3
+  pshufd $0x00, %xmm3,  %xmm0
+  pshufd $0x55, %xmm3,  %xmm1
+  pshufd $0xaa, %xmm3,  %xmm2
+  pshufd $0xff, %xmm3,  %xmm3
 
-  pshufd $0x00, %xmm7, %xmm4
-  pshufd $0x55, %xmm7, %xmm5
-  pshufd $0xaa, %xmm7, %xmm6
-  pshufd $0xff, %xmm7, %xmm7
+  pshufd $0x00, %xmm7,  %xmm4
+  pshufd $0x55, %xmm7,  %xmm5
+  pshufd $0xaa, %xmm7,  %xmm6
+  pshufd $0xff, %xmm7,  %xmm7
 
   pshufd $0x00, %xmm11, %xmm8
   pshufd $0x55, %xmm11, %xmm9
@@ -94,15 +93,15 @@ loop:
   pshufd $0xaa, %xmm15, %xmm14
   pshufd $0xff, %xmm15, %xmm15
 
-  movaps %xmm0, 0*4*4(A_dilated)
-  movaps %xmm1, 1*4*4(A_dilated)
-  movaps %xmm2, 2*4*4(A_dilated)
-  movaps %xmm3, 3*4*4(A_dilated)
+  movaps %xmm0,   0*4*4(A_dilated)
+  movaps %xmm1,   1*4*4(A_dilated)
+  movaps %xmm2,   2*4*4(A_dilated)
+  movaps %xmm3,   3*4*4(A_dilated)
 
-  movaps %xmm4, 4*4*4(A_dilated)
-  movaps %xmm5, 5*4*4(A_dilated)
-  movaps %xmm6, 6*4*4(A_dilated)
-  movaps %xmm7, 7*4*4(A_dilated)
+  movaps %xmm4,   4*4*4(A_dilated)
+  movaps %xmm5,   5*4*4(A_dilated)
+  movaps %xmm6,   6*4*4(A_dilated)
+  movaps %xmm7,   7*4*4(A_dilated)
 
   movaps %xmm8,   8*4*4(A_dilated)
   movaps %xmm9,   9*4*4(A_dilated)
@@ -114,7 +113,8 @@ loop:
   movaps %xmm14, 14*4*4(A_dilated)
   movaps %xmm15, 15*4*4(A_dilated)
 
-  /* Multiply. */
+  movaps alpha, %xmm0 /* Restore alpha to xmm0. */
+
   movaps 0*4*4(B), %xmm1 /* B_{11} B_{12} B_{13} B_{14} */
   movaps 0*4*4(A_dilated), %xmm12 /* A_{11} A_{11} A_{11} A_{11} */
   mulps %xmm1, %xmm12
@@ -184,7 +184,6 @@ loop:
   addps %xmm5, %xmm15
 
   movaps 2*4*4(C), %xmm3
-  movaps alpha, %xmm0
   mulps %xmm0, %xmm12
   mulps %xmm0, %xmm13
 
@@ -203,13 +202,10 @@ loop:
   movaps %xmm14, 2*4*4(C)
   movaps %xmm15, 3*4*4(C)
 
-  /* Increment pointer in multiply stream. */
   addq $3*8, stream_element
 
-  /* Finish loop. */
-  add $1, %rax
-  cmp number_stream_elements, %rax
-  jl loop
+  sub $1, stream_index
+  jg loop
 
   /* We are done. */
   movq old_stack, %rsp

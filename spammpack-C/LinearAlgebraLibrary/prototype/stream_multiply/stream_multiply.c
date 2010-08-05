@@ -17,7 +17,8 @@
 
 //#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
-#define STREAM_KERNEL_2
+//#define STREAM_KERNEL_2
+#define STREAM_KERNEL_3
 
 struct multiply_stream_t
 {
@@ -36,6 +37,13 @@ stream_kernel_1 (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_2
 void
 stream_kernel_2 (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_3
+void
+stream_kernel_3 (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
@@ -114,11 +122,25 @@ stream_multiply (const unsigned int number_stream_elements, const float alpha,
   unsigned int stream_index;
   unsigned int i, j, k;
 
+  float *A, *B, *C;
+
 #if defined(STREAM_KERNEL_1)
   stream_kernel_1(number_stream_elements, alpha, multiply_stream);
 
 #elif defined(STREAM_KERNEL_2)
   stream_kernel_2(number_stream_elements, alpha, multiply_stream);
+
+#elif defined(STREAM_KERNEL_3)
+  stream_kernel_3(number_stream_elements, alpha, multiply_stream);
+
+  //for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
+  //{
+  //  A = multiply_stream[stream_index].A_block;
+  //  B = multiply_stream[stream_index].B_block;
+  //  C = multiply_stream[stream_index].C_block;
+
+  //  A[0] = 0;
+  //}
 
 #else
   /* Multiply stream. */
@@ -248,7 +270,10 @@ main (int argc, char **argv)
   printf("using stream_kernel_1\n");
 
 #elif defined(STREAM_KERNEL_2)
-  printf("using stream_kernel_1\n");
+  printf("using stream_kernel_2\n");
+
+#elif defined(STREAM_KERNEL_3)
+  printf("using stream_kernel_3\n");
 
 #else
   printf("using C stream kernel\n");
@@ -315,14 +340,15 @@ main (int argc, char **argv)
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      A[get_index(N, i, j)] = rand()/(float) RAND_MAX;
-      B[get_index(N, i, j)] = rand()/(float) RAND_MAX;
-      C[get_index(N, i, j)] = rand()/(float) RAND_MAX;
-      D[get_index(N, i, j)] = C[get_index(N, i, j)];
+      //A[get_index(N, i, j)] = rand()/(float) RAND_MAX;
+      //B[get_index(N, i, j)] = rand()/(float) RAND_MAX;
+      //C[get_index(N, i, j)] = rand()/(float) RAND_MAX;
 
-      //A[get_index(N, i, j)] = get_index(N, i, j)+1;
-      //B[get_index(N, i, j)] = get_index(N, i, j)+1;
-      //C[get_index(N, i, j)] = get_index(N, i, j)+1;
+      A[get_index(N, i, j)] = get_index(N, i, j)+1;
+      B[get_index(N, i, j)] = get_index(N, i, j)+1;
+      C[get_index(N, i, j)] = get_index(N, i, j)+1;
+
+      D[get_index(N, i, j)] = C[get_index(N, i, j)];
     }
   }
 
@@ -387,6 +413,8 @@ main (int argc, char **argv)
     if (verify) { D[i] *= beta; }
   }
   printf("applied beta\n");
+
+  printf("looping over multiply (loops = %u)\n", loops);
 
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
