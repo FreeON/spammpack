@@ -193,6 +193,10 @@ main (int argc, char **argv)
   int verify = 0;
   double max_diff;
 
+  int print = 0;
+
+  int random_elements = 1;
+
   unsigned int loop;
   unsigned int loops = 1;
   struct timeval start, stop;
@@ -211,12 +215,14 @@ main (int argc, char **argv)
 
   int parse;
   int longindex;
-  char *short_options = "hN:l:v";
+  char *short_options = "hN:l:vpr";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
     { "loops", required_argument, NULL, 'l' },
     { "verify", no_argument, NULL, 'v' },
+    { "print", no_argument, NULL, 'p' },
+    { "no-random", no_argument, NULL, 'r' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -232,6 +238,8 @@ main (int argc, char **argv)
         printf("-N N          Use NxN matrix blocks\n");
         printf("--loops N     Repeat each multiply N times\n");
         printf("--verify      Verify result\n");
+        printf("--print       Print matrices\n");
+        printf("--no-random   Full matrices with index values as opposed to random\n");
         return 0;
         break;
 
@@ -245,6 +253,14 @@ main (int argc, char **argv)
 
       case 'v':
         verify = 1;
+        break;
+
+      case 'p':
+        print = 1;
+        break;
+
+      case 'r':
+        random_elements = 0;
         break;
 
       default:
@@ -340,16 +356,32 @@ main (int argc, char **argv)
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      //A[get_index(N, i, j)] = rand()/(float) RAND_MAX;
-      //B[get_index(N, i, j)] = rand()/(float) RAND_MAX;
-      //C[get_index(N, i, j)] = rand()/(float) RAND_MAX;
+      if (random_elements)
+      {
+        A[get_index(N, i, j)] = rand()/(float) RAND_MAX;
+        B[get_index(N, i, j)] = rand()/(float) RAND_MAX;
+        C[get_index(N, i, j)] = rand()/(float) RAND_MAX;
+      }
 
-      A[get_index(N, i, j)] = get_index(N, i, j)+1;
-      B[get_index(N, i, j)] = get_index(N, i, j)+1;
-      C[get_index(N, i, j)] = get_index(N, i, j)+1;
+      else
+      {
+        A[get_index(N, i, j)] = get_index(N, i, j)+1;
+        B[get_index(N, i, j)] = get_index(N, i, j)+1;
+        C[get_index(N, i, j)] = get_index(N, i, j)+1;
+      }
 
       D[get_index(N, i, j)] = C[get_index(N, i, j)];
     }
+  }
+
+  if (print)
+  {
+    printf("A =\n");
+    print_matrix(N, A);
+    printf("B =\n");
+    print_matrix(N, B);
+    printf("C =\n");
+    print_matrix(N, C);
   }
 
   /* Allocate stream. */
@@ -476,10 +508,22 @@ main (int argc, char **argv)
         flops/1000./1000./1000.);
   }
 
+  if (print)
+  {
+    printf("C =\n");
+    print_matrix(N, C);
+  }
+
   if (verify)
   {
     printf("verify\n");
     stream_multiply_verify(N, alpha, A, B, D);
+
+    if (print)
+    {
+      printf("D =\n");
+      print_matrix(N, D);
+    }
 
     max_diff = compare_matrix(N, C, D);
     printf("max diff = %e\n", max_diff);
