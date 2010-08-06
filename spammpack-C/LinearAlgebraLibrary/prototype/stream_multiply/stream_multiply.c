@@ -18,7 +18,9 @@
 //#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
-#define STREAM_KERNEL_3
+//#define STREAM_KERNEL_3
+
+#define DEBUG_LOOP
 
 struct multiply_stream_t
 {
@@ -116,10 +118,11 @@ stream_multiply_verify (const unsigned int N, const float alpha,
 }
 
 void
-stream_multiply (const unsigned int number_stream_elements, const float alpha,
+stream_multiply (const unsigned long long number_stream_elements,
+    const float alpha,
     struct multiply_stream_t *multiply_stream)
 {
-  unsigned int stream_index;
+  unsigned long long stream_index;
   unsigned int i, j, k;
 
   float *A, *B, *C;
@@ -144,13 +147,20 @@ stream_multiply (const unsigned int number_stream_elements, const float alpha,
 
 #else
   /* Multiply stream. */
+  A = multiply_stream[0].A_block;
+  B = multiply_stream[0].B_block;
+  C = multiply_stream[0].C_block;
+
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++) {
+    //A = multiply_stream[stream_index].A_block;
+    //B = multiply_stream[stream_index].B_block;
+    //C = multiply_stream[stream_index].C_block;
+
     for (i = 0; i < N_BLOCK; i++) {
       for (j = 0; j < N_BLOCK; j++) {
-        for (k = 0; k < N_BLOCK; k++) {
-          multiply_stream[stream_index].C_block[get_block_index(N_BLOCK, i, j)] +=
-            alpha*multiply_stream[stream_index].A_block[get_block_index(N_BLOCK, i, k)]
-            *multiply_stream[stream_index].B_block[get_block_index(N_BLOCK, k, j)];
+        for (k = 0; k < N_BLOCK; k++)
+        {
+          C[get_block_index(N_BLOCK, i, j)] += alpha*A[get_block_index(N_BLOCK, i, k)]*B[get_block_index(N_BLOCK, k, j)];
         }
       }
     }
@@ -185,7 +195,7 @@ main (int argc, char **argv)
   unsigned int N_padded = N;
 
   unsigned int i, j, k;
-  unsigned int stream_index, number_stream_elements;
+  unsigned long long stream_index, number_stream_elements;
 
   float alpha = 1.2;
   float beta = 0.5;
@@ -198,7 +208,7 @@ main (int argc, char **argv)
   int random_elements = 1;
 
   unsigned int loop;
-  unsigned int loops = 1;
+  unsigned long long loops = 1;
   struct timeval start, stop;
   struct rusage rusage_start, rusage_stop;
   double walltime, usertime, systime, flops;
@@ -352,6 +362,8 @@ main (int argc, char **argv)
   }
 #endif
 
+  printf("Allocated matrices at: A = %p, B = %p, C = %p, D = %p\n", A, B, C, D);
+
   /* Fill matrices with random data. */
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -386,7 +398,7 @@ main (int argc, char **argv)
 
   /* Allocate stream. */
   number_stream_elements = N/N_BLOCK*N/N_BLOCK*N/N_BLOCK;
-  printf("allocating stream with %u elements\n", number_stream_elements);
+  printf("allocating stream with %llu elements\n", number_stream_elements);
   printf("1 stream element has %lu bytes\n", sizeof(struct multiply_stream_t));
   if (sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK < 1024)
   {
@@ -436,7 +448,7 @@ main (int argc, char **argv)
       }
     }
   }
-  printf("copied %u multiply stream elements\n", stream_index);
+  printf("copied %llu multiply stream elements\n", stream_index);
 
   /* Apply beta to C. */
   for (i = 0; i < N*N; i++)
@@ -446,23 +458,29 @@ main (int argc, char **argv)
   }
   printf("applied beta\n");
 
-  printf("looping over multiply (loops = %u)\n", loops);
+  printf("looping over multiply (loops = %llu)\n", loops);
 
   gettimeofday(&start, NULL);
   getrusage(RUSAGE_SELF, &rusage_start);
 
 #ifdef HAVE_PAPI
-  papi_values = (long long*) malloc(sizeof(long long)*5);
+  papi_values = (long long*) malloc(sizeof(long long)*6);
   PAPI_set_granularity(PAPI_GRN_MIN);
   PAPI_create_eventset(&papi_events);
   PAPI_add_event(papi_events, PAPI_TOT_INS);
   PAPI_add_event(papi_events, PAPI_TOT_CYC);
+  PAPI_add_event(papi_events, PAPI_RES_STL);
   PAPI_add_event(papi_events, PAPI_L1_TCM);
   PAPI_add_event(papi_events, PAPI_L2_TCM);
   PAPI_add_event(papi_events, PAPI_TLB_DM);
   PAPI_start(papi_events);
 #endif
 
+#ifdef DEBUG_LOOP
+  printf("debugging loop\n");
+  stream_multiply(loops, alpha, multiply_stream);
+
+#else
   for (loop = 0; loop < loops; loop++)
   {
 #if defined(EXTERNAL_BLAS)
@@ -470,18 +488,19 @@ main (int argc, char **argv)
 
 #else
     stream_multiply(number_stream_elements, alpha, multiply_stream);
-    //stream_multiply(loops, alpha, multiply_stream);
 
 #endif
   }
+#endif
 
 #ifdef HAVE_PAPI
   PAPI_stop(papi_events, papi_values);
   printf("[PAPI] %lli total instructions\n",    papi_values[0]);
   printf("[PAPI] %lli total cycles\n",          papi_values[1]);
-  printf("[PAPI] %lli total L1 misses\n",       papi_values[2]);
-  printf("[PAPI] %lli total L2 misses\n",       papi_values[3]);
-  printf("[PAPI] %lli total data TLB misses\n", papi_values[4]);
+  printf("[PAPI] %lli cycles stalled\n",        papi_values[2]);
+  printf("[PAPI] %lli total L1 misses\n",       papi_values[3]);
+  printf("[PAPI] %lli total L2 misses\n",       papi_values[4]);
+  printf("[PAPI] %lli total data TLB misses\n", papi_values[5]);
   PAPI_cleanup_eventset(papi_events);
   PAPI_destroy_eventset(&papi_events);
   free(papi_values);
