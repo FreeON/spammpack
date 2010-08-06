@@ -18,7 +18,7 @@
 //#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
-//#define STREAM_KERNEL_3
+#define STREAM_KERNEL_3
 
 #define DEBUG_LOOP
 

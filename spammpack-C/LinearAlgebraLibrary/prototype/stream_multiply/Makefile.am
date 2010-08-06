@@ -1,4 +1,4 @@
-noinst_PROGRAMS = stream_multiply
+noinst_PROGRAMS = stream_multiply memory_access
 
 stream_multiply_SOURCES = \
   stream_multiply.c \

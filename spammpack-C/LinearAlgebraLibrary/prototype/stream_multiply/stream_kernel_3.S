@@ -18,6 +18,9 @@
 #define MULTIPLY
 #define INCREMENT_INDEX
 
+#define LOAD
+#define STORE
+
   .text
   .align 256
   .global stream_kernel_3
@@ -177,7 +180,10 @@ loop_multiply:
 #endif
 
 #ifdef MULTIPLY
-  //movaps 0*4*4(B), %xmm1 /* B_{11} B_{12} B_{13} B_{14} */
+
+#ifdef LOAD
+  movaps 0*4*4(B), %xmm1 /* B_{11} B_{12} B_{13} B_{14} */
+#endif
   movaps 0*4*4(A_dilated), %xmm12 /* A_{11} A_{11} A_{11} A_{11} */
   mulps %xmm1, %xmm12
 
@@ -190,7 +196,9 @@ loop_multiply:
   movaps 12*4*4(A_dilated), %xmm15 /* A_{41} A_{41} A_{41} A_{41} */
   mulps %xmm1, %xmm15
 
-  //movaps 1*4*4(B), %xmm2 /* B_{21} B_{22} B_{23} B_{24} */
+#ifdef LOAD
+  movaps 1*4*4(B), %xmm2 /* B_{21} B_{22} B_{23} B_{24} */
+#endif
   movaps 1*4*4(A_dilated), %xmm3 /* A_{12} A_{12} A_{12} A_{12} */
   mulps %xmm2, %xmm3
 
@@ -203,7 +211,9 @@ loop_multiply:
   movaps 13*4*4(A_dilated), %xmm6 /* A_{42} A_{42} A_{42} A_{42} */
   mulps %xmm2, %xmm6
 
-  //movaps 2*4*4(B), %xmm7 /* B_{31} B_{32} B_{33} B_{34} */
+#ifdef LOAD
+  movaps 2*4*4(B), %xmm7 /* B_{31} B_{32} B_{33} B_{34} */
+#endif
   movaps 2*4*4(A_dilated), %xmm8 /* A_{13} A_{13} A_{13} A_{13} */
   mulps %xmm7, %xmm8
   addps %xmm3, %xmm12
@@ -220,7 +230,9 @@ loop_multiply:
   mulps %xmm7, %xmm11
   addps %xmm6, %xmm15
 
-  //movaps 3*4*4(B), %xmm1 /* B_{41} B_{42} B_{43} B_{44} */
+#ifdef LOAD
+  movaps 3*4*4(B), %xmm1 /* B_{41} B_{42} B_{43} B_{44} */
+#endif
   movaps 3*4*4(A_dilated), %xmm2 /* A_{14} A_{14} A_{14} A_{14} */
   mulps %xmm1, %xmm2
   addps %xmm8, %xmm12
@@ -237,32 +249,47 @@ loop_multiply:
   mulps %xmm1, %xmm5
   addps %xmm11, %xmm15
 
-  //movaps 0*4*4(C), %xmm1
+#ifdef LOAD
+  movaps 0*4*4(C), %xmm1
+#endif
   addps %xmm2, %xmm12
   addps %xmm3, %xmm13
 
-  //movaps 1*4*4(C), %xmm2
+#ifdef LOAD
+  movaps 1*4*4(C), %xmm2
+#endif
   addps %xmm4, %xmm14
   addps %xmm5, %xmm15
 
-  //movaps 2*4*4(C), %xmm3
+#ifdef LOAD
+  movaps 2*4*4(C), %xmm3
+#endif
   mulps %xmm0, %xmm12
   mulps %xmm0, %xmm13
 
-  //movaps 3*4*4(C), %xmm4
+#ifdef LOAD
+  movaps 3*4*4(C), %xmm4
+#endif
   mulps %xmm0, %xmm14
   mulps %xmm0, %xmm15
 
   addps %xmm1, %xmm12
   addps %xmm2, %xmm13
-  //movaps %xmm12, 0*4*4(C)
+#ifdef STORE
+  movaps %xmm12, 0*4*4(C)
+#endif
 
   addps %xmm3, %xmm14
   addps %xmm4, %xmm15
-  //movaps %xmm13, 1*4*4(C)
+#ifdef STORE
+  movaps %xmm13, 1*4*4(C)
+#endif
 
-  //movaps %xmm14, 2*4*4(C)
-  //movaps %xmm15, 3*4*4(C)
+#ifdef STORE
+  movaps %xmm14, 2*4*4(C)
+  movaps %xmm15, 3*4*4(C)
+#endif
+
 #endif
 
 #ifdef INCREMENT_INDEX
