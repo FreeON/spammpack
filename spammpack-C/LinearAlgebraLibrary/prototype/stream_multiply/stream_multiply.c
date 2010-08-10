@@ -10,7 +10,7 @@
 #include <papi.h>
 #endif
 
-#define CACHELINE_SIZE 64
+#define ALIGNMENT 64
 #define N_BLOCK 4
 
 //#undef HAVE_POSIX_MEMALIGN
@@ -20,7 +20,7 @@
 //#define STREAM_KERNEL_2
 #define STREAM_KERNEL_3
 
-#define DEBUG_LOOP
+//#define DEBUG_LOOP
 
 struct multiply_stream_t
 {
@@ -318,22 +318,22 @@ main (int argc, char **argv)
 
   /* Allocate matrices. */
 #ifdef HAVE_POSIX_MEMALIGN
-  if (posix_memalign((void**) &A, CACHELINE_SIZE, sizeof(float)*N*N) != 0)
+  if (posix_memalign((void**) &A, ALIGNMENT, sizeof(float)*N*N) != 0)
   {
     printf("error allocating A\n");
     exit(1);
   }
-  if (posix_memalign((void**) &B, CACHELINE_SIZE, sizeof(float)*N*N) != 0)
+  if (posix_memalign((void**) &B, ALIGNMENT, sizeof(float)*N*N) != 0)
   {
     printf("error allocating B\n");
     exit(1);
   }
-  if (posix_memalign((void**) &C, CACHELINE_SIZE, sizeof(float)*N*N) != 0)
+  if (posix_memalign((void**) &C, ALIGNMENT, sizeof(float)*N*N) != 0)
   {
     printf("error allocating C\n");
     exit(1);
   }
-  if (posix_memalign((void**) &D, CACHELINE_SIZE, sizeof(float)*N*N) != 0)
+  if (posix_memalign((void**) &D, ALIGNMENT, sizeof(float)*N*N) != 0)
   {
     printf("error allocating D\n");
     exit(1);
@@ -421,7 +421,7 @@ main (int argc, char **argv)
   }
 
 #ifdef HAVE_POSIX_MEMALIGN
-  if (posix_memalign((void**) &multiply_stream, CACHELINE_SIZE, sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK) != 0)
+  if (posix_memalign((void**) &multiply_stream, ALIGNMENT, sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK) != 0)
   {
     printf("error allocating multiply stream\n");
     exit(1);

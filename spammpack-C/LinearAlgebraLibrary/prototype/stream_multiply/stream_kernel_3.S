@@ -12,9 +12,9 @@
 #define B         %rcx
 #define C         %r8
 
-#define DILATE_A_ONCE
-// #define DILATE_A
-// #define UPDATE_POINTERS
+// #define DILATE_A_ONCE
+#define DILATE_A
+#define UPDATE_POINTERS
 #define MULTIPLY
 #define INCREMENT_INDEX
 
