@@ -2,7 +2,7 @@
 #define alpha_arg               %xmm0
 #define multiply_stream         %rsi
 
-#define stacksize  64
+#define stacksize  128
 
 #define index     %rax
 #define end_index %r10
@@ -11,12 +11,16 @@
 #define A         %r12
 #define B         %rcx
 #define C         %r8
+#define A_ahead   %r13
+#define B_ahead   %r14
+#define C_ahead   %r15
 
 // #define DILATE_A_ONCE
 #define DILATE_A
 #define UPDATE_POINTERS
 #define MULTIPLY
 #define INCREMENT_INDEX
+#define PREFETCH
 
 #define LOAD
 #define STORE
@@ -51,6 +55,9 @@ stream_kernel_3:
   movq B,         4*8(%rsp)
   movq C,         5*8(%rsp)
   movq A_dilated, 6*8(%rsp)
+  movq A_ahead,   7*8(%rsp)
+  movq B_ahead,   8*8(%rsp)
+  movq C_ahead,   9*8(%rsp)
 
   movq %rsp, old_stack
   subq $(256+16), %rsp
@@ -128,6 +135,14 @@ loop_multiply:
   movq  0(multiply_stream, index, 1), A
   movq  8(multiply_stream, index, 1), B
   movq 16(multiply_stream, index, 1), C
+
+  movq 12*24   (multiply_stream, index, 1), A_ahead
+  movq 12*24+8 (multiply_stream, index, 1), B_ahead
+  movq 12*24+16(multiply_stream, index, 1), C_ahead
+#endif
+
+#ifdef PREFETCH
+  prefetcht0 (A_ahead)
 #endif
 
 #ifdef DILATE_A
@@ -180,6 +195,11 @@ loop_multiply:
 #endif
 
 #ifdef MULTIPLY
+
+#ifdef PREFETCH
+  prefetcht0 (B_ahead)
+  prefetcht0 (C_ahead)
+#endif
 
 #ifdef LOAD
   movaps 0*4*4(B), %xmm1 /* B_{11} B_{12} B_{13} B_{14} */
@@ -303,6 +323,9 @@ done:
 
   movq old_stack, %rsp
 
+  movq 9*8(%rsp), C_ahead
+  movq 8*8(%rsp), B_ahead
+  movq 7*8(%rsp), A_ahead
   movq 6*8(%rsp), A_dilated
   movq 5*8(%rsp), C
   movq 4*8(%rsp), B
