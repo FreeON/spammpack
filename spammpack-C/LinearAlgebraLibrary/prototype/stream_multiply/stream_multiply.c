@@ -29,6 +29,15 @@ struct multiply_stream_t
   float *C_block;
 };
 
+struct multiply_stream_index_t
+{
+  unsigned long long index;
+
+  unsigned int A_index;
+  unsigned int B_index;
+  unsigned int C_index;
+};
+
 #ifdef STREAM_KERNEL_1
 void
 stream_kernel_1 (const unsigned int number_stream_elements,
@@ -49,6 +58,89 @@ stream_kernel_3 (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
+
+/* Swap two elements of type struct multiply_stream_index_t.
+ */
+void
+swap_multiply_stream_index (struct multiply_stream_index_t *a, struct multiply_stream_index_t *b)
+{
+  unsigned long long temp_index;
+  unsigned int temp_block_index;
+
+  temp_index = a->index; a->index = b->index; b->index = temp_index;
+
+  temp_block_index = a->A_index; a->A_index = b->A_index; b->A_index = temp_block_index;
+  temp_block_index = a->B_index; a->B_index = b->B_index; b->B_index = temp_block_index;
+  temp_block_index = a->C_index; a->C_index = b->C_index; b->C_index = temp_block_index;
+}
+
+void
+quicksort_multiply_stream_index (const unsigned int left, const unsigned int right, struct multiply_stream_index_t *stream)
+{
+  unsigned int i, pivot, new_pivot;
+  unsigned long long index;
+
+  if (right > left)
+  {
+    pivot = left+(right-left)/2;
+    index = stream[pivot].index;
+    swap_multiply_stream_index(&stream[pivot], &stream[right]); /* Move pivot to end. */
+    new_pivot = left;
+    for (i = left; i < right; i++)
+    {
+      if (stream[i].index <= index)
+      {
+        if (i != new_pivot)
+        {
+          swap_multiply_stream_index(&stream[i], &stream[new_pivot]);
+        }
+        new_pivot++;
+      }
+    }
+    swap_multiply_stream_index(&stream[new_pivot], &stream[right]); /* Move pivot to final place. */
+
+    if (new_pivot > left)
+    {
+      quicksort_multiply_stream_index(left, new_pivot-1, stream);
+    }
+
+    if (new_pivot < right)
+    {
+      quicksort_multiply_stream_index(new_pivot+1, right, stream);
+    }
+  }
+}
+
+/* Sort stream index. */
+void
+sort_multiply_stream_index (const unsigned int number_elements, struct multiply_stream_index_t *stream)
+{
+  quicksort_multiply_stream_index(0, number_elements-1, stream);
+}
+
+/* Bit-Interleaves 3 integer indices.
+ */
+unsigned int
+interleave_3_index (const unsigned int i, const unsigned int j, const unsigned int k)
+{
+  unsigned int result = 0;
+  unsigned int bitmask = 1;
+  unsigned int addmask = 1;
+  unsigned int index;
+
+  for (index = 0; index < sizeof(unsigned int)*8; index++)
+  {
+    if (i & bitmask) { result |= addmask; }
+    addmask <<= 1;
+    if (j & bitmask) { result |= addmask; }
+    addmask <<= 1;
+    if (k & bitmask) { result |= addmask; }
+    addmask <<= 1;
+    bitmask <<= 1;
+  }
+
+  return result;
+}
 
 /* Returns the Morton-ordered index of a NxN matrix. */
 unsigned int
@@ -98,6 +190,13 @@ print_matrix (unsigned int N, float *restrict A)
     }
     printf("\n");
   }
+
+  printf("linear: ");
+  for (i = 0; i < N*N; i++)
+  {
+    printf(" %f", A[i]);
+  }
+  printf("\n");
 }
 
 void
@@ -207,6 +306,8 @@ main (int argc, char **argv)
 
   int random_elements = 1;
 
+  int sort_stream = 0;
+
   unsigned int loop;
   unsigned long long loops = 1;
   struct timeval start, stop;
@@ -222,10 +323,13 @@ main (int argc, char **argv)
   float *A_blocked, *B_blocked, *C_blocked;
 
   struct multiply_stream_t *multiply_stream;
+  struct multiply_stream_index_t *multiply_stream_index;
+
+  unsigned int memory_access_length, old_A_index, old_B_index, old_C_index;
 
   int parse;
   int longindex;
-  char *short_options = "hN:l:vpr";
+  char *short_options = "hN:l:vprs";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
@@ -233,6 +337,7 @@ main (int argc, char **argv)
     { "verify", no_argument, NULL, 'v' },
     { "print", no_argument, NULL, 'p' },
     { "no-random", no_argument, NULL, 'r' },
+    { "sort", no_argument, NULL, 's' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -250,6 +355,7 @@ main (int argc, char **argv)
         printf("--verify      Verify result\n");
         printf("--print       Print matrices\n");
         printf("--no-random   Full matrices with index values as opposed to random\n");
+        printf("--sort        Sort stream\n");
         return 0;
         break;
 
@@ -271,6 +377,10 @@ main (int argc, char **argv)
 
       case 'r':
         random_elements = 0;
+        break;
+
+      case 's':
+        sort_stream = 1;
         break;
 
       default:
@@ -400,41 +510,53 @@ main (int argc, char **argv)
   number_stream_elements = N/N_BLOCK*N/N_BLOCK*N/N_BLOCK;
   printf("allocating stream with %llu elements\n", number_stream_elements);
   printf("1 stream element has %lu bytes\n", sizeof(struct multiply_stream_t));
-  if (sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK < 1024)
+  if (sizeof(struct multiply_stream_t)*number_stream_elements < 1024)
   {
-    printf("multiply stream has %lu bytes\n", sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK);
+    printf("multiply stream has %llu bytes\n", sizeof(struct multiply_stream_t)*number_stream_elements);
   }
 
-  else if (sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK < 1024*1024)
+  else if (sizeof(struct multiply_stream_t)*number_stream_elements < 1024*1024)
   {
-    printf("multiply stream has %1.2f kB\n", sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK/1024.);
+    printf("multiply stream has %1.2f kB\n", sizeof(struct multiply_stream_t)*number_stream_elements/1024.);
   }
 
-  else if (sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK < 1024*1024*1024)
+  else if (sizeof(struct multiply_stream_t)*number_stream_elements < 1024*1024*1024)
   {
-    printf("multiply stream has %1.2f MB\n", sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK/1024./1024.);
+    printf("multiply stream has %1.2f MB\n", sizeof(struct multiply_stream_t)*number_stream_elements/1024./1024.);
   }
 
   else
   {
-    printf("multiply stream has %1.2f GB\n", sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK/1024./1024./1024.);
+    printf("multiply stream has %1.2f GB\n", sizeof(struct multiply_stream_t)*number_stream_elements/1024./1024./1024.);
   }
 
 #ifdef HAVE_POSIX_MEMALIGN
-  if (posix_memalign((void**) &multiply_stream, ALIGNMENT, sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK) != 0)
+  if (posix_memalign((void**) &multiply_stream, ALIGNMENT, sizeof(struct multiply_stream_t)*number_stream_elements) != 0)
   {
     printf("error allocating multiply stream\n");
     exit(1);
   }
+  if (posix_memalign((void**) &multiply_stream_index, ALIGNMENT, sizeof(struct multiply_stream_index_t)*number_stream_elements) != 0)
+  {
+    printf("error allocating multiply stream index\n");
+    exit(1);
+  }
 #else
-  if ((multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*N/N_BLOCK*N/N_BLOCK*N/N_BLOCK)) == NULL)
+  if ((multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*number_stream_elements)) == NULL)
   {
     printf("error allocating multiply stream\n");
+    exit(1);
+  }
+  if ((multiply_stream = (struct multiply_stream_index_t*) malloc(sizeof(struct multiply_stream_index_t)*number_stream_elements)) == NULL)
+  {
+    printf("error allocating multiply stream index\n");
     exit(1);
   }
 #endif
 
-  /* Multiply. */
+  printf("allocated multiply stream at %p\n", multiply_stream);
+  printf("allocated multiply stream index at %p\n", multiply_stream_index);
+
   stream_index = 0;
   for (i = 0; i < N; i += N_BLOCK) {
     for (j = 0; j < N; j += N_BLOCK) {
@@ -444,11 +566,66 @@ main (int argc, char **argv)
         multiply_stream[stream_index].B_block = &B[get_blocked_index(N, k, j)];
         multiply_stream[stream_index].C_block = &C[get_blocked_index(N, i, j)];
 
+        multiply_stream_index[stream_index].A_index = get_blocked_index(N, i, k)/N_BLOCK/N_BLOCK;
+        multiply_stream_index[stream_index].B_index = get_blocked_index(N, k, j)/N_BLOCK/N_BLOCK;
+        multiply_stream_index[stream_index].C_index = get_blocked_index(N, i, j)/N_BLOCK/N_BLOCK;
+        multiply_stream_index[stream_index].index = interleave_3_index(multiply_stream_index[stream_index].A_index,
+            multiply_stream_index[stream_index].B_index,
+            multiply_stream_index[stream_index].C_index);
         stream_index++;
       }
     }
   }
-  printf("copied %llu multiply stream elements\n", stream_index);
+  printf("created %llu multiply stream elements\n", stream_index);
+
+  if (print)
+  {
+    printf("multiply_stream_index = ");
+    for (i = 0; i < N/N_BLOCK*N/N_BLOCK*N/N_BLOCK; i++)
+    {
+      printf(" %llu[%u:%u:%u]", multiply_stream_index[i].index,
+          multiply_stream_index[i].A_index,
+          multiply_stream_index[i].B_index,
+          multiply_stream_index[i].C_index);
+    }
+    printf("\n");
+  }
+
+  if (sort_stream)
+  {
+    printf("sorting stream\n");
+    sort_multiply_stream_index(number_stream_elements, multiply_stream_index);
+
+    if (print)
+    {
+      printf("multiply_stream_index = ");
+      for (i = 0; i < N/N_BLOCK*N/N_BLOCK*N/N_BLOCK; i++)
+      {
+        printf(" %llu[%u:%u:%u]", multiply_stream_index[i].index,
+            multiply_stream_index[i].A_index,
+            multiply_stream_index[i].B_index,
+            multiply_stream_index[i].C_index);
+      }
+      printf("\n");
+    }
+  }
+
+  /* Get some statistics. */
+  memory_access_length = 0;
+  old_A_index = multiply_stream_index[0].A_index;
+  old_B_index = multiply_stream_index[0].B_index;
+  old_C_index = multiply_stream_index[0].C_index;
+  for (i = 0; i < number_stream_elements; i++)
+  {
+    memory_access_length += abs(multiply_stream_index[i].A_index - old_A_index);
+    memory_access_length += abs(multiply_stream_index[i].B_index - old_B_index);
+    memory_access_length += abs(multiply_stream_index[i].C_index - old_C_index);
+
+    old_A_index = multiply_stream_index[i].A_index;
+    old_B_index = multiply_stream_index[i].B_index;
+    old_C_index = multiply_stream_index[i].C_index;
+  }
+  printf("memory access length = %u\n", memory_access_length);
 
   /* Apply beta to C. */
   for (i = 0; i < N*N; i++)
