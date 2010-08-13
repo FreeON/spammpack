@@ -15,15 +15,15 @@
 #define B_ahead   %r14
 #define C_ahead   %r15
 
-// #define DILATE_A_ONCE
-#define DILATE_A
+#define DILATE_A_ONCE
+//#define DILATE_A
 #define UPDATE_POINTERS
 #define MULTIPLY
 #define INCREMENT_INDEX
-#define PREFETCH
+//#define PREFETCH
 
-#define LOAD
-#define STORE
+//#define LOAD
+//#define STORE
 
   .text
   .align 256
