@@ -15,10 +15,11 @@
 
 //#undef HAVE_POSIX_MEMALIGN
 
-//#define EXTERNAL_BLAS
+#define EXTERNAL_BLAS
+#define EXTERNAL_BLAS_DEFINITION
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
-#define STREAM_KERNEL_3
+//#define STREAM_KERNEL_3
 
 //#define DEBUG_LOOP
 
@@ -37,6 +38,12 @@ struct multiply_stream_index_t
   unsigned int B_index;
   unsigned int C_index;
 };
+
+#ifdef EXTERNAL_BLAS_DEFINITION
+float
+sgemm_ (char *, char *, int *, int *, int *, float *, float  *, int *,
+    float *, int *, float *, float *, int *);
+#endif
 
 #ifdef STREAM_KERNEL_1
 void
@@ -57,6 +64,18 @@ void
 stream_kernel_3 (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef HAVE_PAPI
+void
+print_papi_error (const char *message, const int errorcode)
+{
+  char error[1001];
+
+  PAPI_perror(errorcode, error, 1000);
+  printf("PAPI error: %s - %s\n", message, error);
+  exit(1);
+}
 #endif
 
 /* Swap two elements of type struct multiply_stream_index_t.
@@ -317,6 +336,18 @@ main (int argc, char **argv)
 #ifdef HAVE_PAPI
   int papi_events = PAPI_NULL;
   long long *papi_values;
+  int papi_value_index;
+  int papi_errorcode;
+
+  int load_TOT_INS = 0;
+  int load_TOT_CYC = 0;
+  int load_RES_STL = 0;
+  int load_L1_ICM = 0;
+  int load_L1_DCM = 0;
+  int load_L2_ICM = 0;
+  int load_L2_DCM = 0;
+  int load_TLB_IM = 0;
+  int load_TLB_DM = 0;
 #endif
 
   float *A, *B, *C, *D;
@@ -329,7 +360,7 @@ main (int argc, char **argv)
 
   int parse;
   int longindex;
-  char *short_options = "hN:l:vprs";
+  char *short_options = "hN:l:vprs123456789";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
@@ -338,6 +369,15 @@ main (int argc, char **argv)
     { "print", no_argument, NULL, 'p' },
     { "no-random", no_argument, NULL, 'r' },
     { "sort", no_argument, NULL, 's' },
+    { "TOT_INS", no_argument, NULL, '1' },
+    { "TOT_CYC", no_argument, NULL, '2' },
+    { "RES_STL", no_argument, NULL, '3' },
+    { "L1_ICM", no_argument, NULL, '4' },
+    { "L1_DCM", no_argument, NULL, '5' },
+    { "L2_ICM", no_argument, NULL, '6' },
+    { "L2_DCM", no_argument, NULL, '7' },
+    { "TLB_IM", no_argument, NULL, '8' },
+    { "TLB_DM", no_argument, NULL, '9' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -356,6 +396,15 @@ main (int argc, char **argv)
         printf("--print       Print matrices\n");
         printf("--no-random   Full matrices with index values as opposed to random\n");
         printf("--sort        Sort stream\n");
+        printf("--TOT_INS     Measure total instructions\n");
+        printf("--TOT_CYC     Measure total cycles\n");
+        printf("--RES_STL     Measure stalled cycles\n");
+        printf("--L1_ICM      Measure L1 instruction misses\n");
+        printf("--L1_DCM      Measure L1 data misses\n");
+        printf("--L2_ICM      Measure L2 instruction misses\n");
+        printf("--L2_DCM      Measure L2 data misses\n");
+        printf("--TLB_IM      Measure TLB instruction misses\n");
+        printf("--TLB_DM      Measure TLB data misses\n");
         return 0;
         break;
 
@@ -383,6 +432,42 @@ main (int argc, char **argv)
         sort_stream = 1;
         break;
 
+      case '1':
+        load_TOT_INS = 1;
+        break;
+
+      case '2':
+        load_TOT_CYC = 1;
+        break;
+
+      case '3':
+        load_RES_STL = 1;
+        break;
+
+      case '4':
+        load_L1_ICM = 1;
+        break;
+
+      case '5':
+        load_L1_DCM = 1;
+        break;
+
+      case '6':
+        load_L2_ICM = 1;
+        break;
+
+      case '7':
+        load_L2_DCM = 1;
+        break;
+
+      case '8':
+        load_TLB_IM = 1;
+        break;
+
+      case '9':
+        load_TLB_DM = 1;
+        break;
+
       default:
         printf("unknown command line argument\n");
         return -1;
@@ -397,6 +482,22 @@ main (int argc, char **argv)
     printf("can not initialize PAPI\n");
     exit(1);
   }
+
+  papi_values = (long long*) malloc(sizeof(long long)*9);
+  if ((papi_errorcode = PAPI_set_granularity(PAPI_GRN_MIN) != PAPI_OK)) { print_papi_error("failed to set granularity",  papi_errorcode); }
+  if ((papi_errorcode = PAPI_create_eventset(&papi_events) != PAPI_OK)) { print_papi_error("failed to create eventset",  papi_errorcode); }
+  if ((papi_errorcode = PAPI_assign_eventset_component(papi_events, 0) != PAPI_OK)) { print_papi_error("failed to assign component to eventset",  papi_errorcode); }
+
+  if (load_TOT_INS && (papi_errorcode = PAPI_add_event(papi_events, PAPI_TOT_INS))) { print_papi_error("failed to add PAPI_TOT_INS", papi_errorcode); }
+  if (load_TOT_CYC && (papi_errorcode = PAPI_add_event(papi_events, PAPI_TOT_CYC))) { print_papi_error("failed to add PAPI_TOT_CYC", papi_errorcode); }
+  if (load_RES_STL && (papi_errorcode = PAPI_add_event(papi_events, PAPI_RES_STL))) { print_papi_error("failed to add PAPI_RES_STL", papi_errorcode); }
+
+  if (load_L1_ICM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L1_ICM))) { print_papi_error("failed to add PAPI_L1_ICM",  papi_errorcode); }
+  if (load_L1_DCM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L1_DCM))) { print_papi_error("failed to add PAPI_L1_DCM",  papi_errorcode); }
+  if (load_L2_ICM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L2_ICM))) { print_papi_error("failed to add PAPI_L2_ICM",  papi_errorcode); }
+  if (load_L2_DCM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L2_DCM))) { print_papi_error("failed to add PAPI_L2_DCM",  papi_errorcode); }
+  if (load_TLB_IM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_TLB_IM))) { print_papi_error("failed to add PAPI_TLB_IM",  papi_errorcode); }
+  if (load_TLB_DM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_TLB_DM))) { print_papi_error("failed to add PAPI_TLB_DM",  papi_errorcode); }
 #endif
 
 #if defined(EXTERNAL_BLAS)
@@ -581,7 +682,7 @@ main (int argc, char **argv)
   if (print)
   {
     printf("multiply_stream_index = ");
-    for (i = 0; i < N/N_BLOCK*N/N_BLOCK*N/N_BLOCK; i++)
+    for (i = 0; i < number_stream_elements; i++)
     {
       printf(" %llu[%u:%u:%u]", multiply_stream_index[i].index,
           multiply_stream_index[i].A_index,
@@ -599,7 +700,7 @@ main (int argc, char **argv)
     if (print)
     {
       printf("multiply_stream_index = ");
-      for (i = 0; i < N/N_BLOCK*N/N_BLOCK*N/N_BLOCK; i++)
+      for (i = 0; i < number_stream_elements; i++)
       {
         printf(" %llu[%u:%u:%u]", multiply_stream_index[i].index,
             multiply_stream_index[i].A_index,
@@ -641,16 +742,21 @@ main (int argc, char **argv)
   getrusage(RUSAGE_SELF, &rusage_start);
 
 #ifdef HAVE_PAPI
-  papi_values = (long long*) malloc(sizeof(long long)*6);
-  PAPI_set_granularity(PAPI_GRN_MIN);
-  PAPI_create_eventset(&papi_events);
-  PAPI_add_event(papi_events, PAPI_TOT_INS);
-  PAPI_add_event(papi_events, PAPI_TOT_CYC);
-  PAPI_add_event(papi_events, PAPI_RES_STL);
-  PAPI_add_event(papi_events, PAPI_L1_TCM);
-  PAPI_add_event(papi_events, PAPI_L2_TCM);
-  PAPI_add_event(papi_events, PAPI_TLB_DM);
-  PAPI_start(papi_events);
+  papi_errorcode = PAPI_num_events(papi_events);
+  if (papi_errorcode == 0)
+  {
+    printf("[PAPI] no counters specified\n");
+  }
+
+  else if (papi_errorcode < 0)
+  {
+    print_papi_error("failed to count number of counters in eventset", papi_errorcode);
+  }
+
+  else
+  {
+    if ((papi_errorcode = PAPI_start(papi_events))) { print_papi_error("failed start", papi_errorcode); }
+  }
 #endif
 
 #ifdef DEBUG_LOOP
@@ -671,13 +777,23 @@ main (int argc, char **argv)
 #endif
 
 #ifdef HAVE_PAPI
-  PAPI_stop(papi_events, papi_values);
-  printf("[PAPI] %lli total instructions\n",    papi_values[0]);
-  printf("[PAPI] %lli total cycles\n",          papi_values[1]);
-  printf("[PAPI] %lli cycles stalled\n",        papi_values[2]);
-  printf("[PAPI] %lli total L1 misses\n",       papi_values[3]);
-  printf("[PAPI] %lli total L2 misses\n",       papi_values[4]);
-  printf("[PAPI] %lli total data TLB misses\n", papi_values[5]);
+  if (PAPI_num_events(papi_events) > 0)
+  {
+    if (PAPI_stop(papi_events, papi_values) != PAPI_OK) { printf("failed to stop\n"); exit(1); }
+    papi_value_index = 0;
+
+    if (load_TOT_INS) { printf("[PAPI] total instructions = %lli\n", papi_values[papi_value_index++]); }
+    if (load_TOT_CYC) { printf("[PAPI] total cycles = %lli\n", papi_values[papi_value_index++]); }
+    if (load_RES_STL) { printf("[PAPI] cycles stalled = %lli\n", papi_values[papi_value_index++]); }
+
+    if (load_L1_ICM) { printf("[PAPI] instruction L1 misses = %lli\n", papi_values[papi_value_index++]); }
+    if (load_L1_DCM) { printf("[PAPI] data L1 misses = %lli\n", papi_values[papi_value_index++]); }
+    if (load_L2_ICM) { printf("[PAPI] instruction L2 misses = %lli\n", papi_values[papi_value_index++]); }
+    if (load_L2_DCM) { printf("[PAPI] data L2 misses = %lli\n", papi_values[papi_value_index++]); }
+    if (load_TLB_IM) { printf("[PAPI] total instruction TLB misses = %lli\n", papi_values[papi_value_index++]); }
+    if (load_TLB_DM) { printf("[PAPI] total data TLB misses = %lli\n", papi_values[papi_value_index++]); }
+  }
+
   PAPI_cleanup_eventset(papi_events);
   PAPI_destroy_eventset(&papi_events);
   free(papi_values);
