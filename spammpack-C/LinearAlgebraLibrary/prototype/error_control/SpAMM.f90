@@ -39,12 +39,11 @@ MODULE SpAMM_TYPES
   INTEGER, PARAMETER :: SINGLE=KIND(0.0)           !--Real*4
   INTEGER, PARAMETER :: DOUBLE=KIND(0.D0)          !--Real*8
   REAL(DOUBLE),PARAMETER :: Zero=0D0
-
   !
   !----------------------------------------------------------------
   REAL(DOUBLE)       :: SpAMM_tolerance,SpAMM_multiplies
   INTEGER            :: SpAMM_tiles,    SpAMM_levels,     SpAMM_quadcount
-  INTEGER, PARAMETER :: BLOCK_SIZE=1
+  INTEGER, PARAMETER :: BLOCK_SIZE=2
   !----------------------------------------------------------------
   TYPE QuTree
      INTEGER                      :: Siz
@@ -68,7 +67,7 @@ CONTAINS
     qA%Lev=1
     qA%Num=SpAMM_quadcount
     qA%Box(:,1)=(/1,1/)
-    qA%Box(:,2)=(/SpAMM_tiles,SpAMM_tiles/)
+    qA%Box(:,2)=(/SpAMM_tiles,SpAMM_tiles/)*BLOCK_SIZE
     CALL SpAMM_Mat2Quad(A,qA)
     qA%Norm=SQRT(qA%Norm)
   END FUNCTION Dense2Quad
@@ -149,8 +148,6 @@ CONTAINS
     TYPE(QuTree) :: qA
     CALL SpAMM_Quad2Mat(A,qA)
   END FUNCTION Quad2Dense
-
-
   RECURSIVE SUBROUTINE SpAMM_Quad2Mat(A,qA)
     INTEGER :: I1,I2,J1,J2
     REAL(DOUBLE),DIMENSION(:,:) :: A
@@ -257,7 +254,7 @@ CONTAINS
     qC%Lev=1
     SpAMM_multiplies=Zero
     qC%Box(:,1)=(/1,1/)
-    qC%Box(:,2)=(/SpAMM_tiles,SpAMM_tiles/)
+    qC%Box(:,2)=(/SpAMM_tiles,SpAMM_tiles/)*BLOCK_SIZE
     !
     CALL SpAMM_Multiply(qC,qA,qB)
   END FUNCTION SpAMM
@@ -282,10 +279,16 @@ CONTAINS
     LOGICAL :: do00x00,do01x10,do10x00,do11x10, &
                do00x01,do01x11,do10x01,do11x11
     ! Bounds
+
     qC%Box(1,1)=qA%Box(2,1)
     qC%Box(1,2)=qA%Box(2,2)
+
     qC%Box(2,1)=qB%Box(1,1)
     qC%Box(2,2)=qB%Box(1,2)
+
+!    if(qA%Box(1,1)==28.AND.QB%Box(2,2)==29)
+
+
     ! Blocks
     IF(qA%Siz==BLOCK_SIZE)THEN
        IF(.NOT.ALLOCATED(qC%Blok))THEN
@@ -301,6 +304,13 @@ CONTAINS
        CTmp=MATMUL(qA%Blok,qB%Blok)
        ! Increment
        qC%Blok=qC%Blok+CTmp
+!!$
+!!$    IF(qA%Box(2,1)==7.AND.qB%Box(1,2)==6)THEN
+!!$!    IF(qC%Box(1,1)==7.AND.qC%Box(2,2)==6)THEN
+!!$!    WRITE(*,33)qA%Box,qB%Box,qC%Box,CTMP
+!!$    WRITE(*,*)qC%Box(1,1),qC%Box(2,2),CTMP,qC%Blok,qA%Norm*qB%Norm
+!!$ ENDIF
+!!$33  format(4(I2,', '), ' || ',4(I2,', '),' || ',4(I2,', '),F20.10)
        ! Bounds
        qC%Norm=qC%Norm+SUM(CTmp(1:BLOCK_SIZE,1:BLOCK_SIZE)**2)
        RETURN
@@ -316,8 +326,7 @@ CONTAINS
        CALL NewQuNode(qC%Quad11,SpAMM_quadcount)
     ! SpAMM=Sparse Approximate Matrix-Matrix
 
-
-    IF(qA%Siz<=2*BLOCK_SIZE)THEN
+  !  IF(qA%Siz<=2*BLOCK_SIZE)THEN
 
     do00x00=qA%Quad00%Norm*qB%Quad00%Norm>SpAMM_tolerance
     do01x10=qA%Quad01%Norm*qB%Quad10%Norm>SpAMM_tolerance
@@ -328,18 +337,9 @@ CONTAINS
     do10x01=qA%Quad10%Norm*qB%Quad01%Norm>SpAMM_tolerance
     do11x11=qA%Quad11%Norm*qB%Quad11%Norm>SpAMM_tolerance
 
-       ELSE
-
-    do00x00=.TRUE.
-    do01x10=.TRUE.
-    do00x01=.TRUE.
-    do01x11=.TRUE.
-    do10x00=.TRUE.
-    do11x10=.TRUE.
-    do10x01=.TRUE.
-    do11x11=.TRUE.
-
-       ENDIF
+!!$    WRITE(*,*)' ---------------------------------------------------'
+!!$    WRITE(*,33)qA%Box,qB%Box,qC%Box,qA%Norm*qB%Norm
+!!$    WRITE(*,*)' DO ',do00x00,do01x10,do00x01,do01x11,do10x00,do11x10,do10x01,do11x11
 
     ! 00=00*00+01*10
     IF(do00x00.OR.do01x10)THEN
@@ -351,9 +351,9 @@ CONTAINS
     ! 01=00*01+01*11
     IF(do00x01.OR.do01x11)THEN
        IF(do00x01) &
-            CALL SpAMM_Multiply(qC%Quad01,qA%Quad01,qB%Quad11)
-       IF(do01x11) &
             CALL SpAMM_Multiply(qC%Quad01,qA%Quad00,qB%Quad01)
+       IF(do01x11) &
+            CALL SpAMM_Multiply(qC%Quad01,qA%Quad01,qB%Quad11)
     ENDIF
     ! 10=10*00+11*10
     IF(do10x00.OR.do11x10)THEN
@@ -390,7 +390,7 @@ PROGRAM SpAMM_TEST
   INTEGER           ::  N,I,J,M,II,JJ
   REAL(DOUBLE),ALLOCATABLE, DIMENSION(:,:) ::  A, B, C1,C2,CDiff
   TYPE(QuTree),POINTER  :: qA,qB,qC
-  REAL(DOUBLE)          :: CDiffNorm,CErrBound
+  REAL(DOUBLE)          :: CNorm,CDiffNorm,CErrBound,CElementErr
   CHARACTER *100        :: Buffer
 
   CALL GETARG(1,BUFFER)
@@ -414,12 +414,12 @@ PROGRAM SpAMM_TEST
         ! >>> COMMENTS: If you make "gamma" larger, the accounting for
         ! >>> number of multiplies becomes funny for very small thresholds
         !
-        A(I,J)=EXP(-1.0D0*ABS(I-J)) *A(I,J)
-        B(I,J)=EXP(-5.0D0*ABS(I-J)) *B(I,J)
+        A(I,J)=EXP(-5.0D-1*ABS(I-J)) !*A(I,J)
+        B(I,J)=EXP(-2.0D-1*ABS(I-J)) !*B(I,J)
      ENDDO
   ENDDO
   !
-  SpAMM_tiles=BLOCK_SIZE*CEILING(DBLE(N)/BLOCK_SIZE)
+  SpAMM_tiles=CEILING(DBLE(N)/BLOCK_SIZE)!*BLOCK_SIZE
   SpAMM_levels=FLOOR(LOG(DBLE(M))/LOG(2D0))
   !
   qA=>Dense2Quad(A)
@@ -429,13 +429,34 @@ PROGRAM SpAMM_TEST
   C2=Quad2Dense(qC)
   C1=MATMUL(A,B)
   CDiff=C1-C2
-
+  CNorm=SQRT(SUM(C1(1:N,1:N)**2))
   CDiffNorm=SQRT(SUM(CDiff(1:N,1:N)**2))
   CErrBound=SpAMM_tolerance*SQRT(SUM(A(1:N,1:N)**2))*SQRT(SUM(B(1:N,1:N)**2))
 
-!  WRITE(*,*)LOG10(DBLE(N))/LOG10(2D0),SpAMM_tolerance,CDiffNorm/CErrBound,SpAMM_multiplies/DBLE(N**3)
-!  WRITE(*,*)SpAMM_tolerance,CDiffNorm/CErrBound,SpAMM_multiplies/DBLE(N**3)
-  WRITE(*,*)SpAMM_tolerance,CDiffNorm,CErrBound,SpAMM_multiplies/DBLE(N**3)
+  DO I=1,N
+     DO J=1,N
+        CDiff(I,J)=ABS(CDiff(I,J)) !/C1(I,J))
+     ENDDO
+  ENDDO
+  CElementErr=MAXVAL(CDIFF)
+
+  DO I=1,N
+     DO J=1,N
+        IF(CDiff(I,J)==CElementErr)THEN
+           !           WRITE(*,*)I,J
+           GOTO 101
+        ENDIF
+     ENDDO
+  ENDDO
+101 CONTINUE
+
+  WRITE(*,33)N,SpAMM_tolerance,CDiffNorm/CErrBound,CElementErr,SpAMM_multiplies/DBLE(SpAMM_tiles**3)
+33 FORMAT(I6,', ', 3(D12.6,', '),D12.6)
+
+  ! WRITE(*,*)C1(I,J),C2(I,J),(C1(I,J)-C2(I,J))/C1(I,J)
+
+  STOP
+
   !
   CALL DeleteQuad(qA)
   CALL DeleteQuad(qB)
