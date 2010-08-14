@@ -369,6 +369,7 @@ main (int argc, char **argv)
     { "print", no_argument, NULL, 'p' },
     { "no-random", no_argument, NULL, 'r' },
     { "sort", no_argument, NULL, 's' },
+#ifdef HAVE_PAPI
     { "TOT_INS", no_argument, NULL, '1' },
     { "TOT_CYC", no_argument, NULL, '2' },
     { "RES_STL", no_argument, NULL, '3' },
@@ -378,6 +379,7 @@ main (int argc, char **argv)
     { "L2_DCM", no_argument, NULL, '7' },
     { "TLB_IM", no_argument, NULL, '8' },
     { "TLB_DM", no_argument, NULL, '9' },
+#endif
     { NULL, 0, NULL, 0 }
   };
 
@@ -396,6 +398,7 @@ main (int argc, char **argv)
         printf("--print       Print matrices\n");
         printf("--no-random   Full matrices with index values as opposed to random\n");
         printf("--sort        Sort stream\n");
+#ifdef HAVE_PAPI
         printf("--TOT_INS     Measure total instructions\n");
         printf("--TOT_CYC     Measure total cycles\n");
         printf("--RES_STL     Measure stalled cycles\n");
@@ -405,6 +408,7 @@ main (int argc, char **argv)
         printf("--L2_DCM      Measure L2 data misses\n");
         printf("--TLB_IM      Measure TLB instruction misses\n");
         printf("--TLB_DM      Measure TLB data misses\n");
+#endif
         return 0;
         break;
 
@@ -432,6 +436,7 @@ main (int argc, char **argv)
         sort_stream = 1;
         break;
 
+#ifdef HAVE_PAPI
       case '1':
         load_TOT_INS = 1;
         break;
@@ -467,6 +472,7 @@ main (int argc, char **argv)
       case '9':
         load_TLB_DM = 1;
         break;
+#endif
 
       default:
         printf("unknown command line argument\n");
