@@ -25,14 +25,14 @@ print_papi_error (const char *message, const int errorcode)
 int
 main (int argc, char **argv)
 {
-  unsigned long long loop;
   unsigned long long loops = 1;
-  unsigned long long N = 4*4*1024*1024;
-  unsigned long long d = 1;
+  unsigned long long N = 1;
   unsigned long long alignment = 4096;
 
   int result;
 
+  unsigned long long loop;
+  unsigned long long index;
   unsigned int i, j, k;
 
   struct timeval start, stop;
@@ -56,7 +56,8 @@ main (int argc, char **argv)
   int load_TLB_DM = 0;
 #endif
 
-  float *A;
+  float *A, *B, *C;
+  float *A_block, *B_block, *C_block;
 
   int parse;
   int longindex;
@@ -90,9 +91,8 @@ main (int argc, char **argv)
         printf("Usage:\n");
         printf("\n");
         printf("-h            This help\n");
-        printf("-N N          Use N byte buffer (default N = %llu bytes)\n", N);
+        printf("-N N          Use N blocks per matrix (default N = %llu)\n", N);
         printf("--align N     Align memory buffer on N byte boundary (default N = %llu)\n", alignment);
-        printf("-d d          access 2 float elements d elements apart (default d = %llu)\n", d);
         printf("--loops N     Repeat each access test N times (default N = %llu)\n", loops);
 #ifdef HAVE_PAPI
         printf("--TOT_INS     Measure total instructions\n");
@@ -114,10 +114,6 @@ main (int argc, char **argv)
 
       case 'a':
         alignment = strtol(optarg, NULL, 10);
-        break;
-
-      case 'd':
-        d = strtol(optarg, NULL, 10);
         break;
 
       case 'l':
@@ -169,12 +165,6 @@ main (int argc, char **argv)
     }
   }
 
-  if (2*d > N)
-  {
-    printf("distance has to be at most N/2 (%llu)\n", N/2);
-    exit(1);
-  }
-
 #ifdef HAVE_PAPI
   /* Do some PAPI. */
   if (PAPI_library_init(PAPI_VER_CURRENT) != PAPI_VER_CURRENT)
@@ -201,7 +191,45 @@ main (int argc, char **argv)
 #endif
 
 #ifdef HAVE_POSIX_MEMALIGN
-  if ((result = posix_memalign((void**) &A, alignment, sizeof(float)*N)) != 0)
+  if ((result = posix_memalign((void**) &A, alignment, sizeof(float)*16*N)) != 0)
+  {
+    switch (result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
+    exit(1);
+  }
+
+  if ((result = posix_memalign((void**) &B, alignment, sizeof(float)*16*N)) != 0)
+  {
+    switch (result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
+    exit(1);
+  }
+
+  if ((result = posix_memalign((void**) &C, alignment, sizeof(float)*16*N)) != 0)
   {
     switch (result)
     {
@@ -220,18 +248,30 @@ main (int argc, char **argv)
     exit(1);
   }
 #else
-  if ((A = (struct float*) malloc(sizeof(float)*N)) == NULL)
+  if ((A = (struct float*) malloc(sizeof(float)*16*N)) == NULL)
+  {
+    printf("error allocating A\n");
+    exit(1);
+  }
+
+  if ((B = (struct float*) malloc(sizeof(float)*16*N)) == NULL)
+  {
+    printf("error allocating A\n");
+    exit(1);
+  }
+
+  if ((C = (struct float*) malloc(sizeof(float)*16*N)) == NULL)
   {
     printf("error allocating A\n");
     exit(1);
   }
 #endif
 
-  if (N < 1024) printf("buffer is %llu bytes\n", N*sizeof(float));
-  else if (N < 1024*1024) printf("buffer is %1.1f kB\n", N*sizeof(float)/1024.);
-  else if (N < 1024*1024*1024) printf("buffer is %1.1f MB\n", N*sizeof(float)/1024./1024.);
-  else printf("buffer is %1.1f GB\n", N*sizeof(float)/1024./1024./1024.);
-  printf("accessing A[0] = A[%llu]*A[%llu] --> %p = %p * %p\n", d, 2*d, (void*) &A[0], (void*) &A[d], (void*) &A[2*d]);
+  printf("stream has %llu matrix blocks\n", N);
+  if (N < 1024) printf("stream is %llu bytes\n", 3*16*N*sizeof(float));
+  else if (N < 1024*1024) printf("stream is %1.1f kB\n", 3*16*N*sizeof(float)/1024.);
+  else if (N < 1024*1024*1024) printf("stream is %1.1f MB\n", 3*16*N*sizeof(float)/1024./1024.);
+  else printf("stream is %1.1f GB\n", 3*16*N*sizeof(float)/1024./1024./1024.);
   printf("loops = %llu\n", loops);
 
   gettimeofday(&start, NULL);
@@ -257,12 +297,20 @@ main (int argc, char **argv)
 
   for (loop = 0; loop < loops; loop++)
   {
-    /* Multiply 4x4 matrix block. */
-    for (i = 0; i < 4; i++) {
-      for (j = 0; j < 4; j++) {
-        for (k = 0; k < 4; k++)
+    for (index = 0; index < N; index++)
+    {
+      A_block = &A[index*16];
+      B_block = &B[index*16];
+      C_block = &C[index*16];
+
+      /* Multiply 4x4 matrix block. */
+      for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++)
         {
-          A[0+i*4+j] = A[d+i*4+k]*A[2*d+k*4+j];
+          for (k = 0; k < 4; k++)
+          {
+            C_block[i*4+j] = A_block[i*4+k]*B_block[k*4+j];
+          }
         }
       }
     }
@@ -276,55 +324,64 @@ main (int argc, char **argv)
 
     if (load_TOT_INS)
     {
-      printf("[PAPI] total instructions = %lli, per loop = %f\n", papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops);
+      printf("[PAPI] total instructions = %lli, per block = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) N);
       papi_value_index++;
     }
 
     if (load_TOT_CYC)
     {
-      printf("[PAPI] total cycles = %lli, per loop = %e\n", papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops);
+      printf("[PAPI] total cycles = %lli, per block = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) N);
       papi_value_index++;
     }
 
     if (load_RES_STL)
     {
-      printf("[PAPI] cycles stalled = %lli, per loop = %e\n", papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops);
+      printf("[PAPI] cycles stalled = %lli, per block = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) N);
       papi_value_index++;
     }
 
     if (load_L1_ICM)
     {
-      printf("[PAPI] instruction L1 misses = %lli, per loop = %e\n", papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops);
+      printf("[PAPI] instruction L1 misses = %lli, per block = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) N);
       papi_value_index++;
     }
 
     if (load_L1_DCM)
     {
-      printf("[PAPI] data L1 misses = %lli, per loop = %e\n", papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops);
+      printf("[PAPI] data L1 misses = %lli, per block = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) N);
       papi_value_index++;
     }
 
     if (load_L2_ICM)
     {
-      printf("[PAPI] instruction L2 misses = %lli, per loop = %e\n", papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops);
+      printf("[PAPI] instruction L2 misses = %lli, per block = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) N);
       papi_value_index++;
     }
 
     if (load_L2_DCM)
     {
-      printf("[PAPI] data L2 misses = %lli, per loop = %e\n", papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops);
+      printf("[PAPI] data L2 misses = %lli, per block = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) N);
       papi_value_index++;
     }
 
     if (load_TLB_IM)
     {
-      printf("[PAPI] total instruction TLB misses = %lli, per loop = %e\n", papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops);
+      printf("[PAPI] total instruction TLB misses = %lli, per block = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) N);
       papi_value_index++;
     }
 
     if (load_TLB_DM)
     {
-      printf("[PAPI] total data TLB misses = %lli, per loop = %e\n", papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops);
+      printf("[PAPI] total data TLB misses = %lli, per block = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) N);
       papi_value_index++;
     }
   }
@@ -343,4 +400,6 @@ main (int argc, char **argv)
       walltime*loops, usertime*loops, systime*loops, walltime, usertime, systime);
 
   free(A);
+  free(B);
+  free(C);
 }
