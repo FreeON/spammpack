@@ -1,7 +1,7 @@
 noinst_PROGRAMS = \
   stream_multiply \
   memory_access \
-  Drepper_sequential_access \
+  Drepper_Follow \
 	Drepper_matrix_multiply
 
 AM_LDFLAGS = -all-static

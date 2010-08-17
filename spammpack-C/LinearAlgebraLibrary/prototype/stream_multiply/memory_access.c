@@ -1,5 +1,7 @@
 #include "config.h"
+#include <emmintrin.h>
 #include <errno.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -9,6 +11,8 @@
 #ifdef HAVE_PAPI
 #include <papi.h>
 #endif
+
+#define N_BLOCK 4
 
 #ifdef HAVE_PAPI
 void
@@ -37,7 +41,7 @@ main (int argc, char **argv)
 
   struct timeval start, stop;
   struct rusage rusage_start, rusage_stop;
-  double walltime, usertime, systime;
+  double walltime, usertime, systime, flops;
 
 #ifdef HAVE_PAPI
   int papi_events = PAPI_NULL;
@@ -56,8 +60,8 @@ main (int argc, char **argv)
   int load_TLB_DM = 0;
 #endif
 
-  float *A, *B, *C;
-  float *A_block, *B_block, *C_block;
+  float *A, *B, *C, *stream;
+  float *restrict A_block, *restrict B_block, *restrict C_block;
 
   int parse;
   int longindex;
@@ -247,6 +251,25 @@ main (int argc, char **argv)
     }
     exit(1);
   }
+
+  if ((result = posix_memalign((void**) &stream, alignment, sizeof(float)*3*16*N)) != 0)
+  {
+    switch (result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
+    exit(1);
+  }
 #else
   if ((A = (struct float*) malloc(sizeof(float)*16*N)) == NULL)
   {
@@ -256,22 +279,51 @@ main (int argc, char **argv)
 
   if ((B = (struct float*) malloc(sizeof(float)*16*N)) == NULL)
   {
-    printf("error allocating A\n");
+    printf("error allocating B\n");
     exit(1);
   }
 
   if ((C = (struct float*) malloc(sizeof(float)*16*N)) == NULL)
   {
-    printf("error allocating A\n");
+    printf("error allocating C\n");
+    exit(1);
+  }
+
+  if ((stream = (struct float*) malloc(sizeof(float)*3*16*N)) == NULL)
+  {
+    printf("error allocating stream\n");
     exit(1);
   }
 #endif
 
+  /* Load random data into stream. */
+  for (index = 0; index < N; index++)
+  {
+    A_block = &A[index*16];
+    B_block = &B[index*16];
+    C_block = &C[index*16];
+
+    //A_block = &stream[index*3*16];
+    //B_block = &stream[index*3*16+16];
+    //C_block = &stream[index*3*16+32];
+
+    for (i = 0; i < N_BLOCK; i++) {
+      for (j = 0; j < N_BLOCK; j++)
+      {
+        A_block[i*N_BLOCK+j] = rand()/(float) RAND_MAX;
+        B_block[i*N_BLOCK+j] = rand()/(float) RAND_MAX;
+        C_block[i*N_BLOCK+j] = rand()/(float) RAND_MAX;
+      }
+    }
+  }
+
   printf("stream has %llu matrix blocks\n", N);
-  if (N < 1024) printf("stream is %llu bytes\n", 3*16*N*sizeof(float));
-  else if (N < 1024*1024) printf("stream is %1.1f kB\n", 3*16*N*sizeof(float)/1024.);
-  else if (N < 1024*1024*1024) printf("stream is %1.1f MB\n", 3*16*N*sizeof(float)/1024./1024.);
+  if (3*16*N*sizeof(float) < 1024) printf("stream is %llu bytes\n", 3*16*N*sizeof(float));
+  else if (3*16*N*sizeof(float) < 1024*1024) printf("stream is %1.1f kB\n", 3*16*N*sizeof(float)/1024.);
+  else if (3*16*N*sizeof(float) < 1024*1024*1024) printf("stream is %1.1f MB\n", 3*16*N*sizeof(float)/1024./1024.);
   else printf("stream is %1.1f GB\n", 3*16*N*sizeof(float)/1024./1024./1024.);
+  printf("stream uses %llu pages of 4 kB\n", 3*16*N*sizeof(float)/4096);
+  printf("if this were a matrix multiply, the underlying matrices would have dimension %f x %f\n", pow(N, 1/3.)*N_BLOCK, pow(N, 1/3.)*N_BLOCK);
   printf("loops = %llu\n", loops);
 
   gettimeofday(&start, NULL);
@@ -299,20 +351,23 @@ main (int argc, char **argv)
   {
     for (index = 0; index < N; index++)
     {
+      /* Load pointer to blocks. */
       A_block = &A[index*16];
       B_block = &B[index*16];
       C_block = &C[index*16];
 
-      /* Multiply 4x4 matrix block. */
-      for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++)
-        {
-          for (k = 0; k < 4; k++)
-          {
-            C_block[i*4+j] = A_block[i*4+k]*B_block[k*4+j];
-          }
-        }
-      }
+      /* Do some prefetching. */
+      _mm_prefetch(&A[(index+6)*16], _MM_HINT_T0);
+      _mm_prefetch(&B[(index+6)*16], _MM_HINT_T0);
+      _mm_prefetch(&C[(index+6)*16], _MM_HINT_T0);
+
+      //A_block = &stream[index*3*16];
+      //B_block = &stream[index*3*16+16];
+      //C_block = &stream[index*3*16+32];
+
+      if (A_block[0] == 0) { break; }
+      if (B_block[0] == 0) { break; }
+      if (C_block[0] == 0) { break; }
     }
   }
 
@@ -396,8 +451,18 @@ main (int argc, char **argv)
   walltime = (stop.tv_sec-start.tv_sec+(stop.tv_usec-start.tv_usec)/1.0e6)/loops;
   usertime = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/loops;
   systime = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/loops;
-  printf("performance: total walltime %f s, usertime %f s, systime %f s, per iteration walltime %e s, usertime %e s, systime %e s\n",
-      walltime*loops, usertime*loops, systime*loops, walltime, usertime, systime);
+  flops = (pow(N, 1/3.)*N_BLOCK)*(pow(N, 1/3.)*N_BLOCK)*(2.*pow(N, 1/3.)*N_BLOCK+1.)/usertime;
+  printf("performance: total walltime %f s, usertime %f s, systime %f s, ", walltime*loops, usertime*loops, systime*loops);
+  printf("per loop walltime %e s, usertime %e s, systime %e, ", walltime, usertime, systime);
+  if (flops < 1000*1000*1000)
+  {
+    printf("%1.2f Mflop/s\n", flops/1000./1000.);
+  }
+
+  else
+  {
+    printf("%1.2f Gflop/s\n", flops/1000./1000./1000.);
+  }
 
   free(A);
   free(B);
