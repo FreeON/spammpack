@@ -1,4 +1,5 @@
 #include "config.h"
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,16 +11,15 @@
 #include <papi.h>
 #endif
 
-#define ALIGNMENT 64
 #define N_BLOCK 4
 
 //#undef HAVE_POSIX_MEMALIGN
 
-#define EXTERNAL_BLAS
-#define EXTERNAL_BLAS_DEFINITION
+//#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
 //#define STREAM_KERNEL_3
+#define POINTER_CHASE
 
 //#define DEBUG_LOOP
 
@@ -39,7 +39,7 @@ struct multiply_stream_index_t
   unsigned int C_index;
 };
 
-#ifdef EXTERNAL_BLAS_DEFINITION
+#ifdef EXTERNAL_BLAS
 float
 sgemm_ (char *, char *, int *, int *, int *, float *, float  *, int *,
     float *, int *, float *, float *, int *);
@@ -263,6 +263,22 @@ stream_multiply (const unsigned long long number_stream_elements,
   //  A[0] = 0;
   //}
 
+#elif defined(POINTER_CHASE)
+  /* Loops over all elements in stream. */
+  for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
+  {
+    A = multiply_stream[stream_index].A_block;
+    //B = multiply_stream[stream_index].B_block;
+    //C = multiply_stream[stream_index].C_block;
+
+    /* Do something so that the compiler does not optimize out the poitner
+     * assignment and we are forcing the processor to load the matrix block.
+     */
+    if (A[0] == 0.0) { printf("do something\n"); }
+    //if (B[0] == 0.0) { printf("do something\n"); }
+    //if (C[0] == 0.0) { printf("do something\n"); }
+  }
+
 #else
   /* Multiply stream. */
   A = multiply_stream[0].A_block;
@@ -312,6 +328,10 @@ main (int argc, char **argv)
   unsigned int N = 1024;
   unsigned int N_padded = N;
 
+  unsigned int alignment = 64;
+
+  int allocation_result;
+
   unsigned int i, j, k;
   unsigned long long stream_index, number_stream_elements;
 
@@ -360,11 +380,12 @@ main (int argc, char **argv)
 
   int parse;
   int longindex;
-  char *short_options = "hN:l:vprs123456789";
+  char *short_options = "hN:l:a:vprs123456789";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
     { "loops", required_argument, NULL, 'l' },
+    { "align", required_argument, NULL, 'a' },
     { "verify", no_argument, NULL, 'v' },
     { "print", no_argument, NULL, 'p' },
     { "no-random", no_argument, NULL, 'r' },
@@ -393,7 +414,8 @@ main (int argc, char **argv)
         printf("\n");
         printf("-h            This help\n");
         printf("-N N          Use NxN matrix blocks\n");
-        printf("--loops N     Repeat each multiply N times\n");
+        printf("--align N     Align memory buffer on N byte boundary (default N = %u)\n", alignment);
+        printf("--loops N     Repeat each access test N times (default N = %llu)\n", loops);
         printf("--verify      Verify result\n");
         printf("--print       Print matrices\n");
         printf("--no-random   Full matrices with index values as opposed to random\n");
@@ -418,6 +440,10 @@ main (int argc, char **argv)
 
       case 'l':
         loops = strtol(optarg, NULL, 10);
+        break;
+
+      case 'a':
+        alignment = strtol(optarg, NULL, 10);
         break;
 
       case 'v':
@@ -518,6 +544,9 @@ main (int argc, char **argv)
 #elif defined(STREAM_KERNEL_3)
   printf("using stream_kernel_3\n");
 
+#elif defined(POINTER_CHASE)
+  printf("pointer chase\n");
+
 #else
   printf("using C stream kernel\n");
 
@@ -535,26 +564,82 @@ main (int argc, char **argv)
 
   /* Allocate matrices. */
 #ifdef HAVE_POSIX_MEMALIGN
-  if (posix_memalign((void**) &A, ALIGNMENT, sizeof(float)*N*N) != 0)
+  if ((allocation_result = posix_memalign((void**) &A, alignment, sizeof(float)*N*N)) != 0)
   {
-    printf("error allocating A\n");
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
     exit(1);
   }
-  if (posix_memalign((void**) &B, ALIGNMENT, sizeof(float)*N*N) != 0)
+
+  if ((allocation_result = posix_memalign((void**) &B, alignment, sizeof(float)*N*N)) != 0)
   {
-    printf("error allocating B\n");
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
     exit(1);
   }
-  if (posix_memalign((void**) &C, ALIGNMENT, sizeof(float)*N*N) != 0)
+
+  if ((allocation_result = posix_memalign((void**) &C, alignment, sizeof(float)*N*N)) != 0)
   {
-    printf("error allocating C\n");
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
     exit(1);
   }
-  if (posix_memalign((void**) &D, ALIGNMENT, sizeof(float)*N*N) != 0)
+
+  if ((allocation_result = posix_memalign((void**) &D, alignment, sizeof(float)*N*N)) != 0)
   {
-    printf("error allocating D\n");
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
     exit(1);
   }
+
 #else
   printf("can not allocated aligned memory for matrices\n");
   if ((A = (float*) malloc(sizeof(float)*N*N)) == NULL)
@@ -562,16 +647,19 @@ main (int argc, char **argv)
     printf("error allocating A\n");
     exit(1);
   }
+
   if ((B = (float*) malloc(sizeof(float)*N*N)) == NULL)
   {
     printf("error allocating B\n");
     exit(1);
   }
+
   if ((C = (float*) malloc(sizeof(float)*N*N)) == NULL)
   {
     printf("error allocating C\n");
     exit(1);
   }
+
   if ((D = (float*) malloc(sizeof(float)*N*N)) == NULL)
   {
     printf("error allocating D\n");
@@ -599,6 +687,7 @@ main (int argc, char **argv)
         C[get_index(N, i, j)] = get_index(N, i, j)+1;
       }
 
+      /* Copy C matrix for verification. */
       D[get_index(N, i, j)] = C[get_index(N, i, j)];
     }
   }
@@ -638,14 +727,41 @@ main (int argc, char **argv)
   }
 
 #ifdef HAVE_POSIX_MEMALIGN
-  if (posix_memalign((void**) &multiply_stream, ALIGNMENT, sizeof(struct multiply_stream_t)*number_stream_elements) != 0)
+  if ((allocation_result = posix_memalign((void**) &multiply_stream, alignment, sizeof(struct multiply_stream_t)*number_stream_elements)) != 0)
   {
-    printf("error allocating multiply stream\n");
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
     exit(1);
   }
-  if (posix_memalign((void**) &multiply_stream_index, ALIGNMENT, sizeof(struct multiply_stream_index_t)*number_stream_elements) != 0)
+
+  if ((allocation_result = posix_memalign((void**) &multiply_stream_index, alignment, sizeof(struct multiply_stream_t)*number_stream_elements)) != 0)
   {
-    printf("error allocating multiply stream index\n");
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
     exit(1);
   }
 #else
@@ -669,9 +785,14 @@ main (int argc, char **argv)
     for (j = 0; j < N; j += N_BLOCK) {
       for (k = 0; k < N; k += N_BLOCK)
       {
-        multiply_stream[stream_index].A_block = &A[get_blocked_index(N, i, k)];
-        multiply_stream[stream_index].B_block = &B[get_blocked_index(N, k, j)];
-        multiply_stream[stream_index].C_block = &C[get_blocked_index(N, i, j)];
+        //multiply_stream[stream_index].A_block = &A[get_blocked_index(N, i, k)];
+        //multiply_stream[stream_index].B_block = &B[get_blocked_index(N, k, j)];
+        //multiply_stream[stream_index].C_block = &C[get_blocked_index(N, i, j)];
+
+        /* Load only the first matrix block into the stream. */
+        multiply_stream[stream_index].A_block = &A[0];
+        multiply_stream[stream_index].B_block = &B[0];
+        multiply_stream[stream_index].C_block = &C[0];
 
         multiply_stream_index[stream_index].A_index = get_blocked_index(N, i, k)/N_BLOCK/N_BLOCK;
         multiply_stream_index[stream_index].B_index = get_blocked_index(N, k, j)/N_BLOCK/N_BLOCK;
@@ -788,16 +909,68 @@ main (int argc, char **argv)
     if (PAPI_stop(papi_events, papi_values) != PAPI_OK) { printf("failed to stop\n"); exit(1); }
     papi_value_index = 0;
 
-    if (load_TOT_INS) { printf("[PAPI] total instructions = %lli\n", papi_values[papi_value_index++]); }
-    if (load_TOT_CYC) { printf("[PAPI] total cycles = %lli\n", papi_values[papi_value_index++]); }
-    if (load_RES_STL) { printf("[PAPI] cycles stalled = %lli\n", papi_values[papi_value_index++]); }
+    if (load_TOT_INS)
+    {
+      printf("[PAPI] total instructions = %lli, per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
 
-    if (load_L1_ICM) { printf("[PAPI] instruction L1 misses = %lli\n", papi_values[papi_value_index++]); }
-    if (load_L1_DCM) { printf("[PAPI] data L1 misses = %lli\n", papi_values[papi_value_index++]); }
-    if (load_L2_ICM) { printf("[PAPI] instruction L2 misses = %lli\n", papi_values[papi_value_index++]); }
-    if (load_L2_DCM) { printf("[PAPI] data L2 misses = %lli\n", papi_values[papi_value_index++]); }
-    if (load_TLB_IM) { printf("[PAPI] total instruction TLB misses = %lli\n", papi_values[papi_value_index++]); }
-    if (load_TLB_DM) { printf("[PAPI] total data TLB misses = %lli\n", papi_values[papi_value_index++]); }
+    if (load_TOT_CYC)
+    {
+      printf("[PAPI] total cycles = %lli, per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_RES_STL)
+    {
+      printf("[PAPI] cycles stalled = %lli, per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_L1_ICM)
+    {
+      printf("[PAPI] instruction L1 misses = %lli, per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_L1_DCM)
+    {
+      printf("[PAPI] data L1 misses = %lli, per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_L2_ICM)
+    {
+      printf("[PAPI] instruction L2 misses = %lli, per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_L2_DCM)
+    {
+      printf("[PAPI] data L2 misses = %lli, per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_TLB_IM)
+    {
+      printf("[PAPI] total instruction TLB misses = %lli, per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_TLB_DM)
+    {
+      printf("[PAPI] total data TLB misses = %lli, per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
   }
 
   PAPI_cleanup_eventset(papi_events);

@@ -1,6 +1,7 @@
 AC_INIT([SpAMM], [2010-06-24], [nicolasbock@gmail.com])
 AM_INIT_AUTOMAKE
 
+dnl Define location of m4 macros.
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Identify compilers.
