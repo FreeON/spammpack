@@ -358,6 +358,8 @@ main (int argc, char **argv)
 
   int sort_stream = 0;
 
+  int histogram = 0;
+
   unsigned int loop;
   unsigned long long loops = 1;
   struct timeval start, stop;
@@ -394,11 +396,19 @@ main (int argc, char **argv)
   struct multiply_stream_t *multiply_stream;
   struct multiply_stream_index_t *multiply_stream_index;
 
+  unsigned int unique_block_index;
+  void **unique_blocks;
+  unsigned long long *histogram_distances;
+  unsigned int *histogram_counts;
+
+  void *temp_pointer;
+  unsigned int temp_unsigned_int;
+
   unsigned int memory_access_length, old_A_index, old_B_index, old_C_index;
 
   int parse;
   int longindex;
-  char *short_options = "hN:l:a:vprsx:y:z:123456789ABCDEF";
+  char *short_options = "hN:l:a:vprsx:y:z:q123456789ABCDEF";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
@@ -411,6 +421,7 @@ main (int argc, char **argv)
     { "only_A", required_argument, NULL, 'x' },
     { "only_B", required_argument, NULL, 'y' },
     { "only_C", required_argument, NULL, 'z' },
+    { "histogram", no_argument, NULL, 'q' },
 #ifdef HAVE_PAPI
     { "TOT_INS",  no_argument, NULL, '1' },
     { "TOT_CYC",  no_argument, NULL, '2' },
@@ -450,6 +461,7 @@ main (int argc, char **argv)
         printf("--only_A N    Map only N matrix blocks in stream A (default N = all)\n", N_only_A);
         printf("--only_B N    Map only N matrix blocks in stream A (default N = all)\n", N_only_B);
         printf("--only_C N    Map only N matrix blocks in stream A (default N = all)\n", N_only_C);
+        printf("--histogram   Calculate address distance histogram of blocks in stream\n");
 #ifdef HAVE_PAPI
         printf("--TOT_INS     Measure total instructions\n");
         printf("--TOT_CYC     Measure total cycles\n");
@@ -508,6 +520,10 @@ main (int argc, char **argv)
 
       case 'z':
         N_only_C = strtol(optarg, NULL, 10);
+        break;
+
+      case 'q':
+        histogram = 1;
         break;
 
 #ifdef HAVE_PAPI
@@ -925,6 +941,63 @@ main (int argc, char **argv)
     exit(1);
   }
 
+  if ((allocation_result = posix_memalign((void**) &unique_blocks, alignment, sizeof(void*)*(N_only_A+N_only_B+N_only_C))) != 0)
+  {
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
+    exit(1);
+  }
+
+  if ((allocation_result = posix_memalign((void**) &histogram_distances, alignment, sizeof(unsigned long long)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) != 0)
+  {
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
+    exit(1);
+  }
+
+  if ((allocation_result = posix_memalign((void**) &histogram_counts, alignment, sizeof(unsigned int)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) != 0)
+  {
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("There was insufficient memory to fulfill the allocation request.\n");
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
+    exit(1);
+  }
+
   if ((allocation_result = posix_memalign((void**) &multiply_stream_index, alignment, sizeof(struct multiply_stream_t)*number_stream_elements)) != 0)
   {
     switch (allocation_result)
@@ -968,6 +1041,24 @@ main (int argc, char **argv)
     exit(1);
   }
 
+  if ((unique_blocks = (void**) malloc(sizeof(void*)*(N_only_A+N_only_B+N_only_C))) == NULL)
+  {
+    printf("error allocating list of unique blocks\n");
+    exit(1);
+  }
+
+  if ((histogram_distances = (unsigned long long*) malloc(sizeof(unsigned long long)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) == NULL)
+  {
+    printf("error allocating list of histogram distances\n");
+    exit(1);
+  }
+
+  if ((histogram_counts = (unsigned int*) malloc(sizeof(unsigned int)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) == NULL)
+  {
+    printf("error allocating list of histogram counts\n");
+    exit(1);
+  }
+
   if ((multiply_stream_index = (struct multiply_stream_index_t*) malloc(sizeof(struct multiply_stream_index_t)*number_stream_elements)) == NULL)
   {
     printf("error allocating multiply stream index\n");
@@ -982,6 +1073,7 @@ main (int argc, char **argv)
   printf("allocated multiply stream index at %p\n", multiply_stream_index);
 
   stream_index = 0;
+  unique_block_index = 0;
   /* In order to avoid cache aliasing effects between blocks, we increment the
    * 3 stream indices starting at different values.
    */
@@ -997,6 +1089,7 @@ main (int argc, char **argv)
           multiply_stream[stream_index].A_block = &A[get_blocked_index(N, i, k)];
           A_stream[stream_index] = &A[get_blocked_index(N, i, k)];
           multiply_stream_index[stream_index].A_index = get_blocked_index(N, i, k)/N_BLOCK/N_BLOCK;
+          unique_blocks[unique_block_index++] = &A[get_blocked_index(N, i, k)];
         }
 
         else
@@ -1011,6 +1104,7 @@ main (int argc, char **argv)
           multiply_stream[stream_index].B_block = &B[get_blocked_index(N, k, j)];
           B_stream[stream_index] = &B[get_blocked_index(N, k, j)];
           multiply_stream_index[stream_index].B_index = get_blocked_index(N, k, j)/N_BLOCK/N_BLOCK;
+          unique_blocks[unique_block_index++] = &B[get_blocked_index(N, k, j)];
         }
 
         else
@@ -1025,6 +1119,7 @@ main (int argc, char **argv)
           multiply_stream[stream_index].C_block = &C[get_blocked_index(N, i, j)];
           C_stream[stream_index] = &C[get_blocked_index(N, i, j)];
           multiply_stream_index[stream_index].C_index = get_blocked_index(N, i, j)/N_BLOCK/N_BLOCK;
+          unique_blocks[unique_block_index++] = &C[get_blocked_index(N, i, j)];
         }
 
         else
@@ -1101,6 +1196,71 @@ main (int argc, char **argv)
     old_C_index = multiply_stream_index[i].C_index;
   }
   printf("memory access length = %u\n", memory_access_length);
+
+  /* Calculate histogram of address distances of all blocks on stream. */
+  if (histogram)
+  {
+    /* Sort and uniqify list of unique blocks (to really make it a list of
+     * unique blocks).
+     */
+    for (i = 0; i < N_only_A+N_only_B+N_only_C-1; i++) {
+      for (j = i; j < N_only_A+N_only_B+N_only_C; j++)
+      {
+        if (unique_blocks[i] > unique_blocks[j])
+        {
+          temp_pointer = unique_blocks[i];
+          unique_blocks[i] = unique_blocks[j];
+          unique_blocks[j] = temp_pointer;
+        }
+      }
+    }
+
+    k = 0;
+    for (i = 0; i < N_only_A+N_only_B+N_only_C; i++) {
+      for (j = i+1; j < N_only_A+N_only_B+N_only_C; j++)
+      {
+        if (unique_blocks[i] != unique_blocks[j])
+        {
+          histogram_distances[k++] = unique_blocks[j]-unique_blocks[i];
+        }
+      }
+
+      /* Skip over identical blocks. */
+      while (i < N_only_A+N_only_B+N_only_C-1 && unique_blocks[i] == unique_blocks[i+1]) { i++; }
+    }
+
+    /* Count. */
+    for (i = 0; i < k-1; i++) {
+      for (j = i+1; j < k; j++)
+      {
+        if (histogram_distances[i] > histogram_distances[j])
+        {
+          temp_unsigned_int = histogram_distances[i];
+          histogram_distances[i] = histogram_distances[j];
+          histogram_distances[j] = temp_unsigned_int;
+        }
+      }
+    }
+
+    //printf("unique block address distance histogram (only multiples of 4096)\n");
+    //printf("distance in bytes, count\n");
+    temp_unsigned_int = 0;
+    for (i = 0; i < k; i++) {
+      histogram_counts[i] = 1;
+      j = i;
+      while (i+1 < k && histogram_distances[i] == histogram_distances[i+1])
+      {
+        histogram_counts[j]++;
+        i++;
+      }
+      if (histogram_distances[j]%4096 == 0)
+      {
+        temp_unsigned_int += histogram_counts[j];
+        //printf("%llu %u\n", histogram_distances[j], histogram_counts[j]);
+      }
+    }
+    printf("unique block address distance multiples of 4096 = %u\n", temp_unsigned_int);
+  }
 
   /* Apply beta to C. */
   for (i = 0; i < N*N; i++)
