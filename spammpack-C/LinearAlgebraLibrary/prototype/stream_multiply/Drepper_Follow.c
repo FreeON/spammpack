@@ -35,6 +35,7 @@ main (int argc, char **argv)
   unsigned int i;
   unsigned int N = 8;
   unsigned int alignment = 4096;
+  unsigned int increment = 1;
 
   unsigned int number_elements;
 
@@ -67,11 +68,12 @@ main (int argc, char **argv)
 
   int parse;
   int longindex;
-  char *short_options = "hN:a:l:123456789";
+  char *short_options = "hN:a:s:l:123456789";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
     { "align", required_argument, NULL, 'a' },
+    { "increment", required_argument, NULL, 's' },
     { "loops", required_argument, NULL, 'l' },
 #ifdef HAVE_PAPI
     { "TOT_INS", no_argument, NULL, '1' },
@@ -95,20 +97,21 @@ main (int argc, char **argv)
       case 'h':
         printf("Usage:\n");
         printf("\n");
-        printf("-h            This help\n");
-        printf("-N N          Use N byte buffer (default N = %u bytes)\n", N);
-        printf("--align N     Align memory buffer on N byte boundary (default N = %u)\n", alignment);
-        printf("--loops N     Repeat each access test N times (default N = %llu)\n", loops);
+        printf("-h              This help\n");
+        printf("-N N            Use 2^N elements (default N = %u)\n", N);
+        printf("--align N       Align memory buffer on N byte boundary (default N = %u)\n", alignment);
+        printf("--increment N   When iterating over list, increment element index by N (default N = %u)\n", increment);
+        printf("--loops N       Repeat each access test N times (default N = %llu)\n", loops);
 #ifdef HAVE_PAPI
-        printf("--TOT_INS     Measure total instructions\n");
-        printf("--TOT_CYC     Measure total cycles\n");
-        printf("--RES_STL     Measure stalled cycles\n");
-        printf("--L1_ICM      Measure L1 instruction misses\n");
-        printf("--L1_DCM      Measure L1 data misses\n");
-        printf("--L2_ICM      Measure L2 instruction misses\n");
-        printf("--L2_DCM      Measure L2 data misses\n");
-        printf("--TLB_IM      Measure TLB instruction misses\n");
-        printf("--TLB_DM      Measure TLB data misses\n");
+        printf("--TOT_INS       Measure total instructions\n");
+        printf("--TOT_CYC       Measure total cycles\n");
+        printf("--RES_STL       Measure stalled cycles\n");
+        printf("--L1_ICM        Measure L1 instruction misses\n");
+        printf("--L1_DCM        Measure L1 data misses\n");
+        printf("--L2_ICM        Measure L2 instruction misses\n");
+        printf("--L2_DCM        Measure L2 data misses\n");
+        printf("--TLB_IM        Measure TLB instruction misses\n");
+        printf("--TLB_DM        Measure TLB data misses\n");
 #endif
         return 0;
         break;
@@ -119,6 +122,10 @@ main (int argc, char **argv)
 
       case 'a':
         alignment = strtol(optarg, NULL, 10);
+        break;
+
+      case 's':
+        increment = strtol(optarg, NULL, 10);
         break;
 
       case 'l':
@@ -196,21 +203,27 @@ main (int argc, char **argv)
 #endif
 
   number_elements = (1 << N)/sizeof(struct list_t);
+  if (increment == 0) { increment = 1; }
+  if (increment > number_elements) { increment = number_elements; }
 
   printf("NPAD = %u\n", NPAD);
   printf("sizeof(list_t) = %lu\n", sizeof(struct list_t));
   printf("N = %u\n", N);
-  printf("number elements = %u\n", number_elements);
+  printf("number elements in buffer = %u\n", number_elements);
+  printf("number elements looped over = %u\n", number_elements/increment);
+  printf("increment = %u\n", increment);
+  printf("distance between 2 elements = %lu bytes\n", sizeof(struct list_t)*increment);
   printf("allocating %lu bytes\n", sizeof(struct list_t)*number_elements);
+  printf("working set size = %lu bytes\n", sizeof(struct list_t)*number_elements/increment);
 
   /* Allocate buffer. */
   buffer = malloc(sizeof(struct list_t)*number_elements);
 
   /* Set up links in buffer. */
   list = (struct list_t*) buffer;
-  for (i = 0; i < number_elements; i++)
+  for (i = 0; i < number_elements; i += increment)
   {
-    if (i < number_elements-1) { list[i].n = &list[i+1]; }
+    if (i+increment < number_elements) { list[i].n = &list[i+increment]; }
     else { list[i].n = &list[0]; }
   }
 
@@ -255,63 +268,63 @@ main (int argc, char **argv)
     if (load_TOT_INS)
     {
       printf("[PAPI] total instructions = %lli, per element = %1.2f\n",
-          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements);
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements*(double) increment);
       papi_value_index++;
     }
 
     if (load_TOT_CYC)
     {
       printf("[PAPI] total cycles = %lli, per element = %1.2f\n",
-          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements);
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements*(double) increment);
       papi_value_index++;
     }
 
     if (load_RES_STL)
     {
       printf("[PAPI] cycles stalled = %lli, per element = %1.2f\n",
-          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements);
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements*(double) increment);
       papi_value_index++;
     }
 
     if (load_L1_ICM)
     {
       printf("[PAPI] instruction L1 misses = %lli, per element = %1.2f\n",
-          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements);
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements*(double) increment);
       papi_value_index++;
     }
 
     if (load_L1_DCM)
     {
       printf("[PAPI] data L1 misses = %lli, per element = %1.2f\n",
-          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements);
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements*(double) increment);
       papi_value_index++;
     }
 
     if (load_L2_ICM)
     {
       printf("[PAPI] instruction L2 misses = %lli, per element = %1.2f\n",
-          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements);
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements*(double) increment);
       papi_value_index++;
     }
 
     if (load_L2_DCM)
     {
       printf("[PAPI] data L2 misses = %lli, per element = %1.2f\n",
-          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements);
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements*(double) increment);
       papi_value_index++;
     }
 
     if (load_TLB_IM)
     {
       printf("[PAPI] total instruction TLB misses = %lli, per element = %1.2f\n",
-          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements);
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements*(double) increment);
       papi_value_index++;
     }
 
     if (load_TLB_DM)
     {
       printf("[PAPI] total data TLB misses = %lli, per element = %1.2f\n",
-          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements);
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_elements*(double) increment);
       papi_value_index++;
     }
   }
