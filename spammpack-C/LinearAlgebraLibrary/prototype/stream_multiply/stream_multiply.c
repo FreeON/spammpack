@@ -21,7 +21,39 @@
 //#define STREAM_KERNEL_3
 #define POINTER_CHASE
 
+//#define DENSE_MULTIPLY
+
 //#define DEBUG_LOOP
+
+struct matrix_box_t
+{
+  /* These boundaries are semi-open, i.e. the matrix indices covered in this
+   * matrix node go from [M_lower, M_upper[ and [N_lower, N_upper[.
+   */
+
+  /* Row box. */
+  unsigned int M_lower;
+  unsigned int M_upper;
+
+  /* Column box. */
+  unsigned int N_lower;
+  unsigned int N_upper;
+};
+
+struct matrix_node_t
+{
+  struct matrix_box_t box;
+  struct matrix_node_t **child;
+  float *block_dense;
+};
+
+struct matrix_t
+{
+  unsigned int N;
+  struct matrix_box_t box;
+  unsigned long long alignment;
+  struct matrix_node_t *root;
+};
 
 struct multiply_stream_t
 {
@@ -161,6 +193,26 @@ interleave_3_index (const unsigned int i, const unsigned int j, const unsigned i
   return result;
 }
 
+unsigned int
+interleave_2_index (const unsigned int i, const unsigned int j)
+{
+  unsigned int result = 0;
+  unsigned int bitmask = 1;
+  unsigned int addmask = 1;
+  unsigned int index;
+
+  for (index = 0; index < sizeof(unsigned int)*8; index++)
+  {
+    if (i & bitmask) { result |= addmask; }
+    addmask <<= 1;
+    if (j & bitmask) { result |= addmask; }
+    addmask <<= 1;
+    bitmask <<= 1;
+  }
+
+  return result;
+}
+
 /* Returns the Morton-ordered index of a NxN matrix. */
 unsigned int
 get_Morton_index (const unsigned int N, const unsigned int i, const unsigned int j)
@@ -222,7 +274,6 @@ void
 stream_multiply_verify (const unsigned int N, const float alpha,
     const float *restrict A, const float *restrict B, float *restrict C)
 {
-  unsigned int stream_index;
   unsigned int i, j, k;
 
   for (i = 0; i < N; i++) {
@@ -244,7 +295,14 @@ stream_multiply (const unsigned long long number_stream_elements,
     float **C_stream)
 {
   unsigned long long stream_index;
+
+#if ! defined(EXTERNAL_BLAS) \
+  && ! defined(STREAM_KENEL_1) \
+  && ! defined(STREAM_KERNEL_2) \
+  && ! defined(STREAM_KERNEL_3) \
+  && ! defined(POINTER_CHASE)
   unsigned int i, j, k;
+#endif
 
   float *A, *B, *C;
 
@@ -288,14 +346,14 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #else
   /* Multiply stream. */
-  A = multiply_stream[0].A_block;
-  B = multiply_stream[0].B_block;
-  C = multiply_stream[0].C_block;
+  //A = multiply_stream[0].A_block;
+  //B = multiply_stream[0].B_block;
+  //C = multiply_stream[0].C_block;
 
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++) {
-    //A = multiply_stream[stream_index].A_block;
-    //B = multiply_stream[stream_index].B_block;
-    //C = multiply_stream[stream_index].C_block;
+    A = multiply_stream[stream_index].A_block;
+    B = multiply_stream[stream_index].B_block;
+    C = multiply_stream[stream_index].C_block;
 
     for (i = 0; i < N_BLOCK; i++) {
       for (j = 0; j < N_BLOCK; j++) {
@@ -329,17 +387,341 @@ compare_matrix (const unsigned int N, const float *restrict A, const float *rest
   return max_diff;
 }
 
+struct matrix_t*
+spamm_new (const unsigned int N, const unsigned int alignment)
+{
+  struct matrix_t *new_matrix;
+
+  if ((new_matrix = (struct matrix_t*) malloc(sizeof(struct matrix_t))) == NULL)
+  {
+    printf("error allocating new matrix\n");
+    exit(1);
+  }
+
+  new_matrix->N = N;
+  new_matrix->box.M_lower = 0;
+  new_matrix->box.N_lower = 0;
+  new_matrix->box.M_upper = N;
+  new_matrix->box.N_upper = N;
+  new_matrix->alignment = alignment;
+  new_matrix->root = NULL;
+
+  return new_matrix;
+}
+
+struct matrix_node_t*
+spamm_new_node (const unsigned int M_lower, const unsigned int M_upper,
+    const unsigned int N_lower, const unsigned int N_upper,
+    const unsigned long long alignment)
+{
+  struct matrix_node_t *new_node;
+
+  if ((new_node = (struct matrix_node_t*) malloc(sizeof(struct matrix_node_t))) == NULL)
+  {
+    printf("error allocating new node\n");
+    exit(1);
+  }
+
+  new_node->box.M_lower = M_lower;
+  new_node->box.M_upper = M_upper;
+  new_node->box.N_lower = N_lower;
+  new_node->box.N_upper = N_upper;
+  new_node->child = NULL;
+  new_node->block_dense = NULL;
+
+  return new_node;
+}
+
+void
+spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned int j, const float Aij, const unsigned long long alignment)
+{
+#ifdef HAVE_POSIX_MEMALIGN
+  int allocation_result;
+#endif
+
+  short int child_index;
+
+  if (node->box.M_upper-node->box.M_lower == N_BLOCK &&
+      node->box.N_upper-node->box.N_lower == N_BLOCK)
+  {
+    if (node->block_dense == NULL)
+    {
+      /* Allocate new dense matrix block. */
+#if defined(HAVE_POSIX_MEMALIGN)
+      if ((allocation_result = posix_memalign((void**) &node->block_dense, alignment, sizeof(float)*N_BLOCK*N_BLOCK)) != 0)
+      {
+        switch (allocation_result)
+        {
+          case EINVAL:
+            printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+            break;
+
+          case ENOMEM:
+            printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
+            break;
+
+          default:
+            printf("Unknown error code\n");
+            break;
+        }
+        exit(1);
+      }
+#else
+      if ((node->block_dense = (float*) malloc(sizeof(float)*N_BLOCK*N_BLOCK)) == NULL)
+      {
+        printf("error allocating new dense matrix block\n");
+        exit(1);
+      }
+#endif
+    }
+
+    node->block_dense[(i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower)] = Aij;
+  }
+
+  else
+  {
+    if (node->child == NULL)
+    {
+      if ((node->child = (struct matrix_node_t**) malloc(sizeof(struct matrix_node_t*)*4)) == NULL)
+      {
+        printf("error allocating children pointers\n");
+        exit(1);
+      }
+
+      node->child[0*2+0] = spamm_new_node(node->box.M_lower,
+          node->box.M_lower+(node->box.M_upper-node->box.M_lower)/2,
+          node->box.N_lower,
+          node->box.N_lower+(node->box.N_upper-node->box.N_lower)/2,
+          alignment);
+      node->child[0*2+1] = spamm_new_node(node->box.M_lower,
+          node->box.M_lower+(node->box.M_upper-node->box.M_lower)/2,
+          node->box.N_lower+(node->box.N_upper-node->box.N_lower)/2,
+          node->box.N_upper,
+          alignment);
+      node->child[1*2+0] = spamm_new_node(node->box.M_lower+(node->box.M_upper-node->box.M_lower)/2,
+          node->box.M_upper,
+          node->box.N_lower,
+          node->box.N_lower+(node->box.N_upper-node->box.N_lower)/2,
+          alignment);
+      node->child[1*2+1] = spamm_new_node(node->box.M_lower+(node->box.M_upper-node->box.M_lower)/2,
+          node->box.M_upper,
+          node->box.N_lower+(node->box.N_upper-node->box.N_lower)/2,
+          node->box.N_upper,
+          alignment);
+    }
+
+    if (i < node->box.M_lower+(node->box.M_upper-node->box.M_lower)/2)
+    {
+      child_index = 0;
+    }
+    else
+    {
+      child_index = 2;
+    }
+
+    if (j >= node->box.N_lower+(node->box.N_upper-node->box.N_lower)/2)
+    {
+      child_index |= 1;
+    }
+
+    /* Descent to child node. */
+    spamm_set_node(node->child[child_index], i, j, Aij, alignment);
+  }
+}
+
+void
+spamm_set (struct matrix_t *A, const unsigned int i, const unsigned int j, const float Aij)
+{
+  if (A->root == NULL)
+  {
+    A->root = spamm_new_node(A->box.M_lower, A->box.M_upper, A->box.N_lower, A->box.N_upper, A->alignment);
+  }
+
+  spamm_set_node(A->root, i, j, Aij, A->alignment);
+}
+
+float
+spamm_get_node (struct matrix_node_t *node, const unsigned int i, const unsigned int j)
+{
+  short int child_index;
+
+  if (node->child != NULL)
+  {
+    if (i < node->box.M_lower+(node->box.M_upper-node->box.M_lower)/2)
+    {
+      child_index = 0;
+    }
+    else
+    {
+      child_index = 2;
+    }
+
+    if (j >= node->box.N_lower+(node->box.N_upper-node->box.N_lower)/2)
+    {
+      child_index |= 1;
+    }
+
+    /* Descent to child node. */
+    return spamm_get_node(node->child[child_index], i, j);
+  }
+
+  else if (node->block_dense != NULL)
+  {
+    return node->block_dense[(i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower)];
+  }
+
+  else { return 0.0; }
+}
+
+float
+spamm_get (const struct matrix_t *A, const unsigned int i, const unsigned int j)
+{
+  if (A->root == NULL) { return 0; }
+  else
+  {
+    return spamm_get_node(A->root, i, j);
+  }
+}
+
+void
+spamm_print (struct matrix_t *A)
+{
+  unsigned int i, j;
+
+  for (i = 0; i < A->N; i++) {
+    for (j = 0; j < A->N; j++)
+    {
+      printf(" %f", spamm_get(A, i, j));
+    }
+    printf("\n");
+  }
+}
+
+void
+spamm_multiply_node (const struct matrix_node_t *A_node,
+    const struct matrix_node_t *B_node,
+    const struct matrix_node_t *C_node,
+    unsigned long long *index,
+    struct multiply_stream_t *stream,
+    struct multiply_stream_index_t *stream_index,
+    float **A_stream,
+    float **B_stream,
+    float **C_stream)
+{
+  int i, j, k;
+
+  if (A_node->block_dense != NULL)
+  {
+    stream[*index].A_block = A_node->block_dense;
+    stream[*index].B_block = B_node->block_dense;
+    stream[*index].C_block = C_node->block_dense;
+
+    A_stream[*index] = A_node->block_dense;
+    B_stream[*index] = B_node->block_dense;
+    C_stream[*index] = C_node->block_dense;
+
+    (*index)++;
+  }
+
+  else
+  {
+    for (i = 0; i < 2; i++) {
+      for (j = 0; j < 2; j++) {
+        for (k = 0; k < 2; k++)
+        {
+          spamm_multiply_node(A_node->child[i*2+k],
+              B_node->child[k*2+j],
+              C_node->child[i*2+j],
+              index, stream, stream_index, A_stream, B_stream, C_stream);
+        }
+      }
+    }
+  }
+}
+
+void
+spamm_multiply (const struct matrix_t *A,
+    const struct matrix_t *B,
+    const struct matrix_t *C,
+    unsigned long long *index,
+    struct multiply_stream_t *stream,
+    struct multiply_stream_index_t *stream_index,
+    float **A_stream,
+    float **B_stream,
+    float **C_stream)
+{
+  /* Recursively multiply. */
+  spamm_multiply_node(A->root, B->root, C->root, index, stream, stream_index, A_stream, B_stream, C_stream);
+}
+
+float
+spamm_compare_matrix (const struct matrix_t *A, float *B)
+{
+  unsigned int i, j;
+  float max_diff = 0;
+
+  for (i = 0; i < A->N; i++) {
+    for (j = 0; j < A->N; j++)
+    {
+      if (fabs(spamm_get(A, i, j)-B[get_index(A->N, i, j)]) > max_diff)
+      {
+        max_diff = fabs(spamm_get(A, i, j)-B[get_index(A->N, i, j)]);
+      }
+    }
+  }
+
+  return max_diff;
+}
+
+void
+spamm_free_node (struct matrix_node_t **node)
+{
+  short int i;
+
+  if ((*node)->child != NULL)
+  {
+    for (i = 0; i < 4; i++)
+    {
+      spamm_free_node(&(*node)->child[i]);
+    }
+  }
+
+  else if ((*node)->block_dense != NULL)
+  {
+    free((*node)->block_dense);
+    (*node)->block_dense = NULL;
+  }
+
+  free(*node);
+  *node = NULL;
+}
+
+void
+spamm_free (struct matrix_t **A)
+{
+  if ((*A)->root != NULL)
+  {
+    spamm_free_node(&(*A)->root);
+  }
+  free(*A);
+  *A = NULL;
+}
+
 int
 main (int argc, char **argv)
 {
   unsigned int N = 1024;
   unsigned int N_padded = N;
 
-  unsigned int N_only_A, N_only_B, N_only_C;
+  unsigned int N_only_A = N*N;
+  unsigned int N_only_B = N*N;
+  unsigned int N_only_C = N*N;
 
   unsigned int alignment = 64;
 
+#ifdef HAVE_POSIX_MEMALIGN
   int allocation_result;
+#endif
 
   unsigned int i, j, k;
   unsigned long long stream_index;
@@ -389,8 +771,9 @@ main (int argc, char **argv)
   int load_TLB_DM = 0;
 #endif
 
+  struct matrix_t *A_spamm, *B_spamm, *C_spamm;
+
   float *A, *B, *C, *D;
-  float *A_blocked, *B_blocked, *C_blocked;
 
   float **A_stream, **B_stream, **C_stream;
   struct multiply_stream_t *multiply_stream;
@@ -458,9 +841,9 @@ main (int argc, char **argv)
         printf("--print       Print matrices\n");
         printf("--no-random   Full matrices with index values as opposed to random\n");
         printf("--sort        Sort stream\n");
-        printf("--only_A N    Map only N matrix blocks in stream A (default N = all)\n", N_only_A);
-        printf("--only_B N    Map only N matrix blocks in stream A (default N = all)\n", N_only_B);
-        printf("--only_C N    Map only N matrix blocks in stream A (default N = all)\n", N_only_C);
+        printf("--only_A N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_A);
+        printf("--only_B N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_B);
+        printf("--only_C N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_C);
         printf("--histogram   Calculate address distance histogram of blocks in stream\n");
 #ifdef HAVE_PAPI
         printf("--TOT_INS     Measure total instructions\n");
@@ -675,6 +1058,7 @@ main (int argc, char **argv)
 
   /* Allocate matrices. */
 #ifdef HAVE_POSIX_MEMALIGN
+
   if ((allocation_result = posix_memalign((void**) &A, alignment, sizeof(float)*N*N)) != 0)
   {
     switch (allocation_result)
@@ -684,7 +1068,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -703,7 +1087,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -722,7 +1106,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -741,7 +1125,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -750,7 +1134,6 @@ main (int argc, char **argv)
     }
     exit(1);
   }
-
 #else
   printf("can not allocated aligned memory for matrices\n");
   if ((A = (float*) malloc(sizeof(float)*N*N)) == NULL)
@@ -784,6 +1167,10 @@ main (int argc, char **argv)
 #endif
   printf("\n");
 
+  A_spamm = spamm_new(N, alignment);
+  B_spamm = spamm_new(N, alignment);
+  C_spamm = spamm_new(N, alignment);
+
   /* Fill matrices with random data. */
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -804,6 +1191,11 @@ main (int argc, char **argv)
 
       /* Copy C matrix for verification. */
       D[get_index(N, i, j)] = C[get_index(N, i, j)];
+
+      /* Build SpAMM tree. */
+      spamm_set(A_spamm, i, j, A[get_index(N, i, j)]);
+      spamm_set(B_spamm, i, j, B[get_index(N, i, j)]);
+      spamm_set(C_spamm, i, j, C[get_index(N, i, j)]);
     }
   }
 
@@ -815,6 +1207,13 @@ main (int argc, char **argv)
     print_matrix(N, B);
     printf("C =\n");
     print_matrix(N, C);
+
+    printf("A (SpAMM) =\n");
+    spamm_print(A_spamm);
+    printf("B (SpAMM) =\n");
+    spamm_print(B_spamm);
+    printf("C (SpAMM) =\n");
+    spamm_print(C_spamm);
   }
 
   /* Allocate stream. */
@@ -874,7 +1273,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -893,7 +1292,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -912,7 +1311,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -931,7 +1330,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -950,7 +1349,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -960,42 +1359,45 @@ main (int argc, char **argv)
     exit(1);
   }
 
-  if ((allocation_result = posix_memalign((void**) &histogram_distances, alignment, sizeof(unsigned long long)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) != 0)
+  if (histogram)
   {
-    switch (allocation_result)
+    if ((allocation_result = posix_memalign((void**) &histogram_distances, alignment, sizeof(unsigned long long)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) != 0)
     {
-      case EINVAL:
-        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
-        break;
+      switch (allocation_result)
+      {
+        case EINVAL:
+          printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+          break;
 
-      case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
-        break;
+        case ENOMEM:
+          printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
+          break;
 
-      default:
-        printf("Unknown error code\n");
-        break;
+        default:
+          printf("Unknown error code\n");
+          break;
+      }
+      exit(1);
     }
-    exit(1);
-  }
 
-  if ((allocation_result = posix_memalign((void**) &histogram_counts, alignment, sizeof(unsigned int)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) != 0)
-  {
-    switch (allocation_result)
+    if ((allocation_result = posix_memalign((void**) &histogram_counts, alignment, sizeof(unsigned int)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) != 0)
     {
-      case EINVAL:
-        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
-        break;
+      switch (allocation_result)
+      {
+        case EINVAL:
+          printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+          break;
 
-      case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
-        break;
+        case ENOMEM:
+          printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
+          break;
 
-      default:
-        printf("Unknown error code\n");
-        break;
+        default:
+          printf("Unknown error code\n");
+          break;
+      }
+      exit(1);
     }
-    exit(1);
   }
 
   if ((allocation_result = posix_memalign((void**) &multiply_stream_index, alignment, sizeof(struct multiply_stream_t)*number_stream_elements)) != 0)
@@ -1007,7 +1409,7 @@ main (int argc, char **argv)
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
         break;
 
       default:
@@ -1047,16 +1449,19 @@ main (int argc, char **argv)
     exit(1);
   }
 
-  if ((histogram_distances = (unsigned long long*) malloc(sizeof(unsigned long long)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) == NULL)
+  if (histogram)
   {
-    printf("error allocating list of histogram distances\n");
-    exit(1);
-  }
+    if ((histogram_distances = (unsigned long long*) malloc(sizeof(unsigned long long)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) == NULL)
+    {
+      printf("error allocating list of histogram distances\n");
+      exit(1);
+    }
 
-  if ((histogram_counts = (unsigned int*) malloc(sizeof(unsigned int)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) == NULL)
-  {
-    printf("error allocating list of histogram counts\n");
-    exit(1);
+    if ((histogram_counts = (unsigned int*) malloc(sizeof(unsigned int)*(N_only_A+N_only_B+N_only_C)*(N_only_A+N_only_B+N_only_C))) == NULL)
+    {
+      printf("error allocating list of histogram counts\n");
+      exit(1);
+    }
   }
 
   if ((multiply_stream_index = (struct multiply_stream_index_t*) malloc(sizeof(struct multiply_stream_index_t)*number_stream_elements)) == NULL)
@@ -1080,6 +1485,8 @@ main (int argc, char **argv)
   stream_index_A = 0;
   stream_index_B = 1;
   stream_index_C = 2;
+
+#ifdef DENSE_MULTIPLY
   for (i = 0; i < N; i += N_BLOCK) {
     for (j = 0; j < N; j += N_BLOCK) {
       for (k = 0; k < N; k += N_BLOCK)
@@ -1146,6 +1553,10 @@ main (int argc, char **argv)
       }
     }
   }
+#else
+  spamm_multiply(A_spamm, B_spamm, C_spamm, &stream_index, multiply_stream, multiply_stream_index, A_stream, B_stream, C_stream);
+#endif
+
   printf("created %llu multiply stream elements\n", stream_index);
 
   if (print)
@@ -1263,10 +1674,13 @@ main (int argc, char **argv)
   }
 
   /* Apply beta to C. */
-  for (i = 0; i < N*N; i++)
-  {
-    C[i] *= beta;
-    if (verify) { D[i] *= beta; }
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      C[i*N+j] *= beta;
+      spamm_set(C_spamm, i, j, beta*spamm_get(C_spamm, i, j));
+      if (verify) { D[i*N+j] *= beta; }
+    }
   }
   printf("applied beta\n");
 
@@ -1466,7 +1880,11 @@ main (int argc, char **argv)
       print_matrix(N, D);
     }
 
+#ifdef DENSE_MULTIPLY
     max_diff = compare_matrix(N, C, D);
+#else
+    max_diff = spamm_compare_matrix(C_spamm, D);
+#endif
     printf("max diff = %e\n", max_diff);
   }
 
@@ -1475,5 +1893,9 @@ main (int argc, char **argv)
   free(B);
   free(C);
   free(D);
+  spamm_free(&A_spamm);
+  spamm_free(&B_spamm);
+  spamm_free(&C_spamm);
   free(multiply_stream);
+  free(multiply_stream_index);
 }
