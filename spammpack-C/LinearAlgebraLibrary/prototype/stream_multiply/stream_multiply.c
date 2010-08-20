@@ -7,6 +7,7 @@
 #include <getopt.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <time.h>
 
 #ifdef HAVE_XMMINTRIN_H
 #include <xmmintrin.h>
@@ -899,6 +900,8 @@ main (int argc, char **argv)
   float alpha = 1.2;
   float beta = 0.5;
 
+  unsigned int rand_seed = 1;
+
   int verify = 0;
   double max_diff;
 
@@ -973,6 +976,7 @@ main (int argc, char **argv)
     { "only_B", required_argument, NULL, 'y' },
     { "only_C", required_argument, NULL, 'z' },
     { "histogram", no_argument, NULL, 'q' },
+    { "seed", required_argument, NULL, 'S' },
 #ifdef HAVE_PAPI
     { "TOT_INS",  no_argument, NULL, '1' },
     { "TOT_CYC",  no_argument, NULL, '2' },
@@ -1013,6 +1017,7 @@ main (int argc, char **argv)
         printf("--only_B N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_B);
         printf("--only_C N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_C);
         printf("--histogram   Calculate address distance histogram of blocks in stream\n");
+        printf("--seed N      Use N as the seed for rand() (default N = time())\n");
 #ifdef HAVE_PAPI
         printf("--TOT_INS     Measure total instructions\n");
         printf("--TOT_CYC     Measure total cycles\n");
@@ -1075,6 +1080,10 @@ main (int argc, char **argv)
 
       case 'q':
         histogram = 1;
+        break;
+
+      case 'S':
+        rand_seed = strtol(optarg, NULL, 10);
         break;
 
 #ifdef HAVE_PAPI
@@ -1201,6 +1210,17 @@ main (int argc, char **argv)
   printf("using C stream kernel\n");
 
 #endif
+
+  /* Set the rand() seed. */
+  if (rand_seed == 0)
+  {
+    srand(time(NULL));
+  }
+
+  else
+  {
+    srand(rand_seed);
+  }
 
   /* Check input. */
   N_padded = (int) N_BLOCK*pow(2, (int) ceil(log(N/(double) N_BLOCK)/log(2)));
@@ -1356,22 +1376,22 @@ main (int argc, char **argv)
     }
   }
 
-  //printf("randomizing order of setting matrix elements\n");
-  //for (i = 0; i < N*N-1; i++) {
-  //  for (j = i+1; j < N*N; j++)
-  //  {
-  //    if (rand()/(double) RAND_MAX > 0.5)
-  //    {
-  //      k = index_pairs[i][0];
-  //      index_pairs[i][0] = index_pairs[j][0];
-  //      index_pairs[j][0] = k;
+  if (random_elements)
+  {
+    printf("randomizing order of setting matrix elements\n");
+    for (i = 0; i < 10*N*N; i++)
+    {
+      j = (int) floor(rand()/(double) RAND_MAX*N);
 
-  //      k = index_pairs[i][1];
-  //      index_pairs[i][1] = index_pairs[j][1];
-  //      index_pairs[j][1] = k;
-  //    }
-  //  }
-  //}
+      k = index_pairs[i%(N*N)][0];
+      index_pairs[i%(N*N)][0] = index_pairs[j][0];
+      index_pairs[j][0] = k;
+
+      k = index_pairs[i%(N*N)][1];
+      index_pairs[i%(N*N)][1] = index_pairs[j][1];
+      index_pairs[j][1] = k;
+    }
+  }
 
   printf("setting matrix elements\n");
   for (k = 0; k < N*N; k++)
