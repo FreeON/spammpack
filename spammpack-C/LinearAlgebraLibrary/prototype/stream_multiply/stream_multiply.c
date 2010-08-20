@@ -1,4 +1,5 @@
 #include "config.h"
+
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
@@ -6,6 +7,10 @@
 #include <getopt.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+
+#ifdef HAVE_XMMINTRIN_H
+#include <xmmintrin.h>
+#endif
 
 #ifdef HAVE_PAPI
 #include <papi.h>
@@ -19,7 +24,8 @@
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
 //#define STREAM_KERNEL_3
-#define POINTER_CHASE
+//#define POINTER_CHASE
+#define C_KERNEL
 
 //#define DENSE_MULTIPLY
 
@@ -294,17 +300,19 @@ stream_multiply (const unsigned long long number_stream_elements,
     float **B_stream,
     float **C_stream)
 {
-  unsigned long long stream_index;
-
 #if ! defined(EXTERNAL_BLAS) \
   && ! defined(STREAM_KENEL_1) \
   && ! defined(STREAM_KERNEL_2) \
   && ! defined(STREAM_KERNEL_3) \
-  && ! defined(POINTER_CHASE)
+  && ! defined(POINTER_CHASE) \
+  && ! defined(C_KERNEL)
   unsigned int i, j, k;
 #endif
 
-  float *A, *B, *C;
+#if defined(POINTER_CHASE) || defined(C_KERNEL)
+  unsigned long long stream_index;
+  float *restrict A, *restrict B, *restrict C;
+#endif
 
 #if defined(STREAM_KERNEL_1)
   stream_kernel_1(number_stream_elements, alpha, multiply_stream);
@@ -342,6 +350,34 @@ stream_multiply (const unsigned long long number_stream_elements,
     if (A[0] == 0.0) { printf("do something\n"); }
     if (B[0] == 0.0) { printf("do something\n"); }
     if (C[0] == 0.0) { printf("do something\n"); }
+  }
+
+#elif defined(C_KERNEL)
+  for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
+  {
+    A = multiply_stream[stream_index].A_block;
+    B = multiply_stream[stream_index].B_block;
+    C = multiply_stream[stream_index].C_block;
+
+    __asm__(
+
+      "movaps 0%0, %%xmm3\n\t"
+      "pshufd $0x00, %%xmm3, %%xmm0\n\t"
+      "pshufd $0x55, %%xmm3, %%xmm1\n\t"
+      "pshufd $0xaa, %%xmm3, %%xmm2\n\t"
+      "pshufd $0xff, %%xmm3, %%xmm3\n\t"
+
+      "movaps 4*4%0, %%xmm7\n\t"
+      "pshufd $0x00, %%xmm7, %%xmm4\n\t"
+      "pshufd $0x55, %%xmm7, %%xmm5\n\t"
+      "pshufd $0xaa, %%xmm7, %%xmm7\n\t"
+      "pshufd $0xff, %%xmm7, %%xmm7\n\t"
+
+      : /* no output operands. */
+      : "m" (A), "m" (B), "m" (C) /* input operands. */
+    );
+
+    exit(1);
   }
 
 #else
@@ -1025,6 +1061,9 @@ main (int argc, char **argv)
 
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
+
+#elif defined(C_KERNEL)
+  printf("C kernel\n");
 
 #else
   printf("using C stream kernel\n");
