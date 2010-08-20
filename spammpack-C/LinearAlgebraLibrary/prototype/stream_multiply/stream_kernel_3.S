@@ -16,11 +16,11 @@
 #define C_ahead   %r15
 
 //#define DILATE_A_ONCE
-//#define DILATE_A
+#define DILATE_A
 #define UPDATE_POINTERS
-//#define MULTIPLY
+#define MULTIPLY
 #define INCREMENT_INDEX
-//#define PREFETCH
+#define PREFETCH
 
 #define LOAD
 #define STORE
@@ -37,6 +37,7 @@
    *    float *A_block;
    *    float *B_block;
    *    float *C_block;
+   *    float *A_dilated;
    *  };
    *
    *  void
@@ -70,8 +71,8 @@ stream_kernel_3:
   je done
 
   xor index, index
-  lea (number_stream_elements, number_stream_elements, 2), end_index
-  shl $3, end_index
+  movq number_stream_elements, end_index
+  shl $5, end_index
 
   lea  16(%rsp), A_dilated
 
@@ -326,7 +327,7 @@ loop_multiply:
 #endif
 
 #ifdef INCREMENT_INDEX
-  addq $(3*8), index
+  addq $(4*8), index
 #endif
   cmp end_index, index
   jne loop_multiply
