@@ -23,9 +23,9 @@
 //#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
-#define STREAM_KERNEL_3
+//#define STREAM_KERNEL_3
 //#define POINTER_CHASE
-//#define C_KERNEL
+#define C_KERNEL
 
 //#define DENSE_MULTIPLY
 
@@ -342,8 +342,11 @@ stream_multiply (const unsigned long long number_stream_elements,
   }
 
 #elif defined(C_KERNEL)
-  short i;
-  __m128 A_element, B_row, C_row;
+
+#define READAHEAD 8
+  __m128 A_element, B_row, C_row, alpha_row;
+
+  alpha_row = _mm_set1_ps(alpha);
 
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
   {
@@ -351,28 +354,100 @@ stream_multiply (const unsigned long long number_stream_elements,
     B = multiply_stream[stream_index].B_block;
     C = multiply_stream[stream_index].C_block;
 
-    for (i = 0; i < 4; i++)
+    if (stream_index < number_stream_elements-READAHEAD)
     {
-      A_element = _mm_load_ps(&A[(i*4+0)*4]);
-      B_row = _mm_load_ps(&B[0*4]);
-      C_row = _mm_mul_ps(A_element, B_row);
-
-      A_element = _mm_load_ps(&A[(i*4+1)*4]);
-      B_row = _mm_load_ps(&B[1*4]);
-      C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-      A_element = _mm_load_ps(&A[(i*4+2)*4]);
-      B_row = _mm_load_ps(&B[2*4]);
-      C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-      A_element = _mm_load_ps(&A[(i*4+3)*4]);
-      B_row = _mm_load_ps(&B[3*4]);
-      C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-      C_row = _mm_mul_ps(_mm_set1_ps(alpha), C_row);
-      C_row = _mm_add_ps(_mm_load_ps(&C[i*4]), C_row);
-      _mm_store_ps(&C[i*4], C_row);
+      _mm_prefetch(multiply_stream[stream_index+READAHEAD].A_dilated, _MM_HINT_T0);
     }
+
+    A_element = _mm_load_ps(&A[(0*4+0)*4]);
+    B_row = _mm_load_ps(&B[0*4]);
+    C_row = _mm_mul_ps(A_element, B_row);
+
+    A_element = _mm_load_ps(&A[(0*4+1)*4]);
+    B_row = _mm_load_ps(&B[1*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    A_element = _mm_load_ps(&A[(0*4+2)*4]);
+    B_row = _mm_load_ps(&B[2*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    A_element = _mm_load_ps(&A[(0*4+3)*4]);
+    B_row = _mm_load_ps(&B[3*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    C_row = _mm_mul_ps(alpha_row, C_row);
+    C_row = _mm_add_ps(_mm_load_ps(&C[0*4]), C_row);
+    _mm_store_ps(&C[0*4], C_row);
+
+    if (stream_index < number_stream_elements-READAHEAD)
+    {
+      _mm_prefetch(multiply_stream[stream_index+READAHEAD].B_block, _MM_HINT_T0);
+    }
+
+    A_element = _mm_load_ps(&A[(1*4+0)*4]);
+    B_row = _mm_load_ps(&B[0*4]);
+    C_row = _mm_mul_ps(A_element, B_row);
+
+    A_element = _mm_load_ps(&A[(1*4+1)*4]);
+    B_row = _mm_load_ps(&B[1*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    A_element = _mm_load_ps(&A[(1*4+2)*4]);
+    B_row = _mm_load_ps(&B[2*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    A_element = _mm_load_ps(&A[(1*4+3)*4]);
+    B_row = _mm_load_ps(&B[3*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    C_row = _mm_mul_ps(alpha_row, C_row);
+    C_row = _mm_add_ps(_mm_load_ps(&C[1*4]), C_row);
+    _mm_store_ps(&C[1*4], C_row);
+
+    if (stream_index < number_stream_elements-READAHEAD)
+    {
+      _mm_prefetch(multiply_stream[stream_index+READAHEAD].C_block, _MM_HINT_T0);
+    }
+
+    A_element = _mm_load_ps(&A[(2*4+0)*4]);
+    B_row = _mm_load_ps(&B[0*4]);
+    C_row = _mm_mul_ps(A_element, B_row);
+
+    A_element = _mm_load_ps(&A[(2*4+1)*4]);
+    B_row = _mm_load_ps(&B[1*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    A_element = _mm_load_ps(&A[(2*4+2)*4]);
+    B_row = _mm_load_ps(&B[2*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    A_element = _mm_load_ps(&A[(2*4+3)*4]);
+    B_row = _mm_load_ps(&B[3*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    C_row = _mm_mul_ps(alpha_row, C_row);
+    C_row = _mm_add_ps(_mm_load_ps(&C[2*4]), C_row);
+    _mm_store_ps(&C[2*4], C_row);
+
+    A_element = _mm_load_ps(&A[(3*4+0)*4]);
+    B_row = _mm_load_ps(&B[0*4]);
+    C_row = _mm_mul_ps(A_element, B_row);
+
+    A_element = _mm_load_ps(&A[(3*4+1)*4]);
+    B_row = _mm_load_ps(&B[1*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    A_element = _mm_load_ps(&A[(3*4+2)*4]);
+    B_row = _mm_load_ps(&B[2*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    A_element = _mm_load_ps(&A[(3*4+3)*4]);
+    B_row = _mm_load_ps(&B[3*4]);
+    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+    C_row = _mm_mul_ps(alpha_row, C_row);
+    C_row = _mm_add_ps(_mm_load_ps(&C[3*4]), C_row);
+    _mm_store_ps(&C[3*4], C_row);
   }
 
 #else
