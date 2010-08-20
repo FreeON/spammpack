@@ -330,9 +330,19 @@ stream_multiply (const unsigned long long number_stream_elements,
   stream_kernel_3(number_stream_elements, alpha, multiply_stream);
 
 #elif defined(POINTER_CHASE)
+
+#define READAHEAD 20
+
   /* Loops over all elements in stream. */
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
   {
+    if (stream_index < number_stream_elements-READAHEAD)
+    {
+      _mm_prefetch(multiply_stream[stream_index+READAHEAD].A_block, _MM_HINT_T0);
+      _mm_prefetch(multiply_stream[stream_index+READAHEAD].B_block, _MM_HINT_T0);
+      _mm_prefetch(multiply_stream[stream_index+READAHEAD].C_block, _MM_HINT_T0);
+    }
+
     A = multiply_stream[stream_index].A_block;
     B = multiply_stream[stream_index].B_block;
     C = multiply_stream[stream_index].C_block;
