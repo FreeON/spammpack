@@ -15,15 +15,15 @@
 #define B_ahead   %r14
 #define C_ahead   %r15
 
-#define DILATE_A_ONCE
+//#define DILATE_A_ONCE
 //#define DILATE_A
 #define UPDATE_POINTERS
-#define MULTIPLY
+//#define MULTIPLY
 #define INCREMENT_INDEX
 //#define PREFETCH
 
-//#define LOAD
-//#define STORE
+#define LOAD
+#define STORE
 
   .text
   .align 256
@@ -136,9 +136,12 @@ loop_multiply:
   movq  8(multiply_stream, index, 1), B
   movq 16(multiply_stream, index, 1), C
 
+#ifdef PREFETCH
   movq 12*24   (multiply_stream, index, 1), A_ahead
   movq 12*24+8 (multiply_stream, index, 1), B_ahead
   movq 12*24+16(multiply_stream, index, 1), C_ahead
+#endif
+
 #endif
 
 #ifdef PREFETCH
@@ -194,8 +197,6 @@ loop_multiply:
   movaps (%rsp), %xmm0
 #endif
 
-#ifdef MULTIPLY
-
 #ifdef PREFETCH
   prefetcht0 (B_ahead)
   prefetcht0 (C_ahead)
@@ -204,6 +205,9 @@ loop_multiply:
 #ifdef LOAD
   movaps 0*4*4(B), %xmm1 /* B_{11} B_{12} B_{13} B_{14} */
 #endif
+
+#ifdef MULTIPLY
+
   movaps 0*4*4(A_dilated), %xmm12 /* A_{11} A_{11} A_{11} A_{11} */
   mulps %xmm1, %xmm12
 
@@ -216,9 +220,13 @@ loop_multiply:
   movaps 12*4*4(A_dilated), %xmm15 /* A_{41} A_{41} A_{41} A_{41} */
   mulps %xmm1, %xmm15
 
+#endif
+
 #ifdef LOAD
   movaps 1*4*4(B), %xmm2 /* B_{21} B_{22} B_{23} B_{24} */
 #endif
+
+#ifdef MULTIPLY
   movaps 1*4*4(A_dilated), %xmm3 /* A_{12} A_{12} A_{12} A_{12} */
   mulps %xmm2, %xmm3
 
@@ -230,10 +238,13 @@ loop_multiply:
 
   movaps 13*4*4(A_dilated), %xmm6 /* A_{42} A_{42} A_{42} A_{42} */
   mulps %xmm2, %xmm6
+#endif
 
 #ifdef LOAD
   movaps 2*4*4(B), %xmm7 /* B_{31} B_{32} B_{33} B_{34} */
 #endif
+
+#ifdef MULTIPLY
   movaps 2*4*4(A_dilated), %xmm8 /* A_{13} A_{13} A_{13} A_{13} */
   mulps %xmm7, %xmm8
   addps %xmm3, %xmm12
@@ -249,10 +260,13 @@ loop_multiply:
   movaps 14*4*4(A_dilated), %xmm11 /* A_{43} A_{43} A_{43} A_{43} */
   mulps %xmm7, %xmm11
   addps %xmm6, %xmm15
+#endif
 
 #ifdef LOAD
   movaps 3*4*4(B), %xmm1 /* B_{41} B_{42} B_{43} B_{44} */
 #endif
+
+#ifdef MULTIPLY
   movaps 3*4*4(A_dilated), %xmm2 /* A_{14} A_{14} A_{14} A_{14} */
   mulps %xmm1, %xmm2
   addps %xmm8, %xmm12
@@ -268,6 +282,7 @@ loop_multiply:
   movaps 15*4*4(A_dilated), %xmm5 /* A_{44} A_{44} A_{44} A_{44} */
   mulps %xmm1, %xmm5
   addps %xmm11, %xmm15
+#endif
 
 #ifdef LOAD
   movaps 0*4*4(C), %xmm1
@@ -308,8 +323,6 @@ loop_multiply:
 #ifdef STORE
   movaps %xmm14, 2*4*4(C)
   movaps %xmm15, 3*4*4(C)
-#endif
-
 #endif
 
 #ifdef INCREMENT_INDEX

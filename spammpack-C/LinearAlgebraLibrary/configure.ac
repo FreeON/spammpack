@@ -175,6 +175,9 @@ else
   AC_MSG_RESULT([no])
 fi
 
+dnl Check for SSE intrinsics.
+AC_CHECK_HEADERS([xmmintrin.h])
+
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
 
