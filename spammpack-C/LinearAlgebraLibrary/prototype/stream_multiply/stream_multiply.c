@@ -51,6 +51,7 @@ struct matrix_node_t
   struct matrix_box_t box;
   struct matrix_node_t **child;
   float *block_dense;
+  float *block_dilated;
 };
 
 struct matrix_t
@@ -66,6 +67,7 @@ struct multiply_stream_t
   float *A_block;
   float *B_block;
   float *C_block;
+  float *A_dilated;
 };
 
 struct multiply_stream_index_t
@@ -323,15 +325,6 @@ stream_multiply (const unsigned long long number_stream_elements,
 #elif defined(STREAM_KERNEL_3)
   stream_kernel_3(number_stream_elements, alpha, multiply_stream);
 
-  //for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
-  //{
-  //  A = multiply_stream[stream_index].A_block;
-  //  B = multiply_stream[stream_index].B_block;
-  //  C = multiply_stream[stream_index].C_block;
-
-  //  A[0] = 0;
-  //}
-
 #elif defined(POINTER_CHASE)
   /* Loops over all elements in stream. */
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
@@ -339,10 +332,6 @@ stream_multiply (const unsigned long long number_stream_elements,
     A = multiply_stream[stream_index].A_block;
     B = multiply_stream[stream_index].B_block;
     C = multiply_stream[stream_index].C_block;
-
-    //A = A_stream[stream_index];
-    //B = B_stream[stream_index];
-    //C = C_stream[stream_index];
 
     /* Do something so that the compiler does not optimize out the poitner
      * assignment and we are forcing the processor to load the matrix block.
@@ -353,39 +342,41 @@ stream_multiply (const unsigned long long number_stream_elements,
   }
 
 #elif defined(C_KERNEL)
+  short i;
+  __m128 A_element, B_row, C_row;
+
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
   {
-    A = multiply_stream[stream_index].A_block;
+    A = multiply_stream[stream_index].A_dilated;
     B = multiply_stream[stream_index].B_block;
     C = multiply_stream[stream_index].C_block;
 
-    __asm__(
+    for (i = 0; i < 4; i++)
+    {
+      A_element = _mm_load_ps(&A[(i*4+0)*4]);
+      B_row = _mm_load_ps(&B[0*4]);
+      C_row = _mm_mul_ps(A_element, B_row);
 
-      "movaps 0%0, %%xmm3\n\t"
-      "pshufd $0x00, %%xmm3, %%xmm0\n\t"
-      "pshufd $0x55, %%xmm3, %%xmm1\n\t"
-      "pshufd $0xaa, %%xmm3, %%xmm2\n\t"
-      "pshufd $0xff, %%xmm3, %%xmm3\n\t"
+      A_element = _mm_load_ps(&A[(i*4+1)*4]);
+      B_row = _mm_load_ps(&B[1*4]);
+      C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
 
-      "movaps 4*4%0, %%xmm7\n\t"
-      "pshufd $0x00, %%xmm7, %%xmm4\n\t"
-      "pshufd $0x55, %%xmm7, %%xmm5\n\t"
-      "pshufd $0xaa, %%xmm7, %%xmm7\n\t"
-      "pshufd $0xff, %%xmm7, %%xmm7\n\t"
+      A_element = _mm_load_ps(&A[(i*4+2)*4]);
+      B_row = _mm_load_ps(&B[2*4]);
+      C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
 
-      : /* no output operands. */
-      : "m" (A), "m" (B), "m" (C) /* input operands. */
-    );
+      A_element = _mm_load_ps(&A[(i*4+3)*4]);
+      B_row = _mm_load_ps(&B[3*4]);
+      C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
 
-    exit(1);
+      C_row = _mm_mul_ps(_mm_set1_ps(alpha), C_row);
+      C_row = _mm_add_ps(_mm_load_ps(&C[i*4]), C_row);
+      _mm_store_ps(&C[i*4], C_row);
+    }
   }
 
 #else
   /* Multiply stream. */
-  //A = multiply_stream[0].A_block;
-  //B = multiply_stream[0].B_block;
-  //C = multiply_stream[0].C_block;
-
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++) {
     A = multiply_stream[stream_index].A_block;
     B = multiply_stream[stream_index].B_block;
@@ -464,6 +455,7 @@ spamm_new_node (const unsigned int M_lower, const unsigned int M_upper,
   new_node->box.N_upper = N_upper;
   new_node->child = NULL;
   new_node->block_dense = NULL;
+  new_node->block_dilated = NULL;
 
   return new_node;
 }
@@ -475,6 +467,7 @@ spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned
   int allocation_result;
 #endif
 
+  short int row_index, column_index;
   short int child_index;
 
   if (node->box.M_upper-node->box.M_lower == N_BLOCK &&
@@ -502,16 +495,57 @@ spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned
         }
         exit(1);
       }
+
+      if ((allocation_result = posix_memalign((void**) &node->block_dilated, alignment, sizeof(float)*4*N_BLOCK*N_BLOCK)) != 0)
+      {
+        switch (allocation_result)
+        {
+          case EINVAL:
+            printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+            break;
+
+          case ENOMEM:
+            printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
+            break;
+
+          default:
+            printf("Unknown error code\n");
+            break;
+        }
+        exit(1);
+      }
 #else
       if ((node->block_dense = (float*) malloc(sizeof(float)*N_BLOCK*N_BLOCK)) == NULL)
       {
         printf("error allocating new dense matrix block\n");
         exit(1);
       }
+
+      if ((node->block_dilated = (float*) malloc(sizeof(float)*4*N_BLOCK*N_BLOCK)) == NULL)
+      {
+        printf("error allocating new dense matrix block\n");
+        exit(1);
+      }
 #endif
+
+      /* Zero out the newly allocated block. */
+      for (row_index = 0; row_index < N_BLOCK; row_index++) {
+        for (column_index = 0; column_index < N_BLOCK; column_index++)
+        {
+          node->block_dense[row_index*N_BLOCK+column_index] = 0.0;
+          node->block_dilated[(row_index*N_BLOCK+column_index)*4+0] = 0.0;
+          node->block_dilated[(row_index*N_BLOCK+column_index)*4+1] = 0.0;
+          node->block_dilated[(row_index*N_BLOCK+column_index)*4+2] = 0.0;
+          node->block_dilated[(row_index*N_BLOCK+column_index)*4+3] = 0.0;
+        }
+      }
     }
 
     node->block_dense[(i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower)] = Aij;
+    node->block_dilated[((i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower))*4+0] = Aij;
+    node->block_dilated[((i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower))*4+1] = Aij;
+    node->block_dilated[((i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower))*4+2] = Aij;
+    node->block_dilated[((i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower))*4+3] = Aij;
   }
 
   else
@@ -651,6 +685,7 @@ spamm_multiply_node (const struct matrix_node_t *A_node,
     stream[*index].A_block = A_node->block_dense;
     stream[*index].B_block = B_node->block_dense;
     stream[*index].C_block = C_node->block_dense;
+    stream[*index].A_dilated = A_node->block_dilated;
 
     A_stream[*index] = A_node->block_dense;
     B_stream[*index] = B_node->block_dense;
@@ -725,7 +760,9 @@ spamm_free_node (struct matrix_node_t **node)
   else if ((*node)->block_dense != NULL)
   {
     free((*node)->block_dense);
+    free((*node)->block_dilated);
     (*node)->block_dense = NULL;
+    (*node)->block_dilated = NULL;
   }
 
   free(*node);
