@@ -24,8 +24,10 @@
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
 //#define STREAM_KERNEL_3
-//#define POINTER_CHASE
-#define C_KERNEL
+#define POINTER_CHASE
+//#define C_KERNEL
+
+//#define STORE_DILATED_BLOCK
 
 //#define DENSE_MULTIPLY
 
@@ -51,7 +53,9 @@ struct matrix_node_t
   struct matrix_box_t box;
   struct matrix_node_t **child;
   float *block_dense;
+#ifdef STORE_DILATED_BLOCK
   float *block_dilated;
+#endif
 };
 
 struct matrix_t
@@ -67,7 +71,6 @@ struct multiply_stream_t
   float *A_block;
   float *B_block;
   float *C_block;
-  float *A_dilated;
 };
 
 struct multiply_stream_index_t
@@ -350,13 +353,13 @@ stream_multiply (const unsigned long long number_stream_elements,
 
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
   {
-    A = multiply_stream[stream_index].A_dilated;
+    A = multiply_stream[stream_index].A_block;
     B = multiply_stream[stream_index].B_block;
     C = multiply_stream[stream_index].C_block;
 
     if (stream_index < number_stream_elements-READAHEAD)
     {
-      _mm_prefetch(multiply_stream[stream_index+READAHEAD].A_dilated, _MM_HINT_T0);
+      _mm_prefetch(multiply_stream[stream_index+READAHEAD].A_block, _MM_HINT_T0);
     }
 
     A_element = _mm_load_ps(&A[(0*4+0)*4]);
@@ -530,7 +533,9 @@ spamm_new_node (const unsigned int M_lower, const unsigned int M_upper,
   new_node->box.N_upper = N_upper;
   new_node->child = NULL;
   new_node->block_dense = NULL;
+#ifdef STORE_DILATED_BLOCK
   new_node->block_dilated = NULL;
+#endif
 
   return new_node;
 }
@@ -571,6 +576,7 @@ spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned
         exit(1);
       }
 
+#ifdef STORE_DILATED_BLOCK
       if ((allocation_result = posix_memalign((void**) &node->block_dilated, alignment, sizeof(float)*4*N_BLOCK*N_BLOCK)) != 0)
       {
         switch (allocation_result)
@@ -589,6 +595,8 @@ spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned
         }
         exit(1);
       }
+#endif
+
 #else
       if ((node->block_dense = (float*) malloc(sizeof(float)*N_BLOCK*N_BLOCK)) == NULL)
       {
@@ -596,6 +604,7 @@ spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned
         exit(1);
       }
 
+#ifdef STORE_DILATED_BLOCK
       if ((node->block_dilated = (float*) malloc(sizeof(float)*4*N_BLOCK*N_BLOCK)) == NULL)
       {
         printf("error allocating new dense matrix block\n");
@@ -603,24 +612,30 @@ spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned
       }
 #endif
 
+#endif
+
       /* Zero out the newly allocated block. */
       for (row_index = 0; row_index < N_BLOCK; row_index++) {
         for (column_index = 0; column_index < N_BLOCK; column_index++)
         {
           node->block_dense[row_index*N_BLOCK+column_index] = 0.0;
+#ifdef STORE_DILATED_BLOCK
           node->block_dilated[(row_index*N_BLOCK+column_index)*4+0] = 0.0;
           node->block_dilated[(row_index*N_BLOCK+column_index)*4+1] = 0.0;
           node->block_dilated[(row_index*N_BLOCK+column_index)*4+2] = 0.0;
           node->block_dilated[(row_index*N_BLOCK+column_index)*4+3] = 0.0;
+#endif
         }
       }
     }
 
     node->block_dense[(i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower)] = Aij;
+#ifdef STORE_DILATED_BLOCK
     node->block_dilated[((i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower))*4+0] = Aij;
     node->block_dilated[((i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower))*4+1] = Aij;
     node->block_dilated[((i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower))*4+2] = Aij;
     node->block_dilated[((i-node->box.M_lower)*N_BLOCK+(j-node->box.N_lower))*4+3] = Aij;
+#endif
   }
 
   else
@@ -758,11 +773,12 @@ spamm_multiply_node (const struct matrix_node_t *A_node,
   if (A_node->block_dense != NULL)
   {
     stream[*index].A_block = A_node->block_dense;
+    //stream[*index].A_block = A_node->block_dilated;
     stream[*index].B_block = B_node->block_dense;
     stream[*index].C_block = C_node->block_dense;
-    stream[*index].A_dilated = A_node->block_dilated;
 
     A_stream[*index] = A_node->block_dense;
+    //A_stream[*index] = A_node->block_dilated;
     B_stream[*index] = B_node->block_dense;
     C_stream[*index] = C_node->block_dense;
 
@@ -835,9 +851,12 @@ spamm_free_node (struct matrix_node_t **node)
   else if ((*node)->block_dense != NULL)
   {
     free((*node)->block_dense);
-    free((*node)->block_dilated);
     (*node)->block_dense = NULL;
+
+#ifdef STORE_DILATED_BLOCK
+    free((*node)->block_dilated);
     (*node)->block_dilated = NULL;
+#endif
   }
 
   free(*node);
@@ -872,6 +891,7 @@ main (int argc, char **argv)
 #endif
 
   unsigned int i, j, k;
+  unsigned int (*index_pairs)[2];
   unsigned long long stream_index;
   unsigned long long stream_index_A, stream_index_B, stream_index_C;
   unsigned long long number_stream_elements;
@@ -1322,33 +1342,64 @@ main (int argc, char **argv)
   B_spamm = spamm_new(N, alignment);
   C_spamm = spamm_new(N, alignment);
 
-  /* Fill matrices with random data. */
+  /* Fill matrices with random data. In order to avoid a deterministic
+   * allocation pattern, the matrix indices are reandomized as well.
+   */
+  index_pairs = (unsigned int (*)[2]) malloc(sizeof(unsigned int[2])*N*N);
+  k = 0;
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      if (random_elements)
-      {
-        A[get_index(N, i, j)] = rand()/(float) RAND_MAX;
-        B[get_index(N, i, j)] = rand()/(float) RAND_MAX;
-        C[get_index(N, i, j)] = rand()/(float) RAND_MAX;
-      }
-
-      else
-      {
-        A[get_index(N, i, j)] = get_index(N, i, j)+1;
-        B[get_index(N, i, j)] = get_index(N, i, j)+1;
-        C[get_index(N, i, j)] = get_index(N, i, j)+1;
-      }
-
-      /* Copy C matrix for verification. */
-      D[get_index(N, i, j)] = C[get_index(N, i, j)];
-
-      /* Build SpAMM tree. */
-      spamm_set(A_spamm, i, j, A[get_index(N, i, j)]);
-      spamm_set(B_spamm, i, j, B[get_index(N, i, j)]);
-      spamm_set(C_spamm, i, j, C[get_index(N, i, j)]);
+      index_pairs[k][0] = i;
+      index_pairs[k][1] = j;
+      k++;
     }
   }
+
+  //printf("randomizing order of setting matrix elements\n");
+  //for (i = 0; i < N*N-1; i++) {
+  //  for (j = i+1; j < N*N; j++)
+  //  {
+  //    if (rand()/(double) RAND_MAX > 0.5)
+  //    {
+  //      k = index_pairs[i][0];
+  //      index_pairs[i][0] = index_pairs[j][0];
+  //      index_pairs[j][0] = k;
+
+  //      k = index_pairs[i][1];
+  //      index_pairs[i][1] = index_pairs[j][1];
+  //      index_pairs[j][1] = k;
+  //    }
+  //  }
+  //}
+
+  printf("setting matrix elements\n");
+  for (k = 0; k < N*N; k++)
+  {
+    if (random_elements)
+    {
+      A[get_index(N, index_pairs[k][0], index_pairs[k][1])] = rand()/(float) RAND_MAX;
+      B[get_index(N, index_pairs[k][0], index_pairs[k][1])] = rand()/(float) RAND_MAX;
+      C[get_index(N, index_pairs[k][0], index_pairs[k][1])] = rand()/(float) RAND_MAX;
+    }
+
+    else
+    {
+      A[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
+      B[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
+      C[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
+    }
+
+    /* Copy C matrix for verification. */
+    D[get_index(N, index_pairs[k][0], index_pairs[k][1])] = C[get_index(N, index_pairs[k][0], index_pairs[k][1])];
+
+    /* Build SpAMM tree. */
+    spamm_set(A_spamm, index_pairs[k][0], index_pairs[k][1], A[get_index(N, index_pairs[k][0], index_pairs[k][1])]);
+    spamm_set(B_spamm, index_pairs[k][0], index_pairs[k][1], B[get_index(N, index_pairs[k][0], index_pairs[k][1])]);
+    spamm_set(C_spamm, index_pairs[k][0], index_pairs[k][1], C[get_index(N, index_pairs[k][0], index_pairs[k][1])]);
+  }
+
+  free(index_pairs);
 
   if (print)
   {
