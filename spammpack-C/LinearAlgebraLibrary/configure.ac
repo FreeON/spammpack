@@ -15,6 +15,14 @@ AC_PROG_LIBTOOL
 dnl Check for assert macros.
 AC_HEADER_ASSERT
 
+dnl If `stdint.h' or `inttypes.h' defines the type `intptr_t', define
+dnl `HAVE_INTPTR_T'.  Otherwise, define `intptr_t' to a signed integer type wide
+dnl enough to hold a pointer, if such a type exists.
+AC_TYPE_INTPTR_T
+
+dnl Define `pid_t' to a suitable type, if standard headers do not define it.
+AC_TYPE_PID_T
+
 dnl Define precision.
 AC_ARG_WITH([precision],
             [AS_HELP_STRING([--with-precision], [set the precision of floating
@@ -179,14 +187,14 @@ dnl Check for SSE intrinsics.
 AC_CHECK_HEADERS([xmmintrin.h])
 
 dnl Check for pthread support.
-dnl have_PTHREAD="yes"
-dnl AC_CHECK_HEADERS([pthread.h], [], [unset have_PTHREAD])
-dnl AC_CHECK_LIB([pthread], [pthread_create], [], [unset have_PTHREAD])
-dnl if test "${have_PTHREAD}" = "yes"; then
-dnl   AC_DEFINE([HAVE_PTHREAD], [1], [whether we have pthread support])
-dnl else
-dnl   AC_MSG_FAILURE([no pthread support])
-dnl fi
+have_PTHREAD="yes"
+AC_CHECK_HEADERS([pthread.h], [], [unset have_PTHREAD])
+AC_CHECK_LIB([pthread], [pthread_create], [], [unset have_PTHREAD])
+if test "${have_PTHREAD}" = "yes"; then
+  AC_DEFINE([HAVE_PTHREAD], [1], [whether we have pthread support])
+else
+  AC_MSG_FAILURE([no pthread support])
+fi
 
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
