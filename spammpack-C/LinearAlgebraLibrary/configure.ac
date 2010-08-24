@@ -178,6 +178,16 @@ fi
 dnl Check for SSE intrinsics.
 AC_CHECK_HEADERS([xmmintrin.h])
 
+dnl Check for pthread support.
+dnl have_PTHREAD="yes"
+dnl AC_CHECK_HEADERS([pthread.h], [], [unset have_PTHREAD])
+dnl AC_CHECK_LIB([pthread], [pthread_create], [], [unset have_PTHREAD])
+dnl if test "${have_PTHREAD}" = "yes"; then
+dnl   AC_DEFINE([HAVE_PTHREAD], [1], [whether we have pthread support])
+dnl else
+dnl   AC_MSG_FAILURE([no pthread support])
+dnl fi
+
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
 
