@@ -25,12 +25,12 @@
 //#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
-#define STREAM_KERNEL_3
+//#define STREAM_KERNEL_3
 //#define POINTER_CHASE
-//#define C_KERNEL
+#define C_KERNEL
 //#define NAIVE_KERNEL
 
-//#define STORE_DILATED_BLOCK
+#define STORE_DILATED_BLOCK
 
 //#define DENSE_MULTIPLY
 
@@ -74,7 +74,9 @@ struct matrix_t
 
 #ifdef CONTIGUOUS_ALLOCATE
   float *contiguous;
+#ifdef STORE_DILATED_BLOCK
   float *contiguous_dilated;
+#endif
 #endif
 };
 
@@ -328,9 +330,14 @@ stream_multiply (const unsigned long long number_stream_elements,
   unsigned int i, j, k;
 #endif
 
-#if defined(POINTER_CHASE)
+#if defined(POINTER_CHASE) || \
+  defined(C_KERNEL)
   unsigned long long stream_index;
   float *restrict A, *restrict B, *restrict C;
+#endif
+
+#ifdef C_KERNEL
+  short i;
 #endif
 
 #if defined(STREAM_KERNEL_1)
@@ -381,9 +388,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #elif defined(C_KERNEL)
 
-#define READAHEAD 8
   __m128 A_element, B_row, C_row, alpha_row;
 
+  /* Load alpha. */
   alpha_row = _mm_set1_ps(alpha);
 
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
@@ -392,100 +399,28 @@ stream_multiply (const unsigned long long number_stream_elements,
     B = multiply_stream[stream_index].B_block;
     C = multiply_stream[stream_index].C_block;
 
-    if (stream_index < number_stream_elements-READAHEAD)
+    for (i = 0; i < 4; i++)
     {
-      _mm_prefetch(multiply_stream[stream_index+READAHEAD].A_block, _MM_HINT_T0);
+      A_element = _mm_load_ps(&A[(i*4+0)*4]);
+      B_row = _mm_load_ps(&B[0*4]);
+      C_row = _mm_mul_ps(A_element, B_row);
+
+      A_element = _mm_load_ps(&A[(i*4+1)*4]);
+      B_row = _mm_load_ps(&B[1*4]);
+      C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+      A_element = _mm_load_ps(&A[(i*4+2)*4]);
+      B_row = _mm_load_ps(&B[2*4]);
+      C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+      A_element = _mm_load_ps(&A[(i*4+3)*4]);
+      B_row = _mm_load_ps(&B[3*4]);
+      C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
+
+      C_row = _mm_mul_ps(alpha_row, C_row);
+      C_row = _mm_add_ps(_mm_load_ps(&C[i*4]), C_row);
+      _mm_store_ps(&C[i*4], C_row);
     }
-
-    A_element = _mm_load_ps(&A[(0*4+0)*4]);
-    B_row = _mm_load_ps(&B[0*4]);
-    C_row = _mm_mul_ps(A_element, B_row);
-
-    A_element = _mm_load_ps(&A[(0*4+1)*4]);
-    B_row = _mm_load_ps(&B[1*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    A_element = _mm_load_ps(&A[(0*4+2)*4]);
-    B_row = _mm_load_ps(&B[2*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    A_element = _mm_load_ps(&A[(0*4+3)*4]);
-    B_row = _mm_load_ps(&B[3*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    C_row = _mm_mul_ps(alpha_row, C_row);
-    C_row = _mm_add_ps(_mm_load_ps(&C[0*4]), C_row);
-    _mm_store_ps(&C[0*4], C_row);
-
-    if (stream_index < number_stream_elements-READAHEAD)
-    {
-      _mm_prefetch(multiply_stream[stream_index+READAHEAD].B_block, _MM_HINT_T0);
-    }
-
-    A_element = _mm_load_ps(&A[(1*4+0)*4]);
-    B_row = _mm_load_ps(&B[0*4]);
-    C_row = _mm_mul_ps(A_element, B_row);
-
-    A_element = _mm_load_ps(&A[(1*4+1)*4]);
-    B_row = _mm_load_ps(&B[1*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    A_element = _mm_load_ps(&A[(1*4+2)*4]);
-    B_row = _mm_load_ps(&B[2*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    A_element = _mm_load_ps(&A[(1*4+3)*4]);
-    B_row = _mm_load_ps(&B[3*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    C_row = _mm_mul_ps(alpha_row, C_row);
-    C_row = _mm_add_ps(_mm_load_ps(&C[1*4]), C_row);
-    _mm_store_ps(&C[1*4], C_row);
-
-    if (stream_index < number_stream_elements-READAHEAD)
-    {
-      _mm_prefetch(multiply_stream[stream_index+READAHEAD].C_block, _MM_HINT_T0);
-    }
-
-    A_element = _mm_load_ps(&A[(2*4+0)*4]);
-    B_row = _mm_load_ps(&B[0*4]);
-    C_row = _mm_mul_ps(A_element, B_row);
-
-    A_element = _mm_load_ps(&A[(2*4+1)*4]);
-    B_row = _mm_load_ps(&B[1*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    A_element = _mm_load_ps(&A[(2*4+2)*4]);
-    B_row = _mm_load_ps(&B[2*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    A_element = _mm_load_ps(&A[(2*4+3)*4]);
-    B_row = _mm_load_ps(&B[3*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    C_row = _mm_mul_ps(alpha_row, C_row);
-    C_row = _mm_add_ps(_mm_load_ps(&C[2*4]), C_row);
-    _mm_store_ps(&C[2*4], C_row);
-
-    A_element = _mm_load_ps(&A[(3*4+0)*4]);
-    B_row = _mm_load_ps(&B[0*4]);
-    C_row = _mm_mul_ps(A_element, B_row);
-
-    A_element = _mm_load_ps(&A[(3*4+1)*4]);
-    B_row = _mm_load_ps(&B[1*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    A_element = _mm_load_ps(&A[(3*4+2)*4]);
-    B_row = _mm_load_ps(&B[2*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    A_element = _mm_load_ps(&A[(3*4+3)*4]);
-    B_row = _mm_load_ps(&B[3*4]);
-    C_row = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row);
-
-    C_row = _mm_mul_ps(alpha_row, C_row);
-    C_row = _mm_add_ps(_mm_load_ps(&C[3*4]), C_row);
-    _mm_store_ps(&C[3*4], C_row);
   }
 
 #elif defined(NAIVE_KERNEL)
@@ -534,6 +469,9 @@ compare_matrix (const unsigned int N, const float *restrict A, const float *rest
 struct matrix_t*
 spamm_new (const unsigned int N, const unsigned int alignment)
 {
+#ifdef HAVE_POSIX_MEMALIGN
+  int allocation_result;
+#endif
   struct matrix_t *new_matrix;
 
   if ((new_matrix = (struct matrix_t*) malloc(sizeof(struct matrix_t))) == NULL)
@@ -553,7 +491,6 @@ spamm_new (const unsigned int N, const unsigned int alignment)
 #ifdef CONTIGUOUS_ALLOCATE
 
 #ifdef HAVE_POSIX_MEMALIGN
-  int allocation_result;
   if ((allocation_result = posix_memalign((void**) &new_matrix->contiguous, alignment, sizeof(float)*N*N)) != 0)
   {
     switch (allocation_result)
@@ -579,6 +516,39 @@ spamm_new (const unsigned int N, const unsigned int alignment)
     printf("error allocating contiguous memory for matrix\n");
     exit(1);
   }
+
+#endif
+
+#ifdef STORE_DILATED_BLOCK
+
+#ifdef HAVE_POSIX_MEMALIGN
+  if ((allocation_result = posix_memalign((void**) &new_matrix->contiguous_dilated, alignment, sizeof(float)*N*N*4)) != 0)
+  {
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
+    exit(1);
+  }
+
+#else
+  if ((new_matrix->contiguous_dilated = (float*) malloc(sizeof(float)*N*N)) == NULL)
+  {
+    printf("error allocating contiguous_dilated memory for matrix\n");
+    exit(1);
+  }
+
+#endif
 
 #endif
 
@@ -632,7 +602,7 @@ spamm_set_node (struct matrix_node_t *node, struct matrix_t *A,
 
       node->block_dense = &A->contiguous[interleave_2_index(i/N_BLOCK, j/N_BLOCK)*N_BLOCK*N_BLOCK];
 #ifdef STORE_DILATED_BLOCK
-      node->block_dilated = &A->contiguous_dilated[get_blocked_index(A->N, i, j)];
+      node->block_dilated = &A->contiguous_dilated[interleave_2_index(i/N_BLOCK, j/N_BLOCK)*N_BLOCK*N_BLOCK*4];
 #endif
 
 #else
@@ -867,13 +837,19 @@ spamm_multiply_node (const struct matrix_node_t *A_node,
 
   if (A_node->block_dense != NULL)
   {
+#ifdef STORE_DILATED_BLOCK
+    stream[*index].A_block = A_node->block_dilated;
+#else
     stream[*index].A_block = A_node->block_dense;
-    //stream[*index].A_block = A_node->block_dilated;
+#endif
     stream[*index].B_block = B_node->block_dense;
     stream[*index].C_block = C_node->block_dense;
 
+#ifdef STORE_DILATED_BLOCK
+    A_stream[*index] = A_node->block_dilated;
+#else
     A_stream[*index] = A_node->block_dense;
-    //A_stream[*index] = A_node->block_dilated;
+#endif
     B_stream[*index] = B_node->block_dense;
     C_stream[*index] = C_node->block_dense;
 
@@ -951,7 +927,9 @@ spamm_free_node (struct matrix_node_t **node)
     (*node)->block_dense = NULL;
 
 #ifdef STORE_DILATED_BLOCK
+#if ! defined(CONTIGUOUS_ALLOCATE)
     free((*node)->block_dilated);
+#endif
     (*node)->block_dilated = NULL;
 #endif
   }
@@ -967,6 +945,12 @@ spamm_free (struct matrix_t **A)
   {
     spamm_free_node(&(*A)->root);
   }
+#ifdef CONTIGUOUS_ALLOCATE
+  free((*A)->contiguous);
+#ifdef STORE_DILATED_BLOCK
+  free((*A)->contiguous_dilated);
+#endif
+#endif
   free(*A);
   *A = NULL;
 }
