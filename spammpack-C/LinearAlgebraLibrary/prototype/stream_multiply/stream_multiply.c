@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifdef HAVE_XMMINTRIN_H
 #include <xmmintrin.h>
@@ -27,12 +28,17 @@
 //#define STREAM_KERNEL_3
 #define POINTER_CHASE
 //#define C_KERNEL
+//#define NAIVE_KERNEL
 
 //#define STORE_DILATED_BLOCK
 
 //#define DENSE_MULTIPLY
 
 //#define DEBUG_LOOP
+
+/* Allocate the dense matrix blocks in the tree in
+   one contiguous chunk. The tree will then point into that chunk. */
+#define CONTIGUOUS_ALLOCATE
 
 struct matrix_box_t
 {
@@ -65,6 +71,11 @@ struct matrix_t
   struct matrix_box_t box;
   unsigned long long alignment;
   struct matrix_node_t *root;
+
+#ifdef CONTIGUOUS_ALLOCATE
+  float *contiguous;
+  float *contiguous_dilated;
+#endif
 };
 
 struct multiply_stream_t
@@ -193,11 +204,11 @@ interleave_3_index (const unsigned int i, const unsigned int j, const unsigned i
 
   for (index = 0; index < sizeof(unsigned int)*8; index++)
   {
-    if (i & bitmask) { result |= addmask; }
+    if (k & bitmask) { result |= addmask; }
     addmask <<= 1;
     if (j & bitmask) { result |= addmask; }
     addmask <<= 1;
-    if (k & bitmask) { result |= addmask; }
+    if (i & bitmask) { result |= addmask; }
     addmask <<= 1;
     bitmask <<= 1;
   }
@@ -215,9 +226,9 @@ interleave_2_index (const unsigned int i, const unsigned int j)
 
   for (index = 0; index < sizeof(unsigned int)*8; index++)
   {
-    if (i & bitmask) { result |= addmask; }
-    addmask <<= 1;
     if (j & bitmask) { result |= addmask; }
+    addmask <<= 1;
+    if (i & bitmask) { result |= addmask; }
     addmask <<= 1;
     bitmask <<= 1;
   }
@@ -232,6 +243,12 @@ get_Morton_index (const unsigned int N, const unsigned int i, const unsigned int
   return i*N+j;
 }
 
+unsigned int
+get_Z_curve_index (const unsigned int N, const unsigned int i, const unsigned int j)
+{
+  return interleave_2_index(i, j);
+}
+
 /* Returns the linear index of a submatrix block in a (N*N_BLOCK)x(N*N_BLOCK)
  * matrix. The blocks can be arranged in any order, the stream_kernel() does
  * not need to know what order this is.
@@ -242,7 +259,7 @@ get_block_index (const unsigned int N, const unsigned int i, const unsigned int 
   return get_Morton_index(N, i, j);
 }
 
-/* Returns linear index in a NxN matrix of the submatrix block. */
+/* Returns the linear index of the submatrix block in a NxN matrix. */
 unsigned int
 get_blocked_index (const unsigned int N, const unsigned int i, const unsigned int j)
 {
@@ -304,21 +321,15 @@ stream_multiply (const unsigned long long number_stream_elements,
     struct multiply_stream_t *multiply_stream,
     float **A_stream,
     float **B_stream,
-    float **C_stream)
+    float **C_stream,
+    pid_t helper_pid)
 {
-#if ! defined(EXTERNAL_BLAS) \
-  && ! defined(STREAM_KENEL_1) \
-  && ! defined(STREAM_KERNEL_2) \
-  && ! defined(STREAM_KERNEL_3) \
-  && ! defined(POINTER_CHASE) \
-  && ! defined(C_KERNEL)
+#ifdef NAIVE_KERNEL
   unsigned int i, j, k;
 #endif
 
-#if defined(POINTER_CHASE) || defined(C_KERNEL)
   unsigned long long stream_index;
   float *restrict A, *restrict B, *restrict C;
-#endif
 
 #if defined(STREAM_KERNEL_1)
   stream_kernel_1(number_stream_elements, alpha, multiply_stream);
@@ -333,26 +344,37 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #define READAHEAD 20
 
-  /* Loops over all elements in stream. */
-  for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
+  if (helper_pid == 0)
   {
-    if (stream_index < number_stream_elements-READAHEAD)
+    /* The prefetch helper. */
+
+  }
+
+  else
+  {
+    /* Loops over all elements in stream. */
+    for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
     {
-      _mm_prefetch(multiply_stream[stream_index+READAHEAD].A_block, _MM_HINT_T0);
-      _mm_prefetch(multiply_stream[stream_index+READAHEAD].B_block, _MM_HINT_T0);
-      _mm_prefetch(multiply_stream[stream_index+READAHEAD].C_block, _MM_HINT_T0);
+      //if (stream_index < number_stream_elements-READAHEAD)
+      //{
+      //  _mm_prefetch(multiply_stream[stream_index+READAHEAD].A_block, _MM_HINT_T0);
+      //  _mm_prefetch(multiply_stream[stream_index+READAHEAD].B_block, _MM_HINT_T0);
+      //  _mm_prefetch(multiply_stream[stream_index+READAHEAD].C_block, _MM_HINT_T0);
+
+      //  /* Get the helper to prefetch. */
+      //}
+
+      A = multiply_stream[stream_index].A_block;
+      B = multiply_stream[stream_index].B_block;
+      C = multiply_stream[stream_index].C_block;
+
+      /* Do something so that the compiler does not optimize out the poitner
+       * assignment and we are forcing the processor to load the matrix block.
+       */
+      if (A[0] == 0.0) { printf("do something\n"); }
+      if (B[0] == 0.0) { printf("do something\n"); }
+      if (C[0] == 0.0) { printf("do something\n"); }
     }
-
-    A = multiply_stream[stream_index].A_block;
-    B = multiply_stream[stream_index].B_block;
-    C = multiply_stream[stream_index].C_block;
-
-    /* Do something so that the compiler does not optimize out the poitner
-     * assignment and we are forcing the processor to load the matrix block.
-     */
-    if (A[0] == 0.0) { printf("do something\n"); }
-    if (B[0] == 0.0) { printf("do something\n"); }
-    if (C[0] == 0.0) { printf("do something\n"); }
   }
 
 #elif defined(C_KERNEL)
@@ -464,7 +486,7 @@ stream_multiply (const unsigned long long number_stream_elements,
     _mm_store_ps(&C[3*4], C_row);
   }
 
-#else
+#elif defined(NAIVE_KERNEL)
   /* Multiply stream. */
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++) {
     A = multiply_stream[stream_index].A_block;
@@ -480,6 +502,10 @@ stream_multiply (const unsigned long long number_stream_elements,
       }
     }
   }
+
+#else
+  printf("no kernel\n");
+  exit(1);
 
 #endif
 }
@@ -522,6 +548,40 @@ spamm_new (const unsigned int N, const unsigned int alignment)
   new_matrix->alignment = alignment;
   new_matrix->root = NULL;
 
+#ifdef CONTIGUOUS_ALLOCATE
+
+#ifdef HAVE_POSIX_MEMALIGN
+  int allocation_result;
+  if ((allocation_result = posix_memalign((void**) &new_matrix->contiguous, alignment, sizeof(float)*N*N)) != 0)
+  {
+    switch (allocation_result)
+    {
+      case EINVAL:
+        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
+        break;
+
+      case ENOMEM:
+        printf("[line %u] There was insufficient memory to fulfill the allocation request.\n", __LINE__);
+        break;
+
+      default:
+        printf("Unknown error code\n");
+        break;
+    }
+    exit(1);
+  }
+
+#else
+  if ((new_matrix->contiguous = (float*) malloc(sizeof(float)*N*N)) == NULL)
+  {
+    printf("error allocating contiguous memory for matrix\n");
+    exit(1);
+  }
+
+#endif
+
+#endif
+
   return new_matrix;
 }
 
@@ -552,22 +612,33 @@ spamm_new_node (const unsigned int M_lower, const unsigned int M_upper,
 }
 
 void
-spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned int j, const float Aij, const unsigned long long alignment)
+spamm_set_node (struct matrix_node_t *node, struct matrix_t *A,
+    const unsigned int i, const unsigned int j, const float Aij,
+    const unsigned long long alignment)
 {
-#ifdef HAVE_POSIX_MEMALIGN
-  int allocation_result;
-#endif
-
   short int row_index, column_index;
   short int child_index;
 
   if (node->box.M_upper-node->box.M_lower == N_BLOCK &&
       node->box.N_upper-node->box.N_lower == N_BLOCK)
   {
+#ifdef CONTIGUOUS_ALLOCATE
+
+    if (node->block_dense == NULL)
+    {
+      /* Figure out where to point into the contiguous region. */
+
+      node->block_dense = &A->contiguous[interleave_2_index(i/N_BLOCK, j/N_BLOCK)*N_BLOCK*N_BLOCK];
+#ifdef STORE_DILATED_BLOCK
+      node->block_dilated = &A->contiguous_dilated[get_blocked_index(A->N, i, j)];
+#endif
+
+#else
     if (node->block_dense == NULL)
     {
       /* Allocate new dense matrix block. */
 #if defined(HAVE_POSIX_MEMALIGN)
+      int allocation_result;
       if ((allocation_result = posix_memalign((void**) &node->block_dense, alignment, sizeof(float)*N_BLOCK*N_BLOCK)) != 0)
       {
         switch (allocation_result)
@@ -621,6 +692,8 @@ spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned
         printf("error allocating new dense matrix block\n");
         exit(1);
       }
+#endif
+
 #endif
 
 #endif
@@ -696,7 +769,7 @@ spamm_set_node (struct matrix_node_t *node, const unsigned int i, const unsigned
     }
 
     /* Descent to child node. */
-    spamm_set_node(node->child[child_index], i, j, Aij, alignment);
+    spamm_set_node(node->child[child_index], A, i, j, Aij, alignment);
   }
 }
 
@@ -708,7 +781,7 @@ spamm_set (struct matrix_t *A, const unsigned int i, const unsigned int j, const
     A->root = spamm_new_node(A->box.M_lower, A->box.M_upper, A->box.N_lower, A->box.N_upper, A->alignment);
   }
 
-  spamm_set_node(A->root, i, j, Aij, A->alignment);
+  spamm_set_node(A->root, A, i, j, Aij, A->alignment);
 }
 
 float
@@ -766,6 +839,15 @@ spamm_print (struct matrix_t *A)
     }
     printf("\n");
   }
+
+#ifdef CONTIGUOUS_ALLOCATE
+  printf("linear: ");
+  for (i = 0; i < A->N*A->N; i++)
+  {
+    printf(" %f", A->contiguous[i]);
+  }
+  printf("\n");
+#endif
 }
 
 void
@@ -861,7 +943,9 @@ spamm_free_node (struct matrix_node_t **node)
 
   else if ((*node)->block_dense != NULL)
   {
+#if ! defined(CONTIGUOUS_ALLOCATE)
     free((*node)->block_dense);
+#endif
     (*node)->block_dense = NULL;
 
 #ifdef STORE_DILATED_BLOCK
@@ -906,6 +990,8 @@ main (int argc, char **argv)
   unsigned long long stream_index;
   unsigned long long stream_index_A, stream_index_B, stream_index_C;
   unsigned long long number_stream_elements;
+
+  pid_t helper_pid;
 
   float alpha = 1.2;
   float beta = 0.5;
@@ -1216,8 +1302,12 @@ main (int argc, char **argv)
 #elif defined(C_KERNEL)
   printf("C kernel\n");
 
+#elif defined(NAIVE_KERNEL)
+  printf("using naive C stream kernel\n");
+
 #else
-  printf("using C stream kernel\n");
+  printf("no kernel\n");
+  exit(1);
 
 #endif
 
@@ -1415,9 +1505,15 @@ main (int argc, char **argv)
 
     else
     {
-      A[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
-      B[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
-      C[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
+      //A[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
+      //B[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
+      //C[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
+      A[get_index(N, index_pairs[k][0], index_pairs[k][1])] = (get_Morton_index(N_BLOCK, index_pairs[k][0]%N_BLOCK, index_pairs[k][1]%N_BLOCK)
+        +interleave_2_index(index_pairs[k][0]/N_BLOCK, index_pairs[k][1]/N_BLOCK)*N_BLOCK*N_BLOCK+1)/pow(10, ceil(log(N)/log(10))+1);
+      B[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_Morton_index(N_BLOCK, index_pairs[k][0]%N_BLOCK, index_pairs[k][1]%N_BLOCK)
+        +interleave_2_index(index_pairs[k][0]/N_BLOCK, index_pairs[k][1]/N_BLOCK)*N_BLOCK*N_BLOCK+1/pow(10, ceil(log(N)/log(10))+1);
+      C[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_Morton_index(N_BLOCK, index_pairs[k][0]%N_BLOCK, index_pairs[k][1]%N_BLOCK)
+        +interleave_2_index(index_pairs[k][0]/N_BLOCK, index_pairs[k][1]/N_BLOCK)*N_BLOCK*N_BLOCK+1/pow(10, ceil(log(N)/log(10))+1);
     }
 
     /* Copy C matrix for verification. */
@@ -1916,6 +2012,12 @@ main (int argc, char **argv)
   }
   printf("applied beta\n");
 
+  if (print)
+  {
+    printf("C (SpAMM) =\n");
+    spamm_print(C_spamm);
+  }
+
   printf("looping over multiply (loops = %llu)\n", loops);
 
   gettimeofday(&start, NULL);
@@ -1944,16 +2046,22 @@ main (int argc, char **argv)
   stream_multiply(loops, alpha, multiply_stream);
 
 #else
+  /* Create helper thread. */
+  helper_pid = fork();
+
   for (loop = 0; loop < loops; loop++)
   {
 #if defined(EXTERNAL_BLAS)
     sgemm_("N", "N", &N, &N, &N, &alpha, A, &N, B, &N, &beta, C, &N);
 
 #else
-    stream_multiply(number_stream_elements, alpha, multiply_stream, A_stream, B_stream, C_stream);
+    stream_multiply(number_stream_elements, alpha, multiply_stream, A_stream, B_stream, C_stream, helper_pid);
 
 #endif
   }
+
+  /* Terminate helper thread. */
+  if (helper_pid == 0) { exit(0); }
 #endif
 
 #ifdef HAVE_PAPI

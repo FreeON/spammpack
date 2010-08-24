@@ -37,7 +37,7 @@ main (int argc, char **argv)
 
   unsigned long long loop;
   unsigned long long index;
-  unsigned int i, j, k;
+  unsigned int i, j;
 
   struct timeval start, stop;
   struct rusage rusage_start, rusage_stop;
