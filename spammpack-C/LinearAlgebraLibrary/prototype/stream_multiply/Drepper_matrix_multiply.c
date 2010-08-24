@@ -42,7 +42,7 @@ main (void)
       for (k = 0; k < N; k += SM)
         for (i2 = 0, rres = &res[i][j], rmul1 = &mul1[i][k]; i2 < SM; ++i2, rres += N, rmul1 += N)
         {
-          _mm_prefetch (&rmul1[8], _MM_HINT_NTA);
+          _mm_prefetch ((void*) &rmul1[8], _MM_HINT_NTA);
           for (k2 = 0, rmul2 = &mul2[k][j]; k2 < SM; ++k2, rmul2 += N)
           {
             __m128d m1d = _mm_load_sd (&rmul1[k2]);

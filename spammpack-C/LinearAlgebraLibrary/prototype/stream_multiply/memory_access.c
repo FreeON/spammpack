@@ -271,25 +271,25 @@ main (int argc, char **argv)
     exit(1);
   }
 #else
-  if ((A = (struct float*) malloc(sizeof(float)*16*N)) == NULL)
+  if ((A = (float*) malloc(sizeof(float)*16*N)) == NULL)
   {
     printf("error allocating A\n");
     exit(1);
   }
 
-  if ((B = (struct float*) malloc(sizeof(float)*16*N)) == NULL)
+  if ((B = (float*) malloc(sizeof(float)*16*N)) == NULL)
   {
     printf("error allocating B\n");
     exit(1);
   }
 
-  if ((C = (struct float*) malloc(sizeof(float)*16*N)) == NULL)
+  if ((C = (float*) malloc(sizeof(float)*16*N)) == NULL)
   {
     printf("error allocating C\n");
     exit(1);
   }
 
-  if ((stream = (struct float*) malloc(sizeof(float)*3*16*N)) == NULL)
+  if ((stream = (float*) malloc(sizeof(float)*3*16*N)) == NULL)
   {
     printf("error allocating stream\n");
     exit(1);
@@ -357,9 +357,9 @@ main (int argc, char **argv)
       C_block = &C[index*16];
 
       /* Do some prefetching. */
-      _mm_prefetch(&A[(index+6)*16], _MM_HINT_T0);
-      _mm_prefetch(&B[(index+6)*16], _MM_HINT_T0);
-      _mm_prefetch(&C[(index+6)*16], _MM_HINT_T0);
+      _mm_prefetch((void*) &A[(index+6)*16], _MM_HINT_T0);
+      _mm_prefetch((void*) &B[(index+6)*16], _MM_HINT_T0);
+      _mm_prefetch((void*) &C[(index+6)*16], _MM_HINT_T0);
 
       //A_block = &stream[index*3*16];
       //B_block = &stream[index*3*16+16];

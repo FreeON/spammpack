@@ -1,14 +1,16 @@
 #include "config.h"
 
+#define _POSIX_C_SOURCE 200809L
+
 #include <errno.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <time.h>
-#include <unistd.h>
 
 #ifdef HAVE_XMMINTRIN_H
 #include <xmmintrin.h>
@@ -256,12 +258,18 @@ get_Z_curve_index (const unsigned int N, const unsigned int i, const unsigned in
  * not need to know what order this is.
  */
 unsigned int
+get_block_index (const unsigned int N, const unsigned int i, const unsigned int j) __attribute__ ((pure));
+
+unsigned int
 get_block_index (const unsigned int N, const unsigned int i, const unsigned int j)
 {
   return get_Morton_index(N, i, j);
 }
 
 /* Returns the linear index of the submatrix block in a NxN matrix. */
+unsigned int
+get_blocked_index (const unsigned int N, const unsigned int i, const unsigned int j) __attribute__ ((pure));
+
 unsigned int
 get_blocked_index (const unsigned int N, const unsigned int i, const unsigned int j)
 {
@@ -274,6 +282,9 @@ get_blocked_index (const unsigned int N, const unsigned int i, const unsigned in
 }
 
 /* Returns the linear index of a matrix element in a blocked NxN matrix. */
+unsigned int
+get_index (const unsigned int N, const unsigned int i, const unsigned int j) __attribute__ ((pure));
+
 unsigned int
 get_index (const unsigned int N, const unsigned int i, const unsigned int j)
 {
@@ -323,15 +334,13 @@ stream_multiply (const unsigned long long number_stream_elements,
     struct multiply_stream_t *multiply_stream,
     float **A_stream,
     float **B_stream,
-    float **C_stream,
-    pid_t helper_pid)
+    float **C_stream)
 {
 #ifdef NAIVE_KERNEL
   unsigned int i, j, k;
 #endif
 
-#if defined(POINTER_CHASE) || \
-  defined(C_KERNEL)
+#if defined(POINTER_CHASE)
   unsigned long long stream_index;
   float *restrict A, *restrict B, *restrict C;
 #endif
@@ -388,6 +397,12 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #elif defined(C_KERNEL)
 
+//#define READAHEAD 10
+#define C_KERNEL_VERSION_1
+
+#if defined(C_KERNEL_VERSION_1)
+  unsigned long long stream_index;
+  float *restrict A, *restrict B, *restrict C;
   __m128 A_element, B_row, C_row, alpha_row;
 
   /* Load alpha. */
@@ -395,6 +410,15 @@ stream_multiply (const unsigned long long number_stream_elements,
 
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
   {
+#ifdef READAHEAD
+    if (stream_index < number_stream_elements-READAHEAD)
+    {
+      _mm_prefetch((void*) multiply_stream[stream_index+READAHEAD].A_block, _MM_HINT_T0);
+      _mm_prefetch((void*) multiply_stream[stream_index+READAHEAD].B_block, _MM_HINT_T0);
+      _mm_prefetch((void*) multiply_stream[stream_index+READAHEAD].C_block, _MM_HINT_T0);
+    }
+#endif
+
     A = multiply_stream[stream_index].A_block;
     B = multiply_stream[stream_index].B_block;
     C = multiply_stream[stream_index].C_block;
@@ -422,6 +446,73 @@ stream_multiply (const unsigned long long number_stream_elements,
       _mm_store_ps(&C[i*4], C_row);
     }
   }
+#elif defined(C_KERNEL_VERSION_2)
+  unsigned long long stream_index;
+  __m128 alpha_row;
+
+  float *restrict A_1, *restrict B_1, *restrict C_1;
+  __m128 A_element_1, B_row_1, C_row_1;
+
+  float *restrict A_2, *restrict B_2, *restrict C_2;
+  __m128 A_element_2, B_row_2, C_row_2;
+
+  /* Load alpha. */
+  alpha_row = _mm_set1_ps(alpha);
+
+  for (stream_index = 0; stream_index < number_stream_elements; stream_index += 2)
+  {
+    A_1 = multiply_stream[stream_index].A_block;
+    B_1 = multiply_stream[stream_index].B_block;
+    C_1 = multiply_stream[stream_index].C_block;
+
+    A_2 = multiply_stream[stream_index+1].A_block;
+    B_2 = multiply_stream[stream_index+1].B_block;
+    C_2 = multiply_stream[stream_index+1].C_block;
+
+    for (i = 0; i < 4; i++)
+    {
+      A_element_1 = _mm_load_ps(&A_1[(i*4+0)*4]);
+      B_row_1 = _mm_load_ps(&B_1[0*4]);
+      C_row_1 = _mm_mul_ps(A_element_1, B_row_1);
+
+      A_element_1 = _mm_load_ps(&A_1[(i*4+1)*4]);
+      B_row_1 = _mm_load_ps(&B_1[1*4]);
+      C_row_1 = _mm_add_ps(_mm_mul_ps(A_element_1, B_row_1), C_row_1);
+
+      A_element_1 = _mm_load_ps(&A_1[(i*4+2)*4]);
+      B_row_1 = _mm_load_ps(&B_1[2*4]);
+      C_row_1 = _mm_add_ps(_mm_mul_ps(A_element_1, B_row_1), C_row_1);
+
+      A_element_1 = _mm_load_ps(&A_1[(i*4+3)*4]);
+      B_row_1 = _mm_load_ps(&B_1[3*4]);
+      C_row_1 = _mm_add_ps(_mm_mul_ps(A_element_1, B_row_1), C_row_1);
+
+      C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
+      C_row_1 = _mm_add_ps(_mm_load_ps(&C_1[i*4]), C_row_1);
+      _mm_store_ps(&C_1[i*4], C_row_1);
+
+      A_element_2 = _mm_load_ps(&A_2[(i*4+0)*4]);
+      B_row_2 = _mm_load_ps(&B_2[0*4]);
+      C_row_2 = _mm_mul_ps(A_element_2, B_row_2);
+
+      A_element_2 = _mm_load_ps(&A_2[(i*4+1)*4]);
+      B_row_2 = _mm_load_ps(&B_2[1*4]);
+      C_row_2 = _mm_add_ps(_mm_mul_ps(A_element_2, B_row_2), C_row_2);
+
+      A_element_2 = _mm_load_ps(&A_2[(i*4+2)*4]);
+      B_row_2 = _mm_load_ps(&B_2[2*4]);
+      C_row_2 = _mm_add_ps(_mm_mul_ps(A_element_2, B_row_2), C_row_2);
+
+      A_element_2 = _mm_load_ps(&A_2[(i*4+3)*4]);
+      B_row_2 = _mm_load_ps(&B_2[3*4]);
+      C_row_2 = _mm_add_ps(_mm_mul_ps(A_element_2, B_row_2), C_row_2);
+
+      C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
+      C_row_2 = _mm_add_ps(_mm_load_ps(&C_2[i*4]), C_row_2);
+      _mm_store_ps(&C_2[i*4], C_row_2);
+    }
+  }
+#endif
 
 #elif defined(NAIVE_KERNEL)
   /* Multiply stream. */
@@ -465,6 +556,9 @@ compare_matrix (const unsigned int N, const float *restrict A, const float *rest
 
   return max_diff;
 }
+
+struct matrix_t*
+spamm_new (const unsigned int N, const unsigned int alignment) __attribute__ ((malloc));
 
 struct matrix_t*
 spamm_new (const unsigned int N, const unsigned int alignment)
@@ -542,7 +636,7 @@ spamm_new (const unsigned int N, const unsigned int alignment)
   }
 
 #else
-  if ((new_matrix->contiguous_dilated = (float*) malloc(sizeof(float)*N*N)) == NULL)
+  if ((new_matrix->contiguous_dilated = (float*) malloc(sizeof(float)*N*N*4)) == NULL)
   {
     printf("error allocating contiguous_dilated memory for matrix\n");
     exit(1);
@@ -556,6 +650,11 @@ spamm_new (const unsigned int N, const unsigned int alignment)
 
   return new_matrix;
 }
+
+struct matrix_node_t*
+spamm_new_node (const unsigned int M_lower, const unsigned int M_upper,
+    const unsigned int N_lower, const unsigned int N_upper,
+    const unsigned long long alignment) __attribute__ ((malloc));
 
 struct matrix_node_t*
 spamm_new_node (const unsigned int M_lower, const unsigned int M_upper,
@@ -976,8 +1075,6 @@ main (int argc, char **argv)
   unsigned long long stream_index;
   unsigned long long stream_index_A, stream_index_B, stream_index_C;
   unsigned long long number_stream_elements;
-
-  pid_t helper_pid;
 
   float alpha = 1.2;
   float beta = 0.5;
@@ -1946,7 +2043,7 @@ main (int argc, char **argv)
       {
         if (unique_blocks[i] != unique_blocks[j])
         {
-          histogram_distances[k++] = unique_blocks[j]-unique_blocks[i];
+          histogram_distances[k++] = (intptr_t) unique_blocks[j] - (intptr_t) unique_blocks[i];
         }
       }
 
@@ -2032,22 +2129,16 @@ main (int argc, char **argv)
   stream_multiply(loops, alpha, multiply_stream);
 
 #else
-  /* Create helper thread. */
-  helper_pid = fork();
-
   for (loop = 0; loop < loops; loop++)
   {
 #if defined(EXTERNAL_BLAS)
     sgemm_("N", "N", &N, &N, &N, &alpha, A, &N, B, &N, &beta, C, &N);
 
 #else
-    stream_multiply(number_stream_elements, alpha, multiply_stream, A_stream, B_stream, C_stream, helper_pid);
+    stream_multiply(number_stream_elements, alpha, multiply_stream, A_stream, B_stream, C_stream);
 
 #endif
   }
-
-  /* Terminate helper thread. */
-  if (helper_pid == 0) { exit(0); }
 #endif
 
 #ifdef HAVE_PAPI
