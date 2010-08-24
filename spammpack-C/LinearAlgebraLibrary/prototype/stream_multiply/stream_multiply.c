@@ -25,8 +25,8 @@
 //#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
-//#define STREAM_KERNEL_3
-#define POINTER_CHASE
+#define STREAM_KERNEL_3
+//#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
 
@@ -328,8 +328,10 @@ stream_multiply (const unsigned long long number_stream_elements,
   unsigned int i, j, k;
 #endif
 
+#if defined(POINTER_CHASE)
   unsigned long long stream_index;
   float *restrict A, *restrict B, *restrict C;
+#endif
 
 #if defined(STREAM_KERNEL_1)
   stream_kernel_1(number_stream_elements, alpha, multiply_stream);

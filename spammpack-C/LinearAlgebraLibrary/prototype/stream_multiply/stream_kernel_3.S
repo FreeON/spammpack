@@ -37,7 +37,6 @@
    *    float *A_block;
    *    float *B_block;
    *    float *C_block;
-   *    float *A_dilated;
    *  };
    *
    *  void
@@ -71,8 +70,8 @@ stream_kernel_3:
   je done
 
   xor index, index
-  movq number_stream_elements, end_index
-  shl $5, end_index
+  lea (number_stream_elements, number_stream_elements, 2), end_index
+  shl $3, end_index
 
   lea  16(%rsp), A_dilated
 
@@ -327,7 +326,7 @@ loop_multiply:
 #endif
 
 #ifdef INCREMENT_INDEX
-  addq $(4*8), index
+  addq $(3*8), index
 #endif
   cmp end_index, index
   jne loop_multiply
