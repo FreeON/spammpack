@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifdef HAVE_XMMINTRIN_H
 #include <xmmintrin.h>
@@ -336,19 +337,6 @@ stream_multiply (const unsigned long long number_stream_elements,
     float **B_stream,
     float **C_stream)
 {
-#ifdef NAIVE_KERNEL
-  unsigned int i, j, k;
-#endif
-
-#if defined(POINTER_CHASE)
-  unsigned long long stream_index;
-  float *restrict A, *restrict B, *restrict C;
-#endif
-
-#ifdef C_KERNEL
-  short i;
-#endif
-
 #if defined(STREAM_KERNEL_1)
   stream_kernel_1(number_stream_elements, alpha, multiply_stream);
 
@@ -361,6 +349,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 #elif defined(POINTER_CHASE)
 
 #define READAHEAD 20
+
+  unsigned long long stream_index;
+  float *restrict A, *restrict B, *restrict C;
 
   if (helper_pid == 0)
   {
@@ -399,8 +390,10 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 //#define READAHEAD 10
 #define C_KERNEL_VERSION_1
+//#define C_KERNEL_VERSION_2
 
 #if defined(C_KERNEL_VERSION_1)
+  short i;
   unsigned long long stream_index;
   float *restrict A, *restrict B, *restrict C;
   __m128 A_element, B_row, C_row, alpha_row;
@@ -447,6 +440,8 @@ stream_multiply (const unsigned long long number_stream_elements,
     }
   }
 #elif defined(C_KERNEL_VERSION_2)
+  short i;
+
   unsigned long long stream_index;
   __m128 alpha_row;
 
@@ -515,6 +510,8 @@ stream_multiply (const unsigned long long number_stream_elements,
 #endif
 
 #elif defined(NAIVE_KERNEL)
+  unsigned int i, j, k;
+
   /* Multiply stream. */
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++) {
     A = multiply_stream[stream_index].A_block;
@@ -1134,6 +1131,9 @@ main (int argc, char **argv)
   unsigned long long *histogram_distances;
   unsigned int *histogram_counts;
 
+  unsigned long long tree_size;
+  unsigned int tree_depth;
+
   void *temp_pointer;
   unsigned int temp_unsigned_int;
 
@@ -1406,7 +1406,8 @@ main (int argc, char **argv)
   }
 
   /* Check input. */
-  N_padded = (int) N_BLOCK*pow(2, (int) ceil(log(N/(double) N_BLOCK)/log(2)));
+  tree_depth = (int) ceil(log(N/(double) N_BLOCK)/log(2));
+  N_padded = (int) N_BLOCK*pow(2, tree_depth);
   if (N_padded != N)
   {
     printf("N needs to be a power of 2, next larger matrix with %ix%i blocks would be %ix%i\n", N_BLOCK, N_BLOCK, N_padded, N_padded);
@@ -1541,6 +1542,32 @@ main (int argc, char **argv)
 #endif
   printf("\n");
 
+  tree_size = sizeof(struct matrix_t);
+  tree_size += sizeof(struct matrix_node_t)*pow(4, tree_depth);
+  tree_size += sizeof(struct matrix_node_t*)*4*pow(4, tree_depth-1);
+  tree_size += sizeof(float)*N*N;
+  tree_size += sizeof(float)*N*N*4;
+
+  if (tree_size < 1024)
+  {
+    printf("each matrix tree has a maximum depth of %u and a size (in case of a dense matrix) of: %llu bytes\n", tree_depth, tree_size);
+  }
+
+  else if (tree_size < 1024*1024)
+  {
+    printf("each matrix tree has a maximum depth of %u and a size (in case of a dense matrix) of: %1.2f kB\n", tree_depth, tree_size/1024.);
+  }
+
+  else if (tree_size < 1024*1024*1024)
+  {
+    printf("each matrix tree has a maximum depth of %u and a size (in case of a dense matrix) of: %1.2f MB\n", tree_depth, tree_size/1024./1024.);
+  }
+
+  else
+  {
+    printf("each matrix tree has a maximum depth of %u and a size (in case of a dense matrix) of: %1.2f GB\n", tree_depth, tree_size/1024./1024./1024.);
+  }
+
   A_spamm = spamm_new(N, alignment);
   B_spamm = spamm_new(N, alignment);
   C_spamm = spamm_new(N, alignment);
@@ -1672,6 +1699,46 @@ main (int argc, char **argv)
   else
   {
     printf("multiply stream has %1.2f GB\n", sizeof(struct multiply_stream_t)*number_stream_elements/1024./1024./1024.);
+  }
+
+  if (sizeof(struct multiply_stream_index_t)*number_stream_elements < 1024)
+  {
+    printf("multiply stream index has %llu bytes\n", sizeof(struct multiply_stream_index_t)*number_stream_elements);
+  }
+
+  else if (sizeof(struct multiply_stream_index_t)*number_stream_elements < 1024*1024)
+  {
+    printf("multiply stream index has %1.2f kB\n", sizeof(struct multiply_stream_index_t)*number_stream_elements/1024.);
+  }
+
+  else if (sizeof(struct multiply_stream_index_t)*number_stream_elements < 1024*1024*1024)
+  {
+    printf("multiply stream index has %1.2f MB\n", sizeof(struct multiply_stream_index_t)*number_stream_elements/1024./1024.);
+  }
+
+  else
+  {
+    printf("multiply stream index has %1.2f GB\n", sizeof(struct multiply_stream_index_t)*number_stream_elements/1024./1024./1024.);
+  }
+
+  if (sizeof(float*)*number_stream_elements < 1024)
+  {
+    printf("multiply stream {A,B,C} each has %llu bytes\n", sizeof(float*)*number_stream_elements);
+  }
+
+  else if (sizeof(float*)*number_stream_elements < 1024*1024)
+  {
+    printf("multiply stream {A,B,C} each has %1.2f kB\n", sizeof(float*)*number_stream_elements/1024.);
+  }
+
+  else if (sizeof(float*)*number_stream_elements < 1024*1024*1024)
+  {
+    printf("multiply stream {A,B,C} each has %1.2f MB\n", sizeof(float*)*number_stream_elements/1024./1024.);
+  }
+
+  else
+  {
+    printf("multiply stream {A,B,C} each has %1.2f GB\n", sizeof(float*)*number_stream_elements/1024./1024./1024.);
   }
 
 #ifdef HAVE_POSIX_MEMALIGN
