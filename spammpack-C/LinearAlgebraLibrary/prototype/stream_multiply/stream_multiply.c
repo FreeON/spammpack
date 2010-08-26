@@ -28,9 +28,9 @@
 //#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
-//#define STREAM_KERNEL_3
+#define STREAM_KERNEL_3
 //#define POINTER_CHASE
-#define C_KERNEL
+//#define C_KERNEL
 //#define NAIVE_KERNEL
 
 #define STORE_DILATED_BLOCK
