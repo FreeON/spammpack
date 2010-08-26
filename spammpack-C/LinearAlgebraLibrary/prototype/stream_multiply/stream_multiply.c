@@ -25,10 +25,10 @@
 
 //#undef HAVE_POSIX_MEMALIGN
 
-//#define EXTERNAL_BLAS
+#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
-#define STREAM_KERNEL_3
+//#define STREAM_KERNEL_3
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
@@ -2179,6 +2179,7 @@ main (int argc, char **argv)
   }
 
   /* Apply beta to C. */
+#if ! defined(EXTERNAL_BLAS)
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
@@ -2194,6 +2195,7 @@ main (int argc, char **argv)
     printf("C (SpAMM) =\n");
     spamm_print(C_spamm);
   }
+#endif
 
   printf("looping over multiply (loops = %llu)\n", loops);
 
