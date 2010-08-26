@@ -391,6 +391,7 @@ stream_multiply (const unsigned long long number_stream_elements,
 //#define READAHEAD 10
 #define C_KERNEL_VERSION_1
 //#define C_KERNEL_VERSION_2
+//#define C_KERNEL_VERSION_3
 
 #if defined(C_KERNEL_VERSION_1)
   short i;
@@ -507,6 +508,8 @@ stream_multiply (const unsigned long long number_stream_elements,
       _mm_store_ps(&C_2[i*4], C_row_2);
     }
   }
+#elif defined(C_KERNEL_VERSION_3)
+  __asm__();
 #endif
 
 #elif defined(NAIVE_KERNEL)
@@ -1109,13 +1112,16 @@ main (int argc, char **argv)
   int load_L1_LDM = 0;
   int load_L1_STM = 0;
   int load_L1_DCH = 0;
+  int load_L1_DCA = 0;
   int load_L2_ICM = 0;
   int load_L2_DCM = 0;
   int load_L2_LDM = 0;
   int load_L2_STM = 0;
   int load_L2_DCH = 0;
+  int load_L2_DCA = 0;
   int load_TLB_IM = 0;
   int load_TLB_DM = 0;
+  int load_TLB_SD = 0;
 #endif
 
   struct matrix_t *A_spamm, *B_spamm, *C_spamm;
@@ -1141,7 +1147,7 @@ main (int argc, char **argv)
 
   int parse;
   int longindex;
-  char *short_options = "hN:l:a:vprsx:y:z:q123456789ABCDEF";
+  char *short_options = "hN:";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
@@ -1165,13 +1171,16 @@ main (int argc, char **argv)
     { "L1_LDM",   no_argument, NULL, '6' },
     { "L1_STM",   no_argument, NULL, '7' },
     { "L1_DCH",   no_argument, NULL, '8' },
-    { "L2_ICM",   no_argument, NULL, '9' },
-    { "L2_DCM",   no_argument, NULL, 'A' },
-    { "L2_LDM",   no_argument, NULL, 'B' },
-    { "L2_STM",   no_argument, NULL, 'C' },
-    { "L2_DCH",   no_argument, NULL, 'D' },
-    { "TLB_IM",   no_argument, NULL, 'E' },
-    { "TLB_DM",   no_argument, NULL, 'F' },
+    { "L1_DCA",   no_argument, NULL, '9' },
+    { "L2_ICM",   no_argument, NULL, 'A' },
+    { "L2_DCM",   no_argument, NULL, 'B' },
+    { "L2_LDM",   no_argument, NULL, 'C' },
+    { "L2_STM",   no_argument, NULL, 'D' },
+    { "L2_DCH",   no_argument, NULL, 'E' },
+    { "L2_DCA",   no_argument, NULL, 'F' },
+    { "TLB_IM",   no_argument, NULL, 'G' },
+    { "TLB_DM",   no_argument, NULL, 'H' },
+    { "TLB_SD",   no_argument, NULL, 'I' },
 #endif
     { NULL, 0, NULL, 0 }
   };
@@ -1206,13 +1215,16 @@ main (int argc, char **argv)
         printf("--L1_LDM      Measure L1 data load misses\n");
         printf("--L1_STM      Measure L1 data store misses\n");
         printf("--L1_DCH      Measure L1 data hits\n");
+        printf("--L1_DCA      Measure L1 data accesses\n");
         printf("--L2_ICM      Measure L2 instruction misses\n");
         printf("--L2_DCM      Measure L2 data misses\n");
         printf("--L2_LDM      Measure L2 data load misses\n");
         printf("--L2_STM      Measure L2 data store misses\n");
         printf("--L2_DCH      Measure L2 data hits\n");
+        printf("--L2_DCA      Measure L2 data accesses\n");
         printf("--TLB_IM      Measure TLB instruction misses\n");
         printf("--TLB_DM      Measure TLB data misses\n");
+        printf("--TLB_SD      Measure TLB shootdowns\n");
 #endif
         return 0;
         break;
@@ -1299,31 +1311,43 @@ main (int argc, char **argv)
         break;
 
       case '9':
-        load_L2_ICM = 1;
+        load_L1_DCA = 1;
         break;
 
       case 'A':
-        load_L2_DCM = 1;
+        load_L2_ICM = 1;
         break;
 
       case 'B':
-        load_L2_LDM = 1;
+        load_L2_DCM = 1;
         break;
 
       case 'C':
-        load_L2_STM = 1;
+        load_L2_LDM = 1;
         break;
 
       case 'D':
-        load_L2_DCH = 1;
+        load_L2_STM = 1;
         break;
 
       case 'E':
-        load_TLB_IM = 1;
+        load_L2_DCH = 1;
         break;
 
       case 'F':
+        load_L2_DCA = 1;
+        break;
+
+      case 'G':
+        load_TLB_IM = 1;
+        break;
+
+      case 'H':
         load_TLB_DM = 1;
+        break;
+
+      case 'I':
+        load_TLB_SD = 1;
         break;
 #endif
 
@@ -1342,7 +1366,7 @@ main (int argc, char **argv)
     exit(1);
   }
 
-  papi_values = (long long*) malloc(sizeof(long long)*16);
+  papi_values = (long long*) malloc(sizeof(long long)*18);
   if ((papi_errorcode = PAPI_set_granularity(PAPI_GRN_MIN) != PAPI_OK)) { print_papi_error("failed to set granularity",  papi_errorcode); }
   if ((papi_errorcode = PAPI_create_eventset(&papi_events) != PAPI_OK)) { print_papi_error("failed to create eventset",  papi_errorcode); }
   if ((papi_errorcode = PAPI_assign_eventset_component(papi_events, 0) != PAPI_OK)) { print_papi_error("failed to assign component to eventset",  papi_errorcode); }
@@ -1356,15 +1380,18 @@ main (int argc, char **argv)
   if (load_L1_LDM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L1_LDM))) { print_papi_error("failed to add PAPI_L1_LDM",  papi_errorcode); }
   if (load_L1_STM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L1_STM))) { print_papi_error("failed to add PAPI_L1_STM",  papi_errorcode); }
   if (load_L1_DCH && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L1_DCH))) { print_papi_error("failed to add PAPI_L1_DCH",  papi_errorcode); }
+  if (load_L1_DCA && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L1_DCA))) { print_papi_error("failed to add PAPI_L1_DCA",  papi_errorcode); }
 
   if (load_L2_ICM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L2_ICM))) { print_papi_error("failed to add PAPI_L2_ICM",  papi_errorcode); }
   if (load_L2_DCM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L2_DCM))) { print_papi_error("failed to add PAPI_L2_DCM",  papi_errorcode); }
   if (load_L2_LDM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L2_LDM))) { print_papi_error("failed to add PAPI_L2_LDM",  papi_errorcode); }
   if (load_L2_STM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L2_STM))) { print_papi_error("failed to add PAPI_L2_STM",  papi_errorcode); }
   if (load_L2_DCH && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L2_DCH))) { print_papi_error("failed to add PAPI_L2_DCH",  papi_errorcode); }
+  if (load_L2_DCA && (papi_errorcode = PAPI_add_event(papi_events, PAPI_L2_DCA))) { print_papi_error("failed to add PAPI_L2_DCA",  papi_errorcode); }
 
   if (load_TLB_IM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_TLB_IM))) { print_papi_error("failed to add PAPI_TLB_IM",  papi_errorcode); }
   if (load_TLB_DM && (papi_errorcode = PAPI_add_event(papi_events, PAPI_TLB_DM))) { print_papi_error("failed to add PAPI_TLB_DM",  papi_errorcode); }
+  if (load_TLB_SD && (papi_errorcode = PAPI_add_event(papi_events, PAPI_TLB_SD))) { print_papi_error("failed to add PAPI_TLB_SD",  papi_errorcode); }
 #endif
 
 #if defined(EXTERNAL_BLAS)
@@ -1659,12 +1686,12 @@ main (int argc, char **argv)
   printf("allocating stream with %llu elements\n", number_stream_elements);
   printf("1 stream element has %lu bytes\n", sizeof(struct multiply_stream_t));
 
-  printf("mapping %u matrix blocks in stream A touching the first %lu bytes of matrix A\n",
-      N_only_A, N_only_A*N_BLOCK*N_BLOCK*sizeof(float));
-  printf("mapping %u matrix blocks in stream B touching the first %lu bytes of matrix B\n",
-      N_only_B, N_only_B*N_BLOCK*N_BLOCK*sizeof(float));
-  printf("mapping %u matrix blocks in stream C touching the first %lu bytes of matrix C\n",
-      N_only_C, N_only_C*N_BLOCK*N_BLOCK*sizeof(float));
+  printf("mapping %u matrix blocks in stream A touching the first %lu bytes out of %lu bytes of matrix A\n",
+      N_only_A, N_only_A*N_BLOCK*N_BLOCK*sizeof(float), N*N*sizeof(float));
+  printf("mapping %u matrix blocks in stream B touching the first %lu bytes out of %lu bytes of matrix B\n",
+      N_only_B, N_only_B*N_BLOCK*N_BLOCK*sizeof(float), N*N*sizeof(float));
+  printf("mapping %u matrix blocks in stream C touching the first %lu bytes out of %lu bytes of matrix C\n",
+      N_only_C, N_only_C*N_BLOCK*N_BLOCK*sizeof(float), N*N*sizeof(float));
 
   if (sizeof(float)*N*N < 1024)
   {
@@ -2216,105 +2243,126 @@ main (int argc, char **argv)
 
     if (load_TOT_INS)
     {
-      printf("[PAPI] total instructions = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] total instructions = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_TOT_CYC)
     {
-      printf("[PAPI] total cycles = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] total cycles = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_RES_STL)
     {
-      printf("[PAPI] cycles stalled = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] cycles stalled = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L1_ICM)
     {
-      printf("[PAPI] instruction L1 misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] instruction L1 misses = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L1_DCM)
     {
-      printf("[PAPI] data L1 misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] data L1 misses = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L1_LDM)
     {
-      printf("[PAPI] data L1 load misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] data L1 load misses = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L1_STM)
     {
-      printf("[PAPI] data L1 store misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] data L1 store misses = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L1_DCH)
     {
-      printf("[PAPI] data L1 hit = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] data L1 hit = %lli per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_L1_DCA)
+    {
+      printf("[PAPI] data L1 access = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L2_ICM)
     {
-      printf("[PAPI] instruction L2 misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] instruction L2 misses = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L2_DCM)
     {
-      printf("[PAPI] data L2 misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] data L2 misses = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L2_LDM)
     {
-      printf("[PAPI] data L2 load misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] data L2 load misses = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L2_STM)
     {
-      printf("[PAPI] data L2 store misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] data L2 store misses = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_L2_DCH)
     {
-      printf("[PAPI] data L2 hit = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] data L2 hit = %lli per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_L2_DCA)
+    {
+      printf("[PAPI] data L2 access = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_TLB_IM)
     {
-      printf("[PAPI] total instruction TLB misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] total instruction TLB misses = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
 
     if (load_TLB_DM)
     {
-      printf("[PAPI] total data TLB misses = %lli, per stream element = %1.2f\n",
+      printf("[PAPI] total data TLB misses = %lli per stream element = %1.2f\n",
+          papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
+      papi_value_index++;
+    }
+
+    if (load_TLB_SD)
+    {
+      printf("[PAPI] total data TLB shootdowns = %lli per stream element = %1.2f\n",
           papi_values[papi_value_index], papi_values[papi_value_index]/(double) loops/(double) number_stream_elements);
       papi_value_index++;
     }
