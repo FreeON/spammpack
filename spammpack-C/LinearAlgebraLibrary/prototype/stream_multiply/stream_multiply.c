@@ -25,10 +25,11 @@
 
 //#undef HAVE_POSIX_MEMALIGN
 
-#define EXTERNAL_BLAS
+//#define EXTERNAL_BLAS
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
 //#define STREAM_KERNEL_3
+#define STREAM_KERNEL_4
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
@@ -122,6 +123,13 @@ stream_kernel_2 (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_3
 void
 stream_kernel_3 (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_4
+void
+stream_kernel_4 (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
@@ -346,6 +354,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 #elif defined(STREAM_KERNEL_3)
   stream_kernel_3(number_stream_elements, alpha, multiply_stream);
 
+#elif defined(STREAM_KERNEL_4)
+  stream_kernel_4(number_stream_elements, alpha, multiply_stream);
+
 #elif defined(POINTER_CHASE)
 
 #define READAHEAD 20
@@ -389,9 +400,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 #elif defined(C_KERNEL)
 
 //#define READAHEAD 10
-#define C_KERNEL_VERSION_1
+//#define C_KERNEL_VERSION_1
 //#define C_KERNEL_VERSION_2
-//#define C_KERNEL_VERSION_3
+#define C_KERNEL_VERSION_3
 
 #if defined(C_KERNEL_VERSION_1)
   short i;
@@ -509,7 +520,146 @@ stream_multiply (const unsigned long long number_stream_elements,
     }
   }
 #elif defined(C_KERNEL_VERSION_3)
-  __asm__();
+  float alpha_row[4] __attribute__((aligned(64)));
+
+  /* Create 4-element float vector for alpha. */
+  alpha_row[0] = alpha;
+  alpha_row[1] = alpha;
+  alpha_row[2] = alpha;
+  alpha_row[3] = alpha;
+
+  /* Store old rounding mode. */
+  unsigned int old_xcsr = _mm_getcsr();
+
+  /* Set DAZ and FTZ. */
+  _mm_setcsr(old_xcsr | 0x8040);
+
+  __asm__ volatile (
+
+      /* Test whether to loop at all. */
+      "cmp $0, %0\n\t"
+      "jz done\n\t"
+
+      /* Zero loop counter. */
+      "xor %%rax, %%rax\n\t"
+
+      /* Loop. */
+      ".align 16\n"
+      "loop:\n\t"
+
+      /* Multiply stream block. */
+      "mov 0x0(%2), %%r8\n\t"
+      "mov 0x8(%2), %%r9\n\t"
+      "mov 0x10(%2), %%r10\n\t"
+
+      /* Load C matrix block. */
+      "movaps (%%r10), %%xmm12\n\t"
+      "movaps 4*4(%%r10), %%xmm13\n\t"
+      "movaps 8*4(%%r10), %%xmm14\n\t"
+      "movaps 16*4(%%r10), %%xmm15\n\t"
+
+      /* Load A and B. */
+      "movaps (%%r9), %%xmm0\n\t" /* Load B(1,1) B(1,2) B(1,3) B(1,4). */
+      "movaps 4*4(%%r9), %%xmm1\n\t" /* Load B(2,1) B(2,2) B(2,3) B(2,4). */
+      "movaps 8*4(%%r9), %%xmm2\n\t" /* Load B(3,1) B(3,2) B(3,3) B(3,4). */
+      "movaps 16*4(%%r9), %%xmm3\n\t" /* Load B(4,1) B(4,2) B(4,3) B(4,4). */
+
+      "movaps  0*4*4(%%r8), %%xmm4\n\t" /* Load A(1,1). */
+      "movaps  1*4*4(%%r8), %%xmm5\n\t" /* Load A(1,2). */
+
+      "movaps  2*4*4(%%r8), %%xmm6\n\t" /* Load A(1,3). */
+      "movaps  3*4*4(%%r8), %%xmm7\n\t" /* Load A(1,4). */
+
+      "movaps  4*4*4(%%r8), %%xmm8\n\t" /* Load A(2,1). */
+      "movaps  5*4*4(%%r8), %%xmm9\n\t" /* Load A(2,2). */
+
+      "movaps  6*4*4(%%r8), %%xmm10\n\t" /* Load A(2,3). */
+      "movaps  7*4*4(%%r8), %%xmm11\n\t" /* Load A(2,4). */
+
+      "mulps %%xmm0, %%xmm4\n\t"
+      "mulps %%xmm1, %%xmm5\n\t"
+
+      "mulps %%xmm3, %%xmm6\n\t"
+      "mulps %%xmm4, %%xmm7\n\t"
+
+      "mulps %%xmm0, %%xmm8\n\t"
+      "mulps %%xmm1, %%xmm9\n\t"
+
+      "mulps %%xmm3, %%xmm10\n\t"
+      "mulps %%xmm4, %%xmm11\n\t"
+
+      "addps %%xmm4, %%xmm12\n\t"
+      "addps %%xmm5, %%xmm12\n\t"
+
+      "addps %%xmm6, %%xmm13\n\t"
+      "addps %%xmm7, %%xmm13\n\t"
+
+      "addps %%xmm8, %%xmm14\n\t"
+      "addps %%xmm9, %%xmm14\n\t"
+
+      "addps %%xmm10, %%xmm15\n\t"
+      "addps %%xmm11, %%xmm15\n\t"
+
+      "movaps  8*4*4(%%r8), %%xmm4\n\t" /* Load A(3,1). */
+      "movaps  9*4*4(%%r8), %%xmm5\n\t" /* Load A(3,2). */
+
+      "movaps 10*4*4(%%r8), %%xmm6\n\t" /* Load A(3,3). */
+      "movaps 11*4*4(%%r8), %%xmm7\n\t" /* Load A(3,4). */
+
+      "movaps 12*4*4(%%r8), %%xmm8\n\t" /* Load A(4,1). */
+      "movaps 13*4*4(%%r8), %%xmm9\n\t" /* Load A(4,2). */
+
+      "movaps 14*4*4(%%r8), %%xmm10\n\t" /* Load A(4,3). */
+      "movaps 15*4*4(%%r8), %%xmm11\n\t" /* Load A(4,4). */
+
+      "mulps %%xmm0, %%xmm4\n\t"
+      "mulps %%xmm1, %%xmm5\n\t"
+
+      "mulps %%xmm3, %%xmm6\n\t"
+      "mulps %%xmm4, %%xmm7\n\t"
+
+      "mulps %%xmm0, %%xmm8\n\t"
+      "mulps %%xmm1, %%xmm9\n\t"
+
+      "mulps %%xmm3, %%xmm10\n\t"
+      "mulps %%xmm4, %%xmm11\n\t"
+
+      "addps %%xmm4, %%xmm12\n\t"
+      "addps %%xmm5, %%xmm12\n\t"
+
+      "addps %%xmm6, %%xmm13\n\t"
+      "addps %%xmm7, %%xmm13\n\t"
+
+      "addps %%xmm8, %%xmm14\n\t"
+      "addps %%xmm9, %%xmm14\n\t"
+
+      "addps %%xmm10, %%xmm15\n\t"
+      "addps %%xmm11, %%xmm15\n\t"
+
+      /* Write out C. */
+      "movaps %%xmm12, (%%r10)\n\t"
+      "movaps %%xmm13, 4*4(%%r10)\n\t"
+      "movaps %%xmm14, 8*4(%%r10)\n\t"
+      "movaps %%xmm15, 16*4(%%r10)\n\t"
+
+      /* Increment loop counter. */
+      "add $1, %%rax\n\t"
+      "cmp %0, %%rax\n\t"
+      "jl loop\n\t"
+
+      /* Done. */
+      ".align 16\n"
+      "done:\n"
+
+      : /* output registers. */
+      : "r" (number_stream_elements),
+        "r" (alpha_row),
+        "r" (multiply_stream) /* Input registers. */
+      : "memory", "rax", "r8", "r9", "r10"
+      );
+
+  /* Restore old rounding mode. */
+  _mm_setcsr(old_xcsr);
 #endif
 
 #elif defined(NAIVE_KERNEL)
@@ -1406,6 +1556,9 @@ main (int argc, char **argv)
 #elif defined(STREAM_KERNEL_3)
   printf("using stream_kernel_3\n");
 
+#elif defined(STREAM_KERNEL_4)
+  printf("using stream_kernel_4\n");
+
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
 
@@ -1642,15 +1795,11 @@ main (int argc, char **argv)
 
     else
     {
-      //A[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
-      //B[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
-      //C[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
-      A[get_index(N, index_pairs[k][0], index_pairs[k][1])] = (get_Morton_index(N_BLOCK, index_pairs[k][0]%N_BLOCK, index_pairs[k][1]%N_BLOCK)
-        +interleave_2_index(index_pairs[k][0]/N_BLOCK, index_pairs[k][1]/N_BLOCK)*N_BLOCK*N_BLOCK+1)/pow(10, ceil(log(N)/log(10))+1);
-      B[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_Morton_index(N_BLOCK, index_pairs[k][0]%N_BLOCK, index_pairs[k][1]%N_BLOCK)
-        +interleave_2_index(index_pairs[k][0]/N_BLOCK, index_pairs[k][1]/N_BLOCK)*N_BLOCK*N_BLOCK+1/pow(10, ceil(log(N)/log(10))+1);
-      C[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_Morton_index(N_BLOCK, index_pairs[k][0]%N_BLOCK, index_pairs[k][1]%N_BLOCK)
-        +interleave_2_index(index_pairs[k][0]/N_BLOCK, index_pairs[k][1]/N_BLOCK)*N_BLOCK*N_BLOCK+1/pow(10, ceil(log(N)/log(10))+1);
+      A[get_index(N, index_pairs[k][0], index_pairs[k][1])] = get_index(N, index_pairs[k][0], index_pairs[k][1])+1;
+      //A[get_index(N, index_pairs[k][0], index_pairs[k][1])] = (get_Morton_index(N_BLOCK, index_pairs[k][0]%N_BLOCK, index_pairs[k][1]%N_BLOCK)
+      //  +interleave_2_index(index_pairs[k][0]/N_BLOCK, index_pairs[k][1]/N_BLOCK)*N_BLOCK*N_BLOCK+1)/pow(10, ceil(log(N)/log(10))+1);
+      B[get_index(N, index_pairs[k][0], index_pairs[k][1])] = A[get_index(N, index_pairs[k][0], index_pairs[k][1])];
+      C[get_index(N, index_pairs[k][0], index_pairs[k][1])] = A[get_index(N, index_pairs[k][0], index_pairs[k][1])];
     }
 
     /* Copy C matrix for verification. */
