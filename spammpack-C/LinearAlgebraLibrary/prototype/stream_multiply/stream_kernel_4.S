@@ -95,6 +95,90 @@ loop:
   cmp number_stream_elements, index
 
   /* Multiply block. */
+  movaps  0*4*4(B), %xmm1  /* B(1,1:4) */
+  movaps  1*4*4(B), %xmm2  /* B(2,1:4) */
+  movaps  2*4*4(B), %xmm3  /* B(3,1:4) */
+  movaps  3*4*4(B), %xmm4  /* B(4,1:4) */
+
+  movaps  0*4*4(A), %xmm5  /* A(1,1) */
+  movaps  1*4*4(A), %xmm6  /* A(1,2) */
+  movaps  2*4*4(A), %xmm7  /* A(1,3) */
+  movaps  3*4*4(A), %xmm8  /* A(1,4) */
+
+  movaps  4*4*4(A), %xmm9  /* A(2,1) */
+  movaps  5*4*4(A), %xmm10 /* A(2,2) */
+  movaps  6*4*4(A), %xmm11 /* A(2,3) */
+  movaps  7*4*4(A), %xmm12 /* A(2,4) */
+
+  movaps  8*4*4(A), %xmm13 /* A(3,1) */
+  movaps  9*4*4(A), %xmm14 /* A(3,2) */
+  movaps 10*4*4(A), %xmm15 /* A(3,3) */
+
+  mulps %xmm1, %xmm5 /* A(1,1)*B(1,1:4) */
+  mulps %xmm2, %xmm6 /* A(1,2)*B(2,1:4) */
+  addps %xmm5, %xmm6
+
+  movaps 11*4*4(A), %xmm5 /* A(3,4) */
+
+  mulps %xmm3, %xmm7 /* A(1,3)*B(3,1:4) */
+  addps %xmm6, %xmm7
+
+  movaps 12*4*4(A), %xmm6 /* A(4,1) */
+
+  mulps %xmm4, %xmm8 /* A(1,4)*B(4,1:4) */
+  addps %xmm7, %xmm8
+
+  mulps %xmm0, %xmm8 /* alpha*C(1,1:4) */
+  addps  0*4*4(C), %xmm8
+  movaps %xmm8, 0*4*4(C)
+
+  movaps 13*4*4(A), %xmm7 /* A(4,2) */
+
+  mulps %xmm1, %xmm9  /* A(2,1)*B(1,1:4) */
+  mulps %xmm2, %xmm10 /* A(2,2)*B(2,1:4) */
+  addps %xmm9, %xmm10
+
+  movaps 14*4*4(A), %xmm8 /* A(4,3) */
+
+  mulps %xmm3, %xmm11 /* A(2,3)*B(3,1:4) */
+  addps %xmm10, %xmm11
+
+  movaps 15*4*4(A), %xmm9 /* A(4,4) */
+
+  mulps %xmm4, %xmm12 /* A(2,4)*B(4,1:4) */
+  addps %xmm11, %xmm12
+
+  mulps %xmm0, %xmm12
+  addps 1*4*4(C), %xmm12
+  movaps %xmm12, 1*4*4(C)
+
+  mulps %xmm1, %xmm13 /* A(3,1)*B(1,1:4) */
+  mulps %xmm2, %xmm14 /* A(3,2)*B(2,1:4) */
+  addps %xmm13, %xmm14
+
+  mulps %xmm3, %xmm15 /* A(3,3)*B(3,1:4) */
+  addps %xmm14, %xmm15
+
+  mulps %xmm4, %xmm5 /* A(3,4)*B(4,1:4) */
+  addps %xmm15, %xmm5
+
+  mulps %xmm0, %xmm5
+  addps 2*4*4(C), %xmm5
+  movaps %xmm5, 2*4*4(C)
+
+  mulps %xmm1, %xmm6 /* A(4,1)*B(1,1:4) */
+  mulps %xmm2, %xmm7 /* A(4,2)*B(2,1:4) */
+  addps %xmm6, %xmm7
+
+  mulps %xmm3, %xmm8 /* A(4,3)*B(3,1:4) */
+  addps %xmm7, %xmm8
+
+  mulps %xmm4, %xmm9 /* A(4,4)*B(4,1:4) */
+  addps %xmm8, %xmm9
+
+  mulps %xmm0, %xmm9
+  addps 3*4*4(C), %xmm9
+  movaps %xmm9, 3*4*4(C)
 
   /* Finish loop. */
   jl loop
