@@ -29,7 +29,8 @@
 //#define STREAM_KERNEL_1
 //#define STREAM_KERNEL_2
 //#define STREAM_KERNEL_3
-#define STREAM_KERNEL_4
+//#define STREAM_KERNEL_4
+#define STREAM_KERNEL_5
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
@@ -130,6 +131,13 @@ stream_kernel_3 (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_4
 void
 stream_kernel_4 (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_5
+void
+stream_kernel_5 (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
@@ -357,6 +365,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 #elif defined(STREAM_KERNEL_4)
   stream_kernel_4(number_stream_elements, alpha, multiply_stream);
 
+#elif defined(STREAM_KERNEL_5)
+  stream_kernel_5(number_stream_elements, alpha, multiply_stream);
+
 #elif defined(POINTER_CHASE)
 
 #define READAHEAD 20
@@ -401,8 +412,8 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 //#define READAHEAD 10
 //#define C_KERNEL_VERSION_1
-//#define C_KERNEL_VERSION_2
-#define C_KERNEL_VERSION_3
+#define C_KERNEL_VERSION_2
+//#define C_KERNEL_VERSION_3
 
 #if defined(C_KERNEL_VERSION_1)
   short i;
@@ -453,7 +464,6 @@ stream_multiply (const unsigned long long number_stream_elements,
   }
 #elif defined(C_KERNEL_VERSION_2)
   short i;
-
   unsigned long long stream_index;
   __m128 alpha_row;
 
@@ -471,10 +481,6 @@ stream_multiply (const unsigned long long number_stream_elements,
     A_1 = multiply_stream[stream_index].A_block;
     B_1 = multiply_stream[stream_index].B_block;
     C_1 = multiply_stream[stream_index].C_block;
-
-    A_2 = multiply_stream[stream_index+1].A_block;
-    B_2 = multiply_stream[stream_index+1].B_block;
-    C_2 = multiply_stream[stream_index+1].C_block;
 
     for (i = 0; i < 4; i++)
     {
@@ -497,7 +503,14 @@ stream_multiply (const unsigned long long number_stream_elements,
       C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
       C_row_1 = _mm_add_ps(_mm_load_ps(&C_1[i*4]), C_row_1);
       _mm_store_ps(&C_1[i*4], C_row_1);
+    }
 
+    A_2 = multiply_stream[stream_index+1].A_block;
+    B_2 = multiply_stream[stream_index+1].B_block;
+    C_2 = multiply_stream[stream_index+1].C_block;
+
+    for (i = 0; i < 4; i++)
+    {
       A_element_2 = _mm_load_ps(&A_2[(i*4+0)*4]);
       B_row_2 = _mm_load_ps(&B_2[0*4]);
       C_row_2 = _mm_mul_ps(A_element_2, B_row_2);
@@ -1558,6 +1571,9 @@ main (int argc, char **argv)
 
 #elif defined(STREAM_KERNEL_4)
   printf("using stream_kernel_4\n");
+
+#elif defined(STREAM_KERNEL_5)
+  printf("using stream_kernel_5\n");
 
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
