@@ -12,7 +12,9 @@ stream_multiply_SOURCES = \
   stream_kernel_2.S \
   stream_kernel_3.S \
   stream_kernel_4.S \
-  stream_kernel_5.S
+  stream_kernel_5.S \
+  stream_kernel_6.S \
+  stream_kernel_7.S
 
 tags :
 	ctags *.c *.S
