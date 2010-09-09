@@ -14,7 +14,8 @@ stream_multiply_SOURCES = \
   stream_kernel_4.S \
   stream_kernel_5.S \
   stream_kernel_6.S \
-  stream_kernel_7.S
+  stream_kernel_7.S \
+  stream_kernel_8.S
 
 tags :
 	ctags *.c *.S
