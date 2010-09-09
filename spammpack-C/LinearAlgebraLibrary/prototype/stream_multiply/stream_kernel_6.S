@@ -24,8 +24,8 @@
 #define SIZE 8 /* sizeof(void*) */
 
   .text
-  .global stream_kernel_5
-  .type stream_kernel_5, @function
+  .global stream_kernel_6
+  .type stream_kernel_6, @function
 
   /* Function declaration in C.
    *
@@ -37,13 +37,13 @@
    *  };
    *
    *  void
-   *  stream_kernel_5 (const unsigned int number_stream_elements,
+   *  stream_kernel_6 (const unsigned int number_stream_elements,
    *      float alpha,
    *      struct multiply_stream_t *multiply_stream);
    */
 
   .align 256
-stream_kernel_5:
+stream_kernel_6:
 
   /* Save local variables on stack. */
   push old_stack
@@ -83,9 +83,9 @@ stream_kernel_5:
   .align 16
 loop:
 
-  mov (index_pointer, multiply_stream, 1), A
-  mov 0x8(index_pointer, multiply_stream, 1), B
-  mov 0x10(index_pointer, multiply_stream, 1), C
+  //mov (index_pointer, multiply_stream, 1), A
+  mov 0x8(index_pointer, multiply_stream, 1), A
+  //mov 0x10(index_pointer, multiply_stream, 1), A
 
   /* Increment loop index. */
   add $1, index
@@ -95,8 +95,10 @@ loop:
   cmp number_stream_elements, index
 
   /* Multiply block. */
-
-  /* Do nothing. */
+  movaps  0*4*4(A), %xmm1  /* B(1,1:4) */
+  movaps  1*4*4(A), %xmm2  /* B(2,1:4) */
+  movaps  2*4*4(A), %xmm3  /* B(3,1:4) */
+  movaps  3*4*4(A), %xmm4  /* B(4,1:4) */
 
   /* Finish loop. */
   jl loop
@@ -124,4 +126,4 @@ done:
 
   ret
 
-  .size stream_kernel_5, .-stream_kernel_5
+  .size stream_kernel_6, .-stream_kernel_6
