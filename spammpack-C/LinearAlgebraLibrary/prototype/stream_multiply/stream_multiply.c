@@ -29,12 +29,13 @@
 //#define STREAM_KERNEL_3
 //#define STREAM_KERNEL_4
 //#define STREAM_KERNEL_5
-#define STREAM_KERNEL_6
+//#define STREAM_KERNEL_6
+#define STREAM_KERNEL_7
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
 
-//#define STORE_DILATED_BLOCK
+#define STORE_DILATED_BLOCK
 
 //#define DENSE_MULTIPLY
 
@@ -144,6 +145,13 @@ stream_kernel_5 (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_6
 void
 stream_kernel_6 (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_7
+void
+stream_kernel_7 (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
@@ -376,6 +384,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #elif defined(STREAM_KERNEL_6)
   stream_kernel_6(number_stream_elements, alpha, multiply_stream);
+
+#elif defined(STREAM_KERNEL_7)
+  stream_kernel_7(number_stream_elements, alpha, multiply_stream);
 
 #elif defined(POINTER_CHASE)
 
@@ -1587,6 +1598,9 @@ main (int argc, char **argv)
 #elif defined(STREAM_KERNEL_6)
   printf("using stream_kernel_6\n");
 
+#elif defined(STREAM_KERNEL_7)
+  printf("using stream_kernel_7\n");
+
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
 
@@ -1758,7 +1772,10 @@ main (int argc, char **argv)
   tree_size += sizeof(struct matrix_node_t)*pow(4, tree_depth);
   tree_size += sizeof(struct matrix_node_t*)*4*pow(4, tree_depth-1);
   tree_size += sizeof(float)*N*N;
+
+#ifdef STORE_DILATED_BLOCK
   tree_size += sizeof(float)*N*N*4;
+#endif
 
   if (tree_size < 1024)
   {
@@ -1783,6 +1800,27 @@ main (int argc, char **argv)
   A_spamm = spamm_new(N, alignment);
   B_spamm = spamm_new(N, alignment);
   C_spamm = spamm_new(N, alignment);
+
+  printf("Allocated spamm matrices at: A = %p, A->contiguous = %p", A_spamm, A_spamm->contiguous);
+#ifdef STORE_DILATED_BLOCK
+  printf(", A->contiguous_dilated = %p\n", A_spamm->contiguous_dilated);
+#else
+  printf("\n");
+#endif
+
+  printf("Allocated spamm matrices at: B = %p, B->contiguous = %p", B_spamm, B_spamm->contiguous);
+#ifdef STORE_DILATED_BLOCK
+  printf(", B->contiguous_dilated = %p\n", B_spamm->contiguous_dilated);
+#else
+  printf("\n");
+#endif
+
+  printf("Allocated spamm matrices at: C = %p, C->contiguous = %p", C_spamm, C_spamm->contiguous);
+#ifdef STORE_DILATED_BLOCK
+  printf(", C->contiguous_dilated = %p\n", C_spamm->contiguous_dilated);
+#else
+  printf("\n");
+#endif
 
   /* Fill matrices with random data. In order to avoid a deterministic
    * allocation pattern, the matrix indices are reandomized as well.
