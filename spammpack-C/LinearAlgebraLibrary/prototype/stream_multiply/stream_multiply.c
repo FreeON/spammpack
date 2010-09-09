@@ -30,7 +30,8 @@
 //#define STREAM_KERNEL_4
 //#define STREAM_KERNEL_5
 //#define STREAM_KERNEL_6
-#define STREAM_KERNEL_7
+//#define STREAM_KERNEL_7
+#define STREAM_KERNEL_8
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
@@ -152,6 +153,13 @@ stream_kernel_6 (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_7
 void
 stream_kernel_7 (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_8
+void
+stream_kernel_8 (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
@@ -387,6 +395,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #elif defined(STREAM_KERNEL_7)
   stream_kernel_7(number_stream_elements, alpha, multiply_stream);
+
+#elif defined(STREAM_KERNEL_8)
+  stream_kernel_8(number_stream_elements, alpha, multiply_stream);
 
 #elif defined(POINTER_CHASE)
 
@@ -1600,6 +1611,9 @@ main (int argc, char **argv)
 
 #elif defined(STREAM_KERNEL_7)
   printf("using stream_kernel_7\n");
+
+#elif defined(STREAM_KERNEL_8)
+  printf("using stream_kernel_8\n");
 
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
