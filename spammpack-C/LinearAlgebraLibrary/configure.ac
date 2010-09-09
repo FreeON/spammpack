@@ -47,6 +47,8 @@ AC_CHECK_LIB([m], [ceil],
              [])
 
 dnl Check for malloc with alignment.
+AC_DEFINE([_POSIX_C_SOURCE], [200809L], [Define POSIX to enable
+           posix_memalign()])
 AC_CHECK_DECL([posix_memalign],
               [declared_posix_memalign="yes"],
               [declared_posix_memalign="no"], [])

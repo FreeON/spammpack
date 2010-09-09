@@ -24,8 +24,8 @@
 #define SIZE 8 /* sizeof(void*) */
 
   .text
-  .global stream_kernel_6
-  .type stream_kernel_6, @function
+  .global stream_kernel_7
+  .type stream_kernel_7, @function
 
   /* Function declaration in C.
    *
@@ -37,13 +37,13 @@
    *  };
    *
    *  void
-   *  stream_kernel_6 (const unsigned int number_stream_elements,
+   *  stream_kernel_7 (const unsigned int number_stream_elements,
    *      float alpha,
    *      struct multiply_stream_t *multiply_stream);
    */
 
   .align 256
-stream_kernel_6:
+stream_kernel_7:
 
   /* Save local variables on stack. */
   push old_stack
@@ -148,4 +148,4 @@ done:
 
   ret
 
-  .size stream_kernel_6, .-stream_kernel_6
+  .size stream_kernel_7, .-stream_kernel_7
