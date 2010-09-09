@@ -1,7 +1,5 @@
 #include "config.h"
 
-#define _POSIX_C_SOURCE 200809L
-
 #include <errno.h>
 #include <math.h>
 #include <stdint.h>
