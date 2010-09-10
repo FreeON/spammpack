@@ -5,16 +5,13 @@
 
 /* Define local variables. */
 #define old_stack     %r8
-#define index         %rax
-#define index_pointer %rdx
+#define index_outer   %r9
+#define index_inner   %r10
+#define A             %r11
+#define B             %r12
+#define C             %r13
 #define temp_reg_64   %rcx
 #define temp_reg_32   %ecx
-#define A             %r10
-#define B             %r11
-#define C             %r12
-#define A_ahead       %r13
-#define B_ahead       %r14
-#define C_ahead       %r15
 
 #define stacksize 0x80
 #define alpha     (%rsp)
@@ -24,8 +21,8 @@
 #define SIZE 8 /* sizeof(void*) */
 
   .text
-  .global stream_kernel_7
-  .type stream_kernel_7, @function
+  .global stream_kernel_9
+  .type stream_kernel_9, @function
 
   /* Function declaration in C.
    *
@@ -37,25 +34,24 @@
    *  };
    *
    *  void
-   *  stream_kernel_7 (const unsigned int number_stream_elements,
+   *  stream_kernel_9 (const unsigned int number_stream_elements,
    *      float alpha,
    *      struct multiply_stream_t *multiply_stream);
    */
 
   .align 256
-stream_kernel_7:
+stream_kernel_9:
 
   /* Save local variables on stack. */
   push old_stack
   push temp_reg_64
-  push index
-  push index_pointer
+  push index_inner
+  push index_outer
   push A
   push B
   push C
-  push A_ahead
-  push B_ahead
-  push C_ahead
+  push %rax
+  push %rdx
 
   mov %rsp, old_stack /* Save old stack. */
   sub $stacksize, %rsp /* Make some room for local variables. */
@@ -76,54 +72,59 @@ stream_kernel_7:
   mov temp_reg_32, new_MXCSR
   ldmxcsr new_MXCSR
 
-  /* index = 0 */
-  xor index, index
-  xor index_pointer, index_pointer
+  /* index_outer = 0 */
+  xor index_outer, index_outer
 
   .align 16
-loop:
+loop_outer:
 
-  mov (index_pointer, multiply_stream, 1), A
-  mov 0x8(index_pointer, multiply_stream, 1), B
-  mov 0x10(index_pointer, multiply_stream, 1), C
+  /* Load pointer to beginning of stream. */
+  mov (multiply_stream), A
 
   /* Increment loop index. */
-  add $1, index
-  add $0x18, index_pointer
+  add $16, index_outer
 
-  /* Loop comparison. */
-  cmp number_stream_elements, index
+  /* index_inner = 0 */
+  xor index_inner, index_inner
+
+  .align 16
+loop_inner:
+
+  /* Increment loop index. */
+  add $1, index_inner
 
   /* Multiply block. */
-  movaps  0*4*4(B), %xmm1  /* B(1,1:4) */
-  movaps  1*4*4(B), %xmm2  /* B(2,1:4) */
-  movaps  2*4*4(B), %xmm3  /* B(3,1:4) */
-  movaps  3*4*4(B), %xmm4  /* B(4,1:4) */
+  movaps  0*4*4(A), %xmm0  /* A(1,1) */
+  movaps  1*4*4(A), %xmm1  /* A(1,2) */
+  movaps  2*4*4(A), %xmm2  /* A(1,3) */
+  movaps  3*4*4(A), %xmm3  /* A(1,4) */
+  movaps  4*4*4(A), %xmm4  /* A(2,1) */
+  movaps  5*4*4(A), %xmm5  /* A(2,2) */
+  movaps  6*4*4(A), %xmm6  /* A(2,3) */
+  movaps  7*4*4(A), %xmm7  /* A(2,4) */
+  movaps  8*4*4(A), %xmm8  /* A(3,1) */
+  movaps  9*4*4(A), %xmm9  /* A(3,2) */
+  movaps 10*4*4(A), %xmm10 /* A(3,3) */
+  movaps 11*4*4(A), %xmm11 /* A(3,4) */
+  movaps 12*4*4(A), %xmm12 /* A(4,1) */
+  movaps 13*4*4(A), %xmm13 /* A(4,2) */
+  movaps 14*4*4(A), %xmm14 /* A(4,3) */
+  movaps 15*4*4(A), %xmm15 /* A(4,4) */
 
-  movaps  0*4*4(A), %xmm5  /* A(1,1) */
-  movaps  1*4*4(A), %xmm6  /* A(1,2) */
-  movaps  2*4*4(A), %xmm7  /* A(1,3) */
-  movaps  3*4*4(A), %xmm8  /* A(1,4) */
-  movaps  4*4*4(A), %xmm9  /* A(2,1) */
-  movaps  5*4*4(A), %xmm10 /* A(2,2) */
-  movaps  6*4*4(A), %xmm11 /* A(2,3) */
-  movaps  7*4*4(A), %xmm12 /* A(2,4) */
-  movaps  8*4*4(A), %xmm13 /* A(3,1) */
-  movaps  9*4*4(A), %xmm14 /* A(3,2) */
-  movaps 10*4*4(A), %xmm15 /* A(3,3) */
-  movaps 11*4*4(A), %xmm5  /* A(3,4) */
-  movaps 12*4*4(A), %xmm6  /* A(4,1) */
-  movaps 13*4*4(A), %xmm7  /* A(4,2) */
-  movaps 14*4*4(A), %xmm8  /* A(4,3) */
-  movaps 15*4*4(A), %xmm9  /* A(4,4) */
+  /* Increment A pointer to next block. */
+  add $256, A
 
-  movaps  0*4*4(C), %xmm10 /* C(1,1:4) */
-  movaps  1*4*4(C), %xmm11 /* C(2,1:4) */
-  movaps  2*4*4(C), %xmm12 /* C(3,1:4) */
-  movaps  3*4*4(C), %xmm13 /* C(4,1:4) */
+  /* Loop comparison. */
+  cmp $16, index_inner
 
   /* Finish loop. */
-  jl loop
+  jl loop_inner
+
+  /* Loop comparison. */
+  cmp number_stream_elements, index_outer
+
+  /* Finish loop. */
+  jl loop_outer
 
   .align 16
 done:
@@ -135,17 +136,16 @@ done:
   mov old_stack, %rsp
 
   /* Restore local variables from stack. */
-  pop C_ahead
-  pop B_ahead
-  pop A_ahead
+  pop %rdx
+  pop %rax
   pop C
   pop B
   pop A
-  pop index_pointer
-  pop index
+  pop index_outer
+  pop index_inner
   pop temp_reg_64
   pop old_stack
 
   ret
 
-  .size stream_kernel_7, .-stream_kernel_7
+  .size stream_kernel_9, .-stream_kernel_9
