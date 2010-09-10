@@ -109,8 +109,6 @@ loop:
   movaps 14*4*4(A_0), %xmm14 /* A(4,3) */
   movaps 15*4*4(A_0), %xmm15 /* A(4,4) */
 
-  mov (index_pointer, multiply_stream, 1), A_0
-
   /* Multiply block. */
   movaps  0*4*4(A_1), %xmm0  /* A(1,1) */
   movaps  1*4*4(A_1), %xmm1  /* A(1,2) */
@@ -128,8 +126,6 @@ loop:
   movaps 13*4*4(A_1), %xmm13 /* A(4,2) */
   movaps 14*4*4(A_1), %xmm14 /* A(4,3) */
   movaps 15*4*4(A_1), %xmm15 /* A(4,4) */
-
-  mov 24(index_pointer, multiply_stream, 1), A_1
 
   /* Multiply block. */
   movaps  0*4*4(A_2), %xmm0  /* A(1,1) */
@@ -149,8 +145,6 @@ loop:
   movaps 14*4*4(A_2), %xmm14 /* A(4,3) */
   movaps 15*4*4(A_2), %xmm15 /* A(4,4) */
 
-  mov 48(index_pointer, multiply_stream, 1), A_2
-
   /* Multiply block. */
   movaps  0*4*4(A_3), %xmm0  /* A(1,1) */
   movaps  1*4*4(A_3), %xmm1  /* A(1,2) */
@@ -169,6 +163,9 @@ loop:
   movaps 14*4*4(A_3), %xmm14 /* A(4,3) */
   movaps 15*4*4(A_3), %xmm15 /* A(4,4) */
 
+  mov (index_pointer, multiply_stream, 1), A_0
+  mov 24(index_pointer, multiply_stream, 1), A_1
+  mov 48(index_pointer, multiply_stream, 1), A_2
   mov 72(index_pointer, multiply_stream, 1), A_3
 
   /* Finish loop. */
