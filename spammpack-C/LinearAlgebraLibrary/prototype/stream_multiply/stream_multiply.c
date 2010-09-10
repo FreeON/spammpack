@@ -35,7 +35,8 @@
 //#define STREAM_KERNEL_9
 //#define STREAM_KERNEL_10
 //#define STREAM_KERNEL_11
-#define STREAM_KERNEL_12
+//#define STREAM_KERNEL_12
+#define STREAM_KERNEL_13
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
@@ -95,6 +96,9 @@ struct multiply_stream_t
   float *A_block;
   float *B_block;
   float *C_block;
+#ifdef STREAM_KERNEL_13
+  char mask[8];
+#endif
 };
 
 struct multiply_stream_index_t
@@ -192,6 +196,13 @@ stream_kernel_11 (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_12
 void
 stream_kernel_12 (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_13
+void
+stream_kernel_13 (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
@@ -442,6 +453,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #elif defined(STREAM_KERNEL_12)
   stream_kernel_12(number_stream_elements, alpha, multiply_stream);
+
+#elif defined(STREAM_KERNEL_13)
+  stream_kernel_13(number_stream_elements, alpha, multiply_stream);
 
 #elif defined(POINTER_CHASE)
 
@@ -1190,6 +1204,17 @@ spamm_multiply_node (const struct matrix_node_t *A_node,
     B_stream[*index] = B_node->block_dense;
     C_stream[*index] = C_node->block_dense;
 
+#ifdef STREAM_KERNEL_13
+    stream[*index].mask[0] = 1;
+    stream[*index].mask[1] = 1;
+    stream[*index].mask[2] = 1;
+    stream[*index].mask[3] = 1;
+    stream[*index].mask[4] = 1;
+    stream[*index].mask[5] = 1;
+    stream[*index].mask[6] = 1;
+    stream[*index].mask[7] = 1;
+#endif
+
     (*index)++;
   }
 
@@ -1670,6 +1695,9 @@ main (int argc, char **argv)
 
 #elif defined(STREAM_KERNEL_12)
   printf("using stream_kernel_12\n");
+
+#elif defined(STREAM_KERNEL_13)
+  printf("using stream_kernel_13\n");
 
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
