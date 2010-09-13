@@ -36,7 +36,8 @@
 //#define STREAM_KERNEL_10
 //#define STREAM_KERNEL_11
 //#define STREAM_KERNEL_12
-#define STREAM_KERNEL_13
+//#define STREAM_KERNEL_13
+#define STREAM_KERNEL_14
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
@@ -96,7 +97,7 @@ struct multiply_stream_t
   float *A_block;
   float *B_block;
   float *C_block;
-#ifdef STREAM_KERNEL_13
+#if defined(STREAM_KERNEL_13) || defined(STREAM_KERNEL_14)
   char mask[8];
 #endif
 };
@@ -203,6 +204,13 @@ stream_kernel_12 (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_13
 void
 stream_kernel_13 (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_14
+void
+stream_kernel_14_SSE_intrinsics (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
@@ -456,6 +464,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #elif defined(STREAM_KERNEL_13)
   stream_kernel_13(number_stream_elements, alpha, multiply_stream);
+
+#elif defined(STREAM_KERNEL_14)
+  stream_kernel_14_SSE_intrinsics(number_stream_elements, alpha, multiply_stream);
 
 #elif defined(POINTER_CHASE)
 
@@ -1204,7 +1215,7 @@ spamm_multiply_node (const struct matrix_node_t *A_node,
     B_stream[*index] = B_node->block_dense;
     C_stream[*index] = C_node->block_dense;
 
-#ifdef STREAM_KERNEL_13
+#if defined (STREAM_KERNEL_13) || defined(STREAM_KERNEL_14)
     stream[*index].mask[0] = 1;
     stream[*index].mask[1] = 1;
     stream[*index].mask[2] = 1;
@@ -1698,6 +1709,9 @@ main (int argc, char **argv)
 
 #elif defined(STREAM_KERNEL_13)
   printf("using stream_kernel_13\n");
+
+#elif defined(STREAM_KERNEL_14)
+  printf("using stream_kernel_14\n");
 
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
@@ -2716,8 +2730,10 @@ main (int argc, char **argv)
 
   if (print)
   {
-    printf("C =\n");
+    printf("result: C =\n");
     print_matrix(N, C);
+    printf("result: C_spamm =\n");
+    spamm_print(C_spamm);
   }
 
   if (verify)
