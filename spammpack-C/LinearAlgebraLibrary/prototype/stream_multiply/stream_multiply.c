@@ -37,9 +37,9 @@
 //#define STREAM_KERNEL_11
 //#define STREAM_KERNEL_12
 //#define STREAM_KERNEL_13
-#define STREAM_KERNEL_14
+//#define STREAM_KERNEL_14
 //#define POINTER_CHASE
-//#define C_KERNEL
+#define C_KERNEL
 //#define NAIVE_KERNEL
 
 #define STORE_DILATED_BLOCK
@@ -512,8 +512,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 //#define READAHEAD 10
 //#define C_KERNEL_VERSION_1
-#define C_KERNEL_VERSION_2
+//#define C_KERNEL_VERSION_2
 //#define C_KERNEL_VERSION_3
+#define C_KERNEL_VERSION_4
 
 #if defined(C_KERNEL_VERSION_1)
   short i;
@@ -773,6 +774,96 @@ stream_multiply (const unsigned long long number_stream_elements,
 
   /* Restore old rounding mode. */
   _mm_setcsr(old_xcsr);
+#elif defined(C_KERNEL_VERSION_4)
+  short i;
+  unsigned long long stream_index;
+  float *restrict A, *restrict B, *restrict C;
+
+  __m128 A_element_11, A_element_12, A_element_13, A_element_14;
+  __m128 A_element_21, A_element_22, A_element_23, A_element_24;
+  __m128 A_element_31, A_element_32, A_element_33, A_element_34;
+  __m128 A_element_41, A_element_42, A_element_43, A_element_44;
+
+  __m128 B_row_1, B_row_2, B_row_3, B_row_4;
+  __m128 C_row_1, C_row_2, C_row_3, C_row_4;
+
+  __m128 alpha_row;
+
+  /* Load alpha. */
+  alpha_row = _mm_set1_ps(alpha);
+
+  for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
+  {
+#ifdef READAHEAD
+    if (stream_index < number_stream_elements-READAHEAD)
+    {
+      _mm_prefetch((void*) multiply_stream[stream_index+READAHEAD].A_block, _MM_HINT_T0);
+      _mm_prefetch((void*) multiply_stream[stream_index+READAHEAD].B_block, _MM_HINT_T0);
+      _mm_prefetch((void*) multiply_stream[stream_index+READAHEAD].C_block, _MM_HINT_T0);
+    }
+#endif
+
+    A = multiply_stream[stream_index].A_block;
+    B = multiply_stream[stream_index].B_block;
+    C = multiply_stream[stream_index].C_block;
+
+    A_element_11 = _mm_load_ps(&A[(0*4+0)*4]);
+    A_element_12 = _mm_load_ps(&A[(0*4+1)*4]);
+    A_element_13 = _mm_load_ps(&A[(0*4+2)*4]);
+    A_element_14 = _mm_load_ps(&A[(0*4+3)*4]);
+
+    A_element_21 = _mm_load_ps(&A[(1*4+0)*4]);
+    A_element_22 = _mm_load_ps(&A[(1*4+1)*4]);
+    A_element_23 = _mm_load_ps(&A[(1*4+2)*4]);
+    A_element_24 = _mm_load_ps(&A[(1*4+3)*4]);
+
+    A_element_31 = _mm_load_ps(&A[(2*4+0)*4]);
+    A_element_32 = _mm_load_ps(&A[(2*4+1)*4]);
+    A_element_33 = _mm_load_ps(&A[(2*4+2)*4]);
+    A_element_34 = _mm_load_ps(&A[(2*4+3)*4]);
+
+    A_element_41 = _mm_load_ps(&A[(3*4+0)*4]);
+    A_element_42 = _mm_load_ps(&A[(3*4+1)*4]);
+    A_element_43 = _mm_load_ps(&A[(3*4+2)*4]);
+    A_element_44 = _mm_load_ps(&A[(3*4+3)*4]);
+
+    B_row_1 = _mm_load_ps(&B[0*4]);
+    B_row_2 = _mm_load_ps(&B[1*4]);
+    B_row_3 = _mm_load_ps(&B[2*4]);
+    B_row_4 = _mm_load_ps(&B[3*4]);
+
+    C_row_1 = _mm_mul_ps(A_element_11, B_row_1);
+    C_row_1 = _mm_add_ps(_mm_mul_ps(A_element_12, B_row_2), C_row_1);
+    C_row_1 = _mm_add_ps(_mm_mul_ps(A_element_13, B_row_3), C_row_1);
+    C_row_1 = _mm_add_ps(_mm_mul_ps(A_element_14, B_row_4), C_row_1);
+    C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
+    C_row_1 = _mm_add_ps(_mm_load_ps(&C[0*4]), C_row_1);
+    _mm_store_ps(&C[0*4], C_row_1);
+
+    C_row_2 = _mm_mul_ps(A_element_21, B_row_1);
+    C_row_2 = _mm_add_ps(_mm_mul_ps(A_element_22, B_row_2), C_row_2);
+    C_row_2 = _mm_add_ps(_mm_mul_ps(A_element_23, B_row_3), C_row_2);
+    C_row_2 = _mm_add_ps(_mm_mul_ps(A_element_24, B_row_4), C_row_2);
+    C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
+    C_row_2 = _mm_add_ps(_mm_load_ps(&C[1*4]), C_row_2);
+    _mm_store_ps(&C[1*4], C_row_2);
+
+    C_row_3 = _mm_mul_ps(A_element_31, B_row_1);
+    C_row_3 = _mm_add_ps(_mm_mul_ps(A_element_32, B_row_2), C_row_3);
+    C_row_3 = _mm_add_ps(_mm_mul_ps(A_element_33, B_row_3), C_row_3);
+    C_row_3 = _mm_add_ps(_mm_mul_ps(A_element_34, B_row_4), C_row_3);
+    C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
+    C_row_3 = _mm_add_ps(_mm_load_ps(&C[2*4]), C_row_3);
+    _mm_store_ps(&C[2*4], C_row_3);
+
+    C_row_4 = _mm_mul_ps(A_element_41, B_row_1);
+    C_row_4 = _mm_add_ps(_mm_mul_ps(A_element_42, B_row_2), C_row_4);
+    C_row_4 = _mm_add_ps(_mm_mul_ps(A_element_43, B_row_3), C_row_4);
+    C_row_4 = _mm_add_ps(_mm_mul_ps(A_element_44, B_row_4), C_row_4);
+    C_row_4 = _mm_mul_ps(alpha_row, C_row_4);
+    C_row_4 = _mm_add_ps(_mm_load_ps(&C[3*4]), C_row_4);
+    _mm_store_ps(&C[3*4], C_row_4);
+  }
 #endif
 
 #elif defined(NAIVE_KERNEL)
