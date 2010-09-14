@@ -511,10 +511,10 @@ stream_multiply (const unsigned long long number_stream_elements,
 #elif defined(C_KERNEL)
 
 //#define READAHEAD 10
-//#define C_KERNEL_VERSION_1
+#define C_KERNEL_VERSION_1
 //#define C_KERNEL_VERSION_2
 //#define C_KERNEL_VERSION_3
-#define C_KERNEL_VERSION_4
+//#define C_KERNEL_VERSION_4
 
 #if defined(C_KERNEL_VERSION_1)
   short i;
