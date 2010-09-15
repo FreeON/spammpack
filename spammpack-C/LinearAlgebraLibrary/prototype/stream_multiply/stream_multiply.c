@@ -38,8 +38,9 @@
 //#define STREAM_KERNEL_12
 //#define STREAM_KERNEL_13
 //#define STREAM_KERNEL_14
+#define STREAM_KERNEL_15
 //#define POINTER_CHASE
-#define C_KERNEL
+//#define C_KERNEL
 //#define NAIVE_KERNEL
 
 #define STORE_DILATED_BLOCK
@@ -97,7 +98,7 @@ struct multiply_stream_t
   float *A_block;
   float *B_block;
   float *C_block;
-#if defined(STREAM_KERNEL_13) || defined(STREAM_KERNEL_14)
+#if defined(STREAM_KERNEL_13) || defined(STREAM_KERNEL_14) || defined(STREAM_KERNEL_15)
   char mask[8];
 #endif
 };
@@ -211,6 +212,13 @@ stream_kernel_13 (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_14
 void
 stream_kernel_14_SSE_intrinsics (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_15
+void
+stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
@@ -468,6 +476,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 #elif defined(STREAM_KERNEL_14)
   stream_kernel_14_SSE_intrinsics(number_stream_elements, alpha, multiply_stream);
 
+#elif defined(STREAM_KERNEL_15)
+  stream_kernel_15_SSE_intrinsics(number_stream_elements, alpha, multiply_stream);
+
 #elif defined(POINTER_CHASE)
 
 #define READAHEAD 20
@@ -511,10 +522,10 @@ stream_multiply (const unsigned long long number_stream_elements,
 #elif defined(C_KERNEL)
 
 //#define READAHEAD 10
-#define C_KERNEL_VERSION_1
+//#define C_KERNEL_VERSION_1
 //#define C_KERNEL_VERSION_2
 //#define C_KERNEL_VERSION_3
-//#define C_KERNEL_VERSION_4
+#define C_KERNEL_VERSION_4
 
 #if defined(C_KERNEL_VERSION_1)
   short i;
@@ -1306,7 +1317,7 @@ spamm_multiply_node (const struct matrix_node_t *A_node,
     B_stream[*index] = B_node->block_dense;
     C_stream[*index] = C_node->block_dense;
 
-#if defined (STREAM_KERNEL_13) || defined(STREAM_KERNEL_14)
+#if defined (STREAM_KERNEL_13) || defined(STREAM_KERNEL_14) || defined(STREAM_KERNEL_15)
     stream[*index].mask[0] = 1;
     stream[*index].mask[1] = 1;
     stream[*index].mask[2] = 1;
@@ -1803,6 +1814,9 @@ main (int argc, char **argv)
 
 #elif defined(STREAM_KERNEL_14)
   printf("using stream_kernel_14\n");
+
+#elif defined(STREAM_KERNEL_15)
+  printf("using stream_kernel_15\n");
 
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
