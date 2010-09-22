@@ -35,7 +35,7 @@ MODULE SpAMM_TYPES
   INTEGER, PARAMETER :: INT8=SELECTED_INT_KIND(18) !--Integer*8
   !
   INTEGER, PARAMETER :: SINGLE=KIND(0.0)           !--Real*4
-  INTEGER, PARAMETER :: DOUBLE=KIND(0.00)          !--Real*8
+  INTEGER, PARAMETER :: DOUBLE=KIND(0.0)           !--Real*8
   REAL(DOUBLE),PARAMETER :: Zero=0D0,Half=5D-1,One=1D0,Two=2D0
   !
   TYPE QuTree
@@ -123,7 +123,7 @@ CONTAINS
        ALLOCATE(qA%Quad01)
        ALLOCATE(qA%Quad10)
        ALLOCATE(qA%Quad11)
-       !
+
        Tier=qA%Lev+1
        qA%Quad00%Lev=Tier
        qA%Quad01%Lev=Tier
@@ -305,29 +305,20 @@ CONTAINS
     REAL(DOUBLE) :: trc
     INTEGER :: I
 
-!    WRITE(*,*)'TRACE , Lev =',qA%Lev,' Num = ',qA%Num,ASSOCIATED(qA%Quad00),ASSOCIATED(qA%Quad11)
-
     IF(qA%Siz==SpAMM_BLOCK_SIZE)THEN
        trc=Zero
        IF(.NOT.ALLOCATED(qA%Blok))RETURN
        DO I=1,SpAMM_BLOCK_SIZE
           trc=trc+qA%Blok(I,I)
        ENDDO
-!       write(*,*)'Num = ',qA%Num,'Bx = ',qA%Box(1,1),' trc = ',trc
-    ELSEIF(.NOT.(ASSOCIATED(qA%Quad00).AND.ASSOCIATED(qA%Quad11)))THEN
+    ELSEIF(.NOT.ASSOCIATED(qA%Quad00).AND..NOT.ASSOCIATED(qA%Quad11))THEN
        Trc=Zero
-       WRITE(*,*)' Z '
    ELSEIF(.NOT.ASSOCIATED(qA%Quad11))THEN
-!       WRITE(*,*)' 00 ',ASSOCIATED(qA%Quad00)
-!       WRITE(*,*)' 00 ',ASSOCIATED(qA%Quad00),ASSOCIATED(qA%Quad11)
        trc=Trace_qutree(qA%Quad00)
-!       WRITE(*,*)' 00 ',trc
     ELSEIF(.NOT.ASSOCIATED(qA%Quad00))THEN
        trc=Trace_qutree(qA%Quad11)
-!       WRITE(*,*)' 11 ',trc
     ELSE
        trc=Trace_qutree(qA%Quad00)+Trace_qutree(qA%Quad11)
-!       WRITE(*,*)' 00+11 ',trc
     ENDIF
   END FUNCTION Trace_qutree
   !=================================================================
@@ -346,7 +337,6 @@ CONTAINS
        CALL Filter_qutree(qA%Quad11,tau)
     ENDIF
   END SUBROUTINE Filter_qutree
-
   !=================================================================
   ! QuTree add routines: C=A+B
   !=================================================================
@@ -561,6 +551,20 @@ CONTAINS
     ENDIF
   END FUNCTION SpAMM_NormReduce
 
+  FUNCTION NormReduce_dns(A) RESULT(norm)
+
+    REAL(DOUBLE), DIMENSION(:,:) :: A
+    REAL(DOUBLE) :: norm
+    INTEGER :: I,J
+    norm=zero
+    DO I=1,SIZE(A,1)
+       DO J=1,SIZE(A,2)
+          norm=norm+A(I,J)**2
+       ENDDO
+    ENDDO
+    norm=SQRT(norm)
+  END FUNCTION NormReduce_dns
+
   RECURSIVE SUBROUTINE SpAMM_Multiply(qC,qA,qB,count)
     IMPLICIT NONE
     TYPE(QuTree), POINTER :: qC,qA,qB
@@ -613,7 +617,6 @@ CONTAINS
     trc=Zero
     DO I=1,SIZE(A,1)
        trc=trc+A(I,I)
-       !       WRITE(*,*)I,' TRACE ',A(I,I)
     ENDDO
   END FUNCTION Trace_dns
 
@@ -622,9 +625,10 @@ CONTAINS
     REAL(DOUBLE) :: Norm, CR1, CR2, TrP, TrP2,    TrdP,TrdP2
     INTEGER      :: I,  II,J
 
-    INTEGER, PARAMETER:: NN=8
+    INTEGER, PARAMETER:: NN=1024
     REAL(DOUBLE),DIMENSION(NN,NN) :: dP,dP2,dTmp1, dTmp2,dP2b
     !-------------------------------------------------------------------------------
+
     dP=Quad2Dense(P)
 
     IF (I.EQ.1) THEN
@@ -636,7 +640,9 @@ CONTAINS
        ENDIF
     ENDIF
 
+    WRITE(*,*)' SpAMM SpAMM SpAMM SpAMM SpAMM SpAMM '
     CALL Multiply(P,P,P2)             ! The only multiplication is a square
+    WRITE(*,*)' SpAMM SpAMM SpAMM SpAMM SpAMM SpAMM '
 
     dP2=MATMUL(dP,dP)
     dP2b=Quad2Dense(P2)
@@ -669,7 +675,7 @@ CONTAINS
     CR2 = ABS(2.D0*TrP - TrP2 - Norm) ! CR2 = Occupation error criteria
 
     WRITE(*,33)I,NORM,TrP,SpAMM_multiplies/SpAMM_dimension**3
-33  FORMAT(I4,", N =",F8.5,", Tr(P)=",F8.5,", O(N)/N^3 = ",F8.5)
+33  FORMAT(I4,", N =",F12.5,", Tr(P)=",F12.5,", O(N)/N^3 = ",F8.5)
 
     IF (CR1 < CR2) THEN               ! Too many states
 
@@ -790,6 +796,7 @@ PROGRAM SpAMM_TEST
   A=Zero
   A(1:N_OLD,1:N_OLD)=A_NOPADDING(1:N_OLD,1:N_OLD)
   qP=>Dense2Quad(A)
+!  CALL Print_quad(qP)
   !--------------------------------------------------
   DEALLOCATE(A)
   DEALLOCATE(A_NOPADDING)
@@ -799,7 +806,7 @@ PROGRAM SpAMM_TEST
   CALL NewQuNode(qTmp1,init=.TRUE.)
   CALL NewQuNode(qTmp2,init=.TRUE.)
   !
-
+!! BETA CAROTENE EXAMPLE
 !!$ ./a.out bc  bc 256  296 1D-7
 !!$BLOCK_SIZE=1
 !!$1D-4, Tr(P)=148.00410675, O(N)/N^3 =  0.03703, TrE =   -453.64326697675500
@@ -807,7 +814,6 @@ PROGRAM SpAMM_TEST
 !!$1D-7, Tr(P)=148.00003758, O(N)/N^3 =  0.34967, TrE =   -453.48904088853374
 !!$1D-8  Tr(P)=148.00000463, O(N)/N^3 =  0.52270, TrE =   -453.48864186234346
 !!$1D-10 Tr(P)=148.00000006, O(N)/N^3 =  0.81716, TrE =   -453.48859793980563
-
 !!$
 !!$BLOCK_SIZE=2 (DOUBLE)
 !!$1D-4, Tr(P)=147.99964372, O(N)/N^3 =  0.11211, TrE =   -453.53013549760510
@@ -826,6 +832,19 @@ PROGRAM SpAMM_TEST
 
 !!$BLOCK_SIZE=256
 !!$      Tr(P)=148.00000000, O(N)/N^3 =  1.00000, TrE =   -453.48859746697627
+!!
+!! 4,3 160 ATOM NANOTUBE EXAMPLE (HF/STO-2G)
+!! ./a.out tube_4_3__160_Z_18363_Geom#1_Base#2_Clone#1 744 890 1D-4
+!!$BLOCK_SIZE=2 (DOUBLE)
+!! 1D-4, Tr(P)=444.99287617, O(N)/N^3 =  0.02251, TrE =   -1738.7744315310249
+!! 1D-5, Tr(P)=444.99706812, O(N)/N^3 =  0.07218, TrE =   -1738.6751392952985
+!! 1D-6  Tr(P)=445.00047176, O(N)/N^3 =  0.14222, TrE =   -1738.6525685266417
+!! 1D-7, Tr(P)=444.99997010, O(N)/N^3 =  0.22885, TrE =   -1738.6515660877203
+!! 1D-8, Tr(P)=445.00000412, O(N)/N^3 =  0.29912, TrE =   -1738.6515677903926
+!!$BLOCK_SIZE=2 (SINGLE)
+!! 1D-8, Tr(P)=445.0000610,    O(/N^3 =  0.12500, TrE =   -1738.6519   << .125 vs .299 diff in computing the norm?
+!!$BLOCK_SIZE=1024 (DOUBLE)
+!!      Tr(P)=445.00000000, O(N)/N^3 =  1.00000,  TrE =   -1738.6515695910239
 
 
   Occ0 = 0.D0
