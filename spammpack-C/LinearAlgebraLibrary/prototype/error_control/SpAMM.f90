@@ -35,7 +35,7 @@ MODULE SpAMM_TYPES
   INTEGER, PARAMETER :: INT8=SELECTED_INT_KIND(18) !--Integer*8
   !
   INTEGER, PARAMETER :: SINGLE=KIND(0.0)           !--Real*4
-  INTEGER, PARAMETER :: DOUBLE=KIND(0.D0)          !--Real*8
+  INTEGER, PARAMETER :: DOUBLE=KIND(0.00)          !--Real*8
   REAL(DOUBLE),PARAMETER :: Zero=0D0,Half=5D-1,One=1D0,Two=2D0
   !
   TYPE QuTree
@@ -60,7 +60,7 @@ MODULE SpAMM_TYPES
   REAL(DOUBLE)       :: SpAMM_tolerance, SpAMM_multiplies, SpAMM_dimension
   INTEGER            :: SpAMM_tiles, SpAMM_levels, SpAMM_quadcount
   TYPE(SpAMM_cubes),POINTER :: SpAMM_stream
-  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE=256
+  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE=2
   !----------------------------------------------------------------
   !===============================================================================
   !  Interface blocks for generic linear algebra routines
@@ -807,13 +807,23 @@ PROGRAM SpAMM_TEST
 !!$1D-7, Tr(P)=148.00003758, O(N)/N^3 =  0.34967, TrE =   -453.48904088853374
 !!$1D-8  Tr(P)=148.00000463, O(N)/N^3 =  0.52270, TrE =   -453.48864186234346
 !!$1D-10 Tr(P)=148.00000006, O(N)/N^3 =  0.81716, TrE =   -453.48859793980563
-!!$BLOCK_SIZE=2
+
+!!$
+!!$BLOCK_SIZE=2 (DOUBLE)
 !!$1D-4, Tr(P)=147.99964372, O(N)/N^3 =  0.11211, TrE =   -453.53013549760510
 !!$1D-5, Tr(P)=148.00000991, O(N)/N^3 =  0.24183, TrE =   -453.49417884535342
 !!$1D-6, Tr(P)=148.00000677, O(N)/N^3 =  0.42200, TrE =   -453.48909106857525
 !!$1D-7, Tr(P)=148.00000486, O(N)/N^3 =  0.61572, TrE =   -453.48864613262896
 !!$1D-8, Tr(P)=148.00000090, O(N)/N^3 =  0.77632, TrE =   -453.48860167043756
 !!$1D-10,Tr(P)=148.00000000, O(N)/N^3 =  0.95261, TrE =   -453.48859749814483
+!!$BLOCK_SIZE=2 (SINGLE)
+!!$1D-4, Tr(P)=147.99964905, O(N)/N^3 =  0.11212, TrE =   -453.53015
+!!$1D-5, Tr(P)=148.00001526, O(N)/N^3 =  0.24183, TrE =   -453.49417
+!!$1D-6, Tr(P)=148.00000000, O(N)/N^3 =  0.42211, TrE =   -453.48907
+!!$1D-7, Tr(P)=148.00001526, O(N)/N^3 =  0.61580, TrE =   -453.48868
+!!$1D-8, Tr(P)=148.00001526, O(N)/N^3 =  0.77637, TrE =   -453.48865
+!!$1D-10,Tr(P)=148.00000000, O(N)/N^3 =  0.95261, TrE =   -453.48865
+
 !!$BLOCK_SIZE=256
 !!$      Tr(P)=148.00000000, O(N)/N^3 =  1.00000, TrE =   -453.48859746697627
 
@@ -823,7 +833,7 @@ PROGRAM SpAMM_TEST
   Occ2 = 0.D0
   Occ3 = 0.D0
   DO I=1,40
-    CALL TC2(qP,qTmp1,qTmp2,Half*DBLE(NEl),Occ0,I)
+    CALL TC2(qP,qTmp1,qTmp2,Half*FLOAT(NEl),Occ0,I)
     Occ3 = Occ2
     Occ2 = Occ1
     Occ1 = Occ0
