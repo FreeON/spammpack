@@ -59,13 +59,14 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
     C = multiply_stream[stream_index].C_block;
     mask = multiply_stream[stream_index].mask;
 
-    C_row_1 = _mm_setzero_ps();
-    C_row_2 = _mm_setzero_ps();
-    C_row_3 = _mm_setzero_ps();
-    C_row_4 = _mm_setzero_ps();
-
-    if (mask[0]) /* A(1,1)*B(1,1) = C(1,1). */
+    if (mask[0] & mask[1])
     {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(1,1)*B(1,1) = C(1,1). */
       C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_11]), _mm_load_ps(&B[3*4+B_OFFSET_11])),
           _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_11]), _mm_load_ps(&B[2*4+B_OFFSET_11])),
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_11]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
@@ -89,10 +90,8 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_11]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
               _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_11]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
                 C_row_4))));
-    }
 
-    if (mask[1]) /* A(1,2)*B(2,1) = C(1,1). */
-    {
+      /* A(1,2)*B(2,1) = C(1,1). */
       C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_12]), _mm_load_ps(&B[3*4+B_OFFSET_21])),
           _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_12]), _mm_load_ps(&B[2*4+B_OFFSET_21])),
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_12]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
@@ -116,10 +115,7 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_12]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
               _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_12]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
                 C_row_4))));
-    }
 
-    if (mask[0] | mask[1])
-    {
       C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
       C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
       C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
@@ -136,13 +132,110 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
       _mm_store_ps(&C[3*4+C_OFFSET_11], C_row_4);
     }
 
-    C_row_1 = _mm_setzero_ps();
-    C_row_2 = _mm_setzero_ps();
-    C_row_3 = _mm_setzero_ps();
-    C_row_4 = _mm_setzero_ps();
-
-    if (mask[2]) /* A(2,1)*B(1,1) = C(2,1). */
+    else if (mask[0])
     {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(1,1)*B(1,1) = C(1,1). */
+      C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_11]), _mm_load_ps(&B[3*4+B_OFFSET_11])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_11]), _mm_load_ps(&B[2*4+B_OFFSET_11])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_11]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+0)*4+A_OFFSET_11]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
+                C_row_1))));
+
+      C_row_2 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+3)*4]+A_OFFSET_11), _mm_load_ps(&B[3*4+B_OFFSET_11])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+2)*4]+A_OFFSET_11), _mm_load_ps(&B[2*4+B_OFFSET_11])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+1)*4+A_OFFSET_11]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+0)*4+A_OFFSET_11]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
+                C_row_2))));
+
+      C_row_3 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+3)*4+A_OFFSET_11]), _mm_load_ps(&B[3*4+B_OFFSET_11])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+2)*4+A_OFFSET_11]), _mm_load_ps(&B[2*4+B_OFFSET_11])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+1)*4+A_OFFSET_11]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+0)*4+A_OFFSET_11]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
+                C_row_3))));
+
+      C_row_4 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+3)*4+A_OFFSET_11]), _mm_load_ps(&B[3*4+B_OFFSET_11])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+2)*4+A_OFFSET_11]), _mm_load_ps(&B[2*4+B_OFFSET_11])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_11]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_11]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
+                C_row_4))));
+
+      C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
+      C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
+      C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
+      C_row_4 = _mm_mul_ps(alpha_row, C_row_4);
+
+      C_row_1 = _mm_add_ps(_mm_load_ps(&C[0*4+C_OFFSET_11]), C_row_1);
+      C_row_2 = _mm_add_ps(_mm_load_ps(&C[1*4+C_OFFSET_11]), C_row_2);
+      C_row_3 = _mm_add_ps(_mm_load_ps(&C[2*4+C_OFFSET_11]), C_row_3);
+      C_row_4 = _mm_add_ps(_mm_load_ps(&C[3*4+C_OFFSET_11]), C_row_4);
+
+      _mm_store_ps(&C[0*4+C_OFFSET_11], C_row_1);
+      _mm_store_ps(&C[1*4+C_OFFSET_11], C_row_2);
+      _mm_store_ps(&C[2*4+C_OFFSET_11], C_row_3);
+      _mm_store_ps(&C[3*4+C_OFFSET_11], C_row_4);
+    }
+
+    else if (mask[1])
+    {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(1,2)*B(2,1) = C(1,1). */
+      C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_12]), _mm_load_ps(&B[3*4+B_OFFSET_21])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_12]), _mm_load_ps(&B[2*4+B_OFFSET_21])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_12]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+0)*4+A_OFFSET_12]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
+                C_row_1))));
+
+      C_row_2 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+3)*4]+A_OFFSET_12), _mm_load_ps(&B[3*4+B_OFFSET_21])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+2)*4]+A_OFFSET_12), _mm_load_ps(&B[2*4+B_OFFSET_21])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+1)*4+A_OFFSET_12]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+0)*4+A_OFFSET_12]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
+                C_row_2))));
+
+      C_row_3 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+3)*4+A_OFFSET_12]), _mm_load_ps(&B[3*4+B_OFFSET_21])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+2)*4+A_OFFSET_12]), _mm_load_ps(&B[2*4+B_OFFSET_21])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+1)*4+A_OFFSET_12]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+0)*4+A_OFFSET_12]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
+                C_row_3))));
+
+      C_row_4 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+3)*4+A_OFFSET_12]), _mm_load_ps(&B[3*4+B_OFFSET_21])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+2)*4+A_OFFSET_12]), _mm_load_ps(&B[2*4+B_OFFSET_21])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_12]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_12]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
+                C_row_4))));
+
+      C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
+      C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
+      C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
+      C_row_4 = _mm_mul_ps(alpha_row, C_row_4);
+
+      C_row_1 = _mm_add_ps(_mm_load_ps(&C[0*4+C_OFFSET_11]), C_row_1);
+      C_row_2 = _mm_add_ps(_mm_load_ps(&C[1*4+C_OFFSET_11]), C_row_2);
+      C_row_3 = _mm_add_ps(_mm_load_ps(&C[2*4+C_OFFSET_11]), C_row_3);
+      C_row_4 = _mm_add_ps(_mm_load_ps(&C[3*4+C_OFFSET_11]), C_row_4);
+
+      _mm_store_ps(&C[0*4+C_OFFSET_11], C_row_1);
+      _mm_store_ps(&C[1*4+C_OFFSET_11], C_row_2);
+      _mm_store_ps(&C[2*4+C_OFFSET_11], C_row_3);
+      _mm_store_ps(&C[3*4+C_OFFSET_11], C_row_4);
+    }
+
+    if (mask[2] & mask[3])
+    {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(2,1)*B(1,1) = C(2,1). */
       C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_21]), _mm_load_ps(&B[3*4+B_OFFSET_11])),
           _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_21]), _mm_load_ps(&B[2*4+B_OFFSET_11])),
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
@@ -166,10 +259,8 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
               _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
                 C_row_4))));
-    }
 
-    if (mask[3]) /* A(2,2)*B(2,1) = C(2,1). */
-    {
+      /* A(2,2)*B(2,1) = C(2,1). */
       C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_22]), _mm_load_ps(&B[3*4+B_OFFSET_21])),
           _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_22]), _mm_load_ps(&B[2*4+B_OFFSET_21])),
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
@@ -193,10 +284,7 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
               _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
                 C_row_4))));
-    }
 
-    if (mask[2] | mask[3])
-    {
       C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
       C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
       C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
@@ -213,13 +301,110 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
       _mm_store_ps(&C[3*4+C_OFFSET_21], C_row_4);
     }
 
-    C_row_1 = _mm_setzero_ps();
-    C_row_2 = _mm_setzero_ps();
-    C_row_3 = _mm_setzero_ps();
-    C_row_4 = _mm_setzero_ps();
-
-    if (mask[4]) /* A(1,1)*B(1,2) = C(1,2). */
+    else if (mask[2])
     {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(2,1)*B(1,1) = C(2,1). */
+      C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_21]), _mm_load_ps(&B[3*4+B_OFFSET_11])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_21]), _mm_load_ps(&B[2*4+B_OFFSET_11])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
+                C_row_1))));
+
+      C_row_2 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+3)*4]+A_OFFSET_21), _mm_load_ps(&B[3*4+B_OFFSET_11])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+2)*4]+A_OFFSET_21), _mm_load_ps(&B[2*4+B_OFFSET_11])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
+                C_row_2))));
+
+      C_row_3 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+3)*4+A_OFFSET_21]), _mm_load_ps(&B[3*4+B_OFFSET_11])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+2)*4+A_OFFSET_21]), _mm_load_ps(&B[2*4+B_OFFSET_11])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
+                C_row_3))));
+
+      C_row_4 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+3)*4+A_OFFSET_21]), _mm_load_ps(&B[3*4+B_OFFSET_11])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+2)*4+A_OFFSET_21]), _mm_load_ps(&B[2*4+B_OFFSET_11])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_11])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_11])),
+                C_row_4))));
+
+      C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
+      C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
+      C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
+      C_row_4 = _mm_mul_ps(alpha_row, C_row_4);
+
+      C_row_1 = _mm_add_ps(_mm_load_ps(&C[0*4+C_OFFSET_21]), C_row_1);
+      C_row_2 = _mm_add_ps(_mm_load_ps(&C[1*4+C_OFFSET_21]), C_row_2);
+      C_row_3 = _mm_add_ps(_mm_load_ps(&C[2*4+C_OFFSET_21]), C_row_3);
+      C_row_4 = _mm_add_ps(_mm_load_ps(&C[3*4+C_OFFSET_21]), C_row_4);
+
+      _mm_store_ps(&C[0*4+C_OFFSET_21], C_row_1);
+      _mm_store_ps(&C[1*4+C_OFFSET_21], C_row_2);
+      _mm_store_ps(&C[2*4+C_OFFSET_21], C_row_3);
+      _mm_store_ps(&C[3*4+C_OFFSET_21], C_row_4);
+    }
+
+    else if (mask[3])
+    {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(2,2)*B(2,1) = C(2,1). */
+      C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_22]), _mm_load_ps(&B[3*4+B_OFFSET_21])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_22]), _mm_load_ps(&B[2*4+B_OFFSET_21])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
+                C_row_1))));
+
+      C_row_2 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+3)*4]+A_OFFSET_22), _mm_load_ps(&B[3*4+B_OFFSET_21])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+2)*4]+A_OFFSET_22), _mm_load_ps(&B[2*4+B_OFFSET_21])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
+                C_row_2))));
+
+      C_row_3 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+3)*4+A_OFFSET_22]), _mm_load_ps(&B[3*4+B_OFFSET_21])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+2)*4+A_OFFSET_22]), _mm_load_ps(&B[2*4+B_OFFSET_21])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
+                C_row_3))));
+
+      C_row_4 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+3)*4+A_OFFSET_22]), _mm_load_ps(&B[3*4+B_OFFSET_21])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+2)*4+A_OFFSET_22]), _mm_load_ps(&B[2*4+B_OFFSET_21])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_21])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_21])),
+                C_row_4))));
+
+      C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
+      C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
+      C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
+      C_row_4 = _mm_mul_ps(alpha_row, C_row_4);
+
+      C_row_1 = _mm_add_ps(_mm_load_ps(&C[0*4+C_OFFSET_21]), C_row_1);
+      C_row_2 = _mm_add_ps(_mm_load_ps(&C[1*4+C_OFFSET_21]), C_row_2);
+      C_row_3 = _mm_add_ps(_mm_load_ps(&C[2*4+C_OFFSET_21]), C_row_3);
+      C_row_4 = _mm_add_ps(_mm_load_ps(&C[3*4+C_OFFSET_21]), C_row_4);
+
+      _mm_store_ps(&C[0*4+C_OFFSET_21], C_row_1);
+      _mm_store_ps(&C[1*4+C_OFFSET_21], C_row_2);
+      _mm_store_ps(&C[2*4+C_OFFSET_21], C_row_3);
+      _mm_store_ps(&C[3*4+C_OFFSET_21], C_row_4);
+    }
+
+    if (mask[4] & mask[5])
+    {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(1,1)*B(1,2) = C(1,2). */
       C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_11]), _mm_load_ps(&B[3*4+B_OFFSET_12])),
           _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_11]), _mm_load_ps(&B[2*4+B_OFFSET_12])),
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_11]), _mm_load_ps(&B[1*4+B_OFFSET_12])),
@@ -243,10 +428,8 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_11]), _mm_load_ps(&B[1*4+B_OFFSET_12])),
               _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_11]), _mm_load_ps(&B[0*4+B_OFFSET_12])),
                 C_row_4))));
-    }
 
-    if (mask[5]) /* A(1,2)*B(2,2) = C(1,2). */
-    {
+      /* A(1,2)*B(2,2) = C(1,2). */
       C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_12]), _mm_load_ps(&B[3*4+B_OFFSET_22])),
           _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_12]), _mm_load_ps(&B[2*4+B_OFFSET_22])),
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_12]), _mm_load_ps(&B[1*4+B_OFFSET_22])),
@@ -270,10 +453,7 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_12]), _mm_load_ps(&B[1*4+B_OFFSET_22])),
               _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_12]), _mm_load_ps(&B[0*4+B_OFFSET_22])),
                 C_row_4))));
-    }
 
-    if (mask[4] | mask[5])
-    {
       C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
       C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
       C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
@@ -290,13 +470,14 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
       _mm_store_ps(&C[3*4+C_OFFSET_12], C_row_4);
     }
 
-    C_row_1 = _mm_setzero_ps();
-    C_row_2 = _mm_setzero_ps();
-    C_row_3 = _mm_setzero_ps();
-    C_row_4 = _mm_setzero_ps();
-
-    if (mask[6]) /* A(2,1)*B(1,2) = C(2,2). */
+    if (mask[6] & mask[7])
     {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(2,1)*B(1,2) = C(2,2). */
       C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_21]), _mm_load_ps(&B[3*4+B_OFFSET_12])),
           _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_21]), _mm_load_ps(&B[2*4+B_OFFSET_12])),
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_12])),
@@ -320,10 +501,8 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_12])),
               _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_12])),
                 C_row_4))));
-    }
 
-    if (mask[7]) /* A(2,2)*B(2,2) = C(2,2). */
-    {
+      /* A(2,2)*B(2,2) = C(2,2). */
       C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_22]), _mm_load_ps(&B[3*4+B_OFFSET_22])),
           _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_22]), _mm_load_ps(&B[2*4+B_OFFSET_22])),
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_22])),
@@ -347,10 +526,103 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
             _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_22])),
               _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_22])),
                 C_row_4))));
+
+      C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
+      C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
+      C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
+      C_row_4 = _mm_mul_ps(alpha_row, C_row_4);
+
+      C_row_1 = _mm_add_ps(_mm_load_ps(&C[0*4+C_OFFSET_22]), C_row_1);
+      C_row_2 = _mm_add_ps(_mm_load_ps(&C[1*4+C_OFFSET_22]), C_row_2);
+      C_row_3 = _mm_add_ps(_mm_load_ps(&C[2*4+C_OFFSET_22]), C_row_3);
+      C_row_4 = _mm_add_ps(_mm_load_ps(&C[3*4+C_OFFSET_22]), C_row_4);
+
+      _mm_store_ps(&C[0*4+C_OFFSET_22], C_row_1);
+      _mm_store_ps(&C[1*4+C_OFFSET_22], C_row_2);
+      _mm_store_ps(&C[2*4+C_OFFSET_22], C_row_3);
+      _mm_store_ps(&C[3*4+C_OFFSET_22], C_row_4);
     }
 
-    if (mask[6] | mask[7])
+    else if (mask[6])
     {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(2,1)*B(1,2) = C(2,2). */
+      C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_21]), _mm_load_ps(&B[3*4+B_OFFSET_12])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_21]), _mm_load_ps(&B[2*4+B_OFFSET_12])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_12])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_12])),
+                C_row_1))));
+
+      C_row_2 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+3)*4]+A_OFFSET_21), _mm_load_ps(&B[3*4+B_OFFSET_12])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+2)*4]+A_OFFSET_21), _mm_load_ps(&B[2*4+B_OFFSET_12])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_12])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_12])),
+                C_row_2))));
+
+      C_row_3 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+3)*4+A_OFFSET_21]), _mm_load_ps(&B[3*4+B_OFFSET_12])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+2)*4+A_OFFSET_21]), _mm_load_ps(&B[2*4+B_OFFSET_12])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_12])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_12])),
+                C_row_3))));
+
+      C_row_4 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+3)*4+A_OFFSET_21]), _mm_load_ps(&B[3*4+B_OFFSET_12])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+2)*4+A_OFFSET_21]), _mm_load_ps(&B[2*4+B_OFFSET_12])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_21]), _mm_load_ps(&B[1*4+B_OFFSET_12])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_21]), _mm_load_ps(&B[0*4+B_OFFSET_12])),
+                C_row_4))));
+
+      C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
+      C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
+      C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
+      C_row_4 = _mm_mul_ps(alpha_row, C_row_4);
+
+      C_row_1 = _mm_add_ps(_mm_load_ps(&C[0*4+C_OFFSET_22]), C_row_1);
+      C_row_2 = _mm_add_ps(_mm_load_ps(&C[1*4+C_OFFSET_22]), C_row_2);
+      C_row_3 = _mm_add_ps(_mm_load_ps(&C[2*4+C_OFFSET_22]), C_row_3);
+      C_row_4 = _mm_add_ps(_mm_load_ps(&C[3*4+C_OFFSET_22]), C_row_4);
+
+      _mm_store_ps(&C[0*4+C_OFFSET_22], C_row_1);
+      _mm_store_ps(&C[1*4+C_OFFSET_22], C_row_2);
+      _mm_store_ps(&C[2*4+C_OFFSET_22], C_row_3);
+      _mm_store_ps(&C[3*4+C_OFFSET_22], C_row_4);
+    }
+
+    else if (mask[7])
+    {
+      C_row_1 = _mm_setzero_ps();
+      C_row_2 = _mm_setzero_ps();
+      C_row_3 = _mm_setzero_ps();
+      C_row_4 = _mm_setzero_ps();
+
+      /* A(2,2)*B(2,2) = C(2,2). */
+      C_row_1 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+3)*4+A_OFFSET_22]), _mm_load_ps(&B[3*4+B_OFFSET_22])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+2)*4+A_OFFSET_22]), _mm_load_ps(&B[2*4+B_OFFSET_22])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_22])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(0*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_22])),
+                C_row_1))));
+
+      C_row_2 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+3)*4]+A_OFFSET_22), _mm_load_ps(&B[3*4+B_OFFSET_22])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+2)*4]+A_OFFSET_22), _mm_load_ps(&B[2*4+B_OFFSET_22])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_22])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(1*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_22])),
+                C_row_2))));
+
+      C_row_3 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+3)*4+A_OFFSET_22]), _mm_load_ps(&B[3*4+B_OFFSET_22])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+2)*4+A_OFFSET_22]), _mm_load_ps(&B[2*4+B_OFFSET_22])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_22])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(2*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_22])),
+                C_row_3))));
+
+      C_row_4 = _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+3)*4+A_OFFSET_22]), _mm_load_ps(&B[3*4+B_OFFSET_22])),
+          _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+2)*4+A_OFFSET_22]), _mm_load_ps(&B[2*4+B_OFFSET_22])),
+            _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+1)*4+A_OFFSET_22]), _mm_load_ps(&B[1*4+B_OFFSET_22])),
+              _mm_add_ps(_mm_mul_ps(_mm_load_ps(&A[(3*4+0)*4+A_OFFSET_22]), _mm_load_ps(&B[0*4+B_OFFSET_22])),
+                C_row_4))));
+
       C_row_1 = _mm_mul_ps(alpha_row, C_row_1);
       C_row_2 = _mm_mul_ps(alpha_row, C_row_2);
       C_row_3 = _mm_mul_ps(alpha_row, C_row_3);
