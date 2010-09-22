@@ -38,7 +38,8 @@
 //#define STREAM_KERNEL_12
 //#define STREAM_KERNEL_13
 //#define STREAM_KERNEL_14
-#define STREAM_KERNEL_15
+//#define STREAM_KERNEL_15
+#define STREAM_KERNEL_16
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
@@ -98,7 +99,7 @@ struct multiply_stream_t
   float *A_block;
   float *B_block;
   float *C_block;
-#if defined(STREAM_KERNEL_13) || defined(STREAM_KERNEL_14) || defined(STREAM_KERNEL_15)
+#if defined(STREAM_KERNEL_13) || defined(STREAM_KERNEL_14) || defined(STREAM_KERNEL_15) || defined(STREAM_KERNEL_16)
   char mask[8];
 #endif
 };
@@ -219,6 +220,13 @@ stream_kernel_14_SSE_intrinsics (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_15
 void
 stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
+    float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_16
+void
+stream_kernel_16_SSE_intrinsics (const unsigned int number_stream_elements,
     float alpha,
     struct multiply_stream_t *multiply_stream);
 #endif
@@ -478,6 +486,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #elif defined(STREAM_KERNEL_15)
   stream_kernel_15_SSE_intrinsics(number_stream_elements, alpha, multiply_stream);
+
+#elif defined(STREAM_KERNEL_16)
+  stream_kernel_16_SSE_intrinsics(number_stream_elements, alpha, multiply_stream);
 
 #elif defined(POINTER_CHASE)
 
@@ -1317,7 +1328,7 @@ spamm_multiply_node (const struct matrix_node_t *A_node,
     B_stream[*index] = B_node->block_dense;
     C_stream[*index] = C_node->block_dense;
 
-#if defined (STREAM_KERNEL_13) || defined(STREAM_KERNEL_14) || defined(STREAM_KERNEL_15)
+#if defined (STREAM_KERNEL_13) || defined(STREAM_KERNEL_14) || defined(STREAM_KERNEL_15) || defined(STREAM_KERNEL_16)
     stream[*index].mask[0] = 1;
     stream[*index].mask[1] = 1;
     stream[*index].mask[2] = 1;
@@ -1428,6 +1439,47 @@ spamm_free (struct matrix_t **A)
 #endif
   free(*A);
   *A = NULL;
+}
+
+void
+print_usage (unsigned int N, unsigned int alignment, unsigned int long loops,
+    unsigned int N_only_A, unsigned int N_only_B, unsigned int N_only_C)
+{
+  printf("Usage:\n");
+  printf("\n");
+  printf("-h            This help\n");
+  printf("-N N          Use NxN matrices (default N = %u)\n", N);
+  printf("--align N     Align memory buffer on N byte boundary (default N = %u)\n", alignment);
+  printf("--loops N     Repeat each access test N times (default N = %llu)\n", loops);
+  printf("--verify      Verify result\n");
+  printf("--print       Print matrices\n");
+  printf("--no-random   Full matrices with index values as opposed to random\n");
+  printf("--sort        Sort stream\n");
+  printf("--only_A N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_A);
+  printf("--only_B N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_B);
+  printf("--only_C N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_C);
+  printf("--histogram   Calculate address distance histogram of blocks in stream\n");
+  printf("--seed N      Use N as the seed for rand() (default N = time())\n");
+#ifdef HAVE_PAPI
+  printf("--TOT_INS     Measure total instructions\n");
+  printf("--TOT_CYC     Measure total cycles\n");
+  printf("--RES_STL     Measure stalled cycles\n");
+  printf("--L1_ICM      Measure L1 instruction misses\n");
+  printf("--L1_DCM      Measure L1 data misses\n");
+  printf("--L1_LDM      Measure L1 data load misses\n");
+  printf("--L1_STM      Measure L1 data store misses\n");
+  printf("--L1_DCH      Measure L1 data hits\n");
+  printf("--L1_DCA      Measure L1 data accesses\n");
+  printf("--L2_ICM      Measure L2 instruction misses\n");
+  printf("--L2_DCM      Measure L2 data misses\n");
+  printf("--L2_LDM      Measure L2 data load misses\n");
+  printf("--L2_STM      Measure L2 data store misses\n");
+  printf("--L2_DCH      Measure L2 data hits\n");
+  printf("--L2_DCA      Measure L2 data accesses\n");
+  printf("--TLB_IM      Measure TLB instruction misses\n");
+  printf("--TLB_DM      Measure TLB data misses\n");
+  printf("--TLB_SD      Measure TLB shootdowns\n");
+#endif
 }
 
 int
@@ -1567,41 +1619,7 @@ main (int argc, char **argv)
     switch (parse)
     {
       case 'h':
-        printf("Usage:\n");
-        printf("\n");
-        printf("-h            This help\n");
-        printf("-N N          Use NxN matrices (default N = %u)\n", N);
-        printf("--align N     Align memory buffer on N byte boundary (default N = %u)\n", alignment);
-        printf("--loops N     Repeat each access test N times (default N = %llu)\n", loops);
-        printf("--verify      Verify result\n");
-        printf("--print       Print matrices\n");
-        printf("--no-random   Full matrices with index values as opposed to random\n");
-        printf("--sort        Sort stream\n");
-        printf("--only_A N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_A);
-        printf("--only_B N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_B);
-        printf("--only_C N    Map only N matrix blocks in stream A (default N = %u)\n", N_only_C);
-        printf("--histogram   Calculate address distance histogram of blocks in stream\n");
-        printf("--seed N      Use N as the seed for rand() (default N = time())\n");
-#ifdef HAVE_PAPI
-        printf("--TOT_INS     Measure total instructions\n");
-        printf("--TOT_CYC     Measure total cycles\n");
-        printf("--RES_STL     Measure stalled cycles\n");
-        printf("--L1_ICM      Measure L1 instruction misses\n");
-        printf("--L1_DCM      Measure L1 data misses\n");
-        printf("--L1_LDM      Measure L1 data load misses\n");
-        printf("--L1_STM      Measure L1 data store misses\n");
-        printf("--L1_DCH      Measure L1 data hits\n");
-        printf("--L1_DCA      Measure L1 data accesses\n");
-        printf("--L2_ICM      Measure L2 instruction misses\n");
-        printf("--L2_DCM      Measure L2 data misses\n");
-        printf("--L2_LDM      Measure L2 data load misses\n");
-        printf("--L2_STM      Measure L2 data store misses\n");
-        printf("--L2_DCH      Measure L2 data hits\n");
-        printf("--L2_DCA      Measure L2 data accesses\n");
-        printf("--TLB_IM      Measure TLB instruction misses\n");
-        printf("--TLB_DM      Measure TLB data misses\n");
-        printf("--TLB_SD      Measure TLB shootdowns\n");
-#endif
+        print_usage(N, alignment, loops, N_only_A, N_only_B, N_only_C);
         return 0;
         break;
 
@@ -1729,9 +1747,20 @@ main (int argc, char **argv)
 
       default:
         printf("unknown command line argument\n");
+        print_usage(N, alignment, loops, N_only_A, N_only_B, N_only_C);
         return -1;
         break;
     }
+  }
+
+  if (optind < argc) {
+    printf("non-option command line input: ");
+    while (optind < argc)
+    {
+      printf("%s ", argv[optind++]);
+    }
+    printf("\n");
+    exit(1);
   }
 
 #ifdef HAVE_PAPI
@@ -1817,6 +1846,9 @@ main (int argc, char **argv)
 
 #elif defined(STREAM_KERNEL_15)
   printf("using stream_kernel_15\n");
+
+#elif defined(STREAM_KERNEL_16)
+  printf("using stream_kernel_16\n");
 
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
@@ -2628,6 +2660,9 @@ main (int argc, char **argv)
 
   if (print)
   {
+    printf("C =\n");
+    print_matrix(N, C);
+
     printf("C (SpAMM) =\n");
     spamm_print(C_spamm);
   }
