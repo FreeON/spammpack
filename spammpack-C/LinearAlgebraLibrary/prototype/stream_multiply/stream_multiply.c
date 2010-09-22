@@ -39,7 +39,9 @@
 //#define STREAM_KERNEL_13
 //#define STREAM_KERNEL_14
 //#define STREAM_KERNEL_15
-#define STREAM_KERNEL_16
+//#define STREAM_KERNEL_16
+//#define STREAM_KERNEL_17
+#define STREAM_KERNEL_18
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
@@ -101,6 +103,10 @@ struct multiply_stream_t
   float *C_block;
 #if defined(STREAM_KERNEL_13) || defined(STREAM_KERNEL_14) || defined(STREAM_KERNEL_15) || defined(STREAM_KERNEL_16)
   char mask[8];
+#elif defined(STREAM_KERNEL_17)
+  float norm[8];
+#elif defined(STREAM_KERNEL_18)
+  float norm[32];
 #endif
 };
 
@@ -228,6 +234,22 @@ stream_kernel_15_SSE_intrinsics (const unsigned int number_stream_elements,
 void
 stream_kernel_16_SSE_intrinsics (const unsigned int number_stream_elements,
     float alpha,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_17
+void
+stream_kernel_17_SSE_intrinsics (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_18
+void
+stream_kernel_18_SSE_intrinsics (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
     struct multiply_stream_t *multiply_stream);
 #endif
 
@@ -489,6 +511,12 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #elif defined(STREAM_KERNEL_16)
   stream_kernel_16_SSE_intrinsics(number_stream_elements, alpha, multiply_stream);
+
+#elif defined(STREAM_KERNEL_17)
+  stream_kernel_17_SSE_intrinsics(number_stream_elements, alpha, 1e-18, multiply_stream);
+
+#elif defined(STREAM_KERNEL_18)
+  stream_kernel_18_SSE_intrinsics(number_stream_elements, alpha, 1e-18, multiply_stream);
 
 #elif defined(POINTER_CHASE)
 
@@ -1337,6 +1365,16 @@ spamm_multiply_node (const struct matrix_node_t *A_node,
     stream[*index].mask[5] = 1;
     stream[*index].mask[6] = 1;
     stream[*index].mask[7] = 1;
+#elif defined(STREAM_KERNEL_17)
+    for (i = 0; i < 8; i++)
+    {
+      stream[*index].norm[i] = rand()/(float) RAND_MAX;
+    }
+#elif defined(STREAM_KERNEL_18)
+    for (i = 0; i < 32; i++)
+    {
+      stream[*index].norm[i] = rand()/(float) RAND_MAX;
+    }
 #endif
 
     (*index)++;
@@ -1849,6 +1887,12 @@ main (int argc, char **argv)
 
 #elif defined(STREAM_KERNEL_16)
   printf("using stream_kernel_16\n");
+
+#elif defined(STREAM_KERNEL_17)
+  printf("using stream_kernel_17\n");
+
+#elif defined(STREAM_KERNEL_18)
+  printf("using stream_kernel_18\n");
 
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
