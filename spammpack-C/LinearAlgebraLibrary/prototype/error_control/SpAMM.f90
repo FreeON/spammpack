@@ -35,7 +35,7 @@ MODULE SpAMM_TYPES
   INTEGER, PARAMETER :: INT8=SELECTED_INT_KIND(18) !--Integer*8
   !
   INTEGER, PARAMETER :: SINGLE=KIND(0.0)           !--Real*4
-  INTEGER, PARAMETER :: DOUBLE=KIND(0.0)           !--Real*8
+  INTEGER, PARAMETER :: DOUBLE=KIND(0.0D0)           !--Real*8
   REAL(DOUBLE),PARAMETER :: Zero=0D0,Half=5D-1,One=1D0,Two=2D0
   !
   TYPE QuTree
@@ -57,10 +57,11 @@ MODULE SpAMM_TYPES
   END TYPE SpAMM_cubes
   !
   !----------------------------------------------------------------
-  REAL(DOUBLE)       :: SpAMM_tolerance, SpAMM_multiplies, SpAMM_dimension
+  REAL(DOUBLE)       :: SpAMM_tolerance, SpAMM_multiplies, SpAMM_average_multiplies, &
+                        SpAMM_dimension
   INTEGER            :: SpAMM_tiles, SpAMM_levels, SpAMM_quadcount
   TYPE(SpAMM_cubes),POINTER :: SpAMM_stream
-  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE=2
+  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE=4
   !----------------------------------------------------------------
   !===============================================================================
   !  Interface blocks for generic linear algebra routines
@@ -89,7 +90,6 @@ CONTAINS
     !
     SpAMM_quadcount=0
     !
-
     CALL NewQuNode(qA,init=.TRUE.)
     CALL SpAMM_Mat2Quad(A,qA)
     qA%Norm=SQRT(qA%Norm)
@@ -328,6 +328,7 @@ CONTAINS
     IMPLICIT NONE
     TYPE(QuTree), POINTER  :: qA
     REAL(DOUBLE)           :: tau
+    IF(.NOT.ASSOCIATED(qA))RETURN
     IF(qA%Norm<tau)THEN
        CALL DeleteQuad(qA)
     ELSE
@@ -525,6 +526,8 @@ CONTAINS
     SpAMM_count=1
     SpAMM_multiplies=0
     CALL SpAMM_Multiply(qC,qA,qB,count=SpAMM_count)
+
+
     qC%Norm=SQRT(SpAMM_NormReduce(qC))
     IF(PRESENT(tolerance))THEN
        SpAMM_tolerance=Saved_tolerance
@@ -731,7 +734,7 @@ CONTAINS
     TrP2=Trace(P2)
     CR1 = ABS(TrP2-Norm)              ! CR1 = Occupation error criteria
     CR2 = ABS(2.D0*TrP - TrP2 - Norm) ! CR2 = Occupation error criteria
-    WRITE(*,33)I,NORM,TrP,SpAMM_multiplies/SpAMM_tiles**3
+    WRITE(77,33)I,NORM,TrP,SpAMM_multiplies/SpAMM_tiles**3
 33  FORMAT(I4,", N =",F12.8,", Tr(P)=",F12.8,", O(N)/N^3 = ",F8.5)
     IF (CR1 < CR2) THEN               ! Too many states
       P=>Copy(P2)
@@ -744,17 +747,45 @@ CONTAINS
     TrP=Trace(P)
   END SUBROUTINE TC2
 
+
+  SUBROUTINE TC2_filter(P,P2,Tmp1,Norm,TrP,I)
+    TYPE(QuTree),POINTER :: P,P2,Tmp1 , Tmp2
+    REAL(DOUBLE) :: Norm, CR1, CR2, TrP, TrP2,    TrdP,TrdP2
+    INTEGER      :: I,  II,J
+    !-------------------------------------------------------------------------------
+    CALL Filter_qutree(P,SpAMM_tolerance)
+    IF (I.EQ.1)TrP=Trace(P)
+    CALL Multiply_qutree_tms_qutree(P,P,P2,tolerance=1D-100)
+         ! The only multiplication is a square
+
+    TrP2=Trace(P2)
+    CR1 = ABS(TrP2-Norm)              ! CR1 = Occupation error criteria
+    CR2 = ABS(2.D0*TrP - TrP2 - Norm) ! CR2 = Occupation error criteria
+    WRITE(77,33)I,NORM,TrP,SpAMM_multiplies/SpAMM_tiles**3
+33  FORMAT(I4,", N =",F12.8,", Tr(P)=",F12.8,", O(N)/N^3 = ",F8.5)
+    IF (CR1 < CR2) THEN               ! Too many states
+      P=>Copy(P2)
+    ELSE
+       CALL Multiply(P,Two)
+       CALL Multiply(P2,-One)
+       CALL Add(P,P2,Tmp1)             ! P = 2P-P^2
+       P=>Copy(Tmp1)
+    ENDIF
+    TrP=Trace(P)
+  END SUBROUTINE TC2_FILTER
+
 END MODULE SpAMM_TYPES
 
 PROGRAM SpAMM_TEST
   USE SpAMM_TYPES
   IMPLICIT NONE
-  INTEGER           ::  L,M,N_OLD,N,Nel,I,J,K,II,JJ
+  INTEGER           ::  L,M,N_OLD,N,Nel,I,J,K,II,JJ,TC2_cycles
   REAL(DOUBLE),ALLOCATABLE, DIMENSION(:,:) ::  A, B, C,C2,CDiff,A_NOPADDING
   TYPE(QuTree),POINTER  :: qC,qP,qF,qTmp1,qTmp2
   TYPE(SpAMM_cubes),POINTER  :: Stream
-  REAL(DOUBLE)          :: CNorm,CDiffNorm,CErrBound,CElementErr,Opacity,Occ0,Occ1,Occ2,Occ3,TrE
+  REAL(DOUBLE)          :: CNorm,CDiffNorm,CErrBound,CElementErr,Opacity,Occ0,Occ1,Occ2,Occ3,TrE,RelativeError,TargetTrE
   CHARACTER *100        :: Name,Buffer
+  LOGICAL :: FilterOrSpAMM
 
   CALL GETARG(1,NAME)
   NAME=TRIM(ADJUSTL(NAME))
@@ -764,6 +795,10 @@ PROGRAM SpAMM_TEST
   READ(BUFFER,*)Nel
   CALL GETARG(4,BUFFER)
   READ(BUFFER,*)SpAMM_tolerance
+  CALL GETARG(5,BUFFER)
+  READ(BUFFER,*)FilterOrSpAMM
+  CALL GETARG(6,BUFFER)
+  READ(BUFFER,*)TargetTrE
   !--------------------------------------------------
   K=CEILING(LOG10(DBLE(N))/LOG10(2D0))
   N_OLD=N
@@ -796,7 +831,7 @@ PROGRAM SpAMM_TEST
   A=Zero
   A(1:N_OLD,1:N_OLD)=A_NOPADDING(1:N_OLD,1:N_OLD)
   qP=>Dense2Quad(A)
-!  CALL Print_quad(qP)
+  !  CALL Print_quad(qP)
   !--------------------------------------------------
   DEALLOCATE(A)
   DEALLOCATE(A_NOPADDING)
@@ -806,6 +841,35 @@ PROGRAM SpAMM_TEST
   CALL NewQuNode(qTmp1,init=.TRUE.)
   CALL NewQuNode(qTmp2,init=.TRUE.)
   !
+  Occ0 = 0.D0
+  Occ1 = 0.D0
+  Occ2 = 0.D0
+  Occ3 = 0.D0
+
+  TC2_cycles=40
+  SpAMM_average_multiplies=Zero
+  DO I=1,TC2_cycles
+     IF(FilterOrSpAMM)THEN
+        CALL TC2_filter(qP,qTmp1,qTmp2,Half*FLOAT(NEl),Occ0,I)
+     ELSE
+        CALL TC2(qP,qTmp1,qTmp2,Half*FLOAT(NEl),Occ0,I)
+     ENDIF
+     Occ3 = Occ2
+     Occ2 = Occ1
+     Occ1 = Occ0
+     SpAMM_average_multiplies=SpAMM_average_multiplies+SpAMM_multiplies
+  ENDDO
+  SpAMM_average_multiplies=SpAMM_average_multiplies/DBLE(TC2_cycles)
+
+  CALL Multiply(qP,qF,qTmp1)
+  TrE=Trace(qTmp1)
+  RelativeError=ABS(TrE-TargetTrE)/ABS(TargetTrE)
+  WRITE(*,66)N_old,SpAMM_BLOCK_SIZE,SpAMM_tolerance,Half*FLOAT(NEl),Occ0,SpAMM_average_multiplies, &
+       TrE,RelativeError, &
+       SpAMM_average_multiplies/SpAMM_tiles**3
+66 FORMAT(I6,", ",I3,", ",E8.2,7(", ",F18.8))
+  !
+END PROGRAM SpAMM_TEST
 !! BETA CAROTENE EXAMPLE
 !!$ ./a.out bc  bc 256  296 1D-7
 !!$BLOCK_SIZE=1
@@ -847,18 +911,3 @@ PROGRAM SpAMM_TEST
 !!      Tr(P)=445.00000000, O(N)/N^3 =  1.00000,  TrE =   -1738.6515695910239
 
 
-  Occ0 = 0.D0
-  Occ1 = 0.D0
-  Occ2 = 0.D0
-  Occ3 = 0.D0
-  DO I=1,40
-    CALL TC2(qP,qTmp1,qTmp2,Half*FLOAT(NEl),Occ0,I)
-    Occ3 = Occ2
-    Occ2 = Occ1
-    Occ1 = Occ0
- ENDDO
- CALL Multiply(qP,qF,qTmp1)
- TrE=Trace(qTmp1)
- WRITE(*,*)' TrE = ',TrE
-
-END PROGRAM SpAMM_TEST
