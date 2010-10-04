@@ -35,8 +35,8 @@ MODULE SpAMM_TYPES
   INTEGER, PARAMETER :: INT8=SELECTED_INT_KIND(18) !--Integer*8
   !
   INTEGER, PARAMETER :: SINGLE=KIND(0.0)           !--Real*4
-  INTEGER, PARAMETER :: DOUBLE=KIND(0.0D0)           !--Real*8
-  REAL(DOUBLE),PARAMETER :: Zero=0D0,Half=5D-1,One=1D0,Two=2D0
+  INTEGER, PARAMETER :: DOUBLE=KIND(0.0D0)         !--Real*8
+  REAL(DOUBLE),PARAMETER :: Zero=0D0,Half=5D-1,One=1D0,Two=2D0,Eight=8D0
   !
   TYPE QuTree
      INTEGER                      :: Siz
@@ -61,7 +61,10 @@ MODULE SpAMM_TYPES
                         SpAMM_dimension
   INTEGER            :: SpAMM_tiles, SpAMM_levels, SpAMM_quadcount
   TYPE(SpAMM_cubes),POINTER :: SpAMM_stream
-  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE=4
+  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE=2
+
+  REAL(DOUBLE) :: GlobalDropped,GlobalError
+
   !----------------------------------------------------------------
   !===============================================================================
   !  Interface blocks for generic linear algebra routines
@@ -92,7 +95,7 @@ CONTAINS
     !
     CALL NewQuNode(qA,init=.TRUE.)
     CALL SpAMM_Mat2Quad(A,qA)
-    qA%Norm=SQRT(qA%Norm)
+    qA%Norm=SQRT(SpAMM_NormReduce(qA))
   END FUNCTION Dense2Quad
 
   RECURSIVE SUBROUTINE SpAMM_Mat2Quad(A,qA)
@@ -105,12 +108,13 @@ CONTAINS
     J=SIZE(A,2)
     IF(I<=SpAMM_BLOCK_SIZE.AND.J<=SpAMM_BLOCK_SIZE)THEN
        IF(I<SpAMM_BLOCK_SIZE)THEN
+          WRITE(*,*)' I = ',I,' J = ',J,' Blok Siz = ',SpAMM_BLOCK_SIZE
           STOP ' LOGIC ERROR IN SpAMM: padding error '
        ELSE
           qA%Siz=SpAMM_BLOCK_SIZE
           ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
           qA%Blok(1:I,1:J)=A(1:I,1:J)
-          qA%Norm=SUM(A(1:I,1:J)**2)
+!          qA%Norm=SUM(A(1:I,1:J)**2)
           NULLIFY(qA%Quad00)
           NULLIFY(qA%Quad01)
           NULLIFY(qA%Quad10)
@@ -155,13 +159,13 @@ CONTAINS
        CALL SpAMM_Mat2Quad(A(1:I/2  ,J/2+1:J)  , qA%Quad01 )
        CALL SpAMM_Mat2Quad(A(I/2+1:I,1:J/2  )  , qA%Quad10 )
        CALL SpAMM_Mat2Quad(A(I/2+1:I,J/2+1:J)  , qA%Quad11 )
-       !
-       qA%Norm=qA%Quad00%Norm+qA%Quad01%Norm+qA%Quad10%Norm+qA%Quad11%Norm
-       !
-       qA%Quad00%Norm=SQRT(qA%Quad00%Norm)
-       qA%Quad01%Norm=SQRT(qA%Quad01%Norm)
-       qA%Quad10%Norm=SQRT(qA%Quad10%Norm)
-       qA%Quad11%Norm=SQRT(qA%Quad11%Norm)
+!       !
+!       qA%Norm=qA%Quad00%Norm+qA%Quad01%Norm+qA%Quad10%Norm+qA%Quad11%Norm
+!       !
+!       qA%Quad00%Norm=SQRT(qA%Quad00%Norm)
+!       qA%Quad01%Norm=SQRT(qA%Quad01%Norm)
+!       qA%Quad10%Norm=SQRT(qA%Quad10%Norm)
+!       qA%Quad11%Norm=SQRT(qA%Quad11%Norm)
     ENDIF
     !
   END SUBROUTINE SpAMM_Mat2Quad
@@ -486,7 +490,6 @@ CONTAINS
        ENDIF
     ENDIF
   END SUBROUTINE SpAMM_Copy
-
   !=================================================================
   ! QuTree multiply routines
   !=================================================================
@@ -515,8 +518,11 @@ CONTAINS
     IMPLICIT NONE
     TYPE(QuTree), POINTER       :: qA,qB,qC
     REAL(DOUBLE),OPTIONAL       :: tolerance
-    REAL(DOUBLE)                :: Saved_tolerance,norm
+    REAL(DOUBLE)                :: Saved_tolerance,norm,TrueError,fricnfrac
     INTEGER                     :: SpAMM_count
+    REAL(DOUBLE),ALLOCATABLE,DIMENSION(:,:) :: dA,dB,dC
+
+
     IF(PRESENT(tolerance))THEN
        Saved_tolerance=SpAMM_tolerance
        SpAMM_tolerance=tolerance
@@ -525,13 +531,47 @@ CONTAINS
     CALL NewQuNode(qC,init=.TRUE.)
     SpAMM_count=1
     SpAMM_multiplies=0
-    CALL SpAMM_Multiply(qC,qA,qB,count=SpAMM_count)
 
-
+    GlobalDropped=Zero
+    GlobalError=Zero
+    fricnfrac=SpAMM_tolerance
+    CALL SpAMM_Multiply(qC,qA,qB,fricnfrac,count=SpAMM_count)
     qC%Norm=SQRT(SpAMM_NormReduce(qC))
+    !
     IF(PRESENT(tolerance))THEN
        SpAMM_tolerance=Saved_tolerance
     ENDIF
+
+
+ !  WRITE(*,*)' Global Dropped       = ',GlobalDropped
+ !   WRITE(*,*)' Global Dropped Error = ',GlobalError
+ !   WRITE(*,*)' Approx Error 1       = ',SQRT(GlobalDropped)*SpAMM_tolerance
+!    WRITE(*,*)' Approx Error 2       = ',SQRT(GlobalError)
+
+    ALLOCATE(dA(1:SpAMM_tiles*SpAMM_BLOCK_SIZE,1:SpAMM_tiles*SpAMM_BLOCK_SIZE))
+    ALLOCATE(dB(1:SpAMM_tiles*SpAMM_BLOCK_SIZE,1:SpAMM_tiles*SpAMM_BLOCK_SIZE))
+    ALLOCATE(dC(1:SpAMM_tiles*SpAMM_BLOCK_SIZE,1:SpAMM_tiles*SpAMM_BLOCK_SIZE))
+
+    dA=Quad2Dense(qA)
+    dB=Quad2Dense(qB)
+    dC=MATMUL(dA,dB)
+    TrueError=NormReduce_dns(dC-Quad2Dense(qC))
+
+    DEALLOCATE(dA)
+    DEALLOCATE(dB)
+    DEALLOCATE(dC)
+
+!    WRITE(*,*)' True  Error          = ',TrueError
+    WRITE(*,33)GlobalDropped,GlobalError,SQRT(GlobalDropped)*SpAMM_tolerance,TrueError
+33  FORMAT('Number of Dropped = ',D12.6,', Total Norms Dropped = ',D12.6,', Error Estimate = ',D12.6,' True Error = ',D12.6)
+
+!    STOP
+
+
+
+!    CALL SpAMM_Multiply2(qC,qA,qB,count=SpAMM_count)
+
+
   END SUBROUTINE Multiply_qutree_tms_qutree
   !
   RECURSIVE FUNCTION SpAMM_NormReduce(qC) RESULT(norm)
@@ -568,7 +608,168 @@ CONTAINS
     norm=SQRT(norm)
   END FUNCTION NormReduce_dns
 
-  RECURSIVE SUBROUTINE SpAMM_Multiply(qC,qA,qB,count)
+  RECURSIVE SUBROUTINE SpAMM_Multiply(qC,qA,qB,TotalError,count)
+    IMPLICIT NONE
+    TYPE(QuTree), POINTER :: qC,qA,qB
+    INTEGER     :: count,LocalCount,LocalDropped
+    REAL(DOUBLE) :: TotalError,LocalError,ErrorEstimate
+    REAL(DOUBLE):: norm00x00,norm00x01,norm01x11, &
+                   norm10x00,norm10x01,norm11x11,norm01x10,norm11x10
+    REAL(DOUBLE):: frac00x00,frac01x10,frac00x01,frac01x11, &
+                   frac10x00,frac11x10,frac10x01,frac11x11
+    LOGICAL     :: do00x00,do01x10,do10x00,do11x10, &
+                   do00x01,do01x11,do10x01,do11x11
+    ! Bounds
+    qC%Lev=qA%Lev
+    qC%Siz=qA%Siz
+    qC%Box(1,:)=qA%Box(1,:)
+    qC%Box(2,:)=qB%Box(2,:)
+    ! Blocks
+    IF(qA%Siz==SpAMM_BLOCK_SIZE)THEN
+       ! Allocate
+       IF(.NOT.ALLOCATED(qC%Blok))THEN
+          ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+          qC%Blok=Zero
+       END IF
+       ! Count
+       SpAMM_multiplies=SpAMM_multiplies+1
+       ! Accumulate
+       qC%Blok=qC%Blok+MATMUL(qA%Blok,qB%Blok)
+    ELSE
+       ! Nodes exist?
+       do00x00=ASSOCIATED(qA%Quad00).AND.ASSOCIATED(qB%Quad00)
+       do01x10=ASSOCIATED(qA%Quad01).AND.ASSOCIATED(qB%Quad10)
+       do00x01=ASSOCIATED(qA%Quad00).AND.ASSOCIATED(qB%Quad01)
+       do01x11=ASSOCIATED(qA%Quad01).AND.ASSOCIATED(qB%Quad11)
+       do10x00=ASSOCIATED(qA%Quad10).AND.ASSOCIATED(qB%Quad00)
+       do11x10=ASSOCIATED(qA%Quad11).AND.ASSOCIATED(qB%Quad10)
+       do10x01=ASSOCIATED(qA%Quad10).AND.ASSOCIATED(qB%Quad01)
+       do11x11=ASSOCIATED(qA%Quad11).AND.ASSOCIATED(qB%Quad11)
+       !
+       norm00x00=Zero
+       norm01x10=Zero
+       norm00x01=Zero
+       norm01x11=Zero
+       norm10x00=Zero
+       norm11x10=Zero
+       norm10x01=Zero
+       norm11x11=Zero
+       !
+       IF(do00x00)norm00x00=qA%Quad00%Norm*qB%Quad00%Norm
+       IF(do01x10)norm01x10=qA%Quad01%Norm*qB%Quad10%Norm
+       IF(do00x01)norm00x01=qA%Quad00%Norm*qB%Quad01%Norm
+       IF(do01x11)norm01x11=qA%Quad01%Norm*qB%Quad11%Norm
+       IF(do10x00)norm10x00=qA%Quad10%Norm*qB%Quad00%Norm
+       IF(do11x10)norm11x10=qA%Quad11%Norm*qB%Quad10%Norm
+       IF(do10x01)norm10x01=qA%Quad10%Norm*qB%Quad01%Norm
+       IF(do11x11)norm11x11=qA%Quad11%Norm*qB%Quad11%Norm
+       !
+       IF(do00x00)do00x00=do00x00.AND.norm00x00>TotalError
+       IF(do01x10)do01x10=do01x10.AND.norm01x10>TotalError
+       IF(do00x01)do00x01=do00x01.AND.norm00x01>TotalError
+       IF(do01x11)do01x11=do01x11.AND.norm01x11>TotalError
+       IF(do10x00)do10x00=do10x00.AND.norm10x00>TotalError
+       IF(do11x10)do11x10=do11x10.AND.norm11x10>TotalError
+       IF(do10x01)do10x01=do10x01.AND.norm10x01>TotalError
+       IF(do11x11)do11x11=do11x11.AND.norm11x11>TotalError
+       ! Counting the next generation
+       LocalCount=0
+       IF(do00x00)LocalCount=LocalCount+1
+       IF(do01x10)LocalCount=LocalCount+1
+       IF(do00x01)LocalCount=LocalCount+1
+       IF(do01x11)LocalCount=LocalCount+1
+       IF(do10x00)LocalCount=LocalCount+1
+       IF(do11x10)LocalCount=LocalCount+1
+       IF(do10x01)LocalCount=LocalCount+1
+       IF(do11x11)LocalCount=LocalCount+1
+       ! Check
+       IF(LocalCount==0)RETURN
+       ! Errors of omission
+!!$       LocalError=Zero
+!!$       IF(.NOT.do00x00)LocalError=LocalError+norm00x00
+!!$       IF(.NOT.do01x10)LocalError=LocalError+norm01x10
+!!$       IF(.NOT.do00x01)LocalError=LocalError+norm00x01
+!!$       IF(.NOT.do01x11)LocalError=LocalError+norm01x11
+!!$       IF(.NOT.do10x00)LocalError=LocalError+norm10x00
+!!$       IF(.NOT.do11x10)LocalError=LocalError+norm11x10
+!!$       IF(.NOT.do10x01)LocalError=LocalError+norm10x01
+!!$       IF(.NOT.do11x11)LocalError=LocalError+norm11x11
+
+       ! global debug/development counters
+       GlobalDropped=GlobalDropped+(8-LocalCount)
+       GlobalError=GlobalError+LocalError
+       ! Statistical estimate of error partitioning
+       TotalError=TotalError/SQRT(DBLE(LocalCount))
+
+       ! 00=00*00+01*10
+       IF(do00x00.OR.do01x10)THEN
+          IF(.NOT.ASSOCIATED(qC%Quad00))CALL NewQuNode(qC%Quad00,count=count)
+          IF(do00x00)THEN
+             frac00x00=TotalError
+             CALL SpAMM_Multiply(qC%Quad00,qA%Quad00,qB%Quad00,frac00x00,count)
+          ELSE
+             frac00x00=Zero
+          ENDIF
+          IF(do01x10)THEN
+             frac01x10=TotalError
+             CALL SpAMM_Multiply(qC%Quad00,qA%Quad01,qB%Quad10,frac01x10,count)
+          ELSE
+             frac01x10=Zero
+          ENDIF
+       ENDIF
+       ! 01=00*01+01*11
+       IF(do00x01.OR.do01x11)THEN
+          IF(.NOT.ASSOCIATED(qC%Quad01))CALL NewQuNode(qC%Quad01,count=count)
+          IF(do00x01)THEN
+             frac00x01=TotalError
+             CALL SpAMM_Multiply(qC%Quad01,qA%Quad00,qB%Quad01,frac00x01,count)
+          ELSE
+             frac00x01=Zero
+          ENDIF
+          IF(do01x11)THEN
+             frac01x11=TotalError
+             CALL SpAMM_Multiply(qC%Quad01,qA%Quad01,qB%Quad11,frac01x11,count)
+          ELSE
+             frac01x11=Zero
+          ENDIF
+       ENDIF
+       ! 10=10*00+11*10
+       IF(do10x00.OR.do11x10)THEN
+          IF(.NOT.ASSOCIATED(qC%Quad10))CALL NewQuNode(qC%Quad10,count=count)
+          IF(do10x00)THEN
+             frac10x00=TotalError
+             CALL SpAMM_Multiply(qC%Quad10,qA%Quad10,qB%Quad00,frac10x00,count)
+          ELSE
+             frac10x00=Zero
+          ENDIF
+          IF(do11x10)THEN
+             frac11x10=TotalError
+             CALL SpAMM_Multiply(qC%Quad10,qA%Quad11,qB%Quad10,frac11x10,count)
+          ELSE
+             frac11x10=Zero
+          ENDIF
+       ENDIF
+       ! 11=10*01+11*11
+       IF(do10x01.OR.do11x11)THEN
+          IF(.NOT.ASSOCIATED(qC%Quad11))CALL NewQuNode(qC%Quad11,count=count)
+          IF(do10x01)THEN
+             frac10x01=TotalError
+             CALL SpAMM_Multiply(qC%Quad11,qA%Quad10,qB%Quad01,frac10x01,count)
+          ENDIF
+          IF(do11x11)THEN
+             frac11x11=TotalError
+             CALL SpAMM_Multiply(qC%Quad11,qA%Quad11,qB%Quad11,frac11x11,count)
+          ELSE
+             frac11x11=Zero
+          ENDIF
+
+
+       ENDIF
+    ENDIF
+  END SUBROUTINE SpAMM_Multiply
+
+
+  RECURSIVE SUBROUTINE SpAMM_Multiply2(qC,qA,qB,count)
     IMPLICIT NONE
     TYPE(QuTree), POINTER :: qC,qA,qB
     INTEGER :: count
@@ -577,7 +778,7 @@ CONTAINS
     ! Associated
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB))THEN
     ! Bounds
-    IF(qA%Norm*qB%Norm<SpAMM_tolerance)RETURN
+    IF(qA%Norm*qB%Norm*8D0**(HALF*DBLE(qA%Lev))<SpAMM_tolerance)RETURN
     ! Allocate
     IF(.NOT.ASSOCIATED(qC))CALL NewQuNode(qC,count=count)
     ! Boxing
@@ -598,20 +799,20 @@ CONTAINS
           qC%Blok=qC%Blok+MATMUL(qA%Blok,qB%Blok)
        ELSE
           ! 00=00*00+01*10
-          CALL SpAMM_Multiply(qC%Quad00,qA%Quad00,qB%Quad00,count=count)
-          CALL SpAMM_Multiply(qC%Quad00,qA%Quad01,qB%Quad10,count=count)
+          CALL SpAMM_Multiply2(qC%Quad00,qA%Quad00,qB%Quad00,count=count)
+          CALL SpAMM_Multiply2(qC%Quad00,qA%Quad01,qB%Quad10,count=count)
           ! 01=00*01+01*11
-          CALL SpAMM_Multiply(qC%Quad01,qA%Quad00,qB%Quad01,count=count)
-          CALL SpAMM_Multiply(qC%Quad01,qA%Quad01,qB%Quad11,count=count)
+          CALL SpAMM_Multiply2(qC%Quad01,qA%Quad00,qB%Quad01,count=count)
+          CALL SpAMM_Multiply2(qC%Quad01,qA%Quad01,qB%Quad11,count=count)
           ! 10=10*00+11*10
-          CALL SpAMM_Multiply(qC%Quad10,qA%Quad10,qB%Quad00,count=count)
-          CALL SpAMM_Multiply(qC%Quad10,qA%Quad11,qB%Quad10,count=count)
+          CALL SpAMM_Multiply2(qC%Quad10,qA%Quad10,qB%Quad00,count=count)
+          CALL SpAMM_Multiply2(qC%Quad10,qA%Quad11,qB%Quad10,count=count)
           ! 11=10*01+11*11
-          CALL SpAMM_Multiply(qC%Quad11,qA%Quad10,qB%Quad01,count=count)
-          CALL SpAMM_Multiply(qC%Quad11,qA%Quad11,qB%Quad11,count=count)
+          CALL SpAMM_Multiply2(qC%Quad11,qA%Quad10,qB%Quad01,count=count)
+          CALL SpAMM_Multiply2(qC%Quad11,qA%Quad11,qB%Quad11,count=count)
        ENDIF
     ENDIF
-  END SUBROUTINE SpAMM_Multiply
+  END SUBROUTINE SpAMM_Multiply2
 
   FUNCTION Trace_dns(A) RESULT(trc)
     REAL(DOUBLE) :: trc
@@ -625,8 +826,8 @@ CONTAINS
 
   SUBROUTINE TC2_test(P,P2,Tmp1,Norm,TrP,I)
     TYPE(QuTree),POINTER :: P,P2,Tmp1 , Tmp2
-    REAL(DOUBLE) :: Norm, CR1, CR2, TrP, TrP2,    TrdP,TrdP2
-    INTEGER      :: I,  II,J
+    REAL(DOUBLE) :: Norm, CR1, CR2, TrP, TrP2,    TrdP,TrdP2, sum
+    INTEGER      :: I,  II,J,KK
 
     INTEGER, PARAMETER:: NN=1024
     REAL(DOUBLE),DIMENSION(NN,NN) :: dP,dP2,dTmp1, dTmp2,dP2b
@@ -637,42 +838,60 @@ CONTAINS
     IF (I.EQ.1) THEN
        TrP=Trace(P)
        TrdP=Trace(dP)
+       ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       !       TrP=TrdP
        IF(ABS(TrP-TrdP)>SpAMM_tolerance*1D1)THEN
           WRITE(*,*)' 1TrP = ',TrP,TrdP
           STOP
        ENDIF
+       ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ENDIF
-
-    WRITE(*,*)' SpAMM SpAMM SpAMM SpAMM SpAMM SpAMM '
+    !
     CALL Multiply(P,P,P2)             ! The only multiplication is a square
-    WRITE(*,*)' SpAMM SpAMM SpAMM SpAMM SpAMM SpAMM '
-
     dP2=MATMUL(dP,dP)
-    dP2b=Quad2Dense(P2)
 
+
+!    P2=>Dense2Quad(Quad2Dense(P2))
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    dP2b=Quad2Dense(P2)
     DO II=1,NN
        DO J=1,NN
           IF(ABS(dP2(II,J)-dP2b(II,J))>SpAMM_tolerance*1D1)THEN
-            WRITE(*,*)'A',II,J,dP2(II,J),dP2b(II,J),dP2(II,J)-dP2b(II,J)
              WRITE(*,*)'++++++++++++++++++++++++++++++++++++++++++++'
              WRITE(*,*)' sparse P*P'
-             CALL Print_quad(P2)
-             P=>Dense2Quad(dP2)
+
+             sum=Zero
+             DO KK=1,NN
+                IF(ABS(dP(II,KK)*dP(KK,J))>1D-1*SpAMM_tolerance)THEN
+                   WRITE(*,*)dP(II,KK)*dP(KK,J),sum
+                   sum=sum+dP(II,KK)*dP(KK,J)
+                ENDIF
+             ENDDO
+             WRITE(*,*)' SpAMM_tolerance = ',SpAMM_tolerance
+            WRITE(*,*)'ARAW',II,J,dP2(II,J),dP2b(II,J),dP2(II,J)-dP2b(II,J)
+            WRITE(*,*)'ASUM',II,J,sum,dP2b(II,J),dP2(II,J)-sum
+
+!             CALL Print_quad(P2)
+ !            P=>Dense2Quad(dP2)
              WRITE(*,*)'++++++++++++++++++++++++++++++++++++++++++++'
              WRITE(*,*)' dense P*P'
-             CALL Print_quad(P)
+
+
+ !            CALL Print_quad(P)
              STOP
           ENDIF
        ENDDO
     ENDDO
-
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     TrP2=Trace(P2)
     TrdP2=Trace(dP2)
-
-    IF(ABS(TrP2-TrdP2)>SpAMM_tolerance*1D1)THEN
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    !    TrP2=TrdP2
+    IF(ABS(TrP2-TrdP2)>SpAMM_tolerance)THEN
        WRITE(*,*)'TrP = ',TrP2,TrdP2
        STOP "P2 STOP "
     ENDIF
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     CR1 = ABS(TrP2-Norm)              ! CR1 = Occupation error criteria
     CR2 = ABS(2.D0*TrP - TrP2 - Norm) ! CR2 = Occupation error criteria
@@ -681,11 +900,10 @@ CONTAINS
 33  FORMAT(I4,", N =",F12.5,", Tr(P)=",F12.5,", O(N)/N^3 = ",F8.5)
 
     IF (CR1 < CR2) THEN               ! Too many states
-
       P=>Copy(P2)
-      dP2b=Quad2Dense(P)
-
       dP=dP2
+      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      dP2b=Quad2Dense(P)
        DO II=1,NN
           DO J=1,NN
              IF(ABS(dP(II,J)-dP2b(II,J))>SpAMM_tolerance*1D1)THEN
@@ -694,15 +912,15 @@ CONTAINS
              ENDIF
           ENDDO
        ENDDO
+      ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ELSE
        CALL Multiply(P,Two)
        CALL Multiply(P2,-One)
        CALL Add(P,P2,Tmp1)             ! P = 2P-P^2
-       dP2b=Quad2Dense(Tmp1)
-
        P=>Copy(Tmp1)
        dP=Two*dP-dP2
-
+       ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       dP2b=Quad2Dense(Tmp1)
        DO II=1,NN
           DO J=1,NN
              IF(ABS(dP(II,J)-dP2b(II,J))>SpAMM_tolerance*1D1)THEN
@@ -711,10 +929,12 @@ CONTAINS
              ENDIF
           ENDDO
        ENDDO
-
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ENDIF
     TrP=Trace(P)
     TrdP=Trace(dP)
+
+!    TrP=TrdP
 
     IF(ABS(TrP-TrdP)>SpAMM_tolerance*1D1)THEN
        WRITE(*,*)'TrP = ',TrP,TrdP
@@ -734,8 +954,8 @@ CONTAINS
     TrP2=Trace(P2)
     CR1 = ABS(TrP2-Norm)              ! CR1 = Occupation error criteria
     CR2 = ABS(2.D0*TrP - TrP2 - Norm) ! CR2 = Occupation error criteria
-    WRITE(77,33)I,NORM,TrP,SpAMM_multiplies/SpAMM_tiles**3
-33  FORMAT(I4,", N =",F12.8,", Tr(P)=",F12.8,", O(N)/N^3 = ",F8.5)
+    WRITE(*,33)I,NORM,TrP,SpAMM_multiplies/SpAMM_tiles**3
+33  FORMAT(I4,", N =",F18.8,", Tr(P)=",F18.8,", O(N)/N^3 = ",F8.5)
     IF (CR1 < CR2) THEN               ! Too many states
       P=>Copy(P2)
     ELSE
@@ -745,6 +965,8 @@ CONTAINS
        P=>Copy(Tmp1)
     ENDIF
     TrP=Trace(P)
+!    CALL Filter_qutree(P,SpAMM_tolerance*1D-2)
+    !
   END SUBROUTINE TC2
 
 
@@ -753,24 +975,25 @@ CONTAINS
     REAL(DOUBLE) :: Norm, CR1, CR2, TrP, TrP2,    TrdP,TrdP2
     INTEGER      :: I,  II,J
     !-------------------------------------------------------------------------------
-    CALL Filter_qutree(P,SpAMM_tolerance)
-    IF (I.EQ.1)TrP=Trace(P)
+    IF(I.EQ.1)THEN
+       CALL Filter_qutree(P,SpAMM_tolerance)
+       TrP=Trace(P)
+    ENDIF
     CALL Multiply_qutree_tms_qutree(P,P,P2,tolerance=1D-100)
-         ! The only multiplication is a square
-
     TrP2=Trace(P2)
     CR1 = ABS(TrP2-Norm)              ! CR1 = Occupation error criteria
     CR2 = ABS(2.D0*TrP - TrP2 - Norm) ! CR2 = Occupation error criteria
     WRITE(77,33)I,NORM,TrP,SpAMM_multiplies/SpAMM_tiles**3
 33  FORMAT(I4,", N =",F12.8,", Tr(P)=",F12.8,", O(N)/N^3 = ",F8.5)
     IF (CR1 < CR2) THEN               ! Too many states
-      P=>Copy(P2)
+       P=>Copy(P2)
     ELSE
        CALL Multiply(P,Two)
        CALL Multiply(P2,-One)
        CALL Add(P,P2,Tmp1)             ! P = 2P-P^2
        P=>Copy(Tmp1)
     ENDIF
+    CALL Filter_qutree(P,SpAMM_tolerance)
     TrP=Trace(P)
   END SUBROUTINE TC2_FILTER
 
@@ -783,9 +1006,10 @@ PROGRAM SpAMM_TEST
   REAL(DOUBLE),ALLOCATABLE, DIMENSION(:,:) ::  A, B, C,C2,CDiff,A_NOPADDING
   TYPE(QuTree),POINTER  :: qC,qP,qF,qTmp1,qTmp2
   TYPE(SpAMM_cubes),POINTER  :: Stream
-  REAL(DOUBLE)          :: CNorm,CDiffNorm,CErrBound,CElementErr,Opacity,Occ0,Occ1,Occ2,Occ3,TrE,RelativeError,TargetTrE
+  REAL(DOUBLE)          :: CNorm,CDiffNorm,CErrBound,CElementErr,Opacity,Occ0,Occ1,Occ2,Occ3,TrE, &
+                           RelativeErrorE,RelativeErrorN,TargetTrE
   CHARACTER *100        :: Name,Buffer
-  LOGICAL :: FilterOrSpAMM
+  LOGICAL :: DoFilter
 
   CALL GETARG(1,NAME)
   NAME=TRIM(ADJUSTL(NAME))
@@ -794,10 +1018,12 @@ PROGRAM SpAMM_TEST
   CALL GETARG(3,BUFFER)
   READ(BUFFER,*)Nel
   CALL GETARG(4,BUFFER)
-  READ(BUFFER,*)SpAMM_tolerance
+  READ(BUFFER,*)TC2_cycles
   CALL GETARG(5,BUFFER)
-  READ(BUFFER,*)FilterOrSpAMM
+  READ(BUFFER,*)SpAMM_tolerance
   CALL GETARG(6,BUFFER)
+  READ(BUFFER,*)DoFilter
+  CALL GETARG(7,BUFFER)
   READ(BUFFER,*)TargetTrE
   !--------------------------------------------------
   K=CEILING(LOG10(DBLE(N))/LOG10(2D0))
@@ -840,74 +1066,38 @@ PROGRAM SpAMM_TEST
   NULLIFY(qTmp2)
   CALL NewQuNode(qTmp1,init=.TRUE.)
   CALL NewQuNode(qTmp2,init=.TRUE.)
-  !
-  Occ0 = 0.D0
-  Occ1 = 0.D0
-  Occ2 = 0.D0
-  Occ3 = 0.D0
-
-  TC2_cycles=40
+  !--------------------------------------------------
   SpAMM_average_multiplies=Zero
+  IF(.NOT.DoFilter)THEN
+     SpAMM_tolerance=SpAMM_tolerance*SQRT(Two/DBLE(Nel))
+  ENDIF
+  !--------------------------------------------------
+  Occ0 = 0.D0;Occ1 = 0.D0;Occ2 = 0.D0;Occ3 = 0.D0
   DO I=1,TC2_cycles
-     IF(FilterOrSpAMM)THEN
+     IF(DoFilter)THEN
         CALL TC2_filter(qP,qTmp1,qTmp2,Half*FLOAT(NEl),Occ0,I)
      ELSE
         CALL TC2(qP,qTmp1,qTmp2,Half*FLOAT(NEl),Occ0,I)
      ENDIF
-     Occ3 = Occ2
-     Occ2 = Occ1
-     Occ1 = Occ0
+     Occ3 = Occ2;Occ2 = Occ1;Occ1 = Occ0
      SpAMM_average_multiplies=SpAMM_average_multiplies+SpAMM_multiplies
   ENDDO
-  SpAMM_average_multiplies=SpAMM_average_multiplies/DBLE(TC2_cycles)
-
-  CALL Multiply(qP,qF,qTmp1)
+  !
+  IF(DoFilter)THEN
+     CALL Filter_qutree(qF,SpAMM_tolerance)
+     CALL Multiply_qutree_tms_qutree(qP,qF,qTmp1,tolerance=1D-100)
+  ELSE
+     CALL Multiply(qP,qF,qTmp1)
+  ENDIF
   TrE=Trace(qTmp1)
-  RelativeError=ABS(TrE-TargetTrE)/ABS(TargetTrE)
-  WRITE(*,66)N_old,SpAMM_BLOCK_SIZE,SpAMM_tolerance,Half*FLOAT(NEl),Occ0,SpAMM_average_multiplies, &
-       TrE,RelativeError, &
-       SpAMM_average_multiplies/SpAMM_tiles**3
-66 FORMAT(I6,", ",I3,", ",E8.2,7(", ",F18.8))
+  RelativeErrorE=ABS(TrE-TargetTrE)/ABS(TargetTrE)
+  RelativeErrorN=ABS(Occ0-Half*DBLE(Nel))/(Half*DBLE(Nel))
+  !
+  SpAMM_average_multiplies=SpAMM_average_multiplies+SpAMM_multiplies
+  SpAMM_average_multiplies=SpAMM_average_multiplies/DBLE(TC2_cycles+1)
+  !
+  WRITE(*,66)N_old,N,SpAMM_BLOCK_SIZE,SpAMM_tolerance,RelativeErrorE,RelativeErrorN, &
+             SpAMM_average_multiplies
+66 FORMAT(I6,", ",I6,", ",I3,", ",E8.2,7(", ",E18.8))
   !
 END PROGRAM SpAMM_TEST
-!! BETA CAROTENE EXAMPLE
-!!$ ./a.out bc  bc 256  296 1D-7
-!!$BLOCK_SIZE=1
-!!$1D-4, Tr(P)=148.00410675, O(N)/N^3 =  0.03703, TrE =   -453.64326697675500
-!!$1D-6, Tr(P)=148.00007063, O(N)/N^3 =  0.24725, TrE =   -453.49036394380886
-!!$1D-7, Tr(P)=148.00003758, O(N)/N^3 =  0.34967, TrE =   -453.48904088853374
-!!$1D-8  Tr(P)=148.00000463, O(N)/N^3 =  0.52270, TrE =   -453.48864186234346
-!!$1D-10 Tr(P)=148.00000006, O(N)/N^3 =  0.81716, TrE =   -453.48859793980563
-!!$
-!!$BLOCK_SIZE=2 (DOUBLE)
-!!$1D-4, Tr(P)=147.99964372, O(N)/N^3 =  0.11211, TrE =   -453.53013549760510
-!!$1D-5, Tr(P)=148.00000991, O(N)/N^3 =  0.24183, TrE =   -453.49417884535342
-!!$1D-6, Tr(P)=148.00000677, O(N)/N^3 =  0.42200, TrE =   -453.48909106857525
-!!$1D-7, Tr(P)=148.00000486, O(N)/N^3 =  0.61572, TrE =   -453.48864613262896
-!!$1D-8, Tr(P)=148.00000090, O(N)/N^3 =  0.77632, TrE =   -453.48860167043756
-!!$1D-10,Tr(P)=148.00000000, O(N)/N^3 =  0.95261, TrE =   -453.48859749814483
-!!$BLOCK_SIZE=2 (SINGLE)
-!!$1D-4, Tr(P)=147.99964905, O(N)/N^3 =  0.11212, TrE =   -453.53015
-!!$1D-5, Tr(P)=148.00001526, O(N)/N^3 =  0.24183, TrE =   -453.49417
-!!$1D-6, Tr(P)=148.00000000, O(N)/N^3 =  0.42211, TrE =   -453.48907
-!!$1D-7, Tr(P)=148.00001526, O(N)/N^3 =  0.61580, TrE =   -453.48868
-!!$1D-8, Tr(P)=148.00001526, O(N)/N^3 =  0.77637, TrE =   -453.48865
-!!$1D-10,Tr(P)=148.00000000, O(N)/N^3 =  0.95261, TrE =   -453.48865
-
-!!$BLOCK_SIZE=256
-!!$      Tr(P)=148.00000000, O(N)/N^3 =  1.00000, TrE =   -453.48859746697627
-!!
-!! 4,3 160 ATOM NANOTUBE EXAMPLE (HF/STO-2G)
-!! ./a.out tube_4_3__160_Z_18363_Geom#1_Base#2_Clone#1 744 890 1D-4
-!!$BLOCK_SIZE=2 (DOUBLE)
-!! 1D-4, Tr(P)=444.99287617, O(N)/N^3 =  0.02251, TrE =   -1738.7744315310249
-!! 1D-5, Tr(P)=444.99706812, O(N)/N^3 =  0.07218, TrE =   -1738.6751392952985
-!! 1D-6  Tr(P)=445.00047176, O(N)/N^3 =  0.14222, TrE =   -1738.6525685266417
-!! 1D-7, Tr(P)=444.99997010, O(N)/N^3 =  0.22885, TrE =   -1738.6515660877203
-!! 1D-8, Tr(P)=445.00000412, O(N)/N^3 =  0.29912, TrE =   -1738.6515677903926
-!!$BLOCK_SIZE=2 (SINGLE)
-!! 1D-8, Tr(P)=445.0000610,    O(/N^3 =  0.12500, TrE =   -1738.6519   << .125 vs .299 diff in computing the norm?
-!!$BLOCK_SIZE=1024 (DOUBLE)
-!!      Tr(P)=445.00000000, O(N)/N^3 =  1.00000,  TrE =   -1738.6515695910239
-
-
