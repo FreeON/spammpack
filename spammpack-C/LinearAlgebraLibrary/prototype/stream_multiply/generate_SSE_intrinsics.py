@@ -173,7 +173,10 @@ for i in range(options.N):
       print padding + "    {"
       print padding + "      A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
       print padding + "      B_row = _mm_load_ps(&B[0*4+B_OFFSET_%d%d]);" % (k+1, j+1)
-      print padding + "      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
+      if not options.generate_checks and k == 0:
+        print padding + "      C_row[i] = _mm_mul_ps(A_element, B_row);"
+      else:
+        print padding + "      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
       print
       print padding + "      A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
       print padding + "      B_row = _mm_load_ps(&B[1*4+B_OFFSET_%d%d]);" % (k+1, j+1)
