@@ -24,13 +24,21 @@ parser.add_option("--name",
 
 parser.add_option("--use-precomputed-norm-products",
     action = "store_true",
+    default = False,
     help = "use precomputed norm products",
     dest = "precomputed_norm_products")
 
 parser.add_option("--store-outside-if",
     action = "store_true",
+    default = False,
     help = "move the C block store outside the if() block",
     dest = "store_outside_if")
+
+parser.add_option("--no-checks",
+    action = "store_false",
+    default = True,
+    help = "generate code without any norm checks",
+    dest = "generate_checks")
 
 ( options, arguments ) = parser.parse_args()
 
@@ -136,51 +144,56 @@ for i in range(options.N):
     print "    C_row[1] = _mm_setzero_ps();"
     print "    C_row[2] = _mm_setzero_ps();"
     print "    C_row[3] = _mm_setzero_ps();"
-
     print
-    sys.stdout.write("    if (")
-    for k in range(options.N):
-      norm_index_A = i*options.N+k
-      norm_index_B = k*options.N+j+options.N**2
-      if options.precomputed_norm_products:
-        sys.stdout.write("norm_product[%d][%d]" % (i*options.N+k, k*options.N+j))
-      else:
-        sys.stdout.write("norm[%d]*norm[%d] >= tolerance" % (norm_index_A, norm_index_B))
-      if k < options.N-1:
-        sys.stdout.write(" &&\n")
-        sys.stdout.write("        ")
-      else:
-        sys.stdout.write(")\n")
-    print "    {"
+
+    if options.generate_checks:
+      sys.stdout.write("    if (")
+      for k in range(options.N):
+        norm_index_A = i*options.N+k
+        norm_index_B = k*options.N+j+options.N**2
+        if options.precomputed_norm_products:
+          sys.stdout.write("norm_product[%d][%d]" % (i*options.N+k, k*options.N+j))
+        else:
+          sys.stdout.write("norm[%d]*norm[%d] >= tolerance" % (norm_index_A, norm_index_B))
+        if k < options.N-1:
+          sys.stdout.write(" &&\n")
+          sys.stdout.write("        ")
+        else:
+          sys.stdout.write(")\n")
+      print "    {"
+      padding = "  "
+    else:
+      padding = ""
 
     for k in range(options.N):
       #print "    if (norm_product[%d][%d])" % (i*options.N+k, k*options.N+j)
       #print "    {"
-      print "      /* A(%d,%d)*B(%d,%d) = C(%d,%d). */" % (i+1, k+1, k+1, j+1, i+1, j+1)
-      print "      for (i = 0; i < 4; i++)"
-      print "      {"
-      print "        A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
-      print "        B_row = _mm_load_ps(&B[0*4+B_OFFSET_%d%d]);" % (k+1, j+1)
-      print "        C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
+      print padding + "    /* A(%d,%d)*B(%d,%d) = C(%d,%d). */" % (i+1, k+1, k+1, j+1, i+1, j+1)
+      print padding + "    for (i = 0; i < 4; i++)"
+      print padding + "    {"
+      print padding + "      A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
+      print padding + "      B_row = _mm_load_ps(&B[0*4+B_OFFSET_%d%d]);" % (k+1, j+1)
+      print padding + "      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
       print
-      print "        A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
-      print "        B_row = _mm_load_ps(&B[1*4+B_OFFSET_%d%d]);" % (k+1, j+1)
-      print "        C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
+      print padding + "      A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
+      print padding + "      B_row = _mm_load_ps(&B[1*4+B_OFFSET_%d%d]);" % (k+1, j+1)
+      print padding + "      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
       print
-      print "        A_element = _mm_load_ps(&A[(i*4+2)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
-      print "        B_row = _mm_load_ps(&B[2*4+B_OFFSET_%d%d]);" % (k+1, j+1)
-      print "        C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
+      print padding + "      A_element = _mm_load_ps(&A[(i*4+2)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
+      print padding + "      B_row = _mm_load_ps(&B[2*4+B_OFFSET_%d%d]);" % (k+1, j+1)
+      print padding + "      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
       print
-      print "        A_element = _mm_load_ps(&A[(i*4+3)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
-      print "        B_row = _mm_load_ps(&B[3*4+B_OFFSET_%d%d]);" % (k+1, j+1)
-      print "        C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
-      print "      }"
+      print padding + "      A_element = _mm_load_ps(&A[(i*4+3)*4+A_OFFSET_%d%d]);" % (i+1, k+1)
+      print padding + "      B_row = _mm_load_ps(&B[3*4+B_OFFSET_%d%d]);" % (k+1, j+1)
+      print padding + "      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);"
+      print padding + "    }"
       #print "    }"
       if k < options.N-1:
         print
 
     if options.store_outside_if:
-      print "    }"
+      if options.generate_checks:
+        print "    }"
       print
       print "    /* Store C(%d,%d) block. */" % (i+1, j+1)
       print "    for (i = 0; i < 4; i++)"
@@ -191,14 +204,15 @@ for i in range(options.N):
       print "    }"
     else:
       print
-      print "      /* Store C(%d,%d) block. */" % (i+1, j+1)
-      print "      for (i = 0; i < 4; i++)"
-      print "      {"
-      print "        C_row[i] = _mm_mul_ps(alpha_row, C_row[i]);"
-      print "        C_row[i] = _mm_add_ps(_mm_load_ps(&C[i*4+C_OFFSET_%d%d]), C_row[i]);" % (i+1, j+1)
-      print "        _mm_store_ps(&C[i*4+C_OFFSET_%d%d], C_row[i]);" % (i+1, j+1)
-      print "      }"
-      print "    }"
+      print padding + "    /* Store C(%d,%d) block. */" % (i+1, j+1)
+      print padding + "    for (i = 0; i < 4; i++)"
+      print padding + "    {"
+      print padding + "      C_row[i] = _mm_mul_ps(alpha_row, C_row[i]);"
+      print padding + "      C_row[i] = _mm_add_ps(_mm_load_ps(&C[i*4+C_OFFSET_%d%d]), C_row[i]);" % (i+1, j+1)
+      print padding + "      _mm_store_ps(&C[i*4+C_OFFSET_%d%d], C_row[i]);" % (i+1, j+1)
+      print padding + "    }"
+      if options.generate_checks:
+        print "    }"
 
 print "  }"
 print "}"
