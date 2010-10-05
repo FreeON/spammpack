@@ -8,25 +8,25 @@ This GDB was configured as "x86_64-pc-linux-gnu".
 For bug reporting instructions, please see:
 <http://bugs.gentoo.org/>.
 Dump of assembler code for function stream_kernel:
-   0x0000000000000000 <+0>:	movaps %xmm0,%xmm2
+   0x0000000000000000 <+0>:	movaps %xmm0,%xmm2 // alpha is now in xmm2
    0x0000000000000003 <+3>:	shufps $0x0,%xmm2,%xmm2
-   0x0000000000000007 <+7>:	xor    %edx,%edx
-   0x0000000000000009 <+9>:	shr    $0x6,%edi
-   0x000000000000000c <+12>:	test   %edi,%edi
+   0x0000000000000007 <+7>:	xor    %edx,%edx // offset into multiply_stream[stream_index]
+   0x0000000000000009 <+9>:	shr    $0x6,%edi // number_stream_elements /= 64
+   0x000000000000000c <+12>:	test   %edi,%edi // number_stream_elements < 0?
    0x000000000000000e <+14>:	jbe    0x500d <stream_kernel+20493>
-   0x0000000000000014 <+20>:	xor    %eax,%eax
-   0x0000000000000016 <+22>:	imul   $0x98,%rdx,%rdx
-   0x000000000000001d <+29>:	mov    (%rsi,%rdx,1),%r8
-   0x0000000000000021 <+33>:	mov    0x8(%rsi,%rdx,1),%rcx
-   0x0000000000000026 <+38>:	mov    0x10(%rsi,%rdx,1),%r9
-   0x000000000000002b <+43>:	movss  0x18(%rdx,%rsi,1),%xmm7
-   0x0000000000000031 <+49>:	movss  0x58(%rdx,%rsi,1),%xmm6
+   0x0000000000000014 <+20>:	xor    %eax,%eax // stream_index = 0
+   0x0000000000000016 <+22>:	imul   $0x98,%rdx,%rdx // sizeof(multiply_stream_t) == 152 (0x98)
+   0x000000000000001d <+29>:	mov    (%rsi,%rdx,1),%r8 // &A_block
+   0x0000000000000021 <+33>:	mov    0x8(%rsi,%rdx,1),%rcx // &B_block
+   0x0000000000000026 <+38>:	mov    0x10(%rsi,%rdx,1),%r9 // &C_block
+   0x000000000000002b <+43>:	movss  0x18(%rdx,%rsi,1),%xmm7 // norm[0]
+   0x0000000000000031 <+49>:	movss  0x58(%rdx,%rsi,1),%xmm6 // norm[16]
    0x0000000000000037 <+55>:	movaps %xmm7,%xmm0
    0x000000000000003a <+58>:	mulss  %xmm6,%xmm0
-   0x000000000000003e <+62>:	comiss %xmm1,%xmm0
+   0x000000000000003e <+62>:	comiss %xmm1,%xmm0 // norm[0]*norm[16] >= tolerance?
    0x0000000000000041 <+65>:	jb     0x4f7 <stream_kernel+1271>
-   0x0000000000000047 <+71>:	movss  0x1c(%rdx,%rsi,1),%xmm0
-   0x000000000000004d <+77>:	mulss  0x68(%rdx,%rsi,1),%xmm0
+   0x0000000000000047 <+71>:	movss  0x1c(%rdx,%rsi,1),%xmm0 // norm[1]
+   0x000000000000004d <+77>:	mulss  0x68(%rdx,%rsi,1),%xmm0 // norm[20]
    0x0000000000000053 <+83>:	comiss %xmm1,%xmm0
    0x0000000000000056 <+86>:	jb     0x4f7 <stream_kernel+1271>
    0x000000000000005c <+92>:	movss  0x20(%rdx,%rsi,1),%xmm0
@@ -37,38 +37,38 @@ Dump of assembler code for function stream_kernel:
    0x0000000000000077 <+119>:	mulss  0x88(%rdx,%rsi,1),%xmm0
    0x0000000000000080 <+128>:	comiss %xmm1,%xmm0
    0x0000000000000083 <+131>:	jb     0x4f7 <stream_kernel+1271>
-   0x0000000000000089 <+137>:	movaps (%rcx),%xmm4
-   0x000000000000008c <+140>:	movaps 0x10(%rcx),%xmm15
-   0x0000000000000091 <+145>:	movaps 0x20(%rcx),%xmm10
-   0x0000000000000096 <+150>:	movaps 0x30(%rcx),%xmm14
-   0x000000000000009b <+155>:	movaps (%r8),%xmm0
-   0x000000000000009f <+159>:	movaps 0x10(%r8),%xmm12
-   0x00000000000000a4 <+164>:	movaps 0x20(%r8),%xmm13
-   0x00000000000000a9 <+169>:	movaps 0x30(%r8),%xmm5
-   0x00000000000000ae <+174>:	movaps 0x40(%r8),%xmm11
-   0x00000000000000b3 <+179>:	movaps 0x50(%r8),%xmm9
-   0x00000000000000b8 <+184>:	movaps 0x60(%r8),%xmm3
-   0x00000000000000bd <+189>:	mulps  %xmm4,%xmm0
-   0x00000000000000c0 <+192>:	mulps  %xmm15,%xmm12
-   0x00000000000000c4 <+196>:	movaps 0xc0(%r8),%xmm8
+   0x0000000000000089 <+137>:	movaps (%rcx),%xmm4 // B(1,1:4)
+   0x000000000000008c <+140>:	movaps 0x10(%rcx),%xmm15 // B(2,1:4)
+   0x0000000000000091 <+145>:	movaps 0x20(%rcx),%xmm10 // B(3,1:4)
+   0x0000000000000096 <+150>:	movaps 0x30(%rcx),%xmm14 // B(4,1:4)
+   0x000000000000009b <+155>:	movaps (%r8),%xmm0 // A(1,1)
+   0x000000000000009f <+159>:	movaps 0x10(%r8),%xmm12 // A(1,2)
+   0x00000000000000a4 <+164>:	movaps 0x20(%r8),%xmm13 // A(1,3)
+   0x00000000000000a9 <+169>:	movaps 0x30(%r8),%xmm5 // A(1,4)
+   0x00000000000000ae <+174>:	movaps 0x40(%r8),%xmm11 // A(2,1)
+   0x00000000000000b3 <+179>:	movaps 0x50(%r8),%xmm9 // A(2,2)
+   0x00000000000000b8 <+184>:	movaps 0x60(%r8),%xmm3 // A(2,3)
+   0x00000000000000bd <+189>:	mulps  %xmm4,%xmm0 // A(1,1)*B(1,1:4)
+   0x00000000000000c0 <+192>:	mulps  %xmm15,%xmm12 // A(1,2)*B(2,1:4)
+   0x00000000000000c4 <+196>:	movaps 0xc0(%r8),%xmm8 // A(4,1)
    0x00000000000000cc <+204>:	addps  %xmm0,%xmm12
-   0x00000000000000d0 <+208>:	mulps  %xmm10,%xmm13
-   0x00000000000000d4 <+212>:	movaps 0x70(%r8),%xmm0
+   0x00000000000000d0 <+208>:	mulps  %xmm10,%xmm13 // A(1,3)*B(3,1:4)
+   0x00000000000000d4 <+212>:	movaps 0x70(%r8),%xmm0 // A(2,4)
    0x00000000000000d9 <+217>:	addps  %xmm12,%xmm13
-   0x00000000000000dd <+221>:	movaps 0x80(%r8),%xmm12
-   0x00000000000000e5 <+229>:	mulps  %xmm14,%xmm5
+   0x00000000000000dd <+221>:	movaps 0x80(%r8),%xmm12 // A(3,1)
+   0x00000000000000e5 <+229>:	mulps  %xmm14,%xmm5 // A(1,4)*B(4,1:4)
    0x00000000000000e9 <+233>:	addps  %xmm13,%xmm5
-   0x00000000000000ed <+237>:	movaps 0x90(%r8),%xmm13
-   0x00000000000000f5 <+245>:	mulps  %xmm4,%xmm11
-   0x00000000000000f9 <+249>:	mulps  %xmm15,%xmm9
+   0x00000000000000ed <+237>:	movaps 0x90(%r8),%xmm13 // A(3,2)
+   0x00000000000000f5 <+245>:	mulps  %xmm4,%xmm11 // A(2,1)*B(1,1:4)
+   0x00000000000000f9 <+249>:	mulps  %xmm15,%xmm9 // A(2,2)*B(2,1:4)
    0x00000000000000fd <+253>:	addps  %xmm11,%xmm9
-   0x0000000000000101 <+257>:	movaps 0xa0(%r8),%xmm11
+   0x0000000000000101 <+257>:	movaps 0xa0(%r8),%xmm11 // A(3,3)
    0x0000000000000109 <+265>:	mulps  %xmm10,%xmm3
    0x000000000000010d <+269>:	addps  %xmm9,%xmm3
    0x0000000000000111 <+273>:	movaps 0x130(%rcx),%xmm9
    0x0000000000000119 <+281>:	mulps  %xmm14,%xmm0
    0x000000000000011d <+285>:	addps  %xmm3,%xmm0
-   0x0000000000000120 <+288>:	movaps 0xb0(%r8),%xmm3
+   0x0000000000000120 <+288>:	movaps 0xb0(%r8),%xmm3 // A(3,4)
    0x0000000000000128 <+296>:	mulps  %xmm4,%xmm12
    0x000000000000012c <+300>:	mulps  %xmm15,%xmm13
    0x0000000000000130 <+304>:	addps  %xmm12,%xmm13
@@ -78,11 +78,11 @@ Dump of assembler code for function stream_kernel:
    0x0000000000000144 <+324>:	movaps 0x100(%rcx),%xmm13
    0x000000000000014c <+332>:	mulps  %xmm14,%xmm3
    0x0000000000000150 <+336>:	addps  %xmm11,%xmm3
-   0x0000000000000154 <+340>:	movaps 0xf0(%r8),%xmm11
+   0x0000000000000154 <+340>:	movaps 0xf0(%r8),%xmm11 // A(4,4)
    0x000000000000015c <+348>:	mulps  %xmm4,%xmm8
-   0x0000000000000160 <+352>:	movaps 0xd0(%r8),%xmm4
+   0x0000000000000160 <+352>:	movaps 0xd0(%r8),%xmm4 // A(4,2)
    0x0000000000000168 <+360>:	mulps  %xmm15,%xmm4
-   0x000000000000016c <+364>:	movaps 0xe0(%r8),%xmm15
+   0x000000000000016c <+364>:	movaps 0xe0(%r8),%xmm15 // A(4,3)
    0x0000000000000174 <+372>:	addps  %xmm8,%xmm4
    0x0000000000000178 <+376>:	mulps  %xmm10,%xmm15
    0x000000000000017c <+380>:	movaps 0x100(%r8),%xmm10
