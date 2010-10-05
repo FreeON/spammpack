@@ -112,7 +112,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_11]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_11]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_11]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_11]);
@@ -206,7 +206,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_11]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_12]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_11]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_12]);
@@ -300,7 +300,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_11]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_13]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_11]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_13]);
@@ -394,7 +394,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_11]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_14]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_11]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_14]);
@@ -488,7 +488,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_21]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_11]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_21]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_11]);
@@ -582,7 +582,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_21]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_12]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_21]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_12]);
@@ -676,7 +676,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_21]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_13]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_21]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_13]);
@@ -770,7 +770,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_21]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_14]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_21]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_14]);
@@ -864,7 +864,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_31]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_11]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_31]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_11]);
@@ -958,7 +958,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_31]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_12]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_31]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_12]);
@@ -1052,7 +1052,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_31]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_13]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_31]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_13]);
@@ -1146,7 +1146,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_31]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_14]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_31]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_14]);
@@ -1240,7 +1240,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_41]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_11]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_41]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_11]);
@@ -1334,7 +1334,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_41]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_12]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_41]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_12]);
@@ -1428,7 +1428,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_41]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_13]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_41]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_13]);
@@ -1522,7 +1522,7 @@ stream_kernel (const unsigned int number_stream_elements,
     {
       A_element = _mm_load_ps(&A[(i*4+0)*4+A_OFFSET_41]);
       B_row = _mm_load_ps(&B[0*4+B_OFFSET_14]);
-      C_row[i] = _mm_add_ps(_mm_mul_ps(A_element, B_row), C_row[i]);
+      C_row[i] = _mm_mul_ps(A_element, B_row);
 
       A_element = _mm_load_ps(&A[(i*4+1)*4+A_OFFSET_41]);
       B_row = _mm_load_ps(&B[1*4+B_OFFSET_14]);
