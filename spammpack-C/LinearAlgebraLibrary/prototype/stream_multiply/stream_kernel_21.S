@@ -6,37 +6,38 @@
 # Function ABI.
 #define number_stream_elements %rdi
 #define alpha                  %xmm0
+#define tolerance              %xmm1
 #define multiply_stream        %rsi
 
 # Define SSE registers used for C matrix
-#define C1 %xmm1
-#define C2 %xmm2
-#define C3 %xmm3
-#define C4 %xmm4
+#define C1 %xmm2
+#define C2 %xmm3
+#define C3 %xmm4
+#define C4 %xmm5
 
 # Define SSE registeres used for B matrix
-#define B1 %xmm5
-#define B2 %xmm6
-#define B3 %xmm7
-#define B4 %xmm8
+#define B1 %xmm6
+#define B2 %xmm7
+#define B3 %xmm8
+#define B4 %xmm9
 
 # Define SSE registeres used for A matrix
-#define A11 %xmm9
-#define A12 %xmm10
-#define A13 %xmm11
-#define A14 %xmm12
-#define A21 %xmm13
-#define A22 %xmm14
-#define A23 %xmm15
-#define A24 %xmm9
-#define A31 %xmm10
-#define A32 %xmm11
-#define A33 %xmm12
-#define A34 %xmm13
-#define A41 %xmm14
-#define A42 %xmm15
-#define A43 %xmm9
-#define A44 %xmm10
+#define A11 %xmm10
+#define A12 %xmm11
+#define A13 %xmm12
+#define A14 %xmm13
+#define A21 %xmm14
+#define A22 %xmm15
+#define A23 %xmm10
+#define A24 %xmm11
+#define A31 %xmm12
+#define A32 %xmm13
+#define A33 %xmm14
+#define A34 %xmm15
+#define A41 %xmm10
+#define A42 %xmm11
+#define A43 %xmm12
+#define A44 %xmm13
 
 # Define loop variables.
 #define index        %rax
@@ -162,6 +163,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_1:
+
+  # Check norm of product.
+  movss 0x18(multiply_stream, base_pointer), B1
+  mulss 0x58(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_2
+
   # Calculate C(1,1) = A(1,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
   movaps 0x10+B_OFFSET_11(B), B2
@@ -173,37 +183,37 @@ loop:
   movaps 0x30+A_OFFSET_11(A), A14
   movaps 0x40+A_OFFSET_11(A), A21
   movaps 0x50+A_OFFSET_11(A), A22
-  movaps 0x60+A_OFFSET_11(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_11(A), A24
+  movaps 0x60+A_OFFSET_11(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_11(A), A31
+  movaps 0x70+A_OFFSET_11(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_11(A), A32
+  movaps 0x80+A_OFFSET_11(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_11(A), A33
+  movaps 0x90+A_OFFSET_11(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_11(A), A34
+  movaps 0xa0+A_OFFSET_11(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_11(A), A41
+  movaps 0xb0+A_OFFSET_11(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_11(A), A42
+  movaps 0xc0+A_OFFSET_11(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_11(A), A43
+  movaps 0xd0+A_OFFSET_11(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_11(A), A44
+  movaps 0xe0+A_OFFSET_11(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_11(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -215,6 +225,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_2:
+
+  # Check norm of product.
+  movss 0x1c(multiply_stream, base_pointer), B1
+  mulss 0x68(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_3
 
   # Calculate C(1,1) = A(1,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
@@ -227,37 +246,37 @@ loop:
   movaps 0x30+A_OFFSET_12(A), A14
   movaps 0x40+A_OFFSET_12(A), A21
   movaps 0x50+A_OFFSET_12(A), A22
-  movaps 0x60+A_OFFSET_12(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_12(A), A24
+  movaps 0x60+A_OFFSET_12(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_12(A), A31
+  movaps 0x70+A_OFFSET_12(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_12(A), A32
+  movaps 0x80+A_OFFSET_12(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_12(A), A33
+  movaps 0x90+A_OFFSET_12(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_12(A), A34
+  movaps 0xa0+A_OFFSET_12(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_12(A), A41
+  movaps 0xb0+A_OFFSET_12(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_12(A), A42
+  movaps 0xc0+A_OFFSET_12(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_12(A), A43
+  movaps 0xd0+A_OFFSET_12(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_12(A), A44
+  movaps 0xe0+A_OFFSET_12(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_12(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -269,6 +288,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_3:
+
+  # Check norm of product.
+  movss 0x20(multiply_stream, base_pointer), B1
+  mulss 0x78(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_4
 
   # Calculate C(1,1) = A(1,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
@@ -281,37 +309,37 @@ loop:
   movaps 0x30+A_OFFSET_13(A), A14
   movaps 0x40+A_OFFSET_13(A), A21
   movaps 0x50+A_OFFSET_13(A), A22
-  movaps 0x60+A_OFFSET_13(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_13(A), A24
+  movaps 0x60+A_OFFSET_13(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_13(A), A31
+  movaps 0x70+A_OFFSET_13(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_13(A), A32
+  movaps 0x80+A_OFFSET_13(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_13(A), A33
+  movaps 0x90+A_OFFSET_13(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_13(A), A34
+  movaps 0xa0+A_OFFSET_13(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_13(A), A41
+  movaps 0xb0+A_OFFSET_13(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_13(A), A42
+  movaps 0xc0+A_OFFSET_13(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_13(A), A43
+  movaps 0xd0+A_OFFSET_13(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_13(A), A44
+  movaps 0xe0+A_OFFSET_13(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_13(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -324,6 +352,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_4:
+
+  # Check norm of product.
+  movss 0x24(multiply_stream, base_pointer), B1
+  mulss 0x88(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_5
+
   # Calculate C(1,1) = A(1,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
   movaps 0x10+B_OFFSET_41(B), B2
@@ -335,37 +372,37 @@ loop:
   movaps 0x30+A_OFFSET_14(A), A14
   movaps 0x40+A_OFFSET_14(A), A21
   movaps 0x50+A_OFFSET_14(A), A22
-  movaps 0x60+A_OFFSET_14(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_14(A), A24
+  movaps 0x60+A_OFFSET_14(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_14(A), A31
+  movaps 0x70+A_OFFSET_14(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_14(A), A32
+  movaps 0x80+A_OFFSET_14(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_14(A), A33
+  movaps 0x90+A_OFFSET_14(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_14(A), A34
+  movaps 0xa0+A_OFFSET_14(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_14(A), A41
+  movaps 0xb0+A_OFFSET_14(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_14(A), A42
+  movaps 0xc0+A_OFFSET_14(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_14(A), A43
+  movaps 0xd0+A_OFFSET_14(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_14(A), A44
+  movaps 0xe0+A_OFFSET_14(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_14(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -377,6 +414,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_5:
 
   # Multiply C(1,1) by alpha.
   mulps alpha, C1
@@ -402,6 +442,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_6:
+
+  # Check norm of product.
+  movss 0x18(multiply_stream, base_pointer), B1
+  mulss 0x5c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_7
+
   # Calculate C(1,2) = A(1,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
   movaps 0x10+B_OFFSET_12(B), B2
@@ -413,37 +462,37 @@ loop:
   movaps 0x30+A_OFFSET_11(A), A14
   movaps 0x40+A_OFFSET_11(A), A21
   movaps 0x50+A_OFFSET_11(A), A22
-  movaps 0x60+A_OFFSET_11(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_11(A), A24
+  movaps 0x60+A_OFFSET_11(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_11(A), A31
+  movaps 0x70+A_OFFSET_11(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_11(A), A32
+  movaps 0x80+A_OFFSET_11(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_11(A), A33
+  movaps 0x90+A_OFFSET_11(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_11(A), A34
+  movaps 0xa0+A_OFFSET_11(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_11(A), A41
+  movaps 0xb0+A_OFFSET_11(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_11(A), A42
+  movaps 0xc0+A_OFFSET_11(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_11(A), A43
+  movaps 0xd0+A_OFFSET_11(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_11(A), A44
+  movaps 0xe0+A_OFFSET_11(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_11(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -455,6 +504,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_7:
+
+  # Check norm of product.
+  movss 0x1c(multiply_stream, base_pointer), B1
+  mulss 0x6c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_8
 
   # Calculate C(1,2) = A(1,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
@@ -467,37 +525,37 @@ loop:
   movaps 0x30+A_OFFSET_12(A), A14
   movaps 0x40+A_OFFSET_12(A), A21
   movaps 0x50+A_OFFSET_12(A), A22
-  movaps 0x60+A_OFFSET_12(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_12(A), A24
+  movaps 0x60+A_OFFSET_12(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_12(A), A31
+  movaps 0x70+A_OFFSET_12(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_12(A), A32
+  movaps 0x80+A_OFFSET_12(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_12(A), A33
+  movaps 0x90+A_OFFSET_12(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_12(A), A34
+  movaps 0xa0+A_OFFSET_12(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_12(A), A41
+  movaps 0xb0+A_OFFSET_12(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_12(A), A42
+  movaps 0xc0+A_OFFSET_12(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_12(A), A43
+  movaps 0xd0+A_OFFSET_12(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_12(A), A44
+  movaps 0xe0+A_OFFSET_12(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_12(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -509,6 +567,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_8:
+
+  # Check norm of product.
+  movss 0x20(multiply_stream, base_pointer), B1
+  mulss 0x7c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_9
 
   # Calculate C(1,2) = A(1,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
@@ -521,37 +588,37 @@ loop:
   movaps 0x30+A_OFFSET_13(A), A14
   movaps 0x40+A_OFFSET_13(A), A21
   movaps 0x50+A_OFFSET_13(A), A22
-  movaps 0x60+A_OFFSET_13(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_13(A), A24
+  movaps 0x60+A_OFFSET_13(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_13(A), A31
+  movaps 0x70+A_OFFSET_13(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_13(A), A32
+  movaps 0x80+A_OFFSET_13(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_13(A), A33
+  movaps 0x90+A_OFFSET_13(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_13(A), A34
+  movaps 0xa0+A_OFFSET_13(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_13(A), A41
+  movaps 0xb0+A_OFFSET_13(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_13(A), A42
+  movaps 0xc0+A_OFFSET_13(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_13(A), A43
+  movaps 0xd0+A_OFFSET_13(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_13(A), A44
+  movaps 0xe0+A_OFFSET_13(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_13(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -564,6 +631,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_9:
+
+  # Check norm of product.
+  movss 0x24(multiply_stream, base_pointer), B1
+  mulss 0x8c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_10
+
   # Calculate C(1,2) = A(1,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
   movaps 0x10+B_OFFSET_42(B), B2
@@ -575,37 +651,37 @@ loop:
   movaps 0x30+A_OFFSET_14(A), A14
   movaps 0x40+A_OFFSET_14(A), A21
   movaps 0x50+A_OFFSET_14(A), A22
-  movaps 0x60+A_OFFSET_14(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_14(A), A24
+  movaps 0x60+A_OFFSET_14(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_14(A), A31
+  movaps 0x70+A_OFFSET_14(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_14(A), A32
+  movaps 0x80+A_OFFSET_14(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_14(A), A33
+  movaps 0x90+A_OFFSET_14(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_14(A), A34
+  movaps 0xa0+A_OFFSET_14(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_14(A), A41
+  movaps 0xb0+A_OFFSET_14(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_14(A), A42
+  movaps 0xc0+A_OFFSET_14(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_14(A), A43
+  movaps 0xd0+A_OFFSET_14(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_14(A), A44
+  movaps 0xe0+A_OFFSET_14(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_14(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -617,6 +693,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_10:
 
   # Multiply C(1,2) by alpha.
   mulps alpha, C1
@@ -642,6 +721,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_11:
+
+  # Check norm of product.
+  movss 0x18(multiply_stream, base_pointer), B1
+  mulss 0x60(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_12
+
   # Calculate C(1,3) = A(1,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
   movaps 0x10+B_OFFSET_13(B), B2
@@ -653,37 +741,37 @@ loop:
   movaps 0x30+A_OFFSET_11(A), A14
   movaps 0x40+A_OFFSET_11(A), A21
   movaps 0x50+A_OFFSET_11(A), A22
-  movaps 0x60+A_OFFSET_11(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_11(A), A24
+  movaps 0x60+A_OFFSET_11(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_11(A), A31
+  movaps 0x70+A_OFFSET_11(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_11(A), A32
+  movaps 0x80+A_OFFSET_11(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_11(A), A33
+  movaps 0x90+A_OFFSET_11(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_11(A), A34
+  movaps 0xa0+A_OFFSET_11(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_11(A), A41
+  movaps 0xb0+A_OFFSET_11(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_11(A), A42
+  movaps 0xc0+A_OFFSET_11(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_11(A), A43
+  movaps 0xd0+A_OFFSET_11(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_11(A), A44
+  movaps 0xe0+A_OFFSET_11(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_11(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -695,6 +783,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_12:
+
+  # Check norm of product.
+  movss 0x1c(multiply_stream, base_pointer), B1
+  mulss 0x70(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_13
 
   # Calculate C(1,3) = A(1,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
@@ -707,37 +804,37 @@ loop:
   movaps 0x30+A_OFFSET_12(A), A14
   movaps 0x40+A_OFFSET_12(A), A21
   movaps 0x50+A_OFFSET_12(A), A22
-  movaps 0x60+A_OFFSET_12(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_12(A), A24
+  movaps 0x60+A_OFFSET_12(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_12(A), A31
+  movaps 0x70+A_OFFSET_12(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_12(A), A32
+  movaps 0x80+A_OFFSET_12(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_12(A), A33
+  movaps 0x90+A_OFFSET_12(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_12(A), A34
+  movaps 0xa0+A_OFFSET_12(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_12(A), A41
+  movaps 0xb0+A_OFFSET_12(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_12(A), A42
+  movaps 0xc0+A_OFFSET_12(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_12(A), A43
+  movaps 0xd0+A_OFFSET_12(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_12(A), A44
+  movaps 0xe0+A_OFFSET_12(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_12(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -749,6 +846,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_13:
+
+  # Check norm of product.
+  movss 0x20(multiply_stream, base_pointer), B1
+  mulss 0x80(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_14
 
   # Calculate C(1,3) = A(1,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
@@ -761,37 +867,37 @@ loop:
   movaps 0x30+A_OFFSET_13(A), A14
   movaps 0x40+A_OFFSET_13(A), A21
   movaps 0x50+A_OFFSET_13(A), A22
-  movaps 0x60+A_OFFSET_13(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_13(A), A24
+  movaps 0x60+A_OFFSET_13(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_13(A), A31
+  movaps 0x70+A_OFFSET_13(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_13(A), A32
+  movaps 0x80+A_OFFSET_13(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_13(A), A33
+  movaps 0x90+A_OFFSET_13(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_13(A), A34
+  movaps 0xa0+A_OFFSET_13(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_13(A), A41
+  movaps 0xb0+A_OFFSET_13(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_13(A), A42
+  movaps 0xc0+A_OFFSET_13(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_13(A), A43
+  movaps 0xd0+A_OFFSET_13(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_13(A), A44
+  movaps 0xe0+A_OFFSET_13(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_13(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -804,6 +910,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_14:
+
+  # Check norm of product.
+  movss 0x24(multiply_stream, base_pointer), B1
+  mulss 0x90(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_15
+
   # Calculate C(1,3) = A(1,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
   movaps 0x10+B_OFFSET_43(B), B2
@@ -815,37 +930,37 @@ loop:
   movaps 0x30+A_OFFSET_14(A), A14
   movaps 0x40+A_OFFSET_14(A), A21
   movaps 0x50+A_OFFSET_14(A), A22
-  movaps 0x60+A_OFFSET_14(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_14(A), A24
+  movaps 0x60+A_OFFSET_14(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_14(A), A31
+  movaps 0x70+A_OFFSET_14(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_14(A), A32
+  movaps 0x80+A_OFFSET_14(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_14(A), A33
+  movaps 0x90+A_OFFSET_14(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_14(A), A34
+  movaps 0xa0+A_OFFSET_14(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_14(A), A41
+  movaps 0xb0+A_OFFSET_14(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_14(A), A42
+  movaps 0xc0+A_OFFSET_14(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_14(A), A43
+  movaps 0xd0+A_OFFSET_14(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_14(A), A44
+  movaps 0xe0+A_OFFSET_14(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_14(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -857,6 +972,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_15:
 
   # Multiply C(1,3) by alpha.
   mulps alpha, C1
@@ -882,6 +1000,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_16:
+
+  # Check norm of product.
+  movss 0x18(multiply_stream, base_pointer), B1
+  mulss 0x64(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_17
+
   # Calculate C(1,4) = A(1,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
   movaps 0x10+B_OFFSET_14(B), B2
@@ -893,37 +1020,37 @@ loop:
   movaps 0x30+A_OFFSET_11(A), A14
   movaps 0x40+A_OFFSET_11(A), A21
   movaps 0x50+A_OFFSET_11(A), A22
-  movaps 0x60+A_OFFSET_11(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_11(A), A24
+  movaps 0x60+A_OFFSET_11(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_11(A), A31
+  movaps 0x70+A_OFFSET_11(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_11(A), A32
+  movaps 0x80+A_OFFSET_11(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_11(A), A33
+  movaps 0x90+A_OFFSET_11(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_11(A), A34
+  movaps 0xa0+A_OFFSET_11(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_11(A), A41
+  movaps 0xb0+A_OFFSET_11(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_11(A), A42
+  movaps 0xc0+A_OFFSET_11(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_11(A), A43
+  movaps 0xd0+A_OFFSET_11(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_11(A), A44
+  movaps 0xe0+A_OFFSET_11(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_11(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -935,6 +1062,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_17:
+
+  # Check norm of product.
+  movss 0x1c(multiply_stream, base_pointer), B1
+  mulss 0x74(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_18
 
   # Calculate C(1,4) = A(1,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
@@ -947,37 +1083,37 @@ loop:
   movaps 0x30+A_OFFSET_12(A), A14
   movaps 0x40+A_OFFSET_12(A), A21
   movaps 0x50+A_OFFSET_12(A), A22
-  movaps 0x60+A_OFFSET_12(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_12(A), A24
+  movaps 0x60+A_OFFSET_12(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_12(A), A31
+  movaps 0x70+A_OFFSET_12(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_12(A), A32
+  movaps 0x80+A_OFFSET_12(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_12(A), A33
+  movaps 0x90+A_OFFSET_12(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_12(A), A34
+  movaps 0xa0+A_OFFSET_12(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_12(A), A41
+  movaps 0xb0+A_OFFSET_12(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_12(A), A42
+  movaps 0xc0+A_OFFSET_12(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_12(A), A43
+  movaps 0xd0+A_OFFSET_12(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_12(A), A44
+  movaps 0xe0+A_OFFSET_12(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_12(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -989,6 +1125,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_18:
+
+  # Check norm of product.
+  movss 0x20(multiply_stream, base_pointer), B1
+  mulss 0x84(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_19
 
   # Calculate C(1,4) = A(1,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
@@ -1001,37 +1146,37 @@ loop:
   movaps 0x30+A_OFFSET_13(A), A14
   movaps 0x40+A_OFFSET_13(A), A21
   movaps 0x50+A_OFFSET_13(A), A22
-  movaps 0x60+A_OFFSET_13(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_13(A), A24
+  movaps 0x60+A_OFFSET_13(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_13(A), A31
+  movaps 0x70+A_OFFSET_13(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_13(A), A32
+  movaps 0x80+A_OFFSET_13(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_13(A), A33
+  movaps 0x90+A_OFFSET_13(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_13(A), A34
+  movaps 0xa0+A_OFFSET_13(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_13(A), A41
+  movaps 0xb0+A_OFFSET_13(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_13(A), A42
+  movaps 0xc0+A_OFFSET_13(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_13(A), A43
+  movaps 0xd0+A_OFFSET_13(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_13(A), A44
+  movaps 0xe0+A_OFFSET_13(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_13(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1044,6 +1189,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_19:
+
+  # Check norm of product.
+  movss 0x24(multiply_stream, base_pointer), B1
+  mulss 0x94(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_20
+
   # Calculate C(1,4) = A(1,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
   movaps 0x10+B_OFFSET_44(B), B2
@@ -1055,37 +1209,37 @@ loop:
   movaps 0x30+A_OFFSET_14(A), A14
   movaps 0x40+A_OFFSET_14(A), A21
   movaps 0x50+A_OFFSET_14(A), A22
-  movaps 0x60+A_OFFSET_14(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_14(A), A24
+  movaps 0x60+A_OFFSET_14(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_14(A), A31
+  movaps 0x70+A_OFFSET_14(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_14(A), A32
+  movaps 0x80+A_OFFSET_14(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_14(A), A33
+  movaps 0x90+A_OFFSET_14(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_14(A), A34
+  movaps 0xa0+A_OFFSET_14(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_14(A), A41
+  movaps 0xb0+A_OFFSET_14(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_14(A), A42
+  movaps 0xc0+A_OFFSET_14(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_14(A), A43
+  movaps 0xd0+A_OFFSET_14(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_14(A), A44
+  movaps 0xe0+A_OFFSET_14(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_14(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1097,6 +1251,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_20:
 
   # Multiply C(1,4) by alpha.
   mulps alpha, C1
@@ -1122,6 +1279,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_21:
+
+  # Check norm of product.
+  movss 0x28(multiply_stream, base_pointer), B1
+  mulss 0x58(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_22
+
   # Calculate C(2,1) = A(2,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
   movaps 0x10+B_OFFSET_11(B), B2
@@ -1133,37 +1299,37 @@ loop:
   movaps 0x30+A_OFFSET_21(A), A14
   movaps 0x40+A_OFFSET_21(A), A21
   movaps 0x50+A_OFFSET_21(A), A22
-  movaps 0x60+A_OFFSET_21(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_21(A), A24
+  movaps 0x60+A_OFFSET_21(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_21(A), A31
+  movaps 0x70+A_OFFSET_21(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_21(A), A32
+  movaps 0x80+A_OFFSET_21(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_21(A), A33
+  movaps 0x90+A_OFFSET_21(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_21(A), A34
+  movaps 0xa0+A_OFFSET_21(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_21(A), A41
+  movaps 0xb0+A_OFFSET_21(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_21(A), A42
+  movaps 0xc0+A_OFFSET_21(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_21(A), A43
+  movaps 0xd0+A_OFFSET_21(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_21(A), A44
+  movaps 0xe0+A_OFFSET_21(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_21(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1175,6 +1341,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_22:
+
+  # Check norm of product.
+  movss 0x2c(multiply_stream, base_pointer), B1
+  mulss 0x68(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_23
 
   # Calculate C(2,1) = A(2,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
@@ -1187,37 +1362,37 @@ loop:
   movaps 0x30+A_OFFSET_22(A), A14
   movaps 0x40+A_OFFSET_22(A), A21
   movaps 0x50+A_OFFSET_22(A), A22
-  movaps 0x60+A_OFFSET_22(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_22(A), A24
+  movaps 0x60+A_OFFSET_22(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_22(A), A31
+  movaps 0x70+A_OFFSET_22(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_22(A), A32
+  movaps 0x80+A_OFFSET_22(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_22(A), A33
+  movaps 0x90+A_OFFSET_22(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_22(A), A34
+  movaps 0xa0+A_OFFSET_22(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_22(A), A41
+  movaps 0xb0+A_OFFSET_22(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_22(A), A42
+  movaps 0xc0+A_OFFSET_22(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_22(A), A43
+  movaps 0xd0+A_OFFSET_22(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_22(A), A44
+  movaps 0xe0+A_OFFSET_22(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_22(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1229,6 +1404,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_23:
+
+  # Check norm of product.
+  movss 0x30(multiply_stream, base_pointer), B1
+  mulss 0x78(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_24
 
   # Calculate C(2,1) = A(2,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
@@ -1241,37 +1425,37 @@ loop:
   movaps 0x30+A_OFFSET_23(A), A14
   movaps 0x40+A_OFFSET_23(A), A21
   movaps 0x50+A_OFFSET_23(A), A22
-  movaps 0x60+A_OFFSET_23(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_23(A), A24
+  movaps 0x60+A_OFFSET_23(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_23(A), A31
+  movaps 0x70+A_OFFSET_23(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_23(A), A32
+  movaps 0x80+A_OFFSET_23(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_23(A), A33
+  movaps 0x90+A_OFFSET_23(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_23(A), A34
+  movaps 0xa0+A_OFFSET_23(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_23(A), A41
+  movaps 0xb0+A_OFFSET_23(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_23(A), A42
+  movaps 0xc0+A_OFFSET_23(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_23(A), A43
+  movaps 0xd0+A_OFFSET_23(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_23(A), A44
+  movaps 0xe0+A_OFFSET_23(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_23(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1284,6 +1468,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_24:
+
+  # Check norm of product.
+  movss 0x34(multiply_stream, base_pointer), B1
+  mulss 0x88(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_25
+
   # Calculate C(2,1) = A(2,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
   movaps 0x10+B_OFFSET_41(B), B2
@@ -1295,37 +1488,37 @@ loop:
   movaps 0x30+A_OFFSET_24(A), A14
   movaps 0x40+A_OFFSET_24(A), A21
   movaps 0x50+A_OFFSET_24(A), A22
-  movaps 0x60+A_OFFSET_24(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_24(A), A24
+  movaps 0x60+A_OFFSET_24(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_24(A), A31
+  movaps 0x70+A_OFFSET_24(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_24(A), A32
+  movaps 0x80+A_OFFSET_24(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_24(A), A33
+  movaps 0x90+A_OFFSET_24(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_24(A), A34
+  movaps 0xa0+A_OFFSET_24(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_24(A), A41
+  movaps 0xb0+A_OFFSET_24(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_24(A), A42
+  movaps 0xc0+A_OFFSET_24(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_24(A), A43
+  movaps 0xd0+A_OFFSET_24(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_24(A), A44
+  movaps 0xe0+A_OFFSET_24(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_24(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1337,6 +1530,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_25:
 
   # Multiply C(2,1) by alpha.
   mulps alpha, C1
@@ -1362,6 +1558,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_26:
+
+  # Check norm of product.
+  movss 0x28(multiply_stream, base_pointer), B1
+  mulss 0x5c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_27
+
   # Calculate C(2,2) = A(2,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
   movaps 0x10+B_OFFSET_12(B), B2
@@ -1373,37 +1578,37 @@ loop:
   movaps 0x30+A_OFFSET_21(A), A14
   movaps 0x40+A_OFFSET_21(A), A21
   movaps 0x50+A_OFFSET_21(A), A22
-  movaps 0x60+A_OFFSET_21(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_21(A), A24
+  movaps 0x60+A_OFFSET_21(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_21(A), A31
+  movaps 0x70+A_OFFSET_21(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_21(A), A32
+  movaps 0x80+A_OFFSET_21(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_21(A), A33
+  movaps 0x90+A_OFFSET_21(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_21(A), A34
+  movaps 0xa0+A_OFFSET_21(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_21(A), A41
+  movaps 0xb0+A_OFFSET_21(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_21(A), A42
+  movaps 0xc0+A_OFFSET_21(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_21(A), A43
+  movaps 0xd0+A_OFFSET_21(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_21(A), A44
+  movaps 0xe0+A_OFFSET_21(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_21(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1415,6 +1620,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_27:
+
+  # Check norm of product.
+  movss 0x2c(multiply_stream, base_pointer), B1
+  mulss 0x6c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_28
 
   # Calculate C(2,2) = A(2,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
@@ -1427,37 +1641,37 @@ loop:
   movaps 0x30+A_OFFSET_22(A), A14
   movaps 0x40+A_OFFSET_22(A), A21
   movaps 0x50+A_OFFSET_22(A), A22
-  movaps 0x60+A_OFFSET_22(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_22(A), A24
+  movaps 0x60+A_OFFSET_22(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_22(A), A31
+  movaps 0x70+A_OFFSET_22(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_22(A), A32
+  movaps 0x80+A_OFFSET_22(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_22(A), A33
+  movaps 0x90+A_OFFSET_22(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_22(A), A34
+  movaps 0xa0+A_OFFSET_22(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_22(A), A41
+  movaps 0xb0+A_OFFSET_22(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_22(A), A42
+  movaps 0xc0+A_OFFSET_22(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_22(A), A43
+  movaps 0xd0+A_OFFSET_22(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_22(A), A44
+  movaps 0xe0+A_OFFSET_22(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_22(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1469,6 +1683,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_28:
+
+  # Check norm of product.
+  movss 0x30(multiply_stream, base_pointer), B1
+  mulss 0x7c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_29
 
   # Calculate C(2,2) = A(2,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
@@ -1481,37 +1704,37 @@ loop:
   movaps 0x30+A_OFFSET_23(A), A14
   movaps 0x40+A_OFFSET_23(A), A21
   movaps 0x50+A_OFFSET_23(A), A22
-  movaps 0x60+A_OFFSET_23(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_23(A), A24
+  movaps 0x60+A_OFFSET_23(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_23(A), A31
+  movaps 0x70+A_OFFSET_23(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_23(A), A32
+  movaps 0x80+A_OFFSET_23(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_23(A), A33
+  movaps 0x90+A_OFFSET_23(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_23(A), A34
+  movaps 0xa0+A_OFFSET_23(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_23(A), A41
+  movaps 0xb0+A_OFFSET_23(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_23(A), A42
+  movaps 0xc0+A_OFFSET_23(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_23(A), A43
+  movaps 0xd0+A_OFFSET_23(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_23(A), A44
+  movaps 0xe0+A_OFFSET_23(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_23(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1524,6 +1747,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_29:
+
+  # Check norm of product.
+  movss 0x34(multiply_stream, base_pointer), B1
+  mulss 0x8c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_30
+
   # Calculate C(2,2) = A(2,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
   movaps 0x10+B_OFFSET_42(B), B2
@@ -1535,37 +1767,37 @@ loop:
   movaps 0x30+A_OFFSET_24(A), A14
   movaps 0x40+A_OFFSET_24(A), A21
   movaps 0x50+A_OFFSET_24(A), A22
-  movaps 0x60+A_OFFSET_24(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_24(A), A24
+  movaps 0x60+A_OFFSET_24(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_24(A), A31
+  movaps 0x70+A_OFFSET_24(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_24(A), A32
+  movaps 0x80+A_OFFSET_24(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_24(A), A33
+  movaps 0x90+A_OFFSET_24(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_24(A), A34
+  movaps 0xa0+A_OFFSET_24(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_24(A), A41
+  movaps 0xb0+A_OFFSET_24(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_24(A), A42
+  movaps 0xc0+A_OFFSET_24(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_24(A), A43
+  movaps 0xd0+A_OFFSET_24(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_24(A), A44
+  movaps 0xe0+A_OFFSET_24(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_24(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1577,6 +1809,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_30:
 
   # Multiply C(2,2) by alpha.
   mulps alpha, C1
@@ -1602,6 +1837,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_31:
+
+  # Check norm of product.
+  movss 0x28(multiply_stream, base_pointer), B1
+  mulss 0x60(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_32
+
   # Calculate C(2,3) = A(2,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
   movaps 0x10+B_OFFSET_13(B), B2
@@ -1613,37 +1857,37 @@ loop:
   movaps 0x30+A_OFFSET_21(A), A14
   movaps 0x40+A_OFFSET_21(A), A21
   movaps 0x50+A_OFFSET_21(A), A22
-  movaps 0x60+A_OFFSET_21(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_21(A), A24
+  movaps 0x60+A_OFFSET_21(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_21(A), A31
+  movaps 0x70+A_OFFSET_21(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_21(A), A32
+  movaps 0x80+A_OFFSET_21(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_21(A), A33
+  movaps 0x90+A_OFFSET_21(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_21(A), A34
+  movaps 0xa0+A_OFFSET_21(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_21(A), A41
+  movaps 0xb0+A_OFFSET_21(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_21(A), A42
+  movaps 0xc0+A_OFFSET_21(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_21(A), A43
+  movaps 0xd0+A_OFFSET_21(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_21(A), A44
+  movaps 0xe0+A_OFFSET_21(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_21(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1655,6 +1899,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_32:
+
+  # Check norm of product.
+  movss 0x2c(multiply_stream, base_pointer), B1
+  mulss 0x70(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_33
 
   # Calculate C(2,3) = A(2,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
@@ -1667,37 +1920,37 @@ loop:
   movaps 0x30+A_OFFSET_22(A), A14
   movaps 0x40+A_OFFSET_22(A), A21
   movaps 0x50+A_OFFSET_22(A), A22
-  movaps 0x60+A_OFFSET_22(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_22(A), A24
+  movaps 0x60+A_OFFSET_22(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_22(A), A31
+  movaps 0x70+A_OFFSET_22(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_22(A), A32
+  movaps 0x80+A_OFFSET_22(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_22(A), A33
+  movaps 0x90+A_OFFSET_22(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_22(A), A34
+  movaps 0xa0+A_OFFSET_22(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_22(A), A41
+  movaps 0xb0+A_OFFSET_22(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_22(A), A42
+  movaps 0xc0+A_OFFSET_22(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_22(A), A43
+  movaps 0xd0+A_OFFSET_22(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_22(A), A44
+  movaps 0xe0+A_OFFSET_22(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_22(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1709,6 +1962,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_33:
+
+  # Check norm of product.
+  movss 0x30(multiply_stream, base_pointer), B1
+  mulss 0x80(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_34
 
   # Calculate C(2,3) = A(2,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
@@ -1721,37 +1983,37 @@ loop:
   movaps 0x30+A_OFFSET_23(A), A14
   movaps 0x40+A_OFFSET_23(A), A21
   movaps 0x50+A_OFFSET_23(A), A22
-  movaps 0x60+A_OFFSET_23(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_23(A), A24
+  movaps 0x60+A_OFFSET_23(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_23(A), A31
+  movaps 0x70+A_OFFSET_23(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_23(A), A32
+  movaps 0x80+A_OFFSET_23(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_23(A), A33
+  movaps 0x90+A_OFFSET_23(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_23(A), A34
+  movaps 0xa0+A_OFFSET_23(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_23(A), A41
+  movaps 0xb0+A_OFFSET_23(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_23(A), A42
+  movaps 0xc0+A_OFFSET_23(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_23(A), A43
+  movaps 0xd0+A_OFFSET_23(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_23(A), A44
+  movaps 0xe0+A_OFFSET_23(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_23(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1764,6 +2026,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_34:
+
+  # Check norm of product.
+  movss 0x34(multiply_stream, base_pointer), B1
+  mulss 0x90(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_35
+
   # Calculate C(2,3) = A(2,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
   movaps 0x10+B_OFFSET_43(B), B2
@@ -1775,37 +2046,37 @@ loop:
   movaps 0x30+A_OFFSET_24(A), A14
   movaps 0x40+A_OFFSET_24(A), A21
   movaps 0x50+A_OFFSET_24(A), A22
-  movaps 0x60+A_OFFSET_24(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_24(A), A24
+  movaps 0x60+A_OFFSET_24(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_24(A), A31
+  movaps 0x70+A_OFFSET_24(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_24(A), A32
+  movaps 0x80+A_OFFSET_24(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_24(A), A33
+  movaps 0x90+A_OFFSET_24(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_24(A), A34
+  movaps 0xa0+A_OFFSET_24(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_24(A), A41
+  movaps 0xb0+A_OFFSET_24(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_24(A), A42
+  movaps 0xc0+A_OFFSET_24(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_24(A), A43
+  movaps 0xd0+A_OFFSET_24(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_24(A), A44
+  movaps 0xe0+A_OFFSET_24(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_24(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1817,6 +2088,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_35:
 
   # Multiply C(2,3) by alpha.
   mulps alpha, C1
@@ -1842,6 +2116,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_36:
+
+  # Check norm of product.
+  movss 0x28(multiply_stream, base_pointer), B1
+  mulss 0x64(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_37
+
   # Calculate C(2,4) = A(2,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
   movaps 0x10+B_OFFSET_14(B), B2
@@ -1853,37 +2136,37 @@ loop:
   movaps 0x30+A_OFFSET_21(A), A14
   movaps 0x40+A_OFFSET_21(A), A21
   movaps 0x50+A_OFFSET_21(A), A22
-  movaps 0x60+A_OFFSET_21(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_21(A), A24
+  movaps 0x60+A_OFFSET_21(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_21(A), A31
+  movaps 0x70+A_OFFSET_21(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_21(A), A32
+  movaps 0x80+A_OFFSET_21(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_21(A), A33
+  movaps 0x90+A_OFFSET_21(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_21(A), A34
+  movaps 0xa0+A_OFFSET_21(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_21(A), A41
+  movaps 0xb0+A_OFFSET_21(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_21(A), A42
+  movaps 0xc0+A_OFFSET_21(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_21(A), A43
+  movaps 0xd0+A_OFFSET_21(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_21(A), A44
+  movaps 0xe0+A_OFFSET_21(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_21(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1895,6 +2178,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_37:
+
+  # Check norm of product.
+  movss 0x2c(multiply_stream, base_pointer), B1
+  mulss 0x74(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_38
 
   # Calculate C(2,4) = A(2,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
@@ -1907,37 +2199,37 @@ loop:
   movaps 0x30+A_OFFSET_22(A), A14
   movaps 0x40+A_OFFSET_22(A), A21
   movaps 0x50+A_OFFSET_22(A), A22
-  movaps 0x60+A_OFFSET_22(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_22(A), A24
+  movaps 0x60+A_OFFSET_22(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_22(A), A31
+  movaps 0x70+A_OFFSET_22(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_22(A), A32
+  movaps 0x80+A_OFFSET_22(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_22(A), A33
+  movaps 0x90+A_OFFSET_22(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_22(A), A34
+  movaps 0xa0+A_OFFSET_22(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_22(A), A41
+  movaps 0xb0+A_OFFSET_22(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_22(A), A42
+  movaps 0xc0+A_OFFSET_22(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_22(A), A43
+  movaps 0xd0+A_OFFSET_22(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_22(A), A44
+  movaps 0xe0+A_OFFSET_22(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_22(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -1949,6 +2241,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_38:
+
+  # Check norm of product.
+  movss 0x30(multiply_stream, base_pointer), B1
+  mulss 0x84(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_39
 
   # Calculate C(2,4) = A(2,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
@@ -1961,37 +2262,37 @@ loop:
   movaps 0x30+A_OFFSET_23(A), A14
   movaps 0x40+A_OFFSET_23(A), A21
   movaps 0x50+A_OFFSET_23(A), A22
-  movaps 0x60+A_OFFSET_23(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_23(A), A24
+  movaps 0x60+A_OFFSET_23(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_23(A), A31
+  movaps 0x70+A_OFFSET_23(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_23(A), A32
+  movaps 0x80+A_OFFSET_23(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_23(A), A33
+  movaps 0x90+A_OFFSET_23(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_23(A), A34
+  movaps 0xa0+A_OFFSET_23(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_23(A), A41
+  movaps 0xb0+A_OFFSET_23(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_23(A), A42
+  movaps 0xc0+A_OFFSET_23(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_23(A), A43
+  movaps 0xd0+A_OFFSET_23(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_23(A), A44
+  movaps 0xe0+A_OFFSET_23(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_23(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2004,6 +2305,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_39:
+
+  # Check norm of product.
+  movss 0x34(multiply_stream, base_pointer), B1
+  mulss 0x94(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_40
+
   # Calculate C(2,4) = A(2,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
   movaps 0x10+B_OFFSET_44(B), B2
@@ -2015,37 +2325,37 @@ loop:
   movaps 0x30+A_OFFSET_24(A), A14
   movaps 0x40+A_OFFSET_24(A), A21
   movaps 0x50+A_OFFSET_24(A), A22
-  movaps 0x60+A_OFFSET_24(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_24(A), A24
+  movaps 0x60+A_OFFSET_24(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_24(A), A31
+  movaps 0x70+A_OFFSET_24(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_24(A), A32
+  movaps 0x80+A_OFFSET_24(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_24(A), A33
+  movaps 0x90+A_OFFSET_24(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_24(A), A34
+  movaps 0xa0+A_OFFSET_24(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_24(A), A41
+  movaps 0xb0+A_OFFSET_24(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_24(A), A42
+  movaps 0xc0+A_OFFSET_24(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_24(A), A43
+  movaps 0xd0+A_OFFSET_24(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_24(A), A44
+  movaps 0xe0+A_OFFSET_24(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_24(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2057,6 +2367,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_40:
 
   # Multiply C(2,4) by alpha.
   mulps alpha, C1
@@ -2082,6 +2395,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_41:
+
+  # Check norm of product.
+  movss 0x38(multiply_stream, base_pointer), B1
+  mulss 0x58(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_42
+
   # Calculate C(3,1) = A(3,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
   movaps 0x10+B_OFFSET_11(B), B2
@@ -2093,37 +2415,37 @@ loop:
   movaps 0x30+A_OFFSET_31(A), A14
   movaps 0x40+A_OFFSET_31(A), A21
   movaps 0x50+A_OFFSET_31(A), A22
-  movaps 0x60+A_OFFSET_31(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_31(A), A24
+  movaps 0x60+A_OFFSET_31(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_31(A), A31
+  movaps 0x70+A_OFFSET_31(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_31(A), A32
+  movaps 0x80+A_OFFSET_31(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_31(A), A33
+  movaps 0x90+A_OFFSET_31(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_31(A), A34
+  movaps 0xa0+A_OFFSET_31(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_31(A), A41
+  movaps 0xb0+A_OFFSET_31(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_31(A), A42
+  movaps 0xc0+A_OFFSET_31(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_31(A), A43
+  movaps 0xd0+A_OFFSET_31(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_31(A), A44
+  movaps 0xe0+A_OFFSET_31(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_31(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2135,6 +2457,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_42:
+
+  # Check norm of product.
+  movss 0x3c(multiply_stream, base_pointer), B1
+  mulss 0x68(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_43
 
   # Calculate C(3,1) = A(3,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
@@ -2147,37 +2478,37 @@ loop:
   movaps 0x30+A_OFFSET_32(A), A14
   movaps 0x40+A_OFFSET_32(A), A21
   movaps 0x50+A_OFFSET_32(A), A22
-  movaps 0x60+A_OFFSET_32(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_32(A), A24
+  movaps 0x60+A_OFFSET_32(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_32(A), A31
+  movaps 0x70+A_OFFSET_32(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_32(A), A32
+  movaps 0x80+A_OFFSET_32(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_32(A), A33
+  movaps 0x90+A_OFFSET_32(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_32(A), A34
+  movaps 0xa0+A_OFFSET_32(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_32(A), A41
+  movaps 0xb0+A_OFFSET_32(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_32(A), A42
+  movaps 0xc0+A_OFFSET_32(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_32(A), A43
+  movaps 0xd0+A_OFFSET_32(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_32(A), A44
+  movaps 0xe0+A_OFFSET_32(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_32(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2189,6 +2520,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_43:
+
+  # Check norm of product.
+  movss 0x40(multiply_stream, base_pointer), B1
+  mulss 0x78(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_44
 
   # Calculate C(3,1) = A(3,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
@@ -2201,37 +2541,37 @@ loop:
   movaps 0x30+A_OFFSET_33(A), A14
   movaps 0x40+A_OFFSET_33(A), A21
   movaps 0x50+A_OFFSET_33(A), A22
-  movaps 0x60+A_OFFSET_33(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_33(A), A24
+  movaps 0x60+A_OFFSET_33(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_33(A), A31
+  movaps 0x70+A_OFFSET_33(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_33(A), A32
+  movaps 0x80+A_OFFSET_33(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_33(A), A33
+  movaps 0x90+A_OFFSET_33(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_33(A), A34
+  movaps 0xa0+A_OFFSET_33(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_33(A), A41
+  movaps 0xb0+A_OFFSET_33(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_33(A), A42
+  movaps 0xc0+A_OFFSET_33(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_33(A), A43
+  movaps 0xd0+A_OFFSET_33(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_33(A), A44
+  movaps 0xe0+A_OFFSET_33(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_33(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2244,6 +2584,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_44:
+
+  # Check norm of product.
+  movss 0x44(multiply_stream, base_pointer), B1
+  mulss 0x88(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_45
+
   # Calculate C(3,1) = A(3,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
   movaps 0x10+B_OFFSET_41(B), B2
@@ -2255,37 +2604,37 @@ loop:
   movaps 0x30+A_OFFSET_34(A), A14
   movaps 0x40+A_OFFSET_34(A), A21
   movaps 0x50+A_OFFSET_34(A), A22
-  movaps 0x60+A_OFFSET_34(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_34(A), A24
+  movaps 0x60+A_OFFSET_34(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_34(A), A31
+  movaps 0x70+A_OFFSET_34(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_34(A), A32
+  movaps 0x80+A_OFFSET_34(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_34(A), A33
+  movaps 0x90+A_OFFSET_34(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_34(A), A34
+  movaps 0xa0+A_OFFSET_34(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_34(A), A41
+  movaps 0xb0+A_OFFSET_34(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_34(A), A42
+  movaps 0xc0+A_OFFSET_34(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_34(A), A43
+  movaps 0xd0+A_OFFSET_34(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_34(A), A44
+  movaps 0xe0+A_OFFSET_34(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_34(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2297,6 +2646,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_45:
 
   # Multiply C(3,1) by alpha.
   mulps alpha, C1
@@ -2322,6 +2674,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_46:
+
+  # Check norm of product.
+  movss 0x38(multiply_stream, base_pointer), B1
+  mulss 0x5c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_47
+
   # Calculate C(3,2) = A(3,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
   movaps 0x10+B_OFFSET_12(B), B2
@@ -2333,37 +2694,37 @@ loop:
   movaps 0x30+A_OFFSET_31(A), A14
   movaps 0x40+A_OFFSET_31(A), A21
   movaps 0x50+A_OFFSET_31(A), A22
-  movaps 0x60+A_OFFSET_31(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_31(A), A24
+  movaps 0x60+A_OFFSET_31(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_31(A), A31
+  movaps 0x70+A_OFFSET_31(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_31(A), A32
+  movaps 0x80+A_OFFSET_31(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_31(A), A33
+  movaps 0x90+A_OFFSET_31(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_31(A), A34
+  movaps 0xa0+A_OFFSET_31(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_31(A), A41
+  movaps 0xb0+A_OFFSET_31(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_31(A), A42
+  movaps 0xc0+A_OFFSET_31(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_31(A), A43
+  movaps 0xd0+A_OFFSET_31(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_31(A), A44
+  movaps 0xe0+A_OFFSET_31(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_31(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2375,6 +2736,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_47:
+
+  # Check norm of product.
+  movss 0x3c(multiply_stream, base_pointer), B1
+  mulss 0x6c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_48
 
   # Calculate C(3,2) = A(3,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
@@ -2387,37 +2757,37 @@ loop:
   movaps 0x30+A_OFFSET_32(A), A14
   movaps 0x40+A_OFFSET_32(A), A21
   movaps 0x50+A_OFFSET_32(A), A22
-  movaps 0x60+A_OFFSET_32(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_32(A), A24
+  movaps 0x60+A_OFFSET_32(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_32(A), A31
+  movaps 0x70+A_OFFSET_32(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_32(A), A32
+  movaps 0x80+A_OFFSET_32(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_32(A), A33
+  movaps 0x90+A_OFFSET_32(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_32(A), A34
+  movaps 0xa0+A_OFFSET_32(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_32(A), A41
+  movaps 0xb0+A_OFFSET_32(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_32(A), A42
+  movaps 0xc0+A_OFFSET_32(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_32(A), A43
+  movaps 0xd0+A_OFFSET_32(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_32(A), A44
+  movaps 0xe0+A_OFFSET_32(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_32(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2429,6 +2799,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_48:
+
+  # Check norm of product.
+  movss 0x40(multiply_stream, base_pointer), B1
+  mulss 0x7c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_49
 
   # Calculate C(3,2) = A(3,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
@@ -2441,37 +2820,37 @@ loop:
   movaps 0x30+A_OFFSET_33(A), A14
   movaps 0x40+A_OFFSET_33(A), A21
   movaps 0x50+A_OFFSET_33(A), A22
-  movaps 0x60+A_OFFSET_33(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_33(A), A24
+  movaps 0x60+A_OFFSET_33(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_33(A), A31
+  movaps 0x70+A_OFFSET_33(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_33(A), A32
+  movaps 0x80+A_OFFSET_33(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_33(A), A33
+  movaps 0x90+A_OFFSET_33(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_33(A), A34
+  movaps 0xa0+A_OFFSET_33(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_33(A), A41
+  movaps 0xb0+A_OFFSET_33(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_33(A), A42
+  movaps 0xc0+A_OFFSET_33(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_33(A), A43
+  movaps 0xd0+A_OFFSET_33(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_33(A), A44
+  movaps 0xe0+A_OFFSET_33(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_33(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2484,6 +2863,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_49:
+
+  # Check norm of product.
+  movss 0x44(multiply_stream, base_pointer), B1
+  mulss 0x8c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_50
+
   # Calculate C(3,2) = A(3,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
   movaps 0x10+B_OFFSET_42(B), B2
@@ -2495,37 +2883,37 @@ loop:
   movaps 0x30+A_OFFSET_34(A), A14
   movaps 0x40+A_OFFSET_34(A), A21
   movaps 0x50+A_OFFSET_34(A), A22
-  movaps 0x60+A_OFFSET_34(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_34(A), A24
+  movaps 0x60+A_OFFSET_34(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_34(A), A31
+  movaps 0x70+A_OFFSET_34(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_34(A), A32
+  movaps 0x80+A_OFFSET_34(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_34(A), A33
+  movaps 0x90+A_OFFSET_34(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_34(A), A34
+  movaps 0xa0+A_OFFSET_34(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_34(A), A41
+  movaps 0xb0+A_OFFSET_34(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_34(A), A42
+  movaps 0xc0+A_OFFSET_34(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_34(A), A43
+  movaps 0xd0+A_OFFSET_34(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_34(A), A44
+  movaps 0xe0+A_OFFSET_34(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_34(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2537,6 +2925,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_50:
 
   # Multiply C(3,2) by alpha.
   mulps alpha, C1
@@ -2562,6 +2953,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_51:
+
+  # Check norm of product.
+  movss 0x38(multiply_stream, base_pointer), B1
+  mulss 0x60(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_52
+
   # Calculate C(3,3) = A(3,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
   movaps 0x10+B_OFFSET_13(B), B2
@@ -2573,37 +2973,37 @@ loop:
   movaps 0x30+A_OFFSET_31(A), A14
   movaps 0x40+A_OFFSET_31(A), A21
   movaps 0x50+A_OFFSET_31(A), A22
-  movaps 0x60+A_OFFSET_31(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_31(A), A24
+  movaps 0x60+A_OFFSET_31(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_31(A), A31
+  movaps 0x70+A_OFFSET_31(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_31(A), A32
+  movaps 0x80+A_OFFSET_31(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_31(A), A33
+  movaps 0x90+A_OFFSET_31(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_31(A), A34
+  movaps 0xa0+A_OFFSET_31(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_31(A), A41
+  movaps 0xb0+A_OFFSET_31(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_31(A), A42
+  movaps 0xc0+A_OFFSET_31(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_31(A), A43
+  movaps 0xd0+A_OFFSET_31(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_31(A), A44
+  movaps 0xe0+A_OFFSET_31(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_31(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2615,6 +3015,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_52:
+
+  # Check norm of product.
+  movss 0x3c(multiply_stream, base_pointer), B1
+  mulss 0x70(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_53
 
   # Calculate C(3,3) = A(3,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
@@ -2627,37 +3036,37 @@ loop:
   movaps 0x30+A_OFFSET_32(A), A14
   movaps 0x40+A_OFFSET_32(A), A21
   movaps 0x50+A_OFFSET_32(A), A22
-  movaps 0x60+A_OFFSET_32(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_32(A), A24
+  movaps 0x60+A_OFFSET_32(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_32(A), A31
+  movaps 0x70+A_OFFSET_32(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_32(A), A32
+  movaps 0x80+A_OFFSET_32(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_32(A), A33
+  movaps 0x90+A_OFFSET_32(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_32(A), A34
+  movaps 0xa0+A_OFFSET_32(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_32(A), A41
+  movaps 0xb0+A_OFFSET_32(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_32(A), A42
+  movaps 0xc0+A_OFFSET_32(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_32(A), A43
+  movaps 0xd0+A_OFFSET_32(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_32(A), A44
+  movaps 0xe0+A_OFFSET_32(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_32(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2669,6 +3078,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_53:
+
+  # Check norm of product.
+  movss 0x40(multiply_stream, base_pointer), B1
+  mulss 0x80(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_54
 
   # Calculate C(3,3) = A(3,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
@@ -2681,37 +3099,37 @@ loop:
   movaps 0x30+A_OFFSET_33(A), A14
   movaps 0x40+A_OFFSET_33(A), A21
   movaps 0x50+A_OFFSET_33(A), A22
-  movaps 0x60+A_OFFSET_33(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_33(A), A24
+  movaps 0x60+A_OFFSET_33(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_33(A), A31
+  movaps 0x70+A_OFFSET_33(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_33(A), A32
+  movaps 0x80+A_OFFSET_33(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_33(A), A33
+  movaps 0x90+A_OFFSET_33(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_33(A), A34
+  movaps 0xa0+A_OFFSET_33(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_33(A), A41
+  movaps 0xb0+A_OFFSET_33(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_33(A), A42
+  movaps 0xc0+A_OFFSET_33(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_33(A), A43
+  movaps 0xd0+A_OFFSET_33(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_33(A), A44
+  movaps 0xe0+A_OFFSET_33(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_33(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2724,6 +3142,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_54:
+
+  # Check norm of product.
+  movss 0x44(multiply_stream, base_pointer), B1
+  mulss 0x90(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_55
+
   # Calculate C(3,3) = A(3,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
   movaps 0x10+B_OFFSET_43(B), B2
@@ -2735,37 +3162,37 @@ loop:
   movaps 0x30+A_OFFSET_34(A), A14
   movaps 0x40+A_OFFSET_34(A), A21
   movaps 0x50+A_OFFSET_34(A), A22
-  movaps 0x60+A_OFFSET_34(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_34(A), A24
+  movaps 0x60+A_OFFSET_34(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_34(A), A31
+  movaps 0x70+A_OFFSET_34(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_34(A), A32
+  movaps 0x80+A_OFFSET_34(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_34(A), A33
+  movaps 0x90+A_OFFSET_34(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_34(A), A34
+  movaps 0xa0+A_OFFSET_34(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_34(A), A41
+  movaps 0xb0+A_OFFSET_34(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_34(A), A42
+  movaps 0xc0+A_OFFSET_34(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_34(A), A43
+  movaps 0xd0+A_OFFSET_34(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_34(A), A44
+  movaps 0xe0+A_OFFSET_34(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_34(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2777,6 +3204,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_55:
 
   # Multiply C(3,3) by alpha.
   mulps alpha, C1
@@ -2802,6 +3232,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_56:
+
+  # Check norm of product.
+  movss 0x38(multiply_stream, base_pointer), B1
+  mulss 0x64(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_57
+
   # Calculate C(3,4) = A(3,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
   movaps 0x10+B_OFFSET_14(B), B2
@@ -2813,37 +3252,37 @@ loop:
   movaps 0x30+A_OFFSET_31(A), A14
   movaps 0x40+A_OFFSET_31(A), A21
   movaps 0x50+A_OFFSET_31(A), A22
-  movaps 0x60+A_OFFSET_31(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_31(A), A24
+  movaps 0x60+A_OFFSET_31(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_31(A), A31
+  movaps 0x70+A_OFFSET_31(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_31(A), A32
+  movaps 0x80+A_OFFSET_31(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_31(A), A33
+  movaps 0x90+A_OFFSET_31(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_31(A), A34
+  movaps 0xa0+A_OFFSET_31(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_31(A), A41
+  movaps 0xb0+A_OFFSET_31(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_31(A), A42
+  movaps 0xc0+A_OFFSET_31(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_31(A), A43
+  movaps 0xd0+A_OFFSET_31(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_31(A), A44
+  movaps 0xe0+A_OFFSET_31(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_31(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2855,6 +3294,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_57:
+
+  # Check norm of product.
+  movss 0x3c(multiply_stream, base_pointer), B1
+  mulss 0x74(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_58
 
   # Calculate C(3,4) = A(3,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
@@ -2867,37 +3315,37 @@ loop:
   movaps 0x30+A_OFFSET_32(A), A14
   movaps 0x40+A_OFFSET_32(A), A21
   movaps 0x50+A_OFFSET_32(A), A22
-  movaps 0x60+A_OFFSET_32(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_32(A), A24
+  movaps 0x60+A_OFFSET_32(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_32(A), A31
+  movaps 0x70+A_OFFSET_32(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_32(A), A32
+  movaps 0x80+A_OFFSET_32(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_32(A), A33
+  movaps 0x90+A_OFFSET_32(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_32(A), A34
+  movaps 0xa0+A_OFFSET_32(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_32(A), A41
+  movaps 0xb0+A_OFFSET_32(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_32(A), A42
+  movaps 0xc0+A_OFFSET_32(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_32(A), A43
+  movaps 0xd0+A_OFFSET_32(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_32(A), A44
+  movaps 0xe0+A_OFFSET_32(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_32(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2909,6 +3357,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_58:
+
+  # Check norm of product.
+  movss 0x40(multiply_stream, base_pointer), B1
+  mulss 0x84(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_59
 
   # Calculate C(3,4) = A(3,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
@@ -2921,37 +3378,37 @@ loop:
   movaps 0x30+A_OFFSET_33(A), A14
   movaps 0x40+A_OFFSET_33(A), A21
   movaps 0x50+A_OFFSET_33(A), A22
-  movaps 0x60+A_OFFSET_33(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_33(A), A24
+  movaps 0x60+A_OFFSET_33(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_33(A), A31
+  movaps 0x70+A_OFFSET_33(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_33(A), A32
+  movaps 0x80+A_OFFSET_33(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_33(A), A33
+  movaps 0x90+A_OFFSET_33(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_33(A), A34
+  movaps 0xa0+A_OFFSET_33(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_33(A), A41
+  movaps 0xb0+A_OFFSET_33(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_33(A), A42
+  movaps 0xc0+A_OFFSET_33(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_33(A), A43
+  movaps 0xd0+A_OFFSET_33(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_33(A), A44
+  movaps 0xe0+A_OFFSET_33(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_33(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -2964,6 +3421,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_59:
+
+  # Check norm of product.
+  movss 0x44(multiply_stream, base_pointer), B1
+  mulss 0x94(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_60
+
   # Calculate C(3,4) = A(3,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
   movaps 0x10+B_OFFSET_44(B), B2
@@ -2975,37 +3441,37 @@ loop:
   movaps 0x30+A_OFFSET_34(A), A14
   movaps 0x40+A_OFFSET_34(A), A21
   movaps 0x50+A_OFFSET_34(A), A22
-  movaps 0x60+A_OFFSET_34(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_34(A), A24
+  movaps 0x60+A_OFFSET_34(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_34(A), A31
+  movaps 0x70+A_OFFSET_34(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_34(A), A32
+  movaps 0x80+A_OFFSET_34(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_34(A), A33
+  movaps 0x90+A_OFFSET_34(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_34(A), A34
+  movaps 0xa0+A_OFFSET_34(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_34(A), A41
+  movaps 0xb0+A_OFFSET_34(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_34(A), A42
+  movaps 0xc0+A_OFFSET_34(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_34(A), A43
+  movaps 0xd0+A_OFFSET_34(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_34(A), A44
+  movaps 0xe0+A_OFFSET_34(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_34(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3017,6 +3483,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_60:
 
   # Multiply C(3,4) by alpha.
   mulps alpha, C1
@@ -3042,6 +3511,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_61:
+
+  # Check norm of product.
+  movss 0x48(multiply_stream, base_pointer), B1
+  mulss 0x58(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_62
+
   # Calculate C(4,1) = A(4,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
   movaps 0x10+B_OFFSET_11(B), B2
@@ -3053,37 +3531,37 @@ loop:
   movaps 0x30+A_OFFSET_41(A), A14
   movaps 0x40+A_OFFSET_41(A), A21
   movaps 0x50+A_OFFSET_41(A), A22
-  movaps 0x60+A_OFFSET_41(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_41(A), A24
+  movaps 0x60+A_OFFSET_41(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_41(A), A31
+  movaps 0x70+A_OFFSET_41(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_41(A), A32
+  movaps 0x80+A_OFFSET_41(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_41(A), A33
+  movaps 0x90+A_OFFSET_41(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_41(A), A34
+  movaps 0xa0+A_OFFSET_41(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_41(A), A41
+  movaps 0xb0+A_OFFSET_41(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_41(A), A42
+  movaps 0xc0+A_OFFSET_41(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_41(A), A43
+  movaps 0xd0+A_OFFSET_41(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_41(A), A44
+  movaps 0xe0+A_OFFSET_41(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_41(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3095,6 +3573,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_62:
+
+  # Check norm of product.
+  movss 0x4c(multiply_stream, base_pointer), B1
+  mulss 0x68(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_63
 
   # Calculate C(4,1) = A(4,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
@@ -3107,37 +3594,37 @@ loop:
   movaps 0x30+A_OFFSET_42(A), A14
   movaps 0x40+A_OFFSET_42(A), A21
   movaps 0x50+A_OFFSET_42(A), A22
-  movaps 0x60+A_OFFSET_42(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_42(A), A24
+  movaps 0x60+A_OFFSET_42(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_42(A), A31
+  movaps 0x70+A_OFFSET_42(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_42(A), A32
+  movaps 0x80+A_OFFSET_42(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_42(A), A33
+  movaps 0x90+A_OFFSET_42(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_42(A), A34
+  movaps 0xa0+A_OFFSET_42(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_42(A), A41
+  movaps 0xb0+A_OFFSET_42(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_42(A), A42
+  movaps 0xc0+A_OFFSET_42(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_42(A), A43
+  movaps 0xd0+A_OFFSET_42(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_42(A), A44
+  movaps 0xe0+A_OFFSET_42(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_42(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3149,6 +3636,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_63:
+
+  # Check norm of product.
+  movss 0x50(multiply_stream, base_pointer), B1
+  mulss 0x78(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_64
 
   # Calculate C(4,1) = A(4,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
@@ -3161,37 +3657,37 @@ loop:
   movaps 0x30+A_OFFSET_43(A), A14
   movaps 0x40+A_OFFSET_43(A), A21
   movaps 0x50+A_OFFSET_43(A), A22
-  movaps 0x60+A_OFFSET_43(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_43(A), A24
+  movaps 0x60+A_OFFSET_43(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_43(A), A31
+  movaps 0x70+A_OFFSET_43(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_43(A), A32
+  movaps 0x80+A_OFFSET_43(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_43(A), A33
+  movaps 0x90+A_OFFSET_43(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_43(A), A34
+  movaps 0xa0+A_OFFSET_43(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_43(A), A41
+  movaps 0xb0+A_OFFSET_43(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_43(A), A42
+  movaps 0xc0+A_OFFSET_43(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_43(A), A43
+  movaps 0xd0+A_OFFSET_43(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_43(A), A44
+  movaps 0xe0+A_OFFSET_43(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_43(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3204,6 +3700,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_64:
+
+  # Check norm of product.
+  movss 0x54(multiply_stream, base_pointer), B1
+  mulss 0x88(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_65
+
   # Calculate C(4,1) = A(4,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
   movaps 0x10+B_OFFSET_41(B), B2
@@ -3215,37 +3720,37 @@ loop:
   movaps 0x30+A_OFFSET_44(A), A14
   movaps 0x40+A_OFFSET_44(A), A21
   movaps 0x50+A_OFFSET_44(A), A22
-  movaps 0x60+A_OFFSET_44(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_44(A), A24
+  movaps 0x60+A_OFFSET_44(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_44(A), A31
+  movaps 0x70+A_OFFSET_44(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_44(A), A32
+  movaps 0x80+A_OFFSET_44(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_44(A), A33
+  movaps 0x90+A_OFFSET_44(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_44(A), A34
+  movaps 0xa0+A_OFFSET_44(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_44(A), A41
+  movaps 0xb0+A_OFFSET_44(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_44(A), A42
+  movaps 0xc0+A_OFFSET_44(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_44(A), A43
+  movaps 0xd0+A_OFFSET_44(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_44(A), A44
+  movaps 0xe0+A_OFFSET_44(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_44(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3257,6 +3762,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_65:
 
   # Multiply C(4,1) by alpha.
   mulps alpha, C1
@@ -3282,6 +3790,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_66:
+
+  # Check norm of product.
+  movss 0x48(multiply_stream, base_pointer), B1
+  mulss 0x5c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_67
+
   # Calculate C(4,2) = A(4,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
   movaps 0x10+B_OFFSET_12(B), B2
@@ -3293,37 +3810,37 @@ loop:
   movaps 0x30+A_OFFSET_41(A), A14
   movaps 0x40+A_OFFSET_41(A), A21
   movaps 0x50+A_OFFSET_41(A), A22
-  movaps 0x60+A_OFFSET_41(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_41(A), A24
+  movaps 0x60+A_OFFSET_41(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_41(A), A31
+  movaps 0x70+A_OFFSET_41(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_41(A), A32
+  movaps 0x80+A_OFFSET_41(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_41(A), A33
+  movaps 0x90+A_OFFSET_41(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_41(A), A34
+  movaps 0xa0+A_OFFSET_41(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_41(A), A41
+  movaps 0xb0+A_OFFSET_41(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_41(A), A42
+  movaps 0xc0+A_OFFSET_41(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_41(A), A43
+  movaps 0xd0+A_OFFSET_41(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_41(A), A44
+  movaps 0xe0+A_OFFSET_41(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_41(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3335,6 +3852,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_67:
+
+  # Check norm of product.
+  movss 0x4c(multiply_stream, base_pointer), B1
+  mulss 0x6c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_68
 
   # Calculate C(4,2) = A(4,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
@@ -3347,37 +3873,37 @@ loop:
   movaps 0x30+A_OFFSET_42(A), A14
   movaps 0x40+A_OFFSET_42(A), A21
   movaps 0x50+A_OFFSET_42(A), A22
-  movaps 0x60+A_OFFSET_42(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_42(A), A24
+  movaps 0x60+A_OFFSET_42(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_42(A), A31
+  movaps 0x70+A_OFFSET_42(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_42(A), A32
+  movaps 0x80+A_OFFSET_42(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_42(A), A33
+  movaps 0x90+A_OFFSET_42(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_42(A), A34
+  movaps 0xa0+A_OFFSET_42(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_42(A), A41
+  movaps 0xb0+A_OFFSET_42(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_42(A), A42
+  movaps 0xc0+A_OFFSET_42(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_42(A), A43
+  movaps 0xd0+A_OFFSET_42(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_42(A), A44
+  movaps 0xe0+A_OFFSET_42(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_42(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3389,6 +3915,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_68:
+
+  # Check norm of product.
+  movss 0x50(multiply_stream, base_pointer), B1
+  mulss 0x7c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_69
 
   # Calculate C(4,2) = A(4,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
@@ -3401,37 +3936,37 @@ loop:
   movaps 0x30+A_OFFSET_43(A), A14
   movaps 0x40+A_OFFSET_43(A), A21
   movaps 0x50+A_OFFSET_43(A), A22
-  movaps 0x60+A_OFFSET_43(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_43(A), A24
+  movaps 0x60+A_OFFSET_43(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_43(A), A31
+  movaps 0x70+A_OFFSET_43(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_43(A), A32
+  movaps 0x80+A_OFFSET_43(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_43(A), A33
+  movaps 0x90+A_OFFSET_43(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_43(A), A34
+  movaps 0xa0+A_OFFSET_43(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_43(A), A41
+  movaps 0xb0+A_OFFSET_43(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_43(A), A42
+  movaps 0xc0+A_OFFSET_43(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_43(A), A43
+  movaps 0xd0+A_OFFSET_43(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_43(A), A44
+  movaps 0xe0+A_OFFSET_43(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_43(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3444,6 +3979,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_69:
+
+  # Check norm of product.
+  movss 0x54(multiply_stream, base_pointer), B1
+  mulss 0x8c(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_70
+
   # Calculate C(4,2) = A(4,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
   movaps 0x10+B_OFFSET_42(B), B2
@@ -3455,37 +3999,37 @@ loop:
   movaps 0x30+A_OFFSET_44(A), A14
   movaps 0x40+A_OFFSET_44(A), A21
   movaps 0x50+A_OFFSET_44(A), A22
-  movaps 0x60+A_OFFSET_44(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_44(A), A24
+  movaps 0x60+A_OFFSET_44(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_44(A), A31
+  movaps 0x70+A_OFFSET_44(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_44(A), A32
+  movaps 0x80+A_OFFSET_44(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_44(A), A33
+  movaps 0x90+A_OFFSET_44(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_44(A), A34
+  movaps 0xa0+A_OFFSET_44(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_44(A), A41
+  movaps 0xb0+A_OFFSET_44(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_44(A), A42
+  movaps 0xc0+A_OFFSET_44(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_44(A), A43
+  movaps 0xd0+A_OFFSET_44(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_44(A), A44
+  movaps 0xe0+A_OFFSET_44(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_44(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3497,6 +4041,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_70:
 
   # Multiply C(4,2) by alpha.
   mulps alpha, C1
@@ -3522,6 +4069,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_71:
+
+  # Check norm of product.
+  movss 0x48(multiply_stream, base_pointer), B1
+  mulss 0x60(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_72
+
   # Calculate C(4,3) = A(4,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
   movaps 0x10+B_OFFSET_13(B), B2
@@ -3533,37 +4089,37 @@ loop:
   movaps 0x30+A_OFFSET_41(A), A14
   movaps 0x40+A_OFFSET_41(A), A21
   movaps 0x50+A_OFFSET_41(A), A22
-  movaps 0x60+A_OFFSET_41(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_41(A), A24
+  movaps 0x60+A_OFFSET_41(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_41(A), A31
+  movaps 0x70+A_OFFSET_41(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_41(A), A32
+  movaps 0x80+A_OFFSET_41(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_41(A), A33
+  movaps 0x90+A_OFFSET_41(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_41(A), A34
+  movaps 0xa0+A_OFFSET_41(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_41(A), A41
+  movaps 0xb0+A_OFFSET_41(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_41(A), A42
+  movaps 0xc0+A_OFFSET_41(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_41(A), A43
+  movaps 0xd0+A_OFFSET_41(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_41(A), A44
+  movaps 0xe0+A_OFFSET_41(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_41(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3575,6 +4131,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_72:
+
+  # Check norm of product.
+  movss 0x4c(multiply_stream, base_pointer), B1
+  mulss 0x70(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_73
 
   # Calculate C(4,3) = A(4,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
@@ -3587,37 +4152,37 @@ loop:
   movaps 0x30+A_OFFSET_42(A), A14
   movaps 0x40+A_OFFSET_42(A), A21
   movaps 0x50+A_OFFSET_42(A), A22
-  movaps 0x60+A_OFFSET_42(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_42(A), A24
+  movaps 0x60+A_OFFSET_42(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_42(A), A31
+  movaps 0x70+A_OFFSET_42(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_42(A), A32
+  movaps 0x80+A_OFFSET_42(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_42(A), A33
+  movaps 0x90+A_OFFSET_42(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_42(A), A34
+  movaps 0xa0+A_OFFSET_42(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_42(A), A41
+  movaps 0xb0+A_OFFSET_42(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_42(A), A42
+  movaps 0xc0+A_OFFSET_42(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_42(A), A43
+  movaps 0xd0+A_OFFSET_42(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_42(A), A44
+  movaps 0xe0+A_OFFSET_42(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_42(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3629,6 +4194,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_73:
+
+  # Check norm of product.
+  movss 0x50(multiply_stream, base_pointer), B1
+  mulss 0x80(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_74
 
   # Calculate C(4,3) = A(4,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
@@ -3641,37 +4215,37 @@ loop:
   movaps 0x30+A_OFFSET_43(A), A14
   movaps 0x40+A_OFFSET_43(A), A21
   movaps 0x50+A_OFFSET_43(A), A22
-  movaps 0x60+A_OFFSET_43(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_43(A), A24
+  movaps 0x60+A_OFFSET_43(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_43(A), A31
+  movaps 0x70+A_OFFSET_43(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_43(A), A32
+  movaps 0x80+A_OFFSET_43(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_43(A), A33
+  movaps 0x90+A_OFFSET_43(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_43(A), A34
+  movaps 0xa0+A_OFFSET_43(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_43(A), A41
+  movaps 0xb0+A_OFFSET_43(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_43(A), A42
+  movaps 0xc0+A_OFFSET_43(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_43(A), A43
+  movaps 0xd0+A_OFFSET_43(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_43(A), A44
+  movaps 0xe0+A_OFFSET_43(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_43(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3684,6 +4258,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_74:
+
+  # Check norm of product.
+  movss 0x54(multiply_stream, base_pointer), B1
+  mulss 0x90(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_75
+
   # Calculate C(4,3) = A(4,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
   movaps 0x10+B_OFFSET_43(B), B2
@@ -3695,37 +4278,37 @@ loop:
   movaps 0x30+A_OFFSET_44(A), A14
   movaps 0x40+A_OFFSET_44(A), A21
   movaps 0x50+A_OFFSET_44(A), A22
-  movaps 0x60+A_OFFSET_44(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_44(A), A24
+  movaps 0x60+A_OFFSET_44(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_44(A), A31
+  movaps 0x70+A_OFFSET_44(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_44(A), A32
+  movaps 0x80+A_OFFSET_44(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_44(A), A33
+  movaps 0x90+A_OFFSET_44(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_44(A), A34
+  movaps 0xa0+A_OFFSET_44(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_44(A), A41
+  movaps 0xb0+A_OFFSET_44(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_44(A), A42
+  movaps 0xc0+A_OFFSET_44(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_44(A), A43
+  movaps 0xd0+A_OFFSET_44(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_44(A), A44
+  movaps 0xe0+A_OFFSET_44(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_44(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3737,6 +4320,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_75:
 
   # Multiply C(4,3) by alpha.
   mulps alpha, C1
@@ -3762,6 +4348,15 @@ loop:
   xorps C3, C3
   xorps C4, C4
 
+  .align 16
+block_76:
+
+  # Check norm of product.
+  movss 0x48(multiply_stream, base_pointer), B1
+  mulss 0x64(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_77
+
   # Calculate C(4,4) = A(4,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
   movaps 0x10+B_OFFSET_14(B), B2
@@ -3773,37 +4368,37 @@ loop:
   movaps 0x30+A_OFFSET_41(A), A14
   movaps 0x40+A_OFFSET_41(A), A21
   movaps 0x50+A_OFFSET_41(A), A22
-  movaps 0x60+A_OFFSET_41(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_41(A), A24
+  movaps 0x60+A_OFFSET_41(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_41(A), A31
+  movaps 0x70+A_OFFSET_41(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_41(A), A32
+  movaps 0x80+A_OFFSET_41(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_41(A), A33
+  movaps 0x90+A_OFFSET_41(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_41(A), A34
+  movaps 0xa0+A_OFFSET_41(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_41(A), A41
+  movaps 0xb0+A_OFFSET_41(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_41(A), A42
+  movaps 0xc0+A_OFFSET_41(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_41(A), A43
+  movaps 0xd0+A_OFFSET_41(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_41(A), A44
+  movaps 0xe0+A_OFFSET_41(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_41(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3815,6 +4410,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_77:
+
+  # Check norm of product.
+  movss 0x4c(multiply_stream, base_pointer), B1
+  mulss 0x74(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_78
 
   # Calculate C(4,4) = A(4,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
@@ -3827,37 +4431,37 @@ loop:
   movaps 0x30+A_OFFSET_42(A), A14
   movaps 0x40+A_OFFSET_42(A), A21
   movaps 0x50+A_OFFSET_42(A), A22
-  movaps 0x60+A_OFFSET_42(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_42(A), A24
+  movaps 0x60+A_OFFSET_42(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_42(A), A31
+  movaps 0x70+A_OFFSET_42(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_42(A), A32
+  movaps 0x80+A_OFFSET_42(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_42(A), A33
+  movaps 0x90+A_OFFSET_42(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_42(A), A34
+  movaps 0xa0+A_OFFSET_42(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_42(A), A41
+  movaps 0xb0+A_OFFSET_42(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_42(A), A42
+  movaps 0xc0+A_OFFSET_42(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_42(A), A43
+  movaps 0xd0+A_OFFSET_42(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_42(A), A44
+  movaps 0xe0+A_OFFSET_42(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_42(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3869,6 +4473,15 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_78:
+
+  # Check norm of product.
+  movss 0x50(multiply_stream, base_pointer), B1
+  mulss 0x84(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_79
 
   # Calculate C(4,4) = A(4,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
@@ -3881,37 +4494,37 @@ loop:
   movaps 0x30+A_OFFSET_43(A), A14
   movaps 0x40+A_OFFSET_43(A), A21
   movaps 0x50+A_OFFSET_43(A), A22
-  movaps 0x60+A_OFFSET_43(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_43(A), A24
+  movaps 0x60+A_OFFSET_43(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_43(A), A31
+  movaps 0x70+A_OFFSET_43(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_43(A), A32
+  movaps 0x80+A_OFFSET_43(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_43(A), A33
+  movaps 0x90+A_OFFSET_43(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_43(A), A34
+  movaps 0xa0+A_OFFSET_43(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_43(A), A41
+  movaps 0xb0+A_OFFSET_43(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_43(A), A42
+  movaps 0xc0+A_OFFSET_43(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_43(A), A43
+  movaps 0xd0+A_OFFSET_43(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_43(A), A44
+  movaps 0xe0+A_OFFSET_43(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_43(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3924,6 +4537,15 @@ loop:
   addps A43, C4
   addps A44, C4
 
+  .align 16
+block_79:
+
+  # Check norm of product.
+  movss 0x54(multiply_stream, base_pointer), B1
+  mulss 0x94(multiply_stream, base_pointer), B1
+  comiss tolerance, B1
+  jb block_80
+
   # Calculate C(4,4) = A(4,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
   movaps 0x10+B_OFFSET_44(B), B2
@@ -3935,37 +4557,37 @@ loop:
   movaps 0x30+A_OFFSET_44(A), A14
   movaps 0x40+A_OFFSET_44(A), A21
   movaps 0x50+A_OFFSET_44(A), A22
-  movaps 0x60+A_OFFSET_44(A), A23
   mulps B1, A11
   mulps B2, A12
   addps A11, C1
-  movaps 0x70+A_OFFSET_44(A), A24
+  movaps 0x60+A_OFFSET_44(A), A23
   mulps B3, A13
   addps A12, C1
-  movaps 0x80+A_OFFSET_44(A), A31
+  movaps 0x70+A_OFFSET_44(A), A24
   mulps B4, A14
   addps A13, C1
-  movaps 0x90+A_OFFSET_44(A), A32
+  movaps 0x80+A_OFFSET_44(A), A31
   mulps B1, A21
   addps A14, C1
-  movaps 0xa0+A_OFFSET_44(A), A33
+  movaps 0x90+A_OFFSET_44(A), A32
   mulps B2, A22
   addps A21, C2
-  movaps 0xb0+A_OFFSET_44(A), A34
+  movaps 0xa0+A_OFFSET_44(A), A33
   mulps B3, A23
   addps A22, C2
-  movaps 0xc0+A_OFFSET_44(A), A41
+  movaps 0xb0+A_OFFSET_44(A), A34
   mulps B4, A24
   addps A23, C2
-  movaps 0xd0+A_OFFSET_44(A), A42
+  movaps 0xc0+A_OFFSET_44(A), A41
   mulps B1, A31
   addps A24, C2
-  movaps 0xe0+A_OFFSET_44(A), A43
+  movaps 0xd0+A_OFFSET_44(A), A42
   mulps B2, A32
   addps A31, C3
-  movaps 0xf0+A_OFFSET_44(A), A44
+  movaps 0xe0+A_OFFSET_44(A), A43
   mulps B3, A33
   addps A32, C3
+  movaps 0xf0+A_OFFSET_44(A), A44
   mulps B4, A34
   addps A33, C3
   mulps B1, A41
@@ -3977,6 +4599,9 @@ loop:
   mulps B4, A44
   addps A43, C4
   addps A44, C4
+
+  .align 16
+block_80:
 
   # Multiply C(4,4) by alpha.
   mulps alpha, C1

@@ -6,7 +6,8 @@ import math, optparse, sys
 
 parser = optparse.OptionParser(description =
 """This script generates a stream element kernel operating on 4x4 matrix
-blocks. The kernel is written using SSE assembly instructions.""")
+blocks. The kernel generated is written using assembly instructions assuming a
+processor with SSE2.""")
 
 parser.add_option("-N",
     metavar = "N",
@@ -21,18 +22,6 @@ parser.add_option("--name",
     dest = "functionName",
     type = "string",
     default = "stream_kernel")
-
-parser.add_option("--use-precomputed-norm-products",
-    action = "store_true",
-    default = False,
-    help = "use precomputed norm products",
-    dest = "precomputed_norm_products")
-
-parser.add_option("--store-outside-if",
-    action = "store_true",
-    default = False,
-    help = "move the C block store outside the if() block",
-    dest = "store_outside_if")
 
 parser.add_option("--no-checks",
     action = "store_false",
@@ -65,40 +54,41 @@ print
 print "# Function ABI."
 print "#define number_stream_elements %rdi"
 print "#define alpha                  %xmm0"
+print "#define tolerance              %xmm1"
 print "#define multiply_stream        %rsi"
 
 print
 print "# Define SSE registers used for C matrix"
-print "#define C1 %xmm1"
-print "#define C2 %xmm2"
-print "#define C3 %xmm3"
-print "#define C4 %xmm4"
+print "#define C1 %xmm2"
+print "#define C2 %xmm3"
+print "#define C3 %xmm4"
+print "#define C4 %xmm5"
 
 print
 print "# Define SSE registeres used for B matrix"
-print "#define B1 %xmm5"
-print "#define B2 %xmm6"
-print "#define B3 %xmm7"
-print "#define B4 %xmm8"
+print "#define B1 %xmm6"
+print "#define B2 %xmm7"
+print "#define B3 %xmm8"
+print "#define B4 %xmm9"
 
 print
 print "# Define SSE registeres used for A matrix"
-print "#define A11 %xmm9"
-print "#define A12 %xmm10"
-print "#define A13 %xmm11"
-print "#define A14 %xmm12"
-print "#define A21 %xmm13"
-print "#define A22 %xmm14"
-print "#define A23 %xmm15"
-print "#define A24 %xmm9"
-print "#define A31 %xmm10"
-print "#define A32 %xmm11"
-print "#define A33 %xmm12"
-print "#define A34 %xmm13"
-print "#define A41 %xmm14"
-print "#define A42 %xmm15"
-print "#define A43 %xmm9"
-print "#define A44 %xmm10"
+print "#define A11 %xmm10"
+print "#define A12 %xmm11"
+print "#define A13 %xmm12"
+print "#define A14 %xmm13"
+print "#define A21 %xmm14"
+print "#define A22 %xmm15"
+print "#define A23 %xmm10"
+print "#define A24 %xmm11"
+print "#define A31 %xmm12"
+print "#define A32 %xmm13"
+print "#define A33 %xmm14"
+print "#define A34 %xmm15"
+print "#define A41 %xmm10"
+print "#define A42 %xmm11"
+print "#define A43 %xmm12"
+print "#define A44 %xmm13"
 
 print
 print "# Define loop variables."
@@ -180,6 +170,8 @@ print padding + "# Set loop index to zero."
 print padding + "xor base_pointer, base_pointer"
 print padding + "xor index, index"
 
+block_counter = 1
+
 # Beginning of loop.
 print
 print padding + ".align 16"
@@ -203,6 +195,19 @@ for i in range(options.N):
     print padding + "xorps C4, C4"
 
     for k in range(options.N):
+      if options.generate_checks:
+        print
+        print padding + ".align 16"
+        print "block_%d:" % (block_counter)
+        block_counter += 1
+
+        print
+        print padding + "# Check norm of product."
+        print padding + "movss 0x%x(multiply_stream, base_pointer), B1" % ((i*options.N+k)*4+24)
+        print padding + "mulss 0x%x(multiply_stream, base_pointer), B1" % ((k*options.N+j+options.N**2)*4+24)
+        print padding + "comiss tolerance, B1"
+        print padding + "jb block_%d" % (block_counter)
+
       print
       print padding + "# Calculate C(%d,%d) = A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1)
       print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B1" % (0*4*4, k+1, j+1)
@@ -216,37 +221,37 @@ for i in range(options.N):
       print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+3)*4*4, i+1, k+1, 1, 4)
       print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+0)*4*4, i+1, k+1, 2, 1)
       print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+1)*4*4, i+1, k+1, 2, 2)
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+2)*4*4, i+1, k+1, 2, 3)
       print padding + "mulps B1, A11"
       print padding + "mulps B2, A12"
       print padding + "addps A11, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+3)*4*4, i+1, k+1, 2, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+2)*4*4, i+1, k+1, 2, 3)
       print padding + "mulps B3, A13"
       print padding + "addps A12, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+0)*4*4, i+1, k+1, 3, 1)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+3)*4*4, i+1, k+1, 2, 4)
       print padding + "mulps B4, A14"
       print padding + "addps A13, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+1)*4*4, i+1, k+1, 3, 2)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+0)*4*4, i+1, k+1, 3, 1)
       print padding + "mulps B1, A21"
       print padding + "addps A14, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+2)*4*4, i+1, k+1, 3, 3)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+1)*4*4, i+1, k+1, 3, 2)
       print padding + "mulps B2, A22"
       print padding + "addps A21, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+3)*4*4, i+1, k+1, 3, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+2)*4*4, i+1, k+1, 3, 3)
       print padding + "mulps B3, A23"
       print padding + "addps A22, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+0)*4*4, i+1, k+1, 4, 1)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+3)*4*4, i+1, k+1, 3, 4)
       print padding + "mulps B4, A24"
       print padding + "addps A23, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+1)*4*4, i+1, k+1, 4, 2)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+0)*4*4, i+1, k+1, 4, 1)
       print padding + "mulps B1, A31"
       print padding + "addps A24, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+2)*4*4, i+1, k+1, 4, 3)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+1)*4*4, i+1, k+1, 4, 2)
       print padding + "mulps B2, A32"
       print padding + "addps A31, C3"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+3)*4*4, i+1, k+1, 4, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+2)*4*4, i+1, k+1, 4, 3)
       print padding + "mulps B3, A33"
       print padding + "addps A32, C3"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+3)*4*4, i+1, k+1, 4, 4)
       print padding + "mulps B4, A34"
       print padding + "addps A33, C3"
       print padding + "mulps B1, A41"
@@ -258,6 +263,12 @@ for i in range(options.N):
       print padding + "mulps B4, A44"
       print padding + "addps A43, C4"
       print padding + "addps A44, C4"
+
+    if options.generate_checks:
+      print
+      print padding + ".align 16"
+      print "block_%d:" % (block_counter)
+      block_counter += 1
 
     print
     print padding + "# Multiply C(%d,%d) by alpha." % (i+1, j+1)
