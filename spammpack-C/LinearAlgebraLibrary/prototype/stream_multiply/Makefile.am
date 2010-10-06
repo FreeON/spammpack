@@ -28,7 +28,8 @@ stream_multiply_SOURCES = \
   stream_kernel_17_SSE_intrinsics.c \
   stream_kernel_18_SSE_intrinsics.c \
   stream_kernel_19_SSE_intrinsics.c \
-  stream_kernel_20_SSE_intrinsics.c
+  stream_kernel_20_SSE_intrinsics.c \
+  stream_kernel_21.S
 
 tags :
 	ctags *.c *.S
