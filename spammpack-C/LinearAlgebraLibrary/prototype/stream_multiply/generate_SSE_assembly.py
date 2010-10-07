@@ -218,46 +218,46 @@ for i in range(options.N):
       print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+0)*4*4, i+1, k+1, 1, 1)
       print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+1)*4*4, i+1, k+1, 1, 2)
       print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+2)*4*4, i+1, k+1, 1, 3)
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+3)*4*4, i+1, k+1, 1, 4)
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+0)*4*4, i+1, k+1, 2, 1)
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+1)*4*4, i+1, k+1, 2, 2)
       print padding + "mulps B1, A11"
       print padding + "mulps B2, A12"
       print padding + "addps A11, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+2)*4*4, i+1, k+1, 2, 3)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+3)*4*4, i+1, k+1, 1, 4)
       print padding + "mulps B3, A13"
       print padding + "addps A12, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+3)*4*4, i+1, k+1, 2, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+0)*4*4, i+1, k+1, 2, 1)
       print padding + "mulps B4, A14"
       print padding + "addps A13, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+0)*4*4, i+1, k+1, 3, 1)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+1)*4*4, i+1, k+1, 2, 2)
       print padding + "mulps B1, A21"
       print padding + "addps A14, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+1)*4*4, i+1, k+1, 3, 2)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+2)*4*4, i+1, k+1, 2, 3)
       print padding + "mulps B2, A22"
       print padding + "addps A21, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+2)*4*4, i+1, k+1, 3, 3)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+3)*4*4, i+1, k+1, 2, 4)
       print padding + "mulps B3, A23"
       print padding + "addps A22, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+3)*4*4, i+1, k+1, 3, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+0)*4*4, i+1, k+1, 3, 1)
       print padding + "mulps B4, A24"
       print padding + "addps A23, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+0)*4*4, i+1, k+1, 4, 1)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+1)*4*4, i+1, k+1, 3, 2)
       print padding + "mulps B1, A31"
       print padding + "addps A24, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+1)*4*4, i+1, k+1, 4, 2)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+2)*4*4, i+1, k+1, 3, 3)
       print padding + "mulps B2, A32"
       print padding + "addps A31, C3"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+2)*4*4, i+1, k+1, 4, 3)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+3)*4*4, i+1, k+1, 3, 4)
       print padding + "mulps B3, A33"
       print padding + "addps A32, C3"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+3)*4*4, i+1, k+1, 4, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+0)*4*4, i+1, k+1, 4, 1)
       print padding + "mulps B4, A34"
       print padding + "addps A33, C3"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+1)*4*4, i+1, k+1, 4, 2)
       print padding + "mulps B1, A41"
       print padding + "addps A34, C3"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+2)*4*4, i+1, k+1, 4, 3)
       print padding + "mulps B2, A42"
       print padding + "addps A41, C4"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+3)*4*4, i+1, k+1, 4, 4)
       print padding + "mulps B3, A43"
       print padding + "addps A42, C4"
       print padding + "mulps B4, A44"
