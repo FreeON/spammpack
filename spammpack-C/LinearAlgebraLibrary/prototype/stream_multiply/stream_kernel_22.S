@@ -44864,6 +44864,7 @@ done:
   pop base_pointer
   pop index
 
+  # Return from function.
   ret
 
   # Function epilog.

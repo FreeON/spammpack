@@ -164,14 +164,21 @@ processor with SSE2.""")
 
 parser.add_option("-N",
     metavar = "N",
-    help = "generate kernel for NxN matrix of 4x4 matrix blocks",
+    help = "generate fully unrolled kernel for NxN matrix of 4x4 matrix blocks [default: %default]",
     dest = "N",
+    type = "int",
+    default = 1)
+
+parser.add_option("--unroll",
+    metavar = "N",
+    help = "fully unroll loops only at and below a matrix size of NxN [default: %default]",
+    dest = "N_unroll",
     type = "int",
     default = 1)
 
 parser.add_option("--name",
     metavar = "func",
-    help = "set function name to \"func\"",
+    help = "set function name to \"func\" [default: %default]",
     dest = "functionName",
     type = "string",
     default = "stream_kernel")
@@ -179,23 +186,34 @@ parser.add_option("--name",
 parser.add_option("--no-checks",
     action = "store_false",
     default = True,
-    help = "generate code without any norm checks",
+    help = "generate code without any norm checks [default: %default]",
     dest = "generate_checks")
 
 parser.add_option("--Z-curve",
     action = "store_true",
     default = False,
     help = """layout the multiply along a Z-curve as opposed to regular
-row-major ordering""",
+row-major ordering [default: %default]""",
     dest = "Z_curve_ordering")
 
 ( options, arguments ) = parser.parse_args()
 
 # Check N.
+if options.N <= 0:
+  print "N needs to be a positive number > 0"
+  sys.exit(1)
+
 d = int(math.log(options.N)/math.log(2))
 if 2**d != options.N:
   print "N needs to be a power of 2"
   sys.exit(1)
+
+# Check loop unrolling.
+if options.N_unroll <= 0:
+  options.N_unroll = 1
+
+if options.N_unroll > options.N:
+  options.N_unroll = options.N
 
 # Assembly code indentation.
 padding = "  "
@@ -254,6 +272,8 @@ print
 print "# Define loop variables."
 print "#define index        %rax"
 print "#define base_pointer %rdx"
+#print "#define i_outer      %r10"
+#print "#define j_outer      %r11"
 
 print
 print "# Define pointers to matrix blocks in stream."
@@ -314,6 +334,8 @@ print padding + "push base_pointer"
 print padding + "push A"
 print padding + "push B"
 print padding + "push C"
+#print padding + "push i_outer"
+#print padding + "push j_outer"
 
 print
 print padding + "# Copy alpha into all 4 elements of SSE register."
@@ -358,6 +380,18 @@ if options.Z_curve_ordering:
     block_counter.increment()
 
 else:
+  #if options.N_unroll < options.N:
+  #  # Generate outer loop code.
+  #  print
+  #  print padding + ".align 16"
+  #  print "outer_i:"
+
+  #if options.N_unroll < options.N:
+  #  # Generate outer loop code.
+  #  print
+  #  print padding + ".align 16"
+  #  print "outer_j:"
+
   for i in range(options.N):
     for j in range(options.N):
       print
@@ -478,12 +512,15 @@ print padding + ".align 16"
 print "done:"
 print
 print padding + "# Pop registers from stack."
+#print padding + "pop j_outer"
+#print padding + "pop i_outer"
 print padding + "pop C"
 print padding + "pop B"
 print padding + "pop A"
 print padding + "pop base_pointer"
 print padding + "pop index"
 print
+print padding + "# Return from function."
 print padding + "ret"
 
 # Start function epilog.

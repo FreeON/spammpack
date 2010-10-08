@@ -179,7 +179,9 @@ if test "${enable_PAPI}" = "yes"; then
   if test "${have_PAPI}" = "yes"; then
     AC_DEFINE([HAVE_PAPI], [1], [whether we should use the PAPI profiling interface])
   else
-    AC_MSG_FAILURE([PAPI requested but not available])
+    AC_MSG_FAILURE([PAPI requested but not available. You might have to
+                    specify the PAPI header file location by adding to
+                    CPPFLAGS the PAPI library location by adding to LDFLAGS.])
   fi
 else
   AC_MSG_RESULT([no])
