@@ -44,7 +44,8 @@
 //#define STREAM_KERNEL_18
 //#define STREAM_KERNEL_19
 //#define STREAM_KERNEL_20
-#define STREAM_KERNEL_21
+//#define STREAM_KERNEL_21
+#define STREAM_KERNEL_22
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL
@@ -108,7 +109,7 @@ struct multiply_stream_t
   char mask[8];
 #elif defined(STREAM_KERNEL_17)
   float norm[8];
-#elif defined(STREAM_KERNEL_18) || defined(STREAM_KERNEL_19) || defined(STREAM_KERNEL_20) || defined(STREAM_KERNEL_21)
+#elif defined(STREAM_KERNEL_18) || defined(STREAM_KERNEL_19) || defined(STREAM_KERNEL_20) || defined(STREAM_KERNEL_21) || defined(STREAM_KERNEL_22)
   float norm[32];
 #endif
 };
@@ -275,6 +276,14 @@ stream_kernel_20_SSE_intrinsics (const unsigned int number_stream_elements,
 #ifdef STREAM_KERNEL_21
 void
 stream_kernel_21 (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct multiply_stream_t *multiply_stream);
+#endif
+
+#ifdef STREAM_KERNEL_22
+void
+stream_kernel_22 (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct multiply_stream_t *multiply_stream);
@@ -553,6 +562,9 @@ stream_multiply (const unsigned long long number_stream_elements,
 
 #elif defined(STREAM_KERNEL_21)
   stream_kernel_21(number_stream_elements, alpha, 1e-18, multiply_stream);
+
+#elif defined(STREAM_KERNEL_22)
+  stream_kernel_22(number_stream_elements, alpha, 1e-18, multiply_stream);
 
 #elif defined(POINTER_CHASE)
 
@@ -1406,7 +1418,7 @@ spamm_multiply_node (const struct matrix_node_t *A_node,
     {
       stream[*index].norm[i] = rand()/(float) RAND_MAX;
     }
-#elif defined(STREAM_KERNEL_18) || defined(STREAM_KERNEL_19) || defined(STREAM_KERNEL_20) || defined(STREAM_KERNEL_21)
+#elif defined(STREAM_KERNEL_18) || defined(STREAM_KERNEL_19) || defined(STREAM_KERNEL_20) || defined(STREAM_KERNEL_21) || defined(STREAM_KERNEL_22)
     for (i = 0; i < 32; i++)
     {
       stream[*index].norm[i] = rand()/(float) RAND_MAX;
@@ -1938,6 +1950,9 @@ main (int argc, char **argv)
 
 #elif defined(STREAM_KERNEL_21)
   printf("using stream_kernel_21\n");
+
+#elif defined(STREAM_KERNEL_22)
+  printf("using stream_kernel_22\n");
 
 #elif defined(POINTER_CHASE)
   printf("pointer chase\n");
