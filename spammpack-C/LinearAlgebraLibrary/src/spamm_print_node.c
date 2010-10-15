@@ -93,7 +93,7 @@ spamm_print_node (const struct spamm_node_t *node)
           }
         }
       }
-      printf(", sparsity = %1.1f%%", (1.0 - (floating_point_t) nonzero / (floating_point_t) (SPAMM_M_BLOCK*SPAMM_N_BLOCK))*100);
+      printf(", sparsity = %1.1f%%", (1.0 - (floating_point_t) nonzero / (floating_point_t) (kernel_block_M*kernel_block_N))*100);
       printf(", (1:%u,1:%u) { ", kernel_block_M, kernel_block_N);
       for (i = 0; i < kernel_block_M; ++i) {
         printf(" (%u,1:%u) { ", i+1, kernel_block_N);
