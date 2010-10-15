@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 /** Free a previously allocated memory chunk.
+ *
+ * @param data The pointer to the block to be free()'ed.
  */
 void
 spamm_free (void *data)

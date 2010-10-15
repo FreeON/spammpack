@@ -15,22 +15,12 @@ spamm_multiply_scalar_node (const floating_point_t alpha, struct spamm_node_t *n
 
   assert(node != NULL);
 
-  if (node->child != NULL)
+  if (node->tier == node->tree_depth)
   {
-    for (i = 0; i < SPAMM_M_CHILD; ++i) {
-      for (j = 0; j < SPAMM_N_CHILD; ++j)
-      {
-        spamm_multiply_scalar_node(alpha, node->child[i][j]);
-      }
-    }
-  }
-
-  else if (node->block_dense != NULL)
-  {
-    for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+    for (i = 0; i < SPAMM_N_BLOCK; ++i) {
       for (j = 0; j < SPAMM_N_BLOCK; ++j)
       {
-        node->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] *= alpha;
+        node->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] *= alpha;
       }
     }
   }
@@ -49,6 +39,19 @@ spamm_multiply_scalar_node (const floating_point_t alpha, struct spamm_node_t *n
       }
     }
     spamm_ll_iterator_delete(&iterator);
+  }
+
+  else
+  {
+    for (i = 0; i < SPAMM_N_CHILD; ++i) {
+      for (j = 0; j < SPAMM_N_CHILD; ++j)
+      {
+        if (node->child[i][j] != NULL)
+        {
+          spamm_multiply_scalar_node(alpha, node->child[i][j]);
+        }
+      }
+    }
   }
 }
 

@@ -60,7 +60,7 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
      * We therefore create children nodes in B.
      */
     LOG2_DEBUG("A has children, B does not. Creating children in B to recurse.\n");
-    for (i = 0; i < SPAMM_M_CHILD; ++i) {
+    for (i = 0; i < SPAMM_N_CHILD; ++i) {
       for (j = 0; j < SPAMM_N_CHILD; ++j)
       {
         (*B_node)->child[i][j] = spamm_new_node();
@@ -69,8 +69,8 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
         new_node->tier = (*B_node)->tier+1;
         new_node->tree_depth = (*B_node)->tree_depth;
 
-        new_node->M_lower = (*B_node)->M_lower+i*((*B_node)->M_upper-(*B_node)->M_lower)/SPAMM_M_CHILD;
-        new_node->M_upper = (*B_node)->M_lower+(i+1)*((*B_node)->M_upper-(*B_node)->M_lower)/SPAMM_M_CHILD;
+        new_node->M_lower = (*B_node)->M_lower+i*((*B_node)->M_upper-(*B_node)->M_lower)/SPAMM_N_CHILD;
+        new_node->M_upper = (*B_node)->M_lower+(i+1)*((*B_node)->M_upper-(*B_node)->M_lower)/SPAMM_N_CHILD;
         new_node->N_lower = (*B_node)->N_lower+j*((*B_node)->N_upper-(*B_node)->N_lower)/SPAMM_N_CHILD;
         new_node->N_upper = (*B_node)->N_lower+(j+1)*((*B_node)->N_upper-(*B_node)->N_lower)/SPAMM_N_CHILD;
 
@@ -84,11 +84,11 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
     /* We can stop recursing. A has a dense block but B doesn't. We therefore
      * create an empty dense block in B. */
     LOG2_DEBUG("A and B have a dense block here.\n");
-    (*B_node)->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_M_BLOCK*SPAMM_N_BLOCK);
-    for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+    (*B_node)->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_BLOCK*SPAMM_N_BLOCK);
+    for (i = 0; i < SPAMM_N_BLOCK; ++i) {
       for (j = 0; j < SPAMM_N_BLOCK; ++j)
       {
-        (*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] = 0;
+        (*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] = 0;
       }
     }
   }
@@ -108,7 +108,7 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
     /* Recurse further down in A & B. */
     if (A_node != NULL && A_node->child != NULL)
     {
-      for (i = 0; i < SPAMM_M_CHILD; ++i) {
+      for (i = 0; i < SPAMM_N_CHILD; ++i) {
         for (j = 0; j < SPAMM_N_CHILD; ++j)
         {
           spamm_add_node(alpha, A_node->child[i][j], beta, &((*B_node)->child[i][j]));
@@ -119,7 +119,7 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
     /* A doesn't exist, only multiply B with beta. */
     else
     {
-      for (i = 0; i < SPAMM_M_CHILD; ++i) {
+      for (i = 0; i < SPAMM_N_CHILD; ++i) {
         for (j = 0; j < SPAMM_N_CHILD; ++j)
         {
           spamm_add_node(alpha, NULL, beta, &((*B_node)->child[i][j]));
@@ -135,11 +135,11 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
     /* Add dense blocks. */
     if (A_node != NULL && A_node->block_dense != NULL)
     {
-      for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+      for (i = 0; i < SPAMM_N_BLOCK; ++i) {
         for (j = 0; j < SPAMM_N_BLOCK; ++j)
         {
-          (*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] = alpha*A_node->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)]
-            + beta*(*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
+          (*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] = alpha*A_node->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]
+            + beta*(*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
         }
       }
     }
@@ -147,10 +147,10 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
     /* A doesn't exist. Only multiply B with beta. */
     else
     {
-      for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+      for (i = 0; i < SPAMM_N_BLOCK; ++i) {
         for (j = 0; j < SPAMM_N_BLOCK; ++j)
         {
-          (*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] = beta*(*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
+          (*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] = beta*(*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
         }
       }
     }
@@ -165,10 +165,10 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
     for (linear_node_B = spamm_ll_iterator_first(iterator_B); linear_node_B != NULL; linear_node_B = spamm_ll_iterator_next(iterator_B))
     {
       linear_B = linear_node_B->data;
-      for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+      for (i = 0; i < SPAMM_N_BLOCK; ++i) {
         for (j = 0; j < SPAMM_N_BLOCK; ++j)
         {
-          linear_B->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] *= beta;
+          linear_B->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] *= beta;
         }
       }
     }
@@ -209,24 +209,24 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
         {
           /* We didn't find a matching block in B. Create a new one. */
           LOG2_DEBUG("could not find matching block in B. Creating new one.\n");
-          linear_B = spamm_new_linear_quadtree_node(SPAMM_M_BLOCK, SPAMM_N_BLOCK, (*B_node)->linear_quadtree_memory);
+          linear_B = spamm_new_linear_quadtree_node(SPAMM_N_BLOCK, SPAMM_N_BLOCK, (*B_node)->linear_quadtree_memory);
           linear_B->index = linear_A->index;
           spamm_ll_append(linear_B, (*B_node)->linear_quadtree);
 
-          for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+          for (i = 0; i < SPAMM_N_BLOCK; ++i) {
             for (j = 0; j < SPAMM_N_BLOCK; ++j)
             {
-              linear_B->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] = 0.0;
+              linear_B->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] = 0.0;
             }
           }
         }
 
         /* Add blocks of A and B. */
         LOG2_DEBUG("adding A and B blocks\n");
-        for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+        for (i = 0; i < SPAMM_N_BLOCK; ++i) {
           for (j = 0; j < SPAMM_N_BLOCK; ++j)
           {
-            linear_B->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] += alpha*linear_A->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
+            linear_B->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] += alpha*linear_A->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
           }
         }
       }

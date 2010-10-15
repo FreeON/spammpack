@@ -211,36 +211,21 @@ AC_MSG_RESULT([alignment on ${have_alignment} byte boundaries])
 
 dnl Check for matrix block size.
 AC_MSG_CHECKING([for number of rows of matrix block])
-AC_ARG_WITH([block-rows], [AS_HELP_STRING([--with-block-rows], [Define the
-             number of rows of a matrix block. The default is 4.])],
-             [have_M_block="${withval}"],
-             [have_M_block="4"])
-AC_MSG_RESULT([using ${have_M_block} rows])
-
-dnl Check for matrix block size.
-AC_MSG_CHECKING([for number of columns of matrix block])
-AC_ARG_WITH([block-columns], [AS_HELP_STRING([--with-block-columns], [Define the
-             number of columns of a matrix block. The default is 4.])],
+AC_ARG_WITH([N-block], [AS_HELP_STRING([--with-N-block], [Define the size of a
+             matrix block as NxN. The default is N = 4, i.e. matrix blocks of
+             size 4x4.])],
              [have_N_block="${withval}"],
              [have_N_block="4"])
-AC_MSG_RESULT([using ${have_N_block} columns])
-
-dnl Check for children node matrix.
-AC_MSG_CHECKING([for number of rows of children node matrix])
-AC_ARG_WITH([child-rows], [AS_HELP_STRING([--with-child-rows], [Define the
-             number of rows of children node matrix. The default is 2.])],
-             [have_M_child="${withval}"],
-             [have_M_child="2"])
-AC_MSG_RESULT([using ${have_M_child} rows])
+AC_MSG_RESULT([using ${have_N_block}x${have_N_block} matrix blocks])
 
 dnl Check for children node matrix.
 AC_MSG_CHECKING([for number of columns of children node matrix])
-AC_ARG_WITH([child-columns], [AS_HELP_STRING([--with-child-columns], [Define
-             the number of columns of children node matrix. The default is
-             2.])],
+AC_ARG_WITH([N-child], [AS_HELP_STRING([--with-N-child], [Define the size of
+             the children node matrix as NxN. The default is N = 2, i.e. a 2x2
+             children node matrix, which defines a quadtree.])],
              [have_N_child="${withval}"],
              [have_N_child="2"])
-AC_MSG_RESULT([using ${have_N_child} columns])
+AC_MSG_RESULT([using a ${have_N_child}x${have_N_child} children node matrix])
 
 dnl Check for kernel depth.
 AC_MSG_CHECKING([for depth in tiers of computationl kernel])
@@ -254,11 +239,9 @@ AC_MSG_RESULT([using ${have_kernel_depth} tier(s)])
 
 dnl Define some constants.
 AC_DEFINE_UNQUOTED([SPAMM_ALIGNMENT], [${have_alignment}], [Define the alignment of memory allocations])
-AC_DEFINE_UNQUOTED([SPAMM_M_BLOCK], [${have_M_block}], [Define the number of rows of the basic matrix block])
-AC_DEFINE_UNQUOTED([SPAMM_N_BLOCK], [${have_N_block}], [Define the number of columns of the basic matrix block])
-AC_DEFINE_UNQUOTED([SPAMM_M_CHILD], [${have_M_child}], [Define the number of rows of the children node matrix per node])
-AC_DEFINE_UNQUOTED([SPAMM_N_CHILD], [${have_N_child}], [Define the number of columns of the children node matrix per node])
-AC_DEFINE_UNQUOTED([SPAMM_KERNEL_DEPTH], [${have_kernel_depth}], [Define the number of tiers that are allocated contiguously for the computational kernel.])
+AC_DEFINE_UNQUOTED([SPAMM_N_BLOCK], [${have_N_block}], [Define the size of a matrix block as NxN])
+AC_DEFINE_UNQUOTED([SPAMM_N_CHILD], [${have_N_child}], [Define the size of the children node matrix as NxN])
+AC_DEFINE_UNQUOTED([SPAMM_KERNEL_DEPTH], [${have_kernel_depth}], [Define the number of tiers that are allocated contiguously for the computational kernel])
 
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])

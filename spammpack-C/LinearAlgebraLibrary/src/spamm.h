@@ -359,7 +359,7 @@ struct spamm_node_t
    * - As a 2-D array using spamm_dense_index()
    * - As a 1-D array which is sorted on the index.
    */
-  struct spamm_node_t *child[SPAMM_M_CHILD][SPAMM_N_CHILD];
+  struct spamm_node_t *child[SPAMM_N_CHILD][SPAMM_N_CHILD];
 
   /** At the block level, the dense matrix data. */
   floating_point_t *block_dense;
@@ -537,6 +537,7 @@ spamm_mask (const unsigned int index, const unsigned int width,
 
 void
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
+    const floating_point_t tolerance,
     const floating_point_t alpha, const struct spamm_t *A,
     const struct spamm_t *B, const floating_point_t beta, struct spamm_t *C);
 

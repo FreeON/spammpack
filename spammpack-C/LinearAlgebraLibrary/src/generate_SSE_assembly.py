@@ -1,34 +1,51 @@
 #!/usr/bin/python
-#
-# Generate SSE assembly code for a kernel operating on a 4x4 blocks.
+
+"""Generate SSE assembly code for a kernel operating on a 4x4 blocks.
+
+The script generates a kernel written in assembly using SSE instructions that
+operates on basic 4x4 matrix blocks. The kernel tier can be specified in the
+function call.
+"""
 
 import math, optparse, sys
 
 class box:
+  """Defines a box of matrix indices."""
+
   def __init__ (self, i_1, i_2, j_1, j_2):
+    """Initialize the box."""
     self.i_1 = i_1
     self.i_2 = i_2
     self.j_1 = j_1
     self.j_2 = j_2
 
   def __str__ (self):
+    """Convert the box into a string for printing."""
     return "box: [%d-%d][%d-%d]" % (self.i_1, self.i_2, self.j_1, self.j_2)
 
 class counter:
+  """A counter object."""
+
   def __init__ (self):
+    """Initialize the counter to zero."""
     self.counter = 0
 
   def __init__ (self, initial_value):
+    """Initialize the counter and reset it to an initial value."""
     self.counter = initial_value
 
   def increment (self):
+    """Increment the counter by one."""
     self.counter += 1
 
   def get (self):
+    """Get the current value of the counter."""
     return self.counter
 
 # Generate matrix product with Z-curve ordering.
 def generate_Z_curve (A, B, C, block_counter):
+  """Generate assembly for a stream kernel."""
+
   if A.i_2-A.i_1 == 1 and A.j_2-A.j_1 == 1:
     i = C.i_1
     j = C.j_1
@@ -156,7 +173,7 @@ def generate_Z_curve (A, B, C, block_counter):
     generate_Z_curve(A_21, B_12, C_22, block_counter)
     generate_Z_curve(A_22, B_22, C_22, block_counter)
 
-# Main program.
+# The main program.
 parser = optparse.OptionParser(description =
 """This script generates a stream element kernel operating on 4x4 matrix
 blocks. The kernel generated is written using assembly instructions assuming a

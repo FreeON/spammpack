@@ -37,7 +37,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
     if (node->block_dense != NULL)
     {
       /* Read directly from dense block. */
-      return node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
+      return node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
     }
 
     else if (node->linear_quadtree != NULL)
@@ -94,7 +94,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
           mask_j = mask_j >> 2;
         }
 
-        M_upper = M_lower+SPAMM_M_BLOCK;
+        M_upper = M_lower+SPAMM_N_BLOCK;
         N_upper = N_lower+SPAMM_N_BLOCK;
 
 #ifdef SPAMM_DEBUG
@@ -104,7 +104,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
         if (i >= M_lower && i < M_upper && j >= N_lower && j < N_upper)
         {
           spamm_ll_iterator_delete(&linear_iterator);
-          return linear_element->block_dense[spamm_dense_index(i-M_lower, j-N_lower, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
+          return linear_element->block_dense[spamm_dense_index(i-M_lower, j-N_lower, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
         }
       }
       spamm_ll_iterator_delete(&linear_iterator);
@@ -117,11 +117,11 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
   else
   {
     /* Recurse down the tree. */
-    for (l = 0; l < SPAMM_M_CHILD; ++l) {
+    for (l = 0; l < SPAMM_N_CHILD; ++l) {
       for (k = 0; k < SPAMM_N_CHILD; ++k)
       {
-        if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/SPAMM_M_CHILD) &&
-            i <  (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/SPAMM_M_CHILD) &&
+        if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/SPAMM_N_CHILD) &&
+            i <  (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/SPAMM_N_CHILD) &&
             j >= (node->N_lower+(node->N_upper-node->N_lower)*k/SPAMM_N_CHILD) &&
             j <  (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/SPAMM_N_CHILD))
         {
@@ -158,7 +158,7 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
   /* Recurse down to find the element. */
   if (A->root != NULL)
   {
-    LOG_DEBUG("getting element A(%u,%u)\n", i, j);
+    //LOG_DEBUG("getting element A(%u,%u)\n", i, j);
     return spamm_get_element(i, j, A->root);
   }
 
