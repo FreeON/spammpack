@@ -85,7 +85,7 @@ spamm_read_MM (const char *filename,
       token = strtok(NULL, " \t");
       if (token == NULL) { LOG_FATAL("syntax error, line %i\n", linenumber); }
       N = strtol(token, NULL, 10);
-      spamm_new(M, N, M_block, N_block, M_child, N_child, threshold, A);
+      spamm_new(M, N, A);
       continue;
     }
 

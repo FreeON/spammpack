@@ -11,6 +11,8 @@ libspamm_la_SOURCES = \
 matrix_tree_sources = \
   spamm.h \
   spamm_add.c \
+  spamm_allocate.c \
+  spamm_block_index.c \
   spamm_compare_int.c \
   spamm_compare_multiply_stream_element.c \
   spamm_delete.c \
@@ -18,6 +20,7 @@ matrix_tree_sources = \
   spamm_delete_node.c \
   spamm_dense_index.c \
   spamm_dense_to_spamm.c \
+  spamm_free.c \
   spamm_get.c \
   spamm_int_to_binary.c \
   spamm_linear_to_coordinates.c \
@@ -78,6 +81,7 @@ memory_manager_sources = \
   spamm_mm_print.c
 
 matrix_kernel_sources = \
+  spamm_stream_kernel.S \
   spamm_trivial_kernel.c
 
 EXTRA_DIST = spamm_mainpage.h.in

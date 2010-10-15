@@ -1,5 +1,6 @@
 #include "spamm.h"
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 
 /** \private Statistics of a node.
@@ -14,37 +15,43 @@ spamm_node_stats (struct spamm_tree_stats_t *stats, const struct spamm_node_t *n
 {
   int i, j;
   int nonzero;
+  unsigned int kernel_block_M, kernel_block_N;
+
+  assert(node != NULL);
 
   stats->memory_tree += sizeof(struct spamm_node_t);
-  if (node->child != NULL)
-  {
-    stats->memory_tree += node->M_child*node->N_child*sizeof(struct spamm_node_t*);
-    for (i = 0; i < node->M_child; ++i) {
-      for (j = 0; j < node->N_child; ++j)
+  stats->memory_tree += SPAMM_M_CHILD*SPAMM_N_CHILD*sizeof(struct spamm_node_t*);
+  for (i = 0; i < SPAMM_M_CHILD; ++i) {
+    for (j = 0; j < SPAMM_N_CHILD; ++j)
+    {
+      if (node->child[i][j] != NULL)
       {
         stats->number_nodes++;
-        spamm_node_stats(stats, node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+        spamm_node_stats(stats, node->child[i][j]);
       }
     }
   }
 
-  if (node->block_dense != NULL)
+  if (node->tier == node->kernel_tier)
   {
+    kernel_block_M = pow(SPAMM_M_CHILD, node->tree_depth-node->kernel_tier)*SPAMM_M_BLOCK;
+    kernel_block_N = pow(SPAMM_N_CHILD, node->tree_depth-node->kernel_tier)*SPAMM_N_BLOCK;
+
     stats->number_dense_blocks++;
-    stats->memory_dense_blocks += node->M_block*node->N_block*sizeof(floating_point_t);
+    stats->memory_dense_blocks += kernel_block_M*kernel_block_N*sizeof(floating_point_t);
 
     /* Calculate sparsity of dense block. */
     nonzero = 0;
-    for (i = 0; i < node->M_block; ++i) {
-      for (j = 0; j < node->N_block; ++j)
+    for (i = 0; i < kernel_block_M; ++i) {
+      for (j = 0; j < kernel_block_N; ++j)
       {
-        if (node->block_dense[spamm_dense_index(i, j, node->M_block, node->N_block)] != 0.0)
+        if (node->block_dense[spamm_dense_index(i, j, kernel_block_M, kernel_block_N)] != 0.0)
         {
           nonzero++;
         }
       }
     }
-    stats->average_sparsity += 1 - (floating_point_t) nonzero / (floating_point_t) (node->M_block*node->N_block);
+    stats->average_sparsity += 1 - (floating_point_t) nonzero / (floating_point_t) (kernel_block_M*kernel_block_N);
   }
 }
 

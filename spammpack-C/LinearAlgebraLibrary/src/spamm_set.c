@@ -18,11 +18,12 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
 {
   int l, k, m, n;
   struct spamm_node_t *child_node;
+  unsigned int kernel_block_M, kernel_block_N;
 
   assert(node != NULL);
 
   /* Check if we are at the block level. */
-  if ((node->M_upper-node->M_lower) == node->M_block && (node->N_upper-node->N_lower) == node->N_block)
+  if (node->tier == node->tree_depth)
   {
     if (node->block_dense == NULL)
     {
@@ -30,100 +31,65 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
       exit(1);
     }
 
-    node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, node->M_block, node->N_block)] = Aij;
+    /* Set matrix element. */
+    node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] = Aij;
   }
 
   else
   {
-    if (node->child == NULL)
-    {
-      /* Allocate children nodes. */
-      node->child = (struct spamm_node_t**) malloc(sizeof(struct spamm_node_t*)*node->M_child*node->N_child);
-
-      /* Create children nodes. */
-      for (l = 0; l < node->M_child; ++l) {
-        for (k = 0; k < node->N_child; ++k)
+    /* Recurse. */
+    for (l = 0; l < SPAMM_M_CHILD; ++l) {
+      for (k = 0; k < SPAMM_N_CHILD; ++k)
+      {
+        if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/SPAMM_M_CHILD) &&
+            i < (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/SPAMM_M_CHILD) &&
+            j >= (node->N_lower+(node->N_upper-node->N_lower)*k/SPAMM_N_CHILD) &&
+            j < (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/SPAMM_N_CHILD))
         {
-          node->child[spamm_dense_index(l, k, node->M_child, node->N_child)] = spamm_new_node();
-          child_node = node->child[spamm_dense_index(l, k, node->M_child, node->N_child)];
-
-          child_node->tier = node->tier+1;
-          child_node->tree_depth = node->tree_depth;
-
-          child_node->M_lower = node->M_lower+l*(node->M_upper-node->M_lower)/node->M_child;
-          child_node->M_upper = node->M_lower+(l+1)*(node->M_upper-node->M_lower)/node->M_child;
-          child_node->N_lower = node->N_lower+k*(node->N_upper-node->N_lower)/node->N_child;
-          child_node->N_upper = node->N_lower+(k+1)*(node->N_upper-node->N_lower)/node->N_child;
-
-          child_node->M_child = node->M_child;
-          child_node->N_child = node->N_child;
-
-          child_node->threshold = node->threshold;
-
-          child_node->linear_tier = node->linear_tier;
-
-          child_node->M_block = node->M_block;
-          child_node->N_block = node->N_block;
-
-          /* Check if we are at the block level. */
-          if ((child_node->M_upper-child_node->M_lower) == child_node->M_block && (child_node->N_upper-child_node->N_lower) == child_node->N_block)
+          if (node->child[l][k] == NULL)
           {
-            child_node->block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*child_node->M_block*child_node->N_block);
-            for (m = 0; m < child_node->M_block; ++m) {
-              for (n = 0; n < child_node->N_block; ++n)
-              {
-                child_node->block_dense[spamm_dense_index(m, n, child_node->M_block, child_node->N_block)] = 0.0;
+            /* Create new child node. */
+            node->child[l][k] = spamm_new_node();
+            child_node = node->child[l][k];
+
+            child_node->tier = node->tier+1;
+            child_node->tree_depth = node->tree_depth;
+
+            child_node->M_lower = node->M_lower+l*(node->M_upper-node->M_lower)/SPAMM_M_CHILD;
+            child_node->M_upper = node->M_lower+(l+1)*(node->M_upper-node->M_lower)/SPAMM_M_CHILD;
+            child_node->N_lower = node->N_lower+k*(node->N_upper-node->N_lower)/SPAMM_N_CHILD;
+            child_node->N_upper = node->N_lower+(k+1)*(node->N_upper-node->N_lower)/SPAMM_N_CHILD;
+
+            child_node->linear_tier = node->linear_tier;
+            child_node->kernel_tier = node->kernel_tier;
+
+            /* Check if we are at the kernel level. */
+            if (child_node->tier == child_node->kernel_tier)
+            {
+              /* Allocate contiguous matrix block. */
+              kernel_block_M = pow(SPAMM_M_CHILD, child_node->tree_depth-child_node->kernel_tier)*SPAMM_M_BLOCK;
+              kernel_block_N = pow(SPAMM_N_CHILD, child_node->tree_depth-child_node->kernel_tier)*SPAMM_N_BLOCK;
+
+              child_node->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*kernel_block_M*kernel_block_N);
+              for (m = 0; m < kernel_block_M; ++m) {
+                for (n = 0; n < kernel_block_N; ++n)
+                {
+                  child_node->block_dense[spamm_dense_index(m, n, kernel_block_M, kernel_block_N)] = 0.0;
+                }
               }
             }
+
+            else if (child_node->tier > child_node->kernel_tier)
+            {
+              /* Point into the contiguous matrix block. */
+              kernel_block_M = pow(SPAMM_M_CHILD, child_node->tree_depth-child_node->tier)*SPAMM_M_BLOCK;
+              kernel_block_N = pow(SPAMM_N_CHILD, child_node->tree_depth-child_node->tier)*SPAMM_N_BLOCK;
+
+              child_node->block_dense = node->block_dense+kernel_block_M*kernel_block_N*(SPAMM_N_CHILD*l+k);
+            }
           }
-        }
-      }
 
-      if (node->M_child == 2 && node->N_child == 2)
-      {
-        /* Z-curve curve ordering. */
-        switch (node->ordering)
-        {
-          case none:
-            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->index = 0;
-            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->index = 1;
-            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->index = 2;
-            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->index = 3;
-            break;
-
-          case P:
-            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(0, 0, node->M_child, node->N_child)]->index = (node->index << 2)+0;
-            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(0, 1, node->M_child, node->N_child)]->index = (node->index << 2)+1;
-            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(1, 0, node->M_child, node->N_child)]->index = (node->index << 2)+2;
-            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->ordering = P;
-            node->child[spamm_dense_index(1, 1, node->M_child, node->N_child)]->index = (node->index << 2)+3;
-            break;
-
-          default:
-            LOG2_FATAL("bug?\n");
-            exit(1);
-            break;
-        }
-      }
-    }
-
-    /* Recurse. */
-    for (l = 0; l < node->M_child; ++l) {
-      for (k = 0; k < node->N_child; ++k)
-      {
-        if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/node->M_child) &&
-            i < (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/node->M_child) &&
-            j >= (node->N_lower+(node->N_upper-node->N_lower)*k/node->N_child) &&
-            j < (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/node->N_child))
-        {
-          return spamm_set_element(i, j, Aij, node->child[spamm_dense_index(l, k, node->M_child, node->N_child)]);
+          return spamm_set_element(i, j, Aij, node->child[l][k]);
         }
       }
     }
@@ -138,13 +104,14 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
  * @param A The matrix.
  *
  * @return #SPAMM_RESULT_OK indicates that everything went fine.
- * @return #SPAMM_RESULT_BELOW_THRESHOLD indicates that the matrix element was
- *         smaller than the matrix threshold and was not stored.
+ * @return #SPAMM_RESULT_ZERO_ELEMENT indicates that the matrix element was
+ *         zero and therefore not stored.
  */
 int
 spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Aij, struct spamm_t *A)
 {
   int l, k;
+  unsigned int kernel_block_M, kernel_block_N;
   int result = SPAMM_RESULT_OK;
 
   assert(A != NULL);
@@ -152,8 +119,11 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
   if (i >= A->M) { LOG_FATAL("(i = %i) >= (M = %i)\n", i, A->M); exit(1); }
   if (j >= A->N) { LOG_FATAL("(j = %i) >= (N = %i)\n", j, A->N); exit(1); }
 
-  if (fabs(Aij) > A->threshold)
+  /* If the value is zero, we don't have to store it. */
+  if (Aij != 0.0)
   {
+    //printf("setting A(%u,%u) to %f\n", i+1, j+1, Aij);
+
     /* Recursively find the leaf node that stores this element. */
     if (A->root == NULL)
     {
@@ -166,35 +136,33 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
       A->root->N_lower = 0;
       A->root->N_upper = A->N_padded;
 
-      A->root->M_child = A->M_child;
-      A->root->N_child = A->N_child;
-
-      A->root->threshold = A->threshold;
-
       A->root->linear_tier = A->linear_tier;
+      A->root->kernel_tier = A->kernel_tier;
 
-      A->root->M_block = A->M_block;
-      A->root->N_block = A->N_block;
-
-      /* Check if we are at the block level. */
-      if ((A->root->M_upper-A->root->M_lower) == A->root->M_block && (A->root->N_upper-A->root->N_lower) == A->root->N_block)
+      /* Check if we are at the kernel level. */
+      if (A->root->tier == A->root->kernel_tier)
       {
-        A->root->block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*A->root->M_block*A->root->N_block);
-        for (l = 0; l < A->root->M_block; ++l) {
-          for (k = 0; k < A->root->N_block; ++k)
+        kernel_block_M = pow(SPAMM_M_CHILD, A->root->tree_depth-A->root->kernel_tier)*SPAMM_M_BLOCK;
+        kernel_block_N = pow(SPAMM_N_CHILD, A->root->tree_depth-A->root->kernel_tier)*SPAMM_N_BLOCK;
+
+        /* Reset newly allocated block to zero. */
+        A->root->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*kernel_block_M*kernel_block_N);
+        for (l = 0; l < kernel_block_M; ++l) {
+          for (k = 0; k < kernel_block_N; ++k)
           {
-            A->root->block_dense[spamm_dense_index(l, k, A->root->M_block, A->root->N_block)] = 0.0;
+            A->root->block_dense[spamm_dense_index(l, k, kernel_block_M, kernel_block_N)] = 0.0;
           }
         }
       }
     }
 
     spamm_set_element(i, j, Aij, A->root);
+    //spamm_print_tree(A);
   }
 
   else
   {
-    result = SPAMM_RESULT_BELOW_THRESHOLD;
+    result = SPAMM_RESULT_ZERO_ELEMENT;
   }
 
   return result;

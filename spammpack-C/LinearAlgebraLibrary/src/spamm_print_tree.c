@@ -1,4 +1,5 @@
 #include "spamm.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -14,13 +15,15 @@ spamm_print_tree_node (const struct spamm_node_t *node, const int width)
 {
   int i, j;
 
+  assert(node != NULL);
+
   spamm_print_node(node);
-  if (node->child != NULL)
-  {
-    for (i = 0; i < node->M_child; ++i) {
-      for (j = 0; j < node->N_child; ++j)
+  for (i = 0; i < SPAMM_M_CHILD; ++i) {
+    for (j = 0; j < SPAMM_N_CHILD; ++j)
+    {
+      if (node->child[i][j] != NULL)
       {
-        spamm_print_tree_node(node->child[spamm_dense_index(i, j, node->M_child, node->N_child)], width);
+        spamm_print_tree_node(node->child[i][j], width);
       }
     }
   }
@@ -33,12 +36,13 @@ spamm_print_tree_node (const struct spamm_node_t *node, const int width)
 void
 spamm_print_tree (const struct spamm_t *A)
 {
-  printf("A: M = %i, N = %i, ", A->M, A->N);
-  printf("M_padded = %i, N_padded = %i, ", A->M_padded, A->N_padded);
-  printf("M_block = %i, N_block = %i, ", A->M_block, A->N_block);
-  printf("M_child = %i, N_child = %i, ", A->M_child, A->N_child);
+  assert(A != NULL);
+
+  printf("A: M = %u, N = %u, ", A->M, A->N);
+  printf("M_padded = %u, N_padded = %u, ", A->M_padded, A->N_padded);
+  printf("M_block = %u, N_block = %u, ", SPAMM_M_BLOCK, SPAMM_N_BLOCK);
+  printf("M_child = %u, N_child = %u, ", SPAMM_M_CHILD, SPAMM_N_CHILD);
   printf("depth = %u, ", A->tree_depth);
-  printf("threshold = %7.1e, ", A->threshold);
   printf("root = %p\n", (void*) A->root);
 
   if (A->root != NULL)

@@ -1,9 +1,9 @@
-SUBDIRS = ll mm add multiply
+#SUBDIRS = ll mm add multiply
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 AM_CFLAGS = -I$(top_srcdir)/src
-AM_LDFLAGS = $(top_builddir)/src/libspamm.la
+AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 
 TESTS = $(noinst_PROGRAMS)
 

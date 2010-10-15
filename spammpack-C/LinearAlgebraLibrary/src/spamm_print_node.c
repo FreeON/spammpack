@@ -1,4 +1,5 @@
 #include "spamm.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,7 @@ spamm_print_node (const struct spamm_node_t *node)
 {
   int i, j;
   int nonzero;
+  unsigned int kernel_block_M, kernel_block_N;
   char *binary_string;
   char header[1000];
   char empty_header[1000];
@@ -36,12 +38,11 @@ spamm_print_node (const struct spamm_node_t *node)
     printf("tier = %i, ", node->tier);
     printf("depth = %i, ", node->tree_depth);
     printf("linear = %i, ", node->linear_tier);
+    printf("A(%u:%u,%u:%u), ", node->M_lower+1, node->M_upper, node->N_lower+1, node->N_upper);
     printf("M_lower = %i, M_upper = %i, ", node->M_lower, node->M_upper);
     printf("N_lower = %i, N_upper = %i, ", node->N_lower, node->N_upper);
-    printf("M_block = %i, N_block = %i, ", node->M_block, node->N_block);
-    printf("M_child = %i, N_child = %i\n", node->M_child, node->N_child);
+    printf("\n");
     printf("%s", empty_header);
-    printf("threshold = %7.1e, ", node->threshold);
     binary_string = (char*) malloc(sizeof(char)*(node->tier*2+2));
     spamm_int_to_binary(node->index, node->tier*2, binary_string);
     printf("index = 0b%s (%u), ", binary_string, node->index);
@@ -49,14 +50,16 @@ spamm_print_node (const struct spamm_node_t *node)
     printf("child = %p, ", (void*) node->child);
     if (node->child != NULL)
     {
-      printf("{ ");
-      for (i = 0; i < node->M_child; ++i) {
-        for (j = 0; j < node->N_child; ++j)
+      printf("(1:%u,1:%u) { ", SPAMM_M_CHILD, SPAMM_N_CHILD);
+      for (i = 0; i < SPAMM_M_CHILD; ++i) {
+        printf("(%u,1:%u) { ", i+1, SPAMM_N_CHILD);
+        for (j = 0; j < SPAMM_N_CHILD; ++j)
         {
-          printf("%p", (void*) node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
-          if (j < node->N_child-1) { printf(", "); }
+          printf("%p", (void*) node->child[i][j]);
+          if (j < SPAMM_N_CHILD-1) { printf(", "); }
         }
-        if (i < node->M_child-1) { printf(", "); }
+        printf(" }");
+        if (i < SPAMM_M_CHILD-1) { printf(", "); }
       }
       printf(" }\n");
       printf("%s", empty_header);
@@ -74,31 +77,48 @@ spamm_print_node (const struct spamm_node_t *node)
       printf("%s", empty_header);
     }
     printf("block_dense = %p", (void*) node->block_dense);
-    if (node->block_dense != NULL)
+    if (node->tier == node->kernel_tier)
     {
       nonzero = 0;
-      for (i = 0; i < node->M_block; ++i) {
-        for (j = 0; j < node->N_block; ++j)
+
+      kernel_block_M = pow(SPAMM_M_CHILD, node->tree_depth-node->kernel_tier)*SPAMM_M_BLOCK;
+      kernel_block_N = pow(SPAMM_N_CHILD, node->tree_depth-node->kernel_tier)*SPAMM_N_BLOCK;
+
+      for (i = 0; i < kernel_block_M; ++i) {
+        for (j = 0; j < kernel_block_N; ++j)
         {
-          if (node->block_dense[spamm_dense_index(i, j, node->M_block, node->N_block)] != 0.0)
+          if (node->block_dense[spamm_dense_index(i, j, kernel_block_M, kernel_block_N)] != 0.0)
           {
             nonzero++;
           }
         }
       }
-      printf(", sparsity = %1.1f%%", (1.0 - (floating_point_t) nonzero / (floating_point_t) (node->M_block*node->N_block))*100);
-      printf(", { ");
-      for (i = 0; i < node->M_block; ++i) {
-        for (j = 0; j < node->N_block; ++j)
+      printf(", sparsity = %1.1f%%", (1.0 - (floating_point_t) nonzero / (floating_point_t) (SPAMM_M_BLOCK*SPAMM_N_BLOCK))*100);
+      printf(", (1:%u,1:%u) { ", kernel_block_M, kernel_block_N);
+      for (i = 0; i < kernel_block_M; ++i) {
+        printf(" (%u,1:%u) { ", i+1, kernel_block_N);
+        for (j = 0; j < kernel_block_N; ++j)
         {
-          printf("%f", node->block_dense[spamm_dense_index(i, j, node->M_block, node->N_block)]);
-          if (j < node->N_block-1) { printf(", "); }
+          printf("%f", node->block_dense[spamm_dense_index(i, j, kernel_block_M, kernel_block_N)]);
+          if (j < kernel_block_N-1) { printf(", "); }
         }
-        if (i < node->M_block-1) { printf(", "); }
+        printf(" }");
+        if (i < kernel_block_M-1) { printf(", "); }
       }
       printf(" }\n");
     }
 
-    else { printf("\n"); }
+    else
+    {
+      if (node->tier < node->kernel_tier)
+      {
+        printf(" (above kernel tier)\n");
+      }
+
+      else
+      {
+        printf(" (below kernel tier)\n");
+      }
+    }
   }
 }

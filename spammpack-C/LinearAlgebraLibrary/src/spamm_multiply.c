@@ -51,15 +51,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     (*C_node)->N_lower = B_node->N_lower;
     (*C_node)->N_upper = B_node->N_upper;
 
-    (*C_node)->M_child = A_node->M_child;
-    (*C_node)->N_child = B_node->N_child;
-
-    (*C_node)->threshold = A_node->threshold;
-
     (*C_node)->linear_tier = A_node->linear_tier;
-
-    (*C_node)->M_block = A_node->M_block;
-    (*C_node)->N_block = B_node->N_block;
   }
 
   if (A_node->child != NULL && B_node->child != NULL)
@@ -67,69 +59,54 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     /* Create new children nodes. */
     if ((*C_node)->child == NULL)
     {
-      /* Allocate children nodes. */
-      (*C_node)->child = (struct spamm_node_t**) malloc(sizeof(struct spamm_node_t*)*(*C_node)->M_child*(*C_node)->N_child);
-
       /* Create children nodes. */
-      for (i = 0; i < (*C_node)->M_child; ++i) {
-        for (j = 0; j < (*C_node)->N_child; ++j)
+      for (i = 0; i < SPAMM_M_CHILD; ++i) {
+        for (j = 0; j < SPAMM_N_CHILD; ++j)
         {
-          (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)] = spamm_new_node();
+          (*C_node)->child[i][j] = spamm_new_node();
 
-          C_child_node = (*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)];
+          C_child_node = (*C_node)->child[i][j];
           C_child_node->tier = (*C_node)->tier+1;
           C_child_node->tree_depth = (*C_node)->tree_depth;
 
-          C_child_node->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
-          C_child_node->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/(*C_node)->M_child;
-          C_child_node->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
-          C_child_node->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/(*C_node)->N_child;
-
-          C_child_node->M_child = (*C_node)->M_child;
-          C_child_node->N_child = (*C_node)->N_child;
-
-          C_child_node->threshold = (*C_node)->threshold;
+          C_child_node->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_M_CHILD;
+          C_child_node->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_M_CHILD;
+          C_child_node->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
+          C_child_node->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
 
           C_child_node->linear_tier = (*C_node)->linear_tier;
-
-          C_child_node->M_block = (*C_node)->M_block;
-          C_child_node->N_block = (*C_node)->N_block;
         }
       }
 
-      /* Space-Filling curve ordering. */
-      if ((*C_node)->M_child == 2 && (*C_node)->N_child == 2)
+      /* Z-curve curve ordering. */
+      switch ((*C_node)->ordering)
       {
-        /* Z-curve curve ordering. */
-        switch ((*C_node)->ordering)
-        {
-          case none:
-            (*C_node)->child[spamm_dense_index(0, 0, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
-            (*C_node)->child[spamm_dense_index(0, 0, (*C_node)->M_child, (*C_node)->N_child)]->index = 0;
-            (*C_node)->child[spamm_dense_index(0, 1, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
-            (*C_node)->child[spamm_dense_index(0, 1, (*C_node)->M_child, (*C_node)->N_child)]->index = 1;
-            (*C_node)->child[spamm_dense_index(1, 0, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
-            (*C_node)->child[spamm_dense_index(1, 0, (*C_node)->M_child, (*C_node)->N_child)]->index = 2;
-            (*C_node)->child[spamm_dense_index(1, 1, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
-            (*C_node)->child[spamm_dense_index(1, 1, (*C_node)->M_child, (*C_node)->N_child)]->index = 3;
-            break;
+        case none:
+          (*C_node)->child[0][0]->ordering = P;
+          (*C_node)->child[0][0]->index = 0;
+          (*C_node)->child[0][1]->ordering = P;
+          (*C_node)->child[0][1]->index = 1;
+          (*C_node)->child[1][0]->ordering = P;
+          (*C_node)->child[1][0]->index = 2;
+          (*C_node)->child[1][1]->ordering = P;
+          (*C_node)->child[1][1]->index = 3;
+          break;
 
-          case P:
-            (*C_node)->child[spamm_dense_index(0, 0, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
-            (*C_node)->child[spamm_dense_index(0, 0, (*C_node)->M_child, (*C_node)->N_child)]->index = (*C_node)->index*4+0;
-            (*C_node)->child[spamm_dense_index(0, 1, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
-            (*C_node)->child[spamm_dense_index(0, 1, (*C_node)->M_child, (*C_node)->N_child)]->index = (*C_node)->index*4+1;
-            (*C_node)->child[spamm_dense_index(1, 0, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
-            (*C_node)->child[spamm_dense_index(1, 0, (*C_node)->M_child, (*C_node)->N_child)]->index = (*C_node)->index*4+2;
-            (*C_node)->child[spamm_dense_index(1, 1, (*C_node)->M_child, (*C_node)->N_child)]->ordering = P;
-            (*C_node)->child[spamm_dense_index(1, 1, (*C_node)->M_child, (*C_node)->N_child)]->index = (*C_node)->index*4+3;
-            break;
+        case P:
+          (*C_node)->child[0][0]->ordering = P;
+          (*C_node)->child[0][0]->index = (*C_node)->index*4+0;
+          (*C_node)->child[0][1]->ordering = P;
+          (*C_node)->child[0][1]->index = (*C_node)->index*4+1;
+          (*C_node)->child[1][0]->ordering = P;
+          (*C_node)->child[1][0]->index = (*C_node)->index*4+2;
+          (*C_node)->child[1][1]->ordering = P;
+          (*C_node)->child[1][1]->index = (*C_node)->index*4+3;
+          break;
 
-          default:
-            LOG2_FATAL("bug?\n");
-            exit(1);
-            break;
-        }
+        default:
+          LOG2_FATAL("bug?\n");
+          exit(1);
+          break;
       }
     }
 
@@ -139,14 +116,12 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
      * Z-curve ordering, we should recurse in that order and not simply on
      * child_{ij} with 2 nested loops.
      */
-    for (i = 0; i < (*C_node)->M_child; ++i) {
-      for (j = 0; j < (*C_node)->N_child; ++j) {
-        for (k = 0; k < A_node->N_child; ++k)
+    for (i = 0; i < SPAMM_M_CHILD; ++i) {
+      for (j = 0; j < SPAMM_N_CHILD; ++j) {
+        for (k = 0; k < SPAMM_N_CHILD; ++k)
         {
           spamm_multiply_node(algorithm, alpha,
-              A_node->child[spamm_dense_index(i, k, A_node->M_child, A_node->N_child)],
-              B_node->child[spamm_dense_index(k, j, B_node->M_child, B_node->N_child)],
-              &(*C_node)->child[spamm_dense_index(i, j, (*C_node)->M_child, (*C_node)->N_child)],
+              A_node->child[i][k], B_node->child[k][j], &(*C_node)->child[i][j],
               multiply_stream);
         }
       }
@@ -159,11 +134,11 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     if ((*C_node)->block_dense == NULL)
     {
       /* Create empty dense block. */
-      (*C_node)->block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*(*C_node)->M_block*(*C_node)->N_block);
-      for (i = 0; i < (*C_node)->M_block; ++i) {
-        for (j = 0; j < (*C_node)->N_block; ++j)
+      (*C_node)->block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*SPAMM_M_BLOCK*SPAMM_N_BLOCK);
+      for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+        for (j = 0; j < SPAMM_N_BLOCK; ++j)
         {
-          (*C_node)->block_dense[spamm_dense_index(i, j, (*C_node)->M_block, (*C_node)->N_block)] = 0;
+          (*C_node)->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] = 0;
         }
       }
     }
@@ -196,10 +171,10 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         cublasFree(d_B);
         cublasFree(d_C);
 #else
-        spamm_sgemm_trivial('N', 'N', (*C_node)->M_block, (*C_node)->N_block,
-            A_node->N_block, alpha, A_node->block_dense, A_node->M_block,
-            B_node->block_dense, B_node->M_block, beta,
-            (*C_node)->block_dense, (*C_node)->M_block);
+        spamm_sgemm_trivial('N', 'N', SPAMM_M_BLOCK, SPAMM_N_BLOCK,
+            SPAMM_N_BLOCK, alpha, A_node->block_dense, SPAMM_M_BLOCK,
+            B_node->block_dense, SPAMM_M_BLOCK, beta,
+            (*C_node)->block_dense, SPAMM_M_BLOCK);
 #endif
         break;
 
@@ -212,12 +187,12 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         multiply_stream_element->A_index = A_node->index;
         multiply_stream_element->B_index = B_node->index;
         multiply_stream_element->C_index = (*C_node)->index;
-        multiply_stream_element->M_A = A_node->M_block;
-        multiply_stream_element->N_A = A_node->N_block;
-        multiply_stream_element->M_B = B_node->M_block;
-        multiply_stream_element->N_B = B_node->N_block;
-        multiply_stream_element->M_C = (*C_node)->M_block;
-        multiply_stream_element->N_C = (*C_node)->N_block;
+        multiply_stream_element->M_A = SPAMM_M_BLOCK;
+        multiply_stream_element->N_A = SPAMM_N_BLOCK;
+        multiply_stream_element->M_B = SPAMM_M_BLOCK;
+        multiply_stream_element->N_B = SPAMM_N_BLOCK;
+        multiply_stream_element->M_C = SPAMM_M_BLOCK;
+        multiply_stream_element->N_C = SPAMM_N_BLOCK;
         multiply_stream_element->block_A_loaded_in_GPU = 0;
         multiply_stream_element->block_B_loaded_in_GPU = 0;
         multiply_stream_element->block_C_loaded_in_GPU = 0;
@@ -226,7 +201,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         multiply_stream_element->C_node = *C_node;
         if (algorithm == cache_redundant)
         {
-          multiply_stream_element->C_block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*(*C_node)->M_block*(*C_node)->N_block);
+          multiply_stream_element->C_block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*SPAMM_M_BLOCK*SPAMM_N_BLOCK);
         }
 
         else
@@ -298,7 +273,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
           LOG_DEBUG("found matching blocks in A and B: mask_i(A) = %s, mask_j(B) = %s, C = %s\n", bitstring_A, bitstring_B, bitstring_C);
 
           /* Create new block for C. */
-          linear_C = spamm_new_linear_quadtree_node((*C_node)->M_block, (*C_node)->N_block, (*C_node)->linear_quadtree_memory);
+          linear_C = spamm_new_linear_quadtree_node(SPAMM_M_BLOCK, SPAMM_N_BLOCK, (*C_node)->linear_quadtree_memory);
           linear_C->index = mask_C;
           spamm_ll_append(linear_C, (*C_node)->linear_quadtree);
 
@@ -309,16 +284,16 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
           LOG2_DEBUG("B:\n");
           if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_B->M, linear_B->N, linear_B->block_dense); }
 
-          for (i = 0; i < A_node->M_block; ++i) {
-            for (j = 0; j < B_node->N_block; ++j)
+          for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+            for (j = 0; j < SPAMM_N_BLOCK; ++j)
             {
               linear_C->block_dense[spamm_dense_index(i, j, linear_C->M, linear_C->N)] = 0.0;
 
-              for (k = 0; k < A_node->N_block; ++k)
+              for (k = 0; k < SPAMM_N_BLOCK; ++k)
               {
                 linear_C->block_dense[spamm_dense_index(i, j, linear_C->M, linear_C->N)] +=
-                  alpha*linear_A->block_dense[spamm_dense_index(i, k, A_node->M_block, A_node->N_block)]
-                  *linear_B->block_dense[spamm_dense_index(k, j, B_node->M_block, B_node->N_block)];
+                  alpha*linear_A->block_dense[spamm_dense_index(i, k, SPAMM_M_BLOCK, SPAMM_N_BLOCK)]
+                  *linear_B->block_dense[spamm_dense_index(k, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
               }
             }
           }
@@ -661,42 +636,6 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     exit(1);
   }
 
-  if (A->N_child != B->M_child)
-  {
-    LOG_FATAL("matrix child size mismatch, A->N_child = %i, B_child->M = %i\n", A->N_child, B->M_child);
-    exit(1);
-  }
-
-  if (A->M_child != C->M_child)
-  {
-    LOG_FATAL("matrix child size mismatch, A->M_child = %i, C->M_child = %i\n", A->M_child, C->M_child);
-    exit(1);
-  }
-
-  if (B->N_child != C->N_child)
-  {
-    LOG_FATAL("matrix child size mismatch, B->N_child = %i, C->N_child = %i\n", B->N_child, C->N_child);
-    exit(1);
-  }
-
-  if (A->N_block != B->M_block)
-  {
-    LOG_FATAL("matrix block size mismatch, A->N_block = %i, B_block->M = %i\n", A->N_block, B->M_block);
-    exit(1);
-  }
-
-  if (A->M_block != C->M_block)
-  {
-    LOG_FATAL("matrix block size mismatch, A->M_block = %i, C->M_block = %i\n", A->M_block, C->M_block);
-    exit(1);
-  }
-
-  if (B->N_block != C->N_block)
-  {
-    LOG_FATAL("matrix block size mismatch, B->N_block = %i, C->N_block = %i\n", B->N_block, C->N_block);
-    exit(1);
-  }
-
   if (A->tree_depth != B->tree_depth || A->tree_depth != C->tree_depth)
   {
     /* The basic problem is that different tree depths means different amount
@@ -733,8 +672,8 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     case cache_redundant:
       LOG2_INFO("using cache (redundant) algorithm\n");
 
-      max_memory = pow(C->M_child, C->tree_depth)*pow(C->N_child, C->tree_depth)*pow(A->N_child, A->tree_depth)
-        *(sizeof(struct spamm_multiply_stream_element_t)+C->M_block*C->N_block*sizeof(floating_point_t));
+      max_memory = pow(SPAMM_M_CHILD, C->tree_depth)*pow(SPAMM_N_CHILD, C->tree_depth)*pow(SPAMM_N_CHILD, A->tree_depth)
+        *(sizeof(struct spamm_multiply_stream_element_t)+SPAMM_M_BLOCK*SPAMM_N_BLOCK*sizeof(floating_point_t));
       if (max_memory < 1024)
       {
         LOG_INFO("max memory usage for multiply stream: %1.2f bytes\n", max_memory);
