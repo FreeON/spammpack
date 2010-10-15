@@ -30,7 +30,7 @@ spamm_delete_node (struct spamm_node_t **node)
     spamm_mm_delete(&(*node)->linear_quadtree_memory);
   }
 
-  for (i = 0; i < SPAMM_M_CHILD; ++i) {
+  for (i = 0; i < SPAMM_N_CHILD; ++i) {
     for (j = 0; j < SPAMM_N_CHILD; ++j)
     {
       if ((*node)->child[i][j] != NULL)

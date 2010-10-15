@@ -10,11 +10,6 @@
  *
  * @param M Number of rows of dense input matrix.
  * @param N Number of columns of dense input matrix.
- * @param M_block Number of rows of matrix block in spamm_t.
- * @param N_block Number of columns of matrix block in spamm_t.
- * @param M_child Number of rows of children array in spamm_node_t.
- * @param N_child Number of columns of children array in spamm_node_t.
- * @param threshold Threshold below which matrix elements are considered zero.
  * @param A_dense The dense input matrix.
  * @param A The spamm_t output matrix.
  */

@@ -14,6 +14,7 @@
  * C_node = alpha*A_node*B_node + C_node
  *
  * @param algorithm The algorithm to use.
+ * @param tolerance The accuracy target for the matrix product.
  * @param alpha The scalar factor multiplying A*B.
  * @param A_node The node of matrix A.
  * @param B_node The node of matrix B.
@@ -22,16 +23,18 @@
  */
 void
 spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
+    const floating_point_t tolerance,
     const floating_point_t alpha, struct spamm_node_t *A_node,
     struct spamm_node_t *B_node, struct spamm_node_t **C_node,
     struct spamm_ll_t *multiply_stream)
 {
   floating_point_t beta = 1.0;
-  int i, j, k;
+  int i, j, k, l, m;
   char bitstring_A[100];
   char bitstring_B[100];
   char bitstring_C[100];
   unsigned int mask_A, mask_B, mask_C;
+  unsigned int kernel_block_N;
   struct spamm_node_t *C_child_node;
   struct spamm_multiply_stream_element_t *multiply_stream_element;
   struct spamm_ll_iterator_t *iterator_A, *iterator_B, *iterator_C;
@@ -41,6 +44,8 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   /* Create new node. */
   if (*C_node == NULL)
   {
+    LOG2_DEBUG("creating new C node\n");
+
     *C_node = spamm_new_node();
 
     (*C_node)->tier = A_node->tier;
@@ -52,97 +57,71 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     (*C_node)->N_upper = B_node->N_upper;
 
     (*C_node)->linear_tier = A_node->linear_tier;
+    (*C_node)->kernel_tier = A_node->kernel_tier;
   }
 
-  if (A_node->child != NULL && B_node->child != NULL)
-  {
-    /* Create new children nodes. */
-    if ((*C_node)->child == NULL)
-    {
-      /* Create children nodes. */
-      for (i = 0; i < SPAMM_M_CHILD; ++i) {
-        for (j = 0; j < SPAMM_N_CHILD; ++j)
-        {
-          (*C_node)->child[i][j] = spamm_new_node();
-
-          C_child_node = (*C_node)->child[i][j];
-          C_child_node->tier = (*C_node)->tier+1;
-          C_child_node->tree_depth = (*C_node)->tree_depth;
-
-          C_child_node->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_M_CHILD;
-          C_child_node->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_M_CHILD;
-          C_child_node->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
-          C_child_node->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
-
-          C_child_node->linear_tier = (*C_node)->linear_tier;
-        }
-      }
-
-      /* Z-curve curve ordering. */
-      switch ((*C_node)->ordering)
+  /* Recurse down the tree.
+   *
+   * [FIXME] This should be done in index ordering, i.e. in case we have
+   * Z-curve ordering, we should recurse in that order and not simply on
+   * child_{ij} with 2 nested loops.
+   */
+  LOG2_DEBUG("recursing...\n");
+  for (i = 0; i < SPAMM_N_CHILD; ++i) {
+    for (j = 0; j < SPAMM_N_CHILD; ++j) {
+      for (k = 0; k < SPAMM_N_CHILD; ++k)
       {
-        case none:
-          (*C_node)->child[0][0]->ordering = P;
-          (*C_node)->child[0][0]->index = 0;
-          (*C_node)->child[0][1]->ordering = P;
-          (*C_node)->child[0][1]->index = 1;
-          (*C_node)->child[1][0]->ordering = P;
-          (*C_node)->child[1][0]->index = 2;
-          (*C_node)->child[1][1]->ordering = P;
-          (*C_node)->child[1][1]->index = 3;
-          break;
-
-        case P:
-          (*C_node)->child[0][0]->ordering = P;
-          (*C_node)->child[0][0]->index = (*C_node)->index*4+0;
-          (*C_node)->child[0][1]->ordering = P;
-          (*C_node)->child[0][1]->index = (*C_node)->index*4+1;
-          (*C_node)->child[1][0]->ordering = P;
-          (*C_node)->child[1][0]->index = (*C_node)->index*4+2;
-          (*C_node)->child[1][1]->ordering = P;
-          (*C_node)->child[1][1]->index = (*C_node)->index*4+3;
-          break;
-
-        default:
-          LOG2_FATAL("bug?\n");
-          exit(1);
-          break;
-      }
-    }
-
-    /* Recurse down the tree.
-     *
-     * [FIXME] This should be done in index ordering, i.e. in case we have
-     * Z-curve ordering, we should recurse in that order and not simply on
-     * child_{ij} with 2 nested loops.
-     */
-    for (i = 0; i < SPAMM_M_CHILD; ++i) {
-      for (j = 0; j < SPAMM_N_CHILD; ++j) {
-        for (k = 0; k < SPAMM_N_CHILD; ++k)
+        if (A_node->child[i][k] != NULL && B_node->child[k][j] != NULL)
         {
-          spamm_multiply_node(algorithm, alpha,
-              A_node->child[i][k], B_node->child[k][j], &(*C_node)->child[i][j],
-              multiply_stream);
+          if ((*C_node)->child[i][j] == NULL)
+          {
+            /* Create new child node in C. */
+            (*C_node)->child[i][j] = spamm_new_node();
+            C_child_node = (*C_node)->child[i][j];
+
+            C_child_node->tier = (*C_node)->tier+1;
+            C_child_node->tree_depth = (*C_node)->tree_depth;
+
+            C_child_node->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
+            C_child_node->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
+            C_child_node->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
+            C_child_node->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
+
+            C_child_node->linear_tier = (*C_node)->linear_tier;
+            C_child_node->kernel_tier = (*C_node)->kernel_tier;
+
+            /* Check if we are at the kernel level. */
+            if (C_child_node->tier == C_child_node->kernel_tier)
+            {
+              /* Allocate contiguous matrix block. */
+              kernel_block_N = pow(SPAMM_N_CHILD, C_child_node->tree_depth-C_child_node->kernel_tier)*SPAMM_N_BLOCK;
+              C_child_node->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*kernel_block_N*kernel_block_N);
+              for (l = 0; l < kernel_block_N; ++l) {
+                for (m = 0; m < kernel_block_N; ++m)
+                {
+                  C_child_node->block_dense[spamm_dense_index(l, m, kernel_block_N, kernel_block_N)] = 0.0;
+                }
+              }
+            }
+
+            else if (C_child_node->tier > C_child_node->kernel_tier)
+            {
+              /* Point into the contiguous matrix block. */
+              kernel_block_N = pow(SPAMM_N_CHILD, C_child_node->tree_depth-C_child_node->tier)*SPAMM_N_BLOCK;
+              C_child_node->block_dense = (*C_node)->block_dense+kernel_block_N*kernel_block_N*(SPAMM_N_CHILD*l+k);
+            }
+          }
+
+          spamm_multiply_node(algorithm, tolerance, alpha, A_node->child[i][k], B_node->child[k][j], &(*C_node)->child[i][j], multiply_stream);
         }
       }
     }
   }
 
-  if (A_node->block_dense != NULL && B_node->block_dense != NULL)
+  LOG2_DEBUG("done recursing, checking whether we are at the bottom.\n");
+  if (A_node->tier == A_node->tree_depth && B_node->tier == B_node->tree_depth &&
+      A_node->block_dense != NULL && B_node->block_dense != NULL)
   {
-    /* Create new dense block in C. */
-    if ((*C_node)->block_dense == NULL)
-    {
-      /* Create empty dense block. */
-      (*C_node)->block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*SPAMM_M_BLOCK*SPAMM_N_BLOCK);
-      for (i = 0; i < SPAMM_M_BLOCK; ++i) {
-        for (j = 0; j < SPAMM_N_BLOCK; ++j)
-        {
-          (*C_node)->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] = 0;
-        }
-      }
-    }
-
     switch (algorithm)
     {
       case tree:
@@ -171,10 +150,10 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         cublasFree(d_B);
         cublasFree(d_C);
 #else
-        spamm_sgemm_trivial('N', 'N', SPAMM_M_BLOCK, SPAMM_N_BLOCK,
-            SPAMM_N_BLOCK, alpha, A_node->block_dense, SPAMM_M_BLOCK,
-            B_node->block_dense, SPAMM_M_BLOCK, beta,
-            (*C_node)->block_dense, SPAMM_M_BLOCK);
+        spamm_sgemm_trivial('N', 'N', SPAMM_N_BLOCK, SPAMM_N_BLOCK,
+            SPAMM_N_BLOCK, alpha, A_node->block_dense, SPAMM_N_BLOCK,
+            B_node->block_dense, SPAMM_N_BLOCK, beta,
+            (*C_node)->block_dense, SPAMM_N_BLOCK);
 #endif
         break;
 
@@ -187,11 +166,11 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         multiply_stream_element->A_index = A_node->index;
         multiply_stream_element->B_index = B_node->index;
         multiply_stream_element->C_index = (*C_node)->index;
-        multiply_stream_element->M_A = SPAMM_M_BLOCK;
+        multiply_stream_element->M_A = SPAMM_N_BLOCK;
         multiply_stream_element->N_A = SPAMM_N_BLOCK;
-        multiply_stream_element->M_B = SPAMM_M_BLOCK;
+        multiply_stream_element->M_B = SPAMM_N_BLOCK;
         multiply_stream_element->N_B = SPAMM_N_BLOCK;
-        multiply_stream_element->M_C = SPAMM_M_BLOCK;
+        multiply_stream_element->M_C = SPAMM_N_BLOCK;
         multiply_stream_element->N_C = SPAMM_N_BLOCK;
         multiply_stream_element->block_A_loaded_in_GPU = 0;
         multiply_stream_element->block_B_loaded_in_GPU = 0;
@@ -201,7 +180,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         multiply_stream_element->C_node = *C_node;
         if (algorithm == cache_redundant)
         {
-          multiply_stream_element->C_block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*SPAMM_M_BLOCK*SPAMM_N_BLOCK);
+          multiply_stream_element->C_block_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*SPAMM_N_BLOCK*SPAMM_N_BLOCK);
         }
 
         else
@@ -217,6 +196,11 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
         exit(1);
         break;
     }
+  }
+
+  else
+  {
+    LOG2_DEBUG("either A or B is zero\n");
   }
 
   if (A_node->linear_quadtree != NULL && B_node->linear_quadtree != NULL)
@@ -273,7 +257,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
           LOG_DEBUG("found matching blocks in A and B: mask_i(A) = %s, mask_j(B) = %s, C = %s\n", bitstring_A, bitstring_B, bitstring_C);
 
           /* Create new block for C. */
-          linear_C = spamm_new_linear_quadtree_node(SPAMM_M_BLOCK, SPAMM_N_BLOCK, (*C_node)->linear_quadtree_memory);
+          linear_C = spamm_new_linear_quadtree_node(SPAMM_N_BLOCK, SPAMM_N_BLOCK, (*C_node)->linear_quadtree_memory);
           linear_C->index = mask_C;
           spamm_ll_append(linear_C, (*C_node)->linear_quadtree);
 
@@ -284,7 +268,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
           LOG2_DEBUG("B:\n");
           if (spamm_get_loglevel() == debug) { spamm_print_dense(linear_B->M, linear_B->N, linear_B->block_dense); }
 
-          for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+          for (i = 0; i < SPAMM_N_BLOCK; ++i) {
             for (j = 0; j < SPAMM_N_BLOCK; ++j)
             {
               linear_C->block_dense[spamm_dense_index(i, j, linear_C->M, linear_C->N)] = 0.0;
@@ -292,8 +276,8 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
               for (k = 0; k < SPAMM_N_BLOCK; ++k)
               {
                 linear_C->block_dense[spamm_dense_index(i, j, linear_C->M, linear_C->N)] +=
-                  alpha*linear_A->block_dense[spamm_dense_index(i, k, SPAMM_M_BLOCK, SPAMM_N_BLOCK)]
-                  *linear_B->block_dense[spamm_dense_index(k, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
+                  alpha*linear_A->block_dense[spamm_dense_index(i, k, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]
+                  *linear_B->block_dense[spamm_dense_index(k, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
               }
             }
           }
@@ -595,6 +579,7 @@ spamm_add_stream (const unsigned int cache_length, struct spamm_ll_t *multiply_s
  * \f$C = \alpha A \times B + \beta C\f$
  *
  * @param algorithm The algorithm to use.
+ * @param tolerance The accuracy target for the matrix product.
  * @param alpha The scalar factor \f$\alpha\f$.
  * @param A The matrix \f$A\f$.
  * @param B The matrix \f$B\f$.
@@ -605,6 +590,7 @@ spamm_add_stream (const unsigned int cache_length, struct spamm_ll_t *multiply_s
  */
 void
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
+    floating_point_t tolerance,
     const floating_point_t alpha, const struct spamm_t *A,
     const struct spamm_t *B, const floating_point_t beta, struct spamm_t *C)
 {
@@ -648,6 +634,12 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     exit(1);
   }
 
+  if (tolerance < 0.0)
+  {
+    LOG2_INFO("tolerance is negative, using absolute value\n");
+    tolerance = -tolerance;
+  }
+
   if (beta != 1.0)
   {
     /* Multiply existing C. */
@@ -664,7 +656,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
   {
     case tree:
       LOG2_INFO("using tree algorithm\n");
-      spamm_multiply_node(algorithm, alpha, A->root, B->root, &(C->root), NULL);
+      spamm_multiply_node(algorithm, tolerance, alpha, A->root, B->root, &(C->root), NULL);
       break;
 
     case cache:
@@ -672,8 +664,8 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     case cache_redundant:
       LOG2_INFO("using cache (redundant) algorithm\n");
 
-      max_memory = pow(SPAMM_M_CHILD, C->tree_depth)*pow(SPAMM_N_CHILD, C->tree_depth)*pow(SPAMM_N_CHILD, A->tree_depth)
-        *(sizeof(struct spamm_multiply_stream_element_t)+SPAMM_M_BLOCK*SPAMM_N_BLOCK*sizeof(floating_point_t));
+      max_memory = pow(SPAMM_N_CHILD, C->tree_depth)*pow(SPAMM_N_CHILD, C->tree_depth)*pow(SPAMM_N_CHILD, A->tree_depth)
+        *(sizeof(struct spamm_multiply_stream_element_t)+SPAMM_N_BLOCK*SPAMM_N_BLOCK*sizeof(floating_point_t));
       if (max_memory < 1024)
       {
         LOG_INFO("max memory usage for multiply stream: %1.2f bytes\n", max_memory);
@@ -698,7 +690,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       multiply_stream = spamm_ll_new();
 
       gettimeofday(&start, NULL);
-      spamm_multiply_node(algorithm, alpha, A->root, B->root, &(C->root), multiply_stream);
+      spamm_multiply_node(algorithm, tolerance, alpha, A->root, B->root, &(C->root), multiply_stream);
       gettimeofday(&stop, NULL);
       LOG_INFO("symbolic multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 

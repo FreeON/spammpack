@@ -20,10 +20,10 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
   if (node->tier == node->tree_depth)
   {
     LOG2_DEBUG("counting dense block\n");
-    for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+    for (i = 0; i < SPAMM_N_BLOCK; ++i) {
       for (j = 0; j < SPAMM_N_BLOCK; ++j)
       {
-        if (node->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] != 0.0)
+        if (node->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] != 0.0)
         {
           result++;
         }
@@ -32,7 +32,7 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
     LOG_DEBUG("counted %u nonzero elements in this block\n", result);
   }
 
-  for (i = 0; i < SPAMM_M_CHILD; ++i) {
+  for (i = 0; i < SPAMM_N_CHILD; ++i) {
     for (j = 0; j < SPAMM_N_CHILD; ++j)
     {
       if (node->child[i][j] != NULL)

@@ -16,7 +16,7 @@ spamm_print_node (const struct spamm_node_t *node)
 {
   int i, j;
   int nonzero;
-  unsigned int kernel_block_M, kernel_block_N;
+  unsigned int kernel_block_N;
   char *binary_string;
   char header[1000];
   char empty_header[1000];
@@ -50,8 +50,8 @@ spamm_print_node (const struct spamm_node_t *node)
     printf("child = %p, ", (void*) node->child);
     if (node->child != NULL)
     {
-      printf("(1:%u,1:%u) { ", SPAMM_M_CHILD, SPAMM_N_CHILD);
-      for (i = 0; i < SPAMM_M_CHILD; ++i) {
+      printf("(1:%u,1:%u) { ", SPAMM_N_CHILD, SPAMM_N_CHILD);
+      for (i = 0; i < SPAMM_N_CHILD; ++i) {
         printf("(%u,1:%u) { ", i+1, SPAMM_N_CHILD);
         for (j = 0; j < SPAMM_N_CHILD; ++j)
         {
@@ -59,7 +59,7 @@ spamm_print_node (const struct spamm_node_t *node)
           if (j < SPAMM_N_CHILD-1) { printf(", "); }
         }
         printf(" }");
-        if (i < SPAMM_M_CHILD-1) { printf(", "); }
+        if (i < SPAMM_N_CHILD-1) { printf(", "); }
       }
       printf(" }\n");
       printf("%s", empty_header);
@@ -80,30 +80,27 @@ spamm_print_node (const struct spamm_node_t *node)
     if (node->tier == node->kernel_tier)
     {
       nonzero = 0;
-
-      kernel_block_M = pow(SPAMM_M_CHILD, node->tree_depth-node->kernel_tier)*SPAMM_M_BLOCK;
       kernel_block_N = pow(SPAMM_N_CHILD, node->tree_depth-node->kernel_tier)*SPAMM_N_BLOCK;
-
-      for (i = 0; i < kernel_block_M; ++i) {
+      for (i = 0; i < kernel_block_N; ++i) {
         for (j = 0; j < kernel_block_N; ++j)
         {
-          if (node->block_dense[spamm_dense_index(i, j, kernel_block_M, kernel_block_N)] != 0.0)
+          if (node->block_dense[spamm_dense_index(i, j, kernel_block_N, kernel_block_N)] != 0.0)
           {
             nonzero++;
           }
         }
       }
-      printf(", sparsity = %1.1f%%", (1.0 - (floating_point_t) nonzero / (floating_point_t) (kernel_block_M*kernel_block_N))*100);
-      printf(", (1:%u,1:%u) { ", kernel_block_M, kernel_block_N);
-      for (i = 0; i < kernel_block_M; ++i) {
+      printf(", sparsity = %1.1f%%", (1.0 - (floating_point_t) nonzero / (floating_point_t) (kernel_block_N*kernel_block_N))*100);
+      printf(", (1:%u,1:%u) { ", kernel_block_N, kernel_block_N);
+      for (i = 0; i < kernel_block_N; ++i) {
         printf(" (%u,1:%u) { ", i+1, kernel_block_N);
         for (j = 0; j < kernel_block_N; ++j)
         {
-          printf("%f", node->block_dense[spamm_dense_index(i, j, kernel_block_M, kernel_block_N)]);
+          printf("%f", node->block_dense[spamm_dense_index(i, j, kernel_block_N, kernel_block_N)]);
           if (j < kernel_block_N-1) { printf(", "); }
         }
         printf(" }");
-        if (i < kernel_block_M-1) { printf(", "); }
+        if (i < kernel_block_N-1) { printf(", "); }
       }
       printf(" }\n");
     }

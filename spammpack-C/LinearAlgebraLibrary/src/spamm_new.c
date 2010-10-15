@@ -7,11 +7,6 @@
  *
  * @param M Number of rows of dense input matrix.
  * @param N Number of columns of dense input matrix.
- * @param M_block Number of rows of matrix block in spamm_t.
- * @param N_block Number of columns of matrix block in spamm_t.
- * @param M_child Number of rows of children array in spamm_node_t.
- * @param N_child Number of columns of children array in spamm_node_t.
- * @param threshold Threshold below which matrix elements are considered zero.
  * @param A The spamm_t matrix.
  */
 void
@@ -38,9 +33,11 @@ spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
   A->M = M;
   A->N = N;
 
+  LOG_DEBUG("creating new SpAMM with M = %u, N = %u\n", M, N);
+
   /* Pad to powers of M_child x N_child. */
-  x_M = fabs(log(M)-log(SPAMM_M_BLOCK))/log(SPAMM_M_CHILD);
-  x_N = fabs(log(N)-log(SPAMM_N_BLOCK))/log(SPAMM_N_CHILD);
+  x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
+  x_N = (log(N) > log(SPAMM_N_BLOCK) ? log(N) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
 
   LOG_DEBUG("x_M = %f, x_N = %f\n", x_M, x_N);
 
@@ -49,8 +46,10 @@ spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
 
   A->number_nonzero_blocks = 0;
 
-  A->M_padded = (int) (SPAMM_M_BLOCK*pow(SPAMM_M_CHILD, ceil(x)));
+  A->M_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, ceil(x)));
   A->N_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, ceil(x)));
+
+  LOG_DEBUG("padding to M = %u, N = %u\n", A->M_padded, A->N_padded);
 
   A->tree_depth = (unsigned int) ceil(x);
 
@@ -66,7 +65,7 @@ spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
   A->root = NULL;
 
   max_memory = (double) sizeof(struct spamm_t)
-    + sizeof(struct spamm_node_t)*pow(SPAMM_M_CHILD*SPAMM_N_CHILD, (double) A->tree_depth)
+    + sizeof(struct spamm_node_t)*pow(SPAMM_N_CHILD*SPAMM_N_CHILD, (double) A->tree_depth)
     + A->M_padded*A->N_padded*sizeof(floating_point_t);
 
   if (max_memory < 1024)

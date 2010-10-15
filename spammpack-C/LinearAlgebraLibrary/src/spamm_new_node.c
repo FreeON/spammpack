@@ -34,7 +34,7 @@ spamm_new_node ()
 
   node->parent = NULL;
 
-  for (i = 0; i < SPAMM_M_CHILD; i++) {
+  for (i = 0; i < SPAMM_N_CHILD; i++) {
     for (j = 0; j < SPAMM_N_CHILD; j++)
     {
       node->child[i][j] = NULL;
