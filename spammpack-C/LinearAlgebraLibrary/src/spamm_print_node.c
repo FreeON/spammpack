@@ -39,6 +39,7 @@ spamm_print_node (const struct spamm_node_t *node)
     printf("depth = %i, ", node->tree_depth);
     printf("linear = %i, ", node->linear_tier);
     printf("A(%u:%u,%u:%u), ", node->M_lower+1, node->M_upper, node->N_lower+1, node->N_upper);
+    printf("norm = %f, ", node->norm);
     printf("M_lower = %i, M_upper = %i, ", node->M_lower, node->M_upper);
     printf("N_lower = %i, N_upper = %i, ", node->N_lower, node->N_upper);
     printf("\n");

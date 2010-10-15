@@ -12,8 +12,10 @@
  * @param j Column index of element.
  * @param Aij Value to set the matrix element to.
  * @param node The matrix node.
+ *
+ * @return The square of the Frobenius norm of this node.
  */
-void
+floating_point_t
 spamm_set_element (const unsigned int i, const unsigned int j, const floating_point_t Aij, struct spamm_node_t *node)
 {
   int l, k, m, n;
@@ -33,6 +35,12 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
 
     /* Set matrix element. */
     node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] = Aij;
+
+    /* Recalculate the norm. */
+    node->norm2 += Aij*Aij;
+    node->norm = sqrt(node->norm2);
+
+    return node->norm2;
   }
 
   else
@@ -85,10 +93,14 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
             }
           }
 
-          return spamm_set_element(i, j, Aij, node->child[l][k]);
+          node->norm2 -= node->child[l][k]->norm2;
+          node->norm2 += spamm_set_element(i, j, Aij, node->child[l][k]);
+          node->norm = sqrt(node->norm2);
         }
       }
     }
+
+    return node->norm2;
   }
 }
 
@@ -151,7 +163,7 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
     }
 
     spamm_set_element(i, j, Aij, A->root);
-    //spamm_print_tree(A);
+    A->norm = A->root->norm;
   }
 
   else

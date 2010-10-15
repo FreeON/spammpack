@@ -64,6 +64,8 @@ spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
 
   A->root = NULL;
 
+  A->norm = 0;
+
   max_memory = (double) sizeof(struct spamm_t)
     + sizeof(struct spamm_node_t)*pow(SPAMM_N_CHILD*SPAMM_N_CHILD, (double) A->tree_depth)
     + A->M_padded*A->N_padded*sizeof(floating_point_t);

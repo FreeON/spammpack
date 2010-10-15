@@ -50,6 +50,11 @@ spamm_allocate (size_t size)
     return data;
   }
 #else
+  /* In order to allocate aligned memory, we could allocate a larger chunk and
+   * then calculate a pointer into the chunk which is correctly aligned. This
+   * would necessitate our own memory management since the returned, aligned
+   * pointer is not useful anymore for a free().
+   */
   data = malloc(size);
   LOG_DEBUG("allocated %u bytes at %p\n", size, (void*) data);
   return data;

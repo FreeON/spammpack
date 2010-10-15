@@ -32,8 +32,6 @@ spamm_new_node ()
 
   node->ordering = none;
 
-  node->parent = NULL;
-
   for (i = 0; i < SPAMM_N_CHILD; i++) {
     for (j = 0; j < SPAMM_N_CHILD; j++)
     {
@@ -45,6 +43,9 @@ spamm_new_node ()
   node->linear_quadtree_default_chunksize = 1*1024*1024; /* 1 MB. */
   node->linear_quadtree_memory = NULL;
   node->block_dense = NULL;
+
+  node->norm = 0;
+  node->norm2 = 0;
 
   return node;
 }
