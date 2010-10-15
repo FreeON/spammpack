@@ -11,6 +11,7 @@ TESTS = $(noinst_PROGRAMS)
 noinst_PROGRAMS = \
   create_spamm \
   nonzero_spamm \
+  spamm_norm \
   multiply_spamm
 
 #tree_pack

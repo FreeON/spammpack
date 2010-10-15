@@ -190,13 +190,8 @@ struct spamm_t
   /** Padded number of columns. */
   unsigned int N_padded;
 
-  /** The matrix element threshold.
-   *
-   * While elements below this threshold are stored in the matrix trees, a
-   * matrix product will threshold work based on the value of threshold. See
-   * the manual for a more detailed description.
-   */
-  floating_point_t threshold;
+  /** The Frobenius norm of the matrix underneath this node. */
+  floating_point_t norm;
 
   /** The depth of the tree. */
   unsigned int tree_depth;
@@ -341,16 +336,16 @@ struct spamm_node_t
    */
   struct spamm_mm_t *linear_quadtree_memory;
 
+  /** The Frobenius norm of the matrix underneath this node. */
+  floating_point_t norm;
+
+  /** The square of the Frobenius norm of the matrix underneath this node. */
+  floating_point_t norm2;
+
 #if defined(HAVE_CUDA)
   /** Device pointers. */
   void *device_pointer;
 #endif
-
-  /** A pointer to the parent node.
-   *
-   * This linkage allows for convenient travel up on the tree.
-   */
-  struct spamm_node_t *parent;
 
   /** At the non-block level, pointers to the children nodes.
    *
