@@ -17,7 +17,7 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
   assert(node != NULL);
 
   //spamm_print_node(node);
-  if (node->block_dense != NULL)
+  if (node->tier == node->tree_depth)
   {
     LOG2_DEBUG("counting dense block\n");
     for (i = 0; i < SPAMM_M_BLOCK; ++i) {
@@ -32,10 +32,10 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
     LOG_DEBUG("counted %u nonzero elements in this block\n", result);
   }
 
-  else if (node->child != NULL)
-  {
-    for (i = 0; i < SPAMM_M_CHILD; ++i) {
-      for (j = 0; j < SPAMM_N_CHILD; ++j)
+  for (i = 0; i < SPAMM_M_CHILD; ++i) {
+    for (j = 0; j < SPAMM_N_CHILD; ++j)
+    {
+      if (node->child[i][j] != NULL)
       {
         result += spamm_number_nonzero_node(node->child[i][j]);
       }

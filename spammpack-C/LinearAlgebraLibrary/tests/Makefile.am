@@ -9,8 +9,9 @@ TESTS = $(noinst_PROGRAMS)
 
 noinst_PROGRAMS = \
   create_spamm \
-  nonzero_spamm \
-  tree_pack
+  nonzero_spamm
+
+#tree_pack
 
 tags :
 	ctags ../src/*.{c,h}
