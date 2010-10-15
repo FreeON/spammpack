@@ -1528,7 +1528,7 @@ spamm_free (struct matrix_t **A)
 }
 
 void
-print_usage (unsigned int N, unsigned int alignment, unsigned int long loops,
+print_usage (unsigned int N, unsigned int alignment, unsigned long long loops,
     unsigned int N_only_A, unsigned int N_only_B, unsigned int N_only_C)
 {
   printf("Usage:\n");
