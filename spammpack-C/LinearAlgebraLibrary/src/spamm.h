@@ -118,61 +118,11 @@ enum spamm_log_severity_t
 /** Return code: Something went wrong. */
 #define SPAMM_RESULT_FAILED -1
 
-/** Return code: Something went wrong. */
+/** Return code: The result was below the threshold. */
 #define SPAMM_RESULT_BELOW_THRESHOLD 1
 
-/** The basic matrix data type.
- */
-struct spamm_t
-{
-  /** Number of rows of matrix. */
-  unsigned int M;
-
-  /** Number of columns of matrix. */
-  unsigned int N;
-
-  /** Padded number of rows. */
-  unsigned int M_padded;
-
-  /** Padded number of columns. */
-  unsigned int N_padded;
-
-  /** Number of rows of the dense data block at the leaf level. */
-  unsigned int M_block;
-
-  /** Number of columns of the dense data block at the leaf level. */
-  unsigned int N_block;
-
-  /** Number of rows of subdivisions on each child node. */
-  unsigned int M_child;
-
-  /** Number of columns of subdivisions on each child node. */
-  unsigned int N_child;
-
-  /** The matrix element threshold.
-   *
-   * Elements below this threshold are not stored.
-   */
-  floating_point_t threshold;
-
-  /** The depth of the tree. */
-  unsigned int tree_depth;
-
-  /** Contiguous linear quadtree storage.
-   *
-   * Nodes in tier >= linear_tier are stored in linear quadtree format and
-   * allocated in contiguous chunks. This helps with the bandwidth/latency
-   * tradeoff during parallel data distribution. Legal value range:
-   * linear_tier > 0.
-   */
-  unsigned int linear_tier;
-
-  /** The number of non-zero blocks. */
-  unsigned int number_nonzero_blocks;
-
-  /** The root node. */
-  struct spamm_node_t *root;
-};
+/** Return code: Trying to set a matrix element which is zero. */
+#define SPAMM_RESULT_ZERO_ELEMENT 2
 
 /** Block ordering types.
  *
@@ -224,6 +174,57 @@ enum spamm_linear_mask_t
   j_mask
 };
 
+/** The basic matrix data type.
+ */
+struct spamm_t
+{
+  /** Number of rows of matrix. */
+  unsigned int M;
+
+  /** Number of columns of matrix. */
+  unsigned int N;
+
+  /** Padded number of rows. */
+  unsigned int M_padded;
+
+  /** Padded number of columns. */
+  unsigned int N_padded;
+
+  /** The matrix element threshold.
+   *
+   * While elements below this threshold are stored in the matrix trees, a
+   * matrix product will threshold work based on the value of threshold. See
+   * the manual for a more detailed description.
+   */
+  floating_point_t threshold;
+
+  /** The depth of the tree. */
+  unsigned int tree_depth;
+
+  /** Contiguous linear quadtree storage.
+   *
+   * Nodes in tier >= linear_tier are stored in linear quadtree format and
+   * allocated in contiguous chunks. This helps with the bandwidth/latency
+   * tradeoff during parallel data distribution. Legal value range:
+   * linear_tier > 0.
+   */
+  unsigned int linear_tier;
+
+  /** The kernel tier determines at which point the SpAMM kernel will get
+   * involved.
+   *
+   * At and below the kernel tier, the dense matrix blocks are allocated
+   * contiguously.
+   */
+  unsigned int kernel_tier;
+
+  /** The number of non-zero blocks. */
+  unsigned int number_nonzero_blocks;
+
+  /** The root node. */
+  struct spamm_node_t *root;
+};
+
 /** A node in the tree.
  *
  * This structure describes a node in the tree.
@@ -238,6 +239,13 @@ struct spamm_node_t
 
   /** The depth of the tree. */
   unsigned int tree_depth;
+
+  /** The kernel tier determines at which point the SpAMM kernel will get
+   * involved.
+   *
+   * At and below the kernel tier, the tree is allocated contiguously.
+   */
+  unsigned int kernel_tier;
 
   /** Contiguous linear quadtree storage.
    *
@@ -275,24 +283,6 @@ struct spamm_node_t
    * included in the interval.
    */
   unsigned int N_upper;
-
-  /** The number of rows stored in the data blocks at the leaf level. */
-  unsigned int M_block;
-
-  /** The number of columns stored in the data blocks at the leaf level. */
-  unsigned int N_block;
-
-  /** The number of rows of subdivisions on each child node. */
-  unsigned int M_child;
-
-  /** The number of rows of subdivisions on each child node. */
-  unsigned int N_child;
-
-  /** The matrix element threshold.
-   *
-   * Elements below this threshold are not stored.
-   */
-  floating_point_t threshold;
 
   /** The linear index of this block along the curve. */
   unsigned int index;
@@ -356,6 +346,12 @@ struct spamm_node_t
   void *device_pointer;
 #endif
 
+  /** A pointer to the parent node.
+   *
+   * This linkage allows for convenient travel up on the tree.
+   */
+  struct spamm_node_t *parent;
+
   /** At the non-block level, pointers to the children nodes.
    *
    * The pointers can be accessed in 2 ways:
@@ -363,7 +359,7 @@ struct spamm_node_t
    * - As a 2-D array using spamm_dense_index()
    * - As a 1-D array which is sorted on the index.
    */
-  struct spamm_node_t **child;
+  struct spamm_node_t *child[SPAMM_M_CHILD][SPAMM_N_CHILD];
 
   /** At the block level, the dense matrix data. */
   floating_point_t *block_dense;
@@ -483,6 +479,14 @@ spamm_add (const floating_point_t alpha, const struct spamm_t *A, const floating
 void
 spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node, const floating_point_t beta, struct spamm_node_t **B_node);
 
+void *
+spamm_allocate (size_t size);
+
+unsigned int
+spamm_block_index (const unsigned int i, const unsigned int j,
+    const unsigned int M_block, const unsigned int N_block,
+    const unsigned int M_kernel, const unsigned int N_kernel);
+
 int
 spamm_compare_int (const void *integer1, const void *integer2);
 
@@ -504,10 +508,10 @@ spamm_dense_index (const unsigned int i, const unsigned int j,
 
 void
 spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
-    const unsigned int M_block, const unsigned int N_block,
-    const unsigned int M_child, const unsigned int N_child,
-    const floating_point_t threshold, const floating_point_t *A_dense,
-    struct spamm_t *A);
+    const floating_point_t *A_dense, struct spamm_t *A);
+
+void
+spamm_free (void *data);
 
 floating_point_t
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
@@ -540,14 +544,10 @@ void
 spamm_multiply_scalar (const floating_point_t alpha, struct spamm_t *A);
 
 void
-spamm_new (const unsigned int M, const unsigned int N,
-    const unsigned int M_block, const unsigned int N_block,
-    const unsigned int M_child, const unsigned int N_child,
-    const floating_point_t threshold, struct spamm_t *A);
+spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A);
 
 struct spamm_linear_quadtree_t*
-spamm_new_linear_quadtree_node (const unsigned int M, const unsigned int N,
-    struct spamm_mm_t *memory);
+spamm_new_linear_quadtree_node (const unsigned int M, const unsigned int N, struct spamm_mm_t *memory);
 
 struct spamm_node_t *
 spamm_new_node ();
@@ -559,7 +559,7 @@ void
 spamm_print_dense (const unsigned int M, const unsigned int N, const floating_point_t *A_dense);
 
 void
-spamm_print_multiply_stream (const struct spamm_ll_t *stream);
+spamm_print_multiply_stream (struct spamm_ll_t *stream);
 
 void
 spamm_print_node (const struct spamm_node_t *node);

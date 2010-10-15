@@ -200,6 +200,66 @@ else
   AC_MSG_FAILURE([no pthread support])
 fi
 
+dnl Check for memory alignment.
+AC_MSG_CHECKING([for memory alignment])
+AC_ARG_WITH([alignment], [AS_HELP_STRING([--with-alignment], [Define the
+             alignment of memory allocations. The default is 64, a cache
+             line.])],
+             [have_alignment="${withval}"],
+             [have_alignment="64"])
+AC_MSG_RESULT([alignment on ${have_alignment} byte boundaries])
+
+dnl Check for matrix block size.
+AC_MSG_CHECKING([for number of rows of matrix block])
+AC_ARG_WITH([block-rows], [AS_HELP_STRING([--with-block-rows], [Define the
+             number of rows of a matrix block. The default is 4.])],
+             [have_M_block="${withval}"],
+             [have_M_block="4"])
+AC_MSG_RESULT([using ${have_M_block} rows])
+
+dnl Check for matrix block size.
+AC_MSG_CHECKING([for number of columns of matrix block])
+AC_ARG_WITH([block-columns], [AS_HELP_STRING([--with-block-columns], [Define the
+             number of columns of a matrix block. The default is 4.])],
+             [have_N_block="${withval}"],
+             [have_N_block="4"])
+AC_MSG_RESULT([using ${have_N_block} columns])
+
+dnl Check for children node matrix.
+AC_MSG_CHECKING([for number of rows of children node matrix])
+AC_ARG_WITH([child-rows], [AS_HELP_STRING([--with-child-rows], [Define the
+             number of rows of children node matrix. The default is 2.])],
+             [have_M_child="${withval}"],
+             [have_M_child="2"])
+AC_MSG_RESULT([using ${have_M_child} rows])
+
+dnl Check for children node matrix.
+AC_MSG_CHECKING([for number of columns of children node matrix])
+AC_ARG_WITH([child-columns], [AS_HELP_STRING([--with-child-columns], [Define
+             the number of columns of children node matrix. The default is
+             2.])],
+             [have_N_child="${withval}"],
+             [have_N_child="2"])
+AC_MSG_RESULT([using ${have_N_child} columns])
+
+dnl Check for kernel depth.
+AC_MSG_CHECKING([for depth in tiers of computationl kernel])
+AC_ARG_WITH([kernel-depth], [AS_HELP_STRING([--with-kernel-depth], [Define
+             the kernel depth in terms of tiers that allocate the matrix
+             blocks contiguously for the computational kernel. This value has
+             to match the computational kernel.])],
+             [have_kernel_depth="${withval}"],
+             [have_kernel_depth="2"])
+AC_MSG_RESULT([using ${have_kernel_depth} tier(s)])
+
+dnl Define some constants.
+AC_DEFINE_UNQUOTED([SPAMM_ALIGNMENT], [${have_alignment}], [Define the alignment of memory allocations])
+AC_DEFINE_UNQUOTED([SPAMM_M_BLOCK], [${have_M_block}], [Define the number of rows of the basic matrix block])
+AC_DEFINE_UNQUOTED([SPAMM_N_BLOCK], [${have_N_block}], [Define the number of columns of the basic matrix block])
+AC_DEFINE_UNQUOTED([SPAMM_M_CHILD], [${have_M_child}], [Define the number of rows of the children node matrix per node])
+AC_DEFINE_UNQUOTED([SPAMM_N_CHILD], [${have_N_child}], [Define the number of columns of the children node matrix per node])
+AC_DEFINE_UNQUOTED([SPAMM_KERNEL_DEPTH], [${have_kernel_depth}], [Define the number of tiers that are allocated contiguously for the computational kernel.])
+
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
 

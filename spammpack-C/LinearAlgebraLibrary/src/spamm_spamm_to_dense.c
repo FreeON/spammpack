@@ -18,7 +18,7 @@ spamm_spamm_to_dense (const struct spamm_t *A, floating_point_t **A_dense)
   assert(A != NULL);
   assert(A_dense != NULL);
 
-  *A_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*A->M*A->N);
+  *A_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*A->M*A->N);
 
   for (i = 0; i < A->M; ++i) {
     for (j = 0; j < A->N; ++j)

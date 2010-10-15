@@ -20,21 +20,18 @@
  */
 void
 spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
-    const unsigned int M_block, const unsigned int N_block,
-    const unsigned int M_child, const unsigned int N_child,
-    const floating_point_t threshold, const floating_point_t *A_dense,
-    struct spamm_t *A)
+    const floating_point_t *A_dense, struct spamm_t *A)
 {
   int i, j;
 
   assert(A_dense != NULL);
   assert(A != NULL);
 
-  if (M != A->M || N != A->N || M_block != A->M_block || N_block != A->N_block || M_child != A->M_child || N_child != A->N_child)
+  if (M != A->M || N != A->N)
   {
     /* De- and re-allocate A with the correct dimensions. */
     spamm_delete(A);
-    spamm_new(M, N, M_block, N_block, M_child, N_child, threshold, A);
+    spamm_new(M, N, A);
   }
 
   for (i = 0; i < M; ++i) {

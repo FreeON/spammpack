@@ -45,10 +45,10 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
 #ifdef SPAMM_DEBUG
     LOG_DEBUG("linear_tree at %p\n", linear_tree);
 #endif
-    for (i = 0; i < node->M_child; ++i) {
-      for (j = 0; j < node->N_child; ++j)
+    for (i = 0; i < SPAMM_M_CHILD; ++i) {
+      for (j = 0; j < SPAMM_N_CHILD; ++j)
       {
-        spamm_tree_pack_subtree(linear_tier, chunksize, mask, linear_tree, linear_tree_memory, node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+        spamm_tree_pack_subtree(linear_tier, chunksize, mask, linear_tree, linear_tree_memory, node->child[i][j]);
       }
     }
   }
@@ -68,7 +68,7 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
        * of the struct plus the size of the dense matrix block plus some
        * padding.
        */
-      linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+node->M_block*node->N_block*sizeof(floating_point_t)+8, linear_tree_memory);
+      linear_block = (struct spamm_linear_quadtree_t*) spamm_mm_allocate(sizeof(struct spamm_linear_quadtree_t)+SPAMM_M_BLOCK*SPAMM_N_BLOCK*sizeof(floating_point_t)+8, linear_tree_memory);
       spamm_ll_append(linear_block, linear_tree);
 
 #ifdef SPAMM_DEBUG
@@ -83,14 +83,14 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
        */
       linear_block->block_dense = (floating_point_t*) (((void*) linear_block)+sizeof(struct spamm_linear_quadtree_t));
       linear_block->index = node->index;
-      linear_block->M = node->M_block;
-      linear_block->N = node->N_block;
+      linear_block->M = SPAMM_M_BLOCK;
+      linear_block->N = SPAMM_N_BLOCK;
 
       /* Copy data. */
-      for (i = 0; i < node->M_block; ++i) {
-        for (j = 0; j < node->N_block; ++j)
+      for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+        for (j = 0; j < SPAMM_N_BLOCK; ++j)
         {
-          linear_block->block_dense[spamm_dense_index(i, j, node->M_block, node->N_block)] = node->block_dense[spamm_dense_index(i, j, node->M_block, node->N_block)];
+          linear_block->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] = node->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
         }
       }
     }
@@ -110,14 +110,12 @@ spamm_tree_pack_subtree (const unsigned int linear_tier, const unsigned int chun
 
     if (node->child != NULL)
     {
-      for (i = 0; i < node->M_child; ++i) {
-        for (j = 0; j < node->N_child; ++j)
+      for (i = 0; i < SPAMM_M_CHILD; ++i) {
+        for (j = 0; j < SPAMM_M_CHILD; ++j)
         {
-          spamm_delete_node(&node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+          spamm_delete_node(&node->child[i][j]);
         }
       }
-      free(node->child);
-      node->child = NULL;
     }
   }
 }

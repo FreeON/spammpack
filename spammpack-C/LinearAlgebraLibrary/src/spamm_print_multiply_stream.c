@@ -7,7 +7,7 @@
  * @param stream The multiply stream.
  */
 void
-spamm_print_multiply_stream (const struct spamm_ll_t *stream)
+spamm_print_multiply_stream (struct spamm_ll_t *stream)
 {
   unsigned int i;
   struct spamm_ll_iterator_t *iterator;

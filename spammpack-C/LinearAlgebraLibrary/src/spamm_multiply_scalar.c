@@ -17,20 +17,20 @@ spamm_multiply_scalar_node (const floating_point_t alpha, struct spamm_node_t *n
 
   if (node->child != NULL)
   {
-    for (i = 0; i < node->M_child; ++i) {
-      for (j = 0; j < node->N_child; ++j)
+    for (i = 0; i < SPAMM_M_CHILD; ++i) {
+      for (j = 0; j < SPAMM_N_CHILD; ++j)
       {
-        spamm_multiply_scalar_node(alpha, node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+        spamm_multiply_scalar_node(alpha, node->child[i][j]);
       }
     }
   }
 
   else if (node->block_dense != NULL)
   {
-    for (i = 0; i < node->M_block; ++i) {
-      for (j = 0; j < node->N_block; ++j)
+    for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+      for (j = 0; j < SPAMM_N_BLOCK; ++j)
       {
-        node->block_dense[spamm_dense_index(i, j, node->M_block, node->N_block)] *= alpha;
+        node->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] *= alpha;
       }
     }
   }

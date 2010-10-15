@@ -20,10 +20,10 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
   if (node->block_dense != NULL)
   {
     LOG2_DEBUG("counting dense block\n");
-    for (i = 0; i < node->M_block; ++i) {
-      for (j = 0; j < node->N_block; ++j)
+    for (i = 0; i < SPAMM_M_BLOCK; ++i) {
+      for (j = 0; j < SPAMM_N_BLOCK; ++j)
       {
-        if (node->block_dense[spamm_dense_index(i, j, node->M_block, node->N_block)] != 0.0)
+        if (node->block_dense[spamm_dense_index(i, j, SPAMM_M_BLOCK, SPAMM_N_BLOCK)] != 0.0)
         {
           result++;
         }
@@ -34,10 +34,10 @@ spamm_number_nonzero_node (const struct spamm_node_t *node)
 
   else if (node->child != NULL)
   {
-    for (i = 0; i < node->M_child; ++i) {
-      for (j = 0; j < node->N_child; ++j)
+    for (i = 0; i < SPAMM_M_CHILD; ++i) {
+      for (j = 0; j < SPAMM_N_CHILD; ++j)
       {
-        result += spamm_number_nonzero_node(node->child[spamm_dense_index(i, j, node->M_child, node->N_child)]);
+        result += spamm_number_nonzero_node(node->child[i][j]);
       }
     }
   }

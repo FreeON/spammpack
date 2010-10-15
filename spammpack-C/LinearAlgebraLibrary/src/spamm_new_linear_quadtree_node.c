@@ -9,8 +9,7 @@
  * @return A new node in the linear quadtree.
  */
 struct spamm_linear_quadtree_t*
-spamm_new_linear_quadtree_node (const unsigned int M, const unsigned int N,
-    struct spamm_mm_t *memory)
+spamm_new_linear_quadtree_node (const unsigned int M, const unsigned int N, struct spamm_mm_t *memory)
 {
   struct spamm_linear_quadtree_t *node;
 

@@ -17,7 +17,10 @@ spamm_delete_node (struct spamm_node_t **node)
 
   if ((*node)->block_dense != NULL)
   {
-    free((*node)->block_dense);
+    if ((*node)->tier == (*node)->kernel_tier)
+    {
+      spamm_free((*node)->block_dense);
+    }
     (*node)->block_dense = NULL;
   }
 
@@ -27,18 +30,16 @@ spamm_delete_node (struct spamm_node_t **node)
     spamm_mm_delete(&(*node)->linear_quadtree_memory);
   }
 
-  if ((*node)->child != NULL)
-  {
-    for (i = 0; i < (*node)->M_child; ++i) {
-      for (j = 0; j < (*node)->N_child; ++j)
+  for (i = 0; i < SPAMM_M_CHILD; ++i) {
+    for (j = 0; j < SPAMM_N_CHILD; ++j)
+    {
+      if ((*node)->child[i][j] != NULL)
       {
-        spamm_delete_node(&(*node)->child[spamm_dense_index(i, j, (*node)->M_child, (*node)->N_child)]);
+        spamm_delete_node(&(*node)->child[i][j]);
       }
     }
-    free((*node)->child);
-    (*node)->child = NULL;
   }
 
-  free(*node);
+  spamm_free(*node);
   *node = NULL;
 }

@@ -32,12 +32,12 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
   assert(node != NULL);
 
   /* Test whether we are at a leaf node. */
-  if (node->child == NULL)
+  if (node->tier == node->tree_depth)
   {
     if (node->block_dense != NULL)
     {
       /* Read directly from dense block. */
-      return node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, node->M_block, node->N_block)];
+      return node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
     }
 
     else if (node->linear_quadtree != NULL)
@@ -94,8 +94,8 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
           mask_j = mask_j >> 2;
         }
 
-        M_upper = M_lower+node->M_block;
-        N_upper = N_lower+node->N_block;
+        M_upper = M_lower+SPAMM_M_BLOCK;
+        N_upper = N_lower+SPAMM_N_BLOCK;
 
 #ifdef SPAMM_DEBUG
         LOG_DEBUG("M_lower = %u, M_upper = %u, N_lower = %u, N_upper = %u\n", M_lower, M_upper, N_lower, N_upper);
@@ -104,7 +104,7 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
         if (i >= M_lower && i < M_upper && j >= N_lower && j < N_upper)
         {
           spamm_ll_iterator_delete(&linear_iterator);
-          return linear_element->block_dense[spamm_dense_index(i-M_lower, j-N_lower, node->M_block, node->N_block)];
+          return linear_element->block_dense[spamm_dense_index(i-M_lower, j-N_lower, SPAMM_M_BLOCK, SPAMM_N_BLOCK)];
         }
       }
       spamm_ll_iterator_delete(&linear_iterator);
@@ -117,15 +117,20 @@ spamm_get_element (const unsigned int i, const unsigned int j, const struct spam
   else
   {
     /* Recurse down the tree. */
-    for (l = 0; l < node->M_child; ++l) {
-      for (k = 0; k < node->N_child; ++k)
+    for (l = 0; l < SPAMM_M_CHILD; ++l) {
+      for (k = 0; k < SPAMM_N_CHILD; ++k)
       {
-        if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/node->M_child) &&
-            i <  (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/node->M_child) &&
-            j >= (node->N_lower+(node->N_upper-node->N_lower)*k/node->N_child) &&
-            j <  (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/node->N_child))
+        if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/SPAMM_M_CHILD) &&
+            i <  (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/SPAMM_M_CHILD) &&
+            j >= (node->N_lower+(node->N_upper-node->N_lower)*k/SPAMM_N_CHILD) &&
+            j <  (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/SPAMM_N_CHILD))
         {
-          return spamm_get_element(i, j, node->child[spamm_dense_index(l, k, node->M_child, node->N_child)]);
+          if (node->child[l][k] != NULL)
+          {
+            return spamm_get_element(i, j, node->child[l][k]);
+          }
+
+          else { return 0.0; }
         }
       }
     }
