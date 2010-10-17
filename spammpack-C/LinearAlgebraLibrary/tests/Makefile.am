@@ -12,7 +12,8 @@ noinst_PROGRAMS = \
   create_spamm \
   nonzero_spamm \
   spamm_norm \
-  multiply_spamm
+  multiply_spamm \
+  multiply_spamm_exponential_decay
 
 #tree_pack
 

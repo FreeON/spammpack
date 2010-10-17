@@ -140,7 +140,7 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
       A->root->tree_depth = A->tree_depth;
 
       A->root->M_lower = 0;
-      A->root->M_upper = A->M_padded;
+      A->root->M_upper = A->N_padded;
       A->root->N_lower = 0;
       A->root->N_upper = A->N_padded;
 
@@ -163,6 +163,8 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
     }
 
     spamm_set_element(i, j, Aij, A->root);
+
+    /* Set norm. */
     A->norm = A->root->norm;
   }
 

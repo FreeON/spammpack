@@ -21,6 +21,5 @@ spamm_delete (struct spamm_t *A)
   A->M = 0;
   A->N = 0;
 
-  A->M_padded = 0;
   A->N_padded = 0;
 }

@@ -184,10 +184,12 @@ struct spamm_t
   /** Number of columns of matrix. */
   unsigned int N;
 
-  /** Padded number of rows. */
-  unsigned int M_padded;
-
-  /** Padded number of columns. */
+  /** Padded size of matrix.
+   *
+   * Since we are using a square matrix for the basic matrix block and a
+   * square matrix for the children node matrix, the padded matrix can only be
+   * square.
+   */
   unsigned int N_padded;
 
   /** The Frobenius norm of the matrix underneath this node. */
@@ -530,7 +532,7 @@ unsigned int
 spamm_mask (const unsigned int index, const unsigned int width,
     const enum spamm_linear_mask_t mask);
 
-void
+unsigned int
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     const floating_point_t tolerance,
     const floating_point_t alpha, const struct spamm_t *A,
