@@ -15,20 +15,22 @@ main ()
 
   int i, j, k;
 
-  double tolerance = 1e-5;
+  floating_point_t tolerance = 1e-5;
 
   floating_point_t alpha = 1.2;
   floating_point_t beta = 0.5;
 
-  unsigned int L = 50;
-  unsigned int M = 50;
-  unsigned int N = 50;
+  unsigned int L = 200;
+  unsigned int M = 200;
+  unsigned int N = 200;
 
   double fill = 1.0;
 
 #ifdef TEST_DEBUG
   spamm_set_loglevel(debug);
+#endif
 
+#ifdef TEST_DEBUG
   printf("alpha = %f, beta = %f, tolerance = %f\n", alpha, beta, tolerance);
   printf("C = (%f)*A*B + (%f)*C\n", alpha, beta);
 #endif

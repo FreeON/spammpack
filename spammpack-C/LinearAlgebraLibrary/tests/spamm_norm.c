@@ -29,7 +29,7 @@ main ()
 
   if (norm != A.norm)
   {
-    printf("norm = %f, A.norm = %f, diff = %e, rel. diff = %e\n",
+    LOG_FATAL("norm = %f, A.norm = %f, diff = %e, rel. diff = %e\n",
         norm, A.norm, fabs(norm-A.norm), fabs(norm-A.norm)/norm);
     result = -1;
   }

@@ -20,8 +20,10 @@
  * @param B_node The node of matrix B.
  * @param C_node The node of matrix C.
  * @param multiply_stream The multiply stream.
+ *
+ * @return The number of block matrix products.
  */
-void
+unsigned int
 spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     const floating_point_t tolerance,
     const floating_point_t alpha, struct spamm_node_t *A_node,
@@ -40,6 +42,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   struct spamm_ll_iterator_t *iterator_A, *iterator_B, *iterator_C;
   struct spamm_ll_node_t *linear_node_A, *linear_node_B, *linear_node_C, *linear_node_C_next;
   struct spamm_linear_quadtree_t *linear_A, *linear_B, *linear_C, *linear_C_next;
+  unsigned int number_products = 0;
 
   /* Create new node. */
   if (*C_node == NULL)
@@ -73,46 +76,56 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
       {
         if (A_node->child[i][k] != NULL && B_node->child[k][j] != NULL)
         {
-          if ((*C_node)->child[i][j] == NULL)
+          if (A_node->child[i][k]->norm*B_node->child[k][j]->norm >= tolerance)
           {
-            /* Create new child node in C. */
-            (*C_node)->child[i][j] = spamm_new_node();
-            C_child_node = (*C_node)->child[i][j];
-
-            C_child_node->tier = (*C_node)->tier+1;
-            C_child_node->tree_depth = (*C_node)->tree_depth;
-
-            C_child_node->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
-            C_child_node->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
-            C_child_node->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
-            C_child_node->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
-
-            C_child_node->linear_tier = (*C_node)->linear_tier;
-            C_child_node->kernel_tier = (*C_node)->kernel_tier;
-
-            /* Check if we are at the kernel level. */
-            if (C_child_node->tier == C_child_node->kernel_tier)
+            if ((*C_node)->child[i][j] == NULL)
             {
-              /* Allocate contiguous matrix block. */
-              kernel_block_N = pow(SPAMM_N_CHILD, C_child_node->tree_depth-C_child_node->kernel_tier)*SPAMM_N_BLOCK;
-              C_child_node->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*kernel_block_N*kernel_block_N);
-              for (l = 0; l < kernel_block_N; ++l) {
-                for (m = 0; m < kernel_block_N; ++m)
-                {
-                  C_child_node->block_dense[spamm_dense_index(l, m, kernel_block_N, kernel_block_N)] = 0.0;
+              /* Create new child node in C. */
+              (*C_node)->child[i][j] = spamm_new_node();
+              C_child_node = (*C_node)->child[i][j];
+
+              C_child_node->tier = (*C_node)->tier+1;
+              C_child_node->tree_depth = (*C_node)->tree_depth;
+
+              C_child_node->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
+              C_child_node->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
+              C_child_node->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
+              C_child_node->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
+
+              C_child_node->linear_tier = (*C_node)->linear_tier;
+              C_child_node->kernel_tier = (*C_node)->kernel_tier;
+
+              /* Check if we are at the kernel level. */
+              if (C_child_node->tier == C_child_node->kernel_tier)
+              {
+                /* Allocate contiguous matrix block. */
+                kernel_block_N = pow(SPAMM_N_CHILD, C_child_node->tree_depth-C_child_node->kernel_tier)*SPAMM_N_BLOCK;
+                C_child_node->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*kernel_block_N*kernel_block_N);
+                for (l = 0; l < kernel_block_N; ++l) {
+                  for (m = 0; m < kernel_block_N; ++m)
+                  {
+                    C_child_node->block_dense[spamm_dense_index(l, m, kernel_block_N, kernel_block_N)] = 0.0;
+                  }
                 }
+              }
+
+              else if (C_child_node->tier > C_child_node->kernel_tier)
+              {
+                /* Point into the contiguous matrix block. */
+                kernel_block_N = pow(SPAMM_N_CHILD, C_child_node->tree_depth-C_child_node->tier)*SPAMM_N_BLOCK;
+                C_child_node->block_dense = (*C_node)->block_dense+kernel_block_N*kernel_block_N*(SPAMM_N_CHILD*l+k);
               }
             }
 
-            else if (C_child_node->tier > C_child_node->kernel_tier)
-            {
-              /* Point into the contiguous matrix block. */
-              kernel_block_N = pow(SPAMM_N_CHILD, C_child_node->tree_depth-C_child_node->tier)*SPAMM_N_BLOCK;
-              C_child_node->block_dense = (*C_node)->block_dense+kernel_block_N*kernel_block_N*(SPAMM_N_CHILD*l+k);
-            }
+            /* Recurse. */
+            number_products += spamm_multiply_node(algorithm, tolerance, alpha,
+                A_node->child[i][k], B_node->child[k][j], &(*C_node)->child[i][j], multiply_stream);
           }
 
-          spamm_multiply_node(algorithm, tolerance, alpha, A_node->child[i][k], B_node->child[k][j], &(*C_node)->child[i][j], multiply_stream);
+          else
+          {
+            LOG2_DEBUG("dropping product, it is below tolerance\n");
+          }
         }
       }
     }
@@ -122,6 +135,9 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   if (A_node->tier == A_node->tree_depth && B_node->tier == B_node->tree_depth &&
       A_node->block_dense != NULL && B_node->block_dense != NULL)
   {
+    /* Count this product. */
+    number_products++;
+
     switch (algorithm)
     {
       case tree:
@@ -332,6 +348,8 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
 
     LOG_INFO("done, C now has %u elements\n", (*C_node)->linear_quadtree->number_elements);
   }
+
+  return number_products;
 }
 
 /** Go through the multiply stream and calculate product.
@@ -586,9 +604,11 @@ spamm_add_stream (const unsigned int cache_length, struct spamm_ll_t *multiply_s
  * @param beta The scalar factor \f$\beta\f$.
  * @param C The matrix \f$C\f$.
  *
+ * @return The number of block matrix products.
+ *
  * \bug Can not handle multiply of trees with different depths.
  */
-void
+unsigned int
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     floating_point_t tolerance,
     const floating_point_t alpha, const struct spamm_t *A,
@@ -597,6 +617,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
   struct timeval start, stop;
   struct timeval total_start, total_stop;
   struct spamm_ll_t *multiply_stream;
+  unsigned int number_products = 0;
 
   double max_memory;
 
@@ -649,14 +670,14 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
   if ((A->root == NULL || B->root == NULL) && C->root == NULL)
   {
     /* Nothing to be done. */
-    return;
+    return number_products;
   }
 
   switch (algorithm)
   {
     case tree:
       LOG2_INFO("using tree algorithm\n");
-      spamm_multiply_node(algorithm, tolerance, alpha, A->root, B->root, &(C->root), NULL);
+      number_products = spamm_multiply_node(algorithm, tolerance, alpha, A->root, B->root, &(C->root), NULL);
       break;
 
     case cache:
@@ -723,4 +744,6 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       exit(1);
       break;
   }
+
+  return number_products;
 }

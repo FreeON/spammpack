@@ -46,10 +46,9 @@ spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
 
   A->number_nonzero_blocks = 0;
 
-  A->M_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, ceil(x)));
   A->N_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, ceil(x)));
 
-  LOG_DEBUG("padding to M = %u, N = %u\n", A->M_padded, A->N_padded);
+  LOG_DEBUG("padding to %ux%u\n", A->N_padded, A->N_padded);
 
   A->tree_depth = (unsigned int) ceil(x);
 
@@ -68,7 +67,7 @@ spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
 
   max_memory = (double) sizeof(struct spamm_t)
     + sizeof(struct spamm_node_t)*pow(SPAMM_N_CHILD*SPAMM_N_CHILD, (double) A->tree_depth)
-    + A->M_padded*A->N_padded*sizeof(floating_point_t);
+    + A->N_padded*A->N_padded*sizeof(floating_point_t);
 
   if (max_memory < 1024)
   {
