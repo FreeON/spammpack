@@ -9,11 +9,11 @@ EXTRA_DIST = \
   generateMatrix.py \
   README
 
-#noinst_PROGRAMS = \
-#  multiply_MM \
-#  multiply \
-#  SP2_MM \
-#  latency
+noinst_PROGRAMS = \
+  multiply_MM \
+  multiply \
+  SP2_MM \
+  latency
 
 tags :
 	ctags ../src/*.{c,h}

@@ -21,10 +21,7 @@
  * @param A The output matrix.
  */
 void
-spamm_read_MM (const char *filename,
-    const unsigned int M_block, const unsigned int N_block,
-    const unsigned int M_child, const unsigned int N_child,
-    const floating_point_t threshold, struct spamm_t *A)
+spamm_read_MM (const char *filename, struct spamm_t *A)
 {
   FILE *fd;
   int linenumber;
@@ -103,6 +100,6 @@ spamm_read_MM (const char *filename,
     number_nonzero++;
   }
 
-  LOG_DEBUG("loaded %i nonzero elements, %i dropped below threshold of %e\n", number_nonzero, number_dropped, threshold);
+  LOG_DEBUG("loaded %i nonzero elements\n", number_nonzero);
   fclose(fd);
 }

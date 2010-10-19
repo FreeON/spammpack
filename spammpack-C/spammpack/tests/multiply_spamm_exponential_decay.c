@@ -143,7 +143,8 @@ main ()
   spamm_print_dense(N, N, C_dense);
 #endif
 
-  number_products = spamm_multiply(tree, tolerance, alpha, &A, &B, beta, &C);
+  //number_products = spamm_multiply(tree, tolerance, alpha, &A, &B, beta, &C);
+  number_products = spamm_multiply(cache, tolerance, alpha, &A, &B, beta, &C);
 
 #ifdef TEST_DEBUG
   printf("C (SpAMM):\n");

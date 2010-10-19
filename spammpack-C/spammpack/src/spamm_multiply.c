@@ -714,7 +714,7 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       multiply_stream = spamm_ll_new();
 
       gettimeofday(&start, NULL);
-      spamm_multiply_node(algorithm, tolerance, alpha, A->root, B->root, &(C->root), multiply_stream);
+      number_products = spamm_multiply_node(algorithm, tolerance, alpha, A->root, B->root, &(C->root), multiply_stream);
       gettimeofday(&stop, NULL);
       LOG_INFO("symbolic multiply: %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
