@@ -683,7 +683,10 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     case cache:
       LOG2_INFO("using cache algorithm\n");
     case cache_redundant:
-      LOG2_INFO("using cache (redundant) algorithm\n");
+      if (algorithm == cache_redundant)
+      {
+        LOG2_INFO("using cache (redundant) algorithm\n");
+      }
 
       max_memory = pow(SPAMM_N_CHILD, C->tree_depth)*pow(SPAMM_N_CHILD, C->tree_depth)*pow(SPAMM_N_CHILD, A->tree_depth)
         *(sizeof(struct spamm_multiply_stream_element_t)+SPAMM_N_BLOCK*SPAMM_N_BLOCK*sizeof(floating_point_t));
