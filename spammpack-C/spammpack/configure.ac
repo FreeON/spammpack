@@ -1,4 +1,4 @@
-AC_INIT([SpAMM], [2010-06-24], [nicolasbock@gmail.com])
+AC_INIT([spammpack], [2010-06-24], [nicolasbock@gmail.com])
 AM_INIT_AUTOMAKE
 
 dnl Define location of m4 macros.
