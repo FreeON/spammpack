@@ -569,10 +569,7 @@ void
 spamm_print_tree (const struct spamm_t *A);
 
 void
-spamm_read_MM (const char *filename,
-    const unsigned int M_block, const unsigned int N_block,
-    const unsigned int M_child, const unsigned int N_child,
-    const floating_point_t threshold, struct spamm_t *A);
+spamm_read_MM (const char *filename, struct spamm_t *A);
 
 int
 spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Aij, struct spamm_t *A);

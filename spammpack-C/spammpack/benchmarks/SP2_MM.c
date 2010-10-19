@@ -23,10 +23,10 @@ main (int argc, char **argv)
   }
 
   LOG2_INFO("loading matrix\n");
-  spamm_read_MM(argv[1], 8, 8, 2, 2, 1e-10, &A);
+  spamm_read_MM(argv[1], &A);
   spamm_tree_stats(&stats, &A);
-  LOG_INFO("read %ix%i matrix, %ix%i blocks, %i nodes, %i dense blocks, depth = %i, tree = %i bytes, blocks = %i bytes (%1.1f%%), ",
-      A.M, A.N, A.M_block, A.N_block, stats.number_nodes,
+  LOG_INFO("read %ix%i matrix, %i nodes, %i dense blocks, depth = %i, tree = %i bytes, blocks = %i bytes (%1.1f%%), ",
+      A.M, A.N, stats.number_nodes,
       stats.number_dense_blocks, A.tree_depth, stats.memory_tree,
       stats.memory_dense_blocks,
       (stats.memory_tree+stats.memory_dense_blocks)/(double) (A.M*A.N*sizeof(double))*100);

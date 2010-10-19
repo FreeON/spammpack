@@ -168,11 +168,11 @@ main (int argc, char **argv)
         printf("--N_block N               Set the number of columns of the matrix blocks of B and C\n");
         printf("--K_block K               Set the number of columns of the matrix blocks of A\n");
         printf("                          and the number of rows of the matrix blocks of B\n");
-        printf("{ -g | --gamma } gamma    Set the decay constant gamma for exp(-gamma |i-j|)\n");
-        printf("{ -a | --alpha } alpha    Set alpha in C = alpha*A*B + beta*C\n");
-        printf("{ -b | --beta } beta      Set beta in C = alpha*A*B + beta*C\n");
+        printf("{ -g | --gamma } gamma    Set the decay constant gamma for exp(-gamma |i-j|), default: gamma = %1.2f\n", gamma);
+        printf("{ -a | --alpha } alpha    Set alpha in C = alpha*A*B + beta*C, default: alpha = %1.2f\n", alpha);
+        printf("{ -b | --beta } beta      Set beta in C = alpha*A*B + beta*C, default: beta = %1.2f\n", beta);
         printf("{ -e | --thresh } eps     Set the threshold, i.e. no random number will be used below\n");
-        printf("                          this threshold\n");
+        printf("                          this threshold, default: threshold = %1.2e\n", threshold);
         printf("{ -t | --type } type      The calculation type (dense, diagonal, column_row)\n");
         printf("{ -m | --multype } type   The multiplication algorithm (tree, cache, cache_redundant)\n");
         printf("{ -l | --linear } n       Convert to linear trees at tier n\n");
@@ -495,15 +495,15 @@ main (int argc, char **argv)
   if (use_spamm)
   {
     /* Convert to SpAMM. */
-    spamm_new(M, K, M_block, K_block, 2, 2, 0.0, &A);
-    spamm_new(K, N, K_block, N_block, 2, 2, 0.0, &B);
-    spamm_new(M, N, M_block, N_block, 2, 2, 0.0, &C);
+    spamm_new(M, K, &A);
+    spamm_new(K, N, &B);
+    spamm_new(M, N, &C);
 
     LOG2_INFO("converting dense to spamm... ");
     gettimeofday(&start, NULL);
-    spamm_dense_to_spamm(M, K, M_block, K_block, 2, 2, 0.0, A_dense, &A);
-    spamm_dense_to_spamm(K, N, K_block, N_block, 2, 2, 0.0, B_dense, &B);
-    spamm_dense_to_spamm(M, N, M_block, N_block, 2, 2, 0.0, C_dense, &C);
+    spamm_dense_to_spamm(M, K, A_dense, &A);
+    spamm_dense_to_spamm(K, N, B_dense, &B);
+    spamm_dense_to_spamm(M, N, C_dense, &C);
     gettimeofday(&stop, NULL);
     printf("walltime %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
@@ -515,11 +515,11 @@ main (int argc, char **argv)
     }
 
     spamm_tree_stats(&tree_stats, &A);
-    LOG_INFO("A: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", A.M, A.N, A.M_padded, A.N_padded, A.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+    LOG_INFO("A: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", A.M, A.N, A.N_padded, A.N_padded, A.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
     spamm_tree_stats(&tree_stats, &B);
-    LOG_INFO("B: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", B.M, B.N, B.M_padded, B.N_padded, B.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+    LOG_INFO("B: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", B.M, B.N, B.N_padded, B.N_padded, B.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
     spamm_tree_stats(&tree_stats, &C);
-    LOG_INFO("C: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", C.M, C.N, C.M_padded, C.N_padded, C.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
+    LOG_INFO("C: %ix%i, padded %ix%i, depth = %u, avg. sparsity = %1.1f%%, dense blocks = %u\n", C.M, C.N, C.N_padded, C.N_padded, C.tree_depth, tree_stats.average_sparsity*100, tree_stats.number_dense_blocks);
 
     if (print_matrix)
     {
@@ -697,7 +697,7 @@ main (int argc, char **argv)
     getrusage(RUSAGE_SELF, &rusage_start);
     for (repeat = 0; repeat < repeat_counter_spamm; repeat++)
     {
-      spamm_multiply(mul_type, alpha, &A, &B, beta, &C);
+      spamm_multiply(mul_type, threshold, alpha, &A, &B, beta, &C);
     }
     getrusage(RUSAGE_SELF, &rusage_stop);
     gettimeofday(&stop, NULL);
