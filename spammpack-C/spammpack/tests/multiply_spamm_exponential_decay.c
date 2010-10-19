@@ -9,16 +9,20 @@ main ()
   struct spamm_t B;
   struct spamm_t C;
 
-  floating_point_t *A_dense;
-  floating_point_t *B_dense;
-  floating_point_t *C_dense;
+  double *A_dense;
+  double *B_dense;
+  double *C_dense;
+
+  floating_point_t *A_dense_float;
+  floating_point_t *B_dense_float;
+  floating_point_t *C_dense_float;
 
   int i, j, k;
 
-  floating_point_t tolerance = 1e-3;
+  floating_point_t tolerance = 1e-7;
 
-  floating_point_t alpha = 1.2;
-  floating_point_t beta = 0.5;
+  double alpha = 1.2;
+  double beta = 0.5;
 
   unsigned int N = 500;
 
@@ -42,9 +46,9 @@ main ()
   spamm_new(N, N, &B);
   spamm_new(N, N, &C);
 
-  A_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*N*N);
-  B_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*N*N);
-  C_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*N*N);
+  A_dense = (double*) malloc(sizeof(double)*N*N);
+  B_dense = (double*) malloc(sizeof(double)*N*N);
+  C_dense = (double*) malloc(sizeof(double)*N*N);
 
   /* Fill matrices with random data. */
   for (i = 0; i < N; ++i)
@@ -83,19 +87,31 @@ main ()
     }
   }
 
+  /* Copy dense matrix to matrix with proper type. */
+  A_dense_float = (floating_point_t*) malloc(sizeof(floating_point_t)*N*N);
+  B_dense_float = (floating_point_t*) malloc(sizeof(floating_point_t)*N*N);
+  C_dense_float = (floating_point_t*) malloc(sizeof(floating_point_t)*N*N);
+
+  for (i = 0; i < N*N; i++)
+  {
+    A_dense_float[i] = A_dense[i];
+    B_dense_float[i] = B_dense[i];
+    C_dense_float[i] = C_dense[i];
+  }
+
 #ifdef TEST_DEBUG
   printf("A:\n");
-  spamm_print_dense(N, N, A_dense);
+  spamm_print_dense(N, N, A_dense_float);
   printf("B:\n");
-  spamm_print_dense(N, N, B_dense);
+  spamm_print_dense(N, N, B_dense_float);
   printf("C:\n");
-  spamm_print_dense(N, N, C_dense);
+  spamm_print_dense(N, N, C_dense_float);
 #endif
 
   /* Convert matrices. */
-  spamm_dense_to_spamm(N, N, A_dense, &A);
-  spamm_dense_to_spamm(N, N, B_dense, &B);
-  spamm_dense_to_spamm(N, N, C_dense, &C);
+  spamm_dense_to_spamm(N, N, A_dense_float, &A);
+  spamm_dense_to_spamm(N, N, B_dense_float, &B);
+  spamm_dense_to_spamm(N, N, C_dense_float, &C);
 
 #ifdef TEST_DEBUG
   printf("A (SpAMM):\n");
@@ -118,6 +134,11 @@ main ()
   }
 
 #ifdef TEST_DEBUG
+  for (i = 0; i < N*N; i++)
+  {
+    C_dense_float[i] = C_dense[i];
+  }
+
   printf("C:\n");
   spamm_print_dense(N, N, C_dense);
 #endif
@@ -154,6 +175,9 @@ main ()
   free(A_dense);
   free(B_dense);
   free(C_dense);
+  free(A_dense_float);
+  free(B_dense_float);
+  free(C_dense_float);
   spamm_delete(&A);
   spamm_delete(&B);
   spamm_delete(&C);
