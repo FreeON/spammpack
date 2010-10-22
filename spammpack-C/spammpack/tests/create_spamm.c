@@ -37,8 +37,9 @@ main ()
 
       spamm_new(M[i_size], N[i_size], &A);
 #ifdef DEBUG_PRINT
-      printf("[create_spamm] %ix%i matrix, %.1f%% full, padded %ix%i, block dimensions %ix%i, child dimensions %ix%i\n",
-          M[i_size], N[i_size], fill[i_fill]*100, A.M_padded, A.N_padded, SPAMM_M_BLOCK, SPAMM_N_BLOCK, SPAMM_M_CHILD, SPAMM_N_CHILD);
+      printf("[create_spamm] i_size = %i, i_fill = %i, ", i_size, i_fill);
+      printf("%ix%i matrix, %.1f%% full, padded %ix%i, block dimensions %ix%i, child dimensions %ix%i\n",
+          M[i_size], N[i_size], fill[i_fill]*100, A.N_padded, A.N_padded, SPAMM_N_BLOCK, SPAMM_N_BLOCK, SPAMM_N_CHILD, SPAMM_N_CHILD);
 #endif
 
       A_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*M[i_size]*N[i_size]);

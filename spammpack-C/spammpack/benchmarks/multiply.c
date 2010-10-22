@@ -4,13 +4,8 @@
 #include <getopt.h>
 #include <math.h>
 #include <strings.h>
-//#include <fenv.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-
-#define THRESHOLD 1e-14
-
-//#pragma STDC FENV_ACCESS ON
 
 enum matrix_t
 {
@@ -57,8 +52,6 @@ main (int argc, char **argv)
 
   int linear_tier = -1;
   unsigned int chunksize = 100;
-
-  //int fpe_raised;
 
   floating_point_t threshold = 0.0;
   floating_point_t gamma = 0.46;
@@ -584,16 +577,6 @@ main (int argc, char **argv)
       printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Gflop/s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas, flops_blas/1000./1000./1000.);
     }
 #else
-    /* Clear floating point exceptions. */
-    //fpe_raised = fetestexcept(FE_ALL_EXCEPT);
-    //LOG_INFO("fp exceptions raised: %u = ", fpe_raised);
-    //if (FE_DIVBYZERO | fpe_raised) { printf("DIVBYZERO "); }
-    //if (FE_INEXACT | fpe_raised) { printf("INEXACT "); }
-    //if (FE_INVALID | fpe_raised) { printf("INVALID "); }
-    //if (FE_OVERFLOW | fpe_raised) { printf("OVERFLOW "); }
-    //if (FE_UNDERFLOW | fpe_raised) { printf("UNDERFLOW "); }
-    //printf("\n");
-    //feclearexcept(FE_ALL_EXCEPT);
 
     LOG2_INFO("multiplying matrix directly to get reference product... ");
     gettimeofday(&start, NULL);
@@ -621,9 +604,6 @@ main (int argc, char **argv)
               error_compensation = (Kahan_t - sum) - Kahan_y;
               if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
               sum = Kahan_t;
-
-              /* Check for floating point exceptions. */
-              //feclearexcept(FE_ALL_EXCEPT);
             }
 
             else
@@ -743,10 +723,10 @@ main (int argc, char **argv)
       }
     }
 
-    if (max_diff > THRESHOLD)
+    if (max_diff > threshold)
     {
       printf("[multiply_spamm] biggest mismatch above threshold of %e: (C[%i][%i] = %e) != (C_dense[%i][%i] = %e), |diff| = %e\n",
-          THRESHOLD,
+          threshold,
           max_diff_i, max_diff_j, spamm_get(max_diff_i, max_diff_j, &C),
           max_diff_i, max_diff_j, C_dense[spamm_dense_index(max_diff_i, max_diff_j, C.M, C.N)],
           fabs(spamm_get(max_diff_i, max_diff_j, &C)-C_dense[spamm_dense_index(max_diff_i, max_diff_j, C.M, C.N)]));

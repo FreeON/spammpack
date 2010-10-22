@@ -19,8 +19,8 @@ floating_point_t
 spamm_set_element (const unsigned int i, const unsigned int j, const floating_point_t Aij, struct spamm_node_t *node)
 {
   int l, k, m, n;
-  struct spamm_node_t *child_node;
   unsigned int kernel_block_N;
+  struct spamm_node_t *child_node;
 
   assert(node != NULL);
 
@@ -46,8 +46,8 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
   else
   {
     /* Recurse. */
-    for (l = 0; l < SPAMM_N_CHILD; ++l) {
-      for (k = 0; k < SPAMM_N_CHILD; ++k)
+    for (l = 0; l < SPAMM_N_CHILD; l++) {
+      for (k = 0; k < SPAMM_N_CHILD; k++)
       {
         if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/SPAMM_N_CHILD) &&
             i < (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/SPAMM_N_CHILD) &&
@@ -75,12 +75,11 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
             if (child_node->tier == child_node->kernel_tier)
             {
               /* Allocate contiguous matrix block. */
-              kernel_block_N = pow(SPAMM_N_CHILD, child_node->tree_depth-child_node->kernel_tier)*SPAMM_N_BLOCK;
-              child_node->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*kernel_block_N*kernel_block_N);
-              for (m = 0; m < kernel_block_N; ++m) {
-                for (n = 0; n < kernel_block_N; ++n)
+              child_node->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL);
+              for (m = 0; m < SPAMM_N_KERNEL; ++m) {
+                for (n = 0; n < SPAMM_N_KERNEL; ++n)
                 {
-                  child_node->block_dense[spamm_dense_index(m, n, kernel_block_N, kernel_block_N)] = 0.0;
+                  child_node->block_dense[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)] = 0.0;
                 }
               }
             }
@@ -119,7 +118,6 @@ int
 spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Aij, struct spamm_t *A)
 {
   int l, k;
-  unsigned int kernel_block_N;
   int result = SPAMM_RESULT_OK;
 
   assert(A != NULL);
@@ -151,12 +149,11 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
       if (A->root->tier == A->root->kernel_tier)
       {
         /* Reset newly allocated block to zero. */
-        kernel_block_N = pow(SPAMM_N_CHILD, A->root->tree_depth-A->root->kernel_tier)*SPAMM_N_BLOCK;
-        A->root->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*kernel_block_N*kernel_block_N);
-        for (l = 0; l < kernel_block_N; ++l) {
-          for (k = 0; k < kernel_block_N; ++k)
+        A->root->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL);
+        for (l = 0; l < SPAMM_N_KERNEL; l++) {
+          for (k = 0; k < SPAMM_N_KERNEL; k++)
           {
-            A->root->block_dense[spamm_dense_index(l, k, kernel_block_N, kernel_block_N)] = 0.0;
+            A->root->block_dense[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)] = 0.0;
           }
         }
       }

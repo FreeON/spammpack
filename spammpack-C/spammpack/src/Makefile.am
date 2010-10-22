@@ -81,10 +81,11 @@ memory_manager_sources = \
   spamm_mm_print.c
 
 matrix_kernel_sources = \
+  spamm_kernel.h \
   spamm_stream_kernel.S \
   spamm_trivial_kernel.c
 
 EXTRA_DIST = spamm_mainpage.h.in
 
 tags :
-	ctags *.h *.c
+	ctags --C-kinds=+l+x *.h *.c *.S ../config.h

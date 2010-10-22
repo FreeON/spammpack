@@ -16,4 +16,4 @@ noinst_PROGRAMS = \
   latency
 
 tags :
-	ctags ../src/*.{c,h}
+	ctags --C-kinds=+l+x ../src/*.{c,h}

@@ -8,6 +8,7 @@
 #include "config.h"
 #include "spamm_ll.h"
 #include "spamm_mm.h"
+#include "spamm_kernel.h"
 #include <stdio.h>
 
 /** Definition of global floating point precision.
