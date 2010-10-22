@@ -16,7 +16,6 @@ spamm_print_node (const struct spamm_node_t *node)
 {
   int i, j;
   int nonzero;
-  unsigned int kernel_block_N;
   char *binary_string;
   char header[1000];
   char empty_header[1000];
@@ -81,27 +80,26 @@ spamm_print_node (const struct spamm_node_t *node)
     if (node->tier == node->kernel_tier)
     {
       nonzero = 0;
-      kernel_block_N = pow(SPAMM_N_CHILD, node->tree_depth-node->kernel_tier)*SPAMM_N_BLOCK;
-      for (i = 0; i < kernel_block_N; ++i) {
-        for (j = 0; j < kernel_block_N; ++j)
+      for (i = 0; i < SPAMM_N_KERNEL; ++i) {
+        for (j = 0; j < SPAMM_N_KERNEL; ++j)
         {
-          if (node->block_dense[spamm_dense_index(i, j, kernel_block_N, kernel_block_N)] != 0.0)
+          if (node->block_dense[spamm_dense_index(i, j, SPAMM_N_KERNEL, SPAMM_N_KERNEL)] != 0.0)
           {
             nonzero++;
           }
         }
       }
-      printf(", sparsity = %1.1f%%", (1.0 - (floating_point_t) nonzero / (floating_point_t) (kernel_block_N*kernel_block_N))*100);
-      printf(", (1:%u,1:%u) { ", kernel_block_N, kernel_block_N);
-      for (i = 0; i < kernel_block_N; ++i) {
-        printf(" (%u,1:%u) { ", i+1, kernel_block_N);
-        for (j = 0; j < kernel_block_N; ++j)
+      printf(", sparsity = %1.1f%%", (1.0 - (floating_point_t) nonzero / (floating_point_t) (SPAMM_N_KERNEL*SPAMM_N_KERNEL))*100);
+      printf(", (1:%u,1:%u) { ", SPAMM_N_KERNEL, SPAMM_N_KERNEL);
+      for (i = 0; i < SPAMM_N_KERNEL; ++i) {
+        printf(" (%u,1:%u) { ", i+1, SPAMM_N_KERNEL);
+        for (j = 0; j < SPAMM_N_KERNEL; ++j)
         {
-          printf("%f", node->block_dense[spamm_dense_index(i, j, kernel_block_N, kernel_block_N)]);
-          if (j < kernel_block_N-1) { printf(", "); }
+          printf("%f", node->block_dense[spamm_dense_index(i, j, SPAMM_N_KERNEL, SPAMM_N_KERNEL)]);
+          if (j < SPAMM_N_KERNEL-1) { printf(", "); }
         }
         printf(" }");
-        if (i < kernel_block_N-1) { printf(", "); }
+        if (i < SPAMM_N_KERNEL-1) { printf(", "); }
       }
       printf(" }\n");
     }
