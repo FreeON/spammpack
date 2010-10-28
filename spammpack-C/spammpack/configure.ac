@@ -270,7 +270,6 @@ prototype/cuda_gemm_kernel/Makefile
 prototype/kernel_comparison/Makefile
 prototype/linear_quadtree/Makefile
 prototype/stream_multiply/Makefile
-sparsekit/Makefile
 src/Makefile
 src/spamm_mainpage.h
 tests/Makefile
