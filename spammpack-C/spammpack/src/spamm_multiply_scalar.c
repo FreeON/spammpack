@@ -21,6 +21,10 @@ spamm_multiply_scalar_node (const floating_point_t alpha, struct spamm_node_t *n
       for (j = 0; j < SPAMM_N_BLOCK; ++j)
       {
         node->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] *= alpha;
+        node->block_dense_dilated[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)*4+0] *= alpha;
+        node->block_dense_dilated[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)*4+1] *= alpha;
+        node->block_dense_dilated[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)*4+2] *= alpha;
+        node->block_dense_dilated[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)*4+3] *= alpha;
       }
     }
   }

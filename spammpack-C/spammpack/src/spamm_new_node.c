@@ -43,6 +43,7 @@ spamm_new_node ()
   node->linear_quadtree_default_chunksize = 1*1024*1024; /* 1 MB. */
   node->linear_quadtree_memory = NULL;
   node->block_dense = NULL;
+  node->block_dense_dilated = NULL;
 
   node->norm = 0;
   node->norm2 = 0;

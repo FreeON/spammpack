@@ -12,6 +12,7 @@
 void
 spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
 {
+  unsigned int depth;
   double max_memory = 0;
 
   assert(A != NULL);
@@ -30,11 +31,6 @@ spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
 
   double x, x_M, x_N;
 
-  A->M = M;
-  A->N = N;
-
-  LOG_DEBUG("creating new SpAMM with M = %u, N = %u\n", M, N);
-
   /* Pad to powers of M_child x N_child. */
   x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
   x_N = (log(N) > log(SPAMM_N_BLOCK) ? log(N) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
@@ -44,16 +40,26 @@ spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
 
-  A->number_nonzero_blocks = 0;
-
-  A->N_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, ceil(x)));
-
-  LOG_DEBUG("padding to %ux%u\n", A->N_padded, A->N_padded);
-
   A->tree_depth = (unsigned int) ceil(x);
 
+  /* Adjust tree to kernel depth. */
+  if (A->tree_depth < SPAMM_KERNEL_DEPTH) { A->tree_depth = SPAMM_KERNEL_DEPTH; }
+
+  /* Set matrix size. */
+  A->M = M;
+  A->N = N;
+
+  /* Set padded matrix size. */
+  A->N_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, A->tree_depth));
+
+  LOG_DEBUG("creating new SpAMM with M = %u, N = %u\n", M, N);
+  LOG_DEBUG("padding to %ux%u\n", A->N_padded, A->N_padded);
+
+  /* Reset the nonzero block counter. */
+  A->number_nonzero_blocks = 0;
+
   /* Set the kernel tier. */
-  A->kernel_tier = (A->tree_depth >= SPAMM_KERNEL_DEPTH ? A->tree_depth-SPAMM_KERNEL_DEPTH : 0);
+  A->kernel_tier = A->tree_depth-SPAMM_KERNEL_DEPTH;
 
   /* Set the linear tier to depth+1 to indicate that we don't have any linear
    * trees anywhere. */

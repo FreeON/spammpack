@@ -17,11 +17,5 @@ spamm_dense_index (const unsigned int i, const unsigned int j,
     const unsigned int M, const unsigned int N)
 {
   /* Row-Major format. */
-  //return i*N+j;
-
-  /* Column-Major format.
-   *
-   * When using dgemm, we need column-major storage.
-   */
-  return i+j*M;
+  return i*N+j;
 }

@@ -20,8 +20,10 @@ spamm_delete_node (struct spamm_node_t **node)
     if ((*node)->tier == (*node)->kernel_tier)
     {
       spamm_free((*node)->block_dense);
+      spamm_free((*node)->block_dense_dilated);
     }
     (*node)->block_dense = NULL;
+    (*node)->block_dense_dilated = NULL;
   }
 
   if ((*node)->linear_quadtree != NULL)

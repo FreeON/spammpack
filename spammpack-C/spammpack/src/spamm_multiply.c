@@ -64,92 +64,109 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
     (*C_node)->kernel_tier = A_node->kernel_tier;
   }
 
-  /* Recurse down the tree. */
-  LOG2_DEBUG("recursing...\n");
-  for (i = 0; i < SPAMM_N_CHILD; ++i) {
-    for (j = 0; j < SPAMM_N_CHILD; ++j) {
-      for (k = 0; k < SPAMM_N_CHILD; ++k)
-      {
-        if (A_node->child[i][k] != NULL && B_node->child[k][j] != NULL)
+  /* Do some work if at the kernel tier. */
+  if (A_node->tier == A_node->kernel_tier)
+  {
+    switch (algorithm)
+    {
+      case tree:
+        break;
+
+      case cache:
+        /* Pop this product onto multiply stream. */
+        multiply_stream[*number_multiply_stream_elements].A_block = A_node->block_dense_dilated;
+        multiply_stream[*number_multiply_stream_elements].B_block = B_node->block_dense;
+        multiply_stream[*number_multiply_stream_elements].C_block = (*C_node)->block_dense;
+        for (l = 0; l < 32; l++)
         {
-          if (A_node->child[i][k]->norm*B_node->child[k][j]->norm >= tolerance)
+          multiply_stream[*number_multiply_stream_elements].norm[l] = 1;
+        }
+        (*number_multiply_stream_elements)++;
+        break;
+
+      default:
+        LOG2_FATAL("[FIXME]\n");
+        exit(1);
+        break;
+    }
+  }
+
+  else if (A_node->tier > A_node->kernel_tier)
+  {
+    LOG2_FATAL("tier > kernel tier\n");
+    exit(1);
+  }
+
+  else
+  {
+    /* Recurse down the tree. */
+    LOG2_DEBUG("recursing...\n");
+    for (i = 0; i < SPAMM_N_CHILD; ++i) {
+      for (j = 0; j < SPAMM_N_CHILD; ++j) {
+        for (k = 0; k < SPAMM_N_CHILD; ++k)
+        {
+          if (A_node->child[i][k] != NULL && B_node->child[k][j] != NULL)
           {
-            if ((*C_node)->child[i][j] == NULL)
+            if (A_node->child[i][k]->norm*B_node->child[k][j]->norm >= tolerance)
             {
-              /* Create new child node in C. */
-              (*C_node)->child[i][j] = spamm_new_node();
-              C_child_node = (*C_node)->child[i][j];
-
-              C_child_node->tier = (*C_node)->tier+1;
-              C_child_node->tree_depth = (*C_node)->tree_depth;
-
-              C_child_node->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
-              C_child_node->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
-              C_child_node->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
-              C_child_node->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
-
-              C_child_node->linear_tier = (*C_node)->linear_tier;
-              C_child_node->kernel_tier = (*C_node)->kernel_tier;
-
-              /* Check if we are at the kernel level. */
-              if (C_child_node->tier == C_child_node->kernel_tier)
+              if ((*C_node)->child[i][j] == NULL)
               {
-                /* Allocate contiguous matrix block. */
-                C_child_node->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL);
-                for (l = 0; l < SPAMM_N_KERNEL; ++l) {
-                  for (m = 0; m < SPAMM_N_KERNEL; ++m)
-                  {
-                    C_child_node->block_dense[spamm_dense_index(l, m, SPAMM_N_KERNEL, SPAMM_N_KERNEL)] = 0.0;
+                /* Create new child node in C. */
+                (*C_node)->child[i][j] = spamm_new_node();
+                C_child_node = (*C_node)->child[i][j];
+
+                C_child_node->tier = (*C_node)->tier+1;
+                C_child_node->tree_depth = (*C_node)->tree_depth;
+
+                C_child_node->M_lower = (*C_node)->M_lower+i*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
+                C_child_node->M_upper = (*C_node)->M_lower+(i+1)*((*C_node)->M_upper-(*C_node)->M_lower)/SPAMM_N_CHILD;
+                C_child_node->N_lower = (*C_node)->N_lower+j*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
+                C_child_node->N_upper = (*C_node)->N_lower+(j+1)*((*C_node)->N_upper-(*C_node)->N_lower)/SPAMM_N_CHILD;
+
+                C_child_node->linear_tier = (*C_node)->linear_tier;
+                C_child_node->kernel_tier = (*C_node)->kernel_tier;
+
+                /* Check if we are at the kernel level. */
+                if (C_child_node->tier == C_child_node->kernel_tier)
+                {
+                  /* Allocate contiguous matrix block. */
+                  C_child_node->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL);
+                  for (l = 0; l < SPAMM_N_KERNEL; ++l) {
+                    for (m = 0; m < SPAMM_N_KERNEL; ++m)
+                    {
+                      C_child_node->block_dense[spamm_dense_index(l, m, SPAMM_N_KERNEL, SPAMM_N_KERNEL)] = 0.0;
+                    }
                   }
+                }
+
+                else if (C_child_node->tier > C_child_node->kernel_tier)
+                {
+                  /* Point into the contiguous matrix block. */
+                  kernel_block_N = pow(SPAMM_N_CHILD, C_child_node->tree_depth-C_child_node->tier)*SPAMM_N_BLOCK;
+                  C_child_node->block_dense = (*C_node)->block_dense+kernel_block_N*kernel_block_N*(SPAMM_N_CHILD*l+k);
+                  C_child_node->block_dense_dilated = (*C_node)->block_dense+kernel_block_N*kernel_block_N*(SPAMM_N_CHILD*l+k)*4;
                 }
               }
 
-              else if (C_child_node->tier > C_child_node->kernel_tier)
+              if (A_node->tier < A_node->kernel_tier)
               {
-                /* Point into the contiguous matrix block. */
-                kernel_block_N = pow(SPAMM_N_CHILD, C_child_node->tree_depth-C_child_node->tier)*SPAMM_N_BLOCK;
-                C_child_node->block_dense = (*C_node)->block_dense+kernel_block_N*kernel_block_N*(SPAMM_N_CHILD*l+k);
+                /* Recurse. */
+                number_products += spamm_multiply_node(algorithm, tolerance, alpha,
+                    A_node->child[i][k], B_node->child[k][j], &(*C_node)->child[i][j],
+                    number_multiply_stream_elements, multiply_stream);
+              }
+
+              else
+              {
+                LOG2_FATAL("we should not end up here\n");
+                exit(1);
               }
             }
 
-            if (A_node->tier < A_node->kernel_tier)
+            else
             {
-              /* Recurse. */
-              number_products += spamm_multiply_node(algorithm, tolerance, alpha,
-                  A_node->child[i][k], B_node->child[k][j], &(*C_node)->child[i][j],
-                  number_multiply_stream_elements, multiply_stream);
+              LOG2_DEBUG("dropping product, it is below tolerance\n");
             }
-
-            else if (A_node->tier == A_node->kernel_tier)
-            {
-              switch (algorithm)
-              {
-                case tree:
-                  break;
-
-                case cache:
-                  /* Pop this product onto multiply stream. */
-                  multiply_stream[*number_multiply_stream_elements].A_block = A_node->block_dense;
-                  multiply_stream[*number_multiply_stream_elements].B_block = B_node->block_dense;
-                  multiply_stream[*number_multiply_stream_elements].C_block = (*C_node)->block_dense;
-                  for (l = 0; l < 32; l++)
-                  {
-                    multiply_stream[*number_multiply_stream_elements].norm[l] = 1;
-                  }
-                  (*number_multiply_stream_elements)++;
-                  break;
-
-                default:
-                  LOG2_FATAL("[FIXME]\n");
-                  exit(1);
-                  break;
-              }
-            }
-          }
-
-          else
-          {
-            LOG2_DEBUG("dropping product, it is below tolerance\n");
           }
         }
       }

@@ -2,6 +2,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define RANDOM_ELEMENTS
+
 int
 main ()
 {
@@ -53,37 +55,25 @@ main ()
   /* Fill matrices with random data. */
   for (i = 0; i < N; ++i)
   {
+#ifdef RANDOM_ELEMENTS
     A_dense[spamm_dense_index(i, i, N, N)] = rand()/(double) RAND_MAX;
+    B_dense[spamm_dense_index(i, i, N, N)] = rand()/(double) RAND_MAX;
+    C_dense[spamm_dense_index(i, i, N, N)] = rand()/(double) RAND_MAX;
+#endif
     for (j = 0; j < N; ++j)
     {
+#ifdef RANDOM_ELEMENTS
       if (j != i)
       {
         A_dense[spamm_dense_index(i, j, N, N)] = rand()/(double) RAND_MAX * exp(-fabs(i-j)/decayconstant)*A_dense[spamm_dense_index(i, i, N, N)];
-      }
-    }
-  }
-
-  for (i = 0; i < N; ++i)
-  {
-    B_dense[spamm_dense_index(i, i, N, N)] = rand()/(double) RAND_MAX;
-    for (j = 0; j < N; ++j)
-    {
-      if (j != i)
-      {
         B_dense[spamm_dense_index(i, j, N, N)] = rand()/(double) RAND_MAX * exp(-fabs(i-j)/decayconstant)*B_dense[spamm_dense_index(i, i, N, N)];
-      }
-    }
-  }
-
-  for (i = 0; i < N; ++i)
-  {
-    C_dense[spamm_dense_index(i, i, N, N)] = rand()/(double) RAND_MAX;
-    for (j = 0; j < N; ++j)
-    {
-      if (j != i)
-      {
         C_dense[spamm_dense_index(i, j, N, N)] = rand()/(double) RAND_MAX * exp(-fabs(i-j)/decayconstant)*C_dense[spamm_dense_index(i, i, N, N)];
       }
+#else
+      A_dense[spamm_dense_index(i, j, N, N)] = spamm_dense_index(i, j, N, N);
+      B_dense[spamm_dense_index(i, j, N, N)] = spamm_dense_index(i, j, N, N);
+      C_dense[spamm_dense_index(i, j, N, N)] = spamm_dense_index(i, j, N, N);
+#endif
     }
   }
 
@@ -139,15 +129,15 @@ main ()
     C_dense_float[i] = C_dense[i];
   }
 
-  printf("C:\n");
-  spamm_print_dense(N, N, C_dense);
+  printf("C (after dense multiply):\n");
+  spamm_print_dense(N, N, C_dense_float);
 #endif
 
   //number_products = spamm_multiply(tree, tolerance, alpha, &A, &B, beta, &C);
   number_products = spamm_multiply(cache, tolerance, alpha, &A, &B, beta, &C);
 
 #ifdef TEST_DEBUG
-  printf("C (SpAMM):\n");
+  printf("C (SpAMM, after SpAMM multiply):\n");
   spamm_print_spamm(&C);
 #endif
 

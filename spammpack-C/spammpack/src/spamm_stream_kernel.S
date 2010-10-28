@@ -68,56 +68,56 @@
 
 # Define offsets into matrix blocks.
 
-#define A_OFFSET_11 (0*4+0)*64*4 // 0 = 0x0
-#define A_OFFSET_12 (0*4+1)*64*4 // 64 = 0x40
-#define A_OFFSET_13 (0*4+2)*64*4 // 128 = 0x80
-#define A_OFFSET_14 (0*4+3)*64*4 // 192 = 0xc0
-#define A_OFFSET_21 (1*4+0)*64*4 // 256 = 0x100
-#define A_OFFSET_22 (1*4+1)*64*4 // 320 = 0x140
-#define A_OFFSET_23 (1*4+2)*64*4 // 384 = 0x180
-#define A_OFFSET_24 (1*4+3)*64*4 // 448 = 0x1c0
-#define A_OFFSET_31 (2*4+0)*64*4 // 512 = 0x200
-#define A_OFFSET_32 (2*4+1)*64*4 // 576 = 0x240
-#define A_OFFSET_33 (2*4+2)*64*4 // 640 = 0x280
-#define A_OFFSET_34 (2*4+3)*64*4 // 704 = 0x2c0
-#define A_OFFSET_41 (3*4+0)*64*4 // 768 = 0x300
-#define A_OFFSET_42 (3*4+1)*64*4 // 832 = 0x340
-#define A_OFFSET_43 (3*4+2)*64*4 // 896 = 0x380
-#define A_OFFSET_44 (3*4+3)*64*4 // 960 = 0x3c0
+#define A_OFFSET_11 0*64*4 // 0 = 0x0
+#define A_OFFSET_12 1*64*4 // 256 = 0x100
+#define A_OFFSET_13 4*64*4 // 1024 = 0x400
+#define A_OFFSET_14 5*64*4 // 1280 = 0x500
+#define A_OFFSET_21 2*64*4 // 512 = 0x200
+#define A_OFFSET_22 3*64*4 // 768 = 0x300
+#define A_OFFSET_23 6*64*4 // 1536 = 0x600
+#define A_OFFSET_24 7*64*4 // 1792 = 0x700
+#define A_OFFSET_31 8*64*4 // 2048 = 0x800
+#define A_OFFSET_32 9*64*4 // 2304 = 0x900
+#define A_OFFSET_33 12*64*4 // 3072 = 0xc00
+#define A_OFFSET_34 13*64*4 // 3328 = 0xd00
+#define A_OFFSET_41 10*64*4 // 2560 = 0xa00
+#define A_OFFSET_42 11*64*4 // 2816 = 0xb00
+#define A_OFFSET_43 14*64*4 // 3584 = 0xe00
+#define A_OFFSET_44 15*64*4 // 3840 = 0xf00
 
-#define B_OFFSET_11 (0*4+0)*16*4 // 0 = 0x0
-#define B_OFFSET_12 (0*4+1)*16*4 // 16 = 0x10
-#define B_OFFSET_13 (0*4+2)*16*4 // 32 = 0x20
-#define B_OFFSET_14 (0*4+3)*16*4 // 48 = 0x30
-#define B_OFFSET_21 (1*4+0)*16*4 // 64 = 0x40
-#define B_OFFSET_22 (1*4+1)*16*4 // 80 = 0x50
-#define B_OFFSET_23 (1*4+2)*16*4 // 96 = 0x60
-#define B_OFFSET_24 (1*4+3)*16*4 // 112 = 0x70
-#define B_OFFSET_31 (2*4+0)*16*4 // 128 = 0x80
-#define B_OFFSET_32 (2*4+1)*16*4 // 144 = 0x90
-#define B_OFFSET_33 (2*4+2)*16*4 // 160 = 0xa0
-#define B_OFFSET_34 (2*4+3)*16*4 // 176 = 0xb0
-#define B_OFFSET_41 (3*4+0)*16*4 // 192 = 0xc0
-#define B_OFFSET_42 (3*4+1)*16*4 // 208 = 0xd0
-#define B_OFFSET_43 (3*4+2)*16*4 // 224 = 0xe0
-#define B_OFFSET_44 (3*4+3)*16*4 // 240 = 0xf0
+#define B_OFFSET_11 0*16*4 // 0 = 0x0
+#define B_OFFSET_12 1*16*4 // 64 = 0x40
+#define B_OFFSET_13 4*16*4 // 256 = 0x100
+#define B_OFFSET_14 5*16*4 // 320 = 0x140
+#define B_OFFSET_21 2*16*4 // 128 = 0x80
+#define B_OFFSET_22 3*16*4 // 192 = 0xc0
+#define B_OFFSET_23 6*16*4 // 384 = 0x180
+#define B_OFFSET_24 7*16*4 // 448 = 0x1c0
+#define B_OFFSET_31 8*16*4 // 512 = 0x200
+#define B_OFFSET_32 9*16*4 // 576 = 0x240
+#define B_OFFSET_33 12*16*4 // 768 = 0x300
+#define B_OFFSET_34 13*16*4 // 832 = 0x340
+#define B_OFFSET_41 10*16*4 // 640 = 0x280
+#define B_OFFSET_42 11*16*4 // 704 = 0x2c0
+#define B_OFFSET_43 14*16*4 // 896 = 0x380
+#define B_OFFSET_44 15*16*4 // 960 = 0x3c0
 
-#define C_OFFSET_11 (0*4+0)*16*4 // 0 = 0x0
-#define C_OFFSET_12 (0*4+1)*16*4 // 16 = 0x10
-#define C_OFFSET_13 (0*4+2)*16*4 // 32 = 0x20
-#define C_OFFSET_14 (0*4+3)*16*4 // 48 = 0x30
-#define C_OFFSET_21 (1*4+0)*16*4 // 64 = 0x40
-#define C_OFFSET_22 (1*4+1)*16*4 // 80 = 0x50
-#define C_OFFSET_23 (1*4+2)*16*4 // 96 = 0x60
-#define C_OFFSET_24 (1*4+3)*16*4 // 112 = 0x70
-#define C_OFFSET_31 (2*4+0)*16*4 // 128 = 0x80
-#define C_OFFSET_32 (2*4+1)*16*4 // 144 = 0x90
-#define C_OFFSET_33 (2*4+2)*16*4 // 160 = 0xa0
-#define C_OFFSET_34 (2*4+3)*16*4 // 176 = 0xb0
-#define C_OFFSET_41 (3*4+0)*16*4 // 192 = 0xc0
-#define C_OFFSET_42 (3*4+1)*16*4 // 208 = 0xd0
-#define C_OFFSET_43 (3*4+2)*16*4 // 224 = 0xe0
-#define C_OFFSET_44 (3*4+3)*16*4 // 240 = 0xf0
+#define C_OFFSET_11 0*16*4 // 0 = 0x0
+#define C_OFFSET_12 1*16*4 // 64 = 0x40
+#define C_OFFSET_13 4*16*4 // 256 = 0x100
+#define C_OFFSET_14 5*16*4 // 320 = 0x140
+#define C_OFFSET_21 2*16*4 // 128 = 0x80
+#define C_OFFSET_22 3*16*4 // 192 = 0xc0
+#define C_OFFSET_23 6*16*4 // 384 = 0x180
+#define C_OFFSET_24 7*16*4 // 448 = 0x1c0
+#define C_OFFSET_31 8*16*4 // 512 = 0x200
+#define C_OFFSET_32 9*16*4 // 576 = 0x240
+#define C_OFFSET_33 12*16*4 // 768 = 0x300
+#define C_OFFSET_34 13*16*4 // 832 = 0x340
+#define C_OFFSET_41 10*16*4 // 640 = 0x280
+#define C_OFFSET_42 11*16*4 // 704 = 0x2c0
+#define C_OFFSET_43 14*16*4 // 896 = 0x380
+#define C_OFFSET_44 15*16*4 // 960 = 0x3c0
 
   # Function prolog.
   .text
@@ -137,9 +137,6 @@ spamm_stream_kernel:
   # Copy alpha into all 4 elements of SSE register.
   shufps $0x0, alpha, alpha
 
-  # Divide number of stream elements by 64 to simulate stride of 64.
-  shr $6, number_stream_elements
-
   # Test whether number_stream_elements is zero.
   test number_stream_elements, number_stream_elements
   jbe done
@@ -151,7 +148,7 @@ spamm_stream_kernel:
   .align 16
 loop:
 
-  # Set the base pointer using sizeof(multiply_stream_t) = 0x98.
+  # Set the base pointer using sizeof(multiply_stream_t) = 152 (0x98).
   imul $0x98, base_pointer, base_pointer
 
   # Load pointers to stream matrix blocks.
@@ -168,13 +165,13 @@ loop:
   .align 16
 block_1:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,1)||*||B(1,1)||.
   movss 0x18(multiply_stream, base_pointer), B1
   mulss 0x58(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_2
 
-  # Calculate C(1,1) = A(1,1)*B(1,1).
+  # Calculate C(1,1) += A(1,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
   movaps 0x10+B_OFFSET_11(B), B2
   movaps 0x20+B_OFFSET_11(B), B3
@@ -231,13 +228,13 @@ block_1:
   .align 16
 block_2:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,2)||*||B(2,1)||.
   movss 0x1c(multiply_stream, base_pointer), B1
   mulss 0x68(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_3
 
-  # Calculate C(1,1) = A(1,2)*B(2,1).
+  # Calculate C(1,1) += A(1,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
   movaps 0x10+B_OFFSET_21(B), B2
   movaps 0x20+B_OFFSET_21(B), B3
@@ -294,13 +291,13 @@ block_2:
   .align 16
 block_3:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,3)||*||B(3,1)||.
   movss 0x20(multiply_stream, base_pointer), B1
   mulss 0x78(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_4
 
-  # Calculate C(1,1) = A(1,3)*B(3,1).
+  # Calculate C(1,1) += A(1,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
   movaps 0x10+B_OFFSET_31(B), B2
   movaps 0x20+B_OFFSET_31(B), B3
@@ -357,13 +354,13 @@ block_3:
   .align 16
 block_4:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,4)||*||B(4,1)||.
   movss 0x24(multiply_stream, base_pointer), B1
   mulss 0x88(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_5
 
-  # Calculate C(1,1) = A(1,4)*B(4,1).
+  # Calculate C(1,1) += A(1,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
   movaps 0x10+B_OFFSET_41(B), B2
   movaps 0x20+B_OFFSET_41(B), B3
@@ -447,13 +444,13 @@ block_5:
   .align 16
 block_6:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,1)||*||B(1,2)||.
   movss 0x18(multiply_stream, base_pointer), B1
   mulss 0x5c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_7
 
-  # Calculate C(1,2) = A(1,1)*B(1,2).
+  # Calculate C(1,2) += A(1,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
   movaps 0x10+B_OFFSET_12(B), B2
   movaps 0x20+B_OFFSET_12(B), B3
@@ -510,13 +507,13 @@ block_6:
   .align 16
 block_7:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,2)||*||B(2,2)||.
   movss 0x1c(multiply_stream, base_pointer), B1
   mulss 0x6c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_8
 
-  # Calculate C(1,2) = A(1,2)*B(2,2).
+  # Calculate C(1,2) += A(1,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
   movaps 0x10+B_OFFSET_22(B), B2
   movaps 0x20+B_OFFSET_22(B), B3
@@ -573,13 +570,13 @@ block_7:
   .align 16
 block_8:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,3)||*||B(3,2)||.
   movss 0x20(multiply_stream, base_pointer), B1
   mulss 0x7c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_9
 
-  # Calculate C(1,2) = A(1,3)*B(3,2).
+  # Calculate C(1,2) += A(1,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
   movaps 0x10+B_OFFSET_32(B), B2
   movaps 0x20+B_OFFSET_32(B), B3
@@ -636,13 +633,13 @@ block_8:
   .align 16
 block_9:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,4)||*||B(4,2)||.
   movss 0x24(multiply_stream, base_pointer), B1
   mulss 0x8c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_10
 
-  # Calculate C(1,2) = A(1,4)*B(4,2).
+  # Calculate C(1,2) += A(1,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
   movaps 0x10+B_OFFSET_42(B), B2
   movaps 0x20+B_OFFSET_42(B), B3
@@ -726,13 +723,13 @@ block_10:
   .align 16
 block_11:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,1)||*||B(1,3)||.
   movss 0x18(multiply_stream, base_pointer), B1
   mulss 0x60(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_12
 
-  # Calculate C(1,3) = A(1,1)*B(1,3).
+  # Calculate C(1,3) += A(1,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
   movaps 0x10+B_OFFSET_13(B), B2
   movaps 0x20+B_OFFSET_13(B), B3
@@ -789,13 +786,13 @@ block_11:
   .align 16
 block_12:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,2)||*||B(2,3)||.
   movss 0x1c(multiply_stream, base_pointer), B1
   mulss 0x70(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_13
 
-  # Calculate C(1,3) = A(1,2)*B(2,3).
+  # Calculate C(1,3) += A(1,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
   movaps 0x10+B_OFFSET_23(B), B2
   movaps 0x20+B_OFFSET_23(B), B3
@@ -852,13 +849,13 @@ block_12:
   .align 16
 block_13:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,3)||*||B(3,3)||.
   movss 0x20(multiply_stream, base_pointer), B1
   mulss 0x80(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_14
 
-  # Calculate C(1,3) = A(1,3)*B(3,3).
+  # Calculate C(1,3) += A(1,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
   movaps 0x10+B_OFFSET_33(B), B2
   movaps 0x20+B_OFFSET_33(B), B3
@@ -915,13 +912,13 @@ block_13:
   .align 16
 block_14:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,4)||*||B(4,3)||.
   movss 0x24(multiply_stream, base_pointer), B1
   mulss 0x90(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_15
 
-  # Calculate C(1,3) = A(1,4)*B(4,3).
+  # Calculate C(1,3) += A(1,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
   movaps 0x10+B_OFFSET_43(B), B2
   movaps 0x20+B_OFFSET_43(B), B3
@@ -1005,13 +1002,13 @@ block_15:
   .align 16
 block_16:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,1)||*||B(1,4)||.
   movss 0x18(multiply_stream, base_pointer), B1
   mulss 0x64(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_17
 
-  # Calculate C(1,4) = A(1,1)*B(1,4).
+  # Calculate C(1,4) += A(1,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
   movaps 0x10+B_OFFSET_14(B), B2
   movaps 0x20+B_OFFSET_14(B), B3
@@ -1068,13 +1065,13 @@ block_16:
   .align 16
 block_17:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,2)||*||B(2,4)||.
   movss 0x1c(multiply_stream, base_pointer), B1
   mulss 0x74(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_18
 
-  # Calculate C(1,4) = A(1,2)*B(2,4).
+  # Calculate C(1,4) += A(1,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
   movaps 0x10+B_OFFSET_24(B), B2
   movaps 0x20+B_OFFSET_24(B), B3
@@ -1131,13 +1128,13 @@ block_17:
   .align 16
 block_18:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,3)||*||B(3,4)||.
   movss 0x20(multiply_stream, base_pointer), B1
   mulss 0x84(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_19
 
-  # Calculate C(1,4) = A(1,3)*B(3,4).
+  # Calculate C(1,4) += A(1,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
   movaps 0x10+B_OFFSET_34(B), B2
   movaps 0x20+B_OFFSET_34(B), B3
@@ -1194,13 +1191,13 @@ block_18:
   .align 16
 block_19:
 
-  # Check norm of product.
+  # Check norm of product ||A(1,4)||*||B(4,4)||.
   movss 0x24(multiply_stream, base_pointer), B1
   mulss 0x94(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_20
 
-  # Calculate C(1,4) = A(1,4)*B(4,4).
+  # Calculate C(1,4) += A(1,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
   movaps 0x10+B_OFFSET_44(B), B2
   movaps 0x20+B_OFFSET_44(B), B3
@@ -1284,13 +1281,13 @@ block_20:
   .align 16
 block_21:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,1)||*||B(1,1)||.
   movss 0x28(multiply_stream, base_pointer), B1
   mulss 0x58(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_22
 
-  # Calculate C(2,1) = A(2,1)*B(1,1).
+  # Calculate C(2,1) += A(2,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
   movaps 0x10+B_OFFSET_11(B), B2
   movaps 0x20+B_OFFSET_11(B), B3
@@ -1347,13 +1344,13 @@ block_21:
   .align 16
 block_22:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,2)||*||B(2,1)||.
   movss 0x2c(multiply_stream, base_pointer), B1
   mulss 0x68(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_23
 
-  # Calculate C(2,1) = A(2,2)*B(2,1).
+  # Calculate C(2,1) += A(2,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
   movaps 0x10+B_OFFSET_21(B), B2
   movaps 0x20+B_OFFSET_21(B), B3
@@ -1410,13 +1407,13 @@ block_22:
   .align 16
 block_23:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,3)||*||B(3,1)||.
   movss 0x30(multiply_stream, base_pointer), B1
   mulss 0x78(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_24
 
-  # Calculate C(2,1) = A(2,3)*B(3,1).
+  # Calculate C(2,1) += A(2,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
   movaps 0x10+B_OFFSET_31(B), B2
   movaps 0x20+B_OFFSET_31(B), B3
@@ -1473,13 +1470,13 @@ block_23:
   .align 16
 block_24:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,4)||*||B(4,1)||.
   movss 0x34(multiply_stream, base_pointer), B1
   mulss 0x88(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_25
 
-  # Calculate C(2,1) = A(2,4)*B(4,1).
+  # Calculate C(2,1) += A(2,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
   movaps 0x10+B_OFFSET_41(B), B2
   movaps 0x20+B_OFFSET_41(B), B3
@@ -1563,13 +1560,13 @@ block_25:
   .align 16
 block_26:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,1)||*||B(1,2)||.
   movss 0x28(multiply_stream, base_pointer), B1
   mulss 0x5c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_27
 
-  # Calculate C(2,2) = A(2,1)*B(1,2).
+  # Calculate C(2,2) += A(2,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
   movaps 0x10+B_OFFSET_12(B), B2
   movaps 0x20+B_OFFSET_12(B), B3
@@ -1626,13 +1623,13 @@ block_26:
   .align 16
 block_27:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,2)||*||B(2,2)||.
   movss 0x2c(multiply_stream, base_pointer), B1
   mulss 0x6c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_28
 
-  # Calculate C(2,2) = A(2,2)*B(2,2).
+  # Calculate C(2,2) += A(2,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
   movaps 0x10+B_OFFSET_22(B), B2
   movaps 0x20+B_OFFSET_22(B), B3
@@ -1689,13 +1686,13 @@ block_27:
   .align 16
 block_28:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,3)||*||B(3,2)||.
   movss 0x30(multiply_stream, base_pointer), B1
   mulss 0x7c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_29
 
-  # Calculate C(2,2) = A(2,3)*B(3,2).
+  # Calculate C(2,2) += A(2,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
   movaps 0x10+B_OFFSET_32(B), B2
   movaps 0x20+B_OFFSET_32(B), B3
@@ -1752,13 +1749,13 @@ block_28:
   .align 16
 block_29:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,4)||*||B(4,2)||.
   movss 0x34(multiply_stream, base_pointer), B1
   mulss 0x8c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_30
 
-  # Calculate C(2,2) = A(2,4)*B(4,2).
+  # Calculate C(2,2) += A(2,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
   movaps 0x10+B_OFFSET_42(B), B2
   movaps 0x20+B_OFFSET_42(B), B3
@@ -1842,13 +1839,13 @@ block_30:
   .align 16
 block_31:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,1)||*||B(1,3)||.
   movss 0x28(multiply_stream, base_pointer), B1
   mulss 0x60(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_32
 
-  # Calculate C(2,3) = A(2,1)*B(1,3).
+  # Calculate C(2,3) += A(2,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
   movaps 0x10+B_OFFSET_13(B), B2
   movaps 0x20+B_OFFSET_13(B), B3
@@ -1905,13 +1902,13 @@ block_31:
   .align 16
 block_32:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,2)||*||B(2,3)||.
   movss 0x2c(multiply_stream, base_pointer), B1
   mulss 0x70(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_33
 
-  # Calculate C(2,3) = A(2,2)*B(2,3).
+  # Calculate C(2,3) += A(2,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
   movaps 0x10+B_OFFSET_23(B), B2
   movaps 0x20+B_OFFSET_23(B), B3
@@ -1968,13 +1965,13 @@ block_32:
   .align 16
 block_33:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,3)||*||B(3,3)||.
   movss 0x30(multiply_stream, base_pointer), B1
   mulss 0x80(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_34
 
-  # Calculate C(2,3) = A(2,3)*B(3,3).
+  # Calculate C(2,3) += A(2,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
   movaps 0x10+B_OFFSET_33(B), B2
   movaps 0x20+B_OFFSET_33(B), B3
@@ -2031,13 +2028,13 @@ block_33:
   .align 16
 block_34:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,4)||*||B(4,3)||.
   movss 0x34(multiply_stream, base_pointer), B1
   mulss 0x90(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_35
 
-  # Calculate C(2,3) = A(2,4)*B(4,3).
+  # Calculate C(2,3) += A(2,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
   movaps 0x10+B_OFFSET_43(B), B2
   movaps 0x20+B_OFFSET_43(B), B3
@@ -2121,13 +2118,13 @@ block_35:
   .align 16
 block_36:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,1)||*||B(1,4)||.
   movss 0x28(multiply_stream, base_pointer), B1
   mulss 0x64(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_37
 
-  # Calculate C(2,4) = A(2,1)*B(1,4).
+  # Calculate C(2,4) += A(2,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
   movaps 0x10+B_OFFSET_14(B), B2
   movaps 0x20+B_OFFSET_14(B), B3
@@ -2184,13 +2181,13 @@ block_36:
   .align 16
 block_37:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,2)||*||B(2,4)||.
   movss 0x2c(multiply_stream, base_pointer), B1
   mulss 0x74(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_38
 
-  # Calculate C(2,4) = A(2,2)*B(2,4).
+  # Calculate C(2,4) += A(2,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
   movaps 0x10+B_OFFSET_24(B), B2
   movaps 0x20+B_OFFSET_24(B), B3
@@ -2247,13 +2244,13 @@ block_37:
   .align 16
 block_38:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,3)||*||B(3,4)||.
   movss 0x30(multiply_stream, base_pointer), B1
   mulss 0x84(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_39
 
-  # Calculate C(2,4) = A(2,3)*B(3,4).
+  # Calculate C(2,4) += A(2,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
   movaps 0x10+B_OFFSET_34(B), B2
   movaps 0x20+B_OFFSET_34(B), B3
@@ -2310,13 +2307,13 @@ block_38:
   .align 16
 block_39:
 
-  # Check norm of product.
+  # Check norm of product ||A(2,4)||*||B(4,4)||.
   movss 0x34(multiply_stream, base_pointer), B1
   mulss 0x94(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_40
 
-  # Calculate C(2,4) = A(2,4)*B(4,4).
+  # Calculate C(2,4) += A(2,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
   movaps 0x10+B_OFFSET_44(B), B2
   movaps 0x20+B_OFFSET_44(B), B3
@@ -2400,13 +2397,13 @@ block_40:
   .align 16
 block_41:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,1)||*||B(1,1)||.
   movss 0x38(multiply_stream, base_pointer), B1
   mulss 0x58(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_42
 
-  # Calculate C(3,1) = A(3,1)*B(1,1).
+  # Calculate C(3,1) += A(3,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
   movaps 0x10+B_OFFSET_11(B), B2
   movaps 0x20+B_OFFSET_11(B), B3
@@ -2463,13 +2460,13 @@ block_41:
   .align 16
 block_42:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,2)||*||B(2,1)||.
   movss 0x3c(multiply_stream, base_pointer), B1
   mulss 0x68(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_43
 
-  # Calculate C(3,1) = A(3,2)*B(2,1).
+  # Calculate C(3,1) += A(3,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
   movaps 0x10+B_OFFSET_21(B), B2
   movaps 0x20+B_OFFSET_21(B), B3
@@ -2526,13 +2523,13 @@ block_42:
   .align 16
 block_43:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,3)||*||B(3,1)||.
   movss 0x40(multiply_stream, base_pointer), B1
   mulss 0x78(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_44
 
-  # Calculate C(3,1) = A(3,3)*B(3,1).
+  # Calculate C(3,1) += A(3,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
   movaps 0x10+B_OFFSET_31(B), B2
   movaps 0x20+B_OFFSET_31(B), B3
@@ -2589,13 +2586,13 @@ block_43:
   .align 16
 block_44:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,4)||*||B(4,1)||.
   movss 0x44(multiply_stream, base_pointer), B1
   mulss 0x88(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_45
 
-  # Calculate C(3,1) = A(3,4)*B(4,1).
+  # Calculate C(3,1) += A(3,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
   movaps 0x10+B_OFFSET_41(B), B2
   movaps 0x20+B_OFFSET_41(B), B3
@@ -2679,13 +2676,13 @@ block_45:
   .align 16
 block_46:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,1)||*||B(1,2)||.
   movss 0x38(multiply_stream, base_pointer), B1
   mulss 0x5c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_47
 
-  # Calculate C(3,2) = A(3,1)*B(1,2).
+  # Calculate C(3,2) += A(3,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
   movaps 0x10+B_OFFSET_12(B), B2
   movaps 0x20+B_OFFSET_12(B), B3
@@ -2742,13 +2739,13 @@ block_46:
   .align 16
 block_47:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,2)||*||B(2,2)||.
   movss 0x3c(multiply_stream, base_pointer), B1
   mulss 0x6c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_48
 
-  # Calculate C(3,2) = A(3,2)*B(2,2).
+  # Calculate C(3,2) += A(3,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
   movaps 0x10+B_OFFSET_22(B), B2
   movaps 0x20+B_OFFSET_22(B), B3
@@ -2805,13 +2802,13 @@ block_47:
   .align 16
 block_48:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,3)||*||B(3,2)||.
   movss 0x40(multiply_stream, base_pointer), B1
   mulss 0x7c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_49
 
-  # Calculate C(3,2) = A(3,3)*B(3,2).
+  # Calculate C(3,2) += A(3,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
   movaps 0x10+B_OFFSET_32(B), B2
   movaps 0x20+B_OFFSET_32(B), B3
@@ -2868,13 +2865,13 @@ block_48:
   .align 16
 block_49:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,4)||*||B(4,2)||.
   movss 0x44(multiply_stream, base_pointer), B1
   mulss 0x8c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_50
 
-  # Calculate C(3,2) = A(3,4)*B(4,2).
+  # Calculate C(3,2) += A(3,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
   movaps 0x10+B_OFFSET_42(B), B2
   movaps 0x20+B_OFFSET_42(B), B3
@@ -2958,13 +2955,13 @@ block_50:
   .align 16
 block_51:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,1)||*||B(1,3)||.
   movss 0x38(multiply_stream, base_pointer), B1
   mulss 0x60(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_52
 
-  # Calculate C(3,3) = A(3,1)*B(1,3).
+  # Calculate C(3,3) += A(3,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
   movaps 0x10+B_OFFSET_13(B), B2
   movaps 0x20+B_OFFSET_13(B), B3
@@ -3021,13 +3018,13 @@ block_51:
   .align 16
 block_52:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,2)||*||B(2,3)||.
   movss 0x3c(multiply_stream, base_pointer), B1
   mulss 0x70(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_53
 
-  # Calculate C(3,3) = A(3,2)*B(2,3).
+  # Calculate C(3,3) += A(3,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
   movaps 0x10+B_OFFSET_23(B), B2
   movaps 0x20+B_OFFSET_23(B), B3
@@ -3084,13 +3081,13 @@ block_52:
   .align 16
 block_53:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,3)||*||B(3,3)||.
   movss 0x40(multiply_stream, base_pointer), B1
   mulss 0x80(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_54
 
-  # Calculate C(3,3) = A(3,3)*B(3,3).
+  # Calculate C(3,3) += A(3,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
   movaps 0x10+B_OFFSET_33(B), B2
   movaps 0x20+B_OFFSET_33(B), B3
@@ -3147,13 +3144,13 @@ block_53:
   .align 16
 block_54:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,4)||*||B(4,3)||.
   movss 0x44(multiply_stream, base_pointer), B1
   mulss 0x90(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_55
 
-  # Calculate C(3,3) = A(3,4)*B(4,3).
+  # Calculate C(3,3) += A(3,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
   movaps 0x10+B_OFFSET_43(B), B2
   movaps 0x20+B_OFFSET_43(B), B3
@@ -3237,13 +3234,13 @@ block_55:
   .align 16
 block_56:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,1)||*||B(1,4)||.
   movss 0x38(multiply_stream, base_pointer), B1
   mulss 0x64(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_57
 
-  # Calculate C(3,4) = A(3,1)*B(1,4).
+  # Calculate C(3,4) += A(3,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
   movaps 0x10+B_OFFSET_14(B), B2
   movaps 0x20+B_OFFSET_14(B), B3
@@ -3300,13 +3297,13 @@ block_56:
   .align 16
 block_57:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,2)||*||B(2,4)||.
   movss 0x3c(multiply_stream, base_pointer), B1
   mulss 0x74(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_58
 
-  # Calculate C(3,4) = A(3,2)*B(2,4).
+  # Calculate C(3,4) += A(3,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
   movaps 0x10+B_OFFSET_24(B), B2
   movaps 0x20+B_OFFSET_24(B), B3
@@ -3363,13 +3360,13 @@ block_57:
   .align 16
 block_58:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,3)||*||B(3,4)||.
   movss 0x40(multiply_stream, base_pointer), B1
   mulss 0x84(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_59
 
-  # Calculate C(3,4) = A(3,3)*B(3,4).
+  # Calculate C(3,4) += A(3,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
   movaps 0x10+B_OFFSET_34(B), B2
   movaps 0x20+B_OFFSET_34(B), B3
@@ -3426,13 +3423,13 @@ block_58:
   .align 16
 block_59:
 
-  # Check norm of product.
+  # Check norm of product ||A(3,4)||*||B(4,4)||.
   movss 0x44(multiply_stream, base_pointer), B1
   mulss 0x94(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_60
 
-  # Calculate C(3,4) = A(3,4)*B(4,4).
+  # Calculate C(3,4) += A(3,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
   movaps 0x10+B_OFFSET_44(B), B2
   movaps 0x20+B_OFFSET_44(B), B3
@@ -3516,13 +3513,13 @@ block_60:
   .align 16
 block_61:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,1)||*||B(1,1)||.
   movss 0x48(multiply_stream, base_pointer), B1
   mulss 0x58(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_62
 
-  # Calculate C(4,1) = A(4,1)*B(1,1).
+  # Calculate C(4,1) += A(4,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
   movaps 0x10+B_OFFSET_11(B), B2
   movaps 0x20+B_OFFSET_11(B), B3
@@ -3579,13 +3576,13 @@ block_61:
   .align 16
 block_62:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,2)||*||B(2,1)||.
   movss 0x4c(multiply_stream, base_pointer), B1
   mulss 0x68(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_63
 
-  # Calculate C(4,1) = A(4,2)*B(2,1).
+  # Calculate C(4,1) += A(4,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
   movaps 0x10+B_OFFSET_21(B), B2
   movaps 0x20+B_OFFSET_21(B), B3
@@ -3642,13 +3639,13 @@ block_62:
   .align 16
 block_63:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,3)||*||B(3,1)||.
   movss 0x50(multiply_stream, base_pointer), B1
   mulss 0x78(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_64
 
-  # Calculate C(4,1) = A(4,3)*B(3,1).
+  # Calculate C(4,1) += A(4,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
   movaps 0x10+B_OFFSET_31(B), B2
   movaps 0x20+B_OFFSET_31(B), B3
@@ -3705,13 +3702,13 @@ block_63:
   .align 16
 block_64:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,4)||*||B(4,1)||.
   movss 0x54(multiply_stream, base_pointer), B1
   mulss 0x88(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_65
 
-  # Calculate C(4,1) = A(4,4)*B(4,1).
+  # Calculate C(4,1) += A(4,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
   movaps 0x10+B_OFFSET_41(B), B2
   movaps 0x20+B_OFFSET_41(B), B3
@@ -3795,13 +3792,13 @@ block_65:
   .align 16
 block_66:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,1)||*||B(1,2)||.
   movss 0x48(multiply_stream, base_pointer), B1
   mulss 0x5c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_67
 
-  # Calculate C(4,2) = A(4,1)*B(1,2).
+  # Calculate C(4,2) += A(4,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
   movaps 0x10+B_OFFSET_12(B), B2
   movaps 0x20+B_OFFSET_12(B), B3
@@ -3858,13 +3855,13 @@ block_66:
   .align 16
 block_67:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,2)||*||B(2,2)||.
   movss 0x4c(multiply_stream, base_pointer), B1
   mulss 0x6c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_68
 
-  # Calculate C(4,2) = A(4,2)*B(2,2).
+  # Calculate C(4,2) += A(4,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
   movaps 0x10+B_OFFSET_22(B), B2
   movaps 0x20+B_OFFSET_22(B), B3
@@ -3921,13 +3918,13 @@ block_67:
   .align 16
 block_68:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,3)||*||B(3,2)||.
   movss 0x50(multiply_stream, base_pointer), B1
   mulss 0x7c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_69
 
-  # Calculate C(4,2) = A(4,3)*B(3,2).
+  # Calculate C(4,2) += A(4,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
   movaps 0x10+B_OFFSET_32(B), B2
   movaps 0x20+B_OFFSET_32(B), B3
@@ -3984,13 +3981,13 @@ block_68:
   .align 16
 block_69:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,4)||*||B(4,2)||.
   movss 0x54(multiply_stream, base_pointer), B1
   mulss 0x8c(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_70
 
-  # Calculate C(4,2) = A(4,4)*B(4,2).
+  # Calculate C(4,2) += A(4,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
   movaps 0x10+B_OFFSET_42(B), B2
   movaps 0x20+B_OFFSET_42(B), B3
@@ -4074,13 +4071,13 @@ block_70:
   .align 16
 block_71:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,1)||*||B(1,3)||.
   movss 0x48(multiply_stream, base_pointer), B1
   mulss 0x60(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_72
 
-  # Calculate C(4,3) = A(4,1)*B(1,3).
+  # Calculate C(4,3) += A(4,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
   movaps 0x10+B_OFFSET_13(B), B2
   movaps 0x20+B_OFFSET_13(B), B3
@@ -4137,13 +4134,13 @@ block_71:
   .align 16
 block_72:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,2)||*||B(2,3)||.
   movss 0x4c(multiply_stream, base_pointer), B1
   mulss 0x70(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_73
 
-  # Calculate C(4,3) = A(4,2)*B(2,3).
+  # Calculate C(4,3) += A(4,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
   movaps 0x10+B_OFFSET_23(B), B2
   movaps 0x20+B_OFFSET_23(B), B3
@@ -4200,13 +4197,13 @@ block_72:
   .align 16
 block_73:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,3)||*||B(3,3)||.
   movss 0x50(multiply_stream, base_pointer), B1
   mulss 0x80(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_74
 
-  # Calculate C(4,3) = A(4,3)*B(3,3).
+  # Calculate C(4,3) += A(4,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
   movaps 0x10+B_OFFSET_33(B), B2
   movaps 0x20+B_OFFSET_33(B), B3
@@ -4263,13 +4260,13 @@ block_73:
   .align 16
 block_74:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,4)||*||B(4,3)||.
   movss 0x54(multiply_stream, base_pointer), B1
   mulss 0x90(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_75
 
-  # Calculate C(4,3) = A(4,4)*B(4,3).
+  # Calculate C(4,3) += A(4,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
   movaps 0x10+B_OFFSET_43(B), B2
   movaps 0x20+B_OFFSET_43(B), B3
@@ -4353,13 +4350,13 @@ block_75:
   .align 16
 block_76:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,1)||*||B(1,4)||.
   movss 0x48(multiply_stream, base_pointer), B1
   mulss 0x64(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_77
 
-  # Calculate C(4,4) = A(4,1)*B(1,4).
+  # Calculate C(4,4) += A(4,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
   movaps 0x10+B_OFFSET_14(B), B2
   movaps 0x20+B_OFFSET_14(B), B3
@@ -4416,13 +4413,13 @@ block_76:
   .align 16
 block_77:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,2)||*||B(2,4)||.
   movss 0x4c(multiply_stream, base_pointer), B1
   mulss 0x74(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_78
 
-  # Calculate C(4,4) = A(4,2)*B(2,4).
+  # Calculate C(4,4) += A(4,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
   movaps 0x10+B_OFFSET_24(B), B2
   movaps 0x20+B_OFFSET_24(B), B3
@@ -4479,13 +4476,13 @@ block_77:
   .align 16
 block_78:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,3)||*||B(3,4)||.
   movss 0x50(multiply_stream, base_pointer), B1
   mulss 0x84(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_79
 
-  # Calculate C(4,4) = A(4,3)*B(3,4).
+  # Calculate C(4,4) += A(4,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
   movaps 0x10+B_OFFSET_34(B), B2
   movaps 0x20+B_OFFSET_34(B), B3
@@ -4542,13 +4539,13 @@ block_78:
   .align 16
 block_79:
 
-  # Check norm of product.
+  # Check norm of product ||A(4,4)||*||B(4,4)||.
   movss 0x54(multiply_stream, base_pointer), B1
   mulss 0x94(multiply_stream, base_pointer), B1
   comiss tolerance, B1
   jb block_80
 
-  # Calculate C(4,4) = A(4,4)*B(4,4).
+  # Calculate C(4,4) += A(4,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
   movaps 0x10+B_OFFSET_44(B), B2
   movaps 0x20+B_OFFSET_44(B), B3

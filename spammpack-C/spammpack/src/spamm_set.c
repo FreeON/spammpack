@@ -36,6 +36,12 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
     /* Set matrix element. */
     node->block_dense[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] = Aij;
 
+    /* Set the dilated matrix element. */
+    node->block_dense_dilated[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_N_BLOCK, SPAMM_N_BLOCK)*4+0] = Aij;
+    node->block_dense_dilated[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_N_BLOCK, SPAMM_N_BLOCK)*4+1] = Aij;
+    node->block_dense_dilated[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_N_BLOCK, SPAMM_N_BLOCK)*4+2] = Aij;
+    node->block_dense_dilated[spamm_dense_index(i-node->M_lower, j-node->N_lower, SPAMM_N_BLOCK, SPAMM_N_BLOCK)*4+3] = Aij;
+
     /* Recalculate the norm. */
     node->norm2 += Aij*Aij;
     node->norm = sqrt(node->norm2);
@@ -82,6 +88,18 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
                   child_node->block_dense[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)] = 0.0;
                 }
               }
+
+              /* Allocate contiguous matrix block for dilated block. */
+              child_node->block_dense_dilated = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL*4);
+              for (m = 0; m < SPAMM_N_KERNEL; ++m) {
+                for (n = 0; n < SPAMM_N_KERNEL; ++n)
+                {
+                  child_node->block_dense_dilated[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+0] = 0.0;
+                  child_node->block_dense_dilated[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+1] = 0.0;
+                  child_node->block_dense_dilated[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+2] = 0.0;
+                  child_node->block_dense_dilated[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+3] = 0.0;
+                }
+              }
             }
 
             else if (child_node->tier > child_node->kernel_tier)
@@ -89,6 +107,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
               /* Point into the contiguous matrix block. */
               kernel_block_N = pow(SPAMM_N_CHILD, child_node->tree_depth-child_node->tier)*SPAMM_N_BLOCK;
               child_node->block_dense = node->block_dense+kernel_block_N*kernel_block_N*(SPAMM_N_CHILD*l+k);
+              child_node->block_dense_dilated = node->block_dense_dilated+kernel_block_N*4*kernel_block_N*(SPAMM_N_CHILD*l+k);
             }
           }
 
@@ -154,6 +173,18 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
           for (k = 0; k < SPAMM_N_KERNEL; k++)
           {
             A->root->block_dense[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)] = 0.0;
+          }
+        }
+
+        /* Allocate contiguous matrix block for dilated block. */
+        A->root->block_dense_dilated = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL*4);
+        for (l = 0; l < SPAMM_N_KERNEL; ++l) {
+          for (k = 0; k < SPAMM_N_KERNEL; ++k)
+          {
+            A->root->block_dense_dilated[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+0] = 0.0;
+            A->root->block_dense_dilated[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+1] = 0.0;
+            A->root->block_dense_dilated[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+2] = 0.0;
+            A->root->block_dense_dilated[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+3] = 0.0;
           }
         }
       }
