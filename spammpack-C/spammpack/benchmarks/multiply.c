@@ -18,6 +18,12 @@ const char *matrix_type_name[] = { "dense", "diagonal", "column_row" };
 const int number_mul_types = 3;
 const char *mul_type_name[] = { "tree", "cache", "cache_redundant" };
 
+unsigned int
+column_major (const unsigned int i, const unsigned int j, const unsigned int M, const unsigned int N)
+{
+  return i+j*M;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -29,12 +35,7 @@ main (int argc, char **argv)
   enum matrix_t matrix_type = dense;
   enum spamm_multiply_algorithm_t mul_type = cache;
 
-  unsigned int M = 1000;
-  unsigned int N = 1000;
-  unsigned int K = 1000;
-  unsigned int M_block = 2;
-  unsigned int N_block = 2;
-  unsigned int K_block = 2;
+  unsigned int N = 1024;
 
   unsigned int number_nonzeros;
 
@@ -44,6 +45,7 @@ main (int argc, char **argv)
   int verify_spamm = 0;
   int use_spamm = 1;
   int use_sparsekit = 0;
+  int writeout = 0;
 
   unsigned int repeat;
   unsigned int repeat_counter_blas = 1;
@@ -54,6 +56,7 @@ main (int argc, char **argv)
   unsigned int chunksize = 100;
 
   floating_point_t threshold = 0.0;
+  floating_point_t tolerance = 0.0;
   floating_point_t gamma = 0.46;
 
   floating_point_t alpha = 1.2;
@@ -114,19 +117,15 @@ main (int argc, char **argv)
   /* For the Kahan summation algorithm. */
   floating_point_t sum, error_compensation, error_compensation_max, Kahan_y, Kahan_t;
 
-  char *short_options = "hM:N:K:1:2:3:g:e:a:b:t:m:l:c:pkv6sn4:5:";
+  char *short_options = "hN:g:a:b:e:q:t:m:l:c:pkv6sn4:5:w";
   struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
-    { "M", required_argument, NULL, 'M' },
     { "N", required_argument, NULL, 'N' },
-    { "K", required_argument, NULL, 'K' },
-    { "M_block", required_argument, NULL, '1' },
-    { "N_block", required_argument, NULL, '2' },
-    { "K_block", required_argument, NULL, '3' },
     { "gamma", required_argument, NULL, 'g' },
     { "alpha", required_argument, NULL, 'a' },
     { "beta", required_argument, NULL, 'b' },
     { "thresh", required_argument, NULL, 'e' },
+    { "tolerance", required_argument, NULL, 'q' },
     { "type", required_argument, NULL, 't' },
     { "multype", required_argument, NULL, 'm' },
     { "linear", required_argument, NULL, 'l' },
@@ -139,6 +138,7 @@ main (int argc, char **argv)
     { "no-random", no_argument, NULL, 'n' },
     { "repeat-blas", required_argument, NULL, '4' },
     { "repeat-spamm", required_argument, NULL, '5' },
+    { "writeout", no_argument, NULL, 'w' },
     { NULL, 0, NULL, 0 }
   };
   int longindex;
@@ -153,19 +153,13 @@ main (int argc, char **argv)
         printf("Usage:\n");
         printf("\n");
         printf("-h                        This help\n");
-        printf("-M M                      Set the number or rows of matrix A and C\n");
-        printf("-N N                      Set the number of columns of matrix B and C\n");
-        printf("-K K                      Set the number of columns of matrix A and the\n");
-        printf("                          number or rows of matrix B\n");
-        printf("--M_block M               Set the number of rows of the matrix blocks of A and C\n");
-        printf("--N_block N               Set the number of columns of the matrix blocks of B and C\n");
-        printf("--K_block K               Set the number of columns of the matrix blocks of A\n");
-        printf("                          and the number of rows of the matrix blocks of B\n");
+        printf("-N N                      Set the size of the matrices A, B, and C to NxN\n");
         printf("{ -g | --gamma } gamma    Set the decay constant gamma for exp(-gamma |i-j|), default: gamma = %1.2f\n", gamma);
         printf("{ -a | --alpha } alpha    Set alpha in C = alpha*A*B + beta*C, default: alpha = %1.2f\n", alpha);
         printf("{ -b | --beta } beta      Set beta in C = alpha*A*B + beta*C, default: beta = %1.2f\n", beta);
         printf("{ -e | --thresh } eps     Set the threshold, i.e. no random number will be used below\n");
-        printf("                          this threshold, default: threshold = %1.2e\n", threshold);
+        printf("                          this threshold, default: eps = %1.2e\n", threshold);
+        printf("--tolerance tau           The tolerance of the SpAMM product, default: tau = %1.2e\n", tolerance);
         printf("{ -t | --type } type      The calculation type (dense, diagonal, column_row)\n");
         printf("{ -m | --multype } type   The multiplication algorithm (tree, cache, cache_redundant)\n");
         printf("{ -l | --linear } n       Convert to linear trees at tier n\n");
@@ -178,31 +172,12 @@ main (int argc, char **argv)
         printf("--no-random               Fill matrices with linear index as opposed to random values\n");
         printf("--repeat-blas N           Repeat the dense matrix product N times\n");
         printf("--repeat-spamm N          Repeat the spamm matrix product N times\n");
+        printf("--writeout                Write matrices to standard out in matlab format\n");
         return result;
-        break;
-
-      case 'M':
-        M = strtol(optarg, NULL, 10);
         break;
 
       case 'N':
         N = strtol(optarg, NULL, 10);
-        break;
-
-      case 'K':
-        K = strtol(optarg, NULL, 10);
-        break;
-
-      case '1':
-        M_block = strtol(optarg, NULL, 10);
-        break;
-
-      case '2':
-        N_block = strtol(optarg, NULL, 10);
-        break;
-
-      case '3':
-        K_block = strtol(optarg, NULL, 10);
         break;
 
       case 'g':
@@ -219,6 +194,10 @@ main (int argc, char **argv)
 
       case 'e':
         threshold = strtod(optarg, NULL);
+        break;
+
+      case 'q':
+        tolerance = strtod(optarg, NULL);
         break;
 
       case 't':
@@ -281,6 +260,10 @@ main (int argc, char **argv)
         repeat_counter_spamm = strtol(optarg, NULL, 10);
         break;
 
+      case 'w':
+        writeout = 1;
+        break;
+
       default:
         LOG2_FATAL("unknown command line option\n");
         return -1;
@@ -315,31 +298,19 @@ main (int argc, char **argv)
     LOG2_INFO("using Kahan summation algorithm\n");
   }
 
-  /* Clear floating point exceptions. */
-  //feclearexcept(FE_ALL_EXCEPT);
-
   switch (matrix_type)
   {
     case dense:
     case column_row:
-      LOG_INFO("generating random %ix%i matrix A with %ix%i blocks\n", M, K, M_block, K_block);
-      LOG_INFO("generating random %ix%i matrix B with %ix%i blocks\n", K, N, K_block, N_block);
-      LOG_INFO("generating random %ix%i matrix C with %ix%i blocks\n", M, N, M_block, N_block);
+      LOG_INFO("generating random %ix%i matrix A with %ix%i blocks\n", N, N, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+      LOG_INFO("generating random %ix%i matrix B with %ix%i blocks\n", N, N, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+      LOG_INFO("generating random %ix%i matrix C with %ix%i blocks\n", N, N, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
       break;
 
     case diagonal:
-      if (M == N && N == K && M == K)
-      {
-        LOG_INFO("generating random %ix%i matrix A with %ix%i blocks, gamma = %f\n", M, K, M_block, K_block, gamma);
-        LOG_INFO("generating random %ix%i matrix B with %ix%i blocks, gamma = %f\n", K, N, K_block, N_block, gamma);
-        LOG_INFO("generating random %ix%i matrix C with %ix%i blocks, gamma = %f\n", M, N, M_block, N_block, gamma);
-      }
-
-      else
-      {
-        LOG2_FATAL("matrix dimensions do not match\n");
-        exit(1);
-      }
+      LOG_INFO("generating random %ix%i matrix A with %ix%i blocks, gamma = %f\n", N, N, SPAMM_N_BLOCK, SPAMM_N_BLOCK, gamma);
+      LOG_INFO("generating random %ix%i matrix B with %ix%i blocks, gamma = %f\n", N, N, SPAMM_N_BLOCK, SPAMM_N_BLOCK, gamma);
+      LOG_INFO("generating random %ix%i matrix C with %ix%i blocks, gamma = %f\n", N, N, SPAMM_N_BLOCK, SPAMM_N_BLOCK, gamma);
       break;
 
     default:
@@ -348,30 +319,20 @@ main (int argc, char **argv)
       break;
   }
 
-  A_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*M*K);
-  B_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*K*N);
-  C_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*M*N);
+  A_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*N*N);
+  B_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*N*N);
+  C_dense = (floating_point_t*) malloc(sizeof(floating_point_t)*N*N);
 
   /* Initialize matrices. */
   switch (matrix_type)
   {
     case dense:
-      for (i = 0; i < M; i++) {
-        for (j = 0; j < K; j++)
-        {
-          A_dense[spamm_dense_index(i, j, M, K)] = (random_elements ? rand()/(floating_point_t) RAND_MAX + threshold : spamm_dense_index(i, j, M, K));
-        }
-      }
-      for (i = 0; i < K; i++) {
+      for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++)
         {
-          B_dense[spamm_dense_index(i, j, K, N)] = (random_elements ? rand()/(floating_point_t) RAND_MAX + threshold : spamm_dense_index(i, j, K, N));
-        }
-      }
-      for (i = 0; i < M; i++) {
-        for (j = 0; j < N; j++)
-        {
-          C_dense[spamm_dense_index(i, j, M, N)] = (random_elements ? rand()/(floating_point_t) RAND_MAX + threshold : spamm_dense_index(i, j, M, N));
+          A_dense[column_major(i, j, N, N)] = (random_elements ? rand()/(floating_point_t) RAND_MAX + threshold : column_major(i, j, N, N));
+          B_dense[column_major(i, j, N, N)] = (random_elements ? rand()/(floating_point_t) RAND_MAX + threshold : column_major(i, j, N, N));
+          C_dense[column_major(i, j, N, N)] = (random_elements ? rand()/(floating_point_t) RAND_MAX + threshold : column_major(i, j, N, N));
         }
       }
       break;
@@ -379,9 +340,9 @@ main (int argc, char **argv)
     case diagonal:
       for (i = 0; i < N; i++)
       {
-        A_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
-        B_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
-        C_dense[spamm_dense_index(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+        A_dense[column_major(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+        B_dense[column_major(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+        C_dense[column_major(i, i, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
       }
 
       for (i = 0; i < N; i++) {
@@ -389,56 +350,56 @@ main (int argc, char **argv)
         {
           if (i != j)
           {
-            A_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*A_dense[spamm_dense_index(i, i, N, N)]*A_dense[spamm_dense_index(j, j, N, N)];
-            B_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*B_dense[spamm_dense_index(i, i, N, N)]*B_dense[spamm_dense_index(j, j, N, N)];
-            C_dense[spamm_dense_index(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*C_dense[spamm_dense_index(i, i, N, N)]*C_dense[spamm_dense_index(j, j, N, N)];
+            A_dense[column_major(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*A_dense[column_major(i, i, N, N)]*A_dense[column_major(j, j, N, N)];
+            B_dense[column_major(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*B_dense[column_major(i, i, N, N)]*B_dense[column_major(j, j, N, N)];
+            C_dense[column_major(i, j, N, N)] = exp(-gamma*fabs((int) i - (int) j))*C_dense[column_major(i, i, N, N)]*C_dense[column_major(j, j, N, N)];
           }
         }
       }
       break;
 
     case column_row:
-      for (i = 0; i < M; ++i) {
-        for (j = 0; j < K; ++j)
+      for (i = 0; i < N; ++i) {
+        for (j = 0; j < N; ++j)
         {
           if (j == 0)
           {
-            A_dense[spamm_dense_index(i, j, M, K)] = rand()/(floating_point_t) RAND_MAX + threshold;
+            A_dense[column_major(i, j, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
           }
 
           else
           {
-            A_dense[spamm_dense_index(i, j, M, K)] = 0.0;
+            A_dense[column_major(i, j, N, N)] = 0.0;
           }
         }
       }
 
-      for (i = 0; i < K; ++i) {
+      for (i = 0; i < N; ++i) {
         for (j = 0; j < N; ++j)
         {
           if (i == 0)
           {
-            B_dense[spamm_dense_index(i, j, K, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+            B_dense[column_major(i, j, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
           }
 
           else
           {
-            B_dense[spamm_dense_index(i, j, K, N)] = 0.0;
+            B_dense[column_major(i, j, N, N)] = 0.0;
           }
         }
       }
 
-      for (i = 0; i < M; ++i) {
+      for (i = 0; i < N; ++i) {
         for (j = 0; j < N; ++j)
         {
           if (i == 0)
           {
-            C_dense[spamm_dense_index(i, j, M, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
+            C_dense[column_major(i, j, N, N)] = rand()/(floating_point_t) RAND_MAX + threshold;
           }
 
           else
           {
-            C_dense[spamm_dense_index(i, j, M, N)] = 0.0;
+            C_dense[column_major(i, j, N, N)] = 0.0;
           }
         }
       }
@@ -448,55 +409,91 @@ main (int argc, char **argv)
   if (print_matrix)
   {
     printf("A (dense):\n");
-    spamm_print_dense(M, K, A_dense);
+    spamm_print_dense(N, N, A_dense);
     printf("B (dense):\n");
-    spamm_print_dense(K, N, B_dense);
+    spamm_print_dense(N, N, B_dense);
     printf("C (dense):\n");
-    spamm_print_dense(M, N, C_dense);
+    spamm_print_dense(N, N, C_dense);
+  }
+
+  if (writeout)
+  {
+    printf("A=[\n");
+    for (i = 0; i < N; i++) {
+      for (j = 0; j < N; j++)
+      {
+        printf(" %e", A_dense[column_major(i, j, N, N)]);
+      }
+      printf("\n");
+    }
+    printf("];\n");
+
+    printf("B=[\n");
+    for (i = 0; i < N; i++) {
+      for (j = 0; j < N; j++)
+      {
+        printf(" %e", B_dense[column_major(i, j, N, N)]);
+      }
+      printf("\n");
+    }
+    printf("];\n");
+
+    printf("C=[\n");
+    for (i = 0; i < N; i++) {
+      for (j = 0; j < N; j++)
+      {
+        printf(" %e", C_dense[column_major(i, j, N, N)]);
+      }
+      printf("\n");
+    }
+    printf("];\n");
+
+    printf("alpha = %e;\n", alpha);
+    printf("beta = %e;\n", beta);
   }
 
   number_nonzeros = 0;
-  for (i = 0; i < M; i++) {
-    for (j = 0; j < K; j++)
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
     {
-      if (A_dense[spamm_dense_index(i, j, M, K)] != 0.0) { number_nonzeros++; }
+      if (A_dense[column_major(i, j, N, N)] != 0.0) { number_nonzeros++; }
     }
   }
   LOG_INFO("A has %u nonzeros, avg. of %1.2f nonzeros per row, %1.2f%% sparsity:\n",
-      number_nonzeros, number_nonzeros/(double) M, (1-number_nonzeros/(double) (M*K))*100);
+      number_nonzeros, number_nonzeros/(double) N, (1-number_nonzeros/(double) (N*N))*100);
 
   number_nonzeros = 0;
-  for (i = 0; i < K; i++) {
+  for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      if (B_dense[spamm_dense_index(i, j, K, N)] != 0.0) { number_nonzeros++; }
+      if (B_dense[column_major(i, j, N, N)] != 0.0) { number_nonzeros++; }
     }
   }
   LOG_INFO("B has %u nonzeros, avg. of %1.2f nonzeros per row, %1.2f%% sparsity:\n",
-      number_nonzeros, number_nonzeros/(double) K, (1-number_nonzeros/(double) (K*N))*100);
+      number_nonzeros, number_nonzeros/(double) N, (1-number_nonzeros/(double) (N*N))*100);
 
   number_nonzeros = 0;
-  for (i = 0; i < M; i++) {
+  for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      if (C_dense[spamm_dense_index(i, j, M, N)] != 0.0) { number_nonzeros++; }
+      if (C_dense[column_major(i, j, N, N)] != 0.0) { number_nonzeros++; }
     }
   }
   LOG_INFO("C has %u nonzeros, avg. of %1.2f nonzeros per row, %1.2f%% sparsity:\n",
-      number_nonzeros, number_nonzeros/(double) M, (1-number_nonzeros/(double) (M*N))*100);
+      number_nonzeros, number_nonzeros/(double) N, (1-number_nonzeros/(double) (N*N))*100);
 
   if (use_spamm)
   {
     /* Convert to SpAMM. */
-    spamm_new(M, K, &A);
-    spamm_new(K, N, &B);
-    spamm_new(M, N, &C);
+    spamm_new(N, N, &A);
+    spamm_new(N, N, &B);
+    spamm_new(N, N, &C);
 
     LOG2_INFO("converting dense to spamm... ");
     gettimeofday(&start, NULL);
-    spamm_dense_to_spamm(M, K, A_dense, &A);
-    spamm_dense_to_spamm(K, N, B_dense, &B);
-    spamm_dense_to_spamm(M, N, C_dense, &C);
+    spamm_dense_to_spamm(N, N, 'T', A_dense, &A);
+    spamm_dense_to_spamm(N, N, 'T', B_dense, &B);
+    spamm_dense_to_spamm(N, N, 'T', C_dense, &C);
     gettimeofday(&stop, NULL);
     printf("walltime %f s\n", (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
@@ -516,11 +513,11 @@ main (int argc, char **argv)
 
     if (print_matrix)
     {
-      printf("A:\n");
+      printf("A (SpAMM):\n");
       spamm_print_spamm(&A);
-      printf("B:\n");
+      printf("B (SpAMM):\n");
       spamm_print_spamm(&B);
-      printf("C:\n");
+      printf("C (SpAMM):\n");
       spamm_print_spamm(&C);
     }
   }
@@ -560,14 +557,14 @@ main (int argc, char **argv)
     getrusage(RUSAGE_SELF, &rusage_start);
     for (repeat = 0; repeat < repeat_counter_blas; repeat++)
     {
-      DGEMM("N", "N", &M, &N, &K, &alpha, A_dense, &M, B_dense, &K, &beta, C_dense, &M);
+      DGEMM("N", "N", &N, &N, &N, &alpha, A_dense, &N, B_dense, &N, &beta, C_dense, &N);
     }
     getrusage(RUSAGE_SELF, &rusage_stop);
     gettimeofday(&stop, NULL);
     walltime_blas = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_blas;
     usertime_blas = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_blas;
     systime_blas = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_blas;
-    flops_blas = ((double) M)*((double) N)*(2.0*K+1.0)/walltime_blas;
+    flops_blas = ((double) N)*((double) N)*(2.0*N+1.0)/walltime_blas;
     if (flops_blas < 1000*1000*1000)
     {
       printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Mflop/s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas, flops_blas/1000./1000.);
@@ -584,22 +581,23 @@ main (int argc, char **argv)
     for (repeat = 0; repeat < repeat_counter_blas; repeat++)
     {
       error_compensation_max = 0;
-      for (i = 0; i < M; i++) {
-        for (j = 0; j < N; j++) {
-          C_dense[spamm_dense_index(i, j, M, N)] *= beta;
+      for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++)
+        {
+          C_dense[column_major(i, j, N, N)] *= beta;
 
           if (use_kahan)
           {
-            sum = C_dense[spamm_dense_index(i, j, M, N)];
+            sum = C_dense[column_major(i, j, N, N)];
             error_compensation = 0;
           }
 
-          for (k = 0; k < K; k++)
+          for (k = 0; k < N; k++)
           {
             if (use_kahan)
             {
-              C_dense[spamm_dense_index(i, j, M, N)] += rand()*rand();
-              Kahan_y = alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)] - error_compensation;
+              C_dense[column_major(i, j, N, N)] += rand()*rand();
+              Kahan_y = alpha*A_dense[column_major(i, k, N, N)]*B_dense[column_major(k, j, N, N)] - error_compensation;
               Kahan_t = sum + Kahan_y;
               error_compensation = (Kahan_t - sum) - Kahan_y;
               if (fabs(error_compensation) > fabs(error_compensation_max)) { error_compensation_max = error_compensation; }
@@ -608,13 +606,13 @@ main (int argc, char **argv)
 
             else
             {
-              C_dense[spamm_dense_index(i, j, M, N)] += alpha*A_dense[spamm_dense_index(i, k, M, K)]*B_dense[spamm_dense_index(k, j, K, N)];
+              C_dense[column_major(i, j, N, N)] += alpha*A_dense[column_major(i, k, N, N)]*B_dense[column_major(k, j, N, N)];
             }
           }
 
           if (use_kahan)
           {
-            C_dense[spamm_dense_index(i, j, M, N)] = sum;
+            C_dense[column_major(i, j, N, N)] = sum;
           }
         }
       }
@@ -624,7 +622,7 @@ main (int argc, char **argv)
     walltime_blas = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_blas;
     usertime_blas = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_blas;
     systime_blas = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_blas;
-    flops_blas = ((double) M)*((double) N)*(2.0*K+1.0)/walltime_blas;
+    flops_blas = ((double) N)*((double) N)*(2.0*N+1.0)/walltime_blas;
     if (flops_blas < 1000*1000*1000)
     {
       printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Mflop/s\n", walltime_blas, usertime_blas, systime_blas, usertime_blas+systime_blas, flops_blas/1000./1000.);
@@ -638,7 +636,7 @@ main (int argc, char **argv)
     if (print_matrix)
     {
       printf("result C (dense):\n");
-      spamm_print_dense(M, N, C_dense);
+      spamm_print_dense(N, N, C_dense);
     }
   }
 
@@ -659,7 +657,7 @@ main (int argc, char **argv)
     walltime_sparsekit = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_sparsekit;
     usertime_sparsekit = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_sparsekit;
     systime_sparsekit = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_sparsekit;
-    flops_sparsekit = ((double) M)*((double) N)*(2.0*K+1.0)/walltime_sparsekit;
+    flops_sparsekit = ((double) N)*((double) N)*(2.0*N+1.0)/walltime_sparsekit;
     if (flops_sparsekit < 1000*1000*1000)
     {
       printf("walltime: %f s, user time: %f s + system time: %f s = %f s = %1.2f Mflop/s\n", walltime_sparsekit, usertime_sparsekit, systime_sparsekit, usertime_sparsekit+systime_sparsekit, flops_sparsekit/1000./1000.);
@@ -672,19 +670,19 @@ main (int argc, char **argv)
 
   if (use_spamm)
   {
-    LOG2_INFO("multiplying matrix with spamm\n");
+    LOG_INFO("multiplying matrix with spamm, tolerance = %e\n", tolerance);
     gettimeofday(&start, NULL);
     getrusage(RUSAGE_SELF, &rusage_start);
     for (repeat = 0; repeat < repeat_counter_spamm; repeat++)
     {
-      spamm_multiply(mul_type, threshold, alpha, &A, &B, beta, &C);
+      spamm_multiply(mul_type, tolerance, alpha, &A, &B, beta, &C);
     }
     getrusage(RUSAGE_SELF, &rusage_stop);
     gettimeofday(&stop, NULL);
     walltime_spamm = ((stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6)/repeat_counter_spamm;
     usertime_spamm = ((rusage_stop.ru_utime.tv_sec-rusage_start.ru_utime.tv_sec)+(rusage_stop.ru_utime.tv_usec-rusage_start.ru_utime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
     systime_spamm = ((rusage_stop.ru_stime.tv_sec-rusage_start.ru_stime.tv_sec)+(rusage_stop.ru_stime.tv_usec-rusage_start.ru_stime.tv_usec)/(double) 1e6)/repeat_counter_spamm;
-    flops_spamm = ((double) M)*((double) N)*(2.0*K+1.0)/walltime_spamm;
+    flops_spamm = ((double) N)*((double) N)*(2.0*N+1.0)/walltime_spamm;
     if (flops_spamm < 1000*1000*1000)
     {
       LOG_INFO("total spamm time elapsed, walltime: %f s, usertime: %f s + system time: %f s = %f s = %1.2f Mflop/s\n",
@@ -699,7 +697,7 @@ main (int argc, char **argv)
 
     if (print_matrix)
     {
-      printf("result C:\n");
+      printf("result C (SpAMM):\n");
       spamm_print_spamm(&C);
     }
   }
@@ -711,12 +709,12 @@ main (int argc, char **argv)
 
     LOG2_INFO("comparing matrices\n");
     max_diff = 0;
-    for (i = 0; i < C.M; i++) {
-      for (j = 0; j < C.N; j++)
+    for (i = 0; i < N; i++) {
+      for (j = 0; j < N; j++)
       {
-        if (fabs(spamm_get(i, j, &C)-C_dense[spamm_dense_index(i, j, C.M, C.N)]) > max_diff)
+        if (fabs(spamm_get(i, j, &C)-C_dense[column_major(i, j, N, N)]) > max_diff)
         {
-          max_diff = fabs(spamm_get(i, j, &C)-C_dense[spamm_dense_index(i, j, C.M, C.N)]);
+          max_diff = fabs(spamm_get(i, j, &C)-C_dense[column_major(i, j, N, N)]);
           max_diff_i = i;
           max_diff_j = j;
         }
@@ -728,8 +726,8 @@ main (int argc, char **argv)
       printf("[multiply_spamm] biggest mismatch above threshold of %e: (C[%i][%i] = %e) != (C_dense[%i][%i] = %e), |diff| = %e\n",
           threshold,
           max_diff_i, max_diff_j, spamm_get(max_diff_i, max_diff_j, &C),
-          max_diff_i, max_diff_j, C_dense[spamm_dense_index(max_diff_i, max_diff_j, C.M, C.N)],
-          fabs(spamm_get(max_diff_i, max_diff_j, &C)-C_dense[spamm_dense_index(max_diff_i, max_diff_j, C.M, C.N)]));
+          max_diff_i, max_diff_j, C_dense[column_major(max_diff_i, max_diff_j, N, N)],
+          fabs(spamm_get(max_diff_i, max_diff_j, &C)-C_dense[column_major(max_diff_i, max_diff_j, N, N)]));
       result = 1;
     }
 
