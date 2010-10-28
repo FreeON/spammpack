@@ -361,6 +361,9 @@ struct spamm_node_t
 
   /** At the block level, the dense matrix data. */
   floating_point_t *block_dense;
+
+  /** At the block level, the dilated dense matrix data. */
+  floating_point_t *block_dense_dilated;
 };
 
 /** Linear quadtree.

@@ -9,20 +9,6 @@ function call.
 
 import math, optparse, sys
 
-class box:
-  """Defines a box of matrix indices."""
-
-  def __init__ (self, i_1, i_2, j_1, j_2):
-    """Initialize the box."""
-    self.i_1 = i_1
-    self.i_2 = i_2
-    self.j_1 = j_1
-    self.j_2 = j_2
-
-  def __str__ (self):
-    """Convert the box into a string for printing."""
-    return "box: [%d-%d][%d-%d]" % (self.i_1, self.i_2, self.j_1, self.j_2)
-
 class counter:
   """A counter object."""
 
@@ -42,136 +28,27 @@ class counter:
     """Get the current value of the counter."""
     return self.counter
 
-# Generate matrix product with Z-curve ordering.
-def generate_Z_curve (A, B, C, block_counter):
-  """Generate assembly for a stream kernel."""
+def Z_curve_index (i, j):
+  """Return the linear index of a Z-curve ordered matrix."""
 
-  if A.i_2-A.i_1 == 1 and A.j_2-A.j_1 == 1:
-    i = C.i_1
-    j = C.j_1
-    k = A.j_1
+  result = 0
+  index = 0
+  while i >= 2**index or j >= 2**index:
+    if j & 2**index != 0:
+      result += 2**(2*index)
 
-    if options.generate_checks:
-      print
-      print padding + ".align 16"
-      print "block_%d:" % (block_counter.get())
-      block_counter.increment()
+    if i & 2**index != 0:
+      result += 2**(2*index+1)
 
-      print
-      print padding + "# Check norm of product A(%d,%d)*B(%d,%d)." % (i+1, k+1, k+1, j+1)
-      print padding + "movss 0x%x(multiply_stream, base_pointer), B1" % ((i*options.N+k)*4+24)
-      print padding + "mulss 0x%x(multiply_stream, base_pointer), B1" % ((k*options.N+j+options.N**2)*4+24)
-      print padding + "comiss tolerance, B1"
-      print padding + "jb block_%d" % (block_counter.get())
+    index += 1
 
-    print
-    print padding + "# Reset C(%d,%d) matrix block accumulators." % (i+1, j+1)
-    print padding + "xorps C1, C1"
-    print padding + "xorps C2, C2"
-    print padding + "xorps C3, C3"
-    print padding + "xorps C4, C4"
+  return result
 
-    print
-    print padding + "# Calculate C(%d,%d) = A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1)
-    print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B1" % (0*4*4, k+1, j+1)
-    print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B2" % (1*4*4, k+1, j+1)
-    print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B3" % (2*4*4, k+1, j+1)
-    print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B4" % (3*4*4, k+1, j+1)
+def dense_index (i, j, N):
+  """Return the index within a matrix block."""
 
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+0)*4*4, i+1, k+1, 1, 1)
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+1)*4*4, i+1, k+1, 1, 2)
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+2)*4*4, i+1, k+1, 1, 3)
-    print padding + "mulps B1, A11"
-    print padding + "mulps B2, A12"
-    print padding + "addps A11, C1"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+3)*4*4, i+1, k+1, 1, 4)
-    print padding + "mulps B3, A13"
-    print padding + "addps A12, C1"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+0)*4*4, i+1, k+1, 2, 1)
-    print padding + "mulps B4, A14"
-    print padding + "addps A13, C1"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+1)*4*4, i+1, k+1, 2, 2)
-    print padding + "mulps B1, A21"
-    print padding + "addps A14, C1"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+2)*4*4, i+1, k+1, 2, 3)
-    print padding + "mulps B2, A22"
-    print padding + "addps A21, C2"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+3)*4*4, i+1, k+1, 2, 4)
-    print padding + "mulps B3, A23"
-    print padding + "addps A22, C2"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+0)*4*4, i+1, k+1, 3, 1)
-    print padding + "mulps B4, A24"
-    print padding + "addps A23, C2"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+1)*4*4, i+1, k+1, 3, 2)
-    print padding + "mulps B1, A31"
-    print padding + "addps A24, C2"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+2)*4*4, i+1, k+1, 3, 3)
-    print padding + "mulps B2, A32"
-    print padding + "addps A31, C3"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+3)*4*4, i+1, k+1, 3, 4)
-    print padding + "mulps B3, A33"
-    print padding + "addps A32, C3"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+0)*4*4, i+1, k+1, 4, 1)
-    print padding + "mulps B4, A34"
-    print padding + "addps A33, C3"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+1)*4*4, i+1, k+1, 4, 2)
-    print padding + "mulps B1, A41"
-    print padding + "addps A34, C3"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+2)*4*4, i+1, k+1, 4, 3)
-    print padding + "mulps B2, A42"
-    print padding + "addps A41, C4"
-    print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+3)*4*4, i+1, k+1, 4, 4)
-    print padding + "mulps B3, A43"
-    print padding + "addps A42, C4"
-    print padding + "mulps B4, A44"
-    print padding + "addps A43, C4"
-    print padding + "addps A44, C4"
-
-    print
-    print padding + "# Multiply C(%d,%d) by alpha." % (i+1, j+1)
-    print padding + "mulps alpha, C1"
-    print padding + "mulps alpha, C2"
-    print padding + "mulps alpha, C3"
-    print padding + "mulps alpha, C4"
-
-    print
-    print padding + "# Add accumulated C(%d,%d) to already existing." % (i+1, j+1)
-    print padding + "addps 0x0+C_OFFSET_%d%d(C), C1" % (i+1, j+1)
-    print padding + "addps 0x10+C_OFFSET_%d%d(C), C2" % (i+1, j+1)
-    print padding + "addps 0x20+C_OFFSET_%d%d(C), C3" % (i+1, j+1)
-    print padding + "addps 0x30+C_OFFSET_%d%d(C), C4" % (i+1, j+1)
-
-    print
-    print padding + "# Write out C(%d,%d) submatrix block." % (i+1, j+1)
-    print padding + "movaps C1, 0x0+C_OFFSET_%d%d(C)" % (i+1, j+1)
-    print padding + "movaps C2, 0x10+C_OFFSET_%d%d(C)" % (i+1, j+1)
-    print padding + "movaps C3, 0x20+C_OFFSET_%d%d(C)" % (i+1, j+1)
-    print padding + "movaps C4, 0x30+C_OFFSET_%d%d(C)" % (i+1, j+1)
-
-  else:
-    A_11 = box(A.i_1, A.i_1+(A.i_2-A.i_1)/2, A.j_1, A.j_1+(A.j_2-A.j_1)/2)
-    A_12 = box(A.i_1, A.i_1+(A.i_2-A.i_1)/2, A.j_1+(A.j_2-A.j_1)/2, A.j_2)
-    A_21 = box(A.i_1+(A.i_2-A.i_1)/2, A.i_2, A.j_1, A.j_1+(A.j_2-A.j_1)/2)
-    A_22 = box(A.i_1+(A.i_2-A.i_1)/2, A.i_2, A.j_1+(A.j_2-A.j_1)/2, A.j_2)
-
-    B_11 = box(B.i_1, B.i_1+(B.i_2-B.i_1)/2, B.j_1, B.j_1+(B.j_2-B.j_1)/2)
-    B_12 = box(B.i_1, B.i_1+(B.i_2-B.i_1)/2, B.j_1+(B.j_2-B.j_1)/2, B.j_2)
-    B_21 = box(B.i_1+(B.i_2-B.i_1)/2, B.i_2, B.j_1, B.j_1+(B.j_2-B.j_1)/2)
-    B_22 = box(B.i_1+(B.i_2-B.i_1)/2, B.i_2, B.j_1+(B.j_2-B.j_1)/2, B.j_2)
-
-    C_11 = box(C.i_1, C.i_1+(C.i_2-C.i_1)/2, C.j_1, C.j_1+(C.j_2-C.j_1)/2)
-    C_12 = box(C.i_1, C.i_1+(C.i_2-C.i_1)/2, C.j_1+(C.j_2-C.j_1)/2, C.j_2)
-    C_21 = box(C.i_1+(C.i_2-C.i_1)/2, C.i_2, C.j_1, C.j_1+(C.j_2-C.j_1)/2)
-    C_22 = box(C.i_1+(C.i_2-C.i_1)/2, C.i_2, C.j_1+(C.j_2-C.j_1)/2, C.j_2)
-
-    generate_Z_curve(A_11, B_11, C_11, block_counter)
-    generate_Z_curve(A_12, B_21, C_11, block_counter)
-    generate_Z_curve(A_11, B_12, C_12, block_counter)
-    generate_Z_curve(A_12, B_22, C_12, block_counter)
-    generate_Z_curve(A_21, B_11, C_21, block_counter)
-    generate_Z_curve(A_22, B_21, C_21, block_counter)
-    generate_Z_curve(A_21, B_12, C_22, block_counter)
-    generate_Z_curve(A_22, B_22, C_22, block_counter)
+  # Row-major storage.
+  return i*N+j
 
 # The main program.
 parser = optparse.OptionParser(description =
@@ -324,17 +201,17 @@ print "# Define offsets into matrix blocks."
 print
 for i in range(options.N):
   for j in range(options.N):
-    print "#define A_OFFSET_%d%d (%d*%d+%d)*64*4 // %d = 0x%x" % (i+1, j+1, i, options.N, j, (i*options.N+j)*64, (i*options.N+j)*64)
+    print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*64*4, Z_curve_index(i, j)*64*4)
 
 print
 for i in range(options.N):
   for j in range(options.N):
-    print "#define B_OFFSET_%d%d (%d*%d+%d)*16*4 // %d = 0x%x" % (i+1, j+1, i, options.N, j, (i*options.N+j)*16, (i*options.N+j)*16)
+    print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
 
 print
 for i in range(options.N):
   for j in range(options.N):
-    print "#define C_OFFSET_%d%d (%d*%d+%d)*16*4 // %d = 0x%x" % (i+1, j+1, i, options.N, j, (i*options.N+j)*16, (i*options.N+j)*16)
+    print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
 
 # Start the function prolog.
 print
@@ -359,9 +236,9 @@ print padding + "push C"
 print
 print padding + "# Copy alpha into all 4 elements of SSE register."
 print padding + "shufps $0x0, alpha, alpha"
-print
-print padding + "# Divide number of stream elements by %d to simulate stride of %d." % (options.N**3, options.N**3)
-print padding + "shr $%i, number_stream_elements" % (3*math.log(options.N)/math.log(2))
+#print
+#print padding + "# Divide number of stream elements by %d to simulate stride of %d." % (options.N**3, options.N**3)
+#print padding + "shr $%i, number_stream_elements" % (3*math.log(options.N)/math.log(2))
 print
 print padding + "# Test whether number_stream_elements is zero."
 print padding + "test number_stream_elements, number_stream_elements"
@@ -378,144 +255,139 @@ print
 print padding + ".align 16"
 print "loop:"
 print
-print padding + "# Set the base pointer using sizeof(multiply_stream_t) = 0x98."
-print padding + "imul $0x98, base_pointer, base_pointer"
+sizeof_multiply_stream_t = 3*8+2*options.N**2*4
+print padding + "# Set the base pointer using sizeof(multiply_stream_t) = %d (0x%x)." % (sizeof_multiply_stream_t, sizeof_multiply_stream_t)
+print padding + "imul $0x%x, base_pointer, base_pointer" % (sizeof_multiply_stream_t)
 print
 print padding + "# Load pointers to stream matrix blocks."
 print padding + "mov (multiply_stream, base_pointer, 1), A"
 print padding + "mov 0x8(multiply_stream, base_pointer, 1), B"
 print padding + "mov 0x10(multiply_stream, base_pointer, 1), C"
 
-if options.Z_curve_ordering:
-  generate_Z_curve(box(0, options.N, 0, options.N),
-      box(0, options.N, 0, options.N),
-      box(0, options.N, 0, options.N),
-      block_counter)
+#if options.N_unroll < options.N:
+#  # Generate outer loop code.
+#  print
+#  print padding + ".align 16"
+#  print "outer_i:"
 
-  if options.generate_checks:
+#if options.N_unroll < options.N:
+#  # Generate outer loop code.
+#  print
+#  print padding + ".align 16"
+#  print "outer_j:"
+
+for i in range(options.N):
+  for j in range(options.N):
     print
-    print padding + ".align 16"
-    print "block_%d:" % (block_counter.get())
-    block_counter.increment()
+    print padding + "# Reset C(%d,%d) matrix block accumulators." % (i+1, j+1)
+    print padding + "xorps C1, C1"
+    print padding + "xorps C2, C2"
+    print padding + "xorps C3, C3"
+    print padding + "xorps C4, C4"
 
-else:
-  #if options.N_unroll < options.N:
-  #  # Generate outer loop code.
-  #  print
-  #  print padding + ".align 16"
-  #  print "outer_i:"
-
-  #if options.N_unroll < options.N:
-  #  # Generate outer loop code.
-  #  print
-  #  print padding + ".align 16"
-  #  print "outer_j:"
-
-  for i in range(options.N):
-    for j in range(options.N):
-      print
-      print padding + "# Reset C(%d,%d) matrix block accumulators." % (i+1, j+1)
-      print padding + "xorps C1, C1"
-      print padding + "xorps C2, C2"
-      print padding + "xorps C3, C3"
-      print padding + "xorps C4, C4"
-
-      for k in range(options.N):
-        if options.generate_checks:
-          print
-          print padding + ".align 16"
-          print "block_%d:" % (block_counter.get())
-          block_counter.increment()
-
-          print
-          print padding + "# Check norm of product."
-          print padding + "movss 0x%x(multiply_stream, base_pointer), B1" % ((i*options.N+k)*4+24)
-          print padding + "mulss 0x%x(multiply_stream, base_pointer), B1" % ((k*options.N+j+options.N**2)*4+24)
-          print padding + "comiss tolerance, B1"
-          print padding + "jb block_%d" % (block_counter.get())
-
-        print
-        print padding + "# Calculate C(%d,%d) = A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1)
-        print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B1" % (0*4*4, k+1, j+1)
-        print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B2" % (1*4*4, k+1, j+1)
-        print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B3" % (2*4*4, k+1, j+1)
-        print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B4" % (3*4*4, k+1, j+1)
-
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+0)*4*4, i+1, k+1, 1, 1)
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+1)*4*4, i+1, k+1, 1, 2)
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+2)*4*4, i+1, k+1, 1, 3)
-        print padding + "mulps B1, A11"
-        print padding + "mulps B2, A12"
-        print padding + "addps A11, C1"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((0*4+3)*4*4, i+1, k+1, 1, 4)
-        print padding + "mulps B3, A13"
-        print padding + "addps A12, C1"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+0)*4*4, i+1, k+1, 2, 1)
-        print padding + "mulps B4, A14"
-        print padding + "addps A13, C1"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+1)*4*4, i+1, k+1, 2, 2)
-        print padding + "mulps B1, A21"
-        print padding + "addps A14, C1"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+2)*4*4, i+1, k+1, 2, 3)
-        print padding + "mulps B2, A22"
-        print padding + "addps A21, C2"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((1*4+3)*4*4, i+1, k+1, 2, 4)
-        print padding + "mulps B3, A23"
-        print padding + "addps A22, C2"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+0)*4*4, i+1, k+1, 3, 1)
-        print padding + "mulps B4, A24"
-        print padding + "addps A23, C2"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+1)*4*4, i+1, k+1, 3, 2)
-        print padding + "mulps B1, A31"
-        print padding + "addps A24, C2"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+2)*4*4, i+1, k+1, 3, 3)
-        print padding + "mulps B2, A32"
-        print padding + "addps A31, C3"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((2*4+3)*4*4, i+1, k+1, 3, 4)
-        print padding + "mulps B3, A33"
-        print padding + "addps A32, C3"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+0)*4*4, i+1, k+1, 4, 1)
-        print padding + "mulps B4, A34"
-        print padding + "addps A33, C3"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+1)*4*4, i+1, k+1, 4, 2)
-        print padding + "mulps B1, A41"
-        print padding + "addps A34, C3"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+2)*4*4, i+1, k+1, 4, 3)
-        print padding + "mulps B2, A42"
-        print padding + "addps A41, C4"
-        print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % ((3*4+3)*4*4, i+1, k+1, 4, 4)
-        print padding + "mulps B3, A43"
-        print padding + "addps A42, C4"
-        print padding + "mulps B4, A44"
-        print padding + "addps A43, C4"
-        print padding + "addps A44, C4"
-
+    for k in range(options.N):
       if options.generate_checks:
         print
         print padding + ".align 16"
         print "block_%d:" % (block_counter.get())
         block_counter.increment()
 
-      print
-      print padding + "# Multiply C(%d,%d) by alpha." % (i+1, j+1)
-      print padding + "mulps alpha, C1"
-      print padding + "mulps alpha, C2"
-      print padding + "mulps alpha, C3"
-      print padding + "mulps alpha, C4"
+        print
+        print padding + "# Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1)
+        print padding + "movss 0x%x(multiply_stream, base_pointer), B1" % ((i*options.N+k)*4+24)
+        print padding + "mulss 0x%x(multiply_stream, base_pointer), B1" % ((k*options.N+j+options.N**2)*4+24)
+        print padding + "comiss tolerance, B1"
+        print padding + "jb block_%d" % (block_counter.get())
+
+      #print
+      #print padding + "# for debugging..."
+      #print padding + "xorps C1, C1"
+      #print padding + "xorps C2, C2"
+      #print padding + "xorps C3, C3"
+      #print padding + "xorps C4, C4"
 
       print
-      print padding + "# Add accumulated C(%d,%d) to already existing." % (i+1, j+1)
-      print padding + "addps 0x0+C_OFFSET_%d%d(C), C1" % (i+1, j+1)
-      print padding + "addps 0x10+C_OFFSET_%d%d(C), C2" % (i+1, j+1)
-      print padding + "addps 0x20+C_OFFSET_%d%d(C), C3" % (i+1, j+1)
-      print padding + "addps 0x30+C_OFFSET_%d%d(C), C4" % (i+1, j+1)
+      print padding + "# Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1)
+      print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B1" % (0*4*4, k+1, j+1)
+      print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B2" % (1*4*4, k+1, j+1)
+      print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B3" % (2*4*4, k+1, j+1)
+      print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B4" % (3*4*4, k+1, j+1)
 
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(0, 0, 4)*4*4, i+1, k+1, 1, 1)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(0, 1, 4)*4*4, i+1, k+1, 1, 2)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(0, 2, 4)*4*4, i+1, k+1, 1, 3)
+      print padding + "mulps B1, A11"
+      print padding + "mulps B2, A12"
+      print padding + "addps A11, C1"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(0, 3, 4)*4*4, i+1, k+1, 1, 4)
+      print padding + "mulps B3, A13"
+      print padding + "addps A12, C1"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(1, 0, 4)*4*4, i+1, k+1, 2, 1)
+      print padding + "mulps B4, A14"
+      print padding + "addps A13, C1"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(1, 1, 4)*4*4, i+1, k+1, 2, 2)
+      print padding + "mulps B1, A21"
+      print padding + "addps A14, C1"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(1, 2, 4)*4*4, i+1, k+1, 2, 3)
+      print padding + "mulps B2, A22"
+      print padding + "addps A21, C2"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(1, 3, 4)*4*4, i+1, k+1, 2, 4)
+      print padding + "mulps B3, A23"
+      print padding + "addps A22, C2"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(2, 0, 4)*4*4, i+1, k+1, 3, 1)
+      print padding + "mulps B4, A24"
+      print padding + "addps A23, C2"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(2, 1, 4)*4*4, i+1, k+1, 3, 2)
+      print padding + "mulps B1, A31"
+      print padding + "addps A24, C2"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(2, 2, 4)*4*4, i+1, k+1, 3, 3)
+      print padding + "mulps B2, A32"
+      print padding + "addps A31, C3"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(2, 3, 4)*4*4, i+1, k+1, 3, 4)
+      print padding + "mulps B3, A33"
+      print padding + "addps A32, C3"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(3, 0, 4)*4*4, i+1, k+1, 4, 1)
+      print padding + "mulps B4, A34"
+      print padding + "addps A33, C3"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(3, 1, 4)*4*4, i+1, k+1, 4, 2)
+      print padding + "mulps B1, A41"
+      print padding + "addps A34, C3"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(3, 2, 4)*4*4, i+1, k+1, 4, 3)
+      print padding + "mulps B2, A42"
+      print padding + "addps A41, C4"
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(3, 3, 4)*4*4, i+1, k+1, 4, 4)
+      print padding + "mulps B3, A43"
+      print padding + "addps A42, C4"
+      print padding + "mulps B4, A44"
+      print padding + "addps A43, C4"
+      print padding + "addps A44, C4"
+
+    if options.generate_checks:
       print
-      print padding + "# Write out C(%d,%d) submatrix block." % (i+1, j+1)
-      print padding + "movaps C1, 0x0+C_OFFSET_%d%d(C)" % (i+1, j+1)
-      print padding + "movaps C2, 0x10+C_OFFSET_%d%d(C)" % (i+1, j+1)
-      print padding + "movaps C3, 0x20+C_OFFSET_%d%d(C)" % (i+1, j+1)
-      print padding + "movaps C4, 0x30+C_OFFSET_%d%d(C)" % (i+1, j+1)
+      print padding + ".align 16"
+      print "block_%d:" % (block_counter.get())
+      block_counter.increment()
+
+    print
+    print padding + "# Multiply C(%d,%d) by alpha." % (i+1, j+1)
+    print padding + "mulps alpha, C1"
+    print padding + "mulps alpha, C2"
+    print padding + "mulps alpha, C3"
+    print padding + "mulps alpha, C4"
+
+    print
+    print padding + "# Add accumulated C(%d,%d) to already existing." % (i+1, j+1)
+    print padding + "addps 0x0+C_OFFSET_%d%d(C), C1" % (i+1, j+1)
+    print padding + "addps 0x10+C_OFFSET_%d%d(C), C2" % (i+1, j+1)
+    print padding + "addps 0x20+C_OFFSET_%d%d(C), C3" % (i+1, j+1)
+    print padding + "addps 0x30+C_OFFSET_%d%d(C), C4" % (i+1, j+1)
+
+    print
+    print padding + "# Write out C(%d,%d) submatrix block." % (i+1, j+1)
+    print padding + "movaps C1, 0x0+C_OFFSET_%d%d(C)" % (i+1, j+1)
+    print padding + "movaps C2, 0x10+C_OFFSET_%d%d(C)" % (i+1, j+1)
+    print padding + "movaps C3, 0x20+C_OFFSET_%d%d(C)" % (i+1, j+1)
+    print padding + "movaps C4, 0x30+C_OFFSET_%d%d(C)" % (i+1, j+1)
 
 # End of loop.
 print
