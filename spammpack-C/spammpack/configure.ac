@@ -262,7 +262,6 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Doxyfile
 Makefile
-benchmarks/Makefile
 figures/Makefile
 prototype/Makefile
 prototype/Z_curve/Makefile

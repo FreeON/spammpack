@@ -37,7 +37,7 @@ main ()
 
   /* Construct quadtree. */
   spamm_new(8, 8, &A);
-  spamm_dense_to_spamm(8, 8, A_dense, &A);
+  spamm_dense_to_spamm(8, 8, 'N', A_dense, &A);
   linear_A = (struct linear_t*) malloc(sizeof(struct linear_t)*A.number_nonzero_blocks);
 
   /* Print tree. */

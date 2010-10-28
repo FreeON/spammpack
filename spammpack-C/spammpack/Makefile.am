@@ -4,7 +4,7 @@ CLEANFILES = *~
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src sparsekit tests benchmarks prototype figures
+SUBDIRS = src sparsekit tests prototype figures
 
 dist_data_DATA = latex/refman.pdf
 
