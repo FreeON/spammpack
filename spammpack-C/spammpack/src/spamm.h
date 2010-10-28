@@ -509,6 +509,7 @@ spamm_dense_index (const unsigned int i, const unsigned int j,
 
 void
 spamm_dense_to_spamm (const unsigned int M, const unsigned int N,
+    const char operation,
     const floating_point_t *A_dense, struct spamm_t *A);
 
 void
