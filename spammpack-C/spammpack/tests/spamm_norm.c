@@ -25,7 +25,7 @@ main ()
   norm = sqrt(norm2);
 
   spamm_new(N, N, &A);
-  spamm_dense_to_spamm(N, N, A_dense, &A);
+  spamm_dense_to_spamm(N, N, 'N', A_dense, &A);
 
   if (norm != A.norm)
   {

@@ -99,9 +99,9 @@ main ()
 #endif
 
   /* Convert matrices. */
-  spamm_dense_to_spamm(N, N, A_dense_float, &A);
-  spamm_dense_to_spamm(N, N, B_dense_float, &B);
-  spamm_dense_to_spamm(N, N, C_dense_float, &C);
+  spamm_dense_to_spamm(N, N, 'N', A_dense_float, &A);
+  spamm_dense_to_spamm(N, N, 'N', B_dense_float, &B);
+  spamm_dense_to_spamm(N, N, 'N', C_dense_float, &C);
 
 #ifdef TEST_DEBUG
   printf("A (SpAMM):\n");

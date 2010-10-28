@@ -76,9 +76,9 @@ main ()
 #endif
 
   /* Convert matrices. */
-  spamm_dense_to_spamm(L, M, A_dense, &A);
-  spamm_dense_to_spamm(M, N, B_dense, &B);
-  spamm_dense_to_spamm(L, N, C_dense, &C);
+  spamm_dense_to_spamm(L, M, 'N', A_dense, &A);
+  spamm_dense_to_spamm(M, N, 'N', B_dense, &B);
+  spamm_dense_to_spamm(L, N, 'N', C_dense, &C);
 
 #ifdef TEST_DEBUG
   printf("A (SpAMM):\n");

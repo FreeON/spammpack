@@ -55,7 +55,7 @@ main ()
       spamm_print_dense(M[i_size], N[i_size], A_dense);
 #endif
 
-      spamm_dense_to_spamm(M[i_size], N[i_size], A_dense, &A);
+      spamm_dense_to_spamm(M[i_size], N[i_size], 'N', A_dense, &A);
       spamm_tree_stats(&stats, &A);
 #ifdef DEBUG_PRINT
       printf("[create_spamm] nodes = %i, blocks = %i, tree = %i bytes, blocks = %i bytes (%1.1f%%)\n", stats.number_nodes, stats.number_dense_blocks,
