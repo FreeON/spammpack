@@ -44,7 +44,7 @@ def Z_curve_index (i, j):
 
   return result
 
-def dense_index (i, j, N):
+def row_major_index (i, j, N):
   """Return the index within a matrix block."""
 
   # Row-major storage.
@@ -82,13 +82,6 @@ parser.add_option("--no-checks",
     default = True,
     help = "generate code without any norm checks [default: %default]",
     dest = "generate_checks")
-
-parser.add_option("--Z-curve",
-    action = "store_true",
-    default = False,
-    help = """layout the multiply along a Z-curve as opposed to regular
-row-major ordering [default: %default]""",
-    dest = "Z_curve_ordering")
 
 ( options, arguments ) = parser.parse_args()
 
@@ -201,17 +194,20 @@ print "# Define offsets into matrix blocks."
 print
 for i in range(options.N):
   for j in range(options.N):
-    print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*64*4, Z_curve_index(i, j)*64*4)
+    #print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*64*4, Z_curve_index(i, j)*64*4)
+    print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*64*4, row_major_index(i, j, options.N)*64*4)
 
 print
 for i in range(options.N):
   for j in range(options.N):
-    print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
+    #print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
+    print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*16*4, row_major_index(i, j, options.N)*16*4)
 
 print
 for i in range(options.N):
   for j in range(options.N):
-    print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
+    #print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
+    print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*16*4, row_major_index(i, j, options.N)*16*4)
 
 # Start the function prolog.
 print
@@ -313,49 +309,49 @@ for i in range(options.N):
       print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B3" % (2*4*4, k+1, j+1)
       print padding + "movaps 0x%x+B_OFFSET_%d%d(B), B4" % (3*4*4, k+1, j+1)
 
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(0, 0, 4)*4*4, i+1, k+1, 1, 1)
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(0, 1, 4)*4*4, i+1, k+1, 1, 2)
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(0, 2, 4)*4*4, i+1, k+1, 1, 3)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(0, 0, 4)*4*4, i+1, k+1, 1, 1)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(0, 1, 4)*4*4, i+1, k+1, 1, 2)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(0, 2, 4)*4*4, i+1, k+1, 1, 3)
       print padding + "mulps B1, A11"
       print padding + "mulps B2, A12"
       print padding + "addps A11, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(0, 3, 4)*4*4, i+1, k+1, 1, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(0, 3, 4)*4*4, i+1, k+1, 1, 4)
       print padding + "mulps B3, A13"
       print padding + "addps A12, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(1, 0, 4)*4*4, i+1, k+1, 2, 1)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(1, 0, 4)*4*4, i+1, k+1, 2, 1)
       print padding + "mulps B4, A14"
       print padding + "addps A13, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(1, 1, 4)*4*4, i+1, k+1, 2, 2)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(1, 1, 4)*4*4, i+1, k+1, 2, 2)
       print padding + "mulps B1, A21"
       print padding + "addps A14, C1"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(1, 2, 4)*4*4, i+1, k+1, 2, 3)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(1, 2, 4)*4*4, i+1, k+1, 2, 3)
       print padding + "mulps B2, A22"
       print padding + "addps A21, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(1, 3, 4)*4*4, i+1, k+1, 2, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(1, 3, 4)*4*4, i+1, k+1, 2, 4)
       print padding + "mulps B3, A23"
       print padding + "addps A22, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(2, 0, 4)*4*4, i+1, k+1, 3, 1)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(2, 0, 4)*4*4, i+1, k+1, 3, 1)
       print padding + "mulps B4, A24"
       print padding + "addps A23, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(2, 1, 4)*4*4, i+1, k+1, 3, 2)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(2, 1, 4)*4*4, i+1, k+1, 3, 2)
       print padding + "mulps B1, A31"
       print padding + "addps A24, C2"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(2, 2, 4)*4*4, i+1, k+1, 3, 3)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(2, 2, 4)*4*4, i+1, k+1, 3, 3)
       print padding + "mulps B2, A32"
       print padding + "addps A31, C3"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(2, 3, 4)*4*4, i+1, k+1, 3, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(2, 3, 4)*4*4, i+1, k+1, 3, 4)
       print padding + "mulps B3, A33"
       print padding + "addps A32, C3"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(3, 0, 4)*4*4, i+1, k+1, 4, 1)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(3, 0, 4)*4*4, i+1, k+1, 4, 1)
       print padding + "mulps B4, A34"
       print padding + "addps A33, C3"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(3, 1, 4)*4*4, i+1, k+1, 4, 2)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(3, 1, 4)*4*4, i+1, k+1, 4, 2)
       print padding + "mulps B1, A41"
       print padding + "addps A34, C3"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(3, 2, 4)*4*4, i+1, k+1, 4, 3)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(3, 2, 4)*4*4, i+1, k+1, 4, 3)
       print padding + "mulps B2, A42"
       print padding + "addps A41, C4"
-      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (dense_index(3, 3, 4)*4*4, i+1, k+1, 4, 4)
+      print padding + "movaps 0x%x+A_OFFSET_%d%d(A), A%d%d" % (row_major_index(3, 3, 4)*4*4, i+1, k+1, 4, 4)
       print padding + "mulps B3, A43"
       print padding + "addps A42, C4"
       print padding + "mulps B4, A44"

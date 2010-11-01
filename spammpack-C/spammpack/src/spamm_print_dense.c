@@ -12,15 +12,15 @@
 void
 spamm_print_dense (const unsigned int M, const unsigned int N, const floating_point_t *A_dense)
 {
-  int i, j;
+  unsigned int i, j;
 
   assert(A_dense != NULL);
   assert(M > 0 && N > 0);
 
-  for (i = 0; i < M; ++i) {
-    for (j = 0; j < N; ++j)
+  for (i = 0; i < M; i++) {
+    for (j = 0; j < N; j++)
     {
-      printf(" % f", A_dense[spamm_dense_index(i, j, M, N)]);
+      printf(" % 7.2f", A_dense[spamm_dense_index(i, j, M, N)]);
     }
     printf("\n");
   }

@@ -41,9 +41,17 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   unsigned int number_products = 0;
   unsigned int kernel_block_N;
 
-  assert(A_node != NULL);
-  assert(B_node != NULL);
-  assert(A_node->tier == B_node->tier);
+  if (A_node == NULL || B_node == NULL)
+  {
+    /* Nothing to do here. */
+    return number_products;
+  }
+
+  if (A_node->tier != B_node->tier)
+  {
+    LOG_FATAL("There seems to be a bug here, A_node-tier != B_node->tier (%u != %u)\n", A_node->tier, B_node->tier);
+    exit(1);
+  }
 
   /* Create new node. */
   if (*C_node == NULL)

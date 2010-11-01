@@ -1,5 +1,8 @@
-AC_INIT([spammpack], [2010-06-24], [nicolasbock@gmail.com])
-AM_INIT_AUTOMAKE
+dnl vim:tw=0
+
+dnl Define some basic information of this package.
+AC_INIT([spammpack], [2010-06-24], [nicolasbock@gmail.com], [spammpack], [http://freeon.org])
+AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip])
 
 dnl Define location of m4 macros.
 AC_CONFIG_MACRO_DIR([m4])
@@ -31,10 +34,10 @@ AC_ARG_WITH([precision],
 
 if test "${with_precision}" = "single"; then
   AC_MSG_NOTICE([using single precision])
-  AC_DEFINE([FLOATING_PRECISION], [float], [Define the floating point number type])
+  AC_SUBST(FLOATING_PRECISION, [float])
 elif test "${with_precision}" = "double"; then
   AC_MSG_NOTICE([using double precision])
-  AC_DEFINE([FLOATING_PRECISION], [double], [Define the floating point number type])
+  AC_SUBST(FLOATING_PRECISION, [double])
 else
   AC_MSG_FAILURE([unknown precision: ${with_precision}])
 fi
@@ -48,7 +51,7 @@ AC_CHECK_LIB([m], [ceil],
 
 dnl Check for malloc with alignment.
 AC_DEFINE([_POSIX_C_SOURCE], [200809L], [Define POSIX to enable
-           posix_memalign()])
+           posix_memalign().])
 AC_CHECK_DECL([posix_memalign],
               [declared_posix_memalign="yes"],
               [declared_posix_memalign="no"], [])
@@ -56,7 +59,7 @@ AC_CHECK_DECL([posix_memalign],
 if test "${declared_posix_memalign}" = "yes"; then
   AC_CHECK_LIB([c], [posix_memalign],
                [AC_DEFINE([HAVE_POSIX_MEMALIGN], [1], [We can allocate aligned
-                memory])], [], [])
+                memory.])], [], [])
 fi
 
 dnl Check for blas.
@@ -72,38 +75,38 @@ if test "${enable_blas}" = "yes"; then
                  [LIBS="-lblas ${LIBS}"
                   have_blas="yes"
                   AC_DEFINE([DGEMM], [dgemm], [How many underscores are in dgemm()?])
-                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  AC_DEFINE([HAVE_BLAS], [1], [Can we use blas routines?])],
                   [], [])
     AC_CHECK_LIB([blas], [dgemm_],
                  [LIBS="-lblas ${LIBS}"
                   have_blas="yes"
                   AC_DEFINE([DGEMM], [dgemm_], [How many underscores are in dgemm()?])
-                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  AC_DEFINE([HAVE_BLAS], [1], [Can we use blas routines?])],
                   [], [])
     AC_CHECK_LIB([blas], [dgemm__],
                  [LIBS="-lblas ${LIBS}"
                   have_blas="yes"
                   AC_DEFINE([DGEMM], [dgemm__], [How many underscores are in dgemm()?])
-                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  AC_DEFINE([HAVE_BLAS], [1], [Can we use blas routines?])],
                   [], [])
   elif test "${with_precision}" = "single"; then
     AC_CHECK_LIB([blas], [sgemm],
                  [LIBS="-lblas ${LIBS}"
                   have_blas="yes"
                   AC_DEFINE([DGEMM], [sgemm], [How many underscores are in sgemm()?])
-                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  AC_DEFINE([HAVE_BLAS], [1], [Can we use blas routines?])],
                   [], [])
     AC_CHECK_LIB([blas], [sgemm_],
                  [LIBS="-lblas ${LIBS}"
                   have_blas="yes"
                   AC_DEFINE([DGEMM], [sgemm_], [How many underscores are in sgemm()?])
-                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  AC_DEFINE([HAVE_BLAS], [1], [Can we use blas routines?])],
                   [], [])
     AC_CHECK_LIB([blas], [sgemm__],
                  [LIBS="-lblas ${LIBS}"
                   have_blas="yes"
                   AC_DEFINE([DGEMM], [sgemm__], [How many underscores are in sgemm()?])
-                  AC_DEFINE([HAVE_BLAS], [1], [whether we can use blas routines])],
+                  AC_DEFINE([HAVE_BLAS], [1], [Can we use blas routines?])],
                   [], [])
   else
     AC_MSG_FAILURE([unknown precision])
@@ -122,7 +125,7 @@ AC_ARG_ENABLE([dummy-kernel], [AS_HELP_STRING([--enable-dummy-kernel],
 if test "${enable_dummy_kernel}" = "yes"; then
   AC_MSG_RESULT([yes])
   have_blas="yes"
-  AC_DEFINE([DGEMM], [spamm_sgemm_dummy], [The dummy matrix kernel])
+  AC_DEFINE([DGEMM], [spamm_sgemm_dummy], [The dummy matrix kernel.])
 else
   AC_MSG_RESULT([no])
 fi
@@ -154,7 +157,7 @@ if test "${enable_cuda}" != "no"; then
   unset old_CPPFLAGS
   unset old_LDFLAGS
   if test "${have_cuda}" = "yes"; then
-    AC_DEFINE([HAVE_CUDA], [1], [whether we can use cuda])
+    AC_DEFINE([HAVE_CUDA], [1], [Can we use cuda?])
   fi
 else
   AC_MSG_RESULT([no])
@@ -177,7 +180,7 @@ if test "${enable_PAPI}" = "yes"; then
   AC_CHECK_HEADERS([papi.h], [], [unset have_PAPI])
   AC_CHECK_LIB([papi], [PAPI_library_init], [], [unset have_PAPI])
   if test "${have_PAPI}" = "yes"; then
-    AC_DEFINE([HAVE_PAPI], [1], [whether we should use the PAPI profiling interface])
+    AC_DEFINE([HAVE_PAPI], [1], [Should we use the PAPI profiling interface?])
   else
     AC_MSG_FAILURE([PAPI requested but not available. You might have to
                     specify the PAPI header file location by adding to
@@ -195,7 +198,7 @@ have_PTHREAD="yes"
 AC_CHECK_HEADERS([pthread.h], [], [unset have_PTHREAD])
 AC_CHECK_LIB([pthread], [pthread_create], [], [unset have_PTHREAD])
 if test "${have_PTHREAD}" = "yes"; then
-  AC_DEFINE([HAVE_PTHREAD], [1], [whether we have pthread support])
+  AC_DEFINE([HAVE_PTHREAD], [1], [Do we have pthread support?])
 else
   AC_MSG_FAILURE([no pthread support])
 fi
@@ -210,7 +213,7 @@ AC_ARG_WITH([alignment], [AS_HELP_STRING([--with-alignment], [Define the
 AC_MSG_RESULT([alignment on ${have_alignment} byte boundaries])
 
 dnl Check for matrix block size.
-AC_MSG_CHECKING([for number of rows of matrix block])
+AC_MSG_CHECKING([for size of matrix block])
 AC_ARG_WITH([N-block], [AS_HELP_STRING([--with-N-block], [Define the size of a
              matrix block as NxN. The default is N = 4, i.e. matrix blocks of
              size 4x4.])],
@@ -219,13 +222,22 @@ AC_ARG_WITH([N-block], [AS_HELP_STRING([--with-N-block], [Define the size of a
 AC_MSG_RESULT([using ${have_N_block}x${have_N_block} matrix blocks])
 
 dnl Check for children node matrix.
-AC_MSG_CHECKING([for number of columns of children node matrix])
+AC_MSG_CHECKING([for size of children node matrix])
 AC_ARG_WITH([N-child], [AS_HELP_STRING([--with-N-child], [Define the size of
              the children node matrix as NxN. The default is N = 2, i.e. a 2x2
-             children node matrix, which defines a quadtree.])],
+             children node matrix, which defines a quadtree. You better not
+             change this unless you really know what you are doing.])],
              [have_N_child="${withval}"],
              [have_N_child="2"])
 AC_MSG_RESULT([using a ${have_N_child}x${have_N_child} children node matrix])
+
+if test ${have_N_child} -eq 1; then
+  AC_MSG_FAILURE([It is really pointless to define a tree in which each node has only 1 child.])
+fi
+
+if test ${have_N_child} -ne 2; then
+  AC_MSG_NOTICE([You requested to not generate a quadtree. Please fasten your seatbelt and hope for a miracle...])
+fi
 
 dnl Check for kernel depth.
 AC_MSG_CHECKING([for depth in tiers of computational kernel])
@@ -237,12 +249,18 @@ AC_ARG_WITH([kernel-depth], [AS_HELP_STRING([--with-kernel-depth], [Define
              [have_kernel_depth="2"])
 AC_MSG_RESULT([using ${have_kernel_depth} tier(s)])
 
+have_N_kernel_block=$((${have_N_child}**${have_kernel_depth}))
+have_N_kernel=$((${have_N_block}*${have_N_child}**${have_kernel_depth}))
+
+AC_MSG_NOTICE([at the kernel tier, the dense matrix block has a size of ${have_N_kernel}x${have_N_kernel} elements, representing a ${have_N_kernel_block}x${have_N_kernel_block} matrix of ${have_N_block}x${have_N_block} matrix blocks])
+
 dnl Define some constants.
-AC_DEFINE_UNQUOTED([SPAMM_ALIGNMENT], [${have_alignment}], [Define the alignment of memory allocations])
-AC_DEFINE_UNQUOTED([SPAMM_N_BLOCK], [${have_N_block}], [Define the size of a matrix block as NxN])
-AC_DEFINE_UNQUOTED([SPAMM_N_CHILD], [${have_N_child}], [Define the size of the children node matrix as NxN])
-AC_DEFINE_UNQUOTED([SPAMM_KERNEL_DEPTH], [${have_kernel_depth}], [Define the number of tiers that are allocated contiguously for the computational kernel])
-AC_DEFINE_UNQUOTED([SPAMM_N_KERNEL], [$((${have_N_block}*${have_N_child}**${have_kernel_depth}))], [Define the size of the matrix kernel as NxN])
+AC_SUBST(SPAMM_ALIGNMENT, [${have_alignment}])
+AC_SUBST(SPAMM_N_BLOCK, [${have_N_block}])
+AC_SUBST(SPAMM_N_CHILD, [${have_N_child}])
+AC_SUBST(SPAMM_KERNEL_DEPTH, [${have_kernel_depth}])
+AC_SUBST(SPAMM_N_KERNEL_BLOCK, [${have_N_kernel_block}])
+AC_SUBST(SPAMM_N_KERNEL, [${have_N_kernel}])
 
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
@@ -271,12 +289,9 @@ prototype/kernel_comparison/Makefile
 prototype/linear_quadtree/Makefile
 prototype/stream_multiply/Makefile
 src/Makefile
+src/spamm_config.h
 src/spamm_mainpage.h
 tests/Makefile
-tests/add/Makefile
-tests/ll/Makefile
-tests/mm/Makefile
-tests/multiply/Makefile
 ])
 
 AC_OUTPUT

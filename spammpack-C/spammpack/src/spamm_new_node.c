@@ -23,6 +23,11 @@ spamm_new_node ()
   node->N_upper = 0;
   node->N_lower = 0;
 
+  node->M_upper_kernel_tier = 0;
+  node->M_lower_kernel_tier = 0;
+  node->N_upper_kernel_tier = 0;
+  node->N_lower_kernel_tier = 0;
+
   node->index = 0;
 
   node->previous_i = NULL;
@@ -50,4 +55,3 @@ spamm_new_node ()
 
   return node;
 }
-
