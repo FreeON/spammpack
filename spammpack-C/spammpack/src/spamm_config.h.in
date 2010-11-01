@@ -1,0 +1,26 @@
+#if ! defined(__HAVE_SPAMM_CONFIG_H)
+#define __HAVE_SPAMM_CONFIG_H 1
+
+/* Define the floating point number type. */
+#define FLOATING_PRECISION @FLOATING_PRECISION@
+
+/* Define the alignment of memory allocations. */
+#define SPAMM_ALIGNMENT @SPAMM_ALIGNMENT@
+
+/* Define the number of tiers that are allocated contiguously for the
+   computational kernel. */
+#define SPAMM_KERNEL_DEPTH @SPAMM_KERNEL_DEPTH@
+
+/* Define the size of a matrix block as NxN. */
+#define SPAMM_N_BLOCK @SPAMM_N_BLOCK@
+
+/* Define the size of the children node matrix as NxN. */
+#define SPAMM_N_CHILD @SPAMM_N_CHILD@
+
+/* Define the size of the matrix kernel as NxN single elements. */
+#define SPAMM_N_KERNEL @SPAMM_N_KERNEL@
+
+/* Define the size of the kernel matrix as NxN basic kernel blocks. */
+#define SPAMM_N_KERNEL_BLOCK @SPAMM_N_KERNEL_BLOCK@
+
+#endif

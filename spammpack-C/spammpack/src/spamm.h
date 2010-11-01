@@ -6,6 +6,7 @@
 #define __SPAMM_H 1
 
 #include "config.h"
+#include "spamm_config.h"
 #include "spamm_ll.h"
 #include "spamm_mm.h"
 #include "spamm_kernel.h"
@@ -282,6 +283,11 @@ struct spamm_node_t
    */
   unsigned int N_upper;
 
+  unsigned int M_lower_kernel_tier;
+  unsigned int M_upper_kernel_tier;
+  unsigned int N_lower_kernel_tier;
+  unsigned int N_upper_kernel_tier;
+
   /** The linear index of this block along the curve. */
   unsigned int index;
 
@@ -548,6 +554,16 @@ spamm_multiply_scalar (const floating_point_t alpha, struct spamm_t *A);
 
 void
 spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A);
+
+struct spamm_node_t *
+spamm_new_childnode (const unsigned int tier,
+    const unsigned int tree_depth,
+    const unsigned int M_lower, const unsigned int M_upper,
+    const unsigned int N_lower, const unsigned int N_upper,
+    const unsigned int M_lower_kernel_tier, const unsigned int M_upper_kernel_tier,
+    const unsigned int N_lower_kernel_tier, const unsigned int N_upper_kernel_tier,
+    const unsigned int linear_tier, const unsigned int kernel_tier,
+    floating_point_t *block_dense, floating_point_t *block_dense_dilated);
 
 struct spamm_linear_quadtree_t*
 spamm_new_linear_quadtree_node (const unsigned int M, const unsigned int N, struct spamm_mm_t *memory);

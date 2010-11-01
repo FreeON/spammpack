@@ -14,10 +14,10 @@ spamm_print_spamm (const struct spamm_t *A)
 
   assert(A != NULL);
 
-  for (i = 0; i < A->M; ++i) {
-    for (j = 0; j < A->N; ++j)
+  for (i = 0; i < A->M; i++) {
+    for (j = 0; j < A->N; j++)
     {
-      printf(" % f", spamm_get(i, j, A));
+      printf(" % 7.2f", spamm_get(i, j, A));
     }
     printf("\n");
   }

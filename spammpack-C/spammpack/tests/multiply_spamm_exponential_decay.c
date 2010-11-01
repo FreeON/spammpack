@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #define RANDOM_ELEMENTS
+//#define TEST_DEBUG
 
 int
 main ()
@@ -26,7 +27,7 @@ main ()
   double alpha = 1.2;
   double beta = 0.5;
 
-  unsigned int N = 500;
+  unsigned int N = 512;
 
   double decayconstant = 3;
 
@@ -53,14 +54,14 @@ main ()
   C_dense = (double*) malloc(sizeof(double)*N*N);
 
   /* Fill matrices with random data. */
-  for (i = 0; i < N; ++i)
+  for (i = 0; i < N; i++)
   {
 #ifdef RANDOM_ELEMENTS
     A_dense[spamm_dense_index(i, i, N, N)] = rand()/(double) RAND_MAX;
     B_dense[spamm_dense_index(i, i, N, N)] = rand()/(double) RAND_MAX;
     C_dense[spamm_dense_index(i, i, N, N)] = rand()/(double) RAND_MAX;
 #endif
-    for (j = 0; j < N; ++j)
+    for (j = 0; j < N; j++)
     {
 #ifdef RANDOM_ELEMENTS
       if (j != i)
@@ -113,8 +114,8 @@ main ()
 #endif
 
   /* Multiply. */
-  for (i = 0; i < N; ++i) {
-    for (j = 0; j < N; ++j) {
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++) {
       C_dense[spamm_dense_index(i, j, N, N)] *= beta;
       for (k = 0; k < N; ++k)
       {
@@ -143,8 +144,8 @@ main ()
 
   /* Compare. */
   max_diff = 0;
-  for (i = 0; i < N; ++i) {
-    for (j = 0; j < N; ++j)
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
     {
       if (fabs(C_dense[spamm_dense_index(i, j, N, N)]-spamm_get(i, j, &C)) > max_diff)
       {

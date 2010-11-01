@@ -10,6 +10,7 @@ libspamm_la_SOURCES = \
 
 matrix_tree_sources = \
   spamm.h \
+  spamm_config.h \
   spamm_add.c \
   spamm_allocate.c \
   spamm_block_index.c \
@@ -29,6 +30,7 @@ matrix_tree_sources = \
   spamm_multiply.c \
   spamm_multiply_scalar.c \
   spamm_new.c \
+  spamm_new_childnode.c \
   spamm_new_linear_quadtree_node.c \
   spamm_new_node.c \
   spamm_number_nonzero.c \

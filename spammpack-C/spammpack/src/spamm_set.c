@@ -63,52 +63,15 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
           if (node->child[l][k] == NULL)
           {
             /* Create new child node. */
-            node->child[l][k] = spamm_new_node();
-            child_node = node->child[l][k];
-
-            child_node->tier = node->tier+1;
-            child_node->tree_depth = node->tree_depth;
-
-            child_node->M_lower = node->M_lower+l*(node->M_upper-node->M_lower)/SPAMM_N_CHILD;
-            child_node->M_upper = node->M_lower+(l+1)*(node->M_upper-node->M_lower)/SPAMM_N_CHILD;
-            child_node->N_lower = node->N_lower+k*(node->N_upper-node->N_lower)/SPAMM_N_CHILD;
-            child_node->N_upper = node->N_lower+(k+1)*(node->N_upper-node->N_lower)/SPAMM_N_CHILD;
-
-            child_node->linear_tier = node->linear_tier;
-            child_node->kernel_tier = node->kernel_tier;
-
-            /* Check if we are at the kernel level. */
-            if (child_node->tier == child_node->kernel_tier)
-            {
-              /* Allocate contiguous matrix block. */
-              child_node->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL);
-              for (m = 0; m < SPAMM_N_KERNEL; ++m) {
-                for (n = 0; n < SPAMM_N_KERNEL; ++n)
-                {
-                  child_node->block_dense[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)] = 0.0;
-                }
-              }
-
-              /* Allocate contiguous matrix block for dilated block. */
-              child_node->block_dense_dilated = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL*4);
-              for (m = 0; m < SPAMM_N_KERNEL; ++m) {
-                for (n = 0; n < SPAMM_N_KERNEL; ++n)
-                {
-                  child_node->block_dense_dilated[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+0] = 0.0;
-                  child_node->block_dense_dilated[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+1] = 0.0;
-                  child_node->block_dense_dilated[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+2] = 0.0;
-                  child_node->block_dense_dilated[spamm_dense_index(m, n, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+3] = 0.0;
-                }
-              }
-            }
-
-            else if (child_node->tier > child_node->kernel_tier)
-            {
-              /* Point into the contiguous matrix block. */
-              kernel_block_N = pow(SPAMM_N_CHILD, child_node->tree_depth-child_node->tier)*SPAMM_N_BLOCK;
-              child_node->block_dense = node->block_dense+kernel_block_N*kernel_block_N*(SPAMM_N_CHILD*l+k);
-              child_node->block_dense_dilated = node->block_dense_dilated+kernel_block_N*4*kernel_block_N*(SPAMM_N_CHILD*l+k);
-            }
+            node->child[l][k] = spamm_new_childnode(node->tier+1, node->tree_depth,
+                node->M_lower+l*(node->M_upper-node->M_lower)/SPAMM_N_CHILD,
+                node->M_lower+(l+1)*(node->M_upper-node->M_lower)/SPAMM_N_CHILD,
+                node->N_lower+k*(node->N_upper-node->N_lower)/SPAMM_N_CHILD,
+                node->N_lower+(k+1)*(node->N_upper-node->N_lower)/SPAMM_N_CHILD,
+                node->M_lower_kernel_tier, node->M_upper_kernel_tier,
+                node->N_lower_kernel_tier, node->N_upper_kernel_tier,
+                node->linear_tier, node->kernel_tier,
+                node->block_dense, node->block_dense_dilated);
           }
 
           node->norm2 -= node->child[l][k]->norm2;
@@ -147,47 +110,14 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
   /* If the value is zero, we don't have to store it. */
   if (Aij != 0.0)
   {
-    //printf("setting A(%u,%u) to %f\n", i+1, j+1, Aij);
-
     /* Recursively find the leaf node that stores this element. */
     if (A->root == NULL)
     {
-      A->root = spamm_new_node();
-
-      A->root->tree_depth = A->tree_depth;
-
-      A->root->M_lower = 0;
-      A->root->M_upper = A->N_padded;
-      A->root->N_lower = 0;
-      A->root->N_upper = A->N_padded;
-
-      A->root->linear_tier = A->linear_tier;
-      A->root->kernel_tier = A->kernel_tier;
-
-      /* Check if we are at the kernel level. */
-      if (A->root->tier == A->root->kernel_tier)
-      {
-        /* Reset newly allocated block to zero. */
-        A->root->block_dense = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL);
-        for (l = 0; l < SPAMM_N_KERNEL; l++) {
-          for (k = 0; k < SPAMM_N_KERNEL; k++)
-          {
-            A->root->block_dense[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)] = 0.0;
-          }
-        }
-
-        /* Allocate contiguous matrix block for dilated block. */
-        A->root->block_dense_dilated = (floating_point_t*) spamm_allocate(sizeof(floating_point_t)*SPAMM_N_KERNEL*SPAMM_N_KERNEL*4);
-        for (l = 0; l < SPAMM_N_KERNEL; ++l) {
-          for (k = 0; k < SPAMM_N_KERNEL; ++k)
-          {
-            A->root->block_dense_dilated[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+0] = 0.0;
-            A->root->block_dense_dilated[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+1] = 0.0;
-            A->root->block_dense_dilated[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+2] = 0.0;
-            A->root->block_dense_dilated[spamm_dense_index(l, k, SPAMM_N_KERNEL, SPAMM_N_KERNEL)*4+3] = 0.0;
-          }
-        }
-      }
+      A->root = spamm_new_childnode(0, A->tree_depth,
+          0, A->N_padded, 0, A->N_padded,
+          0, 0, 0, 0,
+          A->linear_tier, A->kernel_tier,
+          NULL, NULL);
     }
 
     spamm_set_element(i, j, Aij, A->root);
