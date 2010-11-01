@@ -44,8 +44,8 @@
 //#define STREAM_KERNEL_18
 //#define STREAM_KERNEL_19
 //#define STREAM_KERNEL_20
-//#define STREAM_KERNEL_21
-#define STREAM_KERNEL_22
+#define STREAM_KERNEL_21
+//#define STREAM_KERNEL_22
 //#define POINTER_CHASE
 //#define C_KERNEL
 //#define NAIVE_KERNEL

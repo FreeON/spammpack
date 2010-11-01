@@ -83,6 +83,13 @@ parser.add_option("--no-checks",
     help = "generate code without any norm checks [default: %default]",
     dest = "generate_checks")
 
+parser.add_option("--Z-curve",
+    action = "store_true",
+    default = False,
+    help = """layout the multiply along a Z-curve as opposed to regular
+row-major ordering [default: %default]""",
+    dest = "Z_curve_ordering")
+
 ( options, arguments ) = parser.parse_args()
 
 # Check N.
@@ -194,20 +201,26 @@ print "# Define offsets into matrix blocks."
 print
 for i in range(options.N):
   for j in range(options.N):
-    #print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*64*4, Z_curve_index(i, j)*64*4)
-    print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*64*4, row_major_index(i, j, options.N)*64*4)
+    if options.Z_curve_ordering:
+      print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*64*4, Z_curve_index(i, j)*64*4)
+    else:
+      print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*64*4, row_major_index(i, j, options.N)*64*4)
 
 print
 for i in range(options.N):
   for j in range(options.N):
-    #print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
-    print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*16*4, row_major_index(i, j, options.N)*16*4)
+    if options.Z_curve_ordering:
+      print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
+    else:
+      print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*16*4, row_major_index(i, j, options.N)*16*4)
 
 print
 for i in range(options.N):
   for j in range(options.N):
-    #print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
-    print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*16*4, row_major_index(i, j, options.N)*16*4)
+    if options.Z_curve_ordering:
+      print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
+    else:
+      print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*16*4, row_major_index(i, j, options.N)*16*4)
 
 # Start the function prolog.
 print
