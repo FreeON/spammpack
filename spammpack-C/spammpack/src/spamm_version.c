@@ -11,8 +11,9 @@
 char *
 spamm_version ()
 {
-  char *version = (char*) malloc(sizeof(char)*(strlen(PACKAGE_VERSION)+1));
+  unsigned int length = strlen(PACKAGE_VERSION)+2+strlen(COMMIT_TAG)+1+1;
+  char *version = (char*) malloc(sizeof(char)*length);
 
-  strncpy(version, PACKAGE_VERSION, strlen(PACKAGE_VERSION)+1);
+  snprintf(version, length, "%s (%s)", PACKAGE_VERSION, COMMIT_TAG);
   return version;
 }

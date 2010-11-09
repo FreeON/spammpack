@@ -274,6 +274,7 @@ else
   localversion="unknown"
 fi
 AC_SUBST(LOCAL_VERSION, [${branch}:${localversion}])
+AC_SUBST(COMMIT_TAG, [${localversion}])
 AC_MSG_NOTICE([configuring local version ${branch}:${localversion}])
 
 dnl Write results.
