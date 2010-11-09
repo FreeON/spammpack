@@ -1,6 +1,13 @@
 #include "spamm.h"
 #include <math.h>
 
+/** Allocate new child node.
+ *
+ * @param tier The tier this child node is on.
+ * @param tree_depth The depth of the tree.
+ *
+ * @return A newly alloated child node.
+ */
 struct spamm_node_t *
 spamm_new_childnode (const unsigned int tier,
     const unsigned int tree_depth,
