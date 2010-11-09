@@ -371,6 +371,8 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
       gettimeofday(&stop, NULL);
       LOG_INFO("symbolic multiply: placed %u elements into stream, %f s\n", number_multiply_stream_elements, (stop.tv_sec-start.tv_sec)+(stop.tv_usec-start.tv_usec)/(double) 1e6);
 
+      break;
+
       gettimeofday(&start, NULL);
       spamm_stream_kernel(number_multiply_stream_elements, alpha, tolerance, multiply_stream);
       gettimeofday(&stop, NULL);
