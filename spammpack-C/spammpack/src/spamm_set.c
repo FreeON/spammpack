@@ -108,8 +108,8 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
   if (j >= A->N) { LOG_FATAL("(j = %i) >= (N = %i)\n", j, A->N); exit(1); }
 
   /* If the value is zero, we don't have to store it. */
-  if (Aij != 0.0)
-  {
+  //if (Aij != 0.0)
+  //{
     /* Recursively find the leaf node that stores this element. */
     if (A->root == NULL)
     {
@@ -124,12 +124,12 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
 
     /* Set norm. */
     A->norm = A->root->norm;
-  }
+  //}
 
-  else
-  {
-    result = SPAMM_RESULT_ZERO_ELEMENT;
-  }
+  //else
+  //{
+    //result = SPAMM_RESULT_ZERO_ELEMENT;
+  //}
 
   return result;
 }
