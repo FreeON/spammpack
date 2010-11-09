@@ -56,20 +56,22 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   /* Create new node. */
   if (*C_node == NULL)
   {
-    LOG2_DEBUG("creating new C node\n");
+    if (A_node->tier == 0)
+    {
+    LOG2_DEBUG("creating new C root node\n");
 
-    *C_node = spamm_new_node();
+    *C_node = spamm_new_childnode(0, A_node->tree_depth,
+        A_node->M_lower, A_node->N_upper, B_node->N_lower, B_node->N_upper,
+        0, 0, 0, 0,
+        A_node->linear_tier, A_node->kernel_tier,
+        NULL, NULL);
+    }
 
-    (*C_node)->tier = A_node->tier;
-    (*C_node)->tree_depth = A_node->tree_depth;
-
-    (*C_node)->M_lower = A_node->M_lower;
-    (*C_node)->M_upper = A_node->M_upper;
-    (*C_node)->N_lower = B_node->N_lower;
-    (*C_node)->N_upper = B_node->N_upper;
-
-    (*C_node)->linear_tier = A_node->linear_tier;
-    (*C_node)->kernel_tier = A_node->kernel_tier;
+    else
+    {
+      LOG2_FATAL("C_node is not set but we are not at the root\n");
+      exit(1);
+    }
   }
 
   /* Do some work if at the kernel tier. */
