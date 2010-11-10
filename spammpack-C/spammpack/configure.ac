@@ -2,7 +2,8 @@ dnl vim:tw=0
 
 dnl Define some basic information of this package.
 AC_INIT([spammpack], [2010-06-24], [nicolasbock@gmail.com], [spammpack], [http://freeon.org])
-AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip])
+AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
+AM_SILENT_RULES([yes])
 
 dnl Define location of m4 macros.
 AC_CONFIG_MACRO_DIR([m4])
