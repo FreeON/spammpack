@@ -58,13 +58,13 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   {
     if (A_node->tier == 0)
     {
-    LOG2_DEBUG("creating new C root node\n");
+      LOG2_DEBUG("creating new C root node\n");
 
-    *C_node = spamm_new_childnode(0, A_node->tree_depth,
-        A_node->M_lower, A_node->N_upper, B_node->N_lower, B_node->N_upper,
-        0, 0, 0, 0,
-        A_node->linear_tier, A_node->kernel_tier,
-        NULL, NULL);
+      *C_node = spamm_new_childnode(0, A_node->tree_depth,
+          A_node->M_lower, A_node->N_upper, B_node->N_lower, B_node->N_upper,
+          0, 0, 0, 0,
+          A_node->linear_tier, A_node->kernel_tier,
+          NULL, NULL);
     }
 
     else

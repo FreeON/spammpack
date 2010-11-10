@@ -26,4 +26,7 @@
 /* Define the git commit tag for fine-grained version information. */
 #define COMMIT_TAG "@COMMIT_TAG@"
 
+/* Enable logging */
+@ENABLE_LOGGING@
+
 #endif
