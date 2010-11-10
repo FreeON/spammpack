@@ -71,7 +71,11 @@ enum spamm_log_severity_t
  * @param format Format string. See printf() for a detailed description of its
  *               syntax.
  */
+#ifdef ENABLE_LOGGING
 #define LOG_INFO(format, ...) spamm_log(info, format, __FILE__, __LINE__, __VA_ARGS__)
+#else
+#define LOG_INFO(format, ...)
+#endif
 
 /** Define shortcut macro for logging.
  *
@@ -84,7 +88,11 @@ enum spamm_log_severity_t
  * @param format Format string. See printf() for a detailed description of its
  *               syntax.
  */
+#ifdef ENABLE_LOGGING
 #define LOG2_INFO(format) spamm_log(info, format, __FILE__, __LINE__)
+#else
+#define LOG2_INFO(format)
+#endif
 
 /** Define shortcut macro for logging.
  *
@@ -97,7 +105,11 @@ enum spamm_log_severity_t
  * @param format Format string. See printf() for a detailed description of its
  *               syntax.
  */
+#ifdef ENABLE_LOGGING
 #define LOG_DEBUG(format, ...) spamm_log(debug, format, __FILE__, __LINE__, __VA_ARGS__)
+#else
+#define LOG_DEBUG(format, ...)
+#endif
 
 /** Define shortcut macro for logging.
  *
@@ -110,7 +122,11 @@ enum spamm_log_severity_t
  * @param format Format string. See printf() for a detailed description of its
  *               syntax.
  */
+#ifdef ENABLE_LOGGING
 #define LOG2_DEBUG(format) spamm_log(debug, format, __FILE__, __LINE__)
+#else
+#define LOG2_DEBUG(format)
+#endif
 
 /* Definition of return codes. */
 

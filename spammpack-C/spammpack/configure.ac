@@ -204,6 +204,20 @@ else
   AC_MSG_FAILURE([no pthread support])
 fi
 
+dnl Check for logging.
+AC_MSG_CHECKING([whether to enable logging])
+AC_ARG_ENABLE([logging], [AS_HELP_STRING([--disable-logging],
+              [disables logging output])],
+              [], [enable_logging="yes"])
+
+if test "${enable_logging}" = "yes"; then
+  AC_SUBST(ENABLE_LOGGING, ["#define ENABLE_LOGGING 1"])
+  AC_MSG_RESULT([yes])
+else
+  AC_SUBST(ENABLE_LOGGING, ["/* #undef ENABLE_LOGGING */"])
+  AC_MSG_RESULT([no])
+fi
+
 dnl Check for memory alignment.
 AC_MSG_CHECKING([for memory alignment])
 AC_ARG_WITH([alignment], [AS_HELP_STRING([--with-alignment], [Define the
