@@ -29,22 +29,6 @@ spamm_multiply_scalar_node (const floating_point_t alpha, struct spamm_node_t *n
     }
   }
 
-  else if (node->linear_quadtree != NULL)
-  {
-    iterator = spamm_ll_iterator_new(node->linear_quadtree);
-    for (linear_node = spamm_ll_iterator_first(iterator); linear_node != NULL; linear_node = spamm_ll_iterator_next(iterator))
-    {
-      linear_element = linear_node->data;
-      for (i = 0; i < linear_element->M; ++i) {
-        for (j = 0; j < linear_element->N; ++j)
-        {
-          linear_element->block_dense[spamm_dense_index(i, j, linear_element->M, linear_element->N)] *= alpha;
-        }
-      }
-    }
-    spamm_ll_iterator_delete(&iterator);
-  }
-
   else
   {
     for (i = 0; i < SPAMM_N_CHILD; ++i) {

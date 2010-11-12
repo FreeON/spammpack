@@ -7,8 +7,6 @@
 
 #include "config.h"
 #include "spamm_config.h"
-#include "spamm_ll.h"
-#include "spamm_mm.h"
 #include "spamm_kernel.h"
 #include <stdio.h>
 
@@ -216,15 +214,6 @@ struct spamm_t
   /** The depth of the tree. */
   unsigned int tree_depth;
 
-  /** Contiguous linear quadtree storage.
-   *
-   * Nodes in tier >= linear_tier are stored in linear quadtree format and
-   * allocated in contiguous chunks. This helps with the bandwidth/latency
-   * tradeoff during parallel data distribution. Legal value range:
-   * linear_tier > 0.
-   */
-  unsigned int linear_tier;
-
   /** The kernel tier determines at which point the SpAMM kernel will get
    * involved.
    *
@@ -262,15 +251,6 @@ struct spamm_node_t
    */
   unsigned int kernel_tier;
 
-  /** Contiguous linear quadtree storage.
-   *
-   * Nodes in tier >= linear_tier are stored in linear quadtree format and
-   * allocated in contiguous chunks. This helps with the bandwidth/latency
-   * tradeoff during parallel data distribution. Legal value range:
-   * linear_tier > 0.
-   */
-  unsigned int linear_tier;
-
   /** The rows of the padded matrix covered in this node.
    *
    * The indices are meant as [M_lower, M_upper[, i.e. the upper limit is not
@@ -306,25 +286,6 @@ struct spamm_node_t
 
   /** The linear index of this block along the curve. */
   unsigned int index;
-
-  /** The linear quadtree.
-   *
-   * A packed tree stores a linear quadtree at the linear_tier, replacing the
-   * quadtree that was there before. The elements of the linked list at
-   * linear_quadtree are of type spamm_linear_quadtree_t.
-   */
-  struct spamm_ll_t *linear_quadtree;
-
-  /** The linear quadtree default memory chunksize.
-   *
-   * This is set here to provide a default value for the creation of linear
-   * quadtrees. Possibly should be moved someplace else.
-   */
-  unsigned int linear_quadtree_default_chunksize;
-
-  /** The memory that holds the linear quadtree.
-   */
-  struct spamm_mm_t *linear_quadtree_memory;
 
   /** The Frobenius norm of the matrix underneath this node. */
   floating_point_t norm;
@@ -543,11 +504,8 @@ spamm_new_childnode (const unsigned int tier,
     const unsigned int N_lower, const unsigned int N_upper,
     const unsigned int M_lower_kernel_tier, const unsigned int M_upper_kernel_tier,
     const unsigned int N_lower_kernel_tier, const unsigned int N_upper_kernel_tier,
-    const unsigned int linear_tier, const unsigned int kernel_tier,
+    const unsigned int kernel_tier,
     floating_point_t *block_dense, floating_point_t *block_dense_dilated);
-
-struct spamm_linear_quadtree_t*
-spamm_new_linear_quadtree_node (const unsigned int M, const unsigned int N, struct spamm_mm_t *memory);
 
 struct spamm_node_t *
 spamm_new_node ();
@@ -557,9 +515,6 @@ spamm_number_nonzero (const struct spamm_t *A);
 
 void
 spamm_print_dense (const unsigned int M, const unsigned int N, const floating_point_t *A_dense);
-
-void
-spamm_print_multiply_stream (struct spamm_ll_t *stream);
 
 void
 spamm_print_node (const struct spamm_node_t *node);

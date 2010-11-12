@@ -49,8 +49,6 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
     (*B_node)->M_upper = A_node->M_upper;
     (*B_node)->N_lower = A_node->N_lower;
     (*B_node)->N_upper = A_node->N_upper;
-
-    (*B_node)->linear_tier = A_node->linear_tier;
   }
 
   /* Decide on how to recurse further. */
@@ -73,8 +71,6 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
         new_node->M_upper = (*B_node)->M_lower+(i+1)*((*B_node)->M_upper-(*B_node)->M_lower)/SPAMM_N_CHILD;
         new_node->N_lower = (*B_node)->N_lower+j*((*B_node)->N_upper-(*B_node)->N_lower)/SPAMM_N_CHILD;
         new_node->N_upper = (*B_node)->N_lower+(j+1)*((*B_node)->N_upper-(*B_node)->N_lower)/SPAMM_N_CHILD;
-
-        new_node->linear_tier = (*B_node)->linear_tier;
       }
     }
   }
@@ -91,14 +87,6 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
         (*B_node)->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] = 0;
       }
     }
-  }
-
-  if (A_node != NULL && A_node->linear_quadtree != NULL && (*B_node)->linear_quadtree == NULL)
-  {
-    /* Create a new linear quadtree in B. */
-    LOG2_DEBUG("A has linear quadtree, B does not.\n");
-    (*B_node)->linear_quadtree = spamm_ll_new();
-    (*B_node)->linear_quadtree_memory = spamm_mm_new(A_node->linear_quadtree_memory->chunksize);
   }
 
   if ((*B_node)->child != NULL)
@@ -155,84 +143,6 @@ spamm_add_node (const floating_point_t alpha, const struct spamm_node_t *A_node,
       }
     }
   }
-
-  else if ((*B_node)->linear_quadtree != NULL)
-  {
-    LOG2_DEBUG("B has a linear quadtree.\n");
-
-    /* Multiply B with beta. */
-    iterator_B = spamm_ll_iterator_new((*B_node)->linear_quadtree);
-    for (linear_node_B = spamm_ll_iterator_first(iterator_B); linear_node_B != NULL; linear_node_B = spamm_ll_iterator_next(iterator_B))
-    {
-      linear_B = linear_node_B->data;
-      for (i = 0; i < SPAMM_N_BLOCK; ++i) {
-        for (j = 0; j < SPAMM_N_BLOCK; ++j)
-        {
-          linear_B->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] *= beta;
-        }
-      }
-    }
-    spamm_ll_iterator_delete(&iterator_B);
-
-    /* Add to B to A. */
-    if (A_node != NULL && A_node->linear_quadtree != NULL)
-    {
-      LOG2_DEBUG("adding existing linear quadtree of A to B.\n");
-
-      iterator_A = spamm_ll_iterator_new(A_node->linear_quadtree);
-      for (linear_node_A = spamm_ll_iterator_first(iterator_A); linear_node_A != NULL; linear_node_A = spamm_ll_iterator_next(iterator_A))
-      {
-        linear_A = linear_node_A->data;
-
-        spamm_int_to_binary(linear_A->index, A_node->tree_depth*2, binary_string);
-        LOG_DEBUG("found block in A: %s\n", binary_string);
-
-        /* Search B to find whether we have a matching block that we can add.
-         * If not, we need to create a new one.
-         */
-        linear_B = NULL;
-        iterator_B = spamm_ll_iterator_new((*B_node)->linear_quadtree);
-        for (linear_node_B = spamm_ll_iterator_first(iterator_B); linear_node_B != NULL; linear_node_B = spamm_ll_iterator_next(iterator_B))
-        {
-          linear_B = linear_node_B->data;
-          if (linear_A->index == linear_B->index)
-          {
-            /* Found matching block in B. */
-            spamm_int_to_binary(linear_A->index, A_node->tree_depth*2, binary_string);
-            LOG_DEBUG("found matching block in B: index = %s\n", binary_string);
-            break;
-          }
-        }
-        spamm_ll_iterator_delete(&iterator_B);
-
-        if (linear_B == NULL || (linear_B != NULL && linear_A->index != linear_B->index))
-        {
-          /* We didn't find a matching block in B. Create a new one. */
-          LOG2_DEBUG("could not find matching block in B. Creating new one.\n");
-          linear_B = spamm_new_linear_quadtree_node(SPAMM_N_BLOCK, SPAMM_N_BLOCK, (*B_node)->linear_quadtree_memory);
-          linear_B->index = linear_A->index;
-          spamm_ll_append(linear_B, (*B_node)->linear_quadtree);
-
-          for (i = 0; i < SPAMM_N_BLOCK; ++i) {
-            for (j = 0; j < SPAMM_N_BLOCK; ++j)
-            {
-              linear_B->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] = 0.0;
-            }
-          }
-        }
-
-        /* Add blocks of A and B. */
-        LOG2_DEBUG("adding A and B blocks\n");
-        for (i = 0; i < SPAMM_N_BLOCK; ++i) {
-          for (j = 0; j < SPAMM_N_BLOCK; ++j)
-          {
-            linear_B->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] += alpha*linear_A->block_dense[spamm_dense_index(i, j, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
-          }
-        }
-      }
-      spamm_ll_iterator_delete(&iterator_A);
-    }
-  }
 }
 
 /** Calculate
@@ -259,12 +169,6 @@ spamm_add (const floating_point_t alpha, const struct spamm_t *A, const floating
   if (A->N != B->N)
   {
     LOG_FATAL("matrix size mismatch, A->N = %i, B->N = %i\n", A->N, B->N);
-    exit(1);
-  }
-
-  if (A->linear_tier != B->linear_tier)
-  {
-    LOG_FATAL("linear_tier mismatch, A->linear_tier = %u, B->linear_tier = %u\n", A->linear_tier, B->linear_tier);
     exit(1);
   }
 

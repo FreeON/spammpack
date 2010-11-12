@@ -61,10 +61,6 @@ spamm_new (const unsigned int M, const unsigned int N, struct spamm_t *A)
   /* Set the kernel tier. */
   A->kernel_tier = A->tree_depth-SPAMM_KERNEL_DEPTH;
 
-  /* Set the linear tier to depth+1 to indicate that we don't have any linear
-   * trees anywhere. */
-  A->linear_tier = A->tree_depth+1;
-
   A->number_nonzero_blocks = 0;
 
   A->root = NULL;
