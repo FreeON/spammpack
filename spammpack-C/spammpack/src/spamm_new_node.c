@@ -30,13 +30,6 @@ spamm_new_node ()
 
   node->index = 0;
 
-  node->previous_i = NULL;
-  node->next_i = NULL;
-  node->previous_j = NULL;
-  node->next_j = NULL;
-
-  node->ordering = none;
-
   for (i = 0; i < SPAMM_N_CHILD; i++) {
     for (j = 0; j < SPAMM_N_CHILD; j++)
     {
