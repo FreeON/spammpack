@@ -56,9 +56,9 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
       for (k = 0; k < SPAMM_N_CHILD; k++)
       {
         if (i >= (node->M_lower+(node->M_upper-node->M_lower)*l/SPAMM_N_CHILD) &&
-            i < (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/SPAMM_N_CHILD) &&
+            i <  (node->M_lower+(node->M_upper-node->M_lower)*(l+1)/SPAMM_N_CHILD) &&
             j >= (node->N_lower+(node->N_upper-node->N_lower)*k/SPAMM_N_CHILD) &&
-            j < (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/SPAMM_N_CHILD))
+            j <  (node->N_lower+(node->N_upper-node->N_lower)*(k+1)/SPAMM_N_CHILD))
         {
           if (node->child[l][k] == NULL)
           {
@@ -107,27 +107,26 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
   if (j >= A->N) { LOG_FATAL("(j = %i) >= (N = %i)\n", j, A->N); exit(1); }
 
   /* If the value is zero, we don't have to store it. */
-  //if (Aij != 0.0)
-  //{
+  if (Aij != 0.0)
+  {
     /* Recursively find the leaf node that stores this element. */
     if (A->root == NULL)
     {
       A->root = spamm_new_childnode(0, A->tree_depth,
           0, A->N_padded, 0, A->N_padded,
-          0, 0, 0, 0,
-          A->kernel_tier, NULL, NULL);
+          0, 0, 0, 0, A->kernel_tier, NULL, NULL);
     }
 
     spamm_set_element(i, j, Aij, A->root);
 
     /* Set norm. */
     A->norm = A->root->norm;
-  //}
+  }
 
-  //else
-  //{
-    //result = SPAMM_RESULT_ZERO_ELEMENT;
-  //}
+  else
+  {
+    result = SPAMM_RESULT_ZERO_ELEMENT;
+  }
 
   return result;
 }
