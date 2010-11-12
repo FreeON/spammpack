@@ -15,6 +15,8 @@ CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/src/spamm_mainpage.h.in \
   $(top_srcdir)/src/spamm_config.h.in
 
+dist: docs
+
 docs :
 	doxygen
 	$(MAKE) -C latex
