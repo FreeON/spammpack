@@ -307,41 +307,6 @@ struct spamm_node_t
   /** The linear index of this block along the curve. */
   unsigned int index;
 
-  /** Link to previous spamm_node_t in linear quadtree in i sorting.
-   *
-   * In tier >= linear_tier the tree nodes are also linked in a linear
-   * quadtree. The linear tree is sorted on i and on j. This is the i part of
-   * the links.
-   */
-  struct spamm_node_t *previous_i;
-
-  /** Link to next spamm_node_t in linear quadtree in i sorting.
-   *
-   * In tier >= linear_tier the tree nodes are also linked in a linear
-   * quadtree. The linear tree is sorted on i and on j. This is the i part of
-   * the links.
-   */
-  struct spamm_node_t *next_i;
-
-  /** Link to previous spamm_node_t in linear quadtree in j sorting.
-   *
-   * In tier >= linear_tier the tree nodes are also linked in a linear
-   * quadtree. The linear tree is sorted on i and on j. This is the j part of
-   * the links.
-   */
-  struct spamm_node_t *previous_j;
-
-  /** Link to next spamm_node_t in linear quadtree in j sorting.
-   *
-   * In tier >= linear_tier the tree nodes are also linked in a linear
-   * quadtree. The linear tree is sorted on i and on j. This is the j part of
-   * the links.
-   */
-  struct spamm_node_t *next_j;
-
-  /** The name of the block ordering pattern. */
-  enum spamm_block_ordering_t ordering;
-
   /** The linear quadtree.
    *
    * A packed tree stores a linear quadtree at the linear_tier, replacing the
