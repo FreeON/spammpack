@@ -15,7 +15,6 @@ spamm_new_node ()
 
   node->tier = 0;
   node->tree_depth = 0;
-  node->linear_tier = 0;
   node->kernel_tier = 0;
 
   node->M_upper = 0;
@@ -37,9 +36,6 @@ spamm_new_node ()
     }
   }
 
-  node->linear_quadtree = NULL;
-  node->linear_quadtree_default_chunksize = 1*1024*1024; /* 1 MB. */
-  node->linear_quadtree_memory = NULL;
   node->block_dense = NULL;
   node->block_dense_dilated = NULL;
 

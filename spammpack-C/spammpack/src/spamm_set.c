@@ -70,8 +70,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
                 node->N_lower+(k+1)*(node->N_upper-node->N_lower)/SPAMM_N_CHILD,
                 node->M_lower_kernel_tier, node->M_upper_kernel_tier,
                 node->N_lower_kernel_tier, node->N_upper_kernel_tier,
-                node->linear_tier, node->kernel_tier,
-                node->block_dense, node->block_dense_dilated);
+                node->kernel_tier, node->block_dense, node->block_dense_dilated);
           }
 
           node->norm2 -= node->child[l][k]->norm2;
@@ -116,8 +115,7 @@ spamm_set (const unsigned int i, const unsigned int j, const floating_point_t Ai
       A->root = spamm_new_childnode(0, A->tree_depth,
           0, A->N_padded, 0, A->N_padded,
           0, 0, 0, 0,
-          A->linear_tier, A->kernel_tier,
-          NULL, NULL);
+          A->kernel_tier, NULL, NULL);
     }
 
     spamm_set_element(i, j, Aij, A->root);

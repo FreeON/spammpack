@@ -26,12 +26,6 @@ spamm_delete_node (struct spamm_node_t **node)
     (*node)->block_dense_dilated = NULL;
   }
 
-  if ((*node)->linear_quadtree != NULL)
-  {
-    spamm_ll_delete(NULL, &(*node)->linear_quadtree);
-    spamm_mm_delete(&(*node)->linear_quadtree_memory);
-  }
-
   for (i = 0; i < SPAMM_N_CHILD; ++i) {
     for (j = 0; j < SPAMM_N_CHILD; ++j)
     {

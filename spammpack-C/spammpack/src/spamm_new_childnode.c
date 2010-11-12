@@ -15,7 +15,7 @@ spamm_new_childnode (const unsigned int tier,
     const unsigned int N_lower, const unsigned int N_upper,
     const unsigned int M_lower_kernel_tier, const unsigned int M_upper_kernel_tier,
     const unsigned int N_lower_kernel_tier, const unsigned int N_upper_kernel_tier,
-    const unsigned int linear_tier, const unsigned int kernel_tier,
+    const unsigned int kernel_tier,
     floating_point_t *block_dense, floating_point_t *block_dense_dilated)
 {
   unsigned int i, j;
@@ -29,7 +29,6 @@ spamm_new_childnode (const unsigned int tier,
   childnode->N_lower = N_lower;
   childnode->N_upper = N_upper;
 
-  childnode->linear_tier = linear_tier;
   childnode->kernel_tier = kernel_tier;
 
   /* Check if we are at the kernel level. */

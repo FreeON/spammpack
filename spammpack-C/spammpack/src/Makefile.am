@@ -4,8 +4,6 @@ lib_LTLIBRARIES = libspamm.la
 
 libspamm_la_SOURCES = \
   $(matrix_tree_sources) \
-  $(linked_list_sources) \
-  $(memory_manager_sources) \
   $(matrix_kernel_sources)
 
 matrix_tree_sources = \
@@ -31,11 +29,9 @@ matrix_tree_sources = \
   spamm_multiply_scalar.c \
   spamm_new.c \
   spamm_new_childnode.c \
-  spamm_new_linear_quadtree_node.c \
   spamm_new_node.c \
   spamm_number_nonzero.c \
   spamm_print_dense.c \
-  spamm_print_multiply_stream.c \
   spamm_print_node.c \
   spamm_print_spamm.c \
   spamm_print_tree.c \
@@ -50,7 +46,6 @@ matrix_tree_sources = \
   spamm_swap_short_unsigned_int.c \
   spamm_swap_spamm_node_t_pointer.c \
   spamm_swap_unsigned_int.c \
-  spamm_tree_pack.c \
   spamm_tree_stats.c \
   spamm_version.c
 
