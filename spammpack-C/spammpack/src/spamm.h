@@ -472,6 +472,9 @@ spamm_get_loglevel ();
 void
 spamm_int_to_binary (const unsigned int integer, const int width, char *binary_string);
 
+unsigned int
+spamm_linear_index_2D (const unsigned int i, const unsigned int j);
+
 void
 spamm_linear_to_coordinates (const unsigned int index, unsigned int *i,
     unsigned int *j, const unsigned int M, const unsigned int N,
