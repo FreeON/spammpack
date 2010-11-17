@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#define DEBUG_PRINT 1
+#define DEBUG_PRINT 1
 
 int
 main ()

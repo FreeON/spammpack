@@ -21,6 +21,7 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
   int l, k, m, n;
   unsigned int kernel_block_N;
   struct spamm_node_t *child_node;
+  char binary_string[1000];
 
   assert(node != NULL);
 
@@ -71,6 +72,14 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
                 node->M_lower_kernel_tier, node->M_upper_kernel_tier,
                 node->N_lower_kernel_tier, node->N_upper_kernel_tier,
                 node->kernel_tier, node->block_dense, node->block_dense_dilated);
+
+            if (SPAMM_N_CHILD == 2)
+            {
+              /* Set the linear index on child node. */
+              node->child[l][k]->index = (node->index << 2) | (l << 1) | k;
+              spamm_int_to_binary(node->child[l][k]->index, 2*(node->tier+1), binary_string);
+              LOG_DEBUG("setting linear index of child[%u][%u] to %s\n", l, k, binary_string);
+            }
           }
 
           node->norm2 -= node->child[l][k]->norm2;

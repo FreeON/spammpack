@@ -20,8 +20,7 @@
  * @return The number of block matrix products.
  */
 unsigned int
-spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
-    const floating_point_t tolerance,
+spamm_multiply_node (const floating_point_t tolerance,
     const floating_point_t alpha, struct spamm_node_t *A_node,
     struct spamm_node_t *B_node, struct spamm_node_t **C_node,
     unsigned int *number_multiply_stream_elements,
@@ -76,28 +75,15 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
   /* Do some work if at the kernel tier. */
   if (A_node->tier == A_node->kernel_tier)
   {
-    switch (algorithm)
+    /* Pop this product onto multiply stream. */
+    multiply_stream[*number_multiply_stream_elements].A_block = A_node->block_dense_dilated;
+    multiply_stream[*number_multiply_stream_elements].B_block = B_node->block_dense;
+    multiply_stream[*number_multiply_stream_elements].C_block = (*C_node)->block_dense;
+    for (l = 0; l < 32; l++)
     {
-      case tree:
-        break;
-
-      case cache:
-        /* Pop this product onto multiply stream. */
-        multiply_stream[*number_multiply_stream_elements].A_block = A_node->block_dense_dilated;
-        multiply_stream[*number_multiply_stream_elements].B_block = B_node->block_dense;
-        multiply_stream[*number_multiply_stream_elements].C_block = (*C_node)->block_dense;
-        for (l = 0; l < 32; l++)
-        {
-          multiply_stream[*number_multiply_stream_elements].norm[l] = 1;
-        }
-        (*number_multiply_stream_elements)++;
-        break;
-
-      default:
-        LOG2_FATAL("[FIXME]\n");
-        exit(1);
-        break;
+      multiply_stream[*number_multiply_stream_elements].norm[l] = 1;
     }
+    (*number_multiply_stream_elements)++;
   }
 
   /* Recurse down the tree. */
@@ -124,7 +110,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
             }
 
             /* Recurse. */
-            number_products += spamm_multiply_node(algorithm, tolerance, alpha,
+            number_products += spamm_multiply_node(tolerance, alpha,
                 A_node->child[i][k], B_node->child[k][j], &(*C_node)->child[i][j],
                 number_multiply_stream_elements, multiply_stream);
           }
@@ -158,8 +144,7 @@ spamm_multiply_node (const enum spamm_multiply_algorithm_t algorithm,
  * \bug Can not handle multiply of trees with different depths.
  */
 unsigned int
-spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
-    floating_point_t tolerance,
+spamm_multiply (floating_point_t tolerance,
     const floating_point_t alpha, const struct spamm_t *A,
     const struct spamm_t *B, const floating_point_t beta, struct spamm_t *C)
 {
@@ -228,74 +213,52 @@ spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
     return number_products;
   }
 
-  switch (algorithm)
+  max_number_stream_elements = pow(A->N_padded/SPAMM_N_BLOCK/pow(2, SPAMM_KERNEL_DEPTH), 3);
+  max_memory = max_number_stream_elements*sizeof(struct multiply_stream_t);
+
+  LOG_INFO("max number of stream elements: %u\n", max_number_stream_elements);
+
+  if (max_memory < 1024)
   {
-    case tree:
-      LOG2_INFO("using tree algorithm\n");
-      number_products = spamm_multiply_node(algorithm, tolerance, alpha, A->root, B->root, &(C->root), NULL, NULL);
-      break;
-
-    case cache:
-      LOG2_INFO("using cache algorithm\n");
-    case cache_redundant:
-      if (algorithm == cache_redundant)
-      {
-        LOG2_INFO("using cache (redundant) algorithm\n");
-      }
-
-      max_number_stream_elements = pow(A->N_padded/SPAMM_N_BLOCK/pow(2, SPAMM_KERNEL_DEPTH), 3);
-      max_memory = max_number_stream_elements*sizeof(struct multiply_stream_t);
-
-      LOG_INFO("max number of stream elements: %u\n", max_number_stream_elements);
-
-      if (max_memory < 1024)
-      {
-        LOG_INFO("max memory usage for multiply stream: %1.2f bytes\n", max_memory);
-      }
-
-      else if (max_memory < 1024*1024)
-      {
-        LOG_INFO("max memory usage for multiply stream: %1.2f kB\n", max_memory/1024.);
-      }
-
-      else if (max_memory < 1024*1024*1024)
-      {
-        LOG_INFO("max memory usage for multiply stream: %1.2f MB\n", max_memory/1024./1024.);
-      }
-
-      else
-      {
-        LOG_INFO("max memory usage for multiply stream: %1.2f GB\n", max_memory/1024./1024./1024.);
-      }
-
-      gettimeofday(&total_start, NULL);
-      multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*max_number_stream_elements);
-
-      gettimeofday(&tree_start, NULL);
-      number_products = spamm_multiply_node(algorithm, tolerance, alpha, A->root, B->root, &(C->root), &number_multiply_stream_elements, multiply_stream);
-      gettimeofday(&tree_stop, NULL);
-      tree_time = (tree_stop.tv_sec-tree_start.tv_sec)+(tree_stop.tv_usec-tree_start.tv_usec)/(double) 1e6;
-      printf("symbolic multiply: placed %u elements into stream, %f s\n", number_multiply_stream_elements, tree_time);
-
-      gettimeofday(&stream_start, NULL);
-      spamm_stream_kernel(number_multiply_stream_elements, alpha, tolerance, multiply_stream);
-      gettimeofday(&stream_stop, NULL);
-      stream_time = (stream_stop.tv_sec-stream_start.tv_sec)+(stream_stop.tv_usec-stream_start.tv_usec)/(double) 1e6;
-      printf("stream multiply: %f s\n", stream_time);
-
-      printf("symbolic is %1.1f times stream\n", tree_time/stream_time);
-
-      free(multiply_stream);
-
-      gettimeofday(&total_stop, NULL);
-      printf("total time for multiply: %f s\n", (total_stop.tv_sec-total_start.tv_sec)+(total_stop.tv_usec-total_start.tv_usec)/(double) 1e6);
-      break;
-
-    default:
-      LOG2_FATAL("unknown algorithm\n");
-      exit(1);
-      break;
+    LOG_INFO("max memory usage for multiply stream: %1.2f bytes\n", max_memory);
   }
+
+  else if (max_memory < 1024*1024)
+  {
+    LOG_INFO("max memory usage for multiply stream: %1.2f kB\n", max_memory/1024.);
+  }
+
+  else if (max_memory < 1024*1024*1024)
+  {
+    LOG_INFO("max memory usage for multiply stream: %1.2f MB\n", max_memory/1024./1024.);
+  }
+
+  else
+  {
+    LOG_INFO("max memory usage for multiply stream: %1.2f GB\n", max_memory/1024./1024./1024.);
+  }
+
+  gettimeofday(&total_start, NULL);
+  multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*max_number_stream_elements);
+
+  gettimeofday(&tree_start, NULL);
+  number_products = spamm_multiply_node(tolerance, alpha, A->root, B->root, &(C->root), &number_multiply_stream_elements, multiply_stream);
+  gettimeofday(&tree_stop, NULL);
+  tree_time = (tree_stop.tv_sec-tree_start.tv_sec)+(tree_stop.tv_usec-tree_start.tv_usec)/(double) 1e6;
+  printf("symbolic multiply: placed %u elements into stream, %f s\n", number_multiply_stream_elements, tree_time);
+
+  gettimeofday(&stream_start, NULL);
+  spamm_stream_kernel(number_multiply_stream_elements, alpha, tolerance, multiply_stream);
+  gettimeofday(&stream_stop, NULL);
+  stream_time = (stream_stop.tv_sec-stream_start.tv_sec)+(stream_stop.tv_usec-stream_start.tv_usec)/(double) 1e6;
+  printf("stream multiply: %f s\n", stream_time);
+
+  printf("symbolic is %1.1f times stream\n", tree_time/stream_time);
+
+  free(multiply_stream);
+
+  gettimeofday(&total_stop, NULL);
+  printf("total time for multiply: %f s\n", (total_stop.tv_sec-total_start.tv_sec)+(total_stop.tv_usec-total_start.tv_usec)/(double) 1e6);
 
   return number_products;
 }
