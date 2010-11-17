@@ -105,7 +105,7 @@ main ()
   spamm_print_dense(L, N, C_dense);
 #endif
 
-  spamm_multiply(tree, tolerance, alpha, &A, &B, beta, &C);
+  spamm_multiply(tolerance, alpha, &A, &B, beta, &C);
 
 #ifdef TEST_DEBUG
   printf("C (SpAMM):\n");

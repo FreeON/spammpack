@@ -76,9 +76,9 @@ spamm_set_element (const unsigned int i, const unsigned int j, const floating_po
             if (SPAMM_N_CHILD == 2)
             {
               /* Set the linear index on child node. */
-              node->child[l][k]->index = (node->index << 2) | (l << 1) | k;
-              spamm_int_to_binary(node->child[l][k]->index, 2*(node->tier+1), binary_string);
-              LOG_DEBUG("setting linear index of child[%u][%u] to %s\n", l, k, binary_string);
+              node->child[l][k]->index_2D = (node->index_2D << 2) | (l << 1) | k;
+              node->child[l][k]->index_3D_column = (node->index_3D_column << 3) | (l << 2) | (k << 1);
+              node->child[l][k]->index_3D_row = (node->index_3D_row << 3) | (l << 1) | k;
             }
           }
 

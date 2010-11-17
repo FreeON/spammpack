@@ -229,13 +229,70 @@ struct spamm_node_t
    */
   unsigned int N_upper;
 
+  /** The value of M_lower at the kernel tier.
+   *
+   * Used to pass down to the bottom tier the proper bounding box values so
+   * that the pointers into the contiguous block_dense on the kernel tier can
+   * be constructed.
+   */
   unsigned int M_lower_kernel_tier;
+
+  /** The value of M_upper at the kernel tier.
+   *
+   * Used to pass down to the bottom tier the proper bounding box values so
+   * that the pointers into the contiguous block_dense on the kernel tier can
+   * be constructed.
+   */
   unsigned int M_upper_kernel_tier;
+
+  /** The value of N_lower at the kernel tier.
+   *
+   * Used to pass down to the bottom tier the proper bounding box values so
+   * that the pointers into the contiguous block_dense on the kernel tier can
+   * be constructed.
+   */
   unsigned int N_lower_kernel_tier;
+
+  /** The value of N_upper at the kernel tier.
+   *
+   * Used to pass down to the bottom tier the proper bounding box values so
+   * that the pointers into the contiguous block_dense on the kernel tier can
+   * be constructed.
+   */
   unsigned int N_upper_kernel_tier;
 
-  /** The linear index of this block along the curve. */
-  unsigned int index;
+  /** The horizontal link layer.
+   *
+   * Row-major ordered, i.e. ordered on the first index.
+   */
+  struct spamm_node_t *next_row_major;
+
+  /** The horizontal link layer.
+   *
+   * Column-major ordered, i.e. ordered on the second index.
+   */
+  struct spamm_node_t *next_column_major;
+
+  /** The linear index of this node in the matrix quadtree. */
+  unsigned int index_2D;
+
+  /** The linear index of this node in the matrix product octree (ijk).
+   *
+   * The running index k is the column index, i.e. A_{ik}. The index
+   * translates into
+   *
+   * (ik) --> ( i1 k1 0 i2 k2 0 i3 k3 0 ... )
+   */
+  unsigned int index_3D_column;
+
+  /** The linear index of this node in the matrix product octree (ijk).
+   *
+   * The running index k is the row index, i.e. A_{kj}. The index translates
+   * into
+   *
+   * (kj) --> ( 0 k1 j1 0 k2 j2 0 k3 j3 ... )
+   */
+  unsigned int index_3D_row;
 
   /** The Frobenius norm of the matrix underneath this node. */
   floating_point_t norm;
