@@ -27,7 +27,12 @@ spamm_new_node ()
   node->N_upper_kernel_tier = 0;
   node->N_lower_kernel_tier = 0;
 
-  node->index = 0;
+  node->next_row_major    = NULL;
+  node->next_column_major = NULL;
+
+  node->index_2D        = 0;
+  node->index_3D_row    = 0;
+  node->index_3D_column = 0;
 
   for (i = 0; i < SPAMM_N_CHILD; i++) {
     for (j = 0; j < SPAMM_N_CHILD; j++)

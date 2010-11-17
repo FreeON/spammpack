@@ -16,7 +16,7 @@ spamm_print_node (const struct spamm_node_t *node)
 {
   int i, j;
   int nonzero;
-  char *binary_string;
+  char binary_string[2000];
   char header[1000];
   char empty_header[1000];
 
@@ -42,10 +42,12 @@ spamm_print_node (const struct spamm_node_t *node)
     printf("N_lower = %i, N_upper = %i, ", node->N_lower, node->N_upper);
     printf("\n");
     printf("%s", empty_header);
-    binary_string = (char*) malloc(sizeof(char)*(node->tier*2+2));
-    spamm_int_to_binary(node->index, node->tier*2, binary_string);
-    printf("index = 0b%s (%u), ", binary_string, node->index);
-    free(binary_string);
+    spamm_int_to_binary(node->index_2D, node->tier*2, binary_string);
+    printf("index_2D = 0b%s (%u), ", binary_string, node->index_2D);
+    spamm_int_to_binary(node->index_3D_column, node->tier*3, binary_string);
+    printf("index_3D_column = 0b%s (%u), ", binary_string, node->index_3D_column);
+    spamm_int_to_binary(node->index_3D_row, node->tier*3, binary_string);
+    printf("index_3D_row = 0b%s (%u), ", binary_string, node->index_3D_row);
     printf("child = %p, ", (void*) node->child);
     if (node->child != NULL)
     {
@@ -82,7 +84,7 @@ spamm_print_node (const struct spamm_node_t *node)
         printf(" (%u,1:%u) { ", i+1, SPAMM_N_KERNEL);
         for (j = 0; j < SPAMM_N_KERNEL; ++j)
         {
-          printf("%f", node->block_dense[spamm_dense_index(i, j, SPAMM_N_KERNEL, SPAMM_N_KERNEL)]);
+          printf("%0.3f", node->block_dense[spamm_dense_index(i, j, SPAMM_N_KERNEL, SPAMM_N_KERNEL)]);
           if (j < SPAMM_N_KERNEL-1) { printf(", "); }
         }
         printf(" }");

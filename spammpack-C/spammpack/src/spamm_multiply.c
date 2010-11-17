@@ -9,7 +9,6 @@
  *
  * C_node = alpha*A_node*B_node + C_node
  *
- * @param algorithm The algorithm to use.
  * @param tolerance The accuracy target for the matrix product.
  * @param alpha The scalar factor multiplying A*B.
  * @param A_node The node of matrix A.
@@ -131,7 +130,6 @@ spamm_multiply_node (const floating_point_t tolerance,
  *
  * \f$C = \alpha A \times B + \beta C\f$
  *
- * @param algorithm The algorithm to use.
  * @param tolerance The accuracy target for the matrix product.
  * @param alpha The scalar factor \f$\alpha\f$.
  * @param A The matrix \f$A\f$.
