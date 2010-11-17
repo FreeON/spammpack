@@ -436,17 +436,8 @@ spamm_block_index (const unsigned int i, const unsigned int j,
     const unsigned int M_block, const unsigned int N_block,
     const unsigned int M_kernel, const unsigned int N_kernel);
 
-int
-spamm_compare_int (const void *integer1, const void *integer2);
-
-int
-spamm_compare_multiply_stream_element (const void *element1, const void *element2);
-
 void
 spamm_delete (struct spamm_t *A);
-
-void
-spamm_delete_multiply_stream_element (void *data);
 
 void
 spamm_delete_node (struct spamm_node_t **node);
@@ -483,10 +474,6 @@ spamm_linear_to_coordinates (const unsigned int index, unsigned int *i,
 void
 spamm_log (const enum spamm_log_severity_t severity, const char *format,
     const char *filename, const unsigned int linenumber, ...);
-
-unsigned int
-spamm_mask (const unsigned int index, const unsigned int width,
-    const enum spamm_linear_mask_t mask);
 
 unsigned int
 spamm_multiply (const enum spamm_multiply_algorithm_t algorithm,
@@ -551,30 +538,6 @@ spamm_sgemm_trivial (const char opA, const char opB,
 
 void
 spamm_spamm_to_dense (const struct spamm_t *A, floating_point_t **A_dense);
-
-void
-spamm_swap_block_dense (const unsigned int M, const unsigned int N, floating_point_t *A, floating_point_t *B);
-
-void
-spamm_swap_floating_point_t (floating_point_t *a, floating_point_t *b);
-
-void
-spamm_swap_floating_point_t_pointer (floating_point_t **a, floating_point_t **b);
-
-void
-spamm_swap_linear_quadtree (void *data1, void *data2);
-
-void
-spamm_swap_multiply_stream (void *data1, void *data2);
-
-void
-spamm_swap_short_unsigned_int (short unsigned int *a, short unsigned int *b);
-
-void
-spamm_swap_spamm_node_t_pointer (struct spamm_node_t **a, struct spamm_node_t **b);
-
-void
-spamm_swap_unsigned_int (unsigned int *a, unsigned int *b);
 
 void
 spamm_tree_pack (const unsigned int linear_tier, const unsigned int chunksize,

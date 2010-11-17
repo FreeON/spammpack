@@ -94,7 +94,6 @@ spamm_new_childnode (const unsigned int tier,
      * corner of the index box for this calculation. The matrix indices
      * therefore jump by SPAMM_N_BLOCK.
      */
-    spamm_print_node(childnode);
     childnode->index = spamm_linear_index_2D(childnode->M_lower, childnode->N_lower);
   }
 
