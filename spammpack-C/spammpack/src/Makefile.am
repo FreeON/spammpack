@@ -22,6 +22,7 @@ matrix_tree_sources = \
   spamm_free.c \
   spamm_get.c \
   spamm_int_to_binary.c \
+  spamm_linear_index.c \
   spamm_linear_to_coordinates.c \
   spamm_logger.c \
   spamm_mask.c \
