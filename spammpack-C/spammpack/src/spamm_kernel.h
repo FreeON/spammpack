@@ -1,5 +1,5 @@
-#if ! defined(__SPAMM_KERNEL_H)
-#define __SPAMM_KERNEL_H 1
+#ifndef __SPAMM_KERNEL_H__
+#define __SPAMM_KERNEL_H__
 
 /** The basic information in a stream element.
  */

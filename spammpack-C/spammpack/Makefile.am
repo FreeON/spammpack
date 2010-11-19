@@ -10,3 +10,8 @@ EXTRA_DIST = localversion
 
 CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/localversion
+
+dist: docs
+
+docs:
+	doxygen
