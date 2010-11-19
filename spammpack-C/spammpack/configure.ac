@@ -19,6 +19,21 @@ AC_PROG_LIBTOOL
 dnl Check for assert macros.
 AC_HEADER_ASSERT
 
+dnl Check for glib.
+have_GLIB="yes"
+AC_CHECK_HEADERS([glib.h], [], [unset have_GLIB])
+AC_CHECK_LIB([glib], [g_hash_table_new], [], [unset have_GLIB])
+if test "${have_GLIB}" != "yes"; then
+  AC_MSG_FAILURE([no, but we really need it])
+fi
+
+dnl Check for math library.
+AC_CHECK_HEADERS([math.h])
+AC_CHECK_LIB([m], [ceil],
+             [],
+             [AC_MSG_FAILURE([ceil() not found])],
+             [])
+
 dnl Check for PAPI.
 AC_MSG_CHECKING([whether to enable PAPI profiling interface])
 AC_ARG_ENABLE([PAPI], [AS_HELP_STRING([--enable-PAPI],

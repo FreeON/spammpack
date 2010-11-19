@@ -1,5 +1,5 @@
-#if ! defined(__HAVE_SPAMM_CONFIG_H)
-#define __HAVE_SPAMM_CONFIG_H 1
+#ifndef __SPAMM_CONFIG_H__
+#define __SPAMM_CONFIG_H__
 
 /* Define the floating point number type. */
 #define FLOATING_PRECISION @FLOATING_PRECISION@
@@ -25,8 +25,5 @@
 
 /* Define the git commit tag for fine-grained version information. */
 #define COMMIT_TAG "@COMMIT_TAG@"
-
-/* Enable logging */
-@ENABLE_LOGGING@
 
 #endif
