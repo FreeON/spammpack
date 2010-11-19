@@ -5,6 +5,203 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
+enum hll_order
+{
+  row_major, column_major
+};
+
+/** \private Creates the horizontal link layer.
+ *
+ * @param order The order of the hll.
+ * @param A The matrix tree.
+ *
+ * @return The number of blocks in the hll.
+ */
+void
+spamm_multiply_create_hll (const enum hll_order order, struct spamm_t *A, unsigned int *number_nodes, struct spamm_node_t **first_node)
+{
+  unsigned int i, j;
+  struct spamm_node_t *node;
+  struct spamm_node_t *last_node = NULL;
+
+  /* Reset first node. */
+  *first_node = NULL;
+  *number_nodes = 0;
+
+  /* Construct hll. */
+  switch (order)
+  {
+    case row_major:
+      for (i = 0; i < A->M; i += SPAMM_N_KERNEL) {
+        for (j = 0; j < A->N; j += SPAMM_N_KERNEL)
+        {
+          //LOG_DEBUG("finding node of A(%u,%u)\n", i, j);
+          node = spamm_get_node(i, j, A->kernel_tier, A);
+
+          if (node != NULL)
+          {
+            //spamm_print_node(node);
+            (*number_nodes)++;
+
+            /* Link to previous node. */
+            if (last_node != NULL)
+            {
+              last_node->next = node;
+            }
+
+            else
+            {
+              *first_node = node;
+            }
+
+            last_node = node;
+          }
+        }
+      }
+      break;
+
+    case column_major:
+      for (j = 0; j < A->N; j += SPAMM_N_KERNEL) {
+        for (i = 0; i < A->M; i += SPAMM_N_KERNEL)
+        {
+          //LOG_DEBUG("finding node of A(%u,%u)\n", i, j);
+          node = spamm_get_node(i, j, A->kernel_tier, A);
+
+          if (node != NULL)
+          {
+            //spamm_print_node(node);
+            (*number_nodes)++;
+
+            /* Link to previous node. */
+            if (last_node != NULL)
+            {
+              last_node->next = node;
+            }
+
+            else
+            {
+              *first_node = node;
+            }
+
+            last_node = node;
+          }
+        }
+      }
+      break;
+  }
+}
+
+/** \private Generate convolution.
+ */
+unsigned int
+spamm_multiply_convolute (const unsigned int number_hll_A,
+    const unsigned int *hll_nodelist_A_index,
+    floating_point_t **hll_nodelist_A_block,
+    const unsigned int number_hll_B,
+    const unsigned int *hll_nodelist_B_index,
+    floating_point_t **hll_nodelist_B_block,
+    const unsigned int max_number_elements,
+    struct multiply_stream_t *multiply_stream,
+    unsigned int *multiply_stream_index)
+{
+  unsigned int i, j, k;
+  unsigned int stream_index;
+
+  /* [FIXME] This step should be made O(N^2). We need to introduce some
+   * linking in the the nodelists, sort of like a skip-list, so we can loop
+   * over ranges of fixed k.
+   */
+  stream_index = 0;
+  for (i = 0; i < number_hll_A; i++) {
+    for (j = 0; j < number_hll_B; j++)
+    {
+      if ((hll_nodelist_A_index[i] & 0x12492492) == (hll_nodelist_B_index[j] & 0x12492492))
+      {
+        multiply_stream_index[stream_index] = hll_nodelist_A_index[i] | hll_nodelist_B_index[j];
+        multiply_stream[stream_index].A_block = hll_nodelist_A_block[i];
+        multiply_stream[stream_index].B_block = hll_nodelist_B_block[j];
+
+        /* [FIXME] The norms should be loaded from the actual matrix blocks.
+         * Format: A(1,1), A(1,2), A(1,3), A(1,4), A(2,1), ...., B(1,1),
+         * B(1,2) ....
+         */
+        for (k = 0; k < 32; k++)
+        {
+          multiply_stream[stream_index].norm[k] = 1.0;
+        }
+
+        stream_index++;
+        if (stream_index > max_number_elements)
+        {
+          LOG2_FATAL("insufficient space in multiply_stream\n");
+          exit(1);
+        }
+      }
+    }
+  }
+
+  return stream_index;
+}
+
+/** \private Build stream.
+ *
+ * The stream is built by allocating the proper nodes in the C tree and
+ * linking the dense blocks in C into the stream.
+ */
+void
+spamm_multiply_build_stream (const unsigned int number_elements,
+    struct multiply_stream_t *multiply_stream,
+    unsigned int *multiply_stream_index,
+    struct spamm_t *C)
+{
+  short bit_index, masked_Cij;
+  unsigned int index;
+  unsigned int Cij;
+  unsigned int i, j;
+  char index_string[1000];
+  char Cij_string[1000];
+
+  /* Construct indices of C blocks, allocate C tree, and assign C dense blocks
+   * to multiply stream.
+   */
+  for (index = 0; index < number_elements; index++)
+  {
+    Cij = multiply_stream_index[index] & 0x2db6db6d;
+
+    for (i = 0, j = 0, bit_index = 0; bit_index < 10; bit_index++)
+    {
+      masked_Cij = Cij & 7;
+      switch (masked_Cij)
+      {
+        case 1:
+          j |= 1 << bit_index;
+          break;
+
+        case 4:
+          i |= 1 << bit_index;
+          break;
+
+        case 5:
+          i |= 1 << bit_index;
+          j |= 1 << bit_index;
+          break;
+      }
+      Cij >>= 3;
+    }
+
+    i *= SPAMM_N_BLOCK;
+    j *= SPAMM_N_BLOCK;
+
+    //spamm_int_to_binary(multiply_stream_index[index], 32, index_string);
+    //spamm_int_to_binary(multiply_stream_index[index] & 0x2db6db6d, 32, Cij_string);
+    //LOG_INFO("analyzing stream element %06u: %s --> %s --> (%u,%u)\n", index, index_string, Cij_string, i, j);
+
+    /* Create necessary nodes in C and link into stream. */
+    spamm_create_tree(i, j, C);
+  }
+}
+
+
 /** \private Computes
  *
  * C_node = alpha*A_node*B_node + C_node
@@ -143,18 +340,38 @@ spamm_multiply_node (const floating_point_t tolerance,
  */
 unsigned int
 spamm_multiply (floating_point_t tolerance,
-    const floating_point_t alpha, const struct spamm_t *A,
-    const struct spamm_t *B, const floating_point_t beta, struct spamm_t *C)
+    const floating_point_t alpha, struct spamm_t *A,
+    struct spamm_t *B, const floating_point_t beta, struct spamm_t *C)
 {
+  struct timeval hll_start, hll_stop;
   struct timeval tree_start, tree_stop;
+  struct timeval convolution_start, convolution_stop;
+  struct timeval streambuild_start, streambuild_stop;
   struct timeval stream_start, stream_stop;
   struct timeval total_start, total_stop;
-  struct multiply_stream_t *multiply_stream;
 
-  double tree_time, stream_time;
+  struct multiply_stream_t *multiply_stream;
+  unsigned int *multiply_stream_index;
+
+  unsigned int *hll_nodelist_A_index;
+  unsigned int *hll_nodelist_B_index;
+  floating_point_t **hll_nodelist_A_block;
+  floating_point_t **hll_nodelist_B_block;
+
+  struct spamm_node_t *first_hll_node_A;
+  struct spamm_node_t *first_hll_node_B;
+  struct spamm_node_t *node;
+
+  double hll_time;
+  double tree_time;
+  double convolution_time;
+  double streambuild_time;
+  double stream_time;
 
   unsigned int number_multiply_stream_elements = 0;
   unsigned int number_products = 0;
+  unsigned int number_hll_A, number_hll_B;
+  unsigned int hll_index;
 
   unsigned int max_number_stream_elements;
   double max_memory;
@@ -238,12 +455,50 @@ spamm_multiply (floating_point_t tolerance,
 
   gettimeofday(&total_start, NULL);
   multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*max_number_stream_elements);
+  multiply_stream_index = (unsigned int*) malloc(sizeof(unsigned int)*max_number_stream_elements);
 
-  gettimeofday(&tree_start, NULL);
-  number_products = spamm_multiply_node(tolerance, alpha, A->root, B->root, &(C->root), &number_multiply_stream_elements, multiply_stream);
-  gettimeofday(&tree_stop, NULL);
-  tree_time = (tree_stop.tv_sec-tree_start.tv_sec)+(tree_stop.tv_usec-tree_start.tv_usec)/(double) 1e6;
-  printf("symbolic multiply: placed %u elements into stream, %f s\n", number_multiply_stream_elements, tree_time);
+  /* Set up horizontal link list layer. */
+  gettimeofday(&hll_start, NULL);
+  spamm_multiply_create_hll(column_major, A, &number_hll_A, &first_hll_node_A);
+  spamm_multiply_create_hll(row_major, B, &number_hll_B, &first_hll_node_B);
+  hll_nodelist_A_index = (unsigned int*) malloc(sizeof(unsigned int)*number_hll_A);
+  hll_nodelist_A_block = (floating_point_t**) malloc(sizeof(floating_point_t*)*number_hll_A);
+  for (node = first_hll_node_A, hll_index = 0; node != NULL; node = node->next)
+  {
+    hll_nodelist_A_index[hll_index] = node->index_3D_column;
+    hll_nodelist_A_block[hll_index++] = node->block_dense_dilated;
+  }
+  hll_nodelist_B_index = (unsigned int*) malloc(sizeof(unsigned int)*number_hll_B);
+  hll_nodelist_B_block = (floating_point_t**) malloc(sizeof(floating_point_t*)*number_hll_B);
+  for (node = first_hll_node_B, hll_index = 0; node != NULL; node = node->next)
+  {
+    hll_nodelist_B_index[hll_index] = node->index_3D_row;
+    hll_nodelist_B_block[hll_index++] = node->block_dense;
+  }
+  gettimeofday(&hll_stop, NULL);
+  hll_time = (hll_stop.tv_sec-hll_start.tv_sec)+(hll_stop.tv_usec-hll_start.tv_usec)/(double) 1e6;
+  printf("hll setup: hll A = %u elements, hll B = %u elements, %f s\n", number_hll_A, number_hll_B, hll_time);
+
+  /* Construct convolution. */
+  gettimeofday(&convolution_start, NULL);
+  number_products = spamm_multiply_convolute(number_hll_A, hll_nodelist_A_index, hll_nodelist_A_block,
+      number_hll_B, hll_nodelist_B_index, hll_nodelist_B_block, max_number_stream_elements, multiply_stream, multiply_stream_index);
+  gettimeofday(&convolution_stop, NULL);
+  convolution_time = (convolution_stop.tv_sec-convolution_start.tv_sec)+(convolution_stop.tv_usec-convolution_start.tv_usec)/(double) 1e6;
+  printf("convolution: constructed %u elements, %f s\n", number_products, convolution_time);
+
+  /* Link in C tree. */
+  gettimeofday(&streambuild_start, NULL);
+  spamm_multiply_build_stream(number_products, multiply_stream, multiply_stream_index, C);
+  gettimeofday(&streambuild_stop, NULL);
+  streambuild_time = (streambuild_stop.tv_sec-streambuild_start.tv_sec)+(streambuild_stop.tv_usec-streambuild_start.tv_usec)/(double) 1e6;
+  printf("streambuild: %f s\n", streambuild_time);
+
+  //gettimeofday(&tree_start, NULL);
+  //number_products = spamm_multiply_node(tolerance, alpha, A->root, B->root, &(C->root), &number_multiply_stream_elements, multiply_stream);
+  //gettimeofday(&tree_stop, NULL);
+  //tree_time = (tree_stop.tv_sec-tree_start.tv_sec)+(tree_stop.tv_usec-tree_start.tv_usec)/(double) 1e6;
+  //printf("symbolic multiply: placed %u elements into stream, %f s\n", number_multiply_stream_elements, tree_time);
 
   gettimeofday(&stream_start, NULL);
   spamm_stream_kernel(number_multiply_stream_elements, alpha, tolerance, multiply_stream);

@@ -12,12 +12,14 @@ matrix_tree_sources = \
   spamm_add.c \
   spamm_allocate.c \
   spamm_block_index.c \
+  spamm_create_tree.c \
   spamm_delete.c \
   spamm_delete_node.c \
   spamm_dense_index.c \
   spamm_dense_to_spamm.c \
   spamm_free.c \
   spamm_get.c \
+  spamm_get_node.c \
   spamm_int_to_binary.c \
   spamm_linear_index.c \
   spamm_linear_to_coordinates.c \
