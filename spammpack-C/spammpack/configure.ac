@@ -137,6 +137,7 @@ Doxyfile
 Makefile
 src/Makefile
 src/spamm_config.h
+tests/Makefile
 ])
 
 AC_OUTPUT
