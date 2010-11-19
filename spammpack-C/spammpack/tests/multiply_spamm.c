@@ -2,6 +2,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+//#define TEST_DEBUG 1
+
 int
 main ()
 {

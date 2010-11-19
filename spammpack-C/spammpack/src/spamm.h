@@ -263,15 +263,9 @@ struct spamm_node_t
 
   /** The horizontal link layer.
    *
-   * Row-major ordered, i.e. ordered on the first index.
+   * This layer connects horizontally the nodes on a tier.
    */
-  struct spamm_node_t *next_row_major;
-
-  /** The horizontal link layer.
-   *
-   * Column-major ordered, i.e. ordered on the second index.
-   */
-  struct spamm_node_t *next_column_major;
+  struct spamm_node_t *next;
 
   /** The linear index of this node in the matrix quadtree. */
   unsigned int index_2D;
@@ -377,6 +371,9 @@ spamm_block_index (const unsigned int i, const unsigned int j,
     const unsigned int M_kernel, const unsigned int N_kernel);
 
 void
+spamm_create_tree (const unsigned int i, const unsigned int j, struct spamm_t *A);
+
+void
 spamm_delete (struct spamm_t *A);
 
 void
@@ -397,6 +394,9 @@ spamm_free (void *data);
 floating_point_t
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
 
+struct spamm_node_t *
+spamm_get_node (const unsigned int i, const unsigned int j, const unsigned int tier, const struct spamm_t *A);
+
 enum spamm_log_severity_t
 spamm_get_loglevel ();
 
@@ -416,9 +416,9 @@ spamm_log (const enum spamm_log_severity_t severity, const char *format,
     const char *filename, const unsigned int linenumber, ...);
 
 unsigned int
-spamm_multiply (const floating_point_t tolerance,
-    const floating_point_t alpha, const struct spamm_t *A,
-    const struct spamm_t *B, const floating_point_t beta, struct spamm_t *C);
+spamm_multiply (floating_point_t tolerance,
+    const floating_point_t alpha, struct spamm_t *A,
+    struct spamm_t *B, const floating_point_t beta, struct spamm_t *C);
 
 void
 spamm_multiply_scalar (const floating_point_t alpha, struct spamm_t *A);
