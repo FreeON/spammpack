@@ -21,10 +21,30 @@ AC_HEADER_ASSERT
 
 dnl Check for glib.
 have_GLIB="yes"
+
+dnl Check whether we find it without any tricks.
+AC_MSG_NOTICE([checking for glib])
 AC_CHECK_HEADERS([glib.h], [], [unset have_GLIB])
 AC_CHECK_LIB([glib], [g_hash_table_new], [], [unset have_GLIB])
+
 if test "${have_GLIB}" != "yes"; then
-  AC_MSG_FAILURE([no, but we really need it])
+  dnl Check in some other locations.
+  have_GLIB="yes"
+  unset ac_cv_header_glib_h
+  unset ac_cv_lib_glib_g_hash_table_new
+  old_CPPFAGS=$CPPFLAGS
+  if test -n "${CPPFLAGS}"; then
+    CPPFLAGS="${CPPFLAGS} -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include"
+  else
+    CPPFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include"
+  fi
+  AC_MSG_NOTICE([last glib test failed, checking for glib, using CPPFLAGS="${CPPFLAGS}"])
+  AC_CHECK_HEADERS([glib.h], [], [unset have_GLIB])
+  AC_CHECK_LIB([glib], [g_hash_table_new], [], [unset have_GLIB])
+
+  if test "${have_GLIB}" != "yes"; then
+    AC_MSG_FAILURE([can not find glib. Consider add custom CPPFLAGS, LDFLAGS, and/or LIBS to configure])
+  fi
 fi
 
 dnl Check for math library.
