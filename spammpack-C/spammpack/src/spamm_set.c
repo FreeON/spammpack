@@ -8,7 +8,9 @@
 void
 spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_t *A)
 {
-  unsigned int tier, i_tier, j_tier, index, delta_index;
+  unsigned int tier, index, i_tier, j_tier, delta_index;
+  unsigned int *tier_key;
+  unsigned int *index_key;
   GHashTable *node_hashtable;
   struct spamm_node_t *node;
   struct spamm_data_t *data;
@@ -43,7 +45,13 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       /* Create new hash table for this tier. */
       printf("creating new hashtable for tier %u\n", tier);
       node_hashtable = g_hash_table_new(g_int_hash, spamm_hash_uint_equal);
-      g_hash_table_insert(A->tier, &tier, node_hashtable);
+
+      /* Allocate new tier key. */
+      tier_key = (unsigned int*) malloc(sizeof(unsigned int));
+      *tier_key = tier;
+
+      /* Insert new tier key into hashtable. */
+      g_hash_table_insert(A->tier, tier_key, node_hashtable);
     }
 
     if (tier < A->kernel_tier)
@@ -54,7 +62,13 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       {
         printf("creating new node for tier %u with index %u\n", tier, index);
         node = spamm_new_node(tier, index);
-        g_hash_table_insert(node_hashtable, &index, node);
+
+        /* Allocate new linear index key. */
+        index_key = (unsigned int*) malloc(sizeof(unsigned int));
+        *index_key = index;
+
+        /* Insert new linear index key into hashtable. */
+        g_hash_table_insert(node_hashtable, index_key, node);
       }
     }
 
@@ -65,10 +79,13 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       {
         printf("creating new data for tier %u with index %u\n", tier, index);
         data = spamm_new_block(tier, index);
-        g_hash_table_insert(node_hashtable, &index, data);
+        index_key = (unsigned int*) malloc(sizeof(unsigned int));
+        *index_key = index;
+        g_hash_table_insert(node_hashtable, index_key, data);
       }
 
-      printf("setting data at index %u\n", index);
+      printf("setting data at (%u,%u) and index %u\n", i-i_tier*delta_index, j-j_tier*delta_index, index);
+      data->block_dense[i-i_tier*delta_index][j-j_tier*delta_index] = Aij;
     }
 
     printf("tier %u: size(node_hashtable) = %u\n", tier, g_hash_table_size(node_hashtable));
