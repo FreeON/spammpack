@@ -8,7 +8,7 @@ spamm_print_node (gpointer key, gpointer value, gpointer user_data)
   unsigned int *index = key;
   struct spamm_node_t *node = value;
 
-  printf("tier %u: index = %u\n", node->tier, node->index);
+  printf("(node) tier %u: index = %u\n", node->tier, node->index);
 }
 
 void
@@ -18,7 +18,7 @@ spamm_print_data (gpointer key, gpointer value, gpointer user_data)
   unsigned int *index = key;
   struct spamm_data_t *data = value;
 
-  printf("tier %u: index = %u, block_dense = ", data->tier, data->index);
+  printf("(data) tier %u: index = %u, block_dense = ", data->tier, data->index);
   for (i = 0; i < SPAMM_N_KERNEL; i++) {
     printf("{");
     for (j = 0; j < SPAMM_N_KERNEL; j++)
@@ -32,27 +32,30 @@ spamm_print_data (gpointer key, gpointer value, gpointer user_data)
 }
 
 void
+spamm_print_tier (gpointer key, gpointer value, gpointer user_data)
+{
+  unsigned int *tier = key;
+  unsigned int *kernel_tier = user_data;
+  GHashTable *tier_hashtable = value;
+
+  if (*tier < *kernel_tier)
+  {
+    g_hash_table_foreach(tier_hashtable, spamm_print_node, NULL);
+  }
+
+  else
+  {
+    g_hash_table_foreach(tier_hashtable, spamm_print_data, NULL);
+  }
+}
+
+void
 spamm_print (const struct spamm_t *A)
 {
-  unsigned int tier;
-  GHashTable *node_hashtable;
-  struct spamm_node_t *node;
-
   assert(A != NULL);
 
   printf("root node: M = %u, N = %u, N_padded = %u, depth = %u, kernel_tier = %u\n",
       A->M, A->N, A->N_padded, A->depth, A->kernel_tier);
 
-  for (tier = 0; tier < A->kernel_tier; tier++)
-  {
-    if ((node_hashtable = g_hash_table_lookup(A->tier, &tier)) != NULL)
-    {
-      g_hash_table_foreach(node_hashtable, spamm_print_node, NULL);
-    }
-  }
-
-  if ((node_hashtable = g_hash_table_lookup(A->tier, &A->kernel_tier)) != NULL)
-  {
-    g_hash_table_foreach(node_hashtable, spamm_print_data, NULL);
-  }
+  g_hash_table_foreach(A->tier, spamm_print_tier, (gpointer) &A->kernel_tier);
 }

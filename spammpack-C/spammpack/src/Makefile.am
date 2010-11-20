@@ -17,6 +17,8 @@ libspamm_tree_la_SOURCES = \
   spamm_delete_node.c \
   spamm_delete_block.c \
   spamm_get.c \
+  spamm_hashtable.c \
+  spamm_index_2D.c \
   spamm_new.c \
   spamm_new_block.c \
   spamm_new_node.c \
