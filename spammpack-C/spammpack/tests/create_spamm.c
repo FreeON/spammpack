@@ -7,7 +7,7 @@ main ()
 {
   int result = 0;
   unsigned int i, j;
-  unsigned int N = 16;
+  unsigned int N = 64;
   struct spamm_t *A;
   float *A_dense = (float*) malloc(sizeof(float)*N*N);
 

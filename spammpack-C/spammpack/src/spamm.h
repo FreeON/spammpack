@@ -65,6 +65,12 @@ spamm_delete_node (struct spamm_node_t **node);
 float
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
 
+gboolean
+spamm_hash_uint_equal (gconstpointer a, gconstpointer b);
+
+unsigned int
+spamm_index_2D (const unsigned int i, const unsigned int j);
+
 struct spamm_t *
 spamm_new (const unsigned int M, const unsigned int N);
 
@@ -72,7 +78,7 @@ struct spamm_data_t *
 spamm_new_block (const unsigned int tier, const unsigned int index);
 
 struct spamm_node_t *
-spamm_new_node ();
+spamm_new_node (const unsigned int tier, const unsigned int index);
 
 void
 spamm_print (const struct spamm_t *A);

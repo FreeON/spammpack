@@ -58,7 +58,7 @@ spamm_new (const unsigned int M, const unsigned int N)
   A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
 
   /* Create the tier hash tables. */
-  A->tier = g_hash_table_new(g_int_hash, g_int_equal);
+  A->tier = g_hash_table_new(g_int_hash, spamm_hash_uint_equal);
 
   return A;
 }
