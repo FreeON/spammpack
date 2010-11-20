@@ -24,6 +24,15 @@ main ()
     }
   }
 
+  printf("A_dense:\n");
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      printf(" %1.2f", A_dense[i*N+j]);
+    }
+    printf("\n");
+  }
+
   /* For debugging, print out the whole tree. */
   spamm_print(A);
 
