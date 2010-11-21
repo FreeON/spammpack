@@ -27,7 +27,7 @@ struct spamm_t
   unsigned int kernel_tier;
 
   /** The hashtables for access to each tier. */
-  GHashTable *tier;
+  GHashTable *tier_hashtable;
 };
 
 /** A node in the matrix tree.

@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//#define PRINT_DEBUG
+
 int
 main ()
 {
   int result = 0;
   unsigned int i, j;
-  unsigned int N = 64;
+  unsigned int N = 1024;
   struct spamm_t *A;
   float *A_dense = (float*) malloc(sizeof(float)*N*N);
 
@@ -24,6 +26,7 @@ main ()
     }
   }
 
+#ifdef PRINT_DEBUG
   printf("A_dense:\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -35,6 +38,7 @@ main ()
 
   /* For debugging, print out the whole tree. */
   spamm_print(A);
+#endif
 
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -49,6 +53,10 @@ main ()
     }
     if (result < 0) { break; }
   }
+
+#ifdef PRINT_DEBUG
+  printf("test passed\n");
+#endif
 
   spamm_delete(&A);
   free(A_dense);
