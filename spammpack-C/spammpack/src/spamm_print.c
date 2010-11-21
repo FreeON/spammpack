@@ -57,5 +57,5 @@ spamm_print (const struct spamm_t *A)
   printf("root node: M = %u, N = %u, N_padded = %u, depth = %u, kernel_tier = %u\n",
       A->M, A->N, A->N_padded, A->depth, A->kernel_tier);
 
-  g_hash_table_foreach(A->tier, spamm_print_tier, (gpointer) &A->kernel_tier);
+  g_hash_table_foreach(A->tier_hashtable, spamm_print_tier, (gpointer) &A->kernel_tier);
 }

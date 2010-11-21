@@ -15,6 +15,8 @@ spamm_new (const unsigned int M, const unsigned int N)
 {
   struct spamm_t *A;
   double x, x_M, x_N;
+  unsigned int tier;
+  unsigned int *tier_key;
 
   if (M <= 0)
   {
@@ -35,7 +37,7 @@ spamm_new (const unsigned int M, const unsigned int N)
   x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
   x_N = (log(N) > log(SPAMM_N_BLOCK) ? log(N) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
 
-  printf("x_M = %f, x_N = %f\n", x_M, x_N);
+  //printf("x_M = %f, x_N = %f\n", x_M, x_N);
 
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
@@ -52,13 +54,19 @@ spamm_new (const unsigned int M, const unsigned int N)
   /* Set padded matrix size. */
   A->N_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, A->depth));
 
-  printf("created %ux%u matrix, padded to %ux%u\n", M, N, A->N_padded, A->N_padded);
+  //printf("created %ux%u matrix, padded to %ux%u\n", M, N, A->N_padded, A->N_padded);
 
   /* Set the kernel tier. */
   A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
 
   /* Create the tier hash tables. */
-  A->tier = g_hash_table_new(g_int_hash, spamm_hash_uint_equal);
+  A->tier_hashtable = g_hash_table_new(g_int_hash, spamm_hash_uint_equal);
+  for (tier = 0; tier <= A->kernel_tier; tier++)
+  {
+    tier_key = (unsigned int*) malloc(sizeof(unsigned int));
+    *tier_key = tier;
+    g_hash_table_insert(A->tier_hashtable, tier_key, g_hash_table_new(g_int_hash, spamm_hash_uint_equal));
+  }
 
   return A;
 }
