@@ -1,5 +1,4 @@
 #include "spamm.h"
-
 #include <stdio.h>
 
 unsigned int
@@ -26,6 +25,5 @@ spamm_index_2D (const unsigned int i, const unsigned int j)
     getmask <<= 1;
   }
 
-  //printf("(%u,%u) --> %u\n", i, j, index);
   return index;
 }

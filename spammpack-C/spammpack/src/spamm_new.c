@@ -1,5 +1,4 @@
 #include "spamm.h"
-
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,13 +19,13 @@ spamm_new (const unsigned int M, const unsigned int N)
 
   if (M <= 0)
   {
-    printf("M <= 0\n");
+    fprintf(stderr, "M <= 0\n");
     exit(1);
   }
 
   if (N <= 0)
   {
-    printf("N <= 0\n");
+    fprintf(stderr, "N <= 0\n");
     exit(1);
   }
 
@@ -36,8 +35,6 @@ spamm_new (const unsigned int M, const unsigned int N)
   /* Pad to powers of M_child x N_child. */
   x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
   x_N = (log(N) > log(SPAMM_N_BLOCK) ? log(N) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
-
-  //printf("x_M = %f, x_N = %f\n", x_M, x_N);
 
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
@@ -53,8 +50,6 @@ spamm_new (const unsigned int M, const unsigned int N)
 
   /* Set padded matrix size. */
   A->N_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, A->depth));
-
-  //printf("created %ux%u matrix, padded to %ux%u\n", M, N, A->N_padded, A->N_padded);
 
   /* Set the kernel tier. */
   A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;

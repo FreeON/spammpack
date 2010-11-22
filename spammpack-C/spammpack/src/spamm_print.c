@@ -18,12 +18,25 @@ spamm_print_data (gpointer key, gpointer value, gpointer user_data)
   unsigned int *index = key;
   struct spamm_data_t *data = value;
 
-  printf("(data) tier %u: index = %u, block_dense = ", data->tier, data->index);
-  for (i = 0; i < SPAMM_N_KERNEL; i++) {
+  printf("(data) tier %u: index = %u, ", data->tier, data->index);
+  printf("norm = { ");
+  for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++)
+  {
+    printf("{");
+    for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++)
+    {
+      printf(" %1.2f", data->norm[i*SPAMM_N_KERNEL_BLOCK+j]);
+    }
+    printf(" }");
+    if (i < SPAMM_N_KERNEL_BLOCK-1) { printf(", "); }
+  }
+  printf(" }, block_dense = ");
+  for (i = 0; i < SPAMM_N_KERNEL; i++)
+  {
     printf("{");
     for (j = 0; j < SPAMM_N_KERNEL; j++)
     {
-      printf(" %1.2f", data->block_dense[i][j]);
+      printf(" %1.2f", data->block_dense[i*SPAMM_N_KERNEL+j]);
     }
     printf(" }");
     if (i < SPAMM_N_KERNEL-1) { printf(", "); }

@@ -1,5 +1,4 @@
 #include "spamm.h"
-
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -17,7 +16,7 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
 
   if (i >= A->M || j >= A->N)
   {
-    printf("illegal index values for A_ij\n");
+    fprintf(stderr, "illegal index values for A_ij\n");
     exit(1);
   }
 
@@ -35,7 +34,7 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
 
   if ((data = g_hash_table_lookup(node_hashtable, &index)) != NULL)
   {
-    Aij = data->block_dense[i-i_tier*delta_index][j-j_tier*delta_index];
+    Aij = data->block_dense[spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)];
   }
 
   return Aij;
