@@ -1,5 +1,4 @@
 #include "spamm.h"
-
 #include <stdlib.h>
 
 struct spamm_node_t *

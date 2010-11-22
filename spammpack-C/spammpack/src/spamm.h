@@ -6,6 +6,8 @@
 
 /* Include more header files. */
 #include <glib.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /** The matrix type.
  */
@@ -50,8 +52,11 @@ struct spamm_data_t
   /** The linear index of this node. */
   unsigned int index;
 
+  /** The norms of the basic block matrices. */
+  float norm[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
+
   /** The matrix data. */
-  float block_dense[SPAMM_N_KERNEL][SPAMM_N_KERNEL];
+  float block_dense[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
 };
 
 /* Function declarations. */
@@ -60,7 +65,22 @@ void
 spamm_delete (struct spamm_t **A);
 
 void
+spamm_delete_block (struct spamm_data_t **data);
+
+void
 spamm_delete_node (struct spamm_node_t **node);
+
+inline unsigned int
+spamm_dense_index (const unsigned int i, const unsigned int j)
+{
+  if (i >= SPAMM_N_KERNEL || i >= SPAMM_N_KERNEL)
+  {
+    fprintf(stderr, "i or j out of bounds\n");
+    exit(1);
+  }
+
+  return i*SPAMM_N_KERNEL+j;
+}
 
 float
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
@@ -70,6 +90,9 @@ spamm_hash_uint_equal (gconstpointer a, gconstpointer b);
 
 unsigned int
 spamm_index_2D (const unsigned int i, const unsigned int j);
+
+void
+spamm_multiply ();
 
 struct spamm_t *
 spamm_new (const unsigned int M, const unsigned int N);

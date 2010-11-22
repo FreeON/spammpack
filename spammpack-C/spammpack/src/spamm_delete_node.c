@@ -1,5 +1,4 @@
 #include "spamm.h"
-
 #include <stdlib.h>
 
 void
