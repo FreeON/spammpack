@@ -8,7 +8,8 @@ spamm_print_node (gpointer key, gpointer value, gpointer user_data)
   unsigned int *index = key;
   struct spamm_node_t *node = value;
 
-  printf("(node) tier %u: index = %u\n", node->tier, node->index);
+  printf("(node) tier %u: index_2D = %u, index_3D_ik0 = %u, index_3D_0kj = %u\n",
+      node->tier, node->index_2D, node->index_3D_ik0, node->index_3D_0kj);
 }
 
 void
@@ -18,7 +19,8 @@ spamm_print_data (gpointer key, gpointer value, gpointer user_data)
   unsigned int *index = key;
   struct spamm_data_t *data = value;
 
-  printf("(data) tier %u: index = %u, ", data->tier, data->index);
+  printf("(node) tier %u: index_2D = %u, index_3D_ik0 = %u, index_3D_0kj = %u, ",
+      data->tier, data->index_2D, data->index_3D_ik0, data->index_3D_0kj);
   printf("norm = { ");
   for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++)
   {
