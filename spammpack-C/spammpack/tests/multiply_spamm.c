@@ -1,5 +1,9 @@
 #include <spamm.h>
 #include <math.h>
+#include <stdio.h>
+
+//#define RANDOM_ELEMENTS
+#define PRINT_DEBUG
 
 int
 main ()
@@ -8,10 +12,12 @@ main ()
 
   unsigned int i, j, k;
 
-  unsigned int N = 64;
+  unsigned int N = 4;
 
-  float alpha = 1.2;
-  float beta = 0.5;
+  float alpha = 1.0;
+  float beta = 1.0;
+
+  float tolerance = 0.0;
 
   float *A_dense;
   float *B_dense;
@@ -35,15 +41,50 @@ main ()
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
+#ifdef RANDOM_ELEMENTS
       A_dense[i*N+j] = rand()/(float) RAND_MAX;
       B_dense[i*N+j] = rand()/(float) RAND_MAX;
       C_dense[i*N+j] = rand()/(float) RAND_MAX;
+#else
+      A_dense[i*N+j] = i*N+j;
+      B_dense[i*N+j] = i*N+j;
+      C_dense[i*N+j] = i*N+j;
+#endif
 
       spamm_set(i, j, A_dense[i*N+j], A);
       spamm_set(i, j, B_dense[i*N+j], B);
       spamm_set(i, j, C_dense[i*N+j], C);
     }
   }
+
+#ifdef PRINT_DEBUG
+  printf("A_dense =\n");
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      printf(" %5.1f", A_dense[i*N+j]);
+    }
+    printf("\n");
+  }
+
+  printf("B_dense =\n");
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      printf(" %5.1f", B_dense[i*N+j]);
+    }
+    printf("\n");
+  }
+
+  printf("C_dense =\n");
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      printf(" %5.1f", C_dense[i*N+j]);
+    }
+    printf("\n");
+  }
+#endif
 
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -56,12 +97,34 @@ main ()
     for (j = 0; j < N; j++) {
       for (k = 0; k < N; k++)
       {
-        C_dense[i*N+j] += alpha*A_dense[i*N+j]*B_dense[i*N+j];
+        C_dense[i*N+j] += alpha*A_dense[i*N+k]*B_dense[k*N+j];
       }
     }
   }
 
-  spamm_multiply(alpha, A, B, beta, C);
+#ifdef PRINT_DEBUG
+  printf("C_dense =\n");
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      printf(" %5.1f", C_dense[i*N+j]);
+    }
+    printf("\n");
+  }
+#endif
+
+  spamm_multiply(tolerance, alpha, A, B, beta, C);
+
+#ifdef PRINT_DEBUG
+  printf("C =\n");
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      printf(" %5.1f", spamm_get(i, j, C));
+    }
+    printf("\n");
+  }
+#endif
 
   max_diff = 0;
   for (i = 0; i < N; i++) {

@@ -70,6 +70,9 @@ struct spamm_data_t
 
   /** The matrix data. */
   float block_dense[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
+
+  /** The matrix data (dilated by 4 for SSE). */
+  float block_dense_dilated[4*SPAMM_N_KERNEL*SPAMM_N_KERNEL];
 };
 
 /* Function declarations. */
@@ -120,7 +123,8 @@ unsigned int
 spamm_index_3D_i0j_to_2D (const unsigned int index_3D_i0j);
 
 void
-spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
+spamm_multiply (const float tolerance,
+    const float alpha, struct spamm_t *A, struct spamm_t *B,
     const float beta, struct spamm_t *C);
 
 struct spamm_t *

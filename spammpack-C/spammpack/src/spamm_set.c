@@ -67,6 +67,11 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       }
 
       data->block_dense[spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)] = Aij;
+
+      data->block_dense_dilated[4*spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)+0] = Aij;
+      data->block_dense_dilated[4*spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)+1] = Aij;
+      data->block_dense_dilated[4*spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)+2] = Aij;
+      data->block_dense_dilated[4*spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)+3] = Aij;
     }
   }
 }
