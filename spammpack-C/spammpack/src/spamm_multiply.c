@@ -30,12 +30,12 @@ spamm_multiply_compare_index_row (gconstpointer a, gconstpointer b)
   const unsigned int *x = a;
   const unsigned int *y = b;
 
-  unsigned int x_masked = (*x) & 0x55555555;
-  unsigned int y_masked = (*y) & 0x55555555;
+  unsigned int x_masked = (*x) & MASK_2D_I;
+  unsigned int y_masked = (*y) & MASK_2D_I;
 
   if (x_masked < y_masked)       { return -1; }
-  else if (x_masked == y_masked) { return 0; }
-  else                           { return 1; }
+  else if (x_masked == y_masked) { return  0; }
+  else                           { return  1; }
 }
 
 gint
@@ -44,12 +44,12 @@ spamm_multiply_compare_index_column (gconstpointer a, gconstpointer b)
   const unsigned int *x = a;
   const unsigned int *y = b;
 
-  unsigned int x_masked = (*x) & 0xaaaaaaaa;
-  unsigned int y_masked = (*y) & 0xaaaaaaaa;
+  unsigned int x_masked = (*x) & MASK_2D_J;
+  unsigned int y_masked = (*y) & MASK_2D_J;
 
   if (x_masked < y_masked)       { return -1; }
-  else if (x_masked == y_masked) { return 0; }
-  else                           { return 1; }
+  else if (x_masked == y_masked) { return  0; }
+  else                           { return  1; }
 }
 
 void
@@ -68,12 +68,17 @@ spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
 {
   GHashTable *A_tier_hashtable;
   GHashTable *B_tier_hashtable;
+  GHashTable *C_tier_hashtable;
   GList *A_index_unsorted;
   GList *A_index_sorted;
   GList *B_index_unsorted;
   GList *B_index_sorted;
   struct spamm_multiply_index_list_t A_index;
   struct spamm_multiply_index_list_t B_index;
+
+  struct spamm_data_t *A_block;
+  struct spamm_data_t *B_block;
+  struct spamm_data_t *C_block;
 
   struct spamm_data_t *data;
 
@@ -82,7 +87,12 @@ spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
   unsigned int last_B_index;
   unsigned int last_A_index;
   unsigned int convolution_index;
+  unsigned int convolution_index_2D;
   unsigned int k_match_index;
+  unsigned int C_i, C_j;
+
+  struct multiply_stream_t *multiply_stream;
+  unsigned int stream_index;
 
   char bitstring[1000];
 
@@ -100,6 +110,8 @@ spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
   B_tier_hashtable = g_hash_table_lookup(B->tier_hashtable, &B->kernel_tier);
   B_index_unsorted = g_hash_table_get_keys(B_tier_hashtable);
   B_index_sorted = g_list_sort(B_index_unsorted, spamm_multiply_compare_index_row);
+
+  C_tier_hashtable = g_hash_table_lookup(C->tier_hashtable, &C->kernel_tier);
 
   /* Copy sorted indices to array for quick access. */
   A_index.last_index = 0;
@@ -134,48 +146,78 @@ spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
   g_list_free(B_index_sorted);
 
   /* Convolute by constructing product 3D index. */
+  multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*A->N*A->N*A->N);
+
   first_B_index = 0;
   last_A_index = (A_index.index_3D[0] & MASK_3D_K);
   last_B_index = B_index.last_index;
   for (i = 0; i < A_index.last_index; i++)
   {
-    spamm_uint_to_bin_string(A_index.index_2D[i], bitstring);
-    printf("A_index_2D[%u] = %u (%s), ", i, A_index.index_2D[i], bitstring);
-    spamm_uint_to_bin_string(A_index.index_3D[i], bitstring);
-    printf("A_index_3D[%u] = %u (%s), ", i, A_index.index_3D[i], bitstring);
-    spamm_uint_to_bin_string(last_A_index, bitstring);
-    printf("last_A_index = %u (%s)\n", last_A_index, bitstring);
+    //spamm_uint_to_bin_string(A_index.index_2D[i], bitstring);
+    //printf("A_index_2D[%2u] = (%s) %u\n", i, bitstring, A_index.index_2D[i]);
+    //spamm_uint_to_bin_string(A_index.index_3D[i], bitstring);
+    //printf("A_index_3D[%2u] = (%s) %u\n", i, bitstring, A_index.index_3D[i]);
+    //spamm_uint_to_bin_string(MASK_3D_K, bitstring);
+    //printf("MASK_3D_K      = (%s)\n", bitstring);
+    //spamm_uint_to_bin_string(A_index.index_3D[i] & MASK_3D_K, bitstring);
+    //printf("A_index_3D mkd = (%s) %u\n", bitstring, A_index.index_3D[i] & MASK_3D_K);
+    //spamm_uint_to_bin_string(last_A_index, bitstring);
+    //printf("last_A_index   = (%s) %u\n", bitstring, last_A_index);
 
     if (last_A_index != (A_index.index_3D[i] & MASK_3D_K))
     {
-      printf("i = %u, new last_A_index %u --> ", i, last_A_index);
+      //printf("i = %u, new last_A_index %u --> ", i, last_A_index);
       last_A_index = (A_index.index_3D[i] & MASK_3D_K);
       first_B_index = last_B_index;
       last_B_index = B_index.last_index;
-      printf("%u, B index starting from %u\n", last_A_index, first_B_index);
+      //printf("%u, B index starting from %u\n", last_A_index, first_B_index);
     }
+
+    A_block = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
 
     for (j = first_B_index; j < last_B_index; j++)
     {
-      spamm_uint_to_bin_string(B_index.index_2D[j], bitstring);
-      printf("B_index_2D[%u] = %u (%s), ", i, B_index.index_2D[j], bitstring);
-      spamm_uint_to_bin_string(B_index.index_3D[j], bitstring);
-      printf("B_index_3D[%u] = %u (%s), ", i, B_index.index_3D[j], bitstring);
-      spamm_uint_to_bin_string(B_index.index_3D[j] & MASK_3D_K, bitstring);
-      printf("k masked B_index_3D[%u] = %u (%s)\n", i, B_index.index_3D[j] & MASK_3D_K, bitstring);
+      //spamm_uint_to_bin_string(B_index.index_2D[j], bitstring);
+      //printf("B_index_2D[%u] = %u (%s), ", j, B_index.index_2D[j], bitstring);
+      //spamm_uint_to_bin_string(B_index.index_3D[j], bitstring);
+      //printf("B_index_3D[%u] = %u (%s), ", j, B_index.index_3D[j], bitstring);
+      //spamm_uint_to_bin_string(B_index.index_3D[j] & MASK_3D_K, bitstring);
+      //printf("k masked B_index_3D[%u] = %u (%s)\n", j, B_index.index_3D[j] & MASK_3D_K, bitstring);
 
-      convolution_index = (A_index.index_3D[i] & MASK_3D_IJ) & (B_index.index_3D[j] & MASK_3D_IJ);
+      //spamm_uint_to_bin_string(A_index.index_3D[i] & MASK_3D_IJ, bitstring);
+      //printf("A masked = %s\n", bitstring);
+      //spamm_uint_to_bin_string(B_index.index_3D[j] & MASK_3D_IJ, bitstring);
+      //printf("B masked = %s\n", bitstring);
+
+      B_block = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[j]);
+
+      convolution_index = (A_index.index_3D[i] & MASK_3D_IJ) | (B_index.index_3D[j] & MASK_3D_IJ);
       k_match_index = last_A_index ^ (B_index.index_3D[j] & MASK_3D_K);
 
       if (k_match_index != 0)
       {
         /* The k indices do not match. */
-        printf("last_B_index = %u\n", j);
+        //printf("last_B_index = %u\n", j);
         last_B_index = j;
         break;
       }
 
-      printf("convolution: %x\n", convolution_index);
+      convolution_index_2D = spamm_index_3D_i0j_to_2D(convolution_index);
+
+      C_block = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
+
+      multiply_stream[stream_index].A_block = A_block->block_dense;
+      multiply_stream[stream_index].B_block = B_block->block_dense;
+      multiply_stream[stream_index].C_block = C_block->block_dense;
+
+      stream_index++;
+
+      //spamm_uint_to_bin_string(convolution_index, bitstring);
+      //printf("convolution_3D: %x (%s)\n", convolution_index, bitstring);
+      //spamm_uint_to_bin_string(convolution_index_2D, bitstring);
+      //printf("convolution_2D: %x (%s)\n", convolution_index_2D, bitstring);
+      //spamm_index_2D_to_ij(convolution_index_2D, &C_i, &C_j);
+      //printf("mapping to C(%u,%u)\n", C_i, C_j);
     }
   }
 
