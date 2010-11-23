@@ -19,13 +19,16 @@ libspamm_tree_la_SOURCES = \
   spamm_delete_block.c \
   spamm_get.c \
   spamm_hashtable.c \
+  spamm_index.c \
   spamm_index_2D.c \
+  spamm_index_3D.c \
   spamm_multiply.c \
   spamm_new.c \
   spamm_new_block.c \
   spamm_new_node.c \
   spamm_print.c \
-  spamm_set.c
+  spamm_set.c \
+  spamm_uint_to_bin_string.c
 
 tags :
 	ctags --C-kinds=+l+x *.h *.c *.S ../config.h

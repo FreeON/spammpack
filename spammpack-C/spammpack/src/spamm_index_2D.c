@@ -1,6 +1,8 @@
 #include "spamm.h"
 #include <stdio.h>
 
+#define BITFIELD_SIZE 10
+
 unsigned int
 spamm_index_2D (const unsigned int i, const unsigned int j)
 {
@@ -9,7 +11,7 @@ spamm_index_2D (const unsigned int i, const unsigned int j)
   unsigned int setmask = 1;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < 10; bit_index++)
+  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
     if ((j & getmask) != 0)
     {
