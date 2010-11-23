@@ -63,7 +63,13 @@ spamm_multiply_copy_to_array (gpointer data, gpointer user_data)
 }
 
 void
-spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
+spamm_multiply_beta (const float beta, struct spamm_t *A)
+{
+}
+
+void
+spamm_multiply (const float tolerance,
+    const float alpha, struct spamm_t *A, struct spamm_t *B,
     const float beta, struct spamm_t *C)
 {
   GHashTable *A_tier_hashtable;
@@ -82,7 +88,7 @@ spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
 
   struct spamm_data_t *data;
 
-  unsigned int i, j;
+  unsigned int i, j, k;
   unsigned int first_B_index;
   unsigned int last_B_index;
   unsigned int last_A_index;
@@ -101,17 +107,18 @@ spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
   assert(C != NULL);
 
   /* Multiply C with beta. */
+  spamm_multiply_beta(beta, C);
 
   /* Sort 2D indices on k, i.e. either on row or column index. */
   A_tier_hashtable = g_hash_table_lookup(A->tier_hashtable, &A->kernel_tier);
+  B_tier_hashtable = g_hash_table_lookup(B->tier_hashtable, &B->kernel_tier);
+  C_tier_hashtable = g_hash_table_lookup(C->tier_hashtable, &C->kernel_tier);
+
   A_index_unsorted = g_hash_table_get_keys(A_tier_hashtable);
   A_index_sorted = g_list_sort(A_index_unsorted, spamm_multiply_compare_index_column);
 
-  B_tier_hashtable = g_hash_table_lookup(B->tier_hashtable, &B->kernel_tier);
   B_index_unsorted = g_hash_table_get_keys(B_tier_hashtable);
   B_index_sorted = g_list_sort(B_index_unsorted, spamm_multiply_compare_index_row);
-
-  C_tier_hashtable = g_hash_table_lookup(C->tier_hashtable, &C->kernel_tier);
 
   /* Copy sorted indices to array for quick access. */
   A_index.last_index = 0;
@@ -146,49 +153,27 @@ spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
   g_list_free(B_index_sorted);
 
   /* Convolute by constructing product 3D index. */
-  multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*A->N*A->N*A->N);
+  stream_index = 0;
+  multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
 
   first_B_index = 0;
   last_A_index = (A_index.index_3D[0] & MASK_3D_K);
   last_B_index = B_index.last_index;
   for (i = 0; i < A_index.last_index; i++)
   {
-    //spamm_uint_to_bin_string(A_index.index_2D[i], bitstring);
-    //printf("A_index_2D[%2u] = (%s) %u\n", i, bitstring, A_index.index_2D[i]);
-    //spamm_uint_to_bin_string(A_index.index_3D[i], bitstring);
-    //printf("A_index_3D[%2u] = (%s) %u\n", i, bitstring, A_index.index_3D[i]);
-    //spamm_uint_to_bin_string(MASK_3D_K, bitstring);
-    //printf("MASK_3D_K      = (%s)\n", bitstring);
-    //spamm_uint_to_bin_string(A_index.index_3D[i] & MASK_3D_K, bitstring);
-    //printf("A_index_3D mkd = (%s) %u\n", bitstring, A_index.index_3D[i] & MASK_3D_K);
-    //spamm_uint_to_bin_string(last_A_index, bitstring);
-    //printf("last_A_index   = (%s) %u\n", bitstring, last_A_index);
-
     if (last_A_index != (A_index.index_3D[i] & MASK_3D_K))
     {
-      //printf("i = %u, new last_A_index %u --> ", i, last_A_index);
       last_A_index = (A_index.index_3D[i] & MASK_3D_K);
       first_B_index = last_B_index;
       last_B_index = B_index.last_index;
-      //printf("%u, B index starting from %u\n", last_A_index, first_B_index);
     }
 
+    /* Get reference to dense block of A. */
     A_block = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
 
     for (j = first_B_index; j < last_B_index; j++)
     {
-      //spamm_uint_to_bin_string(B_index.index_2D[j], bitstring);
-      //printf("B_index_2D[%u] = %u (%s), ", j, B_index.index_2D[j], bitstring);
-      //spamm_uint_to_bin_string(B_index.index_3D[j], bitstring);
-      //printf("B_index_3D[%u] = %u (%s), ", j, B_index.index_3D[j], bitstring);
-      //spamm_uint_to_bin_string(B_index.index_3D[j] & MASK_3D_K, bitstring);
-      //printf("k masked B_index_3D[%u] = %u (%s)\n", j, B_index.index_3D[j] & MASK_3D_K, bitstring);
-
-      //spamm_uint_to_bin_string(A_index.index_3D[i] & MASK_3D_IJ, bitstring);
-      //printf("A masked = %s\n", bitstring);
-      //spamm_uint_to_bin_string(B_index.index_3D[j] & MASK_3D_IJ, bitstring);
-      //printf("B masked = %s\n", bitstring);
-
+      /* Get reference to dense block of B. */
       B_block = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[j]);
 
       convolution_index = (A_index.index_3D[i] & MASK_3D_IJ) | (B_index.index_3D[j] & MASK_3D_IJ);
@@ -197,29 +182,40 @@ spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
       if (k_match_index != 0)
       {
         /* The k indices do not match. */
-        //printf("last_B_index = %u\n", j);
         last_B_index = j;
         break;
       }
 
       convolution_index_2D = spamm_index_3D_i0j_to_2D(convolution_index);
 
+      /* Get reference to dense block of C. */
       C_block = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
 
-      multiply_stream[stream_index].A_block = A_block->block_dense;
+      multiply_stream[stream_index].A_block = A_block->block_dense_dilated;
       multiply_stream[stream_index].B_block = B_block->block_dense;
       multiply_stream[stream_index].C_block = C_block->block_dense;
 
-      stream_index++;
+      for (k = 0; k < 16; k++)
+      {
+        multiply_stream[stream_index].norm[k] = A_block->norm[k];
+      }
 
-      //spamm_uint_to_bin_string(convolution_index, bitstring);
-      //printf("convolution_3D: %x (%s)\n", convolution_index, bitstring);
-      //spamm_uint_to_bin_string(convolution_index_2D, bitstring);
-      //printf("convolution_2D: %x (%s)\n", convolution_index_2D, bitstring);
-      //spamm_index_2D_to_ij(convolution_index_2D, &C_i, &C_j);
-      //printf("mapping to C(%u,%u)\n", C_i, C_j);
+      for (k = 16; k < 32; k++)
+      {
+        multiply_stream[stream_index].norm[k] = B_block->norm[k-16];
+      }
+
+      stream_index++;
     }
   }
+  free(A_index.index_2D);
+  free(A_index.index_3D);
+  free(B_index.index_2D);
+  free(B_index.index_3D);
 
   /* Call stream product. */
+  spamm_stream_kernel(stream_index, alpha, tolerance, multiply_stream);
+
+  /* Free memory. */
+  free(multiply_stream);
 }

@@ -45,7 +45,7 @@ for (( i = 0; i < ${#glib_libs[*]}; i++ )); do
     if test "${have_GLIB}" = "yes"; then
       break
     else
-      AC_MSG_NOTICE([test failed])
+      AC_MSG_NOTICE([test for ${glib_libs@<:@$i@:>@} failed])
     fi
   done
 
@@ -57,7 +57,7 @@ done
 if test "${have_GLIB}" != "yes"; then
   AC_MSG_FAILURE([can not find glib. Consider add custom CPPFLAGS, LDFLAGS, and/or LIBS to configure])
 else
-  AC_MSG_NOTICE([test passed, found working glib])
+  AC_MSG_NOTICE([test for ${glib_libs@<:@$i@:>@} passed, found working glib])
 fi
 
 dnl Check for math library.
