@@ -25,4 +25,5 @@ spamm_uint_to_bin_string (const unsigned int i, char *result)
 
     bitmask >>= 1;
   }
+  result[STRING_WIDTH-1-index] = '\0';
 }

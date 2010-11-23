@@ -20,8 +20,8 @@ dnl Check for assert macros.
 AC_HEADER_ASSERT
 
 dnl Check for glib.
-glib_libs=( "glib" "glib-2.0" )
-glib_libs_ac=( "glib" "glib_2_0" )
+glib_libs=( "glib-2.0" )
+glib_libs_ac=( "glib_2_0" )
 glib_cppflags=( "" "-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" )
 old_CPPFAGS=$CPPFLAGS
 old_LIBS=$LIBS

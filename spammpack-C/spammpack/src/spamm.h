@@ -3,6 +3,7 @@
 
 /* Include some configuration options. */
 #include "spamm_config.h"
+#include "spamm_kernel.h"
 
 /* Include more header files. */
 #include <glib.h>
@@ -106,11 +107,17 @@ spamm_hash_uint_equal (gconstpointer a, gconstpointer b);
 unsigned int
 spamm_index_2D (const unsigned int i, const unsigned int j);
 
+void
+spamm_index_2D_to_ij (const unsigned int index, unsigned int *i, unsigned int *j);
+
 unsigned int
 spamm_index_3D_0kj (const unsigned int k, const unsigned int j);
 
 unsigned int
 spamm_index_3D_ik0 (const unsigned int i, const unsigned int k);
+
+unsigned int
+spamm_index_3D_i0j_to_2D (const unsigned int index_3D_i0j);
 
 void
 spamm_multiply (const float alpha, struct spamm_t *A, struct spamm_t *B,
