@@ -87,7 +87,11 @@ void
 spamm_delete_node (struct spamm_node_t **node);
 
 unsigned int
-spamm_dense_index (const unsigned int i, const unsigned int j);
+spamm_index_kernel_block (const unsigned int i, const unsigned int j);
+
+unsigned int
+spamm_index_row_major (const unsigned int i, const unsigned int j,
+    const unsigned int M, const unsigned int N);
 
 //inline unsigned int
 //spamm_dense_index (const unsigned int i, const unsigned int j)

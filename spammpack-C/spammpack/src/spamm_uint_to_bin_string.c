@@ -7,7 +7,7 @@ void
 spamm_uint_to_bin_string (const unsigned int i, char *result)
 {
   short index;
-  unsigned int bitmask = 1 << STRING_WIDTH-1;
+  unsigned int bitmask = 1 << (STRING_WIDTH-1);
 
   assert(result != NULL);
 

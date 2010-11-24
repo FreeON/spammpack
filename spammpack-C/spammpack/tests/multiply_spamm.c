@@ -2,8 +2,8 @@
 #include <math.h>
 #include <stdio.h>
 
-//#define RANDOM_ELEMENTS
-#define PRINT_DEBUG
+#define RANDOM_ELEMENTS
+//#define PRINT_DEBUG
 
 int
 main ()
@@ -12,7 +12,7 @@ main ()
 
   unsigned int i, j, k;
 
-  unsigned int N = 4;
+  unsigned int N = 512;
 
   float alpha = 1.0;
   float beta = 1.0;
@@ -63,6 +63,15 @@ main ()
     for (j = 0; j < N; j++)
     {
       printf(" %5.1f", A_dense[i*N+j]);
+    }
+    printf("\n");
+  }
+
+  printf("A =\n");
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++)
+    {
+      printf(" %5.1f", spamm_get(i, j, A));
     }
     printf("\n");
   }
