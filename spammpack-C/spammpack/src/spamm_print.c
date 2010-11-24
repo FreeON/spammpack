@@ -5,7 +5,6 @@
 void
 spamm_print_node (gpointer key, gpointer value, gpointer user_data)
 {
-  unsigned int *index = key;
   struct spamm_node_t *node = value;
 
   printf("(node) tier %u: index_2D = %u, index_3D_ik0 = %u, index_3D_0kj = %u\n",
@@ -16,7 +15,6 @@ void
 spamm_print_data (gpointer key, gpointer value, gpointer user_data)
 {
   unsigned int i, j;
-  unsigned int *index = key;
   struct spamm_data_t *data = value;
 
   printf("(node) tier %u: index_2D = %u, index_3D_ik0 = %u, index_3D_0kj = %u, ",

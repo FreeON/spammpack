@@ -1,13 +1,20 @@
 #include "spamm.h"
 
 unsigned int
-spamm_dense_index (const unsigned int i, const unsigned int j)
+spamm_index_row_major (const unsigned int i, const unsigned int j,
+    const unsigned int M, const unsigned int N)
 {
-  if (i >= SPAMM_N_KERNEL || i >= SPAMM_N_KERNEL)
-  {
-    fprintf(stderr, "i or j out of bounds\n");
-    exit(1);
-  }
+  return i*N+j;
+}
 
-  return i*SPAMM_N_KERNEL+j;
+unsigned int
+spamm_index_kernel_block (const unsigned int i, const unsigned int j)
+{
+  unsigned int offset;
+
+  offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK*spamm_index_row_major(i/SPAMM_N_BLOCK,
+      j/SPAMM_N_BLOCK, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
+    + spamm_index_row_major(i%SPAMM_N_BLOCK, j%SPAMM_N_BLOCK, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+
+  return offset;
 }

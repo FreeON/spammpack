@@ -95,12 +95,9 @@ spamm_multiply (const float tolerance,
   unsigned int convolution_index;
   unsigned int convolution_index_2D;
   unsigned int k_match_index;
-  unsigned int C_i, C_j;
 
   struct multiply_stream_t *multiply_stream;
   unsigned int stream_index;
-
-  char bitstring[1000];
 
   assert(A != NULL);
   assert(B != NULL);

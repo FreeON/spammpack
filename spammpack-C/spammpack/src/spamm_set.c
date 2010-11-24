@@ -8,7 +8,7 @@ void
 spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_t *A)
 {
   unsigned int tier, index, i_tier, j_tier, delta_index;
-  unsigned int *tier_key;
+  unsigned int data_offset;
   unsigned int *index_key;
   GHashTable *node_hashtable;
   struct spamm_node_t *node;
@@ -27,8 +27,8 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   {
     delta_index = (unsigned int) floor(A->N_padded/pow(SPAMM_N_CHILD, tier));
 
-    i_tier = (unsigned int) floor(i/delta_index);
-    j_tier = (unsigned int) floor(j/delta_index);
+    i_tier = i/delta_index;
+    j_tier = j/delta_index;
 
     /* Construct linear index of the node on this tier. */
     index = spamm_index_2D(i_tier, j_tier);
@@ -66,12 +66,42 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
         g_hash_table_insert(node_hashtable, index_key, data);
       }
 
-      data->block_dense[spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)] = Aij;
+      /* The data layout in this kernel tier dense matrix is broken into
+       * blocks of 4x4 matrix blocks. The bocks are ordered in row-major
+       * order, i.e.
+       *
+       * A_OFFSET_ij corresponds to the offset into the kernel tier matrix of
+       * one basic 4x4 matrix.
+       *
+       * A_OFFSET_11  0*4*4
+       * A_OFFSET_12  1*4*4
+       * A_OFFSET_13  2*4*4
+       * A_OFFSET_14  3*4*4
+       * A_OFFSET_21  4*4*4
+       * A_OFFSET_22  5*4*4
+       * A_OFFSET_23  6*4*4
+       * A_OFFSET_24  7*4*4
+       * A_OFFSET_31  8*4*4
+       * A_OFFSET_32  9*4*4
+       * A_OFFSET_33 10*4*4
+       * A_OFFSET_34 11*4*4
+       * A_OFFSET_41 12*4*4
+       * A_OFFSET_42 13*4*4
+       * A_OFFSET_43 14*4*4
+       * A_OFFSET_44 15*4*4
+       */
 
-      data->block_dense_dilated[4*spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)+0] = Aij;
-      data->block_dense_dilated[4*spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)+1] = Aij;
-      data->block_dense_dilated[4*spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)+2] = Aij;
-      data->block_dense_dilated[4*spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)+3] = Aij;
+      /* Calculate index on lowest tier, i.e. for basic 4x4 matrix blocks. */
+      data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index);
+
+      data->block_dense[data_offset] = Aij;
+
+      data->block_dense_dilated[4*data_offset+0] = Aij;
+      data->block_dense_dilated[4*data_offset+1] = Aij;
+      data->block_dense_dilated[4*data_offset+2] = Aij;
+      data->block_dense_dilated[4*data_offset+3] = Aij;
+
+      /* Update norms. */
     }
   }
 }

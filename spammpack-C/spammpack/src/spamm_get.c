@@ -23,8 +23,8 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
   /* Go into kernel tier hash and retrieve proper node. */
   delta_index = (unsigned int) floor(A->N_padded/pow(SPAMM_N_CHILD, A->kernel_tier));
 
-  i_tier = (unsigned int) floor(i/delta_index);
-  j_tier = (unsigned int) floor(j/delta_index);
+  i_tier = i/delta_index;
+  j_tier = j/delta_index;
 
   /* Construct linear index of the node on this tier. */
   index = spamm_index_2D(i_tier, j_tier);
@@ -34,7 +34,7 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
 
   if ((data = g_hash_table_lookup(node_hashtable, &index)) != NULL)
   {
-    Aij = data->block_dense[spamm_dense_index(i-i_tier*delta_index, j-j_tier*delta_index)];
+    Aij = data->block_dense[spamm_index_kernel_block(i%delta_index, j%delta_index)];
   }
 
   return Aij;
