@@ -65,8 +65,30 @@ spamm_multiply_copy_to_array (gpointer data, gpointer user_data)
 }
 
 void
+spamm_multiply_beta_block (gpointer key, gpointer value, gpointer user_data)
+{
+  struct spamm_data_t *data = value;
+  float *beta = user_data;
+  unsigned int i;
+
+  for (i = 0; i < SPAMM_N_KERNEL*SPAMM_N_KERNEL; i++)
+  {
+    data->block_dense[i] *= (*beta);
+
+    data->block_dense_dilated[i+0] *= (*beta);
+    data->block_dense_dilated[i+1] *= (*beta);
+    data->block_dense_dilated[i+2] *= (*beta);
+    data->block_dense_dilated[i+3] *= (*beta);
+  }
+}
+
+void
 spamm_multiply_beta (const float beta, struct spamm_t *A)
 {
+  GHashTable *tier_hashtable;
+
+  tier_hashtable = g_hash_table_lookup(A->tier_hashtable, &A->kernel_tier);
+  g_hash_table_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &beta);
 }
 
 void
@@ -108,6 +130,7 @@ spamm_multiply (const float tolerance,
   struct spamm_timer_t *free_timer      = spamm_timer_new();
   struct spamm_timer_t *convolute_timer = spamm_timer_new();
   struct spamm_timer_t *stream_timer    = spamm_timer_new();
+  struct spamm_timer_t *free_2_timer    = spamm_timer_new();
 
   assert(A != NULL);
   assert(B != NULL);
@@ -241,10 +264,14 @@ spamm_multiply (const float tolerance,
   printf("%1.2e s\n", spamm_timer_get_seconds(convolute_timer));
 
   /* Free memory. */
+  printf("[multiply] free some more memory... ");
+  spamm_timer_start(free_2_timer);
   free(A_index.index_2D);
   free(A_index.index_3D);
   free(B_index.index_2D);
   free(B_index.index_3D);
+  spamm_timer_stop(free_2_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(free_2_timer));
 
   /* Call stream product. */
   printf("[multiply] stream multiply... ");
@@ -254,6 +281,14 @@ spamm_multiply (const float tolerance,
   printf("%1.2e s\n", spamm_timer_get_seconds(stream_timer));
 
   /* Print out total time. */
+  printf("[multiply] total time elapsed for everything but stream: %1.2e s\n",
+      spamm_timer_get_seconds(beta_timer) +
+      spamm_timer_get_seconds(sort_timer) +
+      spamm_timer_get_seconds(copy_timer) +
+      spamm_timer_get_seconds(copy_3D_timer) +
+      spamm_timer_get_seconds(free_timer) +
+      spamm_timer_get_seconds(convolute_timer));
+
   printf("[multiply] total time elapsed: %1.2e s\n",
       spamm_timer_get_seconds(beta_timer) +
       spamm_timer_get_seconds(sort_timer) +
