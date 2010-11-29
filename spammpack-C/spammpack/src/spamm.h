@@ -131,6 +131,12 @@ spamm_multiply (const float tolerance,
     const float alpha, struct spamm_t *A, struct spamm_t *B,
     const float beta, struct spamm_t *C);
 
+unsigned int
+spamm_number_nonzero (const struct spamm_t *A);
+
+void
+spamm_print_dense (const unsigned int M, const unsigned int N, const float *A);
+
 struct spamm_t *
 spamm_new (const unsigned int M, const unsigned int N);
 
@@ -150,5 +156,8 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
 void
 spamm_uint_to_bin_string (const unsigned int i, char *result);
+
+char *
+spamm_version ();
 
 #endif
