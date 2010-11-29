@@ -1,7 +1,7 @@
 dnl vim:tw=0
 
 dnl Define some basic information of this package.
-AC_INIT([spammpack], [2010-11-20], [nicolasbock@gmail.com], [spammpack], [http://freeon.org])
+AC_INIT([spammpack], [2010-11-29], [nicolasbock@gmail.com], [spammpack], [http://freeon.org])
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
