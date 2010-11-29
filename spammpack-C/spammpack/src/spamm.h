@@ -4,11 +4,10 @@
 /* Include some configuration options. */
 #include "spamm_config.h"
 #include "spamm_kernel.h"
+#include "spamm_timer.h"
 
 /* Include more header files. */
 #include <glib.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 /** The matrix type.
  */
