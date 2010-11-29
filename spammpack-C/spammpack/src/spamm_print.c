@@ -3,6 +3,24 @@
 #include <stdio.h>
 
 void
+spamm_print_dense (const unsigned int M, const unsigned int N, const float *A)
+{
+  unsigned int i, j;
+
+  for (i = 0; i < M; i++) {
+    for (j = 0; j < N; j++)
+    {
+      printf(" % 1.2f", A[spamm_index_row_major(i, j, M, N)]);
+    }
+
+    if (i < M-1)
+    {
+      printf("\n");
+    }
+  }
+}
+
+void
 spamm_print_node (gpointer key, gpointer value, gpointer user_data)
 {
   struct spamm_node_t *node = value;
