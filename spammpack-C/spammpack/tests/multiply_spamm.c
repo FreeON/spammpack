@@ -1,6 +1,7 @@
 #include <spamm.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define RANDOM_ELEMENTS
 //#define PRINT_DEBUG

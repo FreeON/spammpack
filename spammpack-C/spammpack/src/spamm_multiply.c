@@ -1,5 +1,7 @@
 #include "spamm.h"
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /* Some commonly used bit-patterns are:
  *
@@ -99,14 +101,28 @@ spamm_multiply (const float tolerance,
   struct multiply_stream_t *multiply_stream;
   unsigned int stream_index;
 
+  struct spamm_timer_t *beta_timer      = spamm_timer_new();
+  struct spamm_timer_t *sort_timer      = spamm_timer_new();
+  struct spamm_timer_t *copy_timer      = spamm_timer_new();
+  struct spamm_timer_t *copy_3D_timer   = spamm_timer_new();
+  struct spamm_timer_t *free_timer      = spamm_timer_new();
+  struct spamm_timer_t *convolute_timer = spamm_timer_new();
+  struct spamm_timer_t *stream_timer    = spamm_timer_new();
+
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
 
   /* Multiply C with beta. */
+  printf("[multiply] multiplying C with beta... ");
+  spamm_timer_start(beta_timer);
   spamm_multiply_beta(beta, C);
+  spamm_timer_stop(beta_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(beta_timer));
 
   /* Sort 2D indices on k, i.e. either on row or column index. */
+  printf("[multiply] sorting A and B... ");
+  spamm_timer_start(sort_timer);
   A_tier_hashtable = g_hash_table_lookup(A->tier_hashtable, &A->kernel_tier);
   B_tier_hashtable = g_hash_table_lookup(B->tier_hashtable, &B->kernel_tier);
   C_tier_hashtable = g_hash_table_lookup(C->tier_hashtable, &C->kernel_tier);
@@ -116,8 +132,12 @@ spamm_multiply (const float tolerance,
 
   B_index_unsorted = g_hash_table_get_keys(B_tier_hashtable);
   B_index_sorted = g_list_sort(B_index_unsorted, spamm_multiply_compare_index_row);
+  spamm_timer_stop(sort_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(sort_timer));
 
   /* Copy sorted indices to array for quick access. */
+  printf("[multiply] copying indices to array... ");
+  spamm_timer_start(copy_timer);
   A_index.last_index = 0;
   A_index.index_2D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(A_index_sorted));
   A_index.index_3D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(A_index_sorted));
@@ -128,8 +148,12 @@ spamm_multiply (const float tolerance,
 
   g_list_foreach(A_index_sorted, spamm_multiply_copy_to_array, &A_index);
   g_list_foreach(B_index_sorted, spamm_multiply_copy_to_array, &B_index);
+  spamm_timer_stop(copy_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(copy_timer));
 
   /* Copy appropriate 3D convolution index to arrays. */
+  printf("[multiply] copying 3D convolution index to arrays... ");
+  spamm_timer_start(copy_3D_timer);
   for (i = 0; i < A_index.last_index; i++)
   {
     data = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
@@ -141,15 +165,23 @@ spamm_multiply (const float tolerance,
     data = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[i]);
     B_index.index_3D[i] = data->index_3D_0kj;
   }
+  spamm_timer_stop(copy_3D_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(copy_3D_timer));
 
   /* Free some memory. */
+  printf("[multiply] free some memory... ");
+  spamm_timer_start(free_timer);
   g_list_free(A_index_unsorted);
   g_list_free(B_index_unsorted);
 
   g_list_free(A_index_sorted);
   g_list_free(B_index_sorted);
+  spamm_timer_stop(free_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(free_timer));
 
   /* Convolute by constructing product 3D index. */
+  printf("[multiply] convolute... ");
+  spamm_timer_start(convolute_timer);
   stream_index = 0;
   multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
 
@@ -205,14 +237,40 @@ spamm_multiply (const float tolerance,
       stream_index++;
     }
   }
+  spamm_timer_stop(convolute_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(convolute_timer));
+
+  /* Free memory. */
   free(A_index.index_2D);
   free(A_index.index_3D);
   free(B_index.index_2D);
   free(B_index.index_3D);
 
   /* Call stream product. */
+  printf("[multiply] stream multiply... ");
+  spamm_timer_start(stream_timer);
   spamm_stream_kernel(stream_index, alpha, tolerance, multiply_stream);
+  spamm_timer_stop(stream_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(stream_timer));
+
+  /* Print out total time. */
+  printf("[multiply] total time elapsed: %1.2e s\n",
+      spamm_timer_get_seconds(beta_timer) +
+      spamm_timer_get_seconds(sort_timer) +
+      spamm_timer_get_seconds(copy_timer) +
+      spamm_timer_get_seconds(copy_3D_timer) +
+      spamm_timer_get_seconds(free_timer) +
+      spamm_timer_get_seconds(convolute_timer) +
+      spamm_timer_get_seconds(stream_timer));
 
   /* Free memory. */
   free(multiply_stream);
+
+  spamm_timer_delete(&beta_timer);
+  spamm_timer_delete(&sort_timer);
+  spamm_timer_delete(&copy_timer);
+  spamm_timer_delete(&copy_3D_timer);
+  spamm_timer_delete(&free_timer);
+  spamm_timer_delete(&convolute_timer);
+  spamm_timer_delete(&stream_timer);
 }

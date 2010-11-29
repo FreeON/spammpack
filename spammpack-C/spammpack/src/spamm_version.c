@@ -1,5 +1,6 @@
 #include "config.h"
 #include "spamm.h"
+#include <stdio.h>
 #include <string.h>
 
 char *
