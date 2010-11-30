@@ -12,5 +12,8 @@ spamm_new_node (const unsigned int tier, const unsigned int index_2D,
   node->index_3D_ik0 = index_3D_ik0;
   node->index_3D_0kj = index_3D_0kj;
 
+  node->norm = 0.0;
+  node->norm2 = 0.0;
+
   return node;
 }

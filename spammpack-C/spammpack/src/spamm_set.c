@@ -7,12 +7,19 @@
 void
 spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_t *A)
 {
-  unsigned int tier, index, i_tier, j_tier, delta_index;
+  unsigned int tier;
+  unsigned int reverse_tier;
+  unsigned int index;
+  unsigned int i_tier;
+  unsigned int j_tier;
+  unsigned int delta_index;
+  unsigned int norm_offset;
   unsigned int data_offset;
   unsigned int *index_key;
   GHashTable *node_hashtable;
   struct spamm_node_t *node;
   struct spamm_data_t *data;
+  float old_Aij;
 
   assert(A != NULL);
 
@@ -92,8 +99,13 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
        */
 
       /* Calculate index on lowest tier, i.e. for basic 4x4 matrix blocks. */
+      norm_offset = spamm_index_row_major((i%delta_index)/SPAMM_N_KERNEL_BLOCK, (j%delta_index)/SPAMM_N_KERNEL_BLOCK, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
       data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index);
 
+      /* For norm calculations, get original value of Aij. */
+      old_Aij = data->block_dense[data_offset];
+
+      /* Set new value. */
       data->block_dense[data_offset] = Aij;
 
       data->block_dense_dilated[4*data_offset+0] = Aij;
@@ -102,6 +114,33 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       data->block_dense_dilated[4*data_offset+3] = Aij;
 
       /* Update norms. */
+      data->norm2[norm_offset] += Aij*Aij-old_Aij*old_Aij;
+      data->norm[norm_offset] = sqrt(data->norm2[norm_offset]);
     }
+  }
+
+  /* Update norms back up the tree. Watch out for loop comparisons, tier is
+   * unsigned and we better start looping top down. */
+  for (tier = 1; tier <= A->kernel_tier; tier++)
+  {
+    reverse_tier = A->kernel_tier-tier;
+
+    delta_index = (unsigned int) floor(A->N_padded/pow(SPAMM_N_CHILD, reverse_tier));
+
+    i_tier = i/delta_index;
+    j_tier = j/delta_index;
+
+    /* Construct linear index of the node on this tier. */
+    index = spamm_index_2D(i_tier, j_tier);
+
+    /* Get hash table at this tier. */
+    node_hashtable = g_hash_table_lookup(A->tier_hashtable, &reverse_tier);
+
+    /* Get the node. */
+    node = g_hash_table_lookup(node_hashtable, &index);
+
+    /* Update norms. */
+    node->norm2 += Aij*Aij-old_Aij*old_Aij;
+    node->norm = sqrt(node->norm2);
   }
 }
