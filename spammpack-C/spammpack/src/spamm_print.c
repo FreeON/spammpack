@@ -10,13 +10,9 @@ spamm_print_dense (const unsigned int M, const unsigned int N, const float *A)
   for (i = 0; i < M; i++) {
     for (j = 0; j < N; j++)
     {
-      printf(" % 1.2f", A[spamm_index_row_major(i, j, M, N)]);
+      printf(" % 1.2e", A[spamm_index_row_major(i, j, M, N)]);
     }
-
-    if (i < M-1)
-    {
-      printf("\n");
-    }
+    printf("\n");
   }
 }
 
@@ -25,8 +21,8 @@ spamm_print_node (gpointer key, gpointer value, gpointer user_data)
 {
   struct spamm_node_t *node = value;
 
-  printf("(node) tier %u: index_2D = %u, index_3D_ik0 = %u, index_3D_0kj = %u\n",
-      node->tier, node->index_2D, node->index_3D_ik0, node->index_3D_0kj);
+  printf("(node) tier %u: index_2D = %u, index_3D_ik0 = %u, index_3D_0kj = %u, norm = %1.2e\n",
+      node->tier, node->index_2D, node->index_3D_ik0, node->index_3D_0kj, node->norm);
 }
 
 void
@@ -43,7 +39,7 @@ spamm_print_data (gpointer key, gpointer value, gpointer user_data)
     printf("{");
     for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++)
     {
-      printf(" %1.2f", data->norm[i*SPAMM_N_KERNEL_BLOCK+j]);
+      printf(" %1.2e", data->norm[i*SPAMM_N_KERNEL_BLOCK+j]);
     }
     printf(" }");
     if (i < SPAMM_N_KERNEL_BLOCK-1) { printf(", "); }
@@ -54,7 +50,7 @@ spamm_print_data (gpointer key, gpointer value, gpointer user_data)
     printf("{");
     for (j = 0; j < SPAMM_N_KERNEL; j++)
     {
-      printf(" %1.2f", data->block_dense[i*SPAMM_N_KERNEL+j]);
+      printf(" %1.2e", data->block_dense[i*SPAMM_N_KERNEL+j]);
     }
     printf(" }");
     if (i < SPAMM_N_KERNEL-1) { printf(", "); }

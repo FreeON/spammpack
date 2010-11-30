@@ -47,6 +47,12 @@ struct spamm_node_t
 
   /** The linear index of this node in 3D, i.e. in product space. */
   unsigned int index_3D_0kj;
+
+  /** The norm of this block. */
+  float norm;
+
+  /** The square of the norm of this block. */
+  float norm2;
 };
 
 /** A node at the kernel tier. */
@@ -66,6 +72,9 @@ struct spamm_data_t
 
   /** The norms of the basic block matrices. */
   float norm[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
+
+  /** The square of the norms of the basic block matrices. */
+  float norm2[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
 
   /** The matrix data. */
   float block_dense[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
