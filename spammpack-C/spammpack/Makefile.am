@@ -11,7 +11,8 @@ EXTRA_DIST = localversion
 CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/localversion
 
-dist: docs
+dist : docs
 
-docs:
+docs :
 	doxygen
+	$(MAKE) -C latex
