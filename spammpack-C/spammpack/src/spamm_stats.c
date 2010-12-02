@@ -1,5 +1,11 @@
 #include "spamm.h"
 
+/** Return the number of non-zero elements in a matrix.
+ *
+ * @param A The matrix.
+ *
+ * @return The number of non-zero elements.
+ */
 unsigned int
 spamm_number_nonzero (const struct spamm_t *A)
 {

@@ -7,7 +7,8 @@
  *
  * @param M Number of rows of dense input matrix.
  * @param N Number of columns of dense input matrix.
- * @param A The spamm_t matrix.
+ *
+ * @return A pointer to the matrix.
  */
 struct spamm_t *
 spamm_new (const unsigned int M, const unsigned int N)

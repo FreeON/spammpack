@@ -3,9 +3,6 @@
 #ifndef __SPAMM_CONFIG_H__
 #define __SPAMM_CONFIG_H__
 
-/** Define the floating point number type. */
-#define FLOATING_PRECISION @FLOATING_PRECISION@
-
 /** Define the alignment of memory allocations. */
 #define SPAMM_ALIGNMENT @SPAMM_ALIGNMENT@
 
