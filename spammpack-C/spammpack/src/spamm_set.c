@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define NEW_NORM
+
 /** Set an element in a matrix.
  *
  * @param i The row index.
@@ -19,6 +21,8 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   unsigned int index;
   unsigned int i_tier;
   unsigned int j_tier;
+  unsigned int i_block;
+  unsigned int j_block;
   unsigned int delta_index;
   unsigned int norm_offset;
   unsigned int data_offset;
@@ -26,6 +30,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   GHashTable *node_hashtable;
   struct spamm_node_t *node;
   struct spamm_data_t *data;
+
   float old_Aij;
 
   assert(A != NULL);
@@ -106,7 +111,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
        */
 
       /* Calculate index on lowest tier, i.e. for basic 4x4 matrix blocks. */
-      norm_offset = spamm_index_row_major((i%delta_index)/SPAMM_N_KERNEL_BLOCK, (j%delta_index)/SPAMM_N_KERNEL_BLOCK, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+      norm_offset = spamm_index_row_major((i%delta_index)/SPAMM_N_KERNEL_BLOCK, (j%delta_index)/SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK);
       data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index);
 
       /* For norm calculations, get original value of Aij. */
@@ -121,11 +126,34 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       data->block_dense_dilated[4*data_offset+3] = Aij;
 
       /* Update norms. */
+#ifdef NEW_NORM
+      data->norm2[norm_offset] = 0.0;
+      for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
+        for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
+        {
+          old_Aij = data->block_dense[SPAMM_N_BLOCK*SPAMM_N_BLOCK*spamm_index_row_major(i%delta_index/SPAMM_N_KERNEL_BLOCK,
+              j%delta_index/SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
+            +spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
+          data->norm2[norm_offset] += old_Aij*old_Aij;
+        }
+      }
+      data->norm[norm_offset] = sqrt(data->norm2[norm_offset]);
+
+      data->node_norm2 = 0.0;
+      for (i_block = 0; i_block < SPAMM_N_KERNEL_BLOCK; i_block++) {
+        for (j_block = 0; j_block < SPAMM_N_KERNEL_BLOCK; j_block++)
+        {
+          data->node_norm2 += data->norm2[spamm_index_row_major(i_block, j_block, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)];
+        }
+      }
+      data->node_norm = sqrt(data->node_norm2);
+#else
       data->norm2[norm_offset] += Aij*Aij-old_Aij*old_Aij;
       data->norm[norm_offset] = sqrt(data->norm2[norm_offset]);
 
       data->node_norm2 += Aij*Aij-old_Aij*old_Aij;
       data->node_norm = sqrt(data->node_norm2);
+#endif
     }
   }
 

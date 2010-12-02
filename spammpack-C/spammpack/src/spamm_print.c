@@ -2,6 +2,12 @@
 #include <assert.h>
 #include <stdio.h>
 
+/** Print a dense matrix.
+ *
+ * @param M The number of rows.
+ * @param N The number of columns.
+ * @param A The dense matrix.
+ */
 void
 spamm_print_dense (const unsigned int M, const unsigned int N, const float *A)
 {
@@ -77,6 +83,10 @@ spamm_print_tier (gpointer key, gpointer value, gpointer user_data)
   }
 }
 
+/** Print a SpAMM matrix.
+ *
+ * @param A The matrix.
+ */
 void
 spamm_print (const struct spamm_t *A)
 {
