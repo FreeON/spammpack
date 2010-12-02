@@ -33,6 +33,7 @@ spamm_print_data (gpointer key, gpointer value, gpointer user_data)
 
   printf("(node) tier %u: index_2D = %u, index_3D_ik0 = %u, index_3D_0kj = %u, ",
       data->tier, data->index_2D, data->index_3D_ik0, data->index_3D_0kj);
+  printf("node norm = %1.2e, ", data->node_norm);
   printf("norm = { ");
   for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++)
   {

@@ -14,8 +14,13 @@ libspamm_kernel_la_SOURCES = \
 libspamm_tree_la_SOURCES = \
   spamm.h \
   spamm_config.h \
-  spamm_delete.c \
+  spamm_error.h \
+  spamm_timer.h \
+  spamm_manual_mainpage.h \
+  spamm_allocate.c \
+  spamm_check.c \
   spamm_delete_block.c \
+  spamm_delete.c \
   spamm_delete_node.c \
   spamm_get.c \
   spamm_hashtable.c \
@@ -30,7 +35,6 @@ libspamm_tree_la_SOURCES = \
   spamm_set.c \
   spamm_stats.c \
   spamm_timer.c \
-  spamm_timer.h \
   spamm_uint_to_bin_string.c \
   spamm_version.c
 

@@ -1,8 +1,11 @@
-#ifndef __SPAMM_H__
-#define __SPAMM_H__
+/** @file */
+
+#ifndef __SPAMM_H
+#define __SPAMM_H
 
 /* Include some configuration options. */
 #include "spamm_config.h"
+#include "spamm_error.h"
 #include "spamm_kernel.h"
 #include "spamm_timer.h"
 
@@ -70,6 +73,12 @@ struct spamm_data_t
   /** The linear index of this node in 3D, i.e. in product space. */
   unsigned int index_3D_0kj;
 
+  /** The norm of this matrix block. */
+  float node_norm;
+
+  /** The square of the norm of this matrix block. */
+  float node_norm2;
+
   /** The norms of the basic block matrices. */
   float norm[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
 
@@ -77,13 +86,19 @@ struct spamm_data_t
   float norm2[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
 
   /** The matrix data. */
-  float block_dense[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
+  float *block_dense;
 
   /** The matrix data (dilated by 4 for SSE). */
-  float block_dense_dilated[4*SPAMM_N_KERNEL*SPAMM_N_KERNEL];
+  float *block_dense_dilated;
 };
 
 /* Function declarations. */
+
+void *
+spamm_allocate (size_t size);
+
+int
+spamm_check (const struct spamm_t *A);
 
 void
 spamm_delete (struct spamm_t **A);
@@ -133,6 +148,9 @@ spamm_index_3D_ik0 (const unsigned int i, const unsigned int k);
 
 unsigned int
 spamm_index_3D_i0j_to_2D (const unsigned int index_3D_i0j);
+
+unsigned int
+spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj);
 
 void
 spamm_multiply (const float tolerance,
