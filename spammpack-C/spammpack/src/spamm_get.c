@@ -4,6 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/** Get an element from a matrix.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ * @param A The matrix.
+ *
+ * @return The matrix element \f$A(i,j)\f$.
+ */
 float
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
 {

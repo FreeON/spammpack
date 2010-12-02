@@ -53,6 +53,10 @@ spamm_delete_tier_hashtable (gpointer key, gpointer value, gpointer user_data)
   g_hash_table_destroy(node_hashtable);
 }
 
+/** Delete a matrix.
+ *
+ * @param A The matrix to delete.
+ */
 void
 spamm_delete (struct spamm_t **A)
 {

@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+/** Return the version string of this library.
+ *
+ * @return The version string. This string is allocated with malloc() and the
+ * caller is responsible for free()ing the string.
+ */
 char *
 spamm_version ()
 {
