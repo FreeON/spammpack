@@ -67,6 +67,18 @@ AC_CHECK_LIB([m], [ceil],
              [AC_MSG_FAILURE([ceil() not found])],
              [])
 
+dnl Check for malloc with alignment.
+AC_DEFINE([_POSIX_C_SOURCE], [200809L], [Define POSIX to enable posix_memalign().])
+AC_CHECK_DECL([posix_memalign],
+              [declared_posix_memalign="yes"],
+              [declared_posix_memalign="no"], [])
+
+if test "${declared_posix_memalign}" = "yes"; then
+  AC_CHECK_LIB([c], [posix_memalign],
+               [AC_DEFINE([HAVE_POSIX_MEMALIGN], [1], [We can allocate aligned
+                memory.])], [], [])
+fi
+
 dnl Check for PAPI.
 AC_MSG_CHECKING([whether to enable PAPI profiling interface])
 AC_ARG_ENABLE([PAPI], [AS_HELP_STRING([--enable-PAPI],
@@ -185,6 +197,7 @@ Doxyfile
 Makefile
 src/Makefile
 src/spamm_config.h
+src/spamm_manual_mainpage.h
 tests/Makefile
 ])
 

@@ -1,5 +1,7 @@
-#ifndef __SPAMM_KERNEL_H__
-#define __SPAMM_KERNEL_H__
+/** @file */
+
+#ifndef __SPAMM_KERNEL_H
+#define __SPAMM_KERNEL_H
 
 /** The basic information in a stream element.
  */

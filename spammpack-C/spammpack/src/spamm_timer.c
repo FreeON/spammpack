@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/** Return a new timer object.
+ *
+ * @return The newly allocated and initialized timer object.
+ */
 struct spamm_timer_t *
 spamm_timer_new ()
 {
@@ -12,6 +16,11 @@ spamm_timer_new ()
   return timer;
 }
 
+/** Delete a timer object.
+ *
+ * @param timer The timer object to delete. The memory pointer to will be
+ * freed and the pointer to the timer will be set to NULL.
+ */
 void
 spamm_timer_delete (struct spamm_timer_t **timer)
 {
@@ -19,6 +28,10 @@ spamm_timer_delete (struct spamm_timer_t **timer)
   *timer = NULL;
 }
 
+/** Start the timer.
+ *
+ * @param timer The timer to start.
+ */
 void
 spamm_timer_start (struct spamm_timer_t *timer)
 {
@@ -36,6 +49,10 @@ spamm_timer_start (struct spamm_timer_t *timer)
   }
 }
 
+/** Stop the timer.
+ *
+ * @param timer The timer to stop.
+ */
 void
 spamm_timer_stop (struct spamm_timer_t *timer)
 {
@@ -53,6 +70,12 @@ spamm_timer_stop (struct spamm_timer_t *timer)
   }
 }
 
+/** Get the number of seconds that have passed between starting and stopping
+ * the timer. This time is using the total time, i.e. the sum of user and
+ * system time.
+ *
+ * @param timer The timer.
+ */
 float
 spamm_timer_get_seconds (const struct spamm_timer_t *timer)
 {
@@ -62,6 +85,12 @@ spamm_timer_get_seconds (const struct spamm_timer_t *timer)
     exit(1);
   }
 
-  return (timer->end_time).ru_utime.tv_sec+(timer->end_time).ru_utime.tv_usec/1.0e6
-    -((timer->start_time).ru_utime.tv_sec+(timer->start_time).ru_utime.tv_usec/1.0e6);
+  return (timer->end_time).ru_utime.tv_sec
+    +(timer->end_time).ru_stime.tv_sec
+    +(timer->end_time).ru_utime.tv_usec/1.0e6
+    +(timer->end_time).ru_stime.tv_usec/1.0e6
+    -((timer->start_time).ru_utime.tv_sec
+        +(timer->start_time).ru_stime.tv_sec
+        +(timer->start_time).ru_utime.tv_usec/1.0e6
+        +(timer->start_time).ru_stime.tv_usec/1.0e6);
 }

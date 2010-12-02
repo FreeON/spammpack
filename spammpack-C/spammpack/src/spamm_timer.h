@@ -1,3 +1,5 @@
+/** @file */
+
 #ifndef __SPAMM_TIMER_H
 #define __SPAMM_TIMER_H
 
@@ -9,8 +11,13 @@
  */
 struct spamm_timer_t
 {
+  /** Indicate whether the timer is already running. */
   short timer_running;
+
+  /** The time the timer was started. */
   struct rusage start_time;
+
+  /** The time the timer was stopped. */
   struct rusage end_time;
 };
 

@@ -4,6 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/** Set an element in a matrix.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ * @param Aij The value of the matrix element A(i,j).
+ * @param A The matrix.
+ */
 void
 spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_t *A)
 {
@@ -116,6 +123,9 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       /* Update norms. */
       data->norm2[norm_offset] += Aij*Aij-old_Aij*old_Aij;
       data->norm[norm_offset] = sqrt(data->norm2[norm_offset]);
+
+      data->node_norm2 += Aij*Aij-old_Aij*old_Aij;
+      data->node_norm = sqrt(data->node_norm2);
     }
   }
 

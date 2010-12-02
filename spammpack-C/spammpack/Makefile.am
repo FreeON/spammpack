@@ -9,7 +9,9 @@ SUBDIRS = src tests
 EXTRA_DIST = localversion
 
 CONFIG_STATUS_DEPENDENCIES = \
-  $(top_srcdir)/localversion
+  $(top_srcdir)/localversion \
+  $(top_srcdir)/src/spamm_manual_mainpage.h.in \
+  $(top_srcdir)/src/spamm_config.h.in
 
 dist : docs
 
