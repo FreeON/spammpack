@@ -39,7 +39,17 @@ spamm_new (const unsigned int M, const unsigned int N)
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
 
+  /* The ceil() function can lead to a depth that is one tier too large
+   * because of numerical errors in the calculation of x. We need to check
+   * whether the depth is appropriate.
+   */
   A->depth = (unsigned int) ceil(x);
+
+  /* Double check depth. */
+  if (A->depth >= 1 && ((int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, A->depth-1)) >= M && (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, A->depth-1)) >= N))
+  {
+    (A->depth)--;
+  }
 
   /* Adjust tree to kernel depth. */
   if (A->depth < SPAMM_KERNEL_DEPTH) { A->depth = SPAMM_KERNEL_DEPTH; }

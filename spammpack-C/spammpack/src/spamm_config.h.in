@@ -13,7 +13,7 @@
  * computational kernel. */
 #define SPAMM_KERNEL_DEPTH @SPAMM_KERNEL_DEPTH@
 
-/** Define the size of a matrix block as NxN. */
+/** Define the size of a basic matrix block as NxN. */
 #define SPAMM_N_BLOCK @SPAMM_N_BLOCK@
 
 /** Define the size of the children node matrix as NxN. */

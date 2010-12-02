@@ -3,6 +3,151 @@
 #include <math.h>
 #include <stdio.h>
 
+struct spamm_check_user_data_t
+{
+  unsigned int tier;
+  const struct spamm_t *A;
+};
+
+void
+spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
+{
+  short i, j;
+  short i_block, j_block;
+  float norm2 = 0.0;
+
+  float Aij;
+
+  unsigned int child_index;
+  struct spamm_node_t *child_node = NULL;
+  struct spamm_data_t *child_data = NULL;
+
+  unsigned int *index = key;
+  struct spamm_node_t *node = NULL;
+  struct spamm_data_t *data = NULL;
+  struct spamm_check_user_data_t *user = user_data;
+
+  unsigned int next_tier;
+  GHashTable *next_tier_hashtable = NULL;
+
+  /* Load correct value. */
+  if (user->tier == user->A->kernel_tier)
+  {
+    data = value;
+
+    printf("tier %u, index %u: checking data, norm = %e, norm2 = %e\n",
+        data->tier, data->index_2D, data->node_norm, data->node_norm2);
+
+    /* Check norms on kernel blocks. */
+    for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++) {
+      for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++)
+      {
+        norm2 = 0.0;
+        for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
+          for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
+          {
+            Aij = data->block_dense[SPAMM_N_BLOCK*SPAMM_N_BLOCK*spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
+              +spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
+            norm2 += Aij*Aij;
+          }
+        }
+
+        if (norm2 != data->norm2[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)])
+        {
+          data->norm2[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)] = norm2;
+        }
+
+        if (sqrt(norm2) != data->norm[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)])
+        {
+          printf("tier %u, index %u, block (%u,%u): incorrect norm value, found %e, should be %e, |diff| = %e, fixing...\n",
+              data->tier, data->index_2D, i, j,
+              data->norm[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)],
+              sqrt(norm2),
+              fabs(data->norm[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)]-sqrt(norm2)));
+          data->norm[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)] = sqrt(norm2);
+        }
+      }
+    }
+
+    /* Check norms on kernel tier block. */
+    norm2 = 0.0;
+    for (i = 0; i < SPAMM_N_KERNEL; i++) {
+      for (j = 0; j < SPAMM_N_KERNEL; j++)
+      {
+        Aij = data->block_dense[spamm_index_row_major(i, j, SPAMM_N_KERNEL, SPAMM_N_KERNEL)];
+        norm2 += Aij*Aij;
+      }
+    }
+
+    if (norm2 != data->node_norm2)
+    {
+      data->node_norm2 = norm2;
+    }
+
+    if (sqrt(norm2) != data->node_norm)
+    {
+      printf("tier %u, index %u: incorrect norm value, found %e, should be %e, |diff| = %e, fixing...\n",
+          data->tier, data->index_2D, data->node_norm, sqrt(norm2), fabs(data->node_norm-sqrt(norm2)));
+      data->node_norm = sqrt(norm2);
+    }
+  }
+
+  else
+  {
+    node = value;
+
+    printf("tier %u, index %u: checking node, norm = %e, norm2 = %e\n",
+        node->tier, node->index_2D, node->norm, node->norm2);
+
+    /* Get the tier hashtable for the next tier. */
+    next_tier = user->tier+1;
+    next_tier_hashtable = g_hash_table_lookup(user->A->tier_hashtable, &next_tier);
+
+    if (next_tier == user->A->kernel_tier)
+    {
+      for (i = 0; i < SPAMM_N_CHILD; i++) {
+        for (j = 0; j < SPAMM_N_CHILD; j++)
+        {
+          /* Construct index of child block. */
+          child_index = ((*index) << 2) | (i << 1) | j;
+
+          child_data = g_hash_table_lookup(next_tier_hashtable, &child_index);
+
+          norm2 += child_data->node_norm2;
+        }
+      }
+    }
+
+    else
+    {
+      norm2 = 0.0;
+      for (i = 0; i < SPAMM_N_CHILD; i++) {
+        for (j = 0; j < SPAMM_N_CHILD; j++)
+        {
+          /* Construct index of child block. */
+          child_index = ((*index) << 2) | (i << 1) | j;
+
+          child_node = g_hash_table_lookup(next_tier_hashtable, &child_index);
+
+          norm2 += child_node->norm2;
+        }
+      }
+    }
+
+    if (norm2 != node->norm2)
+    {
+      node->norm2 = norm2;
+    }
+
+    if (sqrt(norm2) != node->norm)
+    {
+      printf("tier %u, index %u: incorrect norm value, found %e, should be %e, |diff| = %e, fixing...\n",
+          node->tier, node->index_2D, node->norm, sqrt(norm2), fabs(node->norm-sqrt(norm2)));
+      node->norm = sqrt(norm2);
+    }
+  }
+}
+
 /** Check the internal consistency of a matrix.
  *
  * @param A The matrix to check
@@ -19,12 +164,15 @@ spamm_check (const struct spamm_t *A)
   unsigned int N_padded;
   unsigned int tier;
   unsigned int reverse_tier;
+  unsigned int next_tier;
   float x_M, x_N, x;
+  struct spamm_check_user_data_t user_data;
   GHashTable *hashtable;
 
   assert(A != NULL);
 
-  /* Calculate padding and depth of matrix based on values stored in M and N.
+  /* Calculate the padding and depth of matrix based on values stored in M and
+   * N.
    */
   x_M = (log(A->M) > log(SPAMM_N_BLOCK) ? log(A->M) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
   x_N = (log(A->N) > log(SPAMM_N_BLOCK) ? log(A->N) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
@@ -32,7 +180,17 @@ spamm_check (const struct spamm_t *A)
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
 
+  /* The ceil() function can lead to a depth that is one tier too large
+   * because of numerical errors in the calculation of x. We need to check
+   * whether the depth is appropriate.
+   */
   depth = (unsigned int) ceil(x);
+
+  /* Double check depth. */
+  if (depth >= 1 && ((int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, depth-1)) >= A->M && (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, depth-1)) >= A->N))
+  {
+    depth--;
+  }
 
   if (A->depth != depth)
   {
@@ -78,6 +236,11 @@ spamm_check (const struct spamm_t *A)
     hashtable = g_hash_table_lookup(A->tier_hashtable, &reverse_tier);
 
     /* Verify consistency of 2D and 3D linear indices. */
+
+    /* Verify norms. */
+    user_data.tier = reverse_tier;
+    user_data.A = A;
+    g_hash_table_foreach(hashtable, spamm_check_verify_norm, &user_data);
   }
 
   return result;

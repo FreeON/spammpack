@@ -55,9 +55,9 @@ spamm_multiply_compare_index_row (gconstpointer a, gconstpointer b, gpointer use
     b_data = g_hash_table_lookup(tier_hashtable, y);
 
     /* Sort norms within k in descending order. */
-    if (a_data->norm > b_data->norm)      { return -1; }
-    else if (a_data->norm < b_data->norm) { return  1; }
-    else                                  { return  0; }
+    if (a_data->node_norm > b_data->node_norm)      { return -1; }
+    else if (a_data->node_norm < b_data->node_norm) { return  1; }
+    else                                            { return  0; }
   }
 }
 
@@ -84,9 +84,9 @@ spamm_multiply_compare_index_column (gconstpointer a, gconstpointer b, gpointer 
     b_data = g_hash_table_lookup(tier_hashtable, y);
 
     /* Sort norms within k in descending order. */
-    if (a_data->norm > b_data->norm)      { return -1; }
-    else if (a_data->norm < b_data->norm) { return  1; }
-    else                                  { return  0; }
+    if (a_data->node_norm > b_data->node_norm)      { return -1; }
+    else if (a_data->node_norm < b_data->node_norm) { return  1; }
+    else                                            { return  0; }
   }
 }
 
@@ -171,6 +171,7 @@ spamm_multiply (const float tolerance,
 
   struct multiply_stream_t *multiply_stream;
   unsigned int stream_index;
+  unsigned int number_dropped_blocks;
 
   struct spamm_timer_t *beta_timer          = spamm_timer_new();
   struct spamm_timer_t *sort_timer          = spamm_timer_new();
@@ -208,6 +209,8 @@ spamm_multiply (const float tolerance,
 
   B_index_sorted = g_hash_table_get_keys(B_tier_hashtable);
   B_index_sorted = g_list_sort_with_data(B_index_sorted, spamm_multiply_compare_index_row, B_tier_hashtable);
+
+  printf("len(A) = %u, len(B) = %u, ", g_list_length(A_index_sorted), g_list_length(B_index_sorted));
 
   spamm_timer_stop(sort_timer);
   printf("%1.2e s\n", spamm_timer_get_seconds(sort_timer));
@@ -288,6 +291,8 @@ spamm_multiply (const float tolerance,
     exit(1);
   }
 
+  printf("len(A_k) = %u, len(B_k) = %u, ", A_k_lookup.size, B_k_lookup.size);
+
   spamm_timer_stop(k_lookuptable_timer);
   printf("%1.2e s\n", spamm_timer_get_seconds(k_lookuptable_timer));
 
@@ -305,6 +310,8 @@ spamm_multiply (const float tolerance,
 
   g_list_foreach(A_index_sorted, spamm_multiply_copy_to_array, &A_index);
   g_list_foreach(B_index_sorted, spamm_multiply_copy_to_array, &B_index);
+
+  printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
 
   spamm_timer_stop(copy_timer);
   printf("%1.2e s\n", spamm_timer_get_seconds(copy_timer));
@@ -343,7 +350,9 @@ spamm_multiply (const float tolerance,
   spamm_timer_start(convolute_timer);
 
   stream_index = 0;
-  multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
+  number_dropped_blocks = 0;
+  multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)
+      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
 
   /* Loop over A. */
   A_k_lookup_index = 0;
@@ -361,6 +370,12 @@ spamm_multiply (const float tolerance,
     {
       /* Advance B in k. */
       B_k_lookup_index++;
+
+      /* Possibly terminate. */
+      if (B_k_lookup_index == B_k_lookup.size)
+      {
+        break;
+      }
       continue;
     }
 
@@ -368,6 +383,12 @@ spamm_multiply (const float tolerance,
     {
       /* Advance A in k. */
       A_k_lookup_index++;
+
+      /* Possibly Terminate. */
+      if (A_k_lookup_index == A_k_lookup.size)
+      {
+        break;
+      }
 
       /* Set loop counter correctly. */
       i = A_k_lookup.index[A_k_lookup_index];
@@ -386,6 +407,12 @@ spamm_multiply (const float tolerance,
       /* Perform norm product and test whether to keep this term. */
       if (A_block->node_norm*B_block->node_norm <= tolerance)
       {
+        printf("dropping product\n");
+        printf("A_block->node_norm = %e, index = %u\n", A_block->node_norm, A_block->index_2D);
+        spamm_print_dense(SPAMM_N_KERNEL, SPAMM_N_KERNEL, A_block->block_dense);
+        printf("B_block->node_norm = %e, index = %u\n", B_block->node_norm, B_block->index_2D);
+        spamm_print_dense(SPAMM_N_KERNEL, SPAMM_N_KERNEL, B_block->block_dense);
+        number_dropped_blocks++;
         break;
       }
 
@@ -442,6 +469,8 @@ spamm_multiply (const float tolerance,
 
   spamm_timer_stop(convolute_timer);
   printf("%1.2e s\n", spamm_timer_get_seconds(convolute_timer));
+
+  printf("dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
 
   /* Free memory. */
   printf("[multiply] free some more memory... ");
