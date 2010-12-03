@@ -8,14 +8,14 @@ libspamm_la_SOURCES =
 libspamm_la_LIBADD = $(noinst_LTLIBRARIES)
 
 libspamm_kernel_la_SOURCES = \
-  spamm_kernel.h \
+  $(libspamm_kernel_headers) \
   spamm_stream_kernel.S
 
+libspamm_kernel_headers = \
+  spamm_kernel.h
+
 libspamm_tree_la_SOURCES = \
-  spamm.h \
-  spamm_config.h \
-  spamm_error.h \
-  spamm_timer.h \
+  $(libspamm_tree_headers) \
   spamm_manual_mainpage.h \
   spamm_allocate.c \
   spamm_check.c \
@@ -37,6 +37,16 @@ libspamm_tree_la_SOURCES = \
   spamm_timer.c \
   spamm_uint_to_bin_string.c \
   spamm_version.c
+
+libspamm_tree_headers = \
+  spamm.h \
+  spamm_config.h \
+  spamm_error.h \
+  spamm_timer.h
+
+include_HEADERS = \
+  $(libspamm_kernel_headers) \
+  $(libspamm_tree_headers)
 
 tags :
 	ctags --C-kinds=+l+x *.h *.c *.S ../config.h
