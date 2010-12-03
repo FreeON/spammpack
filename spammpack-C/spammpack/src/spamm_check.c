@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdio.h>
 
+#define RELATIVE_TOLERANCE 1.0e-7
+
 struct spamm_check_user_data_t
 {
   unsigned int tier;
@@ -35,9 +37,6 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
   {
     data = value;
 
-    printf("tier %u, index %u: checking data, norm = %e, norm2 = %e\n",
-        data->tier, data->index_2D, data->node_norm, data->node_norm2);
-
     /* Check norms on kernel blocks. */
     for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++) {
       for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++)
@@ -52,18 +51,15 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
           }
         }
 
-        if (norm2 != data->norm2[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)])
-        {
-          data->norm2[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)] = norm2;
-        }
-
-        if (sqrt(norm2) != data->norm[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)])
+        if (fabs(norm2-data->norm2[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)]) > RELATIVE_TOLERANCE*norm2)
         {
           printf("tier %u, index %u, block (%u,%u): incorrect norm value, found %e, should be %e, |diff| = %e, fixing...\n",
               data->tier, data->index_2D, i, j,
               data->norm[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)],
               sqrt(norm2),
               fabs(data->norm[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)]-sqrt(norm2)));
+
+          data->norm2[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)] = norm2;
           data->norm[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)] = sqrt(norm2);
         }
       }
@@ -79,15 +75,12 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
       }
     }
 
-    if (norm2 != data->node_norm2)
+    if (fabs(norm2-data->node_norm2) > RELATIVE_TOLERANCE*norm2)
     {
-      data->node_norm2 = norm2;
-    }
-
-    if (sqrt(norm2) != data->node_norm)
-    {
-      printf("tier %u, index %u: incorrect norm value, found %e, should be %e, |diff| = %e, fixing...\n",
+      printf("tier %u, index %u: incorrect node norm value, found %e, should be %e, |diff| = %e, fixing...\n",
           data->tier, data->index_2D, data->node_norm, sqrt(norm2), fabs(data->node_norm-sqrt(norm2)));
+
+      data->node_norm2 = norm2;
       data->node_norm = sqrt(norm2);
     }
   }
@@ -96,15 +89,13 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
   {
     node = value;
 
-    printf("tier %u, index %u: checking node, norm = %e, norm2 = %e\n",
-        node->tier, node->index_2D, node->norm, node->norm2);
-
     /* Get the tier hashtable for the next tier. */
     next_tier = user->tier+1;
     next_tier_hashtable = g_hash_table_lookup(user->A->tier_hashtable, &next_tier);
 
     if (next_tier == user->A->kernel_tier)
     {
+      norm2 = 0.0;
       for (i = 0; i < SPAMM_N_CHILD; i++) {
         for (j = 0; j < SPAMM_N_CHILD; j++)
         {
@@ -134,15 +125,12 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
       }
     }
 
-    if (norm2 != node->norm2)
-    {
-      node->norm2 = norm2;
-    }
-
-    if (sqrt(norm2) != node->norm)
+    if (fabs(norm2-node->norm2) > RELATIVE_TOLERANCE*norm2)
     {
       printf("tier %u, index %u: incorrect norm value, found %e, should be %e, |diff| = %e, fixing...\n",
           node->tier, node->index_2D, node->norm, sqrt(norm2), fabs(node->norm-sqrt(norm2)));
+
+      node->norm2 = norm2;
       node->norm = sqrt(norm2);
     }
   }
@@ -164,7 +152,6 @@ spamm_check (const struct spamm_t *A)
   unsigned int N_padded;
   unsigned int tier;
   unsigned int reverse_tier;
-  unsigned int next_tier;
   float x_M, x_N, x;
   struct spamm_check_user_data_t user_data;
   GHashTable *hashtable;
