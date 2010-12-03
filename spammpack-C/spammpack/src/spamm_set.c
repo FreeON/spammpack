@@ -131,8 +131,9 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
         for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
         {
-          old_Aij = data->block_dense[SPAMM_N_BLOCK*SPAMM_N_BLOCK*spamm_index_row_major(i%delta_index/SPAMM_N_KERNEL_BLOCK,
-              j%delta_index/SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
+          old_Aij = data->block_dense[SPAMM_N_BLOCK*SPAMM_N_BLOCK
+            *spamm_index_row_major(i%delta_index/SPAMM_N_KERNEL_BLOCK,
+                j%delta_index/SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
             +spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
           data->norm2[norm_offset] += old_Aij*old_Aij;
         }

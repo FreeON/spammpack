@@ -407,11 +407,6 @@ spamm_multiply (const float tolerance,
       /* Perform norm product and test whether to keep this term. */
       if (A_block->node_norm*B_block->node_norm <= tolerance)
       {
-        printf("dropping product\n");
-        printf("A_block->node_norm = %e, index = %u\n", A_block->node_norm, A_block->index_2D);
-        spamm_print_dense(SPAMM_N_KERNEL, SPAMM_N_KERNEL, A_block->block_dense);
-        printf("B_block->node_norm = %e, index = %u\n", B_block->node_norm, B_block->index_2D);
-        spamm_print_dense(SPAMM_N_KERNEL, SPAMM_N_KERNEL, B_block->block_dense);
         number_dropped_blocks++;
         break;
       }
