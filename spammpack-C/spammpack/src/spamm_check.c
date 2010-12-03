@@ -102,9 +102,13 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
           /* Construct index of child block. */
           child_index = ((*index) << 2) | (i << 1) | j;
 
+          /* Get child node. */
           child_data = g_hash_table_lookup(next_tier_hashtable, &child_index);
 
-          norm2 += child_data->node_norm2;
+          if (child_data != NULL)
+          {
+            norm2 += child_data->node_norm2;
+          }
         }
       }
     }
@@ -118,9 +122,13 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
           /* Construct index of child block. */
           child_index = ((*index) << 2) | (i << 1) | j;
 
+          /* Get child node. */
           child_node = g_hash_table_lookup(next_tier_hashtable, &child_index);
 
-          norm2 += child_node->norm2;
+          if (child_node != NULL)
+          {
+            norm2 += child_node->norm2;
+          }
         }
       }
     }
