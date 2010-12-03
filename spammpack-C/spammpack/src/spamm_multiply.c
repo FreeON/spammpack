@@ -217,7 +217,7 @@ spamm_multiply (const float tolerance,
 
   /* Create a lookup table for the start of a particular k index in the sorted
    * arrays. */
-  printf("[multiply] creating k lookup trables... ");
+  printf("[multiply] creating k lookup tables... ");
   spamm_timer_start(k_lookuptable_timer);
 
   A_k_lookup.index = (unsigned int*) malloc(sizeof(unsigned int)*(A->N_padded/SPAMM_N_KERNEL+1));
@@ -355,103 +355,111 @@ spamm_multiply (const float tolerance,
       *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
 
   /* Loop over A. */
-  A_k_lookup_index = 0;
-  B_k_lookup_index = 0;
-  for (i = 0; i < A_index.size; )
+  for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size-1; A_k_lookup_index++)
   {
     /* Get k value of A. */
-    A_k = spamm_index_3D_ikj_to_k(A_index.index_3D[i]);
+    A_k = spamm_index_3D_ikj_to_k(A_index.index_3D[A_k_lookup.index[A_k_lookup_index]]);
 
-    /* Get k value of B. */
-    B_k = spamm_index_3D_ikj_to_k(B_index.index_3D[B_k_lookup.index[B_k_lookup_index]]);
-
-    /* Compare k values. */
-    if (A_k > B_k)
+    /* Note that we don't increment i in the for() construct. */
+    for (i = A_k_lookup.index[A_k_lookup_index]; i < A_k_lookup.index[A_k_lookup_index+1]; )
     {
-      /* Advance B in k. */
-      B_k_lookup_index++;
+      /* Get k value of B. */
+      B_k = spamm_index_3D_ikj_to_k(B_index.index_3D[B_k_lookup.index[B_k_lookup_index]]);
 
-      /* Possibly terminate. */
-      if (B_k_lookup_index == B_k_lookup.size)
+      /* Compare k values. */
+      if (A_k > B_k)
       {
-        break;
+        /* Advance B in k. */
+        B_k_lookup_index++;
+
+        /* Possibly terminate. */
+        if (B_k_lookup_index == B_k_lookup.size-1)
+        {
+          break;
+        }
+        continue;
       }
-      continue;
+
+      else if (A_k < B_k)
+      {
+        continue;
+      }
+
+      /* Get reference to dense block of A. */
+      A_block = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
+
+      /* Loop over subset of B with matching k. */
+      for (j = B_k_lookup.index[B_k_lookup_index]; j < B_k_lookup.index[B_k_lookup_index+1]; j++)
+      {
+        /* Get reference to dense block of B. */
+        B_block = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[j]);
+
+        /* Perform norm product and test whether to keep this term. */
+        if (A_block->node_norm*B_block->node_norm <= tolerance)
+        {
+          number_dropped_blocks++;
+          break;
+        }
+
+        /* Get the linear 2D index of the C block. */
+        convolution_index = (A_index.index_3D[i] & MASK_3D_IJ) | (B_index.index_3D[j] & MASK_3D_IJ);
+        convolution_index_2D = spamm_index_3D_i0j_to_2D(convolution_index);
+
+        /* Get reference to dense block of C. */
+        C_block = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
+
+        /* Check if that C block is already in the tree. */
+        if (C_block == NULL)
+        {
+          printf("[FIXME]\n");
+          exit(1);
+        }
+
+        /* Set references to matrix block in multiply stream. */
+        multiply_stream[stream_index].A_block = A_block->block_dense_dilated;
+        multiply_stream[stream_index].B_block = B_block->block_dense;
+        multiply_stream[stream_index].C_block = C_block->block_dense;
+
+        /* Set the kernel block norms. */
+        for (k = 0; k < 16; k++)
+        {
+          multiply_stream[stream_index].norm[k] = A_block->norm[k];
+        }
+
+        for (k = 16; k < 32; k++)
+        {
+          multiply_stream[stream_index].norm[k] = B_block->norm[k-16];
+        }
+
+        /* Done with this stream element. */
+        stream_index++;
+      }
+
+      /* Test how quickly we tested out in the previous loop over B. */
+      if (j == B_k_lookup.index[B_k_lookup_index])
+      {
+        /* We never went past the first block in B. Since k segments are norm
+         * sorted, we know that we can skip the rest of this k segment in A. */
+        A_k_lookup_index++;
+
+        /* Possibly Terminate. */
+        if (A_k_lookup_index == A_k_lookup.size-1)
+        {
+          break;
+        }
+
+        /* Set loop counter correctly. */
+        i = A_k_lookup.index[A_k_lookup_index];
+
+        /* Get k value of A. */
+        A_k = spamm_index_3D_ikj_to_k(A_index.index_3D[A_k_lookup.index[A_k_lookup_index]]);
+
+        continue;
+      }
+
+      /* Increment loop counter. */
+      i++;
     }
-
-    else if (A_k < B_k)
-    {
-      /* Advance A in k. */
-      A_k_lookup_index++;
-
-      /* Possibly Terminate. */
-      if (A_k_lookup_index == A_k_lookup.size)
-      {
-        break;
-      }
-
-      /* Set loop counter correctly. */
-      i = A_k_lookup.index[A_k_lookup_index];
-      continue;
-    }
-
-    /* Get reference to dense block of A. */
-    A_block = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
-
-    /* Loop over subset of B with matching k. */
-    for (j = B_k_lookup.index[B_k_lookup_index]; j < B_k_lookup.index[B_k_lookup_index+1]; j++)
-    {
-      /* Get reference to dense block of B. */
-      B_block = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[j]);
-
-      /* Perform norm product and test whether to keep this term. */
-      if (A_block->node_norm*B_block->node_norm <= tolerance)
-      {
-        number_dropped_blocks++;
-        break;
-      }
-
-      /* Get the linear 2D index of the C block. */
-      convolution_index = (A_index.index_3D[i] & MASK_3D_IJ) | (B_index.index_3D[j] & MASK_3D_IJ);
-      convolution_index_2D = spamm_index_3D_i0j_to_2D(convolution_index);
-
-      /* Get reference to dense block of C. */
-      C_block = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
-
-      /* Set references to matrix block in multiply stream. */
-      multiply_stream[stream_index].A_block = A_block->block_dense_dilated;
-      multiply_stream[stream_index].B_block = B_block->block_dense;
-      multiply_stream[stream_index].C_block = C_block->block_dense;
-
-      /* Set the kernel block norms. */
-      for (k = 0; k < 16; k++)
-      {
-        multiply_stream[stream_index].norm[k] = A_block->norm[k];
-      }
-
-      for (k = 16; k < 32; k++)
-      {
-        multiply_stream[stream_index].norm[k] = B_block->norm[k-16];
-      }
-
-      /* Done with this stream element. */
-      stream_index++;
-    }
-
-    /* Test how quickly we tested out in the previous loop over B. */
-    if (j == B_k_lookup.index[B_k_lookup_index])
-    {
-      /* We never went past the first block in B. Since k segments are norm
-       * sorted, we know that we can skip the rest of this k segment in A. */
-      A_k_lookup_index++;
-
-      /* Set loop counter correctly. */
-      i = A_k_lookup.index[A_k_lookup_index];
-      continue;
-    }
-
-    /* Increment loop counter. */
-    i++;
   }
 
   /* Check. */
