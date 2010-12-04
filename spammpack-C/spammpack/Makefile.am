@@ -6,12 +6,15 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src tests
 
-EXTRA_DIST = localversion
+EXTRA_DIST = localversion $(pdf_DATA)
 
 CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/localversion \
   $(top_srcdir)/src/spamm_manual_mainpage.h.in \
   $(top_srcdir)/src/spamm_config.h.in
+
+pdfdir = ${docdir}/pdf
+pdf_DATA = latex/refman.pdf
 
 dist : docs
 

@@ -24,6 +24,7 @@ struct spamm_multiply_index_list_t
   unsigned int size;
   unsigned int *index_2D;
   unsigned int *index_3D;
+  struct spamm_data_t **block_dense;
 };
 
 struct spamm_multiply_k_lookup_t
@@ -303,10 +304,12 @@ spamm_multiply (const float tolerance,
   A_index.size = 0;
   A_index.index_2D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(A_index_sorted));
   A_index.index_3D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(A_index_sorted));
+  A_index.block_dense = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*g_list_length(A_index_sorted));
 
   B_index.size = 0;
   B_index.index_2D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(B_index_sorted));
   B_index.index_3D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(B_index_sorted));
+  B_index.block_dense = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*g_list_length(B_index_sorted));
 
   g_list_foreach(A_index_sorted, spamm_multiply_copy_to_array, &A_index);
   g_list_foreach(B_index_sorted, spamm_multiply_copy_to_array, &B_index);
@@ -317,19 +320,21 @@ spamm_multiply (const float tolerance,
   printf("%1.2e s\n", spamm_timer_get_seconds(copy_timer));
 
   /* Copy appropriate 3D convolution index to arrays. */
-  printf("[multiply] copying 3D convolution index to arrays... ");
+  printf("[multiply] copying 3D convolution index to arrays and referencing dense blocks... ");
   spamm_timer_start(copy_3D_timer);
 
   for (i = 0; i < A_index.size; i++)
   {
     data = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
     A_index.index_3D[i] = data->index_3D_ik0;
+    A_index.block_dense[i] = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
   }
 
   for (i = 0; i < B_index.size; i++)
   {
     data = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[i]);
     B_index.index_3D[i] = data->index_3D_0kj;
+    B_index.block_dense[i] = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[i]);
   }
 
   spamm_timer_stop(copy_3D_timer);
@@ -386,13 +391,13 @@ spamm_multiply (const float tolerance,
       }
 
       /* Get reference to dense block of A. */
-      A_block = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
+      A_block = A_index.block_dense[i];
 
       /* Loop over subset of B with matching k. */
       for (j = B_k_lookup.index[B_k_lookup_index]; j < B_k_lookup.index[B_k_lookup_index+1]; j++)
       {
         /* Get reference to dense block of B. */
-        B_block = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[j]);
+        B_block = B_index.block_dense[j];
 
         /* Perform norm product and test whether to keep this term. */
         if (A_block->node_norm*B_block->node_norm <= tolerance)
