@@ -128,6 +128,69 @@ spamm_multiply_beta (const float beta, struct spamm_t *A)
   g_hash_table_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &beta);
 }
 
+/** @private Sort the multiply stream according to a linear 2D index. This is
+ * used to sort the stream according to the linear index of the C blocks to
+ * help avoid excessive hash table lookups in associating C blocks to the
+ * stream.
+ *
+ * @param left The left index of the sub-list to be sorted.
+ * @param right The right index of the sub-list to be sorted.
+ * @param multiply_stream The multiply stream.
+ * @param C_block_stream_index The array of linear matrix indices of the C
+ * blocks.
+ */
+void
+spamm_multiply_sort_stream (const unsigned int left,
+    const unsigned int right,
+    struct spamm_multiply_stream_t *multiply_stream,
+    unsigned int *C_block_stream_index)
+{
+  unsigned int pivot;
+  unsigned int temp;
+  unsigned int left_index = left;
+  unsigned int right_index = right;
+
+  if (right > left)
+  {
+    pivot = (left+right)/2;
+    while (left_index <= pivot && right_index >= pivot)
+    {
+      while ((C_block_stream_index[left_index] < C_block_stream_index[pivot]) && (left_index <= pivot))
+      {
+        left_index++;
+      }
+
+      while ((C_block_stream_index[pivot] < C_block_stream_index[right_index]) && (right_index >= pivot))
+      {
+        right_index--;
+      }
+
+      /* Swap left_index with right_index. */
+      temp = C_block_stream_index[left_index];
+      C_block_stream_index[left_index] = C_block_stream_index[right_index];
+      C_block_stream_index[right_index] = temp;
+
+      left_index++;
+      right_index--;
+
+      if (left_index-1 == pivot)
+      {
+        pivot = right_index;
+        right_index++;
+      }
+
+      else if (right_index+1 == pivot)
+      {
+        pivot = left_index;
+        left_index--;
+      }
+    }
+
+    spamm_multiply_sort_stream(left, pivot-1,  multiply_stream, C_block_stream_index);
+    spamm_multiply_sort_stream(pivot+1, right, multiply_stream, C_block_stream_index);
+  }
+}
+
 /** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
  *
  * @param tolerance The SpAMM tolerance of this product.
@@ -170,9 +233,12 @@ spamm_multiply (const float tolerance,
   struct spamm_multiply_k_lookup_t A_k_lookup;
   struct spamm_multiply_k_lookup_t B_k_lookup;
 
-  struct multiply_stream_t *multiply_stream;
+  struct spamm_multiply_stream_t *multiply_stream;
   unsigned int stream_index;
   unsigned int number_dropped_blocks;
+  unsigned int previous_index;
+
+  unsigned int *C_block_stream_index;
 
   struct spamm_timer_t *beta_timer          = spamm_timer_new();
   struct spamm_timer_t *sort_timer          = spamm_timer_new();
@@ -183,6 +249,7 @@ spamm_multiply (const float tolerance,
   struct spamm_timer_t *convolute_timer     = spamm_timer_new();
   struct spamm_timer_t *stream_timer        = spamm_timer_new();
   struct spamm_timer_t *free_2_timer        = spamm_timer_new();
+  struct spamm_timer_t *reference_C_timer   = spamm_timer_new();
 
   assert(A != NULL);
   assert(B != NULL);
@@ -356,7 +423,9 @@ spamm_multiply (const float tolerance,
 
   stream_index = 0;
   number_dropped_blocks = 0;
-  multiply_stream = (struct multiply_stream_t*) malloc(sizeof(struct multiply_stream_t)
+  multiply_stream = (struct spamm_multiply_stream_t*) malloc(sizeof(struct spamm_multiply_stream_t)
+      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
+  C_block_stream_index = (unsigned int*) malloc(sizeof(unsigned int)
       *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
 
   /* Loop over A. */
@@ -410,20 +479,10 @@ spamm_multiply (const float tolerance,
         convolution_index = (A_index.index_3D[i] & MASK_3D_IJ) | (B_index.index_3D[j] & MASK_3D_IJ);
         convolution_index_2D = spamm_index_3D_i0j_to_2D(convolution_index);
 
-        /* Get reference to dense block of C. */
-        C_block = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
-
-        /* Check if that C block is already in the tree. */
-        if (C_block == NULL)
-        {
-          printf("[FIXME]\n");
-          exit(1);
-        }
-
         /* Set references to matrix block in multiply stream. */
         multiply_stream[stream_index].A_block = A_block->block_dense_dilated;
         multiply_stream[stream_index].B_block = B_block->block_dense;
-        multiply_stream[stream_index].C_block = C_block->block_dense;
+        C_block_stream_index[stream_index] = convolution_index_2D;
 
         /* Set the kernel block norms. */
         for (k = 0; k < 16; k++)
@@ -480,10 +539,45 @@ spamm_multiply (const float tolerance,
 
   printf("dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
 
+  /* Sort multiply stream and reference C blocks. */
+  printf("[multiply] sort and reference C blocks...");
+  spamm_timer_start(reference_C_timer);
+
+  /* Sort on C block index. */
+  spamm_multiply_sort_stream(0, stream_index, multiply_stream, C_block_stream_index);
+
+  /* Loop over sorted stream and associate the correct C block references. */
+  previous_index = C_block_stream_index[0]+1;
+  for (i = 0; i < stream_index; i++)
+  {
+    if (C_block_stream_index[i] != previous_index)
+    {
+      /* Get reference to dense block of C. */
+      C_block = g_hash_table_lookup(C_tier_hashtable, &C_block_stream_index[i]);
+
+      /* Update the previous index. */
+      previous_index = C_block_stream_index[i];
+
+      /* Check if that C block is already in the tree. */
+      if (C_block == NULL)
+      {
+        printf("[FIXME]\n");
+        exit(1);
+      }
+    }
+
+    /* Add reference to stream. */
+    multiply_stream[i].C_block = C_block->block_dense;
+  }
+
+  spamm_timer_stop(reference_C_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(reference_C_timer));
+
   /* Free memory. */
   printf("[multiply] free some more memory... ");
   spamm_timer_start(free_2_timer);
 
+  free(C_block_stream_index);
   free(A_index.index_2D);
   free(A_index.index_3D);
   free(B_index.index_2D);

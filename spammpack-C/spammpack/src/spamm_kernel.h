@@ -5,7 +5,7 @@
 
 /** The basic information in a stream element.
  */
-struct multiply_stream_t
+struct spamm_multiply_stream_t
 {
   /** A pointer to the kernel dense matrix block of A. This block is assumed
    * to be dilated by 4 for SSE processing. */
@@ -32,6 +32,6 @@ void
 spamm_stream_kernel (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
-    struct multiply_stream_t *multiply_stream);
+    struct spamm_multiply_stream_t *multiply_stream);
 
 #endif
