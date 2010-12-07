@@ -125,7 +125,7 @@ sys.stdout.write("\n")
 print "#"
 print "# C API:"
 print "#"
-print "# struct multiply_stream_t"
+print "# struct spamm_multiply_stream_t"
 print "# {"
 print "#   float *A_block;"
 print "#   float *B_block;"

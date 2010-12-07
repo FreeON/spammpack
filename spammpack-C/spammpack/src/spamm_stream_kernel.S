@@ -5,7 +5,7 @@
 #
 # C API:
 #
-# struct multiply_stream_t
+# struct spamm_multiply_stream_t
 # {
 #   float *A_block;
 #   float *B_block;
