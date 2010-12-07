@@ -128,10 +128,44 @@ spamm_multiply_beta (const float beta, struct spamm_t *A)
   g_hash_table_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &beta);
 }
 
+void
+spamm_multiply_sort_stream_swap (struct spamm_multiply_stream_t *a_stream,
+    struct spamm_multiply_stream_t *b_stream, unsigned int *a, unsigned int *b)
+{
+  short i;
+  float temp_norm;
+  float *temp_block;
+  unsigned int temp;
+
+  temp_block = a_stream->A_block;
+  a_stream->A_block = b_stream->A_block;
+  b_stream->A_block = temp_block;
+
+  temp_block = a_stream->B_block;
+  a_stream->B_block = b_stream->B_block;
+  b_stream->B_block = temp_block;
+
+  temp_block = a_stream->C_block;
+  a_stream->C_block = b_stream->C_block;
+  b_stream->C_block = temp_block;
+
+  for (i = 0; i < 32; i++)
+  {
+    temp_norm = a_stream->norm[i];
+    a_stream->norm[i] = b_stream->norm[i];
+    b_stream->norm[i] = temp_norm;
+  }
+
+  temp = *a;
+  *a = *b;
+  *b = temp;
+}
+
 /** @private Sort the multiply stream according to a linear 2D index. This is
  * used to sort the stream according to the linear index of the C blocks to
  * help avoid excessive hash table lookups in associating C blocks to the
- * stream.
+ * stream. The sub-list sorted is given by the indices left and right, such
+ * that [left, right], i.e. right is inclusive in the array.
  *
  * @param left The left index of the sub-list to be sorted.
  * @param right The right index of the sub-list to be sorted.
@@ -145,49 +179,39 @@ spamm_multiply_sort_stream (const unsigned int left,
     struct spamm_multiply_stream_t *multiply_stream,
     unsigned int *C_block_stream_index)
 {
+  unsigned int i;
   unsigned int pivot;
-  unsigned int temp;
-  unsigned int left_index = left;
-  unsigned int right_index = right;
+  unsigned int new_pivot;
+  unsigned int pivot_value;
 
   if (right > left)
   {
-    pivot = (left+right)/2;
-    while (left_index <= pivot && right_index >= pivot)
+    /* Select pivot value. */
+    pivot = left+(right-left)/2;
+
+    /* Partition. */
+    pivot_value = C_block_stream_index[pivot];
+
+    /* Move pivot to the end. */
+    spamm_multiply_sort_stream_swap(&multiply_stream[pivot], &multiply_stream[right],
+        &C_block_stream_index[pivot], &C_block_stream_index[right]);
+
+    /* Find new pivot. */
+    new_pivot = left;
+
+    for (i = left; i < right; i++)
     {
-      while ((C_block_stream_index[left_index] < C_block_stream_index[pivot]) && (left_index <= pivot))
+      if (C_block_stream_index[i] <= pivot_value)
       {
-        left_index++;
-      }
-
-      while ((C_block_stream_index[pivot] < C_block_stream_index[right_index]) && (right_index >= pivot))
-      {
-        right_index--;
-      }
-
-      /* Swap left_index with right_index. */
-      temp = C_block_stream_index[left_index];
-      C_block_stream_index[left_index] = C_block_stream_index[right_index];
-      C_block_stream_index[right_index] = temp;
-
-      left_index++;
-      right_index--;
-
-      if (left_index-1 == pivot)
-      {
-        pivot = right_index;
-        right_index++;
-      }
-
-      else if (right_index+1 == pivot)
-      {
-        pivot = left_index;
-        left_index--;
+        spamm_multiply_sort_stream_swap(&multiply_stream[i], &multiply_stream[new_pivot], &C_block_stream_index[i], &C_block_stream_index[new_pivot]);
+        new_pivot++;
       }
     }
+    spamm_multiply_sort_stream_swap(&multiply_stream[new_pivot], &multiply_stream[right], &C_block_stream_index[new_pivot], &C_block_stream_index[right]);
 
-    spamm_multiply_sort_stream(left, pivot-1,  multiply_stream, C_block_stream_index);
-    spamm_multiply_sort_stream(pivot+1, right, multiply_stream, C_block_stream_index);
+    /* Recurse. */
+    spamm_multiply_sort_stream(left, new_pivot-1, multiply_stream, C_block_stream_index);
+    spamm_multiply_sort_stream(new_pivot+1, right, multiply_stream, C_block_stream_index);
   }
 }
 
@@ -249,6 +273,7 @@ spamm_multiply (const float tolerance,
   struct spamm_timer_t *convolute_timer     = spamm_timer_new();
   struct spamm_timer_t *stream_timer        = spamm_timer_new();
   struct spamm_timer_t *free_2_timer        = spamm_timer_new();
+  struct spamm_timer_t *sort_C_timer        = spamm_timer_new();
   struct spamm_timer_t *reference_C_timer   = spamm_timer_new();
 
   assert(A != NULL);
@@ -540,13 +565,18 @@ spamm_multiply (const float tolerance,
   printf("dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
 
   /* Sort multiply stream and reference C blocks. */
-  printf("[multiply] sort and reference C blocks...");
-  spamm_timer_start(reference_C_timer);
+  printf("[multiply] sort C blocks...");
+  spamm_timer_start(sort_C_timer);
 
   /* Sort on C block index. */
-  spamm_multiply_sort_stream(0, stream_index, multiply_stream, C_block_stream_index);
+  spamm_multiply_sort_stream(0, stream_index-1, multiply_stream, C_block_stream_index);
+
+  spamm_timer_stop(sort_C_timer);
+  printf("%1.2e s\n", spamm_timer_get_seconds(sort_C_timer));
 
   /* Loop over sorted stream and associate the correct C block references. */
+  printf("[multiply] reference C blocks...");
+  spamm_timer_start(reference_C_timer);
   previous_index = C_block_stream_index[0]+1;
   for (i = 0; i < stream_index; i++)
   {
