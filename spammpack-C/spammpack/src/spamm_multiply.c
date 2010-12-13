@@ -248,7 +248,7 @@ spamm_multiply (const float tolerance,
 
   unsigned int i, j, k, k_check;
   unsigned int index;
-  unsigned int convolution_index;
+  volatile unsigned int convolution_index;
   unsigned int convolution_index_2D;
   unsigned int A_k_lookup_index;
   unsigned int B_k_lookup_index;
@@ -500,15 +500,39 @@ spamm_multiply (const float tolerance,
           break;
         }
 
+//#define BLA_1
+#ifdef BLA_1
         /* Get the linear 2D index of the C block. */
         convolution_index = (A_index.index_3D[i] & MASK_3D_IJ) | (B_index.index_3D[j] & MASK_3D_IJ);
-        convolution_index_2D = spamm_index_3D_i0j_to_2D(convolution_index);
+#endif
 
+//#define BLA_2
+#ifdef BLA_2
+        convolution_index_2D = spamm_index_3D_i0j_to_2D(convolution_index);
+#endif
+
+//#define BLA_3
+#ifdef BLA_3
         /* Set references to matrix block in multiply stream. */
         multiply_stream[stream_index].A_block = A_block->block_dense_dilated;
         multiply_stream[stream_index].B_block = B_block->block_dense;
-        C_block_stream_index[stream_index] = convolution_index_2D;
+#endif
 
+//#define BLA_4
+#ifdef BLA_4
+        /* Store linear index of C block. */
+        C_block_stream_index[stream_index] = convolution_index_2D;
+#endif
+
+//#define BLA_5
+#ifdef BLA_5
+        /* Get reference to dense block of C. */
+        C_block = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
+        multiply_stream[stream_index].C_block = C_block->block_dense;
+#endif
+
+//#define BLA_6
+#ifdef BLA_6
         /* Set the kernel block norms. */
         for (k = 0; k < 16; k++)
         {
@@ -519,6 +543,7 @@ spamm_multiply (const float tolerance,
         {
           multiply_stream[stream_index].norm[k] = B_block->norm[k-16];
         }
+#endif
 
         /* Done with this stream element. */
         stream_index++;
