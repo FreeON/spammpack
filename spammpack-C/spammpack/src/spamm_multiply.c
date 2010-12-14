@@ -453,6 +453,23 @@ spamm_multiply (const float tolerance,
   C_block_stream_index = (unsigned int*) malloc(sizeof(unsigned int)
       *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
 
+  /* Some tings to try:
+   *
+   * 1) Don't dilate matrix index in 3D, but leave in 2D so that convolution
+   * is done faster.
+   * 2) Can the stream element be made smaller so that the norms are not
+   * explicitly stored in it? The norm would have to be looked up by pointer
+   * reference, but that might be ok since the matrix data is looked up this
+   * way too.
+   * 3) Terminate the 2D index with a leading "1" bit, like Warren/Salmon to
+   * indicate the width of the key and therefore its tier.
+   * 4) The pointer lookup in BLA_3 is somewhat slow, can moving the loading
+   * of the block pointers to an earlier point in the code alleviate this? By
+   * hiding the memory access latency?
+   * 5) Hash table lookup is very slow here. Can this be made faster? Better
+   * hashing?
+   */
+
   /* Loop over A. */
   for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size-1; A_k_lookup_index++)
   {
