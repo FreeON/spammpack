@@ -248,7 +248,7 @@ spamm_multiply (const float tolerance,
 
   unsigned int i, j, k, k_check;
   unsigned int index;
-  volatile unsigned int convolution_index;
+  unsigned int convolution_index;
   unsigned int convolution_index_2D;
   unsigned int A_k_lookup_index;
   unsigned int B_k_lookup_index;
@@ -474,13 +474,22 @@ spamm_multiply (const float tolerance,
   for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size-1; A_k_lookup_index++)
   {
     /* Get k value of A. */
+//#define DEBUG_STUFF
+#ifdef DEBUG_STUFF
     A_k = spamm_index_3D_ikj_to_k(A_index.index_3D[A_k_lookup.index[A_k_lookup_index]]);
+#else
+    A_k = A_index.index_2D[A_k_lookup.index[A_k_lookup_index]] & MASK_2D_J;
+#endif
 
     /* Note that we don't increment i in the for() construct. */
     for (i = A_k_lookup.index[A_k_lookup_index]; i < A_k_lookup.index[A_k_lookup_index+1]; )
     {
       /* Get k value of B. */
+#ifdef DEBUG_STUFF
       B_k = spamm_index_3D_ikj_to_k(B_index.index_3D[B_k_lookup.index[B_k_lookup_index]]);
+#else
+      B_k = (B_index.index_2D[B_k_lookup.index[B_k_lookup_index]] & MASK_2D_I) >> 1;
+#endif
 
       /* Compare k values. */
       if (A_k > B_k)
@@ -517,18 +526,26 @@ spamm_multiply (const float tolerance,
           break;
         }
 
-//#define BLA_1
+#ifdef DEBUG_STUFF
+#define BLA_1
 #ifdef BLA_1
         /* Get the linear 2D index of the C block. */
         convolution_index = (A_index.index_3D[i] & MASK_3D_IJ) | (B_index.index_3D[j] & MASK_3D_IJ);
 #endif
 
-//#define BLA_2
+#define BLA_2
 #ifdef BLA_2
         convolution_index_2D = spamm_index_3D_i0j_to_2D(convolution_index);
 #endif
+#else
+#define BLA_1
+#ifdef BLA_1
+        /* Get the linear 2D index of the C block. */
+        convolution_index_2D = (A_index.index_2D[i] & MASK_2D_I) | (B_index.index_2D[j] & MASK_2D_J);
+#endif
+#endif
 
-//#define BLA_3
+#define BLA_3
 #ifdef BLA_3
         /* Set references to matrix block in multiply stream. */
         multiply_stream[stream_index].A_block = A_block->block_dense_dilated;
@@ -541,14 +558,14 @@ spamm_multiply (const float tolerance,
         C_block_stream_index[stream_index] = convolution_index_2D;
 #endif
 
-//#define BLA_5
+#define BLA_5
 #ifdef BLA_5
         /* Get reference to dense block of C. */
         C_block = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
         multiply_stream[stream_index].C_block = C_block->block_dense;
 #endif
 
-//#define BLA_6
+#define BLA_6
 #ifdef BLA_6
         /* Set the kernel block norms. */
         for (k = 0; k < 16; k++)
@@ -583,7 +600,11 @@ spamm_multiply (const float tolerance,
         i = A_k_lookup.index[A_k_lookup_index];
 
         /* Get k value of A. */
+#ifdef DEBUG_STUFF
         A_k = spamm_index_3D_ikj_to_k(A_index.index_3D[A_k_lookup.index[A_k_lookup_index]]);
+#else
+        A_k = A_index.index_2D[A_k_lookup.index[A_k_lookup_index]] & MASK_2D_J;
+#endif
 
         continue;
       }
@@ -606,6 +627,7 @@ spamm_multiply (const float tolerance,
 
   printf("dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
 
+#ifdef SORT_C_BLOCKS
   /* Sort multiply stream and reference C blocks. */
   printf("[multiply] sort C blocks...");
   spamm_timer_start(sort_C_timer);
@@ -615,7 +637,9 @@ spamm_multiply (const float tolerance,
 
   spamm_timer_stop(sort_C_timer);
   printf("%1.2e s\n", spamm_timer_get_seconds(sort_C_timer));
+#endif
 
+#ifdef REFERENCE_C_BLOCKS
   /* Loop over sorted stream and associate the correct C block references. */
   printf("[multiply] reference C blocks...");
   spamm_timer_start(reference_C_timer);
@@ -644,6 +668,7 @@ spamm_multiply (const float tolerance,
 
   spamm_timer_stop(reference_C_timer);
   printf("%1.2e s\n", spamm_timer_get_seconds(reference_C_timer));
+#endif
 
   /* Free memory. */
   printf("[multiply] free some more memory... ");
