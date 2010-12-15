@@ -3,14 +3,13 @@
 #
 #  ./generate_SSE_assembly.py -N 4 --name spamm_stream_kernel
 #
-# C API:
+# C API (found in spamm_kernel.h):
 #
 # struct spamm_multiply_stream_t
 # {
-#   float *A_block;
-#   float *B_block;
-#   float *C_block;
-#   float  norm[32];
+#   struct spamm_data_t *A;
+#   struct spamm_data_t *B;
+#   struct spamm_data_t *C;
 # };
 #
 # void
@@ -61,63 +60,69 @@
 #define index        %rax
 #define base_pointer %rdx
 
-# Define pointers to matrix blocks in stream.
+# Define pointers to matrix data nodes in stream.
 #define A %r8
-#define B %rcx
-#define C %r9
+#define B %r9
+#define C %r10
 
 # Define offsets into matrix blocks.
 
-#define A_OFFSET_11 0*64*4 // 0 = 0x0
-#define A_OFFSET_12 1*64*4 // 256 = 0x100
-#define A_OFFSET_13 2*64*4 // 512 = 0x200
-#define A_OFFSET_14 3*64*4 // 768 = 0x300
-#define A_OFFSET_21 4*64*4 // 1024 = 0x400
-#define A_OFFSET_22 5*64*4 // 1280 = 0x500
-#define A_OFFSET_23 6*64*4 // 1536 = 0x600
-#define A_OFFSET_24 7*64*4 // 1792 = 0x700
-#define A_OFFSET_31 8*64*4 // 2048 = 0x800
-#define A_OFFSET_32 9*64*4 // 2304 = 0x900
-#define A_OFFSET_33 10*64*4 // 2560 = 0xa00
-#define A_OFFSET_34 11*64*4 // 2816 = 0xb00
-#define A_OFFSET_41 12*64*4 // 3072 = 0xc00
-#define A_OFFSET_42 13*64*4 // 3328 = 0xd00
-#define A_OFFSET_43 14*64*4 // 3584 = 0xe00
-#define A_OFFSET_44 15*64*4 // 3840 = 0xf00
+#define SIZEOF_MULTIPLY_STREAM_T 0x18
 
-#define B_OFFSET_11 0*16*4 // 0 = 0x0
-#define B_OFFSET_12 1*16*4 // 64 = 0x40
-#define B_OFFSET_13 2*16*4 // 128 = 0x80
-#define B_OFFSET_14 3*16*4 // 192 = 0xc0
-#define B_OFFSET_21 4*16*4 // 256 = 0x100
-#define B_OFFSET_22 5*16*4 // 320 = 0x140
-#define B_OFFSET_23 6*16*4 // 384 = 0x180
-#define B_OFFSET_24 7*16*4 // 448 = 0x1c0
-#define B_OFFSET_31 8*16*4 // 512 = 0x200
-#define B_OFFSET_32 9*16*4 // 576 = 0x240
-#define B_OFFSET_33 10*16*4 // 640 = 0x280
-#define B_OFFSET_34 11*16*4 // 704 = 0x2c0
-#define B_OFFSET_41 12*16*4 // 768 = 0x300
-#define B_OFFSET_42 13*16*4 // 832 = 0x340
-#define B_OFFSET_43 14*16*4 // 896 = 0x380
-#define B_OFFSET_44 15*16*4 // 960 = 0x3c0
+#define OFFSET_NORM 0x18
+#define OFFSET_BLOCK_DENSE 0xc0
+#define OFFSET_BLOCK_DENSE_DILATED 0x4c0
 
-#define C_OFFSET_11 0*16*4 // 0 = 0x0
-#define C_OFFSET_12 1*16*4 // 64 = 0x40
-#define C_OFFSET_13 2*16*4 // 128 = 0x80
-#define C_OFFSET_14 3*16*4 // 192 = 0xc0
-#define C_OFFSET_21 4*16*4 // 256 = 0x100
-#define C_OFFSET_22 5*16*4 // 320 = 0x140
-#define C_OFFSET_23 6*16*4 // 384 = 0x180
-#define C_OFFSET_24 7*16*4 // 448 = 0x1c0
-#define C_OFFSET_31 8*16*4 // 512 = 0x200
-#define C_OFFSET_32 9*16*4 // 576 = 0x240
-#define C_OFFSET_33 10*16*4 // 640 = 0x280
-#define C_OFFSET_34 11*16*4 // 704 = 0x2c0
-#define C_OFFSET_41 12*16*4 // 768 = 0x300
-#define C_OFFSET_42 13*16*4 // 832 = 0x340
-#define C_OFFSET_43 14*16*4 // 896 = 0x380
-#define C_OFFSET_44 15*16*4 // 960 = 0x3c0
+#define A_OFFSET_11  0*64*4+OFFSET_BLOCK_DENSE_DILATED // 1216 = 0x4c0
+#define A_OFFSET_12  1*64*4+OFFSET_BLOCK_DENSE_DILATED // 1472 = 0x5c0
+#define A_OFFSET_13  2*64*4+OFFSET_BLOCK_DENSE_DILATED // 1728 = 0x6c0
+#define A_OFFSET_14  3*64*4+OFFSET_BLOCK_DENSE_DILATED // 1984 = 0x7c0
+#define A_OFFSET_21  4*64*4+OFFSET_BLOCK_DENSE_DILATED // 2240 = 0x8c0
+#define A_OFFSET_22  5*64*4+OFFSET_BLOCK_DENSE_DILATED // 2496 = 0x9c0
+#define A_OFFSET_23  6*64*4+OFFSET_BLOCK_DENSE_DILATED // 2752 = 0xac0
+#define A_OFFSET_24  7*64*4+OFFSET_BLOCK_DENSE_DILATED // 3008 = 0xbc0
+#define A_OFFSET_31  8*64*4+OFFSET_BLOCK_DENSE_DILATED // 3264 = 0xcc0
+#define A_OFFSET_32  9*64*4+OFFSET_BLOCK_DENSE_DILATED // 3520 = 0xdc0
+#define A_OFFSET_33 10*64*4+OFFSET_BLOCK_DENSE_DILATED // 3776 = 0xec0
+#define A_OFFSET_34 11*64*4+OFFSET_BLOCK_DENSE_DILATED // 4032 = 0xfc0
+#define A_OFFSET_41 12*64*4+OFFSET_BLOCK_DENSE_DILATED // 4288 = 0x10c0
+#define A_OFFSET_42 13*64*4+OFFSET_BLOCK_DENSE_DILATED // 4544 = 0x11c0
+#define A_OFFSET_43 14*64*4+OFFSET_BLOCK_DENSE_DILATED // 4800 = 0x12c0
+#define A_OFFSET_44 15*64*4+OFFSET_BLOCK_DENSE_DILATED // 5056 = 0x13c0
+
+#define B_OFFSET_11  0*16*4+OFFSET_BLOCK_DENSE // 192 = 0xc0
+#define B_OFFSET_12  1*16*4+OFFSET_BLOCK_DENSE // 256 = 0x100
+#define B_OFFSET_13  2*16*4+OFFSET_BLOCK_DENSE // 320 = 0x140
+#define B_OFFSET_14  3*16*4+OFFSET_BLOCK_DENSE // 384 = 0x180
+#define B_OFFSET_21  4*16*4+OFFSET_BLOCK_DENSE // 448 = 0x1c0
+#define B_OFFSET_22  5*16*4+OFFSET_BLOCK_DENSE // 512 = 0x200
+#define B_OFFSET_23  6*16*4+OFFSET_BLOCK_DENSE // 576 = 0x240
+#define B_OFFSET_24  7*16*4+OFFSET_BLOCK_DENSE // 640 = 0x280
+#define B_OFFSET_31  8*16*4+OFFSET_BLOCK_DENSE // 704 = 0x2c0
+#define B_OFFSET_32  9*16*4+OFFSET_BLOCK_DENSE // 768 = 0x300
+#define B_OFFSET_33 10*16*4+OFFSET_BLOCK_DENSE // 832 = 0x340
+#define B_OFFSET_34 11*16*4+OFFSET_BLOCK_DENSE // 896 = 0x380
+#define B_OFFSET_41 12*16*4+OFFSET_BLOCK_DENSE // 960 = 0x3c0
+#define B_OFFSET_42 13*16*4+OFFSET_BLOCK_DENSE // 1024 = 0x400
+#define B_OFFSET_43 14*16*4+OFFSET_BLOCK_DENSE // 1088 = 0x440
+#define B_OFFSET_44 15*16*4+OFFSET_BLOCK_DENSE // 1152 = 0x480
+
+#define C_OFFSET_11  0*16*4+OFFSET_BLOCK_DENSE // 192 = 0xc0
+#define C_OFFSET_12  1*16*4+OFFSET_BLOCK_DENSE // 256 = 0x100
+#define C_OFFSET_13  2*16*4+OFFSET_BLOCK_DENSE // 320 = 0x140
+#define C_OFFSET_14  3*16*4+OFFSET_BLOCK_DENSE // 384 = 0x180
+#define C_OFFSET_21  4*16*4+OFFSET_BLOCK_DENSE // 448 = 0x1c0
+#define C_OFFSET_22  5*16*4+OFFSET_BLOCK_DENSE // 512 = 0x200
+#define C_OFFSET_23  6*16*4+OFFSET_BLOCK_DENSE // 576 = 0x240
+#define C_OFFSET_24  7*16*4+OFFSET_BLOCK_DENSE // 640 = 0x280
+#define C_OFFSET_31  8*16*4+OFFSET_BLOCK_DENSE // 704 = 0x2c0
+#define C_OFFSET_32  9*16*4+OFFSET_BLOCK_DENSE // 768 = 0x300
+#define C_OFFSET_33 10*16*4+OFFSET_BLOCK_DENSE // 832 = 0x340
+#define C_OFFSET_34 11*16*4+OFFSET_BLOCK_DENSE // 896 = 0x380
+#define C_OFFSET_41 12*16*4+OFFSET_BLOCK_DENSE // 960 = 0x3c0
+#define C_OFFSET_42 13*16*4+OFFSET_BLOCK_DENSE // 1024 = 0x400
+#define C_OFFSET_43 14*16*4+OFFSET_BLOCK_DENSE // 1088 = 0x440
+#define C_OFFSET_44 15*16*4+OFFSET_BLOCK_DENSE // 1152 = 0x480
 
   # Function prolog.
   .text
@@ -148,8 +153,8 @@ spamm_stream_kernel:
   .align 16
 loop:
 
-  # Set the base pointer using sizeof(multiply_stream_t) = 152 (0x98).
-  imul $0x98, base_pointer, base_pointer
+  # Set the base pointer using sizeof(multiply_stream_t) = 24 (0x18).
+  imul $SIZEOF_MULTIPLY_STREAM_T, base_pointer, base_pointer
 
   # Load pointers to stream matrix blocks.
   mov (multiply_stream, base_pointer, 1), A
@@ -166,8 +171,8 @@ loop:
 block_1:
 
   # Check norm of product ||A(1,1)||*||B(1,1)||.
-  movss 0x18(multiply_stream, base_pointer), B1
-  mulss 0x58(multiply_stream, base_pointer), B1
+  movss 0x0+OFFSET_NORM(A), B1
+  mulss 0x0+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_2
 
@@ -229,8 +234,8 @@ block_1:
 block_2:
 
   # Check norm of product ||A(1,2)||*||B(2,1)||.
-  movss 0x1c(multiply_stream, base_pointer), B1
-  mulss 0x68(multiply_stream, base_pointer), B1
+  movss 0x4+OFFSET_NORM(A), B1
+  mulss 0x10+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_3
 
@@ -292,8 +297,8 @@ block_2:
 block_3:
 
   # Check norm of product ||A(1,3)||*||B(3,1)||.
-  movss 0x20(multiply_stream, base_pointer), B1
-  mulss 0x78(multiply_stream, base_pointer), B1
+  movss 0x8+OFFSET_NORM(A), B1
+  mulss 0x20+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_4
 
@@ -355,8 +360,8 @@ block_3:
 block_4:
 
   # Check norm of product ||A(1,4)||*||B(4,1)||.
-  movss 0x24(multiply_stream, base_pointer), B1
-  mulss 0x88(multiply_stream, base_pointer), B1
+  movss 0xc+OFFSET_NORM(A), B1
+  mulss 0x30+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_5
 
@@ -445,8 +450,8 @@ block_5:
 block_6:
 
   # Check norm of product ||A(1,1)||*||B(1,2)||.
-  movss 0x18(multiply_stream, base_pointer), B1
-  mulss 0x5c(multiply_stream, base_pointer), B1
+  movss 0x0+OFFSET_NORM(A), B1
+  mulss 0x4+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_7
 
@@ -508,8 +513,8 @@ block_6:
 block_7:
 
   # Check norm of product ||A(1,2)||*||B(2,2)||.
-  movss 0x1c(multiply_stream, base_pointer), B1
-  mulss 0x6c(multiply_stream, base_pointer), B1
+  movss 0x4+OFFSET_NORM(A), B1
+  mulss 0x14+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_8
 
@@ -571,8 +576,8 @@ block_7:
 block_8:
 
   # Check norm of product ||A(1,3)||*||B(3,2)||.
-  movss 0x20(multiply_stream, base_pointer), B1
-  mulss 0x7c(multiply_stream, base_pointer), B1
+  movss 0x8+OFFSET_NORM(A), B1
+  mulss 0x24+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_9
 
@@ -634,8 +639,8 @@ block_8:
 block_9:
 
   # Check norm of product ||A(1,4)||*||B(4,2)||.
-  movss 0x24(multiply_stream, base_pointer), B1
-  mulss 0x8c(multiply_stream, base_pointer), B1
+  movss 0xc+OFFSET_NORM(A), B1
+  mulss 0x34+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_10
 
@@ -724,8 +729,8 @@ block_10:
 block_11:
 
   # Check norm of product ||A(1,1)||*||B(1,3)||.
-  movss 0x18(multiply_stream, base_pointer), B1
-  mulss 0x60(multiply_stream, base_pointer), B1
+  movss 0x0+OFFSET_NORM(A), B1
+  mulss 0x8+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_12
 
@@ -787,8 +792,8 @@ block_11:
 block_12:
 
   # Check norm of product ||A(1,2)||*||B(2,3)||.
-  movss 0x1c(multiply_stream, base_pointer), B1
-  mulss 0x70(multiply_stream, base_pointer), B1
+  movss 0x4+OFFSET_NORM(A), B1
+  mulss 0x18+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_13
 
@@ -850,8 +855,8 @@ block_12:
 block_13:
 
   # Check norm of product ||A(1,3)||*||B(3,3)||.
-  movss 0x20(multiply_stream, base_pointer), B1
-  mulss 0x80(multiply_stream, base_pointer), B1
+  movss 0x8+OFFSET_NORM(A), B1
+  mulss 0x28+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_14
 
@@ -913,8 +918,8 @@ block_13:
 block_14:
 
   # Check norm of product ||A(1,4)||*||B(4,3)||.
-  movss 0x24(multiply_stream, base_pointer), B1
-  mulss 0x90(multiply_stream, base_pointer), B1
+  movss 0xc+OFFSET_NORM(A), B1
+  mulss 0x38+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_15
 
@@ -1003,8 +1008,8 @@ block_15:
 block_16:
 
   # Check norm of product ||A(1,1)||*||B(1,4)||.
-  movss 0x18(multiply_stream, base_pointer), B1
-  mulss 0x64(multiply_stream, base_pointer), B1
+  movss 0x0+OFFSET_NORM(A), B1
+  mulss 0xc+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_17
 
@@ -1066,8 +1071,8 @@ block_16:
 block_17:
 
   # Check norm of product ||A(1,2)||*||B(2,4)||.
-  movss 0x1c(multiply_stream, base_pointer), B1
-  mulss 0x74(multiply_stream, base_pointer), B1
+  movss 0x4+OFFSET_NORM(A), B1
+  mulss 0x1c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_18
 
@@ -1129,8 +1134,8 @@ block_17:
 block_18:
 
   # Check norm of product ||A(1,3)||*||B(3,4)||.
-  movss 0x20(multiply_stream, base_pointer), B1
-  mulss 0x84(multiply_stream, base_pointer), B1
+  movss 0x8+OFFSET_NORM(A), B1
+  mulss 0x2c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_19
 
@@ -1192,8 +1197,8 @@ block_18:
 block_19:
 
   # Check norm of product ||A(1,4)||*||B(4,4)||.
-  movss 0x24(multiply_stream, base_pointer), B1
-  mulss 0x94(multiply_stream, base_pointer), B1
+  movss 0xc+OFFSET_NORM(A), B1
+  mulss 0x3c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_20
 
@@ -1282,8 +1287,8 @@ block_20:
 block_21:
 
   # Check norm of product ||A(2,1)||*||B(1,1)||.
-  movss 0x28(multiply_stream, base_pointer), B1
-  mulss 0x58(multiply_stream, base_pointer), B1
+  movss 0x10+OFFSET_NORM(A), B1
+  mulss 0x0+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_22
 
@@ -1345,8 +1350,8 @@ block_21:
 block_22:
 
   # Check norm of product ||A(2,2)||*||B(2,1)||.
-  movss 0x2c(multiply_stream, base_pointer), B1
-  mulss 0x68(multiply_stream, base_pointer), B1
+  movss 0x14+OFFSET_NORM(A), B1
+  mulss 0x10+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_23
 
@@ -1408,8 +1413,8 @@ block_22:
 block_23:
 
   # Check norm of product ||A(2,3)||*||B(3,1)||.
-  movss 0x30(multiply_stream, base_pointer), B1
-  mulss 0x78(multiply_stream, base_pointer), B1
+  movss 0x18+OFFSET_NORM(A), B1
+  mulss 0x20+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_24
 
@@ -1471,8 +1476,8 @@ block_23:
 block_24:
 
   # Check norm of product ||A(2,4)||*||B(4,1)||.
-  movss 0x34(multiply_stream, base_pointer), B1
-  mulss 0x88(multiply_stream, base_pointer), B1
+  movss 0x1c+OFFSET_NORM(A), B1
+  mulss 0x30+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_25
 
@@ -1561,8 +1566,8 @@ block_25:
 block_26:
 
   # Check norm of product ||A(2,1)||*||B(1,2)||.
-  movss 0x28(multiply_stream, base_pointer), B1
-  mulss 0x5c(multiply_stream, base_pointer), B1
+  movss 0x10+OFFSET_NORM(A), B1
+  mulss 0x4+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_27
 
@@ -1624,8 +1629,8 @@ block_26:
 block_27:
 
   # Check norm of product ||A(2,2)||*||B(2,2)||.
-  movss 0x2c(multiply_stream, base_pointer), B1
-  mulss 0x6c(multiply_stream, base_pointer), B1
+  movss 0x14+OFFSET_NORM(A), B1
+  mulss 0x14+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_28
 
@@ -1687,8 +1692,8 @@ block_27:
 block_28:
 
   # Check norm of product ||A(2,3)||*||B(3,2)||.
-  movss 0x30(multiply_stream, base_pointer), B1
-  mulss 0x7c(multiply_stream, base_pointer), B1
+  movss 0x18+OFFSET_NORM(A), B1
+  mulss 0x24+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_29
 
@@ -1750,8 +1755,8 @@ block_28:
 block_29:
 
   # Check norm of product ||A(2,4)||*||B(4,2)||.
-  movss 0x34(multiply_stream, base_pointer), B1
-  mulss 0x8c(multiply_stream, base_pointer), B1
+  movss 0x1c+OFFSET_NORM(A), B1
+  mulss 0x34+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_30
 
@@ -1840,8 +1845,8 @@ block_30:
 block_31:
 
   # Check norm of product ||A(2,1)||*||B(1,3)||.
-  movss 0x28(multiply_stream, base_pointer), B1
-  mulss 0x60(multiply_stream, base_pointer), B1
+  movss 0x10+OFFSET_NORM(A), B1
+  mulss 0x8+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_32
 
@@ -1903,8 +1908,8 @@ block_31:
 block_32:
 
   # Check norm of product ||A(2,2)||*||B(2,3)||.
-  movss 0x2c(multiply_stream, base_pointer), B1
-  mulss 0x70(multiply_stream, base_pointer), B1
+  movss 0x14+OFFSET_NORM(A), B1
+  mulss 0x18+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_33
 
@@ -1966,8 +1971,8 @@ block_32:
 block_33:
 
   # Check norm of product ||A(2,3)||*||B(3,3)||.
-  movss 0x30(multiply_stream, base_pointer), B1
-  mulss 0x80(multiply_stream, base_pointer), B1
+  movss 0x18+OFFSET_NORM(A), B1
+  mulss 0x28+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_34
 
@@ -2029,8 +2034,8 @@ block_33:
 block_34:
 
   # Check norm of product ||A(2,4)||*||B(4,3)||.
-  movss 0x34(multiply_stream, base_pointer), B1
-  mulss 0x90(multiply_stream, base_pointer), B1
+  movss 0x1c+OFFSET_NORM(A), B1
+  mulss 0x38+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_35
 
@@ -2119,8 +2124,8 @@ block_35:
 block_36:
 
   # Check norm of product ||A(2,1)||*||B(1,4)||.
-  movss 0x28(multiply_stream, base_pointer), B1
-  mulss 0x64(multiply_stream, base_pointer), B1
+  movss 0x10+OFFSET_NORM(A), B1
+  mulss 0xc+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_37
 
@@ -2182,8 +2187,8 @@ block_36:
 block_37:
 
   # Check norm of product ||A(2,2)||*||B(2,4)||.
-  movss 0x2c(multiply_stream, base_pointer), B1
-  mulss 0x74(multiply_stream, base_pointer), B1
+  movss 0x14+OFFSET_NORM(A), B1
+  mulss 0x1c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_38
 
@@ -2245,8 +2250,8 @@ block_37:
 block_38:
 
   # Check norm of product ||A(2,3)||*||B(3,4)||.
-  movss 0x30(multiply_stream, base_pointer), B1
-  mulss 0x84(multiply_stream, base_pointer), B1
+  movss 0x18+OFFSET_NORM(A), B1
+  mulss 0x2c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_39
 
@@ -2308,8 +2313,8 @@ block_38:
 block_39:
 
   # Check norm of product ||A(2,4)||*||B(4,4)||.
-  movss 0x34(multiply_stream, base_pointer), B1
-  mulss 0x94(multiply_stream, base_pointer), B1
+  movss 0x1c+OFFSET_NORM(A), B1
+  mulss 0x3c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_40
 
@@ -2398,8 +2403,8 @@ block_40:
 block_41:
 
   # Check norm of product ||A(3,1)||*||B(1,1)||.
-  movss 0x38(multiply_stream, base_pointer), B1
-  mulss 0x58(multiply_stream, base_pointer), B1
+  movss 0x20+OFFSET_NORM(A), B1
+  mulss 0x0+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_42
 
@@ -2461,8 +2466,8 @@ block_41:
 block_42:
 
   # Check norm of product ||A(3,2)||*||B(2,1)||.
-  movss 0x3c(multiply_stream, base_pointer), B1
-  mulss 0x68(multiply_stream, base_pointer), B1
+  movss 0x24+OFFSET_NORM(A), B1
+  mulss 0x10+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_43
 
@@ -2524,8 +2529,8 @@ block_42:
 block_43:
 
   # Check norm of product ||A(3,3)||*||B(3,1)||.
-  movss 0x40(multiply_stream, base_pointer), B1
-  mulss 0x78(multiply_stream, base_pointer), B1
+  movss 0x28+OFFSET_NORM(A), B1
+  mulss 0x20+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_44
 
@@ -2587,8 +2592,8 @@ block_43:
 block_44:
 
   # Check norm of product ||A(3,4)||*||B(4,1)||.
-  movss 0x44(multiply_stream, base_pointer), B1
-  mulss 0x88(multiply_stream, base_pointer), B1
+  movss 0x2c+OFFSET_NORM(A), B1
+  mulss 0x30+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_45
 
@@ -2677,8 +2682,8 @@ block_45:
 block_46:
 
   # Check norm of product ||A(3,1)||*||B(1,2)||.
-  movss 0x38(multiply_stream, base_pointer), B1
-  mulss 0x5c(multiply_stream, base_pointer), B1
+  movss 0x20+OFFSET_NORM(A), B1
+  mulss 0x4+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_47
 
@@ -2740,8 +2745,8 @@ block_46:
 block_47:
 
   # Check norm of product ||A(3,2)||*||B(2,2)||.
-  movss 0x3c(multiply_stream, base_pointer), B1
-  mulss 0x6c(multiply_stream, base_pointer), B1
+  movss 0x24+OFFSET_NORM(A), B1
+  mulss 0x14+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_48
 
@@ -2803,8 +2808,8 @@ block_47:
 block_48:
 
   # Check norm of product ||A(3,3)||*||B(3,2)||.
-  movss 0x40(multiply_stream, base_pointer), B1
-  mulss 0x7c(multiply_stream, base_pointer), B1
+  movss 0x28+OFFSET_NORM(A), B1
+  mulss 0x24+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_49
 
@@ -2866,8 +2871,8 @@ block_48:
 block_49:
 
   # Check norm of product ||A(3,4)||*||B(4,2)||.
-  movss 0x44(multiply_stream, base_pointer), B1
-  mulss 0x8c(multiply_stream, base_pointer), B1
+  movss 0x2c+OFFSET_NORM(A), B1
+  mulss 0x34+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_50
 
@@ -2956,8 +2961,8 @@ block_50:
 block_51:
 
   # Check norm of product ||A(3,1)||*||B(1,3)||.
-  movss 0x38(multiply_stream, base_pointer), B1
-  mulss 0x60(multiply_stream, base_pointer), B1
+  movss 0x20+OFFSET_NORM(A), B1
+  mulss 0x8+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_52
 
@@ -3019,8 +3024,8 @@ block_51:
 block_52:
 
   # Check norm of product ||A(3,2)||*||B(2,3)||.
-  movss 0x3c(multiply_stream, base_pointer), B1
-  mulss 0x70(multiply_stream, base_pointer), B1
+  movss 0x24+OFFSET_NORM(A), B1
+  mulss 0x18+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_53
 
@@ -3082,8 +3087,8 @@ block_52:
 block_53:
 
   # Check norm of product ||A(3,3)||*||B(3,3)||.
-  movss 0x40(multiply_stream, base_pointer), B1
-  mulss 0x80(multiply_stream, base_pointer), B1
+  movss 0x28+OFFSET_NORM(A), B1
+  mulss 0x28+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_54
 
@@ -3145,8 +3150,8 @@ block_53:
 block_54:
 
   # Check norm of product ||A(3,4)||*||B(4,3)||.
-  movss 0x44(multiply_stream, base_pointer), B1
-  mulss 0x90(multiply_stream, base_pointer), B1
+  movss 0x2c+OFFSET_NORM(A), B1
+  mulss 0x38+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_55
 
@@ -3235,8 +3240,8 @@ block_55:
 block_56:
 
   # Check norm of product ||A(3,1)||*||B(1,4)||.
-  movss 0x38(multiply_stream, base_pointer), B1
-  mulss 0x64(multiply_stream, base_pointer), B1
+  movss 0x20+OFFSET_NORM(A), B1
+  mulss 0xc+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_57
 
@@ -3298,8 +3303,8 @@ block_56:
 block_57:
 
   # Check norm of product ||A(3,2)||*||B(2,4)||.
-  movss 0x3c(multiply_stream, base_pointer), B1
-  mulss 0x74(multiply_stream, base_pointer), B1
+  movss 0x24+OFFSET_NORM(A), B1
+  mulss 0x1c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_58
 
@@ -3361,8 +3366,8 @@ block_57:
 block_58:
 
   # Check norm of product ||A(3,3)||*||B(3,4)||.
-  movss 0x40(multiply_stream, base_pointer), B1
-  mulss 0x84(multiply_stream, base_pointer), B1
+  movss 0x28+OFFSET_NORM(A), B1
+  mulss 0x2c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_59
 
@@ -3424,8 +3429,8 @@ block_58:
 block_59:
 
   # Check norm of product ||A(3,4)||*||B(4,4)||.
-  movss 0x44(multiply_stream, base_pointer), B1
-  mulss 0x94(multiply_stream, base_pointer), B1
+  movss 0x2c+OFFSET_NORM(A), B1
+  mulss 0x3c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_60
 
@@ -3514,8 +3519,8 @@ block_60:
 block_61:
 
   # Check norm of product ||A(4,1)||*||B(1,1)||.
-  movss 0x48(multiply_stream, base_pointer), B1
-  mulss 0x58(multiply_stream, base_pointer), B1
+  movss 0x30+OFFSET_NORM(A), B1
+  mulss 0x0+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_62
 
@@ -3577,8 +3582,8 @@ block_61:
 block_62:
 
   # Check norm of product ||A(4,2)||*||B(2,1)||.
-  movss 0x4c(multiply_stream, base_pointer), B1
-  mulss 0x68(multiply_stream, base_pointer), B1
+  movss 0x34+OFFSET_NORM(A), B1
+  mulss 0x10+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_63
 
@@ -3640,8 +3645,8 @@ block_62:
 block_63:
 
   # Check norm of product ||A(4,3)||*||B(3,1)||.
-  movss 0x50(multiply_stream, base_pointer), B1
-  mulss 0x78(multiply_stream, base_pointer), B1
+  movss 0x38+OFFSET_NORM(A), B1
+  mulss 0x20+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_64
 
@@ -3703,8 +3708,8 @@ block_63:
 block_64:
 
   # Check norm of product ||A(4,4)||*||B(4,1)||.
-  movss 0x54(multiply_stream, base_pointer), B1
-  mulss 0x88(multiply_stream, base_pointer), B1
+  movss 0x3c+OFFSET_NORM(A), B1
+  mulss 0x30+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_65
 
@@ -3793,8 +3798,8 @@ block_65:
 block_66:
 
   # Check norm of product ||A(4,1)||*||B(1,2)||.
-  movss 0x48(multiply_stream, base_pointer), B1
-  mulss 0x5c(multiply_stream, base_pointer), B1
+  movss 0x30+OFFSET_NORM(A), B1
+  mulss 0x4+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_67
 
@@ -3856,8 +3861,8 @@ block_66:
 block_67:
 
   # Check norm of product ||A(4,2)||*||B(2,2)||.
-  movss 0x4c(multiply_stream, base_pointer), B1
-  mulss 0x6c(multiply_stream, base_pointer), B1
+  movss 0x34+OFFSET_NORM(A), B1
+  mulss 0x14+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_68
 
@@ -3919,8 +3924,8 @@ block_67:
 block_68:
 
   # Check norm of product ||A(4,3)||*||B(3,2)||.
-  movss 0x50(multiply_stream, base_pointer), B1
-  mulss 0x7c(multiply_stream, base_pointer), B1
+  movss 0x38+OFFSET_NORM(A), B1
+  mulss 0x24+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_69
 
@@ -3982,8 +3987,8 @@ block_68:
 block_69:
 
   # Check norm of product ||A(4,4)||*||B(4,2)||.
-  movss 0x54(multiply_stream, base_pointer), B1
-  mulss 0x8c(multiply_stream, base_pointer), B1
+  movss 0x3c+OFFSET_NORM(A), B1
+  mulss 0x34+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_70
 
@@ -4072,8 +4077,8 @@ block_70:
 block_71:
 
   # Check norm of product ||A(4,1)||*||B(1,3)||.
-  movss 0x48(multiply_stream, base_pointer), B1
-  mulss 0x60(multiply_stream, base_pointer), B1
+  movss 0x30+OFFSET_NORM(A), B1
+  mulss 0x8+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_72
 
@@ -4135,8 +4140,8 @@ block_71:
 block_72:
 
   # Check norm of product ||A(4,2)||*||B(2,3)||.
-  movss 0x4c(multiply_stream, base_pointer), B1
-  mulss 0x70(multiply_stream, base_pointer), B1
+  movss 0x34+OFFSET_NORM(A), B1
+  mulss 0x18+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_73
 
@@ -4198,8 +4203,8 @@ block_72:
 block_73:
 
   # Check norm of product ||A(4,3)||*||B(3,3)||.
-  movss 0x50(multiply_stream, base_pointer), B1
-  mulss 0x80(multiply_stream, base_pointer), B1
+  movss 0x38+OFFSET_NORM(A), B1
+  mulss 0x28+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_74
 
@@ -4261,8 +4266,8 @@ block_73:
 block_74:
 
   # Check norm of product ||A(4,4)||*||B(4,3)||.
-  movss 0x54(multiply_stream, base_pointer), B1
-  mulss 0x90(multiply_stream, base_pointer), B1
+  movss 0x3c+OFFSET_NORM(A), B1
+  mulss 0x38+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_75
 
@@ -4351,8 +4356,8 @@ block_75:
 block_76:
 
   # Check norm of product ||A(4,1)||*||B(1,4)||.
-  movss 0x48(multiply_stream, base_pointer), B1
-  mulss 0x64(multiply_stream, base_pointer), B1
+  movss 0x30+OFFSET_NORM(A), B1
+  mulss 0xc+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_77
 
@@ -4414,8 +4419,8 @@ block_76:
 block_77:
 
   # Check norm of product ||A(4,2)||*||B(2,4)||.
-  movss 0x4c(multiply_stream, base_pointer), B1
-  mulss 0x74(multiply_stream, base_pointer), B1
+  movss 0x34+OFFSET_NORM(A), B1
+  mulss 0x1c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_78
 
@@ -4477,8 +4482,8 @@ block_77:
 block_78:
 
   # Check norm of product ||A(4,3)||*||B(3,4)||.
-  movss 0x50(multiply_stream, base_pointer), B1
-  mulss 0x84(multiply_stream, base_pointer), B1
+  movss 0x38+OFFSET_NORM(A), B1
+  mulss 0x2c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_79
 
@@ -4540,8 +4545,8 @@ block_78:
 block_79:
 
   # Check norm of product ||A(4,4)||*||B(4,4)||.
-  movss 0x54(multiply_stream, base_pointer), B1
-  mulss 0x94(multiply_stream, base_pointer), B1
+  movss 0x3c+OFFSET_NORM(A), B1
+  mulss 0x3c+OFFSET_NORM(B), B1
   comiss tolerance, B1
   jb block_80
 
