@@ -123,14 +123,13 @@ sys.stdout.write("\n")
 
 # Print some C function declarations.
 print "#"
-print "# C API:"
+print "# C API (found in spamm_kernel.h):"
 print "#"
 print "# struct spamm_multiply_stream_t"
 print "# {"
-print "#   float *A_block;"
-print "#   float *B_block;"
-print "#   float *C_block;"
-print "#   float  norm[%d];" % (2*options.N**2)
+print "#   struct spamm_data_t *A;"
+print "#   struct spamm_data_t *B;"
+print "#   struct spamm_data_t *C;"
 print "# };"
 print "#"
 print "# void"
@@ -186,41 +185,68 @@ print
 print "# Define loop variables."
 print "#define index        %rax"
 print "#define base_pointer %rdx"
-#print "#define i_outer      %r10"
-#print "#define j_outer      %r11"
 
 print
-print "# Define pointers to matrix blocks in stream."
+print "# Define pointers to matrix data nodes in stream."
 print "#define A %r8"
-print "#define B %rcx"
-print "#define C %r9"
+print "#define B %r9"
+print "#define C %r10"
+
+sizeof_multiply_stream_t = 3*8
+offset_norm = 24
+offset_block_dense = 192
+offset_block_dense_dilated = 1216
 
 # Generate offsets.
 print
 print "# Define offsets into matrix blocks."
 print
+print "#define SIZEOF_MULTIPLY_STREAM_T 0x%x" % (sizeof_multiply_stream_t)
+print
+print "#define OFFSET_NORM 0x%x" % (offset_norm)
+print "#define OFFSET_BLOCK_DENSE 0x%x" % (offset_block_dense)
+print "#define OFFSET_BLOCK_DENSE_DILATED 0x%x" % (offset_block_dense_dilated)
+print
 for i in range(options.N):
   for j in range(options.N):
     if options.Z_curve_ordering:
-      print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*64*4, Z_curve_index(i, j)*64*4)
+      print "#define A_OFFSET_%d%d %2d*64*4+OFFSET_BLOCK_DENSE_DILATED // %d = 0x%x" % (i+1, j+1,
+          Z_curve_index(i, j),
+          Z_curve_index(i, j)*64*4+offset_block_dense_dilated,
+          Z_curve_index(i, j)*64*4+offset_block_dense_dilated)
     else:
-      print "#define A_OFFSET_%d%d %d*64*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*64*4, row_major_index(i, j, options.N)*64*4)
+      print "#define A_OFFSET_%d%d %2d*64*4+OFFSET_BLOCK_DENSE_DILATED // %d = 0x%x" % (i+1, j+1,
+          row_major_index(i, j, options.N),
+          row_major_index(i, j, options.N)*64*4+offset_block_dense_dilated,
+          row_major_index(i, j, options.N)*64*4+offset_block_dense_dilated)
 
 print
 for i in range(options.N):
   for j in range(options.N):
     if options.Z_curve_ordering:
-      print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
+      print "#define B_OFFSET_%d%d %2d*16*4+OFFSET_BLOCK_DENSE // %d = 0x%x" % (i+1, j+1,
+          Z_curve_index(i, j),
+          Z_curve_index(i, j)*16*4+offset_block_dense,
+          Z_curve_index(i, j)*16*4+offset_block_dense)
     else:
-      print "#define B_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*16*4, row_major_index(i, j, options.N)*16*4)
+      print "#define B_OFFSET_%d%d %2d*16*4+OFFSET_BLOCK_DENSE // %d = 0x%x" % (i+1, j+1,
+          row_major_index(i, j, options.N),
+          row_major_index(i, j, options.N)*16*4+offset_block_dense,
+          row_major_index(i, j, options.N)*16*4+offset_block_dense)
 
 print
 for i in range(options.N):
   for j in range(options.N):
     if options.Z_curve_ordering:
-      print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, Z_curve_index(i, j), Z_curve_index(i, j)*16*4, Z_curve_index(i, j)*16*4)
+      print "#define C_OFFSET_%d%d %2d*16*4+OFFSET_BLOCK_DENSE // %d = 0x%x" % (i+1, j+1,
+          Z_curve_index(i, j),
+          Z_curve_index(i, j)*16*4+offset_block_dense,
+          Z_curve_index(i, j)*16*4+offset_block_dense)
     else:
-      print "#define C_OFFSET_%d%d %d*16*4 // %d = 0x%x" % (i+1, j+1, row_major_index(i, j, options.N), row_major_index(i, j, options.N)*16*4, row_major_index(i, j, options.N)*16*4)
+      print "#define C_OFFSET_%d%d %2d*16*4+OFFSET_BLOCK_DENSE // %d = 0x%x" % (i+1, j+1,
+          row_major_index(i, j, options.N),
+          row_major_index(i, j, options.N)*16*4+offset_block_dense,
+          row_major_index(i, j, options.N)*16*4+offset_block_dense)
 
 # Start the function prolog.
 print
@@ -239,15 +265,10 @@ print padding + "push base_pointer"
 print padding + "push A"
 print padding + "push B"
 print padding + "push C"
-#print padding + "push i_outer"
-#print padding + "push j_outer"
 
 print
 print padding + "# Copy alpha into all 4 elements of SSE register."
 print padding + "shufps $0x0, alpha, alpha"
-#print
-#print padding + "# Divide number of stream elements by %d to simulate stride of %d." % (options.N**3, options.N**3)
-#print padding + "shr $%i, number_stream_elements" % (3*math.log(options.N)/math.log(2))
 print
 print padding + "# Test whether number_stream_elements is zero."
 print padding + "test number_stream_elements, number_stream_elements"
@@ -264,26 +285,13 @@ print
 print padding + ".align 16"
 print "loop:"
 print
-sizeof_multiply_stream_t = 3*8+2*options.N**2*4
 print padding + "# Set the base pointer using sizeof(multiply_stream_t) = %d (0x%x)." % (sizeof_multiply_stream_t, sizeof_multiply_stream_t)
-print padding + "imul $0x%x, base_pointer, base_pointer" % (sizeof_multiply_stream_t)
+print padding + "imul $SIZEOF_MULTIPLY_STREAM_T, base_pointer, base_pointer"
 print
 print padding + "# Load pointers to stream matrix blocks."
 print padding + "mov (multiply_stream, base_pointer, 1), A"
 print padding + "mov 0x8(multiply_stream, base_pointer, 1), B"
 print padding + "mov 0x10(multiply_stream, base_pointer, 1), C"
-
-#if options.N_unroll < options.N:
-#  # Generate outer loop code.
-#  print
-#  print padding + ".align 16"
-#  print "outer_i:"
-
-#if options.N_unroll < options.N:
-#  # Generate outer loop code.
-#  print
-#  print padding + ".align 16"
-#  print "outer_j:"
 
 for i in range(options.N):
   for j in range(options.N):
@@ -303,17 +311,10 @@ for i in range(options.N):
 
         print
         print padding + "# Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1)
-        print padding + "movss 0x%x(multiply_stream, base_pointer), B1" % ((i*options.N+k)*4+24)
-        print padding + "mulss 0x%x(multiply_stream, base_pointer), B1" % ((k*options.N+j+options.N**2)*4+24)
+        print padding + "movss 0x%x+OFFSET_NORM(A), B1" % ((i*options.N+k)*4)
+        print padding + "mulss 0x%x+OFFSET_NORM(B), B1" % ((k*options.N+j)*4)
         print padding + "comiss tolerance, B1"
         print padding + "jb block_%d" % (block_counter.get())
-
-      #print
-      #print padding + "# for debugging..."
-      #print padding + "xorps C1, C1"
-      #print padding + "xorps C2, C2"
-      #print padding + "xorps C3, C3"
-      #print padding + "xorps C4, C4"
 
       print
       print padding + "# Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1)
@@ -412,8 +413,6 @@ print padding + ".align 16"
 print "done:"
 print
 print padding + "# Pop registers from stack."
-#print padding + "pop j_outer"
-#print padding + "pop i_outer"
 print padding + "pop C"
 print padding + "pop B"
 print padding + "pop A"

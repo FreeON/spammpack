@@ -7,18 +7,14 @@
  */
 struct spamm_multiply_stream_t
 {
-  /** A pointer to the kernel dense matrix block of A. This block is assumed
-   * to be dilated by 4 for SSE processing. */
-  float *A_block;
+  /** A pointer to the kernel tier matrix node of A. */
+  struct spamm_data_t *A;
 
-  /** A pointer to the kernel dense matrix block of B. */
-  float *B_block;
+  /** A pointer to the kernel tier matrix node of B. */
+  struct spamm_data_t *B;
 
-  /** A pointer to the kernel dense matrix block of B. */
-  float *C_block;
-
-  /** The 2x16 norms of the underlying matrix blocks of A and B. */
-  float  norm[32];
+  /** A pointer to the kernel tier matrix node of C. */
+  struct spamm_data_t *C;
 };
 
 /** Process the multiply stream.

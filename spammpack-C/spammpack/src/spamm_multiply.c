@@ -24,7 +24,7 @@ struct spamm_multiply_index_list_t
   unsigned int size;
   unsigned int *index_2D;
   unsigned int *index_3D;
-  struct spamm_data_t **block_dense;
+  struct spamm_data_t **data;
 };
 
 struct spamm_multiply_k_lookup_t
@@ -134,27 +134,20 @@ spamm_multiply_sort_stream_swap (struct spamm_multiply_stream_t *a_stream,
 {
   short i;
   float temp_norm;
-  float *temp_block;
+  struct spamm_data_t *temp_node;
   unsigned int temp;
 
-  temp_block = a_stream->A_block;
-  a_stream->A_block = b_stream->A_block;
-  b_stream->A_block = temp_block;
+  temp_node = a_stream->A;
+  a_stream->A= b_stream->A;
+  b_stream->A= temp_node;
 
-  temp_block = a_stream->B_block;
-  a_stream->B_block = b_stream->B_block;
-  b_stream->B_block = temp_block;
+  temp_node = a_stream->B;
+  a_stream->B= b_stream->B;
+  b_stream->B= temp_node;
 
-  temp_block = a_stream->C_block;
-  a_stream->C_block = b_stream->C_block;
-  b_stream->C_block = temp_block;
-
-  for (i = 0; i < 32; i++)
-  {
-    temp_norm = a_stream->norm[i];
-    a_stream->norm[i] = b_stream->norm[i];
-    b_stream->norm[i] = temp_norm;
-  }
+  temp_node = a_stream->C;
+  a_stream->C= b_stream->C;
+  b_stream->C= temp_node;
 
   temp = *a;
   *a = *b;
@@ -240,9 +233,9 @@ spamm_multiply (const float tolerance,
   struct spamm_multiply_index_list_t A_index;
   struct spamm_multiply_index_list_t B_index;
 
-  struct spamm_data_t *A_block;
-  struct spamm_data_t *B_block;
-  struct spamm_data_t *C_block;
+  struct spamm_data_t *A_data;
+  struct spamm_data_t *B_data;
+  struct spamm_data_t *C_data;
 
   struct spamm_data_t *data;
 
@@ -396,12 +389,12 @@ spamm_multiply (const float tolerance,
   A_index.size = 0;
   A_index.index_2D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(A_index_sorted));
   A_index.index_3D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(A_index_sorted));
-  A_index.block_dense = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*g_list_length(A_index_sorted));
+  A_index.data = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*g_list_length(A_index_sorted));
 
   B_index.size = 0;
   B_index.index_2D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(B_index_sorted));
   B_index.index_3D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(B_index_sorted));
-  B_index.block_dense = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*g_list_length(B_index_sorted));
+  B_index.data = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*g_list_length(B_index_sorted));
 
   g_list_foreach(A_index_sorted, spamm_multiply_copy_to_array, &A_index);
   g_list_foreach(B_index_sorted, spamm_multiply_copy_to_array, &B_index);
@@ -419,14 +412,14 @@ spamm_multiply (const float tolerance,
   {
     data = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
     A_index.index_3D[i] = data->index_3D_ik0;
-    A_index.block_dense[i] = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
+    A_index.data[i] = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
   }
 
   for (i = 0; i < B_index.size; i++)
   {
     data = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[i]);
     B_index.index_3D[i] = data->index_3D_0kj;
-    B_index.block_dense[i] = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[i]);
+    B_index.data[i] = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[i]);
   }
 
   spamm_timer_stop(copy_3D_timer);
@@ -511,45 +504,32 @@ spamm_multiply (const float tolerance,
       }
 
       /* Get reference to dense block of A. */
-      A_block = A_index.block_dense[i];
+      A_data = A_index.data[i];
 
       /* Loop over subset of B with matching k. */
       for (j = B_k_lookup.index[B_k_lookup_index]; j < B_k_lookup.index[B_k_lookup_index+1]; j++)
       {
         /* Get reference to dense block of B. */
-        B_block = B_index.block_dense[j];
+        B_data = B_index.data[j];
 
         /* Perform norm product and test whether to keep this term. */
-        if (A_block->node_norm*B_block->node_norm <= tolerance)
+        if (A_data->node_norm*B_data->node_norm <= tolerance)
         {
           number_dropped_blocks++;
           break;
         }
 
-#ifdef DEBUG_STUFF
-#define BLA_1
-#ifdef BLA_1
-        /* Get the linear 2D index of the C block. */
-        convolution_index = (A_index.index_3D[i] & MASK_3D_IJ) | (B_index.index_3D[j] & MASK_3D_IJ);
-#endif
-
-#define BLA_2
-#ifdef BLA_2
-        convolution_index_2D = spamm_index_3D_i0j_to_2D(convolution_index);
-#endif
-#else
 #define BLA_1
 #ifdef BLA_1
         /* Get the linear 2D index of the C block. */
         convolution_index_2D = (A_index.index_2D[i] & MASK_2D_I) | (B_index.index_2D[j] & MASK_2D_J);
 #endif
-#endif
 
 #define BLA_3
 #ifdef BLA_3
         /* Set references to matrix block in multiply stream. */
-        multiply_stream[stream_index].A_block = A_block->block_dense_dilated;
-        multiply_stream[stream_index].B_block = B_block->block_dense;
+        multiply_stream[stream_index].A = A_data;
+        multiply_stream[stream_index].B = B_data;
 #endif
 
 //#define BLA_4
@@ -561,22 +541,24 @@ spamm_multiply (const float tolerance,
 #define BLA_5
 #ifdef BLA_5
         /* Get reference to dense block of C. */
-        C_block = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
-        multiply_stream[stream_index].C_block = C_block->block_dense;
+        C_data = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
+        multiply_stream[stream_index].C = C_data;
 #endif
 
+#ifdef DEBUG_STUFF
 #define BLA_6
 #ifdef BLA_6
         /* Set the kernel block norms. */
         for (k = 0; k < 16; k++)
         {
-          multiply_stream[stream_index].norm[k] = A_block->norm[k];
+          multiply_stream[stream_index].norm[k] = A_data->norm[k];
         }
 
         for (k = 16; k < 32; k++)
         {
           multiply_stream[stream_index].norm[k] = B_block->norm[k-16];
         }
+#endif
 #endif
 
         /* Done with this stream element. */

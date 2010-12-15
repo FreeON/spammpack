@@ -22,10 +22,6 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D,
   data->index_3D_ik0 = index_3D_ik0;
   data->index_3D_0kj = index_3D_0kj;
 
-  /* Allocate space for matrix blocks. */
-  data->block_dense = (float*) spamm_allocate(sizeof(float)*SPAMM_N_KERNEL*SPAMM_N_KERNEL);
-  data->block_dense_dilated = (float*) spamm_allocate(sizeof(float)*4*SPAMM_N_KERNEL*SPAMM_N_KERNEL);
-
   /* Set matrix elements to zero. */
   for (i = 0; i < SPAMM_N_KERNEL; i++) {
     for (j = 0; j < SPAMM_N_KERNEL; j++)

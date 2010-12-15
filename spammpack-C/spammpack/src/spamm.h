@@ -86,10 +86,10 @@ struct spamm_data_t
   float norm2[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
 
   /** The matrix data. */
-  float *block_dense;
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
 
   /** The matrix data (dilated by 4 for SSE). */
-  float *block_dense_dilated;
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
 };
 
 /* Function declarations. */
