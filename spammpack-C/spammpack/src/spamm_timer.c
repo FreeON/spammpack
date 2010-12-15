@@ -79,18 +79,23 @@ spamm_timer_stop (struct spamm_timer_t *timer)
 float
 spamm_timer_get_seconds (const struct spamm_timer_t *timer)
 {
+  unsigned int seconds, useconds;
+
   if (timer->timer_running != 0)
   {
-    printf("[print timer] this timer is running right now\n");
+    printf("[get seconds] this timer is running right now\n");
     exit(1);
   }
 
-  return (timer->end_time).ru_utime.tv_sec
+  seconds = (timer->end_time).ru_utime.tv_sec
     +(timer->end_time).ru_stime.tv_sec
-    +(timer->end_time).ru_utime.tv_usec/1.0e6
-    +(timer->end_time).ru_stime.tv_usec/1.0e6
     -((timer->start_time).ru_utime.tv_sec
-        +(timer->start_time).ru_stime.tv_sec
-        +(timer->start_time).ru_utime.tv_usec/1.0e6
-        +(timer->start_time).ru_stime.tv_usec/1.0e6);
+        +(timer->start_time).ru_stime.tv_sec);
+
+  useconds = (timer->end_time).ru_utime.tv_usec
+    +(timer->end_time).ru_stime.tv_usec
+    -((timer->start_time).ru_utime.tv_usec
+        +(timer->start_time).ru_stime.tv_usec);
+
+  return (double) seconds + (double) useconds/1.0e6;
 }

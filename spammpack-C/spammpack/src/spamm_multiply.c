@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef HAVE_SSE
+#include <xmmintrin.h>
+#endif
+
 /* Some commonly used bit-patterns are:
  *
  * For 3D indices:
@@ -23,7 +27,6 @@ struct spamm_multiply_index_list_t
 {
   unsigned int size;
   unsigned int *index_2D;
-  unsigned int *index_3D;
   struct spamm_data_t **data;
 };
 
@@ -107,16 +110,36 @@ spamm_multiply_beta_block (gpointer key, gpointer value, gpointer user_data)
   struct spamm_data_t *data = value;
   float *beta = user_data;
   unsigned int i;
+  short j;
 
+#ifdef HAVE_SSE
+  __m128 xmm, xmm_beta;
+
+  xmm_beta = _mm_load_ps1(beta);
+  for (i = 0; i < SPAMM_N_KERNEL*SPAMM_N_KERNEL; i += 4)
+  {
+    xmm = _mm_load_ps(&data->block_dense[i]);
+    xmm = _mm_mul_ss(xmm_beta, xmm);
+    _mm_store_ps(&data->block_dense[i], xmm);
+
+    for (j = 0; j < 4; j++)
+    {
+      xmm = _mm_load_ps(&data->block_dense_dilated[4*i+4*j]);
+      xmm = _mm_mul_ss(xmm_beta, xmm);
+      _mm_store_ps(&data->block_dense_dilated[4*i+4*j], xmm);
+    }
+  }
+#else
   for (i = 0; i < SPAMM_N_KERNEL*SPAMM_N_KERNEL; i++)
   {
     data->block_dense[i] *= (*beta);
 
-    data->block_dense_dilated[i+0] *= (*beta);
-    data->block_dense_dilated[i+1] *= (*beta);
-    data->block_dense_dilated[i+2] *= (*beta);
-    data->block_dense_dilated[i+3] *= (*beta);
+    for (j = 0; j < 4; j++)
+    {
+      data->block_dense_dilated[4*i+j] *= (*beta);
+    }
   }
+#endif
 }
 
 void
@@ -132,8 +155,6 @@ void
 spamm_multiply_sort_stream_swap (struct spamm_multiply_stream_t *a_stream,
     struct spamm_multiply_stream_t *b_stream, unsigned int *a, unsigned int *b)
 {
-  short i;
-  float temp_norm;
   struct spamm_data_t *temp_node;
   unsigned int temp;
 
@@ -241,7 +262,6 @@ spamm_multiply (const float tolerance,
 
   unsigned int i, j, k, k_check;
   unsigned int index;
-  unsigned int convolution_index;
   unsigned int convolution_index_2D;
   unsigned int A_k_lookup_index;
   unsigned int B_k_lookup_index;
@@ -253,7 +273,6 @@ spamm_multiply (const float tolerance,
   struct spamm_multiply_stream_t *multiply_stream;
   unsigned int stream_index;
   unsigned int number_dropped_blocks;
-  unsigned int previous_index;
 
   unsigned int *C_block_stream_index;
 
@@ -265,13 +284,14 @@ spamm_multiply (const float tolerance,
   struct spamm_timer_t *free_timer          = spamm_timer_new();
   struct spamm_timer_t *convolute_timer     = spamm_timer_new();
   struct spamm_timer_t *stream_timer        = spamm_timer_new();
-  struct spamm_timer_t *free_2_timer        = spamm_timer_new();
-  struct spamm_timer_t *sort_C_timer        = spamm_timer_new();
-  struct spamm_timer_t *reference_C_timer   = spamm_timer_new();
+  struct spamm_timer_t *total_timer         = spamm_timer_new();
 
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
+
+  /* Start the timer. */
+  spamm_timer_start(total_timer);
 
   /* Multiply C with beta. */
   printf("[multiply] multiplying C with beta... ");
@@ -280,7 +300,7 @@ spamm_multiply (const float tolerance,
   spamm_multiply_beta(beta, C);
 
   spamm_timer_stop(beta_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(beta_timer));
+  printf("%1.4e s\n", spamm_timer_get_seconds(beta_timer));
 
   /* Sort 2D indices on k, i.e. either on row or column index. */
   printf("[multiply] sorting A and B... ");
@@ -299,7 +319,7 @@ spamm_multiply (const float tolerance,
   printf("len(A) = %u, len(B) = %u, ", g_list_length(A_index_sorted), g_list_length(B_index_sorted));
 
   spamm_timer_stop(sort_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(sort_timer));
+  printf("%1.4e s\n", spamm_timer_get_seconds(sort_timer));
 
   /* Create a lookup table for the start of a particular k index in the sorted
    * arrays. */
@@ -380,7 +400,7 @@ spamm_multiply (const float tolerance,
   printf("len(A_k) = %u, len(B_k) = %u, ", A_k_lookup.size, B_k_lookup.size);
 
   spamm_timer_stop(k_lookuptable_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(k_lookuptable_timer));
+  printf("%1.4e s\n", spamm_timer_get_seconds(k_lookuptable_timer));
 
   /* Copy sorted indices to array for quick access. */
   printf("[multiply] copying indices to array... ");
@@ -388,12 +408,10 @@ spamm_multiply (const float tolerance,
 
   A_index.size = 0;
   A_index.index_2D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(A_index_sorted));
-  A_index.index_3D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(A_index_sorted));
   A_index.data = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*g_list_length(A_index_sorted));
 
   B_index.size = 0;
   B_index.index_2D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(B_index_sorted));
-  B_index.index_3D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(B_index_sorted));
   B_index.data = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*g_list_length(B_index_sorted));
 
   g_list_foreach(A_index_sorted, spamm_multiply_copy_to_array, &A_index);
@@ -402,7 +420,7 @@ spamm_multiply (const float tolerance,
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
 
   spamm_timer_stop(copy_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(copy_timer));
+  printf("%1.4e s\n", spamm_timer_get_seconds(copy_timer));
 
   /* Copy appropriate 3D convolution index to arrays. */
   printf("[multiply] copying 3D convolution index to arrays and referencing dense blocks... ");
@@ -411,29 +429,17 @@ spamm_multiply (const float tolerance,
   for (i = 0; i < A_index.size; i++)
   {
     data = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
-    A_index.index_3D[i] = data->index_3D_ik0;
     A_index.data[i] = g_hash_table_lookup(A_tier_hashtable, &A_index.index_2D[i]);
   }
 
   for (i = 0; i < B_index.size; i++)
   {
     data = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[i]);
-    B_index.index_3D[i] = data->index_3D_0kj;
     B_index.data[i] = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[i]);
   }
 
   spamm_timer_stop(copy_3D_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(copy_3D_timer));
-
-  /* Free some memory. */
-  printf("[multiply] free some memory... ");
-  spamm_timer_start(free_timer);
-
-  g_list_free(A_index_sorted);
-  g_list_free(B_index_sorted);
-
-  spamm_timer_stop(free_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(free_timer));
+  printf("%1.4e s\n", spamm_timer_get_seconds(copy_3D_timer));
 
   /* Convolute by constructing product 3D index. */
   printf("[multiply] convolute... ");
@@ -448,12 +454,6 @@ spamm_multiply (const float tolerance,
 
   /* Some tings to try:
    *
-   * 1) Don't dilate matrix index in 3D, but leave in 2D so that convolution
-   * is done faster.
-   * 2) Can the stream element be made smaller so that the norms are not
-   * explicitly stored in it? The norm would have to be looked up by pointer
-   * reference, but that might be ok since the matrix data is looked up this
-   * way too.
    * 3) Terminate the 2D index with a leading "1" bit, like Warren/Salmon to
    * indicate the width of the key and therefore its tier.
    * 4) The pointer lookup in BLA_3 is somewhat slow, can moving the loading
@@ -467,22 +467,13 @@ spamm_multiply (const float tolerance,
   for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size-1; A_k_lookup_index++)
   {
     /* Get k value of A. */
-//#define DEBUG_STUFF
-#ifdef DEBUG_STUFF
-    A_k = spamm_index_3D_ikj_to_k(A_index.index_3D[A_k_lookup.index[A_k_lookup_index]]);
-#else
     A_k = A_index.index_2D[A_k_lookup.index[A_k_lookup_index]] & MASK_2D_J;
-#endif
 
     /* Note that we don't increment i in the for() construct. */
     for (i = A_k_lookup.index[A_k_lookup_index]; i < A_k_lookup.index[A_k_lookup_index+1]; )
     {
       /* Get k value of B. */
-#ifdef DEBUG_STUFF
-      B_k = spamm_index_3D_ikj_to_k(B_index.index_3D[B_k_lookup.index[B_k_lookup_index]]);
-#else
       B_k = (B_index.index_2D[B_k_lookup.index[B_k_lookup_index]] & MASK_2D_I) >> 1;
-#endif
 
       /* Compare k values. */
       if (A_k > B_k)
@@ -519,47 +510,16 @@ spamm_multiply (const float tolerance,
           break;
         }
 
-#define BLA_1
-#ifdef BLA_1
         /* Get the linear 2D index of the C block. */
         convolution_index_2D = (A_index.index_2D[i] & MASK_2D_I) | (B_index.index_2D[j] & MASK_2D_J);
-#endif
 
-#define BLA_3
-#ifdef BLA_3
         /* Set references to matrix block in multiply stream. */
         multiply_stream[stream_index].A = A_data;
         multiply_stream[stream_index].B = B_data;
-#endif
 
-//#define BLA_4
-#ifdef BLA_4
-        /* Store linear index of C block. */
-        C_block_stream_index[stream_index] = convolution_index_2D;
-#endif
-
-#define BLA_5
-#ifdef BLA_5
         /* Get reference to dense block of C. */
         C_data = g_hash_table_lookup(C_tier_hashtable, &convolution_index_2D);
         multiply_stream[stream_index].C = C_data;
-#endif
-
-#ifdef DEBUG_STUFF
-#define BLA_6
-#ifdef BLA_6
-        /* Set the kernel block norms. */
-        for (k = 0; k < 16; k++)
-        {
-          multiply_stream[stream_index].norm[k] = A_data->norm[k];
-        }
-
-        for (k = 16; k < 32; k++)
-        {
-          multiply_stream[stream_index].norm[k] = B_block->norm[k-16];
-        }
-#endif
-#endif
 
         /* Done with this stream element. */
         stream_index++;
@@ -582,11 +542,7 @@ spamm_multiply (const float tolerance,
         i = A_k_lookup.index[A_k_lookup_index];
 
         /* Get k value of A. */
-#ifdef DEBUG_STUFF
-        A_k = spamm_index_3D_ikj_to_k(A_index.index_3D[A_k_lookup.index[A_k_lookup_index]]);
-#else
         A_k = A_index.index_2D[A_k_lookup.index[A_k_lookup_index]] & MASK_2D_J;
-#endif
 
         continue;
       }
@@ -605,65 +561,28 @@ spamm_multiply (const float tolerance,
   }
 
   spamm_timer_stop(convolute_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(convolute_timer));
+  printf("%1.4e s\n", spamm_timer_get_seconds(convolute_timer));
 
   printf("dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
 
-#ifdef SORT_C_BLOCKS
-  /* Sort multiply stream and reference C blocks. */
-  printf("[multiply] sort C blocks...");
-  spamm_timer_start(sort_C_timer);
-
-  /* Sort on C block index. */
-  spamm_multiply_sort_stream(0, stream_index-1, multiply_stream, C_block_stream_index);
-
-  spamm_timer_stop(sort_C_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(sort_C_timer));
-#endif
-
-#ifdef REFERENCE_C_BLOCKS
-  /* Loop over sorted stream and associate the correct C block references. */
-  printf("[multiply] reference C blocks...");
-  spamm_timer_start(reference_C_timer);
-  previous_index = C_block_stream_index[0]+1;
-  for (i = 0; i < stream_index; i++)
-  {
-    if (C_block_stream_index[i] != previous_index)
-    {
-      /* Get reference to dense block of C. */
-      C_block = g_hash_table_lookup(C_tier_hashtable, &C_block_stream_index[i]);
-
-      /* Update the previous index. */
-      previous_index = C_block_stream_index[i];
-
-      /* Check if that C block is already in the tree. */
-      if (C_block == NULL)
-      {
-        printf("[FIXME]\n");
-        exit(1);
-      }
-    }
-
-    /* Add reference to stream. */
-    multiply_stream[i].C_block = C_block->block_dense;
-  }
-
-  spamm_timer_stop(reference_C_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(reference_C_timer));
-#endif
-
   /* Free memory. */
-  printf("[multiply] free some more memory... ");
-  spamm_timer_start(free_2_timer);
+  printf("[multiply] free memory... ");
+  spamm_timer_start(free_timer);
+
+  g_list_free(A_index_sorted);
+  g_list_free(B_index_sorted);
+
+  free(A_k_lookup.index);
+  free(B_k_lookup.index);
 
   free(C_block_stream_index);
   free(A_index.index_2D);
-  free(A_index.index_3D);
+  free(A_index.data);
   free(B_index.index_2D);
-  free(B_index.index_3D);
+  free(B_index.data);
 
-  spamm_timer_stop(free_2_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(free_2_timer));
+  spamm_timer_stop(free_timer);
+  printf("%1.4e s\n", spamm_timer_get_seconds(free_timer));
 
   /* Call stream product. */
   printf("[multiply] stream multiply... ");
@@ -672,34 +591,28 @@ spamm_multiply (const float tolerance,
   spamm_stream_kernel(stream_index, alpha, tolerance, multiply_stream);
 
   spamm_timer_stop(stream_timer);
-  printf("%1.2e s\n", spamm_timer_get_seconds(stream_timer));
+  printf("%1.4e s\n", spamm_timer_get_seconds(stream_timer));
+
+  /* Stop timer. */
+  spamm_timer_stop(total_timer);
 
   /* Print out total time. */
-  printf("[multiply] total time elapsed for everything but stream: %1.2e s\n",
-      spamm_timer_get_seconds(beta_timer) +
-      spamm_timer_get_seconds(sort_timer) +
-      spamm_timer_get_seconds(copy_timer) +
-      spamm_timer_get_seconds(copy_3D_timer) +
-      spamm_timer_get_seconds(free_timer) +
-      spamm_timer_get_seconds(convolute_timer));
-
-  printf("[multiply] total time elapsed: %1.2e s\n",
-      spamm_timer_get_seconds(beta_timer) +
-      spamm_timer_get_seconds(sort_timer) +
-      spamm_timer_get_seconds(copy_timer) +
-      spamm_timer_get_seconds(copy_3D_timer) +
-      spamm_timer_get_seconds(free_timer) +
-      spamm_timer_get_seconds(convolute_timer) +
+  printf("[multiply] total time elapsed for everything but stream: %1.4e s\n",
+      spamm_timer_get_seconds(total_timer) -
       spamm_timer_get_seconds(stream_timer));
+
+  printf("[multiply] total time elapsed: %1.4e s\n", spamm_timer_get_seconds(total_timer));
 
   /* Free memory. */
   free(multiply_stream);
 
   spamm_timer_delete(&beta_timer);
   spamm_timer_delete(&sort_timer);
+  spamm_timer_delete(&k_lookuptable_timer);
   spamm_timer_delete(&copy_timer);
   spamm_timer_delete(&copy_3D_timer);
   spamm_timer_delete(&free_timer);
   spamm_timer_delete(&convolute_timer);
   spamm_timer_delete(&stream_timer);
+  spamm_timer_delete(&total_timer);
 }
