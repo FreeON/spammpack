@@ -138,7 +138,5 @@ include_HEADERS = \
   $(libspamm_kernel_headers) \
   $(libspamm_tree_headers)
 
-noinst_PROGRAMS = print_data_sizes
-
 tags :
 	ctags --C-kinds=+l+x *.h *.c *.S ../config.h
