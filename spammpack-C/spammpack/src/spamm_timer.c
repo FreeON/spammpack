@@ -1,6 +1,11 @@
+#include "config.h"
 #include "spamm_timer.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+#ifdef HAVE_PAPI
+#include <papi.h>
+#endif
 
 /** Return a new timer object.
  *

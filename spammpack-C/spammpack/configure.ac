@@ -9,7 +9,7 @@ dnl Define location of m4 macros.
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Identify compilers.
-AC_PROG_CC_STDC
+AC_PROG_CC_C99
 AC_PROG_F77
 AM_PROG_AS
 
@@ -23,7 +23,7 @@ dnl Check for glib.
 glib_libs=( "glib-2.0" )
 glib_libs_ac=( "glib_2_0" )
 glib_cppflags=( "" "-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" )
-old_CPPFAGS=$CPPFLAGS
+old_CPPFLAGS=$CPPFLAGS
 old_LIBS=$LIBS
 
 for (( i = 0; i < ${#glib_libs[*]}; i++ )); do
@@ -87,6 +87,10 @@ AC_ARG_ENABLE([PAPI], [AS_HELP_STRING([--enable-PAPI],
 
 if test "${enable_PAPI}" = "yes"; then
   AC_MSG_RESULT([yes])
+
+  dnl We need to define the C99 macro to get the declaration of caddr_t.
+  CPPFLAGS="${CPPFLAGS} -DC99"
+
   have_PAPI="yes"
   AC_CHECK_HEADERS([papi.h], [], [unset have_PAPI])
   AC_CHECK_LIB([papi], [PAPI_library_init], [], [unset have_PAPI])
@@ -94,8 +98,8 @@ if test "${enable_PAPI}" = "yes"; then
     AC_DEFINE([HAVE_PAPI], [1], [Should we use the PAPI profiling interface?])
   else
     AC_MSG_FAILURE([PAPI requested but not available. You might have to
-                    specify the PAPI header file location by adding to
-                    CPPFLAGS the PAPI library location by adding to LDFLAGS.])
+specify the PAPI header file location by adding to CPPFLAGS and/or the PAPI
+library location by adding to LDFLAGS.])
   fi
 else
   AC_MSG_RESULT([no])
@@ -199,6 +203,7 @@ src/Makefile
 src/spamm_config.h
 src/spamm_manual_mainpage.h
 tests/Makefile
+tools/Makefile
 ])
 
 AC_OUTPUT
