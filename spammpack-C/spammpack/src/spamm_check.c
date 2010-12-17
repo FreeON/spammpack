@@ -5,12 +5,28 @@
 
 #define RELATIVE_TOLERANCE 1.0e-7
 
+/** @private The user data object that is passed to to the hash table
+ * iterator.
+ */
 struct spamm_check_user_data_t
 {
+  /** The tier this hash table is on. */
   unsigned int tier;
+
+  /** The spamm_t object the hash table was taken from. */
   const struct spamm_t *A;
 };
 
+/** @private Verify the norm of a node.
+ *
+ * This function is called in the hash table iterator for each tier of the
+ * matrix tree.
+ *
+ * @param key The linear index of this node.
+ * @param value The matrix tree node. This can have either type spamm_node_t
+ * or spamm_data_t depending on the tier.
+ * @param user_data The user data of type spamm_check_user_data_t.
+ */
 void
 spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
 {
