@@ -3,36 +3,23 @@
 #ifndef __SPAMM_TIMER_H
 #define __SPAMM_TIMER_H
 
-#include "config.h"
 #include <time.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#ifdef HAVE_PAPI
-#include <papi.h>
-#endif
-
-/** A timer object.
+/** The timer type.
  */
-struct spamm_timer_t
+enum spamm_timer_type_t
 {
-  /** Indicate whether the timer is already running. */
-  short timer_running;
+  /** The walltime passed. */
+  walltime,
 
-#ifdef HAVE_PAPI
-  /** The timer type. */
-
-#else
-  /** The time the timer was started. */
-  struct rusage start_time;
-
-  /** The time the timer was stopped. */
-  struct rusage end_time;
-#endif
+  /** Instructions. */
+  total_instructions
 };
 
 struct spamm_timer_t *
-spamm_timer_new ();
+spamm_timer_new (const enum spamm_timer_type_t type);
 
 void
 spamm_timer_delete (struct spamm_timer_t **timer);
@@ -43,7 +30,7 @@ spamm_timer_start (struct spamm_timer_t *timer);
 void
 spamm_timer_stop (struct spamm_timer_t *timer);
 
-float
-spamm_timer_get_seconds (const struct spamm_timer_t *timer);
+unsigned int
+spamm_timer_get (const struct spamm_timer_t *timer);
 
 #endif

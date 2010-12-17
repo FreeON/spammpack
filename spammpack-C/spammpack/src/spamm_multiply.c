@@ -18,24 +18,53 @@
  * 01010101010101010101010101010101 = 0x55555555
  * 10101010101010101010101010101010 = 0xaaaaaaaa
  */
+
+/** 010010010010010010010010010010 = 0x12492492 */
 #define MASK_3D_K  0x12492492
+
+/** 101101101101101101101101101101 = 0x2DB6DB6D */
 #define MASK_3D_IJ 0x2DB6DB6D
+
+/** 01010101010101010101010101010101 = 0x55555555 */
 #define MASK_2D_J  0x55555555
+
+/** 10101010101010101010101010101010 = 0xaaaaaaaa */
 #define MASK_2D_I  0xaaaaaaaa
 
+/** @private List of index (key) space of kernel tier.
+ */
 struct spamm_multiply_index_list_t
 {
+  /** The number of elements in the index_2D array. */
   unsigned int size;
+
+  /** An array that contains a list of linear 2D matrix indices. */
   unsigned int *index_2D;
+
+  /** An array of pointers to the matrix tree nodes at the kernel tier. */
   struct spamm_data_t **data;
 };
 
+/** @private k lookup table to speed up loop over indices. */
 struct spamm_multiply_k_lookup_t
 {
+  /** The number of elements in the index array. */
   unsigned int size;
+
+  /** An array of index values pointing into the linear index array for
+   * different k values. */
   unsigned int *index;
 };
 
+/** @private Compare 2 2D indices by their row index.
+ *
+ * @param a A pointer to the first index.
+ * @param b A pointer to the second index.
+ * @param user_data A pointer to the tier hashtable.
+ *
+ * @return if a is before b, return -1, if a is after b, return +1, and if a
+ * and b are equivalent, return 0.
+ */
 gint
 spamm_multiply_compare_index_row (gconstpointer a, gconstpointer b, gpointer user_data)
 {
@@ -65,6 +94,15 @@ spamm_multiply_compare_index_row (gconstpointer a, gconstpointer b, gpointer use
   }
 }
 
+/** @private Compare 2 2D indices by their column index.
+ *
+ * @param a A pointer to the first index.
+ * @param b A pointer to the second index.
+ * @param user_data A pointer to the tier hashtable.
+ *
+ * @return if a is before b, return -1, if a is after b, return +1, and if a
+ * and b are equivalent, return 0.
+ */
 gint
 spamm_multiply_compare_index_column (gconstpointer a, gconstpointer b, gpointer user_data)
 {
@@ -94,6 +132,12 @@ spamm_multiply_compare_index_column (gconstpointer a, gconstpointer b, gpointer 
   }
 }
 
+/** @private Copy linear matrix index to array. This function is called by the
+ * hash table iterator.
+ *
+ * @param data The linear matrix index.
+ * @param user_data A pointer to the array.
+ */
 void
 spamm_multiply_copy_to_array (gpointer data, gpointer user_data)
 {
@@ -104,6 +148,12 @@ spamm_multiply_copy_to_array (gpointer data, gpointer user_data)
   (A_index->size)++;
 }
 
+/** @private Multiply a matrix node by a scalar.
+ *
+ * @param key The linear index of that matrix node.
+ * @param value A pointer to the spamm_data_t matrix node.
+ * @param user_data The scalar \f$\beta\f$ that multiplies the matrix.
+ */
 void
 spamm_multiply_beta_block (gpointer key, gpointer value, gpointer user_data)
 {
@@ -142,6 +192,11 @@ spamm_multiply_beta_block (gpointer key, gpointer value, gpointer user_data)
 #endif
 }
 
+/** @private Multiply a matrix by a scalar.
+ *
+ * @param beta The scalar \f$\beta\f$ that multiplies the matrix.
+ * @param A The matrix.
+ */
 void
 spamm_multiply_beta (const float beta, struct spamm_t *A)
 {
@@ -151,6 +206,13 @@ spamm_multiply_beta (const float beta, struct spamm_t *A)
   g_hash_table_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &beta);
 }
 
+/** @private Swap 2 multiply stream elements.
+ *
+ * @param a_stream The first stream element.
+ * @param b_stream The second stream element.
+ * @param a The first linear index of the C matrix.
+ * @param b The second linear index of the C matrix.
+ */
 void
 spamm_multiply_sort_stream_swap (struct spamm_multiply_stream_t *a_stream,
     struct spamm_multiply_stream_t *b_stream, unsigned int *a, unsigned int *b)
@@ -276,15 +338,15 @@ spamm_multiply (const float tolerance,
 
   unsigned int *C_block_stream_index;
 
-  struct spamm_timer_t *beta_timer          = spamm_timer_new();
-  struct spamm_timer_t *sort_timer          = spamm_timer_new();
-  struct spamm_timer_t *k_lookuptable_timer = spamm_timer_new();
-  struct spamm_timer_t *copy_timer          = spamm_timer_new();
-  struct spamm_timer_t *copy_3D_timer       = spamm_timer_new();
-  struct spamm_timer_t *free_timer          = spamm_timer_new();
-  struct spamm_timer_t *convolute_timer     = spamm_timer_new();
-  struct spamm_timer_t *stream_timer        = spamm_timer_new();
-  struct spamm_timer_t *total_timer         = spamm_timer_new();
+  struct spamm_timer_t *beta_timer          = spamm_timer_new(walltime);
+  struct spamm_timer_t *sort_timer          = spamm_timer_new(walltime);
+  struct spamm_timer_t *k_lookuptable_timer = spamm_timer_new(walltime);
+  struct spamm_timer_t *copy_timer          = spamm_timer_new(walltime);
+  struct spamm_timer_t *copy_3D_timer       = spamm_timer_new(walltime);
+  struct spamm_timer_t *free_timer          = spamm_timer_new(walltime);
+  struct spamm_timer_t *convolute_timer     = spamm_timer_new(walltime);
+  struct spamm_timer_t *stream_timer        = spamm_timer_new(walltime);
+  struct spamm_timer_t *total_timer         = spamm_timer_new(walltime);
 
   assert(A != NULL);
   assert(B != NULL);
@@ -300,7 +362,7 @@ spamm_multiply (const float tolerance,
   spamm_multiply_beta(beta, C);
 
   spamm_timer_stop(beta_timer);
-  printf("%1.4e s\n", spamm_timer_get_seconds(beta_timer));
+  printf("%u\n", spamm_timer_get(beta_timer));
 
   /* Sort 2D indices on k, i.e. either on row or column index. */
   printf("[multiply] sorting A and B... ");
@@ -319,7 +381,7 @@ spamm_multiply (const float tolerance,
   printf("len(A) = %u, len(B) = %u, ", g_list_length(A_index_sorted), g_list_length(B_index_sorted));
 
   spamm_timer_stop(sort_timer);
-  printf("%1.4e s\n", spamm_timer_get_seconds(sort_timer));
+  printf("%u\n", spamm_timer_get(sort_timer));
 
   /* Create a lookup table for the start of a particular k index in the sorted
    * arrays. */
@@ -400,7 +462,7 @@ spamm_multiply (const float tolerance,
   printf("len(A_k) = %u, len(B_k) = %u, ", A_k_lookup.size, B_k_lookup.size);
 
   spamm_timer_stop(k_lookuptable_timer);
-  printf("%1.4e s\n", spamm_timer_get_seconds(k_lookuptable_timer));
+  printf("%u\n", spamm_timer_get(k_lookuptable_timer));
 
   /* Copy sorted indices to array for quick access. */
   printf("[multiply] copying indices to array... ");
@@ -420,7 +482,7 @@ spamm_multiply (const float tolerance,
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
 
   spamm_timer_stop(copy_timer);
-  printf("%1.4e s\n", spamm_timer_get_seconds(copy_timer));
+  printf("%u\n", spamm_timer_get(copy_timer));
 
   /* Copy appropriate 3D convolution index to arrays. */
   printf("[multiply] copying 3D convolution index to arrays and referencing dense blocks... ");
@@ -439,7 +501,7 @@ spamm_multiply (const float tolerance,
   }
 
   spamm_timer_stop(copy_3D_timer);
-  printf("%1.4e s\n", spamm_timer_get_seconds(copy_3D_timer));
+  printf("%u\n", spamm_timer_get(copy_3D_timer));
 
   /* Convolute by constructing product 3D index. */
   printf("[multiply] convolute... ");
@@ -561,7 +623,7 @@ spamm_multiply (const float tolerance,
   }
 
   spamm_timer_stop(convolute_timer);
-  printf("%1.4e s\n", spamm_timer_get_seconds(convolute_timer));
+  printf("%u\n", spamm_timer_get(convolute_timer));
 
   printf("dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
 
@@ -582,7 +644,7 @@ spamm_multiply (const float tolerance,
   free(B_index.data);
 
   spamm_timer_stop(free_timer);
-  printf("%1.4e s\n", spamm_timer_get_seconds(free_timer));
+  printf("%u\n", spamm_timer_get(free_timer));
 
   /* Call stream product. */
   printf("[multiply] stream multiply... ");
@@ -591,17 +653,17 @@ spamm_multiply (const float tolerance,
   spamm_stream_kernel(stream_index, alpha, tolerance, multiply_stream);
 
   spamm_timer_stop(stream_timer);
-  printf("%1.4e s\n", spamm_timer_get_seconds(stream_timer));
+  printf("%u\n", spamm_timer_get(stream_timer));
 
   /* Stop timer. */
   spamm_timer_stop(total_timer);
 
   /* Print out total time. */
-  printf("[multiply] total time elapsed for everything but stream: %1.4e s\n",
-      spamm_timer_get_seconds(total_timer) -
-      spamm_timer_get_seconds(stream_timer));
+  printf("[multiply] total time elapsed for everything but stream: %u\n",
+      spamm_timer_get(total_timer) -
+      spamm_timer_get(stream_timer));
 
-  printf("[multiply] total time elapsed: %1.4e s\n", spamm_timer_get_seconds(total_timer));
+  printf("[multiply] total time elapsed: %u\n", spamm_timer_get(total_timer));
 
   /* Free memory. */
   free(multiply_stream);
