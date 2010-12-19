@@ -83,6 +83,8 @@ spamm_multiply_compare_index_row (gconstpointer a, gconstpointer b, gpointer use
   else if (x_masked > y_masked) { return  1; }
   else
   {
+#define SORT_WITH_HASHTABLE
+#ifdef SORT_WITH_HASHTABLE
     /* Compare norms. */
     a_data = g_hash_table_lookup(tier_hashtable, x);
     b_data = g_hash_table_lookup(tier_hashtable, y);
@@ -91,6 +93,9 @@ spamm_multiply_compare_index_row (gconstpointer a, gconstpointer b, gpointer use
     if (a_data->node_norm > b_data->node_norm)      { return -1; }
     else if (a_data->node_norm < b_data->node_norm) { return  1; }
     else                                            { return  0; }
+#else
+    return 0;
+#endif
   }
 }
 
@@ -121,6 +126,7 @@ spamm_multiply_compare_index_column (gconstpointer a, gconstpointer b, gpointer 
   else if (x_masked > y_masked)  { return  1; }
   else
   {
+#ifdef SORT_WITH_HASHTABLE
     /* Compare norms. */
     a_data = g_hash_table_lookup(tier_hashtable, x);
     b_data = g_hash_table_lookup(tier_hashtable, y);
@@ -129,6 +135,9 @@ spamm_multiply_compare_index_column (gconstpointer a, gconstpointer b, gpointer 
     if (a_data->node_norm > b_data->node_norm)      { return -1; }
     else if (a_data->node_norm < b_data->node_norm) { return  1; }
     else                                            { return  0; }
+#else
+    return 0;
+#endif
   }
 }
 
@@ -338,35 +347,40 @@ spamm_multiply (const float tolerance,
 
   unsigned int *C_block_stream_index;
 
-  struct spamm_timer_t *beta_timer          = spamm_timer_new(walltime);
-  struct spamm_timer_t *sort_timer          = spamm_timer_new(walltime);
-  struct spamm_timer_t *k_lookuptable_timer = spamm_timer_new(walltime);
-  struct spamm_timer_t *copy_timer          = spamm_timer_new(walltime);
-  struct spamm_timer_t *copy_3D_timer       = spamm_timer_new(walltime);
-  struct spamm_timer_t *free_timer          = spamm_timer_new(walltime);
-  struct spamm_timer_t *convolute_timer     = spamm_timer_new(walltime);
-  struct spamm_timer_t *stream_timer        = spamm_timer_new(walltime);
-  struct spamm_timer_t *total_timer         = spamm_timer_new(walltime);
+  struct spamm_timer_t *timer = spamm_timer_new(papi_total_cycles);
+
+  char timer_info_string[2000];
+
+  unsigned long long beta_timer;
+  unsigned long long sort_timer;
+  unsigned long long k_lookuptable_timer;
+  unsigned long long copy_timer;
+  unsigned long long copy_3D_timer;
+  unsigned long long free_timer;
+  unsigned long long convolute_timer;
+  unsigned long long stream_timer;
 
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
 
-  /* Start the timer. */
-  spamm_timer_start(total_timer);
+  /* Print out some timer information. */
+  spamm_timer_info(timer, timer_info_string, 2000);
+  printf("[multiply] timer: %s\n", timer_info_string);
 
   /* Multiply C with beta. */
   printf("[multiply] multiplying C with beta... ");
-  spamm_timer_start(beta_timer);
+  spamm_timer_start(timer);
 
   spamm_multiply_beta(beta, C);
 
-  spamm_timer_stop(beta_timer);
-  printf("%u\n", spamm_timer_get(beta_timer));
+  spamm_timer_stop(timer);
+  beta_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", beta_timer);
 
   /* Sort 2D indices on k, i.e. either on row or column index. */
   printf("[multiply] sorting A and B... ");
-  spamm_timer_start(sort_timer);
+  spamm_timer_start(timer);
 
   A_tier_hashtable = g_hash_table_lookup(A->tier_hashtable, &A->kernel_tier);
   B_tier_hashtable = g_hash_table_lookup(B->tier_hashtable, &B->kernel_tier);
@@ -380,13 +394,14 @@ spamm_multiply (const float tolerance,
 
   printf("len(A) = %u, len(B) = %u, ", g_list_length(A_index_sorted), g_list_length(B_index_sorted));
 
-  spamm_timer_stop(sort_timer);
-  printf("%u\n", spamm_timer_get(sort_timer));
+  spamm_timer_stop(timer);
+  sort_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", sort_timer);
 
   /* Create a lookup table for the start of a particular k index in the sorted
    * arrays. */
   printf("[multiply] creating k lookup tables... ");
-  spamm_timer_start(k_lookuptable_timer);
+  spamm_timer_start(timer);
 
   A_k_lookup.index = (unsigned int*) malloc(sizeof(unsigned int)*(A->N_padded/SPAMM_N_KERNEL+1));
   B_k_lookup.index = (unsigned int*) malloc(sizeof(unsigned int)*(B->N_padded/SPAMM_N_KERNEL+1));
@@ -461,12 +476,13 @@ spamm_multiply (const float tolerance,
 
   printf("len(A_k) = %u, len(B_k) = %u, ", A_k_lookup.size, B_k_lookup.size);
 
-  spamm_timer_stop(k_lookuptable_timer);
-  printf("%u\n", spamm_timer_get(k_lookuptable_timer));
+  spamm_timer_stop(timer);
+  k_lookuptable_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", k_lookuptable_timer);
 
   /* Copy sorted indices to array for quick access. */
   printf("[multiply] copying indices to array... ");
-  spamm_timer_start(copy_timer);
+  spamm_timer_start(timer);
 
   A_index.size = 0;
   A_index.index_2D = (unsigned int*) malloc(sizeof(unsigned int)*g_list_length(A_index_sorted));
@@ -481,12 +497,13 @@ spamm_multiply (const float tolerance,
 
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
 
-  spamm_timer_stop(copy_timer);
-  printf("%u\n", spamm_timer_get(copy_timer));
+  spamm_timer_stop(timer);
+  copy_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", copy_timer);
 
   /* Copy appropriate 3D convolution index to arrays. */
   printf("[multiply] copying 3D convolution index to arrays and referencing dense blocks... ");
-  spamm_timer_start(copy_3D_timer);
+  spamm_timer_start(timer);
 
   for (i = 0; i < A_index.size; i++)
   {
@@ -500,12 +517,13 @@ spamm_multiply (const float tolerance,
     B_index.data[i] = g_hash_table_lookup(B_tier_hashtable, &B_index.index_2D[i]);
   }
 
-  spamm_timer_stop(copy_3D_timer);
-  printf("%u\n", spamm_timer_get(copy_3D_timer));
+  spamm_timer_stop(timer);
+  copy_3D_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", copy_3D_timer);
 
   /* Convolute by constructing product 3D index. */
   printf("[multiply] convolute... ");
-  spamm_timer_start(convolute_timer);
+  spamm_timer_start(timer);
 
   stream_index = 0;
   number_dropped_blocks = 0;
@@ -622,14 +640,15 @@ spamm_multiply (const float tolerance,
     exit(1);
   }
 
-  spamm_timer_stop(convolute_timer);
-  printf("%u\n", spamm_timer_get(convolute_timer));
+  spamm_timer_stop(timer);
+  convolute_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", convolute_timer);
 
-  printf("dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
+  printf("[multiply] dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
 
   /* Free memory. */
   printf("[multiply] free memory... ");
-  spamm_timer_start(free_timer);
+  spamm_timer_start(timer);
 
   g_list_free(A_index_sorted);
   g_list_free(B_index_sorted);
@@ -643,38 +662,22 @@ spamm_multiply (const float tolerance,
   free(B_index.index_2D);
   free(B_index.data);
 
-  spamm_timer_stop(free_timer);
-  printf("%u\n", spamm_timer_get(free_timer));
+  spamm_timer_stop(timer);
+  free_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", free_timer);
 
   /* Call stream product. */
   printf("[multiply] stream multiply... ");
-  spamm_timer_start(stream_timer);
+  spamm_timer_start(timer);
 
   spamm_stream_kernel(stream_index, alpha, tolerance, multiply_stream);
 
-  spamm_timer_stop(stream_timer);
-  printf("%u\n", spamm_timer_get(stream_timer));
-
-  /* Stop timer. */
-  spamm_timer_stop(total_timer);
-
-  /* Print out total time. */
-  printf("[multiply] total time elapsed for everything but stream: %u\n",
-      spamm_timer_get(total_timer) -
-      spamm_timer_get(stream_timer));
-
-  printf("[multiply] total time elapsed: %u\n", spamm_timer_get(total_timer));
+  spamm_timer_stop(timer);
+  stream_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", stream_timer);
 
   /* Free memory. */
   free(multiply_stream);
 
-  spamm_timer_delete(&beta_timer);
-  spamm_timer_delete(&sort_timer);
-  spamm_timer_delete(&k_lookuptable_timer);
-  spamm_timer_delete(&copy_timer);
-  spamm_timer_delete(&copy_3D_timer);
-  spamm_timer_delete(&free_timer);
-  spamm_timer_delete(&convolute_timer);
-  spamm_timer_delete(&stream_timer);
-  spamm_timer_delete(&total_timer);
+  spamm_timer_delete(&timer);
 }

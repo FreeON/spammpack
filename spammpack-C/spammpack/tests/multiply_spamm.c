@@ -28,7 +28,8 @@ main ()
   struct spamm_t *B;
   struct spamm_t *C;
 
-  unsigned int max_i, max_j;
+  unsigned int max_i = 0;
+  unsigned int max_j = 0;
   float max_diff;
 
   A_dense = (float*) malloc(sizeof(float)*N*N);

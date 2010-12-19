@@ -14,8 +14,11 @@ enum spamm_timer_type_t
   /** The walltime passed. */
   walltime,
 
-  /** Instructions. */
-  total_instructions
+  /** Total Instructions. */
+  papi_total_instructions,
+
+  /** Total cycles. */
+  papi_total_cycles
 };
 
 struct spamm_timer_t *
@@ -30,7 +33,11 @@ spamm_timer_start (struct spamm_timer_t *timer);
 void
 spamm_timer_stop (struct spamm_timer_t *timer);
 
-unsigned int
+unsigned long long
 spamm_timer_get (const struct spamm_timer_t *timer);
+
+void
+spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
+    const int maxlength);
 
 #endif
