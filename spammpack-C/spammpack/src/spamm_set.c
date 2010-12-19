@@ -31,7 +31,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   struct spamm_node_t *node;
   struct spamm_data_t *data;
 
-  float old_Aij;
+  float old_Aij = 0;
 
   assert(A != NULL);
 

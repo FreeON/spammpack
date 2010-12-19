@@ -1,11 +1,16 @@
 #include "config.h"
 #include "spamm_timer.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #ifdef HAVE_PAPI
 #include <papi.h>
 #endif
+
+/** The maximum length of the info output string. This is used only
+ * internally. */
+#define INFO_MAX_LENGTH 2000
 
 /** @private A timer object.
  */
@@ -18,6 +23,11 @@ struct spamm_timer_t
   enum spamm_timer_type_t type;
 
 #ifdef HAVE_PAPI
+  /** The PAPI eventset. */
+  int eventset;
+
+  /** An array that holds the measured PAPI event values. */
+  long_long *event_values;
 #endif
 
   /** The time the timer was started. */
@@ -27,6 +37,20 @@ struct spamm_timer_t
   struct rusage end_time;
 };
 
+#ifdef HAVE_PAPI
+/** Handle PAPI related errors.
+ *
+ * @param error_code The error code returned by a PAPI call.
+ * @param message The message to prepend to the error string.
+ */
+void
+spamm_timer_handle_PAPI_error (const int error_code, const char *message)
+{
+  printf("[timer, PAPI error] %s: %s\n", message, PAPI_strerror(error_code));
+  exit(1);
+}
+#endif
+
 /** Return a new timer object.
  *
  * @return The newly allocated and initialized timer object.
@@ -34,10 +58,74 @@ struct spamm_timer_t
 struct spamm_timer_t *
 spamm_timer_new (const enum spamm_timer_type_t type)
 {
+#ifdef HAVE_PAPI
+  int papi_result;
+#endif
   struct spamm_timer_t *timer = (struct spamm_timer_t*) malloc(sizeof(struct spamm_timer_t));
 
   timer->timer_running = 0;
   timer->type = type;
+
+#ifdef HAVE_PAPI
+  timer->eventset = PAPI_NULL;
+
+  if ((papi_result = PAPI_is_initialized()) != PAPI_LOW_LEVEL_INITED)
+  {
+    papi_result = PAPI_library_init(PAPI_VER_CURRENT);
+    if (papi_result != PAPI_VER_CURRENT && papi_result > 0)
+    {
+      printf("PAPI library version mismatch\n");
+      exit(1);
+    }
+
+    if (papi_result < 0)
+    {
+      spamm_timer_handle_PAPI_error(papi_result, "timer new, PAPI_library_init()");
+    }
+
+    if ((papi_result = PAPI_is_initialized()) != PAPI_LOW_LEVEL_INITED)
+    {
+      spamm_timer_handle_PAPI_error(papi_result, "timer new, PAPI_is_initialized()");
+    }
+  }
+#endif
+
+  switch (timer->type)
+  {
+    case walltime:
+      break;
+
+#ifdef HAVE_PAPI
+    case papi_total_instructions:
+    case papi_total_cycles:
+      if ((papi_result = PAPI_create_eventset(&timer->eventset)) != PAPI_OK)
+      {
+        spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_create_eventset()");
+      }
+
+      switch(timer->type)
+      {
+        case papi_total_instructions:
+          if ((papi_result = PAPI_add_event(timer->eventset, PAPI_TOT_INS)) != PAPI_OK)
+          {
+            spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
+          }
+
+          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          break;
+
+        case papi_total_cycles:
+          if ((papi_result = PAPI_add_event(timer->eventset, PAPI_TOT_CYC)) != PAPI_OK)
+          {
+            spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
+          }
+
+          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          break;
+      }
+      break;
+#endif
+  }
 
   return timer;
 }
@@ -50,6 +138,33 @@ spamm_timer_new (const enum spamm_timer_type_t type)
 void
 spamm_timer_delete (struct spamm_timer_t **timer)
 {
+#ifdef HAVE_PAPI
+  int papi_result;
+#endif
+
+  switch ((*timer)->type)
+  {
+    case walltime:
+      break;
+
+#ifdef HAVE_PAPI
+    case papi_total_instructions:
+    case papi_total_cycles:
+      if ((papi_result = PAPI_cleanup_eventset((*timer)->eventset)) != PAPI_OK)
+      {
+        spamm_timer_handle_PAPI_error(papi_result, "delete timer, PAPI_cleanup_eventset()");
+      }
+
+      if ((papi_result = PAPI_destroy_eventset(&(*timer)->eventset)) != PAPI_OK)
+      {
+        spamm_timer_handle_PAPI_error(papi_result, "delete timer, PAPI_destroy_eventset()");
+      }
+
+      free((*timer)->event_values);
+      break;
+#endif
+  }
+
   free(*timer);
   *timer = NULL;
 }
@@ -61,6 +176,10 @@ spamm_timer_delete (struct spamm_timer_t **timer)
 void
 spamm_timer_start (struct spamm_timer_t *timer)
 {
+#ifdef HAVE_PAPI
+  int papi_result;
+#endif
+
   if (timer->timer_running != 0)
   {
     printf("[start timer] this timer is already running\n");
@@ -79,8 +198,18 @@ spamm_timer_start (struct spamm_timer_t *timer)
       }
       break;
 
+#ifdef HAVE_PAPI
+    case papi_total_instructions:
+    case papi_total_cycles:
+      if ((papi_result = PAPI_start(timer->eventset)) != PAPI_OK)
+      {
+        spamm_timer_handle_PAPI_error(papi_result, "start timer, PAPI_start()");
+      }
+      break;
+#endif
+
     default:
-      printf("[FIXME] unknown timer type\n");
+      printf("[timer start] unknown timer type\n");
       exit(1);
       break;
   }
@@ -93,6 +222,10 @@ spamm_timer_start (struct spamm_timer_t *timer)
 void
 spamm_timer_stop (struct spamm_timer_t *timer)
 {
+#ifdef HAVE_PAPI
+  int papi_result;
+#endif
+
   if (timer->timer_running != 1)
   {
     printf("[stop timer] this timer is not running\n");
@@ -111,8 +244,18 @@ spamm_timer_stop (struct spamm_timer_t *timer)
       }
       break;
 
+#ifdef HAVE_PAPI
+    case papi_total_instructions:
+    case papi_total_cycles:
+      if ((papi_result = PAPI_stop(timer->eventset, timer->event_values)) != PAPI_OK)
+      {
+        spamm_timer_handle_PAPI_error(papi_result, "start timer, PAPI_stop()");
+      }
+      break;
+#endif
+
     default:
-      printf("[FIXME] unknown timer type\n");
+      printf("[timer stop] unknown timer type\n");
       exit(1);
       break;
   }
@@ -126,7 +269,7 @@ spamm_timer_stop (struct spamm_timer_t *timer)
  *
  * @return The time passed in the default units of the timer type.
  */
-unsigned int
+unsigned long long
 spamm_timer_get (const struct spamm_timer_t *timer)
 {
   if (timer->timer_running != 0)
@@ -148,9 +291,73 @@ spamm_timer_get (const struct spamm_timer_t *timer)
             +(timer->start_time).ru_stime.tv_usec);
       break;
 
+#ifdef HAVE_PAPI
+    case papi_total_instructions:
+    case papi_total_cycles:
+      return timer->event_values[0];
+      break;
+#endif
+
     default:
-      printf("[FIXME] unknown timer type\n");
+      printf("[timer get] unknown timer type\n");
       exit(1);
       break;
+  }
+}
+
+/** Print out some information on the timer.
+ *
+ * @param timer The timer to print information on.
+ * @param infostring A pointer to the output string. This has to be allocated
+ * by the caller.
+ * @param maxlength The length of the output string.
+ */
+void
+spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
+    const int maxlength)
+{
+  int i;
+  char string[INFO_MAX_LENGTH];
+
+#ifdef HAVE_PAPI
+  int papi_result;
+#endif
+
+  assert(timer != NULL);
+  assert(infostring != NULL);
+  assert(maxlength >= 1);
+
+  /* Terminate string. */
+  string[0] = '\0';
+
+  switch (timer->type)
+  {
+    case walltime:
+      sprintf(string, "walltime");
+      break;
+
+#ifdef HAVE_PAPI
+    case papi_total_instructions:
+      sprintf(string, "PAPI total instructions");
+      break;
+
+    case papi_total_cycles:
+      if ((papi_result = PAPI_get_opt(PAPI_CLOCKRATE, NULL)) <= 0)
+      {
+        spamm_timer_handle_PAPI_error(papi_result, "timer info, PAPI_get_opt()");
+      }
+      sprintf(string, "PAPI total cycles, clockrate = %d MHz", papi_result);
+      break;
+#endif
+  }
+
+  /* Copy string to output. */
+  for (i = 0; i < maxlength && i < INFO_MAX_LENGTH; i++)
+  {
+    infostring[i] = string[i];
+    if (string[i] == '\0')
+    {
+      break;
+    }
   }
 }
