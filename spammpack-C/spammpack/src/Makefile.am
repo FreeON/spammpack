@@ -132,6 +132,7 @@ libspamm_tree_headers = \
   spamm.h \
   spamm_config.h \
   spamm_error.h \
+  spamm_hashtable.h \
   spamm_timer.h
 
 include_HEADERS = \
