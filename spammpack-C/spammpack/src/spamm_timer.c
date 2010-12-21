@@ -53,6 +53,8 @@ spamm_timer_handle_PAPI_error (const int error_code, const char *message)
 
 /** Return a new timer object.
  *
+ * @param type The timer type.
+ *
  * @return The newly allocated and initialized timer object.
  */
 struct spamm_timer_t *
