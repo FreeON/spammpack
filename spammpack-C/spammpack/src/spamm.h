@@ -6,6 +6,7 @@
 /* Include some configuration options. */
 #include "spamm_config.h"
 #include "spamm_error.h"
+#include "spamm_hashtable.h"
 #include "spamm_kernel.h"
 #include "spamm_timer.h"
 

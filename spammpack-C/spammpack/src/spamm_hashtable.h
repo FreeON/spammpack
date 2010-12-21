@@ -14,7 +14,7 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
     unsigned int key, void *value);
 
 void *
-spamm_hashtable_lookup (const struct spamm_hashtable_t *hashtable,
+spamm_hashtable_lookup (struct spamm_hashtable_t *hashtable,
     const unsigned int key);
 
 #endif

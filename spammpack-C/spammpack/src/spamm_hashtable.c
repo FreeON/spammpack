@@ -93,13 +93,32 @@ spamm_hashtable_new ()
   return spamm_hashtable_new_internal(8);
 }
 
-/** Destroy a hashtable. Note that the values stored are not freed.
+/** Destroy a hashtable. Note that the values stored are freed with free().
  *
  * @param hastable The hashtable to free.
  */
 void
 spamm_hashtable_delete (struct spamm_hashtable_t **hashtable)
 {
+  unsigned int i;
+
+  for (i = 0; i < (*hashtable)->number_buckets; i++)
+  {
+    if ((*hashtable)->data[i].key != SPAMM_KEY_EMPTY &&
+        (*hashtable)->data[i].key != SPAMM_KEY_DELETED)
+    {
+      free((*hashtable)->data[i].value);
+    }
+  }
+
+  for (i = 0; i < 2; i++)
+  {
+    if ((*hashtable)->has_special_key[i] == 1)
+    {
+      free((*hashtable)->special_value[i]);
+    }
+  }
+
   free((*hashtable)->data);
   free(*hashtable);
   *hashtable = NULL;
