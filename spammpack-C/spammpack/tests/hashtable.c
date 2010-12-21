@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NUMBER_KEYS 1000
+#define NUMBER_KEYS 2000
 
 int
 main ()
