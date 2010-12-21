@@ -4,7 +4,7 @@ CLEANFILES = *~
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = tools src tests
+SUBDIRS = tools src tests prototype
 
 EXTRA_DIST = localversion $(pdf_DATA)
 

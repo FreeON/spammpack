@@ -202,6 +202,8 @@ Makefile
 src/Makefile
 src/spamm_config.h
 src/spamm_manual_mainpage.h
+prototype/Makefile
+prototype/hash_tables/Makefile
 tests/Makefile
 tools/Makefile
 ])
