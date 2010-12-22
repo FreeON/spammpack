@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NUMBER_KEYS 2000
+#define NUMBER_KEYS 5000
 
 int
 main ()
@@ -32,7 +32,7 @@ main ()
       break;
     }
 
-    else if (*value != i)
+    else if (*((int*) value) != i)
     {
       printf("incorrect value for key %u, value = %u\n", i, *value);
       result = 2;
