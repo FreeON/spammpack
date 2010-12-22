@@ -132,9 +132,6 @@ spamm_index_row_major (const unsigned int i, const unsigned int j,
 float
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
 
-gboolean
-spamm_hash_uint_equal (gconstpointer a, gconstpointer b);
-
 unsigned int
 spamm_index_2D (const unsigned int i, const unsigned int j);
 
