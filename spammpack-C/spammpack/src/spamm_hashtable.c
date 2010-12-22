@@ -4,24 +4,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-/** Compare to unsigned int values. This is a helper function for the
- * hashtables in dealing with the linear indices.
- *
- * @param a A pointer to the first index.
- * @param b A pointer to the second index.
- *
- * @return TRUE if the two values are equal, FALSE if not.
- */
-gboolean
-spamm_hash_uint_equal (gconstpointer a, gconstpointer b)
-{
-  const unsigned int *value_1 = a;
-  const unsigned int *value_2 = b;
-
-  if ((*value_1) == (*value_2)) { return TRUE; }
-  else { return FALSE; }
-}
-
 /** An empty key. */
 #define SPAMM_KEY_EMPTY 0
 
@@ -80,6 +62,24 @@ struct spamm_hashtable_t
 /** A utility function for Bob Jenkins' hash function. */
 #define rot(x,k) (((x) << (k)) | ((x) >> (32-(k))))
 
+/** Compare to unsigned int values. This is a helper function for the
+ * hashtables in dealing with the linear indices.
+ *
+ * @param a A pointer to the first index.
+ * @param b A pointer to the second index.
+ *
+ * @return TRUE if the two values are equal, FALSE if not.
+ */
+gboolean
+spamm_hash_uint_equal (gconstpointer a, gconstpointer b)
+{
+  const unsigned int *value_1 = a;
+  const unsigned int *value_2 = b;
+
+  if ((*value_1) == (*value_2)) { return TRUE; }
+  else { return FALSE; }
+}
+
 /** A hash function. This is taken the hashword() function from Bob Jenkins'
  * webpage,
  *
@@ -87,7 +87,7 @@ struct spamm_hashtable_t
  *
  * @param key The key to hash.
  *
- * @return A hashed key.
+ * @return The hashed key.
  */
 unsigned int
 spamm_hashtable_hash_1 (const unsigned int key)
@@ -109,6 +109,19 @@ spamm_hashtable_hash_1 (const unsigned int key)
 
   /* Return the result. */
   return c;
+}
+
+/** The glib compatible version of the hash function spamm_hashtable_hash_1().
+ * See this function's comments for more information.
+ *
+ * @param key A pointer to the key.
+ *
+ * @return The hashed key.
+ */
+guint
+spamm_hashtable_hash_1_glib (gconstpointer key)
+{
+  return spamm_hashtable_hash_1(*((unsigned int*) key));
 }
 
 /** Create a new hashtable.
@@ -316,6 +329,50 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
   }
 }
 
+/** Lookup a key in a hashtable and return a bucket item.
+ *
+ * @param hashtable The hashtable.
+ * @param key The key to lookup.
+ *
+ * @return NULL in case the key is not in the table, or if the value stored
+ * there is NULL. Any value other than NULL indicates that they key was found,
+ * and the pointer returned is the pointer stored with this key.
+ */
+struct spamm_hashtable_bucket_t *
+spamm_hashtable_lookup_bucket (struct spamm_hashtable_t *hashtable,
+    const unsigned int key)
+{
+  unsigned int keyhash = spamm_hashtable_hash_1(key);
+  unsigned int bucket_index = keyhash & (hashtable->number_buckets-1);
+
+  if (hashtable->data[bucket_index].key == key)
+  {
+    return &hashtable->data[bucket_index];
+  }
+
+  else if (hashtable->data[bucket_index].key == SPAMM_KEY_EMPTY)
+  {
+    return NULL;
+  }
+
+  else
+  {
+    /* Linear chaining, i.e. increment bucket index until we either find the
+     * key or an empty bucket. */
+    do
+    {
+      bucket_index = (bucket_index+1) & (hashtable->number_buckets-1);
+      if (hashtable->data[bucket_index].key == key)
+      {
+        return &hashtable->data[bucket_index];
+      }
+    }
+    while (hashtable->data[bucket_index].key != SPAMM_KEY_EMPTY);
+  }
+
+  return NULL;
+}
+
 /** Lookup a key in the hashtable.
  *
  * @param hashtable The hashtable.
@@ -330,8 +387,7 @@ spamm_hashtable_lookup (struct spamm_hashtable_t *hashtable,
     const unsigned int key)
 {
   void *value = NULL;
-  unsigned int keyhash = spamm_hashtable_hash_1(key);
-  unsigned int bucket_index = keyhash & (hashtable->number_buckets-1);
+  struct spamm_hashtable_bucket_t *bucket;
 
   if (key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
   {
@@ -346,32 +402,66 @@ spamm_hashtable_lookup (struct spamm_hashtable_t *hashtable,
     return value;
   }
 
-  else if (hashtable->data[bucket_index].key == key)
+  else
   {
-    /* Store value in this bucket. This overwrites any existing value. */
-    return hashtable->data[bucket_index].value;
+    bucket = spamm_hashtable_lookup_bucket(hashtable, key);
+    if (bucket != NULL)
+    {
+      return bucket->value;
+    }
+
+    else
+    {
+      return NULL;
+    }
+  }
+}
+
+/** Remove a key from a hashtable.
+ *
+ * @param hashtable The hashtable.
+ * @param key The key to remove.
+ *
+ * @return A pointer to the removed value. If this pointer is NULL then either
+ * they key was not found or the value stored was actually NULL.
+ */
+void *
+spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
+    const unsigned int key)
+{
+  void *result = NULL;
+  struct spamm_hashtable_bucket_t *bucket = NULL;
+
+  if (key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
+  {
+    if (hashtable->has_special_key[key] == 1)
+    {
+      hashtable->has_special_key[key] = 0;
+      result = hashtable->special_value[key];
+      hashtable->special_value[key] = NULL;
+    }
   }
 
-  else if (hashtable->data[bucket_index].key != SPAMM_KEY_EMPTY &&
-      hashtable->data[bucket_index].key != SPAMM_KEY_DELETED)
+  else
   {
-    /* Linear chaining, i.e. increment bucket index until we either find the
-     * key or an empty bucket. */
-    do
+    bucket = spamm_hashtable_lookup_bucket(hashtable, key);
+    if (bucket != NULL)
     {
-      bucket_index = (bucket_index+1) & (hashtable->number_buckets-1);
-      if (hashtable->data[bucket_index].key == key)
-      {
-        return hashtable->data[bucket_index].value;
-      }
+      bucket->key = SPAMM_KEY_DELETED;
+      result = bucket->value;
+      bucket->value = NULL;
 
-      else if (hashtable->data[bucket_index].key == SPAMM_KEY_DELETED)
+      hashtable->number_stored_keys--;
+      hashtable->number_deleted_keys++;
+
+      if (hashtable->number_stored_keys < SPAMM_SHRINK_THRESHOLD*hashtable->number_buckets)
       {
-        break;
+        spamm_hashtable_rehash(hashtable, hashtable->number_buckets >> 1);
       }
     }
-    while (hashtable->data[bucket_index].key > SPAMM_KEY_EMPTY);
   }
+
+  return result;
 }
 
 /** Get the number of buckets in this hashtable.
