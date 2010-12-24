@@ -7,6 +7,7 @@ noinst_PROGRAMS = \
   create_spamm \
   hashtable_remove \
   hashtable_insert \
+  list \
   multiply_spamm
 
 TESTS = $(noinst_PROGRAMS)

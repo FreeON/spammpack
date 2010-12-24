@@ -28,7 +28,7 @@ struct spamm_check_user_data_t
  * @param user_data The user data of type spamm_check_user_data_t.
  */
 void
-spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
+spamm_check_verify_norm (void *key, void *value, void *user_data)
 {
   short i, j;
   short i_block, j_block;
@@ -46,7 +46,7 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
   struct spamm_check_user_data_t *user = user_data;
 
   unsigned int next_tier;
-  GHashTable *next_tier_hashtable = NULL;
+  struct spamm_hashtable_t *next_tier_hashtable = NULL;
 
   /* Load correct value. */
   if (user->tier == user->A->kernel_tier)
@@ -107,7 +107,7 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
 
     /* Get the tier hashtable for the next tier. */
     next_tier = user->tier+1;
-    next_tier_hashtable = g_hash_table_lookup(user->A->tier_hashtable, &next_tier);
+    next_tier_hashtable = user->A->tier_hashtable[next_tier];
 
     if (next_tier == user->A->kernel_tier)
     {
@@ -119,7 +119,7 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
           child_index = ((*index) << 2) | (i << 1) | j;
 
           /* Get child node. */
-          child_data = g_hash_table_lookup(next_tier_hashtable, &child_index);
+          child_data = spamm_hashtable_lookup(next_tier_hashtable, child_index);
 
           if (child_data != NULL)
           {
@@ -139,7 +139,7 @@ spamm_check_verify_norm (gpointer key, gpointer value, gpointer user_data)
           child_index = ((*index) << 2) | (i << 1) | j;
 
           /* Get child node. */
-          child_node = g_hash_table_lookup(next_tier_hashtable, &child_index);
+          child_node = spamm_hashtable_lookup(next_tier_hashtable, child_index);
 
           if (child_node != NULL)
           {
@@ -178,7 +178,7 @@ spamm_check (const struct spamm_t *A)
   unsigned int reverse_tier;
   float x_M, x_N, x;
   struct spamm_check_user_data_t user_data;
-  GHashTable *hashtable;
+  struct spamm_hashtable_t *hashtable;
 
   assert(A != NULL);
 
@@ -232,7 +232,7 @@ spamm_check (const struct spamm_t *A)
 
   for (tier = 0; tier <= A->kernel_tier; tier++)
   {
-    if ((hashtable = g_hash_table_lookup(A->tier_hashtable, &tier)) == NULL)
+    if ((hashtable = A->tier_hashtable[tier]) == NULL)
     {
       printf("missing tier hashtable for tier %u\n", tier);
       return SPAMM_ERROR;
@@ -244,14 +244,14 @@ spamm_check (const struct spamm_t *A)
   {
     /* Get tier hashtable. */
     reverse_tier = tier-1;
-    hashtable = g_hash_table_lookup(A->tier_hashtable, &reverse_tier);
+    hashtable = A->tier_hashtable[reverse_tier];
 
     /* Verify consistency of 2D and 3D linear indices. */
 
     /* Verify norms. */
     user_data.tier = reverse_tier;
     user_data.A = A;
-    g_hash_table_foreach(hashtable, spamm_check_verify_norm, &user_data);
+    spamm_hashtable_foreach(hashtable, spamm_check_verify_norm, &user_data);
   }
 
   return result;

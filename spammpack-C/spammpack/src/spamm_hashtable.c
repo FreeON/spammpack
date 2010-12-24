@@ -1,5 +1,5 @@
 #include "spamm_hashtable.h"
-#include <glib.h>
+#include "spamm_list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -62,24 +62,6 @@ struct spamm_hashtable_t
 /** A utility function for Bob Jenkins' hash function. */
 #define rot(x,k) (((x) << (k)) | ((x) >> (32-(k))))
 
-/** Compare to unsigned int values. This is a helper function for the
- * hashtables in dealing with the linear indices.
- *
- * @param a A pointer to the first index.
- * @param b A pointer to the second index.
- *
- * @return TRUE if the two values are equal, FALSE if not.
- */
-gboolean
-spamm_hash_uint_equal (gconstpointer a, gconstpointer b)
-{
-  const unsigned int *value_1 = a;
-  const unsigned int *value_2 = b;
-
-  if ((*value_1) == (*value_2)) { return TRUE; }
-  else { return FALSE; }
-}
-
 /** A hash function. This is taken the hashword() function from Bob Jenkins'
  * webpage,
  *
@@ -109,19 +91,6 @@ spamm_hashtable_hash_1 (const unsigned int key)
 
   /* Return the result. */
   return c;
-}
-
-/** The glib compatible version of the hash function spamm_hashtable_hash_1().
- * See this function's comments for more information.
- *
- * @param key A pointer to the key.
- *
- * @return The hashed key.
- */
-guint
-spamm_hashtable_hash_1_glib (gconstpointer key)
-{
-  return spamm_hashtable_hash_1(*((unsigned int*) key));
 }
 
 /** Create a new hashtable.
@@ -462,6 +431,31 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
   }
 
   return result;
+}
+
+/** Iterate over keys and call a function for each key.
+ *
+ * @param hashtable The hashtable.
+ * @param func The function to execute for each of the keys.
+ * @param user_data A pointer that will be passed to func.
+ */
+void
+spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
+    void (*func) (void *, void *, void *), void *user_data)
+{
+}
+
+/** Copy all keys into array. The returned pointer points to an array that is
+ * allocated in this function with malloc(). The caller needs to take care of
+ * calling free() on it when the array is not needed anymore.
+ *
+ * @param hashtable The hashtable.
+ *
+ * @return A pointer to an array that contains all of the keys.
+ */
+struct spamm_list_t *
+spamm_hashtable_keys (struct spamm_hashtable_t *hashtable)
+{
 }
 
 /** Get the number of buckets in this hashtable.

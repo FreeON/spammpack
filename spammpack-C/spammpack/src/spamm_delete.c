@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 void
-spamm_delete_node_hashentry (gpointer key, gpointer value, gpointer user_data)
+spamm_delete_node_hashentry (void *key, void *value, void *user_data)
 {
   unsigned int *index = key;
   int *at_kernel_tier = user_data;
@@ -25,34 +25,6 @@ spamm_delete_node_hashentry (gpointer key, gpointer value, gpointer user_data)
   free(index);
 }
 
-void
-spamm_delete_tier_hashtable (gpointer key, gpointer value, gpointer user_data)
-{
-  unsigned int *tier = key;
-  unsigned int *kernel_tier = user_data;
-  int at_kernel_tier;
-  GHashTable *node_hashtable = value;
-
-  if ((*tier) == (*kernel_tier))
-  {
-    at_kernel_tier = 1;
-  }
-
-  else
-  {
-    at_kernel_tier = 0;
-  }
-
-  /* Delete each tier hashtable. */
-  g_hash_table_foreach(node_hashtable, spamm_delete_node_hashentry,  &at_kernel_tier);
-
-  /* Free tier key. */
-  free(tier);
-
-  /* Free the node hashtable. */
-  g_hash_table_destroy(node_hashtable);
-}
-
 /** Delete a matrix.
  *
  * @param A The matrix to delete.
@@ -60,11 +32,31 @@ spamm_delete_tier_hashtable (gpointer key, gpointer value, gpointer user_data)
 void
 spamm_delete (struct spamm_t **A)
 {
-  /* Delete all data on all tiers. */
-  g_hash_table_foreach((*A)->tier_hashtable, spamm_delete_tier_hashtable, &(*A)->kernel_tier);
+  int at_kernel_tier;
+  unsigned int tier;
 
-  /* Delete the tier hashtable. */
-  g_hash_table_destroy((*A)->tier_hashtable);
+  /* Delete all data on all tiers. */
+  for (tier = 0; tier <= (*A)->kernel_tier; tier++)
+  {
+    if (tier == (*A)->kernel_tier)
+    {
+      at_kernel_tier = 1;
+    }
+
+    else
+    {
+      at_kernel_tier = 0;
+    }
+
+    /* Delete each tier hashtable. */
+    spamm_hashtable_foreach((*A)->tier_hashtable[tier], spamm_delete_node_hashentry,  &at_kernel_tier);
+
+    /* Free the node hashtable. */
+    spamm_hashtable_delete(&(*A)->tier_hashtable[tier]);
+  }
+
+  /* Free the tier hashtables. */
+  free((*A)->tier_hashtable);
 
   /* Delete the matrix. */
   free(*A);

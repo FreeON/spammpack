@@ -7,11 +7,9 @@
 #include "spamm_config.h"
 #include "spamm_error.h"
 #include "spamm_hashtable.h"
+#include "spamm_list.h"
 #include "spamm_kernel.h"
 #include "spamm_timer.h"
-
-/* Include more header files. */
-#include <glib.h>
 
 /** The matrix type.
  */
@@ -33,7 +31,7 @@ struct spamm_t
   unsigned int kernel_tier;
 
   /** The hashtables for access to each tier. */
-  GHashTable *tier_hashtable;
+  struct spamm_hashtable_t **tier_hashtable;
 };
 
 /** A node in the matrix tree.

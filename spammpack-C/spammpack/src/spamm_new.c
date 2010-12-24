@@ -66,12 +66,10 @@ spamm_new (const unsigned int M, const unsigned int N)
   A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
 
   /* Create the tier hash tables. */
-  A->tier_hashtable = g_hash_table_new(g_int_hash, spamm_hash_uint_equal);
+  A->tier_hashtable = (struct spamm_hashtable_t**) malloc(sizeof(struct spamm_hashtable_t*)*(A->kernel_tier+1));
   for (tier = 0; tier <= A->kernel_tier; tier++)
   {
-    tier_key = (unsigned int*) malloc(sizeof(unsigned int));
-    *tier_key = tier;
-    g_hash_table_insert(A->tier_hashtable, tier_key, g_hash_table_new(g_int_hash, spamm_hash_uint_equal));
+    A->tier_hashtable[tier] = spamm_hashtable_new();
   }
 
   return A;
