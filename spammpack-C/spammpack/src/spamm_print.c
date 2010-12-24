@@ -23,7 +23,7 @@ spamm_print_dense (const unsigned int M, const unsigned int N, const float *A)
 }
 
 void
-spamm_print_node (gpointer key, gpointer value, gpointer user_data)
+spamm_print_node (void *key, void *value, void *user_data)
 {
   struct spamm_node_t *node = value;
 
@@ -32,7 +32,7 @@ spamm_print_node (gpointer key, gpointer value, gpointer user_data)
 }
 
 void
-spamm_print_data (gpointer key, gpointer value, gpointer user_data)
+spamm_print_data (void *key, void *value, void *user_data)
 {
   unsigned int i, j;
   struct spamm_data_t *data = value;
@@ -65,24 +65,6 @@ spamm_print_data (gpointer key, gpointer value, gpointer user_data)
   printf(" }\n");
 }
 
-void
-spamm_print_tier (gpointer key, gpointer value, gpointer user_data)
-{
-  unsigned int *tier = key;
-  unsigned int *kernel_tier = user_data;
-  GHashTable *tier_hashtable = value;
-
-  if (*tier < *kernel_tier)
-  {
-    g_hash_table_foreach(tier_hashtable, spamm_print_node, NULL);
-  }
-
-  else
-  {
-    g_hash_table_foreach(tier_hashtable, spamm_print_data, NULL);
-  }
-}
-
 /** Print a SpAMM matrix.
  *
  * @param A The matrix.
@@ -90,10 +72,23 @@ spamm_print_tier (gpointer key, gpointer value, gpointer user_data)
 void
 spamm_print (const struct spamm_t *A)
 {
+  unsigned int tier;
+
   assert(A != NULL);
 
   printf("root node: M = %u, N = %u, N_padded = %u, depth = %u, kernel_tier = %u\n",
       A->M, A->N, A->N_padded, A->depth, A->kernel_tier);
 
-  g_hash_table_foreach(A->tier_hashtable, spamm_print_tier, (gpointer) &A->kernel_tier);
+  for (tier = 0; tier <= A->kernel_tier; tier++)
+  {
+    if (tier < A->kernel_tier)
+    {
+      spamm_hashtable_foreach(A->tier_hashtable[tier], spamm_print_node, NULL);
+    }
+
+    else
+    {
+      spamm_hashtable_foreach(A->tier_hashtable[tier], spamm_print_data, NULL);
+    }
+  }
 }

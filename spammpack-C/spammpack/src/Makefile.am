@@ -117,6 +117,7 @@ libspamm_tree_la_SOURCES = \
   spamm_index.c \
   spamm_index_2D.c \
   spamm_index_3D.c \
+  spamm_list.c \
   spamm_multiply.c \
   spamm_new.c \
   spamm_new_block.c \
@@ -133,6 +134,7 @@ libspamm_tree_headers = \
   spamm_config.h \
   spamm_error.h \
   spamm_hashtable.h \
+  spamm_list.h \
   spamm_timer.h
 
 include_HEADERS = \

@@ -19,47 +19,6 @@ AC_PROG_LIBTOOL
 dnl Check for assert macros.
 AC_HEADER_ASSERT
 
-dnl Check for glib.
-glib_libs=( "glib-2.0" )
-glib_libs_ac=( "glib_2_0" )
-glib_cppflags=( "" "-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" )
-old_CPPFLAGS=$CPPFLAGS
-old_LIBS=$LIBS
-
-for (( i = 0; i < ${#glib_libs[*]}; i++ )); do
-  for (( j = 0; j < ${#glib_cppflags[*]}; j++ )); do
-
-    dnl We have to use Quadrigraphs to write '[' and ']'. Otherwise m4 will not
-    dnl print the brackets. The quadrigraphs for the brackets are:
-    dnl
-    dnl "@<:@" = "[" and "@:>@" = "]".
-    have_GLIB="yes"
-    unset ac_cv_header_glib_h
-    unset ac_cv_lib_${glib_libs_ac@<:@$i@:>@}___g_hash_table_new
-    CPPFLAGS="${old_CPPFLAGS} ${glib_cppflags@<:@$j@:>@}"
-    LIBS=$old_LIBS
-    AC_MSG_NOTICE([checking for ${glib_libs@<:@$i@:>@}, using CPPFLAGS="${CPPFLAGS}"])
-    AC_CHECK_HEADERS([glib.h], [], [unset have_GLIB])
-    AC_CHECK_LIB([${glib_libs@<:@$i@:>@}], [g_hash_table_new], [], [unset have_GLIB])
-
-    if test "${have_GLIB}" = "yes"; then
-      break
-    else
-      AC_MSG_NOTICE([test for ${glib_libs@<:@$i@:>@} failed])
-    fi
-  done
-
-  if test "${have_GLIB}" = "yes"; then
-    break
-  fi
-done
-
-if test "${have_GLIB}" != "yes"; then
-  AC_MSG_FAILURE([can not find glib. Consider add custom CPPFLAGS, LDFLAGS, and/or LIBS to configure])
-else
-  AC_MSG_NOTICE([test for ${glib_libs@<:@$i@:>@} passed, found working glib])
-fi
-
 dnl Check for math library.
 AC_CHECK_HEADERS([math.h])
 AC_CHECK_LIB([m], [ceil],
