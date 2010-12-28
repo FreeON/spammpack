@@ -58,34 +58,31 @@ struct spamm_multiply_k_lookup_t
 
 /** @private Compare 2 2D indices by their row index.
  *
- * @param a A pointer to the first index.
- * @param b A pointer to the second index.
+ * @param a The first index.
+ * @param b The second index.
  * @param user_data A pointer to the tier hashtable.
  *
  * @return if a is before b, return -1, if a is after b, return +1, and if a
  * and b are equivalent, return 0.
  */
 int
-spamm_multiply_compare_index_row (const void *a, const void *b, void *user_data)
+spamm_multiply_compare_index_row (const unsigned int a, const unsigned int b, void *user_data)
 {
-  const unsigned int *x = a;
-  const unsigned int *y = b;
-
   struct spamm_hashtable_t *tier_hashtable = user_data;
 
   struct spamm_data_t *a_data;
   struct spamm_data_t *b_data;
 
-  unsigned int x_masked = (*x) & MASK_2D_I;
-  unsigned int y_masked = (*y) & MASK_2D_I;
+  unsigned int a_masked = a & MASK_2D_I;
+  unsigned int b_masked = b & MASK_2D_I;
 
-  if (x_masked < y_masked)      { return -1; }
-  else if (x_masked > y_masked) { return  1; }
+  if (a_masked < b_masked)      { return -1; }
+  else if (a_masked > b_masked) { return  1; }
   else
   {
     /* Compare norms. */
-    a_data = spamm_hashtable_lookup(tier_hashtable, *x);
-    b_data = spamm_hashtable_lookup(tier_hashtable, *y);
+    a_data = spamm_hashtable_lookup(tier_hashtable, a);
+    b_data = spamm_hashtable_lookup(tier_hashtable, b);
 
     /* Sort norms within k in descending order. */
     if (a_data->node_norm > b_data->node_norm)      { return -1; }
@@ -96,34 +93,31 @@ spamm_multiply_compare_index_row (const void *a, const void *b, void *user_data)
 
 /** @private Compare 2 2D indices by their column index.
  *
- * @param a A pointer to the first index.
- * @param b A pointer to the second index.
+ * @param a The first index.
+ * @param b The second index.
  * @param user_data A pointer to the tier hashtable.
  *
  * @return if a is before b, return -1, if a is after b, return +1, and if a
  * and b are equivalent, return 0.
  */
 int
-spamm_multiply_compare_index_column (const void *a, const void *b, void *user_data)
+spamm_multiply_compare_index_column (const unsigned int a, const unsigned int b, void *user_data)
 {
-  const unsigned int *x = a;
-  const unsigned int *y = b;
-
   struct spamm_hashtable_t *tier_hashtable = user_data;
 
   struct spamm_data_t *a_data;
   struct spamm_data_t *b_data;
 
-  unsigned int x_masked = (*x) & MASK_2D_J;
-  unsigned int y_masked = (*y) & MASK_2D_J;
+  unsigned int a_masked = a & MASK_2D_J;
+  unsigned int b_masked = b & MASK_2D_J;
 
-  if (x_masked < y_masked)       { return -1; }
-  else if (x_masked > y_masked)  { return  1; }
+  if (a_masked < b_masked)       { return -1; }
+  else if (a_masked > b_masked)  { return  1; }
   else
   {
     /* Compare norms. */
-    a_data = spamm_hashtable_lookup(tier_hashtable, *x);
-    b_data = spamm_hashtable_lookup(tier_hashtable, *y);
+    a_data = spamm_hashtable_lookup(tier_hashtable, a);
+    b_data = spamm_hashtable_lookup(tier_hashtable, b);
 
     /* Sort norms within k in descending order. */
     if (a_data->node_norm > b_data->node_norm)      { return -1; }
@@ -134,12 +128,12 @@ spamm_multiply_compare_index_column (const void *a, const void *b, void *user_da
 
 /** @private Multiply a matrix node by a scalar.
  *
- * @param key The linear index of that matrix node.
+ * @param index The linear index of that matrix node.
  * @param value A pointer to the spamm_data_t matrix node.
  * @param user_data The scalar \f$\beta\f$ that multiplies the matrix.
  */
 void
-spamm_multiply_beta_block (void *key, void *value, void *user_data)
+spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
 {
   struct spamm_data_t *data = value;
   float *beta = user_data;
@@ -361,6 +355,7 @@ spamm_multiply (const float tolerance,
 
   A_index.index_2D = spamm_hashtable_keys(A_tier_hashtable);
   spamm_list_sort(A_index.index_2D, spamm_multiply_compare_index_column, A_tier_hashtable);
+  //spamm_list_sort(A_index.index_2D, spamm_list_compare_int, A_tier_hashtable);
 
   B_index.index_2D = spamm_hashtable_keys(B_tier_hashtable);
   spamm_list_sort(B_index.index_2D, spamm_multiply_compare_index_row, B_tier_hashtable);

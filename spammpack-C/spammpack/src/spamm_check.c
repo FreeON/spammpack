@@ -22,13 +22,13 @@ struct spamm_check_user_data_t
  * This function is called in the hash table iterator for each tier of the
  * matrix tree.
  *
- * @param key The linear index of this node.
+ * @param index The linear index of this node.
  * @param value The matrix tree node. This can have either type spamm_node_t
  * or spamm_data_t depending on the tier.
  * @param user_data The user data of type spamm_check_user_data_t.
  */
 void
-spamm_check_verify_norm (void *key, void *value, void *user_data)
+spamm_check_verify_norm (unsigned int index, void *value, void *user_data)
 {
   short i, j;
   short i_block, j_block;
@@ -40,7 +40,6 @@ spamm_check_verify_norm (void *key, void *value, void *user_data)
   struct spamm_node_t *child_node = NULL;
   struct spamm_data_t *child_data = NULL;
 
-  unsigned int *index = key;
   struct spamm_node_t *node = NULL;
   struct spamm_data_t *data = NULL;
   struct spamm_check_user_data_t *user = user_data;
@@ -116,7 +115,7 @@ spamm_check_verify_norm (void *key, void *value, void *user_data)
         for (j = 0; j < SPAMM_N_CHILD; j++)
         {
           /* Construct index of child block. */
-          child_index = ((*index) << 2) | (i << 1) | j;
+          child_index = (index << 2) | (i << 1) | j;
 
           /* Get child node. */
           child_data = spamm_hashtable_lookup(next_tier_hashtable, child_index);
@@ -136,7 +135,7 @@ spamm_check_verify_norm (void *key, void *value, void *user_data)
         for (j = 0; j < SPAMM_N_CHILD; j++)
         {
           /* Construct index of child block. */
-          child_index = ((*index) << 2) | (i << 1) | j;
+          child_index = (index << 2) | (i << 1) | j;
 
           /* Get child node. */
           child_node = spamm_hashtable_lookup(next_tier_hashtable, child_index);

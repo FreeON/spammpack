@@ -18,7 +18,7 @@ spamm_hashtable_new_sized (const unsigned int number_buckets);
 
 void
 spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
-    void (*func) (void *, void *, void *), void *user_data);
+    void (*func) (unsigned int, void *, void *), void *user_data);
 
 void
 spamm_hashtable_delete (struct spamm_hashtable_t **hashtable);
