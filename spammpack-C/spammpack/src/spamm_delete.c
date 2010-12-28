@@ -2,9 +2,8 @@
 #include <stdlib.h>
 
 void
-spamm_delete_node_hashentry (void *key, void *value, void *user_data)
+spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
 {
-  unsigned int *index = key;
   int *at_kernel_tier = user_data;
   struct spamm_node_t *node;
   struct spamm_data_t *data;
@@ -20,9 +19,6 @@ spamm_delete_node_hashentry (void *key, void *value, void *user_data)
     node = value;
     spamm_delete_node(&node);
   }
-
-  /* Free index key. */
-  free(index);
 }
 
 /** Delete a matrix.

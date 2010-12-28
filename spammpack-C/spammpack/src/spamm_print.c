@@ -23,7 +23,7 @@ spamm_print_dense (const unsigned int M, const unsigned int N, const float *A)
 }
 
 void
-spamm_print_node (void *key, void *value, void *user_data)
+spamm_print_node (unsigned int key, void *value, void *user_data)
 {
   struct spamm_node_t *node = value;
 
@@ -32,7 +32,7 @@ spamm_print_node (void *key, void *value, void *user_data)
 }
 
 void
-spamm_print_data (void *key, void *value, void *user_data)
+spamm_print_data (unsigned int key, void *value, void *user_data)
 {
   unsigned int i, j;
   struct spamm_data_t *data = value;

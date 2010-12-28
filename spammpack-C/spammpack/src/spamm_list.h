@@ -11,9 +11,12 @@ spamm_list_new (const unsigned int length);
 void
 spamm_list_delete (struct spamm_list_t **list);
 
+int
+spamm_list_compare_int (const unsigned int a, const unsigned int b, void *user_data);
+
 void
-spamm_list_sort (struct spamm_list_t *keys,
-    int (*compare) (const void *, const void *, void *),
+spamm_list_sort (struct spamm_list_t *list,
+    int (*compare) (const unsigned int, const unsigned int, void *),
     void *user_data);
 
 unsigned int

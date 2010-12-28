@@ -10,6 +10,12 @@
 /** A deleted key. */
 #define SPAMM_KEY_DELETED 1
 
+/* Define false. */
+#define SPAMM_FALSE 0
+
+/** Define true. */
+#define SPAMM_TRUE 1
+
 /** The grow threshold. */
 #define SPAMM_GROW_THRESHOLD 0.65
 
@@ -133,7 +139,7 @@ spamm_hashtable_new ()
   return spamm_hashtable_new_sized(8);
 }
 
-/** Destroy a hashtable. Note that the values stored are freed with free().
+/** Destroy a hashtable. Note that the values stored are not free'ed.
  *
  * @param hashtable The hashtable to free.
  */
@@ -142,24 +148,8 @@ spamm_hashtable_delete (struct spamm_hashtable_t **hashtable)
 {
   unsigned int i;
 
-  for (i = 0; i < (*hashtable)->number_buckets; i++)
-  {
-    if ((*hashtable)->data[i].key != SPAMM_KEY_EMPTY &&
-        (*hashtable)->data[i].key != SPAMM_KEY_DELETED)
-    {
-      free((*hashtable)->data[i].value);
-    }
-  }
-
-  for (i = 0; i < 2; i++)
-  {
-    if ((*hashtable)->has_special_key[i] == 1)
-    {
-      free((*hashtable)->special_value[i]);
-    }
-  }
-
   free((*hashtable)->data);
+
   free(*hashtable);
   *hashtable = NULL;
 }
@@ -200,9 +190,9 @@ spamm_hashtable_rehash (struct spamm_hashtable_t *hashtable,
   /* Copy the 2 special keys. */
   for (i = 0; i < 2; i++)
   {
-    if (old_hashtable->has_special_key[i] == 1)
+    if (old_hashtable->has_special_key[i] == SPAMM_TRUE)
     {
-      new_hashtable->has_special_key[i] = 1;
+      new_hashtable->has_special_key[i] = SPAMM_TRUE;
       new_hashtable->special_value[i] = old_hashtable->special_value[i];
     }
   }
@@ -242,7 +232,7 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
      * treated first because the usual key hashing will not work properly on
      * them.
      */
-    hashtable->has_special_key[key] = 1;
+    hashtable->has_special_key[key] = SPAMM_TRUE;
     hashtable->special_value[key] = value;
     return;
   }
@@ -364,7 +354,7 @@ spamm_hashtable_lookup (struct spamm_hashtable_t *hashtable,
      * treated first because the usual key hashing will not work properly on
      * them.
      */
-    if (hashtable->has_special_key[key] == 1)
+    if (hashtable->has_special_key[key] == SPAMM_TRUE)
     {
       value = hashtable->special_value[key];
     }
@@ -403,9 +393,9 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
 
   if (key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
   {
-    if (hashtable->has_special_key[key] == 1)
+    if (hashtable->has_special_key[key] == SPAMM_TRUE)
     {
-      hashtable->has_special_key[key] = 0;
+      hashtable->has_special_key[key] = SPAMM_FALSE;
       result = hashtable->special_value[key];
       hashtable->special_value[key] = NULL;
     }
@@ -441,8 +431,27 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
  */
 void
 spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
-    void (*func) (void *, void *, void *), void *user_data)
+    void (*func) (unsigned int, void *, void *), void *user_data)
 {
+  unsigned int i;
+
+  /* Loop over all buckets and call func() for each key. */
+  for (i = 0; i < 2; i++)
+  {
+    if (hashtable->has_special_key[i] == SPAMM_TRUE)
+    {
+      func(i, hashtable->special_value[i], user_data);
+    }
+  }
+
+  for (i = 0; i < hashtable->number_buckets; i++)
+  {
+    if (hashtable->data[i].key != SPAMM_KEY_EMPTY &&
+        hashtable->data[i].key != SPAMM_KEY_DELETED)
+    {
+      func(hashtable->data[i].key, hashtable->data[i].value, user_data);
+    }
+  }
 }
 
 /** Copy all keys into array. The returned pointer points to an array that is
@@ -456,6 +465,40 @@ spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
 struct spamm_list_t *
 spamm_hashtable_keys (struct spamm_hashtable_t *hashtable)
 {
+  unsigned int i;
+  unsigned int list_index;
+  struct spamm_list_t *key_list;
+
+  key_list = spamm_list_new((hashtable->has_special_key[0] == SPAMM_TRUE ? 1 : 0)
+      + (hashtable->has_special_key[1] == SPAMM_TRUE ? 1 : 0)
+      + hashtable->number_stored_keys);
+
+  list_index = 0;
+
+  for (i = 0; i < 2; i++)
+  {
+    if (hashtable->has_special_key[i] == SPAMM_TRUE)
+    {
+      spamm_list_set(key_list, list_index++, i);
+    }
+  }
+
+  for (i = 0; i < hashtable->number_buckets; i++)
+  {
+    if (hashtable->data[i].key != SPAMM_KEY_EMPTY &&
+        hashtable->data[i].key != SPAMM_KEY_DELETED)
+    {
+      spamm_list_set(key_list, list_index++, hashtable->data[i].key);
+    }
+  }
+
+  if (list_index != spamm_list_length(key_list))
+  {
+    printf("error copying keys\n");
+    exit(1);
+  }
+
+  return key_list;
 }
 
 /** Get the number of buckets in this hashtable.
@@ -496,7 +539,7 @@ spamm_hashtable_get_number_keys (const struct spamm_hashtable_t *hashtable)
 
   for (i = 0; i < 2; i++)
   {
-    if (hashtable->has_special_key[i] == 1)
+    if (hashtable->has_special_key[i] == SPAMM_TRUE)
     {
       result++;
     }
