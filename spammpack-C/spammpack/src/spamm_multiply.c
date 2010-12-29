@@ -1,4 +1,5 @@
 #include "spamm.h"
+#include "config.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -314,7 +315,11 @@ spamm_multiply (const float tolerance,
 
   unsigned int *C_block_stream_index;
 
+#ifdef HAVE_PAPI
   struct spamm_timer_t *timer = spamm_timer_new(papi_total_cycles);
+#else
+  struct spamm_timer_t *timer = spamm_timer_new(walltime);
+#endif
 
   char timer_info_string[2000];
 
