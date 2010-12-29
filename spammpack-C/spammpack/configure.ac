@@ -123,7 +123,7 @@ AC_ARG_WITH([kernel-depth], [AS_HELP_STRING([--with-kernel-depth], [Define
              blocks contiguously for the computational kernel. This value has
              to match the computational kernel.])],
              [have_kernel_depth="${withval}"],
-             [have_kernel_depth="2"])
+             [have_kernel_depth="3"])
 AC_MSG_RESULT([using ${have_kernel_depth} tier(s)])
 
 have_N_kernel_block=$((${have_N_child}**${have_kernel_depth}))
