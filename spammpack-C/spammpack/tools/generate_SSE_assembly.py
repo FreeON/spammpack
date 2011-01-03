@@ -68,9 +68,9 @@ parser.add_option("-N",
     type = "int",
     default = 1)
 
-parser.add_option("--unroll",
+parser.add_option("--stripe",
     metavar = "N",
-    help = "fully unroll loops so that stripes consist of N 4x4 blocks [default: %default]",
+    help = "unroll loops over stripes consisting of N 4x4 blocks [default: %default]",
     dest = "N_stripe",
     type = "int",
     default = 1)
@@ -151,6 +151,13 @@ print("#     struct multiply_stream_t *multiply_stream);")
 print("#")
 print("# End of C API.")
 
+print("")
+print("# The matrix elements in the kernel block are layed out in the following order.")
+print("# The basic matrix blocks are of size 4x4 to be able to take advantage fully of")
+print("# single precision SSE instructions. Within the 4x4 blocks, the matrix elements")
+print("# are layed out in row-major order. The blocks are themselves ordered in")
+print("# row-major order within the kernel block.")
+
 # Define some things.
 print("")
 print("# Function ABI.")
@@ -206,6 +213,7 @@ print("#define A %r8")
 print("#define B %r9")
 print("#define C %r10")
 
+# The following sizes were generated with print_data_sizes.c.
 sizeof_multiply_stream_t = 3*8
 offset_norm = 24
 offset_block_dense = 192
@@ -300,7 +308,7 @@ print("  xor index, index")
 
 block_counter = counter(1)
 
-# Beginning of outer loop.
+# Beginning of loop over stream elements.
 print("")
 print("  .align 16")
 print("stream_loop:")
@@ -313,25 +321,25 @@ print("  mov (multiply_stream, base_pointer, 1), A")
 print("  mov 0x8(multiply_stream, base_pointer, 1), B")
 print("  mov 0x10(multiply_stream, base_pointer, 1), C")
 
-if options.N-options.N_stripe > 0:
-  print("")
-  print("  # Loop over j index.")
-  print("  mov $%d, j_index" % (options.N-options.N_stripe+1))
+# Loop over matrix blocks.
+print("")
+print("  # Loop over i index. Stream matrix block conists of %dx%d basic blocks." % (options.N, options.N))
+print("  mov $%d, i_index" % (options.N))
+print("")
+print("  .align 16")
+print("i_loop:")
 
-  print("")
-  print("  .align 16")
-  print("j_loop:")
+print("")
+print("  # Loop over j index. Stream matrix block conists of %dx%d basic blocks." % (options.N, options.N))
+print("  mov $%d, j_index" % (options.N))
+print("")
+print("  .align 16")
+print("j_loop:")
+
+print("")
+print("  # Adjust offset into matrix.")
 
 for i in range(options.N_stripe):
-  if options.N-options.N_stripe > 0:
-    print("")
-    print("  # Loop over i index.")
-    print("  mov $%d, i_index" % (options.N-options.N_stripe+1))
-
-    print("")
-    print("  .align 16")
-    print("i_loop:")
-
   for j in range(options.N_stripe):
     print("")
     print("  # Reset C(%d,%d) matrix block accumulators." % (i+1, j+1))

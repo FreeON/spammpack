@@ -336,6 +336,9 @@ spamm_multiply (const float tolerance,
   assert(B != NULL);
   assert(C != NULL);
 
+  /* Print out some information. */
+  printf("[multiply] alpha = %e, beta = %e, tolerance = %e\n", alpha, beta, tolerance);
+
   /* Print out some timer information. */
   spamm_timer_info(timer, timer_info_string, 2000);
   printf("[multiply] timer: %s\n", timer_info_string);
@@ -566,6 +569,13 @@ spamm_multiply (const float tolerance,
 
         /* Get reference to dense block of C. */
         C_data = spamm_hashtable_lookup(C_tier_hashtable, convolution_index_2D);
+
+        if (C_data == NULL)
+        {
+          printf("[FIXME] C block missing\n");
+          exit(1);
+        }
+
         multiply_stream[stream_index].C = C_data;
 
         /* Done with this stream element. */

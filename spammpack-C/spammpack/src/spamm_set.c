@@ -42,7 +42,9 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   }
 
   /* In the trivial case, we simply return. */
+#ifdef SPAMM_SET_NO_ZERO
   if (Aij == 0.0) { return; }
+#endif
 
   /* Loop through tiers to construct the tree structure. */
   for (tier = 0; tier <= A->kernel_tier; tier++)
