@@ -15,14 +15,14 @@ main ()
 
   unsigned int N = 512;
 
-  float alpha = 1.0;
-  float beta = 1.0;
+  double alpha = 1.0;
+  double beta = 1.0;
 
   float tolerance = 0.0;
 
-  float *A_dense;
-  float *B_dense;
-  float *C_dense;
+  double *A_dense;
+  double *B_dense;
+  double *C_dense;
 
   struct spamm_t *A;
   struct spamm_t *B;
@@ -30,11 +30,11 @@ main ()
 
   unsigned int max_i = 0;
   unsigned int max_j = 0;
-  float max_diff;
+  double max_diff;
 
-  A_dense = (float*) malloc(sizeof(float)*N*N);
-  B_dense = (float*) malloc(sizeof(float)*N*N);
-  C_dense = (float*) malloc(sizeof(float)*N*N);
+  A_dense = (double*) malloc(sizeof(double)*N*N);
+  B_dense = (double*) malloc(sizeof(double)*N*N);
+  C_dense = (double*) malloc(sizeof(double)*N*N);
 
   A = spamm_new(N, N);
   B = spamm_new(N, N);
@@ -44,9 +44,9 @@ main ()
     for (j = 0; j < N; j++)
     {
 #ifdef RANDOM_ELEMENTS
-      A_dense[i*N+j] = rand()/(float) RAND_MAX;
-      B_dense[i*N+j] = rand()/(float) RAND_MAX;
-      C_dense[i*N+j] = rand()/(float) RAND_MAX;
+      A_dense[i*N+j] = rand()/(double) RAND_MAX;
+      B_dense[i*N+j] = rand()/(double) RAND_MAX;
+      C_dense[i*N+j] = rand()/(double) RAND_MAX;
 #else
       A_dense[i*N+j] = i*N+j;
       B_dense[i*N+j] = i*N+j;
@@ -154,7 +154,11 @@ main ()
 
   if (max_diff > 0)
   {
-    printf("failed, max diff = %e for A(%u,%u)\n", max_diff, max_i, max_j);
+    printf("failed, max diff = %e for A(%u,%u) = %e, A_reference(%u,%u) = %e\n",
+        max_diff,
+        max_i, max_j, spamm_get(max_i, max_j, C),
+        max_i, max_j, C_dense[max_i*N+max_j]);
+    result = -1;
   }
 
   free(A_dense);
