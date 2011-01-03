@@ -10,6 +10,7 @@ EXTRA_DIST = localversion $(pdf_DATA)
 
 CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/localversion \
+  $(top_srcdir)/Doxyfile.in \
   $(top_srcdir)/src/spamm_manual_mainpage.h.in \
   $(top_srcdir)/src/spamm_config.h.in
 
