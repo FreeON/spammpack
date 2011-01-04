@@ -402,8 +402,6 @@ spamm_multiply (const float tolerance,
       A_k_lookup.index[A_k_lookup.size++] = i;
       k = k_check;
     }
-
-    i++;
   }
 
   /* Add terminating entry to lookup list. */
@@ -436,8 +434,6 @@ spamm_multiply (const float tolerance,
       B_k_lookup.index[B_k_lookup.size++] = i;
       k = k_check;
     }
-
-    i++;
   }
 
   /* Add terminating entry to lookup list. */
@@ -645,6 +641,7 @@ spamm_multiply (const float tolerance,
   spamm_timer_start(timer);
 
   spamm_stream_kernel(stream_index, alpha, tolerance, multiply_stream);
+  //spamm_stream_kernel_no_checks(stream_index, alpha, tolerance, multiply_stream);
 
   spamm_timer_stop(timer);
   stream_timer = spamm_timer_get(timer);

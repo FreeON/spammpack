@@ -99,7 +99,8 @@ libspamm_la_LIBADD  = $(noinst_LTLIBRARIES)
 
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \
-  spamm_stream_kernel.S
+  spamm_stream_kernel.S \
+  spamm_stream_kernel_no_checks.S
 
 libspamm_kernel_headers = \
   spamm_kernel.h

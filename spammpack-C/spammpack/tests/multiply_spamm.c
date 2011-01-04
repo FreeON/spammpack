@@ -13,7 +13,7 @@ main ()
 
   unsigned int i, j, k;
 
-  unsigned int N = 512;
+  unsigned int N = 513;
 
   double alpha = 1.0;
   double beta = 1.0;
