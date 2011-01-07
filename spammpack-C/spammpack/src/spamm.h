@@ -44,12 +44,6 @@ struct spamm_node_t
   /** The linear index of this node in 2D, i.e. in matrix space. */
   unsigned int index_2D;
 
-  /** The linear index of this node in 3D, i.e. in product space. */
-  unsigned int index_3D_ik0;
-
-  /** The linear index of this node in 3D, i.e. in product space. */
-  unsigned int index_3D_0kj;
-
   /** The norm of this block. */
   float norm;
 
@@ -65,12 +59,6 @@ struct spamm_data_t
 
   /** The linear index of this node in 2D, i.e. in matrix space. */
   unsigned int index_2D;
-
-  /** The linear index of this node in 3D, i.e. in product space. */
-  unsigned int index_3D_ik0;
-
-  /** The linear index of this node in 3D, i.e. in product space. */
-  unsigned int index_3D_0kj;
 
   /** The norm of this matrix block. */
   float node_norm;
@@ -163,12 +151,10 @@ struct spamm_t *
 spamm_new (const unsigned int M, const unsigned int N);
 
 struct spamm_data_t *
-spamm_new_block (const unsigned int tier, const unsigned int index_2D,
-    const unsigned int index_3D_ik0, const unsigned int index_3D_0kj);
+spamm_new_block (const unsigned int tier, const unsigned int index_2D);
 
 struct spamm_node_t *
-spamm_new_node (const unsigned int tier, const unsigned int index_2D,
-    const unsigned int index_3D_ik0, const unsigned int index_3D_0kj);
+spamm_new_node (const unsigned int tier, const unsigned int index_2D);
 
 void
 spamm_print (const struct spamm_t *A);

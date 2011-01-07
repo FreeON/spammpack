@@ -65,7 +65,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       /* Check whether we already have a block at this tier. */
       if ((node = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
       {
-        node = spamm_new_node(tier, index, spamm_index_3D_ik0(i_tier, j_tier), spamm_index_3D_0kj(i_tier, j_tier));
+        node = spamm_new_node(tier, index);
         spamm_hashtable_insert(node_hashtable, index, node);
       }
     }
@@ -74,7 +74,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
     {
       if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
       {
-        data = spamm_new_block(tier, index, spamm_index_3D_ik0(i_tier, j_tier), spamm_index_3D_0kj(i_tier, j_tier));
+        data = spamm_new_block(tier, index);
         spamm_hashtable_insert(node_hashtable, index, data);
       }
 
