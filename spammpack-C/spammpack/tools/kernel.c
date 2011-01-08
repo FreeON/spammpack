@@ -7,10 +7,12 @@
  * to get the gcc assembly.
  */
 
+/* The stream elements contain a matrix of NxN basic matrix blocks. */
 #ifndef N
 #define N 1
 #endif
 
+/* The stride to go through a stripe of basic matrix blocks. */
 #ifndef N_STRIPE
 #define N_STRIPE 1
 #endif

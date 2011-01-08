@@ -363,7 +363,6 @@ spamm_multiply (const float tolerance,
 
   A_index.index_2D = spamm_hashtable_keys(A_tier_hashtable);
   spamm_list_sort(A_index.index_2D, spamm_multiply_compare_index_column, A_tier_hashtable);
-  //spamm_list_sort(A_index.index_2D, spamm_list_compare_int, A_tier_hashtable);
 
   B_index.index_2D = spamm_hashtable_keys(B_tier_hashtable);
   spamm_list_sort(B_index.index_2D, spamm_multiply_compare_index_row, B_tier_hashtable);
@@ -499,13 +498,8 @@ spamm_multiply (const float tolerance,
 
   /* Some tings to try:
    *
-   * 3) Terminate the 2D index with a leading "1" bit, like Warren/Salmon to
+   * 1) Terminate the 2D index with a leading "1" bit, like Warren/Salmon to
    * indicate the width of the key and therefore its tier.
-   * 4) The pointer lookup in BLA_3 is somewhat slow, can moving the loading
-   * of the block pointers to an earlier point in the code alleviate this? By
-   * hiding the memory access latency?
-   * 5) Hash table lookup is very slow here. Can this be made faster? Better
-   * hashing?
    */
 
   /* Loop over A. */
@@ -640,8 +634,13 @@ spamm_multiply (const float tolerance,
   printf("[multiply] stream multiply... ");
   spamm_timer_start(timer);
 
+#if defined(SPAMM_KERNEL_NO_CHECKS)
+  spamm_stream_kernel_no_checks(stream_index, alpha, tolerance, multiply_stream);
+#elif defined(SPAMM_KERNEL_EXPERIMENTAL)
+  spamm_stream_kernel_C(stream_index, alpha, tolerance, multiply_stream);
+#else
   spamm_stream_kernel(stream_index, alpha, tolerance, multiply_stream);
-  //spamm_stream_kernel_no_checks(stream_index, alpha, tolerance, multiply_stream);
+#endif
 
   spamm_timer_stop(timer);
   stream_timer = spamm_timer_get(timer);

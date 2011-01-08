@@ -43,4 +43,17 @@ spamm_stream_kernel_no_checks (const unsigned int number_stream_elements,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
 
+/** Process the multiply stream. Version written in C.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_stream_kernel_C (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
 #endif
