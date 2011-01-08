@@ -22,6 +22,9 @@
 /** Define the size of the kernel matrix as NxN basic kernel blocks. */
 #define SPAMM_N_KERNEL_BLOCK @SPAMM_N_KERNEL_BLOCK@
 
+/** Define the stride in the kernel. */
+#define SPAMM_N_STRIDE @SPAMM_N_STRIDE@
+
 /** Define the git commit tag for fine-grained version information. */
 #define COMMIT_TAG "@COMMIT_TAG@"
 

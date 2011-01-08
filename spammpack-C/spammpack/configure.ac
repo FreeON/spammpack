@@ -108,6 +108,15 @@ AC_ARG_WITH([N-child], [AS_HELP_STRING([--with-N-child], [Define the size of
              [have_N_child="2"])
 AC_MSG_RESULT([using a ${have_N_child}x${have_N_child} children node matrix])
 
+dnl Check for stride.
+AC_MSG_CHECKING([for stride in kernel])
+AC_ARG_WITH([N-stride], [AS_HELP_STRING([--with-N-stride], [Define the stride
+             taken by the experimental stream kernel. The default is N = 1,
+             i.e. a stride of 1.])],
+             [have_N_stride="${withval}"],
+             [have_N_stride="1"])
+AC_MSG_RESULT([using a stride of ${have_N_stride}])
+
 if test ${have_N_child} -eq 1; then
   AC_MSG_FAILURE([It is really pointless to define a tree in which each node has only 1 child.])
 fi
@@ -131,6 +140,24 @@ have_N_kernel=$((${have_N_block}*${have_N_child}**${have_kernel_depth}))
 
 AC_MSG_NOTICE([at the kernel tier, the dense matrix block has a size of ${have_N_kernel}x${have_N_kernel} elements, representing a ${have_N_kernel_block}x${have_N_kernel_block} matrix of ${have_N_block}x${have_N_block} matrix blocks])
 
+AC_MSG_CHECKING([for which kernel implementation to use])
+AC_ARG_WITH([kernel], [AS_HELP_STRING([--with-kernel], [Choose the kernel
+             implementation to use. Available kernel implementations are
+             standard, no_check, experimental. Default is standard.])],
+             [have_kernel="${withval}"],
+             [have_kernel="standard"])
+if test "${have_kernel}" = "standard"; then
+  AC_MSG_RESULT([using standard kernel])
+elif test "${have_kernel}" = "no_check"; then
+  AC_MSG_RESULT([using no_check kernel])
+  AC_DEFINE(SPAMM_KERNEL_NO_CHECKS, [1], [Use a stream kernel without norm checks.])
+elif test "${have_kernel}" = "experimental"; then
+  AC_MSG_RESULT([using experimental kernel])
+  AC_DEFINE(SPAMM_KERNEL_EXPERIMENTAL, [1], [Use the experimental version of the stream kernel.])
+else
+  AC_MSG_FAILURE([unknown kernel ${have_kernel}])
+fi
+
 dnl Define some constants.
 AC_SUBST(SPAMM_ALIGNMENT, [${have_alignment}])
 AC_SUBST(SPAMM_N_BLOCK, [${have_N_block}])
@@ -138,6 +165,7 @@ AC_SUBST(SPAMM_N_CHILD, [${have_N_child}])
 AC_SUBST(SPAMM_KERNEL_DEPTH, [${have_kernel_depth}])
 AC_SUBST(SPAMM_N_KERNEL_BLOCK, [${have_N_kernel_block}])
 AC_SUBST(SPAMM_N_KERNEL, [${have_N_kernel}])
+AC_SUBST(SPAMM_N_STRIDE, [${have_N_stride}])
 
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
