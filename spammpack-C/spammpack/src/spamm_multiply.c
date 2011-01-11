@@ -315,6 +315,8 @@ spamm_multiply (const float tolerance,
 
   unsigned int *C_block_stream_index;
 
+  unsigned int number_products = 0;
+
 #ifdef HAVE_PAPI
   struct spamm_timer_t *timer = spamm_timer_new(papi_total_cycles);
 #else
@@ -631,14 +633,17 @@ spamm_multiply (const float tolerance,
   printf("%llu timer units\n", free_timer);
 
   /* Call stream product. */
-  printf("[multiply] stream multiply... ");
+  printf("[multiply] stream multiply ");
   spamm_timer_start(timer);
 
 #if defined(SPAMM_KERNEL_NO_CHECKS)
+  printf("(no-checks kernel)... ");
   spamm_stream_kernel_no_checks(stream_index, alpha, tolerance, multiply_stream);
 #elif defined(SPAMM_KERNEL_EXPERIMENTAL)
+  printf("(experimental kernel)... ");
   spamm_stream_kernel_C(stream_index, alpha, tolerance, multiply_stream);
 #else
+  printf("(standard kernel)... ");
   spamm_stream_kernel(stream_index, alpha, tolerance, multiply_stream);
 #endif
 
@@ -646,8 +651,30 @@ spamm_multiply (const float tolerance,
   stream_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", stream_timer);
 
+#if defined(SPAMM_PRODUCT_COUNT)
+  /* Loop through the stream and determine the number of products. */
+  printf("[multiply] counting number of block products... ");
+  fflush(stdout);
+  for (index = 0; index < stream_index; index++)
+  {
+    for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++) {
+      for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++) {
+        for (k = 0; k < SPAMM_N_KERNEL_BLOCK; k++)
+        {
+          if (multiply_stream[index].A->norm[i*SPAMM_N_KERNEL_BLOCK+k]*multiply_stream[index].B->norm[k*SPAMM_N_KERNEL_BLOCK+j] >= tolerance)
+          {
+            number_products++;
+          }
+        }
+      }
+    }
+  }
+  printf("%u products out of %u possible (%1.2f%%)\n", number_products,
+      (A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK),
+      (double) number_products/(double) ((A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK))*100);
+#endif
+
   /* Free memory. */
   free(multiply_stream);
-
   spamm_timer_delete(&timer);
 }
