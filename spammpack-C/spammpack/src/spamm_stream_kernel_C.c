@@ -67,7 +67,7 @@ spamm_stream_kernel_C (const unsigned int number_stream_elements,
             B_offset = (k+m)*SPAMM_N_KERNEL_BLOCK+j;
 
             /* Check the norm. */
-            if (norm_A[A_offset]*norm_B[B_offset] < tolerance)
+            if (norm_A[A_offset]*norm_B[B_offset] <= tolerance)
             {
               continue;
             }
