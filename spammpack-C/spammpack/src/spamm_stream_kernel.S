@@ -174,7 +174,7 @@ block_1:
   movss 0x0+OFFSET_NORM(A), B1
   mulss 0x0+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_2
+  jbe block_2
 
   # Calculate C(1,1) += A(1,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
@@ -237,7 +237,7 @@ block_2:
   movss 0x4+OFFSET_NORM(A), B1
   mulss 0x10+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_3
+  jbe block_3
 
   # Calculate C(1,1) += A(1,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
@@ -300,7 +300,7 @@ block_3:
   movss 0x8+OFFSET_NORM(A), B1
   mulss 0x20+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_4
+  jbe block_4
 
   # Calculate C(1,1) += A(1,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
@@ -363,7 +363,7 @@ block_4:
   movss 0xc+OFFSET_NORM(A), B1
   mulss 0x30+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_5
+  jbe block_5
 
   # Calculate C(1,1) += A(1,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
@@ -453,7 +453,7 @@ block_6:
   movss 0x0+OFFSET_NORM(A), B1
   mulss 0x4+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_7
+  jbe block_7
 
   # Calculate C(1,2) += A(1,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
@@ -516,7 +516,7 @@ block_7:
   movss 0x4+OFFSET_NORM(A), B1
   mulss 0x14+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_8
+  jbe block_8
 
   # Calculate C(1,2) += A(1,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
@@ -579,7 +579,7 @@ block_8:
   movss 0x8+OFFSET_NORM(A), B1
   mulss 0x24+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_9
+  jbe block_9
 
   # Calculate C(1,2) += A(1,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
@@ -642,7 +642,7 @@ block_9:
   movss 0xc+OFFSET_NORM(A), B1
   mulss 0x34+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_10
+  jbe block_10
 
   # Calculate C(1,2) += A(1,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
@@ -732,7 +732,7 @@ block_11:
   movss 0x0+OFFSET_NORM(A), B1
   mulss 0x8+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_12
+  jbe block_12
 
   # Calculate C(1,3) += A(1,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
@@ -795,7 +795,7 @@ block_12:
   movss 0x4+OFFSET_NORM(A), B1
   mulss 0x18+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_13
+  jbe block_13
 
   # Calculate C(1,3) += A(1,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
@@ -858,7 +858,7 @@ block_13:
   movss 0x8+OFFSET_NORM(A), B1
   mulss 0x28+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_14
+  jbe block_14
 
   # Calculate C(1,3) += A(1,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
@@ -921,7 +921,7 @@ block_14:
   movss 0xc+OFFSET_NORM(A), B1
   mulss 0x38+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_15
+  jbe block_15
 
   # Calculate C(1,3) += A(1,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
@@ -1011,7 +1011,7 @@ block_16:
   movss 0x0+OFFSET_NORM(A), B1
   mulss 0xc+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_17
+  jbe block_17
 
   # Calculate C(1,4) += A(1,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
@@ -1074,7 +1074,7 @@ block_17:
   movss 0x4+OFFSET_NORM(A), B1
   mulss 0x1c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_18
+  jbe block_18
 
   # Calculate C(1,4) += A(1,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
@@ -1137,7 +1137,7 @@ block_18:
   movss 0x8+OFFSET_NORM(A), B1
   mulss 0x2c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_19
+  jbe block_19
 
   # Calculate C(1,4) += A(1,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
@@ -1200,7 +1200,7 @@ block_19:
   movss 0xc+OFFSET_NORM(A), B1
   mulss 0x3c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_20
+  jbe block_20
 
   # Calculate C(1,4) += A(1,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
@@ -1290,7 +1290,7 @@ block_21:
   movss 0x10+OFFSET_NORM(A), B1
   mulss 0x0+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_22
+  jbe block_22
 
   # Calculate C(2,1) += A(2,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
@@ -1353,7 +1353,7 @@ block_22:
   movss 0x14+OFFSET_NORM(A), B1
   mulss 0x10+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_23
+  jbe block_23
 
   # Calculate C(2,1) += A(2,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
@@ -1416,7 +1416,7 @@ block_23:
   movss 0x18+OFFSET_NORM(A), B1
   mulss 0x20+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_24
+  jbe block_24
 
   # Calculate C(2,1) += A(2,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
@@ -1479,7 +1479,7 @@ block_24:
   movss 0x1c+OFFSET_NORM(A), B1
   mulss 0x30+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_25
+  jbe block_25
 
   # Calculate C(2,1) += A(2,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
@@ -1569,7 +1569,7 @@ block_26:
   movss 0x10+OFFSET_NORM(A), B1
   mulss 0x4+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_27
+  jbe block_27
 
   # Calculate C(2,2) += A(2,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
@@ -1632,7 +1632,7 @@ block_27:
   movss 0x14+OFFSET_NORM(A), B1
   mulss 0x14+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_28
+  jbe block_28
 
   # Calculate C(2,2) += A(2,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
@@ -1695,7 +1695,7 @@ block_28:
   movss 0x18+OFFSET_NORM(A), B1
   mulss 0x24+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_29
+  jbe block_29
 
   # Calculate C(2,2) += A(2,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
@@ -1758,7 +1758,7 @@ block_29:
   movss 0x1c+OFFSET_NORM(A), B1
   mulss 0x34+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_30
+  jbe block_30
 
   # Calculate C(2,2) += A(2,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
@@ -1848,7 +1848,7 @@ block_31:
   movss 0x10+OFFSET_NORM(A), B1
   mulss 0x8+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_32
+  jbe block_32
 
   # Calculate C(2,3) += A(2,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
@@ -1911,7 +1911,7 @@ block_32:
   movss 0x14+OFFSET_NORM(A), B1
   mulss 0x18+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_33
+  jbe block_33
 
   # Calculate C(2,3) += A(2,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
@@ -1974,7 +1974,7 @@ block_33:
   movss 0x18+OFFSET_NORM(A), B1
   mulss 0x28+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_34
+  jbe block_34
 
   # Calculate C(2,3) += A(2,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
@@ -2037,7 +2037,7 @@ block_34:
   movss 0x1c+OFFSET_NORM(A), B1
   mulss 0x38+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_35
+  jbe block_35
 
   # Calculate C(2,3) += A(2,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
@@ -2127,7 +2127,7 @@ block_36:
   movss 0x10+OFFSET_NORM(A), B1
   mulss 0xc+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_37
+  jbe block_37
 
   # Calculate C(2,4) += A(2,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
@@ -2190,7 +2190,7 @@ block_37:
   movss 0x14+OFFSET_NORM(A), B1
   mulss 0x1c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_38
+  jbe block_38
 
   # Calculate C(2,4) += A(2,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
@@ -2253,7 +2253,7 @@ block_38:
   movss 0x18+OFFSET_NORM(A), B1
   mulss 0x2c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_39
+  jbe block_39
 
   # Calculate C(2,4) += A(2,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
@@ -2316,7 +2316,7 @@ block_39:
   movss 0x1c+OFFSET_NORM(A), B1
   mulss 0x3c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_40
+  jbe block_40
 
   # Calculate C(2,4) += A(2,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
@@ -2406,7 +2406,7 @@ block_41:
   movss 0x20+OFFSET_NORM(A), B1
   mulss 0x0+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_42
+  jbe block_42
 
   # Calculate C(3,1) += A(3,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
@@ -2469,7 +2469,7 @@ block_42:
   movss 0x24+OFFSET_NORM(A), B1
   mulss 0x10+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_43
+  jbe block_43
 
   # Calculate C(3,1) += A(3,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
@@ -2532,7 +2532,7 @@ block_43:
   movss 0x28+OFFSET_NORM(A), B1
   mulss 0x20+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_44
+  jbe block_44
 
   # Calculate C(3,1) += A(3,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
@@ -2595,7 +2595,7 @@ block_44:
   movss 0x2c+OFFSET_NORM(A), B1
   mulss 0x30+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_45
+  jbe block_45
 
   # Calculate C(3,1) += A(3,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
@@ -2685,7 +2685,7 @@ block_46:
   movss 0x20+OFFSET_NORM(A), B1
   mulss 0x4+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_47
+  jbe block_47
 
   # Calculate C(3,2) += A(3,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
@@ -2748,7 +2748,7 @@ block_47:
   movss 0x24+OFFSET_NORM(A), B1
   mulss 0x14+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_48
+  jbe block_48
 
   # Calculate C(3,2) += A(3,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
@@ -2811,7 +2811,7 @@ block_48:
   movss 0x28+OFFSET_NORM(A), B1
   mulss 0x24+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_49
+  jbe block_49
 
   # Calculate C(3,2) += A(3,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
@@ -2874,7 +2874,7 @@ block_49:
   movss 0x2c+OFFSET_NORM(A), B1
   mulss 0x34+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_50
+  jbe block_50
 
   # Calculate C(3,2) += A(3,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
@@ -2964,7 +2964,7 @@ block_51:
   movss 0x20+OFFSET_NORM(A), B1
   mulss 0x8+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_52
+  jbe block_52
 
   # Calculate C(3,3) += A(3,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
@@ -3027,7 +3027,7 @@ block_52:
   movss 0x24+OFFSET_NORM(A), B1
   mulss 0x18+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_53
+  jbe block_53
 
   # Calculate C(3,3) += A(3,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
@@ -3090,7 +3090,7 @@ block_53:
   movss 0x28+OFFSET_NORM(A), B1
   mulss 0x28+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_54
+  jbe block_54
 
   # Calculate C(3,3) += A(3,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
@@ -3153,7 +3153,7 @@ block_54:
   movss 0x2c+OFFSET_NORM(A), B1
   mulss 0x38+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_55
+  jbe block_55
 
   # Calculate C(3,3) += A(3,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
@@ -3243,7 +3243,7 @@ block_56:
   movss 0x20+OFFSET_NORM(A), B1
   mulss 0xc+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_57
+  jbe block_57
 
   # Calculate C(3,4) += A(3,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
@@ -3306,7 +3306,7 @@ block_57:
   movss 0x24+OFFSET_NORM(A), B1
   mulss 0x1c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_58
+  jbe block_58
 
   # Calculate C(3,4) += A(3,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
@@ -3369,7 +3369,7 @@ block_58:
   movss 0x28+OFFSET_NORM(A), B1
   mulss 0x2c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_59
+  jbe block_59
 
   # Calculate C(3,4) += A(3,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
@@ -3432,7 +3432,7 @@ block_59:
   movss 0x2c+OFFSET_NORM(A), B1
   mulss 0x3c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_60
+  jbe block_60
 
   # Calculate C(3,4) += A(3,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1
@@ -3522,7 +3522,7 @@ block_61:
   movss 0x30+OFFSET_NORM(A), B1
   mulss 0x0+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_62
+  jbe block_62
 
   # Calculate C(4,1) += A(4,1)*B(1,1).
   movaps 0x0+B_OFFSET_11(B), B1
@@ -3585,7 +3585,7 @@ block_62:
   movss 0x34+OFFSET_NORM(A), B1
   mulss 0x10+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_63
+  jbe block_63
 
   # Calculate C(4,1) += A(4,2)*B(2,1).
   movaps 0x0+B_OFFSET_21(B), B1
@@ -3648,7 +3648,7 @@ block_63:
   movss 0x38+OFFSET_NORM(A), B1
   mulss 0x20+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_64
+  jbe block_64
 
   # Calculate C(4,1) += A(4,3)*B(3,1).
   movaps 0x0+B_OFFSET_31(B), B1
@@ -3711,7 +3711,7 @@ block_64:
   movss 0x3c+OFFSET_NORM(A), B1
   mulss 0x30+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_65
+  jbe block_65
 
   # Calculate C(4,1) += A(4,4)*B(4,1).
   movaps 0x0+B_OFFSET_41(B), B1
@@ -3801,7 +3801,7 @@ block_66:
   movss 0x30+OFFSET_NORM(A), B1
   mulss 0x4+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_67
+  jbe block_67
 
   # Calculate C(4,2) += A(4,1)*B(1,2).
   movaps 0x0+B_OFFSET_12(B), B1
@@ -3864,7 +3864,7 @@ block_67:
   movss 0x34+OFFSET_NORM(A), B1
   mulss 0x14+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_68
+  jbe block_68
 
   # Calculate C(4,2) += A(4,2)*B(2,2).
   movaps 0x0+B_OFFSET_22(B), B1
@@ -3927,7 +3927,7 @@ block_68:
   movss 0x38+OFFSET_NORM(A), B1
   mulss 0x24+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_69
+  jbe block_69
 
   # Calculate C(4,2) += A(4,3)*B(3,2).
   movaps 0x0+B_OFFSET_32(B), B1
@@ -3990,7 +3990,7 @@ block_69:
   movss 0x3c+OFFSET_NORM(A), B1
   mulss 0x34+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_70
+  jbe block_70
 
   # Calculate C(4,2) += A(4,4)*B(4,2).
   movaps 0x0+B_OFFSET_42(B), B1
@@ -4080,7 +4080,7 @@ block_71:
   movss 0x30+OFFSET_NORM(A), B1
   mulss 0x8+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_72
+  jbe block_72
 
   # Calculate C(4,3) += A(4,1)*B(1,3).
   movaps 0x0+B_OFFSET_13(B), B1
@@ -4143,7 +4143,7 @@ block_72:
   movss 0x34+OFFSET_NORM(A), B1
   mulss 0x18+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_73
+  jbe block_73
 
   # Calculate C(4,3) += A(4,2)*B(2,3).
   movaps 0x0+B_OFFSET_23(B), B1
@@ -4206,7 +4206,7 @@ block_73:
   movss 0x38+OFFSET_NORM(A), B1
   mulss 0x28+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_74
+  jbe block_74
 
   # Calculate C(4,3) += A(4,3)*B(3,3).
   movaps 0x0+B_OFFSET_33(B), B1
@@ -4269,7 +4269,7 @@ block_74:
   movss 0x3c+OFFSET_NORM(A), B1
   mulss 0x38+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_75
+  jbe block_75
 
   # Calculate C(4,3) += A(4,4)*B(4,3).
   movaps 0x0+B_OFFSET_43(B), B1
@@ -4359,7 +4359,7 @@ block_76:
   movss 0x30+OFFSET_NORM(A), B1
   mulss 0xc+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_77
+  jbe block_77
 
   # Calculate C(4,4) += A(4,1)*B(1,4).
   movaps 0x0+B_OFFSET_14(B), B1
@@ -4422,7 +4422,7 @@ block_77:
   movss 0x34+OFFSET_NORM(A), B1
   mulss 0x1c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_78
+  jbe block_78
 
   # Calculate C(4,4) += A(4,2)*B(2,4).
   movaps 0x0+B_OFFSET_24(B), B1
@@ -4485,7 +4485,7 @@ block_78:
   movss 0x38+OFFSET_NORM(A), B1
   mulss 0x2c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_79
+  jbe block_79
 
   # Calculate C(4,4) += A(4,3)*B(3,4).
   movaps 0x0+B_OFFSET_34(B), B1
@@ -4548,7 +4548,7 @@ block_79:
   movss 0x3c+OFFSET_NORM(A), B1
   mulss 0x3c+OFFSET_NORM(B), B1
   comiss tolerance, B1
-  jb block_80
+  jbe block_80
 
   # Calculate C(4,4) += A(4,4)*B(4,4).
   movaps 0x0+B_OFFSET_44(B), B1

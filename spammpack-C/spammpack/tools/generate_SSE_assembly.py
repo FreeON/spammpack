@@ -360,7 +360,7 @@ for i in range(options.N_stripe):
         print("  movss 0x%x+OFFSET_NORM(A), B1" % ((i*options.N_stripe+k)*4))
         print("  mulss 0x%x+OFFSET_NORM(B), B1" % ((k*options.N_stripe+j)*4))
         print("  comiss tolerance, B1")
-        print("  jb jump_%d" % (block_counter.get()))
+        print("  jbe jump_%d" % (block_counter.get()))
 
       print("")
       print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
