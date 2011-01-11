@@ -5,6 +5,7 @@ AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 
 noinst_PROGRAMS = \
   create_spamm \
+  check_spamm \
   hashtable_remove \
   hashtable_insert \
   list \

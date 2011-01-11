@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #define NEW_NORM
+//#define SPAMM_SET_NO_ZERO
 
 /** Set an element in a matrix.
  *
@@ -33,7 +34,17 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
   float old_Aij = 0;
 
+#ifdef NEW_NORM
+  unsigned int next_tier;
+  unsigned int child_index;
+  struct spamm_node_t *child_node;
+  struct spamm_data_t *child_data;
+  struct spamm_hashtable_t *next_tier_hashtable;
+#endif
+
   assert(A != NULL);
+  assert(i < A->M);
+  assert(j < A->N);
 
   if (i >= A->M || j >= A->N)
   {
@@ -49,8 +60,10 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   /* Loop through tiers to construct the tree structure. */
   for (tier = 0; tier <= A->kernel_tier; tier++)
   {
+    /* Calculate the size of the matrix block. */
     delta_index = (unsigned int) floor(A->N_padded/pow(SPAMM_N_CHILD, tier));
 
+    /* Calculate the matrix block indices. */
     i_tier = i/delta_index;
     j_tier = j/delta_index;
 
@@ -103,12 +116,14 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
        * A_OFFSET_44 15*4*4
        */
 
-      /* Calculate index on lowest tier, i.e. for basic 4x4 matrix blocks. */
-      norm_offset = spamm_index_row_major((i%delta_index)/SPAMM_N_KERNEL_BLOCK, (j%delta_index)/SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK);
+      /* Calculate offsets into the norm and the matrix data. */
+      norm_offset = spamm_index_norm(i%delta_index, j%delta_index);
       data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index);
 
+#ifndef NEW_NORM
       /* For norm calculations, get original value of Aij. */
       old_Aij = data->block_dense[data_offset];
+#endif
 
       /* Set new value. */
       data->block_dense[data_offset] = Aij;
@@ -120,14 +135,12 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
       /* Update norms. */
 #ifdef NEW_NORM
+      data_offset = spamm_index_kernel_block((i%delta_index)/SPAMM_N_BLOCK*SPAMM_N_BLOCK, (j%delta_index)/SPAMM_N_BLOCK*SPAMM_N_BLOCK);
       data->norm2[norm_offset] = 0.0;
       for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
         for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
         {
-          old_Aij = data->block_dense[SPAMM_N_BLOCK*SPAMM_N_BLOCK
-            *spamm_index_row_major(i%delta_index/SPAMM_N_KERNEL_BLOCK,
-                j%delta_index/SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
-            +spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
+          old_Aij = data->block_dense[data_offset+spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
           data->norm2[norm_offset] += old_Aij*old_Aij;
         }
       }
@@ -171,8 +184,55 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
     /* Get the node. */
     node = spamm_hashtable_lookup(node_hashtable, index);
 
+#ifdef NEW_NORM
+    /* Get the tier hashtable for the next tier. */
+    next_tier = node->tier+1;
+    next_tier_hashtable = A->tier_hashtable[next_tier];
+
+    node->norm2 = 0.0;
+
+    if (next_tier == A->kernel_tier)
+    {
+      for (i_block = 0; i_block < SPAMM_N_CHILD; i_block++) {
+        for (j_block = 0; j_block < SPAMM_N_CHILD; j_block++)
+        {
+          /* Construct index of child block. */
+          child_index = (index << 2) | (i_block << 1) | j_block;
+
+          /* Get child node. */
+          child_data = spamm_hashtable_lookup(next_tier_hashtable, child_index);
+
+          if (child_data != NULL)
+          {
+            node->norm2 += child_data->node_norm2;
+          }
+        }
+      }
+    }
+
+    else
+    {
+      for (i_block = 0; i_block < SPAMM_N_CHILD; i_block++) {
+        for (j_block = 0; j_block < SPAMM_N_CHILD; j_block++)
+        {
+          /* Construct index of child block. */
+          child_index = (index << 2) | (i_block << 1) | j_block;
+
+          /* Get child node. */
+          child_node = spamm_hashtable_lookup(next_tier_hashtable, child_index);
+
+          if (child_node != NULL)
+          {
+            node->norm2 += child_node->norm2;
+          }
+        }
+      }
+    }
+    node->norm = sqrt(node->norm2);
+#else
     /* Update norms. */
     node->norm2 += Aij*Aij-old_Aij*old_Aij;
     node->norm = sqrt(node->norm2);
+#endif
   }
 }

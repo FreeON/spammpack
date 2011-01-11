@@ -66,13 +66,24 @@ struct spamm_data_t
   /** The square of the norm of this matrix block. */
   float node_norm2;
 
-  /** The norms of the basic block matrices. */
+  /** The norms of the basic block matrices.
+   *
+   * The norms are the Frobenius norms for the basic #SPAMM_N_BLOCK x
+   * #SPAMM_N_BLOCK matrix blocks. Since they are #SPAMM_N_KERNEL_BLOCK x
+   * #SPAMM_N_KERNEL_BLOCK of those, the norms are stored in row-major order
+   * in a #SPAMM_N_KERNEL_BLOCK x #SPAMM_N_KERNEL_BLOCK matrix. */
   float norm[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
 
   /** The square of the norms of the basic block matrices. */
   float norm2[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
 
-  /** The matrix data. */
+  /** The matrix data.
+   *
+   * The matrix elements are arranged on a row-major ordered
+   * #SPAMM_N_KERNEL_BLOCK x #SPAMM_N_KERNEL_BLOCK grid of basic *
+   * #SPAMM_N_BLOCK x #SPAMM_N_BLOCK matrix blocks. The total size of
+   * block_dense is therefore (#SPAMM_N_KERNEL_BLOCK * #SPAMM_N_BLOCK) x
+   * (#SPAMM_N_KERNEL_BLOCK * #SPAMM_N_BLOCK). */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
 
   /** The matrix data (dilated by 4 for SSE). */
@@ -102,6 +113,9 @@ spamm_index_kernel_block (const unsigned int i, const unsigned int j);
 unsigned int
 spamm_index_row_major (const unsigned int i, const unsigned int j,
     const unsigned int M, const unsigned int N);
+
+unsigned int
+spamm_index_norm (const unsigned int i, const unsigned int j);
 
 //inline unsigned int
 //spamm_dense_index (const unsigned int i, const unsigned int j)
