@@ -111,6 +111,7 @@ libspamm_tree_la_SOURCES = \
   spamm_manual_mainpage.h \
   spamm_allocate.c \
   spamm_check.c \
+  spamm_convert.c \
   spamm_delete_block.c \
   spamm_delete.c \
   spamm_delete_node.c \
