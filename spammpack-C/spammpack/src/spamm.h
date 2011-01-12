@@ -98,6 +98,9 @@ spamm_allocate (size_t size);
 int
 spamm_check (const struct spamm_t *A);
 
+struct spamm_t *
+spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N, float *A_dense);
+
 void
 spamm_delete (struct spamm_t **A);
 
@@ -112,6 +115,10 @@ spamm_index_kernel_block (const unsigned int i, const unsigned int j);
 
 unsigned int
 spamm_index_row_major (const unsigned int i, const unsigned int j,
+    const unsigned int M, const unsigned int N);
+
+unsigned int
+spamm_index_column_major (const unsigned int i, const unsigned int j,
     const unsigned int M, const unsigned int N);
 
 unsigned int

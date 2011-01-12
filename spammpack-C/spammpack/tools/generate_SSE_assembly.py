@@ -215,7 +215,7 @@ print("#define C %r10")
 
 # The following sizes were generated with print_data_sizes.c.
 sizeof_multiply_stream_t = 3*8
-offset_norm = 24
+offset_norm = 16
 offset_block_dense = 192
 offset_block_dense_dilated = 1216
 
@@ -321,20 +321,21 @@ print("  mov (multiply_stream, base_pointer, 1), A")
 print("  mov 0x8(multiply_stream, base_pointer, 1), B")
 print("  mov 0x10(multiply_stream, base_pointer, 1), C")
 
-# Loop over matrix blocks.
-print("")
-print("  # Loop over i index. Stream matrix block conists of %dx%d basic blocks." % (options.N, options.N))
-print("  mov $%d, i_index" % (options.N))
-print("")
-print("  .align 16")
-print("i_loop:")
+if options.N-options.N_stripe > 0:
+  # Loop over matrix blocks.
+  print("")
+  print("  # Loop over i index. Stream matrix block conists of %dx%d basic blocks." % (options.N, options.N))
+  print("  mov $%d, i_index" % (options.N))
+  print("")
+  print("  .align 16")
+  print("i_loop:")
 
-print("")
-print("  # Loop over j index. Stream matrix block conists of %dx%d basic blocks." % (options.N, options.N))
-print("  mov $%d, j_index" % (options.N))
-print("")
-print("  .align 16")
-print("j_loop:")
+  print("")
+  print("  # Loop over j index. Stream matrix block conists of %dx%d basic blocks." % (options.N, options.N))
+  print("  mov $%d, j_index" % (options.N))
+  print("")
+  print("  .align 16")
+  print("j_loop:")
 
 print("")
 print("  # Adjust offset into matrix.")
@@ -359,6 +360,11 @@ for i in range(options.N_stripe):
         print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
         print("  movss 0x%x+OFFSET_NORM(A), B1" % ((i*options.N_stripe+k)*4))
         print("  mulss 0x%x+OFFSET_NORM(B), B1" % ((k*options.N_stripe+j)*4))
+
+        # When comparing with the Intel Software Developer's Manual, keep in
+        # mind that Intel uses Intel syntax and this code is writting using
+        # At&T syntax, which means that the order of operand 1 and 2 are the
+        # opposite.
         print("  comiss tolerance, B1")
         print("  jbe jump_%d" % (block_counter.get()))
 
