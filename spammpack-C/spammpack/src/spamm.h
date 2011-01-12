@@ -10,6 +10,7 @@
 #include "spamm_list.h"
 #include "spamm_kernel.h"
 #include "spamm_timer.h"
+#include "spamm_convert.h"
 
 /** The matrix type.
  */
@@ -97,9 +98,6 @@ spamm_allocate (size_t size);
 
 int
 spamm_check (const struct spamm_t *A);
-
-struct spamm_t *
-spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N, float *A_dense);
 
 void
 spamm_delete (struct spamm_t **A);

@@ -21,7 +21,31 @@ struct spamm_check_user_data_t
   const struct spamm_t *A;
 };
 
-/** @private Verify the norm of a node.
+/** Verify tree structure.
+ *
+ * @param index The linear index of this node.
+ * @param value The matrix tree node. This can have either type spamm_node_t
+ * or spamm_data_t depending on the tier.
+ * @param user_data The user data of type spamm_check_user_data_t.
+ */
+void
+spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
+{
+}
+
+/** Verify linear indices.
+ *
+ * @param index The linear index of this node.
+ * @param value The matrix tree node. This can have either type spamm_node_t
+ * or spamm_data_t depending on the tier.
+ * @param user_data The user data of type spamm_check_user_data_t.
+ */
+void
+spamm_check_linear_index (unsigned int index, void *value, void *user_data)
+{
+}
+
+/** Verify the norm of a node.
  *
  * This function is called in the hash table iterator for each tier of the
  * matrix tree.
@@ -32,7 +56,7 @@ struct spamm_check_user_data_t
  * @param user_data The user data of type spamm_check_user_data_t.
  */
 void
-spamm_check_verify_norm (unsigned int index, void *value, void *user_data)
+spamm_check_norm (unsigned int index, void *value, void *user_data)
 {
   short i, j;
   short i_block, j_block;
@@ -102,8 +126,8 @@ spamm_check_verify_norm (unsigned int index, void *value, void *user_data)
     if (fabs(norm2-data->node_norm2) > RELATIVE_TOLERANCE*norm2 ||
         fabs(sqrt(norm2)-data->node_norm) > RELATIVE_TOLERANCE*sqrt(norm2))
     {
-      printf("tier %u, index %u: incorrect node norm value, found %e, should be %e, |diff| = %e, fixing...\n",
-          data->tier, data->index_2D, data->node_norm, sqrt(norm2), fabs(data->node_norm-sqrt(norm2)));
+      printf("tier %u, index %u: incorrect node norm value, found %e = sqrt(%e), should be %e, |diff| = %e, fixing...\n",
+          data->tier, data->index_2D, data->node_norm, data->node_norm2, sqrt(norm2), fabs(data->node_norm-sqrt(norm2)));
 
       data->node_norm2 = norm2;
       data->node_norm = sqrt(norm2);
@@ -162,8 +186,8 @@ spamm_check_verify_norm (unsigned int index, void *value, void *user_data)
     if (fabs(norm2-node->norm2) > RELATIVE_TOLERANCE*norm2 ||
         fabs(sqrt(norm2)-node->norm) > RELATIVE_TOLERANCE*sqrt(norm2))
     {
-      printf("tier %u, index %u: incorrect norm value, found %e, should be %e, |diff| = %e, fixing...\n",
-          node->tier, node->index_2D, node->norm, sqrt(norm2), fabs(node->norm-sqrt(norm2)));
+      printf("tier %u, index %u: incorrect norm value, found %e = sqrt(%e), should be %e, |diff| = %e, fixing...\n",
+          node->tier, node->index_2D, node->norm, node->norm2, sqrt(norm2), fabs(node->norm-sqrt(norm2)));
 
       node->norm2 = norm2;
       node->norm = sqrt(norm2);
@@ -259,12 +283,17 @@ spamm_check (const struct spamm_t *A)
     reverse_tier = tier-1;
     hashtable = A->tier_hashtable[reverse_tier];
 
-    /* Verify consistency of 2D and 3D linear indices. */
-
-    /* Verify norms. */
     user_data.tier = reverse_tier;
     user_data.A = A;
-    spamm_hashtable_foreach(hashtable, spamm_check_verify_norm, &user_data);
+
+    /* Verify tree structure. */
+    spamm_hashtable_foreach(hashtable, spamm_check_tree_structure, &user_data);
+
+    /* Verify consistency of linear indices. */
+    spamm_hashtable_foreach(hashtable, spamm_check_linear_index, &user_data);
+
+    /* Verify norms. */
+    spamm_hashtable_foreach(hashtable, spamm_check_norm, &user_data);
   }
 
   return user_data.result;
