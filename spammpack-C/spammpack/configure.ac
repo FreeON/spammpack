@@ -167,6 +167,9 @@ AC_SUBST(SPAMM_N_KERNEL_BLOCK, [${have_N_kernel_block}])
 AC_SUBST(SPAMM_N_KERNEL, [${have_N_kernel}])
 AC_SUBST(SPAMM_N_STRIDE, [${have_N_stride}])
 
+dnl For benchmarking.
+AC_DEFINE([SPAMM_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
+
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
 
