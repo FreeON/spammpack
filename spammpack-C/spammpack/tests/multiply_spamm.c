@@ -154,8 +154,9 @@ main ()
 
   if (max_diff > 0)
   {
-    printf("failed, max diff = %e for A(%u,%u) = %e, A_reference(%u,%u) = %e\n",
+    printf("failed, max diff = %e, rel. diff = %e, A(%u,%u) = %e, A_reference(%u,%u) = %e\n",
         max_diff,
+        (C_dense[max_i*N+max_j] != 0.0 ? max_diff/C_dense[max_i*N+max_j] : 0.0),
         max_i, max_j, spamm_get(max_i, max_j, C),
         max_i, max_j, C_dense[max_i*N+max_j]);
     result = -1;

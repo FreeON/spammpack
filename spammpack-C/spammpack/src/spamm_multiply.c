@@ -141,7 +141,7 @@ spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
   unsigned int i;
   short j;
 
-#ifdef HAVE_SSE
+#ifdef HAVE_SSE_DISABLED
   __m128 xmm, xmm_beta;
 
   xmm_beta = _mm_load_ps1(beta);
@@ -345,6 +345,7 @@ spamm_multiply (const float tolerance,
   spamm_timer_info(timer, timer_info_string, 2000);
   printf("[multiply] timer: %s\n", timer_info_string);
 
+#ifdef SPAMM_MULTIPLY_BETA
   /* Multiply C with beta. */
   printf("[multiply] multiplying C with beta... ");
   spamm_timer_start(timer);
@@ -354,7 +355,9 @@ spamm_multiply (const float tolerance,
   spamm_timer_stop(timer);
   beta_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", beta_timer);
+#endif
 
+#ifdef SPAMM_MULTIPLY_SORTING
   /* Sort 2D indices on k, i.e. either on row or column index. */
   printf("[multiply] sorting A and B... ");
   spamm_timer_start(timer);
@@ -374,7 +377,9 @@ spamm_multiply (const float tolerance,
   spamm_timer_stop(timer);
   sort_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", sort_timer);
+#endif
 
+#ifdef SPAMM_MULTIPLY_K_LOOKUP
   /* Create a lookup table for the start of a particular k index in the sorted
    * arrays. */
   printf("[multiply] creating k lookup tables... ");
@@ -452,7 +457,9 @@ spamm_multiply (const float tolerance,
   spamm_timer_stop(timer);
   k_lookuptable_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", k_lookuptable_timer);
+#endif
 
+#ifdef SPAMM_MULTIPLY_COPY_INDICES
   /* Copy sorted indices to array for quick access. */
   printf("[multiply] copying indices to array... ");
   spamm_timer_start(timer);
@@ -468,7 +475,9 @@ spamm_multiply (const float tolerance,
   spamm_timer_stop(timer);
   copy_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", copy_timer);
+#endif
 
+#ifdef SPAMM_MULTIPLY_COPY_3D
   /* Copy appropriate 3D convolution index to arrays. */
   printf("[multiply] copying 3D convolution index to arrays and referencing dense blocks... ");
   spamm_timer_start(timer);
@@ -486,7 +495,9 @@ spamm_multiply (const float tolerance,
   spamm_timer_stop(timer);
   copy_3D_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", copy_3D_timer);
+#endif
 
+#ifdef SPAMM_MULTIPLY_CONVOLUTE
   /* Convolute by constructing product 3D index. */
   printf("[multiply] convolute... ");
   spamm_timer_start(timer);
@@ -614,7 +625,9 @@ spamm_multiply (const float tolerance,
   printf("%llu timer units\n", convolute_timer);
 
   printf("[multiply] dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
+#endif
 
+#ifdef SPAMM_MULTIPLY_FREE
   /* Free memory. */
   printf("[multiply] free memory... ");
   spamm_timer_start(timer);
@@ -631,7 +644,9 @@ spamm_multiply (const float tolerance,
   spamm_timer_stop(timer);
   free_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", free_timer);
+#endif
 
+#ifdef SPAMM_MULTIPLY_STREAM
   /* Call stream product. */
   printf("[multiply] stream multiply ");
   spamm_timer_start(timer);
@@ -650,8 +665,9 @@ spamm_multiply (const float tolerance,
   spamm_timer_stop(timer);
   stream_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", stream_timer);
+#endif
 
-#if defined(SPAMM_PRODUCT_COUNT)
+#ifdef SPAMM_MULTIPLY_PRODUCT_COUNT
   /* Loop through the stream and determine the number of products. */
   printf("[multiply] counting number of block products... ");
   fflush(stdout);
@@ -674,7 +690,9 @@ spamm_multiply (const float tolerance,
       (double) number_products/(double) ((A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK))*100);
 #endif
 
+#ifdef SPAMM_MULTIPLY_FINAL_FREE
   /* Free memory. */
   free(multiply_stream);
   spamm_timer_delete(&timer);
+#endif
 }

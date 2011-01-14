@@ -101,11 +101,12 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
         if (fabs(norm2-data->norm2[norm_offset]) > RELATIVE_TOLERANCE*norm2 ||
             fabs(sqrt(norm2)-data->norm[norm_offset]) > RELATIVE_TOLERANCE*sqrt(norm2))
         {
-          printf("tier %u, index %u, block (%u,%u): incorrect block norm value, found %e, should be %e, |diff| = %e, fixing...\n",
+          printf("tier %u, index %u, block (%u,%u): incorrect block norm value, found %e, should be %e, |diff| = %e, rel. diff = %e, fixing...\n",
               data->tier, data->index_2D, i, j,
               data->norm[norm_offset],
               sqrt(norm2),
-              fabs(data->norm[norm_offset]-sqrt(norm2)));
+              fabs(data->norm[norm_offset]-sqrt(norm2)),
+              (norm2 != 0.0 ? fabs(data->norm[norm_offset]-sqrt(norm2))/sqrt(norm2) : 0));
 
           data->norm2[norm_offset] = norm2;
           data->norm[norm_offset] = sqrt(norm2);
@@ -126,8 +127,13 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
     if (fabs(norm2-data->node_norm2) > RELATIVE_TOLERANCE*norm2 ||
         fabs(sqrt(norm2)-data->node_norm) > RELATIVE_TOLERANCE*sqrt(norm2))
     {
-      printf("tier %u, index %u: incorrect node norm value, found %e = sqrt(%e), should be %e, |diff| = %e, fixing...\n",
-          data->tier, data->index_2D, data->node_norm, data->node_norm2, sqrt(norm2), fabs(data->node_norm-sqrt(norm2)));
+      printf("tier %u, index %u: incorrect node norm value, found %e = sqrt(%e), should be %e, |diff| = %e, rel. diff = %e, fixing...\n",
+          data->tier, data->index_2D,
+          data->node_norm,
+          data->node_norm2,
+          sqrt(norm2),
+          fabs(data->node_norm-sqrt(norm2)),
+          (norm2 != 0.0 ? fabs(data->node_norm-sqrt(norm2))/sqrt(norm2) : 0));
 
       data->node_norm2 = norm2;
       data->node_norm = sqrt(norm2);
@@ -186,8 +192,13 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
     if (fabs(norm2-node->norm2) > RELATIVE_TOLERANCE*norm2 ||
         fabs(sqrt(norm2)-node->norm) > RELATIVE_TOLERANCE*sqrt(norm2))
     {
-      printf("tier %u, index %u: incorrect norm value, found %e = sqrt(%e), should be %e, |diff| = %e, fixing...\n",
-          node->tier, node->index_2D, node->norm, node->norm2, sqrt(norm2), fabs(node->norm-sqrt(norm2)));
+      printf("tier %u, index %u: incorrect norm value, found %e = sqrt(%e), should be %e, |diff| = %e, rel. diff = %e, fixing...\n",
+          node->tier, node->index_2D,
+          node->norm,
+          node->norm2,
+          sqrt(norm2),
+          fabs(node->norm-sqrt(norm2)),
+          (norm2 != 0.0 ? fabs(node->norm-sqrt(norm2))/sqrt(norm2) : 0));
 
       node->norm2 = norm2;
       node->norm = sqrt(norm2);

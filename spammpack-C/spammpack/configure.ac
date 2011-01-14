@@ -38,6 +38,12 @@ if test "${declared_posix_memalign}" = "yes"; then
                 memory.])], [], [])
 fi
 
+dnl Check for SSE.
+AC_CHECK_HEADERS([xmmintrin.h])
+if test "${ac_cv_header_xmmintrin_h}" = "yes"; then
+  AC_DEFINE([HAVE_SSE], [1], [Use SSE instructions in some parts of the code.])
+fi
+
 dnl Check for PAPI.
 AC_MSG_CHECKING([whether to enable PAPI profiling interface])
 AC_ARG_ENABLE([PAPI], [AS_HELP_STRING([--enable-PAPI],
@@ -168,7 +174,16 @@ AC_SUBST(SPAMM_N_KERNEL, [${have_N_kernel}])
 AC_SUBST(SPAMM_N_STRIDE, [${have_N_stride}])
 
 dnl For benchmarking.
-AC_DEFINE([SPAMM_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
+AC_DEFINE([SPAMM_MULTIPLY_BETA], [1], [Multiply C matrix with beta factor.])
+AC_DEFINE([SPAMM_MULTIPLY_SORTING], [1], [Sort A and B linear indices.])
+AC_DEFINE([SPAMM_MULTIPLY_K_LOOKUP], [1], [Create k lookup table.])
+AC_DEFINE([SPAMM_MULTIPLY_COPY_INDICES], [1], [Copy indices to array.])
+AC_DEFINE([SPAMM_MULTIPLY_COPY_3D], [1], [Copy 3D indices to array.])
+AC_DEFINE([SPAMM_MULTIPLY_CONVOLUTE], [1], [Convolute.])
+AC_DEFINE([SPAMM_MULTIPLY_FREE], [1], [Free memory.])
+AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
+AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
+AC_DEFINE([SPAMM_MULTIPLY_FINAL_FREE], [1], [Free remaining memory before exit.])
 
 dnl Fix the package version everywhere.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
