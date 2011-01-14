@@ -1,5 +1,12 @@
 #include "spamm.h"
+#include "config.h"
+
+#ifdef HAVE_SSE
 #include <xmmintrin.h>
+#else
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
 void
 spamm_stream_kernel_C (const unsigned int number_stream_elements,
@@ -7,6 +14,7 @@ spamm_stream_kernel_C (const unsigned int number_stream_elements,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream)
 {
+#ifdef HAVE_SSE
   unsigned int stream_index;
 
   short int i, j, k, l, m;
@@ -104,4 +112,8 @@ spamm_stream_kernel_C (const unsigned int number_stream_elements,
       }
     }
   }
+#else
+  printf("no SSE, this kernel will not work.\n");
+  exit(1);
+#endif
 }
