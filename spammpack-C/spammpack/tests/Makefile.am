@@ -10,6 +10,7 @@ noinst_PROGRAMS = \
   hashtable_remove \
   hashtable_insert \
   list \
+  list_sort \
   multiply_spamm
 
 TESTS = $(noinst_PROGRAMS)
