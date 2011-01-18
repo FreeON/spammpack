@@ -269,8 +269,8 @@ spamm_list_sort (struct spamm_list_t *list,
     int (*compare) (const unsigned int, const unsigned int, void *),
     void *user_data)
 {
-  printf("[list sort] using quicksort_2\n");
-  spamm_list_sort_quicksort_2(list, 0, list->length-1, compare, user_data);
+  printf("[list sort] using quicksort_1\n");
+  spamm_list_sort_quicksort_1(list, 0, list->length-1, compare, user_data);
 }
 
 /** Return the length of a list.
@@ -324,4 +324,16 @@ spamm_list_set (struct spamm_list_t *list, const unsigned int i, const unsigned 
   }
 
   list->data[i] = Ai;
+}
+
+/** Get the pointer to the data.
+ *
+ * @param list The list.
+ *
+ * @return A pointer unsigned int* to the elements in this list.
+ */
+unsigned int*
+spamm_list_get_data (struct spamm_list_t *list)
+{
+  return list->data;
 }

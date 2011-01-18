@@ -25,6 +25,9 @@ spamm_list_length (struct spamm_list_t *list);
 unsigned int
 spamm_list_get (struct spamm_list_t *list, const unsigned int i);
 
+unsigned int*
+spamm_list_get_data (struct spamm_list_t *list);
+
 void
 spamm_list_set (struct spamm_list_t *list, const unsigned int i, const unsigned int Ai);
 
