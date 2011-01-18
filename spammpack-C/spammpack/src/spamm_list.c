@@ -269,7 +269,6 @@ spamm_list_sort (struct spamm_list_t *list,
     int (*compare) (const unsigned int, const unsigned int, void *),
     void *user_data)
 {
-  printf("[list sort] using quicksort_1\n");
   spamm_list_sort_quicksort_1(list, 0, list->length-1, compare, user_data);
 }
 
