@@ -113,6 +113,68 @@ spamm_list_sort_quicksort_1 (struct spamm_list_t *list,
   }
 }
 
+/** Increment a somewhat signed unsigned int.
+ *
+ * minus_one A flag that indicates whether index is really -1.
+ * index The unsigned int.
+ */
+void
+spamm_list_sort_signed_increment (short *minus_one, unsigned int *index)
+{
+  if (*minus_one == 1)
+  {
+    *minus_one = 0;
+    if (*index != 0)
+    {
+      printf("index should be zero\n");
+      exit(1);
+    }
+    *index = 0;
+  }
+
+  else
+  {
+    (*index)++;
+  }
+}
+
+/** Decrement a somewhat signed unsigned int.
+ *
+ * minus_one A flag that indicates whether index is really -1.
+ * index The unsigned int.
+ */
+void
+spamm_list_sort_signed_decrement (short *minus_one, unsigned int *index)
+{
+  if (*minus_one == 0)
+  {
+    if (*index == 0)
+    {
+      *minus_one = 1;
+    }
+
+    else
+    {
+      (*index)--;
+    }
+  }
+
+  else
+  {
+    if (*index != 0)
+    {
+      printf("index should be zero\n");
+      exit(1);
+    }
+
+    else
+    {
+      printf("index is already minus one, can not decrement further.\n");
+      exit(1);
+    }
+  }
+}
+
 /** Quicksort.
  *
  * @param list The list.
@@ -130,60 +192,51 @@ spamm_list_sort_quicksort_2 (struct spamm_list_t *list,
   unsigned int pivot;
   unsigned int left_index = left;
   unsigned int right_index = right;
-
+  short left_index_minus_one = 0;
+  short right_index_minus_one = 0;
   unsigned int temp;
 
   if (right > left)
   {
-    pivot = (left+right)/2;
+    pivot = left+(right-left)/2;
     while (left_index <= pivot && pivot <= right_index)
     {
       while (compare(list->data[left_index], list->data[pivot], user_data) < 0 && left_index <= pivot)
       {
-        left_index++;
+        spamm_list_sort_signed_increment(&left_index_minus_one, &left_index);
       }
 
       while (compare(list->data[pivot], list->data[right_index], user_data) < 0 && pivot <= right_index)
       {
-        right_index--;
+        spamm_list_sort_signed_decrement(&right_index_minus_one, &right_index);
       }
 
       temp = list->data[left_index];
       list->data[left_index] = list->data[right_index];
       list->data[right_index] = temp;
 
-      if (left_index < right)
-      {
-        left_index++;
-      }
-
-      if (right_index > left)
-      {
-        right_index--;
-      }
+      spamm_list_sort_signed_increment(&left_index_minus_one, &left_index);
+      spamm_list_sort_signed_decrement(&right_index_minus_one, &right_index);
 
       if (left_index == pivot+1)
       {
+        spamm_list_sort_signed_increment(&right_index_minus_one, &right_index);
         pivot = right_index;
-        right_index++;
       }
 
-      else if (right_index+1 == pivot)
+      else if ((right_index_minus_one == 1 && pivot == 0) || (right_index+1 == pivot))
       {
+        spamm_list_sort_signed_decrement(&left_index_minus_one, &left_index);
         pivot = left_index;
-        left_index--;
       }
     }
 
-    if (left+1 <= pivot)
+    if (pivot > 0)
     {
       spamm_list_sort_quicksort_2(list, left, pivot-1, compare, user_data);
     }
 
-    if (pivot+1 <= right)
-    {
-      spamm_list_sort_quicksort_2(list, pivot+1, right, compare, user_data);
-    }
+    spamm_list_sort_quicksort_2(list, pivot+1, right, compare, user_data);
   }
 }
 
@@ -216,7 +269,8 @@ spamm_list_sort (struct spamm_list_t *list,
     int (*compare) (const unsigned int, const unsigned int, void *),
     void *user_data)
 {
-  spamm_list_sort_quicksort_1(list, 0, list->length-1, compare, user_data);
+  printf("[list sort] using quicksort_2\n");
+  spamm_list_sort_quicksort_2(list, 0, list->length-1, compare, user_data);
 }
 
 /** Return the length of a list.
