@@ -1,3 +1,6 @@
+AM_CTAGSFLAGS = --C-kinds=+l+x
+TAGS_FILES = ../config.h
+
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 lib_LTLIBRARIES = libspamm.la
@@ -144,6 +147,3 @@ libspamm_tree_headers = \
 include_HEADERS = \
   $(libspamm_kernel_headers) \
   $(libspamm_tree_headers)
-
-tags :
-	ctags --C-kinds=+l+x *.h *.c *.S ../config.h
