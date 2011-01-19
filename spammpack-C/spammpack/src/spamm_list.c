@@ -95,6 +95,7 @@ spamm_list_sort_quicksort_1 (struct spamm_list_t *list,
 {
   unsigned int pivot;
   unsigned int new_pivot;
+  unsigned int length_left, length_right;
 
   if (right > left)
   {
@@ -103,12 +104,48 @@ spamm_list_sort_quicksort_1 (struct spamm_list_t *list,
 
     if (left+1 <= new_pivot)
     {
-      spamm_list_sort_quicksort_1(list, left, new_pivot-1, compare, user_data);
+      length_left = new_pivot-1-left;
     }
+
+    else { length_left = 0; }
 
     if (new_pivot+1 <= right)
     {
-      spamm_list_sort_quicksort_1(list, new_pivot+1, right, compare, user_data);
+      length_right = right-new_pivot-1;
+    }
+
+    else { length_right = 0; }
+
+    /* From http://en.wikipedia.org/wiki/Quicksort:
+     *
+     * Section Implementation issues:Optimizations
+     *
+     * To make sure at most O(log N) space is used, recurse first into the
+     * smaller half of the array, and use a tail call to recurse into the
+     * other.
+     */
+    if (length_left <= length_right)
+    {
+      if (length_left > 0)
+      {
+        spamm_list_sort_quicksort_1(list, left, new_pivot-1, compare, user_data);
+      }
+      if (length_right > 0)
+      {
+        spamm_list_sort_quicksort_1(list, new_pivot+1, right, compare, user_data);
+      }
+    }
+
+    else
+    {
+      if (length_right > 0)
+      {
+        spamm_list_sort_quicksort_1(list, new_pivot+1, right, compare, user_data);
+      }
+      if (length_left > 0)
+      {
+        spamm_list_sort_quicksort_1(list, left, new_pivot-1, compare, user_data);
+      }
     }
   }
 }
