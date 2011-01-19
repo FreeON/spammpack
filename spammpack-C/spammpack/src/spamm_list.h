@@ -15,7 +15,7 @@ int
 spamm_list_compare_int (const unsigned int a, const unsigned int b, void *user_data);
 
 void
-spamm_list_sort (struct spamm_list_t **list,
+spamm_list_sort (struct spamm_list_t *list,
     int (*compare) (const unsigned int, const unsigned int, void *),
     void *user_data);
 

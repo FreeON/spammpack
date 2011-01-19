@@ -367,10 +367,10 @@ spamm_multiply (const float tolerance,
   C_tier_hashtable = C->tier_hashtable[C->kernel_tier];
 
   A_index.index_2D = spamm_hashtable_keys(A_tier_hashtable);
-  spamm_list_sort(&A_index.index_2D, spamm_multiply_compare_index_column, A_tier_hashtable);
+  spamm_list_sort(A_index.index_2D, spamm_multiply_compare_index_column, A_tier_hashtable);
 
   B_index.index_2D = spamm_hashtable_keys(B_tier_hashtable);
-  spamm_list_sort(&B_index.index_2D, spamm_multiply_compare_index_row, B_tier_hashtable);
+  spamm_list_sort(B_index.index_2D, spamm_multiply_compare_index_row, B_tier_hashtable);
 
   printf("len(A) = %u, len(B) = %u, ", spamm_list_length(A_index.index_2D), spamm_list_length(B_index.index_2D));
 
