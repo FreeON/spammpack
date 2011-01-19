@@ -19,7 +19,7 @@ main ()
     spamm_list_set(list, i, rand());
   }
 
-  spamm_list_sort(list, spamm_list_compare_int, NULL);
+  spamm_list_sort(&list, spamm_list_compare_int, NULL);
 
   last_i = 0;
   last_value = spamm_list_get(list, 0);

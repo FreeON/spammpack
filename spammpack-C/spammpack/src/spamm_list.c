@@ -293,6 +293,77 @@ spamm_list_compare_int (const unsigned int a, const unsigned int b, void *user_d
   else             { return  1; }
 }
 
+/** Merge sort.
+ *
+ * @param list The list to sort.
+ * @param compare The comparison function.
+ * @param user_data A pointer that will be passed to the comparison function.
+ */
+void
+spamm_list_sort_mergesort (struct spamm_list_t **list,
+    int (*compare) (const unsigned int, const unsigned int, void *),
+    void *user_data)
+{
+  struct spamm_list_t *new_list;
+  struct spamm_list_t *left;
+  struct spamm_list_t *right;
+  unsigned int i, i_left, i_right;
+  unsigned int middle;
+
+  if ((*list)->length <= 1) { return; }
+
+  middle = (*list)->length/2;
+  left = spamm_list_new(middle);
+  right = spamm_list_new((*list)->length-middle);
+
+  for (i = 0; i < middle; i++)
+  {
+    left->data[i] = (*list)->data[i];
+  }
+
+  for (i = middle; i < (*list)->length; i++)
+  {
+    right->data[i-middle] = (*list)->data[i];
+  }
+
+  spamm_list_sort_mergesort(&left, compare, user_data);
+  spamm_list_sort_mergesort(&right, compare, user_data);
+
+  new_list = spamm_list_new((*list)->length);
+
+  for (i = 0, i_left = 0, i_right = 0; i < (*list)->length; i++)
+  {
+    if (i_left < left->length && i_right < right->length)
+    {
+      if (compare(left->data[i_left], right->data[i_right], user_data) <= 0)
+      {
+        new_list->data[i] = left->data[i_left++];
+      }
+
+      else
+      {
+        new_list->data[i] = right->data[i_right++];
+      }
+    }
+
+    else if (i_left < left->length)
+    {
+      new_list->data[i] = left->data[i_left++];
+    }
+
+    else
+    {
+      new_list->data[i] = right->data[i_right++];
+    }
+  }
+
+  spamm_list_delete(&left);
+  spamm_list_delete(&right);
+  spamm_list_delete(list);
+
+  *list = new_list;
+}
+
 /** Sort a list.
  *
  * @param list The list to sort.
@@ -302,11 +373,12 @@ spamm_list_compare_int (const unsigned int a, const unsigned int b, void *user_d
  * used to pass any information to the compare function.
  */
 void
-spamm_list_sort (struct spamm_list_t *list,
+spamm_list_sort (struct spamm_list_t **list,
     int (*compare) (const unsigned int, const unsigned int, void *),
     void *user_data)
 {
-  spamm_list_sort_quicksort_1(list, 0, list->length-1, compare, user_data);
+  //spamm_list_sort_quicksort_1(list, 0, list->length-1, compare, user_data);
+  spamm_list_sort_mergesort(list, compare, user_data);
 }
 
 /** Return the length of a list.

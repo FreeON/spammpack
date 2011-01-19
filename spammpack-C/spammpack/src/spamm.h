@@ -155,6 +155,9 @@ spamm_index_3D_i0j_to_2D (const unsigned int index_3D_i0j);
 unsigned int
 spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj);
 
+unsigned int
+spamm_memory (const struct spamm_t *A);
+
 void
 spamm_multiply (const float tolerance,
     const float alpha, struct spamm_t *A, struct spamm_t *B,
@@ -162,9 +165,6 @@ spamm_multiply (const float tolerance,
 
 unsigned int
 spamm_number_nonzero (const struct spamm_t *A);
-
-void
-spamm_print_dense (const unsigned int M, const unsigned int N, const float *A);
 
 struct spamm_t *
 spamm_new (const unsigned int M, const unsigned int N);
@@ -177,6 +177,9 @@ spamm_new_node (const unsigned int tier, const unsigned int index_2D);
 
 void
 spamm_print (const struct spamm_t *A);
+
+void
+spamm_print_dense (const unsigned int M, const unsigned int N, const float *A);
 
 void
 spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_t *A);
