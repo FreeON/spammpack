@@ -24,3 +24,20 @@ spamm_number_nonzero (const struct spamm_t *A)
 
   return result;
 }
+
+/** Return the total memory consumption of a matrix.
+ *
+ * @param A The matrix.
+ *
+ * @return The number of bytes allocated for this matrix.
+ */
+unsigned int
+spamm_memory (const struct spamm_t *A)
+{
+  unsigned int total = 0;
+
+  total = sizeof(struct spamm_t);
+  total += sizeof(struct spamm_hashtable_t*)*(A->kernel_tier+1);
+
+  return total;
+}

@@ -547,3 +547,21 @@ spamm_hashtable_get_number_keys (const struct spamm_hashtable_t *hashtable)
 
   return hashtable->number_stored_keys;
 }
+
+/** Return the memory used in a hashtable. This does <em>not</em> include the
+ * memory consumed by the values.
+ *
+ * @param hasthable The hashtable.
+ *
+ * @return The number of bytes consumed by the hashtable.
+ */
+unsigned int
+spamm_hashtable_memory (const struct spamm_hashtable_t *hashtable)
+{
+  unsigned int total = 0;
+
+  total = sizeof(struct spamm_hashtable_t);
+  total += hashtable->number_buckets*sizeof(struct spamm_hashtable_bucket_t);
+
+  return total;
+}

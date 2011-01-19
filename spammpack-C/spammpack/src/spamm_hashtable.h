@@ -47,4 +47,7 @@ spamm_hashtable_get_total_distance (const struct spamm_hashtable_t *hashtable);
 unsigned int
 spamm_hashtable_get_number_keys (const struct spamm_hashtable_t *hashtable);
 
+unsigned int
+spamm_hashtable_memory (const struct spamm_hashtable_t *hashtable);
+
 #endif
