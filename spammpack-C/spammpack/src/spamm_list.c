@@ -296,6 +296,9 @@ spamm_list_compare_int (const unsigned int a, const unsigned int b, void *user_d
 /** Merge sort.
  *
  * @param list The list to sort.
+ * @param scratch Scratch space, a list that has to be as long as list.
+ * @param left The left most index of the sublist to sort.
+ * @param right The right most index of the sublist to sort.
  * @param compare The comparison function.
  * @param user_data A pointer that will be passed to the comparison function.
  */
@@ -351,6 +354,118 @@ spamm_list_sort_mergesort (struct spamm_list_t *list,
   }
 }
 
+/** Iterative merge sort.
+ *
+ * @param list The list to sort.
+ * @param compare The comparison function.
+ * @param user_data A pointer that will be passed to the comparison function.
+ */
+void
+spamm_list_sort_iterative_mergesort (struct spamm_list_t *list,
+    int (*compare) (const unsigned int, const unsigned int, void *),
+    void *user_data)
+{
+  unsigned int i, j, j_next, i_left, i_right;
+  unsigned int sub_current, sub_next;
+  unsigned int sub_length;
+  unsigned int *sublist;
+  unsigned int *scratch;
+
+  /* The list is trivially already sorted. */
+  if (list->length <= 1) { return; }
+
+  /* Create index array for sublists. This array is length+1 since we
+   * terminate the array by a value of length. */
+  sublist = (unsigned int*) malloc(sizeof(unsigned int)*2*(list->length+1));
+
+  /* Allocate scratch space. */
+  scratch = (unsigned int*) calloc(sizeof(unsigned int), list->length);
+
+  /* Break the original list into at most N pieces, i.e. single element
+   * sublists. If adajacent list elements are already in the right order, we
+   * put them into the same sublist. */
+  sublist[0] = 0;
+  for (i = 1, j = 1; i < list->length; i++)
+  {
+    if (compare(list->data[i-1], list->data[i], user_data) > 0)
+    {
+      /* The 2 elements are in incorrect order. Start a new sublist. */
+      sublist[j++] = i;
+    }
+  }
+  sublist[j++] = i;
+  sub_length = j;
+
+  /* Loop over the list, merging neighboring sublists until evertying is
+   * sorted. */
+  sub_current = 0;
+  sub_next = list->length+1;
+  while (sublist[sub_current+1] < list->length)
+  {
+    for (j = 0, j_next = 0; j < sub_length-2; j += 2)
+    {
+      /* Merge 2 adjacent sublists. */
+      for (i = sublist[sub_current+j], i_left = sublist[sub_current+j], i_right = sublist[sub_current+j+1];
+          i < sublist[sub_current+j+2];
+          i++)
+      {
+        if (i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
+        {
+          if (compare(list->data[i_left], list->data[i_right], user_data) <= 0)
+          {
+            scratch[i] = list->data[i_left++];
+          }
+
+          else
+          {
+            scratch[i] = list->data[i_right++];
+          }
+        }
+
+        else if (i_left < sublist[sub_current+j+1])
+        {
+          scratch[i] = list->data[i_left++];
+        }
+
+        else
+        {
+          scratch[i] = list->data[i_right++];
+        }
+      }
+
+      /* Copy the merged list back. */
+      for (i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
+      {
+        list->data[i] = scratch[i];
+      }
+
+      /* Remove division between the just merged sublists. */
+      sublist[sub_next+j_next] = sublist[sub_current+j];
+      sublist[sub_next+j_next+1] = sublist[sub_current+j+2];
+      j_next++;
+    }
+
+    /* Add remaining sublist divisions. */
+    while (j < sub_length)
+    {
+      sublist[sub_next+j_next] = sublist[sub_current+j];
+      j++;
+      j_next++;
+    }
+    sub_length = j_next;
+
+    /* Switch sublists. */
+    if (sub_current == 0) { sub_current = list->length+1; }
+    else                  { sub_current = 0; }
+    if (sub_next == 0) { sub_next = list->length+1; }
+    else               { sub_next = 0; }
+  }
+
+  /* Free memory. */
+  free(sublist);
+  free(scratch);
+}
+
 /** Sort a list.
  *
  * @param list The list to sort.
@@ -366,11 +481,17 @@ spamm_list_sort (struct spamm_list_t *list,
 {
   struct spamm_list_t *scratch;
 
-  //spamm_list_sort_quicksort_1(list, 0, list->length-1, compare, user_data);
+#ifdef SPAMM_SORT_QUICKSORT
+  spamm_list_sort_quicksort_1(list, 0, list->length-1, compare, user_data);
+#endif
 
+#ifdef SPAMM_SORT_MERGESORT
   scratch = spamm_list_new(list->length);
   spamm_list_sort_mergesort(list, scratch, 0, list->length, compare, user_data);
   spamm_list_delete(&scratch);
+#endif
+
+  spamm_list_sort_iterative_mergesort(list, compare, user_data);
 }
 
 /** Return the length of a list.
