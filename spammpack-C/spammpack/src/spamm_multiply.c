@@ -8,6 +8,8 @@
 #include <xmmintrin.h>
 #endif
 
+#define SPAMM_DEBUG_SORT
+
 /* Some commonly used bit-patterns are:
  *
  * For 3D indices:
@@ -79,6 +81,9 @@ spamm_multiply_compare_index_row (const unsigned int a, const unsigned int b, vo
 
   if (a_masked < b_masked)      { return -1; }
   else if (a_masked > b_masked) { return  1; }
+#ifdef SPAMM_DEBUG_SORT
+  else { return 0; }
+#else
   else
   {
     /* Compare norms. */
@@ -90,6 +95,7 @@ spamm_multiply_compare_index_row (const unsigned int a, const unsigned int b, vo
     else if (a_data->node_norm < b_data->node_norm) { return  1; }
     else                                            { return  0; }
   }
+#endif
 }
 
 /** @private Compare 2 2D indices by their column index.
@@ -114,6 +120,9 @@ spamm_multiply_compare_index_column (const unsigned int a, const unsigned int b,
 
   if (a_masked < b_masked)       { return -1; }
   else if (a_masked > b_masked)  { return  1; }
+#ifdef SPAMM_DEBUG_SORT
+  else { return 0; }
+#else
   else
   {
     /* Compare norms. */
@@ -125,6 +134,7 @@ spamm_multiply_compare_index_column (const unsigned int a, const unsigned int b,
     else if (a_data->node_norm < b_data->node_norm) { return  1; }
     else                                            { return  0; }
   }
+#endif
 }
 
 /** @private Multiply a matrix node by a scalar.
