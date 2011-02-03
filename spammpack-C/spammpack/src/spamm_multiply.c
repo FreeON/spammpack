@@ -8,7 +8,8 @@
 #include <xmmintrin.h>
 #endif
 
-#define SPAMM_DEBUG_SORT
+//#define SPAMM_DEBUG_SORT
+//#define SPAMM_INT_SORT
 
 /* Some commonly used bit-patterns are:
  *
@@ -377,16 +378,29 @@ spamm_multiply (const float tolerance,
   C_tier_hashtable = C->tier_hashtable[C->kernel_tier];
 
   A_index.index_2D = spamm_hashtable_keys(A_tier_hashtable);
+#ifdef SPAMM_INT_SORT
+  spamm_list_sort(A_index.index_2D, spamm_list_compare_int, A_tier_hashtable);
+#else
   spamm_list_sort(A_index.index_2D, spamm_multiply_compare_index_column, A_tier_hashtable);
+#endif
 
   B_index.index_2D = spamm_hashtable_keys(B_tier_hashtable);
+#ifdef SPAMM_INT_SORT
+  spamm_list_sort(B_index.index_2D, spamm_list_compare_int, B_tier_hashtable);
+#else
   spamm_list_sort(B_index.index_2D, spamm_multiply_compare_index_row, B_tier_hashtable);
+#endif
 
   printf("len(A) = %u, len(B) = %u, ", spamm_list_length(A_index.index_2D), spamm_list_length(B_index.index_2D));
 
   spamm_timer_stop(timer);
   sort_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", sort_timer);
+
+#ifdef SPAMM_INT_SORT
+  return;
+#endif
+
 #endif
 
 #ifdef SPAMM_MULTIPLY_K_LOOKUP
