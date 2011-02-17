@@ -5,8 +5,8 @@
  * \brief The Sparse Approximate Matrix Multiply (SpAMM) library.
  *
  * The public functions of this library are declared in spamm.h,
- * spamm_config.h, spamm_error.h, spamm_hashtable.h, spamm_kernel.h, and
- * spamm_timer.h, spamm_convert.h.
+ * spamm_config.h, spamm_error.h, spamm_hashtable.h, spamm_list.h,
+ * spamm_kernel.h, and spamm_timer.h, spamm_convert.h.
  *
  * The documentation is organized into the following chapters:
  *

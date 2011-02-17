@@ -135,6 +135,9 @@ libspamm_tree_la_SOURCES = \
   spamm_uint_to_bin_string.c \
   spamm_version.c
 
+EXTRA_DIST = \
+  spamm_list_driver.c
+
 libspamm_tree_headers = \
   spamm.h \
   spamm_config.h \

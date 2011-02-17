@@ -1,5 +1,4 @@
-#include "spamm_hashtable.h"
-#include "spamm_list.h"
+#include "spamm.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -463,7 +462,7 @@ spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
  * @return A pointer to an array that contains all of the keys.
  */
 struct spamm_list_t *
-spamm_hashtable_keys (struct spamm_hashtable_t *hashtable)
+spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
 {
   unsigned int i;
   unsigned int list_index;
@@ -499,6 +498,76 @@ spamm_hashtable_keys (struct spamm_hashtable_t *hashtable)
   }
 
   return key_list;
+}
+
+/** Get a list of matrix indices and a list of norms.
+ *
+ * @param index An empty list for the matrix indices. The list will be
+ * allocated in this function and needs to be free()'ed by the caller when not
+ * needed anymore.
+ * @param norm An empty list for the matrix block norms. The list will be
+ * allocated in this function and needs to be free()'ed by the caller when not
+ * needed anymore.
+ * @param hashtable The hashtable.
+ */
+void
+spamm_hashtable_index_and_norm (struct spamm_list_t **index,
+    float **norm,
+    const struct spamm_hashtable_t *hashtable)
+{
+  unsigned int i;
+  unsigned int list_index;
+
+  if (*index != NULL)
+  {
+    printf("possibly allready allocated list index\n");
+    exit(1);
+  }
+
+  if (*norm != NULL)
+  {
+    printf("possibly already allocated list norm\n");
+    exit(1);
+  }
+
+  /* Allocate new lists. */
+  *index = spamm_list_new((hashtable->has_special_key[0] == SPAMM_TRUE ? 1 : 0)
+      + (hashtable->has_special_key[1] == SPAMM_TRUE ? 1 : 0)
+      + hashtable->number_stored_keys);
+  *norm = (float*) calloc(sizeof(float),
+      (hashtable->has_special_key[0] == SPAMM_TRUE ? 1 : 0)
+      + (hashtable->has_special_key[1] == SPAMM_TRUE ? 1 : 0)
+      + hashtable->number_stored_keys);
+
+  /* Populate lists. */
+  list_index = 0;
+
+  for (i = 0; i < 2; i++)
+  {
+    if (hashtable->has_special_key[i] == SPAMM_TRUE)
+    {
+      spamm_list_set(*index, list_index, i);
+      (*norm)[list_index] = ((struct spamm_data_t*) hashtable->special_value[i])->node_norm;
+      list_index++;
+    }
+  }
+
+  for (i = 0; i < hashtable->number_buckets; i++)
+  {
+    if (hashtable->data[i].key != SPAMM_KEY_EMPTY &&
+        hashtable->data[i].key != SPAMM_KEY_DELETED)
+    {
+      spamm_list_set(*index, list_index, hashtable->data[i].key);
+      (*norm)[list_index] = ((struct spamm_data_t*) hashtable->data[i].value)->node_norm;
+      list_index++;
+    }
+  }
+
+  if (list_index != spamm_list_length(*index))
+  {
+    printf("error copying indices\n");
+    exit(1);
+  }
 }
 
 /** Get the number of buckets in this hashtable.
