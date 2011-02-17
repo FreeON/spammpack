@@ -10,6 +10,7 @@
 
 //#define SPAMM_DEBUG_SORT
 //#define SPAMM_INT_SORT
+//#define SPAMM_COMPLICATED_COMPARISON
 
 /* Some commonly used bit-patterns are:
  *
@@ -45,6 +46,9 @@ struct spamm_multiply_index_list_t
   /** An array that contains a list of linear 2D matrix indices. */
   struct spamm_list_t *index_2D;
 
+  /** An array for the node norms of the matrix indices. */
+  float *node_norm;
+
   /** An array of pointers to the matrix tree nodes at the kernel tier. */
   struct spamm_data_t **data;
 };
@@ -64,37 +68,47 @@ struct spamm_multiply_k_lookup_t
  *
  * @param a The first index.
  * @param b The second index.
- * @param user_data A pointer to the tier hashtable.
+ * @param a_norm The norm of the first index.
+ * @param b_norm The norm of the second index.
  *
  * @return if a is before b, return -1, if a is after b, return +1, and if a
  * and b are equivalent, return 0.
  */
 int
-spamm_multiply_compare_index_row (const unsigned int a, const unsigned int b, void *user_data)
+spamm_multiply_compare_index_row (const unsigned int a,
+    const unsigned int b,
+    const float a_norm,
+    const float b_norm)
 {
-  struct spamm_hashtable_t *tier_hashtable = user_data;
-
-  struct spamm_data_t *a_data;
-  struct spamm_data_t *b_data;
-
   unsigned int a_masked = a & MASK_2D_I;
   unsigned int b_masked = b & MASK_2D_I;
 
-  if (a_masked < b_masked)      { return -1; }
-  else if (a_masked > b_masked) { return  1; }
 #ifdef SPAMM_DEBUG_SORT
+  if (a_masked < b_masked)       { return -1; }
+  else if (a_masked > b_masked)  { return  1; }
   else { return 0; }
+#elif defined(SPAMM_COMPLICATED_COMPARISON)
+  short index_comparison;
+  short norm_comparison;
+
+  if (a_masked < b_masked)      { index_comparison = -1; }
+  else if (a_masked > b_masked) { index_comparison =  1; }
+  else                          { index_comparison =  0; }
+
+  if (a_norm > b_norm)          { norm_comparison = -1; }
+  else if (a_norm < b_norm)     { norm_comparison =  1; }
+  else                          { norm_comparison =  0; }
+
+  return index_comparison+(1-index_comparison*index_comparison)*norm_comparison;
 #else
+  if (a_masked < b_masked)       { return -1; }
+  else if (a_masked > b_masked)  { return  1; }
   else
   {
-    /* Compare norms. */
-    a_data = spamm_hashtable_lookup(tier_hashtable, a);
-    b_data = spamm_hashtable_lookup(tier_hashtable, b);
-
     /* Sort norms within k in descending order. */
-    if (a_data->node_norm > b_data->node_norm)      { return -1; }
-    else if (a_data->node_norm < b_data->node_norm) { return  1; }
-    else                                            { return  0; }
+    if (a_norm > b_norm)      { return -1; }
+    else if (a_norm < b_norm) { return  1; }
+    else                      { return  0; }
   }
 #endif
 }
@@ -103,37 +117,47 @@ spamm_multiply_compare_index_row (const unsigned int a, const unsigned int b, vo
  *
  * @param a The first index.
  * @param b The second index.
- * @param user_data A pointer to the tier hashtable.
+ * @param a_norm The norm of the first index.
+ * @param b_norm The norm of the second index.
  *
  * @return if a is before b, return -1, if a is after b, return +1, and if a
  * and b are equivalent, return 0.
  */
 int
-spamm_multiply_compare_index_column (const unsigned int a, const unsigned int b, void *user_data)
+spamm_multiply_compare_index_column (const unsigned int a,
+    const unsigned int b,
+    const float a_norm,
+    const float b_norm)
 {
-  struct spamm_hashtable_t *tier_hashtable = user_data;
-
-  struct spamm_data_t *a_data;
-  struct spamm_data_t *b_data;
-
   unsigned int a_masked = a & MASK_2D_J;
   unsigned int b_masked = b & MASK_2D_J;
 
+#ifdef SPAMM_DEBUG_SORT
   if (a_masked < b_masked)       { return -1; }
   else if (a_masked > b_masked)  { return  1; }
-#ifdef SPAMM_DEBUG_SORT
   else { return 0; }
+#elif defined(SPAMM_COMPLICATED_COMPARISON)
+  short index_comparison;
+  short norm_comparison;
+
+  if (a_masked < b_masked)      { index_comparison = -1; }
+  else if (a_masked > b_masked) { index_comparison =  1; }
+  else                          { index_comparison =  0; }
+
+  if (a_norm > b_norm)          { norm_comparison = -1; }
+  else if (a_norm < b_norm)     { norm_comparison =  1; }
+  else                          { norm_comparison =  0; }
+
+  return index_comparison+(1-index_comparison*index_comparison)*norm_comparison;
 #else
+  if (a_masked < b_masked)       { return -1; }
+  else if (a_masked > b_masked)  { return  1; }
   else
   {
-    /* Compare norms. */
-    a_data = spamm_hashtable_lookup(tier_hashtable, a);
-    b_data = spamm_hashtable_lookup(tier_hashtable, b);
-
     /* Sort norms within k in descending order. */
-    if (a_data->node_norm > b_data->node_norm)      { return -1; }
-    else if (a_data->node_norm < b_data->node_norm) { return  1; }
-    else                                            { return  0; }
+    if (a_norm > b_norm)      { return -1; }
+    else if (a_norm < b_norm) { return  1; }
+    else                      { return  0; }
   }
 #endif
 }
@@ -377,18 +401,22 @@ spamm_multiply (const float tolerance,
   B_tier_hashtable = B->tier_hashtable[B->kernel_tier];
   C_tier_hashtable = C->tier_hashtable[C->kernel_tier];
 
-  A_index.index_2D = spamm_hashtable_keys(A_tier_hashtable);
+  A_index.index_2D = NULL;
+  A_index.node_norm = NULL;
+  spamm_hashtable_index_and_norm(&A_index.index_2D, &A_index.node_norm, A_tier_hashtable);
 #ifdef SPAMM_INT_SORT
   spamm_list_sort(A_index.index_2D, spamm_list_compare_int, A_tier_hashtable);
 #else
-  spamm_list_sort(A_index.index_2D, spamm_multiply_compare_index_column, A_tier_hashtable);
+  spamm_list_sort(A_index.index_2D, A_index.node_norm, spamm_multiply_compare_index_column);
 #endif
 
-  B_index.index_2D = spamm_hashtable_keys(B_tier_hashtable);
+  B_index.index_2D = NULL;
+  B_index.node_norm = NULL;
+  spamm_hashtable_index_and_norm(&B_index.index_2D, &B_index.node_norm, B_tier_hashtable);
 #ifdef SPAMM_INT_SORT
   spamm_list_sort(B_index.index_2D, spamm_list_compare_int, B_tier_hashtable);
 #else
-  spamm_list_sort(B_index.index_2D, spamm_multiply_compare_index_row, B_tier_hashtable);
+  spamm_list_sort(B_index.index_2D, B_index.node_norm, spamm_multiply_compare_index_row);
 #endif
 
   printf("len(A) = %u, len(B) = %u, ", spamm_list_length(A_index.index_2D), spamm_list_length(B_index.index_2D));

@@ -46,7 +46,8 @@ spamm_list_delete (struct spamm_list_t **list)
 /** Quicksort.
  */
 unsigned int
-spamm_list_sort_quicksort_1_partition (struct spamm_list_t *list,
+spamm_list_sort_quicksort_1_partition (
+    struct spamm_list_t *list,
     const unsigned int left,
     const unsigned int right,
     const unsigned int pivot,
@@ -88,8 +89,10 @@ spamm_list_sort_quicksort_1_partition (struct spamm_list_t *list,
 /** Quicksort.
  */
 void
-spamm_list_sort_quicksort_1 (struct spamm_list_t *list,
-    const unsigned int left, const unsigned int right,
+spamm_list_sort_quicksort_1 (
+    struct spamm_list_t *list,
+    const unsigned int left,
+    const unsigned int right,
     int (*compare) (const unsigned int, const unsigned int, void *),
     void *user_data)
 {
@@ -221,8 +224,10 @@ spamm_list_sort_signed_decrement (short *minus_one, unsigned int *index)
  * @param user_data A pointer to some data.
  */
 void
-spamm_list_sort_quicksort_2 (struct spamm_list_t *list,
-    const unsigned int left, const unsigned int right,
+spamm_list_sort_quicksort_2 (
+    struct spamm_list_t *list,
+    const unsigned int left,
+    const unsigned int right,
     int (*compare) (const unsigned int, const unsigned int, void *),
     void *user_data)
 {
@@ -281,12 +286,13 @@ spamm_list_sort_quicksort_2 (struct spamm_list_t *list,
  *
  * @param a The first key.
  * @param b The second key.
- * @param user_data A pointer to some data to pass to the comparison function.
+ * @param a_norm The norm of the first key.
+ * @param b_norm The norm of the second key.
  *
  * @return -1 if a < b, 0 if a == b, and 1 if a > b.
  */
 int
-spamm_list_compare_int (const unsigned int a, const unsigned int b, void *user_data)
+spamm_list_compare_int (const unsigned int a, const unsigned int b, const float a_norm, const float b_norm)
 {
   if (a < b)       { return -1; }
   else if (a == b) { return  0; }
@@ -303,7 +309,8 @@ spamm_list_compare_int (const unsigned int a, const unsigned int b, void *user_d
  * @param user_data A pointer that will be passed to the comparison function.
  */
 void
-spamm_list_sort_mergesort (struct spamm_list_t *list,
+spamm_list_sort_mergesort (
+    struct spamm_list_t *list,
     struct spamm_list_t *scratch,
     const unsigned int left, const unsigned int right,
     int (*compare) (const unsigned int, const unsigned int, void *),
@@ -361,15 +368,17 @@ spamm_list_sort_mergesort (struct spamm_list_t *list,
  * @param user_data A pointer that will be passed to the comparison function.
  */
 void
-spamm_list_sort_iterative_mergesort (struct spamm_list_t *list,
-    int (*compare) (const unsigned int, const unsigned int, void *),
-    void *user_data)
+spamm_list_sort_iterative_mergesort (
+    struct spamm_list_t *list,
+    float *node_norm,
+    spamm_list_compare_function compare)
 {
   unsigned int i, j, j_next, i_left, i_right;
   unsigned int sub_current, sub_next;
   unsigned int sub_length;
   unsigned int *sublist;
   unsigned int *scratch;
+  float *scratch_norm;
 
   /* The list is trivially already sorted. */
   if (list->length <= 1) { return; }
@@ -380,6 +389,7 @@ spamm_list_sort_iterative_mergesort (struct spamm_list_t *list,
 
   /* Allocate scratch space. */
   scratch = (unsigned int*) calloc(sizeof(unsigned int), list->length);
+  scratch_norm = (float*) calloc(sizeof(float), list->length);
 
   /* Break the original list into at most N pieces, i.e. single element
    * sublists. If adajacent list elements are already in the right order, we
@@ -387,7 +397,7 @@ spamm_list_sort_iterative_mergesort (struct spamm_list_t *list,
   sublist[0] = 0;
   for (i = 1, j = 1; i < list->length; i++)
   {
-    if (compare(list->data[i-1], list->data[i], user_data) > 0)
+    if (compare(list->data[i-1], list->data[i], node_norm[i-1], node_norm[i]) > 0)
     {
       /* The 2 elements are in incorrect order. Start a new sublist. */
       sublist[j++] = i;
@@ -396,7 +406,7 @@ spamm_list_sort_iterative_mergesort (struct spamm_list_t *list,
   sublist[j++] = i;
   sub_length = j;
 
-  /* Loop over the list, merging neighboring sublists until evertying is
+  /* Loop over the list, merging neighboring sublists until everthying is
    * sorted. */
   sub_current = 0;
   sub_next = list->length+1;
@@ -411,25 +421,33 @@ spamm_list_sort_iterative_mergesort (struct spamm_list_t *list,
       {
         if (i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
         {
-          if (compare(list->data[i_left], list->data[i_right], user_data) <= 0)
+          if (compare(list->data[i_left], list->data[i_right], node_norm[i_left], node_norm[i_right]) <= 0)
           {
-            scratch[i] = list->data[i_left++];
+            scratch[i] = list->data[i_left];
+            scratch_norm[i] = node_norm[i_left];
+            i_left++;
           }
 
           else
           {
-            scratch[i] = list->data[i_right++];
+            scratch[i] = list->data[i_right];
+            scratch_norm[i] = node_norm[i_right];
+            i_right++;
           }
         }
 
         else if (i_left < sublist[sub_current+j+1])
         {
-          scratch[i] = list->data[i_left++];
+          scratch[i] = list->data[i_left];
+          scratch_norm[i] = node_norm[i_left];
+          i_left++;
         }
 
         else
         {
-          scratch[i] = list->data[i_right++];
+          scratch[i] = list->data[i_right];
+          scratch_norm[i] = node_norm[i_right];
+          i_right++;
         }
       }
 
@@ -437,9 +455,10 @@ spamm_list_sort_iterative_mergesort (struct spamm_list_t *list,
       for (i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
       {
         list->data[i] = scratch[i];
+        node_norm[i] = scratch_norm[i];
       }
 
-      /* Remove division between the just merged sublists. */
+      /* Remove division between the sublists just merged. */
       sublist[sub_next+j_next] = sublist[sub_current+j];
       sublist[sub_next+j_next+1] = sublist[sub_current+j+2];
       j_next++;
@@ -464,20 +483,21 @@ spamm_list_sort_iterative_mergesort (struct spamm_list_t *list,
   /* Free memory. */
   free(sublist);
   free(scratch);
+  free(scratch_norm);
 }
 
 /** Sort a list.
  *
  * @param list The list to sort.
+ * @param node_norm The node norms.
  * @param compare A function that compares 2 elements a and b of the list, and
  * returns -1 in case a < b, 0 if a == b, and 1 if a > b.
- * @param user_data A pointer that is given to the compare function and can be
- * used to pass any information to the compare function.
  */
 void
-spamm_list_sort (struct spamm_list_t *list,
-    int (*compare) (const unsigned int, const unsigned int, void *),
-    void *user_data)
+spamm_list_sort (
+    struct spamm_list_t *list,
+    float *node_norm,
+    spamm_list_compare_function compare)
 {
   struct spamm_list_t *scratch;
 
@@ -491,7 +511,7 @@ spamm_list_sort (struct spamm_list_t *list,
   spamm_list_delete(&scratch);
 #endif
 
-  spamm_list_sort_iterative_mergesort(list, compare, user_data);
+  spamm_list_sort_iterative_mergesort(list, node_norm, compare);
 }
 
 /** Return the length of a list.
