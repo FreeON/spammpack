@@ -13,6 +13,20 @@ AC_PROG_CC_C99
 AC_PROG_F77
 AM_PROG_AS
 
+dnl Find python.
+AM_PATH_PYTHON
+
+dnl Find the python include path.
+AC_MSG_CHECKING([for python include path])
+python_error="no"
+python_include=`${PYTHON} -c "from distutils import sysconfig; print sysconfig.get_python_inc()"` || python_error="yes"
+if test "${python_error}" = "yes"; then
+  AC_MSG_RESULT([an error occured])
+  AC_MSG_FAILURE([I need the python include path.])
+fi
+AC_MSG_RESULT([found ${python_include}])
+AC_SUBST(PYTHON_INCLUDE, ${python_include})
+
 dnl Find libtool.
 AC_PROG_LIBTOOL
 
@@ -205,6 +219,8 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Doxyfile
 Makefile
+interfaces/Makefile
+interfaces/python/Makefile
 src/Makefile
 src/spamm_config.h
 src/spamm_manual_mainpage.h
