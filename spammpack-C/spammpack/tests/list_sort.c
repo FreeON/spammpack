@@ -3,56 +3,96 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 10000
+#define N 100000
+#define N_norm 100
 
 int
 main ()
 {
   int result = 0;
-  unsigned int i;
+
+  unsigned int index;
+  float norm;
+
+  unsigned int i, j, j_max;
   unsigned int last_i;
-  unsigned int value, last_value;
+  unsigned int last_index;
+  float last_norm;
   struct spamm_list_t *list;
-  float *node_norm;
 
   list = spamm_list_new(N);
-  node_norm = calloc(sizeof(float), N);
   for (i = 0; i < N; i++)
   {
-    spamm_list_set(list, i, rand());
-    node_norm[i] = spamm_list_get(list, i);
+    index = rand();
+    spamm_list_set(list, i, index, index);
   }
 
-  spamm_list_sort(list, node_norm, spamm_list_compare_int);
+  /* Sort on index. */
+  spamm_list_sort_index(list, spamm_list_compare_int);
 
   last_i = 0;
-  last_value = spamm_list_get(list, 0);
+  last_index = spamm_list_get_index(list, 0);
   for (i = 0; i < N; i++)
   {
-    value = spamm_list_get(list, i);
-    if (fabs(value-node_norm[i]) > 1e-10)
+    index = spamm_list_get_index(list, i);
+    norm = spamm_list_get_norm(list, i);
+    if (fabs(index-norm) > 1e-10)
     {
       printf("node norm was not sorted along with index\n");
       result = -1;
       break;
     }
 
-    if (value > last_value)
+    if (index > last_index)
     {
-      last_value = value;
+      last_index = index;
       last_i = i;
     }
 
-    else if (value < last_value)
+    else if (index < last_index)
     {
       result = -1;
-      printf("failed to sort, list[%u] = %i, list[%u] = %i...\n", i, spamm_list_get(list, i), last_i, last_value);
+      printf("failed to sort, list[%u] = %i, list[%u] = %i...\n", last_i, last_index, i, spamm_list_get_index(list, i));
       break;
     }
   }
 
+  /* Sort on norm. */
+  for (j = 0; j < N; j += N_norm)
+  {
+    j_max = (j+N_norm <= N ? j+N_norm : N);
+    spamm_list_sort_norm(list, j, j_max);
+
+    last_i = j;
+    last_norm = spamm_list_get_norm(list, j);
+    for (i = j; i < j_max; i++)
+    {
+      index = spamm_list_get_index(list, i);
+      norm = spamm_list_get_norm(list, i);
+      if (fabs(index-norm) > 1e-10)
+      {
+        printf("node norm was not sorted along with index\n");
+        result = -1;
+        break;
+      }
+
+      if (norm < last_norm)
+      {
+        last_norm = norm;
+        last_i = i;
+      }
+
+      else if (norm > last_norm)
+      {
+        result = -1;
+        printf("[%u, %u[: failed to sort, list[%u] = %f, list[%u] = %f...\n",
+            j, j_max, last_i, last_norm, i, spamm_list_get_norm(list, i));
+        break;
+      }
+    }
+  }
+
   spamm_list_delete(&list);
-  free(node_norm);
 
   return result;
 }

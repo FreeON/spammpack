@@ -38,11 +38,6 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
 struct spamm_list_t *
 spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable);
 
-void
-spamm_hashtable_index_and_norm (struct spamm_list_t **index,
-    float **norm,
-    const struct spamm_hashtable_t *hashtable);
-
 unsigned int
 spamm_hashtable_get_number_buckets (const struct spamm_hashtable_t *hashtable);
 
