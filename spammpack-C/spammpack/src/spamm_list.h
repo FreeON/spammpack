@@ -5,7 +5,11 @@
 
 struct spamm_list_t;
 
-typedef int (*spamm_list_compare_function) (const unsigned int, const unsigned int, const float, const float);
+/** The comparison function of 2 indices for the sort. */
+typedef int (*spamm_list_compare_index_function) (const unsigned int, const unsigned int);
+
+/** The comparison function of 2 norms for the sort. */
+typedef int (*spamm_list_compare_norm_function) (const float, const float);
 
 struct spamm_list_t *
 spamm_list_new (const unsigned int length);
@@ -14,24 +18,30 @@ void
 spamm_list_delete (struct spamm_list_t **list);
 
 int
-spamm_list_compare_int (const unsigned int a, const unsigned int b, const float a_norm, const float b_norm);
+spamm_list_compare_int (const unsigned int a, const unsigned int b);
+
+int
+spamm_list_compare_index_row (const unsigned int a, const unsigned int b);
+
+int
+spamm_list_compare_index_column (const unsigned int a, const unsigned int b);
 
 void
-spamm_list_sort (
-    struct spamm_list_t *list,
-    float *node_norm,
-    spamm_list_compare_function compare);
+spamm_list_sort_index (struct spamm_list_t *list, spamm_list_compare_index_function compare);
+
+void
+spamm_list_sort_norm (struct spamm_list_t *list, const unsigned int left, const unsigned int right);
 
 unsigned int
 spamm_list_length (struct spamm_list_t *list);
 
 unsigned int
-spamm_list_get (struct spamm_list_t *list, const unsigned int i);
+spamm_list_get_index (struct spamm_list_t *list, const unsigned int i);
 
-unsigned int*
-spamm_list_get_data (struct spamm_list_t *list);
+float
+spamm_list_get_norm (struct spamm_list_t *list, const unsigned int i);
 
 void
-spamm_list_set (struct spamm_list_t *list, const unsigned int i, const unsigned int Ai);
+spamm_list_set (struct spamm_list_t *list, const unsigned int i, const unsigned int index, const float norm);
 
 #endif

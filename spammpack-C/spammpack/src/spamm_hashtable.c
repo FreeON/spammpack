@@ -453,89 +453,23 @@ spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
   }
 }
 
-/** Copy all keys into array. The returned pointer points to an array that is
- * allocated in this function with malloc(). The caller needs to take care of
- * calling free() on it when the array is not needed anymore.
+/** Get a list of matrix indices and a list of norms.
  *
  * @param hashtable The hashtable.
  *
- * @return A pointer to an array that contains all of the keys.
+ * @return list An empty list for the matrix indices. The list will be
+ * allocated in this function and needs to be free()'ed by the caller when not
+ * needed anymore.
  */
 struct spamm_list_t *
 spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
 {
+  struct spamm_list_t *list;
   unsigned int i;
   unsigned int list_index;
-  struct spamm_list_t *key_list;
-
-  key_list = spamm_list_new((hashtable->has_special_key[0] == SPAMM_TRUE ? 1 : 0)
-      + (hashtable->has_special_key[1] == SPAMM_TRUE ? 1 : 0)
-      + hashtable->number_stored_keys);
-
-  list_index = 0;
-
-  for (i = 0; i < 2; i++)
-  {
-    if (hashtable->has_special_key[i] == SPAMM_TRUE)
-    {
-      spamm_list_set(key_list, list_index++, i);
-    }
-  }
-
-  for (i = 0; i < hashtable->number_buckets; i++)
-  {
-    if (hashtable->data[i].key != SPAMM_KEY_EMPTY &&
-        hashtable->data[i].key != SPAMM_KEY_DELETED)
-    {
-      spamm_list_set(key_list, list_index++, hashtable->data[i].key);
-    }
-  }
-
-  if (list_index != spamm_list_length(key_list))
-  {
-    printf("error copying keys\n");
-    exit(1);
-  }
-
-  return key_list;
-}
-
-/** Get a list of matrix indices and a list of norms.
- *
- * @param index An empty list for the matrix indices. The list will be
- * allocated in this function and needs to be free()'ed by the caller when not
- * needed anymore.
- * @param norm An empty list for the matrix block norms. The list will be
- * allocated in this function and needs to be free()'ed by the caller when not
- * needed anymore.
- * @param hashtable The hashtable.
- */
-void
-spamm_hashtable_index_and_norm (struct spamm_list_t **index,
-    float **norm,
-    const struct spamm_hashtable_t *hashtable)
-{
-  unsigned int i;
-  unsigned int list_index;
-
-  if (*index != NULL)
-  {
-    printf("possibly allready allocated list index\n");
-    exit(1);
-  }
-
-  if (*norm != NULL)
-  {
-    printf("possibly already allocated list norm\n");
-    exit(1);
-  }
 
   /* Allocate new lists. */
-  *index = spamm_list_new((hashtable->has_special_key[0] == SPAMM_TRUE ? 1 : 0)
-      + (hashtable->has_special_key[1] == SPAMM_TRUE ? 1 : 0)
-      + hashtable->number_stored_keys);
-  *norm = (float*) calloc(sizeof(float),
-      (hashtable->has_special_key[0] == SPAMM_TRUE ? 1 : 0)
+  list = spamm_list_new((hashtable->has_special_key[0] == SPAMM_TRUE ? 1 : 0)
       + (hashtable->has_special_key[1] == SPAMM_TRUE ? 1 : 0)
       + hashtable->number_stored_keys);
 
@@ -546,8 +480,7 @@ spamm_hashtable_index_and_norm (struct spamm_list_t **index,
   {
     if (hashtable->has_special_key[i] == SPAMM_TRUE)
     {
-      spamm_list_set(*index, list_index, i);
-      (*norm)[list_index] = ((struct spamm_data_t*) hashtable->special_value[i])->node_norm;
+      spamm_list_set(list, list_index, i, ((struct spamm_data_t*) hashtable->special_value[i])->node_norm);
       list_index++;
     }
   }
@@ -557,17 +490,18 @@ spamm_hashtable_index_and_norm (struct spamm_list_t **index,
     if (hashtable->data[i].key != SPAMM_KEY_EMPTY &&
         hashtable->data[i].key != SPAMM_KEY_DELETED)
     {
-      spamm_list_set(*index, list_index, hashtable->data[i].key);
-      (*norm)[list_index] = ((struct spamm_data_t*) hashtable->data[i].value)->node_norm;
+      spamm_list_set(list, list_index, hashtable->data[i].key, ((struct spamm_data_t*) hashtable->data[i].value)->node_norm);
       list_index++;
     }
   }
 
-  if (list_index != spamm_list_length(*index))
+  if (list_index != spamm_list_length(list))
   {
     printf("error copying indices\n");
     exit(1);
   }
+
+  return list;
 }
 
 /** Get the number of buckets in this hashtable.
@@ -620,7 +554,7 @@ spamm_hashtable_get_number_keys (const struct spamm_hashtable_t *hashtable)
 /** Return the memory used in a hashtable. This does <em>not</em> include the
  * memory consumed by the values.
  *
- * @param hasthable The hashtable.
+ * @param hashtable The hashtable.
  *
  * @return The number of bytes consumed by the hashtable.
  */

@@ -136,7 +136,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
       for (i = 0; i < spamm_list_length(tier_indices); i++)
       {
         /* Get block. */
-        data = spamm_hashtable_lookup(node_hashtable, spamm_list_get(tier_indices, i));
+        data = spamm_hashtable_lookup(node_hashtable, spamm_list_get_index(tier_indices, i));
 
         /* Construct index of parent node. */
         parent_index = data->index_2D >> 2;
@@ -159,7 +159,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
       for (i = 0; i < spamm_list_length(tier_indices); i++)
       {
         /* Get block. */
-        node = spamm_hashtable_lookup(node_hashtable, spamm_list_get(tier_indices, i));
+        node = spamm_hashtable_lookup(node_hashtable, spamm_list_get_index(tier_indices, i));
 
         /* Construct index of parent node. */
         parent_index = node->index_2D >> 2;
@@ -182,7 +182,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
     for (i = 0; i < spamm_list_length(tier_indices); i++)
     {
       /* Get block. */
-      node = spamm_hashtable_lookup(next_tier_hashtable, spamm_list_get(tier_indices, i));
+      node = spamm_hashtable_lookup(next_tier_hashtable, spamm_list_get_index(tier_indices, i));
       node->norm = sqrt(node->norm2);
     }
     spamm_list_delete(&tier_indices);

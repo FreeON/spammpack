@@ -175,8 +175,9 @@ AC_SUBST(SPAMM_N_STRIDE, [${have_N_stride}])
 
 dnl For benchmarking.
 AC_DEFINE([SPAMM_MULTIPLY_BETA], [1], [Multiply C matrix with beta factor.])
-AC_DEFINE([SPAMM_MULTIPLY_SORTING], [1], [Sort A and B linear indices.])
+AC_DEFINE([SPAMM_MULTIPLY_SORT_INDEX], [1], [Sort A and B linear indices.])
 AC_DEFINE([SPAMM_MULTIPLY_K_LOOKUP], [1], [Create k lookup table.])
+AC_DEFINE([SPAMM_MULTIPLY_SORT_NORM], [1], [Subsort A and B by norms.])
 AC_DEFINE([SPAMM_MULTIPLY_COPY_INDICES], [1], [Copy indices to array.])
 AC_DEFINE([SPAMM_MULTIPLY_COPY_3D], [1], [Copy 3D indices to array.])
 AC_DEFINE([SPAMM_MULTIPLY_CONVOLUTE], [1], [Convolute.])

@@ -20,14 +20,14 @@ main ()
 
   for (i = 0; i < N; i++)
   {
-    spamm_list_set(list, i, i);
+    spamm_list_set(list, i, i, i);
   }
 
   for (i = 0; i < N; i++)
   {
-    if (spamm_list_get(list, i) != i)
+    if (spamm_list_get_index(list, i) != i)
     {
-      printf("incorrect list entry for i = %u, found %u\n", i, spamm_list_get(list, i));
+      printf("incorrect list entry for i = %u, found %u\n", i, spamm_list_get_index(list, i));
       exit(1);
     }
   }

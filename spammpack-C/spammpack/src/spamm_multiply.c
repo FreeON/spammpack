@@ -8,10 +8,6 @@
 #include <xmmintrin.h>
 #endif
 
-//#define SPAMM_DEBUG_SORT
-//#define SPAMM_INT_SORT
-//#define SPAMM_COMPLICATED_COMPARISON
-
 /* Some commonly used bit-patterns are:
  *
  * For 3D indices:
@@ -46,9 +42,6 @@ struct spamm_multiply_index_list_t
   /** An array that contains a list of linear 2D matrix indices. */
   struct spamm_list_t *index_2D;
 
-  /** An array for the node norms of the matrix indices. */
-  float *node_norm;
-
   /** An array of pointers to the matrix tree nodes at the kernel tier. */
   struct spamm_data_t **data;
 };
@@ -63,104 +56,6 @@ struct spamm_multiply_k_lookup_t
    * different k values. */
   unsigned int *index;
 };
-
-/** @private Compare 2 2D indices by their row index.
- *
- * @param a The first index.
- * @param b The second index.
- * @param a_norm The norm of the first index.
- * @param b_norm The norm of the second index.
- *
- * @return if a is before b, return -1, if a is after b, return +1, and if a
- * and b are equivalent, return 0.
- */
-int
-spamm_multiply_compare_index_row (const unsigned int a,
-    const unsigned int b,
-    const float a_norm,
-    const float b_norm)
-{
-  unsigned int a_masked = a & MASK_2D_I;
-  unsigned int b_masked = b & MASK_2D_I;
-
-#ifdef SPAMM_DEBUG_SORT
-  if (a_masked < b_masked)       { return -1; }
-  else if (a_masked > b_masked)  { return  1; }
-  else { return 0; }
-#elif defined(SPAMM_COMPLICATED_COMPARISON)
-  short index_comparison;
-  short norm_comparison;
-
-  if (a_masked < b_masked)      { index_comparison = -1; }
-  else if (a_masked > b_masked) { index_comparison =  1; }
-  else                          { index_comparison =  0; }
-
-  if (a_norm > b_norm)          { norm_comparison = -1; }
-  else if (a_norm < b_norm)     { norm_comparison =  1; }
-  else                          { norm_comparison =  0; }
-
-  return index_comparison+(1-index_comparison*index_comparison)*norm_comparison;
-#else
-  if (a_masked < b_masked)       { return -1; }
-  else if (a_masked > b_masked)  { return  1; }
-  else
-  {
-    /* Sort norms within k in descending order. */
-    if (a_norm > b_norm)      { return -1; }
-    else if (a_norm < b_norm) { return  1; }
-    else                      { return  0; }
-  }
-#endif
-}
-
-/** @private Compare 2 2D indices by their column index.
- *
- * @param a The first index.
- * @param b The second index.
- * @param a_norm The norm of the first index.
- * @param b_norm The norm of the second index.
- *
- * @return if a is before b, return -1, if a is after b, return +1, and if a
- * and b are equivalent, return 0.
- */
-int
-spamm_multiply_compare_index_column (const unsigned int a,
-    const unsigned int b,
-    const float a_norm,
-    const float b_norm)
-{
-  unsigned int a_masked = a & MASK_2D_J;
-  unsigned int b_masked = b & MASK_2D_J;
-
-#ifdef SPAMM_DEBUG_SORT
-  if (a_masked < b_masked)       { return -1; }
-  else if (a_masked > b_masked)  { return  1; }
-  else { return 0; }
-#elif defined(SPAMM_COMPLICATED_COMPARISON)
-  short index_comparison;
-  short norm_comparison;
-
-  if (a_masked < b_masked)      { index_comparison = -1; }
-  else if (a_masked > b_masked) { index_comparison =  1; }
-  else                          { index_comparison =  0; }
-
-  if (a_norm > b_norm)          { norm_comparison = -1; }
-  else if (a_norm < b_norm)     { norm_comparison =  1; }
-  else                          { norm_comparison =  0; }
-
-  return index_comparison+(1-index_comparison*index_comparison)*norm_comparison;
-#else
-  if (a_masked < b_masked)       { return -1; }
-  else if (a_masked > b_masked)  { return  1; }
-  else
-  {
-    /* Sort norms within k in descending order. */
-    if (a_norm > b_norm)      { return -1; }
-    else if (a_norm < b_norm) { return  1; }
-    else                      { return  0; }
-  }
-#endif
-}
 
 /** @private Multiply a matrix node by a scalar.
  *
@@ -392,7 +287,7 @@ spamm_multiply (const float tolerance,
   printf("%llu timer units\n", beta_timer);
 #endif
 
-#ifdef SPAMM_MULTIPLY_SORTING
+#ifdef SPAMM_MULTIPLY_SORT_INDEX
   /* Sort 2D indices on k, i.e. either on row or column index. */
   printf("[multiply] sorting A and B... ");
   spamm_timer_start(timer);
@@ -401,22 +296,18 @@ spamm_multiply (const float tolerance,
   B_tier_hashtable = B->tier_hashtable[B->kernel_tier];
   C_tier_hashtable = C->tier_hashtable[C->kernel_tier];
 
-  A_index.index_2D = NULL;
-  A_index.node_norm = NULL;
-  spamm_hashtable_index_and_norm(&A_index.index_2D, &A_index.node_norm, A_tier_hashtable);
+  A_index.index_2D = spamm_hashtable_keys(A_tier_hashtable);
 #ifdef SPAMM_INT_SORT
   spamm_list_sort(A_index.index_2D, spamm_list_compare_int, A_tier_hashtable);
 #else
-  spamm_list_sort(A_index.index_2D, A_index.node_norm, spamm_multiply_compare_index_column);
+  spamm_list_sort_index(A_index.index_2D, spamm_list_compare_index_column);
 #endif
 
-  B_index.index_2D = NULL;
-  B_index.node_norm = NULL;
-  spamm_hashtable_index_and_norm(&B_index.index_2D, &B_index.node_norm, B_tier_hashtable);
+  B_index.index_2D = spamm_hashtable_keys(B_tier_hashtable);
 #ifdef SPAMM_INT_SORT
   spamm_list_sort(B_index.index_2D, spamm_list_compare_int, B_tier_hashtable);
 #else
-  spamm_list_sort(B_index.index_2D, B_index.node_norm, spamm_multiply_compare_index_row);
+  spamm_list_sort_index(B_index.index_2D, spamm_list_compare_index_row);
 #endif
 
   printf("len(A) = %u, len(B) = %u, ", spamm_list_length(A_index.index_2D), spamm_list_length(B_index.index_2D));
@@ -452,7 +343,7 @@ spamm_multiply (const float tolerance,
   for (i = 0; i < spamm_list_length(A_index.index_2D); i++)
   {
     /* Extract k index from linear index. */
-    index = spamm_list_get(A_index.index_2D, i);
+    index = spamm_list_get_index(A_index.index_2D, i);
     spamm_index_2D_to_ij(index, NULL, &k_check);
 
     if (k != k_check)
@@ -484,7 +375,7 @@ spamm_multiply (const float tolerance,
   for (i = 0; i < spamm_list_length(B_index.index_2D); i++)
   {
     /* Extract k index from linear index. */
-    index = spamm_list_get(B_index.index_2D, i);
+    index = spamm_list_get_index(B_index.index_2D, i);
     spamm_index_2D_to_ij(index, &k_check, NULL);
 
     if (k != k_check)
@@ -509,6 +400,27 @@ spamm_multiply (const float tolerance,
   spamm_timer_stop(timer);
   k_lookuptable_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", k_lookuptable_timer);
+#endif
+
+#ifdef SPAMM_MULTIPLY_SORT_NORM
+  /* Sort 2D indices on norms. */
+  printf("[multiply] sorting A and B on norms... ");
+  spamm_timer_start(timer);
+
+  for (i = 0; i < A_k_lookup.size-2; i++)
+  {
+    spamm_list_sort_norm(A_index.index_2D, A_k_lookup.index[i], A_k_lookup.index[i+1]);
+  }
+
+  for (i = 0; i < B_k_lookup.size-2; i++)
+  {
+    spamm_list_sort_norm(B_index.index_2D, B_k_lookup.index[i], B_k_lookup.index[i+1]);
+  }
+
+  spamm_timer_stop(timer);
+  sort_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", sort_timer);
+
 #endif
 
 #ifdef SPAMM_MULTIPLY_COPY_INDICES
@@ -536,12 +448,12 @@ spamm_multiply (const float tolerance,
 
   for (i = 0; i < A_index.size; i++)
   {
-    A_index.data[i] = spamm_hashtable_lookup(A_tier_hashtable, spamm_list_get(A_index.index_2D, i));
+    A_index.data[i] = spamm_hashtable_lookup(A_tier_hashtable, spamm_list_get_index(A_index.index_2D, i));
   }
 
   for (i = 0; i < B_index.size; i++)
   {
-    B_index.data[i] = spamm_hashtable_lookup(B_tier_hashtable, spamm_list_get(B_index.index_2D, i));
+    B_index.data[i] = spamm_hashtable_lookup(B_tier_hashtable, spamm_list_get_index(B_index.index_2D, i));
   }
 
   spamm_timer_stop(timer);
@@ -571,13 +483,13 @@ spamm_multiply (const float tolerance,
   for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size-1; A_k_lookup_index++)
   {
     /* Get k value of A. */
-    A_k = spamm_list_get(A_index.index_2D, A_k_lookup.index[A_k_lookup_index]) & MASK_2D_J;
+    A_k = spamm_list_get_index(A_index.index_2D, A_k_lookup.index[A_k_lookup_index]) & MASK_2D_J;
 
     /* Note that we don't increment i in the for() construct. */
     for (i = A_k_lookup.index[A_k_lookup_index]; i < A_k_lookup.index[A_k_lookup_index+1]; )
     {
       /* Get k value of B. */
-      B_k = (spamm_list_get(B_index.index_2D, B_k_lookup.index[B_k_lookup_index]) & MASK_2D_I) >> 1;
+      B_k = (spamm_list_get_index(B_index.index_2D, B_k_lookup.index[B_k_lookup_index]) & MASK_2D_I) >> 1;
 
       /* Compare k values. */
       if (A_k > B_k)
@@ -615,8 +527,8 @@ spamm_multiply (const float tolerance,
         }
 
         /* Get the linear 2D index of the C block. */
-        convolution_index_2D = (spamm_list_get(A_index.index_2D, i) & MASK_2D_I) |
-          (spamm_list_get(B_index.index_2D, j) & MASK_2D_J);
+        convolution_index_2D = (spamm_list_get_index(A_index.index_2D, i) & MASK_2D_I) |
+          (spamm_list_get_index(B_index.index_2D, j) & MASK_2D_J);
 
         /* Set references to matrix block in multiply stream. */
         multiply_stream[stream_index].A = A_data;
@@ -654,7 +566,7 @@ spamm_multiply (const float tolerance,
         i = A_k_lookup.index[A_k_lookup_index];
 
         /* Get k value of A. */
-        A_k = spamm_list_get(A_index.index_2D, A_k_lookup.index[A_k_lookup_index]) & MASK_2D_J;
+        A_k = spamm_list_get_index(A_index.index_2D, A_k_lookup.index[A_k_lookup_index]) & MASK_2D_J;
 
         continue;
       }
