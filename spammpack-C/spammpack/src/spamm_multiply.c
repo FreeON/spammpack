@@ -36,11 +36,11 @@
  */
 struct spamm_multiply_index_list_t
 {
-  /** The number of elements in the index_2D array. */
+  /** The number of elements in the index array. */
   unsigned int size;
 
   /** An array that contains a list of linear 2D matrix indices. */
-  struct spamm_list_t *index_2D;
+  struct spamm_list_t *index;
 
   /** An array of pointers to the matrix tree nodes at the kernel tier. */
   struct spamm_data_t **data;
@@ -289,37 +289,24 @@ spamm_multiply (const float tolerance,
 
 #ifdef SPAMM_MULTIPLY_SORT_INDEX
   /* Sort 2D indices on k, i.e. either on row or column index. */
-  printf("[multiply] sorting A and B... ");
+  printf("[multiply] sorting A and B on index... ");
   spamm_timer_start(timer);
 
   A_tier_hashtable = A->tier_hashtable[A->kernel_tier];
   B_tier_hashtable = B->tier_hashtable[B->kernel_tier];
   C_tier_hashtable = C->tier_hashtable[C->kernel_tier];
 
-  A_index.index_2D = spamm_hashtable_keys(A_tier_hashtable);
-#ifdef SPAMM_INT_SORT
-  spamm_list_sort(A_index.index_2D, spamm_list_compare_int, A_tier_hashtable);
-#else
-  spamm_list_sort_index(A_index.index_2D, spamm_list_compare_index_column);
-#endif
+  A_index.index = spamm_hashtable_keys(A_tier_hashtable);
+  B_index.index = spamm_hashtable_keys(B_tier_hashtable);
 
-  B_index.index_2D = spamm_hashtable_keys(B_tier_hashtable);
-#ifdef SPAMM_INT_SORT
-  spamm_list_sort(B_index.index_2D, spamm_list_compare_int, B_tier_hashtable);
-#else
-  spamm_list_sort_index(B_index.index_2D, spamm_list_compare_index_row);
-#endif
+  spamm_list_sort_index(A_index.index, spamm_list_compare_index_column);
+  spamm_list_sort_index(B_index.index, spamm_list_compare_index_row);
 
-  printf("len(A) = %u, len(B) = %u, ", spamm_list_length(A_index.index_2D), spamm_list_length(B_index.index_2D));
+  printf("len(A) = %u, len(B) = %u, ", spamm_list_length(A_index.index), spamm_list_length(B_index.index));
 
   spamm_timer_stop(timer);
   sort_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", sort_timer);
-
-#ifdef SPAMM_INT_SORT
-  return;
-#endif
-
 #endif
 
 #ifdef SPAMM_MULTIPLY_K_LOOKUP
@@ -334,16 +321,16 @@ spamm_multiply (const float tolerance,
   /* The index in A_k_lookup. */
   A_k_lookup.size = 0;
 
-  /* The index in A_index.index_2D. */
+  /* The index in A_index.index. */
   i = 0;
 
   /* The last k value. Initially place it behind the largest expected k value. */
   k = A->N+1;
 
-  for (i = 0; i < spamm_list_length(A_index.index_2D); i++)
+  for (i = 0; i < spamm_list_length(A_index.index); i++)
   {
     /* Extract k index from linear index. */
-    index = spamm_list_get_index(A_index.index_2D, i);
+    index = spamm_list_get_index(A_index.index, i);
     spamm_index_2D_to_ij(index, NULL, &k_check);
 
     if (k != k_check)
@@ -354,7 +341,7 @@ spamm_multiply (const float tolerance,
   }
 
   /* Add terminating entry to lookup list. */
-  A_k_lookup.index[A_k_lookup.size++] = spamm_list_length(A_index.index_2D);
+  A_k_lookup.index[A_k_lookup.size++] = spamm_list_length(A_index.index);
 
   /* Check. */
   if (A_k_lookup.size > A->N_padded/SPAMM_N_KERNEL+1)
@@ -372,10 +359,10 @@ spamm_multiply (const float tolerance,
   /* The last k value. Initially place it behind the largest expected k value. */
   k = B->M+1;
 
-  for (i = 0; i < spamm_list_length(B_index.index_2D); i++)
+  for (i = 0; i < spamm_list_length(B_index.index); i++)
   {
     /* Extract k index from linear index. */
-    index = spamm_list_get_index(B_index.index_2D, i);
+    index = spamm_list_get_index(B_index.index, i);
     spamm_index_2D_to_ij(index, &k_check, NULL);
 
     if (k != k_check)
@@ -386,7 +373,7 @@ spamm_multiply (const float tolerance,
   }
 
   /* Add terminating entry to lookup list. */
-  B_k_lookup.index[B_k_lookup.size++] = spamm_list_length(B_index.index_2D);
+  B_k_lookup.index[B_k_lookup.size++] = spamm_list_length(B_index.index);
 
   /* Check. */
   if (B_k_lookup.size > B->N_padded/SPAMM_N_KERNEL+1)
@@ -407,20 +394,19 @@ spamm_multiply (const float tolerance,
   printf("[multiply] sorting A and B on norms... ");
   spamm_timer_start(timer);
 
-  for (i = 0; i < A_k_lookup.size-2; i++)
+  for (i = 0; i < A_k_lookup.size-1; i++)
   {
-    spamm_list_sort_norm(A_index.index_2D, A_k_lookup.index[i], A_k_lookup.index[i+1]);
+    spamm_list_sort_norm(A_index.index, A_k_lookup.index[i], A_k_lookup.index[i+1]);
   }
 
-  for (i = 0; i < B_k_lookup.size-2; i++)
+  for (i = 0; i < B_k_lookup.size-1; i++)
   {
-    spamm_list_sort_norm(B_index.index_2D, B_k_lookup.index[i], B_k_lookup.index[i+1]);
+    spamm_list_sort_norm(B_index.index, B_k_lookup.index[i], B_k_lookup.index[i+1]);
   }
 
   spamm_timer_stop(timer);
   sort_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", sort_timer);
-
 #endif
 
 #ifdef SPAMM_MULTIPLY_COPY_INDICES
@@ -428,11 +414,11 @@ spamm_multiply (const float tolerance,
   printf("[multiply] copying indices to array... ");
   spamm_timer_start(timer);
 
-  A_index.size = spamm_list_length(A_index.index_2D);
-  A_index.data = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*spamm_list_length(A_index.index_2D));
+  A_index.size = spamm_list_length(A_index.index);
+  A_index.data = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*spamm_list_length(A_index.index));
 
-  B_index.size = spamm_list_length(B_index.index_2D);
-  B_index.data = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*spamm_list_length(B_index.index_2D));
+  B_index.size = spamm_list_length(B_index.index);
+  B_index.data = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*spamm_list_length(B_index.index));
 
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
 
@@ -448,12 +434,12 @@ spamm_multiply (const float tolerance,
 
   for (i = 0; i < A_index.size; i++)
   {
-    A_index.data[i] = spamm_hashtable_lookup(A_tier_hashtable, spamm_list_get_index(A_index.index_2D, i));
+    A_index.data[i] = spamm_hashtable_lookup(A_tier_hashtable, spamm_list_get_index(A_index.index, i));
   }
 
   for (i = 0; i < B_index.size; i++)
   {
-    B_index.data[i] = spamm_hashtable_lookup(B_tier_hashtable, spamm_list_get_index(B_index.index_2D, i));
+    B_index.data[i] = spamm_hashtable_lookup(B_tier_hashtable, spamm_list_get_index(B_index.index, i));
   }
 
   spamm_timer_stop(timer);
@@ -483,13 +469,13 @@ spamm_multiply (const float tolerance,
   for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size-1; A_k_lookup_index++)
   {
     /* Get k value of A. */
-    A_k = spamm_list_get_index(A_index.index_2D, A_k_lookup.index[A_k_lookup_index]) & MASK_2D_J;
+    A_k = spamm_list_get_index(A_index.index, A_k_lookup.index[A_k_lookup_index]) & MASK_2D_J;
 
     /* Note that we don't increment i in the for() construct. */
     for (i = A_k_lookup.index[A_k_lookup_index]; i < A_k_lookup.index[A_k_lookup_index+1]; )
     {
       /* Get k value of B. */
-      B_k = (spamm_list_get_index(B_index.index_2D, B_k_lookup.index[B_k_lookup_index]) & MASK_2D_I) >> 1;
+      B_k = (spamm_list_get_index(B_index.index, B_k_lookup.index[B_k_lookup_index]) & MASK_2D_I) >> 1;
 
       /* Compare k values. */
       if (A_k > B_k)
@@ -527,8 +513,8 @@ spamm_multiply (const float tolerance,
         }
 
         /* Get the linear 2D index of the C block. */
-        convolution_index_2D = (spamm_list_get_index(A_index.index_2D, i) & MASK_2D_I) |
-          (spamm_list_get_index(B_index.index_2D, j) & MASK_2D_J);
+        convolution_index_2D = (spamm_list_get_index(A_index.index, i) & MASK_2D_I) |
+          (spamm_list_get_index(B_index.index, j) & MASK_2D_J);
 
         /* Set references to matrix block in multiply stream. */
         multiply_stream[stream_index].A = A_data;
@@ -566,7 +552,7 @@ spamm_multiply (const float tolerance,
         i = A_k_lookup.index[A_k_lookup_index];
 
         /* Get k value of A. */
-        A_k = spamm_list_get_index(A_index.index_2D, A_k_lookup.index[A_k_lookup_index]) & MASK_2D_J;
+        A_k = spamm_list_get_index(A_index.index, A_k_lookup.index[A_k_lookup_index]) & MASK_2D_J;
 
         continue;
       }
@@ -600,9 +586,9 @@ spamm_multiply (const float tolerance,
   free(B_k_lookup.index);
 
   free(C_block_stream_index);
-  spamm_list_delete(&A_index.index_2D);
+  spamm_list_delete(&A_index.index);
   free(A_index.data);
-  spamm_list_delete(&B_index.index_2D);
+  spamm_list_delete(&B_index.index);
   free(B_index.data);
 
   spamm_timer_stop(timer);

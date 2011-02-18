@@ -8,9 +8,6 @@ struct spamm_list_t;
 /** The comparison function of 2 indices for the sort. */
 typedef int (*spamm_list_compare_index_function) (const unsigned int, const unsigned int);
 
-/** The comparison function of 2 norms for the sort. */
-typedef int (*spamm_list_compare_norm_function) (const float, const float);
-
 struct spamm_list_t *
 spamm_list_new (const unsigned int length);
 
@@ -43,5 +40,8 @@ spamm_list_get_norm (struct spamm_list_t *list, const unsigned int i);
 
 void
 spamm_list_set (struct spamm_list_t *list, const unsigned int i, const unsigned int index, const float norm);
+
+void
+spamm_list_print (const struct spamm_list_t *list);
 
 #endif
