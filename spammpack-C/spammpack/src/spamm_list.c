@@ -85,7 +85,7 @@ spamm_list_compare_index_row (const unsigned int a, const unsigned int b)
 
   if (a_masked < b_masked)       { return -1; }
   else if (a_masked > b_masked)  { return  1; }
-  else { return 0; }
+  else                           { return 0; }
 }
 
 /** Compare 2 2D indices by their column index.
@@ -104,7 +104,7 @@ spamm_list_compare_index_column (const unsigned int a, const unsigned int b)
 
   if (a_masked < b_masked)       { return -1; }
   else if (a_masked > b_masked)  { return  1; }
-  else { return 0; }
+  else                           { return 0; }
 }
 
 /** Iterative merge sort.
@@ -466,4 +466,21 @@ spamm_list_set (struct spamm_list_t *list, const unsigned int i, const unsigned 
 
   list->index[i] = index;
   list->norm[i] = norm;
+}
+
+/** Print a list.
+ *
+ * @param list The list.
+ */
+void
+spamm_list_print (const struct spamm_list_t *list)
+{
+  unsigned int i;
+
+  printf("# list with %u entries\n", list->length);
+  printf("# i index column row norm\n");
+  for (i = 0; i < list->length; i++)
+  {
+    printf("%i %i %i %i %e\n", i, list->index[i], list->index[i] & MASK_2D_J, list->index[i] & MASK_2D_I, list->norm[i]);
+  }
 }
