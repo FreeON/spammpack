@@ -446,20 +446,6 @@ spamm_multiply (const float tolerance,
   printf("%llu timer units\n", copy_3D_timer);
 #endif
 
-#ifdef SPAMM_MULTIPLY_EXPAND_TREE
-  /* We expand the C matrix tree to avoid having to allocate blocks in the
-   * convolution algorithm. This is not necessarily the final solution but it
-   * helps in timing the performance and the scaling behavior of the
-   * convolution part without having to worry about allocation issues.
-   */
-  printf("[multiply] copying 3D convolution index to arrays and referencing dense blocks... ");
-  spamm_timer_start(timer);
-  spamm_expand(C);
-  spamm_timer_stop(timer);
-  expand_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", expand_timer);
-#endif
-
 #ifdef SPAMM_MULTIPLY_CONVOLUTE
   /* Convolute by constructing product 3D index. */
   printf("[multiply] convolute... ");
