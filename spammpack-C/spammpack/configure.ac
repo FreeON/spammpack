@@ -12,6 +12,7 @@ dnl Identify compilers.
 AC_PROG_CC_C99
 AC_PROG_F77
 AM_PROG_AS
+AC_PROG_FC
 
 dnl Find python.
 AM_PATH_PYTHON
@@ -194,6 +195,7 @@ AC_DEFINE([SPAMM_MULTIPLY_K_LOOKUP], [1], [Create k lookup table.])
 AC_DEFINE([SPAMM_MULTIPLY_SORT_NORM], [1], [Subsort A and B by norms.])
 AC_DEFINE([SPAMM_MULTIPLY_COPY_INDICES], [1], [Copy indices to array.])
 AC_DEFINE([SPAMM_MULTIPLY_COPY_3D], [1], [Copy 3D indices to array.])
+AC_DEFINE([SPAMM_MULTIPLY_EXPAND_TREE], [1], [Expand the C matrix tree to avoid allocation in the convolution step.])
 AC_DEFINE([SPAMM_MULTIPLY_CONVOLUTE], [1], [Convolute.])
 AC_DEFINE([SPAMM_MULTIPLY_FREE], [1], [Free memory.])
 AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
@@ -220,6 +222,7 @@ AC_CONFIG_FILES([
 Doxyfile
 Makefile
 interfaces/Makefile
+interfaces/f90/Makefile
 interfaces/python/Makefile
 src/Makefile
 src/spamm_config.h

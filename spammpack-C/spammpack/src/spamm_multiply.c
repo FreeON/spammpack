@@ -218,16 +218,12 @@ spamm_multiply (const float tolerance,
   struct spamm_hashtable_t *B_tier_hashtable;
   struct spamm_hashtable_t *C_tier_hashtable;
 
-  struct spamm_list_t *list_element;
-
   struct spamm_multiply_index_list_t A_index;
   struct spamm_multiply_index_list_t B_index;
 
   struct spamm_data_t *A_data;
   struct spamm_data_t *B_data;
   struct spamm_data_t *C_data;
-
-  struct spamm_data_t *data;
 
   unsigned int i, j, k, k_check;
   unsigned int index;
@@ -261,6 +257,7 @@ spamm_multiply (const float tolerance,
   unsigned long long copy_timer;
   unsigned long long copy_3D_timer;
   unsigned long long free_timer;
+  unsigned long long expand_timer;
   unsigned long long convolute_timer;
   unsigned long long stream_timer;
 
@@ -399,6 +396,8 @@ spamm_multiply (const float tolerance,
     spamm_list_sort_norm(A_index.index, A_k_lookup.index[i], A_k_lookup.index[i+1]);
   }
 
+  //spamm_list_print(A_index.index);
+
   for (i = 0; i < B_k_lookup.size-1; i++)
   {
     spamm_list_sort_norm(B_index.index, B_k_lookup.index[i], B_k_lookup.index[i+1]);
@@ -445,6 +444,20 @@ spamm_multiply (const float tolerance,
   spamm_timer_stop(timer);
   copy_3D_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", copy_3D_timer);
+#endif
+
+#ifdef SPAMM_MULTIPLY_EXPAND_TREE
+  /* We expand the C matrix tree to avoid having to allocate blocks in the
+   * convolution algorithm. This is not necessarily the final solution but it
+   * helps in timing the performance and the scaling behavior of the
+   * convolution part without having to worry about allocation issues.
+   */
+  printf("[multiply] copying 3D convolution index to arrays and referencing dense blocks... ");
+  spamm_timer_start(timer);
+  spamm_expand(C);
+  spamm_timer_stop(timer);
+  expand_timer = spamm_timer_get(timer);
+  printf("%llu timer units\n", expand_timer);
 #endif
 
 #ifdef SPAMM_MULTIPLY_CONVOLUTE

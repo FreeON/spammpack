@@ -190,4 +190,13 @@ spamm_uint_to_bin_string (const unsigned int i, char *result);
 char *
 spamm_version ();
 
+void
+spamm_prune (struct spamm_t *A);
+
+void
+spamm_expand (struct spamm_t *A);
+
+void
+spamm_construct_tree (struct spamm_t *A);
+
 #endif

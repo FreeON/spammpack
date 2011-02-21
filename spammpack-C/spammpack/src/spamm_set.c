@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #define NEW_NORM
-//#define SPAMM_SET_NO_ZERO
+#define SPAMM_SET_NO_ZERO
 
 /** Set an element in a matrix.
  *
@@ -27,7 +27,6 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   unsigned int delta_index;
   unsigned int norm_offset;
   unsigned int data_offset;
-  unsigned int *index_key;
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_node_t *node;
   struct spamm_data_t *data;

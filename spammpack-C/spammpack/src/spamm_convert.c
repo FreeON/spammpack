@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//#define EXTRA_DEBUG
+#define SPAMM_SET_NO_ZERO
+
 /** Convert a dense matrix to SpAMM.
  *
  * @param M The number of rows.
@@ -12,16 +15,12 @@
  *
  * @return The SpAMM matrix.
  */
-  struct spamm_t *
+struct spamm_t *
 spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
     const enum spamm_dense_type_t type, float *A_dense)
 {
   struct spamm_t *A = NULL;
-  unsigned int tier;
-  unsigned int next_tier;
-  unsigned int reverse_tier;
   unsigned int index;
-  unsigned int parent_index;
   unsigned int i;
   unsigned int j;
   unsigned int i_block;
@@ -33,21 +32,24 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
   unsigned int norm_offset;
   unsigned int data_offset;
   struct spamm_hashtable_t *node_hashtable;
-  struct spamm_hashtable_t *next_tier_hashtable;
-  struct spamm_node_t *node;
-  struct spamm_node_t *parent_node;
   struct spamm_data_t *data;
-  struct spamm_list_t *tier_indices;
   float Aij;
   float norm2;
+#ifdef SPAMM_SET_NO_ZERO
+  short found_nonzero_element;
+#endif
 
   assert(A_dense != NULL);
 
+#ifdef EXTRA_DEBUG
+  printf("creating new SpAMM %ux%u matrix\n", M, N);
+#endif
   A = spamm_new(M, N);
 
   /* Get hash table at this tier. */
   node_hashtable = A->tier_hashtable[A->kernel_tier];
 
+  /* Store matrix elements on kernel tier. */
   for (i = 0; i < M; i += SPAMM_N_KERNEL) {
     for (j = 0; j < N; j += SPAMM_N_KERNEL)
     {
@@ -57,6 +59,66 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
 
       /* Construct linear index of the node on this tier. */
       index = spamm_index_2D(i_tier, j_tier);
+
+#ifdef SPAMM_SET_NO_ZERO
+      /* Check whether at least one elements is non-zero for this kernel tier
+       * block. */
+#ifdef EXTRA_DEBUG
+      printf("[convert] analyzing kernel tier block A(%u,%u), index = %u\n", i, j, index);
+#endif
+      found_nonzero_element = 0;
+      for (i_kernel = 0; i_kernel < SPAMM_N_KERNEL && i+i_kernel < M; i_kernel++) {
+        for (j_kernel = 0; j_kernel < SPAMM_N_KERNEL && j+j_kernel < N; j_kernel++)
+        {
+          switch(type)
+          {
+            case row_major:
+#ifdef EXTRA_DEBUG
+              printf("[convert] storing A[%u,%u] = %e\n", i+i_kernel, j+j_kernel, A_dense[spamm_index_row_major(i+i_kernel, j+j_kernel, M, N)]);
+#endif
+              if (A_dense[spamm_index_row_major(i+i_kernel, j+j_kernel, M, N)] != 0.0)
+              {
+                found_nonzero_element = 1;
+              }
+              break;
+
+            case column_major:
+#ifdef EXTRA_DEBUG
+              printf("[convert] storing A[%u,%u] = %e\n", i+i_kernel, j+j_kernel, A_dense[spamm_index_column_major(i+i_kernel, j+j_kernel, M, N)]);
+#endif
+              if (A_dense[spamm_index_column_major(i+i_kernel, j+j_kernel, M, N)] != 0.0)
+              {
+                found_nonzero_element = 1;
+              }
+              break;
+
+            default:
+              printf("unknown type\n");
+              exit(1);
+              break;
+          }
+
+          if (found_nonzero_element == 1) { break; }
+        }
+        if (found_nonzero_element == 1) { break; }
+      }
+
+      if (found_nonzero_element == 0)
+      {
+#ifdef EXTRA_DEBUG
+        printf("[convert] all elements are zero in this block\n");
+#endif
+        continue;
+      }
+
+#ifdef EXTRA_DEBUG
+      else
+      {
+        printf("[convert] found at least 1 non zero element\n");
+      }
+#endif
+
+#endif
 
       if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
       {
@@ -122,71 +184,8 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
     }
   }
 
-  for (tier = 0; tier <= A->kernel_tier-1; tier++)
-  {
-    reverse_tier = A->kernel_tier-tier;
-    node_hashtable = A->tier_hashtable[reverse_tier];
-    next_tier = reverse_tier-1;
-    next_tier_hashtable = A->tier_hashtable[next_tier];
-
-    tier_indices = spamm_hashtable_keys(node_hashtable);
-
-    if (reverse_tier == A->kernel_tier)
-    {
-      for (i = 0; i < spamm_list_length(tier_indices); i++)
-      {
-        /* Get block. */
-        data = spamm_hashtable_lookup(node_hashtable, spamm_list_get_index(tier_indices, i));
-
-        /* Construct index of parent node. */
-        parent_index = data->index_2D >> 2;
-
-        /* Get parent node. */
-        parent_node = spamm_hashtable_lookup(next_tier_hashtable, parent_index);
-
-        if (parent_node == NULL)
-        {
-          parent_node = spamm_new_node(next_tier, parent_index);
-          spamm_hashtable_insert(next_tier_hashtable, parent_index, parent_node);
-        }
-
-        parent_node->norm2 += data->node_norm2;
-      }
-    }
-
-    else
-    {
-      for (i = 0; i < spamm_list_length(tier_indices); i++)
-      {
-        /* Get block. */
-        node = spamm_hashtable_lookup(node_hashtable, spamm_list_get_index(tier_indices, i));
-
-        /* Construct index of parent node. */
-        parent_index = node->index_2D >> 2;
-
-        /* Get parent node. */
-        parent_node = spamm_hashtable_lookup(next_tier_hashtable, parent_index);
-
-        if (parent_node == NULL)
-        {
-          parent_node = spamm_new_node(next_tier, parent_index);
-          spamm_hashtable_insert(next_tier_hashtable, parent_index, parent_node);
-        }
-
-        parent_node->norm2 += node->norm2;
-      }
-    }
-    spamm_list_delete(&tier_indices);
-
-    tier_indices = spamm_hashtable_keys(next_tier_hashtable);
-    for (i = 0; i < spamm_list_length(tier_indices); i++)
-    {
-      /* Get block. */
-      node = spamm_hashtable_lookup(next_tier_hashtable, spamm_list_get_index(tier_indices, i));
-      node->norm = sqrt(node->norm2);
-    }
-    spamm_list_delete(&tier_indices);
-  }
+  /* Construct the rest of the tree. */
+  spamm_construct_tree(A);
 
   return A;
 }
