@@ -145,8 +145,6 @@ spamm_hashtable_new ()
 void
 spamm_hashtable_delete (struct spamm_hashtable_t **hashtable)
 {
-  unsigned int i;
-
   free((*hashtable)->data);
 
   free(*hashtable);

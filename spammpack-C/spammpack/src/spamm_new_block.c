@@ -12,8 +12,12 @@ struct spamm_data_t *
 spamm_new_block (const unsigned int tier, const unsigned int index_2D)
 {
   int i, j;
-  struct spamm_data_t *data = (struct spamm_data_t*) malloc(sizeof(struct spamm_data_t));
+  struct spamm_data_t *data;
 
+  /* Allocate data. */
+  data = (struct spamm_data_t*) malloc(sizeof(struct spamm_data_t));
+
+  /* Set some information on the data block. */
   data->tier = tier;
   data->index_2D = index_2D;
 

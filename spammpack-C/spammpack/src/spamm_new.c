@@ -16,7 +16,6 @@ spamm_new (const unsigned int M, const unsigned int N)
   struct spamm_t *A;
   double x, x_M, x_N;
   unsigned int tier;
-  unsigned int *tier_key;
 
   if (M <= 0)
   {

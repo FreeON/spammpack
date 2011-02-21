@@ -373,8 +373,6 @@ spamm_list_sort_norm_iterative_mergesort (
 void
 spamm_list_sort_index (struct spamm_list_t *list, spamm_list_compare_index_function compare)
 {
-  struct spamm_list_t *scratch;
-
   spamm_list_sort_index_iterative_mergesort(list, compare);
 }
 
@@ -387,8 +385,6 @@ spamm_list_sort_index (struct spamm_list_t *list, spamm_list_compare_index_funct
 void
 spamm_list_sort_norm (struct spamm_list_t *list, const unsigned int left, const unsigned int right)
 {
-  struct spamm_list_t *scratch;
-
   spamm_list_sort_norm_iterative_mergesort(list, left, right);
 }
 

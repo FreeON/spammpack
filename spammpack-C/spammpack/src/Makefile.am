@@ -124,6 +124,7 @@ libspamm_tree_la_SOURCES = \
   spamm_index_2D.c \
   spamm_index_3D.c \
   spamm_list.c \
+  spamm_maintenance.c \
   spamm_multiply.c \
   spamm_new.c \
   spamm_new_block.c \
