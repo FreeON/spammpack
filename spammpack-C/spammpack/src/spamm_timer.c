@@ -100,6 +100,8 @@ spamm_timer_new (const enum spamm_timer_type_t type)
 #ifdef HAVE_PAPI
     case papi_total_instructions:
     case papi_total_cycles:
+    case papi_flop:
+    case papi_vec_sp:
       if ((papi_result = PAPI_create_eventset(&timer->eventset)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_create_eventset()");
@@ -124,9 +126,32 @@ spamm_timer_new (const enum spamm_timer_type_t type)
 
           timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
           break;
+
+        case papi_flop:
+          if ((papi_result = PAPI_add_event(timer->eventset, PAPI_FP_OPS)) != PAPI_OK)
+          {
+            spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
+          }
+
+          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          break;
+
+        case papi_vec_sp:
+          if ((papi_result = PAPI_add_event(timer->eventset, PAPI_VEC_SP)) != PAPI_OK)
+          {
+            spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
+          }
+
+          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          break;
       }
       break;
 #endif
+
+    default:
+      printf("[timer new] unknown timer type\n");
+      exit(1);
+      break;
   }
 
   return timer;
@@ -152,6 +177,8 @@ spamm_timer_delete (struct spamm_timer_t **timer)
 #ifdef HAVE_PAPI
     case papi_total_instructions:
     case papi_total_cycles:
+    case papi_flop:
+    case papi_vec_sp:
       if ((papi_result = PAPI_cleanup_eventset((*timer)->eventset)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "delete timer, PAPI_cleanup_eventset()");
@@ -165,6 +192,11 @@ spamm_timer_delete (struct spamm_timer_t **timer)
       free((*timer)->event_values);
       break;
 #endif
+
+    default:
+      printf("[timer delete] unknown timer type\n");
+      exit(1);
+      break;
   }
 
   free(*timer);
@@ -203,6 +235,8 @@ spamm_timer_start (struct spamm_timer_t *timer)
 #ifdef HAVE_PAPI
     case papi_total_instructions:
     case papi_total_cycles:
+    case papi_flop:
+    case papi_vec_sp:
       if ((papi_result = PAPI_start(timer->eventset)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "start timer, PAPI_start()");
@@ -249,9 +283,11 @@ spamm_timer_stop (struct spamm_timer_t *timer)
 #ifdef HAVE_PAPI
     case papi_total_instructions:
     case papi_total_cycles:
+    case papi_flop:
+    case papi_vec_sp:
       if ((papi_result = PAPI_stop(timer->eventset, timer->event_values)) != PAPI_OK)
       {
-        spamm_timer_handle_PAPI_error(papi_result, "start timer, PAPI_stop()");
+        spamm_timer_handle_PAPI_error(papi_result, "stop timer, PAPI_stop()");
       }
       break;
 #endif
@@ -296,6 +332,8 @@ spamm_timer_get (const struct spamm_timer_t *timer)
 #ifdef HAVE_PAPI
     case papi_total_instructions:
     case papi_total_cycles:
+    case papi_flop:
+    case papi_vec_sp:
       return timer->event_values[0];
       break;
 #endif
@@ -340,7 +378,7 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
 
 #ifdef HAVE_PAPI
     case papi_total_instructions:
-      sprintf(string, "PAPI total instructions");
+      sprintf(string, "PAPI Total instructions");
       break;
 
     case papi_total_cycles:
@@ -348,9 +386,22 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
       {
         spamm_timer_handle_PAPI_error(papi_result, "timer info, PAPI_get_opt()");
       }
-      sprintf(string, "PAPI total cycles, clockrate = %d MHz", papi_result);
+      sprintf(string, "PAPI Total cycles, clockrate = %d MHz", papi_result);
+      break;
+
+    case papi_flop:
+      sprintf(string, "PAPI Floating point operations");
+      break;
+
+    case papi_vec_sp:
+      sprintf(string, "PAPI Single precision vector/SIMD instructions");
       break;
 #endif
+
+    default:
+      printf("[timer info] unknown timer type\n");
+      exit(1);
+      break;
   }
 
   /* Copy string to output. */

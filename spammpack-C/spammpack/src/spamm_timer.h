@@ -18,7 +18,13 @@ enum spamm_timer_type_t
   papi_total_instructions,
 
   /** Total cycles. */
-  papi_total_cycles
+  papi_total_cycles,
+
+  /** Number floating point instructions. */
+  papi_flop,
+
+  /** Number single precision vector. */
+  papi_vec_sp
 };
 
 struct spamm_timer_t *
