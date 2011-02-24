@@ -111,8 +111,11 @@ spamm_multiply_beta (const float beta, struct spamm_t *A)
 {
   struct spamm_hashtable_t *tier_hashtable;
 
-  tier_hashtable = A->tier_hashtable[A->kernel_tier];
-  spamm_hashtable_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &beta);
+  if (beta != 1.0)
+  {
+    tier_hashtable = A->tier_hashtable[A->kernel_tier];
+    spamm_hashtable_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &beta);
+  }
 }
 
 /** @private Swap 2 multiply stream elements.
@@ -244,9 +247,9 @@ spamm_multiply (const float tolerance,
   unsigned int number_products = 0;
 
 #ifdef HAVE_PAPI
-  //struct spamm_timer_t *timer = spamm_timer_new(papi_total_cycles);
+  struct spamm_timer_t *timer = spamm_timer_new(papi_total_cycles);
   //struct spamm_timer_t *timer = spamm_timer_new(papi_flop);
-  struct spamm_timer_t *timer = spamm_timer_new(papi_vec_sp);
+  //struct spamm_timer_t *timer = spamm_timer_new(papi_vec_sp);
 #else
   struct spamm_timer_t *timer = spamm_timer_new(walltime);
 #endif
