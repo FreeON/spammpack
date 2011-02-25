@@ -161,7 +161,8 @@ spamm_memory (const struct spamm_t *A);
 void
 spamm_multiply (const float tolerance,
     const float alpha, struct spamm_t *A, struct spamm_t *B,
-    const float beta, struct spamm_t *C);
+    const float beta, struct spamm_t *C,
+    const enum spamm_timer_type_t timer_type);
 
 unsigned int
 spamm_number_nonzero (const struct spamm_t *A);
