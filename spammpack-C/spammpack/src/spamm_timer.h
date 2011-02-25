@@ -23,7 +23,7 @@ enum spamm_timer_type_t
   /** Number floating point instructions. */
   papi_flop,
 
-  /** Number single precision vector. */
+  /** Number single precision vector operations only. */
   papi_vec_sp
 };
 

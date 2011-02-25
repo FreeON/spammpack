@@ -124,7 +124,7 @@ main ()
   }
 #endif
 
-  spamm_multiply(tolerance, alpha, A, B, beta, C);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, walltime);
 
 #ifdef PRINT_DEBUG
   printf("C =\n");

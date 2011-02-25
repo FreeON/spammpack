@@ -211,11 +211,13 @@ spamm_multiply_sort_stream (const unsigned int left,
  * @param B The matrix \f$B\f$.
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
+ * @param timer_type The timer to use.
  */
 void
 spamm_multiply (const float tolerance,
     const float alpha, struct spamm_t *A, struct spamm_t *B,
-    const float beta, struct spamm_t *C)
+    const float beta, struct spamm_t *C,
+    const enum spamm_timer_type_t timer_type)
 {
   struct spamm_hashtable_t *A_tier_hashtable;
   struct spamm_hashtable_t *B_tier_hashtable;
@@ -246,13 +248,7 @@ spamm_multiply (const float tolerance,
 
   unsigned int number_products = 0;
 
-#ifdef HAVE_PAPI
-  struct spamm_timer_t *timer = spamm_timer_new(papi_total_cycles);
-  //struct spamm_timer_t *timer = spamm_timer_new(papi_flop);
-  //struct spamm_timer_t *timer = spamm_timer_new(papi_vec_sp);
-#else
-  struct spamm_timer_t *timer = spamm_timer_new(walltime);
-#endif
+  struct spamm_timer_t *timer = spamm_timer_new(timer_type);
 
   char timer_info_string[2000];
 
