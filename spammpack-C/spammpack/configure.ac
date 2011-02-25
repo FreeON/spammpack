@@ -25,7 +25,7 @@ if test "${python_error}" = "yes"; then
   AC_MSG_RESULT([an error occured])
   AC_MSG_FAILURE([I need the python include path.])
 fi
-AC_MSG_RESULT([found ${python_include}])
+AC_MSG_RESULT([${python_include}])
 AC_SUBST(PYTHON_INCLUDE, ${python_include})
 
 dnl Find libtool.
