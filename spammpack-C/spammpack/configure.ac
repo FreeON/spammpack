@@ -227,7 +227,6 @@ src/Makefile
 src/spamm_config.h
 src/spamm_manual_mainpage.h
 tests/Makefile
-tools/Makefile
 ])
 
 AC_OUTPUT

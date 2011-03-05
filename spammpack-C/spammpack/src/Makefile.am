@@ -100,6 +100,15 @@ libspamm_la_LDFLAGS = -version-info 0:0:0
 libspamm_la_SOURCES =
 libspamm_la_LIBADD  = $(noinst_LTLIBRARIES)
 
+noinst_SCRIPTS = generate_SSE_assembly.py
+noinst_PROGRAMS = print_data_sizes
+
+spamm_stream_kernel.S : generate_SSE_assembly.py
+	$(PYTHON) generate_SSE_assembly.py -N 4 --name spamm_stream_kernel > $@
+
+spamm_stream_kernel_no_checks.S : generate_SSE_assembly.py
+	$(PYTHON) generate_SSE_assembly.py -N 4 --name spamm_stream_kernel_no_checks --no-checks > $@
+
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \
   spamm_stream_kernel.S \
