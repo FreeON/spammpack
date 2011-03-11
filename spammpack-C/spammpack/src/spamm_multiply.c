@@ -625,6 +625,13 @@ spamm_multiply (const float tolerance,
 #endif
 
   spamm_timer_stop(timer);
+  if (timer_type == papi_flop)
+  {
+    /* We multiply the floprate by 4 because most of the flops come from
+     * single precision SSE instructions, each of which is counted only once
+     * in the floprate. */
+    printf("%1.2f Gflop/s, ", 4*spamm_timer_get_floprate(timer)/1e3);
+  }
   stream_timer = spamm_timer_get(timer);
   printf("%llu timer units\n", stream_timer);
 #endif
