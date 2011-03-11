@@ -89,6 +89,11 @@ struct spamm_data_t
 
   /** The matrix data (dilated by 4 for SSE). */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
+
+#if defined(SPAMM_USE_TRANSPOSE)
+  /** The transpose of block_dense.  */
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_transpose[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
+#endif
 };
 
 /* Function declarations. */
@@ -180,7 +185,8 @@ void
 spamm_print (const struct spamm_t *A);
 
 void
-spamm_print_dense (const unsigned int M, const unsigned int N, const float *A);
+spamm_print_dense (const unsigned int M, const unsigned int N,
+    const enum spamm_dense_type_t type, const float *A);
 
 void
 spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_t *A);

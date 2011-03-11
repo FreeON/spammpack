@@ -25,6 +25,9 @@
 /** Define the stride in the kernel. */
 #define SPAMM_N_STRIDE @SPAMM_N_STRIDE@
 
+/** Define whether we use the transpose in the data blocks. */
+@SPAMM_USE_TRANSPOSE_PREFIX@#define SPAMM_USE_TRANSPOSE 1
+
 /** Define the git commit tag for fine-grained version information. */
 #define COMMIT_TAG "@COMMIT_TAG@"
 

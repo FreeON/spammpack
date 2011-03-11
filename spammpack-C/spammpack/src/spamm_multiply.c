@@ -1,5 +1,5 @@
-#include "spamm.h"
 #include "config.h"
+#include "spamm.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,6 +92,9 @@ spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
   for (i = 0; i < SPAMM_N_KERNEL*SPAMM_N_KERNEL; i++)
   {
     data->block_dense[i] *= (*beta);
+#ifdef SPAMM_USE_TRANSPOSE
+    data->block_dense_transpose[i] *= (*beta);
+#endif
 
     for (j = 0; j < 4; j++)
     {
@@ -601,15 +604,24 @@ spamm_multiply (const float tolerance,
   printf("[multiply] stream multiply ");
   spamm_timer_start(timer);
 
-#if defined(SPAMM_KERNEL_NO_CHECKS)
+#if defined(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK)
   printf("(no-checks kernel)... ");
-  spamm_stream_kernel_no_checks(stream_index, alpha, tolerance, multiply_stream);
-#elif defined(SPAMM_KERNEL_EXPERIMENTAL)
+  spamm_stream_kernel_no_checks_SSE(stream_index, alpha, tolerance, multiply_stream);
+#elif defined(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK_SSE4_1)
+  printf("(no-checks kernel SSE4.1)... ");
+  spamm_stream_kernel_no_checks_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
+#elif defined(SPAMM_KERNEL_IMPLEMENTATION_EXPERIMENTAL)
   printf("(experimental kernel)... ");
   spamm_stream_kernel_C(stream_index, alpha, tolerance, multiply_stream);
-#else
+#elif defined(SPAMM_KERNEL_IMPLEMENTATION_STANDARD)
   printf("(standard kernel)... ");
-  spamm_stream_kernel(stream_index, alpha, tolerance, multiply_stream);
+  spamm_stream_kernel_SSE(stream_index, alpha, tolerance, multiply_stream);
+#elif defined(SPAMM_KERNEL_IMPLEMENTATION_STANDARD_SSE4_1)
+  printf("(standard kernel SSE4.1)... ");
+  spamm_stream_kernel_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
+#else
+  printf("(unknown kernel)... ");
+  exit(1);
 #endif
 
   spamm_timer_stop(timer);

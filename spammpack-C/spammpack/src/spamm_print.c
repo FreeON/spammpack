@@ -6,19 +6,41 @@
  *
  * @param M The number of rows.
  * @param N The number of columns.
+ * @param type The storage type of the dense matrix.
  * @param A The dense matrix.
  */
 void
-spamm_print_dense (const unsigned int M, const unsigned int N, const float *A)
+spamm_print_dense (const unsigned int M, const unsigned int N,
+    const enum spamm_dense_type_t type, const float *A)
 {
   unsigned int i, j;
 
-  for (i = 0; i < M; i++) {
-    for (j = 0; j < N; j++)
-    {
-      printf(" % 1.2e", A[spamm_index_row_major(i, j, M, N)]);
-    }
-    printf("\n");
+  switch (type)
+  {
+    case column_major:
+      for (i = 0; i < M; i++) {
+        for (j = 0; j < N; j++)
+        {
+          printf(" % 1.2e", A[spamm_index_column_major(i, j, M, N)]);
+        }
+        printf("\n");
+      }
+      break;
+
+    case row_major:
+      for (i = 0; i < M; i++) {
+        for (j = 0; j < N; j++)
+        {
+          printf(" % 1.2e", A[spamm_index_row_major(i, j, M, N)]);
+        }
+        printf("\n");
+      }
+      break;
+
+    default:
+      printf("error\n");
+      exit(1);
+      break;
   }
 }
 
@@ -62,6 +84,20 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
     if (i < SPAMM_N_KERNEL-1) { printf(", "); }
   }
   printf(" }\n");
+#ifdef SPAMM_USE_TRANSPOSE
+  printf(" }, block_dense_transpose = ");
+  for (i = 0; i < SPAMM_N_KERNEL; i++)
+  {
+    printf("{");
+    for (j = 0; j < SPAMM_N_KERNEL; j++)
+    {
+      printf(" %1.2e", data->block_dense_transpose[i*SPAMM_N_KERNEL+j]);
+    }
+    printf(" }");
+    if (i < SPAMM_N_KERNEL-1) { printf(", "); }
+  }
+  printf(" }\n");
+#endif
 }
 
 /** Print a SpAMM matrix.

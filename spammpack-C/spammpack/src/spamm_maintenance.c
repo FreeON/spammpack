@@ -70,6 +70,8 @@ spamm_construct_tree (struct spamm_t *A)
   struct spamm_node_t *node;
   struct spamm_node_t *parent_node;
 
+  if (A->kernel_tier == 0) { return; }
+
   /* Create tree above kernel tier. */
   for (tier = 0; tier <= A->kernel_tier-1; tier++)
   {

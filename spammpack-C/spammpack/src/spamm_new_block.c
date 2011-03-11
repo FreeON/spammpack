@@ -26,6 +26,9 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D)
     for (j = 0; j < SPAMM_N_KERNEL; j++)
     {
       data->block_dense[i*SPAMM_N_KERNEL+j] = 0.0;
+#if defined(SPAMM_USE_TRANSPOSE)
+      data->block_dense_transpose[i*SPAMM_N_KERNEL+j] = 0.0;
+#endif
 
       data->block_dense_dilated[4*(i*SPAMM_N_KERNEL+j)+0] = 0.0;
       data->block_dense_dilated[4*(i*SPAMM_N_KERNEL+j)+1] = 0.0;
