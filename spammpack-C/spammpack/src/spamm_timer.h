@@ -42,6 +42,9 @@ spamm_timer_stop (struct spamm_timer_t *timer);
 unsigned long long
 spamm_timer_get (const struct spamm_timer_t *timer);
 
+float
+spamm_timer_get_floprate (const struct spamm_timer_t *timer);
+
 void
 spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
     const int maxlength);

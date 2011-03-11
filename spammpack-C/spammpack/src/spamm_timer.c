@@ -133,7 +133,12 @@ spamm_timer_new (const enum spamm_timer_type_t type)
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
 
-          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          if ((papi_result = PAPI_add_event(timer->eventset, PAPI_TOT_CYC)) != PAPI_OK)
+          {
+            spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
+          }
+
+          timer->event_values = (long_long*) malloc(sizeof(long_long)*2);
           break;
 
         case papi_vec_sp:
@@ -345,6 +350,43 @@ spamm_timer_get (const struct spamm_timer_t *timer)
   }
 }
 
+/** Get the floprate. This is only possible for timer type papi_flop.
+ *
+ * @param timer Tht timer.
+ *
+ * @return The flop rate in Mflop/s.
+ */
+float
+spamm_timer_get_floprate (const struct spamm_timer_t *timer)
+{
+#ifdef HAVE_PAPI
+  int papi_result;
+#endif
+
+  if (timer->timer_running != 0)
+  {
+    printf("[timer get] this timer is running right now\n");
+    exit(1);
+  }
+
+  switch (timer->type)
+  {
+#ifdef HAVE_PAPI
+    case papi_flop:
+      if ((papi_result = PAPI_get_opt(PAPI_CLOCKRATE, NULL)) <= 0)
+      {
+        spamm_timer_handle_PAPI_error(papi_result, "[timer get] failed PAPI_get_opt()");
+      }
+      return (float) timer->event_values[0] / (float) timer->event_values[1] * (float) papi_result;
+      break;
+#endif
+    default:
+      printf("[timer get] unknown or illegal timer type\n");
+      exit(1);
+      break;
+  }
+}
+
 /** Print out some information on the timer.
  *
  * @param timer The timer to print information on.
@@ -390,7 +432,11 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
       break;
 
     case papi_flop:
-      sprintf(string, "PAPI Floating point operations");
+      if ((papi_result = PAPI_get_opt(PAPI_CLOCKRATE, NULL)) <= 0)
+      {
+        spamm_timer_handle_PAPI_error(papi_result, "timer info, PAPI_get_opt()");
+      }
+      sprintf(string, "PAPI Floating point operations, clockrate = %d MHz", papi_result);
       break;
 
     case papi_vec_sp:
