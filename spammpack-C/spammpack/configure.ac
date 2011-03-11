@@ -164,17 +164,28 @@ AC_MSG_NOTICE([at the kernel tier, the dense matrix block has a size of ${have_N
 AC_MSG_CHECKING([for which kernel implementation to use])
 AC_ARG_WITH([kernel], [AS_HELP_STRING([--with-kernel], [Choose the kernel
              implementation to use. Available kernel implementations are
-             standard, no_check, experimental. Default is standard.])],
+             standard, standard_SSE4_1, no_check, no_check_SSE4_1,
+             experimental.  Default is standard.])],
              [have_kernel="${withval}"],
              [have_kernel="standard"])
 if test "${have_kernel}" = "standard"; then
   AC_MSG_RESULT([using standard kernel])
+  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_STANDARD, [1], [Use the standard stream kernel (SSE).])
+  AC_SUBST(SPAMM_USE_TRANSPOSE_PREFIX, [//])
 elif test "${have_kernel}" = "no_check"; then
   AC_MSG_RESULT([using no_check kernel])
-  AC_DEFINE(SPAMM_KERNEL_NO_CHECKS, [1], [Use a stream kernel without norm checks.])
+  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK, [1], [Use a stream kernel without norm checks (SSE).])
+  AC_SUBST(SPAMM_USE_TRANSPOSE_PREFIX, [//])
+elif test "${have_kernel}" = "standard_SSE4_1"; then
+  AC_MSG_RESULT([using standard kernel (SSE 4.1)])
+  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_STANDARD_SSE4_1, [1], [Use the standard stream kernel (SSE4.1).])
+elif test "${have_kernel}" = "no_check_SSE4_1"; then
+  AC_MSG_RESULT([using no_check kernel (SSE 4.1)])
+  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK_SSE4_1, [1], [Use a stream kernel without norm checks (SSE4.1).])
 elif test "${have_kernel}" = "experimental"; then
   AC_MSG_RESULT([using experimental kernel])
-  AC_DEFINE(SPAMM_KERNEL_EXPERIMENTAL, [1], [Use the experimental version of the stream kernel.])
+  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_EXPERIMENTAL, [1], [Use the experimental version of the stream kernel.])
+  AC_SUBST(SPAMM_USE_TRANSPOSE_PREFIX, [//])
 else
   AC_MSG_FAILURE([unknown kernel ${have_kernel}])
 fi

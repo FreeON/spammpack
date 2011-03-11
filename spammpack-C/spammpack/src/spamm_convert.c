@@ -11,6 +11,7 @@
  *
  * @param M The number of rows.
  * @param N The number of columns.
+ * @param type The storage type of the dense matrix.
  * @param A_dense The dense matrix.
  *
  * @return The SpAMM matrix.
@@ -31,6 +32,9 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
   unsigned int j_tier;
   unsigned int norm_offset;
   unsigned int data_offset;
+#ifdef SPAMM_USE_TRANSPOSE
+  unsigned int data_offset_transpose;
+#endif
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_data_t *data;
   float Aij;
@@ -138,6 +142,9 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
             {
               /* Calculate offsets into the matrix data. */
               data_offset = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+i_block, SPAMM_N_BLOCK*j_kernel+j_block);
+#ifdef SPAMM_USE_TRANSPOSE
+              data_offset_transpose = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+j_block, SPAMM_N_BLOCK*j_kernel+i_block);
+#endif
 
               /* Get matrix elements from dense matrix. */
               switch(type)
@@ -157,6 +164,9 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
 
               /* Set new value. */
               data->block_dense[data_offset] = Aij;
+#ifdef SPAMM_USE_TRANSPOSE
+              data->block_dense_transpose[data_offset_transpose] = Aij;
+#endif
 
               data->block_dense_dilated[4*data_offset+0] = Aij;
               data->block_dense_dilated[4*data_offset+1] = Aij;

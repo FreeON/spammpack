@@ -27,6 +27,9 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   unsigned int delta_index;
   unsigned int norm_offset;
   unsigned int data_offset;
+#ifdef SPAMM_USE_TRANSPOSE
+  unsigned int data_offset_transpose;
+#endif
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_node_t *node;
   struct spamm_data_t *data;
@@ -118,6 +121,9 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       /* Calculate offsets into the norm and the matrix data. */
       norm_offset = spamm_index_norm(i%delta_index, j%delta_index);
       data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index);
+#ifdef SPAMM_USE_TRANSPOSE
+      data_offset_transpose = spamm_index_kernel_block(j%delta_index, i%delta_index);
+#endif
 
 #ifndef NEW_NORM
       /* For norm calculations, get original value of Aij. */
@@ -126,6 +132,9 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
       /* Set new value. */
       data->block_dense[data_offset] = Aij;
+#ifdef SPAMM_USE_TRANSPOSE
+      data->block_dense_transpose[data_offset_transpose] = Aij;
+#endif
 
       data->block_dense_dilated[4*data_offset+0] = Aij;
       data->block_dense_dilated[4*data_offset+1] = Aij;

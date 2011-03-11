@@ -25,7 +25,7 @@ struct spamm_multiply_stream_t
  * @param multiply_stream The multiply stream.
  */
 void
-spamm_stream_kernel (const unsigned int number_stream_elements,
+spamm_stream_kernel_SSE (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
@@ -38,7 +38,33 @@ spamm_stream_kernel (const unsigned int number_stream_elements,
  * @param multiply_stream The multiply stream.
  */
 void
-spamm_stream_kernel_no_checks (const unsigned int number_stream_elements,
+spamm_stream_kernel_no_checks_SSE4_1 (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_stream_kernel_SSE4_1 (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream without norm checks.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_stream_kernel_no_checks_SSE (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);

@@ -14,8 +14,11 @@ main ()
   printf("&stream_element.C at %p, offset = %lu\n", &stream_element.C, (unsigned long int) &stream_element.C - (unsigned long int) &stream_element);
 
   printf("sizeof(struct spamm_data_t) = %lu\n", sizeof(struct spamm_data_t));
-  printf("&data at                     %p\n", &data);
-  printf("&data.norm at                %p, offset = %lu\n", &data.norm, (unsigned long int) &data.norm - (unsigned long int) &data);
-  printf("&data.block_dense at         %p, offset = %lu\n", &data.block_dense, (unsigned long int) &data.block_dense - (unsigned long int) &data);
-  printf("&data.block_dense_dilated at %p, offset = %lu\n", &data.block_dense_dilated, (unsigned long int) &data.block_dense_dilated - (unsigned long int) &data);
+  printf("&data at                       %p\n", &data);
+  printf("&data.norm at                  %p, offset = %lu\n", &data.norm, (unsigned long int) &data.norm - (unsigned long int) &data);
+  printf("&data.block_dense at           %p, offset = %lu\n", &data.block_dense, (unsigned long int) &data.block_dense - (unsigned long int) &data);
+  printf("&data.block_dense_dilated at   %p, offset = %lu\n", &data.block_dense_dilated, (unsigned long int) &data.block_dense_dilated - (unsigned long int) &data);
+#ifdef SPAMM_USE_TRANSPOSE
+  printf("&data.block_dense_transpose at %p, offset = %lu\n", &data.block_dense_transpose, (unsigned long int) &data.block_dense_transpose - (unsigned long int) &data);
+#endif
 }

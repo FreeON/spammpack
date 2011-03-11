@@ -207,6 +207,53 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
   }
 }
 
+void
+spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
+{
+  short i, j;
+  short i_block, j_block;
+  short i_dilated;
+  float Aij;
+  unsigned int data_offset;
+#ifdef SPAMM_USE_TRANSPOSE
+  unsigned int data_offset_transpose;
+#endif
+  struct spamm_data_t *data = value;
+  struct spamm_check_user_data_t *user = user_data;
+
+  for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++) {
+    for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++) {
+      for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
+        for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
+        {
+          data_offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK
+            *spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
+            +spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+          Aij = data->block_dense[data_offset];
+          for (i_dilated = 0; i_dilated < 4; i_dilated++)
+          {
+            if (Aij != data->block_dense_dilated[data_offset*4+i_dilated])
+            {
+              printf("index %u: data block inconsistency between block_dense and block_dense_dilated\n", index);
+              user->result = SPAMM_ERROR;
+            }
+          }
+#ifdef SPAMM_USE_TRANSPOSE
+          data_offset_transpose = SPAMM_N_BLOCK*SPAMM_N_BLOCK
+            *spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
+            +spamm_index_row_major(j_block, i_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+          if (Aij != data->block_dense_transpose[data_offset_transpose])
+          {
+            printf("index %u: data block inconsistency between block_dense and block_dense_transpose\n", index);
+            user->result = SPAMM_ERROR;
+          }
+#endif
+        }
+      }
+    }
+  }
+}
+
 /** Check the internal consistency of a matrix.
  *
  * @param A The matrix to check
@@ -299,6 +346,12 @@ spamm_check (const struct spamm_t *A)
 
     /* Verify tree structure. */
     spamm_hashtable_foreach(hashtable, spamm_check_tree_structure, &user_data);
+
+    if (reverse_tier == A->kernel_tier)
+    {
+      /* Verify transpose and dilated data. */
+      spamm_hashtable_foreach(hashtable, spamm_check_data_consistency, &user_data);
+    }
 
     /* Verify consistency of linear indices. */
     spamm_hashtable_foreach(hashtable, spamm_check_linear_index, &user_data);
