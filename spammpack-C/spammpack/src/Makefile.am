@@ -154,7 +154,8 @@ libspamm_tree_la_SOURCES = \
   spamm_version.c
 
 EXTRA_DIST = \
-  spamm_list_driver.c
+  spamm_list_driver.c \
+  generate_SSE_assembly.py
 
 libspamm_tree_headers = \
   spamm.h \
