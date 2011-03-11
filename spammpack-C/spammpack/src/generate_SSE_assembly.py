@@ -480,43 +480,39 @@ for i in range(options.N):
         B4.release()
 
       elif options.SSE == 4.1:
-        B1 = register("B1")
-        B2 = register("B2")
-        B3 = register("B3")
-        B4 = register("B4")
-
         print("")
         print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
-        print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B1))
-        print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B2))
-        print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B3))
-        print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B4))
 
         A1 = register("A1")
-        A2 = register("A2")
-
         print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A1))
+        A2 = register("A2")
         print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A2))
+
+        B1 = register("B1")
+        print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B1))
+        B2 = register("B2")
+        print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B2))
+        B3 = register("B3")
+        print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B3))
+        B4 = register("B4")
+        print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B4))
 
         print("")
         print("  # Calculate C(1,:).")
-        C11 = register("C11")
 
+        C11 = register("C11")
         print("  movaps %s, %s" % (B1, C11))
         print("  dpps $0xf1, %s, %s" % (A1, C11))
 
         C12 = register("C12")
-
         print("  movaps %s, %s" % (B2, C12))
         print("  dpps $0xf2, %s, %s" % (A1, C12))
 
         C13 = register("C13")
-
         print("  movaps %s, %s" % (B3, C13))
         print("  dpps $0xf4, %s, %s" % (A1, C13))
 
         C14 = register("C14")
-
         print("  movaps %s, %s" % (B4, C14))
         print("  dpps $0xf8, %s, %s" % (A1, C14))
 
@@ -535,23 +531,20 @@ for i in range(options.N):
 
         print("")
         print("  # Calculate C(2,:).")
-        C21 = register("C21")
 
+        C21 = register("C21")
         print("  movaps %s, %s" % (B1, C21))
         print("  dpps $0xf1, %s, %s" % (A2, C21))
 
         C22 = register("C22")
-
         print("  movaps %s, %s" % (B2, C22))
         print("  dpps $0xf2, %s, %s" % (A2, C22))
 
         C23 = register("C23")
-
         print("  movaps %s, %s" % (B3, C23))
         print("  dpps $0xf4, %s, %s" % (A2, C23))
 
         C24 = register("C24")
-
         print("  movaps %s, %s" % (B4, C24))
         print("  dpps $0xf8, %s, %s" % (A2, C24))
 
@@ -570,23 +563,20 @@ for i in range(options.N):
 
         print("")
         print("  # Calculate C(3,:).")
-        C31 = register("C31")
 
+        C31 = register("C31")
         print("  movaps %s, %s" % (B1, C31))
         print("  dpps $0xf1, %s, %s" % (A3, C31))
 
         C32 = register("C32")
-
         print("  movaps %s, %s" % (B2, C32))
         print("  dpps $0xf2, %s, %s" % (A3, C32))
 
         C33 = register("C33")
-
         print("  movaps %s, %s" % (B3, C33))
         print("  dpps $0xf4, %s, %s" % (A3, C33))
 
         C34 = register("C34")
-
         print("  movaps %s, %s" % (B4, C34))
         print("  dpps $0xf8, %s, %s" % (A3, C34))
 
@@ -602,23 +592,20 @@ for i in range(options.N):
 
         print("")
         print("  # Calculate C(4,:).")
-        C41 = register("C41")
 
+        C41 = register("C41")
         print("  movaps %s, %s" % (B1, C41))
         print("  dpps $0xf1, %s, %s" % (A4, C41))
 
         C42 = register("C42")
-
         print("  movaps %s, %s" % (B2, C42))
         print("  dpps $0xf2, %s, %s" % (A4, C42))
 
         C43 = register("C43")
-
         print("  movaps %s, %s" % (B3, C43))
         print("  dpps $0xf4, %s, %s" % (A4, C43))
 
         C44 = register("C44")
-
         print("  movaps %s, %s" % (B4, C44))
         print("  dpps $0xf8, %s, %s" % (A4, C44))
 

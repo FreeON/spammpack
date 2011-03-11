@@ -91,15 +91,11 @@ spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
 #else
   for (i = 0; i < SPAMM_N_KERNEL*SPAMM_N_KERNEL; i++)
   {
+    /* We only multiply data in block_dense, not the dilated, nor the
+     * transpose data (if it exists). This obviously introduces incosistencies
+     * into the C matrix, the stream product however, does that right now
+     * already anyway. */
     data->block_dense[i] *= (*beta);
-#ifdef SPAMM_USE_TRANSPOSE
-    data->block_dense_transpose[i] *= (*beta);
-#endif
-
-    for (j = 0; j < 4; j++)
-    {
-      data->block_dense_dilated[4*i+j] *= (*beta);
-    }
   }
 #endif
 }
