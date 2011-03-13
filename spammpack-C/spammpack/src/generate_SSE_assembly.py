@@ -156,7 +156,7 @@ parser.add_option("--debug",
     default = False)
 
 parser.add_option("--SSE",
-    help = "set the SSE level from [1, 4.1] [default: %default]",
+    help = "set the SSE level from [1, 3, 4.1] [default: %default]",
     metavar = "level",
     type = "float",
     default = 1)
@@ -195,7 +195,7 @@ if 2**d != options.N:
   sys.exit(1)
 
 # Check SSE level.
-if not options.SSE in [1, 4.1]:
+if not options.SSE in [1, 3, 4.1]:
   log.error("unknown SSE level")
   sys.exit(1)
 
@@ -478,6 +478,9 @@ for i in range(options.N):
         B2.release()
         B3.release()
         B4.release()
+
+      elif options.SSE == 3:
+        print("")
 
       elif options.SSE == 4.1:
         print("")
