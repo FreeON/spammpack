@@ -1,7 +1,7 @@
 # C API:
 #
 # void
-# matrix_multiply_SSE4_1 (const unsigned int N, float *A, float *B, float *C);
+# matrix_multiply_SSE4_1_01 (const unsigned int N, float *A, float *B, float *C);
 
 #define N %rdi
 #define A %rsi
@@ -12,10 +12,10 @@
 
   .text
   .align 256
-  .global matrix_multiply_SSE4_1
-  .type matrix_multiply_SSE4_1, @function
+  .global matrix_multiply_SSE4_1_01
+  .type matrix_multiply_SSE4_1_01, @function
 
-matrix_multiply_SSE4_1:
+matrix_multiply_SSE4_1_01:
 
   push i
   xor i, i
@@ -112,4 +112,4 @@ end_loop:
   pop i
   ret
 
-  .size matrix_multiply_SSE4_1, .-matrix_multiply_SSE4_1
+  .size matrix_multiply_SSE4_1_01, .-matrix_multiply_SSE4_1_01

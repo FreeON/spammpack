@@ -54,8 +54,10 @@ main (int argc, char **argv)
 
 #ifdef SSE
   matrix_multiply_SSE(max_N, (float*) &A_dilated[0][0], (float*) &B[0][0], (float*) &C[0][0]);
-#elif defined(SSE4_1)
-  matrix_multiply_SSE4_1(max_N, (float*) &A[0][0], (float*) &B_transpose[0][0], (float*) &C[0][0]);
+#elif defined(SSE4_1_01)
+  matrix_multiply_SSE4_1_01(max_N, (float*) &A[0][0], (float*) &B_transpose[0][0], (float*) &C[0][0]);
+#elif defined(SSE4_1_02)
+  matrix_multiply_SSE4_1_02(max_N, (float*) &A[0][0], (float*) &B_transpose[0][0], (float*) &C[0][0]);
 #endif
 
 #ifdef PRINT_DEBUG
