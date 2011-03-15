@@ -171,33 +171,33 @@ AC_ARG_WITH([kernel], [AS_HELP_STRING([--with-kernel], [Choose the kernel
 if test "${have_kernel}" = "standard"; then
   AC_MSG_RESULT([using standard kernel])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_STANDARD, [1], [Use the standard stream kernel (SSE).])
-  AC_SUBST(SPAMM_USE_TRANSPOSE_PREFIX, [//])
 elif test "${have_kernel}" = "no_check"; then
   AC_MSG_RESULT([using no_check kernel])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK, [1], [Use a stream kernel without norm checks (SSE).])
-  AC_SUBST(SPAMM_USE_TRANSPOSE_PREFIX, [//])
 elif test "${have_kernel}" = "standard_SSE4_1"; then
   AC_MSG_RESULT([using standard kernel (SSE 4.1)])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_STANDARD_SSE4_1, [1], [Use the standard stream kernel (SSE4.1).])
+  AC_DEFINE(SPAMM_USE_TRANSPOSE, [1], [Define whether we use the transpose in the data blocks.])
 elif test "${have_kernel}" = "no_check_SSE4_1"; then
   AC_MSG_RESULT([using no_check kernel (SSE 4.1)])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK_SSE4_1, [1], [Use a stream kernel without norm checks (SSE4.1).])
+  AC_DEFINE(SPAMM_USE_TRANSPOSE, [1], [Define whether we use the transpose in the data blocks.])
 elif test "${have_kernel}" = "experimental"; then
   AC_MSG_RESULT([using experimental kernel])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_EXPERIMENTAL, [1], [Use the experimental version of the stream kernel.])
-  AC_SUBST(SPAMM_USE_TRANSPOSE_PREFIX, [//])
 else
   AC_MSG_FAILURE([unknown kernel ${have_kernel}])
 fi
 
 dnl Define some constants.
-AC_SUBST(SPAMM_ALIGNMENT, [${have_alignment}])
-AC_SUBST(SPAMM_N_BLOCK, [${have_N_block}])
-AC_SUBST(SPAMM_N_CHILD, [${have_N_child}])
-AC_SUBST(SPAMM_KERNEL_DEPTH, [${have_kernel_depth}])
-AC_SUBST(SPAMM_N_KERNEL_BLOCK, [${have_N_kernel_block}])
-AC_SUBST(SPAMM_N_KERNEL, [${have_N_kernel}])
-AC_SUBST(SPAMM_N_STRIDE, [${have_N_stride}])
+AC_DEFINE_UNQUOTED(SPAMM_ALIGNMENT, [${have_alignment}], [Define the alignment of memory allocations.])
+AC_DEFINE_UNQUOTED(SPAMM_N_BLOCK, [${have_N_block}], [Define the size of a basic matrix block as NxN.])
+AC_DEFINE_UNQUOTED(SPAMM_N_CHILD, [${have_N_child}], [Define the size of the children node matrix as NxN.])
+AC_DEFINE_UNQUOTED(SPAMM_KERNEL_DEPTH, [${have_kernel_depth}], [Define the number of tiers that are allocated contiguously for the computational kernel.])
+AC_DEFINE_UNQUOTED(SPAMM_N_KERNEL_BLOCK, [${have_N_kernel_block}], [Define the size of the kernel matrix as NxN basic kernel blocks.])
+AC_DEFINE_UNQUOTED(SPAMM_N_KERNEL, [${have_N_kernel}], [Define the size of the matrix kernel as NxN single elements.])
+AC_DEFINE_UNQUOTED(SPAMM_N_STRIDE, [${have_N_stride}], []Define the stride in the kernel.)
+AC_DEFINE(SPAMM_BLOCK_ORDER, [1], [Define the block order of the basic matrix blocks in the kernel tier. Possible values are 1 - row major order, 2 - Z-curve order.])
 
 dnl For benchmarking.
 AC_DEFINE([SPAMM_MULTIPLY_BETA], [1], [Multiply C matrix with beta factor.])
@@ -212,9 +212,6 @@ AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
 AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
 AC_DEFINE([SPAMM_MULTIPLY_FINAL_FREE], [1], [Free remaining memory before exit.])
 
-dnl Fix the package version everywhere.
-AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
-
 dnl Load git commit ID and set.
 if test -f ${srcdir}/localversion; then
   . ${srcdir}/localversion
@@ -222,12 +219,19 @@ else
   branch="unknown"
   localversion="unknown"
 fi
+
+dnl Fix the package version in the documentation.
+AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
 AC_SUBST(LOCAL_VERSION, [${branch}:${localversion}])
-AC_SUBST(COMMIT_TAG, [${localversion}])
+
+dnl Define the git commit tag.
+AC_DEFINE_UNQUOTED(COMMIT_TAG, ["${localversion}"], [Define the git commit tag of this build.])
+
+dnl Some output.
 AC_MSG_NOTICE([configuring local version ${branch}:${localversion}])
 
 dnl Write results.
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([spamm_config.h])
 AC_CONFIG_FILES([
 Doxyfile
 Makefile
@@ -235,7 +239,6 @@ interfaces/Makefile
 interfaces/f90/Makefile
 interfaces/python/Makefile
 src/Makefile
-src/spamm_config.h
 src/spamm_manual_mainpage.h
 tests/Makefile
 ])

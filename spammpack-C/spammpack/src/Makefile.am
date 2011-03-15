@@ -1,5 +1,5 @@
 AM_CTAGSFLAGS = --C-kinds=+l+x
-TAGS_FILES = ../config.h
+TAGS_FILES = ../spamm_config.h
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
@@ -159,7 +159,6 @@ EXTRA_DIST = \
 
 libspamm_tree_headers = \
   spamm.h \
-  spamm_config.h \
   spamm_convert.h \
   spamm_error.h \
   spamm_hashtable.h \
