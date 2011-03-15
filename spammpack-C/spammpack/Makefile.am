@@ -8,11 +8,12 @@ SUBDIRS = src interfaces tests
 
 EXTRA_DIST = localversion $(pdf_DATA)
 
+include_HEADERS = spamm_config.h
+
 CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/localversion \
   $(top_srcdir)/Doxyfile.in \
-  $(top_srcdir)/src/spamm_manual_mainpage.h.in \
-  $(top_srcdir)/src/spamm_config.h.in
+  $(top_srcdir)/src/spamm_manual_mainpage.h.in
 
 pdfdir = $(docdir)/pdf
 pdf_DATA = latex/refman.pdf

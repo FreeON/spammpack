@@ -1,5 +1,5 @@
+#include "spamm_config.h"
 #include "spamm.h"
-#include "config.h"
 
 #ifdef HAVE_SSE
 #include <xmmintrin.h>
