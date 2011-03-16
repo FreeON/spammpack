@@ -111,8 +111,11 @@ spamm_stream_kernel_no_checks_SSE.S : generate_SSE_assembly.py
 spamm_stream_kernel_SSE4_1.S : generate_SSE_assembly.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --name spamm_stream_kernel_SSE4_1 > $@
 
-spamm_stream_kernel_SSE4_1_Z_curve.S : generate_SSE_assembly.py
-	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --Z-curve --name spamm_stream_kernel_SSE4_1_Z_curve > $@
+spamm_stream_kernel_Z_curve_SSE.S : generate_SSE_assembly.py
+	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 1 --Z-curve --name spamm_stream_kernel_Z_curve_SSE > $@
+
+spamm_stream_kernel_Z_curve_SSE4_1.S : generate_SSE_assembly.py
+	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --Z-curve --name spamm_stream_kernel_Z_curve_SSE4_1 > $@
 
 spamm_stream_kernel_no_checks_SSE4_1.S : generate_SSE_assembly.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --name spamm_stream_kernel_no_checks_SSE4_1 --no-checks > $@
@@ -124,7 +127,8 @@ libspamm_kernel_la_SOURCES = \
   spamm_stream_kernel_no_checks_SSE.S \
   spamm_stream_kernel_SSE4_1.S \
   spamm_stream_kernel_no_checks_SSE4_1.S \
-  spamm_stream_kernel_SSE4_1_Z_curve.S
+  spamm_stream_kernel_Z_curve_SSE.S \
+  spamm_stream_kernel_Z_curve_SSE4_1.S
 
 libspamm_kernel_headers = \
   spamm_kernel.h

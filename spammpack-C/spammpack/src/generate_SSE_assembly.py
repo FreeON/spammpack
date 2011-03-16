@@ -118,6 +118,354 @@ def row_major_index (i, j, N):
   # Row-major storage.
   return i*N+j
 
+def block_product (i, j, k):
+  i -= 1
+  j -= 1
+  k -= 1
+
+  C1 = register("C1")
+  C2 = register("C2")
+  C3 = register("C3")
+  C4 = register("C4")
+
+  print("")
+  print("  # Reset C(%d,%d) matrix block accumulators." % (i+1, j+1))
+  print("  xorps %s, %s" % (C1, C1))
+  print("  xorps %s, %s" % (C2, C2))
+  print("  xorps %s, %s" % (C3, C3))
+  print("  xorps %s, %s" % (C4, C4))
+
+  if options.generate_checks:
+    print("")
+    print("  .align 16")
+    print("jump_%d:" % (block_counter.get()))
+    block_counter.increment()
+
+    norm = register("norm")
+
+    print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
+    print("  movss 0x%x(A), %s" % ((i*options.N+k)*4+offset_norm, norm))
+    print("  mulss 0x%x(B), %s" % ((k*options.N+j)*4+offset_norm, norm))
+
+    # When comparing with the Intel Software Developer's Manual, keep in
+    # mind that Intel uses Intel syntax and this code is writting using
+    # At&T syntax, which means that the order of operand 1 and 2 are the
+    # opposite.
+    print("  comiss %s, %s" % (tolerance, norm))
+    print("  jbe jump_%d" % (block_counter.get()))
+
+    norm.release()
+
+  if options.SSE == 1:
+    B1 = register("B1")
+    B2 = register("B2")
+    B3 = register("B3")
+    B4 = register("B4")
+
+    print("")
+    print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
+    print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B1))
+    print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B2))
+    print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B3))
+    print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B4))
+
+    A11 = register("A11")
+    A12 = register("A12")
+    A13 = register("A13")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A11))
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A12))
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A13))
+    print("  mulps %s, %s" % (B1, A11))
+    print("  mulps %s, %s" % (B2, A12))
+    print("  addps %s, %s" % (A11, C1))
+
+    A11.release()
+    A14 = register("A14")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A14))
+    print("  mulps %s, %s" % (B3, A13))
+    print("  addps %s, %s" % (A12, C1))
+
+    A12.release()
+    A21 = register("A21")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A21))
+    print("  mulps %s, %s" % (B4, A14))
+    print("  addps %s, %s" % (A13, C1))
+
+    A13.release()
+    A22 = register("A22")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A22))
+    print("  mulps %s, %s" % (B1, A21))
+    print("  addps %s, %s" % (A14, C1))
+
+    A14.release()
+    A23 = register("A23")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A23))
+    print("  mulps %s, %s" % (B2, A22))
+    print("  addps %s, %s" % (A21, C2))
+
+    A21.release()
+    A24 = register("A24")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A24))
+    print("  mulps %s, %s" % (B3, A23))
+    print("  addps %s, %s" % (A22, C2))
+
+    A22.release()
+    A31 = register("A31")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A31))
+    print("  mulps %s, %s" % (B4, A24))
+    print("  addps %s, %s" % (A23, C2))
+
+    A23.release()
+    A32 = register("A32")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A32))
+    print("  mulps %s, %s" % (B1, A31))
+    print("  addps %s, %s" % (A24, C2))
+
+    A24.release()
+    A33 = register("A33")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A33))
+    print("  mulps %s, %s" % (B2, A32))
+    print("  addps %s, %s" % (A31, C3))
+
+    A31.release()
+    A34 = register("A34")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A34))
+    print("  mulps %s, %s" % (B3, A33))
+    print("  addps %s, %s" % (A32, C3))
+
+    A32.release()
+    A41 = register("A41")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A41))
+    print("  mulps %s, %s" % (B4, A34))
+    print("  addps %s, %s" % (A33, C3))
+
+    A33.release()
+    A42 = register("A42")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A42))
+    print("  mulps %s, %s" % (B1, A41))
+    print("  addps %s, %s" % (A34, C3))
+
+    A34.release()
+    A43 = register("A43")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A43))
+    print("  mulps %s, %s" % (B2, A42))
+    print("  addps %s, %s" % (A41, C4))
+
+    A41.release()
+    A44 = register("A44")
+
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A44))
+    print("  mulps %s, %s" % (B3, A43))
+    print("  addps %s, %s" % (A42, C4))
+    print("  mulps %s, %s" % (B4, A44))
+    print("  addps %s, %s" % (A43, C4))
+    print("  addps %s, %s" % (A44, C4))
+
+    A42.release()
+    A43.release()
+    A44.release()
+
+    B1.release()
+    B2.release()
+    B3.release()
+    B4.release()
+
+  elif options.SSE == 3:
+    print("")
+
+  elif options.SSE == 4.1:
+    print("")
+    print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
+
+    A1 = register("A1")
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A1))
+
+    B1 = register("B1")
+    print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B1))
+    B2 = register("B2")
+    print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B2))
+    B3 = register("B3")
+    print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B3))
+    B4 = register("B4")
+    print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B4))
+
+    print("")
+    print("  # Calculate C(1,:).")
+
+    C11 = register("C11")
+    print("  movaps %s, %s" % (B1, C11))
+    print("  dpps $0xf1, %s, %s" % (A1, C11))
+
+    C12 = register("C12")
+    print("  movaps %s, %s" % (B2, C12))
+    print("  dpps $0xf2, %s, %s" % (A1, C12))
+
+    C13 = register("C13")
+    print("  movaps %s, %s" % (B3, C13))
+    print("  dpps $0xf4, %s, %s" % (A1, C13))
+
+    C14 = register("C14")
+    print("  movaps %s, %s" % (B4, C14))
+    print("  dpps $0xf8, %s, %s" % (A1, C14))
+
+    print("  blendps $0x01, %s, %s" % (C11, C12))
+    C11.release()
+    print("  blendps $0x03, %s, %s" % (C12, C13))
+    C12.release()
+    print("  blendps $0x07, %s, %s" % (C13, C14))
+    C13.release()
+    print("  addps %s, %s" % (C14, C1))
+    C14.release()
+    A1.release()
+
+    A2 = register("A2")
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A2))
+
+    print("")
+    print("  # Calculate C(2,:).")
+
+    C21 = register("C21")
+    print("  movaps %s, %s" % (B1, C21))
+    print("  dpps $0xf1, %s, %s" % (A2, C21))
+
+    C22 = register("C22")
+    print("  movaps %s, %s" % (B2, C22))
+    print("  dpps $0xf2, %s, %s" % (A2, C22))
+
+    C23 = register("C23")
+    print("  movaps %s, %s" % (B3, C23))
+    print("  dpps $0xf4, %s, %s" % (A2, C23))
+
+    C24 = register("C24")
+    print("  movaps %s, %s" % (B4, C24))
+    print("  dpps $0xf8, %s, %s" % (A2, C24))
+
+    print("  blendps $0x01, %s, %s" % (C21, C22))
+    C21.release()
+    print("  blendps $0x03, %s, %s" % (C22, C23))
+    C22.release()
+    print("  blendps $0x07, %s, %s" % (C23, C24))
+    C23.release()
+    print("  addps %s, %s" % (C24, C2))
+    C24.release()
+    A2.release()
+
+    A3 = register("A3")
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A3))
+
+    print("")
+    print("  # Calculate C(3,:).")
+
+    C31 = register("C31")
+    print("  movaps %s, %s" % (B1, C31))
+    print("  dpps $0xf1, %s, %s" % (A3, C31))
+
+    C32 = register("C32")
+    print("  movaps %s, %s" % (B2, C32))
+    print("  dpps $0xf2, %s, %s" % (A3, C32))
+
+    C33 = register("C33")
+    print("  movaps %s, %s" % (B3, C33))
+    print("  dpps $0xf4, %s, %s" % (A3, C33))
+
+    C34 = register("C34")
+    print("  movaps %s, %s" % (B4, C34))
+    print("  dpps $0xf8, %s, %s" % (A3, C34))
+
+    print("  blendps $0x01, %s, %s" % (C31, C32))
+    C31.release()
+    print("  blendps $0x03, %s, %s" % (C32, C33))
+    C32.release()
+    print("  blendps $0x07, %s, %s" % (C33, C34))
+    C33.release()
+    print("  addps %s, %s" % (C34, C3))
+    C34.release()
+    A3.release()
+
+    A4 = register("A4")
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A4))
+
+    print("")
+    print("  # Calculate C(4,:).")
+
+    C41 = register("C41")
+    print("  movaps %s, %s" % (B1, C41))
+    print("  dpps $0xf1, %s, %s" % (A4, C41))
+
+    C42 = register("C42")
+    print("  movaps %s, %s" % (B2, C42))
+    print("  dpps $0xf2, %s, %s" % (A4, C42))
+
+    C43 = register("C43")
+    print("  movaps %s, %s" % (B3, C43))
+    print("  dpps $0xf4, %s, %s" % (A4, C43))
+
+    C44 = register("C44")
+    print("  movaps %s, %s" % (B4, C44))
+    print("  dpps $0xf8, %s, %s" % (A4, C44))
+
+    print("  blendps $0x01, %s, %s" % (C41, C42))
+    C41.release()
+    print("  blendps $0x03, %s, %s" % (C42, C43))
+    C42.release()
+    print("  blendps $0x07, %s, %s" % (C43, C44))
+    C43.release()
+    print("  addps %s, %s" % (C44, C4))
+    C44.release()
+    A4.release()
+
+    # Done.
+    B1.release()
+    B2.release()
+    B3.release()
+    B4.release()
+
+  if options.generate_checks:
+    print("")
+    print("  .align 16")
+    print("jump_%d:" % (block_counter.get()))
+    block_counter.increment()
+
+  if not options.alphaOne:
+    print("")
+    print("  # Multiply C(%d,%d) by alpha." % (i+1, j+1))
+    print("  mulps alpha, %s" % (C1))
+    print("  mulps alpha, %s" % (C2))
+    print("  mulps alpha, %s" % (C3))
+    print("  mulps alpha, %s" % (C4))
+
+  print("")
+  print("  # Add accumulated C(%d,%d) to already existing." % (i+1, j+1))
+  print("  addps 0x%x(C), %s" % (row_major_index(0, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense, C1))
+  print("  addps 0x%x(C), %s" % (row_major_index(1, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense, C2))
+  print("  addps 0x%x(C), %s" % (row_major_index(2, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense, C3))
+  print("  addps 0x%x(C), %s" % (row_major_index(3, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense, C4))
+
+  print("")
+  print("  # Write out C(%d,%d) submatrix block." % (i+1, j+1))
+  print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense))
+  print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense))
+  print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense))
+  print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense))
+
+  C1.release()
+  C2.release()
+  C3.release()
+  C4.release()
+
 # The main program.
 parser = optparse.OptionParser(description =
 """This script generates a stream element kernel operating on 4x4 matrix
@@ -198,10 +546,6 @@ if options.Z_curve_ordering:
   if options.N != 4:
     log.warning("Z-curve ordering only works with N = 4")
     options.N = 4
-
-  if options.SSE != 4.1:
-    log.warning("Z-curve ordering only uses SSE4.1")
-    options.SSE = 4.1
 
 # Check SSE level.
 if not options.SSE in [1, 3, 4.1]:
@@ -406,19 +750,24 @@ if options.Z_curve_ordering:
 
   for jump_index in range(15):
     print("")
+    print(".align 16")
     print("tier_%02d:" % (jump_index))
 
     if (jump_index & 0x1) == 0:
       print("  # Perform A_{11}*B_{11} = C_{11} product with norm checks.")
+      block_product(1, 1, 1)
 
     if (jump_index & 0x2) == 0:
       print("  # Perform A_{12}*B_{21} = C_{11} product with norm checks.")
+      block_product(1, 2, 1)
 
     if (jump_index & 0x4) == 0:
       print("  # Perform A_{11}*B_{12} = C_{12} product with norm checks.")
+      block_product(1, 1, 2)
 
     if (jump_index & 0x8) == 0:
       print("  # Perform A_{12}*B_{22} = C_{12} product with norm checks.")
+      block_product(1, 2, 2)
 
 else:
   for i in range(options.N):
@@ -445,7 +794,6 @@ else:
 
           norm = register("norm")
 
-          print("")
           print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
           print("  movss 0x%x(A), %s" % ((i*options.N+k)*4+offset_norm, norm))
           print("  mulss 0x%x(B), %s" % ((k*options.N+j)*4+offset_norm, norm))
