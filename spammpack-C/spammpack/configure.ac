@@ -164,8 +164,8 @@ AC_MSG_NOTICE([at the kernel tier, the dense matrix block has a size of ${have_N
 AC_MSG_CHECKING([for which kernel implementation to use])
 AC_ARG_WITH([kernel], [AS_HELP_STRING([--with-kernel], [Choose the kernel
              implementation to use. Available kernel implementations are
-             standard, standard_SSE4_1, no_check, no_check_SSE4_1,
-             experimental.  Default is standard.])],
+             standard, standard_SSE4_1, Z_curve_SSE4_1, no_check,
+             no_check_SSE4_1, experimental.  Default is standard.])],
              [have_kernel="${withval}"],
              [have_kernel="standard"])
 if test "${have_kernel}" = "standard"; then
@@ -177,6 +177,10 @@ elif test "${have_kernel}" = "no_check"; then
 elif test "${have_kernel}" = "standard_SSE4_1"; then
   AC_MSG_RESULT([using standard kernel (SSE 4.1)])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_STANDARD_SSE4_1, [1], [Use the standard stream kernel (SSE4.1).])
+  AC_DEFINE(SPAMM_USE_TRANSPOSE, [1], [Define whether we use the transpose in the data blocks.])
+elif test "${have_kernel}" = "Z_curve_SSE4_1"; then
+  AC_MSG_RESULT([using Z-curve kernel (SSE 4.1)])
+  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1, [1], [Use the Z-curve stream kernel (SSE4.1).])
   AC_DEFINE(SPAMM_USE_TRANSPOSE, [1], [Define whether we use the transpose in the data blocks.])
 elif test "${have_kernel}" = "no_check_SSE4_1"; then
   AC_MSG_RESULT([using no_check kernel (SSE 4.1)])

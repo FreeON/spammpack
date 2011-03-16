@@ -681,7 +681,7 @@ if options.N-options.N > 0:
 # End of outer loop.
 print("")
 print("  # Loop end.")
-print("  inc index")
+print("  add $0x01, index")
 print("  mov index, base_pointer")
 print("  cmp number_stream_elements, index")
 print("  jb stream_loop")
