@@ -89,7 +89,8 @@ stream_loop:
   lea (jump_index, jump_index_temp), jump_index
   jmp *jump_index
 
-#.section .rodata
+  # The jump table is in the read-only data section.
+  .section .rodata
   .align 4
 jump_table:
   .long tier_00-jump_table
