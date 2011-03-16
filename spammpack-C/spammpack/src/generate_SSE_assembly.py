@@ -194,6 +194,15 @@ if 2**d != options.N:
   log.error("N needs to be a power of 2")
   sys.exit(1)
 
+if options.Z_curve_ordering:
+  if options.N != 4:
+    log.warning("Z-curve ordering only works with N = 4")
+    options.N = 4
+
+  if options.SSE != 4.1:
+    log.warning("Z-curve ordering only uses SSE4.1")
+    options.SSE = 4.1
+
 # Check SSE level.
 if not options.SSE in [1, 3, 4.1]:
   log.error("unknown SSE level")
@@ -259,17 +268,26 @@ print("#define C %r10")
 if options.Z_curve_ordering:
   print("")
   print("# Define jump table variables.")
-  print("#define jump_index %11")
+  print("#define jump_index %r11")
   print("#define jump_index_base %rcx")
   print("#define jump_index_base_32 %ecx")
   print("#define old_stack %r12")
 
 # The following sizes were generated with print_data_sizes.c.
 sizeof_multiply_stream_t = 3*8
-offset_norm = 16
-offset_block_dense = 192
-offset_block_dense_dilated = 1216
-offset_block_dense_transpose = 5312
+
+if not options.Z_curve_ordering:
+  offset_norm = 16
+  offset_block_dense = 192
+  offset_block_dense_dilated = 1216
+  offset_block_dense_transpose = 5312
+else:
+  offset_norm = 16
+  offset_norm_upper = 192
+  offset_norm_upper_transpose = 256
+  offset_block_dense = 320
+  offset_block_dense_dilated = 1344
+  offset_block_dense_transpose = 5440
 
 # Get alpha if needed.
 if not options.alphaOne:
@@ -285,6 +303,16 @@ print("  .text")
 print("  .align 256")
 print("  .global %s" % (options.functionName))
 print("  .type %s, @function" % (options.functionName))
+
+if options.Z_curve_ordering:
+  print("")
+  print("  # The jump table for the second kernel tier is in the read-only data section.")
+  print("  .section .rodata")
+  print("  .align 4")
+  print("jump_table:")
+  for jump_index in range(15):
+    print("  .long tier_%02d-jump_table" % (jump_index))
+  print("  .text")
 
 print("")
 print("%s:" % (options.functionName))
@@ -350,60 +378,47 @@ if options.Z_curve_ordering:
   print("")
   print("  # First level of hierarchy. Do some norm products [ A11*B11, A12*B21, A11*B12, A12*B22 ].")
   norm = register("norm")
-  print("  movaps 0x0(A), %s" % (norm))
-  print("  mulps 0x0(B), %s" % (norm))
+  print("  movaps 0x%x(A), %s" % (offset_norm_upper, norm))
+  print("  mulps 0x%x(B), %s" % (offset_norm_upper_transpose, norm))
   print("  cmpps $0x02, %s, %s # norm product <= tolerance?" % (tolerance, norm))
   print("  pshufb %s, %s" % (norm_mask, norm))
   print("  pmovmskb %s, jump_index" % (norm))
   norm.release()
 
   print("")
+  print("  # The value in jump_index is now such that a \"1\" bit indicates that the norm")
+  print("  # product was <= tolerance and a \"0\" that it was not. The bits are ordered such")
+  print("  # that:")
+  print("  #")
+  print("  # jump_index[0] = A11*B11")
+  print("  # jump_index[1] = A12*B21")
+  print("  # jump_index[2] = A11*B12")
+  print("  # jump_index[3] = A12*B22")
+
+  print("")
   print("  # Jump table for first tier.")
-  print("  lea jump_table(%rip), jump_index_temp")
-  print("  mov (jump_index_temp, jump_index, 4), jump_index_temp_32")
-  print("  movslq jump_index_temp_32, jump_index_temp")
+  print("  lea jump_table(%rip), jump_index_base")
+  print("  mov (jump_index_base, jump_index, 4), jump_index_base_32")
+  print("  movslq jump_index_base_32, jump_index_base")
   print("  lea jump_table(%rip), jump_index")
-  print("  lea (jump_index, jump_index_temp), jump_index")
+  print("  lea (jump_index, jump_index_base), jump_index")
   print("  jmp *jump_index")
-  print("")
-  print("  # The jump table is in the read-only data section.")
-  print("  .section .rodata")
-  print("  .align 4")
-  print("jump_table:")
-  print("  .long tier_00-jump_table")
-  print("  .long tier_01-jump_table")
-  print("  .long tier_02-jump_table")
-  print("  .long tier_03-jump_table")
-  print("  .long tier_04-jump_table")
-  print("  .long tier_05-jump_table")
-  print("  .long tier_06-jump_table")
-  print("  .long tier_07-jump_table")
-  print("  .long tier_08-jump_table")
-  print("  .long tier_09-jump_table")
-  print("  .long tier_10-jump_table")
-  print("  .long tier_11-jump_table")
-  print("  .long tier_12-jump_table")
-  print("  .long tier_13-jump_table")
-  print("  .long tier_14-jump_table")
-  print("  .long tier_15-jump_table")
-  print("")
-  print("  .text")
-  print("tier_00: jmp loop_end")
-  print("tier_01: jmp loop_end")
-  print("tier_02: jmp loop_end")
-  print("tier_03: jmp loop_end")
-  print("tier_04: jmp loop_end")
-  print("tier_05: jmp loop_end")
-  print("tier_06: jmp loop_end")
-  print("tier_07: jmp loop_end")
-  print("tier_08: jmp loop_end")
-  print("tier_09: jmp loop_end")
-  print("tier_10: jmp loop_end")
-  print("tier_11: jmp loop_end")
-  print("tier_12: jmp loop_end")
-  print("tier_13: jmp loop_end")
-  print("tier_14: jmp loop_end")
-  print("tier_15: jmp loop_end")
+
+  for jump_index in range(15):
+    print("")
+    print("tier_%02d:" % (jump_index))
+
+    if (jump_index & 0x1) == 0:
+      print("  # Perform A_{11}*B_{11} = C_{11} product with norm checks.")
+
+    if (jump_index & 0x2) == 0:
+      print("  # Perform A_{12}*B_{21} = C_{11} product with norm checks.")
+
+    if (jump_index & 0x4) == 0:
+      print("  # Perform A_{11}*B_{12} = C_{12} product with norm checks.")
+
+    if (jump_index & 0x8) == 0:
+      print("  # Perform A_{12}*B_{22} = C_{12} product with norm checks.")
 
 else:
   for i in range(options.N):

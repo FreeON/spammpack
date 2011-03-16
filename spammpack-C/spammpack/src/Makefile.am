@@ -111,6 +111,9 @@ spamm_stream_kernel_no_checks_SSE.S : generate_SSE_assembly.py
 spamm_stream_kernel_SSE4_1.S : generate_SSE_assembly.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --name spamm_stream_kernel_SSE4_1 > $@
 
+spamm_stream_kernel_SSE4_1_Z_curve.S : generate_SSE_assembly.py
+	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --Z-curve --name spamm_stream_kernel_SSE4_1_Z_curve > $@
+
 spamm_stream_kernel_no_checks_SSE4_1.S : generate_SSE_assembly.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --name spamm_stream_kernel_no_checks_SSE4_1 --no-checks > $@
 

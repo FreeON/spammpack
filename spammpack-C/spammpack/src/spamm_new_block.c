@@ -46,5 +46,13 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D)
   data->node_norm = 0.0;
   data->node_norm2 = 0.0;
 
+#if defined(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1)
+  for (i = 0; i < 8; i++)
+  {
+    data->norm_upper[i] = 0.0;
+    data->norm_upper_transpose[i] = 0.0;
+  }
+#endif
+
   return data;
 }

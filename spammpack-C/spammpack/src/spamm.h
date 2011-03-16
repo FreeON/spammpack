@@ -78,6 +78,14 @@ struct spamm_data_t
   /** The square of the norms of the basic block matrices. */
   float norm2[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
 
+#if defined(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1)
+  /** The upper tier norms. */
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) norm_upper[8];
+
+  /** The upper tier norms for the transpose. */
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) norm_upper_transpose[8];
+#endif
+
   /** The matrix data.
    *
    * The matrix elements are arranged on a row-major ordered
