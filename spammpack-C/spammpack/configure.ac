@@ -178,6 +178,9 @@ elif test "${have_kernel}" = "standard_SSE4_1"; then
   AC_MSG_RESULT([using standard kernel (SSE 4.1)])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_STANDARD_SSE4_1, [1], [Use the standard stream kernel (SSE4.1).])
   AC_DEFINE(SPAMM_USE_TRANSPOSE, [1], [Define whether we use the transpose in the data blocks.])
+elif test "${have_kernel}" = "Z_curve_SSE"; then
+  AC_MSG_RESULT([using Z-curve kernel (SSE)])
+  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE, [1], [Use the Z-curve stream kernel (SSE).])
 elif test "${have_kernel}" = "Z_curve_SSE4_1"; then
   AC_MSG_RESULT([using Z-curve kernel (SSE 4.1)])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1, [1], [Use the Z-curve stream kernel (SSE4.1).])
