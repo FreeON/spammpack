@@ -9,11 +9,12 @@
 #define base_pointer %rdx
 
 # Define a variable for the old stack.
-#define old_stack %rcx
+#define old_stack %r12
 
 # Define jump table index.
 #define jump_index %r11
-#define jump_index_temp %r12
+#define jump_index_temp %rcx
+#define jump_index_temp_32 %ecx
 
 # Define pointers to matrix data nodes in stream.
 #define A %r8
@@ -81,14 +82,14 @@ stream_loop:
   pmovmskb %xmm3, jump_index
 
   # Jump table for first tier.
-  lea (,jump_index, 4), jump_index
   lea jump_table(%rip), jump_index_temp
-  mov (jump_index_temp, jump_index), jump_index
-  lea jump_table(%rip), jump_index_temp
-  lea (jump_index_temp, jump_index), jump_index
+  mov (jump_index_temp, jump_index, 4), jump_index_temp_32
+  movslq jump_index_temp_32, jump_index_temp
+  lea jump_table(%rip), jump_index
+  lea (jump_index, jump_index_temp), jump_index
   jmp *jump_index
 
-  .section .rodata
+#.section .rodata
   .align 4
 jump_table:
   .long tier_00-jump_table
@@ -100,26 +101,31 @@ jump_table:
   .long tier_06-jump_table
   .long tier_07-jump_table
   .long tier_08-jump_table
+  .long tier_09-jump_table
+  .long tier_10-jump_table
+  .long tier_11-jump_table
+  .long tier_12-jump_table
+  .long tier_13-jump_table
+  .long tier_14-jump_table
+  .long tier_15-jump_table
 
   .text
-tier_00:
-  jmp loop_end
-tier_01:
-  jmp loop_end
-tier_02:
-  jmp loop_end
-tier_03:
-  jmp loop_end
-tier_04:
-  jmp loop_end
-tier_05:
-  jmp loop_end
-tier_06:
-  jmp loop_end
-tier_07:
-  jmp loop_end
-tier_08:
-  jmp loop_end
+tier_00: jmp loop_end
+tier_01: jmp loop_end
+tier_02: jmp loop_end
+tier_03: jmp loop_end
+tier_04: jmp loop_end
+tier_05: jmp loop_end
+tier_06: jmp loop_end
+tier_07: jmp loop_end
+tier_08: jmp loop_end
+tier_09: jmp loop_end
+tier_10: jmp loop_end
+tier_11: jmp loop_end
+tier_12: jmp loop_end
+tier_13: jmp loop_end
+tier_14: jmp loop_end
+tier_15: jmp loop_end
 
 loop_end:
   # Loop end.
