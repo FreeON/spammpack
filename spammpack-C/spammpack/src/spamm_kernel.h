@@ -64,7 +64,20 @@ spamm_stream_kernel_SSE4_1 (const unsigned int number_stream_elements,
  * @param multiply_stream The multiply stream.
  */
 void
-spamm_stream_kernel_SSE4_1_Z_curve (const unsigned int number_stream_elements,
+spamm_stream_kernel_Z_curve_SSE (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_stream_kernel_Z_curve_SSE4_1 (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);

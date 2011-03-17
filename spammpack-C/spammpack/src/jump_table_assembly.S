@@ -10,7 +10,8 @@ jump_table:
 
   lea 0(,%rax, 4), %rdx
   lea table(%rip), %rax
-  mov (%rdx, %rax), %rdx
+  mov (%rdx, %rax), %edx
+  movslq %edx, %rdx
   lea table(%rip), %rax
   lea (%rdx, %rax), %rax
   jmp *%rax
