@@ -15,7 +15,74 @@ import optparse
 import os.path
 import sys
 
-class register:
+class Register:
+  """A class that takes care of returning an available x86 register to the
+  caller."""
+
+  variables = {}
+  registerPool = [ "%rax", "%rsi", "%rdi", "%rdx" ]
+
+  def __init__ (self, name, registerName = None):
+    """Get a free register for the named variable. The register needs to be
+    released again to become free again."""
+
+    if name in Register.variables:
+      log.error("The variable %s is already assigned a register" % (name))
+      sys.exit(1)
+
+    if registerName and not registerName in Register.registerPool:
+      log.error("The requested register %s is not available anymore" % (registerName))
+      sys.exit(1)
+
+    if registerName:
+      self.name = name
+      self.register = registerName
+      Register.registerPool.remove(registerName)
+      Register.variables[name] = registerName
+    else:
+      if len(Register.registerPool) > 0:
+        self.name = name
+        self.register = Register.registerPool.pop(0)
+        Register.variables[name] = self.register
+      else:
+        log.error("no registers left")
+        sys.exit(1)
+
+    log.debug("assigned %s --> %s" % (self.register, self.name))
+    log.debug("registerPool: %s" % (Register.registerPool))
+    log.debug("variables: %s" % (Register.variables))
+
+  def release (self):
+    """Release a register back to the register pool."""
+
+    if not self.name in Register.variables:
+      log.error("The variable %s is not assigned a register" % (self.name))
+      sys.exit(1)
+
+    Register.registerPool.append(self.register)
+    del Register.variables[self.name]
+
+    log.debug("released register %s assigned to variable %s" % (self.register, self.name))
+    log.debug("registerPool: %s" % (Register.registerPool))
+    log.debug("variables: %s" % (Register.variables))
+
+  def getName (self):
+    """Return the name of the variable."""
+    return self.name
+
+  def getRegister (self):
+    """Return the register assigned to this variable."""
+    return self.register
+
+  def __str__ (self):
+    """Use this variable in the code."""
+
+    if not self.name in Register.variables:
+      log.error("The variable %s is not assigned a register" % (self.name))
+      sys.exit(1)
+    return self.register
+
+class SSERegister:
   """A class that takes care of returning an available SSE register to the
   caller. This is how we rotate through the 16 available registers on an x86_64
   CPU."""
@@ -29,50 +96,58 @@ class register:
     """Get a free register for the named variable. The register needs to be
     released again to become free again."""
 
-    if name in register.variables:
+    if name in SSERegister.variables:
       log.error("The variable %s is already assigned a register" % (name))
       sys.exit(1)
 
-    if registerName and not registerName in register.registerPool:
+    if registerName and not registerName in SSERegister.registerPool:
       log.error("The requested register %s is not available anymore" % (registerName))
       sys.exit(1)
 
     if registerName:
       self.name = name
       self.register = registerName
-      register.registerPool.remove(registerName)
-      register.variables[name] = registerName
+      SSERegister.registerPool.remove(registerName)
+      SSERegister.variables[name] = registerName
     else:
-      if len(register.registerPool) > 0:
+      if len(SSERegister.registerPool) > 0:
         self.name = name
-        self.register = register.registerPool.pop(0)
-        register.variables[name] = self.register
+        self.register = SSERegister.registerPool.pop(0)
+        SSERegister.variables[name] = self.register
       else:
         log.error("no registers left")
         sys.exit(1)
 
     log.debug("assigned %s --> %s" % (self.register, self.name))
-    log.debug("registerPool: %s" % (register.registerPool))
-    log.debug("variables: %s" % (register.variables))
+    log.debug("registerPool: %s" % (SSERegister.registerPool))
+    log.debug("variables: %s" % (SSERegister.variables))
 
   def release (self):
     """Release a register back to the register pool."""
 
-    if not self.name in register.variables:
+    if not self.name in SSERegister.variables:
       log.error("The variable %s is not assigned a register" % (self.name))
       sys.exit(1)
 
-    register.registerPool.append(self.register)
-    del register.variables[self.name]
+    SSERegister.registerPool.append(self.register)
+    del SSERegister.variables[self.name]
 
     log.debug("released register %s assigned to variable %s" % (self.register, self.name))
-    log.debug("registerPool: %s" % (register.registerPool))
-    log.debug("variables: %s" % (register.variables))
+    log.debug("registerPool: %s" % (SSERegister.registerPool))
+    log.debug("variables: %s" % (SSERegister.variables))
+
+  def getName (self):
+    """Return the name of the variable."""
+    return self.name
+
+  def getRegister (self):
+    """Return the register assigned to this variable."""
+    return self.register
 
   def __str__ (self):
     """Use this variable in the code."""
 
-    if not self.name in register.variables:
+    if not self.name in SSERegister.variables:
       log.error("The variable %s is not assigned a register" % (self.name))
       sys.exit(1)
     return self.register
@@ -123,10 +198,10 @@ def block_product (i, j, k):
   j -= 1
   k -= 1
 
-  C1 = register("C1")
-  C2 = register("C2")
-  C3 = register("C3")
-  C4 = register("C4")
+  C1 = SSERegister("C1")
+  C2 = SSERegister("C2")
+  C3 = SSERegister("C3")
+  C4 = SSERegister("C4")
 
   print("")
   print("  # Reset C(%d,%d) matrix block accumulators." % (i+1, j+1))
@@ -141,7 +216,7 @@ def block_product (i, j, k):
     print("jump_%d:" % (block_counter.get()))
     block_counter.increment()
 
-    norm = register("norm")
+    norm = SSERegister("norm")
 
     print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
     print("  movss 0x%x(A), %s" % ((i*options.N+k)*4+offset_norm, norm))
@@ -157,10 +232,10 @@ def block_product (i, j, k):
     norm.release()
 
   if options.SSE == 1:
-    B1 = register("B1")
-    B2 = register("B2")
-    B3 = register("B3")
-    B4 = register("B4")
+    B1 = SSERegister("B1")
+    B2 = SSERegister("B2")
+    B3 = SSERegister("B3")
+    B4 = SSERegister("B4")
 
     print("")
     print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
@@ -169,9 +244,9 @@ def block_product (i, j, k):
     print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B3))
     print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B4))
 
-    A11 = register("A11")
-    A12 = register("A12")
-    A13 = register("A13")
+    A11 = SSERegister("A11")
+    A12 = SSERegister("A12")
+    A13 = SSERegister("A13")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A11))
     print("  movaps 0x%x(A), %s" % (row_major_index(0, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A12))
@@ -181,91 +256,91 @@ def block_product (i, j, k):
     print("  addps %s, %s" % (A11, C1))
 
     A11.release()
-    A14 = register("A14")
+    A14 = SSERegister("A14")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(0, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A14))
     print("  mulps %s, %s" % (B3, A13))
     print("  addps %s, %s" % (A12, C1))
 
     A12.release()
-    A21 = register("A21")
+    A21 = SSERegister("A21")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A21))
     print("  mulps %s, %s" % (B4, A14))
     print("  addps %s, %s" % (A13, C1))
 
     A13.release()
-    A22 = register("A22")
+    A22 = SSERegister("A22")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(1, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A22))
     print("  mulps %s, %s" % (B1, A21))
     print("  addps %s, %s" % (A14, C1))
 
     A14.release()
-    A23 = register("A23")
+    A23 = SSERegister("A23")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(1, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A23))
     print("  mulps %s, %s" % (B2, A22))
     print("  addps %s, %s" % (A21, C2))
 
     A21.release()
-    A24 = register("A24")
+    A24 = SSERegister("A24")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(1, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A24))
     print("  mulps %s, %s" % (B3, A23))
     print("  addps %s, %s" % (A22, C2))
 
     A22.release()
-    A31 = register("A31")
+    A31 = SSERegister("A31")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A31))
     print("  mulps %s, %s" % (B4, A24))
     print("  addps %s, %s" % (A23, C2))
 
     A23.release()
-    A32 = register("A32")
+    A32 = SSERegister("A32")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(2, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A32))
     print("  mulps %s, %s" % (B1, A31))
     print("  addps %s, %s" % (A24, C2))
 
     A24.release()
-    A33 = register("A33")
+    A33 = SSERegister("A33")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(2, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A33))
     print("  mulps %s, %s" % (B2, A32))
     print("  addps %s, %s" % (A31, C3))
 
     A31.release()
-    A34 = register("A34")
+    A34 = SSERegister("A34")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(2, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A34))
     print("  mulps %s, %s" % (B3, A33))
     print("  addps %s, %s" % (A32, C3))
 
     A32.release()
-    A41 = register("A41")
+    A41 = SSERegister("A41")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A41))
     print("  mulps %s, %s" % (B4, A34))
     print("  addps %s, %s" % (A33, C3))
 
     A33.release()
-    A42 = register("A42")
+    A42 = SSERegister("A42")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(3, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A42))
     print("  mulps %s, %s" % (B1, A41))
     print("  addps %s, %s" % (A34, C3))
 
     A34.release()
-    A43 = register("A43")
+    A43 = SSERegister("A43")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(3, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A43))
     print("  mulps %s, %s" % (B2, A42))
     print("  addps %s, %s" % (A41, C4))
 
     A41.release()
-    A44 = register("A44")
+    A44 = SSERegister("A44")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(3, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A44))
     print("  mulps %s, %s" % (B3, A43))
@@ -290,34 +365,34 @@ def block_product (i, j, k):
     print("")
     print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
 
-    A1 = register("A1")
+    A1 = SSERegister("A1")
     print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A1))
 
-    B1 = register("B1")
+    B1 = SSERegister("B1")
     print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B1))
-    B2 = register("B2")
+    B2 = SSERegister("B2")
     print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B2))
-    B3 = register("B3")
+    B3 = SSERegister("B3")
     print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B3))
-    B4 = register("B4")
+    B4 = SSERegister("B4")
     print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B4))
 
     print("")
     print("  # Calculate C(1,:).")
 
-    C11 = register("C11")
+    C11 = SSERegister("C11")
     print("  movaps %s, %s" % (B1, C11))
     print("  dpps $0xf1, %s, %s" % (A1, C11))
 
-    C12 = register("C12")
+    C12 = SSERegister("C12")
     print("  movaps %s, %s" % (B2, C12))
     print("  dpps $0xf2, %s, %s" % (A1, C12))
 
-    C13 = register("C13")
+    C13 = SSERegister("C13")
     print("  movaps %s, %s" % (B3, C13))
     print("  dpps $0xf4, %s, %s" % (A1, C13))
 
-    C14 = register("C14")
+    C14 = SSERegister("C14")
     print("  movaps %s, %s" % (B4, C14))
     print("  dpps $0xf8, %s, %s" % (A1, C14))
 
@@ -331,25 +406,25 @@ def block_product (i, j, k):
     C14.release()
     A1.release()
 
-    A2 = register("A2")
+    A2 = SSERegister("A2")
     print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A2))
 
     print("")
     print("  # Calculate C(2,:).")
 
-    C21 = register("C21")
+    C21 = SSERegister("C21")
     print("  movaps %s, %s" % (B1, C21))
     print("  dpps $0xf1, %s, %s" % (A2, C21))
 
-    C22 = register("C22")
+    C22 = SSERegister("C22")
     print("  movaps %s, %s" % (B2, C22))
     print("  dpps $0xf2, %s, %s" % (A2, C22))
 
-    C23 = register("C23")
+    C23 = SSERegister("C23")
     print("  movaps %s, %s" % (B3, C23))
     print("  dpps $0xf4, %s, %s" % (A2, C23))
 
-    C24 = register("C24")
+    C24 = SSERegister("C24")
     print("  movaps %s, %s" % (B4, C24))
     print("  dpps $0xf8, %s, %s" % (A2, C24))
 
@@ -363,25 +438,25 @@ def block_product (i, j, k):
     C24.release()
     A2.release()
 
-    A3 = register("A3")
+    A3 = SSERegister("A3")
     print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A3))
 
     print("")
     print("  # Calculate C(3,:).")
 
-    C31 = register("C31")
+    C31 = SSERegister("C31")
     print("  movaps %s, %s" % (B1, C31))
     print("  dpps $0xf1, %s, %s" % (A3, C31))
 
-    C32 = register("C32")
+    C32 = SSERegister("C32")
     print("  movaps %s, %s" % (B2, C32))
     print("  dpps $0xf2, %s, %s" % (A3, C32))
 
-    C33 = register("C33")
+    C33 = SSERegister("C33")
     print("  movaps %s, %s" % (B3, C33))
     print("  dpps $0xf4, %s, %s" % (A3, C33))
 
-    C34 = register("C34")
+    C34 = SSERegister("C34")
     print("  movaps %s, %s" % (B4, C34))
     print("  dpps $0xf8, %s, %s" % (A3, C34))
 
@@ -395,25 +470,25 @@ def block_product (i, j, k):
     C34.release()
     A3.release()
 
-    A4 = register("A4")
+    A4 = SSERegister("A4")
     print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A4))
 
     print("")
     print("  # Calculate C(4,:).")
 
-    C41 = register("C41")
+    C41 = SSERegister("C41")
     print("  movaps %s, %s" % (B1, C41))
     print("  dpps $0xf1, %s, %s" % (A4, C41))
 
-    C42 = register("C42")
+    C42 = SSERegister("C42")
     print("  movaps %s, %s" % (B2, C42))
     print("  dpps $0xf2, %s, %s" % (A4, C42))
 
-    C43 = register("C43")
+    C43 = SSERegister("C43")
     print("  movaps %s, %s" % (B3, C43))
     print("  dpps $0xf4, %s, %s" % (A4, C43))
 
-    C44 = register("C44")
+    C44 = SSERegister("C44")
     print("  movaps %s, %s" % (B4, C44))
     print("  dpps $0xf8, %s, %s" % (A4, C44))
 
@@ -593,15 +668,27 @@ print("# row-major order within the kernel block.")
 # Define some things.
 print("")
 print("# Function ABI.")
-print("#define number_stream_elements %rdi")
-print("#define alpha                  %xmm0")
-print("#define tolerance              %xmm1")
-print("#define multiply_stream        %rsi")
+number_stream_elements = Register("number_stream_elements", "%rdi")
+print("#define %s %s" % (number_stream_elements.getName(), number_stream_elements.getRegister()))
+
+# Get alpha if needed.
+if not options.alphaOne:
+  alpha = SSERegister("alpha", "%xmm0")
+  print("#define %s %s" % (alpha.name, alpha.register))
+
+# Get tolerance.
+tolerance = SSERegister("tolerance", "%xmm1")
+
+print("#define %s %s" % (tolerance.name, tolerance.register))
+multiply_stream = Register("multiply_stream", "%rsi")
+print("#define %s %s" % (multiply_stream.getName(), multiply_stream.getRegister()))
 
 print("")
 print("# Define loop variables.")
-print("#define index        %rax")
-print("#define base_pointer %rdx")
+index = Register("index", "%rax")
+print("#define %s %s" % (index.getName(), index.getRegister()))
+base_pointer = Register("base_pointer", "%rdx")
+print("#define %s %s" % (base_pointer.getName(), base_pointer.getRegister()))
 
 print("")
 print("# Define pointers to matrix data nodes in stream.")
@@ -613,6 +700,7 @@ if options.Z_curve_ordering:
   print("")
   print("# Define jump table variables.")
   print("#define jump_index %r11")
+  print("#define jump_index_temp %r13")
   print("#define jump_index_base %rcx")
   print("#define jump_index_base_32 %ecx")
   print("#define old_stack %r12")
@@ -632,13 +720,6 @@ else:
   offset_block_dense = 320
   offset_block_dense_dilated = 1344
   offset_block_dense_transpose = 5440
-
-# Get alpha if needed.
-if not options.alphaOne:
-  alpha = register("alpha", "%xmm0")
-
-# Get tolerance.
-tolerance = register("tolerance", "%xmm1")
 
 # Start the function prolog.
 print("")
@@ -669,10 +750,11 @@ print("")
 print("%s:" % (options.functionName))
 print("")
 print("  # Push used registers on stack.")
-print("  push index")
-print("  push base_pointer")
+print("  push %s" % (index.getName()))
+print("  push %s" % (base_pointer.getName()))
 if options.Z_curve_ordering:
   print("  push jump_index")
+  print("  push jump_index_temp")
   print("  push jump_index_base")
   print("  push old_stack")
 print("  push A")
@@ -693,7 +775,7 @@ if options.Z_curve_ordering:
   print("  movl $0x80808080, 0x8(%rsp)")
   print("  movl $0x80808080, 0xc(%rsp)")
 
-  norm_mask = register("norm_mask")
+  norm_mask = SSERegister("norm_mask")
   print("  movaps (%%rsp), %s" % (norm_mask))
 
 if not options.alphaOne:
@@ -703,12 +785,12 @@ if not options.alphaOne:
 
 print("")
 print("  # Test whether number_stream_elements is zero.")
-print("  test number_stream_elements, number_stream_elements")
+print("  test %s, %s" % (number_stream_elements.getName(), number_stream_elements.getName()))
 print("  jbe stream_done")
 print("")
 print("  # Set loop index to zero.")
-print("  xor base_pointer, base_pointer")
-print("  xor index, index")
+print("  xor %s, %s" % (base_pointer.getName(), base_pointer.getName()))
+print("  xor %s, %s" % (index.getName(), index.getName()))
 
 block_counter = counter(1)
 
@@ -718,22 +800,31 @@ print("  .align 16")
 print("stream_loop:")
 print("")
 print("  # Set the base pointer using sizeof(multiply_stream_t) = %d (0x%x)." % (sizeof_multiply_stream_t, sizeof_multiply_stream_t))
-print("  imul $0x%x, base_pointer, base_pointer" % (sizeof_multiply_stream_t))
+print("  imul $0x%x, %s, %s" % (sizeof_multiply_stream_t, base_pointer.getName(), base_pointer.getName()))
 print("")
 print("  # Load pointers to stream matrix blocks.")
-print("  mov (multiply_stream, base_pointer, 1), A")
-print("  mov 0x8(multiply_stream, base_pointer, 1), B")
-print("  mov 0x10(multiply_stream, base_pointer, 1), C")
+print("  mov (%s, %s, 1), A" % (multiply_stream.getName(), base_pointer.getName()))
+print("  mov 0x8(%s, %s, 1), B" % (multiply_stream.getName(), base_pointer.getName()))
+print("  mov 0x10(%s, %s, 1), C" % (multiply_stream.getName(), base_pointer.getName()))
 
 if options.Z_curve_ordering:
   print("")
   print("  # First level of hierarchy. Do some norm products [ A11*B11, A12*B21, A11*B12, A12*B22 ].")
-  norm = register("norm")
+  norm = SSERegister("norm")
   print("  movaps 0x%x(A), %s" % (offset_norm_upper, norm))
   print("  mulps 0x%x(B), %s" % (offset_norm_upper_transpose, norm))
   print("  cmpps $0x02, %s, %s # norm product <= tolerance?" % (tolerance, norm))
   print("  pshufb %s, %s" % (norm_mask, norm))
   print("  pmovmskb %s, jump_index" % (norm))
+  print("")
+  print("  movaps 0x%x(A), %s" % (offset_norm_upper+4*4, norm))
+  print("  mulps 0x%x(B), %s" % (offset_norm_upper_transpose+4*4, norm))
+  print("  cmpps $0x02, %s, %s # norm product <= tolerance?" % (tolerance, norm))
+  print("  pshufb %s, %s" % (norm_mask, norm))
+  print("  pmovmskb %s, jump_index_temp" % (norm))
+  print("")
+  print("  add jump_index_temp, jump_index")
+  norm_mask.release()
   norm.release()
 
   print("")
@@ -784,10 +875,10 @@ else:
   for i in range(options.N):
     for j in range(options.N):
 
-      C1 = register("C1")
-      C2 = register("C2")
-      C3 = register("C3")
-      C4 = register("C4")
+      C1 = SSERegister("C1")
+      C2 = SSERegister("C2")
+      C3 = SSERegister("C3")
+      C4 = SSERegister("C4")
 
       print("")
       print("  # Reset C(%d,%d) matrix block accumulators." % (i+1, j+1))
@@ -803,7 +894,7 @@ else:
           print("jump_%d:" % (block_counter.get()))
           block_counter.increment()
 
-          norm = register("norm")
+          norm = SSERegister("norm")
 
           print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
           print("  movss 0x%x(A), %s" % ((i*options.N+k)*4+offset_norm, norm))
@@ -819,10 +910,10 @@ else:
           norm.release()
 
         if options.SSE == 1:
-          B1 = register("B1")
-          B2 = register("B2")
-          B3 = register("B3")
-          B4 = register("B4")
+          B1 = SSERegister("B1")
+          B2 = SSERegister("B2")
+          B3 = SSERegister("B3")
+          B4 = SSERegister("B4")
 
           print("")
           print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
@@ -831,9 +922,9 @@ else:
           print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B3))
           print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B4))
 
-          A11 = register("A11")
-          A12 = register("A12")
-          A13 = register("A13")
+          A11 = SSERegister("A11")
+          A12 = SSERegister("A12")
+          A13 = SSERegister("A13")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A11))
           print("  movaps 0x%x(A), %s" % (row_major_index(0, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A12))
@@ -843,91 +934,91 @@ else:
           print("  addps %s, %s" % (A11, C1))
 
           A11.release()
-          A14 = register("A14")
+          A14 = SSERegister("A14")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(0, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A14))
           print("  mulps %s, %s" % (B3, A13))
           print("  addps %s, %s" % (A12, C1))
 
           A12.release()
-          A21 = register("A21")
+          A21 = SSERegister("A21")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A21))
           print("  mulps %s, %s" % (B4, A14))
           print("  addps %s, %s" % (A13, C1))
 
           A13.release()
-          A22 = register("A22")
+          A22 = SSERegister("A22")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(1, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A22))
           print("  mulps %s, %s" % (B1, A21))
           print("  addps %s, %s" % (A14, C1))
 
           A14.release()
-          A23 = register("A23")
+          A23 = SSERegister("A23")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(1, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A23))
           print("  mulps %s, %s" % (B2, A22))
           print("  addps %s, %s" % (A21, C2))
 
           A21.release()
-          A24 = register("A24")
+          A24 = SSERegister("A24")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(1, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A24))
           print("  mulps %s, %s" % (B3, A23))
           print("  addps %s, %s" % (A22, C2))
 
           A22.release()
-          A31 = register("A31")
+          A31 = SSERegister("A31")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A31))
           print("  mulps %s, %s" % (B4, A24))
           print("  addps %s, %s" % (A23, C2))
 
           A23.release()
-          A32 = register("A32")
+          A32 = SSERegister("A32")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(2, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A32))
           print("  mulps %s, %s" % (B1, A31))
           print("  addps %s, %s" % (A24, C2))
 
           A24.release()
-          A33 = register("A33")
+          A33 = SSERegister("A33")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(2, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A33))
           print("  mulps %s, %s" % (B2, A32))
           print("  addps %s, %s" % (A31, C3))
 
           A31.release()
-          A34 = register("A34")
+          A34 = SSERegister("A34")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(2, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A34))
           print("  mulps %s, %s" % (B3, A33))
           print("  addps %s, %s" % (A32, C3))
 
           A32.release()
-          A41 = register("A41")
+          A41 = SSERegister("A41")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A41))
           print("  mulps %s, %s" % (B4, A34))
           print("  addps %s, %s" % (A33, C3))
 
           A33.release()
-          A42 = register("A42")
+          A42 = SSERegister("A42")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(3, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A42))
           print("  mulps %s, %s" % (B1, A41))
           print("  addps %s, %s" % (A34, C3))
 
           A34.release()
-          A43 = register("A43")
+          A43 = SSERegister("A43")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(3, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A43))
           print("  mulps %s, %s" % (B2, A42))
           print("  addps %s, %s" % (A41, C4))
 
           A41.release()
-          A44 = register("A44")
+          A44 = SSERegister("A44")
 
           print("  movaps 0x%x(A), %s" % (row_major_index(3, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A44))
           print("  mulps %s, %s" % (B3, A43))
@@ -952,36 +1043,36 @@ else:
           print("")
           print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
 
-          A1 = register("A1")
+          A1 = SSERegister("A1")
           print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A1))
-          A2 = register("A2")
+          A2 = SSERegister("A2")
           print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A2))
 
-          B1 = register("B1")
+          B1 = SSERegister("B1")
           print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B1))
-          B2 = register("B2")
+          B2 = SSERegister("B2")
           print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B2))
-          B3 = register("B3")
+          B3 = SSERegister("B3")
           print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B3))
-          B4 = register("B4")
+          B4 = SSERegister("B4")
           print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B4))
 
           print("")
           print("  # Calculate C(1,:).")
 
-          C11 = register("C11")
+          C11 = SSERegister("C11")
           print("  movaps %s, %s" % (B1, C11))
           print("  dpps $0xf1, %s, %s" % (A1, C11))
 
-          C12 = register("C12")
+          C12 = SSERegister("C12")
           print("  movaps %s, %s" % (B2, C12))
           print("  dpps $0xf2, %s, %s" % (A1, C12))
 
-          C13 = register("C13")
+          C13 = SSERegister("C13")
           print("  movaps %s, %s" % (B3, C13))
           print("  dpps $0xf4, %s, %s" % (A1, C13))
 
-          C14 = register("C14")
+          C14 = SSERegister("C14")
           print("  movaps %s, %s" % (B4, C14))
           print("  dpps $0xf8, %s, %s" % (A1, C14))
 
@@ -995,25 +1086,25 @@ else:
           C14.release()
           A1.release()
 
-          A3 = register("A3")
+          A3 = SSERegister("A3")
           print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A3))
 
           print("")
           print("  # Calculate C(2,:).")
 
-          C21 = register("C21")
+          C21 = SSERegister("C21")
           print("  movaps %s, %s" % (B1, C21))
           print("  dpps $0xf1, %s, %s" % (A2, C21))
 
-          C22 = register("C22")
+          C22 = SSERegister("C22")
           print("  movaps %s, %s" % (B2, C22))
           print("  dpps $0xf2, %s, %s" % (A2, C22))
 
-          C23 = register("C23")
+          C23 = SSERegister("C23")
           print("  movaps %s, %s" % (B3, C23))
           print("  dpps $0xf4, %s, %s" % (A2, C23))
 
-          C24 = register("C24")
+          C24 = SSERegister("C24")
           print("  movaps %s, %s" % (B4, C24))
           print("  dpps $0xf8, %s, %s" % (A2, C24))
 
@@ -1027,25 +1118,25 @@ else:
           C24.release()
           A2.release()
 
-          A4 = register("A4")
+          A4 = SSERegister("A4")
           print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A4))
 
           print("")
           print("  # Calculate C(3,:).")
 
-          C31 = register("C31")
+          C31 = SSERegister("C31")
           print("  movaps %s, %s" % (B1, C31))
           print("  dpps $0xf1, %s, %s" % (A3, C31))
 
-          C32 = register("C32")
+          C32 = SSERegister("C32")
           print("  movaps %s, %s" % (B2, C32))
           print("  dpps $0xf2, %s, %s" % (A3, C32))
 
-          C33 = register("C33")
+          C33 = SSERegister("C33")
           print("  movaps %s, %s" % (B3, C33))
           print("  dpps $0xf4, %s, %s" % (A3, C33))
 
-          C34 = register("C34")
+          C34 = SSERegister("C34")
           print("  movaps %s, %s" % (B4, C34))
           print("  dpps $0xf8, %s, %s" % (A3, C34))
 
@@ -1062,19 +1153,19 @@ else:
           print("")
           print("  # Calculate C(4,:).")
 
-          C41 = register("C41")
+          C41 = SSERegister("C41")
           print("  movaps %s, %s" % (B1, C41))
           print("  dpps $0xf1, %s, %s" % (A4, C41))
 
-          C42 = register("C42")
+          C42 = SSERegister("C42")
           print("  movaps %s, %s" % (B2, C42))
           print("  dpps $0xf2, %s, %s" % (A4, C42))
 
-          C43 = register("C43")
+          C43 = SSERegister("C43")
           print("  movaps %s, %s" % (B3, C43))
           print("  dpps $0xf4, %s, %s" % (A4, C43))
 
-          C44 = register("C44")
+          C44 = SSERegister("C44")
           print("  movaps %s, %s" % (B4, C44))
           print("  dpps $0xf8, %s, %s" % (A4, C44))
 
@@ -1131,9 +1222,9 @@ else:
 print("")
 print("loop_end:")
 print("  # Loop end.")
-print("  add $0x01, index")
-print("  mov index, base_pointer")
-print("  cmp number_stream_elements, index")
+print("  add $0x01, %s" % (index.getName()))
+print("  mov %s, %s" % (index.getName(), base_pointer.getName()))
+print("  cmp %s, %s" % (number_stream_elements.getName(), index.getName()))
 print("  jb stream_loop")
 
 # Leave function.
@@ -1146,12 +1237,12 @@ print("  pop C")
 print("  pop B")
 print("  pop A")
 if options.Z_curve_ordering:
-  norm_mask.release()
   print("  pop old_stack")
   print("  pop jump_index_base")
+  print("  pop jump_index_temp")
   print("  pop jump_index")
-print("  pop base_pointer")
-print("  pop index")
+print("  pop %s" % (base_pointer.getName()))
+print("  pop %s" % (index.getName()))
 print("")
 print("  # Return from function.")
 print("  ret")
@@ -1164,3 +1255,21 @@ tolerance.release()
 print("")
 print("  # Function epilog.")
 print("  .size %s, .-%s" % (options.functionName, options.functionName))
+
+# Release remaining general purpose registers.
+multiply_stream.release()
+index.release()
+number_stream_elements.release()
+base_pointer.release()
+
+# For debugging.
+log.debug("remaining variables assigned as Register: %s" % (Register.variables))
+log.debug("remaining variables assigned as SSERegister: %s" % (SSERegister.variables))
+
+if len(Register.variables) > 0:
+  log.error("still assigned variables as Register: %s" % (Register.variables))
+  sys.exit(1)
+
+if len(SSERegister.variables) > 0:
+  log.error("still assigned variables as SSERegister: %s" % (SSERegister.variables))
+  sys.exit(1)
