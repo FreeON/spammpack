@@ -615,9 +615,12 @@ spamm_multiply (const float tolerance,
 #elif defined(SPAMM_KERNEL_IMPLEMENTATION_STANDARD_SSE4_1)
   printf("(standard kernel SSE4.1)... ");
   spamm_stream_kernel_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
+#elif defined(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE)
+  printf("(Z-curve kernel SSE)... ");
+  spamm_stream_kernel_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
 #elif defined(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1)
   printf("(Z-curve kernel SSE4.1)... ");
-  spamm_stream_kernel_SSE4_1_Z_curve(stream_index, alpha, tolerance, multiply_stream);
+  spamm_stream_kernel_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
 #else
   printf("(unknown kernel)... ");
   exit(1);

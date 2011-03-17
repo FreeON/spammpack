@@ -652,10 +652,17 @@ if options.Z_curve_ordering:
   print("")
   print("  # The jump table for the second kernel tier is in the read-only data section.")
   print("  .section .rodata")
+  print("#ifdef __PIC__")
   print("  .align 4")
   print("jump_table:")
-  for jump_index in range(15):
+  for jump_index in range(16):
     print("  .long tier_%02d-jump_table" % (jump_index))
+  print("#else")
+  print("  .align 4")
+  print("jump_table:")
+  for jump_index in range(16):
+    print("  .long tier_%02d" % (jump_index))
+  print("#endif")
   print("  .text")
 
 print("")
@@ -741,14 +748,18 @@ if options.Z_curve_ordering:
 
   print("")
   print("  # Jump table for first tier.")
+  print("#ifdef __PIC__")
   print("  lea jump_table(%rip), jump_index_base")
   print("  mov (jump_index_base, jump_index, 4), jump_index_base_32")
   print("  movslq jump_index_base_32, jump_index_base")
   print("  lea jump_table(%rip), jump_index")
   print("  lea (jump_index, jump_index_base), jump_index")
   print("  jmp *jump_index")
+  print("#else")
+  print("  jmp *jump_table(, jump_index, 4)")
+  print("#endif")
 
-  for jump_index in range(15):
+  for jump_index in range(16):
     print("")
     print(".align 16")
     print("tier_%02d:" % (jump_index))
