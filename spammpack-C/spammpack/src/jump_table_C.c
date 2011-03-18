@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 void
-jump_table ()
+jump_table_C ()
 {
   int i = rand()/(float) RAND_MAX*100;
 
