@@ -4,7 +4,7 @@ TAGS_FILES = ../spamm_config.h
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 lib_LTLIBRARIES = libspamm.la
-noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la libjump_C.la libjump_assembly.la
+noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la libjump.la
 
 # The version scheme used by Libtool tracks interfaces, where an interface is
 # the set of exported entry points into the library. All Libtool libraries
@@ -102,14 +102,10 @@ libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la
 noinst_SCRIPTS = generate_SSE_assembly.py
 noinst_PROGRAMS = print_data_sizes jump_C jump_assembly
 
-jump_C_SOURCES = jump.c
-jump_C_LDADD = libjump_C.la
+jump_C_LDADD = libjump.la
+jump_assembly_LDADD = libjump.la
 
-jump_assembly_SOURCES = jump.c
-jump_assembly_LDADD = libjump_assembly.la
-
-libjump_C_la_SOURCES = jump_table_C.c
-libjump_assembly_la_SOURCES = jump_table_assembly.S
+libjump_la_SOURCES = jump_table_C.c jump_table_assembly.S
 
 spamm_stream_kernel_SSE.S : generate_SSE_assembly.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 1 --name spamm_stream_kernel_SSE > $@
@@ -137,7 +133,8 @@ libspamm_kernel_la_SOURCES = \
   spamm_stream_kernel_SSE4_1.S \
   spamm_stream_kernel_no_checks_SSE4_1.S \
   spamm_stream_kernel_Z_curve_SSE.S \
-  spamm_stream_kernel_Z_curve_SSE4_1.S
+  spamm_stream_kernel_Z_curve_SSE4_1.S \
+	jump_table_assembly.S
 
 libspamm_kernel_headers = \
   spamm_kernel.h
