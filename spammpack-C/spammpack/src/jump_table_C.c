@@ -4,7 +4,7 @@
 void
 jump_table_C ()
 {
-  int i = rand()/(float) RAND_MAX*100;
+  int i = rand()/(float) RAND_MAX*20;
 
   switch (i)
   {

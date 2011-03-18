@@ -8,7 +8,7 @@ jump_table_asm:
 
   mov $0x02, %rax # Move index into rax; 2 is supposed to end up at label_02.
 
-//#define SHARED
+#define SHARED
 #ifdef SHARED
   lea 0(,%rax, 4), %rdx
   lea table(%rip), %rax
