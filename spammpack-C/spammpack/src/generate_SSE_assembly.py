@@ -15,73 +15,6 @@ import optparse
 import os.path
 import sys
 
-class Register:
-  """A class that takes care of returning an available x86 register to the
-  caller."""
-
-  variables = {}
-  registerPool = [ "%rax", "%rsi", "%rdi", "%rdx" ]
-
-  def __init__ (self, name, registerName = None):
-    """Get a free register for the named variable. The register needs to be
-    released again to become free again."""
-
-    if name in Register.variables:
-      log.error("The variable %s is already assigned a register" % (name))
-      sys.exit(1)
-
-    if registerName and not registerName in Register.registerPool:
-      log.error("The requested register %s is not available anymore" % (registerName))
-      sys.exit(1)
-
-    if registerName:
-      self.name = name
-      self.register = registerName
-      Register.registerPool.remove(registerName)
-      Register.variables[name] = registerName
-    else:
-      if len(Register.registerPool) > 0:
-        self.name = name
-        self.register = Register.registerPool.pop(0)
-        Register.variables[name] = self.register
-      else:
-        log.error("no registers left")
-        sys.exit(1)
-
-    log.debug("assigned %s --> %s" % (self.register, self.name))
-    log.debug("registerPool: %s" % (Register.registerPool))
-    log.debug("variables: %s" % (Register.variables))
-
-  def release (self):
-    """Release a register back to the register pool."""
-
-    if not self.name in Register.variables:
-      log.error("The variable %s is not assigned a register" % (self.name))
-      sys.exit(1)
-
-    Register.registerPool.append(self.register)
-    del Register.variables[self.name]
-
-    log.debug("released register %s assigned to variable %s" % (self.register, self.name))
-    log.debug("registerPool: %s" % (Register.registerPool))
-    log.debug("variables: %s" % (Register.variables))
-
-  def getName (self):
-    """Return the name of the variable."""
-    return self.name
-
-  def getRegister (self):
-    """Return the register assigned to this variable."""
-    return self.register
-
-  def __str__ (self):
-    """Use this variable in the code."""
-
-    if not self.name in Register.variables:
-      log.error("The variable %s is not assigned a register" % (self.name))
-      sys.exit(1)
-    return self.register
-
 class SSERegister:
   """A class that takes care of returning an available SSE register to the
   caller. This is how we rotate through the 16 available registers on an x86_64
@@ -212,7 +145,7 @@ def block_product (i, j, k):
 
   if options.generate_checks:
     print("")
-    print("  .align 16")
+    print("  .balign 16")
     print("jump_%d:" % (block_counter.get()))
     block_counter.increment()
 
@@ -510,7 +443,7 @@ def block_product (i, j, k):
 
   if options.generate_checks:
     print("")
-    print("  .align 16")
+    print("  .balign 16")
     print("jump_%d:" % (block_counter.get()))
     block_counter.increment()
 
@@ -668,8 +601,7 @@ print("# row-major order within the kernel block.")
 # Define some things.
 print("")
 print("# Function ABI.")
-number_stream_elements = Register("number_stream_elements", "%rdi")
-print("#define %s %s" % (number_stream_elements.getName(), number_stream_elements.getRegister()))
+print("#define number_stream_elements %rdi")
 
 # Get alpha if needed.
 if not options.alphaOne:
@@ -680,15 +612,12 @@ if not options.alphaOne:
 tolerance = SSERegister("tolerance", "%xmm1")
 
 print("#define %s %s" % (tolerance.name, tolerance.register))
-multiply_stream = Register("multiply_stream", "%rsi")
-print("#define %s %s" % (multiply_stream.getName(), multiply_stream.getRegister()))
+print("#define multiply_stream %rsi")
 
 print("")
 print("# Define loop variables.")
-index = Register("index", "%rax")
-print("#define %s %s" % (index.getName(), index.getRegister()))
-base_pointer = Register("base_pointer", "%rdx")
-print("#define %s %s" % (base_pointer.getName(), base_pointer.getRegister()))
+print("#define index %rax")
+print("#define base_pointer %rdx")
 
 print("")
 print("# Define pointers to matrix data nodes in stream.")
@@ -725,7 +654,7 @@ else:
 print("")
 print("  # Function prolog.")
 print("  .text")
-print("  .align 256")
+print("  .balign 256")
 print("  .global %s" % (options.functionName))
 print("  .type %s, @function" % (options.functionName))
 
@@ -734,15 +663,15 @@ if options.Z_curve_ordering:
   print("  # The jump table for the second kernel tier is in the read-only data section.")
   print("  .section .rodata")
   print("#ifdef __PIC__")
-  print("  .align 4")
+  print("  .balign 4")
   print("jump_table:")
-  for jump_index in range(16):
-    print("  .long tier_%02d-jump_table" % (jump_index))
+  for jump_index in range(256):
+    print("  .long tier_%03d-jump_table" % (jump_index))
   print("#else")
-  print("  .align 4")
+  print("  .balign 4")
   print("jump_table:")
-  for jump_index in range(16):
-    print("  .long tier_%02d" % (jump_index))
+  for jump_index in range(256):
+    print("  .long tier_%03d" % (jump_index))
   print("#endif")
   print("  .text")
 
@@ -750,8 +679,8 @@ print("")
 print("%s:" % (options.functionName))
 print("")
 print("  # Push used registers on stack.")
-print("  push %s" % (index.getName()))
-print("  push %s" % (base_pointer.getName()))
+print("  push index")
+print("  push base_pointer")
 if options.Z_curve_ordering:
   print("  push jump_index")
   print("  push jump_index_temp")
@@ -764,7 +693,6 @@ print("  push C")
 if options.Z_curve_ordering:
   print("")
   print("  # Push stack pointer so we can make room for local storage.")
-  print("  push old_stack")
   print("  mov %rsp, old_stack")
   print("  sub $0x16, %rsp")
   print("  and $-0x10, %rsp")
@@ -785,27 +713,27 @@ if not options.alphaOne:
 
 print("")
 print("  # Test whether number_stream_elements is zero.")
-print("  test %s, %s" % (number_stream_elements.getName(), number_stream_elements.getName()))
+print("  test number_stream_elements, number_stream_elements")
 print("  jbe stream_done")
 print("")
 print("  # Set loop index to zero.")
-print("  xor %s, %s" % (base_pointer.getName(), base_pointer.getName()))
-print("  xor %s, %s" % (index.getName(), index.getName()))
+print("  xor base_pointer, base_pointer")
+print("  xor index, index")
 
 block_counter = counter(1)
 
 # Beginning of loop over stream elements.
 print("")
-print("  .align 16")
+print("  .balign 16")
 print("stream_loop:")
 print("")
 print("  # Set the base pointer using sizeof(multiply_stream_t) = %d (0x%x)." % (sizeof_multiply_stream_t, sizeof_multiply_stream_t))
-print("  imul $0x%x, %s, %s" % (sizeof_multiply_stream_t, base_pointer.getName(), base_pointer.getName()))
+print("  imul $0x%x, base_pointer, base_pointer" % (sizeof_multiply_stream_t))
 print("")
 print("  # Load pointers to stream matrix blocks.")
-print("  mov (%s, %s, 1), A" % (multiply_stream.getName(), base_pointer.getName()))
-print("  mov 0x8(%s, %s, 1), B" % (multiply_stream.getName(), base_pointer.getName()))
-print("  mov 0x10(%s, %s, 1), C" % (multiply_stream.getName(), base_pointer.getName()))
+print("  mov (multiply_stream, base_pointer, 1), A")
+print("  mov 0x8(multiply_stream, base_pointer, 1), B")
+print("  mov 0x10(multiply_stream, base_pointer, 1), C")
 
 if options.Z_curve_ordering:
   print("")
@@ -816,6 +744,7 @@ if options.Z_curve_ordering:
   print("  cmpps $0x02, %s, %s # norm product <= tolerance?" % (tolerance, norm))
   print("  pshufb %s, %s" % (norm_mask, norm))
   print("  pmovmskb %s, jump_index" % (norm))
+  print("  shl $4, jump_index")
   print("")
   print("  movaps 0x%x(A), %s" % (offset_norm_upper+4*4, norm))
   print("  mulps 0x%x(B), %s" % (offset_norm_upper_transpose+4*4, norm))
@@ -823,7 +752,7 @@ if options.Z_curve_ordering:
   print("  pshufb %s, %s" % (norm_mask, norm))
   print("  pmovmskb %s, jump_index_temp" % (norm))
   print("")
-  print("  add jump_index_temp, jump_index")
+  print("  or jump_index_temp, jump_index")
   norm_mask.release()
   norm.release()
 
@@ -840,6 +769,10 @@ if options.Z_curve_ordering:
   print("")
   print("  # Jump table for first tier.")
   print("#ifdef __PIC__")
+  print("  # For PIC (Position Independent Code) we need to perform some magic")
+  print("  # when it comes to figuring out the relative addresses of the jump")
+  print("  # table. Fortunatley on x86_64 we can use %rdi.")
+  print("")
   print("  lea jump_table(%rip), jump_index_base")
   print("  mov (jump_index_base, jump_index, 4), jump_index_base_32")
   print("  movslq jump_index_base_32, jump_index_base")
@@ -850,10 +783,10 @@ if options.Z_curve_ordering:
   print("  jmp *jump_table(, jump_index, 4)")
   print("#endif")
 
-  for jump_index in range(16):
+  for jump_index in range(256):
     print("")
-    print(".align 16")
-    print("tier_%02d:" % (jump_index))
+    print(".balign 16")
+    print("tier_%03d:" % (jump_index))
 
     if (jump_index & 0x1) == 0:
       print("  # Perform A_{11}*B_{11} = C_{11} product with norm checks.")
@@ -870,6 +803,22 @@ if options.Z_curve_ordering:
     if (jump_index & 0x8) == 0:
       print("  # Perform A_{12}*B_{22} = C_{12} product with norm checks.")
       block_product(1, 2, 2)
+
+    if (jump_index & 0x10) == 0:
+      print("  # Perform A_{21}*B_{11} = C_{21} product with norm checks.")
+      block_product(2, 1, 1)
+
+    if (jump_index & 0x20) == 0:
+      print("  # Perform A_{22}*B_{21} = C_{21} product with norm checks.")
+      block_product(2, 2, 1)
+
+    if (jump_index & 0x30) == 0:
+      print("  # Perform A_{21}*B_{12} = C_{22} product with norm checks.")
+      block_product(2, 1, 2)
+
+    if (jump_index & 0x40) == 0:
+      print("  # Perform A_{22}*B_{22} = C_{22} product with norm checks.")
+      block_product(2, 2, 2)
 
 else:
   for i in range(options.N):
@@ -890,7 +839,7 @@ else:
       for k in range(options.N):
         if options.generate_checks:
           print("")
-          print("  .align 16")
+          print("  .balign 16")
           print("jump_%d:" % (block_counter.get()))
           block_counter.increment()
 
@@ -1187,7 +1136,7 @@ else:
 
       if options.generate_checks:
         print("")
-        print("  .align 16")
+        print("  .balign 16")
         print("jump_%d:" % (block_counter.get()))
         block_counter.increment()
 
@@ -1222,14 +1171,14 @@ else:
 print("")
 print("loop_end:")
 print("  # Loop end.")
-print("  add $0x01, %s" % (index.getName()))
-print("  mov %s, %s" % (index.getName(), base_pointer.getName()))
-print("  cmp %s, %s" % (number_stream_elements.getName(), index.getName()))
+print("  add $0x01, index")
+print("  mov index, base_pointer")
+print("  cmp  number_stream_elements, index")
 print("  jb stream_loop")
 
 # Leave function.
 print("")
-print("  .align 16")
+print("  .balign 16")
 print("stream_done:")
 print("")
 print("  # Pop registers from stack.")
@@ -1241,8 +1190,8 @@ if options.Z_curve_ordering:
   print("  pop jump_index_base")
   print("  pop jump_index_temp")
   print("  pop jump_index")
-print("  pop %s" % (base_pointer.getName()))
-print("  pop %s" % (index.getName()))
+print("  pop base_pointer")
+print("  pop index")
 print("")
 print("  # Return from function.")
 print("  ret")
@@ -1256,19 +1205,8 @@ print("")
 print("  # Function epilog.")
 print("  .size %s, .-%s" % (options.functionName, options.functionName))
 
-# Release remaining general purpose registers.
-multiply_stream.release()
-index.release()
-number_stream_elements.release()
-base_pointer.release()
-
 # For debugging.
-log.debug("remaining variables assigned as Register: %s" % (Register.variables))
 log.debug("remaining variables assigned as SSERegister: %s" % (SSERegister.variables))
-
-if len(Register.variables) > 0:
-  log.error("still assigned variables as Register: %s" % (Register.variables))
-  sys.exit(1)
 
 if len(SSERegister.variables) > 0:
   log.error("still assigned variables as SSERegister: %s" % (SSERegister.variables))
