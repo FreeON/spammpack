@@ -1,4 +1,4 @@
-#include "spamm_config.h"
+#include "config.h"
 #include "spamm.h"
 
 #ifdef HAVE_POSIX_MEMALIGN

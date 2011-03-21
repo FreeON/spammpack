@@ -8,7 +8,7 @@ jump_table_asm:
 
   mov $0x02, %rax # Move index into rax; 2 is supposed to end up at label_02.
 
-#define SHARED
+//#define SHARED
 #ifdef SHARED
   lea 0(,%rax, 4), %rdx
   lea table(%rip), %rax
@@ -26,15 +26,15 @@ table:
   .long label_02-table
   .long label_03-table
 #else
-  jmp *table(, %rax, 4)
+  jmp *table(, %rax, 8)
 
   .section .rodata
-  .balign 4
+  .balign 8
 table:
-  .long label_00
-  .long label_01
-  .long label_02
-  .long label_03
+  .quad label_00
+  .quad label_01
+  .quad label_02
+  .quad label_03
 #endif
 
   .text

@@ -4,7 +4,7 @@
 #define __SPAMM_H
 
 /* Include some configuration options. */
-#include "spamm_config.h"
+#include "config.h"
 #include "spamm_error.h"
 #include "spamm_hashtable.h"
 #include "spamm_list.h"
@@ -78,7 +78,7 @@ struct spamm_data_t
   /** The square of the norms of the basic block matrices. */
   float norm2[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
 
-#if defined(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE) || defined(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1)
+#ifdef SPAMM_USE_HIERARCHICAL_NORM
   /** The upper tier norms. */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) norm_upper[8];
 
@@ -98,7 +98,7 @@ struct spamm_data_t
   /** The matrix data (dilated by 4 for SSE). */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
 
-#if defined(SPAMM_USE_TRANSPOSE)
+#ifdef SPAMM_USE_TRANSPOSE
   /** The transpose of block_dense.  */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_transpose[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
 #endif
@@ -146,6 +146,11 @@ spamm_index_norm (const unsigned int i, const unsigned int j);
 //
 //  return i*SPAMM_N_KERNEL+j;
 //}
+
+unsigned int
+spamm_index_kernel_block_hierarchical_1 (const unsigned int i_block,
+    const unsigned int j_block, const unsigned int i,
+    const unsigned int j);
 
 float
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);

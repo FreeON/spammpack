@@ -84,3 +84,31 @@ spamm_index_norm (const unsigned int i, const unsigned int j)
 
   return offset;
 }
+
+/** Return a linear offset into a kernel tier matrix block using hierarchical
+ * indexing.
+ *
+ * @param i_block The row index of the basic matrix block, i.e. [0,
+ * SPAMM_N_KERNEL_BLOCK[.
+ * @param j_block The column index of the basic matrix block, i.e. [0,
+ * SPAMM_N_KERNEL_BLOCK[.
+ * @param i The row index in the basic matrix block, i.e. [0, SPAMM_N_BLOCK[.
+ * @param j The column index in the basic matrix block, i.e. [0,
+ * SPAMM_N_BLOCK[.
+ *
+ * @return The offset into the kernel matrix.
+ */
+unsigned int
+spamm_index_kernel_block_hierarchical_1 (const unsigned int i_block,
+    const unsigned int j_block, const unsigned int i,
+    const unsigned int j)
+{
+  unsigned int offset;
+
+  assert(i_block < SPAMM_N_KERNEL_BLOCK);
+  assert(j_block < SPAMM_N_KERNEL_BLOCK);
+  assert(i < SPAMM_N_BLOCK);
+  assert(j < SPAMM_N_BLOCK);
+
+  offset = spamm_index_kernel_block(i_block*SPAMM_N_KERNEL_BLOCK+i, j_block*SPAMM_N_KERNEL_BLOCK+j);
+}
