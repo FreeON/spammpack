@@ -16,7 +16,7 @@ main ()
   printf("sizeof(struct spamm_data_t) = %lu\n", sizeof(struct spamm_data_t));
   printf("&data at                       %p\n", &data);
   printf("&data.norm at                  %p, offset_norm = %lu\n", &data.norm, (unsigned long int) &data.norm - (unsigned long int) &data);
-#ifdef SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1
+#ifdef SPAMM_USE_HIERARCHICAL_NORM
   printf("&data.norm_upper at            %p, offset_norm_upper = %lu\n", &data.norm_upper, (unsigned long int) &data.norm_upper - (unsigned long int) &data);
   printf("&data.norm_upper_transpose at  %p, offset_norm_upper_transpose = %lu\n", &data.norm_upper_transpose, (unsigned long int) &data.norm_upper_transpose - (unsigned long int) &data);
 #endif

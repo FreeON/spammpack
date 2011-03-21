@@ -8,16 +8,16 @@ jump_table_C ()
 
   switch (i)
   {
-    case 0: printf("at case 0\n"); break;
-    case 1: printf("at case 1\n"); break;
-    case 2: printf("at case 2\n"); break;
-    case 3: printf("at case 3\n"); break;
-    case 4: printf("at case 4\n"); break;
-    case 5: printf("at case 5\n"); break;
-    case 6: printf("at case 6\n"); break;
-    case 7: printf("at case 7\n"); break;
-    case 8: printf("at case 8\n"); break;
-    case 9: printf("at case 9\n"); break;
+    case  0: printf("at case 0\n"); break;
+    case  1: printf("at case 1\n"); break;
+    case  2: printf("at case 2\n"); break;
+    case  3: printf("at case 3\n"); break;
+    case  4: printf("at case 4\n"); break;
+    case  5: printf("at case 5\n"); break;
+    case  6: printf("at case 6\n"); break;
+    case  7: printf("at case 7\n"); break;
+    case  8: printf("at case 8\n"); break;
+    case  9: printf("at case 9\n"); break;
     case 10: printf("at case 10\n"); break;
     case 11: printf("at case 11\n"); break;
     case 12: printf("at case 12\n"); break;

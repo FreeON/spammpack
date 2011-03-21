@@ -1,3 +1,4 @@
+#include "config.h"
 #include "spamm.h"
 #include <assert.h>
 #include <math.h>
@@ -34,6 +35,12 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
   unsigned int data_offset;
 #ifdef SPAMM_USE_TRANSPOSE
   unsigned int data_offset_transpose;
+#endif
+#ifdef SPAMM_USE_HIERARCHICAL_NORM
+  float norm_A11;
+  float norm_A12;
+  float norm_A21;
+  float norm_A22;
 #endif
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_data_t *data;
@@ -135,6 +142,8 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
         for (j_kernel = 0; j_kernel < SPAMM_N_KERNEL_BLOCK && j+SPAMM_N_BLOCK*j_kernel < N; j_kernel++)
         {
           norm_offset = spamm_index_norm(SPAMM_N_BLOCK*i_kernel, SPAMM_N_BLOCK*j_kernel);
+
+          /* Reset norm2. */
           norm2 = 0.0;
 
           for (i_block = 0; i_block < SPAMM_N_BLOCK && i+SPAMM_N_BLOCK*i_kernel+i_block < M; i_block++) {
@@ -177,11 +186,52 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
               norm2 += Aij*Aij;
             }
           }
-
           data->norm2[norm_offset] = norm2;
           data->norm[norm_offset] = sqrt(norm2);
         }
       }
+
+#ifdef SPAMM_USE_HIERARCHICAL_NORM
+      /* Loop over upper tier. */
+      norm_A11 = sqrt(
+          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+      norm_A12 = sqrt(
+          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+      norm_A21 = sqrt(
+          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+      norm_A22 = sqrt(
+          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+
+      data->norm_upper[0] = norm_A11;
+      data->norm_upper[1] = norm_A12;
+      data->norm_upper[2] = norm_A11;
+      data->norm_upper[3] = norm_A12;
+      data->norm_upper[4] = norm_A21;
+      data->norm_upper[5] = norm_A22;
+      data->norm_upper[6] = norm_A21;
+      data->norm_upper[7] = norm_A22;
+
+      data->norm_upper_transpose[0] = norm_A11;
+      data->norm_upper_transpose[1] = norm_A21;
+      data->norm_upper_transpose[2] = norm_A12;
+      data->norm_upper_transpose[3] = norm_A22;
+      data->norm_upper_transpose[4] = norm_A11;
+      data->norm_upper_transpose[5] = norm_A21;
+      data->norm_upper_transpose[6] = norm_A12;
+      data->norm_upper_transpose[7] = norm_A22;
+#endif
 
       /* Update node norm. */
       for (i_block = 0; i_block < SPAMM_N_KERNEL_BLOCK; i_block++) {

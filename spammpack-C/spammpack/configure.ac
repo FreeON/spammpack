@@ -113,8 +113,8 @@ AC_MSG_RESULT([alignment on ${have_alignment} byte boundaries])
 dnl Check for matrix block size.
 AC_MSG_CHECKING([for size of matrix block])
 AC_ARG_WITH([N-block], [AS_HELP_STRING([--with-N-block], [Define the size of a
-             matrix block as NxN. The default is N = 4, i.e. matrix blocks of
-             size 4x4.])],
+             basic matrix block as NxN. The default is N = 4, i.e. basic matrix
+             blocks of size 4x4.])],
              [have_N_block="${withval}"],
              [have_N_block="4"])
 AC_MSG_RESULT([using ${have_N_block}x${have_N_block} matrix blocks])
@@ -181,10 +181,12 @@ elif test "${have_kernel}" = "standard_SSE4_1"; then
 elif test "${have_kernel}" = "Z_curve_SSE"; then
   AC_MSG_RESULT([using Z-curve kernel (SSE)])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE, [1], [Use the Z-curve stream kernel (SSE).])
+  AC_DEFINE(SPAMM_USE_HIERARCHICAL_NORM, [1], [Define whether to use a hierarchical norm in the kernel matrix.])
 elif test "${have_kernel}" = "Z_curve_SSE4_1"; then
   AC_MSG_RESULT([using Z-curve kernel (SSE 4.1)])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1, [1], [Use the Z-curve stream kernel (SSE4.1).])
   AC_DEFINE(SPAMM_USE_TRANSPOSE, [1], [Define whether we use the transpose in the data blocks.])
+  AC_DEFINE(SPAMM_USE_HIERARCHICAL_NORM, [1], [Define whether to use a hierarchical norm in the kernel matrix.])
 elif test "${have_kernel}" = "no_check_SSE4_1"; then
   AC_MSG_RESULT([using no_check kernel (SSE 4.1)])
   AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK_SSE4_1, [1], [Use a stream kernel without norm checks (SSE4.1).])
@@ -202,7 +204,7 @@ AC_DEFINE_UNQUOTED(SPAMM_N_BLOCK, [${have_N_block}], [Define the size of a basic
 AC_DEFINE_UNQUOTED(SPAMM_N_CHILD, [${have_N_child}], [Define the size of the children node matrix as NxN.])
 AC_DEFINE_UNQUOTED(SPAMM_KERNEL_DEPTH, [${have_kernel_depth}], [Define the number of tiers that are allocated contiguously for the computational kernel.])
 AC_DEFINE_UNQUOTED(SPAMM_N_KERNEL_BLOCK, [${have_N_kernel_block}], [Define the size of the kernel matrix as NxN basic kernel blocks.])
-AC_DEFINE_UNQUOTED(SPAMM_N_KERNEL, [${have_N_kernel}], [Define the size of the matrix kernel as NxN single elements.])
+AC_DEFINE_UNQUOTED(SPAMM_N_KERNEL, [${have_N_kernel}], [Define the size of the kernel matrix as NxN single elements.])
 AC_DEFINE_UNQUOTED(SPAMM_N_STRIDE, [${have_N_stride}], []Define the stride in the kernel.)
 AC_DEFINE(SPAMM_BLOCK_ORDER, [1], [Define the block order of the basic matrix blocks in the kernel tier. Possible values are 1 - row major order, 2 - Z-curve order.])
 
@@ -238,7 +240,7 @@ dnl Some output.
 AC_MSG_NOTICE([configuring local version ${branch}:${localversion}])
 
 dnl Write results.
-AC_CONFIG_HEADERS([spamm_config.h])
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Doxyfile
 Makefile
@@ -248,6 +250,16 @@ interfaces/python/Makefile
 src/Makefile
 src/spamm_manual_mainpage.h
 tests/Makefile
+])
+
+AC_CONFIG_COMMANDS([src/spamm_config.h], [
+  echo "creating spamm_config.h"
+  echo "// @file" > src/spamm_config.h
+  echo >> src/spamm_config.h
+  echo "// This file contains the configuration options that directly" >> src/spamm_config.h
+  echo "// affect the built of spamm." >> src/spamm_config.h
+  echo >> src/spamm_config.h
+  grep "#define SPAMM" config.h >> src/spamm_config.h
 ])
 
 AC_OUTPUT

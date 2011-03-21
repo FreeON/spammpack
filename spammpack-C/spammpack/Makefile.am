@@ -8,8 +8,6 @@ SUBDIRS = src interfaces tests
 
 EXTRA_DIST = localversion $(pdf_DATA)
 
-include_HEADERS = spamm_config.h
-
 CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/localversion \
   $(top_srcdir)/Doxyfile.in \

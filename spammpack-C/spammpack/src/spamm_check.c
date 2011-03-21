@@ -1,3 +1,4 @@
+#include "config.h"
 #include "spamm.h"
 #include <assert.h>
 #include <math.h>
@@ -31,6 +32,7 @@ struct spamm_check_user_data_t
 void
 spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
 {
+  printf("[FIXME]\n");
 }
 
 /** Verify linear indices.
@@ -43,6 +45,7 @@ spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
 void
 spamm_check_linear_index (unsigned int index, void *value, void *user_data)
 {
+  printf("[FIXME]\n");
 }
 
 /** Verify the norm of a node.
@@ -139,6 +142,9 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
       data->node_norm = sqrt(norm2);
       user->result = SPAMM_ERROR;
     }
+
+#ifdef SPAMM_USE_HIERARCHICAL_NORM
+#endif
   }
 
   else
@@ -297,6 +303,9 @@ spamm_check (const struct spamm_t *A)
   {
     depth--;
   }
+
+  /* Adjust tree to kernel depth. */
+  if (depth < SPAMM_KERNEL_DEPTH) { depth = SPAMM_KERNEL_DEPTH; }
 
   if (A->depth != depth)
   {
