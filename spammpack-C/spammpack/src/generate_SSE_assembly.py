@@ -774,7 +774,6 @@ if options.Z_curve_ordering:
   print("  pmovmskb %s, jump_index_temp" % (norm_2))
   print("")
   print("  or jump_index_temp, jump_index")
-  norm_mask.release()
   norm_1.release()
   norm_2.release()
 
@@ -1132,6 +1131,9 @@ print("  ret")
 if not options.alphaOne:
   alpha.release()
 tolerance.release()
+
+if options.Z_curve_ordering:
+  norm_mask.release()
 
 # Start function epilog.
 print("")
