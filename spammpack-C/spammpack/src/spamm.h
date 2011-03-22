@@ -4,7 +4,7 @@
 #define __SPAMM_H
 
 /* Include some configuration options. */
-#include "config.h"
+#include "spamm_config.h"
 #include "spamm_error.h"
 #include "spamm_hashtable.h"
 #include "spamm_list.h"
