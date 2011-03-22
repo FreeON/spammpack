@@ -625,7 +625,7 @@ print("#define multiply_stream %rsi")
 
 print("")
 print("# Define loop variables.")
-print("#define index %rax")
+print("#define index        %rax")
 print("#define base_pointer %rdx")
 
 print("")
@@ -637,11 +637,11 @@ print("#define C %r10")
 if options.Z_curve_ordering:
   print("")
   print("# Define jump table variables.")
-  print("#define jump_index %r11")
-  print("#define jump_index_temp %r13")
-  print("#define jump_index_base %rcx")
+  print("#define jump_index         %r11")
+  print("#define jump_index_temp    %r12")
+  print("#define jump_index_base    %rcx")
   print("#define jump_index_base_32 %ecx")
-  print("#define old_stack %r12")
+  print("#define old_stack          %r13")
 
 # The following sizes were generated with print_data_sizes.c.
 sizeof_multiply_stream_t = 3*8
@@ -790,14 +790,14 @@ if options.Z_curve_ordering:
 
   print("")
   print("  # Jump table for first tier.")
-  print("#ifdef __PIC__")
+  print("#if defined(__PIC__) || defined(__pic__)")
   print("  # For PIC (Position Independent Code) we need to perform some magic")
   print("  # when it comes to figuring out the relative addresses of the jump")
   print("  # table. Fortunatley on x86_64 we can use %rdi.")
   print("")
   print("  lea jump_table(%rip), jump_index_base")
   print("  mov (jump_index_base, jump_index, 4), jump_index_base_32")
-  print("  movslq jump_index_base_32, jump_index_base")
+  print("  movslq jump_index_base_32, jump_index_base # Expand pointer to 64-bit.")
   print("  lea jump_table(%rip), jump_index")
   print("  lea (jump_index, jump_index_base), jump_index")
   print("  jmp *jump_index")
@@ -1086,6 +1086,10 @@ if options.Z_curve_ordering:
         block_product(4, 3, 4, clearC = True, writeC = False)
         block_product(4, 4, 4, clearC = False, writeC = True)
 
+    print("")
+    print("  # Done.")
+    print("  jmp loop_end")
+
 else:
   for i in range(options.N):
     for j in range(options.N):
@@ -1105,6 +1109,10 @@ print("  jb stream_loop")
 print("")
 print("  .balign 16")
 print("stream_done:")
+if options.Z_curve_ordering:
+  print("")
+  print("  # Restore old stack.")
+  print("  mov old_stack, %rsp")
 print("")
 print("  # Pop registers from stack.")
 print("  pop C")

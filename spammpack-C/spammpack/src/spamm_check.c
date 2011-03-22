@@ -22,7 +22,10 @@ struct spamm_check_user_data_t
   const struct spamm_t *A;
 };
 
-/** Verify tree structure.
+/** Verify tree structure. This step verifies that the tree hierarchy is
+ * correct. Although we don't explicitly store the tree as a quadtree pointer
+ * list, the tree hierarchy is still present and is given simply by the fact
+ * that a non-zero node should have a parent.
  *
  * @param index The linear index of this node.
  * @param value The matrix tree node. This can have either type spamm_node_t
@@ -32,10 +35,11 @@ struct spamm_check_user_data_t
 void
 spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
 {
-  printf("[FIXME]\n");
+  printf("[FIXME] (verifying tree structure)\n");
 }
 
-/** Verify linear indices.
+/** Verify linear indices. This step computes the linear matrix index of each
+ * tree node and verifies that the stored index matches the one calculated.
  *
  * @param index The linear index of this node.
  * @param value The matrix tree node. This can have either type spamm_node_t
@@ -45,7 +49,7 @@ spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
 void
 spamm_check_linear_index (unsigned int index, void *value, void *user_data)
 {
-  printf("[FIXME]\n");
+  printf("[FIXME] (verifying linear indices)\n");
 }
 
 /** Verify the norm of a node.
