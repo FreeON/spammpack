@@ -101,12 +101,12 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
 #endif
 }
 
-/** Print a SpAMM matrix.
+/** Print a SpAMM matrix, printing the tree structure.
  *
  * @param A The matrix.
  */
 void
-spamm_print (const struct spamm_t *A)
+spamm_print_tree (const struct spamm_t *A)
 {
   unsigned int tier;
 
@@ -126,5 +126,26 @@ spamm_print (const struct spamm_t *A)
     {
       spamm_hashtable_foreach(A->tier_hashtable[tier], spamm_print_data, NULL);
     }
+  }
+}
+
+/** Print a SpAMM matrix in the same format a dense matrix is printed.
+ *
+ * @param A The matrix.
+ */
+void
+spamm_print (const struct spamm_t *A)
+{
+  unsigned int i;
+  unsigned int j;
+
+  assert(A != NULL);
+
+  for (i = 0; i < A->M; i++) {
+    for (j = 0; j < A->N; j++)
+    {
+      printf(" % 1.2e", spamm_get(i, j, A));
+    }
+    printf("\n");
   }
 }
