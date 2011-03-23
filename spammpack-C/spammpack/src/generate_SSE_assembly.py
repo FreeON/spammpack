@@ -766,6 +766,7 @@ if options.Z_curve_ordering:
   print("  pmovmskb %s, jump_index" % (norm_1))
   print("  shl $4, jump_index")
   print("")
+  print("  # First level of hierarchy. Do some norm products [ A21*B11, A22*B21, A21*B12, A22*B22 ].")
   norm_2 = SSERegister("norm_2")
   print("  movaps 0x%x(A), %s" % (offset_norm_upper+4*4, norm_2))
   print("  mulps 0x%x(B), %s" % (offset_norm_upper_transpose+4*4, norm_2))
@@ -810,6 +811,7 @@ if options.Z_curve_ordering:
     print("tier_%03d:" % (jump_index))
 
     if (jump_index & (0x1 | 0x2)) == 0:
+      print("")
       print("  # Perform A_{11}*B_{11} = C_{11} product with norm checks.")
       print("  #")
       print("  # On the basic matrix block level, this translates into:")
@@ -817,7 +819,7 @@ if options.Z_curve_ordering:
       print("  # A_{11}*B_{12} + A_{12}*B_{22} = C_{12}")
       print("  # A_{21}*B_{11} + A_{22}*B_{21} = C_{21}")
       print("  # A_{21}*B_{12} + A_{22}*B_{22} = C_{22}")
-
+      print("")
       print("  # Perform A_{12}*B_{21} = C_{11} product with norm checks.")
       print("  #")
       print("  # On the basic matrix block level, this translates into:")
@@ -845,6 +847,7 @@ if options.Z_curve_ordering:
 
     else:
       if (jump_index & 0x1) == 0:
+        print("")
         print("  # Perform A_{11}*B_{11} = C_{11} product with norm checks.")
         print("  #")
         print("  # On the basic matrix block level, this translates into:")
@@ -862,6 +865,7 @@ if options.Z_curve_ordering:
         block_product(2, 2, 2, clearC = False, writeC = True)
 
       if (jump_index & 0x2) == 0:
+        print("")
         print("  # Perform A_{12}*B_{21} = C_{11} product with norm checks.")
         print("  #")
         print("  # On the basic matrix block level, this translates into:")
@@ -879,6 +883,7 @@ if options.Z_curve_ordering:
         block_product(2, 4, 2, clearC = False, writeC = True)
 
     if (jump_index & (0x4 | 0x8)) == 0:
+      print("")
       print("  # Perform A_{11}*B_{12} = C_{12} product with norm checks.")
       print("  #")
       print("  # On the basic matrix block level, this translates into:")
@@ -886,7 +891,7 @@ if options.Z_curve_ordering:
       print("  # A_{11}*B_{14} + A_{12}*B_{24} = C_{14}")
       print("  # A_{21}*B_{13} + A_{22}*B_{23} = C_{23}")
       print("  # A_{21}*B_{14} + A_{22}*B_{24} = C_{24}")
-
+      print("")
       print("  # Perform A_{12}*B_{22} = C_{12} product with norm checks.")
       print("  #")
       print("  # On the basic matrix block level, this translates into:")
@@ -914,6 +919,7 @@ if options.Z_curve_ordering:
 
     else:
       if (jump_index & 0x4) == 0:
+        print("")
         print("  # Perform A_{11}*B_{12} = C_{12} product with norm checks.")
         print("  #")
         print("  # On the basic matrix block level, this translates into:")
@@ -931,6 +937,7 @@ if options.Z_curve_ordering:
         block_product(2, 2, 4, clearC = False, writeC = True)
 
       if (jump_index & 0x8) == 0:
+        print("")
         print("  # Perform A_{12}*B_{22} = C_{12} product with norm checks.")
         print("  #")
         print("  # On the basic matrix block level, this translates into:")
@@ -948,6 +955,7 @@ if options.Z_curve_ordering:
         block_product(2, 4, 4, clearC = False, writeC = True)
 
     if (jump_index & (0x10 | 0x20)) == 0:
+      print("")
       print("  # Perform A_{21}*B_{11} = C_{21} product with norm checks.")
       print("  #")
       print("  # On the basic matrix block level, this translates into:")
@@ -955,7 +963,7 @@ if options.Z_curve_ordering:
       print("  # A_{31}*B_{12} + A_{32}*B_{22} = C_{32}")
       print("  # A_{41}*B_{11} + A_{42}*B_{21} = C_{41}")
       print("  # A_{41}*B_{12} + A_{42}*B_{22} = C_{42}")
-
+      print("")
       print("  # Perform A_{22}*B_{21} = C_{21} product with norm checks.")
       print("  #")
       print("  # On the basic matrix block level, this translates into:")
@@ -983,6 +991,7 @@ if options.Z_curve_ordering:
 
     else:
       if (jump_index & 0x10) == 0:
+        print("")
         print("  # Perform A_{21}*B_{11} = C_{21} product with norm checks.")
         print("  #")
         print("  # On the basic matrix block level, this translates into:")
@@ -1000,6 +1009,7 @@ if options.Z_curve_ordering:
         block_product(4, 2, 2, clearC = False, writeC = True)
 
       if (jump_index & 0x20) == 0:
+        print("")
         print("  # Perform A_{22}*B_{21} = C_{21} product with norm checks.")
         print("  #")
         print("  # On the basic matrix block level, this translates into:")
@@ -1016,7 +1026,8 @@ if options.Z_curve_ordering:
         block_product(4, 3, 2, clearC = True, writeC = False)
         block_product(4, 4, 2, clearC = False, writeC = True)
 
-    if (jump_index & (0x30 | 0x40)) == 0:
+    if (jump_index & (0x40 | 0x80)) == 0:
+      print("")
       print("  # Perform A_{21}*B_{12} = C_{22} product with norm checks.")
       print("  #")
       print("  # On the basic matrix block level, this translates into:")
@@ -1024,7 +1035,7 @@ if options.Z_curve_ordering:
       print("  # A_{31}*B_{14} + A_{32}*B_{24} = C_{34}")
       print("  # A_{41}*B_{13} + A_{42}*B_{23} = C_{43}")
       print("  # A_{41}*B_{14} + A_{42}*B_{24} = C_{44}")
-
+      print("")
       print("  # Perform A_{22}*B_{22} = C_{22} product with norm checks.")
       print("  #")
       print("  # On the basic matrix block level, this translates into:")
@@ -1051,7 +1062,8 @@ if options.Z_curve_ordering:
       block_product(4, 4, 4, clearC = False, writeC = True)
 
     else:
-      if (jump_index & 0x30) == 0:
+      if (jump_index & 0x40) == 0:
+        print("")
         print("  # Perform A_{21}*B_{12} = C_{22} product with norm checks.")
         print("  #")
         print("  # On the basic matrix block level, this translates into:")
@@ -1068,7 +1080,8 @@ if options.Z_curve_ordering:
         block_product(4, 1, 4, clearC = True, writeC = False)
         block_product(4, 2, 4, clearC = False, writeC = True)
 
-      if (jump_index & 0x40) == 0:
+      if (jump_index & 0x80) == 0:
+        print("")
         print("  # Perform A_{22}*B_{22} = C_{22} product with norm checks.")
         print("  #")
         print("  # On the basic matrix block level, this translates into:")

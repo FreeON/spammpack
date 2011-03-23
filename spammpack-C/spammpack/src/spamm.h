@@ -198,6 +198,9 @@ void
 spamm_print (const struct spamm_t *A);
 
 void
+spamm_print_tree (const struct spamm_t *A);
+
+void
 spamm_print_dense (const unsigned int M, const unsigned int N,
     const enum spamm_dense_type_t type, const float *A);
 
