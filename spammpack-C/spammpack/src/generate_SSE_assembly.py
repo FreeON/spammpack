@@ -527,11 +527,16 @@ parser.add_option("--SSE",
     default = 1)
 
 parser.add_option("--Z-curve",
-    action = "store_true",
-    default = False,
     help = """layout the multiply along a Z-curve as opposed to regular
 row-major ordering [default: %default]""",
+    action = "store_true",
+    default = False,
     dest = "Z_curve_ordering")
+
+parser.add_option("--hierarchical",
+    help = "create a hierarchical kernel [default: %default]",
+    action = "store_true",
+    default = False)
 
 ( options, arguments ) = parser.parse_args()
 
@@ -559,7 +564,7 @@ if 2**d != options.N:
   log.error("N needs to be a power of 2")
   sys.exit(1)
 
-if options.Z_curve_ordering:
+if options.hierarchical:
   if options.N != 4:
     log.warning("Z-curve ordering only works with N = 4")
     options.N = 4
@@ -634,7 +639,7 @@ print("#define A %r8")
 print("#define B %r9")
 print("#define C %r10")
 
-if options.Z_curve_ordering:
+if options.hierarchical:
   print("")
   print("# Define jump table variables.")
   print("#define jump_index         %r11")
@@ -645,19 +650,12 @@ if options.Z_curve_ordering:
 
 # The following sizes were generated with print_data_sizes.c.
 sizeof_multiply_stream_t = 3*8
-
-if not options.Z_curve_ordering:
-  offset_norm = 16
-  offset_block_dense = 192
-  offset_block_dense_dilated = 1216
-  offset_block_dense_transpose = 5312
-else:
-  offset_norm = 16
-  offset_norm_upper = 192
-  offset_norm_upper_transpose = 256
-  offset_block_dense = 320
-  offset_block_dense_dilated = 1344
-  offset_block_dense_transpose = 5440
+offset_norm = 16
+offset_norm_upper = 192
+offset_norm_upper_transpose = 256
+offset_block_dense = 320
+offset_block_dense_dilated = 1344
+offset_block_dense_transpose = 5440
 
 # Start the function prolog.
 print("")
@@ -667,7 +665,7 @@ print("  .balign 256")
 print("  .global %s" % (options.functionName))
 print("  .type %s, @function" % (options.functionName))
 
-if options.Z_curve_ordering:
+if options.hierarchical:
   print("")
   print("  # The jump table for the second kernel tier is in the read-only data section.")
   print("  .section .rodata")
@@ -695,7 +693,7 @@ print("")
 print("  # Push used registers on stack.")
 print("  push index")
 print("  push base_pointer")
-if options.Z_curve_ordering:
+if options.hierarchical:
   print("  push jump_index")
   print("  push jump_index_temp")
   print("  push jump_index_base")
@@ -704,7 +702,7 @@ print("  push A")
 print("  push B")
 print("  push C")
 
-if options.Z_curve_ordering:
+if options.hierarchical:
   print("")
   print("  # Push stack pointer so we can make room for local storage.")
   print("  mov %rsp, old_stack")
@@ -755,7 +753,7 @@ C2 = None
 C3 = None
 C4 = None
 
-if options.Z_curve_ordering:
+if options.hierarchical:
   print("")
   print("  # First level of hierarchy. Do some norm products [ A11*B11, A12*B21, A11*B12, A12*B22 ].")
   norm_1 = SSERegister("norm_1")
@@ -1121,7 +1119,7 @@ print("  jb stream_loop")
 print("")
 print("  .balign 16")
 print("stream_done:")
-if options.Z_curve_ordering:
+if options.hierarchical:
   print("")
   print("  # Restore old stack.")
   print("  mov old_stack, %rsp")
@@ -1130,7 +1128,7 @@ print("  # Pop registers from stack.")
 print("  pop C")
 print("  pop B")
 print("  pop A")
-if options.Z_curve_ordering:
+if options.hierarchical:
   print("  pop old_stack")
   print("  pop jump_index_base")
   print("  pop jump_index_temp")
@@ -1145,7 +1143,7 @@ if not options.alphaOne:
   alpha.release()
 tolerance.release()
 
-if options.Z_curve_ordering:
+if options.hierarchical:
   norm_mask.release()
 
 # Start function epilog.

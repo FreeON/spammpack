@@ -26,9 +26,7 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D)
     for (j = 0; j < SPAMM_N_KERNEL; j++)
     {
       data->block_dense[i*SPAMM_N_KERNEL+j] = 0.0;
-#ifdef SPAMM_USE_TRANSPOSE
       data->block_dense_transpose[i*SPAMM_N_KERNEL+j] = 0.0;
-#endif
 
       data->block_dense_dilated[4*(i*SPAMM_N_KERNEL+j)+0] = 0.0;
       data->block_dense_dilated[4*(i*SPAMM_N_KERNEL+j)+1] = 0.0;
@@ -46,13 +44,11 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D)
   data->node_norm = 0.0;
   data->node_norm2 = 0.0;
 
-#ifdef SPAMM_USE_HIERARCHICAL_NORM
   for (i = 0; i < 8; i++)
   {
     data->norm_upper[i] = 0.0;
     data->norm_upper_transpose[i] = 0.0;
   }
-#endif
 
   return data;
 }

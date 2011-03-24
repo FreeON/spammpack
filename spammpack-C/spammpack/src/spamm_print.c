@@ -85,7 +85,6 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
     if (i < SPAMM_N_KERNEL-1) { printf(", "); }
   }
   printf(" }\n");
-#ifdef SPAMM_USE_TRANSPOSE
   printf(" }, block_dense_transpose = ");
   for (i = 0; i < SPAMM_N_KERNEL; i++)
   {
@@ -98,7 +97,6 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
     if (i < SPAMM_N_KERNEL-1) { printf(", "); }
   }
   printf(" }\n");
-#endif
 }
 
 /** Print a SpAMM matrix, printing the tree structure.

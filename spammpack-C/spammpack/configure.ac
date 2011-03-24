@@ -161,43 +161,6 @@ have_N_kernel=$((${have_N_block}*${have_N_child}**${have_kernel_depth}))
 
 AC_MSG_NOTICE([at the kernel tier, the dense matrix block has a size of ${have_N_kernel}x${have_N_kernel} elements, representing a ${have_N_kernel_block}x${have_N_kernel_block} matrix of ${have_N_block}x${have_N_block} matrix blocks])
 
-AC_MSG_CHECKING([for which kernel implementation to use])
-AC_ARG_WITH([kernel], [AS_HELP_STRING([--with-kernel], [Choose the kernel
-             implementation to use. Available kernel implementations are
-             standard, standard_SSE4_1, Z_curve_SSE4_1, no_check,
-             no_check_SSE4_1, experimental.  Default is standard.])],
-             [have_kernel="${withval}"],
-             [have_kernel="standard"])
-if test "${have_kernel}" = "standard"; then
-  AC_MSG_RESULT([using standard kernel])
-  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_STANDARD, [1], [Use the standard stream kernel (SSE).])
-elif test "${have_kernel}" = "no_check"; then
-  AC_MSG_RESULT([using no_check kernel])
-  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK, [1], [Use a stream kernel without norm checks (SSE).])
-elif test "${have_kernel}" = "standard_SSE4_1"; then
-  AC_MSG_RESULT([using standard kernel (SSE 4.1)])
-  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_STANDARD_SSE4_1, [1], [Use the standard stream kernel (SSE4.1).])
-  AC_DEFINE(SPAMM_USE_TRANSPOSE, [1], [Define whether we use the transpose in the data blocks.])
-elif test "${have_kernel}" = "Z_curve_SSE"; then
-  AC_MSG_RESULT([using Z-curve kernel (SSE)])
-  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE, [1], [Use the Z-curve stream kernel (SSE).])
-  AC_DEFINE(SPAMM_USE_HIERARCHICAL_NORM, [1], [Define whether to use a hierarchical norm in the kernel matrix.])
-elif test "${have_kernel}" = "Z_curve_SSE4_1"; then
-  AC_MSG_RESULT([using Z-curve kernel (SSE 4.1)])
-  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1, [1], [Use the Z-curve stream kernel (SSE4.1).])
-  AC_DEFINE(SPAMM_USE_TRANSPOSE, [1], [Define whether we use the transpose in the data blocks.])
-  AC_DEFINE(SPAMM_USE_HIERARCHICAL_NORM, [1], [Define whether to use a hierarchical norm in the kernel matrix.])
-elif test "${have_kernel}" = "no_check_SSE4_1"; then
-  AC_MSG_RESULT([using no_check kernel (SSE 4.1)])
-  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK_SSE4_1, [1], [Use a stream kernel without norm checks (SSE4.1).])
-  AC_DEFINE(SPAMM_USE_TRANSPOSE, [1], [Define whether we use the transpose in the data blocks.])
-elif test "${have_kernel}" = "experimental"; then
-  AC_MSG_RESULT([using experimental kernel])
-  AC_DEFINE(SPAMM_KERNEL_IMPLEMENTATION_EXPERIMENTAL, [1], [Use the experimental version of the stream kernel.])
-else
-  AC_MSG_FAILURE([unknown kernel ${have_kernel}])
-fi
-
 dnl Define some constants.
 AC_DEFINE_UNQUOTED(SPAMM_ALIGNMENT, [${have_alignment}], [Define the alignment of memory allocations.])
 AC_DEFINE_UNQUOTED(SPAMM_N_BLOCK, [${have_N_block}], [Define the size of a basic matrix block as NxN.])
@@ -232,12 +195,16 @@ fi
 dnl Fix the package version in the documentation.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
 AC_SUBST(LOCAL_VERSION, [${branch}:${localversion}])
+AC_DEFINE_UNQUOTED(SPAMM_VERSION, ["${VERSION}"], [The spammpack version.])
 
 dnl Define the git commit tag.
-AC_DEFINE_UNQUOTED(COMMIT_TAG, ["${localversion}"], [Define the git commit tag of this build.])
+AC_DEFINE_UNQUOTED(SPAMM_COMMIT_TAG, ["${localversion}"], [Define the git commit tag of this build.])
 
 dnl Some output.
 AC_MSG_NOTICE([configuring local version ${branch}:${localversion}])
+
+dnl Store the command line.
+AC_DEFINE_UNQUOTED([SPAMM_CONFIGURE_ARGUMENTS], ["${ac_configure_args}"], [The command line with which spammpack was configured.])
 
 dnl Write results.
 AC_CONFIG_HEADERS([config.h])
@@ -253,13 +220,26 @@ tests/Makefile
 ])
 
 AC_CONFIG_COMMANDS([src/spamm_config.h], [
-  echo "creating spamm_config.h"
-  echo "// @file" > src/spamm_config.h
-  echo >> src/spamm_config.h
-  echo "// This file contains the configuration options that directly" >> src/spamm_config.h
-  echo "// affect the built of spamm." >> src/spamm_config.h
-  echo >> src/spamm_config.h
-  grep "#define SPAMM" config.h >> src/spamm_config.h
+  echo -n "creating src/spamm_config.h... "
+  echo "/** @file */" > src/spamm_config.h.temp
+  echo >> src/spamm_config.h.temp
+  echo "#ifndef __SPAMM_CONFIG_H" >> src/spamm_config.h.temp
+  echo "#define __SPAMM_CONFIG_H" >> src/spamm_config.h.temp
+  echo >> src/spamm_config.h.temp
+  echo "/* This file contains the configuration options that directly" >> src/spamm_config.h.temp
+  echo " * affect the built of spamm." >> src/spamm_config.h.temp
+  echo " */" >> src/spamm_config.h.temp
+  echo >> src/spamm_config.h.temp
+  grep "#define SPAMM" config.h >> src/spamm_config.h.temp
+  echo >> src/spamm_config.h.temp
+  echo "#endif" >> src/spamm_config.h.temp
+  if (diff --brief src/spamm_config.h src/spamm_config.h.temp > /dev/null 2>&1); then
+    echo "no difference, keeping old one"
+    rm -f src/spamm_config.h.temp
+  else
+    echo "updating src/spamm_config.h"
+    mv -f src/spamm_config.h.temp src/spamm_config.h
+  fi
 ])
 
 AC_OUTPUT

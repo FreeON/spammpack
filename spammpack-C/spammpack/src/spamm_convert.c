@@ -1,4 +1,3 @@
-#include "config.h"
 #include "spamm.h"
 #include <assert.h>
 #include <math.h>
@@ -33,15 +32,11 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
   unsigned int j_tier;
   unsigned int norm_offset;
   unsigned int data_offset;
-#ifdef SPAMM_USE_TRANSPOSE
   unsigned int data_offset_transpose;
-#endif
-#ifdef SPAMM_USE_HIERARCHICAL_NORM
   float norm_A11;
   float norm_A12;
   float norm_A21;
   float norm_A22;
-#endif
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_data_t *data;
   float Aij;
@@ -151,9 +146,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
             {
               /* Calculate offsets into the matrix data. */
               data_offset = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+i_block, SPAMM_N_BLOCK*j_kernel+j_block);
-#ifdef SPAMM_USE_TRANSPOSE
               data_offset_transpose = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+j_block, SPAMM_N_BLOCK*j_kernel+i_block);
-#endif
 
               /* Get matrix elements from dense matrix. */
               switch(type)
@@ -173,9 +166,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
 
               /* Set new value. */
               data->block_dense[data_offset] = Aij;
-#ifdef SPAMM_USE_TRANSPOSE
               data->block_dense_transpose[data_offset_transpose] = Aij;
-#endif
 
               data->block_dense_dilated[4*data_offset+0] = Aij;
               data->block_dense_dilated[4*data_offset+1] = Aij;
@@ -191,7 +182,6 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
         }
       }
 
-#ifdef SPAMM_USE_HIERARCHICAL_NORM
       /* Loop over upper tier. */
       norm_A11 = sqrt(
           data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
@@ -231,7 +221,6 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
       data->norm_upper_transpose[5] = norm_A21;
       data->norm_upper_transpose[6] = norm_A12;
       data->norm_upper_transpose[7] = norm_A22;
-#endif
 
       /* Update node norm. */
       for (i_block = 0; i_block < SPAMM_N_KERNEL_BLOCK; i_block++) {
