@@ -1,4 +1,3 @@
-#include "config.h"
 #include "spamm.h"
 #include <assert.h>
 #include <stdio.h>
@@ -211,12 +210,14 @@ spamm_multiply_sort_stream (const unsigned int left,
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
  * @param timer_type The timer to use.
+ * @param kernel The stream kernel to use.
  */
 void
 spamm_multiply (const float tolerance,
     const float alpha, struct spamm_t *A, struct spamm_t *B,
     const float beta, struct spamm_t *C,
-    const enum spamm_timer_type_t timer_type)
+    const enum spamm_timer_type_t timer_type,
+    const enum spamm_kernel_t kernel)
 {
   struct spamm_hashtable_t *A_tier_hashtable;
   struct spamm_hashtable_t *B_tier_hashtable;
@@ -600,31 +601,48 @@ spamm_multiply (const float tolerance,
   printf("[multiply] stream multiply ");
   spamm_timer_start(timer);
 
-#if defined(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK)
-  printf("(no-checks kernel)... ");
-  spamm_stream_kernel_no_checks_SSE(stream_index, alpha, tolerance, multiply_stream);
-#elif defined(SPAMM_KERNEL_IMPLEMENTATION_NO_CHECK_SSE4_1)
-  printf("(no-checks kernel SSE4.1)... ");
-  spamm_stream_kernel_no_checks_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-#elif defined(SPAMM_KERNEL_IMPLEMENTATION_EXPERIMENTAL)
-  printf("(experimental kernel)... ");
-  spamm_stream_kernel_C(stream_index, alpha, tolerance, multiply_stream);
-#elif defined(SPAMM_KERNEL_IMPLEMENTATION_STANDARD)
-  printf("(standard kernel)... ");
-  spamm_stream_kernel_SSE(stream_index, alpha, tolerance, multiply_stream);
-#elif defined(SPAMM_KERNEL_IMPLEMENTATION_STANDARD_SSE4_1)
-  printf("(standard kernel SSE4.1)... ");
-  spamm_stream_kernel_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-#elif defined(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE)
-  printf("(Z-curve kernel SSE)... ");
-  spamm_stream_kernel_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-#elif defined(SPAMM_KERNEL_IMPLEMENTATION_Z_CURVE_SSE4_1)
-  printf("(Z-curve kernel SSE4.1)... ");
-  spamm_stream_kernel_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-#else
-  printf("(unknown kernel)... ");
-  exit(1);
-#endif
+  switch (kernel)
+  {
+    case kernel_standard_SSE:
+      printf("(standard kernel)... ");
+      spamm_stream_kernel_SSE(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
+    case kernel_standard_no_checks_SSE:
+      printf("(no-checks kernel)... ");
+      spamm_stream_kernel_no_checks_SSE(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
+    case kernel_standard_no_checks_SSE4_1:
+      printf("(no-checks kernel SSE4.1)... ");
+      spamm_stream_kernel_no_checks_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
+    case kernel_experimental:
+      printf("(experimental kernel)... ");
+      spamm_stream_kernel_C(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
+    case kernel_standard_SSE4_1:
+      printf("(standard kernel SSE4.1)... ");
+      spamm_stream_kernel_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
+    case kernel_Z_curve_SSE:
+      printf("(Z-curve kernel SSE)... ");
+      spamm_stream_kernel_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
+    case kernel_Z_curve_SSE4_1:
+      printf("(Z-curve kernel SSE4.1)... ");
+      spamm_stream_kernel_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
+    default:
+      printf("(unknown kernel)... ");
+      exit(1);
+      break;
+  }
 
   spamm_timer_stop(timer);
   if (timer_type == papi_flop)

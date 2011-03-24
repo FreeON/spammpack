@@ -7,10 +7,37 @@
 #include "spamm_config.h"
 #include "spamm_error.h"
 #include "spamm_hashtable.h"
+#include "spamm_introspection.h"
 #include "spamm_list.h"
 #include "spamm_kernel.h"
 #include "spamm_timer.h"
 #include "spamm_convert.h"
+
+/** The different stream kernels.
+ */
+enum spamm_kernel_t
+{
+  /** The standard stream kernel (SSE). */
+  kernel_standard_SSE,
+
+  /** The standard stream kernel (SSE4.1). */
+  kernel_standard_SSE4_1,
+
+  /** The standard stream kernel without norm checks (SSE). */
+  kernel_standard_no_checks_SSE,
+
+  /** The standard stream kernel without norm checks (SSE4.1). */
+  kernel_standard_no_checks_SSE4_1,
+
+  /** The experimental version of the stream kernel. */
+  kernel_experimental,
+
+  /** The Z-curve stream kernel (SSE). */
+  kernel_Z_curve_SSE,
+
+  /** The Z-curve stream kernel (SSE4.1). */
+  kernel_Z_curve_SSE4_1
+};
 
 /** The matrix type.
  */
@@ -78,13 +105,11 @@ struct spamm_data_t
   /** The square of the norms of the basic block matrices. */
   float norm2[SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK];
 
-#ifdef SPAMM_USE_HIERARCHICAL_NORM
   /** The upper tier norms. */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) norm_upper[8];
 
   /** The upper tier norms for the transpose. */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) norm_upper_transpose[8];
-#endif
 
   /** The matrix data.
    *
@@ -98,10 +123,8 @@ struct spamm_data_t
   /** The matrix data (dilated by 4 for SSE). */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
 
-#ifdef SPAMM_USE_TRANSPOSE
   /** The transpose of block_dense.  */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_transpose[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
-#endif
 };
 
 /* Function declarations. */
@@ -180,7 +203,8 @@ void
 spamm_multiply (const float tolerance,
     const float alpha, struct spamm_t *A, struct spamm_t *B,
     const float beta, struct spamm_t *C,
-    const enum spamm_timer_type_t timer_type);
+    const enum spamm_timer_type_t timer_type,
+    const enum spamm_kernel_t kernel);
 
 unsigned int
 spamm_number_nonzero (const struct spamm_t *A);

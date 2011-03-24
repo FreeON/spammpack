@@ -1,4 +1,3 @@
-#include "config.h"
 #include "spamm.h"
 #include <assert.h>
 #include <math.h>
@@ -146,9 +145,6 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
       data->node_norm = sqrt(norm2);
       user->result = SPAMM_ERROR;
     }
-
-#ifdef SPAMM_USE_HIERARCHICAL_NORM
-#endif
   }
 
   else
@@ -225,9 +221,7 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
   short i_dilated;
   float Aij;
   unsigned int data_offset;
-#ifdef SPAMM_USE_TRANSPOSE
   unsigned int data_offset_transpose;
-#endif
   struct spamm_data_t *data = value;
   struct spamm_check_user_data_t *user = user_data;
 
@@ -248,7 +242,6 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
               user->result = SPAMM_ERROR;
             }
           }
-#ifdef SPAMM_USE_TRANSPOSE
           data_offset_transpose = SPAMM_N_BLOCK*SPAMM_N_BLOCK
             *spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
             +spamm_index_row_major(j_block, i_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
@@ -257,7 +250,6 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
             printf("index %u: data block inconsistency between block_dense and block_dense_transpose\n", index);
             user->result = SPAMM_ERROR;
           }
-#endif
         }
       }
     }

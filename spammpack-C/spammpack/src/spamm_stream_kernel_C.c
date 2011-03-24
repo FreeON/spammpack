@@ -1,4 +1,3 @@
-#include "config.h"
 #include "spamm.h"
 
 #ifdef HAVE_SSE
