@@ -111,4 +111,6 @@ spamm_index_kernel_block_hierarchical_1 (const unsigned int i_block,
   assert(j < SPAMM_N_BLOCK);
 
   offset = spamm_index_kernel_block(i_block*SPAMM_N_KERNEL_BLOCK+i, j_block*SPAMM_N_KERNEL_BLOCK+j);
+
+  return offset;
 }

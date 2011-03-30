@@ -1,5 +1,5 @@
 AM_CTAGSFLAGS = --C-kinds=+l+x
-TAGS_FILES = ../config.h
+TAGS_FILES = ../config.h generate_SSE_assembly.py
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
