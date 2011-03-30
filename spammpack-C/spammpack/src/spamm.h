@@ -13,32 +13,6 @@
 #include "spamm_timer.h"
 #include "spamm_convert.h"
 
-/** The different stream kernels.
- */
-enum spamm_kernel_t
-{
-  /** The standard stream kernel (SSE). */
-  kernel_standard_SSE,
-
-  /** The standard stream kernel (SSE4.1). */
-  kernel_standard_SSE4_1,
-
-  /** The standard stream kernel without norm checks (SSE). */
-  kernel_standard_no_checks_SSE,
-
-  /** The standard stream kernel without norm checks (SSE4.1). */
-  kernel_standard_no_checks_SSE4_1,
-
-  /** The experimental version of the stream kernel. */
-  kernel_experimental,
-
-  /** The Z-curve stream kernel (SSE). */
-  kernel_Z_curve_SSE,
-
-  /** The Z-curve stream kernel (SSE4.1). */
-  kernel_Z_curve_SSE4_1
-};
-
 /** The matrix type.
  */
 struct spamm_t

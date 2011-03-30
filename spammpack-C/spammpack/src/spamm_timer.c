@@ -1,3 +1,4 @@
+#include "config.h"
 #include "spamm_timer.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -108,6 +109,12 @@ spamm_timer_new (const enum spamm_timer_type_t type)
 
       switch(timer->type)
       {
+        case walltime:
+          /* We already took care of this option, just making the compiler
+           * happy.
+           */
+          break;
+
         case papi_total_instructions:
           if ((papi_result = PAPI_add_event(timer->eventset, PAPI_TOT_INS)) != PAPI_OK)
           {
