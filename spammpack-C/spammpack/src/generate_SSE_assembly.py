@@ -127,6 +127,9 @@ def row_major_index (i, j, N):
   return i*N+j
 
 def block_product (i, k, j, clearC = True, writeC = True):
+  """Produce an assembly code block to multiply 2 4x4 matrices in SSE. The
+  index arguments are 1-based."""
+
   # Fix up indices.
   i -= 1
   j -= 1
@@ -166,7 +169,7 @@ def block_product (i, k, j, clearC = True, writeC = True):
     # When comparing with the Intel Software Developer's Manual, keep in
     # mind that Intel uses Intel syntax and this code is writting using
     # At&T syntax, which means that the order of operand 1 and 2 are the
-    # opposite.
+    # opposite which includes the comparison instruction.
     print("  comiss %s, %s" % (tolerance, norm))
     print("  jbe jump_%d" % (block_counter.get()))
 
@@ -328,21 +331,21 @@ def block_product (i, k, j, clearC = True, writeC = True):
     C12 = SSERegister("C12")
     print("  movaps %s, %s" % (B2, C12))
     print("  dpps $0xf2, %s, %s" % (A1, C12))
+    print("  blendps $0x01, %s, %s" % (C11, C12))
+    C11.release()
 
     C13 = SSERegister("C13")
     print("  movaps %s, %s" % (B3, C13))
     print("  dpps $0xf4, %s, %s" % (A1, C13))
+    print("  blendps $0x03, %s, %s" % (C12, C13))
+    C12.release()
 
     C14 = SSERegister("C14")
     print("  movaps %s, %s" % (B4, C14))
     print("  dpps $0xf8, %s, %s" % (A1, C14))
-
-    print("  blendps $0x01, %s, %s" % (C11, C12))
-    C11.release()
-    print("  blendps $0x03, %s, %s" % (C12, C13))
-    C12.release()
     print("  blendps $0x07, %s, %s" % (C13, C14))
     C13.release()
+
     print("  addps %s, %s" % (C14, C1))
     C14.release()
     A1.release()
@@ -360,21 +363,21 @@ def block_product (i, k, j, clearC = True, writeC = True):
     C22 = SSERegister("C22")
     print("  movaps %s, %s" % (B2, C22))
     print("  dpps $0xf2, %s, %s" % (A2, C22))
+    print("  blendps $0x01, %s, %s" % (C21, C22))
+    C21.release()
 
     C23 = SSERegister("C23")
     print("  movaps %s, %s" % (B3, C23))
     print("  dpps $0xf4, %s, %s" % (A2, C23))
+    print("  blendps $0x03, %s, %s" % (C22, C23))
+    C22.release()
 
     C24 = SSERegister("C24")
     print("  movaps %s, %s" % (B4, C24))
     print("  dpps $0xf8, %s, %s" % (A2, C24))
-
-    print("  blendps $0x01, %s, %s" % (C21, C22))
-    C21.release()
-    print("  blendps $0x03, %s, %s" % (C22, C23))
-    C22.release()
     print("  blendps $0x07, %s, %s" % (C23, C24))
     C23.release()
+
     print("  addps %s, %s" % (C24, C2))
     C24.release()
     A2.release()
@@ -392,21 +395,21 @@ def block_product (i, k, j, clearC = True, writeC = True):
     C32 = SSERegister("C32")
     print("  movaps %s, %s" % (B2, C32))
     print("  dpps $0xf2, %s, %s" % (A3, C32))
+    print("  blendps $0x01, %s, %s" % (C31, C32))
+    C31.release()
 
     C33 = SSERegister("C33")
     print("  movaps %s, %s" % (B3, C33))
     print("  dpps $0xf4, %s, %s" % (A3, C33))
+    print("  blendps $0x03, %s, %s" % (C32, C33))
+    C32.release()
 
     C34 = SSERegister("C34")
     print("  movaps %s, %s" % (B4, C34))
     print("  dpps $0xf8, %s, %s" % (A3, C34))
-
-    print("  blendps $0x01, %s, %s" % (C31, C32))
-    C31.release()
-    print("  blendps $0x03, %s, %s" % (C32, C33))
-    C32.release()
     print("  blendps $0x07, %s, %s" % (C33, C34))
     C33.release()
+
     print("  addps %s, %s" % (C34, C3))
     C34.release()
     A3.release()
@@ -424,21 +427,21 @@ def block_product (i, k, j, clearC = True, writeC = True):
     C42 = SSERegister("C42")
     print("  movaps %s, %s" % (B2, C42))
     print("  dpps $0xf2, %s, %s" % (A4, C42))
+    print("  blendps $0x01, %s, %s" % (C41, C42))
+    C41.release()
 
     C43 = SSERegister("C43")
     print("  movaps %s, %s" % (B3, C43))
     print("  dpps $0xf4, %s, %s" % (A4, C43))
+    print("  blendps $0x03, %s, %s" % (C42, C43))
+    C42.release()
 
     C44 = SSERegister("C44")
     print("  movaps %s, %s" % (B4, C44))
     print("  dpps $0xf8, %s, %s" % (A4, C44))
-
-    print("  blendps $0x01, %s, %s" % (C41, C42))
-    C41.release()
-    print("  blendps $0x03, %s, %s" % (C42, C43))
-    C42.release()
     print("  blendps $0x07, %s, %s" % (C43, C44))
     C43.release()
+
     print("  addps %s, %s" % (C44, C4))
     C44.release()
     A4.release()
