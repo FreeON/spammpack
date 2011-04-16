@@ -41,7 +41,7 @@ spamm_expand (struct spamm_t *A)
       /* Create new block in case one doesn't exist already. */
       if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
       {
-        data = spamm_new_block(A->kernel_tier, index);
+        data = spamm_new_block(A->kernel_tier, index, A->layout);
         spamm_hashtable_insert(node_hashtable, index, data);
       }
     }

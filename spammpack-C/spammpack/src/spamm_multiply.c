@@ -601,55 +601,55 @@ spamm_multiply (const float tolerance,
   printf("[multiply] stream multiply ");
   spamm_timer_start(timer);
 
+  printf("(%s)... ", spamm_kernel_get_name(kernel));
   switch (kernel)
   {
     case kernel_experimental:
-      printf("(experimental kernel)... ");
       spamm_stream_kernel_C(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     case kernel_standard_SSE:
-      printf("(standard kernel)... ");
       spamm_stream_kernel_SSE(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     case kernel_standard_SSE4_1:
-      printf("(standard kernel SSE4.1)... ");
       spamm_stream_kernel_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     case kernel_Z_curve_SSE:
-      printf("(Z-curve kernel SSE)... ");
       spamm_stream_kernel_Z_curve_SSE(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     case kernel_Z_curve_SSE4_1:
-      printf("(Z-curve kernel SSE4.1)... ");
       spamm_stream_kernel_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     case kernel_hierarchical_SSE:
-      printf("(hierarchical kernel SSE)... ");
       spamm_stream_kernel_hierarchical_SSE(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     case kernel_hierarchical_SSE4_1:
-      printf("(hierarchical kernel SSE4.1)... ");
       spamm_stream_kernel_hierarchical_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
       break;
 
+    case kernel_hierarchical_Z_curve_SSE:
+      spamm_stream_kernel_hierarchical_Z_curve_SSE(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
+    case kernel_hierarchical_Z_curve_SSE4_1:
+      spamm_stream_kernel_hierarchical_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
     case kernel_standard_no_checks_SSE:
-      printf("(no-checks kernel)... ");
       spamm_stream_kernel_no_checks_SSE(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     case kernel_standard_no_checks_SSE4_1:
-      printf("(no-checks kernel SSE4.1)... ");
       spamm_stream_kernel_no_checks_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     default:
-      printf("(unknown kernel)... ");
+      printf("unknown kernel... ");
       exit(1);
       break;
   }

@@ -34,7 +34,39 @@ struct spamm_check_user_data_t
 void
 spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
 {
-  printf("[FIXME] (verifying tree structure)\n");
+  char binary_string_1[100];
+  char binary_string_2[100];
+  unsigned int tier;
+  unsigned int next_index;
+  struct spamm_hashtable_t *tier_hashtable;
+  struct spamm_check_user_data_t *user = user_data;
+
+  /* Go up the tiers and make sure that we have a node that covers the indices
+   * of the current node.
+   */
+  for (next_index = index, tier = user->tier; ; )
+  {
+    if (tier > 0)
+    {
+      tier -= 1;
+      next_index >>= 2;
+    }
+
+    else
+    {
+      break;
+    }
+
+    tier_hashtable = user->A->tier_hashtable[tier];
+    if (spamm_hashtable_lookup(tier_hashtable, next_index) == NULL)
+    {
+      spamm_uint_to_bin_string(2*user->tier, index, binary_string_1);
+      spamm_uint_to_bin_string(2*tier, next_index, binary_string_2);
+      printf("missing node in tree: cannot find node for index %s at tier %u which is needed for index %s at tier %u\n", binary_string_2, tier, binary_string_1, user->tier);
+      user->result = SPAMM_ERROR;
+      break;
+    }
+  }
 }
 
 /** Verify linear indices. This step computes the linear matrix index of each
@@ -49,6 +81,7 @@ void
 spamm_check_linear_index (unsigned int index, void *value, void *user_data)
 {
   printf("[FIXME] (verifying linear indices)\n");
+  exit(1);
 }
 
 /** Verify the norm of a node.
@@ -221,18 +254,15 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
   short i_dilated;
   float Aij;
   unsigned int data_offset;
-  unsigned int data_offset_transpose;
   struct spamm_data_t *data = value;
   struct spamm_check_user_data_t *user = user_data;
 
-  for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++) {
-    for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++) {
-      for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
+  for (i = 0; i < SPAMM_N_KERNEL_BLOCK && user->result == SPAMM_OK; i++) {
+    for (j = 0; j < SPAMM_N_KERNEL_BLOCK && user->result == SPAMM_OK; j++) {
+      for (i_block = 0; i_block < SPAMM_N_BLOCK && user->result == SPAMM_OK; i_block++) {
         for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
         {
-          data_offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK
-            *spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
-            +spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+          data_offset = spamm_index_kernel_block_hierarchical_1(i_block, j_block, i, j, user->A->layout);
           Aij = data->block_dense[data_offset];
           for (i_dilated = 0; i_dilated < 4; i_dilated++)
           {
@@ -240,15 +270,16 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
             {
               printf("index %u: data block inconsistency between block_dense and block_dense_dilated\n", index);
               user->result = SPAMM_ERROR;
+              break;
             }
           }
-          data_offset_transpose = SPAMM_N_BLOCK*SPAMM_N_BLOCK
-            *spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
-            +spamm_index_row_major(j_block, i_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
-          if (Aij != data->block_dense_transpose[data_offset_transpose])
+          if (Aij != data->block_dense_transpose[spamm_index_kernel_block_hierarchical_1(i_block, j_block, j, i, user->A->layout)])
           {
             printf("index %u: data block inconsistency between block_dense and block_dense_transpose\n", index);
+            printf("index %u: Aij = %e, (A^T)ij = %e\n", index,
+                Aij, data->block_dense_transpose[spamm_index_kernel_block_hierarchical_1(j_block, i_block, i, j, user->A->layout)]);
             user->result = SPAMM_ERROR;
+            break;
           }
         }
       }
@@ -349,11 +380,11 @@ spamm_check (const struct spamm_t *A)
     user_data.tier = reverse_tier;
     user_data.A = A;
 
-    /* Verify tree structure. */
-    spamm_hashtable_foreach(hashtable, spamm_check_tree_structure, &user_data);
-
     if (reverse_tier == A->kernel_tier)
     {
+      /* Verify tree structure. */
+      spamm_hashtable_foreach(hashtable, spamm_check_tree_structure, &user_data);
+
       /* Verify transpose and dilated data. */
       spamm_hashtable_foreach(hashtable, spamm_check_data_consistency, &user_data);
     }

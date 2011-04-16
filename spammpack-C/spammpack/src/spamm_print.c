@@ -12,7 +12,7 @@
  */
 void
 spamm_print_dense (const unsigned int M, const unsigned int N,
-    const enum spamm_dense_type_t type, const float *A)
+    const enum spamm_layout_t type, const float *A)
 {
   unsigned int i, j;
 
@@ -61,7 +61,7 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
   struct spamm_data_t *data = value;
 
   printf("(node) tier %u: index_2D = %u, ", data->tier, data->index_2D);
-  printf("node norm = %1.2e, ", data->node_norm);
+  printf("node norm = %1.2e\n", data->node_norm);
   printf("norm = { ");
   for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++)
   {
@@ -73,7 +73,20 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
     printf(" }");
     if (i < SPAMM_N_KERNEL_BLOCK-1) { printf(", "); }
   }
-  printf(" }, block_dense = ");
+  printf(" }, ");
+  printf("norm_upper = { ");
+  for (i = 0; i < 8; i++)
+  {
+    printf(" %1.2e", data->norm_upper[i]);
+  }
+  printf(" }, ");
+  printf("norm_upper_transpose = { ");
+  for (i = 0; i < 8; i++)
+  {
+    printf(" %1.2e", data->norm_upper_transpose[i]);
+  }
+  printf(" }\n");
+  printf("block_dense = ");
   for (i = 0; i < SPAMM_N_KERNEL; i++)
   {
     printf("{");
@@ -85,7 +98,9 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
     if (i < SPAMM_N_KERNEL-1) { printf(", "); }
   }
   printf(" }\n");
-  printf(" }, block_dense_transpose = ");
+  printf("block_dense =\n");
+  spamm_print_dense(SPAMM_N_KERNEL, SPAMM_N_KERNEL, row_major, data->block_dense);
+  printf("block_dense_transpose = ");
   for (i = 0; i < SPAMM_N_KERNEL; i++)
   {
     printf("{");
@@ -97,6 +112,8 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
     if (i < SPAMM_N_KERNEL-1) { printf(", "); }
   }
   printf(" }\n");
+  printf("block_dense_transpose =\n");
+  spamm_print_dense(SPAMM_N_KERNEL, SPAMM_N_KERNEL, row_major, data->block_dense_transpose);
 }
 
 /** Print a SpAMM matrix, printing the tree structure.

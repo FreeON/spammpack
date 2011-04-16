@@ -36,9 +36,9 @@ main ()
   B_dense = (double*) malloc(sizeof(double)*N*N);
   C_dense = (double*) malloc(sizeof(double)*N*N);
 
-  A = spamm_new(N, N);
-  B = spamm_new(N, N);
-  C = spamm_new(N, N);
+  A = spamm_new(N, N, row_major);
+  B = spamm_new(N, N, row_major);
+  C = spamm_new(N, N, row_major);
 
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)

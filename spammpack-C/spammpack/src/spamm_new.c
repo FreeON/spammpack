@@ -11,7 +11,7 @@
  * @return A pointer to the matrix.
  */
 struct spamm_t *
-spamm_new (const unsigned int M, const unsigned int N)
+spamm_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout)
 {
   struct spamm_t *A;
   double x, x_M, x_N;
@@ -31,6 +31,21 @@ spamm_new (const unsigned int M, const unsigned int N)
 
   /* Allocate memory. */
   A = (struct spamm_t*) malloc(sizeof(struct spamm_t));
+
+  /* Set the layout. */
+  switch (layout)
+  {
+    case row_major:
+    case column_major:
+    case Z_curve:
+      A->layout = layout;
+      break;
+
+    default:
+      fprintf(stderr, "unknown layout\n");
+      exit(1);
+      break;
+  }
 
   /* Pad to powers of M_child x N_child. */
   x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);

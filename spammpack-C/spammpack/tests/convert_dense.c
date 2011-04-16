@@ -18,7 +18,7 @@ main ()
     A_dense[i] = rand()/(float) RAND_MAX;
   }
 
-  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense);
+  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense, row_major);
 
 #ifdef PRINT_DEBUG
   printf("A_dense:\n");
