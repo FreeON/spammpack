@@ -8,7 +8,7 @@ main ()
   int result = 0;
   struct spamm_t *A;
 
-  A = spamm_new(N, N);
+  A = spamm_new(N, N, row_major);
 
   spamm_expand(A);
 

@@ -14,6 +14,7 @@ import math
 import optparse
 import os.path
 import sys
+from spammOffsets import spammOffsets
 
 class SSERegister:
   """A class that takes care of returning an available SSE register to the
@@ -126,6 +127,14 @@ def row_major_index (i, j, N):
   # Row-major storage.
   return i*N+j
 
+def offset (i, j, N):
+  """Return the offset into a matrix block."""
+
+  if options.Z_curve_ordering:
+    return Z_curve_index(i, j)
+  else:
+    return row_major_index(i, j, N)
+
 def block_product (i, k, j, clearC = True, writeC = True):
   """Produce an assembly code block to multiply 2 4x4 matrices in SSE. The
   index arguments are 1-based."""
@@ -163,8 +172,8 @@ def block_product (i, k, j, clearC = True, writeC = True):
     norm = SSERegister("norm")
 
     print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
-    print("  movss 0x%x(A), %s" % ((i*options.N+k)*4+offset_norm, norm))
-    print("  mulss 0x%x(B), %s" % ((k*options.N+j)*4+offset_norm, norm))
+    print("  movss 0x%x(A), %s" % ((i*options.N+k)*4+spammOffsets.offset_norm, norm))
+    print("  mulss 0x%x(B), %s" % ((k*options.N+j)*4+spammOffsets.offset_norm, norm))
 
     # When comparing with the Intel Software Developer's Manual, keep in
     # mind that Intel uses Intel syntax and this code is writting using
@@ -183,18 +192,18 @@ def block_product (i, k, j, clearC = True, writeC = True):
 
     print("")
     print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
-    print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B1))
-    print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B2))
-    print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B3))
-    print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense, B4))
+    print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense, B1))
+    print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense, B2))
+    print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense, B3))
+    print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense, B4))
 
     A11 = SSERegister("A11")
     A12 = SSERegister("A12")
     A13 = SSERegister("A13")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A11))
-    print("  movaps 0x%x(A), %s" % (row_major_index(0, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A12))
-    print("  movaps 0x%x(A), %s" % (row_major_index(0, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A13))
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A11))
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 1, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A12))
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 2, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A13))
     print("  mulps %s, %s" % (B1, A11))
     print("  mulps %s, %s" % (B2, A12))
     print("  addps %s, %s" % (A11, C1))
@@ -202,91 +211,91 @@ def block_product (i, k, j, clearC = True, writeC = True):
     A11.release()
     A14 = SSERegister("A14")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(0, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A14))
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 3, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A14))
     print("  mulps %s, %s" % (B3, A13))
     print("  addps %s, %s" % (A12, C1))
 
     A12.release()
     A21 = SSERegister("A21")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A21))
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A21))
     print("  mulps %s, %s" % (B4, A14))
     print("  addps %s, %s" % (A13, C1))
 
     A13.release()
     A22 = SSERegister("A22")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(1, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A22))
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 1, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A22))
     print("  mulps %s, %s" % (B1, A21))
     print("  addps %s, %s" % (A14, C1))
 
     A14.release()
     A23 = SSERegister("A23")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(1, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A23))
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 2, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A23))
     print("  mulps %s, %s" % (B2, A22))
     print("  addps %s, %s" % (A21, C2))
 
     A21.release()
     A24 = SSERegister("A24")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(1, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A24))
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 3, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A24))
     print("  mulps %s, %s" % (B3, A23))
     print("  addps %s, %s" % (A22, C2))
 
     A22.release()
     A31 = SSERegister("A31")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A31))
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A31))
     print("  mulps %s, %s" % (B4, A24))
     print("  addps %s, %s" % (A23, C2))
 
     A23.release()
     A32 = SSERegister("A32")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(2, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A32))
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 1, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A32))
     print("  mulps %s, %s" % (B1, A31))
     print("  addps %s, %s" % (A24, C2))
 
     A24.release()
     A33 = SSERegister("A33")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(2, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A33))
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 2, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A33))
     print("  mulps %s, %s" % (B2, A32))
     print("  addps %s, %s" % (A31, C3))
 
     A31.release()
     A34 = SSERegister("A34")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(2, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A34))
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 3, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A34))
     print("  mulps %s, %s" % (B3, A33))
     print("  addps %s, %s" % (A32, C3))
 
     A32.release()
     A41 = SSERegister("A41")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A41))
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A41))
     print("  mulps %s, %s" % (B4, A34))
     print("  addps %s, %s" % (A33, C3))
 
     A33.release()
     A42 = SSERegister("A42")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(3, 1, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A42))
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 1, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A42))
     print("  mulps %s, %s" % (B1, A41))
     print("  addps %s, %s" % (A34, C3))
 
     A34.release()
     A43 = SSERegister("A43")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(3, 2, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A43))
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 2, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A43))
     print("  mulps %s, %s" % (B2, A42))
     print("  addps %s, %s" % (A41, C4))
 
     A41.release()
     A44 = SSERegister("A44")
 
-    print("  movaps 0x%x(A), %s" % (row_major_index(3, 3, 4)*4*4+row_major_index(i, k, options.N)*64*4+offset_block_dense_dilated, A44))
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 3, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A44))
     print("  mulps %s, %s" % (B3, A43))
     print("  addps %s, %s" % (A42, C4))
     print("  mulps %s, %s" % (B4, A44))
@@ -310,16 +319,16 @@ def block_product (i, k, j, clearC = True, writeC = True):
     print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
 
     A1 = SSERegister("A1")
-    print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A1))
+    print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, A1))
 
     B1 = SSERegister("B1")
-    print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B1))
+    print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, B1))
     B2 = SSERegister("B2")
-    print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B2))
+    print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, B2))
     B3 = SSERegister("B3")
-    print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B3))
+    print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, B3))
     B4 = SSERegister("B4")
-    print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+row_major_index(k, j, options.N)*16*4+offset_block_dense_transpose, B4))
+    print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, B4))
 
     print("")
     print("  # Calculate C(1,:).")
@@ -351,7 +360,7 @@ def block_product (i, k, j, clearC = True, writeC = True):
     A1.release()
 
     A2 = SSERegister("A2")
-    print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A2))
+    print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, A2))
 
     print("")
     print("  # Calculate C(2,:).")
@@ -383,7 +392,7 @@ def block_product (i, k, j, clearC = True, writeC = True):
     A2.release()
 
     A3 = SSERegister("A3")
-    print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A3))
+    print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, A3))
 
     print("")
     print("  # Calculate C(3,:).")
@@ -415,7 +424,7 @@ def block_product (i, k, j, clearC = True, writeC = True):
     A3.release()
 
     A4 = SSERegister("A4")
-    print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4+row_major_index(i, k, options.N)*16*4+offset_block_dense, A4))
+    print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, A4))
 
     print("")
     print("  # Calculate C(4,:).")
@@ -469,17 +478,17 @@ def block_product (i, k, j, clearC = True, writeC = True):
 
     print("")
     print("  # Add accumulated C(%d,%d) to already existing." % (i+1, j+1))
-    print("  addps 0x%x(C), %s" % (row_major_index(0, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense, C1))
-    print("  addps 0x%x(C), %s" % (row_major_index(1, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense, C2))
-    print("  addps 0x%x(C), %s" % (row_major_index(2, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense, C3))
-    print("  addps 0x%x(C), %s" % (row_major_index(3, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense, C4))
+    print("  addps 0x%x(C), %s" % (row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C1))
+    print("  addps 0x%x(C), %s" % (row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C2))
+    print("  addps 0x%x(C), %s" % (row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C3))
+    print("  addps 0x%x(C), %s" % (row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C4))
 
     print("")
     print("  # Write out C(%d,%d) submatrix block." % (i+1, j+1))
-    print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense))
-    print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense))
-    print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense))
-    print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+row_major_index(i, j, options.N)*16*4+offset_block_dense))
+    print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
 
     C1.release()
     C2.release()
@@ -652,13 +661,14 @@ if options.hierarchical:
   print("#define old_stack          %r13")
 
 # The following sizes were generated with print_data_sizes.c.
-sizeof_multiply_stream_t = 3*8
-offset_norm = 16
-offset_norm_upper = 192
-offset_norm_upper_transpose = 256
-offset_block_dense = 320
-offset_block_dense_dilated = 1344
-offset_block_dense_transpose = 5440
+#sizeof_multiply_stream_t = 3*8
+
+#offset_norm = 20
+#offset_norm_upper = 192
+#offset_norm_upper_transpose = 256
+#offset_block_dense = 4096
+#offset_block_dense_dilated = 8192
+#offset_block_dense_transpose = 12288
 
 # Start the function prolog.
 print("")
@@ -742,8 +752,8 @@ print("")
 print("  .balign 16")
 print("stream_loop:")
 print("")
-print("  # Set the base pointer using sizeof(multiply_stream_t) = %d (0x%x)." % (sizeof_multiply_stream_t, sizeof_multiply_stream_t))
-print("  imul $0x%x, base_pointer, base_pointer" % (sizeof_multiply_stream_t))
+print("  # Set the base pointer using sizeof(multiply_stream_t) = %d (0x%x)." % (spammOffsets.sizeof_multiply_stream_t, spammOffsets.sizeof_multiply_stream_t))
+print("  imul $0x%x, base_pointer, base_pointer" % (spammOffsets.sizeof_multiply_stream_t))
 print("")
 print("  # Load pointers to stream matrix blocks.")
 print("  mov (multiply_stream, base_pointer, 1), A")
@@ -760,8 +770,8 @@ if options.hierarchical:
   print("")
   print("  # First level of hierarchy. Do some norm products [ A11*B11, A12*B21, A11*B12, A12*B22 ].")
   norm_1 = SSERegister("norm_1")
-  print("  movaps 0x%x(A), %s" % (offset_norm_upper, norm_1))
-  print("  mulps 0x%x(B), %s" % (offset_norm_upper_transpose, norm_1))
+  print("  movaps 0x%x(A), %s" % (spammOffsets.offset_norm_upper, norm_1))
+  print("  mulps 0x%x(B), %s" % (spammOffsets.offset_norm_upper_transpose, norm_1))
   print("  cmpps $0x02, %s, %s # norm product <= tolerance?" % (tolerance, norm_1))
   print("  pshufb %s, %s" % (norm_mask, norm_1))
   print("  pmovmskb %s, jump_index" % (norm_1))
@@ -769,8 +779,8 @@ if options.hierarchical:
   print("")
   print("  # First level of hierarchy. Do some norm products [ A21*B11, A22*B21, A21*B12, A22*B22 ].")
   norm_2 = SSERegister("norm_2")
-  print("  movaps 0x%x(A), %s" % (offset_norm_upper+4*4, norm_2))
-  print("  mulps 0x%x(B), %s" % (offset_norm_upper_transpose+4*4, norm_2))
+  print("  movaps 0x%x(A), %s" % (spammOffsets.offset_norm_upper+4*4, norm_2))
+  print("  mulps 0x%x(B), %s" % (spammOffsets.offset_norm_upper_transpose+4*4, norm_2))
   print("  cmpps $0x02, %s, %s # norm product <= tolerance?" % (tolerance, norm_2))
   print("  pshufb %s, %s" % (norm_mask, norm_2))
   print("  pmovmskb %s, jump_index_temp" % (norm_2))

@@ -11,14 +11,16 @@
  *
  * @param M The number of rows.
  * @param N The number of columns.
- * @param type The storage type of the dense matrix.
+ * @param dense_type The storage type of the dense matrix.
  * @param A_dense The dense matrix.
+ * @param spamm_layout The layout of the SpAMM data nodes.
  *
  * @return The SpAMM matrix.
  */
 struct spamm_t *
 spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
-    const enum spamm_dense_type_t type, float *A_dense)
+    const enum spamm_layout_t dense_type, float *A_dense,
+    const enum spamm_layout_t spamm_layout)
 {
   struct spamm_t *A = NULL;
   unsigned int index;
@@ -50,7 +52,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
 #ifdef EXTRA_DEBUG
   printf("creating new SpAMM %ux%u matrix\n", M, N);
 #endif
-  A = spamm_new(M, N);
+  A = spamm_new(M, N, spamm_layout);
 
   /* Get hash table at this tier. */
   node_hashtable = A->tier_hashtable[A->kernel_tier];
@@ -76,7 +78,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
       for (i_kernel = 0; i_kernel < SPAMM_N_KERNEL && i+i_kernel < M; i_kernel++) {
         for (j_kernel = 0; j_kernel < SPAMM_N_KERNEL && j+j_kernel < N; j_kernel++)
         {
-          switch(type)
+          switch(dense_type)
           {
             case row_major:
 #ifdef EXTRA_DEBUG
@@ -128,7 +130,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
 
       if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
       {
-        data = spamm_new_block(A->kernel_tier, index);
+        data = spamm_new_block(A->kernel_tier, index, A->layout);
         spamm_hashtable_insert(node_hashtable, index, data);
       }
 
@@ -145,11 +147,11 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
             for (j_block = 0; j_block < SPAMM_N_BLOCK && j+SPAMM_N_BLOCK*j_kernel+j_block < N; j_block++)
             {
               /* Calculate offsets into the matrix data. */
-              data_offset = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+i_block, SPAMM_N_BLOCK*j_kernel+j_block);
-              data_offset_transpose = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+j_block, SPAMM_N_BLOCK*j_kernel+i_block);
+              data_offset = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+i_block, SPAMM_N_BLOCK*j_kernel+j_block, A->layout);
+              data_offset_transpose = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+j_block, SPAMM_N_BLOCK*j_kernel+i_block, A->layout);
 
               /* Get matrix elements from dense matrix. */
-              switch(type)
+              switch(dense_type)
               {
                 case row_major:
                   Aij = A_dense[spamm_index_row_major(i+SPAMM_N_BLOCK*i_kernel+i_block, j+SPAMM_N_BLOCK*j_kernel+j_block, M, N)];

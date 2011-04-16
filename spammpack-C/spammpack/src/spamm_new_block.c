@@ -1,21 +1,37 @@
 #include "spamm.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 /** Allocate a new data node of a matrix tree.
  *
  * @param tier The tier this node will be on.
  * @param index_2D The 2D linear matrix index of this node.
+ * @param layout The layout of the basic matrix blocks.
  *
  * @return A pointer to the newly allocated node.
  */
 struct spamm_data_t *
-spamm_new_block (const unsigned int tier, const unsigned int index_2D)
+spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout)
 {
   int i, j;
   struct spamm_data_t *data;
 
   /* Allocate data. */
   data = (struct spamm_data_t*) malloc(sizeof(struct spamm_data_t));
+
+  switch (layout)
+  {
+    case row_major:
+    case column_major:
+    case Z_curve:
+      data->layout = layout;
+      break;
+
+    default:
+      fprintf(stderr, "unknown layout\n");
+      exit(1);
+      break;
+  }
 
   /* Set some information on the data block. */
   data->tier = tier;

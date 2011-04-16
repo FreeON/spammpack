@@ -33,7 +33,7 @@ main ()
     }
   }
 
-  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense);
+  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense, row_major);
   if (spamm_number_nonzero(A) != nonzeros)
   {
     printf("found %u nonzeros, should have found %u\n", spamm_number_nonzero(A), nonzeros);

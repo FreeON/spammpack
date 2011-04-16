@@ -42,7 +42,7 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
 
   if ((data = spamm_hashtable_lookup(node_hashtable, index)) != NULL)
   {
-    Aij = data->block_dense[spamm_index_kernel_block(i%delta_index, j%delta_index)];
+    Aij = data->block_dense[spamm_index_kernel_block(i%delta_index, j%delta_index, A->layout)];
   }
 
   return Aij;

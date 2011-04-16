@@ -11,7 +11,7 @@ main ()
 
   struct spamm_t *A;
 
-  A = spamm_new(N, N);
+  A = spamm_new(N, N, row_major);
 
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)

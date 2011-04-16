@@ -87,7 +87,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
     {
       if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
       {
-        data = spamm_new_block(tier, index);
+        data = spamm_new_block(tier, index, A->layout);
         spamm_hashtable_insert(node_hashtable, index, data);
       }
 
@@ -118,8 +118,8 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
       /* Calculate offsets into the norm and the matrix data. */
       norm_offset = spamm_index_norm(i%delta_index, j%delta_index);
-      data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index);
-      data_offset_transpose = spamm_index_kernel_block(j%delta_index, i%delta_index);
+      data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index, A->layout);
+      data_offset_transpose = spamm_index_kernel_block(j%delta_index, i%delta_index, A->layout);
 
 #ifndef NEW_NORM
       /* For norm calculations, get original value of Aij. */
@@ -137,7 +137,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
       /* Update norms. */
 #ifdef NEW_NORM
-      data_offset = spamm_index_kernel_block((i%delta_index)/SPAMM_N_BLOCK*SPAMM_N_BLOCK, (j%delta_index)/SPAMM_N_BLOCK*SPAMM_N_BLOCK);
+      data_offset = spamm_index_kernel_block((i%delta_index)/SPAMM_N_BLOCK*SPAMM_N_BLOCK, (j%delta_index)/SPAMM_N_BLOCK*SPAMM_N_BLOCK, A->layout);
       data->norm2[norm_offset] = 0.0;
       for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
         for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)

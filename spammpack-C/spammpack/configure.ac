@@ -2,6 +2,14 @@ dnl vim:tw=0
 
 dnl Define some basic information of this package.
 AC_INIT([spammpack], [2011-02-03], [nicolasbock@gmail.com], [spammpack], [http://freeon.org])
+
+dnl Check for build host.
+AC_CANONICAL_TARGET
+if test "${target_cpu}" != "x86_64"; then
+  AC_MSG_FAILURE([we currently only support the 64-bit x86 architecture])
+fi
+
+dnl Initialize automake.
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
@@ -101,68 +109,22 @@ AC_ARG_ENABLE([logging], [AS_HELP_STRING([--disable-logging],
               [disables logging output])],
               [], [enable_logging="yes"])
 
-dnl Check for memory alignment.
-AC_MSG_CHECKING([for memory alignment])
-AC_ARG_WITH([alignment], [AS_HELP_STRING([--with-alignment], [Define the
-             alignment of memory allocations. The default is 64, a cache
-             line.])],
-             [have_alignment="${withval}"],
-             [have_alignment="64"])
-AC_MSG_RESULT([alignment on ${have_alignment} byte boundaries])
-
-dnl Check for matrix block size.
-AC_MSG_CHECKING([for size of matrix block])
-AC_ARG_WITH([N-block], [AS_HELP_STRING([--with-N-block], [Define the size of a
-             basic matrix block as NxN. The default is N = 4, i.e. basic matrix
-             blocks of size 4x4.])],
-             [have_N_block="${withval}"],
-             [have_N_block="4"])
-AC_MSG_RESULT([using ${have_N_block}x${have_N_block} matrix blocks])
-
-dnl Check for children node matrix.
-AC_MSG_CHECKING([for size of children node matrix])
-AC_ARG_WITH([N-child], [AS_HELP_STRING([--with-N-child], [Define the size of
-             the children node matrix as NxN. The default is N = 2, i.e. a 2x2
-             children node matrix, which defines a quadtree. You better not
-             change this unless you really know what you are doing.])],
-             [have_N_child="${withval}"],
-             [have_N_child="2"])
-AC_MSG_RESULT([using a ${have_N_child}x${have_N_child} children node matrix])
-
-dnl Check for stride.
-AC_MSG_CHECKING([for stride in kernel])
-AC_ARG_WITH([N-stride], [AS_HELP_STRING([--with-N-stride], [Define the stride
-             taken by the experimental stream kernel. The default is N = 1,
-             i.e. a stride of 1.])],
-             [have_N_stride="${withval}"],
-             [have_N_stride="1"])
-AC_MSG_RESULT([using a stride of ${have_N_stride}])
-
-if test ${have_N_child} -eq 1; then
-  AC_MSG_FAILURE([It is really pointless to define a tree in which each node has only 1 child.])
-fi
-
-if test ${have_N_child} -ne 2; then
-  AC_MSG_NOTICE([You requested to not generate a quadtree. Please fasten your seatbelt and hope for a miracle...])
-fi
-
-dnl Check for kernel depth.
-AC_MSG_CHECKING([for depth in tiers of computational kernel])
-AC_ARG_WITH([kernel-depth], [AS_HELP_STRING([--with-kernel-depth], [Define
-             the kernel depth in terms of tiers that allocate the matrix
-             blocks contiguously for the computational kernel. This value has
-             to match the computational kernel.])],
-             [have_kernel_depth="${withval}"],
-             [have_kernel_depth="2"])
-AC_MSG_RESULT([using ${have_kernel_depth} tier(s)])
-
+dnl Define basic tree properties.
+have_N_block=4
+have_N_child=2
+have_N_stride=1
+have_kernel_depth=2
 have_N_kernel_block=$((${have_N_child}**${have_kernel_depth}))
 have_N_kernel=$((${have_N_block}*${have_N_child}**${have_kernel_depth}))
 
 AC_MSG_NOTICE([at the kernel tier, the dense matrix block has a size of ${have_N_kernel}x${have_N_kernel} elements, representing a ${have_N_kernel_block}x${have_N_kernel_block} matrix of ${have_N_block}x${have_N_block} matrix blocks])
 
+dnl Define default memory alignment.
+have_alignment=64
+
 dnl Define some constants.
 AC_DEFINE_UNQUOTED(SPAMM_ALIGNMENT, [${have_alignment}], [Define the alignment of memory allocations.])
+AC_DEFINE_UNQUOTED(SPAMM_PAGE_ALIGNMENT, [4096], [Define the alignment on a 4kB page.])
 AC_DEFINE_UNQUOTED(SPAMM_N_BLOCK, [${have_N_block}], [Define the size of a basic matrix block as NxN.])
 AC_DEFINE_UNQUOTED(SPAMM_N_CHILD, [${have_N_child}], [Define the size of the children node matrix as NxN.])
 AC_DEFINE_UNQUOTED(SPAMM_KERNEL_DEPTH, [${have_kernel_depth}], [Define the number of tiers that are allocated contiguously for the computational kernel.])
@@ -220,7 +182,7 @@ tests/Makefile
 ])
 
 AC_CONFIG_COMMANDS([src/spamm_config.h], [
-  echo -n "creating src/spamm_config.h... "
+  echo -n "configure: creating src/spamm_config.h... "
   echo "/** @file */" > src/spamm_config.h.temp
   echo >> src/spamm_config.h.temp
   echo "#ifndef __SPAMM_CONFIG_H" >> src/spamm_config.h.temp

@@ -102,34 +102,42 @@ libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la
 noinst_SCRIPTS = generate_SSE_assembly.py
 noinst_PROGRAMS = print_data_sizes jump_C jump_assembly
 
-print_data_sizes_LDADD = libspamm.la
 jump_C_LDADD = libjump.la
 jump_assembly_LDADD = libjump.la
 
 libjump_la_SOURCES = jump_table_C.c jump_table_assembly.S
 
-spamm_stream_kernel_SSE.S : generate_SSE_assembly.py
+spammOffsets.py : spamm_config.h print_data_sizes$(EXEEXT)
+	./print_data_sizes$(EXEEXT) > $@
+
+spamm_stream_kernel_SSE.S : generate_SSE_assembly.py spammOffsets.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 1 --name spamm_stream_kernel_SSE > $@
 
-spamm_stream_kernel_SSE4_1.S : generate_SSE_assembly.py
+spamm_stream_kernel_SSE4_1.S : generate_SSE_assembly.py spammOffsets.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --name spamm_stream_kernel_SSE4_1 > $@
 
-spamm_stream_kernel_Z_curve_SSE.S : generate_SSE_assembly.py
+spamm_stream_kernel_Z_curve_SSE.S : generate_SSE_assembly.py spammOffsets.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 1 --Z-curve --name spamm_stream_kernel_Z_curve_SSE > $@
 
-spamm_stream_kernel_Z_curve_SSE4_1.S : generate_SSE_assembly.py
+spamm_stream_kernel_Z_curve_SSE4_1.S : generate_SSE_assembly.py spammOffsets.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --Z-curve --name spamm_stream_kernel_Z_curve_SSE4_1 > $@
 
-spamm_stream_kernel_hierarchical_SSE.S : generate_SSE_assembly.py
+spamm_stream_kernel_hierarchical_SSE.S : generate_SSE_assembly.py spammOffsets.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 1 --hierarchical --name spamm_stream_kernel_hierarchical_SSE > $@
 
-spamm_stream_kernel_hierarchical_SSE4_1.S : generate_SSE_assembly.py
+spamm_stream_kernel_hierarchical_SSE4_1.S : generate_SSE_assembly.py spammOffsets.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --hierarchical --name spamm_stream_kernel_hierarchical_SSE4_1 > $@
 
-spamm_stream_kernel_no_checks_SSE.S : generate_SSE_assembly.py
+spamm_stream_kernel_hierarchical_Z_curve_SSE.S : generate_SSE_assembly.py spammOffsets.py
+	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 1 --hierarchical --Z-curve --name spamm_stream_kernel_hierarchical_Z_curve_SSE > $@
+
+spamm_stream_kernel_hierarchical_Z_curve_SSE4_1.S : generate_SSE_assembly.py spammOffsets.py
+	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --hierarchical --Z-curve --name spamm_stream_kernel_hierarchical_Z_curve_SSE4_1 > $@
+
+spamm_stream_kernel_no_checks_SSE.S : generate_SSE_assembly.py spammOffsets.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 1 --name spamm_stream_kernel_no_checks_SSE --no-checks > $@
 
-spamm_stream_kernel_no_checks_SSE4_1.S : generate_SSE_assembly.py
+spamm_stream_kernel_no_checks_SSE4_1.S : generate_SSE_assembly.py spammOffsets.py
 	$(PYTHON) generate_SSE_assembly.py -N 4 --SSE 4.1 --name spamm_stream_kernel_no_checks_SSE4_1 --no-checks > $@
 
 generated_kernel_files = \
@@ -139,6 +147,8 @@ generated_kernel_files = \
   spamm_stream_kernel_Z_curve_SSE4_1.S \
   spamm_stream_kernel_hierarchical_SSE.S \
   spamm_stream_kernel_hierarchical_SSE4_1.S \
+  spamm_stream_kernel_hierarchical_Z_curve_SSE.S \
+  spamm_stream_kernel_hierarchical_Z_curve_SSE4_1.S \
   spamm_stream_kernel_no_checks_SSE.S \
   spamm_stream_kernel_no_checks_SSE4_1.S
 
@@ -181,9 +191,7 @@ libspamm_tree_la_SOURCES = \
   spamm_uint_to_bin_string.c \
   spamm_version.c
 
-EXTRA_DIST = \
-  spamm_list_driver.c \
-  generate_SSE_assembly.py
+EXTRA_DIST = spamm_list_driver.c
 
 libspamm_tree_headers = \
   spamm.h \
@@ -192,7 +200,8 @@ libspamm_tree_headers = \
   spamm_hashtable.h \
   spamm_introspection.h \
   spamm_list.h \
-  spamm_timer.h
+  spamm_timer.h \
+  spamm_types.h
 
 include_HEADERS = \
   spamm_config.h \
