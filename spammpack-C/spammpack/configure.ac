@@ -196,12 +196,15 @@ AC_CONFIG_COMMANDS([src/spamm_config.h], [
   echo >> src/spamm_config.h.temp
   echo "#endif" >> src/spamm_config.h.temp
   if (diff --brief src/spamm_config.h src/spamm_config.h.temp > /dev/null 2>&1); then
-    echo "no difference, keeping old one"
+    echo -n "no difference, keeping old one... "
     rm -f src/spamm_config.h.temp
   else
-    echo "updating src/spamm_config.h"
+    echo -n "updating src/spamm_config.h... "
     mv -f src/spamm_config.h.temp src/spamm_config.h
   fi
+  echo -n "removing duplicate entries from config.h... "
+  sed -e "s/^#define SPAMM/\/\/#define SPAMM/" -i config.h
+  echo "done"
 ])
 
 AC_OUTPUT
