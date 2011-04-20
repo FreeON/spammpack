@@ -7,7 +7,7 @@
 //#define PRINT_DEBUG
 
 int
-main ()
+main (int argc, char **argv)
 {
   int result = 0;
 
@@ -31,6 +31,13 @@ main ()
   unsigned int max_i = 0;
   unsigned int max_j = 0;
   double max_diff;
+
+  enum spamm_kernel_t kernel = kernel_standard_SSE;
+
+  if (argc == 2)
+  {
+    kernel = spamm_kernel_get_kernel(argv[1]);
+  }
 
   A_dense = (double*) malloc(sizeof(double)*N*N);
   B_dense = (double*) malloc(sizeof(double)*N*N);
@@ -124,7 +131,7 @@ main ()
   }
 #endif
 
-  spamm_multiply(tolerance, alpha, A, B, beta, C, walltime, kernel_standard_SSE);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, walltime, kernel);
 
 #ifdef PRINT_DEBUG
   printf("C =\n");

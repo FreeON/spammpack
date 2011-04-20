@@ -80,8 +80,7 @@ spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
 void
 spamm_check_linear_index (unsigned int index, void *value, void *user_data)
 {
-  printf("[FIXME] (verifying linear indices)\n");
-  exit(1);
+  //printf("[FIXME] (verifying linear indices)\n");
 }
 
 /** Verify the norm of a node.
@@ -100,6 +99,8 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
   short i, j;
   short i_block, j_block;
   float norm2 = 0.0;
+  float norm_A11, norm_A12, norm_A21, norm_A22;
+  int upper_norm_check = SPAMM_OK;
 
   float Aij;
 
@@ -177,6 +178,52 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
       data->node_norm2 = norm2;
       data->node_norm = sqrt(norm2);
       user->result = SPAMM_ERROR;
+    }
+
+    /* Check norms on upper tier. */
+    norm_A11 = sqrt(
+        data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+    norm_A12 = sqrt(
+        data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+    norm_A21 = sqrt(
+        data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+    norm_A22 = sqrt(
+        data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+        data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+
+    if (fabs(data->norm_upper[0]-norm_A11) > RELATIVE_TOLERANCE*norm_A11) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper[1]-norm_A12) > RELATIVE_TOLERANCE*norm_A12) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper[2]-norm_A11) > RELATIVE_TOLERANCE*norm_A11) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper[3]-norm_A12) > RELATIVE_TOLERANCE*norm_A12) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper[4]-norm_A21) > RELATIVE_TOLERANCE*norm_A21) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper[5]-norm_A22) > RELATIVE_TOLERANCE*norm_A22) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper[6]-norm_A21) > RELATIVE_TOLERANCE*norm_A21) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper[7]-norm_A22) > RELATIVE_TOLERANCE*norm_A22) { upper_norm_check = SPAMM_ERROR; }
+
+    if (fabs(data->norm_upper_transpose[0]-norm_A11) > RELATIVE_TOLERANCE*norm_A11) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper_transpose[1]-norm_A21) > RELATIVE_TOLERANCE*norm_A21) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper_transpose[2]-norm_A12) > RELATIVE_TOLERANCE*norm_A12) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper_transpose[3]-norm_A22) > RELATIVE_TOLERANCE*norm_A22) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper_transpose[4]-norm_A11) > RELATIVE_TOLERANCE*norm_A11) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper_transpose[5]-norm_A21) > RELATIVE_TOLERANCE*norm_A21) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper_transpose[6]-norm_A12) > RELATIVE_TOLERANCE*norm_A12) { upper_norm_check = SPAMM_ERROR; }
+    if (fabs(data->norm_upper_transpose[7]-norm_A22) > RELATIVE_TOLERANCE*norm_A22) { upper_norm_check = SPAMM_ERROR; }
+
+    if (upper_norm_check != SPAMM_OK)
+    {
+      printf("upper norm fail...\n");
+      exit(1);
     }
   }
 
