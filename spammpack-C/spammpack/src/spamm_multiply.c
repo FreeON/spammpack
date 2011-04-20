@@ -466,7 +466,7 @@ spamm_multiply (const float tolerance,
    */
 
   /* Loop over A. */
-  for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size-1; A_k_lookup_index++)
+  for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size-1 && B_k_lookup_index < B_k_lookup.size-1; A_k_lookup_index++)
   {
     /* Get k value of A. */
     A_k = spamm_list_get_index(A_index.index, A_k_lookup.index[A_k_lookup_index]) & MASK_2D_J;

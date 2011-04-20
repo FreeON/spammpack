@@ -7,7 +7,7 @@ main ()
   struct spamm_data_t data;
   struct spamm_multiply_stream_t stream_element;
 
-  printf("# spammpack version: %s\n", spamm_version());
+  printf("# spammpack version: %s:%s\n", SPAMM_VERSION, SPAMM_COMMIT_TAG);
   printf("#\n");
   printf("# sizeof(struct spamm_multiply_stream_t) = %lu\n", sizeof(struct spamm_multiply_stream_t));
   printf("# &stream_element at   %p\n", &stream_element);

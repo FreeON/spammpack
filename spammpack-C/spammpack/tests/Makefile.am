@@ -17,4 +17,21 @@ noinst_PROGRAMS = \
   list_sort \
   multiply_spamm
 
-TESTS = $(noinst_PROGRAMS)
+TESTS = \
+  create_spamm \
+  expand \
+  stats \
+  check_spamm \
+  convert_dense \
+  hashtable_remove \
+  hashtable_insert \
+  list \
+  list_sort \
+  multiply_spamm_kernel_standard_SSE.sh \
+  multiply_spamm_kernel_standard_SSE4_1.sh \
+  multiply_spamm_kernel_Z_curve_SSE.sh \
+  multiply_spamm_kernel_Z_curve_SSE4_1.sh \
+  multiply_spamm_kernel_hierarchical_SSE.sh \
+  multiply_spamm_kernel_hierarchical_SSE4_1.sh \
+  multiply_spamm_kernel_hierarchical_Z_curve_SSE.sh \
+  multiply_spamm_kernel_hierarchical_Z_curve_SSE4_1.sh
