@@ -5,7 +5,7 @@
 //#define PRINT_DEBUG
 
 int
-main ()
+main (int argc, char **argv)
 {
   int result = 0;
   unsigned int i, j;
@@ -13,12 +13,19 @@ main ()
   struct spamm_t *A;
   float *A_dense = (float*) malloc(sizeof(float)*N*N);
 
+  enum spamm_layout_t layout = row_major;
+
+  if (argc == 2)
+  {
+    layout = spamm_kernel_get_layout(argv[1]);
+  }
+
   for (i = 0; i < N*N; i++)
   {
     A_dense[i] = rand()/(float) RAND_MAX;
   }
 
-  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense, row_major);
+  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense, layout);
 
 #ifdef PRINT_DEBUG
   printf("A_dense:\n");

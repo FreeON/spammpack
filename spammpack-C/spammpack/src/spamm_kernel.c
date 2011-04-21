@@ -148,3 +148,38 @@ spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel)
       break;
   }
 }
+
+/** Get a layout from a name.
+ *
+ * @param name The name of the layout.
+ *
+ * @return The layout.
+ */
+enum spamm_layout_t
+spamm_kernel_get_layout (const char *name)
+{
+  enum spamm_layout_t layout;
+
+  if (strcasecmp(name, "row_major") == 0)
+  {
+    layout = row_major;
+  }
+
+  else if (strcasecmp(name, "column_major") == 0)
+  {
+    layout = column_major;
+  }
+
+  else if (strcasecmp(name, "Z_curve") == 0)
+  {
+    layout = Z_curve;
+  }
+
+  else
+  {
+    printf("unknown layout name: %s\n", name);
+    exit(1);
+  }
+
+  return layout;
+}

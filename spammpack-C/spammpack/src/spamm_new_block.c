@@ -28,7 +28,7 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enu
       break;
 
     default:
-      fprintf(stderr, "unknown layout\n");
+      fprintf(stderr, "[spamm new block] unknown layout (%i)\n", layout);
       exit(1);
       break;
   }

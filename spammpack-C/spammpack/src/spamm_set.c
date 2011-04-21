@@ -34,6 +34,8 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
   float old_Aij = 0;
 
+  float norm_A11, norm_A12, norm_A21, norm_A22;
+
 #ifdef NEW_NORM
   unsigned int next_tier;
   unsigned int child_index;
@@ -119,7 +121,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       /* Calculate offsets into the norm and the matrix data. */
       norm_offset = spamm_index_norm(i%delta_index, j%delta_index);
       data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index, A->layout);
-      data_offset_transpose = spamm_index_kernel_block(j%delta_index, i%delta_index, A->layout);
+      data_offset_transpose = spamm_index_kernel_block_transpose(i%delta_index, j%delta_index, A->layout);
 
 #ifndef NEW_NORM
       /* For norm calculations, get original value of Aij. */
@@ -163,6 +165,46 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
       data->node_norm2 += Aij*Aij-old_Aij*old_Aij;
       data->node_norm = sqrt(data->node_norm2);
 #endif
+
+      /* Update upper tier norms. */
+      norm_A11 = sqrt(
+          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+      norm_A12 = sqrt(
+          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+      norm_A21 = sqrt(
+          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+      norm_A22 = sqrt(
+          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
+          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+
+      data->norm_upper[0] = norm_A11;
+      data->norm_upper[1] = norm_A12;
+      data->norm_upper[2] = norm_A11;
+      data->norm_upper[3] = norm_A12;
+      data->norm_upper[4] = norm_A21;
+      data->norm_upper[5] = norm_A22;
+      data->norm_upper[6] = norm_A21;
+      data->norm_upper[7] = norm_A22;
+
+      data->norm_upper_transpose[0] = norm_A11;
+      data->norm_upper_transpose[1] = norm_A21;
+      data->norm_upper_transpose[2] = norm_A12;
+      data->norm_upper_transpose[3] = norm_A22;
+      data->norm_upper_transpose[4] = norm_A11;
+      data->norm_upper_transpose[5] = norm_A21;
+      data->norm_upper_transpose[6] = norm_A12;
+      data->norm_upper_transpose[7] = norm_A22;
     }
   }
 
