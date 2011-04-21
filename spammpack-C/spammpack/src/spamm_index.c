@@ -84,6 +84,28 @@ spamm_index_Z_curve (const unsigned int i, const unsigned int j)
   return offset;
 }
 
+/** Return a linear offset into the block norms at the kernel tier. The
+ * indices are within the blocked kernel matrix, i.e. within the range of [0,
+ * SPAMM_N_KERNEL_BLOCKED[.
+ *
+ * @param i The row index of the kernel block.
+ * @param j The column index of the kernel block.
+ *
+ * @return The offset into the norm[] arry at the kernel tier.
+ */
+unsigned int
+spamm_index_norm (const unsigned int i, const unsigned int j)
+{
+  unsigned int offset;
+
+  assert(i < SPAMM_N_KERNEL_BLOCKED);
+  assert(j < SPAMM_N_KERNEL_BLOCKED);
+
+  offset = spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
+
+  return offset;
+}
+
 /** Return a linear offset into a dense matrix block at the kernel tier. The
  * indices are within the kernel block at the kernel tier, i.e. within the
  * range of [0, SPAMM_N_KERNEL[.
@@ -102,7 +124,7 @@ spamm_index_kernel_block (const unsigned int i, const unsigned int j, const enum
   assert(i < SPAMM_N_KERNEL);
   assert(j < SPAMM_N_KERNEL);
 
-  return spamm_index_kernel_block_hierarchical_1(i%SPAMM_N_BLOCK, j%SPAMM_N_BLOCK, i/SPAMM_N_BLOCK, j/SPAMM_N_BLOCK, layout);
+  return spamm_index_kernel_block_hierarchical(i/SPAMM_N_BLOCK, j/SPAMM_N_BLOCK, i%SPAMM_N_BLOCK, j%SPAMM_N_BLOCK, layout);
 }
 
 /** Return a linear offset into a dense matrix block at the kernel tier. The
@@ -123,69 +145,44 @@ spamm_index_kernel_block_transpose (const unsigned int i, const unsigned int j, 
   assert(i < SPAMM_N_KERNEL);
   assert(j < SPAMM_N_KERNEL);
 
-  return spamm_index_kernel_block_transpose_hierarchical_1(i%SPAMM_N_BLOCK, j%SPAMM_N_BLOCK, i/SPAMM_N_BLOCK, j/SPAMM_N_BLOCK, layout);
-}
-
-/** Return a linear offset into the norms at the kernel tier. The indices are
- * within the kernel block at the kernel tier, i.e. within the range of [0,
- * SPAMM_N_KERNEL[.
- *
- * @param i The row index within the kernel block.
- * @param j The column index within the kernel block.
- *
- * @return The offset into the norm[] arry at the kernel tier.
- */
-unsigned int
-spamm_index_norm (const unsigned int i, const unsigned int j)
-{
-  unsigned int offset;
-
-  assert(i < SPAMM_N_KERNEL);
-  assert(j < SPAMM_N_KERNEL);
-
-  offset = spamm_index_row_major(i/SPAMM_N_BLOCK, j/SPAMM_N_BLOCK, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK);
-
-  return offset;
+  return spamm_index_kernel_block_transpose_hierarchical(i/SPAMM_N_BLOCK, j/SPAMM_N_BLOCK, i%SPAMM_N_BLOCK, j%SPAMM_N_BLOCK, layout);
 }
 
 /** Return a linear offset into a kernel tier matrix block using hierarchical
  * indexing.
  *
- * @param i_block The row index of the basic matrix block, i.e. [0,
- * SPAMM_N_KERNEL_BLOCK[.
- * @param j_block The column index of the basic matrix block, i.e. [0,
- * SPAMM_N_KERNEL_BLOCK[.
- * @param i The row index in the basic matrix block, i.e. [0, SPAMM_N_BLOCK[.
- * @param j The column index in the basic matrix block, i.e. [0,
+ * @param i_blocked The row index of the basic matrix block, i.e. [0,
+ * SPAMM_N_KERNEL_BLOCKED[.
+ * @param j_blocked The column index of the basic matrix block, i.e. [0,
+ * SPAMM_N_KERNEL_BLOCKED[.
+ * @param i_basic The row index in the basic matrix block, i.e. [0,
+ * SPAMM_N_BLOCK[.
+ * @param j_basic The column index in the basic matrix block, i.e. [0,
  * SPAMM_N_BLOCK[.
  * @param layout The layout of the basic matrix blocks at the kernel level.
  *
  * @return The offset into the kernel matrix.
  */
 unsigned int
-spamm_index_kernel_block_hierarchical_1 (const unsigned int i_block,
-    const unsigned int j_block, const unsigned int i,
-    const unsigned int j, const enum spamm_layout_t layout)
+spamm_index_kernel_block_hierarchical (const unsigned int i_blocked,
+    const unsigned int j_blocked, const unsigned int i_basic,
+    const unsigned int j_basic, const enum spamm_layout_t layout)
 {
   unsigned int offset;
 
-  assert(i_block < SPAMM_N_KERNEL_BLOCK);
-  assert(j_block < SPAMM_N_KERNEL_BLOCK);
-  assert(i < SPAMM_N_BLOCK);
-  assert(j < SPAMM_N_BLOCK);
+  assert(i_blocked < SPAMM_N_KERNEL_BLOCKED);
+  assert(j_blocked < SPAMM_N_KERNEL_BLOCKED);
+  assert(i_basic < SPAMM_N_BLOCK);
+  assert(j_basic < SPAMM_N_BLOCK);
 
   switch (layout)
   {
     case row_major:
-      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK
-        * spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
-        + spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_row_major(i_blocked, j_blocked, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
       break;
 
     case Z_curve:
-      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK
-        * spamm_index_Z_curve(i, j)
-        + spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_Z_curve(i_blocked, j_blocked);
       break;
 
     default:
@@ -194,47 +191,46 @@ spamm_index_kernel_block_hierarchical_1 (const unsigned int i_block,
       break;
   }
 
+  offset += spamm_index_row_major(i_basic, j_basic, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
   return offset;
 }
 
 /** Return a linear offset into a kernel tier matrix block using hierarchical
- * indexing.
+ * indexing. This function is used on the transpose part, i.e. the field
+ * block_tranpose.
  *
- * @param i_block The row index of the basic matrix block, i.e. [0,
- * SPAMM_N_KERNEL_BLOCK[.
- * @param j_block The column index of the basic matrix block, i.e. [0,
- * SPAMM_N_KERNEL_BLOCK[.
- * @param i The row index in the basic matrix block, i.e. [0, SPAMM_N_BLOCK[.
- * @param j The column index in the basic matrix block, i.e. [0,
+ * @param i_blocked The row index of the basic matrix block, i.e. [0,
+ * SPAMM_N_KERNEL_BLOCKED[.
+ * @param j_blocked The column index of the basic matrix block, i.e. [0,
+ * SPAMM_N_KERNEL_BLOCKED[.
+ * @param i_basic The row index in the basic matrix block, i.e. [0,
+ * SPAMM_N_BLOCK[.
+ * @param j_basic The column index in the basic matrix block, i.e. [0,
  * SPAMM_N_BLOCK[.
  * @param layout The layout of the basic matrix blocks at the kernel level.
  *
  * @return The offset into the kernel matrix.
  */
 unsigned int
-spamm_index_kernel_block_transpose_hierarchical_1 (const unsigned int i_block,
-    const unsigned int j_block, const unsigned int i,
-    const unsigned int j, const enum spamm_layout_t layout)
+spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_blocked,
+    const unsigned int j_blocked, const unsigned int i_basic,
+    const unsigned int j_basic, const enum spamm_layout_t layout)
 {
   unsigned int offset;
 
-  assert(i_block < SPAMM_N_KERNEL_BLOCK);
-  assert(j_block < SPAMM_N_KERNEL_BLOCK);
-  assert(i < SPAMM_N_BLOCK);
-  assert(j < SPAMM_N_BLOCK);
+  assert(i_blocked < SPAMM_N_KERNEL_BLOCKED);
+  assert(j_blocked < SPAMM_N_KERNEL_BLOCKED);
+  assert(i_basic < SPAMM_N_BLOCK);
+  assert(j_basic < SPAMM_N_BLOCK);
 
   switch (layout)
   {
     case row_major:
-      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK
-        * spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
-        + spamm_index_row_major(j_block, i_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_row_major(i_blocked, j_blocked, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
       break;
 
     case Z_curve:
-      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK
-        * spamm_index_Z_curve(i, j)
-        + spamm_index_row_major(j_block, i_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_Z_curve(i_blocked, j_blocked);
       break;
 
     default:
@@ -243,5 +239,6 @@ spamm_index_kernel_block_transpose_hierarchical_1 (const unsigned int i_block,
       break;
   }
 
+  offset += spamm_index_row_major(j_basic, i_basic, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
   return offset;
 }

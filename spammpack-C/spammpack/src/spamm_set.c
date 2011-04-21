@@ -22,8 +22,12 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   unsigned int index;
   unsigned int i_tier;
   unsigned int j_tier;
-  unsigned int i_block;
-  unsigned int j_block;
+  unsigned int i_blocked;
+  unsigned int j_blocked;
+  unsigned int i_basic;
+  unsigned int j_basic;
+  unsigned int i_child;
+  unsigned int j_child;
   unsigned int delta_index;
   unsigned int norm_offset;
   unsigned int data_offset;
@@ -119,7 +123,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
        */
 
       /* Calculate offsets into the norm and the matrix data. */
-      norm_offset = spamm_index_norm(i%delta_index, j%delta_index);
+      norm_offset = spamm_index_norm(i%delta_index/SPAMM_N_BLOCK, j%delta_index/SPAMM_N_BLOCK);
       data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index, A->layout);
       data_offset_transpose = spamm_index_kernel_block_transpose(i%delta_index, j%delta_index, A->layout);
 
@@ -139,22 +143,21 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
       /* Update norms. */
 #ifdef NEW_NORM
-      data_offset = spamm_index_kernel_block((i%delta_index)/SPAMM_N_BLOCK*SPAMM_N_BLOCK, (j%delta_index)/SPAMM_N_BLOCK*SPAMM_N_BLOCK, A->layout);
       data->norm2[norm_offset] = 0.0;
-      for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
-        for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
+      for (i_basic = 0; i_basic < SPAMM_N_BLOCK; i_basic++) {
+        for (j_basic = 0; j_basic < SPAMM_N_BLOCK; j_basic++)
         {
-          old_Aij = data->block_dense[data_offset+spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
+          old_Aij = data->block_dense[spamm_index_kernel_block_hierarchical((i%delta_index)/SPAMM_N_BLOCK, (j%delta_index)/SPAMM_N_BLOCK, i_basic, j_basic, A->layout)];
           data->norm2[norm_offset] += old_Aij*old_Aij;
         }
       }
       data->norm[norm_offset] = sqrt(data->norm2[norm_offset]);
 
       data->node_norm2 = 0.0;
-      for (i_block = 0; i_block < SPAMM_N_KERNEL_BLOCK; i_block++) {
-        for (j_block = 0; j_block < SPAMM_N_KERNEL_BLOCK; j_block++)
+      for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
+        for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED; j_blocked++)
         {
-          data->node_norm2 += data->norm2[spamm_index_row_major(i_block, j_block, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)];
+          data->node_norm2 += data->norm2[spamm_index_norm(i_blocked, j_blocked)];
         }
       }
       data->node_norm = sqrt(data->node_norm2);
@@ -168,25 +171,25 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
       /* Update upper tier norms. */
       norm_A11 = sqrt(
-          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+          data->norm2[spamm_index_norm(0, 0)]+
+          data->norm2[spamm_index_norm(0, 1)]+
+          data->norm2[spamm_index_norm(1, 0)]+
+          data->norm2[spamm_index_norm(1, 1)]);
       norm_A12 = sqrt(
-          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+          data->norm2[spamm_index_norm(0, 2)]+
+          data->norm2[spamm_index_norm(0, 3)]+
+          data->norm2[spamm_index_norm(1, 2)]+
+          data->norm2[spamm_index_norm(1, 3)]);
       norm_A21 = sqrt(
-          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+          data->norm2[spamm_index_norm(2, 0)]+
+          data->norm2[spamm_index_norm(2, 1)]+
+          data->norm2[spamm_index_norm(3, 0)]+
+          data->norm2[spamm_index_norm(3, 1)]);
       norm_A22 = sqrt(
-          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+          data->norm2[spamm_index_norm(2, 2)]+
+          data->norm2[spamm_index_norm(2, 3)]+
+          data->norm2[spamm_index_norm(3, 2)]+
+          data->norm2[spamm_index_norm(3, 3)]);
 
       data->norm_upper[0] = norm_A11;
       data->norm_upper[1] = norm_A12;
@@ -237,11 +240,11 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
     if (next_tier == A->kernel_tier)
     {
-      for (i_block = 0; i_block < SPAMM_N_CHILD; i_block++) {
-        for (j_block = 0; j_block < SPAMM_N_CHILD; j_block++)
+      for (i_child = 0; i_child < SPAMM_N_CHILD; i_child++) {
+        for (j_child = 0; j_child < SPAMM_N_CHILD; j_child++)
         {
           /* Construct index of child block. */
-          child_index = (index << 2) | (i_block << 1) | j_block;
+          child_index = (index << 2) | (i_child << 1) | j_child;
 
           /* Get child node. */
           child_data = spamm_hashtable_lookup(next_tier_hashtable, child_index);
@@ -256,11 +259,11 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
     else
     {
-      for (i_block = 0; i_block < SPAMM_N_CHILD; i_block++) {
-        for (j_block = 0; j_block < SPAMM_N_CHILD; j_block++)
+      for (i_child = 0; i_child < SPAMM_N_CHILD; i_child++) {
+        for (j_child = 0; j_child < SPAMM_N_CHILD; j_child++)
         {
           /* Construct index of child block. */
-          child_index = (index << 2) | (i_block << 1) | j_block;
+          child_index = (index << 2) | (i_child << 1) | j_child;
 
           /* Get child node. */
           child_node = spamm_hashtable_lookup(next_tier_hashtable, child_index);

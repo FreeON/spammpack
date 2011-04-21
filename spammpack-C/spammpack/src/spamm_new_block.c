@@ -51,7 +51,7 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enu
     }
   }
 
-  for (i = 0; i < SPAMM_N_KERNEL_BLOCK*SPAMM_N_KERNEL_BLOCK; i++)
+  for (i = 0; i < SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED; i++)
   {
     data->norm[i] = 0.0;
     data->norm2[i] = 0.0;

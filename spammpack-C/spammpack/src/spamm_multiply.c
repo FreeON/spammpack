@@ -685,11 +685,11 @@ spamm_multiply (const float tolerance,
   fflush(stdout);
   for (index = 0; index < stream_index; index++)
   {
-    for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++) {
-      for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++) {
-        for (k = 0; k < SPAMM_N_KERNEL_BLOCK; k++)
+    for (i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
+      for (j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++) {
+        for (k = 0; k < SPAMM_N_KERNEL_BLOCKED; k++)
         {
-          if (multiply_stream[index].A->norm[i*SPAMM_N_KERNEL_BLOCK+k]*multiply_stream[index].B->norm[k*SPAMM_N_KERNEL_BLOCK+j] >= tolerance)
+          if (multiply_stream[index].A->norm[i*SPAMM_N_KERNEL_BLOCKED+k]*multiply_stream[index].B->norm[k*SPAMM_N_KERNEL_BLOCKED+j] >= tolerance)
           {
             number_products++;
           }

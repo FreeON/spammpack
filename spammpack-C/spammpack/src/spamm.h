@@ -30,12 +30,6 @@ void
 spamm_delete_node (struct spamm_node_t **node);
 
 unsigned int
-spamm_index_kernel_block (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout);
-
-unsigned int
-spamm_index_kernel_block_transpose (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout);
-
-unsigned int
 spamm_index_row_major (const unsigned int i, const unsigned int j,
     const unsigned int M, const unsigned int N);
 
@@ -45,6 +39,12 @@ spamm_index_column_major (const unsigned int i, const unsigned int j,
 
 unsigned int
 spamm_index_norm (const unsigned int i, const unsigned int j);
+
+unsigned int
+spamm_index_kernel_block (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout);
+
+unsigned int
+spamm_index_kernel_block_transpose (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout);
 
 //inline unsigned int
 //spamm_dense_index (const unsigned int i, const unsigned int j)
@@ -59,12 +59,12 @@ spamm_index_norm (const unsigned int i, const unsigned int j);
 //}
 
 unsigned int
-spamm_index_kernel_block_hierarchical_1 (const unsigned int i_block,
-    const unsigned int j_block, const unsigned int i,
-    const unsigned int j, const enum spamm_layout_t layout);
+spamm_index_kernel_block_hierarchical (const unsigned int i_blocked,
+    const unsigned int j_blocked, const unsigned int i_basic,
+    const unsigned int j_basic, const enum spamm_layout_t layout);
 
 unsigned int
-spamm_index_kernel_block_transpose_hierarchical_1 (const unsigned int i_block,
+spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_block,
     const unsigned int j_block, const unsigned int i,
     const unsigned int j, const enum spamm_layout_t layout);
 
