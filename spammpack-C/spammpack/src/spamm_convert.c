@@ -26,8 +26,10 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
   unsigned int index;
   unsigned int i;
   unsigned int j;
-  unsigned int i_block;
-  unsigned int j_block;
+  unsigned int i_blocked;
+  unsigned int j_blocked;
+  unsigned int i_basic;
+  unsigned int j_basic;
   unsigned int i_kernel;
   unsigned int j_kernel;
   unsigned int i_tier;
@@ -135,30 +137,30 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
       }
 
       /* Set all elements in this kernel block. */
-      for (i_kernel = 0; i_kernel < SPAMM_N_KERNEL_BLOCK && i+SPAMM_N_BLOCK*i_kernel < M; i_kernel++) {
-        for (j_kernel = 0; j_kernel < SPAMM_N_KERNEL_BLOCK && j+SPAMM_N_BLOCK*j_kernel < N; j_kernel++)
+      for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED && i+SPAMM_N_BLOCK*i_blocked < M; i_blocked++) {
+        for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED && j+SPAMM_N_BLOCK*j_blocked < N; j_blocked++)
         {
-          norm_offset = spamm_index_norm(SPAMM_N_BLOCK*i_kernel, SPAMM_N_BLOCK*j_kernel);
+          norm_offset = spamm_index_norm(i_blocked, j_blocked);
 
           /* Reset norm2. */
           norm2 = 0.0;
 
-          for (i_block = 0; i_block < SPAMM_N_BLOCK && i+SPAMM_N_BLOCK*i_kernel+i_block < M; i_block++) {
-            for (j_block = 0; j_block < SPAMM_N_BLOCK && j+SPAMM_N_BLOCK*j_kernel+j_block < N; j_block++)
+          for (i_basic = 0; i_basic < SPAMM_N_BLOCK && i+SPAMM_N_BLOCK*i_blocked+i_basic < M; i_basic++) {
+            for (j_basic = 0; j_basic < SPAMM_N_BLOCK && j+SPAMM_N_BLOCK*j_blocked+j_basic < N; j_basic++)
             {
               /* Calculate offsets into the matrix data. */
-              data_offset = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+i_block, SPAMM_N_BLOCK*j_kernel+j_block, A->layout);
-              data_offset_transpose = spamm_index_kernel_block(SPAMM_N_BLOCK*i_kernel+j_block, SPAMM_N_BLOCK*j_kernel+i_block, A->layout);
+              data_offset = spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, A->layout);
+              data_offset_transpose = spamm_index_kernel_block_transpose_hierarchical(i_blocked, j_blocked, i_basic, j_basic, A->layout);
 
               /* Get matrix elements from dense matrix. */
               switch(dense_type)
               {
                 case row_major:
-                  Aij = A_dense[spamm_index_row_major(i+SPAMM_N_BLOCK*i_kernel+i_block, j+SPAMM_N_BLOCK*j_kernel+j_block, M, N)];
+                  Aij = A_dense[spamm_index_row_major(i+SPAMM_N_BLOCK*i_blocked+i_basic, j+SPAMM_N_BLOCK*j_blocked+j_basic, M, N)];
                   break;
 
                 case column_major:
-                  Aij = A_dense[spamm_index_column_major(i+SPAMM_N_BLOCK*i_kernel+i_block, j+SPAMM_N_BLOCK*j_kernel+j_block, M, N)];
+                  Aij = A_dense[spamm_index_column_major(i+SPAMM_N_BLOCK*i_blocked+i_basic, j+SPAMM_N_BLOCK*j_blocked+j_basic, M, N)];
                   break;
 
                 default:
@@ -186,25 +188,25 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
 
       /* Loop over upper tier. */
       norm_A11 = sqrt(
-          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+          data->norm2[spamm_index_norm(0, 0)]+
+          data->norm2[spamm_index_norm(0, 1)]+
+          data->norm2[spamm_index_norm(1, 0)]+
+          data->norm2[spamm_index_norm(1, 1)]);
       norm_A12 = sqrt(
-          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+          data->norm2[spamm_index_norm(0, 2)]+
+          data->norm2[spamm_index_norm(0, 3)]+
+          data->norm2[spamm_index_norm(1, 2)]+
+          data->norm2[spamm_index_norm(1, 3)]);
       norm_A21 = sqrt(
-          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+          data->norm2[spamm_index_norm(2, 0)]+
+          data->norm2[spamm_index_norm(2, 1)]+
+          data->norm2[spamm_index_norm(3, 0)]+
+          data->norm2[spamm_index_norm(3, 1)]);
       norm_A22 = sqrt(
-          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-          data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+          data->norm2[spamm_index_norm(2, 2)]+
+          data->norm2[spamm_index_norm(2, 3)]+
+          data->norm2[spamm_index_norm(3, 2)]+
+          data->norm2[spamm_index_norm(3, 3)]);
 
       data->norm_upper[0] = norm_A11;
       data->norm_upper[1] = norm_A12;
@@ -225,10 +227,10 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
       data->norm_upper_transpose[7] = norm_A22;
 
       /* Update node norm. */
-      for (i_block = 0; i_block < SPAMM_N_KERNEL_BLOCK; i_block++) {
-        for (j_block = 0; j_block < SPAMM_N_KERNEL_BLOCK; j_block++)
+      for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
+        for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED; j_blocked++)
         {
-          data->node_norm2 += data->norm2[spamm_index_row_major(i_block, j_block, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)];
+          data->node_norm2 += data->norm2[spamm_index_norm(i_blocked, j_blocked)];
         }
       }
       data->node_norm = sqrt(data->node_norm2);

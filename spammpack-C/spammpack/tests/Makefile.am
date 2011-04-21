@@ -18,6 +18,8 @@ noinst_PROGRAMS = \
   multiply_spamm
 
 noinst_SCRIPTS = \
+  create_spamm_row_major.sh \
+  create_spamm_Z_curve.sh \
   convert_dense_row_major.sh \
   convert_dense_Z_curve.sh \
   multiply_spamm_kernel_standard_SSE.sh \
@@ -32,7 +34,8 @@ noinst_SCRIPTS = \
 EXTRA_DIST = $(noinst_SCRIPTS)
 
 TESTS = \
-  create_spamm \
+  $(srcdir)/create_spamm_row_major.sh \
+  $(srcdir)/create_spamm_Z_curve.sh \
   expand \
   stats \
   check_spamm \

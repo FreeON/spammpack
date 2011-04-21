@@ -53,8 +53,8 @@ spamm_stream_kernel_C (const unsigned int number_stream_elements,
     norm_A = A_data->norm;
     norm_B = B_data->norm;
 
-    for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++) {
-      for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++)
+    for (i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
+      for (j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
       {
         /* Zero C block. */
         for (l = 0; l < 4; l++)
@@ -63,15 +63,15 @@ spamm_stream_kernel_C (const unsigned int number_stream_elements,
         }
 
         /* Calculate C offset. */
-        C_offset = i*SPAMM_N_KERNEL_BLOCK+j;
+        C_offset = i*SPAMM_N_KERNEL_BLOCKED+j;
 
-        for (k = 0; k < SPAMM_N_KERNEL_BLOCK; k += SPAMM_N_STRIDE)
+        for (k = 0; k < SPAMM_N_KERNEL_BLOCKED; k += SPAMM_N_STRIDE)
         {
           for (m = 0; m < SPAMM_N_STRIDE; m++)
           {
             /* Calculate offsets. */
-            A_offset = i*SPAMM_N_KERNEL_BLOCK+(k+m);
-            B_offset = (k+m)*SPAMM_N_KERNEL_BLOCK+j;
+            A_offset = i*SPAMM_N_KERNEL_BLOCKED+(k+m);
+            B_offset = (k+m)*SPAMM_N_KERNEL_BLOCKED+j;
 
             /* Check the norm. */
             if (norm_A[A_offset]*norm_B[B_offset] <= tolerance)

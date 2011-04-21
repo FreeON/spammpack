@@ -63,15 +63,15 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
   printf("(node) tier %u: index_2D = %u, ", data->tier, data->index_2D);
   printf("node norm = %1.2e\n", data->node_norm);
   printf("norm = { ");
-  for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++)
+  for (i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++)
   {
     printf("{");
-    for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++)
+    for (j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
     {
-      printf(" %1.2e", data->norm[i*SPAMM_N_KERNEL_BLOCK+j]);
+      printf(" %1.2e", data->norm[i*SPAMM_N_KERNEL_BLOCKED+j]);
     }
     printf(" }");
-    if (i < SPAMM_N_KERNEL_BLOCK-1) { printf(", "); }
+    if (i < SPAMM_N_KERNEL_BLOCKED-1) { printf(", "); }
   }
   printf(" }, ");
   printf("norm_upper = { ");

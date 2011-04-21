@@ -96,8 +96,9 @@ spamm_check_linear_index (unsigned int index, void *value, void *user_data)
 void
 spamm_check_norm (unsigned int index, void *value, void *user_data)
 {
-  short i, j;
-  short i_block, j_block;
+  short i_child, j_child;
+  short i_blocked, j_blocked;
+  short i_basic, j_basic;
   float norm2 = 0.0;
   float norm_A11, norm_A12, norm_A21, norm_A22;
   int upper_norm_check = SPAMM_OK;
@@ -124,26 +125,24 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
     data = value;
 
     /* Check norms on kernel blocks. */
-    for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++) {
-      for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++)
+    for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
+      for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED; j_blocked++)
       {
         norm2 = 0.0;
-        for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
-          for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
+        for (i_basic = 0; i_basic < SPAMM_N_BLOCK; i_basic++) {
+          for (j_basic = 0; j_basic < SPAMM_N_BLOCK; j_basic++)
           {
-            Aij = data->block_dense[SPAMM_N_BLOCK*SPAMM_N_BLOCK
-              *spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)
-              +spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
+            Aij = data->block_dense[spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, data->layout)];
             norm2 += Aij*Aij;
           }
         }
 
-        norm_offset = spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK);
+        norm_offset = spamm_index_norm(i_blocked, j_blocked);
         if (fabs(norm2-data->norm2[norm_offset]) > RELATIVE_TOLERANCE*norm2 ||
             fabs(sqrt(norm2)-data->norm[norm_offset]) > RELATIVE_TOLERANCE*sqrt(norm2))
         {
           printf("tier %u, index %u, block (%u,%u): incorrect block norm value, found %e, should be %e, |diff| = %e, rel. diff = %e\n",
-              data->tier, data->index_2D, i, j,
+              data->tier, data->index_2D, i_blocked, j_blocked,
               data->norm[norm_offset],
               sqrt(norm2),
               fabs(data->norm[norm_offset]-sqrt(norm2)),
@@ -155,10 +154,10 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
 
     /* Check norms on kernel tier block. */
     norm2 = 0.0;
-    for (i = 0; i < SPAMM_N_KERNEL_BLOCK; i++) {
-      for (j = 0; j < SPAMM_N_KERNEL_BLOCK; j++)
+    for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
+      for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED; j_blocked++)
       {
-        norm2 += data->norm2[spamm_index_row_major(i, j, SPAMM_N_KERNEL_BLOCK, SPAMM_N_KERNEL_BLOCK)];
+        norm2 += data->norm2[spamm_index_norm(i_blocked, j_blocked)];
       }
     }
 
@@ -177,25 +176,25 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
 
     /* Check norms on upper tier. */
     norm_A11 = sqrt(
-        data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+        data->norm2[spamm_index_norm(0, 0)]+
+        data->norm2[spamm_index_norm(0, 1)]+
+        data->norm2[spamm_index_norm(1, 0)]+
+        data->norm2[spamm_index_norm(1, 1)]);
     norm_A12 = sqrt(
-        data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(0*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(1*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+        data->norm2[spamm_index_norm(0, 2)]+
+        data->norm2[spamm_index_norm(0, 3)]+
+        data->norm2[spamm_index_norm(1, 2)]+
+        data->norm2[spamm_index_norm(1, 3)]);
     norm_A21 = sqrt(
-        data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 0*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 1*SPAMM_N_BLOCK)]);
+        data->norm2[spamm_index_norm(2, 0)]+
+        data->norm2[spamm_index_norm(2, 1)]+
+        data->norm2[spamm_index_norm(3, 0)]+
+        data->norm2[spamm_index_norm(3, 1)]);
     norm_A22 = sqrt(
-        data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(2*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 2*SPAMM_N_BLOCK)]+
-        data->norm2[spamm_index_norm(3*SPAMM_N_BLOCK, 3*SPAMM_N_BLOCK)]);
+        data->norm2[spamm_index_norm(2, 2)]+
+        data->norm2[spamm_index_norm(2, 3)]+
+        data->norm2[spamm_index_norm(3, 2)]+
+        data->norm2[spamm_index_norm(3, 3)]);
 
     if (fabs(data->norm_upper[0]-norm_A11) > RELATIVE_TOLERANCE*norm_A11) { upper_norm_check = SPAMM_ERROR; }
     if (fabs(data->norm_upper[1]-norm_A12) > RELATIVE_TOLERANCE*norm_A12) { upper_norm_check = SPAMM_ERROR; }
@@ -274,11 +273,11 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
 
     if (next_tier == user->A->kernel_tier)
     {
-      for (i = 0; i < SPAMM_N_CHILD; i++) {
-        for (j = 0; j < SPAMM_N_CHILD; j++)
+      for (i_child = 0; i_child < SPAMM_N_CHILD; i_child++) {
+        for (j_child = 0; j_child < SPAMM_N_CHILD; j_child++)
         {
           /* Construct index of child block. */
-          child_index = (index << 2) | (i << 1) | j;
+          child_index = (index << 2) | (i_child << 1) | j_child;
 
           /* Get child node. */
           child_data = spamm_hashtable_lookup(next_tier_hashtable, child_index);
@@ -293,11 +292,11 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
 
     else
     {
-      for (i = 0; i < SPAMM_N_CHILD; i++) {
-        for (j = 0; j < SPAMM_N_CHILD; j++)
+      for (i_child = 0; i_child < SPAMM_N_CHILD; i_child++) {
+        for (j_child = 0; j_child < SPAMM_N_CHILD; j_child++)
         {
           /* Construct index of child block. */
-          child_index = (index << 2) | (i << 1) | j;
+          child_index = (index << 2) | (i_child << 1) | j_child;
 
           /* Get child node. */
           child_node = spamm_hashtable_lookup(next_tier_hashtable, child_index);
@@ -328,20 +327,20 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
 void
 spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
 {
-  short i, j;
-  short i_block, j_block;
+  short i_blocked, j_blocked;
+  short i_basic, j_basic;
   short i_dilated;
   float Aij;
   unsigned int data_offset;
   struct spamm_data_t *data = value;
   struct spamm_check_user_data_t *user = user_data;
 
-  for (i = 0; i < SPAMM_N_KERNEL_BLOCK && user->result == SPAMM_OK; i++) {
-    for (j = 0; j < SPAMM_N_KERNEL_BLOCK && user->result == SPAMM_OK; j++) {
-      for (i_block = 0; i_block < SPAMM_N_BLOCK && user->result == SPAMM_OK; i_block++) {
-        for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
+  for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED && user->result == SPAMM_OK; i_blocked++) {
+    for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED && user->result == SPAMM_OK; j_blocked++) {
+      for (i_basic = 0; i_basic < SPAMM_N_BLOCK && user->result == SPAMM_OK; i_basic++) {
+        for (j_basic = 0; j_basic < SPAMM_N_BLOCK; j_basic++)
         {
-          data_offset = spamm_index_kernel_block_hierarchical_1(i_block, j_block, i, j, user->A->layout);
+          data_offset = spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, user->A->layout);
           Aij = data->block_dense[data_offset];
           for (i_dilated = 0; i_dilated < 4; i_dilated++)
           {
@@ -352,14 +351,14 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
               break;
             }
           }
-          if (Aij != data->block_dense_transpose[spamm_index_kernel_block_transpose_hierarchical_1(i_block, j_block, i, j, user->A->layout)])
+          if (Aij != data->block_dense_transpose[spamm_index_kernel_block_transpose_hierarchical(i_blocked, j_blocked, i_basic, j_basic, user->A->layout)])
           {
             printf("index %u: data block inconsistency between block_dense and block_dense_transpose, ", index);
-            printf("i = %u, j = %u, i_block = %u, j_block = %u, Aij = %e, (A^T)ij = %e, |diff| = %e\n",
-                i, j, i_block, j_block,
+            printf("i_blocked = %u, j_blocked = %u, i_basic = %u, j_basic = %u, Aij = %e, (A^T)ij = %e, |diff| = %e\n",
+                i_blocked, j_blocked, i_basic, j_basic,
                 Aij,
-                data->block_dense_transpose[spamm_index_kernel_block_transpose_hierarchical_1(i_block, j_block, i, j, user->A->layout)],
-                fabs(Aij-data->block_dense_transpose[spamm_index_kernel_block_transpose_hierarchical_1(i_block, j_block, i, j, user->A->layout)]));
+                data->block_dense_transpose[spamm_index_kernel_block_transpose_hierarchical(i_blocked, j_blocked, i_basic, j_basic, user->A->layout)],
+                fabs(Aij-data->block_dense_transpose[spamm_index_kernel_block_transpose_hierarchical(i_blocked, j_blocked, i_basic, j_basic, user->A->layout)]));
             user->result = SPAMM_ERROR;
             break;
           }

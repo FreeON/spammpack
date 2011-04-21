@@ -67,6 +67,8 @@ main (int argc, char **argv)
   }
 
   spamm_check(A);
+  spamm_check(B);
+  spamm_check(C);
 
 #ifdef PRINT_DEBUG
   printf("A_dense =\n");
