@@ -43,9 +43,9 @@ main (int argc, char **argv)
   B_dense = (double*) malloc(sizeof(double)*N*N);
   C_dense = (double*) malloc(sizeof(double)*N*N);
 
-  A = spamm_new(N, N, row_major);
-  B = spamm_new(N, N, row_major);
-  C = spamm_new(N, N, row_major);
+  A = spamm_new(N, N, spamm_kernel_suggest_layout(kernel));
+  B = spamm_new(N, N, spamm_kernel_suggest_layout(kernel));
+  C = spamm_new(N, N, spamm_kernel_suggest_layout(kernel));
 
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -65,6 +65,8 @@ main (int argc, char **argv)
       spamm_set(i, j, C_dense[i*N+j], C);
     }
   }
+
+  spamm_check(A);
 
 #ifdef PRINT_DEBUG
   printf("A_dense =\n");

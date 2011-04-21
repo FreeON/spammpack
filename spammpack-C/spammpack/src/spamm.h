@@ -33,6 +33,9 @@ unsigned int
 spamm_index_kernel_block (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout);
 
 unsigned int
+spamm_index_kernel_block_transpose (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout);
+
+unsigned int
 spamm_index_row_major (const unsigned int i, const unsigned int j,
     const unsigned int M, const unsigned int N);
 
@@ -57,6 +60,11 @@ spamm_index_norm (const unsigned int i, const unsigned int j);
 
 unsigned int
 spamm_index_kernel_block_hierarchical_1 (const unsigned int i_block,
+    const unsigned int j_block, const unsigned int i,
+    const unsigned int j, const enum spamm_layout_t layout);
+
+unsigned int
+spamm_index_kernel_block_transpose_hierarchical_1 (const unsigned int i_block,
     const unsigned int j_block, const unsigned int i,
     const unsigned int j, const enum spamm_layout_t layout);
 

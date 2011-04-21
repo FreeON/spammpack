@@ -266,6 +266,19 @@ spamm_multiply (const float tolerance,
   assert(B != NULL);
   assert(C != NULL);
 
+  /* Check some more things. */
+  if (A->layout != B->layout || A->layout != C->layout)
+  {
+    printf("[multiply] inconsistent layout in matrices\n");
+    exit(1);
+  }
+
+  if (A->layout != spamm_kernel_suggest_layout(kernel))
+  {
+    printf("[multiply] wrong layout for chosen kernel\n");
+    exit(1);
+  }
+
   /* Print out some information. */
   printf("[multiply] alpha = %e, beta = %e, tolerance = %e\n", alpha, beta, tolerance);
 

@@ -42,7 +42,7 @@ spamm_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t
       break;
 
     default:
-      fprintf(stderr, "unknown layout\n");
+      fprintf(stderr, "[spamm new] unknown layout (%i)\n", layout);
       exit(1);
       break;
   }

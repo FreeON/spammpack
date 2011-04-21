@@ -67,6 +67,9 @@ spamm_kernel_get_kernel (const char* name);
 enum spamm_layout_t
 spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel);
 
+enum spamm_layout_t
+spamm_kernel_get_layout (const char *name);
+
 /** Process the multiply stream.
  *
  * @param number_stream_elements The size of the multiply stream.
