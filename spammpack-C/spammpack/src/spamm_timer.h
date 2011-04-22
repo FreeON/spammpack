@@ -29,8 +29,14 @@ enum spamm_timer_type_t
   /** Number of L1 data-cache misses. */
   papi_l1_dcm,
 
+  /** Number of L1 instruction-cache misses. */
+  papi_l1_icm,
+
   /** Number of L2 data-cache misses. */
-  papi_l2_dcm
+  papi_l2_dcm,
+
+  /** Number of L2 instruction-cache misses. */
+  papi_l2_icm
 };
 
 struct spamm_timer_t *
@@ -54,5 +60,8 @@ spamm_timer_get_floprate (const struct spamm_timer_t *timer);
 void
 spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
     const int maxlength);
+
+enum spamm_timer_type_t
+spamm_timer_get_timer_type (const char *name);
 
 #endif
