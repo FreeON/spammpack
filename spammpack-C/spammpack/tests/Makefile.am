@@ -23,13 +23,21 @@ noinst_SCRIPTS = \
   convert_dense_row_major.sh \
   convert_dense_Z_curve.sh \
   multiply_spamm_kernel_standard_SSE.sh \
+  multiply_spamm_kernel_standard_no_checks_SSE.sh \
   multiply_spamm_kernel_standard_SSE4_1.sh \
+  multiply_spamm_kernel_standard_no_checks_SSE4_1.sh \
   multiply_spamm_kernel_Z_curve_SSE.sh \
+  multiply_spamm_kernel_Z_curve_no_checks_SSE.sh \
   multiply_spamm_kernel_Z_curve_SSE4_1.sh \
+  multiply_spamm_kernel_Z_curve_no_checks_SSE4_1.sh \
   multiply_spamm_kernel_hierarchical_SSE.sh \
+  multiply_spamm_kernel_hierarchical_no_checks_SSE.sh \
   multiply_spamm_kernel_hierarchical_SSE4_1.sh \
+  multiply_spamm_kernel_hierarchical_no_checks_SSE4_1.sh \
   multiply_spamm_kernel_hierarchical_Z_curve_SSE.sh \
-  multiply_spamm_kernel_hierarchical_Z_curve_SSE4_1.sh
+  multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE.sh \
+  multiply_spamm_kernel_hierarchical_Z_curve_SSE4_1.sh \
+  multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE4_1.sh
 
 EXTRA_DIST = $(noinst_SCRIPTS)
 
@@ -46,10 +54,18 @@ TESTS = \
   list \
   list_sort \
   $(srcdir)/multiply_spamm_kernel_standard_SSE.sh \
+  $(srcdir)/multiply_spamm_kernel_standard_no_checks_SSE.sh \
   $(srcdir)/multiply_spamm_kernel_standard_SSE4_1.sh \
+  $(srcdir)/multiply_spamm_kernel_standard_no_checks_SSE4_1.sh \
   $(srcdir)/multiply_spamm_kernel_Z_curve_SSE.sh \
+  $(srcdir)/multiply_spamm_kernel_Z_curve_no_checks_SSE.sh \
   $(srcdir)/multiply_spamm_kernel_Z_curve_SSE4_1.sh \
+  $(srcdir)/multiply_spamm_kernel_Z_curve_no_checks_SSE4_1.sh \
   $(srcdir)/multiply_spamm_kernel_hierarchical_SSE.sh \
+  $(srcdir)/multiply_spamm_kernel_hierarchical_no_checks_SSE.sh \
   $(srcdir)/multiply_spamm_kernel_hierarchical_SSE4_1.sh \
+  $(srcdir)/multiply_spamm_kernel_hierarchical_no_checks_SSE4_1.sh \
   $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_SSE.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_SSE4_1.sh
+  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE.sh \
+  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_SSE4_1.sh \
+  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE4_1.sh
