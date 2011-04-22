@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <strings.h>
 
 #ifdef HAVE_PAPI
 #include <papi.h>
@@ -103,7 +104,9 @@ spamm_timer_new (const enum spamm_timer_type_t type)
     case papi_flop:
     case papi_vec_sp:
     case papi_l1_dcm:
+    case papi_l1_icm:
     case papi_l2_dcm:
+    case papi_l2_icm:
       if ((papi_result = PAPI_create_eventset(&timer->eventset)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_create_eventset()");
@@ -167,8 +170,26 @@ spamm_timer_new (const enum spamm_timer_type_t type)
           timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
           break;
 
+        case papi_l1_icm:
+          if ((papi_result = PAPI_add_event(timer->eventset, PAPI_L1_ICM)) != PAPI_OK)
+          {
+            spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
+          }
+
+          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          break;
+
         case papi_l2_dcm:
           if ((papi_result = PAPI_add_event(timer->eventset, PAPI_L2_DCM)) != PAPI_OK)
+          {
+            spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
+          }
+
+          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          break;
+
+        case papi_l2_icm:
+          if ((papi_result = PAPI_add_event(timer->eventset, PAPI_L2_ICM)) != PAPI_OK)
           {
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
@@ -211,7 +232,9 @@ spamm_timer_delete (struct spamm_timer_t **timer)
     case papi_flop:
     case papi_vec_sp:
     case papi_l1_dcm:
+    case papi_l1_icm:
     case papi_l2_dcm:
+    case papi_l2_icm:
       if ((papi_result = PAPI_cleanup_eventset((*timer)->eventset)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "delete timer, PAPI_cleanup_eventset()");
@@ -271,7 +294,9 @@ spamm_timer_start (struct spamm_timer_t *timer)
     case papi_flop:
     case papi_vec_sp:
     case papi_l1_dcm:
+    case papi_l1_icm:
     case papi_l2_dcm:
+    case papi_l2_icm:
       if ((papi_result = PAPI_start(timer->eventset)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "start timer, PAPI_start()");
@@ -321,7 +346,9 @@ spamm_timer_stop (struct spamm_timer_t *timer)
     case papi_flop:
     case papi_vec_sp:
     case papi_l1_dcm:
+    case papi_l1_icm:
     case papi_l2_dcm:
+    case papi_l2_icm:
       if ((papi_result = PAPI_stop(timer->eventset, timer->event_values)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "stop timer, PAPI_stop()");
@@ -372,7 +399,9 @@ spamm_timer_get (const struct spamm_timer_t *timer)
     case papi_flop:
     case papi_vec_sp:
     case papi_l1_dcm:
+    case papi_l1_icm:
     case papi_l2_dcm:
+    case papi_l2_icm:
       return timer->event_values[0];
       break;
 #endif
@@ -481,8 +510,16 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
       sprintf(string, "PAPI Level 1 data cache misses");
       break;
 
+    case papi_l1_icm:
+      sprintf(string, "PAPI Level 1 instruction cache misses");
+      break;
+
     case papi_l2_dcm:
       sprintf(string, "PAPI Level 2 data cache misses");
+      break;
+
+    case papi_l2_icm:
+      sprintf(string, "PAPI Level 2 instruction cache misses");
       break;
 #endif
 
@@ -501,4 +538,58 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
       break;
     }
   }
+}
+
+/** Get timer from a name.
+ *
+ * @name The name of the timer.
+ *
+ * @return The timer.
+ */
+enum spamm_timer_type_t
+spamm_timer_get_timer_type (const char *name)
+{
+  enum spamm_timer_type_t timer_type = -1;
+
+  if (strcasecmp(name, "walltime") == 0)
+  {
+    timer_type = walltime;
+  }
+
+  else if (strcasecmp(name, "papi_total_cycles") == 0)
+  {
+    timer_type = papi_total_cycles;
+  }
+
+  else if (strcasecmp(name, "papi_flop") == 0)
+  {
+    timer_type = papi_flop;
+  }
+
+  else if (strcasecmp(name, "papi_l1_dcm") == 0)
+  {
+    timer_type = papi_l1_dcm;
+  }
+
+  else if (strcasecmp(name, "papi_l1_icm") == 0)
+  {
+    timer_type = papi_l1_icm;
+  }
+
+  else if (strcasecmp(name, "papi_l2_dcm") == 0)
+  {
+    timer_type = papi_l2_dcm;
+  }
+
+  else if (strcasecmp(name, "papi_l2_icm") == 0)
+  {
+    timer_type = papi_l2_icm;
+  }
+
+  else
+  {
+    timer_type = -1;
+  }
+
+  return timer_type;
 }
