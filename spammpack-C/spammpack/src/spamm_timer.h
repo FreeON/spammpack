@@ -24,7 +24,13 @@ enum spamm_timer_type_t
   papi_flop,
 
   /** Number single precision vector operations only. */
-  papi_vec_sp
+  papi_vec_sp,
+
+  /** Number of L1 data-cache misses. */
+  papi_l1_dcm,
+
+  /** Number of L2 data-cache misses. */
+  papi_l2_dcm
 };
 
 struct spamm_timer_t *

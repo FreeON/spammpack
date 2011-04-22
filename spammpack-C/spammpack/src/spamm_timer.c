@@ -102,6 +102,8 @@ spamm_timer_new (const enum spamm_timer_type_t type)
     case papi_total_cycles:
     case papi_flop:
     case papi_vec_sp:
+    case papi_l1_dcm:
+    case papi_l2_dcm:
       if ((papi_result = PAPI_create_eventset(&timer->eventset)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_create_eventset()");
@@ -155,6 +157,24 @@ spamm_timer_new (const enum spamm_timer_type_t type)
 
           timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
           break;
+
+        case papi_l1_dcm:
+          if ((papi_result = PAPI_add_event(timer->eventset, PAPI_L1_DCM)) != PAPI_OK)
+          {
+            spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
+          }
+
+          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          break;
+
+        case papi_l2_dcm:
+          if ((papi_result = PAPI_add_event(timer->eventset, PAPI_L2_DCM)) != PAPI_OK)
+          {
+            spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
+          }
+
+          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          break;
       }
       break;
 #endif
@@ -190,6 +210,8 @@ spamm_timer_delete (struct spamm_timer_t **timer)
     case papi_total_cycles:
     case papi_flop:
     case papi_vec_sp:
+    case papi_l1_dcm:
+    case papi_l2_dcm:
       if ((papi_result = PAPI_cleanup_eventset((*timer)->eventset)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "delete timer, PAPI_cleanup_eventset()");
@@ -248,6 +270,8 @@ spamm_timer_start (struct spamm_timer_t *timer)
     case papi_total_cycles:
     case papi_flop:
     case papi_vec_sp:
+    case papi_l1_dcm:
+    case papi_l2_dcm:
       if ((papi_result = PAPI_start(timer->eventset)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "start timer, PAPI_start()");
@@ -296,6 +320,8 @@ spamm_timer_stop (struct spamm_timer_t *timer)
     case papi_total_cycles:
     case papi_flop:
     case papi_vec_sp:
+    case papi_l1_dcm:
+    case papi_l2_dcm:
       if ((papi_result = PAPI_stop(timer->eventset, timer->event_values)) != PAPI_OK)
       {
         spamm_timer_handle_PAPI_error(papi_result, "stop timer, PAPI_stop()");
@@ -345,6 +371,8 @@ spamm_timer_get (const struct spamm_timer_t *timer)
     case papi_total_cycles:
     case papi_flop:
     case papi_vec_sp:
+    case papi_l1_dcm:
+    case papi_l2_dcm:
       return timer->event_values[0];
       break;
 #endif
@@ -447,6 +475,14 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
 
     case papi_vec_sp:
       sprintf(string, "PAPI Single precision vector/SIMD instructions");
+      break;
+
+    case papi_l1_dcm:
+      sprintf(string, "PAPI Level 1 data cache misses");
+      break;
+
+    case papi_l2_dcm:
+      sprintf(string, "PAPI Level 2 data cache misses");
       break;
 #endif
 
