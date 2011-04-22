@@ -4,7 +4,7 @@
 #define __SPAMM_KERNEL_H
 
 /** Available stream kernels. */
-#define SPAMM_NUMBER_KERNELS 11
+#define SPAMM_NUMBER_KERNELS 17
 
 /** The different stream kernels.
  */
@@ -16,32 +16,50 @@ enum spamm_kernel_t
   /** The standard stream kernel (SSE). */
   kernel_standard_SSE,
 
+  /** The standard stream kernel without norm checks (SSE). */
+  kernel_standard_no_checks_SSE,
+
   /** The standard stream kernel (SSE4.1). */
   kernel_standard_SSE4_1,
+
+  /** The standard stream kernel without norm checks (SSE4.1). */
+  kernel_standard_no_checks_SSE4_1,
 
   /** The Z-curve stream kernel (SSE). */
   kernel_Z_curve_SSE,
 
+  /** The Z-curve stream kernel without norm checks (SSE). */
+  kernel_Z_curve_no_checks_SSE,
+
   /** The Z-curve stream kernel (SSE4.1). */
   kernel_Z_curve_SSE4_1,
+
+  /** The Z-curve stream kernel without norm checks (SSE4.1). */
+  kernel_Z_curve_no_checks_SSE4_1,
 
   /** The hierarchical stream kernel (SSE). */
   kernel_hierarchical_SSE,
 
+  /** The hierarchical stream kernel without norm checks (SSE). */
+  kernel_hierarchical_no_checks_SSE,
+
   /** The hierarchical stream kernel (SSE4.1). */
   kernel_hierarchical_SSE4_1,
+
+  /** The hierarchical stream kernel without norm checks (SSE4.1). */
+  kernel_hierarchical_no_checks_SSE4_1,
 
   /** The hierarchical Z-curve stream kernel (SSE). */
   kernel_hierarchical_Z_curve_SSE,
 
+  /** The hierarchical Z-curve stream kernel without norm checks (SSE). */
+  kernel_hierarchical_Z_curve_no_checks_SSE,
+
   /** The hierarchical Z-curve stream kernel (SSE4.1). */
   kernel_hierarchical_Z_curve_SSE4_1,
 
-  /** The standard stream kernel without norm checks (SSE). */
-  kernel_standard_no_checks_SSE,
-
-  /** The standard stream kernel without norm checks (SSE4.1). */
-  kernel_standard_no_checks_SSE4_1
+  /** The hierarchical Z-curve stream kernel without norm checks (SSE4.1). */
+  kernel_hierarchical_Z_curve_no_checks_SSE4_1
 };
 
 /** The basic information in a stream element.
@@ -91,7 +109,7 @@ spamm_stream_kernel_SSE (const unsigned int number_stream_elements,
  * @param multiply_stream The multiply stream.
  */
 void
-spamm_stream_kernel_no_checks_SSE4_1 (const unsigned int number_stream_elements,
+spamm_stream_kernel_no_checks_SSE (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
@@ -105,6 +123,19 @@ spamm_stream_kernel_no_checks_SSE4_1 (const unsigned int number_stream_elements,
  */
 void
 spamm_stream_kernel_SSE4_1 (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream without norm checks.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_stream_kernel_no_checks_SSE4_1 (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
@@ -130,7 +161,33 @@ spamm_stream_kernel_Z_curve_SSE (const unsigned int number_stream_elements,
  * @param multiply_stream The multiply stream.
  */
 void
+spamm_stream_kernel_Z_curve_no_checks_SSE (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
 spamm_stream_kernel_Z_curve_SSE4_1 (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_stream_kernel_Z_curve_no_checks_SSE4_1 (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
@@ -156,7 +213,33 @@ spamm_stream_kernel_hierarchical_SSE (const unsigned int number_stream_elements,
  * @param multiply_stream The multiply stream.
  */
 void
+spamm_stream_kernel_hierarchical_no_checks_SSE (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
 spamm_stream_kernel_hierarchical_SSE4_1 (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_stream_kernel_hierarchical_no_checks_SSE4_1 (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
@@ -182,12 +265,12 @@ spamm_stream_kernel_hierarchical_Z_curve_SSE (const unsigned int number_stream_e
  * @param multiply_stream The multiply stream.
  */
 void
-spamm_stream_kernel_hierarchical_Z_curve_SSE4_1 (const unsigned int number_stream_elements,
+spamm_stream_kernel_hierarchical_Z_curve_no_checks_SSE (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
 
-/** Process the multiply stream without norm checks.
+/** Process the multiply stream.
  *
  * @param number_stream_elements The size of the multiply stream.
  * @param alpha The factor \f$\alpha\f$.
@@ -195,7 +278,20 @@ spamm_stream_kernel_hierarchical_Z_curve_SSE4_1 (const unsigned int number_strea
  * @param multiply_stream The multiply stream.
  */
 void
-spamm_stream_kernel_no_checks_SSE (const unsigned int number_stream_elements,
+spamm_stream_kernel_hierarchical_Z_curve_SSE4_1 (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_stream_kernel_hierarchical_Z_curve_no_checks_SSE4_1 (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);

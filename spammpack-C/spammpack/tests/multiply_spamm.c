@@ -13,7 +13,7 @@ main (int argc, char **argv)
 
   unsigned int i, j, k;
 
-  unsigned int N = 513;
+  unsigned int N = 129;
 
   double alpha = 1.0;
   double beta = 1.0;
