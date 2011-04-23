@@ -713,7 +713,7 @@ spamm_multiply (const float tolerance,
       for (j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++) {
         for (k = 0; k < SPAMM_N_KERNEL_BLOCKED; k++)
         {
-          if (multiply_stream[index].A->norm[i*SPAMM_N_KERNEL_BLOCKED+k]*multiply_stream[index].B->norm[k*SPAMM_N_KERNEL_BLOCKED+j] >= tolerance)
+          if (multiply_stream[index].A->norm[spamm_index_norm(i, k)]*multiply_stream[index].B->norm[spamm_index_norm(k, j)] > tolerance)
           {
             number_products++;
           }
