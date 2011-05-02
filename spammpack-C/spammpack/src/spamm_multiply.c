@@ -252,15 +252,7 @@ spamm_multiply (const float tolerance,
 
   char timer_info_string[2000];
 
-  unsigned long long beta_timer;
-  unsigned long long sort_timer;
-  unsigned long long k_lookuptable_timer;
-  unsigned long long copy_timer;
-  unsigned long long copy_3D_timer;
-  unsigned long long free_timer;
-  unsigned long long expand_timer;
-  unsigned long long convolute_timer;
-  unsigned long long stream_timer;
+  char *timer_string;
 
   assert(A != NULL);
   assert(B != NULL);
@@ -294,8 +286,9 @@ spamm_multiply (const float tolerance,
   spamm_multiply_beta(beta, C);
 
   spamm_timer_stop(timer);
-  beta_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", beta_timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_SORT_INDEX
@@ -316,8 +309,9 @@ spamm_multiply (const float tolerance,
   printf("len(A) = %u, len(B) = %u, ", spamm_list_length(A_index.index), spamm_list_length(B_index.index));
 
   spamm_timer_stop(timer);
-  sort_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", sort_timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_K_LOOKUP
@@ -396,8 +390,9 @@ spamm_multiply (const float tolerance,
   printf("len(A_k) = %u, len(B_k) = %u, ", A_k_lookup.size, B_k_lookup.size);
 
   spamm_timer_stop(timer);
-  k_lookuptable_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", k_lookuptable_timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_SORT_NORM
@@ -418,8 +413,9 @@ spamm_multiply (const float tolerance,
   }
 
   spamm_timer_stop(timer);
-  sort_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", sort_timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_COPY_INDICES
@@ -436,8 +432,9 @@ spamm_multiply (const float tolerance,
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
 
   spamm_timer_stop(timer);
-  copy_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", copy_timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_COPY_3D
@@ -456,8 +453,9 @@ spamm_multiply (const float tolerance,
   }
 
   spamm_timer_stop(timer);
-  copy_3D_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", copy_3D_timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_CONVOLUTE
@@ -584,9 +582,9 @@ spamm_multiply (const float tolerance,
   }
 
   spamm_timer_stop(timer);
-  convolute_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", convolute_timer);
-
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
   printf("[multiply] dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
 #endif
 
@@ -605,8 +603,9 @@ spamm_multiply (const float tolerance,
   free(B_index.data);
 
   spamm_timer_stop(timer);
-  free_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", free_timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_STREAM
@@ -699,8 +698,9 @@ spamm_multiply (const float tolerance,
      * in the floprate. */
     printf("%1.2f Gflop/s, ", 4*spamm_timer_get_floprate(timer)/1e3);
   }
-  stream_timer = spamm_timer_get(timer);
-  printf("%llu timer units\n", stream_timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_PRODUCT_COUNT
