@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <strings.h>
 
 #ifdef HAVE_PAPI
@@ -26,6 +27,12 @@ struct spamm_timer_t
 #ifdef HAVE_PAPI
   /** The PAPI eventset. */
   int eventset;
+
+  /** The length of the values array. */
+  short length;
+
+  /** An array that holds the names of the PAPI events. */
+  char **event_names;
 
   /** An array that holds the measured PAPI event values. */
   long_long *event_values;
@@ -52,25 +59,13 @@ spamm_timer_handle_PAPI_error (const int error_code, const char *message)
 }
 #endif
 
-/** Return a new timer object.
- *
- * @param type The timer type.
- *
- * @return The newly allocated and initialized timer object.
+/** Initialize the PAPI library.
  */
-struct spamm_timer_t *
-spamm_timer_new (const enum spamm_timer_type_t type)
+void
+spamm_timer_PAPI_init ()
 {
 #ifdef HAVE_PAPI
   int papi_result;
-#endif
-  struct spamm_timer_t *timer = (struct spamm_timer_t*) malloc(sizeof(struct spamm_timer_t));
-
-  timer->timer_running = 0;
-  timer->type = type;
-
-#ifdef HAVE_PAPI
-  timer->eventset = PAPI_NULL;
 
   if ((papi_result = PAPI_is_initialized()) != PAPI_LOW_LEVEL_INITED)
   {
@@ -91,11 +86,38 @@ spamm_timer_new (const enum spamm_timer_type_t type)
       spamm_timer_handle_PAPI_error(papi_result, "timer new, PAPI_is_initialized()");
     }
   }
+#else
+  printf("PAPI is not available\n");
+  exit(1);
+#endif
+}
+
+/** Return a new timer object.
+ *
+ * @param type The timer type.
+ *
+ * @return The newly allocated and initialized timer object.
+ */
+struct spamm_timer_t *
+spamm_timer_new (const enum spamm_timer_type_t type)
+{
+#ifdef HAVE_PAPI
+  int papi_result;
+#endif
+  struct spamm_timer_t *timer = (struct spamm_timer_t*) malloc(sizeof(struct spamm_timer_t));
+
+  timer->timer_running = 0;
+  timer->type = type;
+
+#ifdef HAVE_PAPI
+  timer->eventset = PAPI_NULL;
+  spamm_timer_PAPI_init();
 #endif
 
   switch (timer->type)
   {
     case walltime:
+    case empty:
       break;
 
 #ifdef HAVE_PAPI
@@ -126,7 +148,10 @@ spamm_timer_new (const enum spamm_timer_type_t type)
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
 
-          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          timer->length = 1;
+          timer->event_values = calloc(timer->length, sizeof(long_long));
+          timer->event_names = calloc(timer->length, sizeof(char*));
+          timer->event_names[0] = strndup("PAPI_TOT_INS", strlen("PAPI_TOT_INS"));
           break;
 
         case papi_total_cycles:
@@ -135,7 +160,10 @@ spamm_timer_new (const enum spamm_timer_type_t type)
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
 
-          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          timer->length = 1;
+          timer->event_values = calloc(timer->length, sizeof(long_long));
+          timer->event_names = calloc(timer->length, sizeof(char*));
+          timer->event_names[0] = strndup("PAPI_TOT_CYC", strlen("PAPI_TOT_CYC"));
           break;
 
         case papi_flop:
@@ -149,7 +177,11 @@ spamm_timer_new (const enum spamm_timer_type_t type)
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
 
-          timer->event_values = (long_long*) malloc(sizeof(long_long)*2);
+          timer->length = 2;
+          timer->event_values = calloc(timer->length, sizeof(long_long));
+          timer->event_names = calloc(timer->length, sizeof(char*));
+          timer->event_names[0] = strndup("PAPI_FP_OPS", strlen("PAPI_FP_OPS"));
+          timer->event_names[0] = strndup("PAPI_TOT_CYC", strlen("PAPI_TOT_CYC"));
           break;
 
         case papi_vec_sp:
@@ -158,7 +190,10 @@ spamm_timer_new (const enum spamm_timer_type_t type)
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
 
-          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          timer->length = 1;
+          timer->event_values = calloc(timer->length, sizeof(long_long));
+          timer->event_names = calloc(timer->length, sizeof(char*));
+          timer->event_names[0] = strndup("PAPI_VEC_SP", strlen("PAPI_VEC_SP"));
           break;
 
         case papi_l1_dcm:
@@ -167,7 +202,10 @@ spamm_timer_new (const enum spamm_timer_type_t type)
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
 
-          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          timer->length = 1;
+          timer->event_values = calloc(timer->length, sizeof(long_long));
+          timer->event_names = calloc(timer->length, sizeof(char*));
+          timer->event_names[0] = strndup("PAPI_L1_DCM", strlen("PAPI_L1_DCM"));
           break;
 
         case papi_l1_icm:
@@ -176,7 +214,10 @@ spamm_timer_new (const enum spamm_timer_type_t type)
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
 
-          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          timer->length = 1;
+          timer->event_values = calloc(timer->length, sizeof(long_long));
+          timer->event_names = calloc(timer->length, sizeof(char*));
+          timer->event_names[0] = strndup("PAPI_L1_ICM", strlen("PAPI_L1_ICM"));
           break;
 
         case papi_l2_dcm:
@@ -185,7 +226,10 @@ spamm_timer_new (const enum spamm_timer_type_t type)
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
 
-          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          timer->length = 1;
+          timer->event_values = calloc(timer->length, sizeof(long_long));
+          timer->event_names = calloc(timer->length, sizeof(char*));
+          timer->event_names[0] = strndup("PAPI_L2_DCM", strlen("PAPI_L2_DCM"));
           break;
 
         case papi_l2_icm:
@@ -194,7 +238,10 @@ spamm_timer_new (const enum spamm_timer_type_t type)
             spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
           }
 
-          timer->event_values = (long_long*) malloc(sizeof(long_long)*1);
+          timer->length = 1;
+          timer->event_values = calloc(timer->length, sizeof(long_long));
+          timer->event_names = calloc(timer->length, sizeof(char*));
+          timer->event_names[0] = strndup("PAPI_L2_ICM", strlen("PAPI_L2_ICM"));
           break;
       }
       break;
@@ -218,6 +265,7 @@ void
 spamm_timer_delete (struct spamm_timer_t **timer)
 {
 #ifdef HAVE_PAPI
+  int i;
   int papi_result;
 #endif
 
@@ -245,6 +293,11 @@ spamm_timer_delete (struct spamm_timer_t **timer)
         spamm_timer_handle_PAPI_error(papi_result, "delete timer, PAPI_destroy_eventset()");
       }
 
+      for (i = 0; i < (*timer)->length; i++)
+      {
+        free((*timer)->event_names[i]);
+      }
+      free((*timer)->event_names);
       free((*timer)->event_values);
       break;
 #endif
@@ -367,13 +420,20 @@ spamm_timer_stop (struct spamm_timer_t *timer)
  * is returned as an integer. The units of that integer depends on the timer
  * type.
  *
+ * @param length Will hold the length of the allocated array values on return.
  * @param timer The timer.
  *
- * @return The time passed in the default units of the timer type.
+ * @return The variables length will contain the number of elements in the
+ * values array, and the values variable will point to an array with the
+ * counter values. This array needs to be free()'ed by the caller when not
+ * needed anymore.
  */
-unsigned long long
-spamm_timer_get (const struct spamm_timer_t *timer)
+void
+spamm_timer_get (short *length, unsigned long long **values, const struct spamm_timer_t *timer)
 {
+  assert(length != NULL);
+  assert(values != NULL);
+
   if (timer->timer_running != 0)
   {
     printf("[timer get] this timer is running right now\n");
@@ -383,7 +443,9 @@ spamm_timer_get (const struct spamm_timer_t *timer)
   switch (timer->type)
   {
     case walltime:
-      return 1000000*((timer->end_time).ru_utime.tv_sec
+      *length = 1;
+      *values = calloc(*length, sizeof(unsigned long long));
+      (*values)[0] = 1000000*((timer->end_time).ru_utime.tv_sec
           +(timer->end_time).ru_stime.tv_sec
           -((timer->start_time).ru_utime.tv_sec
             +(timer->start_time).ru_stime.tv_sec))
@@ -396,13 +458,21 @@ spamm_timer_get (const struct spamm_timer_t *timer)
 #ifdef HAVE_PAPI
     case papi_total_instructions:
     case papi_total_cycles:
-    case papi_flop:
     case papi_vec_sp:
     case papi_l1_dcm:
     case papi_l1_icm:
     case papi_l2_dcm:
     case papi_l2_icm:
-      return timer->event_values[0];
+      *length = 1;
+      *values = calloc(*length, sizeof(unsigned long long));
+      (*values)[0] = timer->event_values[0];
+      break;
+
+    case papi_flop:
+      *length = 2;
+      *values = calloc(*length, sizeof(unsigned long long));
+      (*values)[0] = timer->event_values[0];
+      (*values)[1] = timer->event_values[1];
       break;
 #endif
 
@@ -411,6 +481,33 @@ spamm_timer_get (const struct spamm_timer_t *timer)
       exit(1);
       break;
   }
+}
+
+/** Return a string with all timer values in list format.
+ *
+ * timer The timer.
+ *
+ * @return A string with a list of timer values. The string needs to be
+ * free()'ed by the caller.
+ */
+char *
+spamm_timer_get_string (const struct spamm_timer_t *timer)
+{
+  int i;
+  char *result = calloc(2000, sizeof(char));
+
+#ifdef HAVE_PAPI
+  sprintf(result, "[ ");
+  for (i = 0; i < timer->length; i++)
+  {
+    sprintf(result, "%s %lli (%s)", result, timer->event_values[i], timer->event_names[i]);
+  }
+  sprintf(result, " ]");
+#else
+  sprintf(result, "walltime %u", 0);
+#endif
+
+  return result;
 }
 
 /** Get the floprate. This is only possible for timer type papi_flop.
@@ -592,4 +689,47 @@ spamm_timer_get_timer_type (const char *name)
   }
 
   return timer_type;
+}
+
+/** Get native events and print a list.
+ */
+void
+spamm_timer_get_native_events ()
+{
+#ifdef HAVE_PAPI
+  int i;
+  int event_number = 0;
+  int retval;
+  PAPI_event_info_t info;
+
+  /* Initialize PAPI library. */
+  spamm_timer_PAPI_init();
+
+  printf("Native events:\n");
+  i = PAPI_NATIVE_MASK;
+  printf("Nr.   Name                           Code        Description\n");
+  do
+  {
+    if ((retval = PAPI_get_event_info(i, &info)) == PAPI_OK)
+    {
+      printf("%3u   %-30s 0x%-10x%s\n", event_number++, info.symbol, info.event_code, info.long_descr);
+    }
+  }
+  while ((retval = PAPI_enum_event(&i, PAPI_ENUM_ALL)) == PAPI_OK);
+
+  printf("Preset events:\n");
+  i = PAPI_PRESET_MASK;
+  printf("Nr.   Name                           Code        Description\n");
+  do
+  {
+    if ((retval = PAPI_get_event_info(i, &info)) == PAPI_OK)
+    {
+      printf("%3u   %-30s 0x%-10x%s\n", event_number++, info.symbol, info.event_code, info.long_descr);
+    }
+  }
+  while ((retval = PAPI_enum_event(&i, PAPI_ENUM_ALL)) == PAPI_OK);
+#else
+  printf("PAPI is not available\n");
+  exit(1);
+#endif
 }

@@ -11,6 +11,9 @@
  */
 enum spamm_timer_type_t
 {
+  /** An empty timer. */
+  empty,
+
   /** The walltime passed. */
   walltime,
 
@@ -51,8 +54,11 @@ spamm_timer_start (struct spamm_timer_t *timer);
 void
 spamm_timer_stop (struct spamm_timer_t *timer);
 
-unsigned long long
-spamm_timer_get (const struct spamm_timer_t *timer);
+void
+spamm_timer_get (short *length, unsigned long long **values, const struct spamm_timer_t *timer);
+
+char *
+spamm_timer_get_string (const struct spamm_timer_t *timer);
 
 float
 spamm_timer_get_floprate (const struct spamm_timer_t *timer);
@@ -63,5 +69,8 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
 
 enum spamm_timer_type_t
 spamm_timer_get_timer_type (const char *name);
+
+void
+spamm_timer_get_native_events ();
 
 #endif
