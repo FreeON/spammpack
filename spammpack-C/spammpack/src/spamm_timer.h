@@ -43,7 +43,10 @@ enum spamm_timer_type_t
 };
 
 struct spamm_timer_t *
-spamm_timer_new (const enum spamm_timer_type_t type);
+spamm_timer_new ();
+
+void
+spamm_timer_add_event (int event, const char *event_name, struct spamm_timer_t *timer);
 
 void
 spamm_timer_delete (struct spamm_timer_t **timer);
@@ -59,9 +62,6 @@ spamm_timer_get (short *length, unsigned long long **values, const struct spamm_
 
 char *
 spamm_timer_get_string (const struct spamm_timer_t *timer);
-
-float
-spamm_timer_get_floprate (const struct spamm_timer_t *timer);
 
 void
 spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,

@@ -96,7 +96,7 @@ void
 spamm_multiply (const float tolerance,
     const float alpha, struct spamm_t *A, struct spamm_t *B,
     const float beta, struct spamm_t *C,
-    const enum spamm_timer_type_t timer_type,
+    struct spamm_timer_t *timer,
     const enum spamm_kernel_t kernel);
 
 unsigned int
