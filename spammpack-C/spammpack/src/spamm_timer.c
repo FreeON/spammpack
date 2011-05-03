@@ -24,11 +24,11 @@ struct spamm_timer_t
   /** The length of the values array. */
   short number_events;
 
-  /** An array that holds the names of the PAPI events. */
-  char **event_names;
+  /** An array holding the PAPI event codes. */
+  int *event;
 
   /** An array that holds the measured PAPI event values. */
-  long_long *event_values;
+  long_long *event_value;
 #endif
 
   /** The time the timer was started. */
@@ -115,34 +115,34 @@ spamm_timer_new ()
 /** Add an event to the timer.
  *
  * @param event The event to add.
- * @param event_name A string describing the event.
  * @param timer The timer to add to.
  */
 void
-spamm_timer_add_event (int event, const char *event_name, struct spamm_timer_t *timer)
+spamm_timer_add_event (int event, struct spamm_timer_t *timer)
 {
 #ifdef HAVE_PAPI
   short i;
   int papi_result;
-  char **temp_event_names;
+  int *temp_event;
+  char temp_string[100];
 
   if ((papi_result = PAPI_add_event(timer->eventset, event)) != PAPI_OK)
   {
     spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
   }
 
-  temp_event_names = calloc(timer->number_events+1, sizeof(char*));
+  temp_event = calloc(timer->number_events+1, sizeof(int));
   for (i = 0; i < timer->number_events; i++)
   {
-    temp_event_names[i] = strndup(timer->event_names[i], strlen(timer->event_names[i]));
-    free(timer->event_names[i]);
+    temp_event[i] = timer->event[i];
   }
-  temp_event_names[timer->number_events] = strndup(event_name, strlen(event_name));
-  if (timer->event_names != NULL)
+  temp_event[timer->number_events] = event;
+
+  if (timer->event != NULL)
   {
-    free(timer->event_names);
+    free(timer->event);
   }
-  timer->event_names = temp_event_names;
+  timer->event = temp_event;
   timer->number_events += 1;
 #else
 
@@ -172,13 +172,8 @@ spamm_timer_delete (struct spamm_timer_t **timer)
   {
     spamm_timer_handle_PAPI_error(papi_result, "delete timer, PAPI_destroy_eventset()");
   }
-
-  for (i = 0; i < (*timer)->number_events; i++)
-  {
-    free((*timer)->event_names[i]);
-  }
-  free((*timer)->event_names);
-  free((*timer)->event_values);
+  free((*timer)->event);
+  free((*timer)->event_value);
 #endif
 
   free(*timer);
@@ -244,12 +239,12 @@ spamm_timer_stop (struct spamm_timer_t *timer)
   timer->timer_running = 0;
 
 #ifdef HAVE_PAPI
-  if (timer->event_values != NULL)
+  if (timer->event_value != NULL)
   {
-    free(timer->event_values);
+    free(timer->event_value);
   }
-  timer->event_values = calloc(timer->number_events, sizeof(unsigned long long));
-  if ((papi_result = PAPI_stop(timer->eventset, timer->event_values)) != PAPI_OK)
+  timer->event_value = calloc(timer->number_events, sizeof(unsigned long long));
+  if ((papi_result = PAPI_stop(timer->eventset, timer->event_value)) != PAPI_OK)
   {
     spamm_timer_handle_PAPI_error(papi_result, "stop timer, PAPI_stop()");
   }
@@ -295,7 +290,7 @@ spamm_timer_get (short *length, unsigned long long **values, const struct spamm_
   *values = calloc(*length, sizeof(unsigned long long));
   for (i = 0; i < *length; i++)
   {
-    (*values)[i] = timer->event_values[i];
+    (*values)[i] = timer->event_value[i];
   }
 #else
   *length = 1;
@@ -321,20 +316,32 @@ spamm_timer_get (short *length, unsigned long long **values, const struct spamm_
 char *
 spamm_timer_get_string (const struct spamm_timer_t *timer)
 {
+  const int maxlength = 2000;
   int i;
-  char *result = calloc(2000, sizeof(char));
+  char *result = calloc(maxlength, sizeof(char));
 
 #ifdef HAVE_PAPI
+  int papi_result;
+  char *temp_string = calloc(maxlength, sizeof(char));
+  char *temp_event_name = calloc(maxlength, sizeof(char));
+
   sprintf(result, "[");
   for (i = 0; i < timer->number_events; i++)
   {
-    sprintf(result, "%s %lli (%s)", result, timer->event_values[i], timer->event_names[i]);
+    if ((papi_result = PAPI_event_code_to_name(timer->event[i], temp_event_name)) != PAPI_OK)
+    {
+      spamm_timer_handle_PAPI_error(papi_result, "get string, PAPI_event_code_to_name()");
+    }
+
+    sprintf(temp_string, " %lli 0x%x(%s)", timer->event_value[i], timer->event[i], temp_event_name);
+    strncat(result, temp_string, maxlength-1);
     if (i < timer->number_events-1)
     {
-      sprintf(result, "%s,", result);
+      strncat(result, ",", maxlength-1);
     }
   }
-  sprintf(result, "%s ]", result);
+  strncat(result, " ]", maxlength-1);
+  free(temp_string);
 #else
   sprintf(result, "%u (walltime)", 0);
 #endif
@@ -350,13 +357,14 @@ spamm_timer_get_string (const struct spamm_timer_t *timer)
  * @param maxlength The length of the output string.
  */
 void
-spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
-    const int maxlength)
+spamm_timer_info (const struct spamm_timer_t *timer, char *infostring, const int maxlength)
 {
   int i;
 
 #ifdef HAVE_PAPI
   int papi_result;
+  char *temp_string;
+  char *temp_event_name;
 #endif
 
   assert(timer != NULL);
@@ -364,16 +372,26 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
   assert(maxlength >= 1);
 
 #ifdef HAVE_PAPI
+  temp_string = calloc(maxlength, sizeof(char));
+  temp_event_name = calloc(maxlength, sizeof(char));
+
   sprintf(infostring, "[");
   for (i = 0; i < timer->number_events; i++)
   {
-    sprintf(infostring, "%s %s", infostring, timer->event_names[i]);
+    if ((papi_result = PAPI_event_code_to_name(timer->event[i], temp_event_name)) != PAPI_OK)
+    {
+      spamm_timer_handle_PAPI_error(papi_result, "timer info, PAPI_event_code_to_name()");
+    }
+
+    sprintf(temp_string, " 0x%x(%s)", timer->event[i], temp_event_name);
+    strncat(infostring, temp_string, maxlength-1);
     if (i < timer->number_events-1)
     {
-      sprintf(infostring, "%s,", infostring);
+      strncat(infostring, ",", maxlength-1);
     }
   }
-  sprintf(infostring, "%s ]", infostring);
+  strncat(infostring, " ]", maxlength-1);
+  free(temp_string);
 #else
   sprintf(infostring, "walltime");
 #endif

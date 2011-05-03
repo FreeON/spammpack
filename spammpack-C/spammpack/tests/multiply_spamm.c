@@ -33,6 +33,7 @@ main (int argc, char **argv)
   double max_diff;
 
   enum spamm_kernel_t kernel = kernel_standard_SSE;
+  struct spamm_timer_t *timer;
 
   if (argc == 2)
   {
@@ -135,7 +136,9 @@ main (int argc, char **argv)
   }
 #endif
 
-  spamm_multiply(tolerance, alpha, A, B, beta, C, walltime, kernel);
+  timer = spamm_timer_new();
+  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, kernel);
+  spamm_timer_delete(&timer);
 
 #ifdef PRINT_DEBUG
   printf("C =\n");

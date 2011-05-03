@@ -46,7 +46,7 @@ struct spamm_timer_t *
 spamm_timer_new ();
 
 void
-spamm_timer_add_event (int event, const char *event_name, struct spamm_timer_t *timer);
+spamm_timer_add_event (int event, struct spamm_timer_t *timer);
 
 void
 spamm_timer_delete (struct spamm_timer_t **timer);
@@ -64,8 +64,7 @@ char *
 spamm_timer_get_string (const struct spamm_timer_t *timer);
 
 void
-spamm_timer_info (const struct spamm_timer_t *timer, char *infostring,
-    const int maxlength);
+spamm_timer_info (const struct spamm_timer_t *timer, char *infostring, const int maxlength);
 
 enum spamm_timer_type_t
 spamm_timer_get_timer_type (const char *name);
