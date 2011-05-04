@@ -197,15 +197,15 @@ spamm_timer_start (struct spamm_timer_t *timer)
     exit(1);
   }
 
+  timer->timer_running = 1;
+
+#ifdef HAVE_PAPI
   if (timer->number_events == 0)
   {
     printf("[start timer] this timer does not have any events\n");
     exit(1);
   }
 
-  timer->timer_running = 1;
-
-#ifdef HAVE_PAPI
   if ((papi_result = PAPI_start(timer->eventset)) != PAPI_OK)
   {
     spamm_timer_handle_PAPI_error(papi_result, "start timer, PAPI_start()");
