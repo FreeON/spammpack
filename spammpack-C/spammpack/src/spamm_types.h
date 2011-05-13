@@ -105,13 +105,13 @@ struct spamm_data_t
    * #SPAMM_N_BLOCK x #SPAMM_N_BLOCK matrix blocks. The total size of
    * block_dense is therefore (#SPAMM_N_KERNEL_BLOCKED * #SPAMM_N_BLOCK) x
    * (#SPAMM_N_KERNEL_BLOCKED * #SPAMM_N_BLOCK). */
-  float __attribute__ ((aligned (SPAMM_PAGE_ALIGNMENT))) block_dense[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
 
   /** The matrix data (dilated by 4 for SSE). */
-  float __attribute__ ((aligned (SPAMM_PAGE_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
 
   /** The transpose of block_dense.  */
-  float __attribute__ ((aligned (SPAMM_PAGE_ALIGNMENT))) block_dense_transpose[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_transpose[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
 };
 
 #endif
