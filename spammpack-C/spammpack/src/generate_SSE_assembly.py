@@ -485,10 +485,13 @@ def block_product (i, k, j, clearC = True, writeC = True):
 
     print("")
     print("  # Write out C(%d,%d) submatrix block." % (i+1, j+1))
-    print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-    print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-    print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-    print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    if options.no_store:
+      print("  # skipped (--no-store).")
+    else:
+      print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
 
     C1.release()
     C2.release()
@@ -520,6 +523,11 @@ parser.add_option("--no-checks",
     action = "store_false",
     default = True,
     dest = "generate_checks")
+
+parser.add_option("--no-store",
+    help = "do not generate store instructions (store C) [default: %default]",
+    action = "store_true",
+    default = False)
 
 parser.add_option("--no-alpha",
     help = "generate a kernel for the special case of alpha = 1 [default: %default]",
