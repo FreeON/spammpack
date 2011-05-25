@@ -21,16 +21,18 @@ main ()
   printf("# &data.norm_upper at            %p, offset_norm_upper = %lu\n", &data.norm_upper, (unsigned long int) &data.norm_upper - (unsigned long int) &data);
   printf("# &data.norm_upper_transpose at  %p, offset_norm_upper_transpose = %lu\n", &data.norm_upper_transpose, (unsigned long int) &data.norm_upper_transpose - (unsigned long int) &data);
   printf("# &data.block_dense at           %p, offset_block_dense = %lu\n", &data.block_dense, (unsigned long int) &data.block_dense - (unsigned long int) &data);
-  printf("# &data.block_dense_dilated at   %p, offset_block_dense_dilated = %lu\n", &data.block_dense_dilated, (unsigned long int) &data.block_dense_dilated - (unsigned long int) &data);
+  printf("# &data.block_dense_store at     %p, offset_block_dense_store = %lu\n", &data.block_dense_store, (unsigned long int) &data.block_dense_store - (unsigned long int) &data);
   printf("# &data.block_dense_transpose at %p, offset_block_dense_transpose = %lu\n", &data.block_dense_transpose, (unsigned long int) &data.block_dense_transpose - (unsigned long int) &data);
+  printf("# &data.block_dense_dilated at   %p, offset_block_dense_dilated = %lu\n", &data.block_dense_dilated, (unsigned long int) &data.block_dense_dilated - (unsigned long int) &data);
   printf("\n");
   printf("class spammOffsets:\n");
   printf("\n");
   printf("  sizeof_multiply_stream_t     = %lu\n", sizeof(struct spamm_multiply_stream_t));
-  printf("  offset_norm                  = %lu\n", (unsigned long int) &data.norm - (unsigned long int) &data);
-  printf("  offset_norm_upper            = %lu\n", (unsigned long int) &data.norm_upper - (unsigned long int) &data);
-  printf("  offset_norm_upper_transpose  = %lu\n", (unsigned long int) &data.norm_upper_transpose - (unsigned long int) &data);
-  printf("  offset_block_dense           = %lu\n", (unsigned long int) &data.block_dense - (unsigned long int) &data);
-  printf("  offset_block_dense_dilated   = %lu\n", (unsigned long int) &data.block_dense_dilated - (unsigned long int) &data);
-  printf("  offset_block_dense_transpose = %lu\n", (unsigned long int) &data.block_dense_transpose - (unsigned long int) &data);
+  printf("  offset_norm                  = %lu # 0x%lx\n", (unsigned long int) &data.norm - (unsigned long int) &data, (unsigned long int) &data.norm - (unsigned long int) &data);
+  printf("  offset_norm_upper            = %lu # 0x%lx\n", (unsigned long int) &data.norm_upper - (unsigned long int) &data, (unsigned long int) &data.norm_upper - (unsigned long int) &data);
+  printf("  offset_norm_upper_transpose  = %lu # 0x%lx\n", (unsigned long int) &data.norm_upper_transpose - (unsigned long int) &data, (unsigned long int) &data.norm_upper_transpose - (unsigned long int) &data);
+  printf("  offset_block_dense           = %lu # 0x%lx\n", (unsigned long int) &data.block_dense - (unsigned long int) &data, (unsigned long int) &data.block_dense - (unsigned long int) &data);
+  printf("  offset_block_dense_store     = %lu # 0x%lx\n", (unsigned long int) &data.block_dense_store - (unsigned long int) &data, (unsigned long int) &data.block_dense_store - (unsigned long int) &data);
+  printf("  offset_block_dense_transpose = %lu # 0x%lx\n", (unsigned long int) &data.block_dense_transpose - (unsigned long int) &data, (unsigned long int) &data.block_dense_transpose - (unsigned long int) &data);
+  printf("  offset_block_dense_dilated   = %lu # 0x%lx\n", (unsigned long int) &data.block_dense_dilated - (unsigned long int) &data, (unsigned long int) &data.block_dense_dilated - (unsigned long int) &data);
 }

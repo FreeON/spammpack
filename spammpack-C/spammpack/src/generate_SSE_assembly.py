@@ -16,6 +16,30 @@ import os.path
 import sys
 from spammOffsets import spammOffsets
 
+class Line:
+  """A class that helps print a line of assembly code. It takes care of things
+  such as line numbers and intendation."""
+
+  def __init__ (self):
+    if Line.initialized:
+      log.error("Only one Line class can be used at a time")
+      sys.exit(1)
+
+    Line.initialized = True
+    self.line_number = 0
+
+  def out (self, line):
+    """Print a line."""
+
+    self.line_number += 1
+    print(line)
+
+  def get_line_number (self):
+    """Get the current line number (the line number of the last line
+    printed)."""
+
+    return self.line_number
+
 class SSERegister:
   """A class that takes care of returning an available SSE register to the
   caller. This is how we rotate through the 16 available registers on an x86_64
@@ -135,6 +159,25 @@ def offset (i, j, N):
   else:
     return row_major_index(i, j, N)
 
+def check_load_offset (load_offset):
+  """Check the overlap with the load offset and the last store offset."""
+
+  global last_store_offset
+
+  for store_offset in last_store_offset:
+    log.debug("checking load offset 0x%x against store offset 0x%x, overlap is 0x%x"
+        % (load_offset, store_offset, abs(store_offset-load_offset)%4096))
+    if abs(store_offset-load_offset)%4096 == 0:
+      log.warn("4 kB overlap detected, load offset 0x%x against store offset 0x%x, diff = 0x%x, overlap is 0x%x"
+          % (load_offset, store_offset, abs(store_offset-load_offset), abs(store_offset-load_offset)%4096))
+
+def issue_load (load_offset, base_pointer, register):
+  """Issue a load statement from memory to a register. The memory address is
+  given by load_offset(base_pointer)."""
+
+  check_load_offset(load_offset)
+  print("  movaps 0x%x(%s), %s" % (load_offset, base_pointer, register))
+
 def block_product (i, k, j, clearC = True, writeC = True):
   """Produce an assembly code block to multiply 2 4x4 matrices in SSE. The
   index arguments are 1-based."""
@@ -149,6 +192,8 @@ def block_product (i, k, j, clearC = True, writeC = True):
   global C2
   global C3
   global C4
+
+  global last_store_offset
 
   if clearC:
     C1 = SSERegister("C1")
@@ -172,7 +217,9 @@ def block_product (i, k, j, clearC = True, writeC = True):
     norm = SSERegister("norm")
 
     print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
+    check_load_offset((i*options.N+k)*4+spammOffsets.offset_norm)
     print("  movss 0x%x(A), %s" % ((i*options.N+k)*4+spammOffsets.offset_norm, norm))
+    check_load_offset((k*options.N+j)*4+spammOffsets.offset_norm)
     print("  mulss 0x%x(B), %s" % ((k*options.N+j)*4+spammOffsets.offset_norm, norm))
 
     # When comparing with the Intel Software Developer's Manual, keep in
@@ -319,16 +366,16 @@ def block_product (i, k, j, clearC = True, writeC = True):
     print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
 
     A1 = SSERegister("A1")
-    print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, A1))
+    issue_load(row_major_index(0, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, "A", A1)
 
     B1 = SSERegister("B1")
-    print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, B1))
+    issue_load(row_major_index(0, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, "B", B1)
     B2 = SSERegister("B2")
-    print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, B2))
+    issue_load(row_major_index(1, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, "B", B2)
     B3 = SSERegister("B3")
-    print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, B3))
+    issue_load(row_major_index(2, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, "B", B3)
     B4 = SSERegister("B4")
-    print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, B4))
+    issue_load(row_major_index(3, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, "B", B4)
 
     print("")
     print("  # Calculate C(1,:).")
@@ -360,7 +407,7 @@ def block_product (i, k, j, clearC = True, writeC = True):
     A1.release()
 
     A2 = SSERegister("A2")
-    print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, A2))
+    issue_load(row_major_index(1, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, "A", A2)
 
     print("")
     print("  # Calculate C(2,:).")
@@ -392,7 +439,7 @@ def block_product (i, k, j, clearC = True, writeC = True):
     A2.release()
 
     A3 = SSERegister("A3")
-    print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, A3))
+    issue_load(row_major_index(2, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, "A", A3)
 
     print("")
     print("  # Calculate C(3,:).")
@@ -424,7 +471,7 @@ def block_product (i, k, j, clearC = True, writeC = True):
     A3.release()
 
     A4 = SSERegister("A4")
-    print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, A4))
+    issue_load(row_major_index(3, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, "A", A4)
 
     print("")
     print("  # Calculate C(4,:).")
@@ -478,20 +525,31 @@ def block_product (i, k, j, clearC = True, writeC = True):
 
     print("")
     print("  # Add accumulated C(%d,%d) to already existing." % (i+1, j+1))
-    print("  addps 0x%x(C), %s" % (row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C1))
-    print("  addps 0x%x(C), %s" % (row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C2))
-    print("  addps 0x%x(C), %s" % (row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C3))
-    print("  addps 0x%x(C), %s" % (row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C4))
+    print("  addps 0x%x(C), %s" % (row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store, C1))
+    print("  addps 0x%x(C), %s" % (row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store, C2))
+    print("  addps 0x%x(C), %s" % (row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store, C3))
+    print("  addps 0x%x(C), %s" % (row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store, C4))
 
     print("")
     print("  # Write out C(%d,%d) submatrix block." % (i+1, j+1))
     if options.no_store:
-      print("  # skipped (--no-store).")
+      print("  # skipped (command line option --no-store).")
+      print("  #")
+      print("  # movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
+      print("  # movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
+      print("  # movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
+      print("  # movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
     else:
-      print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-      print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-      print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-      print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
+      print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
+      print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
+      print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
+
+      if not options.hierarchical:
+        last_store_offset.append(row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store)
+        last_store_offset.append(row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store)
+        last_store_offset.append(row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store)
+        last_store_offset.append(row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store)
 
     C1.release()
     C2.release()
@@ -773,6 +831,9 @@ C1 = None
 C2 = None
 C3 = None
 C4 = None
+
+# Initialize some other global variables.
+last_store_offset = []
 
 if options.hierarchical:
   print("")

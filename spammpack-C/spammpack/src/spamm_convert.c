@@ -170,6 +170,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
 
               /* Set new value. */
               data->block_dense[data_offset] = Aij;
+              data->block_dense_store[data_offset] = Aij;
               data->block_dense_transpose[data_offset_transpose] = Aij;
 
               data->block_dense_dilated[4*data_offset+0] = Aij;

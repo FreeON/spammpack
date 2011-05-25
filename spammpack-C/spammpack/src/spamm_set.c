@@ -134,6 +134,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
       /* Set new value. */
       data->block_dense[data_offset] = Aij;
+      data->block_dense_store[data_offset] = Aij;
       data->block_dense_transpose[data_offset_transpose] = Aij;
 
       data->block_dense_dilated[4*data_offset+0] = Aij;
