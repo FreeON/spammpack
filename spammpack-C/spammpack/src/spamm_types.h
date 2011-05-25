@@ -87,10 +87,10 @@ struct spamm_data_t
    * #SPAMM_N_BLOCK matrix blocks. Since they are #SPAMM_N_KERNEL_BLOCKED x
    * #SPAMM_N_KERNEL_BLOCKED of those, the norms are stored in row-major order
    * in a #SPAMM_N_KERNEL_BLOCKED x #SPAMM_N_KERNEL_BLOCKED matrix. */
-  float norm[SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED];
+  float __attribute__ ((aligned (8))) norm[SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED];
 
   /** The square of the norms of the basic block matrices. */
-  float norm2[SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED];
+  float __attribute__ ((aligned (8))) norm2[SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED];
 
   /** The upper tier norms. */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) norm_upper[2*2*2];
@@ -107,11 +107,14 @@ struct spamm_data_t
    * (#SPAMM_N_KERNEL_BLOCKED * #SPAMM_N_BLOCK). */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
 
-  /** The matrix data (dilated by 4 for SSE). */
-  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
+  /** A store buffer. */
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_store[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
 
   /** The transpose of block_dense.  */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_transpose[SPAMM_N_KERNEL*SPAMM_N_KERNEL];
+
+  /** The matrix data (dilated by 4 for SSE). */
+  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
 };
 
 #endif
