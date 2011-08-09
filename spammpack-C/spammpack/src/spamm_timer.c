@@ -94,6 +94,7 @@ spamm_timer_new ()
 {
 #ifdef HAVE_PAPI
   int papi_result;
+  int eventcode;
 #endif
 
   struct spamm_timer_t *timer = calloc(1, sizeof(struct spamm_timer_t));

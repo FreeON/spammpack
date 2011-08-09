@@ -137,6 +137,7 @@ main (int argc, char **argv)
 #endif
 
   timer = spamm_timer_new();
+  spamm_timer_add_event(0x40000428, timer);
   spamm_multiply(tolerance, alpha, A, B, beta, C, timer, kernel);
   spamm_timer_delete(&timer);
 

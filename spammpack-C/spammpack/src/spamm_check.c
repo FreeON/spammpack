@@ -342,6 +342,17 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
         {
           data_offset = spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, user->A->layout);
           Aij = data->block_dense[data_offset];
+          if (Aij != data->block_dense_store[spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, user->A->layout)])
+          {
+            printf("index %u: data block inconsistency between block_dense and block_dense_store, ", index);
+            printf("i_blocked = %u, j_blocked = %u, i_basic = %u, j_basic = %u, Aij = %e, (Aij)store = %e, |diff| = %e\n",
+                i_blocked, j_blocked, i_basic, j_basic,
+                Aij,
+                data->block_dense_store[spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, user->A->layout)],
+                fabs(Aij-data->block_dense_store[spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, user->A->layout)]));
+            user->result = SPAMM_ERROR;
+            break;
+          }
           for (i_dilated = 0; i_dilated < 4; i_dilated++)
           {
             if (Aij != data->block_dense_dilated[data_offset*4+i_dilated])
