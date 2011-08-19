@@ -4,7 +4,8 @@ TAGS_FILES = $(top_srcdir)/src/*.h $(top_srcdir)/src/*.c $(top_srcdir)/src/*.S
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
-AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
+AM_LDFLAGS = $(top_builddir)/src/libspamm.la
+#AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 
 noinst_PROGRAMS = \
   create_spamm \
