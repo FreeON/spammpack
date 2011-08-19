@@ -4,7 +4,7 @@ TAGS_FILES = $(top_srcdir)/src/*.h $(top_srcdir)/src/*.c $(top_srcdir)/src/*.S
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
-AM_LDFLAGS = $(top_builddir)/src/libspamm.la
+AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 
 noinst_PROGRAMS = \
   create_spamm \
@@ -16,7 +16,8 @@ noinst_PROGRAMS = \
   hashtable_insert \
   list \
   list_sort \
-  multiply_spamm
+  multiply_spamm \
+  multiply_naive
 
 noinst_SCRIPTS = \
   create_spamm_row_major.sh \
@@ -69,4 +70,5 @@ TESTS = \
   $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_SSE.sh \
   $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE.sh \
   $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_SSE4_1.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE4_1.sh
+  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE4_1.sh \
+  multiply_naive
