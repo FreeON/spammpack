@@ -83,7 +83,9 @@ spamm_naive_new_node (const unsigned int tier)
   return node;
 }
 
-/** Get an element from a naive matrix.
+/** @brief Get an element from a naive matrix.
+ *
+ * If the matri is NULL, this function returns 0.
  *
  * @param i The row index.
  * @param j The column index.
@@ -96,12 +98,20 @@ spamm_naive_get (const unsigned int i, const unsigned int j, const struct spamm_
 {
   struct spamm_naive_node_t **node = NULL;
 
-  assert(A != NULL);
+  if (A == NULL)
+  {
+    return 0;
+  }
 
   node = (struct spamm_naive_node_t**) &(A->root);
 
   while (1)
   {
+    if (*node == NULL)
+    {
+      return 0;
+    }
+
     if ((*node)->M_upper-(*node)->M_lower == A->blocksize)
     {
       /* Get the matrix element. */
@@ -141,6 +151,98 @@ spamm_naive_get (const unsigned int i, const unsigned int j, const struct spamm_
   }
 }
 
+/** Recursively set a matrix element.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ * @param Aij The value of the matrix element A(i,j).
+ * @param tier The tier the node is on.
+ * @param node The node.
+ */
+void
+spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const float Aij,
+    const unsigned int M_lower,
+    const unsigned int M_upper,
+    const unsigned int N_lower,
+    const unsigned int N_upper,
+    const int blocksize,
+    const int tier,
+    struct spamm_naive_node_t **node)
+{
+  if (*node == NULL)
+  {
+    /* Allocate new node. */
+    *node = spamm_naive_new_node(tier+1);
+
+    (*node)->M_lower = M_lower;
+    (*node)->M_upper = M_upper;
+    (*node)->N_lower = N_lower;
+    (*node)->N_upper = N_upper;
+
+    (*node)->tier = tier;
+  }
+
+  if ((*node)->M_upper-(*node)->M_lower == blocksize)
+  {
+    /* Store the matrix element. */
+    if ((*node)->data == NULL)
+    {
+      (*node)->blocksize = blocksize;
+      (*node)->data = calloc(blocksize*blocksize, sizeof(float));
+    }
+
+    /* sgemm() loves column major. */
+    (*node)->data[spamm_index_column_major(i-(*node)->M_lower, j-(*node)->N_lower, blocksize, blocksize)] = Aij;
+
+    /* Update norm. */
+    (*node)->norm2 += Aij*Aij;
+    (*node)->norm = sqrt((*node)->norm2);
+  }
+
+  else
+  {
+    if (i < (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
+        j < (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
+    {
+      spamm_naive_set_recursive(i, j, Aij,
+          (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
+          (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
+          blocksize, tier+1, &((*node)->child[0]));
+    }
+
+    else if (i <  (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
+        j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
+    {
+      spamm_naive_set_recursive(i, j, Aij,
+          (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
+          (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
+          blocksize, tier+1, &((*node)->child[1]));
+    }
+
+    else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
+        j <  (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
+    {
+      spamm_naive_set_recursive(i, j, Aij,
+          (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
+          (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
+          blocksize, tier+1, &((*node)->child[2]));
+    }
+
+    else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
+        j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
+    {
+      spamm_naive_set_recursive(i, j, Aij,
+          (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
+          (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
+          blocksize, tier+1, &((*node)->child[3]));
+    }
+
+    /* Update norm. */
+    (*node)->norm2 += Aij*Aij;
+    (*node)->norm = sqrt((*node)->norm2);
+  }
+}
+
 /** Set an element in a naive matrix.
  *
  * @param i The row index.
@@ -151,103 +253,19 @@ spamm_naive_get (const unsigned int i, const unsigned int j, const struct spamm_
 void
 spamm_naive_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_naive_t *A)
 {
-  unsigned int tier;
-  struct spamm_naive_node_t **node = NULL;
-  unsigned M_lower, M_upper;
-  unsigned N_lower, N_upper;
-
-  assert(A != NULL);
+  if (A == NULL)
+  {
+    printf("[%s:%i] A can not be NULL\n", __FILE__, __LINE__);
+    exit(1);
+  }
 
   /* Recurse the tree to find the dense data block to store the matrix element
    * in.
    */
   if (Aij == 0.0) { return; }
 
-  node = &(A->root);
-  tier = 0;
-
-  M_lower = 0;
-  M_upper = A->N_padded;
-  N_lower = 0;
-  N_upper = A->N_padded;
-
-  while (1)
-  {
-    if (*node == NULL)
-    {
-      /* Allocate new node. */
-      *node = spamm_naive_new_node(tier+1);
-
-      (*node)->M_lower = M_lower;
-      (*node)->M_upper = M_upper;
-      (*node)->N_lower = N_lower;
-      (*node)->N_upper = N_upper;
-
-      (*node)->tier = tier;
-    }
-
-    if ((*node)->M_upper-(*node)->M_lower == A->blocksize)
-    {
-      /* Store the matrix element. */
-      if ((*node)->data == NULL)
-      {
-        (*node)->blocksize = A->blocksize;
-        (*node)->data = calloc(A->blocksize*A->blocksize, sizeof(float));
-      }
-
-      (*node)->data[spamm_index_column_major(i-(*node)->M_lower, j-(*node)->N_lower, A->blocksize, A->blocksize)] = Aij;
-      break;
-    }
-
-    else
-    {
-      if (i < (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
-          j < (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
-      {
-        M_lower = (*node)->M_lower;
-        M_upper = (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2;
-        N_lower = (*node)->N_lower;
-        N_upper = (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2;
-
-        node = &((*node)->child[0]);
-      }
-
-      else if (i <  (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
-               j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
-      {
-        M_lower = (*node)->M_lower;
-        M_upper = (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2;
-        N_lower = (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2;
-        N_upper = (*node)->N_upper;
-
-        node = &((*node)->child[1]);
-      }
-
-      else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
-               j <  (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
-      {
-        M_lower = (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2;
-        M_upper = (*node)->M_upper;
-        N_lower = (*node)->N_lower;
-        N_upper = (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2;
-
-        node = &((*node)->child[2]);
-      }
-
-      else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
-               j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
-      {
-        M_lower = (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2;
-        M_upper = (*node)->M_upper;
-        N_lower = (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2;
-        N_upper = (*node)->N_upper;
-
-        node = &((*node)->child[3]);
-      }
-
-      tier++;
-    }
-  }
+  /* Recursively set the matrix element. */
+  spamm_naive_set_recursive(i, j, Aij, 0, A->N_padded, 0, A->N_padded, A->blocksize, 0, &(A->root));
 }
 
 /** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -380,13 +398,16 @@ spamm_naive_multiply_matrix (const float tolerance,
   /* Multiply matrix blocks. */
   if (node_A->data != NULL && node_B->data != NULL)
   {
-    if ((*node_C)->data == NULL)
+    if (node_A->norm*node_B->norm > tolerance)
     {
-      (*node_C)->data = calloc((*node_C)->blocksize*(*node_C)->blocksize, sizeof(float));
+      if ((*node_C)->data == NULL)
+      {
+        (*node_C)->data = calloc((*node_C)->blocksize*(*node_C)->blocksize, sizeof(float));
+      }
+      sgemm("N", "N", &(node_A->blocksize), &(node_A->blocksize), &(node_A)->blocksize,
+          (float*) &alpha, node_A->data, &node_A->blocksize, node_B->data,
+          &node_A->blocksize, &beta, (*node_C)->data, &node_A->blocksize);
     }
-    sgemm("N", "N", &(node_A->blocksize), &(node_A->blocksize), &(node_A)->blocksize,
-        (float*) &alpha, node_A->data, &node_A->blocksize, node_B->data,
-        &node_A->blocksize, &beta, (*node_C)->data, &node_A->blocksize);
   }
 
   else
@@ -398,23 +419,26 @@ spamm_naive_multiply_matrix (const float tolerance,
         {
           if (node_A->child[spamm_index_row_major(i, k, 2, 2)] != NULL && node_B->child[spamm_index_row_major(k, j, 2, 2)] != NULL)
           {
-            /* Create a new C node if necessary. */
-            if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
+            if (node_A->norm*node_B->norm > tolerance)
             {
-              (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_naive_new_node((*node_C)->tier+1);
-              (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_lower = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i;
-              (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_upper = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1);
-              (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_lower = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j;
-              (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_upper = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*(j+1);
-            }
+              /* Create a new C node if necessary. */
+              if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
+              {
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_naive_new_node((*node_C)->tier+1);
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_lower = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i;
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_upper = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1);
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_lower = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j;
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_upper = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*(j+1);
+              }
 
-            spamm_naive_multiply_matrix(tolerance,
-                alpha,
-                node_A->child[spamm_index_row_major(i, k, 2, 2)],
-                node_B->child[spamm_index_row_major(k, j, 2, 2)],
-                &((*node_C)->child[spamm_index_row_major(i, j, 2, 2)]),
-                timer,
-                sgemm);
+              spamm_naive_multiply_matrix(tolerance,
+                  alpha,
+                  node_A->child[spamm_index_row_major(i, k, 2, 2)],
+                  node_B->child[spamm_index_row_major(k, j, 2, 2)],
+                  &((*node_C)->child[spamm_index_row_major(i, j, 2, 2)]),
+                  timer,
+                  sgemm);
+            }
           }
         }
       }
