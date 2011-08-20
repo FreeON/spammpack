@@ -13,7 +13,7 @@ int
 main ()
 {
   const int N =  10;
-  const int blocksize = 1;
+  const int blocksize = 3;
   const float alpha = 1.2;
   const float beta = 0.5;
 

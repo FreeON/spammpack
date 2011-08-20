@@ -57,9 +57,6 @@ spamm_naive_new (const unsigned int M, const unsigned int N, const unsigned int 
     (A->depth)--;
   }
 
-  /* Adjust tree to kernel depth. */
-  if (A->depth < SPAMM_KERNEL_DEPTH) { A->depth = SPAMM_KERNEL_DEPTH; }
-
   /* Set matrix size. */
   A->M = M;
   A->N = N;
@@ -111,7 +108,7 @@ spamm_naive_get (const unsigned int i, const unsigned int j, const struct spamm_
       if ((*node)->data == NULL) { return 0.0; }
       else
       {
-        return (*node)->data[spamm_index_row_major(i-(*node)->M_lower, j-(*node)->N_lower, A->blocksize, A->blocksize)];
+        return (*node)->data[spamm_index_column_major(i-(*node)->M_lower, j-(*node)->N_lower, A->blocksize, A->blocksize)];
       }
     }
 
@@ -198,8 +195,7 @@ spamm_naive_set (const unsigned int i, const unsigned int j, const float Aij, st
         (*node)->data = calloc(A->blocksize*A->blocksize, sizeof(float));
       }
 
-      (*node)->data[spamm_index_row_major(i-(*node)->M_lower, j-(*node)->N_lower, A->blocksize, A->blocksize)] = Aij;
-
+      (*node)->data[spamm_index_column_major(i-(*node)->M_lower, j-(*node)->N_lower, A->blocksize, A->blocksize)] = Aij;
       break;
     }
 
@@ -422,6 +418,32 @@ spamm_naive_multiply_matrix (const float tolerance,
           }
         }
       }
+    }
+  }
+}
+
+/** @brief Print a naive SpAMM matrix.
+ *
+ * @param A The matrix.
+ */
+void
+spamm_naive_print (const struct spamm_naive_t *A)
+{
+  int i, j;
+
+  if (A == NULL)
+  {
+    printf("A = (null)\n");
+  }
+
+  else
+  {
+    for (i = 0; i < A->M; i++) {
+      for (j = 0; j < A->N; j++)
+      {
+        printf(" % 1.2e", spamm_naive_get(i, j, A));
+      }
+      printf("\n");
     }
   }
 }

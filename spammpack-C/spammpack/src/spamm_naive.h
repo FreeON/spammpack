@@ -37,4 +37,7 @@ spamm_naive_multiply_matrix (const float tolerance,
     struct spamm_timer_t *timer,
     void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *));
 
+void
+spamm_naive_print (const struct spamm_naive_t *A);
+
 #endif
