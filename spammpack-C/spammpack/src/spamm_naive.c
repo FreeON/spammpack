@@ -196,7 +196,7 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
 
     /* Update norm. */
     (*node)->norm2 += Aij*Aij;
-    (*node)->norm = sqrt((*node)->norm2);
+    (*node)->norm   = sqrt((*node)->norm2);
   }
 
   else
@@ -239,7 +239,7 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
 
     /* Update norm. */
     (*node)->norm2 += Aij*Aij;
-    (*node)->norm = sqrt((*node)->norm2);
+    (*node)->norm   = sqrt((*node)->norm2);
   }
 }
 
@@ -419,7 +419,8 @@ spamm_naive_multiply_matrix (const float tolerance,
         {
           if (node_A->child[spamm_index_row_major(i, k, 2, 2)] != NULL && node_B->child[spamm_index_row_major(k, j, 2, 2)] != NULL)
           {
-            if (node_A->norm*node_B->norm > tolerance)
+            if (node_A->child[spamm_index_row_major(i, k, 2, 2)]->norm *
+                node_B->child[spamm_index_row_major(k, j, 2, 2)]->norm > tolerance)
             {
               /* Create a new C node if necessary. */
               if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
