@@ -7,6 +7,12 @@
 
 #define TOLERANCE 5e-7
 
+#ifndef SGEMM
+#define SGEMM sgemm_
+#endif
+
+//#define PRINT_DEBUG
+
 extern void SGEMM (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *);
 
 int
@@ -73,6 +79,7 @@ main ()
     }
   }
 
+#ifdef PRINT_DEBUG
   /* Print matrices for debugging. */
   printf("A =\n");
   for (i = 0; i < N; i++) {
@@ -100,6 +107,7 @@ main ()
     }
     printf("\n");
   }
+#endif
 
   /* Multiply by beta. */
   for (i = 0; i < N; i++) {
@@ -121,6 +129,7 @@ main ()
     }
   }
 
+#ifdef PRINT_DEBUG
   printf("C =\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -129,9 +138,11 @@ main ()
     }
     printf("\n");
   }
+#endif
 
   spamm_naive_multiply(tolerance, alpha, A, B, beta, C, NULL, SGEMM);
 
+#ifdef PRING_DEBUG
   printf("C(SpAMM) =\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -140,6 +151,7 @@ main ()
     }
     printf("\n");
   }
+#endif
 
   /* Compare results. */
   for (i = 0; i < N; i++) {
