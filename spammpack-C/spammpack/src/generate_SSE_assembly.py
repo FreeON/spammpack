@@ -525,31 +525,31 @@ def block_product (i, k, j, clearC = True, writeC = True):
 
     print("")
     print("  # Add accumulated C(%d,%d) to already existing." % (i+1, j+1))
-    print("  addps 0x%x(C), %s" % (row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store, C1))
-    print("  addps 0x%x(C), %s" % (row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store, C2))
-    print("  addps 0x%x(C), %s" % (row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store, C3))
-    print("  addps 0x%x(C), %s" % (row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store, C4))
+    print("  addps 0x%x(C), %s" % (row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C1))
+    print("  addps 0x%x(C), %s" % (row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C2))
+    print("  addps 0x%x(C), %s" % (row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C3))
+    print("  addps 0x%x(C), %s" % (row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C4))
 
     print("")
     print("  # Write out C(%d,%d) submatrix block." % (i+1, j+1))
     if options.no_store:
       print("  # skipped (command line option --no-store).")
       print("  #")
-      print("  # movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
-      print("  # movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
-      print("  # movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
-      print("  # movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
+      print("  # movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  # movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  # movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  # movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
     else:
-      print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
-      print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
-      print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
-      print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store))
+      print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+      print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
 
       if not options.hierarchical:
-        last_store_offset.append(row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store)
-        last_store_offset.append(row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store)
-        last_store_offset.append(row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store)
-        last_store_offset.append(row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense_store)
+        last_store_offset.append(row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
+        last_store_offset.append(row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
+        last_store_offset.append(row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
+        last_store_offset.append(row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
 
     C1.release()
     C2.release()
@@ -725,16 +725,6 @@ if options.hierarchical:
   print("#define jump_index_base    %rcx")
   print("#define jump_index_base_32 %ecx")
   print("#define old_stack          %r13")
-
-# The following sizes were generated with print_data_sizes.c.
-#sizeof_multiply_stream_t = 3*8
-
-#offset_norm = 20
-#offset_norm_upper = 192
-#offset_norm_upper_transpose = 256
-#offset_block_dense = 4096
-#offset_block_dense_dilated = 8192
-#offset_block_dense_transpose = 12288
 
 # Start the function prolog.
 print("")
