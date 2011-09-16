@@ -10,7 +10,7 @@ struct spamm_naive_t *
 spamm_naive_new (const unsigned int M, const unsigned int N, const unsigned int blocksize);
 
 struct spamm_naive_node_t *
-spamm_naive_new_node (const unsigned int tier);
+spamm_naive_new_node (const unsigned int tier, const unsigned int blocksize);
 
 double
 spamm_naive_get (const unsigned int i, const unsigned int j, const struct spamm_naive_t *A);

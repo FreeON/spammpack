@@ -74,11 +74,13 @@ spamm_naive_new (const unsigned int M, const unsigned int N, const unsigned int 
  * @return A pointer to the newly allocated node.
  */
 struct spamm_naive_node_t *
-spamm_naive_new_node (const unsigned int tier)
+spamm_naive_new_node (const unsigned int tier, const unsigned int blocksize)
 {
   struct spamm_naive_node_t *node = NULL;
 
   node = calloc(1, sizeof(struct spamm_naive_node_t));
+  node->tier = tier;
+  node->blocksize = blocksize;
 
   return node;
 }
@@ -172,7 +174,7 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
   if (*node == NULL)
   {
     /* Allocate new node. */
-    *node = spamm_naive_new_node(tier+1);
+    *node = spamm_naive_new_node(tier+1, blocksize);
 
     (*node)->M_lower = M_lower;
     (*node)->M_upper = M_upper;
@@ -187,7 +189,6 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
     /* Store the matrix element. */
     if ((*node)->data == NULL)
     {
-      (*node)->blocksize = blocksize;
       (*node)->data = calloc(blocksize*blocksize, sizeof(float));
     }
 
@@ -322,7 +323,7 @@ spamm_naive_multiply (const float tolerance,
   /* Multiply A and B. */
   if (A->root != NULL && B->root != NULL && C->root == NULL)
   {
-    C->root = spamm_naive_new_node(0);
+    C->root = spamm_naive_new_node(0, C->blocksize);
     C->root->M_lower = 0;
     C->root->M_upper = A->root->M_upper;
     C->root->N_lower = 0;
@@ -425,7 +426,7 @@ spamm_naive_multiply_matrix (const float tolerance,
               /* Create a new C node if necessary. */
               if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
               {
-                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_naive_new_node((*node_C)->tier+1);
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_naive_new_node((*node_C)->tier+1, (*node_C)->blocksize);
                 (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_lower = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i;
                 (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_upper = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1);
                 (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_lower = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j;
