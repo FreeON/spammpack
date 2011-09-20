@@ -473,3 +473,13 @@ spamm_naive_print (const struct spamm_naive_t *A)
     }
   }
 }
+
+/** A naive implementation of sgemm(). This function is not feature complete,
+ * it hardly does anything.
+ */
+void spamm_naive_sgemm (char * transA, char * transB,
+    int *M, int *N, int *K,
+    float *alpha, float *A, int *LDA, float *B, int *LDB,
+    float *beta, float *C, int *LDC)
+{
+}

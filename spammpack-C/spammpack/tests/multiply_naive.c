@@ -13,8 +13,6 @@
 
 //#define PRINT_DEBUG
 
-extern void SGEMM (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *);
-
 int
 main ()
 {
@@ -140,7 +138,7 @@ main ()
   }
 #endif
 
-  spamm_naive_multiply(tolerance, alpha, A, B, beta, C, NULL, SGEMM);
+  spamm_naive_multiply(tolerance, alpha, A, B, beta, C, NULL, spamm_naive_sgemm);
 
 #ifdef PRING_DEBUG
   printf("C(SpAMM) =\n");

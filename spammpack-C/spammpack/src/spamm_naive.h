@@ -40,4 +40,9 @@ spamm_naive_multiply_matrix (const float tolerance,
 void
 spamm_naive_print (const struct spamm_naive_t *A);
 
+void spamm_naive_sgemm (char * transA, char * transB,
+    int *M, int *N, int *K,
+    float *alpha, float *A, int *LDA, float *B, int *LDB,
+    float *beta, float *C, int *LDC);
+
 #endif
