@@ -6,7 +6,7 @@ _spammpack_la_CPPFLAGS = -I$(PYTHON_INCLUDE) -I$(top_srcdir)/src
 _spammpack_la_LDFLAGS = -module
 _spammpack_la_LIBADD = $(top_builddir)/src/libspamm.la
 
-$(srcdir)/%_wrap.c : %.i
+%_wrap.c : $(srcdir)/%.i
 	swig -python -I$(top_srcdir)/src -o $@ $<
 
 CLEANFILES = *_wrap.c spammpack.py
