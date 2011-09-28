@@ -38,6 +38,7 @@ spamm_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t
     case row_major:
     case column_major:
     case Z_curve:
+    case dense_column_major:
       A->layout = layout;
       break;
 

@@ -25,6 +25,7 @@ noinst_SCRIPTS = \
   create_spamm_Z_curve.sh \
   convert_dense_row_major.sh \
   convert_dense_Z_curve.sh \
+  multiply_spamm_kernel_experimental.sh \
   multiply_spamm_kernel_standard_SSE.sh \
   multiply_spamm_kernel_standard_no_checks_SSE.sh \
   multiply_spamm_kernel_standard_SSE4_1.sh \
@@ -56,6 +57,7 @@ TESTS = \
   hashtable_insert \
   list \
   list_sort \
+  $(srcdir)/multiply_spamm_kernel_experimental.sh \
   $(srcdir)/multiply_spamm_kernel_standard_SSE.sh \
   $(srcdir)/multiply_spamm_kernel_standard_no_checks_SSE.sh \
   $(srcdir)/multiply_spamm_kernel_standard_SSE4_1.sh \

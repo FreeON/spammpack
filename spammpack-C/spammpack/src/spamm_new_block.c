@@ -83,6 +83,7 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enu
     case row_major:
     case column_major:
     case Z_curve:
+    case dense_column_major:
       data->layout = layout;
       break;
 

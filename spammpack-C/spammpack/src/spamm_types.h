@@ -17,7 +17,10 @@ enum spamm_layout_t
   column_major,
 
   /** Layout in Z-curve order. */
-  Z_curve
+  Z_curve,
+
+  /** Layout as a dense kernel block, in row-major order. */
+  dense_column_major
 };
 
 /** The matrix type.
