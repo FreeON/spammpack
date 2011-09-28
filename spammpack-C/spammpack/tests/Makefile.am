@@ -7,7 +7,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 #AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 
-noinst_PROGRAMS = \
+check_PROGRAMS = \
   create_spamm \
   expand \
   stats \
