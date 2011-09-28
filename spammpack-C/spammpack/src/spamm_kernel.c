@@ -162,6 +162,9 @@ spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel)
   switch (kernel)
   {
     case kernel_experimental:
+      return dense_column_major;
+      break;
+
     case kernel_standard_SSE:
     case kernel_standard_no_checks_SSE:
     case kernel_standard_SSE4_1:
@@ -217,9 +220,14 @@ spamm_kernel_get_layout (const char *name)
     layout = Z_curve;
   }
 
+  else if (strcasecmp(name, "dense_column_major") == 0)
+  {
+    layout = dense_column_major;
+  }
+
   else
   {
-    printf("unknown layout name: %s\n", name);
+    printf("[spamm kernel get layout] unknown layout name: %s\n", name);
     exit(1);
   }
 

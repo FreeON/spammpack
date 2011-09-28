@@ -177,21 +177,26 @@ spamm_index_kernel_block_hierarchical (const unsigned int i_blocked,
 
   switch (layout)
   {
+    case dense_column_major:
+      offset = spamm_index_column_major(i_blocked*SPAMM_N_BLOCK+i_basic, j_blocked*SPAMM_N_BLOCK+j_basic, SPAMM_N_KERNEL, SPAMM_N_KERNEL);
+      break;
+
     case row_major:
-      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_row_major(i_blocked, j_blocked, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
+      offset = spamm_index_row_major(i_basic, j_basic, SPAMM_N_BLOCK, SPAMM_N_BLOCK)
+        +SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_row_major(i_blocked, j_blocked, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
       break;
 
     case Z_curve:
-      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_Z_curve(i_blocked, j_blocked);
+      offset = spamm_index_row_major(i_basic, j_basic, SPAMM_N_BLOCK, SPAMM_N_BLOCK)
+        +SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_Z_curve(i_blocked, j_blocked);
       break;
 
     default:
-      printf("unknown layout (%i)\n", layout);
+      printf("[spamm index kernel block hierarchical] unknown layout (%i)\n", layout);
       exit(1);
       break;
   }
 
-  offset += spamm_index_row_major(i_basic, j_basic, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
   return offset;
 }
 
@@ -225,20 +230,25 @@ spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_blocked,
 
   switch (layout)
   {
+    case dense_column_major:
+      offset = spamm_index_column_major(j_blocked*SPAMM_N_BLOCK+j_basic, i_blocked*SPAMM_N_BLOCK+i_basic, SPAMM_N_KERNEL, SPAMM_N_KERNEL);
+      break;
+
     case row_major:
-      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_row_major(i_blocked, j_blocked, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
+      offset = spamm_index_row_major(j_basic, i_basic, SPAMM_N_BLOCK, SPAMM_N_BLOCK)
+        +SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_row_major(i_blocked, j_blocked, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
       break;
 
     case Z_curve:
-      offset = SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_Z_curve(i_blocked, j_blocked);
+      offset = spamm_index_row_major(j_basic, i_basic, SPAMM_N_BLOCK, SPAMM_N_BLOCK)
+        +SPAMM_N_BLOCK*SPAMM_N_BLOCK * spamm_index_Z_curve(i_blocked, j_blocked);
       break;
 
     default:
-      printf("unknown layout (%i)\n", layout);
+      printf("[spamm index kernel block transpose hierarchical] unknown layout (%i)\n", layout);
       exit(1);
       break;
   }
 
-  offset += spamm_index_row_major(j_basic, i_basic, SPAMM_N_BLOCK, SPAMM_N_BLOCK);
   return offset;
 }

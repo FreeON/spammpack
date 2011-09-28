@@ -14,9 +14,10 @@ main (int argc, char **argv)
   unsigned int i, j, k;
 
   unsigned int N = 129;
+  //unsigned int N = 16;
 
-  double alpha = 1.0;
-  double beta = 1.0;
+  double alpha = 1.2;
+  double beta = 0.5;
 
   float tolerance = 0.0;
 
