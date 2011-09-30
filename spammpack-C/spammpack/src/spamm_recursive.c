@@ -403,10 +403,9 @@ spamm_recursive_multiply (const float tolerance,
     const float alpha, struct spamm_recursive_t *A, struct spamm_recursive_t *B,
     const float beta, struct spamm_recursive_t *C,
     struct spamm_timer_t *timer,
-    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *))
+    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    unsigned int *number_products)
 {
-  unsigned int number_products = 0;
-
   if (A == NULL)
   {
     printf("[%s:%i] A is NULL\n", __FILE__, __LINE__);
@@ -450,9 +449,7 @@ spamm_recursive_multiply (const float tolerance,
     C->root->N_upper = A->root->N_upper;
   }
 
-  spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, &number_products);
-
-  printf("[recursive multiply] called sgemm %i times\n", number_products);
+  spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, number_products);
 }
 
 /** @brief Print a recursive SpAMM matrix.
