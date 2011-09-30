@@ -205,7 +205,7 @@ libspamm_tree_la_SOURCES = \
   spamm_list.c \
   spamm_maintenance.c \
   spamm_multiply.c \
-  spamm_naive.c \
+  spamm_recursive.c \
   spamm_new.c \
   spamm_new_block.c \
   spamm_new_node.c \
@@ -223,7 +223,7 @@ libspamm_tree_headers = \
   spamm_hashtable.h \
   spamm_introspection.h \
   spamm_list.h \
-  spamm_naive.h \
+  spamm_recursive.h \
   spamm_timer.h \
   spamm_types.h
 

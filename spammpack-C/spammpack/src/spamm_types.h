@@ -120,9 +120,9 @@ struct spamm_data_t
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
 };
 
-/** A naive recursive SpAMM tree. */
+/** A recursive recursive SpAMM tree. */
 struct
-spamm_naive_t
+spamm_recursive_t
 {
   /** Number or rows in this matrix. */
   unsigned int M;
@@ -140,11 +140,11 @@ spamm_naive_t
   unsigned int blocksize;
 
   /** The root node. */
-  struct spamm_naive_node_t *root;
+  struct spamm_recursive_node_t *root;
 };
 
 struct
-spamm_naive_node_t
+spamm_recursive_node_t
 {
   /** The lower value of the row index. */
   unsigned int M_lower;
@@ -168,7 +168,7 @@ spamm_naive_node_t
   float norm2;
 
   /** The children nodes. */
-  struct spamm_naive_node_t *child[4];
+  struct spamm_recursive_node_t *child[4];
 
   /** The blocksize. */
   unsigned int blocksize;
