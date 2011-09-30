@@ -4,9 +4,9 @@
 #include <stdlib.h>
 
 #include "spamm.h"
-#include "spamm_naive.h"
+#include "spamm_recursive.h"
 
-/** Create a new naive matrix object.
+/** Create a new recursive matrix object.
  *
  * @param M Number of rows of dense input matrix.
  * @param N Number of columns of dense input matrix.
@@ -14,10 +14,10 @@
  *
  * @return A pointer to the matrix.
  */
-struct spamm_naive_t *
-spamm_naive_new (const unsigned int M, const unsigned int N, const unsigned int blocksize)
+struct spamm_recursive_t *
+spamm_recursive_new (const unsigned int M, const unsigned int N, const unsigned int blocksize)
 {
-  struct spamm_naive_t *A = NULL;
+  struct spamm_recursive_t *A = NULL;
   double x, x_M, x_N;
 
   if (M <= 0)
@@ -33,7 +33,7 @@ spamm_naive_new (const unsigned int M, const unsigned int N, const unsigned int 
   }
 
   /* Allocate memory. */
-  A = calloc(1, sizeof(struct spamm_naive_t));
+  A = calloc(1, sizeof(struct spamm_recursive_t));
 
   /* Store the blocksize. */
   A->blocksize = blocksize;
@@ -67,25 +67,25 @@ spamm_naive_new (const unsigned int M, const unsigned int N, const unsigned int 
   return A;
 }
 
-/** Allocate a new node of a naive matrix tree.
+/** Allocate a new node of a recursive matrix tree.
  *
  * @param tier The tier this node will be on.
  *
  * @return A pointer to the newly allocated node.
  */
-struct spamm_naive_node_t *
-spamm_naive_new_node (const unsigned int tier, const unsigned int blocksize)
+struct spamm_recursive_node_t *
+spamm_recursive_new_node (const unsigned int tier, const unsigned int blocksize)
 {
-  struct spamm_naive_node_t *node = NULL;
+  struct spamm_recursive_node_t *node = NULL;
 
-  node = calloc(1, sizeof(struct spamm_naive_node_t));
+  node = calloc(1, sizeof(struct spamm_recursive_node_t));
   node->tier = tier;
   node->blocksize = blocksize;
 
   return node;
 }
 
-/** @brief Get an element from a naive matrix.
+/** @brief Get an element from a recursive matrix.
  *
  * If the matri is NULL, this function returns 0.
  *
@@ -96,16 +96,16 @@ spamm_naive_new_node (const unsigned int tier, const unsigned int blocksize)
  * @return The matrix element Aij.
  */
 double
-spamm_naive_get (const unsigned int i, const unsigned int j, const struct spamm_naive_t *A)
+spamm_recursive_get (const unsigned int i, const unsigned int j, const struct spamm_recursive_t *A)
 {
-  struct spamm_naive_node_t **node = NULL;
+  struct spamm_recursive_node_t **node = NULL;
 
   if (A == NULL)
   {
     return 0;
   }
 
-  node = (struct spamm_naive_node_t**) &(A->root);
+  node = (struct spamm_recursive_node_t**) &(A->root);
 
   while (1)
   {
@@ -162,19 +162,19 @@ spamm_naive_get (const unsigned int i, const unsigned int j, const struct spamm_
  * @param node The node.
  */
 void
-spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const float Aij,
+spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const float Aij,
     const unsigned int M_lower,
     const unsigned int M_upper,
     const unsigned int N_lower,
     const unsigned int N_upper,
     const int blocksize,
     const int tier,
-    struct spamm_naive_node_t **node)
+    struct spamm_recursive_node_t **node)
 {
   if (*node == NULL)
   {
     /* Allocate new node. */
-    *node = spamm_naive_new_node(tier+1, blocksize);
+    *node = spamm_recursive_new_node(tier+1, blocksize);
 
     (*node)->M_lower = M_lower;
     (*node)->M_upper = M_upper;
@@ -205,7 +205,7 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
     if (i < (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
         j < (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
     {
-      spamm_naive_set_recursive(i, j, Aij,
+      spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
           (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
           blocksize, tier+1, &((*node)->child[0]));
@@ -214,7 +214,7 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
     else if (i <  (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
         j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
     {
-      spamm_naive_set_recursive(i, j, Aij,
+      spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
           (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
           blocksize, tier+1, &((*node)->child[1]));
@@ -223,7 +223,7 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
     else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
         j <  (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
     {
-      spamm_naive_set_recursive(i, j, Aij,
+      spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
           (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
           blocksize, tier+1, &((*node)->child[2]));
@@ -232,7 +232,7 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
     else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
         j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
     {
-      spamm_naive_set_recursive(i, j, Aij,
+      spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
           (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
           blocksize, tier+1, &((*node)->child[3]));
@@ -244,7 +244,7 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
   }
 }
 
-/** Set an element in a naive matrix.
+/** Set an element in a recursive matrix.
  *
  * @param i The row index.
  * @param j The column index.
@@ -252,7 +252,7 @@ spamm_naive_set_recursive (const unsigned int i, const unsigned int j, const flo
  * @param A The matrix.
  */
 void
-spamm_naive_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_naive_t *A)
+spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_recursive_t *A)
 {
   if (A == NULL)
   {
@@ -266,7 +266,38 @@ spamm_naive_set (const unsigned int i, const unsigned int j, const float Aij, st
   if (Aij == 0.0) { return; }
 
   /* Recursively set the matrix element. */
-  spamm_naive_set_recursive(i, j, Aij, 0, A->N_padded, 0, A->N_padded, A->blocksize, 0, &(A->root));
+  spamm_recursive_set_recursive(i, j, Aij, 0, A->N_padded, 0, A->N_padded, A->blocksize, 0, &(A->root));
+}
+
+/** @brief Multiply a node by a scalar.
+ *
+ * The node and its children nodes are multiplied by the scalar.
+ *
+ * @param beta The scalar.
+ * @param node The node.
+ */
+void
+spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t *node)
+{
+  int i;
+
+  if (node == NULL) { return; }
+
+  if (node->data != NULL)
+  {
+    for (i = 0; i < node->blocksize*node->blocksize; i++)
+    {
+      node->data[i] *= beta;
+    }
+  }
+
+  else
+  {
+    for (i = 0; i < 4; i++)
+    {
+      spamm_recursive_multiply_scalar(beta, node->child[i]);
+    }
+  }
 }
 
 /** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -281,12 +312,101 @@ spamm_naive_set (const unsigned int i, const unsigned int j, const float Aij, st
  * @param sgemm The external sgemm function to use.
  */
 void
-spamm_naive_multiply (const float tolerance,
-    const float alpha, struct spamm_naive_t *A, struct spamm_naive_t *B,
-    const float beta, struct spamm_naive_t *C,
+spamm_recursive_multiply_matrix (const float tolerance,
+    const float alpha,
+    struct spamm_recursive_node_t *node_A,
+    struct spamm_recursive_node_t *node_B,
+    struct spamm_recursive_node_t **node_C,
+    struct spamm_timer_t *timer,
+    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    unsigned int *number_products)
+{
+  float beta = 1.0;
+  int i, j, k;
+
+  if (node_A == NULL || node_B == NULL) { return; }
+
+  /* We have to allocate a new C block a tier up. */
+  if (*node_C == NULL)
+  {
+    printf("[%s:%i] node_C should not be NULL\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  /* Multiply matrix blocks. */
+  if (node_A->data != NULL && node_B->data != NULL)
+  {
+    if (node_A->norm*node_B->norm > tolerance)
+    {
+      if ((*node_C)->data == NULL)
+      {
+        (*node_C)->data = calloc((*node_C)->blocksize*(*node_C)->blocksize, sizeof(float));
+      }
+      sgemm("N", "N", &(node_A->blocksize), &(node_A->blocksize), &(node_A)->blocksize,
+          (float*) &alpha, node_A->data, &node_A->blocksize, node_B->data,
+          &node_A->blocksize, &beta, (*node_C)->data, &node_A->blocksize);
+      (*number_products)++;
+    }
+  }
+
+  else
+  {
+    /* Recurse. */
+    for (i = 0; i < 2; i++) {
+      for (j = 0; j < 2; j++) {
+        for (k = 0; k < 2; k++)
+        {
+          if (node_A->child[spamm_index_row_major(i, k, 2, 2)] != NULL && node_B->child[spamm_index_row_major(k, j, 2, 2)] != NULL)
+          {
+            if (node_A->child[spamm_index_row_major(i, k, 2, 2)]->norm *
+                node_B->child[spamm_index_row_major(k, j, 2, 2)]->norm > tolerance)
+            {
+              /* Create a new C node if necessary. */
+              if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
+              {
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1, (*node_C)->blocksize);
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_lower = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i;
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_upper = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1);
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_lower = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j;
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_upper = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*(j+1);
+              }
+
+              spamm_recursive_multiply_matrix(tolerance,
+                  alpha,
+                  node_A->child[spamm_index_row_major(i, k, 2, 2)],
+                  node_B->child[spamm_index_row_major(k, j, 2, 2)],
+                  &((*node_C)->child[spamm_index_row_major(i, j, 2, 2)]),
+                  timer,
+                  sgemm,
+                  number_products);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
+ *
+ * @param tolerance The SpAMM tolerance of this product.
+ * @param alpha The paramater \f$\alpha\f$.
+ * @param A The matrix \f$A\f$.
+ * @param B The matrix \f$B\f$.
+ * @param beta The paramater \f$\beta\f$.
+ * @param C The matrix \f$C\f$.
+ * @param timer The timer to use.
+ * @param sgemm The external sgemm function to use.
+ */
+void
+spamm_recursive_multiply (const float tolerance,
+    const float alpha, struct spamm_recursive_t *A, struct spamm_recursive_t *B,
+    const float beta, struct spamm_recursive_t *C,
     struct spamm_timer_t *timer,
     void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *))
 {
+  unsigned int number_products = 0;
+
   if (A == NULL)
   {
     printf("[%s:%i] A is NULL\n", __FILE__, __LINE__);
@@ -318,142 +438,29 @@ spamm_naive_multiply (const float tolerance,
   }
 
   /* Multiply C by beta. */
-  spamm_naive_multiply_scalar(beta, C->root);
+  spamm_recursive_multiply_scalar(beta, C->root);
 
   /* Multiply A and B. */
   if (A->root != NULL && B->root != NULL && C->root == NULL)
   {
-    C->root = spamm_naive_new_node(0, C->blocksize);
+    C->root = spamm_recursive_new_node(0, C->blocksize);
     C->root->M_lower = 0;
     C->root->M_upper = A->root->M_upper;
     C->root->N_lower = 0;
     C->root->N_upper = A->root->N_upper;
   }
 
-  spamm_naive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm);
+  spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, &number_products);
+
+  printf("[recursive multiply] called sgemm %i times\n", number_products);
 }
 
-/** @brief Multiply a node by a scalar.
- *
- * The node and its children nodes are multiplied by the scalar.
- *
- * @param beta The scalar.
- * @param node The node.
- */
-void
-spamm_naive_multiply_scalar (const float beta, struct spamm_naive_node_t *node)
-{
-  int i;
-
-  if (node == NULL) { return; }
-
-  if (node->data != NULL)
-  {
-    for (i = 0; i < node->blocksize*node->blocksize; i++)
-    {
-      node->data[i] *= beta;
-    }
-  }
-
-  else
-  {
-    for (i = 0; i < 4; i++)
-    {
-      spamm_naive_multiply_scalar(beta, node->child[i]);
-    }
-  }
-}
-
-/** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
- *
- * @param tolerance The SpAMM tolerance of this product.
- * @param alpha The paramater \f$\alpha\f$.
- * @param A The matrix \f$A\f$.
- * @param B The matrix \f$B\f$.
- * @param beta The paramater \f$\beta\f$.
- * @param C The matrix \f$C\f$.
- * @param timer The timer to use.
- * @param sgemm The external sgemm function to use.
- */
-void
-spamm_naive_multiply_matrix (const float tolerance,
-    const float alpha,
-    struct spamm_naive_node_t *node_A,
-    struct spamm_naive_node_t *node_B,
-    struct spamm_naive_node_t **node_C,
-    struct spamm_timer_t *timer,
-    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *))
-{
-  float beta = 1.0;
-  int i, j, k;
-
-  if (node_A == NULL || node_B == NULL) { return; }
-
-  /* We have to allocate a new C block a tier up. */
-  if (*node_C == NULL)
-  {
-    printf("[%s:%i] node_C should not be NULL\n", __FILE__, __LINE__);
-    exit(1);
-  }
-
-  /* Multiply matrix blocks. */
-  if (node_A->data != NULL && node_B->data != NULL)
-  {
-    if (node_A->norm*node_B->norm > tolerance)
-    {
-      if ((*node_C)->data == NULL)
-      {
-        (*node_C)->data = calloc((*node_C)->blocksize*(*node_C)->blocksize, sizeof(float));
-      }
-      sgemm("N", "N", &(node_A->blocksize), &(node_A->blocksize), &(node_A)->blocksize,
-          (float*) &alpha, node_A->data, &node_A->blocksize, node_B->data,
-          &node_A->blocksize, &beta, (*node_C)->data, &node_A->blocksize);
-    }
-  }
-
-  else
-  {
-    /* Recurse. */
-    for (i = 0; i < 2; i++) {
-      for (j = 0; j < 2; j++) {
-        for (k = 0; k < 2; k++)
-        {
-          if (node_A->child[spamm_index_row_major(i, k, 2, 2)] != NULL && node_B->child[spamm_index_row_major(k, j, 2, 2)] != NULL)
-          {
-            if (node_A->child[spamm_index_row_major(i, k, 2, 2)]->norm *
-                node_B->child[spamm_index_row_major(k, j, 2, 2)]->norm > tolerance)
-            {
-              /* Create a new C node if necessary. */
-              if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
-              {
-                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_naive_new_node((*node_C)->tier+1, (*node_C)->blocksize);
-                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_lower = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i;
-                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_upper = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1);
-                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_lower = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j;
-                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_upper = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*(j+1);
-              }
-
-              spamm_naive_multiply_matrix(tolerance,
-                  alpha,
-                  node_A->child[spamm_index_row_major(i, k, 2, 2)],
-                  node_B->child[spamm_index_row_major(k, j, 2, 2)],
-                  &((*node_C)->child[spamm_index_row_major(i, j, 2, 2)]),
-                  timer,
-                  sgemm);
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-/** @brief Print a naive SpAMM matrix.
+/** @brief Print a recursive SpAMM matrix.
  *
  * @param A The matrix.
  */
 void
-spamm_naive_print (const struct spamm_naive_t *A)
+spamm_recursive_print (const struct spamm_recursive_t *A)
 {
   int i, j;
 
@@ -467,17 +474,17 @@ spamm_naive_print (const struct spamm_naive_t *A)
     for (i = 0; i < A->M; i++) {
       for (j = 0; j < A->N; j++)
       {
-        printf(" % 1.2e", spamm_naive_get(i, j, A));
+        printf(" % 1.2e", spamm_recursive_get(i, j, A));
       }
       printf("\n");
     }
   }
 }
 
-/** A naive implementation of sgemm(). This function is not feature complete,
+/** A recursive implementation of sgemm(). This function is not feature complete,
  * it hardly does anything.
  */
-void spamm_naive_sgemm (char * transA, char * transB,
+void spamm_recursive_sgemm (char * transA, char * transB,
     int *M, int *N, int *K,
     float *alpha, float *A, int *LDA, float *B, int *LDB,
     float *beta, float *C, int *LDC)

@@ -1,5 +1,6 @@
 #include "spamm.h"
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -713,8 +714,8 @@ spamm_multiply (const float tolerance,
     }
   }
   printf("%u products out of %u possible (%1.2f%%)\n", number_products,
-      (A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK),
-      (double) number_products/(double) ((A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK)*(A->N/SPAMM_N_BLOCK))*100);
+      (int) round(ceil(A->N/(double) SPAMM_N_BLOCK)*ceil(A->N/(double) SPAMM_N_BLOCK)*ceil(A->N/(double) SPAMM_N_BLOCK)),
+      (double) number_products/round(ceil(A->N/(double) SPAMM_N_BLOCK)*ceil(A->N/(double) SPAMM_N_BLOCK)*ceil(A->N/(double) SPAMM_N_BLOCK))*100);
 #endif
 
 #ifdef SPAMM_MULTIPLY_FINAL_FREE
