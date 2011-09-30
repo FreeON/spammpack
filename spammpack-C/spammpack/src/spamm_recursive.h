@@ -23,7 +23,8 @@ spamm_recursive_multiply (const float tolerance,
     const float alpha, struct spamm_recursive_t *A, struct spamm_recursive_t *B,
     const float beta, struct spamm_recursive_t *C,
     struct spamm_timer_t *timer,
-    void (*sgemm) ());
+    void (*sgemm) (),
+    unsigned int *number_products);
 
 void
 spamm_recursive_print (const struct spamm_recursive_t *A);
