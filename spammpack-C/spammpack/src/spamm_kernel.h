@@ -10,8 +10,8 @@
  */
 enum spamm_kernel_t
 {
-  /** The experimental version of the stream kernel. */
-  kernel_experimental,
+  /** The external_sgemm version of the stream kernel. */
+  kernel_external_sgemm,
 
   /** The standard stream kernel (SSE). */
   kernel_standard_SSE,
@@ -304,7 +304,7 @@ spamm_stream_kernel_hierarchical_Z_curve_no_checks_SSE4_1 (const unsigned int nu
  * @param multiply_stream The multiply stream.
  */
 void
-spamm_stream_kernel_C (const unsigned int number_stream_elements,
+spamm_stream_external_sgemm (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);

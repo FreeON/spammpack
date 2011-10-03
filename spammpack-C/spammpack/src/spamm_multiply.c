@@ -615,8 +615,8 @@ spamm_multiply (const float tolerance,
   printf("(%s)... ", spamm_kernel_get_name(kernel));
   switch (kernel)
   {
-    case kernel_experimental:
-      spamm_stream_kernel_C(stream_index, alpha, tolerance, multiply_stream);
+    case kernel_external_sgemm:
+      spamm_stream_external_sgemm(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     case kernel_standard_SSE:

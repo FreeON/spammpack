@@ -181,7 +181,7 @@ nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \
-  spamm_stream_kernel_C.c \
+  spamm_stream_external_sgemm.c \
   spamm_kernel.c
 
 libspamm_kernel_headers = \

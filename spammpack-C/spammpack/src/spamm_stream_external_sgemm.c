@@ -6,7 +6,7 @@
 extern void sgemm_ (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *);
 
 void
-spamm_stream_kernel_C (const unsigned int number_stream_elements,
+spamm_stream_external_sgemm (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream)
