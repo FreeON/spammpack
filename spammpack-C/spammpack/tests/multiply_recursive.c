@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "spamm.h"
-#include "spamm_naive.h"
+#include "spamm_recursive.h"
 
 #define TOLERANCE 5e-7
 
@@ -23,18 +23,20 @@ main ()
 
   float tolerance = 1e-4;
 
-  struct spamm_naive_t *A = NULL;
-  struct spamm_naive_t *B = NULL;
-  struct spamm_naive_t *C = NULL;
+  struct spamm_recursive_t *A = NULL;
+  struct spamm_recursive_t *B = NULL;
+  struct spamm_recursive_t *C = NULL;
   float *A_dense = NULL;
   float *B_dense = NULL;
   float *C_dense = NULL;
 
   int i, j, k;
 
-  A = spamm_naive_new(N, N, blocksize);
-  B = spamm_naive_new(N, N, blocksize);
-  C = spamm_naive_new(N, N, blocksize);
+  unsigned int recursive_number_products = 0;
+
+  A = spamm_recursive_new(N, N, blocksize);
+  B = spamm_recursive_new(N, N, blocksize);
+  C = spamm_recursive_new(N, N, blocksize);
 
   A_dense = calloc(N*N, sizeof(float));
   B_dense = calloc(N*N, sizeof(float));
@@ -47,9 +49,9 @@ main ()
       B_dense[spamm_index_row_major(i, j, N, N)] = rand()/(float) RAND_MAX;
       C_dense[spamm_index_row_major(i, j, N, N)] = rand()/(float) RAND_MAX;
 
-      spamm_naive_set(i, j, A_dense[spamm_index_row_major(i, j, N, N)], A);
-      spamm_naive_set(i, j, B_dense[spamm_index_row_major(i, j, N, N)], B);
-      spamm_naive_set(i, j, C_dense[spamm_index_row_major(i, j, N, N)], C);
+      spamm_recursive_set(i, j, A_dense[spamm_index_row_major(i, j, N, N)], A);
+      spamm_recursive_set(i, j, B_dense[spamm_index_row_major(i, j, N, N)], B);
+      spamm_recursive_set(i, j, C_dense[spamm_index_row_major(i, j, N, N)], C);
     }
   }
 
@@ -57,19 +59,19 @@ main ()
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      if (A_dense[spamm_index_row_major(i, j, N, N)] != spamm_naive_get(i, j, A))
+      if (A_dense[spamm_index_row_major(i, j, N, N)] != spamm_recursive_get(i, j, A))
       {
         printf("[%s:%i] element mismatch\n", __FILE__, __LINE__);
         return -1;
       }
 
-      if (B_dense[spamm_index_row_major(i, j, N, N)] != spamm_naive_get(i, j, B))
+      if (B_dense[spamm_index_row_major(i, j, N, N)] != spamm_recursive_get(i, j, B))
       {
         printf("[%s:%i] element mismatch\n", __FILE__, __LINE__);
         return -1;
       }
 
-      if (C_dense[spamm_index_row_major(i, j, N, N)] != spamm_naive_get(i, j, C))
+      if (C_dense[spamm_index_row_major(i, j, N, N)] != spamm_recursive_get(i, j, C))
       {
         printf("[%s:%i] element mismatch\n", __FILE__, __LINE__);
         return -1;
@@ -138,14 +140,14 @@ main ()
   }
 #endif
 
-  spamm_naive_multiply(tolerance, alpha, A, B, beta, C, NULL, spamm_naive_sgemm);
+  spamm_recursive_multiply(tolerance, alpha, A, B, beta, C, NULL, spamm_recursive_sgemm, &recursive_number_products);
 
 #ifdef PRING_DEBUG
   printf("C(SpAMM) =\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      printf(" % f", spamm_naive_get(i, j, C));
+      printf(" % f", spamm_recursive_get(i, j, C));
     }
     printf("\n");
   }
@@ -157,11 +159,11 @@ main ()
     {
       if (C_dense[spamm_index_row_major(i, j, N, N)] != 0.0)
       {
-        if (fabs((C_dense[spamm_index_row_major(i, j, N, N)]-spamm_naive_get(i, j, C))/C_dense[spamm_index_row_major(i, j, N, N)]) > TOLERANCE)
+        if (fabs((C_dense[spamm_index_row_major(i, j, N, N)]-spamm_recursive_get(i, j, C))/C_dense[spamm_index_row_major(i, j, N, N)]) > TOLERANCE)
         {
           printf("[%s:%i] result mismatch: |(C_dense(%i,%i)-C(%i,%i))/C_dense(%i,%i)| = %e\n", __FILE__, __LINE__,
               i, j, i, j, i, j,
-              fabs((C_dense[spamm_index_row_major(i, j, N, N)]-spamm_naive_get(i, j, C))/C_dense[spamm_index_row_major(i, j, N, N)]));
+              fabs((C_dense[spamm_index_row_major(i, j, N, N)]-spamm_recursive_get(i, j, C))/C_dense[spamm_index_row_major(i, j, N, N)]));
           return -1;
         }
       }
