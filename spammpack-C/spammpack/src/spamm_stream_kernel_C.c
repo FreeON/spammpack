@@ -39,13 +39,9 @@ spamm_stream_kernel_C (const unsigned int number_stream_elements,
     B_dense = B_data->block_dense;
     C_dense = C_data->block_dense;
 
-    /* If the matrix norm product is large enough, multiply the blocks with an
-     * external sgemm() call. We are assuming a Fortran interface, hence
-     * sgemm_().
+    /* Multiply the blocks with an external sgemm() call. We are assuming a
+     * Fortran interface, hence sgemm_().
      */
-    if (A_data->node_norm*B_data->node_norm > tolerance)
-    {
-      sgemm_("N", "N", &N, &N, &N, &alpha, A_dense, &N, B_dense, &N, &beta, C_dense, &N);
-    }
+    sgemm_("N", "N", &N, &N, &N, &alpha, A_dense, &N, B_dense, &N, &beta, C_dense, &N);
   }
 }

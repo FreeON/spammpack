@@ -342,10 +342,13 @@ spamm_recursive_multiply_matrix (const float tolerance,
       {
         (*node_C)->data = calloc((*node_C)->blocksize*(*node_C)->blocksize, sizeof(float));
       }
-      sgemm("N", "N", &(node_A->blocksize), &(node_A->blocksize), &(node_A)->blocksize,
-          (float*) &alpha, node_A->data, &node_A->blocksize, node_B->data,
-          &node_A->blocksize, &beta, (*node_C)->data, &node_A->blocksize);
-      (*number_products)++;
+      if (sgemm != NULL)
+      {
+        sgemm("N", "N", &(node_A->blocksize), &(node_A->blocksize), &(node_A)->blocksize,
+            (float*) &alpha, node_A->data, &node_A->blocksize, node_B->data,
+            &node_A->blocksize, &beta, (*node_C)->data, &node_A->blocksize);
+        (*number_products)++;
+      }
     }
   }
 
