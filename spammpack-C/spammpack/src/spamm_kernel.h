@@ -10,8 +10,11 @@
  */
 enum spamm_kernel_t
 {
-  /** The external_sgemm version of the stream kernel. */
+  /** The external sgemm version of the stream kernel. */
   kernel_external_sgemm,
+
+  /** The external sgemm version of the stream kernel with NULL as sgemm_(). */
+  kernel_stream_NULL,
 
   /** The standard stream kernel (SSE). */
   kernel_standard_SSE,
@@ -307,6 +310,7 @@ void
 spamm_stream_external_sgemm (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
-    struct spamm_multiply_stream_t *multiply_stream);
+    struct spamm_multiply_stream_t *multiply_stream,
+    const short call_external_sgemm);
 
 #endif

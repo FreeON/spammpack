@@ -16,6 +16,7 @@ spamm_kernel_get_name (const unsigned int i)
   /* Available stream kernels (their names). */
   const char* spamm_stream_kernel_name [SPAMM_NUMBER_KERNELS] = {
     "kernel_external_sgemm",
+    "kernel_stream_NULL",
     "kernel_standard_SSE",
     "kernel_standard_no_checks_SSE",
     "kernel_standard_SSE4_1",
@@ -57,6 +58,11 @@ spamm_kernel_get_kernel (const char* name)
   if (strcasecmp(name, "kernel_external_sgemm") == 0)
   {
     kernel = kernel_external_sgemm;
+  }
+
+  else if (strcasecmp(name, "kernel_stream_NULL") == 0)
+  {
+    kernel = kernel_stream_NULL;
   }
 
   else if (strcasecmp(name, "kernel_standard_SSE") == 0)
@@ -141,7 +147,7 @@ spamm_kernel_get_kernel (const char* name)
 
   else
   {
-    printf("unknown kernel: %s\n", name);
+    printf("[get kernel] unknown kernel: %s\n", name);
     exit(1);
   }
 
@@ -162,6 +168,7 @@ spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel)
   switch (kernel)
   {
     case kernel_external_sgemm:
+    case kernel_stream_NULL:
       return dense_column_major;
       break;
 
@@ -188,7 +195,7 @@ spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel)
       break;
 
     default:
-      printf("unknown kernel: %i\n", kernel);
+      printf("[suggest layout] unknown kernel: %i\n", kernel);
       exit(1);
       break;
   }
