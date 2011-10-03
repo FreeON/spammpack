@@ -18,7 +18,7 @@ check_PROGRAMS = \
   list \
   list_sort \
   multiply_spamm \
-  multiply_naive
+  multiply_recursive
 
 noinst_SCRIPTS = \
   create_spamm_row_major.sh \
@@ -74,4 +74,4 @@ TESTS = \
   $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE.sh \
   $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_SSE4_1.sh \
   $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE4_1.sh \
-  multiply_naive
+  multiply_recursive

@@ -13,10 +13,6 @@ spamm_stream_kernel_C (const unsigned int number_stream_elements,
 {
   unsigned int stream_index;
 
-  struct spamm_data_t *A_data;
-  struct spamm_data_t *B_data;
-  struct spamm_data_t *C_data;
-
   float *A_dense;
   float *B_dense;
   float *C_dense;
@@ -31,17 +27,12 @@ spamm_stream_kernel_C (const unsigned int number_stream_elements,
   /* Loop through the stream. */
   for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
   {
-    A_data = multiply_stream[stream_index].A;
-    B_data = multiply_stream[stream_index].B;
-    C_data = multiply_stream[stream_index].C;
-
-    A_dense = A_data->block_dense;
-    B_dense = B_data->block_dense;
-    C_dense = C_data->block_dense;
-
     /* Multiply the blocks with an external sgemm() call. We are assuming a
      * Fortran interface, hence sgemm_().
      */
-    sgemm_("N", "N", &N, &N, &N, &alpha, A_dense, &N, B_dense, &N, &beta, C_dense, &N);
+    sgemm_("N", "N", &N, &N, &N, &alpha,
+        multiply_stream[stream_index].A->block_dense, &N,
+        multiply_stream[stream_index].B->block_dense, &N, &beta,
+        multiply_stream[stream_index].C->block_dense, &N);
   }
 }
