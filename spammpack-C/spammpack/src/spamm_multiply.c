@@ -616,7 +616,11 @@ spamm_multiply (const float tolerance,
   switch (kernel)
   {
     case kernel_external_sgemm:
-      spamm_stream_external_sgemm(stream_index, alpha, tolerance, multiply_stream);
+      spamm_stream_external_sgemm(stream_index, alpha, tolerance, multiply_stream, 1);
+      break;
+
+    case kernel_stream_NULL:
+      spamm_stream_external_sgemm(stream_index, alpha, tolerance, multiply_stream, 0);
       break;
 
     case kernel_standard_SSE:
@@ -684,7 +688,7 @@ spamm_multiply (const float tolerance,
       break;
 
     default:
-      printf("unknown kernel... ");
+      printf("[multiply] unknown kernel... ");
       exit(1);
       break;
   }
