@@ -143,7 +143,7 @@ AC_DEFINE([SPAMM_MULTIPLY_COPY_3D], [1], [Copy 3D indices to array.])
 AC_DEFINE([SPAMM_MULTIPLY_CONVOLUTE], [1], [Convolute.])
 AC_DEFINE([SPAMM_MULTIPLY_FREE], [1], [Free memory.])
 AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
-AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
+#AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
 AC_DEFINE([SPAMM_MULTIPLY_FINAL_FREE], [1], [Free remaining memory before exit.])
 
 dnl Load git commit ID and set.
