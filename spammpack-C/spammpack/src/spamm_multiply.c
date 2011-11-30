@@ -483,8 +483,6 @@ spamm_multiply (const float tolerance,
       /* Compare k values. */
       if (A_k > B_k)
       {
-        printf("here 1: A_k = %u, B_k = %u\n", A_k, B_k);
-
         /* Advance B in k. */
         B_k_lookup_index++;
 
@@ -498,7 +496,6 @@ spamm_multiply (const float tolerance,
 
       else if (A_k < B_k)
       {
-        printf("here 2: A_k = %u, B_k = %u\n", A_k, B_k);
         continue;
       }
 
@@ -591,7 +588,7 @@ spamm_multiply (const float tolerance,
   timer_string = spamm_timer_get_string(timer);
   printf("%s timer units\n", timer_string);
   free(timer_string);
-  printf("[multiply] dropped %u blocks, placed %u blocks into stream\n", number_dropped_blocks, stream_index);
+  printf("[multiply] dropped %u blocks, placed %u blocks into stream, total of %u blocks\n", number_dropped_blocks, stream_index, number_dropped_blocks+stream_index);
 #endif
 
 #ifdef SPAMM_MULTIPLY_FREE
