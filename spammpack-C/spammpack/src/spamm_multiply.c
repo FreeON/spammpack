@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define CONVOLUTE_1
+
 #ifdef HAVE_SSE
 #include <xmmintrin.h>
 #endif
@@ -451,8 +453,6 @@ spamm_multiply (const float tolerance,
   printf("[multiply] convolute... ");
   spamm_timer_start(timer);
 
-  stream_index = 0;
-  number_dropped_blocks = 0;
   multiply_stream = (struct spamm_multiply_stream_t*) malloc(sizeof(struct spamm_multiply_stream_t)
       *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
   C_block_stream_index = (unsigned int*) malloc(sizeof(unsigned int)
@@ -463,6 +463,10 @@ spamm_multiply (const float tolerance,
    * 1) Terminate the 2D index with a leading "1" bit, like Warren/Salmon to
    * indicate the width of the key and therefore its tier.
    */
+
+#ifdef CONVOLUTE_1
+  stream_index = 0;
+  number_dropped_blocks = 0;
 
   /* Loop over A. */
   for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size-1 && B_k_lookup_index < B_k_lookup.size-1; A_k_lookup_index++)
@@ -479,6 +483,8 @@ spamm_multiply (const float tolerance,
       /* Compare k values. */
       if (A_k > B_k)
       {
+        printf("here 1: A_k = %u, B_k = %u\n", A_k, B_k);
+
         /* Advance B in k. */
         B_k_lookup_index++;
 
@@ -492,6 +498,7 @@ spamm_multiply (const float tolerance,
 
       else if (A_k < B_k)
       {
+        printf("here 2: A_k = %u, B_k = %u\n", A_k, B_k);
         continue;
       }
 
@@ -507,7 +514,6 @@ spamm_multiply (const float tolerance,
         /* Perform norm product and test whether to keep this term. */
         if (A_data->node_norm*B_data->node_norm <= tolerance)
         {
-          number_dropped_blocks++;
           break;
         }
 
@@ -534,11 +540,16 @@ spamm_multiply (const float tolerance,
         stream_index++;
       }
 
-      /* Test how quickly we tested out in the previous loop over B. */
+      /* Test how quickly we broke out in the previous loop over B. */
       if (j == B_k_lookup.index[B_k_lookup_index])
       {
         /* We never went past the first block in B. Since k segments are norm
          * sorted, we know that we can skip the rest of this k segment in A. */
+
+        /* Increment dropped count. */
+        number_dropped_blocks += (A_k_lookup.index[A_k_lookup_index+1]-i)*(B_k_lookup.index[B_k_lookup_index+1]-B_k_lookup.index[B_k_lookup_index]);
+
+        /* Go to the next k-block in A. */
         A_k_lookup_index++;
 
         /* Possibly Terminate. */
@@ -556,10 +567,17 @@ spamm_multiply (const float tolerance,
         continue;
       }
 
+      else
+      {
+        /* Increment dropped count. */
+        number_dropped_blocks += B_k_lookup.index[B_k_lookup_index+1]-j;
+      }
+
       /* Increment loop counter. */
       i++;
     }
   }
+#endif
 
   /* Check. */
   if (stream_index > (A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL))
