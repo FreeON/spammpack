@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define VERIFY_RESULT
 #define RANDOM_ELEMENTS
 //#define PRINT_DEBUG
 
@@ -13,6 +14,7 @@ main (int argc, char **argv)
 
   unsigned int i, j, k;
 
+  //unsigned int N = 2000;
   unsigned int N = 129;
   //unsigned int N = 16;
 
@@ -138,7 +140,7 @@ main (int argc, char **argv)
 #endif
 
   timer = spamm_timer_new();
-  spamm_timer_add_event(0x40000428, timer);
+  spamm_timer_add_event(0x8000003b, timer);
   spamm_multiply(tolerance, alpha, A, B, beta, C, timer, kernel);
   spamm_timer_delete(&timer);
 
@@ -153,6 +155,7 @@ main (int argc, char **argv)
   }
 #endif
 
+#ifdef VERIFY_RESULT
   max_diff = 0;
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++) {
@@ -177,6 +180,7 @@ main (int argc, char **argv)
         max_i, max_j, C_dense[max_i*N+max_j]);
     result = -1;
   }
+#endif
 
   free(A_dense);
   free(B_dense);
