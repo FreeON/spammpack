@@ -419,7 +419,7 @@ spamm_multiply (const float tolerance,
 
 #ifdef SPAMM_MULTIPLY_COPY_INDICES
   /* Copy sorted indices to array for quick access. */
-  printf("[multiply] copying indices to array... ");
+  printf("[multiply] copying indices to array and referencing dense blocks... ");
   spamm_timer_start(timer);
 
   A_index.size = spamm_list_length(A_index.index);
@@ -429,17 +429,6 @@ spamm_multiply (const float tolerance,
   B_index.data = (struct spamm_data_t**) malloc(sizeof(struct spamm_data_t*)*spamm_list_length(B_index.index));
 
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
-
-  spamm_timer_stop(timer);
-  timer_string = spamm_timer_get_string(timer);
-  printf("%s timer units\n", timer_string);
-  free(timer_string);
-#endif
-
-#ifdef SPAMM_MULTIPLY_COPY_3D
-  /* Copy appropriate 3D convolution index to arrays. */
-  printf("[multiply] copying 3D convolution index to arrays and referencing dense blocks... ");
-  spamm_timer_start(timer);
 
   for (i = 0; i < A_index.size; i++)
   {
