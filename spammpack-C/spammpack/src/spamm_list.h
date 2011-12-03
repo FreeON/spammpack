@@ -35,6 +35,9 @@ spamm_list_length (struct spamm_list_t *list);
 unsigned int
 spamm_list_get_index (struct spamm_list_t *list, const unsigned int i);
 
+unsigned int *
+spamm_list_get_index_address (struct spamm_list_t *list);
+
 float
 spamm_list_get_norm (struct spamm_list_t *list, const unsigned int i);
 

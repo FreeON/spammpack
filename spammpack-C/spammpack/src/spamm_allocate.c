@@ -59,7 +59,7 @@ spamm_allocate (size_t size)
    * pointer is not useful anymore for a free().
    */
   printf("[FIXME] can not allocate aligned memory\n");
-  data = malloc(size);
+  data = calloc(size, 1);
   return data;
 #endif
 }
