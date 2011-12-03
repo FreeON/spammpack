@@ -1,3 +1,4 @@
+#include "spamm.h"
 #include "spamm_list.h"
 #include <assert.h>
 #include <stdio.h>
@@ -33,10 +34,10 @@ spamm_list_new (const unsigned int length)
 {
   struct spamm_list_t *list;
 
-  list = calloc(sizeof(struct spamm_list_t), 1);
+  list = spamm_allocate(sizeof(struct spamm_list_t));
   list->length = length;
-  list->index = (unsigned int*) calloc(sizeof(unsigned int), length);
-  list->norm = (float*) calloc(sizeof(float), length);
+  list->index = spamm_allocate(length*sizeof(unsigned int));
+  list->norm = spamm_allocate(length*sizeof(float));
 
   return list;
 }
@@ -419,6 +420,18 @@ spamm_list_get_index (struct spamm_list_t *list, const unsigned int i)
   }
 
   return list->index[i];
+}
+
+/** Get the address of the index array.
+ *
+ * @param list The list.
+ *
+ * @return The address of the first element of list.
+ */
+unsigned int *
+spamm_list_get_index_address (struct spamm_list_t *list)
+{
+  return list->index;
 }
 
 /** Get a norm from a list.
