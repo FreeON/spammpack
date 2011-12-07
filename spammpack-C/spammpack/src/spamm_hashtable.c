@@ -1,4 +1,7 @@
-#include "spamm.h"
+#include "spamm_hashtable.h"
+#include "spamm_list.h"
+#include "spamm_types.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -64,8 +67,19 @@ struct spamm_hashtable_t
   struct spamm_hashtable_bucket_t *data;
 };
 
-/** A utility function for Bob Jenkins' hash function. */
-#define rot(x,k) (((x) << (k)) | ((x) >> (32-(k))))
+/** A hash function. This is a wrapper for the actual hash function used.
+ *
+ * @param key The key to hash.
+ *
+ * @return The hashed key.
+ */
+inline uint32_t
+spamm_hashtable_hash (const uint32_t key)
+{
+  return spamm_hashtable_hash_direct(key);
+  //return spamm_hashtable_hash_Jenkins(key);
+  //return spamm_hashtable_hash_MurmurHash3(key);
+}
 
 /** A hash function. This is taken the hashword() function from Bob Jenkins'
  * webpage,
@@ -76,26 +90,79 @@ struct spamm_hashtable_t
  *
  * @return The hashed key.
  */
-unsigned int
-spamm_hashtable_hash_1 (const unsigned int key)
+uint32_t
+spamm_hashtable_hash_Jenkins (const uint32_t key)
 {
+  static const uint32_t seed = 0xC80748E8;
   unsigned int a, b, c;
 
   /* Set up the internal state */
-  a = b = c = 0xdeadbeef + (((uint32_t) 1) << 2);
+  a = b = c = 0xdeadbeef + (((uint32_t) 4) + seed);
 
   /* Rotate. */
   a += key;
-  c ^= b; c -= rot(b,14);
-  a ^= c; a -= rot(c,11);
-  b ^= a; b -= rot(a,25);
-  c ^= b; c -= rot(b,16);
-  a ^= c; a -= rot(c,4);
-  b ^= a; b -= rot(a,14);
-  c ^= b; c -= rot(b,24);
+  c ^= b; c -= ((b << 14) | (b >> (32 - 14)));
+  a ^= c; a -= ((c << 11) | (c >> (32 - 11)));
+  b ^= a; b -= ((a << 25) | (a >> (32 - 25)));
+  c ^= b; c -= ((b << 16) | (b >> (32 - 16)));
+  a ^= c; a -= ((c <<  4) | (c >> (32 -  4)));
+  b ^= a; b -= ((a << 14) | (a >> (32 - 14)));
+  c ^= b; c -= ((b << 24) | (b >> (32 - 24)));
 
   /* Return the result. */
   return c;
+}
+
+/** A really simple hash function. We assume here that we store a full matrix,
+ * i.e. all linear indices. This means that we can pass the key right through
+ * and don't have to do anything.
+ *
+ * @param key The key to hash.
+ *
+ * @return The hashed key.
+ */
+inline uint32_t
+spamm_hashtable_hash_direct (const uint32_t key)
+{
+  return key;
+}
+
+/** A hash function. This one is taken from the MurmurHash3_x86_32() function
+ * of MurmuHash3.cpp from Austin Appleby.
+ *
+ * http://code.google.com/p/smhasher/
+ *
+ * @param key The key (32-bit).
+ * @param seed The seed.
+ *
+ * @return The hashed key.
+ */
+uint32_t
+spamm_hashtable_hash_MurmurHash3 (const uint32_t key)
+{
+#define HASH_MURMURHASH3_SEED 1
+
+  const uint8_t *data = (const uint8_t*) &key;
+  uint32_t h1 = HASH_MURMURHASH3_SEED;
+  uint32_t c1 = 0xcc9e2d51;
+  uint32_t c2 = 0x1b873593;
+  uint32_t k1 = 0;
+
+  k1 ^= data[0];
+  k1 *= c1;
+  k1  = (k1 << 15) | (k1 >> (32 - 15));;
+  k1 *= c2;
+  h1 ^= k1;
+
+  h1 ^= 1;
+
+  h1 ^= h1 >> 16;
+  h1 *= 0x85ebca6b;
+  h1 ^= h1 >> 13;
+  h1 *= 0xc2b2ae35;
+  h1 ^= h1 >> 16;
+
+  return h1;
 }
 
 /** Create a new hashtable.
@@ -220,7 +287,7 @@ void
 spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
     unsigned int key, void *value)
 {
-  unsigned int keyhash = spamm_hashtable_hash_1(key);
+  unsigned int keyhash = spamm_hashtable_hash(key);
   unsigned int bucket_index = keyhash & (hashtable->number_buckets-1);
 
   if (key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
@@ -298,7 +365,7 @@ struct spamm_hashtable_bucket_t *
 spamm_hashtable_lookup_bucket (struct spamm_hashtable_t *hashtable,
     const unsigned int key)
 {
-  unsigned int keyhash = spamm_hashtable_hash_1(key);
+  unsigned int keyhash = spamm_hashtable_hash(key);
   unsigned int bucket_index = keyhash & (hashtable->number_buckets-1);
 
   if (hashtable->data[bucket_index].key == key)

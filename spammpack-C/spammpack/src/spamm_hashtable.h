@@ -5,10 +5,21 @@
 
 #include "spamm_list.h"
 
+#include <stdint.h>
+
 struct spamm_hashtable_t;
 
-unsigned int
-spamm_hashtable_hash_1 (const unsigned int key);
+uint32_t
+spamm_hashtable_hash (const uint32_t key);
+
+uint32_t
+spamm_hashtable_hash_Jenkins (const uint32_t key);
+
+uint32_t
+spamm_hashtable_hash_MurmurHash3 (const uint32_t key);
+
+uint32_t
+spamm_hashtable_hash_direct (const uint32_t key);
 
 struct spamm_hashtable_t *
 spamm_hashtable_new ();
