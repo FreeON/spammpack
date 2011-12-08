@@ -1,0 +1,101 @@
+$Header: /u/spert/src/IPM/RCS/INSTALL,v 1.15 1996/08/07 21:13:40 krste Exp $
+
+The IPM library is built using the standard GNU configure process.
+Please refer to the GNU documentation for details on how to run
+configure.
+
+Set arguments --prefix and --exec_prefix to install the header file
+and library somewhere other than /usr/local/.
+
+The package builds a simple test program called IPM_test in the build
+directory.  This can be run using "make check".
+
+There is also an IPM_timer_stats program that can be used to measure
+the calling overhead of the IPM_timer_start/stop call.  See the README
+file for details.
+
+Compiler Settings
+-----------------
+
+The default Makefile built in the configure process uses:
+        CC=gcc CFLAGS='-g -O'
+
+To alter the default compiler built into the Makefile, set the two
+environment variables CC and CFLAGS before calling configure.  This
+can be done on one csh command line as follows:
+
+        env CC=acc CFLAGS='-Xa -vc -O2' <srcdir>/configure <args>
+
+Or using the bourne shell:
+
+	CC=acc CFLAGS='-Xa -vc -O2' <srcdir>/configure <args>
+
+You can also change the compiler and compiler flags by setting these
+two make variables on the make command line, e.g.:
+
+        make CC=acc CFLAGS='-Xa -vc -O2' check
+
+This may cause problems if configure would have changed the Makefile
+for this new compiler.
+
+Below are some notes on configuring IPM for various systems.
+
+ALL SYSTEMS: gcc
+----------------
+
+When compiling with gcc, it's a good idea to turn on inlining.
+
+CC=gcc CFLAGS='-Wall -g -O -finline-functions'
+
+SunOS4
+------
+
+Using Sun's acc v2.0 the following flags work:
+
+CC=acc CFLAGS='-Xa -vc -O2'  # Can't use -Xc because need "long long".
+
+SunOS5
+------
+
+Using Sun's acc v4.0 compiler, the following flags work:
+
+CC=cc CFLAGS='-Xa -xO2'  # Can't use -Xc because need "long long".
+
+HP-UX
+-----
+
+Using HP's c89 compiler, need to turn on _HPUX_SOURCE macro.  The
+following works:
+
+CC=c89  CFLAGS='-Aa -D_HPUX_SOURCE -O'
+
+Irix
+----
+
+Need to use the -xansi option to get at the 64-bit types.
+
+CC=cc CFLAGS='-xansi -O2'       # Need -xansi for 64b types.
+CC=cc CFLAGS='-xansi -O2 -mips2'  # Optimize for mips2 ISA.
+CC=cc CFLAGS='-xansi -O2 -64'   # Optimize for mips4 ISA, 64b model.
+
+AIX
+---
+
+CC=xlc CFLAGS='-qlanglvl=ansi -O'
+CC=xlc CFLAGS='-qlanglvl=ansi -O -qarch=pwr2 -qtune=pwr2' # Optimize for POWER2
+
+Spert0
+------
+
+Want to turn on inline-functions to get clock register read inlined
+into IPM_timer routines.
+
+CC=spert0-gcc CFLAGS='-Wall -g -O2 -finline-functions'
+
+DEC Alpha OSF v3.2
+------------------
+
+When compiling IPM_timer_stats, need to have IEEE turned on to handle
+divide by zero without crashing.
+
+CC=cc CFLAGS='-ieee_with_no_inexact -O'

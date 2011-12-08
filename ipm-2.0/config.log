@@ -1,0 +1,16 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:552: checking host system type
+configure:574: checking build system type
+configure:600: checking for x86_64-unknown-linux-gcc
+configure:666: checking whether we are using GNU C
+configure:686: checking whether gcc accepts -g
+configure:723: checking for a BSD compatible install
+configure:778: checking for x86_64-unknown-linux-ar
+configure:810: checking for x86_64-unknown-linux-ranlib
+configure:877: checking how to run test programs
+configure:886: checking how to run the C preprocessor
+configure:966: checking for AIX
+configure:1006: checking for getrusage
+configure:1075: checking for gettimeofday

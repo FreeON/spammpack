@@ -1,0 +1,106 @@
+dnl $Header: /u/spert/src/IPM/RCS/configure.in,v 1.16 1996/08/08 02:28:14 krste Exp $
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(IPM_timer.h)
+
+AC_CANONICAL_HOST
+
+dnl Checks for programs.
+ACSPERT_TOOL_CC
+AC_PROG_INSTALL
+AC_CHECK_TOOL(AR,ar)
+AC_CHECK_TOOL(RANLIB,ranlib,:)
+ACSPERT_PROG_RUN
+
+AC_AIX
+
+dnl Build up list of supported timer modules.
+dnl The order is important, we start with the least accurate to most
+dnl accurate, so that default is set to most accurate.
+
+AC_SUBST(ipm_modules)
+ipm_modules=
+
+dnl This is a hack - the SPERT library has numerous functions
+dnl that are not implemented in the kernel.  We fix this by
+dnl simply keying off the CPU
+
+if test $host_cpu = "torrent0"
+then
+  AC_DEFINE(HAVE_T0VCOUNT)
+  ipm_modules="IPM_timer_t0vcount.o"
+  ipm_default=t0vcount
+else
+
+  AC_CHECK_FUNC(getrusage,
+  [AC_DEFINE(HAVE_GETRUSAGE)
+   ipm_modules="$ipm_modules IPM_timer_getrusage.o"
+   ipm_default=getrusage])
+
+  dnl Fix getrusage resolution when not equal to 10ms.
+  case $host_alias in
+  *sun3*)
+        AC_DEFINE(IPM_GETRUSAGE_RESOLUTION,(0.020))
+        ;;
+        dnl FIXME: Not sure if correct for DEC OSF3.
+  *-solaris2*|*-irix5*|*-irix6*|*dec-osf3*)
+        AC_DEFINE(IPM_GETRUSAGE_RESOLUTION,(1e-6))
+        ;;
+  esac
+
+  AC_CHECK_FUNC(gettimeofday,
+   [AC_DEFINE(HAVE_GETTIMEOFDAY)
+    ipm_modules="$ipm_modules IPM_timer_gettimeofday.o"
+    ipm_default=gettimeofday])
+
+  dnl Fix gettimeofday resolution when not equal to 1us.
+  case $host_alias in
+  *sun3*)
+        dnl FIXME: Not sure if value correct.
+        AC_DEFINE(IPM_GETTIMEOFDAY_RESOLUTION,(0.020))
+        ;;
+  *-aix*)
+        AC_DEFINE(IPM_GETTIMEOFDAY_RESOLUTION,(0.010))
+        ;;
+  *-linux*)
+        dnl FIXME: Not sure if this value is correct.
+        AC_DEFINE(IPM_GETTIMEOFDAY_RESOLUTION,(0.0001))
+        ;;
+  esac
+
+  case $host_alias in
+  *ibm-aix3*)
+          AC_CHECK_FUNC(gettimer,
+           [AC_DEFINE(HAVE_GETTIMER)
+            ipm_modules="$ipm_modules IPM_timer_gettimer.o"
+            ipm_default=gettimer])
+        ;;
+  esac
+
+  case $host_alias in
+  *-solaris2*)
+          AC_CHECK_FUNC(gethrtime,
+           [AC_DEFINE(HAVE_GETHRTIME)
+            ipm_modules="$ipm_modules IPM_timer_gethrtime.o"
+            ipm_default=gethrtime])
+        ;;
+  esac
+
+  case $host_alias in
+  *-sgi-*)
+        AC_CHECK_FUNC(syssgi,
+         [AC_DEFINE(HAVE_SYSSGI)
+          ipm_modules="$ipm_modules IPM_timer_syssgi.o"
+          ipm_default=syssgi])
+        ;;
+  esac
+fi
+
+dnl If ipm_default isn't set, then no timing modules were found.
+if test ${ipm_default:-"no_modules"} = "no_modules"; then
+        AC_MSG_ERROR(cannot any timing modules - check compilation options.);
+fi
+
+AC_DEFINE_UNQUOTED(IPM_init_DEFAULT, IPM_init_${ipm_default})
+
+AC_OUTPUT(Makefile)
+

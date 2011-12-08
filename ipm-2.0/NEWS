@@ -1,0 +1,75 @@
+IPM 2.0
+
+DEC Alpha OSF v3.2 now supported.
+
+SGI Irix 6.1, and support for all SGI machines added.
+
+Factored out range and resolution reporting code.
+
+Removed unused n_intervals code, should be slightly faster now.
+
+Factored out common error reporting code, better error messages
+including version number.
+
+=============================================================================
+
+IPM 1.11
+Added function `IPM_timer_format' to return appropriate format string
+to printf time.  Cleaned up format handling.
+
+Moved IPM_timer_report out of modules into common central function,
+made output more consistent and fits on single line.
+
+Added more correct resolutions for getrusage and gettimeofday modules.
+
+Changed environment variable controls to lower case.
+E.g., old IPM_TIMER_MODULE=GETRUSAGE now IPM_timer_module=getrusage.
+
+Made tag optional in IPM_timer_report, can use NULL to leave off tag.
+
+Configure now complains if no timing modules found.
+
+IPM 1.10
+Fixed some bad distribution building targets in Makefile.
+
+IPM 1.9
+Improved documentation somewhat.
+
+Removed clock_getres from SunOS5 IPM_timer_gethrtime module.  Was
+returning wrong value and complicating configure.
+
+Added further measurement of raw call overhead to IPM_timer_stats.
+
+IPM 1.8
+
+Wrote a new program "IPM_timer_stats", that measures the calling
+overhead and resolution of the IPM timer.
+
+IPM 1.7
+
+Added UCB Regents copyright/disclaimer to source files.
+
+Sundry makefile/configure fixes.
+
+IPM 1.4
+
+Removed advanced features from Makefile to make compatible with more
+"make"s.  No more +=, and doesn't rely on VPATH.
+
+Added some more text to INSTALL file.
+
+Sundry other improvements to make process.
+
+IPM 1.3
+
+Made hard-coded resolutions and ranges over-rideable with preprocessor
+symbols.
+
+Added IPM_timer_get_time function to provide portable high resolution
+clock interface.
+
+Changed name of IPM_timer_val function to IPM_timer_read.
+
+Compiled on Linux 1.2.8.
+
+IPM 1.2

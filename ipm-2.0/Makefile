@@ -1,0 +1,369 @@
+# Generated automatically from Makefile.in by configure.
+# $Header: /u/spert/src/IPM/RCS/Makefile.in,v 1.38 1996/08/08 01:06:40 krste Exp $
+# Makefile for IPM timer package.
+
+#
+# Makefile good manners.
+#
+SHELL = /bin/sh
+
+.SUFFIXES:
+.SUFFIXES: .c .o .dis
+
+#
+# Details of our host and target.
+#
+build_alias = x86_64-unknown-linux
+host_alias = x86_64-unknown-linux
+
+#
+# Where sources are located.
+#
+srcdir = .
+top_srcdir = .
+
+#
+# Programs to use.
+#
+CC = gcc
+LD = $(CC)
+AR = ar
+RANLIB = ranlib
+INSTALL = /usr/bin/install -c
+INSTALL_DATA = ${INSTALL} -m 644
+# Need to use spertrun or spertrun-isa for spert0.
+RUN = 
+
+
+#
+# Program options.
+#
+CFLAGS = -g -O
+LDFLAGS = 
+DEFS =  -DHAVE_GETRUSAGE=1 -DHAVE_GETTIMEOFDAY=1 -DIPM_GETTIMEOFDAY_RESOLUTION=\(0.0001\) -DIPM_init_DEFAULT=IPM_init_gettimeofday 
+
+#
+# Libraries.
+# TODO: Find sqrt using autoconf.
+LIBS =  -lm
+
+#
+# Installation stuff
+#
+prefix = /usr/local
+exec_prefix = ${prefix}
+libdir = $(exec_prefix)/lib
+includedir = $(prefix)/include
+docdir = $(prefix)/doc
+
+compile.c = $(CC) $(DEFS) -I$(srcdir) -I$(prefix)/include $(CFLAGS)
+link = $(LD) $(LDFLAGS) $(CFLAGS)
+
+#----------------------------------------------------------------------------
+# Default build rules.
+#----------------------------------------------------------------------------
+.c.o:
+	$(compile.c) -c $<
+
+.c.s:
+	$(compile.c) -S -c $<
+
+# TODO: Figure out how to best to handle disassemblies in config Makefiles.
+
+#----------------------------------------------------------------------------
+# Default target builds library, test program, and statistics program.
+#----------------------------------------------------------------------------
+
+all: IPM_test IPM_timer_stats
+
+#----------------------------------------------------------------------------
+# Timer library object modules.
+#----------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------
+# Code sources, for all targets.
+#----------------------------------------------------------------------------
+
+ipm_srcs =	$(srcdir)/IPM_timer.c \
+		$(srcdir)/IPM_timer_getrusage.c \
+		$(srcdir)/IPM_timer_gettimeofday.c \
+		$(srcdir)/IPM_timer_t0vcount.c \
+		$(srcdir)/IPM_timer_syssgi.c \
+		$(srcdir)/IPM_timer_gethrtime.c \
+		$(srcdir)/IPM_timer_gettimer.c
+
+ipm_hdrs =	$(srcdir)/IPM_timer.h \
+		$(srcdir)/IPM_timer_internal.h \
+		$(srcdir)/IPM_timer_getrusage.h \
+		$(srcdir)/IPM_timer_gettimeofday.h \
+		$(srcdir)/IPM_timer_t0vcount.h \
+		$(srcdir)/IPM_timer_syssgi.h \
+		$(srcdir)/IPM_timer_gethrtime.h \
+		$(srcdir)/IPM_timer_gettimer.h
+
+ipm_objs =	IPM_timer.o \
+		IPM_timer_getrusage.o \
+		IPM_timer_gettimeofday.o \
+		IPM_timer_t0vcount.o \
+		IPM_timer_syssgi.o \
+		IPM_timer_gethrtime.o \
+		IPM_timer_gettimer.o
+
+IPM_timer.o: $(srcdir)/IPM_timer.c $(ipm_hdrs)
+	$(compile.c) -c $(srcdir)/IPM_timer.c
+
+IPM_timer_getrusage.o: $(srcdir)/IPM_timer_getrusage.c \
+			$(srcdir)/IPM_timer_getrusage.h \
+			$(srcdir)/IPM_timer_internal.h \
+			$(srcdir)/IPM_timer.h
+	$(compile.c) -c $(srcdir)/IPM_timer_getrusage.c
+
+IPM_timer_gettimeofday.o: $(srcdir)/IPM_timer_gettimeofday.c \
+			$(srcdir)/IPM_timer_gettimeofday.h \
+			$(srcdir)/IPM_timer_internal.h \
+			$(srcdir)/IPM_timer.h
+	$(compile.c) -c $(srcdir)/IPM_timer_gettimeofday.c
+
+IPM_timer_t0vcount.o: $(srcdir)/IPM_timer_t0vcount.c \
+			$(srcdir)/IPM_timer_t0vcount.h \
+			$(srcdir)/IPM_timer_internal.h \
+			$(srcdir)/IPM_timer.h
+	$(compile.c) -c $(srcdir)/IPM_timer_t0vcount.c
+
+IPM_timer_syssgi.o: $(srcdir)/IPM_timer_syssgi.c \
+			$(srcdir)/IPM_timer_syssgi.h \
+			$(srcdir)/IPM_timer_internal.h \
+			$(srcdir)/IPM_timer.h
+	$(compile.c) -c $(srcdir)/IPM_timer_syssgi.c
+
+IPM_timer_gethrtime.o: $(srcdir)/IPM_timer_gethrtime.c \
+			$(srcdir)/IPM_timer_gethrtime.h \
+			$(srcdir)/IPM_timer_internal.h \
+			$(srcdir)/IPM_timer.h
+	$(compile.c) -c $(srcdir)/IPM_timer_gethrtime.c
+
+IPM_timer_gettimer.o: $(srcdir)/IPM_timer_gettimer.c \
+			$(srcdir)/IPM_timer_gettimer.h \
+			$(srcdir)/IPM_timer_internal.h \
+			$(srcdir)/IPM_timer.h
+	$(compile.c) -c $(srcdir)/IPM_timer_gettimer.c
+
+# Version string.
+IPM_version.o: $(srcdir)/IPM_version.c
+	$(compile.c) -c $(srcdir)/IPM_version.c
+
+#----------------------------------------------------------------------------
+# Build library.
+#----------------------------------------------------------------------------
+
+# Set ipm_modules to the list of applicable object files for this platform.
+ipm_lib_objs = IPM_version.o IPM_timer.o  IPM_timer_getrusage.o IPM_timer_gettimeofday.o
+
+lib_root = ipm
+lib_name = lib$(lib_root).a
+
+$(lib_name): $(ipm_lib_objs)
+	rm -f $(lib_name)
+	$(AR) rcv $(lib_name) $(ipm_lib_objs)
+	$(RANLIB) $(lib_name)
+
+#----------------------------------------------------------------------------
+# Build and run test program.
+#----------------------------------------------------------------------------
+
+IPM_test.o: $(srcdir)/IPM_test.c $(srcdir)/IPM_timer.h
+	$(compile.c) -c $(srcdir)/IPM_test.c
+
+check: IPM_test
+	$(RUN) ./IPM_test
+
+IPM_test : IPM_test.o $(lib_name)
+	$(link) -o IPM_test IPM_test.o -L. -l$(lib_root) $(LIBS)
+
+#----------------------------------------------------------------------------
+# Build statistics gathering program.
+#----------------------------------------------------------------------------
+
+IPM_timer_stats.o: $(srcdir)/IPM_timer_stats.c $(srcdir)/IPM_timer.h
+	$(compile.c) -c $(srcdir)/IPM_timer_stats.c
+
+IPM_timer_stats : IPM_timer_stats.o $(lib_name)
+	$(link) -o IPM_timer_stats IPM_timer_stats.o -L. -l$(lib_root) $(LIBS)
+
+#----------------------------------------------------------------------------
+# Gather stuff together.
+#----------------------------------------------------------------------------
+
+all_srcs = $(ipm_srcs) $(srcdir)/IPM_test.c $(srcdir)/IPM_timer_stats.c
+all_hdrs = $(ipm_hdrs)
+all_objs = $(ipm_objs) IPM_version.o IPM_test.o IPM_timer_stats.o
+
+all_exs = IPM_test IPM_timer_stats
+
+#----------------------------------------------------------------------------
+# Installation
+#----------------------------------------------------------------------------
+
+install-lib: $(lib_name)
+	$(INSTALL_DATA) $(lib_name) $(libdir)/$(lib_name)
+	$(RANLIB) $(libdir)/$(lib_name)
+
+uninstall-lib:
+	rm -f $(libdir)/$(lib_name)
+
+install-hdrs:
+	$(INSTALL_DATA) $(srcdir)/IPM_timer.h $(includedir)/IPM_timer.h
+
+uninstall-hdrs:
+	rm -f $(includedir)/IPM_timer.h
+
+# TODO: Right proper man page.
+install-docs:
+	$(INSTALL_DATA) $(srcdir)/README $(docdir)/IPM.txt
+
+uninstall-docs:
+	rm -f $(docdir)/IPM.txt
+
+install: install-lib install-hdrs install-docs
+
+uninstall: uninstall-lib uninstall-hdrs uninstall-docs
+
+#----------------------------------------------------------------------------
+# Configure targets.
+#----------------------------------------------------------------------------
+
+$(srcdir)/configure: $(srcdir)/configure.in $(srcdir)/aclocal.m4
+	cd $(srcdir) && autoconf
+
+Makefile: $(srcdir)/Makefile.in config.status
+	./config.status
+     
+config.status: $(srcdir)/configure
+	./config.status --recheck
+
+config_files = 	$(srcdir)/configure.in \
+		$(srcdir)/aclocal.m4 \
+		$(srcdir)/Makefile.in
+
+#----------------------------------------------------------------------------
+# Documentation.
+#----------------------------------------------------------------------------
+
+doc_files = $(srcdir)/INSTALL $(srcdir)/NEWS $(srcdir)/TODO \
+		$(srcdir)/README
+
+#----------------------------------------------------------------------------
+# RCS management.
+#----------------------------------------------------------------------------
+
+# VERSION is symbolic name of version for RCS targets.
+# CHANGES is message to use when making bulk check-ins.
+
+VERSION = NoVersionGiven
+
+rcs_files = $(all_srcs) $(all_hdrs) $(doc_files) $(config_files)
+
+ci:
+	ci -u -t- "-m$(CHANGES)" $(rcs_files)
+
+co:
+	co -l $(rcs_files)
+
+cio:
+	ci -l -t- "-m$(CHANGES)" $(rcs_files)
+
+# Check out latest copy.
+col:
+	co $(rcs_files)
+
+
+VERSION_CODE = 'const char *IPM_version="$(VERSION)";'
+VERSION_STR_CODE = 'const char *IPM_version_str="IPM version=$(VERSION).\nCopyright (c) 1995,1996 The Regents of the University of California";'
+
+version_code:
+	echo $(VERSION_CODE) > $(srcdir)/IPM_version.c
+	echo $(VERSION_STR_CODE) >> $(srcdir)/IPM_version.c
+
+# Check out a previous version.
+cov: version_code
+	co -r$(VERSION) $(rcs_files)
+
+rcsdiff:
+	rcsdiff $(rcs_files)
+
+# Make sure all files are checked in before creating new version.
+ensure-ci:
+	@if [ `rlog -L -l -R $(rcs_files) | wc -w` -ne 0 ]; \
+	then \
+		echo "ERROR: The following files are not checked in:"; \
+		rlog -L -l -R $(rcs_files); \
+		exit 1; \
+	fi
+
+version : ensure-ci version_code
+	rcs "-n$(VERSION):" $(rcs_files)
+
+#----------------------------------------------------------------------------
+# Package distribution.
+#----------------------------------------------------------------------------
+
+# Set DISTNAME to name root of tar file name, e.g. DISTNAME=ipm-1.3
+# Set default to flag that variable wasn't set.
+DISTNAME = ipm-$(VERSION)
+
+autoconf_dir = /usr/src/local/gnu/autoconf-2.7
+
+autoconf_files = $(autoconf_dir)/config.guess $(autoconf_dir)/config.sub \
+	$(autoconf_dir)/install-sh
+
+dist_files = $(all_srcs) $(all_hdrs) $(srcdir)/IPM_version.c \
+	$(config_files) \
+	$(srcdir)/configure \
+	$(doc_files) \
+	$(autoconf_files)
+
+dist_dir = $(srcdir)/dists
+dist_build_dir = $(dist_dir)/$(DISTNAME)
+
+dist: ensure-ci $(dist_files)
+	mkdir $(dist_build_dir)
+	chmod 777 $(dist_build_dir)
+	cp -p $(dist_files) $(dist_build_dir)
+	(cd $(dist_dir); \
+		tar cvf $(DISTNAME).tar $(DISTNAME); \
+		gzip --best $(DISTNAME).tar )
+	rm -rf $(dist_build_dir)
+
+#----------------------------------------------------------------------------
+# Generate TAGS file for emacs editing.
+#----------------------------------------------------------------------------
+
+TAGS: $(all_srcs) $(all_hdrs)
+	etags --output=$(srcdir)/TAGS $(all_srcs) $(all_hdrs)
+
+#----------------------------------------------------------------------------
+# Count lines of code and number of C statements.
+#----------------------------------------------------------------------------
+
+counts:
+	wc $(all_srcs) $(all_hdrs)
+	cat $(all_srcs) $(all_hdrs) | tr -cd ';' | wc -c
+
+#----------------------------------------------------------------------------
+# Garbage disposal.
+#----------------------------------------------------------------------------
+
+target_junk = $(all_objs) $(all_exs) $(lib_name)
+
+clean:
+	rm -rf $(target_junk) spert.core a.out
+
+distclean: clean
+	rm -f config.log config.status config.cache Makefile
+
+maintainer_junk = $(srcdir)/TAGS
+
+maintainer-clean: distclean
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+	rm -rf $(maintainer_junk)

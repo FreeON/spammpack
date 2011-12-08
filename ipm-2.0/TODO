@@ -1,0 +1,27 @@
+$Header: /u/spert/src/IPM/RCS/TODO,v 1.14 1996/08/08 00:57:20 krste Exp $
+
+OVERALL
+-------
+
+Add _report that doesn't need buf, with argument that gives output
+file.
+
+Turn README into man page.
+
+GETHRTIME
+---------
+
+Figure out why sometimes see 1e-9 deltas on Ultrasparcs.
+
+SYSSGI
+------
+
+Try out possibility of using ldc1 to capture 64b counter value on
+Challenge machines.
+
+DEC Alpha OSF v3.2
+------------------
+
+Find out correct resolution of gettimeofday and getrusage calls.
+
+Add module that reads the processor cycle counter.
