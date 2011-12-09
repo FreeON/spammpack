@@ -34,10 +34,10 @@ spamm_list_new (const unsigned int length)
 {
   struct spamm_list_t *list;
 
-  list = spamm_allocate(sizeof(struct spamm_list_t));
+  list = calloc(1, sizeof(struct spamm_list_t));
   list->length = length;
-  list->index = spamm_allocate(length*sizeof(unsigned int));
-  list->norm = spamm_allocate(length*sizeof(float));
+  list->index = calloc(length, sizeof(unsigned int));
+  list->norm = calloc(length, sizeof(float));
 
   return list;
 }

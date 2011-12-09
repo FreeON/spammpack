@@ -10,6 +10,7 @@ main (int argc, char **argv)
   int result = 0;
   unsigned int i, j;
   unsigned int N = 1024;
+  //unsigned int N = 130;
   struct spamm_t *A;
   float *A_dense = (float*) malloc(sizeof(float)*N*N);
 
