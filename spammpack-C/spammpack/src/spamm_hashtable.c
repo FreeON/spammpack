@@ -1,3 +1,4 @@
+#include "spamm.h"
 #include "spamm_hashtable.h"
 #include "spamm_list.h"
 #include "spamm_types.h"
@@ -42,6 +43,7 @@ struct spamm_hashtable_t
   /** The number of buckets in this hashtable. */
   unsigned int number_buckets;
 
+#ifdef SPAMM_USE_HASHTABLE
   /** Flag for whether the special keys SPAMM_KEY_EMPTY and SPAMM_KEY_DELETE
    * are stored in this hashtable.
    */
@@ -65,6 +67,10 @@ struct spamm_hashtable_t
 
   /** The buckets. */
   struct spamm_hashtable_bucket_t *data;
+#else
+  /** The stored values. */
+  void **value;
+#endif
 };
 
 /** A hash function. This is a wrapper for the actual hash function used.
@@ -174,8 +180,9 @@ spamm_hashtable_hash_MurmurHash3 (const uint32_t key)
 struct spamm_hashtable_t *
 spamm_hashtable_new_sized (unsigned int number_buckets)
 {
-  short i;
   struct spamm_hashtable_t *hashtable;
+#ifdef SPAMM_USE_HASHTABLE
+  short i;
 
   /* We should have at least 8 buckets. */
   if (number_buckets < 8) { number_buckets = 8; }
@@ -188,9 +195,14 @@ spamm_hashtable_new_sized (unsigned int number_buckets)
   }
   number_buckets++;
 
-  hashtable = (struct spamm_hashtable_t*) calloc(sizeof(struct spamm_hashtable_t), 1);
+  hashtable = spamm_allocate(sizeof(struct spamm_hashtable_t));
   hashtable->number_buckets = number_buckets;
-  hashtable->data = calloc(sizeof(struct spamm_hashtable_bucket_t), hashtable->number_buckets);
+  hashtable->data = spamm_allocate(sizeof(struct spamm_hashtable_bucket_t)*hashtable->number_buckets);
+#else
+  hashtable = spamm_allocate(sizeof(struct spamm_hashtable_t));
+  hashtable->number_buckets = number_buckets;
+  hashtable->value = spamm_allocate(sizeof(void*)*hashtable->number_buckets);
+#endif
 
   return hashtable;
 }
@@ -202,7 +214,7 @@ spamm_hashtable_new_sized (unsigned int number_buckets)
 struct spamm_hashtable_t *
 spamm_hashtable_new ()
 {
-  return spamm_hashtable_new_sized(8);
+  return spamm_hashtable_new_sized(16);
 }
 
 /** Destroy a hashtable. Note that the values stored are not free'ed.
@@ -212,7 +224,11 @@ spamm_hashtable_new ()
 void
 spamm_hashtable_delete (struct spamm_hashtable_t **hashtable)
 {
+#ifdef SPAMM_USE_HASHTABLE
   free((*hashtable)->data);
+#else
+  free((*hashtable)->value);
+#endif
 
   free(*hashtable);
   *hashtable = NULL;
@@ -227,6 +243,7 @@ void
 spamm_hashtable_rehash (struct spamm_hashtable_t *hashtable,
     const unsigned int number_buckets)
 {
+#ifdef SPAMM_USE_HASHTABLE
   unsigned int i;
   struct spamm_hashtable_t *old_hashtable = hashtable;
   struct spamm_hashtable_t *new_hashtable;
@@ -273,6 +290,23 @@ spamm_hashtable_rehash (struct spamm_hashtable_t *hashtable,
 
   /* Free the new hashtable. */
   free(new_hashtable);
+#else
+  unsigned int i;
+  void **value = spamm_allocate(sizeof(void*)*number_buckets);
+
+  /* Copy old data. */
+  for (i = 0; i < hashtable->number_buckets; i++)
+  {
+    value[i] = hashtable->value[i];
+  }
+
+  /* Free old data array. */
+  free(hashtable->value);
+
+  /* Copy data into hashtable. */
+  hashtable->number_buckets = number_buckets;
+  hashtable->value = value;
+#endif
 }
 
 /** Insert a key/value pair into the hashtable. If the key to be inserted
@@ -287,6 +321,7 @@ void
 spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
     unsigned int key, void *value)
 {
+#ifdef SPAMM_USE_HASHTABLE
   unsigned int keyhash = spamm_hashtable_hash(key);
   unsigned int bucket_index = keyhash & (hashtable->number_buckets-1);
 
@@ -335,7 +370,7 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
       hashtable->number_stored_keys >= SPAMM_GROW_THRESHOLD*hashtable->number_buckets)
   {
     spamm_hashtable_rehash(hashtable, hashtable->number_buckets << 1);
-    return spamm_hashtable_insert(hashtable, key, value);
+    spamm_hashtable_insert(hashtable, key, value);
   }
 
   else
@@ -350,6 +385,18 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
     hashtable->number_stored_keys++;
     return;
   }
+#else
+  if (key < hashtable->number_buckets)
+  {
+    hashtable->value[key] = value;
+  }
+
+  else
+  {
+    spamm_hashtable_rehash(hashtable, hashtable->number_buckets << 1);
+    spamm_hashtable_insert(hashtable, key, value);
+  }
+#endif
 }
 
 /** Lookup a key in a hashtable and return a bucket item.
@@ -365,6 +412,7 @@ struct spamm_hashtable_bucket_t *
 spamm_hashtable_lookup_bucket (struct spamm_hashtable_t *hashtable,
     const unsigned int key)
 {
+#ifdef SPAMM_USE_HASHTABLE
   unsigned int keyhash = spamm_hashtable_hash(key);
   unsigned int bucket_index = keyhash & (hashtable->number_buckets-1);
 
@@ -392,6 +440,7 @@ spamm_hashtable_lookup_bucket (struct spamm_hashtable_t *hashtable,
     }
     while (hashtable->data[bucket_index].key != SPAMM_KEY_EMPTY);
   }
+#endif
 
   return NULL;
 }
@@ -409,6 +458,7 @@ void *
 spamm_hashtable_lookup (struct spamm_hashtable_t *hashtable,
     const unsigned int key)
 {
+#ifdef SPAMM_USE_HASHTABLE
   void *value = NULL;
   struct spamm_hashtable_bucket_t *bucket;
 
@@ -438,6 +488,18 @@ spamm_hashtable_lookup (struct spamm_hashtable_t *hashtable,
       return NULL;
     }
   }
+#else
+  if (key < hashtable->number_buckets)
+  {
+    return hashtable->value[key];
+  }
+
+  else
+  {
+    spamm_hashtable_rehash(hashtable, hashtable->number_buckets << 1);
+    return spamm_hashtable_lookup(hashtable, key);
+  }
+#endif
 }
 
 /** Remove a key from a hashtable.
@@ -453,6 +515,7 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
     const unsigned int key)
 {
   void *result = NULL;
+#ifdef SPAMM_USE_HASHTABLE
   struct spamm_hashtable_bucket_t *bucket = NULL;
 
   if (key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
@@ -483,6 +546,18 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
       }
     }
   }
+#else
+  if (key < hashtable->number_buckets)
+  {
+    result = hashtable->value[key];
+  }
+
+  else
+  {
+    printf("[spamm_hashtable_remove] key out of bounds\n");
+    exit(1);
+  }
+#endif
 
   return result;
 }
@@ -499,6 +574,7 @@ spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
 {
   unsigned int i;
 
+#ifdef SPAMM_USE_HASHTABLE
   /* Loop over all buckets and call func() for each key. */
   for (i = 0; i < 2; i++)
   {
@@ -516,6 +592,12 @@ spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
       func(hashtable->data[i].key, hashtable->data[i].value, user_data);
     }
   }
+#else
+  for (i = 0; i < hashtable->number_buckets; i++)
+  {
+    func(i, hashtable->value[i], user_data);
+  }
+#endif
 }
 
 /** Get a list of matrix indices and a list of norms.
@@ -531,6 +613,7 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
 {
   struct spamm_list_t *list;
   unsigned int i;
+#ifdef SPAMM_USE_HASHTABLE
   unsigned int list_index;
 
   /* Allocate new lists. */
@@ -565,6 +648,14 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
     printf("error copying indices\n");
     exit(1);
   }
+#else
+  list = spamm_list_new(hashtable->number_buckets);
+
+  for (i = 0; i < hashtable->number_buckets; i++)
+  {
+    spamm_list_set(list, i, i, ((struct spamm_data_t*) hashtable->value[i])->node_norm);
+  }
+#endif
 
   return list;
 }
@@ -590,7 +681,11 @@ spamm_hashtable_get_number_buckets (const struct spamm_hashtable_t *hashtable)
 unsigned int
 spamm_hashtable_get_total_distance (const struct spamm_hashtable_t *hashtable)
 {
+#ifdef SPAMM_USE_HASHTABLE
   return hashtable->total_distance;
+#else
+  return 0;
+#endif
 }
 
 /** Get the number of stored keys.
@@ -602,6 +697,7 @@ spamm_hashtable_get_total_distance (const struct spamm_hashtable_t *hashtable)
 unsigned int
 spamm_hashtable_get_number_keys (const struct spamm_hashtable_t *hashtable)
 {
+#ifdef SPAMM_USE_HASHTABLE
   short i;
   unsigned int result = hashtable->number_stored_keys;
 
@@ -614,6 +710,9 @@ spamm_hashtable_get_number_keys (const struct spamm_hashtable_t *hashtable)
   }
 
   return hashtable->number_stored_keys;
+#else
+  return hashtable->number_buckets;
+#endif
 }
 
 /** Return the memory used in a hashtable. This does <em>not</em> include the
