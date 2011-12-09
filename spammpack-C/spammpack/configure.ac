@@ -145,6 +145,9 @@ AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
 #AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
 AC_DEFINE([SPAMM_MULTIPLY_FINAL_FREE], [1], [Free remaining memory before exit.])
 
+dnl Use hashtables in matrix tiers?
+#AC_DEFINE([SPAMM_USE_HASHTABLE], [1], [Use tier hashtables.])
+
 dnl Load git commit ID and set.
 if test -f ${srcdir}/localversion; then
   . ${srcdir}/localversion
@@ -188,7 +191,7 @@ AC_CONFIG_COMMANDS([src/spamm_config.h], [
   echo "#define __SPAMM_CONFIG_H" >> src/spamm_config.h.temp
   echo >> src/spamm_config.h.temp
   echo "/* This file contains the configuration options that directly" >> src/spamm_config.h.temp
-  echo " * affect the built of spamm." >> src/spamm_config.h.temp
+  echo " * affect the building of spamm." >> src/spamm_config.h.temp
   echo " */" >> src/spamm_config.h.temp
   echo >> src/spamm_config.h.temp
   grep "#define SPAMM" config.h >> src/spamm_config.h.temp

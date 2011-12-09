@@ -632,6 +632,10 @@ logFormatter = logging.Formatter("%(levelname)s: %(message)s")
 logHandler.setFormatter(logFormatter)
 log.addHandler(logHandler)
 
+# [FIXME] Take this out again.
+log.info("removing hierarchical option")
+options.hierarchical = False
+
 # Check N.
 if options.N <= 0:
   log.error("N needs to be a positive number > 0")
