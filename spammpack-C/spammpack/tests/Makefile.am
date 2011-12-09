@@ -8,14 +8,14 @@ AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 #AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 
 check_PROGRAMS = \
-  create_spamm \
-  expand \
-  stats \
   check_spamm \
   convert_dense \
-  hashtable_remove \
+  create_spamm \
+  expand \
   hashtable_insert \
+  hashtable_remove \
   list \
+  stats \
   list_sort \
   multiply_spamm \
   multiply_recursive
@@ -46,6 +46,10 @@ noinst_SCRIPTS = \
 EXTRA_DIST = $(noinst_SCRIPTS)
 
 TESTS = \
+  hashtable_remove \
+  hashtable_insert \
+  list \
+  list_sort \
   $(srcdir)/create_spamm_row_major.sh \
   $(srcdir)/create_spamm_Z_curve.sh \
   expand \
@@ -53,10 +57,6 @@ TESTS = \
   check_spamm \
   $(srcdir)/convert_dense_row_major.sh \
   $(srcdir)/convert_dense_Z_curve.sh \
-  hashtable_remove \
-  hashtable_insert \
-  list \
-  list_sort \
   $(srcdir)/multiply_spamm_kernel_experimental.sh \
   $(srcdir)/multiply_spamm_kernel_standard_SSE.sh \
   $(srcdir)/multiply_spamm_kernel_standard_no_checks_SSE.sh \

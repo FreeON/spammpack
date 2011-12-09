@@ -393,7 +393,6 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
 
   else
   {
-    printf("[insert] (key = %u) >= (number_buckets = %u)\n", key, hashtable->number_buckets);
     spamm_hashtable_rehash(hashtable, hashtable->number_buckets << 1);
     spamm_hashtable_insert(hashtable, key, value);
   }
@@ -551,6 +550,7 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
   if (key < hashtable->number_buckets)
   {
     result = hashtable->value[key];
+    hashtable->value[key] = NULL;
   }
 
   else
@@ -596,7 +596,10 @@ spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
 #else
   for (i = 0; i < hashtable->number_buckets; i++)
   {
-    func(i, hashtable->value[i], user_data);
+    if (hashtable->value[i] != NULL)
+    {
+      func(i, hashtable->value[i], user_data);
+    }
   }
 #endif
 }
@@ -614,9 +617,9 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
 {
   struct spamm_list_t *list;
   unsigned int i;
-#ifdef SPAMM_USE_HASHTABLE
   unsigned int list_index;
 
+#ifdef SPAMM_USE_HASHTABLE
   /* Allocate new lists. */
   list = spamm_list_new((hashtable->has_special_key[0] == SPAMM_TRUE ? 1 : 0)
       + (hashtable->has_special_key[1] == SPAMM_TRUE ? 1 : 0)
@@ -650,11 +653,29 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
     exit(1);
   }
 #else
-  list = spamm_list_new(hashtable->number_buckets);
+  unsigned int number_keys;
 
+  /* Count number of keys (the entries that are not NULL).
+   */
+  number_keys = 0;
   for (i = 0; i < hashtable->number_buckets; i++)
   {
-    spamm_list_set(list, i, i, ((struct spamm_data_t*) hashtable->value[i])->node_norm);
+    if (hashtable->value[i] != NULL)
+    {
+      number_keys++;
+    }
+  }
+
+  /* Copy the existing keys into a list. */
+  list = spamm_list_new(number_keys);
+  list_index = 0;
+  for (i = 0; i < hashtable->number_buckets; i++)
+  {
+    if (hashtable->value[i] != NULL)
+    {
+      spamm_list_set(list, list_index, i, ((struct spamm_data_t*) hashtable->value[i])->node_norm);
+      list_index++;
+    }
   }
 #endif
 
