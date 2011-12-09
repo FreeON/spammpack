@@ -195,13 +195,13 @@ spamm_hashtable_new_sized (unsigned int number_buckets)
   }
   number_buckets++;
 
-  hashtable = spamm_allocate(sizeof(struct spamm_hashtable_t));
+  hashtable = calloc(1, sizeof(struct spamm_hashtable_t));
   hashtable->number_buckets = number_buckets;
-  hashtable->data = spamm_allocate(sizeof(struct spamm_hashtable_bucket_t)*hashtable->number_buckets);
+  hashtable->data = calloc(hashtable->number_buckets, sizeof(struct spamm_hashtable_bucket_t));
 #else
-  hashtable = spamm_allocate(sizeof(struct spamm_hashtable_t));
+  hashtable = calloc(1, sizeof(struct spamm_hashtable_t));
   hashtable->number_buckets = number_buckets;
-  hashtable->value = spamm_allocate(sizeof(void*)*hashtable->number_buckets);
+  hashtable->value = calloc(hashtable->number_buckets, sizeof(void*));
 #endif
 
   return hashtable;
@@ -214,7 +214,7 @@ spamm_hashtable_new_sized (unsigned int number_buckets)
 struct spamm_hashtable_t *
 spamm_hashtable_new ()
 {
-  return spamm_hashtable_new_sized(16);
+  return spamm_hashtable_new_sized(4);
 }
 
 /** Destroy a hashtable. Note that the values stored are not free'ed.
@@ -292,7 +292,7 @@ spamm_hashtable_rehash (struct spamm_hashtable_t *hashtable,
   free(new_hashtable);
 #else
   unsigned int i;
-  void **value = spamm_allocate(sizeof(void*)*number_buckets);
+  void **value = calloc(number_buckets, sizeof(void*));
 
   /* Copy old data. */
   for (i = 0; i < hashtable->number_buckets; i++)
@@ -393,6 +393,7 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
 
   else
   {
+    printf("[insert] (key = %u) >= (number_buckets = %u)\n", key, hashtable->number_buckets);
     spamm_hashtable_rehash(hashtable, hashtable->number_buckets << 1);
     spamm_hashtable_insert(hashtable, key, value);
   }

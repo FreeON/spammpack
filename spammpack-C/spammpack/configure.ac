@@ -71,11 +71,11 @@ dnl Check for PAPI.
 AC_MSG_CHECKING([whether to enable PAPI profiling interface])
 AC_ARG_ENABLE([PAPI], [AS_HELP_STRING([--enable-PAPI],
               [enables the PAPI profiling interface])],
-              [], [enable_PAPI="no"])
+              [enable_PAPI=$enableval],
+              [enable_PAPI="no"])
+AC_MSG_RESULT([$enable_PAPI])
 
 if test "${enable_PAPI}" = "yes"; then
-  AC_MSG_RESULT([yes])
-
   dnl We need to define the C99 macro to get the declaration of caddr_t.
   CPPFLAGS="${CPPFLAGS} -DC99"
 
@@ -89,8 +89,6 @@ if test "${enable_PAPI}" = "yes"; then
 specify the PAPI header file location by adding to CPPFLAGS and/or the PAPI
 library location by adding to LDFLAGS.])
   fi
-else
-  AC_MSG_RESULT([no])
 fi
 
 dnl Check for pthread support.
@@ -107,7 +105,9 @@ dnl Check for logging.
 AC_MSG_CHECKING([whether to enable logging])
 AC_ARG_ENABLE([logging], [AS_HELP_STRING([--disable-logging],
               [disables logging output])],
-              [], [enable_logging="yes"])
+              [enable_logging=$enableval],
+              [enable_logging="yes"])
+AC_MSG_RESULT([$enable_logging])
 
 dnl Define basic tree properties.
 have_N_block=4
@@ -145,8 +145,17 @@ AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
 #AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
 AC_DEFINE([SPAMM_MULTIPLY_FINAL_FREE], [1], [Free remaining memory before exit.])
 
-dnl Use hashtables in matrix tiers?
-#AC_DEFINE([SPAMM_USE_HASHTABLE], [1], [Use tier hashtables.])
+AC_MSG_CHECKING([whether to use real hashtables])
+AC_ARG_ENABLE([hashtable],
+              [AS_HELP_STRING([--enable-hashtable], [Enables the use of real hashtables as opposed to arrays.])],
+              [use_hashtable=${enableval}],
+              [use_hashtable="no"])
+  AC_MSG_RESULT([$use_hashtable])
+
+if test "${use_hashtable}" = "yes"; then
+  dnl Use hashtables in matrix tiers?
+  AC_DEFINE([SPAMM_USE_HASHTABLE], [1], [Use tier hashtables.])
+fi
 
 dnl Load git commit ID and set.
 if test -f ${srcdir}/localversion; then
