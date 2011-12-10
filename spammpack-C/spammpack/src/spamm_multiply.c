@@ -218,33 +218,127 @@ spamm_multiply_C_index_sort (unsigned int *array,
     struct spamm_multiply_stream_t *stream,
     const unsigned int length)
 {
-  unsigned temp;
-  struct spamm_data_t *temp_pointer;
-  unsigned int i, j;
+  unsigned int i, j, j_next, i_left, i_right;
+  unsigned int sub_current, sub_next;
+  unsigned int sub_length;
+  unsigned int *sublist;
+  unsigned int *scratch_index;
+  struct spamm_multiply_stream_t *scratch_stream;
 
-  for (i = 0; i < length-1; i++) {
-    for (j = i+1; j < length; j++)
+  /* The array is trivially already sorted. */
+  if (length <= 1) { return; }
+
+  /* Create index array for sublists. This array is length+1 since we
+   * terminate the array by a value of length. */
+  sublist = (unsigned int*) malloc(sizeof(unsigned int)*2*(length+1));
+
+  /* Allocate scratch space. */
+  scratch_index = (unsigned int*) calloc(length, sizeof(unsigned int));
+  scratch_stream = (struct spamm_multiply_stream_t*) calloc(length, sizeof(struct spamm_multiply_stream_t));
+
+  /* Break the original list into at most N pieces, i.e. single element
+   * sublists. If adajacent list elements are already in the right order, we
+   * put them into the same sublist. */
+  sublist[0] = 0;
+  for (i = 1, j = 1; i < length; i++)
+  {
+    if (array[i-1] > array[i])
     {
-      if (array[i] > array[j])
-      {
-        temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-
-        temp_pointer = stream[i].A;
-        stream[i].A = stream[j].A;
-        stream[j].A = temp_pointer;
-
-        temp_pointer = stream[i].B;
-        stream[i].B = stream[j].B;
-        stream[j].B = temp_pointer;
-
-        temp_pointer = stream[i].C;
-        stream[i].C = stream[j].C;
-        stream[j].C = temp_pointer;
-      }
+      /* The 2 elements are in incorrect order. Start a new sublist. */
+      sublist[j++] = i;
     }
   }
+  sublist[j++] = i;
+  sub_length = j;
+
+  /* Loop over the list, merging neighboring sublists until everthying is
+   * sorted. */
+  sub_current = 0;
+  sub_next = length+1;
+  while (sublist[sub_current+1] < length)
+  {
+    for (j = 0, j_next = 0; j < sub_length-2; j += 2)
+    {
+      /* Merge 2 adjacent sublists. */
+      for (i = sublist[sub_current+j], i_left = sublist[sub_current+j], i_right = sublist[sub_current+j+1];
+          i < sublist[sub_current+j+2];
+          i++)
+      {
+        if (i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
+        {
+          if (array[i_left] <= array[i_right])
+          {
+            scratch_index[i] = array[i_left];
+            scratch_stream[i].A = stream[i_left].A;
+            scratch_stream[i].B = stream[i_left].B;
+            scratch_stream[i].C = stream[i_left].C;
+            i_left++;
+          }
+
+          else
+          {
+            scratch_index[i] = array[i_right];
+            scratch_stream[i].A = stream[i_right].A;
+            scratch_stream[i].B = stream[i_right].B;
+            scratch_stream[i].C = stream[i_right].C;
+            i_right++;
+          }
+        }
+
+        else if (i_left < sublist[sub_current+j+1])
+        {
+          scratch_index[i] = array[i_left];
+          scratch_stream[i].A = stream[i_left].A;
+          scratch_stream[i].B = stream[i_left].B;
+          scratch_stream[i].C = stream[i_left].C;
+          i_left++;
+        }
+
+        else
+        {
+          scratch_index[i] = array[i_right];
+          scratch_stream[i].A = stream[i_right].A;
+          scratch_stream[i].B = stream[i_right].B;
+          scratch_stream[i].C = stream[i_right].C;
+          i_right++;
+        }
+      }
+
+      /* Copy the merged list back. */
+      for (i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
+      {
+        array[i] = scratch_index[i];
+        stream[i].A = scratch_stream[i].A;
+        stream[i].B = scratch_stream[i].B;
+        stream[i].C = scratch_stream[i].C;
+      }
+
+      /* Remove division between the sublists just merged. */
+      sublist[sub_next+j_next] = sublist[sub_current+j];
+      sublist[sub_next+j_next+1] = sublist[sub_current+j+2];
+      j_next++;
+    }
+
+    /* Add remaining sublist divisions. */
+    while (j < sub_length)
+    {
+      sublist[sub_next+j_next] = sublist[sub_current+j];
+      j++;
+      j_next++;
+    }
+    sub_length = j_next;
+
+    /* Switch sublists. */
+    if (sub_current == 0) { sub_current = length+1; }
+    else                  { sub_current = 0; }
+    if (sub_next == 0) { sub_next = length+1; }
+    else               { sub_next = 0; }
+  }
+
+  /* Free memory. */
+  free(sublist);
+  free(scratch_index);
+  free(scratch_stream);
 }
 
 /** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
