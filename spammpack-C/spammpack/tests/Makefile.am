@@ -8,7 +8,6 @@ AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 #AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 
 check_PROGRAMS = \
-  array_sort \
   check_spamm \
   convert_dense \
   create_spamm \
@@ -51,7 +50,6 @@ TESTS = \
   hashtable_insert \
   list \
   list_sort \
-  array_sort \
   $(srcdir)/create_spamm_row_major.sh \
   $(srcdir)/create_spamm_Z_curve.sh \
   expand \

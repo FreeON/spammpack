@@ -207,6 +207,46 @@ spamm_multiply_sort_stream (const unsigned int left,
   }
 }
 
+/** Sort the C index array.
+ *
+ * @param array The array to sort.
+ * @param stream The multiply stream.
+ * @param length The length of the array and the stream.
+ */
+void
+spamm_multiply_C_index_sort (unsigned int *array,
+    struct spamm_multiply_stream_t *stream,
+    const unsigned int length)
+{
+  unsigned temp;
+  struct spamm_data_t *temp_pointer;
+  unsigned int i, j;
+
+  for (i = 0; i < length-1; i++) {
+    for (j = i+1; j < length; j++)
+    {
+      if (array[i] > array[j])
+      {
+        temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+
+        temp_pointer = stream[i].A;
+        stream[i].A = stream[j].A;
+        stream[j].A = temp_pointer;
+
+        temp_pointer = stream[i].B;
+        stream[i].B = stream[j].B;
+        stream[j].B = temp_pointer;
+
+        temp_pointer = stream[i].C;
+        stream[i].C = stream[j].C;
+        stream[j].C = temp_pointer;
+      }
+    }
+  }
+}
+
 /** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
  *
  * @param tolerance The SpAMM tolerance of this product.
@@ -859,6 +899,8 @@ spamm_multiply (const float tolerance,
   }
 
   /* Sort multiply_stream and lookup C blocks. */
+  spamm_multiply_C_index_sort(multiply_stream_C_index, multiply_stream, stream_index);
+
   for (i = 0; i < stream_index; i++)
   {
     multiply_stream[i].C = spamm_hashtable_lookup(C_tier_hashtable, multiply_stream_C_index[i]);
