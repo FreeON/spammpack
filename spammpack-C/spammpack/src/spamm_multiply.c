@@ -6,8 +6,8 @@
 #include <stdlib.h>
 
 //#define CONVOLUTE_1
-#define CONVOLUTE_2
-//#define CONVOLUTE_3
+//#define CONVOLUTE_2
+#define CONVOLUTE_3
 
 #ifdef HAVE_SSE
 #include <xmmintrin.h>
@@ -859,7 +859,10 @@ spamm_multiply (const float tolerance,
   }
 
   /* Sort multiply_stream and lookup C blocks. */
-
+  for (i = 0; i < stream_index; i++)
+  {
+    multiply_stream[i].C = spamm_hashtable_lookup(C_tier_hashtable, multiply_stream_C_index[i]);
+  }
 #endif
 
   /* Check. */

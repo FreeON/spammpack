@@ -191,6 +191,7 @@ libspamm_tree_la_SOURCES = \
   $(libspamm_tree_headers) \
   spamm_manual_mainpage.h \
   spamm_allocate.c \
+  spamm_array.c \
   spamm_check.c \
   spamm_convert.c \
   spamm_delete_block.c \
@@ -218,8 +219,10 @@ libspamm_tree_la_SOURCES = \
 
 libspamm_tree_headers = \
   spamm.h \
+  spamm_array.h \
   spamm_convert.h \
   spamm_error.h \
+  spamm_general.h \
   spamm_hashtable.h \
   spamm_introspection.h \
   spamm_list.h \
