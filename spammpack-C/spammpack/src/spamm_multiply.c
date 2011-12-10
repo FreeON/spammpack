@@ -778,6 +778,9 @@ spamm_multiply (const float tolerance,
 
   short int early_termination = 0;
 
+  unsigned int last_C_index;
+  struct spamm_data_t *last_C;
+
   stream_index = 0;
   number_dropped_blocks = 0;
 
@@ -901,9 +904,17 @@ spamm_multiply (const float tolerance,
   /* Sort multiply_stream and lookup C blocks. */
   spamm_multiply_C_index_sort(multiply_stream_C_index, multiply_stream, stream_index);
 
+  last_C_index = multiply_stream_C_index[0];
+  last_C = spamm_hashtable_lookup(C_tier_hashtable, last_C_index);
   for (i = 0; i < stream_index; i++)
   {
-    multiply_stream[i].C = spamm_hashtable_lookup(C_tier_hashtable, multiply_stream_C_index[i]);
+    if (multiply_stream_C_index[i] != last_C_index)
+    {
+      last_C_index = multiply_stream_C_index[i];
+      last_C = spamm_hashtable_lookup(C_tier_hashtable, last_C_index);
+    }
+
+    multiply_stream[i].C = last_C;
   }
 #endif
 
