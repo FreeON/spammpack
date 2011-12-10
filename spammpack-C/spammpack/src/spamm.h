@@ -7,7 +7,6 @@
 #include "spamm_config.h"
 
 /* Include the rest. */
-#include "spamm_array.h"
 #include "spamm_error.h"
 #include "spamm_hashtable.h"
 #include "spamm_introspection.h"
