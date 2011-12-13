@@ -445,7 +445,10 @@ CONTAINS
     LOGICAL,OPTIONAL :: init 
     TYPE(QuTree), POINTER :: qA
     IF(PRESENT(init))THEN
-       IF(ASSOCIATED(qA))STOP 'LOGIC ERROR IN NewQuNode'
+       IF(ASSOCIATED(qA))THEN
+       WRITE(*,*)'LOGIC ERROR IN NewQuNode'
+       CALL Trap()
+       ENDIF
        ALLOCATE(qA)       
     ELSE
        IF(.NOT.ASSOCIATED(qA))THEN          

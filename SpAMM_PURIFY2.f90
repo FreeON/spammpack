@@ -91,8 +91,8 @@ CONTAINS
     INTEGER :: I,LeftRow,RghtRow,LeftCol,RghtCol,HalfRow,HalfCol
     INTEGER :: MA,NA,IAts,IStrt,IStop,J,P,JP,N,M
     INTEGER :: Row,Col,BlkRow,BlkCol
-    IF(LeftRow>RghtRow)RETURN
-    IF(LeftCol>RghtCol)RETURN    
+    IF(LeftRow>RghtRow.OR.LeftRow>SpAMM_MATRIX_DIMENSION)RETURN
+    IF(LeftCol>RghtCol.OR.LeftCol>SpAMM_MATRIX_DIMENSION)RETURN    
     IF(.NOT.ASSOCIATED(qA))THEN
        CALL NewQuNode(qA)
     ENDIF
@@ -106,27 +106,29 @@ CONTAINS
        ! Ugly but it works...  
        DO IAts=1,NAtoms
           MA=BSiz%I(IAts)
-          IStrt=GLOBAL_BCSR%RowPt%I(IAts)
-          IStop=GLOBAL_BCSR%RowPt%I(IAts+1)-1
-          IF(IStrt.NE.0.AND.IStop.NE.0)THEN
+          IF(OffS%I(IAts)<=RhgtRow.OR.OffS%I(IAts)+MA-1>=RhgtCol)THEN
+             IStrt=GLOBAL_BCSR%RowPt%I(IAts)
+             IStop=GLOBAL_BCSR%RowPt%I(IAts+1)-1
              DO JP=IStrt,IStop
                 J=GLOBAL_BCSR%ColPt%I(JP)
-                P=GLOBAL_BCSR%BlkPt%I(JP)
                 NA=BSiz%I(J)
-                BlkCol=0
-                DO N=1,NA 
-                   Col=OffS%I(J)+N-1
-                   IF(Col>=LeftCol.AND.Col<=RghtCol)THEN
-                      BlkCol=Col-LeftCol+1
-                      DO M=1,MA
-                         Row=OffS%I(IAts)+M-1
-                         IF(Row>=LeftRow.AND.Row<=RghtRow)THEN
-                            BlkRow=Row-LeftRow+1
-                            qA%Blok(BlkRow,BlkCol)=GLOBAL_BCSR%MTrix%D(P+M+(N-1)*MA-1)
-                         ENDIF
-                      ENDDO
-                   ENDIF
-                ENDDO
+                IF(OffS%I(J)<=RhgtCol.OR.OffS%I(J)+NA-1>=LeftCol)THEN
+                   P=GLOBAL_BCSR%BlkPt%I(JP)
+                   BlkCol=0
+                   DO N=1,NA 
+                      Col=OffS%I(J)+N-1
+                      IF(Col>=LeftCol.AND.Col<=RghtCol)THEN
+                         BlkCol=Col-LeftCol+1
+                         DO M=1,MA
+                            Row=OffS%I(IAts)+M-1
+                            IF(Row>=LeftRow.AND.Row<=RghtRow)THEN
+                               BlkRow=Row-LeftRow+1
+                               qA%Blok(BlkRow,BlkCol)=GLOBAL_BCSR%MTrix%D(P+M+(N-1)*MA-1)
+                            ENDIF
+                         ENDDO
+                      ENDIF
+                   ENDDO
+                ENDIF 
              ENDDO
           ENDIF
        ENDDO
@@ -151,35 +153,37 @@ CONTAINS
     INTEGER :: I,LeftRow,RghtRow,LeftCol,RghtCol,HalfRow,HalfCol
     INTEGER :: MA,NA,IAts,IStrt,IStop,J,P,JP,N,M
     INTEGER :: Row,Col,BlkRow,BlkCol
-    IF(LeftRow>RghtRow)RETURN
-    IF(LeftCol>RghtCol)RETURN    
+    IF(LeftRow>RghtRow.OR.LeftRow>SpAMM_MATRIX_DIMENSION)RETURN
+    IF(LeftCol>RghtCol.OR.LeftCol>SpAMM_MATRIX_DIMENSION)RETURN    
     IF(.NOT.ASSOCIATED(qA))RETURN
     ! Blocks    
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
        ! Ugly but it works...  
        DO IAts=1,NAtoms
           MA=BSiz%I(IAts)
-          IStrt=GLOBAL_BCSR%RowPt%I(IAts)
-          IStop=GLOBAL_BCSR%RowPt%I(IAts+1)-1
-          IF(IStrt.NE.0.AND.IStop.NE.0)THEN
+          IF(OffS%I(IAts)<=RhgtRow.OR.OffS%I(IAts)+MA-1>=RhgtCol)THEN
+             IStrt=GLOBAL_BCSR%RowPt%I(IAts)
+             IStop=GLOBAL_BCSR%RowPt%I(IAts+1)-1
              DO JP=IStrt,IStop
                 J=GLOBAL_BCSR%ColPt%I(JP)
-                P=GLOBAL_BCSR%BlkPt%I(JP)
                 NA=BSiz%I(J)
-                BlkCol=0
-                DO N=1,NA 
-                   Col=OffS%I(J)+N-1
-                   IF(Col>=LeftCol.AND.Col<=RghtCol)THEN
-                      BlkCol=Col-LeftCol+1
-                      DO M=1,MA
-                         Row=OffS%I(IAts)+M-1
-                         IF(Row>=LeftRow.AND.Row<=RghtRow)THEN
-                            BlkRow=Row-LeftRow+1
-                            GLOBAL_BCSR%MTrix%D(P+M+(N-1)*MA-1)=qA%Blok(BlkRow,BlkCol)
-                         ENDIF
-                      ENDDO
-                   ENDIF
-                ENDDO
+                IF(OffS%I(J)<=RhgtCol.OR.OffS%I(J)+NA-1>=LeftCol)THEN
+                   P=GLOBAL_BCSR%BlkPt%I(JP)
+                   BlkCol=0
+                   DO N=1,NA 
+                      Col=OffS%I(J)+N-1
+                      IF(Col>=LeftCol.AND.Col<=RghtCol)THEN
+                         BlkCol=Col-LeftCol+1
+                         DO M=1,MA
+                            Row=OffS%I(IAts)+M-1
+                            IF(Row>=LeftRow.AND.Row<=RghtRow)THEN
+                               BlkRow=Row-LeftRow+1
+                               GLOBAL_BCSR%MTrix%D(P+M+(N-1)*MA-1)=qA%Blok(BlkRow,BlkCol)
+                            ENDIF
+                         ENDDO
+                      ENDIF
+                   ENDDO
+                ENDIF
              ENDDO
           ENDIF
        ENDDO
@@ -212,7 +216,6 @@ PROGRAM DMP_SP2 ! Density matrix purification, SP2 variation
   USE DenMatMethods
   USE MondoLogger
   USE SpAMM_QU2BCSR
-
   IMPLICIT NONE
   !-------------------------------------------------------------------------------
   ! Trace Setting SP2
@@ -227,8 +230,14 @@ PROGRAM DMP_SP2 ! Density matrix purification, SP2 variation
   TYPE(DBL_RNK2)                 :: dF
   TYPE(DBL_VECT)                 :: EigenV
   !-------------------------------------------------------------------------------
-  TYPE(QuTree),POINTER           :: qF=>NULL(), qP=>NULL(), qTmp1=>NULL(), qTmp2=>NULL()
+  TYPE(QuTree),POINTER           :: qF=>NULL(), qP=>NULL()
+  TYPE(QuTree),POINTER           :: qTmp1=>NULL(), qTmp2=>NULL()
+#ifdef NON_ORTHOGONAL
+  TYPE(QuTree),POINTER           :: qZ=>NULL(),qS=>NULL()
+#endif
   REAL(SpAMM_KIND)               :: TrE,HalfNe,Nocc
+  ! DEBUG ...
+  TYPE(BCSR) :: bS,bF,bTmp
   !-------------------------------------------------------------------------------
 #if defined(PARALLEL) || defined(PARALLEL_CLONES)
   CALL StartUp(Args,Prog,SERIAL_O=.FALSE.)
@@ -236,58 +245,51 @@ PROGRAM DMP_SP2 ! Density matrix purification, SP2 variation
   CALL StartUp(Args,Prog)
 #endif
   !
+  CALL SpAMM_Init_Globals(NBasF,1)
+  !
   CALL New(GLOBAL_BCSR,N_O=(/1+NAtoms,1+NAtoms**2,1+NBasF**2/))
   !
-  FFile=TrixFile('F_DIIS',Args,0)
-  INQUIRE(FILE=FFile,EXIST=Present)
-  IF(Present)THEN
-    CALL Get(GLOBAL_BCSR,FFile)
-  ELSE
-    CALL Get(GLOBAL_BCSR,TrixFile('OrthoF',Args,0))
-  ENDIF
-
-  ! Following call raises all kinds of questions about spectral 
-  ! remaping, b/c using perfect idempotent matrix still leads to 
-  ! lots of purification work. Shouldnt be ...
+!  FFile=TrixFile('F_DIIS',Args,0)
+!  INQUIRE(FILE=FFile,EXIST=Present)
+!  IF(Present)THEN
+!    CALL Get(GLOBAL_BCSR,FFile)
+!  ELSE
+  ! We are getting the non-DIIS Fockian, so that we
+  ! have perfect correspondence with non-orthogonal 
+  ! algorithm; non-orthogonal DIIS matrix not available
   !
-!   CALL Get(GLOBAL_BCSR,TrixFile('OrthoD',Args,0))
-!!$
-!!$  CALL New(dF,(/NBasF,NBasF/))
-!!$  CALL SetEq(dF,GLOBAL_BCSR)
-!!$  CALL New(EigenV,NBasF)
-!!$  CALL SetEq(EigenV,Zero)
-!!$  CALL MDiag_DSYEVD(dF,NBasF,EigenV,0)
-!!$
-!!$  WRITE(*,*)'EXTREME EIGENVALUES = ',EigenV%D
+    CALL Get(GLOBAL_BCSR,TrixFile('OrthoF',Args,0))
+!  ENDIF
 
-!  STOP
-!  CALL Print_CheckSum_BCSR(GLOBAL_BCSR,' OrthoF(A) in ',Unit_O=6) 
-
-
-
-
-  !-----------------------------------------------------------
-  CALL SpAMM_Init_Globals(NBasF,1)
   CALL NewQuNode(qF,init=.TRUE.)
-  CALL Copy_GLOBAL_BCSR_2_QuTree(qF)   
-  CALL Copy(qF,qP)
   CALL NewQuNode(qTmp1,init=.TRUE.)
-  CALL AllocateFull(qTmp1)
-  !-----------------------------------------------------------
+
+  CALL Copy_GLOBAL_BCSR_2_QuTree(qF)   
+  !
+  CALL Copy(qF,qP)
   CALL RemapSpectralBounds201(qP)
-!!$
-!!$  CALL Copy_QuTree_2_GLOBAL_BCSR(qP) 
-!!$  CALL New(dF,(/NBasF,NBasF/))
-!!$  CALL SetEq(dF,GLOBAL_BCSR)
-!!$  CALL New(EigenV,NBasF)
-!!$  CALL SetEq(EigenV,Zero)
-!!$  CALL MDiag_DSYEVD(dF,NBasF,EigenV,0)
-!!$
-!!$  WRITE(*,*)'EXTREME EIGENVALUES = ',EigenV%D
-
-!  STOP
-
-
+  !  
+#ifdef NON_ORTHOGONAL
+  ! Bit of Z-space
+  CALL NewQuNode(qZ,init=.TRUE.)
+  CALL AllocateFull(qZ)
+  ! non-orthogonal guess
+  CALL Get(GLOBAL_BCSR,TrixFile('Z',Args))   ! Z=S^(-L)
+  CALL Copy_GLOBAL_BCSR_2_QuTree(qZ)   
+  CALL Multiply(qZ,qP,qTmp1)
+  qTmp1%Norm=SQRT(Norm(qTmp1))
+  CALL Get(GLOBAL_BCSR,TrixFile('ZT',Args))
+  CALL Copy_GLOBAL_BCSR_2_QuTree(qZ)   
+  CALL Multiply(qTmp1,qZ,qP)
+  qTmp1%Norm=SQRT(Norm(qP))
+  ! Corresponding non-orthogonal Fockian
+  CALL Get(GLOBAL_BCSR,TrixFile('F',Args,0))   ! Z=S^(-L)
+  CALL Copy_GLOBAL_BCSR_2_QuTree(qF)   
+  ! Overlap matrix
+  CALL Get(GLOBAL_BCSR,TrixFile('S',Args))
+  CALL Copy_GLOBAL_BCSR_2_QuTree(qS)   
+#endif
+  !-----------------------------------------------------------
   HalfNe=SpAMM_Half*FLOAT(NEl)
   Occ0=Zero
   Occ1=Zero
@@ -295,9 +297,12 @@ PROGRAM DMP_SP2 ! Density matrix purification, SP2 variation
   Occ3=Zero
   Imin = 20
   DO I=1,100
+#ifdef NON_ORTHOGONAL
+     CALL SpAMM_TC2(qP,qS,qTmp1,qZ,HalfNe,Nocc)
+#else
      CALL SpAMM_TC2(qP,qTmp1,HalfNe,Nocc)
+#endif
      WRITE(*,*)' I ',I,ABS(Nocc*SpAMM_Two),ABS(Nocc*SpAMM_Two-FLOAT(NEl))/FLOAT(NEl)
-
      Occ0=Nocc
      IF(IdmpCnvrgChck(Occ0,Occ1,Occ2,Occ3,Imin,I)) THEN
         CALL MondoLog(DEBUG_MAXIMUM, Prog, "converged in "//TRIM(IntToChar(I))//" iterations")
@@ -310,11 +315,20 @@ PROGRAM DMP_SP2 ! Density matrix purification, SP2 variation
      Occ1 = Occ0
   ENDDO
   !-----------------------------------------------------------
-  CALL Multiply(qP,qF,qTmp1)
-  TrE=Trace(qTmp1)
-  CALL Copy_QuTree_2_GLOBAL_BCSR(qP) 
-  CALL SpAMM_Time_Stamp()
+  TrE=Trace(qP,qF)
+!
+! Diff likely due to Z and ZT (AINV)
+! Non-orthogonal:
+! E_el =   -1814.24578303247 
+! Orthogonal:
+! E_el =   -1814.24577622504 
+
+  !$OMP END SINGLE 
+  !$OMP END PARALLEL 
   WRITE(*,*)' E_el = ',TrE
+  CALL SpAMM_Time_Stamp()
+  !
+  CALL Copy_QuTree_2_GLOBAL_BCSR(qP) 
   !-----------------------------------------------------------
   ! Orthogonal put and xform to AO rep and put
   CALL New(Tmp1)

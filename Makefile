@@ -1,46 +1,17 @@
 .SUFFIXES:	.o .c .f .f90
 #
 .f90.o:   
-	ifort -c  -O3 -fpp -DSPAMM_SINGLE -I/home/matcha/freeon_1/Modules  -I/home/matcha/freeon_1/SCFeqs -I/home/matcha/FREEON_HOME_1/include/ $*.f90
-#	gfortran -c  -O3 -cpp -DSPAMM_SINGLE -I/home/matcha/freeon_1/Modules  -I/home/matcha/freeon_1/SCFeqs -I/home/matcha/FREEON_HOME_1/include/ $*.f90
+#	ifort -c -g -O0 -traceback -fpp -DSPAMM_DOUBLE -DNON_ORTHOGONAL -I/home/matcha/freeon_beta/Modules  -I/home/matcha/freeon_beta/SCFeqs -I/home/matcha/FREEON_HOME_1/include/ $*.f90
+	ifort -c  -O3 -fpp -I/home/matcha/freeon_beta/Modules  -I/home/matcha/freeon_beta/SCFeqs -I/home/matcha/FREEON_HOME_1/include/ $*.f90
+#	ifort -c -g3 -O3 -fpp -DNON_ORTHOGONAL -I/home/matcha/freeon_beta/Modules  -I/home/matcha/freeon_beta/SCFeqs -I/home/matcha/FREEON_HOME_1/include/ $*.f90
+#	ifort -c -g3 -O3 -fpp -DSPAMM_DOUBLE -DNON_ORTHOGONAL -I/home/matcha/freeon_beta/Modules  -I/home/matcha/freeon_beta/SCFeqs -I/home/matcha/FREEON_HOME_1/include/ $*.f90
+#	gfortran -c -O3 -cpp -DSPAMM_SINGLE -I/home/matcha/freeon_beta/Modules  -I/home/matcha/freeon_beta/SCFeqs -I/home/matcha/FREEON_HOME_1/include/ $*.f90
 
-
-
-
-#	gfortran -c  -O3 -cpp -DSPAMM_DOUBLE -I/home/matcha/freeon_1/Modules  -I/home/matcha/freeon_1/SCFeqs -I/home/matcha/FREEON_HOME_1/include/ $*.f90
-#-g -cpp -fbacktrace -fbounds-check -finit-real=nan -finit-integer=99999999999999999  
-#----------------------------------------------------------------------------
-#	openf90 -c  -O3 -openmp -cpp  $*.f90
-#----------------------------------------------------------------------------
-#	ifort -c -g -O0  -shared-intel -fpp  $*.f90
-#	ifort -c  -O3  -openmp -shared-intel -fpp  $*.f90
-#	ifort -c -g3 -O3 -openmp -shared-intel -shared-libgcc -fpp $*.f90
-#	ifort -c -g -O0 -openmp -fpp  $*.f90
-#	ifort -c -g -diag-enable sc3 -O0 -fpp -openmp $*.f90
-#----------------------------------------------------------------------------
-#	pgf95 -c  -O3 -mp -Mpreprocess $*.f90
-#	pgf95 -c -g -O3 -mp -Mpreprocess $*.f90
-#----------------------------------------------------------------------------
-#	gfortran -c -g -O3 -fopenmp -cpp $*.f90
-#	gfortran -c  -O3 -cpp $*.f90
-#----------------------------------------------------------------------------
 .c.o:   
 	gcc -c -g -O2 -Iipm-2.0 $*.c
-#----------------------------------------------------------------------------
-#	openCC -c -O3 -Iipm-2.0 $*.c
-#----------------------------------------------------------------------------
-#	icc -c -g -O0 -Iipm-2.0 $*.c
 #	icc -c -g3 -O3 -Iipm-2.0 $*.c
-#	icc -c -g -diag-enable sc3  -O0 -Iipm-2.0 $*.c
-#----------------------------------------------------------------------------
-#	pgcc -c  -O3 -Iipm-2.0 $*.c
-#	pgcc -c -g -O2 -Iipm-2.0 $*.c
-#----------------------------------------------------------------------------
-#----------------------------------------------------------------------------
-#
 Objs = SpAMM_PACKAGE.o SpAMM_PROJECT.o SpAMM_CONVERT.o SpAMM_ALGEBRA.o SpAMM_MNGMENT.o SpAMM_GLOBALS.o SpAMM_TIMER.o SpAMM_DERIVED.o 
 #
-
 ipm:	
 	cd ipm-2.0; ./configure ; cd ..
 	make -C ipm-2.0 
@@ -48,14 +19,19 @@ ipm:
 test:	clean ipm $(Objs) SpAMM_TESTONE.o
 	gfortran  -o spamm_test.exe SpAMM_TESTONE.o $(Objs) -Lipm-2.0/ -lipm -lm -L/home/matcha/LIBS/lapack_gcc_4.3.3/ -llapack -lblas
 
+#pure:	clean ipm $(Objs) SpAMM_PURIFY2.o
+#	gfortran  -o spamm_purify2.exe SpAMM_PURIFY2.o $(Objs) /home/matcha/freeon_beta/SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -lm -I/home/matcha/freeon_beta/Modules  -I/home/matcha/FREEON_HOME_1/inc/ -L/home/matcha/LIBS/lapack_gcc_4.5.2//lib -L/home/matcha/LIBS/HDF5//lib -all-static  -llapack -lblas  -L/home/matcha/freeon_beta/Modules/.libs/ -L/home/matcha/freeon_beta/SCFeqs/  -all-static -lfreeonmodules -lz -lhdf5 -lpthread -lm -lm  -llapack -lblas
+
 pure:	clean ipm $(Objs) SpAMM_PURIFY2.o
-	gfortran  -o spamm_pure.exe SpAMM_PURIFY2.o $(Objs) /home/matcha/freeon_1/SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -lm -I/home/matcha/freeon_1/Modules  -I/home/matcha/FREEON_HOME_1/inc/ -L/home/matcha/LIBS/lapack_gcc_4.5.2//lib -L/home/matcha/LIBS/HDF5//lib -all-static  -llapack -lblas  -L/home/matcha/freeon_1/Modules/.libs/ -L/home/matcha/freeon_1/SCFeqs/  -all-static -lfreeonmodules -lz -lhdf5 -lpthread -lm -lm  -llapack -lblas
+	ifort -g -Bstatic -o spamm_purify2.exe SpAMM_PURIFY2.o $(Objs) ../SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -I../Modules  -I$(MONDO_HOME)/inc/ -L$(MONDO_HOME)/lib/ -L../Modules/.libs/ -L../SCFeqs/  -L../Modules/lapack/lapack/.libs/ -lfreeonmodules -lhdf5 -lz -lm -lfreeonlapack -mkl=sequential 
+	cp spamm_purify2.exe $(MONDO_HOME)/bin/SP2 
+
+#-L/home/matcha/LIBS/lapack_ifort
 
 #pure:	clean ipm $(Objs) SpAMM_PURIFY2.o
-#	gfortran  -all-static -o spamm_pure.exe SpAMM_PURIFY2.o $(Objs) /home/matcha/freeon_1/SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -lm -I/home/matcha/freeon_1/Modules  -I/home/matcha/FREEON_HOME_1/inc/ -L/home/matcha/LIBS/LAPACK_GFORT_64  -llapack -lblas  -L/home/matcha/freeon_1/Modules/.libs/ -lfreeonmodules  -L/home/matcha/FREEON_HOME_1/lib -lhdf5 -L/home/matcha/freeon_1/SCFeqs/ -lz -lpthread -lm -lm  
+#	gfortran  -all-static -o spamm_pure.exe SpAMM_PURIFY2.o $(Objs) /home/matcha/freeon_beta/SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -lm -I/home/matcha/freeon_beta/Modules  -I/home/matcha/FREEON_HOME_1/inc/ -L/home/matcha/LIBS/LAPACK_GFORT_64  -llapack -lblas  -L/home/matcha/freeon_beta/Modules/.libs/ -lfreeonmodules  -L/home/matcha/FREEON_HOME_1/lib -lhdf5 -L/home/matcha/freeon_beta/SCFeqs/ -lz -lpthread -lm -lm  
 
 
-#
 
 #----------------------------------------------------------------------------
 #	openf90 -openmp -o spamm_test.exe $(Objs) -Lipm-2.0/ -lipm -lm
@@ -101,7 +77,7 @@ clean:
 	rm -f \#*
 	rm -f *.mod *.o
 	rm -f *~
-	rm -f spamm_test.exe
+	rm -f *.exe
 	rm -rf jnk
 	ls -lS
 

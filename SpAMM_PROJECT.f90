@@ -38,7 +38,8 @@ MODULE SpAMM_PROJECT
      MODULE PROCEDURE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
   END INTERFACE
   INTERFACE SpAMM_TC2
-     MODULE PROCEDURE SpAMM_Quadratic_Trace_Correcting_Purification
+     MODULE PROCEDURE SpAMM_Quadratic_Trace_Correcting_Purification, &
+                      SpAMM_Quadratic_Trace_Correcting_Purification_NonOrthogonal
   END INTERFACE
 CONTAINS 
   !================================================================= 
@@ -77,10 +78,32 @@ CONTAINS
        CALL Add(P,P2,SpAMM_Two,-SpAMM_One)         ! P <- 2*P-P^2
     ENDIF
     P%Norm=SQRT(Norm(P))
-    TrP=Trace(P)                                   
     TTotal=SpAMM_IPM_GET_TIME()-TInitial
-    CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification",30)
+    CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification",29)
   END SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification
+
+  SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification_NonOrthogonal(P,S,P2,Tmp,Ne,TrP)
+    TYPE(QuTree),POINTER   :: P,S,P2,Tmp
+    TYPE(QuTree),POINTER   :: T1
+    REAL(SpAMM_KIND)       :: Ne,TrP,TrP2 
+    REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
+    TInitial=SpAMM_IPM_GET_TIME()  
+!!$    CALL Multiply(S,P,Tmp)
+!!$    Tmp%Norm=SQRT(Norm(Tmp))
+!!$    TrP=Trace(Tmp)                                   
+!!$    CALL Multiply(P,Tmp,P2) 
+    TrP=Trace(S,P)
+    CALL Multiply(P,S,P,P2)                        ! P^2 <- P.S.P
+    TrP2=Trace(P2)
+    IF(ABS(TrP2-Ne)<ABS(SpAMM_Two*TrP-TrP2-Ne))THEN       
+       T1=>P; P=>P2; P2=>T1                        ! P <- P^2
+    ELSE  
+       CALL Add(P,P2,SpAMM_Two,-SpAMM_One)         ! P <- 2*P-P^2
+    ENDIF
+    P%Norm=SQRT(Norm(P))
+    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification_NonOrthogonal",30)
+  END SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification_NonOrthogonal
   !================================================================= 
   ! REMAPING SPECTRAL BOUNDS TO [0,1]
   !================================================================= 

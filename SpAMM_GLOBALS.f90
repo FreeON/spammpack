@@ -28,11 +28,11 @@
 !------------------------------------------------------------------------------
 MODULE SpAMM_GLOBALS
   USE SpAMM_DERIVED
-  INTEGER,PARAMETER                               :: SpAMM_BLOCK_SIZE=4
+  INTEGER,PARAMETER                               :: SpAMM_BLOCK_SIZE=16
 #ifdef SPAMM_DOUBLE
-  REAL(SpAMM_KIND),PARAMETER                      :: SpAMM_PRODUCT_TOLERANCE=1D-8
-#else
   REAL(SpAMM_KIND),PARAMETER                      :: SpAMM_PRODUCT_TOLERANCE=1D-12
+#else
+  REAL(SpAMM_KIND),PARAMETER                      :: SpAMM_PRODUCT_TOLERANCE=1D-8
 #endif
   REAL(SpAMM_KIND),PARAMETER                      :: SpAMM_MATRIX_TOLERANCE=1D-4*SpAMM_PRODUCT_TOLERANCE
   REAL(SpAMM_KIND),PARAMETER                      :: SpAMM_RECURSION_NORMD_CUTOFF=1E-4
@@ -50,9 +50,7 @@ MODULE SpAMM_GLOBALS
        REAL(SpAMM_DOUBLE) :: SpAMM_IPM_GET_TIME
      END FUNCTION SpAMM_IPM_GET_TIME
   END INTERFACE
-
   CONTAINS
-
     SUBROUTINE SpAMM_Init_Globals(N,Threads)
       IMPLICIT NONE
       INTEGER          :: N
@@ -125,7 +123,7 @@ MODULE SpAMM_GLOBALS
          ENDDO
          WRITE(*,22)
          WRITE(*,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
-         WRITE(77,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
+!         WRITE(77,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
 35       FORMAT("SpAMM_SCALING ",I4,"  ", F20.10)
       ELSE
          SpAMM_STATS(RoutineID)%Time=SpAMM_STATS(RoutineID)%Time+Time
