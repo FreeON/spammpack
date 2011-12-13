@@ -14,10 +14,7 @@ main (int argc, char **argv)
 
   unsigned int i, j, k;
 
-  //unsigned int N = 2000;
-  unsigned int N = 129;
-  //unsigned int N = 16;
-  //unsigned int N = 32;
+  unsigned int N = 513;
 
   double alpha = 1.2;
   double beta = 0.5;
