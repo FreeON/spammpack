@@ -7,7 +7,8 @@
 
 //#define CONVOLUTE_1
 //#define CONVOLUTE_2
-#define CONVOLUTE_3
+//#define CONVOLUTE_3
+#define CONVOLUTE_4
 
 #ifdef HAVE_SSE
 #include <xmmintrin.h>
@@ -1008,6 +1009,169 @@ spamm_multiply (const float tolerance,
       last_C = spamm_hashtable_lookup(C_tier_hashtable, last_C_index);
     }
 
+    /* Assign C block. */
+    multiply_stream[i].C = last_C;
+  }
+#endif
+
+#ifdef CONVOLUTE_4
+  unsigned int *A_index_array = spamm_list_get_index_address(A_index.index);
+  unsigned int *B_index_array = spamm_list_get_index_address(B_index.index);
+
+  unsigned int *multiply_stream_C_index = spamm_allocate(sizeof(unsigned int)
+      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
+
+  unsigned int A_index_current[4];
+  unsigned int B_index_current[4];
+  unsigned int C_index_current[4];
+
+  unsigned int A_index_k_current[4];
+  unsigned int B_index_k_current[4];
+
+  float A_norm_current[4];
+  float B_norm_current[4];
+
+  short int norm_product[4];
+
+  short int early_termination = 0;
+
+  unsigned int last_C_index;
+  struct spamm_data_t *last_C;
+
+  stream_index = 0;
+  number_dropped_blocks = 0;
+
+  for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size && B_k_lookup_index < B_k_lookup.size; )
+  {
+    /* Match k-indices. */
+    A_k = A_index_array[A_k_lookup.index[A_k_lookup_index]] & MASK_2D_J;
+    B_k = (B_index_array[B_k_lookup.index[B_k_lookup_index]] & MASK_2D_I) >> 1;
+
+    if (A_k > B_k)
+    {
+      B_k_lookup_index++;
+      continue;
+    }
+
+    else if (A_k < B_k)
+    {
+      A_k_lookup_index++;
+      continue;
+    }
+
+    /* Loop over k-block in A. */
+    for (i = A_k_lookup.index[A_k_lookup_index]; i < A_k_lookup.index[A_k_lookup_index+1]; i++)
+    {
+      /* Get index of A. */
+      A_index_current[0] = A_index_array[i];
+      A_index_current[1] = A_index_current[0];
+      A_index_current[2] = A_index_current[0];
+      A_index_current[3] = A_index_current[0];
+
+      /* Load norm of A. */
+      A_norm_current[0] = A_index.data[i]->node_norm;
+      A_norm_current[1] = A_norm_current[0];
+      A_norm_current[2] = A_norm_current[0];
+      A_norm_current[3] = A_norm_current[0];
+
+      early_termination = 0;
+      for (j = B_k_lookup.index[B_k_lookup_index]; j < B_k_lookup.index[B_k_lookup_index+1]; j += 4)
+      {
+        /* Get index of B. */
+        B_index_current[0] = B_index_array[j];
+        B_index_current[1] = (j+1 < B_k_lookup.index[B_k_lookup_index+1] ? B_index_array[j+1] : 0);
+        B_index_current[2] = (j+2 < B_k_lookup.index[B_k_lookup_index+1] ? B_index_array[j+2] : 0);
+        B_index_current[3] = (j+3 < B_k_lookup.index[B_k_lookup_index+1] ? B_index_array[j+3] : 0);
+
+        /* Load norm of B. */
+        B_norm_current[0] = B_index.data[j]->node_norm;
+        B_norm_current[1] = (j+1 < B_k_lookup.index[B_k_lookup_index+1] ? B_index.data[j+1]->node_norm : 0.0);
+        B_norm_current[2] = (j+2 < B_k_lookup.index[B_k_lookup_index+1] ? B_index.data[j+2]->node_norm : 0.0);
+        B_norm_current[3] = (j+3 < B_k_lookup.index[B_k_lookup_index+1] ? B_index.data[j+3]->node_norm : 0.0);
+
+        /* Calculate norm products. */
+        norm_product[0] = (A_norm_current[0]*B_norm_current[0] > tolerance) && (A_norm_current[0]*B_norm_current[0] > 0.0);
+        norm_product[1] = (A_norm_current[1]*B_norm_current[1] > tolerance) && (A_norm_current[1]*B_norm_current[1] > 0.0);
+        norm_product[2] = (A_norm_current[2]*B_norm_current[2] > tolerance) && (A_norm_current[2]*B_norm_current[2] > 0.0);
+        norm_product[3] = (A_norm_current[3]*B_norm_current[3] > tolerance) && (A_norm_current[3]*B_norm_current[3] > 0.0);
+
+        /* Calculate indices of C. */
+        C_index_current[0] = (A_index_current[0] & MASK_2D_I) | (B_index_current[0] & MASK_2D_J);
+        C_index_current[1] = (A_index_current[1] & MASK_2D_I) | (B_index_current[1] & MASK_2D_J);
+        C_index_current[2] = (A_index_current[2] & MASK_2D_I) | (B_index_current[2] & MASK_2D_J);
+        C_index_current[3] = (A_index_current[3] & MASK_2D_I) | (B_index_current[3] & MASK_2D_J);
+
+        /* Append to stream or done. */
+        if (norm_product[0])
+        {
+          multiply_stream[stream_index].A = A_index.data[i];
+          multiply_stream[stream_index].B = B_index.data[j];
+          multiply_stream_C_index[stream_index] = C_index_current[0];
+          stream_index++;
+        }
+
+        else
+        {
+          early_termination = 1;
+          break;
+        }
+
+        if (norm_product[1])
+        {
+          multiply_stream[stream_index].A = A_index.data[i];
+          multiply_stream[stream_index].B = B_index.data[j+1];
+          multiply_stream_C_index[stream_index] = C_index_current[1];
+          stream_index++;
+        }
+
+        else { break; }
+
+        if (norm_product[2])
+        {
+          multiply_stream[stream_index].A = A_index.data[i];
+          multiply_stream[stream_index].B = B_index.data[j+2];
+          multiply_stream_C_index[stream_index] = C_index_current[2];
+          stream_index++;
+        }
+
+        else { break; }
+
+        if (norm_product[3])
+        {
+          multiply_stream[stream_index].A = A_index.data[i];
+          multiply_stream[stream_index].B = B_index.data[j+3];
+          multiply_stream_C_index[stream_index] = C_index_current[3];
+          stream_index++;
+        }
+
+        else { break; }
+      }
+
+      /* Check whether we had at least one block in B that made it passed the
+       * SpAMM condition. */
+      if (early_termination == 1)
+      {
+        break;
+      }
+    }
+
+    A_k_lookup_index++;
+  }
+
+  /* Sort multiply_stream and lookup C blocks. */
+  //spamm_multiply_C_index_sort(multiply_stream_C_index, multiply_stream, stream_index);
+
+  last_C_index = multiply_stream_C_index[0];
+  last_C = spamm_hashtable_lookup(C_tier_hashtable, last_C_index);
+  for (i = 0; i < stream_index; i++)
+  {
+    if (multiply_stream_C_index[i] != last_C_index)
+    {
+      last_C_index = multiply_stream_C_index[i];
+      last_C = spamm_hashtable_lookup(C_tier_hashtable, last_C_index);
+    }
+
+    /* Assign C block. */
     multiply_stream[i].C = last_C;
   }
 #endif
