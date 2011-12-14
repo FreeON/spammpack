@@ -10,6 +10,8 @@
 //#define CONVOLUTE_3
 #define CONVOLUTE_4
 
+//#define SPAMM_MULTIPLY_DOUBLE_CHECK
+
 #ifdef HAVE_SSE
 #include <xmmintrin.h>
 #endif
@@ -377,6 +379,8 @@ spamm_multiply (const float tolerance,
   unsigned int A_k_lookup_index;
   unsigned int B_k_lookup_index;
   unsigned int A_k, B_k;
+  unsigned int first_A_k, first_B_k;
+  unsigned int next_A_k, next_B_k;
 
   struct spamm_multiply_k_lookup_t A_k_lookup;
   struct spamm_multiply_k_lookup_t B_k_lookup;
@@ -441,6 +445,9 @@ spamm_multiply (const float tolerance,
 
   A_index.index = spamm_hashtable_keys(A_tier_hashtable);
   B_index.index = spamm_hashtable_keys(B_tier_hashtable);
+
+  A_index.size = spamm_list_length(A_index.index);
+  B_index.size = spamm_list_length(B_index.index);
 
   spamm_list_sort_index(A_index.index, spamm_list_compare_index_column);
   spamm_list_sort_index(B_index.index, spamm_list_compare_index_row);
@@ -560,10 +567,7 @@ spamm_multiply (const float tolerance,
   printf("[multiply] copying indices to array and referencing dense blocks... ");
   spamm_timer_start(timer);
 
-  A_index.size = spamm_list_length(A_index.index);
   A_index.data = spamm_allocate(sizeof(struct spamm_data_t*)*spamm_list_length(A_index.index));
-
-  B_index.size = spamm_list_length(B_index.index);
   B_index.data = spamm_allocate(sizeof(struct spamm_data_t*)*spamm_list_length(B_index.index));
 
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
@@ -582,6 +586,98 @@ spamm_multiply (const float tolerance,
   timer_string = spamm_timer_get_string(timer);
   printf("%s timer units\n", timer_string);
   free(timer_string);
+#endif
+
+#ifdef SPAMM_MULTIPLY_DOUBLE_CHECK
+  for (i = 0, A_k_lookup_index = 0; i < A_index.size; i++)
+  {
+    if (spamm_list_get_norm(A_index.index, i) != A_index.data[i]->node_norm)
+    {
+      printf("[multiply] DOUBLECHECK norm mismatch in A_index[%u]\n", i);
+      exit(1);
+    }
+
+    A_k = spamm_list_get_index(A_index.index, i) & MASK_2D_J;
+
+    if (i == A_k_lookup.index[A_k_lookup_index])
+    {
+      first_A_k = spamm_list_get_index(A_index.index, i) & MASK_2D_J;
+    }
+
+    else if (i == A_k_lookup.index[A_k_lookup_index+1])
+    {
+      A_k_lookup_index++;
+      first_A_k = spamm_list_get_index(A_index.index, i) & MASK_2D_J;
+    }
+
+    else
+    {
+      if (A_k != first_A_k)
+      {
+        printf("[multipy] DOUBLECHECK A_k_lookup incorrect\n");
+        exit(1);
+      }
+    }
+
+    if (i < A_index.size-1)
+    {
+      next_A_k = spamm_list_get_index(A_index.index, i+1) & MASK_2D_J;
+
+      if (A_k == next_A_k) {
+        if (A_index.data[i]->node_norm < A_index.data[i+1]->node_norm)
+        {
+          printf("[multiply] DOUBLECHECK norms in A_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
+              i, A_index.data[i]->node_norm, i+1, A_index.data[i+1]->node_norm);
+          exit(1);
+        }
+      }
+    }
+  }
+
+  for (i = 0, B_k_lookup_index = 0; i < B_index.size; i++)
+  {
+    if (spamm_list_get_norm(B_index.index, i) != B_index.data[i]->node_norm)
+    {
+      printf("[multiply] DOUBLECHECK norm mismatch in B_index[%u]\n", i);
+      exit(1);
+    }
+
+    B_k = spamm_list_get_index(B_index.index, i) & MASK_2D_I;
+
+    if (i == B_k_lookup.index[B_k_lookup_index])
+    {
+      first_B_k = spamm_list_get_index(B_index.index, i) & MASK_2D_I;
+    }
+
+    else if (i == B_k_lookup.index[B_k_lookup_index+1])
+    {
+      B_k_lookup_index++;
+      first_B_k = spamm_list_get_index(B_index.index, i) & MASK_2D_I;
+    }
+
+    else
+    {
+      if (B_k != first_B_k)
+      {
+        printf("[multipy] DOUBLECHECK B_k_lookup incorrect\n");
+        exit(1);
+      }
+    }
+
+    if (i < B_index.size-1)
+    {
+      next_B_k = spamm_list_get_index(B_index.index, i+1) & MASK_2D_I;
+
+      if (B_k == next_B_k) {
+        if (B_index.data[i]->node_norm < B_index.data[i+1]->node_norm)
+        {
+          printf("[multiply] DOUBLECHECK norms in B_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
+              i, B_index.data[i]->node_norm, i+1, B_index.data[i+1]->node_norm);
+          exit(1);
+        }
+      }
+    }
+  }
 #endif
 
 #ifdef SPAMM_MULTIPLY_CONVOLUTE
@@ -1074,8 +1170,7 @@ spamm_multiply (const float tolerance,
       A_norm_current[2] = A_norm_current[0];
       A_norm_current[3] = A_norm_current[0];
 
-      early_termination = 0;
-      for (j = B_k_lookup.index[B_k_lookup_index]; j < B_k_lookup.index[B_k_lookup_index+1]; j += 4)
+      for (j = B_k_lookup.index[B_k_lookup_index], early_termination = 1; j < B_k_lookup.index[B_k_lookup_index+1]; j += 4)
       {
         /* Get index of B. */
         B_index_current[0] = B_index_array[j];
@@ -1090,10 +1185,10 @@ spamm_multiply (const float tolerance,
         B_norm_current[3] = (j+3 < B_k_lookup.index[B_k_lookup_index+1] ? B_index.data[j+3]->node_norm : 0.0);
 
         /* Calculate norm products. */
-        norm_product[0] = (A_norm_current[0]*B_norm_current[0] > tolerance) && (A_norm_current[0]*B_norm_current[0] > 0.0);
-        norm_product[1] = (A_norm_current[1]*B_norm_current[1] > tolerance) && (A_norm_current[1]*B_norm_current[1] > 0.0);
-        norm_product[2] = (A_norm_current[2]*B_norm_current[2] > tolerance) && (A_norm_current[2]*B_norm_current[2] > 0.0);
-        norm_product[3] = (A_norm_current[3]*B_norm_current[3] > tolerance) && (A_norm_current[3]*B_norm_current[3] > 0.0);
+        norm_product[0] = (A_norm_current[0]*B_norm_current[0] > tolerance);
+        norm_product[1] = (A_norm_current[1]*B_norm_current[1] > tolerance);
+        norm_product[2] = (A_norm_current[2]*B_norm_current[2] > tolerance);
+        norm_product[3] = (A_norm_current[3]*B_norm_current[3] > tolerance);
 
         /* Calculate indices of C. */
         C_index_current[0] = (A_index_current[0] & MASK_2D_I) | (B_index_current[0] & MASK_2D_J);
@@ -1108,11 +1203,15 @@ spamm_multiply (const float tolerance,
           multiply_stream[stream_index].B = B_index.data[j];
           multiply_stream_C_index[stream_index] = C_index_current[0];
           stream_index++;
+
+          /* Since we have been able to find at least one product that passed
+           * the SpAMM condition, we have to consider the next block in A. */
+          early_termination = 0;
         }
 
         else
         {
-          early_termination = 1;
+          number_dropped_blocks += B_k_lookup.index[B_k_lookup_index+1]-(j);
           break;
         }
 
@@ -1124,7 +1223,11 @@ spamm_multiply (const float tolerance,
           stream_index++;
         }
 
-        else { break; }
+        else
+        {
+          number_dropped_blocks += B_k_lookup.index[B_k_lookup_index+1]-(j+1);
+          break;
+        }
 
         if (norm_product[2])
         {
@@ -1134,7 +1237,11 @@ spamm_multiply (const float tolerance,
           stream_index++;
         }
 
-        else { break; }
+        else
+        {
+          number_dropped_blocks += B_k_lookup.index[B_k_lookup_index+1]-(j+2);
+          break;
+        }
 
         if (norm_product[3])
         {
@@ -1144,13 +1251,18 @@ spamm_multiply (const float tolerance,
           stream_index++;
         }
 
-        else { break; }
+        else
+        {
+          number_dropped_blocks += B_k_lookup.index[B_k_lookup_index+1]-(j+3);
+          break;
+        }
       }
 
-      /* Check whether we had at least one block in B that made it passed the
+      /* Check whether we had at least one block in B that made it past the
        * SpAMM condition. */
       if (early_termination == 1)
       {
+        number_dropped_blocks += (A_k_lookup.index[A_k_lookup_index+1]-(i+1))*(B_k_lookup.index[B_k_lookup_index+1]-B_k_lookup.index[B_k_lookup_index]);
         break;
       }
     }
@@ -1183,6 +1295,19 @@ spamm_multiply (const float tolerance,
         (A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
     exit(1);
   }
+
+#ifdef SPAMM_MULTIPLY_DOUBLE_CHECK
+  /* Print multiply stream for debugging. */
+  printf("[multiply] multiply stream = {\n");
+  for (i = 0; i < stream_index; i++)
+  {
+    printf("  [ %u(%e) %u(%e) -> %u(%e) ] : %u\n",
+        multiply_stream[i].A->index_2D, multiply_stream[i].A->node_norm,
+        multiply_stream[i].B->index_2D, multiply_stream[i].B->node_norm,
+        multiply_stream[i].C->index_2D, multiply_stream[i].A->node_norm*multiply_stream[i].B->node_norm, i);
+  }
+  printf("}\n");
+#endif
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
