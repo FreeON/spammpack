@@ -3,10 +3,7 @@
 #ifndef __SPAMM_H
 #define __SPAMM_H
 
-/* Include some configuration options. */
-#include "spamm_config.h"
-
-/* Include the rest. */
+/* Include the other header files. */
 #include "spamm_error.h"
 #include "spamm_hashtable.h"
 #include "spamm_introspection.h"

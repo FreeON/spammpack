@@ -1,4 +1,5 @@
 #include "spamm.h"
+
 #include <math.h>
 
 /** Prune matrix tree by removing zero blocks.

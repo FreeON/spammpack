@@ -150,12 +150,57 @@ AC_ARG_ENABLE([hashtable],
               [AS_HELP_STRING([--enable-hashtable], [Enables the use of real hashtables as opposed to arrays.])],
               [use_hashtable=${enableval}],
               [use_hashtable="no"])
-  AC_MSG_RESULT([$use_hashtable])
+AC_MSG_RESULT([$use_hashtable])
 
+use_hashtable_hash=0
 if test "${use_hashtable}" = "yes"; then
   dnl Use hashtables in matrix tiers?
   AC_DEFINE([SPAMM_USE_HASHTABLE], [1], [Use tier hashtables.])
+
+  AC_MSG_CHECKING([whether to use the direct hash])
+  AC_ARG_ENABLE([hash-direct],
+                [AS_HELP_STRING([--enable-hash-direct], [Enables the direct hash, i.e. the key is not modified.])],
+                [use_hashtable_hash_direct=${enableval}],
+                [use_hashtable_hash_direct="no"])
+  AC_MSG_RESULT([$use_hashtable_hash_direct])
+
+  AC_MSG_CHECKING([whether to use the Jenkins hash])
+  AC_ARG_ENABLE([hash-jenkins],
+                [AS_HELP_STRING([--enable-hash-jenkins], [Enables the lookup3 hash by Jenkins])],
+                [use_hashtable_hash_jenkins=${enableval}],
+                [use_hashtable_hash_jenkins="no"])
+  AC_MSG_RESULT([$use_hashtable_hash_jenkins])
+
+  AC_MSG_CHECKING([whether to use the MurmurHash3 hash])
+  AC_ARG_ENABLE([hash-murmurhash3],
+                [AS_HELP_STRING([--enable-hash-murmurhash3], [Enables the MurmurHash3 hash])],
+                [use_hashtable_hash_murmurhash3=${enableval}],
+                [use_hashtable_hash_murmurhash3="no"])
+  AC_MSG_RESULT([$use_hashtable_hash_murmurhash3])
+
+  dnl Set default
+  use_hashtable_hash=2
+
+  dnl Test what the user wanted.
+  if test "$use_hashtable_hash_direct" = "yes"; then
+    use_hashtable_hash=1
+  elif test "$use_hashtable_hash_jenkins" = "yes"; then
+    use_hashtable_hash=2
+  elif test "$use_hashtable_hash_murmurhash3" = "yes"; then
+    use_hashtable_hash=3
+  else
+    AC_MSG_NOTICE([no hash preference given, using $use_hashtable_hash])
+  fi
 fi
+AC_DEFINE_UNQUOTED([SPAMM_HASHTABLE_HASH], [$use_hashtable_hash], [The type of hash function])
+
+AC_MSG_CHECKING([what convolution implementation to use])
+AC_ARG_WITH([convolution],
+            [AS_HELP_STRING([--with-convolution], [Choose which convolution implementation to use])],
+            [use_convolution=$withval],
+            [use_convolution=1])
+AC_MSG_RESULT([$use_convolution])
+AC_DEFINE_UNQUOTED([SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION], [$use_convolution], [The convolution implementation])
 
 dnl Load git commit ID and set.
 if test -f ${srcdir}/localversion; then

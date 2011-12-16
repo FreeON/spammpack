@@ -1,10 +1,10 @@
+#include "spamm.h"
+#include "spamm_recursive.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "spamm.h"
-#include "spamm_recursive.h"
 
 /** Create a new recursive matrix object.
  *
