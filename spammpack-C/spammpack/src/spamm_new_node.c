@@ -1,4 +1,5 @@
 #include "spamm.h"
+
 #include <stdlib.h>
 
 /** Allocate a new node of a matrix tree.

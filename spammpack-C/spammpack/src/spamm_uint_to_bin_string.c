@@ -1,4 +1,5 @@
 #include "spamm.h"
+
 #include <assert.h>
 
 /** Convert an unsigned int to a binary string.

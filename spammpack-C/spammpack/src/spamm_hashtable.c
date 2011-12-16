@@ -1,3 +1,4 @@
+#include "spamm_config.h"
 #include "spamm.h"
 #include "spamm_hashtable.h"
 #include "spamm_list.h"
@@ -82,9 +83,19 @@ struct spamm_hashtable_t
 inline uint32_t
 spamm_hashtable_hash (const uint32_t key)
 {
+#if SPAMM_HASHTABLE_HASH == 1
+#warning Using direct hash
   return spamm_hashtable_hash_direct(key);
-  //return spamm_hashtable_hash_Jenkins(key);
-  //return spamm_hashtable_hash_MurmurHash3(key);
+#elif SPAMM_HASHTABLE_HASH == 2
+#warning Using Jenkins hash
+  return spamm_hashtable_hash_Jenkins(key);
+#elif SPAMM_HASHTABLE_HASH == 3
+#warning Using MurmurHash3 hash
+  return spamm_hashtable_hash_MurmurHash3(key);
+#else
+#warning Disabled hash function (code will stop when calling the hash function)
+  exit(1);
+#endif
 }
 
 /** A hash function. This is taken the hashword() function from Bob Jenkins'

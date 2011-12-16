@@ -1,4 +1,5 @@
 #include "spamm.h"
+
 #include <stdlib.h>
 
 /** Delete a block of type spamm_data_t.

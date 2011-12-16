@@ -1,4 +1,5 @@
 #include "spamm.h"
+
 #include <stdlib.h>
 
 /** Delete a node in a matrix.

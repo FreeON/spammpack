@@ -1,4 +1,5 @@
 #include "spamm.h"
+
 #include <stdio.h>
 
 int

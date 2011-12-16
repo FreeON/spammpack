@@ -175,7 +175,7 @@ generated_kernel_files = \
 
 BUILT_SOURCES = $(generated_kernel_files)
 
-CLEANFILES = $(generated_kernel_files)
+CLEANFILES = $(generated_kernel_files) $(builddir)/spamm_config.h
 
 nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
@@ -229,6 +229,6 @@ libspamm_tree_headers = \
   spamm_types.h
 
 include_HEADERS = \
-  spamm_config.h \
+  $(builddir)/spamm_config.h \
   $(libspamm_kernel_headers) \
   $(libspamm_tree_headers)

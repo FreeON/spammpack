@@ -1,5 +1,6 @@
 #include "config.h"
 #include "spamm_timer.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>

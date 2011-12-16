@@ -1,5 +1,6 @@
 #include "spamm_kernel.h"
 #include "spamm_types.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
