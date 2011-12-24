@@ -3,19 +3,25 @@
 #alias cfpgi  'autoreconf -i -s; ./configure --build=x86_64-unknown-linux-gnu --disable-random-seed --disable-delete-preprocessed-files --prefix=/home/mchalla/FREEON_BETA_PGI  --enable-phipac --enable-static --with-MONDO_SCRATCH=/scratch CC=pgcc FC=pgf90 F77=pgf90 FCFLAGS="-O2 -fast -fastsse " FFLAGS="-O2 -fast -fastsse " '
 
 
-FREEON_HOME=/home/mchalla/FREEON_BETA_INTEL
-FREEON_SRCE=/home/mchalla/freeon_beta_intel
+FREEON_HOME=/home/mchalla/FREEON_BETA_PGI
+FREEON_SRCE=/home/mchalla/freeon_beta_pgi
+
+#FREEON_HOME=/home/mchalla/FREEON_BETA_INTEL
+#FREEON_SRCE=/home/mchalla/freeon_beta_intel
 
 .SUFFIXES:	.o .c .f .f90
 #
 .f90.o:   
 #	gfortran -c -O3 -ffast-math -ftree-vectorize -cpp -I$(FREEON_SRCE)/Modules  -I$(FREEON_SRCE)/SCFeqs -I$(FREEON_HOME)/include/ $*.f90
-	ifort -c  -O3 -fpp -I$(FREEON_SRCE)/Modules  -I$(FREEON_SRCE)/SCFeqs -I$(FREEON_HOME)/include/ $*.f90
+	pgf95 -c -O4 -fast -fastsse -Mpreprocess -I$(FREEON_SRCE)/Modules  -I$(FREEON_SRCE)/SCFeqs -I$(FREEON_HOME)/include/ $*.f90
+#	ifort -c  -O3 -fpp -I$(FREEON_SRCE)/Modules  -I$(FREEON_SRCE)/SCFeqs -I$(FREEON_HOME)/include/ $*.f90
 #	ifort -c -g -O0 -traceback -fpp -I$(FREEON_SRCE)/Modules  -I$(FREEON_SRCE)/SCFeqs -I$(FREEON_HOME)/include/ $*.f90
 
 .c.o:   
-#	gcc -c -g -O3 -Iipm-2.0 $*.c
-	icc -c -g3 -O3 -Iipm-2.0 $*.c
+#	gcc -c   -O3 -Iipm-2.0 $*.c
+#	icc -c   -O3 -Iipm-2.0 $*.c
+	pgcc -c  -O3 -Iipm-2.0 $*.c
+
 Objs = SpAMM_PACKAGE.o SpAMM_PROJECT.o SpAMM_CONVERT.o SpAMM_ALGEBRA.o SpAMM_MNGMENT.o SpAMM_GLOBALS.o SpAMM_TIMER.o SpAMM_DERIVED.o 
 #
 ipm:	
@@ -27,8 +33,9 @@ test:	clean ipm $(Objs) SpAMM_TESTONE.o
 
 pure:	clean ipm $(Objs) SpAMM_PURIFY2.o
 	cp $(FREEON_HOME)/lib/libhdf5.a $(FREEON_HOME)/lib/libfreeonhdf5.a
-#	gfortran -g  -static-libgfortran -o spamm_purify2.exe SpAMM_PURIFY2.o $(Objs) ../SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -I../Modules  -I$(FREEON_HOME)/inc/ -L$(FREEON_HOME)/lib/ -L../Modules/.libs/ -L../SCFeqs/  -L../lapack/lapack/.libs/ -L../lapack/blas/.libs/  -L../lapack/install/.libs/ -lfreeonmodules -lfreeonhdf5 -lz -lm -lfreeonlapack -lfreeonblas -lfreeonlapackextra
-	ifort -g -Bstatic -o spamm_purify2.exe SpAMM_PURIFY2.o $(Objs) ../SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -I../Modules  -I$(FREEON_HOME)/inc/ -L$(FREEON_HOME)/lib/ -L../Modules/.libs/ -L../SCFeqs/  -L../lapack/lapack/.libs/ -L../lapack/blas/.libs/  -L../lapack/install/.libs/ -lfreeonmodules -lhdf5 -lz -lm -lfreeonlapack -lfreeonblas -lfreeonlapackextra
+#	gfortran  -static-libgfortran -o spamm_purify2.exe SpAMM_PURIFY2.o $(Objs) ../SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -I../Modules  -I$(FREEON_HOME)/inc/ -L$(FREEON_HOME)/lib/ -L../Modules/.libs/ -L../SCFeqs/  -L../lapack/lapack/.libs/ -L../lapack/blas/.libs/  -L../lapack/install/.libs/ -lfreeonmodules -lfreeonhdf5 -lz -lm -lfreeonlapack -lfreeonblas -lfreeonlapackextra
+	pgf95 -Bstatic -o spamm_purify2.exe SpAMM_PURIFY2.o $(Objs) ../SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -I../Modules  -I$(FREEON_HOME)/inc/ -L$(FREEON_HOME)/lib/ -L../Modules/.libs/ -L../SCFeqs/  -L../lapack/lapack/.libs/ -L../lapack/blas/.libs/  -L../lapack/install/.libs/ -lfreeonmodules -lhdf5 -lz -lm -lfreeonlapack -lfreeonblas -lfreeonlapackextra
+#	ifort  -Bstatic -o spamm_purify2.exe SpAMM_PURIFY2.o $(Objs) ../SCFeqs/DenMatMethods.o -Lipm-2.0/ -lipm -I../Modules  -I$(FREEON_HOME)/inc/ -L$(FREEON_HOME)/lib/ -L../Modules/.libs/ -L../SCFeqs/  -L../lapack/lapack/.libs/ -L../lapack/blas/.libs/  -L../lapack/install/.libs/ -lfreeonmodules -lhdf5 -lz -lm -lfreeonlapack -lfreeonblas -lfreeonlapackextra
 #	cp spamm_purify2.exe $(FREEON_HOME)/bin/SP2 
 
 #----------------------------------------------------------------------------

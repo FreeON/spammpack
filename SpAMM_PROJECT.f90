@@ -110,9 +110,9 @@ CONTAINS
   SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree(A)
     TYPE(QuTree),POINTER  :: A    
     REAL(SpAMM_KIND)     :: RQIMin,RQIMax,SpectralExtent
-    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_MULTIPLY_THRESHOLD   =SpAMM_PRODUCT_TOLERANCE
-    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !2*SpAMM_RQI_MULTIPLY_THRESHOLD
-    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_EVAL_ERROR_ESTIMATE  =1D-2 !*SpAMM_RQI_CONVERGENCE_THRESHOLD
+    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_MULTIPLY_THRESHOLD   =1D-7 !SpAMM_PRODUCT_TOLERANCE
+    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !100d0*SpAMM_RQI_MULTIPLY_THRESHOLD
+    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_EVAL_ERROR_ESTIMATE  =2D-2 !100d0*SpAMM_RQI_CONVERGENCE_THRESHOLD
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     TInitial=SpAMM_IPM_GET_TIME()  
     ! Find extremal eigenvalues by RQI
@@ -158,7 +158,6 @@ CONTAINS
     DO I=1,2
        IF(I==1)THEN
           CALL Copy(A,1,x)
-!          CALL Copy(A,SpAMM_MATRIX_DIMENSION,x)
        ELSE
           CALL Copy(A,SpAMM_MATRIX_DIMENSION,x)
        ENDIF
@@ -249,12 +248,17 @@ CONTAINS
              ENDIF
           ENDIF
           x%Norm=SQRT(Norm(x))
+
+!       IF(I==1)THEN
+!          WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
+!       ELSE
+!          WRITE(*,44)omega,SQRT(Dot(g,g))/ABS(Omega),CG
+!       ENDIF
+
        END DO
        IF(I==1)THEN
-          !WRITE(*,33)omega,vals1(1),CG
           WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
        ELSE
-          !  WRITE(*,44)omega,vals1(N),CG
           WRITE(*,44)omega,SQRT(Dot(g,g))/ABS(Omega),CG
        ENDIF
     ENDDO
