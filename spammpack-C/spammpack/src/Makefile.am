@@ -175,7 +175,9 @@ generated_kernel_files = \
 
 BUILT_SOURCES = $(generated_kernel_files)
 
-CLEANFILES = $(generated_kernel_files) $(builddir)/spamm_config.h
+CLEANFILES = $(generated_kernel_files)
+
+DISTCLEANFILES = $(builddir)/spamm_config.h
 
 nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
