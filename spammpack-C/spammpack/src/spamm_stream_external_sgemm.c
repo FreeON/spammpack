@@ -14,10 +14,6 @@ spamm_stream_external_sgemm (const unsigned int number_stream_elements,
 {
   unsigned int stream_index;
 
-  float *A_dense;
-  float *B_dense;
-  float *C_dense;
-
   int N;
   float beta;
 

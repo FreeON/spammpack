@@ -319,10 +319,10 @@ char *
 spamm_timer_get_string (const struct spamm_timer_t *timer)
 {
   const int maxlength = 2000;
-  int i;
   char *result = calloc(maxlength, sizeof(char));
 
 #ifdef HAVE_PAPI
+  int i;
   int papi_result;
   char *temp_string = calloc(maxlength, sizeof(char));
   char *temp_event_name = calloc(maxlength, sizeof(char));
@@ -361,9 +361,8 @@ spamm_timer_get_string (const struct spamm_timer_t *timer)
 void
 spamm_timer_info (const struct spamm_timer_t *timer, char *infostring, const int maxlength)
 {
-  int i;
-
 #ifdef HAVE_PAPI
+  int i;
   int papi_result;
   char *temp_string;
   char *temp_event_name;

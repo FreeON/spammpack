@@ -7,8 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#define SPAMM_MULTIPLY_DOUBLE_CHECK
-
 #ifdef HAVE_SSE
 #include <xmmintrin.h>
 #endif
@@ -74,9 +72,9 @@ spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
   struct spamm_data_t *data = value;
   float *beta = user_data;
   unsigned int i;
-  short j;
 
 #ifdef HAVE_SSE_DISABLED
+  short j;
   __m128 xmm, xmm_beta;
 
   xmm_beta = _mm_load_ps1(beta);
@@ -366,13 +364,17 @@ spamm_multiply (const float tolerance,
   struct spamm_multiply_index_list_t A_index;
   struct spamm_multiply_index_list_t B_index;
 
+#if SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 1
   struct spamm_data_t *A_data;
   struct spamm_data_t *B_data;
   struct spamm_data_t *C_data;
+#endif
 
   unsigned int i, j, k, k_check;
   unsigned int index;
+#if SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 1
   unsigned int convolution_index_2D;
+#endif
   unsigned int A_k_lookup_index;
   unsigned int B_k_lookup_index;
   unsigned int A_k, B_k;
@@ -388,7 +390,9 @@ spamm_multiply (const float tolerance,
 
   unsigned int *C_block_stream_index;
 
+#ifdef SPAMM_MULTIPLY_PRODUCT_COUNT
   unsigned int number_products = 0;
+#endif
 
   char timer_info_string[2000];
 
@@ -1115,9 +1119,6 @@ spamm_multiply (const float tolerance,
   unsigned int B_index_current[4];
   unsigned int C_index_current[4];
 
-  unsigned int A_index_k_current[4];
-  unsigned int B_index_k_current[4];
-
   float A_norm_current[4];
   float B_norm_current[4];
 
@@ -1131,7 +1132,7 @@ spamm_multiply (const float tolerance,
   stream_index = 0;
   number_dropped_blocks = 0;
 
-  for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size && B_k_lookup_index < B_k_lookup.size; )
+  for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index+1 < A_k_lookup.size && B_k_lookup_index+1 < B_k_lookup.size; )
   {
     /* Match k-indices. */
     A_k = A_index_array[A_k_lookup.index[A_k_lookup_index]] & MASK_2D_J;
@@ -1283,36 +1284,89 @@ spamm_multiply (const float tolerance,
 #elif SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 5
 #warning Using convolution implementation 5
   unsigned int *A_index_array = spamm_list_get_index_address(A_index.index);
-  unsigned int *B_index_array = spamm_list_get_index_address(B_index.index);
+  unsigned int *B_index_array_original = spamm_list_get_index_address(B_index.index);
 
   unsigned int *multiply_stream_C_index = spamm_allocate(sizeof(unsigned int)
       *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
 
-  unsigned int A_index_current[4];
-  unsigned int B_index_current[4];
+  __m128i A_index_xmm;
+  __m128i B_index_xmm;
+  __m128i C_index_xmm;
+
   unsigned int C_index_current[4];
 
-  unsigned int A_index_k_current[4];
-  unsigned int B_index_k_current[4];
+  __m128 A_norm_xmm;
+  __m128 B_norm_xmm;
 
-  float A_norm_current[4];
-  float B_norm_current[4];
+  unsigned int *B_k_lookup_array;
+  unsigned int *B_index_array;
+  unsigned int *B_index_translation;
 
-  short int norm_product[4];
+  float *A_norm_array;
+  float *B_norm_array;
+
+  int norm_product[4];
+  __m128 norm_product_xmm;
 
   short int early_termination = 0;
 
   unsigned int last_C_index;
   struct spamm_data_t *last_C;
 
+  __m128 tolerance_xmm;
+
+  __m128i mask_2d_i_xmm;
+  __m128i mask_2d_j_xmm;
+
   stream_index = 0;
   number_dropped_blocks = 0;
 
-  for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index < A_k_lookup.size && B_k_lookup_index < B_k_lookup.size; )
+  tolerance_xmm = _mm_load_ss(&tolerance);
+  tolerance_xmm = _mm_shuffle_ps(tolerance_xmm, tolerance_xmm, 0x00);
+
+  mask_2d_i_xmm = _mm_cvtsi32_si128(MASK_2D_I);
+  mask_2d_j_xmm = _mm_cvtsi32_si128(MASK_2D_J);
+
+  mask_2d_i_xmm = (__m128i) _mm_shuffle_ps((__m128) mask_2d_i_xmm, (__m128) mask_2d_i_xmm, 0x00);
+  mask_2d_j_xmm = (__m128i) _mm_shuffle_ps((__m128) mask_2d_j_xmm, (__m128) mask_2d_j_xmm, 0x00);
+
+  A_norm_array = spamm_allocate(A_index.size*sizeof(float));
+  for (i = 0; i < A_index.size; i++)
+  {
+    A_norm_array[i] = A_index.data[i]->node_norm;
+  }
+
+  /* Copy index and norm arrays. This needs to be done to create properly
+   * aligned arrays. */
+  B_k_lookup_array = spamm_allocate(B_k_lookup.size*sizeof(unsigned int));
+  B_norm_array = spamm_allocate(B_index.size*sizeof(float)+B_k_lookup.size*16);
+  B_index_array = spamm_allocate(B_index.size*sizeof(unsigned int)+B_k_lookup.size*16);
+  B_index_translation = spamm_allocate(B_index.size*sizeof(unsigned int)+B_k_lookup.size*16);
+
+  for (B_k_lookup_index = 0, j = 0; B_k_lookup_index+1 < B_k_lookup.size; B_k_lookup_index++)
+  {
+    B_k_lookup_array[B_k_lookup_index] = j;
+
+    /* Copy k-block data. */
+    for (i = B_k_lookup.index[B_k_lookup_index]; i < B_k_lookup.index[B_k_lookup_index+1]; i++)
+    {
+      B_norm_array[j] = B_index.data[i]->node_norm;
+      B_index_array[j] = B_index_array_original[i];
+      B_index_translation[j] = i;
+      j++;
+    }
+
+    /* Align up to next 128-bit boundary. */
+    j = (j+16/sizeof(unsigned int)) & (-16/sizeof(unsigned int));
+  }
+  B_k_lookup_array[B_k_lookup_index] = j;
+
+  /* Start convolution. */
+  for (A_k_lookup_index = 0, B_k_lookup_index = 0; A_k_lookup_index+1 < A_k_lookup.size && B_k_lookup_index+1 < B_k_lookup.size; )
   {
     /* Match k-indices. */
     A_k = A_index_array[A_k_lookup.index[A_k_lookup_index]] & MASK_2D_J;
-    B_k = (B_index_array[B_k_lookup.index[B_k_lookup_index]] & MASK_2D_I) >> 1;
+    B_k = (B_index_array[B_k_lookup_array[B_k_lookup_index]] & MASK_2D_I) >> 1;
 
     if (A_k > B_k)
     {
@@ -1330,48 +1384,37 @@ spamm_multiply (const float tolerance,
     for (i = A_k_lookup.index[A_k_lookup_index]; i < A_k_lookup.index[A_k_lookup_index+1]; i++)
     {
       /* Get index of A. */
-      A_index_current[0] = A_index_array[i];
-      A_index_current[1] = A_index_current[0];
-      A_index_current[2] = A_index_current[0];
-      A_index_current[3] = A_index_current[0];
+      A_index_xmm = _mm_cvtsi32_si128(A_index_array[i]); /* movd A_index_array_original[i], xmm */
+      A_index_xmm = (__m128i) _mm_shuffle_ps((__m128) A_index_xmm, (__m128) A_index_xmm, 0x00); /* pshufd xmm, $0x0 */
 
       /* Load norm of A. */
-      A_norm_current[0] = A_index.data[i]->node_norm;
-      A_norm_current[1] = A_norm_current[0];
-      A_norm_current[2] = A_norm_current[0];
-      A_norm_current[3] = A_norm_current[0];
+      A_norm_xmm = _mm_load_ss(&A_norm_array[i]); /* movss A_norm_current, xmm */
+      A_norm_xmm = _mm_shuffle_ps(A_norm_xmm, A_norm_xmm, 0x00); /* shufps xmm, xmm, $0x00 */
 
-      for (j = B_k_lookup.index[B_k_lookup_index], early_termination = 1; j < B_k_lookup.index[B_k_lookup_index+1]; j += 4)
+      for (j = B_k_lookup_array[B_k_lookup_index], early_termination = 1; j < B_k_lookup_array[B_k_lookup_index+1]; j += 4)
       {
         /* Get index of B. */
-        B_index_current[0] = B_index_array[j];
-        B_index_current[1] = (j+1 < B_k_lookup.index[B_k_lookup_index+1] ? B_index_array[j+1] : 0);
-        B_index_current[2] = (j+2 < B_k_lookup.index[B_k_lookup_index+1] ? B_index_array[j+2] : 0);
-        B_index_current[3] = (j+3 < B_k_lookup.index[B_k_lookup_index+1] ? B_index_array[j+3] : 0);
+        B_index_xmm = _mm_load_si128((__m128i*) &B_index_array[j]); /* movdqa B_index_array[j], xmm */
 
         /* Load norm of B. */
-        B_norm_current[0] = B_index.data[j]->node_norm;
-        B_norm_current[1] = (j+1 < B_k_lookup.index[B_k_lookup_index+1] ? B_index.data[j+1]->node_norm : 0.0);
-        B_norm_current[2] = (j+2 < B_k_lookup.index[B_k_lookup_index+1] ? B_index.data[j+2]->node_norm : 0.0);
-        B_norm_current[3] = (j+3 < B_k_lookup.index[B_k_lookup_index+1] ? B_index.data[j+3]->node_norm : 0.0);
+        B_norm_xmm = _mm_load_ps(&B_norm_array[j]); /* movaps B_norm_array[j], xmm */
 
         /* Calculate norm products. */
-        norm_product[0] = (A_norm_current[0]*B_norm_current[0] > tolerance);
-        norm_product[1] = (A_norm_current[1]*B_norm_current[1] > tolerance);
-        norm_product[2] = (A_norm_current[2]*B_norm_current[2] > tolerance);
-        norm_product[3] = (A_norm_current[3]*B_norm_current[3] > tolerance);
+        norm_product_xmm = _mm_mul_ps(A_norm_xmm, B_norm_xmm);
+        norm_product_xmm = _mm_cmpgt_ps(norm_product_xmm, tolerance_xmm);
+        _mm_store_si128((__m128i*) &norm_product, (__m128i) norm_product_xmm);
 
         /* Calculate indices of C. */
-        C_index_current[0] = (A_index_current[0] & MASK_2D_I) | (B_index_current[0] & MASK_2D_J);
-        C_index_current[1] = (A_index_current[1] & MASK_2D_I) | (B_index_current[1] & MASK_2D_J);
-        C_index_current[2] = (A_index_current[2] & MASK_2D_I) | (B_index_current[2] & MASK_2D_J);
-        C_index_current[3] = (A_index_current[3] & MASK_2D_I) | (B_index_current[3] & MASK_2D_J);
+        C_index_xmm = (__m128i) (_mm_or_ps(
+              _mm_and_ps((__m128) A_index_xmm, (__m128) mask_2d_i_xmm),
+              _mm_and_ps((__m128) B_index_xmm, (__m128) mask_2d_j_xmm)));
+        _mm_store_si128((__m128i*) &C_index_current, C_index_xmm);
 
         /* Append to stream or done. */
-        if (norm_product[0])
+        if (norm_product[0] != 0)
         {
           multiply_stream[stream_index].A = A_index.data[i];
-          multiply_stream[stream_index].B = B_index.data[j];
+          multiply_stream[stream_index].B = B_index.data[B_index_translation[j]];
           multiply_stream_C_index[stream_index] = C_index_current[0];
           stream_index++;
 
@@ -1386,10 +1429,10 @@ spamm_multiply (const float tolerance,
           break;
         }
 
-        if (norm_product[1])
+        if (norm_product[1] != 0)
         {
           multiply_stream[stream_index].A = A_index.data[i];
-          multiply_stream[stream_index].B = B_index.data[j+1];
+          multiply_stream[stream_index].B = B_index.data[B_index_translation[j+1]];
           multiply_stream_C_index[stream_index] = C_index_current[1];
           stream_index++;
         }
@@ -1400,10 +1443,10 @@ spamm_multiply (const float tolerance,
           break;
         }
 
-        if (norm_product[2])
+        if (norm_product[2] != 0)
         {
           multiply_stream[stream_index].A = A_index.data[i];
-          multiply_stream[stream_index].B = B_index.data[j+2];
+          multiply_stream[stream_index].B = B_index.data[B_index_translation[j+2]];
           multiply_stream_C_index[stream_index] = C_index_current[2];
           stream_index++;
         }
@@ -1414,10 +1457,10 @@ spamm_multiply (const float tolerance,
           break;
         }
 
-        if (norm_product[3])
+        if (norm_product[3] != 0)
         {
           multiply_stream[stream_index].A = A_index.data[i];
-          multiply_stream[stream_index].B = B_index.data[j+3];
+          multiply_stream[stream_index].B = B_index.data[B_index_translation[j+3]];
           multiply_stream_C_index[stream_index] = C_index_current[3];
           stream_index++;
         }

@@ -62,7 +62,7 @@ spamm_index_Z_curve (const unsigned int i, const unsigned int j)
   {
     if (i_internal > 0)
     {
-      if (i_internal & 0x1 != 0)
+      if ((i_internal & 0x1) != 0)
       {
         offset |= setmask_i;
       }
@@ -71,7 +71,7 @@ spamm_index_Z_curve (const unsigned int i, const unsigned int j)
 
     if (j_internal > 0)
     {
-      if (j_internal & 0x1 != 0)
+      if ((j_internal & 0x1) != 0)
       {
         offset |= setmask_j;
       }
@@ -120,8 +120,6 @@ spamm_index_norm (const unsigned int i, const unsigned int j)
 unsigned int
 spamm_index_kernel_block (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout)
 {
-  unsigned int offset;
-
   assert(i < SPAMM_N_KERNEL);
   assert(j < SPAMM_N_KERNEL);
 
@@ -141,8 +139,6 @@ spamm_index_kernel_block (const unsigned int i, const unsigned int j, const enum
 unsigned int
 spamm_index_kernel_block_transpose (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout)
 {
-  unsigned int offset;
-
   assert(i < SPAMM_N_KERNEL);
   assert(j < SPAMM_N_KERNEL);
 

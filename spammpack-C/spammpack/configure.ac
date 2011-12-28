@@ -202,6 +202,16 @@ AC_ARG_WITH([convolution],
 AC_MSG_RESULT([$use_convolution])
 AC_DEFINE_UNQUOTED([SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION], [$use_convolution], [The convolution implementation])
 
+AC_MSG_CHECKING([whether to double-check the multiply])
+AC_ARG_ENABLE([double-check],
+              [AS_HELP_STRING([--enable-double-check], [Double check a few things in the multiply])],
+              [use_double_check=$enableval],
+              [use_double_check="no"])
+AC_MSG_RESULT([$use_double_check])
+if test "${use_double_check}" = "yes"; then
+  AC_DEFINE([SPAMM_MULTIPLY_DOUBLE_CHECK], [1], [Double check a few things in the multiply])
+fi
+
 dnl Load git commit ID and set.
 if test -f ${srcdir}/localversion; then
   . ${srcdir}/localversion
