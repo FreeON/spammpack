@@ -177,7 +177,10 @@ BUILT_SOURCES = $(generated_kernel_files)
 
 CLEANFILES = $(generated_kernel_files)
 
-DISTCLEANFILES = $(builddir)/spamm_config.h
+DISTCLEANFILES = \
+  $(builddir)/spamm_config.h \
+  $(builddir)/spammOffsets.py \
+  $(builddir)/spammOffsets.pyc
 
 nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 

@@ -178,8 +178,11 @@ if test "${use_hashtable}" = "yes"; then
                 [use_hashtable_hash_murmurhash3="no"])
   AC_MSG_RESULT([$use_hashtable_hash_murmurhash3])
 
-  dnl Set default
+  dnl Set default.
   use_hashtable_hash=2
+
+  dnl Define hashtable name.
+  current_hashtable_name="Jenkins"
 
   dnl Test what the user wanted.
   if test "$use_hashtable_hash_direct" = "yes"; then
@@ -189,7 +192,7 @@ if test "${use_hashtable}" = "yes"; then
   elif test "$use_hashtable_hash_murmurhash3" = "yes"; then
     use_hashtable_hash=3
   else
-    AC_MSG_NOTICE([no hash preference given, using $use_hashtable_hash])
+    AC_MSG_NOTICE([no hash preference given, using $current_hashtable_name])
   fi
 fi
 AC_DEFINE_UNQUOTED([SPAMM_HASHTABLE_HASH], [$use_hashtable_hash], [The type of hash function])
