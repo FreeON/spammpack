@@ -300,7 +300,7 @@ spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t
   }
 }
 
-/** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
+/** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
  *
  * @param tolerance The SpAMM tolerance of this product.
  * @param alpha The paramater \f$\alpha\f$.
@@ -390,7 +390,99 @@ spamm_recursive_multiply_matrix (const float tolerance,
   }
 }
 
-/** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
+/** Multiply three matrices, i.e. \f$ D = \alpha A \times B \times C + \beta D\f$.
+ *
+ * @param tolerance The SpAMM tolerance of this product.
+ * @param alpha The paramater \f$\alpha\f$.
+ * @param A The matrix \f$A\f$.
+ * @param B The matrix \f$B\f$.
+ * @param C The matrix \f$C\f$.
+ * @param beta The paramater \f$\beta\f$.
+ * @param D The matrix \f$D\f$.
+ * @param timer The timer to use.
+ * @param sgemm The external sgemm function to use.
+ */
+void
+spamm_recursive_multiply_3_matrix (const float tolerance,
+    const float alpha,
+    struct spamm_recursive_node_t *node_A,
+    struct spamm_recursive_node_t *node_B,
+    struct spamm_recursive_node_t *node_C,
+    struct spamm_recursive_node_t **node_D,
+    struct spamm_timer_t *timer,
+    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    unsigned int *number_products)
+{
+  float beta = 1.0;
+  int i, j, k;
+
+  if (node_A == NULL || node_B == NULL || node_C == NULL) { return; }
+
+  /* We have to allocate a new D block a tier up. */
+  if (*node_D == NULL)
+  {
+    printf("[%s:%i] node_D should not be NULL\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  /* Multiply matrix blocks. */
+  if (node_A->data != NULL && node_B->data != NULL && node_C->data != NULL)
+  {
+    if (node_A->norm*node_B->norm*node_C->norm > tolerance)
+    {
+      if ((*node_D)->data == NULL)
+      {
+        (*node_D)->data = calloc((*node_D)->blocksize*(*node_D)->blocksize, sizeof(float));
+      }
+      if (sgemm != NULL)
+      {
+        sgemm("N", "N", &(node_A->blocksize), &(node_A->blocksize), &(node_A)->blocksize,
+            (float*) &alpha, node_A->data, &node_A->blocksize, node_B->data,
+            &node_A->blocksize, &beta, (*node_D)->data, &node_A->blocksize);
+        (*number_products)++;
+      }
+    }
+  }
+
+//  else
+//  {
+//    /* Recurse. */
+//    for (i = 0; i < 2; i++) {
+//      for (j = 0; j < 2; j++) {
+//        for (k = 0; k < 2; k++)
+//        {
+//          if (node_A->child[spamm_index_row_major(i, k, 2, 2)] != NULL && node_B->child[spamm_index_row_major(k, j, 2, 2)] != NULL)
+//          {
+//            if (node_A->child[spamm_index_row_major(i, k, 2, 2)]->norm *
+//                node_B->child[spamm_index_row_major(k, j, 2, 2)]->norm > tolerance)
+//            {
+//              /* Create a new C node if necessary. */
+//              if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
+//              {
+//                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1, (*node_C)->blocksize);
+//                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_lower = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i;
+//                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_upper = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1);
+//                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_lower = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j;
+//                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_upper = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*(j+1);
+//              }
+//
+//              spamm_recursive_multiply_matrix(tolerance,
+//                  alpha,
+//                  node_A->child[spamm_index_row_major(i, k, 2, 2)],
+//                  node_B->child[spamm_index_row_major(k, j, 2, 2)],
+//                  &((*node_C)->child[spamm_index_row_major(i, j, 2, 2)]),
+//                  timer,
+//                  sgemm,
+//                  number_products);
+//            }
+//          }
+//        }
+//      }
+//    }
+//  }
+}
+
+/** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
  *
  * @param tolerance The SpAMM tolerance of this product.
  * @param alpha The paramater \f$\alpha\f$.
@@ -450,6 +542,88 @@ spamm_recursive_multiply (const float tolerance,
     C->root->M_upper = A->root->M_upper;
     C->root->N_lower = 0;
     C->root->N_upper = A->root->N_upper;
+  }
+
+  spamm_recursive_multiply_3_matrix(tolerance, alpha, A->root, B->root, C->root, &(C->root), timer, sgemm, number_products);
+}
+
+/** Multiply three matrices, i.e. \f$ D = \alpha A \times B \times C + \beta D\f$.
+ *
+ * @param tolerance The SpAMM tolerance of this product.
+ * @param alpha The paramater \f$\alpha\f$.
+ * @param A The matrix \f$A\f$.
+ * @param B The matrix \f$B\f$.
+ * @param B The matrix \f$C\f$.
+ * @param beta The paramater \f$\beta\f$.
+ * @param C The matrix \f$D\f$.
+ * @param timer The timer to use.
+ * @param sgemm The external sgemm function to use.
+ */
+void
+spamm_recursive_multiply_3 (const float tolerance,
+    const float alpha,
+    struct spamm_recursive_t *A,
+    struct spamm_recursive_t *B,
+    struct spamm_recursive_t *C,
+    const float beta,
+    struct spamm_recursive_t *D,
+    struct spamm_timer_t *timer,
+    void (*sgemm) (),
+    unsigned int *number_products)
+{
+  if (A == NULL)
+  {
+    printf("[%s:%i] A is NULL\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  if (B == NULL)
+  {
+    printf("[%s:%i] B is NULL\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  if (C == NULL)
+  {
+    printf("[%s:%i] C is NULL\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  if (D == NULL)
+  {
+    printf("[%s:%i] D is NULL\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  if (A->blocksize != B->blocksize)
+  {
+    printf("[%s:%i] A->blocksize != B->blocksize\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  if (A->blocksize != C->blocksize)
+  {
+    printf("[%s:%i] A->blocksize != C->blocksize\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  if (A->blocksize != D->blocksize)
+  {
+    printf("[%s:%i] A->blocksize != D->blocksize\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  /* Multiply C by beta. */
+  spamm_recursive_multiply_scalar(beta, D->root);
+
+  /* Multiply A and B. */
+  if (A->root != NULL && B->root != NULL && C->root == NULL && D->root != NULL)
+  {
+    D->root = spamm_recursive_new_node(0, D->blocksize);
+    D->root->M_lower = 0;
+    D->root->M_upper = A->root->M_upper;
+    D->root->N_lower = 0;
+    D->root->N_upper = A->root->N_upper;
   }
 
   spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, number_products);
