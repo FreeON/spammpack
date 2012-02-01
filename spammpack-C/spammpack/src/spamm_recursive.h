@@ -20,8 +20,23 @@ spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij
 
 void
 spamm_recursive_multiply (const float tolerance,
-    const float alpha, struct spamm_recursive_t *A, struct spamm_recursive_t *B,
-    const float beta, struct spamm_recursive_t *C,
+    const float alpha,
+    struct spamm_recursive_t *A,
+    struct spamm_recursive_t *B,
+    const float beta,
+    struct spamm_recursive_t *C,
+    struct spamm_timer_t *timer,
+    void (*sgemm) (),
+    unsigned int *number_products);
+
+void
+spamm_recursive_multiply_3 (const float tolerance,
+    const float alpha,
+    struct spamm_recursive_t *A,
+    struct spamm_recursive_t *B,
+    struct spamm_recursive_t *C,
+    const float beta,
+    struct spamm_recursive_t *D,
     struct spamm_timer_t *timer,
     void (*sgemm) (),
     unsigned int *number_products);
