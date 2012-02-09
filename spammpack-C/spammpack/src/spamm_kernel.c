@@ -19,6 +19,7 @@ spamm_kernel_get_name (const unsigned int i)
     "kernel_external_sgemm",
     "kernel_stream_NULL",
     "kernel_standard_SSE",
+    "kernel_standard_SSE_sparse",
     "kernel_standard_no_checks_SSE",
     "kernel_standard_SSE4_1",
     "kernel_standard_no_checks_SSE4_1",
@@ -179,6 +180,7 @@ spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel)
       break;
 
     case kernel_standard_SSE:
+    case kernel_standard_SSE_sparse:
     case kernel_standard_no_checks_SSE:
     case kernel_standard_SSE4_1:
     case kernel_standard_no_checks_SSE4_1:
