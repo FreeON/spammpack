@@ -4,7 +4,7 @@
 #define __SPAMM_KERNEL_H
 
 /** Available stream kernels. */
-#define SPAMM_NUMBER_KERNELS 18
+#define SPAMM_NUMBER_KERNELS 19
 
 /** The different stream kernels.
  */

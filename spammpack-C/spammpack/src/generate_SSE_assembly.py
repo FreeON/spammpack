@@ -1371,16 +1371,10 @@ if options.hierarchical:
 else:
   for i in range(options.N):
     for j in range(options.N):
-      we_need_to_write = False
-      if number_deactivated_products < 4:
-        clearC(i+1, j+1)
-        we_need_to_write = True
-
+      clearC(i+1, j+1)
       for k in range(options.N):
         number_deactivated_products = block_product(i+1, k+1, j+1, number_deactivated_products)
-
-      if we_need_to_write:
-        writeC(i+1, j+1)
+      writeC(i+1, j+1)
 
 # End of outer loop.
 print("")
