@@ -71,6 +71,11 @@ spamm_kernel_get_kernel (const char* name)
     kernel = kernel_standard_SSE;
   }
 
+  else if (strcasecmp(name, "kernel_standard_SSE_sparse") == 0)
+  {
+    kernel = kernel_standard_SSE_sparse;
+  }
+
   else if (strcasecmp(name, "kernel_standard_no_checks_SSE") == 0)
   {
     kernel = kernel_standard_no_checks_SSE;
