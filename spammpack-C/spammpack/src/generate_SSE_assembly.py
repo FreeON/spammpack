@@ -630,8 +630,8 @@ parser.add_argument("--debug",
     default = False)
 
 parser.add_argument("--deactivate-products",
-    metavar = "N",
-    help = "deactivate the first N products of the 64 possible ones",
+    metavar = "D",
+    help = "deactivate the first D products of the N^3 possible ones",
     type = int,
     default = 0)
 
@@ -694,6 +694,10 @@ if not options.SSE in [1, 3, 4.1]:
   sys.exit(1)
 
 # Set the number of deactivated blocks.
+if options.deactivate_products > options.N**3:
+  log.error("there are only %d products in this kernel" % (options.N**3))
+  sys.exit(1)
+
 number_deactivated_products = options.deactivate_products
 
 # Generate assembly code.
@@ -1367,12 +1371,16 @@ if options.hierarchical:
 else:
   for i in range(options.N):
     for j in range(options.N):
+      we_need_to_write = False
+      if number_deactivated_products < 4:
+        clearC(i+1, j+1)
+        we_need_to_write = True
+
       for k in range(options.N):
-        if k == 0:
-          clearC(i+1, j+1)
         number_deactivated_products = block_product(i+1, k+1, j+1, number_deactivated_products)
-        if k == options.N-1:
-          writeC(i+1, j+1)
+
+      if we_need_to_write:
+        writeC(i+1, j+1)
 
 # End of outer loop.
 print("")
