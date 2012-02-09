@@ -11,7 +11,7 @@ function call.
 
 import logging
 import math
-import optparse
+import argparse
 import os.path
 import sys
 from spammOffsets import spammOffsets
@@ -178,9 +178,39 @@ def issue_load (load_offset, base_pointer, register):
   check_load_offset(load_offset)
   print("  movaps 0x%x(%s), %s" % (load_offset, base_pointer, register))
 
-def block_product (i, k, j, clearC = True, writeC = True):
+def clearC (i, j):
+  """Clears the C(i,j) accumulator registers."""
+
+  # Fix up indices.
+  i -= 1
+  j -= 1
+
+  # Reference the correct C registers.
+  global C1
+  global C2
+  global C3
+  global C4
+
+  C1 = SSERegister("C1")
+  C2 = SSERegister("C2")
+  C3 = SSERegister("C3")
+  C4 = SSERegister("C4")
+
+  print("")
+  print("  # Reset C(%d,%d) matrix block accumulators." % (i+1, j+1))
+  print("  xorps %s, %s" % (C1, C1))
+  print("  xorps %s, %s" % (C2, C2))
+  print("  xorps %s, %s" % (C3, C3))
+  print("  xorps %s, %s" % (C4, C4))
+
+def block_product (i, k, j, number_deactivated_products):
   """Produce an assembly code block to multiply 2 4x4 matrices in SSE. The
   index arguments are 1-based."""
+
+  # Check whether to omit this product.
+  if number_deactivated_products > 0:
+    number_deactivated_products -= 1
+    return number_deactivated_products
 
   # Fix up indices.
   i -= 1
@@ -194,19 +224,6 @@ def block_product (i, k, j, clearC = True, writeC = True):
   global C4
 
   global last_store_offset
-
-  if clearC:
-    C1 = SSERegister("C1")
-    C2 = SSERegister("C2")
-    C3 = SSERegister("C3")
-    C4 = SSERegister("C4")
-
-    print("")
-    print("  # Reset C(%d,%d) matrix block accumulators." % (i+1, j+1))
-    print("  xorps %s, %s" % (C1, C1))
-    print("  xorps %s, %s" % (C2, C2))
-    print("  xorps %s, %s" % (C3, C3))
-    print("  xorps %s, %s" % (C4, C4))
 
   if options.generate_checks:
     print("")
@@ -508,115 +525,135 @@ def block_product (i, k, j, clearC = True, writeC = True):
     B3.release()
     B4.release()
 
-  if writeC:
-    if options.generate_checks:
-      print("")
-      print("  .balign 16")
-      print("jump_%d:" % (block_counter.get()))
-      block_counter.increment()
+  # We are done.
+  return number_deactivated_products
 
-    if not options.alphaOne:
-      print("")
-      print("  # Multiply C(%d,%d) by alpha." % (i+1, j+1))
-      print("  mulps alpha, %s" % (C1))
-      print("  mulps alpha, %s" % (C2))
-      print("  mulps alpha, %s" % (C3))
-      print("  mulps alpha, %s" % (C4))
+def writeC (i, j):
+  """Write out the accumulator registers for C into memory."""
 
+  # Fix up indices.
+  i -= 1
+  j -= 1
+
+  # Reference the correct C registers.
+  global C1
+  global C2
+  global C3
+  global C4
+
+  if options.generate_checks:
     print("")
-    print("  # Add accumulated C(%d,%d) to already existing." % (i+1, j+1))
-    print("  addps 0x%x(C), %s" % (row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C1))
-    print("  addps 0x%x(C), %s" % (row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C2))
-    print("  addps 0x%x(C), %s" % (row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C3))
-    print("  addps 0x%x(C), %s" % (row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C4))
+    print("  .balign 16")
+    print("jump_%d:" % (block_counter.get()))
+    block_counter.increment()
 
+  if not options.alphaOne:
     print("")
-    print("  # Write out C(%d,%d) submatrix block." % (i+1, j+1))
-    if options.no_store:
-      print("  # skipped (command line option --no-store).")
-      print("  #")
-      print("  # movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-      print("  # movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-      print("  # movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-      print("  # movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-    else:
-      print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-      print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-      print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
-      print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  # Multiply C(%d,%d) by alpha." % (i+1, j+1))
+    print("  mulps alpha, %s" % (C1))
+    print("  mulps alpha, %s" % (C2))
+    print("  mulps alpha, %s" % (C3))
+    print("  mulps alpha, %s" % (C4))
 
-      if not options.hierarchical:
-        last_store_offset.append(row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
-        last_store_offset.append(row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
-        last_store_offset.append(row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
-        last_store_offset.append(row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
+  print("")
+  print("  # Add accumulated C(%d,%d) to already existing." % (i+1, j+1))
+  print("  addps 0x%x(C), %s" % (row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C1))
+  print("  addps 0x%x(C), %s" % (row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C2))
+  print("  addps 0x%x(C), %s" % (row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C3))
+  print("  addps 0x%x(C), %s" % (row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense, C4))
 
-    C1.release()
-    C2.release()
-    C3.release()
-    C4.release()
+  print("")
+  print("  # Write out C(%d,%d) submatrix block." % (i+1, j+1))
+  if options.no_store:
+    print("  # skipped (command line option --no-store).")
+    print("  #")
+    print("  # movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  # movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  # movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  # movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+  else:
+    print("  movaps %s, 0x%x(C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  movaps %s, 0x%x(C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  movaps %s, 0x%x(C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+    print("  movaps %s, 0x%x(C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense))
+
+    if not options.hierarchical:
+      last_store_offset.append(row_major_index(0, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
+      last_store_offset.append(row_major_index(1, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
+      last_store_offset.append(row_major_index(2, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
+      last_store_offset.append(row_major_index(3, 0, 4)*4+offset(i, j, options.N)*16*4+spammOffsets.offset_block_dense)
+
+  C1.release()
+  C2.release()
+  C3.release()
+  C4.release()
 
 # The main program.
-parser = optparse.OptionParser(description =
+parser = argparse.ArgumentParser(description =
 """This script generates a stream element kernel operating on 4x4 matrix
 blocks. The kernel generated is written using assembly instructions assuming a
 processor with the SSE instruction set.""")
 
-parser.add_option("-N",
+parser.add_argument("-N",
     metavar = "N",
-    help = "generate kernel for NxN matrix of 4x4 matrix blocks [default: %default]",
+    help = "generate kernel for NxN matrix of 4x4 matrix blocks [default: %(default)s]",
     dest = "N",
-    type = "int",
+    type = int,
     default = 1)
 
-parser.add_option("--name",
+parser.add_argument("--name",
     metavar = "func",
-    help = "set function name to \"func\" [default: %default]",
+    help = "set function name to \"func\" [default: %(default)s]",
     dest = "functionName",
-    type = "string",
     default = "stream_kernel")
 
-parser.add_option("--no-checks",
-    help = "generate code without any norm checks [default: %default]",
+parser.add_argument("--no-checks",
+    help = "generate code without any norm checks [default: %(default)s]",
     action = "store_false",
     default = True,
     dest = "generate_checks")
 
-parser.add_option("--no-store",
-    help = "do not generate store instructions (store C) [default: %default]",
+parser.add_argument("--no-store",
+    help = "do not generate store instructions (store C) [default: %(default)s]",
     action = "store_true",
     default = False)
 
-parser.add_option("--no-alpha",
-    help = "generate a kernel for the special case of alpha = 1 [default: %default]",
+parser.add_argument("--no-alpha",
+    help = "generate a kernel for the special case of alpha = 1 [default: %(default)s]",
     action = "store_true",
     default = False,
     dest = "alphaOne")
 
-parser.add_option("--debug",
-    help = "print out a lot of debugging information [default: %default]",
+parser.add_argument("--debug",
+    help = "print out a lot of debugging information [default: %(default)s]",
     action = "store_true",
     default = False)
 
-parser.add_option("--SSE",
-    help = "set the SSE level from [1, 3, 4.1] [default: %default]",
+parser.add_argument("--deactivate-products",
+    metavar = "N",
+    help = "deactivate the first N products of the 64 possible ones",
+    type = int,
+    default = 0)
+
+parser.add_argument("--SSE",
+    help = "set the SSE level from [1, 3, 4.1] [default: %(default)s]",
     metavar = "level",
-    type = "float",
+    type = float,
     default = 1)
 
-parser.add_option("--Z-curve",
+parser.add_argument("--Z-curve",
     help = """layout the multiply along a Z-curve as opposed to regular
-row-major ordering [default: %default]""",
+row-major ordering [default: %(default)s]""",
     action = "store_true",
     default = False,
     dest = "Z_curve_ordering")
 
-parser.add_option("--hierarchical",
-    help = "create a hierarchical kernel [default: %default]",
+parser.add_argument("--hierarchical",
+    help = "create a hierarchical kernel [default: %(default)s]",
     action = "store_true",
     default = False)
 
-( options, arguments ) = parser.parse_args()
+options = parser.parse_args()
 
 # Get logger.
 log = logging.getLogger("generate assembly")
@@ -655,6 +692,9 @@ if options.hierarchical:
 if not options.SSE in [1, 3, 4.1]:
   log.error("unknown SSE level")
   sys.exit(1)
+
+# Set the number of deactivated blocks.
+number_deactivated_products = options.deactivate_products
 
 # Generate assembly code.
 print("# This code was generated by %s." % (os.path.basename(sys.argv[0])))
@@ -910,22 +950,33 @@ if options.hierarchical:
       print("  # A_{23}*B_{31} + A_{24}*B_{41} = C_{21}")
       print("  # A_{23}*B_{32} + A_{24}*B_{42} = C_{22}")
 
-      block_product(1, 1, 1, clearC = True, writeC = False)
-      block_product(1, 2, 1, clearC = False, writeC = False)
-      block_product(1, 3, 1, clearC = False, writeC = False)
-      block_product(1, 4, 1, clearC = False, writeC = True)
-      block_product(1, 1, 2, clearC = True, writeC = False)
-      block_product(1, 2, 2, clearC = False, writeC = False)
-      block_product(1, 3, 2, clearC = False, writeC = False)
-      block_product(1, 4, 2, clearC = False, writeC = True)
-      block_product(2, 1, 1, clearC = True, writeC = False)
-      block_product(2, 2, 1, clearC = False, writeC = False)
-      block_product(2, 3, 1, clearC = False, writeC = False)
-      block_product(2, 4, 1, clearC = False, writeC = True)
-      block_product(2, 1, 2, clearC = True, writeC = False)
-      block_product(2, 2, 2, clearC = False, writeC = False)
-      block_product(2, 3, 2, clearC = False, writeC = False)
-      block_product(2, 4, 2, clearC = False, writeC = True)
+      clearC(1, 1)
+      number_deactivated_products = block_product(1, 1, 1, number_deactivated_products)
+      number_deactivated_products = block_product(1, 2, 1, number_deactivated_products)
+      number_deactivated_products = block_product(1, 3, 1, number_deactivated_products)
+      number_deactivated_products = block_product(1, 4, 1, number_deactivated_products)
+      writeC(1, 1)
+
+      clearC(1, 2)
+      number_deactivated_products = block_product(1, 1, 2, number_deactivated_products)
+      number_deactivated_products = block_product(1, 2, 2, number_deactivated_products)
+      number_deactivated_products = block_product(1, 3, 2, number_deactivated_products)
+      number_deactivated_products = block_product(1, 4, 2, number_deactivated_products)
+      writeC(1, 2)
+
+      clearC(2, 1)
+      number_deactivated_products = block_product(2, 1, 1, number_deactivated_products)
+      number_deactivated_products = block_product(2, 2, 1, number_deactivated_products)
+      number_deactivated_products = block_product(2, 3, 1, number_deactivated_products)
+      number_deactivated_products = block_product(2, 4, 1, number_deactivated_products)
+      writeC(2, 1)
+
+      clearC(2, 2)
+      number_deactivated_products = block_product(2, 1, 2, number_deactivated_products)
+      number_deactivated_products = block_product(2, 2, 2, number_deactivated_products)
+      number_deactivated_products = block_product(2, 3, 2, number_deactivated_products)
+      number_deactivated_products = block_product(2, 4, 2, number_deactivated_products)
+      writeC(2, 2)
 
     else:
       if (jump_index & 0x1) == 0:
@@ -937,14 +988,26 @@ if options.hierarchical:
         print("  # A_{11}*B_{12} + A_{12}*B_{22} = C_{12}")
         print("  # A_{21}*B_{11} + A_{22}*B_{21} = C_{21}")
         print("  # A_{21}*B_{12} + A_{22}*B_{22} = C_{22}")
-        block_product(1, 1, 1, clearC = True, writeC = False)
-        block_product(1, 2, 1, clearC = False, writeC = True)
-        block_product(1, 1, 2, clearC = True, writeC = False)
-        block_product(1, 2, 2, clearC = False, writeC = True)
-        block_product(2, 1, 1, clearC = True, writeC = False)
-        block_product(2, 2, 1, clearC = False, writeC = True)
-        block_product(2, 1, 2, clearC = True, writeC = False)
-        block_product(2, 2, 2, clearC = False, writeC = True)
+
+        clearC(1, 1)
+        number_deactivated_products = block_product(1, 1, 1, number_deactivated_products)
+        number_deactivated_products = block_product(1, 2, 1, number_deactivated_products)
+        writeC(1, 1)
+
+        clearC(1, 2)
+        number_deactivated_products = block_product(1, 1, 2, number_deactivated_products)
+        number_deactivated_products = block_product(1, 2, 2, number_deactivated_products)
+        writeC(1, 2)
+
+        clearC(2, 1)
+        number_deactivated_products = block_product(2, 1, 1, number_deactivated_products)
+        number_deactivated_products = block_product(2, 2, 1, number_deactivated_products)
+        writeC(2, 1)
+
+        clearC(2, 2)
+        number_deactivated_products = block_product(2, 1, 2, number_deactivated_products)
+        number_deactivated_products = block_product(2, 2, 2, number_deactivated_products)
+        writeC(2, 2)
 
       if (jump_index & 0x2) == 0:
         print("")
@@ -955,14 +1018,26 @@ if options.hierarchical:
         print("  # A_{13}*B_{32} + A_{14}*B_{42} = C_{12}")
         print("  # A_{23}*B_{31} + A_{24}*B_{41} = C_{21}")
         print("  # A_{23}*B_{32} + A_{24}*B_{42} = C_{22}")
-        block_product(1, 3, 1, clearC = True, writeC = False)
-        block_product(1, 4, 1, clearC = False, writeC = True)
-        block_product(1, 3, 2, clearC = True, writeC = False)
-        block_product(1, 4, 2, clearC = False, writeC = True)
-        block_product(2, 3, 1, clearC = True, writeC = False)
-        block_product(2, 4, 1, clearC = False, writeC = True)
-        block_product(2, 3, 2, clearC = True, writeC = False)
-        block_product(2, 4, 2, clearC = False, writeC = True)
+
+        clearC(1, 1)
+        number_deactivated_products = block_product(1, 3, 1, number_deactivated_products)
+        number_deactivated_products = block_product(1, 4, 1, number_deactivated_products)
+        writeC(1, 1)
+
+        clearC(1, 2)
+        number_deactivated_products = block_product(1, 3, 2, number_deactivated_products)
+        number_deactivated_products = block_product(1, 4, 2, number_deactivated_products)
+        writeC(1, 2)
+
+        clearC(2, 1)
+        number_deactivated_products = block_product(2, 3, 1, number_deactivated_products)
+        number_deactivated_products = block_product(2, 4, 1, number_deactivated_products)
+        writeC(2, 1)
+
+        clearC(2, 2)
+        number_deactivated_products = block_product(2, 3, 2, number_deactivated_products)
+        number_deactivated_products = block_product(2, 4, 2, number_deactivated_products)
+        writeC(2, 2)
 
     if (jump_index & (0x4 | 0x8)) == 0:
       print("")
@@ -982,22 +1057,33 @@ if options.hierarchical:
       print("  # A_{23}*B_{33} + A_{24}*B_{43} = C_{23}")
       print("  # A_{23}*B_{34} + A_{24}*B_{44} = C_{24}")
 
-      block_product(1, 1, 3, clearC = True, writeC = False)
-      block_product(1, 2, 3, clearC = False, writeC = False)
-      block_product(1, 3, 3, clearC = False, writeC = False)
-      block_product(1, 4, 3, clearC = False, writeC = True)
-      block_product(1, 1, 4, clearC = True, writeC = False)
-      block_product(1, 2, 4, clearC = False, writeC = False)
-      block_product(1, 3, 4, clearC = False, writeC = False)
-      block_product(1, 4, 4, clearC = False, writeC = True)
-      block_product(2, 1, 3, clearC = True, writeC = False)
-      block_product(2, 2, 3, clearC = False, writeC = False)
-      block_product(2, 3, 3, clearC = False, writeC = False)
-      block_product(2, 4, 3, clearC = False, writeC = True)
-      block_product(2, 1, 4, clearC = True, writeC = False)
-      block_product(2, 2, 4, clearC = False, writeC = False)
-      block_product(2, 3, 4, clearC = False, writeC = False)
-      block_product(2, 4, 4, clearC = False, writeC = True)
+      clearC(1, 3)
+      number_deactivated_products = block_product(1, 1, 3, number_deactivated_products)
+      number_deactivated_products = block_product(1, 2, 3, number_deactivated_products)
+      number_deactivated_products = block_product(1, 3, 3, number_deactivated_products)
+      number_deactivated_products = block_product(1, 4, 3, number_deactivated_products)
+      writeC(1, 3)
+
+      clearC(1, 4)
+      number_deactivated_products = block_product(1, 1, 4, number_deactivated_products)
+      number_deactivated_products = block_product(1, 2, 4, number_deactivated_products)
+      number_deactivated_products = block_product(1, 3, 4, number_deactivated_products)
+      number_deactivated_products = block_product(1, 4, 4, number_deactivated_products)
+      writeC(1, 4)
+
+      clearC(2, 3)
+      number_deactivated_products = block_product(2, 1, 3, number_deactivated_products)
+      number_deactivated_products = block_product(2, 2, 3, number_deactivated_products)
+      number_deactivated_products = block_product(2, 3, 3, number_deactivated_products)
+      number_deactivated_products = block_product(2, 4, 3, number_deactivated_products)
+      writeC(2, 3)
+
+      clearC(2, 4)
+      number_deactivated_products = block_product(2, 1, 4, number_deactivated_products)
+      number_deactivated_products = block_product(2, 2, 4, number_deactivated_products)
+      number_deactivated_products = block_product(2, 3, 4, number_deactivated_products)
+      number_deactivated_products = block_product(2, 4, 4, number_deactivated_products)
+      writeC(2, 4)
 
     else:
       if (jump_index & 0x4) == 0:
@@ -1009,14 +1095,26 @@ if options.hierarchical:
         print("  # A_{11}*B_{14} + A_{12}*B_{24} = C_{14}")
         print("  # A_{21}*B_{13} + A_{22}*B_{23} = C_{23}")
         print("  # A_{21}*B_{14} + A_{22}*B_{24} = C_{24}")
-        block_product(1, 1, 3, clearC = True, writeC = False)
-        block_product(1, 2, 3, clearC = False, writeC = True)
-        block_product(1, 1, 4, clearC = True, writeC = False)
-        block_product(1, 2, 4, clearC = False, writeC = True)
-        block_product(2, 1, 3, clearC = True, writeC = False)
-        block_product(2, 2, 3, clearC = False, writeC = True)
-        block_product(2, 1, 4, clearC = True, writeC = False)
-        block_product(2, 2, 4, clearC = False, writeC = True)
+
+        clearC(1, 3)
+        number_deactivated_products = block_product(1, 1, 3, number_deactivated_products)
+        number_deactivated_products = block_product(1, 2, 3, number_deactivated_products)
+        writeC(1, 3)
+
+        clearC(1, 4)
+        number_deactivated_products = block_product(1, 1, 4, number_deactivated_products)
+        number_deactivated_products = block_product(1, 2, 4, number_deactivated_products)
+        writeC(1, 4)
+
+        clearC(2, 3)
+        number_deactivated_products = block_product(2, 1, 3, number_deactivated_products)
+        number_deactivated_products = block_product(2, 2, 3, number_deactivated_products)
+        writeC(2, 3)
+
+        clearC(2, 4)
+        number_deactivated_products = block_product(2, 1, 4, number_deactivated_products)
+        number_deactivated_products = block_product(2, 2, 4, number_deactivated_products)
+        writeC(2, 4)
 
       if (jump_index & 0x8) == 0:
         print("")
@@ -1027,14 +1125,26 @@ if options.hierarchical:
         print("  # A_{13}*B_{34} + A_{14}*B_{44} = C_{14}")
         print("  # A_{23}*B_{33} + A_{24}*B_{43} = C_{23}")
         print("  # A_{23}*B_{34} + A_{24}*B_{44} = C_{24}")
-        block_product(1, 3, 3, clearC = True, writeC = False)
-        block_product(1, 4, 3, clearC = False, writeC = True)
-        block_product(1, 3, 4, clearC = True, writeC = False)
-        block_product(1, 4, 4, clearC = False, writeC = True)
-        block_product(2, 3, 3, clearC = True, writeC = False)
-        block_product(2, 4, 3, clearC = False, writeC = True)
-        block_product(2, 3, 4, clearC = True, writeC = False)
-        block_product(2, 4, 4, clearC = False, writeC = True)
+
+        clearC(1, 3)
+        number_deactivated_products = block_product(1, 3, 3, number_deactivated_products)
+        number_deactivated_products = block_product(1, 4, 3, number_deactivated_products)
+        writeC(1, 3)
+
+        clearC(1, 4)
+        number_deactivated_products = block_product(1, 3, 4, number_deactivated_products)
+        number_deactivated_products = block_product(1, 4, 4, number_deactivated_products)
+        writeC(1, 4)
+
+        clearC(2, 3)
+        number_deactivated_products = block_product(2, 3, 3, number_deactivated_products)
+        number_deactivated_products = block_product(2, 4, 3, number_deactivated_products)
+        writeC(2, 3)
+
+        clearC(2, 4)
+        number_deactivated_products = block_product(2, 3, 4, number_deactivated_products)
+        number_deactivated_products = block_product(2, 4, 4, number_deactivated_products)
+        writeC(2, 4)
 
     if (jump_index & (0x10 | 0x20)) == 0:
       print("")
@@ -1054,22 +1164,33 @@ if options.hierarchical:
       print("  # A_{43}*B_{31} + A_{44}*B_{41} = C_{41}")
       print("  # A_{43}*B_{32} + A_{44}*B_{42} = C_{42}")
 
-      block_product(3, 1, 1, clearC = True, writeC = False)
-      block_product(3, 2, 1, clearC = False, writeC = False)
-      block_product(3, 3, 1, clearC = False, writeC = False)
-      block_product(3, 4, 1, clearC = False, writeC = True)
-      block_product(3, 1, 2, clearC = True, writeC = False)
-      block_product(3, 2, 2, clearC = False, writeC = False)
-      block_product(3, 3, 2, clearC = False, writeC = False)
-      block_product(3, 4, 2, clearC = False, writeC = True)
-      block_product(4, 1, 1, clearC = True, writeC = False)
-      block_product(4, 2, 1, clearC = False, writeC = False)
-      block_product(4, 3, 1, clearC = False, writeC = False)
-      block_product(4, 4, 1, clearC = False, writeC = True)
-      block_product(4, 1, 2, clearC = True, writeC = False)
-      block_product(4, 2, 2, clearC = False, writeC = False)
-      block_product(4, 3, 2, clearC = False, writeC = False)
-      block_product(4, 4, 2, clearC = False, writeC = True)
+      clearC(3, 1)
+      number_deactivated_products = block_product(3, 1, 1, number_deactivated_products)
+      number_deactivated_products = block_product(3, 2, 1, number_deactivated_products)
+      number_deactivated_products = block_product(3, 3, 1, number_deactivated_products)
+      number_deactivated_products = block_product(3, 4, 1, number_deactivated_products)
+      writeC(3, 1)
+
+      clearC(3, 2)
+      number_deactivated_products = block_product(3, 1, 2, number_deactivated_products)
+      number_deactivated_products = block_product(3, 2, 2, number_deactivated_products)
+      number_deactivated_products = block_product(3, 3, 2, number_deactivated_products)
+      number_deactivated_products = block_product(3, 4, 2, number_deactivated_products)
+      writeC(3, 2)
+
+      clearC(4, 1)
+      number_deactivated_products = block_product(4, 1, 1, number_deactivated_products)
+      number_deactivated_products = block_product(4, 2, 1, number_deactivated_products)
+      number_deactivated_products = block_product(4, 3, 1, number_deactivated_products)
+      number_deactivated_products = block_product(4, 4, 1, number_deactivated_products)
+      writeC(4, 1)
+
+      clearC(4, 2)
+      number_deactivated_products = block_product(4, 1, 2, number_deactivated_products)
+      number_deactivated_products = block_product(4, 2, 2, number_deactivated_products)
+      number_deactivated_products = block_product(4, 3, 2, number_deactivated_products)
+      number_deactivated_products = block_product(4, 4, 2, number_deactivated_products)
+      writeC(4, 2)
 
     else:
       if (jump_index & 0x10) == 0:
@@ -1081,14 +1202,26 @@ if options.hierarchical:
         print("  # A_{31}*B_{12} + A_{32}*B_{22} = C_{32}")
         print("  # A_{41}*B_{11} + A_{42}*B_{21} = C_{41}")
         print("  # A_{41}*B_{12} + A_{42}*B_{22} = C_{42}")
-        block_product(3, 1, 1, clearC = True, writeC = False)
-        block_product(3, 2, 1, clearC = False, writeC = True)
-        block_product(3, 1, 2, clearC = True, writeC = False)
-        block_product(3, 2, 2, clearC = False, writeC = True)
-        block_product(4, 1, 1, clearC = True, writeC = False)
-        block_product(4, 2, 1, clearC = False, writeC = True)
-        block_product(4, 1, 2, clearC = True, writeC = False)
-        block_product(4, 2, 2, clearC = False, writeC = True)
+
+        clearC(3, 1)
+        number_deactivated_products = block_product(3, 1, 1, number_deactivated_products)
+        number_deactivated_products = block_product(3, 2, 1, number_deactivated_products)
+        writeC(3, 1)
+
+        clearC(3, 2)
+        number_deactivated_products = block_product(3, 1, 2, number_deactivated_products)
+        number_deactivated_products = block_product(3, 2, 2, number_deactivated_products)
+        writeC(3, 2)
+
+        clearC(4, 1)
+        number_deactivated_products = block_product(4, 1, 1, number_deactivated_products)
+        number_deactivated_products = block_product(4, 2, 1, number_deactivated_products)
+        writeC(4, 1)
+
+        clearC(4, 2)
+        number_deactivated_products = block_product(4, 1, 2, number_deactivated_products)
+        number_deactivated_products = block_product(4, 2, 2, number_deactivated_products)
+        writeC(4, 2)
 
       if (jump_index & 0x20) == 0:
         print("")
@@ -1099,14 +1232,26 @@ if options.hierarchical:
         print("  # A_{33}*B_{32} + A_{34}*B_{42} = C_{32}")
         print("  # A_{43}*B_{31} + A_{44}*B_{41} = C_{41}")
         print("  # A_{43}*B_{32} + A_{44}*B_{42} = C_{42}")
-        block_product(3, 3, 1, clearC = True, writeC = False)
-        block_product(3, 4, 1, clearC = False, writeC = True)
-        block_product(3, 3, 2, clearC = True, writeC = False)
-        block_product(3, 4, 2, clearC = False, writeC = True)
-        block_product(4, 3, 1, clearC = True, writeC = False)
-        block_product(4, 4, 1, clearC = False, writeC = True)
-        block_product(4, 3, 2, clearC = True, writeC = False)
-        block_product(4, 4, 2, clearC = False, writeC = True)
+
+        clearC(3, 1)
+        number_deactivated_products = block_product(3, 3, 1, number_deactivated_products)
+        number_deactivated_products = block_product(3, 4, 1, number_deactivated_products)
+        writeC(3, 1)
+
+        clearC(3, 2)
+        number_deactivated_products = block_product(3, 3, 2, number_deactivated_products)
+        number_deactivated_products = block_product(3, 4, 2, number_deactivated_products)
+        writeC(3, 2)
+
+        clearC(4, 1)
+        number_deactivated_products = block_product(4, 3, 1, number_deactivated_products)
+        number_deactivated_products = block_product(4, 4, 1, number_deactivated_products)
+        writeC(4, 1)
+
+        clearC(4, 2)
+        number_deactivated_products = block_product(4, 3, 2, number_deactivated_products)
+        number_deactivated_products = block_product(4, 4, 2, number_deactivated_products)
+        writeC(4, 2)
 
     if (jump_index & (0x40 | 0x80)) == 0:
       print("")
@@ -1126,22 +1271,33 @@ if options.hierarchical:
       print("  # A_{43}*B_{33} + A_{44}*B_{43} = C_{43}")
       print("  # A_{43}*B_{34} + A_{44}*B_{44} = C_{44}")
 
-      block_product(3, 1, 3, clearC = True, writeC = False)
-      block_product(3, 2, 3, clearC = False, writeC = False)
-      block_product(3, 3, 3, clearC = False, writeC = False)
-      block_product(3, 4, 3, clearC = False, writeC = True)
-      block_product(3, 1, 4, clearC = True, writeC = False)
-      block_product(3, 2, 4, clearC = False, writeC = False)
-      block_product(3, 3, 4, clearC = False, writeC = False)
-      block_product(3, 4, 4, clearC = False, writeC = True)
-      block_product(4, 1, 3, clearC = True, writeC = False)
-      block_product(4, 2, 3, clearC = False, writeC = False)
-      block_product(4, 3, 3, clearC = False, writeC = False)
-      block_product(4, 4, 3, clearC = False, writeC = True)
-      block_product(4, 1, 4, clearC = True, writeC = False)
-      block_product(4, 2, 4, clearC = False, writeC = False)
-      block_product(4, 3, 4, clearC = False, writeC = False)
-      block_product(4, 4, 4, clearC = False, writeC = True)
+      clearC(3, 3)
+      number_deactivated_products = block_product(3, 1, 3, number_deactivated_products)
+      number_deactivated_products = block_product(3, 2, 3, number_deactivated_products)
+      number_deactivated_products = block_product(3, 3, 3, number_deactivated_products)
+      number_deactivated_products = block_product(3, 4, 3, number_deactivated_products)
+      writeC(3, 3)
+
+      clearC(3, 4)
+      number_deactivated_products = block_product(3, 1, 4, number_deactivated_products)
+      number_deactivated_products = block_product(3, 2, 4, number_deactivated_products)
+      number_deactivated_products = block_product(3, 3, 4, number_deactivated_products)
+      number_deactivated_products = block_product(3, 4, 4, number_deactivated_products)
+      writeC(3, 4)
+
+      clearC(4, 3)
+      number_deactivated_products = block_product(4, 1, 3, number_deactivated_products)
+      number_deactivated_products = block_product(4, 2, 3, number_deactivated_products)
+      number_deactivated_products = block_product(4, 3, 3, number_deactivated_products)
+      number_deactivated_products = block_product(4, 4, 3, number_deactivated_products)
+      writeC(4, 3)
+
+      clearC(4, 4)
+      number_deactivated_products = block_product(4, 1, 4, number_deactivated_products)
+      number_deactivated_products = block_product(4, 2, 4, number_deactivated_products)
+      number_deactivated_products = block_product(4, 3, 4, number_deactivated_products)
+      number_deactivated_products = block_product(4, 4, 4, number_deactivated_products)
+      writeC(4, 4)
 
     else:
       if (jump_index & 0x40) == 0:
@@ -1153,14 +1309,26 @@ if options.hierarchical:
         print("  # A_{31}*B_{14} + A_{32}*B_{24} = C_{34}")
         print("  # A_{41}*B_{13} + A_{42}*B_{23} = C_{43}")
         print("  # A_{41}*B_{14} + A_{42}*B_{24} = C_{44}")
-        block_product(3, 1, 3, clearC = True, writeC = False)
-        block_product(3, 2, 3, clearC = False, writeC = True)
-        block_product(3, 1, 4, clearC = True, writeC = False)
-        block_product(3, 2, 4, clearC = False, writeC = True)
-        block_product(4, 1, 3, clearC = True, writeC = False)
-        block_product(4, 2, 3, clearC = False, writeC = True)
-        block_product(4, 1, 4, clearC = True, writeC = False)
-        block_product(4, 2, 4, clearC = False, writeC = True)
+
+        clearC(3, 3)
+        number_deactivated_products = block_product(3, 1, 3, number_deactivated_products)
+        number_deactivated_products = block_product(3, 2, 3, number_deactivated_products)
+        writeC(3, 3)
+
+        clearC(3, 4)
+        number_deactivated_products = block_product(3, 1, 4, number_deactivated_products)
+        number_deactivated_products = block_product(3, 2, 4, number_deactivated_products)
+        writeC(3, 4)
+
+        clearC(4, 3)
+        number_deactivated_products = block_product(4, 1, 3, number_deactivated_products)
+        number_deactivated_products = block_product(4, 2, 3, number_deactivated_products)
+        writeC(4, 3)
+
+        clearC(4, 4)
+        number_deactivated_products = block_product(4, 1, 4, number_deactivated_products)
+        number_deactivated_products = block_product(4, 2, 4, number_deactivated_products)
+        writeC(4, 4)
 
       if (jump_index & 0x80) == 0:
         print("")
@@ -1171,14 +1339,26 @@ if options.hierarchical:
         print("  # A_{33}*B_{34} + A_{34}*B_{44} = C_{34}")
         print("  # A_{43}*B_{33} + A_{44}*B_{43} = C_{43}")
         print("  # A_{43}*B_{34} + A_{44}*B_{44} = C_{44}")
-        block_product(3, 3, 3, clearC = True, writeC = False)
-        block_product(3, 4, 3, clearC = False, writeC = True)
-        block_product(3, 3, 4, clearC = True, writeC = False)
-        block_product(3, 4, 4, clearC = False, writeC = True)
-        block_product(4, 3, 3, clearC = True, writeC = False)
-        block_product(4, 4, 3, clearC = False, writeC = True)
-        block_product(4, 3, 4, clearC = True, writeC = False)
-        block_product(4, 4, 4, clearC = False, writeC = True)
+
+        clearC(3, 3)
+        number_deactivated_products = block_product(3, 3, 3, number_deactivated_products)
+        number_deactivated_products = block_product(3, 4, 3, number_deactivated_products)
+        writeC(3, 3)
+
+        clearC(3, 4)
+        number_deactivated_products = block_product(3, 3, 4, number_deactivated_products)
+        number_deactivated_products = block_product(3, 4, 4, number_deactivated_products)
+        writeC(3, 4)
+
+        clearC(4, 3)
+        number_deactivated_products = block_product(4, 3, 3, number_deactivated_products)
+        number_deactivated_products = block_product(4, 4, 3, number_deactivated_products)
+        writeC(4, 3)
+
+        clearC(4, 4)
+        number_deactivated_products = block_product(4, 3, 4, number_deactivated_products)
+        number_deactivated_products = block_product(4, 4, 4, number_deactivated_products)
+        writeC(4, 4)
 
     print("")
     print("  # Done.")
@@ -1188,7 +1368,11 @@ else:
   for i in range(options.N):
     for j in range(options.N):
       for k in range(options.N):
-        block_product(i+1, k+1, j+1, clearC = (k == 0), writeC = (k == options.N-1))
+        if k == 0:
+          clearC(i+1, j+1)
+        number_deactivated_products = block_product(i+1, k+1, j+1, number_deactivated_products)
+        if k == options.N-1:
+          writeC(i+1, j+1)
 
 # End of outer loop.
 print("")
