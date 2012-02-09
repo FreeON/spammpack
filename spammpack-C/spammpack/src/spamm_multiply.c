@@ -1570,6 +1570,10 @@ spamm_multiply (const float tolerance,
       spamm_stream_kernel_SSE(stream_index, alpha, tolerance, multiply_stream);
       break;
 
+    case kernel_standard_SSE_sparse:
+      spamm_stream_kernel_SSE_sparse(stream_index, alpha, tolerance, multiply_stream);
+      break;
+
     case kernel_standard_no_checks_SSE:
       spamm_stream_kernel_no_checks_SSE(stream_index, alpha, tolerance, multiply_stream);
       break;

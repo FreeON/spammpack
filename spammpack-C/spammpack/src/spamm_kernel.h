@@ -19,6 +19,9 @@ enum spamm_kernel_t
   /** The standard stream kernel (SSE). */
   kernel_standard_SSE,
 
+  /** The standard stream kernel, sparse version (SSE). */
+  kernel_standard_SSE_sparse,
+
   /** The standard stream kernel without norm checks (SSE). */
   kernel_standard_no_checks_SSE,
 
@@ -100,6 +103,19 @@ spamm_kernel_get_layout (const char *name);
  */
 void
 spamm_stream_kernel_SSE (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    struct spamm_multiply_stream_t *multiply_stream);
+
+/** Process the multiply stream.
+ *
+ * @param number_stream_elements The size of the multiply stream.
+ * @param alpha The factor \f$\alpha\f$.
+ * @param tolerance The SpAMM tolerance.
+ * @param multiply_stream The multiply stream.
+ */
+void
+spamm_stream_kernel_SSE_sparse (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
