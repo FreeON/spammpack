@@ -544,7 +544,7 @@ spamm_recursive_multiply (const float tolerance,
     C->root->N_upper = A->root->N_upper;
   }
 
-  spamm_recursive_multiply_3_matrix(tolerance, alpha, A->root, B->root, C->root, &(C->root), timer, sgemm, number_products);
+  spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, number_products);
 }
 
 /** Multiply three matrices, i.e. \f$ D = \alpha A \times B \times C + \beta D\f$.
@@ -626,7 +626,7 @@ spamm_recursive_multiply_3 (const float tolerance,
     D->root->N_upper = A->root->N_upper;
   }
 
-  spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, number_products);
+  spamm_recursive_multiply_3_matrix(tolerance, alpha, A->root, B->root, C->root, &(C->root), timer, sgemm, number_products);
 }
 
 /** @brief Print a recursive SpAMM matrix.
