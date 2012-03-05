@@ -142,8 +142,18 @@ AC_DEFINE([SPAMM_MULTIPLY_COPY_INDICES], [1], [Copy indices to array.])
 AC_DEFINE([SPAMM_MULTIPLY_CONVOLUTE], [1], [Convolute.])
 AC_DEFINE([SPAMM_MULTIPLY_FREE], [1], [Free memory.])
 AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
-#AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
 AC_DEFINE([SPAMM_MULTIPLY_FINAL_FREE], [1], [Free remaining memory before exit.])
+
+AC_MSG_CHECKING([whether to count the number of basic matrix block products])
+AC_ARG_ENABLE([product-count],
+              [AS_HELP_STRING([--enable-product-count], [Enable basic matrix block product count.])],
+              [use_product_count=${enableval}],
+              [use_product_count="no"])
+AC_MSG_RESULT([$use_product_count])
+
+if test "${use_product_count}" = "yes"; then
+  AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
+fi
 
 AC_MSG_CHECKING([whether to use real hashtables])
 AC_ARG_ENABLE([hashtable],
