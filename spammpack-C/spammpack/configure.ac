@@ -225,24 +225,9 @@ if test "${use_double_check}" = "yes"; then
   AC_DEFINE([SPAMM_MULTIPLY_DOUBLE_CHECK], [1], [Double check a few things in the multiply])
 fi
 
-dnl Load git commit ID and set.
-if test -f ${srcdir}/localversion; then
-  . ${srcdir}/localversion
-else
-  branch="unknown"
-  localversion="unknown"
-fi
-
 dnl Fix the package version in the documentation.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
-AC_SUBST(LOCAL_VERSION, [${branch}:${localversion}])
 AC_DEFINE_UNQUOTED(SPAMM_VERSION, ["${VERSION}"], [The spammpack version.])
-
-dnl Define the git commit tag.
-AC_DEFINE_UNQUOTED(SPAMM_COMMIT_TAG, ["${localversion}"], [Define the git commit tag of this build.])
-
-dnl Some output.
-AC_MSG_NOTICE([configuring local version ${branch}:${localversion}])
 
 dnl Store the command line.
 AC_DEFINE_UNQUOTED([SPAMM_CONFIGURE_ARGUMENTS], ["${ac_configure_args}"], [The command line with which spammpack was configured.])

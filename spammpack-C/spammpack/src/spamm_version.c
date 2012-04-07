@@ -12,8 +12,8 @@
 char *
 spamm_version ()
 {
-  char *string = (char *) malloc(sizeof(char)*strlen(SPAMM_VERSION)+1+strlen(SPAMM_COMMIT_TAG)+1);
+  char *string = (char *) malloc(sizeof(char)*strlen(SPAMM_VERSION)+1);
 
-  sprintf(string, "%s:%s", SPAMM_VERSION, SPAMM_COMMIT_TAG);
+  sprintf(string, "%s", SPAMM_VERSION);
   return string;
 }
