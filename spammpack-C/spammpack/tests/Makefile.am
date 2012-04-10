@@ -18,7 +18,10 @@ check_PROGRAMS = \
   stats \
   list_sort \
   multiply_spamm \
-  multiply_recursive
+  multiply_recursive \
+  get_version
+
+get_version_SOURCES = get_version.F90
 
 noinst_SCRIPTS = \
   create_spamm_row_major.sh \
