@@ -95,9 +95,17 @@ noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la
 # releases, so you could make all the stable releases with `-release 1.0' and
 # begin the first unstable release with `-release 1.1'.
 
+if INTERNAL_LAPACK
+LIBADD_INTERNAL_LAPACK = \
+  $(top_builddir)/../lapack/lapack/libfreeonlapack.la \
+  $(top_builddir)/../lapack/blas/libfreeonblas.la \
+  $(top_builddir)/../lapack/install/libfreeonlapackextra.la
+endif
+
 libspamm_la_LDFLAGS = -version-info 0:0:0
 libspamm_la_SOURCES =
-libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la
+libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la $(LIBADD_INTERNAL_LAPACK)
+#libspamm_la_DEPENDENCIES = $(LIBADD_INTERNAL_LAPACK)
 
 noinst_SCRIPTS = generate_SSE_assembly.py spammOffsets.py
 noinst_PROGRAMS = print_data_sizes

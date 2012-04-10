@@ -101,6 +101,16 @@ else
   AC_MSG_FAILURE([no pthread support])
 fi
 
+dnl Check for internal lapack (in case this package is compiled as part of FreeON).
+AC_MSG_CHECKING([for internal lapack])
+AC_ARG_ENABLE([internal-lapack],
+              [AS_HELP_STRING([--enable-internal-lapack],
+                              [enables internal lapack (as part of FreeON)])],
+              [enable_internal_lapack=$enableval],
+              [enable_internal_lapack="no"])
+AC_MSG_RESULT([$enable_internal_lapack])
+AM_CONDITIONAL(INTERNAL_LAPACK, [test "${enable_internal_lapack}" = "yes"])
+
 dnl Check for logging.
 AC_MSG_CHECKING([whether to enable logging])
 AC_ARG_ENABLE([logging], [AS_HELP_STRING([--disable-logging],
