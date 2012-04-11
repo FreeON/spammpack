@@ -1,41 +1,9 @@
 /** @file */
 
-#ifndef __SPAMM_TYPES_H
-#define __SPAMM_TYPES_H
+#ifndef __SPAMM_TYPES_PRIVATE_H
+#define __SPAMM_TYPES_PRIVATE_H
 
 #include "spamm_config.h"
-
-/** The basic information in a stream element.
- */
-struct spamm_multiply_stream_t
-{
-  /** A pointer to the kernel tier matrix node of A. */
-  struct spamm_data_t *A;
-
-  /** A pointer to the kernel tier matrix node of B. */
-  struct spamm_data_t *B;
-
-  /** A pointer to the kernel tier matrix node of C. */
-  struct spamm_data_t *C;
-};
-
-/** The layout type for the layout of the basic matrix blocks on the kernel
- * tier.
- */
-enum spamm_layout_t
-{
-  /** Layout in row-major order. */
-  row_major,
-
-  /** Layout in column-major order. */
-  column_major,
-
-  /** Layout in Z-curve order. */
-  Z_curve,
-
-  /** Layout as a dense kernel block, in row-major order. */
-  dense_column_major
-};
 
 /** The matrix type.
  */
@@ -189,6 +157,20 @@ spamm_recursive_node_t
 
   /** The matrix data (if this is a leaf node). */
   float *data;
+};
+
+/** The basic information in a stream element.
+ */
+struct spamm_multiply_stream_t
+{
+  /** A pointer to the kernel tier matrix node of A. */
+  struct spamm_data_t *A;
+
+  /** A pointer to the kernel tier matrix node of B. */
+  struct spamm_data_t *B;
+
+  /** A pointer to the kernel tier matrix node of C. */
+  struct spamm_data_t *C;
 };
 
 #endif

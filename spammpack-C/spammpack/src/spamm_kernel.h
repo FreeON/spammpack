@@ -3,6 +3,8 @@
 #ifndef __SPAMM_KERNEL_H
 #define __SPAMM_KERNEL_H
 
+#include "spamm_types.h"
+
 /** Available stream kernels. */
 #define SPAMM_NUMBER_KERNELS 4
 
@@ -22,8 +24,6 @@ enum spamm_kernel_t
   /** The standard stream kernel (SSE4.1). */
   kernel_standard_SSE4_1
 };
-
-struct spamm_multiply_stream_t;
 
 const char *
 spamm_kernel_get_name (const unsigned int i);
