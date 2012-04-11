@@ -206,6 +206,7 @@ libspamm_kernel_headers = \
 
 libspamm_tree_la_SOURCES = \
   $(libspamm_tree_headers) \
+  $(libspamm_tree_private_headers) \
   spamm_manual_mainpage.h \
   spamm_allocate.c \
   spamm_check.c \
@@ -244,6 +245,10 @@ libspamm_tree_headers = \
   spamm_recursive.h \
   spamm_timer.h \
   spamm_types.h
+
+libspamm_tree_private_headers = \
+  spamm_private.h \
+  spamm_types_private.h
 
 include_HEADERS = \
   $(builddir)/spamm_config.h \

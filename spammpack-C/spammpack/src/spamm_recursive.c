@@ -1,4 +1,4 @@
-#include "spamm.h"
+#include "spamm_private.h"
 #include "spamm_recursive.h"
 
 #include <assert.h>
