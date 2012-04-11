@@ -1,4 +1,5 @@
 #include "spamm.h"
+#include "spamm_types_private.h"
 
 #include <assert.h>
 #include <stdio.h>

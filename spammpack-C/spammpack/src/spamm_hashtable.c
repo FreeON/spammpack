@@ -2,6 +2,7 @@
 #include "spamm.h"
 #include "spamm_hashtable.h"
 #include "spamm_list.h"
+#include "spamm_types_private.h"
 
 #include <stdio.h>
 #include <stdlib.h>

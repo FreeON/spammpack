@@ -1,5 +1,6 @@
 #include "config.h"
 #include "spamm.h"
+#include "spamm_types_private.h"
 
 #include <errno.h>
 #include <stdio.h>
