@@ -1,5 +1,6 @@
 #include "spamm.h"
 #include "spamm_recursive.h"
+#include "spamm_types_private.h"
 
 #include <assert.h>
 #include <math.h>

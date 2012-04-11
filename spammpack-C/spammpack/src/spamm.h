@@ -9,9 +9,8 @@
 #include "spamm_kernel.h"
 #include "spamm_types.h"
 #include "spamm_errno.h"
-
 #include "spamm_timer.h"
-#include "spamm_convert.h"
+
 #include "spamm_general.h"
 
 #endif

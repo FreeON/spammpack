@@ -3,6 +3,8 @@
 #ifndef __SPAMM_GENERAL_H
 #define __SPAMM_GENERAL_H
 
+#include "spamm_types.h"
+
 void *
 spamm_allocate (size_t size);
 
@@ -127,5 +129,10 @@ spamm_expand (struct spamm_t *A);
 
 void
 spamm_construct_tree (struct spamm_t *A);
+
+struct spamm_t *
+spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
+    const enum spamm_layout_t dense_type, float *A_dense,
+    const enum spamm_layout_t spamm_layout);
 
 #endif

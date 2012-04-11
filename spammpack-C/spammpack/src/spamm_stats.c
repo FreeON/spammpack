@@ -1,4 +1,5 @@
 #include "spamm.h"
+#include "spamm_types_private.h"
 
 /** Return the number of non-zero elements in a matrix.
  *
