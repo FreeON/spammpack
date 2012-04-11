@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <strings.h>
 
+/** Available stream kernels. */
+#define SPAMM_NUMBER_KERNELS 4
+
 /** Get the name of the ith kernel.
  *
  * @param i The index of the kernel

@@ -5,9 +5,6 @@
 
 #include "spamm_types.h"
 
-/** Available stream kernels. */
-#define SPAMM_NUMBER_KERNELS 4
-
 /** The different stream kernels.
  */
 enum spamm_kernel_t
