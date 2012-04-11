@@ -1,11 +1,3 @@
-AM_CTAGSFLAGS = --C-kinds=+l+x
-TAGS_FILES = $(builddir)/../config.h generate_SSE_assembly.py
-
-ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
-
-lib_LTLIBRARIES = libspamm.la
-noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la
-
 # The version scheme used by Libtool tracks interfaces, where an interface is
 # the set of exported entry points into the library. All Libtool libraries
 # start with `-version-info' set to `0:0:0' -- this will be the default
@@ -94,6 +86,14 @@ noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la
 # from the unstable branch will not be binary compatible with the stable
 # releases, so you could make all the stable releases with `-release 1.0' and
 # begin the first unstable release with `-release 1.1'.
+
+AM_CTAGSFLAGS = --C-kinds=+l+x
+TAGS_FILES = $(builddir)/../config.h generate_SSE_assembly.py
+
+ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
+
+lib_LTLIBRARIES = libspamm.la
+noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la
 
 if INTERNAL_LAPACK
 LIBADD_INTERNAL_LAPACK = \
