@@ -5,6 +5,20 @@
 
 #include "spamm_config.h"
 
+/** The basic information in a stream element.
+ */
+struct spamm_multiply_stream_t
+{
+  /** A pointer to the kernel tier matrix node of A. */
+  struct spamm_data_t *A;
+
+  /** A pointer to the kernel tier matrix node of B. */
+  struct spamm_data_t *B;
+
+  /** A pointer to the kernel tier matrix node of C. */
+  struct spamm_data_t *C;
+};
+
 /** The layout type for the layout of the basic matrix blocks on the kernel
  * tier.
  */
