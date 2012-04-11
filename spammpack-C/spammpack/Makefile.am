@@ -6,7 +6,9 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src interfaces tests
 
-CONFIG_STATUS_DEPENDENCIES = $(top_srcdir)/Doxyfile.in
+CONFIG_STATUS_DEPENDENCIES = \
+  $(top_srcdir)/Doxyfile.in \
+  $(top_srcdir)/src/spamm_manual_mainpage.h.in
 
 docs :
 	doxygen
