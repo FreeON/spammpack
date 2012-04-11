@@ -1,8 +1,7 @@
 #include "spamm_config.h"
-#include "spamm.h"
+#include "spamm_private.h"
 #include "spamm_hashtable.h"
 #include "spamm_list.h"
-#include "spamm_types.h"
 
 #include <stdio.h>
 #include <stdlib.h>
