@@ -23,22 +23,11 @@ enum spamm_layout_t
   dense_column_major
 };
 
-/** The matrix type.
- */
+struct spamm_multiply_stream_t;
 struct spamm_t;
-
-/** A node in the matrix tree.
- */
 struct spamm_node_t;
-
-/** A node at the kernel tier. */
 struct spamm_data_t;
-
-/** A recursive recursive SpAMM tree. */
-struct
-spamm_recursive_t;
-
-struct
-spamm_recursive_node_t;
+struct spamm_recursive_t;
+struct spamm_recursive_node_t;
 
 #endif

@@ -1,7 +1,7 @@
 /** @file */
 
-#ifndef __SPAMM_H
-#define __SPAMM_H
+#ifndef __SPAMM_PRIVATE_H
+#define __SPAMM_PRIVATE_H
 
 /* Include the other header files. */
 #include "spamm_error.h"
