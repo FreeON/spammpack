@@ -6,16 +6,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src interfaces tests
 
-#EXTRA_DIST = localversion $(pdf_DATA)
-
-CONFIG_STATUS_DEPENDENCIES = \
-  $(top_srcdir)/Doxyfile.in \
-  $(top_srcdir)/src/spamm_manual_mainpage.h.in
-
-#pdfdir = $(docdir)/pdf
-#pdf_DATA = latex/refman.pdf
-
-#dist : docs
+CONFIG_STATUS_DEPENDENCIES = $(top_srcdir)/Doxyfile.in
 
 docs :
 	doxygen

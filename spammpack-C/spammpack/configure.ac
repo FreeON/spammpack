@@ -43,11 +43,7 @@ dnl Check for assert macros.
 AC_HEADER_ASSERT
 
 dnl Check for math library.
-AC_CHECK_HEADERS([math.h])
-AC_CHECK_LIB([m], [ceil],
-             [],
-             [AC_MSG_FAILURE([ceil() not found])],
-             [])
+AC_SEARCH_LIBS([ceil], [m], [], [AC_MSG_FAILURE([could not find ceil()])])
 
 dnl Check for malloc with alignment.
 AC_DEFINE([_POSIX_C_SOURCE], [200809L], [Define POSIX to enable posix_memalign().])
@@ -81,7 +77,7 @@ if test "${enable_PAPI}" = "yes"; then
 
   have_PAPI="yes"
   AC_CHECK_HEADERS([papi.h], [], [unset have_PAPI])
-  AC_CHECK_LIB([papi], [PAPI_library_init], [], [unset have_PAPI])
+  AC_SEARCH_LIBS([PAPI_library_init], [papi], [], [unset have_PAPI])
   if test "${have_PAPI}" = "yes"; then
     AC_DEFINE([HAVE_PAPI], [1], [Should we use the PAPI profiling interface?])
   else
@@ -94,7 +90,7 @@ fi
 dnl Check for pthread support.
 have_PTHREAD="yes"
 AC_CHECK_HEADERS([pthread.h], [], [unset have_PTHREAD])
-AC_CHECK_LIB([pthread], [pthread_create], [], [unset have_PTHREAD])
+AC_SEARCH_LIBS([pthread_create], [pthread], [], [unset have_PTHREAD])
 if test "${have_PTHREAD}" = "yes"; then
   AC_DEFINE([HAVE_PTHREAD], [1], [Do we have pthread support?])
 else
