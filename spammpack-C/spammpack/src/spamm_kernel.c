@@ -19,22 +19,7 @@ spamm_kernel_get_name (const unsigned int i)
     "kernel_external_sgemm",
     "kernel_stream_NULL",
     "kernel_standard_SSE",
-    "kernel_standard_SSE_sparse",
-    "kernel_standard_no_checks_SSE",
-    "kernel_standard_SSE4_1",
-    "kernel_standard_no_checks_SSE4_1",
-    "kernel_Z_curve_SSE",
-    "kernel_Z_curve_no_checks_SSE",
-    "kernel_Z_curve_SSE4_1",
-    "kernel_Z_curve_no_checks_SSE4_1",
-    "kernel_hierarchical_SSE",
-    "kernel_hierarchical_no_checks_SSE",
-    "kernel_hierarchical_SSE4_1",
-    "kernel_hierarchical_no_checks_SSE4_1",
-    "kernel_hierarchical_Z_curve_SSE",
-    "kernel_hierarchical_Z_curve_no_checks_SSE",
-    "kernel_hierarchical_Z_curve_SSE4_1",
-    "kernel_hierarchical_Z_curve_no_checks_SSE4_1"
+    "kernel_standard_SSE4_1"
   };
 
   if (i >= SPAMM_NUMBER_KERNELS)
@@ -72,84 +57,9 @@ spamm_kernel_get_kernel (const char* name)
     kernel = kernel_standard_SSE;
   }
 
-  else if (strcasecmp(name, "kernel_standard_SSE_sparse") == 0)
-  {
-    kernel = kernel_standard_SSE_sparse;
-  }
-
-  else if (strcasecmp(name, "kernel_standard_no_checks_SSE") == 0)
-  {
-    kernel = kernel_standard_no_checks_SSE;
-  }
-
   else if (strcasecmp(name, "kernel_standard_SSE4_1") == 0)
   {
     kernel = kernel_standard_SSE4_1;
-  }
-
-  else if (strcasecmp(name, "kernel_standard_no_checks_SSE4_1") == 0)
-  {
-    kernel = kernel_standard_no_checks_SSE4_1;
-  }
-
-  else if (strcasecmp(name, "kernel_Z_curve_SSE") == 0)
-  {
-    kernel = kernel_Z_curve_SSE;
-  }
-
-  else if (strcasecmp(name, "kernel_Z_curve_no_checks_SSE") == 0)
-  {
-    kernel = kernel_Z_curve_no_checks_SSE;
-  }
-
-  else if (strcasecmp(name, "kernel_Z_curve_SSE4_1") == 0)
-  {
-    kernel = kernel_Z_curve_SSE4_1;
-  }
-
-  else if (strcasecmp(name, "kernel_Z_curve_no_checks_SSE4_1") == 0)
-  {
-    kernel = kernel_Z_curve_no_checks_SSE4_1;
-  }
-
-  else if (strcasecmp(name, "kernel_hierarchical_SSE") == 0)
-  {
-    kernel = kernel_hierarchical_SSE;
-  }
-
-  else if (strcasecmp(name, "kernel_hierarchical_no_checks_SSE") == 0)
-  {
-    kernel = kernel_hierarchical_no_checks_SSE;
-  }
-
-  else if (strcasecmp(name, "kernel_hierarchical_SSE4_1") == 0)
-  {
-    kernel = kernel_hierarchical_SSE4_1;
-  }
-
-  else if (strcasecmp(name, "kernel_hierarchical_no_checks_SSE4_1") == 0)
-  {
-    kernel = kernel_hierarchical_no_checks_SSE4_1;
-  }
-
-  else if (strcasecmp(name, "kernel_hierarchical_Z_curve_SSE") == 0)
-  {
-    kernel = kernel_hierarchical_Z_curve_SSE;
-  }
-
-  else if (strcasecmp(name, "kernel_hierarchical_Z_curve_no_checks_SSE") == 0)
-  {
-    kernel = kernel_hierarchical_Z_curve_no_checks_SSE;
-  }
-
-  else if (strcasecmp(name, "kernel_hierarchical_Z_curve_SSE4_1") == 0)
-  {
-    kernel = kernel_hierarchical_Z_curve_SSE4_1;
-  }
-
-  else if (strcasecmp(name, "kernel_hierarchical_Z_curve_no_checks_SSE4_1") == 0)
-  {
-    kernel = kernel_hierarchical_Z_curve_no_checks_SSE4_1;
   }
 
   else
@@ -180,26 +90,8 @@ spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel)
       break;
 
     case kernel_standard_SSE:
-    case kernel_standard_SSE_sparse:
-    case kernel_standard_no_checks_SSE:
     case kernel_standard_SSE4_1:
-    case kernel_standard_no_checks_SSE4_1:
-    case kernel_hierarchical_SSE:
-    case kernel_hierarchical_no_checks_SSE:
-    case kernel_hierarchical_SSE4_1:
-    case kernel_hierarchical_no_checks_SSE4_1:
       return row_major;
-      break;
-
-    case kernel_Z_curve_SSE:
-    case kernel_Z_curve_no_checks_SSE:
-    case kernel_Z_curve_SSE4_1:
-    case kernel_Z_curve_no_checks_SSE4_1:
-    case kernel_hierarchical_Z_curve_SSE:
-    case kernel_hierarchical_Z_curve_no_checks_SSE:
-    case kernel_hierarchical_Z_curve_SSE4_1:
-    case kernel_hierarchical_Z_curve_no_checks_SSE4_1:
-      return Z_curve;
       break;
 
     default:

@@ -1,4 +1,5 @@
-#include "spamm_private.h"
+#include "spamm_kernel.h"
+#include "spamm_types_private.h"
 
 #include <stdio.h>
 
@@ -8,7 +9,7 @@ main ()
   struct spamm_data_t data;
   struct spamm_multiply_stream_t stream_element;
 
-  printf("# spammpack version: %s:%s\n", SPAMM_VERSION);
+  printf("# spammpack version: %s\n", SPAMM_VERSION);
   printf("#\n");
   printf("# sizeof(struct spamm_multiply_stream_t) = %lu\n", sizeof(struct spamm_multiply_stream_t));
   printf("# &stream_element at   %p\n", &stream_element);

@@ -1570,68 +1570,8 @@ spamm_multiply (const float tolerance,
       spamm_stream_kernel_SSE(stream_index, alpha, tolerance, multiply_stream);
       break;
 
-    case kernel_standard_SSE_sparse:
-      spamm_stream_kernel_SSE_sparse(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_standard_no_checks_SSE:
-      spamm_stream_kernel_no_checks_SSE(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
     case kernel_standard_SSE4_1:
       spamm_stream_kernel_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_standard_no_checks_SSE4_1:
-      spamm_stream_kernel_no_checks_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_Z_curve_SSE:
-      spamm_stream_kernel_Z_curve_SSE(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_Z_curve_no_checks_SSE:
-      spamm_stream_kernel_Z_curve_no_checks_SSE(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_Z_curve_SSE4_1:
-      spamm_stream_kernel_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_Z_curve_no_checks_SSE4_1:
-      spamm_stream_kernel_Z_curve_no_checks_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_hierarchical_SSE:
-      spamm_stream_kernel_hierarchical_SSE(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_hierarchical_no_checks_SSE:
-      spamm_stream_kernel_hierarchical_no_checks_SSE(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_hierarchical_SSE4_1:
-      spamm_stream_kernel_hierarchical_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_hierarchical_no_checks_SSE4_1:
-      spamm_stream_kernel_hierarchical_no_checks_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_hierarchical_Z_curve_SSE:
-      spamm_stream_kernel_hierarchical_Z_curve_SSE(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_hierarchical_Z_curve_no_checks_SSE:
-      spamm_stream_kernel_hierarchical_Z_curve_no_checks_SSE(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_hierarchical_Z_curve_SSE4_1:
-      spamm_stream_kernel_hierarchical_Z_curve_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_hierarchical_Z_curve_no_checks_SSE4_1:
-      spamm_stream_kernel_hierarchical_Z_curve_no_checks_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
       break;
 
     default:
