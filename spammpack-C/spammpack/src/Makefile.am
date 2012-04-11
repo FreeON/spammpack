@@ -159,7 +159,6 @@ libspamm_tree_la_SOURCES = \
   spamm_index.c \
   spamm_index_2D.c \
   spamm_index_3D.c \
-  spamm_introspection.c \
   spamm_list.c \
   spamm_maintenance.c \
   spamm_multiply.c \
@@ -177,17 +176,15 @@ libspamm_tree_la_SOURCES = \
 libspamm_tree_headers = \
   spamm.h \
   spamm_convert.h \
-  spamm_error.h \
+  spamm_errno.h \
   spamm_general.h \
   spamm_hashtable.h \
-  spamm_introspection.h \
   spamm_list.h \
   spamm_recursive.h \
   spamm_timer.h \
   spamm_types.h
 
 libspamm_tree_private_headers = \
-  spamm_private.h \
   spamm_types_private.h
 
 include_HEADERS = \

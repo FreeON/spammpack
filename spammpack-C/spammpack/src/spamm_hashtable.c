@@ -1,5 +1,5 @@
 #include "spamm_config.h"
-#include "spamm_private.h"
+#include "spamm.h"
 #include "spamm_hashtable.h"
 #include "spamm_list.h"
 
