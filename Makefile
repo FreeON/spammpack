@@ -115,3 +115,5 @@ scale:
 #	./spamm_test.exe /home/mchalla/Desktop/RESEARCH/SCALING/TUBES_3_3/tube_33_132_20432_Geom#1_Base#3_Clone#1  612 732 54 7  -1182.5623733386851D0 >> spamm_scaling
 #	./spamm_test.exe /home/mchalla/Desktop/RESEARCH/SCALING/TUBES_3_3/tube_33_132_20432_Geom#1_Base#3_Clone#1  612 732 54 8  -1182.5623733386851D0 >> spamm_scaling
 
+tags : *.f90
+	ctags --fortran-kinds=+i+L *.f90
