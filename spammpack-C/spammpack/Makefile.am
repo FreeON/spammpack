@@ -10,6 +10,8 @@ CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/Doxyfile.in \
   $(top_srcdir)/src/spamm_manual_mainpage.h.in
 
+EXTRA_DIST = latex/refman.pdf
+
 docs :
 	doxygen
 	$(MAKE) -C latex
