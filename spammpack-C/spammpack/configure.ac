@@ -1,7 +1,11 @@
 dnl vim:tw=0
 
 dnl Define some basic information of this package.
-AC_INIT([spammpack], [2011-02-03], [nicolasbock@gmail.com], [spammpack], [http://freeon.org])
+AC_INIT([spammpack],
+        [2011-02-03],
+        [freeon-devel@nongnu.org],
+        [],
+        [http://freeon.org])
 
 dnl Check for build host.
 AC_CANONICAL_TARGET
