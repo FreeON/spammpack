@@ -28,23 +28,8 @@ noinst_SCRIPTS = \
   create_spamm_Z_curve.sh \
   convert_dense_row_major.sh \
   convert_dense_Z_curve.sh \
-  multiply_spamm_kernel_experimental.sh \
   multiply_spamm_kernel_standard_SSE.sh \
-  multiply_spamm_kernel_standard_no_checks_SSE.sh \
-  multiply_spamm_kernel_standard_SSE4_1.sh \
-  multiply_spamm_kernel_standard_no_checks_SSE4_1.sh \
-  multiply_spamm_kernel_Z_curve_SSE.sh \
-  multiply_spamm_kernel_Z_curve_no_checks_SSE.sh \
-  multiply_spamm_kernel_Z_curve_SSE4_1.sh \
-  multiply_spamm_kernel_Z_curve_no_checks_SSE4_1.sh \
-  multiply_spamm_kernel_hierarchical_SSE.sh \
-  multiply_spamm_kernel_hierarchical_no_checks_SSE.sh \
-  multiply_spamm_kernel_hierarchical_SSE4_1.sh \
-  multiply_spamm_kernel_hierarchical_no_checks_SSE4_1.sh \
-  multiply_spamm_kernel_hierarchical_Z_curve_SSE.sh \
-  multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE.sh \
-  multiply_spamm_kernel_hierarchical_Z_curve_SSE4_1.sh \
-  multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE4_1.sh
+  multiply_spamm_kernel_standard_SSE4_1.sh
 
 EXTRA_DIST = $(noinst_SCRIPTS)
 
@@ -53,28 +38,8 @@ TESTS = \
   hashtable_insert \
   list \
   list_sort \
-  $(srcdir)/create_spamm_row_major.sh \
-  $(srcdir)/create_spamm_Z_curve.sh \
   expand \
   stats \
   check_spamm \
-  $(srcdir)/convert_dense_row_major.sh \
-  $(srcdir)/convert_dense_Z_curve.sh \
-  $(srcdir)/multiply_spamm_kernel_experimental.sh \
-  $(srcdir)/multiply_spamm_kernel_standard_SSE.sh \
-  $(srcdir)/multiply_spamm_kernel_standard_no_checks_SSE.sh \
-  $(srcdir)/multiply_spamm_kernel_standard_SSE4_1.sh \
-  $(srcdir)/multiply_spamm_kernel_standard_no_checks_SSE4_1.sh \
-  $(srcdir)/multiply_spamm_kernel_Z_curve_SSE.sh \
-  $(srcdir)/multiply_spamm_kernel_Z_curve_no_checks_SSE.sh \
-  $(srcdir)/multiply_spamm_kernel_Z_curve_SSE4_1.sh \
-  $(srcdir)/multiply_spamm_kernel_Z_curve_no_checks_SSE4_1.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_SSE.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_no_checks_SSE.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_SSE4_1.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_no_checks_SSE4_1.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_SSE.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_SSE4_1.sh \
-  $(srcdir)/multiply_spamm_kernel_hierarchical_Z_curve_no_checks_SSE4_1.sh \
+	$(noinst_SCRIPTS) \
   multiply_recursive
