@@ -37,4 +37,6 @@ main ()
   printf("  offset_block_dense_store     = %lu # 0x%lx\n", (unsigned long int) &data.block_dense_store - (unsigned long int) &data, (unsigned long int) &data.block_dense_store - (unsigned long int) &data);
   printf("  offset_block_dense_transpose = %lu # 0x%lx\n", (unsigned long int) &data.block_dense_transpose - (unsigned long int) &data, (unsigned long int) &data.block_dense_transpose - (unsigned long int) &data);
   printf("  offset_block_dense_dilated   = %lu # 0x%lx\n", (unsigned long int) &data.block_dense_dilated - (unsigned long int) &data, (unsigned long int) &data.block_dense_dilated - (unsigned long int) &data);
+
+  return 0;
 }
