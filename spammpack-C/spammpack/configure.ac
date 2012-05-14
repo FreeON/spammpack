@@ -119,6 +119,31 @@ AC_ARG_ENABLE([logging], [AS_HELP_STRING([--disable-logging],
               [enable_logging="yes"])
 AC_MSG_RESULT([$enable_logging])
 
+dnl Find out whether we support SSE and SSE4.1.
+AC_MSG_CHECKING([for SSE support])
+AC_RUN_IFELSE([AC_LANG_PROGRAM([],
+              [asm("mulps %xmm0, %xmm0");])],
+              [have_SSE_in_CPU="yes"],
+              [have_SSE_in_CPU="no"])
+if test "${have_SSE_in_CPU}" = "yes"; then
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+AM_CONDITIONAL(HAVE_SSE_IN_CPU, [test "${have_SSE_in_CPU}" = "yes"])
+
+AC_MSG_CHECKING([for SSE4.1 support])
+AC_RUN_IFELSE([AC_LANG_PROGRAM([],
+              [asm("dpps \$0x0, %xmm0, %xmm0");])],
+              [have_SSE4_1_in_CPU="yes"],
+              [have_SSE4_1_in_CPU="no"])
+if test "${have_SSE4_1_in_CPU}" = "yes"; then
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+AM_CONDITIONAL(HAVE_SSE4_1_IN_CPU, [test "${have_SSE4_1_in_CPU}" = "yes"])
+
 dnl Define basic tree properties.
 have_N_block=4
 have_N_child=2
