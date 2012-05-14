@@ -7,6 +7,16 @@ AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 #AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 
+if HAVE_SSE_IN_CPU
+multiply_spamm_SSE = multiply_spamm_kernel_standard_SSE.sh
+endif
+
+if HAVE_SSE4_1_IN_CPU
+multiply_spamm_SSE4_1 = multiply_spamm_kernel_standard_SSE4_1.sh
+endif
+
+multiply_tests = $(multiply_spamm_SSE) $(multiply_spamm_SSE4_1)
+
 check_PROGRAMS = \
   check_spamm \
   convert_dense \
@@ -41,5 +51,5 @@ TESTS = \
   expand \
   stats \
   check_spamm \
-	$(noinst_SCRIPTS) \
+	$(multiply_tests) \
   multiply_recursive
