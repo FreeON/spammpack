@@ -7,6 +7,8 @@
 #define RANDOM_ELEMENTS
 //#define PRINT_DEBUG
 
+#define TEST_TOLERANCE 5e-7
+
 int
 main (int argc, char **argv)
 {
@@ -32,6 +34,7 @@ main (int argc, char **argv)
   unsigned int max_i = 0;
   unsigned int max_j = 0;
   double max_diff;
+  double max_rel_diff;
 
   enum spamm_kernel_t kernel = kernel_standard_SSE;
   struct spamm_timer_t *timer;
@@ -155,6 +158,7 @@ main (int argc, char **argv)
 
 #ifdef VERIFY_RESULT
   max_diff = 0;
+  max_rel_diff = 0;
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++) {
       for (k = 0; k < N; k++)
@@ -165,17 +169,27 @@ main (int argc, char **argv)
           max_i = i;
           max_j = j;
         }
+
+        if (C_dense[i*N+j] > 0)
+        {
+          if (fabs((C_dense[i*N+j]-spamm_get(i, j, C))/C_dense[i*N+j]) > max_rel_diff)
+          {
+            max_rel_diff = fabs((C_dense[i*N+j]-spamm_get(i, j, C))/C_dense[i*N+j]);
+          }
+        }
       }
     }
   }
 
-  if (max_diff > 0)
+  printf("max diff = %e, rel. diff = %e, A(%u,%u) = %e, A_reference(%u,%u) = %e\n",
+      max_diff,
+      (C_dense[max_i*N+max_j] != 0.0 ? max_diff/C_dense[max_i*N+max_j] : 0.0),
+      max_i, max_j, spamm_get(max_i, max_j, C),
+      max_i, max_j, C_dense[max_i*N+max_j]);
+
+  if (max_rel_diff > TEST_TOLERANCE)
   {
-    printf("failed, max diff = %e, rel. diff = %e, A(%u,%u) = %e, A_reference(%u,%u) = %e\n",
-        max_diff,
-        (C_dense[max_i*N+max_j] != 0.0 ? max_diff/C_dense[max_i*N+max_j] : 0.0),
-        max_i, max_j, spamm_get(max_i, max_j, C),
-        max_i, max_j, C_dense[max_i*N+max_j]);
+    printf("test failed\n");
     result = -1;
   }
 #endif
