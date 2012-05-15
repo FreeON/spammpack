@@ -345,9 +345,9 @@ spamm_recursive_multiply_matrix (const float tolerance,
       }
       if (sgemm != NULL)
       {
-        sgemm("N", "N", &(node_A->blocksize), &(node_A->blocksize), &(node_A)->blocksize,
-            (float*) &alpha, node_A->data, &node_A->blocksize, node_B->data,
-            &node_A->blocksize, &beta, (*node_C)->data, &node_A->blocksize);
+        sgemm("N", "N", (int*) &(node_A->blocksize), (int*) &(node_A->blocksize), (int*) &(node_A)->blocksize,
+            (float*) &alpha, node_A->data, (int*) &node_A->blocksize, node_B->data,
+            (int*) &node_A->blocksize, (float*) &beta, (*node_C)->data, (int*) &node_A->blocksize);
         (*number_products)++;
       }
     }
@@ -437,9 +437,9 @@ spamm_recursive_multiply_3_matrix (const float tolerance,
       }
       if (sgemm != NULL)
       {
-        sgemm("N", "N", &(node_A->blocksize), &(node_A->blocksize), &(node_A)->blocksize,
-            (float*) &alpha, node_A->data, &node_A->blocksize, node_B->data,
-            &node_A->blocksize, &beta, (*node_D)->data, &node_A->blocksize);
+        sgemm("N", "N", (int*) &(node_A->blocksize), (int*) &(node_A->blocksize), (int*) &(node_A)->blocksize,
+            (float*) &alpha, node_A->data, (int*) &node_A->blocksize, node_B->data,
+            (int*) &node_A->blocksize, (float*) &beta, (*node_D)->data, (int*) &node_A->blocksize);
         (*number_products)++;
       }
     }
