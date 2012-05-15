@@ -170,7 +170,7 @@ main (int argc, char **argv)
           max_j = j;
         }
 
-        if (C_dense[i*N+j] > 0)
+        if (C_dense[i*N+j] != 0)
         {
           if (fabs((C_dense[i*N+j]-spamm_get(i, j, C))/C_dense[i*N+j]) > max_rel_diff)
           {
