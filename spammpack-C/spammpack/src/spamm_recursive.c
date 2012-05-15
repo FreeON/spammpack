@@ -345,9 +345,21 @@ spamm_recursive_multiply_matrix (const float tolerance,
       }
       if (sgemm != NULL)
       {
-        sgemm("N", "N", (int*) &(node_A->blocksize), (int*) &(node_A->blocksize), (int*) &(node_A)->blocksize,
-            (float*) &alpha, node_A->data, (int*) &node_A->blocksize, node_B->data,
-            (int*) &node_A->blocksize, (float*) &beta, (*node_C)->data, (int*) &node_A->blocksize);
+        sgemm(
+            "N", /* TRANSA */
+            "N", /* TRANSB */
+            (int*) &(node_A->blocksize), /* M */
+            (int*) &(node_A->blocksize), /* N */
+            (int*) &(node_A->blocksize), /* K */
+            (float*) &alpha, /* alpha */
+            node_A->data, /* A */
+            (int*) &node_A->blocksize, /* LDA */
+            node_B->data, /* B */
+            (int*) &node_A->blocksize, /* LDB */
+            (float*) &beta, /* beta */
+            (*node_C)->data, /* C */
+            (int*) &node_A->blocksize /* LDC */
+            );
         (*number_products)++;
       }
     }
@@ -437,7 +449,7 @@ spamm_recursive_multiply_3_matrix (const float tolerance,
       }
       if (sgemm != NULL)
       {
-        sgemm("N", "N", (int*) &(node_A->blocksize), (int*) &(node_A->blocksize), (int*) &(node_A)->blocksize,
+        sgemm("N", "N", (int*) &(node_A->blocksize), (int*) &(node_A->blocksize), (int*) &(node_A->blocksize),
             (float*) &alpha, node_A->data, (int*) &node_A->blocksize, node_B->data,
             (int*) &node_A->blocksize, (float*) &beta, (*node_D)->data, (int*) &node_A->blocksize);
         (*number_products)++;
@@ -664,4 +676,15 @@ void spamm_recursive_sgemm (char * transA, char * transB,
     float *alpha, float *A, int *LDA, float *B, int *LDB,
     float *beta, float *C, int *LDC)
 {
+  int i, j, k;
+
+  for (i = 0; i < *M; i++) {
+    for (j = 0; j < *N; j++) {
+      for (k = 0; k < *K; k++)
+      {
+        C[spamm_index_column_major(i, j, *M, *N)] = (*beta)*C[spamm_index_column_major(i, j, *M, *N)]
+          +(*alpha)*A[spamm_index_column_major(i, k, *M, *K)]*B[spamm_index_column_major(k, j, *K, *N)];
+      }
+    }
+  }
 }

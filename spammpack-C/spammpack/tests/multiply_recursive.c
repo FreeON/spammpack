@@ -5,7 +5,7 @@
 #include "spamm.h"
 #include "spamm_recursive.h"
 
-#define TOLERANCE 5e-7
+#define TEST_TOLERANCE 5e-7
 
 #ifndef SGEMM
 #define SGEMM sgemm_
@@ -16,7 +16,9 @@
 int
 main ()
 {
-  const int N =  10;
+  int result = 0;
+
+  const int N =  513;
   const int blocksize = 3;
   const float alpha = 1.2;
   const float beta = 0.5;
@@ -31,6 +33,11 @@ main ()
   float *C_dense = NULL;
 
   int i, j, k;
+
+  unsigned int max_i = 0;
+  unsigned int max_j = 0;
+  double max_diff;
+  double max_rel_diff;
 
   unsigned int recursive_number_products = 0;
 
@@ -81,6 +88,8 @@ main ()
 
 #ifdef PRINT_DEBUG
   /* Print matrices for debugging. */
+  printf("alpha = %1.2f\n", alpha);
+  printf("beta = %1.2f\n", beta);
   printf("A =\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -99,7 +108,7 @@ main ()
     printf("\n");
   }
 
-  printf("C =\n");
+  printf("C(before) =\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
@@ -130,7 +139,7 @@ main ()
   }
 
 #ifdef PRINT_DEBUG
-  printf("C =\n");
+  printf("C(after) =\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
@@ -142,7 +151,7 @@ main ()
 
   spamm_recursive_multiply(tolerance, alpha, A, B, beta, C, NULL, spamm_recursive_sgemm, &recursive_number_products);
 
-#ifdef PRING_DEBUG
+#ifdef PRINT_DEBUG
   printf("C(SpAMM) =\n");
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -154,21 +163,41 @@ main ()
 #endif
 
   /* Compare results. */
+  max_diff = 0;
+  max_rel_diff = 0;
   for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
-    {
-      if (C_dense[spamm_index_row_major(i, j, N, N)] != 0.0)
+    for (j = 0; j < N; j++) {
+      for (k = 0; k < N; k++)
       {
-        if (fabs((C_dense[spamm_index_row_major(i, j, N, N)]-spamm_recursive_get(i, j, C))/C_dense[spamm_index_row_major(i, j, N, N)]) > TOLERANCE)
+        if (fabs(C_dense[i*N+j]-spamm_recursive_get(i, j, C)) > max_diff)
         {
-          printf("[%s:%i] result mismatch: |(C_dense(%i,%i)-C(%i,%i))/C_dense(%i,%i)| = %e\n", __FILE__, __LINE__,
-              i, j, i, j, i, j,
-              fabs((C_dense[spamm_index_row_major(i, j, N, N)]-spamm_recursive_get(i, j, C))/C_dense[spamm_index_row_major(i, j, N, N)]));
-          return -1;
+          max_diff = fabs(C_dense[i*N+j]-spamm_recursive_get(i, j, C));
+          max_i = i;
+          max_j = j;
+        }
+
+        if (C_dense[i*N+j] != 0)
+        {
+          if (fabs((C_dense[i*N+j]-spamm_recursive_get(i, j, C))/C_dense[i*N+j]) > max_rel_diff)
+          {
+            max_rel_diff = fabs((C_dense[i*N+j]-spamm_recursive_get(i, j, C))/C_dense[i*N+j]);
+          }
         }
       }
     }
   }
 
-  return 0;
+  printf("max diff = %e, rel. diff = %e, A(%u,%u) = %e, A_reference(%u,%u) = %e\n",
+      max_diff,
+      (C_dense[max_i*N+max_j] != 0.0 ? max_diff/C_dense[max_i*N+max_j] : 0.0),
+      max_i, max_j, spamm_recursive_get(max_i, max_j, C),
+      max_i, max_j, C_dense[max_i*N+max_j]);
+
+  if (max_rel_diff > TEST_TOLERANCE)
+  {
+    printf("test failed\n");
+    result = -1;
+  }
+
+  return result;
 }
