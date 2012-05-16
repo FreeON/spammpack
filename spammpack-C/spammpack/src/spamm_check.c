@@ -64,7 +64,8 @@ spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
     {
       spamm_uint_to_bin_string(2*user->tier, index, binary_string_1);
       spamm_uint_to_bin_string(2*tier, next_index, binary_string_2);
-      printf("missing node in tree: cannot find node for index %s at tier %u which is needed for index %s at tier %u\n", binary_string_2, tier, binary_string_1, user->tier);
+      printf("missing node in tree: cannot find node for index %s ", binary_string_2);
+      printf("at tier %u which is needed for index %s at tier %u\n", tier, binary_string_1, user->tier);
       user->result = SPAMM_ERROR;
       break;
     }
@@ -420,7 +421,9 @@ spamm_check (const struct spamm_t *A)
   depth = (unsigned int) ceil(x);
 
   /* Double check depth. */
-  if (depth >= 1 && ((int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, depth-1)) >= A->M && (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, depth-1)) >= A->N))
+  if (depth >= 1 &&
+      ((int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, depth-1)) >=
+       A->M && (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, depth-1)) >= A->N))
   {
     depth--;
   }

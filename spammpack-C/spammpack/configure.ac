@@ -21,7 +21,7 @@ dnl Define location of m4 macros.
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Identify compilers.
-AC_PROG_CC_C99
+AC_PROG_CC
 AC_PROG_F77
 AM_PROG_AS
 AC_PROG_FC
@@ -99,6 +99,16 @@ if test "${have_PTHREAD}" = "yes"; then
   AC_DEFINE([HAVE_PTHREAD], [1], [Do we have pthread support?])
 else
   AC_MSG_FAILURE([no pthread support])
+fi
+
+dnl Check for sgemm_().
+AC_SEARCH_LIBS([sgemm_], [],
+               [have_sgemm="yes"],
+               [have_sgemm="no"])
+
+if test "${have_sgemm}" = "no"; then
+  AC_MSG_NOTICE([no external sgemm_(), will use internal sgemm()])
+  AC_DEFINE([SGEMM], [spamm_sgemm], [SpAMM internal sgemm.])
 fi
 
 dnl Check for internal lapack (in case this package is compiled as part of FreeON).

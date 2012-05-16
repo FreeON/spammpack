@@ -44,9 +44,4 @@ spamm_recursive_multiply_3 (const float tolerance,
 void
 spamm_recursive_print (const struct spamm_recursive_t *A);
 
-void spamm_recursive_sgemm (char * transA, char * transB,
-    int *M, int *N, int *K,
-    float *alpha, float *A, int *LDA, float *B, int *LDB,
-    float *beta, float *C, int *LDC);
-
 #endif

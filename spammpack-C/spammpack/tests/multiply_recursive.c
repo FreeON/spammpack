@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "config.h"
 #include "spamm.h"
 #include "spamm_recursive.h"
 
@@ -149,7 +150,7 @@ main ()
   }
 #endif
 
-  spamm_recursive_multiply(tolerance, alpha, A, B, beta, C, NULL, spamm_recursive_sgemm, &recursive_number_products);
+  spamm_recursive_multiply(tolerance, alpha, A, B, beta, C, NULL, SGEMM, &recursive_number_products);
 
 #ifdef PRINT_DEBUG
   printf("C(SpAMM) =\n");
