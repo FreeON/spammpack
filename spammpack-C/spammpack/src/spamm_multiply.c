@@ -110,7 +110,7 @@ spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
  * @param A The matrix.
  */
 void
-spamm_multiply_beta (const float beta, struct spamm_t *A)
+spamm_multiply_beta (const float beta, struct spamm_hashed_t *A)
 {
   struct spamm_hashtable_t *tier_hashtable;
 
@@ -353,8 +353,8 @@ spamm_multiply_C_index_sort (unsigned int *array,
  */
 void
 spamm_multiply (const float tolerance,
-    const float alpha, struct spamm_t *A, struct spamm_t *B,
-    const float beta, struct spamm_t *C,
+    const float alpha, struct spamm_hashed_t *A, struct spamm_hashed_t *B,
+    const float beta, struct spamm_hashed_t *C,
     struct spamm_timer_t *timer,
     const enum spamm_kernel_t kernel)
 {

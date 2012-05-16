@@ -7,7 +7,7 @@ void
 spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
 {
   int *at_kernel_tier = user_data;
-  struct spamm_node_t *node;
+  struct spamm_hashed_node_t *node;
   struct spamm_data_t *data;
 
   if ((*at_kernel_tier) == 1)
@@ -28,7 +28,7 @@ spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
  * @param A The matrix to delete.
  */
 void
-spamm_delete (struct spamm_t **A)
+spamm_delete (struct spamm_hashed_t **A)
 {
   int at_kernel_tier;
   unsigned int tier;

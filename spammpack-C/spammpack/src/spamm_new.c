@@ -12,10 +12,10 @@
  *
  * @return A pointer to the matrix.
  */
-struct spamm_t *
+struct spamm_hashed_t *
 spamm_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout)
 {
-  struct spamm_t *A;
+  struct spamm_hashed_t *A;
   double x, x_M, x_N;
   unsigned int tier;
 
@@ -32,7 +32,7 @@ spamm_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t
   }
 
   /* Allocate memory. */
-  A = (struct spamm_t*) malloc(sizeof(struct spamm_t));
+  A = (struct spamm_hashed_t*) malloc(sizeof(struct spamm_hashed_t));
 
   /* Set the layout. */
   switch (layout)

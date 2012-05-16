@@ -7,7 +7,7 @@
 
 /** The matrix type.
  */
-struct spamm_t
+struct spamm_hashed_t
 {
   /** The layout of the basic matrix blocks on the kernel tier. */
   enum spamm_layout_t layout;
@@ -33,7 +33,7 @@ struct spamm_t
 
 /** A node in the matrix tree.
  */
-struct spamm_node_t
+struct spamm_hashed_node_t
 {
   /** The tier. */
   unsigned int tier;

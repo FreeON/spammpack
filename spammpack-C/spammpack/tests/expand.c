@@ -6,7 +6,7 @@ int
 main ()
 {
   int result = 0;
-  struct spamm_t *A;
+  struct spamm_hashed_t *A;
 
   A = spamm_new(N, N, row_major);
 

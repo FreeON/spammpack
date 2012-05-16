@@ -9,16 +9,16 @@ void *
 spamm_allocate (size_t size);
 
 int
-spamm_check (const struct spamm_t *A);
+spamm_check (const struct spamm_hashed_t *A);
 
 void
-spamm_delete (struct spamm_t **A);
+spamm_delete (struct spamm_hashed_t **A);
 
 void
 spamm_delete_block (struct spamm_data_t **data);
 
 void
-spamm_delete_node (struct spamm_node_t **node);
+spamm_delete_node (struct spamm_hashed_node_t **node);
 
 unsigned int
 spamm_index_row_major (const unsigned int i, const unsigned int j,
@@ -60,7 +60,7 @@ spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_block,
     const unsigned int j, const enum spamm_layout_t layout);
 
 float
-spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A);
+spamm_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A);
 
 unsigned int
 spamm_index_2D (const unsigned int i, const unsigned int j);
@@ -81,39 +81,39 @@ unsigned int
 spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj);
 
 unsigned int
-spamm_memory (const struct spamm_t *A);
+spamm_memory (const struct spamm_hashed_t *A);
 
 void
 spamm_multiply (const float tolerance,
-    const float alpha, struct spamm_t *A, struct spamm_t *B,
-    const float beta, struct spamm_t *C,
+    const float alpha, struct spamm_hashed_t *A, struct spamm_hashed_t *B,
+    const float beta, struct spamm_hashed_t *C,
     struct spamm_timer_t *timer,
     const enum spamm_kernel_t kernel);
 
 unsigned int
-spamm_number_nonzero (const struct spamm_t *A);
+spamm_number_nonzero (const struct spamm_hashed_t *A);
 
-struct spamm_t *
+struct spamm_hashed_t *
 spamm_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout);
 
 struct spamm_data_t *
 spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout);
 
-struct spamm_node_t *
+struct spamm_hashed_node_t *
 spamm_new_node (const unsigned int tier, const unsigned int index_2D);
 
 void
-spamm_print (const struct spamm_t *A);
+spamm_print (const struct spamm_hashed_t *A);
 
 void
-spamm_print_tree (const struct spamm_t *A);
+spamm_print_tree (const struct spamm_hashed_t *A);
 
 void
 spamm_print_dense (const unsigned int M, const unsigned int N,
     const enum spamm_layout_t type, const float *A);
 
 void
-spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_t *A);
+spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A);
 
 void
 spamm_uint_to_bin_string (const unsigned int width, const unsigned int i, char *result);
@@ -122,15 +122,15 @@ char *
 spamm_version ();
 
 void
-spamm_prune (struct spamm_t *A);
+spamm_prune (struct spamm_hashed_t *A);
 
 void
-spamm_expand (struct spamm_t *A);
+spamm_expand (struct spamm_hashed_t *A);
 
 void
-spamm_construct_tree (struct spamm_t *A);
+spamm_construct_tree (struct spamm_hashed_t *A);
 
-struct spamm_t *
+struct spamm_hashed_t *
 spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
     const enum spamm_layout_t dense_type, float *A_dense,
     const enum spamm_layout_t spamm_layout);

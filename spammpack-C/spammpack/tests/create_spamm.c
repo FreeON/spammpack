@@ -11,7 +11,7 @@ main (int argc, char **argv)
   unsigned int i, j;
   unsigned int N = 1024;
   //unsigned int N = 130;
-  struct spamm_t *A;
+  struct spamm_hashed_t *A;
   float *A_dense = (float*) malloc(sizeof(float)*N*N);
 
   enum spamm_layout_t layout = row_major;
