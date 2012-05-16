@@ -135,4 +135,9 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
     const enum spamm_layout_t dense_type, float *A_dense,
     const enum spamm_layout_t spamm_layout);
 
+void spamm_sgemm (char * transA, char * transB,
+    int *M, int *N, int *K,
+    float *alpha, float *A, int *LDA, float *B, int *LDB,
+    float *beta, float *C, int *LDC);
+
 #endif
