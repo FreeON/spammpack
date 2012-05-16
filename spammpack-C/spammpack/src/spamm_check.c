@@ -19,8 +19,8 @@ struct spamm_check_user_data_t
   /** The tier this hash table is on. */
   unsigned int tier;
 
-  /** The spamm_t object the hash table was taken from. */
-  const struct spamm_t *A;
+  /** The spamm_hashed_t object the hash table was taken from. */
+  const struct spamm_hashed_t *A;
 };
 
 /** Verify tree structure. This step verifies that the tree hierarchy is
@@ -29,8 +29,8 @@ struct spamm_check_user_data_t
  * that a non-zero node should have a parent.
  *
  * @param index The linear index of this node.
- * @param value The matrix tree node. This can have either type spamm_node_t
- * or spamm_data_t depending on the tier.
+ * @param value The matrix tree node. This can have either type
+ * spamm_hashed_node_t or spamm_data_t depending on the tier.
  * @param user_data The user data of type spamm_check_user_data_t.
  */
 void
@@ -76,8 +76,8 @@ spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
  * tree node and verifies that the stored index matches the one calculated.
  *
  * @param index The linear index of this node.
- * @param value The matrix tree node. This can have either type spamm_node_t
- * or spamm_data_t depending on the tier.
+ * @param value The matrix tree node. This can have either type
+ * spamm_hashed_node_t or spamm_data_t depending on the tier.
  * @param user_data The user data of type spamm_check_user_data_t.
  */
 void
@@ -92,8 +92,8 @@ spamm_check_linear_index (unsigned int index, void *value, void *user_data)
  * matrix tree.
  *
  * @param index The linear index of this node.
- * @param value The matrix tree node. This can have either type spamm_node_t
- * or spamm_data_t depending on the tier.
+ * @param value The matrix tree node. This can have either type
+ * spamm_hashed_node_t or spamm_data_t depending on the tier.
  * @param user_data The user data of type spamm_check_user_data_t.
  */
 void
@@ -110,10 +110,10 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
   float Aij;
 
   unsigned int child_index;
-  struct spamm_node_t *child_node = NULL;
+  struct spamm_hashed_node_t *child_node = NULL;
   struct spamm_data_t *child_data = NULL;
 
-  struct spamm_node_t *node = NULL;
+  struct spamm_hashed_node_t *node = NULL;
   struct spamm_data_t *data = NULL;
   struct spamm_check_user_data_t *user = user_data;
 
@@ -391,7 +391,7 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
  *   - SPAMM_ERROR - Something is not consistent.
  */
 int
-spamm_check (const struct spamm_t *A)
+spamm_check (const struct spamm_hashed_t *A)
 {
   unsigned int depth;
   unsigned int N_padded;

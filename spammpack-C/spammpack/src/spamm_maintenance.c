@@ -8,7 +8,7 @@
  * @param A The matrix.
  */
 void
-spamm_prune (struct spamm_t *A)
+spamm_prune (struct spamm_hashed_t *A)
 {
 }
 
@@ -17,7 +17,7 @@ spamm_prune (struct spamm_t *A)
  * @param A The matrix.
  */
 void
-spamm_expand (struct spamm_t *A)
+spamm_expand (struct spamm_hashed_t *A)
 {
   unsigned int i, j;
   unsigned int i_tier;
@@ -58,7 +58,7 @@ spamm_expand (struct spamm_t *A)
  * @param A The matrix.
  */
 void
-spamm_construct_tree (struct spamm_t *A)
+spamm_construct_tree (struct spamm_hashed_t *A)
 {
   unsigned int i;
   unsigned int tier;
@@ -69,8 +69,8 @@ spamm_construct_tree (struct spamm_t *A)
   struct spamm_hashtable_t *next_tier_hashtable;
   struct spamm_list_t *tier_indices;
   struct spamm_data_t *data;
-  struct spamm_node_t *node;
-  struct spamm_node_t *parent_node;
+  struct spamm_hashed_node_t *node;
+  struct spamm_hashed_node_t *parent_node;
 
   if (A->kernel_tier == 0) { return; }
 

@@ -13,7 +13,7 @@ main ()
   unsigned int i, j;
   unsigned int nonzeros = 0;
 
-  struct spamm_t *A;
+  struct spamm_hashed_t *A;
   float *A_dense;
 
   A_dense = (float*) malloc(sizeof(float)*N*N);

@@ -19,12 +19,12 @@
  *
  * @return The SpAMM matrix.
  */
-struct spamm_t *
+struct spamm_hashed_t *
 spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
     const enum spamm_layout_t dense_type, float *A_dense,
     const enum spamm_layout_t spamm_layout)
 {
-  struct spamm_t *A = NULL;
+  struct spamm_hashed_t *A = NULL;
   unsigned int index;
   unsigned int i;
   unsigned int j;

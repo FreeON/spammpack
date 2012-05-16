@@ -9,7 +9,7 @@ main ()
   unsigned int N = 129;
   unsigned int i, j;
 
-  struct spamm_t *A;
+  struct spamm_hashed_t *A;
 
   A = spamm_new(N, N, row_major);
 

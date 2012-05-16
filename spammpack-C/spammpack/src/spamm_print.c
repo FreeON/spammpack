@@ -50,7 +50,7 @@ spamm_print_dense (const unsigned int M, const unsigned int N,
 void
 spamm_print_node (unsigned int key, void *value, void *user_data)
 {
-  struct spamm_node_t *node = value;
+  struct spamm_hashed_node_t *node = value;
 
   printf("(node) tier %u: index_2D = %u, norm = %1.2e\n",
       node->tier, node->index_2D, node->norm);
@@ -123,7 +123,7 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
  * @param A The matrix.
  */
 void
-spamm_print_tree (const struct spamm_t *A)
+spamm_print_tree (const struct spamm_hashed_t *A)
 {
   unsigned int tier;
 
@@ -151,7 +151,7 @@ spamm_print_tree (const struct spamm_t *A)
  * @param A The matrix.
  */
 void
-spamm_print (const struct spamm_t *A)
+spamm_print (const struct spamm_hashed_t *A)
 {
   unsigned int i;
   unsigned int j;

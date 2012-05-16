@@ -15,7 +15,7 @@
  * @return The matrix element \f$A(i,j)\f$.
  */
 float
-spamm_get (const unsigned int i, const unsigned int j, const struct spamm_t *A)
+spamm_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A)
 {
   unsigned int index, i_tier, j_tier, delta_index;
   struct spamm_hashtable_t *node_hashtable;

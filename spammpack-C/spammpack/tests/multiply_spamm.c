@@ -27,9 +27,9 @@ main (int argc, char **argv)
   double *B_dense;
   double *C_dense;
 
-  struct spamm_t *A;
-  struct spamm_t *B;
-  struct spamm_t *C;
+  struct spamm_hashed_t *A;
+  struct spamm_hashed_t *B;
+  struct spamm_hashed_t *C;
 
   unsigned int max_i = 0;
   unsigned int max_j = 0;

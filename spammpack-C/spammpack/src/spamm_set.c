@@ -17,7 +17,7 @@
  * @param A The matrix.
  */
 void
-spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_t *A)
+spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A)
 {
   unsigned int tier;
   unsigned int reverse_tier;
@@ -35,7 +35,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   unsigned int data_offset;
   unsigned int data_offset_transpose;
   struct spamm_hashtable_t *node_hashtable;
-  struct spamm_node_t *node;
+  struct spamm_hashed_node_t *node;
   struct spamm_data_t *data;
 
   float old_Aij = 0;
@@ -45,7 +45,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 #ifdef NEW_NORM
   unsigned int next_tier;
   unsigned int child_index;
-  struct spamm_node_t *child_node;
+  struct spamm_hashed_node_t *child_node;
   struct spamm_data_t *child_data;
   struct spamm_hashtable_t *next_tier_hashtable;
 #endif

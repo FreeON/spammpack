@@ -10,10 +10,10 @@
  *
  * @return A pointer to the newly allocated node.
  */
-struct spamm_node_t *
+struct spamm_hashed_node_t *
 spamm_new_node (const unsigned int tier, const unsigned int index_2D)
 {
-  struct spamm_node_t *node = (struct spamm_node_t*) malloc(sizeof(struct spamm_node_t));
+  struct spamm_hashed_node_t *node = (struct spamm_hashed_node_t*) malloc(sizeof(struct spamm_hashed_node_t));
 
   node->tier = tier;
   node->index_2D = index_2D;
