@@ -142,7 +142,7 @@ main (int argc, char **argv)
 
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
-  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, kernel);
+  spamm_hashed_multiply(tolerance, alpha, A, B, beta, C, timer, kernel);
   spamm_timer_delete(&timer);
 
 #ifdef PRINT_DEBUG

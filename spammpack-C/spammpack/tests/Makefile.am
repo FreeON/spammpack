@@ -27,8 +27,9 @@ check_PROGRAMS = \
   list \
   stats \
   list_sort \
-  multiply_spamm \
+  multiply \
   multiply_recursive \
+  multiply_spamm \
   get_version
 
 get_version_SOURCES = get_version.F90
