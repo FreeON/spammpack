@@ -24,6 +24,7 @@ enum spamm_layout_t
 };
 
 struct spamm_multiply_stream_t;
+struct spamm_matrix_t;
 struct spamm_hashed_t;
 struct spamm_hashed_node_t;
 struct spamm_data_t;

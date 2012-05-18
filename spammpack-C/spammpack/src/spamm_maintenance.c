@@ -99,7 +99,7 @@ spamm_construct_tree (struct spamm_hashed_t *A)
 
         if (parent_node == NULL)
         {
-          parent_node = spamm_new_node(next_tier, parent_index);
+          parent_node = spamm_hashed_new_node(next_tier, parent_index);
           spamm_hashtable_insert(next_tier_hashtable, parent_index, parent_node);
         }
 
@@ -122,7 +122,7 @@ spamm_construct_tree (struct spamm_hashed_t *A)
 
         if (parent_node == NULL)
         {
-          parent_node = spamm_new_node(next_tier, parent_index);
+          parent_node = spamm_hashed_new_node(next_tier, parent_index);
           spamm_hashtable_insert(next_tier_hashtable, parent_index, parent_node);
         }
 

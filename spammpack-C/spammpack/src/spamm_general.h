@@ -94,13 +94,13 @@ unsigned int
 spamm_number_nonzero (const struct spamm_hashed_t *A);
 
 struct spamm_hashed_t *
-spamm_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout);
+spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout);
 
 struct spamm_data_t *
 spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout);
 
 struct spamm_hashed_node_t *
-spamm_new_node (const unsigned int tier, const unsigned int index_2D);
+spamm_hashed_new_node (const unsigned int tier, const unsigned int index_2D);
 
 void
 spamm_print (const struct spamm_hashed_t *A);

@@ -1,72 +1,10 @@
 #include "spamm.h"
-#include "spamm_recursive.h"
 #include "spamm_types_private.h"
 
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-/** Create a new recursive matrix object.
- *
- * @param M Number of rows of dense input matrix.
- * @param N Number of columns of dense input matrix.
- * @param blocksize The size of the dense matrix blocks.
- *
- * @return A pointer to the matrix.
- */
-struct spamm_recursive_t *
-spamm_recursive_new (const unsigned int M, const unsigned int N, const unsigned int blocksize)
-{
-  struct spamm_recursive_t *A = NULL;
-  double x, x_M, x_N;
-
-  if (M <= 0)
-  {
-    fprintf(stderr, "M <= 0\n");
-    exit(1);
-  }
-
-  if (N <= 0)
-  {
-    fprintf(stderr, "N <= 0\n");
-    exit(1);
-  }
-
-  /* Allocate memory. */
-  A = calloc(1, sizeof(struct spamm_recursive_t));
-
-  /* Store the blocksize. */
-  A->blocksize = blocksize;
-
-  /* Pad to powers of M_child x N_child. */
-  x_M = (log(M) > log(blocksize) ? log(M) - log(blocksize) : 0)/log(2);
-  x_N = (log(N) > log(blocksize) ? log(N) - log(blocksize) : 0)/log(2);
-
-  if (x_M > x_N) { x = x_M; }
-  else           { x = x_N; }
-
-  /* The ceil() function can lead to a depth that is one tier too large
-   * because of numerical errors in the calculation of x. We need to check
-   * whether the depth is appropriate.
-   */
-  A->depth = (unsigned int) ceil(x);
-
-  /* Double check depth. */
-  if (A->depth >= 1 && ((int) (blocksize*pow(2, A->depth-1)) >= M && (int) (blocksize*pow(2, A->depth-1)) >= N))
-  {
-    (A->depth)--;
-  }
-
-  /* Set matrix size. */
-  A->M = M;
-  A->N = N;
-
-  /* Set padded matrix size. */
-  A->N_padded = (int) (blocksize*pow(2, A->depth));
-
-  return A;
-}
 
 /** Allocate a new node of a recursive matrix tree.
  *
