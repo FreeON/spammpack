@@ -119,7 +119,10 @@ spamm_print_dense (const unsigned int M, const unsigned int N,
     const enum spamm_layout_t type, const float *A);
 
 void
-spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A);
+spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_matrix_t *A);
+
+void
+spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A);
 
 void
 spamm_uint_to_bin_string (const unsigned int width, const unsigned int i, char *result);
