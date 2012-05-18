@@ -1,6 +1,7 @@
 #include "spamm.h"
 #include "spamm_types_private.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 /** Delete a hashtable entry.
@@ -27,6 +28,30 @@ spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
     node = value;
     spamm_hashed_delete_node(&node);
   }
+}
+
+/** Delete a recursive matrix.
+ *
+ * @param A The recursive matrix root.
+ */
+void
+spamm_recursive_delete (struct spamm_recursive_node_t *root)
+{
+  printf("[FIXME]\n");
+  exit(1);
+}
+
+/** Delete a matrix.
+ *
+ * @param A The matrix to delete.
+ */
+void
+spamm_delete (struct spamm_matrix_t **A)
+{
+  spamm_recursive_delete((*A)->root);
+
+  free(*A);
+  *A = NULL;
 }
 
 /** Delete a matrix.

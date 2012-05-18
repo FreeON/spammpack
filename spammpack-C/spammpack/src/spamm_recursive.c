@@ -6,24 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/** Allocate a new node of a recursive matrix tree.
- *
- * @param tier The tier this node will be on.
- *
- * @return A pointer to the newly allocated node.
- */
-struct spamm_recursive_node_t *
-spamm_recursive_new_node (const unsigned int tier, const unsigned int blocksize)
-{
-  struct spamm_recursive_node_t *node = NULL;
-
-  node = calloc(1, sizeof(struct spamm_recursive_node_t));
-  node->tier = tier;
-  node->blocksize = blocksize;
-
-  return node;
-}
-
 /** @brief Get an element from a recursive matrix.
  *
  * If the matri is NULL, this function returns 0.
