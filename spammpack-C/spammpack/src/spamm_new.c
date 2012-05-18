@@ -13,10 +13,10 @@
  * @return The newly allocated matrix. This matrix has to be freed by calling
  * spamm_delete().
  */
-struct spamm_t *
+struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N)
 {
-  struct spamm_t *A;
+  struct spamm_matrix_t *A;
 
   if (M <= 0)
   {
@@ -30,7 +30,7 @@ spamm_new (const unsigned int M, const unsigned int N)
     exit(1);
   }
 
-  A = calloc(1, sizeof(struct spamm_t*));
+  A = calloc(1, sizeof(struct spamm_matrix_t*));
 
   return A;
 }
@@ -298,4 +298,22 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enu
   data->index_2D = index_2D;
 
   return data;
+}
+
+/** Allocate a new node of a recursive matrix tree.
+ *
+ * @param tier The tier this node will be on.
+ *
+ * @return A pointer to the newly allocated node.
+ */
+struct spamm_recursive_node_t *
+spamm_recursive_new_node (const unsigned int tier, const unsigned int blocksize)
+{
+  struct spamm_recursive_node_t *node = NULL;
+
+  node = calloc(1, sizeof(struct spamm_recursive_node_t));
+  node->tier = tier;
+  node->blocksize = blocksize;
+
+  return node;
 }

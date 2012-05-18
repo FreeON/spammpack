@@ -12,6 +12,9 @@ int
 spamm_check (const struct spamm_hashed_t *A);
 
 void
+spamm_delete (struct spamm_matrix_t **A);
+
+void
 spamm_hashed_delete (struct spamm_hashed_t **A);
 
 void
@@ -93,7 +96,7 @@ spamm_hashed_multiply (const float tolerance,
 unsigned int
 spamm_number_nonzero (const struct spamm_hashed_t *A);
 
-struct spamm_t *
+struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N);
 
 struct spamm_hashed_t *
