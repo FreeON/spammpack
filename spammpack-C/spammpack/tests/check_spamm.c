@@ -11,7 +11,7 @@ main ()
 
   struct spamm_hashed_t *A;
 
-  A = spamm_new(N, N, row_major);
+  A = spamm_hashed_new(N, N, row_major);
 
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -22,7 +22,7 @@ main ()
 
   result = spamm_check(A);
 
-  spamm_delete(&A);
+  spamm_hashed_delete(&A);
 
   return result;
 }

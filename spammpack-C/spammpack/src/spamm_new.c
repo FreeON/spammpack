@@ -5,6 +5,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/** Initialize a new matrix object.
+ *
+ * @param M The number of rows of the matrix.
+ * @param N The number of columns of the matrix.
+ *
+ * @return The newly allocated matrix. This matrix has to be freed by calling
+ * spamm_delete().
+ */
+struct spamm_t *
+spamm_new (const unsigned int M, const unsigned int N)
+{
+  struct spamm_t *A;
+
+  if (M <= 0)
+  {
+    fprintf(stderr, "M <= 0\n");
+    exit(1);
+  }
+
+  if (N <= 0)
+  {
+    fprintf(stderr, "N <= 0\n");
+    exit(1);
+  }
+
+  A = calloc(1, sizeof(struct spamm_t*));
+
+  return A;
+}
+
 /** Initialize new matrix object.
  *
  * @param M Number of rows of dense input matrix.

@@ -3,6 +3,12 @@
 
 #include <stdlib.h>
 
+/** Delete a hashtable entry.
+ *
+ * @param value The hashtable value.
+ * @param user_data A pointer to an int indicating whether we are at the
+ * kernel tier or not.
+ */
 void
 spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
 {
@@ -19,7 +25,7 @@ spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
   else
   {
     node = value;
-    spamm_delete_node(&node);
+    spamm_hashed_delete_node(&node);
   }
 }
 
@@ -28,7 +34,7 @@ spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
  * @param A The matrix to delete.
  */
 void
-spamm_delete (struct spamm_hashed_t **A)
+spamm_hashed_delete (struct spamm_hashed_t **A)
 {
   int at_kernel_tier;
   unsigned int tier;
@@ -66,7 +72,7 @@ spamm_delete (struct spamm_hashed_t **A)
  * @param node The node in the matrix to delete.
  */
 void
-spamm_delete_node (struct spamm_hashed_node_t **node)
+spamm_hashed_delete_node (struct spamm_hashed_node_t **node)
 {
   free(*node);
   *node = NULL;

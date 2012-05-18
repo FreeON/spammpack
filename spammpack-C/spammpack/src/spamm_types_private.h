@@ -186,6 +186,9 @@ spamm_recursive_node_t
 
   /** The matrix data (if this is a leaf node). */
   float *data;
+
+  /** The hashed tree (if we deal with a hybrid matrix tree). */
+  struct spamm_hashed_t *hashed_tree;
 };
 
 /** The basic information in a stream element.

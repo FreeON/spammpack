@@ -66,7 +66,7 @@ main (int argc, char **argv)
   printf("test passed\n");
 #endif
 
-  spamm_delete(&A);
+  spamm_hashed_delete(&A);
   free(A_dense);
   return result;
 }

@@ -26,7 +26,7 @@ main (int argc, char **argv)
     A_dense[i] = rand()/(float) RAND_MAX;
   }
 
-  A = spamm_new(N, N, layout);
+  A = spamm_hashed_new(N, N, layout);
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
@@ -66,7 +66,7 @@ main (int argc, char **argv)
   printf("test passed\n");
 #endif
 
-  spamm_delete(&A);
+  spamm_hashed_delete(&A);
   free(A_dense);
   return result;
 }
