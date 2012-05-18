@@ -5,7 +5,36 @@
 
 #include "spamm_config.h"
 
-/** The matrix type.
+/** The matrix.
+ */
+struct spamm_matrix_t
+{
+  /** Number or rows in this matrix. */
+  unsigned int M;
+
+  /** Number of columns in this matrix. */
+  unsigned int N;
+
+  /** Number of rows and columns in the padded matrix. */
+  unsigned int N_padded;
+
+  /** The total depth of the tree. */
+  unsigned int depth;
+
+  /** The number of tiers from the root that are stored in a hierarchical
+   * tree.
+   */
+  unsigned int number_hierarchical_tiers;
+
+  /** The kernel tier, i.e. the tier at which the dense kernel matrix blocks
+   * will be processed. */
+  unsigned int kernel_tier;
+
+  /** The root node. */
+  struct spamm_recursive_node_t *root;
+};
+
+/** The hashed matrix type.
  */
 struct spamm_hashed_t
 {

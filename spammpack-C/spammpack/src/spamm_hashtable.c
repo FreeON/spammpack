@@ -96,7 +96,7 @@ spamm_hashtable_hash (const uint32_t key)
 #warning Disabled hash function (code will stop when calling the hash function)
   exit(1);
 
-  /* Make PGI happy. */
+  /* Make PGI compiler happy. */
   return -1;
 #endif
 }
