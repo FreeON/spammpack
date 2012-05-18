@@ -12,13 +12,13 @@ int
 spamm_check (const struct spamm_hashed_t *A);
 
 void
-spamm_delete (struct spamm_hashed_t **A);
+spamm_hashed_delete (struct spamm_hashed_t **A);
 
 void
 spamm_delete_block (struct spamm_data_t **data);
 
 void
-spamm_delete_node (struct spamm_hashed_node_t **node);
+spamm_hashed_delete_node (struct spamm_hashed_node_t **node);
 
 unsigned int
 spamm_index_row_major (const unsigned int i, const unsigned int j,
@@ -92,6 +92,9 @@ spamm_hashed_multiply (const float tolerance,
 
 unsigned int
 spamm_number_nonzero (const struct spamm_hashed_t *A);
+
+struct spamm_t *
+spamm_new (const unsigned int M, const unsigned int N);
 
 struct spamm_hashed_t *
 spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout);

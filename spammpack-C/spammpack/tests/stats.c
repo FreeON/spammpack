@@ -40,7 +40,7 @@ main ()
     result = -1;
   }
 
-  spamm_delete(&A);
+  spamm_hashed_delete(&A);
   free(A_dense);
 
   return result;
