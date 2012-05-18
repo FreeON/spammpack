@@ -84,7 +84,7 @@ unsigned int
 spamm_memory (const struct spamm_hashed_t *A);
 
 void
-spamm_multiply (const float tolerance,
+spamm_hashed_multiply (const float tolerance,
     const float alpha, struct spamm_hashed_t *A, struct spamm_hashed_t *B,
     const float beta, struct spamm_hashed_t *C,
     struct spamm_timer_t *timer,
