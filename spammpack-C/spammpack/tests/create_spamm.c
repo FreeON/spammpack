@@ -30,7 +30,7 @@ main (int argc, char **argv)
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      spamm_set(i, j, A_dense[i*N+j], A);
+      spamm_hashed_set(i, j, A_dense[i*N+j], A);
     }
   }
 

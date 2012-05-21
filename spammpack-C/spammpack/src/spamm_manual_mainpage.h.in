@@ -8,6 +8,7 @@
  *
  * - spamm.h
  * - spamm_config.h
+ * - spamm_error.h
  * - spamm_errno.h
  * - spamm_hashtable.h
  * - spamm_list.h
