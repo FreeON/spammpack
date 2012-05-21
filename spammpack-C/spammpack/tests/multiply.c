@@ -10,6 +10,7 @@ main (int argc, char *argv[])
   const int M = 103;
   const int N = 129;
   const int kernel_tier = 4;
+  const int number_contiguous_tiers = 4;
 
   unsigned int i, j;
   float Aij;
