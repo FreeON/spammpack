@@ -20,7 +20,7 @@ main (int argc, char *argv[])
   struct spamm_matrix_t *A;
 
   /* Allocate matrices. */
-  A = spamm_new(M, N);
+  A = spamm_new(M, N, 0);
 
   /* Load matrix from file. */
   if ((fd = fopen(filename_A, "r")) == NULL)
@@ -28,6 +28,8 @@ main (int argc, char *argv[])
     printf("error opening matrix file \"%s\"\n", filename_A);
     exit(1);
   }
+
+  spamm_set(300, 1, 0.0, A);
 
   while (fscanf(fd, "%u %u %e\n", &i, &j, &Aij) == 3)
   {

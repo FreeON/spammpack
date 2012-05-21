@@ -9,6 +9,7 @@
 #include "spamm_recursive.h"
 #include "spamm_kernel.h"
 #include "spamm_types.h"
+#include "spamm_error.h"
 #include "spamm_errno.h"
 #include "spamm_timer.h"
 
