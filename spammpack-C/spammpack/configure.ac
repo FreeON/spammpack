@@ -156,11 +156,10 @@ AM_CONDITIONAL(HAVE_SSE4_1_IN_CPU, [test "${have_SSE4_1_in_CPU}" = "yes"])
 
 dnl Define basic tree properties.
 have_N_block=4
-have_N_child=2
 have_N_stride=1
 have_kernel_depth=2
-have_N_kernel_blocked=$((${have_N_child}**${have_kernel_depth}))
-have_N_kernel=$((${have_N_block}*${have_N_child}**${have_kernel_depth}))
+have_N_kernel_blocked=$((2**${have_kernel_depth}))
+have_N_kernel=$((${have_N_block}*2**${have_kernel_depth}))
 
 AC_MSG_NOTICE([at the kernel tier, the dense matrix block has a size of ${have_N_kernel}x${have_N_kernel} elements, representing a ${have_N_kernel_block}x${have_N_kernel_block} matrix of ${have_N_block}x${have_N_block} matrix blocks])
 
@@ -171,7 +170,6 @@ dnl Define some constants.
 AC_DEFINE_UNQUOTED(SPAMM_ALIGNMENT, [${have_alignment}], [Define the alignment of memory allocations.])
 AC_DEFINE_UNQUOTED(SPAMM_PAGE_ALIGNMENT, [4096], [Define the alignment on a 4kB page.])
 AC_DEFINE_UNQUOTED(SPAMM_N_BLOCK, [${have_N_block}], [Define the size of a basic matrix block as NxN single matrix elements.])
-AC_DEFINE_UNQUOTED(SPAMM_N_CHILD, [${have_N_child}], [Define the size of the children node matrix as NxN.])
 AC_DEFINE_UNQUOTED(SPAMM_KERNEL_DEPTH, [${have_kernel_depth}], [Define the number of tiers that are allocated contiguously for the computational kernel.])
 AC_DEFINE_UNQUOTED(SPAMM_N_KERNEL_BLOCKED, [${have_N_kernel_blocked}], [Define the size of the kernel matrix as NxN basic kernel blocks.])
 AC_DEFINE_UNQUOTED(SPAMM_N_KERNEL, [${have_N_kernel}], [Define the size of the kernel matrix as NxN single elements.])

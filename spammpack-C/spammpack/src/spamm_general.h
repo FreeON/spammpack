@@ -98,7 +98,9 @@ spamm_number_nonzero (const struct spamm_hashed_t *A);
 
 struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N,
-    const unsigned int number_hashed_tiers);
+    const unsigned int N_block,
+    const unsigned int number_hashed_tiers,
+    const unsigned int kernel_tier);
 
 struct spamm_hashed_t *
 spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout);

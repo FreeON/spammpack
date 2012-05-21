@@ -276,8 +276,8 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
 
     if (next_tier == user->A->kernel_tier)
     {
-      for (i_child = 0; i_child < SPAMM_N_CHILD; i_child++) {
-        for (j_child = 0; j_child < SPAMM_N_CHILD; j_child++)
+      for (i_child = 0; i_child < 2; i_child++) {
+        for (j_child = 0; j_child < 2; j_child++)
         {
           /* Construct index of child block. */
           child_index = (index << 2) | (i_child << 1) | j_child;
@@ -295,8 +295,8 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
 
     else
     {
-      for (i_child = 0; i_child < SPAMM_N_CHILD; i_child++) {
-        for (j_child = 0; j_child < SPAMM_N_CHILD; j_child++)
+      for (i_child = 0; i_child < 2; i_child++) {
+        for (j_child = 0; j_child < 2; j_child++)
         {
           /* Construct index of child block. */
           child_index = (index << 2) | (i_child << 1) | j_child;
@@ -408,8 +408,8 @@ spamm_check (const struct spamm_hashed_t *A)
   /* Calculate the padding and depth of matrix based on values stored in M and
    * N.
    */
-  x_M = (log(A->M) > log(SPAMM_N_BLOCK) ? log(A->M) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
-  x_N = (log(A->N) > log(SPAMM_N_BLOCK) ? log(A->N) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
+  x_M = (log(A->M) > log(SPAMM_N_BLOCK) ? log(A->M) - log(SPAMM_N_BLOCK) : 0)/log(2);
+  x_N = (log(A->N) > log(SPAMM_N_BLOCK) ? log(A->N) - log(SPAMM_N_BLOCK) : 0)/log(2);
 
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
@@ -422,8 +422,8 @@ spamm_check (const struct spamm_hashed_t *A)
 
   /* Double check depth. */
   if (depth >= 1 &&
-      ((int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, depth-1)) >=
-       A->M && (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, depth-1)) >= A->N))
+      ((int) (SPAMM_N_BLOCK*pow(2, depth-1)) >=
+       A->M && (int) (SPAMM_N_BLOCK*pow(2, depth-1)) >= A->N))
   {
     depth--;
   }
@@ -437,7 +437,7 @@ spamm_check (const struct spamm_hashed_t *A)
     return SPAMM_ERROR;
   }
 
-  N_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, depth));
+  N_padded = (int) (SPAMM_N_BLOCK*pow(2, depth));
 
   if (A->N_padded != N_padded)
   {

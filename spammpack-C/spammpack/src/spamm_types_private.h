@@ -29,8 +29,14 @@ struct spamm_matrix_t
    * will be processed. */
   unsigned int kernel_tier;
 
+  /** The blocksize, i.e. the matrix size at the kernel tier. */
+  unsigned int blocksize;
+
   /** The root node. */
   struct spamm_recursive_node_t *root;
+
+  /** The hashed tree (if we deal with a hybrid matrix tree). */
+  struct spamm_hashed_t *hashed_tree;
 };
 
 /** The hashed matrix type.
