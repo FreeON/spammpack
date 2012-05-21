@@ -10,6 +10,8 @@
  * @param M The number of rows of the matrix.
  * @param N The number of columns of the matrix.
  * @param N_block The size of a basic matrix block as NxN single matrix elements.
+ * @param number_contiguous_tiers The number of tiers that are allocated
+ * contiguously for the computational kernel.
  * @param number_hashed_tiers The number of tiers from the bottom of the
  * matrix tree that are stored in hashed format. This number can be zero in
  * which case the whole tree is stored in hierarchical format.
@@ -22,10 +24,13 @@
 struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int N_block,
+    const unsigned int number_contiguous_tiers,
     const unsigned int number_hashed_tiers,
-    const unsigned int kernel_tier)
+    const unsigned int kernel_tier,
+    const enum spamm_layout_t layout)
 {
   struct spamm_matrix_t *A;
+  double x, x_M, x_N;
 
   if (kernel_tier == 0)
   {
@@ -57,7 +62,7 @@ spamm_new (const unsigned int M, const unsigned int N,
   }
 
   /* Adjust tree to kernel depth. */
-  if (A->depth < SPAMM_KERNEL_DEPTH) { A->depth = SPAMM_KERNEL_DEPTH; }
+  if (A->depth < number_contiguous_tiers) { A->depth = number_contiguous_tiers; }
 
   /* Set matrix size. */
   A->M = M;
@@ -67,7 +72,23 @@ spamm_new (const unsigned int M, const unsigned int N,
   A->N_padded = (int) (N_block*pow(2, A->depth));
 
   /* Set the kernel tier. */
-  A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
+  A->kernel_tier = A->depth-number_contiguous_tiers;
+
+  /* Set the layout. */
+  switch (layout)
+  {
+    case row_major:
+    case column_major:
+    case Z_curve:
+    case dense_column_major:
+      A->layout = layout;
+      break;
+
+    default:
+      spamm_error_fatal(__FILE__, __LINE__, "unknown layout (%i)\n", layout);
+      exit(1);
+      break;
+  }
 
   return A;
 }

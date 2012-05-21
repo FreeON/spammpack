@@ -21,6 +21,9 @@ struct spamm_matrix_t
   /** The total depth of the tree. */
   unsigned int depth;
 
+  /** The layout of the basic matrix blocks on the kernel tier. */
+  enum spamm_layout_t layout;
+
   /** The number of tiers from the bottom that are stored in the hashed
    * format. */
   unsigned int number_hashed_tiers;
@@ -32,11 +35,11 @@ struct spamm_matrix_t
   /** The blocksize, i.e. the matrix size at the kernel tier. */
   unsigned int blocksize;
 
-  /** The root node. */
-  struct spamm_recursive_node_t *root;
+  /** The root node of the recursive tree. */
+  struct spamm_recursive_node_t *recursive_root;
 
-  /** The hashed tree (if we deal with a hybrid matrix tree). */
-  struct spamm_hashed_t *hashed_tree;
+  /** The root node of the hashed tree (if we deal with a hybrid matrix tree). */
+  struct spamm_hashed_t *hashed_root;
 };
 
 /** The hashed matrix type.

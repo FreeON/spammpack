@@ -27,13 +27,9 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     const int blocksize,
     const int tier,
     const int hashed_tier,
+    const enum spamm_layout_t layout,
     struct spamm_recursive_node_t **node)
 {
-  if (tier == hashed_tier)
-  {
-    spamm_hashed_set();
-  }
-
   if (*node == NULL)
   {
     /* Allocate new node. */
@@ -47,7 +43,13 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     (*node)->tier = tier;
   }
 
-  if ((*node)->M_upper-(*node)->M_lower == blocksize)
+  if (tier == hashed_tier)
+  {
+    (*node)->hashed_tree = spamm_hashed_new(M_upper-M_lower, N_upper-N_lower, layout);
+    spamm_hashed_set(i, j, Aij, (*node)->hashed_tree);
+  }
+
+  else if ((*node)->M_upper-(*node)->M_lower == blocksize)
   {
     /* Store the matrix element. */
     if ((*node)->data == NULL)
@@ -71,7 +73,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
       spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
           (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
-          blocksize, tier+1, &((*node)->child[0]));
+          blocksize, tier+1, hashed_tier, layout, &((*node)->child[0]));
     }
 
     else if (i <  (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
@@ -80,7 +82,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
       spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
           (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
-          blocksize, tier+1, &((*node)->child[1]));
+          blocksize, tier+1, hashed_tier, layout, &((*node)->child[1]));
     }
 
     else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
@@ -89,7 +91,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
       spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
           (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
-          blocksize, tier+1, &((*node)->child[2]));
+          blocksize, tier+1, hashed_tier, layout, &((*node)->child[2]));
     }
 
     else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
@@ -98,7 +100,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
       spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
           (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
-          blocksize, tier+1, &((*node)->child[3]));
+          blocksize, tier+1, hashed_tier, layout, &((*node)->child[3]));
     }
 
     /* Update norm. */
@@ -407,7 +409,7 @@ spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij
   if (Aij == 0.0) { return; }
 
   /* Recursively set the matrix element. */
-  spamm_recursive_set_recursive(i, j, Aij, 0, A->N_padded, 0, A->N_padded, A->blocksize, 0, &(A->root));
+  spamm_recursive_set_recursive(i, j, Aij, 0, A->N_padded, 0, A->N_padded, A->blocksize, 0, A->depth, row_major, &(A->root));
 }
 
 /** Set an element in a matrix.
@@ -436,7 +438,19 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   if (Aij == 0.0) { return; }
 
   /* Store matrix element. */
-  spamm_recursive_set_recursive(i, j, Aij,
-      0, A->N_padded, 0, A->N_padded,
-      A->blocksize, 0, A->depth-A->hashed_tier, &(A->root));
+  if (A->number_hashed_tiers == 0)
+  {
+    if (A->hashed_root == NULL)
+    {
+      A->hashed_root = spamm_hashed_new(A->M, A->N, A->layout);
+    }
+    spamm_hashed_set(i, j, Aij, A->hashed_root);
+  }
+
+  else
+  {
+    spamm_recursive_set_recursive(i, j, Aij,
+        0, A->N_padded, 0, A->N_padded,
+        A->blocksize, 0, A->depth-A->number_hashed_tiers, A->layout, &(A->recursive_root));
+  }
 }
