@@ -1656,24 +1656,24 @@ spamm_recursive_multiply_matrix (const float tolerance,
     {
       if ((*node_C)->data == NULL)
       {
-        (*node_C)->data = calloc((*node_C)->blocksize*(*node_C)->blocksize, sizeof(float));
+        (*node_C)->data = calloc((*node_C)->N_contiguous*(*node_C)->N_contiguous, sizeof(float));
       }
       if (sgemm != NULL)
       {
         sgemm(
             "N", /* TRANSA */
             "N", /* TRANSB */
-            (int*) &(node_A->blocksize), /* M */
-            (int*) &(node_A->blocksize), /* N */
-            (int*) &(node_A->blocksize), /* K */
+            (int*) &(node_A->N_contiguous), /* M */
+            (int*) &(node_A->N_contiguous), /* N */
+            (int*) &(node_A->N_contiguous), /* K */
             (float*) &alpha, /* alpha */
             node_A->data, /* A */
-            (int*) &node_A->blocksize, /* LDA */
+            (int*) &node_A->N_contiguous, /* LDA */
             node_B->data, /* B */
-            (int*) &node_A->blocksize, /* LDB */
+            (int*) &node_A->N_contiguous, /* LDB */
             (float*) &beta, /* beta */
             (*node_C)->data, /* C */
-            (int*) &node_A->blocksize /* LDC */
+            (int*) &node_A->N_contiguous /* LDC */
             );
         (*number_products)++;
       }
@@ -1695,7 +1695,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
               /* Create a new C node if necessary. */
               if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
               {
-                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1, (*node_C)->blocksize);
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1, (*node_C)->N_contiguous);
                 (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_lower = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i;
                 (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_upper = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1);
                 (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_lower = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j;
@@ -1755,15 +1755,15 @@ spamm_multiply (const float tolerance,
     exit(1);
   }
 
-  if (A->blocksize != B->blocksize)
+  if (A->N_contiguous != B->N_contiguous)
   {
-    printf("[%s:%i] A->blocksize != B->blocksize\n", __FILE__, __LINE__);
+    printf("[%s:%i] A->N_contiguous != B->N_contiguous\n", __FILE__, __LINE__);
     exit(1);
   }
 
-  if (A->blocksize != C->blocksize)
+  if (A->N_contiguous != C->N_contiguous)
   {
-    printf("[%s:%i] A->blocksize != C->blocksize\n", __FILE__, __LINE__);
+    printf("[%s:%i] A->N_contiguous != C->N_contiguous\n", __FILE__, __LINE__);
     exit(1);
   }
 
@@ -1773,7 +1773,7 @@ spamm_multiply (const float tolerance,
   /* Multiply A and B. */
   if (A->root != NULL && B->root != NULL && C->root == NULL)
   {
-    C->root = spamm_recursive_new_node(0, C->blocksize);
+    C->root = spamm_recursive_new_node(0, C->N_contiguous);
     C->root->M_lower = 0;
     C->root->M_upper = A->root->M_upper;
     C->root->N_lower = 0;
