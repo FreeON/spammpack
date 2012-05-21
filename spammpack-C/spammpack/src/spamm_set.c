@@ -19,7 +19,7 @@
 void
 spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_matrix_t *A)
 {
-  printf("[FIXME]\n");
+  printf("[%s:%i] [FIXME]\n", __FILE__, __LINE__);
   exit(1);
 }
 
