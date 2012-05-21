@@ -24,23 +24,25 @@
 struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int N_block,
-    const unsigned int number_contiguous_tiers,
-    const unsigned int number_hashed_tiers,
-    const unsigned int kernel_tier,
+    const unsigned int N_contiguous,
+    const unsigned int N_hashed,
     const enum spamm_layout_t layout)
 {
   struct spamm_matrix_t *A;
   double x, x_M, x_N;
 
-  if (kernel_tier == 0)
+  if (N_block == 0)
   {
-    spamm_error_fatal(__FILE__, __LINE__, "kernel_tier has to be greater 0\n");
+    spamm_error_fatal(__FILE__, __LINE__, "N_block has to be greater 0\n");
   }
 
   A = calloc(1, sizeof(struct spamm_matrix_t*));
-  A->number_hashed_tiers = number_hashed_tiers;
-  A->kernel_tier = kernel_tier;
-  A->blocksize = (unsigned int) pow(2, kernel_tier);
+  A->N_block = N_block;
+  A->N_contiguous = N_contiguous;
+  A->N_hashed = N_hashed;
+
+  A->number_contiguous_tiers = (unsigned int) round(pow(2, N_contiguous));
+  A->number_hashed_tiers = (unsigned int) round(pow(2, N_hashed));
 
   /* Pad to powers of M_child x N_child. */
   x_M = (log(M) > log(N_block) ? log(M) - log(N_block) : 0)/log(2);
@@ -62,7 +64,7 @@ spamm_new (const unsigned int M, const unsigned int N,
   }
 
   /* Adjust tree to kernel depth. */
-  if (A->depth < number_contiguous_tiers) { A->depth = number_contiguous_tiers; }
+  if (A->depth < A->number_contiguous_tiers) { A->depth = A->number_contiguous_tiers; }
 
   /* Set matrix size. */
   A->M = M;
@@ -70,9 +72,6 @@ spamm_new (const unsigned int M, const unsigned int N,
 
   /* Set padded matrix size. */
   A->N_padded = (int) (N_block*pow(2, A->depth));
-
-  /* Set the kernel tier. */
-  A->kernel_tier = A->depth-number_contiguous_tiers;
 
   /* Set the layout. */
   switch (layout)
@@ -361,17 +360,18 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enu
 /** Allocate a new node of a recursive matrix tree.
  *
  * @param tier The tier this node will be on.
+ * @param N_contiguous The size of the contiguous submatrix block.
  *
  * @return A pointer to the newly allocated node.
  */
 struct spamm_recursive_node_t *
-spamm_recursive_new_node (const unsigned int tier, const unsigned int blocksize)
+spamm_recursive_new_node (const unsigned int tier, const unsigned int N_contiguous)
 {
   struct spamm_recursive_node_t *node = NULL;
 
   node = calloc(1, sizeof(struct spamm_recursive_node_t));
   node->tier = tier;
-  node->blocksize = blocksize;
+  node->N_contiguous = N_contiguous;
 
   return node;
 }

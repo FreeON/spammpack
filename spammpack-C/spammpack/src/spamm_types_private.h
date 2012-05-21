@@ -24,16 +24,23 @@ struct spamm_matrix_t
   /** The layout of the basic matrix blocks on the kernel tier. */
   enum spamm_layout_t layout;
 
+  /** The blocksize, i.e. the matrix size at the kernel tier the SpAMM
+   * condition is applied to. */
+  unsigned int N_block;
+
+  /** The size of the contiguous matrix blocks. */
+  unsigned int N_contiguous;
+
+  /** The size of the submatrix stored in the hashed data format. */
+  unsigned int N_hashed;
+
+  /** The number of tiers that are stored in contiguous blocks. The matrix
+   * size this corresponds to is given by /f$ 2^{N_{contiguous}} /f$. */
+  unsigned int number_contiguous_tiers;
+
   /** The number of tiers from the bottom that are stored in the hashed
-   * format. */
+   * format. The matrix size this corresponds to is /f$ 2^{N_{hashed}} /f$. */
   unsigned int number_hashed_tiers;
-
-  /** The kernel tier, i.e. the tier at which the dense kernel matrix blocks
-   * will be processed. */
-  unsigned int kernel_tier;
-
-  /** The blocksize, i.e. the matrix size at the kernel tier. */
-  unsigned int blocksize;
 
   /** The root node of the recursive tree. */
   struct spamm_recursive_node_t *recursive_root;
@@ -190,7 +197,7 @@ spamm_recursive_node_t
   struct spamm_recursive_node_t *child[4];
 
   /** The blocksize. */
-  unsigned int blocksize;
+  unsigned int N_contiguous;
 
   /** The matrix data (if this is a leaf node). */
   float *data;

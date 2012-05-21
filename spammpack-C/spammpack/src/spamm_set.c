@@ -14,8 +14,14 @@
  * @param i The row index.
  * @param j The column index.
  * @param Aij The value of the matrix element A(i,j).
- * @param tier The tier the node is on.
- * @param hashed_tier The tier at which to store the matrix in hashed format.
+ * @param M_lower The left-most row index.
+ * @param M_upper The right-most row index.
+ * @param N_lower The left-most column index.
+ * @param N_upper The right-most column index.
+ * @param N_contiguous The size of the contiguous submatrix block.
+ * @param N_hashed The size of the submatrix that is stored in hashed format.
+ * @param tier The tier this node is on.
+ * @param layout The layout of the matrix elements.
  * @param node The node.
  */
 void
@@ -24,9 +30,10 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     const unsigned int M_upper,
     const unsigned int N_lower,
     const unsigned int N_upper,
-    const int blocksize,
-    const int tier,
-    const int hashed_tier,
+    const unsigned int N_block,
+    const unsigned int N_contiguous,
+    const unsigned int N_hashed,
+    const unsigned int tier,
     const enum spamm_layout_t layout,
     struct spamm_recursive_node_t **node)
 {
@@ -438,7 +445,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   if (Aij == 0.0) { return; }
 
   /* Store matrix element. */
-  if (A->number_hashed_tiers == 0)
+  if (A->number_hashed_tiers == A->depth)
   {
     if (A->hashed_root == NULL)
     {
@@ -451,6 +458,6 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   {
     spamm_recursive_set_recursive(i, j, Aij,
         0, A->N_padded, 0, A->N_padded,
-        A->blocksize, 0, A->depth-A->number_hashed_tiers, A->layout, &(A->recursive_root));
+        A->N_block, A->N_contiguous, A->N_hashed, 0, A->layout, &(A->recursive_root));
   }
 }
