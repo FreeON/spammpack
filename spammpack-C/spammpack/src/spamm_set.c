@@ -19,8 +19,12 @@
 void
 spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_matrix_t *A)
 {
-  printf("[%s:%i] [FIXME]\n", __FILE__, __LINE__);
-  exit(1);
+  assert(A != NULL);
+
+  if (i >= A->M)
+  {
+    SPAMM_FATAL("i out of bounds (i = %i and M = %i)\n", i, A->M);
+  }
 }
 
 /** Set an element in a matrix.

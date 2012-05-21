@@ -21,10 +21,9 @@ struct spamm_matrix_t
   /** The total depth of the tree. */
   unsigned int depth;
 
-  /** The number of tiers from the root that are stored in a hierarchical
-   * tree.
-   */
-  unsigned int number_hierarchical_tiers;
+  /** The number of tiers from the bottom that are stored in the hashed
+   * format. */
+  unsigned int number_hashed_tiers;
 
   /** The kernel tier, i.e. the tier at which the dense kernel matrix blocks
    * will be processed. */

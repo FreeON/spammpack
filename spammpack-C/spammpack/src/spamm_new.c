@@ -9,12 +9,16 @@
  *
  * @param M The number of rows of the matrix.
  * @param N The number of columns of the matrix.
+ * @param number_hashed_tiers The number of tiers from the bottom of the
+ * matrix tree that are stored in hashed format. This number can be zero in
+ * which case the whole tree is stored in hierarchical format.
  *
  * @return The newly allocated matrix. This matrix has to be freed by calling
  * spamm_delete().
  */
 struct spamm_matrix_t *
-spamm_new (const unsigned int M, const unsigned int N)
+spamm_new (const unsigned int M, const unsigned int N,
+    const unsigned int number_hashed_tiers)
 {
   struct spamm_matrix_t *A;
 
@@ -31,6 +35,7 @@ spamm_new (const unsigned int M, const unsigned int N)
   }
 
   A = calloc(1, sizeof(struct spamm_matrix_t*));
+  A->number_hashed_tiers = number_hashed_tiers;
 
   return A;
 }
