@@ -16,7 +16,7 @@ main ()
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      spamm_set(i, j, rand()/(float) RAND_MAX, A);
+      spamm_hashed_set(i, j, rand()/(float) RAND_MAX, A);
     }
   }
 

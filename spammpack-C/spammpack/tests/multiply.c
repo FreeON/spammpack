@@ -29,8 +29,6 @@ main (int argc, char *argv[])
     exit(1);
   }
 
-  spamm_set(300, 1, 0.0, A);
-
   while (fscanf(fd, "%u %u %e\n", &i, &j, &Aij) == 3)
   {
     spamm_set(i, j, Aij, A);

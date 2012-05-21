@@ -9,6 +9,97 @@
 #define NEW_NORM
 #define SPAMM_SET_NO_ZERO
 
+/** Recursively set a matrix element.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ * @param Aij The value of the matrix element A(i,j).
+ * @param tier The tier the node is on.
+ * @param node The node.
+ */
+void
+spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const float Aij,
+    const unsigned int M_lower,
+    const unsigned int M_upper,
+    const unsigned int N_lower,
+    const unsigned int N_upper,
+    const int blocksize,
+    const int tier,
+    struct spamm_recursive_node_t **node)
+{
+  if (*node == NULL)
+  {
+    /* Allocate new node. */
+    *node = spamm_recursive_new_node(tier+1, blocksize);
+
+    (*node)->M_lower = M_lower;
+    (*node)->M_upper = M_upper;
+    (*node)->N_lower = N_lower;
+    (*node)->N_upper = N_upper;
+
+    (*node)->tier = tier;
+  }
+
+  if ((*node)->M_upper-(*node)->M_lower == blocksize)
+  {
+    /* Store the matrix element. */
+    if ((*node)->data == NULL)
+    {
+      (*node)->data = calloc(blocksize*blocksize, sizeof(float));
+    }
+
+    /* sgemm() loves column major. */
+    (*node)->data[spamm_index_column_major(i-(*node)->M_lower, j-(*node)->N_lower, blocksize, blocksize)] = Aij;
+
+    /* Update norm. */
+    (*node)->norm2 += Aij*Aij;
+    (*node)->norm   = sqrt((*node)->norm2);
+  }
+
+  else
+  {
+    if (i < (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
+        j < (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
+    {
+      spamm_recursive_set_recursive(i, j, Aij,
+          (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
+          (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
+          blocksize, tier+1, &((*node)->child[0]));
+    }
+
+    else if (i <  (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
+        j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
+    {
+      spamm_recursive_set_recursive(i, j, Aij,
+          (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
+          (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
+          blocksize, tier+1, &((*node)->child[1]));
+    }
+
+    else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
+        j <  (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
+    {
+      spamm_recursive_set_recursive(i, j, Aij,
+          (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
+          (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
+          blocksize, tier+1, &((*node)->child[2]));
+    }
+
+    else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
+        j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
+    {
+      spamm_recursive_set_recursive(i, j, Aij,
+          (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
+          (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
+          blocksize, tier+1, &((*node)->child[3]));
+    }
+
+    /* Update norm. */
+    (*node)->norm2 += Aij*Aij;
+    (*node)->norm   = sqrt((*node)->norm2);
+  }
+}
+
 /** Set an element in a matrix.
  *
  * @param i The row index.
@@ -25,6 +116,17 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   {
     SPAMM_FATAL("i out of bounds (i = %i and M = %i)\n", i, A->M);
   }
+
+  if (j >= A->N)
+  {
+    SPAMM_FATAL("j out of bounds (j = %i and N = %i)\n", j, A->N);
+  }
+
+  /* Don't store zero. */
+  if (Aij == 0.0) { return; }
+
+  /* Store matrix element. */
+  spamm_recursive_set_recursive(i, j, Aij, 0, A->N_padded, 0, A->N_padded, A->blocksize, 0, &(A->root));
 }
 
 /** Set an element in a matrix.
@@ -302,97 +404,6 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
     node->norm2 += Aij*Aij-old_Aij*old_Aij;
     node->norm = sqrt(node->norm2);
 #endif
-  }
-}
-
-/** Recursively set a matrix element.
- *
- * @param i The row index.
- * @param j The column index.
- * @param Aij The value of the matrix element A(i,j).
- * @param tier The tier the node is on.
- * @param node The node.
- */
-void
-spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const float Aij,
-    const unsigned int M_lower,
-    const unsigned int M_upper,
-    const unsigned int N_lower,
-    const unsigned int N_upper,
-    const int blocksize,
-    const int tier,
-    struct spamm_recursive_node_t **node)
-{
-  if (*node == NULL)
-  {
-    /* Allocate new node. */
-    *node = spamm_recursive_new_node(tier+1, blocksize);
-
-    (*node)->M_lower = M_lower;
-    (*node)->M_upper = M_upper;
-    (*node)->N_lower = N_lower;
-    (*node)->N_upper = N_upper;
-
-    (*node)->tier = tier;
-  }
-
-  if ((*node)->M_upper-(*node)->M_lower == blocksize)
-  {
-    /* Store the matrix element. */
-    if ((*node)->data == NULL)
-    {
-      (*node)->data = calloc(blocksize*blocksize, sizeof(float));
-    }
-
-    /* sgemm() loves column major. */
-    (*node)->data[spamm_index_column_major(i-(*node)->M_lower, j-(*node)->N_lower, blocksize, blocksize)] = Aij;
-
-    /* Update norm. */
-    (*node)->norm2 += Aij*Aij;
-    (*node)->norm   = sqrt((*node)->norm2);
-  }
-
-  else
-  {
-    if (i < (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
-        j < (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
-    {
-      spamm_recursive_set_recursive(i, j, Aij,
-          (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
-          (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
-          blocksize, tier+1, &((*node)->child[0]));
-    }
-
-    else if (i <  (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
-        j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
-    {
-      spamm_recursive_set_recursive(i, j, Aij,
-          (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
-          (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
-          blocksize, tier+1, &((*node)->child[1]));
-    }
-
-    else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
-        j <  (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
-    {
-      spamm_recursive_set_recursive(i, j, Aij,
-          (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
-          (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
-          blocksize, tier+1, &((*node)->child[2]));
-    }
-
-    else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
-        j >= (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2)
-    {
-      spamm_recursive_set_recursive(i, j, Aij,
-          (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
-          (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
-          blocksize, tier+1, &((*node)->child[3]));
-    }
-
-    /* Update norm. */
-    (*node)->norm2 += Aij*Aij;
-    (*node)->norm   = sqrt((*node)->norm2);
   }
 }
 
