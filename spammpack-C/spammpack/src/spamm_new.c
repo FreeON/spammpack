@@ -9,33 +9,65 @@
  *
  * @param M The number of rows of the matrix.
  * @param N The number of columns of the matrix.
+ * @param N_block The size of a basic matrix block as NxN single matrix elements.
  * @param number_hashed_tiers The number of tiers from the bottom of the
  * matrix tree that are stored in hashed format. This number can be zero in
  * which case the whole tree is stored in hierarchical format.
+ * @param kernel_tier The tier at which to store the dense kernel matrix
+ * blocks.
  *
  * @return The newly allocated matrix. This matrix has to be freed by calling
  * spamm_delete().
  */
 struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N,
-    const unsigned int number_hashed_tiers)
+    const unsigned int N_block,
+    const unsigned int number_hashed_tiers,
+    const unsigned int kernel_tier)
 {
   struct spamm_matrix_t *A;
 
-  if (M <= 0)
+  if (kernel_tier == 0)
   {
-    fprintf(stderr, "M <= 0\n");
-    exit(1);
-  }
-
-  if (N <= 0)
-  {
-    fprintf(stderr, "N <= 0\n");
-    exit(1);
+    spamm_error_fatal(__FILE__, __LINE__, "kernel_tier has to be greater 0\n");
   }
 
   A = calloc(1, sizeof(struct spamm_matrix_t*));
   A->number_hashed_tiers = number_hashed_tiers;
+  A->kernel_tier = kernel_tier;
+  A->blocksize = (unsigned int) pow(2, kernel_tier);
+
+  /* Pad to powers of M_child x N_child. */
+  x_M = (log(M) > log(N_block) ? log(M) - log(N_block) : 0)/log(2);
+  x_N = (log(N) > log(N_block) ? log(N) - log(N_block) : 0)/log(2);
+
+  if (x_M > x_N) { x = x_M; }
+  else           { x = x_N; }
+
+  /* The ceil() function can lead to a depth that is one tier too large
+   * because of numerical errors in the calculation of x. We need to check
+   * whether the depth is appropriate.
+   */
+  A->depth = (unsigned int) ceil(x);
+
+  /* Double check depth. */
+  if (A->depth >= 1 && ((int) (N_block*pow(2, A->depth-1)) >= M && (int) (N_block*pow(2, A->depth-1)) >= N))
+  {
+    (A->depth)--;
+  }
+
+  /* Adjust tree to kernel depth. */
+  if (A->depth < SPAMM_KERNEL_DEPTH) { A->depth = SPAMM_KERNEL_DEPTH; }
+
+  /* Set matrix size. */
+  A->M = M;
+  A->N = N;
+
+  /* Set padded matrix size. */
+  A->N_padded = (int) (N_block*pow(2, A->depth));
+
+  /* Set the kernel tier. */
+  A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
 
   return A;
 }
@@ -86,8 +118,8 @@ spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_l
   }
 
   /* Pad to powers of M_child x N_child. */
-  x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
-  x_N = (log(N) > log(SPAMM_N_BLOCK) ? log(N) - log(SPAMM_N_BLOCK) : 0)/log(SPAMM_N_CHILD);
+  x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(2);
+  x_N = (log(N) > log(SPAMM_N_BLOCK) ? log(N) - log(SPAMM_N_BLOCK) : 0)/log(2);
 
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
@@ -99,7 +131,7 @@ spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_l
   A->depth = (unsigned int) ceil(x);
 
   /* Double check depth. */
-  if (A->depth >= 1 && ((int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, A->depth-1)) >= M && (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, A->depth-1)) >= N))
+  if (A->depth >= 1 && ((int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) >= M && (int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) >= N))
   {
     (A->depth)--;
   }
@@ -112,7 +144,7 @@ spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_l
   A->N = N;
 
   /* Set padded matrix size. */
-  A->N_padded = (int) (SPAMM_N_BLOCK*pow(SPAMM_N_CHILD, A->depth));
+  A->N_padded = (int) (SPAMM_N_BLOCK*pow(2, A->depth));
 
   /* Set the kernel tier. */
   A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;

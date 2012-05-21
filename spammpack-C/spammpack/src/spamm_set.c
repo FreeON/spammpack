@@ -15,6 +15,7 @@
  * @param j The column index.
  * @param Aij The value of the matrix element A(i,j).
  * @param tier The tier the node is on.
+ * @param hashed_tier The tier at which to store the matrix in hashed format.
  * @param node The node.
  */
 void
@@ -25,8 +26,14 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     const unsigned int N_upper,
     const int blocksize,
     const int tier,
+    const int hashed_tier,
     struct spamm_recursive_node_t **node)
 {
+  if (tier == hashed_tier)
+  {
+    spamm_hashed_set();
+  }
+
   if (*node == NULL)
   {
     /* Allocate new node. */
@@ -108,35 +115,6 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
  * @param A The matrix.
  */
 void
-spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_matrix_t *A)
-{
-  assert(A != NULL);
-
-  if (i >= A->M)
-  {
-    SPAMM_FATAL("i out of bounds (i = %i and M = %i)\n", i, A->M);
-  }
-
-  if (j >= A->N)
-  {
-    SPAMM_FATAL("j out of bounds (j = %i and N = %i)\n", j, A->N);
-  }
-
-  /* Don't store zero. */
-  if (Aij == 0.0) { return; }
-
-  /* Store matrix element. */
-  spamm_recursive_set_recursive(i, j, Aij, 0, A->N_padded, 0, A->N_padded, A->blocksize, 0, &(A->root));
-}
-
-/** Set an element in a matrix.
- *
- * @param i The row index.
- * @param j The column index.
- * @param Aij The value of the matrix element A(i,j).
- * @param A The matrix.
- */
-void
 spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A)
 {
   unsigned int tier;
@@ -189,7 +167,7 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
   for (tier = 0; tier <= A->kernel_tier; tier++)
   {
     /* Calculate the size of the matrix block. */
-    delta_index = (unsigned int) floor(A->N_padded/pow(SPAMM_N_CHILD, tier));
+    delta_index = (unsigned int) floor(A->N_padded/pow(2, tier));
 
     /* Calculate the matrix block indices. */
     i_tier = i/delta_index;
@@ -340,7 +318,7 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
   {
     reverse_tier = A->kernel_tier-tier;
 
-    delta_index = (unsigned int) floor(A->N_padded/pow(SPAMM_N_CHILD, reverse_tier));
+    delta_index = (unsigned int) floor(A->N_padded/pow(2, reverse_tier));
 
     i_tier = i/delta_index;
     j_tier = j/delta_index;
@@ -363,8 +341,8 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
 
     if (next_tier == A->kernel_tier)
     {
-      for (i_child = 0; i_child < SPAMM_N_CHILD; i_child++) {
-        for (j_child = 0; j_child < SPAMM_N_CHILD; j_child++)
+      for (i_child = 0; i_child < 2; i_child++) {
+        for (j_child = 0; j_child < 2; j_child++)
         {
           /* Construct index of child block. */
           child_index = (index << 2) | (i_child << 1) | j_child;
@@ -382,8 +360,8 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
 
     else
     {
-      for (i_child = 0; i_child < SPAMM_N_CHILD; i_child++) {
-        for (j_child = 0; j_child < SPAMM_N_CHILD; j_child++)
+      for (i_child = 0; i_child < 2; i_child++) {
+        for (j_child = 0; j_child < 2; j_child++)
         {
           /* Construct index of child block. */
           child_index = (index << 2) | (i_child << 1) | j_child;
@@ -430,4 +408,35 @@ spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij
 
   /* Recursively set the matrix element. */
   spamm_recursive_set_recursive(i, j, Aij, 0, A->N_padded, 0, A->N_padded, A->blocksize, 0, &(A->root));
+}
+
+/** Set an element in a matrix.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ * @param Aij The value of the matrix element A(i,j).
+ * @param A The matrix.
+ */
+void
+spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_matrix_t *A)
+{
+  assert(A != NULL);
+
+  if (i >= A->M)
+  {
+    SPAMM_FATAL("i out of bounds (i = %i and M = %i)\n", i, A->M);
+  }
+
+  if (j >= A->N)
+  {
+    SPAMM_FATAL("j out of bounds (j = %i and N = %i)\n", j, A->N);
+  }
+
+  /* Don't store zero. */
+  if (Aij == 0.0) { return; }
+
+  /* Store matrix element. */
+  spamm_recursive_set_recursive(i, j, Aij,
+      0, A->N_padded, 0, A->N_padded,
+      A->blocksize, 0, A->depth-A->hashed_tier, &(A->root));
 }

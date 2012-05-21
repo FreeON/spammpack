@@ -31,7 +31,7 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_hashed
   }
 
   /* Go into kernel tier hash and retrieve proper node. */
-  delta_index = (unsigned int) floor(A->N_padded/pow(SPAMM_N_CHILD, A->kernel_tier));
+  delta_index = (unsigned int) floor(A->N_padded/pow(2, A->kernel_tier));
 
   i_tier = i/delta_index;
   j_tier = j/delta_index;

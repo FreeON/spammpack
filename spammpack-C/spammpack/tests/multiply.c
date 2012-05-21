@@ -9,6 +9,7 @@ main (int argc, char *argv[])
   int result = 0;
   const int M = 103;
   const int N = 129;
+  const int kernel_tier = 4;
 
   unsigned int i, j;
   float Aij;
@@ -20,7 +21,7 @@ main (int argc, char *argv[])
   struct spamm_matrix_t *A;
 
   /* Allocate matrices. */
-  A = spamm_new(M, N, 0);
+  A = spamm_new(M, N, 0, kernel_tier);
 
   /* Load matrix from file. */
   if ((fd = fopen(filename_A, "r")) == NULL)
