@@ -160,7 +160,6 @@ libspamm_tree_la_SOURCES = \
   spamm_list.c \
   spamm_maintenance.c \
   spamm_multiply.c \
-  spamm_hashed_multiply.c \
   spamm_recursive.c \
   spamm_new.c \
   spamm_print.c \
