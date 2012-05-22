@@ -184,7 +184,7 @@ spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_l
  * @return A pointer to the matrix.
  */
 struct spamm_recursive_t *
-spamm_recursive_new (const unsigned int M, const unsigned int N, const unsigned int blocksize)
+spamm_recursive_new (const unsigned int M, const unsigned int N, const unsigned int N_contiguous)
 {
   struct spamm_recursive_t *A = NULL;
   double x, x_M, x_N;
@@ -205,11 +205,11 @@ spamm_recursive_new (const unsigned int M, const unsigned int N, const unsigned 
   A = calloc(1, sizeof(struct spamm_recursive_t));
 
   /* Store the blocksize. */
-  A->blocksize = blocksize;
+  A->N_contiguous = N_contiguous;
 
   /* Pad to powers of M_child x N_child. */
-  x_M = (log(M) > log(blocksize) ? log(M) - log(blocksize) : 0)/log(2);
-  x_N = (log(N) > log(blocksize) ? log(N) - log(blocksize) : 0)/log(2);
+  x_M = (log(M) > log(N_contiguous) ? log(M) - log(N_contiguous) : 0)/log(2);
+  x_N = (log(N) > log(N_contiguous) ? log(N) - log(N_contiguous) : 0)/log(2);
 
   if (x_M > x_N) { x = x_M; }
   else           { x = x_N; }
@@ -221,7 +221,7 @@ spamm_recursive_new (const unsigned int M, const unsigned int N, const unsigned 
   A->depth = (unsigned int) ceil(x);
 
   /* Double check depth. */
-  if (A->depth >= 1 && ((int) (blocksize*pow(2, A->depth-1)) >= M && (int) (blocksize*pow(2, A->depth-1)) >= N))
+  if (A->depth >= 1 && ((int) (N_contiguous*pow(2, A->depth-1)) >= M && (int) (N_contiguous*pow(2, A->depth-1)) >= N))
   {
     (A->depth)--;
   }
@@ -231,7 +231,7 @@ spamm_recursive_new (const unsigned int M, const unsigned int N, const unsigned 
   A->N = N;
 
   /* Set padded matrix size. */
-  A->N_padded = (int) (blocksize*pow(2, A->depth));
+  A->N_padded = (int) (N_contiguous*pow(2, A->depth));
 
   return A;
 }
