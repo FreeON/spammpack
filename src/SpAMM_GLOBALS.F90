@@ -161,7 +161,7 @@ MODULE SpAMM_GLOBALS
         SpAMM_STATS(RoutineID)%Count=SpAMM_STATS(RoutineID)%Count+1
         SpAMM_STATS(RoutineID)%Routine=ADJUSTL(Routine)
         !         WRITE(*,44)ADJUSTL(TRIM(Routine)),Time
-        44       FORMAT(A50,': Time = ',F20.10,' CPUsec')
+        !44       FORMAT(A50,': Time = ',F20.10,' CPUsec')
       ENDIF
     END SUBROUTINE SpAMM_Time_Stamp
 

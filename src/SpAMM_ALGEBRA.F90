@@ -566,10 +566,20 @@ CONTAINS
 
     TYPE(QuTree), POINTER :: qD,qA,qB,qC
     INTEGER :: Depth
-    LOGICAL :: DepthOK,Go_00x00,Go_00x01,Go_10x00,Go_10x01,Go_01x10,Go_01x11,Go_11x10,Go_11x11
+    LOGICAL :: DepthOK
+    LOGICAL :: Go_00x00
+    LOGICAL :: Go_00x01
+    LOGICAL :: Go_10x00
+    LOGICAL :: Go_10x01
+    LOGICAL :: Go_01x10
+    LOGICAL :: Go_01x11
+    LOGICAL :: Go_11x10
+    LOGICAL :: Go_11x11
     REAL(SpAMM_KIND), DIMENSION(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) :: ABBlock
+
     ! Associated
     IF(.NOT.(ASSOCIATED(qA).AND.ASSOCIATED(qB).AND.ASSOCIATED(qC)))RETURN
+
     ! Estimate
     IF(qA%Norm*qB%Norm*qC%Norm<SpAMM_Threshold_Multiply_QuTree_x_QuTree)RETURN
     IF(.NOT.ASSOCIATED(qD))THEN
@@ -577,6 +587,7 @@ CONTAINS
       ALLOCATE(qD)
       !$OMP END CRITICAL
     ENDIF
+
     ! Blocks
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
       ! Allocate
@@ -588,18 +599,18 @@ CONTAINS
       END IF
       ! Accumulate: D=D+MATMUL(MATMUL(A,B),C)
       ABBlock(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)=MATMUL(          &
-        qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) ,                &
+        qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) ,              &
         qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
-      !
+
       qD%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) =                &
-        qD%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) +MATMUL(         &
-        ABBlock(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE),                 &
+        qD%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) +MATMUL(       &
+        ABBlock(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE),               &
         qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
     ELSE
 #ifdef _OPENMP
       ! Put a check on the stack
       DepthOK=.TRUE.
-      !          DepthOK=MOD(Depth,2)==0
+      ! DepthOK=MOD(Depth,2)==0
       Go_00x00x00=DepthOK.AND.qA%Quad00%Norm*qB%Quad00%Norm*qC%Quad00%Norm>SpAMM_RECURSION_NORMD_CUTOFF
       Go_00x00x00=DepthOK.AND.qA%Quad00%Norm*qB%Quad00%Norm*qC%Quad00%Norm>SpAMM_RECURSION_NORMD_CUTOFF
       Go_00x00x00=DepthOK.AND.qA%Quad00%Norm*qB%Quad00%Norm*qC%Quad00%Norm>SpAMM_RECURSION_NORMD_CUTOFF
@@ -971,7 +982,7 @@ CONTAINS
     TYPE(QuTree), POINTER :: qA
     TYPE(BiTree), POINTER :: bB,bC
     INTEGER               :: Depth
-    LOGICAL               :: DepthOK,Go_00x0,Go_01x1,Go_10x0,Go_11x1
+    LOGICAL               :: DepthOK,Go_00x0,Go_01x1,Go_10x0,Go_10x1
     ! Associated
     IF(ASSOCIATED(qA).AND.ASSOCIATED(bB))THEN
       ! Estimate
@@ -997,7 +1008,7 @@ CONTAINS
 #ifdef _OPENMP
         ! Put a check on the stack
         DepthOK=.TRUE.
-        !          DepthOK=MOD(Depth,2)==0
+        ! DepthOK=MOD(Depth,2)==0
         Go_00x0=DepthOK.AND.qA%Quad00%Norm*bB%Sect0%Norm>SpAMM_RECURSION_NORMD_CUTOFF
         Go_01x1=DepthOK.AND.qA%Quad00%Norm*bB%Sect1%Norm>SpAMM_RECURSION_NORMD_CUTOFF
         Go_10x0=DepthOK.AND.qA%Quad10%Norm*bB%Sect0%Norm>SpAMM_RECURSION_NORMD_CUTOFF
@@ -1107,11 +1118,11 @@ CONTAINS
       Norm=SUM(bA%Vect(1:SpAMM_BLOCK_SIZE)**2)
       bA%Norm=SQRT(Norm)
     ELSE
-      !$OMP TASK UNTIED SHARED(bA,Norm00) &
+      !$OMP TASK UNTIED SHARED(bA,Norm0) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       Norm0=SpAMM_Norm_Reduce_BiTree_Recur(bA%Sect0,Depth+1)
       !$OMP END TASK
-      !$OMP TASK UNTIED SHARED(bA,Norm01) &
+      !$OMP TASK UNTIED SHARED(bA,Norm1) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       Norm1=SpAMM_Norm_Reduce_BiTree_Recur(bA%Sect1,Depth+1)
       !$OMP END TASK

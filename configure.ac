@@ -1,4 +1,4 @@
-AC_INIT([SpAMMPACK],
+AC_INIT([SpAMMPack],
         [beta-2012-05-22],
         [freeon-devel@nongnu.org],
         [],
