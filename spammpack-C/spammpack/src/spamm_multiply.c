@@ -1731,8 +1731,8 @@ spamm_recursive_multiply_matrix (const float tolerance,
  */
 void
 spamm_multiply (const float tolerance,
-    const float alpha, struct spamm_recursive_t *A, struct spamm_recursive_t *B,
-    const float beta, struct spamm_recursive_t *C,
+    const float alpha, struct spamm_matrix_t *A, struct spamm_matrix_t *B,
+    const float beta, struct spamm_matrix_t *C,
     struct spamm_timer_t *timer,
     void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
     unsigned int *number_products)
@@ -1768,17 +1768,17 @@ spamm_multiply (const float tolerance,
   }
 
   /* Multiply C by beta. */
-  spamm_recursive_multiply_scalar(beta, C->root);
+  //spamm_recursive_multiply_scalar(beta, C->root);
 
   /* Multiply A and B. */
-  if (A->root != NULL && B->root != NULL && C->root == NULL)
-  {
-    C->root = spamm_recursive_new_node(0, C->N_contiguous);
-    C->root->M_lower = 0;
-    C->root->M_upper = A->root->M_upper;
-    C->root->N_lower = 0;
-    C->root->N_upper = A->root->N_upper;
-  }
+  //if (A->root != NULL && B->root != NULL && C->root == NULL)
+  //{
+  //  C->root = spamm_recursive_new_node(0, C->N_contiguous);
+  //  C->root->M_lower = 0;
+  //  C->root->M_upper = A->root->M_upper;
+  //  C->root->N_lower = 0;
+  //  C->root->N_upper = A->root->N_upper;
+  //}
 
-  spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, number_products);
+  //spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, number_products);
 }

@@ -10,13 +10,9 @@
  * @param M The number of rows of the matrix.
  * @param N The number of columns of the matrix.
  * @param N_block The size of a basic matrix block as NxN single matrix elements.
- * @param number_contiguous_tiers The number of tiers that are allocated
- * contiguously for the computational kernel.
- * @param number_hashed_tiers The number of tiers from the bottom of the
- * matrix tree that are stored in hashed format. This number can be zero in
- * which case the whole tree is stored in hierarchical format.
- * @param kernel_tier The tier at which to store the dense kernel matrix
- * blocks.
+ * @param N_contiguous The size of the contiguous matrix blocks.
+ * @param N_hashed The size of the submatrix stored in hashed data format.
+ * @param layout The storage layout of the matrix elements.
  *
  * @return The newly allocated matrix. This matrix has to be freed by calling
  * spamm_delete().
