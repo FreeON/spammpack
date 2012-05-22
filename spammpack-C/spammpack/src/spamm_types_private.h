@@ -162,8 +162,8 @@ spamm_recursive_t
   /** Tree depth. */
   unsigned int depth;
 
-  /** The blocksize. */
-  unsigned int blocksize;
+  /** The N_contiguous. */
+  unsigned int N_contiguous;
 
   /** The root node. */
   struct spamm_recursive_node_t *root;

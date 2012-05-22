@@ -35,13 +35,13 @@ spamm_recursive_get (const unsigned int i, const unsigned int j, const struct sp
       return 0;
     }
 
-    if ((*node)->M_upper-(*node)->M_lower == A->blocksize)
+    if ((*node)->M_upper-(*node)->M_lower == A->N_contiguous)
     {
       /* Get the matrix element. */
       if ((*node)->data == NULL) { return 0.0; }
       else
       {
-        return (*node)->data[spamm_index_column_major(i-(*node)->M_lower, j-(*node)->N_lower, A->blocksize, A->blocksize)];
+        return (*node)->data[spamm_index_column_major(i-(*node)->M_lower, j-(*node)->N_lower, A->N_contiguous, A->N_contiguous)];
       }
     }
 
@@ -90,7 +90,7 @@ spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t
 
   if (node->data != NULL)
   {
-    for (i = 0; i < node->blocksize*node->blocksize; i++)
+    for (i = 0; i < node->N_contiguous*node->N_contiguous; i++)
     {
       node->data[i] *= beta;
     }
@@ -147,13 +147,13 @@ spamm_recursive_multiply_3_matrix (const float tolerance,
     {
       if ((*node_D)->data == NULL)
       {
-        (*node_D)->data = calloc((*node_D)->blocksize*(*node_D)->blocksize, sizeof(float));
+        (*node_D)->data = calloc((*node_D)->N_contiguous*(*node_D)->N_contiguous, sizeof(float));
       }
       if (sgemm != NULL)
       {
-        sgemm("N", "N", (int*) &(node_A->blocksize), (int*) &(node_A->blocksize), (int*) &(node_A->blocksize),
-            (float*) &alpha, node_A->data, (int*) &node_A->blocksize, node_B->data,
-            (int*) &node_A->blocksize, (float*) &beta, (*node_D)->data, (int*) &node_A->blocksize);
+        sgemm("N", "N", (int*) &(node_A->N_contiguous), (int*) &(node_A->N_contiguous), (int*) &(node_A->N_contiguous),
+            (float*) &alpha, node_A->data, (int*) &node_A->N_contiguous, node_B->data,
+            (int*) &node_A->N_contiguous, (float*) &beta, (*node_D)->data, (int*) &node_A->N_contiguous);
         (*number_products)++;
       }
     }
@@ -234,15 +234,15 @@ spamm_recursive_multiply (const float tolerance,
     exit(1);
   }
 
-  if (A->blocksize != B->blocksize)
+  if (A->N_contiguous != B->N_contiguous)
   {
-    printf("[%s:%i] A->blocksize != B->blocksize\n", __FILE__, __LINE__);
+    printf("[%s:%i] A->N_contiguous != B->N_contiguous\n", __FILE__, __LINE__);
     exit(1);
   }
 
-  if (A->blocksize != C->blocksize)
+  if (A->N_contiguous != C->N_contiguous)
   {
-    printf("[%s:%i] A->blocksize != C->blocksize\n", __FILE__, __LINE__);
+    printf("[%s:%i] A->N_contiguous != C->N_contiguous\n", __FILE__, __LINE__);
     exit(1);
   }
 
@@ -252,7 +252,7 @@ spamm_recursive_multiply (const float tolerance,
   /* Multiply A and B. */
   if (A->root != NULL && B->root != NULL && C->root == NULL)
   {
-    C->root = spamm_recursive_new_node(0, C->blocksize);
+    C->root = spamm_recursive_new_node(0, C->N_contiguous);
     C->root->M_lower = 0;
     C->root->M_upper = A->root->M_upper;
     C->root->N_lower = 0;
@@ -310,21 +310,21 @@ spamm_recursive_multiply_3 (const float tolerance,
     exit(1);
   }
 
-  if (A->blocksize != B->blocksize)
+  if (A->N_contiguous != B->N_contiguous)
   {
-    printf("[%s:%i] A->blocksize != B->blocksize\n", __FILE__, __LINE__);
+    printf("[%s:%i] A->N_contiguous != B->N_contiguous\n", __FILE__, __LINE__);
     exit(1);
   }
 
-  if (A->blocksize != C->blocksize)
+  if (A->N_contiguous != C->N_contiguous)
   {
-    printf("[%s:%i] A->blocksize != C->blocksize\n", __FILE__, __LINE__);
+    printf("[%s:%i] A->N_contiguous != C->N_contiguous\n", __FILE__, __LINE__);
     exit(1);
   }
 
-  if (A->blocksize != D->blocksize)
+  if (A->N_contiguous != D->N_contiguous)
   {
-    printf("[%s:%i] A->blocksize != D->blocksize\n", __FILE__, __LINE__);
+    printf("[%s:%i] A->N_contiguous != D->N_contiguous\n", __FILE__, __LINE__);
     exit(1);
   }
 
@@ -334,7 +334,7 @@ spamm_recursive_multiply_3 (const float tolerance,
   /* Multiply A and B. */
   if (A->root != NULL && B->root != NULL && C->root == NULL && D->root != NULL)
   {
-    D->root = spamm_recursive_new_node(0, D->blocksize);
+    D->root = spamm_recursive_new_node(0, D->N_contiguous);
     D->root->M_lower = 0;
     D->root->M_upper = A->root->M_upper;
     D->root->N_lower = 0;
