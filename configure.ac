@@ -1,5 +1,5 @@
 AC_INIT([SpAMMPACK],
-        [beta],
+        [beta-2012-05-22],
         [freeon-devel@nongnu.org],
         [],
         [http://www.freeon.org])
@@ -41,6 +41,6 @@ AC_PROG_FC
 dnl Get libtool.
 AC_PROG_LIBTOOL
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile Doxyfile])
 
 AC_OUTPUT
