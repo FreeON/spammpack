@@ -24,17 +24,19 @@
 !    dissemination in future releases.
 !------------------------------------------------------------------------------
 !    PACKAGE FOR THE SPARSE APPROXIMATE MATRIX MULTIPLY (SpAMMPACK)
-!    Matt Challacombe and Nick Bock 
+!    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
 
-!> @brief Defines derived types used in SpAMMPACK.
+!> @brief
+!! Defines derived types used in SpAMMPACK.
+!!
+!! @details
+!! All derived types are defined here.
+
 MODULE SpAMM_DERIVED
-  ! --------------------------------------------------
-  ! DERIVED TYPES AND DATA STRUCTURES 
-  ! --------------------------------------------------
 
   !$ USE OMP_LIB
-  IMPLICIT NONE  
+  IMPLICIT NONE
 
   ! --------------------------------------------------
   ! Integers
@@ -54,7 +56,7 @@ MODULE SpAMM_DERIVED
   ! --------------------------------------------------
 
   !> Define float of length 4.
-  INTEGER, PARAMETER :: SpAMM_SINGLE=KIND(0.0)     !--Real*4
+  INTEGER, PARAMETER :: SpAMM_SINGLE=KIND(0.0E0)   !--Real*4
   !> Define float of length 8.
   INTEGER, PARAMETER :: SpAMM_DOUBLE=KIND(0.0D0)   !--Real*8
 
@@ -64,45 +66,88 @@ MODULE SpAMM_DERIVED
 #else
   INTEGER, PARAMETER :: SpAMM_KIND=SpAMM_SINGLE
 #endif
+
   ! --------------------------------------------------
   ! Numbers
   ! --------------------------------------------------
-  REAL(SpAMM_KIND),PARAMETER :: SpAMM_Zero=0D0,SpAMM_Half=5D-1,SpAMM_One=1D0, &
-                                SpAMM_Two=2D0,SpAMM_Four=4D0,SpAMM_Eight=8D0
+
+  !> Define the number zero.
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Zero=0D0
+  !> Define the number 1/2.
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Half=5D-1
+  !> Define the number 1.
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_One=1D0
+  !> Define the number 2.
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Two=2D0
+  !> Define the number 4.
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Four=4D0
+  !> Define the number 8.
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Eight=8D0
+
   ! --------------------------------------------------
   ! Bi structures
   ! --------------------------------------------------
+
+  !> @brief
+  !! Binary tree data structure.
   TYPE BiTree
-     REAL(SpAMM_KIND)        :: Norm
-     TYPE(BiTree), POINTER   :: Sect0,Sect1
-     REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
+    !> The norm.
+    REAL(SpAMM_KIND)        :: Norm
+
+    !> The pointer to the left bisecting subtree.
+    TYPE(BiTree), POINTER   :: Sect0
+    !> The pointer to the right bisecting subtree.
+    TYPE(BiTree), POINTER   :: Sect1
+
+    !> The vector data.
+    REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
   END TYPE BiTree
+
   ! --------------------------------------------------
   ! Quad structures
   ! --------------------------------------------------
+
+  !> @brief
+  !! Quaternary tree data structure.
   TYPE QuTree
-!     INTEGER,      DIMENSION(2,2) :: Box     
-     REAL(SpAMM_KIND)             :: Norm
-     TYPE(QuTree), POINTER        :: Quad00,Quad01,Quad10,Quad11
-     REAL(SpAMM_KIND), DIMENSION(:,:), ALLOCATABLE :: Blok
+
+!     INTEGER,      DIMENSION(2,2) :: Box
+
+    !> The norm.
+    REAL(SpAMM_KIND)             :: Norm
+
+    !> The pointer to the subtree in quadrant 11.
+    TYPE(QuTree), POINTER        :: Quad00
+    !> The pointer to the subtree in quadrant 12.
+    TYPE(QuTree), POINTER        :: Quad01
+    !> The pointer to the subtree in quadrant 21.
+    TYPE(QuTree), POINTER        :: Quad10
+    !> The pointer to the subtree in quadrant 22.
+    TYPE(QuTree), POINTER        :: Quad11
+
+    !> The matrix data.
+    REAL(SpAMM_KIND), DIMENSION(:,:), ALLOCATABLE :: Blok
   END TYPE QuTree
-  !
+
   TYPE QuLink
      TYPE(QuLink), POINTER  :: Next
      TYPE(QuTree), POINTER  :: Quad
      REAL(SpAMM_KIND)       :: Wght
      INTEGER                :: Hash
      INTEGER                :: i
-     INTEGER, DIMENSION(2,2):: Box     
+     INTEGER, DIMENSION(2,2):: Box
   END TYPE QuLink
+
   ! QuTree container
   TYPE QuTptr
      TYPE(QuTree),POINTER :: T
   END TYPE QuTptr
+
   ! QuLink container
   TYPE QuLptr
      TYPE(QuLink),POINTER :: L
   END TYPE QuLptr
+
   ! --------------------------------------------------
   ! Cube structures
   ! --------------------------------------------------
@@ -111,23 +156,25 @@ MODULE SpAMM_DERIVED
      TYPE(QuTree), POINTER  :: qA
      TYPE(QuTree), POINTER  :: qB
      TYPE(QuTree), POINTER  :: qC
-     INTEGER, DIMENSION(3,2):: Box     
+     INTEGER, DIMENSION(3,2):: Box
      INTEGER                :: Hash
   END TYPE CuTree
-  !
+
   TYPE CuLink
      TYPE(CuLink), POINTER  :: Next
      TYPE(QuTree), POINTER  :: QuadA
      TYPE(QuTree), POINTER  :: QuadB
-     INTEGER, DIMENSION(3,2):: Box     
+     INTEGER, DIMENSION(3,2):: Box
      REAL(SpAMM_KIND)           :: Wght
      INTEGER                :: Hash
      INTEGER                :: i
   END TYPE CuLink
+
   ! CuTree container
   TYPE CuTPtr
      TYPE(CuTree),POINTER :: T
   END TYPE CuTPtr
+
   ! CuLink container
   TYPE CuLPtr
      TYPE(CuLink),POINTER :: L
@@ -139,6 +186,4 @@ MODULE SpAMM_DERIVED
      CHARACTER(LEN=50)  :: Routine
   END TYPE Stats
 
- 
 END MODULE SpAMM_DERIVED
-
