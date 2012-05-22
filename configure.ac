@@ -41,6 +41,6 @@ AC_PROG_FC
 dnl Get libtool.
 AC_PROG_LIBTOOL
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile])
 
 AC_OUTPUT
