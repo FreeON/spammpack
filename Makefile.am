@@ -1,0 +1,13 @@
+lib_LTLIBRARIES = libspammpack.la
+
+libspammpack_la_SOURCES = \
+  SpAMM_ALGEBRA.f90 \
+  SpAMM_CONVERT.f90 \
+  SpAMM_DERIVED.f90 \
+  SpAMM_GLOBALS.f90 \
+  SpAMM_MNGMENT.f90 \
+  SpAMM_PACKAGE.f90 \
+  SpAMM_PROJECT.f90 \
+  SpAMM_PURIFY2.f90 \
+  SpAMM_TESTONE.f90 \
+  SpAMM_TIMER.c
