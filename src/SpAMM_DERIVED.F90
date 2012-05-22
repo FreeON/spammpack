@@ -26,28 +26,43 @@
 !    PACKAGE FOR THE SPARSE APPROXIMATE MATRIX MULTIPLY (SpAMMPACK)
 !    Matt Challacombe and Nick Bock 
 !------------------------------------------------------------------------------
+
+!> @brief Defines derived types used in SpAMMPACK.
 MODULE SpAMM_DERIVED
   ! --------------------------------------------------
   ! DERIVED TYPES AND DATA STRUCTURES 
   ! --------------------------------------------------
+
   !$ USE OMP_LIB
   IMPLICIT NONE  
+
   ! --------------------------------------------------
   ! Integers
   ! --------------------------------------------------
+
+  !> Define integer of length 2.
   INTEGER, PARAMETER :: INT1=SELECTED_INT_KIND(2)  !--Integer*1
+  !> Define integer of length 2.
   INTEGER, PARAMETER :: INT2=SELECTED_INT_KIND(4)  !--Integer*2
+  !> Define integer of length 4.
   INTEGER, PARAMETER :: INT4=SELECTED_INT_KIND(9)  !--Integer*4
+  !> Define integer of length 8.
   INTEGER, PARAMETER :: INT8=SELECTED_INT_KIND(18) !--Integer*8
+
   ! --------------------------------------------------
   ! Reals
   ! --------------------------------------------------
+
+  !> Define float of length 4.
   INTEGER, PARAMETER :: SpAMM_SINGLE=KIND(0.0)     !--Real*4
+  !> Define float of length 8.
   INTEGER, PARAMETER :: SpAMM_DOUBLE=KIND(0.0D0)   !--Real*8
+
+  !> Define the float type used for SpAMM.
 #ifdef SPAMM_DOUBLE
-  INTEGER, PARAMETER :: SpAMM_KIND=KIND(0.0D0)     !--Real*8
+  INTEGER, PARAMETER :: SpAMM_KIND=SpAMM_DOUBLE
 #else
-  INTEGER, PARAMETER :: SpAMM_KIND=KIND(0.0)       !--Real*4
+  INTEGER, PARAMETER :: SpAMM_KIND=SpAMM_SINGLE
 #endif
   ! --------------------------------------------------
   ! Numbers

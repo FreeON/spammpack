@@ -22,6 +22,11 @@
 !    PACKAGE FOR THE SPARSE APPROXIMATE MATRIX MULTIPLY (SpAMMPack)
 !    Matt Challacombe and Nick Bock 
 !------------------------------------------------------------------------------
+
+!> @mainpage
+!>
+!> The Sparse Approximate Matrix Multiply Package (SpAMMPack) is a library for
+!> approximation multiplication of sparse matrices.
 MODULE SpAMM_PACKAGE
   USE  SpAMM_DERIVED
   USE  SpAMM_GLOBALS
