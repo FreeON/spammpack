@@ -56,7 +56,10 @@ MODULE SpAMM_GLOBALS
   INTEGER :: SpAMM_MATRIX_DIMENSION
   INTEGER :: SpAMM_PADDED_MATRIX_DIMENSION
   INTEGER :: SpAMM_THREAD_COUNT
+
+  !> Cutoff the tree depth at some predefined maximum depth.
   INTEGER :: SpAMM_RECURSION_DEPTH_CUTOFF
+
   INTEGER,PARAMETER :: SpAMM_NUMBER_OF_STATS=100
   TYPE(Stats), DIMENSION(1:SpAMM_NUMBER_OF_STATS) :: SpAMM_STATS
 
@@ -71,43 +74,52 @@ MODULE SpAMM_GLOBALS
 
     !> Initialize global variables.
     SUBROUTINE SpAMM_Init_Globals(N,Threads)
-      IMPLICIT NONE
-      INTEGER          :: N
-      INTEGER,OPTIONAL :: Threads
-      INTEGER          :: K,ThreadID,NThreads
-      INTEGER          :: SpAMM_TILES
+
+      INTEGER, INTENT(inout) :: N
+      INTEGER, OPTIONAL      :: Threads
+      INTEGER                :: K
+      INTEGER                :: SpAMM_TILES
+#ifdef _OPENMP
+      INTEGER                :: NThreads,ThreadID
+#endif
+
+      SpAMM_MATRIX_DIMENSION=N
 
       K=CEILING(LOG10(DBLE(N))/LOG10(2D0))
-      SpAMM_MATRIX_DIMENSION=N
+
+      ! Pad matrix to right size.
       SpAMM_PADDED_MATRIX_DIMENSION=2**K
+
       SpAMM_TILES=CEILING(DBLE(SpAMM_PADDED_MATRIX_DIMENSION)/SpAMM_BLOCK_SIZE)
+
       ! Depth starts from 0:
       SpAMM_TOTAL_DEPTH=CEILING(LOG(DBLE(SpAMM_TILES))/LOG(2D0))
+
       ! Cutoff is tuning policy choice:
       SpAMM_RECURSION_DEPTH_CUTOFF=MAX(0,SpAMM_TOTAL_DEPTH-2)
-      !
+
       N=SpAMM_PADDED_MATRIX_DIMENSION
       !      WRITE(*,*)' SpAMM_MATRIX_DIMENSION        = ',      SpAMM_MATRIX_DIMENSION
       !      WRITE(*,*)' SpAMM_PADDED_MATRIX_DIMENSION = ',SpAMM_PADDED_MATRIX_DIMENSION
+
 #ifdef _OPENMP
-      !
       IF(PRESENT(Threads))THEN
         SpAMM_THREAD_COUNT=Threads
       ELSE
         SpAMM_THREAD_COUNT=1
       ENDIF
-      !
+
       CALL OMP_SET_DYNAMIC(.FALSE.)
       CALL OMP_SET_NESTED(.TRUE.)
       CALL OMP_SET_NUM_THREADS(SpAMM_THREAD_COUNT)
       !$OMP PARALLEL PRIVATE(ThreadID,NThreads)
       ThreadID=OMP_GET_THREAD_NUM()
       NThreads=OMP_GET_NUM_THREADS()
-      WRITE(*,33)ThreadID,NThreads
+      WRITE(*,33) ThreadID, NThreads
       !$OMP END PARALLEL
-
       33    FORMAT(' SpAMM_Init_Globals: Id#',I2,' checking in with ',I2,' threads ')
 #endif
+
       SpAMM_STATS(:)%Time=0
       SpAMM_STATS(:)%Count=0
       SpAMM_STATS(:)%Routine=" "

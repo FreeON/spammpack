@@ -38,9 +38,21 @@ dnl Get compilers.
 AC_PROG_CC
 AC_PROG_FC
 
+dnl Find out how to enable OpenMP in C.
+AC_LANG(C)
+AC_OPENMP
+
+dnl Find out how to enable OpenMP in Fortran.
+AC_LANG(Fortran)
+AC_OPENMP
+
+dnl Switch back to C.
+AC_LANG(C)
+
 dnl Get libtool.
 AC_PROG_LIBTOOL
 
+dnl Output files.
 AC_CONFIG_FILES([Makefile src/Makefile Doxyfile])
 
 AC_OUTPUT

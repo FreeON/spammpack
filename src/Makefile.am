@@ -10,6 +10,10 @@ libspammpack_la_SOURCES = \
   SpAMM_PROJECT.F90 \
   SpAMM_TIMER.c
 
+AM_CFLAGS = $(OPENMP_CFLAGS)
+AM_CPPFLAGS = $(OPENMP_CFLAGS)
+AM_FCFLAGS = $(OPENMP_FCFLAGS)
+
 CLEANFILES = *.mod
 
 # Dependencies.
@@ -28,3 +32,6 @@ depcheck :
 		$(MAKE) $$i || exit 1; \
 	done
 	$(MAKE) clean
+
+TAGS_FILES = *.F90 *.c
+CTAGSFLAGS = --fortran-kinds=+L+i
