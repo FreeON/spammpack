@@ -8,6 +8,23 @@ libspammpack_la_SOURCES = \
   SpAMM_MNGMENT.F90 \
   SpAMM_PACKAGE.F90 \
   SpAMM_PROJECT.F90 \
-  SpAMM_PURIFY2.F90 \
-  SpAMM_TESTONE.F90 \
   SpAMM_TIMER.c
+
+CLEANFILES = *.mod
+
+# Dependencies.
+SpAMM_ALGEBRA.lo : SpAMM_DERIVED.lo SpAMM_GLOBALS.lo SpAMM_MNGMENT.lo
+SpAMM_CONVERT.lo : SpAMM_DERIVED.lo SpAMM_GLOBALS.lo SpAMM_ALGEBRA.lo
+SpAMM_GLOBALS.lo : SpAMM_DERIVED.lo
+SpAMM_MNGMENT.lo : SpAMM_DERIVED.lo SpAMM_GLOBALS.lo
+SpAMM_PACKAGE.lo : SpAMM_DERIVED.lo SpAMM_GLOBALS.lo SpAMM_MNGMENT.lo SpAMM_ALGEBRA.lo SpAMM_PROJECT.lo
+SpAMM_PROJECT.lo : SpAMM_DERIVED.lo SpAMM_GLOBALS.lo SpAMM_MNGMENT.lo SpAMM_ALGEBRA.lo
+
+.PHONY : depcheck
+depcheck :
+	for i in $(libspammpack_la_OBJECTS); do \
+		echo "depchecking $$i"; \
+		$(MAKE) clean; \
+		$(MAKE) $$i || exit 1; \
+	done
+	$(MAKE) clean
