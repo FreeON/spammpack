@@ -51,10 +51,14 @@ MODULE SpAMM_GLOBALS
   !> The norm cutoff for recursion.
   REAL(SpAMM_KIND),PARAMETER :: SpAMM_RECURSION_NORMD_CUTOFF=1E-4
 
+  !> The depth of the matrix tree.
   INTEGER :: SpAMM_TOTAL_DEPTH
+
   INTEGER :: SpAMM_TOTAL_LEVELS
   INTEGER :: SpAMM_MATRIX_DIMENSION
   INTEGER :: SpAMM_PADDED_MATRIX_DIMENSION
+
+  !> The number of threads requested (only applicable when using OpenMP).
   INTEGER :: SpAMM_THREAD_COUNT
 
   !> Cutoff the tree depth at some predefined maximum depth.

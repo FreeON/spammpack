@@ -32,26 +32,23 @@ MODULE SpAMM_MNGMENT
 
   IMPLICIT NONE
 
-  !===============================================================================
-  !  GLOBALS
-  !===============================================================================
-
-  !===============================================================================
-  !  INTERFACE BLOCKS
-  !===============================================================================
-
+  !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
-    MODULE PROCEDURE SpAMM_Copy_QuTree_2_QuTree, &
-                     SpAMM_Copy_QuTree_2_BiTree, &
-                     SpAMM_Copy_BiTree_2_BiTree
+    MODULE PROCEDURE SpAMM_Copy_QuTree_2_QuTree
+    MODULE PROCEDURE SpAMM_Copy_QuTree_2_BiTree
+    MODULE PROCEDURE SpAMM_Copy_BiTree_2_BiTree
   END INTERFACE
 
+  !> Interface for deletion (deallocation) of SpAMM objects.
   INTERFACE Delete
-    MODULE PROCEDURE SpAMM_Delete_QuTree,SpAMM_Delete_BiTree
+    MODULE PROCEDURE SpAMM_Delete_QuTree
+    MODULE PROCEDURE SpAMM_Delete_BiTree
   END INTERFACE
 
-  INTERFACE AllocateFull
-    MODULE PROCEDURE SpAMM_Allocate_Full_QuTree, SpAMM_Allocate_Full_BiTree
+  !> Interface for creation (allocation) of SpAMM objects.
+  INTERFACE New
+    MODULE PROCEDURE SpAMM_Allocate_Full_QuTree
+    MODULE PROCEDURE SpAMM_Allocate_Full_BiTree
   END INTERFACE
 
 CONTAINS
@@ -59,28 +56,34 @@ CONTAINS
   !=================================================================
   ! SPAMM CONTAINERS FOR MEMORY MANEGEMENT ON QUAD TREE MATRICES
   !=================================================================
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! Copy QuTree into another QuTree: C <- A
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SUBROUTINE SpAMM_Copy_QuTree_2_QuTree(qA,qC)
-    IMPLICIT NONE
+
     TYPE(QuTree), POINTER :: qA,qC
     INTEGER               :: Depth
+
     CALL NewQuNode(qC,init=.TRUE.)
     Depth=0
     !$OMP TASK UNTIED SHARED(qA,qC)
     CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA,qC,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
+
   END SUBROUTINE SpAMM_Copy_QuTree_2_QuTree
+
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! Copy a coloumn of A into vector C: C <- Col_I(A)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SUBROUTINE SpAMM_Copy_QuTree_2_BiTree(qA,Col,bC)
-    IMPLICIT NONE
+
     TYPE(QuTree), POINTER :: qA
     TYPE(BiTree), POINTER :: bC
     INTEGER               :: Col,Depth
     INTEGER,DIMENSION(2)  :: Cols
+
     IF(.NOT.ASSOCIATED(bC)) &
       CALL NewBiNode(bC,init=.TRUE.)
     Depth=0
@@ -89,13 +92,17 @@ CONTAINS
     CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA,bC,Col,Cols,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
+
   END SUBROUTINE SpAMM_Copy_QuTree_2_BiTree
+
+  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! Copy QuTree into another QuTree: C <- A
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SUBROUTINE SpAMM_Copy_BiTree_2_BiTree(bA,bC)
-    IMPLICIT NONE
+
     TYPE(BiTree), POINTER :: bA,bC
     INTEGER               :: Depth
+
     IF(.NOT.ASSOCIATED(bC))&
       CALL NewBiNode(bC,init=.TRUE.)
     Depth=0
@@ -103,13 +110,17 @@ CONTAINS
     CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA,bC,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
+
   END SUBROUTINE SpAMM_Copy_BiTree_2_BiTree
+
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! Delete a QuTree: A <- NULL()
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SUBROUTINE SpAMM_Delete_QuTree(qA)
+
     TYPE(QuTree),POINTER :: qA
     INTEGER              :: Depth
+
     IF(.NOT.ASSOCIATED(qA))RETURN
     Depth=0
     !$OMP TASK UNTIED SHARED(qA)
@@ -117,7 +128,9 @@ CONTAINS
     !$OMP END TASK
     !$OMP TASKWAIT
     DEALLOCATE(qA)
+
   END SUBROUTINE SpAMM_Delete_QuTree
+
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! Delete a BiTree: A <- NULL()
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -132,35 +145,50 @@ CONTAINS
     !$OMP TASKWAIT
     DEALLOCATE(bA)
   END SUBROUTINE SpAMM_Delete_BiTree
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Delete a BiTree: A <- NULL()
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  !> @brief
+  !! Create a new quadtree.
+  !!
+  !! @details
+  !! The newly created quadtree has to be deallocated by calling Delete(). If qA
+  !! is already allocated then it will be free'ed by calling Delete().
+  !!
+  !! @param qA [inout] A pointer to a type(QuTree) object.
   SUBROUTINE SpAMM_Allocate_Full_QuTree(qA)
+
     TYPE(QuTree),POINTER :: qA
     INTEGER              :: Depth
+
     IF(ASSOCIATED(qA))CALL SpAMM_Delete_QuTree(qA)
     CALL NewQuNode(qA,init=.TRUE.)
     Depth=0
     CALL SpAMM_Allocate_Full_QuTree_Recur(qA,Depth)
+
   END SUBROUTINE SpAMM_Allocate_Full_QuTree
+
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! Delete a BiTree: A <- NULL()
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SUBROUTINE SpAMM_Allocate_Full_BiTree(bA)
+
     TYPE(BiTree),POINTER :: bA
     INTEGER              :: Depth
+
     IF(ASSOCIATED(bA))CALL SpAMM_Delete_BiTree(bA)
     CALL NewBiNode(bA,init=.TRUE.)
     Depth=0
     CALL SpAMM_Allocate_Full_BiTree_Recur(bA,Depth)
+
   END SUBROUTINE SpAMM_Allocate_Full_BiTree
+
   !=================================================================
   ! SPAMM CONTAINERS FOR MEMORY MANEGEMENT
   !=================================================================
   RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur(qA,qC,Depth)
-    IMPLICIT NONE
+
     TYPE(QuTree), POINTER  :: qA,qC
     INTEGER                :: Depth
+
     IF(.NOT.ASSOCIATED(qA))RETURN
     IF(.NOT.ASSOCIATED(qC))THEN
       CALL NewQuNode(qC)
@@ -228,12 +256,14 @@ CONTAINS
         DEALLOCATE(qC%Quad11)
       ENDIF
     ENDIF
+
   END SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur
-  !
+
   RECURSIVE SUBROUTINE SpAMM_Copy_BiTree_2_BiTree_Recur(bA,bC,Depth)
-    IMPLICIT NONE
+
     TYPE(BiTree), POINTER  :: bA,bC
     INTEGER                :: Depth
+
     IF(.NOT.ASSOCIATED(bA))RETURN
     IF(.NOT.ASSOCIATED(bC))THEN
       CALL NewBiNode(bC)
@@ -271,17 +301,18 @@ CONTAINS
         DEALLOCATE(bC%Sect1)
       ENDIF
     ENDIF
+
   END SUBROUTINE SpAMM_Copy_BiTree_2_BiTree_Recur
 
   RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur(qA,bC,Col,Cols,Depth)
-    IMPLICIT NONE
+
     TYPE(QuTree), POINTER :: qA
     TYPE(BiTree), POINTER :: bC
     INTEGER               :: I,Col,Depth,HlfSpn
     INTEGER,DIMENSION(2)  :: Cols,Col_00_10,Col_01_11
-    !
+
     IF(.NOT.ASSOCIATED(qA))RETURN
-    !
+
     IF(.NOT.ASSOCIATED(bC)) &
       CALL NewBiNode(bC)
 
@@ -358,12 +389,14 @@ CONTAINS
         ENDIF
       ENDIF
     ENDIF
+
   END SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur
 
-
   RECURSIVE SUBROUTINE SpAMM_Delete_QuTree_Recur(qA,Depth)
+
     TYPE(QuTree),POINTER  :: qA
     INTEGER :: Status,Depth
+
     IF(.NOT.ASSOCIATED(qA))RETURN
     IF(ALLOCATED(qA%Blok))THEN
       !$OMP CRITICAL
@@ -410,13 +443,14 @@ CONTAINS
       DEALLOCATE(qA%Quad11)
       !$OMP END CRITICAL
     ENDIF
+
   END SUBROUTINE SpAMM_Delete_QuTree_Recur
 
-
-
   RECURSIVE SUBROUTINE SpAMM_Delete_BiTree_Recur(bA,Depth)
+
     TYPE(BiTree),POINTER  :: bA
     INTEGER               :: Status,Depth
+
     IF(.NOT.ASSOCIATED(bA))RETURN
     IF(ALLOCATED(bA%Vect))THEN
       !$OMP CRITICAL
@@ -443,11 +477,14 @@ CONTAINS
       DEALLOCATE(bA%Sect1)
       !$OMP END CRITICAL
     ENDIF
+
   END SUBROUTINE SpAMM_Delete_BiTree_Recur
 
   SUBROUTINE NewQuNode(qA,init)
+
     LOGICAL,OPTIONAL :: init
     TYPE(QuTree), POINTER :: qA
+
     IF(PRESENT(init))THEN
       IF(ASSOCIATED(qA))THEN
         WRITE(*,*)'LOGIC ERROR IN NewQuNode'
@@ -466,11 +503,14 @@ CONTAINS
     NULLIFY(qA%Quad01)
     NULLIFY(qA%Quad10)
     NULLIFY(qA%Quad11)
+
   END SUBROUTINE NewQuNode
 
   SUBROUTINE NewBiNode(bA,init)
+
     LOGICAL,OPTIONAL :: init
     TYPE(BiTree), POINTER :: bA
+
     IF(PRESENT(init))THEN
       IF(ASSOCIATED(bA))STOP 'LOGIC ERROR IN NewBiNode'
       ALLOCATE(bA)
@@ -482,8 +522,16 @@ CONTAINS
     bA%Norm=SpAMM_Zero
     NULLIFY(bA%Sect0)
     NULLIFY(bA%Sect1)
+
   END SUBROUTINE NewBiNode
 
+  !> @private
+  !!
+  !! @brief
+  !! Recursive allocation of a quadtree.
+  !!
+  !! @param qA A pointer to a type(QuTree) object.
+  !! @param Depth The current tier.
   RECURSIVE SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur(qA,Depth)
 
     TYPE(QuTree),POINTER        :: qA

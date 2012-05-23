@@ -43,6 +43,12 @@
 !! - SpAMM_ALGEBRA
 !! - SpAMM_PROJECT
 !!
+!! Using the library from Fortran requires a
+!!
+!! @code
+!! USE spammpack
+!! @endcode
+!!
 !! @copyright
 !! This code is part of the FreeON suite of programs for linear scaling
 !! electronic structure theory and ab initio molecular dynamics.
