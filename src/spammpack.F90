@@ -74,11 +74,11 @@
 !! @author Matt Challacombe <matt.challacombe@freeon.org>
 !! @author Nicolas Bock <nicolas.bock@freeon.org>
 
-MODULE SpAMM_PACKAGE
+MODULE spammpack
   USE SpAMM_DERIVED
   USE SpAMM_GLOBALS
   USE SpAMM_MNGMENT
   USE SpAMM_ALGEBRA
   USE SpAMM_PROJECT
 CONTAINS
-END MODULE SpAMM_PACKAGE
+END MODULE spammpack

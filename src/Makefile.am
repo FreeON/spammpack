@@ -6,7 +6,7 @@ libspammpack_la_SOURCES = \
   SpAMM_DERIVED.F90 \
   SpAMM_GLOBALS.F90 \
   SpAMM_MNGMENT.F90 \
-  SpAMM_PACKAGE.F90 \
+  spammpack.F90 \
   SpAMM_PROJECT.F90 \
   SpAMM_TIMER.c \
   trap.c
