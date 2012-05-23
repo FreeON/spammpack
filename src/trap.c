@@ -24,12 +24,8 @@
      dissemination in future releases.
 */
 
-#include <time.h>
+#include <stdlib.h>
 
-double spamm_ipm_get_time ()
-{
-  return (double) time(NULL);
-}
-
-double spamm_ipm_get_time_ () { return spamm_ipm_get_time(); }
-double spamm_ipm_get_time__ () { return spamm_ipm_get_time(); }
+void trap () { abort(); }
+void trap_ () { trap(); }
+void trap__ () { trap(); }

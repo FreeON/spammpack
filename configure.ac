@@ -53,6 +53,11 @@ dnl Get libtool.
 AC_PROG_LIBTOOL
 
 dnl Output files.
-AC_CONFIG_FILES([Makefile src/Makefile Doxyfile])
+AC_CONFIG_FILES([
+Doxyfile
+Makefile
+src/Makefile
+tests/Makefile
+])
 
 AC_OUTPUT

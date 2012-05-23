@@ -1,4 +1,4 @@
-SUBDIRS = src
+SUBDIRS = src tests
 
 CONFIG_STATUS_DEPENDENCIES = Doxyfile.in
 
