@@ -24,16 +24,16 @@
 !    dissemination in future releases.
 !------------------------------------------------------------------------------
 !    PACKAGE FOR THE SPARSE APPROXIMATE MATRIX MULTIPLY (SPAMMPACK)
-!    Matt Challacombe and Nick Bock 
+!    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
 MODULE SpAMM_CONVERT
   USE  SpAMM_DERIVED
   USE  SpAMM_GLOBALS
   USE  SpAMM_ALGEBRA
   CONTAINS
-  !================================================================= 
-  ! QuTree 
-  !================================================================= 
+  !=================================================================
+  ! QuTree
+  !=================================================================
   FUNCTION SpAMM_Convert_Dense_2_QuTree(A) RESULT(qA)
     REAL(SpAMM_KIND),DIMENSION(:,:) :: A
     TYPE(QuTree),POINTER        :: qA
@@ -68,7 +68,7 @@ MODULE SpAMM_CONVERT
      ELSE
        !
        ALLOCATE(qA%Quad00)
-       ALLOCATE(qA%Quad01) 
+       ALLOCATE(qA%Quad01)
        ALLOCATE(qA%Quad10)
        ALLOCATE(qA%Quad11)
 !!$
@@ -85,7 +85,7 @@ MODULE SpAMM_CONVERT
 !!$       SpAMM_quadcount=SpAMM_quadcount+4
        !
 !!$       qA%Siz=(qA%Box(1,2)-qA%Box(1,1))+1
-!!$       Delta=(qA%Siz-1)/2      
+!!$       Delta=(qA%Siz-1)/2
 !!$       !
 !!$       qA%Quad00%Box(:,1)=qA%Box(:,1)
 !!$       qA%Quad00%Box(:,2)=qA%Box(:,1)+(/Delta,Delta/)
@@ -93,10 +93,10 @@ MODULE SpAMM_CONVERT
 !!$       qA%Quad10%Box(:,1)=(/qA%Box(1,1)+Delta+1,qA%Box(2,1)/)
 !!$       qA%Quad10%Box(:,2)=(/qA%Box(1,2),qA%Box(2,1)+Delta/)
 !!$       !
-!!$       qA%Quad01%Box(:,1)=(/qA%Box(1,1),qA%Box(2,1)+Delta+1/) 
-!!$       qA%Quad01%Box(:,2)=(/qA%Box(1,1)+Delta,qA%Box(2,2)/) 
+!!$       qA%Quad01%Box(:,1)=(/qA%Box(1,1),qA%Box(2,1)+Delta+1/)
+!!$       qA%Quad01%Box(:,2)=(/qA%Box(1,1)+Delta,qA%Box(2,2)/)
 !!$       !
-!!$       qA%Quad11%Box(:,1)=(/qA%Box(1,1)+Delta+1,qA%Box(2,1)+Delta+1/) 
+!!$       qA%Quad11%Box(:,1)=(/qA%Box(1,1)+Delta+1,qA%Box(2,1)+Delta+1/)
 !!$       qA%Quad11%Box(:,2)=qA%Box(:,2)
        !
        CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:I/2  ,1:J/2  )  , qA%Quad00 )

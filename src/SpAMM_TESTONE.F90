@@ -24,7 +24,7 @@
 !    dissemination in future releases.
 !------------------------------------------------------------------------------
 !    PACKAGE FOR THE SPARSE APPROXIMATE MATRIX MULTIPLY (SPAMMPACK)
-!    Matt Challacombe and Nick Bock 
+!    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
 PROGRAM SpAMM_TESTONE
   USE SpAMM_DERIVED
@@ -68,9 +68,9 @@ PROGRAM SpAMM_TESTONE
   READ(BUFFER,*)TC2_cycles
   CALL GETARG(5,BUFFER)
   READ(BUFFER,*)Threads
-  WRITE(*,*)' THREADS = ',THREADS	
+  WRITE(*,*)' THREADS = ',THREADS
   CALL GETARG(6,BUFFER)
-  READ(BUFFER,*)TargetTrE  
+  READ(BUFFER,*)TargetTrE
   WRITE(*,*)NAME
   WRITE(*,*)N
   WRITE(*,*)Nel
@@ -96,7 +96,7 @@ PROGRAM SpAMM_TESTONE
   A(1:SpAMM_MATRIX_DIMENSION,1:SpAMM_MATRIX_DIMENSION)= &
        A_NOPADDING(1:SpAMM_MATRIX_DIMENSION,1:SpAMM_MATRIX_DIMENSION)
 
-  qP=>SpAMM_Convert_Dense_2_QuTree(A) 
+  qP=>SpAMM_Convert_Dense_2_QuTree(A)
   CALL RemapSpectralBounds201(qP)
   CALL NewQuNode(qTmp1,init=.TRUE.)
   CALL AllocateFull(qTmp1)
@@ -109,8 +109,8 @@ PROGRAM SpAMM_TESTONE
 
   CALL Multiply(qP,qF,qTmp1)
   TrE=Trace(qTmp1)
- !$OMP END SINGLE 
- !$OMP END PARALLEL 
+ !$OMP END SINGLE
+ !$OMP END PARALLEL
 
   CALL SpAMM_Time_Stamp()
 

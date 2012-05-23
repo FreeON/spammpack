@@ -38,7 +38,7 @@ MODULE SpAMM_QU2BCSR
   USE Macros
   USE DenMatMethods
   USE MondoLogger
-  !       
+  !
   USE SpAMM_DERIVED
   USE SpAMM_GLOBALS
   USE SpAMM_MNGMENT
@@ -54,7 +54,7 @@ CONTAINS
     REAL(SpAMM_DOUBLE)    :: TInitial, TTotal
     TInitial=SpAMM_IPM_GET_TIME()
     Depth=0
-    CALL Copy_GLOBAL_BCSR_2_QuTree_Recur(qA,1,SpAMM_PADDED_MATRIX_DIMENSION,1,SpAMM_PADDED_MATRIX_DIMENSION,Depth) 
+    CALL Copy_GLOBAL_BCSR_2_QuTree_Recur(qA,1,SpAMM_PADDED_MATRIX_DIMENSION,1,SpAMM_PADDED_MATRIX_DIMENSION,Depth)
     qA%Norm=SQRT(Norm(qA))
     TTotal=SpAMM_IPM_GET_TIME()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"Copy_GLOBAL_BCSR_2_QuTree",40)
@@ -66,8 +66,8 @@ CONTAINS
     REAL(SpAMM_DOUBLE)    :: TInitial, TTotal
     TInitial=SpAMM_IPM_GET_TIME()
     !
-    P=1 
-    R=1 
+    P=1
+    R=1
     GLOBAL_BCSR%RowPt%I(1)=1
     DO AtA=1,NAtoms
        DO AtB=1,NAtoms
@@ -75,39 +75,39 @@ CONTAINS
           GLOBAL_BCSR%MTrix%D(R:R+NN-1)=0D0
           GLOBAL_BCSR%ColPt%I(P)=AtB
           GLOBAL_BCSR%BlkPt%I(P)=R
-          R=R+NN 
-          P=P+1 
-          GLOBAL_BCSR%RowPt%I(AtA+1)=P        
+          R=R+NN
+          P=P+1
+          GLOBAL_BCSR%RowPt%I(AtA+1)=P
        ENDDO
     ENDDO
     GLOBAL_BCSR%NBlks=P-1
     GLOBAL_BCSR%NNon0=R-1
     !
     Depth=0
-    CALL Copy_QuTree_2_GLOBAL_BCSR_Recur(qA,1,SpAMM_PADDED_MATRIX_DIMENSION,1,SpAMM_PADDED_MATRIX_DIMENSION,Depth) 
+    CALL Copy_QuTree_2_GLOBAL_BCSR_Recur(qA,1,SpAMM_PADDED_MATRIX_DIMENSION,1,SpAMM_PADDED_MATRIX_DIMENSION,Depth)
     TTotal=SpAMM_IPM_GET_TIME()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"Copy_QuTree_2_GLOBAL_BCSR",41)
   END SUBROUTINE Copy_QuTree_2_GLOBAL_BCSR
 
-  RECURSIVE SUBROUTINE Copy_GLOBAL_BCSR_2_QuTree_Recur(qA,LeftRow,RghtRow,LeftCol,RghtCol,Depth) 
+  RECURSIVE SUBROUTINE Copy_GLOBAL_BCSR_2_QuTree_Recur(qA,LeftRow,RghtRow,LeftCol,RghtCol,Depth)
     TYPE(QuTree), POINTER :: qA
     INTEGER :: Depth
     INTEGER :: I,LeftRow,RghtRow,LeftCol,RghtCol,HalfRow,HalfCol
     INTEGER :: MA,NA,IAts,IStrt,IStop,J,P,JP,N,M
     INTEGER :: Row,Col,BlkRow,BlkCol
     IF(LeftRow>RghtRow.OR.LeftRow>SpAMM_MATRIX_DIMENSION)RETURN
-    IF(LeftCol>RghtCol.OR.LeftCol>SpAMM_MATRIX_DIMENSION)RETURN    
+    IF(LeftCol>RghtCol.OR.LeftCol>SpAMM_MATRIX_DIMENSION)RETURN
     IF(.NOT.ASSOCIATED(qA))THEN
        CALL NewQuNode(qA)
     ENDIF
-    ! Blocks    
+    ! Blocks
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
        ! Allocate
        IF(.NOT.ALLOCATED(qA%Blok))THEN
           ALLOCATE(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
        END IF
        qA%Blok=Zero
-       ! Ugly but it works...  
+       ! Ugly but it works...
        DO IAts=1,NAtoms
           MA=BSiz%I(IAts)
           IF(OffS%I(IAts)<=RhgtRow.OR.OffS%I(IAts)+MA-1>=RhgtCol)THEN
@@ -119,7 +119,7 @@ CONTAINS
                 IF(OffS%I(J)<=RhgtCol.OR.OffS%I(J)+NA-1>=LeftCol)THEN
                    P=GLOBAL_BCSR%BlkPt%I(JP)
                    BlkCol=0
-                   DO N=1,NA 
+                   DO N=1,NA
                       Col=OffS%I(J)+N-1
                       IF(Col>=LeftCol.AND.Col<=RghtCol)THEN
                          BlkCol=Col-LeftCol+1
@@ -132,7 +132,7 @@ CONTAINS
                          ENDDO
                       ENDIF
                    ENDDO
-                ENDIF 
+                ENDIF
              ENDDO
           ENDIF
        ENDDO
@@ -140,29 +140,29 @@ CONTAINS
        HalfRow=(RghtRow-LeftRow)/2
        HalfCol=(RghtCol-LeftCol)/2
        CALL Copy_GLOBAL_BCSR_2_QuTree_Recur(qA%Quad00,LeftRow,LeftRow+HalfRow,LeftCol,LeftCol+HalfCol, &
-            Depth+1) 
+            Depth+1)
        CALL Copy_GLOBAL_BCSR_2_QuTree_Recur(qA%Quad01,LeftRow,LeftRow+HalfRow,LeftCol+HalfCol+1,RghtCol, &
-            Depth+1) 
+            Depth+1)
        CALL Copy_GLOBAL_BCSR_2_QuTree_Recur(qA%Quad10,LeftRow+HalfRow+1,RghtRow,LeftCol,LeftCol+HalfCol, &
-            Depth+1) 
+            Depth+1)
        CALL Copy_GLOBAL_BCSR_2_QuTree_Recur(qA%Quad11,LeftRow+HalfRow+1,RghtRow,LeftCol+HalfCol+1,RghtCol, &
-            Depth+1) 
+            Depth+1)
     ENDIF
     !
   END SUBROUTINE Copy_GLOBAL_BCSR_2_QuTree_Recur
 
-  RECURSIVE SUBROUTINE Copy_QuTree_2_GLOBAL_BCSR_Recur(qA,LeftRow,RghtRow,LeftCol,RghtCol,Depth) 
+  RECURSIVE SUBROUTINE Copy_QuTree_2_GLOBAL_BCSR_Recur(qA,LeftRow,RghtRow,LeftCol,RghtCol,Depth)
     TYPE(QuTree), POINTER :: qA
     INTEGER :: Depth
     INTEGER :: I,LeftRow,RghtRow,LeftCol,RghtCol,HalfRow,HalfCol
     INTEGER :: MA,NA,IAts,IStrt,IStop,J,P,JP,N,M
     INTEGER :: Row,Col,BlkRow,BlkCol
     IF(LeftRow>RghtRow.OR.LeftRow>SpAMM_MATRIX_DIMENSION)RETURN
-    IF(LeftCol>RghtCol.OR.LeftCol>SpAMM_MATRIX_DIMENSION)RETURN    
+    IF(LeftCol>RghtCol.OR.LeftCol>SpAMM_MATRIX_DIMENSION)RETURN
     IF(.NOT.ASSOCIATED(qA))RETURN
-    ! Blocks    
+    ! Blocks
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
-       ! Ugly but it works...  
+       ! Ugly but it works...
        DO IAts=1,NAtoms
           MA=BSiz%I(IAts)
           IF(OffS%I(IAts)<=RhgtRow.OR.OffS%I(IAts)+MA-1>=RhgtCol)THEN
@@ -174,7 +174,7 @@ CONTAINS
                 IF(OffS%I(J)<=RhgtCol.OR.OffS%I(J)+NA-1>=LeftCol)THEN
                    P=GLOBAL_BCSR%BlkPt%I(JP)
                    BlkCol=0
-                   DO N=1,NA 
+                   DO N=1,NA
                       Col=OffS%I(J)+N-1
                       IF(Col>=LeftCol.AND.Col<=RghtCol)THEN
                          BlkCol=Col-LeftCol+1
@@ -195,13 +195,13 @@ CONTAINS
        HalfRow=(RghtRow-LeftRow)/2
        HalfCol=(RghtCol-LeftCol)/2
        CALL Copy_QuTree_2_GLOBAL_BCSR_Recur(qA%Quad00,LeftRow,LeftRow+HalfRow,LeftCol,LeftCol+HalfCol, &
-            Depth+1) 
+            Depth+1)
        CALL Copy_QuTree_2_GLOBAL_BCSR_Recur(qA%Quad01,LeftRow,LeftRow+HalfRow,LeftCol+HalfCol+1,RghtCol, &
-            Depth+1) 
+            Depth+1)
        CALL Copy_QuTree_2_GLOBAL_BCSR_Recur(qA%Quad10,LeftRow+HalfRow+1,RghtRow,LeftCol,LeftCol+HalfCol, &
-            Depth+1) 
+            Depth+1)
        CALL Copy_QuTree_2_GLOBAL_BCSR_Recur(qA%Quad11,LeftRow+HalfRow+1,RghtRow,LeftCol+HalfCol+1,RghtCol, &
-            Depth+1) 
+            Depth+1)
     ENDIF
     !
   END SUBROUTINE Copy_QuTree_2_GLOBAL_BCSR_Recur
@@ -236,12 +236,9 @@ PROGRAM DMP_SP2 ! Density matrix purification, SP2 variation
   !-------------------------------------------------------------------------------
   TYPE(QuTree),POINTER           :: qF=>NULL(), qP=>NULL()
   TYPE(QuTree),POINTER           :: qTmp1=>NULL(), qTmp2=>NULL()
-#ifdef NON_ORTHOGONAL
-  TYPE(QuTree),POINTER           :: qZ=>NULL(),qS=>NULL()
-#endif
   REAL(SpAMM_KIND)               :: TrE,HalfNe,Nocc
   ! DEBUG ...
-  TYPE(BCSR) :: bS,bF,bTmp
+  !  TYPE(BCSR) :: bS,bF,bTmp
   !-------------------------------------------------------------------------------
 #if defined(PARALLEL) || defined(PARALLEL_CLONES)
   CALL StartUp(Args,Prog,SERIAL_O=.FALSE.)
@@ -250,49 +247,39 @@ PROGRAM DMP_SP2 ! Density matrix purification, SP2 variation
 #endif
   !
   CALL SpAMM_Init_Globals(NBasF,1)
-  !
   CALL New(GLOBAL_BCSR,N_O=(/1+NAtoms,1+NAtoms**2,1+NBasF**2/))
+  !-----------------------------------------------------------
   !
-!  FFile=TrixFile('F_DIIS',Args,0)
-!  INQUIRE(FILE=FFile,EXIST=Present)
-!  IF(Present)THEN
-!    CALL Get(GLOBAL_BCSR,FFile)
-!  ELSE
-  ! We are getting the non-DIIS Fockian, so that we
-  ! have perfect correspondence with non-orthogonal 
-  ! algorithm; non-orthogonal DIIS matrix not available
-  !
+  !-----------------------------------------------------------
+  FFile=TrixFile('F_DIIS',Args,0)
+  INQUIRE(FILE=FFile,EXIST=Present)
+  IF(Present)THEN
+     ! We have a DIIS-extrapolated Fockian. Use that preferentially.
+    CALL Get(GLOBAL_BCSR,FFile)
+  ELSE
+    ! Here is the non-DIIS Fockian, default to that one.
     CALL Get(GLOBAL_BCSR,TrixFile('OrthoF',Args,0))
-!  ENDIF
-
+  ENDIF
+  !-----------------------------------------------------------
+  !
+  !-----------------------------------------------------------
   CALL NewQuNode(qF,init=.TRUE.)
   CALL NewQuNode(qTmp1,init=.TRUE.)
 
-  CALL Copy_GLOBAL_BCSR_2_QuTree(qF)   
-  !
+  CALL Copy_GLOBAL_BCSR_2_QuTree(qF)
+
   CALL Copy(qF,qP)
+  WRITE(*,*)' Before remap'
+  !-----------------------------------------------------------
+  !
+  !-----------------------------------------------------------
+  !-----------------------------------------------------------
+  !
+  !-----------------------------------------------------------
+  !$OMP PARALLEL
+  !$OMP SINGLE
   CALL RemapSpectralBounds201(qP)
-  !  
-#ifdef NON_ORTHOGONAL
-  ! Bit of Z-space
-  CALL NewQuNode(qZ,init=.TRUE.)
-  CALL AllocateFull(qZ)
-  ! non-orthogonal guess
-  CALL Get(GLOBAL_BCSR,TrixFile('Z',Args))   ! Z=S^(-L)
-  CALL Copy_GLOBAL_BCSR_2_QuTree(qZ)   
-  CALL Multiply(qZ,qP,qTmp1)
-  qTmp1%Norm=SQRT(Norm(qTmp1))
-  CALL Get(GLOBAL_BCSR,TrixFile('ZT',Args))
-  CALL Copy_GLOBAL_BCSR_2_QuTree(qZ)   
-  CALL Multiply(qTmp1,qZ,qP)
-  qTmp1%Norm=SQRT(Norm(qP))
-  ! Corresponding non-orthogonal Fockian
-  CALL Get(GLOBAL_BCSR,TrixFile('F',Args,0))   ! Z=S^(-L)
-  CALL Copy_GLOBAL_BCSR_2_QuTree(qF)   
-  ! Overlap matrix
-  CALL Get(GLOBAL_BCSR,TrixFile('S',Args))
-  CALL Copy_GLOBAL_BCSR_2_QuTree(qS)   
-#endif
+  !
   !-----------------------------------------------------------
   HalfNe=SpAMM_Half*FLOAT(NEl)
   Occ0=Zero
@@ -320,19 +307,12 @@ PROGRAM DMP_SP2 ! Density matrix purification, SP2 variation
   ENDDO
   !-----------------------------------------------------------
   TrE=Trace(qP,qF)
-!
-! Diff likely due to Z and ZT (AINV)
-! Non-orthogonal:
-! E_el =   -1814.24578303247 
-! Orthogonal:
-! E_el =   -1814.24577622504 
-
-  !$OMP END SINGLE 
-  !$OMP END PARALLEL 
+  !$OMP END SINGLE
+  !$OMP END PARALLEL
   WRITE(*,*)' E_el = ',TrE
   CALL SpAMM_Time_Stamp()
   !
-  CALL Copy_QuTree_2_GLOBAL_BCSR(qP) 
+  CALL Copy_QuTree_2_GLOBAL_BCSR(qP)
   !-----------------------------------------------------------
   ! Orthogonal put and xform to AO rep and put
   CALL New(Tmp1)

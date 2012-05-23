@@ -24,7 +24,7 @@
 !    dissemination in future releases.
 !-------------------------------------------------------------------------------
 !    PACKAGE FOR THE SPARSE APPROXIMATE MATRIX MULTIPLY (SpAMMPack)
-!    Matt Challacombe and Nick Bock 
+!    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
 MODULE SpAMM_PROJECT
   USE  SpAMM_DERIVED
@@ -37,48 +37,32 @@ MODULE SpAMM_PROJECT
   !
   !===============================================================================
   !  INTERFACE BLOCKS
-  !================================================================= 
+  !=================================================================
   INTERFACE RemapSpectralBounds201
      MODULE PROCEDURE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
   END INTERFACE
   INTERFACE SpAMM_TC2
-     MODULE PROCEDURE SpAMM_Quadratic_Trace_Correcting_Purification, &
-                      SpAMM_Quadratic_Trace_Correcting_Purification_NonOrthogonal
+     MODULE PROCEDURE SpAMM_Quadratic_Trace_Correcting_Purification
   END INTERFACE
-CONTAINS 
-  !================================================================= 
-  ! SPAMM ROUTINES FOR SPECTRAL PROJECTION 
-  !================================================================= 
-  ! Quadratic trace correcting purification 
-  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-!!$  RECURSIVE SUBROUTINE PRINT_QU(qA,Depth)
-!!$    TYPE(QuTree),POINTER   :: qA
-!!$    INTEGER :: Depth
-!!$    IF(.NOT.ASSOCIATED(qA))RETURN
-!!$    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
-!!$       WRITE(*,*)' -----------------------------'
-!!$       DO I=1,SIZE(qA%Blok,1)
-!!$          WRITE(*,*)I,qA%Blok(I,I)
-!!$       ENDDO
-!!$    ELSE
-!!$       CALL Print_qu(qA%Quad00,Depth+1)
-!!$       CALL Print_qu(qA%Quad11,Depth+1)
-!!$    ENDIF
-!!$  END SUBROUTINE PRINT_QU
-
+CONTAINS
+  !=================================================================
+  ! SPAMM ROUTINES FOR SPECTRAL PROJECTION
+  !=================================================================
+  ! Quadratic trace correcting purification
+  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification(P,P2,Ne,TrP)
     TYPE(QuTree),POINTER   :: P,P2
     TYPE(QuTree),POINTER   :: T1
-    REAL(SpAMM_KIND)       :: Ne,TrP,TrP2 
+    REAL(SpAMM_KIND)       :: Ne,TrP,TrP2
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
-    TInitial=SpAMM_IPM_GET_TIME()  
-    TrP=Trace(P)                                   
+    TInitial=SpAMM_IPM_GET_TIME()
+    TrP=Trace(P)
     CALL Multiply(P,P,P2)                          ! P^2 <- P.P
     TrP2=Trace(P2)
-    IF(ABS(TrP2-Ne)<ABS(SpAMM_Two*TrP-TrP2-Ne))THEN       
+    IF(ABS(TrP2-Ne)<ABS(SpAMM_Two*TrP-TrP2-Ne))THEN
        T1=>P; P=>P2; P2=>T1                        ! P <- P^2
-    ELSE  
+    ELSE
        CALL Add(P,P2,SpAMM_Two,-SpAMM_One)         ! P <- 2*P-P^2
     ENDIF
     P%Norm=SQRT(Norm(P))
@@ -86,39 +70,17 @@ CONTAINS
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification",29)
   END SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification
 
-  SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification_NonOrthogonal(P,S,P2,Tmp,Ne,TrP)
-    TYPE(QuTree),POINTER   :: P,S,P2,Tmp
-    TYPE(QuTree),POINTER   :: T1
-    REAL(SpAMM_KIND)       :: Ne,TrP,TrP2 
-    REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
-    TInitial=SpAMM_IPM_GET_TIME()  
-!!$    CALL Multiply(S,P,Tmp)
-!!$    Tmp%Norm=SQRT(Norm(Tmp))
-!!$    TrP=Trace(Tmp)                                   
-!!$    CALL Multiply(P,Tmp,P2) 
-    TrP=Trace(S,P)
-    CALL Multiply(P,S,P,P2)                        ! P^2 <- P.S.P
-    TrP2=Trace(P2)
-    IF(ABS(TrP2-Ne)<ABS(SpAMM_Two*TrP-TrP2-Ne))THEN       
-       T1=>P; P=>P2; P2=>T1                        ! P <- P^2
-    ELSE  
-       CALL Add(P,P2,SpAMM_Two,-SpAMM_One)         ! P <- 2*P-P^2
-    ENDIF
-    P%Norm=SQRT(Norm(P))
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
-    CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification_NonOrthogonal",30)
-  END SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification_NonOrthogonal
-  !================================================================= 
+  !=================================================================
   ! REMAPING SPECTRAL BOUNDS TO [0,1]
-  !================================================================= 
+  !=================================================================
   SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree(A)
-    TYPE(QuTree),POINTER  :: A    
+    TYPE(QuTree),POINTER  :: A
     REAL(SpAMM_KIND)     :: RQIMin,RQIMax,SpectralExtent
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_MULTIPLY_THRESHOLD   =1D-7 !SpAMM_PRODUCT_TOLERANCE
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !100d0*SpAMM_RQI_MULTIPLY_THRESHOLD
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_EVAL_ERROR_ESTIMATE  =2D-2 !100d0*SpAMM_RQI_CONVERGENCE_THRESHOLD
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
-    TInitial=SpAMM_IPM_GET_TIME()  
+    TInitial=SpAMM_IPM_GET_TIME()
     ! Find extremal eigenvalues by RQI
     CALL SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree(A,RQIMin,RQIMax, &
              SpAMM_RQI_MULTIPLY_THRESHOLD,SpAMM_RQI_CONVERGENCE_THRESHOLD)
@@ -132,15 +94,15 @@ CONTAINS
     TTotal=SpAMM_IPM_GET_TIME()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree",31)
   END SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
-  !================================================================= 
+  !=================================================================
   ! SPAMM ROUTINES FOR SPECTRAL ESTIMATION (EXTREMAL EIGENVALUES)
-  !================================================================= 
+  !=================================================================
   ! RQI for finding the eigen bounds (Min/Max E.V.s)
-  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SUBROUTINE SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree(A,RQIMin,RQIMax, &
              SpAMM_RQI_MULTIPLY_THRESHOLD,SpAMM_RQI_CONVERGENCE_THRESHOLD)
     INTEGER              :: N,I,CG
-    REAL(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD 
+    REAL(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD
     INTEGER, PARAMETER   :: NCG=1000
     TYPE(QuTree),POINTER :: A
     TYPE(BiTree),POINTER :: x=>NULL(),g=>NULL(),h=>NULL(),Ax=>NULL(), &
@@ -169,6 +131,8 @@ CONTAINS
        !
        CALL Multiply(x,xnorm)
        x%Norm=SQRT(Norm(x))
+       WRITE(*,*)' XNORM = ',XNORM
+!       STOP
        !
        CALL Multiply(h,SpAMM_Zero)
        CALL Multiply(g,SpAMM_Zero)
@@ -177,8 +141,12 @@ CONTAINS
        CALL Multiply(gOld,SpAMM_Zero)
        !
        DO CG=1,NCG
-          ! Intermediates 
+          ! Intermediates
           xx=Dot(x,x)
+
+          WRITE(*,*)xx
+          WRITE(*,*)" NormA = ",Norm(A)
+
           CALL Multiply(A,x,Ax,SpAMM_RQI_MULTIPLY_THRESHOLD)
           xAx=Dot(x,Ax)
           omega=xAx/xx
@@ -187,6 +155,10 @@ CONTAINS
           ELSE
              RQIMax=omega
           ENDIF
+
+          WRITE(*,*)" omega = ",omega
+          STOP
+
           ! Gradient of extremal quotients (eigenvalues): one is + the other is - ...
           IF(I==1)THEN
              ! g=2*(Ax-omega*x)/xx
@@ -204,9 +176,9 @@ CONTAINS
           ELSE
              beta=SpAMM_Zero
           ENDIF
-          ! 
+          !
           ! h=g+beta*hOld
-          CALL Add(h,SpAMM_One,g,beta,hOld)  
+          CALL Add(h,SpAMM_One,g,beta,hOld)
           h%Norm=SQRT(Norm(h))
           !
           CALL Copy(g,gOld)
@@ -219,9 +191,9 @@ CONTAINS
           hAx=Dot(h,Ax)
           hAh=Dot(h,Ah)
           ! By symmetry
-          xh=hx       
+          xh=hx
           hAx=xAh
-          !       
+          !
           LambdaPlus=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx+SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
                -SpAMM_Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
                /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
@@ -230,9 +202,9 @@ CONTAINS
                /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
           !
           RQIPlus=(xAx+LambdaPlus*(xAh+hAx)+hAh*LambdaPlus**2) &
-               /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2) 
+               /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2)
           RQIMins=(xAx+LambdaMins*(xAh+hAx)+hAh*LambdaMins**2) &
-               /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2) 
+               /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2)
           !
           IF(I==1)THEN
              IF(RQIMins<RQIPlus)THEN
@@ -253,11 +225,11 @@ CONTAINS
           ENDIF
           x%Norm=SQRT(Norm(x))
 
-!       IF(I==1)THEN
-!          WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
-!       ELSE
-!          WRITE(*,44)omega,SQRT(Dot(g,g))/ABS(Omega),CG
-!       ENDIF
+       IF(I==1)THEN
+          WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
+       ELSE
+          WRITE(*,44)omega,SQRT(Dot(g,g))/ABS(Omega),CG
+       ENDIF
 
        END DO
        IF(I==1)THEN
@@ -286,7 +258,7 @@ END MODULE SpAMM_PROJECT
 !!$
 !!$  SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_SpAMM_Zero_And_SpAMM_One(N,A)
 !!$    INTEGER                              :: N
-!!$    REAL(SpAMM_KIND),DIMENSION(1:N,1:N)  :: A    
+!!$    REAL(SpAMM_KIND),DIMENSION(1:N,1:N)  :: A
 !!$    REAL(SpAMM_KIND) :: RQIMin,RQIMax,SpectralExtent
 !!$    CALL SpAMM_Spectral_Bounds_Estimated_by_RQI(N,A,RQIMin,RQIMax)
 !!$    ! Assume a 1% error in the estimated bounds
@@ -298,14 +270,14 @@ END MODULE SpAMM_PROJECT
 !!$       A(I,I)=A(I,I)-RQIMax
 !!$    ENDDO
 !!$    A=(-SpAMM_One/SpectralExtent)*A
-!!$    
+!!$
 !!$  END SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_SpAMM_Zero_And_SpAMM_One
 !!$
 !!$
 !!$
-!!$  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-!!$  ! Spectral bounds through RQI 
-!!$  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!!$  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!!$  ! Spectral bounds through RQI
+!!$  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!$  SUBROUTINE SpAMM_Spectral_Bounds_Estimated_by_RQI(N,A,RQIMin,RQIMax)
 !!$    INTEGER :: N,I,CG,NCG
 !!$    REAL(SpAMM_KIND),DIMENSION(1:N,1:N)  ::  A
@@ -314,14 +286,14 @@ END MODULE SpAMM_PROJECT
 !!$         xx,hh,xh,hx,xAx,xAh,hAx,hAh,GSize
 !!$    REAL(SpAMM_KIND) :: RQIMin,RQIMax,Lambda,Lambdamax,LambdaMin
 !!$
-!!$    INTEGER :: LWork,Info   
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(N) :: Vals1      
+!!$    INTEGER :: LWork,Info
+!!$    REAL(SpAMM_DOUBLE), DIMENSION(N) :: Vals1
 !!$    REAL(SpAMM_DOUBLE), DIMENSION(N,N) :: Temp
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(3*N) :: Work   
-!!$    LWork=MAX(1,3*N)                                                                                                             
-!!$    Vals2=0.0D0                                                                                                                  
+!!$    REAL(SpAMM_DOUBLE), DIMENSION(3*N) :: Work
+!!$    LWork=MAX(1,3*N)
+!!$    Vals2=0.0D0
 !!$    Temp=A
-!!$    Call DSYEV('V','U',N,Temp,N,Vals1,Work,LWork,Info)                                                                           
+!!$    Call DSYEV('V','U',N,Temp,N,Vals1,Work,LWork,Info)
 !!$    WRITE(*,*)' MIN/MAX EigenValues = ',Vals1(1),Vals1(N)
 !!$
 !!$    RQIMin=Vals1(1)
@@ -351,7 +323,7 @@ END MODULE SpAMM_PROJECT
 !!$       hOld=SpAMM_Zero
 !!$       gOld=SpAMM_Zero
 !!$       DO CG=1,NCG
-!!$          ! Intermediates 
+!!$          ! Intermediates
 !!$          xx=DOT_PRODUCT(x,x)
 !!$          Ax=MATMUL(A,x)
 !!$          xAx=DOT_PRODUCT(x,Ax)
@@ -378,7 +350,7 @@ END MODULE SpAMM_PROJECT
 !!$          ELSE
 !!$             beta=SpAMM_Zero
 !!$          ENDIF
-!!$          ! 
+!!$          !
 !!$          h=g+beta*hOld
 !!$
 !!$!          WRITE(*,*)' H = ',dot_product(h,h)
@@ -400,13 +372,13 @@ END MODULE SpAMM_PROJECT
 !!$!          WRITE(*,*)' hAh = ',hAh
 !!$
 !!$
-!!$          
+!!$
 !!$          !
 !!$
 !!$
-!!$          xh=hx       
+!!$          xh=hx
 !!$          hAx=xAh
-!!$          !       
+!!$          !
 !!$          LambdaPlus=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx+SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
 !!$               -Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
 !!$               /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
@@ -415,9 +387,9 @@ END MODULE SpAMM_PROJECT
 !!$               /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
 !!$          !
 !!$          RQIPlus=(xAx+LambdaPlus*(xAh+hAx)+hAh*LambdaPlus**2) &
-!!$               /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2) 
+!!$               /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2)
 !!$          RQIMins=(xAx+LambdaMins*(xAh+hAx)+hAh*LambdaMins**2) &
-!!$               /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2) 
+!!$               /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2)
 !!$
 !!$          IF(I==1)THEN
 !!$             IF(RQIMins<RQIPlus)THEN
@@ -460,17 +432,17 @@ END MODULE SpAMM_PROJECT
 !!$    INTEGER :: I,CG,NCG
 !!$    REAL(SpAMM_KIND) :: RQIMin,RQIMax,Lambda,Lambdamax,LambdaMin
 !!$
-!!$    INTEGER :: LWork,Info                                                                                                    
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(N) :: Vals1                                                                                          
+!!$    INTEGER :: LWork,Info
+!!$    REAL(SpAMM_DOUBLE), DIMENSION(N) :: Vals1
 !!$    REAL(SpAMM_DOUBLE), DIMENSION(N,N) :: Temp
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(3*N) :: Work                                                                                         
+!!$    REAL(SpAMM_DOUBLE), DIMENSION(3*N) :: Work
 !!$
 !!$    LOGICAL :: MinMaxTest
 !!$
-!!$    LWork=MAX(1,3*N)                                                                                                             
-!!$    Vals2=0.0D0                                                                                                                  
+!!$    LWork=MAX(1,3*N)
+!!$    Vals2=0.0D0
 !!$    Temp=A
-!!$    Call DSYEV('V','U',N,Temp,N,Vals1,Work,LWork,Info)                                                                           
+!!$    Call DSYEV('V','U',N,Temp,N,Vals1,Work,LWork,Info)
 !!$    WRITE(*,*)' MIN/MAX EigenValues = ',Vals1(1),Vals1(N)
 !!$
 !!$    NCG=50
@@ -491,7 +463,7 @@ END MODULE SpAMM_PROJECT
 !!$       hOld=SpAMM_Zero
 !!$       gOld=SpAMM_Zero
 !!$       DO CG=1,NCG
-!!$          ! Intermediates 
+!!$          ! Intermediates
 !!$          xx=DOT_PRODUCT(x,x)
 !!$          Ax=MATMUL(A,x)
 !!$          xAx=DOT_PRODUCT(x,Ax)
@@ -510,7 +482,7 @@ END MODULE SpAMM_PROJECT
 !!$          ELSE
 !!$             beta=SpAMM_Zero
 !!$          ENDIF
-!!$          ! 
+!!$          !
 !!$          h=g+beta*hOld
 !!$          hOld=h
 !!$          gOld=g
@@ -522,9 +494,9 @@ END MODULE SpAMM_PROJECT
 !!$          hAx=DOT_PRODUCT(h,Ax)
 !!$          hAh=DOT_PRODUCT(h,Ah)
 !!$          !
-!!$          xh=hx       
+!!$          xh=hx
 !!$          hAx=xAh
-!!$          !       
+!!$          !
 !!$          LambdaPlus=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx+SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
 !!$               -Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
 !!$               /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
@@ -533,9 +505,9 @@ END MODULE SpAMM_PROJECT
 !!$               /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
 !!$          !
 !!$          RQIPlus=(xAx+LambdaPlus*(xAh+hAx)+hAh*LambdaPlus**2) &
-!!$               /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2) 
+!!$               /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2)
 !!$          RQIMins=(xAx+LambdaMins*(xAh+hAx)+hAh*LambdaMins**2) &
-!!$               /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2) 
+!!$               /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2)
 !!$
 !!$          IF(I==1)THEN
 !!$             IF(RQIMins<RQIPlus)THEN

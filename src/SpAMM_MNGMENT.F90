@@ -401,7 +401,7 @@ CONTAINS
       !$OMP END CRITICAL
     ENDIF
     IF(ASSOCIATED(qA%Quad11))THEN
-      !$OMP TASK UNTIED SHARED(qA) &
+       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       CALL SpAMM_Delete_QuTree_Recur(qA%Quad11,Depth+1)
       !$OMP END TASK
