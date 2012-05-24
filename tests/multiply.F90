@@ -1,18 +1,25 @@
 program multiply
 
   use spammpack
-  use load_matrix
+  use test_utilities
 
   implicit none
 
   integer :: N
+
+  real(kind = 8) :: alpha
+  real(kind = 8) :: beta
+
   real(kind = 8), dimension(:,:), allocatable :: A
   real(kind = 8), dimension(:,:), allocatable :: B
   real(kind = 8), dimension(:,:), allocatable :: C
 
-  call load("testmatrix_1.coor", A)
-  call load("testmatrix_1.coor", B)
-  call load("testmatrix_1.coor", C)
+  alpha = 1.2
+  beta = 0.5
+
+  call load_matrix("testmatrix_1.coor", A)
+  call load_matrix("testmatrix_1.coor", B)
+  call load_matrix("testmatrix_1.coor", C)
 
   N = size(A, 1)
 
