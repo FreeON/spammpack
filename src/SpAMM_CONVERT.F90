@@ -26,23 +26,32 @@
 !    PACKAGE FOR THE SPARSE APPROXIMATE MATRIX MULTIPLY (SPAMMPACK)
 !    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
+
+!> @brief
+!! Defines conversion operation between different data structures and SpAMM.
 MODULE SpAMM_CONVERT
-  USE  SpAMM_DERIVED
-  USE  SpAMM_GLOBALS
-  USE  SpAMM_ALGEBRA
+
+  USE SpAMM_DERIVED
+  USE SpAMM_GLOBALS
+  USE SpAMM_ALGEBRA
+
   CONTAINS
+
   !=================================================================
   ! QuTree
   !=================================================================
   FUNCTION SpAMM_Convert_Dense_2_QuTree(A) RESULT(qA)
+
     REAL(SpAMM_KIND),DIMENSION(:,:) :: A
     TYPE(QuTree),POINTER        :: qA
+
     qA=>NULL()
     CALL NewQuNode(qA,init=.TRUE.)
     CALL SpAMM_Convert_Dense_2_QuTree_Recur(A,qA)
     qA%Norm=SQRT(Norm(qA))
+
   END FUNCTION SpAMM_Convert_Dense_2_QuTree
-  !
+
   RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur(A,qA)
     REAL(SpAMM_KIND),DIMENSION(:,:) :: A
     TYPE(QuTree),POINTER        :: qA
@@ -108,71 +117,66 @@ MODULE SpAMM_CONVERT
     !
   END SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur
 
+!  FUNCTION Quad2Dense(qA) RESULT(A)
+!    REAL(SpAMM_KIND),DIMENSION(SpAMM_tiles*SpAMM_BLOCK_SIZE,SpAMM_tiles*SpAMM_BLOCK_SIZE) :: A
+!    TYPE(QuTree),POINTER :: qA
+!    A=Zero
+!    CALL SpAMM_Quad2Mat(A,qA)
+!  END FUNCTION Quad2Dense
+!
+!  RECURSIVE SUBROUTINE SpAMM_Quad2Mat(A,qA)
+!    INTEGER :: I1,I2,J1,J2
+!    REAL(SpAMM_KIND),DIMENSION(:,:) :: A
+!    TYPE(QuTree),POINTER :: qA
+!
+!    IF(.NOT.ASSOCIATED(qA))RETURN
+!    IF(qA%Norm==Zero)RETURN
+!    !
+!    IF(ALLOCATED(qA%Blok))THEN
+!       A(I1:I2,J1:J2)=qA%Blok
+!       RETURN
+!    ELSE
+!       CALL SpAMM_Quad2Mat(A,qA%Quad00)
+!       CALL SpAMM_Quad2Mat(A,qA%Quad01)
+!       CALL SpAMM_Quad2Mat(A,qA%Quad10)
+!       CALL SpAMM_Quad2Mat(A,qA%Quad11)
+!    ENDIF
+!  END SUBROUTINE SpAMM_Quad2Mat
 
-!!$  FUNCTION Quad2Dense(qA) RESULT(A)
-!!$    REAL(SpAMM_KIND),DIMENSION(SpAMM_tiles*SpAMM_BLOCK_SIZE,SpAMM_tiles*SpAMM_BLOCK_SIZE) :: A
-!!$    TYPE(QuTree),POINTER :: qA
-!!$    A=Zero
-!!$    CALL SpAMM_Quad2Mat(A,qA)
-!!$  END FUNCTION Quad2Dense
-
-!!$  RECURSIVE SUBROUTINE SpAMM_Quad2Mat(A,qA)
-!!$    INTEGER :: I1,I2,J1,J2
-!!$    REAL(SpAMM_KIND),DIMENSION(:,:) :: A
-!!$    TYPE(QuTree),POINTER :: qA
-!!$
-!!$    IF(.NOT.ASSOCIATED(qA))RETURN
-!!$    IF(qA%Norm==Zero)RETURN
-!!$    !
-!!$    IF(ALLOCATED(qA%Blok))THEN
-!!$       I1=qA%Box(1,1)
-!!$       I2=qA%Box(1,2)
-!!$       J1=qA%Box(2,1)
-!!$       J2=qA%Box(2,2)
-!!$       A(I1:I2,J1:J2)=qA%Blok
-!!$       RETURN
-!!$    ELSE
-!!$       CALL SpAMM_Quad2Mat(A,qA%Quad00)
-!!$       CALL SpAMM_Quad2Mat(A,qA%Quad01)
-!!$       CALL SpAMM_Quad2Mat(A,qA%Quad10)
-!!$       CALL SpAMM_Quad2Mat(A,qA%Quad11)
-!!$    ENDIF
-!!$  END SUBROUTINE SpAMM_Quad2Mat
-!!$
-!!$  RECURSIVE SUBROUTINE Print_Quad(qA,PrintOnce)
-!!$    TYPE(QuTree),POINTER :: qA
-!!$    LOGICAL, OPTIONAL    :: PrintOnce
-!!$
-!!$    IF(qA%Lev>2)RETURN
-!!$
-!!$    IF(ASSOCIATED(qA))THEN
-!!$       WRITE(*,111)qA%Box(:,1),qA%Box(:,2),qA%Num,qA%Siz,qA%Norm
-!!$    ENDIF
-!!$    IF(PRESENT(PrintOnce))THEN
-!!$       IF(PrintOnce)RETURN
-!!$    ENDIF
-!!$
-!!$    IF(ASSOCIATED(qA%Quad00))&
-!!$         WRITE(*,111)qA%Quad00%Box(:,1),qA%Quad00%Box(:,2),qA%Quad00%Num,qA%Quad00%Siz,qA%Quad00%Norm
-!!$    IF(ASSOCIATED(qA%Quad01))&
-!!$         WRITE(*,111)qA%Quad01%Box(:,1),qA%Quad01%Box(:,2),qA%Quad01%Num,qA%Quad01%Siz,qA%Quad01%Norm
-!!$    IF(ASSOCIATED(qA%Quad10))&
-!!$         WRITE(*,111)qA%Quad10%Box(:,1),qA%Quad10%Box(:,2),qA%Quad10%Num,qA%Quad10%Siz,qA%Quad10%Norm
-!!$    IF(ASSOCIATED(qA%Quad11))&
-!!$         WRITE(*,111)qA%Quad11%Box(:,1),qA%Quad11%Box(:,2),qA%Quad11%Num,qA%Quad11%Siz,qA%Quad11%Norm
-!!$    WRITE(*,*)' ========================================'
-!!$    !
-!!$    IF(ASSOCIATED(qA%Quad00)) &
-!!$         CALL Print_Quad(qA%Quad00)
-!!$    IF(ASSOCIATED(qA%Quad01)) &
-!!$         CALL Print_Quad(qA%Quad01)
-!!$    IF(ASSOCIATED(qA%Quad10)) &
-!!$         CALL Print_Quad(qA%Quad10)
-!!$    IF(ASSOCIATED(qA%Quad11)) &
-!!$         CALL Print_Quad(qA%Quad11)
-!!$
-!!$111 FORMAT("Cuboid[{",I8,",",I8,":",I8,",",I8,"}, (* ",I6,", ",I6,", ",F12.6,"*)")
-!!$
-!!$  END SUBROUTINE Print_Quad
+!  RECURSIVE SUBROUTINE Print_Quad(qA,PrintOnce)
+!    TYPE(QuTree),POINTER :: qA
+!    LOGICAL, OPTIONAL    :: PrintOnce
+!
+!    IF(qA%Lev>2)RETURN
+!
+!    IF(ASSOCIATED(qA))THEN
+!       WRITE(*,111)qA%Box(:,1),qA%Box(:,2),qA%Num,qA%Siz,qA%Norm
+!    ENDIF
+!    IF(PRESENT(PrintOnce))THEN
+!       IF(PrintOnce)RETURN
+!    ENDIF
+!
+!    IF(ASSOCIATED(qA%Quad00))&
+!         WRITE(*,111)qA%Quad00%Box(:,1),qA%Quad00%Box(:,2),qA%Quad00%Num,qA%Quad00%Siz,qA%Quad00%Norm
+!    IF(ASSOCIATED(qA%Quad01))&
+!         WRITE(*,111)qA%Quad01%Box(:,1),qA%Quad01%Box(:,2),qA%Quad01%Num,qA%Quad01%Siz,qA%Quad01%Norm
+!    IF(ASSOCIATED(qA%Quad10))&
+!         WRITE(*,111)qA%Quad10%Box(:,1),qA%Quad10%Box(:,2),qA%Quad10%Num,qA%Quad10%Siz,qA%Quad10%Norm
+!    IF(ASSOCIATED(qA%Quad11))&
+!         WRITE(*,111)qA%Quad11%Box(:,1),qA%Quad11%Box(:,2),qA%Quad11%Num,qA%Quad11%Siz,qA%Quad11%Norm
+!    WRITE(*,*)' ========================================'
+!    !
+!    IF(ASSOCIATED(qA%Quad00)) &
+!         CALL Print_Quad(qA%Quad00)
+!    IF(ASSOCIATED(qA%Quad01)) &
+!         CALL Print_Quad(qA%Quad01)
+!    IF(ASSOCIATED(qA%Quad10)) &
+!         CALL Print_Quad(qA%Quad10)
+!    IF(ASSOCIATED(qA%Quad11)) &
+!         CALL Print_Quad(qA%Quad11)
+!
+!111 FORMAT("Cuboid[{",I8,",",I8,":",I8,",",I8,"}, (* ",I6,", ",I6,", ",F12.6,"*)")
+!
+!  END SUBROUTINE Print_Quad
 
 END MODULE SpAMM_CONVERT

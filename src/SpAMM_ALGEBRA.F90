@@ -53,15 +53,6 @@ MODULE SpAMM_ALGEBRA
   REAL(SpAMM_DOUBLE) :: SpAMM_Threshold_Multiply_QuTree_x_BiTree
 
   !===============================================================================
-  !  EXTERNAL
-  !===============================================================================
-#ifdef SPAMM_DOUBLE
-  EXTERNAL :: DGEMM
-#else
-  EXTERNAL :: SGEMM
-#endif
-
-  !===============================================================================
   !  INTERFACE BLOCKS
   !===============================================================================
 
@@ -118,8 +109,8 @@ CONTAINS
   !> Multiplication operation between a quadtree and a quadtree.
   SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA,qB,qC,LocalThreshold)
 
-    TYPE(QuTree), POINTER              :: qA,qB
-    TYPE(QuTree), POINTER, INTENT(OUT) :: qC
+    TYPE(QuTree), POINTER                :: qA,qB
+    TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
     INTEGER :: Depth
     REAL(SpAMM_KIND), OPTIONAL         :: LocalThreshold
     REAL(SpAMM_DOUBLE)                 :: TInitial, TTotal
@@ -166,9 +157,13 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! QuTree In Place Add: A <- a*A + b*B
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> @brief
+  !! Add 2 quadtree matrices, @f$ A \leftarrow \alpha A + \beta B @f$.
+  !!
+  !! @param qA [inout] Pointer to matrix A.
+  !! @param qB [in] Pointer to matrix B.
+  !! @param Alpha Factor @f$ \alpha @f$.
+  !! @param Beta Factor @f$ \beta @f$.
   SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace(qA,qB,Alpha,Beta)
 
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qA
@@ -280,15 +275,19 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Filter_QuTree
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! L_2 norm for QuTrees
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> @brief
+  !! L2 norm of matrix.
+  !!
+  !! @param qA Pointer to matrix.
+  !!
+  !! @return The L2 norm.
   FUNCTION SpAMM_Norm_Reduce_QuTree(qA) RESULT(Norm)
 
     INTEGER :: Depth
     TYPE(QuTree),POINTER :: qA
     REAL(SpAMM_KIND) :: Norm
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
+
     Depth=0
     TInitial=SpAMM_IPM_GET_TIME()
     !$OMP TASK SHARED(Norm,qA)
