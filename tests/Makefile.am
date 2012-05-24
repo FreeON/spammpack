@@ -7,3 +7,5 @@ AM_CPPFLAGS = -I../src
 AM_LDFLAGS = ../src/libspammpack.la
 
 multiply_SOURCES = multiply.F90
+
+TAGS_FILES = ../src/*.F90 ../src/*.c
