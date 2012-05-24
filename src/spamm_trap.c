@@ -26,6 +26,6 @@
 
 #include <stdlib.h>
 
-void trap () { abort(); }
-void trap_ () { trap(); }
-void trap__ () { trap(); }
+void spamm_trap () { abort(); }
+void spamm_trap_ () { spamm_trap(); }
+void spamm_trap__ () { spamm_trap(); }

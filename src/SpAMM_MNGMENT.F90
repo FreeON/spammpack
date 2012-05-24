@@ -488,7 +488,7 @@ CONTAINS
     IF(PRESENT(init))THEN
       IF(ASSOCIATED(qA))THEN
         WRITE(*,*)'LOGIC ERROR IN NewQuNode'
-        CALL Trap()
+        CALL SpAMM_Trap()
       ENDIF
       ALLOCATE(qA)
     ELSE
