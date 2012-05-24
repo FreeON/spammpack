@@ -112,14 +112,14 @@ CONTAINS
          xx,hh,xh,hx,xAx,xAh,hAx,hAh,GSize,xnorm
     REAL(SpAMM_KIND) :: RQIMin,RQIMax,Lambda,Lambdamax,LambdaMin
     !
-    CALL AllocateFull(x)
-    CALL AllocateFull(g)
-    CALL AllocateFull(h)
-    CALL AllocateFull(Ax)
-    CALL AllocateFull(Ah)
-    CALL AllocateFull(xOld)
-    CALL AllocateFull(gOld)
-    CALL AllocateFull(hOld)
+    CALL New(x)
+    CALL New(g)
+    CALL New(h)
+    CALL New(Ax)
+    CALL New(Ah)
+    CALL New(xOld)
+    CALL New(gOld)
+    CALL New(hOld)
 
     DO I=1,2
        IF(I==1)THEN

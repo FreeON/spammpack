@@ -30,6 +30,7 @@
 !> @brief
 !! Defines operations on SpAMM trees.
 MODULE SpAMM_ALGEBRA
+
   USE  SpAMM_DERIVED
   USE  SpAMM_GLOBALS
   USE  SpAMM_MNGMENT
