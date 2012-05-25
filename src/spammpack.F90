@@ -80,6 +80,9 @@
 !! to return derivative works to the FreeON group for review, and possible
 !! dissemination in future releases.
 !!
+!! @copyright
+!! Los Alamos National Laboratory (LA-CC 01-2; LA-CC-04-086)
+!!
 !! @author Matt Challacombe <matt.challacombe@freeon.org>
 !! @author Nicolas Bock <nicolas.bock@freeon.org>
 
