@@ -12,6 +12,7 @@ spamm_multiply_LDFLAGS = ../src/libspammpack.la libspammtests.la
 spamm_multiply_SOURCES = spamm_multiply.F90
 
 TAGS_FILES = ../src/*.F90 ../src/*.c
+CTAGSFLAGS = --fortran-kinds=+L+i
 
 # Dependencies.
 spamm_multiply.o : test_utilities.o spammtests.o

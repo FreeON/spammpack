@@ -56,7 +56,7 @@ MODULE SpAMM_GLOBALS
   END INTERFACE SpAMM_Get_Time
 
   !> The size of the basic submatrix blocks.
-  INTEGER,PARAMETER :: SpAMM_BLOCK_SIZE = 1024
+  INTEGER,PARAMETER :: SpAMM_BLOCK_SIZE = 16
 
   !> The SpAMM tolerance.
 #ifdef SPAMM_DOUBLE

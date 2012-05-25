@@ -120,6 +120,7 @@ CONTAINS
     ELSE
       SpAMM_Threshold_Multiply_QuTree_x_QuTree=SpAMM_PRODUCT_TOLERANCE
     ENDIF
+
     Depth=0
     TInitial=SpAMM_Get_Time()
     CALL SpAMM_Multiply_QuTree_x_Scalar(qC,SpAMM_Zero)
@@ -136,15 +137,18 @@ CONTAINS
   ! The Sparse Approximate Matrix-Multiply (SpAMM): D <- A.B.C
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Scalar multiply: A <- a*A
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Scalar multiply: @f$ A \leftarrow a A @f$.
+  !!
+  !! @param qA Pointer to matrix A.
+  !! @param a Scalar a.
   RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar(qA,a)
 
-    INTEGER :: Depth
-    TYPE(QuTree), POINTER    :: qA
-    REAL(SpAMM_KIND)         :: a
-    REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
+    TYPE(QuTree), POINTER        :: qA
+    REAL(SpAMM_KIND), INTENT(IN) :: a
+
+    INTEGER            :: Depth
+    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+
     IF(.NOT.ASSOCIATED(qA))RETURN
     Depth=0
     TInitial=SpAMM_Get_Time()
