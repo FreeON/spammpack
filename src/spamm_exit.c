@@ -26,26 +26,36 @@
      dissemination in future releases.
 */
 
+#include <stdio.h>
 #include <stdlib.h>
 
-/** @details
- * Terminate and produce a backtrace.
+/** @brief
+ * Produce an exit code and exit.
+ *
+ * @details
+ * Fortran does not have a standard way of exiting with an exit code. In
+ * some situations it is nice to have one though, and this function provides
+ * this functionality.
+ *
+ * @param exitcode The exit code to produce.
  */
-void spamm_trap ()
+void
+spamm_exit (const int exitcode)
 {
-  abort();
+  printf("exiting with error code %i\n", exitcode);
+  exit(exitcode);
 }
 
 /** @private
  *
  * @brief
- * Underscore version of spamm_trap().
+ * Underscore version of spamm_exit().
  */
-void spamm_trap_ () { spamm_trap(); }
+void spamm_exit_ (const int exitcode) { spamm_exit(exitcode); }
 
 /** @private
  *
  * @brief
- * Underscore version of spamm_trap().
+ * Underscore version of spamm_exit().
  */
-void spamm_trap__ () { spamm_trap(); }
+void spamm_exit__ (const int exitcode) { spamm_exit(exitcode); }

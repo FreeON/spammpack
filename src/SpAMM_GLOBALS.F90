@@ -76,7 +76,13 @@ MODULE SpAMM_GLOBALS
 
   CONTAINS
 
-    !> Initialize global variables.
+    !> @brief
+    !! Initialize global variables.
+    !!
+    !! @param N [inout] The matrix size. This variable gets padded and will be
+    !! set to the padded matrix dimension on exit.
+    !! @param Threads The number of threads. This is an optional argument and
+    !! only relevant when compiled with OpenMP.
     SUBROUTINE SpAMM_Init_Globals(N, Threads)
 
       INTEGER, INTENT(inout) :: N

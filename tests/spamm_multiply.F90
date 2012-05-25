@@ -1,12 +1,13 @@
 program spamm_multiply
 
   use spammpack
-  use test_utilities
+  use spammtests
 
   implicit none
 
   integer :: N
-  integer, parameter :: NThreads = 8
+  integer :: testresult = 0
+  integer, parameter :: NThreads = 4
 
   real(SpAMM_DOUBLE) :: max_norm
 
@@ -34,10 +35,7 @@ program spamm_multiply
   allocate(C_dense(N, N))
   C_dense = SpAMM_ZERO
 
-  !write(*, *) "N = ", N
-
   call SpAMM_Init_Globals(N, NThreads)
-  !write(*, *) "N = ", N
 
   allocate(A_dense_padded(N, N))
   allocate(B_dense_padded(N, N))
@@ -49,28 +47,6 @@ program spamm_multiply
 
   A_dense_padded = A_dense
   B_dense_padded = B_dense
-
-  !write(*,*) A_dense(1, 1), B_dense(1, 1)
-  !write(*,*) A_dense_padded(1, 1), B_dense_padded(1, 1)
-
-  !call dgemm('N', 'N', N, N, N, 1.0d0, A_dense, N, B_dense, N, 1.0d0, C_dense, N)
-  !C_dense = matmul(A_dense, B_dense)
-  !call sgemm('N', 'N', N, N, N, 1.0, A_dense_padded, N, B_dense_padded, N, 1.0, C_dense_padded, N)
-  !C_dense_padded = matmul(A_dense_padded, B_dense_padded)
-
-  !allocate(C_diff(N, N))
-  !write(*,*) C_dense(1, 1), C_dense_padded(1, 1)
-  !C_diff = C_dense-C_dense_padded
-
-  !max_norm = 0.0
-  !do i = 1, N
-  !  do j = 1, N
-  !    max_norm = max(max_norm, C_diff(i, j))
-  !  enddo
-  !enddo
-
-  !write(*,*) "max_norm = ", max_norm
-  !stop
 
   A => SpAMM_Convert_Dense_2_QuTree(A_dense_padded)
   B => SpAMM_Convert_Dense_2_QuTree(B_dense_padded)
@@ -88,18 +64,17 @@ program spamm_multiply
 
   CALL SpAMM_Time_Stamp()
 
-  !write(*, *) "here"
   C_dense = matmul(A_dense, B_dense)
-  !write(*, *) "here 2"
   C_dense_padded = C_dense
-  !write(*, *) "here 3"
   C_reference => SpAMM_Convert_Dense_2_QuTree(C_dense_padded)
-  !write(*, *) "here 4"
 
   call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
 
   max_norm = SQRT(Norm(C))
 
   write(*, *) "diff norm (C) = ", max_norm
+
+  ! Exit with some error code.
+  call spamm_exit(testresult)
 
 end program spamm_multiply

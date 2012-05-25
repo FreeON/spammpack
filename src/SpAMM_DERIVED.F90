@@ -27,15 +27,12 @@
 !    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
 
-!> @brief
+!> @details
 !! Defines derived types used in SpAMMPACK.
-!!
-!! @details
-!! All derived types are defined here.
-
 MODULE SpAMM_DERIVED
 
   !$ USE OMP_LIB
+
   IMPLICIT NONE
 
   ! --------------------------------------------------
@@ -88,45 +85,48 @@ MODULE SpAMM_DERIVED
   ! Bi structures
   ! --------------------------------------------------
 
-  !> @brief
-  !! Binary tree data structure.
+  !> Binary tree data structure.
   TYPE BiTree
+
     !> The norm.
     REAL(SpAMM_KIND)        :: Norm
 
     !> The pointer to the left bisecting subtree.
     TYPE(BiTree), POINTER   :: Sect0
+
     !> The pointer to the right bisecting subtree.
     TYPE(BiTree), POINTER   :: Sect1
 
     !> The vector data.
     REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
+
   END TYPE BiTree
 
   ! --------------------------------------------------
   ! Quad structures
   ! --------------------------------------------------
 
-  !> @brief
-  !! Quaternary tree data structure.
+  !> Quaternary tree data structure.
   TYPE QuTree
-
-!     INTEGER,      DIMENSION(2,2) :: Box
 
     !> The norm.
     REAL(SpAMM_KIND)             :: Norm
 
     !> The pointer to the subtree in quadrant 11.
     TYPE(QuTree), POINTER        :: Quad00
+
     !> The pointer to the subtree in quadrant 12.
     TYPE(QuTree), POINTER        :: Quad01
+
     !> The pointer to the subtree in quadrant 21.
     TYPE(QuTree), POINTER        :: Quad10
+
     !> The pointer to the subtree in quadrant 22.
     TYPE(QuTree), POINTER        :: Quad11
 
     !> The matrix data.
     REAL(SpAMM_KIND), DIMENSION(:,:), ALLOCATABLE :: Blok
+
   END TYPE QuTree
 
   TYPE QuLink
