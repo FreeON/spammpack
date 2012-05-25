@@ -39,10 +39,16 @@ void spamm_trap ()
  *
  * Underscore version of spamm_trap().
  */
-void spamm_trap_ () { spamm_trap(); }
+void spamm_trap_ ()
+{
+  spamm_trap();
+}
 
 /** @private
  *
  * Underscore version of spamm_trap().
  */
-void spamm_trap__ () { spamm_trap(); }
+void spamm_trap__ ()
+{
+  spamm_trap();
+}

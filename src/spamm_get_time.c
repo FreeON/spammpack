@@ -39,10 +39,16 @@ double spamm_get_time ()
  *
  * Underscore version of spamm_get_time().
  */
-double spamm_get_time_ () { return spamm_get_time(); }
+double spamm_get_time_ ()
+{
+  return spamm_get_time();
+}
 
 /** @private
  *
  * Underscore version of spamm_get_time().
  */
-double spamm_get_time__ () { return spamm_get_time(); }
+double spamm_get_time__ ()
+{
+  return spamm_get_time();
+}

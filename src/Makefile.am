@@ -7,10 +7,10 @@ libspammpack_la_SOURCES = \
   SpAMM_GLOBALS.F90 \
   SpAMM_MNGMENT.F90 \
   SpAMM_PROJECT.F90 \
-  SpAMM_TIMER.c \
   spamm_exit.c \
-  spammpack.F90 \
-  spamm_trap.c
+  spamm_get_time.c \
+  spamm_trap.c \
+  spammpack.F90
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS)

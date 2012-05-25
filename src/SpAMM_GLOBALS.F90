@@ -34,6 +34,27 @@ MODULE SpAMM_GLOBALS
 
   IMPLICIT NONE
 
+  !> Define interface to the C function spamm_exit().
+  INTERFACE SpAMM_Exit
+    SUBROUTINE SpAMM_Exit (exitcode)
+      INTEGER, INTENT(IN) :: exitcode
+    END SUBROUTINE SpAMM_Exit
+  END INTERFACE SpAMM_Exit
+
+  !> Define interface to the C function spamm_trap().
+  INTERFACE SpAMM_Trap
+    SUBROUTINE SpAMM_Trap ()
+    END SUBROUTINE SpAMM_Trap
+  END INTERFACE SpAMM_Trap
+
+  !> Define interface to the C function spamm_get_time().
+  INTERFACE SpAMM_Get_Time
+    FUNCTION SpAMM_Get_Time ()
+      USE SpAMM_DERIVED
+      REAL(SpAMM_DOUBLE) :: SpAMM_Get_Time
+    END FUNCTION SpAMM_Get_Time
+  END INTERFACE SpAMM_Get_Time
+
   !> The size of the basic submatrix blocks.
   INTEGER,PARAMETER :: SpAMM_BLOCK_SIZE=16
 
@@ -66,27 +87,6 @@ MODULE SpAMM_GLOBALS
   INTEGER,PARAMETER :: SpAMM_NUMBER_OF_STATS=100
 
   TYPE(Stats), DIMENSION(1:SpAMM_NUMBER_OF_STATS) :: SpAMM_STATS
-
-  !> Define interface to the C function spamm_exit().
-  INTERFACE SpAMM_EXIT
-    SUBROUTINE SpAMM_EXIT (exitcode)
-      INTEGER, INTENT(IN) :: exitcode
-    END SUBROUTINE SpAMM_EXIT
-  END INTERFACE SpAMM_EXIT
-
-  !> Define interface to the C function spamm_trap().
-  INTERFACE SpAMM_Trap
-    SUBROUTINE SpAMM_Trap ()
-    END SUBROUTINE SpAMM_Trap
-  END INTERFACE SpAMM_Trap
-
-  !> Define interface to the C function spamm_get_time().
-  INTERFACE SpAMM_Get_Time
-    FUNCTION SpAMM_Get_Time ()
-      USE SpAMM_DERIVED
-      REAL(SpAMM_DOUBLE) :: SpAMM_Get_Time
-    END FUNCTION SpAMM_Get_Time
-  END INTERFACE SpAMM_Get_Time
 
 CONTAINS
 

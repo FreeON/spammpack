@@ -79,7 +79,7 @@ MODULE SpAMM_CONVERT
         WRITE(*, *) "SIZE(A, 1) = ", I
         WRITE(*, *) "SIZE(A, 2) = ", J
         WRITE(*, *) "SpAMM_BLOCK_SIZE = ", SpAMM_BLOCK_SIZE
-        CALL SpAMM_EXIT(1)
+        CALL SpAMM_Exit(1)
       ELSE
         ! qA%Siz=SpAMM_BLOCK_SIZE
         ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))

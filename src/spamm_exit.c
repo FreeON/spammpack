@@ -50,10 +50,16 @@ spamm_exit (const int exitcode)
  *
  * Underscore version of spamm_exit().
  */
-void spamm_exit_ (const int exitcode) { spamm_exit(exitcode); }
+void spamm_exit_ (const int exitcode)
+{
+  spamm_exit(exitcode);
+}
 
 /** @private
  *
  * Underscore version of spamm_exit().
  */
-void spamm_exit__ (const int exitcode) { spamm_exit(exitcode); }
+void spamm_exit__ (const int exitcode)
+{
+  spamm_exit(exitcode);
+}

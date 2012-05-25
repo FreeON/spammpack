@@ -40,13 +40,13 @@ MODULE SpAMM_PROJECT
   !===============================================================================
   !  GLOBALS
   !===============================================================================
-  !
-  !===============================================================================
-  !  INTERFACE BLOCKS
-  !=================================================================
+
+  !> Interface for spectral projections.
   INTERFACE RemapSpectralBounds201
      MODULE PROCEDURE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
   END INTERFACE
+
+  !> Interface for TC2.
   INTERFACE SpAMM_TC2
      MODULE PROCEDURE SpAMM_Quadratic_Trace_Correcting_Purification
   END INTERFACE
