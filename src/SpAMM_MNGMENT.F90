@@ -199,7 +199,7 @@ CONTAINS
     !    qC%Siz=qA%Siz
     !    qC%Lev=qA%Lev
     !    qC%Box=qA%Box
-    qC%Norm=qA%Norm
+    qC%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm
     IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
       !    IF(qA%Siz==SpAMM_BLOCK_SIZE.AND.ALLOCATED(qA%Blok))THEN
       IF(.NOT.ALLOCATED(qC%Blok)) &
@@ -271,7 +271,7 @@ CONTAINS
     IF(.NOT.ASSOCIATED(bC))THEN
       CALL NewBiNode(bC)
     ENDIF
-    bC%Norm=bA%Norm
+    bC%Norms%FrobeniusNorm=bA%Norms%FrobeniusNorm
     IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(bA%Vect))THEN
       IF(.NOT.ALLOCATED(bC%Vect)) &
         ALLOCATE(bC%Vect(1:SpAMM_BLOCK_SIZE))
@@ -501,7 +501,7 @@ CONTAINS
         STOP ' Logic error 2 in NewQuNode '
       ENDIF
     ENDIF
-    qA%Norm=SpAMM_Zero
+    qA%Norms%FrobeniusNorm=SpAMM_Zero
     NULLIFY(qA%Quad00)
     NULLIFY(qA%Quad01)
     NULLIFY(qA%Quad10)
@@ -522,7 +522,7 @@ CONTAINS
         ALLOCATE(bA)
       ENDIF
     ENDIF
-    bA%Norm=SpAMM_Zero
+    bA%Norms%FrobeniusNorm=SpAMM_Zero
     NULLIFY(bA%Sect0)
     NULLIFY(bA%Sect1)
 

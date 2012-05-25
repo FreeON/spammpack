@@ -9,7 +9,7 @@ program spamm_multiply
   integer :: testresult = 0
   integer, parameter :: NThreads = 4
 
-  real(SpAMM_DOUBLE) :: max_norm
+  type(SpAMM_Norm) :: norms
 
   real(SpAMM_DOUBLE), dimension(:,:), allocatable :: A_dense
   real(SpAMM_DOUBLE), dimension(:,:), allocatable :: B_dense
@@ -28,8 +28,8 @@ program spamm_multiply
 
   integer :: i, j
 
-  call load_matrix("testmatrix_random_64x64.coor", A_dense)
-  call load_matrix("testmatrix_random_64x64.coor", B_dense)
+  call load_matrix("testmatrix_random_1024x1024.coor", A_dense)
+  call load_matrix("testmatrix_random_1024x1024.coor", B_dense)
 
   N = size(A_dense, 1)
   allocate(C_dense(N, N))
@@ -60,7 +60,7 @@ program spamm_multiply
   !$OMP END SINGLE
   !$OMP END PARALLEL
 
-  C%Norm = SQRT(Norm(C))
+  !C%Norm = SQRT(Norm(C))
 
   CALL SpAMM_Time_Stamp()
 
@@ -70,9 +70,10 @@ program spamm_multiply
 
   call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
 
-  max_norm = SQRT(Norm(C))
+  norms = Norm(C)
 
-  write(*, *) "diff norm (C) = ", max_norm
+  write(*, *) "F-norm (C)   = ", sqrt(norms%FrobeniusNorm)
+  write(*, *) "max-norm (C) = ", norms%MaxNorm
 
   ! Exit with some error code.
   call spamm_exit(testresult)

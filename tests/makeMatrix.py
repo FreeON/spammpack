@@ -2,7 +2,7 @@
 
 import random
 
-N = 2**6
+N = 1024
 
 for i in range(N):
   for j in range(N):

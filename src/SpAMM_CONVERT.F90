@@ -56,7 +56,8 @@ MODULE SpAMM_CONVERT
     qA=>NULL()
     CALL NewQuNode(qA,init=.TRUE.)
     CALL SpAMM_Convert_Dense_2_QuTree_Recur(A,qA)
-    qA%Norm=SQRT(Norm(qA))
+    qA%Norms=Norm(qA)
+    qA%Norms%FrobeniusNorm = SQRT(qA%Norms%FrobeniusNorm)
 
   END FUNCTION SpAMM_Convert_Dense_2_QuTree
 
@@ -69,7 +70,7 @@ MODULE SpAMM_CONVERT
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
     INTEGER                                      :: I,J,Delta,Tier
-    REAL(SpAMM_KIND)                             :: Norm
+    TYPE(SpAMM_Norm)                             :: Norms
 
     I=SIZE(A,1)
     J=SIZE(A,2)

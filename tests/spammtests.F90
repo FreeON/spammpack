@@ -4,6 +4,4 @@ module spammtests
 
   implicit none
 
-  external spamm_exit
-
 end module spammtests

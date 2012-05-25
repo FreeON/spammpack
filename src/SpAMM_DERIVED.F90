@@ -80,21 +80,32 @@ MODULE SpAMM_DERIVED
   !> Define the number 8.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Eight=8D0
 
-  ! --------------------------------------------------
-  ! Bi structures
-  ! --------------------------------------------------
+  !> Norm type.
+  !!
+  !! This type includes several different norms.
+  TYPE SpAMM_Norm
+
+    !> The Frobenius norm.
+    !!
+    !! @f$ \Vert A \Vert_{F} = @f$.
+    REAL(SpAMM_KIND) :: FrobeniusNorm
+
+    !> The max norm.
+    REAL(SpAMM_KIND) :: MaxNorm
+
+  END TYPE SpAMM_Norm
 
   !> Binary tree data structure.
   TYPE BiTree
 
     !> The norm.
-    REAL(SpAMM_KIND)        :: Norm
+    TYPE(SpAMM_Norm) :: Norms
 
     !> The pointer to the left bisecting subtree.
-    TYPE(BiTree), POINTER   :: Sect0
+    TYPE(BiTree), POINTER :: Sect0
 
     !> The pointer to the right bisecting subtree.
-    TYPE(BiTree), POINTER   :: Sect1
+    TYPE(BiTree), POINTER :: Sect1
 
     !> The vector data.
     REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
@@ -109,19 +120,19 @@ MODULE SpAMM_DERIVED
   TYPE QuTree
 
     !> The norm.
-    REAL(SpAMM_KIND)             :: Norm
+    TYPE(SpAMM_Norm) :: Norms
 
     !> The pointer to the subtree in quadrant 11.
-    TYPE(QuTree), POINTER        :: Quad00
+    TYPE(QuTree), POINTER :: Quad00
 
     !> The pointer to the subtree in quadrant 12.
-    TYPE(QuTree), POINTER        :: Quad01
+    TYPE(QuTree), POINTER :: Quad01
 
     !> The pointer to the subtree in quadrant 21.
-    TYPE(QuTree), POINTER        :: Quad10
+    TYPE(QuTree), POINTER :: Quad10
 
     !> The pointer to the subtree in quadrant 22.
-    TYPE(QuTree), POINTER        :: Quad11
+    TYPE(QuTree), POINTER :: Quad11
 
     !> The matrix data.
     REAL(SpAMM_KIND), DIMENSION(:,:), ALLOCATABLE :: Blok

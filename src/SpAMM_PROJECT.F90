@@ -72,7 +72,8 @@ CONTAINS
     ELSE
        CALL Add(P,P2,SpAMM_Two,-SpAMM_One)         ! P <- 2*P-P^2
     ENDIF
-    P%Norm=SQRT(Norm(P))
+    P%Norms=Norm(P)
+    P%Norms%FrobeniusNorm=SQRT(P%Norms%FrobeniusNorm)
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification",29)
   END SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification
@@ -97,7 +98,8 @@ CONTAINS
     SpectralExtent=RQIMax-RQIMin
     CALL Add(A,-RQIMax)
     CALL Multiply(A,-SpAMM_One/SpectralExtent)
-    A%Norm=Sqrt(Norm(A))
+    A%Norms=Norm(A)
+    A%Norms%FrobeniusNorm=Sqrt(A%Norms%FrobeniusNorm)
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree",31)
   END SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
@@ -137,7 +139,8 @@ CONTAINS
        xnorm=SpAMM_One/Dot(x,x)
        !
        CALL Multiply(x,xnorm)
-       x%Norm=SQRT(Norm(x))
+       x%Norms=Norm(x)
+       x%Norms%FrobeniusNorm=SQRT(x%Norms%FrobeniusNorm)
        WRITE(*,*)' XNORM = ',XNORM
 !       STOP
        !
@@ -186,7 +189,8 @@ CONTAINS
           !
           ! h=g+beta*hOld
           CALL Add(h,SpAMM_One,g,beta,hOld)
-          h%Norm=SQRT(Norm(h))
+          h%Norms=Norm(h)
+          h%Norms%FrobeniusNorm=SQRT(h%Norms%FrobeniusNorm)
           !
           CALL Copy(g,gOld)
           CALL Copy(h,hOld)
@@ -230,7 +234,8 @@ CONTAINS
                 CALL Add(x,SpAMM_One,h,LambdaPlus)
              ENDIF
           ENDIF
-          x%Norm=SQRT(Norm(x))
+          x%Norms=Norm(x)
+          x%Norms%FrobeniusNorm=SQRT(x%Norms%FrobeniusNorm)
 
        IF(I==1)THEN
           WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
