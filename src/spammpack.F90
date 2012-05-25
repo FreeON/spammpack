@@ -50,7 +50,7 @@
 !! USE spammpack
 !! @endcode
 !!
-!! See @ref spammpack for more details.
+!! See the documentation of @ref spammpack for more details.
 !!
 !! @copyright
 !! This code is part of the FreeON suite of programs for linear scaling
@@ -83,8 +83,7 @@
 !! @author Matt Challacombe <matt.challacombe@freeon.org>
 !! @author Nicolas Bock <nicolas.bock@freeon.org>
 
-!> @brief
-!! The main module of SpAMMPack.
+!> The main module of SpAMMPack.
 MODULE spammpack
 
   USE SpAMM_DERIVED
@@ -93,21 +92,6 @@ MODULE spammpack
   USE SpAMM_MNGMENT
   USE SpAMM_ALGEBRA
   USE SpAMM_PROJECT
-
-  !> @brief
-  !! Define interface to the C function spamm_exit().
-  INTERFACE SpAMM_EXIT
-    SUBROUTINE SpAMM_EXIT (exitcode)
-      INTEGER, INTENT(IN) :: exitcode
-    END SUBROUTINE SpAMM_EXIT
-  END INTERFACE SpAMM_EXIT
-
-  !> @brief
-  !! Define interface to the C function spamm_trap().
-  INTERFACE SpAMM_Trap
-    SUBROUTINE SpAMM_Trap ()
-    END SUBROUTINE SpAMM_Trap
-  END INTERFACE SpAMM_Trap
 
 CONTAINS
 

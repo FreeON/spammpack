@@ -1,3 +1,5 @@
+/** @file */
+
 /*
      This code is part of the FreeON suite of programs for linear scaling
      electronic structure theory and ab initio molecular dynamics.
@@ -26,10 +28,21 @@
 
 #include <time.h>
 
-double spamm_ipm_get_time ()
+/** Get the current time.
+ */
+double spamm_get_time ()
 {
   return (double) time(NULL);
 }
 
-double spamm_ipm_get_time_ () { return spamm_ipm_get_time(); }
-double spamm_ipm_get_time__ () { return spamm_ipm_get_time(); }
+/** @private
+ *
+ * Underscore version of spamm_get_time().
+ */
+double spamm_get_time_ () { return spamm_get_time(); }
+
+/** @private
+ *
+ * Underscore version of spamm_get_time().
+ */
+double spamm_get_time__ () { return spamm_get_time(); }

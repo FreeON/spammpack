@@ -48,14 +48,12 @@ spamm_exit (const int exitcode)
 
 /** @private
  *
- * @brief
  * Underscore version of spamm_exit().
  */
 void spamm_exit_ (const int exitcode) { spamm_exit(exitcode); }
 
 /** @private
  *
- * @brief
  * Underscore version of spamm_exit().
  */
 void spamm_exit__ (const int exitcode) { spamm_exit(exitcode); }

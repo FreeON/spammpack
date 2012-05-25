@@ -27,13 +27,12 @@
 !    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
 
-!> @brief
-!! Defines operations on SpAMM trees.
+!> Defines operations on SpAMM trees.
 MODULE SpAMM_ALGEBRA
 
-  USE  SpAMM_DERIVED
-  USE  SpAMM_GLOBALS
-  USE  SpAMM_MNGMENT
+  USE SpAMM_DERIVED
+  USE SpAMM_GLOBALS
+  USE SpAMM_MNGMENT
 
   IMPLICIT NONE
 
@@ -56,8 +55,7 @@ MODULE SpAMM_ALGEBRA
   !  INTERFACE BLOCKS
   !===============================================================================
 
-  !> @brief
-  !! Interface for multiplication operations between different SpAMM types.
+  !> Interface for multiplication operations between different SpAMM types.
   !!
   !! @details
   !! The Sparse Approximate Matrix-Multiply (SpAMM):
@@ -69,15 +67,13 @@ MODULE SpAMM_ALGEBRA
     MODULE PROCEDURE SpAMM_Multiply_BiTree_x_Scalar
   END INTERFACE
 
-  !> @brief
-  !! Interface for trace operations.
+  !> Interface for trace operations.
   INTERFACE Trace
     MODULE PROCEDURE SpAMM_Trace_QuTree
     MODULE PROCEDURE SpAMM_Trace_QuTree_Product
   END INTERFACE
 
-  !> @brief
-  !! Interface for additions operations between different SpAMM types.
+  !> Interface for additions operations between different SpAMM types.
   INTERFACE Add
     MODULE PROCEDURE SpAMM_Add_QuTree_2_QuTree_InPlace
     MODULE PROCEDURE SpAMM_Add_BiTree_2_BiTree_InPlace
@@ -85,21 +81,18 @@ MODULE SpAMM_ALGEBRA
     MODULE PROCEDURE SpAMM_Add_Identity_2_QuTree_InPlace
   END INTERFACE
 
-  !> @brief
-  !! Interface for filter operations (thresholding of small matrix elements).
+  !> Interface for filter operations (thresholding of small matrix elements).
   INTERFACE Filter
     MODULE PROCEDURE SpAMM_Filter_QuTree
   END INTERFACE
 
-  !> @brief
-  !! Interface for norm operations.
+  !> Interface for norm operations.
   INTERFACE Norm
     MODULE PROCEDURE SpAMM_Norm_Reduce_BiTree
     MODULE PROCEDURE SpAMM_Norm_Reduce_QuTree
   END INTERFACE
 
-  !> @brief
-  !! Interface for dot product operations.
+  !> Interface for dot product operations.
   INTERFACE Dot
     MODULE PROCEDURE SpAMM_Dot_Product_BiTree
   END INTERFACE
@@ -107,13 +100,20 @@ MODULE SpAMM_ALGEBRA
 CONTAINS
 
   !> Multiplication operation between a quadtree and a quadtree.
+  !!
+  !! @param qA Pointer to quadtree A.
+  !! @param qB Pointer to quadtree B.
+  !! @param qC Pointer to quadtree C.
+  !! @param LocalThreshold The SpAMM threshold overriding the global value,
+  !! SpAMM_GLOBALS::SpAMM_PRODUCT_TOLERANCE.
   SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA,qB,qC,LocalThreshold)
 
-    TYPE(QuTree), POINTER                :: qA,qB
+    TYPE(QuTree), POINTER, INTENT(IN)    :: qA,qB
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
-    INTEGER :: Depth
-    REAL(SpAMM_KIND), OPTIONAL         :: LocalThreshold
-    REAL(SpAMM_DOUBLE)                 :: TInitial, TTotal
+    REAL(SpAMM_KIND), OPTIONAL           :: LocalThreshold
+
+    INTEGER                              :: Depth
+    REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
 
     IF(PRESENT(LocalThreshold))THEN
       SpAMM_Threshold_Multiply_QuTree_x_QuTree=LocalThreshold
@@ -121,13 +121,13 @@ CONTAINS
       SpAMM_Threshold_Multiply_QuTree_x_QuTree=SpAMM_PRODUCT_TOLERANCE
     ENDIF
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     CALL SpAMM_Multiply_QuTree_x_Scalar(qC,SpAMM_Zero)
     !$OMP TASK UNTIED SHARED(qA,qB,qC)
     CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC,qA,qB,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_QuTree",1)
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree
@@ -147,12 +147,12 @@ CONTAINS
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     IF(.NOT.ASSOCIATED(qA))RETURN
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK SHARED(qA)
     CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_Scalar",3)
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar
@@ -183,12 +183,12 @@ CONTAINS
     ELSE
       SpAMM_Add_QuTree_2_QuTree_InPlace_Beta=SpAMM_One
     ENDIF
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA,qB)
     CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA,qB,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Add_QuTree_2_QuTree_InPlace",4)
 
   END SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace
@@ -205,12 +205,12 @@ CONTAINS
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     Depth=0
     SpAMM_Add_Identity_2_QuTree_InPlace_Alpha=Alpha
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA)
     CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA,1,SpAMM_PADDED_MATRIX_DIMENSION,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Add_QuTree_2_QuTree_InPlace",5)
 
   END SUBROUTINE SpAMM_Add_Identity_2_QuTree_InPlace
@@ -225,12 +225,12 @@ CONTAINS
     INTEGER                :: Depth
     REAL(SpAMM_DOUBLE)     :: TInitial, TTotal
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA,a)
     a=SpAMM_Trace_QuTree_Recur(qA,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Trace_QuTree",6)
 
   END FUNCTION SpAMM_Trace_QuTree
@@ -245,12 +245,12 @@ CONTAINS
     INTEGER                :: Depth
     REAL(SpAMM_DOUBLE)     :: TInitial, TTotal
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA,a)
     a=SpAMM_Trace_QuTree_Product_Recur(qA,qB,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Trace_QuTree",7)
 
   END FUNCTION SpAMM_Trace_QuTree_Product
@@ -265,12 +265,12 @@ CONTAINS
     INTEGER                :: Depth
     REAL(SpAMM_DOUBLE)     :: TInitial, TTotal
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA)
     CALL SpAMM_Filter_QuTree_Recur(qA,Tau,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Filter_QuTree",8)
 
   END SUBROUTINE SpAMM_Filter_QuTree
@@ -289,12 +289,12 @@ CONTAINS
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
 
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK SHARED(Norm,qA)
     Norm=SpAMM_Norm_Reduce_QuTree_Recur(qA,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Norm_Reduce_QuTree",9)
 
   END FUNCTION SpAMM_Norm_Reduce_QuTree
@@ -320,12 +320,12 @@ CONTAINS
     ELSE
       SpAMM_Add_BiTree_2_BiTree_RePlace_Beta=SpAMM_One
     ENDIF
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(bA,bB)
     CALL SpAMM_Add_BiTree_2_BiTree_RePlace_Recur(bA,bB,bC,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Add_BiTree_2_BiTree_RePlace",10)
 
   END SUBROUTINE SpAMM_Add_BiTree_2_BiTree_RePlace
@@ -351,12 +351,12 @@ CONTAINS
     ELSE
       SpAMM_Add_BiTree_2_BiTree_InPlace_Beta=SpAMM_One
     ENDIF
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(bA,bB)
     CALL SpAMM_Add_BiTree_2_BiTree_InPlace_Recur(bA,bB,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Add_BiTree_2_BiTree_InPlace",11)
 
   END SUBROUTINE SpAMM_Add_BiTree_2_BiTree_InPlace
@@ -371,12 +371,12 @@ CONTAINS
     REAL(SpAMM_KIND)     :: dot
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK SHARED(dot,bA,bB)
     dot=SpAMM_Dot_Product_BiTree_Recur(bA,bB,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Dot_Product_BiTree",12)
 
   END FUNCTION SpAMM_Dot_Product_BiTree
@@ -397,13 +397,13 @@ CONTAINS
       SpAMM_Threshold_Multiply_QuTree_x_BiTree=SpAMM_PRODUCT_TOLERANCE
     ENDIF
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     CALL SpAMM_Multiply_BiTree_x_Scalar(bC,SpAMM_Zero)
     !$OMP TASK UNTIED SHARED(qA,bB,bC)
     CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC,qA,bB,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_BiTree",13)
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree
@@ -419,12 +419,12 @@ CONTAINS
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     IF(.NOT.ASSOCIATED(bA))RETURN
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK SHARED(bA)
     CALL SpAMM_Multiply_BiTree_x_Scalar_Recur(bA,a,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_BiTree_x_Scalar",14)
 
   END SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar
@@ -439,12 +439,12 @@ CONTAINS
     REAL(SpAMM_KIND)     :: Norm
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     Depth=0
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     !$OMP TASK SHARED(Norm,bA)
     Norm=SpAMM_Norm_Reduce_BiTree_Recur(bA,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Norm_Reduce_BiTree",15)
 
   END FUNCTION SpAMM_Norm_Reduce_BiTree

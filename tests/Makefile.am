@@ -1,5 +1,5 @@
 noinst_LTLIBRARIES = libspammtests.la
-libspammtests_la_SOURCES = test_utilities.F90 SpAMM_TIMER.c spammtests.F90
+libspammtests_la_SOURCES = test_utilities.F90 spammtests.F90
 
 noinst_PROGRAMS = spamm_multiply
 

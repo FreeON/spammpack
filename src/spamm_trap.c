@@ -28,8 +28,7 @@
 
 #include <stdlib.h>
 
-/** @details
- * Terminate and produce a backtrace.
+/** Terminate and produce a backtrace.
  */
 void spamm_trap ()
 {
@@ -38,14 +37,12 @@ void spamm_trap ()
 
 /** @private
  *
- * @brief
  * Underscore version of spamm_trap().
  */
 void spamm_trap_ () { spamm_trap(); }
 
 /** @private
  *
- * @brief
  * Underscore version of spamm_trap().
  */
 void spamm_trap__ () { spamm_trap(); }

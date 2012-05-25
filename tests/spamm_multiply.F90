@@ -28,8 +28,8 @@ program spamm_multiply
 
   integer :: i, j
 
-  call load_matrix("testmatrix_2.coor", A_dense)
-  call load_matrix("testmatrix_2.coor", B_dense)
+  call load_matrix("testmatrix_random_64x64.coor", A_dense)
+  call load_matrix("testmatrix_random_64x64.coor", B_dense)
 
   N = size(A_dense, 1)
   allocate(C_dense(N, N))

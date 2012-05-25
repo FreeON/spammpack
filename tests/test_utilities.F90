@@ -8,11 +8,12 @@ contains
 
   subroutine load_matrix (filename, A)
 
+    real(SpAMM_DOUBLE), dimension(:, :), allocatable, intent(inout) :: A
+
     integer :: N
     integer :: i, j
     real(SpAMM_DOUBLE) :: Aij
     character(len = *), intent(in) :: filename
-    real(SpAMM_DOUBLE), dimension(:, :), allocatable, intent(inout) :: A
 
     if(allocated(A)) then
       deallocate(A)

@@ -26,11 +26,17 @@
 !    PACKAGE FOR THE SPARSE APPROXIMATE MATRIX MULTIPLY (SpAMMPack)
 !    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
+
+!> Projections of quadtree objects.
 MODULE SpAMM_PROJECT
+
   USE  SpAMM_DERIVED
   USE  SpAMM_GLOBALS
   USE  SpAMM_MNGMENT
   USE  SpAMM_ALGEBRA
+
+  IMPLICIT NONE
+
   !===============================================================================
   !  GLOBALS
   !===============================================================================
@@ -44,6 +50,7 @@ MODULE SpAMM_PROJECT
   INTERFACE SpAMM_TC2
      MODULE PROCEDURE SpAMM_Quadratic_Trace_Correcting_Purification
   END INTERFACE
+
 CONTAINS
   !=================================================================
   ! SPAMM ROUTINES FOR SPECTRAL PROJECTION
@@ -56,7 +63,7 @@ CONTAINS
     TYPE(QuTree),POINTER   :: T1
     REAL(SpAMM_KIND)       :: Ne,TrP,TrP2
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     TrP=Trace(P)
     CALL Multiply(P,P,P2)                          ! P^2 <- P.P
     TrP2=Trace(P2)
@@ -66,7 +73,7 @@ CONTAINS
        CALL Add(P,P2,SpAMM_Two,-SpAMM_One)         ! P <- 2*P-P^2
     ENDIF
     P%Norm=SQRT(Norm(P))
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification",29)
   END SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification
 
@@ -80,7 +87,7 @@ CONTAINS
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !100d0*SpAMM_RQI_MULTIPLY_THRESHOLD
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_EVAL_ERROR_ESTIMATE  =2D-2 !100d0*SpAMM_RQI_CONVERGENCE_THRESHOLD
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
-    TInitial=SpAMM_IPM_GET_TIME()
+    TInitial=SpAMM_Get_Time()
     ! Find extremal eigenvalues by RQI
     CALL SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree(A,RQIMin,RQIMax, &
              SpAMM_RQI_MULTIPLY_THRESHOLD,SpAMM_RQI_CONVERGENCE_THRESHOLD)
@@ -91,7 +98,7 @@ CONTAINS
     CALL Add(A,-RQIMax)
     CALL Multiply(A,-SpAMM_One/SpectralExtent)
     A%Norm=Sqrt(Norm(A))
-    TTotal=SpAMM_IPM_GET_TIME()-TInitial
+    TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree",31)
   END SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
   !=================================================================

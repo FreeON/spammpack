@@ -27,8 +27,7 @@
 !    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
 
-!> @brief
-!! Defines global parameters and variables.
+!> Defines global parameters and variables.
 MODULE SpAMM_GLOBALS
 
   USE SpAMM_DERIVED
@@ -65,114 +64,136 @@ MODULE SpAMM_GLOBALS
   INTEGER :: SpAMM_RECURSION_DEPTH_CUTOFF
 
   INTEGER,PARAMETER :: SpAMM_NUMBER_OF_STATS=100
+
   TYPE(Stats), DIMENSION(1:SpAMM_NUMBER_OF_STATS) :: SpAMM_STATS
 
-  INTERFACE
-    FUNCTION SpAMM_IPM_GET_TIME()
+  !> Define interface to the C function spamm_exit().
+  INTERFACE SpAMM_EXIT
+    SUBROUTINE SpAMM_EXIT (exitcode)
+      INTEGER, INTENT(IN) :: exitcode
+    END SUBROUTINE SpAMM_EXIT
+  END INTERFACE SpAMM_EXIT
+
+  !> Define interface to the C function spamm_trap().
+  INTERFACE SpAMM_Trap
+    SUBROUTINE SpAMM_Trap ()
+    END SUBROUTINE SpAMM_Trap
+  END INTERFACE SpAMM_Trap
+
+  !> Define interface to the C function spamm_get_time().
+  INTERFACE SpAMM_Get_Time
+    FUNCTION SpAMM_Get_Time ()
       USE SpAMM_DERIVED
-      REAL(SpAMM_DOUBLE) :: SpAMM_IPM_GET_TIME
-    END FUNCTION SpAMM_IPM_GET_TIME
-  END INTERFACE
+      REAL(SpAMM_DOUBLE) :: SpAMM_Get_Time
+    END FUNCTION SpAMM_Get_Time
+  END INTERFACE SpAMM_Get_Time
 
-  CONTAINS
+CONTAINS
 
-    !> @brief
-    !! Initialize global variables.
-    !!
-    !! @param N [inout] The matrix size. This variable gets padded and will be
-    !! set to the padded matrix dimension on exit.
-    !! @param Threads The number of threads. This is an optional argument and
-    !! only relevant when compiled with OpenMP.
-    SUBROUTINE SpAMM_Init_Globals(N, Threads)
+  !> Initialize global variables.
+  !!
+  !! @param N The matrix size. This variable gets padded and will be set to
+  !! the padded matrix dimension on exit.
+  !! @param Threads The number of threads. This is an optional argument and
+  !! only relevant when compiled with OpenMP.
+  SUBROUTINE SpAMM_Init_Globals(N, Threads)
 
-      INTEGER, INTENT(inout) :: N
-      INTEGER, OPTIONAL      :: Threads
-      INTEGER                :: K
-      INTEGER                :: SpAMM_TILES
+    INTEGER, INTENT(inout) :: N
+    INTEGER, OPTIONAL      :: Threads
+    INTEGER                :: K
+    INTEGER                :: SpAMM_TILES
 #ifdef _OPENMP
-      INTEGER                :: NThreads,ThreadID
+    INTEGER                :: NThreads,ThreadID
 #endif
 
-      SpAMM_MATRIX_DIMENSION=N
+    SpAMM_MATRIX_DIMENSION=N
 
-      K=CEILING(LOG10(DBLE(N))/LOG10(2D0))
+    K=CEILING(LOG10(DBLE(N))/LOG10(2D0))
 
-      ! Pad matrix to right size.
-      SpAMM_PADDED_MATRIX_DIMENSION=2**K
+    ! Pad matrix to right size.
+    SpAMM_PADDED_MATRIX_DIMENSION=2**K
 
-      SpAMM_TILES=CEILING(DBLE(SpAMM_PADDED_MATRIX_DIMENSION)/SpAMM_BLOCK_SIZE)
+    SpAMM_TILES=CEILING(DBLE(SpAMM_PADDED_MATRIX_DIMENSION)/SpAMM_BLOCK_SIZE)
 
-      ! Depth starts from 0:
-      SpAMM_TOTAL_DEPTH=CEILING(LOG(DBLE(SpAMM_TILES))/LOG(2D0))
+    ! Depth starts from 0:
+    SpAMM_TOTAL_DEPTH=CEILING(LOG(DBLE(SpAMM_TILES))/LOG(2D0))
 
-      ! Cutoff is tuning policy choice:
-      SpAMM_RECURSION_DEPTH_CUTOFF=MAX(0,SpAMM_TOTAL_DEPTH-2)
+    ! Cutoff is tuning policy choice:
+    SpAMM_RECURSION_DEPTH_CUTOFF=MAX(0,SpAMM_TOTAL_DEPTH-2)
 
-      N=SpAMM_PADDED_MATRIX_DIMENSION
-      !WRITE(*,*)' SpAMM_MATRIX_DIMENSION        = ',      SpAMM_MATRIX_DIMENSION
-      !WRITE(*,*)' SpAMM_PADDED_MATRIX_DIMENSION = ',SpAMM_PADDED_MATRIX_DIMENSION
+    N=SpAMM_PADDED_MATRIX_DIMENSION
+    !WRITE(*,*)' SpAMM_MATRIX_DIMENSION        = ',      SpAMM_MATRIX_DIMENSION
+    !WRITE(*,*)' SpAMM_PADDED_MATRIX_DIMENSION = ',SpAMM_PADDED_MATRIX_DIMENSION
 
 #ifdef _OPENMP
-      IF(PRESENT(Threads))THEN
-        SpAMM_THREAD_COUNT=Threads
-      ELSE
-        SpAMM_THREAD_COUNT=1
-      ENDIF
+    IF(PRESENT(Threads))THEN
+      SpAMM_THREAD_COUNT=Threads
+    ELSE
+      SpAMM_THREAD_COUNT=1
+    ENDIF
 
-      CALL OMP_SET_DYNAMIC(.FALSE.)
-      CALL OMP_SET_NESTED(.TRUE.)
-      CALL OMP_SET_NUM_THREADS(SpAMM_THREAD_COUNT)
-      !$OMP PARALLEL PRIVATE(ThreadID,NThreads)
-      ThreadID=OMP_GET_THREAD_NUM()
-      NThreads=OMP_GET_NUM_THREADS()
-      WRITE(*,33) ThreadID, NThreads
-      !$OMP END PARALLEL
-      33    FORMAT(' SpAMM_Init_Globals: Id#',I2,' checking in with ',I2,' threads ')
+    CALL OMP_SET_DYNAMIC(.FALSE.)
+    CALL OMP_SET_NESTED(.TRUE.)
+    CALL OMP_SET_NUM_THREADS(SpAMM_THREAD_COUNT)
+    !$OMP PARALLEL PRIVATE(ThreadID,NThreads)
+    ThreadID=OMP_GET_THREAD_NUM()
+    NThreads=OMP_GET_NUM_THREADS()
+    WRITE(*,33) ThreadID, NThreads
+    !$OMP END PARALLEL
+33  FORMAT(' SpAMM_Init_Globals: Id#',I2,' checking in with ',I2,' threads ')
 #endif
 
-      SpAMM_STATS(:)%Time=0
-      SpAMM_STATS(:)%Count=0
-      SpAMM_STATS(:)%Routine=" "
-    END SUBROUTINE SpAMM_Init_Globals
+    SpAMM_STATS(:)%Time=0
+    SpAMM_STATS(:)%Count=0
+    SpAMM_STATS(:)%Routine=" "
+  END SUBROUTINE SpAMM_Init_Globals
 
-    SUBROUTINE SpAMM_Time_Stamp(Time,Routine,RoutineID)
-      IMPLICIT NONE
-      REAL(SpAMM_DOUBLE),OPTIONAL     :: Time
-      INTEGER,OPTIONAL          :: RoutineID
-      CHARACTER(LEN=*),OPTIONAL :: Routine
-      REAL(SpAMM_DOUBLE)              :: SpAMM_Total_Time
-      INTEGER                   :: I
-      IF(.NOT.PRESENT(Time))THEN
-        WRITE(*,22)
-        22       FORMAT(72('-'))
-        DO I=1,SpAMM_NUMBER_OF_STATS
-          IF(SpAMM_STATS(I)%Routine(1:1).NE." ")THEN
-            WRITE(*,33)ADJUSTL(TRIM(ADJUSTL(SpAMM_STATS(I)%Routine))), &
-              SpAMM_STATS(I)%Time/DBLE(SpAMM_STATS(I)%Count),SpAMM_STATS(I)%Count
-            33             FORMAT(A50,' AveTime = ',F20.10,' over ',I3,' counts ')
-          ENDIF
-        ENDDO
-        WRITE(*,22)
-        SpAMM_Total_Time=SpAMM_Zero
-        DO I=1,SpAMM_NUMBER_OF_STATS
-          IF(SpAMM_STATS(I)%Routine(1:1).NE." ")THEN
-            SpAMM_Total_Time=SpAMM_Total_Time+SpAMM_STATS(I)%Time
-            WRITE(*,34)ADJUSTL(TRIM(ADJUSTL(SpAMM_STATS(I)%Routine))), &
-              SpAMM_STATS(I)%Time
-            34             FORMAT(A50,' TotalTime = ',F20.10)
-          ENDIF
-        ENDDO
-        WRITE(*,22)
-        WRITE(*,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
-        !         WRITE(77,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
-        35       FORMAT("SpAMM_SCALING ",I4,"  ", F20.10)
-      ELSE
-        SpAMM_STATS(RoutineID)%Time=SpAMM_STATS(RoutineID)%Time+Time
-        SpAMM_STATS(RoutineID)%Count=SpAMM_STATS(RoutineID)%Count+1
-        SpAMM_STATS(RoutineID)%Routine=ADJUSTL(Routine)
-        !         WRITE(*,44)ADJUSTL(TRIM(Routine)),Time
-        !44       FORMAT(A50,': Time = ',F20.10,' CPUsec')
-      ENDIF
-    END SUBROUTINE SpAMM_Time_Stamp
+  !> Print out a timestamp.
+  !!
+  !! @param Time The time to print.
+  !! @param Routine A string indicating the part of the code that took this
+  !! amount of time.
+  !! @RoutineID An ID.
+  SUBROUTINE SpAMM_Time_Stamp(Time,Routine,RoutineID)
 
-  END MODULE SpAMM_GLOBALS
+    REAL(SpAMM_DOUBLE),OPTIONAL :: Time
+    CHARACTER(LEN=*),OPTIONAL   :: Routine
+    INTEGER,OPTIONAL            :: RoutineID
+    REAL(SpAMM_DOUBLE)          :: SpAMM_Total_Time
+    INTEGER                     :: I
+
+    IF(.NOT.PRESENT(Time))THEN
+      WRITE(*,22)
+      22       FORMAT(72('-'))
+      DO I=1,SpAMM_NUMBER_OF_STATS
+        IF(SpAMM_STATS(I)%Routine(1:1).NE." ")THEN
+          WRITE(*,33)ADJUSTL(TRIM(ADJUSTL(SpAMM_STATS(I)%Routine))), &
+            SpAMM_STATS(I)%Time/DBLE(SpAMM_STATS(I)%Count),SpAMM_STATS(I)%Count
+          33             FORMAT(A50,' AveTime = ',F20.10,' over ',I3,' counts ')
+        ENDIF
+      ENDDO
+      WRITE(*,22)
+      SpAMM_Total_Time=SpAMM_Zero
+      DO I=1,SpAMM_NUMBER_OF_STATS
+        IF(SpAMM_STATS(I)%Routine(1:1).NE." ")THEN
+          SpAMM_Total_Time=SpAMM_Total_Time+SpAMM_STATS(I)%Time
+          WRITE(*,34)ADJUSTL(TRIM(ADJUSTL(SpAMM_STATS(I)%Routine))), &
+            SpAMM_STATS(I)%Time
+          34             FORMAT(A50,' TotalTime = ',F20.10)
+        ENDIF
+      ENDDO
+      WRITE(*,22)
+      WRITE(*,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
+      !         WRITE(77,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
+      35       FORMAT("SpAMM_SCALING ",I4,"  ", F20.10)
+    ELSE
+      SpAMM_STATS(RoutineID)%Time=SpAMM_STATS(RoutineID)%Time+Time
+      SpAMM_STATS(RoutineID)%Count=SpAMM_STATS(RoutineID)%Count+1
+      SpAMM_STATS(RoutineID)%Routine=ADJUSTL(Routine)
+      !         WRITE(*,44)ADJUSTL(TRIM(Routine)),Time
+      !44       FORMAT(A50,': Time = ',F20.10,' CPUsec')
+    ENDIF
+
+  END SUBROUTINE SpAMM_Time_Stamp
+
+END MODULE SpAMM_GLOBALS

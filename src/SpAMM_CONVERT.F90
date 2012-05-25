@@ -47,11 +47,12 @@ MODULE SpAMM_CONVERT
   !! @param A The dense matrix.
   !!
   !! @return Pointer to a new quadtree.
-  FUNCTION SpAMM_Convert_Dense_2_QuTree(A) RESULT(qA)
+  FUNCTION SpAMM_Convert_Dense_2_QuTree (A) RESULT(qA)
 
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
 
+    WRITE(*, *) size(A, 1)
     qA=>NULL()
     CALL NewQuNode(qA,init=.TRUE.)
     CALL SpAMM_Convert_Dense_2_QuTree_Recur(A,qA)
@@ -63,7 +64,7 @@ MODULE SpAMM_CONVERT
   !!
   !! @param A The dense matrix.
   !! @param qA A pointer to a quadtree node.
-  RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur(A,qA)
+  RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur (A, qA)
 
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
@@ -73,30 +74,33 @@ MODULE SpAMM_CONVERT
     I=SIZE(A,1)
     J=SIZE(A,2)
     IF(I<=SpAMM_BLOCK_SIZE.AND.J<=SpAMM_BLOCK_SIZE)THEN
-       IF(I<SpAMM_BLOCK_SIZE)THEN
-          WRITE(*, *) 'LOGIC ERROR IN SpAMM: padding error'
-          CALL SpAMM_EXIT(1)
-       ELSE
-!          qA%Siz=SpAMM_BLOCK_SIZE
-          ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
-          qA%Blok(1:I,1:J)=A(1:I,1:J)
-          NULLIFY(qA%Quad00)
-          NULLIFY(qA%Quad01)
-          NULLIFY(qA%Quad10)
-          NULLIFY(qA%Quad11)
-       ENDIF
-       RETURN
-     ELSE
+      IF(I < SpAMM_BLOCK_SIZE .OR. J < SpAMM_BLOCK_SIZE) THEN
+        WRITE(*, *) "LOGIC ERROR IN SpAMM: padding error"
+        WRITE(*, *) "SIZE(A, 1) = ", I
+        WRITE(*, *) "SIZE(A, 2) = ", J
+        WRITE(*, *) "SpAMM_BLOCK_SIZE = ", SpAMM_BLOCK_SIZE
+        CALL SpAMM_EXIT(1)
+      ELSE
+        ! qA%Siz=SpAMM_BLOCK_SIZE
+        ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
+        qA%Blok(1:I,1:J)=A(1:I,1:J)
+        NULLIFY(qA%Quad00)
+        NULLIFY(qA%Quad01)
+        NULLIFY(qA%Quad10)
+        NULLIFY(qA%Quad11)
+      ENDIF
+      RETURN
+    ELSE
 
-       ALLOCATE(qA%Quad00)
-       ALLOCATE(qA%Quad01)
-       ALLOCATE(qA%Quad10)
-       ALLOCATE(qA%Quad11)
+      ALLOCATE(qA%Quad00)
+      ALLOCATE(qA%Quad01)
+      ALLOCATE(qA%Quad10)
+      ALLOCATE(qA%Quad11)
 
-       CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:I/2  ,1:J/2  )  , qA%Quad00 )
-       CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:I/2  ,J/2+1:J)  , qA%Quad01 )
-       CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(I/2+1:I,1:J/2  )  , qA%Quad10 )
-       CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(I/2+1:I,J/2+1:J)  , qA%Quad11 )
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:I/2  ,1:J/2  )  , qA%Quad00 )
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:I/2  ,J/2+1:J)  , qA%Quad01 )
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(I/2+1:I,1:J/2  )  , qA%Quad10 )
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(I/2+1:I,J/2+1:J)  , qA%Quad11 )
 
     ENDIF
 

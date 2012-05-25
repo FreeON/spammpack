@@ -26,6 +26,8 @@
 !    PACKAGE FOR THE SPARSE APPROXIMATE MATRIX MULTIPLY (SPAMMPACK)
 !    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
+
+!> Management functions for quadtree objects.
 MODULE SpAMM_MNGMENT
 
   USE  SpAMM_DERIVED

@@ -27,8 +27,7 @@
 !    Matt Challacombe and Nick Bock
 !------------------------------------------------------------------------------
 
-!> @details
-!! Defines derived types used in SpAMMPACK.
+!> Defines derived types used in SpAMMPACK.
 MODULE SpAMM_DERIVED
 
   !$ USE OMP_LIB
