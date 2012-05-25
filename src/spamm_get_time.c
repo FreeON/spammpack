@@ -26,13 +26,23 @@
      dissemination in future releases.
 */
 
-#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 /** Get the current time.
  */
 double spamm_get_time ()
 {
-  return (double) time(NULL);
+  struct rusage now;
+
+  if (getrusage(RUSAGE_SELF, &now) != 0)
+  {
+    printf("error running getrusage()\n");
+    exit(1);
+  }
+  return now.ru_utime.tv_sec+now.ru_utime.tv_usec/1.0e6;
 }
 
 /** @private
