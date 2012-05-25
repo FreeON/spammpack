@@ -14,5 +14,5 @@ spamm_multiply_SOURCES = spamm_multiply.F90
 TAGS_FILES = ../src/*.F90 ../src/*.c
 
 # Dependencies.
-spamm_multiply.o : test_utilities.o
-spammtests.o : spamm_utilities.o
+spamm_multiply.o : test_utilities.o spammtests.o
+spammtests.o : test_utilities.o
