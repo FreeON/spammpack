@@ -35,6 +35,7 @@
  */
 double spamm_get_time ()
 {
+#ifdef TIMER_GETRUSAGE
   struct rusage now;
 
   if (getrusage(RUSAGE_SELF, &now) != 0)
@@ -42,7 +43,20 @@ double spamm_get_time ()
     printf("error running getrusage()\n");
     exit(1);
   }
-  return now.ru_utime.tv_sec+now.ru_utime.tv_usec/1.0e6;
+  return (now.ru_utime.tv_sec*1e6+now.ru_utime.tv_usec)/1.0e6;
+#elif defined(TIMER_GETTIMEOFDAY)
+  struct timeval now;
+
+  if (gettimeofday(&now, NULL) != 0)
+  {
+    printf("error running gettimeofday()\n");
+    exit(1);
+  }
+  return (now.tv_sec*1e6+now.tv_usec)/1.0e6;
+#else
+  printf("no timer configured\n");
+  exit(1);
+#endif
 }
 
 /** @private

@@ -7,7 +7,7 @@ program spamm_multiply
 
   integer :: N
   integer :: testresult = 0
-  integer, parameter :: NThreads = 4
+  integer, parameter :: NThreads = 2
 
   type(SpAMM_Norm) :: norms
 

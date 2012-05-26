@@ -251,8 +251,8 @@ CONTAINS
        ENDIF
     ENDDO
 
-33  FORMAT(' MIN E.V. = ',E9.3,', GRAD RQI = ',E9.3,' in ',I4,' NLCG steps')
-44  FORMAT(' MAX E.V. = ',E9.3,', GRAD RQI = ',E9.3,' in ',I4,' NLCG steps')
+33  FORMAT(' MIN E.V. = ',E10.3,', GRAD RQI = ',E10.3,' in ',I4,' NLCG steps')
+44  FORMAT(' MAX E.V. = ',E10.3,', GRAD RQI = ',E10.3,' in ',I4,' NLCG steps')
 
     CALL Delete(x)
     CALL Delete(g)

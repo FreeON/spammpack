@@ -52,6 +52,10 @@ AC_LANG(C)
 dnl Get libtool.
 AC_PROG_LIBTOOL
 
+dnl Define which timer to use.
+dnl AC_DEFINE([TIMER_GETRUSAGE], [1], [Use getrusage() to time the library])
+AC_DEFINE([TIMER_GETTIMEOFDAY], [1], [Use gettimeofday() to time the library])
+
 dnl Output files.
 AC_CONFIG_FILES([
 Doxyfile
