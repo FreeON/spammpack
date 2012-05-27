@@ -26,7 +26,6 @@
      dissemination in future releases.
 */
 
-#include <stdio.h>
 #include <stdlib.h>
 
 /** @brief
@@ -40,17 +39,16 @@
  * @param exitcode The exit code to produce.
  */
 void
-spamm_exit (const int exitcode)
+spamm_exit (const int *const exitcode)
 {
-  printf("exiting with error code %i\n", exitcode);
-  exit(exitcode);
+  exit(*exitcode);
 }
 
 /** @private
  *
  * Underscore version of spamm_exit().
  */
-void spamm_exit_ (const int exitcode)
+void spamm_exit_ (const int *const exitcode)
 {
   spamm_exit(exitcode);
 }
@@ -59,7 +57,7 @@ void spamm_exit_ (const int exitcode)
  *
  * Underscore version of spamm_exit().
  */
-void spamm_exit__ (const int exitcode)
+void spamm_exit__ (const int *const exitcode)
 {
   spamm_exit(exitcode);
 }
