@@ -8,12 +8,12 @@ contains
 
   subroutine load_matrix (filename, A)
 
+    character(len = *), intent(in) :: filename
     real(SpAMM_DOUBLE), dimension(:, :), allocatable, intent(inout) :: A
 
     integer :: N
     integer :: i, j
     real(SpAMM_DOUBLE) :: Aij
-    character(len = *), intent(in) :: filename
 
     if(allocated(A)) then
       deallocate(A)
@@ -32,13 +32,17 @@ contains
     enddo
 1   continue
 
-    allocate(A(N, N))
-    rewind(10)
-    do while(.true.)
-      read(10, *, end = 2) i, j, Aij
-      A(i, j) = Aij
-    enddo
-2   close(10)
+    if(N == 0) then
+      write(*, *) "no matrix elements found in matrix file"
+    else
+      allocate(A(N, N))
+      rewind(10)
+      do while(.true.)
+        read(10, *, end = 2) i, j, Aij
+        A(i, j) = Aij
+      enddo
+2     close(10)
+    endif
 
   end subroutine load_matrix
 

@@ -30,7 +30,8 @@
 
 /** Terminate and produce a backtrace.
  */
-void spamm_trap ()
+void
+spamm_trap ()
 {
   abort();
 }
@@ -39,7 +40,8 @@ void spamm_trap ()
  *
  * Underscore version of spamm_trap().
  */
-void spamm_trap_ ()
+void
+spamm_trap_ ()
 {
   spamm_trap();
 }
@@ -48,7 +50,8 @@ void spamm_trap_ ()
  *
  * Underscore version of spamm_trap().
  */
-void spamm_trap__ ()
+void
+spamm_trap__ ()
 {
   spamm_trap();
 }

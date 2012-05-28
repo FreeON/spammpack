@@ -33,7 +33,8 @@
 
 /** Get the current time.
  */
-double spamm_get_time ()
+double
+spamm_get_time ()
 {
 #ifdef TIMER_GETRUSAGE
   struct rusage now;
@@ -63,7 +64,8 @@ double spamm_get_time ()
  *
  * Underscore version of spamm_get_time().
  */
-double spamm_get_time_ ()
+double
+spamm_get_time_ ()
 {
   return spamm_get_time();
 }
@@ -72,7 +74,8 @@ double spamm_get_time_ ()
  *
  * Underscore version of spamm_get_time().
  */
-double spamm_get_time__ ()
+double
+spamm_get_time__ ()
 {
   return spamm_get_time();
 }
