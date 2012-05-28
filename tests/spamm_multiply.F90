@@ -2,6 +2,10 @@
 #define NUMBER_OF_THREADS 1
 #endif
 
+#ifndef TEST_REPEAT
+#define TEST_REPEAT 100
+#endif
+
 program spamm_multiply
 
   use spammpack
@@ -10,6 +14,7 @@ program spamm_multiply
   implicit none
 
   integer :: N
+  integer :: test_repeat
   integer :: testresult = 0
   integer, parameter :: NThreads = NUMBER_OF_THREADS
 
@@ -59,7 +64,10 @@ program spamm_multiply
   !$OMP PARALLEL
   !$OMP SINGLE
 
-  call Multiply(A, B, C)
+  write(*, *) "repeat multiply ", TEST_REPEAT
+  do test_repeat = 1, TEST_REPEAT
+    call Multiply(A, B, C)
+  enddo
 
   !$OMP END SINGLE
   !$OMP END PARALLEL
