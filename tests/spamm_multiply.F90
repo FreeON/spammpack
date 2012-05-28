@@ -1,3 +1,7 @@
+#ifndef NUMBER_OF_THREADS
+#define NUMBER_OF_THREADS 1
+#endif
+
 program spamm_multiply
 
   use spammpack
