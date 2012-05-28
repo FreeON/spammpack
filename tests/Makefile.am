@@ -1,6 +1,8 @@
 noinst_LTLIBRARIES = libspammtests.la
 libspammtests_la_SOURCES = test_utilities.F90 spammtests.F90
 
+noinst_SCRIPTS = scaling_test.sh
+
 noinst_PROGRAMS = \
   spamm_multiply_01 \
   spamm_multiply_02 \
@@ -17,21 +19,7 @@ noinst_PROGRAMS = \
   spamm_multiply_44 \
   spamm_multiply_48
 
-TESTS = \
-  spamm_multiply_01 \
-  spamm_multiply_02 \
-  spamm_multiply_04 \
-  spamm_multiply_08 \
-  spamm_multiply_12 \
-  spamm_multiply_16 \
-  spamm_multiply_20 \
-  spamm_multiply_24 \
-  spamm_multiply_28 \
-  spamm_multiply_32 \
-  spamm_multiply_36 \
-  spamm_multiply_40 \
-  spamm_multiply_44 \
-  spamm_multiply_48
+TESTS = scaling_test.sh
 
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
 AM_CPPFLAGS = -I../src
