@@ -5,6 +5,7 @@ noinst_SCRIPTS = scaling_test.sh parseTestResults.py
 
 EXTRA_DIST = $(noinst_SCRIPTS) \
   set_mode.sh \
+  scaling_test.sh.in \
   scaling_test.reference
 
 noinst_PROGRAMS = \
