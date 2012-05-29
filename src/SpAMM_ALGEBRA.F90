@@ -502,55 +502,57 @@ CONTAINS
           qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)+MATMUL(  &
           qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE),         &
           qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+
       ELSE
-#ifdef _OPENMP
-        ! Put a check on the stack
-        DepthOK=.TRUE.
-        !          DepthOK=MOD(tier,2)==0
-        Go_00x00=DepthOK.AND.qA%Quad00%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        Go_00x01=DepthOK.AND.qA%Quad00%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        Go_10x00=DepthOK.AND.qA%Quad10%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        Go_10x01=DepthOK.AND.qA%Quad10%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-#endif
-        ! 00=00*00
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(Go_00x00)
+
+        ! DepthOK=.TRUE.
+        ! DepthOK=MOD(tier,2)==0
+        !Go_00x00=DepthOK.AND.qA%Quad00%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
+        !Go_00x01=DepthOK.AND.qA%Quad00%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
+        !Go_10x00=DepthOK.AND.qA%Quad10%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
+        !Go_10x01=DepthOK.AND.qA%Quad10%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
+
+        !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad00,qB%Quad00,tier+1)
         !$OMP END TASK
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(Go_00x01)
+
+        !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad00,qB%Quad01,tier+1)
         !$OMP END TASK
-        ! 10=10*00
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(Go_10x00)
+
+        !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad10,qB%Quad00,tier+1)
         !$OMP END TASK
-        ! 11=10*01
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(Go_10x01)
+
+        !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad10,qB%Quad01,tier+1)
         !$OMP END TASK
-#ifdef _OPENMP
-        Go_01x10=DepthOK.AND.qA%Quad01%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        Go_01x11=DepthOK.AND.qA%Quad01%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        Go_11x10=DepthOK.AND.qA%Quad11%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        Go_11x11=DepthOK.AND.qA%Quad11%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-#endif
+
+        !Go_01x10=DepthOK.AND.qA%Quad01%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
+        !Go_01x11=DepthOK.AND.qA%Quad01%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
+        !Go_11x10=DepthOK.AND.qA%Quad11%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
+        !Go_11x11=DepthOK.AND.qA%Quad11%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
+
         !$OMP TASKWAIT
-        ! 00=00*00+01*10
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(Go_01x10)
+
+        !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad01,qB%Quad10,tier+1)
         !$OMP END TASK
-        ! 01=00*01+01*11
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(Go_01x11)
+
+        !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad01,qB%Quad11,tier+1)
         !$OMP END TASK
-        ! 10=10*00+11*10
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(Go_11x10)
+
+        !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad11,qB%Quad10,tier+1)
         !$OMP END TASK
-        ! 11=10*01+11*11
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(Go_11x11)
+
+        !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11,tier+1)
         !$OMP END TASK
+
         !$OMP TASKWAIT
+
       ENDIF
     ENDIF
 
