@@ -34,10 +34,6 @@ MODULE SpAMM_DERIVED
 
   IMPLICIT NONE
 
-  ! --------------------------------------------------
-  ! Integers
-  ! --------------------------------------------------
-
   !> Define integer of length 2.
   INTEGER, PARAMETER :: INT1=SELECTED_INT_KIND(2)  !--Integer*1
   !> Define integer of length 2.
@@ -46,10 +42,6 @@ MODULE SpAMM_DERIVED
   INTEGER, PARAMETER :: INT4=SELECTED_INT_KIND(9)  !--Integer*4
   !> Define integer of length 8.
   INTEGER, PARAMETER :: INT8=SELECTED_INT_KIND(18) !--Integer*8
-
-  ! --------------------------------------------------
-  ! Reals
-  ! --------------------------------------------------
 
   !> Define float of length 4.
   INTEGER, PARAMETER :: SpAMM_SINGLE=KIND(0.0E0)   !--Real*4
@@ -62,10 +54,6 @@ MODULE SpAMM_DERIVED
 #else
   INTEGER, PARAMETER :: SpAMM_KIND=SpAMM_SINGLE
 #endif
-
-  ! --------------------------------------------------
-  ! Numbers
-  ! --------------------------------------------------
 
   !> Define the number zero.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Zero=0D0
@@ -175,7 +163,7 @@ MODULE SpAMM_DERIVED
      TYPE(QuTree), POINTER  :: QuadA
      TYPE(QuTree), POINTER  :: QuadB
      INTEGER, DIMENSION(3,2):: Box
-     REAL(SpAMM_KIND)           :: Wght
+     REAL(SpAMM_KIND)       :: Wght
      INTEGER                :: Hash
      INTEGER                :: i
   END TYPE CuLink
@@ -195,5 +183,13 @@ MODULE SpAMM_DERIVED
      INTEGER            :: Count
      CHARACTER(LEN=50)  :: Routine
   END TYPE Stats
+
+CONTAINS
+
+  !FUNCTION QuTree ()
+
+  !  TYPE(QuTree) :: QuTree
+
+  !END FUNCTION QuTree
 
 END MODULE SpAMM_DERIVED

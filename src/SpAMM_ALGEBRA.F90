@@ -475,16 +475,18 @@ CONTAINS
     INTEGER :: tier
 
     LOGICAL :: DepthOK,Go_00x00,Go_00x01,Go_10x00,Go_10x01,Go_01x10,Go_01x11,Go_11x10,Go_11x11
+    REAL(SpAMM_KIND), DIMENSION(:,:), ALLOCATABLE :: tempBlok
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB))THEN
       ! Apply the SpAMM condition.
       IF(qA%Norms%FrobeniusNorm*qB%Norms%FrobeniusNorm<SpAMM_Threshold_Multiply_QuTree_x_QuTree)RETURN
 
-      !$OMP CRITICAL
-      IF(.NOT.ASSOCIATED(qC))THEN
-        ALLOCATE(qC)
-      ENDIF
-      !$OMP END CRITICAL
+      ! For now we assume a fully preallocated matrix C.
+      !!$OMP CRITICAL
+      !IF(.NOT.ASSOCIATED(qC))THEN
+      !  ALLOCATE(qC)
+      !ENDIF
+      !!$OMP END CRITICAL
 
       ! At the bottom, calculate the product.
       IF(tier==SpAMM_TOTAL_DEPTH)THEN
@@ -497,11 +499,14 @@ CONTAINS
         END IF
         !$OMP END CRITICAL
 
-        ! Accumulate
-        qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)=         &
-          qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)+MATMUL(  &
-          qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE),         &
+        ! Calculate block product.
+        ALLOCATE(tempBlok(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE))
+        tempBlok = MATMUL(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
           qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+
+        !$OMP CRITICAL
+        qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) = qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)+tempBlok
+        !$OMP END CRITICAL
 
       ELSE
 
@@ -533,7 +538,7 @@ CONTAINS
         !Go_11x10=DepthOK.AND.qA%Quad11%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
         !Go_11x11=DepthOK.AND.qA%Quad11%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
 
-        !$OMP TASKWAIT
+        !!$OMP TASKWAIT
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad01,qB%Quad10,tier+1)
@@ -551,7 +556,7 @@ CONTAINS
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11,tier+1)
         !$OMP END TASK
 
-        !$OMP TASKWAIT
+        !!$OMP TASKWAIT
 
       ENDIF
     ENDIF
