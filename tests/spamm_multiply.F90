@@ -3,7 +3,7 @@
 #endif
 
 #ifndef TEST_REPEAT
-#define TEST_REPEAT 100
+#define TEST_REPEAT 10
 #endif
 
 program spamm_multiply
