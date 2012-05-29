@@ -21,3 +21,15 @@ grep SpAMM_SCALING scaling_test.output | awk '{print $2, $3}' > scaling_test.dat
 
 # Test result.
 ./parseTestResults.py --verbose --output scaling_test.output --reference scaling_test.reference
+teststatus=$?
+if test $teststatus -ne 0; then
+  echo "product accuracy test failed"
+fi
+
+./parseTestResults.py --verbose --output scaling_test.output --reference freeon-10.Intel.reference
+teststatus=$?
+if tests $teststatus -ne 0; then
+  echo "product timing test failed"
+fi
+
+exit $teststatus

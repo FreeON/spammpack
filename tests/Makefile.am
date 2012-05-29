@@ -4,6 +4,7 @@ libspammtests_la_SOURCES = test_utilities.F90 spammtests.F90
 noinst_SCRIPTS = scaling_test.sh parseTestResults.py
 
 EXTRA_DIST = $(noinst_SCRIPTS) \
+  set_mode.sh \
   scaling_test.reference
 
 noinst_PROGRAMS = \
@@ -22,7 +23,7 @@ noinst_PROGRAMS = \
   spamm_multiply_44 \
   spamm_multiply_48
 
-TESTS = scaling_test.sh
+TESTS = set_mode.sh scaling_test.sh
 
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
 AM_CPPFLAGS = -I../src

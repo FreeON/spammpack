@@ -44,6 +44,7 @@ case ${FC} in
     AC_MSG_NOTICE([Detected gfortran, the gcc Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
       FCFLAGS="-O3 -g -Wall -DTEST_REPEAT=1"
+      scaling_reference_file="freeon-10.gcc.reference"
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
     fi
     ;;
@@ -51,12 +52,16 @@ case ${FC} in
     AC_MSG_NOTICE([Detected ifort, the Intel Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
       FCFLAGS="-O3 -no-prec-div -xHost -heap-arrays -g -check all -DTEST_REPEAT=100"
+      scaling_reference_file="freeon-10.Intel.reference"
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
     fi
     ;;
   *) AC_MSG_FAILURE([Undetected FC compiler (${FC})])
      ;;
 esac
+
+dnl Set the proper scaling reference file.
+AC_SUBST([SCALING_REFERENCE], [${scaling_reference_file}], [The reference file])
 
 dnl Find out how to enable OpenMP in C.
 AC_LANG(C)
@@ -82,6 +87,7 @@ Doxyfile
 Makefile
 src/Makefile
 tests/Makefile
+tests/scaling_test.sh
 ])
 
 AC_OUTPUT
