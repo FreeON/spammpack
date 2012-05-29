@@ -112,7 +112,7 @@ CONTAINS
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
     REAL(SpAMM_KIND), OPTIONAL           :: LocalThreshold
 
-    INTEGER                              :: Depth
+    INTEGER                              :: tier
     REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
 
     IF(PRESENT(LocalThreshold))THEN
@@ -121,13 +121,17 @@ CONTAINS
       SpAMM_Threshold_Multiply_QuTree_x_QuTree=SpAMM_PRODUCT_TOLERANCE
     ENDIF
 
-    Depth=0
+    tier=0
     TInitial=SpAMM_Get_Time()
+
     CALL SpAMM_Multiply_QuTree_x_Scalar(qC,SpAMM_Zero)
+
     !$OMP TASK UNTIED SHARED(qA,qB,qC)
-    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC,qA,qB,Depth)
+    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC,qA,qB,tier)
     !$OMP END TASK
+
     !$OMP TASKWAIT
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_QuTree",1)
 
@@ -142,16 +146,19 @@ CONTAINS
     TYPE(QuTree), POINTER        :: qA
     REAL(SpAMM_KIND), INTENT(IN) :: a
 
-    INTEGER            :: Depth
+    INTEGER            :: tier
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
     IF(.NOT.ASSOCIATED(qA))RETURN
-    Depth=0
+
+    tier=0
     TInitial=SpAMM_Get_Time()
+
     !$OMP TASK SHARED(qA)
-    CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,Depth)
+    CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,tier)
     !$OMP END TASK
     !$OMP TASKWAIT
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_Scalar",3)
 

@@ -38,6 +38,26 @@ dnl Get compilers.
 AC_PROG_CC
 AC_PROG_FC
 
+dnl Check for default compiler flags.
+case ${FC} in
+  *gfortran*)
+    AC_MSG_NOTICE([Detected gfortran, the gcc Fortran compiler])
+    if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
+      FCFLAGS="-O2 -g -Wall"
+      AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
+    fi
+    ;;
+  *ifort*)
+    AC_MSG_NOTICE([Detected ifort, the Intel Fortran compiler])
+    if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
+      FCFLAGS="-O2 -heap-arrays -g -check all"
+      AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
+    fi
+    ;;
+  *) AC_MSG_FAILURE([Undetected FC compiler (${FC})])
+     ;;
+esac
+
 dnl Find out how to enable OpenMP in C.
 AC_LANG(C)
 AC_OPENMP

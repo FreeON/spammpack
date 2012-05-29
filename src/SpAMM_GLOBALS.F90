@@ -103,7 +103,7 @@ CONTAINS
     INTEGER                :: K
     INTEGER                :: SpAMM_TILES
 #ifdef _OPENMP
-    INTEGER                :: NThreads,ThreadID
+    INTEGER                :: NThreads, ThreadID
 #endif
 
     SpAMM_MATRIX_DIMENSION=N
@@ -113,17 +113,17 @@ CONTAINS
     ! Pad matrix to right size.
     SpAMM_PADDED_MATRIX_DIMENSION=2**K
 
+    ! Number of dense matrix blocks.
     SpAMM_TILES=CEILING(DBLE(SpAMM_PADDED_MATRIX_DIMENSION)/SpAMM_BLOCK_SIZE)
 
     ! Depth starts from 0:
     SpAMM_TOTAL_DEPTH=CEILING(LOG(DBLE(SpAMM_TILES))/LOG(2D0))
 
-    ! Cutoff is tuning policy choice:
+    ! Cutoff for parallel task recursion. This is a tuning policy choice.
     SpAMM_RECURSION_DEPTH_CUTOFF=MAX(0,SpAMM_TOTAL_DEPTH-2)
 
+    ! Set N on the way out to the padded dimension.
     N=SpAMM_PADDED_MATRIX_DIMENSION
-    !WRITE(*,*)' SpAMM_MATRIX_DIMENSION        = ',      SpAMM_MATRIX_DIMENSION
-    !WRITE(*,*)' SpAMM_PADDED_MATRIX_DIMENSION = ',SpAMM_PADDED_MATRIX_DIMENSION
 
 #ifdef _OPENMP
     IF(PRESENT(Threads))THEN
@@ -135,17 +135,22 @@ CONTAINS
     CALL OMP_SET_DYNAMIC(.FALSE.)
     CALL OMP_SET_NESTED(.TRUE.)
     CALL OMP_SET_NUM_THREADS(SpAMM_THREAD_COUNT)
+
     !$OMP PARALLEL PRIVATE(ThreadID,NThreads)
     ThreadID=OMP_GET_THREAD_NUM()
     NThreads=OMP_GET_NUM_THREADS()
+    !$OMP CRITICAL
     WRITE(*,33) ThreadID, NThreads
-    !$OMP END PARALLEL
+    !$OMP END CRITICAL
 33  FORMAT(' SpAMM_Init_Globals: Id#',I2,' checking in with ',I2,' threads ')
+    !$OMP END PARALLEL
+
 #endif
 
     SpAMM_STATS(:)%Time=0
     SpAMM_STATS(:)%Count=0
     SpAMM_STATS(:)%Routine=" "
+
   END SUBROUTINE SpAMM_Init_Globals
 
   !> Print out a timestamp.
