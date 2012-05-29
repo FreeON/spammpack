@@ -28,7 +28,7 @@ fi
 
 ./parseTestResults.py --verbose --output scaling_test.output --reference @SCALING_REFERENCE@
 teststatus=$?
-if tests $teststatus -ne 0; then
+if test $teststatus -ne 0; then
   echo "product timing test failed"
 fi
 
