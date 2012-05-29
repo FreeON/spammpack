@@ -1,7 +1,9 @@
 noinst_LTLIBRARIES = libspammtests.la
 libspammtests_la_SOURCES = test_utilities.F90 spammtests.F90
 
-noinst_SCRIPTS = scaling_test.sh
+noinst_SCRIPTS = scaling_test.sh parseTestResults.py
+
+EXTRA_DIST = $(noinst_SCRIPTS)
 
 noinst_PROGRAMS = \
   spamm_multiply_01 \
