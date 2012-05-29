@@ -17,4 +17,4 @@ echo > scaling_test.output
 ./spamm_multiply_44 >> scaling_test.output
 ./spamm_multiply_48 >> scaling_test.output
 
-grep SpAMM_SCALING scaling_test.output > scaling_test.dat
+grep SpAMM_SCALING scaling_test.output | awk '{print $2, $3}' > scaling_test.dat
