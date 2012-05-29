@@ -62,14 +62,14 @@ program spamm_multiply
   call New(C)
 
   !$OMP PARALLEL
-  !$OMP SINGLE
+  !$OMP MASTER
 
   write(*, *) "repeat multiply ", TEST_REPEAT
   do test_repeat = 1, TEST_REPEAT
     call Multiply(A, B, C)
   enddo
 
-  !$OMP END SINGLE
+  !$OMP END MASTER
   !$OMP END PARALLEL
 
   !C%Norm = SQRT(Norm(C))

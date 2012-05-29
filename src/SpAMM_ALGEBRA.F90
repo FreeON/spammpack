@@ -133,10 +133,6 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! The Sparse Approximate Matrix-Multiply (SpAMM): D <- A.B.C
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   !> Scalar multiply: @f$ A \leftarrow a A @f$.
   !!
   !! @param qA Pointer to matrix A.
