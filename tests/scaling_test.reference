@@ -1,0 +1,19 @@
+equal
+{
+  tag = "max-norm \(C\) = (.*)";
+  relativeTolerance = 1e-10;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+  value = 5.49316406E-04;
+}

@@ -3,7 +3,8 @@ libspammtests_la_SOURCES = test_utilities.F90 spammtests.F90
 
 noinst_SCRIPTS = scaling_test.sh parseTestResults.py
 
-EXTRA_DIST = $(noinst_SCRIPTS)
+EXTRA_DIST = $(noinst_SCRIPTS) \
+  scaling_test.reference
 
 noinst_PROGRAMS = \
   spamm_multiply_01 \

@@ -365,6 +365,7 @@ successfullyTerminated = False
 scratchDirectory = "unknown"
 
 linenumber = 0
+inputFile = None
 for line in output:
   linenumber += 1
   line = line.rstrip()
@@ -389,7 +390,8 @@ for line in output:
 
 exitStatus = 0
 
-log.debug("input file: " + inputFile)
+if inputFile:
+  log.debug("input file: " + inputFile)
 if options.output:
   log.debug("output file: " + options.output)
 else:
