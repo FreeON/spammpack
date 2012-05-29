@@ -38,7 +38,10 @@ MODULE SpAMM_MNGMENT
   PRIVATE
 
   PUBLIC :: Copy
+  PUBLIC :: SpAMM_Copy_QuTree_2_QuTree_Recur
+  PUBLIC :: SpAMM_Copy_BiTree_2_BiTree_Recur
   PUBLIC :: Delete
+  PUBLIC :: SpAMM_Delete_QuTree_Recur
   PUBLIC :: New
   PUBLIC :: NewQuNode
 
