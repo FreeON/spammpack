@@ -33,6 +33,7 @@ MODULE SpAMM_CONVERT
   USE SpAMM_DERIVED
   USE SpAMM_GLOBALS
   USE SpAMM_ALGEBRA
+  USE SpAMM_MNGMENT
 
   IMPLICIT NONE
 
@@ -52,10 +53,11 @@ MODULE SpAMM_CONVERT
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
 
-    WRITE(*, *) size(A, 1)
     qA=>NULL()
-    CALL NewQuNode(qA,init=.TRUE.)
+    CALL NewQuNode(qA, init = .TRUE.)
     CALL SpAMM_Convert_Dense_2_QuTree_Recur(A,qA)
+
+    ! Update norms.
     qA%Norms=Norm(qA)
     qA%Norms%FrobeniusNorm = SQRT(qA%Norms%FrobeniusNorm)
 
@@ -69,8 +71,9 @@ MODULE SpAMM_CONVERT
 
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
-    INTEGER                                      :: I,J,Delta,Tier
-    TYPE(SpAMM_Norm)                             :: Norms
+
+    INTEGER          :: I,J
+    TYPE(SpAMM_Norm) :: Norms
 
     I=SIZE(A,1)
     J=SIZE(A,2)

@@ -37,9 +37,10 @@ MODULE SpAMM_PROJECT
 
   IMPLICIT NONE
 
-  !===============================================================================
-  !  GLOBALS
-  !===============================================================================
+  PRIVATE
+
+  PUBLIC :: RemapSpectralBounds201
+  PUBLIC :: SpAMM_TC2
 
   !> Interface for spectral projections.
   INTERFACE RemapSpectralBounds201

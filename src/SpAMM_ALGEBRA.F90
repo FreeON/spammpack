@@ -36,9 +36,14 @@ MODULE SpAMM_ALGEBRA
 
   IMPLICIT NONE
 
-  !===============================================================================
-  !  GLOBALS (we don't want these on the stack ...)
-  !===============================================================================
+  PRIVATE
+
+  PUBLIC :: Multiply
+  PUBLIC :: Trace
+  PUBLIC :: Add
+  PUBLIC :: Filter
+  PUBLIC :: Norm
+  PUBLIC :: Dot
 
   !> The constant @f$ \alpha @f$ for adding 2 quadtrees in place.
   REAL(SpAMM_DOUBLE) :: SpAMM_Add_QuTree_2_QuTree_InPlace_Alpha
@@ -50,10 +55,6 @@ MODULE SpAMM_ALGEBRA
   REAL(SpAMM_DOUBLE) :: SpAMM_Add_Identity_2_QuTree_InPlace_Alpha
   REAL(SpAMM_DOUBLE) :: SpAMM_Threshold_Multiply_QuTree_x_QuTree
   REAL(SpAMM_DOUBLE) :: SpAMM_Threshold_Multiply_QuTree_x_BiTree
-
-  !===============================================================================
-  !  INTERFACE BLOCKS
-  !===============================================================================
 
   !> Interface for multiplication operations between different SpAMM types.
   !!
@@ -288,17 +289,20 @@ CONTAINS
   !! @return The norm.
   FUNCTION SpAMM_Norm_Reduce_QuTree(qA) RESULT(Norms)
 
-    INTEGER              :: Depth
-    TYPE(QuTree),POINTER :: qA
-    TYPE(SpAMM_Norm)     :: Norms
-    REAL(SpAMM_DOUBLE)   :: TInitial, TTotal
+    TYPE(QuTree), POINTER, INTENT(IN) :: qA
+    TYPE(SpAMM_Norm) :: Norms
 
-    Depth=0
+    INTEGER :: tier
+    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+
+    tier=0
     TInitial=SpAMM_Get_Time()
+
     !$OMP TASK SHARED(Norms,qA)
-    Norms = SpAMM_Norm_Reduce_QuTree_Recur(qA,Depth)
+    Norms = SpAMM_Norm_Reduce_QuTree_Recur(qA,tier)
     !$OMP END TASK
     !$OMP TASKWAIT
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Norm_Reduce_QuTree",9)
 
@@ -541,31 +545,40 @@ CONTAINS
     ENDIF
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur
 
-  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,Depth)
+  !> Recursive part of scalar multiply with quadtree matrix, @f$ A \leftarrow a
+  !! A @f$.
+  !!
+  !! @param qA Pointer to quadtree.
+  !! @param a The scalar
+  !! @param tier The current tier.
+  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,tier)
 
-    INTEGER :: Depth
-    TYPE(QuTree), POINTER   :: qA
-    REAL(SpAMM_KIND)        :: a
-    IF(.NOT.ASSOCIATED(qA))RETURN
-    IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
+    TYPE(QuTree), POINTER :: qA
+    REAL(SpAMM_KIND) :: a
+    INTEGER :: tier
+
+    IF(.NOT.ASSOCIATED(qA)) RETURN
+
+    IF(tier==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
+      ! At the bottom, multiply the block.
       qA%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm*ABS(a)
       qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)=qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)*a
     ELSE
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad00,a,Depth+1)
+      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad00,a,tier+1)
       !$OMP END TASK
       !$OMP TASK UNTIED  SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad01,a,Depth+1)
+      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad01,a,tier+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad10,a,Depth+1)
+      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad10,a,tier+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad11,a,Depth+1)
+      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad11,a,tier+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       qA%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm*ABS(a)
@@ -620,7 +633,7 @@ CONTAINS
     TYPE(QuTree),POINTER :: qA
     INTEGER              :: Depth
     INTEGER              :: Left,Rght,Half,I
-    real*8 ss
+
     IF(Left>SpAMM_MATRIX_DIMENSION.OR.Left>Rght)THEN
       RETURN
     ELSEIF(Depth==SpAMM_TOTAL_DEPTH)THEN
@@ -653,6 +666,8 @@ CONTAINS
     TYPE(QuTree), POINTER  :: qA
     REAL(SpAMM_KIND) :: Trace,Trace00,Trace11
     INTEGER :: Depth, I
+
+    Trace = SpAMM_Zero
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
       Trace=SpAMM_Zero
       IF(.NOT.ASSOCIATED(qA))RETURN
@@ -694,7 +709,8 @@ CONTAINS
 
     TYPE(QuTree), POINTER  :: qA,qB
     REAL(SpAMM_KIND) :: Trace,Trace00,Trace11
-    INTEGER :: Depth, I,J
+    INTEGER :: Depth, I
+
     Trace=SpAMM_Zero
     IF(.NOT.ASSOCIATED(qA))RETURN
     IF(.NOT.ASSOCIATED(qB))RETURN

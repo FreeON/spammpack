@@ -35,6 +35,13 @@ MODULE SpAMM_MNGMENT
 
   IMPLICIT NONE
 
+  PRIVATE
+
+  PUBLIC :: Copy
+  PUBLIC :: Delete
+  PUBLIC :: New
+  PUBLIC :: NewQuNode
+
   !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
     MODULE PROCEDURE SpAMM_Copy_QuTree_2_QuTree
@@ -483,14 +490,18 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Delete_BiTree_Recur
 
-  SUBROUTINE NewQuNode(qA,init)
+  !> Allocate a new node in the quadtree.
+  !!
+  !! @param qA Pointer to node.
+  !! @param init If set then initialize the new node.
+  SUBROUTINE NewQuNode(qA, init)
 
-    LOGICAL,OPTIONAL :: init
     TYPE(QuTree), POINTER :: qA
+    LOGICAL, OPTIONAL :: init
 
     IF(PRESENT(init))THEN
       IF(ASSOCIATED(qA))THEN
-        WRITE(*,*)'LOGIC ERROR IN NewQuNode'
+        WRITE(*, *) 'LOGIC ERROR IN NewQuNode'
         CALL SpAMM_Trap()
       ENDIF
       ALLOCATE(qA)
@@ -498,9 +509,11 @@ CONTAINS
       IF(.NOT.ASSOCIATED(qA))THEN
         ALLOCATE(qA)
       ELSE
-        STOP ' Logic error 2 in NewQuNode '
+        WRITE(*, *) "Logic error 2 in NewQuNode"
+        CALL Spamm_Trap()
       ENDIF
     ENDIF
+
     qA%Norms%FrobeniusNorm=SpAMM_Zero
     NULLIFY(qA%Quad00)
     NULLIFY(qA%Quad01)
