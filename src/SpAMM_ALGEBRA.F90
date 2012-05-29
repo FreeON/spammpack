@@ -486,15 +486,17 @@ CONTAINS
       ENDIF
       !$OMP END CRITICAL
 
-      ! Blocks
+      ! At the bottom, calculate the product.
       IF(tier==SpAMM_TOTAL_DEPTH)THEN
+
         ! Allocate
+        !$OMP CRITICAL
         IF(.NOT.ALLOCATED(qC%Blok))THEN
-          !$OMP CRITICAL
           ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
           qC%Blok=SpAMM_Zero
-          !$OMP END CRITICAL
         END IF
+        !$OMP END CRITICAL
+
         ! Accumulate
         qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)=         &
           qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)+MATMUL(  &

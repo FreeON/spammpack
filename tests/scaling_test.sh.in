@@ -26,7 +26,7 @@ if test $teststatus -ne 0; then
   echo "product accuracy test failed"
 fi
 
-./parseTestResults.py --verbose --output scaling_test.output --reference freeon-10.Intel.reference
+./parseTestResults.py --verbose --output scaling_test.output --reference @SCALING_REFERENCE@
 teststatus=$?
 if tests $teststatus -ne 0; then
   echo "product timing test failed"
