@@ -43,14 +43,14 @@ case ${FC} in
   *gfortran*)
     AC_MSG_NOTICE([Detected gfortran, the gcc Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
-      FCFLAGS="-O3 -g -Wall"
+      FCFLAGS="-O3 -g -Wall -DTEST_REPEAT=1"
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
     fi
     ;;
   *ifort*)
     AC_MSG_NOTICE([Detected ifort, the Intel Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
-      FCFLAGS="-O3 -no-prec-div -xHost -heap-arrays -g -check all"
+      FCFLAGS="-O3 -no-prec-div -xHost -heap-arrays -g -check all -DTEST_REPEAT=100"
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
     fi
     ;;
