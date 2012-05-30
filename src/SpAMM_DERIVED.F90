@@ -34,6 +34,8 @@ MODULE SpAMM_DERIVED
 
   IMPLICIT NONE
 
+  PUBLIC
+
   !> Define integer of length 2.
   INTEGER, PARAMETER :: INT1=SELECTED_INT_KIND(2)  !--Integer*1
   !> Define integer of length 2.
@@ -127,6 +129,10 @@ MODULE SpAMM_DERIVED
 
   END TYPE QuTree
 
+  !INTERFACE QuTree
+  !  MODULE PROCEDURE QuTreeConstructor
+  !END INTERFACE QuTree
+
   TYPE QuLink
      TYPE(QuLink), POINTER  :: Next
      TYPE(QuTree), POINTER  :: Quad
@@ -186,10 +192,15 @@ MODULE SpAMM_DERIVED
 
 CONTAINS
 
-  !FUNCTION QuTree ()
+  FUNCTION QuTreeConstructor () RESULT(q)
 
-  !  TYPE(QuTree) :: QuTree
+    TYPE(QuTree) :: q
 
-  !END FUNCTION QuTree
+    q%Quad00 => NULL()
+    q%Quad01 => NULL()
+    q%Quad10 => NULL()
+    q%Quad11 => NULL()
+
+  END FUNCTION QuTreeConstructor
 
 END MODULE SpAMM_DERIVED
