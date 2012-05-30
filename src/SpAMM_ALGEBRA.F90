@@ -482,11 +482,13 @@ CONTAINS
       IF(qA%Norms%FrobeniusNorm*qB%Norms%FrobeniusNorm<SpAMM_Threshold_Multiply_QuTree_x_QuTree)RETURN
 
       ! For now we assume a fully preallocated matrix C.
-      !!$OMP CRITICAL
-      !IF(.NOT.ASSOCIATED(qC))THEN
-      !  ALLOCATE(qC)
-      !ENDIF
-      !!$OMP END CRITICAL
+      !$OMP CRITICAL
+      IF(.NOT.ASSOCIATED(qC))THEN
+        !WRITE(*, *) "I should not be here!"
+        !CALL SpAMM_Exit(1)
+        ALLOCATE(qC)
+      ENDIF
+      !$OMP END CRITICAL
 
       ! At the bottom, calculate the product.
       IF(tier==SpAMM_TOTAL_DEPTH)THEN

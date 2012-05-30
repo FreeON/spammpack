@@ -159,8 +159,7 @@ CONTAINS
     DEALLOCATE(bA)
   END SUBROUTINE SpAMM_Delete_BiTree
 
-  !> @brief
-  !! Create a new quadtree.
+  !> Create a new quadtree.
   !!
   !! @details
   !! The newly created quadtree has to be deallocated by calling Delete(). If qA
@@ -170,12 +169,12 @@ CONTAINS
   SUBROUTINE SpAMM_Allocate_Full_QuTree(qA)
 
     TYPE(QuTree),POINTER :: qA
-    INTEGER              :: Depth
+    INTEGER              :: tier
 
     IF(ASSOCIATED(qA))CALL SpAMM_Delete_QuTree(qA)
-    CALL NewQuNode(qA,init=.TRUE.)
-    Depth=0
-    CALL SpAMM_Allocate_Full_QuTree_Recur(qA,Depth)
+    CALL NewQuNode(qA, init=.TRUE.)
+    tier=0
+    CALL SpAMM_Allocate_Full_QuTree_Recur(qA,tier)
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree
 
@@ -546,17 +545,16 @@ CONTAINS
 
   !> @private
   !!
-  !! @brief
   !! Recursive allocation of a quadtree.
   !!
   !! @param qA A pointer to a type(QuTree) object.
-  !! @param Depth The current tier.
-  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur(qA,Depth)
+  !! @param tier The current tier.
+  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur(qA, tier)
 
-    TYPE(QuTree),POINTER        :: qA
-    INTEGER                     :: Depth
+    TYPE(QuTree), POINTER :: qA
+    INTEGER               :: tier
 
-    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
+    IF(tier==SpAMM_TOTAL_DEPTH)THEN
       ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
       qA%Blok=SpAMM_Zero
       NULLIFY(qA%Quad00)
@@ -569,10 +567,10 @@ CONTAINS
       ALLOCATE(qA%Quad01)
       ALLOCATE(qA%Quad10)
       ALLOCATE(qA%Quad11)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad00,Depth+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad01,Depth+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad10,Depth+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11,Depth+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad00,tier+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad01,tier+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad10,tier+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11,tier+1)
     ENDIF
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur
