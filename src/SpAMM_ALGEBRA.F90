@@ -532,37 +532,37 @@ CONTAINS
 
       ELSE
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad00%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad00,qB%Quad00,tier+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad00%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad00,qB%Quad01,tier+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad10%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad10,qB%Quad00,tier+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad10%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad10,qB%Quad01,tier+1)
         !$OMP END TASK
 
         !$OMP TASKWAIT
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad01%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad01,qB%Quad10,tier+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad01%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad01,qB%Quad11,tier+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad10%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad11,qB%Quad10,tier+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad11%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11,tier+1)
         !$OMP END TASK
 
