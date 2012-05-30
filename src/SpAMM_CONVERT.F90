@@ -54,7 +54,7 @@ MODULE SpAMM_CONVERT
     TYPE(QuTree), POINTER                        :: qA
 
     qA=>NULL()
-    CALL NewQuNode(qA, init = .TRUE.)
+    CALL NewQuNode(qA)
     CALL SpAMM_Convert_Dense_2_QuTree_Recur(A,qA)
 
     ! Update norms.
@@ -77,6 +77,7 @@ MODULE SpAMM_CONVERT
 
     I=SIZE(A,1)
     J=SIZE(A,2)
+
     IF(I<=SpAMM_BLOCK_SIZE.AND.J<=SpAMM_BLOCK_SIZE)THEN
       IF(I < SpAMM_BLOCK_SIZE .OR. J < SpAMM_BLOCK_SIZE) THEN
         WRITE(*, *) "LOGIC ERROR IN SpAMM: padding error"

@@ -78,7 +78,7 @@ CONTAINS
     TYPE(QuTree), POINTER :: qA,qC
     INTEGER               :: Depth
 
-    CALL NewQuNode(qC,init=.TRUE.)
+    CALL NewQuNode(qC)
     Depth=0
     !$OMP TASK UNTIED SHARED(qA,qC)
     CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA,qC,Depth)
@@ -126,19 +126,23 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Copy_BiTree_2_BiTree
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Delete a QuTree: A <- NULL()
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Delete a quadtree matrix.
+  !!
+  !! @param qA Pointer to quadtree matrix.
   SUBROUTINE SpAMM_Delete_QuTree(qA)
 
-    TYPE(QuTree),POINTER :: qA
-    INTEGER              :: Depth
+    TYPE(QuTree), POINTER :: qA
 
-    IF(.NOT.ASSOCIATED(qA))RETURN
+    INTEGER :: Depth
+
+    IF(.NOT.ASSOCIATED(qA)) RETURN
+
     Depth=0
+
     !$OMP TASK UNTIED SHARED(qA)
     CALL SpAMM_Delete_QuTree_Recur(qA,Depth)
     !$OMP END TASK
+
     !$OMP TASKWAIT
     DEALLOCATE(qA)
 
@@ -171,8 +175,9 @@ CONTAINS
     TYPE(QuTree),POINTER :: qA
     INTEGER              :: tier
 
-    IF(ASSOCIATED(qA))CALL SpAMM_Delete_QuTree(qA)
-    CALL NewQuNode(qA, init=.TRUE.)
+    IF(ASSOCIATED(qA)) CALL SpAMM_Delete_QuTree(qA)
+    CALL NewQuNode(qA)
+
     tier=0
     CALL SpAMM_Allocate_Full_QuTree_Recur(qA,tier)
 
@@ -404,51 +409,62 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur
 
-  RECURSIVE SUBROUTINE SpAMM_Delete_QuTree_Recur(qA,Depth)
+  !> Recursive part of delete quadtree.
+  !!
+  !! @param qA Pointer to quadtree node.
+  !! @param tier The current tier.
+  RECURSIVE SUBROUTINE SpAMM_Delete_QuTree_Recur(qA,tier)
 
     TYPE(QuTree),POINTER  :: qA
-    INTEGER :: Status,Depth
+    INTEGER :: Status,tier
 
     IF(.NOT.ASSOCIATED(qA))RETURN
     IF(ALLOCATED(qA%Blok))THEN
       !$OMP CRITICAL
       DEALLOCATE(qA%Blok,STAT=Status)
+#ifdef _OPENMP
+      CALL OMP_DESTROY_LOCK(qA%Lock)
+#endif
       !$OMP END CRITICAL
     ENDIF
+
     IF(ASSOCIATED(qA%Quad00))THEN
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad00,Depth+1)
+      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad00,tier+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
       DEALLOCATE(qA%Quad00)
       !$OMP END CRITICAL
     ENDIF
+
     IF(ASSOCIATED(qA%Quad01))THEN
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad01,Depth+1)
+      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad01,tier+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
       DEALLOCATE(qA%Quad01)
       !$OMP END CRITICAL
     ENDIF
+
     IF(ASSOCIATED(qA%Quad10))THEN
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad10,Depth+1)
+      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad10,tier+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
       DEALLOCATE(qA%Quad10)
       !$OMP END CRITICAL
     ENDIF
+
     IF(ASSOCIATED(qA%Quad11))THEN
        !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad11,Depth+1)
+      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad11,tier+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -495,32 +511,29 @@ CONTAINS
   !> Allocate a new node in the quadtree.
   !!
   !! @param qA Pointer to node.
-  !! @param init If set then initialize the new node.
-  SUBROUTINE NewQuNode(qA, init)
+  SUBROUTINE NewQuNode(qA)
 
     TYPE(QuTree), POINTER :: qA
-    LOGICAL, OPTIONAL :: init
 
-    IF(PRESENT(init))THEN
-      IF(ASSOCIATED(qA))THEN
-        WRITE(*, *) 'LOGIC ERROR IN NewQuNode'
-        CALL SpAMM_Trap()
-      ENDIF
-      ALLOCATE(qA)
-    ELSE
-      IF(.NOT.ASSOCIATED(qA))THEN
-        ALLOCATE(qA)
-      ELSE
-        WRITE(*, *) "Logic error 2 in NewQuNode"
-        CALL Spamm_Trap()
-      ENDIF
+    ! Delete node if it already exists.
+    IF(ASSOCIATED(qA)) THEN
+      CALL Delete(qA)
     ENDIF
 
+    ! Allocate new node.
+    ALLOCATE(qA)
+
+    ! Initialize fields.
     qA%Norms%FrobeniusNorm=SpAMM_Zero
     NULLIFY(qA%Quad00)
     NULLIFY(qA%Quad01)
     NULLIFY(qA%Quad10)
     NULLIFY(qA%Quad11)
+
+#ifdef _OPENMP
+    ! Initialize Lock.
+    CALL OMP_INIT_LOCK(qA%Lock)
+#endif
 
   END SUBROUTINE NewQuNode
 
@@ -554,19 +567,14 @@ CONTAINS
     TYPE(QuTree), POINTER :: qA
     INTEGER               :: tier
 
+    ! Allocate new node.
+    CALL NewQuNode(qA)
+
     IF(tier==SpAMM_TOTAL_DEPTH)THEN
       ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
       qA%Blok=SpAMM_Zero
-      NULLIFY(qA%Quad00)
-      NULLIFY(qA%Quad01)
-      NULLIFY(qA%Quad10)
-      NULLIFY(qA%Quad11)
       RETURN
     ELSE
-      ALLOCATE(qA%Quad00)
-      ALLOCATE(qA%Quad01)
-      ALLOCATE(qA%Quad10)
-      ALLOCATE(qA%Quad11)
       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad00,tier+1)
       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad01,tier+1)
       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad10,tier+1)

@@ -119,6 +119,9 @@ CONTAINS
     INTEGER                              :: tier
     REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
 
+    !$OMP PARALLEL
+
+    !$OMP MASTER
     IF(PRESENT(LocalThreshold))THEN
       SpAMM_Threshold_Multiply_QuTree_x_QuTree=LocalThreshold
     ELSE
@@ -134,7 +137,9 @@ CONTAINS
     CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC,qA,qB,tier)
     !$OMP END TASK
 
-    !$OMP TASKWAIT
+    !$OMP END MASTER
+
+    !$OMP END PARALLEL
 
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_QuTree",1)
@@ -161,6 +166,7 @@ CONTAINS
     !$OMP TASK SHARED(qA)
     CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,tier)
     !$OMP END TASK
+
     !$OMP TASKWAIT
 
     TTotal=SpAMM_Get_Time()-TInitial
@@ -473,51 +479,58 @@ CONTAINS
 
     TYPE(QuTree), POINTER :: qC,qA,qB
     INTEGER :: tier
+#ifdef _OPENMP
+    INTEGER :: threadID
+#endif
 
-    LOGICAL :: DepthOK,Go_00x00,Go_00x01,Go_10x00,Go_10x01,Go_01x10,Go_01x11,Go_11x10,Go_11x11
-    REAL(SpAMM_KIND), DIMENSION(:,:), ALLOCATABLE :: tempBlok
+    IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
 
-    IF(ASSOCIATED(qA).AND.ASSOCIATED(qB))THEN
       ! Apply the SpAMM condition.
       IF(qA%Norms%FrobeniusNorm*qB%Norms%FrobeniusNorm<SpAMM_Threshold_Multiply_QuTree_x_QuTree)RETURN
 
-      ! For now we assume a fully preallocated matrix C.
-      !$OMP CRITICAL
-      IF(.NOT.ASSOCIATED(qC))THEN
-        !WRITE(*, *) "I should not be here!"
-        !CALL SpAMM_Exit(1)
-        ALLOCATE(qC)
-      ENDIF
-      !$OMP END CRITICAL
+#ifdef _OPENMP
+      !CALL OMP_SET_LOCK(qC%Lock)
+#endif
+      !IF(.NOT.ASSOCIATED(qC))THEN
+
+      !  ! For now we assume a fully preallocated matrix C.
+      !  WRITE(*, *) "I should not be here!"
+      !  CALL SpAMM_Trap(1)
+
+      !  Call NewQuNode(qC)
+      !ENDIF
+#ifdef _OPENMP
+      !CALL OMP_UNSET_LOCK(qC%Lock)
+#endif
 
       ! At the bottom, calculate the product.
-      IF(tier==SpAMM_TOTAL_DEPTH)THEN
+      IF(tier == SpAMM_TOTAL_DEPTH)THEN
 
-        ! Allocate
-        !$OMP CRITICAL
-        IF(.NOT.ALLOCATED(qC%Blok))THEN
-          ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
-          qC%Blok=SpAMM_Zero
-        END IF
-        !$OMP END CRITICAL
+#ifdef _OPENMP
+        !CALL OMP_SET_LOCK(qC%Lock)
+#endif
+        !IF(.NOT.ALLOCATED(qC%Blok))THEN
+        !  WRITE(*, *) "I should not be here!"
+        !  CALL SpAMM_Trap()
+        !  ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+        !  qC%Blok=SpAMM_Zero
+        !ENDIF
+#ifdef _OPENMP
+        !CALL OMP_UNSET_LOCK(qC%Lock)
+#endif
 
-        ! Calculate block product.
-        ALLOCATE(tempBlok(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE))
-        tempBlok = MATMUL(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
+#ifdef _OPENMP
+        !CALL OMP_SET_LOCK(qC%Lock)
+#endif
+        qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)= &
+          qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)+MATMUL( &
+          qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
           qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
-
-        !$OMP CRITICAL
-        qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) = qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)+tempBlok
-        !$OMP END CRITICAL
+#ifdef _OPENMP
+        !CALL OMP_UNSET_LOCK(qC%Lock)
+#endif
 
       ELSE
-
-        ! DepthOK=.TRUE.
-        ! DepthOK=MOD(tier,2)==0
-        !Go_00x00=DepthOK.AND.qA%Quad00%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        !Go_00x01=DepthOK.AND.qA%Quad00%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        !Go_10x00=DepthOK.AND.qA%Quad10%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        !Go_10x01=DepthOK.AND.qA%Quad10%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad00,qB%Quad00,tier+1)
@@ -535,12 +548,7 @@ CONTAINS
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad10,qB%Quad01,tier+1)
         !$OMP END TASK
 
-        !Go_01x10=DepthOK.AND.qA%Quad01%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        !Go_01x11=DepthOK.AND.qA%Quad01%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        !Go_11x10=DepthOK.AND.qA%Quad11%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        !Go_11x11=DepthOK.AND.qA%Quad11%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-
-        !!$OMP TASKWAIT
+        !$OMP TASKWAIT
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC)
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad01,qB%Quad10,tier+1)
@@ -558,7 +566,7 @@ CONTAINS
         CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11,tier+1)
         !$OMP END TASK
 
-        !!$OMP TASKWAIT
+        !$OMP TASKWAIT
 
       ENDIF
     ENDIF
@@ -778,7 +786,7 @@ CONTAINS
       CALL SpAMM_Delete_QuTree_Recur(qA,Depth)
       !$OMP END TASK
       !$OMP TASKWAIT
-      DEALLOCATE(qA)
+      CALL Delete(qA)
     ELSE
       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)

@@ -81,6 +81,8 @@ dnl Define which timer to use.
 dnl AC_DEFINE([TIMER_GETRUSAGE], [1], [Use getrusage() to time the library])
 AC_DEFINE([TIMER_GETTIMEOFDAY], [1], [Use gettimeofday() to time the library])
 
+AM_CONDITIONAL([build_test_programs], [test 1 -eq 0])
+
 dnl Output files.
 AC_CONFIG_FILES([
 Doxyfile

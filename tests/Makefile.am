@@ -8,7 +8,14 @@ EXTRA_DIST = $(noinst_SCRIPTS) \
   scaling_test.sh.in \
   scaling_test.reference
 
+if build_test_programs
+test_programs = \
+  SpAMM_PURIFY2 \
+  SpAMM_TESTONE
+endif
+
 noinst_PROGRAMS = \
+  $(test_programs) \
   spamm_multiply_01 \
   spamm_multiply_02 \
   spamm_multiply_04 \
@@ -28,6 +35,9 @@ TESTS = set_mode.sh scaling_test.sh
 
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
 AM_CPPFLAGS = -I../src
+
+SpAMM_PURIFY2_SOURCES = SpAMM_PURIFY2.F90
+SpAMM_PURIFY2_CPPFLAGS = -I$(top_builddir)/.. -I$(top_builddir)/../Modules
 
 spamm_multiply_01_SOURCES  = spamm_multiply.F90
 spamm_multiply_01_LDFLAGS  = ../src/libspammpack.la libspammtests.la

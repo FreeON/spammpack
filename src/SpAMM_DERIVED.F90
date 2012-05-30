@@ -127,6 +127,11 @@ MODULE SpAMM_DERIVED
     !> The matrix data.
     REAL(SpAMM_KIND), DIMENSION(:,:), ALLOCATABLE :: Blok
 
+#ifdef _OPENMP
+    !> Lock for updating Blok data.
+    INTEGER(KIND = OMP_LOCK_KIND) :: Lock
+#endif
+
   END TYPE QuTree
 
   !INTERFACE QuTree

@@ -24,8 +24,6 @@ program spamm_multiply
   real(SpAMM_DOUBLE), dimension(:,:), allocatable :: B_dense
   real(SpAMM_DOUBLE), dimension(:,:), allocatable :: C_dense
 
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: C_diff
-
   real(SpAMM_KIND), dimension(:,:), allocatable :: A_dense_padded
   real(SpAMM_KIND), dimension(:,:), allocatable :: B_dense_padded
   real(SpAMM_KIND), dimension(:,:), allocatable :: C_dense_padded
@@ -34,8 +32,6 @@ program spamm_multiply
   type(QuTree), pointer :: B => null()
   type(QuTree), pointer :: C => null()
   type(QuTree), pointer :: C_reference => null()
-
-  integer :: i, j
 
   call load_matrix("testmatrix_random_2048x2048.coor", A_dense)
   call load_matrix("testmatrix_random_2048x2048.coor", B_dense)
@@ -61,16 +57,10 @@ program spamm_multiply
   B => SpAMM_Convert_Dense_2_QuTree(B_dense_padded)
   call New(C)
 
-  !$OMP PARALLEL
-  !$OMP MASTER
-
   write(*, *) "repeat multiply ", TEST_REPEAT
   do test_repeat = 1, TEST_REPEAT
     call Multiply(A, B, C)
   enddo
-
-  !$OMP END MASTER
-  !$OMP END PARALLEL
 
   !C%Norm = SQRT(Norm(C))
 
