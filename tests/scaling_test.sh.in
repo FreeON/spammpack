@@ -20,13 +20,13 @@ echo -n "48 thread... "; ./spamm_multiply_48 >> scaling_test.output 2>&1 && echo
 grep SpAMM_SCALING scaling_test.output | awk '{print $2, $3}' > scaling_test.dat
 
 # Test result.
-./parseTestResults.py --verbose --output scaling_test.output --reference scaling_test.reference
+./parseTestResults.py --output scaling_test.output --reference scaling_test.reference
 teststatus=$?
 if test $teststatus -ne 0; then
   echo "product accuracy test failed"
 fi
 
-./parseTestResults.py --verbose --output scaling_test.output --reference @SCALING_REFERENCE@
+./parseTestResults.py --output scaling_test.output --reference @SCALING_REFERENCE@
 teststatus=$?
 if test $teststatus -ne 0; then
   echo "product timing test failed"
