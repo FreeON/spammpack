@@ -33,8 +33,8 @@ program spamm_multiply
   type(QuTree), pointer :: C => null()
   type(QuTree), pointer :: C_reference => null()
 
-  call load_matrix("testmatrix_random_2048x2048.coor", A_dense)
-  call load_matrix("testmatrix_random_2048x2048.coor", B_dense)
+  call load_matrix("testmatrix_random_1024x1024.coor", A_dense)
+  call load_matrix("testmatrix_random_1024x1024.coor", B_dense)
 
   N = size(A_dense, 1)
   allocate(C_dense(N, N))
@@ -58,11 +58,9 @@ program spamm_multiply
   call New(C)
 
   write(*, *) "repeat multiply ", TEST_REPEAT
-  do test_repeat = 1, TEST_REPEAT
+  !do test_repeat = 1, TEST_REPEAT
     call Multiply(A, B, C)
-  enddo
-
-  !C%Norm = SQRT(Norm(C))
+  !enddo
 
   CALL SpAMM_Time_Stamp()
 
@@ -71,6 +69,10 @@ program spamm_multiply
   C_reference => SpAMM_Convert_Dense_2_QuTree(C_dense_padded)
 
   call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
+
+  norms = Norm(A)
+  write(*, *) "F-norm (A)   = ", sqrt(norms%FrobeniusNorm)
+  write(*, *) "max-norm (A) = ", norms%MaxNorm
 
   norms = Norm(C)
 

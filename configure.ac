@@ -52,6 +52,7 @@ case ${FC} in
     AC_MSG_NOTICE([Detected ifort, the Intel Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
       FCFLAGS="-O3 -no-prec-div -xHost -heap-arrays -g -check all -traceback -DTEST_REPEAT=100"
+      #FCFLAGS="-O2 -heap-arrays -g -DTEST_REPEAT=100"
       scaling_reference_file="freeon-10.Intel.reference"
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
     fi

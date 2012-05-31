@@ -39,6 +39,9 @@ AM_CPPFLAGS = -I../src
 SpAMM_PURIFY2_SOURCES = SpAMM_PURIFY2.F90
 SpAMM_PURIFY2_CPPFLAGS = -I$(top_builddir)/.. -I$(top_builddir)/../Modules
 
+SpAMM_TESTONE_SOURCES = SpAMM_TESTONE.F90
+SpAMM_TESTONE_CPPFLAGS = -I$(top_builddir)/.. -I$(top_builddir)/../Modules
+
 spamm_multiply_01_SOURCES  = spamm_multiply.F90
 spamm_multiply_01_LDFLAGS  = ../src/libspammpack.la libspammtests.la
 spamm_multiply_01_CPPFLAGS = -I../src -DNUMBER_OF_THREADS=1
