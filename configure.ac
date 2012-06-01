@@ -43,17 +43,19 @@ case ${FC} in
   *gfortran*)
     AC_MSG_NOTICE([Detected gfortran, the gcc Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
-      FCFLAGS="-O3 -g -Wall -DTEST_REPEAT=1"
+      FCFLAGS="-ffree-line-length-none -O3 -g -Wall"
       scaling_reference_file="freeon-10.gcc.reference"
+      test_repeat=1
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
     fi
     ;;
   *ifort*)
     AC_MSG_NOTICE([Detected ifort, the Intel Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
-      FCFLAGS="-O3 -no-prec-div -xHost -heap-arrays -g -check all -traceback -DTEST_REPEAT=100"
+      FCFLAGS="-O3 -no-prec-div -xHost -extend-source -heap-arrays -g -check all -traceback"
       #FCFLAGS="-O2 -heap-arrays -g -DTEST_REPEAT=100"
       scaling_reference_file="freeon-10.Intel.reference"
+      test_repeat=1
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
     fi
     ;;
@@ -63,6 +65,12 @@ esac
 
 dnl Set the proper scaling reference file.
 AC_SUBST([SCALING_REFERENCE], [${scaling_reference_file}], [The reference file])
+
+dnl Repeat multiply test.
+AC_DEFINE_UNQUOTED([TEST_REPEAT], [${test_repeat}], [Repeat multiply test to get better timings])
+
+dnl Very product matrix in tests.
+AC_DEFINE([VERIFY_RESULT], [1], [Verify the correctnes of the matrix product in the tests])
 
 dnl Find out how to enable OpenMP in C.
 AC_LANG(C)

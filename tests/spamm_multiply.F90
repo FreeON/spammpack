@@ -33,8 +33,8 @@ program spamm_multiply
   type(QuTree), pointer :: C => null()
   type(QuTree), pointer :: C_reference => null()
 
-  call load_matrix("testmatrix_random_1024x1024.coor", A_dense)
-  call load_matrix("testmatrix_random_1024x1024.coor", B_dense)
+  call load_matrix("testmatrix_random_2048x2048.coor", A_dense)
+  call load_matrix("testmatrix_random_2048x2048.coor", B_dense)
 
   N = size(A_dense, 1)
   allocate(C_dense(N, N))
@@ -64,6 +64,7 @@ program spamm_multiply
 
   CALL SpAMM_Time_Stamp()
 
+#ifdef VERIFY_RESULT
   C_dense = matmul(A_dense, B_dense)
   C_dense_padded = C_dense
   C_reference => SpAMM_Convert_Dense_2_QuTree(C_dense_padded)
@@ -78,6 +79,7 @@ program spamm_multiply
 
   write(*, *) "F-norm (C)   = ", sqrt(norms%FrobeniusNorm)
   write(*, *) "max-norm (C) = ", norms%MaxNorm
+#endif
 
   ! Exit with some error code.
   call spamm_exit(testresult)
