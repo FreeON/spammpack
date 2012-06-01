@@ -74,8 +74,10 @@ MODULE SpAMM_GLOBALS
   !> The depth of the matrix tree.
   INTEGER :: SpAMM_TOTAL_DEPTH
 
-  INTEGER :: SpAMM_TOTAL_LEVELS
+  !> The size of the unpadded matrix.
   INTEGER :: SpAMM_MATRIX_DIMENSION
+
+  !> The size of the padded matrix.
   INTEGER :: SpAMM_PADDED_MATRIX_DIMENSION
 
   !> The number of threads requested (only applicable when using OpenMP).
@@ -84,8 +86,10 @@ MODULE SpAMM_GLOBALS
   !> Cutoff the tree depth at some predefined maximum depth.
   INTEGER :: SpAMM_RECURSION_DEPTH_CUTOFF
 
+  !> Number of timer stat slots.
   INTEGER, PARAMETER :: SpAMM_NUMBER_OF_STATS = 100
 
+  !> The timers.
   TYPE(Stats), DIMENSION(1:SpAMM_NUMBER_OF_STATS) :: SpAMM_STATS
 
 CONTAINS
@@ -106,7 +110,7 @@ CONTAINS
     INTEGER                :: NThreads, ThreadID
 #endif
 
-    SpAMM_MATRIX_DIMENSION=N
+    SpAMM_MATRIX_DIMENSION = N
 
     K=CEILING(LOG10(DBLE(N))/LOG10(2D0))
 
@@ -153,23 +157,41 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Init_Globals
 
+  !> Reset the timer.
+  SUBROUTINE SpAMM_Timer_Reset ()
+
+    SpAMM_STATS(:)%Time=0
+    SpAMM_STATS(:)%Count=0
+    SpAMM_STATS(:)%Routine=" "
+
+  END SUBROUTINE SpAMM_Timer_Reset
+
   !> Print out a timestamp.
+  !!
+  !! @detail
+  !! This function keeps track of up to SpAMM_GLOBALS::SpAMM_NUMBER_OF_STATS
+  !! timers. Eeach timer slot is identified by a unique RoutineID, which has to
+  !! be chose by the caller in some fashion, and a string which describes the
+  !! timer. Repeated calls with the same RoutineID will increment the total time
+  !! in the timer slot. When called without arguments, the current state of the
+  !! timers is printed.
   !!
   !! @param Time The time to print.
   !! @param Routine A string indicating the part of the code that took this
   !! amount of time.
-  !! @RoutineID An ID.
-  SUBROUTINE SpAMM_Time_Stamp(Time,Routine,RoutineID)
+  !! @RoutineID An ID that identifies the routine.
+  SUBROUTINE SpAMM_Time_Stamp (Time, Routine, RoutineID)
 
     REAL(SpAMM_DOUBLE),OPTIONAL :: Time
     CHARACTER(LEN=*),OPTIONAL   :: Routine
     INTEGER,OPTIONAL            :: RoutineID
+
     REAL(SpAMM_DOUBLE)          :: SpAMM_Total_Time
     INTEGER                     :: I
 
     IF(.NOT.PRESENT(Time))THEN
       WRITE(*,22)
-      22       FORMAT(72('-'))
+22    FORMAT(72('-'))
       DO I=1,SpAMM_NUMBER_OF_STATS
         IF(SpAMM_STATS(I)%Routine(1:1).NE." ")THEN
           WRITE(*,33)ADJUSTL(TRIM(ADJUSTL(SpAMM_STATS(I)%Routine))), &
@@ -190,8 +212,13 @@ CONTAINS
       WRITE(*,22)
       WRITE(*,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
       !         WRITE(77,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
-      35       FORMAT("SpAMM_SCALING ",I4,"  ", F20.10)
+35    FORMAT("SpAMM_SCALING ",I4," threads ", F20.10)
     ELSE
+      IF(.NOT.PRESENT(Routine) .OR. .NOT.PRESENT(RoutineID)) THEN
+        WRITE(*, *) "missing Routine and/or RoutineID argument"
+        CALL SpAMM_Trap()
+      ENDIF
+
       SpAMM_STATS(RoutineID)%Time=SpAMM_STATS(RoutineID)%Time+Time
       SpAMM_STATS(RoutineID)%Count=SpAMM_STATS(RoutineID)%Count+1
       SpAMM_STATS(RoutineID)%Routine=ADJUSTL(Routine)
@@ -200,5 +227,20 @@ CONTAINS
     ENDIF
 
   END SUBROUTINE SpAMM_Time_Stamp
+
+  !> Set the number of threads.
+  !!
+  !! @param num_threads The number of threads to use for subsequent
+  !! calculations.
+  SUBROUTINE SpAMM_Set_Num_Threads (num_threads)
+
+    INTEGER :: num_threads
+
+    IF(num_threads >= 1) THEN
+      WRITE(*, *) "Setting number of threads to ", num_threads
+      SpAMM_THREAD_COUNT = num_threads
+    ENDIF
+
+  END SUBROUTINE SpAMM_Set_Num_Threads
 
 END MODULE SpAMM_GLOBALS

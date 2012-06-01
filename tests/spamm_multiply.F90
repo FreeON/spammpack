@@ -16,6 +16,8 @@ program spamm_multiply
   integer :: N
   integer :: test_repeat
   integer :: testresult = 0
+  integer :: max_threads
+  integer :: num_threads
   integer, parameter :: NThreads = NUMBER_OF_THREADS
 
   type(SpAMM_Norm) :: norms
@@ -40,8 +42,6 @@ program spamm_multiply
   allocate(C_dense(N, N))
   C_dense = SpAMM_ZERO
 
-  call SpAMM_Init_Globals(N, NThreads)
-
   allocate(A_dense_padded(N, N))
   allocate(B_dense_padded(N, N))
   allocate(C_dense_padded(N, N))
@@ -53,32 +53,44 @@ program spamm_multiply
   A_dense_padded = A_dense
   B_dense_padded = B_dense
 
+  call SpAMM_Init_Globals(N, NThreads)
+
   A => SpAMM_Convert_Dense_2_QuTree(A_dense_padded)
   B => SpAMM_Convert_Dense_2_QuTree(B_dense_padded)
   call New(C)
 
-  write(*, *) "repeat multiply ", TEST_REPEAT
-  !do test_repeat = 1, TEST_REPEAT
-    call Multiply(A, B, C)
-  !enddo
+#if defined(_OPENMP) && defined(THREAD_CYCLE)
+  max_threads = omp_get_num_procs()
+  do num_threads = 1, max_threads
+    CALL SpAMM_Set_Num_Threads(num_threads)
+    CALL SpAMM_Timer_Reset()
+#endif
+    write(*, *) "repeat multiply ", TEST_REPEAT
+    do test_repeat = 1, TEST_REPEAT
+      call Multiply(A, B, C)
+    enddo
 
-  CALL SpAMM_Time_Stamp()
+    CALL SpAMM_Time_Stamp()
 
 #ifdef VERIFY_RESULT
-  C_dense = matmul(A_dense, B_dense)
-  C_dense_padded = C_dense
-  C_reference => SpAMM_Convert_Dense_2_QuTree(C_dense_padded)
+    C_dense = matmul(A_dense, B_dense)
+    C_dense_padded = C_dense
+    C_reference => SpAMM_Convert_Dense_2_QuTree(C_dense_padded)
 
-  call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
+    call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
 
-  norms = Norm(A)
-  write(*, "(A,F22.12)") "F-norm (A)   = ", sqrt(norms%FrobeniusNorm)
-  write(*, "(A,F22.12)") "max-norm (A) = ", norms%MaxNorm
+    norms = Norm(A)
+    write(*, "(A,F22.12)") "F-norm (A)   = ", sqrt(norms%FrobeniusNorm)
+    write(*, "(A,F22.12)") "max-norm (A) = ", norms%MaxNorm
 
-  norms = Norm(C)
+    norms = Norm(C)
 
-  write(*, "(A,F22.12)") "F-norm (C)   = ", sqrt(norms%FrobeniusNorm)
-  write(*, "(A,F22.12)") "max-norm (C) = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (C)   = ", sqrt(norms%FrobeniusNorm)
+    write(*, "(A,F22.12)") "max-norm (C) = ", norms%MaxNorm
+#endif
+
+#if defined(_OPENMP) && defined(THREAD_CYCLE)
+  enddo
 #endif
 
   ! Exit with some error code.

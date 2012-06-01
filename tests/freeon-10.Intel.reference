@@ -1,7 +1,7 @@
 # Benchmark results for Intel compiler on freeon-10.
 equal
 {
-  tag = "SpAMM_SCALING\s+[0-9]+\s+(.*)";
+  tag = "SpAMM_SCALING\s+[0-9]+\s+threads\s+(.*)";
   relativeTolerance = 5.000000000000e-02;
   value = 1.989281034470e+01;
   value = 1.013811421390e+01;

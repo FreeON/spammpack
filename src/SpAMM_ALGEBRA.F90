@@ -119,9 +119,12 @@ CONTAINS
     INTEGER                              :: tier
     REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
 
-    !$OMP PARALLEL
+    !$OMP PARALLEL NUM_THREADS(SpAMM_THREAD_COUNT)
 
+    ! The master thread will lead execution of the product. All subsequent tasks
+    ! are untied and can be executed by any thread in the thread group.
     !$OMP MASTER
+
     IF(PRESENT(LocalThreshold))THEN
       SpAMM_Threshold_Multiply_QuTree_x_QuTree=LocalThreshold
     ELSE

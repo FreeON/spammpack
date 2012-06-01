@@ -70,10 +70,10 @@ dnl Repeat multiply test.
 AC_DEFINE_UNQUOTED([TEST_REPEAT], [${test_repeat}], [Repeat multiply test to get better timings])
 
 dnl Very product matrix in tests.
-AC_MSG_CHECKING([whether to verify SpAMM product])
+AC_MSG_CHECKING([whether to verify SpAMM product in the test-suite])
 AC_ARG_ENABLE([verify],
               [AS_HELP_STRING([--disable-verify],
-              [Disable the veryfication of the matrix product.])],
+              [Disable the veryfication of the matrix product in the test suite.])],
               [verify_result=$enableval],
               [verify_result="yes"])
 AC_MSG_RESULT([$verify_result])
