@@ -70,7 +70,16 @@ dnl Repeat multiply test.
 AC_DEFINE_UNQUOTED([TEST_REPEAT], [${test_repeat}], [Repeat multiply test to get better timings])
 
 dnl Very product matrix in tests.
-AC_DEFINE([VERIFY_RESULT], [1], [Verify the correctnes of the matrix product in the tests])
+AC_MSG_CHECKING([whether to verify SpAMM product])
+AC_ARG_ENABLE([verify],
+              [AS_HELP_STRING([--disable-verify],
+              [Disable the veryfication of the matrix product.])],
+              [verify_result=$enableval],
+              [verify_result="yes"])
+AC_MSG_RESULT([$verify_result])
+if test "$verify_result" = "yes"; then
+  AC_DEFINE([VERIFY_RESULT], [1], [Verify the correctnes of the matrix product in the tests])
+fi
 
 dnl Find out how to enable OpenMP in C.
 AC_LANG(C)
