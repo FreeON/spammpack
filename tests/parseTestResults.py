@@ -257,7 +257,7 @@ logHandler.setLevel(logging.DEBUG)
 
 log.addHandler(logHandler)
 
-log.debug("test")
+log.debug("starting new test...")
 
 if not options.output:
   # Load output from standard input.
