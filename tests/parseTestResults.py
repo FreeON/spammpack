@@ -182,6 +182,21 @@ class referenceTag:
     return "[%s, %d values, abs tol %1.2e, rel tol %1.2e]" % (self.tagType,
         len(self.values), self.absoluteTolerance, self.relativeTolerance)
 
+  def __str__ (self):
+    stringResult = ""
+
+    stringResult += self.tagType + "\n{\n"
+    stringResult += "  " + "tag = \"%s\";\n" % (self.tag)
+    if self.absoluteTolerance > 0.0:
+      stringResult += "  " + "absoluteTolerance = %1.12e;\n" % (self.absoluteTolerance)
+    if self.relativeTolerance > 0.0:
+      stringResult += "  " + "relativeTolerance = %1.12e;\n" % (self.relativeTolerance)
+    for i in self.valueFromOutput:
+      stringResult += "  " + "value = %1.12e;\n" % (i)
+    stringResult += "}"
+
+    return stringResult
+
 ########################################
 #
 # Main program.
@@ -421,6 +436,14 @@ log.debug("%d failed match(es)" % (numberFailed))
 log.debug("%d unreferenced match(es)" % (numberUnreferencedMatches))
 
 log.debug("")
+
+if numberFailed > 0:
+  log.debug("if your reference file had looked like this, I would")
+  log.debug("have been happier...")
+  # Print reference file with proper values.
+  for i in reference:
+    log.debug("\n" + i.__str__())
+  log.debug("")
 
 # Exit with a proper exit code.
 if numberFailed == 0:
