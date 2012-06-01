@@ -33,8 +33,8 @@ program spamm_multiply
   type(QuTree), pointer :: C => null()
   type(QuTree), pointer :: C_reference => null()
 
-  call load_matrix("testmatrix_random_4096x4096.coor", A_dense)
-  call load_matrix("testmatrix_random_4096x4096.coor", B_dense)
+  call load_matrix("testmatrix_random_1024x1024.coor", A_dense)
+  call load_matrix("testmatrix_random_1024x1024.coor", B_dense)
 
   N = size(A_dense, 1)
   allocate(C_dense(N, N))
