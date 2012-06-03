@@ -228,7 +228,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Time_Stamp
 
-  !> Set the number of threads.
+  !> Set the number of threads for subsequent operations.
   !!
   !! @param num_threads The number of threads to use for subsequent
   !! calculations.
