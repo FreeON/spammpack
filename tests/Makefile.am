@@ -4,9 +4,12 @@ libspammtests_la_SOURCES = test_utilities.F90 spammtests.F90
 noinst_SCRIPTS = scaling_test.sh parseTestResults.py
 
 EXTRA_DIST = $(noinst_SCRIPTS) \
-  set_mode.sh \
+  freeon-10.Intel.reference \
+  freeon-10.gcc.reference \
+  scaling_test.reference \
   scaling_test.sh.in \
-  scaling_test.reference
+  set_mode.sh \
+  testmatrix_random_1024x1024.coor
 
 if build_test_programs
 test_programs = \

@@ -1,22 +1,28 @@
 #!/bin/bash
+#
+# vim: tw=0
 
 echo > scaling_test.output
 
-./spamm_multiply >> scaling_test.output 2>&1
+./spamm_multiply ${srcdir}/testmatrix_random_1024x1024.coor >> scaling_test.output 2>&1
 
 grep SpAMM_SCALING scaling_test.output | awk '{print $2, $4}' > scaling_test.dat
 
 # Test result.
-./parseTestResults.py --output scaling_test.output --reference scaling_test.reference
+${srcdir}/parseTestResults.py --output scaling_test.output --reference ${srcdir}/scaling_test.reference --disable-check-zippy
 teststatus=$?
-if test $teststatus -ne 0; then
-  echo "product accuracy test failed"
+if test $teststatus -eq 0; then
+  echo "PASS:   product accuracy test"
+else
+  echo "FAIL:   product accuracy test"
 fi
 
-./parseTestResults.py --output scaling_test.output --reference @SCALING_REFERENCE@
+${srcdir}/parseTestResults.py --output scaling_test.output --reference ${srcdir}/@SCALING_REFERENCE@ --disable-check-zippy
 teststatus=$?
-if test $teststatus -ne 0; then
-  echo "product timing test failed"
+if test $teststatus -eq 0; then
+  echo "PASS:   product timing test"
+else
+  echo "FAIL:   product timing test"
 fi
 
 exit $teststatus

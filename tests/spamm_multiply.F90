@@ -16,8 +16,12 @@ program spamm_multiply
   integer :: N
   integer :: test_repeat
   integer :: testresult = 0
+
+#ifdef _OPENMP
   integer :: max_threads
   integer :: num_threads
+#endif
+
   integer, parameter :: NThreads = NUMBER_OF_THREADS
 
   type(SpAMM_Norm) :: norms
@@ -35,8 +39,12 @@ program spamm_multiply
   type(QuTree), pointer :: C => null()
   type(QuTree), pointer :: C_reference => null()
 
-  call load_matrix("testmatrix_random_1024x1024.coor", A_dense)
-  call load_matrix("testmatrix_random_1024x1024.coor", B_dense)
+  character(len = 1000) :: matrixfilename
+
+  call get_command_argument(1, matrixfilename)
+
+  call load_matrix(matrixfilename, A_dense)
+  call load_matrix(matrixfilename, B_dense)
 
   N = size(A_dense, 1)
   allocate(C_dense(N, N))
