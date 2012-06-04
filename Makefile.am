@@ -10,6 +10,8 @@ man3_MANS = man/man3/*
 
 EXTRA_DIST = $(pdf_DATA) $(man3_MANS)
 
+dist : docs
+
 docs :
 	doxygen
 	$(MAKE) -C latex
