@@ -42,3 +42,5 @@ CTAGSFLAGS = --fortran-kinds=+L+i
 # Dependencies.
 spamm_multiply.o : test_utilities.o spammtests.o
 spammtests.o : test_utilities.o
+
+CLEANFILES = *.mod scaling_test.output scaling_test.dat regressionTest.log
