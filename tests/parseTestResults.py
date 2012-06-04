@@ -211,6 +211,11 @@ parser.add_argument("--reference",
     dest = "reference",
     required = True)
 
+parser.add_argument("--disable-check-zippy",
+    help = "check whether a Zippy quote indicates the successful termination of FreeON (default = %(default)s)",
+    action = "store_true",
+    default = False)
+
 parser.add_argument("--output",
     metavar = "FILE",
     help = "load FreeON output from FILE instead of from standard input",
@@ -417,7 +422,8 @@ log.debug("log file: " + os.path.join(os.getcwd(), "regressionTest.log"))
 if successfullyTerminated:
   log.debug("FreeON successfully terminated")
 else:
-  exitStatus = 1
+  if not options.disable_check_zippy:
+    exitStatus = 1
   log.debug("FreeON did not successfully terminate")
 
 log.debug("result:")
