@@ -1,5 +1,5 @@
 AC_INIT([SpAMMPack],
-        [beta-2012-05-22],
+        [beta-2012-06-04],
         [freeon-devel@nongnu.org],
         [],
         [http://www.freeon.org])
