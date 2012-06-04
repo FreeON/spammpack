@@ -50,6 +50,9 @@ program spamm_multiply
   allocate(C_dense(N, N))
   C_dense = SpAMM_ZERO
 
+  ! Get new, padded matrix size.
+  call SpAMM_Init_Globals(N, NThreads)
+
   allocate(A_dense_padded(N, N))
   allocate(B_dense_padded(N, N))
   allocate(C_dense_padded(N, N))
@@ -60,8 +63,6 @@ program spamm_multiply
 
   A_dense_padded = A_dense
   B_dense_padded = B_dense
-
-  call SpAMM_Init_Globals(N, NThreads)
 
   A => SpAMM_Convert_Dense_2_QuTree(A_dense_padded)
   B => SpAMM_Convert_Dense_2_QuTree(B_dense_padded)

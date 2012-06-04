@@ -148,7 +148,6 @@ CONTAINS
     !$OMP END CRITICAL
 33  FORMAT(' SpAMM_Init_Globals: Id#',I2,' checking in with ',I2,' threads ')
     !$OMP END PARALLEL
-
 #endif
 
     SpAMM_STATS(:)%Time=0
