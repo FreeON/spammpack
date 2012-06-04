@@ -216,6 +216,11 @@ parser.add_argument("--disable-check-zippy",
     action = "store_true",
     default = False)
 
+parser.add_argument("--always-pass",
+    help = "parse output and create analysis, but pass test",
+    action = "store_true",
+    default = False)
+
 parser.add_argument("--output",
     metavar = "FILE",
     help = "load FreeON output from FILE instead of from standard input",
@@ -458,4 +463,7 @@ else:
   log.debug("test failed")
   exitStatus = 1
 
-sys.exit(exitStatus)
+if options.always_pass:
+  sys.exit(0)
+else:
+  sys.exit(exitStatus)
