@@ -173,13 +173,13 @@ CONTAINS
   SUBROUTINE SpAMM_Allocate_Full_QuTree(qA)
 
     TYPE(QuTree),POINTER :: qA
-    INTEGER              :: tier
+    INTEGER              :: Depth
 
     IF(ASSOCIATED(qA)) CALL SpAMM_Delete_QuTree(qA)
     CALL NewQuNode(qA)
 
-    tier=0
-    CALL SpAMM_Allocate_Full_QuTree_Recur(qA,tier)
+    Depth=0
+    CALL SpAMM_Allocate_Full_QuTree_Recur(qA,Depth)
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree
 
@@ -412,11 +412,11 @@ CONTAINS
   !> Recursive part of delete quadtree.
   !!
   !! @param qA Pointer to quadtree node.
-  !! @param tier The current tier.
-  RECURSIVE SUBROUTINE SpAMM_Delete_QuTree_Recur(qA,tier)
+  !! @param Depth The current tier.
+  RECURSIVE SUBROUTINE SpAMM_Delete_QuTree_Recur(qA,Depth)
 
     TYPE(QuTree),POINTER  :: qA
-    INTEGER :: Status,tier
+    INTEGER :: Status,Depth
 
     IF(.NOT.ASSOCIATED(qA))RETURN
     IF(ALLOCATED(qA%Blok))THEN
@@ -430,8 +430,8 @@ CONTAINS
 
     IF(ASSOCIATED(qA%Quad00))THEN
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad00,tier+1)
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad00,Depth+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -441,8 +441,8 @@ CONTAINS
 
     IF(ASSOCIATED(qA%Quad01))THEN
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad01,tier+1)
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad01,Depth+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -452,8 +452,8 @@ CONTAINS
 
     IF(ASSOCIATED(qA%Quad10))THEN
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad10,tier+1)
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad10,Depth+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -463,8 +463,8 @@ CONTAINS
 
     IF(ASSOCIATED(qA%Quad11))THEN
        !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad11,tier+1)
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad11,Depth+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -561,24 +561,24 @@ CONTAINS
   !! Recursive allocation of a quadtree.
   !!
   !! @param qA A pointer to a type(QuTree) object.
-  !! @param tier The current tier.
-  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur(qA, tier)
+  !! @param Depth The current tier.
+  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur(qA, Depth)
 
     TYPE(QuTree), POINTER :: qA
-    INTEGER               :: tier
+    INTEGER               :: Depth
 
     ! Allocate new node.
     CALL NewQuNode(qA)
 
-    IF(tier==SpAMM_TOTAL_DEPTH)THEN
+    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
       ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
       qA%Blok=SpAMM_Zero
       RETURN
     ELSE
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad00,tier+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad01,tier+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad10,tier+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11,tier+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad00,Depth+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad01,Depth+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad10,Depth+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11,Depth+1)
     ENDIF
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur

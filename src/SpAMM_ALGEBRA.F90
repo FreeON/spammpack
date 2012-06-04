@@ -116,7 +116,7 @@ CONTAINS
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
     REAL(SpAMM_KIND), OPTIONAL           :: LocalThreshold
 
-    INTEGER                              :: tier
+    INTEGER                              :: Depth
     REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
 
     !$OMP PARALLEL NUM_THREADS(SpAMM_THREAD_COUNT)
@@ -131,13 +131,13 @@ CONTAINS
       SpAMM_Threshold_Multiply_QuTree_x_QuTree=SpAMM_PRODUCT_TOLERANCE
     ENDIF
 
-    tier=0
-    TInitial=SpAMM_Get_Time()
+    Depth = 0
+    TInitial = SpAMM_Get_Time()
 
     CALL SpAMM_Multiply_QuTree_x_Scalar(qC,SpAMM_Zero)
 
     !$OMP TASK UNTIED SHARED(qA,qB,qC)
-    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC,qA,qB,tier)
+    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC,qA,qB,Depth)
     !$OMP END TASK
 
     !$OMP END MASTER
@@ -158,16 +158,16 @@ CONTAINS
     TYPE(QuTree), POINTER        :: qA
     REAL(SpAMM_KIND), INTENT(IN) :: a
 
-    INTEGER            :: tier
+    INTEGER            :: Depth
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
     IF(.NOT.ASSOCIATED(qA))RETURN
 
-    tier=0
+    Depth=0
     TInitial=SpAMM_Get_Time()
 
     !$OMP TASK SHARED(qA)
-    CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,tier)
+    CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,Depth)
     !$OMP END TASK
 
     !$OMP TASKWAIT
@@ -304,14 +304,14 @@ CONTAINS
     TYPE(QuTree), POINTER, INTENT(IN) :: qA
     TYPE(SpAMM_Norm) :: Norms
 
-    INTEGER :: tier
+    INTEGER :: Depth
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
-    tier=0
+    Depth=0
     TInitial=SpAMM_Get_Time()
 
     !$OMP TASK SHARED(Norms,qA)
-    Norms = SpAMM_Norm_Reduce_QuTree_Recur(qA,tier)
+    Norms = SpAMM_Norm_Reduce_QuTree_Recur(qA,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
 
@@ -477,14 +477,11 @@ CONTAINS
   !! @param qA Pointer to quadtree A.
   !! @param qB Pointer to quadtree B.
   !! @param qC Pointer to quadtree C.
-  !! @param tier The current tier.
-  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, tier)
+  !! @param Depth The current Depth.
+  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, Depth)
 
     TYPE(QuTree), POINTER :: qC,qA,qB
-    INTEGER :: tier
-#ifdef _OPENMP
-    INTEGER :: threadID
-#endif
+    INTEGER :: Depth
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
 
@@ -507,7 +504,7 @@ CONTAINS
 #endif
 
       ! At the bottom, calculate the product.
-      IF(tier == SpAMM_TOTAL_DEPTH)THEN
+      IF(Depth == SpAMM_TOTAL_DEPTH)THEN
 
 #ifdef _OPENMP
         !CALL OMP_SET_LOCK(qC%Lock)
@@ -536,37 +533,37 @@ CONTAINS
       ELSE
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad00%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad00,qB%Quad00,tier+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad00,qB%Quad00,Depth+1)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad00%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad00,qB%Quad01,tier+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad00,qB%Quad01,Depth+1)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad10%Norms%FrobeniusNorm*qB%Quad00%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad10,qB%Quad00,tier+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad10,qB%Quad00,Depth+1)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad10%Norms%FrobeniusNorm*qB%Quad01%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad10,qB%Quad01,tier+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad10,qB%Quad01,Depth+1)
         !$OMP END TASK
 
         !$OMP TASKWAIT
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad01%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad01,qB%Quad10,tier+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad01,qB%Quad10,Depth+1)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad01%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad01,qB%Quad11,tier+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad01,qB%Quad11,Depth+1)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad10%Norms%FrobeniusNorm*qB%Quad10%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad11,qB%Quad10,tier+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad11,qB%Quad10,Depth+1)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad11%Norms%FrobeniusNorm*qB%Quad11%Norms%FrobeniusNorm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11,tier+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11,Depth+1)
         !$OMP END TASK
 
         !$OMP TASKWAIT
@@ -581,35 +578,35 @@ CONTAINS
   !!
   !! @param qA Pointer to quadtree.
   !! @param a The scalar
-  !! @param tier The current tier.
-  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,tier)
+  !! @param Depth The current tier.
+  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,Depth)
 
     TYPE(QuTree), POINTER :: qA
     REAL(SpAMM_KIND) :: a
-    INTEGER :: tier
+    INTEGER :: Depth
 
     IF(.NOT.ASSOCIATED(qA)) RETURN
 
-    IF(tier==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
+    IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
       ! At the bottom, multiply the block.
       qA%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm*ABS(a)
       qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)=qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)*a
     ELSE
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad00,a,tier+1)
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad00,a,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED  SHARED(qA) &
-      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad01,a,tier+1)
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad01,a,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad10,a,tier+1)
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad10,a,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(tier<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad11,a,tier+1)
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad11,a,Depth+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       qA%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm*ABS(a)
@@ -875,7 +872,7 @@ CONTAINS
     TYPE(QuTree), POINTER :: qA
     TYPE(BiTree), POINTER :: bB,bC
     INTEGER               :: Depth
-    LOGICAL               :: DepthOK,Go_00x0,Go_01x1,Go_10x0,Go_11x1
+
     ! Associated
     IF(ASSOCIATED(qA).AND.ASSOCIATED(bB))THEN
       ! Estimate
@@ -898,32 +895,29 @@ CONTAINS
         bC%Vect(1:SpAMM_BLOCK_SIZE)=bC%Vect(1:SpAMM_BLOCK_SIZE)+MATMUL( &
           qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE),bB%Vect(1:SpAMM_BLOCK_SIZE))
       ELSE
-#ifdef _OPENMP
-        ! Put a check on the stack
-        DepthOK=.TRUE.
-        ! DepthOK=MOD(Depth,2)==0
-        Go_00x0=DepthOK.AND.qA%Quad00%Norms%FrobeniusNorm*bB%Sect0%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        Go_01x1=DepthOK.AND.qA%Quad01%Norms%FrobeniusNorm*bB%Sect1%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        Go_10x0=DepthOK.AND.qA%Quad10%Norms%FrobeniusNorm*bB%Sect0%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-        Go_11x1=DepthOK.AND.qA%Quad11%Norms%FrobeniusNorm*bB%Sect1%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF
-#endif
+
         ! 0=00*0
-        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(Go_00x0)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad00%Norms%FrobeniusNorm*bB%Sect0%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect0,qA%Quad00,bB%Sect0,Depth+1)
         !$OMP END TASK
+
         ! 1=10*0
-        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(Go_10x0)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad10%Norms%FrobeniusNorm*bB%Sect0%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect1,qA%Quad10,bB%Sect0,Depth+1)
         !$OMP END TASK
+
         !$OMP TASKWAIT
+
         ! 0=00*0+01*1
-        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(Go_01x1)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad01%Norms%FrobeniusNorm*bB%Sect1%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect0,qA%Quad01,bB%Sect1,Depth+1)
         !$OMP END TASK
+
         ! 1=10*0+11*1
-          !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(Go_11x1)
+          !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad11%Norms%FrobeniusNorm*bB%Sect1%Norms%FrobeniusNorm>SpAMM_RECURSION_NORMD_CUTOFF)
         CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect1,qA%Quad11,bB%Sect1,Depth+1)
         !$OMP END TASK
+
         !$OMP TASKWAIT
       ENDIF
     ENDIF

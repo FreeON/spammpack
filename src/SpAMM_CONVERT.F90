@@ -72,8 +72,7 @@ MODULE SpAMM_CONVERT
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
 
-    INTEGER          :: I,J
-    TYPE(SpAMM_Norm) :: Norms
+    INTEGER :: I,J
 
     I=SIZE(A,1)
     J=SIZE(A,2)
