@@ -4,9 +4,8 @@ AC_INIT([SpAMMPack],
         [],
         [http://www.freeon.org])
 
-AC_COPYRIGHT([
-This code is part of the FreeON suite of programs for linear scaling
-electronic structure theory and ab initio molecular dynamics.
+AC_COPYRIGHT([This code is part of the FreeON suite of programs for linear
+scaling electronic structure theory and ab initio molecular dynamics.
 
 Copyright (2004). The Regents of the University of California. This
 material was produced under U.S. Government contract W-7405-ENG-36
@@ -28,7 +27,8 @@ While you may do as you like with this software, the GNU license requires
 that you clearly mark derivative software.  In addition, you are encouraged
 to return derivative works to the FreeON group for review, and possible
 disemination in future releases.
-])
+
+Los Alamos National Laboratory (LA-CC 01-2; LA-CC-04-086)])
 
 dnl Initialize automake.
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
