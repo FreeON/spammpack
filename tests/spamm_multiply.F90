@@ -45,7 +45,7 @@ program spamm_multiply
 
 #ifdef _OPENMP
   call get_command_argument(2, inputbuffer)
-  read(inputbuffer, "(I)") num_threads
+  read(inputbuffer, "(I2)") num_threads
 #endif
 
   call load_matrix(matrixfilename, A_dense)
@@ -100,7 +100,7 @@ program spamm_multiply
 
     write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
     do test_repeat = 1, TEST_REPEAT
-      call Multiply(A, B, C, LocalThreshold = 1e-5)
+      call Multiply(A, B, C, LocalThreshold = 1e-8)
     enddo
 
     CALL SpAMM_Time_Stamp()
@@ -113,13 +113,13 @@ program spamm_multiply
     call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
 
     norms = Norm(A)
-    write(*, "(A,F22.12)") "F-norm (A)   = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (A) = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (A)      = ", sqrt(norms%FrobeniusNorm)
+    write(*, "(A,F22.12)") "max-norm (A)    = ", norms%MaxNorm
 
     norms = Norm(C)
 
-    write(*, "(A,F22.12)") "F-norm (C)   = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (C) = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (diff)   = ", sqrt(norms%FrobeniusNorm)
+    write(*, "(A,F22.12)") "max-norm (diff) = ", norms%MaxNorm
 #endif
 
 #if defined(_OPENMP)

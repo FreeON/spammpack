@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import math
 import random
 import sys
 
@@ -17,17 +18,60 @@ parser.add_argument("--type",
     choices = [ "full", "decay" ],
     default = "full")
 
+parser.add_argument("--decay",
+    metavar = "gamma",
+    help = "Set matrix element decay to exp(-gamma |i-j|)",
+    type = float,
+    default = 1)
+
 options = parser.parse_args()
+
+A = [ [ 0 for i in range(options.N) ] for j in range(options.N) ]
 
 if options.matrixtype == "full":
   for i in range(options.N):
     for j in range(options.N):
-      print "%d %d % 1.14e" % (i+1, j+1, random.uniform(0.1, 1.0))
+      A[i][j] = random.uniform(0.1, 1.0)
 
 elif options.matrixtype == "decay":
-  print "not implemented"
-  sys.exit(1)
+  for i in range(options.N):
+    A[i][i] = random.uniform(0.6, 1.0)
+  for i in range(options.N):
+    for j in range(options.N):
+      if i != j:
+        A[i][j] = A[i][i]*math.exp(-options.decay*math.fabs(i-j))
 
 else:
   print "unknown matrix type (%s)" % (options.matrixtype)
   sys.exit(1)
+
+# Analyze matrix.
+element_range = [ 0, 1e-8, 1e-6, 1e-4, 1, 10]
+
+range_count = [ 0 for i in range(len(element_range)) ]
+count_total = 0
+min_element = 10
+max_element = -10
+
+for i in range(options.N):
+  for j in range(options.N):
+    if A[i][j] < min_element:
+      min_element = A[i][j]
+    if A[i][j] > max_element:
+      max_element = A[i][j]
+
+    for k in range(len(element_range)-1):
+      if element_range[k] <= math.fabs(A[i][j]) and math.fabs(A[i][j]) < element_range[k+1]:
+        range_count[k] += 1
+        count_total += 1
+
+for k in range(len(element_range)-1):
+  print >> sys.stderr, "[%e,%e) = %d (%1.2f%%)" % (element_range[k],
+      element_range[k+1], range_count[k], range_count[k]/float(count_total)*100)
+print >> sys.stderr, "total = %d (%d)" % (count_total, options.N**2)
+print >> sys.stderr, "min(A) = %e" % (min_element)
+print >> sys.stderr, "max(A) = %e" % (max_element)
+
+for i in range(options.N):
+  for j in range(options.N):
+    print "%d %d % 1.14e" % (i+1, j+1, A[i][j])
