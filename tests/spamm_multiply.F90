@@ -9,7 +9,8 @@ program spamm_multiply
 
   implicit none
 
-  integer :: N
+  integer :: N, N_padded
+  integer :: i, j
   integer :: test_repeat
   integer :: testresult = 0
 
@@ -58,17 +59,18 @@ program spamm_multiply
   write(*, *) "read matrix N = ", N
 
   ! Get new, padded matrix size.
+  N_padded = N
 #ifdef _OPENMP
-  call SpAMM_Init_Globals(N, num_threads)
+  call SpAMM_Init_Globals(N_padded, num_threads)
 #else
-  call SpAMM_Init_Globals(N)
+  call SpAMM_Init_Globals(N_padded)
 #endif
 
-  write(*, *) "padded matrix to N = ", N
+  write(*, *) "padded matrix to N_padded = ", N_padded
 
-  allocate(A_dense_padded(N, N))
-  allocate(B_dense_padded(N, N))
-  allocate(C_dense_padded(N, N))
+  allocate(A_dense_padded(N_padded, N_padded))
+  allocate(B_dense_padded(N_padded, N_padded))
+  allocate(C_dense_padded(N_padded, N_padded))
 
   A_dense_padded = SpAMM_ZERO
   B_dense_padded = SpAMM_ZERO
@@ -107,19 +109,34 @@ program spamm_multiply
 
 #ifdef VERIFY_RESULT
     C_dense = matmul(A_dense, B_dense)
-    C_dense_padded = C_dense
+    do i = 1, N
+      do j = 1, N
+        C_dense_padded(i, j) = C_dense(i, j)
+      enddo
+    enddo
     C_reference => SpAMM_Convert_Dense_2_QuTree(C_dense_padded)
+
+    norms = Norm(A)
+    write(*, "(A,F22.12)") "F-norm (A)             = ", sqrt(norms%FrobeniusNorm)
+    write(*, "(A,F22.12)") "max-norm (A)           = ", norms%MaxNorm
+
+    norms = Norm(B)
+    write(*, "(A,F22.12)") "F-norm (B)             = ", sqrt(norms%FrobeniusNorm)
+    write(*, "(A,F22.12)") "max-norm (B)           = ", norms%MaxNorm
+
+    norms = Norm(C)
+    write(*, "(A,F22.12)") "F-norm (C)             = ", sqrt(norms%FrobeniusNorm)
+    write(*, "(A,F22.12)") "max-norm (C)           = ", norms%MaxNorm
+
+    norms = Norm(C_reference)
+    write(*, "(A,F22.12)") "F-norm (C_reference)   = ", sqrt(norms%FrobeniusNorm)
+    write(*, "(A,F22.12)") "max-norm (C_reference) = ", norms%MaxNorm
 
     call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
 
-    norms = Norm(A)
-    write(*, "(A,F22.12)") "F-norm (A)      = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (A)    = ", norms%MaxNorm
-
     norms = Norm(C)
-
-    write(*, "(A,F22.12)") "F-norm (diff)   = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (diff) = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (diff)          = ", sqrt(norms%FrobeniusNorm)
+    write(*, "(A,F22.12)") "max-norm (diff)        = ", norms%MaxNorm
 #endif
 
 #if defined(_OPENMP)
