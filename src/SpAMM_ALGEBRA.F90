@@ -829,8 +829,7 @@ CONTAINS
       Norms%FrobeniusNorm = SpAMM_Zero
       Norms%MaxNorm = SpAMM_Zero
       RETURN
-    ELSEIF(Depth==SpAMM_TOTAL_DEPTH)THEN
-      !qA%Siz==SpAMM_BLOCK_SIZE.AND.ALLOCATED(qA%Blok))THEN
+    ELSEIF(Depth == SpAMM_TOTAL_DEPTH)THEN
       Norms%FrobeniusNorm=SUM(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)**2)
       qA%Norms%FrobeniusNorm=SQRT(Norms%FrobeniusNorm)
       Norms%MaxNorm = SpAMM_Zero
@@ -844,19 +843,24 @@ CONTAINS
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       Norm00=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad00,Depth+1)
       !$OMP END TASK
+
       !$OMP TASK UNTIED SHARED(qA,Norm01) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       Norm01=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad01,Depth+1)
       !$OMP END TASK
+
       !$OMP TASK UNTIED SHARED(qA,Norm10) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       Norm10=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad10,Depth+1)
       !$OMP END TASK
+
       !$OMP TASK UNTIED SHARED(qA,Norm11) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       Norm11=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad11,Depth+1)
       !$OMP END TASK
+
       !$OMP TASKWAIT
+
       Norms%FrobeniusNorm=Norm00%FrobeniusNorm+Norm01%FrobeniusNorm+Norm10%FrobeniusNorm+Norm11%FrobeniusNorm
       qA%Norms%FrobeniusNorm=SQRT(Norms%FrobeniusNorm)
       Norms%MaxNorm = MAX(Norm00%MaxNorm, Norm01%MaxNorm, Norm10%MaxNorm, Norm11%MaxNorm)

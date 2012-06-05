@@ -39,6 +39,7 @@ contains
       stop
     else
       allocate(A(N, N))
+      A = 0.0D0
       rewind(10)
       do while(.true.)
         read(10, *, end = 2) i, j, Aij

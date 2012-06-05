@@ -523,13 +523,6 @@ CONTAINS
     ! Allocate new node.
     ALLOCATE(qA)
 
-    ! Initialize fields.
-    qA%Norms%FrobeniusNorm=SpAMM_Zero
-    NULLIFY(qA%Quad00)
-    NULLIFY(qA%Quad01)
-    NULLIFY(qA%Quad10)
-    NULLIFY(qA%Quad11)
-
 #ifdef _OPENMP
     ! Initialize Lock.
     CALL OMP_INIT_LOCK(qA%Lock)

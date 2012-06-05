@@ -37,36 +37,45 @@ MODULE SpAMM_DERIVED
   PUBLIC
 
   !> Define integer of length 2.
-  INTEGER, PARAMETER :: INT1=SELECTED_INT_KIND(2)  !--Integer*1
+  INTEGER, PARAMETER :: INT1 = SELECTED_INT_KIND(2)  !--Integer*1
+
   !> Define integer of length 2.
-  INTEGER, PARAMETER :: INT2=SELECTED_INT_KIND(4)  !--Integer*2
+  INTEGER, PARAMETER :: INT2 = SELECTED_INT_KIND(4)  !--Integer*2
+
   !> Define integer of length 4.
-  INTEGER, PARAMETER :: INT4=SELECTED_INT_KIND(9)  !--Integer*4
+  INTEGER, PARAMETER :: INT4 = SELECTED_INT_KIND(9)  !--Integer*4
+
   !> Define integer of length 8.
-  INTEGER, PARAMETER :: INT8=SELECTED_INT_KIND(18) !--Integer*8
+  INTEGER, PARAMETER :: INT8 = SELECTED_INT_KIND(18) !--Integer*8
 
   !> Define float of length 4.
-  INTEGER, PARAMETER :: SpAMM_SINGLE=KIND(0.0E0)   !--Real*4
+  INTEGER, PARAMETER :: SpAMM_SINGLE = KIND(0.0E0)   !--Real*4
+
   !> Define float of length 8.
-  INTEGER, PARAMETER :: SpAMM_DOUBLE=KIND(0.0D0)   !--Real*8
+  INTEGER, PARAMETER :: SpAMM_DOUBLE = KIND(0.0D0)   !--Real*8
 
   !> Define the float type used for SpAMM.
 #ifdef SPAMM_DOUBLE
-  INTEGER, PARAMETER :: SpAMM_KIND=SpAMM_DOUBLE
+  INTEGER, PARAMETER :: SpAMM_KIND = SpAMM_DOUBLE
 #else
-  INTEGER, PARAMETER :: SpAMM_KIND=SpAMM_SINGLE
+  INTEGER, PARAMETER :: SpAMM_KIND = SpAMM_SINGLE
 #endif
 
   !> Define the number zero.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Zero=0D0
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Zero = 0D0
+
   !> Define the number 1/2.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Half=5D-1
+
   !> Define the number 1.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_One=1D0
+
   !> Define the number 2.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Two=2D0
+
   !> Define the number 4.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Four=4D0
+
   !> Define the number 8.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Eight=8D0
 
@@ -78,10 +87,10 @@ MODULE SpAMM_DERIVED
     !> The Frobenius norm.
     !!
     !! @f$ \Vert A \Vert_{F} = @f$.
-    REAL(SpAMM_KIND) :: FrobeniusNorm
+    REAL(SpAMM_KIND) :: FrobeniusNorm = SpAMM_Zero
 
     !> The max norm.
-    REAL(SpAMM_KIND) :: MaxNorm
+    REAL(SpAMM_KIND) :: MaxNorm = SpAMM_Zero
 
   END TYPE SpAMM_Norm
 
@@ -92,10 +101,10 @@ MODULE SpAMM_DERIVED
     TYPE(SpAMM_Norm) :: Norms
 
     !> The pointer to the left bisecting subtree.
-    TYPE(BiTree), POINTER :: Sect0
+    TYPE(BiTree), POINTER :: Sect0 => NULL()
 
     !> The pointer to the right bisecting subtree.
-    TYPE(BiTree), POINTER :: Sect1
+    TYPE(BiTree), POINTER :: Sect1 => NULL()
 
     !> The vector data.
     REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
@@ -113,16 +122,16 @@ MODULE SpAMM_DERIVED
     TYPE(SpAMM_Norm) :: Norms
 
     !> The pointer to the subtree in quadrant 11.
-    TYPE(QuTree), POINTER :: Quad00
+    TYPE(QuTree), POINTER :: Quad00 => NULL()
 
     !> The pointer to the subtree in quadrant 12.
-    TYPE(QuTree), POINTER :: Quad01
+    TYPE(QuTree), POINTER :: Quad01 => NULL()
 
     !> The pointer to the subtree in quadrant 21.
-    TYPE(QuTree), POINTER :: Quad10
+    TYPE(QuTree), POINTER :: Quad10 => NULL()
 
     !> The pointer to the subtree in quadrant 22.
-    TYPE(QuTree), POINTER :: Quad11
+    TYPE(QuTree), POINTER :: Quad11 => NULL()
 
     !> The matrix data.
     REAL(SpAMM_KIND), DIMENSION(:,:), ALLOCATABLE :: Blok

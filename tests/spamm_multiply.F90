@@ -54,7 +54,7 @@ program spamm_multiply
 
   N = size(A_dense, 1)
   allocate(C_dense(N, N))
-  C_dense = SpAMM_ZERO
+  C_dense = 0.0D0
 
   write(*, *) "read matrix N = ", N
 

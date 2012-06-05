@@ -38,6 +38,9 @@ dnl Get compilers.
 AC_PROG_CC
 AC_PROG_FC
 
+dnl Set default test repeat.
+test_repeat=1
+
 dnl Check for default compiler flags.
 case ${FC} in
   *gfortran*)
@@ -53,7 +56,6 @@ case ${FC} in
     AC_MSG_NOTICE([Detected ifort, the Intel Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
       FCFLAGS="-O3 -no-prec-div -xHost -extend-source -heap-arrays -g -check all -traceback"
-      #FCFLAGS="-O2 -heap-arrays -g -DTEST_REPEAT=100"
       scaling_reference_file="freeon-10.Intel.reference"
       test_repeat=1
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
@@ -79,6 +81,18 @@ AC_ARG_ENABLE([verify],
 AC_MSG_RESULT([$verify_result])
 if test "$verify_result" = "yes"; then
   AC_DEFINE([VERIFY_RESULT], [1], [Verify the correctnes of the matrix product in the tests])
+fi
+
+AC_MSG_CHECKING([whether to use the old matrix conversion])
+AC_ARG_ENABLE([old-convert],
+              [AS_HELP_STRING([--enable-old-convert],
+              [Enables the old style matrix conversion. This conversion is
+               buggy and should not be used.])],
+              [old_convert=$enableval],
+              [old_convert="no"])
+AC_MSG_RESULT([$old_convert])
+if test "$old_convert" = "yes"; then
+  AC_DEFINE([OLDCONVERT], [1], [Use the old conversion method])
 fi
 
 dnl Find out how to enable OpenMP in C.
