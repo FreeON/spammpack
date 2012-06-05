@@ -236,7 +236,7 @@ CONTAINS
     INTEGER :: num_threads
 
     IF(num_threads >= 1) THEN
-      WRITE(*, *) "Setting number of threads to ", num_threads
+      WRITE(*, "(A,I2)") "Setting number of threads to ", num_threads
       SpAMM_THREAD_COUNT = num_threads
     ENDIF
 

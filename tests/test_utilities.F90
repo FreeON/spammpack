@@ -19,8 +19,10 @@ contains
       deallocate(A)
     endif
 
+    write(*, "(A,A)") "reading matrix from ", trim(filename)
+
     N = 0
-    open(unit = 10, file = filename)
+    open(unit = 10, file = trim(filename))
     do while(.true.)
       read(10, *, end = 1) i, j, Aij
       if(i > N) then
@@ -33,7 +35,8 @@ contains
 1   continue
 
     if(N == 0) then
-      write(*, *) "no matrix elements found in matrix file"
+      write(*, "(A)") "no matrix elements found in matrix file"
+      stop
     else
       allocate(A(N, N))
       rewind(10)

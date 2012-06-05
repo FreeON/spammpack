@@ -1,7 +1,3 @@
-#ifndef NUMBER_OF_THREADS
-#define NUMBER_OF_THREADS 1
-#endif
-
 #ifndef TEST_REPEAT
 #define TEST_REPEAT 1
 #endif
@@ -18,11 +14,10 @@ program spamm_multiply
   integer :: testresult = 0
 
 #ifdef _OPENMP
+  integer :: min_threads
   integer :: max_threads
   integer :: num_threads
 #endif
-
-  integer, parameter :: NThreads = NUMBER_OF_THREADS
 
   type(SpAMM_Norm) :: norms
 
@@ -39,9 +34,19 @@ program spamm_multiply
   type(QuTree), pointer :: C => null()
   type(QuTree), pointer :: C_reference => null()
 
+  character(len = 1000) :: inputbuffer
   character(len = 1000) :: matrixfilename
 
   call get_command_argument(1, matrixfilename)
+
+  if(matrixfilename == "") then
+    matrixfilename = "testmatrix_random_1024x1024.coor"
+  endif
+
+#ifdef _OPENMP
+  call get_command_argument(2, inputbuffer)
+  read(inputbuffer, "(I)") num_threads
+#endif
 
   call load_matrix(matrixfilename, A_dense)
   call load_matrix(matrixfilename, B_dense)
@@ -50,8 +55,16 @@ program spamm_multiply
   allocate(C_dense(N, N))
   C_dense = SpAMM_ZERO
 
+  write(*, *) "read matrix N = ", N
+
   ! Get new, padded matrix size.
-  call SpAMM_Init_Globals(N, NThreads)
+#ifdef _OPENMP
+  call SpAMM_Init_Globals(N, num_threads)
+#else
+  call SpAMM_Init_Globals(N)
+#endif
+
+  write(*, *) "padded matrix to N = ", N
 
   allocate(A_dense_padded(N, N))
   allocate(B_dense_padded(N, N))
@@ -64,19 +77,30 @@ program spamm_multiply
   A_dense_padded = A_dense
   B_dense_padded = B_dense
 
+  write(*, *) "converting matrices to quadtree"
   A => SpAMM_Convert_Dense_2_QuTree(A_dense_padded)
   B => SpAMM_Convert_Dense_2_QuTree(B_dense_padded)
   call New(C)
 
-#if defined(_OPENMP) && defined(THREAD_CYCLE)
-  max_threads = omp_get_num_procs()
-  do num_threads = 1, max_threads
+#if defined(_OPENMP)
+  if(num_threads == 0) then
+    min_threads = 1
+    max_threads = omp_get_num_procs()
+  else
+    min_threads = num_threads
+    max_threads = num_threads
+  endif
+
+  write(*, "(A,I2,A,I2)") "cycling number of threads between ", min_threads, " and ", max_threads
+
+  do num_threads = min_threads, max_threads
     CALL SpAMM_Set_Num_Threads(num_threads)
     CALL SpAMM_Timer_Reset()
 #endif
-    write(*, *) "repeat multiply ", TEST_REPEAT
+
+    write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
     do test_repeat = 1, TEST_REPEAT
-      call Multiply(A, B, C)
+      call Multiply(A, B, C, LocalThreshold = 1e-5)
     enddo
 
     CALL SpAMM_Time_Stamp()
@@ -98,7 +122,7 @@ program spamm_multiply
     write(*, "(A,F22.12)") "max-norm (C) = ", norms%MaxNorm
 #endif
 
-#if defined(_OPENMP) && defined(THREAD_CYCLE)
+#if defined(_OPENMP)
   enddo
 #endif
 

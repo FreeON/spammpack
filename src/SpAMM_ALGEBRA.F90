@@ -126,10 +126,12 @@ CONTAINS
     !$OMP MASTER
 
     IF(PRESENT(LocalThreshold))THEN
-      SpAMM_Threshold_Multiply_QuTree_x_QuTree=LocalThreshold
+      SpAMM_Threshold_Multiply_QuTree_x_QuTree = LocalThreshold
     ELSE
-      SpAMM_Threshold_Multiply_QuTree_x_QuTree=SpAMM_PRODUCT_TOLERANCE
+      SpAMM_Threshold_Multiply_QuTree_x_QuTree = SpAMM_PRODUCT_TOLERANCE
     ENDIF
+
+    WRITE(*, "(A,D13.3)") "Multiply with threshold of ", SpAMM_Threshold_Multiply_QuTree_x_QuTree
 
     Depth = 0
     TInitial = SpAMM_Get_Time()
@@ -486,7 +488,7 @@ CONTAINS
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
 
       ! Apply the SpAMM condition.
-      IF(qA%Norms%FrobeniusNorm*qB%Norms%FrobeniusNorm<SpAMM_Threshold_Multiply_QuTree_x_QuTree)RETURN
+      IF(qA%Norms%FrobeniusNorm*qB%Norms%FrobeniusNorm < SpAMM_Threshold_Multiply_QuTree_x_QuTree) RETURN
 
 #ifdef _OPENMP
       !CALL OMP_SET_LOCK(qC%Lock)
@@ -504,7 +506,7 @@ CONTAINS
 #endif
 
       ! At the bottom, calculate the product.
-      IF(Depth == SpAMM_TOTAL_DEPTH)THEN
+      IF(Depth == SpAMM_TOTAL_DEPTH) THEN
 
 #ifdef _OPENMP
         !CALL OMP_SET_LOCK(qC%Lock)
@@ -523,9 +525,9 @@ CONTAINS
         !CALL OMP_SET_LOCK(qC%Lock)
 #endif
         qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)= &
-          qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)+MATMUL( &
-          qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
-          qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+          qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) &
+          + MATMUL(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
+                   qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
 #ifdef _OPENMP
         !CALL OMP_UNSET_LOCK(qC%Lock)
 #endif
