@@ -34,14 +34,26 @@ program spamm_SP2
   character(len = 1000) :: inputbuffer
   character(len = 1000) :: matrixfilename
 
+  real(SpAMM_KIND) :: Ne
+
   call get_command_argument(1, matrixfilename)
 
   if(matrixfilename == "") then
     matrixfilename = "testmatrix_random_1024x1024.coor"
   endif
 
-#ifdef _OPENMP
   call get_command_argument(2, inputbuffer)
+  read(inputbuffer, "(D)"), Ne
+
+  if(Ne <= 0) then
+    write(*, *) "Number of electrons missing or wrong"
+    call SpAMM_Exit(1)
+  else
+    write(*, "(A,D12.2)") "Setting Ne = ", Ne
+  endif
+
+#ifdef _OPENMP
+  call get_command_argument(3, inputbuffer)
   read(inputbuffer, "(I2)") num_threads
 #endif
 
