@@ -102,7 +102,7 @@ program spamm_multiply
 
     write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
     do test_repeat = 1, TEST_REPEAT
-      call Multiply(A, B, C, LocalThreshold = 1e-8)
+      call Multiply(A, B, C, LocalThreshold = 1e-7)
     enddo
 
     CALL SpAMM_Time_Stamp()

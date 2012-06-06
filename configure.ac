@@ -95,6 +95,18 @@ if test "$old_convert" = "yes"; then
   AC_DEFINE([OLDCONVERT], [1], [Use the old conversion method])
 fi
 
+AC_MSG_CHECKING([whether to use the big OpenMP lock])
+AC_ARG_ENABLE([big-lock],
+              [AS_HELP_STRING([--enable-big-lock],
+              [Enables the big lock around the recursive multiply with OpenMP
+               (taskwait in the middle of the 8 recursive calls).])],
+              [big_lock=$enableval],
+              [big_lock="no"])
+AC_MSG_RESULT([$big_lock])
+if test "$big_lock" = "yes"; then
+  AC_DEFINE([BIGLOCK], [1], [Use the big lock for recursive multiply])
+fi
+
 dnl Find out how to enable OpenMP in C.
 AC_LANG(C)
 AC_OPENMP
