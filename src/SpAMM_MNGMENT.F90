@@ -70,13 +70,16 @@ CONTAINS
   ! SPAMM CONTAINERS FOR MEMORY MANEGEMENT ON QUAD TREE MATRICES
   !=================================================================
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Copy QuTree into another QuTree: C <- A
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Copy QuTree into another QuTree: @f$ C \leftarrow A @f$.
+  !!
+  !! @param qA Pointer to matrix A.
+  !! @param qC Pointer to matrix C.
   SUBROUTINE SpAMM_Copy_QuTree_2_QuTree(qA,qC)
 
-    TYPE(QuTree), POINTER :: qA,qC
-    INTEGER               :: Depth
+    TYPE(QuTree), POINTER, INTENT(IN)    :: qA
+    TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
+
+    INTEGER :: Depth
 
     CALL NewQuNode(qC)
     Depth=0
@@ -198,26 +201,29 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree
 
-  !=================================================================
-  ! SPAMM CONTAINERS FOR MEMORY MANEGEMENT
-  !=================================================================
-  RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur(qA,qC,Depth)
+  !> Recursive copy of quadtree.
+  !!
+  !! @param qA Pointer to matrix A.
+  !! @param qC Pointer to matrix C.
+  !! @param Depth The current tier.
+  RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur (qA, qC, Depth)
 
-    TYPE(QuTree), POINTER  :: qA,qC
-    INTEGER                :: Depth
+    TYPE(QuTree), POINTER, INTENT(IN)    :: qA
+    TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
+    INTEGER                              :: Depth
 
     IF(.NOT.ASSOCIATED(qA))RETURN
+
     IF(.NOT.ASSOCIATED(qC))THEN
       CALL NewQuNode(qC)
     ENDIF
-    !    qC%Siz=qA%Siz
-    !    qC%Lev=qA%Lev
-    !    qC%Box=qA%Box
+
     qC%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm
     IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
-      !    IF(qA%Siz==SpAMM_BLOCK_SIZE.AND.ALLOCATED(qA%Blok))THEN
-      IF(.NOT.ALLOCATED(qC%Blok)) &
+      ! IF(qA%Siz==SpAMM_BLOCK_SIZE.AND.ALLOCATED(qA%Blok))THEN
+      IF(.NOT.ALLOCATED(qC%Blok)) THEN
         ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+      ENDIF
       qC%Blok=qA%Blok
     ELSE
       IF(ASSOCIATED(qA%Quad00))THEN

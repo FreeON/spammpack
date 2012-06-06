@@ -2,6 +2,8 @@
 #define TEST_REPEAT 1
 #endif
 
+!#define VERIFY_RESULT
+
 program spamm_multiply
 
   use spammpack
@@ -10,17 +12,8 @@ program spamm_multiply
   implicit none
 
   integer :: N, N_padded
-  integer :: i, j
   integer :: test_repeat
   integer :: testresult = 0
-
-#ifdef _OPENMP
-  integer :: min_threads
-  integer :: max_threads
-  integer :: num_threads
-#endif
-
-  type(SpAMM_Norm) :: norms
 
   real(SpAMM_DOUBLE), dimension(:,:), allocatable :: A_dense
   real(SpAMM_DOUBLE), dimension(:,:), allocatable :: B_dense
@@ -33,9 +26,19 @@ program spamm_multiply
   type(QuTree), pointer :: A => null()
   type(QuTree), pointer :: B => null()
   type(QuTree), pointer :: C => null()
-  type(QuTree), pointer :: C_reference => null()
 
+#ifdef VERIFY_RESULT
+  type(SpAMM_Norm) :: norms
+  integer :: i, j
+  type(QuTree), pointer :: C_reference => null()
+#endif
+
+#ifdef _OPENMP
+  integer :: min_threads
+  integer :: max_threads
+  integer :: num_threads
   character(len = 1000) :: inputbuffer
+#endif
   character(len = 1000) :: matrixfilename
 
   call get_command_argument(1, matrixfilename)

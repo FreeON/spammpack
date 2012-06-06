@@ -44,39 +44,48 @@ MODULE SpAMM_PROJECT
 
   !> Interface for spectral projections.
   INTERFACE RemapSpectralBounds201
-     MODULE PROCEDURE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
+    MODULE PROCEDURE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
   END INTERFACE
 
   !> Interface for TC2.
   INTERFACE SpAMM_TC2
-     MODULE PROCEDURE SpAMM_Quadratic_Trace_Correcting_Purification
+    MODULE PROCEDURE SpAMM_Quadratic_Trace_Correcting_Purification
   END INTERFACE
 
 CONTAINS
-  !=================================================================
-  ! SPAMM ROUTINES FOR SPECTRAL PROJECTION
-  !=================================================================
-  ! Quadratic trace correcting purification
-  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification(P,P2,Ne,TrP)
+  !> Quadratic trace correcting purification.
+  !!
+  !! @param P The density matrix.
+  !! @param P2 The squared density matrix.
+  !! @param Ne The number of electrons.
+  !! @param TrP The trace of P.
+  SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification (P, P2, Ne, TrP)
 
-    TYPE(QuTree),POINTER   :: P,P2
-    TYPE(QuTree),POINTER   :: T1
-    REAL(SpAMM_KIND)       :: Ne,TrP,TrP2
-    REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
+    TYPE(QuTree), POINTER, INTENT(INOUT) :: P
+    TYPE(QuTree), POINTER, INTENT(INOUT) :: P2
+    REAL(SpAMM_KIND), INTENT(IN)         :: Ne
+    REAL(SpAMM_KIND), INTENT(OUT)        :: TrP
+
+    TYPE(QuTree), POINTER :: T1
+    REAL(SpAMM_KIND)      :: TrP2
+    REAL(SpAMM_DOUBLE)    :: TInitial, TTotal
 
     TInitial=SpAMM_Get_Time()
+
     TrP=Trace(P)
     CALL Multiply(P,P,P2)                          ! P^2 <- P.P
     TrP2=Trace(P2)
+
     IF(ABS(TrP2-Ne)<ABS(SpAMM_Two*TrP-TrP2-Ne))THEN
       T1=>P; P=>P2; P2=>T1                        ! P <- P^2
     ELSE
       CALL Add(P,P2,SpAMM_Two,-SpAMM_One)         ! P <- 2*P-P^2
     ENDIF
+
     P%Norms=Norm(P)
     P%Norms%FrobeniusNorm=SQRT(P%Norms%FrobeniusNorm)
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification",29)
 

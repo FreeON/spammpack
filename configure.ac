@@ -71,18 +71,6 @@ AC_SUBST([SCALING_REFERENCE], [${scaling_reference_file}], [The reference file])
 dnl Repeat multiply test.
 AC_DEFINE_UNQUOTED([TEST_REPEAT], [${test_repeat}], [Repeat multiply test to get better timings])
 
-dnl Very product matrix in tests.
-AC_MSG_CHECKING([whether to verify SpAMM product in the test-suite])
-AC_ARG_ENABLE([verify],
-              [AS_HELP_STRING([--disable-verify],
-              [Disable the veryfication of the matrix product in the test suite.])],
-              [verify_result=$enableval],
-              [verify_result="yes"])
-AC_MSG_RESULT([$verify_result])
-if test "$verify_result" = "yes"; then
-  AC_DEFINE([VERIFY_RESULT], [1], [Verify the correctnes of the matrix product in the tests])
-fi
-
 AC_MSG_CHECKING([whether to use the old matrix conversion])
 AC_ARG_ENABLE([old-convert],
               [AS_HELP_STRING([--enable-old-convert],

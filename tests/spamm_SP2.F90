@@ -1,9 +1,34 @@
+function IdmpCnvrgChck (Occ0, Occ1, Occ2, Occ3, iMin, i) result(converged)
+
+  use spammpack
+
+  logical                        :: converged
+  real(SpAMM_DOUBLE), intent(in) :: Occ0, Occ1, Occ2, Occ3
+  integer, intent(in)            :: iMin, i
+
+  real(SpAMM_DOUBLE) :: IdmpErrCurr, IdmpErrOld
+
+  converged = .false.
+  if(i >= iMin) then
+    IdmpErrCurr = abs(Occ0-Occ1) ! |Tr(P*Q)|
+    if(IdmpErrCurr < 0.01D0) then
+      IdmpErrOld = abs(Occ2-Occ3)
+      if(IdmpErrCurr >= IdmpErrOld) then
+        converged = .true.
+      endif
+    endif
+  endif
+
+end function IdmpCnvrgChck
+
 program spamm_SP2
 
   use spammpack
   use spammtests
 
   implicit none
+
+  logical :: IdmpCnvrgChck
 
   integer :: N, N_padded
   integer :: i, j
@@ -18,23 +43,21 @@ program spamm_SP2
 
   type(SpAMM_Norm) :: norms
 
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: A_dense
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: B_dense
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: C_dense
+  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: P_dense
 
-  real(SpAMM_KIND), dimension(:,:), allocatable :: A_dense_padded
-  real(SpAMM_KIND), dimension(:,:), allocatable :: B_dense_padded
-  real(SpAMM_KIND), dimension(:,:), allocatable :: C_dense_padded
+  real(SpAMM_KIND), dimension(:,:), allocatable :: P_dense_padded
 
-  type(QuTree), pointer :: A => null()
-  type(QuTree), pointer :: B => null()
-  type(QuTree), pointer :: C => null()
-  type(QuTree), pointer :: C_reference => null()
+  type(QuTree), pointer :: P => null()
+  type(QuTree), pointer :: P2 => null()
 
   character(len = 1000) :: inputbuffer
   character(len = 1000) :: matrixfilename
 
-  real(SpAMM_KIND) :: Ne
+  integer :: intbuffer
+
+  integer :: I2, MM, iMin
+  real(SpAMM_KIND) :: TrE, HalfNe, Nocc
+  real(SpAMM_DOUBLE) :: Ne, Lambda, idempotency_error, Occ0, Occ1, Occ2, Occ3
 
   call get_command_argument(1, matrixfilename)
 
@@ -43,7 +66,8 @@ program spamm_SP2
   endif
 
   call get_command_argument(2, inputbuffer)
-  read(inputbuffer, "(D)"), Ne
+  read(inputbuffer, "(I8)"), intbuffer
+  Ne = intbuffer
 
   if(Ne <= 0) then
     write(*, *) "Number of electrons missing or wrong"
@@ -57,12 +81,9 @@ program spamm_SP2
   read(inputbuffer, "(I2)") num_threads
 #endif
 
-  call load_matrix(matrixfilename, A_dense)
-  call load_matrix(matrixfilename, B_dense)
+  call load_matrix(matrixfilename, P_dense)
 
-  N = size(A_dense, 1)
-  allocate(C_dense(N, N))
-  C_dense = 0.0D0
+  N = size(P_dense, 1)
 
   write(*, *) "read matrix N = ", N
 
@@ -76,21 +97,16 @@ program spamm_SP2
 
   write(*, *) "padded matrix to N_padded = ", N_padded
 
-  allocate(A_dense_padded(N_padded, N_padded))
-  allocate(B_dense_padded(N_padded, N_padded))
-  allocate(C_dense_padded(N_padded, N_padded))
+  allocate(P_dense_padded(N_padded, N_padded))
 
-  A_dense_padded = SpAMM_ZERO
-  B_dense_padded = SpAMM_ZERO
-  C_dense_padded = SpAMM_ZERO
-
-  A_dense_padded = A_dense
-  B_dense_padded = B_dense
+  P_dense_padded = SpAMM_ZERO
+  P_dense_padded = P_dense
 
   write(*, *) "converting matrices to quadtree"
-  A => SpAMM_Convert_Dense_2_QuTree(A_dense_padded)
-  B => SpAMM_Convert_Dense_2_QuTree(B_dense_padded)
-  call New(C)
+  P => SpAMM_Convert_Dense_2_QuTree(P_dense_padded)
+
+  ! Allocate new P2.
+  call New(P2)
 
 #if defined(_OPENMP)
   if(num_threads == 0) then
@@ -104,48 +120,34 @@ program spamm_SP2
   write(*, "(A,I2,A,I2)") "cycling number of threads between ", min_threads, " and ", max_threads
 
   do num_threads = min_threads, max_threads
-    CALL SpAMM_Set_Num_Threads(num_threads)
-    CALL SpAMM_Timer_Reset()
+    call SpAMM_Set_Num_Threads(num_threads)
+    call SpAMM_Timer_Reset()
 #endif
 
-    write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
-    do test_repeat = 1, TEST_REPEAT
-      call Multiply(A, B, C, LocalThreshold = 1e-7)
+    HalfNe = SpAMM_Half*Ne
+    Occ0 = SpaMM_Zero
+    Occ1 = SpaMM_Zero
+    Occ2 = SpaMM_Zero
+    Occ3 = SpaMM_Zero
+    iMin = 20
+
+    write(*, *) "          i   occupation      occError"
+    DO i = 1, 100
+      call SpAMM_TC2(P, P2, HalfNe, Nocc)
+      write(*, *) i, ABS(Nocc*SpAMM_Two), ABS(Nocc*SpAMM_Two-Ne)
+      Occ0=Nocc
+      IF(IdmpCnvrgChck(Occ0, Occ1, Occ2, Occ3, iMin, i)) THEN
+        write(*, *) "converged in ", i, "iterations"
+        write(*, *) "Idempotency error = ", abs(Occ0-Occ1)
+        write(*, *) "Previous idempotency error = ", abs(Occ2-Occ3)
+        exit
+      endif
+      Occ3 = Occ2
+      Occ2 = Occ1
+      Occ1 = Occ0
     enddo
 
     CALL SpAMM_Time_Stamp()
-
-#ifdef VERIFY_RESULT
-    C_dense = matmul(A_dense, B_dense)
-    do i = 1, N
-      do j = 1, N
-        C_dense_padded(i, j) = C_dense(i, j)
-      enddo
-    enddo
-    C_reference => SpAMM_Convert_Dense_2_QuTree(C_dense_padded)
-
-    norms = Norm(A)
-    write(*, "(A,F22.12)") "F-norm (A)             = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (A)           = ", norms%MaxNorm
-
-    norms = Norm(B)
-    write(*, "(A,F22.12)") "F-norm (B)             = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (B)           = ", norms%MaxNorm
-
-    norms = Norm(C)
-    write(*, "(A,F22.12)") "F-norm (C)             = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (C)           = ", norms%MaxNorm
-
-    norms = Norm(C_reference)
-    write(*, "(A,F22.12)") "F-norm (C_reference)   = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (C_reference) = ", norms%MaxNorm
-
-    call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
-
-    norms = Norm(C)
-    write(*, "(A,F22.12)") "F-norm (diff)          = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (diff)        = ", norms%MaxNorm
-#endif
 
 #if defined(_OPENMP)
   enddo

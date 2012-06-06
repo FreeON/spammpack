@@ -65,19 +65,19 @@ MODULE SpAMM_DERIVED
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Zero = 0D0
 
   !> Define the number 1/2.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Half=5D-1
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Half = 5D-1
 
   !> Define the number 1.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_One=1D0
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_One = 1D0
 
   !> Define the number 2.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Two=2D0
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Two = 2D0
 
   !> Define the number 4.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Four=4D0
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Four = 4D0
 
   !> Define the number 8.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Eight=8D0
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Eight = 8D0
 
   !> Norm type.
   !!
@@ -90,6 +90,8 @@ MODULE SpAMM_DERIVED
     REAL(SpAMM_KIND) :: FrobeniusNorm = SpAMM_Zero
 
     !> The max norm.
+    !!
+    !! @f$ \max_{ij} A_{ij} @f$.
     REAL(SpAMM_KIND) :: MaxNorm = SpAMM_Zero
 
   END TYPE SpAMM_Norm
