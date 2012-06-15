@@ -1,0 +1,1 @@
+./configure CC=icc FC=ifort FCFLAGS="-xHost -O3 -no-prec-div -extend-source -align array64byte -g -assume byterecl -opt-matmul -mkl=sequential -fopenmp" CFLAGS="-xHost -O3 -g" --disable-shared

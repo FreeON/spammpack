@@ -219,11 +219,12 @@ CONTAINS
     ENDIF
 
     qC%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm
-    IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
+    !IF(Depth==SpAMM_TOTAL_DEPTH.AND.ASSOCIATED(qA%Blok))THEN
+    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
       ! IF(qA%Siz==SpAMM_BLOCK_SIZE.AND.ALLOCATED(qA%Blok))THEN
-      IF(.NOT.ALLOCATED(qC%Blok)) THEN
-        ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
-      ENDIF
+      !IF(.NOT.ASSOCIATED(qC%Blok)) THEN
+      !  ALLOCATE(qC%Blok)
+      !ENDIF
       qC%Blok=qA%Blok
     ELSE
       IF(ASSOCIATED(qA%Quad00))THEN
@@ -339,9 +340,10 @@ CONTAINS
     IF(.NOT.ASSOCIATED(bC)) &
       CALL NewBiNode(bC)
 
-    IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
-      IF(.NOT.ALLOCATED(bC%Vect)) &
-        ALLOCATE(bC%Vect(1:SpAMM_BLOCK_SIZE))
+    !IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
+    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
+      !IF(.NOT.ALLOCATED(bC%Vect)) &
+      !  ALLOCATE(bC%Vect(1:SpAMM_BLOCK_SIZE))
       I=Col-Cols(1)+1
       bC%Vect=qA%Blok(:,I)
       !       WRITE(*,*)'I = ',I,' Col = ',Col,' Col = ',qA%Blok(:,I)
@@ -425,14 +427,14 @@ CONTAINS
     INTEGER :: Status,Depth
 
     IF(.NOT.ASSOCIATED(qA))RETURN
-    IF(ALLOCATED(qA%Blok))THEN
-      !$OMP CRITICAL
-      DEALLOCATE(qA%Blok,STAT=Status)
+    !$OMP CRITICAL
+    !IF(ALLOCATED(qA%Blok))THEN
+    !  DEALLOCATE(qA%Blok,STAT=Status)
+    !ENDIF
 #ifdef _OPENMP
-      CALL OMP_DESTROY_LOCK(qA%Lock)
+    CALL OMP_DESTROY_LOCK(qA%Lock)
 #endif
-      !$OMP END CRITICAL
-    ENDIF
+    !$OMP END CRITICAL
 
     IF(ASSOCIATED(qA%Quad00))THEN
       !$OMP TASK UNTIED SHARED(qA) &
@@ -529,6 +531,9 @@ CONTAINS
     ! Allocate new node.
     ALLOCATE(qA)
 
+    !write(*, *) "loc(qA) = ", mod(loc(qA), 64)
+    !write(*, *) "loc(qA%Blok) = ", mod(loc(qA%Blok), 64)
+
 #ifdef _OPENMP
     ! Initialize Lock.
     CALL OMP_INIT_LOCK(qA%Lock)
@@ -570,7 +575,7 @@ CONTAINS
     CALL NewQuNode(qA)
 
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
-      ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
+      !ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
       qA%Blok=SpAMM_Zero
       RETURN
     ELSE

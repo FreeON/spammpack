@@ -50,6 +50,41 @@ contains
 
   end subroutine load_matrix
 
+  subroutine load_matrix_binary (filename, A)
+
+    character(len = *), intent(in) :: filename
+    real*8, dimension(:, :), allocatable, intent(inout) :: A
+
+    integer :: N
+    integer :: i, j
+    real*8 :: Aij
+
+    if(allocated(A)) then
+      deallocate(A)
+    endif
+
+    write(*, "(A,A)") "reading matrix from ", trim(filename)
+
+    N = 0
+    !open(unit = 1, file = trim(filename), form = "unformatted", access = "direct", recl = 8)
+    open(unit = 1, file = trim(filename), form = "binary", recl = 8)
+    read(1) Aij
+    N = Aij
+
+    !write(*, *) "N = ", N
+
+    allocate(A(N, N))
+    do i = 1, N
+      do j = 1, N
+        read(1) A(i, j)
+        !write(*, *) "Aij = ", Aij
+      enddo
+    enddo
+
+    close(1)
+
+  end subroutine load_matrix_binary
+
   subroutine print_matrix (A)
 
     integer :: i, j

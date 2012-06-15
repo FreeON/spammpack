@@ -56,7 +56,7 @@ MODULE SpAMM_GLOBALS
   END INTERFACE SpAMM_Get_Time
 
   !> The size of the basic submatrix blocks.
-  INTEGER,PARAMETER :: SpAMM_BLOCK_SIZE = 16
+  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE = 16
 
   !> The SpAMM tolerance.
 #ifdef SPAMM_DOUBLE
@@ -146,7 +146,7 @@ CONTAINS
     !$OMP CRITICAL
     WRITE(*,33) ThreadID, NThreads
     !$OMP END CRITICAL
-33  FORMAT(' SpAMM_Init_Globals: Id#',I2,' checking in with ',I2,' threads ')
+33  FORMAT(' SpAMM_Init_Globals: Id#',I3,' checking in with ',I3,' threads ')
     !$OMP END PARALLEL
 #endif
 
@@ -236,7 +236,7 @@ CONTAINS
     INTEGER :: num_threads
 
     IF(num_threads >= 1) THEN
-      WRITE(*, "(A,I2)") "Setting number of threads to ", num_threads
+      WRITE(*, "(A,I3)") "Setting number of threads to ", num_threads
       SpAMM_THREAD_COUNT = num_threads
     ENDIF
 

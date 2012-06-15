@@ -514,6 +514,16 @@ CONTAINS
     TYPE(QuTree), POINTER :: qC,qA,qB
     REAL(SpAMM_KIND) :: threshold
     INTEGER :: Depth
+    REAL(SpAMM_KIND), DIMENSION(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE) :: temp
+    INTEGER :: i, j, k, l
+
+    !REAL(SpAMM_KIND), DIMENSION(16, 16) :: tempA
+    !REAL(SpAMM_KIND), DIMENSION(16, 16) :: tempB
+    !REAL(SpAMM_KIND), DIMENSION(16, 16) :: tempC
+
+    REAL(SpAMM_KIND), DIMENSION(:, :), POINTER :: tempA
+    REAL(SpAMM_KIND), DIMENSION(:, :), POINTER :: tempB
+    REAL(SpAMM_KIND), DIMENSION(:, :), POINTER :: tempC
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
 
@@ -535,24 +545,74 @@ CONTAINS
       IF(Depth == SpAMM_TOTAL_DEPTH) THEN
 
 #ifdef _OPENMP
-        CALL OMP_SET_LOCK(qC%Lock)
+        !CALL OMP_SET_LOCK(qC%Lock)
 #endif
-        IF(.NOT.ALLOCATED(qC%Blok))THEN
-          ! Allocate new block.
-          ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
-          qC%Blok=SpAMM_Zero
-        ENDIF
+        !IF(.NOT.ALLOCATED(qC%Blok))THEN
+        !  ! Allocate new block.
+        !  ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+        !  qC%Blok=SpAMM_Zero
+        !ENDIF
 #ifdef _OPENMP
-        CALL OMP_UNSET_LOCK(qC%Lock)
+        !CALL OMP_UNSET_LOCK(qC%Lock)
 #endif
 
 #if defined(_OPENMP) && ! defined(BIGLOCK)
         CALL OMP_SET_LOCK(qC%Lock)
 #endif
-        qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)= &
-          qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) &
-          + MATMUL(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
-                   qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+        !tempA => qA%Blok
+        !tempB => qB%Blok
+        !tempC => qC%Blok
+
+        ! Medium fast.
+        !DxIR$ ASSUME_ALIGNED tempA: 64
+        !DxIR$ ASSUME_ALIGNED tempB: 64
+        !DxIR$ ASSUME_ALIGNED tempC: 64
+        !tempC = tempC + MATMUL(tempA, tempB)
+
+        ! Faster, 5 seconds.
+        !CALL SGEMM('N', 'N', SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE, &
+        !           1.0, qA%Blok, SpAMM_BLOCK_SIZE, qB%Blok, SpAMM_BLOCK_SIZE, &
+        !           1.0, qC%Blok, SpAMM_BLOCK_SIZE)
+
+        !call cmultiply(qC%Blok, qA%Blok, qB%Blok)
+
+        ! Fastest right now on KNC.
+        call sgemm_ispc_16x16(qC%Blok, qA%Blok, qB%Blok)
+
+        !temp = MATMUL(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
+        !              qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+        !qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)= qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) + temp
+
+        !qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
+
+        !qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) = &
+        !  qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) &
+        !  + MATMUL(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
+        !           qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+
+        ! Slow, 50 seconds.
+        !DO i = 1, 16
+        !  DO j = 1, 16
+        !    DO k = 1, 16
+        !      qC%Blok(i, j) = qC%Blok(i, j) + qA%Blok(i, k)*qB%Blok(k, j)
+        !    ENDDO
+        !  ENDDO
+        !ENDDO
+
+        !write(*, *) "starting"
+        !DxIR$ SIMD
+        !DxIR$ VECTOR ALIGNED
+        !DO l = 0, 4095
+        !  j = MOD(l, 16)+1
+        !  k = MOD(l/16, 16)+1
+        !  i = MOD(l/256, 16)+1
+        !  !write(*, *) i, j, k
+        !  !qC%Blok(i, j) = qC%Blok(i, j) + qA%Blok(i, k)*qB%Blok(k, j)
+        !  tempC(i, j) = tempC(i, j) + tempA(i, k)*tempB(k, j)
+        !ENDDO
+        !write(*, *) "done starting"
+
+        !qC%Blok = tempC
 #if defined(_OPENMP) && ! defined(BIGLOCK)
         CALL OMP_UNSET_LOCK(qC%Lock)
 #endif
@@ -616,7 +676,8 @@ CONTAINS
 
     IF(.NOT.ASSOCIATED(qA)) RETURN
 
-    IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
+    !IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
+    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
       ! At the bottom, multiply the block.
       qA%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm*ABS(a)
       qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)=qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)*a
@@ -706,7 +767,7 @@ CONTAINS
     ELSEIF(Depth==SpAMM_TOTAL_DEPTH)THEN
       IF(.NOT.ASSOCIATED(qA))THEN
         CALL NewQuNode(qA)
-        ALLOCATE(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+        !ALLOCATE(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
         qA%Blok=SpAMM_Zero
       ENDIF
       DO I=1,MIN(SpAMM_BLOCK_SIZE,SpAMM_MATRIX_DIMENSION-Left+1)

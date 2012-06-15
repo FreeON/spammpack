@@ -120,6 +120,8 @@ MODULE SpAMM_DERIVED
   !> Quaternary tree data structure.
   TYPE QuTree
 
+    REAL(SpAMM_KIND), DIMENSION(16, 16) :: Blok
+
     !> The norm.
     TYPE(SpAMM_Norm) :: Norms
 
@@ -136,7 +138,8 @@ MODULE SpAMM_DERIVED
     TYPE(QuTree), POINTER :: Quad11 => NULL()
 
     !> The matrix data.
-    REAL(SpAMM_KIND), DIMENSION(:,:), ALLOCATABLE :: Blok
+    !REAL(SpAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
+    !TYPE(QuLeaf), POINTER :: Blok
 
 #ifdef _OPENMP
     !> Lock for updating Blok data.
@@ -144,6 +147,12 @@ MODULE SpAMM_DERIVED
 #endif
 
   END TYPE QuTree
+
+  TYPE QuLeaf
+
+    REAL(SpAMM_KIND), DIMENSION(16, 16) :: Blok
+
+  END TYPE QuLeaf
 
   !INTERFACE QuTree
   !  MODULE PROCEDURE QuTreeConstructor

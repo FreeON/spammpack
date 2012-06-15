@@ -49,13 +49,15 @@ program spamm_multiply
 
 #ifdef _OPENMP
   call get_command_argument(2, inputbuffer)
-  read(inputbuffer, "(I2)") num_threads
+  read(inputbuffer, "(I3)") num_threads
 #endif
 
-  call load_matrix(matrixfilename, A_dense)
-  call load_matrix(matrixfilename, B_dense)
+  call load_matrix_binary(matrixfilename, A_dense)
+  !call load_matrix_binary(matrixfilename, B_dense)
 
   N = size(A_dense, 1)
+  allocate(B_dense(N, N))
+  B_dense = A_dense
   allocate(C_dense(N, N))
   C_dense = 0.0D0
 
@@ -86,6 +88,7 @@ program spamm_multiply
   A => SpAMM_Convert_Dense_2_QuTree(A_dense_padded)
   B => SpAMM_Convert_Dense_2_QuTree(B_dense_padded)
   call New(C)
+  write(*, *) "done converting"
 
 #if defined(_OPENMP)
   if(num_threads == 0) then
@@ -96,7 +99,7 @@ program spamm_multiply
     max_threads = num_threads
   endif
 
-  write(*, "(A,I2,A,I2)") "cycling number of threads between ", min_threads, " and ", max_threads
+  write(*, "(A,I3,A,I3)") "cycling number of threads between ", min_threads, " and ", max_threads
 
   do num_threads = min_threads, max_threads
     CALL SpAMM_Set_Num_Threads(num_threads)

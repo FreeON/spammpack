@@ -1,0 +1,7 @@
+#!/bin/bash
+cd tests
+../ispc/ispc --emit-c++ --c++-include-file=knc.h -h sgemm16x16_ispc.h  ../src/sgemm16x16.ispc -o sgemm16x16_ispc.cpp 
+icc -xHost -O3 -I../ispc/ -fno-exceptions sgemm16x16_ispc.cpp -c -o sgemm16x16.o 
+icc -xHost -O3 -I../ispc/ -fno-exceptions sgemm16x16_ispc.cpp -S -o sgemm16x16.s
+ifort -xHost -O3 -no-prec-div -extend-source -align array64byte -g -assume byterecl -opt-matmul -mkl=sequential -fopenmp -o spamm_multiply spamm_multiply-spamm_multiply.o sgemm16x16.o ../src/.libs/libspammpack.a ./.libs/libspammtests.a -fopenmp
+scp spamm_multiply mic0:
