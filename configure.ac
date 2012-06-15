@@ -42,6 +42,25 @@ dnl Set default test repeat.
 test_repeat=1
 
 dnl Check for default compiler flags.
+case ${CC} in
+  *gcc*)
+    AC_MSG_NOTICE([Detected gcc, the gcc C compiler])
+    if test "${ac_cv_env_CFLAGS_set}" != "set"; then
+      CFLAGS="-O3 -g -Wall"
+      AC_MSG_NOTICE([setting default compiler flags: ${CFLAGS}])
+    fi
+    ;;
+  *icc*)
+    AC_MSG_NOTICE([Detected icc, The Intel C compiler])
+    if test "${ac_cv_env_CFLAGS_set}" != "set"; then
+      CFLAGS="-O3 -xHost -g"
+      AC_MSG_NOTICE([setting default compiler flags: ${CFLAGS}])
+    fi
+    ;;
+  *) AC_MSG_FAILURE([Undetected CC compiler (${CC})])
+     ;;
+esac
+
 case ${FC} in
   *gfortran*)
     AC_MSG_NOTICE([Detected gfortran, the gcc Fortran compiler])
@@ -55,7 +74,7 @@ case ${FC} in
   *ifort*)
     AC_MSG_NOTICE([Detected ifort, the Intel Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
-      FCFLAGS="-O3 -no-prec-div -xHost -extend-source -heap-arrays -g -check all -traceback"
+      FCFLAGS="-O3 -no-prec-div -xHost -extend-source -heap-arrays -g -align array64byte -assume byterecl -opt-matmul -mkl=sequential -traceback"
       scaling_reference_file="freeon-10.Intel.reference"
       test_repeat=1
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
