@@ -35,7 +35,7 @@ AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
 dnl Get compilers.
-AC_PROG_CC
+AC_PROG_CC_C99
 AC_PROG_FC
 
 dnl Set default test repeat.

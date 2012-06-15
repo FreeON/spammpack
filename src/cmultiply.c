@@ -1,3 +1,9 @@
+/** Simple C version of 16x16 single precision matrix multiply.
+ *
+ * @param C Pointer to dense matrix C.
+ * @param A Pointer to dense matrix A.
+ * @param B Pointer to dense matrix B.
+ */
 void
 cmultiply_ (float *restrict C, float *restrict A, float *restrict B)
 {

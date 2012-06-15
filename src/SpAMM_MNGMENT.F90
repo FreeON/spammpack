@@ -424,7 +424,8 @@ CONTAINS
   RECURSIVE SUBROUTINE SpAMM_Delete_QuTree_Recur(qA,Depth)
 
     TYPE(QuTree),POINTER  :: qA
-    INTEGER :: Status,Depth
+    INTEGER :: Depth
+    !INTEGER :: Status
 
     IF(.NOT.ASSOCIATED(qA))RETURN
     !$OMP CRITICAL
