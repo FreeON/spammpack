@@ -20,7 +20,8 @@ endif
 noinst_PROGRAMS = \
   $(test_programs) \
   spamm_multiply \
-  spamm_SP2
+  spamm_SP2 \
+  convert_to_binary
 
 TESTS = set_mode.sh scaling_test.sh
 

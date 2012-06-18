@@ -18,7 +18,7 @@ main (int argc, char **argv)
   N = 0;
   while (1)
   {
-          if (fscanf(fd_in, "%i %i %e\n", &i, &j, &Aij) == EOF)
+          if (fscanf(fd_in, "%i %i %le\n", &i, &j, &Aij) == EOF)
           {
                   break;
           }
@@ -32,7 +32,7 @@ main (int argc, char **argv)
 
   while (1)
   {
-          if (fscanf(fd_in, "%i %i %lf\n", &i, &j, &Aij) == EOF)
+          if (fscanf(fd_in, "%i %i %le\n", &i, &j, &Aij) == EOF)
           {
                   break;
           }
