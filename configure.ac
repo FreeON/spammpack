@@ -34,7 +34,7 @@ dnl Initialize automake.
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
-dnl Get compilers.
+dnl Set compilers.
 AC_PROG_CC_C99
 AC_PROG_FC
 
@@ -74,7 +74,7 @@ case ${FC} in
   *ifort*)
     AC_MSG_NOTICE([Detected ifort, the Intel Fortran compiler])
     if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
-      FCFLAGS="-O3 -no-prec-div -xHost -extend-source -heap-arrays -g -align array64byte -assume byterecl -opt-matmul -mkl=sequential -traceback"
+      FCFLAGS="-O3 -no-prec-div -xHost -extend-source -g -assume byterecl -opt-matmul -mkl=sequential -traceback"
       scaling_reference_file="freeon-10.Intel.reference"
       test_repeat=1
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])

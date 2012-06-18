@@ -559,15 +559,15 @@ CONTAINS
 #if defined(_OPENMP) && ! defined(BIGLOCK)
         CALL OMP_SET_LOCK(qC%Lock)
 #endif
-        !tempA => qA%Blok
-        !tempB => qB%Blok
-        !tempC => qC%Blok
+        tempA => qA%Blok
+        tempB => qB%Blok
+        tempC => qC%Blok
 
         ! Medium fast.
-        !DxIR$ ASSUME_ALIGNED tempA: 64
-        !DxIR$ ASSUME_ALIGNED tempB: 64
-        !DxIR$ ASSUME_ALIGNED tempC: 64
-        !tempC = tempC + MATMUL(tempA, tempB)
+        !DIR$ ASSUME_ALIGNED tempA: 64
+        !DIR$ ASSUME_ALIGNED tempB: 64
+        !DIR$ ASSUME_ALIGNED tempC: 64
+        tempC = tempC + MATMUL(tempA, tempB)
 
         ! Faster, 5 seconds.
         !CALL SGEMM('N', 'N', SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE, &
@@ -577,7 +577,7 @@ CONTAINS
         !call cmultiply(qC%Blok, qA%Blok, qB%Blok)
 
         ! Fastest right now on KNC.
-        call sgemm_ispc_16x16(qC%Blok, qA%Blok, qB%Blok)
+        !call sgemm_ispc_16x16(qC%Blok, qA%Blok, qB%Blok)
 
         !temp = MATMUL(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
         !              qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
