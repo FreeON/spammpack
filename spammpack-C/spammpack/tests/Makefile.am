@@ -27,7 +27,6 @@ check_PROGRAMS = \
   list \
   stats \
   list_sort \
-  multiply \
   multiply_recursive \
   multiply_spamm \
   get_version
