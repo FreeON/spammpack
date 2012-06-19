@@ -21,7 +21,7 @@ dnl Define location of m4 macros.
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Identify compilers.
-AC_PROG_CC
+AC_PROG_CC_STDC
 AC_PROG_F77
 AM_PROG_AS
 AC_PROG_FC
