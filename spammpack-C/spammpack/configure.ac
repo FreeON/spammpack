@@ -281,7 +281,7 @@ AC_CONFIG_FILES([
 Doxyfile
 Makefile
 interfaces/Makefile
-interfaces/f90/Makefile
+interfaces/Fortran/Makefile
 interfaces/python/Makefile
 src/Makefile
 src/spamm_manual_mainpage.h
