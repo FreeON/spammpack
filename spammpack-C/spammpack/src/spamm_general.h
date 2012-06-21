@@ -93,6 +93,29 @@ spamm_hashed_multiply (const float tolerance,
     struct spamm_timer_t *timer,
     const enum spamm_kernel_t kernel);
 
+void
+spamm_recursive_multiply (const float tolerance,
+    const float alpha,
+    struct spamm_recursive_t *A,
+    struct spamm_recursive_t *B,
+    const float beta,
+    struct spamm_recursive_t *C,
+    struct spamm_timer_t *timer,
+    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    unsigned int *number_products);
+
+void
+spamm_recursive_multiply_3 (const float tolerance,
+    const float alpha,
+    struct spamm_recursive_t *A,
+    struct spamm_recursive_t *B,
+    struct spamm_recursive_t *C,
+    const float beta,
+    struct spamm_recursive_t *D,
+    struct spamm_timer_t *timer,
+    void (*sgemm) (),
+    unsigned int *number_products);
+
 unsigned int
 spamm_number_nonzero (const struct spamm_hashed_t *A);
 
