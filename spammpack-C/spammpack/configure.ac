@@ -32,7 +32,7 @@ AM_PATH_PYTHON
 dnl Find the python include path.
 AC_MSG_CHECKING([for python include path])
 python_error="no"
-python_include=`${PYTHON} -c "from distutils import sysconfig; print sysconfig.get_python_inc()"` || python_error="yes"
+python_include=`${PYTHON} -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"` || python_error="yes"
 if test "${python_error}" = "yes"; then
   AC_MSG_RESULT([an error occured])
   AC_MSG_FAILURE([I need the python include path.])
