@@ -1,3 +1,5 @@
+AM_CTAGSFLAGS = --Fortran-kinds=+i+L
+
 lib_LTLIBRARIES = libspammpack_f90.la
 
 include_HEADERS = spammpack.mod

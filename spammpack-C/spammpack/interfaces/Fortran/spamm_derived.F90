@@ -78,11 +78,11 @@ MODULE SpAMM_DERIVED
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Eight = 8D0
 
   !> Quaternary tree data structure.
-  TYPE SpAMM_MATRIX
+  TYPE SpAMM_Matrix
 
     !> The identifier of this object.
     INTEGER :: identifier
 
-  END TYPE SpAMM_MATRIX
+  END TYPE SpAMM_Matrix
 
 END MODULE SpAMM_DERIVED

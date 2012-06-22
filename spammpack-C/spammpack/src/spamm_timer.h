@@ -11,6 +11,9 @@
  */
 enum spamm_timer_type_t
 {
+  /** Unitialized timer. */
+  uninitialized,
+
   /** An empty timer. */
   empty,
 
