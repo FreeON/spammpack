@@ -41,14 +41,12 @@ program spamm_SP2
   integer :: num_threads
 #endif
 
-  type(SpAMM_Norm) :: norms
-
   real(SpAMM_DOUBLE), dimension(:,:), allocatable :: P_dense
 
   real(SpAMM_KIND), dimension(:,:), allocatable :: P_dense_padded
 
-  type(QuTree), pointer :: P => null()
-  type(QuTree), pointer :: P2 => null()
+  type(SpAMM_Matrix) :: P
+  type(SpAMM_Matrix) :: P2
 
   character(len = 1000) :: inputbuffer
   character(len = 1000) :: matrixfilename
@@ -103,7 +101,7 @@ program spamm_SP2
   P_dense_padded = P_dense
 
   write(*, *) "converting matrices to quadtree"
-  P => SpAMM_Convert_Dense_2_QuTree(P_dense_padded)
+  P = SpAMM_Convert_Dense_to_SpAMM(P_dense_padded)
 
   ! Allocate new P2.
   call New(P2)

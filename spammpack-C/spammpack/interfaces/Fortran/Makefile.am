@@ -3,10 +3,11 @@ lib_LTLIBRARIES = libspammpack_f90.la
 include_HEADERS = spammpack.mod
 
 libspammpack_f90_la_SOURCES = \
-  spammpack.F90 \
   spamm_convert.F90 \
   spamm_derived.F90 \
-  spamm_version.F90
+  spamm_exit.c \
+  spamm_version.F90 \
+  spammpack.F90
 
 # Dependencies.
 spammpack.lo : spamm_convert.lo
