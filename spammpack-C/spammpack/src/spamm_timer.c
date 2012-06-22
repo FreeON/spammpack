@@ -407,7 +407,7 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring, const int
 enum spamm_timer_type_t
 spamm_timer_get_timer_type (const char *name)
 {
-  enum spamm_timer_type_t timer_type = -1;
+  enum spamm_timer_type_t timer_type = uninitialized;
 
   if (strcasecmp(name, "walltime") == 0)
   {
@@ -446,7 +446,7 @@ spamm_timer_get_timer_type (const char *name)
 
   else
   {
-    timer_type = -1;
+    timer_type = uninitialized;
   }
 
   return timer_type;

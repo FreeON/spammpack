@@ -59,14 +59,14 @@ CONTAINS
   !! @param TrP The trace of P.
   SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification (P, P2, Ne, TrP)
 
-    TYPE(QuTree), POINTER, INTENT(INOUT) :: P
-    TYPE(QuTree), POINTER, INTENT(INOUT) :: P2
-    REAL(SpAMM_KIND), INTENT(IN)         :: Ne
-    REAL(SpAMM_KIND), INTENT(OUT)        :: TrP
+    TYPE(SpAMM_Matrix), INTENT(INOUT) :: P
+    TYPE(SpAMM_Matrix), INTENT(INOUT) :: P2
+    REAL(SpAMM_KIND), INTENT(IN)      :: Ne
+    REAL(SpAMM_KIND), INTENT(OUT)     :: TrP
 
-    TYPE(QuTree), POINTER :: T1
-    REAL(SpAMM_KIND)      :: TrP2
-    REAL(SpAMM_DOUBLE)    :: TInitial, TTotal
+    TYPE(SpAMM_Matrix) :: T1
+    REAL(SpAMM_KIND)   :: TrP2
+    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
     TInitial=SpAMM_Get_Time()
 
