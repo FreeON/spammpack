@@ -1,9 +1,9 @@
-AM_CTAGSFLAGS = --C-kinds=+l+x
+AM_CTAGSFLAGS = --C-kinds=+l+x --Fortran-kinds=+i+L
 TAGS_FILES = $(top_srcdir)/src/*.h $(top_srcdir)/src/*.c $(top_srcdir)/src/*.S
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
-AM_CPPFLAGS = -I$(top_srcdir)/src
+AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/interfaces/Fortran
 AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 #AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 
@@ -17,6 +17,11 @@ endif
 
 multiply_tests = $(multiply_spamm_SSE) $(multiply_spamm_SSE4_1)
 
+check_LTLIBRARIES = libspammtest.la
+libspammtest_la_SOURCES = \
+  test_utilities.F90 \
+  spammtests.F90
+
 check_PROGRAMS = \
   check_spamm \
   convert_dense \
@@ -29,9 +34,15 @@ check_PROGRAMS = \
   list_sort \
   multiply_recursive \
   multiply_spamm \
-  get_version
+  get_version \
+  SP2
+
+noinst_PROGRAMS = \
+  convert_to_binary
 
 get_version_SOURCES = get_version.F90
+SP2_SOURCES = SP2.F90 spamm_project.F90
+SP2_LDFLAGS = $(top_builddir)/interfaces/Fortran/libspammpack_f90.la libspammtest.la
 
 noinst_SCRIPTS = \
   create_spamm_row_major.sh \
@@ -53,3 +64,5 @@ TESTS = \
   check_spamm \
 	$(multiply_tests) \
   multiply_recursive
+
+CLEANFILES = *.mod

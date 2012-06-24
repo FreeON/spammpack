@@ -1,1 +1,1 @@
-SUBDIRS = python f90
+SUBDIRS = python Fortran
