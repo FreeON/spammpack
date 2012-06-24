@@ -20,7 +20,7 @@ main ()
   int result = 0;
 
   const int N =  513;
-  const int blocksize = 3;
+  const int blocksize = 16;
   const float alpha = 1.2;
   const float beta = 0.5;
 
