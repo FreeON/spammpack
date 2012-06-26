@@ -342,7 +342,7 @@ spamm_multiply_C_index_sort (unsigned int *array,
   free(scratch_stream);
 }
 
-/** Multiply to matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
+/** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
  *
  * @param tolerance The SpAMM tolerance of this product.
  * @param alpha The paramater \f$\alpha\f$.
@@ -1832,10 +1832,14 @@ spamm_recursive_multiply (const float tolerance,
  */
 void
 spamm_multiply (const float tolerance,
-    const float alpha, struct spamm_matrix_t *A, struct spamm_matrix_t *B,
-    const float beta, struct spamm_matrix_t *C,
+    const float alpha,
+    struct spamm_matrix_t *A,
+    struct spamm_matrix_t *B,
+    const float beta,
+    struct spamm_matrix_t *C,
     struct spamm_timer_t *timer,
     void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    const enum spamm_kernel_t kernel,
     unsigned int *number_products)
 {
   if (A == NULL)
