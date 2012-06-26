@@ -1,5 +1,9 @@
 AM_CTAGSFLAGS = --C-kinds=+l+x --Fortran-kinds=+i+L
-TAGS_FILES = $(top_srcdir)/src/*.h $(top_srcdir)/src/*.c $(top_srcdir)/src/*.S
+TAGS_FILES = $(top_srcdir)/src/*.h \
+  $(top_srcdir)/src/*.c \
+  $(top_srcdir)/src/*.S \
+  $(top_srcdir)/interfaces/Fortran/*.F90 \
+  $(top_srcdir)/interfaces/Fortran/*.c
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
@@ -35,14 +39,16 @@ check_PROGRAMS = \
   multiply_recursive \
   multiply_spamm \
   get_version \
-  SP2
+  spamm_multiply
 
 noinst_PROGRAMS = \
   convert_to_binary
 
 get_version_SOURCES = get_version.F90
-SP2_SOURCES = SP2.F90 spamm_project.F90
-SP2_LDFLAGS = $(top_builddir)/interfaces/Fortran/libspammpack_f90.la libspammtest.la
+
+spamm_multiply_SOURCES = spamm_multiply.F90
+spamm_multiply_LDFLAGS = $(top_builddir)/interfaces/Fortran/libspammpack_f90.la libspammtest.la
+spamm_multiply_DEPENDENCIES = libspammtest.la
 
 noinst_SCRIPTS = \
   create_spamm_row_major.sh \
