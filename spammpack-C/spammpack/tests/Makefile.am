@@ -7,7 +7,9 @@ TAGS_FILES = $(top_srcdir)/src/*.h \
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
-AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/interfaces/Fortran
+AM_CFLAGS = $(OPENMP_CFLAGS)
+AM_FCFLAGS = $(OPENMP_FCFLAGS)
+AM_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/src -I$(top_builddir)/interfaces/Fortran
 AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 #AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 

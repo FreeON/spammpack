@@ -26,6 +26,16 @@ AC_PROG_F77
 AM_PROG_AS
 AC_PROG_FC
 
+dnl Find OpenMP flags for C.
+AC_LANG_PUSH(C)
+AC_OPENMP
+AC_LANG_POP(C)
+
+dnl Find OpenMP flags for Fortran.
+AC_LANG_PUSH(Fortran)
+AC_OPENMP
+AC_LANG_POP(Fortran)
+
 dnl Find python.
 AM_PATH_PYTHON
 

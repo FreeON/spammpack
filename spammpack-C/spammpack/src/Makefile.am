@@ -90,6 +90,10 @@
 AM_CTAGSFLAGS = --C-kinds=+l+x
 TAGS_FILES = $(builddir)/../config.h generate_SSE_assembly.py
 
+AM_CFLAGS = $(OPENMP_CFLAGS)
+AM_CPPFLAGS = $(OPENMP_CFLAGS)
+AM_FCFLAGS = $(OPENMP_FCFLAGS)
+
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 lib_LTLIBRARIES = libspamm.la
