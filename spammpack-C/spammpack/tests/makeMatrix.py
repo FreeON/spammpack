@@ -42,7 +42,7 @@ elif options.matrixtype == "decay":
         A[i][j] = A[i][i]*math.exp(-options.decay*math.fabs(i-j))
 
 else:
-  print "unknown matrix type (%s)" % (options.matrixtype)
+  sys.stderr.write("[FIXME] unknown matrix type (%s)\n" % (options.matrixtype))
   sys.exit(1)
 
 # Analyze matrix.
@@ -66,12 +66,13 @@ for i in range(options.N):
         count_total += 1
 
 for k in range(len(element_range)-1):
-  print >> sys.stderr, "[%e,%e) = %d (%1.2f%%)" % (element_range[k],
-      element_range[k+1], range_count[k], range_count[k]/float(count_total)*100)
-print >> sys.stderr, "total = %d (%d)" % (count_total, options.N**2)
-print >> sys.stderr, "min(A) = %e" % (min_element)
-print >> sys.stderr, "max(A) = %e" % (max_element)
+  sys.stderr.write("[%e,%e) = %d (%1.2f%%)\n" % (element_range[k],
+      element_range[k+1], range_count[k],
+      range_count[k]/float(count_total)*100))
+sys.stderr.write("total = %d (%d)\n" % (count_total, options.N**2))
+sys.stderr.write("min(A) = %e\n" % (min_element))
+sys.stderr.write("max(A) = %e\n" % (max_element))
 
 for i in range(options.N):
   for j in range(options.N):
-    print "%d %d % 1.14e" % (i+1, j+1, A[i][j])
+    print("%d %d % 1.14e" % (i+1, j+1, A[i][j]))
