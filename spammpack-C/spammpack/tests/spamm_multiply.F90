@@ -15,13 +15,9 @@ program spamm_multiply
   integer :: test_repeat
   integer :: testresult = 0
 
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: A_dense
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: B_dense
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: C_dense
-
-  real(SpAMM_KIND), dimension(:,:), allocatable :: A_dense_padded
-  real(SpAMM_KIND), dimension(:,:), allocatable :: B_dense_padded
-  real(SpAMM_KIND), dimension(:,:), allocatable :: C_dense_padded
+  real(SpAMM_SINGLE), dimension(:,:), allocatable :: A_dense
+  real(SpAMM_SINGLE), dimension(:,:), allocatable :: B_dense
+  real(SpAMM_SINGLE), dimension(:,:), allocatable :: C_dense
 
   type(SpAMM_Matrix) :: A
   type(SpAMM_Matrix) :: B
@@ -64,30 +60,9 @@ program spamm_multiply
 
   write(*, *) "read matrix N = ", N
 
-  ! Get new, padded matrix size.
-  N_padded = N
-#ifdef _OPENMP
-  !call SpAMM_Init_Globals(N_padded, num_threads)
-#else
-  !call SpAMM_Init_Globals(N_padded)
-#endif
-
-  write(*, *) "padded matrix to N_padded = ", N_padded
-
-  allocate(A_dense_padded(N_padded, N_padded))
-  allocate(B_dense_padded(N_padded, N_padded))
-  allocate(C_dense_padded(N_padded, N_padded))
-
-  A_dense_padded = SpAMM_ZERO
-  B_dense_padded = SpAMM_ZERO
-  C_dense_padded = SpAMM_ZERO
-
-  A_dense_padded = A_dense
-  B_dense_padded = B_dense
-
   write(*, *) "converting matrices to quadtree"
-  A = SpAMM_Convert_Dense_to_SpAMM(A_dense_padded)
-  B = SpAMM_Convert_Dense_to_SpAMM(B_dense_padded)
+  A = SpAMM_Convert_Dense_to_SpAMM(A_dense)
+  B = SpAMM_Convert_Dense_to_SpAMM(B_dense)
   call New(C)
   write(*, *) "done converting"
 
@@ -116,12 +91,7 @@ program spamm_multiply
 
 #ifdef VERIFY_RESULT
     C_dense = matmul(A_dense, B_dense)
-    do i = 1, N
-      do j = 1, N
-        C_dense_padded(i, j) = C_dense(i, j)
-      enddo
-    enddo
-    C_reference = SpAMM_Convert_Dense_to_SpAMM(C_dense_padded)
+    C_reference = SpAMM_Convert_Dense_to_SpAMM(C_dense)
 
     !norms = Norm(A)
     !write(*, "(A,F22.12)") "F-norm (A)             = ", sqrt(norms%FrobeniusNorm)

@@ -80,6 +80,11 @@ spamm_interface_add_spamm_object (struct spamm_hashed_t *A)
   {
     spamm_matrix_object = spamm_interface_new_object();
     spamm_matrix_object->object = A;
+
+    /* We'll start the ID with 1, so that an ID of zero can not be found in
+     * the store. */
+    spamm_matrix_object->ID = 1;
+    return spamm_matrix_object->ID;
   }
 
   else
@@ -89,6 +94,7 @@ spamm_interface_add_spamm_object (struct spamm_hashed_t *A)
     element->next->ID = element->ID+1;
     element->next->previous = element;
     element->next->object = A;
+    return element->next->ID;
   }
 }
 

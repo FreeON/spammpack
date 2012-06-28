@@ -4,9 +4,31 @@ module test_utilities
 
   implicit none
 
+  interface load_matrix
+    module procedure load_matrix_single, load_matrix_double
+  end interface load_matrix
+
 contains
 
-  subroutine load_matrix (filename, A)
+  subroutine load_matrix_single (filename, A)
+
+    character(len = *), intent(in) :: filename
+    real(SpAMM_SINGLE), dimension(:, :), allocatable, intent(inout) :: A
+    real(SpAMM_DOUBLE), dimension(:, :), allocatable :: A_double
+    integer :: i, j
+
+    call load_matrix_double(filename, A_double)
+
+    allocate(A(size(A_double, 1), size(A_double, 2)))
+    do i = 1, size(A_double, 1)
+      do j = 1, size(A_double, 1)
+        A(i, j) = A_double(i, j)
+      enddo
+    enddo
+
+  end subroutine load_matrix_single
+
+  subroutine load_matrix_double (filename, A)
 
     character(len = *), intent(in) :: filename
     real(SpAMM_DOUBLE), dimension(:, :), allocatable, intent(inout) :: A
@@ -48,7 +70,7 @@ contains
 2     close(10)
     endif
 
-  end subroutine load_matrix
+  end subroutine load_matrix_double
 
   subroutine load_matrix_binary (filename, A)
 

@@ -81,7 +81,7 @@ MODULE SpAMM_DERIVED
   TYPE SpAMM_Matrix
 
     !> The identifier of this object.
-    INTEGER :: identifier
+    INTEGER :: identifier = 0
 
   END TYPE SpAMM_Matrix
 
