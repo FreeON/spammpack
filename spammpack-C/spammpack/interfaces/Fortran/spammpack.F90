@@ -19,8 +19,9 @@ module spammpack
 
   !> Interface to spamm_convert_dense_to_spamm_interface().
   interface spamm_convert_dense_to_spamm_interface
-    subroutine spamm_convert_dense_to_spamm_interface (A, B)
+    subroutine spamm_convert_dense_to_spamm_interface (M, N, A, B)
       use spamm_derived
+      integer, intent(in) :: M, N
       real(SpAMM_KIND), dimension(:, :), intent(in) :: A
       type(SpAMM_Matrix), intent(inout) :: B
     end subroutine spamm_convert_dense_to_spamm_interface
@@ -42,7 +43,7 @@ contains
 
   type(SpAMM_Matrix) function spamm_convert_dense_to_spamm (A) result (B)
     real(SpAMM_KIND), dimension(:, :), intent(in) :: A
-    call spamm_convert_dense_to_spamm_interface(A, B)
+    call spamm_convert_dense_to_spamm_interface(size(A, 1), size(A, 2), A, B)
   end function spamm_convert_dense_to_spamm
 
   subroutine multiply_spamm_spamm (A, B, C, tolerance)

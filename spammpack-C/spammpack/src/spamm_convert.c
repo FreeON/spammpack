@@ -21,7 +21,7 @@
  */
 struct spamm_hashed_t *
 spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
-    const enum spamm_layout_t dense_type, float *A_dense,
+    const enum spamm_layout_t dense_type, const float *const A_dense,
     const enum spamm_layout_t spamm_layout)
 {
   struct spamm_hashed_t *A = NULL;

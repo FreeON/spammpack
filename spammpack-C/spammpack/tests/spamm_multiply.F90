@@ -44,7 +44,7 @@ program spamm_multiply
   call get_command_argument(1, matrixfilename)
 
   if(matrixfilename == "") then
-    matrixfilename = "testmatrix_random_1024x1024.bin"
+    matrixfilename = "testmatrix_random_1024x1024.coor"
   endif
 
 #ifdef _OPENMP
@@ -52,7 +52,8 @@ program spamm_multiply
   read(inputbuffer, "(I3)") num_threads
 #endif
 
-  call load_matrix_binary(matrixfilename, A_dense)
+  call load_matrix(matrixfilename, A_dense)
+  !call load_matrix_binary(matrixfilename, A_dense)
   !call load_matrix_binary(matrixfilename, B_dense)
 
   N = size(A_dense, 1)
