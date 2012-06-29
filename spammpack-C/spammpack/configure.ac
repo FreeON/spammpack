@@ -26,6 +26,10 @@ AC_PROG_F77
 AM_PROG_AS
 AC_PROG_FC
 
+dnl Check for naming convention for Fortran-C interface.
+AC_F77_WRAPPERS()
+AC_FC_WRAPPERS()
+
 dnl Find OpenMP flags for C.
 AC_LANG_PUSH(C)
 AC_OPENMP

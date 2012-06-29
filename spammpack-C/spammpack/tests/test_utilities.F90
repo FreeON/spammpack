@@ -10,35 +10,35 @@ module test_utilities
 
 contains
 
-  subroutine load_matrix_single (filename, A)
+  subroutine load_matrix_single (filename, A_single)
 
     character(len = *), intent(in) :: filename
-    real(SpAMM_SINGLE), dimension(:, :), allocatable, intent(inout) :: A
+    real(SpAMM_SINGLE), dimension(:, :), allocatable, intent(inout) :: A_single
     real(SpAMM_DOUBLE), dimension(:, :), allocatable :: A_double
     integer :: i, j
 
     call load_matrix_double(filename, A_double)
 
-    allocate(A(size(A_double, 1), size(A_double, 2)))
+    allocate(A_single(size(A_double, 1), size(A_double, 2)))
     do i = 1, size(A_double, 1)
       do j = 1, size(A_double, 1)
-        A(i, j) = A_double(i, j)
+        A_single(i, j) = A_double(i, j)
       enddo
     enddo
 
   end subroutine load_matrix_single
 
-  subroutine load_matrix_double (filename, A)
+  subroutine load_matrix_double (filename, A_double)
 
     character(len = *), intent(in) :: filename
-    real(SpAMM_DOUBLE), dimension(:, :), allocatable, intent(inout) :: A
+    real(SpAMM_DOUBLE), dimension(:, :), allocatable, intent(inout) :: A_double
 
     integer :: N
     integer :: i, j
     real(SpAMM_DOUBLE) :: Aij
 
-    if(allocated(A)) then
-      deallocate(A)
+    if(allocated(A_double)) then
+      deallocate(A_double)
     endif
 
     write(*, "(A,A)") "reading matrix from ", trim(filename)
@@ -60,12 +60,12 @@ contains
       write(*, "(A)") "no matrix elements found in matrix file"
       stop
     else
-      allocate(A(N, N))
-      A = 0.0D0
+      allocate(A_double(N, N))
+      A_double = 0.0D0
       rewind(10)
       do while(.true.)
         read(10, *, end = 2) i, j, Aij
-        A(i, j) = Aij
+        A_double(i, j) = Aij
       enddo
 2     close(10)
     endif

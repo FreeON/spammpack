@@ -1,4 +1,6 @@
+/** @file */
 
+#include "spamm.h"
 
 /** A recursive implementation of sgemm(). This function is not feature complete,
  * it hardly does anything.

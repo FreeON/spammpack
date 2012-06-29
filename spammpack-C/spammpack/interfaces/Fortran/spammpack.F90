@@ -51,6 +51,7 @@ contains
     type(SpAMM_Matrix), intent(in) :: B
     type(SpAMM_Matrix), intent(inout) :: C
     real(SpAMM_KIND), intent(in), optional :: tolerance
+    call spamm_multiply_spamm_spamm_interface(A, B, C, tolerance)
   end subroutine multiply_spamm_spamm
 
   subroutine add_spamm_spamm (A, B, alpha, beta)
@@ -60,9 +61,10 @@ contains
     real(SpAMM_KIND), intent(in) :: beta
   end subroutine add_spamm_spamm
 
-  subroutine new_spamm (A)
+  subroutine new_spamm (M, N, A)
+    integer, intent(in) :: M, N
     type(SpAMM_Matrix), intent(inout) :: A
-    call spamm_new_interface(A)
+    call spamm_new_interface(M, N, A)
   end subroutine new_spamm
 
 end module spammpack

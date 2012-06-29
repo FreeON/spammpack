@@ -63,7 +63,7 @@ program spamm_multiply
   write(*, *) "converting matrices to quadtree"
   A = SpAMM_Convert_Dense_to_SpAMM(A_dense)
   B = SpAMM_Convert_Dense_to_SpAMM(B_dense)
-  call New(C)
+  call New(size(A_dense, 1), size(B_dense, 2), C)
   write(*, *) "done converting"
 
 #if defined(_OPENMP)
