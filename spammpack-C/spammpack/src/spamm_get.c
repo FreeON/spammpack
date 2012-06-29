@@ -49,3 +49,27 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_hashed
 
   return Aij;
 }
+
+/** Get the number of rows of a matrix.
+ *
+ * @param A The matrix.
+ *
+ * @return The number of rows.
+ */
+unsigned int
+spamm_get_number_of_rows (const struct spamm_hashed_t *const A)
+{
+  return A->M;
+}
+
+/** Get the number of columns of a matrix.
+ *
+ * @param A The matrix.
+ *
+ * @return The number of rows.
+ */
+unsigned int
+spamm_get_number_of_columns (const struct spamm_hashed_t *const A)
+{
+  return A->N;
+}

@@ -66,6 +66,12 @@ float
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A);
 
 unsigned int
+spamm_get_number_of_rows (const struct spamm_hashed_t *const A);
+
+unsigned int
+spamm_get_number_of_columns (const struct spamm_hashed_t *const A);
+
+unsigned int
 spamm_index_2D (const unsigned int i, const unsigned int j);
 
 void

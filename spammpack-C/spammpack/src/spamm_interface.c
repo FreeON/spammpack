@@ -187,4 +187,22 @@ void
 FC_FUNC(spamm_multiply_spamm_spamm_interface, SPAMM_MULTIPLY_SPAMM_SPAMM_INTERFACE) (int *A,
     int *B, int *C, const float *const tolerance)
 {
+  struct spamm_hashed_t *A_spamm;
+  struct spamm_hashed_t *B_spamm;
+  struct spamm_hashed_t *C_spamm;
+
+  struct spamm_timer_t *timer;
+
+  A_spamm = spamm_interface_get_spamm_object(*A);
+  B_spamm = spamm_interface_get_spamm_object(*B);
+  C_spamm = spamm_interface_get_spamm_object(*C);
+
+  if (C_spamm == NULL)
+  {
+    C_spamm = spamm_hashed_new(spamm_get_number_of_rows(A_spamm), spamm_get_number_of_columns(B_spamm), row_major);
+    *C = spamm_interface_add_spamm_object(C_spamm);
+  }
+
+  timer = spamm_timer_new();
+  spamm_hashed_multiply(*tolerance, 1.0, A_spamm, B_spamm, 1.0, C_spamm, timer, kernel_standard_SSE);
 }
