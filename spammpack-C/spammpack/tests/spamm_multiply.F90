@@ -84,7 +84,7 @@ program spamm_multiply
 
     write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
     do test_repeat = 1, TEST_REPEAT
-      call multiply(A, B, C, tolerance = 1e-7)
+      call Multiply(A, B, C, tolerance = 1e-7)
     enddo
 
     !CALL SpAMM_Time_Stamp()

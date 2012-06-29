@@ -38,6 +38,7 @@ check_PROGRAMS = \
   list \
   stats \
   list_sort \
+	add_spamm \
   multiply_recursive \
   multiply_spamm \
   get_version \
@@ -70,7 +71,9 @@ TESTS = \
   expand \
   stats \
   check_spamm \
+	add_spamm \
 	$(multiply_tests) \
-  multiply_recursive
+  multiply_recursive \
+  spamm_multiply
 
 CLEANFILES = *.mod

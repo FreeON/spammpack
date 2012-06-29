@@ -134,6 +134,12 @@ spamm_multiply (const float tolerance,
     const enum spamm_kernel_t kernel,
     unsigned int *number_products);
 
+void
+spamm_hashed_add (const float alpha,
+    struct spamm_hashed_t *A,
+    const float beta,
+    struct spamm_hashed_t *B);
+
 unsigned int
 spamm_number_nonzero (const struct spamm_hashed_t *A);
 

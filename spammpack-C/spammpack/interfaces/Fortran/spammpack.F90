@@ -59,6 +59,7 @@ contains
     type(SpAMM_Matrix), intent(inout) :: B
     real(SpAMM_KIND), intent(in) :: alpha
     real(SpAMM_KIND), intent(in) :: beta
+    call spamm_add_spamm_spamm_interface(A, B, alpha, beta)
   end subroutine add_spamm_spamm
 
   subroutine new_spamm (M, N, A)

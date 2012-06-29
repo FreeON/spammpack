@@ -183,6 +183,13 @@ FC_FUNC(spamm_new_interface, SPAMM_NEW_INTERFACE) (const int *const M, const int
   *A = spamm_interface_add_spamm_object(A_spamm);
 }
 
+/** Multiply two spamm matrices.
+ *
+ * @param A The matrix A.
+ * @param B The matrix A.
+ * @param C The matrix A.
+ * @param tolerance The SpAMM tolerance.
+ */
 void
 FC_FUNC(spamm_multiply_spamm_spamm_interface, SPAMM_MULTIPLY_SPAMM_SPAMM_INTERFACE) (int *A,
     int *B, int *C, const float *const tolerance)
@@ -205,4 +212,24 @@ FC_FUNC(spamm_multiply_spamm_spamm_interface, SPAMM_MULTIPLY_SPAMM_SPAMM_INTERFA
 
   timer = spamm_timer_new();
   spamm_hashed_multiply(*tolerance, 1.0, A_spamm, B_spamm, 1.0, C_spamm, timer, kernel_standard_SSE);
+}
+
+/** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.
+ *
+ * @param A The matrix A.
+ * @param B The matrix B.
+ * @param alpha The factor @f$ \alpha @f$.
+ * @param beta The factor @f$ \beta @f$.
+ */
+void
+FC_FUNC(spamm_add_spamm_spamm_interface, SPAMM_ADD_SPAMM_SPAMM_INTERFACE) (int *A,
+    int *B, float *alpha, float *beta)
+{
+  struct spamm_hashed_t *A_spamm;
+  struct spamm_hashed_t *B_spamm;
+
+  A_spamm = spamm_interface_get_spamm_object(*A);
+  B_spamm = spamm_interface_get_spamm_object(*B);
+
+  spamm_hashed_add(*alpha, A_spamm, *beta, B_spamm);
 }
