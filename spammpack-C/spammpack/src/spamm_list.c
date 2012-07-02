@@ -366,7 +366,8 @@ spamm_list_sort_norm_iterative_mergesort (
   free(scratch_norm);
 }
 
-/** Sort a list by its matrix index.
+/** Sort a list, in place, by its matrix index. The list is modified and
+ * sorted after this function returns.
  *
  * @param list The list to sort.
  * @param compare A function that compares 2 elements a and b of the list, and

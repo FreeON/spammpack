@@ -18,7 +18,7 @@ void
 spamm_hashed_delete (struct spamm_hashed_t **A);
 
 void
-spamm_delete_block (struct spamm_data_t **data);
+spamm_delete_block (struct spamm_hashed_data_t **data);
 
 void
 spamm_hashed_delete_node (struct spamm_hashed_node_t **node);
@@ -153,8 +153,8 @@ spamm_new (const unsigned int M, const unsigned int N,
 struct spamm_hashed_t *
 spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout);
 
-struct spamm_data_t *
-spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout);
+struct spamm_hashed_data_t *
+spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout);
 
 struct spamm_hashed_node_t *
 spamm_hashed_new_node (const unsigned int tier, const unsigned int index_2D);

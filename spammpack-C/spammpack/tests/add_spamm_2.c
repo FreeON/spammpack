@@ -31,10 +31,11 @@ main (int argc, char **argv)
   A_dense = calloc(N*N, sizeof(double));
   B_dense = calloc(N*N, sizeof(double));
 
-  for (i = 0; i < N; i++) {
+  for (i = 0; i < N; i++)
+  {
+    A_dense[spamm_index_row_major(i, i, N, N)] = rand()/(double) RAND_MAX;
     for (j = 0; j < N; j++)
     {
-      A_dense[spamm_index_row_major(i, j, N, N)] = rand()/(double) RAND_MAX;
       B_dense[spamm_index_row_major(i, j, N, N)] = rand()/(double) RAND_MAX;
     }
   }
@@ -73,6 +74,9 @@ main (int argc, char **argv)
   spamm_print(A);
 #endif
 
+  /* Check tree consistency. */
+  result = spamm_check(A);
+
   /* Compare result. */
   max_diff = 0.0;
   for (i = 0; i < N; i++) {
@@ -86,9 +90,9 @@ main (int argc, char **argv)
   }
   printf("[add_spamm] max diff = %e\n", max_diff);
 
-  if (max_diff < TEST_TOLERANCE)
+  if (result == SPAMM_OK && max_diff < TEST_TOLERANCE)
   {
-    result = 0;
+    result = SPAMM_OK;
   }
 
   free(A_dense);

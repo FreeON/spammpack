@@ -1,3 +1,4 @@
+#include "config.h"
 #include "spamm.h"
 #include "spamm_types_private.h"
 
@@ -44,7 +45,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
   float norm_A21;
   float norm_A22;
   struct spamm_hashtable_t *node_hashtable;
-  struct spamm_data_t *data;
+  struct spamm_hashed_data_t *data;
   float Aij;
   float norm2;
 #ifdef SPAMM_SET_NO_ZERO
@@ -134,7 +135,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
 
       if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
       {
-        data = spamm_new_block(A->kernel_tier, index, A->layout);
+        data = spamm_hashed_new_data(A->kernel_tier, index, A->layout);
         spamm_hashtable_insert(node_hashtable, index, data);
       }
 

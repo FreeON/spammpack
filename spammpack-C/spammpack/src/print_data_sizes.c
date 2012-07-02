@@ -6,7 +6,7 @@
 int
 main ()
 {
-  struct spamm_data_t data;
+  struct spamm_hashed_data_t data;
   struct spamm_multiply_stream_t stream_element;
 
   printf("# spammpack version: %s\n", SPAMM_VERSION);
@@ -17,7 +17,7 @@ main ()
   printf("# &stream_element.B at %p, offset = %lu\n", &stream_element.B, (unsigned long int) &stream_element.B - (unsigned long int) &stream_element);
   printf("# &stream_element.C at %p, offset = %lu\n", &stream_element.C, (unsigned long int) &stream_element.C - (unsigned long int) &stream_element);
   printf("# \n");
-  printf("# sizeof(struct spamm_data_t) = %lu\n", sizeof(struct spamm_data_t));
+  printf("# sizeof(struct spamm_hashed_data_t) = %lu\n", sizeof(struct spamm_hashed_data_t));
   printf("# &data at                       %p\n", &data);
   printf("# &data.norm at                  %p, offset_norm = %lu\n", &data.norm, (unsigned long int) &data.norm - (unsigned long int) &data);
   printf("# &data.norm_upper at            %p, offset_norm_upper = %lu\n", &data.norm_upper, (unsigned long int) &data.norm_upper - (unsigned long int) &data);

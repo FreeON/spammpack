@@ -15,7 +15,7 @@ spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
 {
   int *at_kernel_tier = user_data;
   struct spamm_hashed_node_t *node;
-  struct spamm_data_t *data;
+  struct spamm_hashed_data_t *data;
 
   if ((*at_kernel_tier) == 1)
   {
@@ -104,12 +104,12 @@ spamm_hashed_delete_node (struct spamm_hashed_node_t **node)
   *node = NULL;
 }
 
-/** Delete a block of type spamm_data_t.
+/** Delete a block of type spamm_hashed_data_t.
  *
  * @param data The block of data to free.
  */
 void
-spamm_delete_block (struct spamm_data_t **data)
+spamm_delete_block (struct spamm_hashed_data_t **data)
 {
   free(*data);
   *data = NULL;

@@ -1,6 +1,8 @@
+#include "config.h"
 #include "spamm.h"
 #include "spamm_types_private.h"
 
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -265,17 +267,17 @@ spamm_hashed_new_node (const unsigned int tier, const unsigned int index_2D)
  *
  * @return A pointer to the newly allocated node.
  */
-struct spamm_data_t *
-spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout)
+struct spamm_hashed_data_t *
+spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout)
 {
   int i, j;
-  struct spamm_data_t *data;
+  struct spamm_hashed_data_t *data;
 
 #ifdef HAVE_POSIX_MEMALIGN
   int result;
 
   /* Allocate data. */
-  if ((result = posix_memalign((void**) &data, SPAMM_PAGE_ALIGNMENT, sizeof(struct spamm_data_t))) != 0)
+  if ((result = posix_memalign((void**) &data, SPAMM_PAGE_ALIGNMENT, sizeof(struct spamm_hashed_data_t))) != 0)
   {
     switch (result)
     {
@@ -328,7 +330,7 @@ spamm_new_block (const unsigned int tier, const unsigned int index_2D, const enu
 #else
   /* Allocate data (this is with unknown alignment, i.e. it is aligned to
    * whatever malloc() aligns it to. */
-  data = (struct spamm_data_t*) calloc(1, sizeof(struct spamm_data_t));
+  data = (struct spamm_hashed_data_t*) calloc(1, sizeof(struct spamm_hashed_data_t));
 #endif
 
   switch (layout)

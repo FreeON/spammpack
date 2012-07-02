@@ -30,7 +30,7 @@ struct spamm_check_user_data_t
  *
  * @param index The linear index of this node.
  * @param value The matrix tree node. This can have either type
- * spamm_hashed_node_t or spamm_data_t depending on the tier.
+ * spamm_hashed_node_t or spamm_hashed_data_t depending on the tier.
  * @param user_data The user data of type spamm_check_user_data_t.
  */
 void
@@ -77,7 +77,7 @@ spamm_check_tree_structure (unsigned int index, void *value, void *user_data)
  *
  * @param index The linear index of this node.
  * @param value The matrix tree node. This can have either type
- * spamm_hashed_node_t or spamm_data_t depending on the tier.
+ * spamm_hashed_node_t or spamm_hashed_data_t depending on the tier.
  * @param user_data The user data of type spamm_check_user_data_t.
  */
 void
@@ -93,7 +93,7 @@ spamm_check_linear_index (unsigned int index, void *value, void *user_data)
  *
  * @param index The linear index of this node.
  * @param value The matrix tree node. This can have either type
- * spamm_hashed_node_t or spamm_data_t depending on the tier.
+ * spamm_hashed_node_t or spamm_hashed_data_t depending on the tier.
  * @param user_data The user data of type spamm_check_user_data_t.
  */
 void
@@ -111,10 +111,10 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
 
   unsigned int child_index;
   struct spamm_hashed_node_t *child_node = NULL;
-  struct spamm_data_t *child_data = NULL;
+  struct spamm_hashed_data_t *child_data = NULL;
 
   struct spamm_hashed_node_t *node = NULL;
-  struct spamm_data_t *data = NULL;
+  struct spamm_hashed_data_t *data = NULL;
   struct spamm_check_user_data_t *user = user_data;
 
   unsigned int next_tier;
@@ -335,7 +335,7 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
   short i_dilated;
   float Aij;
   unsigned int data_offset;
-  struct spamm_data_t *data = value;
+  struct spamm_hashed_data_t *data = value;
   struct spamm_check_user_data_t *user = user_data;
 
   for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED && user->result == SPAMM_OK; i_blocked++) {

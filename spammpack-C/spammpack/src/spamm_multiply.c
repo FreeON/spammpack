@@ -1,7 +1,6 @@
 /** @file */
 
 #include "config.h"
-#include "spamm_config.h"
 #include "spamm.h"
 #include "spamm_types_private.h"
 
@@ -49,7 +48,7 @@ struct spamm_multiply_index_list_t
   struct spamm_list_t *index;
 
   /** An array of pointers to the matrix tree nodes at the kernel tier. */
-  struct spamm_data_t **data;
+  struct spamm_hashed_data_t **data;
 };
 
 /** @private k lookup table to speed up loop over indices. */
@@ -66,13 +65,13 @@ struct spamm_multiply_k_lookup_t
 /** @private Multiply a matrix node by a scalar.
  *
  * @param index The linear index of that matrix node.
- * @param value A pointer to the spamm_data_t matrix node.
+ * @param value A pointer to the spamm_hashed_data_t matrix node.
  * @param user_data The scalar \f$\beta\f$ that multiplies the matrix.
  */
 void
 spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
 {
-  struct spamm_data_t *data = value;
+  struct spamm_hashed_data_t *data = value;
   float *beta = user_data;
   unsigned int i;
 
@@ -134,7 +133,7 @@ void
 spamm_multiply_sort_stream_swap (struct spamm_multiply_stream_t *a_stream,
     struct spamm_multiply_stream_t *b_stream, unsigned int *a, unsigned int *b)
 {
-  struct spamm_data_t *temp_node;
+  struct spamm_hashed_data_t *temp_node;
   unsigned int temp;
 
   temp_node = a_stream->A;
@@ -368,9 +367,9 @@ spamm_hashed_multiply (const float tolerance,
   struct spamm_multiply_index_list_t B_index;
 
 #if SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 1
-  struct spamm_data_t *A_data;
-  struct spamm_data_t *B_data;
-  struct spamm_data_t *C_data;
+  struct spamm_hashed_data_t *A_data;
+  struct spamm_hashed_data_t *B_data;
+  struct spamm_hashed_data_t *C_data;
 #endif
 
   unsigned int i, j, k, k_check;
@@ -571,8 +570,8 @@ spamm_hashed_multiply (const float tolerance,
   printf("[multiply] copying indices to array and referencing dense blocks... ");
   spamm_timer_start(timer);
 
-  A_index.data = spamm_allocate(sizeof(struct spamm_data_t*)*spamm_list_length(A_index.index));
-  B_index.data = spamm_allocate(sizeof(struct spamm_data_t*)*spamm_list_length(B_index.index));
+  A_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(A_index.index));
+  B_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(B_index.index));
 
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
 
@@ -972,7 +971,7 @@ spamm_hashed_multiply (const float tolerance,
   short int early_termination = 0;
 
   unsigned int last_C_index;
-  struct spamm_data_t *last_C;
+  struct spamm_hashed_data_t *last_C;
 
   stream_index = 0;
   number_dropped_blocks = 0;
@@ -1130,7 +1129,7 @@ spamm_hashed_multiply (const float tolerance,
   short int early_termination = 0;
 
   unsigned int last_C_index;
-  struct spamm_data_t *last_C;
+  struct spamm_hashed_data_t *last_C;
 
   stream_index = 0;
   number_dropped_blocks = 0;
@@ -1314,7 +1313,7 @@ spamm_hashed_multiply (const float tolerance,
   short int early_termination = 0;
 
   unsigned int last_C_index;
-  struct spamm_data_t *last_C;
+  struct spamm_hashed_data_t *last_C;
 
   __m128 tolerance_xmm;
 

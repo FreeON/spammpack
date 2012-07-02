@@ -93,7 +93,7 @@ struct spamm_hashed_node_t
 };
 
 /** A node at the kernel tier. */
-struct spamm_data_t
+struct spamm_hashed_data_t
 {
   /** The layout of the basic matrix blocks on the kernel tier. */
   enum spamm_layout_t layout;
@@ -211,13 +211,13 @@ spamm_recursive_node_t
 struct spamm_multiply_stream_t
 {
   /** A pointer to the kernel tier matrix node of A. */
-  struct spamm_data_t *A;
+  struct spamm_hashed_data_t *A;
 
   /** A pointer to the kernel tier matrix node of B. */
-  struct spamm_data_t *B;
+  struct spamm_hashed_data_t *B;
 
   /** A pointer to the kernel tier matrix node of C. */
-  struct spamm_data_t *C;
+  struct spamm_hashed_data_t *C;
 };
 
 #endif

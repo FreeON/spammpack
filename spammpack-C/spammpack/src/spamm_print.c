@@ -60,7 +60,7 @@ void
 spamm_print_data (unsigned int key, void *value, void *user_data)
 {
   unsigned int i, j;
-  struct spamm_data_t *data = value;
+  struct spamm_hashed_data_t *data = value;
 
   printf("(node) tier %u: index_2D = %u, ", data->tier, data->index_2D);
   printf("node norm = %1.2e\n", data->node_norm);

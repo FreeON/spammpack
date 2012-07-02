@@ -4,6 +4,8 @@
 #include "spamm_types_private.h"
 
 #include <assert.h>
+#include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,11 +22,18 @@ spamm_hashed_add (const float alpha,
     const float beta,
     struct spamm_hashed_t *B)
 {
-  struct spamm_hashtable_t *A_tier_hashtable;
-  struct spamm_hashtable_t *B_tier_hashtable;
+  struct spamm_list_t *A_block_keys;
+  struct spamm_list_t *B_block_keys;
 
   struct spamm_node_t *node;
-  struct spamm_data_t *data;
+  struct spamm_hashed_data_t *A_data;
+  struct spamm_hashed_data_t *B_data;
+
+  unsigned int A_index;
+  unsigned int B_index;
+
+  int i, j, k;
+  int i_block, j_block;
 
   assert(A != NULL);
   assert(B != NULL);
@@ -50,7 +59,144 @@ spamm_hashed_add (const float alpha,
   /* Print out some information. */
   printf("[add] alpha = %e, beta = %e\n", alpha, beta);
 
-  A_tier_hashtable = A->tier_hashtable[0];
-  B_tier_hashtable = B->tier_hashtable[0];
+  /* Go to lowest tier and start adding submatrix blocks. */
+  A_block_keys = spamm_hashtable_keys(A->tier_hashtable[A->kernel_tier]);
+  B_block_keys = spamm_hashtable_keys(B->tier_hashtable[A->kernel_tier]);
 
+  /* Sort the keys. */
+  spamm_list_sort_index(A_block_keys, spamm_list_compare_int);
+  spamm_list_sort_index(B_block_keys, spamm_list_compare_int);
+
+  for (i = 0, j = 0; ; )
+  {
+    if (i < spamm_list_length(A_block_keys))
+    {
+      A_index = spamm_list_get_index(A_block_keys, i);
+    }
+
+    else
+    {
+      A_index = UINT_MAX;
+    }
+
+    if (j < spamm_list_length(B_block_keys))
+    {
+      B_index = spamm_list_get_index(B_block_keys, j);
+    }
+
+    else
+    {
+      B_index = UINT_MAX;
+    }
+
+    if (i >= spamm_list_length(A_block_keys) && j >= spamm_list_length(B_block_keys))
+    {
+      /* Done. */
+      break;
+    }
+
+    if (A_index < B_index)
+    {
+      A_data = spamm_hashtable_lookup(A->tier_hashtable[A->kernel_tier], A_index);
+      for (k = 0; k < SPAMM_N_KERNEL*SPAMM_N_KERNEL; k++)
+      {
+        A_data->block_dense[k] *= alpha;
+      }
+      A_data->node_norm2 *= alpha*alpha;
+      A_data->node_norm *= alpha;
+
+      i++;
+
+      /* Update block norms. */
+      for (i_block = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
+        for (j_block = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
+        {
+          A_data->norm2[spamm_index_norm(i_block, j_block)] = 0;
+          for (k = 0; k < SPAMM_N_BLOCK*SPAMM_N_BLOCK; k++)
+          {
+            A_data->norm2[spamm_index_norm(i_block, j_block)] +=
+              A_data->block_dense[spamm_index_kernel_block(i_block, j_block, A->layout)+k]
+              *A_data->block_dense[spamm_index_kernel_block(i_block, j_block, A->layout)+k];
+          }
+          A_data->norm[spamm_index_norm(i_block, j_block)] = sqrt(A_data->norm[spamm_index_norm(i_block, j_block)]);
+        }
+      }
+    }
+
+    else if (B_index < A_index)
+    {
+      B_data = spamm_hashtable_lookup(B->tier_hashtable[B->kernel_tier], spamm_list_get_index(B_block_keys, j));
+
+      /* Create new node. */
+      A_data = spamm_hashed_new_data(A->kernel_tier, B_index, A->layout);
+      A_data->node_norm2 = 0;
+      for (k = 0; k < SPAMM_N_KERNEL*SPAMM_N_KERNEL; k++)
+      {
+        A_data->block_dense[k] = beta*B_data->block_dense[k];
+        A_data->node_norm2 += A_data->block_dense[k]*A_data->block_dense[k];
+      }
+      A_data->node_norm = sqrt(A_data->node_norm2);
+
+      j++;
+
+      /* Update block norms. */
+      for (i_block = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
+        for (j_block = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
+        {
+          A_data->norm2[spamm_index_norm(i_block, j_block)] = 0;
+          for (k = 0; k < SPAMM_N_BLOCK*SPAMM_N_BLOCK; k++)
+          {
+            A_data->norm2[spamm_index_norm(i_block, j_block)] +=
+              A_data->block_dense[spamm_index_kernel_block(i_block, j_block, A->layout)+k]
+              *A_data->block_dense[spamm_index_kernel_block(i_block, j_block, A->layout)+k];
+          }
+          A_data->norm[spamm_index_norm(i_block, j_block)] = sqrt(A_data->norm[spamm_index_norm(i_block, j_block)]);
+        }
+      }
+
+      /* Create new block in A and store it. */
+      spamm_hashtable_insert(A->tier_hashtable[A->kernel_tier], B_index, B_data);
+    }
+
+    else if (A_index == B_index)
+    {
+      A_data = spamm_hashtable_lookup(A->tier_hashtable[A->kernel_tier], spamm_list_get_index(A_block_keys, i));
+      B_data = spamm_hashtable_lookup(B->tier_hashtable[B->kernel_tier], spamm_list_get_index(B_block_keys, j));
+
+      /* Add block data. */
+      A_data->node_norm2 = 0;
+      for (k = 0; k < SPAMM_N_KERNEL*SPAMM_N_KERNEL; k++)
+      {
+        A_data->block_dense[k] = alpha*A_data->block_dense[k]+beta*B_data->block_dense[k];
+        A_data->node_norm2 += A_data->block_dense[k]*A_data->block_dense[k];
+      }
+      A_data->node_norm = sqrt(A_data->node_norm2);
+
+      /* Update block norms. */
+      for (i_block = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
+        for (j_block = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
+        {
+          A_data->norm2[spamm_index_norm(i_block, j_block)] = 0;
+          for (k = 0; k < SPAMM_N_BLOCK*SPAMM_N_BLOCK; k++)
+          {
+            A_data->norm2[spamm_index_norm(i_block, j_block)] +=
+              A_data->block_dense[spamm_index_kernel_block(i_block, j_block, A->layout)+k]
+              *A_data->block_dense[spamm_index_kernel_block(i_block, j_block, A->layout)+k];
+          }
+          A_data->norm[spamm_index_norm(i_block, j_block)] = sqrt(A_data->norm[spamm_index_norm(i_block, j_block)]);
+        }
+      }
+
+      i++;
+      j++;
+    }
+
+    else
+    {
+      printf("[%s:%i] I should not be here\n", __FILE__, __LINE__);
+      exit(1);
+    }
+  }
+
+  /* Insert into upper tier hashtables. */
 }

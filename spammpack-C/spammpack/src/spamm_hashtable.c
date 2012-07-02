@@ -1,4 +1,3 @@
-#include "spamm_config.h"
 #include "spamm.h"
 #include "spamm_hashtable.h"
 #include "spamm_list.h"
@@ -646,7 +645,7 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
   {
     if (hashtable->has_special_key[i] == SPAMM_TRUE)
     {
-      spamm_list_set(list, list_index, i, ((struct spamm_data_t*) hashtable->special_value[i])->node_norm);
+      spamm_list_set(list, list_index, i, ((struct spamm_hashed_data_t*) hashtable->special_value[i])->node_norm);
       list_index++;
     }
   }
@@ -656,7 +655,7 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
     if (hashtable->data[i].key != SPAMM_KEY_EMPTY &&
         hashtable->data[i].key != SPAMM_KEY_DELETED)
     {
-      spamm_list_set(list, list_index, hashtable->data[i].key, ((struct spamm_data_t*) hashtable->data[i].value)->node_norm);
+      spamm_list_set(list, list_index, hashtable->data[i].key, ((struct spamm_hashed_data_t*) hashtable->data[i].value)->node_norm);
       list_index++;
     }
   }
@@ -687,7 +686,7 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
   {
     if (hashtable->value[i] != NULL)
     {
-      spamm_list_set(list, list_index, i, ((struct spamm_data_t*) hashtable->value[i])->node_norm);
+      spamm_list_set(list, list_index, i, ((struct spamm_hashed_data_t*) hashtable->value[i])->node_norm);
       list_index++;
     }
   }

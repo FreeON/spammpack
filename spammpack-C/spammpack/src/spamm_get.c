@@ -19,7 +19,7 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_hashed
 {
   unsigned int index, i_tier, j_tier, delta_index;
   struct spamm_hashtable_t *node_hashtable;
-  struct spamm_data_t *data;
+  struct spamm_hashed_data_t *data;
   float Aij = 0;
 
   assert(A != NULL);

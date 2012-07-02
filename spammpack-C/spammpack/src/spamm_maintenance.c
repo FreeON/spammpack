@@ -23,7 +23,7 @@ spamm_expand (struct spamm_hashed_t *A)
   unsigned int i_tier;
   unsigned int j_tier;
   unsigned int index;
-  struct spamm_data_t *data;
+  struct spamm_hashed_data_t *data;
   struct spamm_hashtable_t *node_hashtable;
 
   /* Get the kernel tier hashtable. */
@@ -43,7 +43,7 @@ spamm_expand (struct spamm_hashed_t *A)
       /* Create new block in case one doesn't exist already. */
       if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
       {
-        data = spamm_new_block(A->kernel_tier, index, A->layout);
+        data = spamm_hashed_new_data(A->kernel_tier, index, A->layout);
         spamm_hashtable_insert(node_hashtable, index, data);
       }
     }
@@ -68,7 +68,7 @@ spamm_construct_tree (struct spamm_hashed_t *A)
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_hashtable_t *next_tier_hashtable;
   struct spamm_list_t *tier_indices;
-  struct spamm_data_t *data;
+  struct spamm_hashed_data_t *data;
   struct spamm_hashed_node_t *node;
   struct spamm_hashed_node_t *parent_node;
 

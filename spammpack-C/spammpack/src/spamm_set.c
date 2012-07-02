@@ -143,7 +143,7 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
   unsigned int data_offset_transpose;
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_hashed_node_t *node;
-  struct spamm_data_t *data;
+  struct spamm_hashed_data_t *data;
 
   float old_Aij = 0;
 
@@ -153,7 +153,7 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
   unsigned int next_tier;
   unsigned int child_index;
   struct spamm_hashed_node_t *child_node;
-  struct spamm_data_t *child_data;
+  struct spamm_hashed_data_t *child_data;
   struct spamm_hashtable_t *next_tier_hashtable;
 #endif
 
@@ -202,7 +202,7 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
     {
       if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
       {
-        data = spamm_new_block(tier, index, A->layout);
+        data = spamm_hashed_new_data(tier, index, A->layout);
         spamm_hashtable_insert(node_hashtable, index, data);
       }
 

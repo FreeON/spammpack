@@ -38,7 +38,8 @@ check_PROGRAMS = \
   list \
   stats \
   list_sort \
-	add_spamm \
+	add_spamm_1 \
+	add_spamm_2 \
   multiply_recursive \
   multiply_spamm \
   get_version \
@@ -71,7 +72,8 @@ TESTS = \
   expand \
   stats \
   check_spamm \
-	add_spamm \
+	add_spamm_1 \
+	add_spamm_2 \
 	$(multiply_tests) \
   multiply_recursive \
   spamm_multiply
