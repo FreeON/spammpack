@@ -108,8 +108,8 @@ spamm_hashed_add (const float alpha,
       i++;
 
       /* Update block norms. */
-      for (i_block = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
-        for (j_block = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
+      for (i_block = 0; i_block < SPAMM_N_KERNEL_BLOCKED; i_block++) {
+        for (j_block = 0; j_block < SPAMM_N_KERNEL_BLOCKED; j_block++)
         {
           A_data->norm2[spamm_index_norm(i_block, j_block)] = 0;
           for (k = 0; k < SPAMM_N_BLOCK*SPAMM_N_BLOCK; k++)
@@ -140,8 +140,8 @@ spamm_hashed_add (const float alpha,
       j++;
 
       /* Update block norms. */
-      for (i_block = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
-        for (j_block = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
+      for (i_block = 0; i_block < SPAMM_N_KERNEL_BLOCKED; i_block++) {
+        for (j_block = 0; j_block < SPAMM_N_KERNEL_BLOCKED; j_block++)
         {
           A_data->norm2[spamm_index_norm(i_block, j_block)] = 0;
           for (k = 0; k < SPAMM_N_BLOCK*SPAMM_N_BLOCK; k++)
@@ -155,7 +155,7 @@ spamm_hashed_add (const float alpha,
       }
 
       /* Create new block in A and store it. */
-      spamm_hashtable_insert(A->tier_hashtable[A->kernel_tier], B_index, B_data);
+      spamm_hashtable_insert(A->tier_hashtable[A->kernel_tier], B_index, A_data);
     }
 
     else if (A_index == B_index)
@@ -172,9 +172,12 @@ spamm_hashed_add (const float alpha,
       }
       A_data->node_norm = sqrt(A_data->node_norm2);
 
+      i++;
+      j++;
+
       /* Update block norms. */
-      for (i_block = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
-        for (j_block = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
+      for (i_block = 0; i_block < SPAMM_N_KERNEL_BLOCKED; i_block++) {
+        for (j_block = 0; j_block < SPAMM_N_KERNEL_BLOCKED; j_block++)
         {
           A_data->norm2[spamm_index_norm(i_block, j_block)] = 0;
           for (k = 0; k < SPAMM_N_BLOCK*SPAMM_N_BLOCK; k++)
@@ -186,9 +189,6 @@ spamm_hashed_add (const float alpha,
           A_data->norm[spamm_index_norm(i_block, j_block)] = sqrt(A_data->norm[spamm_index_norm(i_block, j_block)]);
         }
       }
-
-      i++;
-      j++;
     }
 
     else
