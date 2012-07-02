@@ -763,8 +763,7 @@ spamm_hashed_multiply (const float tolerance,
 
         if (C_data == NULL)
         {
-          printf("[FIXME] C block missing\n");
-          exit(1);
+          C_data = spamm_hashed_new_data(C->kernel_tier, convolution_index_2D, C->layout);
         }
 
         multiply_stream[stream_index].C = C_data;

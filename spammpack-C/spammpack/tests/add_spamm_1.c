@@ -6,14 +6,14 @@
 
 #define TEST_TOLERANCE 1e-10
 
-#define PRINT_MATRIX
+//#define PRINT_MATRIX
 
 int
 main (int argc, char **argv)
 {
   int result = 1;
 
-  unsigned int N = 20;
+  unsigned int N = 513;
 
   double alpha = 1.2;
   double beta = 0.8;
