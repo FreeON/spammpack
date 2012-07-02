@@ -304,18 +304,7 @@ tests/Makefile
 
 AC_CONFIG_COMMANDS([src/spamm_config.h], [
   echo -n "configure: creating src/spamm_config.h... "
-  echo "/** @file */" > src/spamm_config.h.temp
-  echo >> src/spamm_config.h.temp
-  echo "#ifndef __SPAMM_CONFIG_H" >> src/spamm_config.h.temp
-  echo "#define __SPAMM_CONFIG_H" >> src/spamm_config.h.temp
-  echo >> src/spamm_config.h.temp
-  echo "/* This file contains the configuration options that directly" >> src/spamm_config.h.temp
-  echo " * affect the building of spamm." >> src/spamm_config.h.temp
-  echo " */" >> src/spamm_config.h.temp
-  echo >> src/spamm_config.h.temp
-  grep "#define SPAMM" config.h >> src/spamm_config.h.temp
-  echo >> src/spamm_config.h.temp
-  echo "#endif" >> src/spamm_config.h.temp
+  ./extract_conf.py config.h > src/spamm_config.h.temp
   if (diff --brief src/spamm_config.h src/spamm_config.h.temp > /dev/null 2>&1); then
     echo -n "no difference, keeping old one... "
     rm -f src/spamm_config.h.temp
@@ -324,7 +313,7 @@ AC_CONFIG_COMMANDS([src/spamm_config.h], [
     mv -f src/spamm_config.h.temp src/spamm_config.h
   fi
   echo -n "removing duplicate entries from config.h... "
-  sed -e "s/^#define SPAMM/\/\/#define SPAMM/" -i config.h
+  sed -e "s/^#define SPAMM_/\/\/#define SPAMM_/" -i config.h
   echo "done"
 ])
 
