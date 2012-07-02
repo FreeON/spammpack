@@ -23,6 +23,9 @@ spamm_hashed_add (const float alpha,
   struct spamm_hashtable_t *A_tier_hashtable;
   struct spamm_hashtable_t *B_tier_hashtable;
 
+  struct spamm_node_t *node;
+  struct spamm_data_t *data;
+
   assert(A != NULL);
   assert(B != NULL);
 
@@ -49,4 +52,5 @@ spamm_hashed_add (const float alpha,
 
   A_tier_hashtable = A->tier_hashtable[0];
   B_tier_hashtable = B->tier_hashtable[0];
+
 }
