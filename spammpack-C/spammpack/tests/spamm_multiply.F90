@@ -12,7 +12,7 @@ program spamm_multiply
   implicit none
 
   integer :: N, N_padded
-  integer :: test_repeat
+  integer :: test_counter
   integer :: testresult = 0
 
   real(SpAMM_SINGLE), dimension(:,:), allocatable :: A_dense
@@ -83,7 +83,7 @@ program spamm_multiply
 #endif
 
     write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
-    do test_repeat = 1, TEST_REPEAT
+    do test_counter = 1, TEST_REPEAT
       call Multiply(A, B, C, tolerance = 1e-7)
     enddo
 
@@ -93,14 +93,23 @@ program spamm_multiply
     C_dense = matmul(A_dense, B_dense)
     C_reference = SpAMM_Convert_Dense_to_SpAMM(C_dense)
 
-    write(*, "(A,F22.12)") "F-norm (A)             = ", SpAMM_Norm(A)
-    write(*, "(A,F22.12)") "F-norm (B)             = ", SpAMM_Norm(B)
-    write(*, "(A,F22.12)") "F-norm (C)             = ", SpAMM_Norm(C)
-    write(*, "(A,F22.12)") "F-norm (C_reference)   = ", SpAMM_Norm(C_reference)
+    write(*, *) "A = "
+    call PPrint(A)
+
+    write(*, *) "B = "
+    call PPrint(B)
+
+    write(*, *) "C = "
+    call PPrint(C)
+
+    write(*, "(A,F22.12)") "F-norm (A)             = ", Norm(A)
+    write(*, "(A,F22.12)") "F-norm (B)             = ", Norm(B)
+    write(*, "(A,F22.12)") "F-norm (C)             = ", Norm(C)
+    write(*, "(A,F22.12)") "F-norm (C_reference)   = ", Norm(C_reference)
 
     call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
 
-    write(*, "(A,F22.12)") "F-norm (diff)          = ", SpAMM_Norm(C)
+    write(*, "(A,F22.12)") "F-norm (diff)          = ", Norm(C)
 #endif
 
 #if defined(_OPENMP)

@@ -248,3 +248,16 @@ FC_FUNC(spamm_get_norm_interface, SPAMM_GET_NORM_INTERFACE) (int *A)
   A_spamm = spamm_interface_get_spamm_object(*A);
   return spamm_get_norm(A_spamm);
 }
+
+/** Print a matrix.
+ *
+ * @param A The matrix.
+ */
+void
+FC_FUNC(spamm_print_interface, SPAMM_PRINT_INTERFACE) (int *A)
+{
+  struct spamm_hashed_t *A_spamm;
+
+  A_spamm = spamm_interface_get_spamm_object(*A);
+  spamm_print(A_spamm);
+}

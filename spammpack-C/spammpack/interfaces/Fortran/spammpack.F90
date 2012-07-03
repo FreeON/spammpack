@@ -41,6 +41,10 @@ module spammpack
     end function spamm_get_norm_interface
   end interface spamm_get_norm_interface
 
+  interface pprint
+    module procedure pprint_interface
+  end interface pprint
+
 contains
 
   type(SpAMM_Matrix) function spamm_convert_dense_to_spamm (A) result (B)
@@ -74,5 +78,10 @@ contains
     type(SpAMM_Matrix), intent(in) :: A
     norm_F = spamm_get_norm_interface(A)
   end function spamm_norm
+
+  subroutine pprint_interface (A)
+    type(SpAMM_Matrix), intent(in) :: A
+    call spamm_print_interface(A)
+  end subroutine pprint_interface
 
 end module spammpack
