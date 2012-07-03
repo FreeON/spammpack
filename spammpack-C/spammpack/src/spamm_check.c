@@ -103,7 +103,6 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
   short i_blocked, j_blocked;
   short i_basic, j_basic;
   float norm2 = 0.0;
-  float norm_A11, norm_A12, norm_A21, norm_A22;
   int upper_norm_check = SPAMM_OK;
   int upper_norm_transpose_check = SPAMM_OK;
 
@@ -174,92 +173,6 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
           sqrt(norm2),
           fabs(data->node_norm-sqrt(norm2)),
           (norm2 != 0.0 ? fabs(data->node_norm-sqrt(norm2))/sqrt(norm2) : 0));
-      user->result = SPAMM_ERROR;
-    }
-
-    /* Check norms on upper tier. */
-    norm_A11 = sqrt(
-        data->norm2[spamm_index_norm(0, 0)]+
-        data->norm2[spamm_index_norm(0, 1)]+
-        data->norm2[spamm_index_norm(1, 0)]+
-        data->norm2[spamm_index_norm(1, 1)]);
-    norm_A12 = sqrt(
-        data->norm2[spamm_index_norm(0, 2)]+
-        data->norm2[spamm_index_norm(0, 3)]+
-        data->norm2[spamm_index_norm(1, 2)]+
-        data->norm2[spamm_index_norm(1, 3)]);
-    norm_A21 = sqrt(
-        data->norm2[spamm_index_norm(2, 0)]+
-        data->norm2[spamm_index_norm(2, 1)]+
-        data->norm2[spamm_index_norm(3, 0)]+
-        data->norm2[spamm_index_norm(3, 1)]);
-    norm_A22 = sqrt(
-        data->norm2[spamm_index_norm(2, 2)]+
-        data->norm2[spamm_index_norm(2, 3)]+
-        data->norm2[spamm_index_norm(3, 2)]+
-        data->norm2[spamm_index_norm(3, 3)]);
-
-    if (fabs(data->norm_upper[0]-norm_A11) > RELATIVE_TOLERANCE*norm_A11) { upper_norm_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper[1]-norm_A12) > RELATIVE_TOLERANCE*norm_A12) { upper_norm_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper[2]-norm_A11) > RELATIVE_TOLERANCE*norm_A11) { upper_norm_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper[3]-norm_A12) > RELATIVE_TOLERANCE*norm_A12) { upper_norm_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper[4]-norm_A21) > RELATIVE_TOLERANCE*norm_A21) { upper_norm_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper[5]-norm_A22) > RELATIVE_TOLERANCE*norm_A22) { upper_norm_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper[6]-norm_A21) > RELATIVE_TOLERANCE*norm_A21) { upper_norm_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper[7]-norm_A22) > RELATIVE_TOLERANCE*norm_A22) { upper_norm_check = SPAMM_ERROR; }
-
-    if (upper_norm_check != SPAMM_OK)
-    {
-      printf("tier %u, index %u: upper norm incorrect, found { %e %e %e %e %e %e %e %e }, should be { %e %e %e %e %e %e %e %e }\n",
-          data->tier, data->index_2D,
-          data->norm_upper[0],
-          data->norm_upper[1],
-          data->norm_upper[2],
-          data->norm_upper[3],
-          data->norm_upper[4],
-          data->norm_upper[5],
-          data->norm_upper[6],
-          data->norm_upper[7],
-          norm_A11,
-          norm_A12,
-          norm_A11,
-          norm_A12,
-          norm_A21,
-          norm_A22,
-          norm_A21,
-          norm_A22);
-      user->result = SPAMM_ERROR;
-    }
-
-    if (fabs(data->norm_upper_transpose[0]-norm_A11) > RELATIVE_TOLERANCE*norm_A11) { upper_norm_transpose_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper_transpose[1]-norm_A21) > RELATIVE_TOLERANCE*norm_A21) { upper_norm_transpose_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper_transpose[2]-norm_A12) > RELATIVE_TOLERANCE*norm_A12) { upper_norm_transpose_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper_transpose[3]-norm_A22) > RELATIVE_TOLERANCE*norm_A22) { upper_norm_transpose_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper_transpose[4]-norm_A11) > RELATIVE_TOLERANCE*norm_A11) { upper_norm_transpose_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper_transpose[5]-norm_A21) > RELATIVE_TOLERANCE*norm_A21) { upper_norm_transpose_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper_transpose[6]-norm_A12) > RELATIVE_TOLERANCE*norm_A12) { upper_norm_transpose_check = SPAMM_ERROR; }
-    if (fabs(data->norm_upper_transpose[7]-norm_A22) > RELATIVE_TOLERANCE*norm_A22) { upper_norm_transpose_check = SPAMM_ERROR; }
-
-    if (upper_norm_transpose_check != SPAMM_OK)
-    {
-      printf("tier %u, index %u: upper norm transpose incorrect, found { %e %e %e %e %e %e %e %e }, should be { %e %e %e %e %e %e %e %e }\n",
-          data->tier, data->index_2D,
-          data->norm_upper[0],
-          data->norm_upper[1],
-          data->norm_upper[2],
-          data->norm_upper[3],
-          data->norm_upper[4],
-          data->norm_upper[5],
-          data->norm_upper[6],
-          data->norm_upper[7],
-          norm_A11,
-          norm_A21,
-          norm_A12,
-          norm_A22,
-          norm_A11,
-          norm_A21,
-          norm_A12,
-          norm_A22);
       user->result = SPAMM_ERROR;
     }
   }

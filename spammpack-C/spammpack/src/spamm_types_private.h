@@ -121,12 +121,6 @@ struct spamm_hashed_data_t
   /** The square of the norms of the basic block matrices. */
   float __attribute__ ((aligned (8))) norm2[SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED];
 
-  /** The upper tier norms. */
-  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) norm_upper[2*2*2];
-
-  /** The upper tier norms for the transpose. */
-  float __attribute__ ((aligned (SPAMM_ALIGNMENT))) norm_upper_transpose[2*2*2];
-
   /** The matrix data.
    *
    * The matrix elements are arranged on a row-major ordered

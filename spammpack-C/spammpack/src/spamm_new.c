@@ -322,11 +322,6 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
   data->node_norm = 0.0;
   data->node_norm2 = 0.0;
 
-  for (i = 0; i < 8; i++)
-  {
-    data->norm_upper[i] = 0.0;
-    data->norm_upper_transpose[i] = 0.0;
-  }
 #else
   /* Allocate data (this is with unknown alignment, i.e. it is aligned to
    * whatever malloc() aligns it to. */

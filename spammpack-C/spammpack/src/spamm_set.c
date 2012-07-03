@@ -147,8 +147,6 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
 
   float old_Aij = 0;
 
-  float norm_A11, norm_A12, norm_A21, norm_A22;
-
 #ifdef NEW_NORM
   unsigned int next_tier;
   unsigned int child_index;
@@ -279,45 +277,6 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
       data->node_norm = sqrt(data->node_norm2);
 #endif
 
-      /* Update upper tier norms. */
-      norm_A11 = sqrt(
-          data->norm2[spamm_index_norm(0, 0)]+
-          data->norm2[spamm_index_norm(0, 1)]+
-          data->norm2[spamm_index_norm(1, 0)]+
-          data->norm2[spamm_index_norm(1, 1)]);
-      norm_A12 = sqrt(
-          data->norm2[spamm_index_norm(0, 2)]+
-          data->norm2[spamm_index_norm(0, 3)]+
-          data->norm2[spamm_index_norm(1, 2)]+
-          data->norm2[spamm_index_norm(1, 3)]);
-      norm_A21 = sqrt(
-          data->norm2[spamm_index_norm(2, 0)]+
-          data->norm2[spamm_index_norm(2, 1)]+
-          data->norm2[spamm_index_norm(3, 0)]+
-          data->norm2[spamm_index_norm(3, 1)]);
-      norm_A22 = sqrt(
-          data->norm2[spamm_index_norm(2, 2)]+
-          data->norm2[spamm_index_norm(2, 3)]+
-          data->norm2[spamm_index_norm(3, 2)]+
-          data->norm2[spamm_index_norm(3, 3)]);
-
-      data->norm_upper[0] = norm_A11;
-      data->norm_upper[1] = norm_A12;
-      data->norm_upper[2] = norm_A11;
-      data->norm_upper[3] = norm_A12;
-      data->norm_upper[4] = norm_A21;
-      data->norm_upper[5] = norm_A22;
-      data->norm_upper[6] = norm_A21;
-      data->norm_upper[7] = norm_A22;
-
-      data->norm_upper_transpose[0] = norm_A11;
-      data->norm_upper_transpose[1] = norm_A21;
-      data->norm_upper_transpose[2] = norm_A12;
-      data->norm_upper_transpose[3] = norm_A22;
-      data->norm_upper_transpose[4] = norm_A11;
-      data->norm_upper_transpose[5] = norm_A21;
-      data->norm_upper_transpose[6] = norm_A12;
-      data->norm_upper_transpose[7] = norm_A22;
     }
   }
 

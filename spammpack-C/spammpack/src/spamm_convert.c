@@ -40,10 +40,6 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
   unsigned int norm_offset;
   unsigned int data_offset;
   unsigned int data_offset_transpose;
-  float norm_A11;
-  float norm_A12;
-  float norm_A21;
-  float norm_A22;
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_hashed_data_t *data;
   float Aij;
@@ -189,46 +185,6 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
           data->norm[norm_offset] = sqrt(norm2);
         }
       }
-
-      /* Loop over upper tier. */
-      norm_A11 = sqrt(
-          data->norm2[spamm_index_norm(0, 0)]+
-          data->norm2[spamm_index_norm(0, 1)]+
-          data->norm2[spamm_index_norm(1, 0)]+
-          data->norm2[spamm_index_norm(1, 1)]);
-      norm_A12 = sqrt(
-          data->norm2[spamm_index_norm(0, 2)]+
-          data->norm2[spamm_index_norm(0, 3)]+
-          data->norm2[spamm_index_norm(1, 2)]+
-          data->norm2[spamm_index_norm(1, 3)]);
-      norm_A21 = sqrt(
-          data->norm2[spamm_index_norm(2, 0)]+
-          data->norm2[spamm_index_norm(2, 1)]+
-          data->norm2[spamm_index_norm(3, 0)]+
-          data->norm2[spamm_index_norm(3, 1)]);
-      norm_A22 = sqrt(
-          data->norm2[spamm_index_norm(2, 2)]+
-          data->norm2[spamm_index_norm(2, 3)]+
-          data->norm2[spamm_index_norm(3, 2)]+
-          data->norm2[spamm_index_norm(3, 3)]);
-
-      data->norm_upper[0] = norm_A11;
-      data->norm_upper[1] = norm_A12;
-      data->norm_upper[2] = norm_A11;
-      data->norm_upper[3] = norm_A12;
-      data->norm_upper[4] = norm_A21;
-      data->norm_upper[5] = norm_A22;
-      data->norm_upper[6] = norm_A21;
-      data->norm_upper[7] = norm_A22;
-
-      data->norm_upper_transpose[0] = norm_A11;
-      data->norm_upper_transpose[1] = norm_A21;
-      data->norm_upper_transpose[2] = norm_A12;
-      data->norm_upper_transpose[3] = norm_A22;
-      data->norm_upper_transpose[4] = norm_A11;
-      data->norm_upper_transpose[5] = norm_A21;
-      data->norm_upper_transpose[6] = norm_A12;
-      data->norm_upper_transpose[7] = norm_A22;
 
       /* Update node norm. */
       for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {

@@ -76,18 +76,6 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
     if (i < SPAMM_N_KERNEL_BLOCKED-1) { printf(", "); }
   }
   printf(" }, ");
-  printf("norm_upper = { ");
-  for (i = 0; i < 8; i++)
-  {
-    printf(" %1.2e", data->norm_upper[i]);
-  }
-  printf(" }, ");
-  printf("norm_upper_transpose = { ");
-  for (i = 0; i < 8; i++)
-  {
-    printf(" %1.2e", data->norm_upper_transpose[i]);
-  }
-  printf(" }\n");
   printf("block_dense = ");
   for (i = 0; i < SPAMM_N_KERNEL; i++)
   {
