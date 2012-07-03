@@ -233,3 +233,18 @@ FC_FUNC(spamm_add_spamm_spamm_interface, SPAMM_ADD_SPAMM_SPAMM_INTERFACE) (int *
 
   spamm_hashed_add(*alpha, A_spamm, *beta, B_spamm);
 }
+
+/** Get Frobenius norm of matrix.
+ *
+ * @param A The matrix.
+ *
+ * @return The Frobenius norm.
+ */
+float
+FC_FUNC(spamm_get_norm_interface, SPAMM_GET_NORM_INTERFACE) (int *A)
+{
+  struct spamm_hashed_t *A_spamm;
+
+  A_spamm = spamm_interface_get_spamm_object(*A);
+  return spamm_get_norm(A_spamm);
+}

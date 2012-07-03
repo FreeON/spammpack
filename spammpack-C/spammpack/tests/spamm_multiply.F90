@@ -93,27 +93,14 @@ program spamm_multiply
     C_dense = matmul(A_dense, B_dense)
     C_reference = SpAMM_Convert_Dense_to_SpAMM(C_dense)
 
-    !norms = Norm(A)
-    !write(*, "(A,F22.12)") "F-norm (A)             = ", sqrt(norms%FrobeniusNorm)
-    !write(*, "(A,F22.12)") "max-norm (A)           = ", norms%MaxNorm
-
-    !norms = Norm(B)
-    !write(*, "(A,F22.12)") "F-norm (B)             = ", sqrt(norms%FrobeniusNorm)
-    !write(*, "(A,F22.12)") "max-norm (B)           = ", norms%MaxNorm
-
-    !norms = Norm(C)
-    !write(*, "(A,F22.12)") "F-norm (C)             = ", sqrt(norms%FrobeniusNorm)
-    !write(*, "(A,F22.12)") "max-norm (C)           = ", norms%MaxNorm
-
-    !norms = Norm(C_reference)
-    !write(*, "(A,F22.12)") "F-norm (C_reference)   = ", sqrt(norms%FrobeniusNorm)
-    !write(*, "(A,F22.12)") "max-norm (C_reference) = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (A)             = ", SpAMM_Norm(A)
+    write(*, "(A,F22.12)") "F-norm (B)             = ", SpAMM_Norm(B)
+    write(*, "(A,F22.12)") "F-norm (C)             = ", SpAMM_Norm(C)
+    write(*, "(A,F22.12)") "F-norm (C_reference)   = ", SpAMM_Norm(C_reference)
 
     call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
 
-    !norms = Norm(C)
-    !write(*, "(A,F22.12)") "F-norm (diff)          = ", sqrt(norms%FrobeniusNorm)
-    !write(*, "(A,F22.12)") "max-norm (diff)        = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (diff)          = ", SpAMM_Norm(C)
 #endif
 
 #if defined(_OPENMP)

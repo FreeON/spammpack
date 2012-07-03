@@ -17,16 +17,6 @@ module spammpack
     end subroutine spamm_exit
   end interface spamm_exit
 
-  !> Interface to spamm_convert_dense_to_spamm_interface().
-  interface spamm_convert_dense_to_spamm_interface
-    subroutine spamm_convert_dense_to_spamm_interface (M, N, A, B)
-      use spamm_derived
-      integer, intent(in) :: M, N
-      real(SpAMM_SINGLE), intent(in) :: A
-      type(SpAMM_Matrix), intent(inout) :: B
-    end subroutine spamm_convert_dense_to_spamm_interface
-  end interface spamm_convert_dense_to_spamm_interface
-
   interface add
     module procedure add_spamm_spamm
   end interface add
@@ -38,6 +28,18 @@ module spammpack
   interface new
     module procedure new_spamm
   end interface new
+
+  interface norm
+    module procedure spamm_norm
+  end interface norm
+
+  interface spamm_get_norm_interface
+    function spamm_get_norm_interface (A) result(norm_F)
+      use spamm_derived
+      real(SpAMM_SINGLE) :: norm_F
+      type(SpAMM_Matrix), intent(in) :: A
+    end function spamm_get_norm_interface
+  end interface spamm_get_norm_interface
 
 contains
 
@@ -67,5 +69,10 @@ contains
     type(SpAMM_Matrix), intent(inout) :: A
     call spamm_new_interface(M, N, A)
   end subroutine new_spamm
+
+  real(SpAMM_SINGLE) function spamm_norm (A) result(norm_F)
+    type(SpAMM_Matrix), intent(in) :: A
+    norm_F = spamm_get_norm_interface(A)
+  end function spamm_norm
 
 end module spammpack
