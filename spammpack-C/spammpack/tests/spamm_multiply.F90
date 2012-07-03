@@ -116,6 +116,14 @@ program spamm_multiply
   enddo
 #endif
 
+  call Delete(A)
+  call Delete(B)
+  call Delete(C)
+
+#ifdef VERIFY_RESULT
+  call Delete(C_reference)
+#endif
+
   ! Exit with some error code.
   call spamm_exit(testresult)
 

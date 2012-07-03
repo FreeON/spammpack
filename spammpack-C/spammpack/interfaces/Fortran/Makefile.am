@@ -1,4 +1,7 @@
 AM_CTAGSFLAGS = --Fortran-kinds=+i+L
+TAGS_FILES = \
+  $(top_srcdir)/src/*c \
+  $(top_srcdir)/src/*h
 
 lib_LTLIBRARIES = libspammpack_f90.la
 

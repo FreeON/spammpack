@@ -763,7 +763,9 @@ spamm_hashed_multiply (const float tolerance,
 
         if (C_data == NULL)
         {
+          printf("[%s:%i] creating new node of C\n", __FILE__, __LINE__);
           C_data = spamm_hashed_new_data(C->kernel_tier, convolution_index_2D, C->layout);
+          spamm_hashtable_insert(C_tier_hashtable, convolution_index_2D, C_data);
         }
 
         multiply_stream[stream_index].C = C_data;
@@ -1496,6 +1498,13 @@ spamm_hashed_multiply (const float tolerance,
     {
       last_C_index = multiply_stream_C_index[i];
       last_C = spamm_hashtable_lookup(C_tier_hashtable, last_C_index);
+    }
+
+    if (last_C == NULL)
+    {
+      printf("[%s:%i] creating new node of C\n", __FILE__, __LINE__);
+      last_C = spamm_hashed_new_data(C->kernel_tier, convolution_index_2D, C->layout);
+      spamm_hashtable_insert(C_tier_hashtable, convolution_index_2D, last_C);
     }
 
     /* Assign C block. */

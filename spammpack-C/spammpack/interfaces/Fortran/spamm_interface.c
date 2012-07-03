@@ -183,6 +183,23 @@ FC_FUNC(spamm_new_interface, SPAMM_NEW_INTERFACE) (const int *const M, const int
   *A = spamm_interface_add_spamm_object(A_spamm);
 }
 
+/** Delete a spamm matrix.
+ *
+ * @param A The matrix.
+ */
+void
+FC_FUNC(spamm_delete_interface, SPAMM_DELETE_INTERFACE) (int *A)
+{
+  struct spamm_hashed_t *A_spamm;
+
+  A_spamm = spamm_interface_pop_spamm_object(*A);
+  if (A_spamm == NULL)
+  {
+    return;
+  }
+  spamm_hashed_delete(&A_spamm);
+}
+
 /** Multiply two spamm matrices.
  *
  * @param A The matrix A.
@@ -206,12 +223,14 @@ FC_FUNC(spamm_multiply_spamm_spamm_interface, SPAMM_MULTIPLY_SPAMM_SPAMM_INTERFA
 
   if (C_spamm == NULL)
   {
+    //printf("[%s:%i] creating new C matrix\n", __FILE__, __LINE__);
     C_spamm = spamm_hashed_new(spamm_get_number_of_rows(A_spamm), spamm_get_number_of_columns(B_spamm), row_major);
     *C = spamm_interface_add_spamm_object(C_spamm);
   }
 
   timer = spamm_timer_new();
   spamm_hashed_multiply(*tolerance, 1.0, A_spamm, B_spamm, 1.0, C_spamm, timer, kernel_standard_SSE);
+  spamm_timer_delete(&timer);
 }
 
 /** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.

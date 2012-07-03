@@ -29,6 +29,10 @@ module spammpack
     module procedure new_spamm
   end interface new
 
+  interface delete
+    module procedure delete_spamm
+  end interface delete
+
   interface norm
     module procedure spamm_norm
   end interface norm
@@ -73,6 +77,11 @@ contains
     type(SpAMM_Matrix), intent(inout) :: A
     call spamm_new_interface(M, N, A)
   end subroutine new_spamm
+
+  subroutine delete_spamm (A)
+    type(SpAMM_Matrix), intent(in) :: A
+    call spamm_delete_interface(A)
+  end subroutine delete_spamm
 
   real(SpAMM_SINGLE) function spamm_norm (A) result(norm_F)
     type(SpAMM_Matrix), intent(in) :: A
