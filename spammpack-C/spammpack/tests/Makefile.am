@@ -1,9 +1,11 @@
 AM_CTAGSFLAGS = --C-kinds=+l+x --Fortran-kinds=+i+L
-TAGS_FILES = $(top_srcdir)/src/*.h \
+TAGS_FILES = \
+  $(top_srcdir)/src/*.h \
   $(top_srcdir)/src/*.c \
   $(top_srcdir)/src/*.S \
   $(top_srcdir)/interfaces/Fortran/*.F90 \
-  $(top_srcdir)/interfaces/Fortran/*.c
+  $(top_srcdir)/interfaces/Fortran/*.c \
+  $(top_srcdir)/interfaces/Fortran/*.h
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
