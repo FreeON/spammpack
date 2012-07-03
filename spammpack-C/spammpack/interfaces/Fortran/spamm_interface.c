@@ -142,25 +142,25 @@ spamm_interface_add_spamm_object (struct spamm_hashed_t *A)
 /** Convert dense matrix to spamm matrix.
  *
  * @param A_dense The dense matrix.
- * @param B The SpAMM_Matrix object identifier.
+ * @param A The SpAMM_Matrix object identifier.
  */
 void
 FC_FUNC(spamm_convert_dense_to_spamm_interface, SPAMM_CONVERT_DENSE_TO_SPAMM_INTERFACE) (const int *const M,
     const int *const N,
-    const float *const A_dense,
-    int *B)
+    float *A_dense,
+    int *A)
 {
-  struct spamm_hashed_t *B_spamm;
+  struct spamm_hashed_t *A_spamm;
 
-  B_spamm = spamm_interface_get_spamm_object(*B);
-  if (B_spamm != NULL)
+  A_spamm = spamm_interface_get_spamm_object(*A);
+  if (A_spamm != NULL)
   {
     printf("[%s:%i] object already exists\n", __FILE__, __LINE__);
     exit(1);
   }
-  B_spamm = spamm_convert_dense_to_spamm(*M, *N, column_major, A_dense, row_major);
+  A_spamm = spamm_convert_dense_to_spamm(*M, *N, column_major, A_dense, row_major);
 
-  *B = spamm_interface_add_spamm_object(B_spamm);
+  *A = spamm_interface_add_spamm_object(A_spamm);
 }
 
 /** Create a new spamm matrix.

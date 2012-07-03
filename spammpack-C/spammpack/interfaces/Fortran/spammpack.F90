@@ -22,7 +22,7 @@ module spammpack
     subroutine spamm_convert_dense_to_spamm_interface (M, N, A, B)
       use spamm_derived
       integer, intent(in) :: M, N
-      real(SpAMM_KIND), dimension(:, :), intent(in) :: A
+      real(SpAMM_SINGLE), intent(in) :: A
       type(SpAMM_Matrix), intent(inout) :: B
     end subroutine spamm_convert_dense_to_spamm_interface
   end interface spamm_convert_dense_to_spamm_interface
@@ -42,23 +42,23 @@ module spammpack
 contains
 
   type(SpAMM_Matrix) function spamm_convert_dense_to_spamm (A) result (B)
-    real(SpAMM_KIND), dimension(:, :), intent(in) :: A
-    call spamm_convert_dense_to_spamm_interface(size(A, 1), size(A, 2), A, B)
+    real(SpAMM_SINGLE), dimension(:, :), intent(in) :: A
+    call spamm_convert_dense_to_spamm_interface(size(A, 1), size(A, 2), A(1, 1), B)
   end function spamm_convert_dense_to_spamm
 
   subroutine multiply_spamm_spamm (A, B, C, tolerance)
     type(SpAMM_Matrix), intent(in) :: A
     type(SpAMM_Matrix), intent(in) :: B
     type(SpAMM_Matrix), intent(inout) :: C
-    real(SpAMM_KIND), intent(in), optional :: tolerance
+    real(SpAMM_SINGLE), intent(in), optional :: tolerance
     call spamm_multiply_spamm_spamm_interface(A, B, C, tolerance)
   end subroutine multiply_spamm_spamm
 
   subroutine add_spamm_spamm (A, B, alpha, beta)
     type(SpAMM_Matrix), intent(in) :: A
     type(SpAMM_Matrix), intent(inout) :: B
-    real(SpAMM_KIND), intent(in) :: alpha
-    real(SpAMM_KIND), intent(in) :: beta
+    real(SpAMM_SINGLE), intent(in) :: alpha
+    real(SpAMM_SINGLE), intent(in) :: beta
     call spamm_add_spamm_spamm_interface(A, B, alpha, beta)
   end subroutine add_spamm_spamm
 
