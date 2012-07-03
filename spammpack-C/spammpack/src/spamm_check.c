@@ -6,8 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define RELATIVE_TOLERANCE 1.0e-7
-
 /** @private The user data object that is passed to to the hash table
  * iterator.
  */
@@ -21,6 +19,9 @@ struct spamm_check_user_data_t
 
   /** The spamm_hashed_t object the hash table was taken from. */
   const struct spamm_hashed_t *A;
+
+  /** The test tolerance. */
+  float tolerance;
 };
 
 /** Verify tree structure. This step verifies that the tree hierarchy is
@@ -140,8 +141,8 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
         }
 
         norm_offset = spamm_index_norm(i_blocked, j_blocked);
-        if (fabs(norm2-data->norm2[norm_offset]) > RELATIVE_TOLERANCE*norm2 ||
-            fabs(sqrt(norm2)-data->norm[norm_offset]) > RELATIVE_TOLERANCE*sqrt(norm2))
+        if (fabs(norm2-data->norm2[norm_offset]) > user->tolerance*norm2 ||
+            fabs(sqrt(norm2)-data->norm[norm_offset]) > user->tolerance*sqrt(norm2))
         {
           printf("tier %u, index %u, block (%u,%u): incorrect block norm value, found %e, should be %e, |diff| = %e, rel. diff = %e\n",
               data->tier, data->index_2D, i_blocked, j_blocked,
@@ -163,8 +164,8 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
       }
     }
 
-    if (fabs(norm2-data->node_norm2) > RELATIVE_TOLERANCE*norm2 ||
-        fabs(sqrt(norm2)-data->node_norm) > RELATIVE_TOLERANCE*sqrt(norm2))
+    if (fabs(norm2-data->node_norm2) > user->tolerance*norm2 ||
+        fabs(sqrt(norm2)-data->node_norm) > user->tolerance*sqrt(norm2))
     {
       printf("tier %u, index %u: incorrect node norm value, found %e = sqrt(%e), should be %e, |diff| = %e, rel. diff = %e\n",
           data->tier, data->index_2D,
@@ -225,8 +226,8 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
       }
     }
 
-    if (fabs(norm2-node->norm2) > RELATIVE_TOLERANCE*norm2 ||
-        fabs(sqrt(norm2)-node->norm) > RELATIVE_TOLERANCE*sqrt(norm2))
+    if (fabs(norm2-node->norm2) > user->tolerance*norm2 ||
+        fabs(sqrt(norm2)-node->norm) > user->tolerance*sqrt(norm2))
     {
       printf("tier %u, index %u: incorrect norm value, found %e = sqrt(%e), should be %e, |diff| = %e, rel. diff = %e\n",
           node->tier, node->index_2D,
@@ -298,13 +299,14 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
 /** Check the internal consistency of a matrix.
  *
  * @param A The matrix to check
+ * @param tolerance The absolute tolerance when comparing values.
  *
  * @return The following error codes are returned:
  *   - SPAMM_OK - The matrix is consistent.
  *   - SPAMM_ERROR - Something is not consistent.
  */
 int
-spamm_check (const struct spamm_hashed_t *A)
+spamm_check (const struct spamm_hashed_t *A, const float tolerance)
 {
   unsigned int depth;
   unsigned int N_padded;
@@ -389,6 +391,7 @@ spamm_check (const struct spamm_hashed_t *A)
 
     user_data.tier = reverse_tier;
     user_data.A = A;
+    user_data.tolerance = tolerance;
 
     if (reverse_tier == A->kernel_tier)
     {

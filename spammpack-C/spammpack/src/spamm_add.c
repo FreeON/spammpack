@@ -68,7 +68,7 @@ spamm_hashed_add (const float alpha,
   }
 
   /* Print out some information. */
-  printf("[add] alpha = %e, beta = %e\n", alpha, beta);
+  //printf("[add] alpha = %e, beta = %e\n", alpha, beta);
 
   /* Go to lowest tier and start adding submatrix blocks. */
   A_keys = spamm_hashtable_keys(A->tier_hashtable[A->kernel_tier]);
@@ -154,6 +154,7 @@ spamm_hashed_add (const float alpha,
               A_data->block_dense_dilated[4*spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, A->layout)+1] = Aij;
               A_data->block_dense_dilated[4*spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, A->layout)+2] = Aij;
               A_data->block_dense_dilated[4*spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, A->layout)+3] = Aij;
+
               A_data->node_norm2 += Aij*Aij;
             }
           }
@@ -189,7 +190,8 @@ spamm_hashed_add (const float alpha,
               A_data->block_dense_dilated[4*spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, A->layout)+1] = Aij;
               A_data->block_dense_dilated[4*spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, A->layout)+2] = Aij;
               A_data->block_dense_dilated[4*spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, A->layout)+3] = Aij;
-              A_data->node_norm2 += Aij;
+
+              A_data->node_norm2 += Aij*Aij;
             }
           }
         }

@@ -4,14 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TEST_TOLERANCE 1e-10
+#define TEST_TOLERANCE 5e-7
 
 //#define PRINT_MATRIX
 
 int
 main (int argc, char **argv)
 {
-  int result = 1;
+  int result;
 
   unsigned int N = 513;
 
@@ -75,7 +75,7 @@ main (int argc, char **argv)
 #endif
 
   /* Check tree consistency. */
-  result = spamm_check(A);
+  result = spamm_check(A, TEST_TOLERANCE);
 
   /* Compare result. */
   max_diff = 0.0;
@@ -88,11 +88,11 @@ main (int argc, char **argv)
       }
     }
   }
-  printf("[add_spamm] max diff = %e\n", max_diff);
 
-  if (result == SPAMM_OK && max_diff < TEST_TOLERANCE)
+  if (max_diff > TEST_TOLERANCE)
   {
-    result = SPAMM_OK;
+    result = SPAMM_ERROR;
+    printf("[add_spamm] max diff = %e\n", max_diff);
   }
 
   free(A_dense);

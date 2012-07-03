@@ -9,7 +9,7 @@ void *
 spamm_allocate (size_t size);
 
 int
-spamm_check (const struct spamm_hashed_t *A);
+spamm_check (const struct spamm_hashed_t *A, const float tolerance);
 
 void
 spamm_delete (struct spamm_matrix_t **A);
