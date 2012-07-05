@@ -1503,8 +1503,8 @@ spamm_hashed_multiply (const float tolerance,
     if (last_C == NULL)
     {
       printf("[%s:%i] creating new node of C\n", __FILE__, __LINE__);
-      last_C = spamm_hashed_new_data(C->kernel_tier, convolution_index_2D, C->layout);
-      spamm_hashtable_insert(C_tier_hashtable, convolution_index_2D, last_C);
+      last_C = spamm_hashed_new_data(C->kernel_tier, last_C_index, C->layout);
+      spamm_hashtable_insert(C_tier_hashtable, last_C_index, last_C);
     }
 
     /* Assign C block. */
@@ -1589,6 +1589,19 @@ spamm_hashed_multiply (const float tolerance,
       exit(1);
       break;
   }
+
+  spamm_timer_stop(timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("%s timer units\n", timer_string);
+  free(timer_string);
+#endif
+
+#ifdef SPAMM_MULTIPLY_UPDATE_NORM
+  printf("[multiply] updating C tree norms... ");
+  spamm_timer_start(timer);
+
+  spamm_hashed_norm_update(C);
+  spamm_construct_tree(C);
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);

@@ -200,6 +200,7 @@ AC_DEFINE([SPAMM_MULTIPLY_CONVOLUTE], [1], [Convolute.])
 AC_DEFINE([SPAMM_MULTIPLY_FREE], [1], [Free memory.])
 AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
 AC_DEFINE([SPAMM_MULTIPLY_FINAL_FREE], [1], [Free remaining memory before exit.])
+AC_DEFINE([SPAMM_MULTIPLY_UPDATE_NORM], [1], [Update matrix norms on C tree after multiply.])
 
 AC_MSG_CHECKING([whether to count the number of basic matrix block products])
 AC_ARG_ENABLE([product-count],
@@ -268,7 +269,7 @@ AC_MSG_CHECKING([what convolution implementation to use])
 AC_ARG_WITH([convolution],
             [AS_HELP_STRING([--with-convolution], [Choose which convolution implementation to use])],
             [use_convolution=$withval],
-            [use_convolution=1])
+            [use_convolution=5])
 AC_MSG_RESULT([$use_convolution])
 AC_DEFINE_UNQUOTED([SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION], [$use_convolution], [The convolution implementation])
 

@@ -102,6 +102,9 @@ program spamm_multiply
     write(*, *) "C = "
     call PPrint(C)
 
+    write(*, *) "C_reference = "
+    call PPrint(C)
+
     write(*, "(A,F22.12)") "F-norm (A)             = ", Norm(A)
     write(*, "(A,F22.12)") "F-norm (B)             = ", Norm(B)
     write(*, "(A,F22.12)") "F-norm (C)             = ", Norm(C)

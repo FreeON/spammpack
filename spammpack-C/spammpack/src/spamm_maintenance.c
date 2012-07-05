@@ -1,6 +1,7 @@
 #include "spamm.h"
 #include "spamm_types_private.h"
 
+#include <assert.h>
 #include <math.h>
 
 /** Prune matrix tree by removing zero blocks.
@@ -140,5 +141,107 @@ spamm_construct_tree (struct spamm_hashed_t *A)
       node->norm = sqrt(node->norm2);
     }
     spamm_list_delete(&tier_indices);
+  }
+}
+
+/** Update the matrix norms.
+ *
+ * @param A The matrix.
+ */
+void
+spamm_hashed_norm_update (struct spamm_hashed_t *A)
+{
+  int tier;
+  int i_blocked, j_blocked;
+  int i_basic, j_basic;
+  int i_child, j_child;
+
+  unsigned int i;
+  unsigned int child_index;
+
+  struct spamm_hashed_data_t *data;
+  struct spamm_hashed_node_t *node;
+  struct spamm_hashed_data_t *child_data;
+  struct spamm_hashed_node_t *child_node;
+  struct spamm_list_t *tier_index;
+
+  assert(A != NULL);
+
+  for (tier = A->kernel_tier; tier >= 0; tier--)
+  {
+    tier_index = spamm_hashtable_keys(A->tier_hashtable[tier]);
+
+    if (tier == A->kernel_tier)
+    {
+      for (i = 0; i < spamm_list_length(tier_index); i++)
+      {
+        data = spamm_hashtable_lookup(A->tier_hashtable[tier], spamm_list_get_index(tier_index, i));
+
+        /* Calculate norms on kernel blocks. */
+        for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
+          for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED; j_blocked++)
+          {
+            data->norm2[spamm_index_norm(i_blocked, j_blocked)] = 0.0;
+            for (i_basic = 0; i_basic < SPAMM_N_BLOCK; i_basic++) {
+              for (j_basic = 0; j_basic < SPAMM_N_BLOCK; j_basic++)
+              {
+                data->norm2[spamm_index_norm(i_blocked, j_blocked)] +=
+                  data->block_dense[spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, data->layout)]
+                  * data->block_dense[spamm_index_kernel_block_hierarchical(i_blocked, j_blocked, i_basic, j_basic, data->layout)];
+              }
+            }
+            data->norm[spamm_index_norm(i_blocked, j_blocked)] = sqrt(data->norm2[spamm_index_norm(i_blocked, j_blocked)]);
+          }
+        }
+
+        /* Calculate norms on kernel tier block. */
+        data->node_norm2 = 0.0;
+        for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
+          for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED; j_blocked++)
+          {
+            data->node_norm2 += data->norm2[spamm_index_norm(i_blocked, j_blocked)];
+          }
+        }
+        data->node_norm = sqrt(data->node_norm2);
+      }
+    }
+
+    else
+    {
+      for (i = 0; i < spamm_list_length(tier_index); i++)
+      {
+        node = spamm_hashtable_lookup(A->tier_hashtable[tier], spamm_list_get_index(tier_index, i));
+
+        node->norm2 = 0.0;
+        for (i_child = 0; i_child < 2; i_child++) {
+          for (j_child = 0; j_child < 2; j_child++)
+          {
+            /* Construct index of child block. */
+            child_index = (spamm_list_get_index(tier_index, i) << 2) | (i_child << 1) | j_child;
+
+            if (tier+1 == A->kernel_tier)
+            {
+              child_data = spamm_hashtable_lookup(A->tier_hashtable[tier+1], child_index);
+
+              if (child_data != NULL)
+              {
+                node->norm2 += child_data->node_norm2;
+              }
+            }
+
+            else
+            {
+              child_node = spamm_hashtable_lookup(A->tier_hashtable[tier+1], child_index);
+
+              if (child_node != NULL)
+              {
+                node->norm2 += child_node->norm2;
+              }
+            }
+          }
+        }
+        node->norm = sqrt(node->norm2);
+      }
+    }
   }
 }

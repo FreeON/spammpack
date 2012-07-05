@@ -8,19 +8,19 @@ import sys
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-N",
-    help = "Matrix dimension (default = %(default)s)",
+    help = "Matrix dimension (default: N = %(default)s)",
     type = int,
     default = 1)
 
 parser.add_argument("--type",
     dest = "matrixtype",
-    help = "Matrix type (default = %(default)s)",
+    help = "Matrix type (default: type = %(default)s)",
     choices = [ "full", "decay" ],
     default = "full")
 
 parser.add_argument("--decay",
     metavar = "gamma",
-    help = "Set matrix element decay to exp(-gamma |i-j|)",
+    help = "Set matrix element decay to exp(-gamma |i-j|) (default: gamma = %(default)s)",
     type = float,
     default = 1)
 
