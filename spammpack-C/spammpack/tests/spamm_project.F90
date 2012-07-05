@@ -80,9 +80,6 @@ CONTAINS
       CALL Add(P,P2,SpAMM_Two,-SpAMM_One)         ! P <- 2*P-P^2
     ENDIF
 
-    P%Norms=Norm(P)
-    P%Norms%FrobeniusNorm=SQRT(P%Norms%FrobeniusNorm)
-
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification",29)
 
@@ -93,12 +90,12 @@ CONTAINS
   !=================================================================
   SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree(A)
 
-    TYPE(QuTree),POINTER  :: A
-    REAL(SpAMM_KIND)     :: RQIMin,RQIMax,SpectralExtent
-    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_MULTIPLY_THRESHOLD   =1D-7 !SpAMM_PRODUCT_TOLERANCE
-    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !100d0*SpAMM_RQI_MULTIPLY_THRESHOLD
-    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_EVAL_ERROR_ESTIMATE  =2D-2 !100d0*SpAMM_RQI_CONVERGENCE_THRESHOLD
-    REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
+    TYPE(SpAMM_Matrix), intent(in) :: A
+    REAL(SpAMM_KIND)               :: RQIMin,RQIMax,SpectralExtent
+    REAL(SpAMM_KIND),PARAMETER     :: SpAMM_RQI_MULTIPLY_THRESHOLD   =1D-7 !SpAMM_PRODUCT_TOLERANCE
+    REAL(SpAMM_KIND),PARAMETER     :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !100d0*SpAMM_RQI_MULTIPLY_THRESHOLD
+    REAL(SpAMM_KIND),PARAMETER     :: SpAMM_RQI_EVAL_ERROR_ESTIMATE  =2D-2 !100d0*SpAMM_RQI_CONVERGENCE_THRESHOLD
+    REAL(SpAMM_DOUBLE)             :: TInitial, TTotal
 
     TInitial=SpAMM_Get_Time()
     ! Find extremal eigenvalues by RQI
@@ -110,8 +107,6 @@ CONTAINS
     SpectralExtent=RQIMax-RQIMin
     CALL Add(A,-RQIMax)
     CALL Multiply(A,-SpAMM_One/SpectralExtent)
-    A%Norms=Norm(A)
-    A%Norms%FrobeniusNorm=Sqrt(A%Norms%FrobeniusNorm)
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree",31)
 
@@ -128,7 +123,7 @@ CONTAINS
     INTEGER              :: I,CG
     REAL(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD
     INTEGER, PARAMETER   :: NCG=1000
-    TYPE(QuTree),POINTER :: A
+    TYPE(SpAMM_Matrix)   :: A
     TYPE(BiTree),POINTER :: x=>NULL(),g=>NULL(),h=>NULL(),Ax=>NULL(),Ah=>NULL(),xOld=>NULL(),gOld=>NULL(),hOld=>NULL()
     REAL(SpAMM_KIND)     :: beta,LambdaPlus,LambdaMins,RQIPlus,RQIMins,omega, &
       xx,hh,xh,hx,xAx,xAh,hAx,hAh,xnorm

@@ -45,7 +45,8 @@ check_PROGRAMS = \
   multiply_recursive \
   multiply_spamm \
   get_version \
-  spamm_multiply
+  spamm_multiply \
+  SP2
 
 noinst_PROGRAMS = \
   convert_to_binary
@@ -55,6 +56,10 @@ get_version_SOURCES = get_version.F90
 spamm_multiply_SOURCES = spamm_multiply.F90
 spamm_multiply_LDFLAGS = $(top_builddir)/interfaces/Fortran/libspammpack_f90.la libspammtest.la
 spamm_multiply_DEPENDENCIES = libspammtest.la
+
+SP2_SOURCES = SP2.F90 spamm_project.F90
+SP2_LDFLAGS = $(top_builddir)/interfaces/Fortran/libspammpack_f90.la libspammtest.la
+SP2_DEPENDENCIES = libspammtest.la
 
 noinst_SCRIPTS = \
   create_spamm_row_major.sh \
@@ -78,6 +83,7 @@ TESTS = \
 	add_spamm_2 \
 	$(multiply_tests) \
   multiply_recursive \
-  spamm_multiply
+  spamm_multiply \
+  SP2
 
 CLEANFILES = *.mod

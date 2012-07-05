@@ -41,9 +41,7 @@ program spamm_SP2
   integer :: num_threads
 #endif
 
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: P_dense
-
-  real(SpAMM_KIND), dimension(:,:), allocatable :: P_dense_padded
+  real(SpAMM_SINGLE), dimension(:,:), allocatable :: P_dense
 
   type(SpAMM_Matrix) :: P
   type(SpAMM_Matrix) :: P2
@@ -82,29 +80,13 @@ program spamm_SP2
   call load_matrix(matrixfilename, P_dense)
 
   N = size(P_dense, 1)
-
   write(*, *) "read matrix N = ", N
 
-  ! Get new, padded matrix size.
-  N_padded = N
-#ifdef _OPENMP
-  call SpAMM_Init_Globals(N_padded, num_threads)
-#else
-  call SpAMM_Init_Globals(N_padded)
-#endif
-
-  write(*, *) "padded matrix to N_padded = ", N_padded
-
-  allocate(P_dense_padded(N_padded, N_padded))
-
-  P_dense_padded = SpAMM_ZERO
-  P_dense_padded = P_dense
-
   write(*, *) "converting matrices to quadtree"
-  P = SpAMM_Convert_Dense_to_SpAMM(P_dense_padded)
+  P = SpAMM_Convert_Dense_to_SpAMM(P_dense)
 
   ! Allocate new P2.
-  call New(P2)
+  call New(size(P_dense, 1), size(P_dense, 2), P2)
 
 #if defined(_OPENMP)
   if(num_threads == 0) then
