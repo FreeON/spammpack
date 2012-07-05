@@ -3,6 +3,7 @@
 #endif
 
 #define VERIFY_RESULT
+!#define PRINT_MATRIX
 
 program spamm_multiply
 
@@ -93,6 +94,7 @@ program spamm_multiply
     C_dense = matmul(A_dense, B_dense)
     C_reference = SpAMM_Convert_Dense_to_SpAMM(C_dense)
 
+#ifdef PRINT_MATRIX
     write(*, *) "A = "
     call PPrint(A)
 
@@ -104,6 +106,7 @@ program spamm_multiply
 
     write(*, *) "C_reference = "
     call PPrint(C)
+#endif
 
     write(*, "(A,F22.12)") "F-norm (A)             = ", Norm(A)
     write(*, "(A,F22.12)") "F-norm (B)             = ", Norm(B)
@@ -118,6 +121,10 @@ program spamm_multiply
 #if defined(_OPENMP)
   enddo
 #endif
+
+  deallocate(A_dense)
+  deallocate(B_dense)
+  deallocate(C_dense)
 
   call Delete(A)
   call Delete(B)

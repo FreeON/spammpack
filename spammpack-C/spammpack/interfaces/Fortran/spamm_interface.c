@@ -70,7 +70,7 @@ spamm_interface_pop_spamm_object (const int ID)
   struct spamm_hashed_t *object;
   struct spamm_interface_object_t *element;
 
-  if (spamm_matrix_object == NULL)
+  if (ID == 0)
   {
     return NULL;
   }
@@ -79,6 +79,13 @@ spamm_interface_pop_spamm_object (const int ID)
   {
     if (element->ID == ID)
     {
+      if (element == spamm_matrix_object)
+      {
+        /* Move the beginning of linked list. */
+        spamm_matrix_object = element->next;
+      }
+
+      /* Relink list. */
       if (element->previous != NULL)
       {
         element->previous->next = element->next;
@@ -87,8 +94,12 @@ spamm_interface_pop_spamm_object (const int ID)
       {
         element->next->previous = element->previous;
       }
+
+      /* Get object... */
       object = element->object;
       free(element);
+
+      /* and return it. */
       return object;
     }
   }

@@ -247,5 +247,6 @@ spamm_hashed_norm_update (struct spamm_hashed_t *A)
         node->norm = sqrt(node->norm2);
       }
     }
+    spamm_list_delete(&tier_index);
   }
 }
