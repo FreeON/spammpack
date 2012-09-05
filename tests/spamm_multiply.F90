@@ -52,7 +52,7 @@ program spamm_multiply
   read(inputbuffer, "(I3)") num_threads
 #endif
 
-  call load_matrix_binary(matrixfilename, A_dense)
+  call load_matrix(matrixfilename, A_dense)
   !call load_matrix_binary(matrixfilename, B_dense)
 
   N = size(A_dense, 1)

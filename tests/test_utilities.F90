@@ -66,8 +66,7 @@ contains
     write(*, "(A,A)") "reading matrix from ", trim(filename)
 
     N = 0
-    !open(unit = 1, file = trim(filename), form = "unformatted", access = "direct", recl = 8)
-    open(unit = 1, file = trim(filename), form = "binary", recl = 8)
+    open(unit = 1, file = trim(filename), form = "unformatted", recl = 8)
     read(1) Aij
     N = Aij
 
