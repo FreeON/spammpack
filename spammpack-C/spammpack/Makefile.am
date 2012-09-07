@@ -13,6 +13,9 @@ CONFIG_STATUS_DEPENDENCIES = \
 EXTRA_DIST = latex/refman.pdf \
   extract_conf.py
 
+TAGS_FILES = src/* tests/*
+AM_CTAGSFLAGS = --C-kinds=+l+x
+
 docs :
 	doxygen
 	$(MAKE) -C latex

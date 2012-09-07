@@ -20,6 +20,7 @@
  *
  * The documentation is organized into the following chapters:
  *
+ * - \subpage spamm_examples "Examples"
  * - \subpage spamm_introduction "Introduction"
  * - \subpage spamm_algorithm "Algorithm"
  * - \subpage spamm_milestones "Future Milestones"
@@ -60,8 +61,24 @@
  * \copyright
  * Los Alamos National Laboratory (LA-CC 01-2; LA-CC-04-086)
  *
- * \author Nicolas Bock <nicolasbock@gmail.com>
- * \author Matt Challacombe <matt.challacombe@gmail.com>
+ * \author Nicolas Bock <nicolasbock@freeon.org>
+ * \author Matt Challacombe <matt.challacombe@freeon.org>
+ */
+
+/** \page spamm_examples SpAMM - Examples
+ *
+ * Here a short example program in C that demonstrates how to multiply two
+ * matrices with the library.
+ *
+ * \code{.c}
+ * #include <spamm.h>
+ *
+ * int
+ * main ()
+ * {
+ * }
+ * \endcode
+ *
  */
 
 /** \page spamm_introduction SpAMM - Introduction

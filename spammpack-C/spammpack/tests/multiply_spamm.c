@@ -27,9 +27,9 @@ main (int argc, char **argv)
   double *B_dense;
   double *C_dense;
 
-  struct spamm_hashed_t *A;
-  struct spamm_hashed_t *B;
-  struct spamm_hashed_t *C;
+  struct spamm_matrix_t *A;
+  struct spamm_matrix_t *B;
+  struct spamm_matrix_t *C;
 
   unsigned int max_i = 0;
   unsigned int max_j = 0;
@@ -48,9 +48,9 @@ main (int argc, char **argv)
   B_dense = (double*) malloc(sizeof(double)*N*N);
   C_dense = (double*) malloc(sizeof(double)*N*N);
 
-  A = spamm_hashed_new(N, N, spamm_kernel_suggest_layout(kernel));
-  B = spamm_hashed_new(N, N, spamm_kernel_suggest_layout(kernel));
-  C = spamm_hashed_new(N, N, spamm_kernel_suggest_layout(kernel));
+  A = spamm_new(N, N, N_block, N_contiguous, N_hashed, spamm_kernel_suggest_layout(kernel));
+  B = spamm_new(N, N, N_block, N_contiguous, N_hashed, spamm_kernel_suggest_layout(kernel));
+  C = spamm_new(N, N, N_block, N_contiguous, N_hashed, spamm_kernel_suggest_layout(kernel));
 
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -65,15 +65,15 @@ main (int argc, char **argv)
       C_dense[i*N+j] = i*N+j;
 #endif
 
-      spamm_hashed_set(i, j, A_dense[i*N+j], A);
-      spamm_hashed_set(i, j, B_dense[i*N+j], B);
-      spamm_hashed_set(i, j, C_dense[i*N+j], C);
+      spamm_matrix_set(i, j, A_dense[i*N+j], A);
+      spamm_matrix_set(i, j, B_dense[i*N+j], B);
+      spamm_matrix_set(i, j, C_dense[i*N+j], C);
     }
   }
 
-  spamm_hashed_check(A, 1e-7);
-  spamm_hashed_check(B, 1e-7);
-  spamm_hashed_check(C, 1e-7);
+  //spamm_check(A, 1e-7);
+  //spamm_check(B, 1e-7);
+  //spamm_check(C, 1e-7);
 
 #ifdef PRINT_DEBUG
   printf("A_dense =\n");
@@ -142,7 +142,7 @@ main (int argc, char **argv)
 
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
-  spamm_hashed_multiply(tolerance, alpha, A, B, beta, C, timer, kernel);
+  spamm_matrix_multiply(tolerance, alpha, A, B, beta, C, timer, kernel);
   spamm_timer_delete(&timer);
 
 #ifdef PRINT_DEBUG
@@ -198,9 +198,9 @@ main (int argc, char **argv)
   free(B_dense);
   free(C_dense);
 
-  spamm_hashed_delete(&A);
-  spamm_hashed_delete(&B);
-  spamm_hashed_delete(&C);
+  spamm_matrix_delete(&A);
+  spamm_matrix_delete(&B);
+  spamm_matrix_delete(&C);
 
   return result;
 }

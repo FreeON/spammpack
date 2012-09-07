@@ -20,7 +20,7 @@ main ()
     }
   }
 
-  result = spamm_check(A, 1e-7);
+  result = spamm_hashed_check(A, 1e-7);
 
   spamm_hashed_delete(&A);
 
