@@ -32,7 +32,7 @@ struct spamm_matrix_t
   unsigned int N_contiguous;
 
   /** The size of the submatrix stored in the hashed data format. */
-  unsigned int N_hashed;
+  unsigned int N_linear;
 
   /** The number of tiers that are stored in contiguous blocks. The matrix
    * size this corresponds to is given by /f$ 2^{N_{contiguous}} /f$. */
@@ -41,6 +41,13 @@ struct spamm_matrix_t
   /** The number of tiers from the bottom that are stored in the hashed
    * format. The matrix size this corresponds to is /f$ 2^{N_{hashed}} /f$. */
   unsigned int number_hashed_tiers;
+
+  /** The kernel tier. */
+  unsigned int kernel_tier;
+
+  /** The linear tier. At this tier the matrix represenation switches from
+   * hierarchical to linear tree. */
+  unsigned int linear_tier;
 
   /** The root node of the recursive tree. */
   struct spamm_recursive_node_t *recursive_root;

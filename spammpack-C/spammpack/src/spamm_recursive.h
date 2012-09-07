@@ -7,7 +7,8 @@
 #include "spamm_types.h"
 
 struct spamm_recursive_t *
-spamm_recursive_new (const unsigned int M, const unsigned int N, const unsigned int blocksize);
+spamm_recursive_new (const unsigned int M, const unsigned int N,
+    const unsigned int N_contiguous);
 
 struct spamm_recursive_node_t *
 spamm_recursive_new_node (const unsigned int tier, const unsigned int blocksize);

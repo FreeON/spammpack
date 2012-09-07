@@ -11,9 +11,8 @@
  *
  * @param M The number of rows of the matrix.
  * @param N The number of columns of the matrix.
- * @param N_block The size of a basic matrix block as NxN single matrix elements.
- * @param N_contiguous The size of the contiguous matrix blocks.
- * @param N_hashed The size of the submatrix stored in hashed data format.
+ * @param linear_tier The tier at which to switch from hierarchical to linear
+ * tree.
  * @param layout The storage layout of the matrix elements.
  *
  * @return The newly allocated matrix. This matrix has to be freed by calling
@@ -21,55 +20,26 @@
  */
 struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N,
-    const unsigned int N_block,
-    const unsigned int N_contiguous,
-    const unsigned int N_hashed,
+    const unsigned int linear_tier,
     const enum spamm_layout_t layout)
 {
-  struct spamm_matrix_t *A;
+  struct spamm_matrix_t *A = NULL;
   double x, x_M, x_N;
 
-  if (N_block == 0)
+  if (M <= 0)
   {
-    spamm_error_fatal(__FILE__, __LINE__, "N_block has to be greater 0\n");
+    fprintf(stderr, "M <= 0\n");
+    exit(1);
   }
 
-  A = calloc(1, sizeof(struct spamm_matrix_t*));
-  A->N_block = N_block;
-  A->N_contiguous = N_contiguous;
-  A->N_hashed = N_hashed;
-
-  A->number_contiguous_tiers = (unsigned int) round(pow(2, N_contiguous));
-  A->number_hashed_tiers = (unsigned int) round(pow(2, N_hashed));
-
-  /* Pad to powers of M_child x N_child. */
-  x_M = (log(M) > log(N_block) ? log(M) - log(N_block) : 0)/log(2);
-  x_N = (log(N) > log(N_block) ? log(N) - log(N_block) : 0)/log(2);
-
-  if (x_M > x_N) { x = x_M; }
-  else           { x = x_N; }
-
-  /* The ceil() function can lead to a depth that is one tier too large
-   * because of numerical errors in the calculation of x. We need to check
-   * whether the depth is appropriate.
-   */
-  A->depth = (unsigned int) ceil(x);
-
-  /* Double check depth. */
-  if (A->depth >= 1 && ((int) (N_block*pow(2, A->depth-1)) >= M && (int) (N_block*pow(2, A->depth-1)) >= N))
+  if (N <= 0)
   {
-    (A->depth)--;
+    fprintf(stderr, "N <= 0\n");
+    exit(1);
   }
 
-  /* Adjust tree to kernel depth. */
-  if (A->depth < A->number_contiguous_tiers) { A->depth = A->number_contiguous_tiers; }
-
-  /* Set matrix size. */
-  A->M = M;
-  A->N = N;
-
-  /* Set padded matrix size. */
-  A->N_padded = (int) (N_block*pow(2, A->depth));
+  /* Allocate memory. */
+  A = calloc(1, sizeof(struct spamm_matrix_t));
 
   /* Set the layout. */
   switch (layout)
@@ -82,10 +52,58 @@ spamm_new (const unsigned int M, const unsigned int N,
       break;
 
     default:
-      spamm_error_fatal(__FILE__, __LINE__, "unknown layout (%i)\n", layout);
+      fprintf(stderr, "[spamm new] unknown layout (%i)\n", layout);
       exit(1);
       break;
   }
+
+  /* Pad to powers of M_child x N_child. */
+  x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(2);
+  x_N = (log(N) > log(SPAMM_N_BLOCK) ? log(N) - log(SPAMM_N_BLOCK) : 0)/log(2);
+
+  if (x_M > x_N) { x = x_M; }
+  else           { x = x_N; }
+
+  /* The ceil() function can lead to a depth that is one tier too large
+   * because of numerical errors in the calculation of x. We need to check
+   * whether the depth is appropriate.
+   */
+  A->depth = (unsigned int) ceil(x);
+
+  /* Double check depth. */
+  if (A->depth >= 1 && ((int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) >= M && (int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) >= N))
+  {
+    (A->depth)--;
+  }
+
+  /* Adjust tree to kernel depth. */
+  if (A->depth < SPAMM_KERNEL_DEPTH) { A->depth = SPAMM_KERNEL_DEPTH; }
+
+  /* Adjust the linear depth. */
+  if (linear_tier > A->depth)
+  {
+    fprintf(stderr, "[%s:%i] linear tier (%u) is greater than depth (%u)\n", __FILE__, __LINE__, linear_tier, A->depth);
+    exit(1);
+  }
+  A->linear_tier = linear_tier;
+
+  /* Set matrix size. */
+  A->M = M;
+  A->N = N;
+
+  /* Set padded matrix size. */
+  A->N_padded = (int) (SPAMM_N_BLOCK*pow(2, A->depth));
+
+  /* Adjust hashed size. */
+  A->N_linear = (int) (SPAMM_N_BLOCK*pow(2, A->linear_tier));
+
+  if (A->N_linear > A->N_padded)
+  {
+    A->N_linear = A->N_padded;
+  }
+
+  /* Set the kernel tier. */
+  A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
 
   return A;
 }
@@ -186,7 +204,8 @@ spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_l
  * @return A pointer to the matrix.
  */
 struct spamm_recursive_t *
-spamm_recursive_new (const unsigned int M, const unsigned int N, const unsigned int N_contiguous)
+spamm_recursive_new (const unsigned int M, const unsigned int N,
+    const unsigned int N_contiguous)
 {
   struct spamm_recursive_t *A = NULL;
   double x, x_M, x_N;

@@ -19,7 +19,7 @@
  * @param N_lower The left-most column index.
  * @param N_upper The right-most column index.
  * @param N_contiguous The size of the contiguous submatrix block.
- * @param N_hashed The size of the submatrix that is stored in hashed format.
+ * @param N_linear The size of the submatrix that is stored in hashed format.
  * @param tier The tier this node is on.
  * @param layout The layout of the matrix elements.
  * @param node The node.
@@ -32,7 +32,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     const unsigned int N_upper,
     const unsigned int N_block,
     const unsigned int N_contiguous,
-    const unsigned int N_hashed,
+    const unsigned int N_linear,
     const unsigned int tier,
     const enum spamm_layout_t layout,
     struct spamm_recursive_node_t **node)
@@ -50,7 +50,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     (*node)->tier = tier;
   }
 
-  if ((*node)->M_upper-(*node)->M_lower == N_hashed)
+  if ((*node)->M_upper-(*node)->M_lower == N_linear)
   {
     (*node)->hashed_tree = spamm_hashed_new(M_upper-M_lower, N_upper-N_lower, layout);
     spamm_hashed_set(i, j, Aij, (*node)->hashed_tree);
@@ -80,7 +80,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
       spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
           (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
-          N_block, N_contiguous, N_hashed, tier+1, layout, &((*node)->child[0]));
+          N_block, N_contiguous, N_linear, tier+1, layout, &((*node)->child[0]));
     }
 
     else if (i <  (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
@@ -89,7 +89,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
       spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower, (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2,
           (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
-          N_block, N_contiguous, N_hashed, tier+1, layout, &((*node)->child[1]));
+          N_block, N_contiguous, N_linear, tier+1, layout, &((*node)->child[1]));
     }
 
     else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
@@ -98,7 +98,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
       spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
           (*node)->N_lower, (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2,
-          N_block, N_contiguous, N_hashed, tier+1, layout, &((*node)->child[2]));
+          N_block, N_contiguous, N_linear, tier+1, layout, &((*node)->child[2]));
     }
 
     else if (i >= (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2 &&
@@ -107,7 +107,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
       spamm_recursive_set_recursive(i, j, Aij,
           (*node)->M_lower+((*node)->M_upper-(*node)->M_lower)/2, (*node)->M_upper,
           (*node)->N_lower+((*node)->N_upper-(*node)->N_lower)/2, (*node)->N_upper,
-          N_block, N_contiguous, N_hashed, tier+1, layout, &((*node)->child[3]));
+          N_block, N_contiguous, N_linear, tier+1, layout, &((*node)->child[3]));
     }
 
     /* Update norm. */
@@ -420,6 +420,6 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   {
     spamm_recursive_set_recursive(i, j, Aij,
         0, A->N_padded, 0, A->N_padded,
-        A->N_block, A->N_contiguous, A->N_hashed, 0, A->layout, &(A->recursive_root));
+        A->N_block, A->N_contiguous, A->N_linear, 0, A->layout, &(A->recursive_root));
   }
 }
