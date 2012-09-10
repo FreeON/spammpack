@@ -67,9 +67,9 @@ main (int argc, char **argv)
       C_dense[i*N+j] = i*N+j;
 #endif
 
-      spamm_matrix_set(i, j, A_dense[i*N+j], A);
-      spamm_matrix_set(i, j, B_dense[i*N+j], B);
-      spamm_matrix_set(i, j, C_dense[i*N+j], C);
+      spamm_set(i, j, A_dense[i*N+j], A);
+      spamm_set(i, j, B_dense[i*N+j], B);
+      spamm_set(i, j, C_dense[i*N+j], C);
     }
   }
 

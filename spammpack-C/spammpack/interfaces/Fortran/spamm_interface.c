@@ -291,3 +291,13 @@ FC_FUNC(spamm_print_interface, SPAMM_PRINT_INTERFACE) (int *A)
   A_spamm = spamm_interface_get_spamm_object(*A);
   spamm_print(A_spamm);
 }
+
+/** Set the number of threads (within OpenMP).
+ *
+ * @param num_threads The number of threads to use for subsequent
+ * calculations.
+ */
+void
+FC_FUNC(spamm_set_num_threads, SPAMM_SET_NUM_THREADS) (int *num_threads)
+{
+}

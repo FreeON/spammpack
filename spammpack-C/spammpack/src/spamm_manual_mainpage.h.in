@@ -70,7 +70,7 @@
  * Here a short example program in C that demonstrates how to multiply two
  * matrices with the library.
  *
- * \code{.c}
+ * \code
  * #include <spamm.h>
  *
  * int

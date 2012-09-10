@@ -49,6 +49,13 @@ module spammpack
     module procedure pprint_interface
   end interface pprint
 
+  !> Interface to spamm_set_num_threads.
+  interface spamm_set_num_threads
+    subroutine spamm_set_num_threads (num_threads)
+      integer :: num_threads
+    end subroutine spamm_set_num_threads
+  end interface spamm_set_num_threads
+
 contains
 
   type(SpAMM_Matrix) function spamm_convert_dense_to_spamm (A) result (B)

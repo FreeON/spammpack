@@ -26,6 +26,10 @@ program spamm_SP2
   use spammpack
   use spammtests
 
+#ifdef _OPENMP
+  use omp_lib
+#endif
+
   implicit none
 
   logical :: IdmpCnvrgChck
