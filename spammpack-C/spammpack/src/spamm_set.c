@@ -407,19 +407,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   if (Aij == 0.0) { return; }
 
   /* Store matrix element. */
-  if (A->number_hashed_tiers == A->depth)
-  {
-    if (A->hashed_root == NULL)
-    {
-      A->hashed_root = spamm_hashed_new(A->M, A->N, A->layout);
-    }
-    spamm_hashed_set(i, j, Aij, A->hashed_root);
-  }
-
-  else
-  {
-    spamm_recursive_set_recursive(i, j, Aij,
-        0, A->N_padded, 0, A->N_padded,
-        A->N_block, A->N_contiguous, A->N_linear, 0, A->layout, &(A->recursive_root));
-  }
+  spamm_recursive_set_recursive(i, j, Aij,
+      0, A->N_padded, 0, A->N_padded,
+      A->N_block, A->N_contiguous, A->N_linear, 0, A->layout, &(A->recursive_root));
 }
