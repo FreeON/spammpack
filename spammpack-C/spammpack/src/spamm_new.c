@@ -112,6 +112,7 @@ spamm_new (const unsigned int M, const unsigned int N,
  *
  * @param M Number of rows of dense input matrix.
  * @param N Number of columns of dense input matrix.
+ * @param layout The matrix element layout.
  *
  * @return A pointer to the matrix.
  */

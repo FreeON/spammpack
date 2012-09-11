@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+/** Print out a fatal error message.
+ *
+ * @param filename The filename this error message was generated in.
+ * @param line The line number this error message was generated on.
+ * @param format The format of the error message.
+ */
 void
 spamm_error_fatal (const char *const filename, const int line, const char *const format, ...)
 {
@@ -17,10 +23,12 @@ spamm_error_fatal (const char *const filename, const int line, const char *const
   snprintf(new_format, format_length, "[%s:%i] ", filename, line);
   strncat(new_format, format, format_length);
 
-  /* Print error and exit. */
+  /* Print error. */
   va_start(va, format);
   vprintf(new_format, va);
   va_end(va);
   free(new_format);
+
+  /* Exit. */
   exit(1);
 }

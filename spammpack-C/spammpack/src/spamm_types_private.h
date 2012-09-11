@@ -170,6 +170,7 @@ spamm_recursive_t
   struct spamm_recursive_node_t *root;
 };
 
+/** A recursive node. */
 struct
 spamm_recursive_node_t
 {
