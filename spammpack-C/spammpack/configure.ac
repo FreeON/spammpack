@@ -290,6 +290,15 @@ AC_DEFINE_UNQUOTED(SPAMM_VERSION, ["${VERSION}"], [The spammpack version.])
 dnl Store the command line.
 AC_DEFINE_UNQUOTED([SPAMM_CONFIGURE_ARGUMENTS], ["${ac_configure_args}"], [The command line with which spammpack was configured.])
 
+dnl Get the git commit tag.
+AC_MSG_NOTICE([sourcing ${srcdir}/git_commit])
+if test -f ${srcdir}/git_commit; then
+  source ${srcdir}/git_commit
+else
+  git_commit="unknown"
+fi
+AC_SUBST([GIT_COMMIT], [${git_commit}])
+
 dnl Write results.
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([

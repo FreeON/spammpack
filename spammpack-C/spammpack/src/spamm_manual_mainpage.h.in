@@ -28,7 +28,7 @@
  * - \subpage spamm_performance "SpAMM Performance"
  * - \subpage spamm_matrix "Matrix Data Structure"
  *
- * \version @PACKAGE_VERSION_STRING@
+ * \version @PACKAGE_VERSION_STRING@ ( @GIT_COMMIT@ )
  *
  * \copyright
  * This code is part of the FreeON suite of programs for linear scaling
