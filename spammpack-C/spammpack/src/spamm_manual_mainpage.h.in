@@ -209,4 +209,6 @@
  * matrix elements are organized in submatrix blocks of size \f$ N_{kernel}
  * \f$, which means that the computational kernel will apply the spamm
  * condition to those submatrices.
+ *
+ * \image html Matrix_Structure.png "The layout of the spamm_matrix_t data structure." width="80%"
  */
