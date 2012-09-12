@@ -29,7 +29,7 @@
  *
  * \version @PACKAGE_VERSION_STRING@ ( @GIT_COMMIT@ )
  *
- * \date Compiled on @TIMESTAMP@
+ * \date Generated on @TIMESTAMP@
  *
  * \copyright
  * This code is part of the FreeON suite of programs for linear scaling
