@@ -189,7 +189,7 @@ FC_FUNC(spamm_new_interface, SPAMM_NEW_INTERFACE) (const int *const M, const int
     printf("[%s:%i] deleting already existing matrix\n", __FILE__, __LINE__);
     spamm_hashed_delete(&A_spamm);
   }
-  A_spamm = spamm_hashed_new(*M, *N, row_major);
+  //A_spamm = spamm_hashed_new(*M, *N, row_major);
 
   *A = spamm_interface_add_spamm_object(A_spamm);
 }
@@ -235,7 +235,7 @@ FC_FUNC(spamm_multiply_spamm_spamm_interface, SPAMM_MULTIPLY_SPAMM_SPAMM_INTERFA
   if (C_spamm == NULL)
   {
     //printf("[%s:%i] creating new C matrix\n", __FILE__, __LINE__);
-    C_spamm = spamm_hashed_new(spamm_get_number_of_rows(A_spamm), spamm_get_number_of_columns(B_spamm), row_major);
+    //C_spamm = spamm_hashed_new(spamm_get_number_of_rows(A_spamm), spamm_get_number_of_columns(B_spamm), row_major);
     *C = spamm_interface_add_spamm_object(C_spamm);
   }
 

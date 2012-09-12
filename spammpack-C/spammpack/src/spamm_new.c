@@ -127,13 +127,6 @@ spamm_new (const unsigned int M, const unsigned int N,
   /* Set the kernel tier. */
   A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
 
-  /* Create the tier hash tables. */
-  A->tier_hashtable = (struct spamm_hashtable_t**) malloc(sizeof(struct spamm_hashtable_t*)*(A->kernel_tier+1));
-  for (tier = 0; tier <= A->kernel_tier; tier++)
-  {
-    A->tier_hashtable[tier] = spamm_hashtable_new();
-  }
-
   /* Done. */
   return A;
 }
@@ -147,80 +140,40 @@ spamm_new (const unsigned int M, const unsigned int N,
  * @return A pointer to the matrix.
  */
 struct spamm_hashed_t *
-spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout)
+spamm_hashed_new (const unsigned int tier,
+    const unsigned int kernel_tier,
+    const unsigned int depth,
+    const unsigned int M_lower,
+    const unsigned int M_upper,
+    const unsigned int N_lower,
+    const unsigned int N_upper)
 {
+  unsigned int i;
   struct spamm_hashed_t *A;
-  double x, x_M, x_N;
-  unsigned int tier;
-
-  if (M <= 0)
-  {
-    fprintf(stderr, "M <= 0\n");
-    exit(1);
-  }
-
-  if (N <= 0)
-  {
-    fprintf(stderr, "N <= 0\n");
-    exit(1);
-  }
 
   /* Allocate memory. */
-  A = (struct spamm_hashed_t*) malloc(sizeof(struct spamm_hashed_t));
+  A = calloc(1, sizeof(struct spamm_hashed_t));
 
-  /* Set the layout. */
-  switch (layout)
-  {
-    case row_major:
-    case column_major:
-    case Z_curve:
-    case dense_column_major:
-      A->layout = layout;
-      break;
+  /* Store kernel_tier. */
+  A->kernel_tier = kernel_tier;
 
-    default:
-      fprintf(stderr, "[spamm new] unknown layout (%i)\n", layout);
-      exit(1);
-      break;
-  }
+  /* Store tier. */
+  A->tier = tier;
 
-  /* Pad to powers of M_child x N_child. */
-  x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(2);
-  x_N = (log(N) > log(SPAMM_N_BLOCK) ? log(N) - log(SPAMM_N_BLOCK) : 0)/log(2);
+  /* Store depth. */
+  A->depth = depth;
 
-  if (x_M > x_N) { x = x_M; }
-  else           { x = x_N; }
-
-  /* The ceil() function can lead to a depth that is one tier too large
-   * because of numerical errors in the calculation of x. We need to check
-   * whether the depth is appropriate.
-   */
-  A->depth = (unsigned int) ceil(x);
-
-  /* Double check depth. */
-  if (A->depth >= 1 && ((int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) >= M && (int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) >= N))
-  {
-    (A->depth)--;
-  }
-
-  /* Adjust tree to kernel depth. */
-  if (A->depth < SPAMM_KERNEL_DEPTH) { A->depth = SPAMM_KERNEL_DEPTH; }
-
-  /* Set matrix size. */
-  A->M = M;
-  A->N = N;
-
-  /* Set padded matrix size. */
-  A->N_padded = (int) (SPAMM_N_BLOCK*pow(2, A->depth));
-
-  /* Set the kernel tier. */
-  A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
+  /* Store bounding box. */
+  A->M_lower = M_lower;
+  A->M_upper = M_upper;
+  A->N_lower = N_lower;
+  A->N_upper = N_upper;
 
   /* Create the tier hash tables. */
-  A->tier_hashtable = (struct spamm_hashtable_t**) malloc(sizeof(struct spamm_hashtable_t*)*(A->kernel_tier+1));
-  for (tier = 0; tier <= A->kernel_tier; tier++)
+  A->tier_hashtable = (struct spamm_hashtable_t**) malloc(sizeof(struct spamm_hashtable_t*)*(A->kernel_tier-A->tier+1));
+  for (i = A->tier; i <= A->kernel_tier; i++)
   {
-    A->tier_hashtable[tier] = spamm_hashtable_new();
+    A->tier_hashtable[i-A->tier] = spamm_hashtable_new();
   }
 
   return A;

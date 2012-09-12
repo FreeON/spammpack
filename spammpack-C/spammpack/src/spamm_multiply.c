@@ -700,7 +700,6 @@ spamm_hashed_multiply (const float tolerance,
    */
 
 #if SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 1
-#warning Using convolution implementation 1
   stream_index = 0;
   number_dropped_blocks = 0;
 
@@ -812,7 +811,6 @@ spamm_hashed_multiply (const float tolerance,
     }
   }
 #elif SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 2
-#warning Using convolution implementation 2
   unsigned int *A_index_array = spamm_list_get_index_address(A_index.index);
   unsigned int *B_index_array = spamm_list_get_index_address(B_index.index);
 
@@ -950,7 +948,6 @@ spamm_hashed_multiply (const float tolerance,
     A_k_lookup_index++;
   }
 #elif SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 3
-#warning Using convolution implementation 3
   unsigned int *A_index_array = spamm_list_get_index_address(A_index.index);
   unsigned int *B_index_array = spamm_list_get_index_address(B_index.index);
 
@@ -1111,7 +1108,6 @@ spamm_hashed_multiply (const float tolerance,
     multiply_stream[i].C = last_C;
   }
 #elif SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 4
-#warning Using convolution implementation 4
   unsigned int *A_index_array = spamm_list_get_index_address(A_index.index);
   unsigned int *B_index_array = spamm_list_get_index_address(B_index.index);
 
@@ -1285,7 +1281,6 @@ spamm_hashed_multiply (const float tolerance,
     multiply_stream[i].C = last_C;
   }
 #elif SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 5
-#warning Using convolution implementation 5
   unsigned int *A_index_array = spamm_list_get_index_address(A_index.index);
   unsigned int *B_index_array_original = spamm_list_get_index_address(B_index.index);
 

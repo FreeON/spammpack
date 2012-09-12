@@ -53,7 +53,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
 #ifdef EXTRA_DEBUG
   printf("creating new SpAMM %ux%u matrix\n", M, N);
 #endif
-  A = spamm_hashed_new(M, N, spamm_layout);
+  //A = spamm_hashed_new(M, N, spamm_layout);
 
   /* Get hash table at this tier. */
   node_hashtable = A->tier_hashtable[A->kernel_tier];

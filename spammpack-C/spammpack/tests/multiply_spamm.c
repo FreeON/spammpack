@@ -69,6 +69,8 @@ main (int argc, char **argv)
 #endif
 
       spamm_set(i, j, A_dense[i*N+j], A);
+      spamm_get(i, j, A);
+
       spamm_set(i, j, B_dense[i*N+j], B);
       spamm_set(i, j, C_dense[i*N+j], C);
     }

@@ -16,7 +16,7 @@ spamm_number_nonzero (const struct spamm_hashed_t *A)
   for (i = 0; i < A->M; i++) {
     for (j = 0; j < A->N; j++)
     {
-      if (spamm_get(i, j, A) != 0.0)
+      if (spamm_hashed_get(i, j, A) != 0.0)
       {
         result++;
       }

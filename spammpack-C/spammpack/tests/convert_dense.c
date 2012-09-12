@@ -51,11 +51,11 @@ main (int argc, char **argv)
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      if (A_dense[i*N+j] != spamm_get(i, j, A))
+      if (A_dense[i*N+j] != spamm_hashed_get(i, j, A))
       {
         result = -1;
         printf("failed test at A[%u][%u] (found %f, should be %f)\n", i, j,
-            spamm_get(i, j, A), A_dense[i*N+j]);
+            spamm_hashed_get(i, j, A), A_dense[i*N+j]);
         break;
       }
     }

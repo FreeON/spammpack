@@ -48,7 +48,7 @@ spamm_recursive_delete (struct spamm_recursive_node_t *root)
 void
 spamm_delete (struct spamm_matrix_t **A)
 {
-  spamm_recursive_delete((*A)->recursive_root);
+  spamm_recursive_delete((*A)->recursive_tree);
   //spamm_hashed_delete(&(*A)->hashed_root);
 
   free(*A);

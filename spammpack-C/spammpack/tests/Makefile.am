@@ -44,7 +44,6 @@ check_PROGRAMS = \
 	add_spamm_2 \
   multiply_recursive \
   multiply_spamm \
-  multiply_spamm_hashed \
   get_version \
   spamm_multiply \
   SP2

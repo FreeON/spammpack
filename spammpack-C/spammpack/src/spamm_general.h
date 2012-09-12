@@ -63,7 +63,10 @@ spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_block,
     const unsigned int j, const enum spamm_layout_t layout);
 
 float
-spamm_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A);
+spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A);
+
+float
+spamm_get (const unsigned int i, const unsigned int j, const struct spamm_matrix_t *A);
 
 unsigned int
 spamm_get_number_of_rows (const struct spamm_hashed_t *const A);
@@ -153,7 +156,13 @@ spamm_new (const unsigned int M, const unsigned int N,
     const enum spamm_layout_t layout);
 
 struct spamm_hashed_t *
-spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout);
+spamm_hashed_new (const unsigned int tier,
+    const unsigned int kernel_tier,
+    const unsigned int depth,
+    const unsigned int M_lower,
+    const unsigned int M_upper,
+    const unsigned int N_lower,
+    const unsigned int N_upper);
 
 struct spamm_hashed_data_t *
 spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout);
