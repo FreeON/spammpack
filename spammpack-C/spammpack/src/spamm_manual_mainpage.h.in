@@ -30,6 +30,8 @@
  *
  * \version @PACKAGE_VERSION_STRING@ ( @GIT_COMMIT@ )
  *
+ * \date Compiled on @TIMESTAMP@
+ *
  * \copyright
  * This code is part of the FreeON suite of programs for linear scaling
  * electronic structure theory and ab initio molecular dynamics.
@@ -200,7 +202,17 @@
 /** \page spamm_matrix SpAMM - Matrix Data Structure
  *
  * Conceptually, the matrix is stored in a quaternary tree data structure. For
- * performance, the actual data structure is a hybrid.
+ * performance, the actual data structure is a hybrid. Matrices are created by
+ * calling spamm_new().
+ *
+ * The top tiers of the matrix are stored in hierarchical quadtree format. If
+ * spamm_matrix_t::linear_tier <= spamm_matrix_t::contiguous_tier, then the
+ * tree will switch to linear quadtree format at tier ==
+ * spamm_matrix_t::linear_tier. If spamm_matrix_t::contiguous_tier <
+ * spamm_matrix_t::linear_tier, then the tree will be stored completely in
+ * hierarhical quadtree format and at tier == spamm_matrix_t::contiguous_tier,
+ * dense column-major submatrix blocks will be stored and the spamm condition
+ * applied.
  *
  * The matrix dimensions \f$ M \f$ and \f$ N \f$ are padded to powers of 2 so
  * that recursive bisection is possible. The lowest \f$ N_{cont} \f$ tiers are

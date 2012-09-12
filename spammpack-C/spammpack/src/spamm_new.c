@@ -9,10 +9,19 @@
 
 /** Initialize a new matrix object.
  *
+ * Two settings determine when and if the tree is stored in linear or
+ * hierarchical format. If linear_tier <= contiguous_tier, then the tree
+ * format will switch to linear tree format at linear_tier. If contiguous_tier
+ * < linear_tier, then the whole tree will be stored hierarchically and at
+ * tier == contiguous_tier, dense submatrix blocks are stored and the spamm
+ * condition is applied.
+ *
  * @param M The number of rows of the matrix.
  * @param N The number of columns of the matrix.
  * @param linear_tier The tier at which to switch from hierarchical to linear
  * tree.
+ * @param contiguous_tier The tier at which to store contiguous submatrix
+ * blocks in the hierarhical tree.
  * @param layout The storage layout of the matrix elements.
  *
  * @return The newly allocated matrix. This matrix has to be freed by calling
@@ -21,6 +30,7 @@
 struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int linear_tier,
+    const unsigned int contiguous_tier,
     const enum spamm_layout_t layout)
 {
   struct spamm_matrix_t *A = NULL;
@@ -87,6 +97,14 @@ spamm_new (const unsigned int M, const unsigned int N,
   }
   A->linear_tier = linear_tier;
 
+  /* Adjust the contiguous tier depth. */
+  if (contiguous_tier > A->depth)
+  {
+    fprintf(stderr, "[%s:%i] contiguous tier (%u) is greater than depth (%u)\n", __FILE__, __LINE__, contiguous_tier, A->depth);
+    exit(1);
+  }
+  A->contiguous_tier = contiguous_tier;
+
   /* Set matrix size. */
   A->M = M;
   A->N = N;
@@ -95,7 +113,10 @@ spamm_new (const unsigned int M, const unsigned int N,
   A->N_padded = (int) (SPAMM_N_BLOCK*pow(2, A->depth));
 
   /* Adjust hashed size. */
-  A->N_linear = (int) (SPAMM_N_BLOCK*pow(2, A->linear_tier));
+  A->N_linear = (int) (SPAMM_N_BLOCK*pow(2, A->depth-A->linear_tier));
+
+  /* Adjust contiguous size. */
+  A->N_contiguous = (int) (SPAMM_N_BLOCK*pow(2, A->depth-A->contiguous_tier));
 
   if (A->N_linear > A->N_padded)
   {

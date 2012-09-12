@@ -299,6 +299,10 @@ else
 fi
 AC_SUBST([GIT_COMMIT], [${git_commit}])
 
+dnl Get the current date.
+timestamp=`date +%Y-%m-%d`
+AC_SUBST([TIMESTAMP], [${timestamp}])
+
 dnl Write results.
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
