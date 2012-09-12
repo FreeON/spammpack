@@ -49,7 +49,7 @@ void
 spamm_delete (struct spamm_matrix_t **A)
 {
   spamm_recursive_delete((*A)->recursive_root);
-  spamm_hashed_delete(&(*A)->hashed_root);
+  //spamm_hashed_delete(&(*A)->hashed_root);
 
   free(*A);
   *A = NULL;

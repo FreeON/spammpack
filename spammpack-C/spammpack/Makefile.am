@@ -12,7 +12,8 @@ CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/src/spamm_manual_mainpage.h.in
 
 EXTRA_DIST = latex/refman.pdf \
-  extract_conf.py
+  extract_conf.py \
+  git_commit
 
 TAGS_FILES = src/* tests/*
 AM_CTAGSFLAGS = --C-kinds=+l+x

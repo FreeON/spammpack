@@ -44,8 +44,8 @@ struct spamm_matrix_t
   /** The root node of the recursive tree. */
   struct spamm_recursive_node_t *recursive_root;
 
-  /** The root node of the hashed tree (if we deal with a hybrid matrix tree). */
-  struct spamm_hashed_t *hashed_root;
+  /** The hashtables for access to each tier. */
+  struct spamm_hashtable_t **tier_hashtable;
 };
 
 /** The hashed matrix type.

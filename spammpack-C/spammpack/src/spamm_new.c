@@ -34,6 +34,7 @@ spamm_new (const unsigned int M, const unsigned int N,
     const enum spamm_layout_t layout)
 {
   struct spamm_matrix_t *A = NULL;
+  int tier;
   double x, x_M, x_N;
 
   if (M <= 0)
@@ -126,6 +127,14 @@ spamm_new (const unsigned int M, const unsigned int N,
   /* Set the kernel tier. */
   A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
 
+  /* Create the tier hash tables. */
+  A->tier_hashtable = (struct spamm_hashtable_t**) malloc(sizeof(struct spamm_hashtable_t*)*(A->kernel_tier+1));
+  for (tier = 0; tier <= A->kernel_tier; tier++)
+  {
+    A->tier_hashtable[tier] = spamm_hashtable_new();
+  }
+
+  /* Done. */
   return A;
 }
 
