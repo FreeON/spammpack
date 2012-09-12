@@ -14,7 +14,6 @@
  * - spamm_hashtable.h
  * - spamm_kernel.h
  * - spamm_list.h
- * - spamm_recursive.h
  * - spamm_timer.h
  * - spamm_types.h
  *

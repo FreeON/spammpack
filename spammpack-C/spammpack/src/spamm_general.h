@@ -65,6 +65,9 @@ spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_block,
 float
 spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A);
 
+double
+spamm_recursive_get (const unsigned int i, const unsigned int j, const struct spamm_recursive_t *A);
+
 float
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_matrix_t *A);
 
@@ -170,8 +173,18 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
 struct spamm_hashed_node_t *
 spamm_hashed_new_node (const unsigned int tier, const unsigned int index_2D);
 
+struct spamm_recursive_t *
+spamm_recursive_new (const unsigned int M, const unsigned int N,
+    const unsigned int N_contiguous);
+
+struct spamm_recursive_node_t *
+spamm_recursive_new_node (const unsigned int tier, const unsigned int blocksize);
+
 void
 spamm_print (const struct spamm_hashed_t *A);
+
+void
+spamm_recursive_print (const struct spamm_recursive_t *A);
 
 void
 spamm_print_tree (const struct spamm_hashed_t *A);
@@ -185,6 +198,9 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
 void
 spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A);
+
+void
+spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_recursive_t *A);
 
 void
 spamm_uint_to_bin_string (const unsigned int width, const unsigned int i, char *result);
