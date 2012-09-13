@@ -65,7 +65,7 @@ spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_block,
 float
 spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A);
 
-double
+float
 spamm_recursive_get (const unsigned int i, const unsigned int j, const struct spamm_recursive_t *A);
 
 float
@@ -178,7 +178,9 @@ spamm_recursive_new (const unsigned int M, const unsigned int N,
     const unsigned int N_contiguous);
 
 struct spamm_recursive_node_t *
-spamm_recursive_new_node (const unsigned int tier, const unsigned int blocksize);
+spamm_recursive_new_node (const unsigned int tier,
+    const unsigned int N_contiguous,
+    const unsigned int N_linear);
 
 void
 spamm_print (const struct spamm_hashed_t *A);

@@ -34,7 +34,6 @@ spamm_new (const unsigned int M, const unsigned int N,
     const enum spamm_layout_t layout)
 {
   struct spamm_matrix_t *A = NULL;
-  int tier;
   double x, x_M, x_N;
 
   if (M <= 0)
@@ -361,13 +360,16 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
  * @return A pointer to the newly allocated node.
  */
 struct spamm_recursive_node_t *
-spamm_recursive_new_node (const unsigned int tier, const unsigned int N_contiguous)
+spamm_recursive_new_node (const unsigned int tier,
+    const unsigned int N_contiguous,
+    const unsigned int N_linear)
 {
   struct spamm_recursive_node_t *node = NULL;
 
   node = calloc(1, sizeof(struct spamm_recursive_node_t));
   node->tier = tier;
   node->N_contiguous = N_contiguous;
+  node->N_linear = N_linear;
 
   return node;
 }

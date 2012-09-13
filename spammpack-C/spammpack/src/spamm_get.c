@@ -57,7 +57,7 @@ spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm
  *
  * @return The matrix element Aij.
  */
-double
+float
 spamm_recursive_get (const unsigned int i, const unsigned int j, const struct spamm_recursive_t *A)
 {
   struct spamm_recursive_node_t **node = NULL;
@@ -147,6 +147,75 @@ spamm_hashed_get_hashed (const unsigned int i, const unsigned int j, const struc
   else { return 0; }
 }
 
+/** Get an element from a recursive matrix.
+ *
+ * If the matrix is NULL, this function returns 0.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ * @param A The matrix.
+ *
+ * @return The matrix element Aij.
+ */
+float
+spamm_recursive_get_recursive (const unsigned int i, const unsigned int j, const struct spamm_recursive_node_t *node)
+{
+  unsigned int number_rows;
+  unsigned int number_columns;
+
+  number_rows = node->M_upper-node->M_lower;
+  number_columns = node->N_upper-node->N_lower;
+
+  if (node == NULL) { return 0; }
+
+  else if (number_rows == node->N_linear)
+  {
+    return spamm_hashed_get_hashed(i, j, node->hashed_tree);
+  }
+
+  else if (number_rows == node->N_contiguous)
+  {
+    /* Get the matrix element. */
+    if (node->data == NULL) { return 0.0; }
+    else
+    {
+      return node->data[spamm_index_column_major(i-node->M_lower, j-node->N_lower, node->N_contiguous, node->N_contiguous)];
+    }
+  }
+
+  else
+  {
+    if (i < node->M_lower+(number_rows)/2 &&
+        j < node->N_lower+(number_columns)/2)
+    {
+      return spamm_recursive_get_recursive(i, j, node->child[0]);
+    }
+
+    else if (i <  node->M_lower+(number_rows)/2 &&
+        j >= node->N_lower+(number_columns)/2)
+    {
+      return spamm_recursive_get_recursive(i, j, node->child[1]);
+    }
+
+    else if (i >= node->M_lower+(number_rows)/2 &&
+        j <  node->N_lower+(number_columns)/2)
+    {
+      return spamm_recursive_get_recursive(i, j, node->child[2]);
+    }
+
+    else if (i >= node->M_lower+(number_rows)/2 &&
+        j >= node->N_lower+(number_columns)/2)
+    {
+      return spamm_recursive_get_recursive(i, j, node->child[3]);
+    }
+
+    else
+    {
+      spamm_error_fatal(__FILE__, __LINE__, "should not be here...\n");
+    }
+  }
+}
+
 /** Get an element from a matrix.
  *
  * @param i The row index.
@@ -158,11 +227,6 @@ spamm_hashed_get_hashed (const unsigned int i, const unsigned int j, const struc
 float
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_matrix_t *A)
 {
-  unsigned int number_rows;
-  unsigned int number_columns;
-
-  struct spamm_recursive_node_t *node;
-
   assert(A != NULL);
 
   if (i >= A->M)
@@ -177,67 +241,13 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_matrix
 
   if (A->linear_tier == 0)
   {
+    /* In case we only have a linear tree. */
     return spamm_hashed_get_hashed(i, j, A->hashed_tree);
   }
 
   else
   {
-    node = (struct spamm_recursive_node_t*) A->recursive_tree;
-
-    /* Instead of recursing, follow tree links. */
-    while (1)
-    {
-      /* Calculate box dimensions for convenience. */
-      number_rows = node->M_upper-node->M_lower;
-      number_columns = node->N_upper-node->N_lower;
-
-      if (node == NULL)
-      {
-        return 0;
-      }
-
-      if (number_rows == A->N_contiguous)
-      {
-        /* Get the matrix element. */
-        if (node->data == NULL) { return 0.0; }
-        else
-        {
-          return node->data[spamm_index_column_major(i-node->M_lower, j-node->N_lower, A->N_contiguous, A->N_contiguous)];
-        }
-      }
-
-      else if (number_rows == A->N_linear)
-      {
-        return spamm_hashed_get_hashed(i, j, node->hashed_tree);
-      }
-
-      else
-      {
-        if (i < node->M_lower+number_rows/2 &&
-            j < node->N_lower+number_columns/2)
-        {
-          node = node->child[0];
-        }
-
-        else if (i <  node->M_lower+number_rows/2 &&
-            j >= node->N_lower+number_columns/2)
-        {
-          node = node->child[1];
-        }
-
-        else if (i >= node->M_lower+number_rows/2 &&
-            j <  node->N_lower+number_columns/2)
-        {
-          node = node->child[2];
-        }
-
-        else if (i >= node->M_lower+number_rows/2 &&
-            j >= node->N_lower+number_columns/2)
-        {
-          node = node->child[3];
-        }
-      }
-    }
+    return spamm_recursive_get_recursive(i, j, A->recursive_tree);
   }
 }
 

@@ -44,7 +44,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
   if (*node == NULL)
   {
     /* Allocate new node. */
-    *node = spamm_recursive_new_node(tier, N_contiguous);
+    *node = spamm_recursive_new_node(tier, N_contiguous, N_linear);
 
     (*node)->M_lower = M_lower;
     (*node)->M_upper = M_upper;
@@ -211,7 +211,7 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
   for (tier = A->tier; tier <= A->kernel_tier; tier++)
   {
     /* Calculate the size of the matrix block. */
-    delta_index = (A->M_upper-A->M_lower)/(1 << tier-A->tier);
+    delta_index = (A->M_upper-A->M_lower)/(1 << (tier-A->tier));
 
     /* Calculate the matrix block indices. */
     i_tier = i/delta_index;
@@ -323,7 +323,7 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
   {
     reverse_tier = A->kernel_tier-tier+A->tier;
 
-    delta_index = (A->M_upper-A->M_lower)/(1 << reverse_tier-A->tier);
+    delta_index = (A->M_upper-A->M_lower)/(1 << (reverse_tier-A->tier));
 
     i_tier = i/delta_index;
     j_tier = j/delta_index;

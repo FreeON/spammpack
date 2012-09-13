@@ -173,6 +173,9 @@ spamm_recursive_t
   /** The N_contiguous. */
   unsigned int N_contiguous;
 
+  /** The size of the submatrix stored in the hashed data format. */
+  unsigned int N_linear;
+
   /** The root node. */
   struct spamm_recursive_node_t *root;
 };
@@ -207,6 +210,9 @@ spamm_recursive_node_t
 
   /** The blocksize for recursive trees. */
   unsigned int N_contiguous;
+
+  /** The size of the submatrix stored in the hashed data format. */
+  unsigned int N_linear;
 
   /** The matrix data (if this is a leaf node) of size N_contiguous x
    * N_contiguous. */

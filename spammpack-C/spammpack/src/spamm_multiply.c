@@ -380,8 +380,6 @@ spamm_hashed_multiply (const float tolerance,
   unsigned int A_k_lookup_index;
   unsigned int B_k_lookup_index;
   unsigned int A_k, B_k;
-  unsigned int first_A_k, first_B_k;
-  unsigned int next_A_k, next_B_k;
 
   struct spamm_multiply_k_lookup_t A_k_lookup;
   struct spamm_multiply_k_lookup_t B_k_lookup;
@@ -1721,7 +1719,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
               /* Create a new C node if necessary. */
               if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
               {
-                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1, (*node_C)->N_contiguous);
+                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1, (*node_C)->N_contiguous, (*node_C)->N_linear);
                 (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_lower = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i;
                 (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->M_upper = (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1);
                 (*node_C)->child[spamm_index_row_major(i, j, 2, 2)]->N_lower = (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j;
@@ -1833,7 +1831,7 @@ spamm_recursive_multiply (const float tolerance,
   /* Multiply A and B. */
   if (A->root != NULL && B->root != NULL && C->root == NULL)
   {
-    C->root = spamm_recursive_new_node(0, C->N_contiguous);
+    C->root = spamm_recursive_new_node(0, C->N_contiguous, C->N_linear);
     C->root->M_lower = 0;
     C->root->M_upper = A->root->M_upper;
     C->root->N_lower = 0;
@@ -1936,7 +1934,6 @@ spamm_recursive_multiply_3_matrix (const float tolerance,
     unsigned int *number_products)
 {
   float beta = 1.0;
-  int i, j, k;
 
   if (node_A == NULL || node_B == NULL || node_C == NULL) { return; }
 
@@ -2076,7 +2073,7 @@ spamm_recursive_multiply_3 (const float tolerance,
   /* Multiply A and B. */
   if (A->root != NULL && B->root != NULL && C->root == NULL && D->root != NULL)
   {
-    D->root = spamm_recursive_new_node(0, D->N_contiguous);
+    D->root = spamm_recursive_new_node(0, D->N_contiguous, D->N_linear);
     D->root->M_lower = 0;
     D->root->M_upper = A->root->M_upper;
     D->root->N_lower = 0;
