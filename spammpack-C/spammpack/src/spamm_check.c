@@ -104,8 +104,6 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
   short i_blocked, j_blocked;
   short i_basic, j_basic;
   float norm2 = 0.0;
-  int upper_norm_check = SPAMM_OK;
-  int upper_norm_transpose_check = SPAMM_OK;
 
   float Aij;
 

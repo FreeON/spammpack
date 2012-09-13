@@ -17,7 +17,7 @@
 float
 spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A)
 {
-  unsigned int index, i_tier, j_tier, delta_index;
+  unsigned int index, i_tier, j_tier;
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_hashed_data_t *data;
   float Aij = 0;
@@ -30,11 +30,8 @@ spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm
     exit(1);
   }
 
-  /* Go into kernel tier hash and retrieve proper node. */
-  delta_index = (unsigned int) floor(A->N_padded/pow(2, A->kernel_tier));
-
-  i_tier = i/delta_index;
-  j_tier = j/delta_index;
+  i_tier = i/SPAMM_N_KERNEL;
+  j_tier = j/SPAMM_N_KERNEL;
 
   /* Construct linear index of the node on this tier. */
   index = spamm_index_2D(i_tier, j_tier);
@@ -44,7 +41,7 @@ spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm
 
   if ((data = spamm_hashtable_lookup(node_hashtable, index)) != NULL)
   {
-    Aij = data->block_dense[spamm_index_kernel_block(i%delta_index, j%delta_index, A->layout)];
+    Aij = data->block_dense[spamm_index_kernel_block(i%SPAMM_N_KERNEL, j%SPAMM_N_KERNEL, A->layout)];
   }
 
   return Aij;
@@ -124,11 +121,124 @@ spamm_recursive_get (const unsigned int i, const unsigned int j, const struct sp
  * @param j The column index.
  * @param A The matrix.
  *
+ * @return The matrix element \f$A(i,j)\f$.
+ */
+float
+spamm_hashed_get_hashed (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A)
+{
+  unsigned int index, i_tier, j_tier;
+  struct spamm_hashtable_t *node_hashtable;
+  struct spamm_hashed_data_t *data;
+
+  i_tier = i/SPAMM_N_KERNEL;
+  j_tier = j/SPAMM_N_KERNEL;
+
+  /* Construct linear index of the node on this tier. */
+  index = spamm_index_2D(i_tier, j_tier);
+
+  /* Get hash table at this tier. */
+  node_hashtable = A->tier_hashtable[A->kernel_tier-A->tier];
+
+  if ((data = spamm_hashtable_lookup(node_hashtable, index)) != NULL)
+  {
+    return data->block_dense[spamm_index_kernel_block(i%SPAMM_N_KERNEL, j%SPAMM_N_KERNEL, A->layout)];
+  }
+
+  else { return 0; }
+}
+
+/** Get an element from a matrix.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ * @param A The matrix.
+ *
  * @return The matrix element.
  */
 float
 spamm_get (const unsigned int i, const unsigned int j, const struct spamm_matrix_t *A)
 {
+  unsigned int number_rows;
+  unsigned int number_columns;
+
+  struct spamm_recursive_node_t *node;
+
+  assert(A != NULL);
+
+  if (i >= A->M)
+  {
+    SPAMM_FATAL("i out of bounds (i = %i and M = %i)\n", i, A->M);
+  }
+
+  if (j >= A->N)
+  {
+    SPAMM_FATAL("j out of bounds (j = %i and N = %i)\n", j, A->N);
+  }
+
+  if (A->linear_tier == 0)
+  {
+    return spamm_hashed_get_hashed(i, j, A->hashed_tree);
+  }
+
+  else
+  {
+    node = (struct spamm_recursive_node_t*) A->recursive_tree;
+
+    /* Instead of recursing, follow tree links. */
+    while (1)
+    {
+      /* Calculate box dimensions for convenience. */
+      number_rows = node->M_upper-node->M_lower;
+      number_columns = node->N_upper-node->N_lower;
+
+      if (node == NULL)
+      {
+        return 0;
+      }
+
+      if (number_rows == A->N_contiguous)
+      {
+        /* Get the matrix element. */
+        if (node->data == NULL) { return 0.0; }
+        else
+        {
+          return node->data[spamm_index_column_major(i-node->M_lower, j-node->N_lower, A->N_contiguous, A->N_contiguous)];
+        }
+      }
+
+      else if (number_rows == A->N_linear)
+      {
+        return spamm_hashed_get_hashed(i, j, node->hashed_tree);
+      }
+
+      else
+      {
+        if (i < node->M_lower+number_rows/2 &&
+            j < node->N_lower+number_columns/2)
+        {
+          node = node->child[0];
+        }
+
+        else if (i <  node->M_lower+number_rows/2 &&
+            j >= node->N_lower+number_columns/2)
+        {
+          node = node->child[1];
+        }
+
+        else if (i >= node->M_lower+number_rows/2 &&
+            j <  node->N_lower+number_columns/2)
+        {
+          node = node->child[2];
+        }
+
+        else if (i >= node->M_lower+number_rows/2 &&
+            j >= node->N_lower+number_columns/2)
+        {
+          node = node->child[3];
+        }
+      }
+    }
+  }
 }
 
 /** Get the number of rows of a matrix.
