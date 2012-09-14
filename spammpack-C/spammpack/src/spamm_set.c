@@ -214,8 +214,8 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
     delta_index = (A->M_upper-A->M_lower)/(1 << (tier-A->tier));
 
     /* Calculate the matrix block indices. */
-    i_tier = i/delta_index;
-    j_tier = j/delta_index;
+    i_tier = (i-A->M_lower)/delta_index;
+    j_tier = (j-A->N_lower)/delta_index;
 
     /* Construct linear index of the node on this tier. */
     index = spamm_index_2D(i_tier, j_tier);
@@ -267,9 +267,9 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
        */
 
       /* Calculate offsets into the norm and the matrix data. */
-      norm_offset = spamm_index_norm(i%delta_index/SPAMM_N_BLOCK, j%delta_index/SPAMM_N_BLOCK);
-      data_offset = spamm_index_kernel_block(i%delta_index, j%delta_index, A->layout);
-      data_offset_transpose = spamm_index_kernel_block_transpose(i%delta_index, j%delta_index, A->layout);
+      norm_offset = spamm_index_norm((i-A->M_lower)%delta_index/SPAMM_N_BLOCK, (j-A->N_lower)%delta_index/SPAMM_N_BLOCK);
+      data_offset = spamm_index_kernel_block((i-A->M_lower)%delta_index, (j-A->N_lower)%delta_index, A->layout);
+      data_offset_transpose = spamm_index_kernel_block_transpose((i-A->M_lower)%delta_index, (j-A->N_lower)%delta_index, A->layout);
 
 #ifndef NEW_NORM
       /* For norm calculations, get original value of Aij. */
@@ -292,7 +292,8 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
       for (i_basic = 0; i_basic < SPAMM_N_BLOCK; i_basic++) {
         for (j_basic = 0; j_basic < SPAMM_N_BLOCK; j_basic++)
         {
-          old_Aij = data->block_dense[spamm_index_kernel_block_hierarchical((i%delta_index)/SPAMM_N_BLOCK, (j%delta_index)/SPAMM_N_BLOCK, i_basic, j_basic, A->layout)];
+          old_Aij = data->block_dense[spamm_index_kernel_block_hierarchical(((i-A->M_lower)%delta_index)/SPAMM_N_BLOCK,
+              ((j-A->N_lower)%delta_index)/SPAMM_N_BLOCK, i_basic, j_basic, A->layout)];
           data->norm2[norm_offset] += old_Aij*old_Aij;
         }
       }
@@ -325,8 +326,8 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
 
     delta_index = (A->M_upper-A->M_lower)/(1 << (reverse_tier-A->tier));
 
-    i_tier = i/delta_index;
-    j_tier = j/delta_index;
+    i_tier = (i-A->M_lower)/delta_index;
+    j_tier = (j-A->N_lower)/delta_index;
 
     /* Construct linear index of the node on this tier. */
     index = spamm_index_2D(i_tier, j_tier);

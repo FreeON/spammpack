@@ -37,8 +37,7 @@ spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
 void
 spamm_recursive_delete (struct spamm_recursive_node_t *root)
 {
-  printf("[FIXME]\n");
-  exit(1);
+  spamm_error_fatal(__FILE__, __LINE__, "FIXME\n");
 }
 
 /** Delete a matrix.

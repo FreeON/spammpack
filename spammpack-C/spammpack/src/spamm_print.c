@@ -139,7 +139,7 @@ spamm_print_tree (const struct spamm_hashed_t *A)
  * @param A The matrix.
  */
 void
-spamm_print (const struct spamm_hashed_t *A)
+spamm_print (const struct spamm_matrix_t *A)
 {
   unsigned int i;
   unsigned int j;
@@ -149,7 +149,7 @@ spamm_print (const struct spamm_hashed_t *A)
   for (i = 0; i < A->M; i++) {
     for (j = 0; j < A->N; j++)
     {
-      printf(" % 1.2e", spamm_hashed_get(i, j, A));
+      printf(" % 1.2e", spamm_get(i, j, A));
     }
     printf("\n");
   }

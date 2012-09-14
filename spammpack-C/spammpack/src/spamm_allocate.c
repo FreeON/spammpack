@@ -58,7 +58,7 @@ spamm_allocate (size_t size)
    * would necessitate our own memory management since the returned, aligned
    * pointer is not useful anymore for a free().
    */
-  printf("[FIXME] can not allocate aligned memory\n");
+  printf("[%s:%i] FIXME: can not allocate aligned memory\n", __FILE__, __LINE__);
   data = calloc(size, 1);
   return data;
 #endif

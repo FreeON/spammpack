@@ -2,16 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#define PRINT_DEBUG
+#define PRINT_DEBUG
 
 int
 main (int argc, char **argv)
 {
   int result = 0;
   unsigned int i, j;
-  const unsigned int N = 1024;
-  const unsigned int linear_tier = 5;
-  const unsigned int contiguous_tier = 5;
+  const unsigned int N = 10;
+  const unsigned int linear_tier = 2;
+  const unsigned int contiguous_tier = 2;
   struct spamm_matrix_t *A;
   float *A_dense = (float*) calloc(N*N, sizeof(float));
 

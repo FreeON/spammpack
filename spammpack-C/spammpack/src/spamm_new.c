@@ -38,14 +38,12 @@ spamm_new (const unsigned int M, const unsigned int N,
 
   if (M <= 0)
   {
-    fprintf(stderr, "M <= 0\n");
-    exit(1);
+    spamm_error_fatal(__FILE__, __LINE__, "M <= 0\n");
   }
 
   if (N <= 0)
   {
-    fprintf(stderr, "N <= 0\n");
-    exit(1);
+    spamm_error_fatal(__FILE__, __LINE__, "N <= 0\n");
   }
 
   /* Allocate memory. */
@@ -90,20 +88,28 @@ spamm_new (const unsigned int M, const unsigned int N,
   if (A->depth < SPAMM_KERNEL_DEPTH) { A->depth = SPAMM_KERNEL_DEPTH; }
 
   /* Adjust the linear depth. */
-  if (linear_tier > A->depth)
+  if (linear_tier+SPAMM_KERNEL_DEPTH > A->depth)
   {
-    fprintf(stderr, "[%s:%i] linear tier (%u) is greater than depth (%u)\n", __FILE__, __LINE__, linear_tier, A->depth);
-    exit(1);
+    SPAMM_WARN("linear tier (%u) + kernel depth (%u) is greater than depth (%u)\n", linear_tier, SPAMM_KERNEL_DEPTH, A->depth);
+    A->linear_tier = A->depth+1;
   }
-  A->linear_tier = linear_tier;
+
+  else
+  {
+    A->linear_tier = linear_tier;
+  }
 
   /* Adjust the contiguous tier depth. */
   if (contiguous_tier > A->depth)
   {
-    fprintf(stderr, "[%s:%i] contiguous tier (%u) is greater than depth (%u)\n", __FILE__, __LINE__, contiguous_tier, A->depth);
-    exit(1);
+    SPAMM_WARN("contiguous tier (%u) is greater than depth (%u)\n", contiguous_tier, A->depth);
+    A->contiguous_tier = A->depth;
   }
-  A->contiguous_tier = contiguous_tier;
+
+  else
+  {
+    A->contiguous_tier = contiguous_tier;
+  }
 
   /* Set matrix size. */
   A->M = M;
@@ -112,8 +118,12 @@ spamm_new (const unsigned int M, const unsigned int N,
   /* Set padded matrix size. */
   A->N_padded = (int) (SPAMM_N_BLOCK*pow(2, A->depth));
 
-  /* Adjust hashed size. */
-  A->N_linear = (int) (SPAMM_N_BLOCK*pow(2, A->depth-A->linear_tier));
+  /* Adjust hashed size. In case linear_tier is larger than the depth, we do
+   * not adjust N_linear, i.e. we disable the linear tree. */
+  if (A->linear_tier < A->depth)
+  {
+    A->N_linear = (int) (SPAMM_N_BLOCK*pow(2, A->depth-A->linear_tier));
+  }
 
   /* Adjust contiguous size. */
   A->N_contiguous = (int) (SPAMM_N_BLOCK*pow(2, A->depth-A->contiguous_tier));

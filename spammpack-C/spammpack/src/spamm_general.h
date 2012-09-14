@@ -183,7 +183,7 @@ spamm_recursive_new_node (const unsigned int tier,
     const unsigned int N_linear);
 
 void
-spamm_print (const struct spamm_hashed_t *A);
+spamm_print (const struct spamm_matrix_t *A);
 
 void
 spamm_recursive_print (const struct spamm_recursive_t *A);

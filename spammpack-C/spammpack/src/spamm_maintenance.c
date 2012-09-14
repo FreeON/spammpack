@@ -13,8 +13,7 @@
 void
 spamm_prune (struct spamm_hashed_t *A)
 {
-  printf("[%s:%i] FIXME\n", __FILE__, __LINE__);
-  exit(1);
+  spamm_error_fatal(__FILE__, __LINE__, "FIXME\n");
 }
 
 /** Expand a matrix tree to a full tree by adding zero blocks.
