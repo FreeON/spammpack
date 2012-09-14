@@ -366,13 +366,21 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
  *
  * @param tier The tier this node will be on.
  * @param N_contiguous The size of the contiguous submatrix block.
+ * @param M_lower The lowest row index of this submatrix node.
+ * @param M_upper The lowest row index of this submatrix node.
+ * @param N_lower The lowest column index of this submatrix node.
+ * @param N_upper The lowest column index of this submatrix node.
  *
  * @return A pointer to the newly allocated node.
  */
 struct spamm_recursive_node_t *
 spamm_recursive_new_node (const unsigned int tier,
     const unsigned int N_contiguous,
-    const unsigned int N_linear)
+    const unsigned int N_linear,
+    const unsigned int M_lower,
+    const unsigned int M_upper,
+    const unsigned int N_lower,
+    const unsigned int N_upper)
 {
   struct spamm_recursive_node_t *node = NULL;
 
@@ -380,6 +388,11 @@ spamm_recursive_new_node (const unsigned int tier,
   node->tier = tier;
   node->N_contiguous = N_contiguous;
   node->N_linear = N_linear;
+
+  node->M_lower = M_lower;
+  node->M_upper = M_upper;
+  node->N_lower = N_lower;
+  node->N_upper = N_upper;
 
   return node;
 }

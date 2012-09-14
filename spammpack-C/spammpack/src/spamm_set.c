@@ -44,12 +44,11 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
   if (*node == NULL)
   {
     /* Allocate new node. */
-    *node = spamm_recursive_new_node(tier, N_contiguous, N_linear);
-
-    (*node)->M_lower = M_lower;
-    (*node)->M_upper = M_upper;
-    (*node)->N_lower = N_lower;
-    (*node)->N_upper = N_upper;
+    *node = spamm_recursive_new_node(tier, N_contiguous, N_linear,
+        M_lower,
+        M_upper,
+        N_lower,
+        N_upper);
   }
 
   /* Some sanity checks. */
@@ -87,7 +86,10 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
 
   if (number_rows == N_linear)
   {
-    (*node)->hashed_tree = spamm_hashed_new(tier, kernel_tier, depth, M_lower, M_upper, N_lower, N_upper);
+    if ((*node)->hashed_tree == NULL)
+    {
+      (*node)->hashed_tree = spamm_hashed_new(tier, kernel_tier, depth, M_lower, M_upper, N_lower, N_upper);
+    }
     spamm_hashed_set(i, j, Aij, (*node)->hashed_tree);
   }
 
@@ -449,7 +451,10 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
   if (A->linear_tier == 0)
   {
     /* In case we only have a linear tree. */
-    A->hashed_tree = spamm_hashed_new(0, A->kernel_tier, A->depth, 0, A->N_padded, 0, A->N_padded);
+    if (A->hashed_tree == NULL)
+    {
+      A->hashed_tree = spamm_hashed_new(0, A->kernel_tier, A->depth, 0, A->N_padded, 0, A->N_padded);
+    }
     spamm_hashed_set(i, j, Aij, A->hashed_tree);
   }
 

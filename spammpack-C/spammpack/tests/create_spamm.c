@@ -9,8 +9,8 @@ main (int argc, char **argv)
 {
   int result = 0;
   unsigned int i, j;
-  const unsigned int N = 1023;
-  const unsigned int linear_tier = 8;
+  const unsigned int N = 78;
+  const unsigned int linear_tier = 1;
   const unsigned int contiguous_tier = 4;
   struct spamm_matrix_t *A;
   float *A_dense = (float*) calloc(N*N, sizeof(float));
@@ -49,6 +49,7 @@ main (int argc, char **argv)
   }
 
   /* For debugging, print out the whole tree. */
+  printf("A:\n");
   spamm_print(A);
 #endif
 
