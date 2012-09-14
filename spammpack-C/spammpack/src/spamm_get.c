@@ -130,8 +130,8 @@ spamm_hashed_get_hashed (const unsigned int i, const unsigned int j, const struc
   struct spamm_hashtable_t *node_hashtable;
   struct spamm_hashed_data_t *data;
 
-  i_tier = i/SPAMM_N_KERNEL;
-  j_tier = j/SPAMM_N_KERNEL;
+  i_tier = (i-A->M_lower)/SPAMM_N_KERNEL;
+  j_tier = (j-A->N_lower)/SPAMM_N_KERNEL;
 
   /* Construct linear index of the node on this tier. */
   index = spamm_index_2D(i_tier, j_tier);
@@ -141,7 +141,7 @@ spamm_hashed_get_hashed (const unsigned int i, const unsigned int j, const struc
 
   if ((data = spamm_hashtable_lookup(node_hashtable, index)) != NULL)
   {
-    return data->block_dense[spamm_index_kernel_block(i%SPAMM_N_KERNEL, j%SPAMM_N_KERNEL, A->layout)];
+    return data->block_dense[spamm_index_kernel_block((i-A->M_lower)%SPAMM_N_KERNEL, (j-A->N_lower)%SPAMM_N_KERNEL, A->layout)];
   }
 
   else { return 0; }

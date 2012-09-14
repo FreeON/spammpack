@@ -111,6 +111,12 @@ spamm_new (const unsigned int M, const unsigned int N,
     A->contiguous_tier = contiguous_tier;
   }
 
+  if (A->contiguous_tier > A->linear_tier)
+  {
+    /* Reset contiguous_tier, it will not get used. */
+    A->contiguous_tier = A->depth-SPAMM_KERNEL_DEPTH;
+  }
+
   /* Set matrix size. */
   A->M = M;
   A->N = N;
