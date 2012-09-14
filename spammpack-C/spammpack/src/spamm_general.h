@@ -152,6 +152,9 @@ spamm_hashed_add (const float alpha,
 unsigned int
 spamm_number_nonzero (const struct spamm_hashed_t *A);
 
+void
+spamm_print_info (const struct spamm_matrix_t *const A);
+
 struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int linear_tier,
