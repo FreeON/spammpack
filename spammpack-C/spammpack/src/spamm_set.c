@@ -25,7 +25,7 @@
  * @param node The node.
  */
 void
-spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const float Aij,
+spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij,
     const unsigned int M_lower,
     const unsigned int M_upper,
     const unsigned int N_lower,
@@ -114,7 +114,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     if (i < (*node)->M_lower+(number_rows)/2 &&
         j < (*node)->N_lower+(number_columns)/2)
     {
-      spamm_recursive_set_recursive(i, j, Aij,
+      spamm_recursive_set(i, j, Aij,
           (*node)->M_lower, (*node)->M_lower+(number_rows)/2,
           (*node)->N_lower, (*node)->N_lower+(number_columns)/2,
           N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[0]));
@@ -123,7 +123,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     else if (i <  (*node)->M_lower+(number_rows)/2 &&
         j >= (*node)->N_lower+(number_columns)/2)
     {
-      spamm_recursive_set_recursive(i, j, Aij,
+      spamm_recursive_set(i, j, Aij,
           (*node)->M_lower, (*node)->M_lower+(number_rows)/2,
           (*node)->N_lower+(number_columns)/2, (*node)->N_upper,
           N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[1]));
@@ -132,7 +132,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     else if (i >= (*node)->M_lower+(number_rows)/2 &&
         j <  (*node)->N_lower+(number_columns)/2)
     {
-      spamm_recursive_set_recursive(i, j, Aij,
+      spamm_recursive_set(i, j, Aij,
           (*node)->M_lower+(number_rows)/2, (*node)->M_upper,
           (*node)->N_lower, (*node)->N_lower+(number_columns)/2,
           N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[2]));
@@ -141,7 +141,7 @@ spamm_recursive_set_recursive (const unsigned int i, const unsigned int j, const
     else if (i >= (*node)->M_lower+(number_rows)/2 &&
         j >= (*node)->N_lower+(number_columns)/2)
     {
-      spamm_recursive_set_recursive(i, j, Aij,
+      spamm_recursive_set(i, j, Aij,
           (*node)->M_lower+(number_rows)/2, (*node)->M_upper,
           (*node)->N_lower+(number_columns)/2, (*node)->N_upper,
           N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[3]));
@@ -393,35 +393,6 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
   }
 }
 
-/** Set an element in a recursive matrix.
- *
- * @param i The row index.
- * @param j The column index.
- * @param Aij The value of the matrix element A(i,j).
- * @param A The matrix.
- */
-void
-spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij,
-    struct spamm_recursive_t *A)
-{
-  if (A == NULL)
-  {
-    printf("[%s:%i] A can not be NULL\n", __FILE__, __LINE__);
-    exit(1);
-  }
-
-  /* Recurse the tree to find the dense data block to store the matrix element
-   * in.
-   */
-  if (Aij == 0.0) { return; }
-
-  /* Recursively set the matrix element. */
-  spamm_recursive_set_recursive(i, j, Aij,
-      0, A->N_padded, 0, A->N_padded,
-      A->N_contiguous, 0, 0, 0, 0,
-      row_major, &(A->root));
-}
-
 /** Set an element in a matrix.
  *
  * @param i The row index.
@@ -460,7 +431,7 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
 
   else
   {
-    spamm_recursive_set_recursive(i, j, Aij,
+    spamm_recursive_set(i, j, Aij,
         0, A->N_padded, 0, A->N_padded,
         A->N_contiguous, A->N_linear,
         0, A->kernel_tier, A->depth,

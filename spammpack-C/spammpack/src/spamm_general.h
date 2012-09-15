@@ -209,9 +209,6 @@ void
 spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A);
 
 void
-spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_recursive_t *A);
-
-void
 spamm_uint_to_bin_string (const unsigned int width, const unsigned int i, char *result);
 
 char *
