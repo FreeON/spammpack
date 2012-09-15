@@ -18,7 +18,7 @@ spamm_error_warning (const char *const filename, const int line, const char *con
   int format_length;
   char *new_format;
 
-  format_length = 4+strlen(filename)+10+strlen(format);
+  format_length = 6+strlen(filename)+14+strlen(format);
   new_format = calloc(format_length, sizeof(char));
   snprintf(new_format, format_length, "[%s:%i WARNING] ", filename, line);
   strncat(new_format, format, format_length);
@@ -43,7 +43,7 @@ spamm_error_fatal (const char *const filename, const int line, const char *const
   int format_length;
   char *new_format;
 
-  format_length = 4+strlen(filename)+10+strlen(format);
+  format_length = 6+strlen(filename)+14+strlen(format);
   new_format = calloc(format_length, sizeof(char));
   snprintf(new_format, format_length, "[%s:%i FATAL] ", filename, line);
   strncat(new_format, format, format_length);

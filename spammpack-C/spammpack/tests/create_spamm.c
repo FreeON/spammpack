@@ -9,8 +9,8 @@ main (int argc, char **argv)
 {
   int result = 0;
   unsigned int i, j;
-  const unsigned int N = 1023;
-  const unsigned int linear_tier = 5;
+  const unsigned int N = 511;
+  const unsigned int linear_tier = 3;
   const unsigned int contiguous_tier = 5;
   struct spamm_matrix_t *A;
   float *A_dense = (float*) calloc(N*N, sizeof(float));
