@@ -304,7 +304,7 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
  *   - SPAMM_ERROR - Something is not consistent.
  */
 int
-spamm_hashed_check (const struct spamm_hashed_t *A, const float tolerance)
+spamm_check (const struct spamm_matrix_t *A, const float tolerance)
 {
   unsigned int depth;
   unsigned int N_padded;
