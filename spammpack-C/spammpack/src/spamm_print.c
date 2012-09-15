@@ -166,29 +166,3 @@ spamm_print (const struct spamm_matrix_t *A)
     printf("\n");
   }
 }
-
-/** Print a recursive SpAMM matrix.
- *
- * @param A The matrix.
- */
-void
-spamm_recursive_print (const struct spamm_recursive_t *A)
-{
-  int i, j;
-
-  if (A == NULL)
-  {
-    printf("A = (null)\n");
-  }
-
-  else
-  {
-    for (i = 0; i < A->M; i++) {
-      for (j = 0; j < A->N; j++)
-      {
-        printf(" % 1.2e", spamm_recursive_get(i, j, A));
-      }
-      printf("\n");
-    }
-  }
-}

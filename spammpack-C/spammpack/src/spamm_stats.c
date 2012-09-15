@@ -11,7 +11,7 @@
  * @return The number of non-zero elements.
  */
 unsigned int
-spamm_number_nonzero (const struct spamm_hashed_t *A)
+spamm_number_nonzero (const struct spamm_matrix_t *A)
 {
   unsigned int i, j;
   unsigned int result = 0;
@@ -19,7 +19,7 @@ spamm_number_nonzero (const struct spamm_hashed_t *A)
   for (i = 0; i < A->M; i++) {
     for (j = 0; j < A->N; j++)
     {
-      if (spamm_hashed_get(i, j, A) != 0.0)
+      if (spamm_get(i, j, A) != 0.0)
       {
         result++;
       }
