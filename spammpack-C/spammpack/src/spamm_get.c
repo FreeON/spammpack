@@ -83,7 +83,7 @@ spamm_recursive_get (const unsigned int i, const unsigned int j, const struct sp
  * @return The matrix element \f$A(i,j)\f$.
  */
 float
-spamm_hashed_get_hashed (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A)
+spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A)
 {
   unsigned int index, i_tier, j_tier;
   struct spamm_hashtable_t *node_hashtable;
@@ -129,7 +129,7 @@ spamm_recursive_get_recursive (const unsigned int i, const unsigned int j, const
 
   else if (number_rows == node->N_linear)
   {
-    return spamm_hashed_get_hashed(i, j, node->hashed_tree);
+    return spamm_hashed_get(i, j, node->hashed_tree);
   }
 
   else if (number_rows == node->N_contiguous)
@@ -204,7 +204,7 @@ spamm_get (const unsigned int i, const unsigned int j, const struct spamm_matrix
   if (A->linear_tier == 0)
   {
     /* In case we only have a linear tree. */
-    return spamm_hashed_get_hashed(i, j, A->hashed_tree);
+    return spamm_hashed_get(i, j, A->hashed_tree);
   }
 
   else
