@@ -102,7 +102,7 @@ spamm_recursive_get (const unsigned int i, const unsigned int j, const struct sp
 
     else
     {
-      spamm_error_fatal(__FILE__, __LINE__, "should not be here...\n");
+      SPAMM_FATAL("should not be here...\n");
 
       /* Appease the compiler. */
       return 0;

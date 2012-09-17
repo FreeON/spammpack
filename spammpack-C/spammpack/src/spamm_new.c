@@ -38,12 +38,12 @@ spamm_new (const unsigned int M, const unsigned int N,
 
   if (M <= 0)
   {
-    spamm_error_fatal(__FILE__, __LINE__, "M <= 0\n");
+    SPAMM_FATAL("M <= 0\n");
   }
 
   if (N <= 0)
   {
-    spamm_error_fatal(__FILE__, __LINE__, "N <= 0\n");
+    SPAMM_FATAL("N <= 0\n");
   }
 
   /* Allocate memory. */

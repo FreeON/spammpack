@@ -17,6 +17,38 @@
  * @param B The matrix B.
  */
 void
+spamm_add (const float alpha,
+    struct spamm_matrix_t *A,
+    const float beta,
+    struct spamm_matrix_t *B)
+{
+  assert(A != NULL);
+  assert(B != NULL);
+
+  if (A->layout != B->layout)
+  {
+    SPAMM_FATAL("[add] inconsisten layout in matrices\n");
+  }
+
+  if (A->M != B->M)
+  {
+    SPAMM_FATAL("[add] mismatch of number of rows\n");
+  }
+
+  if (A->N != B->N)
+  {
+    SPAMM_FATAL("[add] mismatch of number of columns\n");
+  }
+}
+
+/** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.
+ *
+ * @param alpha The factor @f$ \alpha @f$.
+ * @param A The matrix A.
+ * @param beta The factor @f$ \beta @f$.
+ * @param B The matrix B.
+ */
+void
 spamm_hashed_add (const float alpha,
     struct spamm_hashed_t *A,
     const float beta,

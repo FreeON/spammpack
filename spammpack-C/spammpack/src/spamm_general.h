@@ -138,6 +138,12 @@ spamm_multiply (const float tolerance,
     unsigned int *number_products);
 
 void
+spamm_add (const float alpha,
+    struct spamm_matrix_t *A,
+    const float beta,
+    struct spamm_matrix_t *B);
+
+void
 spamm_hashed_add (const float alpha,
     struct spamm_hashed_t *A,
     const float beta,
@@ -204,12 +210,6 @@ spamm_uint_to_bin_string (const unsigned int width, const unsigned int i, char *
 
 char *
 spamm_version ();
-
-void
-spamm_prune (struct spamm_matrix_t *A);
-
-void
-spamm_expand (struct spamm_matrix_t *A);
 
 void
 spamm_construct_tree (struct spamm_hashed_t *A);

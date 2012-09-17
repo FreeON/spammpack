@@ -34,7 +34,6 @@ check_PROGRAMS = \
   create_spamm \
   check_spamm \
   convert_dense \
-  expand \
   hashtable_insert \
   hashtable_remove \
   list \
