@@ -30,6 +30,44 @@ spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
   }
 }
 
+/** Delete a matrix.
+ *
+ * @param A The matrix to delete.
+ */
+void
+spamm_hashed_delete (struct spamm_hashed_t **A)
+{
+  int at_kernel_tier;
+  unsigned int tier;
+
+  /* Delete all data on all tiers. */
+  for (tier = (*A)->tier; tier <= (*A)->kernel_tier; tier++)
+  {
+    if (tier == (*A)->kernel_tier)
+    {
+      at_kernel_tier = 1;
+    }
+
+    else
+    {
+      at_kernel_tier = 0;
+    }
+
+    /* Delete each tier hashtable. */
+    spamm_hashtable_foreach((*A)->tier_hashtable[tier-(*A)->tier], spamm_delete_node_hashentry, &at_kernel_tier);
+
+    /* Free the node hashtable. */
+    spamm_hashtable_delete(&(*A)->tier_hashtable[tier-(*A)->tier]);
+  }
+
+  /* Free the tier hashtables. */
+  free((*A)->tier_hashtable);
+
+  /* Delete the matrix. */
+  free(*A);
+  *A = NULL;
+}
+
 /** Delete a recursive matrix.
  *
  * @param A The recursive matrix root.
@@ -80,44 +118,6 @@ spamm_delete (struct spamm_matrix_t **A)
     spamm_hashed_delete(&(*A)->hashed_tree);
   }
 
-  free(*A);
-  *A = NULL;
-}
-
-/** Delete a matrix.
- *
- * @param A The matrix to delete.
- */
-void
-spamm_hashed_delete (struct spamm_hashed_t **A)
-{
-  int at_kernel_tier;
-  unsigned int tier;
-
-  /* Delete all data on all tiers. */
-  for (tier = (*A)->tier; tier <= (*A)->kernel_tier; tier++)
-  {
-    if (tier == (*A)->kernel_tier)
-    {
-      at_kernel_tier = 1;
-    }
-
-    else
-    {
-      at_kernel_tier = 0;
-    }
-
-    /* Delete each tier hashtable. */
-    spamm_hashtable_foreach((*A)->tier_hashtable[tier-(*A)->tier], spamm_delete_node_hashentry, &at_kernel_tier);
-
-    /* Free the node hashtable. */
-    spamm_hashtable_delete(&(*A)->tier_hashtable[tier-(*A)->tier]);
-  }
-
-  /* Free the tier hashtables. */
-  free((*A)->tier_hashtable);
-
-  /* Delete the matrix. */
   free(*A);
   *A = NULL;
 }
