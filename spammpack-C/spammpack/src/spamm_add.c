@@ -307,7 +307,43 @@ spamm_recursive_add (const float alpha,
     const float beta,
     struct spamm_recursive_node_t *B)
 {
+  unsigned int i;
 
+  if (A->M_upper-A->M_lower == A->N_linear)
+  {
+    spamm_hashed_add(alpha, A->hashed_tree, beta, B->hashed_tree);
+  }
+
+  else if (A->M_upper-A->M_lower == A->N_contiguous)
+  {
+    /* Braindead add. */
+    for (i = 0; i < A->N_contiguous*A->N_contiguous; i++)
+    {
+      A->data[i] = alpha*A->data[i]+beta*B->data[i];
+    }
+  }
+
+  else
+  {
+    if (A != NULL && B != NULL)
+    {
+      /* Recursve. */
+      spamm_recursive_add(alpha, A->child[0], beta, B->child[0]);
+      spamm_recursive_add(alpha, A->child[1], beta, B->child[1]);
+      spamm_recursive_add(alpha, A->child[2], beta, B->child[2]);
+      spamm_recursive_add(alpha, A->child[3], beta, B->child[3]);
+    }
+
+    else if (A == NULL && B != NULL)
+    {
+      /* Copy B node to A. */
+    }
+
+    else if (A != NULL && B == NULL)
+    {
+      /* Multiply A by alpha. */
+    }
+  }
 }
 
 /** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.

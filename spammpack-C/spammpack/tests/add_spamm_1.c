@@ -93,7 +93,7 @@ main (int argc, char **argv)
   if (max_diff > TEST_TOLERANCE)
   {
     result = SPAMM_ERROR;
-    printf("[add_spamm] max diff = %e\n", max_diff);
+    printf("[add_spamm] max diff (test tolerance was %1.2e) = %e\n", TEST_TOLERANCE, max_diff);
   }
 
   free(A_dense);
