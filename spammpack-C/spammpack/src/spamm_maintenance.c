@@ -11,7 +11,7 @@
  * @param A The matrix.
  */
 void
-spamm_prune (struct spamm_hashed_t *A)
+spamm_prune (struct spamm_matrix_t *A)
 {
   spamm_error_fatal(__FILE__, __LINE__, "FIXME\n");
 }
@@ -21,7 +21,7 @@ spamm_prune (struct spamm_hashed_t *A)
  * @param A The matrix.
  */
 void
-spamm_expand (struct spamm_hashed_t *A)
+spamm_expand (struct spamm_matrix_t *A)
 {
   unsigned int i, j;
   unsigned int i_tier;

@@ -72,7 +72,7 @@ unsigned int
 spamm_get_number_of_columns (const struct spamm_hashed_t *const A);
 
 float
-spamm_get_norm (const struct spamm_hashed_t *const A);
+spamm_get_norm (const struct spamm_matrix_t *const A);
 
 unsigned int
 spamm_index_2D (const unsigned int i, const unsigned int j);
@@ -206,10 +206,10 @@ char *
 spamm_version ();
 
 void
-spamm_prune (struct spamm_hashed_t *A);
+spamm_prune (struct spamm_matrix_t *A);
 
 void
-spamm_expand (struct spamm_hashed_t *A);
+spamm_expand (struct spamm_matrix_t *A);
 
 void
 spamm_construct_tree (struct spamm_hashed_t *A);

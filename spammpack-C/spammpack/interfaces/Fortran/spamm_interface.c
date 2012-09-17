@@ -171,7 +171,7 @@ FC_FUNC(spamm_convert_dense_to_spamm_interface, SPAMM_CONVERT_DENSE_TO_SPAMM_INT
     printf("[%s:%i] object already exists\n", __FILE__, __LINE__);
     exit(1);
   }
-  A_spamm = spamm_convert_dense_to_spamm(*M, *N, column_major, A_dense, *linear_tier, *contiguous_tier, row_major);
+  A_spamm = spamm_convert_dense_to_spamm(*M, *N, *linear_tier, *contiguous_tier, column_major, A_dense, row_major);
 
   *A = spamm_interface_add_spamm_object(A_spamm);
 }

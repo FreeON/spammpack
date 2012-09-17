@@ -308,11 +308,8 @@ spamm_check (const struct spamm_matrix_t *A, const float tolerance)
 {
   unsigned int depth;
   unsigned int N_padded;
-  unsigned int tier;
-  unsigned int reverse_tier;
   float x_M, x_N, x;
   struct spamm_check_user_data_t user_data;
-  struct spamm_hashtable_t *hashtable;
 
   assert(A != NULL);
 

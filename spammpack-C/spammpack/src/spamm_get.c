@@ -176,7 +176,7 @@ spamm_get_number_of_columns (const struct spamm_hashed_t *const A)
  * @return The Frobenius norm.
  */
 float
-spamm_get_norm (const struct spamm_hashed_t *const A)
+spamm_hashed_get_norm (const struct spamm_hashed_t *const A)
 {
   struct spamm_hashtable_t *tier_hashtable;
   struct spamm_hashed_node_t *root;
@@ -194,4 +194,28 @@ spamm_get_norm (const struct spamm_hashed_t *const A)
   }
 
   return root->norm;
+}
+
+/** Get the Frobenius norm of the matrix.
+ *
+ * @param A The matrix.
+ *
+ * @return The Frobenius norm.
+ */
+float
+spamm_get_norm (const struct spamm_matrix_t *const A)
+{
+  assert(A != NULL);
+
+  if (A->recursive_tree != NULL)
+  {
+    return A->recursive_tree->norm;
+  }
+
+  else if (A->hashed_tree != NULL)
+  {
+    return spamm_hashed_get_norm(A->hashed_tree);
+  }
+
+  else { return 0; }
 }
