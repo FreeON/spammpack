@@ -18,8 +18,8 @@ struct spamm_interface_object_t
   /** The index of this object. */
   unsigned int ID;
 
-  /** The pointer to the spamm_hashed_t object. */
-  struct spamm_hashed_t *object;
+  /** The pointer to the spamm_matrix_t object. */
+  struct spamm_matrix_t *object;
 };
 
 /** The spamm object buffer for the interface. We store the real objects here
@@ -28,14 +28,14 @@ struct spamm_interface_object_t
  */
 struct spamm_interface_object_t *spamm_matrix_object = NULL;
 
-/** Get a spamm_hashed_t object from the interface list.
+/** Get a spamm_matrix_t object from the interface list.
  *
  * @param ID The ID of the object.
  *
- * @return A pointer to the spamm_hashed_t object or NULL if the ID does not
+ * @return A pointer to the spamm_matrix_t object or NULL if the ID does not
  * exist in the store.
  */
-struct spamm_hashed_t *
+struct spamm_matrix_t *
 spamm_interface_get_spamm_object (const int ID)
 {
   struct spamm_interface_object_t *element;
@@ -56,18 +56,18 @@ spamm_interface_get_spamm_object (const int ID)
   return NULL;
 }
 
-/** Pop a spamm_hashed_t object from the interface list. If the object exists,
+/** Pop a spamm_matrix_t object from the interface list. If the object exists,
  * it will be removed from the store.
  *
  * @param ID The ID of the object.
  *
- * @return A pointer to the spamm_hashed_t object or NULL if the ID does not
+ * @return A pointer to the spamm_matrix_t object or NULL if the ID does not
  * exist in the store.
  */
-struct spamm_hashed_t *
+struct spamm_matrix_t *
 spamm_interface_pop_spamm_object (const int ID)
 {
-  struct spamm_hashed_t *object;
+  struct spamm_matrix_t *object;
   struct spamm_interface_object_t *element;
 
   if (ID == 0)
@@ -119,12 +119,12 @@ spamm_interface_new_object ()
 
 /** Add a matrix object to the interface list.
  *
- * @param A The pointer to the spamm_hashed_t object to add to the store.
+ * @param A The pointer to the spamm_matrix_t object to add to the store.
  *
  * @return The newly assigned ID.
  */
 unsigned int
-spamm_interface_add_spamm_object (struct spamm_hashed_t *A)
+spamm_interface_add_spamm_object (struct spamm_matrix_t *A)
 {
   struct spamm_interface_object_t *element;
 
@@ -158,10 +158,12 @@ spamm_interface_add_spamm_object (struct spamm_hashed_t *A)
 void
 FC_FUNC(spamm_convert_dense_to_spamm_interface, SPAMM_CONVERT_DENSE_TO_SPAMM_INTERFACE) (const int *const M,
     const int *const N,
+    const int *const linear_tier,
+    const int *const contiguous_tier,
     float *A_dense,
     int *A)
 {
-  struct spamm_hashed_t *A_spamm;
+  struct spamm_matrix_t *A_spamm;
 
   A_spamm = spamm_interface_get_spamm_object(*A);
   if (A_spamm != NULL)
@@ -169,7 +171,7 @@ FC_FUNC(spamm_convert_dense_to_spamm_interface, SPAMM_CONVERT_DENSE_TO_SPAMM_INT
     printf("[%s:%i] object already exists\n", __FILE__, __LINE__);
     exit(1);
   }
-  A_spamm = spamm_convert_dense_to_spamm(*M, *N, column_major, A_dense, row_major);
+  A_spamm = spamm_convert_dense_to_spamm(*M, *N, column_major, A_dense, *linear_tier, *contiguous_tier, row_major);
 
   *A = spamm_interface_add_spamm_object(A_spamm);
 }
@@ -179,17 +181,20 @@ FC_FUNC(spamm_convert_dense_to_spamm_interface, SPAMM_CONVERT_DENSE_TO_SPAMM_INT
  * @param A The matrix.
  */
 void
-FC_FUNC(spamm_new_interface, SPAMM_NEW_INTERFACE) (const int *const M, const int *const N, int *A)
+FC_FUNC(spamm_new_interface, SPAMM_NEW_INTERFACE) (const int *const M, const int *const N,
+    const int *const linear_tier,
+    const int *const contiguous_tier,
+    int *A)
 {
-  struct spamm_hashed_t *A_spamm;
+  struct spamm_matrix_t *A_spamm;
 
   A_spamm = spamm_interface_pop_spamm_object(*A);
   if (A_spamm != NULL)
   {
     printf("[%s:%i] deleting already existing matrix\n", __FILE__, __LINE__);
-    spamm_hashed_delete(&A_spamm);
+    spamm_delete(&A_spamm);
   }
-  //A_spamm = spamm_hashed_new(*M, *N, row_major);
+  A_spamm = spamm_new(*M, *N, *linear_tier, *contiguous_tier, row_major);
 
   *A = spamm_interface_add_spamm_object(A_spamm);
 }
@@ -201,14 +206,14 @@ FC_FUNC(spamm_new_interface, SPAMM_NEW_INTERFACE) (const int *const M, const int
 void
 FC_FUNC(spamm_delete_interface, SPAMM_DELETE_INTERFACE) (int *A)
 {
-  struct spamm_hashed_t *A_spamm;
+  struct spamm_matrix_t *A_spamm;
 
   A_spamm = spamm_interface_pop_spamm_object(*A);
   if (A_spamm == NULL)
   {
     return;
   }
-  spamm_hashed_delete(&A_spamm);
+  spamm_delete(&A_spamm);
 }
 
 /** Multiply two spamm matrices.
@@ -222,9 +227,9 @@ void
 FC_FUNC(spamm_multiply_spamm_spamm_interface, SPAMM_MULTIPLY_SPAMM_SPAMM_INTERFACE) (int *A,
     int *B, int *C, const float *const tolerance)
 {
-  struct spamm_hashed_t *A_spamm;
-  struct spamm_hashed_t *B_spamm;
-  struct spamm_hashed_t *C_spamm;
+  struct spamm_matrix_t *A_spamm;
+  struct spamm_matrix_t *B_spamm;
+  struct spamm_matrix_t *C_spamm;
 
   struct spamm_timer_t *timer;
 
@@ -234,13 +239,13 @@ FC_FUNC(spamm_multiply_spamm_spamm_interface, SPAMM_MULTIPLY_SPAMM_SPAMM_INTERFA
 
   if (C_spamm == NULL)
   {
-    //printf("[%s:%i] creating new C matrix\n", __FILE__, __LINE__);
-    //C_spamm = spamm_hashed_new(spamm_get_number_of_rows(A_spamm), spamm_get_number_of_columns(B_spamm), row_major);
+    printf("[%s:%i] creating new C matrix\n", __FILE__, __LINE__);
+    //C_spamm = spamm_new(spamm_get_number_of_rows(A_spamm), spamm_get_number_of_columns(B_spamm), row_major);
     *C = spamm_interface_add_spamm_object(C_spamm);
   }
 
   timer = spamm_timer_new();
-  spamm_hashed_multiply(*tolerance, 1.0, A_spamm, B_spamm, 1.0, C_spamm, timer, kernel_standard_SSE);
+  //spamm_multiply(*tolerance, 1.0, A_spamm, B_spamm, 1.0, C_spamm, timer, kernel_standard_SSE);
   spamm_timer_delete(&timer);
 }
 
@@ -255,13 +260,13 @@ void
 FC_FUNC(spamm_add_spamm_spamm_interface, SPAMM_ADD_SPAMM_SPAMM_INTERFACE) (int *A,
     int *B, float *alpha, float *beta)
 {
-  struct spamm_hashed_t *A_spamm;
-  struct spamm_hashed_t *B_spamm;
+  struct spamm_matrix_t *A_spamm;
+  struct spamm_matrix_t *B_spamm;
 
   A_spamm = spamm_interface_get_spamm_object(*A);
   B_spamm = spamm_interface_get_spamm_object(*B);
 
-  spamm_hashed_add(*alpha, A_spamm, *beta, B_spamm);
+  //spamm_add(*alpha, A_spamm, *beta, B_spamm);
 }
 
 /** Get Frobenius norm of matrix.
@@ -273,7 +278,7 @@ FC_FUNC(spamm_add_spamm_spamm_interface, SPAMM_ADD_SPAMM_SPAMM_INTERFACE) (int *
 float
 FC_FUNC(spamm_get_norm_interface, SPAMM_GET_NORM_INTERFACE) (int *A)
 {
-  struct spamm_hashed_t *A_spamm;
+  struct spamm_matrix_t *A_spamm;
 
   A_spamm = spamm_interface_get_spamm_object(*A);
   return spamm_get_norm(A_spamm);
@@ -286,7 +291,7 @@ FC_FUNC(spamm_get_norm_interface, SPAMM_GET_NORM_INTERFACE) (int *A)
 void
 FC_FUNC(spamm_print_interface, SPAMM_PRINT_INTERFACE) (int *A)
 {
-  struct spamm_hashed_t *A_spamm;
+  struct spamm_matrix_t *A_spamm;
 
   A_spamm = spamm_interface_get_spamm_object(*A);
   spamm_print(A_spamm);

@@ -217,9 +217,12 @@ spamm_construct_tree (struct spamm_hashed_t *A);
 void
 spamm_hashed_norm_update (struct spamm_hashed_t *A);
 
-struct spamm_hashed_t *
+struct spamm_matrix_t *
 spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
-    const enum spamm_layout_t dense_type, const float *const A_dense,
+    const unsigned int linear_tier,
+    const unsigned int contiguous_tier,
+    const enum spamm_layout_t dense_type,
+    const float *const A_dense,
     const enum spamm_layout_t spamm_layout);
 
 void spamm_sgemm (char * transA, char * transB,

@@ -9,8 +9,10 @@ main (int argc, char **argv)
 {
   int result = 0;
   unsigned int i, j;
-  unsigned int N = 1024;
-  struct spamm_hashed_t *A;
+  const unsigned int N = 1024;
+  const unsigned int linear_tier = 5;
+  const unsigned int contiguous_tier = 6;
+  struct spamm_matrix_t *A = NULL;
   float *A_dense = (float*) malloc(sizeof(float)*N*N);
 
   enum spamm_layout_t layout = row_major;
@@ -25,7 +27,7 @@ main (int argc, char **argv)
     A_dense[i] = rand()/(float) RAND_MAX;
   }
 
-  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense, layout);
+  A = spamm_convert_dense_to_spamm(N, N, linear_tier, contiguous_tier, row_major, A_dense, layout);
 
 #ifdef PRINT_DEBUG
   printf("A_dense:\n");
@@ -42,7 +44,7 @@ main (int argc, char **argv)
 #endif
 
   /* Check matrix. */
-  if ((result = spamm_hashed_check(A, 1e-7)) != SPAMM_OK)
+  if ((result = spamm_check(A, 1e-7)) != SPAMM_OK)
   {
     printf("failed spamm_hashed_check()\n");
     return result;
@@ -51,11 +53,11 @@ main (int argc, char **argv)
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      if (A_dense[i*N+j] != spamm_hashed_get(i, j, A))
+      if (A_dense[i*N+j] != spamm_get(i, j, A))
       {
         result = -1;
         printf("failed test at A[%u][%u] (found %f, should be %f)\n", i, j,
-            spamm_hashed_get(i, j, A), A_dense[i*N+j]);
+            spamm_get(i, j, A), A_dense[i*N+j]);
         break;
       }
     }
@@ -66,7 +68,7 @@ main (int argc, char **argv)
   printf("test passed\n");
 #endif
 
-  spamm_hashed_delete(&A);
+  spamm_delete(&A);
   free(A_dense);
   return result;
 }
