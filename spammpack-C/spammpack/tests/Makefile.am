@@ -31,10 +31,9 @@ libspammtest_la_SOURCES = \
   spammtests.F90
 
 check_PROGRAMS = \
+  create_spamm \
   check_spamm \
   convert_dense \
-  create_spamm \
-  expand \
   hashtable_insert \
   hashtable_remove \
   list \
@@ -44,7 +43,6 @@ check_PROGRAMS = \
 	add_spamm_2 \
   multiply_recursive \
   multiply_spamm \
-  multiply_spamm_hashed \
   get_version \
   spamm_multiply \
   SP2

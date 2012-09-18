@@ -6,58 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/** Prune matrix tree by removing zero blocks.
- *
- * @param A The matrix.
- */
-void
-spamm_prune (struct spamm_hashed_t *A)
-{
-  printf("[%s:%i] FIXME\n", __FILE__, __LINE__);
-  exit(1);
-}
-
-/** Expand a matrix tree to a full tree by adding zero blocks.
- *
- * @param A The matrix.
- */
-void
-spamm_expand (struct spamm_hashed_t *A)
-{
-  unsigned int i, j;
-  unsigned int i_tier;
-  unsigned int j_tier;
-  unsigned int index;
-  struct spamm_hashed_data_t *data;
-  struct spamm_hashtable_t *node_hashtable;
-
-  /* Get the kernel tier hashtable. */
-  node_hashtable = A->tier_hashtable[A->kernel_tier];
-
-  /* Create new nodes at the kernel tier. */
-  for (i = 0; i < A->M; i += SPAMM_N_KERNEL) {
-    for (j = 0; j < A->N; j += SPAMM_N_KERNEL)
-    {
-      /* Calculate the matrix block indices. */
-      i_tier = i/SPAMM_N_KERNEL;
-      j_tier = j/SPAMM_N_KERNEL;
-
-      /* Construct linear index of the node on this tier. */
-      index = spamm_index_2D(i_tier, j_tier);
-
-      /* Create new block in case one doesn't exist already. */
-      if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
-      {
-        data = spamm_hashed_new_data(A->kernel_tier, index, A->layout);
-        spamm_hashtable_insert(node_hashtable, index, data);
-      }
-    }
-  }
-
-  /* Construct the rest of the tree. */
-  spamm_construct_tree(A);
-}
-
 /** Construct the full tree from blocks at the kernel tier level.
  *
  * @param A The matrix.

@@ -9,13 +9,10 @@ void *
 spamm_allocate (size_t size);
 
 int
-spamm_hashed_check (const struct spamm_hashed_t *A, const float tolerance);
+spamm_check (const struct spamm_matrix_t *A, const float tolerance);
 
 void
 spamm_delete (struct spamm_matrix_t **A);
-
-void
-spamm_hashed_delete (struct spamm_hashed_t **A);
 
 void
 spamm_delete_block (struct spamm_hashed_data_t **data);
@@ -63,7 +60,7 @@ spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_block,
     const unsigned int j, const enum spamm_layout_t layout);
 
 float
-spamm_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A);
+spamm_get (const unsigned int i, const unsigned int j, const struct spamm_matrix_t *A);
 
 unsigned int
 spamm_get_number_of_rows (const struct spamm_hashed_t *const A);
@@ -72,7 +69,7 @@ unsigned int
 spamm_get_number_of_columns (const struct spamm_hashed_t *const A);
 
 float
-spamm_get_norm (const struct spamm_hashed_t *const A);
+spamm_get_norm (const struct spamm_matrix_t *const A);
 
 unsigned int
 spamm_index_2D (const unsigned int i, const unsigned int j);
@@ -138,21 +135,31 @@ spamm_multiply (const float tolerance,
     unsigned int *number_products);
 
 void
-spamm_hashed_add (const float alpha,
-    struct spamm_hashed_t *A,
+spamm_add (const float alpha,
+    struct spamm_matrix_t *A,
     const float beta,
-    struct spamm_hashed_t *B);
+    struct spamm_matrix_t *B);
 
 unsigned int
-spamm_number_nonzero (const struct spamm_hashed_t *A);
+spamm_number_nonzero (const struct spamm_matrix_t *A);
+
+void
+spamm_print_info (const struct spamm_matrix_t *const A);
 
 struct spamm_matrix_t *
 spamm_new (const unsigned int M, const unsigned int N,
     const unsigned int linear_tier,
+    const unsigned int contiguous_tier,
     const enum spamm_layout_t layout);
 
 struct spamm_hashed_t *
-spamm_hashed_new (const unsigned int M, const unsigned int N, const enum spamm_layout_t layout);
+spamm_hashed_new (const unsigned int tier,
+    const unsigned int kernel_tier,
+    const unsigned int depth,
+    const unsigned int M_lower,
+    const unsigned int M_upper,
+    const unsigned int N_lower,
+    const unsigned int N_upper);
 
 struct spamm_hashed_data_t *
 spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout);
@@ -160,8 +167,21 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
 struct spamm_hashed_node_t *
 spamm_hashed_new_node (const unsigned int tier, const unsigned int index_2D);
 
+struct spamm_recursive_t *
+spamm_recursive_new (const unsigned int M, const unsigned int N,
+    const unsigned int N_contiguous);
+
+struct spamm_recursive_node_t *
+spamm_recursive_new_node (const unsigned int tier,
+    const unsigned int N_contiguous,
+    const unsigned int N_linear,
+    const unsigned int M_lower,
+    const unsigned int M_upper,
+    const unsigned int N_lower,
+    const unsigned int N_upper);
+
 void
-spamm_print (const struct spamm_hashed_t *A);
+spamm_print (const struct spamm_matrix_t *A);
 
 void
 spamm_print_tree (const struct spamm_hashed_t *A);
@@ -183,20 +203,17 @@ char *
 spamm_version ();
 
 void
-spamm_prune (struct spamm_hashed_t *A);
-
-void
-spamm_expand (struct spamm_hashed_t *A);
-
-void
 spamm_construct_tree (struct spamm_hashed_t *A);
 
 void
 spamm_hashed_norm_update (struct spamm_hashed_t *A);
 
-struct spamm_hashed_t *
+struct spamm_matrix_t *
 spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
-    const enum spamm_layout_t dense_type, const float *const A_dense,
+    const unsigned int linear_tier,
+    const unsigned int contiguous_tier,
+    const enum spamm_layout_t dense_type,
+    const float *const A_dense,
     const enum spamm_layout_t spamm_layout);
 
 void spamm_sgemm (char * transA, char * transB,

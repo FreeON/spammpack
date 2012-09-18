@@ -47,6 +47,12 @@ spamm_print_dense (const unsigned int M, const unsigned int N,
   }
 }
 
+/** Print out a spamm_hashed_node_t object.
+ *
+ * @param key The key for the hashtable.
+ * @param value The spamm_hashed_node_t object.
+ * @param user_data Some additional data that can be passed into this function.
+ */
 void
 spamm_print_node (unsigned int key, void *value, void *user_data)
 {
@@ -56,6 +62,12 @@ spamm_print_node (unsigned int key, void *value, void *user_data)
       node->tier, node->index_2D, node->norm);
 }
 
+/** Print out a spamm_hashed_data_t object.
+ *
+ * @param key The key for the hashtable.
+ * @param value The spamm_hashed_data_t object.
+ * @param user_data Some additional data that can be passed into this function.
+ */
 void
 spamm_print_data (unsigned int key, void *value, void *user_data)
 {
@@ -139,7 +151,7 @@ spamm_print_tree (const struct spamm_hashed_t *A)
  * @param A The matrix.
  */
 void
-spamm_print (const struct spamm_hashed_t *A)
+spamm_print (const struct spamm_matrix_t *A)
 {
   unsigned int i;
   unsigned int j;

@@ -18,7 +18,8 @@ main (int argc, char **argv)
 
   unsigned int N = 513;
 
-  unsigned int linear_tier = 4;
+  const unsigned int linear_tier = 4;
+  const unsigned int contiguous_tier = 5;
 
   double alpha = 1.2;
   double beta = 0.5;
@@ -50,9 +51,9 @@ main (int argc, char **argv)
   B_dense = (double*) malloc(sizeof(double)*N*N);
   C_dense = (double*) malloc(sizeof(double)*N*N);
 
-  A = spamm_new(N, N, linear_tier, spamm_kernel_suggest_layout(kernel));
-  B = spamm_new(N, N, linear_tier, spamm_kernel_suggest_layout(kernel));
-  C = spamm_new(N, N, linear_tier, spamm_kernel_suggest_layout(kernel));
+  A = spamm_new(N, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
+  B = spamm_new(N, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
+  C = spamm_new(N, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
 
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
@@ -67,9 +68,9 @@ main (int argc, char **argv)
       C_dense[i*N+j] = i*N+j;
 #endif
 
-      spamm_matrix_set(i, j, A_dense[i*N+j], A);
-      spamm_matrix_set(i, j, B_dense[i*N+j], B);
-      spamm_matrix_set(i, j, C_dense[i*N+j], C);
+      spamm_set(i, j, A_dense[i*N+j], A);
+      spamm_set(i, j, B_dense[i*N+j], B);
+      spamm_set(i, j, C_dense[i*N+j], C);
     }
   }
 

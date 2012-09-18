@@ -30,31 +30,6 @@ spamm_delete_node_hashentry (unsigned int index, void *value, void *user_data)
   }
 }
 
-/** Delete a recursive matrix.
- *
- * @param A The recursive matrix root.
- */
-void
-spamm_recursive_delete (struct spamm_recursive_node_t *root)
-{
-  printf("[FIXME]\n");
-  exit(1);
-}
-
-/** Delete a matrix.
- *
- * @param A The matrix to delete.
- */
-void
-spamm_delete (struct spamm_matrix_t **A)
-{
-  spamm_recursive_delete((*A)->recursive_root);
-  spamm_hashed_delete(&(*A)->hashed_root);
-
-  free(*A);
-  *A = NULL;
-}
-
 /** Delete a matrix.
  *
  * @param A The matrix to delete.
@@ -66,7 +41,7 @@ spamm_hashed_delete (struct spamm_hashed_t **A)
   unsigned int tier;
 
   /* Delete all data on all tiers. */
-  for (tier = 0; tier <= (*A)->kernel_tier; tier++)
+  for (tier = (*A)->tier; tier <= (*A)->kernel_tier; tier++)
   {
     if (tier == (*A)->kernel_tier)
     {
@@ -79,16 +54,70 @@ spamm_hashed_delete (struct spamm_hashed_t **A)
     }
 
     /* Delete each tier hashtable. */
-    spamm_hashtable_foreach((*A)->tier_hashtable[tier], spamm_delete_node_hashentry,  &at_kernel_tier);
+    spamm_hashtable_foreach((*A)->tier_hashtable[tier-(*A)->tier], spamm_delete_node_hashentry, &at_kernel_tier);
 
     /* Free the node hashtable. */
-    spamm_hashtable_delete(&(*A)->tier_hashtable[tier]);
+    spamm_hashtable_delete(&(*A)->tier_hashtable[tier-(*A)->tier]);
   }
 
   /* Free the tier hashtables. */
   free((*A)->tier_hashtable);
 
   /* Delete the matrix. */
+  free(*A);
+  *A = NULL;
+}
+
+/** Delete a recursive matrix.
+ *
+ * @param A The recursive matrix root.
+ */
+void
+spamm_recursive_delete (struct spamm_recursive_node_t **node)
+{
+  int i;
+
+  if (*node == NULL) { return; }
+
+  for (i = 0; i < 4; i++)
+  {
+    spamm_recursive_delete(&(*node)->child[i]);
+  }
+
+  if ((*node)->data != NULL)
+  {
+    free((*node)->data);
+    (*node)->data = NULL;
+  }
+
+  if ((*node)->hashed_tree != NULL)
+  {
+    spamm_hashed_delete(&(*node)->hashed_tree);
+  }
+
+  free(*node);
+  *node = NULL;
+}
+
+/** Delete a matrix.
+ *
+ * @param A The matrix to delete.
+ */
+void
+spamm_delete (struct spamm_matrix_t **A)
+{
+  if (*A == NULL) { return; }
+
+  if ((*A)->recursive_tree != NULL)
+  {
+    spamm_recursive_delete(&(*A)->recursive_tree);
+  }
+
+  else if ((*A)->hashed_tree != NULL)
+  {
+    spamm_hashed_delete(&(*A)->hashed_tree);
+  }
+
   free(*A);
   *A = NULL;
 }

@@ -293,3 +293,97 @@ spamm_hashed_add (const float alpha,
     spamm_list_delete(&A_keys);
   }
 }
+
+/** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.
+ *
+ * @param alpha The factor @f$ \alpha @f$.
+ * @param A The matrix A.
+ * @param beta The factor @f$ \beta @f$.
+ * @param B The matrix B.
+ */
+void
+spamm_recursive_add (const float alpha,
+    struct spamm_recursive_node_t *A,
+    const float beta,
+    struct spamm_recursive_node_t *B)
+{
+  unsigned int i;
+
+  if (A->M_upper-A->M_lower == A->N_linear)
+  {
+    spamm_hashed_add(alpha, A->hashed_tree, beta, B->hashed_tree);
+  }
+
+  else if (A->M_upper-A->M_lower == A->N_contiguous)
+  {
+    /* Braindead add. */
+    for (i = 0; i < A->N_contiguous*A->N_contiguous; i++)
+    {
+      A->data[i] = alpha*A->data[i]+beta*B->data[i];
+    }
+  }
+
+  else
+  {
+    if (A != NULL && B != NULL)
+    {
+      /* Recursve. */
+      spamm_recursive_add(alpha, A->child[0], beta, B->child[0]);
+      spamm_recursive_add(alpha, A->child[1], beta, B->child[1]);
+      spamm_recursive_add(alpha, A->child[2], beta, B->child[2]);
+      spamm_recursive_add(alpha, A->child[3], beta, B->child[3]);
+    }
+
+    else if (A == NULL && B != NULL)
+    {
+      /* Copy B node to A. */
+    }
+
+    else if (A != NULL && B == NULL)
+    {
+      /* Multiply A by alpha. */
+    }
+  }
+}
+
+/** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.
+ *
+ * @param alpha The factor @f$ \alpha @f$.
+ * @param A The matrix A.
+ * @param beta The factor @f$ \beta @f$.
+ * @param B The matrix B.
+ */
+void
+spamm_add (const float alpha,
+    struct spamm_matrix_t *A,
+    const float beta,
+    struct spamm_matrix_t *B)
+{
+  assert(A != NULL);
+  assert(B != NULL);
+
+  if (A->layout != B->layout)
+  {
+    SPAMM_FATAL("[add] inconsisten layout in matrices\n");
+  }
+
+  if (A->M != B->M)
+  {
+    SPAMM_FATAL("[add] mismatch of number of rows\n");
+  }
+
+  if (A->N != B->N)
+  {
+    SPAMM_FATAL("[add] mismatch of number of columns\n");
+  }
+
+  if (A->recursive_tree != NULL)
+  {
+    spamm_recursive_add(alpha, A->recursive_tree, beta, B->recursive_tree);
+  }
+
+  else if (A->hashed_tree != NULL)
+  {
+    spamm_hashed_add(alpha, A->hashed_tree, beta, B->hashed_tree);
+  }
+}

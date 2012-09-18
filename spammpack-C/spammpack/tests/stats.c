@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 1000
 #define FILL 0.60
 
 int
@@ -13,7 +12,11 @@ main ()
   unsigned int i, j;
   unsigned int nonzeros = 0;
 
-  struct spamm_hashed_t *A;
+  const unsigned int N = 1000;
+  const unsigned int linear_tier = 4;
+  const unsigned int contiguous_tier = 5;
+
+  struct spamm_matrix_t *A;
   float *A_dense;
 
   A_dense = (float*) malloc(sizeof(float)*N*N);
@@ -33,14 +36,14 @@ main ()
     }
   }
 
-  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense, row_major);
+  A = spamm_convert_dense_to_spamm(N, N, linear_tier, contiguous_tier, row_major, A_dense, row_major);
   if (spamm_number_nonzero(A) != nonzeros)
   {
     printf("found %u nonzeros, should have found %u\n", spamm_number_nonzero(A), nonzeros);
     result = -1;
   }
 
-  spamm_hashed_delete(&A);
+  spamm_delete(&A);
   free(A_dense);
 
   return result;

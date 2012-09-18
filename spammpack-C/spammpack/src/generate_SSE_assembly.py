@@ -167,7 +167,7 @@ def check_load_offset (load_offset):
   for store_offset in last_store_offset:
     log.debug("checking load offset 0x%x against store offset 0x%x, overlap is 0x%x"
         % (load_offset, store_offset, abs(store_offset-load_offset)%4096))
-    if abs(store_offset-load_offset)%4096 == 0:
+    if abs(store_offset-load_offset)%4096 == 0 and abs(store_offset-load_offset) > 0:
       log.warn("4 kB overlap detected, load offset 0x%x against store offset 0x%x, diff = 0x%x, overlap is 0x%x"
           % (load_offset, store_offset, abs(store_offset-load_offset), abs(store_offset-load_offset)%4096))
 
@@ -668,10 +668,6 @@ else:
 logFormatter = logging.Formatter("%(levelname)s: %(message)s")
 logHandler.setFormatter(logFormatter)
 log.addHandler(logHandler)
-
-# [FIXME] Take this out again.
-log.info("removing hierarchical option")
-options.hierarchical = False
 
 # Check N.
 if options.N <= 0:

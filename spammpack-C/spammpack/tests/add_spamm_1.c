@@ -13,7 +13,9 @@ main (int argc, char **argv)
 {
   int result;
 
-  unsigned int N = 513;
+  const unsigned int N = 513;
+  const unsigned int linear_tier = 3;
+  const unsigned int contiguous_tier = 4;
 
   double alpha = 1.2;
   double beta = 0.8;
@@ -23,8 +25,8 @@ main (int argc, char **argv)
 
   float max_diff;
 
-  struct spamm_hashed_t *A;
-  struct spamm_hashed_t *B;
+  struct spamm_matrix_t *A;
+  struct spamm_matrix_t *B;
 
   unsigned int i, j;
 
@@ -48,8 +50,8 @@ main (int argc, char **argv)
 #endif
 
   /* Convert to SpAMM matrix. */
-  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense, row_major);
-  B = spamm_convert_dense_to_spamm(N, N, row_major, B_dense, row_major);
+  A = spamm_convert_dense_to_spamm(N, N, linear_tier, contiguous_tier, row_major, A_dense, row_major);
+  B = spamm_convert_dense_to_spamm(N, N, linear_tier, contiguous_tier, row_major, B_dense, row_major);
 
   /* Add by hand for verification. */
   for (i = 0; i < N; i++) {
@@ -66,7 +68,7 @@ main (int argc, char **argv)
   spamm_print_dense(N, N, row_major, A_dense);
 #endif
 
-  spamm_hashed_add(alpha, A, beta, B);
+  spamm_add(alpha, A, beta, B);
 
 #ifdef PRINT_MATRIX
   printf("A =\n");
@@ -74,7 +76,7 @@ main (int argc, char **argv)
 #endif
 
   /* Check tree consistency. */
-  result = spamm_hashed_check(A, TEST_TOLERANCE);
+  result = spamm_check(A, TEST_TOLERANCE);
 
   /* Compare result. */
   max_diff = 0.0;
@@ -91,14 +93,14 @@ main (int argc, char **argv)
   if (max_diff > TEST_TOLERANCE)
   {
     result = SPAMM_ERROR;
-    printf("[add_spamm] max diff = %e\n", max_diff);
+    printf("[add_spamm] max diff (test tolerance was %1.2e) = %e\n", TEST_TOLERANCE, max_diff);
   }
 
   free(A_dense);
   free(B_dense);
 
-  spamm_hashed_delete(&A);
-  spamm_hashed_delete(&B);
+  spamm_delete(&A);
+  spamm_delete(&B);
 
   return result;
 }

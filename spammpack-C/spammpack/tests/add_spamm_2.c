@@ -82,9 +82,9 @@ main (int argc, char **argv)
   for (i = 0; i < N; i++) {
     for (j = 0; j < N; j++)
     {
-      if (fabs(A_dense[spamm_index_row_major(i, j, N, N)]-spamm_get(i, j, A)) > max_diff)
+      if (fabs(A_dense[spamm_index_row_major(i, j, N, N)]-spamm_hashed_get(i, j, A)) > max_diff)
       {
-        max_diff = fabs(A_dense[spamm_index_row_major(i, j, N, N)]-spamm_get(i, j, A));
+        max_diff = fabs(A_dense[spamm_index_row_major(i, j, N, N)]-spamm_hashed_get(i, j, A));
       }
     }
   }

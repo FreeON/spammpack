@@ -14,7 +14,6 @@
  * - spamm_hashtable.h
  * - spamm_kernel.h
  * - spamm_list.h
- * - spamm_recursive.h
  * - spamm_timer.h
  * - spamm_types.h
  *
@@ -28,7 +27,9 @@
  * - \subpage spamm_performance "SpAMM Performance"
  * - \subpage spamm_matrix "Matrix Data Structure"
  *
- * \version @PACKAGE_VERSION_STRING@
+ * \version @PACKAGE_VERSION_STRING@ ( @GIT_COMMIT@ )
+ *
+ * \date Generated on @TIMESTAMP@
  *
  * \copyright
  * This code is part of the FreeON suite of programs for linear scaling
@@ -70,7 +71,7 @@
  * Here a short example program in C that demonstrates how to multiply two
  * matrices with the library.
  *
- * \code{.c}
+ * \code
  * #include <spamm.h>
  *
  * int
@@ -199,14 +200,26 @@
 
 /** \page spamm_matrix SpAMM - Matrix Data Structure
  *
- * Conceptially, the matrix is stored in a quaternary tree data structure. For
- * performance, the actual data structure is a hybrid.
+ * Conceptually, the matrix is stored in a quaternary tree data structure. For
+ * performance, the actual data structure is a hybrid. Matrices are created by
+ * calling spamm_new().
  *
- * The matrix dimensions @f$ M @f$ and @f$ N @f$ are padded to powers of 2 so
- * that recursive bisction is possible. The lowest $f@ N_{cont} @f$ tiers are
+ * The top tiers of the matrix are stored in hierarchical quadtree format. If
+ * spamm_matrix_t::linear_tier <= spamm_matrix_t::contiguous_tier, then the
+ * tree will switch to linear quadtree format at tier ==
+ * spamm_matrix_t::linear_tier. If spamm_matrix_t::contiguous_tier <
+ * spamm_matrix_t::linear_tier, then the tree will be stored completely in
+ * hierarhical quadtree format and at tier == spamm_matrix_t::contiguous_tier,
+ * dense column-major submatrix blocks will be stored and the spamm condition
+ * applied.
+ *
+ * The matrix dimensions \f$ M \f$ and \f$ N \f$ are padded to powers of 2 so
+ * that recursive bisection is possible. The lowest \f$ N_{cont} \f$ tiers are
  * stored in contiguously allocated memory. The multiply uses a dense kernel
  * to operate on these contiguous blocks. Within the contiguous blocks, the
- * matrix elements are organized in submatrix blocks of size @f$ N_{kernel}
- * @f$, which means that the computational kernel will apply the spamm
+ * matrix elements are organized in submatrix blocks of size \f$ N_{kernel}
+ * \f$, which means that the computational kernel will apply the spamm
  * condition to those submatrices.
+ *
+ * \image html Matrix_Structure.png "The layout of the spamm_matrix_t data structure." width="80%"
  */

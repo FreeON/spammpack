@@ -104,8 +104,6 @@ spamm_check_norm (unsigned int index, void *value, void *user_data)
   short i_blocked, j_blocked;
   short i_basic, j_basic;
   float norm2 = 0.0;
-  int upper_norm_check = SPAMM_OK;
-  int upper_norm_transpose_check = SPAMM_OK;
 
   float Aij;
 
@@ -306,23 +304,19 @@ spamm_check_data_consistency (unsigned int index, void *value, void *user_data)
  *   - SPAMM_ERROR - Something is not consistent.
  */
 int
-spamm_hashed_check (const struct spamm_hashed_t *A, const float tolerance)
+spamm_check (const struct spamm_matrix_t *A, const float tolerance)
 {
   unsigned int depth;
   unsigned int N_padded;
-  unsigned int tier;
-  unsigned int reverse_tier;
   float x_M, x_N, x;
   struct spamm_check_user_data_t user_data;
-  struct spamm_hashtable_t *hashtable;
 
   assert(A != NULL);
 
   user_data.result = SPAMM_OK;
 
   /* Calculate the padding and depth of matrix based on values stored in M and
-   * N.
-   */
+   * N. */
   x_M = (log(A->M) > log(SPAMM_N_BLOCK) ? log(A->M) - log(SPAMM_N_BLOCK) : 0)/log(2);
   x_N = (log(A->N) > log(SPAMM_N_BLOCK) ? log(A->N) - log(SPAMM_N_BLOCK) : 0)/log(2);
 
@@ -367,47 +361,47 @@ spamm_hashed_check (const struct spamm_hashed_t *A, const float tolerance)
   }
 
   /* Check whether there are tier hashtables for every tier. */
-  if (A->tier_hashtable == NULL)
-  {
-    printf("no tier hashtable\n");
-    return SPAMM_ERROR;
-  }
+  //if (A->tier_hashtable == NULL)
+  //{
+  //  printf("no tier hashtable\n");
+  //  return SPAMM_ERROR;
+  //}
 
-  for (tier = 0; tier <= A->kernel_tier; tier++)
-  {
-    if ((hashtable = A->tier_hashtable[tier]) == NULL)
-    {
-      printf("missing tier hashtable for tier %u\n", tier);
-      return SPAMM_ERROR;
-    }
-  }
+  //for (tier = 0; tier <= A->kernel_tier; tier++)
+  //{
+  //  if ((hashtable = A->tier_hashtable[tier]) == NULL)
+  //  {
+  //    printf("missing tier hashtable for tier %u\n", tier);
+  //    return SPAMM_ERROR;
+  //  }
+  //}
 
   /* Check each node. */
-  for (tier = A->kernel_tier+1; tier >= 1; tier--)
-  {
-    /* Get tier hashtable. */
-    reverse_tier = tier-1;
-    hashtable = A->tier_hashtable[reverse_tier];
+  //for (tier = A->kernel_tier+1; tier >= 1; tier--)
+  //{
+  //  /* Get tier hashtable. */
+  //  reverse_tier = tier-1;
+  //  hashtable = A->tier_hashtable[reverse_tier];
 
-    user_data.tier = reverse_tier;
-    user_data.A = A;
-    user_data.tolerance = tolerance;
+  //  user_data.tier = reverse_tier;
+  //  user_data.A = A;
+  //  user_data.tolerance = tolerance;
 
-    if (reverse_tier == A->kernel_tier)
-    {
-      /* Verify tree structure. */
-      spamm_hashtable_foreach(hashtable, spamm_check_tree_structure, &user_data);
+  //  if (reverse_tier == A->kernel_tier)
+  //  {
+  //    /* Verify tree structure. */
+  //    spamm_hashtable_foreach(hashtable, spamm_check_tree_structure, &user_data);
 
-      /* Verify transpose and dilated data. */
-      spamm_hashtable_foreach(hashtable, spamm_check_data_consistency, &user_data);
-    }
+  //    /* Verify transpose and dilated data. */
+  //    spamm_hashtable_foreach(hashtable, spamm_check_data_consistency, &user_data);
+  //  }
 
-    /* Verify consistency of linear indices. */
-    spamm_hashtable_foreach(hashtable, spamm_check_linear_index, &user_data);
+  //  /* Verify consistency of linear indices. */
+  //  spamm_hashtable_foreach(hashtable, spamm_check_linear_index, &user_data);
 
-    /* Verify norms. */
-    spamm_hashtable_foreach(hashtable, spamm_check_norm, &user_data);
-  }
+  //  /* Verify norms. */
+  //  spamm_hashtable_foreach(hashtable, spamm_check_norm, &user_data);
+  //}
 
   return user_data.result;
 }

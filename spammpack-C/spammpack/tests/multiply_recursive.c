@@ -4,7 +4,6 @@
 
 #include "config.h"
 #include "spamm.h"
-#include "spamm_recursive.h"
 
 #define TEST_TOLERANCE 5e-7
 
