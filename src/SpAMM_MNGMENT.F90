@@ -218,7 +218,8 @@ CONTAINS
       CALL NewQuNode(qC)
     ENDIF
 
-    qC%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm
+!    qC%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm
+    qC%Norm=qA%Norm
     !IF(Depth==SpAMM_TOTAL_DEPTH.AND.ASSOCIATED(qA%Blok))THEN
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
       ! IF(qA%Siz==SpAMM_BLOCK_SIZE.AND.ALLOCATED(qA%Blok))THEN
@@ -292,7 +293,8 @@ CONTAINS
     IF(.NOT.ASSOCIATED(bC))THEN
       CALL NewBiNode(bC)
     ENDIF
-    bC%Norms%FrobeniusNorm=bA%Norms%FrobeniusNorm
+    !    bC%Norms%FrobeniusNorm=bA%Norms%FrobeniusNorm
+    bC%Norm=bA%Norm
     IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(bA%Vect))THEN
       IF(.NOT.ALLOCATED(bC%Vect)) &
         ALLOCATE(bC%Vect(1:SpAMM_BLOCK_SIZE))
@@ -555,7 +557,7 @@ CONTAINS
         ALLOCATE(bA)
       ENDIF
     ENDIF
-    bA%Norms%FrobeniusNorm=SpAMM_Zero
+    bA%Norm=SpAMM_BIG_DBL
     NULLIFY(bA%Sect0)
     NULLIFY(bA%Sect1)
 

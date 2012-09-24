@@ -29,24 +29,19 @@
 
 !> Defines global parameters and variables.
 MODULE SpAMM_GLOBALS
-
   USE SpAMM_DERIVED
-
   IMPLICIT NONE
-
   !> Define interface to the C function spamm_exit().
   INTERFACE SpAMM_Exit
     SUBROUTINE SpAMM_Exit (exitcode)
       INTEGER, INTENT(IN) :: exitcode
     END SUBROUTINE SpAMM_Exit
   END INTERFACE SpAMM_Exit
-
   !> Define interface to the C function spamm_trap().
   INTERFACE SpAMM_Trap
     SUBROUTINE SpAMM_Trap ()
     END SUBROUTINE SpAMM_Trap
   END INTERFACE SpAMM_Trap
-
   !> Define interface to the C function spamm_get_time().
   INTERFACE SpAMM_Get_Time
     FUNCTION SpAMM_Get_Time ()
@@ -54,44 +49,32 @@ MODULE SpAMM_GLOBALS
       REAL(SpAMM_DOUBLE) :: SpAMM_Get_Time
     END FUNCTION SpAMM_Get_Time
   END INTERFACE SpAMM_Get_Time
-
   !> The size of the basic submatrix blocks.
-  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE = 16
-
+  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE = 2
   !> The SpAMM tolerance.
 #ifdef SPAMM_DOUBLE
   REAL(SpAMM_KIND),PARAMETER :: SpAMM_PRODUCT_TOLERANCE = 1D-12
 #else
   REAL(SpAMM_KIND),PARAMETER :: SpAMM_PRODUCT_TOLERANCE = 1D-8
 #endif
-
-  !> The tolerance for a matrix product.
+  !> The "sparsification" tolerance
   REAL(SpAMM_KIND),PARAMETER :: SpAMM_MATRIX_TOLERANCE = 1D-4*SpAMM_PRODUCT_TOLERANCE
-
   !> The norm cutoff for tasked recursion.
   REAL(SpAMM_KIND),PARAMETER :: SpAMM_RECURSION_NORMD_CUTOFF = 1E-4
-
   !> The depth of the matrix tree.
   INTEGER :: SpAMM_TOTAL_DEPTH
-
   !> The size of the unpadded matrix.
   INTEGER :: SpAMM_MATRIX_DIMENSION
-
   !> The size of the padded matrix.
   INTEGER :: SpAMM_PADDED_MATRIX_DIMENSION
-
   !> The number of threads requested (only applicable when using OpenMP).
   INTEGER :: SpAMM_THREAD_COUNT
-
   !> Cutoff the tree depth at some predefined maximum depth.
   INTEGER :: SpAMM_RECURSION_DEPTH_CUTOFF
-
   !> Number of timer stat slots.
   INTEGER, PARAMETER :: SpAMM_NUMBER_OF_STATS = 100
-
   !> The timers.
   TYPE(Stats), DIMENSION(1:SpAMM_NUMBER_OF_STATS) :: SpAMM_STATS
-
 CONTAINS
 
   !> Initialize global variables.

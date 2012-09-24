@@ -29,185 +29,77 @@
 
 !> Defines derived types used in SpAMMPACK.
 MODULE SpAMM_DERIVED
-
   !$ USE OMP_LIB
-
   IMPLICIT NONE
-
   PUBLIC
-
   !> Define integer of length 2.
   INTEGER, PARAMETER :: INT1 = SELECTED_INT_KIND(2)  !--Integer*1
 
   !> Define integer of length 2.
   INTEGER, PARAMETER :: INT2 = SELECTED_INT_KIND(4)  !--Integer*2
-
   !> Define integer of length 4.
   INTEGER, PARAMETER :: INT4 = SELECTED_INT_KIND(9)  !--Integer*4
-
   !> Define integer of length 8.
   INTEGER, PARAMETER :: INT8 = SELECTED_INT_KIND(18) !--Integer*8
-
   !> Define float of length 4.
   INTEGER, PARAMETER :: SpAMM_SINGLE = KIND(0.0E0)   !--Real*4
-
   !> Define float of length 8.
   INTEGER, PARAMETER :: SpAMM_DOUBLE = KIND(0.0D0)   !--Real*8
-
   !> Define the float type used for SpAMM.
 #ifdef SPAMM_DOUBLE
   INTEGER, PARAMETER :: SpAMM_KIND = SpAMM_DOUBLE
 #else
   INTEGER, PARAMETER :: SpAMM_KIND = SpAMM_SINGLE
 #endif
-
   !> Define the number zero.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Zero = 0D0
-
   !> Define the number 1/2.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Half = 5D-1
-
   !> Define the number 1.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_One = 1D0
-
   !> Define the number 2.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Two = 2D0
-
   !> Define the number 4.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Four = 4D0
-
   !> Define the number 8.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Eight = 8D0
-
-  !> Norm type.
-  !!
-  !! This type includes several different norms.
-  TYPE SpAMM_Norm
-
-    !> The Frobenius norm.
-    !!
-    !! @f$ \Vert A \Vert_{F} = @f$.
-    REAL(SpAMM_KIND) :: FrobeniusNorm = SpAMM_Zero
-
-    !> The max norm.
-    !!
-    !! @f$ \max_{ij} A_{ij} @f$.
-    REAL(SpAMM_KIND) :: MaxNorm = SpAMM_Zero
-
-  END TYPE SpAMM_Norm
-
+  !> Bigest machine double for ONX_KIND
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_BIG_DBL=HUGE(SpAMM_One)           
+  !> Bigest machine int for int*4
+  INTEGER,      PARAMETER     :: SpAMM_BIG_INT=2**28  
   !> Binary tree data structure.
   TYPE BiTree
-
     !> The norm.
-    TYPE(SpAMM_Norm) :: Norms
-
+    REAL(SpAMM_KIND) :: Norm
     !> The pointer to the left bisecting subtree.
     TYPE(BiTree), POINTER :: Sect0 => NULL()
-
     !> The pointer to the right bisecting subtree.
     TYPE(BiTree), POINTER :: Sect1 => NULL()
-
     !> The vector data.
     REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
-
   END TYPE BiTree
-
   ! --------------------------------------------------
   ! Quad structures
   ! --------------------------------------------------
-
   !> Quaternary tree data structure.
   TYPE QuTree
-
-    REAL(SpAMM_KIND), DIMENSION(16, 16) :: Blok
-
-    !> The norm.
-    TYPE(SpAMM_Norm) :: Norms
-
+    !> The Frobenious norm.
+    REAL(SpAMM_KIND) :: Norm
     !> The pointer to the subtree in quadrant 11.
     TYPE(QuTree), POINTER :: Quad00 => NULL()
-
     !> The pointer to the subtree in quadrant 12.
     TYPE(QuTree), POINTER :: Quad01 => NULL()
-
     !> The pointer to the subtree in quadrant 21.
     TYPE(QuTree), POINTER :: Quad10 => NULL()
-
     !> The pointer to the subtree in quadrant 22.
     TYPE(QuTree), POINTER :: Quad11 => NULL()
-
     !> The matrix data.
-    !REAL(SpAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
-    !TYPE(QuLeaf), POINTER :: Blok
-
+    REAL(SpAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
 #ifdef _OPENMP
-    !> Lock for updating Blok data.
+    !> Block lock 
     INTEGER(KIND = OMP_LOCK_KIND) :: Lock
 #endif
-
   END TYPE QuTree
-
-  TYPE QuLeaf
-
-    REAL(SpAMM_KIND), DIMENSION(16, 16) :: Blok
-
-  END TYPE QuLeaf
-
-  !INTERFACE QuTree
-  !  MODULE PROCEDURE QuTreeConstructor
-  !END INTERFACE QuTree
-
-  TYPE QuLink
-     TYPE(QuLink), POINTER  :: Next
-     TYPE(QuTree), POINTER  :: Quad
-     REAL(SpAMM_KIND)       :: Wght
-     INTEGER                :: Hash
-     INTEGER                :: i
-     INTEGER, DIMENSION(2,2):: Box
-  END TYPE QuLink
-
-  ! QuTree container
-  TYPE QuTptr
-     TYPE(QuTree),POINTER :: T
-  END TYPE QuTptr
-
-  ! QuLink container
-  TYPE QuLptr
-     TYPE(QuLink),POINTER :: L
-  END TYPE QuLptr
-
-  ! --------------------------------------------------
-  ! Cube structures
-  ! --------------------------------------------------
-  TYPE CuTree
-     TYPE(CuTree), POINTER  :: Next
-     TYPE(QuTree), POINTER  :: qA
-     TYPE(QuTree), POINTER  :: qB
-     TYPE(QuTree), POINTER  :: qC
-     INTEGER, DIMENSION(3,2):: Box
-     INTEGER                :: Hash
-  END TYPE CuTree
-
-  TYPE CuLink
-     TYPE(CuLink), POINTER  :: Next
-     TYPE(QuTree), POINTER  :: QuadA
-     TYPE(QuTree), POINTER  :: QuadB
-     INTEGER, DIMENSION(3,2):: Box
-     REAL(SpAMM_KIND)       :: Wght
-     INTEGER                :: Hash
-     INTEGER                :: i
-  END TYPE CuLink
-
-  ! CuTree container
-  TYPE CuTPtr
-     TYPE(CuTree),POINTER :: T
-  END TYPE CuTPtr
-
-  ! CuLink container
-  TYPE CuLPtr
-     TYPE(CuLink),POINTER :: L
-  END TYPE CuLPtr
 
   TYPE Stats
      REAL(SpAMM_KIND)   :: Time
@@ -217,15 +109,163 @@ MODULE SpAMM_DERIVED
 
 CONTAINS
 
-  FUNCTION QuTreeConstructor () RESULT(q)
-
-    TYPE(QuTree) :: q
-
-    q%Quad00 => NULL()
-    q%Quad01 => NULL()
-    q%Quad10 => NULL()
-    q%Quad11 => NULL()
-
-  END FUNCTION QuTreeConstructor
-
 END MODULE SpAMM_DERIVED
+
+!!$
+!!$  !! This type includes several different norms.
+!!$  TYPE SpAMM_Norm
+!!$
+!!$    !> The Frobenius norm.
+!!$    !!
+!!$    !! @f$ \Vert A \Vert_{F} = @f$.
+!!$    REAL(SpAMM_KIND) :: FrobeniusNorm = SpAMM_Zero
+!!$
+!!$    !> The max norm.
+!!$    !!
+!!$    !! @f$ \max_{ij} A_{ij} @f$.
+!!$    REAL(SpAMM_KIND) :: MaxNorm = SpAMM_Zero
+!!$
+!!$  END TYPE SpAMM_Norm
+
+!!$
+!!$
+!!$  FUNCTION QuTreeConstructor () RESULT(q)
+!!$
+!!$    TYPE(QuTree) :: q
+!!$
+!!$    q%Quad00 => NULL()
+!!$    q%Quad01 => NULL()
+!!$    q%Quad10 => NULL()
+!!$    q%Quad11 => NULL()
+!!$
+!!$  END FUNCTION QuTreeConstructor
+!!$
+!!$  TYPE QuLeaf
+!!$
+!!$    REAL(SpAMM_KIND), DIMENSION(16, 16) :: Blok
+!!$
+!!$  END TYPE QuLeaf
+!!$
+!!$  !INTERFACE QuTree
+!!$  !  MODULE PROCEDURE QuTreeConstructor
+!!$  !END INTERFACE QuTree
+!!$
+!!$  TYPE QuLink
+!!$     TYPE(QuLink), POINTER  :: Next
+!!$     TYPE(QuTree), POINTER  :: Quad
+!!$     REAL(SpAMM_KIND)       :: Wght
+!!$     INTEGER                :: Hash
+!!$     INTEGER                :: i
+!!$     INTEGER, DIMENSION(2,2):: Box
+!!$  END TYPE QuLink
+!!$
+!!$  ! QuTree container
+!!$  TYPE QuTptr
+!!$     TYPE(QuTree),POINTER :: T
+!!$  END TYPE QuTptr
+!!$
+!!$  ! QuLink container
+!!$  TYPE QuLptr
+!!$     TYPE(QuLink),POINTER :: L
+!!$  END TYPE QuLptr
+!!$
+!!$  ! --------------------------------------------------
+!!$  ! Cube structures
+!!$  ! --------------------------------------------------
+!!$  TYPE CuTree
+!!$     TYPE(CuTree), POINTER  :: Next
+!!$     TYPE(QuTree), POINTER  :: qA
+!!$     TYPE(QuTree), POINTER  :: qB
+!!$     TYPE(QuTree), POINTER  :: qC
+!!$     INTEGER, DIMENSION(3,2):: Box
+!!$     INTEGER                :: Hash
+!!$  END TYPE CuTree
+!!$
+!!$  TYPE CuLink
+!!$     TYPE(CuLink), POINTER  :: Next
+!!$     TYPE(QuTree), POINTER  :: QuadA
+!!$     TYPE(QuTree), POINTER  :: QuadB
+!!$     INTEGER, DIMENSION(3,2):: Box
+!!$     REAL(SpAMM_KIND)       :: Wght
+!!$     INTEGER                :: Hash
+!!$     INTEGER                :: i
+!!$  END TYPE CuLink
+!!$
+!!$  ! CuTree container
+!!$  TYPE CuTPtr
+!!$     TYPE(CuTree),POINTER :: T
+!!$  END TYPE CuTPtr
+!!$
+!!$  ! CuLink container
+!!$  TYPE CuLPtr
+!!$     TYPE(CuLink),POINTER :: L
+!!$  END TYPE CuLPtr
+!!$ NULL()
+!!$
+!!$  END FUNCTION QuTreeConstructor
+!!$
+!!$END MODULE SpAMM_DERIVED
+!!$
+!!$
+!!$  TYPE QuLeaf
+!!$
+!!$    REAL(SpAMM_KIND), DIMENSION(16, 16) :: Blok
+!!$
+!!$  END TYPE QuLeaf
+!!$
+!!$  !INTERFACE QuTree
+!!$  !  MODULE PROCEDURE QuTreeConstructor
+!!$  !END INTERFACE QuTree
+!!$
+!!$  TYPE QuLink
+!!$     TYPE(QuLink), POINTER  :: Next
+!!$     TYPE(QuTree), POINTER  :: Quad
+!!$     REAL(SpAMM_KIND)       :: Wght
+!!$     INTEGER                :: Hash
+!!$     INTEGER                :: i
+!!$     INTEGER, DIMENSION(2,2):: Box
+!!$  END TYPE QuLink
+!!$
+!!$  ! QuTree container
+!!$  TYPE QuTptr
+!!$     TYPE(QuTree),POINTER :: T
+!!$  END TYPE QuTptr
+!!$
+!!$  ! QuLink container
+!!$  TYPE QuLptr
+!!$     TYPE(QuLink),POINTER :: L
+!!$  END TYPE QuLptr
+!!$
+!!$  ! --------------------------------------------------
+!!$  ! Cube structures
+!!$  ! --------------------------------------------------
+!!$  TYPE CuTree
+!!$     TYPE(CuTree), POINTER  :: Next
+!!$     TYPE(QuTree), POINTER  :: qA
+!!$     TYPE(QuTree), POINTER  :: qB
+!!$     TYPE(QuTree), POINTER  :: qC
+!!$     INTEGER, DIMENSION(3,2):: Box
+!!$     INTEGER                :: Hash
+!!$  END TYPE CuTree
+!!$
+!!$  TYPE CuLink
+!!$     TYPE(CuLink), POINTER  :: Next
+!!$     TYPE(QuTree), POINTER  :: QuadA
+!!$     TYPE(QuTree), POINTER  :: QuadB
+!!$     INTEGER, DIMENSION(3,2):: Box
+!!$     REAL(SpAMM_KIND)       :: Wght
+!!$     INTEGER                :: Hash
+!!$     INTEGER                :: i
+!!$  END TYPE CuLink
+!!$
+!!$  ! CuTree container
+!!$  TYPE CuTPtr
+!!$     TYPE(CuTree),POINTER :: T
+!!$  END TYPE CuTPtr
+!!$
+!!$  ! CuLink container
+!!$  TYPE CuLPtr
+!!$     TYPE(CuLink),POINTER :: L
+!!$  END TYPE CuLPtr
+!!$
+!!$

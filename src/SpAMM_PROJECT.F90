@@ -61,41 +61,30 @@ CONTAINS
   !! @param Ne The number of electrons.
   !! @param TrP The trace of P.
   SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification (P, P2, Ne, TrP)
-
     TYPE(QuTree), POINTER, INTENT(INOUT) :: P
     TYPE(QuTree), POINTER, INTENT(INOUT) :: P2
     REAL(SpAMM_KIND), INTENT(IN)         :: Ne
     REAL(SpAMM_KIND), INTENT(OUT)        :: TrP
-
     TYPE(QuTree), POINTER :: T1
     REAL(SpAMM_KIND)      :: TrP2
     REAL(SpAMM_DOUBLE)    :: TInitial, TTotal
-
     TInitial=SpAMM_Get_Time()
-
     TrP=Trace(P)
     CALL Multiply(P,P,P2)                          ! P^2 <- P.P
     TrP2=Trace(P2)
-
     IF(ABS(TrP2-Ne)<ABS(SpAMM_Two*TrP-TrP2-Ne))THEN
       T1=>P; P=>P2; P2=>T1                        ! P <- P^2
     ELSE
       CALL Add(P,P2,SpAMM_Two,-SpAMM_One)         ! P <- 2*P-P^2
     ENDIF
-
-    P%Norms=Norm(P)
-    P%Norms%FrobeniusNorm=SQRT(P%Norms%FrobeniusNorm)
-
+    P%Norm=SQRT(Norm(P))
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Quadratic_Trace_Correcting_Purification",29)
-
   END SUBROUTINE SpAMM_Quadratic_Trace_Correcting_Purification
-
   !=================================================================
   ! REMAPING SPECTRAL BOUNDS TO [0,1]
   !=================================================================
   SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree(A)
-
     TYPE(QuTree),POINTER  :: A
     REAL(SpAMM_KIND)     :: RQIMin,RQIMax,SpectralExtent
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_MULTIPLY_THRESHOLD   =1D-7 !SpAMM_PRODUCT_TOLERANCE
@@ -113,13 +102,10 @@ CONTAINS
     SpectralExtent=RQIMax-RQIMin
     CALL Add(A,-RQIMax)
     CALL Multiply(A,-SpAMM_One/SpectralExtent)
-    A%Norms=Norm(A)
-    A%Norms%FrobeniusNorm=Sqrt(A%Norms%FrobeniusNorm)
+    A%Norm=SQRT(Norm(A))
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree",31)
-
   END SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
-
   !=================================================================
   ! SPAMM ROUTINES FOR SPECTRAL ESTIMATION (EXTREMAL EIGENVALUES)
   !=================================================================
@@ -127,7 +113,6 @@ CONTAINS
   !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SUBROUTINE SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree(A,RQIMin,RQIMax, &
       SpAMM_RQI_MULTIPLY_THRESHOLD,SpAMM_RQI_CONVERGENCE_THRESHOLD)
-
     INTEGER              :: I,CG
     REAL(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD
     INTEGER, PARAMETER   :: NCG=1000
@@ -136,7 +121,6 @@ CONTAINS
     REAL(SpAMM_KIND)     :: beta,LambdaPlus,LambdaMins,RQIPlus,RQIMins,omega, &
       xx,hh,xh,hx,xAx,xAh,hAx,hAh,xnorm
     REAL(SpAMM_KIND)     :: RQIMin,RQIMax
-
     CALL New(x)
     CALL New(g)
     CALL New(h)
@@ -153,26 +137,16 @@ CONTAINS
         CALL Copy(A,SpAMM_MATRIX_DIMENSION,x)
       ENDIF
       xnorm=SpAMM_One/Dot(x,x)
-
       CALL Multiply(x,xnorm)
-      x%Norms=Norm(x)
-      x%Norms%FrobeniusNorm=SQRT(x%Norms%FrobeniusNorm)
-      WRITE(*,*)' XNORM = ',XNORM
-      !       STOP
-
+      x%Norm=SQRT(Norm(x))
       CALL Multiply(h,SpAMM_Zero)
       CALL Multiply(g,SpAMM_Zero)
       CALL Multiply(xOld,SpAMM_Zero)
       CALL Multiply(hOld,SpAMM_Zero)
       CALL Multiply(gOld,SpAMM_Zero)
-
       DO CG=1,NCG
         ! Intermediates
         xx=Dot(x,x)
-
-        WRITE(*,*)xx
-        WRITE(*,*)" NormA = ",Norm(A)
-
         CALL Multiply(A,x,Ax,SpAMM_RQI_MULTIPLY_THRESHOLD)
         xAx=Dot(x,Ax)
         omega=xAx/xx
@@ -181,10 +155,6 @@ CONTAINS
         ELSE
           RQIMax=omega
         ENDIF
-
-        WRITE(*,*)" omega = ",omega
-        STOP
-
         ! Gradient of extremal quotients (eigenvalues): one is + the other is - ...
         IF(I==1)THEN
           ! g=2*(Ax-omega*x)/xx
@@ -205,9 +175,7 @@ CONTAINS
 
         ! h=g+beta*hOld
         CALL Add(h,SpAMM_One,g,beta,hOld)
-        h%Norms=Norm(h)
-        h%Norms%FrobeniusNorm=SQRT(h%Norms%FrobeniusNorm)
-
+        h%Norm=SQRT(Norm(h))
         CALL Copy(g,gOld)
         CALL Copy(h,hOld)
         ! Ah=A.h
@@ -251,9 +219,7 @@ CONTAINS
             CALL Add(x,SpAMM_One,h,LambdaPlus)
           ENDIF
         ENDIF
-        x%Norms=Norm(x)
-        x%Norms%FrobeniusNorm=SQRT(x%Norms%FrobeniusNorm)
-
+        x%Norm=SQRT(Norm(x))
         IF(I==1)THEN
           WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
         ELSE

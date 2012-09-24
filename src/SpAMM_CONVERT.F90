@@ -49,14 +49,10 @@ MODULE SpAMM_CONVERT
   !!
   !! @return Pointer to a new quadtree.
   FUNCTION SpAMM_Convert_Dense_2_QuTree (A) RESULT(qA)
-
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
-
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
-
     TInitial = SpAMM_Get_Time()
-
     qA=>NULL()
     CALL NewQuNode(qA)
 #ifdef OLDCONVERT
@@ -65,14 +61,11 @@ MODULE SpAMM_CONVERT
     CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA, &
       1, SpAMM_PADDED_MATRIX_DIMENSION, 1, SpAMM_PADDED_MATRIX_DIMENSION)
 #endif
-
     ! Update norms.
-    qA%Norms=Norm(qA)
-    qA%Norms%FrobeniusNorm = SQRT(qA%Norms%FrobeniusNorm)
-
+    qA%Norm=Norm(qA)
+    qA%Norm=SQRT(qA%Norm)
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal, "SpAMM_Convert_Dense_2_QuTree", 20)
-
   END FUNCTION SpAMM_Convert_Dense_2_QuTree
 
   !> Recursively convert a dense matrix to a quadtree.
