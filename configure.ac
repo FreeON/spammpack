@@ -80,6 +80,15 @@ case ${FC} in
       AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
     fi
     ;;
+  *nagfor*)
+    AC_MSG_NOTICE([Detected nagfor, the NAG Fortran compiler])
+    if test "${ac_cv_env_FCFLAGS_set}" != "set"; then
+      FCFLAGS="-g -DNAG -dcfuns -O2 -Oassumed=always_contig -Ounroll=1 -u -w=unused -mismatch_all -maxcontin=1500 -ieee=full -nan -save"
+      scaling_reference_file="freeon-10.Intel.reference"
+      test_repeat=1
+      AC_MSG_NOTICE([setting default compiler flags: ${FCFLAGS}])
+    fi
+    ;;
   *) AC_MSG_FAILURE([Undetected FC compiler (${FC})])
      ;;
 esac
