@@ -67,12 +67,9 @@ spamm_hashed_add (const float alpha,
     exit(1);
   }
 
-  /* Print out some information. */
-  //printf("[add] alpha = %e, beta = %e\n", alpha, beta);
-
   /* Go to lowest tier and start adding submatrix blocks. */
-  A_keys = spamm_hashtable_keys(A->tier_hashtable[A->kernel_tier]);
-  B_keys = spamm_hashtable_keys(B->tier_hashtable[A->kernel_tier]);
+  A_keys = spamm_hashtable_keys(A->tier_hashtable[A->kernel_tier-A->tier]);
+  B_keys = spamm_hashtable_keys(B->tier_hashtable[A->kernel_tier-A->tier]);
 
   /* Sort the keys. */
   spamm_list_sort_index(A_keys, spamm_list_compare_int);
@@ -108,7 +105,7 @@ spamm_hashed_add (const float alpha,
 
     if (A_index < B_index)
     {
-      A_data = spamm_hashtable_lookup(A->tier_hashtable[A->kernel_tier], A_index);
+      A_data = spamm_hashtable_lookup(A->tier_hashtable[A->kernel_tier-A->tier], A_index);
       for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
         for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED; j_blocked++) {
           for (i_basic = 0; i_basic < SPAMM_N_BLOCK; i_basic++) {
@@ -135,10 +132,10 @@ spamm_hashed_add (const float alpha,
 
     else if (B_index < A_index)
     {
-      B_data = spamm_hashtable_lookup(B->tier_hashtable[B->kernel_tier], spamm_list_get_index(B_keys, j));
+      B_data = spamm_hashtable_lookup(B->tier_hashtable[B->kernel_tier-B->tier], spamm_list_get_index(B_keys, j));
 
       /* Create new node. */
-      A_data = spamm_hashed_new_data(A->kernel_tier, B_index, A->layout);
+      A_data = spamm_hashed_new_data(A->kernel_tier-A->tier, B_index, A->layout);
       A_data->node_norm2 = 0;
       for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
         for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED; j_blocked++) {
@@ -165,13 +162,13 @@ spamm_hashed_add (const float alpha,
       j++;
 
       /* Create new block in A and store it. */
-      spamm_hashtable_insert(A->tier_hashtable[A->kernel_tier], B_index, A_data);
+      spamm_hashtable_insert(A->tier_hashtable[A->kernel_tier-A->tier], B_index, A_data);
     }
 
     else if (A_index == B_index)
     {
-      A_data = spamm_hashtable_lookup(A->tier_hashtable[A->kernel_tier], spamm_list_get_index(A_keys, i));
-      B_data = spamm_hashtable_lookup(B->tier_hashtable[B->kernel_tier], spamm_list_get_index(B_keys, j));
+      A_data = spamm_hashtable_lookup(A->tier_hashtable[A->kernel_tier-A->tier], spamm_list_get_index(A_keys, i));
+      B_data = spamm_hashtable_lookup(B->tier_hashtable[B->kernel_tier-B->tier], spamm_list_get_index(B_keys, j));
 
       /* Add block data. */
       A_data->node_norm2 = 0;
@@ -227,7 +224,7 @@ spamm_hashed_add (const float alpha,
   spamm_list_delete(&B_keys);
 
   /* Fix norms of upper tiers. */
-  for (tier = A->kernel_tier-1; tier >= 0; tier--)
+  for (tier = A->kernel_tier-A->tier-1; tier >= 0; tier--)
   {
     next_tier = tier+1;
 
@@ -251,7 +248,7 @@ spamm_hashed_add (const float alpha,
       node = spamm_hashtable_lookup(A->tier_hashtable[tier], A_index);
       node->norm2 = 0;
 
-      if (next_tier == A->kernel_tier)
+      if (next_tier == A->kernel_tier-A->tier)
       {
         for (i_child = 0; i_child < 2; i_child++) {
           for (j_child = 0; j_child < 2; j_child++)
@@ -309,6 +306,9 @@ spamm_recursive_add (const float alpha,
 {
   unsigned int i;
 
+  /* There is nothing to do here. */
+  if (A == NULL && B == NULL) { return; }
+
   if (A->M_upper-A->M_lower == A->N_linear)
   {
     spamm_hashed_add(alpha, A->hashed_tree, beta, B->hashed_tree);
@@ -337,11 +337,13 @@ spamm_recursive_add (const float alpha,
     else if (A == NULL && B != NULL)
     {
       /* Copy B node to A. */
+      SPAMM_FATAL("[FIXME]\n");
     }
 
     else if (A != NULL && B == NULL)
     {
       /* Multiply A by alpha. */
+      SPAMM_FATAL("[FIXME]\n");
     }
   }
 }
