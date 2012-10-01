@@ -49,8 +49,8 @@ main (int argc, char **argv)
 #endif
 
   /* Convert to SpAMM matrix. */
-  A = spamm_convert_dense_to_spamm(N, N, row_major, A_dense, row_major);
-  B = spamm_convert_dense_to_spamm(N, N, row_major, B_dense, row_major);
+  A = spamm_hashed_convert_dense_to_spamm(N, N, row_major, A_dense, row_major);
+  B = spamm_hashed_convert_dense_to_spamm(N, N, row_major, B_dense, row_major);
 
   /* Add by hand for verification. */
   for (i = 0; i < N; i++) {

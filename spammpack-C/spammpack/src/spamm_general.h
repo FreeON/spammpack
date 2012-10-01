@@ -216,6 +216,11 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
     const float *const A_dense,
     const enum spamm_layout_t spamm_layout);
 
+struct spamm_hashed_t *
+spamm_hashed_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
+    const enum spamm_layout_t dense_type, const float *const A_dense,
+    const enum spamm_layout_t spamm_layout);
+
 void spamm_sgemm (char * transA, char * transB,
     int *M, int *N, int *K,
     float *alpha, float *A, int *LDA, float *B, int *LDB,
