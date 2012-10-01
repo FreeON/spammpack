@@ -39,8 +39,7 @@ check_PROGRAMS = \
   list \
   stats \
   list_sort \
-	add_spamm_1 \
-	add_spamm_2 \
+  add_spamm \
   multiply_recursive \
   multiply_spamm \
   get_version \
