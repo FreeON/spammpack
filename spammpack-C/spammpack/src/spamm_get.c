@@ -54,12 +54,12 @@ spamm_recursive_get (const unsigned int i, const unsigned int j, const struct sp
   unsigned int number_rows;
   unsigned int number_columns;
 
+  if (node == NULL) { return 0; }
+
   number_rows = node->M_upper-node->M_lower;
   number_columns = node->N_upper-node->N_lower;
 
-  if (node == NULL) { return 0; }
-
-  else if (number_rows == node->N_linear)
+  if (number_rows == node->N_linear)
   {
     return spamm_hashed_get(i, j, node->hashed_tree);
   }
