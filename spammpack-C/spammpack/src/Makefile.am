@@ -156,6 +156,7 @@ libspamm_tree_la_SOURCES = \
   spamm_allocate.c \
   spamm_check.c \
   spamm_convert.c \
+  spamm_copy.c \
   spamm_delete.c \
   spamm_error.c \
   spamm_get.c \

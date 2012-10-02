@@ -12,6 +12,10 @@ int
 spamm_check (const struct spamm_matrix_t *A, const float tolerance);
 
 void
+spamm_copy (struct spamm_matrix_t *A,
+    const struct spamm_matrix_t *const B);
+
+void
 spamm_delete (struct spamm_matrix_t **A);
 
 void

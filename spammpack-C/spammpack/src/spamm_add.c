@@ -309,23 +309,23 @@ spamm_recursive_add (const float alpha,
   /* There is nothing to do here. */
   if (A == NULL && B == NULL) { return; }
 
-  if (A->M_upper-A->M_lower == A->N_linear)
+  if (A != NULL && B != NULL)
   {
-    spamm_hashed_add(alpha, A->hashed_tree, beta, B->hashed_tree);
-  }
-
-  else if (A->M_upper-A->M_lower == A->N_contiguous)
-  {
-    /* Braindead add. */
-    for (i = 0; i < A->N_contiguous*A->N_contiguous; i++)
+    if (A->M_upper-A->M_lower == A->N_linear)
     {
-      A->data[i] = alpha*A->data[i]+beta*B->data[i];
+      spamm_hashed_add(alpha, A->hashed_tree, beta, B->hashed_tree);
     }
-  }
 
-  else
-  {
-    if (A != NULL && B != NULL)
+    else if (A->M_upper-A->M_lower == A->N_contiguous)
+    {
+      /* Braindead add. */
+      for (i = 0; i < A->N_contiguous*A->N_contiguous; i++)
+      {
+        A->data[i] = alpha*A->data[i]+beta*B->data[i];
+      }
+    }
+
+    else
     {
       /* Recursve. */
       spamm_recursive_add(alpha, A->child[0], beta, B->child[0]);
@@ -333,18 +333,18 @@ spamm_recursive_add (const float alpha,
       spamm_recursive_add(alpha, A->child[2], beta, B->child[2]);
       spamm_recursive_add(alpha, A->child[3], beta, B->child[3]);
     }
+  }
 
-    else if (A == NULL && B != NULL)
-    {
-      /* Copy B node to A. */
-      SPAMM_FATAL("[FIXME]\n");
-    }
+  else if (A == NULL && B != NULL)
+  {
+    /* Copy B node to A. */
+    SPAMM_FATAL("[FIXME]\n");
+  }
 
-    else if (A != NULL && B == NULL)
-    {
-      /* Multiply A by alpha. */
-      SPAMM_FATAL("[FIXME]\n");
-    }
+  else if (A != NULL && B == NULL)
+  {
+    /* Multiply A by alpha. */
+    SPAMM_FATAL("[FIXME]\n");
   }
 }
 
