@@ -338,7 +338,7 @@ spamm_recursive_add (const float alpha,
   else if (A == NULL && B != NULL)
   {
     /* Copy B node to A. */
-    SPAMM_FATAL("[FIXME]\n");
+    spamm_recursive_copy(A, B);
   }
 
   else if (A != NULL && B == NULL)
