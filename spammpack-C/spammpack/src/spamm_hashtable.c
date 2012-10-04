@@ -89,7 +89,7 @@ spamm_hashtable_hash (const uint32_t key)
 #elif SPAMM_HASHTABLE_HASH == 3
   return spamm_hashtable_hash_MurmurHash3(key);
 #else
-  exit(1);
+  SPAMM_FATAL("uncovered case\n");
 
   /* Make PGI compiler happy. */
   return -1;
@@ -272,9 +272,8 @@ spamm_hashtable_rehash (struct spamm_hashtable_t *hashtable,
   /* Sanity check. */
   if (old_hashtable->number_stored_keys != new_hashtable->number_stored_keys)
   {
-    printf("error in hashtable rehash... had %u keys in old hashtable, have %u keys in new hashtable\n",
+    SPAMM_FATAL("error in hashtable rehash... had %u keys in old hashtable, have %u keys in new hashtable\n",
         old_hashtable->number_stored_keys, new_hashtable->number_stored_keys);
-    exit(1);
   }
 
   /* Copy the 2 special keys. */
@@ -564,8 +563,7 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
 
   else
   {
-    printf("[spamm_hashtable_remove] key out of bounds\n");
-    exit(1);
+    SPAMM_FATAL("key out of bounds\n");
   }
 #endif
 
@@ -658,8 +656,7 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
 
   if (list_index != spamm_list_length(list))
   {
-    printf("error copying indices\n");
-    exit(1);
+    SPAMM_FATAL("error copying indices\n");
   }
 #else
   unsigned int number_keys;

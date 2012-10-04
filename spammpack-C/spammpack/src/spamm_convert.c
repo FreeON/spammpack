@@ -49,8 +49,7 @@ spamm_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
           break;
 
         default:
-          printf("unknown type\n");
-          exit(1);
+          SPAMM_FATAL("unknown type\n");
           break;
       }
     }
@@ -151,8 +150,7 @@ spamm_hashed_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
               break;
 
             default:
-              printf("unknown type\n");
-              exit(1);
+              SPAMM_FATAL("unknown type\n");
               break;
           }
 
@@ -212,8 +210,8 @@ spamm_hashed_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
                   break;
 
                 default:
-                  printf("unknown type\n");
-                  exit(1);
+                  SPAMM_FATAL("unknown type\n");
+                  break;
               }
 
               /* Set new value. */

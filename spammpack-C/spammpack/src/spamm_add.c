@@ -52,20 +52,17 @@ spamm_hashed_add (const float alpha,
   {
     if ((*A)->layout != (*B)->layout)
     {
-      printf("[add] inconsistent layout in matrices\n");
-      exit(1);
+      SPAMM_FATAL("inconsistent layout in matrices\n");
     }
 
     if ((*A)->M != (*B)->M)
     {
-      printf("[add] mismatch of number of rows\n");
-      exit(1);
+      SPAMM_FATAL("mismatch of number of rows\n");
     }
 
     if ((*A)->N != (*B)->N)
     {
-      printf("[add] mismatch of number of columns\n");
-      exit(1);
+      SPAMM_FATAL("mismatch of number of columns\n");
     }
 
     /* Go to lowest tier and start adding submatrix blocks. */
@@ -202,8 +199,7 @@ spamm_hashed_add (const float alpha,
 
       else
       {
-        printf("[%s:%i] I should not be here\n", __FILE__, __LINE__);
-        exit(1);
+        SPAMM_FATAL("I should not be here\n");
       }
 
       /* Update block norms. */

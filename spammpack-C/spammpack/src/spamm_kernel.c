@@ -1,3 +1,4 @@
+#include "spamm_error.h"
 #include "spamm_kernel.h"
 #include "spamm_types_private.h"
 
@@ -27,8 +28,7 @@ spamm_kernel_get_name (const unsigned int i)
 
   if (i >= SPAMM_NUMBER_KERNELS)
   {
-    printf("illegal kernel index\n");
-    exit(1);
+    SPAMM_FATAL("illegal kernel index\n");
   }
 
   return spamm_stream_kernel_name[i];
@@ -67,8 +67,7 @@ spamm_kernel_get_kernel (const char* name)
 
   else
   {
-    printf("[get kernel] unknown kernel: %s\n", name);
-    exit(1);
+    SPAMM_FATAL("unknown kernel: %s\n", name);
   }
 
   return kernel;
@@ -98,8 +97,7 @@ spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel)
       break;
 
     default:
-      printf("[suggest layout] unknown kernel: %i\n", kernel);
-      exit(1);
+      SPAMM_FATAL("unknown kernel: %i\n", kernel);
       break;
   }
 }
@@ -137,8 +135,7 @@ spamm_kernel_get_layout (const char *name)
 
   else
   {
-    printf("[spamm kernel get layout] unknown layout name: %s\n", name);
-    exit(1);
+    SPAMM_FATAL("unknown layout name: %s\n", name);
   }
 
   return layout;

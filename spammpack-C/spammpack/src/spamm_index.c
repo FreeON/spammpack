@@ -189,8 +189,7 @@ spamm_index_kernel_block_hierarchical (const unsigned int i_blocked,
       break;
 
     default:
-      printf("[spamm index kernel block hierarchical] unknown layout (%i)\n", layout);
-      exit(1);
+      SPAMM_FATAL("unknown layout (%i)\n", layout);
       break;
   }
 
@@ -242,8 +241,7 @@ spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_blocked,
       break;
 
     default:
-      printf("[spamm index kernel block transpose hierarchical] unknown layout (%i)\n", layout);
-      exit(1);
+      SPAMM_FATAL("unknown layout (%i)\n", layout);
       break;
   }
 

@@ -32,18 +32,15 @@ spamm_allocate (size_t size)
     switch (result)
     {
       case EINVAL:
-        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
-        exit(1);
+        SPAMM_FATAL("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
         break;
 
       case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
-        exit(1);
+        SPAMM_FATAL("There was insufficient memory to fulfill the allocation request.\n");
         break;
 
       default:
-        printf("unknown error code\n");
-        exit(1);
+        SPAMM_FATAL("unknown error code\n");
         break;
     }
   }

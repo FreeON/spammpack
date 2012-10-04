@@ -1,9 +1,33 @@
 #include "spamm_error.h"
 
+#include <execinfo.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/** Print a backtrace. */
+void
+spamm_error_print_backtrace ()
+{
+  void *array[50];
+  size_t size;
+  char **strings;
+  size_t i;
+
+  size = backtrace(array, 50);
+  strings = backtrace_symbols(array, size);
+
+  printf("Obtained %zd stack frames.\n", size-2);
+
+  /* Omit the first 2 frames since we know those are the error handlers. */
+  for (i = 2; i < size; i++)
+  {
+    printf("%s\n", strings[i]);
+  }
+
+  free(strings);
+}
 
 /** Print out a warning message.
  *
@@ -71,6 +95,10 @@ spamm_error_fatal (const char *const filename, const int line, ...)
 
   /* Cleanup. */
   free(new_format);
+
+  /* Print backtrace. */
+  printf("\n");
+  spamm_error_print_backtrace();
 
   /* Exit. */
   exit(1);

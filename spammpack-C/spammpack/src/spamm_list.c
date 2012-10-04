@@ -417,8 +417,7 @@ spamm_list_get_index (struct spamm_list_t *list, const unsigned int i)
 
   if (i >= list->length)
   {
-    printf("[list get index] index out of bounds: (i = %u) >= (length = %u)\n", i, list->length);
-    exit(1);
+    SPAMM_FATAL("index out of bounds: (i = %u) >= (length = %u)\n", i, list->length);
   }
 
   return list->index[i];
@@ -450,8 +449,7 @@ spamm_list_get_norm (struct spamm_list_t *list, const unsigned int i)
 
   if (i >= list->length)
   {
-    printf("[list get norm] index out of bounds: (i = %u) >= (length = %u)\n", i, list->length);
-    exit(1);
+    SPAMM_FATAL("index out of bounds: (i = %u) >= (length = %u)\n", i, list->length);
   }
 
   return list->norm[i];
@@ -471,8 +469,7 @@ spamm_list_set (struct spamm_list_t *list, const unsigned int i, const unsigned 
 
   if (i >= list->length)
   {
-    printf("[list set] index out of bounds: (i = %u) >= (length = %u)\n", i, list->length);
-    exit(1);
+    SPAMM_FATAL("index out of bounds: (i = %u) >= (length = %u)\n", i, list->length);
   }
 
   list->index[i] = index;

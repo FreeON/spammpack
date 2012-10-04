@@ -405,14 +405,12 @@ spamm_hashed_multiply (const float tolerance,
   /* Check some more things. */
   if (A->layout != B->layout || A->layout != C->layout)
   {
-    printf("[multiply] inconsistent layout in matrices\n");
-    exit(1);
+    SPAMM_FATAL("inconsistent layout in matrices\n");
   }
 
   if (A->layout != spamm_kernel_suggest_layout(kernel))
   {
-    printf("[multiply] wrong layout for chosen kernel\n");
-    exit(1);
+    SPAMM_FATAL("wrong layout for chosen kernel\n");
   }
 
   /* Print out some information. */
@@ -498,8 +496,7 @@ spamm_hashed_multiply (const float tolerance,
   /* Check. */
   if (A_k_lookup.size > A->N_padded/SPAMM_N_KERNEL+1)
   {
-    printf("k lookup table too long for A, estimated %u elemens, but found %u\n", A->N_padded/SPAMM_N_KERNEL+1, A_k_lookup.size);
-    exit(1);
+    SPAMM_FATAL("k lookup table too long for A, estimated %u elemens, but found %u\n", A->N_padded/SPAMM_N_KERNEL+1, A_k_lookup.size);
   }
 
   /* The index in B_k_lookup. */
@@ -530,8 +527,7 @@ spamm_hashed_multiply (const float tolerance,
   /* Check. */
   if (B_k_lookup.size > B->N_padded/SPAMM_N_KERNEL+1)
   {
-    printf("k lookup table too long for B, estimated %u elemens, but found %u\n", B->N_padded/SPAMM_N_KERNEL+1, B_k_lookup.size);
-    exit(1);
+    SPAMM_FATAL("k lookup table too long for B, estimated %u elemens, but found %u\n", B->N_padded/SPAMM_N_KERNEL+1, B_k_lookup.size);
   }
 
   printf("len(A_k) = %u, len(B_k) = %u, ", A_k_lookup.size, B_k_lookup.size);
@@ -594,8 +590,7 @@ spamm_hashed_multiply (const float tolerance,
   {
     if (spamm_list_get_norm(A_index.index, i) != A_index.data[i]->node_norm)
     {
-      printf("[multiply] DOUBLECHECK norm mismatch in A_index[%u]\n", i);
-      exit(1);
+      SPAMM_FATAL("DOUBLECHECK norm mismatch in A_index[%u]\n", i);
     }
 
     A_k = spamm_list_get_index(A_index.index, i) & MASK_2D_J;
@@ -615,8 +610,7 @@ spamm_hashed_multiply (const float tolerance,
     {
       if (A_k != first_A_k)
       {
-        printf("[multipy] DOUBLECHECK A_k_lookup incorrect\n");
-        exit(1);
+        SPAMM_FATAL("DOUBLECHECK A_k_lookup incorrect\n");
       }
     }
 
@@ -627,9 +621,8 @@ spamm_hashed_multiply (const float tolerance,
       if (A_k == next_A_k) {
         if (A_index.data[i]->node_norm < A_index.data[i+1]->node_norm)
         {
-          printf("[multiply] DOUBLECHECK norms in A_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
+          SPAMM_FATAL("DOUBLECHECK norms in A_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
               i, A_index.data[i]->node_norm, i+1, A_index.data[i+1]->node_norm);
-          exit(1);
         }
       }
     }
@@ -639,8 +632,7 @@ spamm_hashed_multiply (const float tolerance,
   {
     if (spamm_list_get_norm(B_index.index, i) != B_index.data[i]->node_norm)
     {
-      printf("[multiply] DOUBLECHECK norm mismatch in B_index[%u]\n", i);
-      exit(1);
+      SPAMM_FATAL("DOUBLECHECK norm mismatch in B_index[%u]\n", i);
     }
 
     B_k = spamm_list_get_index(B_index.index, i) & MASK_2D_I;
@@ -660,8 +652,7 @@ spamm_hashed_multiply (const float tolerance,
     {
       if (B_k != first_B_k)
       {
-        printf("[multipy] DOUBLECHECK B_k_lookup incorrect\n");
-        exit(1);
+        SPAMM_FATAL("DOUBLECHECK B_k_lookup incorrect\n");
       }
     }
 
@@ -672,9 +663,8 @@ spamm_hashed_multiply (const float tolerance,
       if (B_k == next_B_k) {
         if (B_index.data[i]->node_norm < B_index.data[i+1]->node_norm)
         {
-          printf("[multiply] DOUBLECHECK norms in B_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
+          SPAMM_FATAL("DOUBLECHECK norms in B_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
               i, B_index.data[i]->node_norm, i+1, B_index.data[i+1]->node_norm);
-          exit(1);
         }
       }
     }
@@ -1517,9 +1507,8 @@ spamm_hashed_multiply (const float tolerance,
   /* Check. */
   if (stream_index > (A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL))
   {
-    printf("multiply stream has too many elements, has %u but is only dimensioned for %u\n", stream_index,
+    SPAMM_FATAL("multiply stream has too many elements, has %u but is only dimensioned for %u\n", stream_index,
         (A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
-    exit(1);
   }
 
 #ifdef SPAMM_MULTIPLY_DOUBLE_CHECK
@@ -1587,8 +1576,7 @@ spamm_hashed_multiply (const float tolerance,
       break;
 
     default:
-      printf("[multiply] unknown kernel... ");
-      exit(1);
+      SPAMM_FATAL("unknown kernel... ");
       break;
   }
 
@@ -1669,8 +1657,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
   /* We have to allocate a new C block a tier up. */
   if (*node_C == NULL)
   {
-    printf("[%s:%i] node_C should not be NULL\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("node_C should not be NULL\n");
   }
 
   /* Multiply matrix blocks. */
@@ -1797,32 +1784,27 @@ spamm_recursive_multiply (const float tolerance,
 {
   if (A == NULL)
   {
-    printf("[%s:%i] A is NULL\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("A is NULL\n");
   }
 
   if (B == NULL)
   {
-    printf("[%s:%i] B is NULL\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("B is NULL\n");
   }
 
   if (C == NULL)
   {
-    printf("[%s:%i] C is NULL\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("C is NULL\n");
   }
 
   if (A->N_contiguous != B->N_contiguous)
   {
-    printf("[%s:%i] A->N_contiguous != B->N_contiguous\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("A->N_contiguous != B->N_contiguous\n");
   }
 
   if (A->N_contiguous != C->N_contiguous)
   {
-    printf("[%s:%i] A->N_contiguous != C->N_contiguous\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("A->N_contiguous != C->N_contiguous\n");
   }
 
   /* Multiply C by beta. */
@@ -1866,32 +1848,27 @@ spamm_multiply (const float tolerance,
 {
   if (A == NULL)
   {
-    printf("[%s:%i] A is NULL\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("A is NULL\n");
   }
 
   if (B == NULL)
   {
-    printf("[%s:%i] B is NULL\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("B is NULL\n");
   }
 
   if (C == NULL)
   {
-    printf("[%s:%i] C is NULL\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("C is NULL\n");
   }
 
   if (A->N_contiguous != B->N_contiguous)
   {
-    printf("[%s:%i] A->N_contiguous != B->N_contiguous\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("A->N_contiguous != B->N_contiguous\n");
   }
 
   if (A->N_contiguous != C->N_contiguous)
   {
-    printf("[%s:%i] A->N_contiguous != C->N_contiguous\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("A->N_contiguous != C->N_contiguous\n");
   }
 
   /* Multiply C by beta. */
@@ -1940,8 +1917,7 @@ spamm_recursive_multiply_3_matrix (const float tolerance,
   /* We have to allocate a new D block a tier up. */
   if (*node_D == NULL)
   {
-    printf("[%s:%i] node_D should not be NULL\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("node_D should not be NULL\n");
   }
 
   /* Multiply matrix blocks. */
