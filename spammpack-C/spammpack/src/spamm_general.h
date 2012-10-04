@@ -17,10 +17,12 @@ spamm_copy (struct spamm_matrix_t **A,
 
 void
 spamm_recursive_copy (struct spamm_recursive_node_t **A,
+    const float beta,
     const struct spamm_recursive_node_t *const B);
 
 void
 spamm_hashed_copy (struct spamm_hashed_t **A,
+    const float beta,
     const struct spamm_hashed_t *const B);
 
 void
