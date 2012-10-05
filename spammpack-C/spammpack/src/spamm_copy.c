@@ -79,6 +79,12 @@ spamm_hashed_copy (struct spamm_hashed_t **A,
   tier_hashtable = B->tier_hashtable[B->kernel_tier-B->tier];
   index = spamm_hashtable_keys(tier_hashtable);
 
+  if (spamm_list_length(index) != spamm_hashtable_get_number_keys(tier_hashtable))
+  {
+    SPAMM_FATAL("inconsistent number of keys (list = %u, hashtable = %u)\n",
+        spamm_list_length(index), spamm_hashtable_get_number_keys(tier_hashtable));
+  }
+
   for (i = 0; i < spamm_hashtable_get_number_keys(tier_hashtable); i++)
   {
     data = spamm_hashtable_lookup(tier_hashtable, spamm_list_get_index(index, i));
