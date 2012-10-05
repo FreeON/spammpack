@@ -106,13 +106,15 @@ spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
 }
 
 void
-spamm_multiply_beta (const float beta, struct spamm_hashed_t *A)
+spamm_hashed_multiply_beta (const float beta, struct spamm_hashed_t *A)
 {
   struct spamm_hashtable_t *tier_hashtable;
 
+  if (A == NULL) { return; }
+
   if (beta != 1.0)
   {
-    tier_hashtable = A->tier_hashtable[A->kernel_tier];
+    tier_hashtable = A->tier_hashtable[A->kernel_tier-A->tier];
     spamm_hashtable_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &beta);
   }
 }
@@ -125,7 +127,30 @@ spamm_multiply_beta (const float beta, struct spamm_hashed_t *A)
 void
 spamm_recursive_multiply_beta (const float beta, struct spamm_recursive_node_t *A)
 {
-  SPAMM_FATAL("[FIXME]\n");
+  unsigned int i;
+
+  if (A == NULL) { return; }
+
+  if (A->M_upper-A->M_lower == A->N_linear)
+  {
+    spamm_hashed_multiply_beta(beta, A->hashed_tree);
+  }
+
+  else if (A->M_upper-A->M_lower == A->N_contiguous)
+  {
+    for (i = 0; i < A->N_contiguous*A->N_contiguous; i++)
+    {
+      A->data[i] *= beta;
+    }
+  }
+
+  else
+  {
+    spamm_recursive_multiply_beta(beta, A->child[0]);
+    spamm_recursive_multiply_beta(beta, A->child[1]);
+    spamm_recursive_multiply_beta(beta, A->child[2]);
+    spamm_recursive_multiply_beta(beta, A->child[3]);
+  }
 }
 
 /** @private Multiply a matrix by a scalar.
@@ -436,7 +461,7 @@ spamm_hashed_multiply (const float tolerance,
   printf("[multiply] multiplying C with beta... ");
   spamm_timer_start(timer);
 
-  spamm_multiply_beta(beta, C);
+  spamm_hashed_multiply_beta(beta, C);
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
