@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define THROW_SEGFAULT
-
 /** Print a backtrace. */
 void
 spamm_error_print_backtrace ()
@@ -102,14 +100,6 @@ spamm_error_fatal (const char *const filename, const int line, ...)
   printf("\n");
   spamm_error_print_backtrace();
 
-  /* Exit. */
-#ifdef THROW_SEGFAULT
-  new_format = NULL;
-  if (new_format[0] == '0')
-  {
-    printf("wow, I am surprised this worked...\n");
-  }
-#else
-  exit(1);
-#endif
+  /* Exit with signal so debuggers can produce a backtrace. */
+  abort();
 }

@@ -105,11 +105,6 @@ spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
 #endif
 }
 
-/** @private Multiply a matrix by a scalar.
- *
- * @param beta The scalar \f$\beta\f$ that multiplies the matrix.
- * @param A The matrix.
- */
 void
 spamm_multiply_beta (const float beta, struct spamm_hashed_t *A)
 {
@@ -122,6 +117,22 @@ spamm_multiply_beta (const float beta, struct spamm_hashed_t *A)
   }
 }
 
+/** @private Multiply a matrix by a scalar.
+ *
+ * @param beta The scalar \f$\beta\f$ that multiplies the matrix.
+ * @param A The matrix.
+ */
+void
+spamm_recursive_multiply_beta (const float beta, struct spamm_recursive_node_t *A)
+{
+  SPAMM_FATAL("[FIXME]\n");
+}
+
+/** @private Multiply a matrix by a scalar.
+ *
+ * @param beta The scalar \f$\beta\f$ that multiplies the matrix.
+ * @param A The matrix.
+ */
 /** @private Swap 2 multiply stream elements.
  *
  * @param a_stream The first stream element.

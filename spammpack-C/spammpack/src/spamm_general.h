@@ -29,6 +29,9 @@ void
 spamm_delete (struct spamm_matrix_t **A);
 
 void
+spamm_recursive_delete (struct spamm_recursive_node_t **node);
+
+void
 spamm_delete_block (struct spamm_hashed_data_t **data);
 
 void
@@ -112,6 +115,9 @@ spamm_hashed_multiply (const float tolerance,
     const float beta, struct spamm_hashed_t *C,
     struct spamm_timer_t *timer,
     const enum spamm_kernel_t kernel);
+
+void
+spamm_recursive_multiply_beta (const float beta, struct spamm_recursive_node_t *A);
 
 void
 spamm_recursive_multiply (const float tolerance,

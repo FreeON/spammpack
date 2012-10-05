@@ -7,8 +7,8 @@
 #define TEST_TOLERANCE 5e-7
 #define DECAY 0.7
 
-#define A_SPARSE 1
-//#define B_SPARSE 1
+//#define A_SPARSE 1
+#define B_SPARSE 1
 
 //#define PRINT_MATRIX
 
