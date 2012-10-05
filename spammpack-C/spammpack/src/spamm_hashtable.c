@@ -739,7 +739,18 @@ spamm_hashtable_get_number_keys (const struct spamm_hashtable_t *hashtable)
 
   return hashtable->number_stored_keys;
 #else
-  return hashtable->number_buckets;
+  unsigned int i;
+  unsigned int result = 0;
+
+  for (i = 0; i < hashtable->number_buckets; i++)
+  {
+    if (hashtable->value[i] != NULL)
+    {
+      result++;
+    }
+  }
+
+  return result;
 #endif
 }
 

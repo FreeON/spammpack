@@ -100,6 +100,6 @@ spamm_error_fatal (const char *const filename, const int line, ...)
   printf("\n");
   spamm_error_print_backtrace();
 
-  /* Exit. */
-  exit(1);
+  /* Exit with signal so debuggers can produce a backtrace. */
+  abort();
 }

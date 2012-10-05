@@ -352,7 +352,7 @@ spamm_recursive_add (const float alpha,
   else if ((*A) != NULL && (*B) == NULL)
   {
     /* Multiply A by alpha. */
-    SPAMM_FATAL("[FIXME]\n");
+    spamm_recursive_multiply_beta(alpha, *A);
   }
 }
 

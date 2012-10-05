@@ -79,6 +79,12 @@ spamm_hashed_copy (struct spamm_hashed_t **A,
   tier_hashtable = B->tier_hashtable[B->kernel_tier-B->tier];
   index = spamm_hashtable_keys(tier_hashtable);
 
+  if (spamm_list_length(index) != spamm_hashtable_get_number_keys(tier_hashtable))
+  {
+    SPAMM_FATAL("inconsistent number of keys (list = %u, hashtable = %u)\n",
+        spamm_list_length(index), spamm_hashtable_get_number_keys(tier_hashtable));
+  }
+
   for (i = 0; i < spamm_hashtable_get_number_keys(tier_hashtable); i++)
   {
     data = spamm_hashtable_lookup(tier_hashtable, spamm_list_get_index(index, i));
@@ -99,37 +105,43 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 {
   unsigned int i;
 
-  assert(B != NULL);
-
-  if (*A == NULL)
+  if (B == NULL && *A != NULL)
   {
-    *A = spamm_recursive_new_node(B->tier,
-        B->N_contiguous, B->N_linear,
-        B->M_lower, B->M_upper,
-        B->N_lower, B->N_upper);
+    spamm_recursive_delete(A);
   }
 
-  if ((*A)->M_upper-(*A)->M_lower == (*A)->N_linear)
+  if (B != NULL)
   {
-    spamm_hashed_copy(&(*A)->hashed_tree, beta, B->hashed_tree);
-  }
-
-  else if ((*A)->M_upper-(*A)->M_lower == (*A)->N_contiguous)
-  {
-    for (i = 0; i < (*A)->N_contiguous*(*A)->N_contiguous; i++)
+    if (*A == NULL)
     {
-      (*A)->data[i] = beta*B->data[i];
-      (*A)->norm = beta*B->norm;
-      (*A)->norm2 = (*A)->norm*(*A)->norm;
+      *A = spamm_recursive_new_node(B->tier,
+          B->N_contiguous, B->N_linear,
+          B->M_lower, B->M_upper,
+          B->N_lower, B->N_upper);
     }
-  }
 
-  else
-  {
-    spamm_recursive_copy(&(*A)->child[0], beta, B->child[0]);
-    spamm_recursive_copy(&(*A)->child[1], beta, B->child[1]);
-    spamm_recursive_copy(&(*A)->child[2], beta, B->child[2]);
-    spamm_recursive_copy(&(*A)->child[3], beta, B->child[3]);
+    if ((*A)->M_upper-(*A)->M_lower == (*A)->N_linear)
+    {
+      spamm_hashed_copy(&(*A)->hashed_tree, beta, B->hashed_tree);
+    }
+
+    else if ((*A)->M_upper-(*A)->M_lower == (*A)->N_contiguous)
+    {
+      for (i = 0; i < (*A)->N_contiguous*(*A)->N_contiguous; i++)
+      {
+        (*A)->data[i] = beta*B->data[i];
+        (*A)->norm = beta*B->norm;
+        (*A)->norm2 = (*A)->norm*(*A)->norm;
+      }
+    }
+
+    else
+    {
+      spamm_recursive_copy(&(*A)->child[0], beta, B->child[0]);
+      spamm_recursive_copy(&(*A)->child[1], beta, B->child[1]);
+      spamm_recursive_copy(&(*A)->child[2], beta, B->child[2]);
+      spamm_recursive_copy(&(*A)->child[3], beta, B->child[3]);
+    }
   }
 }
 
