@@ -85,4 +85,21 @@ MODULE SpAMM_DERIVED
 
   END TYPE SpAMM_Matrix
 
+  !> Binary tree data structure.
+  TYPE BiTree
+
+    !> The norm.
+    REAL(SpAMM_KIND) :: Norm
+
+    !> The pointer to the left bisecting subtree.
+    TYPE(BiTree), POINTER :: Sect0 => NULL()
+
+    !> The pointer to the right bisecting subtree.
+    TYPE(BiTree), POINTER :: Sect1 => NULL()
+
+    !> The vector data.
+    REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
+
+  END TYPE BiTree
+
 END MODULE SpAMM_DERIVED
