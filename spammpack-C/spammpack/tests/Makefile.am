@@ -30,23 +30,6 @@ libspammtest_la_SOURCES = \
   test_utilities.F90 \
   spammtests.F90
 
-check_PROGRAMS = \
-  create_spamm \
-  check_spamm \
-  convert_dense \
-  hashtable_insert \
-  hashtable_remove \
-  list \
-  stats \
-  list_sort \
-  add_spamm_dense \
-  add_spamm_sparse \
-  multiply_recursive \
-  multiply_spamm \
-  get_version \
-  spamm_multiply \
-  SP2
-
 noinst_PROGRAMS = \
   convert_to_binary
 
@@ -70,19 +53,25 @@ noinst_SCRIPTS = \
 
 EXTRA_DIST = $(noinst_SCRIPTS)
 
-TESTS = \
-  hashtable_remove \
+check_PROGRAMS = \
+  add_spamm_dense \
+  add_spamm_sparse \
+  check_spamm \
+  convert_dense \
+  create_spamm \
+  get_version \
   hashtable_insert \
+  hashtable_remove \
   list \
   list_sort \
-  expand \
-  stats \
-  check_spamm \
-	add_spamm_1 \
-	add_spamm_2 \
-	$(multiply_tests) \
   multiply_recursive \
+  multiply_spamm \
   spamm_multiply \
+  stats \
   SP2
+
+TESTS = \
+  $(multiply_tests) \
+  $(check_PROGRAMS)
 
 CLEANFILES = *.mod

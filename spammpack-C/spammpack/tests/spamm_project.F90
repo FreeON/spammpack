@@ -144,8 +144,8 @@ CONTAINS
       xnorm=SpAMM_One/Dot(x,x)
 
       CALL Multiply(x,xnorm)
-      x%Norms=Norm(x)
-      x%Norms%FrobeniusNorm=SQRT(x%Norms%FrobeniusNorm)
+      x%Norm=Norm(x)
+      x%Norm=SQRT(x%Norm)
       WRITE(*,*)' XNORM = ',XNORM
       ! STOP
 
@@ -194,8 +194,8 @@ CONTAINS
 
         ! h=g+beta*hOld
         CALL Add(h,SpAMM_One,g,beta,hOld)
-        h%Norms=Norm(h)
-        h%Norms%FrobeniusNorm=SQRT(h%Norms%FrobeniusNorm)
+        h%Norm=Norm(h)
+        h%Norm=SQRT(h%Norm)
 
         CALL Copy(g,gOld)
         CALL Copy(h,hOld)
@@ -240,8 +240,8 @@ CONTAINS
             CALL Add(x,SpAMM_One,h,LambdaPlus)
           ENDIF
         ENDIF
-        x%Norms=Norm(x)
-        x%Norms%FrobeniusNorm=SQRT(x%Norms%FrobeniusNorm)
+        x%Norm=Norm(x)
+        x%Norm=SQRT(x%Norm)
 
         IF(I==1)THEN
           WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
