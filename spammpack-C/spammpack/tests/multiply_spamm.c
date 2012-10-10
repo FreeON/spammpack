@@ -5,7 +5,7 @@
 
 #define VERIFY_RESULT
 #define RANDOM_ELEMENTS
-#define PRINT_DEBUG
+//#define PRINT_DEBUG
 
 #define TEST_TOLERANCE 5e-7
 
