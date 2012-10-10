@@ -308,20 +308,21 @@ spamm_check (const struct spamm_matrix_t *A, const float tolerance)
 {
   unsigned int depth;
   unsigned int N_padded;
-  float x_M, x_N, x;
+  unsigned int dim;
+  float x, x_N;
   struct spamm_check_user_data_t user_data;
 
   assert(A != NULL);
 
   user_data.result = SPAMM_OK;
 
-  /* Calculate the padding and depth of matrix based on values stored in M and
-   * N. */
-  x_M = (log(A->M) > log(SPAMM_N_BLOCK) ? log(A->M) - log(SPAMM_N_BLOCK) : 0)/log(2);
-  x_N = (log(A->N) > log(SPAMM_N_BLOCK) ? log(A->N) - log(SPAMM_N_BLOCK) : 0)/log(2);
-
-  if (x_M > x_N) { x = x_M; }
-  else           { x = x_N; }
+  /* Calculate the padding and depth of matrix based on values stored in N. */
+  x = 0;
+  for (dim = 0; dim < A->number_dimensions; dim++)
+  {
+    x_N = (log(A->N[dim]) > log(SPAMM_N_BLOCK) ? log(A->N[dim]) - log(SPAMM_N_BLOCK) : 0)/log(2);
+    if (x_N > x) { x = x_N; }
+  }
 
   /* The ceil() function can lead to a depth that is one tier too large
    * because of numerical errors in the calculation of x. We need to check
@@ -330,10 +331,16 @@ spamm_check (const struct spamm_matrix_t *A, const float tolerance)
   depth = (unsigned int) ceil(x);
 
   /* Double check depth. */
-  if (depth >= 1 &&
-      ((int) (SPAMM_N_BLOCK*pow(2, depth-1)) >=
-       A->M && (int) (SPAMM_N_BLOCK*pow(2, depth-1)) >= A->N))
+  if (depth >= 1)
   {
+    for (dim = 0; dim < A->number_dimensions; dim++)
+    {
+      if ((int) (SPAMM_N_BLOCK*pow(2, depth-1)) < A->N[dim])
+      {
+        depth++;
+        break;
+      }
+    }
     depth--;
   }
 

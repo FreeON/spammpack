@@ -154,23 +154,28 @@ void
 spamm_copy (struct spamm_matrix_t **A,
     const struct spamm_matrix_t *const B)
 {
+  unsigned int i;
+
   assert(B != NULL);
 
   if (*A == NULL)
   {
     /* Create new matrix A. */
-    *A = spamm_new(B->M, B->N, B->linear_tier, B->contiguous_tier, B->layout);
+    *A = spamm_new(B->number_dimensions, B->N, B->linear_tier, B->contiguous_tier, B->layout);
   }
 
   /* Sanity check. */
-  if ((*A)->M != B->M)
+  if ((*A)->number_dimensions != B->number_dimensions)
   {
-    SPAMM_FATAL("mismatch in matrix dimension M\n");
+    SPAMM_FATAL("mismatch in number of dimensions\n");
   }
 
-  if ((*A)->N != B->N)
+  for (i = 0; i < B->number_dimensions; i++)
   {
-    SPAMM_FATAL("mismatch in matrix dimension N\n");
+    if ((*A)->N[i] != B->N[i])
+    {
+      SPAMM_FATAL("mismatch in matrix dimension N[%u]\n", i);
+    }
   }
 
   if ((*A)->linear_tier != B->linear_tier)

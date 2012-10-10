@@ -369,6 +369,8 @@ spamm_add (const float alpha,
     const float beta,
     struct spamm_matrix_t *B)
 {
+  unsigned int dim;
+
   assert(A != NULL);
   assert(B != NULL);
 
@@ -377,14 +379,17 @@ spamm_add (const float alpha,
     SPAMM_FATAL("[add] inconsisten layout in matrices\n");
   }
 
-  if (A->M != B->M)
+  if (A->number_dimensions != B->number_dimensions)
   {
-    SPAMM_FATAL("[add] mismatch of number of rows\n");
+    SPAMM_FATAL("mismatch of number of dimensions\n");
   }
 
-  if (A->N != B->N)
+  for (dim = 0; dim < A->number_dimensions; dim++)
   {
-    SPAMM_FATAL("[add] mismatch of number of columns\n");
+    if (A->N[dim] != B->N[dim])
+    {
+      SPAMM_FATAL("mismatch of number of rows/columns\n");
+    }
   }
 
   if (A->recursive_tree != NULL || B->recursive_tree != NULL)

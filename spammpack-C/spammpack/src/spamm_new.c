@@ -16,8 +16,9 @@
  * tier == contiguous_tier, dense submatrix blocks are stored and the spamm
  * condition is applied.
  *
- * @param M The number of rows of the matrix.
- * @param N The number of columns of the matrix.
+ * @param number_dimensions The number of dimensions of this matrix.
+ * @param N The number of rows/columns of the matrix. This array has to have
+ * a size of number_dimensions.
  * @param linear_tier The tier at which to switch from hierarchical to linear
  * tree.
  * @param contiguous_tier The tier at which to store contiguous submatrix
@@ -28,22 +29,22 @@
  * spamm_delete().
  */
 struct spamm_matrix_t *
-spamm_new (const unsigned int M, const unsigned int N,
+spamm_new (const unsigned int number_dimensions,
+    const unsigned int *const N,
     const unsigned int linear_tier,
     const unsigned int contiguous_tier,
     const enum spamm_layout_t layout)
 {
+  int dim;
   struct spamm_matrix_t *A = NULL;
-  double x, x_M, x_N;
+  double x, x_N;
 
-  if (M <= 0)
+  for (dim = 0; dim < number_dimensions; dim++)
   {
-    SPAMM_FATAL("M <= 0\n");
-  }
-
-  if (N <= 0)
-  {
-    SPAMM_FATAL("N <= 0\n");
+    if (N[dim] == 0)
+    {
+      SPAMM_FATAL("N[%u] == 0\n", dim);
+    }
   }
 
   /* Allocate memory. */
@@ -66,11 +67,14 @@ spamm_new (const unsigned int M, const unsigned int N,
   }
 
   /* Pad to powers of M_child x N_child. */
-  x_M = (log(M) > log(SPAMM_N_BLOCK) ? log(M) - log(SPAMM_N_BLOCK) : 0)/log(2);
-  x_N = (log(N) > log(SPAMM_N_BLOCK) ? log(N) - log(SPAMM_N_BLOCK) : 0)/log(2);
-
-  if (x_M > x_N) { x = x_M; }
-  else           { x = x_N; }
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    x_N = (log(N[dim]) > log(SPAMM_N_BLOCK) ? log(N[dim]) - log(SPAMM_N_BLOCK) : 0)/log(2);
+    if (x_N > x)
+    {
+      x = x_N;
+    }
+  }
 
   /* The ceil() function can lead to a depth that is one tier too large
    * because of numerical errors in the calculation of x. We need to check
@@ -79,9 +83,17 @@ spamm_new (const unsigned int M, const unsigned int N,
   A->depth = (unsigned int) ceil(x);
 
   /* Double check depth. */
-  if (A->depth >= 1 && ((int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) >= M && (int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) >= N))
+  if (A->depth >= 1)
   {
-    (A->depth)--;
+    for (dim = 0; dim < A->number_dimensions; dim++)
+    {
+      if ((int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) < A->N[dim])
+      {
+        A->depth++;
+        break;
+      }
+    }
+    A->depth--;
   }
 
   /* Adjust tree to kernel depth. */
@@ -118,8 +130,11 @@ spamm_new (const unsigned int M, const unsigned int N,
   }
 
   /* Set matrix size. */
-  A->M = M;
-  A->N = N;
+  A->N = calloc(number_dimensions, sizeof(unsigned int));
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    A->N[dim] = N[dim];
+  }
 
   /* Set padded matrix size. */
   A->N_padded = (int) (SPAMM_N_BLOCK*pow(2, A->depth));

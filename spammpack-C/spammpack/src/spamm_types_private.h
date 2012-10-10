@@ -9,11 +9,14 @@
  */
 struct spamm_matrix_t
 {
-  /** Number or rows in this matrix. */
-  unsigned int M;
+  /** The number of dimensions of this matrix (a 1-dimensional matrix is a
+   * vector, a 2-dimensional matrix is a matrix, and so on...).
+   */
+  unsigned int number_dimensions;
 
-  /** Number of columns in this matrix. */
-  unsigned int N;
+  /** Number of rows/columns in this matrix. The length of this array is given
+   * by number_dimensions. */
+  unsigned int *N;
 
   /** Number of rows and columns in the padded matrix. */
   unsigned int N_padded;

@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /** Return the number of non-zero elements in a matrix.
  *
@@ -13,18 +14,30 @@
 unsigned int
 spamm_number_nonzero (const struct spamm_matrix_t *A)
 {
-  unsigned int i, j;
+  unsigned int *i;
   unsigned int result = 0;
 
-  for (i = 0; i < A->M; i++) {
-    for (j = 0; j < A->N; j++)
-    {
-      if (spamm_get(i, j, A) != 0.0)
-      {
-        result++;
+  i = calloc(A->number_dimensions, sizeof(unsigned int));
+
+  switch (A->number_dimensions)
+  {
+    case 2:
+      for (i[0] = 0; i[0] < A->N[0]; i[0]++) {
+        for (i[1] = 0; i[1] < A->N[1]; i[1]++)
+        {
+          if (spamm_get(i, A) != 0.0)
+          {
+            result++;
+          }
+        }
       }
-    }
+      break;
+
+    default:
+      SPAMM_FATAL("not implemented\n");
   }
+
+  free(i);
 
   return result;
 }
@@ -53,10 +66,15 @@ spamm_memory (const struct spamm_hashed_t *A)
 void
 spamm_print_info (const struct spamm_matrix_t *const A)
 {
+  unsigned int dim;
+
   assert(A != NULL);
 
-  printf("M = %u", A->M);
-  printf(", N = %u", A->N);
+  printf("number_dimensions = %u", A->number_dimensions);
+  for (dim = 0; dim < A->number_dimensions; dim++)
+  {
+    printf(", N[%i] = %u", dim, A->N[dim]);
+  }
   printf(", N_padded = %u", A->N_padded);
   printf(", depth = %u", A->depth);
   printf(", N_contiguous = %u", A->N_contiguous);

@@ -112,36 +112,40 @@ spamm_recursive_get (const unsigned int i, const unsigned int j, const struct sp
 
 /** Get an element from a matrix.
  *
- * @param i The row index.
- * @param j The column index.
+ * @param i The row/column index.
  * @param A The matrix.
  *
  * @return The matrix element.
  */
 float
-spamm_get (const unsigned int i, const unsigned int j, const struct spamm_matrix_t *A)
+spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
 {
+  int dim;
+
   assert(A != NULL);
 
-  if (i >= A->M)
+  if (A->number_dimensions != 2)
   {
-    SPAMM_FATAL("i out of bounds (i = %i and M = %i)\n", i, A->M);
+    SPAMM_FATAL("not supported yet\n");
   }
 
-  if (j >= A->N)
+  for (dim = 0; dim < A->number_dimensions; dim++)
   {
-    SPAMM_FATAL("j out of bounds (j = %i and N = %i)\n", j, A->N);
+    if (i[dim] >= A->N[dim])
+    {
+      SPAMM_FATAL("i[%u] out of bounds (i[%u] = %i and N[%u] = %i)\n", dim, dim, i, dim, A->N[dim]);
+    }
   }
 
   if (A->linear_tier == 0)
   {
     /* In case we only have a linear tree. */
-    return spamm_hashed_get(i, j, A->hashed_tree);
+    return spamm_hashed_get(i[0], i[1], A->hashed_tree);
   }
 
   else
   {
-    return spamm_recursive_get(i, j, A->recursive_tree);
+    return spamm_recursive_get(i[0], i[1], A->recursive_tree);
   }
 }
 

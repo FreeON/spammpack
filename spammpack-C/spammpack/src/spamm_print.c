@@ -153,16 +153,24 @@ spamm_print_tree (const struct spamm_hashed_t *A)
 void
 spamm_print (const struct spamm_matrix_t *A)
 {
-  unsigned int i;
-  unsigned int j;
+  unsigned int *i;
 
   assert(A != NULL);
 
-  for (i = 0; i < A->M; i++) {
-    for (j = 0; j < A->N; j++)
-    {
-      printf(" % 1.2e", spamm_get(i, j, A));
-    }
-    printf("\n");
+  i = calloc(A->number_dimensions, sizeof(unsigned int));
+  switch(A->number_dimensions)
+  {
+    case 2:
+      for (i[0] = 0; i[0] < A->N[0]; i[0]++) {
+        for (i[1] = 0; i[1] < A->N[1]; i[1]++)
+        {
+          printf(" % 1.2e", spamm_get(i, A));
+        }
+        printf("\n");
+      }
+      break;
+
+    default:
+      SPAMM_FATAL("not implemented\n");
   }
 }

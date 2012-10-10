@@ -395,24 +395,28 @@ spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, s
 
 /** Set an element in a matrix.
  *
- * @param i The row index.
- * @param j The column index.
+ * @param i The row/column index.
  * @param Aij The value of the matrix element A(i,j).
  * @param A The matrix.
  */
 void
-spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_matrix_t *A)
+spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *A)
 {
+  unsigned int dim;
+
   assert(A != NULL);
 
-  if (i >= A->M)
+  for (dim = 0; dim < A->number_dimensions; dim++)
   {
-    SPAMM_FATAL("i out of bounds (i = %i and M = %i)\n", i, A->M);
+    if (i[dim] >= A->N[dim])
+    {
+      SPAMM_FATAL("i[%u] out of bounds (i[%u] = %i and N[%u] = %i)\n", dim, dim, i[dim], dim, A->N[dim]);
+    }
   }
 
-  if (j >= A->N)
+  if (A->number_dimensions != 2)
   {
-    SPAMM_FATAL("j out of bounds (j = %i and N = %i)\n", j, A->N);
+    SPAMM_FATAL("not implemented\n");
   }
 
   /* Don't store zero. */
@@ -426,12 +430,12 @@ spamm_set (const unsigned int i, const unsigned int j, const float Aij, struct s
     {
       A->hashed_tree = spamm_hashed_new(0, A->kernel_tier, A->depth, 0, A->N_padded, 0, A->N_padded);
     }
-    spamm_hashed_set(i, j, Aij, A->hashed_tree);
+    spamm_hashed_set(i[0], i[1], Aij, A->hashed_tree);
   }
 
   else
   {
-    spamm_recursive_set(i, j, Aij,
+    spamm_recursive_set(i[0], i[1], Aij,
         0, A->N_padded, 0, A->N_padded,
         A->N_contiguous, A->N_linear,
         0, A->kernel_tier, A->depth,
