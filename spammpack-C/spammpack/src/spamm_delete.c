@@ -118,6 +118,8 @@ spamm_delete (struct spamm_matrix_t **A)
     spamm_hashed_delete(&(*A)->hashed_tree);
   }
 
+  free((*A)->N);
+
   free(*A);
   *A = NULL;
 }

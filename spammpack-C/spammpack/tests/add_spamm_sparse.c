@@ -42,8 +42,8 @@ main (int argc, char **argv)
 
     for (i[0] = 0; i[0] < N[0]; i[0]++)
     {
-      A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
-      B_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
+      A_dense[spamm_index_row_major(i[0], i[0], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
+      B_dense[spamm_index_row_major(i[0], i[0], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
 
       for (i[1] = 0; i[1] < N[1]; i[1]++)
       {

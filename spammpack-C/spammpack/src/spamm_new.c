@@ -50,6 +50,16 @@ spamm_new (const unsigned int number_dimensions,
   /* Allocate memory. */
   A = calloc(1, sizeof(struct spamm_matrix_t));
 
+  /* Store the number of dimensions. */
+  A->number_dimensions = number_dimensions;
+
+  /* Store matrix dimensions. */
+  A->N = calloc(number_dimensions, sizeof(unsigned int));
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    A->N[dim] = N[dim];
+  }
+
   /* Set the layout. */
   switch (layout)
   {
@@ -127,13 +137,6 @@ spamm_new (const unsigned int number_dimensions,
   {
     /* Reset contiguous_tier, it will not get used. */
     A->contiguous_tier = A->depth-SPAMM_KERNEL_DEPTH;
-  }
-
-  /* Set matrix size. */
-  A->N = calloc(number_dimensions, sizeof(unsigned int));
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    A->N[dim] = N[dim];
   }
 
   /* Set padded matrix size. */

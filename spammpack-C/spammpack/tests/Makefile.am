@@ -70,7 +70,7 @@ check_PROGRAMS = \
   stats
 
 TESTS = \
-  $(multiply_tests) \
-  $(check_PROGRAMS)
+  $(check_PROGRAMS) \
+  $(multiply_tests)
 
 CLEANFILES = *.mod
