@@ -8,12 +8,12 @@ int
 main (int argc, char **argv)
 {
   int result = 0;
-  unsigned int i, j;
-  const unsigned int N = 1024;
+  unsigned int i[2];
+  const unsigned int N[] = { 1024, 1024 };
   const unsigned int linear_tier = 5;
   const unsigned int contiguous_tier = 6;
   struct spamm_matrix_t *A = NULL;
-  float *A_dense = (float*) malloc(sizeof(float)*N*N);
+  float *A_dense = (float*) malloc(sizeof(float)*N[0]*N[1]);
 
   enum spamm_layout_t layout = row_major;
 
@@ -22,19 +22,19 @@ main (int argc, char **argv)
     layout = spamm_kernel_get_layout(argv[1]);
   }
 
-  for (i = 0; i < N*N; i++)
+  for (i[0] = 0; i[0] < N[0]*N[1]; i[0]++)
   {
-    A_dense[i] = rand()/(float) RAND_MAX;
+    A_dense[i[0]] = rand()/(float) RAND_MAX;
   }
 
-  A = spamm_convert_dense_to_spamm(N, N, linear_tier, contiguous_tier, row_major, A_dense, layout);
+  A = spamm_convert_dense_to_spamm(2, N, linear_tier, contiguous_tier, row_major, A_dense, layout);
 
 #ifdef PRINT_DEBUG
   printf("A_dense:\n");
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
     {
-      printf(" %1.2f", A_dense[i*N+j]);
+      printf(" %1.2f", A_dense[i[0]*N[1]+i[1]]);
     }
     printf("\n");
   }
@@ -50,14 +50,14 @@ main (int argc, char **argv)
     return result;
   }
 
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
     {
-      if (A_dense[i*N+j] != spamm_get(i, j, A))
+      if (A_dense[i[0]*N[1]+i[1]] != spamm_get(i, A))
       {
         result = -1;
-        printf("failed test at A[%u][%u] (found %f, should be %f)\n", i, j,
-            spamm_get(i, j, A), A_dense[i*N+j]);
+        printf("failed test at A[%u][%u] (found %f, should be %f)\n", i[0], i[1],
+            spamm_get(i, A), A_dense[i[0]*N[1]+i[0]]);
         break;
       }
     }

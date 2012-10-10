@@ -65,7 +65,6 @@ check_PROGRAMS = \
   hashtable_remove \
   list \
   list_sort \
-  multiply_recursive \
   multiply_spamm \
   spamm_multiply \
   stats \

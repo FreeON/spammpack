@@ -6,19 +6,19 @@ main ()
 {
   int result = 0;
 
-  unsigned int N = 129;
+  unsigned int N[] = { 129, 129 };
   const unsigned int linear_tier = 2;
   const unsigned int contiguous_tier = 3;
-  unsigned int i, j;
+  unsigned int i[2];
 
   struct spamm_matrix_t *A;
 
-  A = spamm_new(N, N, linear_tier, contiguous_tier, row_major);
+  A = spamm_new(2, N, linear_tier, contiguous_tier, row_major);
 
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
     {
-      spamm_set(i, j, rand()/(float) RAND_MAX, A);
+      spamm_set(i, rand()/(float) RAND_MAX, A);
     }
   }
 

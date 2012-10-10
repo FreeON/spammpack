@@ -14,7 +14,7 @@ main (int argc, char **argv)
 {
   int result;
 
-  const unsigned int N = 513;
+  const unsigned int N[] = { 513, 513 };
   const unsigned int linear_tier = 3;
   const unsigned int contiguous_tier = 4;
 
@@ -29,7 +29,7 @@ main (int argc, char **argv)
   struct spamm_matrix_t *A;
   struct spamm_matrix_t *B;
 
-  int i, j;
+  unsigned int i[2];
 
   short sparse_test;
   const short sparse_A[] = { 0, 0, 1, 1 };
@@ -37,68 +37,68 @@ main (int argc, char **argv)
 
   for (sparse_test = 0; sparse_test < 4; sparse_test++)
   {
-    A_dense = calloc(N*N, sizeof(double));
-    B_dense = calloc(N*N, sizeof(double));
+    A_dense = calloc(N[0]*N[1], sizeof(double));
+    B_dense = calloc(N[0]*N[1], sizeof(double));
 
-    for (i = 0; i < N; i++)
+    for (i[0] = 0; i[0] < N[0]; i[0]++)
     {
-      A_dense[spamm_index_row_major(i, i, N, N)] = 0.8+rand()/(double) RAND_MAX;
-      B_dense[spamm_index_row_major(i, i, N, N)] = 0.8+rand()/(double) RAND_MAX;
+      A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
+      B_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
 
-      for (j = i+1; j < N; j++)
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
       {
         /* Exponential decay. */
         if (sparse_A[sparse_test] == 1)
         {
-          A_dense[spamm_index_row_major(i, j, N, N)] = A_dense[spamm_index_row_major(i, i, N, N)]*exp(-fabsf(i-j)/DECAY);
-          A_dense[spamm_index_row_major(j, i, N, N)] = A_dense[spamm_index_row_major(i, j, N, N)];
+          A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = A_dense[spamm_index_row_major(i[0], i[0], N[0], N[1])]*exp(-fabsf(i[0]-i[1])/DECAY);
+          A_dense[spamm_index_row_major(i[1], i[0], N[0], N[1])] = A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])];
         }
 
         else
         {
-          A_dense[spamm_index_row_major(i, j, N, N)] = 0.8+rand()/(double) RAND_MAX;
-          A_dense[spamm_index_row_major(j, i, N, N)] = 0.8+rand()/(double) RAND_MAX;
+          A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
+          A_dense[spamm_index_row_major(i[1], i[0], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
         }
 
         if (sparse_B[sparse_test] == 1)
         {
-          B_dense[spamm_index_row_major(i, j, N, N)] = B_dense[spamm_index_row_major(i, i, N, N)]*exp(-fabsf(i-j)/DECAY);
-          B_dense[spamm_index_row_major(j, i, N, N)] = B_dense[spamm_index_row_major(i, j, N, N)];
+          B_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = B_dense[spamm_index_row_major(i[0], i[0], N[0], N[1])]*exp(-fabsf(i[0]-i[1])/DECAY);
+          B_dense[spamm_index_row_major(i[1], i[0], N[0], N[1])] = B_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])];
         }
 
         else
         {
-          B_dense[spamm_index_row_major(i, j, N, N)] = 0.8+rand()/(double) RAND_MAX;
-          B_dense[spamm_index_row_major(j, i, N, N)] = 0.8+rand()/(double) RAND_MAX;
+          B_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
+          B_dense[spamm_index_row_major(i[1], i[0], N[0], N[1])] = 0.8+rand()/(double) RAND_MAX;
         }
       }
     }
 
 #ifdef PRINT_MATRIX
     printf("A_dense =\n");
-    spamm_print_dense(N, N, row_major, A_dense);
+    spamm_print_dense(N[0], N[1], row_major, A_dense);
 
     printf("B_dense =\n");
-    spamm_print_dense(N, N, row_major, B_dense);
+    spamm_print_dense(N[0], N[1], row_major, B_dense);
 #endif
 
     /* Convert to SpAMM matrix. */
-    A = spamm_convert_dense_to_spamm(N, N, linear_tier, contiguous_tier, row_major, A_dense, row_major);
-    B = spamm_convert_dense_to_spamm(N, N, linear_tier, contiguous_tier, row_major, B_dense, row_major);
+    A = spamm_convert_dense_to_spamm(2, N, linear_tier, contiguous_tier, row_major, A_dense, row_major);
+    B = spamm_convert_dense_to_spamm(2, N, linear_tier, contiguous_tier, row_major, B_dense, row_major);
 
     /* Add by hand for verification. */
-    for (i = 0; i < N; i++) {
-      for (j = 0; j < N; j++)
+    for (i[0] = 0; i[0] < N[0]; i[0]++) {
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        A_dense[spamm_index_row_major(i, j, N, N)] =
-          alpha*A_dense[spamm_index_row_major(i, j, N, N)]
-          + beta*B_dense[spamm_index_row_major(i, j, N, N)];
+        A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] =
+          alpha*A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])]
+          + beta*B_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])];
       }
     }
 
 #ifdef PRINT_MATRIX
     printf("A_dense =\n");
-    spamm_print_dense(N, N, row_major, A_dense);
+    spamm_print_dense(N[0], N[1], row_major, A_dense);
 #endif
 
     spamm_add(alpha, A, beta, B);
@@ -113,12 +113,12 @@ main (int argc, char **argv)
 
     /* Compare result. */
     max_diff = 0.0;
-    for (i = 0; i < N; i++) {
-      for (j = 0; j < N; j++)
+    for (i[0] = 0; i[0] < N[0]; i[0]++) {
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        if (fabs(A_dense[spamm_index_row_major(i, j, N, N)]-spamm_get(i, j, A)) > max_diff)
+        if (fabs(A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])]-spamm_get(i, A)) > max_diff)
         {
-          max_diff = fabs(A_dense[spamm_index_row_major(i, j, N, N)]-spamm_get(i, j, A));
+          max_diff = fabs(A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])]-spamm_get(i, A));
         }
       }
     }

@@ -14,9 +14,10 @@ main (int argc, char **argv)
 {
   int result = 0;
 
-  unsigned int i, j, k;
+  unsigned int i[2];
+  unsigned int k;
 
-  unsigned int N = 513;
+  unsigned int N[] = { 513, 513 };
 
   const unsigned int linear_tier = 4;
   const unsigned int contiguous_tier = 5;
@@ -47,30 +48,30 @@ main (int argc, char **argv)
     kernel = spamm_kernel_get_kernel(argv[1]);
   }
 
-  A_dense = (double*) malloc(sizeof(double)*N*N);
-  B_dense = (double*) malloc(sizeof(double)*N*N);
-  C_dense = (double*) malloc(sizeof(double)*N*N);
+  A_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
+  B_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
+  C_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
 
-  A = spamm_new(N, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
-  B = spamm_new(N, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
-  C = spamm_new(N, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
+  A = spamm_new(2, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
+  B = spamm_new(2, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
+  C = spamm_new(2, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
 
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++)
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
     {
 #ifdef RANDOM_ELEMENTS
-      A_dense[i*N+j] = rand()/(double) RAND_MAX;
-      B_dense[i*N+j] = rand()/(double) RAND_MAX;
-      C_dense[i*N+j] = rand()/(double) RAND_MAX;
+      A_dense[i[0]*N[1]+i[1]] = rand()/(double) RAND_MAX;
+      B_dense[i[0]*N[1]+i[1]] = rand()/(double) RAND_MAX;
+      C_dense[i[0]*N[1]+i[1]] = rand()/(double) RAND_MAX;
 #else
-      A_dense[i*N+j] = i*N+j;
-      B_dense[i*N+j] = i*N+j;
-      C_dense[i*N+j] = i*N+j;
+      A_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
+      B_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
+      C_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
 #endif
 
-      spamm_set(i, j, A_dense[i*N+j], A);
-      spamm_set(i, j, B_dense[i*N+j], B);
-      spamm_set(i, j, C_dense[i*N+j], C);
+      spamm_set(i, A_dense[i[0]*N[1]+i[1]], A);
+      spamm_set(i, B_dense[i[0]*N[1]+i[1]], B);
+      spamm_set(i, C_dense[i[0]*N[1]+i[1]], C);
     }
   }
 

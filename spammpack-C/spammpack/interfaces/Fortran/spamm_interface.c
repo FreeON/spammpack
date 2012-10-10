@@ -152,11 +152,15 @@ spamm_interface_add_spamm_object (struct spamm_matrix_t *A)
 
 /** Convert dense matrix to spamm matrix.
  *
+ * @param number_dimensions
+ * @param N The number of rows/columns.
+ * @param linear_tier The linear tier.
+ * @param contiguous_tier The contiguous tier.
  * @param A_dense The dense matrix.
  * @param A The SpAMM_Matrix object identifier.
  */
 void
-FC_FUNC(spamm_convert_dense_to_spamm_interface, SPAMM_CONVERT_DENSE_TO_SPAMM_INTERFACE) (const int *const M,
+FC_FUNC(spamm_convert_dense_to_spamm_interface, SPAMM_CONVERT_DENSE_TO_SPAMM_INTERFACE) (const int *const number_dimensions,
     const int *const N,
     const int *const linear_tier,
     const int *const contiguous_tier,
@@ -168,20 +172,23 @@ FC_FUNC(spamm_convert_dense_to_spamm_interface, SPAMM_CONVERT_DENSE_TO_SPAMM_INT
   A_spamm = spamm_interface_get_spamm_object(*A);
   if (A_spamm != NULL)
   {
-    printf("[%s:%i] object already exists\n", __FILE__, __LINE__);
-    exit(1);
+    SPAMM_FATAL("object already exists\n");
   }
-  A_spamm = spamm_convert_dense_to_spamm(*M, *N, *linear_tier, *contiguous_tier, column_major, A_dense, row_major);
+  A_spamm = spamm_convert_dense_to_spamm(*number_dimensions, N, *linear_tier, *contiguous_tier, column_major, A_dense, row_major);
 
   *A = spamm_interface_add_spamm_object(A_spamm);
 }
 
 /** Create a new spamm matrix.
  *
+ * @param number_dimensions
+ * @param N
+ * @param linear_tier The linear tier.
  * @param A The matrix.
  */
 void
-FC_FUNC(spamm_new_interface, SPAMM_NEW_INTERFACE) (const int *const M, const int *const N,
+FC_FUNC(spamm_new_interface, SPAMM_NEW_INTERFACE) (const int *const number_dimensions,
+    const int *const N,
     const int *const linear_tier,
     const int *const contiguous_tier,
     int *A)
@@ -194,7 +201,7 @@ FC_FUNC(spamm_new_interface, SPAMM_NEW_INTERFACE) (const int *const M, const int
     printf("[%s:%i] deleting already existing matrix\n", __FILE__, __LINE__);
     spamm_delete(&A_spamm);
   }
-  A_spamm = spamm_new(*M, *N, *linear_tier, *contiguous_tier, row_major);
+  A_spamm = spamm_new(*number_dimensions, N, *linear_tier, *contiguous_tier, row_major);
 
   *A = spamm_interface_add_spamm_object(A_spamm);
 }

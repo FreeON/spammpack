@@ -215,6 +215,20 @@ void
 spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *A);
 
 void
+spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij,
+    const unsigned int M_lower,
+    const unsigned int M_upper,
+    const unsigned int N_lower,
+    const unsigned int N_upper,
+    const unsigned int N_contiguous,
+    const unsigned int N_linear,
+    const unsigned int tier,
+    const unsigned int kernel_tier,
+    const unsigned int depth,
+    const enum spamm_layout_t layout,
+    struct spamm_recursive_node_t **node);
+
+void
 spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A);
 
 void
