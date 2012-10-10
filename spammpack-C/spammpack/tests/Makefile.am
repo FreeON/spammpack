@@ -67,8 +67,7 @@ check_PROGRAMS = \
   list_sort \
   multiply_spamm \
   spamm_multiply \
-  stats \
-  SP2
+  stats
 
 TESTS = \
   $(multiply_tests) \

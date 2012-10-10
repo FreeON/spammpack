@@ -416,7 +416,7 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
 
   if (A->number_dimensions != 2)
   {
-    SPAMM_FATAL("not implemented\n");
+    SPAMM_FATAL("not implemented, number of dimensions = %u\n", A->number_dimensions);
   }
 
   /* Don't store zero. */

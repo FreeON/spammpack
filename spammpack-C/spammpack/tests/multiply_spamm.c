@@ -5,7 +5,7 @@
 
 #define VERIFY_RESULT
 #define RANDOM_ELEMENTS
-//#define PRINT_DEBUG
+#define PRINT_DEBUG
 
 #define TEST_TOLERANCE 5e-7
 
@@ -35,8 +35,7 @@ main (int argc, char **argv)
   struct spamm_matrix_t *B;
   struct spamm_matrix_t *C;
 
-  unsigned int max_i = 0;
-  unsigned int max_j = 0;
+  unsigned int max_i[] = { 0, 0 };
   double max_diff;
   double max_rel_diff;
 
@@ -75,136 +74,136 @@ main (int argc, char **argv)
     }
   }
 
-//j  //spamm_check(A, 1e-7);
-//j  //spamm_check(B, 1e-7);
-//j  //spamm_check(C, 1e-7);
-//j
-//j#ifdef PRINT_DEBUG
-//j  printf("A_dense =\n");
-//j  for (i = 0; i < N; i++) {
-//j    for (j = 0; j < N; j++)
-//j    {
-//j      printf(" %5.1f", A_dense[i*N+j]);
-//j    }
-//j    printf("\n");
-//j  }
-//j
-//j  printf("A =\n");
-//j  for (i = 0; i < N; i++) {
-//j    for (j = 0; j < N; j++)
-//j    {
-//j      printf(" %5.1f", spamm_get(i, j, A));
-//j    }
-//j    printf("\n");
-//j  }
-//j
-//j  printf("B_dense =\n");
-//j  for (i = 0; i < N; i++) {
-//j    for (j = 0; j < N; j++)
-//j    {
-//j      printf(" %5.1f", B_dense[i*N+j]);
-//j    }
-//j    printf("\n");
-//j  }
-//j
-//j  printf("C_dense =\n");
-//j  for (i = 0; i < N; i++) {
-//j    for (j = 0; j < N; j++)
-//j    {
-//j      printf(" %5.1f", C_dense[i*N+j]);
-//j    }
-//j    printf("\n");
-//j  }
-//j#endif
-//j
-//j  for (i = 0; i < N; i++) {
-//j    for (j = 0; j < N; j++)
-//j    {
-//j      C_dense[i*N+j] *= beta;
-//j    }
-//j  }
-//j
-//j  for (i = 0; i < N; i++) {
-//j    for (j = 0; j < N; j++) {
-//j      for (k = 0; k < N; k++)
-//j      {
-//j        C_dense[i*N+j] += alpha*A_dense[i*N+k]*B_dense[k*N+j];
-//j      }
-//j    }
-//j  }
-//j
-//j#ifdef PRINT_DEBUG
-//j  printf("C_dense =\n");
-//j  for (i = 0; i < N; i++) {
-//j    for (j = 0; j < N; j++)
-//j    {
-//j      printf(" %5.1f", C_dense[i*N+j]);
-//j    }
-//j    printf("\n");
-//j  }
-//j#endif
-//j
-//j  timer = spamm_timer_new();
-//j  spamm_timer_add_event(0x8000003b, timer);
-//j  spamm_matrix_multiply(tolerance, alpha, A, B, beta, C, timer, kernel);
-//j  spamm_timer_delete(&timer);
-//j
-//j#ifdef PRINT_DEBUG
-//j  printf("C =\n");
-//j  for (i = 0; i < N; i++) {
-//j    for (j = 0; j < N; j++)
-//j    {
-//j      printf(" %5.1f", spamm_get(i, j, C));
-//j    }
-//j    printf("\n");
-//j  }
-//j#endif
-//j
-//j#ifdef VERIFY_RESULT
-//j  max_diff = 0;
-//j  max_rel_diff = 0;
-//j  for (i = 0; i < N; i++) {
-//j    for (j = 0; j < N; j++) {
-//j      for (k = 0; k < N; k++)
-//j      {
-//j        if (fabs(C_dense[i*N+j]-spamm_get(i, j, C)) > max_diff)
-//j        {
-//j          max_diff = fabs(C_dense[i*N+j]-spamm_get(i, j, C));
-//j          max_i = i;
-//j          max_j = j;
-//j        }
-//j
-//j        if (C_dense[i*N+j] != 0)
-//j        {
-//j          if (fabs((C_dense[i*N+j]-spamm_get(i, j, C))/C_dense[i*N+j]) > max_rel_diff)
-//j          {
-//j            max_rel_diff = fabs((C_dense[i*N+j]-spamm_get(i, j, C))/C_dense[i*N+j]);
-//j          }
-//j        }
-//j      }
-//j    }
-//j  }
-//j
-//j  printf("max diff = %e, rel. diff = %e, A(%u,%u) = %e, A_reference(%u,%u) = %e\n",
-//j      max_diff,
-//j      (C_dense[max_i*N+max_j] != 0.0 ? max_diff/C_dense[max_i*N+max_j] : 0.0),
-//j      max_i, max_j, spamm_get(max_i, max_j, C),
-//j      max_i, max_j, C_dense[max_i*N+max_j]);
-//j
-//j  if (max_rel_diff > TEST_TOLERANCE)
-//j  {
-//j    printf("test failed\n");
-//j    result = -1;
-//j  }
-//j#endif
-//j
-//j  free(A_dense);
-//j  free(B_dense);
-//j  free(C_dense);
-//j
-//j  spamm_matrix_delete(&A);
-//j  spamm_matrix_delete(&B);
-//j  spamm_matrix_delete(&C);
+  //spamm_check(A, 1e-7);
+  //spamm_check(B, 1e-7);
+  //spamm_check(C, 1e-7);
+
+#ifdef PRINT_DEBUG
+  printf("A_dense =\n");
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
+    {
+      printf(" %5.1f", A_dense[i[0]*N[1]+i[1]]);
+    }
+    printf("\n");
+  }
+
+  printf("A =\n");
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
+    {
+      printf(" %5.1f", spamm_get(i, A));
+    }
+    printf("\n");
+  }
+
+  printf("B_dense =\n");
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
+    {
+      printf(" %5.1f", B_dense[i[0]*N[1]+i[1]]);
+    }
+    printf("\n");
+  }
+
+  printf("C_dense =\n");
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
+    {
+      printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
+    }
+    printf("\n");
+  }
+#endif
+
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
+    {
+      C_dense[i[0]*N[1]+i[1]] *= beta;
+    }
+  }
+
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++) {
+      for (k = 0; k < N[0]; k++)
+      {
+        C_dense[i[0]*N[1]+i[1]] += alpha*A_dense[i[0]*N[1]+k]*B_dense[k*N[1]+i[1]];
+      }
+    }
+  }
+
+#ifdef PRINT_DEBUG
+  printf("C_dense =\n");
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
+    {
+      printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
+    }
+    printf("\n");
+  }
+#endif
+
+  timer = spamm_timer_new();
+  spamm_timer_add_event(0x8000003b, timer);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, NULL, kernel, NULL);
+  spamm_timer_delete(&timer);
+
+#ifdef PRINT_DEBUG
+  printf("C =\n");
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
+    {
+      printf(" %5.1f", spamm_get(i, C));
+    }
+    printf("\n");
+  }
+#endif
+
+#ifdef VERIFY_RESULT
+  max_diff = 0;
+  max_rel_diff = 0;
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++) {
+      for (k = 0; k < N[0]; k++)
+      {
+        if (fabs(C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C)) > max_diff)
+        {
+          max_diff = fabs(C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C));
+          max_i[0] = i[0];
+          max_i[1] = i[1];
+        }
+
+        if (C_dense[i[0]*N[1]+i[1]] != 0)
+        {
+          if (fabs((C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C))/C_dense[i[0]*N[1]+i[1]]) > max_rel_diff)
+          {
+            max_rel_diff = fabs((C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C))/C_dense[i[0]*N[1]+i[1]]);
+          }
+        }
+      }
+    }
+  }
+
+  printf("max diff = %e, rel. diff = %e, A(%u,%u) = %e, A_reference(%u,%u) = %e\n",
+      max_diff,
+      (C_dense[max_i[0]*N[1]+max_i[1]] != 0.0 ? max_diff/C_dense[max_i[0]*N[1]+max_i[1]] : 0.0),
+      max_i[0], max_i[1], spamm_get(max_i, C),
+      max_i[0], max_i[1], C_dense[max_i[0]*N[1]+max_i[1]]);
+
+  if (max_rel_diff > TEST_TOLERANCE)
+  {
+    printf("test failed\n");
+    result = -1;
+  }
+#endif
+
+  free(A_dense);
+  free(B_dense);
+  free(C_dense);
+
+  spamm_delete(&A);
+  spamm_delete(&B);
+  spamm_delete(&C);
 
   return result;
 }
