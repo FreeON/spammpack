@@ -59,6 +59,7 @@ check_PROGRAMS = \
   check_spamm \
   convert_dense \
   create_spamm \
+  create_spamm_vector \
   get_version \
   hashtable_insert \
   hashtable_remove \
