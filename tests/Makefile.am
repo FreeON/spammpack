@@ -17,7 +17,7 @@ test_programs = \
   SpAMM_TESTONE
 endif
 
-noinst_PROGRAMS = \
+check_PROGRAMS = \
   $(test_programs) \
   spamm_multiply \
   spamm_SP2 \

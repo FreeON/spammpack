@@ -11,10 +11,8 @@ libspammpack_la_SOURCES = \
   spamm_get_time.c \
   spamm_trap.c \
   spammpack.F90 
-#  cmultiply.c
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
-#AM_CPPFLAGS = $(OPENMP_CFLAGS)
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
 
 CLEANFILES = *.mod
