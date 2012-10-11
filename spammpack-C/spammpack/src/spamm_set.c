@@ -36,40 +36,32 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const enum spamm_layout_t layout,
     struct spamm_recursive_node_t **node)
 {
+  unsigned int dim;
   unsigned int number_rows;
   unsigned int number_columns;
 
   if (*node == NULL)
   {
     /* Allocate new node. */
-    *node = spamm_recursive_new_node(tier, N_contiguous, N_linear,
-        M_lower,
-        M_upper,
-        N_lower,
-        N_upper);
+    *node = spamm_recursive_new_node(tier, number_dimensions,
+        N_contiguous, N_linear,
+        N_lower, N_upper);
   }
 
   /* Some sanity checks. */
   else
   {
-    if ((*node)->M_lower != M_lower)
+    for (dim = 0; dim < number_dimensions; dim++)
     {
-      SPAMM_FATAL("(*node)->M_lower (%u) != M_lower (%u)\n", (*node)->M_lower, M_lower);
-    }
+      if ((*node)->N_lower[dim] != N_lower[dim])
+      {
+        SPAMM_FATAL("(*node)->N_lower[%u] (%u) != N_lower[%u] (%u)\n", dim, (*node)->N_lower[dim], dim, N_lower[dim]);
+      }
 
-    if ((*node)->M_upper != M_upper)
-    {
-      SPAMM_FATAL("(*node)->M_upper (%u) != M_upper (%u)\n", (*node)->M_upper, M_upper);
-    }
-
-    if ((*node)->N_lower != N_lower)
-    {
-      SPAMM_FATAL("(*node)->N_lower (%u) != N_lower (%u)\n", (*node)->N_lower, N_lower);
-    }
-
-    if ((*node)->N_upper != N_upper)
-    {
-      SPAMM_FATAL("(*node)->N_upper (%u) != N_upper (%u)\n", (*node)->N_upper, N_upper);
+      if ((*node)->N_upper[dim] != N_upper[dim])
+      {
+        SPAMM_FATAL("(*node)->N_upper[%u] (%u) != N_upper[%u] (%u)\n", dim, (*node)->N_upper[dim], dim, N_upper[dim]);
+      }
     }
   }
 

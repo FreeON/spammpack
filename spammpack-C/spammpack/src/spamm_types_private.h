@@ -161,11 +161,11 @@ struct spamm_hashed_data_t
 struct
 spamm_recursive_t
 {
-  /** Number or rows in this matrix. */
-  unsigned int M;
+  /** The number of dimensions. */
+  unsigned int number_dimensions;
 
-  /** Number of columns in this matrix. */
-  unsigned int N;
+  /** Array of the Number or rows/columns in this matrix. */
+  unsigned int *N;
 
   /** Number of rows and columns in the padded matrix. */
   unsigned int N_padded;

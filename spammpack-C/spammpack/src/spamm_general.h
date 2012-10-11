@@ -191,7 +191,8 @@ struct spamm_hashed_node_t *
 spamm_hashed_new_node (const unsigned int tier, const unsigned int index_2D);
 
 struct spamm_recursive_t *
-spamm_recursive_new (const unsigned int M, const unsigned int N,
+spamm_recursive_new (const unsigned int number_dimensions,
+    const unsigned int *const N,
     const unsigned int N_contiguous);
 
 struct spamm_recursive_node_t *
