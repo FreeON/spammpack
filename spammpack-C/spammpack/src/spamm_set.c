@@ -11,13 +11,11 @@
 
 /** Recursively set a matrix element.
  *
- * @param i The row index.
- * @param j The column index.
+ * @param number_dimensions The number of dimensions.
+ * @param i An array of row/column indices.
  * @param Aij The value of the matrix element A(i,j).
- * @param M_lower The left-most row index.
- * @param M_upper The right-most row index.
- * @param N_lower The left-most column index.
- * @param N_upper The right-most column index.
+ * @param N_lower An array of left-most column indices.
+ * @param N_upper An array of right-most column indices.
  * @param N_contiguous The size of the contiguous submatrix block.
  * @param N_linear The size of the submatrix that is stored in hashed format.
  * @param tier The tier this node is on.
@@ -25,11 +23,11 @@
  * @param node The node.
  */
 void
-spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij,
-    const unsigned int M_lower,
-    const unsigned int M_upper,
-    const unsigned int N_lower,
-    const unsigned int N_upper,
+spamm_recursive_set (const unsigned int number_dimensions,
+    const unsigned int *const i,
+    const float Aij,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
     const unsigned int N_contiguous,
     const unsigned int N_linear,
     const unsigned int tier,

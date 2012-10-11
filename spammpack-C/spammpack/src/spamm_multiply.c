@@ -131,16 +131,24 @@ spamm_recursive_multiply_beta (const float beta, struct spamm_recursive_node_t *
 
   if (A == NULL) { return; }
 
-  if (A->M_upper-A->M_lower == A->N_linear)
+  if (A->N_upper[0]-A->N_lower[1] == A->N_linear)
   {
     spamm_hashed_multiply_beta(beta, A->hashed_tree);
   }
 
-  else if (A->M_upper-A->M_lower == A->N_contiguous)
+  else if (A->N_upper[0]-A->N_lower[0] == A->N_contiguous)
   {
-    for (i = 0; i < A->N_contiguous*A->N_contiguous; i++)
+    switch (A->number_dimensions)
     {
-      A->data[i] *= beta;
+      case 2:
+        for (i = 0; i < A->N_contiguous*A->N_contiguous; i++)
+        {
+          A->data[i] *= beta;
+        }
+        break;
+
+      default:
+        SPAMM_FATAL("not implemented\n");
     }
   }
 
@@ -1682,7 +1690,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
     struct spamm_recursive_node_t *node_B,
     struct spamm_recursive_node_t **node_C,
     struct spamm_timer_t *timer,
-    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    sgemm_func sgemm,
     unsigned int *number_products)
 {
   float beta = 1.0;
@@ -1701,28 +1709,36 @@ spamm_recursive_multiply_matrix (const float tolerance,
   {
     if (node_A->norm*node_B->norm > tolerance)
     {
-      if ((*node_C)->data == NULL)
+      switch (node_A->number_dimensions)
       {
-        (*node_C)->data = calloc((*node_C)->N_contiguous*(*node_C)->N_contiguous, sizeof(float));
-      }
-      if (sgemm != NULL)
-      {
-        sgemm(
-            "N", /* TRANSA */
-            "N", /* TRANSB */
-            (int*) &(node_A->N_contiguous), /* M */
-            (int*) &(node_A->N_contiguous), /* N */
-            (int*) &(node_A->N_contiguous), /* K */
-            (float*) &alpha, /* alpha */
-            node_A->data, /* A */
-            (int*) &node_A->N_contiguous, /* LDA */
-            node_B->data, /* B */
-            (int*) &node_A->N_contiguous, /* LDB */
-            (float*) &beta, /* beta */
-            (*node_C)->data, /* C */
-            (int*) &node_A->N_contiguous /* LDC */
-            );
-        (*number_products)++;
+        case 2:
+          if ((*node_C)->data == NULL)
+          {
+            (*node_C)->data = calloc((*node_C)->N_contiguous*(*node_C)->N_contiguous, sizeof(float));
+          }
+          if (sgemm != NULL)
+          {
+            sgemm(
+                "N", /* TRANSA */
+                "N", /* TRANSB */
+                (int*) &(node_A->N_contiguous), /* M */
+                (int*) &(node_A->N_contiguous), /* N */
+                (int*) &(node_A->N_contiguous), /* K */
+                (float*) &alpha, /* alpha */
+                node_A->data, /* A */
+                (int*) &node_A->N_contiguous, /* LDA */
+                node_B->data, /* B */
+                (int*) &node_A->N_contiguous, /* LDB */
+                (float*) &beta, /* beta */
+                (*node_C)->data, /* C */
+                (int*) &node_A->N_contiguous /* LDC */
+                );
+            (*number_products)++;
+          }
+          break;
+
+        default:
+          SPAMM_FATAL("not implemented\n");
       }
     }
   }
@@ -1730,37 +1746,47 @@ spamm_recursive_multiply_matrix (const float tolerance,
   else
   {
     /* Recurse. */
-    for (i = 0; i < 2; i++) {
-      for (j = 0; j < 2; j++) {
-        for (k = 0; k < 2; k++)
-        {
-          if (node_A->child[spamm_index_row_major(i, k, 2, 2)] != NULL && node_B->child[spamm_index_row_major(k, j, 2, 2)] != NULL)
-          {
-            if (node_A->child[spamm_index_row_major(i, k, 2, 2)]->norm *
-                node_B->child[spamm_index_row_major(k, j, 2, 2)]->norm > tolerance)
+    switch (node_A->number_dimensions)
+    {
+      case 2:
+        for (i = 0; i < 2; i++) {
+          for (j = 0; j < 2; j++) {
+            for (k = 0; k < 2; k++)
             {
-              /* Create a new C node if necessary. */
-              if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
+              if (node_A->child[spamm_index_row_major(i, k, 2, 2)] != NULL && node_B->child[spamm_index_row_major(k, j, 2, 2)] != NULL)
               {
-                (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1, (*node_C)->N_contiguous, (*node_C)->N_linear,
-                    (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i,
-                    (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1),
-                    (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j,
-                    (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*(j+1));
-              }
+                if (node_A->child[spamm_index_row_major(i, k, 2, 2)]->norm *
+                    node_B->child[spamm_index_row_major(k, j, 2, 2)]->norm > tolerance)
+                {
+                  /* Create a new C node if necessary. */
+                  if ((*node_C)->child[spamm_index_row_major(i, j, 2, 2)] == NULL)
+                  {
+                    (*node_C)->child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1,
+                        (*node_C)->number_dimensions,
+                        (*node_C)->N_contiguous, (*node_C)->N_linear,
+                        (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*i,
+                        (*node_C)->M_lower+((*node_C)->M_upper-(*node_C)->M_lower)/2*(i+1),
+                        (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*j,
+                        (*node_C)->N_lower+((*node_C)->N_upper-(*node_C)->N_lower)/2*(j+1));
+                  }
 
-              spamm_recursive_multiply_matrix(tolerance,
-                  alpha,
-                  node_A->child[spamm_index_row_major(i, k, 2, 2)],
-                  node_B->child[spamm_index_row_major(k, j, 2, 2)],
-                  &((*node_C)->child[spamm_index_row_major(i, j, 2, 2)]),
-                  timer,
-                  sgemm,
-                  number_products);
+                  spamm_recursive_multiply_matrix(tolerance,
+                      alpha,
+                      node_A->child[spamm_index_row_major(i, k, 2, 2)],
+                      node_B->child[spamm_index_row_major(k, j, 2, 2)],
+                      &((*node_C)->child[spamm_index_row_major(i, j, 2, 2)]),
+                      timer,
+                      sgemm,
+                      number_products);
+                }
+              }
             }
           }
         }
-      }
+        break;
+
+      default:
+        SPAMM_FATAL("not implemented\n");
     }
   }
 }
@@ -1815,7 +1841,7 @@ spamm_recursive_multiply (const float tolerance,
     const float beta,
     struct spamm_recursive_t *C,
     struct spamm_timer_t *timer,
-    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    sgemm_func sgemm,
     unsigned int *number_products)
 {
   if (A == NULL)
@@ -1878,7 +1904,7 @@ spamm_multiply (const float tolerance,
     const float beta,
     struct spamm_matrix_t *C,
     struct spamm_timer_t *timer,
-    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    sgemm_func sgemm,
     const enum spamm_kernel_t kernel,
     unsigned int *number_products)
 {
@@ -1943,7 +1969,7 @@ spamm_recursive_multiply_3_matrix (const float tolerance,
     struct spamm_recursive_node_t *node_C,
     struct spamm_recursive_node_t **node_D,
     struct spamm_timer_t *timer,
-    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    sgemm_func sgemm,
     unsigned int *number_products)
 {
   float beta = 1.0;
@@ -2034,7 +2060,7 @@ spamm_recursive_multiply_3 (const float tolerance,
     const float beta,
     struct spamm_recursive_t *D,
     struct spamm_timer_t *timer,
-    void (*sgemm) (),
+    sgemm_func sgemm,
     unsigned int *number_products)
 {
   if (A == NULL)

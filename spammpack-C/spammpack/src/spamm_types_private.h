@@ -187,17 +187,14 @@ spamm_recursive_t
 struct
 spamm_recursive_node_t
 {
-  /** The lower value of the row index. */
-  unsigned int M_lower;
+  /** The number of dimensions. */
+  unsigned int number_dimensions;
 
-  /** The upper value of the row index. */
-  unsigned int M_upper;
+  /** An array of lower values of the row indices. */
+  unsigned int *N_lower;
 
-  /** The lower value of the column index. */
-  unsigned int N_lower;
-
-  /** The upper value of the column index. */
-  unsigned int N_upper;
+  /** An array of upper values of the row indices. */
+  unsigned int *N_upper;
 
   /** The tier. */
   unsigned int tier;

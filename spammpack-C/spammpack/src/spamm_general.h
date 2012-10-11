@@ -5,6 +5,8 @@
 
 #include "spamm_types.h"
 
+typedef void (*sgemm_func) (char *transA, char *transB, int *M, int *N, int *K, float *alpha, float *A, int *LDA, float *B, int *LDB, float *beta, float *C, int *LDC);
+
 void *
 spamm_allocate (size_t size);
 
@@ -127,7 +129,7 @@ spamm_recursive_multiply (const float tolerance,
     const float beta,
     struct spamm_recursive_t *C,
     struct spamm_timer_t *timer,
-    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    sgemm_func sgemm,
     unsigned int *number_products);
 
 void
@@ -139,7 +141,7 @@ spamm_recursive_multiply_3 (const float tolerance,
     const float beta,
     struct spamm_recursive_t *D,
     struct spamm_timer_t *timer,
-    void (*sgemm) (),
+    sgemm_func sgemm,
     unsigned int *number_products);
 
 void
@@ -150,7 +152,7 @@ spamm_multiply (const float tolerance,
     const float beta,
     struct spamm_matrix_t *C,
     struct spamm_timer_t *timer,
-    void (*sgemm) (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *),
+    sgemm_func sgemm,
     const enum spamm_kernel_t kernel,
     unsigned int *number_products);
 
@@ -194,12 +196,11 @@ spamm_recursive_new (const unsigned int M, const unsigned int N,
 
 struct spamm_recursive_node_t *
 spamm_recursive_new_node (const unsigned int tier,
+    const unsigned int number_dimensions,
     const unsigned int N_contiguous,
     const unsigned int N_linear,
-    const unsigned int M_lower,
-    const unsigned int M_upper,
-    const unsigned int N_lower,
-    const unsigned int N_upper);
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper);
 
 void
 spamm_print (const struct spamm_matrix_t *A);
@@ -215,11 +216,11 @@ void
 spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *A);
 
 void
-spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij,
-    const unsigned int M_lower,
-    const unsigned int M_upper,
-    const unsigned int N_lower,
-    const unsigned int N_upper,
+spamm_recursive_set (const unsigned int number_dimensions,
+    const unsigned int *const i,
+    const float Aij,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
     const unsigned int N_contiguous,
     const unsigned int N_linear,
     const unsigned int tier,

@@ -389,22 +389,21 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
 /** Allocate a new node of a recursive matrix tree.
  *
  * @param tier The tier this node will be on.
+ * @param number_dimensions The number of dimensions.
  * @param N_contiguous The size of the contiguous submatrix block.
- * @param M_lower The lowest row index of this submatrix node.
- * @param M_upper The lowest row index of this submatrix node.
- * @param N_lower The lowest column index of this submatrix node.
- * @param N_upper The lowest column index of this submatrix node.
+ * @param N_linear The size of the matrix when switching to a linear tree.
+ * @param N_lower An array of the lowest row index of this submatrix node.
+ * @param N_upper An array of the lowest row index of this submatrix node.
  *
  * @return A pointer to the newly allocated node.
  */
 struct spamm_recursive_node_t *
 spamm_recursive_new_node (const unsigned int tier,
+    const unsigned int number_dimensions,
     const unsigned int N_contiguous,
     const unsigned int N_linear,
-    const unsigned int M_lower,
-    const unsigned int M_upper,
-    const unsigned int N_lower,
-    const unsigned int N_upper)
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper)
 {
   struct spamm_recursive_node_t *node = NULL;
 

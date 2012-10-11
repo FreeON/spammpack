@@ -42,26 +42,25 @@ spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm
  *
  * If the matrix is NULL, this function returns 0.
  *
- * @param i The row index.
- * @param j The column index.
+ * @param i An array of row indices.
  * @param A The matrix.
  *
  * @return The matrix element Aij.
  */
 float
-spamm_recursive_get (const unsigned int i, const unsigned int j, const struct spamm_recursive_node_t *node)
+spamm_recursive_get (const unsigned int *const i,
+    const struct spamm_recursive_node_t *node)
 {
   unsigned int number_rows;
   unsigned int number_columns;
 
   if (node == NULL) { return 0; }
 
-  number_rows = node->M_upper-node->M_lower;
-  number_columns = node->N_upper-node->N_lower;
+  number_rows = node->N_upper[0]-node->N_lower[0];
 
   if (number_rows == node->N_linear)
   {
-    return spamm_hashed_get(i, j, node->hashed_tree);
+    return spamm_hashed_get(i[0], i[1], node->hashed_tree);
   }
 
   else if (number_rows == node->N_contiguous)
@@ -70,42 +69,50 @@ spamm_recursive_get (const unsigned int i, const unsigned int j, const struct sp
     if (node->data == NULL) { return 0.0; }
     else
     {
-      return node->data[spamm_index_column_major(i-node->M_lower, j-node->N_lower, node->N_contiguous, node->N_contiguous)];
+      switch (node->number_dimensions)
+      {
+        case 2:
+          return node->data[spamm_index_column_major(i[0]-node->N_lower[0], i[1]-node->N_lower[1], node->N_contiguous, node->N_contiguous)];
+          break;
+
+        default:
+          SPAMM_FATAL("not implemented\n");
+      }
     }
   }
 
   else
   {
-    if (i < node->M_lower+(number_rows)/2 &&
-        j < node->N_lower+(number_columns)/2)
+    switch (node->number_dimensions)
     {
-      return spamm_recursive_get(i, j, node->child[0]);
-    }
+      case 2:
+        number_columns = node->N_upper[1]-node->N_lower[1];
+        if (i[0] < node->N_lower[0]+(number_rows)/2 &&
+            i[1] < node->N_lower[1]+(number_columns)/2)
+        {
+          return spamm_recursive_get(i, node->child[0]);
+        }
 
-    else if (i <  node->M_lower+(number_rows)/2 &&
-        j >= node->N_lower+(number_columns)/2)
-    {
-      return spamm_recursive_get(i, j, node->child[1]);
-    }
+        else if (i[0] <  node->N_lower[0]+(number_rows)/2 &&
+            i[1] >= node->N_lower[1]+(number_columns)/2)
+        {
+          return spamm_recursive_get(i, node->child[1]);
+        }
 
-    else if (i >= node->M_lower+(number_rows)/2 &&
-        j <  node->N_lower+(number_columns)/2)
-    {
-      return spamm_recursive_get(i, j, node->child[2]);
-    }
+        else if (i[0] >= node->N_lower[0]+(number_rows)/2 &&
+            i[1] <  node->N_lower[1]+(number_columns)/2)
+        {
+          return spamm_recursive_get(i, node->child[2]);
+        }
 
-    else if (i >= node->M_lower+(number_rows)/2 &&
-        j >= node->N_lower+(number_columns)/2)
-    {
-      return spamm_recursive_get(i, j, node->child[3]);
-    }
+        else
+        {
+          return spamm_recursive_get(i, node->child[3]);
+        }
+        break;
 
-    else
-    {
-      SPAMM_FATAL("should not be here...\n");
-
-      /* Appease the compiler. */
-      return 0;
+      default:
+        SPAMM_FATAL("not implemented\n");
     }
   }
 }
@@ -145,7 +152,7 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
 
   else
   {
-    return spamm_recursive_get(i[0], i[1], A->recursive_tree);
+    return spamm_recursive_get(i, A->recursive_tree);
   }
 }
 

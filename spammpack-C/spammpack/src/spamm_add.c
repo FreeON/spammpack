@@ -312,25 +312,40 @@ spamm_recursive_add (const float alpha,
     const float beta,
     struct spamm_recursive_node_t **B)
 {
-  unsigned int i;
+  unsigned int *i;
 
   /* There is nothing to do here. */
   if ((*A) == NULL && (*B) == NULL) { return; }
 
   if ((*A) != NULL && (*B) != NULL)
   {
-    if ((*A)->M_upper-(*A)->M_lower == (*A)->N_linear)
+    if ((*A)->number_dimensions != (*B)->number_dimensions)
+    {
+      SPAMM_FATAL("dimension mismatch\n");
+    }
+
+    if ((*A)->N_upper[0]-(*A)->N_lower[0] == (*A)->N_linear)
     {
       spamm_hashed_add(alpha, &(*A)->hashed_tree, beta, &(*B)->hashed_tree);
     }
 
-    else if ((*A)->M_upper-(*A)->M_lower == (*A)->N_contiguous)
+    else if ((*A)->N_upper[0]-(*A)->N_lower[0] == (*A)->N_contiguous)
     {
       /* Braindead add. */
-      for (i = 0; i < (*A)->N_contiguous*(*A)->N_contiguous; i++)
+      i = calloc((*A)->number_dimensions, sizeof(unsigned int));
+      switch ((*A)->number_dimensions)
       {
-        (*A)->data[i] = alpha*(*A)->data[i]+beta*(*B)->data[i];
+        case 2:
+          for (i[0] = 0; i[0] < (*A)->N_contiguous*(*A)->N_contiguous; i[0]++)
+          {
+            (*A)->data[i[0]] = alpha*(*A)->data[i[0]]+beta*(*B)->data[i[0]];
+          }
+          break;
+
+        default:
+          SPAMM_FATAL("not implemented\n");
       }
+      free(i);
     }
 
     else
