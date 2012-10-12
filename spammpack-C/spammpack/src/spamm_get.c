@@ -71,6 +71,10 @@ spamm_recursive_get (const unsigned int *const i,
     {
       switch (node->number_dimensions)
       {
+        case 1:
+          return node->data[i[0]-node->N_lower[0]];
+          break;
+
         case 2:
           return node->data[spamm_index_column_major(i[0]-node->N_lower[0], i[1]-node->N_lower[1], node->N_contiguous, node->N_contiguous)];
           break;
@@ -85,6 +89,17 @@ spamm_recursive_get (const unsigned int *const i,
   {
     switch (node->number_dimensions)
     {
+      case 1:
+        if (i[0] < node->N_lower[0]+(number_rows)/2)
+        {
+          return spamm_recursive_get(i, node->child[0]);
+        }
+
+        else
+        {
+          return spamm_recursive_get(i, node->child[1]);
+        }
+
       case 2:
         number_columns = node->N_upper[1]-node->N_lower[1];
         if (i[0] < node->N_lower[0]+(number_rows)/2 &&
@@ -130,11 +145,6 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
   int dim;
 
   assert(A != NULL);
-
-  if (A->number_dimensions != 2)
-  {
-    SPAMM_FATAL("not supported yet\n");
-  }
 
   for (dim = 0; dim < A->number_dimensions; dim++)
   {

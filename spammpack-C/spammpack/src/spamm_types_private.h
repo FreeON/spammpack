@@ -206,7 +206,7 @@ spamm_recursive_node_t
   float norm2;
 
   /** The children nodes. */
-  struct spamm_recursive_node_t *child[4];
+  struct spamm_recursive_node_t **child;
 
   /** The blocksize for recursive trees. */
   unsigned int N_contiguous;

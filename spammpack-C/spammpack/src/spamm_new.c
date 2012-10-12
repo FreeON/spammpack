@@ -77,6 +77,7 @@ spamm_new (const unsigned int number_dimensions,
   }
 
   /* Pad to powers of M_child x N_child. */
+  x = 0;
   for (dim = 0; dim < number_dimensions; dim++)
   {
     x_N = (log(N[dim]) > log(SPAMM_N_BLOCK) ? log(N[dim]) - log(SPAMM_N_BLOCK) : 0)/log(2);
@@ -244,6 +245,7 @@ spamm_recursive_new (const unsigned int number_dimensions,
   A->N_contiguous = N_contiguous;
 
   /* Pad to powers of M_child x N_child. */
+  x = 0;
   for (dim = 0; dim < number_dimensions; dim++)
   {
     x_N = (log(N[dim]) > log(N_contiguous) ? log(N[dim]) - log(N_contiguous) : 0)/log(2);
@@ -433,6 +435,9 @@ spamm_recursive_new_node (const unsigned int tier,
 
   node->N_lower = calloc(number_dimensions, sizeof(unsigned int));
   node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+  /* Allocate child matrix. */
+  node->child = calloc(powl(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
 
   for (dim = 0; dim < number_dimensions; dim++)
   {

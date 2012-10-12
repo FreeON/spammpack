@@ -1825,7 +1825,7 @@ spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t
 
   else
   {
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < powl(2, node->number_dimensions); i++)
     {
       spamm_recursive_multiply_scalar(beta, node->child[i]);
     }

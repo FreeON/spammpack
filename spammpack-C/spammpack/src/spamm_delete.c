@@ -1,6 +1,7 @@
 #include "spamm.h"
 #include "spamm_types_private.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -79,10 +80,11 @@ spamm_recursive_delete (struct spamm_recursive_node_t **node)
 
   if (*node == NULL) { return; }
 
-  for (i = 0; i < 4; i++)
+  for (i = 0; i < powl(2, (*node)->number_dimensions); i++)
   {
     spamm_recursive_delete(&(*node)->child[i]);
   }
+  free((*node)->child);
 
   if ((*node)->data != NULL)
   {
@@ -94,6 +96,9 @@ spamm_recursive_delete (struct spamm_recursive_node_t **node)
   {
     spamm_hashed_delete(&(*node)->hashed_tree);
   }
+
+  free((*node)->N_lower);
+  free((*node)->N_upper);
 
   free(*node);
   *node = NULL;

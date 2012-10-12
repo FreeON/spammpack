@@ -82,36 +82,61 @@ spamm_recursive_set (const unsigned int number_dimensions,
 
   else if (number_rows == N_contiguous)
   {
+    if ((*node)->data == NULL)
+    {
+      (*node)->data = calloc(powl(N_contiguous, number_dimensions), sizeof(float));
+    }
+
     switch (number_dimensions)
     {
-      case 2:
-        /* Store the matrix element. */
-        if ((*node)->data == NULL)
-        {
-          (*node)->data = calloc(powl(N_contiguous, number_dimensions), sizeof(float));
-        }
+      case 1:
+        (*node)->data[i[0]-(*node)->N_lower[0]] = Aij;
+        break;
 
+      case 2:
         /* sgemm() loves column major. */
         (*node)->data[spamm_index_column_major(i[0]-(*node)->N_lower[0], i[1]-(*node)->N_lower[1], N_contiguous, N_contiguous)] = Aij;
-
-        /* Update norm. */
-        (*node)->norm2 += Aij*Aij;
-        (*node)->norm   = sqrt((*node)->norm2);
         break;
 
       default:
         SPAMM_FATAL("not implemented\n");
     }
+
+    /* Update norm. */
+    (*node)->norm2 += Aij*Aij;
+    (*node)->norm   = sqrt((*node)->norm2);
   }
 
   else
   {
+    new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
+    new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
     switch (number_dimensions)
     {
+      case 1:
+        if (i[0] < (*node)->N_lower[0]+(number_rows)/2)
+        {
+          new_N_lower[0] = (*node)->N_lower[0];
+          new_N_upper[0] = (*node)->N_lower[0]+(number_rows)/2;
+
+          spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
+              N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[0]));
+        }
+
+        else
+        {
+          new_N_lower[0] = (*node)->N_lower[0]+(number_rows)/2;
+          new_N_upper[0] = (*node)->N_upper[0];
+
+          spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
+              N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[1]));
+        }
+
+        break;
+
       case 2:
         number_columns = (*node)->N_upper[1]-(*node)->N_lower[1];
-        new_N_lower = calloc(2, sizeof(unsigned int));
-        new_N_upper = calloc(2, sizeof(unsigned int));
 
         if (i[0] < (*node)->N_lower[0]+(number_rows)/2 &&
             i[1] < (*node)->N_lower[1]+(number_columns)/2)
@@ -121,7 +146,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
           new_N_lower[1] = (*node)->N_lower[1];
           new_N_upper[1] = (*node)->N_lower[1]+(number_columns)/2;
 
-          spamm_recursive_set(2, i, Aij, new_N_lower, new_N_upper,
+          spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
               N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[0]));
         }
 
@@ -133,7 +158,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
           new_N_lower[1] = (*node)->N_lower[1]+(number_columns)/2;
           new_N_upper[1] = (*node)->N_upper[1];
 
-          spamm_recursive_set(2, i, Aij, new_N_lower, new_N_upper,
+          spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
               N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[1]));
         }
 
@@ -145,30 +170,33 @@ spamm_recursive_set (const unsigned int number_dimensions,
           new_N_lower[1] = (*node)->N_lower[1];
           new_N_upper[1] = (*node)->N_lower[1]+(number_columns)/2;
 
-          spamm_recursive_set(2, i, Aij, new_N_lower, new_N_upper,
+          spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
               N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[2]));
         }
 
-        else if (i[0] >= (*node)->N_lower[0]+(number_rows)/2 &&
-            i[1] >= (*node)->N_lower[1]+(number_columns)/2)
+        else
         {
           new_N_lower[0] = (*node)->N_lower[0]+(number_rows)/2;
           new_N_upper[0] = (*node)->N_upper[0];
           new_N_lower[1] = (*node)->N_lower[1]+(number_columns)/2;
           new_N_upper[1] = (*node)->N_upper[1];
 
-          spamm_recursive_set(2, i, Aij, new_N_lower, new_N_upper,
+          spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
               N_contiguous, N_linear, tier+1, kernel_tier, depth, layout, &((*node)->child[3]));
         }
 
-        /* Update norm. */
-        (*node)->norm2 += Aij*Aij;
-        (*node)->norm   = sqrt((*node)->norm2);
         break;
 
       default:
         SPAMM_FATAL("not implemented\n");
     }
+
+    /* Update norm. */
+    (*node)->norm2 += Aij*Aij;
+    (*node)->norm   = sqrt((*node)->norm2);
+
+    free(new_N_lower);
+    free(new_N_upper);
   }
 }
 

@@ -60,6 +60,7 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
       }
     }
   }
+  free(i);
 
   return A;
 }
