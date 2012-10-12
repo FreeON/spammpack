@@ -131,7 +131,7 @@ spamm_recursive_multiply_beta (const float beta, struct spamm_recursive_node_t *
 
   if (A == NULL) { return; }
 
-  if (A->N_upper[0]-A->N_lower[1] == A->N_linear)
+  if (A->N_upper[0]-A->N_lower[0] == A->N_linear)
   {
     spamm_hashed_multiply_beta(beta, A->hashed_tree);
   }

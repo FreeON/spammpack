@@ -25,6 +25,7 @@ main (int argc, char **argv)
   float *B_dense;
 
   float max_diff;
+  unsigned int max_diff_i[2];
 
   struct spamm_matrix_t *A;
   struct spamm_matrix_t *B;
@@ -86,6 +87,30 @@ main (int argc, char **argv)
     A = spamm_convert_dense_to_spamm(2, N, linear_tier, contiguous_tier, row_major, A_dense, row_major);
     B = spamm_convert_dense_to_spamm(2, N, linear_tier, contiguous_tier, row_major, B_dense, row_major);
 
+    result |= spamm_check(A, TEST_TOLERANCE);
+    result |= spamm_check(B, TEST_TOLERANCE);
+
+    for (i[0] = 0; i[0] < N[0]; i[0]++) {
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        if (A_dense[i[0]*N[1]+i[1]] != spamm_get(i, A))
+        {
+          result |= SPAMM_ERROR;
+          printf("failed test at A[%u][%u] (found %f, should be %f)\n", i[0], i[1],
+              spamm_get(i, A), A_dense[i[0]*N[1]+i[1]]);
+          break;
+        }
+
+        if (B_dense[i[0]*N[1]+i[1]] != spamm_get(i, B))
+        {
+          result |= SPAMM_ERROR;
+          printf("failed test at B[%u][%u] (found %f, should be %f)\n", i[0], i[1],
+              spamm_get(i, B), B_dense[i[0]*N[1]+i[1]]);
+          break;
+        }
+      }
+    }
+
     /* Add by hand for verification. */
     for (i[0] = 0; i[0] < N[0]; i[0]++) {
       for (i[1] = 0; i[1] < N[1]; i[1]++)
@@ -113,12 +138,16 @@ main (int argc, char **argv)
 
     /* Compare result. */
     max_diff = 0.0;
+    max_diff_i[0] = 0;
+    max_diff_i[1] = 0;
     for (i[0] = 0; i[0] < N[0]; i[0]++) {
       for (i[1] = 0; i[1] < N[1]; i[1]++)
       {
         if (fabs(A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])]-spamm_get(i, A)) > max_diff)
         {
           max_diff = fabs(A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])]-spamm_get(i, A));
+          max_diff_i[0] = i[0];
+          max_diff_i[1] = i[1];
         }
       }
     }
@@ -127,8 +156,8 @@ main (int argc, char **argv)
     if (max_diff > TEST_TOLERANCE)
     {
       result |= SPAMM_ERROR;
-      printf("[add_spamm] max diff (sparse_A = %u, sparse_B = %u, test tolerance was %1.2e) = %e\n",
-          sparse_A[sparse_test], sparse_B[sparse_test], TEST_TOLERANCE, max_diff);
+      printf("[add_spamm] max diff of A[%u,%u] (sparse_A = %u, sparse_B = %u, test tolerance was %1.2e) = %e\n",
+          max_diff_i[0], max_diff_i[1], sparse_A[sparse_test], sparse_B[sparse_test], TEST_TOLERANCE, max_diff);
     }
 
     free(A_dense);

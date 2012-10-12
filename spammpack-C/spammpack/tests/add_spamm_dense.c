@@ -24,6 +24,7 @@ main (int argc, char **argv)
   float *B_dense;
 
   float max_diff;
+  unsigned int max_diff_i[2];
 
   struct spamm_matrix_t *A;
   struct spamm_matrix_t *B;
@@ -80,12 +81,16 @@ main (int argc, char **argv)
 
   /* Compare result. */
   max_diff = 0.0;
+  max_diff_i[0] = 0;
+  max_diff_i[1] = 0;
   for (i[0] = 0; i[0] < N[0]; i[0]++) {
     for (i[1] = 0; i[1] < N[1]; i[1]++)
     {
       if (fabs(A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])]-spamm_get(i, A)) > max_diff)
       {
         max_diff = fabs(A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])]-spamm_get(i, A));
+        max_diff_i[0] = i[0];
+        max_diff_i[1] = i[1];
       }
     }
   }
@@ -93,7 +98,8 @@ main (int argc, char **argv)
   if (max_diff > TEST_TOLERANCE)
   {
     result |= SPAMM_ERROR;
-    printf("[add_spamm] max diff (test tolerance was %1.2e) = %e\n", TEST_TOLERANCE, max_diff);
+    printf("[add_spamm] max diff of A[%u,%u] (test tolerance was %1.2e) = %e\n",
+        max_diff_i[0], max_diff_i[1], TEST_TOLERANCE, max_diff);
   }
 
   free(A_dense);
