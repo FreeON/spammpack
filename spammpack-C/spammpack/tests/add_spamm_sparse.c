@@ -109,7 +109,7 @@ main (int argc, char **argv)
 #endif
 
     /* Check tree consistency. */
-    result = spamm_check(A, TEST_TOLERANCE);
+    result |= spamm_check(A, TEST_TOLERANCE);
 
     /* Compare result. */
     max_diff = 0.0;
@@ -126,7 +126,7 @@ main (int argc, char **argv)
     /* Test result. */
     if (max_diff > TEST_TOLERANCE)
     {
-      result = SPAMM_ERROR;
+      result |= SPAMM_ERROR;
       printf("[add_spamm] max diff (sparse_A = %u, sparse_B = %u, test tolerance was %1.2e) = %e\n",
           sparse_A[sparse_test], sparse_B[sparse_test], TEST_TOLERANCE, max_diff);
     }

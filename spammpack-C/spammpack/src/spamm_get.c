@@ -58,7 +58,7 @@ spamm_recursive_get (const unsigned int *const i,
 
   number_rows = node->N_upper[0]-node->N_lower[0];
 
-  if (number_rows == node->N_linear)
+  if (node->number_dimensions == 2 && number_rows == node->N_linear)
   {
     return spamm_hashed_get(i[0], i[1], node->hashed_tree);
   }
@@ -144,7 +144,7 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
     }
   }
 
-  if (A->linear_tier == 0)
+  if (A->number_dimensions == 2 && A->linear_tier == 0)
   {
     /* In case we only have a linear tree. */
     return spamm_hashed_get(i[0], i[1], A->hashed_tree);

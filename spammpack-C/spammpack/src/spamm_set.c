@@ -70,7 +70,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
   /* Calculate box dimensions for convenience. */
   number_rows = (*node)->N_upper[0]-(*node)->N_lower[0];
 
-  if (number_rows == N_linear)
+  if (number_dimensions == 2 && number_rows == N_linear)
   {
     if ((*node)->hashed_tree == NULL)
     {
@@ -435,16 +435,11 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
     }
   }
 
-  if (A->number_dimensions != 2)
-  {
-    SPAMM_FATAL("not implemented, number of dimensions = %u\n", A->number_dimensions);
-  }
-
   /* Don't store zero. */
   if (Aij == 0.0) { return; }
 
   /* Store matrix element. */
-  if (A->linear_tier == 0)
+  if (A->number_dimensions == 2 && A->linear_tier == 0)
   {
     /* In case we only have a linear tree. */
     if (A->hashed_tree == NULL)

@@ -273,6 +273,9 @@ spamm_recursive_new (const unsigned int number_dimensions,
     A->depth--;
   }
 
+  /* Store the number of dimensions. */
+  A->number_dimensions = number_dimensions;
+
   /* Set matrix size. */
   A->N = calloc(number_dimensions, sizeof(unsigned int));
   for (dim = 0; dim < number_dimensions; dim++)
@@ -420,8 +423,11 @@ spamm_recursive_new_node (const unsigned int tier,
   unsigned int dim;
   struct spamm_recursive_node_t *node = NULL;
 
+  /* Allocate memory. */
   node = calloc(1, sizeof(struct spamm_recursive_node_t));
+
   node->tier = tier;
+  node->number_dimensions = number_dimensions;
   node->N_contiguous = N_contiguous;
   node->N_linear = N_linear;
 
