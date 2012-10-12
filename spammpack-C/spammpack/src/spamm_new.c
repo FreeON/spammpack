@@ -214,29 +214,27 @@ spamm_hashed_new (const unsigned int tier,
 
 /** Create a new recursive matrix object.
  *
- * @param M Number of rows of dense input matrix.
- * @param N Number of columns of dense input matrix.
+ * @param number_dimensions The number of dimensions.
+ * @param N An array of the number of rows/columns of dense input matrix.
  * @param blocksize The size of the dense matrix blocks.
  *
  * @return A pointer to the matrix.
  */
 struct spamm_recursive_t *
-spamm_recursive_new (const unsigned int M, const unsigned int N,
+spamm_recursive_new (const unsigned int number_dimensions,
+    const unsigned int *const N,
     const unsigned int N_contiguous)
 {
+  unsigned int dim;
   struct spamm_recursive_t *A = NULL;
-  double x, x_M, x_N;
+  double x, x_N;
 
-  if (M <= 0)
+  for (dim = 0; dim < number_dimensions; dim++)
   {
-    fprintf(stderr, "M <= 0\n");
-    exit(1);
-  }
-
-  if (N <= 0)
-  {
-    fprintf(stderr, "N <= 0\n");
-    exit(1);
+    if (N[dim] <= 0)
+    {
+      SPAMM_FATAL("N[%u] <= 0\n", dim);
+    }
   }
 
   /* Allocate memory. */
@@ -246,11 +244,14 @@ spamm_recursive_new (const unsigned int M, const unsigned int N,
   A->N_contiguous = N_contiguous;
 
   /* Pad to powers of M_child x N_child. */
-  x_M = (log(M) > log(N_contiguous) ? log(M) - log(N_contiguous) : 0)/log(2);
-  x_N = (log(N) > log(N_contiguous) ? log(N) - log(N_contiguous) : 0)/log(2);
-
-  if (x_M > x_N) { x = x_M; }
-  else           { x = x_N; }
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    x_N = (log(N[dim]) > log(N_contiguous) ? log(N[dim]) - log(N_contiguous) : 0)/log(2);
+    if (x_N > x)
+    {
+      x = x_N;
+    }
+  }
 
   /* The ceil() function can lead to a depth that is one tier too large
    * because of numerical errors in the calculation of x. We need to check
@@ -259,14 +260,25 @@ spamm_recursive_new (const unsigned int M, const unsigned int N,
   A->depth = (unsigned int) ceil(x);
 
   /* Double check depth. */
-  if (A->depth >= 1 && ((int) (N_contiguous*pow(2, A->depth-1)) >= M && (int) (N_contiguous*pow(2, A->depth-1)) >= N))
+  if (A->depth >= 1)
   {
-    (A->depth)--;
+    for (dim = 0; dim < A->number_dimensions; dim++)
+    {
+      if ((int) (N_contiguous*pow(2, A->depth-1)) < A->N[dim])
+      {
+        A->depth++;
+        break;
+      }
+    }
+    A->depth--;
   }
 
   /* Set matrix size. */
-  A->M = M;
-  A->N = N;
+  A->N = calloc(number_dimensions, sizeof(unsigned int));
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    A->N[dim] = N[dim];
+  }
 
   /* Set padded matrix size. */
   A->N_padded = (int) (N_contiguous*pow(2, A->depth));
@@ -389,23 +401,23 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
 /** Allocate a new node of a recursive matrix tree.
  *
  * @param tier The tier this node will be on.
+ * @param number_dimensions The number of dimensions.
  * @param N_contiguous The size of the contiguous submatrix block.
- * @param M_lower The lowest row index of this submatrix node.
- * @param M_upper The lowest row index of this submatrix node.
- * @param N_lower The lowest column index of this submatrix node.
- * @param N_upper The lowest column index of this submatrix node.
+ * @param N_linear The size of the matrix when switching to a linear tree.
+ * @param N_lower An array of the lowest row index of this submatrix node.
+ * @param N_upper An array of the lowest row index of this submatrix node.
  *
  * @return A pointer to the newly allocated node.
  */
 struct spamm_recursive_node_t *
 spamm_recursive_new_node (const unsigned int tier,
+    const unsigned int number_dimensions,
     const unsigned int N_contiguous,
     const unsigned int N_linear,
-    const unsigned int M_lower,
-    const unsigned int M_upper,
-    const unsigned int N_lower,
-    const unsigned int N_upper)
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper)
 {
+  unsigned int dim;
   struct spamm_recursive_node_t *node = NULL;
 
   node = calloc(1, sizeof(struct spamm_recursive_node_t));
@@ -413,10 +425,14 @@ spamm_recursive_new_node (const unsigned int tier,
   node->N_contiguous = N_contiguous;
   node->N_linear = N_linear;
 
-  node->M_lower = M_lower;
-  node->M_upper = M_upper;
-  node->N_lower = N_lower;
-  node->N_upper = N_upper;
+  node->N_lower = calloc(number_dimensions, sizeof(unsigned int));
+  node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    node->N_lower[dim] = N_lower[dim];
+    node->N_upper[dim] = N_upper[dim];
+  }
 
   return node;
 }

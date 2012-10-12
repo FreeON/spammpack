@@ -8,7 +8,7 @@
 #ifndef SGEMM
 #define SGEMM sgemm_
 
-extern void sgemm_ (char *, char *, int *, int *, int *, float *, float *, int *, float *, int *, float *, float *, int *);
+extern sgemm_func sgemm_;
 
 #endif
 

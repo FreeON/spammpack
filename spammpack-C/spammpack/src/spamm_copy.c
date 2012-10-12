@@ -115,17 +115,17 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
     if (*A == NULL)
     {
       *A = spamm_recursive_new_node(B->tier,
+          B->number_dimensions,
           B->N_contiguous, B->N_linear,
-          B->M_lower, B->M_upper,
           B->N_lower, B->N_upper);
     }
 
-    if ((*A)->M_upper-(*A)->M_lower == (*A)->N_linear)
+    if ((*A)->N_upper[0]-(*A)->N_lower[0] == (*A)->N_linear)
     {
       spamm_hashed_copy(&(*A)->hashed_tree, beta, B->hashed_tree);
     }
 
-    else if ((*A)->M_upper-(*A)->M_lower == (*A)->N_contiguous)
+    else if ((*A)->N_upper[0]-(*A)->N_lower[0] == (*A)->N_contiguous)
     {
       for (i = 0; i < (*A)->N_contiguous*(*A)->N_contiguous; i++)
       {

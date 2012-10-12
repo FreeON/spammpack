@@ -11,13 +11,11 @@
 
 /** Recursively set a matrix element.
  *
- * @param i The row index.
- * @param j The column index.
+ * @param number_dimensions The number of dimensions.
+ * @param i An array of row/column indices.
  * @param Aij The value of the matrix element A(i,j).
- * @param M_lower The left-most row index.
- * @param M_upper The right-most row index.
- * @param N_lower The left-most column index.
- * @param N_upper The right-most column index.
+ * @param N_lower An array of left-most column indices.
+ * @param N_upper An array of right-most column indices.
  * @param N_contiguous The size of the contiguous submatrix block.
  * @param N_linear The size of the submatrix that is stored in hashed format.
  * @param tier The tier this node is on.
@@ -25,11 +23,11 @@
  * @param node The node.
  */
 void
-spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij,
-    const unsigned int M_lower,
-    const unsigned int M_upper,
-    const unsigned int N_lower,
-    const unsigned int N_upper,
+spamm_recursive_set (const unsigned int number_dimensions,
+    const unsigned int *const i,
+    const float Aij,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
     const unsigned int N_contiguous,
     const unsigned int N_linear,
     const unsigned int tier,
@@ -38,40 +36,32 @@ spamm_recursive_set (const unsigned int i, const unsigned int j, const float Aij
     const enum spamm_layout_t layout,
     struct spamm_recursive_node_t **node)
 {
+  unsigned int dim;
   unsigned int number_rows;
   unsigned int number_columns;
 
   if (*node == NULL)
   {
     /* Allocate new node. */
-    *node = spamm_recursive_new_node(tier, N_contiguous, N_linear,
-        M_lower,
-        M_upper,
-        N_lower,
-        N_upper);
+    *node = spamm_recursive_new_node(tier, number_dimensions,
+        N_contiguous, N_linear,
+        N_lower, N_upper);
   }
 
   /* Some sanity checks. */
   else
   {
-    if ((*node)->M_lower != M_lower)
+    for (dim = 0; dim < number_dimensions; dim++)
     {
-      SPAMM_FATAL("(*node)->M_lower (%u) != M_lower (%u)\n", (*node)->M_lower, M_lower);
-    }
+      if ((*node)->N_lower[dim] != N_lower[dim])
+      {
+        SPAMM_FATAL("(*node)->N_lower[%u] (%u) != N_lower[%u] (%u)\n", dim, (*node)->N_lower[dim], dim, N_lower[dim]);
+      }
 
-    if ((*node)->M_upper != M_upper)
-    {
-      SPAMM_FATAL("(*node)->M_upper (%u) != M_upper (%u)\n", (*node)->M_upper, M_upper);
-    }
-
-    if ((*node)->N_lower != N_lower)
-    {
-      SPAMM_FATAL("(*node)->N_lower (%u) != N_lower (%u)\n", (*node)->N_lower, N_lower);
-    }
-
-    if ((*node)->N_upper != N_upper)
-    {
-      SPAMM_FATAL("(*node)->N_upper (%u) != N_upper (%u)\n", (*node)->N_upper, N_upper);
+      if ((*node)->N_upper[dim] != N_upper[dim])
+      {
+        SPAMM_FATAL("(*node)->N_upper[%u] (%u) != N_upper[%u] (%u)\n", dim, (*node)->N_upper[dim], dim, N_upper[dim]);
+      }
     }
   }
 
