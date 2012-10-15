@@ -1,10 +1,11 @@
 #include <spamm.h>
+
+#include <getopt.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define VERIFY_RESULT
-#define RANDOM_ELEMENTS
 //#define PRINT_DEBUG
 
 #define TEST_TOLERANCE 5e-7
@@ -14,16 +15,19 @@ main (int argc, char **argv)
 {
   int result = 0;
 
+  unsigned int dim;
   unsigned int i[2];
   unsigned int k;
 
-  unsigned int N[] = { 13, 13 };
+  unsigned int N[] = { 513, 513 };
 
-  const unsigned int linear_tier = 0;
-  const unsigned int contiguous_tier = 5;
+  unsigned int linear_tier = 4;
+  unsigned int contiguous_tier = 5;
 
   double alpha = 1.2;
   double beta = 0.5;
+
+  short random_matrix = 1;
 
   float tolerance = 0.0;
 
@@ -42,9 +46,65 @@ main (int argc, char **argv)
   enum spamm_kernel_t kernel = kernel_standard_SSE;
   struct spamm_timer_t *timer;
 
-  if (argc == 2)
+  int option_index;
+  int parse_result;
+  char *short_options = "hk:N:l:c:";
+  static struct option long_options[] = {
+    { "help",       no_argument,        NULL, 'h' },
+    { "kernel",     required_argument,  NULL, 'k' },
+    { "N",          required_argument,  NULL, 'N' },
+    { "linear",     required_argument,  NULL, 'l' },
+    { "contiguous", required_argument,  NULL, 'c' },
+    { "random",     no_argument,        NULL, 'r' },
+    { NULL,         0,                  NULL,  0 }
+  };
+
+  while (1)
   {
-    kernel = spamm_kernel_get_kernel(argv[1]);
+    parse_result = getopt_long(argc, argv, short_options, long_options, &option_index);
+
+    if (parse_result == -1) { break; }
+
+    switch (parse_result)
+    {
+      case 'h':
+        printf("Usage:\n");
+        printf("\n");
+        printf("{ -k | --kernel } kernel      Use the kernel\n");
+        printf("{ -N | --N } N                Set N\n");
+        printf("{ -l | --linear } t           Set linear tier to t\n");
+        printf("{ -c | --contiguous } c       Set contiguous tier to c\n");
+        printf("{ -r | --random }             Create random matrix\n");
+        exit(0);
+        break;
+
+      case 'k':
+        kernel = spamm_kernel_get_kernel(optarg);
+        break;
+
+      case 'N':
+        for (dim = 0; dim < 2; dim++)
+        {
+          N[dim] = strtol(optarg, NULL, 10);
+        }
+        break;
+
+      case 'l':
+        linear_tier = strtol(optarg, NULL, 10);
+        break;
+
+      case 'c':
+        contiguous_tier = strtol(optarg, NULL, 10);
+        break;
+
+      case 'r':
+        random_matrix = 1;
+        break;
+
+      default:
+        printf("unknown option\n");
+        break;
+    }
   }
 
   A_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
@@ -58,15 +118,19 @@ main (int argc, char **argv)
   for (i[0] = 0; i[0] < N[0]; i[0]++) {
     for (i[1] = 0; i[1] < N[1]; i[1]++)
     {
-#ifdef RANDOM_ELEMENTS
-      A_dense[i[0]*N[1]+i[1]] = rand()/(double) RAND_MAX;
-      B_dense[i[0]*N[1]+i[1]] = rand()/(double) RAND_MAX;
-      C_dense[i[0]*N[1]+i[1]] = rand()/(double) RAND_MAX;
-#else
-      A_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
-      B_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
-      C_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
-#endif
+      if (random_matrix)
+      {
+        A_dense[i[0]*N[1]+i[1]] = rand()/(double) RAND_MAX;
+        B_dense[i[0]*N[1]+i[1]] = rand()/(double) RAND_MAX;
+        C_dense[i[0]*N[1]+i[1]] = rand()/(double) RAND_MAX;
+      }
+
+      else
+      {
+        A_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
+        B_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
+        C_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
+      }
 
       spamm_set(i, A_dense[i[0]*N[1]+i[1]], A);
       spamm_set(i, B_dense[i[0]*N[1]+i[1]], B);

@@ -179,6 +179,7 @@ struct spamm_hashed_t *
 spamm_hashed_new (const unsigned int tier,
     const unsigned int kernel_tier,
     const unsigned int depth,
+    const unsigned int N_padded,
     const unsigned int M_lower,
     const unsigned int M_upper,
     const unsigned int N_lower,

@@ -74,7 +74,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
   {
     if ((*node)->hashed_tree == NULL)
     {
-      (*node)->hashed_tree = spamm_hashed_new(tier, kernel_tier, depth,
+      (*node)->hashed_tree = spamm_hashed_new(tier, kernel_tier, depth, 0,
           N_lower[0], N_upper[0], N_lower[1], N_upper[1]);
     }
     spamm_hashed_set(i[0], i[1], Aij, (*node)->hashed_tree);
@@ -472,7 +472,7 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
     /* In case we only have a linear tree. */
     if (A->hashed_tree == NULL)
     {
-      A->hashed_tree = spamm_hashed_new(0, A->kernel_tier, A->depth, 0, A->N_padded, 0, A->N_padded);
+      A->hashed_tree = spamm_hashed_new(0, A->kernel_tier, A->depth, A->N_padded, 0, A->N_padded, 0, A->N_padded);
     }
     spamm_hashed_set(i[0], i[1], Aij, A->hashed_tree);
   }

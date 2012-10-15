@@ -73,6 +73,7 @@ spamm_hashed_copy (struct spamm_hashed_t **A,
   }
 
   *A = spamm_hashed_new(B->tier, B->kernel_tier, B->depth,
+      B->N_padded,
       B->M_lower, B->M_upper,
       B->N_lower, B->N_upper);
 

@@ -191,7 +191,7 @@ AC_DEFINE_UNQUOTED(SPAMM_N_STRIDE, [${have_N_stride}], []Define the stride in th
 AC_DEFINE(SPAMM_BLOCK_ORDER, [1], [Define the block order of the basic matrix blocks in the kernel tier. Possible values are 1 - row major order, 2 - Z-curve order.])
 
 dnl For benchmarking.
-AC_DEFINE([SPAMM_MULTIPLY_BETA], [1], [Multiply C matrix with beta factor.])
+#AC_DEFINE([SPAMM_MULTIPLY_BETA], [1], [Multiply C matrix with beta factor.])
 AC_DEFINE([SPAMM_MULTIPLY_SORT_INDEX], [1], [Sort A and B linear indices.])
 AC_DEFINE([SPAMM_MULTIPLY_K_LOOKUP], [1], [Create k lookup table.])
 AC_DEFINE([SPAMM_MULTIPLY_SORT_NORM], [1], [Subsort A and B by norms.])
