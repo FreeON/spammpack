@@ -6,7 +6,6 @@
 #include <stdlib.h>
 
 #define VERIFY_RESULT
-//#define PRINT_DEBUG
 
 #define TEST_TOLERANCE 5e-7
 
@@ -28,6 +27,7 @@ main (int argc, char **argv)
   double beta = 0.5;
 
   short random_matrix = 1;
+  short print_debug = 0;
 
   float tolerance = 0.0;
 
@@ -48,7 +48,7 @@ main (int argc, char **argv)
 
   int option_index;
   int parse_result;
-  char *short_options = "hk:N:l:c:";
+  char *short_options = "hk:N:l:c:rd";
   static struct option long_options[] = {
     { "help",       no_argument,        NULL, 'h' },
     { "kernel",     required_argument,  NULL, 'k' },
@@ -56,7 +56,8 @@ main (int argc, char **argv)
     { "linear",     required_argument,  NULL, 'l' },
     { "contiguous", required_argument,  NULL, 'c' },
     { "random",     no_argument,        NULL, 'r' },
-    { NULL,         0,                  NULL,  0 }
+    { "debug",      no_argument,        NULL, 'd' },
+    { NULL,         0,                  NULL,  0  }
   };
 
   while (1)
@@ -75,6 +76,7 @@ main (int argc, char **argv)
         printf("{ -l | --linear } t           Set linear tier to t\n");
         printf("{ -c | --contiguous } c       Set contiguous tier to c\n");
         printf("{ -r | --random }             Create random matrix\n");
+        printf("{ -d | --debug }              Print matrices\n");
         exit(0);
         break;
 
@@ -99,6 +101,10 @@ main (int argc, char **argv)
 
       case 'r':
         random_matrix = 1;
+        break;
+
+      case 'd':
+        print_debug = 1;
         break;
 
       default:
@@ -146,43 +152,44 @@ main (int argc, char **argv)
   //spamm_check(B, 1e-7);
   //spamm_check(C, 1e-7);
 
-#ifdef PRINT_DEBUG
-  printf("A_dense =\n");
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
-    {
-      printf(" %5.1f", A_dense[i[0]*N[1]+i[1]]);
+  if (print_debug)
+  {
+    printf("A_dense =\n");
+    for (i[0] = 0; i[0] < N[0]; i[0]++) {
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        printf(" %5.1f", A_dense[i[0]*N[1]+i[1]]);
+      }
+      printf("\n");
     }
-    printf("\n");
-  }
 
-  printf("A =\n");
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
-    {
-      printf(" %5.1f", spamm_get(i, A));
+    printf("A =\n");
+    for (i[0] = 0; i[0] < N[0]; i[0]++) {
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        printf(" %5.1f", spamm_get(i, A));
+      }
+      printf("\n");
     }
-    printf("\n");
-  }
 
-  printf("B_dense =\n");
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
-    {
-      printf(" %5.1f", B_dense[i[0]*N[1]+i[1]]);
+    printf("B_dense =\n");
+    for (i[0] = 0; i[0] < N[0]; i[0]++) {
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        printf(" %5.1f", B_dense[i[0]*N[1]+i[1]]);
+      }
+      printf("\n");
     }
-    printf("\n");
-  }
 
-  printf("C_dense =\n");
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
-    {
-      printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
+    printf("C_dense =\n");
+    for (i[0] = 0; i[0] < N[0]; i[0]++) {
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
+      }
+      printf("\n");
     }
-    printf("\n");
   }
-#endif
 
   for (i[0] = 0; i[0] < N[0]; i[0]++) {
     for (i[1] = 0; i[1] < N[1]; i[1]++)
@@ -200,32 +207,34 @@ main (int argc, char **argv)
     }
   }
 
-#ifdef PRINT_DEBUG
-  printf("C_dense =\n");
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
-    {
-      printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
+  if (print_debug)
+  {
+    printf("C_dense =\n");
+    for (i[0] = 0; i[0] < N[0]; i[0]++) {
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
+      }
+      printf("\n");
     }
-    printf("\n");
   }
-#endif
 
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
   spamm_multiply(tolerance, alpha, A, B, beta, C, timer, NULL, kernel, NULL);
   spamm_timer_delete(&timer);
 
-#ifdef PRINT_DEBUG
-  printf("C =\n");
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
-    {
-      printf(" %5.1f", spamm_get(i, C));
+  if (print_debug)
+  {
+    printf("C =\n");
+    for (i[0] = 0; i[0] < N[0]; i[0]++) {
+      for (i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        printf(" %5.1f", spamm_get(i, C));
+      }
+      printf("\n");
     }
-    printf("\n");
   }
-#endif
 
 #ifdef VERIFY_RESULT
   max_diff = 0;
