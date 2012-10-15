@@ -184,7 +184,7 @@ main (int argc, char **argv)
     }
   }
 
-  printf("max diff = %e, rel. diff = %e, A(%u,%u) = %e, A_reference(%u,%u) = %e\n",
+  printf("max diff = %e, rel. diff = %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
       max_diff,
       (C_dense[max_i[0]*N[1]+max_i[1]] != 0.0 ? max_diff/C_dense[max_i[0]*N[1]+max_i[1]] : 0.0),
       max_i[0], max_i[1], spamm_get(max_i, C),

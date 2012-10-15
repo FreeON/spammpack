@@ -106,7 +106,7 @@ spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
 }
 
 void
-spamm_hashed_multiply_beta (const float beta, struct spamm_hashed_t *A)
+spamm_hashed_multiply_scalar (const float beta, struct spamm_hashed_t *A)
 {
   struct spamm_hashtable_t *tier_hashtable;
 
@@ -133,7 +133,7 @@ spamm_recursive_multiply_beta (const float beta, struct spamm_recursive_node_t *
 
   if (A->N_upper[0]-A->N_lower[0] == A->N_linear)
   {
-    spamm_hashed_multiply_beta(beta, A->hashed_tree);
+    spamm_hashed_multiply_scalar(beta, A->hashed_tree);
   }
 
   else if (A->N_upper[0]-A->N_lower[0] == A->N_contiguous)
@@ -161,11 +161,6 @@ spamm_recursive_multiply_beta (const float beta, struct spamm_recursive_node_t *
   }
 }
 
-/** @private Multiply a matrix by a scalar.
- *
- * @param beta The scalar \f$\beta\f$ that multiplies the matrix.
- * @param A The matrix.
- */
 /** @private Swap 2 multiply stream elements.
  *
  * @param a_stream The first stream element.
@@ -469,7 +464,7 @@ spamm_hashed_multiply (const float tolerance,
   printf("[multiply] multiplying C with beta... ");
   spamm_timer_start(timer);
 
-  spamm_hashed_multiply_beta(beta, C);
+  spamm_hashed_multiply_scalar(beta, C);
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
@@ -1811,7 +1806,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
 void
 spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t *node)
 {
-  int i;
+  unsigned int i;
 
   if (node == NULL) { return; }
 
@@ -1935,6 +1930,10 @@ spamm_multiply (const float tolerance,
     const enum spamm_kernel_t kernel,
     unsigned int *number_products)
 {
+  unsigned int dim;
+  unsigned int *N_lower;
+  unsigned int *N_upper;
+
   if (A == NULL)
   {
     SPAMM_FATAL("A is NULL\n");
@@ -1960,20 +1959,57 @@ spamm_multiply (const float tolerance,
     SPAMM_FATAL("A->N_contiguous != C->N_contiguous\n");
   }
 
+  if (A->N_linear != B->N_linear)
+  {
+    SPAMM_FATAL("A->N_linear != B->N_linear\n");
+  }
+
+  if (A->N_linear != C->N_linear)
+  {
+    SPAMM_FATAL("A->N_linear != C->N_linear\n");
+  }
+
   /* Multiply C by beta. */
-  //spamm_recursive_multiply_scalar(beta, C->root);
+  if (C->recursive_tree != NULL)
+  {
+    spamm_recursive_multiply_scalar(beta, C->recursive_tree);
+  }
+
+  else if (C->hashed_tree != NULL)
+  {
+    spamm_hashed_multiply_scalar(beta, C->hashed_tree);
+  }
 
   /* Multiply A and B. */
-  //if (A->root != NULL && B->root != NULL && C->root == NULL)
-  //{
-  //  C->root = spamm_recursive_new_node(0, C->N_contiguous);
-  //  C->root->M_lower = 0;
-  //  C->root->M_upper = A->root->M_upper;
-  //  C->root->N_lower = 0;
-  //  C->root->N_upper = A->root->N_upper;
-  //}
+  if (A->recursive_tree == NULL && B->recursive_tree == NULL)
+  {
+    return;
+  }
 
-  //spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, number_products);
+  if (A->hashed_tree == NULL && B->hashed_tree == NULL)
+  {
+    return;
+  }
+
+  if (C->N[0] == C->N_linear)
+  {
+    spamm_hashed_multiply(tolerance, alpha, A->hashed_tree, B->hashed_tree, beta, C->hashed_tree, timer, kernel);
+  }
+
+  else
+  {
+    N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
+    N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
+
+    for (dim = 0; dim < A->number_dimensions; dim++)
+    {
+      N_upper[dim] = A->N_padded;
+    }
+
+    C->recursive_tree = spamm_recursive_new_node(0, C->number_dimensions, C->N_contiguous, C->N_linear, N_lower, N_upper);
+    spamm_recursive_multiply_matrix(tolerance, alpha, A->recursive_tree, B->recursive_tree, &(C->recursive_tree),
+        timer, sgemm, number_products);
+  }
 }
 
 /** Multiply three matrices, i.e. \f$ D = \alpha A \times B \times C + \beta D\f$.

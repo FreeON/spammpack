@@ -156,7 +156,7 @@ main (int argc, char **argv)
     if (max_diff > TEST_TOLERANCE)
     {
       result |= SPAMM_ERROR;
-      printf("[add_spamm] max diff of A[%u,%u] (sparse_A = %u, sparse_B = %u, test tolerance was %1.2e) = %e\n",
+      printf("[add_spamm] max diff of A[%u][%u] (sparse_A = %u, sparse_B = %u, test tolerance was %1.2e) = %e\n",
           max_diff_i[0], max_diff_i[1], sparse_A[sparse_test], sparse_B[sparse_test], TEST_TOLERANCE, max_diff);
     }
 

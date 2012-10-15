@@ -49,7 +49,7 @@ main (int argc, char **argv)
     {
       if (fwrite(&A[i*N+j], sizeof(double), 1, fd_out) < 1)
       {
-        printf("error writing matrix element to binary file, A(%i, %i)\n", i, j);
+        printf("error writing matrix element to binary file, A[%i][%i]\n", i, j);
         exit(1);
       }
     }
