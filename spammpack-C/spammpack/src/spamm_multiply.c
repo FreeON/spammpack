@@ -535,7 +535,7 @@ spamm_hashed_multiply (const float tolerance,
   /* Check. */
   if (A_k_lookup.size > A->N_padded/SPAMM_N_KERNEL+1)
   {
-    SPAMM_FATAL("k lookup table too long for A, estimated %u elemens, but found %u\n", A->N_padded/SPAMM_N_KERNEL+1, A_k_lookup.size);
+    SPAMM_FATAL("k lookup table too long for A, estimated %u elements, but found %u\n", A->N_padded/SPAMM_N_KERNEL+1, A_k_lookup.size);
   }
 
   /* The index in B_k_lookup. */
@@ -566,7 +566,7 @@ spamm_hashed_multiply (const float tolerance,
   /* Check. */
   if (B_k_lookup.size > B->N_padded/SPAMM_N_KERNEL+1)
   {
-    SPAMM_FATAL("k lookup table too long for B, estimated %u elemens, but found %u\n", B->N_padded/SPAMM_N_KERNEL+1, B_k_lookup.size);
+    SPAMM_FATAL("k lookup table too long for B, estimated %u elements, but found %u\n", B->N_padded/SPAMM_N_KERNEL+1, B_k_lookup.size);
   }
 
   printf("len(A_k) = %u, len(B_k) = %u, ", A_k_lookup.size, B_k_lookup.size);
@@ -629,7 +629,7 @@ spamm_hashed_multiply (const float tolerance,
   {
     if (spamm_list_get_norm(A_index.index, i) != A_index.data[i]->node_norm)
     {
-      SPAMM_FATAL("DOUBLECHECK norm mismatch in A_index[%u]\n", i);
+      SPAMM_FATAL("norm mismatch in A_index[%u]\n", i);
     }
 
     A_k = spamm_list_get_index(A_index.index, i) & MASK_2D_J;
@@ -649,7 +649,7 @@ spamm_hashed_multiply (const float tolerance,
     {
       if (A_k != first_A_k)
       {
-        SPAMM_FATAL("DOUBLECHECK A_k_lookup incorrect\n");
+        SPAMM_FATAL("A_k_lookup incorrect\n");
       }
     }
 
@@ -660,7 +660,7 @@ spamm_hashed_multiply (const float tolerance,
       if (A_k == next_A_k) {
         if (A_index.data[i]->node_norm < A_index.data[i+1]->node_norm)
         {
-          SPAMM_FATAL("DOUBLECHECK norms in A_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
+          SPAMM_FATAL("norms in A_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
               i, A_index.data[i]->node_norm, i+1, A_index.data[i+1]->node_norm);
         }
       }
@@ -671,7 +671,7 @@ spamm_hashed_multiply (const float tolerance,
   {
     if (spamm_list_get_norm(B_index.index, i) != B_index.data[i]->node_norm)
     {
-      SPAMM_FATAL("DOUBLECHECK norm mismatch in B_index[%u]\n", i);
+      SPAMM_FATAL("norm mismatch in B_index[%u]\n", i);
     }
 
     B_k = spamm_list_get_index(B_index.index, i) & MASK_2D_I;
@@ -691,7 +691,7 @@ spamm_hashed_multiply (const float tolerance,
     {
       if (B_k != first_B_k)
       {
-        SPAMM_FATAL("DOUBLECHECK B_k_lookup incorrect\n");
+        SPAMM_FATAL("B_k_lookup incorrect\n");
       }
     }
 
@@ -702,7 +702,7 @@ spamm_hashed_multiply (const float tolerance,
       if (B_k == next_B_k) {
         if (B_index.data[i]->node_norm < B_index.data[i+1]->node_norm)
         {
-          SPAMM_FATAL("DOUBLECHECK norms in B_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
+          SPAMM_FATAL("norms in B_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
               i, B_index.data[i]->node_norm, i+1, B_index.data[i+1]->node_norm);
         }
       }
@@ -1732,6 +1732,21 @@ spamm_recursive_multiply_matrix (const float tolerance,
                 );
             (*number_products)++;
           }
+
+          else
+          {
+            /* Manual multiply. */
+            for (i = 0; i < node_A->N_contiguous; i++) {
+              for (j = 0; j < node_A->N_contiguous; j++) {
+                for (k = 0; k < node_A->N_contiguous; k++)
+                {
+                  (*node_C)->data[spamm_index_column_major(i, j, (*node_C)->N_contiguous, (*node_C)->N_contiguous)] += alpha
+                    *node_A->data[spamm_index_column_major(i, k, node_A->N_contiguous, node_A->N_contiguous)]
+                    *node_B->data[spamm_index_column_major(k, j, node_A->N_contiguous, node_B->N_contiguous)];
+                }
+              }
+            }
+          }
           break;
 
         default:
@@ -1950,34 +1965,30 @@ spamm_multiply (const float tolerance,
   }
 
   /* Multiply A and B. */
-  if (A->recursive_tree == NULL && B->recursive_tree == NULL)
+  if (A->recursive_tree != NULL || B->recursive_tree != NULL)
   {
-    return;
-  }
-
-  if (A->hashed_tree == NULL && B->hashed_tree == NULL)
-  {
-    return;
-  }
-
-  if (C->N[0] == C->N_linear)
-  {
-    spamm_hashed_multiply(tolerance, alpha, A->hashed_tree, B->hashed_tree, beta, C->hashed_tree, timer, kernel);
-  }
-
-  else
-  {
-    N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
-    N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
-
-    for (dim = 0; dim < A->number_dimensions; dim++)
+    if (C->recursive_tree == NULL)
     {
-      N_upper[dim] = A->N_padded;
-    }
+      N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
+      N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
 
-    C->recursive_tree = spamm_recursive_new_node(0, C->number_dimensions, C->N_contiguous, C->N_linear, N_lower, N_upper);
+      for (dim = 0; dim < A->number_dimensions; dim++)
+      {
+        N_upper[dim] = A->N_padded;
+      }
+
+      C->recursive_tree = spamm_recursive_new_node(0, C->number_dimensions, C->N_contiguous, C->N_linear, N_lower, N_upper);
+
+      free(N_lower);
+      free(N_upper);
+    }
     spamm_recursive_multiply_matrix(tolerance, alpha, A->recursive_tree, B->recursive_tree, &(C->recursive_tree),
         timer, sgemm, number_products);
+  }
+
+  else if (A->hashed_tree != NULL || B->hashed_tree != NULL)
+  {
+    spamm_hashed_multiply(tolerance, alpha, A->hashed_tree, B->hashed_tree, beta, C->hashed_tree, timer, kernel);
   }
 }
 

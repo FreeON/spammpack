@@ -17,9 +17,9 @@ main (int argc, char **argv)
   unsigned int i[2];
   unsigned int k;
 
-  unsigned int N[] = { 513, 513 };
+  unsigned int N[] = { 13, 13 };
 
-  const unsigned int linear_tier = 4;
+  const unsigned int linear_tier = 0;
   const unsigned int contiguous_tier = 5;
 
   double alpha = 1.2;
@@ -73,6 +73,10 @@ main (int argc, char **argv)
       spamm_set(i, C_dense[i[0]*N[1]+i[1]], C);
     }
   }
+
+  spamm_print_info(A);
+  spamm_print_info(B);
+  spamm_print_info(C);
 
   //spamm_check(A, 1e-7);
   //spamm_check(B, 1e-7);
