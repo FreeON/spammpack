@@ -125,7 +125,7 @@ spamm_hashed_multiply_scalar (const float beta, struct spamm_hashed_t *A)
  * @param A The matrix.
  */
 void
-spamm_recursive_multiply_beta (const float beta, struct spamm_recursive_node_t *A)
+spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t *A)
 {
   unsigned int i;
 
@@ -154,10 +154,10 @@ spamm_recursive_multiply_beta (const float beta, struct spamm_recursive_node_t *
 
   else
   {
-    spamm_recursive_multiply_beta(beta, A->child[0]);
-    spamm_recursive_multiply_beta(beta, A->child[1]);
-    spamm_recursive_multiply_beta(beta, A->child[2]);
-    spamm_recursive_multiply_beta(beta, A->child[3]);
+    spamm_recursive_multiply_scalar(beta, A->child[0]);
+    spamm_recursive_multiply_scalar(beta, A->child[1]);
+    spamm_recursive_multiply_scalar(beta, A->child[2]);
+    spamm_recursive_multiply_scalar(beta, A->child[3]);
   }
 }
 
@@ -1792,37 +1792,6 @@ spamm_recursive_multiply_matrix (const float tolerance,
 
       default:
         SPAMM_FATAL("not implemented\n");
-    }
-  }
-}
-
-/** @brief Multiply a node by a scalar.
- *
- * The node and its children nodes are multiplied by the scalar.
- *
- * @param beta The scalar.
- * @param node The node.
- */
-void
-spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t *node)
-{
-  unsigned int i;
-
-  if (node == NULL) { return; }
-
-  if (node->data != NULL)
-  {
-    for (i = 0; i < node->N_contiguous*node->N_contiguous; i++)
-    {
-      node->data[i] *= beta;
-    }
-  }
-
-  else
-  {
-    for (i = 0; i < powl(2, node->number_dimensions); i++)
-    {
-      spamm_recursive_multiply_scalar(beta, node->child[i]);
     }
   }
 }
