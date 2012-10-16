@@ -201,6 +201,7 @@ AC_DEFINE([SPAMM_MULTIPLY_FREE], [1], [Free memory.])
 AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
 AC_DEFINE([SPAMM_MULTIPLY_FINAL_FREE], [1], [Free remaining memory before exit.])
 AC_DEFINE([SPAMM_MULTIPLY_UPDATE_NORM], [1], [Update matrix norms on C tree after multiply.])
+#AC_DEFINE([SPAMM_MULTIPLY_PRINT_ALOT], [1], [Print a lot of information while multiplying.])
 
 AC_MSG_CHECKING([whether to count the number of basic matrix block products])
 AC_ARG_ENABLE([product-count],

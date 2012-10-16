@@ -148,7 +148,9 @@ spamm_timer_add_event (int event, struct spamm_timer_t *timer)
   timer->number_events += 1;
 #else
 
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[add event] adding walltime event\n");
+#endif
 
 #endif
 }

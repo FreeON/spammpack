@@ -31,7 +31,7 @@ spamm_construct_tree (struct spamm_hashed_t *A)
   for (tier = A->tier; tier <= A->kernel_tier-1; tier++)
   {
     reverse_tier = A->kernel_tier-tier;
-    node_hashtable = A->tier_hashtable[reverse_tier-A->tier];
+    node_hashtable = A->tier_hashtable[reverse_tier];
     next_tier = reverse_tier-1;
     next_tier_hashtable = A->tier_hashtable[next_tier];
 

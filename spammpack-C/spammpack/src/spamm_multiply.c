@@ -453,28 +453,38 @@ spamm_hashed_multiply (const float tolerance,
   }
 
   /* Print out some information. */
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] alpha = %e, beta = %e, tolerance = %e\n", alpha, beta, tolerance);
+#endif
 
   /* Print out some timer information. */
   spamm_timer_info(timer, timer_info_string, 2000);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] timer: %s\n", timer_info_string);
+#endif
 
 #ifdef SPAMM_MULTIPLY_BETA
   /* Multiply C with beta. */
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] multiplying C with beta... ");
+#endif
   spamm_timer_start(timer);
 
   spamm_hashed_multiply_scalar(beta, C);
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("%s timer units\n", timer_string);
+#endif
   free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_SORT_INDEX
   /* Sort 2D indices on k, i.e. either on row or column index. */
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] sorting A and B on index... ");
+#endif
   spamm_timer_start(timer);
 
   A_tier_hashtable = A->tier_hashtable[A->kernel_tier-A->tier];
@@ -490,18 +500,24 @@ spamm_hashed_multiply (const float tolerance,
   spamm_list_sort_index(A_index.index, spamm_list_compare_index_column);
   spamm_list_sort_index(B_index.index, spamm_list_compare_index_row);
 
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("len(A) = %u, len(B) = %u, ", spamm_list_length(A_index.index), spamm_list_length(B_index.index));
+#endif
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("%s timer units\n", timer_string);
+#endif
   free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_K_LOOKUP
   /* Create a lookup table for the start of a particular k index in the sorted
    * arrays. */
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] creating k lookup tables... ");
+#endif
   spamm_timer_start(timer);
 
   A_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(A->N_padded/SPAMM_N_KERNEL+1), 1);
@@ -569,17 +585,23 @@ spamm_hashed_multiply (const float tolerance,
     SPAMM_FATAL("k lookup table too long for B, estimated %u elements, but found %u\n", B->N_padded/SPAMM_N_KERNEL+1, B_k_lookup.size);
   }
 
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("len(A_k) = %u, len(B_k) = %u, ", A_k_lookup.size, B_k_lookup.size);
+#endif
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("%s timer units\n", timer_string);
+#endif
   free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_SORT_NORM
   /* Sort 2D indices on norms. */
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] sorting A and B on norms... ");
+#endif
   spamm_timer_start(timer);
 
   for (i = 0; i < A_k_lookup.size-1; i++)
@@ -594,19 +616,25 @@ spamm_hashed_multiply (const float tolerance,
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("%s timer units\n", timer_string);
+#endif
   free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_COPY_INDICES
   /* Copy sorted indices to array for quick access. */
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] copying indices to array and referencing dense blocks... ");
+#endif
   spamm_timer_start(timer);
 
   A_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(A_index.index), 0);
   B_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(B_index.index), 0);
 
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
+#endif
 
   for (i = 0; i < A_index.size; i++)
   {
@@ -620,7 +648,9 @@ spamm_hashed_multiply (const float tolerance,
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("%s timer units\n", timer_string);
+#endif
   free(timer_string);
 #endif
 
@@ -712,7 +742,9 @@ spamm_hashed_multiply (const float tolerance,
 
 #ifdef SPAMM_MULTIPLY_CONVOLUTE
   /* Convolute by constructing product 3D index. */
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] convolute... ");
+#endif
   spamm_timer_start(timer);
 
   multiply_stream = spamm_allocate(sizeof(struct spamm_multiply_stream_t)
@@ -1569,14 +1601,20 @@ spamm_hashed_multiply (const float tolerance,
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("%s timer units\n", timer_string);
+#endif
   free(timer_string);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] dropped %u blocks, placed %u blocks into stream, total of %u blocks\n", number_dropped_blocks, stream_index, number_dropped_blocks+stream_index);
+#endif
 #endif
 
 #ifdef SPAMM_MULTIPLY_FREE
   /* Free memory. */
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] free memory... ");
+#endif
   spamm_timer_start(timer);
 
   free(A_k_lookup.index);
@@ -1590,16 +1628,22 @@ spamm_hashed_multiply (const float tolerance,
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("%s timer units\n", timer_string);
+#endif
   free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_STREAM
   /* Call stream product. */
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] stream multiply ");
+#endif
   spamm_timer_start(timer);
 
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("(%s)... ", spamm_kernel_get_name(kernel));
+#endif
   switch (kernel)
   {
     case kernel_external_sgemm:
@@ -1625,12 +1669,16 @@ spamm_hashed_multiply (const float tolerance,
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("%s timer units\n", timer_string);
+#endif
   free(timer_string);
 #endif
 
 #ifdef SPAMM_MULTIPLY_UPDATE_NORM
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("[multiply] updating C tree norms... ");
+#endif
   spamm_timer_start(timer);
 
   spamm_hashed_norm_update(C);
@@ -1638,7 +1686,9 @@ spamm_hashed_multiply (const float tolerance,
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
+#ifdef SPAMM_MULTIPLY_PRINT_ALOT
   printf("%s timer units\n", timer_string);
+#endif
   free(timer_string);
 #endif
 
