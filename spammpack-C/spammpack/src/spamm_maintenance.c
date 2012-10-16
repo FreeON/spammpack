@@ -28,10 +28,10 @@ spamm_construct_tree (struct spamm_hashed_t *A)
   if (A->kernel_tier == 0) { return; }
 
   /* Create tree above kernel tier. */
-  for (tier = 0; tier <= A->kernel_tier-1; tier++)
+  for (tier = A->tier; tier <= A->kernel_tier-1; tier++)
   {
     reverse_tier = A->kernel_tier-tier;
-    node_hashtable = A->tier_hashtable[reverse_tier];
+    node_hashtable = A->tier_hashtable[reverse_tier-A->tier];
     next_tier = reverse_tier-1;
     next_tier_hashtable = A->tier_hashtable[next_tier];
 
@@ -119,15 +119,15 @@ spamm_hashed_norm_update (struct spamm_hashed_t *A)
 
   assert(A != NULL);
 
-  for (tier = A->kernel_tier; tier >= 0; tier--)
+  for (tier = A->kernel_tier; tier >= A->tier; tier--)
   {
-    tier_index = spamm_hashtable_keys(A->tier_hashtable[tier]);
+    tier_index = spamm_hashtable_keys(A->tier_hashtable[tier-A->tier]);
 
     if (tier == A->kernel_tier)
     {
       for (i = 0; i < spamm_list_length(tier_index); i++)
       {
-        data = spamm_hashtable_lookup(A->tier_hashtable[tier], spamm_list_get_index(tier_index, i));
+        data = spamm_hashtable_lookup(A->tier_hashtable[tier-A->tier], spamm_list_get_index(tier_index, i));
 
         /* Calculate norms on kernel blocks. */
         for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
@@ -162,7 +162,7 @@ spamm_hashed_norm_update (struct spamm_hashed_t *A)
     {
       for (i = 0; i < spamm_list_length(tier_index); i++)
       {
-        node = spamm_hashtable_lookup(A->tier_hashtable[tier], spamm_list_get_index(tier_index, i));
+        node = spamm_hashtable_lookup(A->tier_hashtable[tier-A->tier], spamm_list_get_index(tier_index, i));
 
         node->norm2 = 0.0;
         for (i_child = 0; i_child < 2; i_child++) {
@@ -173,7 +173,7 @@ spamm_hashed_norm_update (struct spamm_hashed_t *A)
 
             if (tier+1 == A->kernel_tier)
             {
-              child_data = spamm_hashtable_lookup(A->tier_hashtable[tier+1], child_index);
+              child_data = spamm_hashtable_lookup(A->tier_hashtable[tier-A->tier+1], child_index);
 
               if (child_data != NULL)
               {
@@ -183,7 +183,7 @@ spamm_hashed_norm_update (struct spamm_hashed_t *A)
 
             else
             {
-              child_node = spamm_hashtable_lookup(A->tier_hashtable[tier+1], child_index);
+              child_node = spamm_hashtable_lookup(A->tier_hashtable[tier-A->tier+1], child_index);
 
               if (child_node != NULL)
               {

@@ -8,7 +8,7 @@
 typedef void (*sgemm_func) (char *transA, char *transB, int *M, int *N, int *K, float *alpha, float *A, int *LDA, float *B, int *LDB, float *beta, float *C, int *LDC);
 
 void *
-spamm_allocate (size_t size);
+spamm_allocate (const size_t size, const short zero_memory);
 
 int
 spamm_check (const struct spamm_matrix_t *A, const float tolerance);
@@ -130,6 +130,7 @@ spamm_recursive_multiply (const float tolerance,
     struct spamm_recursive_t *C,
     struct spamm_timer_t *timer,
     sgemm_func sgemm,
+    const enum spamm_kernel_t kernel,
     unsigned int *number_products);
 
 void
@@ -208,7 +209,7 @@ void
 spamm_print (const struct spamm_matrix_t *A);
 
 void
-spamm_print_tree (const struct spamm_hashed_t *A);
+spamm_print_tree (const struct spamm_matrix_t *A);
 
 void
 spamm_print_dense (const unsigned int M, const unsigned int N,

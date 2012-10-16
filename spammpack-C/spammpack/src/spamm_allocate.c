@@ -7,6 +7,7 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 
 /** Allocate a contiguous memory block.
  *
@@ -15,12 +16,15 @@
  * block on the given boundary (controlled by SPAMM_ALIGNMENT).
  *
  * @param size The size in bytes of the requested memory block.
+ * @param zero_memory If set to zero, then nothing is done to the newly
+ * allocated memory. The contents are undefined. If set to something else,
+ * then the newly allocate memory is set to zero.
  *
  * @return A pointer to the allocated memory. A NULL pointer indicates that
  * something went wrong.
  */
 void *
-spamm_allocate (size_t size)
+spamm_allocate (const size_t size, const short zero_memory)
 {
   void *data;
 
@@ -47,6 +51,12 @@ spamm_allocate (size_t size)
 
   else
   {
+    /* Check whether we should zero the new memory. */
+    if (zero_memory != 0)
+    {
+      memset(data, 0, size);
+    }
+
     return data;
   }
 #else

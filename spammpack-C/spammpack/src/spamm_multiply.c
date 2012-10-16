@@ -477,9 +477,9 @@ spamm_hashed_multiply (const float tolerance,
   printf("[multiply] sorting A and B on index... ");
   spamm_timer_start(timer);
 
-  A_tier_hashtable = A->tier_hashtable[A->kernel_tier];
-  B_tier_hashtable = B->tier_hashtable[B->kernel_tier];
-  C_tier_hashtable = C->tier_hashtable[C->kernel_tier];
+  A_tier_hashtable = A->tier_hashtable[A->kernel_tier-A->tier];
+  B_tier_hashtable = B->tier_hashtable[B->kernel_tier-A->tier];
+  C_tier_hashtable = C->tier_hashtable[C->kernel_tier-A->tier];
 
   A_index.index = spamm_hashtable_keys(A_tier_hashtable);
   B_index.index = spamm_hashtable_keys(B_tier_hashtable);
@@ -504,8 +504,8 @@ spamm_hashed_multiply (const float tolerance,
   printf("[multiply] creating k lookup tables... ");
   spamm_timer_start(timer);
 
-  A_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(A->N_padded/SPAMM_N_KERNEL+1));
-  B_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(B->N_padded/SPAMM_N_KERNEL+1));
+  A_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(A->N_padded/SPAMM_N_KERNEL+1), 1);
+  B_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(B->N_padded/SPAMM_N_KERNEL+1), 1);
 
   /* The index in A_k_lookup. */
   A_k_lookup.size = 0;
@@ -603,8 +603,8 @@ spamm_hashed_multiply (const float tolerance,
   printf("[multiply] copying indices to array and referencing dense blocks... ");
   spamm_timer_start(timer);
 
-  A_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(A_index.index));
-  B_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(B_index.index));
+  A_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(A_index.index), 0);
+  B_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(B_index.index), 0);
 
   printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
 
@@ -716,9 +716,9 @@ spamm_hashed_multiply (const float tolerance,
   spamm_timer_start(timer);
 
   multiply_stream = spamm_allocate(sizeof(struct spamm_multiply_stream_t)
-      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
+      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL), 0);
   C_block_stream_index = spamm_allocate(sizeof(unsigned int)
-      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
+      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL), 0);
 
   /* Some tings to try:
    *
@@ -979,7 +979,7 @@ spamm_hashed_multiply (const float tolerance,
   unsigned int *B_index_array = spamm_list_get_index_address(B_index.index);
 
   unsigned int *multiply_stream_C_index = spamm_allocate(sizeof(unsigned int)
-      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
+      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL), 0);
 
   unsigned int A_index_current[4];
   unsigned int B_index_current[4];
@@ -1139,7 +1139,7 @@ spamm_hashed_multiply (const float tolerance,
   unsigned int *B_index_array = spamm_list_get_index_address(B_index.index);
 
   unsigned int *multiply_stream_C_index = spamm_allocate(sizeof(unsigned int)
-      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
+      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL), 0);
 
   unsigned int A_index_current[4];
   unsigned int B_index_current[4];
@@ -1312,7 +1312,7 @@ spamm_hashed_multiply (const float tolerance,
   unsigned int *B_index_array_original = spamm_list_get_index_address(B_index.index);
 
   unsigned int *multiply_stream_C_index = spamm_allocate(sizeof(unsigned int)
-      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
+      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL), 0);
 
   __m128i A_index_xmm;
   __m128i B_index_xmm;
@@ -1355,7 +1355,7 @@ spamm_hashed_multiply (const float tolerance,
   mask_2d_i_xmm = (__m128i) _mm_shuffle_ps((__m128) mask_2d_i_xmm, (__m128) mask_2d_i_xmm, 0x00);
   mask_2d_j_xmm = (__m128i) _mm_shuffle_ps((__m128) mask_2d_j_xmm, (__m128) mask_2d_j_xmm, 0x00);
 
-  A_norm_array = spamm_allocate(A_index.size*sizeof(float));
+  A_norm_array = spamm_allocate(A_index.size*sizeof(float), 0);
   for (i = 0; i < A_index.size; i++)
   {
     A_norm_array[i] = A_index.data[i]->node_norm;
@@ -1363,10 +1363,10 @@ spamm_hashed_multiply (const float tolerance,
 
   /* Copy index and norm arrays. This needs to be done to create properly
    * aligned arrays. */
-  B_k_lookup_array = spamm_allocate(B_k_lookup.size*sizeof(unsigned int));
-  B_norm_array = spamm_allocate(B_index.size*sizeof(float)+B_k_lookup.size*16);
-  B_index_array = spamm_allocate(B_index.size*sizeof(unsigned int)+B_k_lookup.size*16);
-  B_index_translation = spamm_allocate(B_index.size*sizeof(unsigned int)+B_k_lookup.size*16);
+  B_k_lookup_array = spamm_allocate(B_k_lookup.size*sizeof(unsigned int), 1);
+  B_norm_array = spamm_allocate(B_index.size*sizeof(float)+B_k_lookup.size*16, 1);
+  B_index_array = spamm_allocate(B_index.size*sizeof(unsigned int)+B_k_lookup.size*16, 1);
+  B_index_translation = spamm_allocate(B_index.size*sizeof(unsigned int)+B_k_lookup.size*16, 1);
 
   for (B_k_lookup_index = 0, j = 0; B_k_lookup_index+1 < B_k_lookup.size; B_k_lookup_index++)
   {
@@ -1375,9 +1375,13 @@ spamm_hashed_multiply (const float tolerance,
     /* Copy k-block data. */
     for (i = B_k_lookup.index[B_k_lookup_index]; i < B_k_lookup.index[B_k_lookup_index+1]; i++)
     {
-      B_norm_array[j] = B_index.data[i]->node_norm;
-      B_index_array[j] = B_index_array_original[i];
-      B_index_translation[j] = i;
+      if (i < B_index.size)
+      {
+        B_norm_array[j] = B_index.data[i]->node_norm;
+        B_index_array[j] = B_index_array_original[i];
+        B_index_translation[j] = i;
+      }
+
       j++;
     }
 
@@ -1686,6 +1690,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
     struct spamm_recursive_node_t **node_C,
     struct spamm_timer_t *timer,
     sgemm_func sgemm,
+    const enum spamm_kernel_t kernel,
     unsigned int *number_products)
 {
   float beta = 1.0;
@@ -1702,7 +1707,13 @@ spamm_recursive_multiply_matrix (const float tolerance,
   }
 
   /* Multiply matrix blocks. */
-  if (node_A->data != NULL && node_B->data != NULL)
+  if (node_A->N_upper[0]-node_A->N_lower[0] == node_A->N_linear)
+  {
+    spamm_hashed_multiply(tolerance, alpha, node_A->hashed_tree, node_B->hashed_tree,
+        beta, (*node_C)->hashed_tree, timer, kernel);
+  }
+
+  else if (node_A->N_upper[0]-node_A->N_lower[0] == node_A->N_contiguous)
   {
     if (node_A->norm*node_B->norm > tolerance)
     {
@@ -1730,7 +1741,6 @@ spamm_recursive_multiply_matrix (const float tolerance,
                 (*node_C)->data, /* C */
                 (int*) &node_A->N_contiguous /* LDC */
                 );
-            (*number_products)++;
           }
 
           else
@@ -1752,6 +1762,9 @@ spamm_recursive_multiply_matrix (const float tolerance,
         default:
           SPAMM_FATAL("not implemented\n");
       }
+
+      /* Count this product. */
+      (*number_products)++;
     }
   }
 
@@ -1797,6 +1810,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
                       &((*node_C)->child[spamm_index_row_major(i, j, 2, 2)]),
                       timer,
                       sgemm,
+                      kernel,
                       number_products);
                 }
               }
@@ -1831,6 +1845,7 @@ spamm_recursive_multiply (const float tolerance,
     struct spamm_recursive_t *C,
     struct spamm_timer_t *timer,
     sgemm_func sgemm,
+    const enum spamm_kernel_t kernel,
     unsigned int *number_products)
 {
   unsigned int *N_lower;
@@ -1888,7 +1903,7 @@ spamm_recursive_multiply (const float tolerance,
     free(N_upper);
   }
 
-  spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, number_products);
+  spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, kernel, number_products);
 }
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -1983,7 +1998,7 @@ spamm_multiply (const float tolerance,
       free(N_upper);
     }
     spamm_recursive_multiply_matrix(tolerance, alpha, A->recursive_tree, B->recursive_tree, &(C->recursive_tree),
-        timer, sgemm, number_products);
+        timer, sgemm, kernel, number_products);
   }
 
   else if (A->hashed_tree != NULL || B->hashed_tree != NULL)

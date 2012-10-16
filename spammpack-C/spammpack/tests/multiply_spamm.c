@@ -189,6 +189,9 @@ main (int argc, char **argv)
       }
       printf("\n");
     }
+
+    printf("A =\n");
+    spamm_print_tree(A);
   }
 
   for (i[0] = 0; i[0] < N[0]; i[0]++) {

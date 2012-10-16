@@ -70,11 +70,16 @@ spamm_recursive_set (const unsigned int number_dimensions,
   /* Calculate box dimensions for convenience. */
   number_rows = (*node)->N_upper[0]-(*node)->N_lower[0];
 
+  /* Update norm. */
+  (*node)->norm2 += Aij*Aij;
+  (*node)->norm   = sqrt((*node)->norm2);
+
   if (number_dimensions == 2 && number_rows == N_linear)
   {
     if ((*node)->hashed_tree == NULL)
     {
-      (*node)->hashed_tree = spamm_hashed_new(tier, kernel_tier, depth, 0,
+      (*node)->hashed_tree = spamm_hashed_new(tier, kernel_tier, depth,
+          (*node)->N_linear,
           N_lower[0], N_upper[0], N_lower[1], N_upper[1]);
     }
     spamm_hashed_set(i[0], i[1], Aij, (*node)->hashed_tree);
@@ -101,10 +106,6 @@ spamm_recursive_set (const unsigned int number_dimensions,
       default:
         SPAMM_FATAL("not implemented\n");
     }
-
-    /* Update norm. */
-    (*node)->norm2 += Aij*Aij;
-    (*node)->norm   = sqrt((*node)->norm2);
   }
 
   else
@@ -190,10 +191,6 @@ spamm_recursive_set (const unsigned int number_dimensions,
       default:
         SPAMM_FATAL("not implemented\n");
     }
-
-    /* Update norm. */
-    (*node)->norm2 += Aij*Aij;
-    (*node)->norm   = sqrt((*node)->norm2);
 
     free(new_N_lower);
     free(new_N_upper);

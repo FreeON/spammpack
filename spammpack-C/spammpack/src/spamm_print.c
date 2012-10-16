@@ -118,30 +118,126 @@ spamm_print_data (unsigned int key, void *value, void *user_data)
   spamm_print_dense(SPAMM_N_KERNEL, SPAMM_N_KERNEL, row_major, data->block_dense_transpose);
 }
 
+/** Print a recursive tree node and all nodes underneath.
+ *
+ * @param node The tree node.
+ */
+void
+spamm_recursive_print_node (const struct spamm_recursive_node_t *const node)
+{
+  unsigned int tier;
+  unsigned int i;
+  unsigned int dim;
+
+  if (node == NULL) { return; }
+
+  printf("node (tier = %u): N = {", node->tier);
+  for (dim = 0; dim < node->number_dimensions; dim++)
+  {
+    printf(" [ %u --> %u ]", node->N_lower[dim], node->N_upper[dim]);
+  }
+  printf(" }, norm = %1.2e, ", node->norm);
+  if (node->child == NULL)
+  {
+    printf("no children");
+  }
+
+  else
+  {
+    printf("{");
+    for (i = 0; i < node->number_dimensions*node->number_dimensions; i++)
+    {
+      printf(" %p", node->child[i]);
+    }
+    printf(" }");
+  }
+  printf("\n");
+
+  if (node->N_upper[0]-node->N_lower[0] == node->N_linear)
+  {
+    for (tier = node->tier; tier <= node->hashed_tree->kernel_tier; tier++)
+    {
+      if (tier < node->hashed_tree->kernel_tier)
+      {
+        spamm_hashtable_foreach(node->hashed_tree->tier_hashtable[tier-node->tier], spamm_print_node, NULL);
+      }
+
+      else
+      {
+        spamm_hashtable_foreach(node->hashed_tree->tier_hashtable[tier-node->tier], spamm_print_data, NULL);
+      }
+    }
+  }
+
+  else if (node->N_upper[0]-node->N_lower[0] == node->N_contiguous)
+  {
+    return;
+  }
+
+  else
+  {
+    switch (node->number_dimensions)
+    {
+      case 2:
+        for (i = 0; i < 4; i++)
+        {
+          spamm_recursive_print_node(node->child[i]);
+        }
+        break;
+
+      default:
+        SPAMM_FATAL("not implemented\n");
+        break;
+    }
+  }
+}
+
 /** Print a SpAMM matrix, printing the tree structure.
  *
  * @param A The matrix.
  */
 void
-spamm_print_tree (const struct spamm_hashed_t *A)
+spamm_print_tree (const struct spamm_matrix_t *const A)
 {
+  unsigned int dim;
   unsigned int tier;
 
   assert(A != NULL);
 
-  printf("root node: M = %u, N = %u, N_padded = %u, depth = %u, kernel_tier = %u\n",
-      A->M, A->N, A->N_padded, A->depth, A->kernel_tier);
-
-  for (tier = 0; tier <= A->kernel_tier; tier++)
+  printf("root node: ");
+  printf("ndim = %u, ", A->number_dimensions);
+  printf("N = {");
+  for (dim = 0; dim < A->number_dimensions; dim++)
   {
-    if (tier < A->kernel_tier)
-    {
-      spamm_hashtable_foreach(A->tier_hashtable[tier], spamm_print_node, NULL);
-    }
+    printf(" %u", A->N[dim]);
+  }
+  printf(" }, ");
+  printf("N_padded = %u, ", A->N_padded);
+  printf("depth = %u, ", A->depth);
+  printf("N_contiguous = %u, ", A->N_contiguous);
+  printf("N_linear = %u, ", A->N_linear);
+  printf("kernel_tier = %u, ", A->kernel_tier);
+  printf("linear_tier = %u, ", A->linear_tier);
+  printf("contiguous_tier = %u\n", A->contiguous_tier);
 
-    else
+  if (A->recursive_tree != NULL)
+  {
+    spamm_recursive_print_node(A->recursive_tree);
+  }
+
+  else if (A->hashed_tree != NULL)
+  {
+    for (tier = 0; tier <= A->kernel_tier; tier++)
     {
-      spamm_hashtable_foreach(A->tier_hashtable[tier], spamm_print_data, NULL);
+      if (tier < A->kernel_tier)
+      {
+        spamm_hashtable_foreach(A->hashed_tree->tier_hashtable[tier], spamm_print_node, NULL);
+      }
+
+      else
+      {
+        spamm_hashtable_foreach(A->hashed_tree->tier_hashtable[tier], spamm_print_data, NULL);
+      }
     }
   }
 }
