@@ -200,11 +200,11 @@
 
 /** \page spamm_matrix SpAMM - Matrix Data Structure
  *
- * Conceptually, the matrix is stored in a quaternary tree data structure. For
+ * Conceptually, the matrix is stored in a k-d tree data structure. For
  * performance, the actual data structure is a hybrid. Matrices are created by
  * calling spamm_new().
  *
- * The top tiers of the matrix are stored in hierarchical quadtree format. If
+ * The top tiers of the matrix are stored in hierarchical k-d format. If
  * spamm_matrix_t::linear_tier <= spamm_matrix_t::contiguous_tier, then the
  * tree will switch to linear quadtree format at tier ==
  * spamm_matrix_t::linear_tier. If spamm_matrix_t::contiguous_tier <
@@ -221,5 +221,19 @@
  * \f$, which means that the computational kernel will apply the spamm
  * condition to those submatrices.
  *
- * \image html Matrix_Structure.png "The layout of the spamm_matrix_t data structure." width="80%"
+ * \code
+ * struct spamm_matrix_chunk_t
+ * {
+ *   uint32         number_dimensions;
+ *   uint32         N_lower[number_dimensions];
+ *   uint32         N_upper[number_dimensions];
+ *   spamm_float_t  A[N_contiguous*N_contiguous];
+ *   spamm_float_t  A_transpose[N_contiguous*N_contiguous];
+ *   spamm_float_t  A_dilated[N_contiguos*N_contiguous];
+ *   spamm_float_t  norm[]
+ *   spamm_float_t  norm2[]
+ * };
+ * \endcode
+ *
+ * \image html Matrix_Structure.png "The layout of the spamm_matrix_t data structure."
  */

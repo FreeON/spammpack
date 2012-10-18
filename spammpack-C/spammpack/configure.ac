@@ -26,20 +26,6 @@ AC_PROG_F77
 AM_PROG_AS
 AC_PROG_FC
 
-dnl Check for naming convention for Fortran-C interface.
-AC_F77_WRAPPERS()
-AC_FC_WRAPPERS()
-
-dnl Find OpenMP flags for C.
-AC_LANG_PUSH(C)
-AC_OPENMP
-AC_LANG_POP(C)
-
-dnl Find OpenMP flags for Fortran.
-AC_LANG_PUSH(Fortran)
-AC_OPENMP
-AC_LANG_POP(Fortran)
-
 dnl Find python.
 AM_PATH_PYTHON
 
@@ -53,6 +39,20 @@ if test "${python_error}" = "yes"; then
 fi
 AC_MSG_RESULT([${python_include}])
 AC_SUBST(PYTHON_INCLUDE, ${python_include})
+
+dnl Check for naming convention for Fortran-C interface.
+AC_F77_WRAPPERS()
+AC_FC_WRAPPERS()
+
+dnl Find OpenMP flags for C.
+AC_LANG_PUSH(C)
+AC_OPENMP
+AC_LANG_POP(C)
+
+dnl Find OpenMP flags for Fortran.
+AC_LANG_PUSH(Fortran)
+AC_OPENMP
+AC_LANG_POP(Fortran)
 
 dnl Find libtool.
 AC_PROG_LIBTOOL
