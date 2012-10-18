@@ -1,6 +1,7 @@
 module spammpack
 
   use spamm_derived
+  use spamm_chunk
 
   IMPLICIT NONE
 

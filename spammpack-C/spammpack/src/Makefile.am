@@ -145,6 +145,7 @@ DISTCLEANFILES = \
 nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
 libspammpack_fortran_la_SOURCES = \
+  spamm_fortran_chunk.F90 \
   spamm_fortran_derived.F90 \
   spamm_fortran_interface.c \
   spamm_fortran_interface.h \
