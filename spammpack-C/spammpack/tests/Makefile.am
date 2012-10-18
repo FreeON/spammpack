@@ -60,6 +60,7 @@ check_PROGRAMS = \
   get_version \
   hashtable_insert \
   hashtable_remove \
+  ipow \
   list \
   list_sort \
   multiply_spamm \

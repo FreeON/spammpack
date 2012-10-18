@@ -80,7 +80,7 @@ spamm_recursive_delete (struct spamm_recursive_node_t **node)
 
   if (*node == NULL) { return; }
 
-  for (i = 0; i < powl(2, (*node)->number_dimensions); i++)
+  for (i = 0; i < ipow(2, (*node)->number_dimensions); i++)
   {
     spamm_recursive_delete(&(*node)->child[i]);
   }

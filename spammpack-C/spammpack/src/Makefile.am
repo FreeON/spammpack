@@ -112,7 +112,9 @@ libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la $(LIBADD_INTERNAL_LAPA
 #libspamm_la_DEPENDENCIES = $(LIBADD_INTERNAL_LAPACK)
 
 noinst_SCRIPTS = generate_SSE_assembly.py spammOffsets.py
-noinst_PROGRAMS = print_data_sizes
+noinst_PROGRAMS = print_data_sizes print_chunk_offsets
+
+print_chunk_offsets_LDFLAGS = libspamm.la
 
 EXTRA_DIST = spamm_list_driver.c generate_SSE_assembly.py
 
@@ -142,8 +144,6 @@ DISTCLEANFILES = \
 
 nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
-include_HEADERS =
-
 libspammpack_fortran_la_SOURCES = \
   spamm_fortran_derived.F90 \
   spamm_fortran_interface.c \
@@ -165,15 +165,17 @@ libspamm_tree_la_SOURCES = \
   spamm_add.c \
   spamm_allocate.c \
   spamm_check.c \
+  spamm_chunk.c \
   spamm_convert.c \
   spamm_copy.c \
   spamm_delete.c \
   spamm_error.c \
   spamm_get.c \
   spamm_hashtable.c \
+  spamm_index.c \
   spamm_index_2D.c \
   spamm_index_3D.c \
-  spamm_index.c \
+  spamm_ipow.c \
   spamm_list.c \
   spamm_maintenance.c \
   spamm_multiply.c \

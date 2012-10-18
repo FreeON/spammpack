@@ -31,4 +31,7 @@ struct spamm_hashed_data_t;
 struct spamm_recursive_t;
 struct spamm_recursive_node_t;
 
+/** A data chunk. */
+typedef void spamm_chunk_t;
+
 #endif

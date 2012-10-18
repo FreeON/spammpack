@@ -7,6 +7,9 @@
 
 typedef void (*sgemm_func) (char *transA, char *transB, int *M, int *N, int *K, float *alpha, float *A, int *LDA, float *B, int *LDB, float *beta, float *C, int *LDC);
 
+int
+ipow (int b, int n);
+
 void *
 spamm_allocate (const size_t size, const short zero_memory);
 
@@ -265,5 +268,31 @@ void spamm_sgemm (char * transA, char * transB,
     int *M, int *N, int *K,
     float *alpha, float *A, int *LDA, float *B, int *LDB,
     float *beta, float *C, int *LDC);
+
+spamm_chunk_t *
+spamm_chunk_new (const unsigned int number_dimensions,
+    const unsigned int N_contiguous);
+
+uint32_t *
+spamm_chunk_get_number_dimensions (spamm_chunk_t *chunk);
+
+uint32_t *
+spamm_chunk_get_N_contiguous (spamm_chunk_t *chunk);
+
+uint32_t *
+spamm_chunk_get_N_lower (spamm_chunk_t *chunk);
+
+uint32_t *
+spamm_chunk_get_N_upper (spamm_chunk_t *chunk);
+
+float *
+spamm_chunk_get_matrix (spamm_chunk_t *chunk);
+
+float *
+spamm_chunk_get_matrix_dilated (spamm_chunk_t *chunk);
+
+size_t
+spamm_get_chunk_size (const unsigned int number_dimensions,
+    const unsigned int N_contiguous);
 
 #endif

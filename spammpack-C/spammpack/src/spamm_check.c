@@ -335,7 +335,7 @@ spamm_check (const struct spamm_matrix_t *A, const float tolerance)
   {
     for (dim = 0; dim < A->number_dimensions; dim++)
     {
-      if ((int) (SPAMM_N_BLOCK*pow(2, depth-1)) < A->N[dim])
+      if ((int) (SPAMM_N_BLOCK*ipow(2, depth-1)) < A->N[dim])
       {
         depth++;
         break;
@@ -353,7 +353,7 @@ spamm_check (const struct spamm_matrix_t *A, const float tolerance)
     return SPAMM_ERROR;
   }
 
-  N_padded = (int) (SPAMM_N_BLOCK*pow(2, depth));
+  N_padded = (int) (SPAMM_N_BLOCK*ipow(2, depth));
 
   if (A->N_padded != N_padded)
   {

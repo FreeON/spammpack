@@ -227,6 +227,7 @@
  *   uint32         number_dimensions;
  *   uint32         N_lower[number_dimensions];
  *   uint32         N_upper[number_dimensions];
+ *   char           padding[];
  *   spamm_float_t  A[N_contiguous*N_contiguous];
  *   spamm_float_t  A_transpose[N_contiguous*N_contiguous];
  *   spamm_float_t  A_dilated[N_contiguos*N_contiguous];

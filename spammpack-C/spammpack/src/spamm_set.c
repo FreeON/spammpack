@@ -89,7 +89,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
   {
     if ((*node)->data == NULL)
     {
-      (*node)->data = calloc(powl(N_contiguous, number_dimensions), sizeof(float));
+      (*node)->data = calloc(ipow(N_contiguous, number_dimensions), sizeof(float));
     }
 
     switch (number_dimensions)

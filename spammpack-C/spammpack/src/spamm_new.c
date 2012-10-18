@@ -98,7 +98,7 @@ spamm_new (const unsigned int number_dimensions,
   {
     for (dim = 0; dim < A->number_dimensions; dim++)
     {
-      if ((int) (SPAMM_N_BLOCK*pow(2, A->depth-1)) < A->N[dim])
+      if ((int) (SPAMM_N_BLOCK*ipow(2, A->depth-1)) < A->N[dim])
       {
         A->depth++;
         break;
@@ -141,17 +141,17 @@ spamm_new (const unsigned int number_dimensions,
   }
 
   /* Set padded matrix size. */
-  A->N_padded = (int) (SPAMM_N_BLOCK*pow(2, A->depth));
+  A->N_padded = (int) (SPAMM_N_BLOCK*ipow(2, A->depth));
 
   /* Adjust hashed size. In case linear_tier is larger than the depth, we do
    * not adjust N_linear, i.e. we disable the linear tree. */
   if (A->linear_tier < A->depth)
   {
-    A->N_linear = (int) (SPAMM_N_BLOCK*pow(2, A->depth-A->linear_tier));
+    A->N_linear = (int) (SPAMM_N_BLOCK*ipow(2, A->depth-A->linear_tier));
   }
 
   /* Adjust contiguous size. */
-  A->N_contiguous = (int) (SPAMM_N_BLOCK*pow(2, A->depth-A->contiguous_tier));
+  A->N_contiguous = (int) (SPAMM_N_BLOCK*ipow(2, A->depth-A->contiguous_tier));
 
   if (A->N_linear > A->N_padded)
   {
@@ -274,7 +274,7 @@ spamm_recursive_new (const unsigned int number_dimensions,
   {
     for (dim = 0; dim < A->number_dimensions; dim++)
     {
-      if ((int) (N_contiguous*pow(2, A->depth-1)) < A->N[dim])
+      if ((int) (N_contiguous*ipow(2, A->depth-1)) < A->N[dim])
       {
         A->depth++;
         break;
@@ -294,7 +294,7 @@ spamm_recursive_new (const unsigned int number_dimensions,
   }
 
   /* Set padded matrix size. */
-  A->N_padded = (int) (N_contiguous*pow(2, A->depth));
+  A->N_padded = (int) (N_contiguous*ipow(2, A->depth));
 
   return A;
 }
@@ -445,7 +445,7 @@ spamm_recursive_new_node (const unsigned int tier,
   node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
   /* Allocate child matrix. */
-  node->child = calloc(powl(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
+  node->child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
 
   for (dim = 0; dim < number_dimensions; dim++)
   {
@@ -454,4 +454,28 @@ spamm_recursive_new_node (const unsigned int tier,
   }
 
   return node;
+}
+
+/** Allocate a SpAMM data chunk.
+ *
+ * @param number_dimensions The number of dimensions.
+ * @param N_contiguous The size of the contigous matrix in this chunk.
+ *
+ * @return A pointer to the newly allocated chunk.
+ */
+spamm_chunk_t *
+spamm_chunk_new (const unsigned int number_dimensions,
+    const unsigned int N_contiguous)
+{
+  uint32_t *N;
+  spamm_chunk_t *chunk;
+
+  chunk = spamm_allocate(spamm_get_chunk_size(number_dimensions, N_contiguous), 1);
+  N = (uint32_t*) chunk;
+  *N = number_dimensions;
+
+  N = (uint32_t*) (chunk+sizeof(uint32_t));
+  *N = N_contiguous;
+
+  return chunk;
 }
