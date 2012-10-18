@@ -96,7 +96,7 @@ AM_FCFLAGS = $(OPENMP_FCFLAGS)
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
-lib_LTLIBRARIES = libspamm.la
+lib_LTLIBRARIES = libspamm.la libspammpack_fortran.la
 noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la
 
 if INTERNAL_LAPACK
@@ -131,7 +131,9 @@ generated_kernel_files = \
 
 BUILT_SOURCES = $(generated_kernel_files)
 
-CLEANFILES = $(generated_kernel_files)
+CLEANFILES = \
+  $(generated_kernel_files) \
+  *.mod
 
 DISTCLEANFILES = \
   $(builddir)/spamm_config.h \
@@ -139,6 +141,14 @@ DISTCLEANFILES = \
   $(builddir)/spammOffsets.pyc
 
 nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
+
+include_HEADERS =
+
+libspammpack_fortran_la_SOURCES = \
+  spamm_fortran_derived.F90 \
+  spamm_fortran_interface.c \
+  spamm_fortran_interface.h \
+  spammpack.F90
 
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \
@@ -192,4 +202,5 @@ libspamm_tree_private_headers = \
 include_HEADERS = \
   $(builddir)/spamm_config.h \
   $(libspamm_kernel_headers) \
-  $(libspamm_tree_headers)
+  $(libspamm_tree_headers) \
+  spammpack.mod

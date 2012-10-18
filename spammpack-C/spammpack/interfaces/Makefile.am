@@ -1,1 +1,1 @@
-SUBDIRS = python Fortran
+SUBDIRS = python

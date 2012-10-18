@@ -139,6 +139,6 @@ program spamm_multiply
 #endif
 
   ! Exit with some error code.
-  call spamm_exit(testresult)
+  call exit(testresult)
 
 end program spamm_multiply

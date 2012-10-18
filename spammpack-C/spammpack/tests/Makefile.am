@@ -2,16 +2,13 @@ AM_CTAGSFLAGS = --C-kinds=+l+x --Fortran-kinds=+i+L
 TAGS_FILES = \
   $(top_srcdir)/src/*.h \
   $(top_srcdir)/src/*.c \
-  $(top_srcdir)/src/*.S \
-  $(top_srcdir)/interfaces/Fortran/*.F90 \
-  $(top_srcdir)/interfaces/Fortran/*.c \
-  $(top_srcdir)/interfaces/Fortran/*.h
+  $(top_srcdir)/src/*.S
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
-AM_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/src -I$(top_builddir)/interfaces/Fortran
+AM_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/src
 AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 #AM_LDFLAGS = $(top_builddir)/src/libspamm.la -all-static
 
@@ -36,11 +33,11 @@ noinst_PROGRAMS = \
 get_version_SOURCES = get_version.F90
 
 spamm_multiply_SOURCES = spamm_multiply.F90
-spamm_multiply_LDFLAGS = $(top_builddir)/interfaces/Fortran/libspammpack_f90.la libspammtest.la
+spamm_multiply_LDFLAGS = $(top_builddir)/src/libspammpack_fortran.la libspammtest.la
 spamm_multiply_DEPENDENCIES = libspammtest.la
 
 SP2_SOURCES = SP2.F90 spamm_project.F90
-SP2_LDFLAGS = $(top_builddir)/interfaces/Fortran/libspammpack_f90.la libspammtest.la
+SP2_LDFLAGS = $(top_builddir)/src/libspammpack_fortran.la libspammtest.la
 SP2_DEPENDENCIES = libspammtest.la
 
 noinst_SCRIPTS = \
