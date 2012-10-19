@@ -314,10 +314,10 @@ FC_FUNC(spamm_set_num_threads, SPAMM_SET_NUM_THREADS) (int *num_threads)
 {
 }
 
-spamm_chunk_t *
+uint64_t
 FC_FUNC(spamm_new_chunk, SPAMM_NEW_CHUNK) (int *number_dimensions, int *N_contiguous)
 {
-  return spamm_new_chunk(*number_dimensions, *N_contiguous);
+  return (uint64_t) spamm_new_chunk(*number_dimensions, *N_contiguous);
 }
 
 uint32_t *
