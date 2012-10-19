@@ -101,4 +101,10 @@ contains
     call spamm_print_interface(A)
   end subroutine pprint_interface
 
+  subroutine spamm_new_chunk_interface (ndim, N_contiguous, chunk_address)
+    integer :: ndim
+    integer :: N_contiguous
+    integer*8 :: chunk_address
+  end subroutine spamm_new_chunk_interface
+
 end module spammpack

@@ -33,12 +33,14 @@ noinst_PROGRAMS = \
 get_version_SOURCES = get_version.F90
 
 spamm_multiply_SOURCES = spamm_multiply.F90
-spamm_multiply_LDFLAGS = $(top_builddir)/src/libspammpack_fortran.la libspammtest.la
+spamm_multiply_LDFLAGS = libspammtest.la
 spamm_multiply_DEPENDENCIES = libspammtest.la
 
 SP2_SOURCES = SP2.F90 spamm_project.F90
-SP2_LDFLAGS = $(top_builddir)/src/libspammpack_fortran.la libspammtest.la
+SP2_LDFLAGS = libspammtest.la
 SP2_DEPENDENCIES = libspammtest.la
+
+chunk_test_SOURCES = chunk_test.F90 chunk_test_C.c
 
 noinst_SCRIPTS = \
   create_spamm_row_major.sh \
@@ -54,6 +56,7 @@ check_PROGRAMS = \
   add_spamm_dense \
   add_spamm_sparse \
   check_spamm \
+  chunk_test \
   convert_dense \
   create_spamm \
   create_spamm_vector \
@@ -64,6 +67,7 @@ check_PROGRAMS = \
   list \
   list_sort \
   multiply_spamm \
+  new_chunk \
   spamm_multiply \
   stats
 

@@ -12,6 +12,15 @@ main (int argc, char **argv)
 
   spamm_chunk_t *chunk;
 
+  uint32_t **number_dimension_pointer;
+  uint32_t **N_contiguous_pointer;
+  uint32_t **N_lower_pointer;
+  uint32_t **N_upper_pointer;
+  float **A_pointer;
+  float **A_dilated_pointer;
+  float **norm_pointer;
+  float **norm2_pointer;
+
   int c;
   const char *short_options = "hd:c:";
   const struct option long_options[] = {
@@ -56,11 +65,15 @@ main (int argc, char **argv)
     }
   }
 
-  chunk = spamm_chunk_new(number_dimensions, N_contiguous);
+  chunk = spamm_new_chunk(number_dimensions, N_contiguous);
 
   printf("number_dimensions = %u\n", number_dimensions);
   printf("N_contiguous      = %u\n", N_contiguous);
-  printf("sizeof(chunk)     = 0x%lx bytes\n", spamm_get_chunk_size(number_dimensions, N_contiguous));
+  printf("sizeof(chunk)     = 0x%lx bytes\n",
+      spamm_chunk_get_size(number_dimensions, N_contiguous,
+        number_dimension_pointer, N_contiguous_pointer, N_lower_pointer,
+        N_upper_pointer, A_pointer, A_dilated_pointer, norm_pointer,
+        norm2_pointer));
   printf("\n");
   printf("&chunk->number_dimensions = 0x%lx\n", (void*) spamm_chunk_get_number_dimensions(chunk) - chunk);
   printf("&chunk->N_contiguous      = 0x%lx\n", (void*) spamm_chunk_get_N_contiguous(chunk) - chunk);

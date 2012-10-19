@@ -458,24 +458,87 @@ spamm_recursive_new_node (const unsigned int tier,
 
 /** Allocate a SpAMM data chunk.
  *
+ * The chunk contains the following data fields. Since compilers don't
+ * guarantee certain alignments and padding unless coerced, we manage the
+ * position and size of the fields in the chunk ourselves. In order to
+ * simplify access to the fields, we start the chunk with a pointer array that
+ * points to the field variables.
+ *
+ * \code
+ * struct spamm_chunk_t
+ * {
+ *   uint32_t      *number_dimensions_pointer;
+ *   uint32_t      *N_contiguous_pointer;
+ *   uint32_t      *N_lower_pointer;
+ *   uint32_t      *N_upper_pointer;
+ *   spamm_float_t *A_pointer;
+ *   spamm_float_t *A_dilated_pointer;
+ *   spamm_float_t *norm_pointer;
+ *   spamm_float_t *norm2_pointer;
+ *
+ *   uint32_t number_dimensions;
+ *   uint32_t N_contiguous;
+ *   uint32_t N_lower[number_dimensions];
+ *   uint32_t N_upper[number_dimensions];
+ *
+ *   char padding[];
+ *
+ *   spamm_float_t *A;
+ *
+ *   char padding[];
+ *
+ *   spamm_float_t *A_dilated;
+ *
+ *   char padding[];
+ *
+ *   spamm_float_t norm[];
+ *   spamm_float_t norm2[];
+ * };
+ * \endcode
+ *
  * @param number_dimensions The number of dimensions.
  * @param N_contiguous The size of the contigous matrix in this chunk.
  *
  * @return A pointer to the newly allocated chunk.
  */
 spamm_chunk_t *
-spamm_chunk_new (const unsigned int number_dimensions,
+spamm_new_chunk (const unsigned int number_dimensions,
     const unsigned int N_contiguous)
 {
-  uint32_t *N;
+  void **chunk_pointer;
+  uint32_t *number_dimension_pointer;
+  uint32_t *N_contiguous_pointer;
+  uint32_t *N_lower_pointer;
+  uint32_t *N_upper_pointer;
+  float *A_pointer;
+  float *A_dilated_pointer;
+  float *norm_pointer;
+  float *norm2_pointer;
+
   spamm_chunk_t *chunk;
 
-  chunk = spamm_allocate(spamm_get_chunk_size(number_dimensions, N_contiguous), 1);
-  N = (uint32_t*) chunk;
-  *N = number_dimensions;
+  chunk = spamm_allocate(spamm_chunk_get_size(number_dimensions, N_contiguous,
+        &number_dimension_pointer, &N_contiguous_pointer,
+        &N_lower_pointer, &N_upper_pointer,
+        &A_pointer, &A_dilated_pointer,
+        &norm_pointer, &norm2_pointer), 1);
 
-  N = (uint32_t*) (chunk+sizeof(uint32_t));
-  *N = N_contiguous;
+  chunk_pointer = chunk;
+
+  chunk_pointer[0] = (void*) number_dimension_pointer;
+  chunk_pointer[1] = (void*) N_contiguous_pointer;
+  chunk_pointer[2] = (void*) N_lower_pointer;
+  chunk_pointer[3] = (void*) N_upper_pointer;
+  chunk_pointer[4] = (void*) A_pointer;
+  chunk_pointer[5] = (void*) A_dilated_pointer;
+  chunk_pointer[6] = (void*) norm_pointer;
+  chunk_pointer[7] = (void*) norm2_pointer;
+
+  number_dimension_pointer = (uint32_t*) ((uint64_t) chunk + (uint64_t) number_dimension_pointer);
+  *number_dimension_pointer = number_dimensions;
+
+  N_contiguous_pointer = (uint32_t*) ((uint64_t) chunk + (uint64_t) N_contiguous_pointer);
+  *N_contiguous_pointer = N_contiguous;
 
   return chunk;
 }

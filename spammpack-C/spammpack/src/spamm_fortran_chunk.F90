@@ -1,30 +1,34 @@
-MODULE SpAMM_Chunk
+MODULE SpAMM_chunk
 
   IMPLICIT NONE
 
 CONTAINS
 
-  INTEGER*4 FUNCTION SpAMM_Chunk_get_ndim (chunk) RESULT (ndim)
+  FUNCTION SpAMM_chunk_get_ndim (chunk) RESULT (ndim)
 
-    INTEGER*4, DIMENSION(1) :: chunk
+    INTEGER*8 :: chunk
+    INTEGER*4, POINTER :: ndim
 
     ndim = chunk(1)
 
-  END FUNCTION SpAMM_Chunk_get_ndim
+  END FUNCTION SpAMM_chunk_get_ndim
 
-  INTEGER*4 FUNCTION SpAMM_Chunk_get_N_contiguous (chunk) RESULT (N_contiguous)
+  FUNCTION SpAMM_chunk_get_N_contiguous (chunk) RESULT (N_contiguous)
 
     INTEGER*4, DIMENSION(2) :: chunk
+    INTEGER*4, POINTER :: N_contiguous
 
     N_contiguous = chunk(2)
 
-  END FUNCTION SpAMM_Chunk_get_N_contiguous
+  END FUNCTION SpAMM_chunk_get_N_contiguous
 
-  !FUNCTION SpAMM_Chunk_get_N_lower (chunk) RESULT (N_lower)
+  FUNCTION SpAMM_chunk_get_N_lower (chunk) RESULT (N_lower)
 
-  !  INTEGER*4, DIMENSION(:) :: chunk
-  !  INTEGER*4, DIMENSION(*) :: N_lower
+    INTEGER*4, DIMENSION(:) :: chunk
+    INTEGER*4, POINTER, DIMENSION(:,:) :: N_lower
 
-  !END FUNCTION SpAMM_Chunk_get_N_lower
+    N_lower = chunk(3)
 
-END MODULE SpAMM_Chunk
+  END FUNCTION SpAMM_chunk_get_N_lower
+
+END MODULE SpAMM_chunk
