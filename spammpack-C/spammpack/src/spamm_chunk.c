@@ -194,12 +194,7 @@ spamm_chunk_print (spamm_chunk_t *chunk)
     printf("N[%u] = [ %u, %u ]\n", dim, N_lower[dim], N_upper[dim]);
   }
   A = spamm_chunk_get_matrix(chunk);
-  for (i = 0; i < N_contiguous; i++) {
-    for (j = 0; j < N_contiguous; j++)
-    {
-      printf("A[%u][%u] = %e\n", i, j, A[spamm_index_column_major(i, j, N_contiguous, N_contiguous)]);
-    }
-  }
+  spamm_print_dense(N_contiguous, N_contiguous, column_major, A);
 }
 
 /** Allocate a SpAMM data chunk.
