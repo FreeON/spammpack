@@ -70,6 +70,10 @@ module spammpack
 
 contains
 
+  !> Get the N_lower vector of a SpAMM chunk.
+  !>
+  !> @param N_lower The N_lower vector.
+  !> @param chunk The chunk.
   subroutine spamm_chunk_get_N_lower (N_lower, chunk)
 
     integer, dimension(:), pointer, intent(out) :: N_lower
@@ -86,6 +90,10 @@ contains
 
   end subroutine spamm_chunk_get_N_lower
 
+  !> Get the N_upper vector of a SpAMM chunk.
+  !>
+  !> @param N_upper The N_upper vector.
+  !> @param chunk The chunk.
   subroutine spamm_chunk_get_N_upper (N_upper, chunk)
 
     integer, dimension(:), pointer, intent(out) :: N_upper
@@ -102,6 +110,10 @@ contains
 
   end subroutine spamm_chunk_get_N_upper
 
+  !> Get the matrix of a SpAMM chunk.
+  !>
+  !> @param A The matrix.
+  !> @param chunk The chunk.
   subroutine spamm_chunk_get_matrix (A, chunk)
 
     real*4, dimension(:,:), pointer, intent(out) :: A
