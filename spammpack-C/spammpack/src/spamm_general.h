@@ -269,48 +269,4 @@ void spamm_sgemm (char * transA, char * transB,
     float *alpha, float *A, int *LDA, float *B, int *LDB,
     float *beta, float *C, int *LDC);
 
-spamm_chunk_t *
-spamm_new_chunk (const unsigned int number_dimensions,
-    const unsigned int N_contiguous);
-
-size_t
-spamm_chunk_align (const size_t address,
-    const size_t alignment);
-
-uint32_t *
-spamm_chunk_get_number_dimensions (spamm_chunk_t *chunk);
-
-uint32_t *
-spamm_chunk_get_N_contiguous (spamm_chunk_t *chunk);
-
-uint32_t *
-spamm_chunk_get_N_lower (spamm_chunk_t *chunk);
-
-uint32_t *
-spamm_chunk_get_N_upper (spamm_chunk_t *chunk);
-
-float *
-spamm_chunk_get_matrix (spamm_chunk_t *chunk);
-
-float *
-spamm_chunk_get_matrix_dilated (spamm_chunk_t *chunk);
-
-size_t
-spamm_chunk_get_size (const unsigned int number_dimensions,
-    const unsigned int N_contiguous,
-    uint32_t **number_dimension_pointer,
-    uint32_t **N_contiguous_pointer,
-    uint32_t **N_lower_pointer,
-    uint32_t **N_upper_pointer,
-    float **A_pointer,
-    float **A_dilated_pointer,
-    float **norm_pointer,
-    float **norm2_pointer);
-
-void
-spamm_chunk_print (spamm_chunk_t *chunk);
-
-void
-spamm_delete_chunk (spamm_chunk_t **chunk);
-
 #endif

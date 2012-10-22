@@ -26,6 +26,9 @@ AC_PROG_F77
 AM_PROG_AS
 AC_PROG_FC
 
+dnl Get pointer int type.
+AC_TYPE_INTPTR_T
+
 dnl Find python.
 AM_PATH_PYTHON
 

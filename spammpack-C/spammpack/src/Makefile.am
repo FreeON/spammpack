@@ -191,6 +191,7 @@ libspamm_tree_la_SOURCES = \
 
 libspamm_tree_headers = \
   spamm.h \
+  spamm_chunk.h \
   spamm_error.h \
   spamm_errno.h \
   spamm_general.h \

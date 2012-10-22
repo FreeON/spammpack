@@ -11,6 +11,7 @@
 #include "spamm_error.h"
 #include "spamm_errno.h"
 #include "spamm_timer.h"
+#include "spamm_chunk.h"
 
 #include "spamm_general.h"
 
