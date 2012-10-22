@@ -16,7 +16,9 @@
  * - spamm_list.h
  * - spamm_timer.h
  * - spamm_types.h
- * - \ref spammpack "Fortran spammpack module"
+ *
+ * The SpAMM library can be used from Fortran with the
+ * \ref spammpack "spammpack module".
  *
  * The documentation is organized into the following chapters:
  *
