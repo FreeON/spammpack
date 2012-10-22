@@ -40,7 +40,7 @@ SP2_SOURCES = SP2.F90 spamm_project.F90
 SP2_LDFLAGS = libspammtest.la
 SP2_DEPENDENCIES = libspammtest.la
 
-chunk_test_SOURCES = chunk_test.F90 chunk_test_C.c
+chunk_test_SOURCES = chunk_test.F90
 
 noinst_SCRIPTS = \
   create_spamm_row_major.sh \

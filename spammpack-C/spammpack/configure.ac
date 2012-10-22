@@ -40,10 +40,6 @@ fi
 AC_MSG_RESULT([${python_include}])
 AC_SUBST(PYTHON_INCLUDE, ${python_include})
 
-dnl Check for naming convention for Fortran-C interface.
-AC_F77_WRAPPERS()
-AC_FC_WRAPPERS()
-
 dnl Find OpenMP flags for C.
 AC_LANG_PUSH(C)
 AC_OPENMP
