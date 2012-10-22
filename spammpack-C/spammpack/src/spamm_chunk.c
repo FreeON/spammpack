@@ -165,3 +165,13 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
 
   return size;
 }
+
+/** Print some information on a SpAMM chunk.
+ *
+ * @param chunk The chunk.
+ */
+void
+spamm_chunk_print (const spamm_chunk_t *const chunk)
+{
+  printf("chunk:\n");
+}

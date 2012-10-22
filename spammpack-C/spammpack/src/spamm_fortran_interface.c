@@ -315,24 +315,16 @@ FC_FUNC(spamm_set_num_threads, SPAMM_SET_NUM_THREADS) (int *num_threads)
 }
 
 void
-FC_FUNC(spamm_new_chunk_interface, SPAMM_NEW_CHUNK_INTERFACE) (int *number_dimensions, int *N_contiguous, uint64_t *chunk)
+FC_FUNC(spamm_new_chunk_interface, SPAMM_NEW_CHUNK_INTERFACE) (int *number_dimensions,
+    int *N_contiguous, spamm_chunk_t **chunk)
 {
-  *chunk = (uint64_t) spamm_new_chunk(*number_dimensions, *N_contiguous);
+  *chunk = spamm_new_chunk(*number_dimensions, *N_contiguous);
 }
 
 void
-FC_FUNC(spamm_chunk_get_n_lower_interface, SPAMM_CHUNK_GET_N_LOWER_interface) (int *N_lower, uint64_t *chunk)
+FC_FUNC(spamm_chunk_get_n_lower_interface, SPAMM_CHUNK_GET_N_LOWER_interface) (int **N_lower, spamm_chunk_t **chunk)
 {
-  int i;
-  int *N_lower_pointer;
-  int *number_dimensions;
-
-  number_dimensions = spamm_chunk_get_number_dimensions((spamm_chunk_t*) (*chunk));
-  N_lower_pointer = spamm_chunk_get_N_lower((spamm_chunk_t*) (*chunk));
-  for (i = 0; i < *number_dimensions; i++)
-  {
-    N_lower[i] = N_lower_pointer[i];
-  }
+  *N_lower = spamm_chunk_get_N_lower(*chunk);
 }
 
 void
