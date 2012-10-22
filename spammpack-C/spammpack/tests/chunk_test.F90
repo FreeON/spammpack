@@ -3,11 +3,11 @@ program chunk_test
   use :: spammpack
   use, intrinsic :: iso_c_binding
 
-  INTEGER :: number_dimensions = 2
-  INTEGER :: N_contiguous = 8
-  INTEGER, DIMENSION(:), POINTER :: N_lower
-  INTEGER, DIMENSION(:), POINTER :: N_upper
-  REAL*4, DIMENSION(:,:), POINTER :: A
+  integer :: number_dimensions = 2
+  integer :: N_contiguous = 8
+  integer, dimension(:), pointer :: N_lower
+  integer, dimension(:), pointer :: N_upper
+  real*4, dimension(:,:), pointer :: A
 
   type(c_ptr) :: chunk
 
