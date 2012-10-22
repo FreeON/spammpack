@@ -16,6 +16,7 @@
  * - spamm_list.h
  * - spamm_timer.h
  * - spamm_types.h
+ * - \ref spammpack "Fortran spammpack module"
  *
  * The documentation is organized into the following chapters:
  *
@@ -80,6 +81,11 @@
  * }
  * \endcode
  *
+ * From Fortran:
+ *
+ * \code
+ * use spammpack
+ * \endcode
  */
 
 /** \page spamm_introduction SpAMM - Introduction
