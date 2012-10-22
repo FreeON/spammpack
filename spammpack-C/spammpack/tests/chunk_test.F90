@@ -4,9 +4,10 @@ program chunk_test
   use, intrinsic :: iso_c_binding
 
   INTEGER :: number_dimensions = 2
-  INTEGER :: N_contiguous = 128
-  INTEGER*4, DIMENSION(:), POINTER :: N_lower
-  INTEGER*4, DIMENSION(:), POINTER :: N_upper
+  INTEGER :: N_contiguous = 8
+  INTEGER, DIMENSION(:), POINTER :: N_lower
+  INTEGER, DIMENSION(:), POINTER :: N_upper
+  REAL*4, DIMENSION(:,:), POINTER :: A
 
   type(c_ptr) :: chunk
   type(c_ptr) :: cptr
@@ -24,6 +25,13 @@ program chunk_test
 
   N_upper(1) = 256
   N_upper(2) = 768
+
+  call spamm_chunk_get_matrix(cptr, chunk)
+  call c_f_pointer(cptr, A, [N_contiguous, N_contiguous])
+
+  do i = 1, N_contiguous
+    A(i,:) = i
+  enddo
 
   call spamm_chunk_print(chunk)
 

@@ -175,19 +175,30 @@ void
 spamm_chunk_print (spamm_chunk_t *chunk)
 {
   int dim;
+  unsigned int i, j;
   unsigned int number_dimensions;
+  unsigned int N_contiguous;
   unsigned int *N_lower;
   unsigned int *N_upper;
+  float *A;
 
   printf("chunk:\n");
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
   printf("number_dimensions: %u\n", number_dimensions);
-  printf("N_contiguous: %u\n", *spamm_chunk_get_N_contiguous(chunk));
+  N_contiguous = *spamm_chunk_get_N_contiguous(chunk);
+  printf("N_contiguous: %u\n", N_contiguous);
   N_lower = spamm_chunk_get_N_lower(chunk);
   N_upper = spamm_chunk_get_N_upper(chunk);
   for (dim = 0; dim < number_dimensions; dim++)
   {
     printf("N[%u] = [ %u, %u ]\n", dim, N_lower[dim], N_upper[dim]);
+  }
+  A = spamm_chunk_get_matrix(chunk);
+  for (i = 0; i < N_contiguous; i++) {
+    for (j = 0; j < N_contiguous; j++)
+    {
+      printf("A[%u][%u] = %e\n", i, j, A[spamm_index_column_major(i, j, N_contiguous, N_contiguous)]);
+    }
   }
 }
 
@@ -202,10 +213,10 @@ spamm_chunk_print (spamm_chunk_t *chunk)
  * \code
  * struct spamm_chunk_t
  * {
- *   unsigned int      *number_dimensions_pointer;
- *   unsigned int      *N_contiguous_pointer;
- *   unsigned int      *N_lower_pointer;
- *   unsigned int      *N_upper_pointer;
+ *   unsigned int  *number_dimensions_pointer;
+ *   unsigned int  *N_contiguous_pointer;
+ *   unsigned int  *N_lower_pointer;
+ *   unsigned int  *N_upper_pointer;
  *   spamm_float_t *A_pointer;
  *   spamm_float_t *A_dilated_pointer;
  *   spamm_float_t *norm_pointer;
