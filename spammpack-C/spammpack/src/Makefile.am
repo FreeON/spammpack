@@ -96,8 +96,8 @@ AM_FCFLAGS = $(OPENMP_FCFLAGS)
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
-lib_LTLIBRARIES = libspamm.la
-noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la libspammpack_fortran.la
+lib_LTLIBRARIES = libspamm.la libspammpack_fortran.la
+noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la
 
 if INTERNAL_LAPACK
 LIBADD_INTERNAL_LAPACK = \
@@ -108,7 +108,7 @@ endif
 
 libspamm_la_LDFLAGS = -version-info 0:0:0
 libspamm_la_SOURCES =
-libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la libspammpack_fortran.la $(LIBADD_INTERNAL_LAPACK)
+libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la $(LIBADD_INTERNAL_LAPACK)
 #libspamm_la_DEPENDENCIES = $(LIBADD_INTERNAL_LAPACK)
 
 noinst_SCRIPTS = generate_SSE_assembly.py spammOffsets.py

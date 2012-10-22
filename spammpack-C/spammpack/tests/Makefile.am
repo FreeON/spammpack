@@ -41,6 +41,9 @@ SP2_LDFLAGS = libspammtest.la
 SP2_DEPENDENCIES = libspammtest.la
 
 chunk_test_SOURCES = chunk_test.F90
+chunk_test_LDFLAGS = \
+  $(top_builddir)/src/libspammpack_fortran.la \
+  $(top_builddir)/src/libspamm.la
 
 noinst_SCRIPTS = \
   create_spamm_row_major.sh \

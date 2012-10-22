@@ -17,6 +17,18 @@ spamm_chunk_get_N_lower_interface (unsigned int **N_lower, spamm_chunk_t **chunk
 }
 
 void
+spamm_chunk_get_number_dimensions_interface (unsigned int **number_dimensions, spamm_chunk_t **chunk)
+{
+  *number_dimensions = spamm_chunk_get_number_dimensions(*chunk);
+}
+
+void
+spamm_chunk_get_N_contiguous_interface (unsigned int **N_contiguous, spamm_chunk_t **chunk)
+{
+  *N_contiguous = spamm_chunk_get_N_contiguous(*chunk);
+}
+
+void
 spamm_chunk_get_N_upper_interface (unsigned int **N_upper, spamm_chunk_t **chunk)
 {
   *N_upper = spamm_chunk_get_N_upper(*chunk);
