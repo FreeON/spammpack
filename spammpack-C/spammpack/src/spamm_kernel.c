@@ -100,6 +100,9 @@ spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel)
       SPAMM_FATAL("unknown kernel: %i\n", kernel);
       break;
   }
+
+  SPAMM_FATAL("I should not be here\n");
+  return 0;
 }
 
 /** Get a layout from a name.

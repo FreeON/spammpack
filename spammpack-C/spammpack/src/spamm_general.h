@@ -308,6 +308,9 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     float **norm2_pointer);
 
 void
+spamm_chunk_print (spamm_chunk_t *chunk);
+
+void
 spamm_delete_chunk (spamm_chunk_t **chunk);
 
 #endif

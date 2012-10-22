@@ -69,4 +69,7 @@ spamm_allocate (const size_t size, const short zero_memory)
   data = calloc(1, size);
   return data;
 #endif
+
+  SPAMM_FATAL("I should not be here\n");
+  return NULL;
 }

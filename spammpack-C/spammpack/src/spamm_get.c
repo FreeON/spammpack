@@ -130,6 +130,9 @@ spamm_recursive_get (const unsigned int *const i,
         SPAMM_FATAL("not implemented\n");
     }
   }
+
+  SPAMM_FATAL("I should not be here\n");
+  return 0;
 }
 
 /** Get an element from a matrix.

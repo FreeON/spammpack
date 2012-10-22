@@ -171,7 +171,21 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
  * @param chunk The chunk.
  */
 void
-spamm_chunk_print (const spamm_chunk_t *const chunk)
+spamm_chunk_print (spamm_chunk_t *chunk)
 {
+  int dim;
+  uint32_t number_dimensions;
+  uint32_t *N_lower;
+  uint32_t *N_upper;
+
   printf("chunk:\n");
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  printf("number_dimensions: %u\n", number_dimensions);
+  printf("N_contiguous: %u\n", *spamm_chunk_get_N_contiguous(chunk));
+  N_lower = spamm_chunk_get_N_lower(chunk);
+  N_upper = spamm_chunk_get_N_upper(chunk);
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    printf("N[%u] = [ %u, %u ]\n", dim, N_lower[dim], N_upper[dim]);
+  }
 }
