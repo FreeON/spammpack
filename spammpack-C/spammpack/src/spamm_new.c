@@ -267,8 +267,8 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
 struct spamm_recursive_node_t *
 spamm_recursive_new_node (const unsigned int tier,
     const unsigned int number_dimensions,
-    const unsigned int N_contiguous,
-    const unsigned int N_linear,
+    const unsigned int contiguous_tier,
+    const unsigned int linear_tier,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper)
 {
@@ -280,14 +280,14 @@ spamm_recursive_new_node (const unsigned int tier,
 
   node->tier = tier;
   node->number_dimensions = number_dimensions;
-  node->N_contiguous = N_contiguous;
-  node->N_linear = N_linear;
+  node->contiguous_tier = contiguous_tier;
+  node->linear_tier = linear_tier;
 
   node->N_lower = calloc(number_dimensions, sizeof(unsigned int));
   node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
   /* Allocate child matrix. */
-  node->child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
+  node->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
 
   for (dim = 0; dim < number_dimensions; dim++)
   {
@@ -321,7 +321,7 @@ spamm_recursive_new_node (const unsigned int tier,
 struct spamm_matrix_t *
 spamm_new (const unsigned int number_dimensions,
     const unsigned int *const N,
-    const unsigned int N_linear,
+    const unsigned int linear_tier,
     const unsigned int contiguous_tier,
     const enum spamm_layout_t layout)
 {
@@ -450,21 +450,6 @@ spamm_new (const unsigned int number_dimensions,
 
   /* Set padded matrix size. */
   A->N_padded = (int) (SPAMM_N_BLOCK*ipow(2, A->depth));
-
-  /* Adjust hashed size. In case linear_tier is larger than the depth, we do
-   * not adjust N_linear, i.e. we disable the linear tree. */
-  if (A->linear_tier < A->depth)
-  {
-    A->N_linear = (int) (SPAMM_N_BLOCK*ipow(2, A->depth-A->linear_tier));
-  }
-
-  /* Adjust contiguous size. */
-  A->N_contiguous = (int) (SPAMM_N_BLOCK*ipow(2, A->depth-A->contiguous_tier));
-
-  if (A->N_linear > A->N_padded)
-  {
-    A->N_linear = A->N_padded;
-  }
 
   /* Set the kernel tier. */
   A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;

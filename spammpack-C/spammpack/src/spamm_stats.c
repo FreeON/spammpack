@@ -77,10 +77,9 @@ spamm_print_info (const struct spamm_matrix_t *const A)
   }
   printf(", N_padded = %u", A->N_padded);
   printf(", depth = %u", A->depth);
-  printf(", N_contiguous = %u", A->N_contiguous);
-  printf(", N_linear = %u", A->N_linear);
-  printf(", kernel_tier = %u", A->kernel_tier);
+  printf(", contiguous_tier = %u", A->contiguous_tier);
   printf(", linear_tier = %u", A->linear_tier);
+  printf(", kernel_tier = %u", A->kernel_tier);
   printf(", contiguous_tier = %u", A->contiguous_tier);
 
   printf("\n");

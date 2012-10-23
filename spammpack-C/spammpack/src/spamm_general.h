@@ -137,18 +137,6 @@ spamm_recursive_multiply (const float tolerance,
     unsigned int *number_products);
 
 void
-spamm_recursive_multiply_3 (const float tolerance,
-    const float alpha,
-    struct spamm_recursive_t *A,
-    struct spamm_recursive_t *B,
-    struct spamm_recursive_t *C,
-    const float beta,
-    struct spamm_recursive_t *D,
-    struct spamm_timer_t *timer,
-    sgemm_func sgemm,
-    unsigned int *number_products);
-
-void
 spamm_multiply (const float tolerance,
     const float alpha,
     struct spamm_matrix_t *A,

@@ -80,21 +80,30 @@ spamm_recursive_delete (struct spamm_recursive_node_t **node)
 
   if (*node == NULL) { return; }
 
-  for (i = 0; i < ipow(2, (*node)->number_dimensions); i++)
+  if ((*node)->tier == (*node)->linear_tier)
   {
-    spamm_recursive_delete(&(*node)->child[i]);
-  }
-  free((*node)->child);
-
-  if ((*node)->data != NULL)
-  {
-    free((*node)->data);
-    (*node)->data = NULL;
+    spamm_hashed_delete(&(*node)->tree.hashed_tree);
   }
 
-  if ((*node)->hashed_tree != NULL)
+  else
   {
-    spamm_hashed_delete(&(*node)->hashed_tree);
+    if ((*node)->tier == (*node)->contiguous_tier)
+    {
+      if ((*node)->tree.data != NULL)
+      {
+        free((*node)->tree.data);
+        (*node)->tree.data = NULL;
+      }
+    }
+
+    else
+    {
+      for (i = 0; i < ipow(2, (*node)->number_dimensions); i++)
+      {
+        spamm_recursive_delete(&(*node)->tree.child[i]);
+      }
+      free((*node)->tree.child);
+    }
   }
 
   free((*node)->N_lower);
@@ -113,14 +122,14 @@ spamm_delete (struct spamm_matrix_t **A)
 {
   if (*A == NULL) { return; }
 
-  if ((*A)->recursive_tree != NULL)
+  if ((*A)->linear_tier == 0)
   {
-    spamm_recursive_delete(&(*A)->recursive_tree);
+    spamm_hashed_delete(&(*A)->tree.hashed_tree);
   }
 
-  else if ((*A)->hashed_tree != NULL)
+  else
   {
-    spamm_hashed_delete(&(*A)->hashed_tree);
+    spamm_recursive_delete(&(*A)->tree.recursive_tree);
   }
 
   free((*A)->N);

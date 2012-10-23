@@ -312,7 +312,7 @@ spamm_recursive_add (const float alpha,
     const float beta,
     struct spamm_recursive_node_t **B)
 {
-  unsigned int *i;
+  unsigned int i;
 
   /* There is nothing to do here. */
   if ((*A) == NULL && (*B) == NULL) { return; }
@@ -324,37 +324,35 @@ spamm_recursive_add (const float alpha,
       SPAMM_FATAL("dimension mismatch\n");
     }
 
-    if ((*A)->N_upper[0]-(*A)->N_lower[0] == (*A)->N_linear)
+    if ((*A)->tier == (*A)->linear_tier)
     {
-      spamm_hashed_add(alpha, &(*A)->hashed_tree, beta, &(*B)->hashed_tree);
+      spamm_hashed_add(alpha, &(*A)->tree.hashed_tree, beta, &(*B)->tree.hashed_tree);
     }
 
-    else if ((*A)->N_upper[0]-(*A)->N_lower[0] == (*A)->N_contiguous)
+    else if ((*A)->tier == (*A)->contiguous_tier)
     {
       /* Braindead add. */
-      i = calloc((*A)->number_dimensions, sizeof(unsigned int));
       switch ((*A)->number_dimensions)
       {
         case 2:
-          for (i[0] = 0; i[0] < (*A)->N_contiguous*(*A)->N_contiguous; i[0]++)
+          for (i = 0; i < ipow((*A)->N_upper[0]-(*A)->N_lower[0], 2); i++)
           {
-            (*A)->data[i[0]] = alpha*(*A)->data[i[0]]+beta*(*B)->data[i[0]];
+            (*A)->tree.data[i] = alpha*(*A)->tree.data[i]+beta*(*B)->tree.data[i];
           }
           break;
 
         default:
           SPAMM_FATAL("not implemented\n");
       }
-      free(i);
     }
 
     else
     {
       /* Recursve. */
-      spamm_recursive_add(alpha, &(*A)->child[0], beta, &(*B)->child[0]);
-      spamm_recursive_add(alpha, &(*A)->child[1], beta, &(*B)->child[1]);
-      spamm_recursive_add(alpha, &(*A)->child[2], beta, &(*B)->child[2]);
-      spamm_recursive_add(alpha, &(*A)->child[3], beta, &(*B)->child[3]);
+      spamm_recursive_add(alpha, &(*A)->tree.child[0], beta, &(*B)->tree.child[0]);
+      spamm_recursive_add(alpha, &(*A)->tree.child[1], beta, &(*B)->tree.child[1]);
+      spamm_recursive_add(alpha, &(*A)->tree.child[2], beta, &(*B)->tree.child[2]);
+      spamm_recursive_add(alpha, &(*A)->tree.child[3], beta, &(*B)->tree.child[3]);
     }
   }
 
@@ -407,14 +405,17 @@ spamm_add (const float alpha,
     }
   }
 
-  if (A->recursive_tree != NULL || B->recursive_tree != NULL)
+  if (A->linear_tier == 0)
   {
-    spamm_recursive_add(alpha, &A->recursive_tree, beta, &B->recursive_tree);
+    if (A->tree.hashed_tree != NULL || B->tree.hashed_tree != NULL)
+    {
+      spamm_hashed_add(alpha, &A->tree.hashed_tree, beta, &B->tree.hashed_tree);
+    }
   }
 
-  else if (A->hashed_tree != NULL || B->hashed_tree != NULL)
+  else if (A->tree.recursive_tree != NULL || B->tree.recursive_tree != NULL)
   {
-    spamm_hashed_add(alpha, &A->hashed_tree, beta, &B->hashed_tree);
+    spamm_recursive_add(alpha, &A->tree.recursive_tree, beta, &B->tree.recursive_tree);
   }
 
   else

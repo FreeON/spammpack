@@ -117,20 +117,20 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
     {
       *A = spamm_recursive_new_node(B->tier,
           B->number_dimensions,
-          B->N_contiguous, B->N_linear,
+          B->contiguous_tier, B->linear_tier,
           B->N_lower, B->N_upper);
     }
 
-    if ((*A)->N_upper[0]-(*A)->N_lower[0] == (*A)->N_linear)
+    if ((*A)->tier == (*A)->linear_tier)
     {
-      spamm_hashed_copy(&(*A)->hashed_tree, beta, B->hashed_tree);
+      spamm_hashed_copy(&(*A)->tree.hashed_tree, beta, B->tree.hashed_tree);
     }
 
-    else if ((*A)->N_upper[0]-(*A)->N_lower[0] == (*A)->N_contiguous)
+    else if ((*A)->tier == (*A)->contiguous_tier)
     {
-      for (i = 0; i < (*A)->N_contiguous*(*A)->N_contiguous; i++)
+      for (i = 0; i < ipow((*A)->N_upper[0]-(*A)->N_lower[0], 2); i++)
       {
-        (*A)->data[i] = beta*B->data[i];
+        (*A)->tree.data[i] = beta*B->tree.data[i];
         (*A)->norm = beta*B->norm;
         (*A)->norm2 = (*A)->norm*(*A)->norm;
       }
@@ -138,10 +138,10 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 
     else
     {
-      spamm_recursive_copy(&(*A)->child[0], beta, B->child[0]);
-      spamm_recursive_copy(&(*A)->child[1], beta, B->child[1]);
-      spamm_recursive_copy(&(*A)->child[2], beta, B->child[2]);
-      spamm_recursive_copy(&(*A)->child[3], beta, B->child[3]);
+      spamm_recursive_copy(&(*A)->tree.child[0], beta, B->tree.child[0]);
+      spamm_recursive_copy(&(*A)->tree.child[1], beta, B->tree.child[1]);
+      spamm_recursive_copy(&(*A)->tree.child[2], beta, B->tree.child[2]);
+      spamm_recursive_copy(&(*A)->tree.child[3], beta, B->tree.child[3]);
     }
   }
 }
@@ -162,7 +162,7 @@ spamm_copy (struct spamm_matrix_t **A,
   if (*A == NULL)
   {
     /* Create new matrix A. */
-    *A = spamm_new(B->number_dimensions, B->N, B->N_linear, B->N_contiguous, B->layout);
+    *A = spamm_new(B->number_dimensions, B->N, B->linear_tier, B->contiguous_tier, B->layout);
   }
 
   /* Sanity check. */
@@ -179,12 +179,12 @@ spamm_copy (struct spamm_matrix_t **A,
     }
   }
 
-  if ((*A)->N_linear != B->N_linear)
+  if ((*A)->linear_tier != B->linear_tier)
   {
     SPAMM_FATAL("mismatch in linear tier\n");
   }
 
-  if ((*A)->N_contiguous != B->N_contiguous)
+  if ((*A)->contiguous_tier != B->contiguous_tier)
   {
     SPAMM_FATAL("mismatch in contiguous tier\n");
   }
@@ -194,13 +194,13 @@ spamm_copy (struct spamm_matrix_t **A,
     SPAMM_FATAL("mismatch in layout\n");
   }
 
-  if (B->recursive_tree != NULL)
+  if (B->linear_tier == 0)
   {
-    spamm_recursive_copy(&(*A)->recursive_tree, 1.0, B->recursive_tree);
+    spamm_hashed_copy(&(*A)->tree.hashed_tree, 1.0, B->tree.hashed_tree);
   }
 
-  else if (B->hashed_tree != NULL)
+  else
   {
-    spamm_hashed_copy(&(*A)->hashed_tree, 1.0, B->hashed_tree);
+    spamm_recursive_copy(&(*A)->tree.recursive_tree, 1.0, B->tree.recursive_tree);
   }
 }

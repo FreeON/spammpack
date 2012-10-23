@@ -131,7 +131,9 @@ generated_kernel_files = \
   spamm_stream_kernel_SSE.S \
   spamm_stream_kernel_SSE4_1.S
 
-BUILT_SOURCES = $(generated_kernel_files)
+BUILT_SOURCES = $(generated_kernel_files) spammpack.mod
+
+spammpack.mod : libspammpack_fortran.la
 
 CLEANFILES = \
   $(generated_kernel_files) \

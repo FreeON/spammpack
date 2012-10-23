@@ -27,26 +27,30 @@ struct spamm_matrix_t
   /** The layout of the basic matrix blocks on the kernel tier. */
   enum spamm_layout_t layout;
 
-  /** The size of the contiguous matrix chunks. See the documentation of
+  /** The tier of the contiguous matrix chunks. See the documentation of
    * spamm_matrix_t::N_linear for more details. */
-  unsigned int N_contiguous;
+  unsigned int contiguous_tier;
 
-  /** The size of the submatrix stored in the hashed data format.  At this
-   * tier the matrix represenation switches from hierarchical to linear tree.
-   * Note that N_linear <= N_contiguous. In case N_linear < N_contiguous, the
-   * matrix is stored completely in a hierarchical tree. In case N_linear ==
-   * N_contiguous the matrix is stored in a hybrid, with a tree at the top and
-   * a linear representation at the bottom. */
-  unsigned int N_linear;
+  /** The tier at which the submatrix is stored in the hashed data format.  At
+   * this tier the matrix represenation switches from hierarchical to linear
+   * tree.  Note that N_linear <= N_contiguous. In case N_linear <
+   * N_contiguous, the matrix is stored completely in a hierarchical tree. In
+   * case N_linear == N_contiguous the matrix is stored in a hybrid, with a
+   * tree at the top and a linear representation at the bottom. */
+  unsigned int linear_tier;
 
-  /** The kernel tier. */
+  /** The kernel tier. At this tier the stream kernel processes matrices. */
   unsigned int kernel_tier;
 
-  /** The root node of the recursive tree. */
-  struct spamm_recursive_node_t *recursive_tree;
+  union tree_t
+  {
+    /** The root node of the recursive tree. */
+    struct spamm_recursive_node_t *recursive_tree;
 
-  /** The hashed tree (if we deal with a hybrid matrix tree). */
-  struct spamm_hashed_t *hashed_tree;
+    /** The hashed tree (if we deal with a hybrid matrix tree). */
+    struct spamm_hashed_t *hashed_tree;
+  }
+  tree;
 };
 
 /** The hashed matrix type.
@@ -203,21 +207,25 @@ spamm_recursive_node_t
   /** The square of the norm of this block. */
   float norm2;
 
-  /** The children nodes. */
-  struct spamm_recursive_node_t **child;
+  union children
+  {
+    /** The children nodes. */
+    struct spamm_recursive_node_t **child;
+
+    /** The matrix data (if this is a leaf node) of size N_contiguous x
+     * N_contiguous. */
+    float *data;
+
+    /** The hashed tree (if we deal with a hybrid matrix tree). */
+    struct spamm_hashed_t *hashed_tree;
+  }
+  tree;
 
   /** The blocksize for recursive trees. */
-  unsigned int N_contiguous;
+  unsigned int contiguous_tier;
 
   /** The size of the submatrix stored in the hashed data format. */
-  unsigned int N_linear;
-
-  /** The matrix data (if this is a leaf node) of size N_contiguous x
-   * N_contiguous. */
-  float *data;
-
-  /** The hashed tree (if we deal with a hybrid matrix tree). */
-  struct spamm_hashed_t *hashed_tree;
+  unsigned int linear_tier;
 };
 
 /** The basic information in a stream element.

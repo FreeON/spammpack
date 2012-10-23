@@ -58,25 +58,25 @@ spamm_recursive_get (const unsigned int *const i,
 
   number_rows = node->N_upper[0]-node->N_lower[0];
 
-  if (node->number_dimensions == 2 && number_rows == node->N_linear)
+  if (node->number_dimensions == 2 && node->tier == node->linear_tier)
   {
-    return spamm_hashed_get(i[0], i[1], node->hashed_tree);
+    return spamm_hashed_get(i[0], i[1], node->tree.hashed_tree);
   }
 
-  else if (number_rows == node->N_contiguous)
+  else if (node->tier == node->contiguous_tier)
   {
     /* Get the matrix element. */
-    if (node->data == NULL) { return 0.0; }
+    if (node->tree.data == NULL) { return 0.0; }
     else
     {
       switch (node->number_dimensions)
       {
         case 1:
-          return node->data[i[0]-node->N_lower[0]];
+          return node->tree.data[i[0]-node->N_lower[0]];
           break;
 
         case 2:
-          return node->data[spamm_index_column_major(i[0]-node->N_lower[0], i[1]-node->N_lower[1], node->N_contiguous, node->N_contiguous)];
+          return node->tree.data[spamm_index_column_major(i[0]-node->N_lower[0], i[1]-node->N_lower[1], node->contiguous_tier, node->contiguous_tier)];
           break;
 
         default:
@@ -92,12 +92,12 @@ spamm_recursive_get (const unsigned int *const i,
       case 1:
         if (i[0] < node->N_lower[0]+(number_rows)/2)
         {
-          return spamm_recursive_get(i, node->child[0]);
+          return spamm_recursive_get(i, node->tree.child[0]);
         }
 
         else
         {
-          return spamm_recursive_get(i, node->child[1]);
+          return spamm_recursive_get(i, node->tree.child[1]);
         }
 
       case 2:
@@ -105,24 +105,24 @@ spamm_recursive_get (const unsigned int *const i,
         if (i[0] < node->N_lower[0]+(number_rows)/2 &&
             i[1] < node->N_lower[1]+(number_columns)/2)
         {
-          return spamm_recursive_get(i, node->child[0]);
+          return spamm_recursive_get(i, node->tree.child[0]);
         }
 
         else if (i[0] <  node->N_lower[0]+(number_rows)/2 &&
             i[1] >= node->N_lower[1]+(number_columns)/2)
         {
-          return spamm_recursive_get(i, node->child[1]);
+          return spamm_recursive_get(i, node->tree.child[1]);
         }
 
         else if (i[0] >= node->N_lower[0]+(number_rows)/2 &&
             i[1] <  node->N_lower[1]+(number_columns)/2)
         {
-          return spamm_recursive_get(i, node->child[2]);
+          return spamm_recursive_get(i, node->tree.child[2]);
         }
 
         else
         {
-          return spamm_recursive_get(i, node->child[3]);
+          return spamm_recursive_get(i, node->tree.child[3]);
         }
         break;
 
@@ -157,15 +157,15 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
     }
   }
 
-  if (A->number_dimensions == 2 && A->N_linear == A->N_padded)
+  if (A->number_dimensions == 2 && A->linear_tier == 0)
   {
     /* In case we only have a linear tree. */
-    return spamm_hashed_get(i[0], i[1], A->hashed_tree);
+    return spamm_hashed_get(i[0], i[1], A->tree.hashed_tree);
   }
 
   else
   {
-    return spamm_recursive_get(i, A->recursive_tree);
+    return spamm_recursive_get(i, A->tree.recursive_tree);
   }
 }
 
@@ -231,14 +231,14 @@ spamm_get_norm (const struct spamm_matrix_t *const A)
 {
   assert(A != NULL);
 
-  if (A->recursive_tree != NULL)
+  if (A->tree.recursive_tree != NULL)
   {
-    return A->recursive_tree->norm;
+    return A->tree.recursive_tree->norm;
   }
 
-  else if (A->hashed_tree != NULL)
+  else if (A->tree.hashed_tree != NULL)
   {
-    return spamm_hashed_get_norm(A->hashed_tree);
+    return spamm_hashed_get_norm(A->tree.hashed_tree);
   }
 
   else { return 0; }
