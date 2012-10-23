@@ -287,7 +287,20 @@ spamm_recursive_new_node (const unsigned int tier,
   node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
   /* Allocate child matrix. */
-  node->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
+  if (tier == linear_tier)
+  {
+    /* Allocate new linear tree. */
+  }
+
+  else if (tier == contiguous_tier)
+  {
+    /* Allocate chunk. */
+  }
+
+  else
+  {
+    node->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
+  }
 
   for (dim = 0; dim < number_dimensions; dim++)
   {
