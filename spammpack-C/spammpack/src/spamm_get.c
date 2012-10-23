@@ -178,7 +178,7 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
 unsigned int
 spamm_get_number_of_rows (const struct spamm_hashed_t *const A)
 {
-  return A->M;
+  return A->M_upper-A->M_lower;
 }
 
 /** Get the number of columns of a matrix.
@@ -190,7 +190,7 @@ spamm_get_number_of_rows (const struct spamm_hashed_t *const A)
 unsigned int
 spamm_get_number_of_columns (const struct spamm_hashed_t *const A)
 {
-  return A->N;
+  return A->N_upper-A->N_lower;
 }
 
 /** Get the Frobenius norm of the matrix.

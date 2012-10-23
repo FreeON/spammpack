@@ -55,12 +55,12 @@ spamm_hashed_add (const float alpha,
       SPAMM_FATAL("inconsistent layout in matrices\n");
     }
 
-    if ((*A)->M != (*B)->M)
+    if ((*A)->M_upper-(*A)->M_lower != (*B)->M_upper-(*B)->M_lower)
     {
       SPAMM_FATAL("mismatch of number of rows\n");
     }
 
-    if ((*A)->N != (*B)->N)
+    if ((*A)->N_upper-(*A)->N_lower != (*B)->N_upper-(*B)->N_lower)
     {
       SPAMM_FATAL("mismatch of number of columns\n");
     }

@@ -537,7 +537,7 @@ spamm_hashed_multiply (const float tolerance,
   i = 0;
 
   /* The last k value. Initially place it behind the largest expected k value. */
-  k = A->N+1;
+  k = A->N_upper-A->N_lower+1;
 
   for (i = 0; i < spamm_list_length(A_index.index); i++)
   {
@@ -568,7 +568,7 @@ spamm_hashed_multiply (const float tolerance,
   i = 0;
 
   /* The last k value. Initially place it behind the largest expected k value. */
-  k = B->M+1;
+  k = B->M_upper-B->M_lower+1;
 
   for (i = 0; i < spamm_list_length(B_index.index); i++)
   {

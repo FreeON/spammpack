@@ -60,12 +60,6 @@ struct spamm_hashed_t
   /** The layout of the basic matrix blocks on the kernel tier. */
   enum spamm_layout_t layout;
 
-  /** Number or rows in this matrix. */
-  unsigned int M;
-
-  /** Number of columns in this matrix. */
-  unsigned int N;
-
   /** The lower value of the row index. */
   unsigned int M_lower;
 
