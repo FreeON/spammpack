@@ -27,22 +27,20 @@ struct spamm_matrix_t
   /** The layout of the basic matrix blocks on the kernel tier. */
   enum spamm_layout_t layout;
 
-  /** The size of the contiguous matrix blocks. */
+  /** The size of the contiguous matrix chunks. See the documentation of
+   * spamm_matrix_t::N_linear for more details. */
   unsigned int N_contiguous;
 
-  /** The size of the submatrix stored in the hashed data format. */
+  /** The size of the submatrix stored in the hashed data format.  At this
+   * tier the matrix represenation switches from hierarchical to linear tree.
+   * Note that N_linear <= N_contiguous. In case N_linear < N_contiguous, the
+   * matrix is stored completely in a hierarchical tree. In case N_linear ==
+   * N_contiguous the matrix is stored in a hybrid, with a tree at the top and
+   * a linear representation at the bottom. */
   unsigned int N_linear;
 
   /** The kernel tier. */
   unsigned int kernel_tier;
-
-  /** The linear tier. At this tier the matrix represenation switches from
-   * hierarchical to linear tree. */
-  unsigned int linear_tier;
-
-  /** The contiguous tier. At this tier the matrix stores dense submatrix
-   * blocks and applies the spamm condition. */
-  unsigned int contiguous_tier;
 
   /** The root node of the recursive tree. */
   struct spamm_recursive_node_t *recursive_tree;

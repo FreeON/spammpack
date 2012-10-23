@@ -157,7 +157,7 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
     }
   }
 
-  if (A->number_dimensions == 2 && A->linear_tier == 0)
+  if (A->number_dimensions == 2 && A->N_linear == A->N_padded)
   {
     /* In case we only have a linear tree. */
     return spamm_hashed_get(i[0], i[1], A->hashed_tree);

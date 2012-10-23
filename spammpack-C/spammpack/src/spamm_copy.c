@@ -162,7 +162,7 @@ spamm_copy (struct spamm_matrix_t **A,
   if (*A == NULL)
   {
     /* Create new matrix A. */
-    *A = spamm_new(B->number_dimensions, B->N, B->linear_tier, B->contiguous_tier, B->layout);
+    *A = spamm_new(B->number_dimensions, B->N, B->N_linear, B->N_contiguous, B->layout);
   }
 
   /* Sanity check. */
@@ -179,12 +179,12 @@ spamm_copy (struct spamm_matrix_t **A,
     }
   }
 
-  if ((*A)->linear_tier != B->linear_tier)
+  if ((*A)->N_linear != B->N_linear)
   {
     SPAMM_FATAL("mismatch in linear tier\n");
   }
 
-  if ((*A)->contiguous_tier != B->contiguous_tier)
+  if ((*A)->N_contiguous != B->N_contiguous)
   {
     SPAMM_FATAL("mismatch in contiguous tier\n");
   }

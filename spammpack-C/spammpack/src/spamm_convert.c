@@ -11,7 +11,7 @@
  *
  * @param number_dimensions The number of dimensions.
  * @param N The number of rows/columns.
- * @param linear_tier The linear tier (see spamm_new()).
+ * @param N_linear The linear tier (see spamm_new()).
  * @param contiguous_tier The contiguous tier (see spamm_new()).
  * @param dense_type The storage type of the dense matrix.
  * @param A_dense The dense matrix.
@@ -22,7 +22,7 @@
 struct spamm_matrix_t *
 spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const unsigned int *const N,
-    const unsigned int linear_tier,
+    const unsigned int N_linear,
     const unsigned int contiguous_tier,
     const enum spamm_layout_t dense_type,
     const float *const A_dense,
@@ -38,7 +38,7 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     SPAMM_FATAL("can not handle this case\n");
   }
 
-  A = spamm_new(number_dimensions, N, linear_tier, contiguous_tier, spamm_layout);
+  A = spamm_new(number_dimensions, N, N_linear, contiguous_tier, spamm_layout);
 
   i = calloc(number_dimensions, sizeof(unsigned int));
   for (i[0] = 0; i[0] < N[0]; i[0]++) {

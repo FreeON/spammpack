@@ -7,164 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/** Initialize a new matrix object.
- *
- * Two settings determine when and if the tree is stored in linear or
- * hierarchical format. If linear_tier <= contiguous_tier, then the tree
- * format will switch to linear tree format at linear_tier. If contiguous_tier
- * < linear_tier, then the whole tree will be stored hierarchically and at
- * tier == contiguous_tier, dense submatrix blocks are stored and the spamm
- * condition is applied.
- *
- * @param number_dimensions The number of dimensions of this matrix.
- * @param N The number of rows/columns of the matrix. This array has to have
- * a size of number_dimensions.
- * @param linear_tier The tier at which to switch from hierarchical to linear
- * tree.
- * @param contiguous_tier The tier at which to store contiguous submatrix
- * blocks in the hierarhical tree.
- * @param layout The storage layout of the matrix elements.
- *
- * @return The newly allocated matrix. This matrix has to be freed by calling
- * spamm_delete().
- */
-struct spamm_matrix_t *
-spamm_new (const unsigned int number_dimensions,
-    const unsigned int *const N,
-    const unsigned int linear_tier,
-    const unsigned int contiguous_tier,
-    const enum spamm_layout_t layout)
-{
-  int dim;
-  struct spamm_matrix_t *A = NULL;
-  double x, x_N;
-
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    if (N[dim] == 0)
-    {
-      SPAMM_FATAL("N[%u] == 0\n", dim);
-    }
-  }
-
-  /* Allocate memory. */
-  A = calloc(1, sizeof(struct spamm_matrix_t));
-
-  /* Store the number of dimensions. */
-  A->number_dimensions = number_dimensions;
-
-  /* Store matrix dimensions. */
-  A->N = calloc(number_dimensions, sizeof(unsigned int));
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    A->N[dim] = N[dim];
-  }
-
-  /* Set the layout. */
-  switch (layout)
-  {
-    case row_major:
-    case column_major:
-    case Z_curve:
-    case dense_column_major:
-      A->layout = layout;
-      break;
-
-    default:
-      fprintf(stderr, "[spamm new] unknown layout (%i)\n", layout);
-      exit(1);
-      break;
-  }
-
-  /* Pad to powers of M_child x N_child. */
-  x = 0;
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    x_N = (log(N[dim]) > log(SPAMM_N_BLOCK) ? log(N[dim]) - log(SPAMM_N_BLOCK) : 0)/log(2);
-    if (x_N > x)
-    {
-      x = x_N;
-    }
-  }
-
-  /* The ceil() function can lead to a depth that is one tier too large
-   * because of numerical errors in the calculation of x. We need to check
-   * whether the depth is appropriate.
-   */
-  A->depth = (unsigned int) ceil(x);
-
-  /* Double check depth. */
-  if (A->depth >= 1)
-  {
-    for (dim = 0; dim < A->number_dimensions; dim++)
-    {
-      if ((int) (SPAMM_N_BLOCK*ipow(2, A->depth-1)) < A->N[dim])
-      {
-        A->depth++;
-        break;
-      }
-    }
-    A->depth--;
-  }
-
-  /* Adjust tree to kernel depth. */
-  if (A->depth < SPAMM_KERNEL_DEPTH) { A->depth = SPAMM_KERNEL_DEPTH; }
-
-  /* Adjust the linear depth. */
-  if (linear_tier+SPAMM_KERNEL_DEPTH > A->depth)
-  {
-    SPAMM_WARN("linear tier (%u) + kernel depth (%u) is greater than depth (%u)\n", linear_tier, SPAMM_KERNEL_DEPTH, A->depth);
-    A->linear_tier = A->depth+1;
-  }
-
-  else
-  {
-    A->linear_tier = linear_tier;
-  }
-
-  /* Adjust the contiguous tier depth. */
-  if (contiguous_tier > A->depth)
-  {
-    SPAMM_WARN("contiguous tier (%u) is greater than depth (%u), adjusting to depth\n", contiguous_tier, A->depth);
-    A->contiguous_tier = A->depth;
-  }
-
-  else
-  {
-    A->contiguous_tier = contiguous_tier;
-  }
-
-  if (A->contiguous_tier >= A->linear_tier)
-  {
-    /* Reset contiguous_tier, it will not get used. */
-    A->contiguous_tier = A->depth-SPAMM_KERNEL_DEPTH;
-  }
-
-  /* Set padded matrix size. */
-  A->N_padded = (int) (SPAMM_N_BLOCK*ipow(2, A->depth));
-
-  /* Adjust hashed size. In case linear_tier is larger than the depth, we do
-   * not adjust N_linear, i.e. we disable the linear tree. */
-  if (A->linear_tier < A->depth)
-  {
-    A->N_linear = (int) (SPAMM_N_BLOCK*ipow(2, A->depth-A->linear_tier));
-  }
-
-  /* Adjust contiguous size. */
-  A->N_contiguous = (int) (SPAMM_N_BLOCK*ipow(2, A->depth-A->contiguous_tier));
-
-  if (A->N_linear > A->N_padded)
-  {
-    A->N_linear = A->N_padded;
-  }
-
-  /* Set the kernel tier. */
-  A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
-
-  /* Done. */
-  return A;
-}
-
 /** Initialize new matrix object.
  *
  * @param tier The tier.
@@ -454,4 +296,179 @@ spamm_recursive_new_node (const unsigned int tier,
   }
 
   return node;
+}
+
+/** Initialize a new matrix object.
+ *
+ * Two settings determine when and if the tree is stored in linear or
+ * hierarchical format. If N_linear == N_contiguous, then the tree format will
+ * switch to linear tree format at N_contiguous. If N_linear < N_contiguous,
+ * then the whole tree will be stored hierarchically and the spamm condition
+ * is applied to the SpAMM chunks.
+ *
+ * @param number_dimensions The number of dimensions of this matrix.
+ * @param N The number of rows/columns of the matrix. This array has to have
+ * a size of number_dimensions.
+ * @param N_linear The tier at which to switch from hierarchical to linear
+ * tree.
+ * @param contiguous_tier The tier at which to store contiguous submatrix
+ * blocks in the hierarhical tree.
+ * @param layout The storage layout of the matrix elements.
+ *
+ * @return The newly allocated matrix. This matrix has to be freed by calling
+ * spamm_delete().
+ */
+struct spamm_matrix_t *
+spamm_new (const unsigned int number_dimensions,
+    const unsigned int *const N,
+    const unsigned int N_linear,
+    const unsigned int contiguous_tier,
+    const enum spamm_layout_t layout)
+{
+  int dim;
+  unsigned int N_temp;
+  struct spamm_matrix_t *A = NULL;
+  double x, x_N;
+
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    if (N[dim] == 0)
+    {
+      SPAMM_FATAL("N[%u] == 0\n", dim);
+    }
+  }
+
+  /* Allocate memory. */
+  A = calloc(1, sizeof(struct spamm_matrix_t));
+
+  /* Store the number of dimensions. */
+  A->number_dimensions = number_dimensions;
+
+  /* Store matrix dimensions. */
+  A->N = calloc(number_dimensions, sizeof(unsigned int));
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    A->N[dim] = N[dim];
+  }
+
+  /* Set the layout. */
+  switch (layout)
+  {
+    case row_major:
+    case column_major:
+    case Z_curve:
+    case dense_column_major:
+      A->layout = layout;
+      break;
+
+    default:
+      fprintf(stderr, "[spamm new] unknown layout (%i)\n", layout);
+      exit(1);
+      break;
+  }
+
+  /* Pad to powers of M_child x N_child. */
+  x = 0;
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    /* Make sure we pad at least to the extend that we can store that linear
+     * kernel matrix. */
+    if (N[dim] < SPAMM_N_KERNEL)
+    {
+      N_temp = SPAMM_N_KERNEL;
+    }
+
+    else
+    {
+      N_temp = N[dim];
+    }
+
+    x_N = (log(N_temp) > log(SPAMM_N_BLOCK) ? log(N_temp) - log(SPAMM_N_BLOCK) : 0)/log(2);
+    if (x_N > x)
+    {
+      x = x_N;
+    }
+  }
+
+  /* The ceil() function can lead to a depth that is one tier too large
+   * because of numerical errors in the calculation of x. We need to check
+   * whether the depth is appropriate.
+   */
+  A->depth = (unsigned int) ceil(x);
+
+  /* Double check depth. */
+  if (A->depth >= 1)
+  {
+    for (dim = 0; dim < A->number_dimensions; dim++)
+    {
+      if ((int) (SPAMM_N_BLOCK*ipow(2, A->depth-1)) < A->N[dim])
+      {
+        A->depth++;
+        break;
+      }
+    }
+    A->depth--;
+  }
+
+  /* Adjust tree to kernel depth. */
+  if (A->depth < SPAMM_KERNEL_DEPTH)
+  {
+    /* We should have already made sure that the matrix is big enough to fit
+     * the kernel matrix. */
+    SPAMM_FATAL("there is some logic error in this function\n");
+  }
+
+  /* Adjust the linear depth. */
+  if (linear_tier+SPAMM_KERNEL_DEPTH > A->depth)
+  {
+    SPAMM_WARN("linear tier (%u) + kernel depth (%u) is greater than depth (%u)\n", linear_tier, SPAMM_KERNEL_DEPTH, A->depth);
+    A->linear_tier = A->depth+1;
+  }
+
+  else
+  {
+    A->linear_tier = linear_tier;
+  }
+
+  /* Adjust the contiguous tier depth. */
+  if (contiguous_tier > A->depth)
+  {
+    SPAMM_WARN("contiguous tier (%u) is greater than depth (%u), adjusting to depth\n", contiguous_tier, A->depth);
+    A->contiguous_tier = A->depth;
+  }
+
+  else
+  {
+    A->contiguous_tier = contiguous_tier;
+  }
+
+  if (A->contiguous_tier >= A->linear_tier)
+  {
+    /* Reset contiguous_tier, it will not get used. */
+    A->contiguous_tier = A->depth-SPAMM_KERNEL_DEPTH;
+  }
+
+  /* Set padded matrix size. */
+  A->N_padded = (int) (SPAMM_N_BLOCK*ipow(2, A->depth));
+
+  /* Adjust hashed size. In case linear_tier is larger than the depth, we do
+   * not adjust N_linear, i.e. we disable the linear tree. */
+  if (A->linear_tier < A->depth)
+  {
+    A->N_linear = (int) (SPAMM_N_BLOCK*ipow(2, A->depth-A->linear_tier));
+  }
+
+  /* Adjust contiguous size. */
+  A->N_contiguous = (int) (SPAMM_N_BLOCK*ipow(2, A->depth-A->contiguous_tier));
+
+  if (A->N_linear > A->N_padded)
+  {
+    A->N_linear = A->N_padded;
+  }
+
+  /* Set the kernel tier. */
+  A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
+
+  /* Done. */
+  return A;
 }
