@@ -66,9 +66,6 @@ struct spamm_hashed_t
   /** Number of columns in this matrix. */
   unsigned int N;
 
-  /** Number of rows and columns in the padded matrix. */
-  unsigned int N_padded;
-
   /** The lower value of the row index. */
   unsigned int M_lower;
 

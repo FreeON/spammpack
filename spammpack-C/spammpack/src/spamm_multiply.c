@@ -413,9 +413,11 @@ spamm_hashed_multiply (const float tolerance,
 
   unsigned int i, j, k, k_check;
   unsigned int index;
+
 #if SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION == 1
   unsigned int convolution_index_2D;
 #endif
+
   unsigned int A_k_lookup_index;
   unsigned int B_k_lookup_index;
   unsigned int A_k, B_k;
@@ -437,9 +439,14 @@ spamm_hashed_multiply (const float tolerance,
 
   char *timer_string;
 
+  unsigned int N_padded;
+
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
+
+  /* For convenience. */
+  N_padded = A->N_upper-A->N_lower;
 
   /* Check some more things. */
   if (A->layout != B->layout || A->layout != C->layout)
@@ -520,8 +527,8 @@ spamm_hashed_multiply (const float tolerance,
 #endif
   spamm_timer_start(timer);
 
-  A_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(A->N_padded/SPAMM_N_KERNEL+1), 1);
-  B_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(B->N_padded/SPAMM_N_KERNEL+1), 1);
+  A_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(N_padded/SPAMM_N_KERNEL+1), 1);
+  B_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(N_padded/SPAMM_N_KERNEL+1), 1);
 
   /* The index in A_k_lookup. */
   A_k_lookup.size = 0;
@@ -549,9 +556,9 @@ spamm_hashed_multiply (const float tolerance,
   A_k_lookup.index[A_k_lookup.size++] = spamm_list_length(A_index.index);
 
   /* Check. */
-  if (A_k_lookup.size > A->N_padded/SPAMM_N_KERNEL+1)
+  if (A_k_lookup.size > N_padded/SPAMM_N_KERNEL+1)
   {
-    SPAMM_FATAL("k lookup table too long for A, estimated %u elements, but found %u\n", A->N_padded/SPAMM_N_KERNEL+1, A_k_lookup.size);
+    SPAMM_FATAL("k lookup table too long for A, estimated %u elements, but found %u\n", N_padded/SPAMM_N_KERNEL+1, A_k_lookup.size);
   }
 
   /* The index in B_k_lookup. */
@@ -580,9 +587,9 @@ spamm_hashed_multiply (const float tolerance,
   B_k_lookup.index[B_k_lookup.size++] = spamm_list_length(B_index.index);
 
   /* Check. */
-  if (B_k_lookup.size > B->N_padded/SPAMM_N_KERNEL+1)
+  if (B_k_lookup.size > N_padded/SPAMM_N_KERNEL+1)
   {
-    SPAMM_FATAL("k lookup table too long for B, estimated %u elements, but found %u\n", B->N_padded/SPAMM_N_KERNEL+1, B_k_lookup.size);
+    SPAMM_FATAL("k lookup table too long for B, estimated %u elements, but found %u\n", N_padded/SPAMM_N_KERNEL+1, B_k_lookup.size);
   }
 
 #ifdef SPAMM_MULTIPLY_PRINT_ALOT
@@ -748,9 +755,9 @@ spamm_hashed_multiply (const float tolerance,
   spamm_timer_start(timer);
 
   multiply_stream = spamm_allocate(sizeof(struct spamm_multiply_stream_t)
-      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL), 0);
+      *(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL), 0);
   C_block_stream_index = spamm_allocate(sizeof(unsigned int)
-      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL), 0);
+      *(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL), 0);
 
   /* Some tings to try:
    *
@@ -1011,7 +1018,7 @@ spamm_hashed_multiply (const float tolerance,
   unsigned int *B_index_array = spamm_list_get_index_address(B_index.index);
 
   unsigned int *multiply_stream_C_index = spamm_allocate(sizeof(unsigned int)
-      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL), 0);
+      *(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL), 0);
 
   unsigned int A_index_current[4];
   unsigned int B_index_current[4];
@@ -1344,7 +1351,7 @@ spamm_hashed_multiply (const float tolerance,
   unsigned int *B_index_array_original = spamm_list_get_index_address(B_index.index);
 
   unsigned int *multiply_stream_C_index = spamm_allocate(sizeof(unsigned int)
-      *(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL), 0);
+      *(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL), 0);
 
   __m128i A_index_xmm;
   __m128i B_index_xmm;
@@ -1580,10 +1587,10 @@ spamm_hashed_multiply (const float tolerance,
 #endif
 
   /* Check. */
-  if (stream_index > (A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL))
+  if (stream_index > (N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL))
   {
     SPAMM_FATAL("multiply stream has too many elements, has %u but is only dimensioned for %u\n", stream_index,
-        (A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL)*(A->N_padded/SPAMM_N_KERNEL));
+        (N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL));
   }
 
 #ifdef SPAMM_MULTIPLY_DOUBLE_CHECK

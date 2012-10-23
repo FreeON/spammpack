@@ -11,7 +11,6 @@
  *
  * @param tier The tier.
  * @param depth The depth of the matrix tree.
- * @param N_padded The padded size of the matrix.
  * @param M_lower The lower row index of this submatrix.
  * @param M_upper The upper row index of this submatrix.
  * @param N_lower The lower column index of this submatrix.
@@ -23,7 +22,6 @@ struct spamm_hashed_t *
 spamm_hashed_new (const unsigned int tier,
     const unsigned int kernel_tier,
     const unsigned int depth,
-    const unsigned int N_padded,
     const unsigned int M_lower,
     const unsigned int M_upper,
     const unsigned int N_lower,
@@ -43,9 +41,6 @@ spamm_hashed_new (const unsigned int tier,
 
   /* Store depth. */
   A->depth = depth;
-
-  /* Store matrix size. */
-  A->N_padded = N_padded;
 
   /* Store bounding box. */
   A->M_lower = M_lower;
