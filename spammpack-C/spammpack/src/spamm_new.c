@@ -287,7 +287,7 @@ spamm_recursive_new_node (const unsigned int tier,
   node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
   /* Allocate child matrix. */
-  if (tier == linear_tier)
+  if (number_dimensions == 2 && tier == linear_tier)
   {
     /* Allocate new linear tree. */
   }

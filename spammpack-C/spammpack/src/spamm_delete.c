@@ -80,7 +80,7 @@ spamm_recursive_delete (struct spamm_recursive_node_t **node)
 
   if (*node == NULL) { return; }
 
-  if ((*node)->tier == (*node)->linear_tier)
+  if ((*node)->number_dimensions == 2 && (*node)->tier == (*node)->linear_tier)
   {
     spamm_hashed_delete(&(*node)->tree.hashed_tree);
   }
@@ -122,7 +122,7 @@ spamm_delete (struct spamm_matrix_t **A)
 {
   if (*A == NULL) { return; }
 
-  if ((*A)->linear_tier == 0)
+  if ((*A)->number_dimensions == 2 && (*A)->linear_tier == 0)
   {
     spamm_hashed_delete(&(*A)->tree.hashed_tree);
   }
