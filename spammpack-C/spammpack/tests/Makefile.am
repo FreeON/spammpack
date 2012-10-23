@@ -71,8 +71,9 @@ check_PROGRAMS = \
   list_sort \
   multiply_spamm \
   new_chunk \
-  spamm_multiply \
   stats
+
+# spamm_multiply
 
 TESTS = \
   $(check_PROGRAMS) \
