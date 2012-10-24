@@ -25,3 +25,4 @@ docs :
 .PHONY : always
 git_commit : always
 	COMMIT=`git show --pretty=oneline HEAD | head -n1 | awk '{print $$1}'` && echo "git_commit=$$COMMIT" > git_commit.temp && ( diff --brief git_commit git_commit.temp > /dev/null 2>&1 ) || mv -f git_commit.temp git_commit
+	@rm -f git_commit.temp
