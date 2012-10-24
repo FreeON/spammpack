@@ -59,6 +59,20 @@ module spammpack
       type(c_ptr) :: cptr, chunk
     end subroutine spamm_chunk_get_matrix_dilated
 
+    !> Interface for spamm_chunk_get_norm().
+    subroutine spamm_chunk_get_norm_interface (cptr, chunk) &
+        bind(C, name = "spamm_chunk_get_norm_interface")
+      use, intrinsic :: iso_C_binding
+      type(c_ptr) :: cptr, chunk
+    end subroutine spamm_chunk_get_norm_interface
+
+    !> Interface for spamm_chunk_get_norm2().
+    subroutine spamm_chunk_get_norm2_interface (cptr, chunk) &
+        bind(C, name = "spamm_chunk_get_norm2_interface")
+      use, intrinsic :: iso_C_binding
+      type(c_ptr) :: cptr, chunk
+    end subroutine spamm_chunk_get_norm2_interface
+
     !> Interface for spamm_chunk_print().
     subroutine spamm_chunk_print (chunk) &
         bind(C, name = "spamm_chunk_print_interface")
@@ -129,5 +143,73 @@ contains
     call c_f_pointer(cptr, A, [N_contiguous, N_contiguous])
 
   end subroutine spamm_chunk_get_matrix
+
+  !> Get the norm vector of a SpAMM chunk.
+  !>
+  !> @param norm The norm vector.
+  !> @param chunk The chunk.
+  subroutine spamm_chunk_get_norm (norm, chunk)
+
+    real*4, dimension(:), pointer, intent(out) :: norm
+    type(c_ptr), intent(in) :: chunk
+
+    integer, pointer :: N_contiguous
+    type(c_ptr) :: cptr
+
+    integer :: number_entries, N
+
+    call spamm_chunk_get_N_contiguous(cptr, chunk)
+    call c_f_pointer(cptr, N_contiguous)
+
+    call spamm_chunk_get_norm_interface(cptr, chunk)
+
+    ! Figure out the number of norm entries.
+    number_entries = 0
+    N = N_contiguous
+    do while (.true.)
+      number_entries = number_entries + N_contiguous/N
+      N = N/2
+      if (N < SPAMM_N_BLOCK) then
+        exit
+      endif
+    enddo
+
+    call c_f_pointer(cptr, norm, [number_entries])
+
+  end subroutine spamm_chunk_get_norm
+
+  !> Get the square of the norm vector of a SpAMM chunk.
+  !>
+  !> @param norm2 The norm2 vector.
+  !> @param chunk The chunk.
+  subroutine spamm_chunk_get_norm2 (norm2, chunk)
+
+    real*4, dimension(:), pointer, intent(out) :: norm2
+    type(c_ptr), intent(in) :: chunk
+
+    integer, pointer :: N_contiguous
+    type(c_ptr) :: cptr
+
+    integer :: number_entries, N
+
+    call spamm_chunk_get_N_contiguous(cptr, chunk)
+    call c_f_pointer(cptr, N_contiguous)
+
+    call spamm_chunk_get_norm2_interface(cptr, chunk)
+
+    ! Figure out the number of norm entries.
+    number_entries = 0
+    N = N_contiguous
+    do while (.true.)
+      number_entries = number_entries + N_contiguous/N
+      N = N/2
+      if (N < SPAMM_N_BLOCK) then
+        exit
+      endif
+    enddo
+
+    call c_f_pointer(cptr, norm2, [number_entries])
+
+  end subroutine spamm_chunk_get_norm2
 
 end module spammpack

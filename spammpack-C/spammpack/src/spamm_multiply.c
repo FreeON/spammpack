@@ -1,6 +1,5 @@
 /** @file */
 
-#include "config.h"
 #include "spamm.h"
 #include "spamm_types_private.h"
 

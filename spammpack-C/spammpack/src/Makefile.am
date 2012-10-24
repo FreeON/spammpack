@@ -88,7 +88,7 @@
 # begin the first unstable release with `-release 1.1'.
 
 AM_CTAGSFLAGS = --C-kinds=+l+x
-TAGS_FILES = $(builddir)/../config.h generate_SSE_assembly.py
+TAGS_FILES = generate_SSE_assembly.py
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS)
@@ -118,7 +118,7 @@ print_chunk_offsets_LDFLAGS = libspamm.la
 
 EXTRA_DIST = spamm_list_driver.c generate_SSE_assembly.py
 
-spammOffsets.py : spamm_config.h print_data_sizes$(EXEEXT)
+spammOffsets.py : print_data_sizes$(EXEEXT)
 	$(builddir)/print_data_sizes$(EXEEXT) > $@
 
 spamm_stream_kernel_SSE.S : $(srcdir)/generate_SSE_assembly.py spammOffsets.py
@@ -140,7 +140,6 @@ CLEANFILES = \
   *.mod
 
 DISTCLEANFILES = \
-  $(builddir)/spamm_config.h \
   $(builddir)/spammOffsets.py \
   $(builddir)/spammOffsets.pyc
 
@@ -206,7 +205,6 @@ libspamm_tree_private_headers = \
   spamm_types_private.h
 
 include_HEADERS = \
-  $(builddir)/spamm_config.h \
   $(libspamm_kernel_headers) \
   $(libspamm_tree_headers) \
   spammpack.mod

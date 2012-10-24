@@ -56,6 +56,28 @@ spamm_chunk_get_matrix_dilated_interface (float **A, spamm_chunk_t **chunk)
   *A = spamm_chunk_get_matrix_dilated(*chunk);
 }
 
+/** Fortran interface wrapper for spamm_chunk_get_norm().
+ *
+ * @param norm The norm vector.
+ * @param chunk The chunk.
+ */
+void
+spamm_chunk_get_norm_interface (float **norm, spamm_chunk_t **chunk)
+{
+  *norm = spamm_chunk_get_norm(*chunk);
+}
+
+/** Fortran interface wrapper for spamm_chunk_get_norm2().
+ *
+ * @param norm2 The norm2 vector.
+ * @param chunk The chunk.
+ */
+void
+spamm_chunk_get_norm2_interface (float **norm2, spamm_chunk_t **chunk)
+{
+  *norm2 = spamm_chunk_get_norm2(*chunk);
+}
+
 void
 spamm_chunk_print_interface (spamm_chunk_t **chunk)
 {

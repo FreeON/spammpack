@@ -3,8 +3,6 @@
 #ifndef __SPAMM_TYPES_H
 #define __SPAMM_TYPES_H
 
-#include "spamm_config.h"
-
 /** The layout type for the layout of the basic matrix blocks on the kernel
  * tier.
  */

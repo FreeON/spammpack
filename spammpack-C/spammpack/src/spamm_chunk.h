@@ -33,6 +33,12 @@ spamm_chunk_get_matrix (spamm_chunk_t *chunk);
 float *
 spamm_chunk_get_matrix_dilated (spamm_chunk_t *chunk);
 
+float *
+spamm_chunk_get_norm (spamm_chunk_t *chunk);
+
+float *
+spamm_chunk_get_norm2 (spamm_chunk_t *chunk);
+
 size_t
 spamm_chunk_get_size (const unsigned int number_dimensions,
     const unsigned int N_contiguous,

@@ -102,6 +102,32 @@ spamm_chunk_get_matrix_dilated (spamm_chunk_t *chunk)
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[5]);
 }
 
+/** Get a pointer to the norm arrays.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The pointer to the norm arrays.
+ */
+float *
+spamm_chunk_get_norm (spamm_chunk_t *chunk)
+{
+  spamm_chunk_t **chunk_pointer = chunk;
+  return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[6]);
+}
+
+/** Get a pointer to the square of the norm arrays.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The pointer to the norm2 arrays.
+ */
+float *
+spamm_chunk_get_norm2 (spamm_chunk_t *chunk)
+{
+  spamm_chunk_t **chunk_pointer = chunk;
+  return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[7]);
+}
+
 /** Get the size of a SpAMM data chunk.
  *
  * See the documentation for spamm_new_chunk() for a detailed description of
@@ -132,6 +158,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     float **norm_pointer,
     float **norm2_pointer)
 {
+  unsigned int N;
   size_t size = 0;
 
   /* Pointers to fields. */
@@ -163,6 +190,20 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   *A_dilated_pointer = (float*) size; size += 4*ipow(N_contiguous, number_dimensions)*sizeof(float); /* A_dilated[4*N_contiguous, number_dimensions)] */
 
   /* Norm. */
+  *norm_pointer = (float*) size;
+
+  for (N = N_contiguous; N >= SPAMM_N_BLOCK; N /= 2)
+  {
+    size += ipow(N_contiguous/N, 2)*sizeof(float);
+  }
+
+  /* Squared norm. */
+  *norm2_pointer = (float*) size;
+
+  for (N = N_contiguous; N >= SPAMM_N_BLOCK; N /= 2)
+  {
+    size += ipow(N_contiguous/N, 2)*sizeof(float);
+  }
 
   return size;
 }

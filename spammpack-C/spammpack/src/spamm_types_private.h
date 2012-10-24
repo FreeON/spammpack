@@ -3,8 +3,6 @@
 #ifndef __SPAMM_TYPES_PRIVATE_H
 #define __SPAMM_TYPES_PRIVATE_H
 
-#include "spamm_config.h"
-
 /** The matrix. */
 struct spamm_matrix_t
 {
