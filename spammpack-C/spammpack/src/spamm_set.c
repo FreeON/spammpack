@@ -30,8 +30,8 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int *const N_upper,
     const unsigned int tier,
     const unsigned int contiguous_tier,
-    const unsigned int linear_tier,
     const unsigned int kernel_tier,
+    const short use_linear_tree,
     const unsigned int depth,
     const enum spamm_layout_t layout,
     struct spamm_recursive_node_t **node)
@@ -44,7 +44,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
   {
     /* Allocate new node. */
     *node = spamm_recursive_new_node(tier, number_dimensions,
-        contiguous_tier, linear_tier,
+        contiguous_tier, use_linear_tree,
         N_lower, N_upper);
   }
 
@@ -69,7 +69,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
   (*node)->norm2 += Aij*Aij;
   (*node)->norm   = sqrt((*node)->norm2);
 
-  if (number_dimensions == 2 && tier == linear_tier)
+  if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
   {
     if ((*node)->tree.hashed_tree == NULL)
     {
@@ -116,7 +116,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
           new_N_upper[0] = (*node)->N_lower[0]+((*node)->N_upper[0]-(*node)->N_lower[0])/2;
 
           spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
-              tier+1, contiguous_tier, linear_tier, kernel_tier, depth, layout, &((*node)->tree.child[0]));
+              tier+1, contiguous_tier, kernel_tier, use_linear_tree, depth, layout, &((*node)->tree.child[0]));
         }
 
         else
@@ -125,7 +125,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
           new_N_upper[0] = (*node)->N_upper[0];
 
           spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
-              tier+1, contiguous_tier, linear_tier, kernel_tier, depth, layout, &((*node)->tree.child[1]));
+              tier+1, contiguous_tier, kernel_tier, use_linear_tree, depth, layout, &((*node)->tree.child[1]));
         }
 
         break;
@@ -140,7 +140,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
           new_N_upper[1] = (*node)->N_lower[1]+((*node)->N_upper[1]-(*node)->N_lower[1])/2;
 
           spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
-              tier+1, contiguous_tier, linear_tier, kernel_tier, depth, layout, &((*node)->tree.child[0]));
+              tier+1, contiguous_tier, kernel_tier, use_linear_tree, depth, layout, &((*node)->tree.child[0]));
         }
 
         else if (i[0] <  (*node)->N_lower[0]+((*node)->N_upper[0]-(*node)->N_lower[0])/2 &&
@@ -152,7 +152,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
           new_N_upper[1] = (*node)->N_upper[1];
 
           spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
-              tier+1, contiguous_tier, linear_tier, kernel_tier, depth, layout, &((*node)->tree.child[1]));
+              tier+1, contiguous_tier, kernel_tier, use_linear_tree, depth, layout, &((*node)->tree.child[1]));
         }
 
         else if (i[0] >= (*node)->N_lower[0]+((*node)->N_upper[0]-(*node)->N_lower[0])/2 &&
@@ -164,7 +164,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
           new_N_upper[1] = (*node)->N_lower[1]+((*node)->N_upper[1]-(*node)->N_lower[1])/2;
 
           spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
-              tier+1, contiguous_tier, linear_tier, kernel_tier, depth, layout, &((*node)->tree.child[2]));
+              tier+1, contiguous_tier, kernel_tier, use_linear_tree, depth, layout, &((*node)->tree.child[2]));
         }
 
         else
@@ -175,7 +175,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
           new_N_upper[1] = (*node)->N_upper[1];
 
           spamm_recursive_set(number_dimensions, i, Aij, new_N_lower, new_N_upper,
-              tier+1, contiguous_tier, linear_tier, kernel_tier, depth, layout, &((*node)->tree.child[3]));
+              tier+1, contiguous_tier, kernel_tier, use_linear_tree, depth, layout, &((*node)->tree.child[3]));
         }
 
         break;
@@ -456,7 +456,7 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
   if (Aij == 0.0) { return; }
 
   /* Store matrix element. */
-  if (A->number_dimensions == 2 && A->linear_tier == 0)
+  if (A->number_dimensions == 2 && A->contiguous_tier == 0 && A->use_linear_tree)
   {
     /* In case we only have a linear tree. */
     if (A->tree.hashed_tree == NULL)
@@ -478,7 +478,7 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
 
     spamm_recursive_set(A->number_dimensions, i, Aij,
         N_lower, N_upper,
-        0, A->contiguous_tier, A->linear_tier, A->kernel_tier,
+        0, A->contiguous_tier, A->kernel_tier, A->use_linear_tree,
         A->depth, A->layout, &(A->tree.recursive_tree));
 
     free(N_lower);

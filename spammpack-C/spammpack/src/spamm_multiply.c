@@ -131,7 +131,7 @@ spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t
 
   if (A == NULL) { return; }
 
-  if (A->tier == A->linear_tier)
+  if (A->tier == A->contiguous_tier && A->use_linear_tree)
   {
     spamm_hashed_multiply_scalar(beta, A->tree.hashed_tree);
   }
@@ -1768,7 +1768,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
   }
 
   /* Multiply matrix blocks. */
-  if (node_A->tier == node_A->linear_tier)
+  if (node_A->tier == node_A->contiguous_tier && node_A->use_linear_tree)
   {
     spamm_hashed_multiply(tolerance, alpha, node_A->tree.hashed_tree, node_B->tree.hashed_tree,
         beta, (*node_C)->tree.hashed_tree, timer, kernel);
@@ -1826,7 +1826,10 @@ spamm_recursive_multiply_matrix (const float tolerance,
       }
 
       /* Count this product. */
-      (*number_products)++;
+      if (number_products != NULL)
+      {
+        (*number_products)++;
+      }
     }
   }
 
@@ -1858,7 +1861,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
 
                     (*node_C)->tree.child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1,
                         (*node_C)->number_dimensions,
-                        (*node_C)->contiguous_tier, (*node_C)->linear_tier,
+                        (*node_C)->contiguous_tier, (*node_C)->use_linear_tree,
                         N_lower, N_upper);
 
                     free(N_lower);
@@ -1885,87 +1888,6 @@ spamm_recursive_multiply_matrix (const float tolerance,
         SPAMM_FATAL("not implemented\n");
     }
   }
-}
-
-/** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
- *
- * @param tolerance The SpAMM tolerance of this product.
- * @param alpha The paramater \f$\alpha\f$.
- * @param A The matrix \f$A\f$.
- * @param B The matrix \f$B\f$.
- * @param beta The paramater \f$\beta\f$.
- * @param C The matrix \f$C\f$.
- * @param timer The timer to use.
- * @param sgemm The external sgemm function to use.
- */
-void
-spamm_recursive_multiply (const float tolerance,
-    const float alpha,
-    struct spamm_recursive_t *A,
-    struct spamm_recursive_t *B,
-    const float beta,
-    struct spamm_recursive_t *C,
-    struct spamm_timer_t *timer,
-    sgemm_func sgemm,
-    const enum spamm_kernel_t kernel,
-    unsigned int *number_products)
-{
-  unsigned int *N_lower;
-  unsigned int *N_upper;
-
-  if (A == NULL)
-  {
-    SPAMM_FATAL("A is NULL\n");
-  }
-
-  if (B == NULL)
-  {
-    SPAMM_FATAL("B is NULL\n");
-  }
-
-  if (C == NULL)
-  {
-    SPAMM_FATAL("C is NULL\n");
-  }
-
-  if (A->N_contiguous != B->N_contiguous)
-  {
-    SPAMM_FATAL("A->N_contiguous != B->N_contiguous\n");
-  }
-
-  if (A->N_contiguous != C->N_contiguous)
-  {
-    SPAMM_FATAL("A->N_contiguous != C->N_contiguous\n");
-  }
-
-  if (B->number_dimensions != C->number_dimensions)
-  {
-    SPAMM_FATAL("dimension mismatch\n");
-  }
-
-  /* Multiply C by beta. */
-  spamm_recursive_multiply_scalar(beta, C->root);
-
-  /* Multiply A and B. */
-  if (A->root != NULL && B->root != NULL && C->root == NULL)
-  {
-    N_lower = calloc(2, sizeof(unsigned int));
-    N_upper = calloc(2, sizeof(unsigned int));
-
-    N_lower[0] = 0;
-    N_upper[0] = A->root->N_upper[0];
-    N_lower[1] = 0;
-    N_upper[1] = A->root->N_upper[1];
-
-    C->root = spamm_recursive_new_node(0, 2,
-        C->N_contiguous, C->N_linear,
-        N_lower, N_upper);
-
-    free(N_lower);
-    free(N_upper);
-  }
-
-  spamm_recursive_multiply_matrix(tolerance, alpha, A->root, B->root, &(C->root), timer, sgemm, kernel, number_products);
 }
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -2020,18 +1942,18 @@ spamm_multiply (const float tolerance,
     SPAMM_FATAL("A->contiguous_tier != C->contiguous_tier\n");
   }
 
-  if (A->linear_tier != B->linear_tier)
+  if (A->use_linear_tree != B->use_linear_tree)
   {
-    SPAMM_FATAL("A->linear_tier != B->linear_tier\n");
+    SPAMM_FATAL("A->use_linear_tree != B->use_linear_tree\n");
   }
 
-  if (A->linear_tier != C->linear_tier)
+  if (A->use_linear_tree != C->use_linear_tree)
   {
-    SPAMM_FATAL("A->linear_tier != C->linear_tier\n");
+    SPAMM_FATAL("A->use_linear_tree != C->use_linear_tree\n");
   }
 
   /* Multiply C by beta. */
-  if (C->linear_tier == 0)
+  if (C->contiguous_tier == 0 && C->use_linear_tree)
   {
     spamm_hashed_multiply_scalar(beta, C->tree.hashed_tree);
 
@@ -2058,7 +1980,7 @@ spamm_multiply (const float tolerance,
           N_upper[dim] = A->N_padded;
         }
 
-        C->tree.recursive_tree = spamm_recursive_new_node(0, C->number_dimensions, C->contiguous_tier, C->linear_tier, N_lower, N_upper);
+        C->tree.recursive_tree = spamm_recursive_new_node(0, C->number_dimensions, C->contiguous_tier, C->use_linear_tree, N_lower, N_upper);
 
         free(N_lower);
         free(N_upper);

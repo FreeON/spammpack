@@ -58,84 +58,6 @@ spamm_hashed_new (const unsigned int tier,
   return A;
 }
 
-/** Create a new recursive matrix object.
- *
- * @param number_dimensions The number of dimensions.
- * @param N An array of the number of rows/columns of dense input matrix.
- * @param blocksize The size of the dense matrix blocks.
- *
- * @return A pointer to the matrix.
- */
-struct spamm_recursive_t *
-spamm_recursive_new (const unsigned int number_dimensions,
-    const unsigned int *const N,
-    const unsigned int N_contiguous)
-{
-  unsigned int dim;
-  struct spamm_recursive_t *A = NULL;
-  double x, x_N;
-
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    if (N[dim] <= 0)
-    {
-      SPAMM_FATAL("N[%u] <= 0\n", dim);
-    }
-  }
-
-  /* Allocate memory. */
-  A = calloc(1, sizeof(struct spamm_recursive_t));
-
-  /* Store the blocksize. */
-  A->N_contiguous = N_contiguous;
-
-  /* Pad to powers of M_child x N_child. */
-  x = 0;
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    x_N = (log(N[dim]) > log(N_contiguous) ? log(N[dim]) - log(N_contiguous) : 0)/log(2);
-    if (x_N > x)
-    {
-      x = x_N;
-    }
-  }
-
-  /* The ceil() function can lead to a depth that is one tier too large
-   * because of numerical errors in the calculation of x. We need to check
-   * whether the depth is appropriate.
-   */
-  A->depth = (unsigned int) ceil(x);
-
-  /* Double check depth. */
-  if (A->depth >= 1)
-  {
-    for (dim = 0; dim < A->number_dimensions; dim++)
-    {
-      if ((int) (N_contiguous*ipow(2, A->depth-1)) < A->N[dim])
-      {
-        A->depth++;
-        break;
-      }
-    }
-    A->depth--;
-  }
-
-  /* Store the number of dimensions. */
-  A->number_dimensions = number_dimensions;
-
-  /* Set matrix size. */
-  A->N = calloc(number_dimensions, sizeof(unsigned int));
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    A->N[dim] = N[dim];
-  }
-
-  /* Set padded matrix size. */
-  A->N_padded = (int) (N_contiguous*ipow(2, A->depth));
-
-  return A;
-}
-
 /** Allocate a new node of a matrix tree.
  *
  * @param tier The tier this node will be on.
@@ -253,7 +175,7 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
  * @param tier The tier this node will be on.
  * @param number_dimensions The number of dimensions.
  * @param N_contiguous The size of the contiguous submatrix block.
- * @param N_linear The size of the matrix when switching to a linear tree.
+ * @param use_linear_tree Whether to use a linear tree at the contiguous tier.
  * @param N_lower An array of the lowest row index of this submatrix node.
  * @param N_upper An array of the lowest row index of this submatrix node.
  *
@@ -263,7 +185,7 @@ struct spamm_recursive_node_t *
 spamm_recursive_new_node (const unsigned int tier,
     const unsigned int number_dimensions,
     const unsigned int contiguous_tier,
-    const unsigned int linear_tier,
+    const short use_linear_tree,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper)
 {
@@ -276,24 +198,25 @@ spamm_recursive_new_node (const unsigned int tier,
   node->tier = tier;
   node->number_dimensions = number_dimensions;
   node->contiguous_tier = contiguous_tier;
-  node->linear_tier = linear_tier;
+  node->use_linear_tree = use_linear_tree;
 
   node->N_lower = calloc(number_dimensions, sizeof(unsigned int));
   node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
   /* Allocate child matrix. */
-  if (number_dimensions == 2 && tier == linear_tier)
+  if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
   {
-    /* Allocate new linear tree. */
+    /* Allocate new linear tree (will be done when used). */
   }
 
   else if (tier == contiguous_tier)
   {
-    /* Allocate chunk. */
+    /* Allocate chunk (will be done when used). */
   }
 
   else
   {
+    /* Allocate children nodes in hierarchical tree. */
     node->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
   }
 
@@ -329,8 +252,8 @@ spamm_recursive_new_node (const unsigned int tier,
 struct spamm_matrix_t *
 spamm_new (const unsigned int number_dimensions,
     const unsigned int *const N,
-    const unsigned int linear_tier,
     const unsigned int contiguous_tier,
+    const short use_linear_tree,
     const enum spamm_layout_t layout)
 {
   int dim;
@@ -426,34 +349,18 @@ spamm_new (const unsigned int number_dimensions,
     SPAMM_FATAL("there is some logic error in this function\n");
   }
 
+  A->use_linear_tree = use_linear_tree;
+
   /* Adjust the linear depth. */
-  if (linear_tier+SPAMM_KERNEL_DEPTH > A->depth)
+  if (use_linear_tree && contiguous_tier+SPAMM_KERNEL_DEPTH > A->depth)
   {
-    SPAMM_WARN("linear tier (%u) + kernel depth (%u) is greater than depth (%u)\n", linear_tier, SPAMM_KERNEL_DEPTH, A->depth);
-    A->linear_tier = A->depth+1;
-  }
-
-  else
-  {
-    A->linear_tier = linear_tier;
-  }
-
-  /* Adjust the contiguous tier depth. */
-  if (contiguous_tier > A->depth)
-  {
-    SPAMM_WARN("contiguous tier (%u) is greater than depth (%u), adjusting to depth\n", contiguous_tier, A->depth);
-    A->contiguous_tier = A->depth;
+    SPAMM_WARN("contiguous tier (%u) + kernel depth (%u) is greater than depth (%u)\n", contiguous_tier, SPAMM_KERNEL_DEPTH, A->depth);
+    A->contiguous_tier = A->depth-SPAMM_KERNEL_DEPTH;
   }
 
   else
   {
     A->contiguous_tier = contiguous_tier;
-  }
-
-  if (A->contiguous_tier >= A->linear_tier)
-  {
-    /* Reset contiguous_tier, it will not get used. */
-    A->contiguous_tier = A->depth-SPAMM_KERNEL_DEPTH;
   }
 
   /* Set padded matrix size. */

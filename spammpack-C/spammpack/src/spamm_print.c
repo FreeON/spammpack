@@ -137,7 +137,7 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node)
     printf(" [ %u --> %u ]", node->N_lower[dim], node->N_upper[dim]);
   }
   printf(" }, norm = %1.2e, ", node->norm);
-  if (node->tier == node->linear_tier)
+  if (node->tier == node->contiguous_tier && node->use_linear_tree)
   {
     for (tier = node->tier; tier <= node->tree.hashed_tree->kernel_tier; tier++)
     {
@@ -215,11 +215,11 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
   printf("N_padded = %u, ", A->N_padded);
   printf("depth = %u, ", A->depth);
   printf("contiguous_tier = %u, ", A->contiguous_tier);
-  printf("linear_tier = %u, ", A->linear_tier);
+  printf("use_linear_tree = %u, ", A->use_linear_tree);
   printf("kernel_tier = %u, ", A->kernel_tier);
   printf("contiguous_tier = %u\n", A->contiguous_tier);
 
-  if (A->linear_tier == 0)
+  if (A->contiguous_tier == 0 && A->use_linear_tree)
   {
     for (tier = 0; tier <= A->kernel_tier; tier++)
     {

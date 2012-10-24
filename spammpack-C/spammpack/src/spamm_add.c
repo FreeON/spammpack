@@ -324,7 +324,7 @@ spamm_recursive_add (const float alpha,
       SPAMM_FATAL("dimension mismatch\n");
     }
 
-    if ((*A)->tier == (*A)->linear_tier)
+    if ((*A)->tier == (*A)->contiguous_tier && (*A)->use_linear_tree)
     {
       spamm_hashed_add(alpha, &(*A)->tree.hashed_tree, beta, &(*B)->tree.hashed_tree);
     }
@@ -405,7 +405,7 @@ spamm_add (const float alpha,
     }
   }
 
-  if (A->linear_tier == 0)
+  if (A->contiguous_tier == 0 && A->use_linear_tree)
   {
     if (A->tree.hashed_tree != NULL || B->tree.hashed_tree != NULL)
     {

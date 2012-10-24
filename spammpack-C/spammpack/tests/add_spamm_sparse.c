@@ -15,8 +15,8 @@ main (int argc, char **argv)
   int result;
 
   const unsigned int N[] = { 513, 513 };
-  const unsigned int linear_tier = 3;
   const unsigned int contiguous_tier = 4;
+  const short use_linear_tree = 1;
 
   double alpha = 1.2;
   double beta = 0.8;
@@ -84,8 +84,8 @@ main (int argc, char **argv)
 #endif
 
     /* Convert to SpAMM matrix. */
-    A = spamm_convert_dense_to_spamm(2, N, linear_tier, contiguous_tier, row_major, A_dense, row_major);
-    B = spamm_convert_dense_to_spamm(2, N, linear_tier, contiguous_tier, row_major, B_dense, row_major);
+    A = spamm_convert_dense_to_spamm(2, N, contiguous_tier, use_linear_tree, row_major, A_dense, row_major);
+    B = spamm_convert_dense_to_spamm(2, N, contiguous_tier, use_linear_tree, row_major, B_dense, row_major);
 
     result |= spamm_check(A, TEST_TOLERANCE);
     result |= spamm_check(B, TEST_TOLERANCE);

@@ -36,8 +36,15 @@ unsigned int
 spamm_index_column_major (const unsigned int i, const unsigned int j,
     const unsigned int M, const unsigned int N)
 {
-  assert(i < M);
-  assert(j < N);
+  if (i >= M)
+  {
+    SPAMM_FATAL("i (%u) out of bounds (%u)\n", i, M);
+  }
+
+  if (j >= N)
+  {
+    SPAMM_FATAL("j (%u) out of bounds (%u)\n", j, N);
+  }
 
   return i+j*M;
 }

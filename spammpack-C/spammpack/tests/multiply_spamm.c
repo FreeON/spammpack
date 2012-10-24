@@ -20,8 +20,9 @@ main (int argc, char **argv)
 
   unsigned int N[] = { 513, 513 };
 
-  unsigned int linear_tier = 4;
   unsigned int contiguous_tier = 5;
+
+  short use_linear_tree = 0;
 
   double alpha = 1.2;
   double beta = 0.5;
@@ -48,12 +49,12 @@ main (int argc, char **argv)
 
   int option_index;
   int parse_result;
-  char *short_options = "hk:N:l:c:rd";
+  char *short_options = "hk:N:lc:rd";
   static struct option long_options[] = {
     { "help",       no_argument,        NULL, 'h' },
     { "kernel",     required_argument,  NULL, 'k' },
     { "N",          required_argument,  NULL, 'N' },
-    { "linear",     required_argument,  NULL, 'l' },
+    { "linear",     no_argument,        NULL, 'l' },
     { "contiguous", required_argument,  NULL, 'c' },
     { "random",     no_argument,        NULL, 'r' },
     { "debug",      no_argument,        NULL, 'd' },
@@ -92,7 +93,7 @@ main (int argc, char **argv)
         break;
 
       case 'l':
-        linear_tier = strtol(optarg, NULL, 10);
+        use_linear_tree = 1;
         break;
 
       case 'c':
@@ -117,9 +118,9 @@ main (int argc, char **argv)
   B_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
   C_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
 
-  A = spamm_new(2, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
-  B = spamm_new(2, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
-  C = spamm_new(2, N, linear_tier, contiguous_tier, spamm_kernel_suggest_layout(kernel));
+  A = spamm_new(2, N, contiguous_tier, use_linear_tree, spamm_kernel_suggest_layout(kernel));
+  B = spamm_new(2, N, contiguous_tier, use_linear_tree, spamm_kernel_suggest_layout(kernel));
+  C = spamm_new(2, N, contiguous_tier, use_linear_tree, spamm_kernel_suggest_layout(kernel));
 
   for (i[0] = 0; i[0] < N[0]; i[0]++) {
     for (i[1] = 0; i[1] < N[1]; i[1]++)
