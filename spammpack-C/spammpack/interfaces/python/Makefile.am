@@ -1,6 +1,8 @@
 nodist_pkgpython_PYTHON = spammpack.py
 pkgpyexec_LTLIBRARIES = _spammpack.la
 
+spammpack.py : spammpack_wrap.c
+
 _spammpack_la_SOURCES = spammpack.i spammpack_wrap.c
 _spammpack_la_CPPFLAGS = -I$(PYTHON_INCLUDE) -I$(top_srcdir)/src -I$(top_builddir)/src
 _spammpack_la_LDFLAGS = -module

@@ -7,7 +7,7 @@
 
 #define VERIFY_RESULT
 
-#define TEST_TOLERANCE 5e-7
+#define TEST_TOLERANCE 2e-6
 
 int
 main (int argc, char **argv)

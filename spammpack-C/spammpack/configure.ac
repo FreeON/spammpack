@@ -311,10 +311,10 @@ AC_CONFIG_COMMANDS([config_fortran.h], [
   echo -n "configure: creating config_fortran.h... "
   ${srcdir}/extract_conf.py config.h > config_fortran.h.temp
   if (diff --brief config_fortran.h config_fortran.h.temp > /dev/null 2>&1); then
-    echo -n "no difference, keeping old one... "
+    echo "no difference, keeping old one"
     rm -f config_fortran.h.temp
   else
-    echo -n "updating config_fortran.h... "
+    echo "updating config_fortran.h"
     mv -f config_fortran.h.temp config_fortran.h
   fi
 ])
