@@ -27,11 +27,20 @@ program chunk_test
   call spamm_chunk_get_N_lower(N_lower, chunk_B)
   call spamm_chunk_get_N_upper(N_upper, chunk_B)
 
+  N_lower(1) = 512
+  N_upper(1) = 768
+
+  N_lower(2) = 128
+  N_upper(2) = 256
+
+  call spamm_chunk_get_N_lower(N_lower, chunk_C)
+  call spamm_chunk_get_N_upper(N_upper, chunk_C)
+
   N_lower(1) = 128
   N_upper(1) = 256
 
-  N_lower(2) = 512
-  N_upper(2) = 768
+  N_lower(2) = 128
+  N_upper(2) = 256
 
   call spamm_chunk_get_matrix(A, chunk_A)
   call spamm_chunk_get_matrix(B, chunk_B)
@@ -42,10 +51,10 @@ program chunk_test
     B(i,:) = i
   enddo
 
-  call spamm_chunk_print(chunk_A)
-
   C = matmul(A, B)
 
+  call spamm_chunk_print(chunk_A)
+  call spamm_chunk_print(chunk_B)
   call spamm_chunk_print(chunk_C)
 
 end program chunk_test

@@ -5,8 +5,7 @@
 
 #include "spamm_config.h"
 
-/** The matrix.
- */
+/** The matrix. */
 struct spamm_matrix_t
 {
   /** The number of dimensions of this matrix (a 1-dimensional matrix is a
@@ -51,8 +50,7 @@ struct spamm_matrix_t
   tree;
 };
 
-/** The hashed matrix type.
- */
+/** The hashed matrix type. */
 struct spamm_hashed_t
 {
   /** The layout of the basic matrix blocks on the kernel tier. */
@@ -83,8 +81,7 @@ struct spamm_hashed_t
   struct spamm_hashtable_t **tier_hashtable;
 };
 
-/** A node in the matrix tree.
- */
+/** A node in the matrix tree. */
 struct spamm_hashed_node_t
 {
   /** The tier. */
@@ -193,8 +190,7 @@ spamm_recursive_node_t
   unsigned int contiguous_tier;
 };
 
-/** The basic information in a stream element.
- */
+/** The basic information in a stream element. */
 struct spamm_multiply_stream_t
 {
   /** A pointer to the kernel tier matrix node of A. */
