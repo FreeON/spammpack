@@ -303,7 +303,23 @@ dnl Get the current date.
 timestamp=`date +%Y-%m-%d`
 AC_SUBST([TIMESTAMP], [${timestamp}])
 
-dnl Write results.
+dnl Write headers.
+AC_CONFIG_HEADERS([config.h])
+
+dnl Write Fortran friendly version of header file.
+AC_CONFIG_COMMANDS([config_fortran.h], [
+  echo -n "configure: creating config_fortran.h... "
+  ${srcdir}/extract_conf.py config.h > config_fortran.h.temp
+  if (diff --brief config_fortran.h config_fortran.h.temp > /dev/null 2>&1); then
+    echo -n "no difference, keeping old one... "
+    rm -f config_fortran.h.temp
+  else
+    echo -n "updating config_fortran.h... "
+    mv -f config_fortran.h.temp config_fortran.h
+  fi
+])
+
+dnl Write makefiles.
 AC_CONFIG_FILES([
 Doxyfile
 Makefile

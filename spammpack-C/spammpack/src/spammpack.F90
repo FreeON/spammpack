@@ -1,5 +1,7 @@
 !> @file
 
+#include "config_fortran.h"
+
 module spammpack
 
   use, intrinsic :: iso_c_binding

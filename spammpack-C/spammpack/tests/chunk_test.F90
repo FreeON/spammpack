@@ -8,6 +8,7 @@ program chunk_test
   integer, dimension(:), pointer :: N_lower
   integer, dimension(:), pointer :: N_upper
   real*4, dimension(:,:), pointer :: A, B, C
+  real*4, dimension(:), pointer :: norm
 
   type(c_ptr) :: chunk_A, chunk_B, chunk_C
 

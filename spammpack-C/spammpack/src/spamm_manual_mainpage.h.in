@@ -7,7 +7,7 @@
  * The public functions of this library are declared in:
  *
  * - spamm.h
- * - spamm_config.h
+ * - config.h
  * - spamm_errno.h
  * - spamm_error.h
  * - spamm_general.h
@@ -16,6 +16,8 @@
  * - spamm_list.h
  * - spamm_timer.h
  * - spamm_types.h
+ * - spamm_chunk.h
+ * - spamm_fortran_interface.h
  *
  * The SpAMM library can be used from Fortran with the
  * \ref spammpack "spammpack module".

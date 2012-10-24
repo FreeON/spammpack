@@ -1,5 +1,7 @@
+#include "config.h"
 #include "spamm.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -128,6 +130,27 @@ spamm_chunk_get_norm2 (spamm_chunk_t *chunk)
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[7]);
 }
 
+/** Get the number of tiers stored in the SpAMM chunk.
+ *
+ * @param chunk
+ *
+ * @return The number of tiers.
+ */
+unsigned int
+spamm_chunk_get_number_tiers (spamm_chunk_t *chunk)
+{
+  unsigned int *N_contiguous;
+  unsigned int number_tiers;
+  unsigned int N;
+
+  N_contiguous = spamm_chunk_get_N_contiguous(chunk);
+  for (N = *N_contiguous, number_tiers = 0; N >= SPAMM_N_BLOCK; N /= 2)
+  {
+    number_tiers++;
+  }
+  return number_tiers;
+}
+
 /** Get the size of a SpAMM data chunk.
  *
  * See the documentation for spamm_new_chunk() for a detailed description of
@@ -222,6 +245,7 @@ spamm_chunk_print (spamm_chunk_t *chunk)
   unsigned int *N_lower;
   unsigned int *N_upper;
   float *A;
+  float *norm;
 
   printf("chunk:\n");
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
@@ -236,6 +260,7 @@ spamm_chunk_print (spamm_chunk_t *chunk)
   }
   A = spamm_chunk_get_matrix(chunk);
   spamm_print_dense(N_contiguous, N_contiguous, column_major, A);
+  norm = spamm_chunk_get_norm(chunk);
 }
 
 /** Allocate a SpAMM data chunk.

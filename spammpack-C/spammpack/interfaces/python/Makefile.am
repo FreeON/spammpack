@@ -1,4 +1,4 @@
-pkgpython_PYTHON = spammpack.py
+nodist_pkgpython_PYTHON = spammpack.py
 pkgpyexec_LTLIBRARIES = _spammpack.la
 
 _spammpack_la_SOURCES = spammpack.i spammpack_wrap.c

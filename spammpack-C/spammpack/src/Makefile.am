@@ -88,7 +88,7 @@
 # begin the first unstable release with `-release 1.1'.
 
 AM_CTAGSFLAGS = --C-kinds=+l+x
-TAGS_FILES = generate_SSE_assembly.py
+TAGS_FILES = $(top_builddir)/config.h generate_SSE_assembly.py
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS)

@@ -15,6 +15,8 @@ EXTRA_DIST = latex/refman.pdf \
   extract_conf.py \
   git_commit
 
+include_HEADERS = config.h config_fortran.h
+
 TAGS_FILES = src/* tests/*
 AM_CTAGSFLAGS = --C-kinds=+l+x
 

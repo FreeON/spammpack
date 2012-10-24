@@ -2,6 +2,12 @@
 
 #include "spamm.h"
 
+/** Fortran interface for spamm_new_chunk().
+ *
+ * @param number_dimensions The number of dimensions.
+ * @param N_contiguous The size of the contiguous submatrix.
+ * @param chunk[out] The chunk.
+ */
 void
 spamm_new_chunk_interface (unsigned int *number_dimensions,
     unsigned int *N_contiguous,
