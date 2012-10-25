@@ -17,6 +17,8 @@ fd.close()
 
 print("!> @file")
 print()
+print("! vim: syntax=fortran")
+print()
 print("#ifndef __SPAMM_CONFIG_H")
 print("#define __SPAMM_CONFIG_H")
 print()

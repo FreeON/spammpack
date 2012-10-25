@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 
-CLEANFILES = *~
+CLEANFILES = *~ config_fortran.h
 
 ACLOCAL_AMFLAGS = -I m4
 
@@ -11,7 +11,8 @@ CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/git_commit \
   $(top_srcdir)/src/spamm_manual_mainpage.h.in
 
-EXTRA_DIST = latex/refman.pdf \
+EXTRA_DIST = \
+  $(DOCFILES) \
   extract_conf.py \
   git_commit
 
@@ -19,6 +20,10 @@ include_HEADERS = config.h config_fortran.h
 
 TAGS_FILES = src/* tests/*
 AM_CTAGSFLAGS = --C-kinds=+l+x
+
+#DOCFILES = latex/refman.pdf
+
+latex/refman.pdf : docs
 
 docs :
 	doxygen

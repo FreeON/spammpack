@@ -141,7 +141,8 @@ CLEANFILES = \
 
 DISTCLEANFILES = \
   $(builddir)/spammOffsets.py \
-  $(builddir)/spammOffsets.pyc
+  $(builddir)/spammOffsets.pyc \
+  $(builddir)/__pycache__/*
 
 nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
