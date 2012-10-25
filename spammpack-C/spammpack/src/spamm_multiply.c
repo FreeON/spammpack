@@ -1858,10 +1858,12 @@ spamm_recursive_multiply_matrix (const float tolerance,
                     N_lower[1] = (*node_C)->N_lower[1]+((*node_C)->N_upper[1]-(*node_C)->N_lower[1])/2*j;
                     N_upper[1] = (*node_C)->N_lower[1]+((*node_C)->N_upper[1]-(*node_C)->N_lower[1])/2*(j+1);
 
-                    (*node_C)->tree.child[spamm_index_row_major(i, j, 2, 2)] = spamm_recursive_new_node((*node_C)->tier+1,
-                        (*node_C)->number_dimensions,
-                        (*node_C)->contiguous_tier, (*node_C)->use_linear_tree,
-                        N_lower, N_upper);
+                    (*node_C)->tree.child[spamm_index_row_major(i, j, 2, 2)] =
+                      spamm_recursive_new_node((*node_C)->tier+1,
+                          (*node_C)->number_dimensions,
+                          (*node_C)->contiguous_tier,
+                          (*node_C)->N_block, (*node_C)->use_linear_tree,
+                          N_lower, N_upper);
 
                     free(N_lower);
                     free(N_upper);
@@ -1979,7 +1981,9 @@ spamm_multiply (const float tolerance,
           N_upper[dim] = A->N_padded;
         }
 
-        C->tree.recursive_tree = spamm_recursive_new_node(0, C->number_dimensions, C->contiguous_tier, C->use_linear_tree, N_lower, N_upper);
+        C->tree.recursive_tree = spamm_recursive_new_node(0,
+            C->number_dimensions, C->contiguous_tier, C->N_block,
+            C->use_linear_tree, N_lower, N_upper);
 
         free(N_lower);
         free(N_upper);

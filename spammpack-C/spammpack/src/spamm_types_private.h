@@ -20,6 +20,9 @@ struct spamm_matrix_t
   /** Number of rows and columns in the padded matrix. */
   unsigned int N_padded;
 
+  /** The block size at which the SpAMM condition is applied. */
+  unsigned int N_block;
+
   /** The total depth of the tree. */
   unsigned int depth;
 
@@ -157,6 +160,9 @@ spamm_recursive_node_t
 
   /** An array of upper values of the row indices. */
   unsigned int *N_upper;
+
+  /** The block size at which the SpAMM condition is applied. */
+  unsigned int N_block;
 
   /** The tier. */
   unsigned int tier;

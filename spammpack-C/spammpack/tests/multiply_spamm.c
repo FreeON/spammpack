@@ -22,6 +22,8 @@ main (int argc, char **argv)
 
   unsigned int contiguous_tier = 5;
 
+  unsigned int N_block = 4;
+
   short use_linear_tree = 0;
 
   double alpha = 1.2;
@@ -118,9 +120,9 @@ main (int argc, char **argv)
   B_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
   C_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
 
-  A = spamm_new(2, N, contiguous_tier, use_linear_tree, spamm_kernel_suggest_layout(kernel));
-  B = spamm_new(2, N, contiguous_tier, use_linear_tree, spamm_kernel_suggest_layout(kernel));
-  C = spamm_new(2, N, contiguous_tier, use_linear_tree, spamm_kernel_suggest_layout(kernel));
+  A = spamm_new(2, N, contiguous_tier, N_block, use_linear_tree, spamm_kernel_suggest_layout(kernel));
+  B = spamm_new(2, N, contiguous_tier, N_block, use_linear_tree, spamm_kernel_suggest_layout(kernel));
+  C = spamm_new(2, N, contiguous_tier, N_block, use_linear_tree, spamm_kernel_suggest_layout(kernel));
 
   for (i[0] = 0; i[0] < N[0]; i[0]++) {
     for (i[1] = 0; i[1] < N[1]; i[1]++)

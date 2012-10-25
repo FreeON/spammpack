@@ -173,8 +173,12 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
  *
  * @param tier The tier this node will be on.
  * @param number_dimensions The number of dimensions.
- * @param N_contiguous The size of the contiguous submatrix block.
- * @param use_linear_tree Whether to use a linear tree at the contiguous tier.
+ * @param contiguous_tier The tier at which to store contiguous submatrix
+ * blocks in the hierarhical tree.
+ * @param N_block The size of matrix to which the SpAMM condition is applied.
+ * @param use_linear_tree If set to zero, then the tree will be stored in the
+ * hierachical format, otherwise storage will switch to linear format at
+ * contiguous_tier.
  * @param N_lower An array of the lowest row index of this submatrix node.
  * @param N_upper An array of the lowest row index of this submatrix node.
  *
@@ -184,6 +188,7 @@ struct spamm_recursive_node_t *
 spamm_recursive_new_node (const unsigned int tier,
     const unsigned int number_dimensions,
     const unsigned int contiguous_tier,
+    const unsigned int N_block,
     const short use_linear_tree,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper)
@@ -198,6 +203,7 @@ spamm_recursive_new_node (const unsigned int tier,
   node->number_dimensions = number_dimensions;
   node->contiguous_tier = contiguous_tier;
   node->use_linear_tree = use_linear_tree;
+  node->N_block = N_block;
 
   node->N_lower = calloc(number_dimensions, sizeof(unsigned int));
   node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
@@ -239,10 +245,12 @@ spamm_recursive_new_node (const unsigned int tier,
  * @param number_dimensions The number of dimensions of this matrix.
  * @param N The number of rows/columns of the matrix. This array has to have
  * a size of number_dimensions.
- * @param N_linear The tier at which to switch from hierarchical to linear
- * tree.
  * @param contiguous_tier The tier at which to store contiguous submatrix
  * blocks in the hierarhical tree.
+ * @param N_block The size of matrix to which the SpAMM condition is applied.
+ * @param use_linear_tree If set to zero, then the tree will be stored in the
+ * hierachical format, otherwise storage will switch to linear format at
+ * contiguous_tier.
  * @param layout The storage layout of the matrix elements.
  *
  * @return The newly allocated matrix. This matrix has to be freed by calling
@@ -252,6 +260,7 @@ struct spamm_matrix_t *
 spamm_new (const unsigned int number_dimensions,
     const unsigned int *const N,
     const unsigned int contiguous_tier,
+    const unsigned int N_block,
     const short use_linear_tree,
     const enum spamm_layout_t layout)
 {
@@ -273,6 +282,9 @@ spamm_new (const unsigned int number_dimensions,
 
   /* Store the number of dimensions. */
   A->number_dimensions = number_dimensions;
+
+  /* Store block size. */
+  A->N_block = N_block;
 
   /* Store matrix dimensions. */
   A->N = calloc(number_dimensions, sizeof(unsigned int));

@@ -152,6 +152,7 @@ struct spamm_matrix_t *
 spamm_new (const unsigned int number_dimensions,
     const unsigned int *const N,
     const unsigned int contiguous_tier,
+    const unsigned int N_block,
     const short use_linear_tree,
     const enum spamm_layout_t layout);
 
@@ -174,7 +175,8 @@ struct spamm_recursive_node_t *
 spamm_recursive_new_node (const unsigned int tier,
     const unsigned int number_dimensions,
     const unsigned int contiguous_tier,
-    const short use_linear_tier,
+    const unsigned int N_block,
+    const short use_linear_tree,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper);
 
@@ -200,6 +202,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int contiguous_tier,
     const unsigned int kernel_tier,
+    const unsigned int N_block,
     const short use_linear_tree,
     const unsigned int depth,
     const enum spamm_layout_t layout,
@@ -224,6 +227,7 @@ struct spamm_matrix_t *
 spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const unsigned int *const N,
     const unsigned int contiguous_tier,
+    const unsigned int N_block,
     const short use_linear_tree,
     const enum spamm_layout_t dense_type,
     const float *const A_dense,

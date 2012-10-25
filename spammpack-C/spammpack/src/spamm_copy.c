@@ -114,10 +114,9 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
   {
     if (*A == NULL)
     {
-      *A = spamm_recursive_new_node(B->tier,
-          B->number_dimensions,
-          B->contiguous_tier, B->use_linear_tree,
-          B->N_lower, B->N_upper);
+      *A = spamm_recursive_new_node(B->tier, B->number_dimensions,
+          B->contiguous_tier, B->N_block, B->use_linear_tree, B->N_lower,
+          B->N_upper);
     }
 
     if ((*A)->tier == (*A)->contiguous_tier && (*A)->use_linear_tree)
@@ -161,7 +160,7 @@ spamm_copy (struct spamm_matrix_t **A,
   if (*A == NULL)
   {
     /* Create new matrix A. */
-    *A = spamm_new(B->number_dimensions, B->N, B->contiguous_tier, B->use_linear_tree, B->layout);
+    *A = spamm_new(B->number_dimensions, B->N, B->contiguous_tier, B->N_block, B->use_linear_tree, B->layout);
   }
 
   /* Sanity check. */

@@ -11,6 +11,7 @@ main (int argc, char **argv)
   unsigned int i[2];
   const unsigned int N[] = { 1024, 1024 };
   const unsigned int contiguous_tier = 6;
+  const unsigned int N_block = 4;
   const short use_linear_tree = 1;
   struct spamm_matrix_t *A = NULL;
   float *A_dense = (float*) malloc(sizeof(float)*N[0]*N[1]);
@@ -27,7 +28,7 @@ main (int argc, char **argv)
     A_dense[i[0]] = rand()/(float) RAND_MAX;
   }
 
-  A = spamm_convert_dense_to_spamm(2, N, contiguous_tier, use_linear_tree, row_major, A_dense, layout);
+  A = spamm_convert_dense_to_spamm(2, N, contiguous_tier, N_block, use_linear_tree, row_major, A_dense, layout);
 
 #ifdef PRINT_DEBUG
   printf("A_dense:\n");
