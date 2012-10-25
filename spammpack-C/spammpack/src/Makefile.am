@@ -115,6 +115,7 @@ noinst_SCRIPTS = generate_SSE_assembly.py spammOffsets.py
 noinst_PROGRAMS = print_data_sizes print_chunk_offsets
 
 print_chunk_offsets_LDFLAGS = libspamm.la
+print_chunk_offsets_DEPENDENCIES = libspamm.la
 
 EXTRA_DIST = spamm_list_driver.c generate_SSE_assembly.py
 

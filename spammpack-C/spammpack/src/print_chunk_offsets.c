@@ -9,17 +9,21 @@ main (int argc, char **argv)
 {
   unsigned int number_dimensions = 2;
   unsigned int N_contiguous = 128;
+  unsigned int N_block = 4;
+
+  unsigned int *N_lower;
+  unsigned int *N_upper;
 
   spamm_chunk_t *chunk;
 
-  uint32_t *number_dimension_pointer;
-  uint32_t *N_contiguous_pointer;
-  uint32_t *N_lower_pointer;
-  uint32_t *N_upper_pointer;
+  unsigned int *N_lower_pointer;
+  unsigned int *N_upper_pointer;
   float *A_pointer;
   float *A_dilated_pointer;
   float *norm_pointer;
   float *norm2_pointer;
+
+  int dim;
 
   int c;
   const char *short_options = "hd:c:";
@@ -65,18 +69,28 @@ main (int argc, char **argv)
     }
   }
 
-  chunk = spamm_new_chunk(number_dimensions, N_contiguous);
+  N_lower = calloc(number_dimensions, sizeof(unsigned int));
+  N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    N_lower[dim] = 0;
+    N_upper[dim] = N_contiguous;
+  }
+  chunk = spamm_new_chunk(number_dimensions, N_block, N_lower, N_upper);
+
+  free(N_lower);
+  free(N_upper);
 
   printf("number_dimensions = %u\n", number_dimensions);
   printf("N_contiguous      = %u\n", N_contiguous);
   printf("sizeof(chunk)     = 0x%lx bytes\n",
-      spamm_chunk_get_size(number_dimensions, N_contiguous,
-        &number_dimension_pointer, &N_contiguous_pointer, &N_lower_pointer,
-        &N_upper_pointer, &A_pointer, &A_dilated_pointer, &norm_pointer,
-        &norm2_pointer));
+      spamm_chunk_get_size(number_dimensions, N_block, N_lower, N_upper,
+        &N_lower_pointer, &N_upper_pointer, &A_pointer, &A_dilated_pointer,
+        &norm_pointer, &norm2_pointer));
   printf("\n");
   printf("&chunk->number_dimensions = 0x%lx\n", (void*) spamm_chunk_get_number_dimensions(chunk) - chunk);
-  printf("&chunk->N_contiguous      = 0x%lx\n", (void*) spamm_chunk_get_N_contiguous(chunk) - chunk);
+  printf("&chunk->N_block           = 0x%lx\n", (void*) spamm_chunk_get_N_block(chunk) - chunk);
   printf("&chunk->N_lower           = 0x%lx\n", (void*) spamm_chunk_get_N_lower(chunk) - chunk);
   printf("&chunk->N_upper           = 0x%lx\n", (void*) spamm_chunk_get_N_upper(chunk) - chunk);
   printf("&chunk->A                 = 0x%lx\n", (void*) spamm_chunk_get_matrix(chunk) - chunk);

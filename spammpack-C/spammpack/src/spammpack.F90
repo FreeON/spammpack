@@ -12,10 +12,11 @@ module spammpack
   interface
 
     !> Interface for spamm_new_chunk().
-    subroutine spamm_new_chunk (ndim, N_contiguous, chunk) &
+    subroutine spamm_new_chunk (ndim, N_block, N_lower, N_upper, chunk) &
         bind(C, name = "spamm_new_chunk_interface")
       use, intrinsic :: iso_c_binding
-      integer(c_int), intent(in) :: ndim, N_contiguous
+      integer(c_int), intent(in) :: ndim, N_block
+      integer(c_int), dimension(ndim), intent(in) :: N_lower, N_upper
       type(c_ptr), intent(out) :: chunk
     end subroutine spamm_new_chunk
 
@@ -27,11 +28,19 @@ module spammpack
     end subroutine spamm_chunk_get_number_dimensions
 
     !> Interface for spamm_chunk_get_N_contiguous().
-    subroutine spamm_chunk_get_N_contiguous (cptr, chunk) &
+    subroutine spamm_chunk_get_N_contiguous (N_contiguous, chunk) &
         bind(C, name = "spamm_chunk_get_N_contiguous_interface")
       use, intrinsic :: iso_C_binding
-      type(c_ptr) :: cptr, chunk
+      integer(c_int) :: N_contiguous
+      type(c_ptr) :: chunk
     end subroutine spamm_chunk_get_N_contiguous
+
+    !> Interface for spamm_chunk_get_N_block().
+    subroutine spamm_chunk_get_N_block (cptr, chunk) &
+        bind(C, name = "spamm_chunk_get_N_block")
+      use, intrinsic :: iso_C_binding
+      type(c_ptr) :: cptr, chunk
+    end subroutine spamm_chunk_get_N_block
 
     !> Interface for spamm_chunk_get_N_lower().
     subroutine spamm_chunk_get_N_lower_interface (cptr, chunk) &
@@ -135,12 +144,10 @@ contains
     real*4, dimension(:,:), pointer, intent(out) :: A
     type(c_ptr), intent(in) :: chunk
 
-    integer, pointer :: N_contiguous
+    integer :: N_contiguous
     type(c_ptr) :: cptr
 
-    call spamm_chunk_get_N_contiguous(cptr, chunk)
-    call c_f_pointer(cptr, N_contiguous)
-
+    call spamm_chunk_get_N_contiguous(N_contiguous, chunk)
     call spamm_chunk_get_matrix_interface(cptr, chunk)
     call c_f_pointer(cptr, A, [N_contiguous, N_contiguous])
 
@@ -155,14 +162,12 @@ contains
     real*4, dimension(:), pointer, intent(out) :: norm
     type(c_ptr), intent(in) :: chunk
 
-    integer, pointer :: N_contiguous
+    integer :: N_contiguous
     type(c_ptr) :: cptr
 
     integer :: number_entries, N
 
-    call spamm_chunk_get_N_contiguous(cptr, chunk)
-    call c_f_pointer(cptr, N_contiguous)
-
+    call spamm_chunk_get_N_contiguous(N_contiguous, chunk)
     call spamm_chunk_get_norm_interface(cptr, chunk)
 
     ! Figure out the number of norm entries.
@@ -189,14 +194,12 @@ contains
     real*4, dimension(:), pointer, intent(out) :: norm2
     type(c_ptr), intent(in) :: chunk
 
-    integer, pointer :: N_contiguous
+    integer :: N_contiguous
     type(c_ptr) :: cptr
 
     integer :: number_entries, N
 
-    call spamm_chunk_get_N_contiguous(cptr, chunk)
-    call c_f_pointer(cptr, N_contiguous)
-
+    call spamm_chunk_get_N_contiguous(N_contiguous, chunk)
     call spamm_chunk_get_norm2_interface(cptr, chunk)
 
     ! Figure out the number of norm entries.

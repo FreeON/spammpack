@@ -1,6 +1,8 @@
 AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 
-CLEANFILES = *~ config_fortran.h
+CLEANFILES = *~
+
+DISTCLEANFILES = config_fortran.h
 
 ACLOCAL_AMFLAGS = -I m4
 

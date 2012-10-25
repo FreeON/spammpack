@@ -301,7 +301,7 @@ AC_SUBST([GIT_COMMIT], [${git_commit}])
 
 dnl Get the current date.
 timestamp=`date +%Y-%m-%d`
-AC_SUBST([TIMESTAMP], [${timestamp}])
+AC_DEFINE_UNQUOTED([SPAMM_TIMESTAMP], ["${timestamp}"], [The build date.])
 
 dnl Write headers.
 AC_CONFIG_HEADERS([config.h])

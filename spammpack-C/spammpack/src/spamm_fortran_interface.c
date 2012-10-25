@@ -10,16 +10,12 @@
  */
 void
 spamm_new_chunk_interface (unsigned int *number_dimensions,
-    unsigned int *N_contiguous,
+    unsigned int *N_block,
+    unsigned int *N_lower,
+    unsigned int *N_upper,
     void **chunk)
 {
-  *chunk = spamm_new_chunk(*number_dimensions, *N_contiguous);
-}
-
-void
-spamm_chunk_get_N_lower_interface (unsigned int **N_lower, spamm_chunk_t **chunk)
-{
-  *N_lower = spamm_chunk_get_N_lower(*chunk);
+  *chunk = spamm_new_chunk(*number_dimensions, *N_block, N_lower, N_upper);
 }
 
 void
@@ -29,9 +25,21 @@ spamm_chunk_get_number_dimensions_interface (unsigned int **number_dimensions, s
 }
 
 void
-spamm_chunk_get_N_contiguous_interface (unsigned int **N_contiguous, spamm_chunk_t **chunk)
+spamm_chunk_get_N_lower_interface (unsigned int **N_lower, spamm_chunk_t **chunk)
+{
+  *N_lower = spamm_chunk_get_N_lower(*chunk);
+}
+
+void
+spamm_chunk_get_N_contiguous_interface (unsigned int *N_contiguous, spamm_chunk_t **chunk)
 {
   *N_contiguous = spamm_chunk_get_N_contiguous(*chunk);
+}
+
+void
+spamm_chunk_get_N_block_interface (unsigned int **N_block, spamm_chunk_t **chunk)
+{
+  *N_block = spamm_chunk_get_N_block(*chunk);
 }
 
 void
