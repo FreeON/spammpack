@@ -105,6 +105,9 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 {
   unsigned int i;
 
+  float *A_matrix;
+  float *B_matrix;
+
   if (B == NULL && *A != NULL)
   {
     spamm_recursive_delete(A);
@@ -126,9 +129,12 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 
     else if ((*A)->tier == (*A)->contiguous_tier)
     {
+      A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
+      B_matrix = spamm_chunk_get_matrix(B->tree.chunk);
+
       for (i = 0; i < ipow((*A)->N_upper[0]-(*A)->N_lower[0], 2); i++)
       {
-        (*A)->tree.data[i] = beta*B->tree.data[i];
+        A_matrix[i] = beta*B_matrix[i];
         (*A)->norm = beta*B->norm;
         (*A)->norm2 = (*A)->norm*(*A)->norm;
       }
@@ -136,6 +142,11 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 
     else
     {
+      if ((*A)->tree.child == NULL)
+      {
+        (*A)->tree.child = calloc(ipow(2, (*A)->number_dimensions), sizeof(struct spamm_recursive_node_t*));
+      }
+
       spamm_recursive_copy(&(*A)->tree.child[0], beta, B->tree.child[0]);
       spamm_recursive_copy(&(*A)->tree.child[1], beta, B->tree.child[1]);
       spamm_recursive_copy(&(*A)->tree.child[2], beta, B->tree.child[2]);

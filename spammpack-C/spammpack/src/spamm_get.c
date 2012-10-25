@@ -54,6 +54,8 @@ spamm_recursive_get (const unsigned int *const i,
   unsigned int number_rows;
   unsigned int number_columns;
 
+  float *A;
+
   if (node == NULL) { return 0; }
 
   number_rows = node->N_upper[0]-node->N_lower[0];
@@ -66,17 +68,18 @@ spamm_recursive_get (const unsigned int *const i,
   else if (node->tier == node->contiguous_tier)
   {
     /* Get the matrix element. */
-    if (node->tree.data == NULL) { return 0.0; }
+    if (node->tree.chunk == NULL) { return 0.0; }
     else
     {
+      A = spamm_chunk_get_matrix(node->tree.chunk);
       switch (node->number_dimensions)
       {
         case 1:
-          return node->tree.data[i[0]-node->N_lower[0]];
+          return A[i[0]-node->N_lower[0]];
           break;
 
         case 2:
-          return node->tree.data[spamm_index_column_major(i[0]-node->N_lower[0], i[1]-node->N_lower[1], number_rows, number_rows)];
+          return A[spamm_index_column_major(i[0]-node->N_lower[0], i[1]-node->N_lower[1], number_rows, number_rows)];
           break;
 
         default:

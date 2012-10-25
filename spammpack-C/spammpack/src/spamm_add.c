@@ -314,6 +314,9 @@ spamm_recursive_add (const float alpha,
 {
   unsigned int i;
 
+  float *A_matrix;
+  float *B_matrix;
+
   /* There is nothing to do here. */
   if ((*A) == NULL && (*B) == NULL) { return; }
 
@@ -332,12 +335,15 @@ spamm_recursive_add (const float alpha,
     else if ((*A)->tier == (*A)->contiguous_tier)
     {
       /* Braindead add. */
+      A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
+      B_matrix = spamm_chunk_get_matrix((*B)->tree.chunk);
+
       switch ((*A)->number_dimensions)
       {
         case 2:
           for (i = 0; i < ipow((*A)->N_upper[0]-(*A)->N_lower[0], 2); i++)
           {
-            (*A)->tree.data[i] = alpha*(*A)->tree.data[i]+beta*(*B)->tree.data[i];
+            A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
           }
           break;
 

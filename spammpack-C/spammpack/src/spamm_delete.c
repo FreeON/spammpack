@@ -89,10 +89,10 @@ spamm_recursive_delete (struct spamm_recursive_node_t **node)
   {
     if ((*node)->tier == (*node)->contiguous_tier)
     {
-      if ((*node)->tree.data != NULL)
+      if ((*node)->tree.chunk != NULL)
       {
-        free((*node)->tree.data);
-        (*node)->tree.data = NULL;
+        free((*node)->tree.chunk);
+        (*node)->tree.chunk = NULL;
       }
     }
 

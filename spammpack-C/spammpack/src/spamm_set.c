@@ -41,6 +41,8 @@ spamm_recursive_set (const unsigned int number_dimensions,
   unsigned int *new_N_lower;
   unsigned int *new_N_upper;
 
+  float *A;
+
   if (*node == NULL)
   {
     /* Allocate new node. */
@@ -81,20 +83,22 @@ spamm_recursive_set (const unsigned int number_dimensions,
 
   else if (tier == contiguous_tier)
   {
-    if ((*node)->tree.data == NULL)
+    if ((*node)->tree.chunk == NULL)
     {
-      (*node)->tree.data = calloc(ipow(N_upper[0]-N_lower[0], number_dimensions), sizeof(float));
+      (*node)->tree.chunk = spamm_new_chunk((*node)->number_dimensions, (*node)->N_block, (*node)->N_lower, (*node)->N_upper);
     }
+
+    A = spamm_chunk_get_matrix((*node)->tree.chunk);
 
     switch (number_dimensions)
     {
       case 1:
-        (*node)->tree.data[i[0]-(*node)->N_lower[0]] = Aij;
+        A[i[0]-(*node)->N_lower[0]] = Aij;
         break;
 
       case 2:
         /* sgemm() loves column major. */
-        (*node)->tree.data[spamm_index_column_major(i[0]-(*node)->N_lower[0], i[1]-(*node)->N_lower[1], (*node)->N_upper[0]-(*node)->N_lower[0], (*node)->N_upper[0]-(*node)->N_lower[0])] = Aij;
+        A[spamm_index_column_major(i[0]-(*node)->N_lower[0], i[1]-(*node)->N_lower[1], (*node)->N_upper[0]-(*node)->N_lower[0], (*node)->N_upper[0]-(*node)->N_lower[0])] = Aij;
         break;
 
       default:
@@ -104,6 +108,12 @@ spamm_recursive_set (const unsigned int number_dimensions,
 
   else
   {
+    /* Allocate children nodes. */
+    if ((*node)->tree.child == NULL)
+    {
+      (*node)->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
+    }
+
     new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
     new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
@@ -470,6 +480,22 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
       A->tree.hashed_tree = spamm_hashed_new(0, A->kernel_tier, A->depth, 0, A->N_padded, 0, A->N_padded);
     }
     spamm_hashed_set(i[0], i[1], Aij, A->tree.hashed_tree);
+  }
+
+  else if (A->contiguous_tier == 0)
+  {
+    N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
+    N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
+
+    for (dim = 0; dim < A->number_dimensions; dim++)
+    {
+      N_upper[dim] = A->N_padded;
+    }
+
+    A->tree.chunk = spamm_new_chunk(A->number_dimensions, A->N_block, N_lower, N_upper);
+
+    free(N_lower);
+    free(N_upper);
   }
 
   else

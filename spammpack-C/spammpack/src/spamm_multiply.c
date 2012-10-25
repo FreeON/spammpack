@@ -128,6 +128,8 @@ spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t
 {
   unsigned int i;
 
+  float *A_matrix;
+
   if (A == NULL) { return; }
 
   if (A->tier == A->contiguous_tier && A->use_linear_tree)
@@ -137,12 +139,13 @@ spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t
 
   else if (A->tier == A->contiguous_tier)
   {
+    A_matrix = spamm_chunk_get_matrix(A->tree.chunk);
     switch (A->number_dimensions)
     {
       case 2:
         for (i = 0; i < ipow(A->N_upper[0]-A->N_lower[0], 2); i++)
         {
-          A->tree.data[i] *= beta;
+          A_matrix[i] *= beta;
         }
         break;
 
@@ -1755,6 +1758,10 @@ spamm_recursive_multiply_matrix (const float tolerance,
   unsigned int N_contiguous;
   int i, j, k;
 
+  float *A_matrix;
+  float *B_matrix;
+  float *C_matrix;
+
   if (node_A == NULL || node_B == NULL) { return; }
 
   /* For convenience. */
@@ -1780,9 +1787,11 @@ spamm_recursive_multiply_matrix (const float tolerance,
       switch (node_A->number_dimensions)
       {
         case 2:
-          if ((*node_C)->tree.data == NULL)
+          if ((*node_C)->tree.chunk == NULL)
           {
-            (*node_C)->tree.data = calloc(ipow(N_contiguous, 2), sizeof(float));
+            (*node_C)->tree.chunk =
+              spamm_new_chunk((*node_C)->number_dimensions,
+                  (*node_C)->N_block, (*node_C)->N_lower, (*node_C)->N_upper);
           }
 
           if (sgemm != NULL)
@@ -1794,12 +1803,12 @@ spamm_recursive_multiply_matrix (const float tolerance,
                 (int*) &N_contiguous, /* N */
                 (int*) &N_contiguous, /* K */
                 (float*) &alpha, /* alpha */
-                node_A->tree.data, /* A */
+                spamm_chunk_get_matrix(node_A->tree.chunk), /* A */
                 (int*) &N_contiguous, /* LDA */
-                node_B->tree.data, /* B */
+                spamm_chunk_get_matrix(node_B->tree.chunk), /* B */
                 (int*) &N_contiguous, /* LDB */
                 (float*) &beta, /* beta */
-                (*node_C)->tree.data, /* C */
+                spamm_chunk_get_matrix((*node_C)->tree.chunk), /* C */
                 (int*) &N_contiguous /* LDC */
                 );
           }
@@ -1807,13 +1816,17 @@ spamm_recursive_multiply_matrix (const float tolerance,
           else
           {
             /* Manual multiply. */
+            A_matrix = spamm_chunk_get_matrix(node_A->tree.chunk);
+            B_matrix = spamm_chunk_get_matrix(node_B->tree.chunk);
+            C_matrix = spamm_chunk_get_matrix((*node_C)->tree.chunk);
+
             for (i = 0; i < N_contiguous; i++) {
               for (j = 0; j < N_contiguous; j++) {
                 for (k = 0; k < N_contiguous; k++)
                 {
-                  (*node_C)->tree.data[spamm_index_column_major(i, j, N_contiguous, N_contiguous)] += alpha
-                    *node_A->tree.data[spamm_index_column_major(i, k, N_contiguous, N_contiguous)]
-                    *node_B->tree.data[spamm_index_column_major(k, j, N_contiguous, N_contiguous)];
+                  C_matrix[spamm_index_column_major(i, j, N_contiguous, N_contiguous)] += alpha
+                    *A_matrix[spamm_index_column_major(i, k, N_contiguous, N_contiguous)]
+                    *B_matrix[spamm_index_column_major(k, j, N_contiguous, N_contiguous)];
                 }
               }
             }

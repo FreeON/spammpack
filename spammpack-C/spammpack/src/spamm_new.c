@@ -208,23 +208,6 @@ spamm_recursive_new_node (const unsigned int tier,
   node->N_lower = calloc(number_dimensions, sizeof(unsigned int));
   node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
-  /* Allocate child matrix. */
-  if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
-  {
-    /* Allocate new linear tree (will be done when used). */
-  }
-
-  else if (tier == contiguous_tier)
-  {
-    /* Allocate chunk (will be done when used). */
-  }
-
-  else
-  {
-    /* Allocate children nodes in hierarchical tree. */
-    node->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
-  }
-
   for (dim = 0; dim < number_dimensions; dim++)
   {
     node->N_lower[dim] = N_lower[dim];
@@ -284,7 +267,15 @@ spamm_new (const unsigned int number_dimensions,
   A->number_dimensions = number_dimensions;
 
   /* Store block size. */
-  A->N_block = N_block;
+  if (use_linear_tree)
+  {
+    A->N_block = SPAMM_N_BLOCK;
+  }
+
+  else
+  {
+    A->N_block = N_block;
+  }
 
   /* Store matrix dimensions. */
   A->N = calloc(number_dimensions, sizeof(unsigned int));
@@ -315,9 +306,17 @@ spamm_new (const unsigned int number_dimensions,
   {
     /* Make sure we pad at least to the extend that we can store that linear
      * kernel matrix. */
-    if (N[dim] < SPAMM_N_KERNEL)
+    if (use_linear_tree)
     {
-      N_temp = SPAMM_N_KERNEL;
+      if (N[dim] < SPAMM_N_KERNEL)
+      {
+        N_temp = SPAMM_N_KERNEL;
+      }
+
+      else
+      {
+        N_temp = N[dim];
+      }
     }
 
     else
@@ -325,7 +324,7 @@ spamm_new (const unsigned int number_dimensions,
       N_temp = N[dim];
     }
 
-    x_N = (log(N_temp) > log(SPAMM_N_BLOCK) ? log(N_temp) - log(SPAMM_N_BLOCK) : 0)/log(2);
+    x_N = (log(N_temp) > log(A->N_block) ? log(N_temp) - log(A->N_block) : 0)/log(2);
     if (x_N > x)
     {
       x = x_N;
@@ -343,7 +342,7 @@ spamm_new (const unsigned int number_dimensions,
   {
     for (dim = 0; dim < A->number_dimensions; dim++)
     {
-      if ((int) (SPAMM_N_BLOCK*ipow(2, A->depth-1)) < A->N[dim])
+      if ((int) (A->N_block*ipow(2, A->depth-1)) < A->N[dim])
       {
         A->depth++;
         break;
@@ -353,7 +352,7 @@ spamm_new (const unsigned int number_dimensions,
   }
 
   /* Adjust tree to kernel depth. */
-  if (A->depth < SPAMM_KERNEL_DEPTH)
+  if (use_linear_tree && A->depth < SPAMM_KERNEL_DEPTH)
   {
     /* We should have already made sure that the matrix is big enough to fit
      * the kernel matrix. */
@@ -375,10 +374,18 @@ spamm_new (const unsigned int number_dimensions,
   }
 
   /* Set padded matrix size. */
-  A->N_padded = (int) (SPAMM_N_BLOCK*ipow(2, A->depth));
+  A->N_padded = (int) (A->N_block*ipow(2, A->depth));
 
   /* Set the kernel tier. */
-  A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
+  if (use_linear_tree)
+  {
+    A->kernel_tier = A->depth-SPAMM_KERNEL_DEPTH;
+  }
+
+  else
+  {
+    A->kernel_tier = 0;
+  }
 
   /* Done. */
   return A;

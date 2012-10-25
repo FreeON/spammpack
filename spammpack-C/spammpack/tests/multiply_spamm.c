@@ -51,13 +51,14 @@ main (int argc, char **argv)
 
   int option_index;
   int parse_result;
-  char *short_options = "hk:N:lc:rd";
+  char *short_options = "hk:N:lc:b:rd";
   static struct option long_options[] = {
     { "help",       no_argument,        NULL, 'h' },
     { "kernel",     required_argument,  NULL, 'k' },
     { "N",          required_argument,  NULL, 'N' },
     { "linear",     no_argument,        NULL, 'l' },
     { "contiguous", required_argument,  NULL, 'c' },
+    { "N_block",    required_argument,  NULL, 'b' },
     { "random",     no_argument,        NULL, 'r' },
     { "debug",      no_argument,        NULL, 'd' },
     { NULL,         0,                  NULL,  0  }
@@ -78,6 +79,7 @@ main (int argc, char **argv)
         printf("{ -N | --N } N                Set N\n");
         printf("{ -l | --linear } t           Set linear tier to t\n");
         printf("{ -c | --contiguous } c       Set contiguous tier to c\n");
+        printf("{ -b | --N_block } N          Set N_block to N\n");
         printf("{ -r | --random }             Create random matrix\n");
         printf("{ -d | --debug }              Print matrices\n");
         exit(0);
@@ -100,6 +102,10 @@ main (int argc, char **argv)
 
       case 'c':
         contiguous_tier = strtol(optarg, NULL, 10);
+        break;
+
+      case 'b':
+        N_block = strtol(optarg, NULL, 10);
         break;
 
       case 'r':

@@ -49,6 +49,9 @@ struct spamm_matrix_t
 
     /** The hashed tree (if we deal with a hybrid matrix tree). */
     struct spamm_hashed_t *hashed_tree;
+
+    /** The SpAMM chunk. */
+    struct spamm_chunk_t *chunk;
   }
   tree;
 };
@@ -178,12 +181,12 @@ spamm_recursive_node_t
     /** The children nodes. */
     struct spamm_recursive_node_t **child;
 
-    /** The matrix data (if this is a leaf node) of size N_contiguous x
-     * N_contiguous. */
-    float *data;
-
     /** The hashed tree (if we deal with a hybrid matrix tree). */
     struct spamm_hashed_t *hashed_tree;
+
+    /** The matrix data (if this is a leaf node) of size N_contiguous x
+     * N_contiguous. */
+    spamm_chunk_t *chunk;
   }
   tree;
 
