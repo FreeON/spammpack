@@ -94,6 +94,10 @@ float
 spamm_get_norm (const struct spamm_matrix_t *const A);
 
 unsigned int
+spamm_index_linear (const unsigned int number_dimensions,
+    const unsigned int *const i);
+
+unsigned int
 spamm_index_2D (const unsigned int i, const unsigned int j);
 
 void

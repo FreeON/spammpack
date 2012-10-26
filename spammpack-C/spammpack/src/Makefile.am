@@ -178,8 +178,6 @@ libspamm_tree_la_SOURCES = \
   spamm_get.c \
   spamm_hashtable.c \
   spamm_index.c \
-  spamm_index_2D.c \
-  spamm_index_3D.c \
   spamm_ipow.c \
   spamm_list.c \
   spamm_maintenance.c \

@@ -27,6 +27,8 @@ libspammtest_la_SOURCES = \
   test_utilities.F90 \
   spammtests.F90
 
+spammtests.lo : test_utilities.lo
+
 noinst_PROGRAMS = \
   convert_to_binary
 
@@ -67,6 +69,7 @@ check_PROGRAMS = \
   hashtable_insert \
   hashtable_remove \
   ipow \
+  linear_index \
   list \
   list_sort \
   multiply_spamm \

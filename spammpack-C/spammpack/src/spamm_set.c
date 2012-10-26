@@ -91,22 +91,9 @@ spamm_recursive_set (const unsigned int number_dimensions,
           (*node)->N_block, (*node)->N, (*node)->N_lower, (*node)->N_upper);
     }
 
+    /* Set matrix element. */
     A = spamm_chunk_get_matrix((*node)->tree.chunk);
-
-    switch (number_dimensions)
-    {
-      case 1:
-        A[i[0]-(*node)->N_lower[0]] = Aij;
-        break;
-
-      case 2:
-        /* sgemm() loves column major. */
-        A[spamm_index_column_major(i[0]-(*node)->N_lower[0], i[1]-(*node)->N_lower[1], (*node)->N_upper[0]-(*node)->N_lower[0], (*node)->N_upper[0]-(*node)->N_lower[0])] = Aij;
-        break;
-
-      default:
-        SPAMM_FATAL("not implemented\n");
-    }
+    A[spamm_chunk_matrix_index((*node)->number_dimensions, (*node)->N_lower, (*node)->N_upper, i)] = Aij;
   }
 
   else

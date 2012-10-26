@@ -5,6 +5,255 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define BITFIELD_SIZE 15
+
+/** Convert an n-dimensions index tuple to a linear index.
+ *
+ * @param number_dimensions The number of dimensions.
+ * @param i The array of indices.
+ *
+ * @return The linear index.
+ */
+unsigned int
+spamm_index_linear (const unsigned int number_dimensions,
+    const unsigned int *const i)
+{
+  short bit_index;
+  int dim;
+  unsigned int getmask = 1;
+  unsigned int setmask = 1;
+  unsigned int index = 0;
+
+  for (bit_index = 0; bit_index < sizeof(unsigned int)*8; bit_index += number_dimensions)
+  {
+    for (dim = number_dimensions-1; dim >= 0 && bit_index+number_dimensions-1-dim < sizeof(unsigned int)*8; dim--)
+    {
+      if (i[dim] & getmask)
+      {
+        index |= setmask;
+      }
+      setmask <<= 1;
+    }
+    getmask <<= 1;
+  }
+
+  return index;
+}
+
+/** Convert index pair (i,j) into linear 2D index.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ *
+ * @return The linear 2D matrix index.
+ */
+unsigned int
+spamm_index_2D (const unsigned int i, const unsigned int j)
+{
+  short bit_index;
+  unsigned int getmask = 1;
+  unsigned int setmask = 1;
+  unsigned int index = 0;
+
+  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  {
+    if ((j & getmask) != 0)
+    {
+      index |= setmask;
+    }
+    setmask <<= 1;
+
+    if ((i & getmask) != 0)
+    {
+      index |= setmask;
+    }
+    setmask <<= 1;
+    getmask <<= 1;
+  }
+
+  return index;
+}
+
+/** Convert a linear 2D index to an index pair (i,j). If any of the two
+ * indices i and j point to NULL, then this index is ignored and not returned.
+ *
+ * @param index The 2D linear index.
+ * @param i The row index.
+ * @param j The column index.
+ */
+void
+spamm_index_2D_to_ij (const unsigned int index, unsigned int *i, unsigned int *j)
+{
+  short bit_index;
+  unsigned int getmask = 1;
+  unsigned int setmask = 1;
+
+  if (i != NULL)
+  {
+    *i = 0;
+  }
+
+  if (j != NULL)
+  {
+    *j = 0;
+  }
+
+  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  {
+    if (j != NULL)
+    {
+      if ((index & getmask) != 0)
+      {
+        *j |= setmask;
+      }
+    }
+    getmask <<= 1;
+
+    if (i != NULL)
+    {
+      if ((index & getmask) != 0)
+      {
+        *i |= setmask;
+      }
+    }
+    setmask <<= 1;
+    getmask <<= 1;
+  }
+}
+
+/** Convert an index pair into a convolution space 3D linear index. The index
+ * pair is interpreted as \f$A(k,j)\f$, i.e. this function is meant to be
+ * applied to matrix \f$B\f$ in the product \f$A \times B\f$.
+ *
+ * @param k The row index.
+ * @param j The column index.
+ *
+ * @return The 3D linear index with 0kj ordering.
+ */
+unsigned int
+spamm_index_3D_0kj (const unsigned int k, const unsigned int j)
+{
+  short bit_index;
+  unsigned int getmask = 1;
+  unsigned int setmask = 1;
+  unsigned int index = 0;
+
+  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  {
+    if ((j & getmask) != 0)
+    {
+      index |= setmask;
+    }
+    setmask <<= 1;
+
+    if ((k & getmask) != 0)
+    {
+      index |= setmask;
+    }
+    setmask <<= 2;
+    getmask <<= 1;
+  }
+
+  return index;
+}
+
+/** Convert an index pair into a convolution space 3D linear index. The index
+ * pair is interpreted as \f$A(i,k)\f$, i.e. this function is meant to be
+ * applied to matrix \f$A\f$ in the product \f$A \times B\f$.
+ *
+ * @param i The row index.
+ * @param k The column index.
+ *
+ * @return The 3D linear index with ik0 ordering.
+ */
+unsigned int
+spamm_index_3D_ik0 (const unsigned int i, const unsigned int k)
+{
+  short bit_index;
+  unsigned int getmask = 1;
+  unsigned int setmask = 2;
+  unsigned int index = 0;
+
+  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  {
+    if ((k & getmask) != 0)
+    {
+      index |= setmask;
+    }
+    setmask <<= 1;
+
+    if ((i & getmask) != 0)
+    {
+      index |= setmask;
+    }
+    setmask <<= 2;
+    getmask <<= 1;
+  }
+
+  return index;
+}
+
+/** Convert a 3D linear index to a 2D index.
+ *
+ * @param index_3D_i0j The 3D linear index.
+ *
+ * @return The 2D linear index.
+ */
+unsigned int
+spamm_index_3D_i0j_to_2D (const unsigned int index_3D_i0j)
+{
+  short bit_index;
+  unsigned int getmask = 1;
+  unsigned int setmask = 1;
+  unsigned int index = 0;
+
+  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  {
+    if ((index_3D_i0j & getmask) != 0)
+    {
+      index |= setmask;
+    }
+    getmask <<= 2;
+    setmask <<= 1;
+
+    if ((index_3D_i0j & getmask) != 0)
+    {
+      index |= setmask;
+    }
+    getmask <<= 1;
+    setmask <<= 1;
+  }
+
+  return index;
+}
+
+/** Extract the k index from a 3D linear index.
+ *
+ * @param index_3D_ikj The 3D linear index in ikj encoding.
+ *
+ * @return The k index.
+ */
+unsigned int
+spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj)
+{
+  short bit_index;
+  unsigned int getmask = 2;
+  unsigned int setmask = 1;
+  unsigned int k = 0;
+
+  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  {
+    if ((index_3D_ikj & getmask) != 0)
+    {
+      k |= setmask;
+    }
+    getmask <<= 3;
+    setmask <<= 1;
+  }
+
+  return k;
+}
+
 /** Return a linear offset into a dense matrix block in row major order.
  *
  * @param i The row index.

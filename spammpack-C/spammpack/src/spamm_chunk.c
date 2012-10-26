@@ -180,6 +180,28 @@ spamm_chunk_get_number_tiers (spamm_chunk_t *chunk)
   return number_tiers;
 }
 
+/** Calculate a linear offset into a SpAMM chunk matrix. The matrix data is
+ * stored in a matrix of width N_contiguous, of submatrices of width N_block.
+ * Storage order is column-major (for reasons of compatibilty with Fortran).
+ *
+ * @param number_dimensions The number of dimensions.
+ * @param N_lower The bounding box lower index array.
+ * @param N_upper The bounding box upper index array.
+ * @param i The index array.
+ *
+ * @return The linear offset into the matrix data.
+ */
+unsigned int
+spamm_chunk_matrix_index (const unsigned int number_dimensions,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
+    const unsigned int *const i)
+{
+  unsigned int offset = 0;
+  unsigned int dim;
+
+}
+
 /** Get the size of a SpAMM data chunk.
  *
  * See the documentation for spamm_new_chunk() for a detailed description of
