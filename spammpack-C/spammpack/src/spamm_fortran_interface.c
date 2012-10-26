@@ -11,11 +11,12 @@
 void
 spamm_new_chunk_interface (unsigned int *number_dimensions,
     unsigned int *N_block,
+    unsigned int *N,
     unsigned int *N_lower,
     unsigned int *N_upper,
     void **chunk)
 {
-  *chunk = spamm_new_chunk(*number_dimensions, *N_block, N_lower, N_upper);
+  *chunk = spamm_new_chunk(*number_dimensions, *N_block, N, N_lower, N_upper);
 }
 
 void

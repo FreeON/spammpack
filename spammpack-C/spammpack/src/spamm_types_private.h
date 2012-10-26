@@ -158,6 +158,10 @@ spamm_recursive_node_t
   /** The number of dimensions. */
   unsigned int number_dimensions;
 
+  /** Number of rows/columns in this matrix. The length of this array is given
+   * by number_dimensions. */
+  unsigned int *N;
+
   /** An array of lower values of the row indices. */
   unsigned int *N_lower;
 

@@ -7,6 +7,7 @@ program chunk_test
   integer :: N_contiguous = 8
   integer :: N_block = 4
 
+  integer, dimension(:), pointer :: N
   integer, dimension(:), pointer :: N_lower
   integer, dimension(:), pointer :: N_upper
 
@@ -15,18 +16,21 @@ program chunk_test
 
   type(c_ptr) :: chunk_A, chunk_B, chunk_C
 
+  allocate(N(number_dimensions))
   allocate(N_lower(number_dimensions))
   allocate(N_upper(number_dimensions))
 
   do i = 1, number_dimensions
+    N(i) = N_contiguous
     N_lower(i) = 0
     N_upper(i) = N_contiguous
   enddo
 
-  call spamm_new_chunk(number_dimensions, N_block, N_lower, N_upper, chunk_A)
-  call spamm_new_chunk(number_dimensions, N_block, N_lower, N_upper, chunk_B)
-  call spamm_new_chunk(number_dimensions, N_block, N_lower, N_upper, chunk_C)
+  call spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper, chunk_A)
+  call spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper, chunk_B)
+  call spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper, chunk_C)
 
+  deallocate(N)
   deallocate(N_lower)
   deallocate(N_upper)
 

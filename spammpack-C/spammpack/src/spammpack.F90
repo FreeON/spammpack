@@ -12,11 +12,11 @@ module spammpack
   interface
 
     !> Interface for spamm_new_chunk().
-    subroutine spamm_new_chunk (ndim, N_block, N_lower, N_upper, chunk) &
+    subroutine spamm_new_chunk (ndim, N_block, N, N_lower, N_upper, chunk) &
         bind(C, name = "spamm_new_chunk_interface")
       use, intrinsic :: iso_c_binding
       integer(c_int), intent(in) :: ndim, N_block
-      integer(c_int), dimension(ndim), intent(in) :: N_lower, N_upper
+      integer(c_int), dimension(ndim), intent(in) :: N, N_lower, N_upper
       type(c_ptr), intent(out) :: chunk
     end subroutine spamm_new_chunk
 

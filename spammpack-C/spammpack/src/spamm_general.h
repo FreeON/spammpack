@@ -177,6 +177,7 @@ spamm_recursive_new_node (const unsigned int tier,
     const unsigned int contiguous_tier,
     const unsigned int N_block,
     const short use_linear_tree,
+    const unsigned int *const N,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper);
 
@@ -197,6 +198,7 @@ void
 spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int *const i,
     const float Aij,
+    const unsigned int *const N,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper,
     const unsigned int tier,

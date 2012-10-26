@@ -179,6 +179,7 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
  * @param use_linear_tree If set to zero, then the tree will be stored in the
  * hierachical format, otherwise storage will switch to linear format at
  * contiguous_tier.
+ * @param N An array of the matrix dimensions (unpadded).
  * @param N_lower An array of the lowest row index of this submatrix node.
  * @param N_upper An array of the lowest row index of this submatrix node.
  *
@@ -190,6 +191,7 @@ spamm_recursive_new_node (const unsigned int tier,
     const unsigned int contiguous_tier,
     const unsigned int N_block,
     const short use_linear_tree,
+    const unsigned int *const N,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper)
 {
@@ -205,11 +207,13 @@ spamm_recursive_new_node (const unsigned int tier,
   node->use_linear_tree = use_linear_tree;
   node->N_block = N_block;
 
+  node->N       = calloc(number_dimensions, sizeof(unsigned int));
   node->N_lower = calloc(number_dimensions, sizeof(unsigned int));
   node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
   for (dim = 0; dim < number_dimensions; dim++)
   {
+    node->N[dim]       = N[dim];
     node->N_lower[dim] = N_lower[dim];
     node->N_upper[dim] = N_upper[dim];
   }

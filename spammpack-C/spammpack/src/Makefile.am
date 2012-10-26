@@ -135,6 +135,7 @@ generated_kernel_files = \
 BUILT_SOURCES = $(generated_kernel_files) spammpack.mod
 
 spammpack.mod : libspammpack_fortran.la
+spammpack.lo : spamm_fortran_derived.lo
 
 CLEANFILES = \
   $(generated_kernel_files) \

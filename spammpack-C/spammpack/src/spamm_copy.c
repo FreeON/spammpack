@@ -118,8 +118,8 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
     if (*A == NULL)
     {
       *A = spamm_recursive_new_node(B->tier, B->number_dimensions,
-          B->contiguous_tier, B->N_block, B->use_linear_tree, B->N_lower,
-          B->N_upper);
+          B->contiguous_tier, B->N_block, B->use_linear_tree, B->N,
+          B->N_lower, B->N_upper);
     }
 
     if ((*A)->tier == (*A)->contiguous_tier && (*A)->use_linear_tree)

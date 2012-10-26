@@ -7,6 +7,7 @@ main ()
   unsigned int N_contiguous = 128;
   unsigned int N_block = 4;
 
+  unsigned int *N;
   unsigned int *N_lower;
   unsigned int *N_upper;
 
@@ -16,15 +17,17 @@ main ()
 
   int dim;
 
+  N = calloc(number_dimensions, sizeof(unsigned int));
   N_lower = calloc(number_dimensions, sizeof(unsigned int));
   N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
   for (dim = 0; dim < number_dimensions; dim++)
   {
+    N[dim] = N_contiguous;
     N_lower[dim] = 0;
     N_upper[dim] = N_contiguous;
   }
-  chunk = spamm_new_chunk(number_dimensions, N_block, N_lower, N_upper);
+  chunk = spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper);
 
   free(N_lower);
   free(N_upper);

@@ -10,6 +10,7 @@
 spamm_chunk_t *
 spamm_new_chunk (const unsigned int number_dimensions,
     const unsigned int N_block,
+    const unsigned int *const N,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper);
 
@@ -22,6 +23,9 @@ spamm_chunk_get_number_dimensions (spamm_chunk_t *chunk);
 
 unsigned int *
 spamm_chunk_get_N_block (spamm_chunk_t *chunk);
+
+unsigned int *
+spamm_chunk_get_N (spamm_chunk_t *chunk);
 
 unsigned int *
 spamm_chunk_get_N_lower (spamm_chunk_t *chunk);
@@ -50,8 +54,10 @@ spamm_chunk_get_number_tiers (spamm_chunk_t *chunk);
 size_t
 spamm_chunk_get_size (const unsigned int number_dimensions,
     const unsigned int N_block,
+    const unsigned int *const N,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper,
+    unsigned int **N_pointer,
     unsigned int **N_lower_pointer,
     unsigned int **N_upper_pointer,
     float **A_pointer,

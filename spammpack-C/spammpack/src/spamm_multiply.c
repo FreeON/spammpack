@@ -1197,7 +1197,8 @@ spamm_recursive_multiply_matrix (const float tolerance,
           {
             (*node_C)->tree.chunk =
               spamm_new_chunk((*node_C)->number_dimensions,
-                  (*node_C)->N_block, (*node_C)->N_lower, (*node_C)->N_upper);
+                  (*node_C)->N_block, (*node_C)->N, (*node_C)->N_lower,
+                  (*node_C)->N_upper);
           }
 
           if (sgemm != NULL)
@@ -1282,7 +1283,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
                           (*node_C)->number_dimensions,
                           (*node_C)->contiguous_tier,
                           (*node_C)->N_block, (*node_C)->use_linear_tree,
-                          N_lower, N_upper);
+                          (*node_C)->N, N_lower, N_upper);
 
                     free(N_lower);
                     free(N_upper);
@@ -1412,7 +1413,7 @@ spamm_multiply (const float tolerance,
 
         C->tree.recursive_tree = spamm_recursive_new_node(0,
             C->number_dimensions, C->contiguous_tier, C->N_block,
-            C->use_linear_tree, N_lower, N_upper);
+            C->use_linear_tree, C->N, N_lower, N_upper);
 
         free(N_lower);
         free(N_upper);

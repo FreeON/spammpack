@@ -106,6 +106,7 @@ spamm_recursive_delete (struct spamm_recursive_node_t **node)
     }
   }
 
+  free((*node)->N);
   free((*node)->N_lower);
   free((*node)->N_upper);
 
