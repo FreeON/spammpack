@@ -213,12 +213,14 @@ if test "${use_product_count}" = "yes"; then
   AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
 fi
 
-AC_MSG_CHECKING([whether to use real hashtables])
-AC_ARG_ENABLE([hashtable],
-              [AS_HELP_STRING([--enable-hashtable], [Enables the use of real hashtables as opposed to arrays.])],
-              [use_hashtable=${enableval}],
-              [use_hashtable="no"])
-AC_MSG_RESULT([$use_hashtable])
+#AC_MSG_CHECKING([whether to use real hashtables])
+#AC_ARG_ENABLE([hashtable],
+#              [AS_HELP_STRING([--enable-hashtable], [Enables the use of real hashtables as opposed to arrays.])],
+#              [use_hashtable=${enableval}],
+#              [use_hashtable="no"])
+#AC_MSG_RESULT([$use_hashtable])
+
+use_hashtable="no"
 
 use_hashtable_hash=0
 if test "${use_hashtable}" = "yes"; then
@@ -265,12 +267,12 @@ if test "${use_hashtable}" = "yes"; then
 fi
 AC_DEFINE_UNQUOTED([SPAMM_HASHTABLE_HASH], [$use_hashtable_hash], [The type of hash function])
 
-AC_MSG_CHECKING([what convolution implementation to use])
-AC_ARG_WITH([convolution],
-            [AS_HELP_STRING([--with-convolution], [Choose which convolution implementation to use])],
-            [use_convolution=$withval],
-            [use_convolution=5])
-AC_MSG_RESULT([$use_convolution])
+#AC_MSG_CHECKING([what convolution implementation to use])
+#AC_ARG_WITH([convolution],
+#            [AS_HELP_STRING([--with-convolution], [Choose which convolution implementation to use])],
+#            [use_convolution=$withval],
+#            [use_convolution=5])
+#AC_MSG_RESULT([$use_convolution])
 AC_DEFINE_UNQUOTED([SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION], [$use_convolution], [The convolution implementation])
 
 AC_MSG_CHECKING([whether to double-check the multiply])
