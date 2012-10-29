@@ -48,15 +48,15 @@ spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm
  * @return The matrix element Aij.
  */
 float
-spamm_recursive_get (const unsigned int *const i,
-    const struct spamm_recursive_node_t *node,
-    const unsigned int number_dimensions,
+spamm_recursive_get (const unsigned int number_dimensions,
+    const unsigned int *const i,
     const unsigned int *N_lower,
     const unsigned int *N_upper,
     const unsigned int tier,
     const unsigned int contiguous_tier,
     const unsigned int N_block,
-    const short use_linear_tree)
+    const short use_linear_tree,
+    const struct spamm_recursive_node_t *node)
 {
   int dim;
 
@@ -105,17 +105,17 @@ spamm_recursive_get (const unsigned int *const i,
         if (i[0] < N_lower[0]+(number_rows)/2)
         {
           new_N_upper[0] = N_lower[0]+(number_rows)/2;
-          return spamm_recursive_get(i, node->tree.child[0],
-              number_dimensions, new_N_lower, new_N_upper, tier,
-              contiguous_tier, N_block, use_linear_tree);
+          return spamm_recursive_get(number_dimensions, i, new_N_lower,
+              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              node->tree.child[0]);
         }
 
         else
         {
           new_N_lower[0] = N_lower[0]+(number_rows)/2;
-          return spamm_recursive_get(i, node->tree.child[1],
-              number_dimensions, new_N_lower, new_N_upper, tier,
-              contiguous_tier, N_block, use_linear_tree);
+          return spamm_recursive_get(number_dimensions, i, new_N_lower,
+              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              node->tree.child[1]);
         }
 
       case 2:
@@ -125,9 +125,9 @@ spamm_recursive_get (const unsigned int *const i,
         {
           new_N_upper[0] = N_lower[0]+(number_rows)/2;
           new_N_upper[1] = N_lower[1]+(number_columns)/2;
-          return spamm_recursive_get(i, node->tree.child[0],
-              number_dimensions, new_N_lower, new_N_upper, tier,
-              contiguous_tier, N_block, use_linear_tree);
+          return spamm_recursive_get(number_dimensions, i, new_N_lower,
+              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              node->tree.child[0]);
         }
 
         else if (i[0] <  N_lower[0]+(number_rows)/2 &&
@@ -135,9 +135,9 @@ spamm_recursive_get (const unsigned int *const i,
         {
           new_N_upper[0] = N_lower[0]+(number_rows)/2;
           new_N_lower[1] = N_lower[1]+(number_columns)/2;
-          return spamm_recursive_get(i, node->tree.child[1],
-              number_dimensions, new_N_lower, new_N_upper, tier,
-              contiguous_tier, N_block, use_linear_tree);
+          return spamm_recursive_get(number_dimensions, i, new_N_lower,
+              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              node->tree.child[1]);
         }
 
         else if (i[0] >= N_lower[0]+(number_rows)/2 &&
@@ -145,18 +145,18 @@ spamm_recursive_get (const unsigned int *const i,
         {
           new_N_lower[0] = N_lower[0]+(number_rows)/2;
           new_N_upper[1] = N_lower[1]+(number_columns)/2;
-          return spamm_recursive_get(i, node->tree.child[2],
-              number_dimensions, new_N_lower, new_N_upper, tier,
-              contiguous_tier, N_block, use_linear_tree);
+          return spamm_recursive_get(number_dimensions, i, new_N_lower,
+              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              node->tree.child[2]);
         }
 
         else
         {
           new_N_lower[0] = N_lower[0]+(number_rows)/2;
           new_N_lower[1] = N_lower[1]+(number_columns)/2;
-          return spamm_recursive_get(i, node->tree.child[3],
-              number_dimensions, new_N_lower, new_N_upper, tier,
-              contiguous_tier, N_block, use_linear_tree);
+          return spamm_recursive_get(number_dimensions, i, new_N_lower,
+              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              node->tree.child[3]);
         }
         break;
 
@@ -213,8 +213,9 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
       N_upper[dim] = A->N_padded;
     }
 
-    return spamm_recursive_get(i, A->tree.recursive_tree, A->number_dimensions,
-        N_lower, N_upper, 0, A->contiguous_tier, A->N_block, A->use_linear_tree);
+    return spamm_recursive_get(A->number_dimensions, i, N_lower, N_upper, 0,
+        A->contiguous_tier, A->N_block, A->use_linear_tree,
+        A->tree.recursive_tree);
 
     free(N_lower);
     free(N_upper);

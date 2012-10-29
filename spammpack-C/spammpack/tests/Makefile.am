@@ -42,8 +42,8 @@ SP2_SOURCES = SP2.F90 spamm_project.F90
 SP2_LDFLAGS = libspammtest.la
 SP2_DEPENDENCIES = libspammtest.la
 
-chunk_test_SOURCES = chunk_test.F90
-chunk_test_LDFLAGS = \
+06_chunk_test_SOURCES = 06_chunk_test.F90
+06_chunk_test_LDFLAGS = \
   $(top_builddir)/src/libspammpack_fortran.la \
   $(top_builddir)/src/libspamm.la
 
@@ -58,22 +58,22 @@ noinst_SCRIPTS = \
 EXTRA_DIST = $(noinst_SCRIPTS)
 
 check_PROGRAMS = \
+  01_list \
+  02_list_sort \
+  03_create_spamm \
+  04_create_spamm_vector \
+  05_new_chunk \
+  06_chunk_test \
   add_spamm_dense \
   add_spamm_sparse \
   check_spamm \
-  chunk_test \
   convert_dense \
-  create_spamm \
-  create_spamm_vector \
   get_version \
   hashtable_insert \
   hashtable_remove \
   ipow \
   linear_index \
-  list \
-  list_sort \
   multiply_spamm \
-  new_chunk \
   stats
 
 # spamm_multiply

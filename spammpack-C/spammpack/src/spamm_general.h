@@ -203,7 +203,6 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
 void
 spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int *const i,
-    const float Aij,
     const unsigned int *const N,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper,
@@ -213,6 +212,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int N_block,
     const short use_linear_tree,
     const unsigned int depth,
+    const float Aij,
     struct spamm_recursive_node_t **node);
 
 void
