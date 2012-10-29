@@ -93,7 +93,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
 
     /* Set matrix element. */
     A = spamm_chunk_get_matrix((*node)->tree.chunk);
-    A[spamm_chunk_matrix_index((*node)->number_dimensions, (*node)->N_lower, (*node)->N_upper, i)] = Aij;
+    A[spamm_chunk_matrix_index((*node)->number_dimensions, (*node)->N_block, (*node)->N_lower, i)] = Aij;
   }
 
   else

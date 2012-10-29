@@ -185,21 +185,40 @@ spamm_chunk_get_number_tiers (spamm_chunk_t *chunk)
  * Storage order is column-major (for reasons of compatibilty with Fortran).
  *
  * @param number_dimensions The number of dimensions.
- * @param N_lower The bounding box lower index array.
- * @param N_upper The bounding box upper index array.
+ * @param N_block The block size.
+ * @param N_lower The bounding box upper index array.
  * @param i The index array.
  *
  * @return The linear offset into the matrix data.
  */
 unsigned int
 spamm_chunk_matrix_index (const unsigned int number_dimensions,
+    const unsigned int N_block,
     const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
     const unsigned int *const i)
 {
-  unsigned int offset = 0;
-  unsigned int dim;
+  unsigned int offset;
+  unsigned int block_offset;
+  unsigned int *i_temp;
 
+  int dim;
+
+  i_temp = calloc(number_dimensions, sizeof(unsigned int));
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    i_temp[dim] = (i[dim]-N_lower[dim])/N_block;
+  }
+  offset = N_block*N_block*spamm_index_linear(number_dimensions, i_temp);
+  free(i_temp);
+
+  for (dim = number_dimensions-1; dim >= 1; dim--)
+  {
+    block_offset = N_block*(block_offset+(i[dim]-N_lower[dim])%N_block);
+  }
+  block_offset += (i[0]-N_lower[0])%N_block;
+  offset += block_offset;
+
+  return offset;
 }
 
 /** Get the size of a SpAMM data chunk.

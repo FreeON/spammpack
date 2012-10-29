@@ -12,7 +12,7 @@ main (int argc, char **argv)
   const unsigned int N[] = { 511, 513 };
   const unsigned int contiguous_tier = 5;
   const unsigned int N_block = 4;
-  const short use_linear_tree = 1;
+  const short use_linear_tree = 0;
   struct spamm_matrix_t *A;
   float *A_dense = (float*) calloc(N[0]*N[1], sizeof(float));
 

@@ -53,8 +53,8 @@ spamm_chunk_get_number_tiers (spamm_chunk_t *chunk);
 
 unsigned int
 spamm_chunk_matrix_index (const unsigned int number_dimensions,
+    const unsigned int N_block,
     const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
     const unsigned int *const i);
 
 size_t

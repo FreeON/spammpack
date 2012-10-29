@@ -72,19 +72,7 @@ spamm_recursive_get (const unsigned int *const i,
     else
     {
       A = spamm_chunk_get_matrix(node->tree.chunk);
-      switch (node->number_dimensions)
-      {
-        case 1:
-          return A[i[0]-node->N_lower[0]];
-          break;
-
-        case 2:
-          return A[spamm_index_column_major(i[0]-node->N_lower[0], i[1]-node->N_lower[1], number_rows, number_rows)];
-          break;
-
-        default:
-          SPAMM_FATAL("not implemented\n");
-      }
+      return A[spamm_chunk_matrix_index(node->number_dimensions, node->N_block, node->N_lower, i)];
     }
   }
 
