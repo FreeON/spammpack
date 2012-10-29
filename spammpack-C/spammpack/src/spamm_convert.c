@@ -29,8 +29,7 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const unsigned int N_block,
     const short use_linear_tree,
     const enum spamm_layout_t dense_type,
-    const float *const A_dense,
-    const enum spamm_layout_t spamm_layout)
+    const float *const A_dense)
 {
   struct spamm_matrix_t *A = NULL;
   unsigned int *i;
@@ -42,7 +41,7 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     SPAMM_FATAL("can not handle this case\n");
   }
 
-  A = spamm_new(number_dimensions, N, contiguous_tier, N_block, use_linear_tree, spamm_layout);
+  A = spamm_new(number_dimensions, N, contiguous_tier, N_block, use_linear_tree);
 
   i = calloc(number_dimensions, sizeof(unsigned int));
   for (i[0] = 0; i[0] < N[0]; i[0]++) {

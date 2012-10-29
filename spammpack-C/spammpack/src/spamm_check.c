@@ -308,7 +308,7 @@ spamm_check (const struct spamm_matrix_t *A, const float tolerance)
 {
   unsigned int depth;
   unsigned int N_padded;
-  unsigned int dim;
+  int dim;
   float x, x_N;
   struct spamm_check_user_data_t user_data;
 

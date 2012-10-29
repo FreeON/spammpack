@@ -186,37 +186,12 @@ spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, con
  * @return A pointer to the newly allocated node.
  */
 struct spamm_recursive_node_t *
-spamm_recursive_new_node (const unsigned int tier,
-    const unsigned int number_dimensions,
-    const unsigned int contiguous_tier,
-    const unsigned int N_block,
-    const short use_linear_tree,
-    const unsigned int *const N,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper)
+spamm_recursive_new_node ()
 {
-  unsigned int dim;
   struct spamm_recursive_node_t *node = NULL;
 
   /* Allocate memory. */
   node = calloc(1, sizeof(struct spamm_recursive_node_t));
-
-  node->tier = tier;
-  node->number_dimensions = number_dimensions;
-  node->contiguous_tier = contiguous_tier;
-  node->use_linear_tree = use_linear_tree;
-  node->N_block = N_block;
-
-  node->N       = calloc(number_dimensions, sizeof(unsigned int));
-  node->N_lower = calloc(number_dimensions, sizeof(unsigned int));
-  node->N_upper = calloc(number_dimensions, sizeof(unsigned int));
-
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    node->N[dim]       = N[dim];
-    node->N_lower[dim] = N_lower[dim];
-    node->N_upper[dim] = N_upper[dim];
-  }
 
   return node;
 }
@@ -238,7 +213,6 @@ spamm_recursive_new_node (const unsigned int tier,
  * @param use_linear_tree If set to zero, then the tree will be stored in the
  * hierachical format, otherwise storage will switch to linear format at
  * contiguous_tier.
- * @param layout The storage layout of the matrix elements.
  *
  * @return The newly allocated matrix. This matrix has to be freed by calling
  * spamm_delete().
@@ -248,8 +222,7 @@ spamm_new (const unsigned int number_dimensions,
     const unsigned int *const N,
     const unsigned int contiguous_tier,
     const unsigned int N_block,
-    const short use_linear_tree,
-    const enum spamm_layout_t layout)
+    const short use_linear_tree)
 {
   int dim;
   unsigned int N_temp;
@@ -286,22 +259,6 @@ spamm_new (const unsigned int number_dimensions,
   for (dim = 0; dim < number_dimensions; dim++)
   {
     A->N[dim] = N[dim];
-  }
-
-  /* Set the layout. */
-  switch (layout)
-  {
-    case row_major:
-    case column_major:
-    case Z_curve:
-    case dense_column_major:
-      A->layout = layout;
-      break;
-
-    default:
-      fprintf(stderr, "[spamm new] unknown layout (%i)\n", layout);
-      exit(1);
-      break;
   }
 
   /* Pad to powers of M_child x N_child. */

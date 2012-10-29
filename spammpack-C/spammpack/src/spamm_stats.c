@@ -66,7 +66,7 @@ spamm_memory (const struct spamm_hashed_t *A)
 void
 spamm_print_info (const struct spamm_matrix_t *const A)
 {
-  unsigned int dim;
+  int dim;
 
   assert(A != NULL);
 

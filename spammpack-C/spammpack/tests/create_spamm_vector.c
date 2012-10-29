@@ -28,7 +28,7 @@ main (int argc, char **argv)
     A_dense[i[0]] = rand()/(float) RAND_MAX;
   }
 
-  A = spamm_new(1, N, contiguous_tier, N_block, use_linear_tree, layout);
+  A = spamm_new(1, N, contiguous_tier, N_block, use_linear_tree);
   printf("A info: ");
   spamm_print_info(A);
 

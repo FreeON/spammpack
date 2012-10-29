@@ -101,7 +101,13 @@ spamm_hashed_copy (struct spamm_hashed_t **A,
 void
 spamm_recursive_copy (struct spamm_recursive_node_t **A,
     const float beta,
-    const struct spamm_recursive_node_t *const B)
+    const struct spamm_recursive_node_t *const B,
+    const unsigned int number_dimensions,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const short use_linear_tree)
 {
   unsigned int i;
 
@@ -117,22 +123,20 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
   {
     if (*A == NULL)
     {
-      *A = spamm_recursive_new_node(B->tier, B->number_dimensions,
-          B->contiguous_tier, B->N_block, B->use_linear_tree, B->N,
-          B->N_lower, B->N_upper);
+      *A = spamm_recursive_new_node();
     }
 
-    if ((*A)->tier == (*A)->contiguous_tier && (*A)->use_linear_tree)
+    if (tier == contiguous_tier && use_linear_tree)
     {
       spamm_hashed_copy(&(*A)->tree.hashed_tree, beta, B->tree.hashed_tree);
     }
 
-    else if ((*A)->tier == (*A)->contiguous_tier)
+    else if (tier == contiguous_tier)
     {
       A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
       B_matrix = spamm_chunk_get_matrix(B->tree.chunk);
 
-      for (i = 0; i < ipow((*A)->N_upper[0]-(*A)->N_lower[0], 2); i++)
+      for (i = 0; i < ipow(N_upper[0]-N_lower[0], 2); i++)
       {
         A_matrix[i] = beta*B_matrix[i];
         (*A)->norm = beta*B->norm;
@@ -144,13 +148,13 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
     {
       if ((*A)->tree.child == NULL)
       {
-        (*A)->tree.child = calloc(ipow(2, (*A)->number_dimensions), sizeof(struct spamm_recursive_node_t*));
+        (*A)->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
       }
 
-      spamm_recursive_copy(&(*A)->tree.child[0], beta, B->tree.child[0]);
-      spamm_recursive_copy(&(*A)->tree.child[1], beta, B->tree.child[1]);
-      spamm_recursive_copy(&(*A)->tree.child[2], beta, B->tree.child[2]);
-      spamm_recursive_copy(&(*A)->tree.child[3], beta, B->tree.child[3]);
+      spamm_recursive_copy(&(*A)->tree.child[0], beta, B->tree.child[0], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
+      spamm_recursive_copy(&(*A)->tree.child[1], beta, B->tree.child[1], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
+      spamm_recursive_copy(&(*A)->tree.child[2], beta, B->tree.child[2], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
+      spamm_recursive_copy(&(*A)->tree.child[3], beta, B->tree.child[3], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
     }
   }
 }
@@ -166,12 +170,17 @@ spamm_copy (struct spamm_matrix_t **A,
 {
   unsigned int i;
 
+  int dim;
+
+  unsigned int *N_lower;
+  unsigned int *N_upper;
+
   assert(B != NULL);
 
   if (*A == NULL)
   {
     /* Create new matrix A. */
-    *A = spamm_new(B->number_dimensions, B->N, B->contiguous_tier, B->N_block, B->use_linear_tree, B->layout);
+    *A = spamm_new(B->number_dimensions, B->N, B->contiguous_tier, B->N_block, B->use_linear_tree);
   }
 
   /* Sanity check. */
@@ -198,11 +207,6 @@ spamm_copy (struct spamm_matrix_t **A,
     SPAMM_FATAL("mismatch in contiguous tier\n");
   }
 
-  if ((*A)->layout != B->layout)
-  {
-    SPAMM_FATAL("mismatch in layout\n");
-  }
-
   if (B->contiguous_tier == 0 && B->use_linear_tree)
   {
     spamm_hashed_copy(&(*A)->tree.hashed_tree, 1.0, B->tree.hashed_tree);
@@ -210,6 +214,18 @@ spamm_copy (struct spamm_matrix_t **A,
 
   else
   {
-    spamm_recursive_copy(&(*A)->tree.recursive_tree, 1.0, B->tree.recursive_tree);
+    N_lower = calloc(B->number_dimensions, sizeof(unsigned int));
+    N_upper = calloc(B->number_dimensions, sizeof(unsigned int));
+
+    for (dim = 0; dim < B->number_dimensions; dim++)
+    {
+      N_upper[dim] = B->N_padded;
+    }
+
+    spamm_recursive_copy(&(*A)->tree.recursive_tree, 1.0, B->tree.recursive_tree,
+        B->number_dimensions, N_lower, N_upper, 0, B->contiguous_tier, B->use_linear_tree);
+
+    free(N_lower);
+    free(N_upper);
   }
 }

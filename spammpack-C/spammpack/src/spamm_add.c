@@ -305,12 +305,19 @@ spamm_hashed_add (const float alpha,
  * @param A The matrix A.
  * @param beta The factor @f$ \beta @f$.
  * @param B The matrix B.
+ * @param number_dimensions The number of dimensions.
  */
 void
 spamm_recursive_add (const float alpha,
     struct spamm_recursive_node_t **A,
     const float beta,
-    struct spamm_recursive_node_t **B)
+    struct spamm_recursive_node_t **B,
+    const unsigned int number_dimensions,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const short use_linear_tree)
 {
   unsigned int i;
 
@@ -322,26 +329,21 @@ spamm_recursive_add (const float alpha,
 
   if ((*A) != NULL && (*B) != NULL)
   {
-    if ((*A)->number_dimensions != (*B)->number_dimensions)
-    {
-      SPAMM_FATAL("dimension mismatch\n");
-    }
-
-    if ((*A)->tier == (*A)->contiguous_tier && (*A)->use_linear_tree)
+    if (tier == contiguous_tier && use_linear_tree)
     {
       spamm_hashed_add(alpha, &(*A)->tree.hashed_tree, beta, &(*B)->tree.hashed_tree);
     }
 
-    else if ((*A)->tier == (*A)->contiguous_tier)
+    else if (tier == contiguous_tier)
     {
       /* Braindead add. */
       A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
       B_matrix = spamm_chunk_get_matrix((*B)->tree.chunk);
 
-      switch ((*A)->number_dimensions)
+      switch (number_dimensions)
       {
         case 2:
-          for (i = 0; i < ipow((*A)->N_upper[0]-(*A)->N_lower[0], 2); i++)
+          for (i = 0; i < ipow(N_upper[0]-N_lower[0], 2); i++)
           {
             A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
           }
@@ -355,23 +357,23 @@ spamm_recursive_add (const float alpha,
     else
     {
       /* Recursve. */
-      spamm_recursive_add(alpha, &(*A)->tree.child[0], beta, &(*B)->tree.child[0]);
-      spamm_recursive_add(alpha, &(*A)->tree.child[1], beta, &(*B)->tree.child[1]);
-      spamm_recursive_add(alpha, &(*A)->tree.child[2], beta, &(*B)->tree.child[2]);
-      spamm_recursive_add(alpha, &(*A)->tree.child[3], beta, &(*B)->tree.child[3]);
+      spamm_recursive_add(alpha, &(*A)->tree.child[0], beta, &(*B)->tree.child[0], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
+      spamm_recursive_add(alpha, &(*A)->tree.child[1], beta, &(*B)->tree.child[1], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
+      spamm_recursive_add(alpha, &(*A)->tree.child[2], beta, &(*B)->tree.child[2], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
+      spamm_recursive_add(alpha, &(*A)->tree.child[3], beta, &(*B)->tree.child[3], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
     }
   }
 
   else if ((*A) == NULL && (*B) != NULL)
   {
     /* Copy B node to A. */
-    spamm_recursive_copy(&(*A), beta, (*B));
+    spamm_recursive_copy(&(*A), beta, (*B), number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
   }
 
   else if ((*A) != NULL && (*B) == NULL)
   {
     /* Multiply A by alpha. */
-    spamm_recursive_multiply_scalar(alpha, *A);
+    spamm_recursive_multiply_scalar(alpha, *A, number_dimensions, tier, contiguous_tier, use_linear_tree);
   }
 }
 
@@ -388,15 +390,13 @@ spamm_add (const float alpha,
     const float beta,
     struct spamm_matrix_t *B)
 {
-  unsigned int dim;
+  int dim;
+
+  unsigned int *N_lower;
+  unsigned int *N_upper;
 
   assert(A != NULL);
   assert(B != NULL);
-
-  if (A->layout != B->layout)
-  {
-    SPAMM_FATAL("[add] inconsisten layout in matrices\n");
-  }
 
   if (A->number_dimensions != B->number_dimensions)
   {
@@ -421,7 +421,20 @@ spamm_add (const float alpha,
 
   else if (A->tree.recursive_tree != NULL || B->tree.recursive_tree != NULL)
   {
-    spamm_recursive_add(alpha, &A->tree.recursive_tree, beta, &B->tree.recursive_tree);
+    N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
+    N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
+
+    for (dim = 0; dim < A->number_dimensions; dim++)
+    {
+      N_upper[dim] = A->N_padded;
+    }
+
+    spamm_recursive_add(alpha, &A->tree.recursive_tree, beta,
+        &B->tree.recursive_tree, A->number_dimensions, N_lower, N_upper, 0,
+        A->contiguous_tier, A->use_linear_tree);
+
+    free(N_lower);
+    free(N_upper);
   }
 
   else

@@ -23,7 +23,13 @@ spamm_copy (struct spamm_matrix_t **A,
 void
 spamm_recursive_copy (struct spamm_recursive_node_t **A,
     const float beta,
-    const struct spamm_recursive_node_t *const B);
+    const struct spamm_recursive_node_t *const B,
+    const unsigned int number_dimensions,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const short use_linear_tree);
 
 void
 spamm_hashed_copy (struct spamm_hashed_t **A,
@@ -126,7 +132,11 @@ spamm_hashed_multiply (const float tolerance,
     const enum spamm_kernel_t kernel);
 
 void
-spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t *A);
+spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t *A,
+    const unsigned int number_dimensions,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const short use_linear_tree);
 
 void
 spamm_multiply (const float tolerance,
@@ -157,8 +167,7 @@ spamm_new (const unsigned int number_dimensions,
     const unsigned int *const N,
     const unsigned int contiguous_tier,
     const unsigned int N_block,
-    const short use_linear_tree,
-    const enum spamm_layout_t layout);
+    const short use_linear_tree);
 
 struct spamm_hashed_t *
 spamm_hashed_new (const unsigned int tier,
@@ -176,14 +185,7 @@ struct spamm_hashed_node_t *
 spamm_hashed_new_node (const unsigned int tier, const unsigned int index_2D);
 
 struct spamm_recursive_node_t *
-spamm_recursive_new_node (const unsigned int tier,
-    const unsigned int number_dimensions,
-    const unsigned int contiguous_tier,
-    const unsigned int N_block,
-    const short use_linear_tree,
-    const unsigned int *const N,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper);
+spamm_recursive_new_node ();
 
 void
 spamm_print (const struct spamm_matrix_t *A);
@@ -211,7 +213,6 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int N_block,
     const short use_linear_tree,
     const unsigned int depth,
-    const enum spamm_layout_t layout,
     struct spamm_recursive_node_t **node);
 
 void
@@ -236,8 +237,7 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const unsigned int N_block,
     const short use_linear_tree,
     const enum spamm_layout_t dense_type,
-    const float *const A_dense,
-    const enum spamm_layout_t spamm_layout);
+    const float *const A_dense);
 
 struct spamm_hashed_t *
 spamm_hashed_convert_dense_to_spamm (const unsigned int M, const unsigned int N,

@@ -330,7 +330,6 @@ void
 spamm_chunk_print (spamm_chunk_t *chunk)
 {
   int dim;
-  unsigned int i, j;
   unsigned int number_dimensions;
   unsigned int N_contiguous;
   unsigned int *N;

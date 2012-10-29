@@ -76,39 +76,7 @@ spamm_hashed_delete (struct spamm_hashed_t **A)
 void
 spamm_recursive_delete (struct spamm_recursive_node_t **node)
 {
-  int i;
-
   if (*node == NULL) { return; }
-
-  if ((*node)->number_dimensions == 2 && (*node)->tier == (*node)->contiguous_tier && (*node)->use_linear_tree)
-  {
-    spamm_hashed_delete(&(*node)->tree.hashed_tree);
-  }
-
-  else
-  {
-    if ((*node)->tier == (*node)->contiguous_tier)
-    {
-      if ((*node)->tree.chunk != NULL)
-      {
-        free((*node)->tree.chunk);
-        (*node)->tree.chunk = NULL;
-      }
-    }
-
-    else
-    {
-      for (i = 0; i < ipow(2, (*node)->number_dimensions); i++)
-      {
-        spamm_recursive_delete(&(*node)->tree.child[i]);
-      }
-      free((*node)->tree.child);
-    }
-  }
-
-  free((*node)->N);
-  free((*node)->N_lower);
-  free((*node)->N_upper);
 
   free(*node);
   *node = NULL;

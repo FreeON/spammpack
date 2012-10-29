@@ -85,8 +85,8 @@ main (int argc, char **argv)
 #endif
 
     /* Convert to SpAMM matrix. */
-    A = spamm_convert_dense_to_spamm(2, N, contiguous_tier, N_block, use_linear_tree, row_major, A_dense, row_major);
-    B = spamm_convert_dense_to_spamm(2, N, contiguous_tier, N_block, use_linear_tree, row_major, B_dense, row_major);
+    A = spamm_convert_dense_to_spamm(2, N, contiguous_tier, N_block, use_linear_tree, row_major, A_dense);
+    B = spamm_convert_dense_to_spamm(2, N, contiguous_tier, N_block, use_linear_tree, row_major, B_dense);
 
     result |= spamm_check(A, TEST_TOLERANCE);
     result |= spamm_check(B, TEST_TOLERANCE);

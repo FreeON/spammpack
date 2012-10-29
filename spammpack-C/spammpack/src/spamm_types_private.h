@@ -26,9 +26,6 @@ struct spamm_matrix_t
   /** The total depth of the tree. */
   unsigned int depth;
 
-  /** The layout of the basic matrix blocks on the kernel tier. */
-  enum spamm_layout_t layout;
-
   /** The tier of the contiguous matrix chunks. At this tier the submatrix is
    * stored in SpAMM chunks, and accessed hierarchically or through a linear
    * subtree. */
@@ -155,25 +152,6 @@ struct spamm_hashed_data_t
 struct
 spamm_recursive_node_t
 {
-  /** The number of dimensions. */
-  unsigned int number_dimensions;
-
-  /** Number of rows/columns in this matrix. The length of this array is given
-   * by number_dimensions. */
-  unsigned int *N;
-
-  /** An array of lower values of the row indices. */
-  unsigned int *N_lower;
-
-  /** An array of upper values of the row indices. */
-  unsigned int *N_upper;
-
-  /** The block size at which the SpAMM condition is applied. */
-  unsigned int N_block;
-
-  /** The tier. */
-  unsigned int tier;
-
   /** The norm of this block. */
   float norm;
 
@@ -193,14 +171,6 @@ spamm_recursive_node_t
     spamm_chunk_t *chunk;
   }
   tree;
-
-  /** Use a linear submatrix representation or a hierarchical one. A value of
-   * 0 implies hierarchical, while anything else (but we use 1) implies
-   * linear. */
-  short use_linear_tree;
-
-  /** The tier at which SpAMM chunks are stored. */
-  unsigned int contiguous_tier;
 };
 
 /** The basic information in a stream element. */
