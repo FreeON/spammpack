@@ -1,6 +1,7 @@
 #include "config.h"
 #include "spamm.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -451,6 +452,7 @@ spamm_new_chunk (const unsigned int number_dimensions,
   N_pointer       = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_pointer);
   N_lower_pointer = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_lower_pointer);
   N_upper_pointer = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_upper_pointer);
+
   for (dim = 0; dim < number_dimensions; dim++)
   {
     N_pointer[dim] = N[dim];

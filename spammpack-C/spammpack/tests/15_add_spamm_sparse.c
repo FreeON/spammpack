@@ -17,7 +17,7 @@ main (int argc, char **argv)
   const unsigned int N[] = { 513, 513 };
   const unsigned int contiguous_tier = 4;
   const unsigned int N_block = 4;
-  const short use_linear_tree = 1;
+  const short use_linear_tree = 0;
 
   double alpha = 1.2;
   double beta = 0.8;

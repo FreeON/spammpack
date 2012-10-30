@@ -356,11 +356,14 @@ spamm_recursive_add (const float alpha,
 
     else
     {
-      /* Recursve. */
-      spamm_recursive_add(alpha, &(*A)->tree.child[0], beta, &(*B)->tree.child[0], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
-      spamm_recursive_add(alpha, &(*A)->tree.child[1], beta, &(*B)->tree.child[1], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
-      spamm_recursive_add(alpha, &(*A)->tree.child[2], beta, &(*B)->tree.child[2], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
-      spamm_recursive_add(alpha, &(*A)->tree.child[3], beta, &(*B)->tree.child[3], number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
+      /* Recurse. */
+      for (i = 0; i < ipow(2, number_dimensions); i++)
+      {
+        spamm_recursive_add(alpha,
+            ((*A)->tree.child != NULL ? &(*A)->tree.child[i] : (struct spamm_recursive_node_t**) (&(*A)->tree.child)), beta,
+            ((*B)->tree.child != NULL ? &(*B)->tree.child[i] : (struct spamm_recursive_node_t**) (&(*B)->tree.child)),
+            number_dimensions, N_lower, N_upper, tier+1, contiguous_tier, use_linear_tree);
+      }
     }
   }
 
