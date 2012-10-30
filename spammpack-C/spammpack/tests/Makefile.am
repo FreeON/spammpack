@@ -32,7 +32,7 @@ spammtests.lo : test_utilities.lo
 noinst_PROGRAMS = \
   convert_to_binary
 
-get_version_SOURCES = get_version.F90
+08_get_version_SOURCES = 08_get_version.F90
 
 spamm_multiply_SOURCES = spamm_multiply.F90
 spamm_multiply_LDFLAGS = libspammtest.la
@@ -64,17 +64,17 @@ check_PROGRAMS = \
   04_create_spamm_vector \
   05_new_chunk \
   06_chunk_test \
-  add_spamm_dense \
-  add_spamm_sparse \
-  check_spamm \
-  convert_dense \
-  get_version \
-  hashtable_insert \
-  hashtable_remove \
-  ipow \
-  linear_index \
-  multiply_spamm \
-  stats
+  07_convert_dense \
+  08_get_version \
+  09_hashtable_insert \
+  10_hashtable_remove \
+  11_ipow \
+  12_linear_index \
+  13_check_spamm \
+  14_add_spamm_dense \
+  15_add_spamm_sparse \
+  16_stats \
+  17_multiply_spamm
 
 # spamm_multiply
 

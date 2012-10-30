@@ -106,7 +106,7 @@ spamm_recursive_get (const unsigned int number_dimensions,
         {
           new_N_upper[0] = N_lower[0]+(number_rows)/2;
           return spamm_recursive_get(number_dimensions, i, new_N_lower,
-              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              new_N_upper, tier+1, contiguous_tier, N_block, use_linear_tree,
               node->tree.child[0]);
         }
 
@@ -114,7 +114,7 @@ spamm_recursive_get (const unsigned int number_dimensions,
         {
           new_N_lower[0] = N_lower[0]+(number_rows)/2;
           return spamm_recursive_get(number_dimensions, i, new_N_lower,
-              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              new_N_upper, tier+1, contiguous_tier, N_block, use_linear_tree,
               node->tree.child[1]);
         }
 
@@ -126,7 +126,7 @@ spamm_recursive_get (const unsigned int number_dimensions,
           new_N_upper[0] = N_lower[0]+(number_rows)/2;
           new_N_upper[1] = N_lower[1]+(number_columns)/2;
           return spamm_recursive_get(number_dimensions, i, new_N_lower,
-              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              new_N_upper, tier+1, contiguous_tier, N_block, use_linear_tree,
               node->tree.child[0]);
         }
 
@@ -136,7 +136,7 @@ spamm_recursive_get (const unsigned int number_dimensions,
           new_N_upper[0] = N_lower[0]+(number_rows)/2;
           new_N_lower[1] = N_lower[1]+(number_columns)/2;
           return spamm_recursive_get(number_dimensions, i, new_N_lower,
-              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              new_N_upper, tier+1, contiguous_tier, N_block, use_linear_tree,
               node->tree.child[1]);
         }
 
@@ -146,7 +146,7 @@ spamm_recursive_get (const unsigned int number_dimensions,
           new_N_lower[0] = N_lower[0]+(number_rows)/2;
           new_N_upper[1] = N_lower[1]+(number_columns)/2;
           return spamm_recursive_get(number_dimensions, i, new_N_lower,
-              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              new_N_upper, tier+1, contiguous_tier, N_block, use_linear_tree,
               node->tree.child[2]);
         }
 
@@ -155,7 +155,7 @@ spamm_recursive_get (const unsigned int number_dimensions,
           new_N_lower[0] = N_lower[0]+(number_rows)/2;
           new_N_lower[1] = N_lower[1]+(number_columns)/2;
           return spamm_recursive_get(number_dimensions, i, new_N_lower,
-              new_N_upper, tier, contiguous_tier, N_block, use_linear_tree,
+              new_N_upper, tier+1, contiguous_tier, N_block, use_linear_tree,
               node->tree.child[3]);
         }
         break;
