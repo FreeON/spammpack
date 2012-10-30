@@ -116,7 +116,7 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 
   if (B == NULL && *A != NULL)
   {
-    spamm_recursive_delete(A);
+    spamm_recursive_delete(number_dimensions, tier, contiguous_tier, use_linear_tree, A);
   }
 
   if (B != NULL)

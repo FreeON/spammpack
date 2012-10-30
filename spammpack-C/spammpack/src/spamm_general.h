@@ -40,7 +40,11 @@ void
 spamm_delete (struct spamm_matrix_t **A);
 
 void
-spamm_recursive_delete (struct spamm_recursive_node_t **node);
+spamm_recursive_delete (const unsigned int number_dimensions,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const short use_linear_tree,
+    struct spamm_recursive_node_t **node);
 
 void
 spamm_delete_block (struct spamm_hashed_data_t **data);

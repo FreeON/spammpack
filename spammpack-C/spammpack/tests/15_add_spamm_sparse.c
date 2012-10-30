@@ -14,7 +14,7 @@ main (int argc, char **argv)
 {
   int result;
 
-  const unsigned int N[] = { 513, 513 };
+  const unsigned int N[] = { 734, 734 };
   const unsigned int contiguous_tier = 4;
   const unsigned int N_block = 4;
   const short use_linear_tree = 0;

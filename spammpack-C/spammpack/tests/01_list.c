@@ -32,5 +32,7 @@ main ()
     }
   }
 
+  spamm_list_delete(&list);
+
   return 0;
 }

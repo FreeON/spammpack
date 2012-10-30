@@ -336,6 +336,16 @@ spamm_recursive_add (const float alpha,
 
     else if (tier == contiguous_tier)
     {
+      if ((*A)->tree.chunk == NULL)
+      {
+        SPAMM_FATAL("??\n");
+      }
+
+      if ((*B)->tree.chunk == NULL)
+      {
+        SPAMM_FATAL("??\n");
+      }
+
       /* Braindead add. */
       A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
       B_matrix = spamm_chunk_get_matrix((*B)->tree.chunk);
@@ -356,13 +366,22 @@ spamm_recursive_add (const float alpha,
 
     else
     {
+      if ((*A)->tree.child == NULL)
+      {
+        SPAMM_FATAL("??\n");
+      }
+
+      if ((*B)->tree.child == NULL)
+      {
+        SPAMM_FATAL("??\n");
+      }
+
       /* Recurse. */
       for (i = 0; i < ipow(2, number_dimensions); i++)
       {
-        spamm_recursive_add(alpha,
-            ((*A)->tree.child != NULL ? &(*A)->tree.child[i] : (struct spamm_recursive_node_t**) (&(*A)->tree.child)), beta,
-            ((*B)->tree.child != NULL ? &(*B)->tree.child[i] : (struct spamm_recursive_node_t**) (&(*B)->tree.child)),
-            number_dimensions, N_lower, N_upper, tier+1, contiguous_tier, use_linear_tree);
+        spamm_recursive_add(alpha, &(*A)->tree.child[i], beta,
+            &(*B)->tree.child[i], number_dimensions, N_lower, N_upper,
+            tier+1, contiguous_tier, use_linear_tree);
       }
     }
   }

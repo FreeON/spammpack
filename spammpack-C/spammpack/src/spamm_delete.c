@@ -74,9 +74,36 @@ spamm_hashed_delete (struct spamm_hashed_t **A)
  * @param A The recursive matrix root.
  */
 void
-spamm_recursive_delete (struct spamm_recursive_node_t **node)
+spamm_recursive_delete (const unsigned int number_dimensions,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const short use_linear_tree,
+    struct spamm_recursive_node_t **node)
 {
+  unsigned int i;
+
+  if (node == NULL) { return; }
+
   if (*node == NULL) { return; }
+
+  if (tier == contiguous_tier && use_linear_tree)
+  {
+    spamm_hashed_delete(&(*node)->tree.hashed_tree);
+  }
+
+  else if (tier == contiguous_tier)
+  {
+    free((*node)->tree.chunk);
+  }
+
+  else
+  {
+    for (i = 0; i < ipow(2, number_dimensions); i++)
+    {
+      spamm_recursive_delete(number_dimensions, tier+1, contiguous_tier, use_linear_tree, &(*node)->tree.child[i]);
+      free((*node)->tree.child);
+    }
+  }
 
   free(*node);
   *node = NULL;
@@ -98,7 +125,7 @@ spamm_delete (struct spamm_matrix_t **A)
 
   else
   {
-    spamm_recursive_delete(&(*A)->tree.recursive_tree);
+    spamm_recursive_delete((*A)->number_dimensions, 0, (*A)->contiguous_tier, (*A)->use_linear_tree, &(*A)->tree.recursive_tree);
   }
 
   free((*A)->N);
