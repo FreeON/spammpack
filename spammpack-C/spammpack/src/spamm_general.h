@@ -25,8 +25,6 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
     const float beta,
     const struct spamm_recursive_node_t *const B,
     const unsigned int number_dimensions,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
     const unsigned int tier,
     const unsigned int contiguous_tier,
     const short use_linear_tree);

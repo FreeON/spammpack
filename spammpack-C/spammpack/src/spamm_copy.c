@@ -103,13 +103,13 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
     const float beta,
     const struct spamm_recursive_node_t *const B,
     const unsigned int number_dimensions,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
     const unsigned int tier,
     const unsigned int contiguous_tier,
     const short use_linear_tree)
 {
   unsigned int i;
+
+  unsigned int N_contiguous;
 
   float *A_matrix;
   float *B_matrix;
@@ -136,7 +136,8 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
       A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
       B_matrix = spamm_chunk_get_matrix(B->tree.chunk);
 
-      for (i = 0; i < ipow(N_upper[0]-N_lower[0], 2); i++)
+      N_contiguous = spamm_chunk_get_N_contiguous((*A)->tree.chunk);
+      for (i = 0; i < N_contiguous; i++)
       {
         A_matrix[i] = beta*B_matrix[i];
         (*A)->norm = beta*B->norm;
@@ -151,10 +152,10 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
         (*A)->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
       }
 
-      spamm_recursive_copy(&(*A)->tree.child[0], beta, B->tree.child[0], number_dimensions, N_lower, N_upper, tier+1, contiguous_tier, use_linear_tree);
-      spamm_recursive_copy(&(*A)->tree.child[1], beta, B->tree.child[1], number_dimensions, N_lower, N_upper, tier+1, contiguous_tier, use_linear_tree);
-      spamm_recursive_copy(&(*A)->tree.child[2], beta, B->tree.child[2], number_dimensions, N_lower, N_upper, tier+1, contiguous_tier, use_linear_tree);
-      spamm_recursive_copy(&(*A)->tree.child[3], beta, B->tree.child[3], number_dimensions, N_lower, N_upper, tier+1, contiguous_tier, use_linear_tree);
+      spamm_recursive_copy(&(*A)->tree.child[0], beta, B->tree.child[0], number_dimensions, tier+1, contiguous_tier, use_linear_tree);
+      spamm_recursive_copy(&(*A)->tree.child[1], beta, B->tree.child[1], number_dimensions, tier+1, contiguous_tier, use_linear_tree);
+      spamm_recursive_copy(&(*A)->tree.child[2], beta, B->tree.child[2], number_dimensions, tier+1, contiguous_tier, use_linear_tree);
+      spamm_recursive_copy(&(*A)->tree.child[3], beta, B->tree.child[3], number_dimensions, tier+1, contiguous_tier, use_linear_tree);
     }
   }
 }
@@ -171,9 +172,6 @@ spamm_copy (struct spamm_matrix_t **A,
   unsigned int i;
 
   int dim;
-
-  unsigned int *N_lower;
-  unsigned int *N_upper;
 
   assert(B != NULL);
 
@@ -214,18 +212,8 @@ spamm_copy (struct spamm_matrix_t **A,
 
   else
   {
-    N_lower = calloc(B->number_dimensions, sizeof(unsigned int));
-    N_upper = calloc(B->number_dimensions, sizeof(unsigned int));
-
-    for (dim = 0; dim < B->number_dimensions; dim++)
-    {
-      N_upper[dim] = B->N_padded;
-    }
-
-    spamm_recursive_copy(&(*A)->tree.recursive_tree, 1.0, B->tree.recursive_tree,
-        B->number_dimensions, N_lower, N_upper, 0, B->contiguous_tier, B->use_linear_tree);
-
-    free(N_lower);
-    free(N_upper);
+    spamm_recursive_copy(&(*A)->tree.recursive_tree, 1.0,
+        B->tree.recursive_tree, B->number_dimensions, 0, B->contiguous_tier,
+        B->use_linear_tree);
   }
 }

@@ -313,13 +313,13 @@ spamm_recursive_add (const float alpha,
     const float beta,
     struct spamm_recursive_node_t **B,
     const unsigned int number_dimensions,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
     const unsigned int tier,
     const unsigned int contiguous_tier,
     const short use_linear_tree)
 {
   unsigned int i;
+
+  unsigned int N_contiguous;
 
   float *A_matrix;
   float *B_matrix;
@@ -329,7 +329,7 @@ spamm_recursive_add (const float alpha,
 
   if ((*A) != NULL && (*B) != NULL)
   {
-    if (tier == contiguous_tier && use_linear_tree)
+    if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
     {
       spamm_hashed_add(alpha, &(*A)->tree.hashed_tree, beta, &(*B)->tree.hashed_tree);
     }
@@ -350,10 +350,12 @@ spamm_recursive_add (const float alpha,
       A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
       B_matrix = spamm_chunk_get_matrix((*B)->tree.chunk);
 
+      N_contiguous = spamm_chunk_get_N_contiguous((*A)->tree.chunk);
+
       switch (number_dimensions)
       {
         case 2:
-          for (i = 0; i < ipow(N_upper[0]-N_lower[0], 2); i++)
+          for (i = 0; i < N_contiguous; i++)
           {
             A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
           }
@@ -366,22 +368,12 @@ spamm_recursive_add (const float alpha,
 
     else
     {
-      if ((*A)->tree.child == NULL)
-      {
-        SPAMM_FATAL("??\n");
-      }
-
-      if ((*B)->tree.child == NULL)
-      {
-        SPAMM_FATAL("??\n");
-      }
-
       /* Recurse. */
       for (i = 0; i < ipow(2, number_dimensions); i++)
       {
         spamm_recursive_add(alpha, &(*A)->tree.child[i], beta,
-            &(*B)->tree.child[i], number_dimensions, N_lower, N_upper,
-            tier+1, contiguous_tier, use_linear_tree);
+            &(*B)->tree.child[i], number_dimensions, tier+1, contiguous_tier,
+            use_linear_tree);
       }
     }
   }
@@ -389,7 +381,7 @@ spamm_recursive_add (const float alpha,
   else if ((*A) == NULL && (*B) != NULL)
   {
     /* Copy B node to A. */
-    spamm_recursive_copy(&(*A), beta, (*B), number_dimensions, N_lower, N_upper, tier, contiguous_tier, use_linear_tree);
+    spamm_recursive_copy(&(*A), beta, (*B), number_dimensions, tier, contiguous_tier, use_linear_tree);
   }
 
   else if ((*A) != NULL && (*B) == NULL)
@@ -414,9 +406,6 @@ spamm_add (const float alpha,
 {
   int dim;
 
-  unsigned int *N_lower;
-  unsigned int *N_upper;
-
   assert(A != NULL);
   assert(B != NULL);
 
@@ -433,7 +422,7 @@ spamm_add (const float alpha,
     }
   }
 
-  if (A->contiguous_tier == 0 && A->use_linear_tree)
+  if (A->number_dimensions == 2 && A->contiguous_tier == 0 && A->use_linear_tree)
   {
     if (A->tree.hashed_tree != NULL || B->tree.hashed_tree != NULL)
     {
@@ -443,20 +432,9 @@ spamm_add (const float alpha,
 
   else if (A->tree.recursive_tree != NULL || B->tree.recursive_tree != NULL)
   {
-    N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
-    N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
-
-    for (dim = 0; dim < A->number_dimensions; dim++)
-    {
-      N_upper[dim] = A->N_padded;
-    }
-
     spamm_recursive_add(alpha, &A->tree.recursive_tree, beta,
-        &B->tree.recursive_tree, A->number_dimensions, N_lower, N_upper, 0,
-        A->contiguous_tier, A->use_linear_tree);
-
-    free(N_lower);
-    free(N_upper);
+        &B->tree.recursive_tree, A->number_dimensions, 0, A->contiguous_tier,
+        A->use_linear_tree);
   }
 
   else
