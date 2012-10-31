@@ -209,7 +209,7 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
   {
     i_temp[dim] = (i[dim]-N_lower[dim])/N_block;
   }
-  offset = N_block*N_block*spamm_index_linear(number_dimensions, i_temp);
+  offset = ipow(N_block, number_dimensions)*spamm_index_linear(number_dimensions, i_temp);
   free(i_temp);
 
   for (dim = number_dimensions-1; dim >= 1; dim--)

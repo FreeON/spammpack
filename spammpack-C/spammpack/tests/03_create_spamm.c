@@ -49,7 +49,7 @@ main (int argc, char **argv)
     {
       for (is_sparse = 0; is_sparse < 2; is_sparse++)
       {
-        printf("number_dimensions: %u, use_linear_tree: %u, is_sparse: %u, ", number_dimensions, use_linear_tree, is_sparse);
+        printf("dim: %u, linTree: %u, sparse: %u, ", number_dimensions, use_linear_tree, is_sparse);
         if (is_sparse)
         {
           switch (number_dimensions)

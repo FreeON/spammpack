@@ -119,6 +119,7 @@ spamm_recursive_get (const unsigned int number_dimensions,
               new_N_upper, tier+1, contiguous_tier, N_block, use_linear_tree,
               node->tree.child[1]);
         }
+        break;
 
       case 2:
         number_columns = N_upper[1]-N_lower[1];

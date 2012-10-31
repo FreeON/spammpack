@@ -84,7 +84,7 @@ spamm_recursive_delete (const unsigned int number_dimensions,
 
   if (*node == NULL) { return; }
 
-  if (tier == contiguous_tier && use_linear_tree)
+  if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
   {
     spamm_hashed_delete(&(*node)->tree.hashed_tree);
   }
