@@ -282,7 +282,15 @@ spamm_new (const unsigned int number_dimensions,
 
     else
     {
-      N_temp = N[dim];
+      if (N[dim] < N_block)
+      {
+        N_temp = N_block;
+      }
+
+      else
+      {
+        N_temp = N[dim];
+      }
     }
 
     x_N = (log(N_temp) > log(A->N_block) ? log(N_temp) - log(A->N_block) : 0)/log(2);
@@ -331,7 +339,16 @@ spamm_new (const unsigned int number_dimensions,
 
   else
   {
-    A->contiguous_tier = contiguous_tier;
+    if (contiguous_tier > A->depth)
+    {
+      SPAMM_WARN("contiguous tier (%u) is greater than depth (%u)\n", contiguous_tier, A->depth);
+      A->contiguous_tier = A->depth;
+    }
+
+    else
+    {
+      A->contiguous_tier = contiguous_tier;
+    }
   }
 
   /* Set padded matrix size. */

@@ -1,6 +1,7 @@
 #include "config.h"
 #include "spamm.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -208,7 +209,7 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
   {
     i_temp[dim] = (i[dim]-N_lower[dim])/N_block;
   }
-  offset = N_block*N_block*spamm_index_linear(number_dimensions, i_temp);
+  offset = ipow(N_block, number_dimensions)*spamm_index_linear(number_dimensions, i_temp);
   free(i_temp);
 
   for (dim = number_dimensions-1; dim >= 1; dim--)
@@ -451,6 +452,7 @@ spamm_new_chunk (const unsigned int number_dimensions,
   N_pointer       = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_pointer);
   N_lower_pointer = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_lower_pointer);
   N_upper_pointer = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_upper_pointer);
+
   for (dim = 0; dim < number_dimensions; dim++)
   {
     N_pointer[dim] = N[dim];

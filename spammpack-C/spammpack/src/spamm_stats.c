@@ -71,10 +71,16 @@ spamm_print_info (const struct spamm_matrix_t *const A)
   assert(A != NULL);
 
   printf("number_dimensions = %u", A->number_dimensions);
+  printf(", N = {");
   for (dim = 0; dim < A->number_dimensions; dim++)
   {
-    printf(", N[%i] = %u", dim, A->N[dim]);
+    printf(" %u", dim, A->N[dim]);
+    if (dim+1 < A->number_dimensions)
+    {
+      printf(",");
+    }
   }
+  printf(" }");
   printf(", N_padded = %u", A->N_padded);
   printf(", depth = %u", A->depth);
   printf(", contiguous_tier = %u", A->contiguous_tier);

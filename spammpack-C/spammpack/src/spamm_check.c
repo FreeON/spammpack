@@ -363,7 +363,7 @@ spamm_check (const struct spamm_matrix_t *A, const float tolerance)
 
   if (A->kernel_tier != depth-SPAMM_KERNEL_DEPTH)
   {
-    printf("kernel tier incorrect, should be %u, but is %u\n", depth-SPAMM_KERNEL_DEPTH, A->kernel_tier);
+    SPAMM_WARN("kernel tier incorrect, should be %u, but is %u\n", depth-SPAMM_KERNEL_DEPTH, A->kernel_tier);
     return SPAMM_ERROR;
   }
 
