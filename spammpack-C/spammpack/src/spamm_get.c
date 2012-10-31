@@ -214,7 +214,6 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
 
     for (dim = 0; dim < A->number_dimensions; dim++)
     {
-      N_lower[dim] = 0;
       N_upper[dim] = A->N_padded;
     }
 

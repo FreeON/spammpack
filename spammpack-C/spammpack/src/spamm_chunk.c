@@ -170,11 +170,13 @@ unsigned int
 spamm_chunk_get_number_tiers (spamm_chunk_t *chunk)
 {
   unsigned int N_contiguous;
+  unsigned int N_block;
   unsigned int number_tiers;
   unsigned int N;
 
   N_contiguous = spamm_chunk_get_N_contiguous(chunk);
-  for (N = N_contiguous, number_tiers = 0; N >= SPAMM_N_BLOCK; N /= 2)
+  N_block = *spamm_chunk_get_N_block(chunk);
+  for (N = N_contiguous, number_tiers = 0; N >= N_block; N /= 2)
   {
     number_tiers++;
   }
@@ -220,6 +222,22 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
   offset += block_offset;
 
   return offset;
+}
+
+/** Calculate the starting address of the norm arrays inside a SpAMM chunk.
+ * The norm arrays start at tier == contiguous_tier, with one entry, and
+ * generally have pow(pow(2, number_dimensions), tier-contiguous_tier)
+ * entries.
+ *
+ * @param chunk The chunk.
+ * @param tier The tier.
+ *
+ * @return A pointer to the start of the norm chunk at this tier.
+ */
+unsigned int *
+spamm_chunk_get_tier_norm (spamm_chunk_t *chunk,
+    const unsigned int tier)
+{
 }
 
 /** Get the size of a SpAMM data chunk.
@@ -307,7 +325,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   /* Norm. */
   *norm_pointer = (float*) size;
 
-  for (N_temp = N_contiguous; N_temp >= SPAMM_N_BLOCK; N_temp /= 2)
+  for (N_temp = N_contiguous; N_temp >= N_block; N_temp /= 2)
   {
     size += ipow(N_contiguous/N_temp, 2)*sizeof(float);
   }
@@ -315,7 +333,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   /* Squared norm. */
   *norm2_pointer = (float*) size;
 
-  for (N_temp = N_contiguous; N_temp >= SPAMM_N_BLOCK; N_temp /= 2)
+  for (N_temp = N_contiguous; N_temp >= N_block; N_temp /= 2)
   {
     size += ipow(N_contiguous/N_temp, 2)*sizeof(float);
   }

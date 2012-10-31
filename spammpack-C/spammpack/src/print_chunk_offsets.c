@@ -78,7 +78,6 @@ main (int argc, char **argv)
   for (dim = 0; dim < number_dimensions; dim++)
   {
     N[dim] = N_contiguous;
-    N_lower[dim] = 0;
     N_upper[dim] = N_contiguous;
   }
   chunk = spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper);

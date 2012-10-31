@@ -476,11 +476,9 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
 
     for (dim = 0; dim < A->number_dimensions; dim++)
     {
-      N_lower[dim] = 0;
       N_upper[dim] = A->N_padded;
     }
 
-    //printf("%u %u %u %u\n", i[0], i[1], N_lower[0], N_lower[1]);
     spamm_recursive_set(A->number_dimensions, i, A->N, N_lower, N_upper, 0,
         A->contiguous_tier, A->kernel_tier, A->N_block, A->use_linear_tree,
         A->depth, Aij, &(A->tree.recursive_tree));
