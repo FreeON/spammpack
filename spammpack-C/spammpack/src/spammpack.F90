@@ -20,6 +20,13 @@ module spammpack
       type(c_ptr), intent(out) :: chunk
     end subroutine spamm_new_chunk
 
+    !> Interface for spamm_delete_chunk().
+    subroutine spamm_delete_chunk (chunk) &
+        bind(C, name = "spamm_delete_chunk_interface")
+      use, intrinsic :: iso_c_binding
+      type(c_ptr), intent(inout) :: chunk
+    end subroutine spamm_delete_chunk
+
     !> Interface for spamm_chunk_get_number_dimensions().
     subroutine spamm_chunk_get_number_dimensions (cptr, chunk) &
         bind(C, name = "spamm_chunk_get_number_dimensions_interface")

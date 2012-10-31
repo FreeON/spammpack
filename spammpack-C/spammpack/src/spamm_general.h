@@ -134,7 +134,8 @@ spamm_hashed_multiply (const float tolerance,
     const enum spamm_kernel_t kernel);
 
 void
-spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t *A,
+spamm_recursive_multiply_scalar (const float alpha,
+    struct spamm_recursive_node_t *A,
     const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int contiguous_tier,

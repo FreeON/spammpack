@@ -325,7 +325,10 @@ spamm_recursive_add (const float alpha,
   float *B_matrix;
 
   /* There is nothing to do here. */
-  if ((*A) == NULL && (*B) == NULL) { return; }
+  if ((*A) == NULL && (*B) == NULL)
+  {
+    return;
+  }
 
   if ((*A) != NULL && (*B) != NULL)
   {
@@ -336,16 +339,6 @@ spamm_recursive_add (const float alpha,
 
     else if (tier == contiguous_tier)
     {
-      if ((*A)->tree.chunk == NULL)
-      {
-        SPAMM_FATAL("??\n");
-      }
-
-      if ((*B)->tree.chunk == NULL)
-      {
-        SPAMM_FATAL("??\n");
-      }
-
       /* Braindead add. */
       A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
       B_matrix = spamm_chunk_get_matrix((*B)->tree.chunk);
@@ -355,7 +348,7 @@ spamm_recursive_add (const float alpha,
       switch (number_dimensions)
       {
         case 2:
-          for (i = 0; i < N_contiguous; i++)
+          for (i = 0; i < ipow(N_contiguous, number_dimensions); i++)
           {
             A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
           }
@@ -388,6 +381,11 @@ spamm_recursive_add (const float alpha,
   {
     /* Multiply A by alpha. */
     spamm_recursive_multiply_scalar(alpha, *A, number_dimensions, tier, contiguous_tier, use_linear_tree);
+  }
+
+  else
+  {
+    SPAMM_WARN("strange\n");
   }
 }
 

@@ -105,26 +105,27 @@ spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
 }
 
 void
-spamm_hashed_multiply_scalar (const float beta, struct spamm_hashed_t *A)
+spamm_hashed_multiply_scalar (const float alpha, struct spamm_hashed_t *A)
 {
   struct spamm_hashtable_t *tier_hashtable;
 
   if (A == NULL) { return; }
 
-  if (beta != 1.0)
+  if (alpha != 1.0)
   {
     tier_hashtable = A->tier_hashtable[A->kernel_tier-A->tier];
-    spamm_hashtable_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &beta);
+    spamm_hashtable_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &alpha);
   }
 }
 
 /** @private Multiply a matrix by a scalar.
  *
- * @param beta The scalar \f$\beta\f$ that multiplies the matrix.
+ * @param alpha The scalar \f$\alpha\f$ that multiplies the matrix.
  * @param A The matrix.
  */
 void
-spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t *A,
+spamm_recursive_multiply_scalar (const float alpha,
+    struct spamm_recursive_node_t *A,
     const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int contiguous_tier,
@@ -137,9 +138,9 @@ spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t
 
   if (A == NULL) { return; }
 
-  if (tier == contiguous_tier && use_linear_tree)
+  if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
   {
-    spamm_hashed_multiply_scalar(beta, A->tree.hashed_tree);
+    spamm_hashed_multiply_scalar(alpha, A->tree.hashed_tree);
   }
 
   else if (tier == contiguous_tier)
@@ -148,7 +149,7 @@ spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t
     N_contiguous = spamm_chunk_get_N_contiguous(A->tree.chunk);
     for (i = 0; i < ipow(N_contiguous, number_dimensions); i++)
     {
-      A_matrix[i] *= beta;
+      A_matrix[i] *= alpha;
     }
   }
 
@@ -156,7 +157,7 @@ spamm_recursive_multiply_scalar (const float beta, struct spamm_recursive_node_t
   {
     for (i = 0; i < ipow(2, number_dimensions); i++)
     {
-      spamm_recursive_multiply_scalar(beta, A->tree.child[0],
+      spamm_recursive_multiply_scalar(alpha, A->tree.child[i],
           number_dimensions, tier+1, contiguous_tier, use_linear_tree);
     }
   }

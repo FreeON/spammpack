@@ -199,7 +199,7 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
     const unsigned int *const i)
 {
   unsigned int offset;
-  unsigned int block_offset;
+  unsigned int block_offset = 0;
   unsigned int *i_temp;
 
   int dim;
@@ -461,4 +461,20 @@ spamm_new_chunk (const unsigned int number_dimensions,
   }
 
   return chunk;
+}
+
+/** Delete a chunk. This function simply calls free().
+ *
+ * @param chunk The chunk to delete.
+ */
+void
+spamm_delete_chunk (spamm_chunk_t **chunk)
+{
+  if (chunk == NULL) { return; }
+
+  if (*chunk != NULL)
+  {
+    free(*chunk);
+  }
+  *chunk = NULL;
 }

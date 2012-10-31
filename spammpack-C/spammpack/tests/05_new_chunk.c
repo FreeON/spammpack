@@ -29,6 +29,7 @@ main ()
   }
   chunk = spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper);
 
+  free(N);
   free(N_lower);
   free(N_upper);
 

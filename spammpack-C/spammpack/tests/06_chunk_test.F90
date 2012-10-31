@@ -76,4 +76,8 @@ program chunk_test
   call spamm_chunk_print(chunk_B)
   call spamm_chunk_print(chunk_C)
 
+  call spamm_delete_chunk(chunk_A)
+  call spamm_delete_chunk(chunk_B)
+  call spamm_delete_chunk(chunk_C)
+
 end program chunk_test

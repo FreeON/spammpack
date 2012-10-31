@@ -40,6 +40,11 @@ main ()
     }
   }
 
+  for (i = 0; i < NUMBER_KEYS; i++)
+  {
+    value = spamm_hashtable_remove(hashtable, i);
+    free(value);
+  }
   spamm_hashtable_delete(&hashtable);
 
   return result;

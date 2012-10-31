@@ -126,18 +126,27 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
       *A = spamm_recursive_new_node();
     }
 
-    if (tier == contiguous_tier && use_linear_tree)
+    if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
     {
       spamm_hashed_copy(&(*A)->tree.hashed_tree, beta, B->tree.hashed_tree);
     }
 
     else if (tier == contiguous_tier)
     {
+      if ((*A)->tree.chunk == NULL)
+      {
+        (*A)->tree.chunk = spamm_new_chunk(number_dimensions,
+            *spamm_chunk_get_N_block(B->tree.chunk),
+            spamm_chunk_get_N(B->tree.chunk),
+            spamm_chunk_get_N_lower(B->tree.chunk),
+            spamm_chunk_get_N_upper(B->tree.chunk));
+      }
+
       A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
       B_matrix = spamm_chunk_get_matrix(B->tree.chunk);
 
       N_contiguous = spamm_chunk_get_N_contiguous((*A)->tree.chunk);
-      for (i = 0; i < N_contiguous; i++)
+      for (i = 0; i < ipow(N_contiguous, number_dimensions); i++)
       {
         A_matrix[i] = beta*B_matrix[i];
         (*A)->norm = beta*B->norm;

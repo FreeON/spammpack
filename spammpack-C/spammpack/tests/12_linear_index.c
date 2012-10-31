@@ -31,5 +31,7 @@ main ()
     printf(" ] = %u\n", spamm_index_linear(number_dimensions, i));
   }
 
+  free(i);
+
   return 0;
 }

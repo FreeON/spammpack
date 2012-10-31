@@ -155,14 +155,3 @@ spamm_delete_block (struct spamm_hashed_data_t **data)
   free(*data);
   *data = NULL;
 }
-
-/** Delete a SpAMM chunk.
- *
- * @param chunk The chunk.
- */
-void
-spamm_delete_chunk (spamm_chunk_t **chunk)
-{
-  free(*chunk);
-  *chunk = NULL;
-}
