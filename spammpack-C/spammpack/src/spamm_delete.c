@@ -82,8 +82,6 @@ spamm_recursive_delete (const unsigned int number_dimensions,
 {
   unsigned int i;
 
-  if (node == NULL) { return; }
-
   if (*node == NULL) { return; }
 
   if (tier == contiguous_tier && use_linear_tree)
@@ -94,6 +92,7 @@ spamm_recursive_delete (const unsigned int number_dimensions,
   else if (tier == contiguous_tier)
   {
     free((*node)->tree.chunk);
+    (*node)->tree.chunk = NULL;
   }
 
   else
@@ -101,8 +100,9 @@ spamm_recursive_delete (const unsigned int number_dimensions,
     for (i = 0; i < ipow(2, number_dimensions); i++)
     {
       spamm_recursive_delete(number_dimensions, tier+1, contiguous_tier, use_linear_tree, &(*node)->tree.child[i]);
-      free((*node)->tree.child);
     }
+    free((*node)->tree.child);
+    (*node)->tree.child = NULL;
   }
 
   free(*node);

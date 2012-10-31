@@ -74,7 +74,6 @@ spamm_recursive_set (const unsigned int number_dimensions,
 
     /* Set matrix element. */
     A = spamm_chunk_get_matrix((*node)->tree.chunk);
-    //printf("%lu %lu %lu\n", sizeof(A), sizeof(N_lower), sizeof(i));
     A[spamm_chunk_matrix_index(number_dimensions, N_block, N_lower, i)] = Aij;
   }
 
