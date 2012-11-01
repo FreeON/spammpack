@@ -6,6 +6,58 @@
 #include <stdio.h>
 #include <stdint.h>
 
+void
+spamm_chunk_copy (spamm_chunk_t **A,
+    const float beta,
+    spamm_chunk_t *B)
+{
+  unsigned int *number_dimensions = spamm_chunk_get_number_dimensions(B);
+  unsigned int *N_block = spamm_chunk_get_N_block(B);
+  unsigned int *N = spamm_chunk_get_N(B);
+  unsigned int *N_lower = spamm_chunk_get_N_lower(B);
+  unsigned int *N_upper = spamm_chunk_get_N_upper(B);
+
+  float *norm_A;
+  float *norm_B;
+  float *norm2_A;
+  float *norm2_B;
+
+  float *A_matrix;
+  float *B_matrix;
+
+  unsigned int number_tiers;
+  unsigned int N_contiguous;
+
+  unsigned int i;
+
+  spamm_delete_chunk(A);
+
+  *A = spamm_new_chunk(*number_dimensions, *N_block, N, N_lower, N_upper);
+
+  norm_A = spamm_chunk_get_norm(*A);
+  norm_B = spamm_chunk_get_norm(B);
+  norm2_A = spamm_chunk_get_norm2(*A);
+  norm2_B = spamm_chunk_get_norm2(B);
+
+  number_tiers = spamm_chunk_get_number_tiers(B);
+
+  for (i = 0; i < ipow(*number_dimensions, number_tiers); i++)
+  {
+    norm_A[i] = beta*norm_B[i];
+    norm2_A[i] = beta*beta*norm2_B[i];
+  }
+
+  A_matrix = spamm_chunk_get_matrix(*A);
+  B_matrix = spamm_chunk_get_matrix(B);
+
+  N_contiguous = spamm_chunk_get_N_contiguous(B);
+
+  for (i = 0; i < N_contiguous; i++)
+  {
+    A_matrix[i] = beta*B_matrix[i];
+  }
+}
+
 /** Set an element in a SpAMM chunk.
  *
  * @param i The row/column index array.

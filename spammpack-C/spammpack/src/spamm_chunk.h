@@ -8,6 +8,11 @@
 #include <stdlib.h>
 
 void
+spamm_chunk_copy (spamm_chunk_t **A,
+    const float beta,
+    spamm_chunk_t *B);
+
+void
 spamm_chunk_set (const unsigned int *const i,
     const float Aij,
     const unsigned int tier,

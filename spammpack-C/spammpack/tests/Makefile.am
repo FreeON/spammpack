@@ -61,7 +61,7 @@ check_PROGRAMS = \
   01_list \
   02_list_sort \
   03_create_spamm \
-  04_create_spamm_vector \
+  04_copy_spamm \
   05_new_chunk \
   06_chunk_test \
   07_convert_dense \
