@@ -1193,9 +1193,6 @@ spamm_recursive_multiply_matrix (const float tolerance,
   float *B_matrix;
   float *C_matrix;
 
-  float *norm_A;
-  float *norm_B;
-
   if (node_A == NULL || node_B == NULL) { return; }
 
   /* We have to allocate a new C block a tier up. */
@@ -1205,7 +1202,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
   }
 
   /* Multiply matrix blocks. */
-  if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
+  if (tier == contiguous_tier && use_linear_tree)
   {
     spamm_hashed_multiply(tolerance, alpha, node_A->tree.hashed_tree, node_B->tree.hashed_tree,
         beta, (*node_C)->tree.hashed_tree, timer, kernel);
@@ -1305,11 +1302,8 @@ spamm_recursive_multiply_matrix (const float tolerance,
               new_linear_index_B |= (k << 1) | j;
               new_linear_index_C |= (i << 1) | j;
 
-              if (tier < contiguous_tier
-              norm_A = spamm_chunk_get_tier_norm(tier, node_A->tree.chunk);
-              norm_B = spamm_chunk_get_tier_norm(tier, node_B->tree.chunk);
-
-              if (norm_A[new_linear_index_A]*norm_B[new_linear_index_B] > tolerance)
+              if (node_A->tree.child[spamm_index_row_major(i, k, 2, 2)]->norm *
+                  node_B->tree.child[spamm_index_row_major(k, j, 2, 2)]->norm > tolerance)
               {
                 new_N_lower = calloc(2, sizeof(unsigned int));
                 new_N_upper = calloc(2, sizeof(unsigned int));
@@ -1333,7 +1327,7 @@ spamm_recursive_multiply_matrix (const float tolerance,
                     node_B->tree.child[spamm_index_row_major(k, j, 2, 2)],
                     &((*node_C)->tree.child[spamm_index_row_major(i, j, 2, 2)]),
                     timer, sgemm, kernel, number_dimensions, N, new_N_lower,
-                    new_N_upper, tier+1, contiguous_tier, N_block, depth,
+                    new_N_upper, tier, contiguous_tier, N_block, depth,
                     new_linear_index_A, new_linear_index_B,
                     new_linear_index_C, use_linear_tree, number_products);
 

@@ -6,6 +6,159 @@
 #include <stdio.h>
 #include <stdint.h>
 
+/** Set an element in a SpAMM chunk.
+ *
+ * @param i The row/column index array.
+ * @param Aij The value of the matrix element.
+ * @param chunk The SpAMM chunk.
+ */
+void
+spamm_chunk_set (const unsigned int *const i,
+    const float Aij,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const unsigned int depth,
+    const unsigned int linear_index,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
+    spamm_chunk_t *chunk)
+{
+  int dim;
+
+  unsigned int number_dimensions;
+
+  float *norm;
+  float *norm2;
+
+  unsigned int N_block;
+  float *A;
+
+  unsigned int *new_N_lower;
+  unsigned int *new_N_upper;
+
+  unsigned int new_linear_index = linear_index;
+
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  norm = spamm_chunk_get_tier_norm(tier-contiguous_tier, chunk);
+  norm2 = spamm_chunk_get_tier_norm2(tier-contiguous_tier, chunk);
+
+  /* Update norm. */
+  norm2[linear_index] += Aij*Aij;
+  norm[linear_index]   = sqrt(norm2[linear_index]);
+
+  if (tier == depth)
+  {
+    N_block = *spamm_chunk_get_N_block(chunk);
+    A = spamm_chunk_get_matrix(chunk);
+
+    A[ipow(N_block, number_dimensions)*linear_index
+      +spamm_index_column_major_2(number_dimensions, N_block, N_lower, i)] = Aij;
+  }
+
+  else
+  {
+    new_linear_index <<= number_dimensions;
+
+    new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
+    new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+    for (dim = 0; dim < number_dimensions; dim++)
+    {
+      if (i[dim] < N_lower[dim]+(N_upper[dim]-N_lower[dim])/2)
+      {
+        new_N_lower[dim] = N_lower[dim];
+        new_N_upper[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
+      }
+
+      else
+      {
+        new_N_lower[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
+        new_N_upper[dim] = N_upper[dim];
+        new_linear_index |= (1 << dim);
+      }
+    }
+
+    spamm_chunk_set(i, Aij, tier+1, contiguous_tier, depth, new_linear_index, new_N_lower, new_N_upper, chunk);
+
+    free(new_N_lower);
+    free(new_N_upper);
+  }
+}
+
+/** Get an element from a SpAMM chunk.
+ *
+ * @param i The row/column index array.
+ * @param chunk The chunk.
+ *
+ * @return The matrix element.
+ */
+float
+spamm_chunk_get (const unsigned int *i,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const unsigned int depth,
+    const unsigned int linear_index,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
+    spamm_chunk_t *chunk)
+{
+  float Aij = 0;
+
+  int dim;
+
+  unsigned int number_dimensions;
+
+  unsigned int N_block;
+  float *A;
+
+  unsigned int *new_N_lower;
+  unsigned int *new_N_upper;
+
+  unsigned int new_linear_index = linear_index;
+
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+
+  if (tier == depth)
+  {
+    N_block = *spamm_chunk_get_N_block(chunk);
+    A = spamm_chunk_get_matrix(chunk);
+
+    Aij = A[ipow(N_block, number_dimensions)*linear_index
+      +spamm_index_column_major_2(number_dimensions, N_block, N_lower, i)];
+  }
+
+  else
+  {
+    new_linear_index <<= number_dimensions;
+
+    new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
+    new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+    for (dim = 0; dim < number_dimensions; dim++)
+    {
+      if (i[dim] < N_lower[dim]+(N_upper[dim]-N_lower[dim])/2)
+      {
+        new_N_lower[dim] = N_lower[dim];
+        new_N_upper[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
+      }
+
+      else
+      {
+        new_N_lower[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
+        new_N_upper[dim] = N_upper[dim];
+        new_linear_index |= (1 << dim);
+      }
+    }
+
+    Aij = spamm_chunk_get(i, tier+1, contiguous_tier, depth, new_linear_index, new_N_lower, new_N_upper, chunk);
+
+    free(new_N_lower);
+    free(new_N_upper);
+  }
+
+  return Aij;
+}
+
 /** Pad memory address to some alignment.
  *
  * @param address Address to pad.
@@ -229,15 +382,61 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
  * generally have pow(pow(2, number_dimensions), tier-contiguous_tier)
  * entries.
  *
- * @param chunk The chunk.
  * @param tier The tier.
+ * @param chunk The chunk.
  *
  * @return A pointer to the start of the norm chunk at this tier.
  */
-unsigned int *
-spamm_chunk_get_tier_norm (spamm_chunk_t *chunk,
-    const unsigned int tier)
+float *
+spamm_chunk_get_tier_norm (const unsigned int tier,
+    spamm_chunk_t *chunk)
 {
+  float *norm;
+  unsigned int number_dimensions;
+  unsigned int offset = 0;
+
+  unsigned int i;
+
+  norm = spamm_chunk_get_norm(chunk);
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+
+  for (i = 0; i < tier; i++)
+  {
+    offset += ipow(ipow(2, number_dimensions), i);
+  }
+
+  return &norm[offset];
+}
+
+/** Calculate the starting address of the norm2 arrays inside a SpAMM chunk.
+ * The norm arrays start at tier == contiguous_tier, with one entry, and
+ * generally have pow(pow(2, number_dimensions), tier-contiguous_tier)
+ * entries.
+ *
+ * @param tier The tier.
+ * @param chunk The chunk.
+ *
+ * @return A pointer to the start of the norm chunk at this tier.
+ */
+float *
+spamm_chunk_get_tier_norm2 (const unsigned int tier,
+    spamm_chunk_t *chunk)
+{
+  float *norm2;
+  unsigned int number_dimensions;
+  unsigned int offset = 0;
+
+  unsigned int i;
+
+  norm2 = spamm_chunk_get_norm2(chunk);
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+
+  for (i = 0; i < tier; i++)
+  {
+    offset += ipow(ipow(2, number_dimensions), i);
+  }
+
+  return &norm2[offset];
 }
 
 /** Get the size of a SpAMM data chunk.
@@ -327,7 +526,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
 
   for (N_temp = N_contiguous; N_temp >= N_block; N_temp /= 2)
   {
-    size += ipow(N_contiguous/N_temp, 2)*sizeof(float);
+    size += ipow(N_contiguous/N_temp, number_dimensions)*sizeof(float);
   }
 
   /* Squared norm. */
@@ -335,7 +534,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
 
   for (N_temp = N_contiguous; N_temp >= N_block; N_temp /= 2)
   {
-    size += ipow(N_contiguous/N_temp, 2)*sizeof(float);
+    size += ipow(N_contiguous/N_temp, number_dimensions)*sizeof(float);
   }
 
   return size;

@@ -18,7 +18,7 @@ main (int argc, char **argv)
 
   unsigned int dim;
 
-  const unsigned int contiguous_tier = 4;
+  const unsigned int contiguous_tier = 3;
   const unsigned int N_block = 4;
 
   short use_linear_tree;
@@ -27,14 +27,14 @@ main (int argc, char **argv)
 
   float *A_dense;
 
-  for (number_dimensions = 1; number_dimensions < 3; number_dimensions++)
+  for (number_dimensions = 1; number_dimensions <= 3; number_dimensions++)
   {
     i = calloc(number_dimensions, sizeof(unsigned int));
     N = calloc(number_dimensions, sizeof(unsigned int));
 
     for (dim = 0; dim < number_dimensions; dim++)
     {
-      N[dim] = 512+(int) ((0.5-(float) rand()/(float) RAND_MAX)*20);
+      N[dim] = 150+(int) ((0.5-(float) rand()/(float) RAND_MAX)*30);
     }
 
     N_contiguous = 1;
@@ -66,6 +66,17 @@ main (int argc, char **argv)
                 for ((i[0] >= 10 ? i[1] = i[0]-10 : 0); i[1] < i[0]+10 && i[1] < N[1]; i[1]++)
                 {
                   A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = rand()/(float) RAND_MAX;
+                }
+              }
+              break;
+
+            case 3:
+              for (i[0] = 0; i[0] < N[0]; i[0]++) {
+                for ((i[0] >= 10 ? i[1] = i[0]-10 : 0); i[1] < i[0]+10 && i[1] < N[1]; i[1]++) {
+                  for ((i[0] >= 10 ? i[2] = i[0]-10 : 0); i[2] < i[0]+10 && i[2] < N[2]; i[2]++)
+                  {
+                    A_dense[i[0]+N[0]*(i[1]+N[1]*i[2])] = rand()/(float) RAND_MAX;
+                  }
                 }
               }
               break;
@@ -121,6 +132,17 @@ main (int argc, char **argv)
 #endif
             break;
 
+          case 3:
+            for (i[0] = 0; i[0] < N[0]; i[0]++) {
+              for (i[1] = 0; i[1] < N[1]; i[1]++) {
+                for (i[2] = 0; i[2] < N[2]; i[2]++)
+                {
+                  spamm_set(i, A_dense[i[0]+N[0]*(i[1]+N[1]*i[2])], A);
+                }
+              }
+            }
+            break;
+
           default:
             SPAMM_FATAL("FIXME\n");
             break;
@@ -158,6 +180,25 @@ main (int argc, char **argv)
             }
             break;
 
+          case 3:
+            for (i[0] = 0; i[0] < N[0]; i[0]++) {
+              for (i[1] = 0; i[1] < N[1]; i[1]++) {
+                for (i[2] = 0; i[2] < N[2]; i[2]++)
+                {
+                  if (A_dense[i[0]+N[0]*(i[1]+N[1]*i[2])] != spamm_get(i, A))
+                  {
+                    result = SPAMM_ERROR;
+                    printf("failed test at A[%u][%u][%u] (found %f, should be %f)\n", i[0], i[1], i[2],
+                        spamm_get(i, A), A_dense[i[0]+N[0]*(i[1]+N[1]*i[2])]);
+                    break;
+                  }
+                }
+                if (result) { break; }
+              }
+              if (result) { break; }
+            }
+            break;
+
           default:
             SPAMM_FATAL("FIXME\n");
             break;
@@ -169,6 +210,7 @@ main (int argc, char **argv)
 
         spamm_delete(&A);
       }
+      if (number_dimensions != 2) { break; }
     }
     free(i);
     free(N);

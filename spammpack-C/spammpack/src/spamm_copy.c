@@ -180,8 +180,6 @@ spamm_copy (struct spamm_matrix_t **A,
 {
   unsigned int i;
 
-  int dim;
-
   assert(B != NULL);
 
   if (*A == NULL)

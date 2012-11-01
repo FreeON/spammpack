@@ -74,7 +74,7 @@ spamm_print_info (const struct spamm_matrix_t *const A)
   printf(", N = {");
   for (dim = 0; dim < A->number_dimensions; dim++)
   {
-    printf(" %u", dim, A->N[dim]);
+    printf(" %u", A->N[dim]);
     if (dim+1 < A->number_dimensions)
     {
       printf(",");

@@ -59,6 +59,12 @@ spamm_index_column_major (const unsigned int i, const unsigned int j,
     const unsigned int M, const unsigned int N);
 
 unsigned int
+spamm_index_column_major_2 (const unsigned int number_dimensions,
+    const unsigned int N_block,
+    const unsigned int *const N_lower,
+    const unsigned int *const i);
+
+unsigned int
 spamm_index_norm (const unsigned int i, const unsigned int j);
 
 unsigned int
