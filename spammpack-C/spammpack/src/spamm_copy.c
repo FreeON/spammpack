@@ -107,121 +107,59 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
     const unsigned int contiguous_tier,
     const short use_linear_tree)
 {
-  unsigned int i;
-
-  unsigned int N_contiguous;
-
-  float *A_matrix;
-  float *B_matrix;
-
-  if (B == NULL && *A != NULL)
-  {
-    spamm_recursive_delete(number_dimensions, tier, contiguous_tier, use_linear_tree, A);
-  }
-
-  if (B != NULL)
-  {
-    if (*A == NULL)
-    {
-      *A = spamm_recursive_new_node();
-    }
-
-    if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
-    {
-      spamm_hashed_copy(&(*A)->tree.hashed_tree, beta, B->tree.hashed_tree);
-    }
-
-    else if (tier == contiguous_tier)
-    {
-      if ((*A)->tree.chunk == NULL)
-      {
-        (*A)->tree.chunk = spamm_new_chunk(number_dimensions,
-            *spamm_chunk_get_N_block(B->tree.chunk),
-            spamm_chunk_get_N(B->tree.chunk),
-            spamm_chunk_get_N_lower(B->tree.chunk),
-            spamm_chunk_get_N_upper(B->tree.chunk));
-      }
-
-      A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
-      B_matrix = spamm_chunk_get_matrix(B->tree.chunk);
-
-      N_contiguous = spamm_chunk_get_N_contiguous((*A)->tree.chunk);
-      for (i = 0; i < ipow(N_contiguous, number_dimensions); i++)
-      {
-        A_matrix[i] = beta*B_matrix[i];
-        (*A)->norm = beta*B->norm;
-        (*A)->norm2 = (*A)->norm*(*A)->norm;
-      }
-    }
-
-    else
-    {
-      if ((*A)->tree.child == NULL)
-      {
-        (*A)->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
-      }
-
-      spamm_recursive_copy(&(*A)->tree.child[0], beta, B->tree.child[0], number_dimensions, tier+1, contiguous_tier, use_linear_tree);
-      spamm_recursive_copy(&(*A)->tree.child[1], beta, B->tree.child[1], number_dimensions, tier+1, contiguous_tier, use_linear_tree);
-      spamm_recursive_copy(&(*A)->tree.child[2], beta, B->tree.child[2], number_dimensions, tier+1, contiguous_tier, use_linear_tree);
-      spamm_recursive_copy(&(*A)->tree.child[3], beta, B->tree.child[3], number_dimensions, tier+1, contiguous_tier, use_linear_tree);
-    }
-  }
-}
-
-/** Copy a matrix. \f$ A \leftarrow B \f$.
- *
- * @param A The matrix to copy to.
- * @param B The matrix to copy from.
- */
-void
-spamm_copy (struct spamm_matrix_t **A,
-    const struct spamm_matrix_t *const B)
-{
-  unsigned int i;
-
-  int dim;
-
-  assert(B != NULL);
+  short i;
 
   if (*A == NULL)
   {
-    /* Create new matrix A. */
-    *A = spamm_new(B->number_dimensions, B->N, B->contiguous_tier, B->N_block, B->use_linear_tree);
+    *A = spamm_recursive_new_node();
   }
 
-  /* Sanity check. */
-  if ((*A)->number_dimensions != B->number_dimensions)
+  if (number_dimensions == 2 && use_linear_tree && tier == contiguous_tier)
   {
-    SPAMM_FATAL("mismatch in number of dimensions\n");
+    spamm_hashed_copy(&(*A)->tree.hashed_tree, beta, B->tree.hashed_tree);
   }
 
-  for (i = 0; i < B->number_dimensions; i++)
+  else if (tier == contiguous_tier)
   {
-    if ((*A)->N[i] != B->N[i])
-    {
-      SPAMM_FATAL("mismatch in matrix dimension N[%u]\n", i);
-    }
-  }
-
-  if ((*A)->use_linear_tree != B->use_linear_tree)
-  {
-    SPAMM_FATAL("mismatch in use_linear_tree\n");
-  }
-
-  if ((*A)->contiguous_tier != B->contiguous_tier)
-  {
-    SPAMM_FATAL("mismatch in contiguous tier\n");
-  }
-
-  if (B->contiguous_tier == 0 && B->use_linear_tree)
-  {
-    spamm_hashed_copy(&(*A)->tree.hashed_tree, 1.0, B->tree.hashed_tree);
+    spamm_chunk_copy((*A)->tree.chunk, beta, B->tree.chunk);
   }
 
   else
   {
-    spamm_recursive_copy(&(*A)->tree.recursive_tree, 1.0,
+    for (i = 0; i < ipow(2, number_dimensions); i++)
+    {
+      spamm_recursive_copy(&(*A)->tree.child[i], beta, B->tree.child[i],
+          number_dimensions, tier+1, contiguous_tier, use_linear_tree);
+    }
+  }
+}
+
+/** Copy a matrix. \f$ A \leftarrow \beta B \f$.
+ *
+ * @param A The matrix to copy to.
+ * @param beta The scalar beta.
+ * @param B The matrix to copy from.
+ */
+void
+spamm_copy (struct spamm_matrix_t **A,
+    const float beta,
+    const struct spamm_matrix_t *const B)
+{
+  spamm_delete(A);
+
+  if (B->number_dimensions == 2 && B->use_linear_tree && B->contiguous_tier == 0)
+  {
+    spamm_hashed_copy(&(*A)->tree.hashed_tree, beta, B->tree.hashed_tree);
+  }
+
+  else if (B->contiguous_tier == 0)
+  {
+    spamm_chunk_copy(&(*A)->tree.chunk, beta, B->tree.chunk);
+  }
+
+  else
+  {
+    spamm_recursive_copy(&(*A)->tree.recursive_tree, beta,
         B->tree.recursive_tree, B->number_dimensions, 0, B->contiguous_tier,
         B->use_linear_tree);
   }

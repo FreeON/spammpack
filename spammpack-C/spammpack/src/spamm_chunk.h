@@ -7,6 +7,32 @@
 
 #include <stdlib.h>
 
+void
+spamm_chunk_copy (spamm_chunk_t **A,
+    const float beta,
+    spamm_chunk_t *B);
+
+void
+spamm_chunk_set (const unsigned int *const i,
+    const float Aij,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const unsigned int depth,
+    const unsigned int linear_index,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
+    spamm_chunk_t *chunk);
+
+float
+spamm_chunk_get (const unsigned int *i,
+    const unsigned int tier,
+    const unsigned int contiguous_tier,
+    const unsigned int depth,
+    const unsigned int linear_index,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
+    spamm_chunk_t *chunk);
+
 spamm_chunk_t *
 spamm_new_chunk (const unsigned int number_dimensions,
     const unsigned int N_block,
@@ -57,9 +83,13 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
     const unsigned int *const N_lower,
     const unsigned int *const i);
 
-unsigned int *
-spamm_chunk_get_tier_norm (spamm_chunk_t *chunk,
-    const unsigned int tier);
+float *
+spamm_chunk_get_tier_norm (const unsigned int tier,
+    spamm_chunk_t *chunk);
+
+float *
+spamm_chunk_get_tier_norm2 (const unsigned int tier,
+    spamm_chunk_t *chunk);
 
 size_t
 spamm_chunk_get_size (const unsigned int number_dimensions,

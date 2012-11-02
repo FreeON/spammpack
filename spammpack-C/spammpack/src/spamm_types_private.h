@@ -48,7 +48,7 @@ struct spamm_matrix_t
     struct spamm_hashed_t *hashed_tree;
 
     /** The SpAMM chunk. */
-    struct spamm_chunk_t *chunk;
+    spamm_chunk_t *chunk;
   }
   tree;
 };

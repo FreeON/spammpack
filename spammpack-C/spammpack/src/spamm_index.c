@@ -299,6 +299,24 @@ spamm_index_column_major (const unsigned int i, const unsigned int j,
   return i+j*M;
 }
 
+unsigned int
+spamm_index_column_major_2 (const unsigned int number_dimensions,
+    const unsigned int N_block,
+    const unsigned int *const N_lower,
+    const unsigned int *const i)
+{
+  unsigned int offset = 0;
+  int dim;
+
+  for (dim = number_dimensions-1; dim >= 1; dim--)
+  {
+    offset = N_block*(offset+(i[dim]-N_lower[dim])%N_block);
+  }
+  offset += (i[0]-N_lower[0])%N_block;
+
+  return offset;
+}
+
 /** Return a linear offset in Z-curve ordering.
  *
  * @param i The row index.
