@@ -330,14 +330,37 @@ spamm_recursive_add (const float alpha,
     return;
   }
 
-  if ((*A) != NULL && (*B) != NULL)
+  if (number_dimensions == 2 && use_linear_tree && tier == contiguous_tier)
   {
-    if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
+    if ((*A) == NULL && (*B) != NULL)
+    {
+      SPAMM_FATAL("FIXME\n");
+    }
+
+    else if ((*A) != NULL && (*B) == NULL)
+    {
+      SPAMM_FATAL("FIXME\n");
+    }
+
+    else
     {
       spamm_hashed_add(alpha, &(*A)->tree.hashed_tree, beta, &(*B)->tree.hashed_tree);
     }
+  }
 
-    else if (tier == contiguous_tier)
+  else if (tier == contiguous_tier)
+  {
+    if ((*A) == NULL && (*B) != NULL)
+    {
+      SPAMM_FATAL("FIXME\n");
+    }
+
+    else if ((*A) != NULL && (*B) == NULL)
+    {
+      SPAMM_FATAL("FIXME\n");
+    }
+
+    else
     {
       /* Braindead add. */
       A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
@@ -358,6 +381,21 @@ spamm_recursive_add (const float alpha,
           SPAMM_FATAL("not implemented\n");
       }
     }
+  }
+
+  else
+  {
+    if ((*A) == NULL && (*B) != NULL)
+    {
+      /* Copy B node to A. */
+      spamm_recursive_copy(&(*A), beta, (*B), number_dimensions, tier, contiguous_tier, use_linear_tree);
+    }
+
+    else if ((*A) != NULL && (*B) == NULL)
+    {
+      /* Multiply A by alpha. */
+      spamm_recursive_multiply_scalar(alpha, *A, number_dimensions, tier, contiguous_tier, use_linear_tree);
+    }
 
     else
     {
@@ -369,23 +407,6 @@ spamm_recursive_add (const float alpha,
             use_linear_tree);
       }
     }
-  }
-
-  else if ((*A) == NULL && (*B) != NULL)
-  {
-    /* Copy B node to A. */
-    spamm_recursive_copy(&(*A), beta, (*B), number_dimensions, tier, contiguous_tier, use_linear_tree);
-  }
-
-  else if ((*A) != NULL && (*B) == NULL)
-  {
-    /* Multiply A by alpha. */
-    spamm_recursive_multiply_scalar(alpha, *A, number_dimensions, tier, contiguous_tier, use_linear_tree);
-  }
-
-  else
-  {
-    SPAMM_WARN("strange\n");
   }
 }
 
@@ -402,41 +423,20 @@ spamm_add (const float alpha,
     const float beta,
     struct spamm_matrix_t *B)
 {
-  int dim;
-
-  assert(A != NULL);
-  assert(B != NULL);
-
-  if (A->number_dimensions != B->number_dimensions)
+  if (A->number_dimensions == 2 && A->use_linear_tree && A->contiguous_tier == 0)
   {
-    SPAMM_FATAL("mismatch of number of dimensions\n");
+    spamm_hashed_add(alpha, &A->tree.hashed_tree, beta, &B->tree.hashed_tree);
   }
 
-  for (dim = 0; dim < A->number_dimensions; dim++)
+  else if (A->contiguous_tier == 0)
   {
-    if (A->N[dim] != B->N[dim])
-    {
-      SPAMM_FATAL("mismatch of number of rows/columns\n");
-    }
-  }
-
-  if (A->number_dimensions == 2 && A->contiguous_tier == 0 && A->use_linear_tree)
-  {
-    if (A->tree.hashed_tree != NULL || B->tree.hashed_tree != NULL)
-    {
-      spamm_hashed_add(alpha, &A->tree.hashed_tree, beta, &B->tree.hashed_tree);
-    }
-  }
-
-  else if (A->tree.recursive_tree != NULL || B->tree.recursive_tree != NULL)
-  {
-    spamm_recursive_add(alpha, &A->tree.recursive_tree, beta,
-        &B->tree.recursive_tree, A->number_dimensions, 0, A->contiguous_tier,
-        A->use_linear_tree);
+    spamm_chunk_add(alpha, &A->tree.chunk, beta, B->tree.chunk);
   }
 
   else
   {
-    /* Matrices are empty. */
+    spamm_recursive_add(alpha, &A->tree.recursive_tree, beta,
+        &B->tree.recursive_tree, A->number_dimensions, 0, A->contiguous_tier,
+        A->use_linear_tree);
   }
 }

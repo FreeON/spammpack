@@ -3,6 +3,8 @@
 #ifndef __SPAMM_TYPES_H
 #define __SPAMM_TYPES_H
 
+typedef void (*sgemm_func) (char *transA, char *transB, int *M, int *N, int *K, float *alpha, float *A, int *LDA, float *B, int *LDB, float *beta, float *C, int *LDC);
+
 /** The layout type for the layout of the basic matrix blocks on the kernel
  * tier.
  */

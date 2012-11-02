@@ -77,7 +77,7 @@ main (int argc, char **argv)
         printf("\n");
         printf("{ -k | --kernel } kernel      Use the kernel\n");
         printf("{ -N | --N } N                Set N\n");
-        printf("{ -l | --linear } t           Set linear tier to t\n");
+        printf("{ -l | --linear } t           Use a linear tier\n");
         printf("{ -c | --contiguous } c       Set contiguous tier to c\n");
         printf("{ -b | --N_block } N          Set N_block to N\n");
         printf("{ -r | --random }             Create random matrix\n");
@@ -157,9 +157,9 @@ main (int argc, char **argv)
   spamm_print_info(B);
   spamm_print_info(C);
 
-  //spamm_check(A, 1e-7);
-  //spamm_check(B, 1e-7);
-  //spamm_check(C, 1e-7);
+  spamm_check(A, 1e-7);
+  spamm_check(B, 1e-7);
+  spamm_check(C, 1e-7);
 
   if (print_debug)
   {

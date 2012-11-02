@@ -8,8 +8,8 @@
  *
  * @return \f$ b^n /f$.
  */
-int
-ipow (int b, int n)
+unsigned int
+ipow (unsigned int b, unsigned int n)
 {
   int result = 1;
 

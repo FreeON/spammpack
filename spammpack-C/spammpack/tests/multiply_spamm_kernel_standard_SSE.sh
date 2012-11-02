@@ -1,3 +1,3 @@
 #!/bin/bash
 
-eval ./multiply_spamm --linear --kernel kernel_standard_SSE
+eval ./17_multiply_spamm --linear --kernel kernel_standard_SSE
