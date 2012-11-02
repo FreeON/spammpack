@@ -25,6 +25,7 @@ main (int argc, char **argv)
   unsigned int N_block = 4;
 
   short use_linear_tree = 0;
+  short use_sgemm = 0;
 
   double alpha = 1.2;
   double beta = 0.5;
@@ -51,7 +52,7 @@ main (int argc, char **argv)
 
   int option_index;
   int parse_result;
-  char *short_options = "hk:N:lc:b:rd";
+  char *short_options = "hk:N:lc:b:rds";
   static struct option long_options[] = {
     { "help",       no_argument,        NULL, 'h' },
     { "kernel",     required_argument,  NULL, 'k' },
@@ -61,6 +62,7 @@ main (int argc, char **argv)
     { "N_block",    required_argument,  NULL, 'b' },
     { "random",     no_argument,        NULL, 'r' },
     { "debug",      no_argument,        NULL, 'd' },
+    { "sgemm",      no_argument,        NULL, 's' },
     { NULL,         0,                  NULL,  0  }
   };
 
@@ -82,6 +84,7 @@ main (int argc, char **argv)
         printf("{ -b | --N_block } N          Set N_block to N\n");
         printf("{ -r | --random }             Create random matrix\n");
         printf("{ -d | --debug }              Print matrices\n");
+        printf("{ -s | --sgemm }              Use sgemm\n");
         exit(0);
         break;
 
@@ -114,6 +117,10 @@ main (int argc, char **argv)
 
       case 'd':
         print_debug = 1;
+        break;
+
+      case 's':
+        use_sgemm = 1;
         break;
 
       default:
@@ -233,7 +240,7 @@ main (int argc, char **argv)
 
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
-  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, NULL, kernel, NULL);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, (use_sgemm ? sgemm_() : NULL), kernel, NULL);
   spamm_timer_delete(&timer);
 
   if (print_debug)

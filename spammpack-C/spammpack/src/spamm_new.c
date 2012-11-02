@@ -351,7 +351,8 @@ spamm_new (const unsigned int number_dimensions,
   /* Adjust the linear depth. */
   if (use_linear_tree && contiguous_tier+SPAMM_KERNEL_DEPTH > A->depth)
   {
-    SPAMM_WARN("contiguous tier (%u) + kernel depth (%u) is greater than depth (%u)\n", contiguous_tier, SPAMM_KERNEL_DEPTH, A->depth);
+    SPAMM_WARN("contiguous tier (%u) + kernel depth (%u) is greater than depth (%u), I will adjust it\n",
+        contiguous_tier, SPAMM_KERNEL_DEPTH, A->depth);
     A->contiguous_tier = A->depth-SPAMM_KERNEL_DEPTH;
   }
 
