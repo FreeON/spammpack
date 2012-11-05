@@ -84,7 +84,10 @@ spamm_chunk_multiply (const float tolerance,
   float *norm_C;
   float *norm2_C;
 
+  float alpha_sgemm = alpha;
   float beta = 1.0;
+
+  unsigned int N_block_sgemm = N_block;
 
   float *matrix_A;
   float *matrix_B;
@@ -151,8 +154,9 @@ spamm_chunk_multiply (const float tolerance,
           matrix_B += ipow(N_block, number_dimensions_B)*linear_index_B;
           matrix_C += ipow(N_block, number_dimensions_C)*linear_index_C;
 
-          SGEMM("N", "N", &N_block, &N_block, &N_block, &alpha, matrix_A,
-              &N_block, matrix_B, &N_block, &beta, matrix_C, &N_block);
+          SGEMM("N", "N", &N_block_sgemm, &N_block_sgemm, &N_block_sgemm,
+              &alpha_sgemm, matrix_A, &N_block_sgemm, matrix_B,
+              &N_block_sgemm, &beta, matrix_C, &N_block_sgemm);
         }
 
         else
