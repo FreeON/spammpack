@@ -25,7 +25,6 @@ spamm_chunk_multiply_scalar (const float alpha,
   float *norm;
   float *norm2;
 
-  SPAMM_WARN("starting...\n");
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
   N_contiguous = spamm_chunk_get_N_contiguous(chunk);
   A = spamm_chunk_get_matrix(chunk);
@@ -42,7 +41,6 @@ spamm_chunk_multiply_scalar (const float alpha,
     norm[i] *= alpha;
     norm2[i] *= alpha*alpha;
   }
-  SPAMM_WARN("done\n");
 
   return norm2[0];
 }
@@ -86,11 +84,11 @@ spamm_chunk_multiply (const float tolerance,
   float *norm_C;
   float *norm2_C;
 
+  float beta = 1.0;
+
   float *matrix_A;
   float *matrix_B;
   float *matrix_C;
-
-  SPAMM_WARN("starting...\n");
 
   number_dimensions_A = *spamm_chunk_get_number_dimensions(chunk_A);
   number_dimensions_B = *spamm_chunk_get_number_dimensions(chunk_B);
@@ -142,19 +140,28 @@ spamm_chunk_multiply (const float tolerance,
     {
       if (tier == depth)
       {
-        SPAMM_WARN("here\n");
         if (sgemm)
         {
-          SPAMM_FATAL("FIXME\n");
-        }
-
-        else
-        {
-          SPAMM_WARN("multiplying by hand...\n");
           matrix_A = spamm_chunk_get_matrix(chunk_A);
           matrix_B = spamm_chunk_get_matrix(chunk_B);
           matrix_C = spamm_chunk_get_matrix(chunk_C);
 
+          /* Offset into chunk. */
+          matrix_A += ipow(N_block, number_dimensions_A)*linear_index_A;
+          matrix_B += ipow(N_block, number_dimensions_B)*linear_index_B;
+          matrix_C += ipow(N_block, number_dimensions_C)*linear_index_C;
+
+          SGEMM("N", "N", &N_block, &N_block, &N_block, &alpha, matrix_A,
+              &N_block, matrix_B, &N_block, &beta, matrix_C, &N_block);
+        }
+
+        else
+        {
+          matrix_A = spamm_chunk_get_matrix(chunk_A);
+          matrix_B = spamm_chunk_get_matrix(chunk_B);
+          matrix_C = spamm_chunk_get_matrix(chunk_C);
+
+          /* Offset into chunk. */
           matrix_A += ipow(N_block, number_dimensions_A)*linear_index_A;
           matrix_B += ipow(N_block, number_dimensions_B)*linear_index_B;
           matrix_C += ipow(N_block, number_dimensions_C)*linear_index_C;
@@ -206,7 +213,6 @@ spamm_chunk_multiply (const float tolerance,
       SPAMM_FATAL("not implemented\n");
     }
   }
-  SPAMM_WARN("done\n");
 
   return norm2_C[linear_index_C];
 }

@@ -1,3 +1,4 @@
+#include "config.h"
 #include <spamm.h>
 
 #include <getopt.h>
@@ -240,7 +241,7 @@ main (int argc, char **argv)
 
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
-  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, (use_sgemm ? sgemm_() : NULL), kernel, NULL);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, (use_sgemm ? SGEMM : NULL), kernel, NULL);
   spamm_timer_delete(&timer);
 
   if (print_debug)
