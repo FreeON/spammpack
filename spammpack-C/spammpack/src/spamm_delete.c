@@ -84,7 +84,7 @@ spamm_recursive_delete (const unsigned int number_dimensions,
 
   if (*node == NULL) { return; }
 
-  if (number_dimensions == 2 && tier == contiguous_tier && use_linear_tree)
+  if (number_dimensions == 2 && use_linear_tree && tier == contiguous_tier)
   {
     spamm_hashed_delete(&(*node)->tree.hashed_tree);
   }
@@ -118,9 +118,14 @@ spamm_delete (struct spamm_matrix_t **A)
 {
   if (*A == NULL) { return; }
 
-  if ((*A)->number_dimensions == 2 && (*A)->contiguous_tier == 0 && (*A)->use_linear_tree)
+  if ((*A)->number_dimensions == 2 && (*A)->use_linear_tree && (*A)->contiguous_tier == 0)
   {
     spamm_hashed_delete(&(*A)->tree.hashed_tree);
+  }
+
+  else if ((*A)->contiguous_tier == 0)
+  {
+    free((*A)->tree.chunk);
   }
 
   else

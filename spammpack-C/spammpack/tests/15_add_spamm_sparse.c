@@ -90,8 +90,8 @@ main (int argc, char **argv)
     A = spamm_convert_dense_to_spamm(2, N, contiguous_tier, N_block, use_linear_tree, row_major, A_dense);
     B = spamm_convert_dense_to_spamm(2, N, contiguous_tier, N_block, use_linear_tree, row_major, B_dense);
 
-    //result |= spamm_check(A, TEST_TOLERANCE);
-    //result |= spamm_check(B, TEST_TOLERANCE);
+    result |= spamm_check(A, TEST_TOLERANCE);
+    result |= spamm_check(B, TEST_TOLERANCE);
 
     for (i[0] = 0; i[0] < N[0]; i[0]++) {
       for (i[1] = 0; i[1] < N[1]; i[1]++)
@@ -137,7 +137,7 @@ main (int argc, char **argv)
 #endif
 
     /* Check tree consistency. */
-    //result |= spamm_check(A, TEST_TOLERANCE);
+    result |= spamm_check(A, TEST_TOLERANCE);
 
     /* Compare result. */
     max_diff = 0.0;

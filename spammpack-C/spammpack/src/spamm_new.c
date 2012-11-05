@@ -6,6 +6,83 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/** Get the depth of a matrix tree.
+ *
+ * @return The depth.
+ */
+unsigned int
+spamm_get_tree_depth (const unsigned int number_dimensions,
+    const unsigned int *const N,
+    const unsigned int N_block,
+    const short use_linear_tree)
+{
+  int dim;
+  unsigned int depth;
+  unsigned int N_temp;
+  double x, x_N;
+
+  /* Pad to powers of M_child x N_child. */
+  x = 0;
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    /* Make sure we pad at least to the extend that we can store that linear
+     * kernel matrix. */
+    if (use_linear_tree)
+    {
+      if (N[dim] < SPAMM_N_KERNEL)
+      {
+        N_temp = SPAMM_N_KERNEL;
+      }
+
+      else
+      {
+        N_temp = N[dim];
+      }
+    }
+
+    else
+    {
+      if (N[dim] < N_block)
+      {
+        N_temp = N_block;
+      }
+
+      else
+      {
+        N_temp = N[dim];
+      }
+    }
+
+    x_N = (log(N_temp) > log(N_block) ? log(N_temp) - log(N_block) : 0)/log(2);
+    if (x_N > x)
+    {
+      x = x_N;
+    }
+  }
+
+  /* The ceil() function can lead to a depth that is one tier too large
+   * because of numerical errors in the calculation of x. We need to check
+   * whether the depth is appropriate.
+   */
+  depth = (unsigned int) ceil(x);
+
+  /* Double check depth. */
+  if (depth >= 1)
+  {
+    for (dim = 0; dim < number_dimensions; dim++)
+    {
+      if ((int) (N_block*ipow(2, depth-1)) < N[dim])
+      {
+        depth++;
+        break;
+      }
+    }
+    depth--;
+  }
+
+  return depth;
+}
+
 /** Initialize new matrix object.
  *
  * @param tier The tier.
@@ -225,9 +302,7 @@ spamm_new (const unsigned int number_dimensions,
     const short use_linear_tree)
 {
   int dim;
-  unsigned int N_temp;
   struct spamm_matrix_t *A = NULL;
-  double x, x_N;
 
   for (dim = 0; dim < number_dimensions; dim++)
   {
@@ -261,64 +336,7 @@ spamm_new (const unsigned int number_dimensions,
     A->N[dim] = N[dim];
   }
 
-  /* Pad to powers of M_child x N_child. */
-  x = 0;
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    /* Make sure we pad at least to the extend that we can store that linear
-     * kernel matrix. */
-    if (use_linear_tree)
-    {
-      if (N[dim] < SPAMM_N_KERNEL)
-      {
-        N_temp = SPAMM_N_KERNEL;
-      }
-
-      else
-      {
-        N_temp = N[dim];
-      }
-    }
-
-    else
-    {
-      if (N[dim] < N_block)
-      {
-        N_temp = N_block;
-      }
-
-      else
-      {
-        N_temp = N[dim];
-      }
-    }
-
-    x_N = (log(N_temp) > log(A->N_block) ? log(N_temp) - log(A->N_block) : 0)/log(2);
-    if (x_N > x)
-    {
-      x = x_N;
-    }
-  }
-
-  /* The ceil() function can lead to a depth that is one tier too large
-   * because of numerical errors in the calculation of x. We need to check
-   * whether the depth is appropriate.
-   */
-  A->depth = (unsigned int) ceil(x);
-
-  /* Double check depth. */
-  if (A->depth >= 1)
-  {
-    for (dim = 0; dim < A->number_dimensions; dim++)
-    {
-      if ((int) (A->N_block*ipow(2, A->depth-1)) < A->N[dim])
-      {
-        A->depth++;
-        break;
-      }
-    }
-    A->depth--;
-  }
+  A->depth = spamm_get_tree_depth(number_dimensions, A->N, A->N_block, use_linear_tree);
 
   /* Adjust tree to kernel depth. */
   if (use_linear_tree && A->depth < SPAMM_KERNEL_DEPTH)
@@ -333,7 +351,8 @@ spamm_new (const unsigned int number_dimensions,
   /* Adjust the linear depth. */
   if (use_linear_tree && contiguous_tier+SPAMM_KERNEL_DEPTH > A->depth)
   {
-    SPAMM_WARN("contiguous tier (%u) + kernel depth (%u) is greater than depth (%u)\n", contiguous_tier, SPAMM_KERNEL_DEPTH, A->depth);
+    SPAMM_WARN("contiguous tier (%u) + kernel depth (%u) is greater than depth (%u), I will adjust it\n",
+        contiguous_tier, SPAMM_KERNEL_DEPTH, A->depth);
     A->contiguous_tier = A->depth-SPAMM_KERNEL_DEPTH;
   }
 

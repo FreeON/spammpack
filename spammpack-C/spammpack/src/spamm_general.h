@@ -5,10 +5,8 @@
 
 #include "spamm_types.h"
 
-typedef void (*sgemm_func) (char *transA, char *transB, int *M, int *N, int *K, float *alpha, float *A, int *LDA, float *B, int *LDB, float *beta, float *C, int *LDC);
-
-int
-ipow (int b, int n);
+unsigned int
+ipow (unsigned int b, unsigned int n);
 
 void *
 spamm_allocate (const size_t size, const short zero_memory);
@@ -171,6 +169,12 @@ spamm_number_nonzero (const struct spamm_matrix_t *A);
 
 void
 spamm_print_info (const struct spamm_matrix_t *const A);
+
+unsigned int
+spamm_get_tree_depth (const unsigned int number_dimensions,
+    const unsigned int *const N,
+    const unsigned int N_block,
+    const short use_linear_tree);
 
 struct spamm_matrix_t *
 spamm_new (const unsigned int number_dimensions,
