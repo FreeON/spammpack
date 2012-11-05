@@ -21,14 +21,16 @@ struct spamm_matrix_t
   unsigned int N_padded;
 
   /** The block size at which the SpAMM condition is applied. */
-  unsigned int N_block;
+  unsigned int __attribute__((deprecated)) N_block;
 
   /** The total depth of the tree. */
   unsigned int depth;
 
   /** The tier of the contiguous matrix chunks. At this tier the submatrix is
-   * stored in SpAMM chunks, and accessed hierarchically or through a linear
-   * subtree. */
+   * stored in SpAMM chunks. If use_linear_tree, then the spamm_hashed_* code
+   * takes over and processes the chunks, if not, then the chunk is
+   * interpreted has containing a submatrix of dimension N_contiguous x
+   * N_contiguous. */
   unsigned int contiguous_tier;
 
   /** Use a linear submatrix representation or a hierarchical one. A value of
@@ -37,7 +39,7 @@ struct spamm_matrix_t
   short use_linear_tree;
 
   /** The kernel tier. At this tier the stream kernel processes matrices. */
-  unsigned int kernel_tier;
+  unsigned int __attribute__((deprecated)) kernel_tier;
 
   union tree_t
   {
@@ -82,7 +84,7 @@ struct spamm_hashed_t
 
   /** The hashtables for access to each tier. */
   struct spamm_hashtable_t **tier_hashtable;
-};
+} __attribute__((deprecated));
 
 /** A node in the matrix tree. */
 struct spamm_hashed_node_t
@@ -98,7 +100,7 @@ struct spamm_hashed_node_t
 
   /** The square of the norm of this block. */
   float norm2;
-};
+} __attribute__((deprecated));
 
 /** A node at the kernel tier. */
 struct spamm_hashed_data_t
@@ -146,7 +148,7 @@ struct spamm_hashed_data_t
 
   /** The matrix data (dilated by 4 for SSE). */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
-};
+} __attribute__((deprecated));
 
 /** A recursive node. */
 struct
