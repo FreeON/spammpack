@@ -128,7 +128,7 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper,
     const unsigned int tier,
-    const unsigned int contiguous_tier,
+    const unsigned int chunk_tier,
     const short use_linear_tree)
 {
   unsigned int i;
@@ -142,7 +142,7 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
     printf(" [ %u --> %u ]", N_lower[dim], N_upper[dim]);
   }
   printf(" }, norm = %1.2e, ", node->norm);
-  if (tier == contiguous_tier && use_linear_tree)
+  if (tier == chunk_tier && use_linear_tree)
   {
     for (i = tier; i <= node->tree.hashed_tree->kernel_tier; i++)
     {
@@ -158,7 +158,7 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
     }
   }
 
-  else if (tier == contiguous_tier)
+  else if (tier == chunk_tier)
   {
     return;
   }
@@ -184,7 +184,7 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
     for (i = 0; i < ipow(2, number_dimensions); i++)
     {
       spamm_recursive_print_node(node->tree.child[i], number_dimensions,
-          N_lower, N_upper, tier+1, contiguous_tier, use_linear_tree);
+          N_lower, N_upper, tier+1, chunk_tier, use_linear_tree);
     }
   }
 }
@@ -214,12 +214,12 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
   printf(" }, ");
   printf("N_padded = %u, ", A->N_padded);
   printf("depth = %u, ", A->depth);
-  printf("contiguous_tier = %u, ", A->contiguous_tier);
+  printf("chunk_tier = %u, ", A->chunk_tier);
   printf("use_linear_tree = %u, ", A->use_linear_tree);
   printf("kernel_tier = %u, ", A->kernel_tier);
-  printf("contiguous_tier = %u\n", A->contiguous_tier);
+  printf("chunk_tier = %u\n", A->chunk_tier);
 
-  if (A->contiguous_tier == 0 && A->use_linear_tree)
+  if (A->chunk_tier == 0 && A->use_linear_tree)
   {
     for (tier = 0; tier <= A->kernel_tier; tier++)
     {
@@ -245,7 +245,7 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
     }
 
     spamm_recursive_print_node(A->tree.recursive_tree, A->number_dimensions,
-        N_lower, N_upper, 0, A->contiguous_tier, A->use_linear_tree);
+        N_lower, N_upper, 0, A->chunk_tier, A->use_linear_tree);
 
     free(N_lower);
     free(N_upper);
