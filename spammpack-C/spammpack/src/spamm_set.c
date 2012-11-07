@@ -32,7 +32,6 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int chunk_tier,
     const unsigned int kernel_tier,
-    const unsigned int N_block,
     const short use_linear_tree,
     const unsigned int depth,
     const float Aij,
@@ -58,11 +57,11 @@ spamm_recursive_set (const unsigned int number_dimensions,
   {
     if ((*node)->tree.chunk == NULL)
     {
-      (*node)->tree.chunk = spamm_new_chunk(number_dimensions, N_block, N,
-          N_lower, N_upper);
+      (*node)->tree.chunk = spamm_new_chunk(number_dimensions,
+          use_linear_tree, N, N_lower, N_upper);
     }
 
-    spamm_chunk_set(i, Aij, tier, chunk_tier, depth, 0, N_lower, N_upper, (*node)->tree.chunk);
+    spamm_chunk_set(i, Aij, (*node)->tree.chunk);
   }
 
   else
@@ -94,8 +93,8 @@ spamm_recursive_set (const unsigned int number_dimensions,
     }
 
     spamm_recursive_set(number_dimensions, i, N, new_N_lower, new_N_upper,
-        tier+1, chunk_tier, kernel_tier, N_block, use_linear_tree, depth,
-        Aij, &(*node)->tree.child[child_index]);
+        tier+1, chunk_tier, kernel_tier, use_linear_tree, depth, Aij,
+        &(*node)->tree.child[child_index]);
 
     free(new_N_lower);
     free(new_N_upper);
@@ -368,11 +367,11 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
 
     if (A->tree.chunk == NULL)
     {
-      A->tree.chunk = spamm_new_chunk(A->number_dimensions, A->N_block, A->N,
-          N_lower, N_upper);
+      A->tree.chunk = spamm_new_chunk(A->number_dimensions,
+          A->use_linear_tree, A->N, N_lower, N_upper);
     }
 
-    spamm_chunk_set(i, Aij, 0, A->chunk_tier, A->depth, 0, N_lower, N_upper, A->tree.chunk);
+    spamm_chunk_set(i, Aij, A->tree.chunk);
 
     free(N_lower);
     free(N_upper);
@@ -389,8 +388,8 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
     }
 
     spamm_recursive_set(A->number_dimensions, i, A->N, N_lower, N_upper, 0,
-        A->chunk_tier, A->kernel_tier, SPAMM_N_BLOCK, A->use_linear_tree,
-        A->depth, Aij, &(A->tree.recursive_tree));
+        A->chunk_tier, A->kernel_tier, A->use_linear_tree, A->depth, Aij,
+        &(A->tree.recursive_tree));
 
     free(N_lower);
     free(N_upper);

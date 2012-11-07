@@ -40,22 +40,10 @@ spamm_chunk_copy (spamm_chunk_t **A,
 void
 spamm_chunk_set (const unsigned int *const i,
     const float Aij,
-    const unsigned int tier,
-    const unsigned int chunk_tier,
-    const unsigned int depth,
-    const unsigned int linear_index,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
     spamm_chunk_t *chunk);
 
 float
 spamm_chunk_get (const unsigned int *i,
-    const unsigned int tier,
-    const unsigned int chunk_tier,
-    const unsigned int depth,
-    const unsigned int linear_index,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
     spamm_chunk_t *chunk);
 
 spamm_chunk_t *
@@ -73,7 +61,10 @@ unsigned int *
 spamm_chunk_get_number_dimensions (spamm_chunk_t *chunk);
 
 unsigned int *
-spamm_chunk_get_N_block (spamm_chunk_t *chunk);
+spamm_chunk_get_number_tiers (spamm_chunk_t *chunk);
+
+unsigned int *
+spamm_chunk_get_use_linear_tree (spamm_chunk_t *chunk);
 
 unsigned int *
 spamm_chunk_get_N (spamm_chunk_t *chunk);
@@ -109,9 +100,6 @@ spamm_chunk_get_norm2 (spamm_chunk_t *chunk);
 float *
 spamm_chunk_get_tier_norm2 (const unsigned int tier,
     spamm_chunk_t *chunk);
-
-unsigned int
-spamm_chunk_get_number_tiers (spamm_chunk_t *chunk);
 
 unsigned int
 spamm_chunk_matrix_index (const unsigned int number_dimensions,
