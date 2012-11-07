@@ -25,7 +25,7 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
     const struct spamm_recursive_node_t *const B,
     const unsigned int number_dimensions,
     const unsigned int tier,
-    const unsigned int contiguous_tier,
+    const unsigned int chunk_tier,
     const short use_linear_tree);
 
 void
@@ -39,7 +39,7 @@ spamm_delete (struct spamm_matrix_t **A);
 void
 spamm_recursive_delete (const unsigned int number_dimensions,
     const unsigned int tier,
-    const unsigned int contiguous_tier,
+    const unsigned int chunk_tier,
     const short use_linear_tree,
     struct spamm_recursive_node_t **node);
 
@@ -143,7 +143,7 @@ spamm_recursive_multiply_scalar (const float alpha,
     struct spamm_recursive_node_t *A,
     const unsigned int number_dimensions,
     const unsigned int tier,
-    const unsigned int contiguous_tier,
+    const unsigned int chunk_tier,
     const short use_linear_tree);
 
 void
@@ -173,14 +173,12 @@ spamm_print_info (const struct spamm_matrix_t *const A);
 unsigned int
 spamm_get_tree_depth (const unsigned int number_dimensions,
     const unsigned int *const N,
-    const unsigned int N_block,
     const short use_linear_tree);
 
 struct spamm_matrix_t *
 spamm_new (const unsigned int number_dimensions,
     const unsigned int *const N,
-    const unsigned int contiguous_tier,
-    const unsigned int N_block,
+    const unsigned int chunk_tier,
     const short use_linear_tree);
 
 struct spamm_hashed_t *
@@ -221,7 +219,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper,
     const unsigned int tier,
-    const unsigned int contiguous_tier,
+    const unsigned int chunk_tier,
     const unsigned int kernel_tier,
     const unsigned int N_block,
     const short use_linear_tree,
@@ -247,7 +245,7 @@ spamm_hashed_norm_update (struct spamm_hashed_t *A);
 struct spamm_matrix_t *
 spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const unsigned int *const N,
-    const unsigned int contiguous_tier,
+    const unsigned int chunk_tier,
     const unsigned int N_block,
     const short use_linear_tree,
     const enum spamm_layout_t dense_type,

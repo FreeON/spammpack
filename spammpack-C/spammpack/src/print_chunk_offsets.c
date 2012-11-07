@@ -8,8 +8,11 @@ int
 main (int argc, char **argv)
 {
   unsigned int number_dimensions = 2;
-  unsigned int N_contiguous = 128;
-  unsigned int N_block = 4;
+  unsigned int N_contiguous = 256;
+  unsigned int number_tiers;
+  size_t chunk_size;
+
+  short use_linear_tree = 1;
 
   unsigned int *N;
   unsigned int *N_lower;
@@ -80,17 +83,19 @@ main (int argc, char **argv)
     N[dim] = N_contiguous;
     N_upper[dim] = N_contiguous;
   }
-  chunk = spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper);
+  chunk = spamm_new_chunk(number_dimensions, use_linear_tree, N, N_lower, N_upper);
+  chunk_size = spamm_chunk_get_size(number_dimensions, use_linear_tree,
+      &number_tiers, N, N_lower, N_upper, &N_pointer, &N_lower_pointer,
+      &N_upper_pointer, &A_pointer, &A_dilated_pointer, &norm_pointer,
+      &norm2_pointer);
 
   printf("number_dimensions = %u\n", number_dimensions);
   printf("N_contiguous      = %u\n", N_contiguous);
-  printf("sizeof(chunk)     = 0x%lx bytes\n",
-      spamm_chunk_get_size(number_dimensions, N_block, N, N_lower, N_upper,
-        &N_pointer, &N_lower_pointer, &N_upper_pointer, &A_pointer,
-        &A_dilated_pointer, &norm_pointer, &norm2_pointer));
+  printf("number_tiers      = %u\n", number_tiers);
+  printf("sizeof(chunk)     = 0x%lx bytes\n", chunk_size);
   printf("\n");
   printf("&chunk->number_dimensions = 0x%lx\n", (intptr_t) spamm_chunk_get_number_dimensions(chunk) - (intptr_t) chunk);
-  printf("&chunk->N_block           = 0x%lx\n", (intptr_t) spamm_chunk_get_N_block(chunk) - (intptr_t) chunk);
+  printf("&chunk->number_tiers      = 0x%lx\n", (intptr_t) spamm_chunk_get_N_block(chunk) - (intptr_t) chunk);
   printf("\n");
   printf("N_pointer                 = 0x%lx\n", (intptr_t) 0*sizeof(void*)+2*sizeof(unsigned int));
   printf("N_lower_pointer           = 0x%lx\n", (intptr_t) 1*sizeof(void*)+2*sizeof(unsigned int));

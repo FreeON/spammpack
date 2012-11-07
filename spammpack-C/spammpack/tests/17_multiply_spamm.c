@@ -1,3 +1,4 @@
+#include "config.h"
 #include <spamm.h>
 
 #include <getopt.h>
@@ -21,8 +22,6 @@ main (int argc, char **argv)
   unsigned int N[] = { 513, 513 };
 
   unsigned int contiguous_tier = 5;
-
-  unsigned int N_block = 4;
 
   short use_linear_tree = 0;
   short use_sgemm = 0;
@@ -52,14 +51,13 @@ main (int argc, char **argv)
 
   int option_index;
   int parse_result;
-  char *short_options = "hk:N:lc:b:rds";
+  char *short_options = "hk:N:lc:rds";
   static struct option long_options[] = {
     { "help",       no_argument,        NULL, 'h' },
     { "kernel",     required_argument,  NULL, 'k' },
     { "N",          required_argument,  NULL, 'N' },
     { "linear",     no_argument,        NULL, 'l' },
     { "contiguous", required_argument,  NULL, 'c' },
-    { "N_block",    required_argument,  NULL, 'b' },
     { "random",     no_argument,        NULL, 'r' },
     { "debug",      no_argument,        NULL, 'd' },
     { "sgemm",      no_argument,        NULL, 's' },
@@ -81,7 +79,6 @@ main (int argc, char **argv)
         printf("{ -N | --N } N                Set N\n");
         printf("{ -l | --linear } t           Use a linear tier\n");
         printf("{ -c | --contiguous } c       Set contiguous tier to c\n");
-        printf("{ -b | --N_block } N          Set N_block to N\n");
         printf("{ -r | --random }             Create random matrix\n");
         printf("{ -d | --debug }              Print matrices\n");
         printf("{ -s | --sgemm }              Use sgemm\n");
@@ -107,10 +104,6 @@ main (int argc, char **argv)
         contiguous_tier = strtol(optarg, NULL, 10);
         break;
 
-      case 'b':
-        N_block = strtol(optarg, NULL, 10);
-        break;
-
       case 'r':
         random_matrix = 1;
         break;
@@ -133,9 +126,9 @@ main (int argc, char **argv)
   B_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
   C_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
 
-  A = spamm_new(2, N, contiguous_tier, N_block, use_linear_tree);
-  B = spamm_new(2, N, contiguous_tier, N_block, use_linear_tree);
-  C = spamm_new(2, N, contiguous_tier, N_block, use_linear_tree);
+  A = spamm_new(2, N, contiguous_tier, use_linear_tree);
+  B = spamm_new(2, N, contiguous_tier, use_linear_tree);
+  C = spamm_new(2, N, contiguous_tier, use_linear_tree);
 
   for (i[0] = 0; i[0] < N[0]; i[0]++) {
     for (i[1] = 0; i[1] < N[1]; i[1]++)
@@ -240,7 +233,7 @@ main (int argc, char **argv)
 
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
-  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, (use_sgemm ? sgemm_() : NULL), kernel, NULL);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, (use_sgemm ? SGEMM : NULL), kernel, NULL);
   spamm_timer_delete(&timer);
 
   if (print_debug)

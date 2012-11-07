@@ -128,19 +128,19 @@ spamm_recursive_multiply_scalar (const float alpha,
     struct spamm_recursive_node_t *A,
     const unsigned int number_dimensions,
     const unsigned int tier,
-    const unsigned int contiguous_tier,
+    const unsigned int chunk_tier,
     const short use_linear_tree)
 {
   unsigned int i;
 
   if (A == NULL) { return; }
 
-  if (number_dimensions == 2 && use_linear_tree && tier == contiguous_tier)
+  if (number_dimensions == 2 && use_linear_tree && tier == chunk_tier)
   {
     spamm_hashed_multiply_scalar(alpha, A->tree.hashed_tree);
   }
 
-  else if (tier == contiguous_tier)
+  else if (tier == chunk_tier)
   {
     A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk);
     A->norm = sqrt(A->norm2);
@@ -151,7 +151,7 @@ spamm_recursive_multiply_scalar (const float alpha,
     for (i = 0; i < ipow(2, number_dimensions); i++)
     {
       spamm_recursive_multiply_scalar(alpha, A->tree.child[i],
-          number_dimensions, tier+1, contiguous_tier, use_linear_tree);
+          number_dimensions, tier+1, chunk_tier, use_linear_tree);
     }
   }
 }
@@ -1140,10 +1140,10 @@ spamm_hashed_multiply (const float tolerance,
  * @param timer The timer to use.
  * @param sgemm The external sgemm function to use.
  * @param tier The tier.
- * @param contiguous_tier The contiguous tier.
+ * @param chunk_tier The contiguous tier.
  * @param depth The depth of the matrix tree.
  * @param use_linear_tree If set to 1 then we will switch to a linear tree at
- * contiguous_tier.
+ * chunk_tier.
  * @param number_products [out] The number of block products.
  */
 void
@@ -1162,7 +1162,7 @@ spamm_recursive_multiply (const float tolerance,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper,
     const unsigned int tier,
-    const unsigned int contiguous_tier,
+    const unsigned int chunk_tier,
     const unsigned int N_block,
     const unsigned int depth,
     const short use_linear_tree,
@@ -1187,17 +1187,17 @@ spamm_recursive_multiply (const float tolerance,
       number_dimensions_B == 2 &&
       number_dimensions_C == 2 &&
       use_linear_tree &&
-      tier == contiguous_tier)
+      tier == chunk_tier)
   {
     spamm_hashed_multiply(tolerance, alpha, node_A->tree.hashed_tree, node_B->tree.hashed_tree,
         beta, (*node_C)->tree.hashed_tree, timer, kernel);
   }
 
-  else if (tier == contiguous_tier)
+  else if (tier == chunk_tier)
   {
     (*node_C)->norm2 = spamm_chunk_multiply(tolerance, alpha,
         node_A->tree.chunk, node_B->tree.chunk, (*node_C)->tree.chunk, tier,
-        contiguous_tier, depth, N_block, 0, 0, 0, sgemm);
+        chunk_tier, depth, N_block, 0, 0, 0, sgemm);
     (*node_C)->norm = sqrt((*node_C)->norm2);
   }
 
@@ -1228,7 +1228,7 @@ spamm_recursive_multiply (const float tolerance,
                 node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
                 &(*node_C)->tree.child[i+2*j], timer, sgemm, kernel,
                 number_dimensions_A, number_dimensions_B, number_dimensions_C,
-                N, new_N_lower, new_N_upper, tier+1, contiguous_tier, N_block,
+                N, new_N_lower, new_N_upper, tier+1, chunk_tier, N_block,
                 depth, use_linear_tree, number_products);
           }
         }
@@ -1276,24 +1276,24 @@ spamm_multiply (const float tolerance,
       B->number_dimensions == 2 &&
       C->number_dimensions == 2 &&
       A->use_linear_tree &&
-      A->contiguous_tier == 0)
+      A->chunk_tier == 0)
   {
     spamm_hashed_multiply(tolerance, alpha, A->tree.hashed_tree,
         B->tree.hashed_tree, beta, C->tree.hashed_tree, timer, kernel);
   }
 
-  else if (A->contiguous_tier == 0)
+  else if (A->chunk_tier == 0)
   {
     spamm_chunk_multiply_scalar(beta, C->tree.chunk);
     spamm_chunk_multiply(tolerance, alpha, A->tree.chunk, B->tree.chunk,
-        C->tree.chunk, 0, C->contiguous_tier, C->depth, C->N_block, 0, 0, 0,
+        C->tree.chunk, 0, C->chunk_tier, C->depth, C->N_block, 0, 0, 0,
         sgemm);
   }
 
   else
   {
     spamm_recursive_multiply_scalar(beta, C->tree.recursive_tree,
-        C->number_dimensions, 0, C->contiguous_tier, C->use_linear_tree);
+        C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree);
 
     N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
     N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
@@ -1306,7 +1306,7 @@ spamm_multiply (const float tolerance,
     spamm_recursive_multiply(tolerance, alpha, A->tree.recursive_tree,
         B->tree.recursive_tree, &(C->tree.recursive_tree), timer, sgemm,
         kernel, A->number_dimensions, B->number_dimensions,
-        C->number_dimensions, A->N, N_lower, N_upper, 0, A->contiguous_tier,
+        C->number_dimensions, A->N, N_lower, N_upper, 0, A->chunk_tier,
         A->N_block, A->depth, A->use_linear_tree, number_products);
 
     free(N_lower);

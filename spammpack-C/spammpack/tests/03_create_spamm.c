@@ -19,7 +19,6 @@ main (int argc, char **argv)
   unsigned int dim;
 
   const unsigned int contiguous_tier = 3;
-  const unsigned int N_block = 4;
 
   short use_linear_tree;
   short is_sparse;
@@ -95,7 +94,7 @@ main (int argc, char **argv)
           }
         }
 
-        A = spamm_new(number_dimensions, N, contiguous_tier, N_block, use_linear_tree);
+        A = spamm_new(number_dimensions, N, contiguous_tier, use_linear_tree);
         printf("A info: ");
         spamm_print_info(A);
 

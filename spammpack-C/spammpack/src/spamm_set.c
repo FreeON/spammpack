@@ -18,7 +18,7 @@
  * @param N_lower An array of left-most column indices.
  * @param N_upper An array of right-most column indices.
  * @param tier The tier this node is on.
- * @param contiguous_tier The size of the contiguous submatrix block.
+ * @param chunk_tier The size of the contiguous submatrix block.
  * @param linear_tier The size of the submatrix that is stored in hashed format.
  * @param layout The layout of the matrix elements.
  * @param node The node.
@@ -30,7 +30,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper,
     const unsigned int tier,
-    const unsigned int contiguous_tier,
+    const unsigned int chunk_tier,
     const unsigned int kernel_tier,
     const unsigned int N_block,
     const short use_linear_tree,
@@ -47,26 +47,14 @@ spamm_recursive_set (const unsigned int number_dimensions,
 
   if (*node == NULL)
   {
-    *node = spamm_recursive_new_node(tier, number_dimensions, contiguous_tier,
-        N_block, use_linear_tree, N, N_lower, N_upper);
+    *node = spamm_recursive_new_node();
   }
 
   /* Update norm. */
   (*node)->norm2 += Aij*Aij;
   (*node)->norm   = sqrt((*node)->norm2);
 
-  if (number_dimensions == 2 && use_linear_tree && tier == contiguous_tier)
-  {
-    if ((*node)->tree.hashed_tree == NULL)
-    {
-      (*node)->tree.hashed_tree = spamm_hashed_new(tier, kernel_tier, depth,
-          N_lower[0], N_upper[0], N_lower[1], N_upper[1]);
-    }
-
-    spamm_hashed_set(i[0], i[1], Aij, (*node)->tree.hashed_tree);
-  }
-
-  else if (tier == contiguous_tier)
+  if (tier == chunk_tier)
   {
     if ((*node)->tree.chunk == NULL)
     {
@@ -74,7 +62,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
           N_lower, N_upper);
     }
 
-    spamm_chunk_set(i, Aij, tier, contiguous_tier, depth, 0, N_lower, N_upper, (*node)->tree.chunk);
+    spamm_chunk_set(i, Aij, tier, chunk_tier, depth, 0, N_lower, N_upper, (*node)->tree.chunk);
   }
 
   else
@@ -106,7 +94,7 @@ spamm_recursive_set (const unsigned int number_dimensions,
     }
 
     spamm_recursive_set(number_dimensions, i, N, new_N_lower, new_N_upper,
-        tier+1, contiguous_tier, kernel_tier, N_block, use_linear_tree, depth,
+        tier+1, chunk_tier, kernel_tier, N_block, use_linear_tree, depth,
         Aij, &(*node)->tree.child[child_index]);
 
     free(new_N_lower);
@@ -368,18 +356,7 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
 
   int dim;
 
-  if (A->number_dimensions == 2 && A->use_linear_tree && A->contiguous_tier == 0)
-  {
-    if (A->tree.hashed_tree == NULL)
-    {
-      A->tree.hashed_tree = spamm_hashed_new( 0, A->kernel_tier, A->depth, 0,
-          A->N_padded, 0, A->N_padded);
-    }
-
-    spamm_hashed_set(i[0], i[1], Aij, A->tree.hashed_tree);
-  }
-
-  else if (A->contiguous_tier == 0)
+  if (A->chunk_tier == 0)
   {
     N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
     N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
@@ -395,7 +372,7 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
           N_lower, N_upper);
     }
 
-    spamm_chunk_set(i, Aij, 0, A->contiguous_tier, A->depth, 0, N_lower, N_upper, A->tree.chunk);
+    spamm_chunk_set(i, Aij, 0, A->chunk_tier, A->depth, 0, N_lower, N_upper, A->tree.chunk);
 
     free(N_lower);
     free(N_upper);
@@ -412,7 +389,7 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
     }
 
     spamm_recursive_set(A->number_dimensions, i, A->N, N_lower, N_upper, 0,
-        A->contiguous_tier, A->kernel_tier, A->N_block, A->use_linear_tree,
+        A->chunk_tier, A->kernel_tier, SPAMM_N_BLOCK, A->use_linear_tree,
         A->depth, Aij, &(A->tree.recursive_tree));
 
     free(N_lower);
