@@ -5,7 +5,7 @@ program chunk_test
 
   integer :: number_dimensions = 2
   integer :: N_contiguous = 8
-  integer :: N_block = 4
+  integer :: use_linear_tree = 0
 
   integer, dimension(:), pointer :: N
   integer, dimension(:), pointer :: N_lower
@@ -26,9 +26,9 @@ program chunk_test
     N_upper(i) = N_contiguous
   enddo
 
-  call spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper, chunk_A)
-  call spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper, chunk_B)
-  call spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper, chunk_C)
+  call spamm_new_chunk(number_dimensions, use_linear_tree, N, N_lower, N_upper, chunk_A)
+  call spamm_new_chunk(number_dimensions, use_linear_tree, N, N_lower, N_upper, chunk_B)
+  call spamm_new_chunk(number_dimensions, use_linear_tree, N, N_lower, N_upper, chunk_C)
 
   deallocate(N)
   deallocate(N_lower)

@@ -13,8 +13,7 @@ main ()
   unsigned int nonzeros = 0;
 
   const unsigned int N[] = { 1000, 1000 };
-  const unsigned int contiguous_tier = 5;
-  const unsigned int N_block = 4;
+  const unsigned int chunk_tier = 5;
   const short use_linear_tree = 1;
 
   struct spamm_matrix_t *A;
@@ -37,7 +36,7 @@ main ()
     }
   }
 
-  A = spamm_convert_dense_to_spamm(2, N, contiguous_tier, N_block, use_linear_tree, row_major, A_dense);
+  A = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, A_dense);
   if (spamm_number_nonzero(A) != nonzeros)
   {
     printf("found %u nonzeros, should have found %u\n", spamm_number_nonzero(A), nonzeros);

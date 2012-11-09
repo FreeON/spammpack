@@ -244,7 +244,6 @@ struct spamm_matrix_t *
 spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const unsigned int *const N,
     const unsigned int chunk_tier,
-    const unsigned int N_block,
     const short use_linear_tree,
     const enum spamm_layout_t dense_type,
     const float *const A_dense);

@@ -872,7 +872,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
 
     if (SPAMM_N_KERNEL*ipow(2, *number_tiers-1) != N_contiguous)
     {
-      SPAMM_FATAL("logic error, number_tiers = %u, N_contiguous = %u, %u^%u = %u\n",
+      SPAMM_FATAL("logic error, number_tiers = %u, N_contiguous = %u, %u*2^%u = %u\n",
           *number_tiers, N_contiguous, SPAMM_N_KERNEL, *number_tiers-1,
           SPAMM_N_KERNEL*ipow(2, *number_tiers-1));
     }

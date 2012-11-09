@@ -5,7 +5,8 @@ main ()
 {
   unsigned int number_dimensions = 2;
   unsigned int N_contiguous = 128;
-  unsigned int N_block = 4;
+
+  short use_linear_tree = 0;
 
   unsigned int *N;
   unsigned int *N_lower;
@@ -27,7 +28,7 @@ main ()
     N_lower[dim] = 0;
     N_upper[dim] = N_contiguous;
   }
-  chunk = spamm_new_chunk(number_dimensions, N_block, N, N_lower, N_upper);
+  chunk = spamm_new_chunk(number_dimensions, use_linear_tree, N, N_lower, N_upper);
 
   free(N);
   free(N_lower);

@@ -12,7 +12,6 @@
  * @param N The number of rows/columns.
  * @param chunk_tier The tier at which to store contiguous submatrix
  * blocks in the hierarhical tree.
- * @param N_block The size of matrix to which the SpAMM condition is applied.
  * @param use_linear_tree If set to zero, then the tree will be stored in the
  * hierachical format, otherwise storage will switch to linear format at
  * chunk_tier.
@@ -26,7 +25,6 @@ struct spamm_matrix_t *
 spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const unsigned int *const N,
     const unsigned int chunk_tier,
-    const unsigned int N_block,
     const short use_linear_tree,
     const enum spamm_layout_t dense_type,
     const float *const A_dense)

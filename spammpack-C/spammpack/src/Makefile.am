@@ -63,7 +63,6 @@ libspammpack_fortran_la_SOURCES = \
   spamm_fortran_chunk.F90 \
   spamm_fortran_derived.F90 \
   spamm_fortran_interface.c \
-  spamm_fortran_interface.h \
   spammpack.F90
 
 libspamm_kernel_la_SOURCES = \
