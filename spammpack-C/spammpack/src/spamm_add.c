@@ -350,17 +350,9 @@ spamm_recursive_add (const float alpha,
 
       N_contiguous = spamm_chunk_get_N_contiguous((*A)->tree.chunk);
 
-      switch (number_dimensions)
+      for (i = 0; i < ipow(N_contiguous, number_dimensions); i++)
       {
-        case 2:
-          for (i = 0; i < ipow(N_contiguous, number_dimensions); i++)
-          {
-            A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
-          }
-          break;
-
-        default:
-          SPAMM_FATAL("not implemented\n");
+        A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
       }
     }
   }

@@ -321,15 +321,54 @@ spamm_index_column_major_2 (const unsigned int number_dimensions,
     offset = i[dim]+N*offset;
   }
 
-  if (offset >= ipow(32, 3))
+  return offset;
+}
+
+/** Return offset into a square matrix. The matrix elements are stored in
+ * row-major order.
+ *
+ * @param number_dimensions The number of dimensions.
+ * @param N The size of the matrix.
+ * @param i The array of matrix indices.
+ *
+ * @return The offset into the matrix.
+ */
+unsigned int
+spamm_index_row_major_3 (const unsigned int number_dimensions,
+    const unsigned int *N,
+    const unsigned int *const i)
+{
+  unsigned int offset;
+  int dim;
+
+  for (dim = 1, offset = i[0]; dim+1 < number_dimensions; dim++)
   {
-    fprintf(stderr, "i = {");
-    for (dim = 0; dim < number_dimensions; dim++)
-    {
-      fprintf(stderr, " %u", i[dim]);
-    }
-    fprintf(stderr, " }, N = %u\n", N);
-    SPAMM_FATAL("FIXME\n");
+    offset = i[dim+1]+N[dim+1]*offset;
+  }
+
+  return offset;
+}
+
+/** Return offset into a square matrix. The matrix elements are stored in
+ * column-major order.
+ *
+ * @param number_dimensions The number of dimensions.
+ * @param N The size of the matrix.
+ * @param i The array of matrix indices.
+ *
+ * @return The offset into the matrix.
+ */
+unsigned int
+spamm_index_column_major_3 (const unsigned int number_dimensions,
+    const unsigned int *N,
+    const unsigned int *const i)
+{
+  unsigned int offset;
+  int dim;
+
+  for (dim = number_dimensions-1, offset = 0; dim >= 0; dim--)
+  {
+    offset = i[dim]+N[dim]*offset;
   }
 
   return offset;

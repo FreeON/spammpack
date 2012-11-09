@@ -63,6 +63,16 @@ spamm_index_column_major_2 (const unsigned int number_dimensions,
     const unsigned int *const i);
 
 unsigned int
+spamm_index_row_major_3 (const unsigned int number_dimensions,
+    const unsigned int *N,
+    const unsigned int *const i);
+
+unsigned int
+spamm_index_column_major_3 (const unsigned int number_dimensions,
+    const unsigned int *N,
+    const unsigned int *const i);
+
+unsigned int
 spamm_index_norm (const unsigned int i, const unsigned int j);
 
 unsigned int
@@ -70,18 +80,6 @@ spamm_index_kernel_block (const unsigned int i, const unsigned int j, const enum
 
 unsigned int
 spamm_index_kernel_block_transpose (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout);
-
-//inline unsigned int
-//spamm_dense_index (const unsigned int i, const unsigned int j)
-//{
-//  if (i >= SPAMM_N_KERNEL || i >= SPAMM_N_KERNEL)
-//  {
-//    fprintf(stderr, "i or j out of bounds\n");
-//    exit(1);
-//  }
-//
-//  return i*SPAMM_N_KERNEL+j;
-//}
 
 unsigned int
 spamm_index_kernel_block_hierarchical (const unsigned int i_blocked,

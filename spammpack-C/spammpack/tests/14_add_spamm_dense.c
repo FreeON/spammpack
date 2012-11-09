@@ -62,7 +62,7 @@ main (int argc, char **argv)
     {
       for (is_sparse = 0; is_sparse < 2; is_sparse++)
       {
-        printf("dim: %u, linTree: %u, sparse: %u, ", number_dimensions, use_linear_tree, is_sparse);
+        printf("dim: %u, linTree: %u, sparse: %u\n", number_dimensions, use_linear_tree, is_sparse);
         if (is_sparse)
         {
           switch (number_dimensions)
@@ -115,6 +115,13 @@ main (int argc, char **argv)
         /* Add by hand for verification. */
         switch (number_dimensions)
         {
+          case 1:
+            for (i[0] = 0; i[0] < N[0]; i[0]++)
+            {
+              A_dense[i[0]] = alpha*A_dense[i[0]] + beta*B_dense[i[0]];
+            }
+            break;
+
           case 2:
             for (i[0] = 0; i[0] < N[0]; i[0]++) {
               for (i[1] = 0; i[1] < N[1]; i[1]++)
@@ -122,6 +129,19 @@ main (int argc, char **argv)
                 A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] =
                   alpha*A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])]
                   + beta*B_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])];
+              }
+            }
+            break;
+
+          case 3:
+            for (i[0] = 0; i[0] < N[0]; i[0]++) {
+              for (i[1] = 0; i[1] < N[1]; i[1]++) {
+                for (i[2] = 0; i[2] < N[2]; i[2]++)
+                {
+                  A_dense[spamm_index_row_major_3(number_dimensions, N, i)] =
+                    alpha*A_dense[spamm_index_row_major_3(number_dimensions, N, i)]
+                    + beta*B_dense[spamm_index_row_major_3(number_dimensions, N, i)];
+                }
               }
             }
             break;
@@ -138,12 +158,29 @@ main (int argc, char **argv)
 
         /* Compare result. */
         max_diff = 0.0;
+        max_diff_i = calloc(number_dimensions, sizeof(unsigned int));
 
         switch (number_dimensions)
         {
+          case 1:
+            for (i[0] = 0; i[0] < N[0]; i[0]++)
+            {
+              if (fabs(A_dense[i[0]]-spamm_get(i, A)) > max_diff)
+              {
+                max_diff = fabs(A_dense[i[0]]-spamm_get(i, A));
+                max_diff_i[0] = i[0];
+              }
+            }
+
+            if (max_diff > TEST_TOLERANCE)
+            {
+              result |= SPAMM_ERROR;
+              printf("[add_spamm] max diff of A[%u] (test tolerance was %1.2e) = %e\n",
+                  max_diff_i[0], TEST_TOLERANCE, max_diff);
+            }
+            break;
+
           case 2:
-            max_diff_i[0] = 0;
-            max_diff_i[1] = 0;
             for (i[0] = 0; i[0] < N[0]; i[0]++) {
               for (i[1] = 0; i[1] < N[1]; i[1]++)
               {
@@ -164,10 +201,35 @@ main (int argc, char **argv)
             }
             break;
 
+          case 3:
+            for (i[0] = 0; i[0] < N[0]; i[0]++) {
+              for (i[1] = 0; i[1] < N[1]; i[1]++) {
+                for (i[2] = 0; i[2] < N[2]; i[2]++)
+                {
+                  if (fabs(A_dense[spamm_index_row_major_3(number_dimensions, N, i)]-spamm_get(i, A)) > max_diff)
+                  {
+                    max_diff = fabs(A_dense[spamm_index_row_major_3(number_dimensions, N, i)]-spamm_get(i, A));
+                    max_diff_i[0] = i[0];
+                    max_diff_i[1] = i[1];
+                    max_diff_i[2] = i[2];
+                  }
+                }
+              }
+            }
+
+            if (max_diff > TEST_TOLERANCE)
+            {
+              result |= SPAMM_ERROR;
+              printf("[add_spamm] max diff of A[%u][%u][%u] (test tolerance was %1.2e) = %e\n",
+                  max_diff_i[0], max_diff_i[1], max_diff_i[2], TEST_TOLERANCE, max_diff);
+            }
+            break;
+
           default:
             SPAMM_FATAL("FIXME\n");
             break;
         }
+        free(max_diff_i);
         spamm_delete(&A);
         spamm_delete(&B);
       }

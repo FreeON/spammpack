@@ -34,32 +34,78 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
 
   assert(A_dense != NULL);
 
-  if (number_dimensions != 2)
-  {
-    SPAMM_FATAL("can not handle this case\n");
-  }
-
   A = spamm_new(number_dimensions, N, chunk_tier, use_linear_tree);
 
   i = calloc(number_dimensions, sizeof(unsigned int));
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
-    {
-      switch(dense_type)
+
+  switch (number_dimensions)
+  {
+    case 1:
+      for (i[0] = 0; i[0] < N[0]; i[0]++)
       {
-        case row_major:
-          spamm_set(i, A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])], A);
-          break;
+        switch(dense_type)
+        {
+          case row_major:
+          case column_major:
+            spamm_set(i, A_dense[i[0]], A);
+            break;
 
-        case column_major:
-          spamm_set(i, A_dense[spamm_index_column_major(i[0], i[1], N[0], N[1])], A);
-          break;
-
-        default:
-          SPAMM_FATAL("unknown type\n");
-          break;
+          default:
+            SPAMM_FATAL("unknown type\n");
+            break;
+        }
       }
-    }
+      break;
+
+    case 2:
+      for (i[0] = 0; i[0] < N[0]; i[0]++) {
+        for (i[1] = 0; i[1] < N[1]; i[1]++)
+        {
+          switch(dense_type)
+          {
+            case row_major:
+              spamm_set(i, A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])], A);
+              break;
+
+            case column_major:
+              spamm_set(i, A_dense[spamm_index_column_major(i[0], i[1], N[0], N[1])], A);
+              break;
+
+            default:
+              SPAMM_FATAL("unknown type\n");
+              break;
+          }
+        }
+      }
+      break;
+
+    case 3:
+      for (i[0] = 0; i[0] < N[0]; i[0]++) {
+        for (i[1] = 0; i[1] < N[1]; i[1]++) {
+          for (i[2] = 0; i[2] < N[2]; i[2]++)
+          {
+            switch(dense_type)
+            {
+              case row_major:
+                spamm_set(i, A_dense[spamm_index_row_major_3(number_dimensions, N, i)], A);
+                break;
+
+              case column_major:
+                spamm_set(i, A_dense[spamm_index_column_major_3(number_dimensions, N, i)], A);
+                break;
+
+              default:
+                SPAMM_FATAL("unknown type\n");
+                break;
+            }
+          }
+        }
+      }
+      break;
+
+    default:
+      SPAMM_FATAL("FIXME\n");
+      break;
   }
   free(i);
 
