@@ -449,7 +449,7 @@ spamm_chunk_get (const unsigned int *i,
 
     /* Update norm. */
     norm2[linear_index] += Aij*Aij;
-    norm[linear_index]   = sqrt(norm2[linear_index]);
+    norm[linear_index] = sqrt(norm2[linear_index]);
 
     if (tier+1 < number_tiers)
     {
