@@ -329,6 +329,7 @@ spamm_chunk_set (const unsigned int *const i,
     new_N_upper[dim] = N_upper[dim];
   }
 
+  /* Z-curve ordering down to SPAMM_N_KERNEL. */
   for (tier = 0, linear_index = 0; tier < number_tiers; tier++)
   {
     norm = spamm_chunk_get_tier_norm(tier, chunk);
@@ -440,6 +441,7 @@ spamm_chunk_get (const unsigned int *i,
     new_N_upper[dim] = N_upper[dim];
   }
 
+  /* Z-curve ordering down to SPAMM_N_KERNEL. */
   for (tier = 0, linear_index = 0; tier < number_tiers; tier++)
   {
     norm = spamm_chunk_get_tier_norm(tier, chunk);
@@ -858,7 +860,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     {
       SPAMM_FATAL("logic error, N_contiguous (%u) has to be at least %u\n", N_contiguous, SPAMM_N_KERNEL);
     }
-    tier_temp = log(N_contiguous)/log(SPAMM_N_KERNEL);
+    tier_temp = log(N_contiguous/SPAMM_N_KERNEL)/log(2);
 
     if (tier_temp-round(tier_temp) < 1e-10)
     {
@@ -869,6 +871,9 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     {
       *number_tiers = (unsigned int) ceil(tier_temp);
     }
+
+    /* Add another tier for norms at SPAMM_N_BLOCK. */
+    *number_tiers += 1;
 
     if (SPAMM_N_KERNEL*ipow(2, *number_tiers-1) != N_contiguous)
     {

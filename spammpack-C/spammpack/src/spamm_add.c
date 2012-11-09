@@ -330,25 +330,7 @@ spamm_recursive_add (const float alpha,
     return;
   }
 
-  if (number_dimensions == 2 && use_linear_tree && tier == chunk_tier)
-  {
-    if ((*A) == NULL && (*B) != NULL)
-    {
-      SPAMM_FATAL("FIXME\n");
-    }
-
-    else if ((*A) != NULL && (*B) == NULL)
-    {
-      SPAMM_FATAL("FIXME\n");
-    }
-
-    else
-    {
-      spamm_hashed_add(alpha, &(*A)->tree.hashed_tree, beta, &(*B)->tree.hashed_tree);
-    }
-  }
-
-  else if (tier == chunk_tier)
+  if (tier == chunk_tier)
   {
     if ((*A) == NULL && (*B) != NULL)
     {
@@ -423,12 +405,7 @@ spamm_add (const float alpha,
     const float beta,
     struct spamm_matrix_t *B)
 {
-  if (A->number_dimensions == 2 && A->use_linear_tree && A->chunk_tier == 0)
-  {
-    spamm_hashed_add(alpha, &A->tree.hashed_tree, beta, &B->tree.hashed_tree);
-  }
-
-  else if (A->chunk_tier == 0)
+  if (A->chunk_tier == 0)
   {
     spamm_chunk_add(alpha, &A->tree.chunk, beta, B->tree.chunk);
   }
