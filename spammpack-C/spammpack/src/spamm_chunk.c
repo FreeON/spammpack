@@ -306,6 +306,8 @@ spamm_chunk_set (const unsigned int *const i,
   unsigned int *new_N_lower;
   unsigned int *new_N_upper;
 
+  unsigned int *new_i;
+
   float *norm;
   float *norm2;
 
@@ -373,7 +375,13 @@ spamm_chunk_set (const unsigned int *const i,
 
   else
   {
-    A[spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], i)] = Aij;
+    new_i = calloc(number_dimensions, sizeof(unsigned int));
+    for (dim = 0; dim < number_dimensions; dim++)
+    {
+      new_i[dim] = i[dim]-N_lower[dim];
+    }
+    A[spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], new_i)] = Aij;
+    free(new_i);
   }
 
   free(new_N_lower);
@@ -408,6 +416,8 @@ spamm_chunk_get (const unsigned int *i,
 
   unsigned int *new_N_lower;
   unsigned int *new_N_upper;
+
+  unsigned int *new_i;
 
   float *norm;
   float *norm2;
@@ -476,7 +486,13 @@ spamm_chunk_get (const unsigned int *i,
 
   else
   {
-    Aij = A[spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], i)];
+    new_i = calloc(number_dimensions, sizeof(unsigned int));
+    for (dim = 0; dim < number_dimensions; dim++)
+    {
+      new_i[dim] = i[dim]-N_lower[dim];
+    }
+    Aij = A[spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], new_i)];
+    free(new_i);
   }
 
   free(new_N_lower);
