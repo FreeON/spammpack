@@ -87,7 +87,7 @@ spamm_chunk_multiply (const float tolerance,
   float alpha_sgemm = alpha;
   float beta = 1.0;
 
-  unsigned int N_block_sgemm = N_block;
+  int N_block_sgemm = N_block;
 
   float *matrix_A;
   float *matrix_B;
@@ -236,7 +236,7 @@ spamm_chunk_copy (spamm_chunk_t **A,
     spamm_chunk_t *B)
 {
   unsigned int *number_dimensions = spamm_chunk_get_number_dimensions(B);
-  unsigned int *N_block = spamm_chunk_get_N_block(B);
+  unsigned int *number_tiers = spamm_chunk_get_number_tiers(B);
   unsigned int *N = spamm_chunk_get_N(B);
   unsigned int *N_lower = spamm_chunk_get_N_lower(B);
   unsigned int *N_upper = spamm_chunk_get_N_upper(B);
@@ -249,23 +249,20 @@ spamm_chunk_copy (spamm_chunk_t **A,
   float *A_matrix;
   float *B_matrix;
 
-  unsigned int number_tiers;
   unsigned int N_contiguous;
 
   unsigned int i;
 
   spamm_delete_chunk(A);
 
-  *A = spamm_new_chunk(*number_dimensions, *N_block, N, N_lower, N_upper);
+  *A = spamm_new_chunk(*number_dimensions, (*number_tiers == 1 ? 0 : 1), N, N_lower, N_upper);
 
   norm_A = spamm_chunk_get_norm(*A);
   norm_B = spamm_chunk_get_norm(B);
   norm2_A = spamm_chunk_get_norm2(*A);
   norm2_B = spamm_chunk_get_norm2(B);
 
-  number_tiers = spamm_chunk_get_number_tiers(B);
-
-  for (i = 0; i < ipow(*number_dimensions, number_tiers); i++)
+  for (i = 0; i < ipow(*number_dimensions, *number_tiers); i++)
   {
     norm_A[i] = beta*norm_B[i];
     norm2_A[i] = beta*beta*norm2_B[i];
@@ -291,74 +288,96 @@ spamm_chunk_copy (spamm_chunk_t **A,
 void
 spamm_chunk_set (const unsigned int *const i,
     const float Aij,
-    const unsigned int tier,
-    const unsigned int chunk_tier,
-    const unsigned int depth,
-    const unsigned int linear_index,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
     spamm_chunk_t *chunk)
 {
   int dim;
 
+  short use_linear_tree;
+
+  unsigned int tier;
+  unsigned int linear_index;
+
   unsigned int number_dimensions;
+  unsigned int number_tiers;
 
-  float *norm;
-  float *norm2;
-
-  unsigned int N_block;
-  float *A;
+  unsigned int *N_lower;
+  unsigned int *N_upper;
 
   unsigned int *new_N_lower;
   unsigned int *new_N_upper;
 
-  unsigned int new_linear_index = linear_index;
+  float *norm;
+  float *norm2;
+
+  float *A;
 
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
-  norm = spamm_chunk_get_tier_norm(tier-chunk_tier, chunk);
-  norm2 = spamm_chunk_get_tier_norm2(tier-chunk_tier, chunk);
+  number_tiers = *spamm_chunk_get_number_tiers(chunk);
+  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);
 
-  /* Update norm. */
-  norm2[linear_index] += Aij*Aij;
-  norm[linear_index]   = sqrt(norm2[linear_index]);
+  N_lower = spamm_chunk_get_N_lower(chunk);
+  N_upper = spamm_chunk_get_N_upper(chunk);
 
-  if (tier == depth)
+  new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
+  new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+  for (dim = 0; dim < number_dimensions; dim++)
   {
-    N_block = *spamm_chunk_get_N_block(chunk);
-    A = spamm_chunk_get_matrix(chunk);
+    new_N_lower[dim] = N_lower[dim];
+    new_N_upper[dim] = N_upper[dim];
+  }
 
-    A[ipow(N_block, number_dimensions)*linear_index
-      +spamm_index_column_major_2(number_dimensions, N_block, N_lower, i)] = Aij;
+  for (tier = 0, linear_index = 0; tier < number_tiers; tier++)
+  {
+    norm = spamm_chunk_get_tier_norm(tier, chunk);
+    norm2 = spamm_chunk_get_tier_norm2(tier, chunk);
+
+    /* Update norm. */
+    norm2[linear_index] += Aij*Aij;
+    norm[linear_index] = sqrt(norm2[linear_index]);
+
+    if (tier+1 < number_tiers)
+    {
+      /* Recurse. */
+      linear_index <<= number_dimensions;
+
+      for (dim = 0; dim < number_dimensions; dim++)
+      {
+        if (i[dim] < new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2)
+        {
+          new_N_lower[dim] = new_N_lower[dim];
+          new_N_upper[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
+        }
+
+        else
+        {
+          new_N_upper[dim] = new_N_upper[dim];
+          new_N_lower[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
+          linear_index |= (1 << dim);
+        }
+      }
+    }
+
+    else
+    {
+      break;
+    }
+  }
+
+  A = spamm_chunk_get_matrix(chunk);
+  if (use_linear_tree)
+  {
+    A[linear_index*ipow(SPAMM_N_KERNEL, number_dimensions)*sizeof(float)
+      +spamm_index_kernel_block(i[0]-new_N_lower[0], i[1]-new_N_lower[1], row_major)] = Aij;
   }
 
   else
   {
-    new_linear_index <<= number_dimensions;
-
-    new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
-    new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
-
-    for (dim = 0; dim < number_dimensions; dim++)
-    {
-      if (i[dim] < N_lower[dim]+(N_upper[dim]-N_lower[dim])/2)
-      {
-        new_N_lower[dim] = N_lower[dim];
-        new_N_upper[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
-      }
-
-      else
-      {
-        new_N_lower[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
-        new_N_upper[dim] = N_upper[dim];
-        new_linear_index |= (1 << dim);
-      }
-    }
-
-    spamm_chunk_set(i, Aij, tier+1, chunk_tier, depth, new_linear_index, new_N_lower, new_N_upper, chunk);
-
-    free(new_N_lower);
-    free(new_N_upper);
+    A[spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], i)] = Aij;
   }
+
+  free(new_N_lower);
+  free(new_N_upper);
 }
 
 /** Get an element from a SpAMM chunk.
@@ -370,67 +389,98 @@ spamm_chunk_set (const unsigned int *const i,
  */
 float
 spamm_chunk_get (const unsigned int *i,
-    const unsigned int tier,
-    const unsigned int chunk_tier,
-    const unsigned int depth,
-    const unsigned int linear_index,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
     spamm_chunk_t *chunk)
 {
   float Aij = 0;
 
   int dim;
 
-  unsigned int number_dimensions;
+  short use_linear_tree;
 
-  unsigned int N_block;
-  float *A;
+  unsigned int tier;
+  unsigned int linear_index;
+
+  unsigned int number_dimensions;
+  unsigned int number_tiers;
+
+  unsigned int *N_lower;
+  unsigned int *N_upper;
 
   unsigned int *new_N_lower;
   unsigned int *new_N_upper;
 
-  unsigned int new_linear_index = linear_index;
+  float *norm;
+  float *norm2;
+
+  float *A;
 
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  number_tiers = *spamm_chunk_get_number_tiers(chunk);
+  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);
 
-  if (tier == depth)
+  N_lower = spamm_chunk_get_N_lower(chunk);
+  N_upper = spamm_chunk_get_N_upper(chunk);
+
+  new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
+  new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+  for (dim = 0; dim < number_dimensions; dim++)
   {
-    N_block = *spamm_chunk_get_N_block(chunk);
-    A = spamm_chunk_get_matrix(chunk);
+    new_N_lower[dim] = N_lower[dim];
+    new_N_upper[dim] = N_upper[dim];
+  }
 
-    Aij = A[ipow(N_block, number_dimensions)*linear_index
-      +spamm_index_column_major_2(number_dimensions, N_block, N_lower, i)];
+  for (tier = 0, linear_index = 0; tier < number_tiers; tier++)
+  {
+    norm = spamm_chunk_get_tier_norm(tier, chunk);
+    norm2 = spamm_chunk_get_tier_norm2(tier, chunk);
+
+    /* Update norm. */
+    norm2[linear_index] += Aij*Aij;
+    norm[linear_index]   = sqrt(norm2[linear_index]);
+
+    if (tier+1 < number_tiers)
+    {
+      /* Recurse. */
+      linear_index <<= number_dimensions;
+
+      for (dim = 0; dim < number_dimensions; dim++)
+      {
+        if (i[dim] < new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2)
+        {
+          new_N_lower[dim] = new_N_lower[dim];
+          new_N_upper[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
+        }
+
+        else
+        {
+          new_N_upper[dim] = new_N_upper[dim];
+          new_N_lower[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
+          linear_index |= (1 << dim);
+        }
+      }
+    }
+
+    else
+    {
+      break;
+    }
+  }
+
+  A = spamm_chunk_get_matrix(chunk);
+  if (use_linear_tree)
+  {
+    Aij = A[linear_index*ipow(SPAMM_N_KERNEL, number_dimensions)*sizeof(float)
+      +spamm_index_kernel_block(i[0]-new_N_lower[0], i[1]-new_N_lower[1], row_major)];
   }
 
   else
   {
-    new_linear_index <<= number_dimensions;
-
-    new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
-    new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
-
-    for (dim = 0; dim < number_dimensions; dim++)
-    {
-      if (i[dim] < N_lower[dim]+(N_upper[dim]-N_lower[dim])/2)
-      {
-        new_N_lower[dim] = N_lower[dim];
-        new_N_upper[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
-      }
-
-      else
-      {
-        new_N_lower[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
-        new_N_upper[dim] = N_upper[dim];
-        new_linear_index |= (1 << dim);
-      }
-    }
-
-    Aij = spamm_chunk_get(i, tier+1, chunk_tier, depth, new_linear_index, new_N_lower, new_N_upper, chunk);
-
-    free(new_N_lower);
-    free(new_N_upper);
+    Aij = A[spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], i)];
   }
+
+  free(new_N_lower);
+  free(new_N_upper);
 
   return Aij;
 }
@@ -472,12 +522,24 @@ spamm_chunk_get_number_dimensions (spamm_chunk_t *chunk)
  *
  * @param chunk The chunk.
  *
- * @return N_block.
+ * @return number_tiers
  */
 unsigned int *
-spamm_chunk_get_N_block (spamm_chunk_t *chunk)
+spamm_chunk_get_number_tiers (spamm_chunk_t *chunk)
 {
   return (unsigned int*) ((intptr_t) chunk + sizeof(unsigned int));
+}
+
+/** Get use_linear_tree.
+ *
+ * @param chunk The chunk.
+ *
+ * @return use_linear_tree.
+ */
+unsigned int *
+spamm_chunk_get_use_linear_tree (spamm_chunk_t *chunk)
+{
+  return (unsigned int*) ((intptr_t) chunk + 2*sizeof(unsigned int));
 }
 
 /** Get the address of the N array.
@@ -489,7 +551,7 @@ spamm_chunk_get_N_block (spamm_chunk_t *chunk)
 unsigned int *
 spamm_chunk_get_N (spamm_chunk_t *chunk)
 {
-  void **chunk_pointer = (void*) ((intptr_t) chunk + 2*sizeof(unsigned int));
+  void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (unsigned int*) ((intptr_t) chunk + (intptr_t) chunk_pointer[0]);
 }
 
@@ -502,7 +564,7 @@ spamm_chunk_get_N (spamm_chunk_t *chunk)
 unsigned int *
 spamm_chunk_get_N_lower (spamm_chunk_t *chunk)
 {
-  void **chunk_pointer = (void*) ((intptr_t) chunk + 2*sizeof(unsigned int));
+  void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (unsigned int*) ((intptr_t) chunk + (intptr_t) chunk_pointer[1]);
 }
 
@@ -515,7 +577,7 @@ spamm_chunk_get_N_lower (spamm_chunk_t *chunk)
 unsigned int *
 spamm_chunk_get_N_upper (spamm_chunk_t *chunk)
 {
-  void **chunk_pointer = (void*) ((intptr_t) chunk + 2*sizeof(unsigned int));
+  void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (unsigned int*) ((intptr_t) chunk + (intptr_t) chunk_pointer[2]);
 }
 
@@ -546,7 +608,7 @@ spamm_chunk_get_N_contiguous (spamm_chunk_t *chunk)
 float *
 spamm_chunk_get_matrix (spamm_chunk_t *chunk)
 {
-  void **chunk_pointer = (void*) ((intptr_t) chunk + 2*sizeof(unsigned int));
+  void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[3]);
 }
 
@@ -559,7 +621,7 @@ spamm_chunk_get_matrix (spamm_chunk_t *chunk)
 float *
 spamm_chunk_get_matrix_dilated (spamm_chunk_t *chunk)
 {
-  void **chunk_pointer = (void*) ((intptr_t) chunk + 2*sizeof(unsigned int));
+  void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[4]);
 }
 
@@ -578,7 +640,7 @@ spamm_chunk_get_number_norm_entries (spamm_chunk_t *chunk)
   unsigned int tier;
 
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
-  for (tier = 0; tier < spamm_chunk_get_number_tiers(chunk); tier++)
+  for (tier = 0; tier < *spamm_chunk_get_number_tiers(chunk); tier++)
   {
     result += ipow(ipow(2, number_dimensions), tier);
   }
@@ -595,7 +657,7 @@ spamm_chunk_get_number_norm_entries (spamm_chunk_t *chunk)
 float *
 spamm_chunk_get_norm (spamm_chunk_t *chunk)
 {
-  void **chunk_pointer = (void*) ((intptr_t) chunk + 2*sizeof(unsigned int));
+  void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[5]);
 }
 
@@ -639,7 +701,7 @@ spamm_chunk_get_tier_norm (const unsigned int tier,
 float *
 spamm_chunk_get_norm2 (spamm_chunk_t *chunk)
 {
-  void **chunk_pointer = (void*) ((intptr_t) chunk + 2*sizeof(unsigned int));
+  void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[6]);
 }
 
@@ -672,29 +734,6 @@ spamm_chunk_get_tier_norm2 (const unsigned int tier,
   }
 
   return &norm2[offset];
-}
-
-/** Get the number of tiers stored in the SpAMM chunk.
- *
- * @param chunk The chunk.
- *
- * @return The number of tiers.
- */
-unsigned int
-spamm_chunk_get_number_tiers (spamm_chunk_t *chunk)
-{
-  unsigned int N_contiguous;
-  unsigned int N_block;
-  unsigned int number_tiers;
-  unsigned int N;
-
-  N_contiguous = spamm_chunk_get_N_contiguous(chunk);
-  N_block = *spamm_chunk_get_N_block(chunk);
-  for (N = N_contiguous, number_tiers = 0; N >= N_block; N /= 2)
-  {
-    number_tiers++;
-  }
-  return number_tiers;
 }
 
 /** Calculate a linear offset into a SpAMM chunk matrix. The matrix data is
@@ -799,11 +838,12 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   /* Calculate the number of tiers stored here. */
   if (use_linear_tree)
   {
-    if (N_contiguous < 16)
+    if (N_contiguous < SPAMM_N_KERNEL)
     {
-      SPAMM_FATAL("logic error\n");
+      SPAMM_FATAL("logic error, N_contiguous (%u) has to be at least %u\n", N_contiguous, SPAMM_N_KERNEL);
     }
-    tier_temp = log(N_contiguous)/log(16);
+    tier_temp = log(N_contiguous)/log(SPAMM_N_KERNEL);
+
     if (tier_temp-round(tier_temp) < 1e-10)
     {
       *number_tiers = (unsigned int) round(tier_temp);
@@ -813,10 +853,12 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     {
       *number_tiers = (unsigned int) ceil(tier_temp);
     }
-    if (ipow(16, *number_tiers) != N_contiguous)
+
+    if (SPAMM_N_KERNEL*ipow(2, *number_tiers-1) != N_contiguous)
     {
-      SPAMM_FATAL("logic error, N_contiguous = %u, 16^%u = %u\n",
-          N_contiguous, *number_tiers, ipow(16, *number_tiers));
+      SPAMM_FATAL("logic error, number_tiers = %u, N_contiguous = %u, %u^%u = %u\n",
+          *number_tiers, N_contiguous, SPAMM_N_KERNEL, *number_tiers-1,
+          SPAMM_N_KERNEL*ipow(2, *number_tiers-1));
     }
   }
 
@@ -828,6 +870,9 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   /* Pointers to fields. */
   size += sizeof(unsigned int);  /* number_dimensions */
   size += sizeof(unsigned int);  /* number_tiers */
+  size += sizeof(unsigned int);  /* use_linear_tree */
+  size += sizeof(unsigned int);  /* Padding. */
+
   size += sizeof(unsigned int*); /* N_pointer */
   size += sizeof(unsigned int*); /* N_lower_pointer */
   size += sizeof(unsigned int*); /* N_upper_pointer */
@@ -988,10 +1033,11 @@ spamm_new_chunk (const unsigned int number_dimensions,
         &norm_pointer, &norm2_pointer), 1);
 
   int_pointer = chunk;
-  pointer_pointer = (void**) ((intptr_t) chunk + 2*sizeof(unsigned int));
+  pointer_pointer = (void**) ((intptr_t) chunk + 4*sizeof(unsigned int));
 
   int_pointer[0] = number_dimensions;
   int_pointer[1] = number_tiers;
+  int_pointer[2] = use_linear_tree;
 
   pointer_pointer[0] = (void*) N_pointer;
   pointer_pointer[1] = (void*) N_lower_pointer;

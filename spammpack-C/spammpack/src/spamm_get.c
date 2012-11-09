@@ -70,14 +70,9 @@ spamm_recursive_get (const unsigned int number_dimensions,
 
   if (node == NULL) { return 0; }
 
-  if (number_dimensions == 2 && use_linear_tree && tier == chunk_tier)
+  if (tier == chunk_tier)
   {
-    Aij = spamm_hashed_get(i[0], i[1], node->tree.hashed_tree);
-  }
-
-  else if (tier == chunk_tier)
-  {
-    Aij = spamm_chunk_get(i, tier, chunk_tier, depth, 0, N_lower, N_upper, node->tree.chunk);
+    Aij = spamm_chunk_get(i, node->tree.chunk);
   }
 
   else
@@ -131,25 +126,9 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
 
   float Aij;
 
-  if (A->number_dimensions == 2 && A->use_linear_tree && A->chunk_tier == 0)
+  if (A->chunk_tier == 0)
   {
-    Aij = spamm_hashed_get(i[0], i[1], A->tree.hashed_tree);
-  }
-
-  else if (A->chunk_tier == 0)
-  {
-    N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
-    N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
-
-    for (dim = 0; dim < A->number_dimensions; dim++)
-    {
-      N_upper[dim] = A->N_padded;
-    }
-
-    Aij = spamm_chunk_get(i, 0, A->chunk_tier, A->depth, 0, N_lower, N_upper, A->tree.chunk);
-
-    free(N_lower);
-    free(N_upper);
+    Aij = spamm_chunk_get(i, A->tree.chunk);
   }
 
   else

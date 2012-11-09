@@ -299,20 +299,38 @@ spamm_index_column_major (const unsigned int i, const unsigned int j,
   return i+j*M;
 }
 
+/** Return offset into a square matrix. The matrix elements are stored in
+ * column-major order.
+ *
+ * @param number_dimensions The number of dimensions.
+ * @param N The size of the matrix.
+ * @param i The array of matrix indices.
+ *
+ * @return The offset into the matrix.
+ */
 unsigned int
 spamm_index_column_major_2 (const unsigned int number_dimensions,
-    const unsigned int N_block,
-    const unsigned int *const N_lower,
+    const unsigned int N,
     const unsigned int *const i)
 {
-  unsigned int offset = 0;
+  unsigned int offset;
   int dim;
 
-  for (dim = number_dimensions-1; dim >= 1; dim--)
+  for (dim = number_dimensions-1, offset = 0; dim >= 0; dim--)
   {
-    offset = N_block*(offset+(i[dim]-N_lower[dim])%N_block);
+    offset = i[dim]+N*offset;
   }
-  offset += (i[0]-N_lower[0])%N_block;
+
+  if (offset >= ipow(32, 3))
+  {
+    fprintf(stderr, "i = {");
+    for (dim = 0; dim < number_dimensions; dim++)
+    {
+      fprintf(stderr, " %u", i[dim]);
+    }
+    fprintf(stderr, " }, N = %u\n", N);
+    SPAMM_FATAL("FIXME\n");
+  }
 
   return offset;
 }
@@ -395,8 +413,15 @@ spamm_index_norm (const unsigned int i, const unsigned int j)
 unsigned int
 spamm_index_kernel_block (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout)
 {
-  assert(i < SPAMM_N_KERNEL);
-  assert(j < SPAMM_N_KERNEL);
+  if (i >= SPAMM_N_KERNEL)
+  {
+    SPAMM_FATAL("i (%u) >= %u\n", i, SPAMM_N_KERNEL);
+  }
+
+  if (j >= SPAMM_N_KERNEL)
+  {
+    SPAMM_FATAL("j (%u) >= %u\n", j, SPAMM_N_KERNEL);
+  }
 
   return spamm_index_kernel_block_hierarchical(i/SPAMM_N_BLOCK, j/SPAMM_N_BLOCK, i%SPAMM_N_BLOCK, j%SPAMM_N_BLOCK, layout);
 }

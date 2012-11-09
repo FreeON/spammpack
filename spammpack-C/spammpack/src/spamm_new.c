@@ -71,12 +71,6 @@ spamm_get_tree_depth (const unsigned int number_dimensions,
     depth--;
   }
 
-  /* Adjust the depth. */
-  if (use_linear_tree)
-  {
-    depth -= 2;
-  }
-
   return depth;
 }
 
@@ -331,27 +325,22 @@ spamm_new (const unsigned int number_dimensions,
   /* Set padded matrix size. */
   A->N_padded = (int) (ipow(2, A->depth));
 
-  /* Adjust the linear depth. */
-  if (number_dimensions == 2 && use_linear_tree && chunk_tier+SPAMM_KERNEL_DEPTH > A->depth)
+  /* Adjust the depth. */
+  if (number_dimensions == 2 && use_linear_tree)
   {
-    SPAMM_WARN("contiguous tier (%u) + kernel depth (%u) is greater than depth (%u), I will adjust it\n",
-        chunk_tier, SPAMM_KERNEL_DEPTH, A->depth);
-    A->chunk_tier = A->depth-SPAMM_KERNEL_DEPTH;
+    A->depth -= 3; /* 16x16 submatrix blocks for linear kernel. */
+  }
+
+  if (chunk_tier > A->depth)
+  {
+    SPAMM_WARN("chunk tier (%u) is greater than depth (%u)\n", chunk_tier, A->depth);
+    A->chunk_tier = A->depth;
   }
 
   else
   {
-    if (chunk_tier > A->depth)
-    {
-      SPAMM_WARN("contiguous tier (%u) is greater than depth (%u)\n", chunk_tier, A->depth);
-      A->chunk_tier = A->depth;
-    }
-
-    else
-    {
-      A->chunk_tier = chunk_tier;
-      A->depth = chunk_tier;
-    }
+    A->chunk_tier = chunk_tier;
+    A->depth = chunk_tier;
   }
 
   /* Done. */
