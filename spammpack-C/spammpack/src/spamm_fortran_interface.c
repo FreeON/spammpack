@@ -44,9 +44,9 @@ spamm_chunk_get_N_contiguous_interface (unsigned int *N_contiguous, spamm_chunk_
 }
 
 void
-spamm_chunk_get_N_block_interface (unsigned int **N_block, spamm_chunk_t **chunk)
+spamm_chunk_get_number_tiers_interface (unsigned int **number_tiers, spamm_chunk_t **chunk)
 {
-  *N_block = spamm_chunk_get_N_block(*chunk);
+  *number_tiers = spamm_chunk_get_number_tiers(*chunk);
 }
 
 void

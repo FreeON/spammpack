@@ -42,12 +42,12 @@ module spammpack
       type(c_ptr) :: chunk
     end subroutine spamm_chunk_get_N_contiguous
 
-    !> Interface for spamm_chunk_get_N_block().
-    subroutine spamm_chunk_get_N_block (cptr, chunk) &
-        bind(C, name = "spamm_chunk_get_N_block")
+    !> Interface for spamm_chunk_get_number_tiers().
+    subroutine spamm_chunk_get_number_tiers (cptr, chunk) &
+        bind(C, name = "spamm_chunk_get_number_tiers")
       use, intrinsic :: iso_C_binding
       type(c_ptr) :: cptr, chunk
-    end subroutine spamm_chunk_get_N_block
+    end subroutine spamm_chunk_get_number_tiers
 
     !> Interface for spamm_chunk_get_N_lower().
     subroutine spamm_chunk_get_N_lower_interface (cptr, chunk) &
