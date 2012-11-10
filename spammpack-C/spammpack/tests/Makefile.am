@@ -69,7 +69,7 @@ check_PROGRAMS = \
   09_hashtable_insert \
   10_hashtable_remove \
   11_ipow \
-  12_row_major \
+  12_index \
   12_linear_index \
   13_check_spamm \
   14_add_spamm_dense \

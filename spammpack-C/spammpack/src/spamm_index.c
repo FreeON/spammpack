@@ -300,6 +300,31 @@ spamm_index_column_major (const unsigned int i, const unsigned int j,
 }
 
 /** Return offset into a square matrix. The matrix elements are stored in
+ * row-major order.
+ *
+ * @param number_dimensions The number of dimensions.
+ * @param N The size of the matrix.
+ * @param i The array of matrix indices.
+ *
+ * @return The offset into the matrix.
+ */
+unsigned int
+spamm_index_row_major_2 (const unsigned int number_dimensions,
+    const unsigned int N,
+    const unsigned int *const i)
+{
+  unsigned int offset;
+  int dim;
+
+  for (dim = 1, offset = i[0]; dim < number_dimensions; dim++)
+  {
+    offset = i[dim]+N*offset;
+  }
+
+  return offset;
+}
+
+/** Return offset into a square matrix. The matrix elements are stored in
  * column-major order.
  *
  * @param number_dimensions The number of dimensions.
@@ -324,8 +349,8 @@ spamm_index_column_major_2 (const unsigned int number_dimensions,
   return offset;
 }
 
-/** Return offset into a square matrix. The matrix elements are stored in
- * row-major order.
+/** Return offset into a matrix. The matrix elements are stored in row-major
+ * order.
  *
  * @param number_dimensions The number of dimensions.
  * @param N The size of the matrix.
@@ -349,7 +374,7 @@ spamm_index_row_major_3 (const unsigned int number_dimensions,
   return offset;
 }
 
-/** Return offset into a square matrix. The matrix elements are stored in
+/** Return offset into a matrix. The matrix elements are stored in
  * column-major order.
  *
  * @param number_dimensions The number of dimensions.
