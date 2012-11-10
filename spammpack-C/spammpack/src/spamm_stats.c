@@ -21,6 +21,16 @@ spamm_number_nonzero (const struct spamm_matrix_t *A)
 
   switch (A->number_dimensions)
   {
+    case 1:
+      for (i[0] = 0; i[0] < A->N[0]; i[0]++)
+      {
+        if (spamm_get(i, A) != 0.0)
+        {
+          result++;
+        }
+      }
+      break;
+
     case 2:
       for (i[0] = 0; i[0] < A->N[0]; i[0]++) {
         for (i[1] = 0; i[1] < A->N[1]; i[1]++)
@@ -28,6 +38,20 @@ spamm_number_nonzero (const struct spamm_matrix_t *A)
           if (spamm_get(i, A) != 0.0)
           {
             result++;
+          }
+        }
+      }
+      break;
+
+    case 3:
+      for (i[0] = 0; i[0] < A->N[0]; i[0]++) {
+        for (i[1] = 0; i[1] < A->N[1]; i[1]++) {
+          for (i[2] = 0; i[2] < A->N[2]; i[2]++)
+          {
+            if (spamm_get(i, A) != 0.0)
+            {
+              result++;
+            }
           }
         }
       }
@@ -85,6 +109,6 @@ spamm_print_info (const struct spamm_matrix_t *const A)
   printf(", depth = %u", A->depth);
   printf(", chunk_tier = %u", A->chunk_tier);
   printf(", use_linear_tree = %u", A->use_linear_tree);
-
+  printf(", nnzero = %u", spamm_number_nonzero(A));
   printf("\n");
 }
