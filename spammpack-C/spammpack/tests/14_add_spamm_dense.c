@@ -30,9 +30,9 @@ fill_matrix (const unsigned int number_dimensions,
     switch (number_dimensions)
     {
       case 1:
-        for (i[0] = 0; i[0] < N[0]; i[0]++)
+        for (i[0] = 0; i[0] < 10 && i[0] < N[0]; i[0]++)
         {
-          A_dense[i[0]] = rand()/(float) RAND_MAX;
+          A_dense[spamm_index_row_major_3(number_dimensions, N, i)] = rand()/(float) RAND_MAX;
         }
         break;
 
@@ -40,7 +40,7 @@ fill_matrix (const unsigned int number_dimensions,
         for (i[0] = 0; i[0] < N[0]; i[0]++) {
           for ((i[0] >= 10 ? i[1] = i[0]-10 : 0); i[1] < i[0]+10 && i[1] < N[1]; i[1]++)
           {
-            A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] = rand()/(float) RAND_MAX;
+            A_dense[spamm_index_row_major_3(number_dimensions, N, i)] = rand()/(float) RAND_MAX;
           }
         }
         break;
@@ -50,7 +50,7 @@ fill_matrix (const unsigned int number_dimensions,
           for ((i[0] >= 10 ? i[1] = i[0]-10 : 0); i[1] < i[0]+10 && i[1] < N[1]; i[1]++) {
             for ((i[0] >= 10 ? i[2] = i[0]-10 : 0); i[2] < i[0]+10 && i[2] < N[2]; i[2]++)
             {
-              A_dense[i[0]+N[0]*(i[1]+N[1]*i[2])] = rand()/(float) RAND_MAX;
+              A_dense[spamm_index_row_major_3(number_dimensions, N, i)] = rand()/(float) RAND_MAX;
             }
           }
         }
@@ -121,9 +121,6 @@ main (int argc, char **argv)
       N_contiguous *= N[dim];
     }
 
-    A_dense = (float*) calloc(N_contiguous, sizeof(float));
-    B_dense = (float*) calloc(N_contiguous, sizeof(float));
-
     for (use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++)
     {
       for (is_sparse_A = 0; is_sparse_A < 2; is_sparse_A++) {
@@ -131,6 +128,9 @@ main (int argc, char **argv)
         {
           printf("dim: %u, linTree: %u, sparse A: %u, sparse B: %u\n",
               number_dimensions, use_linear_tree, is_sparse_A, is_sparse_B);
+
+          A_dense = (float*) calloc(N_contiguous, sizeof(float));
+          B_dense = (float*) calloc(N_contiguous, sizeof(float));
 
           fill_matrix(number_dimensions, is_sparse_A, N, A_dense);
           fill_matrix(number_dimensions, is_sparse_B, N, B_dense);
@@ -159,9 +159,9 @@ main (int argc, char **argv)
               for (i[0] = 0; i[0] < N[0]; i[0]++) {
                 for (i[1] = 0; i[1] < N[1]; i[1]++)
                 {
-                  A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])] =
-                    alpha*A_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])]
-                    + beta*B_dense[spamm_index_row_major(i[0], i[1], N[0], N[1])];
+                  A_dense[spamm_index_row_major_3(number_dimensions, N, i)] =
+                    alpha*A_dense[spamm_index_row_major_3(number_dimensions, N, i)]
+                    + beta*B_dense[spamm_index_row_major_3(number_dimensions, N, i)];
                 }
               }
               break;
@@ -211,6 +211,11 @@ main (int argc, char **argv)
                 printf("[add_spamm] max diff of A[%u] (test tolerance was %1.2e) = %e\n",
                     max_diff_i[0], TEST_TOLERANCE, max_diff);
               }
+
+              else
+              {
+                printf("[add_spamm] passed test\n");
+              }
               break;
 
             case 2:
@@ -231,6 +236,11 @@ main (int argc, char **argv)
                 result |= SPAMM_ERROR;
                 printf("[add_spamm] max diff of A[%u][%u] (test tolerance was %1.2e) = %e\n",
                     max_diff_i[0], max_diff_i[1], TEST_TOLERANCE, max_diff);
+              }
+
+              else
+              {
+                printf("[add_spamm] passed test\n");
               }
               break;
 
@@ -253,8 +263,15 @@ main (int argc, char **argv)
               if (max_diff > TEST_TOLERANCE)
               {
                 result |= SPAMM_ERROR;
-                printf("[add_spamm] max diff of A[%u][%u][%u] (test tolerance was %1.2e) = %e\n",
-                    max_diff_i[0], max_diff_i[1], max_diff_i[2], TEST_TOLERANCE, max_diff);
+                printf("[add_spamm] max diff of A[%u][%u][%u] (ref = %e, SpAMM = %e, test tolerance was %1.2e) = %e\n",
+                    max_diff_i[0], max_diff_i[1], max_diff_i[2],
+                    A_dense[spamm_index_row_major_3(number_dimensions, N, max_diff_i)],
+                    spamm_get(max_diff_i, A), TEST_TOLERANCE, max_diff);
+              }
+
+              else
+              {
+                printf("[add_spamm] passed test\n");
               }
               break;
 
@@ -262,6 +279,8 @@ main (int argc, char **argv)
               SPAMM_FATAL("FIXME\n");
               break;
           }
+          free(A_dense);
+          free(B_dense);
           free(max_diff_i);
           spamm_delete(&A);
           spamm_delete(&B);
@@ -270,8 +289,6 @@ main (int argc, char **argv)
     }
     free(i);
     free(N);
-    free(A_dense);
-    free(B_dense);
   }
 
   return result;

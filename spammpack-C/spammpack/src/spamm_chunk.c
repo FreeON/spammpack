@@ -227,7 +227,23 @@ spamm_chunk_add (const float alpha,
     const float beta,
     spamm_chunk_t *B)
 {
-  SPAMM_FATAL("FIXME\n");
+  float *A_matrix;
+  float *B_matrix;
+
+  unsigned int i;
+  unsigned int N_contiguous;
+  unsigned int number_dimensions;
+
+  A_matrix = spamm_chunk_get_matrix(*A);
+  B_matrix = spamm_chunk_get_matrix(B);
+
+  N_contiguous = spamm_chunk_get_N_contiguous(B);
+  number_dimensions = *spamm_chunk_get_number_dimensions(B);
+
+  for (i = 0; i < ipow(N_contiguous, number_dimensions); i++)
+  {
+    A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
+  }
 }
 
 void

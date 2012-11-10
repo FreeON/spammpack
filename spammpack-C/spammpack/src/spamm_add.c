@@ -344,16 +344,7 @@ spamm_recursive_add (const float alpha,
 
     else
     {
-      /* Braindead add. */
-      A_matrix = spamm_chunk_get_matrix((*A)->tree.chunk);
-      B_matrix = spamm_chunk_get_matrix((*B)->tree.chunk);
-
-      N_contiguous = spamm_chunk_get_N_contiguous((*A)->tree.chunk);
-
-      for (i = 0; i < ipow(N_contiguous, number_dimensions); i++)
-      {
-        A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
-      }
+      spamm_chunk_add(alpha, &(*A)->tree.chunk, beta, (*B)->tree.chunk);
     }
   }
 

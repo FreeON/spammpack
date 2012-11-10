@@ -335,15 +335,15 @@ spamm_index_column_major_2 (const unsigned int number_dimensions,
  */
 unsigned int
 spamm_index_row_major_3 (const unsigned int number_dimensions,
-    const unsigned int *N,
+    const unsigned int *const N,
     const unsigned int *const i)
 {
   unsigned int offset;
   int dim;
 
-  for (dim = 1, offset = i[0]; dim+1 < number_dimensions; dim++)
+  for (dim = 1, offset = i[0]; dim < number_dimensions; dim++)
   {
-    offset = i[dim+1]+N[dim+1]*offset;
+    offset = i[dim]+N[dim]*offset;
   }
 
   return offset;
@@ -360,7 +360,7 @@ spamm_index_row_major_3 (const unsigned int number_dimensions,
  */
 unsigned int
 spamm_index_column_major_3 (const unsigned int number_dimensions,
-    const unsigned int *N,
+    const unsigned int *const N,
     const unsigned int *const i)
 {
   unsigned int offset;

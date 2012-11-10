@@ -64,12 +64,12 @@ spamm_index_column_major_2 (const unsigned int number_dimensions,
 
 unsigned int
 spamm_index_row_major_3 (const unsigned int number_dimensions,
-    const unsigned int *N,
+    const unsigned int *const N,
     const unsigned int *const i);
 
 unsigned int
 spamm_index_column_major_3 (const unsigned int number_dimensions,
-    const unsigned int *N,
+    const unsigned int *const N,
     const unsigned int *const i);
 
 unsigned int

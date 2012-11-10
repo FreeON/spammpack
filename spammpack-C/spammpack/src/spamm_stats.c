@@ -91,8 +91,14 @@ void
 spamm_print_info (const struct spamm_matrix_t *const A)
 {
   int dim;
+  unsigned int N_contiguous;
 
   assert(A != NULL);
+
+  for (dim = 0, N_contiguous = 1; dim < A->number_dimensions; dim++)
+  {
+    N_contiguous *= A->N[dim];
+  }
 
   printf("number_dimensions = %u", A->number_dimensions);
   printf(", N = {");
@@ -109,6 +115,6 @@ spamm_print_info (const struct spamm_matrix_t *const A)
   printf(", depth = %u", A->depth);
   printf(", chunk_tier = %u", A->chunk_tier);
   printf(", use_linear_tree = %u", A->use_linear_tree);
-  printf(", nnzero = %u", spamm_number_nonzero(A));
+  printf(", nnzero = %u (%1.2f %%)", spamm_number_nonzero(A), 100*(float) spamm_number_nonzero(A)/(float) N_contiguous);
   printf("\n");
 }
