@@ -388,8 +388,14 @@ spamm_multiply_C_index_sort (unsigned int *array,
  */
 void
 spamm_linear_multiply (const float tolerance,
-    const float alpha, struct spamm_hashed_t *A, struct spamm_hashed_t *B,
-    const float beta, struct spamm_hashed_t *C,
+    const float alpha,
+    struct spamm_hashed_t *A,
+    struct spamm_hashed_t *B,
+    spamm_chunk_t *chunk_A,
+    spamm_chunk_t *chunk_B,
+    const float beta,
+    struct spamm_hashed_t *C,
+    spamm_chunk_t *chunk_C,
     struct spamm_timer_t *timer,
     const enum spamm_kernel_t kernel)
 {
@@ -406,6 +412,18 @@ spamm_linear_multiply (const float tolerance,
   unsigned int A_k_lookup_index;
   unsigned int B_k_lookup_index;
   unsigned int A_k, B_k;
+
+  unsigned int N_contiguous_A;
+  unsigned int N_contiguous_B;
+  unsigned int N_contiguous_C;
+
+  float *norm_A;
+  float *norm_B;
+  float *norm_C;
+
+  float *matrix_A;
+  float *matrix_B;
+  float *matrix_C;
 
   struct spamm_multiply_k_lookup_t A_k_lookup;
   struct spamm_multiply_k_lookup_t B_k_lookup;
@@ -424,25 +442,16 @@ spamm_linear_multiply (const float tolerance,
 
   char *timer_string;
 
-  unsigned int N_padded;
-
-  assert(A != NULL);
-  assert(B != NULL);
-  assert(C != NULL);
+  unsigned int N_contiguous;
 
   /* For convenience. */
-  N_padded = A->N_upper-A->N_lower;
+  N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
 
-  /* Check some more things. */
-  if (A->layout != B->layout || A->layout != C->layout)
-  {
-    SPAMM_FATAL("inconsistent layout in matrices\n");
-  }
+  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A), chunk_A);
+  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B), chunk_B);
 
-  if (A->layout != spamm_kernel_suggest_layout(kernel))
-  {
-    SPAMM_FATAL("wrong layout for chosen kernel\n");
-  }
+  matrix_A = spamm_chunk_get_matrix(chunk_A);
+  matrix_B = spamm_chunk_get_matrix(chunk_B);
 
   /* Print out some information. */
 #ifdef SPAMM_MULTIPLY_PRINT_ALOT
@@ -455,23 +464,6 @@ spamm_linear_multiply (const float tolerance,
   printf("[multiply] timer: %s\n", timer_info_string);
 #endif
 
-#ifdef SPAMM_MULTIPLY_BETA
-  /* Multiply C with beta. */
-#ifdef SPAMM_MULTIPLY_PRINT_ALOT
-  printf("[multiply] multiplying C with beta... ");
-#endif
-  spamm_timer_start(timer);
-
-  spamm_hashed_multiply_scalar(beta, C);
-
-  spamm_timer_stop(timer);
-  timer_string = spamm_timer_get_string(timer);
-#ifdef SPAMM_MULTIPLY_PRINT_ALOT
-  printf("%s timer units\n", timer_string);
-#endif
-  free(timer_string);
-#endif
-
 #ifdef SPAMM_MULTIPLY_SORT_INDEX
   /* Sort 2D indices on k, i.e. either on row or column index. */
 #ifdef SPAMM_MULTIPLY_PRINT_ALOT
@@ -479,12 +471,14 @@ spamm_linear_multiply (const float tolerance,
 #endif
   spamm_timer_start(timer);
 
-  A_tier_hashtable = A->tier_hashtable[A->kernel_tier-A->tier];
-  B_tier_hashtable = B->tier_hashtable[B->kernel_tier-A->tier];
-  C_tier_hashtable = C->tier_hashtable[C->kernel_tier-A->tier];
+  A_index.index = spamm_list_new(N_contiguous_A/SPAMM_N_KERNEL);
+  B_index.index = spamm_list_new(N_contiguous_B/SPAMM_N_KERNEL);
 
-  A_index.index = spamm_hashtable_keys(A_tier_hashtable);
-  B_index.index = spamm_hashtable_keys(B_tier_hashtable);
+  for (i = 0; i < N_contiguous_A/SPAMM_N_KERNEL; i++)
+  {
+    spamm_list_set(A_index.index, i, i, norm_A[i]);
+    spamm_list_set(B_index.index, i, i, norm_B[i]);
+  }
 
   A_index.size = spamm_list_length(A_index.index);
   B_index.size = spamm_list_length(B_index.index);
@@ -512,8 +506,8 @@ spamm_linear_multiply (const float tolerance,
 #endif
   spamm_timer_start(timer);
 
-  A_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(N_padded/SPAMM_N_KERNEL+1), 1);
-  B_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(N_padded/SPAMM_N_KERNEL+1), 1);
+  A_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(N_contiguous/SPAMM_N_KERNEL+1), 1);
+  B_k_lookup.index = spamm_allocate(sizeof(unsigned int)*(N_contiguous/SPAMM_N_KERNEL+1), 1);
 
   /* The index in A_k_lookup. */
   A_k_lookup.size = 0;
@@ -522,7 +516,7 @@ spamm_linear_multiply (const float tolerance,
   i = 0;
 
   /* The last k value. Initially place it behind the largest expected k value. */
-  k = A->N_upper-A->N_lower+1;
+  k = N_contiguous+1;
 
   for (i = 0; i < spamm_list_length(A_index.index); i++)
   {
@@ -541,9 +535,9 @@ spamm_linear_multiply (const float tolerance,
   A_k_lookup.index[A_k_lookup.size++] = spamm_list_length(A_index.index);
 
   /* Check. */
-  if (A_k_lookup.size > N_padded/SPAMM_N_KERNEL+1)
+  if (A_k_lookup.size > N_contiguous/SPAMM_N_KERNEL+1)
   {
-    SPAMM_FATAL("k lookup table too long for A, estimated %u elements, but found %u\n", N_padded/SPAMM_N_KERNEL+1, A_k_lookup.size);
+    SPAMM_FATAL("k lookup table too long for A, estimated %u elements, but found %u\n", N_contiguous/SPAMM_N_KERNEL+1, A_k_lookup.size);
   }
 
   /* The index in B_k_lookup. */
@@ -553,7 +547,7 @@ spamm_linear_multiply (const float tolerance,
   i = 0;
 
   /* The last k value. Initially place it behind the largest expected k value. */
-  k = B->M_upper-B->M_lower+1;
+  k = N_contiguous+1;
 
   for (i = 0; i < spamm_list_length(B_index.index); i++)
   {
@@ -572,9 +566,9 @@ spamm_linear_multiply (const float tolerance,
   B_k_lookup.index[B_k_lookup.size++] = spamm_list_length(B_index.index);
 
   /* Check. */
-  if (B_k_lookup.size > N_padded/SPAMM_N_KERNEL+1)
+  if (B_k_lookup.size > N_contiguous/SPAMM_N_KERNEL+1)
   {
-    SPAMM_FATAL("k lookup table too long for B, estimated %u elements, but found %u\n", N_padded/SPAMM_N_KERNEL+1, B_k_lookup.size);
+    SPAMM_FATAL("k lookup table too long for B, estimated %u elements, but found %u\n", N_contiguous/SPAMM_N_KERNEL+1, B_k_lookup.size);
   }
 
 #ifdef SPAMM_MULTIPLY_PRINT_ALOT
@@ -630,12 +624,12 @@ spamm_linear_multiply (const float tolerance,
 
   for (i = 0; i < A_index.size; i++)
   {
-    A_index.data[i] = spamm_hashtable_lookup(A_tier_hashtable, spamm_list_get_index(A_index.index, i));
+    A_index.data[i] = &matrix_A[spamm_list_get_index(A_index.index, i)*ipow(SPAMM_N_KERNEL, 2)];
   }
 
   for (i = 0; i < B_index.size; i++)
   {
-    B_index.data[i] = spamm_hashtable_lookup(B_tier_hashtable, spamm_list_get_index(B_index.index, i));
+    B_index.data[i] = &matrix_B[spamm_list_get_index(B_index.index, i)*ipow(SPAMM_N_KERNEL, 2)];
   }
 
   spamm_timer_stop(timer);
@@ -646,92 +640,6 @@ spamm_linear_multiply (const float tolerance,
   free(timer_string);
 #endif
 
-#ifdef SPAMM_MULTIPLY_DOUBLE_CHECK
-  for (i = 0, A_k_lookup_index = 0; i < A_index.size; i++)
-  {
-    if (spamm_list_get_norm(A_index.index, i) != A_index.data[i]->node_norm)
-    {
-      SPAMM_FATAL("norm mismatch in A_index[%u]\n", i);
-    }
-
-    A_k = spamm_list_get_index(A_index.index, i) & MASK_2D_J;
-
-    if (i == A_k_lookup.index[A_k_lookup_index])
-    {
-      first_A_k = spamm_list_get_index(A_index.index, i) & MASK_2D_J;
-    }
-
-    else if (i == A_k_lookup.index[A_k_lookup_index+1])
-    {
-      A_k_lookup_index++;
-      first_A_k = spamm_list_get_index(A_index.index, i) & MASK_2D_J;
-    }
-
-    else
-    {
-      if (A_k != first_A_k)
-      {
-        SPAMM_FATAL("A_k_lookup incorrect\n");
-      }
-    }
-
-    if (i < A_index.size-1)
-    {
-      next_A_k = spamm_list_get_index(A_index.index, i+1) & MASK_2D_J;
-
-      if (A_k == next_A_k) {
-        if (A_index.data[i]->node_norm < A_index.data[i+1]->node_norm)
-        {
-          SPAMM_FATAL("norms in A_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
-              i, A_index.data[i]->node_norm, i+1, A_index.data[i+1]->node_norm);
-        }
-      }
-    }
-  }
-
-  for (i = 0, B_k_lookup_index = 0; i < B_index.size; i++)
-  {
-    if (spamm_list_get_norm(B_index.index, i) != B_index.data[i]->node_norm)
-    {
-      SPAMM_FATAL("norm mismatch in B_index[%u]\n", i);
-    }
-
-    B_k = spamm_list_get_index(B_index.index, i) & MASK_2D_I;
-
-    if (i == B_k_lookup.index[B_k_lookup_index])
-    {
-      first_B_k = spamm_list_get_index(B_index.index, i) & MASK_2D_I;
-    }
-
-    else if (i == B_k_lookup.index[B_k_lookup_index+1])
-    {
-      B_k_lookup_index++;
-      first_B_k = spamm_list_get_index(B_index.index, i) & MASK_2D_I;
-    }
-
-    else
-    {
-      if (B_k != first_B_k)
-      {
-        SPAMM_FATAL("B_k_lookup incorrect\n");
-      }
-    }
-
-    if (i < B_index.size-1)
-    {
-      next_B_k = spamm_list_get_index(B_index.index, i+1) & MASK_2D_I;
-
-      if (B_k == next_B_k) {
-        if (B_index.data[i]->node_norm < B_index.data[i+1]->node_norm)
-        {
-          SPAMM_FATAL("norms in B_index are not sorted, norm[%u] = %e, norm[%u] = %e\n",
-              i, B_index.data[i]->node_norm, i+1, B_index.data[i+1]->node_norm);
-        }
-      }
-    }
-  }
-#endif
-
 #ifdef SPAMM_MULTIPLY_CONVOLUTE
   /* Convolute by constructing product 3D index. */
 #ifdef SPAMM_MULTIPLY_PRINT_ALOT
@@ -740,9 +648,9 @@ spamm_linear_multiply (const float tolerance,
   spamm_timer_start(timer);
 
   multiply_stream = spamm_allocate(sizeof(struct spamm_multiply_stream_t)
-      *(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL), 0);
+      *(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL), 0);
   C_block_stream_index = spamm_allocate(sizeof(unsigned int)
-      *(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL), 0);
+      *(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL), 0);
 
   /* Some tings to try:
    *
@@ -754,7 +662,7 @@ spamm_linear_multiply (const float tolerance,
   unsigned int *B_index_array_original = spamm_list_get_index_address(B_index.index);
 
   unsigned int *multiply_stream_C_index = spamm_allocate(sizeof(unsigned int)
-      *(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL), 0);
+      *(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL), 0);
 
   __m128i A_index_xmm;
   __m128i B_index_xmm;
@@ -988,10 +896,10 @@ spamm_linear_multiply (const float tolerance,
   free(multiply_stream_C_index);
 
   /* Check. */
-  if (stream_index > (N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL))
+  if (stream_index > (N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL))
   {
     SPAMM_FATAL("multiply stream has too many elements, has %u but is only dimensioned for %u\n", stream_index,
-        (N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL)*(N_padded/SPAMM_N_KERNEL));
+        (N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL));
   }
 
 #ifdef SPAMM_MULTIPLY_DOUBLE_CHECK

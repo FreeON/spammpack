@@ -101,8 +101,8 @@ spamm_chunk_multiply (const float tolerance,
 
   if (use_linear_tree)
   {
-    spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, beta, chunk_C,
-        timer, kernel);
+    spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, chunk_A,
+        chunk_B, beta, chunk_C, chunk_C, timer, kernel);
   }
 
   else
@@ -115,11 +115,9 @@ spamm_chunk_multiply (const float tolerance,
 
     if (sgemm)
     {
-      SPAMM_WARN("starting sgemm_()...\n");
       sgemm("N", "N", &N_contiguous, &N_contiguous, &N_contiguous,
           &alpha_sgemm, matrix_A, &N_contiguous, matrix_B, &N_contiguous,
           &beta, matrix_C, &N_contiguous);
-      SPAMM_WARN("done with sgemm_()...\n");
     }
 
     else

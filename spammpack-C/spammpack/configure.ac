@@ -270,24 +270,6 @@ if test "${use_hashtable}" = "yes"; then
 fi
 AC_DEFINE_UNQUOTED([SPAMM_HASHTABLE_HASH], [$use_hashtable_hash], [The type of hash function])
 
-#AC_MSG_CHECKING([what convolution implementation to use])
-#AC_ARG_WITH([convolution],
-#            [AS_HELP_STRING([--with-convolution], [Choose which convolution implementation to use])],
-#            [use_convolution=$withval],
-#            [use_convolution=5])
-#AC_MSG_RESULT([$use_convolution])
-AC_DEFINE_UNQUOTED([SPAMM_MULTIPLY_CONVOLUTE_IMPLEMENTATION], [$use_convolution], [The convolution implementation])
-
-AC_MSG_CHECKING([whether to double-check the multiply])
-AC_ARG_ENABLE([double-check],
-              [AS_HELP_STRING([--enable-double-check], [Double check a few things in the multiply])],
-              [use_double_check=$enableval],
-              [use_double_check="no"])
-AC_MSG_RESULT([$use_double_check])
-if test "${use_double_check}" = "yes"; then
-  AC_DEFINE([SPAMM_MULTIPLY_DOUBLE_CHECK], [1], [Double check a few things in the multiply])
-fi
-
 dnl Fix the package version in the documentation.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])
 AC_DEFINE_UNQUOTED(SPAMM_VERSION, ["${VERSION}"], [The spammpack version.])

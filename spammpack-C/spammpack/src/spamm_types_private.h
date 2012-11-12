@@ -84,7 +84,8 @@ struct spamm_hashed_t
 
   /** The hashtables for access to each tier. */
   struct spamm_hashtable_t **tier_hashtable;
-} __attribute__((deprecated("This information is contained already in the chunks.")));
+}
+__attribute__((deprecated("This information is contained already in the chunks.")));
 
 /** A node in the matrix tree. */
 struct spamm_hashed_node_t
@@ -100,7 +101,8 @@ struct spamm_hashed_node_t
 
   /** The square of the norm of this block. */
   float norm2;
-} __attribute__((deprecated("This information is contained already in the chunks.")));
+}
+__attribute__((deprecated("This information is contained already in the chunks.")));
 
 /** A node at the kernel tier. */
 struct spamm_hashed_data_t
@@ -148,7 +150,8 @@ struct spamm_hashed_data_t
 
   /** The matrix data (dilated by 4 for SSE). */
   float __attribute__ ((aligned (SPAMM_ALIGNMENT))) block_dense_dilated[SPAMM_N_KERNEL*SPAMM_N_KERNEL*4];
-} __attribute__((deprecated("This information is contained already in the chunks.")));
+}
+__attribute__((deprecated("This information is contained already in the chunks.")));
 
 /** A recursive node. */
 struct

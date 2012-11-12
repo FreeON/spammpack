@@ -1,3 +1,4 @@
+#include "config.h"
 #include "spamm.h"
 #include "spamm_types_private.h"
 
@@ -26,7 +27,7 @@ spamm_stream_external_sgemm (const unsigned int number_stream_elements,
     if (call_external_sgemm == 1)
     {
       /* Multiply the blocks with an external sgemm() call. We are assuming a
-       * Fortran interface, hence sgemm_().
+       * Fortran interface, i.e. something like sgemm_().
        */
       SGEMM("N", "N", &N, &N, &N, &alpha,
           multiply_stream[stream_index].A->block_dense, &N,

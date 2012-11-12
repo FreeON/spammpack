@@ -135,8 +135,14 @@ spamm_memory (const struct spamm_hashed_t *A);
 
 void
 spamm_linear_multiply (const float tolerance,
-    const float alpha, struct spamm_hashed_t *A, struct spamm_hashed_t *B,
-    const float beta, struct spamm_hashed_t *C,
+    const float alpha,
+    struct spamm_hashed_t *A,
+    struct spamm_hashed_t *B,
+    spamm_chunk_t *chunk_A,
+    spamm_chunk_t *chunk_B,
+    const float beta,
+    struct spamm_hashed_t *C,
+    spamm_chunk_t *chunk_C,
     struct spamm_timer_t *timer,
     const enum spamm_kernel_t kernel);
 
