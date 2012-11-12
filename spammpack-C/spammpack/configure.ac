@@ -122,6 +122,9 @@ AC_SEARCH_LIBS([sgemm_], [],
 if test "${have_sgemm}" = "no"; then
   AC_MSG_NOTICE([no external sgemm_(), will use internal sgemm()])
   AC_DEFINE([SGEMM], [spamm_sgemm], [SpAMM internal sgemm.])
+else
+  AC_DEFINE([ADD_SGEMM_EXTERNAL_DECLARATION], [1], [Add declaration for sgemm_() external.])
+  AC_DEFINE([SGEMM], [sgemm_], [External sgemm_().])
 fi
 
 dnl Check for internal lapack (in case this package is compiled as part of FreeON).

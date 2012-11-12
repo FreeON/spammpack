@@ -387,7 +387,7 @@ spamm_multiply_C_index_sort (unsigned int *array,
  * @param kernel The stream kernel to use.
  */
 void
-spamm_hashed_multiply (const float tolerance,
+spamm_linear_multiply (const float tolerance,
     const float alpha, struct spamm_hashed_t *A, struct spamm_hashed_t *B,
     const float beta, struct spamm_hashed_t *C,
     struct spamm_timer_t *timer,
@@ -1182,22 +1182,11 @@ spamm_recursive_multiply (const float tolerance,
     *node_C = spamm_recursive_new_node();
   }
 
-  /* Multiply matrix blocks. */
-  if (number_dimensions_A == 2 &&
-      number_dimensions_B == 2 &&
-      number_dimensions_C == 2 &&
-      use_linear_tree &&
-      tier == chunk_tier)
-  {
-    spamm_hashed_multiply(tolerance, alpha, node_A->tree.hashed_tree, node_B->tree.hashed_tree,
-        beta, (*node_C)->tree.hashed_tree, timer, kernel);
-  }
-
-  else if (tier == chunk_tier)
+  if (tier == chunk_tier)
   {
     (*node_C)->norm2 = spamm_chunk_multiply(tolerance, alpha,
         node_A->tree.chunk, node_B->tree.chunk, (*node_C)->tree.chunk, tier,
-        chunk_tier, depth, N_block, 0, 0, 0, sgemm);
+        chunk_tier, depth, N_block, 0, 0, 0, timer, sgemm, kernel);
     (*node_C)->norm = sqrt((*node_C)->norm2);
   }
 
@@ -1272,22 +1261,12 @@ spamm_multiply (const float tolerance,
   unsigned int *N_lower;
   unsigned int *N_upper;
 
-  if (A->number_dimensions == 2 &&
-      B->number_dimensions == 2 &&
-      C->number_dimensions == 2 &&
-      A->use_linear_tree &&
-      A->chunk_tier == 0)
-  {
-    spamm_hashed_multiply(tolerance, alpha, A->tree.hashed_tree,
-        B->tree.hashed_tree, beta, C->tree.hashed_tree, timer, kernel);
-  }
-
-  else if (A->chunk_tier == 0)
+  if (A->chunk_tier == 0)
   {
     spamm_chunk_multiply_scalar(beta, C->tree.chunk);
     spamm_chunk_multiply(tolerance, alpha, A->tree.chunk, B->tree.chunk,
         C->tree.chunk, 0, C->chunk_tier, C->depth, C->N_block, 0, 0, 0,
-        sgemm);
+        timer, sgemm, kernel);
   }
 
   else

@@ -4,13 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef SGEMM
-#define SGEMM sgemm_
-
-extern sgemm_func sgemm_;
-
-#endif
-
 void
 spamm_stream_external_sgemm (const unsigned int number_stream_elements,
     float alpha,

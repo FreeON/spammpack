@@ -24,7 +24,9 @@ spamm_chunk_multiply (const float tolerance,
     const unsigned int linear_index_A,
     const unsigned int linear_index_B,
     const unsigned int linear_index_C,
-    sgemm_func sgemm);
+    struct spamm_timer_t *timer,
+    sgemm_func sgemm,
+    const enum spamm_kernel_t kernel);
 
 void
 spamm_chunk_add (const float alpha,

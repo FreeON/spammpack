@@ -59,7 +59,9 @@ spamm_chunk_multiply (const float tolerance,
     const unsigned int linear_index_A,
     const unsigned int linear_index_B,
     const unsigned int linear_index_C,
-    sgemm_func sgemm)
+    struct spamm_timer_t *timer,
+    sgemm_func sgemm,
+    const enum spamm_kernel_t kernel)
 {
   unsigned int i, j, k;
 
@@ -87,138 +89,54 @@ spamm_chunk_multiply (const float tolerance,
   float alpha_sgemm = alpha;
   float beta = 1.0;
 
-  int N_block_sgemm = N_block;
+  int N_contiguous;
 
   float *matrix_A;
   float *matrix_B;
   float *matrix_C;
 
-  number_dimensions_A = *spamm_chunk_get_number_dimensions(chunk_A);
-  number_dimensions_B = *spamm_chunk_get_number_dimensions(chunk_B);
-  number_dimensions_C = *spamm_chunk_get_number_dimensions(chunk_C);
+  short use_linear_tree;
 
-#ifdef PRINT_DEBUG
-  N_lower = spamm_chunk_get_N_lower(chunk_A);
-  N_upper = spamm_chunk_get_N_upper(chunk_A);
-  printf("chunk_A: {");
-  for (dim = 0; dim < number_dimensions_A; dim++)
+  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk_A);
+
+  if (use_linear_tree)
   {
-    printf(" [ %u, %u )", N_lower[dim], N_upper[dim]);
-    if (dim+1 < number_dimensions_A) { printf(","); }
+    spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, beta, chunk_C,
+        timer, kernel);
   }
-  printf(" }\n");
 
-  N_lower = spamm_chunk_get_N_lower(chunk_B);
-  N_upper = spamm_chunk_get_N_upper(chunk_B);
-  printf("chunk_B: {");
-  for (dim = 0; dim < number_dimensions_B; dim++)
+  else
   {
-    printf(" [ %u, %u )", N_lower[dim], N_upper[dim]);
-    if (dim+1 < number_dimensions_B) { printf(","); }
-  }
-  printf(" }\n");
+    matrix_A = spamm_chunk_get_matrix(chunk_A);
+    matrix_B = spamm_chunk_get_matrix(chunk_B);
+    matrix_C = spamm_chunk_get_matrix(chunk_C);
 
-  N_lower = spamm_chunk_get_N_lower(chunk_C);
-  N_upper = spamm_chunk_get_N_upper(chunk_C);
-  printf("chunk_C: {");
-  for (dim = 0; dim < number_dimensions_C; dim++)
-  {
-    printf(" [ %u, %u )", N_lower[dim], N_upper[dim]);
-    if (dim+1 < number_dimensions_C) { printf(","); }
-  }
-  printf(" }\n");
-#endif
+    N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
 
-  norm_A = spamm_chunk_get_tier_norm(tier-chunk_tier, chunk_A);
-  norm_B = spamm_chunk_get_tier_norm(tier-chunk_tier, chunk_B);
-
-  norm_C = spamm_chunk_get_tier_norm(tier-chunk_tier, chunk_C);
-  norm2_C = spamm_chunk_get_tier_norm2(tier-chunk_tier, chunk_C);
-
-  if (norm_A[linear_index_A]*norm_B[linear_index_B] > tolerance)
-  {
-    if (number_dimensions_A == 2 &&
-        number_dimensions_B == 2 &&
-        number_dimensions_C == 2)
+    if (sgemm)
     {
-      if (tier == depth)
-      {
-        if (sgemm)
-        {
-          matrix_A = spamm_chunk_get_matrix(chunk_A);
-          matrix_B = spamm_chunk_get_matrix(chunk_B);
-          matrix_C = spamm_chunk_get_matrix(chunk_C);
-
-          /* Offset into chunk. */
-          matrix_A += ipow(N_block, number_dimensions_A)*linear_index_A;
-          matrix_B += ipow(N_block, number_dimensions_B)*linear_index_B;
-          matrix_C += ipow(N_block, number_dimensions_C)*linear_index_C;
-
-          SGEMM("N", "N", &N_block_sgemm, &N_block_sgemm, &N_block_sgemm,
-              &alpha_sgemm, matrix_A, &N_block_sgemm, matrix_B,
-              &N_block_sgemm, &beta, matrix_C, &N_block_sgemm);
-        }
-
-        else
-        {
-          matrix_A = spamm_chunk_get_matrix(chunk_A);
-          matrix_B = spamm_chunk_get_matrix(chunk_B);
-          matrix_C = spamm_chunk_get_matrix(chunk_C);
-
-          /* Offset into chunk. */
-          matrix_A += ipow(N_block, number_dimensions_A)*linear_index_A;
-          matrix_B += ipow(N_block, number_dimensions_B)*linear_index_B;
-          matrix_C += ipow(N_block, number_dimensions_C)*linear_index_C;
-
-          norm2_C[linear_index_C] = 0;
-          for (i = 0; i < N_block; i++) {
-            for (j = 0; j < N_block; j++) {
-              for (k = 0; k < N_block; k++)
-              {
-                matrix_C[i+N_block*j] += alpha*matrix_A[i+N_block*k]*matrix_B[k+N_block*j];
-                norm2_C[linear_index_C] += ipow(matrix_C[i+N_block*j], 2);
-              }
-            }
-          }
-          norm_C[linear_index_C] = sqrt(norm2_C[linear_index_C]);
-        }
-      }
-
-      else
-      {
-        norm2_C[linear_index_C] = 0;
-        for (i = 0; i < 2; i++) {
-          for (j = 0; j < 2; j++)
-          {
-            new_linear_index_C = linear_index_C << number_dimensions_C;
-            new_linear_index_C |= i | (j << 1);
-
-            for (k = 0; k < 2; k++)
-            {
-              new_linear_index_A = linear_index_A << number_dimensions_A;
-              new_linear_index_B = linear_index_B << number_dimensions_B;
-
-              new_linear_index_A |= i | (k << 1);
-              new_linear_index_B |= k | (j << 1);
-
-              norm2_C[linear_index_C] += spamm_chunk_multiply(tolerance,
-                  alpha, chunk_A, chunk_B, chunk_C, tier+1, chunk_tier,
-                  depth, N_block, new_linear_index_A, new_linear_index_B,
-                  new_linear_index_C, sgemm);
-            }
-          }
-        }
-        norm_C[linear_index_C] = sqrt(norm2_C[linear_index_C]);
-      }
+      SPAMM_WARN("starting sgemm_()...\n");
+      sgemm("N", "N", &N_contiguous, &N_contiguous, &N_contiguous,
+          &alpha_sgemm, matrix_A, &N_contiguous, matrix_B, &N_contiguous,
+          &beta, matrix_C, &N_contiguous);
+      SPAMM_WARN("done with sgemm_()...\n");
     }
 
     else
     {
-      SPAMM_FATAL("not implemented\n");
+      /* Braindead multiply in nested loops. */
+      for (i = 0; i < N_contiguous; i++) {
+        for (j = 0; j < N_contiguous; j++) {
+          for (k = 0; k < N_contiguous; k++)
+          {
+            matrix_C[spamm_index_column_major(i, j, N_contiguous, N_contiguous)] += alpha
+              *matrix_A[spamm_index_column_major(i, k, N_contiguous, N_contiguous)]
+              *matrix_B[spamm_index_column_major(k, j, N_contiguous, N_contiguous)];
+          }
+        }
+      }
     }
   }
-
-  return norm2_C[linear_index_C];
 }
 
 void

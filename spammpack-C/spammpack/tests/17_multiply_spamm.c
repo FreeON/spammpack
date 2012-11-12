@@ -251,6 +251,7 @@ main (int argc, char **argv)
 #ifdef VERIFY_RESULT
   max_diff = 0;
   max_rel_diff = 0;
+  printf("verifying result...\n");
   for (i[0] = 0; i[0] < N[0]; i[0]++) {
     for (i[1] = 0; i[1] < N[1]; i[1]++) {
       for (k = 0; k < N[0]; k++)
