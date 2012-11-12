@@ -608,38 +608,6 @@ spamm_linear_multiply (const float tolerance,
   free(timer_string);
 #endif
 
-#ifdef SPAMM_MULTIPLY_COPY_INDICES
-  /* Copy sorted indices to array for quick access. */
-#ifdef SPAMM_MULTIPLY_PRINT_ALOT
-  printf("[multiply] copying indices to array and referencing dense blocks... ");
-#endif
-  spamm_timer_start(timer);
-
-  A_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(A_index.index), 0);
-  B_index.data = spamm_allocate(sizeof(struct spamm_hashed_data_t*)*spamm_list_length(B_index.index), 0);
-
-#ifdef SPAMM_MULTIPLY_PRINT_ALOT
-  printf("len(A_index) = %u, len(B_index) = %u, ", A_index.size, B_index.size);
-#endif
-
-  for (i = 0; i < A_index.size; i++)
-  {
-    A_index.data[i] = &matrix_A[spamm_list_get_index(A_index.index, i)*ipow(SPAMM_N_KERNEL, 2)];
-  }
-
-  for (i = 0; i < B_index.size; i++)
-  {
-    B_index.data[i] = &matrix_B[spamm_list_get_index(B_index.index, i)*ipow(SPAMM_N_KERNEL, 2)];
-  }
-
-  spamm_timer_stop(timer);
-  timer_string = spamm_timer_get_string(timer);
-#ifdef SPAMM_MULTIPLY_PRINT_ALOT
-  printf("%s timer units\n", timer_string);
-#endif
-  free(timer_string);
-#endif
-
 #ifdef SPAMM_MULTIPLY_CONVOLUTE
   /* Convolute by constructing product 3D index. */
 #ifdef SPAMM_MULTIPLY_PRINT_ALOT
@@ -651,12 +619,6 @@ spamm_linear_multiply (const float tolerance,
       *(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL), 0);
   C_block_stream_index = spamm_allocate(sizeof(unsigned int)
       *(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL), 0);
-
-  /* Some tings to try:
-   *
-   * 1) Terminate the 2D index with a leading "1" bit, like Warren/Salmon to
-   * indicate the width of the key and therefore its tier.
-   */
 
   unsigned int *A_index_array = spamm_list_get_index_address(A_index.index);
   unsigned int *B_index_array_original = spamm_list_get_index_address(B_index.index);
@@ -902,19 +864,6 @@ spamm_linear_multiply (const float tolerance,
         (N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL)*(N_contiguous/SPAMM_N_KERNEL));
   }
 
-#ifdef SPAMM_MULTIPLY_DOUBLE_CHECK
-  /* Print multiply stream for debugging. */
-  printf("[multiply] multiply stream = {\n");
-  for (i = 0; i < stream_index; i++)
-  {
-    printf("  [ %u(%e) %u(%e) -> %u(%e) ] : %u\n",
-        multiply_stream[i].A->index_2D, multiply_stream[i].A->node_norm,
-        multiply_stream[i].B->index_2D, multiply_stream[i].B->node_norm,
-        multiply_stream[i].C->index_2D, multiply_stream[i].A->node_norm*multiply_stream[i].B->node_norm, i);
-  }
-  printf("}\n");
-#endif
-
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
 #ifdef SPAMM_MULTIPLY_PRINT_ALOT
@@ -957,31 +906,7 @@ spamm_linear_multiply (const float tolerance,
 #endif
   spamm_timer_start(timer);
 
-#ifdef SPAMM_MULTIPLY_PRINT_ALOT
-  printf("(%s)... ", spamm_kernel_get_name(kernel));
-#endif
-  switch (kernel)
-  {
-    case kernel_external_sgemm:
-      spamm_stream_external_sgemm(stream_index, alpha, tolerance, multiply_stream, 1);
-      break;
-
-    case kernel_stream_NULL:
-      spamm_stream_external_sgemm(stream_index, alpha, tolerance, multiply_stream, 0);
-      break;
-
-    case kernel_standard_SSE:
-      spamm_stream_kernel_SSE(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    case kernel_standard_SSE4_1:
-      spamm_stream_kernel_SSE4_1(stream_index, alpha, tolerance, multiply_stream);
-      break;
-
-    default:
-      SPAMM_FATAL("unknown kernel... ");
-      break;
-  }
+to be continued...
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
