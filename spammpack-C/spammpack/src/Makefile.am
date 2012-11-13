@@ -1,5 +1,5 @@
 AM_CTAGSFLAGS = --C-kinds=+l+x
-TAGS_FILES = $(top_builddir)/config.h generate_SSE_assembly.py
+TAGS_FILES = $(top_builddir)/config.h *.py
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS)
@@ -22,13 +22,13 @@ libspamm_la_SOURCES =
 libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la $(LIBADD_INTERNAL_LAPACK)
 #libspamm_la_DEPENDENCIES = $(LIBADD_INTERNAL_LAPACK)
 
-noinst_SCRIPTS = generate_SSE_assembly.py spammOffsets.py
+noinst_SCRIPTS = SSERegister.py generate_SSE_assembly.py spammOffsets.py
 noinst_PROGRAMS = print_data_sizes print_chunk_offsets
 
 print_chunk_offsets_LDFLAGS = libspamm.la
 print_chunk_offsets_DEPENDENCIES = libspamm.la
 
-EXTRA_DIST = spamm_list_driver.c generate_SSE_assembly.py
+EXTRA_DIST = spamm_list_driver.c SSERegister.py generate_SSE_assembly.py
 
 spammOffsets.py : print_data_sizes$(EXEEXT)
 	$(builddir)/print_data_sizes$(EXEEXT) > $@

@@ -15,6 +15,7 @@ import argparse
 import os.path
 import sys
 from spammOffsets import spammOffsets
+from SSERegister import SSERegister
 
 class Line:
   """A class that helps print a line of assembly code. It takes care of things
@@ -39,76 +40,6 @@ class Line:
     printed)."""
 
     return self.line_number
-
-class SSERegister:
-  """A class that takes care of returning an available SSE register to the
-  caller. This is how we rotate through the 16 available registers on an x86_64
-  CPU."""
-
-  variables = {}
-  registerPool = [ "%xmm0", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "%xmm5",
-      "%xmm6", "%xmm7", "%xmm8", "%xmm9", "%xmm10", "%xmm11", "%xmm12",
-      "%xmm13", "%xmm14", "%xmm15" ]
-
-  def __init__ (self, name, registerName = None):
-    """Get a free register for the named variable. The register needs to be
-    released again to become free again."""
-
-    if name in SSERegister.variables:
-      log.error("The variable %s is already assigned a register" % (name))
-      sys.exit(1)
-
-    if registerName and not registerName in SSERegister.registerPool:
-      log.error("The requested register %s is not available anymore" % (registerName))
-      sys.exit(1)
-
-    if registerName:
-      self.name = name
-      self.register = registerName
-      SSERegister.registerPool.remove(registerName)
-      SSERegister.variables[name] = registerName
-    else:
-      if len(SSERegister.registerPool) > 0:
-        self.name = name
-        self.register = SSERegister.registerPool.pop(0)
-        SSERegister.variables[name] = self.register
-      else:
-        log.error("no registers left")
-        sys.exit(1)
-
-    log.debug("assigned %s --> %s" % (self.register, self.name))
-    log.debug("registerPool: %s" % (SSERegister.registerPool))
-    log.debug("variables: %s" % (SSERegister.variables))
-
-  def release (self):
-    """Release a register back to the register pool."""
-
-    if not self.name in SSERegister.variables:
-      log.error("The variable %s is not assigned a register" % (self.name))
-      sys.exit(1)
-
-    SSERegister.registerPool.append(self.register)
-    del SSERegister.variables[self.name]
-
-    log.debug("released register %s assigned to variable %s" % (self.register, self.name))
-    log.debug("registerPool: %s" % (SSERegister.registerPool))
-    log.debug("variables: %s" % (SSERegister.variables))
-
-  def getName (self):
-    """Return the name of the variable."""
-    return self.name
-
-  def getRegister (self):
-    """Return the register assigned to this variable."""
-    return self.register
-
-  def __str__ (self):
-    """Use this variable in the code."""
-
-    if not self.name in SSERegister.variables:
-      log.error("The variable %s is not assigned a register" % (self.name))
-      sys.exit(1)
-    return self.register
 
 class counter:
   """A counter object."""
@@ -191,10 +122,10 @@ def clearC (i, j):
   global C3
   global C4
 
-  C1 = SSERegister("C1")
-  C2 = SSERegister("C2")
-  C3 = SSERegister("C3")
-  C4 = SSERegister("C4")
+  C1 = SSERegister(log, "C1")
+  C2 = SSERegister(log, "C2")
+  C3 = SSERegister(log, "C3")
+  C4 = SSERegister(log, "C4")
 
   print("")
   print("  # Reset C(%d,%d) matrix block accumulators." % (i+1, j+1))
@@ -231,7 +162,7 @@ def block_product (i, k, j, number_deactivated_products):
     print("jump_%d:" % (block_counter.get()))
     block_counter.increment()
 
-    norm = SSERegister("norm")
+    norm = SSERegister(log, "norm")
 
     print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
     check_load_offset((i*options.N+k)*4+spammOffsets.offset_norm)
@@ -249,10 +180,10 @@ def block_product (i, k, j, number_deactivated_products):
     norm.release()
 
   if options.SSE == 1:
-    B1 = SSERegister("B1")
-    B2 = SSERegister("B2")
-    B3 = SSERegister("B3")
-    B4 = SSERegister("B4")
+    B1 = SSERegister(log, "B1")
+    B2 = SSERegister(log, "B2")
+    B3 = SSERegister(log, "B3")
+    B4 = SSERegister(log, "B4")
 
     print("")
     print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
@@ -261,9 +192,9 @@ def block_product (i, k, j, number_deactivated_products):
     print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense, B3))
     print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense, B4))
 
-    A11 = SSERegister("A11")
-    A12 = SSERegister("A12")
-    A13 = SSERegister("A13")
+    A11 = SSERegister(log, "A11")
+    A12 = SSERegister(log, "A12")
+    A13 = SSERegister(log, "A13")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A11))
     print("  movaps 0x%x(A), %s" % (row_major_index(0, 1, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A12))
@@ -273,91 +204,91 @@ def block_product (i, k, j, number_deactivated_products):
     print("  addps %s, %s" % (A11, C1))
 
     A11.release()
-    A14 = SSERegister("A14")
+    A14 = SSERegister(log, "A14")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(0, 3, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A14))
     print("  mulps %s, %s" % (B3, A13))
     print("  addps %s, %s" % (A12, C1))
 
     A12.release()
-    A21 = SSERegister("A21")
+    A21 = SSERegister(log, "A21")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A21))
     print("  mulps %s, %s" % (B4, A14))
     print("  addps %s, %s" % (A13, C1))
 
     A13.release()
-    A22 = SSERegister("A22")
+    A22 = SSERegister(log, "A22")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(1, 1, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A22))
     print("  mulps %s, %s" % (B1, A21))
     print("  addps %s, %s" % (A14, C1))
 
     A14.release()
-    A23 = SSERegister("A23")
+    A23 = SSERegister(log, "A23")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(1, 2, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A23))
     print("  mulps %s, %s" % (B2, A22))
     print("  addps %s, %s" % (A21, C2))
 
     A21.release()
-    A24 = SSERegister("A24")
+    A24 = SSERegister(log, "A24")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(1, 3, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A24))
     print("  mulps %s, %s" % (B3, A23))
     print("  addps %s, %s" % (A22, C2))
 
     A22.release()
-    A31 = SSERegister("A31")
+    A31 = SSERegister(log, "A31")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A31))
     print("  mulps %s, %s" % (B4, A24))
     print("  addps %s, %s" % (A23, C2))
 
     A23.release()
-    A32 = SSERegister("A32")
+    A32 = SSERegister(log, "A32")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(2, 1, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A32))
     print("  mulps %s, %s" % (B1, A31))
     print("  addps %s, %s" % (A24, C2))
 
     A24.release()
-    A33 = SSERegister("A33")
+    A33 = SSERegister(log, "A33")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(2, 2, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A33))
     print("  mulps %s, %s" % (B2, A32))
     print("  addps %s, %s" % (A31, C3))
 
     A31.release()
-    A34 = SSERegister("A34")
+    A34 = SSERegister(log, "A34")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(2, 3, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A34))
     print("  mulps %s, %s" % (B3, A33))
     print("  addps %s, %s" % (A32, C3))
 
     A32.release()
-    A41 = SSERegister("A41")
+    A41 = SSERegister(log, "A41")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A41))
     print("  mulps %s, %s" % (B4, A34))
     print("  addps %s, %s" % (A33, C3))
 
     A33.release()
-    A42 = SSERegister("A42")
+    A42 = SSERegister(log, "A42")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(3, 1, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A42))
     print("  mulps %s, %s" % (B1, A41))
     print("  addps %s, %s" % (A34, C3))
 
     A34.release()
-    A43 = SSERegister("A43")
+    A43 = SSERegister(log, "A43")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(3, 2, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A43))
     print("  mulps %s, %s" % (B2, A42))
     print("  addps %s, %s" % (A41, C4))
 
     A41.release()
-    A44 = SSERegister("A44")
+    A44 = SSERegister(log, "A44")
 
     print("  movaps 0x%x(A), %s" % (row_major_index(3, 3, 4)*4*4+offset(i, k, options.N)*64*4+spammOffsets.offset_block_dense_dilated, A44))
     print("  mulps %s, %s" % (B3, A43))
@@ -382,38 +313,38 @@ def block_product (i, k, j, number_deactivated_products):
     print("")
     print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
 
-    A1 = SSERegister("A1")
+    A1 = SSERegister(log, "A1")
     issue_load(row_major_index(0, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, "A", A1)
 
-    B1 = SSERegister("B1")
+    B1 = SSERegister(log, "B1")
     issue_load(row_major_index(0, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, "B", B1)
-    B2 = SSERegister("B2")
+    B2 = SSERegister(log, "B2")
     issue_load(row_major_index(1, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, "B", B2)
-    B3 = SSERegister("B3")
+    B3 = SSERegister(log, "B3")
     issue_load(row_major_index(2, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, "B", B3)
-    B4 = SSERegister("B4")
+    B4 = SSERegister(log, "B4")
     issue_load(row_major_index(3, 0, 4)*4+offset(k, j, options.N)*16*4+spammOffsets.offset_block_dense_transpose, "B", B4)
 
     print("")
     print("  # Calculate C(1,:).")
 
-    C11 = SSERegister("C11")
+    C11 = SSERegister(log, "C11")
     print("  movaps %s, %s" % (B1, C11))
     print("  dpps $0xf1, %s, %s" % (A1, C11))
 
-    C12 = SSERegister("C12")
+    C12 = SSERegister(log, "C12")
     print("  movaps %s, %s" % (B2, C12))
     print("  dpps $0xf2, %s, %s" % (A1, C12))
     print("  blendps $0x01, %s, %s" % (C11, C12))
     C11.release()
 
-    C13 = SSERegister("C13")
+    C13 = SSERegister(log, "C13")
     print("  movaps %s, %s" % (B3, C13))
     print("  dpps $0xf4, %s, %s" % (A1, C13))
     print("  blendps $0x03, %s, %s" % (C12, C13))
     C12.release()
 
-    C14 = SSERegister("C14")
+    C14 = SSERegister(log, "C14")
     print("  movaps %s, %s" % (B4, C14))
     print("  dpps $0xf8, %s, %s" % (A1, C14))
     print("  blendps $0x07, %s, %s" % (C13, C14))
@@ -423,29 +354,29 @@ def block_product (i, k, j, number_deactivated_products):
     C14.release()
     A1.release()
 
-    A2 = SSERegister("A2")
+    A2 = SSERegister(log, "A2")
     issue_load(row_major_index(1, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, "A", A2)
 
     print("")
     print("  # Calculate C(2,:).")
 
-    C21 = SSERegister("C21")
+    C21 = SSERegister(log, "C21")
     print("  movaps %s, %s" % (B1, C21))
     print("  dpps $0xf1, %s, %s" % (A2, C21))
 
-    C22 = SSERegister("C22")
+    C22 = SSERegister(log, "C22")
     print("  movaps %s, %s" % (B2, C22))
     print("  dpps $0xf2, %s, %s" % (A2, C22))
     print("  blendps $0x01, %s, %s" % (C21, C22))
     C21.release()
 
-    C23 = SSERegister("C23")
+    C23 = SSERegister(log, "C23")
     print("  movaps %s, %s" % (B3, C23))
     print("  dpps $0xf4, %s, %s" % (A2, C23))
     print("  blendps $0x03, %s, %s" % (C22, C23))
     C22.release()
 
-    C24 = SSERegister("C24")
+    C24 = SSERegister(log, "C24")
     print("  movaps %s, %s" % (B4, C24))
     print("  dpps $0xf8, %s, %s" % (A2, C24))
     print("  blendps $0x07, %s, %s" % (C23, C24))
@@ -455,29 +386,29 @@ def block_product (i, k, j, number_deactivated_products):
     C24.release()
     A2.release()
 
-    A3 = SSERegister("A3")
+    A3 = SSERegister(log, "A3")
     issue_load(row_major_index(2, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, "A", A3)
 
     print("")
     print("  # Calculate C(3,:).")
 
-    C31 = SSERegister("C31")
+    C31 = SSERegister(log, "C31")
     print("  movaps %s, %s" % (B1, C31))
     print("  dpps $0xf1, %s, %s" % (A3, C31))
 
-    C32 = SSERegister("C32")
+    C32 = SSERegister(log, "C32")
     print("  movaps %s, %s" % (B2, C32))
     print("  dpps $0xf2, %s, %s" % (A3, C32))
     print("  blendps $0x01, %s, %s" % (C31, C32))
     C31.release()
 
-    C33 = SSERegister("C33")
+    C33 = SSERegister(log, "C33")
     print("  movaps %s, %s" % (B3, C33))
     print("  dpps $0xf4, %s, %s" % (A3, C33))
     print("  blendps $0x03, %s, %s" % (C32, C33))
     C32.release()
 
-    C34 = SSERegister("C34")
+    C34 = SSERegister(log, "C34")
     print("  movaps %s, %s" % (B4, C34))
     print("  dpps $0xf8, %s, %s" % (A3, C34))
     print("  blendps $0x07, %s, %s" % (C33, C34))
@@ -487,29 +418,29 @@ def block_product (i, k, j, number_deactivated_products):
     C34.release()
     A3.release()
 
-    A4 = SSERegister("A4")
+    A4 = SSERegister(log, "A4")
     issue_load(row_major_index(3, 0, 4)*4+offset(i, k, options.N)*16*4+spammOffsets.offset_block_dense, "A", A4)
 
     print("")
     print("  # Calculate C(4,:).")
 
-    C41 = SSERegister("C41")
+    C41 = SSERegister(log, "C41")
     print("  movaps %s, %s" % (B1, C41))
     print("  dpps $0xf1, %s, %s" % (A4, C41))
 
-    C42 = SSERegister("C42")
+    C42 = SSERegister(log, "C42")
     print("  movaps %s, %s" % (B2, C42))
     print("  dpps $0xf2, %s, %s" % (A4, C42))
     print("  blendps $0x01, %s, %s" % (C41, C42))
     C41.release()
 
-    C43 = SSERegister("C43")
+    C43 = SSERegister(log, "C43")
     print("  movaps %s, %s" % (B3, C43))
     print("  dpps $0xf4, %s, %s" % (A4, C43))
     print("  blendps $0x03, %s, %s" % (C42, C43))
     C42.release()
 
-    C44 = SSERegister("C44")
+    C44 = SSERegister(log, "C44")
     print("  movaps %s, %s" % (B4, C44))
     print("  dpps $0xf8, %s, %s" % (A4, C44))
     print("  blendps $0x07, %s, %s" % (C43, C44))
@@ -741,11 +672,11 @@ print("#define number_stream_elements %rdi")
 
 # Get alpha if needed.
 if not options.alphaOne:
-  alpha = SSERegister("alpha", "%xmm0")
+  alpha = SSERegister(log, "alpha", "%xmm0")
   print("#define %s %s" % (alpha.name, alpha.register))
 
 # Get tolerance.
-tolerance = SSERegister("tolerance", "%xmm1")
+tolerance = SSERegister(log, "tolerance", "%xmm1")
 
 print("#define %s %s" % (tolerance.name, tolerance.register))
 print("#define multiply_stream %rsi")
@@ -828,7 +759,7 @@ if options.hierarchical:
   print("  movl $0x80808080, 0x8(%rsp)")
   print("  movl $0x80808080, 0xc(%rsp)")
 
-  norm_mask = SSERegister("norm_mask")
+  norm_mask = SSERegister(log, "norm_mask")
   print("  movaps (%%rsp), %s" % (norm_mask))
 
 if not options.alphaOne:
@@ -872,7 +803,7 @@ last_store_offset = []
 if options.hierarchical:
   print("")
   print("  # First level of hierarchy. Do some norm products [ A11*B11, A12*B21, A11*B12, A12*B22 ].")
-  norm_1 = SSERegister("norm_1")
+  norm_1 = SSERegister(log, "norm_1")
   print("  movaps 0x%x(A), %s" % (spammOffsets.offset_norm_upper, norm_1))
   print("  mulps 0x%x(B), %s" % (spammOffsets.offset_norm_upper_transpose, norm_1))
   print("  # (normA*normB <= tolerance ? -1 : 0)")
@@ -881,7 +812,7 @@ if options.hierarchical:
   print("  pmovmskb %s, jump_index" % (norm_1))
   print("")
   print("  # First level of hierarchy. Do some norm products [ A21*B11, A22*B21, A21*B12, A22*B22 ].")
-  norm_2 = SSERegister("norm_2")
+  norm_2 = SSERegister(log, "norm_2")
   print("  movaps 0x%x(A), %s" % (spammOffsets.offset_norm_upper+4*4, norm_2))
   print("  mulps 0x%x(B), %s" % (spammOffsets.offset_norm_upper_transpose+4*4, norm_2))
   print("  # (normA*normB <= tolerance ? -1 : 0)")

@@ -447,8 +447,8 @@ spamm_linear_multiply (const float tolerance,
   /* For convenience. */
   N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
 
-  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A), chunk_A);
-  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B), chunk_B);
+  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A)-SPAMM_KERNEL_DEPTH, chunk_A);
+  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B)-SPAMM_KERNEL_DEPTH, chunk_B);
 
   matrix_A = spamm_chunk_get_matrix(chunk_A);
   matrix_B = spamm_chunk_get_matrix(chunk_B);
@@ -906,7 +906,19 @@ spamm_linear_multiply (const float tolerance,
 #endif
   spamm_timer_start(timer);
 
-to be continued...
+  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A), chunk_A);
+  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B), chunk_B);
+
+  /* Multiply the chunks. */
+  for (i = 0; i < stream_index; i++)
+  {
+    kernel_16x16(norm_A[ipow(SPAMM_N_KERNEL_BLOCKED, 2)*A_block_stream_index[i]],
+        norm_B[ipow(SPAMM_N_KERNEL_BLOCKED, 2)*B_block_stream_index[i]],
+        norm_C[ipow(SPAMM_N_KERNEL_BLOCKED, 2)*C_block_stream_index[i]],
+        matrix_A[ipow(SPAMM_N_KERNEL, 2)*A_block_stream_index[i]],
+        matrix_B[ipow(SPAMM_N_KERNEL, 2)*B_block_stream_index[i]],
+        matrix_C[ipow(SPAMM_N_KERNEL, 2)*C_block_stream_index[i]]);
+  }
 
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
