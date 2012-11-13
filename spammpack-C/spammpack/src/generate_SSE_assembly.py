@@ -17,30 +17,6 @@ import sys
 from spammOffsets import spammOffsets
 from SSERegister import SSERegister
 
-class Line:
-  """A class that helps print a line of assembly code. It takes care of things
-  such as line numbers and intendation."""
-
-  def __init__ (self):
-    if Line.initialized:
-      log.error("Only one Line class can be used at a time")
-      sys.exit(1)
-
-    Line.initialized = True
-    self.line_number = 0
-
-  def out (self, line):
-    """Print a line."""
-
-    self.line_number += 1
-    print(line)
-
-  def get_line_number (self):
-    """Get the current line number (the line number of the last line
-    printed)."""
-
-    return self.line_number
-
 class counter:
   """A counter object."""
 
