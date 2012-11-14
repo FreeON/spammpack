@@ -1,5 +1,5 @@
 AM_CTAGSFLAGS = --C-kinds=+l+x
-TAGS_FILES = $(top_builddir)/config.h *.py
+TAGS_FILES = $(top_builddir)/config.h *.py $(pkginclude_HEADERS)
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS)
