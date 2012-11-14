@@ -133,7 +133,7 @@ spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj);
 unsigned int
 spamm_memory (const struct spamm_hashed_t *A);
 
-void
+float
 spamm_linear_multiply (const float tolerance,
     const float alpha,
     spamm_chunk_t *chunk_A,
@@ -229,9 +229,6 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int depth,
     const float Aij,
     struct spamm_recursive_node_t **node);
-
-void
-spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A);
 
 void
 spamm_uint_to_bin_string (const unsigned int width, const unsigned int i, char *result);

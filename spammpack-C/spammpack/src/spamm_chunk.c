@@ -97,42 +97,64 @@ spamm_chunk_multiply (const float tolerance,
 
   short use_linear_tree;
 
+  unsigned int number_dimensions;
+
   use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk_A);
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk_A);
 
   if (use_linear_tree)
   {
-    spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, beta, chunk_C, timer);
+    return spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, beta, chunk_C, timer);
   }
 
   else
   {
-    matrix_A = spamm_chunk_get_matrix(chunk_A);
-    matrix_B = spamm_chunk_get_matrix(chunk_B);
-    matrix_C = spamm_chunk_get_matrix(chunk_C);
+    norm_A = spamm_chunk_get_norm(chunk_A);
+    norm_B = spamm_chunk_get_norm(chunk_B);
 
-    N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
+    norm_C = spamm_chunk_get_norm(chunk_C);
+    norm2_C = spamm_chunk_get_norm2(chunk_C);
 
-    if (sgemm)
+    if (norm_A[0]*norm_B[0] > tolerance)
     {
-      sgemm("N", "N", &N_contiguous, &N_contiguous, &N_contiguous,
-          &alpha_sgemm, matrix_A, &N_contiguous, matrix_B, &N_contiguous,
-          &beta, matrix_C, &N_contiguous);
-    }
+      matrix_A = spamm_chunk_get_matrix(chunk_A);
+      matrix_B = spamm_chunk_get_matrix(chunk_B);
+      matrix_C = spamm_chunk_get_matrix(chunk_C);
 
-    else
-    {
-      /* Braindead multiply in nested loops. */
-      for (i = 0; i < N_contiguous; i++) {
-        for (j = 0; j < N_contiguous; j++) {
-          for (k = 0; k < N_contiguous; k++)
-          {
-            matrix_C[spamm_index_column_major(i, j, N_contiguous, N_contiguous)] += alpha
-              *matrix_A[spamm_index_column_major(i, k, N_contiguous, N_contiguous)]
-              *matrix_B[spamm_index_column_major(k, j, N_contiguous, N_contiguous)];
+      N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
+
+      if (sgemm)
+      {
+        sgemm("N", "N", &N_contiguous, &N_contiguous, &N_contiguous,
+            &alpha_sgemm, matrix_A, &N_contiguous, matrix_B, &N_contiguous,
+            &beta, matrix_C, &N_contiguous);
+      }
+
+      else
+      {
+        /* Braindead multiply in nested loops. */
+        for (i = 0; i < N_contiguous; i++) {
+          for (j = 0; j < N_contiguous; j++) {
+            for (k = 0; k < N_contiguous; k++)
+            {
+              matrix_C[spamm_index_column_major(i, j, N_contiguous, N_contiguous)] += alpha
+                *matrix_A[spamm_index_column_major(i, k, N_contiguous, N_contiguous)]
+                *matrix_B[spamm_index_column_major(k, j, N_contiguous, N_contiguous)];
+            }
           }
         }
       }
+
+      /* Update norm on C. */
+      norm2_C[0] = 0;
+      for (i = 0; i < ipow(N_contiguous, number_dimensions); i++)
+      {
+        norm2_C[0] += ipow(matrix_C[i], 2);
+      }
+      norm_C[0] = sqrt(norm2_C[0]);
     }
+
+    return norm_C[0];
   }
 }
 

@@ -380,8 +380,10 @@ spamm_multiply_C_index_sort (unsigned int *array,
  * @param C The matrix \f$C\f$.
  * @param timer The timer to use.
  * @param kernel The stream kernel to use.
+ *
+ * @return The square of the Frobenius norm of the chunk.
  */
-void
+float
 spamm_linear_multiply (const float tolerance,
     const float alpha,
     spamm_chunk_t *chunk_A,
@@ -393,10 +395,15 @@ spamm_linear_multiply (const float tolerance,
   unsigned int *index_A;
   unsigned int *index_B;
 
+  unsigned int *stream_A;
+  unsigned int *stream_B;
+  unsigned int *stream_C;
+
   unsigned int N_contiguous;
   unsigned int index_length;
 
-  unsigned int i;
+  unsigned int i, j;
+  unsigned int stream_index;
 
   float *norm_A;
   float *norm_B;
@@ -404,8 +411,8 @@ spamm_linear_multiply (const float tolerance,
   N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
   index_length = N_contiguous/SPAMM_N_KERNEL;
 
-  index_A = calloc(ipow(index_length, 2), sizeof(unsigned int));
-  index_B = calloc(ipow(index_length, 2), sizeof(unsigned int));
+  index_A = malloc(ipow(index_length, 2)*sizeof(unsigned int));
+  index_B = malloc(ipow(index_length, 2)*sizeof(unsigned int));
 
   for (i = 0; i < ipow(index_length, 2); i++)
   {
@@ -428,8 +435,39 @@ spamm_linear_multiply (const float tolerance,
   }
 
   /* Convolute. */
+  stream_A = malloc(ipow(index_length, 2)*sizeof(unsigned int));
+  stream_B = malloc(ipow(index_length, 2)*sizeof(unsigned int));
+  stream_C = malloc(ipow(index_length, 2)*sizeof(unsigned int));
+
+  for (i = 0, stream_index = 0; i < index_length; i++) {
+    for (j = 0; j < index_length; j++)
+    {
+      if (norm_A[index_A[i]]*norm_B[index_B[j]] > tolerance)
+      {
+        stream_A[stream_index] = index_A[i];
+        stream_B[stream_index] = index_B[i];
+        stream_C[stream_index] = (index_A[i] & MASK_2D_I) | (index_B[j] & MASK_2D_J);
+        stream_index++;
+      }
+    }
+  }
+  printf("[multiply] Added %u block products to stream\n", stream_index);
 
   /* Run kernel. */
+  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A)+SPAMM_KERNEL_DEPTH, chunk_A);
+  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B)+SPAMM_KERNEL_DEPTH, chunk_B);
+  for (i = 0; i < stream_index; i++)
+  {
+  }
+
+  /* Free memory. */
+  free(stream_A);
+  free(stream_B);
+  free(stream_C);
+  free(index_A);
+  free(index_B);
+
+  return 0;
 }
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -516,12 +554,15 @@ spamm_recursive_multiply (const float tolerance,
             new_N_lower[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*j;
             new_N_upper[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*(j+1);
 
-            spamm_recursive_multiply(tolerance, alpha,
-                node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
-                &(*node_C)->tree.child[i+2*j], timer, sgemm, kernel,
-                number_dimensions_A, number_dimensions_B, number_dimensions_C,
-                N, new_N_lower, new_N_upper, tier+1, chunk_tier, N_block,
-                depth, use_linear_tree, number_products);
+            if (node_A->norm*node_B->norm > tolerance)
+            {
+              spamm_recursive_multiply(tolerance, alpha,
+                  node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
+                  &(*node_C)->tree.child[i+2*j], timer, sgemm, kernel,
+                  number_dimensions_A, number_dimensions_B, number_dimensions_C,
+                  N, new_N_lower, new_N_upper, tier+1, chunk_tier, N_block,
+                  depth, use_linear_tree, number_products);
+            }
           }
         }
       }
