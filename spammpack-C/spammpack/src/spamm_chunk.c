@@ -101,8 +101,7 @@ spamm_chunk_multiply (const float tolerance,
 
   if (use_linear_tree)
   {
-    spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, chunk_A,
-        chunk_B, beta, chunk_C, chunk_C, timer, kernel);
+    spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, beta, chunk_C, timer);
   }
 
   else

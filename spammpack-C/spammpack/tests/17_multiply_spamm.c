@@ -77,7 +77,7 @@ main (int argc, char **argv)
         printf("\n");
         printf("{ -k | --kernel } kernel      Use the kernel\n");
         printf("{ -N | --N } N                Set N\n");
-        printf("{ -l | --linear } t           Use a linear tier\n");
+        printf("{ -l | --linear }             Use a linear tier\n");
         printf("{ -c | --contiguous } c       Set contiguous tier to c\n");
         printf("{ -r | --random }             Create random matrix\n");
         printf("{ -d | --debug }              Print matrices\n");

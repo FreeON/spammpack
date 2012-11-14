@@ -136,15 +136,11 @@ spamm_memory (const struct spamm_hashed_t *A);
 void
 spamm_linear_multiply (const float tolerance,
     const float alpha,
-    struct spamm_hashed_t *A,
-    struct spamm_hashed_t *B,
     spamm_chunk_t *chunk_A,
     spamm_chunk_t *chunk_B,
     const float beta,
-    struct spamm_hashed_t *C,
     spamm_chunk_t *chunk_C,
-    struct spamm_timer_t *timer,
-    const enum spamm_kernel_t kernel);
+    struct spamm_timer_t *timer);
 
 void
 spamm_recursive_multiply_scalar (const float alpha,
@@ -261,6 +257,11 @@ struct spamm_hashed_t *
 spamm_hashed_convert_dense_to_spamm (const unsigned int M, const unsigned int N,
     const enum spamm_layout_t dense_type, const float *const A_dense,
     const enum spamm_layout_t spamm_layout);
+
+void
+spamm_sort_masked (const unsigned int length,
+    unsigned int *list,
+    const unsigned int mask);
 
 void spamm_sgemm (char * transA, char * transB,
     int *M, int *N, int *K,
