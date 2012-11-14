@@ -12,7 +12,9 @@
  * and b are equivalent, return 0.
  */
 int
-spamm_compare_masked (const unsigned int a, const unsigned int b, const unsigned int mask)
+spamm_compare_masked (const unsigned int a,
+    const unsigned int b,
+    const unsigned int mask)
 {
   unsigned int a_masked = a & mask;
   unsigned int b_masked = b & mask;
@@ -29,15 +31,15 @@ spamm_compare_masked (const unsigned int a, const unsigned int b, const unsigned
  * @param mask The mask to apply to the values in the list before sorting.
  */
 void
-spamm_sort_masked (const unsigned int length,
-    SPAMM_LIST_TYPE *list,
+SPAMM_FUNCTION(spamm_sort_masked, SPAMM_FUNC_TYPE) (const unsigned int length,
+    SPAMM_SORT_TYPE *list,
     const unsigned int mask)
 {
   unsigned int i, j, j_next, i_left, i_right;
   unsigned int sub_current, sub_next;
   unsigned int sub_length;
   unsigned int *sublist;
-  unsigned int *scratch;
+  SPAMM_SORT_TYPE *scratch;
 
   /* The list is trivially already sorted. */
   if (length <= 1) { return; }
