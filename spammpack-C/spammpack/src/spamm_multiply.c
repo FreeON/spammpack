@@ -398,6 +398,9 @@ spamm_linear_multiply (const float tolerance,
 
   unsigned int i;
 
+  float *norm_A;
+  float *norm_B;
+
   N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
   index_length = N_contiguous/SPAMM_N_KERNEL;
 
@@ -411,8 +414,8 @@ spamm_linear_multiply (const float tolerance,
   }
 
   /* Sort indices along k index. */
-  spamm_sort_masked(ipow(index_length, 2), index_A, MASK_2D_J);
-  spamm_sort_masked(ipow(index_length, 2), index_B, MASK_2D_I);
+  spamm_sort_masked_unsigned_int(ipow(index_length, 2), index_A, MASK_2D_J);
+  spamm_sort_masked_unsigned_int(ipow(index_length, 2), index_B, MASK_2D_I);
 
   /* Sort within each k-block by descending norm. */
   norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A), chunk_A);
