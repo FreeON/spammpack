@@ -90,7 +90,6 @@ libspamm_tree_la_SOURCES = \
   spamm_index.c \
   spamm_ipow.c \
   spamm_list.c \
-  spamm_maintenance.c \
   spamm_multiply.c \
   spamm_new.c \
   spamm_print.c \

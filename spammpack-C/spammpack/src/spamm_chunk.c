@@ -54,8 +54,6 @@ spamm_chunk_multiply (const float tolerance,
     spamm_chunk_t *chunk_C,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const unsigned int depth,
-    const unsigned int N_block,
     const unsigned int linear_index_A,
     const unsigned int linear_index_B,
     const unsigned int linear_index_C,
@@ -813,7 +811,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     {
       SPAMM_FATAL("logic error, N_contiguous (%u) has to be at least %u\n", N_contiguous, SPAMM_N_KERNEL);
     }
-    tier_temp = log(N_contiguous/SPAMM_N_KERNEL)/log(2);
+    tier_temp = log(N_contiguous/SPAMM_N_KERNEL)/log(2)+1;
 
     if (tier_temp-round(tier_temp) < 1e-10)
     {
@@ -825,10 +823,10 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
       *number_tiers = (unsigned int) ceil(tier_temp);
     }
 
-    /* Add another tier for norms at SPAMM_N_BLOCK. */
-    *number_tiers += 1;
+    /* Add more tiers for norms at SPAMM_N_BLOCK. */
+    *number_tiers += SPAMM_KERNEL_DEPTH;
 
-    if (SPAMM_N_KERNEL*ipow(2, *number_tiers-1) != N_contiguous)
+    if (SPAMM_N_KERNEL*ipow(2, *number_tiers-1-SPAMM_KERNEL_DEPTH) != N_contiguous)
     {
       SPAMM_FATAL("logic error, number_tiers = %u, N_contiguous = %u, %u*2^%u = %u\n",
           *number_tiers, N_contiguous, SPAMM_N_KERNEL, *number_tiers-1,

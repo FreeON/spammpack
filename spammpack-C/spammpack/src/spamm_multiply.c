@@ -36,20 +36,6 @@
 /** 10101010101010101010101010101010 = 0xaaaaaaaa */
 #define MASK_2D_I  0xaaaaaaaa
 
-/** @private List of index (key) space of kernel tier.
- */
-struct spamm_multiply_index_list_t
-{
-  /** The number of elements in the index array. */
-  unsigned int size;
-
-  /** An array that contains a list of linear 2D matrix indices. */
-  struct spamm_list_t *index;
-
-  /** An array of pointers to the matrix tree nodes at the kernel tier. */
-  struct spamm_hashed_data_t **data;
-};
-
 /** @private k lookup table to speed up loop over indices. */
 struct spamm_multiply_k_lookup_t
 {
@@ -60,63 +46,6 @@ struct spamm_multiply_k_lookup_t
    * different k values. */
   unsigned int *index;
 };
-
-/** @private Multiply a matrix node by a scalar.
- *
- * @param index The linear index of that matrix node.
- * @param value A pointer to the spamm_hashed_data_t matrix node.
- * @param user_data The scalar \f$\beta\f$ that multiplies the matrix.
- */
-void
-spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
-{
-  struct spamm_hashed_data_t *data = value;
-  float *beta = user_data;
-  unsigned int i;
-
-#ifdef HAVE_SSE_DISABLED
-  short j;
-  __m128 xmm, xmm_beta;
-
-  xmm_beta = _mm_load_ps1(beta);
-  for (i = 0; i < SPAMM_N_KERNEL*SPAMM_N_KERNEL; i += 4)
-  {
-    xmm = _mm_load_ps(&data->block_dense[i]);
-    xmm = _mm_mul_ss(xmm_beta, xmm);
-    _mm_store_ps(&data->block_dense[i], xmm);
-
-    for (j = 0; j < 4; j++)
-    {
-      xmm = _mm_load_ps(&data->block_dense_dilated[4*i+4*j]);
-      xmm = _mm_mul_ss(xmm_beta, xmm);
-      _mm_store_ps(&data->block_dense_dilated[4*i+4*j], xmm);
-    }
-  }
-#else
-  for (i = 0; i < SPAMM_N_KERNEL*SPAMM_N_KERNEL; i++)
-  {
-    /* We only multiply data in block_dense, not the dilated, nor the
-     * transpose data (if it exists). This obviously introduces incosistencies
-     * into the C matrix, the stream product however, does that right now
-     * already anyway. */
-    data->block_dense[i] *= (*beta);
-  }
-#endif
-}
-
-void
-spamm_hashed_multiply_scalar (const float alpha, struct spamm_hashed_t *A)
-{
-  struct spamm_hashtable_t *tier_hashtable;
-
-  if (A == NULL) { return; }
-
-  if (alpha != 1.0)
-  {
-    tier_hashtable = A->tier_hashtable[A->kernel_tier-A->tier];
-    spamm_hashtable_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &alpha);
-  }
-}
 
 /** @private Multiply a matrix by a scalar.
  *
@@ -148,91 +77,6 @@ spamm_recursive_multiply_scalar (const float alpha,
       spamm_recursive_multiply_scalar(alpha, A->tree.child[i],
           number_dimensions, tier+1, chunk_tier, use_linear_tree);
     }
-  }
-}
-
-/** @private Swap 2 multiply stream elements.
- *
- * @param a_stream The first stream element.
- * @param b_stream The second stream element.
- * @param a The first linear index of the C matrix.
- * @param b The second linear index of the C matrix.
- */
-void
-spamm_multiply_sort_stream_swap (struct spamm_multiply_stream_t *a_stream,
-    struct spamm_multiply_stream_t *b_stream, unsigned int *a, unsigned int *b)
-{
-  struct spamm_hashed_data_t *temp_node;
-  unsigned int temp;
-
-  temp_node = a_stream->A;
-  a_stream->A= b_stream->A;
-  b_stream->A= temp_node;
-
-  temp_node = a_stream->B;
-  a_stream->B= b_stream->B;
-  b_stream->B= temp_node;
-
-  temp_node = a_stream->C;
-  a_stream->C= b_stream->C;
-  b_stream->C= temp_node;
-
-  temp = *a;
-  *a = *b;
-  *b = temp;
-}
-
-/** @private Sort the multiply stream according to a linear 2D index. This is
- * used to sort the stream according to the linear index of the C blocks to
- * help avoid excessive hash table lookups in associating C blocks to the
- * stream. The sub-list sorted is given by the indices left and right, such
- * that [left, right], i.e. right is inclusive in the array.
- *
- * @param left The left index of the sub-list to be sorted.
- * @param right The right index of the sub-list to be sorted.
- * @param multiply_stream The multiply stream.
- * @param C_block_stream_index The array of linear matrix indices of the C
- * blocks.
- */
-void
-spamm_multiply_sort_stream (const unsigned int left,
-    const unsigned int right,
-    struct spamm_multiply_stream_t *multiply_stream,
-    unsigned int *C_block_stream_index)
-{
-  unsigned int i;
-  unsigned int pivot;
-  unsigned int new_pivot;
-  unsigned int pivot_value;
-
-  if (right > left)
-  {
-    /* Select pivot value. */
-    pivot = left+(right-left)/2;
-
-    /* Partition. */
-    pivot_value = C_block_stream_index[pivot];
-
-    /* Move pivot to the end. */
-    spamm_multiply_sort_stream_swap(&multiply_stream[pivot], &multiply_stream[right],
-        &C_block_stream_index[pivot], &C_block_stream_index[right]);
-
-    /* Find new pivot. */
-    new_pivot = left;
-
-    for (i = left; i < right; i++)
-    {
-      if (C_block_stream_index[i] <= pivot_value)
-      {
-        spamm_multiply_sort_stream_swap(&multiply_stream[i], &multiply_stream[new_pivot], &C_block_stream_index[i], &C_block_stream_index[new_pivot]);
-        new_pivot++;
-      }
-    }
-    spamm_multiply_sort_stream_swap(&multiply_stream[new_pivot], &multiply_stream[right], &C_block_stream_index[new_pivot], &C_block_stream_index[right]);
-
-    /* Recurse. */
-    spamm_multiply_sort_stream(left, new_pivot-1, multiply_stream, C_block_stream_index);
-    spamm_multiply_sort_stream(new_pivot+1, right, multiply_stream, C_block_stream_index);
   }
 }
 
@@ -482,7 +326,6 @@ spamm_linear_multiply (const float tolerance,
  * @param sgemm The external sgemm function to use.
  * @param tier The tier.
  * @param chunk_tier The contiguous tier.
- * @param depth The depth of the matrix tree.
  * @param use_linear_tree If set to 1 then we will switch to a linear tree at
  * chunk_tier.
  * @param number_products [out] The number of block products.
@@ -504,8 +347,6 @@ spamm_recursive_multiply (const float tolerance,
     const unsigned int *const N_upper,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const unsigned int N_block,
-    const unsigned int depth,
     const short use_linear_tree,
     unsigned int *number_products)
 {
@@ -527,7 +368,7 @@ spamm_recursive_multiply (const float tolerance,
   {
     (*node_C)->norm2 = spamm_chunk_multiply(tolerance, alpha,
         node_A->tree.chunk, node_B->tree.chunk, (*node_C)->tree.chunk, tier,
-        chunk_tier, depth, N_block, 0, 0, 0, timer, sgemm, kernel);
+        chunk_tier, 0, 0, 0, timer, sgemm, kernel);
     (*node_C)->norm = sqrt((*node_C)->norm2);
   }
 
@@ -559,9 +400,9 @@ spamm_recursive_multiply (const float tolerance,
               spamm_recursive_multiply(tolerance, alpha,
                   node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
                   &(*node_C)->tree.child[i+2*j], timer, sgemm, kernel,
-                  number_dimensions_A, number_dimensions_B, number_dimensions_C,
-                  N, new_N_lower, new_N_upper, tier+1, chunk_tier, N_block,
-                  depth, use_linear_tree, number_products);
+                  number_dimensions_A, number_dimensions_B,
+                  number_dimensions_C, N, new_N_lower, new_N_upper, tier+1,
+                  chunk_tier, use_linear_tree, number_products);
             }
           }
         }
@@ -609,8 +450,7 @@ spamm_multiply (const float tolerance,
   {
     spamm_chunk_multiply_scalar(beta, C->tree.chunk);
     spamm_chunk_multiply(tolerance, alpha, A->tree.chunk, B->tree.chunk,
-        C->tree.chunk, 0, C->chunk_tier, C->depth, C->N_block, 0, 0, 0,
-        timer, sgemm, kernel);
+        C->tree.chunk, 0, C->chunk_tier, 0, 0, 0, timer, sgemm, kernel);
   }
 
   else
@@ -630,7 +470,7 @@ spamm_multiply (const float tolerance,
         B->tree.recursive_tree, &(C->tree.recursive_tree), timer, sgemm,
         kernel, A->number_dimensions, B->number_dimensions,
         C->number_dimensions, A->N, N_lower, N_upper, 0, A->chunk_tier,
-        A->N_block, A->depth, A->use_linear_tree, number_products);
+        A->use_linear_tree, number_products);
 
     free(N_lower);
     free(N_upper);
