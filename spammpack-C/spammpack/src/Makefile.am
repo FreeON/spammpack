@@ -30,18 +30,12 @@ print_chunk_offsets_DEPENDENCIES = libspamm.la
 
 EXTRA_DIST = SSERegister.py generate_SSE_assembly.py
 
-spamm_stream_kernel_SSE.S : $(srcdir)/generate_SSE_assembly.py spammOffsets.py
-	PYTHONPATH=$(builddir) $(PYTHON) $(srcdir)/generate_SSE_assembly.py -N 4 --SSE 1 --name spamm_stream_kernel_SSE > $@
+spamm_stream_kernel.S : $(srcdir)/generate_SSE_assembly_for_chunks.py
+	PYTHONPATH=$(builddir) $(PYTHON) $(srcdir)/generate_SSE_assembly_for_chunks.py > $@
 
-spamm_stream_kernel_SSE4_1.S : $(srcdir)/generate_SSE_assembly.py spammOffsets.py
-	PYTHONPATH=$(builddir) $(PYTHON) $(srcdir)/generate_SSE_assembly.py -N 4 --SSE 4.1 --name spamm_stream_kernel_SSE4_1 > $@
+generated_kernel_files = spamm_stream_kernel.S
 
-generated_kernel_files = \
-  spamm_stream_kernel_SSE.S \
-  spamm_stream_kernel_SSE4_1.S
-
-#BUILT_SOURCES = $(generated_kernel_files) spammpack.mod
-BUILT_SOURCES = spammpack.mod
+BUILT_SOURCES = $(generated_kernel_files) spammpack.mod
 
 spammpack.mod : libspammpack_fortran.la
 spammpack.lo : spamm_fortran_derived.lo
@@ -55,7 +49,7 @@ DISTCLEANFILES = \
   $(builddir)/spammOffsets.pyc \
   $(builddir)/__pycache__/*
 
-#nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
+nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
 libspammpack_fortran_la_SOURCES = \
   spamm_fortran_chunk.F90 \

@@ -106,6 +106,20 @@ spamm_chunk_set (const unsigned int *const i,
   A = spamm_chunk_get_matrix(chunk);
   if (use_linear_tree)
   {
+    norm = spamm_chunk_get_tier_norm(number_tiers+SPAMM_KERNEL_DEPTH, chunk);
+    norm2 = spamm_chunk_get_tier_norm2(number_tiers+SPAMM_KERNEL_DEPTH, chunk);
+
+    /* Update norms. */
+    norm2[linear_index*ipow(SPAMM_N_KERNEL_BLOCKED, number_dimensions)
+      +spamm_index_norm((i[0]-new_N_lower[0])/SPAMM_N_BLOCK,
+          (i[1]-new_N_lower[1])/SPAMM_N_BLOCK)] += ipow(Aij, 2);
+    norm[linear_index*ipow(SPAMM_N_KERNEL_BLOCKED, number_dimensions)
+      +spamm_index_norm((i[0]-new_N_lower[0])/SPAMM_N_BLOCK,
+          (i[1]-new_N_lower[1])/SPAMM_N_BLOCK)] =
+      sqrt(norm2[linear_index*ipow(SPAMM_N_KERNEL_BLOCKED, number_dimensions)
+          +spamm_index_norm((i[0]-new_N_lower[0])/SPAMM_N_BLOCK,
+            (i[1]-new_N_lower[1])/SPAMM_N_BLOCK)]);
+
     A[linear_index*ipow(SPAMM_N_KERNEL, number_dimensions)*sizeof(float)
       +spamm_index_kernel_block(i[0]-new_N_lower[0], i[1]-new_N_lower[1], row_major)] = Aij;
   }

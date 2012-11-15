@@ -105,9 +105,7 @@ spamm_linear_multiply (const float tolerance,
   unsigned int *index_A;
   unsigned int *index_B;
 
-  unsigned int *stream_A;
-  unsigned int *stream_B;
-  unsigned int *stream_C;
+  unsigned int *stream;
 
   unsigned int N_contiguous;
   unsigned int index_length;
@@ -145,18 +143,16 @@ spamm_linear_multiply (const float tolerance,
   }
 
   /* Convolute. */
-  stream_A = malloc(ipow(index_length, 2)*sizeof(unsigned int));
-  stream_B = malloc(ipow(index_length, 2)*sizeof(unsigned int));
-  stream_C = malloc(ipow(index_length, 2)*sizeof(unsigned int));
+  stream = malloc(ipow(index_length, 2)*3*sizeof(unsigned int));
 
   for (i = 0, stream_index = 0; i < index_length; i++) {
     for (j = 0; j < index_length; j++)
     {
       if (norm_A[index_A[i]]*norm_B[index_B[j]] > tolerance)
       {
-        stream_A[stream_index] = index_A[i];
-        stream_B[stream_index] = index_B[i];
-        stream_C[stream_index] = (index_A[i] & MASK_2D_I) | (index_B[j] & MASK_2D_J);
+        stream[3*stream_index+0] = index_A[i];
+        stream[3*stream_index+1] = index_B[i];
+        stream[3*stream_index+2] = (index_A[i] & MASK_2D_I) | (index_B[j] & MASK_2D_J);
         stream_index++;
       }
     }
@@ -164,20 +160,10 @@ spamm_linear_multiply (const float tolerance,
   printf("[multiply] Added %u block products to stream\n", stream_index);
 
   /* Run kernel. */
-  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A)+SPAMM_KERNEL_DEPTH, chunk_A);
-  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B)+SPAMM_KERNEL_DEPTH, chunk_B);
-  for (i = 0; i < stream_index; i++)
-  {
-    printf("stream_A[%u] = %u", i, stream_A[i]);
-    printf(", stream_B[%u] = %u", i, stream_B[i]);
-    printf(", stream_C[%u] = %u", i, stream_C[i]);
-    printf("\n");
-  }
+  spamm_stream_kernel(stream_index, alpha, tolerance, stream, chunk_A, chunk_B, chunk_C);
 
   /* Free memory. */
-  free(stream_A);
-  free(stream_B);
-  free(stream_C);
+  free(stream);
   free(index_A);
   free(index_B);
 
