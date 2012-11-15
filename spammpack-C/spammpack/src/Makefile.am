@@ -23,15 +23,12 @@ libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la $(LIBADD_INTERNAL_LAPA
 #libspamm_la_DEPENDENCIES = $(LIBADD_INTERNAL_LAPACK)
 
 noinst_SCRIPTS = SSERegister.py generate_SSE_assembly.py spammOffsets.py
-noinst_PROGRAMS = print_data_sizes print_chunk_offsets
+noinst_PROGRAMS = print_chunk_offsets
 
 print_chunk_offsets_LDFLAGS = libspamm.la
 print_chunk_offsets_DEPENDENCIES = libspamm.la
 
 EXTRA_DIST = spamm_list_driver.c SSERegister.py generate_SSE_assembly.py
-
-spammOffsets.py : print_data_sizes$(EXEEXT)
-	$(builddir)/print_data_sizes$(EXEEXT) > $@
 
 spamm_stream_kernel_SSE.S : $(srcdir)/generate_SSE_assembly.py spammOffsets.py
 	PYTHONPATH=$(builddir) $(PYTHON) $(srcdir)/generate_SSE_assembly.py -N 4 --SSE 1 --name spamm_stream_kernel_SSE > $@
@@ -67,7 +64,6 @@ libspammpack_fortran_la_SOURCES = \
 
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \
-  spamm_stream_external_sgemm.c \
   spamm_kernel.c
 
 libspamm_kernel_headers = \
@@ -86,7 +82,6 @@ libspamm_tree_la_SOURCES = \
   spamm_delete.c \
   spamm_error.c \
   spamm_get.c \
-  spamm_hashtable.c \
   spamm_index.c \
   spamm_ipow.c \
   spamm_list.c \

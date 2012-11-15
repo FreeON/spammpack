@@ -171,7 +171,6 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
   printf("depth = %u, ", A->depth);
   printf("chunk_tier = %u, ", A->chunk_tier);
   printf("use_linear_tree = %u, ", A->use_linear_tree);
-  printf("kernel_tier = %u, ", A->kernel_tier);
   printf("chunk_tier = %u\n", A->chunk_tier);
 
   if (A->chunk_tier == 0)
