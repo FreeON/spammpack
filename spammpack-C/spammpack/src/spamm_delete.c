@@ -5,6 +5,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/** Delete a chunk. This function simply calls free().
+ *
+ * @param chunk The chunk to delete.
+ */
+void
+spamm_delete_chunk (spamm_chunk_t **chunk)
+{
+  if (chunk == NULL) { return; }
+
+  if (*chunk != NULL)
+  {
+    free(*chunk);
+  }
+  *chunk = NULL;
+}
+
 /** Delete a recursive matrix.
  *
  * @param A The recursive matrix root.
@@ -22,8 +38,7 @@ spamm_recursive_delete (const unsigned int number_dimensions,
 
   if (tier == chunk_tier)
   {
-    free((*node)->tree.chunk);
-    (*node)->tree.chunk = NULL;
+    spamm_delete_chunk(&(*node)->tree.chunk);
   }
 
   else

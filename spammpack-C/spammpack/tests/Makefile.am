@@ -66,8 +66,6 @@ check_PROGRAMS = \
   06_chunk_test \
   07_convert_dense \
   08_get_version \
-  09_hashtable_insert \
-  10_hashtable_remove \
   11_ipow \
   12_index \
   12_linear_index \

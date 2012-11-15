@@ -11,9 +11,7 @@
  * - spamm_errno.h
  * - spamm_error.h
  * - spamm_general.h
- * - spamm_hashtable.h
  * - spamm_kernel.h
- * - spamm_list.h
  * - spamm_timer.h
  * - spamm_types.h
  * - spamm_chunk.h

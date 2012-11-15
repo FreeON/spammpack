@@ -168,6 +168,10 @@ spamm_linear_multiply (const float tolerance,
   norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B)+SPAMM_KERNEL_DEPTH, chunk_B);
   for (i = 0; i < stream_index; i++)
   {
+    printf("stream_A[%u] = %u", i, stream_A[i]);
+    printf(", stream_B[%u] = %u", i, stream_B[i]);
+    printf(", stream_C[%u] = %u", i, stream_C[i]);
+    printf("\n");
   }
 
   /* Free memory. */

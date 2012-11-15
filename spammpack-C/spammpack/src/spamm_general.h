@@ -29,14 +29,10 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
     const short use_linear_tree);
 
 void
-spamm_delete (struct spamm_matrix_t **A);
+spamm_delete_chunk (spamm_chunk_t **chunk);
 
 void
-spamm_recursive_delete (const unsigned int number_dimensions,
-    const unsigned int tier,
-    const unsigned int chunk_tier,
-    const short use_linear_tree,
-    struct spamm_recursive_node_t **node);
+spamm_delete (struct spamm_matrix_t **A);
 
 unsigned int
 spamm_index_row_major (const unsigned int i, const unsigned int j,
@@ -154,10 +150,12 @@ spamm_number_nonzero (const struct spamm_matrix_t *A);
 void
 spamm_print_info (const struct spamm_matrix_t *const A);
 
-unsigned int
-spamm_get_tree_depth (const unsigned int number_dimensions,
+spamm_chunk_t *
+spamm_new_chunk (const unsigned int number_dimensions,
+    const short use_linear_tree,
     const unsigned int *const N,
-    const short use_linear_tree);
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper);
 
 struct spamm_matrix_t *
 spamm_new (const unsigned int number_dimensions,
@@ -180,19 +178,6 @@ spamm_print_dense (const unsigned int M, const unsigned int N,
 
 void
 spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *A);
-
-void
-spamm_recursive_set (const unsigned int number_dimensions,
-    const unsigned int *const i,
-    const unsigned int *const N,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
-    const unsigned int tier,
-    const unsigned int chunk_tier,
-    const short use_linear_tree,
-    const unsigned int depth,
-    const float Aij,
-    struct spamm_recursive_node_t **node);
 
 void
 spamm_uint_to_bin_string (const unsigned int width, const unsigned int i, char *result);

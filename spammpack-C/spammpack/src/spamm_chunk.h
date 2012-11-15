@@ -37,22 +37,6 @@ spamm_chunk_copy (spamm_chunk_t **A,
     const float beta,
     spamm_chunk_t *B);
 
-void
-spamm_chunk_set (const unsigned int *const i,
-    const float Aij,
-    spamm_chunk_t *chunk);
-
-float
-spamm_chunk_get (const unsigned int *i,
-    spamm_chunk_t *chunk);
-
-spamm_chunk_t *
-spamm_new_chunk (const unsigned int number_dimensions,
-    const short use_linear_tree,
-    const unsigned int *const N,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper);
-
 size_t
 spamm_chunk_pad (const size_t address,
     const size_t alignment);
@@ -124,8 +108,5 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
 
 void
 spamm_chunk_print (spamm_chunk_t *chunk);
-
-void
-spamm_delete_chunk (spamm_chunk_t **chunk);
 
 #endif
