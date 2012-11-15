@@ -58,8 +58,6 @@ noinst_SCRIPTS = \
 EXTRA_DIST = $(noinst_SCRIPTS)
 
 check_PROGRAMS = \
-  01_list \
-  02_list_sort \
   03_create_spamm \
   04_copy_spamm \
   05_new_chunk \
@@ -78,7 +76,8 @@ check_PROGRAMS = \
 # spamm_multiply
 
 TESTS = \
-  $(check_PROGRAMS) \
-  $(multiply_tests)
+  $(check_PROGRAMS)
+
+#$(multiply_tests)
 
 CLEANFILES = *.mod

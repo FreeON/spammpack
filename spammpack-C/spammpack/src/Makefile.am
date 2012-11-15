@@ -22,7 +22,7 @@ libspamm_la_SOURCES =
 libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la $(LIBADD_INTERNAL_LAPACK)
 #libspamm_la_DEPENDENCIES = $(LIBADD_INTERNAL_LAPACK)
 
-noinst_SCRIPTS = SSERegister.py generate_SSE_assembly.py spammOffsets.py
+noinst_SCRIPTS = SSERegister.py generate_SSE_assembly.py # spammOffsets.py
 noinst_PROGRAMS = print_chunk_offsets
 
 print_chunk_offsets_LDFLAGS = libspamm.la
@@ -40,7 +40,8 @@ generated_kernel_files = \
   spamm_stream_kernel_SSE.S \
   spamm_stream_kernel_SSE4_1.S
 
-BUILT_SOURCES = $(generated_kernel_files) spammpack.mod
+#BUILT_SOURCES = $(generated_kernel_files) spammpack.mod
+BUILT_SOURCES = spammpack.mod
 
 spammpack.mod : libspammpack_fortran.la
 spammpack.lo : spamm_fortran_derived.lo
@@ -54,7 +55,7 @@ DISTCLEANFILES = \
   $(builddir)/spammOffsets.pyc \
   $(builddir)/__pycache__/*
 
-nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
+#nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
 libspammpack_fortran_la_SOURCES = \
   spamm_fortran_chunk.F90 \
