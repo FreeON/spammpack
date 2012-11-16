@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 /** Print a dense matrix.
@@ -54,19 +55,86 @@ spamm_print_dense (const unsigned int M, const unsigned int N,
 void
 spamm_print_chunk (spamm_chunk_t *const chunk)
 {
+  int dim;
   unsigned int i, j;
+  unsigned int number_dimensions;
   unsigned int N_contiguous;
-  float *matrix;
+  unsigned int use_linear_tree;
+  unsigned int number_tiers;
+
+  unsigned int *N;
+  unsigned int *N_lower;
+  unsigned int *N_upper;
+
+  float *A;
+  float *norm;
+  float *norm2;
+
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  number_tiers = *spamm_chunk_get_number_tiers(chunk);
+  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);
+  N_contiguous = spamm_chunk_get_N_contiguous(chunk);
 
   printf("chunk (%p): ", chunk);
-  printf("ndim = %u", *spamm_chunk_get_number_dimensions(chunk));
-  printf(", ntiers = %u", *spamm_chunk_get_number_tiers(chunk));
-  printf(", lintree = %u", *spamm_chunk_get_use_linear_tree(chunk));
+  printf("ndim = %u", number_dimensions);
+  printf(", ntiers = %u", number_tiers);
+  printf(", N_cont = %u", N_contiguous);
+  printf(", lintree = %u", use_linear_tree);
+  printf("\n");
+  N = spamm_chunk_get_N(chunk);
+  printf("N = [");
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    printf(" %u", N[dim]);
+    if (dim+1 < number_dimensions)
+    {
+      printf(",");
+    }
+  }
+  printf(" ]\n");
+  N_lower = spamm_chunk_get_N_lower(chunk);
+  N_upper = spamm_chunk_get_N_upper(chunk);
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    printf("N[%u] = [ %u, %u ]\n", dim, N_lower[dim], N_upper[dim]);
+  }
 
-  N_contiguous = spamm_chunk_get_N_contiguous(chunk);
-  matrix = spamm_chunk_get_matrix(chunk);
-  printf(", matrix =\n");
-  spamm_print_dense(N_contiguous, N_contiguous, column_major, matrix);
+  for (i = 0; i < number_tiers; i++)
+  {
+    printf("&norm[%u] = %p\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm(i, chunk) - (intptr_t) chunk));
+  }
+
+  for (i = 0; i < number_tiers; i++)
+  {
+    printf("&norm2[%u] = %p\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm2(i, chunk) - (intptr_t) chunk));
+  }
+
+  printf("&matrix = %p\n", (void*) ((intptr_t) spamm_chunk_get_matrix(chunk) - (intptr_t) chunk));
+
+  for (i = 0; i < number_tiers; i++)
+  {
+    norm = spamm_chunk_get_tier_norm(i, chunk);
+    printf("norm[%u] =", i);
+    for (j = 0; j < ipow(4, i); j++)
+    {
+      printf(" %1.2f", norm[j]);
+    }
+    printf("\n");
+  }
+
+  for (i = 0; i < number_tiers; i++)
+  {
+    norm2 = spamm_chunk_get_tier_norm2(i, chunk);
+    printf("norm2[%u] =", i);
+    for (j = 0; j < ipow(4, i); j++)
+    {
+      printf(" %1.2f", norm2[j]);
+    }
+    printf("\n");
+  }
+
+  A = spamm_chunk_get_matrix(chunk);
+  spamm_print_dense(N_contiguous, N_contiguous, column_major, A);
 }
 
 /** Print a recursive tree node and all nodes underneath.

@@ -147,9 +147,6 @@ spamm_add (const float alpha,
 unsigned int
 spamm_number_nonzero (const struct spamm_matrix_t *A);
 
-void
-spamm_print_info (const struct spamm_matrix_t *const A);
-
 spamm_chunk_t *
 spamm_new_chunk (const unsigned int number_dimensions,
     const short use_linear_tree,
@@ -168,6 +165,12 @@ spamm_recursive_new_node ();
 
 void
 spamm_print (const struct spamm_matrix_t *A);
+
+void
+spamm_print_info (const struct spamm_matrix_t *const A);
+
+void
+spamm_print_chunk (spamm_chunk_t *const chunk);
 
 void
 spamm_print_tree (const struct spamm_matrix_t *A);

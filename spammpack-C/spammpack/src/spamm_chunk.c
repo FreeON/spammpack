@@ -45,7 +45,6 @@ spamm_chunk_multiply_scalar (const float alpha,
   return norm2[0];
 }
 
-//#define PRINT_DEBUG
 float
 spamm_chunk_multiply (const float tolerance,
     const float alpha,
@@ -70,13 +69,6 @@ spamm_chunk_multiply (const float tolerance,
   unsigned int new_linear_index_A;
   unsigned int new_linear_index_B;
   unsigned int new_linear_index_C;
-
-#ifdef PRINT_DEBUG
-  int dim;
-
-  unsigned int *N_lower;
-  unsigned int *N_upper;
-#endif
 
   float *norm_A;
   float *norm_B;
@@ -652,7 +644,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   /* Add up all tiers. */
   for (tier = 0; tier < *number_tiers; tier++)
   {
-    size += ipow(ipow(2, tier), number_dimensions)*sizeof(float);
+    size += ipow(ipow(2, number_dimensions), tier)*sizeof(float);
   }
 
   /* Squared norm. */
@@ -661,51 +653,8 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   /* Add up all tiers. */
   for (tier = 0; tier < *number_tiers; tier++)
   {
-    size += ipow(ipow(2, tier), number_dimensions)*sizeof(float);
+    size += ipow(ipow(2, number_dimensions), tier)*sizeof(float);
   }
 
   return size;
-}
-
-/** Print some information on a SpAMM chunk.
- *
- * @param chunk The chunk.
- */
-void
-spamm_chunk_print (spamm_chunk_t *chunk)
-{
-  int dim;
-  unsigned int number_dimensions;
-  unsigned int N_contiguous;
-  unsigned int *N;
-  unsigned int *N_lower;
-  unsigned int *N_upper;
-  float *A;
-  float *norm;
-
-  printf("chunk:\n");
-  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
-  printf("number_dimensions: %u\n", number_dimensions);
-  N_contiguous = spamm_chunk_get_N_contiguous(chunk);
-  printf("N_contiguous: %u\n", N_contiguous);
-  N = spamm_chunk_get_N(chunk);
-  printf("N = [");
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    printf(" %u", N[dim]);
-    if (dim+1 < number_dimensions)
-    {
-      printf(",");
-    }
-  }
-  printf(" ]\n");
-  N_lower = spamm_chunk_get_N_lower(chunk);
-  N_upper = spamm_chunk_get_N_upper(chunk);
-  for (dim = 0; dim < number_dimensions; dim++)
-  {
-    printf("N[%u] = [ %u, %u ]\n", dim, N_lower[dim], N_upper[dim]);
-  }
-  A = spamm_chunk_get_matrix(chunk);
-  spamm_print_dense(N_contiguous, N_contiguous, column_major, A);
-  norm = spamm_chunk_get_norm(chunk);
 }

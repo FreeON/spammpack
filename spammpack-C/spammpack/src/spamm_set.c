@@ -38,10 +38,13 @@ spamm_chunk_set (const unsigned int *const i,
 
   unsigned int *new_i;
 
+  unsigned int offset;
+
   float *norm;
   float *norm2;
 
   float *A;
+  float *A_dilated;
 
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
   number_tiers = *spamm_chunk_get_number_tiers(chunk);
@@ -104,24 +107,29 @@ spamm_chunk_set (const unsigned int *const i,
   }
 
   A = spamm_chunk_get_matrix(chunk);
+  A_dilated = spamm_chunk_get_matrix_dilated(chunk);
+
   if (use_linear_tree)
   {
-    norm = spamm_chunk_get_tier_norm(number_tiers+SPAMM_KERNEL_DEPTH, chunk);
-    norm2 = spamm_chunk_get_tier_norm2(number_tiers+SPAMM_KERNEL_DEPTH, chunk);
+    norm = spamm_chunk_get_tier_norm(number_tiers+SPAMM_KERNEL_DEPTH-1, chunk);
+    norm2 = spamm_chunk_get_tier_norm2(number_tiers+SPAMM_KERNEL_DEPTH-1, chunk);
 
     /* Update norms. */
-    norm2[linear_index*ipow(SPAMM_N_KERNEL_BLOCKED, number_dimensions)
-      +spamm_index_norm((i[0]-new_N_lower[0])/SPAMM_N_BLOCK,
-          (i[1]-new_N_lower[1])/SPAMM_N_BLOCK)] += ipow(Aij, 2);
-    norm[linear_index*ipow(SPAMM_N_KERNEL_BLOCKED, number_dimensions)
-      +spamm_index_norm((i[0]-new_N_lower[0])/SPAMM_N_BLOCK,
-          (i[1]-new_N_lower[1])/SPAMM_N_BLOCK)] =
-      sqrt(norm2[linear_index*ipow(SPAMM_N_KERNEL_BLOCKED, number_dimensions)
-          +spamm_index_norm((i[0]-new_N_lower[0])/SPAMM_N_BLOCK,
-            (i[1]-new_N_lower[1])/SPAMM_N_BLOCK)]);
+    offset = linear_index*ipow(SPAMM_N_KERNEL_BLOCKED, number_dimensions)
+      +spamm_index_row_major((i[0]-new_N_lower[0])/SPAMM_N_BLOCK,
+          (i[1]-new_N_lower[1])/SPAMM_N_BLOCK,
+          SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
+    norm2[offset] += Aij*Aij;
+    norm[offset] = sqrt(norm2[offset]);
 
-    A[linear_index*ipow(SPAMM_N_KERNEL, number_dimensions)*sizeof(float)
-      +spamm_index_kernel_block(i[0]-new_N_lower[0], i[1]-new_N_lower[1], row_major)] = Aij;
+    offset = linear_index*ipow(SPAMM_N_KERNEL, number_dimensions)*sizeof(float)
+      +spamm_index_kernel_block(i[0]-new_N_lower[0],
+          i[1]-new_N_lower[1], row_major);
+    A[offset] = Aij;
+    A_dilated[0+4*offset] = Aij;
+    A_dilated[1+4*offset] = Aij;
+    A_dilated[2+4*offset] = Aij;
+    A_dilated[3+4*offset] = Aij;
   }
 
   else

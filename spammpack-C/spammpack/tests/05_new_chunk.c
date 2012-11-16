@@ -6,7 +6,7 @@ main ()
   unsigned int number_dimensions = 2;
   unsigned int N_contiguous = 128;
 
-  short use_linear_tree = 0;
+  short use_linear_tree = 1;
 
   unsigned int *N;
   unsigned int *N_lower;
@@ -45,6 +45,8 @@ main ()
   {
     SPAMM_FATAL("N_contiguous mismatch\n");
   }
+
+  spamm_print_chunk(chunk);
 
   spamm_delete_chunk(&chunk);
 }

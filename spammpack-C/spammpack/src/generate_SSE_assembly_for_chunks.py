@@ -83,6 +83,50 @@ def clearC (i, j):
   print("  xorps %s, %s" % (C3, C3))
   print("  xorps %s, %s" % (C4, C4))
 
+def writeC (i, j):
+  """Write out the accumulator registers for C into memory."""
+
+  # Fix up indices.
+  i -= 1
+  j -= 1
+
+  # Reference the correct C registers.
+  global C1
+  global C2
+  global C3
+  global C4
+
+  print("")
+  print("  .balign 16")
+  print("jump_%d:" % (block_counter.get()))
+  block_counter.increment()
+
+  print("")
+  print("  # Multiply C(%d,%d) by alpha." % (i+1, j+1))
+  print("  mulps alpha, %s" % (C1))
+  print("  mulps alpha, %s" % (C2))
+  print("  mulps alpha, %s" % (C3))
+  print("  mulps alpha, %s" % (C4))
+
+  print("")
+  print("  # Add accumulated C(%d,%d) to already existing." % (i+1, j+1))
+  print("  addps 0x%x(pointer_C), %s" % (row_major_index(0, 0, 4)*4+offset(i, j, 4)*16*4, C1))
+  print("  addps 0x%x(pointer_C), %s" % (row_major_index(1, 0, 4)*4+offset(i, j, 4)*16*4, C2))
+  print("  addps 0x%x(pointer_C), %s" % (row_major_index(2, 0, 4)*4+offset(i, j, 4)*16*4, C3))
+  print("  addps 0x%x(pointer_C), %s" % (row_major_index(3, 0, 4)*4+offset(i, j, 4)*16*4, C4))
+
+  print("")
+  print("  # Write out C(%d,%d) submatrix block." % (i+1, j+1))
+  print("  movaps %s, 0x%x(pointer_C)" % (C1, row_major_index(0, 0, 4)*4+offset(i, j, 4)*16*4))
+  print("  movaps %s, 0x%x(pointer_C)" % (C2, row_major_index(1, 0, 4)*4+offset(i, j, 4)*16*4))
+  print("  movaps %s, 0x%x(pointer_C)" % (C3, row_major_index(2, 0, 4)*4+offset(i, j, 4)*16*4))
+  print("  movaps %s, 0x%x(pointer_C)" % (C4, row_major_index(3, 0, 4)*4+offset(i, j, 4)*16*4))
+
+  C1.release()
+  C2.release()
+  C3.release()
+  C4.release()
+
 def block_product (i, k, j):
   """Produce an assembly code block to multiply 2 4x4 matrices in SSE. The
   index arguments are 1-based."""
@@ -98,8 +142,6 @@ def block_product (i, k, j):
   global C3
   global C4
 
-  global last_store_offset
-
   print("")
   print("  .balign 16")
   print("jump_%d:" % (block_counter.get()))
@@ -108,8 +150,10 @@ def block_product (i, k, j):
   norm = SSERegister(log, "norm")
 
   print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
-  #print("  movss 0x%x(A), %s" % ((i*4+k)*4+spammOffsets.offset_norm, norm))
-  #print("  mulss 0x%x(B), %s" % ((k*4+j)*4+spammOffsets.offset_norm, norm))
+  print("  mov norm_A_spill, pointer_A")
+  print("  mov norm_B_spill, pointer_B")
+  print("  movss 0x%x(pointer_A), %s" % ((i*4+k)*4, norm))
+  print("  mulss 0x%x(pointer_B), %s" % ((k*4+j)*4, norm))
 
   # When comparing with the Intel Software Developer's Manual, keep in
   # mind that Intel uses Intel syntax and this code is writting using
@@ -127,18 +171,20 @@ def block_product (i, k, j):
 
   print("")
   print("  # Calculate C(%d,%d) += A(%d,%d)*B(%d,%d)." % (i+1, j+1, i+1, k+1, k+1, j+1))
-  print("  movaps 0x%x(B), %s" % (row_major_index(0, 0, 4)*4+offset(k, j, 4)*16*4+spammOffsets.offset_block_dense, B1))
-  print("  movaps 0x%x(B), %s" % (row_major_index(1, 0, 4)*4+offset(k, j, 4)*16*4+spammOffsets.offset_block_dense, B2))
-  print("  movaps 0x%x(B), %s" % (row_major_index(2, 0, 4)*4+offset(k, j, 4)*16*4+spammOffsets.offset_block_dense, B3))
-  print("  movaps 0x%x(B), %s" % (row_major_index(3, 0, 4)*4+offset(k, j, 4)*16*4+spammOffsets.offset_block_dense, B4))
+  print("  mov matrix_A_spill, pointer_A")
+  print("  mov matrix_B_spill, pointer_B")
+  print("  movaps 0x%x(pointer_B), %s" % (row_major_index(0, 0, 4)*4+offset(k, j, 4)*16*4, B1))
+  print("  movaps 0x%x(pointer_B), %s" % (row_major_index(1, 0, 4)*4+offset(k, j, 4)*16*4, B2))
+  print("  movaps 0x%x(pointer_B), %s" % (row_major_index(2, 0, 4)*4+offset(k, j, 4)*16*4, B3))
+  print("  movaps 0x%x(pointer_B), %s" % (row_major_index(3, 0, 4)*4+offset(k, j, 4)*16*4, B4))
 
   A11 = SSERegister(log, "A11")
   A12 = SSERegister(log, "A12")
   A13 = SSERegister(log, "A13")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(0, 0, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A11))
-  print("  movaps 0x%x(A), %s" % (row_major_index(0, 1, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A12))
-  print("  movaps 0x%x(A), %s" % (row_major_index(0, 2, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A13))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(0, 0, 4)*4*4+offset(i, k, 4)*64*4, A11))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(0, 1, 4)*4*4+offset(i, k, 4)*64*4, A12))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(0, 2, 4)*4*4+offset(i, k, 4)*64*4, A13))
   print("  mulps %s, %s" % (B1, A11))
   print("  mulps %s, %s" % (B2, A12))
   print("  addps %s, %s" % (A11, C1))
@@ -146,91 +192,91 @@ def block_product (i, k, j):
   A11.release()
   A14 = SSERegister(log, "A14")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(0, 3, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A14))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(0, 3, 4)*4*4+offset(i, k, 4)*64*4, A14))
   print("  mulps %s, %s" % (B3, A13))
   print("  addps %s, %s" % (A12, C1))
 
   A12.release()
   A21 = SSERegister(log, "A21")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(1, 0, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A21))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(1, 0, 4)*4*4+offset(i, k, 4)*64*4, A21))
   print("  mulps %s, %s" % (B4, A14))
   print("  addps %s, %s" % (A13, C1))
 
   A13.release()
   A22 = SSERegister(log, "A22")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(1, 1, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A22))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(1, 1, 4)*4*4+offset(i, k, 4)*64*4, A22))
   print("  mulps %s, %s" % (B1, A21))
   print("  addps %s, %s" % (A14, C1))
 
   A14.release()
   A23 = SSERegister(log, "A23")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(1, 2, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A23))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(1, 2, 4)*4*4+offset(i, k, 4)*64*4, A23))
   print("  mulps %s, %s" % (B2, A22))
   print("  addps %s, %s" % (A21, C2))
 
   A21.release()
   A24 = SSERegister(log, "A24")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(1, 3, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A24))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(1, 3, 4)*4*4+offset(i, k, 4)*64*4, A24))
   print("  mulps %s, %s" % (B3, A23))
   print("  addps %s, %s" % (A22, C2))
 
   A22.release()
   A31 = SSERegister(log, "A31")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(2, 0, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A31))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(2, 0, 4)*4*4+offset(i, k, 4)*64*4, A31))
   print("  mulps %s, %s" % (B4, A24))
   print("  addps %s, %s" % (A23, C2))
 
   A23.release()
   A32 = SSERegister(log, "A32")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(2, 1, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A32))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(2, 1, 4)*4*4+offset(i, k, 4)*64*4, A32))
   print("  mulps %s, %s" % (B1, A31))
   print("  addps %s, %s" % (A24, C2))
 
   A24.release()
   A33 = SSERegister(log, "A33")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(2, 2, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A33))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(2, 2, 4)*4*4+offset(i, k, 4)*64*4, A33))
   print("  mulps %s, %s" % (B2, A32))
   print("  addps %s, %s" % (A31, C3))
 
   A31.release()
   A34 = SSERegister(log, "A34")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(2, 3, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A34))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(2, 3, 4)*4*4+offset(i, k, 4)*64*4, A34))
   print("  mulps %s, %s" % (B3, A33))
   print("  addps %s, %s" % (A32, C3))
 
   A32.release()
   A41 = SSERegister(log, "A41")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(3, 0, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A41))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(3, 0, 4)*4*4+offset(i, k, 4)*64*4, A41))
   print("  mulps %s, %s" % (B4, A34))
   print("  addps %s, %s" % (A33, C3))
 
   A33.release()
   A42 = SSERegister(log, "A42")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(3, 1, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A42))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(3, 1, 4)*4*4+offset(i, k, 4)*64*4, A42))
   print("  mulps %s, %s" % (B1, A41))
   print("  addps %s, %s" % (A34, C3))
 
   A34.release()
   A43 = SSERegister(log, "A43")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(3, 2, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A43))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(3, 2, 4)*4*4+offset(i, k, 4)*64*4, A43))
   print("  mulps %s, %s" % (B2, A42))
   print("  addps %s, %s" % (A41, C4))
 
   A41.release()
   A44 = SSERegister(log, "A44")
 
-  print("  movaps 0x%x(A), %s" % (row_major_index(3, 3, 4)*4*4+offset(i, k, 4)*64*4+spammOffsets.offset_block_dense_dilated, A44))
+  print("  movaps 0x%x(pointer_A), %s" % (row_major_index(3, 3, 4)*4*4+offset(i, k, 4)*64*4, A44))
   print("  mulps %s, %s" % (B3, A43))
   print("  addps %s, %s" % (A42, C4))
   print("  mulps %s, %s" % (B4, A44))
@@ -331,8 +377,12 @@ print("# multiply_stream        -> %rsi")
 print("# chunk_A                -> %rdx")
 print("# chunk_B                -> %rcx")
 print("# chunk_C                -> %r8")
-print("#")
 
+print("")
+print("#include \"config.h\"")
+
+print("")
+print("# Define some variables.")
 print("#define number_stream_elements %rdi")
 
 # Get alpha if needed.
@@ -344,26 +394,39 @@ tolerance = SSERegister(log, "tolerance", "%xmm1")
 
 print("#define %s %s" % (tolerance.name, tolerance.register))
 print("#define multiply_stream %rsi")
-print("#define chunk_A         %rdx")
-print("#define chunk_B         %rcx")
-print("#define chunk_C         %r8")
+print("#define chunk_A         %r9")
+print("#define chunk_B         %r10")
+print("#define chunk_C         %r11")
 
 print("")
 print("# Define loop variables.")
 print("#define index        %rax")
-print("#define base_pointer %r9")
+print("#define base_pointer %r8")
 
 print("")
 print("# Define some other variables.")
-print("#define linear_index_A %r10")
-print("#define linear_index_B %r11")
-print("#define linear_index_C %r12")
+print("#define linear_index_A %ebx")
+print("#define linear_index_B %ecx")
+print("#define linear_index_C %edx")
 
 print("")
-print("# Define pointers to matrix data nodes in stream.")
-print("#define A %r13")
-print("#define B %r14")
-print("#define C %r15")
+print("# Define pointers to data in stream.")
+print("#define pointer_A %r12")
+print("#define pointer_B %r13")
+print("#define pointer_C %r14")
+
+print("")
+print("# Define memory locations for spilling register.")
+print("#define matrix_A_spill -0x08(%rbp)")
+print("#define matrix_B_spill -0x10(%rbp)")
+print("#define matrix_C_spill -0x18(%rbp)")
+print("#define norm_A_spill   -0x20(%rbp)")
+print("#define norm_B_spill   -0x28(%rbp)")
+print("#define norm_C_spill   -0x30(%rbp)")
+
+print("")
+print("# Define old stack base pointer.")
+print("#define old_rbp %r15")
 
 # Start the function prolog.
 print("")
@@ -374,16 +437,20 @@ print("  .global %s" % (options.functionName))
 print("  .type %s, @function" % (options.functionName))
 print("")
 print("%s:" % (options.functionName))
+
 print("")
-print("  # Push used registers on stack.")
-print("  push index")
-print("  push base_pointer")
-print("  push linear_index_A")
-print("  push linear_index_B")
-print("  push linear_index_C")
-print("  push A")
-print("  push B")
-print("  push C")
+print("  # Push used registers on stack and make some room on stack.")
+print("  push %rbp")
+print("  mov %rsp, %rbp")
+print("  push %rax")
+print("  push %rbx")
+print("  sub $0x50, %rsp")
+
+print("")
+print("  # Copy register values to right register.")
+print("  mov %rdx, chunk_A")
+print("  mov %rcx, chunk_B")
+print("  mov  %r8, chunk_C")
 print("")
 print("  # Copy alpha into all 4 elements of SSE register.")
 print("  shufps $0x0, alpha, alpha")
@@ -391,27 +458,70 @@ print("")
 print("  # Test whether number_stream_elements is zero.")
 print("  test number_stream_elements, number_stream_elements")
 print("  jbe stream_done")
+
+block_counter = counter(1)
+
+# Some preparations.
+print("")
+print("  # Load pointers to stream matrix blocks.")
+print("  mov 6*8(chunk_A), pointer_A # A_dilated.")
+print("  mov 5*8(chunk_B), pointer_B # B.")
+print("  mov 5*8(chunk_C), pointer_C # C.")
+print("  lea (chunk_A, pointer_A), pointer_A")
+print("  lea (chunk_B, pointer_B), pointer_B")
+print("  lea (chunk_C, pointer_C), pointer_C")
+print("  mov pointer_A, matrix_A_spill")
+print("  mov pointer_B, matrix_B_spill")
+print("  mov pointer_C, matrix_C_spill")
+
+print("")
+print("  # Calculate offset into norm arrays.")
+print("  movl 4(chunk_A), %ebx          # Number of tiers.")
+print("  mov $1, %rax                   # Loop counter.")
+print("  xor %rcx, %rcx                 # Offset into norm array.")
+print("  mov $1, %rdx                   # Number of norms in tier %rax.")
+print("  .balign 16")
+print("tier_loop:")
+print("  add %rdx, %rcx")
+print("  sal $2, %rdx                   # %rdx <- %rdx^4.")
+print("  add $1, %rax")
+print("  cmp %rbx, %rax")
+print("  jne tier_loop")
+
+print("")
+print("  # Load pointers to tier norms.")
+print("  mov 7*8(chunk_A), pointer_A")
+print("  mov 7*8(chunk_B), pointer_B")
+print("  mov 7*8(chunk_C), pointer_C")
+print("  lea (chunk_A, pointer_A), pointer_A")
+print("  lea (chunk_B, pointer_B), pointer_B")
+print("  lea (chunk_C, pointer_C), pointer_C")
+print("  lea (pointer_A, %rcx), pointer_A")
+print("  lea (pointer_B, %rcx), pointer_B")
+print("  lea (pointer_C, %rcx), pointer_C")
+print("  mov pointer_A, norm_A_spill")
+print("  mov pointer_B, norm_B_spill")
+print("  mov pointer_C, norm_C_spill")
+
+# Beginning of loop over stream elements.
 print("")
 print("  # Set loop index to zero.")
 print("  xor index, index")
 
-block_counter = counter(1)
-
-# Beginning of loop over stream elements.
 print("")
 print("  .balign 16")
 print("stream_loop:")
+
 print("")
-print("  # Set the base pointer to the beginning of the 16x16 kernel block in the chunk")
+print("  # Set the base pointer to the correct offset in the multiply_stream.")
 print("  imul $3*4, index, base_pointer")
-print("  mov  (multiply_stream, base_pointer, 1), linear_index_A")
-print("  mov 4(multiply_stream, base_pointer, 1), linear_index_B")
-print("  mov 8(multiply_stream, base_pointer, 1), linear_index_C")
 print("")
-print("  # Load pointers to stream matrix blocks.")
-print("  mov (chunk_A, base_pointer, 1), A")
-print("  mov 0x8(multiply_stream, base_pointer, 1), B")
-print("  mov 0x10(multiply_stream, base_pointer, 1), C")
+print("  # Load the linear indices of the next 16x16 block. Note that since we use")
+print("  # unsigned int for the linear index, a 32-bit value, we need to load a")
+print("  # long (32-bit) value.")
+print("  movl  (multiply_stream, base_pointer, 1), linear_index_A")
+print("  movl 4(multiply_stream, base_pointer, 1), linear_index_B")
+print("  movl 8(multiply_stream, base_pointer, 1), linear_index_C")
 
 # Initialize the C registers so we can use them globally.
 C1 = None
@@ -419,15 +529,12 @@ C2 = None
 C3 = None
 C4 = None
 
-# Initialize some other global variables.
-last_store_offset = []
-
-#for i in range(4):
-#  for j in range(4):
-#    clearC(i+1, j+1)
-#    for k in range(4):
-#      block_product(i+1, k+1, j+1)
-#    writeC(i+1, j+1)
+for i in range(4):
+  for j in range(4):
+    clearC(i+1, j+1)
+    for k in range(4):
+      block_product(i+1, k+1, j+1)
+    writeC(i+1, j+1)
 
 # End of outer loop.
 print("")
@@ -443,14 +550,10 @@ print("  .balign 16")
 print("stream_done:")
 print("")
 print("  # Pop registers from stack.")
-print("  pop C")
-print("  pop B")
-print("  pop A")
-print("  pop linear_index_C")
-print("  pop linear_index_B")
-print("  pop linear_index_A")
-print("  pop base_pointer")
-print("  pop index")
+print("  add $0x50, %rsp")
+print("  pop %rbx")
+print("  pop %rax")
+print("  pop %rbp")
 print("")
 print("  # Return from function.")
 print("  ret")
