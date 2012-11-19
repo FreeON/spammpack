@@ -39,6 +39,7 @@ spamm_chunk_set (const unsigned int *const i,
   unsigned int *new_i;
 
   unsigned int offset;
+  unsigned int norm_offset;
 
   float *norm;
   float *norm2;
@@ -62,7 +63,6 @@ spamm_chunk_set (const unsigned int *const i,
     new_N_upper[dim] = N_upper[dim];
   }
 
-  /* Correct tier count. */
   if (use_linear_tree)
   {
     number_tiers -= SPAMM_KERNEL_DEPTH;
@@ -95,7 +95,7 @@ spamm_chunk_set (const unsigned int *const i,
         {
           new_N_upper[dim] = new_N_upper[dim];
           new_N_lower[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
-          linear_index |= (1 << dim);
+          linear_index |= (1 << (number_dimensions-1-dim));
         }
       }
     }
@@ -114,17 +114,24 @@ spamm_chunk_set (const unsigned int *const i,
     norm = spamm_chunk_get_tier_norm(number_tiers+SPAMM_KERNEL_DEPTH-1, chunk);
     norm2 = spamm_chunk_get_tier_norm2(number_tiers+SPAMM_KERNEL_DEPTH-1, chunk);
 
-    /* Update norms. */
-    offset = linear_index*ipow(SPAMM_N_KERNEL_BLOCKED, number_dimensions)
-      +spamm_index_row_major((i[0]-new_N_lower[0])/SPAMM_N_BLOCK,
-          (i[1]-new_N_lower[1])/SPAMM_N_BLOCK,
-          SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
-    norm2[offset] += Aij*Aij;
-    norm[offset] = sqrt(norm2[offset]);
+    norm_offset = linear_index*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED
+      +(i[0]-new_N_lower[0])/SPAMM_N_BLOCK*SPAMM_N_KERNEL_BLOCKED
+      +(i[1]-new_N_lower[1])/SPAMM_N_BLOCK;
 
-    offset = linear_index*ipow(SPAMM_N_KERNEL, number_dimensions)*sizeof(float)
-      +spamm_index_kernel_block(i[0]-new_N_lower[0],
-          i[1]-new_N_lower[1], row_major);
+    //printf("(%u,%u) -> (%u,%u)\' -> linear_index = %u, norm_offset = %u",
+    //    i[0], i[1], i[0]-new_N_lower[0], i[1]-new_N_lower[1], linear_index, norm_offset);
+
+    norm2[norm_offset] += Aij*Aij;
+    norm[norm_offset] = sqrt(norm2[norm_offset]);
+
+    offset = linear_index*SPAMM_N_KERNEL*SPAMM_N_KERNEL
+      +((i[0]-new_N_lower[0])/SPAMM_N_BLOCK*SPAMM_N_KERNEL_BLOCKED
+          +(i[1]-new_N_lower[1])/SPAMM_N_BLOCK)*SPAMM_N_BLOCK*SPAMM_N_BLOCK
+      +(i[0]-new_N_lower[0])%SPAMM_N_BLOCK*SPAMM_N_BLOCK
+      +(i[1]-new_N_lower[1])%SPAMM_N_BLOCK;
+
+    //printf(", offset = %u\n", offset);
+
     A[offset] = Aij;
     A_dilated[0+4*offset] = Aij;
     A_dilated[1+4*offset] = Aij;

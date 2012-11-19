@@ -20,5 +20,8 @@ spamm_check (const struct spamm_matrix_t *A, const float tolerance)
 {
   int result = 0;
 
+  /* Check norms. */
+  //SPAMM_FATAL("FIXME\n");
+
   return result;
 }

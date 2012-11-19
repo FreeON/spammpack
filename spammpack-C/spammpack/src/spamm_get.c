@@ -37,6 +37,8 @@ spamm_chunk_get (const unsigned int *i,
 
   unsigned int *new_i;
 
+  unsigned int offset;
+
   float *norm;
   float *norm2;
 
@@ -67,13 +69,6 @@ spamm_chunk_get (const unsigned int *i,
   /* Z-curve ordering down to SPAMM_N_KERNEL. */
   for (tier = 0, linear_index = 0; tier < number_tiers; tier++)
   {
-    norm = spamm_chunk_get_tier_norm(tier, chunk);
-    norm2 = spamm_chunk_get_tier_norm2(tier, chunk);
-
-    /* Update norm. */
-    norm2[linear_index] += Aij*Aij;
-    norm[linear_index] = sqrt(norm2[linear_index]);
-
     if (tier+1 < number_tiers)
     {
       /* Recurse. */
@@ -91,7 +86,7 @@ spamm_chunk_get (const unsigned int *i,
         {
           new_N_upper[dim] = new_N_upper[dim];
           new_N_lower[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
-          linear_index |= (1 << dim);
+          linear_index |= (1 << (number_dimensions-1-dim));
         }
       }
     }
@@ -103,10 +98,16 @@ spamm_chunk_get (const unsigned int *i,
   }
 
   A = spamm_chunk_get_matrix(chunk);
+
   if (use_linear_tree)
   {
-    Aij = A[linear_index*ipow(SPAMM_N_KERNEL, number_dimensions)*sizeof(float)
-      +spamm_index_kernel_block(i[0]-new_N_lower[0], i[1]-new_N_lower[1], row_major)];
+    offset = linear_index*SPAMM_N_KERNEL*SPAMM_N_KERNEL
+      +((i[0]-new_N_lower[0])/SPAMM_N_BLOCK*SPAMM_N_KERNEL_BLOCKED
+          +(i[1]-new_N_lower[1])/SPAMM_N_BLOCK)*SPAMM_N_BLOCK*SPAMM_N_BLOCK
+      +(i[0]-new_N_lower[0])%SPAMM_N_BLOCK*SPAMM_N_BLOCK
+      +(i[1]-new_N_lower[1])%SPAMM_N_BLOCK;
+
+    Aij = A[offset];
   }
 
   else

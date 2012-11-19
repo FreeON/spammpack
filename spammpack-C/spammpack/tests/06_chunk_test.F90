@@ -72,9 +72,9 @@ program chunk_test
 
   C = matmul(A, B)
 
-  call spamm_chunk_print(chunk_A)
-  call spamm_chunk_print(chunk_B)
-  call spamm_chunk_print(chunk_C)
+  call spamm_print_chunk(chunk_A)
+  call spamm_print_chunk(chunk_B)
+  call spamm_print_chunk(chunk_C)
 
   call spamm_delete_chunk(chunk_A)
   call spamm_delete_chunk(chunk_B)

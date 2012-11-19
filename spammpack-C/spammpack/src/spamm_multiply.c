@@ -112,6 +112,7 @@ spamm_linear_multiply (const float tolerance,
 
   unsigned int i_stream;
   unsigned int i, j, k;
+  unsigned int j_A, j_B;
   unsigned int i_block, j_block, k_block;
   unsigned int stream_index;
 
@@ -119,12 +120,21 @@ spamm_linear_multiply (const float tolerance,
   unsigned int offset_B;
   unsigned int offset_C;
 
+  unsigned int norm_offset_A;
+  unsigned int norm_offset_B;
+  unsigned int norm_offset_C;
+
   float *norm_A;
   float *norm_B;
+
+  float *norm_C;
+  float *norm2_C;
 
   float *matrix_A;
   float *matrix_B;
   float *matrix_C;
+
+  short skipout;
 
   N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
   index_length = N_contiguous/SPAMM_N_KERNEL;
@@ -152,91 +162,105 @@ spamm_linear_multiply (const float tolerance,
     spamm_sort_norm(index_length, &index_B[i*index_length], norm_B);
   }
 
-  /* Convolute. */
-  stream = malloc(ipow(index_length, 2)*3*sizeof(unsigned int));
+  //printf("potentially %u products\n", ipow(index_length, 3));
 
-  printf("stream (%p): ", stream);
-  for (i = 0, stream_index = 0; i < index_length; i++) {
-    for (j = 0; j < index_length; j++)
-    {
-      if (norm_A[index_A[i]]*norm_B[index_B[j]] > tolerance)
+  /* Convolute. */
+  stream = malloc(ipow(index_length, 3)*3*sizeof(unsigned int));
+
+  //printf("stream (%p): ", stream);
+  for (i = 0, stream_index = 0; i < index_length; i++)
+  {
+    skipout = 0;
+
+    for (j_A = i*index_length; j_A < (i+1)*index_length; j_A++) {
+      for (j_B = i*index_length; j_B < (i+1)*index_length; j_B++)
       {
-        stream[3*stream_index+0] = index_A[i];
-        stream[3*stream_index+1] = index_B[i];
-        stream[3*stream_index+2] = (index_A[i] & MASK_2D_I) | (index_B[j] & MASK_2D_J);
-        printf("stream[%u] = { %u, %u, %u } ", stream_index,
-            stream[3*stream_index+0],
-            stream[3*stream_index+1],
-            stream[3*stream_index+2]);
-        stream_index++;
+        if (norm_A[index_A[j_A]]*norm_B[index_B[j_B]] > tolerance)
+        {
+          stream[3*stream_index+0] = index_A[j_A];
+          stream[3*stream_index+1] = index_B[j_B];
+          stream[3*stream_index+2] = (index_A[j_A] & MASK_2D_I) | (index_B[j_B] & MASK_2D_J);
+          //printf("stream[%u] = { %u, %u, %u } ", stream_index,
+          //    stream[3*stream_index+0],
+          //    stream[3*stream_index+1],
+          //    stream[3*stream_index+2]);
+          stream_index++;
+        }
+
+        else
+        {
+          skipout = 1;
+          break;
+        }
+      }
+      if (skipout)
+      {
+        break;
       }
     }
   }
-  printf("\n");
-  printf("[multiply] Added %u block products to stream\n", stream_index);
+  //printf("\n");
+
+  //printf("[multiply] Added %u (out of %u possible) block products to stream\n", stream_index, ipow(index_length, 3));
 
   /* Run kernel. */
 #ifdef RUN_ASSEMBLY_KERNEL
   spamm_stream_kernel(stream_index, alpha, tolerance, stream, chunk_A, chunk_B, chunk_C);
 #else
-  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A), chunk_A);
-  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B), chunk_B);
+  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A)-1, chunk_A);
+  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B)-1, chunk_B);
+
+  norm_C = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
+  norm2_C = spamm_chunk_get_tier_norm2(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
 
   matrix_A = spamm_chunk_get_matrix(chunk_A);
   matrix_B = spamm_chunk_get_matrix(chunk_B);
   matrix_C = spamm_chunk_get_matrix(chunk_C);
 
-  spamm_print_chunk(chunk_A);
-  spamm_print_chunk(chunk_B);
+  //printf("A: "); spamm_print_chunk(chunk_A);
+  //printf("B: "); spamm_print_chunk(chunk_B);
+  //printf("C: "); spamm_print_chunk(chunk_C);
 
-  printf("starting to calculate product\n");
+  //printf("starting to calculate product\n");
+  //fflush(stdout);
   for (i_stream = 0; i_stream < stream_index; i_stream++)
   {
+    //printf("lin.index (%u,%u,%u)\n", stream[3*i_stream+0], stream[3*i_stream+1], stream[3*i_stream+2]);
+
     for (i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
       for (j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++) {
         for (k = 0; k < SPAMM_N_KERNEL_BLOCKED; k++)
         {
-          printf("(i, j, k) = (%u, %u, %u)\n", i, j, k);
+          norm_offset_A = stream[3*i_stream+0]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED+i*SPAMM_N_KERNEL_BLOCKED+k;
+          norm_offset_B = stream[3*i_stream+1]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED+k*SPAMM_N_KERNEL_BLOCKED+j;
+          norm_offset_C = stream[3*i_stream+2]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED+i*SPAMM_N_KERNEL_BLOCKED+j;
 
-          offset_A = stream[3*i_stream+0]*ipow(SPAMM_N_KERNEL_BLOCKED, 2)
-            +spamm_index_row_major(i/SPAMM_N_BLOCK, k/SPAMM_N_BLOCK, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
-          offset_B = stream[3*i_stream+1]*ipow(SPAMM_N_KERNEL_BLOCKED, 2)
-            +spamm_index_row_major(k/SPAMM_N_BLOCK, j/SPAMM_N_BLOCK, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
+          offset_A = stream[3*i_stream+0]*SPAMM_N_KERNEL*SPAMM_N_KERNEL
+            +(i*SPAMM_N_KERNEL_BLOCKED+k)*SPAMM_N_BLOCK*SPAMM_N_BLOCK;
+          offset_B = stream[3*i_stream+1]*SPAMM_N_KERNEL*SPAMM_N_KERNEL
+            +(k*SPAMM_N_KERNEL_BLOCKED+j)*SPAMM_N_BLOCK*SPAMM_N_BLOCK;
+          offset_C = stream[3*i_stream+2]*SPAMM_N_KERNEL*SPAMM_N_KERNEL
+            +(i*SPAMM_N_KERNEL_BLOCKED+j)*SPAMM_N_BLOCK*SPAMM_N_BLOCK;
 
-          printf("norm_A(%u, %u) = %f\n", i, k, norm_A[offset_A]);
-          printf("norm_B(%u, %u) = %f\n", k, j, norm_B[offset_B]);
+          //printf("(%u,%u,%u) -> norm_offset_C = %u, offset_C = %u\n", i, j, k, norm_offset_C, offset_C);
 
-          if (norm_A[offset_A]*norm_B[offset_B] > tolerance)
+          if (norm_A[norm_offset_A]*norm_B[norm_offset_B] > tolerance)
           {
-            offset_A = stream[3*i_stream+0]*ipow(SPAMM_N_KERNEL, 2)
-              +spamm_index_row_major(i/SPAMM_N_KERNEL_BLOCKED,
-                  k/SPAMM_N_KERNEL_BLOCKED,
-                  SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED)*ipow(SPAMM_N_BLOCK, 2);
-
-            offset_B = stream[3*i_stream+1]*ipow(SPAMM_N_KERNEL, 2)
-              +spamm_index_row_major(k/SPAMM_N_KERNEL_BLOCKED,
-                  j/SPAMM_N_KERNEL_BLOCKED,
-                  SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED)*ipow(SPAMM_N_BLOCK, 2);
-
-            offset_C = stream[3*i_stream+2]*ipow(SPAMM_N_KERNEL, 2)
-              +spamm_index_row_major(i/SPAMM_N_KERNEL_BLOCKED,
-                  j/SPAMM_N_KERNEL_BLOCKED,
-                  SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED)*ipow(SPAMM_N_BLOCK, 2);
-
             for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
               for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++) {
                 for (k_block = 0; k_block < SPAMM_N_BLOCK; k_block++)
                 {
-                  printf("A(%u,%u) = %f", i_block, k_block, matrix_A[offset_A+spamm_index_row_major(i_block, k_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]);
-                  printf(", B(%u,%u) = %f", k_block, j_block, matrix_B[offset_B+spamm_index_row_major(k_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]);
-                  printf(", C(%u,%u) = %f", i_block, j_block, matrix_C[offset_C+spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]);
-                  printf("\n");
-
-                  matrix_C[offset_C+spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] +=
+                  matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block] +=
                     alpha
-                    *matrix_A[offset_A+spamm_index_row_major(i_block, k_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]
-                    *matrix_B[offset_B+spamm_index_row_major(k_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
+                    *matrix_A[offset_A+i_block*SPAMM_N_BLOCK+k_block]
+                    *matrix_B[offset_B+k_block*SPAMM_N_BLOCK+j_block];
                 }
+
+                /* Update C norm. */
+                //printf("(%u,%u) -> row_maj = %u\n", i_block, j_block, i_block*SPAMM_N_BLOCK+j_block);
+                //fflush(stdout);
+                norm2_C[norm_offset_C] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block]*matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
+                norm_C[norm_offset_C] = sqrt(norm2_C[norm_offset_C]);
               }
             }
           }

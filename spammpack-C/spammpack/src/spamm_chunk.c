@@ -521,7 +521,9 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
  *
  * @param number_dimensions [in] The number of dimensions.
  * @param use_linear_tree [in] Whether to use the linear tree code or not.
- * @param number_tiers [out] The number of tiers stored in this chunk.
+ * @param number_tiers [out] The number of tiers stored in this chunk. If
+ * use_linear_tree then the chunk matrix size is >= SPAMM_N_KERNEL, and the
+ * number of tiers is down to SPAMM_N_BLOCK.
  * @param N [in] The array of the original, unpadded matrix size.
  * @param N_lower [in] The array of the bounding box.
  * @param N_upper [in] The array of the bounding box.

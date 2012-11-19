@@ -100,7 +100,7 @@ spamm_chunk_get_norm2_interface (float **norm2, spamm_chunk_t **chunk)
 }
 
 void
-spamm_chunk_print_interface (spamm_chunk_t **chunk)
+spamm_print_chunk_interface (spamm_chunk_t **chunk)
 {
-  spamm_chunk_print(*chunk);
+  spamm_print_chunk(*chunk);
 }

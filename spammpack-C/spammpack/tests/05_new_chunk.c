@@ -46,7 +46,7 @@ main ()
     SPAMM_FATAL("N_contiguous mismatch\n");
   }
 
-  spamm_print_chunk(chunk);
+  //spamm_print_chunk(chunk);
 
   spamm_delete_chunk(&chunk);
 }

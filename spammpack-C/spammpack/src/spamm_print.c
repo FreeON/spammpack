@@ -101,15 +101,18 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
 
   for (i = 0; i < number_tiers; i++)
   {
-    printf("&norm[%u] = %p\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm(i, chunk) - (intptr_t) chunk));
+    printf("&norm[%u] = %p (%p)\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm(i, chunk) - (intptr_t) chunk),
+        spamm_chunk_get_tier_norm(i, chunk));
   }
 
   for (i = 0; i < number_tiers; i++)
   {
-    printf("&norm2[%u] = %p\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm2(i, chunk) - (intptr_t) chunk));
+    printf("&norm2[%u] = %p (%p)\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm2(i, chunk) - (intptr_t) chunk),
+        spamm_chunk_get_tier_norm2(i, chunk));
   }
 
-  printf("&matrix = %p\n", (void*) ((intptr_t) spamm_chunk_get_matrix(chunk) - (intptr_t) chunk));
+  printf("&matrix = %p (%p)\n", (void*) ((intptr_t) spamm_chunk_get_matrix(chunk) - (intptr_t) chunk),
+      spamm_chunk_get_matrix(chunk));
 
   for (i = 0; i < number_tiers; i++)
   {
@@ -133,6 +136,7 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
     printf("\n");
   }
 
+  printf("matrix:\n");
   A = spamm_chunk_get_matrix(chunk);
   spamm_print_dense(N_contiguous, N_contiguous, column_major, A);
 }

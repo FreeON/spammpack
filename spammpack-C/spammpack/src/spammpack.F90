@@ -91,12 +91,12 @@ module spammpack
       type(c_ptr) :: cptr, chunk
     end subroutine spamm_chunk_get_norm2_interface
 
-    !> Interface for spamm_chunk_print().
-    subroutine spamm_chunk_print (chunk) &
-        bind(C, name = "spamm_chunk_print_interface")
+    !> Interface for spamm_print_chunk().
+    subroutine spamm_print_chunk (chunk) &
+        bind(C, name = "spamm_print_chunk_interface")
       use, intrinsic :: iso_C_binding
       type(c_ptr) :: chunk
-    end subroutine spamm_chunk_print
+    end subroutine spamm_print_chunk
 
   end interface
 
