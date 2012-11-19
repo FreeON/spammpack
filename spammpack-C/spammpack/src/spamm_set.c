@@ -9,6 +9,144 @@
 #define NEW_NORM
 #define SPAMM_SET_NO_ZERO
 
+/** Set an element in a SpAMM chunk.
+ *
+ * @param i The row/column index array.
+ * @param Aij The value of the matrix element.
+ * @param chunk The SpAMM chunk.
+ */
+void
+spamm_chunk_set (const unsigned int *const i,
+    const float Aij,
+    spamm_chunk_t *chunk)
+{
+  int dim;
+
+  short use_linear_tree;
+
+  unsigned int tier;
+  unsigned int linear_index;
+
+  unsigned int number_dimensions;
+  unsigned int number_tiers;
+
+  unsigned int *N_lower;
+  unsigned int *N_upper;
+
+  unsigned int *new_N_lower;
+  unsigned int *new_N_upper;
+
+  unsigned int *new_i;
+
+  unsigned int offset;
+
+  float *norm;
+  float *norm2;
+
+  float *A;
+  float *A_dilated;
+
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  number_tiers = *spamm_chunk_get_number_tiers(chunk);
+  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);
+
+  N_lower = spamm_chunk_get_N_lower(chunk);
+  N_upper = spamm_chunk_get_N_upper(chunk);
+
+  new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
+  new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+  for (dim = 0; dim < number_dimensions; dim++)
+  {
+    new_N_lower[dim] = N_lower[dim];
+    new_N_upper[dim] = N_upper[dim];
+  }
+
+  /* Correct tier count. */
+  if (use_linear_tree)
+  {
+    number_tiers -= SPAMM_KERNEL_DEPTH;
+  }
+
+  /* Z-curve ordering down to SPAMM_N_KERNEL. */
+  for (tier = 0, linear_index = 0; tier < number_tiers; tier++)
+  {
+    norm = spamm_chunk_get_tier_norm(tier, chunk);
+    norm2 = spamm_chunk_get_tier_norm2(tier, chunk);
+
+    /* Update norm. */
+    norm2[linear_index] += Aij*Aij;
+    norm[linear_index] = sqrt(norm2[linear_index]);
+
+    if (tier+1 < number_tiers)
+    {
+      /* Recurse. */
+      linear_index <<= number_dimensions;
+
+      for (dim = 0; dim < number_dimensions; dim++)
+      {
+        if (i[dim] < new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2)
+        {
+          new_N_lower[dim] = new_N_lower[dim];
+          new_N_upper[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
+        }
+
+        else
+        {
+          new_N_upper[dim] = new_N_upper[dim];
+          new_N_lower[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
+          linear_index |= (1 << dim);
+        }
+      }
+    }
+
+    else
+    {
+      break;
+    }
+  }
+
+  A = spamm_chunk_get_matrix(chunk);
+  A_dilated = spamm_chunk_get_matrix_dilated(chunk);
+
+  if (use_linear_tree)
+  {
+    norm = spamm_chunk_get_tier_norm(number_tiers+SPAMM_KERNEL_DEPTH-1, chunk);
+    norm2 = spamm_chunk_get_tier_norm2(number_tiers+SPAMM_KERNEL_DEPTH-1, chunk);
+
+    /* Update norms. */
+    offset = linear_index*ipow(SPAMM_N_KERNEL_BLOCKED, number_dimensions)
+      +spamm_index_row_major((i[0]-new_N_lower[0])/SPAMM_N_BLOCK,
+          (i[1]-new_N_lower[1])/SPAMM_N_BLOCK,
+          SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
+    norm2[offset] += Aij*Aij;
+    norm[offset] = sqrt(norm2[offset]);
+
+    offset = linear_index*ipow(SPAMM_N_KERNEL, number_dimensions)*sizeof(float)
+      +spamm_index_kernel_block(i[0]-new_N_lower[0],
+          i[1]-new_N_lower[1], row_major);
+    A[offset] = Aij;
+    A_dilated[0+4*offset] = Aij;
+    A_dilated[1+4*offset] = Aij;
+    A_dilated[2+4*offset] = Aij;
+    A_dilated[3+4*offset] = Aij;
+  }
+
+  else
+  {
+    new_i = calloc(number_dimensions, sizeof(unsigned int));
+    for (dim = 0; dim < number_dimensions; dim++)
+    {
+      new_i[dim] = i[dim]-N_lower[dim];
+    }
+    A[spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], new_i)] = Aij;
+    free(new_i);
+  }
+
+  free(new_N_lower);
+  free(new_N_upper);
+}
+
 /** Recursively set a matrix element.
  *
  * @param number_dimensions The number of dimensions.
@@ -31,7 +169,6 @@ spamm_recursive_set (const unsigned int number_dimensions,
     const unsigned int *const N_upper,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const unsigned int kernel_tier,
     const short use_linear_tree,
     const unsigned int depth,
     const float Aij,
@@ -93,251 +230,11 @@ spamm_recursive_set (const unsigned int number_dimensions,
     }
 
     spamm_recursive_set(number_dimensions, i, N, new_N_lower, new_N_upper,
-        tier+1, chunk_tier, kernel_tier, use_linear_tree, depth, Aij,
+        tier+1, chunk_tier, use_linear_tree, depth, Aij,
         &(*node)->tree.child[child_index]);
 
     free(new_N_lower);
     free(new_N_upper);
-  }
-}
-
-/** Set an element in a matrix.
- *
- * @param i The row index.
- * @param j The column index.
- * @param Aij The value of the matrix element A(i,j).
- * @param A The matrix.
- */
-void
-spamm_hashed_set (const unsigned int i, const unsigned int j, const float Aij, struct spamm_hashed_t *A)
-{
-  unsigned int tier;
-  unsigned int reverse_tier;
-  unsigned int index;
-  unsigned int i_tier;
-  unsigned int j_tier;
-  unsigned int i_blocked;
-  unsigned int j_blocked;
-  unsigned int i_basic;
-  unsigned int j_basic;
-  unsigned int i_child;
-  unsigned int j_child;
-  unsigned int delta_index;
-  unsigned int norm_offset;
-  unsigned int data_offset;
-  unsigned int data_offset_transpose;
-  struct spamm_hashtable_t *node_hashtable;
-  struct spamm_hashed_node_t *node;
-  struct spamm_hashed_data_t *data;
-
-  float old_Aij = 0;
-
-#ifdef NEW_NORM
-  unsigned int next_tier;
-  unsigned int child_index;
-  struct spamm_hashed_node_t *child_node;
-  struct spamm_hashed_data_t *child_data;
-  struct spamm_hashtable_t *next_tier_hashtable;
-#endif
-
-  assert(A != NULL);
-
-  if (i < A->M_lower || i >= A->M_upper)
-  {
-    SPAMM_FATAL("i (%u) out of bounding box [%u, %u)\n", i, A->M_lower, A->M_upper);
-  }
-
-  if (j < A->N_lower || j >= A->N_upper)
-  {
-    SPAMM_FATAL("j (%u) out of bounding box [%u, %u)\n", j, A->N_lower, A->N_upper);
-  }
-
-  /* In the trivial case, we simply return. */
-#ifdef SPAMM_SET_NO_ZERO
-  if (Aij == 0.0) { return; }
-#endif
-
-  /* Loop through tiers to construct the tree structure. */
-  for (tier = A->tier; tier <= A->kernel_tier; tier++)
-  {
-    /* Calculate the size of the matrix block. */
-    delta_index = (A->M_upper-A->M_lower)/(1 << (tier-A->tier));
-
-    /* Calculate the matrix block indices. */
-    i_tier = (i-A->M_lower)/delta_index;
-    j_tier = (j-A->N_lower)/delta_index;
-
-    /* Construct linear index of the node on this tier. */
-    index = spamm_index_2D(i_tier, j_tier);
-
-    /* Get hash table at this tier. */
-    node_hashtable = A->tier_hashtable[tier-A->tier];
-
-    if (tier < A->kernel_tier)
-    {
-      /* Check whether we already have a block at this tier. */
-      if ((node = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
-      {
-        node = spamm_hashed_new_node(tier, index);
-        spamm_hashtable_insert(node_hashtable, index, node);
-      }
-    }
-
-    else
-    {
-      if ((data = spamm_hashtable_lookup(node_hashtable, index)) == NULL)
-      {
-        data = spamm_hashed_new_data(tier, index, A->layout);
-        spamm_hashtable_insert(node_hashtable, index, data);
-      }
-
-      /* The data layout in this kernel tier dense matrix is broken into
-       * blocks of 4x4 matrix blocks. The bocks are ordered in row-major
-       * order, i.e.
-       *
-       * A_OFFSET_ij corresponds to the offset into the kernel tier matrix of
-       * one basic 4x4 matrix.
-       *
-       * A_OFFSET_11  0*4*4
-       * A_OFFSET_12  1*4*4
-       * A_OFFSET_13  2*4*4
-       * A_OFFSET_14  3*4*4
-       * A_OFFSET_21  4*4*4
-       * A_OFFSET_22  5*4*4
-       * A_OFFSET_23  6*4*4
-       * A_OFFSET_24  7*4*4
-       * A_OFFSET_31  8*4*4
-       * A_OFFSET_32  9*4*4
-       * A_OFFSET_33 10*4*4
-       * A_OFFSET_34 11*4*4
-       * A_OFFSET_41 12*4*4
-       * A_OFFSET_42 13*4*4
-       * A_OFFSET_43 14*4*4
-       * A_OFFSET_44 15*4*4
-       */
-
-      /* Calculate offsets into the norm and the matrix data. */
-      norm_offset = spamm_index_norm((i-A->M_lower)%delta_index/SPAMM_N_BLOCK, (j-A->N_lower)%delta_index/SPAMM_N_BLOCK);
-      data_offset = spamm_index_kernel_block((i-A->M_lower)%delta_index, (j-A->N_lower)%delta_index, A->layout);
-      data_offset_transpose = spamm_index_kernel_block_transpose((i-A->M_lower)%delta_index, (j-A->N_lower)%delta_index, A->layout);
-
-#ifndef NEW_NORM
-      /* For norm calculations, get original value of Aij. */
-      old_Aij = data->block_dense[data_offset];
-#endif
-
-      /* Set new value. */
-      data->block_dense[data_offset] = Aij;
-      data->block_dense_store[data_offset] = Aij;
-      data->block_dense_transpose[data_offset_transpose] = Aij;
-
-      data->block_dense_dilated[4*data_offset+0] = Aij;
-      data->block_dense_dilated[4*data_offset+1] = Aij;
-      data->block_dense_dilated[4*data_offset+2] = Aij;
-      data->block_dense_dilated[4*data_offset+3] = Aij;
-
-      /* Update norms. */
-#ifdef NEW_NORM
-      data->norm2[norm_offset] = 0.0;
-      for (i_basic = 0; i_basic < SPAMM_N_BLOCK; i_basic++) {
-        for (j_basic = 0; j_basic < SPAMM_N_BLOCK; j_basic++)
-        {
-          old_Aij = data->block_dense[spamm_index_kernel_block_hierarchical(((i-A->M_lower)%delta_index)/SPAMM_N_BLOCK,
-              ((j-A->N_lower)%delta_index)/SPAMM_N_BLOCK, i_basic, j_basic, A->layout)];
-          data->norm2[norm_offset] += old_Aij*old_Aij;
-        }
-      }
-      data->norm[norm_offset] = sqrt(data->norm2[norm_offset]);
-
-      data->node_norm2 = 0.0;
-      for (i_blocked = 0; i_blocked < SPAMM_N_KERNEL_BLOCKED; i_blocked++) {
-        for (j_blocked = 0; j_blocked < SPAMM_N_KERNEL_BLOCKED; j_blocked++)
-        {
-          data->node_norm2 += data->norm2[spamm_index_norm(i_blocked, j_blocked)];
-        }
-      }
-      data->node_norm = sqrt(data->node_norm2);
-#else
-      data->norm2[norm_offset] += Aij*Aij-old_Aij*old_Aij;
-      data->norm[norm_offset] = sqrt(data->norm2[norm_offset]);
-
-      data->node_norm2 += Aij*Aij-old_Aij*old_Aij;
-      data->node_norm = sqrt(data->node_norm2);
-#endif
-
-    }
-  }
-
-  /* Update norms back up the tree. Watch out for loop comparisons, tier is
-   * unsigned and we better start looping top down. */
-  for (tier = A->tier+1; tier <= A->kernel_tier; tier++)
-  {
-    reverse_tier = A->kernel_tier-tier+A->tier;
-
-    delta_index = (A->M_upper-A->M_lower)/(1 << (reverse_tier-A->tier));
-
-    i_tier = (i-A->M_lower)/delta_index;
-    j_tier = (j-A->N_lower)/delta_index;
-
-    /* Construct linear index of the node on this tier. */
-    index = spamm_index_2D(i_tier, j_tier);
-
-    /* Get hash table at this tier. */
-    node_hashtable = A->tier_hashtable[reverse_tier-A->tier];
-
-    /* Get the node. */
-    node = spamm_hashtable_lookup(node_hashtable, index);
-
-#ifdef NEW_NORM
-    /* Get the tier hashtable for the next tier. */
-    next_tier = node->tier+1;
-    next_tier_hashtable = A->tier_hashtable[next_tier-A->tier];
-
-    node->norm2 = 0.0;
-
-    if (next_tier == A->kernel_tier)
-    {
-      for (i_child = 0; i_child < 2; i_child++) {
-        for (j_child = 0; j_child < 2; j_child++)
-        {
-          /* Construct index of child block. */
-          child_index = (index << 2) | (i_child << 1) | j_child;
-
-          /* Get child node. */
-          child_data = spamm_hashtable_lookup(next_tier_hashtable, child_index);
-
-          if (child_data != NULL)
-          {
-            node->norm2 += child_data->node_norm2;
-          }
-        }
-      }
-    }
-
-    else
-    {
-      for (i_child = 0; i_child < 2; i_child++) {
-        for (j_child = 0; j_child < 2; j_child++)
-        {
-          /* Construct index of child block. */
-          child_index = (index << 2) | (i_child << 1) | j_child;
-
-          /* Get child node. */
-          child_node = spamm_hashtable_lookup(next_tier_hashtable, child_index);
-
-          if (child_node != NULL)
-          {
-            node->norm2 += child_node->norm2;
-          }
-        }
-      }
-    }
-    node->norm = sqrt(node->norm2);
-#else
-    /* Update norms. */
-    node->norm2 += Aij*Aij-old_Aij*old_Aij;
-    node->norm = sqrt(node->norm2);
-#endif
   }
 }
 
@@ -388,7 +285,7 @@ spamm_set (const unsigned int *const i, const float Aij, struct spamm_matrix_t *
     }
 
     spamm_recursive_set(A->number_dimensions, i, A->N, N_lower, N_upper, 0,
-        A->chunk_tier, A->kernel_tier, A->use_linear_tree, A->depth, Aij,
+        A->chunk_tier, A->use_linear_tree, A->depth, Aij,
         &(A->tree.recursive_tree));
 
     free(N_lower);

@@ -12,6 +12,8 @@ void spamm_sgemm (char * transA, char * transB,
 {
   int i, j, k;
 
+  SPAMM_WARN("using SpAMM sgemm()\n");
+
   for (i = 0; i < *M; i++) {
     for (j = 0; j < *N; j++) {
       for (k = 0; k < *K; k++)

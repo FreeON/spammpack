@@ -53,4 +53,13 @@ spamm_stream_external_sgemm (const unsigned int number_stream_elements,
     struct spamm_multiply_stream_t *multiply_stream,
     const short call_external_sgemm);
 
+void
+spamm_stream_kernel (const unsigned int number_stream_elements,
+    float alpha,
+    float tolerance,
+    unsigned int *stream,
+    void *chunk_A,
+    void *chunk_B,
+    void *chunk_C);
+
 #endif

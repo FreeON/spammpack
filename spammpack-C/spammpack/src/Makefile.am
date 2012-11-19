@@ -1,5 +1,5 @@
 AM_CTAGSFLAGS = --C-kinds=+l+x
-TAGS_FILES = $(top_builddir)/config.h *.py
+TAGS_FILES = $(top_builddir)/config.h *.py $(pkginclude_HEADERS)
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS)
@@ -22,26 +22,18 @@ libspamm_la_SOURCES =
 libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la $(LIBADD_INTERNAL_LAPACK)
 #libspamm_la_DEPENDENCIES = $(LIBADD_INTERNAL_LAPACK)
 
-noinst_SCRIPTS = SSERegister.py generate_SSE_assembly.py spammOffsets.py
-noinst_PROGRAMS = print_data_sizes print_chunk_offsets
+noinst_SCRIPTS = SSERegister.py generate_SSE_assembly.py # spammOffsets.py
+noinst_PROGRAMS = print_chunk_offsets
 
 print_chunk_offsets_LDFLAGS = libspamm.la
 print_chunk_offsets_DEPENDENCIES = libspamm.la
 
-EXTRA_DIST = spamm_list_driver.c SSERegister.py generate_SSE_assembly.py
+EXTRA_DIST = SSERegister.py generate_SSE_assembly.py
 
-spammOffsets.py : print_data_sizes$(EXEEXT)
-	$(builddir)/print_data_sizes$(EXEEXT) > $@
+spamm_stream_kernel.S : $(srcdir)/generate_SSE_assembly_for_chunks.py
+	PYTHONPATH=$(builddir) $(PYTHON) $(srcdir)/generate_SSE_assembly_for_chunks.py > $@
 
-spamm_stream_kernel_SSE.S : $(srcdir)/generate_SSE_assembly.py spammOffsets.py
-	PYTHONPATH=$(builddir) $(PYTHON) $(srcdir)/generate_SSE_assembly.py -N 4 --SSE 1 --name spamm_stream_kernel_SSE > $@
-
-spamm_stream_kernel_SSE4_1.S : $(srcdir)/generate_SSE_assembly.py spammOffsets.py
-	PYTHONPATH=$(builddir) $(PYTHON) $(srcdir)/generate_SSE_assembly.py -N 4 --SSE 4.1 --name spamm_stream_kernel_SSE4_1 > $@
-
-generated_kernel_files = \
-  spamm_stream_kernel_SSE.S \
-  spamm_stream_kernel_SSE4_1.S
+generated_kernel_files = spamm_stream_kernel.S
 
 BUILT_SOURCES = $(generated_kernel_files) spammpack.mod
 
@@ -67,7 +59,6 @@ libspammpack_fortran_la_SOURCES = \
 
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \
-  spamm_stream_external_sgemm.c \
   spamm_kernel.c
 
 libspamm_kernel_headers = \
@@ -86,11 +77,8 @@ libspamm_tree_la_SOURCES = \
   spamm_delete.c \
   spamm_error.c \
   spamm_get.c \
-  spamm_hashtable.c \
   spamm_index.c \
   spamm_ipow.c \
-  spamm_list.c \
-  spamm_maintenance.c \
   spamm_multiply.c \
   spamm_new.c \
   spamm_print.c \
@@ -111,8 +99,6 @@ libspamm_tree_headers = \
   spamm_error.h \
   spamm_errno.h \
   spamm_general.h \
-  spamm_hashtable.h \
-  spamm_list.h \
   spamm_sort.h \
   spamm_timer.h \
   spamm_types.h

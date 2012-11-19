@@ -4,12 +4,13 @@
 #define __SPAMM_SORT_H
 
 void
-spamm_sort_masked_unsigned_int (const unsigned int length,
+spamm_sort_masked (const unsigned int length,
     unsigned int *list,
     const unsigned int mask);
 
 void
-spamm_sort_float (const unsigned int length,
-    float *list);
+spamm_sort_norm (const unsigned int length,
+    unsigned int *list,
+    float *norm);
 
 #endif

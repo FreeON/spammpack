@@ -36,20 +36,6 @@
 /** 10101010101010101010101010101010 = 0xaaaaaaaa */
 #define MASK_2D_I  0xaaaaaaaa
 
-/** @private List of index (key) space of kernel tier.
- */
-struct spamm_multiply_index_list_t
-{
-  /** The number of elements in the index array. */
-  unsigned int size;
-
-  /** An array that contains a list of linear 2D matrix indices. */
-  struct spamm_list_t *index;
-
-  /** An array of pointers to the matrix tree nodes at the kernel tier. */
-  struct spamm_hashed_data_t **data;
-};
-
 /** @private k lookup table to speed up loop over indices. */
 struct spamm_multiply_k_lookup_t
 {
@@ -60,63 +46,6 @@ struct spamm_multiply_k_lookup_t
    * different k values. */
   unsigned int *index;
 };
-
-/** @private Multiply a matrix node by a scalar.
- *
- * @param index The linear index of that matrix node.
- * @param value A pointer to the spamm_hashed_data_t matrix node.
- * @param user_data The scalar \f$\beta\f$ that multiplies the matrix.
- */
-void
-spamm_multiply_beta_block (unsigned int index, void *value, void *user_data)
-{
-  struct spamm_hashed_data_t *data = value;
-  float *beta = user_data;
-  unsigned int i;
-
-#ifdef HAVE_SSE_DISABLED
-  short j;
-  __m128 xmm, xmm_beta;
-
-  xmm_beta = _mm_load_ps1(beta);
-  for (i = 0; i < SPAMM_N_KERNEL*SPAMM_N_KERNEL; i += 4)
-  {
-    xmm = _mm_load_ps(&data->block_dense[i]);
-    xmm = _mm_mul_ss(xmm_beta, xmm);
-    _mm_store_ps(&data->block_dense[i], xmm);
-
-    for (j = 0; j < 4; j++)
-    {
-      xmm = _mm_load_ps(&data->block_dense_dilated[4*i+4*j]);
-      xmm = _mm_mul_ss(xmm_beta, xmm);
-      _mm_store_ps(&data->block_dense_dilated[4*i+4*j], xmm);
-    }
-  }
-#else
-  for (i = 0; i < SPAMM_N_KERNEL*SPAMM_N_KERNEL; i++)
-  {
-    /* We only multiply data in block_dense, not the dilated, nor the
-     * transpose data (if it exists). This obviously introduces incosistencies
-     * into the C matrix, the stream product however, does that right now
-     * already anyway. */
-    data->block_dense[i] *= (*beta);
-  }
-#endif
-}
-
-void
-spamm_hashed_multiply_scalar (const float alpha, struct spamm_hashed_t *A)
-{
-  struct spamm_hashtable_t *tier_hashtable;
-
-  if (A == NULL) { return; }
-
-  if (alpha != 1.0)
-  {
-    tier_hashtable = A->tier_hashtable[A->kernel_tier-A->tier];
-    spamm_hashtable_foreach(tier_hashtable, spamm_multiply_beta_block, (void*) &alpha);
-  }
-}
 
 /** @private Multiply a matrix by a scalar.
  *
@@ -151,225 +80,6 @@ spamm_recursive_multiply_scalar (const float alpha,
   }
 }
 
-/** @private Swap 2 multiply stream elements.
- *
- * @param a_stream The first stream element.
- * @param b_stream The second stream element.
- * @param a The first linear index of the C matrix.
- * @param b The second linear index of the C matrix.
- */
-void
-spamm_multiply_sort_stream_swap (struct spamm_multiply_stream_t *a_stream,
-    struct spamm_multiply_stream_t *b_stream, unsigned int *a, unsigned int *b)
-{
-  struct spamm_hashed_data_t *temp_node;
-  unsigned int temp;
-
-  temp_node = a_stream->A;
-  a_stream->A= b_stream->A;
-  b_stream->A= temp_node;
-
-  temp_node = a_stream->B;
-  a_stream->B= b_stream->B;
-  b_stream->B= temp_node;
-
-  temp_node = a_stream->C;
-  a_stream->C= b_stream->C;
-  b_stream->C= temp_node;
-
-  temp = *a;
-  *a = *b;
-  *b = temp;
-}
-
-/** @private Sort the multiply stream according to a linear 2D index. This is
- * used to sort the stream according to the linear index of the C blocks to
- * help avoid excessive hash table lookups in associating C blocks to the
- * stream. The sub-list sorted is given by the indices left and right, such
- * that [left, right], i.e. right is inclusive in the array.
- *
- * @param left The left index of the sub-list to be sorted.
- * @param right The right index of the sub-list to be sorted.
- * @param multiply_stream The multiply stream.
- * @param C_block_stream_index The array of linear matrix indices of the C
- * blocks.
- */
-void
-spamm_multiply_sort_stream (const unsigned int left,
-    const unsigned int right,
-    struct spamm_multiply_stream_t *multiply_stream,
-    unsigned int *C_block_stream_index)
-{
-  unsigned int i;
-  unsigned int pivot;
-  unsigned int new_pivot;
-  unsigned int pivot_value;
-
-  if (right > left)
-  {
-    /* Select pivot value. */
-    pivot = left+(right-left)/2;
-
-    /* Partition. */
-    pivot_value = C_block_stream_index[pivot];
-
-    /* Move pivot to the end. */
-    spamm_multiply_sort_stream_swap(&multiply_stream[pivot], &multiply_stream[right],
-        &C_block_stream_index[pivot], &C_block_stream_index[right]);
-
-    /* Find new pivot. */
-    new_pivot = left;
-
-    for (i = left; i < right; i++)
-    {
-      if (C_block_stream_index[i] <= pivot_value)
-      {
-        spamm_multiply_sort_stream_swap(&multiply_stream[i], &multiply_stream[new_pivot], &C_block_stream_index[i], &C_block_stream_index[new_pivot]);
-        new_pivot++;
-      }
-    }
-    spamm_multiply_sort_stream_swap(&multiply_stream[new_pivot], &multiply_stream[right], &C_block_stream_index[new_pivot], &C_block_stream_index[right]);
-
-    /* Recurse. */
-    spamm_multiply_sort_stream(left, new_pivot-1, multiply_stream, C_block_stream_index);
-    spamm_multiply_sort_stream(new_pivot+1, right, multiply_stream, C_block_stream_index);
-  }
-}
-
-/** Sort the C index array.
- *
- * @param array The array to sort.
- * @param stream The multiply stream.
- * @param length The length of the array and the stream.
- */
-void
-spamm_multiply_C_index_sort (unsigned int *array,
-    struct spamm_multiply_stream_t *stream,
-    const unsigned int length)
-{
-  unsigned int i, j, j_next, i_left, i_right;
-  unsigned int sub_current, sub_next;
-  unsigned int sub_length;
-  unsigned int *sublist;
-  unsigned int *scratch_index;
-  struct spamm_multiply_stream_t *scratch_stream;
-
-  /* The array is trivially already sorted. */
-  if (length <= 1) { return; }
-
-  /* Create index array for sublists. This array is length+1 since we
-   * terminate the array by a value of length. */
-  sublist = (unsigned int*) malloc(sizeof(unsigned int)*2*(length+1));
-
-  /* Allocate scratch space. */
-  scratch_index = (unsigned int*) calloc(length, sizeof(unsigned int));
-  scratch_stream = (struct spamm_multiply_stream_t*) calloc(length, sizeof(struct spamm_multiply_stream_t));
-
-  /* Break the original list into at most N pieces, i.e. single element
-   * sublists. If adajacent list elements are already in the right order, we
-   * put them into the same sublist. */
-  sublist[0] = 0;
-  for (i = 1, j = 1; i < length; i++)
-  {
-    if (array[i-1] > array[i])
-    {
-      /* The 2 elements are in incorrect order. Start a new sublist. */
-      sublist[j++] = i;
-    }
-  }
-  sublist[j++] = i;
-  sub_length = j;
-
-  /* Loop over the list, merging neighboring sublists until everthying is
-   * sorted. */
-  sub_current = 0;
-  sub_next = length+1;
-  while (sublist[sub_current+1] < length)
-  {
-    for (j = 0, j_next = 0; j < sub_length-2; j += 2)
-    {
-      /* Merge 2 adjacent sublists. */
-      for (i = sublist[sub_current+j], i_left = sublist[sub_current+j], i_right = sublist[sub_current+j+1];
-          i < sublist[sub_current+j+2];
-          i++)
-      {
-        if (i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
-        {
-          if (array[i_left] <= array[i_right])
-          {
-            scratch_index[i] = array[i_left];
-            scratch_stream[i].A = stream[i_left].A;
-            scratch_stream[i].B = stream[i_left].B;
-            scratch_stream[i].C = stream[i_left].C;
-            i_left++;
-          }
-
-          else
-          {
-            scratch_index[i] = array[i_right];
-            scratch_stream[i].A = stream[i_right].A;
-            scratch_stream[i].B = stream[i_right].B;
-            scratch_stream[i].C = stream[i_right].C;
-            i_right++;
-          }
-        }
-
-        else if (i_left < sublist[sub_current+j+1])
-        {
-          scratch_index[i] = array[i_left];
-          scratch_stream[i].A = stream[i_left].A;
-          scratch_stream[i].B = stream[i_left].B;
-          scratch_stream[i].C = stream[i_left].C;
-          i_left++;
-        }
-
-        else
-        {
-          scratch_index[i] = array[i_right];
-          scratch_stream[i].A = stream[i_right].A;
-          scratch_stream[i].B = stream[i_right].B;
-          scratch_stream[i].C = stream[i_right].C;
-          i_right++;
-        }
-      }
-
-      /* Copy the merged list back. */
-      for (i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
-      {
-        array[i] = scratch_index[i];
-        stream[i].A = scratch_stream[i].A;
-        stream[i].B = scratch_stream[i].B;
-        stream[i].C = scratch_stream[i].C;
-      }
-
-      /* Remove division between the sublists just merged. */
-      sublist[sub_next+j_next] = sublist[sub_current+j];
-      sublist[sub_next+j_next+1] = sublist[sub_current+j+2];
-      j_next++;
-    }
-
-    /* Add remaining sublist divisions. */
-    while (j < sub_length)
-    {
-      sublist[sub_next+j_next] = sublist[sub_current+j];
-      j++;
-      j_next++;
-    }
-    sub_length = j_next;
-
-    /* Switch sublists. */
-    if (sub_current == 0) { sub_current = length+1; }
-    else                  { sub_current = 0; }
-    if (sub_next == 0) { sub_next = length+1; }
-    else               { sub_next = 0; }
-  }
-
-  /* Free memory. */
-  free(sublist);
-  free(scratch_index);
-  free(scratch_stream);
-}
-
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
  *
  * @param tolerance The SpAMM tolerance of this product.
@@ -380,8 +90,10 @@ spamm_multiply_C_index_sort (unsigned int *array,
  * @param C The matrix \f$C\f$.
  * @param timer The timer to use.
  * @param kernel The stream kernel to use.
+ *
+ * @return The square of the Frobenius norm of the chunk.
  */
-void
+float
 spamm_linear_multiply (const float tolerance,
     const float alpha,
     spamm_chunk_t *chunk_A,
@@ -393,19 +105,32 @@ spamm_linear_multiply (const float tolerance,
   unsigned int *index_A;
   unsigned int *index_B;
 
+  unsigned int *stream;
+
   unsigned int N_contiguous;
   unsigned int index_length;
 
-  unsigned int i;
+  unsigned int i_stream;
+  unsigned int i, j, k;
+  unsigned int i_block, j_block, k_block;
+  unsigned int stream_index;
+
+  unsigned int offset_A;
+  unsigned int offset_B;
+  unsigned int offset_C;
 
   float *norm_A;
   float *norm_B;
 
+  float *matrix_A;
+  float *matrix_B;
+  float *matrix_C;
+
   N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
   index_length = N_contiguous/SPAMM_N_KERNEL;
 
-  index_A = calloc(ipow(index_length, 2), sizeof(unsigned int));
-  index_B = calloc(ipow(index_length, 2), sizeof(unsigned int));
+  index_A = malloc(ipow(index_length, 2)*sizeof(unsigned int));
+  index_B = malloc(ipow(index_length, 2)*sizeof(unsigned int));
 
   for (i = 0; i < ipow(index_length, 2); i++)
   {
@@ -414,22 +139,120 @@ spamm_linear_multiply (const float tolerance,
   }
 
   /* Sort indices along k index. */
-  spamm_sort_masked_unsigned_int(ipow(index_length, 2), index_A, MASK_2D_J);
-  spamm_sort_masked_unsigned_int(ipow(index_length, 2), index_B, MASK_2D_I);
+  spamm_sort_masked(ipow(index_length, 2), index_A, MASK_2D_J);
+  spamm_sort_masked(ipow(index_length, 2), index_B, MASK_2D_I);
 
   /* Sort within each k-block by descending norm. */
-  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A), chunk_A);
-  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B), chunk_B);
+  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A)-SPAMM_KERNEL_DEPTH-1, chunk_A);
+  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B)-SPAMM_KERNEL_DEPTH-1, chunk_B);
 
   for (i = 0; i < index_length; i++)
   {
-    spamm_sort_norm(index_length, &index_A[i*index_length], norm_A[i*index_length]);
-    spamm_sort_norm(index_length, &index_B[i*index_length], norm_B[i*index_length]);
+    spamm_sort_norm(index_length, &index_A[i*index_length], norm_A);
+    spamm_sort_norm(index_length, &index_B[i*index_length], norm_B);
   }
 
   /* Convolute. */
+  stream = malloc(ipow(index_length, 2)*3*sizeof(unsigned int));
+
+  printf("stream (%p): ", stream);
+  for (i = 0, stream_index = 0; i < index_length; i++) {
+    for (j = 0; j < index_length; j++)
+    {
+      if (norm_A[index_A[i]]*norm_B[index_B[j]] > tolerance)
+      {
+        stream[3*stream_index+0] = index_A[i];
+        stream[3*stream_index+1] = index_B[i];
+        stream[3*stream_index+2] = (index_A[i] & MASK_2D_I) | (index_B[j] & MASK_2D_J);
+        printf("stream[%u] = { %u, %u, %u } ", stream_index,
+            stream[3*stream_index+0],
+            stream[3*stream_index+1],
+            stream[3*stream_index+2]);
+        stream_index++;
+      }
+    }
+  }
+  printf("\n");
+  printf("[multiply] Added %u block products to stream\n", stream_index);
 
   /* Run kernel. */
+#ifdef RUN_ASSEMBLY_KERNEL
+  spamm_stream_kernel(stream_index, alpha, tolerance, stream, chunk_A, chunk_B, chunk_C);
+#else
+  norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A), chunk_A);
+  norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B), chunk_B);
+
+  matrix_A = spamm_chunk_get_matrix(chunk_A);
+  matrix_B = spamm_chunk_get_matrix(chunk_B);
+  matrix_C = spamm_chunk_get_matrix(chunk_C);
+
+  spamm_print_chunk(chunk_A);
+  spamm_print_chunk(chunk_B);
+
+  printf("starting to calculate product\n");
+  for (i_stream = 0; i_stream < stream_index; i_stream++)
+  {
+    for (i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
+      for (j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++) {
+        for (k = 0; k < SPAMM_N_KERNEL_BLOCKED; k++)
+        {
+          printf("(i, j, k) = (%u, %u, %u)\n", i, j, k);
+
+          offset_A = stream[3*i_stream+0]*ipow(SPAMM_N_KERNEL_BLOCKED, 2)
+            +spamm_index_row_major(i/SPAMM_N_BLOCK, k/SPAMM_N_BLOCK, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
+          offset_B = stream[3*i_stream+1]*ipow(SPAMM_N_KERNEL_BLOCKED, 2)
+            +spamm_index_row_major(k/SPAMM_N_BLOCK, j/SPAMM_N_BLOCK, SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED);
+
+          printf("norm_A(%u, %u) = %f\n", i, k, norm_A[offset_A]);
+          printf("norm_B(%u, %u) = %f\n", k, j, norm_B[offset_B]);
+
+          if (norm_A[offset_A]*norm_B[offset_B] > tolerance)
+          {
+            offset_A = stream[3*i_stream+0]*ipow(SPAMM_N_KERNEL, 2)
+              +spamm_index_row_major(i/SPAMM_N_KERNEL_BLOCKED,
+                  k/SPAMM_N_KERNEL_BLOCKED,
+                  SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED)*ipow(SPAMM_N_BLOCK, 2);
+
+            offset_B = stream[3*i_stream+1]*ipow(SPAMM_N_KERNEL, 2)
+              +spamm_index_row_major(k/SPAMM_N_KERNEL_BLOCKED,
+                  j/SPAMM_N_KERNEL_BLOCKED,
+                  SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED)*ipow(SPAMM_N_BLOCK, 2);
+
+            offset_C = stream[3*i_stream+2]*ipow(SPAMM_N_KERNEL, 2)
+              +spamm_index_row_major(i/SPAMM_N_KERNEL_BLOCKED,
+                  j/SPAMM_N_KERNEL_BLOCKED,
+                  SPAMM_N_KERNEL_BLOCKED, SPAMM_N_KERNEL_BLOCKED)*ipow(SPAMM_N_BLOCK, 2);
+
+            for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
+              for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++) {
+                for (k_block = 0; k_block < SPAMM_N_BLOCK; k_block++)
+                {
+                  printf("A(%u,%u) = %f", i_block, k_block, matrix_A[offset_A+spamm_index_row_major(i_block, k_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]);
+                  printf(", B(%u,%u) = %f", k_block, j_block, matrix_B[offset_B+spamm_index_row_major(k_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]);
+                  printf(", C(%u,%u) = %f", i_block, j_block, matrix_C[offset_C+spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]);
+                  printf("\n");
+
+                  matrix_C[offset_C+spamm_index_row_major(i_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)] +=
+                    alpha
+                    *matrix_A[offset_A+spamm_index_row_major(i_block, k_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)]
+                    *matrix_B[offset_B+spamm_index_row_major(k_block, j_block, SPAMM_N_BLOCK, SPAMM_N_BLOCK)];
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+#endif
+
+
+  /* Free memory. */
+  free(stream);
+  free(index_A);
+  free(index_B);
+
+  return 0;
 }
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -444,7 +267,6 @@ spamm_linear_multiply (const float tolerance,
  * @param sgemm The external sgemm function to use.
  * @param tier The tier.
  * @param chunk_tier The contiguous tier.
- * @param depth The depth of the matrix tree.
  * @param use_linear_tree If set to 1 then we will switch to a linear tree at
  * chunk_tier.
  * @param number_products [out] The number of block products.
@@ -466,8 +288,6 @@ spamm_recursive_multiply (const float tolerance,
     const unsigned int *const N_upper,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const unsigned int N_block,
-    const unsigned int depth,
     const short use_linear_tree,
     unsigned int *number_products)
 {
@@ -489,7 +309,7 @@ spamm_recursive_multiply (const float tolerance,
   {
     (*node_C)->norm2 = spamm_chunk_multiply(tolerance, alpha,
         node_A->tree.chunk, node_B->tree.chunk, (*node_C)->tree.chunk, tier,
-        chunk_tier, depth, N_block, 0, 0, 0, timer, sgemm, kernel);
+        chunk_tier, 0, 0, 0, timer, sgemm, kernel);
     (*node_C)->norm = sqrt((*node_C)->norm2);
   }
 
@@ -516,12 +336,15 @@ spamm_recursive_multiply (const float tolerance,
             new_N_lower[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*j;
             new_N_upper[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*(j+1);
 
-            spamm_recursive_multiply(tolerance, alpha,
-                node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
-                &(*node_C)->tree.child[i+2*j], timer, sgemm, kernel,
-                number_dimensions_A, number_dimensions_B, number_dimensions_C,
-                N, new_N_lower, new_N_upper, tier+1, chunk_tier, N_block,
-                depth, use_linear_tree, number_products);
+            if (node_A->norm*node_B->norm > tolerance)
+            {
+              spamm_recursive_multiply(tolerance, alpha,
+                  node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
+                  &(*node_C)->tree.child[i+2*j], timer, sgemm, kernel,
+                  number_dimensions_A, number_dimensions_B,
+                  number_dimensions_C, N, new_N_lower, new_N_upper, tier+1,
+                  chunk_tier, use_linear_tree, number_products);
+            }
           }
         }
       }
@@ -568,8 +391,7 @@ spamm_multiply (const float tolerance,
   {
     spamm_chunk_multiply_scalar(beta, C->tree.chunk);
     spamm_chunk_multiply(tolerance, alpha, A->tree.chunk, B->tree.chunk,
-        C->tree.chunk, 0, C->chunk_tier, C->depth, C->N_block, 0, 0, 0,
-        timer, sgemm, kernel);
+        C->tree.chunk, 0, C->chunk_tier, 0, 0, 0, timer, sgemm, kernel);
   }
 
   else
@@ -589,7 +411,7 @@ spamm_multiply (const float tolerance,
         B->tree.recursive_tree, &(C->tree.recursive_tree), timer, sgemm,
         kernel, A->number_dimensions, B->number_dimensions,
         C->number_dimensions, A->N, N_lower, N_upper, 0, A->chunk_tier,
-        A->N_block, A->depth, A->use_linear_tree, number_products);
+        A->use_linear_tree, number_products);
 
     free(N_lower);
     free(N_upper);

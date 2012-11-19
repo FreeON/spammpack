@@ -6,36 +6,124 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/** Get an element from a matrix.
+/** Get an element from a SpAMM chunk.
  *
- * @param i The row index.
- * @param j The column index.
- * @param A The matrix.
+ * @param i The row/column index array.
+ * @param chunk The chunk.
  *
- * @return The matrix element \f$A(i,j)\f$.
+ * @return The matrix element.
  */
 float
-spamm_hashed_get (const unsigned int i, const unsigned int j, const struct spamm_hashed_t *A)
+spamm_chunk_get (const unsigned int *i,
+    spamm_chunk_t *chunk)
 {
-  unsigned int index, i_tier, j_tier;
-  struct spamm_hashtable_t *node_hashtable;
-  struct spamm_hashed_data_t *data;
+  float Aij = 0;
 
-  i_tier = (i-A->M_lower)/SPAMM_N_KERNEL;
-  j_tier = (j-A->N_lower)/SPAMM_N_KERNEL;
+  int dim;
 
-  /* Construct linear index of the node on this tier. */
-  index = spamm_index_2D(i_tier, j_tier);
+  short use_linear_tree;
 
-  /* Get hash table at this tier. */
-  node_hashtable = A->tier_hashtable[A->kernel_tier-A->tier];
+  unsigned int tier;
+  unsigned int linear_index;
 
-  if ((data = spamm_hashtable_lookup(node_hashtable, index)) != NULL)
+  unsigned int number_dimensions;
+  unsigned int number_tiers;
+
+  unsigned int *N_lower;
+  unsigned int *N_upper;
+
+  unsigned int *new_N_lower;
+  unsigned int *new_N_upper;
+
+  unsigned int *new_i;
+
+  float *norm;
+  float *norm2;
+
+  float *A;
+
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  number_tiers = *spamm_chunk_get_number_tiers(chunk);
+  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);
+
+  N_lower = spamm_chunk_get_N_lower(chunk);
+  N_upper = spamm_chunk_get_N_upper(chunk);
+
+  new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
+  new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+  for (dim = 0; dim < number_dimensions; dim++)
   {
-    return data->block_dense[spamm_index_kernel_block((i-A->M_lower)%SPAMM_N_KERNEL, (j-A->N_lower)%SPAMM_N_KERNEL, A->layout)];
+    new_N_lower[dim] = N_lower[dim];
+    new_N_upper[dim] = N_upper[dim];
   }
 
-  else { return 0; }
+  /* Correct tier count. */
+  if (use_linear_tree)
+  {
+    number_tiers -= SPAMM_KERNEL_DEPTH;
+  }
+
+  /* Z-curve ordering down to SPAMM_N_KERNEL. */
+  for (tier = 0, linear_index = 0; tier < number_tiers; tier++)
+  {
+    norm = spamm_chunk_get_tier_norm(tier, chunk);
+    norm2 = spamm_chunk_get_tier_norm2(tier, chunk);
+
+    /* Update norm. */
+    norm2[linear_index] += Aij*Aij;
+    norm[linear_index] = sqrt(norm2[linear_index]);
+
+    if (tier+1 < number_tiers)
+    {
+      /* Recurse. */
+      linear_index <<= number_dimensions;
+
+      for (dim = 0; dim < number_dimensions; dim++)
+      {
+        if (i[dim] < new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2)
+        {
+          new_N_lower[dim] = new_N_lower[dim];
+          new_N_upper[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
+        }
+
+        else
+        {
+          new_N_upper[dim] = new_N_upper[dim];
+          new_N_lower[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
+          linear_index |= (1 << dim);
+        }
+      }
+    }
+
+    else
+    {
+      break;
+    }
+  }
+
+  A = spamm_chunk_get_matrix(chunk);
+  if (use_linear_tree)
+  {
+    Aij = A[linear_index*ipow(SPAMM_N_KERNEL, number_dimensions)*sizeof(float)
+      +spamm_index_kernel_block(i[0]-new_N_lower[0], i[1]-new_N_lower[1], row_major)];
+  }
+
+  else
+  {
+    new_i = calloc(number_dimensions, sizeof(unsigned int));
+    for (dim = 0; dim < number_dimensions; dim++)
+    {
+      new_i[dim] = i[dim]-N_lower[dim];
+    }
+    Aij = A[spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], new_i)];
+    free(new_i);
+  }
+
+  free(new_N_lower);
+  free(new_N_upper);
+
+  return Aij;
 }
 
 /** Get an element from a recursive matrix.
@@ -54,9 +142,7 @@ spamm_recursive_get (const unsigned int number_dimensions,
     const unsigned int *N_upper,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const unsigned int N_block,
     const short use_linear_tree,
-    const unsigned int depth,
     const struct spamm_recursive_node_t *node)
 {
   int dim;
@@ -99,8 +185,7 @@ spamm_recursive_get (const unsigned int number_dimensions,
     }
 
     Aij = spamm_recursive_get(number_dimensions, i, new_N_lower, new_N_upper,
-        tier+1, chunk_tier, N_block, use_linear_tree, depth,
-        node->tree.child[child_index]);
+        tier+1, chunk_tier, use_linear_tree, node->tree.child[child_index]);
 
     free(new_N_lower);
     free(new_N_upper);
@@ -142,87 +227,11 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
     }
 
     Aij = spamm_recursive_get(A->number_dimensions, i, N_lower, N_upper, 0,
-        A->chunk_tier, A->N_block, A->use_linear_tree, A->depth,
-        A->tree.recursive_tree);
+        A->chunk_tier, A->use_linear_tree, A->tree.recursive_tree);
 
     free(N_lower);
     free(N_upper);
   }
 
   return Aij;
-}
-
-/** Get the number of rows of a matrix.
- *
- * @param A The matrix.
- *
- * @return The number of rows.
- */
-unsigned int
-spamm_get_number_of_rows (const struct spamm_hashed_t *const A)
-{
-  return A->M_upper-A->M_lower;
-}
-
-/** Get the number of columns of a matrix.
- *
- * @param A The matrix.
- *
- * @return The number of rows.
- */
-unsigned int
-spamm_get_number_of_columns (const struct spamm_hashed_t *const A)
-{
-  return A->N_upper-A->N_lower;
-}
-
-/** Get the Frobenius norm of the matrix.
- *
- * @param A The matrix.
- *
- * @return The Frobenius norm.
- */
-float
-spamm_hashed_get_norm (const struct spamm_hashed_t *const A)
-{
-  struct spamm_hashtable_t *tier_hashtable;
-  struct spamm_hashed_node_t *root;
-
-  assert(A != NULL);
-
-  if ((tier_hashtable = A->tier_hashtable[0]) == NULL)
-  {
-    return 0;
-  }
-
-  if ((root = spamm_hashtable_lookup(tier_hashtable, 0)) == NULL)
-  {
-    return 0;
-  }
-
-  return root->norm;
-}
-
-/** Get the Frobenius norm of the matrix.
- *
- * @param A The matrix.
- *
- * @return The Frobenius norm.
- */
-float
-spamm_get_norm (const struct spamm_matrix_t *const A)
-{
-  assert(A != NULL);
-
-  if (A->tree.recursive_tree != NULL)
-  {
-    return A->tree.recursive_tree->norm;
-  }
-
-  else if (A->tree.hashed_tree != NULL)
-  {
-    return spamm_hashed_get_norm(A->tree.hashed_tree);
-  }
-
-  else { return 0; }
 }

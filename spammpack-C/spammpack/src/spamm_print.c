@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 /** Print a dense matrix.
@@ -47,75 +48,93 @@ spamm_print_dense (const unsigned int M, const unsigned int N,
   }
 }
 
-/** Print out a spamm_hashed_node_t object.
+/** Print a SpAMM chunk.
  *
- * @param key The key for the hashtable.
- * @param value The spamm_hashed_node_t object.
- * @param user_data Some additional data that can be passed into this function.
+ * @param chunk The chunk.
  */
 void
-spamm_print_node (unsigned int key, void *value, void *user_data)
+spamm_print_chunk (spamm_chunk_t *const chunk)
 {
-  struct spamm_hashed_node_t *node = value;
-
-  printf("(node) tier %u: index_2D = %u, norm = %1.2e\n",
-      node->tier, node->index_2D, node->norm);
-}
-
-/** Print out a spamm_hashed_data_t object.
- *
- * @param key The key for the hashtable.
- * @param value The spamm_hashed_data_t object.
- * @param user_data Some additional data that can be passed into this function.
- */
-void
-spamm_print_data (unsigned int key, void *value, void *user_data)
-{
+  int dim;
   unsigned int i, j;
-  struct spamm_hashed_data_t *data = value;
+  unsigned int number_dimensions;
+  unsigned int N_contiguous;
+  unsigned int use_linear_tree;
+  unsigned int number_tiers;
 
-  printf("(node) tier %u: index_2D = %u, ", data->tier, data->index_2D);
-  printf("node norm = %1.2e\n", data->node_norm);
-  printf("norm = { ");
-  for (i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++)
+  unsigned int *N;
+  unsigned int *N_lower;
+  unsigned int *N_upper;
+
+  float *A;
+  float *norm;
+  float *norm2;
+
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  number_tiers = *spamm_chunk_get_number_tiers(chunk);
+  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);
+  N_contiguous = spamm_chunk_get_N_contiguous(chunk);
+
+  printf("chunk (%p): ", chunk);
+  printf("ndim = %u", number_dimensions);
+  printf(", ntiers = %u", number_tiers);
+  printf(", N_cont = %u", N_contiguous);
+  printf(", lintree = %u", use_linear_tree);
+  printf("\n");
+  N = spamm_chunk_get_N(chunk);
+  printf("N = [");
+  for (dim = 0; dim < number_dimensions; dim++)
   {
-    printf("{");
-    for (j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
+    printf(" %u", N[dim]);
+    if (dim+1 < number_dimensions)
     {
-      printf(" %1.2e", data->norm[i*SPAMM_N_KERNEL_BLOCKED+j]);
+      printf(",");
     }
-    printf(" }");
-    if (i < SPAMM_N_KERNEL_BLOCKED-1) { printf(", "); }
   }
-  printf(" }, ");
-  printf("block_dense = ");
-  for (i = 0; i < SPAMM_N_KERNEL; i++)
+  printf(" ]\n");
+  N_lower = spamm_chunk_get_N_lower(chunk);
+  N_upper = spamm_chunk_get_N_upper(chunk);
+  for (dim = 0; dim < number_dimensions; dim++)
   {
-    printf("{");
-    for (j = 0; j < SPAMM_N_KERNEL; j++)
-    {
-      printf(" %1.2e", data->block_dense[i*SPAMM_N_KERNEL+j]);
-    }
-    printf(" }");
-    if (i < SPAMM_N_KERNEL-1) { printf(", "); }
+    printf("N[%u] = [ %u, %u ]\n", dim, N_lower[dim], N_upper[dim]);
   }
-  printf(" }\n");
-  printf("block_dense =\n");
-  spamm_print_dense(SPAMM_N_KERNEL, SPAMM_N_KERNEL, row_major, data->block_dense);
-  printf("block_dense_transpose = ");
-  for (i = 0; i < SPAMM_N_KERNEL; i++)
+
+  for (i = 0; i < number_tiers; i++)
   {
-    printf("{");
-    for (j = 0; j < SPAMM_N_KERNEL; j++)
-    {
-      printf(" %1.2e", data->block_dense_transpose[i*SPAMM_N_KERNEL+j]);
-    }
-    printf(" }");
-    if (i < SPAMM_N_KERNEL-1) { printf(", "); }
+    printf("&norm[%u] = %p\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm(i, chunk) - (intptr_t) chunk));
   }
-  printf(" }\n");
-  printf("block_dense_transpose =\n");
-  spamm_print_dense(SPAMM_N_KERNEL, SPAMM_N_KERNEL, row_major, data->block_dense_transpose);
+
+  for (i = 0; i < number_tiers; i++)
+  {
+    printf("&norm2[%u] = %p\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm2(i, chunk) - (intptr_t) chunk));
+  }
+
+  printf("&matrix = %p\n", (void*) ((intptr_t) spamm_chunk_get_matrix(chunk) - (intptr_t) chunk));
+
+  for (i = 0; i < number_tiers; i++)
+  {
+    norm = spamm_chunk_get_tier_norm(i, chunk);
+    printf("norm[%u] =", i);
+    for (j = 0; j < ipow(4, i); j++)
+    {
+      printf(" %1.2f", norm[j]);
+    }
+    printf("\n");
+  }
+
+  for (i = 0; i < number_tiers; i++)
+  {
+    norm2 = spamm_chunk_get_tier_norm2(i, chunk);
+    printf("norm2[%u] =", i);
+    for (j = 0; j < ipow(4, i); j++)
+    {
+      printf(" %1.2f", norm2[j]);
+    }
+    printf("\n");
+  }
+
+  A = spamm_chunk_get_matrix(chunk);
+  spamm_print_dense(N_contiguous, N_contiguous, column_major, A);
 }
 
 /** Print a recursive tree node and all nodes underneath.
@@ -134,28 +153,20 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
   unsigned int i;
   int dim;
 
+  unsigned int *new_N_lower;
+  unsigned int *new_N_upper;
+
   if (node == NULL) { return; }
 
-  printf("node (tier = %u): N = {", tier);
+  printf("node (tier = %u, %p): N = {", tier, node);
   for (dim = 0; dim < number_dimensions; dim++)
   {
     printf(" [ %u --> %u ]", N_lower[dim], N_upper[dim]);
   }
   printf(" }, norm = %1.2e, ", node->norm);
-  if (tier == chunk_tier && use_linear_tree)
+  if (tier == chunk_tier)
   {
-    for (i = tier; i <= node->tree.hashed_tree->kernel_tier; i++)
-    {
-      if (i < node->tree.hashed_tree->kernel_tier)
-      {
-        spamm_hashtable_foreach(node->tree.hashed_tree->tier_hashtable[i-tier], spamm_print_node, NULL);
-      }
-
-      else
-      {
-        spamm_hashtable_foreach(node->tree.hashed_tree->tier_hashtable[i-tier], spamm_print_data, NULL);
-      }
-    }
+    spamm_print_chunk(node->tree.chunk);
   }
 
   else if (tier == chunk_tier)
@@ -183,8 +194,20 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
 
     for (i = 0; i < ipow(2, number_dimensions); i++)
     {
+      new_N_lower = malloc(number_dimensions*sizeof(unsigned int));
+      new_N_upper = malloc(number_dimensions*sizeof(unsigned int));
+
+      for (dim = 0; dim < number_dimensions; dim++)
+      {
+        new_N_lower[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2*(i & (1 << dim) ? 1 : 0);
+        new_N_upper[dim] = new_N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
+      }
+
       spamm_recursive_print_node(node->tree.child[i], number_dimensions,
-          N_lower, N_upper, tier+1, chunk_tier, use_linear_tree);
+          new_N_lower, new_N_upper, tier+1, chunk_tier, use_linear_tree);
+
+      free(new_N_lower);
+      free(new_N_upper);
     }
   }
 }
@@ -216,23 +239,11 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
   printf("depth = %u, ", A->depth);
   printf("chunk_tier = %u, ", A->chunk_tier);
   printf("use_linear_tree = %u, ", A->use_linear_tree);
-  printf("kernel_tier = %u, ", A->kernel_tier);
   printf("chunk_tier = %u\n", A->chunk_tier);
 
-  if (A->chunk_tier == 0 && A->use_linear_tree)
+  if (A->chunk_tier == 0)
   {
-    for (tier = 0; tier <= A->kernel_tier; tier++)
-    {
-      if (tier < A->kernel_tier)
-      {
-        spamm_hashtable_foreach(A->tree.hashed_tree->tier_hashtable[tier], spamm_print_node, NULL);
-      }
-
-      else
-      {
-        spamm_hashtable_foreach(A->tree.hashed_tree->tier_hashtable[tier], spamm_print_data, NULL);
-      }
-    }
+    spamm_print_chunk(A->tree.chunk);
   }
   else
   {

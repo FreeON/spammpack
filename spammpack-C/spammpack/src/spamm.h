@@ -4,8 +4,6 @@
 #define __SPAMM_H
 
 /* Include the other header files. */
-#include "spamm_list.h"
-#include "spamm_hashtable.h"
 #include "spamm_kernel.h"
 #include "spamm_types.h"
 #include "spamm_error.h"

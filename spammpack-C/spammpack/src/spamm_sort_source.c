@@ -11,20 +11,25 @@
  * @param mask The mask to apply to the values in the list before sorting.
  */
 void
-#ifdef SPAMM_SORT_MASKED
-SPAMM_FUNCTION(spamm_sort_masked, SPAMM_FUNC_TYPE) (const unsigned int length,
-    SPAMM_SORT_TYPE *list,
+#if defined(SPAMM_SORT_MASKED)
+spamm_sort_masked (const unsigned int length,
+    unsigned int *list,
     const unsigned int mask)
-#else
-SPAMM_FUNCTION(spamm_sort, SPAMM_FUNC_TYPE) (const unsigned int length,
-    SPAMM_SORT_TYPE *list)
+#elif defined(SPAMM_SORT_NORM)
+spamm_sort_norm (const unsigned int length,
+    unsigned int *list,
+    float *norm)
 #endif
 {
   unsigned int i, j, j_next, i_left, i_right;
   unsigned int sub_current, sub_next;
   unsigned int sub_length;
   unsigned int *sublist;
-  SPAMM_SORT_TYPE *scratch;
+#if defined(SPAMM_SORT_MASKED)
+  unsigned int *scratch;
+#elif defined(SPAMM_SORT_NORM)
+  float *scratch;
+#endif
 
   /* The list is trivially already sorted. */
   if (length <= 1) { return; }
@@ -34,7 +39,11 @@ SPAMM_FUNCTION(spamm_sort, SPAMM_FUNC_TYPE) (const unsigned int length,
   sublist = (unsigned int*) malloc(sizeof(unsigned int)*2*(length+1));
 
   /* Allocate scratch space. */
-  scratch = (SPAMM_SORT_TYPE*) calloc(sizeof(SPAMM_SORT_TYPE), length);
+#if defined(SPAMM_SORT_MASKED)
+  scratch = (unsigned int*) calloc(sizeof(unsigned int), length);
+#elif defined(SPAMM_SORT_NORM)
+  scratch = (float*) calloc(sizeof(float), length);
+#endif
 
   /* Break the original list into at most N pieces, i.e. single element
    * sublists. If adajacent list elements are already in the right order, we
@@ -42,10 +51,10 @@ SPAMM_FUNCTION(spamm_sort, SPAMM_FUNC_TYPE) (const unsigned int length,
   sublist[0] = 0;
   for (i = 1, j = 1; i < length; i++)
   {
-#ifdef SPAMM_SORT_MASKED
-    if (SPAMM_SORT_COMPARE(list[i-1], list[i], mask) > 0)
-#else
-    if (list[i-1] > list[i])
+#if defined(SPAMM_SORT_MASKED)
+    if ((list[i-1] & mask) > (list[i] & mask))
+#elif defined(SPAMM_SORT_NORM)
+    if (norm[list[i-1]] < norm[list[i]])
 #endif
     {
       /* The 2 elements are in incorrect order. Start a new sublist. */
@@ -70,10 +79,10 @@ SPAMM_FUNCTION(spamm_sort, SPAMM_FUNC_TYPE) (const unsigned int length,
       {
         if (i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
         {
-#ifdef SPAMM_SORT_MASKED
-          if (SPAMM_SORT_COMPARE(list[i_left], list[i_right], mask) <= 0)
-#else
-          if (list[i_left] <= list[i_right])
+#if defined(SPAMM_SORT_MASKED)
+          if ((list[i_left] & mask) <= (list[i_right] & mask))
+#elif defined(SPAMM_SORT_NORM)
+          if (norm[list[i_left]] > norm[list[i_right]])
 #endif
           {
             scratch[i] = list[i_left];

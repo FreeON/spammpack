@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -74,167 +75,104 @@ spamm_get_tree_depth (const unsigned int number_dimensions,
   return depth;
 }
 
-/** Initialize new matrix object.
+/** Allocate a SpAMM data chunk.
  *
- * @param tier The tier.
- * @param depth The depth of the matrix tree.
- * @param M_lower The lower row index of this submatrix.
- * @param M_upper The upper row index of this submatrix.
- * @param N_lower The lower column index of this submatrix.
- * @param N_upper The upper column index of this submatrix.
+ * The chunk contains the following data fields. In order to guarantee this
+ * layout we allocate a larger chunk of memory and then manage the data inside
+ * of it ourselves.  In order to simplify access to the fields, we start the
+ * chunk with a pointer array that points to the field variables.
  *
- * @return A pointer to the matrix.
+ * \code
+ * struct spamm_chunk_t
+ * {
+ *   unsigned int *number_dimensions_pointer;
+ *   unsigned int *N_block_pointer;
+ *   unsigned int *N_lower_pointer;
+ *   unsigned int *N_upper_pointer;
+ *   float        *A_pointer;
+ *   float        *A_dilated_pointer;
+ *   float        *norm_pointer;
+ *   float        *norm2_pointer;
+ *
+ *   unsigned int number_dimensions;
+ *   unsigned int N_block;
+ *   unsigned int N_lower[number_dimensions];
+ *   unsigned int N_upper[number_dimensions];
+ *
+ *   spamm_float_t *A;
+ *
+ *   spamm_float_t *A_dilated;
+ *
+ *   spamm_float_t norm[];
+ *   spamm_float_t norm2[];
+ * };
+ * \endcode
+ *
+ * @param number_dimensions The number of dimensions.
+ * @param use_linear_tree Whether to use the linear code for the chunk or not.
+ * @param N The size of original matrix (unpadded).
+ * @param N_lower The lower bounds of the bounding box.
+ * @param N_lower The upper bounds of the bounding box.
+ *
+ * @return A pointer to the newly allocated chunk.
  */
-struct spamm_hashed_t *
-spamm_hashed_new (const unsigned int tier,
-    const unsigned int kernel_tier,
-    const unsigned int depth,
-    const unsigned int M_lower,
-    const unsigned int M_upper,
-    const unsigned int N_lower,
-    const unsigned int N_upper)
+spamm_chunk_t *
+spamm_new_chunk (const unsigned int number_dimensions,
+    const short use_linear_tree,
+    const unsigned int *const N,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper)
 {
-  unsigned int i;
-  struct spamm_hashed_t *A;
+  void **pointer_pointer;
+  unsigned int *int_pointer;
 
-  /* Allocate memory. */
-  A = calloc(1, sizeof(struct spamm_hashed_t));
+  unsigned int number_tiers;
 
-  /* Store kernel_tier. */
-  A->kernel_tier = kernel_tier;
+  unsigned int *N_pointer;
+  unsigned int *N_lower_pointer;
+  unsigned int *N_upper_pointer;
+  float *A_pointer;
+  float *A_dilated_pointer;
+  float *norm_pointer;
+  float *norm2_pointer;
 
-  /* Store tier. */
-  A->tier = tier;
+  int dim;
 
-  /* Store depth. */
-  A->depth = depth;
+  spamm_chunk_t *chunk;
+
+  chunk = spamm_allocate(spamm_chunk_get_size(number_dimensions,
+        use_linear_tree, &number_tiers, N, N_lower, N_upper, &N_pointer,
+        &N_lower_pointer, &N_upper_pointer, &A_pointer, &A_dilated_pointer,
+        &norm_pointer, &norm2_pointer), 1);
+
+  int_pointer = chunk;
+  pointer_pointer = (void**) ((intptr_t) chunk + 4*sizeof(unsigned int));
+
+  int_pointer[0] = number_dimensions;
+  int_pointer[1] = number_tiers;
+  int_pointer[2] = use_linear_tree;
+
+  pointer_pointer[0] = (void*) N_pointer;
+  pointer_pointer[1] = (void*) N_lower_pointer;
+  pointer_pointer[2] = (void*) N_upper_pointer;
+  pointer_pointer[3] = (void*) A_pointer;
+  pointer_pointer[4] = (void*) A_dilated_pointer;
+  pointer_pointer[5] = (void*) norm_pointer;
+  pointer_pointer[6] = (void*) norm2_pointer;
 
   /* Store bounding box. */
-  A->M_lower = M_lower;
-  A->M_upper = M_upper;
-  A->N_lower = N_lower;
-  A->N_upper = N_upper;
+  N_pointer       = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_pointer);
+  N_lower_pointer = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_lower_pointer);
+  N_upper_pointer = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_upper_pointer);
 
-  /* Create the tier hash tables. */
-  A->tier_hashtable = (struct spamm_hashtable_t**) malloc(sizeof(struct spamm_hashtable_t*)*(A->kernel_tier-A->tier+1));
-  for (i = A->tier; i <= A->kernel_tier; i++)
+  for (dim = 0; dim < number_dimensions; dim++)
   {
-    A->tier_hashtable[i-A->tier] = spamm_hashtable_new();
+    N_pointer[dim] = N[dim];
+    N_lower_pointer[dim] = N_lower[dim];
+    N_upper_pointer[dim] = N_upper[dim];
   }
 
-  return A;
-}
-
-/** Allocate a new node of a matrix tree.
- *
- * @param tier The tier this node will be on.
- * @param index_2D The 2D linear matrix index of this node.
- *
- * @return A pointer to the newly allocated node.
- */
-struct spamm_hashed_node_t *
-spamm_hashed_new_node (const unsigned int tier, const unsigned int index_2D)
-{
-  struct spamm_hashed_node_t *node = (struct spamm_hashed_node_t*) malloc(sizeof(struct spamm_hashed_node_t));
-
-  node->tier = tier;
-  node->index_2D = index_2D;
-
-  node->norm = 0.0;
-  node->norm2 = 0.0;
-
-  return node;
-}
-
-/** Allocate a new data node of a matrix tree.
- *
- * @param tier The tier this node will be on.
- * @param index_2D The 2D linear matrix index of this node.
- * @param layout The layout of the basic matrix blocks.
- *
- * @return A pointer to the newly allocated node.
- */
-struct spamm_hashed_data_t *
-spamm_hashed_new_data (const unsigned int tier, const unsigned int index_2D, const enum spamm_layout_t layout)
-{
-  int i, j;
-  struct spamm_hashed_data_t *data;
-
-#ifdef HAVE_POSIX_MEMALIGN
-  int result;
-
-  /* Allocate data. */
-  if ((result = posix_memalign((void**) &data, SPAMM_PAGE_ALIGNMENT, sizeof(struct spamm_hashed_data_t))) != 0)
-  {
-    switch (result)
-    {
-      case EINVAL:
-        printf("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
-        exit(1);
-        break;
-
-      case ENOMEM:
-        printf("There was insufficient memory to fulfill the allocation request.\n");
-        exit(1);
-        break;
-
-      default:
-        printf("unknown error code: %i\n", result);
-        exit(1);
-        break;
-    }
-  }
-
-  /* Set matrix elements to zero. */
-  for (i = 0; i < SPAMM_N_KERNEL; i++) {
-    for (j = 0; j < SPAMM_N_KERNEL; j++)
-    {
-      data->block_dense[i*SPAMM_N_KERNEL+j] = 0.0;
-      data->block_dense_store[i*SPAMM_N_KERNEL+j] = 0.0;
-      data->block_dense_transpose[i*SPAMM_N_KERNEL+j] = 0.0;
-
-      data->block_dense_dilated[4*(i*SPAMM_N_KERNEL+j)+0] = 0.0;
-      data->block_dense_dilated[4*(i*SPAMM_N_KERNEL+j)+1] = 0.0;
-      data->block_dense_dilated[4*(i*SPAMM_N_KERNEL+j)+2] = 0.0;
-      data->block_dense_dilated[4*(i*SPAMM_N_KERNEL+j)+3] = 0.0;
-    }
-  }
-
-  for (i = 0; i < SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED; i++)
-  {
-    data->norm[i] = 0.0;
-    data->norm2[i] = 0.0;
-  }
-
-  data->node_norm = 0.0;
-  data->node_norm2 = 0.0;
-
-#else
-  /* Allocate data (this is with unknown alignment, i.e. it is aligned to
-   * whatever malloc() aligns it to. */
-  data = (struct spamm_hashed_data_t*) calloc(1, sizeof(struct spamm_hashed_data_t));
-#endif
-
-  switch (layout)
-  {
-    case row_major:
-    case column_major:
-    case Z_curve:
-    case dense_column_major:
-      data->layout = layout;
-      break;
-
-    default:
-      fprintf(stderr, "[spamm new block] unknown layout (%i)\n", layout);
-      exit(1);
-      break;
-  }
-
-  /* Set some information on the data block. */
-  data->tier = tier;
-  data->index_2D = index_2D;
-
-  return data;
+  return chunk;
 }
 
 /** Allocate a new node of a recursive matrix tree.
@@ -328,7 +266,7 @@ spamm_new (const unsigned int number_dimensions,
   /* Adjust the depth. */
   if (number_dimensions == 2 && use_linear_tree)
   {
-    A->depth -= 3; /* 16x16 submatrix blocks for linear kernel. */
+    A->depth -= 4; /* 16x16 submatrix blocks for linear kernel. */
   }
 
   if (chunk_tier > A->depth)

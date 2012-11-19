@@ -66,23 +66,6 @@ spamm_number_nonzero (const struct spamm_matrix_t *A)
   return result;
 }
 
-/** Return the total memory consumption of a matrix.
- *
- * @param A The matrix.
- *
- * @return The number of bytes allocated for this matrix.
- */
-unsigned int
-spamm_memory (const struct spamm_hashed_t *A)
-{
-  unsigned int total = 0;
-
-  total = sizeof(struct spamm_hashed_t);
-  total += sizeof(struct spamm_hashtable_t*)*(A->kernel_tier+1);
-
-  return total;
-}
-
 /** Print out some information on the matrix.
  *
  * @param A The matrix.
@@ -112,7 +95,6 @@ spamm_print_info (const struct spamm_matrix_t *const A)
   }
   printf(" }");
   printf(", N_padded = %u", A->N_padded);
-  printf(", depth = %u", A->depth);
   printf(", chunk_tier = %u", A->chunk_tier);
   printf(", use_linear_tree = %u", A->use_linear_tree);
   printf(", nnzero = %u (%1.2f %%)", spamm_number_nonzero(A), 100*(float) spamm_number_nonzero(A)/(float) N_contiguous);
