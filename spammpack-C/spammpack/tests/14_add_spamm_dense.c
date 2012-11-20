@@ -187,7 +187,7 @@ main (int argc, char **argv)
           spamm_add(alpha, A, beta, B);
 
           /* Check tree consistency. */
-          result |= spamm_check(A, TEST_TOLERANCE);
+          spamm_check(A, TEST_TOLERANCE);
 
           /* Compare result. */
           max_diff = 0.0;

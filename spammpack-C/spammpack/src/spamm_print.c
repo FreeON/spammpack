@@ -70,6 +70,8 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
   float *norm;
   float *norm2;
 
+  if (chunk == NULL) { return; }
+
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
   number_tiers = *spamm_chunk_get_number_tiers(chunk);
   use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);

@@ -25,6 +25,8 @@ spamm_chunk_multiply_scalar (const float alpha,
   float *norm;
   float *norm2;
 
+  if (chunk == NULL) { return 0.0; }
+
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
   N_contiguous = spamm_chunk_get_N_contiguous(chunk);
   A = spamm_chunk_get_matrix(chunk);
@@ -88,6 +90,8 @@ spamm_chunk_multiply (const float tolerance,
   short use_linear_tree;
 
   unsigned int number_dimensions;
+
+  if (chunk_A == NULL || chunk_B == NULL) { return 0.0; }
 
   use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk_A);
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk_A);

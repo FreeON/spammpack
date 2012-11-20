@@ -22,7 +22,7 @@ main ()
     }
   }
 
-  result = spamm_check(A, 1e-7);
+  spamm_check(A, 1e-7);
 
   spamm_delete(&A);
 

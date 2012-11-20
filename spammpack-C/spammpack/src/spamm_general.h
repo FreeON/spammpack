@@ -11,7 +11,7 @@ ipow (unsigned int b, unsigned int n);
 void *
 spamm_allocate (const size_t size, const short zero_memory);
 
-int
+void
 spamm_check (const struct spamm_matrix_t *A, const float tolerance);
 
 void
