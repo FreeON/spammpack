@@ -23,13 +23,13 @@ spamm_get_tree_depth (const unsigned int number_dimensions,
 
   /* Pad to powers of M_child x N_child. */
   x = 0;
-  for (dim = 0; dim < number_dimensions; dim++)
+  for(dim = 0; dim < number_dimensions; dim++)
   {
     /* Make sure we pad at least to the extend that we can store that linear
      * kernel matrix. */
-    if (use_linear_tree)
+    if(use_linear_tree)
     {
-      if (N[dim] < SPAMM_N_KERNEL)
+      if(N[dim] < SPAMM_N_KERNEL)
       {
         N_temp = SPAMM_N_KERNEL;
       }
@@ -46,7 +46,7 @@ spamm_get_tree_depth (const unsigned int number_dimensions,
     }
 
     x_N = log(N_temp)/log(2);
-    if (x_N > x)
+    if(x_N > x)
     {
       x = x_N;
     }
@@ -59,11 +59,11 @@ spamm_get_tree_depth (const unsigned int number_dimensions,
   depth = (unsigned int) ceil(x);
 
   /* Double check depth. */
-  if (depth >= 1)
+  if(depth >= 1)
   {
-    for (dim = 0; dim < number_dimensions; dim++)
+    for(dim = 0; dim < number_dimensions; dim++)
     {
-      if ((int) (ipow(2, depth-1)) < N[dim])
+      if((int) (ipow(2, depth-1)) < N[dim])
       {
         depth++;
         break;
@@ -165,7 +165,7 @@ spamm_new_chunk (const unsigned int number_dimensions,
   N_lower_pointer = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_lower_pointer);
   N_upper_pointer = (unsigned int*) ((intptr_t) chunk + (intptr_t) N_upper_pointer);
 
-  for (dim = 0; dim < number_dimensions; dim++)
+  for(dim = 0; dim < number_dimensions; dim++)
   {
     N_pointer[dim] = N[dim];
     N_lower_pointer[dim] = N_lower[dim];
@@ -231,9 +231,9 @@ spamm_new (const unsigned int number_dimensions,
   int dim;
   struct spamm_matrix_t *A = NULL;
 
-  for (dim = 0; dim < number_dimensions; dim++)
+  for(dim = 0; dim < number_dimensions; dim++)
   {
-    if (N[dim] == 0)
+    if(N[dim] == 0)
     {
       SPAMM_FATAL("N[%u] == 0\n", dim);
     }
@@ -247,12 +247,12 @@ spamm_new (const unsigned int number_dimensions,
 
   /* Store matrix dimensions. */
   A->N = calloc(number_dimensions, sizeof(unsigned int));
-  for (dim = 0; dim < number_dimensions; dim++)
+  for(dim = 0; dim < number_dimensions; dim++)
   {
     A->N[dim] = N[dim];
   }
 
-  if (number_dimensions == 2 && use_linear_tree)
+  if(number_dimensions == 2 && use_linear_tree)
   {
     A->use_linear_tree = use_linear_tree;
   }
@@ -264,12 +264,12 @@ spamm_new (const unsigned int number_dimensions,
   A->N_padded = (int) (ipow(2, A->depth));
 
   /* Adjust the depth. */
-  if (number_dimensions == 2 && use_linear_tree)
+  if(number_dimensions == 2 && use_linear_tree)
   {
     A->depth -= 4; /* 16x16 submatrix blocks for linear kernel. */
   }
 
-  if (chunk_tier > A->depth)
+  if(chunk_tier > A->depth)
   {
     SPAMM_WARN("chunk tier (%u) is greater than depth (%u)\n", chunk_tier, A->depth);
     A->chunk_tier = A->depth;

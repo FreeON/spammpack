@@ -66,8 +66,8 @@ spamm_list_delete (struct spamm_list_t **list)
 int
 spamm_list_compare_int (const unsigned int a, const unsigned int b)
 {
-  if (a < b)       { return -1; }
-  else if (a == b) { return  0; }
+  if(a < b)       { return -1; }
+  else if(a == b) { return  0; }
   else             { return  1; }
 }
 
@@ -85,8 +85,8 @@ spamm_list_compare_index_row (const unsigned int a, const unsigned int b)
   unsigned int a_masked = a & MASK_2D_I;
   unsigned int b_masked = b & MASK_2D_I;
 
-  if (a_masked < b_masked)       { return -1; }
-  else if (a_masked > b_masked)  { return  1; }
+  if(a_masked < b_masked)       { return -1; }
+  else if(a_masked > b_masked)  { return  1; }
   else                           { return 0; }
 }
 
@@ -104,8 +104,8 @@ spamm_list_compare_index_column (const unsigned int a, const unsigned int b)
   unsigned int a_masked = a & MASK_2D_J;
   unsigned int b_masked = b & MASK_2D_J;
 
-  if (a_masked < b_masked)       { return -1; }
-  else if (a_masked > b_masked)  { return  1; }
+  if(a_masked < b_masked)       { return -1; }
+  else if(a_masked > b_masked)  { return  1; }
   else                           { return 0; }
 }
 
@@ -128,7 +128,7 @@ spamm_list_sort_index_iterative_mergesort (
   float *scratch_norm;
 
   /* The list is trivially already sorted. */
-  if (list->length <= 1) { return; }
+  if(list->length <= 1) { return; }
 
   /* Create index array for sublists. This array is length+1 since we
    * terminate the array by a value of length. */
@@ -142,9 +142,9 @@ spamm_list_sort_index_iterative_mergesort (
    * sublists. If adajacent list elements are already in the right order, we
    * put them into the same sublist. */
   sublist[0] = 0;
-  for (i = 1, j = 1; i < list->length; i++)
+  for(i = 1, j = 1; i < list->length; i++)
   {
-    if (compare(list->index[i-1], list->index[i]) > 0)
+    if(compare(list->index[i-1], list->index[i]) > 0)
     {
       /* The 2 elements are in incorrect order. Start a new sublist. */
       sublist[j++] = i;
@@ -157,18 +157,18 @@ spamm_list_sort_index_iterative_mergesort (
    * sorted. */
   sub_current = 0;
   sub_next = list->length+1;
-  while (sublist[sub_current+1] < list->length)
+  while(sublist[sub_current+1] < list->length)
   {
-    for (j = 0, j_next = 0; j < sub_length-2; j += 2)
+    for(j = 0, j_next = 0; j < sub_length-2; j += 2)
     {
       /* Merge 2 adjacent sublists. */
-      for (i = sublist[sub_current+j], i_left = sublist[sub_current+j], i_right = sublist[sub_current+j+1];
+      for(i = sublist[sub_current+j], i_left = sublist[sub_current+j], i_right = sublist[sub_current+j+1];
           i < sublist[sub_current+j+2];
           i++)
       {
-        if (i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
+        if(i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
         {
-          if (compare(list->index[i_left], list->index[i_right]) <= 0)
+          if(compare(list->index[i_left], list->index[i_right]) <= 0)
           {
             scratch_index[i] = list->index[i_left];
             scratch_norm[i] = list->norm[i_left];
@@ -183,7 +183,7 @@ spamm_list_sort_index_iterative_mergesort (
           }
         }
 
-        else if (i_left < sublist[sub_current+j+1])
+        else if(i_left < sublist[sub_current+j+1])
         {
           scratch_index[i] = list->index[i_left];
           scratch_norm[i] = list->norm[i_left];
@@ -199,7 +199,7 @@ spamm_list_sort_index_iterative_mergesort (
       }
 
       /* Copy the merged list back. */
-      for (i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
+      for(i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
       {
         list->index[i] = scratch_index[i];
         list->norm[i] = scratch_norm[i];
@@ -212,7 +212,7 @@ spamm_list_sort_index_iterative_mergesort (
     }
 
     /* Add remaining sublist divisions. */
-    while (j < sub_length)
+    while(j < sub_length)
     {
       sublist[sub_next+j_next] = sublist[sub_current+j];
       j++;
@@ -221,9 +221,9 @@ spamm_list_sort_index_iterative_mergesort (
     sub_length = j_next;
 
     /* Switch sublists. */
-    if (sub_current == 0) { sub_current = list->length+1; }
+    if(sub_current == 0) { sub_current = list->length+1; }
     else                  { sub_current = 0; }
-    if (sub_next == 0) { sub_next = list->length+1; }
+    if(sub_next == 0) { sub_next = list->length+1; }
     else               { sub_next = 0; }
   }
 
@@ -254,11 +254,11 @@ spamm_list_sort_norm_iterative_mergesort (
   float *scratch_norm;
 
   /* What is the length of this sublist? */
-  if (right >= left) { length = right-left; }
+  if(right >= left) { length = right-left; }
   else { return; }
 
   /* The list is trivially already sorted. */
-  if (length <= 1) { return; }
+  if(length <= 1) { return; }
 
   /* Create index array for sublists. This array is length+1 since we
    * terminate the array by a value of length. */
@@ -272,9 +272,9 @@ spamm_list_sort_norm_iterative_mergesort (
    * sublists. If adjacent list elements are already in the right order, we
    * put them into the same sublist. */
   sublist[0] = left;
-  for (i = left+1, j = 1; i < right; i++)
+  for(i = left+1, j = 1; i < right; i++)
   {
-    if (list->norm[i-1] < list->norm[i])
+    if(list->norm[i-1] < list->norm[i])
     {
       /* The 2 elements are in incorrect order. Start a new sublist. */
       sublist[j++] = i;
@@ -287,18 +287,18 @@ spamm_list_sort_norm_iterative_mergesort (
    * sorted. */
   sub_current = 0;
   sub_next = length+1;
-  while (sublist[sub_current+1] < right)
+  while(sublist[sub_current+1] < right)
   {
-    for (j = 0, j_next = 0; j < sub_length-2; j += 2)
+    for(j = 0, j_next = 0; j < sub_length-2; j += 2)
     {
       /* Merge 2 adjacent sublists. */
-      for (i = sublist[sub_current+j], i_left = sublist[sub_current+j], i_right = sublist[sub_current+j+1];
+      for(i = sublist[sub_current+j], i_left = sublist[sub_current+j], i_right = sublist[sub_current+j+1];
           i < sublist[sub_current+j+2];
           i++)
       {
-        if (i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
+        if(i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
         {
-          if (list->norm[i_left] >= list->norm[i_right])
+          if(list->norm[i_left] >= list->norm[i_right])
           {
             /* The left element is in the right place. */
             scratch_index[i-left] = list->index[i_left];
@@ -316,7 +316,7 @@ spamm_list_sort_norm_iterative_mergesort (
         }
 
         /* Merge the left over elements. */
-        else if (i_left < sublist[sub_current+j+1])
+        else if(i_left < sublist[sub_current+j+1])
         {
           scratch_index[i-left] = list->index[i_left];
           scratch_norm[i-left] = list->norm[i_left];
@@ -332,7 +332,7 @@ spamm_list_sort_norm_iterative_mergesort (
       }
 
       /* Copy the merged list back. */
-      for (i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
+      for(i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
       {
         list->index[i] = scratch_index[i-left];
         list->norm[i] = scratch_norm[i-left];
@@ -345,7 +345,7 @@ spamm_list_sort_norm_iterative_mergesort (
     }
 
     /* Add remaining sublist divisions. */
-    while (j < sub_length)
+    while(j < sub_length)
     {
       sublist[sub_next+j_next] = sublist[sub_current+j];
       j++;
@@ -354,9 +354,9 @@ spamm_list_sort_norm_iterative_mergesort (
     sub_length = j_next;
 
     /* Switch sublists. */
-    if (sub_current == 0) { sub_current = length+1; }
+    if(sub_current == 0) { sub_current = length+1; }
     else                  { sub_current = 0; }
-    if (sub_next == 0) { sub_next = length+1; }
+    if(sub_next == 0) { sub_next = length+1; }
     else               { sub_next = 0; }
   }
 
@@ -415,7 +415,7 @@ spamm_list_get_index (struct spamm_list_t *list, const unsigned int i)
 {
   assert(list != NULL);
 
-  if (i >= list->length)
+  if(i >= list->length)
   {
     SPAMM_FATAL("index out of bounds: (i = %u) >= (length = %u)\n", i, list->length);
   }
@@ -447,7 +447,7 @@ spamm_list_get_norm (struct spamm_list_t *list, const unsigned int i)
 {
   assert(list != NULL);
 
-  if (i >= list->length)
+  if(i >= list->length)
   {
     SPAMM_FATAL("index out of bounds: (i = %u) >= (length = %u)\n", i, list->length);
   }
@@ -467,7 +467,7 @@ spamm_list_set (struct spamm_list_t *list, const unsigned int i, const unsigned 
 {
   assert(list != NULL);
 
-  if (i >= list->length)
+  if(i >= list->length)
   {
     SPAMM_FATAL("index out of bounds: (i = %u) >= (length = %u)\n", i, list->length);
   }
@@ -487,7 +487,7 @@ spamm_list_print (const struct spamm_list_t *list)
 
   printf("# list with %u entries\n", list->length);
   printf("# i index column row norm\n");
-  for (i = 0; i < list->length; i++)
+  for(i = 0; i < list->length; i++)
   {
     printf("%i %i %i %i %e\n", i, list->index[i], list->index[i] & MASK_2D_J, list->index[i] & MASK_2D_I, list->norm[i]);
   }

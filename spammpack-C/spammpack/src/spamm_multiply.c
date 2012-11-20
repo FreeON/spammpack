@@ -62,9 +62,9 @@ spamm_recursive_multiply_scalar (const float alpha,
 {
   unsigned int i;
 
-  if (A == NULL) { return; }
+  if(A == NULL) { return; }
 
-  if (tier == chunk_tier)
+  if(tier == chunk_tier)
   {
     A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk);
     A->norm = sqrt(A->norm2);
@@ -72,7 +72,7 @@ spamm_recursive_multiply_scalar (const float alpha,
 
   else
   {
-    for (i = 0; i < ipow(2, number_dimensions); i++)
+    for(i = 0; i < ipow(2, number_dimensions); i++)
     {
       spamm_recursive_multiply_scalar(alpha, A->tree.child[i],
           number_dimensions, tier+1, chunk_tier, use_linear_tree);
@@ -144,7 +144,7 @@ spamm_linear_multiply (const float tolerance,
   index_A = malloc(ipow(index_length, 2)*sizeof(unsigned int));
   index_B = malloc(ipow(index_length, 2)*sizeof(unsigned int));
 
-  for (i = 0; i < ipow(index_length, 2); i++)
+  for(i = 0; i < ipow(index_length, 2); i++)
   {
     index_A[i] = i;
     index_B[i] = i;
@@ -158,7 +158,7 @@ spamm_linear_multiply (const float tolerance,
   norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A)-SPAMM_KERNEL_DEPTH-1, chunk_A);
   norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B)-SPAMM_KERNEL_DEPTH-1, chunk_B);
 
-  for (i = 0; i < index_length; i++)
+  for(i = 0; i < index_length; i++)
   {
     spamm_sort_norm(index_length, &index_A[i*index_length], norm_A);
     spamm_sort_norm(index_length, &index_B[i*index_length], norm_B);
@@ -174,14 +174,14 @@ spamm_linear_multiply (const float tolerance,
 #ifdef SPAMM_MULTIPLY_DEBUG
   printf("stream (%p): ", stream);
 #endif
-  for (i = 0, stream_index = 0; i < index_length; i++)
+  for(i = 0, stream_index = 0; i < index_length; i++)
   {
     skipout = 0;
 
-    for (j_A = i*index_length; j_A < (i+1)*index_length; j_A++) {
-      for (j_B = i*index_length; j_B < (i+1)*index_length; j_B++)
+    for(j_A = i*index_length; j_A < (i+1)*index_length; j_A++) {
+      for(j_B = i*index_length; j_B < (i+1)*index_length; j_B++)
       {
-        if (norm_A[index_A[j_A]]*norm_B[index_B[j_B]] > tolerance)
+        if(norm_A[index_A[j_A]]*norm_B[index_B[j_B]] > tolerance)
         {
           stream[3*stream_index+0] = index_A[j_A];
           stream[3*stream_index+1] = index_B[j_B];
@@ -201,7 +201,7 @@ spamm_linear_multiply (const float tolerance,
           break;
         }
       }
-      if (skipout)
+      if(skipout)
       {
         break;
       }
@@ -239,15 +239,15 @@ spamm_linear_multiply (const float tolerance,
   printf("starting to calculate product\n");
   fflush(stdout);
 #endif
-  for (i_stream = 0; i_stream < stream_index; i_stream++)
+  for(i_stream = 0; i_stream < stream_index; i_stream++)
   {
 #ifdef SPAMM_MULTIPLY_DEBUG
     printf("lin.index (%u,%u,%u)\n", stream[3*i_stream+0], stream[3*i_stream+1], stream[3*i_stream+2]);
 #endif
 
-    for (i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
-      for (j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++) {
-        for (k = 0; k < SPAMM_N_KERNEL_BLOCKED; k++)
+    for(i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
+      for(j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++) {
+        for(k = 0; k < SPAMM_N_KERNEL_BLOCKED; k++)
         {
           norm_offset_A = stream[3*i_stream+0]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED+i*SPAMM_N_KERNEL_BLOCKED+k;
           norm_offset_B = stream[3*i_stream+1]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED+k*SPAMM_N_KERNEL_BLOCKED+j;
@@ -264,11 +264,11 @@ spamm_linear_multiply (const float tolerance,
           printf("(%u,%u,%u) -> norm_offset_C = %u, offset_C = %u\n", i, j, k, norm_offset_C, offset_C);
 #endif
 
-          if (norm_A[norm_offset_A]*norm_B[norm_offset_B] > tolerance)
+          if(norm_A[norm_offset_A]*norm_B[norm_offset_B] > tolerance)
           {
-            for (i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
-              for (j_block = 0; j_block < SPAMM_N_BLOCK; j_block++) {
-                for (k_block = 0; k_block < SPAMM_N_BLOCK; k_block++)
+            for(i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
+              for(j_block = 0; j_block < SPAMM_N_BLOCK; j_block++) {
+                for(k_block = 0; k_block < SPAMM_N_BLOCK; k_block++)
                 {
                   matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block] +=
                     alpha
@@ -342,15 +342,15 @@ spamm_recursive_multiply (const float tolerance,
 
   short i, j, k;
 
-  if (node_A == NULL || node_B == NULL) { return; }
+  if(node_A == NULL || node_B == NULL) { return; }
 
   /* We have to allocate a new C block a tier up. */
-  if (*node_C == NULL)
+  if(*node_C == NULL)
   {
     *node_C = spamm_recursive_new_node();
   }
 
-  if (tier == chunk_tier)
+  if(tier == chunk_tier)
   {
     (*node_C)->norm2 = spamm_chunk_multiply(tolerance, alpha,
         node_A->tree.chunk, node_B->tree.chunk, (*node_C)->tree.chunk, tier,
@@ -360,7 +360,7 @@ spamm_recursive_multiply (const float tolerance,
 
   else
   {
-    if ((*node_C)->tree.child == NULL)
+    if((*node_C)->tree.child == NULL)
     {
       (*node_C)->tree.child = calloc(ipow(2, number_dimensions_C), sizeof(struct spamm_recursive_node_t*));
     }
@@ -368,20 +368,20 @@ spamm_recursive_multiply (const float tolerance,
     new_N_lower = calloc(number_dimensions_C, sizeof(unsigned int));
     new_N_upper = calloc(number_dimensions_C, sizeof(unsigned int));
 
-    if (number_dimensions_A == 2 &&
+    if(number_dimensions_A == 2 &&
         number_dimensions_B == 2 &&
         number_dimensions_C == 2)
     {
-      for (i = 0; i < 2; i++) {
-        for (j = 0; j < 2; j++) {
-          for (k = 0; k < 2; k++)
+      for(i = 0; i < 2; i++) {
+        for(j = 0; j < 2; j++) {
+          for(k = 0; k < 2; k++)
           {
             new_N_lower[0] = N_lower[0]+(N_upper[0]-N_lower[0])/2*i;
             new_N_upper[0] = N_lower[0]+(N_upper[0]-N_lower[0])/2*(i+1);
             new_N_lower[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*j;
             new_N_upper[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*(j+1);
 
-            if (node_A->norm*node_B->norm > tolerance)
+            if(node_A->norm*node_B->norm > tolerance)
             {
               spamm_recursive_multiply(tolerance, alpha,
                   node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
@@ -432,7 +432,7 @@ spamm_multiply (const float tolerance,
   unsigned int *N_lower;
   unsigned int *N_upper;
 
-  if (A->chunk_tier == 0)
+  if(A->chunk_tier == 0)
   {
     spamm_chunk_multiply_scalar(beta, C->tree.chunk);
     spamm_chunk_multiply(tolerance, alpha, A->tree.chunk, B->tree.chunk,
@@ -447,7 +447,7 @@ spamm_multiply (const float tolerance,
     N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
     N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
 
-    for (dim = 0; dim < A->number_dimensions; dim++)
+    for(dim = 0; dim < A->number_dimensions; dim++)
     {
       N_upper[dim] = A->N_padded;
     }

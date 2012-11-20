@@ -32,7 +32,7 @@ spamm_sort_norm (const unsigned int length,
 #endif
 
   /* The list is trivially already sorted. */
-  if (length <= 1) { return; }
+  if(length <= 1) { return; }
 
   /* Create index array for sublists. This array is length+1 since we
    * terminate the array by a value of length. */
@@ -49,12 +49,12 @@ spamm_sort_norm (const unsigned int length,
    * sublists. If adajacent list elements are already in the right order, we
    * put them into the same sublist. */
   sublist[0] = 0;
-  for (i = 1, j = 1; i < length; i++)
+  for(i = 1, j = 1; i < length; i++)
   {
 #if defined(SPAMM_SORT_MASKED)
-    if ((list[i-1] & mask) > (list[i] & mask))
+    if((list[i-1] & mask) > (list[i] & mask))
 #elif defined(SPAMM_SORT_NORM)
-    if (norm[list[i-1]] < norm[list[i]])
+    if(norm[list[i-1]] < norm[list[i]])
 #endif
     {
       /* The 2 elements are in incorrect order. Start a new sublist. */
@@ -68,21 +68,21 @@ spamm_sort_norm (const unsigned int length,
    * sorted. */
   sub_current = 0;
   sub_next = length+1;
-  while (sublist[sub_current+1] < length)
+  while(sublist[sub_current+1] < length)
   {
-    for (j = 0, j_next = 0; j < sub_length-2; j += 2)
+    for(j = 0, j_next = 0; j < sub_length-2; j += 2)
     {
       /* Merge 2 adjacent sublists. */
-      for (i = sublist[sub_current+j], i_left = sublist[sub_current+j], i_right = sublist[sub_current+j+1];
+      for(i = sublist[sub_current+j], i_left = sublist[sub_current+j], i_right = sublist[sub_current+j+1];
           i < sublist[sub_current+j+2];
           i++)
       {
-        if (i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
+        if(i_left < sublist[sub_current+j+1] && i_right < sublist[sub_current+j+2])
         {
 #if defined(SPAMM_SORT_MASKED)
-          if ((list[i_left] & mask) <= (list[i_right] & mask))
+          if((list[i_left] & mask) <= (list[i_right] & mask))
 #elif defined(SPAMM_SORT_NORM)
-          if (norm[list[i_left]] > norm[list[i_right]])
+          if(norm[list[i_left]] > norm[list[i_right]])
 #endif
           {
             scratch[i] = list[i_left];
@@ -96,7 +96,7 @@ spamm_sort_norm (const unsigned int length,
           }
         }
 
-        else if (i_left < sublist[sub_current+j+1])
+        else if(i_left < sublist[sub_current+j+1])
         {
           scratch[i] = list[i_left];
           i_left++;
@@ -110,7 +110,7 @@ spamm_sort_norm (const unsigned int length,
       }
 
       /* Copy the merged list back. */
-      for (i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
+      for(i = sublist[sub_current+j]; i < sublist[sub_current+j+2]; i++)
       {
         list[i] = scratch[i];
       }
@@ -122,7 +122,7 @@ spamm_sort_norm (const unsigned int length,
     }
 
     /* Add remaining sublist divisions. */
-    while (j < sub_length)
+    while(j < sub_length)
     {
       sublist[sub_next+j_next] = sublist[sub_current+j];
       j++;
@@ -131,9 +131,9 @@ spamm_sort_norm (const unsigned int length,
     sub_length = j_next;
 
     /* Switch sublists. */
-    if (sub_current == 0) { sub_current = length+1; }
+    if(sub_current == 0) { sub_current = length+1; }
     else                  { sub_current = 0; }
-    if (sub_next == 0) { sub_next = length+1; }
+    if(sub_next == 0) { sub_next = length+1; }
     else               { sub_next = 0; }
   }
 

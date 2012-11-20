@@ -44,7 +44,7 @@ spamm_chunk_get (const unsigned int *i,
 
   float *A;
 
-  if (chunk == NULL) { return 0.0; }
+  if(chunk == NULL) { return 0.0; }
 
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
   number_tiers = *spamm_chunk_get_number_tiers(chunk);
@@ -55,28 +55,28 @@ spamm_chunk_get (const unsigned int *i,
 
   A = spamm_chunk_get_matrix(chunk);
 
-  if (use_linear_tree)
+  if(use_linear_tree)
   {
     new_N_lower = calloc(2, sizeof(unsigned int));
     new_N_upper = calloc(2, sizeof(unsigned int));
 
-    for (dim = 0; dim < 2; dim++)
+    for(dim = 0; dim < 2; dim++)
     {
       new_N_lower[dim] = N_lower[dim];
       new_N_upper[dim] = N_upper[dim];
     }
 
     /* Z-curve ordering down to SPAMM_N_KERNEL. */
-    for (tier = 0, linear_index = 0; tier < number_tiers-SPAMM_KERNEL_DEPTH; tier++)
+    for(tier = 0, linear_index = 0; tier < number_tiers-SPAMM_KERNEL_DEPTH; tier++)
     {
-      if (tier+1 < number_tiers-SPAMM_KERNEL_DEPTH)
+      if(tier+1 < number_tiers-SPAMM_KERNEL_DEPTH)
       {
         /* Recurse. */
         linear_index <<= 2;
 
-        for (dim = 0; dim < 2; dim++)
+        for(dim = 0; dim < 2; dim++)
         {
-          if (i[dim] < new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2)
+          if(i[dim] < new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2)
           {
             //new_N_lower[dim] = new_N_lower[dim];
             new_N_upper[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
@@ -112,7 +112,7 @@ spamm_chunk_get (const unsigned int *i,
   else
   {
     new_i = calloc(number_dimensions, sizeof(unsigned int));
-    for (dim = 0; dim < number_dimensions; dim++)
+    for(dim = 0; dim < number_dimensions; dim++)
     {
       new_i[dim] = i[dim]-N_lower[dim];
     }
@@ -151,9 +151,9 @@ spamm_recursive_get (const unsigned int number_dimensions,
 
   float Aij;
 
-  if (node == NULL) { return 0; }
+  if(node == NULL) { return 0; }
 
-  if (tier == chunk_tier)
+  if(tier == chunk_tier)
   {
     Aij = spamm_chunk_get(i, node->tree.chunk);
   }
@@ -165,9 +165,9 @@ spamm_recursive_get (const unsigned int number_dimensions,
 
     child_index = 0;
 
-    for (dim = 0; dim < number_dimensions; dim++)
+    for(dim = 0; dim < number_dimensions; dim++)
     {
-      if (i[dim] < N_lower[dim]+(N_upper[dim]-N_lower[dim])/2)
+      if(i[dim] < N_lower[dim]+(N_upper[dim]-N_lower[dim])/2)
       {
         new_N_lower[dim] = N_lower[dim];
         new_N_upper[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
@@ -208,7 +208,7 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
 
   float Aij;
 
-  if (A->chunk_tier == 0)
+  if(A->chunk_tier == 0)
   {
     Aij = spamm_chunk_get(i, A->tree.chunk);
   }
@@ -218,7 +218,7 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
     N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
     N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
 
-    for (dim = 0; dim < A->number_dimensions; dim++)
+    for(dim = 0; dim < A->number_dimensions; dim++)
     {
       N_upper[dim] = A->N_padded;
     }

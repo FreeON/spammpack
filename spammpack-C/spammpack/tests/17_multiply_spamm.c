@@ -72,13 +72,13 @@ main (int argc, char **argv)
     { NULL,         0,                  NULL,  0  }
   };
 
-  while (1)
+  while(1)
   {
     parse_result = getopt_long(argc, argv, short_options, long_options, &option_index);
 
-    if (parse_result == -1) { break; }
+    if(parse_result == -1) { break; }
 
-    switch (parse_result)
+    switch(parse_result)
     {
       case 'h':
         printf("Usage:\n");
@@ -100,7 +100,7 @@ main (int argc, char **argv)
         break;
 
       case 'N':
-        for (dim = 0; dim < 2; dim++)
+        for(dim = 0; dim < 2; dim++)
         {
           N[dim] = strtol(optarg, NULL, 10);
         }
@@ -148,11 +148,11 @@ main (int argc, char **argv)
   B = spamm_new(2, N, chunk_tier, use_linear_tree);
   C = spamm_new(2, N, chunk_tier, use_linear_tree);
 
-  for (i[0] = 0; i[0] < N[0]; i[0]++)
+  for(i[0] = 0; i[0] < N[0]; i[0]++)
   {
-    if (use_diagonal)
+    if(use_diagonal)
     {
-      if (random_matrix)
+      if(random_matrix)
       {
         A_dense[i[0]*N[1]+i[0]] = (float) rand()/(float) RAND_MAX;
         B_dense[i[0]*N[1]+i[0]] = (float) rand()/(float) RAND_MAX;
@@ -167,11 +167,11 @@ main (int argc, char **argv)
       }
     }
 
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
+    for(i[1] = 0; i[1] < N[1]; i[1]++)
     {
-      if (use_diagonal)
+      if(use_diagonal)
       {
-        if (i[0] != i[1])
+        if(i[0] != i[1])
         {
           A_dense[i[0]*N[1]+i[1]] = A_dense[i[0]*N[1]+i[0]]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
           B_dense[i[0]*N[1]+i[1]] = B_dense[i[0]*N[1]+i[0]]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
@@ -181,7 +181,7 @@ main (int argc, char **argv)
 
       else
       {
-        if (random_matrix)
+        if(random_matrix)
         {
           A_dense[i[0]*N[1]+i[1]] = (float) rand()/(float) RAND_MAX;
           B_dense[i[0]*N[1]+i[1]] = (float) rand()/(float) RAND_MAX;
@@ -213,11 +213,11 @@ main (int argc, char **argv)
   spamm_check(C, 1e-7);
   printf("done\n");
 
-  if (print_debug)
+  if(print_debug)
   {
     printf("A_dense =\n");
-    for (i[0] = 0; i[0] < N[0]; i[0]++) {
-      for (i[1] = 0; i[1] < N[1]; i[1]++)
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
         printf(" %5.1f", A_dense[i[0]*N[1]+i[1]]);
       }
@@ -225,8 +225,8 @@ main (int argc, char **argv)
     }
 
     printf("A =\n");
-    for (i[0] = 0; i[0] < N[0]; i[0]++) {
-      for (i[1] = 0; i[1] < N[1]; i[1]++)
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
         printf(" %5.1f", spamm_get(i, A));
       }
@@ -234,8 +234,8 @@ main (int argc, char **argv)
     }
 
     printf("B_dense =\n");
-    for (i[0] = 0; i[0] < N[0]; i[0]++) {
-      for (i[1] = 0; i[1] < N[1]; i[1]++)
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
         printf(" %5.1f", B_dense[i[0]*N[1]+i[1]]);
       }
@@ -243,8 +243,8 @@ main (int argc, char **argv)
     }
 
     printf("C_dense =\n");
-    for (i[0] = 0; i[0] < N[0]; i[0]++) {
-      for (i[1] = 0; i[1] < N[1]; i[1]++)
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
         printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
       }
@@ -257,16 +257,16 @@ main (int argc, char **argv)
 
   printf("multiplying reference... ");
   fflush(stdout);
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
+  for(i[0] = 0; i[0] < N[0]; i[0]++) {
+    for(i[1] = 0; i[1] < N[1]; i[1]++)
     {
       C_dense[i[0]*N[1]+i[1]] *= beta;
     }
   }
 
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++) {
-      for (k = 0; k < N[0]; k++)
+  for(i[0] = 0; i[0] < N[0]; i[0]++) {
+    for(i[1] = 0; i[1] < N[1]; i[1]++) {
+      for(k = 0; k < N[0]; k++)
       {
         C_dense[i[0]*N[1]+i[1]] += alpha*A_dense[i[0]*N[1]+k]*B_dense[k*N[1]+i[1]];
       }
@@ -274,11 +274,11 @@ main (int argc, char **argv)
   }
   printf("done\n");
 
-  if (print_debug)
+  if(print_debug)
   {
     printf("C_dense =\n");
-    for (i[0] = 0; i[0] < N[0]; i[0]++) {
-      for (i[1] = 0; i[1] < N[1]; i[1]++)
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
         printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
       }
@@ -291,11 +291,11 @@ main (int argc, char **argv)
   spamm_multiply(tolerance, alpha, A, B, beta, C, timer, (use_sgemm ? SGEMM : NULL), kernel, NULL);
   spamm_timer_delete(&timer);
 
-  if (print_debug)
+  if(print_debug)
   {
     printf("C =\n");
-    for (i[0] = 0; i[0] < N[0]; i[0]++) {
-      for (i[1] = 0; i[1] < N[1]; i[1]++)
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
         printf(" %5.1f", spamm_get(i, C));
       }
@@ -308,20 +308,20 @@ main (int argc, char **argv)
   max_rel_diff = 0;
   printf("verifying result... ");
   fflush(stdout);
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++) {
-      for (k = 0; k < N[0]; k++)
+  for(i[0] = 0; i[0] < N[0]; i[0]++) {
+    for(i[1] = 0; i[1] < N[1]; i[1]++) {
+      for(k = 0; k < N[0]; k++)
       {
-        if (fabs(C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C)) > max_diff)
+        if(fabs(C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C)) > max_diff)
         {
           max_diff = fabs(C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C));
           max_i[0] = i[0];
           max_i[1] = i[1];
         }
 
-        if (C_dense[i[0]*N[1]+i[1]] != 0)
+        if(C_dense[i[0]*N[1]+i[1]] != 0)
         {
-          if (fabs((C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C))/C_dense[i[0]*N[1]+i[1]]) > max_rel_diff)
+          if(fabs((C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C))/C_dense[i[0]*N[1]+i[1]]) > max_rel_diff)
           {
             max_rel_diff = fabs((C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C))/C_dense[i[0]*N[1]+i[1]]);
             max_rel_i[0] = i[0];
@@ -344,7 +344,7 @@ main (int argc, char **argv)
       max_rel_i[0], max_rel_i[1], spamm_get(max_rel_i, C),
       max_rel_i[0], max_rel_i[1], C_dense[max_rel_i[0]*N[1]+max_rel_i[1]]);
 
-  if (max_diff > TEST_ABS_TOLERANCE && max_rel_diff > TEST_REL_TOLERANCE)
+  if(max_diff > TEST_ABS_TOLERANCE && max_rel_diff > TEST_REL_TOLERANCE)
   {
     printf("test failed (abs. tolerance = %e, rel. tolerance = %e)\n", TEST_ABS_TOLERANCE, TEST_REL_TOLERANCE);
     result = -1;

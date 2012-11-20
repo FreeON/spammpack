@@ -18,7 +18,7 @@ spamm_uint_to_bin_string (const unsigned int width, const unsigned int i, char *
 
   assert(result != NULL);
 
-  if (width == 0)
+  if(width == 0)
   {
     result[0] = '0';
     result[1] = '\0';
@@ -26,9 +26,9 @@ spamm_uint_to_bin_string (const unsigned int width, const unsigned int i, char *
 
   else
   {
-    for (index = width-1; index >= 0; index--)
+    for(index = width-1; index >= 0; index--)
     {
-      if ((i & bitmask) == 0)
+      if((i & bitmask) == 0)
       {
         result[width-1-index] = '0';
       }

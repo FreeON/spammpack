@@ -22,9 +22,9 @@ spamm_stream_external_sgemm (const unsigned int number_stream_elements,
   beta = 1.0;
 
   /* Loop through the stream. */
-  for (stream_index = 0; stream_index < number_stream_elements; stream_index++)
+  for(stream_index = 0; stream_index < number_stream_elements; stream_index++)
   {
-    if (call_external_sgemm == 1)
+    if(call_external_sgemm == 1)
     {
       /* Multiply the blocks with an external sgemm() call. We are assuming a
        * Fortran interface, i.e. something like sgemm_().

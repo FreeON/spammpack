@@ -14,15 +14,15 @@ main ()
 
   i = calloc(number_dimensions, sizeof(unsigned int));
 
-  for (n = 0; n < ipow(N, number_dimensions); n++)
+  for(n = 0; n < ipow(N, number_dimensions); n++)
   {
     n_temp = n;
     printf("i [");
-    for (dim = 0; dim < number_dimensions; dim++)
+    for(dim = 0; dim < number_dimensions; dim++)
     {
       i[dim] = n_temp%N;
       printf(" %u", i[dim]);
-      if (dim+1 < number_dimensions)
+      if(dim+1 < number_dimensions)
       {
         printf(",");
       }

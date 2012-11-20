@@ -26,7 +26,7 @@ spamm_kernel_get_name (const unsigned int i)
     "kernel_standard_SSE4_1"
   };
 
-  if (i >= SPAMM_NUMBER_KERNELS)
+  if(i >= SPAMM_NUMBER_KERNELS)
   {
     SPAMM_FATAL("illegal kernel index\n");
   }
@@ -45,22 +45,22 @@ spamm_kernel_get_kernel (const char* name)
 {
   enum spamm_kernel_t kernel;
 
-  if (strcasecmp(name, "kernel_external_sgemm") == 0)
+  if(strcasecmp(name, "kernel_external_sgemm") == 0)
   {
     kernel = kernel_external_sgemm;
   }
 
-  else if (strcasecmp(name, "kernel_stream_NULL") == 0)
+  else if(strcasecmp(name, "kernel_stream_NULL") == 0)
   {
     kernel = kernel_stream_NULL;
   }
 
-  else if (strcasecmp(name, "kernel_standard_SSE") == 0)
+  else if(strcasecmp(name, "kernel_standard_SSE") == 0)
   {
     kernel = kernel_standard_SSE;
   }
 
-  else if (strcasecmp(name, "kernel_standard_SSE4_1") == 0)
+  else if(strcasecmp(name, "kernel_standard_SSE4_1") == 0)
   {
     kernel = kernel_standard_SSE4_1;
   }
@@ -84,7 +84,7 @@ spamm_kernel_get_kernel (const char* name)
 enum spamm_layout_t
 spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel)
 {
-  switch (kernel)
+  switch(kernel)
   {
     case kernel_external_sgemm:
     case kernel_stream_NULL:
@@ -116,22 +116,22 @@ spamm_kernel_get_layout (const char *name)
 {
   enum spamm_layout_t layout;
 
-  if (strcasecmp(name, "row_major") == 0)
+  if(strcasecmp(name, "row_major") == 0)
   {
     layout = row_major;
   }
 
-  else if (strcasecmp(name, "column_major") == 0)
+  else if(strcasecmp(name, "column_major") == 0)
   {
     layout = column_major;
   }
 
-  else if (strcasecmp(name, "Z_curve") == 0)
+  else if(strcasecmp(name, "Z_curve") == 0)
   {
     layout = Z_curve;
   }
 
-  else if (strcasecmp(name, "dense_column_major") == 0)
+  else if(strcasecmp(name, "dense_column_major") == 0)
   {
     layout = dense_column_major;
   }

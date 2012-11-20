@@ -13,16 +13,16 @@ ipow (unsigned int b, unsigned int n)
 {
   int result = 1;
 
-  if (b == 2)
+  if(b == 2)
   {
     result <<= n;
   }
 
   else
   {
-    while (n != 0)
+    while(n != 0)
     {
-      if ((n & 1) != 0) /* Odd exponent, multiply by b. */
+      if((n & 1) != 0) /* Odd exponent, multiply by b. */
       {
         result *= b;
       }

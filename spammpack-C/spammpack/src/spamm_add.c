@@ -35,19 +35,19 @@ spamm_recursive_add (const float alpha,
   float *B_matrix;
 
   /* There is nothing to do here. */
-  if ((*A) == NULL && (*B) == NULL)
+  if((*A) == NULL && (*B) == NULL)
   {
     return;
   }
 
-  if (tier == chunk_tier)
+  if(tier == chunk_tier)
   {
-    if ((*A) == NULL && (*B) != NULL)
+    if((*A) == NULL && (*B) != NULL)
     {
       SPAMM_FATAL("FIXME\n");
     }
 
-    else if ((*A) != NULL && (*B) == NULL)
+    else if((*A) != NULL && (*B) == NULL)
     {
       SPAMM_FATAL("FIXME\n");
     }
@@ -60,22 +60,24 @@ spamm_recursive_add (const float alpha,
 
   else
   {
-    if ((*A) == NULL && (*B) != NULL)
+    if((*A) == NULL && (*B) != NULL)
     {
       /* Copy B node to A. */
-      spamm_recursive_copy(&(*A), beta, (*B), number_dimensions, tier, chunk_tier, use_linear_tree);
+      spamm_recursive_copy(&(*A), beta, (*B), number_dimensions, tier,
+          chunk_tier, use_linear_tree);
     }
 
-    else if ((*A) != NULL && (*B) == NULL)
+    else if((*A) != NULL && (*B) == NULL)
     {
       /* Multiply A by alpha. */
-      spamm_recursive_multiply_scalar(alpha, *A, number_dimensions, tier, chunk_tier, use_linear_tree);
+      spamm_recursive_multiply_scalar(alpha, *A, number_dimensions, tier,
+          chunk_tier, use_linear_tree);
     }
 
     else
     {
       /* Recurse. */
-      for (i = 0; i < ipow(2, number_dimensions); i++)
+      for(i = 0; i < ipow(2, number_dimensions); i++)
       {
         spamm_recursive_add(alpha, &(*A)->tree.child[i], beta,
             &(*B)->tree.child[i], number_dimensions, tier+1, chunk_tier,
@@ -98,7 +100,7 @@ spamm_add (const float alpha,
     const float beta,
     struct spamm_matrix_t *B)
 {
-  if (A->chunk_tier == 0)
+  if(A->chunk_tier == 0)
   {
     spamm_chunk_add(alpha, &A->tree.chunk, beta, B->tree.chunk);
   }

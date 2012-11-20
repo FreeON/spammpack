@@ -38,10 +38,10 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
 
   i = calloc(number_dimensions, sizeof(unsigned int));
 
-  switch (number_dimensions)
+  switch(number_dimensions)
   {
     case 1:
-      for (i[0] = 0; i[0] < N[0]; i[0]++)
+      for(i[0] = 0; i[0] < N[0]; i[0]++)
       {
         switch(dense_type)
         {
@@ -58,8 +58,8 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
       break;
 
     case 2:
-      for (i[0] = 0; i[0] < N[0]; i[0]++) {
-        for (i[1] = 0; i[1] < N[1]; i[1]++)
+      for(i[0] = 0; i[0] < N[0]; i[0]++) {
+        for(i[1] = 0; i[1] < N[1]; i[1]++)
         {
           switch(dense_type)
           {
@@ -80,9 +80,9 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
       break;
 
     case 3:
-      for (i[0] = 0; i[0] < N[0]; i[0]++) {
-        for (i[1] = 0; i[1] < N[1]; i[1]++) {
-          for (i[2] = 0; i[2] < N[2]; i[2]++)
+      for(i[0] = 0; i[0] < N[0]; i[0]++) {
+        for(i[1] = 0; i[1] < N[1]; i[1]++) {
+          for(i[2] = 0; i[2] < N[2]; i[2]++)
           {
             switch(dense_type)
             {

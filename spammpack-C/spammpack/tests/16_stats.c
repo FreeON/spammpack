@@ -20,10 +20,10 @@ main ()
   float *A_dense;
 
   A_dense = (float*) malloc(sizeof(float)*N[0]*N[1]);
-  for (i = 0; i < N[0]; i++) {
-    for (j = 0; j < N[1]; j++)
+  for(i = 0; i < N[0]; i++) {
+    for(j = 0; j < N[1]; j++)
     {
-      if (rand()/(double) RAND_MAX > FILL)
+      if(rand()/(double) RAND_MAX > FILL)
       {
         A_dense[i*N[1]+j] = 1.0;
         nonzeros++;
@@ -37,7 +37,7 @@ main ()
   }
 
   A = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, A_dense);
-  if (spamm_number_nonzero(A) != nonzeros)
+  if(spamm_number_nonzero(A) != nonzeros)
   {
     printf("found %u nonzeros, should have found %u\n", spamm_number_nonzero(A), nonzeros);
     result = -1;

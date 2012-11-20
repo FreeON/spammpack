@@ -194,11 +194,11 @@ spamm_hashtable_new_sized (unsigned int number_buckets)
   short i;
 
   /* We should have at least 8 buckets. */
-  if (number_buckets < 8) { number_buckets = 8; }
+  if(number_buckets < 8) { number_buckets = 8; }
 
   /* The number of buckets should be a power of 2. */
   number_buckets--;
-  for (i = 1; i < sizeof(unsigned int)*8-1; i++)
+  for(i = 1; i < sizeof(unsigned int)*8-1; i++)
   {
     number_buckets |= number_buckets >> i;
   }
@@ -260,9 +260,9 @@ spamm_hashtable_rehash (struct spamm_hashtable_t *hashtable,
   new_hashtable = spamm_hashtable_new_sized(number_buckets);
 
   /* Re-insert all keys into new hashtable. */
-  for (i = 0; i < old_hashtable->number_buckets; i++)
+  for(i = 0; i < old_hashtable->number_buckets; i++)
   {
-    if (old_hashtable->data[i].key != SPAMM_KEY_EMPTY &&
+    if(old_hashtable->data[i].key != SPAMM_KEY_EMPTY &&
         old_hashtable->data[i].key != SPAMM_KEY_DELETED)
     {
       spamm_hashtable_insert(new_hashtable, old_hashtable->data[i].key, old_hashtable->data[i].value);
@@ -270,16 +270,16 @@ spamm_hashtable_rehash (struct spamm_hashtable_t *hashtable,
   }
 
   /* Sanity check. */
-  if (old_hashtable->number_stored_keys != new_hashtable->number_stored_keys)
+  if(old_hashtable->number_stored_keys != new_hashtable->number_stored_keys)
   {
     SPAMM_FATAL("error in hashtable rehash... had %u keys in old hashtable, have %u keys in new hashtable\n",
         old_hashtable->number_stored_keys, new_hashtable->number_stored_keys);
   }
 
   /* Copy the 2 special keys. */
-  for (i = 0; i < 2; i++)
+  for(i = 0; i < 2; i++)
   {
-    if (old_hashtable->has_special_key[i] == SPAMM_TRUE)
+    if(old_hashtable->has_special_key[i] == SPAMM_TRUE)
     {
       new_hashtable->has_special_key[i] = SPAMM_TRUE;
       new_hashtable->special_value[i] = old_hashtable->special_value[i];
@@ -303,7 +303,7 @@ spamm_hashtable_rehash (struct spamm_hashtable_t *hashtable,
   void **value = calloc(number_buckets, sizeof(void*));
 
   /* Copy old data. */
-  for (i = 0; i < hashtable->number_buckets; i++)
+  for(i = 0; i < hashtable->number_buckets; i++)
   {
     value[i] = hashtable->value[i];
   }
@@ -333,7 +333,7 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
   unsigned int keyhash = spamm_hashtable_hash(key);
   unsigned int bucket_index = keyhash & (hashtable->number_buckets-1);
 
-  if (key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
+  if(key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
   {
     /* The special keys SPAMM_KEY_EMPTY and SPAMM_KEY_DELETED have to be
      * treated first because the usual key hashing will not work properly on
@@ -344,14 +344,14 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
     return;
   }
 
-  else if (hashtable->data[bucket_index].key == key)
+  else if(hashtable->data[bucket_index].key == key)
   {
     /* Store value in this bucket. This overwrites any existing value. */
     hashtable->data[bucket_index].value = value;
     return;
   }
 
-  else if (hashtable->data[bucket_index].key != SPAMM_KEY_EMPTY &&
+  else if(hashtable->data[bucket_index].key != SPAMM_KEY_EMPTY &&
       hashtable->data[bucket_index].key != SPAMM_KEY_DELETED)
   {
     /* Linear chaining, i.e. increment bucket index until we either find the
@@ -360,21 +360,21 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
     {
       hashtable->total_distance++;
       bucket_index = (bucket_index+1) & (hashtable->number_buckets-1);
-      if (hashtable->data[bucket_index].key == key)
+      if(hashtable->data[bucket_index].key == key)
       {
         hashtable->data[bucket_index].value = value;
         return;
       }
 
-      else if (hashtable->data[bucket_index].key == SPAMM_KEY_DELETED)
+      else if(hashtable->data[bucket_index].key == SPAMM_KEY_DELETED)
       {
         break;
       }
     }
-    while (hashtable->data[bucket_index].key != SPAMM_KEY_EMPTY);
+    while(hashtable->data[bucket_index].key != SPAMM_KEY_EMPTY);
   }
 
-  if (hashtable->data[bucket_index].key == SPAMM_KEY_EMPTY &&
+  if(hashtable->data[bucket_index].key == SPAMM_KEY_EMPTY &&
       hashtable->number_stored_keys >= SPAMM_GROW_THRESHOLD*hashtable->number_buckets)
   {
     spamm_hashtable_rehash(hashtable, hashtable->number_buckets << 1);
@@ -383,7 +383,7 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
 
   else
   {
-    if (hashtable->data[bucket_index].key == SPAMM_KEY_DELETED)
+    if(hashtable->data[bucket_index].key == SPAMM_KEY_DELETED)
     {
       hashtable->number_deleted_keys--;
     }
@@ -394,7 +394,7 @@ spamm_hashtable_insert (struct spamm_hashtable_t *hashtable,
     return;
   }
 #else
-  if (key < hashtable->number_buckets)
+  if(key < hashtable->number_buckets)
   {
     hashtable->value[key] = value;
   }
@@ -424,12 +424,12 @@ spamm_hashtable_lookup_bucket (struct spamm_hashtable_t *hashtable,
   unsigned int keyhash = spamm_hashtable_hash(key);
   unsigned int bucket_index = keyhash & (hashtable->number_buckets-1);
 
-  if (hashtable->data[bucket_index].key == key)
+  if(hashtable->data[bucket_index].key == key)
   {
     return &hashtable->data[bucket_index];
   }
 
-  else if (hashtable->data[bucket_index].key == SPAMM_KEY_EMPTY)
+  else if(hashtable->data[bucket_index].key == SPAMM_KEY_EMPTY)
   {
     return NULL;
   }
@@ -441,12 +441,12 @@ spamm_hashtable_lookup_bucket (struct spamm_hashtable_t *hashtable,
     do
     {
       bucket_index = (bucket_index+1) & (hashtable->number_buckets-1);
-      if (hashtable->data[bucket_index].key == key)
+      if(hashtable->data[bucket_index].key == key)
       {
         return &hashtable->data[bucket_index];
       }
     }
-    while (hashtable->data[bucket_index].key != SPAMM_KEY_EMPTY);
+    while(hashtable->data[bucket_index].key != SPAMM_KEY_EMPTY);
   }
 #endif
 
@@ -470,13 +470,13 @@ spamm_hashtable_lookup (struct spamm_hashtable_t *hashtable,
   void *value = NULL;
   struct spamm_hashtable_bucket_t *bucket;
 
-  if (key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
+  if(key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
   {
     /* The special keys SPAMM_KEY_EMPTY and SPAMM_KEY_DELETED have to be
      * treated first because the usual key hashing will not work properly on
      * them.
      */
-    if (hashtable->has_special_key[key] == SPAMM_TRUE)
+    if(hashtable->has_special_key[key] == SPAMM_TRUE)
     {
       value = hashtable->special_value[key];
     }
@@ -486,7 +486,7 @@ spamm_hashtable_lookup (struct spamm_hashtable_t *hashtable,
   else
   {
     bucket = spamm_hashtable_lookup_bucket(hashtable, key);
-    if (bucket != NULL)
+    if(bucket != NULL)
     {
       return bucket->value;
     }
@@ -497,7 +497,7 @@ spamm_hashtable_lookup (struct spamm_hashtable_t *hashtable,
     }
   }
 #else
-  if (key < hashtable->number_buckets)
+  if(key < hashtable->number_buckets)
   {
     return hashtable->value[key];
   }
@@ -526,9 +526,9 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
 #ifdef SPAMM_USE_HASHTABLE
   struct spamm_hashtable_bucket_t *bucket = NULL;
 
-  if (key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
+  if(key == SPAMM_KEY_EMPTY || key == SPAMM_KEY_DELETED)
   {
-    if (hashtable->has_special_key[key] == SPAMM_TRUE)
+    if(hashtable->has_special_key[key] == SPAMM_TRUE)
     {
       hashtable->has_special_key[key] = SPAMM_FALSE;
       result = hashtable->special_value[key];
@@ -539,7 +539,7 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
   else
   {
     bucket = spamm_hashtable_lookup_bucket(hashtable, key);
-    if (bucket != NULL)
+    if(bucket != NULL)
     {
       bucket->key = SPAMM_KEY_DELETED;
       result = bucket->value;
@@ -548,14 +548,14 @@ spamm_hashtable_remove (struct spamm_hashtable_t *hashtable,
       hashtable->number_stored_keys--;
       hashtable->number_deleted_keys++;
 
-      if (hashtable->number_stored_keys < SPAMM_SHRINK_THRESHOLD*hashtable->number_buckets)
+      if(hashtable->number_stored_keys < SPAMM_SHRINK_THRESHOLD*hashtable->number_buckets)
       {
         spamm_hashtable_rehash(hashtable, hashtable->number_buckets >> 1);
       }
     }
   }
 #else
-  if (key < hashtable->number_buckets)
+  if(key < hashtable->number_buckets)
   {
     result = hashtable->value[key];
     hashtable->value[key] = NULL;
@@ -584,26 +584,26 @@ spamm_hashtable_foreach (struct spamm_hashtable_t *hashtable,
 
 #ifdef SPAMM_USE_HASHTABLE
   /* Loop over all buckets and call func() for each key. */
-  for (i = 0; i < 2; i++)
+  for(i = 0; i < 2; i++)
   {
-    if (hashtable->has_special_key[i] == SPAMM_TRUE)
+    if(hashtable->has_special_key[i] == SPAMM_TRUE)
     {
       func(i, hashtable->special_value[i], user_data);
     }
   }
 
-  for (i = 0; i < hashtable->number_buckets; i++)
+  for(i = 0; i < hashtable->number_buckets; i++)
   {
-    if (hashtable->data[i].key != SPAMM_KEY_EMPTY &&
+    if(hashtable->data[i].key != SPAMM_KEY_EMPTY &&
         hashtable->data[i].key != SPAMM_KEY_DELETED)
     {
       func(hashtable->data[i].key, hashtable->data[i].value, user_data);
     }
   }
 #else
-  for (i = 0; i < hashtable->number_buckets; i++)
+  for(i = 0; i < hashtable->number_buckets; i++)
   {
-    if (hashtable->value[i] != NULL)
+    if(hashtable->value[i] != NULL)
     {
       func(i, hashtable->value[i], user_data);
     }
@@ -635,18 +635,18 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
   /* Populate lists. */
   list_index = 0;
 
-  for (i = 0; i < 2; i++)
+  for(i = 0; i < 2; i++)
   {
-    if (hashtable->has_special_key[i] == SPAMM_TRUE)
+    if(hashtable->has_special_key[i] == SPAMM_TRUE)
     {
       spamm_list_set(list, list_index, i, ((struct spamm_hashed_data_t*) hashtable->special_value[i])->node_norm);
       list_index++;
     }
   }
 
-  for (i = 0; i < hashtable->number_buckets; i++)
+  for(i = 0; i < hashtable->number_buckets; i++)
   {
-    if (hashtable->data[i].key != SPAMM_KEY_EMPTY &&
+    if(hashtable->data[i].key != SPAMM_KEY_EMPTY &&
         hashtable->data[i].key != SPAMM_KEY_DELETED)
     {
       spamm_list_set(list, list_index, hashtable->data[i].key, ((struct spamm_hashed_data_t*) hashtable->data[i].value)->node_norm);
@@ -654,7 +654,7 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
     }
   }
 
-  if (list_index != spamm_list_length(list))
+  if(list_index != spamm_list_length(list))
   {
     SPAMM_FATAL("error copying indices\n");
   }
@@ -664,9 +664,9 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
   /* Count number of keys (the entries that are not NULL).
    */
   number_keys = 0;
-  for (i = 0; i < hashtable->number_buckets; i++)
+  for(i = 0; i < hashtable->number_buckets; i++)
   {
-    if (hashtable->value[i] != NULL)
+    if(hashtable->value[i] != NULL)
     {
       number_keys++;
     }
@@ -675,9 +675,9 @@ spamm_hashtable_keys (const struct spamm_hashtable_t *hashtable)
   /* Copy the existing keys into a list. */
   list = spamm_list_new(number_keys);
   list_index = 0;
-  for (i = 0; i < hashtable->number_buckets; i++)
+  for(i = 0; i < hashtable->number_buckets; i++)
   {
-    if (hashtable->value[i] != NULL)
+    if(hashtable->value[i] != NULL)
     {
       spamm_list_set(list, list_index, i, ((struct spamm_hashed_data_t*) hashtable->value[i])->node_norm);
       list_index++;
@@ -729,9 +729,9 @@ spamm_hashtable_get_number_keys (const struct spamm_hashtable_t *hashtable)
   short i;
   unsigned int result = hashtable->number_stored_keys;
 
-  for (i = 0; i < 2; i++)
+  for(i = 0; i < 2; i++)
   {
-    if (hashtable->has_special_key[i] == SPAMM_TRUE)
+    if(hashtable->has_special_key[i] == SPAMM_TRUE)
     {
       result++;
     }
@@ -742,9 +742,9 @@ spamm_hashtable_get_number_keys (const struct spamm_hashtable_t *hashtable)
   unsigned int i;
   unsigned int result = 0;
 
-  for (i = 0; i < hashtable->number_buckets; i++)
+  for(i = 0; i < hashtable->number_buckets; i++)
   {
-    if (hashtable->value[i] != NULL)
+    if(hashtable->value[i] != NULL)
     {
       result++;
     }
