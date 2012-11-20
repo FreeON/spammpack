@@ -18,11 +18,11 @@ spamm_chunk_copy (spamm_chunk_t **A,
     spamm_chunk_t *B,
     const short use_linear_tree)
 {
-  unsigned int *number_dimensions = spamm_chunk_get_number_dimensions(B);
-  unsigned int *number_tiers = spamm_chunk_get_number_tiers(B);
-  unsigned int *N = spamm_chunk_get_N(B);
-  unsigned int *N_lower = spamm_chunk_get_N_lower(B);
-  unsigned int *N_upper = spamm_chunk_get_N_upper(B);
+  unsigned int *number_dimensions;
+  unsigned int *number_tiers;
+  unsigned int *N;
+  unsigned int *N_lower;
+  unsigned int *N_upper;
 
   float *norm_A;
   float *norm_B;
@@ -42,6 +42,12 @@ spamm_chunk_copy (spamm_chunk_t **A,
   spamm_delete_chunk(A);
 
   *A = spamm_new_chunk(*number_dimensions, use_linear_tree, N, N_lower, N_upper);
+
+  number_dimensions = spamm_chunk_get_number_dimensions(B);
+  number_tiers = spamm_chunk_get_number_tiers(B);
+  N = spamm_chunk_get_N(B);
+  N_lower = spamm_chunk_get_N_lower(B);
+  N_upper = spamm_chunk_get_N_upper(B);
 
   norm_A = spamm_chunk_get_norm(*A);
   norm_B = spamm_chunk_get_norm(B);
