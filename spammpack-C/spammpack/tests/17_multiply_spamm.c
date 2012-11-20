@@ -42,6 +42,10 @@ main (int argc, char **argv)
   double *B_dense;
   double *C_dense;
 
+  float *A_float;
+  float *B_float;
+  float *C_float;
+
   struct spamm_matrix_t *A;
   struct spamm_matrix_t *B;
   struct spamm_matrix_t *C;
@@ -52,17 +56,22 @@ main (int argc, char **argv)
   double max_diff;
   double max_rel_diff;
 
+  double max_diff_float;
+
   enum spamm_kernel_t kernel = kernel_standard_SSE;
   struct spamm_timer_t *timer;
 
   int option_index;
   int parse_result;
-  char *short_options = "hk:N:lc:rds1g:";
+  char *short_options = "hk:N:la:b:t:c:rds1g:";
   static struct option long_options[] = {
     { "help",       no_argument,        NULL, 'h' },
     { "kernel",     required_argument,  NULL, 'k' },
     { "N",          required_argument,  NULL, 'N' },
     { "linear",     no_argument,        NULL, 'l' },
+    { "alpha",      required_argument,  NULL, 'a' },
+    { "beta",       required_argument,  NULL, 'b' },
+    { "tolerance",  required_argument,  NULL, 't' },
     { "contiguous", required_argument,  NULL, 'c' },
     { "no-random",  no_argument,        NULL, 'r' },
     { "debug",      no_argument,        NULL, 'd' },
@@ -86,6 +95,9 @@ main (int argc, char **argv)
         printf("{ -k | --kernel } kernel      Use the kernel\n");
         printf("{ -N | --N } N                Set N\n");
         printf("{ -l | --linear }             Use a linear tier\n");
+        printf("{ -a | --alpha } alpha        Set alpha\n");
+        printf("{ -b | --beta } beta          Set beta\n");
+        printf("{ -t | --tolerance } tau      Multiply with tolerance tau\n");
         printf("{ -c | --contiguous } c       Set contiguous tier to c\n");
         printf("{ -r | --no-random }          Do not create random matrix\n");
         printf("{ -d | --debug }              Print matrices\n");
@@ -108,6 +120,18 @@ main (int argc, char **argv)
 
       case 'l':
         use_linear_tree = 1;
+        break;
+
+      case 'a':
+        alpha = strtod(optarg, NULL);
+        break;
+
+      case 'b':
+        beta = strtod(optarg, NULL);
+        break;
+
+      case 't':
+        tolerance = strtod(optarg, NULL);
         break;
 
       case 'c':
@@ -143,6 +167,10 @@ main (int argc, char **argv)
   A_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
   B_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
   C_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
+
+  A_float = (float*) malloc(sizeof(float)*N[0]*N[1]);
+  B_float = (float*) malloc(sizeof(float)*N[0]*N[1]);
+  C_float = (float*) malloc(sizeof(float)*N[0]*N[1]);
 
   A = spamm_new(2, N, chunk_tier, use_linear_tree);
   B = spamm_new(2, N, chunk_tier, use_linear_tree);
@@ -202,53 +230,63 @@ main (int argc, char **argv)
     }
   }
 
+  for (i[0] = 0; i[0] < N[0]; i[0]++) {
+    for (i[1] = 0; i[1] < N[1]; i[1]++)
+    {
+      A_float[i[0]*N[1]+i[1]] = A_dense[i[0]*N[1]+i[1]];
+      B_float[i[0]*N[1]+i[1]] = B_dense[i[0]*N[1]+i[1]];
+      C_float[i[0]*N[1]+i[1]] = C_dense[i[0]*N[1]+i[1]];
+    }
+  }
+
+  printf("multiply: alpha = %f, beta = %f, tolerance = %f\n", alpha, beta, tolerance);
+
   spamm_print_info(A);
   spamm_print_info(B);
   spamm_print_info(C);
 
-  printf("checking SpAMM matrices... ");
-  fflush(stdout);
+  printf("checking SpAMM matrices...\n");
+  printf("checking A\n");
   spamm_check(A, 1e-7);
+  printf("checking B\n");
   spamm_check(B, 1e-7);
+  printf("checking C\n");
   spamm_check(C, 1e-7);
   printf("done\n");
 
   if(print_debug)
   {
-    printf("A_dense =\n");
+    printf("A_dense = zeros(%u,%u);\n", N[0], N[1]);
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf(" %5.1f", A_dense[i[0]*N[1]+i[1]]);
+        printf("A_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, A_dense[i[0]*N[1]+i[1]]);
       }
-      printf("\n");
     }
 
     printf("A =\n");
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf(" %5.1f", spamm_get(i, A));
+        printf(" %5.2e", spamm_get(i, A));
       }
       printf("\n");
     }
 
-    printf("B_dense =\n");
+    printf("B_dense = zeros(%u,%u);\n", N[0], N[1]);
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf(" %5.1f", B_dense[i[0]*N[1]+i[1]]);
+        printf("B_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, B_dense[i[0]*N[1]+i[1]]);
       }
-      printf("\n");
     }
 
-    printf("C_dense =\n");
+    printf("C_dense = zeros(%u,%u);\n", N[0], N[1]);
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
+        printf("C_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, C_dense[i[0]*N[1]+i[1]]);
       }
-      printf("\n");
     }
 
     printf("A =\n");
@@ -261,11 +299,6 @@ main (int argc, char **argv)
     for(i[1] = 0; i[1] < N[1]; i[1]++)
     {
       C_dense[i[0]*N[1]+i[1]] *= beta;
-    }
-  }
-
-  for(i[0] = 0; i[0] < N[0]; i[0]++) {
-    for(i[1] = 0; i[1] < N[1]; i[1]++) {
       for(k = 0; k < N[0]; k++)
       {
         C_dense[i[0]*N[1]+i[1]] += alpha*A_dense[i[0]*N[1]+k]*B_dense[k*N[1]+i[1]];
@@ -274,15 +307,28 @@ main (int argc, char **argv)
   }
   printf("done\n");
 
+  printf("multiplying sgemm... ");
+  fflush(stdout);
+  for(i[0] = 0; i[0] < N[0]; i[0]++) {
+    for(i[1] = 0; i[1] < N[1]; i[1]++)
+    {
+      C_float[i[0]*N[1]+i[1]] *= beta;
+      for(k = 0; k < N[0]; k++)
+      {
+        C_float[i[0]*N[1]+i[1]] += alpha*A_float[i[0]*N[1]+k]*B_float[k*N[1]+i[1]];
+      }
+    }
+  }
+  printf("done\n");
+
   if(print_debug)
   {
-    printf("C_dense =\n");
+    printf("C_ref_dense = zeros(%u,%u);\n", N[0], N[1]);
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf(" %5.1f", C_dense[i[0]*N[1]+i[1]]);
+        printf("C_ref_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, C_dense[i[0]*N[1]+i[1]]);
       }
-      printf("\n");
     }
   }
 
@@ -297,15 +343,19 @@ main (int argc, char **argv)
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf(" %5.1f", spamm_get(i, C));
+        printf(" %5.2e", spamm_get(i, C));
       }
       printf("\n");
     }
   }
 
+  printf("checking C\n");
+  spamm_check(C, 1e-7);
+
 #ifdef VERIFY_RESULT
   max_diff = 0;
   max_rel_diff = 0;
+  max_diff_float = 0;
   printf("verifying result... ");
   fflush(stdout);
   for(i[0] = 0; i[0] < N[0]; i[0]++) {
@@ -317,6 +367,11 @@ main (int argc, char **argv)
           max_diff = fabs(C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C));
           max_i[0] = i[0];
           max_i[1] = i[1];
+        }
+
+        if(fabs(C_dense[i[0]*N[1]+i[1]]-C_float[i[0]*N[1]+i[1]]) > max_diff_float)
+        {
+          max_diff_float = fabs(C_dense[i[0]*N[1]+i[1]]-C_float[i[0]*N[1]+i[1]]);
         }
 
         if(C_dense[i[0]*N[1]+i[1]] != 0)
@@ -333,12 +388,13 @@ main (int argc, char **argv)
   }
   printf("done\n");
 
-  printf("max diff =      %e, rel. diff = %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
+  printf("max diff =       %e, rel. diff = %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
       max_diff,
       (C_dense[max_i[0]*N[1]+max_i[1]] != 0.0 ? max_diff/C_dense[max_i[0]*N[1]+max_i[1]] : 0.0),
       max_i[0], max_i[1], spamm_get(max_i, C),
       max_i[0], max_i[1], C_dense[max_i[0]*N[1]+max_i[1]]);
-  printf("max rel. diff = %e, diff =      %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
+  printf("max float diff = %e\n", max_diff_float);
+  printf("max rel. diff =  %e, diff =      %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
       max_rel_diff,
       fabs(C_dense[max_rel_i[0]*N[1]+max_rel_i[1]]-spamm_get(max_rel_i, C)),
       max_rel_i[0], max_rel_i[1], spamm_get(max_rel_i, C),
@@ -354,6 +410,10 @@ main (int argc, char **argv)
   free(A_dense);
   free(B_dense);
   free(C_dense);
+
+  free(A_float);
+  free(B_float);
+  free(C_float);
 
   spamm_delete(&A);
   spamm_delete(&B);

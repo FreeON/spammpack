@@ -122,7 +122,7 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
     printf("norm[%u] =", i);
     for(j = 0; j < ipow(4, i); j++)
     {
-      printf(" %1.2f", norm[j]);
+      printf(" %1.2e", norm[j]);
     }
     printf("\n");
   }
@@ -133,7 +133,7 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
     printf("norm2[%u] =", i);
     for(j = 0; j < ipow(4, i); j++)
     {
-      printf(" %1.2f", norm2[j]);
+      printf(" %1.2e", norm2[j]);
     }
     printf("\n");
   }

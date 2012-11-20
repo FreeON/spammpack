@@ -136,8 +136,6 @@ spamm_linear_multiply (const float tolerance,
   float *matrix_B;
   float *matrix_C;
 
-  short skipout;
-
   N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
   index_length = N_contiguous/SPAMM_N_KERNEL;
 
@@ -172,22 +170,28 @@ spamm_linear_multiply (const float tolerance,
   stream = malloc(ipow(index_length, 3)*3*sizeof(unsigned int));
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-  printf("stream (%p): ", stream);
+  printf("stream (%p):\n", stream);
 #endif
   for(i = 0, stream_index = 0; i < index_length; i++)
   {
-    skipout = 0;
-
     for(j_A = i*index_length; j_A < (i+1)*index_length; j_A++) {
       for(j_B = i*index_length; j_B < (i+1)*index_length; j_B++)
       {
+#ifdef SPAMM_MULTIPLY_DEBUG
+        printf("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e",
+            norm_A[index_A[j_A]],
+            index_A[j_A],
+            norm_B[index_B[j_B]],
+            index_B[j_B],
+            norm_A[index_A[j_A]]*norm_B[index_B[j_B]]);
+#endif
         if(norm_A[index_A[j_A]]*norm_B[index_B[j_B]] > tolerance)
         {
           stream[3*stream_index+0] = index_A[j_A];
           stream[3*stream_index+1] = index_B[j_B];
           stream[3*stream_index+2] = (index_A[j_A] & MASK_2D_I) | (index_B[j_B] & MASK_2D_J);
 #ifdef SPAMM_MULTIPLY_DEBUG
-          printf("stream[%u] = { %u, %u, %u } ", stream_index,
+          printf(" -> adding stream[%u] = { %u, %u, %u }\n", stream_index,
               stream[3*stream_index+0],
               stream[3*stream_index+1],
               stream[3*stream_index+2]);
@@ -197,19 +201,14 @@ spamm_linear_multiply (const float tolerance,
 
         else
         {
-          skipout = 1;
+#ifdef SPAMM_MULTIPLY_DEBUG
+          printf(", done\n");
+#endif
           break;
         }
       }
-      if(skipout)
-      {
-        break;
-      }
     }
   }
-#ifdef SPAMM_MULTIPLY_DEBUG
-  printf("\n");
-#endif
 
 #ifdef SPAMM_MULTIPLY_DEBUG
   printf("[multiply] Added %u (out of %u possible) block products to stream\n", stream_index, ipow(index_length, 3));
@@ -281,8 +280,6 @@ spamm_linear_multiply (const float tolerance,
                 printf("(%u,%u) -> row_maj = %u\n", i_block, j_block, i_block*SPAMM_N_BLOCK+j_block);
                 fflush(stdout);
 #endif
-                norm2_C[norm_offset_C] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block]*matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
-                norm_C[norm_offset_C] = sqrt(norm2_C[norm_offset_C]);
               }
             }
           }
@@ -291,6 +288,9 @@ spamm_linear_multiply (const float tolerance,
     }
   }
 #endif
+
+  /* Update norms. */
+  SPAMM_WARN("FIXME: update norms on product\n");
 
   /* Free memory. */
   free(stream);

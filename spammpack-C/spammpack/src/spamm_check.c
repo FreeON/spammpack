@@ -52,7 +52,8 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
         if(fabs(norm2_reference - norm2[linear_index]) > tolerance)
         {
-          SPAMM_WARN("norm2 mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
+          SPAMM_WARN("norm2 mismatch: tier = %u, linear index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
+              tier, linear_index,
               norm2[linear_index], norm2_reference,
               fabs(norm2[linear_index]-norm2_reference),
               fabs(norm2[linear_index]-norm2_reference)/norm2_reference);
@@ -60,7 +61,8 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
         if(fabs(sqrt(norm2_reference) - norm[linear_index]) > tolerance)
         {
-          SPAMM_WARN("norm mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
+          SPAMM_WARN("norm mismatch: tier = %u, linear index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
+              tier, linear_index,
               norm[linear_index], sqrt(norm2_reference),
               fabs(norm[linear_index]-sqrt(norm2_reference)),
               fabs(norm[linear_index]-sqrt(norm2_reference))/sqrt(norm2_reference));
@@ -88,7 +90,8 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
           if(fabs(norm2_reference - norm2[linear_index]) > tolerance)
           {
-            SPAMM_WARN("norm2 mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
+            SPAMM_WARN("norm2 mismatch: tier = %u, linear_index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
+                number_tiers-1, linear_index,
                 norm2[linear_index], norm2_reference,
                 fabs(norm2[linear_index]-norm2_reference),
                 fabs(norm2[linear_index]-norm2_reference)/norm2_reference);
