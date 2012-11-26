@@ -81,6 +81,7 @@ spamm_recursive_multiply_scalar (const float alpha,
 }
 
 #define SPAMM_MULTIPLY_DEBUG
+#define RUN_ASSEMBLY_KERNEL
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
  *
@@ -248,9 +249,12 @@ spamm_linear_multiply (const float tolerance,
       for(j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++) {
         for(k = 0; k < SPAMM_N_KERNEL_BLOCKED; k++)
         {
-          norm_offset_A = stream[3*i_stream+0]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED+i*SPAMM_N_KERNEL_BLOCKED+k;
-          norm_offset_B = stream[3*i_stream+1]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED+k*SPAMM_N_KERNEL_BLOCKED+j;
-          norm_offset_C = stream[3*i_stream+2]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED+i*SPAMM_N_KERNEL_BLOCKED+j;
+          norm_offset_A = stream[3*i_stream+0]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED
+            +i*SPAMM_N_KERNEL_BLOCKED+k;
+          norm_offset_B = stream[3*i_stream+1]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED
+            +k*SPAMM_N_KERNEL_BLOCKED+j;
+          norm_offset_C = stream[3*i_stream+2]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED
+            +i*SPAMM_N_KERNEL_BLOCKED+j;
 
           offset_A = stream[3*i_stream+0]*SPAMM_N_KERNEL*SPAMM_N_KERNEL
             +(i*SPAMM_N_KERNEL_BLOCKED+k)*SPAMM_N_BLOCK*SPAMM_N_BLOCK;
