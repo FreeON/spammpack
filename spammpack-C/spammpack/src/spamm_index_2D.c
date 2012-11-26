@@ -19,15 +19,15 @@ spamm_index_2D (const unsigned int i, const unsigned int j)
   unsigned int setmask = 1;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((j & getmask) != 0)
+    if((j & getmask) != 0)
     {
       index |= setmask;
     }
     setmask <<= 1;
 
-    if ((i & getmask) != 0)
+    if((i & getmask) != 0)
     {
       index |= setmask;
     }
@@ -52,30 +52,30 @@ spamm_index_2D_to_ij (const unsigned int index, unsigned int *i, unsigned int *j
   unsigned int getmask = 1;
   unsigned int setmask = 1;
 
-  if (i != NULL)
+  if(i != NULL)
   {
     *i = 0;
   }
 
-  if (j != NULL)
+  if(j != NULL)
   {
     *j = 0;
   }
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if (j != NULL)
+    if(j != NULL)
     {
-      if ((index & getmask) != 0)
+      if((index & getmask) != 0)
       {
         *j |= setmask;
       }
     }
     getmask <<= 1;
 
-    if (i != NULL)
+    if(i != NULL)
     {
-      if ((index & getmask) != 0)
+      if((index & getmask) != 0)
       {
         *i |= setmask;
       }

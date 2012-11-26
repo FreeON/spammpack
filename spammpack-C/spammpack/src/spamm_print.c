@@ -19,11 +19,11 @@ spamm_print_dense (const unsigned int M, const unsigned int N,
 {
   unsigned int i, j;
 
-  switch (type)
+  switch(type)
   {
     case column_major:
-      for (i = 0; i < M; i++) {
-        for (j = 0; j < N; j++)
+      for(i = 0; i < M; i++) {
+        for(j = 0; j < N; j++)
         {
           printf(" % 1.2e", A[spamm_index_column_major(i, j, M, N)]);
         }
@@ -32,8 +32,8 @@ spamm_print_dense (const unsigned int M, const unsigned int N,
       break;
 
     case row_major:
-      for (i = 0; i < M; i++) {
-        for (j = 0; j < N; j++)
+      for(i = 0; i < M; i++) {
+        for(j = 0; j < N; j++)
         {
           printf(" % 1.2e", A[spamm_index_row_major(i, j, M, N)]);
         }
@@ -70,7 +70,7 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
   float *norm;
   float *norm2;
 
-  if (chunk == NULL) { return; }
+  if(chunk == NULL) { return; }
 
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
   number_tiers = *spamm_chunk_get_number_tiers(chunk);
@@ -85,10 +85,10 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
   printf("\n");
   N = spamm_chunk_get_N(chunk);
   printf("N = [");
-  for (dim = 0; dim < number_dimensions; dim++)
+  for(dim = 0; dim < number_dimensions; dim++)
   {
     printf(" %u", N[dim]);
-    if (dim+1 < number_dimensions)
+    if(dim+1 < number_dimensions)
     {
       printf(",");
     }
@@ -96,18 +96,18 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
   printf(" ]\n");
   N_lower = spamm_chunk_get_N_lower(chunk);
   N_upper = spamm_chunk_get_N_upper(chunk);
-  for (dim = 0; dim < number_dimensions; dim++)
+  for(dim = 0; dim < number_dimensions; dim++)
   {
     printf("N[%u] = [ %u, %u ]\n", dim, N_lower[dim], N_upper[dim]);
   }
 
-  for (i = 0; i < number_tiers; i++)
+  for(i = 0; i < number_tiers; i++)
   {
     printf("&norm[%u] = %p (%p)\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm(i, chunk) - (intptr_t) chunk),
         spamm_chunk_get_tier_norm(i, chunk));
   }
 
-  for (i = 0; i < number_tiers; i++)
+  for(i = 0; i < number_tiers; i++)
   {
     printf("&norm2[%u] = %p (%p)\n", i, (void*) ((intptr_t) spamm_chunk_get_tier_norm2(i, chunk) - (intptr_t) chunk),
         spamm_chunk_get_tier_norm2(i, chunk));
@@ -116,24 +116,24 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
   printf("&matrix = %p (%p)\n", (void*) ((intptr_t) spamm_chunk_get_matrix(chunk) - (intptr_t) chunk),
       spamm_chunk_get_matrix(chunk));
 
-  for (i = 0; i < number_tiers; i++)
+  for(i = 0; i < number_tiers; i++)
   {
     norm = spamm_chunk_get_tier_norm(i, chunk);
     printf("norm[%u] =", i);
-    for (j = 0; j < ipow(4, i); j++)
+    for(j = 0; j < ipow(4, i); j++)
     {
-      printf(" %1.2f", norm[j]);
+      printf(" %1.2e", norm[j]);
     }
     printf("\n");
   }
 
-  for (i = 0; i < number_tiers; i++)
+  for(i = 0; i < number_tiers; i++)
   {
     norm2 = spamm_chunk_get_tier_norm2(i, chunk);
     printf("norm2[%u] =", i);
-    for (j = 0; j < ipow(4, i); j++)
+    for(j = 0; j < ipow(4, i); j++)
     {
-      printf(" %1.2f", norm2[j]);
+      printf(" %1.2e", norm2[j]);
     }
     printf("\n");
   }
@@ -162,27 +162,27 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
   unsigned int *new_N_lower;
   unsigned int *new_N_upper;
 
-  if (node == NULL) { return; }
+  if(node == NULL) { return; }
 
   printf("node (tier = %u, %p): N = {", tier, node);
-  for (dim = 0; dim < number_dimensions; dim++)
+  for(dim = 0; dim < number_dimensions; dim++)
   {
     printf(" [ %u --> %u ]", N_lower[dim], N_upper[dim]);
   }
   printf(" }, norm = %1.2e, ", node->norm);
-  if (tier == chunk_tier)
+  if(tier == chunk_tier)
   {
     spamm_print_chunk(node->tree.chunk);
   }
 
-  else if (tier == chunk_tier)
+  else if(tier == chunk_tier)
   {
     return;
   }
 
   else
   {
-    if (node->tree.child == NULL)
+    if(node->tree.child == NULL)
     {
       printf("no children");
     }
@@ -190,7 +190,7 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
     else
     {
       printf("{");
-      for (i = 0; i < number_dimensions*number_dimensions; i++)
+      for(i = 0; i < number_dimensions*number_dimensions; i++)
       {
         printf(" %p", node->tree.child[i]);
       }
@@ -198,12 +198,12 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
     }
     printf("\n");
 
-    for (i = 0; i < ipow(2, number_dimensions); i++)
+    for(i = 0; i < ipow(2, number_dimensions); i++)
     {
       new_N_lower = malloc(number_dimensions*sizeof(unsigned int));
       new_N_upper = malloc(number_dimensions*sizeof(unsigned int));
 
-      for (dim = 0; dim < number_dimensions; dim++)
+      for(dim = 0; dim < number_dimensions; dim++)
       {
         new_N_lower[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2*(i & (1 << dim) ? 1 : 0);
         new_N_upper[dim] = new_N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
@@ -236,7 +236,7 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
   printf("root node: ");
   printf("ndim = %u, ", A->number_dimensions);
   printf("N = {");
-  for (dim = 0; dim < A->number_dimensions; dim++)
+  for(dim = 0; dim < A->number_dimensions; dim++)
   {
     printf(" %u", A->N[dim]);
   }
@@ -247,7 +247,7 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
   printf("use_linear_tree = %u, ", A->use_linear_tree);
   printf("chunk_tier = %u\n", A->chunk_tier);
 
-  if (A->chunk_tier == 0)
+  if(A->chunk_tier == 0)
   {
     spamm_print_chunk(A->tree.chunk);
   }
@@ -256,7 +256,7 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
     N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
     N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
 
-    for (dim = 0; dim < A->number_dimensions; dim++)
+    for(dim = 0; dim < A->number_dimensions; dim++)
     {
       N_upper[dim] = A->N_padded;
     }
@@ -284,8 +284,8 @@ spamm_print (const struct spamm_matrix_t *A)
   switch(A->number_dimensions)
   {
     case 2:
-      for (i[0] = 0; i[0] < A->N[0]; i[0]++) {
-        for (i[1] = 0; i[1] < A->N[1]; i[1]++)
+      for(i[0] = 0; i[0] < A->N[0]; i[0]++) {
+        for(i[1] = 0; i[1] < A->N[1]; i[1]++)
         {
           printf(" % 1.2e", spamm_get(i, A));
         }

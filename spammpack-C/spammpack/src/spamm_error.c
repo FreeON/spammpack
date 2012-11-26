@@ -21,7 +21,7 @@ spamm_error_print_backtrace ()
   printf("Obtained %zd stack frames.\n", size-2);
 
   /* Omit the first 2 frames since we know those are the error handlers. */
-  for (i = 2; i < size; i++)
+  for(i = 2; i < size; i++)
   {
     printf("%s\n", strings[i]);
   }

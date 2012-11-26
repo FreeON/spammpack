@@ -41,16 +41,16 @@ main (int argc, char **argv)
     { NULL, 0, NULL, 0 }
   };
 
-  while (1)
+  while(1)
   {
     c = getopt_long(argc, argv, short_options, long_options, NULL);
 
-    if (c == -1)
+    if(c == -1)
     {
       break;
     }
 
-    switch (c)
+    switch(c)
     {
       case 'h':
         printf("Usage:\n");
@@ -80,7 +80,7 @@ main (int argc, char **argv)
   N_lower = calloc(number_dimensions, sizeof(unsigned int));
   N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
-  for (dim = 0; dim < number_dimensions; dim++)
+  for(dim = 0; dim < number_dimensions; dim++)
   {
     N[dim] = N_contiguous;
     N_upper[dim] = N_contiguous;

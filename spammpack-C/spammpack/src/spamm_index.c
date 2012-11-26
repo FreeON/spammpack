@@ -24,11 +24,11 @@ spamm_index_linear (const unsigned int number_dimensions,
   unsigned int setmask = 1;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < sizeof(unsigned int)*8; bit_index += number_dimensions)
+  for(bit_index = 0; bit_index < sizeof(unsigned int)*8; bit_index += number_dimensions)
   {
-    for (dim = number_dimensions-1; dim >= 0 && bit_index+number_dimensions-1-dim < sizeof(unsigned int)*8; dim--)
+    for(dim = number_dimensions-1; dim >= 0 && bit_index+number_dimensions-1-dim < sizeof(unsigned int)*8; dim--)
     {
-      if (i[dim] & getmask)
+      if(i[dim] & getmask)
       {
         index |= setmask;
       }
@@ -55,15 +55,15 @@ spamm_index_2D (const unsigned int i, const unsigned int j)
   unsigned int setmask = 1;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((j & getmask) != 0)
+    if((j & getmask) != 0)
     {
       index |= setmask;
     }
     setmask <<= 1;
 
-    if ((i & getmask) != 0)
+    if((i & getmask) != 0)
     {
       index |= setmask;
     }
@@ -88,30 +88,30 @@ spamm_index_2D_to_ij (const unsigned int index, unsigned int *i, unsigned int *j
   unsigned int getmask = 1;
   unsigned int setmask = 1;
 
-  if (i != NULL)
+  if(i != NULL)
   {
     *i = 0;
   }
 
-  if (j != NULL)
+  if(j != NULL)
   {
     *j = 0;
   }
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if (j != NULL)
+    if(j != NULL)
     {
-      if ((index & getmask) != 0)
+      if((index & getmask) != 0)
       {
         *j |= setmask;
       }
     }
     getmask <<= 1;
 
-    if (i != NULL)
+    if(i != NULL)
     {
-      if ((index & getmask) != 0)
+      if((index & getmask) != 0)
       {
         *i |= setmask;
       }
@@ -138,15 +138,15 @@ spamm_index_3D_0kj (const unsigned int k, const unsigned int j)
   unsigned int setmask = 1;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((j & getmask) != 0)
+    if((j & getmask) != 0)
     {
       index |= setmask;
     }
     setmask <<= 1;
 
-    if ((k & getmask) != 0)
+    if((k & getmask) != 0)
     {
       index |= setmask;
     }
@@ -174,15 +174,15 @@ spamm_index_3D_ik0 (const unsigned int i, const unsigned int k)
   unsigned int setmask = 2;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((k & getmask) != 0)
+    if((k & getmask) != 0)
     {
       index |= setmask;
     }
     setmask <<= 1;
 
-    if ((i & getmask) != 0)
+    if((i & getmask) != 0)
     {
       index |= setmask;
     }
@@ -207,16 +207,16 @@ spamm_index_3D_i0j_to_2D (const unsigned int index_3D_i0j)
   unsigned int setmask = 1;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((index_3D_i0j & getmask) != 0)
+    if((index_3D_i0j & getmask) != 0)
     {
       index |= setmask;
     }
     getmask <<= 2;
     setmask <<= 1;
 
-    if ((index_3D_i0j & getmask) != 0)
+    if((index_3D_i0j & getmask) != 0)
     {
       index |= setmask;
     }
@@ -241,9 +241,9 @@ spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj)
   unsigned int setmask = 1;
   unsigned int k = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((index_3D_ikj & getmask) != 0)
+    if((index_3D_ikj & getmask) != 0)
     {
       k |= setmask;
     }
@@ -286,12 +286,12 @@ unsigned int
 spamm_index_column_major (const unsigned int i, const unsigned int j,
     const unsigned int M, const unsigned int N)
 {
-  if (i >= M)
+  if(i >= M)
   {
     SPAMM_FATAL("i (%u) out of bounds (%u)\n", i, M);
   }
 
-  if (j >= N)
+  if(j >= N)
   {
     SPAMM_FATAL("j (%u) out of bounds (%u)\n", j, N);
   }
@@ -316,7 +316,7 @@ spamm_index_row_major_2 (const unsigned int number_dimensions,
   unsigned int offset;
   int dim;
 
-  for (dim = 1, offset = i[0]; dim < number_dimensions; dim++)
+  for(dim = 1, offset = i[0]; dim < number_dimensions; dim++)
   {
     offset = i[dim]+N*offset;
   }
@@ -341,7 +341,7 @@ spamm_index_column_major_2 (const unsigned int number_dimensions,
   unsigned int offset;
   int dim;
 
-  for (dim = number_dimensions-1, offset = 0; dim >= 0; dim--)
+  for(dim = number_dimensions-1, offset = 0; dim >= 0; dim--)
   {
     offset = i[dim]+N*offset;
   }
@@ -366,7 +366,7 @@ spamm_index_row_major_3 (const unsigned int number_dimensions,
   unsigned int offset;
   int dim;
 
-  for (dim = 1, offset = i[0]; dim < number_dimensions; dim++)
+  for(dim = 1, offset = i[0]; dim < number_dimensions; dim++)
   {
     offset = i[dim]+N[dim]*offset;
   }
@@ -391,7 +391,7 @@ spamm_index_column_major_3 (const unsigned int number_dimensions,
   unsigned int offset;
   int dim;
 
-  for (dim = number_dimensions-1, offset = 0; dim >= 0; dim--)
+  for(dim = number_dimensions-1, offset = 0; dim >= 0; dim--)
   {
     offset = i[dim]+N[dim]*offset;
   }
@@ -415,20 +415,20 @@ spamm_index_Z_curve (const unsigned int i, const unsigned int j)
   unsigned int setmask_j = 1;
   unsigned int offset = 0;
 
-  while (i_internal > 0 || j_internal > 0)
+  while(i_internal > 0 || j_internal > 0)
   {
-    if (i_internal > 0)
+    if(i_internal > 0)
     {
-      if ((i_internal & 0x1) != 0)
+      if((i_internal & 0x1) != 0)
       {
         offset |= setmask_i;
       }
       i_internal >>= 1;
     }
 
-    if (j_internal > 0)
+    if(j_internal > 0)
     {
-      if ((j_internal & 0x1) != 0)
+      if((j_internal & 0x1) != 0)
       {
         offset |= setmask_j;
       }
@@ -477,12 +477,12 @@ spamm_index_norm (const unsigned int i, const unsigned int j)
 unsigned int
 spamm_index_kernel_block (const unsigned int i, const unsigned int j, const enum spamm_layout_t layout)
 {
-  if (i >= SPAMM_N_KERNEL)
+  if(i >= SPAMM_N_KERNEL)
   {
     SPAMM_FATAL("i (%u) >= %u\n", i, SPAMM_N_KERNEL);
   }
 
-  if (j >= SPAMM_N_KERNEL)
+  if(j >= SPAMM_N_KERNEL)
   {
     SPAMM_FATAL("j (%u) >= %u\n", j, SPAMM_N_KERNEL);
   }
@@ -536,7 +536,7 @@ spamm_index_kernel_block_hierarchical (const unsigned int i_blocked,
   assert(i_basic < SPAMM_N_BLOCK);
   assert(j_basic < SPAMM_N_BLOCK);
 
-  switch (layout)
+  switch(layout)
   {
     case dense_column_major:
       offset = spamm_index_column_major(i_blocked*SPAMM_N_BLOCK+i_basic, j_blocked*SPAMM_N_BLOCK+j_basic, SPAMM_N_KERNEL, SPAMM_N_KERNEL);
@@ -588,7 +588,7 @@ spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_blocked,
   assert(i_basic < SPAMM_N_BLOCK);
   assert(j_basic < SPAMM_N_BLOCK);
 
-  switch (layout)
+  switch(layout)
   {
     case dense_column_major:
       offset = spamm_index_column_major(j_blocked*SPAMM_N_BLOCK+j_basic, i_blocked*SPAMM_N_BLOCK+i_basic, SPAMM_N_KERNEL, SPAMM_N_KERNEL);

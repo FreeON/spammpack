@@ -26,17 +26,6 @@ spamm_chunk_multiply (const float tolerance,
     sgemm_func sgemm,
     const enum spamm_kernel_t kernel);
 
-void
-spamm_chunk_add (const float alpha,
-    spamm_chunk_t **A,
-    const float beta,
-    spamm_chunk_t *B);
-
-void
-spamm_chunk_copy (spamm_chunk_t **A,
-    const float beta,
-    spamm_chunk_t *B);
-
 size_t
 spamm_chunk_pad (const size_t address,
     const size_t alignment);

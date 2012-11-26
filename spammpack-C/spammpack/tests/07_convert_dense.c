@@ -18,12 +18,12 @@ main (int argc, char **argv)
 
   enum spamm_layout_t layout = row_major;
 
-  if (argc == 2)
+  if(argc == 2)
   {
     layout = spamm_kernel_get_layout(argv[1]);
   }
 
-  for (i[0] = 0; i[0] < N[0]*N[1]; i[0]++)
+  for(i[0] = 0; i[0] < N[0]*N[1]; i[0]++)
   {
     A_dense[i[0]] = rand()/(float) RAND_MAX;
   }
@@ -32,8 +32,8 @@ main (int argc, char **argv)
 
 #ifdef PRINT_DEBUG
   printf("A_dense:\n");
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
+  for(i[0] = 0; i[0] < N[0]; i[0]++) {
+    for(i[1] = 0; i[1] < N[1]; i[1]++)
     {
       printf(" %1.2f", A_dense[i[0]*N[1]+i[1]]);
     }
@@ -51,10 +51,10 @@ main (int argc, char **argv)
     return result;
   }
 
-  for (i[0] = 0; i[0] < N[0]; i[0]++) {
-    for (i[1] = 0; i[1] < N[1]; i[1]++)
+  for(i[0] = 0; i[0] < N[0]; i[0]++) {
+    for(i[1] = 0; i[1] < N[1]; i[1]++)
     {
-      if (A_dense[i[0]*N[1]+i[1]] != spamm_get(i, A))
+      if(A_dense[i[0]*N[1]+i[1]] != spamm_get(i, A))
       {
         result = -1;
         printf("failed test at A[%u][%u] (found %f, should be %f)\n", i[0], i[1],
@@ -62,7 +62,7 @@ main (int argc, char **argv)
         break;
       }
     }
-    if (result < 0) { break; }
+    if(result < 0) { break; }
   }
 
 #ifdef PRINT_DEBUG

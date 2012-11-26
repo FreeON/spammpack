@@ -12,9 +12,9 @@
 void
 spamm_delete_chunk (spamm_chunk_t **chunk)
 {
-  if (chunk == NULL) { return; }
+  if(chunk == NULL) { return; }
 
-  if (*chunk != NULL)
+  if(*chunk != NULL)
   {
     free(*chunk);
   }
@@ -34,16 +34,16 @@ spamm_recursive_delete (const unsigned int number_dimensions,
 {
   unsigned int i;
 
-  if (*node == NULL) { return; }
+  if(*node == NULL) { return; }
 
-  if (tier == chunk_tier)
+  if(tier == chunk_tier)
   {
     spamm_delete_chunk(&(*node)->tree.chunk);
   }
 
   else
   {
-    for (i = 0; i < ipow(2, number_dimensions); i++)
+    for(i = 0; i < ipow(2, number_dimensions); i++)
     {
       spamm_recursive_delete(number_dimensions, tier+1, chunk_tier, use_linear_tree, &(*node)->tree.child[i]);
     }
@@ -62,9 +62,9 @@ spamm_recursive_delete (const unsigned int number_dimensions,
 void
 spamm_delete (struct spamm_matrix_t **A)
 {
-  if (*A == NULL) { return; }
+  if(*A == NULL) { return; }
 
-  if ((*A)->chunk_tier == 0)
+  if((*A)->chunk_tier == 0)
   {
     free((*A)->tree.chunk);
   }

@@ -19,12 +19,12 @@ spamm_number_nonzero (const struct spamm_matrix_t *A)
 
   i = calloc(A->number_dimensions, sizeof(unsigned int));
 
-  switch (A->number_dimensions)
+  switch(A->number_dimensions)
   {
     case 1:
-      for (i[0] = 0; i[0] < A->N[0]; i[0]++)
+      for(i[0] = 0; i[0] < A->N[0]; i[0]++)
       {
-        if (spamm_get(i, A) != 0.0)
+        if(spamm_get(i, A) != 0.0)
         {
           result++;
         }
@@ -32,10 +32,10 @@ spamm_number_nonzero (const struct spamm_matrix_t *A)
       break;
 
     case 2:
-      for (i[0] = 0; i[0] < A->N[0]; i[0]++) {
-        for (i[1] = 0; i[1] < A->N[1]; i[1]++)
+      for(i[0] = 0; i[0] < A->N[0]; i[0]++) {
+        for(i[1] = 0; i[1] < A->N[1]; i[1]++)
         {
-          if (spamm_get(i, A) != 0.0)
+          if(spamm_get(i, A) != 0.0)
           {
             result++;
           }
@@ -44,11 +44,11 @@ spamm_number_nonzero (const struct spamm_matrix_t *A)
       break;
 
     case 3:
-      for (i[0] = 0; i[0] < A->N[0]; i[0]++) {
-        for (i[1] = 0; i[1] < A->N[1]; i[1]++) {
-          for (i[2] = 0; i[2] < A->N[2]; i[2]++)
+      for(i[0] = 0; i[0] < A->N[0]; i[0]++) {
+        for(i[1] = 0; i[1] < A->N[1]; i[1]++) {
+          for(i[2] = 0; i[2] < A->N[2]; i[2]++)
           {
-            if (spamm_get(i, A) != 0.0)
+            if(spamm_get(i, A) != 0.0)
             {
               result++;
             }
@@ -80,22 +80,22 @@ spamm_print_info (const struct spamm_matrix_t *const A)
 
   assert(A != NULL);
 
-  for (dim = 0, N_matrix = 1; dim < A->number_dimensions; dim++)
+  for(dim = 0, N_matrix = 1; dim < A->number_dimensions; dim++)
   {
     N_matrix *= A->N[dim];
   }
 
-  for (i = 0, N_contiguous = A->N_padded; i < A->chunk_tier; i++)
+  for(i = 0, N_contiguous = A->N_padded; i < A->chunk_tier; i++)
   {
     N_contiguous >>= 1;
   }
 
   printf("number_dimensions = %u", A->number_dimensions);
   printf(", N = {");
-  for (dim = 0; dim < A->number_dimensions; dim++)
+  for(dim = 0; dim < A->number_dimensions; dim++)
   {
     printf(" %u", A->N[dim]);
-    if (dim+1 < A->number_dimensions)
+    if(dim+1 < A->number_dimensions)
     {
       printf(",");
     }
@@ -105,6 +105,6 @@ spamm_print_info (const struct spamm_matrix_t *const A)
   printf(", chunk_tier = %u", A->chunk_tier);
   printf(", N_contiguous = %u", N_contiguous);
   printf(", use_linear_tree = %u", A->use_linear_tree);
-  printf(", nnzero = %u (%1.2f %%)", spamm_number_nonzero(A), 100*(float) spamm_number_nonzero(A)/(float) N_matrix);
+  printf(", nnzero = %u (%1.2f%% sparsity)", spamm_number_nonzero(A), 100*(1-(float) spamm_number_nonzero(A)/(float) N_matrix));
   printf("\n");
 }

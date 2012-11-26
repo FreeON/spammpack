@@ -15,7 +15,7 @@ main ()
   hashtable = spamm_hashtable_new();
 
   /* Insert keys. */
-  for (i = 0; i < NUMBER_KEYS; i++)
+  for(i = 0; i < NUMBER_KEYS; i++)
   {
     value = malloc(sizeof(int));
     *value = i;
@@ -23,22 +23,22 @@ main ()
   }
 
   /* Test whether all those stored keys are there. */
-  for (i = 0; i < NUMBER_KEYS; i++)
+  for(i = 0; i < NUMBER_KEYS; i++)
   {
     value = spamm_hashtable_lookup(hashtable, i);
-    if (value == NULL)
+    if(value == NULL)
     {
       printf("found NULL value for key %u\n", i);
       return 1;
     }
 
-    else if (*((int*) value) != i)
+    else if(*((int*) value) != i)
     {
       printf("incorrect value for key %u, value = %u\n", i, *value);
       return 2;
     }
 
-    if ((value = spamm_hashtable_remove(hashtable, i)) == NULL)
+    if((value = spamm_hashtable_remove(hashtable, i)) == NULL)
     {
       printf("could not remove key %u\n", i);
       return 3;

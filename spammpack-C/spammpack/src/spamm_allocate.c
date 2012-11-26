@@ -31,9 +31,9 @@ spamm_allocate (const size_t size, const short zero_memory)
 #ifdef HAVE_POSIX_MEMALIGN
   int result;
 
-  if ((result = posix_memalign(&data, SPAMM_ALIGNMENT, size)) != 0)
+  if((result = posix_memalign(&data, SPAMM_ALIGNMENT, size)) != 0)
   {
-    switch (result)
+    switch(result)
     {
       case EINVAL:
         SPAMM_FATAL("The alignment argument was not a power of two, or was not a multiple of sizeof(void *).\n");
@@ -52,7 +52,7 @@ spamm_allocate (const size_t size, const short zero_memory)
   else
   {
     /* Check whether we should zero the new memory. */
-    if (zero_memory != 0)
+    if(zero_memory != 0)
     {
       memset(data, 0, size);
     }

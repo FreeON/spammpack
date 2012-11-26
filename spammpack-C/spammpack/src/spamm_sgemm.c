@@ -14,9 +14,9 @@ void spamm_sgemm (char * transA, char * transB,
 
   SPAMM_WARN("using SpAMM sgemm()\n");
 
-  for (i = 0; i < *M; i++) {
-    for (j = 0; j < *N; j++) {
-      for (k = 0; k < *K; k++)
+  for(i = 0; i < *M; i++) {
+    for(j = 0; j < *N; j++) {
+      for(k = 0; k < *K; k++)
       {
         C[spamm_index_column_major(i, j, *M, *N)] = (*beta)*C[spamm_index_column_major(i, j, *M, *N)]
           +(*alpha)*A[spamm_index_column_major(i, k, *M, *K)]*B[spamm_index_column_major(k, j, *K, *N)];

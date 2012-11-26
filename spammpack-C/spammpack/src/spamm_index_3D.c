@@ -21,15 +21,15 @@ spamm_index_3D_0kj (const unsigned int k, const unsigned int j)
   unsigned int setmask = 1;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((j & getmask) != 0)
+    if((j & getmask) != 0)
     {
       index |= setmask;
     }
     setmask <<= 1;
 
-    if ((k & getmask) != 0)
+    if((k & getmask) != 0)
     {
       index |= setmask;
     }
@@ -57,15 +57,15 @@ spamm_index_3D_ik0 (const unsigned int i, const unsigned int k)
   unsigned int setmask = 2;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((k & getmask) != 0)
+    if((k & getmask) != 0)
     {
       index |= setmask;
     }
     setmask <<= 1;
 
-    if ((i & getmask) != 0)
+    if((i & getmask) != 0)
     {
       index |= setmask;
     }
@@ -90,16 +90,16 @@ spamm_index_3D_i0j_to_2D (const unsigned int index_3D_i0j)
   unsigned int setmask = 1;
   unsigned int index = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((index_3D_i0j & getmask) != 0)
+    if((index_3D_i0j & getmask) != 0)
     {
       index |= setmask;
     }
     getmask <<= 2;
     setmask <<= 1;
 
-    if ((index_3D_i0j & getmask) != 0)
+    if((index_3D_i0j & getmask) != 0)
     {
       index |= setmask;
     }
@@ -124,9 +124,9 @@ spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj)
   unsigned int setmask = 1;
   unsigned int k = 0;
 
-  for (bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
+  for(bit_index = 0; bit_index < BITFIELD_SIZE; bit_index++)
   {
-    if ((index_3D_ikj & getmask) != 0)
+    if((index_3D_ikj & getmask) != 0)
     {
       k |= setmask;
     }

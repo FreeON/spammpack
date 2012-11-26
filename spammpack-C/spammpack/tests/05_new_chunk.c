@@ -22,7 +22,7 @@ main ()
   N_lower = calloc(number_dimensions, sizeof(unsigned int));
   N_upper = calloc(number_dimensions, sizeof(unsigned int));
 
-  for (dim = 0; dim < number_dimensions; dim++)
+  for(dim = 0; dim < number_dimensions; dim++)
   {
     N[dim] = N_contiguous;
     N_lower[dim] = 0;
@@ -36,12 +36,12 @@ main ()
 
   number_dimensions_pointer = spamm_chunk_get_number_dimensions(chunk);
 
-  if (number_dimensions != *number_dimensions_pointer)
+  if(number_dimensions != *number_dimensions_pointer)
   {
     SPAMM_FATAL("number_dimensions mismatch\n");
   }
 
-  if (N_contiguous != spamm_chunk_get_N_contiguous(chunk))
+  if(N_contiguous != spamm_chunk_get_N_contiguous(chunk))
   {
     SPAMM_FATAL("N_contiguous mismatch\n");
   }

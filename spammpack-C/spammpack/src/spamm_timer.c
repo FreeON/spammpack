@@ -60,21 +60,21 @@ spamm_timer_PAPI_init ()
 #ifdef HAVE_PAPI
   int papi_result;
 
-  if ((papi_result = PAPI_is_initialized()) != PAPI_LOW_LEVEL_INITED)
+  if((papi_result = PAPI_is_initialized()) != PAPI_LOW_LEVEL_INITED)
   {
     papi_result = PAPI_library_init(PAPI_VER_CURRENT);
-    if (papi_result != PAPI_VER_CURRENT && papi_result > 0)
+    if(papi_result != PAPI_VER_CURRENT && papi_result > 0)
     {
       printf("PAPI library version mismatch\n");
       exit(1);
     }
 
-    if (papi_result < 0)
+    if(papi_result < 0)
     {
       spamm_timer_handle_PAPI_error(papi_result, "timer new, PAPI_library_init()");
     }
 
-    if ((papi_result = PAPI_is_initialized()) != PAPI_LOW_LEVEL_INITED)
+    if((papi_result = PAPI_is_initialized()) != PAPI_LOW_LEVEL_INITED)
     {
       spamm_timer_handle_PAPI_error(papi_result, "timer new, PAPI_is_initialized()");
     }
@@ -104,7 +104,7 @@ spamm_timer_new ()
 #ifdef HAVE_PAPI
   timer->eventset = PAPI_NULL;
   spamm_timer_PAPI_init();
-  if ((papi_result = PAPI_create_eventset(&timer->eventset)) != PAPI_OK)
+  if((papi_result = PAPI_create_eventset(&timer->eventset)) != PAPI_OK)
   {
     spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_create_eventset()");
   }
@@ -127,19 +127,19 @@ spamm_timer_add_event (int event, struct spamm_timer_t *timer)
   int *temp_event;
   char temp_string[100];
 
-  if ((papi_result = PAPI_add_event(timer->eventset, event)) != PAPI_OK)
+  if((papi_result = PAPI_add_event(timer->eventset, event)) != PAPI_OK)
   {
     spamm_timer_handle_PAPI_error(papi_result, "new timer, PAPI_add_event()");
   }
 
   temp_event = calloc(timer->number_events+1, sizeof(int));
-  for (i = 0; i < timer->number_events; i++)
+  for(i = 0; i < timer->number_events; i++)
   {
     temp_event[i] = timer->event[i];
   }
   temp_event[timer->number_events] = event;
 
-  if (timer->event != NULL)
+  if(timer->event != NULL)
   {
     free(timer->event);
   }
@@ -166,12 +166,12 @@ spamm_timer_delete (struct spamm_timer_t **timer)
   int i;
   int papi_result;
 
-  if ((papi_result = PAPI_cleanup_eventset((*timer)->eventset)) != PAPI_OK)
+  if((papi_result = PAPI_cleanup_eventset((*timer)->eventset)) != PAPI_OK)
   {
     spamm_timer_handle_PAPI_error(papi_result, "delete timer, PAPI_cleanup_eventset()");
   }
 
-  if ((papi_result = PAPI_destroy_eventset(&(*timer)->eventset)) != PAPI_OK)
+  if((papi_result = PAPI_destroy_eventset(&(*timer)->eventset)) != PAPI_OK)
   {
     spamm_timer_handle_PAPI_error(papi_result, "delete timer, PAPI_destroy_eventset()");
   }
@@ -194,7 +194,7 @@ spamm_timer_start (struct spamm_timer_t *timer)
   int papi_result;
 #endif
 
-  if (timer->timer_running != 0)
+  if(timer->timer_running != 0)
   {
     printf("[start timer] this timer is already running\n");
     exit(1);
@@ -203,18 +203,18 @@ spamm_timer_start (struct spamm_timer_t *timer)
   timer->timer_running = 1;
 
 #ifdef HAVE_PAPI
-  if (timer->number_events == 0)
+  if(timer->number_events == 0)
   {
     printf("[start timer] this timer does not have any events\n");
     exit(1);
   }
 
-  if ((papi_result = PAPI_start(timer->eventset)) != PAPI_OK)
+  if((papi_result = PAPI_start(timer->eventset)) != PAPI_OK)
   {
     spamm_timer_handle_PAPI_error(papi_result, "start timer, PAPI_start()");
   }
 #else
-  if (getrusage(RUSAGE_SELF, &timer->start_time) != 0)
+  if(getrusage(RUSAGE_SELF, &timer->start_time) != 0)
   {
     printf("[start timer] error getting time\n");
     exit(1);
@@ -233,7 +233,7 @@ spamm_timer_stop (struct spamm_timer_t *timer)
   int papi_result;
 #endif
 
-  if (timer->timer_running != 1)
+  if(timer->timer_running != 1)
   {
     printf("[stop timer] this timer is not running\n");
     exit(1);
@@ -242,17 +242,17 @@ spamm_timer_stop (struct spamm_timer_t *timer)
   timer->timer_running = 0;
 
 #ifdef HAVE_PAPI
-  if (timer->event_value != NULL)
+  if(timer->event_value != NULL)
   {
     free(timer->event_value);
   }
   timer->event_value = calloc(timer->number_events, sizeof(unsigned long long));
-  if ((papi_result = PAPI_stop(timer->eventset, timer->event_value)) != PAPI_OK)
+  if((papi_result = PAPI_stop(timer->eventset, timer->event_value)) != PAPI_OK)
   {
     spamm_timer_handle_PAPI_error(papi_result, "stop timer, PAPI_stop()");
   }
 #else
-  if (getrusage(RUSAGE_SELF, &timer->end_time) != 0)
+  if(getrusage(RUSAGE_SELF, &timer->end_time) != 0)
   {
     printf("[stop timer] error getting time\n");
     exit(1);
@@ -282,7 +282,7 @@ spamm_timer_get (short *length, unsigned long long **values, const struct spamm_
   assert(length != NULL);
   assert(values != NULL);
 
-  if (timer->timer_running != 0)
+  if(timer->timer_running != 0)
   {
     printf("[timer get] this timer is running right now\n");
     exit(1);
@@ -291,7 +291,7 @@ spamm_timer_get (short *length, unsigned long long **values, const struct spamm_
 #ifdef HAVE_PAPI
   *length = timer->number_events;
   *values = calloc(*length, sizeof(unsigned long long));
-  for (i = 0; i < *length; i++)
+  for(i = 0; i < *length; i++)
   {
     (*values)[i] = timer->event_value[i];
   }
@@ -329,16 +329,16 @@ spamm_timer_get_string (const struct spamm_timer_t *timer)
   char *temp_event_name = calloc(maxlength, sizeof(char));
 
   sprintf(result, "[");
-  for (i = 0; i < timer->number_events; i++)
+  for(i = 0; i < timer->number_events; i++)
   {
-    if ((papi_result = PAPI_event_code_to_name(timer->event[i], temp_event_name)) != PAPI_OK)
+    if((papi_result = PAPI_event_code_to_name(timer->event[i], temp_event_name)) != PAPI_OK)
     {
       spamm_timer_handle_PAPI_error(papi_result, "get string, PAPI_event_code_to_name()");
     }
 
     sprintf(temp_string, " %lli 0x%x(%s)", timer->event_value[i], timer->event[i], temp_event_name);
     strncat(result, temp_string, maxlength-1);
-    if (i < timer->number_events-1)
+    if(i < timer->number_events-1)
     {
       strncat(result, ",", maxlength-1);
     }
@@ -378,16 +378,16 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring, const int
   temp_event_name = calloc(maxlength, sizeof(char));
 
   sprintf(infostring, "[");
-  for (i = 0; i < timer->number_events; i++)
+  for(i = 0; i < timer->number_events; i++)
   {
-    if ((papi_result = PAPI_event_code_to_name(timer->event[i], temp_event_name)) != PAPI_OK)
+    if((papi_result = PAPI_event_code_to_name(timer->event[i], temp_event_name)) != PAPI_OK)
     {
       spamm_timer_handle_PAPI_error(papi_result, "timer info, PAPI_event_code_to_name()");
     }
 
     sprintf(temp_string, " 0x%x(%s)", timer->event[i], temp_event_name);
     strncat(infostring, temp_string, maxlength-1);
-    if (i < timer->number_events-1)
+    if(i < timer->number_events-1)
     {
       strncat(infostring, ",", maxlength-1);
     }
@@ -410,37 +410,37 @@ spamm_timer_get_timer_type (const char *name)
 {
   enum spamm_timer_type_t timer_type = uninitialized;
 
-  if (strcasecmp(name, "walltime") == 0)
+  if(strcasecmp(name, "walltime") == 0)
   {
     timer_type = walltime;
   }
 
-  else if (strcasecmp(name, "papi_total_cycles") == 0)
+  else if(strcasecmp(name, "papi_total_cycles") == 0)
   {
     timer_type = papi_total_cycles;
   }
 
-  else if (strcasecmp(name, "papi_flop") == 0)
+  else if(strcasecmp(name, "papi_flop") == 0)
   {
     timer_type = papi_flop;
   }
 
-  else if (strcasecmp(name, "papi_l1_dcm") == 0)
+  else if(strcasecmp(name, "papi_l1_dcm") == 0)
   {
     timer_type = papi_l1_dcm;
   }
 
-  else if (strcasecmp(name, "papi_l1_icm") == 0)
+  else if(strcasecmp(name, "papi_l1_icm") == 0)
   {
     timer_type = papi_l1_icm;
   }
 
-  else if (strcasecmp(name, "papi_l2_dcm") == 0)
+  else if(strcasecmp(name, "papi_l2_dcm") == 0)
   {
     timer_type = papi_l2_dcm;
   }
 
-  else if (strcasecmp(name, "papi_l2_icm") == 0)
+  else if(strcasecmp(name, "papi_l2_icm") == 0)
   {
     timer_type = papi_l2_icm;
   }
@@ -472,24 +472,24 @@ spamm_timer_get_native_events ()
   printf("Nr.   Name                           Code        Description\n");
   do
   {
-    if ((retval = PAPI_get_event_info(i, &info)) == PAPI_OK)
+    if((retval = PAPI_get_event_info(i, &info)) == PAPI_OK)
     {
       printf("%3u   %-30s 0x%-10x%s\n", event_number++, info.symbol, info.event_code, info.long_descr);
     }
   }
-  while ((retval = PAPI_enum_event(&i, PAPI_ENUM_ALL)) == PAPI_OK);
+  while((retval = PAPI_enum_event(&i, PAPI_ENUM_ALL)) == PAPI_OK);
 
   printf("Preset events:\n");
   i = PAPI_PRESET_MASK;
   printf("Nr.   Name                           Code        Description\n");
   do
   {
-    if ((retval = PAPI_get_event_info(i, &info)) == PAPI_OK)
+    if((retval = PAPI_get_event_info(i, &info)) == PAPI_OK)
     {
       printf("%3u   %-30s 0x%-10x%s\n", event_number++, info.symbol, info.event_code, info.long_descr);
     }
   }
-  while ((retval = PAPI_enum_event(&i, PAPI_ENUM_ALL)) == PAPI_OK);
+  while((retval = PAPI_enum_event(&i, PAPI_ENUM_ALL)) == PAPI_OK);
 #else
   printf("PAPI is not available\n");
   exit(1);
