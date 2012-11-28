@@ -22,13 +22,13 @@ libspamm_la_SOURCES =
 libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la $(LIBADD_INTERNAL_LAPACK)
 #libspamm_la_DEPENDENCIES = $(LIBADD_INTERNAL_LAPACK)
 
-noinst_SCRIPTS = SSERegister.py generate_SSE_assembly.py # spammOffsets.py
+noinst_SCRIPTS = SSERegister.py generate_SSE_assembly_for_chunks.py # spammOffsets.py
 noinst_PROGRAMS = print_chunk_offsets
 
 print_chunk_offsets_LDFLAGS = libspamm.la
 print_chunk_offsets_DEPENDENCIES = libspamm.la
 
-EXTRA_DIST = SSERegister.py generate_SSE_assembly.py
+EXTRA_DIST = SSERegister.py generate_SSE_assembly_for_chunks.py
 
 spamm_stream_kernel.S : $(srcdir)/generate_SSE_assembly_for_chunks.py
 	PYTHONPATH=$(builddir) $(PYTHON) $(srcdir)/generate_SSE_assembly_for_chunks.py > $@
