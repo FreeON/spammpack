@@ -28,7 +28,7 @@ main (int argc, char **argv)
   struct spamm_matrix_t *A = NULL;
   struct spamm_matrix_t *B = NULL;
 
-  float *B_dense = (float*) calloc(N[0], sizeof(float));
+  float *B_dense;
 
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++)
   {
@@ -223,6 +223,8 @@ main (int argc, char **argv)
         spamm_delete(&B);
       }
     }
+    free(i);
+    free(N);
   }
 
   return result;
