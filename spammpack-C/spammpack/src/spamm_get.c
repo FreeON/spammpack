@@ -39,9 +39,6 @@ spamm_chunk_get (const unsigned int *i,
 
   unsigned int offset;
 
-  float *norm;
-  float *norm2;
-
   float *A;
 
   if(chunk == NULL) { return 0.0; }

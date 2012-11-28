@@ -6,6 +6,28 @@
 #include <stdio.h>
 #include <stdint.h>
 
+/** Get the total number of norm entries stored in a SpAMM chunk.
+ *
+ * @param number_tiers The number of tiers stored in the chunk.
+ * @param number_dimensions The number of dimensions in the chunk.
+ *
+ * @return The total number of norms.
+ */
+unsigned int
+spamm_chunk_get_total_number_norms (const unsigned int number_tiers,
+    const unsigned int number_dimensions)
+{
+  unsigned int tier;
+  unsigned int number_norms;
+
+  for(tier = 1, number_norms = 1; tier < number_tiers; tier++)
+  {
+    number_norms += ipow(ipow(2, number_dimensions), tier);
+  }
+
+  return number_norms;
+}
+
 /** Multiply a chunk with a scalar.
  *
  * @param alpha The factor.
@@ -18,6 +40,8 @@ spamm_chunk_multiply_scalar (const float alpha,
     spamm_chunk_t *chunk)
 {
   unsigned int i;
+  unsigned int number_norms;
+  unsigned int number_tiers;
   unsigned int N_contiguous;
   unsigned int number_dimensions;
 
@@ -28,6 +52,7 @@ spamm_chunk_multiply_scalar (const float alpha,
   if(chunk == NULL) { return 0.0; }
 
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  number_tiers = *spamm_chunk_get_number_tiers(chunk);
   N_contiguous = spamm_chunk_get_N_contiguous(chunk);
   A = spamm_chunk_get_matrix(chunk);
 
@@ -38,118 +63,14 @@ spamm_chunk_multiply_scalar (const float alpha,
 
   norm = spamm_chunk_get_norm(chunk);
   norm2 = spamm_chunk_get_norm2(chunk);
-  for(i = 0; i < 0; i++)
+  number_norms = spamm_chunk_get_total_number_norms(number_tiers, number_dimensions);
+  for(i = 0; i < number_norms; i++)
   {
     norm[i] *= alpha;
     norm2[i] *= alpha*alpha;
   }
 
   return norm2[0];
-}
-
-float
-spamm_chunk_multiply (const float tolerance,
-    const float alpha,
-    spamm_chunk_t *chunk_A,
-    spamm_chunk_t *chunk_B,
-    spamm_chunk_t *chunk_C,
-    const unsigned int tier,
-    const unsigned int chunk_tier,
-    const unsigned int linear_index_A,
-    const unsigned int linear_index_B,
-    const unsigned int linear_index_C,
-    struct spamm_timer_t *timer,
-    sgemm_func sgemm,
-    const enum spamm_kernel_t kernel)
-{
-  unsigned int i, j, k;
-
-  unsigned int number_dimensions_A;
-  unsigned int number_dimensions_B;
-  unsigned int number_dimensions_C;
-
-  unsigned int new_linear_index_A;
-  unsigned int new_linear_index_B;
-  unsigned int new_linear_index_C;
-
-  float *norm_A;
-  float *norm_B;
-
-  float *norm_C;
-  float *norm2_C;
-
-  float alpha_sgemm = alpha;
-  float beta = 1.0;
-
-  int N_contiguous;
-
-  float *matrix_A;
-  float *matrix_B;
-  float *matrix_C;
-
-  short use_linear_tree;
-
-  unsigned int number_dimensions;
-
-  if(chunk_A == NULL || chunk_B == NULL) { return 0.0; }
-
-  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk_A);
-  number_dimensions = *spamm_chunk_get_number_dimensions(chunk_A);
-
-  if(use_linear_tree)
-  {
-    return spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, beta, chunk_C, timer);
-  }
-
-  else
-  {
-    norm_A = spamm_chunk_get_norm(chunk_A);
-    norm_B = spamm_chunk_get_norm(chunk_B);
-
-    norm_C = spamm_chunk_get_norm(chunk_C);
-    norm2_C = spamm_chunk_get_norm2(chunk_C);
-
-    if(norm_A[0]*norm_B[0] > tolerance)
-    {
-      matrix_A = spamm_chunk_get_matrix(chunk_A);
-      matrix_B = spamm_chunk_get_matrix(chunk_B);
-      matrix_C = spamm_chunk_get_matrix(chunk_C);
-
-      N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
-
-      if(sgemm)
-      {
-        sgemm("N", "N", &N_contiguous, &N_contiguous, &N_contiguous,
-            &alpha_sgemm, matrix_A, &N_contiguous, matrix_B, &N_contiguous,
-            &beta, matrix_C, &N_contiguous);
-      }
-
-      else
-      {
-        /* Braindead multiply in nested loops. */
-        for(i = 0; i < N_contiguous; i++) {
-          for(j = 0; j < N_contiguous; j++) {
-            for(k = 0; k < N_contiguous; k++)
-            {
-              matrix_C[spamm_index_column_major(i, j, N_contiguous, N_contiguous)] += alpha
-                *matrix_A[spamm_index_column_major(i, k, N_contiguous, N_contiguous)]
-                *matrix_B[spamm_index_column_major(k, j, N_contiguous, N_contiguous)];
-            }
-          }
-        }
-      }
-
-      /* Update norm on C. */
-      norm2_C[0] = 0;
-      for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
-      {
-        norm2_C[0] += ipow(matrix_C[i], 2);
-      }
-      norm_C[0] = sqrt(norm2_C[0]);
-    }
-
-    return norm_C[0];
-  }
 }
 
 /** Pad memory address to some alignment.
@@ -470,7 +391,6 @@ size_t
 spamm_chunk_get_size (const unsigned int number_dimensions,
     const short use_linear_tree,
     unsigned int *number_tiers,
-    const unsigned int *const N,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper,
     unsigned int **N_pointer,
@@ -481,7 +401,6 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     float **norm_pointer,
     float **norm2_pointer)
 {
-  unsigned int tier;
   unsigned int N_contiguous;
   int dim;
 
@@ -574,19 +493,13 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   *norm_pointer = (float*) size;
 
   /* Add up all tiers. */
-  for(tier = 0; tier < *number_tiers; tier++)
-  {
-    size += ipow(ipow(2, number_dimensions), tier)*sizeof(float);
-  }
+  size += spamm_chunk_get_total_number_norms(*number_tiers, number_dimensions)*sizeof(float);
 
   /* Squared norm. */
   *norm2_pointer = (float*) size;
 
   /* Add up all tiers. */
-  for(tier = 0; tier < *number_tiers; tier++)
-  {
-    size += ipow(ipow(2, number_dimensions), tier)*sizeof(float);
-  }
+  size += spamm_chunk_get_total_number_norms(*number_tiers, number_dimensions)*sizeof(float);
 
   return size;
 }

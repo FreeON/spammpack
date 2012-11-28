@@ -87,7 +87,7 @@ main (int argc, char **argv)
   }
   chunk = spamm_new_chunk(number_dimensions, use_linear_tree, N, N_lower, N_upper);
   chunk_size = spamm_chunk_get_size(number_dimensions, use_linear_tree,
-      &number_tiers, N, N_lower, N_upper, &N_pointer, &N_lower_pointer,
+      &number_tiers, N_lower, N_upper, &N_pointer, &N_lower_pointer,
       &N_upper_pointer, &A_pointer, &A_dilated_pointer, &norm_pointer,
       &norm2_pointer);
 

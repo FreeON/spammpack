@@ -141,7 +141,7 @@ spamm_new_chunk (const unsigned int number_dimensions,
   spamm_chunk_t *chunk;
 
   chunk = spamm_allocate(spamm_chunk_get_size(number_dimensions,
-        use_linear_tree, &number_tiers, N, N_lower, N_upper, &N_pointer,
+        use_linear_tree, &number_tiers, N_lower, N_upper, &N_pointer,
         &N_lower_pointer, &N_upper_pointer, &A_pointer, &A_dilated_pointer,
         &norm_pointer, &norm2_pointer), 1);
 

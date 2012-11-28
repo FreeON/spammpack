@@ -226,7 +226,6 @@ void
 spamm_print_tree (const struct spamm_matrix_t *const A)
 {
   int dim;
-  unsigned int tier;
 
   unsigned int *N_lower;
   unsigned int *N_upper;

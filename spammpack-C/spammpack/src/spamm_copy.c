@@ -95,11 +95,6 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 {
   short i;
 
-  float *norm_A;
-  float *norm_B;
-  float *norm2_A;
-  float *norm2_B;
-
   if(B == NULL) { return; }
 
   if(*A == NULL)

@@ -17,14 +17,7 @@ spamm_chunk_multiply (const float tolerance,
     spamm_chunk_t *chunk_A,
     spamm_chunk_t *chunk_B,
     spamm_chunk_t *chunk_C,
-    const unsigned int tier,
-    const unsigned int chunk_tier,
-    const unsigned int linear_index_A,
-    const unsigned int linear_index_B,
-    const unsigned int linear_index_C,
-    struct spamm_timer_t *timer,
-    sgemm_func sgemm,
-    const enum spamm_kernel_t kernel);
+    sgemm_func sgemm);
 
 size_t
 spamm_chunk_pad (const size_t address,
@@ -84,7 +77,6 @@ size_t
 spamm_chunk_get_size (const unsigned int number_dimensions,
     const short use_linear_tree,
     unsigned int *number_tiers,
-    const unsigned int *const N,
     const unsigned int *const N_lower,
     const unsigned int *const N_upper,
     unsigned int **N_pointer,

@@ -96,11 +96,6 @@ spamm_recursive_add (const float alpha,
 {
   unsigned int i;
 
-  unsigned int N_contiguous;
-
-  float *A_matrix;
-  float *B_matrix;
-
   /* There is nothing to do here. */
   if((*A) == NULL && (*B) == NULL)
   {

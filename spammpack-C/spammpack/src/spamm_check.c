@@ -20,7 +20,6 @@ spamm_chunk_check (spamm_chunk_t *chunk,
   unsigned int tier;
   unsigned int number_dimensions;
   unsigned int N_contiguous;
-  unsigned int N_block;
   unsigned int use_linear_tree;
   unsigned int number_tiers;
   unsigned int linear_index;

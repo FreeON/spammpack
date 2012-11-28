@@ -114,9 +114,7 @@ spamm_linear_multiply (const float tolerance,
     const float alpha,
     spamm_chunk_t *chunk_A,
     spamm_chunk_t *chunk_B,
-    const float beta,
-    spamm_chunk_t *chunk_C,
-    struct spamm_timer_t *timer);
+    spamm_chunk_t *chunk_C);
 
 void
 spamm_recursive_multiply_scalar (const float alpha,
