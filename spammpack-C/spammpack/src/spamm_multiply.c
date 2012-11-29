@@ -8,6 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #ifdef HAVE_SSE
 #include <xmmintrin.h>
 #endif
@@ -85,7 +89,6 @@ spamm_recursive_multiply_scalar (const float alpha,
  * @param B The matrix \f$B\f$.
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
- * @param timer The timer to use.
  * @param kernel The stream kernel to use.
  *
  * @return The square of the Frobenius norm of the chunk.
@@ -379,7 +382,6 @@ spamm_chunk_multiply (const float tolerance,
  * @param B The matrix \f$B\f$.
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
- * @param timer The timer to use.
  * @param sgemm The external sgemm function to use.
  * @param tier The tier.
  * @param chunk_tier The contiguous tier.
@@ -393,7 +395,6 @@ spamm_recursive_multiply (const float tolerance,
     struct spamm_recursive_node_t *node_A,
     struct spamm_recursive_node_t *node_B,
     struct spamm_recursive_node_t **node_C,
-    struct spamm_timer_t *timer,
     sgemm_func sgemm,
     const enum spamm_kernel_t kernel,
     const unsigned int number_dimensions_A,
@@ -417,11 +418,13 @@ spamm_recursive_multiply (const float tolerance,
   /* We have to allocate a new C block a tier up. */
   if(*node_C == NULL)
   {
+    /* Lock when using OpenMP. */
     *node_C = spamm_recursive_new_node();
   }
 
   if(tier == chunk_tier)
   {
+    /* Lock when using OpenMP. */
     (*node_C)->norm2 = spamm_chunk_multiply(tolerance, alpha,
         node_A->tree.chunk, node_B->tree.chunk, (*node_C)->tree.chunk, sgemm);
     (*node_C)->norm = sqrt((*node_C)->norm2);
@@ -429,6 +432,7 @@ spamm_recursive_multiply (const float tolerance,
 
   else
   {
+    /* Lock when using OpenMP. */
     if((*node_C)->tree.child == NULL)
     {
       (*node_C)->tree.child = calloc(ipow(2, number_dimensions_C), sizeof(struct spamm_recursive_node_t*));
@@ -452,9 +456,10 @@ spamm_recursive_multiply (const float tolerance,
 
             if(node_A->norm*node_B->norm > tolerance)
             {
+#pragma omp task untied
               spamm_recursive_multiply(tolerance, alpha,
                   node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
-                  &(*node_C)->tree.child[i+2*j], timer, sgemm, kernel,
+                  &(*node_C)->tree.child[i+2*j], sgemm, kernel,
                   number_dimensions_A, number_dimensions_B,
                   number_dimensions_C, N, new_N_lower, new_N_upper, tier+1,
                   chunk_tier, use_linear_tree, number_products);
@@ -482,7 +487,6 @@ spamm_recursive_multiply (const float tolerance,
  * @param B The matrix \f$B\f$.
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
- * @param timer The timer to use.
  * @param sgemm The external sgemm function to use.
  */
 void
@@ -492,7 +496,6 @@ spamm_multiply (const float tolerance,
     struct spamm_matrix_t *B,
     const float beta,
     struct spamm_matrix_t *C,
-    struct spamm_timer_t *timer,
     sgemm_func sgemm,
     const enum spamm_kernel_t kernel,
     unsigned int *number_products)
@@ -521,11 +524,21 @@ spamm_multiply (const float tolerance,
       N_upper[dim] = A->N_padded;
     }
 
+#ifdef _OPENMP
+    /* Set some OpenMP defaults. */
+    omp_set_dynamic(0);
+    omp_set_nested(1);
+    omp_set_num_threads(omp_get_num_procs());
+#endif
+
+#pragma omp parallel
+#pragma omp master
+#pragma omp task untied
     spamm_recursive_multiply(tolerance, alpha, A->tree.recursive_tree,
-        B->tree.recursive_tree, &(C->tree.recursive_tree), timer, sgemm,
-        kernel, A->number_dimensions, B->number_dimensions,
-        C->number_dimensions, A->N, N_lower, N_upper, 0, A->chunk_tier,
-        A->use_linear_tree, number_products);
+        B->tree.recursive_tree, &(C->tree.recursive_tree), sgemm, kernel,
+        A->number_dimensions, B->number_dimensions, C->number_dimensions,
+        A->N, N_lower, N_upper, 0, A->chunk_tier, A->use_linear_tree,
+        number_products);
 
     free(N_lower);
     free(N_upper);

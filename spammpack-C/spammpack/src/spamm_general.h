@@ -131,7 +131,6 @@ spamm_multiply (const float tolerance,
     struct spamm_matrix_t *B,
     const float beta,
     struct spamm_matrix_t *C,
-    struct spamm_timer_t *timer,
     sgemm_func sgemm,
     const enum spamm_kernel_t kernel,
     unsigned int *number_products);

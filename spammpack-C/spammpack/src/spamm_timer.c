@@ -1,3 +1,4 @@
+#include "config.h"
 #include "spamm_timer.h"
 
 #include <assert.h>
@@ -8,6 +9,8 @@
 
 #ifdef HAVE_PAPI
 #include <papi.h>
+#else
+#include <sys/time.h>
 #endif
 
 /** @private A timer object.
@@ -32,10 +35,10 @@ struct spamm_timer_t
 #endif
 
   /** The time the timer was started. */
-  struct rusage start_time;
+  struct timeval start_time;
 
   /** The time the timer was stopped. */
-  struct rusage end_time;
+  struct timeval end_time;
 };
 
 #ifdef HAVE_PAPI
@@ -214,7 +217,7 @@ spamm_timer_start (struct spamm_timer_t *timer)
     spamm_timer_handle_PAPI_error(papi_result, "start timer, PAPI_start()");
   }
 #else
-  if(getrusage(RUSAGE_SELF, &timer->start_time) != 0)
+  if(gettimeofday(&timer->start_time, NULL) != 0)
   {
     printf("[start timer] error getting time\n");
     exit(1);
@@ -252,7 +255,7 @@ spamm_timer_stop (struct spamm_timer_t *timer)
     spamm_timer_handle_PAPI_error(papi_result, "stop timer, PAPI_stop()");
   }
 #else
-  if(getrusage(RUSAGE_SELF, &timer->end_time) != 0)
+  if(gettimeofday(&timer->end_time, NULL) != 0)
   {
     printf("[stop timer] error getting time\n");
     exit(1);
@@ -264,13 +267,12 @@ spamm_timer_stop (struct spamm_timer_t *timer)
  * is returned as an integer. The units of that integer depends on the timer
  * type.
  *
- * @param length Will hold the length of the allocated array values on return.
- * @param timer The timer.
- *
- * @return The variables length will contain the number of elements in the
+ * @param length [out] Will hold the length of the allocated array values on return.
+ * @param values [out] The variables length will contain the number of elements in the
  * values array, and the values variable will point to an array with the
  * counter values. This array needs to be free()'ed by the caller when not
  * needed anymore.
+ * @param timer The timer.
  */
 void
 spamm_timer_get (short *length, unsigned long long **values, const struct spamm_timer_t *timer)
@@ -298,14 +300,15 @@ spamm_timer_get (short *length, unsigned long long **values, const struct spamm_
 #else
   *length = 1;
   *values = calloc(*length, sizeof(unsigned long long));
-  (*values)[0] = 1000000*((timer->end_time).ru_utime.tv_sec
-      +(timer->end_time).ru_stime.tv_sec
-      -((timer->start_time).ru_utime.tv_sec
-        +(timer->start_time).ru_stime.tv_sec))
-    +(timer->end_time).ru_utime.tv_usec
-    +(timer->end_time).ru_stime.tv_usec
-    -((timer->start_time).ru_utime.tv_usec
-        +(timer->start_time).ru_stime.tv_usec);
+
+  (*values)[0] = 1000000*((timer->end_time).tv_sec
+      +(timer->end_time).tv_sec
+      -((timer->start_time).tv_sec
+        +(timer->start_time).tv_sec))
+    +(timer->end_time).tv_usec
+    +(timer->end_time).tv_usec
+    -((timer->start_time).tv_usec
+        +(timer->start_time).tv_usec);
 #endif
 }
 
@@ -346,7 +349,13 @@ spamm_timer_get_string (const struct spamm_timer_t *timer)
   strncat(result, " ]", maxlength-1);
   free(temp_string);
 #else
-  sprintf(result, "%u (walltime)", 0);
+  short number_events;
+  unsigned long long *event_counter;
+
+  spamm_timer_get(&number_events, &event_counter, timer);
+  sprintf(result, "%llu (walltime)", event_counter[0]);
+
+  free(event_counter);
 #endif
 
   return result;

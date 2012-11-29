@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define VERIFY_RESULT
+//#define VERIFY_RESULT
+//#define CHECK_MATRICES
 
 #define TEST_ABS_TOLERANCE 2e-8
 #define TEST_REL_TOLERANCE 2e-6
@@ -60,6 +61,7 @@ main (int argc, char **argv)
 
   enum spamm_kernel_t kernel = kernel_standard_SSE;
   struct spamm_timer_t *timer;
+  char *timer_string;
 
   int option_index;
   int parse_result;
@@ -172,10 +174,8 @@ main (int argc, char **argv)
   B_float = (float*) malloc(sizeof(float)*N[0]*N[1]);
   C_float = (float*) malloc(sizeof(float)*N[0]*N[1]);
 
-  A = spamm_new(2, N, chunk_tier, use_linear_tree);
-  B = spamm_new(2, N, chunk_tier, use_linear_tree);
-  C = spamm_new(2, N, chunk_tier, use_linear_tree);
-
+  printf("creating random matrices... ");
+  fflush(stdout);
   for(i[0] = 0; i[0] < N[0]; i[0]++)
   {
     if(use_diagonal)
@@ -223,10 +223,6 @@ main (int argc, char **argv)
           C_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
         }
       }
-
-      spamm_set(i, A_dense[i[0]*N[1]+i[1]], A);
-      spamm_set(i, B_dense[i[0]*N[1]+i[1]], B);
-      spamm_set(i, C_dense[i[0]*N[1]+i[1]], C);
     }
   }
 
@@ -238,6 +234,16 @@ main (int argc, char **argv)
       C_float[i[0]*N[1]+i[1]] = C_dense[i[0]*N[1]+i[1]];
     }
   }
+  printf("done\n");
+
+  printf("creating SpAMM matrices... ");
+  fflush(stdout);
+
+  A = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, A_float);
+  B = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, B_float);
+  C = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, C_float);
+
+  printf("done\n");
 
   printf("multiply: alpha = %f, beta = %f, tolerance = %f\n", alpha, beta, tolerance);
 
@@ -245,6 +251,7 @@ main (int argc, char **argv)
   spamm_print_info(B);
   spamm_print_info(C);
 
+#ifdef CHECK_MATRICES
   printf("checking SpAMM matrices...\n");
   printf("checking A\n");
   spamm_check(A, 1e-7);
@@ -253,6 +260,7 @@ main (int argc, char **argv)
   printf("checking C\n");
   spamm_check(C, 1e-7);
   printf("done\n");
+#endif
 
   if(print_debug)
   {
@@ -334,7 +342,12 @@ main (int argc, char **argv)
 
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
-  spamm_multiply(tolerance, alpha, A, B, beta, C, timer, (use_sgemm ? SGEMM : NULL), kernel, NULL);
+  spamm_timer_start(timer);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), kernel, NULL);
+  spamm_timer_stop(timer);
+  timer_string = spamm_timer_get_string(timer);
+  printf("timer: %s\n", timer_string);
+  free(timer_string);
   spamm_timer_delete(&timer);
 
   if(print_debug)
@@ -349,8 +362,10 @@ main (int argc, char **argv)
     }
   }
 
+#ifdef CHECK_MATRICES
   printf("checking C\n");
   spamm_check(C, 1e-7);
+#endif
 
 #ifdef VERIFY_RESULT
   max_diff = 0;
