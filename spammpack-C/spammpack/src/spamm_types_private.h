@@ -5,6 +5,10 @@
 
 #include "config.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 /** The matrix. */
 struct spamm_matrix_t
 {
@@ -55,6 +59,11 @@ spamm_recursive_node_t
 
   /** The square of the norm of this block. */
   float norm2;
+
+#ifdef _OPENMP
+  /** A lock. */
+  omp_lock_t lock;
+#endif
 
   union children
   {

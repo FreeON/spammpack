@@ -415,28 +415,31 @@ spamm_recursive_multiply (const float tolerance,
 
   if(node_A == NULL || node_B == NULL) { return; }
 
-  /* We have to allocate a new C block a tier up. */
-  if(*node_C == NULL)
-  {
-    /* Lock when using OpenMP. */
-    *node_C = spamm_recursive_new_node();
-  }
-
   if(tier == chunk_tier)
   {
-    /* Lock when using OpenMP. */
+#ifdef _OPENMP
+    omp_set_lock(&(*node_C)->lock);
+#endif
     (*node_C)->norm2 = spamm_chunk_multiply(tolerance, alpha,
         node_A->tree.chunk, node_B->tree.chunk, (*node_C)->tree.chunk, sgemm);
     (*node_C)->norm = sqrt((*node_C)->norm2);
+#ifdef _OPENMP
+    omp_unset_lock(&(*node_C)->lock);
+#endif
   }
 
   else
   {
-    /* Lock when using OpenMP. */
+#ifdef _OPENMP
+    omp_set_lock(&(*node_C)->lock);
+#endif
     if((*node_C)->tree.child == NULL)
     {
       (*node_C)->tree.child = calloc(ipow(2, number_dimensions_C), sizeof(struct spamm_recursive_node_t*));
     }
+#ifdef _OPENMP
+    omp_unset_lock(&(*node_C)->lock);
+#endif
 
     new_N_lower = calloc(number_dimensions_C, sizeof(unsigned int));
     new_N_upper = calloc(number_dimensions_C, sizeof(unsigned int));
@@ -456,6 +459,18 @@ spamm_recursive_multiply (const float tolerance,
 
             if(node_A->norm*node_B->norm > tolerance)
             {
+#ifdef _OPENMP
+              omp_set_lock(&(*node_C)->lock);
+#endif
+              /* We have to allocate a new C block a tier up. */
+              if((*node_C)->tree.child[i+2*j] == NULL)
+              {
+                (*node_C)->tree.child[i+2*j] = spamm_recursive_new_node();
+              }
+#ifdef _OPENMP
+              omp_unset_lock(&(*node_C)->lock);
+#endif
+
 #pragma omp task untied
               spamm_recursive_multiply(tolerance, alpha,
                   node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
@@ -467,6 +482,7 @@ spamm_recursive_multiply (const float tolerance,
           }
         }
       }
+#pragma omp taskwait
     }
 
     else
@@ -524,11 +540,15 @@ spamm_multiply (const float tolerance,
       N_upper[dim] = A->N_padded;
     }
 
+    if(C->tree.recursive_tree == NULL)
+    {
+      C->tree.recursive_tree = spamm_recursive_new_node();
+    }
+
 #ifdef _OPENMP
     /* Set some OpenMP defaults. */
     omp_set_dynamic(0);
     omp_set_nested(1);
-    omp_set_num_threads(omp_get_num_procs());
 #endif
 
 #pragma omp parallel

@@ -14,12 +14,12 @@ void spamm_sgemm (char * transA, char * transB,
 
   SPAMM_WARN("using SpAMM sgemm()\n");
 
-  if (*transA != 'N')
+  if(*transA != 'N')
   {
     SPAMM_FATAL("FIXME\n");
   }
 
-  if (*transB != 'N')
+  if(*transB != 'N')
   {
     SPAMM_FATAL("FIXME\n");
   }

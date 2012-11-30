@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 /** Delete a chunk. This function simply calls free().
  *
  * @param chunk The chunk to delete.
@@ -47,6 +51,9 @@ spamm_recursive_delete (const unsigned int number_dimensions,
     {
       spamm_recursive_delete(number_dimensions, tier+1, chunk_tier, use_linear_tree, &(*node)->tree.child[i]);
     }
+#ifdef _OPENMP
+    omp_destroy_lock(&(*node)->lock);
+#endif
     free((*node)->tree.child);
     (*node)->tree.child = NULL;
   }

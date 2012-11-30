@@ -109,7 +109,7 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 
   else
   {
-    if ((*A)->tree.child == NULL)
+    if((*A)->tree.child == NULL)
     {
       (*A)->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
     }

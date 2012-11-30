@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 /** Get the depth of a matrix tree.
  *
  * @return The depth.
@@ -198,6 +202,10 @@ spamm_recursive_new_node ()
 
   /* Allocate memory. */
   node = calloc(1, sizeof(struct spamm_recursive_node_t));
+
+#ifdef _OPENMP
+  omp_init_lock(&node->lock);
+#endif
 
   return node;
 }
