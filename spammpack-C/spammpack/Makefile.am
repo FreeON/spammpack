@@ -33,10 +33,12 @@ docs :
 
 .PHONY : always
 git_commit : always
-	@if test `git --version > /dev/null 2>&1`; then \
+	@git --version > /dev/null 2>&1; if test $$? -eq 0; then \
+		echo "updating git_commit"; \
 		COMMIT=`git show --pretty=oneline HEAD | head -n1 | awk '{print $$1}'` && \
 		echo "git_commit=$$COMMIT" > git_commit.temp && \
 		( diff --brief git_commit git_commit.temp > /dev/null 2>&1 ) || mv -f git_commit.temp git_commit; \
-		else echo "not updating git_commit"; \
+	else \
+		echo "not updating git_commit"; \
 	fi
 	@rm -f git_commit.temp
