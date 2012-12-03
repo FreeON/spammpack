@@ -269,9 +269,9 @@ main (int argc, char **argv)
 
   printf("multiply: alpha = %f, beta = %f, tolerance = %f\n", alpha, beta, tolerance);
 
-  spamm_print_info(A);
-  spamm_print_info(B);
-  spamm_print_info(C);
+  //spamm_print_info(A);
+  //spamm_print_info(B);
+  //spamm_print_info(C);
 
   if(check_matrices)
   {
@@ -327,41 +327,44 @@ main (int argc, char **argv)
     spamm_print_tree(C);
   }
 
-  printf("multiplying reference... ");
-  fflush(stdout);
+  if(verify_result)
+  {
+    printf("multiplying reference... ");
+    fflush(stdout);
 #ifdef DGEMM
-  DGEMM("N", "N", &N[0], &N[0], &N[0], &alpha, A_dense, &N[0], B_dense, &N[0], &beta, C_dense, &N[0]);
+    DGEMM("N", "N", &N[0], &N[0], &N[0], &alpha, A_dense, &N[0], B_dense, &N[0], &beta, C_dense, &N[0]);
 #else
-  for(i[0] = 0; i[0] < N[0]; i[0]++) {
-    for(i[1] = 0; i[1] < N[1]; i[1]++)
-    {
-      C_dense[matrix_index(i[0], i[1], N[0], N[1])] *= beta;
-      for(k = 0; k < N[0]; k++)
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        C_dense[matrix_index(i[0], i[1], N[0], N[1])] += alpha*A_dense[matrix_index(i[0], k, N[0], N[1])]*B_dense[matrix_index(k, i[1], N[0], N[1])];
+        C_dense[matrix_index(i[0], i[1], N[0], N[1])] *= beta;
+        for(k = 0; k < N[0]; k++)
+        {
+          C_dense[matrix_index(i[0], i[1], N[0], N[1])] += alpha*A_dense[matrix_index(i[0], k, N[0], N[1])]*B_dense[matrix_index(k, i[1], N[0], N[1])];
+        }
       }
     }
-  }
 #endif
-  printf("done\n");
+    printf("done\n");
 
-  printf("multiplying sgemm... ");
-  fflush(stdout);
+    printf("multiplying sgemm... ");
+    fflush(stdout);
 #ifdef SGEMM
-  SGEMM("N", "N", &N[0], &N[0], &N[0], &alpha_float, A_float, &N[0], B_float, &N[0], &beta_float, C_float, &N[0]);
+    SGEMM("N", "N", &N[0], &N[0], &N[0], &alpha_float, A_float, &N[0], B_float, &N[0], &beta_float, C_float, &N[0]);
 #else
-  for(i[0] = 0; i[0] < N[0]; i[0]++) {
-    for(i[1] = 0; i[1] < N[1]; i[1]++)
-    {
-      C_float[matrix_index(i[0], i[1], N[0], N[1])] *= beta;
-      for(k = 0; k < N[0]; k++)
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        C_float[matrix_index(i[0], i[1], N[0], N[1])] += alpha*A_float[matrix_index(i[0], k, N[0], N[1])]*B_float[matrix_index(k, i[1], N[0], N[1])];
+        C_float[matrix_index(i[0], i[1], N[0], N[1])] *= beta;
+        for(k = 0; k < N[0]; k++)
+        {
+          C_float[matrix_index(i[0], i[1], N[0], N[1])] += alpha*A_float[matrix_index(i[0], k, N[0], N[1])]*B_float[matrix_index(k, i[1], N[0], N[1])];
+        }
       }
     }
-  }
 #endif
-  printf("done\n");
+    printf("done\n");
+  }
 
   if(print_debug)
   {
