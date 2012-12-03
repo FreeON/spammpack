@@ -6,11 +6,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#define VERIFY_RESULT
-//#define CHECK_MATRICES
-
 #define TEST_ABS_TOLERANCE 2e-8
 #define TEST_REL_TOLERANCE 2e-6
+
+inline unsigned int
+matrix_index (const unsigned int i,
+    const unsigned int j,
+    const unsigned int M,
+    const unsigned int N)
+{
+  return i+j*M;
+}
 
 int
 main (int argc, char **argv)
@@ -25,17 +31,22 @@ main (int argc, char **argv)
 
   unsigned int chunk_tier = 5;
 
+  /* Boolean program parameters. */
   short use_linear_tree = 0;
   short use_sgemm = 0;
   short use_diagonal = 0;
+  short verify_result = 0;
+  short check_matrices = 0;
+  short random_matrix = 1;
+  short print_debug = 0;
 
   float gamma = 1.0;
 
   double alpha = 1.2;
   double beta = 0.5;
 
-  short random_matrix = 1;
-  short print_debug = 0;
+  float alpha_float = alpha;
+  float beta_float = beta;
 
   float tolerance = 0.0;
 
@@ -51,14 +62,12 @@ main (int argc, char **argv)
   struct spamm_matrix_t *B;
   struct spamm_matrix_t *C;
 
-#ifdef VERIFY_RESULT
   unsigned int max_i[] = { 0, 0 };
   unsigned int max_rel_i[] = { 0, 0 };
 
   double max_diff;
   double max_rel_diff;
   double max_diff_float;
-#endif
 
   enum spamm_kernel_t kernel = kernel_standard_SSE;
   struct spamm_timer_t *timer;
@@ -66,7 +75,7 @@ main (int argc, char **argv)
 
   int option_index;
   int parse_result;
-  char *short_options = "hk:N:la:b:t:c:rds1g:";
+  char *short_options = "hk:N:la:b:t:c:rds1g:vx";
   static struct option long_options[] = {
     { "help",       no_argument,        NULL, 'h' },
     { "kernel",     required_argument,  NULL, 'k' },
@@ -81,6 +90,8 @@ main (int argc, char **argv)
     { "sgemm",      no_argument,        NULL, 's' },
     { "diagonal",   no_argument,        NULL, '1' },
     { "gamma",      required_argument,  NULL, 'g' },
+    { "verify",     no_argument,        NULL, 'v' },
+    { "check",      no_argument,        NULL, 'x' },
     { NULL,         0,                  NULL,  0  }
   };
 
@@ -107,6 +118,8 @@ main (int argc, char **argv)
         printf("{ -s | --sgemm }              Use sgemm\n");
         printf("{ -1 | --diagonal }           Create diagonally dominant matrices\n");
         printf("{ -g | --gamma } g            Set decay for diagonal to g\n");
+        printf("{ -v | --verify }             Verify result\n");
+        printf("{ -x | --check }              Check matrices\n");
         exit(0);
         break;
 
@@ -161,6 +174,14 @@ main (int argc, char **argv)
         gamma = strtof(optarg, NULL);
         break;
 
+      case 'v':
+        verify_result = 1;
+        break;
+
+      case 'x':
+        check_matrices = 1;
+        break;
+
       default:
         printf("unknown option\n");
         break;
@@ -183,16 +204,16 @@ main (int argc, char **argv)
     {
       if(random_matrix)
       {
-        A_dense[i[0]*N[1]+i[0]] = (float) rand()/(float) RAND_MAX;
-        B_dense[i[0]*N[1]+i[0]] = (float) rand()/(float) RAND_MAX;
-        C_dense[i[0]*N[1]+i[0]] = (float) rand()/(float) RAND_MAX;
+        A_dense[matrix_index(i[0], i[0], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
+        B_dense[matrix_index(i[0], i[0], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
+        C_dense[matrix_index(i[0], i[0], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
       }
 
       else
       {
-        A_dense[i[0]*N[1]+i[0]] = i[0]*N[1]+i[0]+1;
-        B_dense[i[0]*N[1]+i[0]] = i[0]*N[1]+i[0]+1;
-        C_dense[i[0]*N[1]+i[0]] = i[0]*N[1]+i[0]+1;
+        A_dense[matrix_index(i[0], i[0], N[0], N[1])] = i[0]*N[1]+i[0]+1;
+        B_dense[matrix_index(i[0], i[0], N[0], N[1])] = i[0]*N[1]+i[0]+1;
+        C_dense[matrix_index(i[0], i[0], N[0], N[1])] = i[0]*N[1]+i[0]+1;
       }
     }
 
@@ -202,9 +223,9 @@ main (int argc, char **argv)
       {
         if(i[0] != i[1])
         {
-          A_dense[i[0]*N[1]+i[1]] = A_dense[i[0]*N[1]+i[0]]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
-          B_dense[i[0]*N[1]+i[1]] = B_dense[i[0]*N[1]+i[0]]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
-          C_dense[i[0]*N[1]+i[1]] = C_dense[i[0]*N[1]+i[0]]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
+          A_dense[matrix_index(i[0], i[1], N[0], N[1])] = A_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
+          B_dense[matrix_index(i[0], i[1], N[0], N[1])] = B_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
+          C_dense[matrix_index(i[0], i[1], N[0], N[1])] = C_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
         }
       }
 
@@ -212,16 +233,16 @@ main (int argc, char **argv)
       {
         if(random_matrix)
         {
-          A_dense[i[0]*N[1]+i[1]] = (float) rand()/(float) RAND_MAX;
-          B_dense[i[0]*N[1]+i[1]] = (float) rand()/(float) RAND_MAX;
-          C_dense[i[0]*N[1]+i[1]] = (float) rand()/(float) RAND_MAX;
+          A_dense[matrix_index(i[0], i[1], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
+          B_dense[matrix_index(i[0], i[1], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
+          C_dense[matrix_index(i[0], i[1], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
         }
 
         else
         {
-          A_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
-          B_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
-          C_dense[i[0]*N[1]+i[1]] = i[0]*N[1]+i[1];
+          A_dense[matrix_index(i[0], i[1], N[0], N[1])] = i[0]*N[1]+i[1];
+          B_dense[matrix_index(i[0], i[1], N[0], N[1])] = i[0]*N[1]+i[1];
+          C_dense[matrix_index(i[0], i[1], N[0], N[1])] = i[0]*N[1]+i[1];
         }
       }
     }
@@ -230,9 +251,9 @@ main (int argc, char **argv)
   for (i[0] = 0; i[0] < N[0]; i[0]++) {
     for (i[1] = 0; i[1] < N[1]; i[1]++)
     {
-      A_float[i[0]*N[1]+i[1]] = A_dense[i[0]*N[1]+i[1]];
-      B_float[i[0]*N[1]+i[1]] = B_dense[i[0]*N[1]+i[1]];
-      C_float[i[0]*N[1]+i[1]] = C_dense[i[0]*N[1]+i[1]];
+      A_float[matrix_index(i[0], i[1], N[0], N[1])] = A_dense[i[0]*N[1]+i[1]];
+      B_float[matrix_index(i[0], i[1], N[0], N[1])] = B_dense[i[0]*N[1]+i[1]];
+      C_float[matrix_index(i[0], i[1], N[0], N[1])] = C_dense[i[0]*N[1]+i[1]];
     }
   }
   printf("done\n");
@@ -252,16 +273,17 @@ main (int argc, char **argv)
   spamm_print_info(B);
   spamm_print_info(C);
 
-#ifdef CHECK_MATRICES
-  printf("checking SpAMM matrices...\n");
-  printf("checking A\n");
-  spamm_check(A, 1e-7);
-  printf("checking B\n");
-  spamm_check(B, 1e-7);
-  printf("checking C\n");
-  spamm_check(C, 1e-7);
-  printf("done\n");
-#endif
+  if(check_matrices)
+  {
+    printf("checking SpAMM matrices...\n");
+    printf("checking A\n");
+    spamm_check(A, 1e-7);
+    printf("checking B\n");
+    spamm_check(B, 1e-7);
+    printf("checking C\n");
+    spamm_check(C, 1e-7);
+    printf("done\n");
+  }
 
   if(print_debug)
   {
@@ -269,7 +291,7 @@ main (int argc, char **argv)
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf("A_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, A_dense[i[0]*N[1]+i[1]]);
+        printf("A_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, A_dense[matrix_index(i[0], i[1], N[0], N[1])]);
       }
     }
 
@@ -286,7 +308,7 @@ main (int argc, char **argv)
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf("B_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, B_dense[i[0]*N[1]+i[1]]);
+        printf("B_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, B_dense[matrix_index(i[0], i[1], N[0], N[1])]);
       }
     }
 
@@ -294,7 +316,7 @@ main (int argc, char **argv)
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf("C_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, C_dense[i[0]*N[1]+i[1]]);
+        printf("C_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, C_dense[matrix_index(i[0], i[1], N[0], N[1])]);
       }
     }
 
@@ -307,30 +329,38 @@ main (int argc, char **argv)
 
   printf("multiplying reference... ");
   fflush(stdout);
+#ifdef DGEMM
+  DGEMM("N", "N", &N[0], &N[0], &N[0], &alpha, A_dense, &N[0], B_dense, &N[0], &beta, C_dense, &N[0]);
+#else
   for(i[0] = 0; i[0] < N[0]; i[0]++) {
     for(i[1] = 0; i[1] < N[1]; i[1]++)
     {
-      C_dense[i[0]*N[1]+i[1]] *= beta;
+      C_dense[matrix_index(i[0], i[1], N[0], N[1])] *= beta;
       for(k = 0; k < N[0]; k++)
       {
-        C_dense[i[0]*N[1]+i[1]] += alpha*A_dense[i[0]*N[1]+k]*B_dense[k*N[1]+i[1]];
+        C_dense[matrix_index(i[0], i[1], N[0], N[1])] += alpha*A_dense[matrix_index(i[0], k, N[0], N[1])]*B_dense[matrix_index(k, i[1], N[0], N[1])];
       }
     }
   }
+#endif
   printf("done\n");
 
   printf("multiplying sgemm... ");
   fflush(stdout);
+#ifdef SGEMM
+  SGEMM("N", "N", &N[0], &N[0], &N[0], &alpha_float, A_float, &N[0], B_float, &N[0], &beta_float, C_float, &N[0]);
+#else
   for(i[0] = 0; i[0] < N[0]; i[0]++) {
     for(i[1] = 0; i[1] < N[1]; i[1]++)
     {
-      C_float[i[0]*N[1]+i[1]] *= beta;
+      C_float[matrix_index(i[0], i[1], N[0], N[1])] *= beta;
       for(k = 0; k < N[0]; k++)
       {
-        C_float[i[0]*N[1]+i[1]] += alpha*A_float[i[0]*N[1]+k]*B_float[k*N[1]+i[1]];
+        C_float[matrix_index(i[0], i[1], N[0], N[1])] += alpha*A_float[matrix_index(i[0], k, N[0], N[1])]*B_float[matrix_index(k, i[1], N[0], N[1])];
       }
     }
   }
+#endif
   printf("done\n");
 
   if(print_debug)
@@ -339,7 +369,7 @@ main (int argc, char **argv)
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
       {
-        printf("C_ref_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, C_dense[i[0]*N[1]+i[1]]);
+        printf("C_ref_dense(%u,%u) = %e;\n", i[0]+1, i[1]+1, C_dense[matrix_index(i[0], i[1], N[0], N[1])]);
       }
     }
   }
@@ -366,65 +396,67 @@ main (int argc, char **argv)
     }
   }
 
-#ifdef CHECK_MATRICES
-  printf("checking C\n");
-  spamm_check(C, 1e-7);
-#endif
+  if(check_matrices)
+  {
+    printf("checking C\n");
+    spamm_check(C, 1e-7);
+  }
 
-#ifdef VERIFY_RESULT
-  max_diff = 0;
-  max_rel_diff = 0;
-  max_diff_float = 0;
-  printf("verifying result... ");
-  fflush(stdout);
-  for(i[0] = 0; i[0] < N[0]; i[0]++) {
-    for(i[1] = 0; i[1] < N[1]; i[1]++) {
-      for(k = 0; k < N[0]; k++)
-      {
-        if(fabs(C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C)) > max_diff)
+  if(verify_result)
+  {
+    max_diff = 0;
+    max_rel_diff = 0;
+    max_diff_float = 0;
+    printf("verifying result... ");
+    fflush(stdout);
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++) {
+        for(k = 0; k < N[0]; k++)
         {
-          max_diff = fabs(C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C));
-          max_i[0] = i[0];
-          max_i[1] = i[1];
-        }
-
-        if(fabs(C_dense[i[0]*N[1]+i[1]]-C_float[i[0]*N[1]+i[1]]) > max_diff_float)
-        {
-          max_diff_float = fabs(C_dense[i[0]*N[1]+i[1]]-C_float[i[0]*N[1]+i[1]]);
-        }
-
-        if(C_dense[i[0]*N[1]+i[1]] != 0)
-        {
-          if(fabs((C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C))/C_dense[i[0]*N[1]+i[1]]) > max_rel_diff)
+          if(fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C)) > max_diff)
           {
-            max_rel_diff = fabs((C_dense[i[0]*N[1]+i[1]]-spamm_get(i, C))/C_dense[i[0]*N[1]+i[1]]);
-            max_rel_i[0] = i[0];
-            max_rel_i[1] = i[1];
+            max_diff = fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C));
+            max_i[0] = i[0];
+            max_i[1] = i[1];
+          }
+
+          if(fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-C_float[matrix_index(i[0], i[1], N[0], N[1])]) > max_diff_float)
+          {
+            max_diff_float = fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-C_float[matrix_index(i[0], i[1], N[0], N[1])]);
+          }
+
+          if(C_dense[matrix_index(i[0], i[1], N[0], N[1])] != 0)
+          {
+            if(fabs((C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C))/C_dense[matrix_index(i[0], i[1], N[0], N[1])]) > max_rel_diff)
+            {
+              max_rel_diff = fabs((C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C))/C_dense[matrix_index(i[0], i[1], N[0], N[1])]);
+              max_rel_i[0] = i[0];
+              max_rel_i[1] = i[1];
+            }
           }
         }
       }
     }
-  }
-  printf("done\n");
+    printf("done\n");
 
-  printf("max diff =       %e, rel. diff = %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
-      max_diff,
-      (C_dense[max_i[0]*N[1]+max_i[1]] != 0.0 ? max_diff/C_dense[max_i[0]*N[1]+max_i[1]] : 0.0),
-      max_i[0], max_i[1], spamm_get(max_i, C),
-      max_i[0], max_i[1], C_dense[max_i[0]*N[1]+max_i[1]]);
-  printf("max float diff = %e\n", max_diff_float);
-  printf("max rel. diff =  %e, diff =      %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
-      max_rel_diff,
-      fabs(C_dense[max_rel_i[0]*N[1]+max_rel_i[1]]-spamm_get(max_rel_i, C)),
-      max_rel_i[0], max_rel_i[1], spamm_get(max_rel_i, C),
-      max_rel_i[0], max_rel_i[1], C_dense[max_rel_i[0]*N[1]+max_rel_i[1]]);
+    printf("max diff =       %e, rel. diff = %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
+        max_diff,
+        (C_dense[matrix_index(max_i[0], max_i[1], N[0], N[1])] != 0.0 ? max_diff/C_dense[matrix_index(max_i[0], max_i[1], N[0], N[1])] : 0.0),
+        max_i[0], max_i[1], spamm_get(max_i, C),
+        max_i[0], max_i[1], C_dense[matrix_index(max_i[0], max_i[1], N[0], N[1])]);
+    printf("max float diff = %e\n", max_diff_float);
+    printf("max rel. diff =  %e, diff =      %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
+        max_rel_diff,
+        fabs(C_dense[matrix_index(max_rel_i[0], max_rel_i[1], N[0], N[1])]-spamm_get(max_rel_i, C)),
+        max_rel_i[0], max_rel_i[1], spamm_get(max_rel_i, C),
+        max_rel_i[0], max_rel_i[1], C_dense[matrix_index(max_rel_i[0], max_rel_i[1], N[0], N[1])]);
 
-  if(max_diff > TEST_ABS_TOLERANCE && max_rel_diff > TEST_REL_TOLERANCE)
-  {
-    printf("test failed (abs. tolerance = %e, rel. tolerance = %e)\n", TEST_ABS_TOLERANCE, TEST_REL_TOLERANCE);
-    result = -1;
+    if(max_diff > TEST_ABS_TOLERANCE && max_rel_diff > TEST_REL_TOLERANCE)
+    {
+      printf("test failed (abs. tolerance = %e, rel. tolerance = %e)\n", TEST_ABS_TOLERANCE, TEST_REL_TOLERANCE);
+      result = -1;
+    }
   }
-#endif
 
   free(A_dense);
   free(B_dense);

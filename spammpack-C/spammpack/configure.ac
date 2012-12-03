@@ -99,8 +99,23 @@ if test "${have_sgemm}" = "no"; then
   AC_MSG_NOTICE([no external sgemm_(), will use internal sgemm()])
   AC_DEFINE([SGEMM], [spamm_sgemm], [SpAMM internal sgemm.])
 else
+  AC_MSG_NOTICE([will use external sgemm_()])
   AC_DEFINE([ADD_SGEMM_EXTERNAL_DECLARATION], [1], [Add declaration for sgemm_() external.])
   AC_DEFINE([SGEMM], [sgemm_], [External sgemm_().])
+fi
+
+dnl Check for dgemm_().
+AC_SEARCH_LIBS([dgemm_], [],
+               [have_dgemm="yes"],
+               [have_dgemm="no"])
+
+if test "${have_dgemm}" = "no"; then
+  AC_MSG_NOTICE([no external dgemm_(), will use internal dgemm()])
+  AC_DEFINE([DGEMM], [spamm_dgemm], [SpAMM internal dgemm.])
+else
+  AC_MSG_NOTICE([will use external dgemm_()])
+  AC_DEFINE([ADD_DGEMM_EXTERNAL_DECLARATION], [1], [Add declaration for dgemm_() external.])
+  AC_DEFINE([DGEMM], [dgemm_], [External dgemm_().])
 fi
 
 dnl Find out whether we support SSE and SSE4.1.
