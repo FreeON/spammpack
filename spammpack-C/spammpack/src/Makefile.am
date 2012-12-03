@@ -10,17 +10,9 @@ ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 lib_LTLIBRARIES = libspamm.la libspammpack_fortran.la
 noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la
 
-if INTERNAL_LAPACK
-LIBADD_INTERNAL_LAPACK = \
-  $(top_builddir)/../lapack/lapack/libfreeonlapack.la \
-  $(top_builddir)/../lapack/blas/libfreeonblas.la \
-  $(top_builddir)/../lapack/install/libfreeonlapackextra.la
-endif
-
 libspamm_la_LDFLAGS = -version-info 0:0:0
 libspamm_la_SOURCES =
-libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la $(LIBADD_INTERNAL_LAPACK)
-#libspamm_la_DEPENDENCIES = $(LIBADD_INTERNAL_LAPACK)
+libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la
 
 noinst_SCRIPTS = SSERegister.py generate_SSE_assembly_for_chunks.py # spammOffsets.py
 noinst_PROGRAMS = print_chunk_offsets

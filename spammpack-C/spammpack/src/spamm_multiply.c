@@ -78,7 +78,7 @@ spamm_recursive_multiply_scalar (const float alpha,
   }
 }
 
-#define SPAMM_MULTIPLY_DEBUG
+//#define SPAMM_MULTIPLY_DEBUG
 #define RUN_ASSEMBLY_KERNEL
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
