@@ -51,13 +51,14 @@ main (int argc, char **argv)
   struct spamm_matrix_t *B;
   struct spamm_matrix_t *C;
 
+#ifdef VERIFY_RESULT
   unsigned int max_i[] = { 0, 0 };
   unsigned int max_rel_i[] = { 0, 0 };
 
   double max_diff;
   double max_rel_diff;
-
   double max_diff_float;
+#endif
 
   enum spamm_kernel_t kernel = kernel_standard_SSE;
   struct spamm_timer_t *timer;
@@ -299,6 +300,9 @@ main (int argc, char **argv)
 
     printf("A =\n");
     spamm_print_tree(A);
+
+    printf("C =\n");
+    spamm_print_tree(C);
   }
 
   printf("multiplying reference... ");
