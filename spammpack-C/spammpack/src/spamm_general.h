@@ -194,6 +194,11 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const float *const A_dense);
 
 void
+spamm_spectral_bounds (float *const a_min,
+    float *const a_max,
+    struct spamm_matrix_t *A);
+
+void
 spamm_sort_masked (const unsigned int length,
     unsigned int *const list,
     const unsigned int mask);

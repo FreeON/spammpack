@@ -71,7 +71,8 @@ check_PROGRAMS = \
   14_add_spamm_dense \
   15_add_spamm_sparse \
   16_stats \
-  17_multiply_spamm
+  17_multiply_spamm \
+  18_spectral_bounds
 
 # spamm_multiply
 

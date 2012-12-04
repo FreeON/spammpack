@@ -76,8 +76,9 @@ libspamm_tree_la_SOURCES = \
   spamm_print.c \
   spamm_set.c \
   spamm_sgemm.c \
-  spamm_stats.c \
   spamm_sort.c \
+  spamm_spectral_bounds.c \
+  spamm_stats.c \
   spamm_timer.c \
   spamm_uint_to_bin_string.c \
   spamm_version.c
