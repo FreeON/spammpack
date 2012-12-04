@@ -78,7 +78,7 @@ spamm_recursive_multiply_scalar (const float alpha,
   }
 }
 
-#define SPAMM_MULTIPLY_DEBUG
+//#define SPAMM_MULTIPLY_DEBUG
 #define RUN_ASSEMBLY_KERNEL
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -189,6 +189,10 @@ spamm_linear_multiply (const float tolerance,
     }
   }
 
+  /* Free memory. */
+  free(index_A);
+  free(index_B);
+
 #ifdef SPAMM_MULTIPLY_DEBUG
   printf("[multiply] Added %u (out of %u possible) block products to stream\n", stream_index, ipow(index_length, 3));
 #endif
@@ -272,12 +276,10 @@ spamm_linear_multiply (const float tolerance,
 #endif
 
   /* Update norms. */
-  SPAMM_WARN("FIXME: update norms on product\n");
+  //SPAMM_WARN("FIXME: update norms on product\n");
 
   /* Free memory. */
   free(stream);
-  free(index_A);
-  free(index_B);
 
   return 0;
 }

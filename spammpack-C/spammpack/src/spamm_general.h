@@ -195,12 +195,17 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
 
 void
 spamm_sort_masked (const unsigned int length,
-    unsigned int *list,
+    unsigned int *const list,
     const unsigned int mask);
 
 void spamm_sgemm (char * transA, char * transB,
     int *M, int *N, int *K,
     float *alpha, float *A, int *LDA, float *B, int *LDB,
     float *beta, float *C, int *LDC);
+
+void spamm_dgemm (char * transA, char * transB,
+    int *M, int *N, int *K,
+    double *alpha, double *A, int *LDA, double *B, int *LDB,
+    double *beta, double *C, int *LDC);
 
 #endif

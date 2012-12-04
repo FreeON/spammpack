@@ -80,30 +80,6 @@ if test "${ac_cv_header_xmmintrin_h}" = "yes"; then
   AC_DEFINE([HAVE_SSE], [1], [Use SSE instructions in some parts of the code.])
 fi
 
-dnl Check for PAPI.
-AC_MSG_CHECKING([whether to enable PAPI profiling interface])
-AC_ARG_ENABLE([PAPI], [AS_HELP_STRING([--enable-PAPI],
-              [enables the PAPI profiling interface])],
-              [enable_PAPI=$enableval],
-              [enable_PAPI="no"])
-AC_MSG_RESULT([$enable_PAPI])
-
-if test "${enable_PAPI}" = "yes"; then
-  dnl We need to define the C99 macro to get the declaration of caddr_t.
-  CPPFLAGS="${CPPFLAGS} -DC99"
-
-  have_PAPI="yes"
-  AC_CHECK_HEADERS([papi.h], [], [unset have_PAPI])
-  AC_SEARCH_LIBS([PAPI_library_init], [papi], [], [unset have_PAPI])
-  if test "${have_PAPI}" = "yes"; then
-    AC_DEFINE([HAVE_PAPI], [1], [Should we use the PAPI profiling interface?])
-  else
-    AC_MSG_FAILURE([PAPI requested but not available. You might have to
-specify the PAPI header file location by adding to CPPFLAGS and/or the PAPI
-library location by adding to LDFLAGS.])
-  fi
-fi
-
 dnl Check for pthread support.
 have_PTHREAD="yes"
 AC_CHECK_HEADERS([pthread.h], [], [unset have_PTHREAD])
@@ -123,27 +99,24 @@ if test "${have_sgemm}" = "no"; then
   AC_MSG_NOTICE([no external sgemm_(), will use internal sgemm()])
   AC_DEFINE([SGEMM], [spamm_sgemm], [SpAMM internal sgemm.])
 else
+  AC_MSG_NOTICE([will use external sgemm_()])
   AC_DEFINE([ADD_SGEMM_EXTERNAL_DECLARATION], [1], [Add declaration for sgemm_() external.])
   AC_DEFINE([SGEMM], [sgemm_], [External sgemm_().])
 fi
 
-dnl Check for internal lapack (in case this package is compiled as part of FreeON).
-AC_MSG_CHECKING([for internal lapack])
-AC_ARG_ENABLE([internal-lapack],
-              [AS_HELP_STRING([--enable-internal-lapack],
-                              [enables internal lapack (as part of FreeON)])],
-              [enable_internal_lapack=$enableval],
-              [enable_internal_lapack="no"])
-AC_MSG_RESULT([$enable_internal_lapack])
-AM_CONDITIONAL(INTERNAL_LAPACK, [test "${enable_internal_lapack}" = "yes"])
+dnl Check for dgemm_().
+AC_SEARCH_LIBS([dgemm_], [],
+               [have_dgemm="yes"],
+               [have_dgemm="no"])
 
-dnl Check for logging.
-AC_MSG_CHECKING([whether to enable logging])
-AC_ARG_ENABLE([logging], [AS_HELP_STRING([--disable-logging],
-              [disables logging output])],
-              [enable_logging=$enableval],
-              [enable_logging="yes"])
-AC_MSG_RESULT([$enable_logging])
+if test "${have_dgemm}" = "no"; then
+  AC_MSG_NOTICE([no external dgemm_(), will use internal dgemm()])
+  AC_DEFINE([DGEMM], [spamm_dgemm], [SpAMM internal dgemm.])
+else
+  AC_MSG_NOTICE([will use external dgemm_()])
+  AC_DEFINE([ADD_DGEMM_EXTERNAL_DECLARATION], [1], [Add declaration for dgemm_() external.])
+  AC_DEFINE([DGEMM], [dgemm_], [External dgemm_().])
+fi
 
 dnl Find out whether we support SSE and SSE4.1.
 AC_MSG_CHECKING([for SSE support])
@@ -204,71 +177,6 @@ AC_DEFINE([SPAMM_MULTIPLY_STREAM], [1], [Stream multiply.])
 AC_DEFINE([SPAMM_MULTIPLY_FINAL_FREE], [1], [Free remaining memory before exit.])
 AC_DEFINE([SPAMM_MULTIPLY_UPDATE_NORM], [1], [Update matrix norms on C tree after multiply.])
 #AC_DEFINE([SPAMM_MULTIPLY_PRINT_ALOT], [1], [Print a lot of information while multiplying.])
-
-AC_MSG_CHECKING([whether to count the number of basic matrix block products])
-AC_ARG_ENABLE([product-count],
-              [AS_HELP_STRING([--enable-product-count], [Enable basic matrix block product count.])],
-              [use_product_count=${enableval}],
-              [use_product_count="no"])
-AC_MSG_RESULT([$use_product_count])
-
-if test "${use_product_count}" = "yes"; then
-  AC_DEFINE([SPAMM_MULTIPLY_PRODUCT_COUNT], [1], [Count the number of block products. This is only meant for debugging since it degrades the performance of the multiply.])
-fi
-
-#AC_MSG_CHECKING([whether to use real hashtables])
-#AC_ARG_ENABLE([hashtable],
-#              [AS_HELP_STRING([--enable-hashtable], [Enables the use of real hashtables as opposed to arrays.])],
-#              [use_hashtable=${enableval}],
-#              [use_hashtable="no"])
-#AC_MSG_RESULT([$use_hashtable])
-
-use_hashtable="no"
-
-use_hashtable_hash=0
-if test "${use_hashtable}" = "yes"; then
-  dnl Use hashtables in matrix tiers?
-  AC_DEFINE([SPAMM_USE_HASHTABLE], [1], [Use tier hashtables.])
-
-  AC_MSG_CHECKING([whether to use the direct hash])
-  AC_ARG_ENABLE([hash-direct],
-                [AS_HELP_STRING([--enable-hash-direct], [Enables the direct hash, i.e. the key is not modified.])],
-                [use_hashtable_hash_direct=${enableval}],
-                [use_hashtable_hash_direct="no"])
-  AC_MSG_RESULT([$use_hashtable_hash_direct])
-
-  AC_MSG_CHECKING([whether to use the Jenkins hash])
-  AC_ARG_ENABLE([hash-jenkins],
-                [AS_HELP_STRING([--enable-hash-jenkins], [Enables the lookup3 hash by Jenkins])],
-                [use_hashtable_hash_jenkins=${enableval}],
-                [use_hashtable_hash_jenkins="no"])
-  AC_MSG_RESULT([$use_hashtable_hash_jenkins])
-
-  AC_MSG_CHECKING([whether to use the MurmurHash3 hash])
-  AC_ARG_ENABLE([hash-murmurhash3],
-                [AS_HELP_STRING([--enable-hash-murmurhash3], [Enables the MurmurHash3 hash])],
-                [use_hashtable_hash_murmurhash3=${enableval}],
-                [use_hashtable_hash_murmurhash3="no"])
-  AC_MSG_RESULT([$use_hashtable_hash_murmurhash3])
-
-  dnl Set default.
-  use_hashtable_hash=2
-
-  dnl Define hashtable name.
-  current_hashtable_name="Jenkins"
-
-  dnl Test what the user wanted.
-  if test "$use_hashtable_hash_direct" = "yes"; then
-    use_hashtable_hash=1
-  elif test "$use_hashtable_hash_jenkins" = "yes"; then
-    use_hashtable_hash=2
-  elif test "$use_hashtable_hash_murmurhash3" = "yes"; then
-    use_hashtable_hash=3
-  else
-    AC_MSG_NOTICE([no hash preference given, using $current_hashtable_name])
-  fi
-fi
-AC_DEFINE_UNQUOTED([SPAMM_HASHTABLE_HASH], [$use_hashtable_hash], [The type of hash function])
 
 dnl Fix the package version in the documentation.
 AC_SUBST(PACKAGE_VERSION_STRING, [${PACKAGE_VERSION}])

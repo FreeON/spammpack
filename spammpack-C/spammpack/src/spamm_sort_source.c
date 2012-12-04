@@ -13,11 +13,11 @@
 void
 #if defined(SPAMM_SORT_MASKED)
 spamm_sort_masked (const unsigned int length,
-    unsigned int *list,
+    unsigned int *const list,
     const unsigned int mask)
 #elif defined(SPAMM_SORT_NORM)
 spamm_sort_norm (const unsigned int length,
-    unsigned int *list,
+    unsigned int *const list,
     float *norm)
 #endif
 {

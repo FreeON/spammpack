@@ -16,15 +16,15 @@ lines = fd.readlines()
 fd.close()
 
 print("!> @file")
-print()
+print("")
 print("! vim: syntax=fortran")
-print()
+print("")
 print("#ifndef __SPAMM_CONFIG_H")
 print("#define __SPAMM_CONFIG_H")
-print()
+print("")
 print("! This file contains the configuration options in a Fortran")
 print("! friendly format.")
-print()
+print("")
 
 for i in range(len(lines)):
   result = re.compile("^#define").search(lines[i])
@@ -45,7 +45,7 @@ for i in range(len(lines)):
           j += 1
         break
       j -= 1
-    print()
+    print("")
   i += 1
 
 print("#endif")
