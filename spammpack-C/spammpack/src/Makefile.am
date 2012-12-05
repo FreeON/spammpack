@@ -30,7 +30,6 @@ generated_kernel_files = spamm_stream_kernel.S
 BUILT_SOURCES = $(generated_kernel_files) spammpack.mod
 
 spammpack.mod : libspammpack_fortran.la
-spammpack.lo : spamm_fortran_derived.lo
 
 CLEANFILES = \
   $(generated_kernel_files) \
@@ -44,8 +43,6 @@ DISTCLEANFILES = \
 nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
 libspammpack_fortran_la_SOURCES = \
-  spamm_fortran_chunk.F90 \
-  spamm_fortran_derived.F90 \
   spamm_fortran_interface.c \
   spammpack.F90
 

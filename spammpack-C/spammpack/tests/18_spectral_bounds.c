@@ -12,7 +12,7 @@ main (int argc, char **argv)
   float *A_dense;
   struct spamm_matrix_t *A;
 
-  unsigned int N[2] = { 513, 513 };
+  unsigned int N[2] = { 1029, 1029 };
   unsigned int i[2];
 
   unsigned int chunk_tier = 3;
@@ -37,11 +37,16 @@ main (int argc, char **argv)
   A_dense = malloc(N[0]*N[1]*sizeof(float));
 
   for(i[0] = 0; i[0] < N[0]; i[0]++) {
-    for(i[1] = 0; i[1] < N[1]; i[1]++)
+    for(i[1] = i[0]; i[1] < N[1]; i[1]++)
     {
       A_dense[i[0]+i[1]*N[1]] = rand()/(float) RAND_MAX;
+      A_dense[i[1]+i[0]*N[1]] = A_dense[i[0]+i[1]*N[1]];
     }
   }
+
+#ifdef PRINT_MATRICES
+  spamm_print_dense(N[0], N[1], column_major, A_dense);
+#endif
 
   A = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, column_major, A_dense);
 
@@ -77,11 +82,27 @@ main (int argc, char **argv)
     }
   }
 
-  printf("f_reference = [ %f, %f ]\n", f_min_reference, f_max_reference);
-
   spamm_spectral_bounds(&f_min, &f_max, A);
 
+#ifdef PRINT_MATRICES
+  printf("f_reference = [ %f, %f ]\n", f_min_reference, f_max_reference);
   printf("f = [ %f, %f ]\n", f_min, f_max);
+#endif
+
+  /* Verify. */
+  if(f_min_reference < f_min)
+  {
+    printf("f_reference = [ %f, %f ]\n", f_min_reference, f_max_reference);
+    printf("f = [ %f, %f ]\n", f_min, f_max);
+    SPAMM_FATAL("found eigenvalue below spectral bounds\n");
+  }
+
+  if(f_max_reference > f_max)
+  {
+    printf("f_reference = [ %f, %f ]\n", f_min_reference, f_max_reference);
+    printf("f = [ %f, %f ]\n", f_min, f_max);
+    SPAMM_FATAL("found eigenvalue above spectral bounds\n");
+  }
 
   /* Free memory. */
   free(work);
