@@ -5,7 +5,6 @@
 module spammpack
 
   use, intrinsic :: iso_c_binding
-  use spamm_derived
 
   implicit none
 
