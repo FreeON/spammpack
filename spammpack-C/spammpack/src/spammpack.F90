@@ -5,8 +5,34 @@
 module spammpack
 
   use, intrinsic :: iso_c_binding
+  use spamm_types
 
   implicit none
+
+  interface new
+
+    !> Interface to spamm_new().
+    subroutine spamm_new (ndim, N, chunk_tier, use_linear_tree, A)
+      use, intrinsic :: iso_c_binding
+      integer :: ndim
+      integer, dimension(:) :: N
+      integer :: chunk_tier
+      logical :: use_linear_tree
+      type(c_ptr), intent(out) :: A
+    end subroutine spamm_new
+
+  end interface new
+
+  interface SetEq
+
+    subroutine spamm_convert_dense_to_spamm (A_spamm, A_dense) &
+        bind(C, name = "spamm_convert_dense_to_spamm_interface")
+      use, intrinsic :: iso_c_binding
+      type(c_ptr), intent(out) :: A_spamm
+      real*4, dimension(:,:) :: A_dense
+    end subroutine spamm_convert_dense_to_spamm
+
+  end interface SetEq
 
   interface
 

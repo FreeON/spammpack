@@ -44,6 +44,7 @@ nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
 
 libspammpack_fortran_la_SOURCES = \
   spamm_fortran_interface.c \
+  spamm_fortran_types.F90 \
   spammpack.F90
 
 libspamm_kernel_la_SOURCES = \
