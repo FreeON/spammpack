@@ -2,6 +2,18 @@
 
 #include "spamm.h"
 
+/** Fortran interface for spamm_convert_dense_to_spamm().
+ */
+void
+spamm_convert_dense_to_spamm_interface (const unsigned int *const number_dimensions,
+    const unsigned int *const N,
+    const unsigned int *const chunk_tier,
+    const unsigned int *const use_linear_tree,
+    const float *const A_dense,
+    struct spamm_matrix_t **A)
+{
+}
+
 /** Fortran interface for spamm_new_chunk().
  *
  * @param number_dimensions The number of dimensions.
