@@ -18,7 +18,7 @@ MODULE SpAMMPACK_TYPES
     INTEGER :: NPadded
 
     !> The total depth of the tree.
-    INTEGER :: depth
+    INTEGER :: depth = -1
 
     !> The tier of the contiguous matrix chunks. At this tier the submatrix is
     !> stored in SpAMM chunks. If use_linear_tree, then the spamm_hashed_* code
