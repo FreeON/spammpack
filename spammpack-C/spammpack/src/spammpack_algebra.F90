@@ -1,0 +1,2 @@
+module spammpack_algebra
+end module spammpack_algebra

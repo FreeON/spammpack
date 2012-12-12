@@ -9,7 +9,7 @@ module spammpack
 
   implicit none
 
-  interface new
+  interface spamm_new
 
     !> Interface to spamm_new().
     subroutine spamm_new (ndim, N, chunk_tier, use_linear_tree, A)
@@ -21,13 +21,13 @@ module spammpack
       type(c_ptr), intent(out) :: A
     end subroutine spamm_new
 
-  end interface new
+  end interface spamm_new
 
-  interface SetEq
+  interface spamm_seteq
 
     module procedure Set_SpAMM_EQ_RNK2
 
-  end interface SetEq
+  end interface spamm_seteq
 
   interface
 
@@ -259,7 +259,7 @@ contains
   subroutine Set_SpAMM_EQ_RNK2 (A, A_dense)
 
     type(spamm), intent(inout) :: A
-    real(c_double), dimension(:,:) :: A_dense
+    real(c_float), dimension(:,:) :: A_dense
 
     call spamm_convert_dense_to_spamm(2, &
       (/ size(A_dense, 1), size(A_dense, 2) /), &
