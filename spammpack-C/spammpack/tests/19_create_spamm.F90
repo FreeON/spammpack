@@ -27,7 +27,7 @@ PROGRAM create_SpAMM
   DO i = 1, N(1)
     DO j = 1, N(2)
       IF(SpAMM_Get(i, j, A) /= ADense(i,j)) THEN
-        WRITE(*,*) "error"
+        WRITE(*,*) "error, found ", SpAMM_Get(i, j, A), " but should have found ", ADense(i,j)
         STOP
       ENDIF
     ENDDO
