@@ -47,6 +47,9 @@ libspammpack_fortran_la_SOURCES = \
   spamm_fortran_types.F90 \
   spammpack.F90
 
+# Fortran dependencies.
+spammpack.lo : spamm_fortran_types.lo
+
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \
   spamm_kernel.c

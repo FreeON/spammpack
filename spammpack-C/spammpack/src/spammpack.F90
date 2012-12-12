@@ -14,9 +14,9 @@ module spammpack
     !> Interface to spamm_new().
     subroutine spamm_new (ndim, N, chunk_tier, use_linear_tree, A)
       use, intrinsic :: iso_c_binding
-      integer :: ndim
-      integer, dimension(:) :: N
-      integer :: chunk_tier
+      integer(c_int) :: ndim
+      integer(c_int), dimension(:) :: N
+      integer(c_int) :: chunk_tier
       logical :: use_linear_tree
       type(c_ptr), intent(out) :: A
     end subroutine spamm_new
@@ -25,16 +25,23 @@ module spammpack
 
   interface SetEq
 
-    subroutine spamm_convert_dense_to_spamm (A_spamm, A_dense) &
-        bind(C, name = "spamm_convert_dense_to_spamm_interface")
-      use, intrinsic :: iso_c_binding
-      type(c_ptr), intent(out) :: A_spamm
-      real*4, dimension(:,:) :: A_dense
-    end subroutine spamm_convert_dense_to_spamm
+    module procedure Set_SpAMM_EQ_RNK2
 
   end interface SetEq
 
   interface
+
+    !> Interface for spamm_convert_dense_to_spamm().
+    subroutine spamm_convert_dense_to_spamm (ndim, N, chunk_tier, use_linear_tree, A_dense, A) &
+        bind(C, name = "spamm_convert_dense_to_spamm_interface")
+      use, intrinsic :: iso_c_binding
+      integer(c_int), intent(in) :: ndim
+      integer(c_int), dimension(ndim), intent(in) :: N
+      integer(c_int), intent(in) :: chunk_tier
+      integer(c_int), intent(in) :: use_linear_tree
+      real(kind = c_float), dimension(*) :: A_dense
+      type(c_ptr), intent(out) :: A
+    end subroutine spamm_convert_dense_to_spamm
 
     !> Interface for spamm_new_chunk().
     subroutine spamm_new_chunk (ndim, N_block, N, N_lower, N_upper, chunk) &
@@ -133,10 +140,10 @@ contains
   !> @param chunk The chunk.
   subroutine spamm_chunk_get_N_lower (N_lower, chunk)
 
-    integer, dimension(:), pointer, intent(out) :: N_lower
+    integer(c_int), dimension(:), pointer, intent(out) :: N_lower
     type(c_ptr), intent(in) :: chunk
 
-    integer, pointer :: number_dimensions
+    integer(c_int), pointer :: number_dimensions
     type(c_ptr) :: cptr
 
     call spamm_chunk_get_number_dimensions(cptr, chunk)
@@ -153,10 +160,10 @@ contains
   !> @param chunk The chunk.
   subroutine spamm_chunk_get_N_upper (N_upper, chunk)
 
-    integer, dimension(:), pointer, intent(out) :: N_upper
+    integer(c_int), dimension(:), pointer, intent(out) :: N_upper
     type(c_ptr), intent(in) :: chunk
 
-    integer, pointer :: number_dimensions
+    integer(c_int), pointer :: number_dimensions
     type(c_ptr) :: cptr
 
     call spamm_chunk_get_number_dimensions(cptr, chunk)
@@ -176,7 +183,7 @@ contains
     real*4, dimension(:,:), pointer, intent(out) :: A
     type(c_ptr), intent(in) :: chunk
 
-    integer :: N_contiguous
+    integer(c_int) :: N_contiguous
     type(c_ptr) :: cptr
 
     call spamm_chunk_get_N_contiguous(N_contiguous, chunk)
@@ -194,10 +201,10 @@ contains
     real*4, dimension(:), pointer, intent(out) :: norm
     type(c_ptr), intent(in) :: chunk
 
-    integer :: N_contiguous
+    integer(c_int) :: N_contiguous
     type(c_ptr) :: cptr
 
-    integer :: number_entries, N
+    integer(c_int) :: number_entries, N
 
     call spamm_chunk_get_N_contiguous(N_contiguous, chunk)
     call spamm_chunk_get_norm_interface(cptr, chunk)
@@ -223,13 +230,13 @@ contains
   !> @param chunk The chunk.
   subroutine spamm_chunk_get_norm2 (norm2, chunk)
 
-    real*4, dimension(:), pointer, intent(out) :: norm2
+    real(c_float), dimension(:), pointer, intent(out) :: norm2
     type(c_ptr), intent(in) :: chunk
 
-    integer :: N_contiguous
+    integer(c_int) :: N_contiguous
     type(c_ptr) :: cptr
 
-    integer :: number_entries, N
+    integer(c_int) :: number_entries, N
 
     call spamm_chunk_get_N_contiguous(N_contiguous, chunk)
     call spamm_chunk_get_norm2_interface(cptr, chunk)
@@ -248,5 +255,16 @@ contains
     call c_f_pointer(cptr, norm2, [number_entries])
 
   end subroutine spamm_chunk_get_norm2
+
+  subroutine Set_SpAMM_EQ_RNK2 (A, A_dense)
+
+    type(spamm), intent(inout) :: A
+    real(c_double), dimension(:,:) :: A_dense
+
+    call spamm_convert_dense_to_spamm(2, &
+      (/ size(A_dense, 1), size(A_dense, 2) /), &
+      0, 0, A_dense, A%matrix)
+
+  end subroutine Set_SpAMM_EQ_RNK2
 
 end module spammpack
