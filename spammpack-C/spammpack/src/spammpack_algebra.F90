@@ -1,5 +1,7 @@
 MODULE SpAMMPACK_ALGEBRA
 
+  USE SpAMMPACK_CHUNK
+  USE SpAMMPACK_MANAGEMENT
   USE SpAMMPACK_TYPES
 
   IMPLICIT NONE
@@ -24,11 +26,11 @@ CONTAINS
     REAL*4, INTENT(IN) :: beta
 
     IF(A%chunkTier == 0) THEN
-      CALL spamm_chunk_multiply_scalar(beta, C%root%chunk)
+      CALL spamm_chunk_multiply_scalar(beta, C%root%chunk, C%root%norm2)
       CALL spamm_chunk_multiply(tolerance, alpha, A%root%chunk, &
-        B%root%chunk, C%root%chunk)
+        B%root%chunk, C%root%chunk, C%root%norm2)
     ELSE
-      CALL SpAMM_Multiply_SpAMM_RNK2_x_Scalar_Recur(beta, C)
+      CALL SpAMM_Multiply_SpAMM_RNK2_x_Scalar(beta, C)
 
       !$OMP TASK UNTIED
       CALL SpAMM_Multiply_QuTree_x_QuTree_Recursive(tolerance, alpha, &
@@ -44,13 +46,13 @@ CONTAINS
   !!
   !! @param qA Pointer to matrix A.
   !! @param a Scalar a.
-  RECURSIVE SUBROUTINE SpAMM_Multiply_SpAMM_RNK2_x_Scalar (alpha, A)
+  SUBROUTINE SpAMM_Multiply_SpAMM_RNK2_x_Scalar (alpha, A)
 
     REAL*4, INTENT(IN) :: alpha
     TYPE(SpAMM_RNK2), INTENT(INOUT) :: A
 
     !$OMP TASK
-    CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(alpha, A%root, 0, A%chunkTier, A%useLinearTree)
+    CALL SpAMM_Multiply_QuTree_x_Scalar_Recursive(alpha, A%root, 0, A%chunkTier, A%useLinearTree)
     !$OMP END TASK
 
     !$OMP TASKWAIT
@@ -85,7 +87,8 @@ CONTAINS
       DO i = 1, 2
         DO j = 1, 2
           !$OMP TASK UNTIED
-          CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(alpha, qA%child(i,j), tier+1, chunkTier, useLinearTree)
+          CALL SpAMM_Multiply_QuTree_x_Scalar_Recursive(alpha, qA%child(i,j)%node, &
+            tier+1, chunkTier, useLinearTree)
           !$OMP END TASK
         ENDDO
       ENDDO
@@ -126,7 +129,7 @@ CONTAINS
 #ifdef _OPENMP
       CALL OMP_SET_LOCK(qC%lock)
 #endif
-      CALL spamm_chunk_multiply(tolerance, alpha, qA%chunk, qB%chunk, qC%chunk)
+      CALL spamm_chunk_multiply(tolerance, alpha, qA%chunk, qB%chunk, qC%chunk, qC%norm2)
       qC%norm = sqrt(qC%norm2)
 #ifdef _OPENMP
       CALL OMP_UNSET_LOCK(qC%lock)
@@ -151,7 +154,7 @@ CONTAINS
 #endif
 
                 !$OMP TASK UNTIED SHARED(qA,qB,qC)
-                CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(tolerance, alpha, &
+                CALL SpAMM_Multiply_QuTree_x_QuTree_Recursive(tolerance, alpha, &
                   qA%child(i,k)%node, qB%child(k,j)%node, qC%child(i,j)%node, &
                   N, NLower, NUpper, tier+1, chunkTier, useLinearTree)
                 !$OMP END TASK

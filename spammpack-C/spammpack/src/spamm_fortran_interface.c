@@ -1,6 +1,29 @@
 /** @file */
 
+#include "config.h"
 #include "spamm.h"
+
+/** Fortran interface for spamm_chunk_multiply_scalar().
+ */
+void
+spamm_chunk_multiply_scalar_interface (const float *const alpha,
+    spamm_chunk_t **chunk, float *const norm2)
+{
+  *norm2 = spamm_chunk_multiply_scalar(*alpha, *chunk);
+}
+
+/** Fortran interface for spamm_chunk_multiply().
+ */
+void
+spamm_chunk_multiply_interface (const float *const tolerance,
+    const float *const alpha,
+    spamm_chunk_t **chunk_A,
+    spamm_chunk_t **chunk_B,
+    spamm_chunk_t **chunk_C,
+    float *const norm2)
+{
+  *norm2 = spamm_chunk_multiply(*tolerance, *alpha, *chunk_A, *chunk_B, *chunk_C, SGEMM);
+}
 
 /** Fortran interface for spamm_convert_dense_to_spamm().
  */

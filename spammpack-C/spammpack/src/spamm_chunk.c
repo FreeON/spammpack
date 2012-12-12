@@ -28,51 +28,6 @@ spamm_chunk_get_total_number_norms (const unsigned int number_tiers,
   return number_norms;
 }
 
-/** Multiply a chunk with a scalar.
- *
- * @param alpha The factor.
- * @param chunk The chunk.
- *
- * @return The new squared norm.
- */
-float
-spamm_chunk_multiply_scalar (const float alpha,
-    spamm_chunk_t *chunk)
-{
-  unsigned int i;
-  unsigned int number_norms;
-  unsigned int number_tiers;
-  unsigned int N_contiguous;
-  unsigned int number_dimensions;
-
-  float *A;
-  float *norm;
-  float *norm2;
-
-  if(chunk == NULL) { return 0.0; }
-
-  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
-  number_tiers = *spamm_chunk_get_number_tiers(chunk);
-  N_contiguous = spamm_chunk_get_N_contiguous(chunk);
-  A = spamm_chunk_get_matrix(chunk);
-
-  for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
-  {
-    A[i] *= alpha;
-  }
-
-  norm = spamm_chunk_get_norm(chunk);
-  norm2 = spamm_chunk_get_norm2(chunk);
-  number_norms = spamm_chunk_get_total_number_norms(number_tiers, number_dimensions);
-  for(i = 0; i < number_norms; i++)
-  {
-    norm[i] *= alpha;
-    norm2[i] *= alpha*alpha;
-  }
-
-  return norm2[0];
-}
-
 /** Pad memory address to some alignment.
  *
  * @param address Address to pad.

@@ -213,4 +213,8 @@ void spamm_dgemm (char * transA, char * transB,
     double *alpha, double *A, int *LDA, double *B, int *LDB,
     double *beta, double *C, int *LDC);
 
+unsigned int
+spamm_chunk_get_total_number_norms (const unsigned int number_tiers,
+    const unsigned int number_dimensions);
+
 #endif

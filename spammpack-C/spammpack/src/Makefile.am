@@ -51,8 +51,15 @@ libspammpack_fortran_la_SOURCES = \
   spammpack.F90
 
 # Fortran dependencies.
-spammpack.lo : spammpack_types.lo spammpack_algebra.lo spammpack_management.lo
-spammpack_algebra.lo : spammpack_types.lo
+spammpack.lo : \
+	spammpack_types.lo \
+	spammpack_algebra.lo \
+	spammpack_management.lo \
+	spammpack_chunk.lo
+spammpack_algebra.lo : \
+	spammpack_types.lo \
+	spammpack_management.lo \
+	spammpack_chunk.lo
 spammpack_management.lo : spammpack_types.lo
 
 libspamm_kernel_la_SOURCES = \

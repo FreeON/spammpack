@@ -11,6 +11,26 @@ MODULE SpAMMPACK_CHUNK
 
   INTERFACE
 
+    !> Interface for spamm_chunk_multiply().
+    subroutine spamm_chunk_multiply (tolerance, alpha, chunkA, chunkB, chunkC, norm2) &
+        bind(C, name = "spamm_chunk_multiply_interface")
+      use, intrinsic :: iso_c_binding
+      real(c_float), intent(in) :: tolerance
+      real(c_float), intent(in) :: alpha
+      type(c_ptr), intent(in) :: chunkA
+      type(c_ptr), intent(in) :: chunkB
+      type(c_ptr), intent(inout) :: chunkC
+      real(c_float), intent(out) :: norm2
+    end subroutine spamm_chunk_multiply
+
+    subroutine spamm_chunk_multiply_scalar (alpha, chunk, norm2) &
+        bind(C, name = "spamm_chunk_multiply_scalar_interface")
+      use, intrinsic :: iso_c_binding
+      real(c_float), intent(in) :: alpha
+      type(c_ptr), intent(inout) :: chunk
+      real(c_float), intent(out) :: norm2
+    end subroutine spamm_chunk_multiply_scalar
+
     !> Interface for spamm_new_chunk().
     subroutine spamm_new_chunk (ndim, N_block, N, N_lower, N_upper, chunk) &
         bind(C, name = "spamm_new_chunk_interface")

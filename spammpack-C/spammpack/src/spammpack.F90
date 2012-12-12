@@ -4,29 +4,30 @@
 
 MODULE SpAMMPACK
 
-  use, intrinsic :: iso_c_binding
-  use SpAMMPACK_TYPES
+  USE, INTRINSIC :: iso_c_binding
   USE SpAMMPACK_ALGEBRA
+  USE SpAMMPACK_CHUNK
   USE SpAMMPACK_MANAGEMENT
+  USE SpAMMPACK_TYPES
 
-  implicit none
+  IMPLICIT NONE
 
-  interface
+  INTERFACE
 
     !> Interface for spamm_convert_dense_to_spamm().
-    subroutine spamm_convert_dense_to_spamm (ndim, N, chunk_tier, use_linear_tree, A_dense, A) &
-        bind(C, name = "spamm_convert_dense_to_spamm_interface")
-      use, intrinsic :: iso_c_binding
-      integer(c_int), intent(in) :: ndim
-      integer(c_int), dimension(ndim), intent(in) :: N
-      integer(c_int), intent(in) :: chunk_tier
-      integer(c_int), intent(in) :: use_linear_tree
-      real(kind = c_float), dimension(*) :: A_dense
-      type(c_ptr), intent(out) :: A
-    end subroutine spamm_convert_dense_to_spamm
+    SUBROUTINE spamm_convert_dense_to_spamm (ndim, N, chunk_tier, use_linear_tree, A_dense, A) &
+        BIND(C, NAME = "spamm_convert_dense_to_spamm_interface")
+      USE, INTRINSIC :: iso_c_binding
+      INTEGER(c_int), INTENT(IN) :: ndim
+      INTEGER(c_int), DIMENSION(ndim), INTENT(IN) :: N
+      INTEGER(c_int), INTENT(IN) :: chunk_tier
+      INTEGER(c_int), INTENT(IN) :: use_linear_tree
+      REAL(KIND = c_float), DIMENSION(*) :: A_dense
+      TYPE(c_ptr), INTENT(OUT) :: A
+    END subroutine spamm_convert_dense_to_spamm
 
-  end interface
+  END INTERFACE
 
-contains
+CONTAINS
 
 END MODULE SPAMMPACK
