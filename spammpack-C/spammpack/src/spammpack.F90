@@ -5,24 +5,11 @@
 MODULE SpAMMPACK
 
   use, intrinsic :: iso_c_binding
-  use spammpack_types
+  use SpAMMPACK_TYPES
   USE SpAMMPACK_ALGEBRA
+  USE SpAMMPACK_MANAGEMENT
 
   implicit none
-
-  interface spamm_new
-
-    !> Interface to spamm_new().
-    subroutine spamm_new (ndim, N, chunk_tier, use_linear_tree, A)
-      use, intrinsic :: iso_c_binding
-      integer(c_int) :: ndim
-      integer(c_int), dimension(:) :: N
-      integer(c_int) :: chunk_tier
-      logical :: use_linear_tree
-      type(c_ptr), intent(out) :: A
-    end subroutine spamm_new
-
-  end interface spamm_new
 
   interface
 

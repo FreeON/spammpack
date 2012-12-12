@@ -84,7 +84,7 @@ CONTAINS
 
       DO i = 1, 2
         DO j = 1, 2
-          !$OMP TASK UNTIED SHARED(qA)
+          !$OMP TASK UNTIED
           CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(alpha, qA%child(i,j), tier+1, chunkTier, useLinearTree)
           !$OMP END TASK
         ENDDO
