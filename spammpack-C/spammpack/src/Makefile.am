@@ -7,12 +7,12 @@ AM_FCFLAGS = $(OPENMP_FCFLAGS)
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
-lib_LTLIBRARIES = libspamm.la libspammpack_fortran.la
-noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la
+lib_LTLIBRARIES = libspamm.la
+noinst_LTLIBRARIES = libspamm_tree.la libspamm_kernel.la libspammpack_fortran.la
 
 libspamm_la_LDFLAGS = -version-info 0:0:0
 libspamm_la_SOURCES =
-libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la
+libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la libspammpack_fortran.la
 
 noinst_SCRIPTS = SSERegister.py generate_SSE_assembly_for_chunks.py # spammOffsets.py
 noinst_PROGRAMS = print_chunk_offsets

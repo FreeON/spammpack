@@ -26,9 +26,27 @@ MODULE SpAMMPACK_MANAGEMENT
 
   INTERFACE SpAMM_SetEq
 
-    MODULE PROCEDURE SpAMM_SetEq_SpAMM_RNK2_to_Dense
+    MODULE PROCEDURE SpAMM_SetEq_SpAMM_RNK2_to_Dense, &
+        SpAMM_SetEq_SpAMM_C_to_Dense, &
+        SpAMM_SetEq_SpAMM_C_to_SpAMM_C
 
   END INTERFACE SpAMM_SetEq
+
+  INTERFACE
+
+    !> Interface for spamm_convert_dense_to_spamm().
+    SUBROUTINE spamm_convert_dense_to_spamm (ndim, N, chunk_tier, use_linear_tree, A_dense, A) &
+        BIND(C, NAME = "spamm_convert_dense_to_spamm_interface")
+      USE, INTRINSIC :: iso_c_binding
+      INTEGER(c_int), INTENT(IN) :: ndim
+      INTEGER(c_int), DIMENSION(ndim), INTENT(IN) :: N
+      INTEGER(c_int), INTENT(IN) :: chunk_tier
+      INTEGER(c_int), INTENT(IN) :: use_linear_tree
+      REAL(KIND = c_float), DIMENSION(*) :: A_dense
+      TYPE(c_ptr), INTENT(OUT) :: A
+    END subroutine spamm_convert_dense_to_spamm
+
+  END INTERFACE
 
 CONTAINS
 
@@ -139,5 +157,43 @@ CONTAINS
     ENDDO
 
   END SUBROUTINE SpAMM_SetEq_SpAMM_RNK2_to_Dense
+
+  SUBROUTINE SpAMM_SetEq_SpAMM_C_to_Dense (A, ADense, chunkTier, useLinearTree)
+
+    TYPE(c_ptr), INTENT(INOUT) :: A
+    REAL*8, DIMENSION(:,:), INTENT(IN) :: ADense
+    INTEGER, INTENT(IN) :: chunkTier
+    LOGICAL, INTENT(IN) :: useLinearTree
+
+    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: ADenseSingle
+    INTEGER :: i, j
+    INTEGER :: use_linear_tree
+
+    IF(useLinearTree) THEN
+      use_linear_tree = 1
+    ELSE
+      use_linear_tree = 0
+    ENDIF
+
+    ALLOCATE(ADenseSingle(size(ADense, 1), size(ADense, 2)))
+    DO i = 1, size(ADense, 1)
+      DO j = 1, size(ADense, 2)
+        ADenseSingle(i,j) = ADense(i,j)
+      ENDDO
+    ENDDO
+
+    CALL spamm_convert_dense_to_spamm(2, (/ size(ADense, 1), size(ADense, 2) /), &
+      chunkTier, use_linear_tree, ADenseSingle, A)
+
+    DEALLOCATE(ADenseSingle)
+
+  END SUBROUTINE SpAMM_SetEq_SpAMM_C_to_Dense
+
+  SUBROUTINE SpAMM_SetEq_SpAMM_C_to_SpAMM_C (A, B)
+
+    TYPE(c_ptr), INTENT(INOUT) :: A
+    TYPE(c_ptr), INTENT(IN) :: B
+
+  END SUBROUTINE SpAMM_SetEq_SpAMM_C_to_SpAMM_C
 
 END MODULE SpAMMPACK_MANAGEMENT

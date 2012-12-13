@@ -1,5 +1,6 @@
 MODULE SpAMMPACK_ALGEBRA
 
+  USE, INTRINSIC :: iso_c_binding
   USE SpAMMPACK_CHUNK
   USE SpAMMPACK_MANAGEMENT
   USE SpAMMPACK_TYPES
@@ -8,9 +9,23 @@ MODULE SpAMMPACK_ALGEBRA
 
   INTERFACE SpAMM_Multiply
 
-    MODULE PROCEDURE SpAMM_Multiply_SpAMM_RNK2_x_SpAMM_RNK2
+    MODULE PROCEDURE SpAMM_Multiply_SpAMM_RNK2_x_SpAMM_RNK2, &
+      SpAMM_Multiply_SpAMM_C_x_SpAMM_C, &
+      SpAMM_Multiply_SpAMM_C_x_Scalar
 
   END INTERFACE SpAMM_Multiply
+
+  INTERFACE SpAMM_Trace
+
+    MODULE PROCEDURE SpAMM_Trace_SpAMM_C
+
+  END INTERFACE SpAMM_Trace
+
+  INTERFACE SpAMM_Add
+
+    MODULE PROCEDURE SpAMM_Add_SpAMM_C
+
+  END INTERFACE SpAMM_Add
 
 CONTAINS
 
@@ -168,5 +183,50 @@ CONTAINS
     ENDIF
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recursive
+
+  REAL*4 FUNCTION SpAMM_Trace_SpAMM_C (A) RESULT(trace)
+
+    TYPE(c_ptr), INTENT(IN) :: A
+
+    trace = 0E0
+
+  END FUNCTION SpAMM_Trace_SpAMM_C
+
+  !> Multiply two matrices, @f$ C \leftarrow A \times B @f$.
+  !>
+  !> @param tolerance The SpAMM tolerance.
+  !> @param A Matrix A.
+  !> @param B Matrix B.
+  !> @param C Matrix C.
+  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_SpAMM_C (tolerance, A, B, C)
+
+    REAL*4, INTENT(IN) :: tolerance
+    TYPE(c_ptr), INTENT(IN) :: A, B
+    TYPE(c_ptr), INTENT(INOUT) :: C
+
+  END SUBROUTINE SpAMM_Multiply_SpAMM_C_x_SpAMM_C
+
+  !> Multiply a matrix by a scalar, @f$ A \leftarrow \alpha A @f$.
+  !>
+  !> @param A Matrix A.
+  !> @param alpha The factor @f$ \alpha @f$.
+  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_Scalar (A, alpha)
+
+    TYPE(c_ptr), INTENT(INOUT) :: A
+    REAL*4, INTENT(IN) :: alpha
+
+  END SUBROUTINE SpAMM_Multiply_SpAMM_C_x_Scalar
+
+  !> Add two matrices, @f$ C \leftarrow A + B @f$.
+  !>
+  !> A Matrix A.
+  !> B Matrix B.
+  !> C Matrix C.
+  SUBROUTINE SpAMM_Add_SpAMM_C (A, B, C)
+
+    TYPE(c_ptr), INTENT(IN) :: A, B
+    TYPE(c_ptr), INTENT(INOUT) :: C
+
+  END SUBROUTINE SpAMM_Add_SpAMM_C
 
 END MODULE SpAMMPACK_ALGEBRA
