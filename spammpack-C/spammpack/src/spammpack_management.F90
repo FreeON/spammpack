@@ -2,13 +2,16 @@
 
 MODULE SpAMMPACK_MANAGEMENT
 
+  USE, INTRINSIC :: iso_C_binding
   USE SpAMMPACK_TYPES
 
   IMPLICIT NONE
 
   INTERFACE SpAMM_New
 
-    MODULE PROCEDURE SpAMM_New_SpAMM_RNK2, SpAMM_New_QuTree
+    MODULE PROCEDURE &
+        SpAMM_New_SpAMM_RNK2, &
+        SpAMM_New_QuTree
 
   END INTERFACE SpAMM_New
 
@@ -20,13 +23,16 @@ MODULE SpAMMPACK_MANAGEMENT
 
   INTERFACE SpAMM_Get
 
-    MODULE PROCEDURE SpAMM_Get_SpAMM_RNK2
+    MODULE PROCEDURE &
+        SpAMM_Get_SpAMM_RNK2, &
+        SpAMM_Get_SpAMM_C
 
   END INTERFACE SpAMM_Get
 
   INTERFACE SpAMM_SetEq
 
-    MODULE PROCEDURE SpAMM_SetEq_SpAMM_RNK2_to_Dense, &
+    MODULE PROCEDURE &
+        SpAMM_SetEq_SpAMM_RNK2_to_Dense, &
         SpAMM_SetEq_SpAMM_C_to_Dense, &
         SpAMM_SetEq_SpAMM_C_to_SpAMM_C
 
@@ -37,14 +43,23 @@ MODULE SpAMMPACK_MANAGEMENT
     !> Interface for spamm_convert_dense_to_spamm().
     SUBROUTINE spamm_convert_dense_to_spamm (ndim, N, chunk_tier, use_linear_tree, A_dense, A) &
         BIND(C, NAME = "spamm_convert_dense_to_spamm_interface")
-      USE, INTRINSIC :: iso_c_binding
+      USE, INTRINSIC :: iso_C_binding
       INTEGER(c_int), INTENT(IN) :: ndim
       INTEGER(c_int), DIMENSION(ndim), INTENT(IN) :: N
       INTEGER(c_int), INTENT(IN) :: chunk_tier
       INTEGER(c_int), INTENT(IN) :: use_linear_tree
-      REAL(KIND = c_float), DIMENSION(*) :: A_dense
+      REAL(c_float), DIMENSION(*), INTENT(IN) :: A_dense
       TYPE(c_ptr), INTENT(OUT) :: A
     END subroutine spamm_convert_dense_to_spamm
+
+    !> Interface for spamm_get().
+    SUBROUTINE spamm_get_element (i, A, Aij) &
+        BIND(C, name = "spamm_get_interface")
+      USE, INTRINSIC :: iso_C_binding
+      INTEGER(c_int), DIMENSION(*) :: i
+      TYPE(c_ptr), INTENT(IN) :: A
+      REAL(c_float), INTENT(OUT) :: Aij
+    END SUBROUTINE spamm_get_element
 
   END INTERFACE
 
@@ -134,6 +149,15 @@ CONTAINS
     Aij = 0
 
   END FUNCTION SpAMM_Get_SpAMM_RNK2
+
+  REAL*4 FUNCTION SpAMM_Get_SpAMM_C (i, j, A) RESULT(Aij)
+
+    INTEGER, INTENT(IN) :: i, j
+    TYPE(c_ptr), INTENT(IN) :: A
+
+    CALL spamm_get_element((/ i-1, j-1 /), A, Aij)
+
+  END FUNCTION SpAMM_Get_SpAMM_C
 
   SUBROUTINE SpAMM_SetEq_SpAMM_RNK2_to_Dense (A, ADense)
 

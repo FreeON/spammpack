@@ -1,6 +1,6 @@
 MODULE SpAMMPACK_TYPES
 
-  USE, INTRINSIC :: iso_c_binding
+  USE, INTRINSIC :: iso_C_binding
 
 #ifdef _OPENMP
   USE omp_lib

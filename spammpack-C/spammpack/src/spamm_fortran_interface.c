@@ -3,6 +3,16 @@
 #include "config.h"
 #include "spamm.h"
 
+/** Fortran interface for spamm_get().
+ */
+void
+spamm_get_interface (const int *const i,
+    const struct spamm_matrix_t **const A,
+    float *const Aij)
+{
+  *Aij = spamm_get(i, *A);
+}
+
 /** Fortran interface for spamm_chunk_multiply_scalar().
  */
 void
@@ -33,8 +43,10 @@ spamm_convert_dense_to_spamm_interface (const unsigned int *const number_dimensi
     const unsigned int *const chunk_tier,
     const unsigned int *const use_linear_tree,
     const float *const A_dense,
-    struct spamm_matrix_t **A)
+    struct spamm_matrix_t **const A)
 {
+  *A = spamm_convert_dense_to_spamm(*number_dimensions, N, *chunk_tier,
+      *use_linear_tree, column_major, A_dense);
 }
 
 /** Fortran interface for spamm_new_chunk().

@@ -9,7 +9,7 @@ ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/src
-AM_LDFLAGS = $(top_builddir)/src/libspammpack_fortran.la $(top_builddir)/src/libspamm.la
+AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 
 if HAVE_SSE_IN_CPU
 multiply_spamm_SSE = multiply_spamm_kernel_standard_SSE.sh
@@ -21,9 +21,12 @@ endif
 
 multiply_tests = $(multiply_spamm_SSE) $(multiply_spamm_SSE4_1)
 
-08_get_version_SOURCES = 08_get_version.F90
 06_chunk_test_SOURCES = 06_chunk_test.F90
-19_create_spamm_SOURCES = 19_create_spamm.F90
+06_chunk_test_LDADD = $(top_builddir)/src/libspammpack_fortran.la
+08_get_version_SOURCES = 08_get_version.F90
+08_get_version_LDADD = $(top_builddir)/src/libspammpack_fortran.la
+20_seteq_SOURCES = 20_seteq.F90
+20_seteq_LDADD = $(top_builddir)/src/libspammpack_fortran.la
 
 EXTRA_DIST = $(noinst_SCRIPTS)
 
@@ -43,7 +46,7 @@ check_PROGRAMS = \
   16_stats \
   17_multiply_spamm \
   18_spectral_bounds \
-  19_create_spamm
+  20_seteq
 
 TESTS = \
   $(check_PROGRAMS)
