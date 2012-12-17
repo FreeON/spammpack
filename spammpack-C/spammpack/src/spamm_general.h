@@ -127,12 +127,11 @@ spamm_recursive_multiply_scalar (const float alpha,
 void
 spamm_multiply (const float tolerance,
     const float alpha,
-    struct spamm_matrix_t *A,
-    struct spamm_matrix_t *B,
+    const struct spamm_matrix_t *const A,
+    const struct spamm_matrix_t *const B,
     const float beta,
-    struct spamm_matrix_t *C,
+    struct spamm_matrix_t *const C,
     sgemm_func sgemm,
-    const enum spamm_kernel_t kernel,
     unsigned int *number_products);
 
 void
@@ -216,5 +215,8 @@ void spamm_dgemm (char * transA, char * transB,
 unsigned int
 spamm_chunk_get_total_number_norms (const unsigned int number_tiers,
     const unsigned int number_dimensions);
+
+float
+spamm_trace (const struct spamm_matrix_t *const A);
 
 #endif

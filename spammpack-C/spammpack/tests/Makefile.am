@@ -27,26 +27,29 @@ multiply_tests = $(multiply_spamm_SSE) $(multiply_spamm_SSE4_1)
 08_get_version_LDADD = $(top_builddir)/src/libspammpack_fortran.la
 20_seteq_SOURCES = 20_seteq.F90
 20_seteq_LDADD = $(top_builddir)/src/libspammpack_fortran.la
+21_trace_SOURCES = 21_trace.F90
+21_trace_LDADD = $(top_builddir)/src/libspammpack_fortran.la
 
 EXTRA_DIST = $(noinst_SCRIPTS)
 
 check_PROGRAMS = \
-  03_create_spamm \
-  04_copy_spamm \
-  05_new_chunk \
-  06_chunk_test \
-  07_convert_dense \
-  08_get_version \
-  11_ipow \
-  12_index \
-  12_linear_index \
-  13_check_spamm \
-  14_add_spamm_dense \
-  15_add_spamm_sparse \
-  16_stats \
-  17_multiply_spamm \
-  18_spectral_bounds \
-  20_seteq
+	03_create_spamm \
+	04_copy_spamm \
+	05_new_chunk \
+	06_chunk_test \
+	07_convert_dense \
+	08_get_version \
+	11_ipow \
+	12_index \
+	12_linear_index \
+	13_check_spamm \
+	14_add_spamm_dense \
+	15_add_spamm_sparse \
+	16_stats \
+	17_multiply_spamm \
+	18_spectral_bounds \
+	20_seteq \
+	21_trace
 
 TESTS = \
   $(check_PROGRAMS)

@@ -3,6 +3,30 @@
 #include "config.h"
 #include "spamm.h"
 
+/** Fortran interface for spamm_trace().
+ */
+void
+spamm_trace_interface (float *const trace,
+    const struct spamm_matrix_t **const A)
+{
+  *trace = spamm_trace(*A);
+}
+
+/** Fortran interface for spamm_multiply().
+ */
+void
+spamm_multiply_interface (const float *const tolerance,
+    const float *const alpha,
+    const struct spamm_matrix_t **const A,
+    const struct spamm_matrix_t **const B,
+    const float *const beta,
+    struct spamm_matrix_t **const C)
+{
+  unsigned int number_products = 0;
+
+  spamm_multiply(*tolerance, *alpha, *A, *B, *beta, *C, SGEMM, &number_products);
+}
+
 /** Fortran interface for spamm_get().
  */
 void

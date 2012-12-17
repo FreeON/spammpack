@@ -27,6 +27,28 @@ MODULE SpAMMPACK_ALGEBRA
 
   END INTERFACE SpAMM_Add
 
+  INTERFACE
+
+    SUBROUTINE spamm_multiply_interface (tolerance, alpha, A, B, beta, C) &
+      BIND(C, name = "spamm_multiply_interface")
+      USE, INTRINSIC :: iso_C_binding
+      REAL(c_float), INTENT(IN) :: tolerance
+      REAL(c_float), INTENT(IN) :: alpha
+      TYPE(c_ptr), INTENT(IN) :: A
+      TYPE(c_ptr), INTENT(IN) :: B
+      REAL(c_float), INTENT(IN) :: beta
+      TYPE(c_ptr), INTENT(INOUT) :: C
+    END SUBROUTINE spamm_multiply_interface
+
+    SUBROUTINE spamm_trace_interface (trace, A) &
+        BIND(C, name = "spamm_trace_interface")
+      USE, INTRINSIC :: iso_C_binding
+      REAL(c_float), INTENT(INOUT) :: trace
+      TYPE(c_ptr), INTENT(IN) :: A
+    END SUBROUTINE spamm_trace_interface
+
+  END INTERFACE
+
 CONTAINS
 
   !> Multiply a SpAMM rank 2 matrix with another one.
@@ -188,7 +210,7 @@ CONTAINS
 
     TYPE(c_ptr), INTENT(IN) :: A
 
-    trace = 0E0
+    CALL spamm_trace_interface(trace, A)
 
   END FUNCTION SpAMM_Trace_SpAMM_C
 
@@ -203,6 +225,8 @@ CONTAINS
     REAL*4, INTENT(IN) :: tolerance
     TYPE(c_ptr), INTENT(IN) :: A, B
     TYPE(c_ptr), INTENT(INOUT) :: C
+
+    CALL spamm_multiply_interface(tolerance, 1.0, A, B, 0.0, C)
 
   END SUBROUTINE SpAMM_Multiply_SpAMM_C_x_SpAMM_C
 

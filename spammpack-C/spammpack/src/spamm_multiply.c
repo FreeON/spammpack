@@ -134,7 +134,6 @@ spamm_recursive_multiply_scalar (const float alpha,
  * @param B The matrix \f$B\f$.
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
- * @param kernel The stream kernel to use.
  *
  * @return The square of the Frobenius norm of the chunk.
  */
@@ -443,7 +442,6 @@ spamm_recursive_multiply (const float tolerance,
     struct spamm_recursive_node_t *node_B,
     struct spamm_recursive_node_t **node_C,
     sgemm_func sgemm,
-    const enum spamm_kernel_t kernel,
     const unsigned int number_dimensions_A,
     const unsigned int number_dimensions_B,
     const unsigned int number_dimensions_C,
@@ -517,10 +515,10 @@ spamm_recursive_multiply (const float tolerance,
 #pragma omp task untied
                 spamm_recursive_multiply(tolerance, alpha,
                     node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
-                    &(*node_C)->tree.child[i+2*j], sgemm, kernel,
-                    number_dimensions_A, number_dimensions_B,
-                    number_dimensions_C, N, new_N_lower, new_N_upper, tier+1,
-                    chunk_tier, use_linear_tree, number_products);
+                    &(*node_C)->tree.child[i+2*j], sgemm, number_dimensions_A,
+                    number_dimensions_B, number_dimensions_C, N, new_N_lower,
+                    new_N_upper, tier+1, chunk_tier, use_linear_tree,
+                    number_products);
               }
             }
           }
@@ -552,12 +550,11 @@ spamm_recursive_multiply (const float tolerance,
 void
 spamm_multiply (const float tolerance,
     const float alpha,
-    struct spamm_matrix_t *A,
-    struct spamm_matrix_t *B,
+    const struct spamm_matrix_t *const A,
+    const struct spamm_matrix_t *const B,
     const float beta,
     struct spamm_matrix_t *C,
     sgemm_func sgemm,
-    const enum spamm_kernel_t kernel,
     unsigned int *number_products)
 {
   int dim;
@@ -605,7 +602,7 @@ spamm_multiply (const float tolerance,
 #pragma omp master
 #pragma omp task untied
       spamm_recursive_multiply(tolerance, alpha, A->tree.recursive_tree,
-          B->tree.recursive_tree, &(C->tree.recursive_tree), sgemm, kernel,
+          B->tree.recursive_tree, &(C->tree.recursive_tree), sgemm,
           A->number_dimensions, B->number_dimensions, C->number_dimensions,
           A->N, N_lower, N_upper, 0, A->chunk_tier, A->use_linear_tree,
           number_products);

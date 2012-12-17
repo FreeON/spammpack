@@ -5,9 +5,9 @@ program SetEq
 
   type(c_ptr) :: A
   real*8, allocatable, dimension(:,:) :: ADense
-  integer, dimension(2) :: N = (/ 13, 13 /)
+  integer, dimension(2) :: N = (/ 513, 513 /)
   integer :: chunkTier = 2
-  logical :: useLinearTree = .false.
+  logical :: useLinearTree = .true.
   integer :: i, j
 
   allocate(ADense(N(1), N(2)))
