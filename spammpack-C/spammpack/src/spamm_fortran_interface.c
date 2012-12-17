@@ -187,3 +187,13 @@ spamm_new_interface (const unsigned int *const number_dimensions,
 {
   *A = spamm_new(*number_dimensions, N, *chunk_tier, *use_linear_tree);
 }
+
+/** Fortran interface for spamm_copy().
+ */
+void
+spamm_copy_interface (struct spamm_matrix_t **const A,
+    const float *alpha,
+    const struct spamm_matrix_t **const B)
+{
+  spamm_copy(A, *alpha, *B);
+}

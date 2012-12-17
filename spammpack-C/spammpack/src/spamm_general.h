@@ -125,6 +125,10 @@ spamm_recursive_multiply_scalar (const float alpha,
     const short use_linear_tree);
 
 void
+spamm_multiply_scalar (const float alpha,
+    struct spamm_matrix_t *const A);
+
+void
 spamm_multiply (const float tolerance,
     const float alpha,
     const struct spamm_matrix_t *const A,
@@ -160,7 +164,10 @@ struct spamm_recursive_node_t *
 spamm_recursive_new_node ();
 
 void
-spamm_print (const struct spamm_matrix_t *A);
+spamm_print (const struct spamm_matrix_t *const A);
+
+void
+spamm_matlab_print (const struct spamm_matrix_t *const A);
 
 void
 spamm_print_info (const struct spamm_matrix_t *const A);

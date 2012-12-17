@@ -72,6 +72,14 @@ MODULE SpAMMPACK_MANAGEMENT
       TYPE(c_ptr), INTENT(INOUT) :: A
     END SUBROUTINE spamm_new_interface
 
+    SUBROUTINE spamm_copy (A, beta, B) &
+        BIND(C, name = "spamm_copy_interface")
+      USE, INTRINSIC :: iso_C_binding
+      TYPE(c_ptr), INTENT(INOUT) :: A
+      REAL(c_float), INTENT(IN) :: beta
+      TYPE(c_ptr), INTENT(IN) :: B
+    END SUBROUTINE spamm_copy
+
   END INTERFACE
 
 CONTAINS
@@ -247,6 +255,8 @@ CONTAINS
 
     TYPE(c_ptr), INTENT(INOUT) :: A
     TYPE(c_ptr), INTENT(IN) :: B
+
+    CALL spamm_copy(A, 1.0, B)
 
   END SUBROUTINE SpAMM_SetEq_SpAMM_C_to_SpAMM_C
 

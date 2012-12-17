@@ -544,6 +544,27 @@ spamm_recursive_multiply (const float tolerance,
   }
 }
 
+/** Multiply a matrix by a scalar, @f$ A \leftarrow \alpha A @f$.
+ *
+ * @param alpha The scalar.
+ * @param A The matrix.
+ */
+void
+spamm_multiply_scalar (const float alpha,
+    struct spamm_matrix_t *const A)
+{
+  if(A->chunk_tier == 0)
+  {
+    spamm_chunk_multiply_scalar(alpha, A->tree.chunk);
+  }
+
+  else
+  {
+    spamm_recursive_multiply_scalar(alpha, A->tree.recursive_tree,
+        A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
+  }
+}
+
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
  *
  * @param tolerance The SpAMM tolerance of this product.

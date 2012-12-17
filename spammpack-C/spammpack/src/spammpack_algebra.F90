@@ -40,6 +40,13 @@ MODULE SpAMMPACK_ALGEBRA
       TYPE(c_ptr), INTENT(INOUT) :: C
     END SUBROUTINE spamm_multiply_interface
 
+    SUBROUTINE spamm_multiply_scalar (alpha, A) &
+        BIND(C, name = "spamm_multiply_scalar")
+      USE, INTRINSIC :: iso_C_binding
+      REAL(c_float), INTENT(IN) :: alpha
+      TYPE(c_ptr), INTENT(INOUT) :: A
+    END SUBROUTINE spamm_multiply_scalar
+
     SUBROUTINE spamm_trace_interface (trace, A) &
         BIND(C, name = "spamm_trace_interface")
       USE, INTRINSIC :: iso_C_binding
@@ -239,6 +246,8 @@ CONTAINS
     TYPE(c_ptr), INTENT(INOUT) :: A
     REAL*4, INTENT(IN) :: alpha
 
+    CALL spamm_multiply_scalar(alpha, A)
+
   END SUBROUTINE SpAMM_Multiply_SpAMM_C_x_Scalar
 
   !> Add two matrices, @f$ C \leftarrow A + B @f$.
@@ -250,6 +259,9 @@ CONTAINS
 
     TYPE(c_ptr), INTENT(IN) :: A, B
     TYPE(c_ptr), INTENT(INOUT) :: C
+
+    WRITE(*,*) "FIXME"
+    STOP
 
   END SUBROUTINE SpAMM_Add_SpAMM_C
 
