@@ -175,3 +175,15 @@ spamm_print_chunk_interface (spamm_chunk_t **chunk)
 {
   spamm_print_chunk(*chunk);
 }
+
+/** Fortran interface for spamm_new().
+ */
+void
+spamm_new_interface (const unsigned int *const number_dimensions,
+    const unsigned int *const N,
+    const unsigned int *const chunk_tier,
+    const unsigned int *const use_linear_tree,
+    struct spamm_matrix_t **const A)
+{
+  *A = spamm_new(*number_dimensions, N, *chunk_tier, *use_linear_tree);
+}

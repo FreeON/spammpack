@@ -112,9 +112,9 @@ spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj);
 float
 spamm_linear_multiply (const float tolerance,
     const float alpha,
-    spamm_chunk_t *chunk_A,
-    spamm_chunk_t *chunk_B,
-    spamm_chunk_t *chunk_C);
+    const spamm_chunk_t *const chunk_A,
+    const spamm_chunk_t *const chunk_B,
+    spamm_chunk_t *const chunk_C);
 
 void
 spamm_recursive_multiply_scalar (const float alpha,

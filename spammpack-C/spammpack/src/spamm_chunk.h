@@ -14,9 +14,9 @@ spamm_chunk_multiply_scalar (const float alpha,
 float
 spamm_chunk_multiply (const float tolerance,
     const float alpha,
-    spamm_chunk_t *chunk_A,
-    spamm_chunk_t *chunk_B,
-    spamm_chunk_t *chunk_C,
+    const spamm_chunk_t *const chunk_A,
+    const spamm_chunk_t *const chunk_B,
+    spamm_chunk_t **const chunk_C,
     sgemm_func sgemm);
 
 size_t
@@ -24,44 +24,44 @@ spamm_chunk_pad (const size_t address,
     const size_t alignment);
 
 unsigned int *
-spamm_chunk_get_number_dimensions (spamm_chunk_t *chunk);
+spamm_chunk_get_number_dimensions (const spamm_chunk_t *const chunk);
 
 unsigned int *
-spamm_chunk_get_number_tiers (spamm_chunk_t *chunk);
+spamm_chunk_get_number_tiers (const spamm_chunk_t *const chunk);
 
 unsigned int *
-spamm_chunk_get_use_linear_tree (spamm_chunk_t *chunk);
+spamm_chunk_get_use_linear_tree (const spamm_chunk_t *const chunk);
 
 unsigned int *
-spamm_chunk_get_N (spamm_chunk_t *chunk);
+spamm_chunk_get_N (const spamm_chunk_t *const chunk);
 
 unsigned int *
-spamm_chunk_get_N_lower (spamm_chunk_t *chunk);
+spamm_chunk_get_N_lower (const spamm_chunk_t *const chunk);
 
 unsigned int *
-spamm_chunk_get_N_upper (spamm_chunk_t *chunk);
+spamm_chunk_get_N_upper (const spamm_chunk_t *const chunk);
 
 unsigned int
-spamm_chunk_get_N_contiguous (spamm_chunk_t *chunk);
+spamm_chunk_get_N_contiguous (const spamm_chunk_t *const chunk);
 
 float *
-spamm_chunk_get_matrix (spamm_chunk_t *chunk);
+spamm_chunk_get_matrix (const spamm_chunk_t *const chunk);
 
 float *
-spamm_chunk_get_matrix_dilated (spamm_chunk_t *chunk);
+spamm_chunk_get_matrix_dilated (const spamm_chunk_t *const chunk);
 
 unsigned int
-spamm_chunk_get_number_norm_entries (spamm_chunk_t *chunk);
+spamm_chunk_get_number_norm_entries (const spamm_chunk_t *const chunk);
 
 float *
-spamm_chunk_get_norm (spamm_chunk_t *chunk);
+spamm_chunk_get_norm (const spamm_chunk_t *const chunk);
 
 float *
 spamm_chunk_get_tier_norm (const unsigned int tier,
-    spamm_chunk_t *chunk);
+    const spamm_chunk_t *const chunk);
 
 float *
-spamm_chunk_get_norm2 (spamm_chunk_t *chunk);
+spamm_chunk_get_norm2 (const spamm_chunk_t *const chunk);
 
 float *
 spamm_chunk_get_tier_norm2 (const unsigned int tier,

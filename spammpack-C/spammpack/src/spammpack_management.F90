@@ -11,6 +11,7 @@ MODULE SpAMMPACK_MANAGEMENT
 
     MODULE PROCEDURE &
         SpAMM_New_SpAMM_RNK2, &
+        SpAMM_New_SpAMM_C, &
         SpAMM_New_QuTree
 
   END INTERFACE SpAMM_New
@@ -60,6 +61,16 @@ MODULE SpAMMPACK_MANAGEMENT
       TYPE(c_ptr), INTENT(IN) :: A
       REAL(c_float), INTENT(OUT) :: Aij
     END SUBROUTINE spamm_get_element
+
+    SUBROUTINE spamm_new_interface (ndim, N, chunkTier, useLinearTree, A) &
+        BIND(C, name = "spamm_new_interface")
+      USE, INTRINSIC :: iso_C_binding
+      INTEGER(c_int), INTENT(IN) :: ndim
+      INTEGER(c_int), DIMENSION(2), INTENT(IN) :: N
+      INTEGER(c_int), INTENT(IN) :: chunkTier
+      INTEGER(c_int), INTENT(IN) :: useLinearTree
+      TYPE(c_ptr), INTENT(INOUT) :: A
+    END SUBROUTINE spamm_new_interface
 
   END INTERFACE
 
@@ -132,6 +143,25 @@ CONTAINS
     ENDIF
 
   END SUBROUTINE SpAMM_New_SpAMM_RNK2
+
+  SUBROUTINE SpAMM_New_SpAMM_C (N, chunkTier, useLinearTree, A)
+
+    INTEGER, DIMENSION(2), INTENT(IN) :: N
+    INTEGER, INTENT(IN) :: chunkTier
+    LOGICAL, INTENT(IN) :: useLinearTree
+    TYPE(c_ptr), INTENT(INOUT) :: A
+
+    INTEGER(c_int) :: use_linear_tree
+
+    IF(useLinearTree) THEN
+      use_linear_tree = 1
+    ELSE
+      use_linear_tree = 0
+    ENDIF
+
+    CALL spamm_new_interface(2, N, chunkTier, use_linear_tree, A)
+
+  END SUBROUTINE SpAMM_New_SpAMM_C
 
   SUBROUTINE SpAMM_Set_SpAMM_RNK2 (i, j, Aij, A)
 

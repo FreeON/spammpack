@@ -58,8 +58,8 @@ spamm_stream_kernel (const unsigned int number_stream_elements,
     float alpha,
     float tolerance,
     unsigned int *stream,
-    void *chunk_A,
-    void *chunk_B,
-    void *chunk_C);
+    const void *const chunk_A,
+    const void *const chunk_B,
+    void *const chunk_C);
 
 #endif

@@ -140,9 +140,9 @@ spamm_recursive_multiply_scalar (const float alpha,
 float
 spamm_linear_multiply (const float tolerance,
     const float alpha,
-    spamm_chunk_t *chunk_A,
-    spamm_chunk_t *chunk_B,
-    spamm_chunk_t *chunk_C)
+    const spamm_chunk_t *const chunk_A,
+    const spamm_chunk_t *const chunk_B,
+    spamm_chunk_t *const chunk_C)
 {
   unsigned int *index_A;
   unsigned int *index_B;
@@ -333,9 +333,9 @@ spamm_linear_multiply (const float tolerance,
 float
 spamm_chunk_multiply (const float tolerance,
     const float alpha,
-    spamm_chunk_t *chunk_A,
-    spamm_chunk_t *chunk_B,
-    spamm_chunk_t *chunk_C,
+    const spamm_chunk_t *const chunk_A,
+    const spamm_chunk_t *const chunk_B,
+    spamm_chunk_t **const chunk_C,
     sgemm_func sgemm)
 {
   unsigned int i, j, k;
@@ -366,22 +366,29 @@ spamm_chunk_multiply (const float tolerance,
 
   if(use_linear_tree)
   {
-    return spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, chunk_C);
+    return spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, *chunk_C);
   }
 
   else
   {
+    if(*chunk_C == NULL)
+    {
+      *chunk_C = spamm_new_chunk(*spamm_chunk_get_number_dimensions(chunk_A),
+          *spamm_chunk_get_use_linear_tree(chunk_A), spamm_chunk_get_N(chunk_A),
+          spamm_chunk_get_N_lower(chunk_A), spamm_chunk_get_N_upper(chunk_A));
+    }
+
     norm_A = spamm_chunk_get_norm(chunk_A);
     norm_B = spamm_chunk_get_norm(chunk_B);
 
-    norm_C = spamm_chunk_get_norm(chunk_C);
-    norm2_C = spamm_chunk_get_norm2(chunk_C);
+    norm_C = spamm_chunk_get_norm(*chunk_C);
+    norm2_C = spamm_chunk_get_norm2(*chunk_C);
 
     if(norm_A[0]*norm_B[0] > tolerance)
     {
       matrix_A = spamm_chunk_get_matrix(chunk_A);
       matrix_B = spamm_chunk_get_matrix(chunk_B);
-      matrix_C = spamm_chunk_get_matrix(chunk_C);
+      matrix_C = spamm_chunk_get_matrix(*chunk_C);
 
       N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
 
@@ -553,7 +560,7 @@ spamm_multiply (const float tolerance,
     const struct spamm_matrix_t *const A,
     const struct spamm_matrix_t *const B,
     const float beta,
-    struct spamm_matrix_t *C,
+    struct spamm_matrix_t *const C,
     sgemm_func sgemm,
     unsigned int *number_products)
 {
@@ -561,11 +568,16 @@ spamm_multiply (const float tolerance,
   unsigned int *N_lower;
   unsigned int *N_upper;
 
+  if(A == NULL)
+  {
+    SPAMM_FATAL("not implemented\n");
+  }
+
   if(A->chunk_tier == 0)
   {
     spamm_chunk_multiply_scalar(beta, C->tree.chunk);
     spamm_chunk_multiply(tolerance, alpha, A->tree.chunk, B->tree.chunk,
-        C->tree.chunk, sgemm);
+        &(C->tree.chunk), sgemm);
   }
 
   else

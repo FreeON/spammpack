@@ -56,7 +56,7 @@ spamm_chunk_pad (const size_t address,
  * @return The number_dimensions.
  */
 unsigned int *
-spamm_chunk_get_number_dimensions (spamm_chunk_t *chunk)
+spamm_chunk_get_number_dimensions (const spamm_chunk_t *const chunk)
 {
   return (unsigned int*) chunk;
 }
@@ -68,7 +68,7 @@ spamm_chunk_get_number_dimensions (spamm_chunk_t *chunk)
  * @return number_tiers
  */
 unsigned int *
-spamm_chunk_get_number_tiers (spamm_chunk_t *chunk)
+spamm_chunk_get_number_tiers (const spamm_chunk_t *const chunk)
 {
   return (unsigned int*) ((intptr_t) chunk + sizeof(unsigned int));
 }
@@ -80,7 +80,7 @@ spamm_chunk_get_number_tiers (spamm_chunk_t *chunk)
  * @return use_linear_tree.
  */
 unsigned int *
-spamm_chunk_get_use_linear_tree (spamm_chunk_t *chunk)
+spamm_chunk_get_use_linear_tree (const spamm_chunk_t *const chunk)
 {
   return (unsigned int*) ((intptr_t) chunk + 2*sizeof(unsigned int));
 }
@@ -92,7 +92,7 @@ spamm_chunk_get_use_linear_tree (spamm_chunk_t *chunk)
  * @return The N array.
  */
 unsigned int *
-spamm_chunk_get_N (spamm_chunk_t *chunk)
+spamm_chunk_get_N (const spamm_chunk_t *const chunk)
 {
   void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (unsigned int*) ((intptr_t) chunk + (intptr_t) chunk_pointer[0]);
@@ -105,7 +105,7 @@ spamm_chunk_get_N (spamm_chunk_t *chunk)
  * @return The N_lower array.
  */
 unsigned int *
-spamm_chunk_get_N_lower (spamm_chunk_t *chunk)
+spamm_chunk_get_N_lower (const spamm_chunk_t *const chunk)
 {
   void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (unsigned int*) ((intptr_t) chunk + (intptr_t) chunk_pointer[1]);
@@ -118,7 +118,7 @@ spamm_chunk_get_N_lower (spamm_chunk_t *chunk)
  * @return The N_upper array.
  */
 unsigned int *
-spamm_chunk_get_N_upper (spamm_chunk_t *chunk)
+spamm_chunk_get_N_upper (const spamm_chunk_t *const chunk)
 {
   void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (unsigned int*) ((intptr_t) chunk + (intptr_t) chunk_pointer[2]);
@@ -131,7 +131,7 @@ spamm_chunk_get_N_upper (spamm_chunk_t *chunk)
  * @return The size of the contiguous matrix.
  */
 unsigned int
-spamm_chunk_get_N_contiguous (spamm_chunk_t *chunk)
+spamm_chunk_get_N_contiguous (const spamm_chunk_t *const chunk)
 {
   unsigned int *N_lower;
   unsigned int *N_upper;
@@ -149,7 +149,7 @@ spamm_chunk_get_N_contiguous (spamm_chunk_t *chunk)
  * @return The address of the matrix.
  */
 float *
-spamm_chunk_get_matrix (spamm_chunk_t *chunk)
+spamm_chunk_get_matrix (const spamm_chunk_t *const chunk)
 {
   void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[3]);
@@ -162,7 +162,7 @@ spamm_chunk_get_matrix (spamm_chunk_t *chunk)
  * @return The address of the dilated matrix.
  */
 float *
-spamm_chunk_get_matrix_dilated (spamm_chunk_t *chunk)
+spamm_chunk_get_matrix_dilated (const spamm_chunk_t *const chunk)
 {
   void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[4]);
@@ -176,7 +176,7 @@ spamm_chunk_get_matrix_dilated (spamm_chunk_t *chunk)
  * @return The total number of entries.
  */
 unsigned int
-spamm_chunk_get_number_norm_entries (spamm_chunk_t *chunk)
+spamm_chunk_get_number_norm_entries (const spamm_chunk_t *const chunk)
 {
   unsigned int result = 0;
   unsigned int number_dimensions;
@@ -198,7 +198,7 @@ spamm_chunk_get_number_norm_entries (spamm_chunk_t *chunk)
  * @return The pointer to the norm arrays.
  */
 float *
-spamm_chunk_get_norm (spamm_chunk_t *chunk)
+spamm_chunk_get_norm (const spamm_chunk_t *const chunk)
 {
   void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[5]);
@@ -216,7 +216,7 @@ spamm_chunk_get_norm (spamm_chunk_t *chunk)
  */
 float *
 spamm_chunk_get_tier_norm (const unsigned int tier,
-    spamm_chunk_t *chunk)
+    const spamm_chunk_t *const chunk)
 {
   float *norm;
   unsigned int number_dimensions;
@@ -242,7 +242,7 @@ spamm_chunk_get_tier_norm (const unsigned int tier,
  * @return The pointer to the norm2 arrays.
  */
 float *
-spamm_chunk_get_norm2 (spamm_chunk_t *chunk)
+spamm_chunk_get_norm2 (const spamm_chunk_t *const chunk)
 {
   void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
   return (float*) ((intptr_t) chunk + (intptr_t) chunk_pointer[6]);
