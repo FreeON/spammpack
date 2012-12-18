@@ -311,7 +311,7 @@ spamm_matlab_print (const struct spamm_matrix_t *const A)
       for(i[0] = 0; i[0] < A->N[0]; i[0]++) {
         for(i[1] = 0; i[1] < A->N[1]; i[1]++)
         {
-          printf("A(%u,%u) = %e\n", i[0]+1, i[1]+1, spamm_get(i, A));
+          printf("A(%u,%u) = %e;\n", i[0]+1, i[1]+1, spamm_get(i, A));
         }
       }
       break;

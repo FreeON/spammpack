@@ -594,6 +594,9 @@ spamm_multiply (const float tolerance,
     SPAMM_FATAL("not implemented\n");
   }
 
+  SPAMM_WARN("A\n");
+  spamm_matlab_print(A);
+
   if(A->chunk_tier == 0)
   {
     spamm_chunk_multiply_scalar(beta, C->tree.chunk);
@@ -644,4 +647,7 @@ spamm_multiply (const float tolerance,
       free(N_upper);
     }
   }
+
+  SPAMM_WARN("after product, C\n");
+  spamm_matlab_print(C);
 }
