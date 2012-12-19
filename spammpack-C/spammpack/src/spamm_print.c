@@ -320,4 +320,5 @@ spamm_matlab_print (const struct spamm_matrix_t *const A)
       SPAMM_FATAL("FIXME\n");
       break;
   }
+  fflush(stdout);
 }
