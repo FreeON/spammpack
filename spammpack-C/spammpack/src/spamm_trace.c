@@ -29,4 +29,5 @@ spamm_trace (const struct spamm_matrix_t *const A)
   }
 
   SPAMM_WARN("trace = %e\n", trace);
+  return trace;
 }

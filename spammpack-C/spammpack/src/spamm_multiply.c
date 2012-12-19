@@ -418,7 +418,7 @@ spamm_chunk_multiply (const float tolerance,
       norm2_C[0] = 0;
       for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
       {
-        norm2_C[0] += ipow(matrix_C[i], 2);
+        norm2_C[0] += matrix_C[i]*matrix_C[i];
       }
       norm_C[0] = sqrt(norm2_C[0]);
     }

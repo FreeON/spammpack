@@ -35,7 +35,8 @@ MODULE SpAMMPACK_MANAGEMENT
     MODULE PROCEDURE &
         SpAMM_SetEq_SpAMM_RNK2_to_Dense, &
         SpAMM_SetEq_SpAMM_C_to_Dense, &
-        SpAMM_SetEq_SpAMM_C_to_SpAMM_C
+        SpAMM_SetEq_SpAMM_C_to_SpAMM_C, &
+        SpAMM_SetEq_Dense_to_SpAMM_C
 
   END INTERFACE SpAMM_SetEq
 
@@ -52,6 +53,14 @@ MODULE SpAMMPACK_MANAGEMENT
       REAL(c_float), DIMENSION(*), INTENT(IN) :: A_dense
       TYPE(c_ptr), INTENT(OUT) :: A
     END subroutine spamm_convert_dense_to_spamm
+
+    !> Interface for spamm_convert_spamm_to_dense().
+    SUBROUTINE spamm_convert_spamm_to_dense (A, ADense) &
+        BIND(C, name = "spamm_convert_spamm_to_dense_interface")
+      USE, INTRINSIC :: iso_C_binding
+      TYPE(c_ptr), INTENT(IN) :: A
+      REAL(c_float), DIMENSION(*), INTENT(IN) :: ADense
+    END SUBROUTINE spamm_convert_spamm_to_dense
 
     !> Interface for spamm_get().
     SUBROUTINE spamm_get_element (i, A, Aij) &
@@ -227,7 +236,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: chunkTier
     LOGICAL, INTENT(IN) :: useLinearTree
 
-    REAL*4, ALLOCATABLE, DIMENSION(:,:) :: ADenseSingle
+    REAL*4, DIMENSION(SIZE(ADense, 1), SIZE(ADense, 2)) :: ADenseSingle
     INTEGER :: i, j
     INTEGER :: use_linear_tree
 
@@ -237,7 +246,6 @@ CONTAINS
       use_linear_tree = 0
     ENDIF
 
-    ALLOCATE(ADenseSingle(size(ADense, 1), size(ADense, 2)))
     DO i = 1, size(ADense, 1)
       DO j = 1, size(ADense, 2)
         ADenseSingle(i,j) = ADense(i,j)
@@ -246,8 +254,6 @@ CONTAINS
 
     CALL spamm_convert_dense_to_spamm(2, (/ size(ADense, 1), size(ADense, 2) /), &
       chunkTier, use_linear_tree, ADenseSingle, A)
-
-    DEALLOCATE(ADenseSingle)
 
   END SUBROUTINE SpAMM_SetEq_SpAMM_C_to_Dense
 
@@ -259,5 +265,20 @@ CONTAINS
     CALL spamm_copy(A, 1.0, B)
 
   END SUBROUTINE SpAMM_SetEq_SpAMM_C_to_SpAMM_C
+
+  SUBROUTINE SpAMM_SetEq_Dense_to_SpAMM_C (ADense, A)
+
+    REAL*8, DIMENSION(:,:), INTENT(INOUT) :: ADense
+    TYPE(c_ptr), INTENT(IN) :: A
+
+    INTEGER :: i, j
+
+    DO i = 1, size(ADense, 1)
+      DO j = 1, size(ADense, 2)
+        ADense(i,j) = SpAMM_Get(i, j, A)
+      ENDDO
+    ENDDO
+
+  END SUBROUTINE SpAMM_SetEq_Dense_to_SpAMM_C
 
 END MODULE SpAMMPACK_MANAGEMENT

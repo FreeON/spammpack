@@ -41,7 +41,7 @@ MODULE SpAMMPACK_ALGEBRA
     END SUBROUTINE spamm_multiply_interface
 
     SUBROUTINE spamm_multiply_scalar (alpha, A) &
-        BIND(C, name = "spamm_multiply_scalar")
+        BIND(C, name = "spamm_multiply_scalar_interface")
       USE, INTRINSIC :: iso_C_binding
       REAL(c_float), INTENT(IN) :: alpha
       TYPE(c_ptr), INTENT(INOUT) :: A
@@ -53,6 +53,16 @@ MODULE SpAMMPACK_ALGEBRA
       REAL(c_float), INTENT(INOUT) :: trace
       TYPE(c_ptr), INTENT(IN) :: A
     END SUBROUTINE spamm_trace_interface
+
+    SUBROUTINE spamm_add_interface (alpha, A, beta, B, C) &
+        BIND(C, name = "spamm_add_interface")
+      USE, INTRINSIC :: iso_C_binding
+      REAL(c_float), INTENT(IN) :: alpha
+      TYPE(c_ptr), INTENT(IN) :: A
+      REAL(c_float), INTENT(IN) :: beta
+      TYPE(c_ptr), INTENT(IN) :: B
+      TYPE(c_ptr), INTENT(INOUT) :: C
+    END SUBROUTINE spamm_add_interface
 
   END INTERFACE
 
@@ -260,8 +270,7 @@ CONTAINS
     TYPE(c_ptr), INTENT(IN) :: A, B
     TYPE(c_ptr), INTENT(INOUT) :: C
 
-    WRITE(*,*) "FIXME"
-    STOP
+    CALL spamm_add_interface(1.0, A, 1.0, B, C)
 
   END SUBROUTINE SpAMM_Add_SpAMM_C
 

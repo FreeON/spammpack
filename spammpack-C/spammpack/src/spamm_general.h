@@ -140,9 +140,9 @@ spamm_multiply (const float tolerance,
 
 void
 spamm_add (const float alpha,
-    struct spamm_matrix_t *A,
+    struct spamm_matrix_t *const A,
     const float beta,
-    struct spamm_matrix_t *B);
+    const struct spamm_matrix_t *const B);
 
 unsigned int
 spamm_number_nonzero (const struct spamm_matrix_t *A);
@@ -198,6 +198,9 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const short use_linear_tree,
     const enum spamm_layout_t dense_type,
     const float *const A_dense);
+
+float *
+spamm_convert_spamm_to_dense (const struct spamm_matrix_t *const A);
 
 void
 spamm_spectral_bounds (float *const a_min,
