@@ -12,7 +12,7 @@ void spamm_sgemm (char * transA, char * transB,
 {
   int i, j, k;
 
-  SPAMM_WARN("using SpAMM sgemm()\n");
+  //SPAMM_WARN("using SpAMM sgemm()\n");
 
   if(*transA != 'N')
   {
@@ -45,7 +45,7 @@ void spamm_dgemm (char * transA, char * transB,
 {
   int i, j, k;
 
-  SPAMM_WARN("using SpAMM dgemm()\n");
+  //SPAMM_WARN("using SpAMM dgemm()\n");
 
   if(*transA != 'N')
   {

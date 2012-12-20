@@ -594,8 +594,8 @@ spamm_multiply (const float tolerance,
     SPAMM_FATAL("not implemented\n");
   }
 
-  SPAMM_WARN("A\n");
-  spamm_matlab_print(A);
+  //SPAMM_WARN("A\n");
+  //spamm_matlab_print(A);
 
   if(A->chunk_tier == 0)
   {
@@ -648,6 +648,6 @@ spamm_multiply (const float tolerance,
     }
   }
 
-  SPAMM_WARN("after product, C\n");
-  spamm_matlab_print(C);
+  //SPAMM_WARN("after product, C\n");
+  //spamm_matlab_print(C);
 }
