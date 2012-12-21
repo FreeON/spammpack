@@ -65,7 +65,7 @@ spamm_chunk_multiply_interface (const float *const tolerance,
     spamm_chunk_t **chunk_C,
     float *const norm2)
 {
-  *norm2 = spamm_chunk_multiply(*tolerance, *alpha, *chunk_A, *chunk_B, *chunk_C, SGEMM);
+  *norm2 = spamm_chunk_multiply(*tolerance, *alpha, *chunk_A, *chunk_B, chunk_C, SGEMM);
 }
 
 /** Fortran interface for spamm_convert_dense_to_spamm().

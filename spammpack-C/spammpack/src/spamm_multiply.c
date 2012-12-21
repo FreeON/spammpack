@@ -471,7 +471,7 @@ spamm_recursive_multiply (const float tolerance,
     omp_set_lock(&(*node_C)->lock);
 #endif
     (*node_C)->norm2 = spamm_chunk_multiply(tolerance, alpha,
-        node_A->tree.chunk, node_B->tree.chunk, (*node_C)->tree.chunk, sgemm);
+        node_A->tree.chunk, node_B->tree.chunk, &(*node_C)->tree.chunk, sgemm);
     (*node_C)->norm = sqrt((*node_C)->norm2);
 #ifdef _OPENMP
     omp_unset_lock(&(*node_C)->lock);
@@ -505,14 +505,11 @@ spamm_recursive_multiply (const float tolerance,
 #endif
                 if((*node_C)->tree.child == NULL)
                 {
-                  SPAMM_WARN("allocating new child matrix\n");
                   (*node_C)->tree.child = calloc(ipow(2, number_dimensions_C), sizeof(struct spamm_recursive_node_t*));
                 }
 
                 if((*node_C)->tree.child[i+2*j] == NULL)
                 {
-                  SPAMM_WARN("node %p, tier = %u, i = %u, j = %u, k = %u, i+2*j = %u\n",
-                      *node_C, tier, i, j, k, i+2*j);
                   (*node_C)->tree.child[i+2*j] = spamm_recursive_new_node();
                 }
 #ifdef _OPENMP
