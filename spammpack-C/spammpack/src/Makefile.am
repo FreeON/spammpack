@@ -52,15 +52,16 @@ libspammpack_fortran_la_SOURCES = \
 
 # Fortran dependencies.
 spammpack.lo : \
-	spammpack_types.lo \
 	spammpack_algebra.lo \
+	spammpack_chunk.lo \
 	spammpack_management.lo \
-	spammpack_chunk.lo
+	spammpack_types.lo
 spammpack_algebra.lo : \
-	spammpack_types.lo \
+	spammpack_chunk.lo \
 	spammpack_management.lo \
-	spammpack_chunk.lo
-spammpack_management.lo : spammpack_types.lo
+	spammpack_types.lo
+spammpack_management.lo : \
+	spammpack_types.lo
 
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \
@@ -75,6 +76,7 @@ libspamm_tree_la_SOURCES = \
   spamm_manual_mainpage.h \
   spamm_add.c \
   spamm_allocate.c \
+  spamm_blas.c \
   spamm_check.c \
   spamm_chunk.c \
   spamm_convert.c \
@@ -84,15 +86,16 @@ libspamm_tree_la_SOURCES = \
   spamm_get.c \
   spamm_index.c \
   spamm_ipow.c \
+  spamm_lapack.c \
   spamm_multiply.c \
   spamm_new.c \
   spamm_print.c \
   spamm_set.c \
-  spamm_sgemm.c \
   spamm_sort.c \
   spamm_spectral_bounds.c \
   spamm_stats.c \
   spamm_timer.c \
+  spamm_trace.c \
   spamm_uint_to_bin_string.c \
   spamm_version.c
 

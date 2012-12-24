@@ -273,7 +273,7 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
  * @param A The matrix.
  */
 void
-spamm_print (const struct spamm_matrix_t *A)
+spamm_print (const struct spamm_matrix_t *const A)
 {
   unsigned int *i;
 
@@ -295,4 +295,30 @@ spamm_print (const struct spamm_matrix_t *A)
     default:
       SPAMM_FATAL("not implemented\n");
   }
+}
+
+/** Print a matrix in matlab format.
+ */
+void
+spamm_matlab_print (const struct spamm_matrix_t *const A)
+{
+  unsigned int i[2];
+
+  switch(A->number_dimensions)
+  {
+    case 2:
+      printf("A = sparse(%u,%u);\n", A->N[0], A->N[1]);
+      for(i[0] = 0; i[0] < A->N[0]; i[0]++) {
+        for(i[1] = 0; i[1] < A->N[1]; i[1]++)
+        {
+          printf("A(%u,%u) = %e;\n", i[0]+1, i[1]+1, spamm_get(i, A));
+        }
+      }
+      break;
+
+    default:
+      SPAMM_FATAL("FIXME\n");
+      break;
+  }
+  fflush(stdout);
 }

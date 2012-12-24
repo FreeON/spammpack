@@ -118,6 +118,20 @@ else
   AC_DEFINE([DGEMM], [dgemm_], [External dgemm_().])
 fi
 
+dnl Check for sgeev_().
+AC_SEARCH_LIBS([sgeev_], [],
+               [have_sgeev="yes"],
+               [have_sgeev="no"])
+
+if test "${have_sgeev}" = "no"; then
+  AC_MSG_NOTICE([no external sgeev_(), will not use sgeev()])
+  AC_DEFINE([SGEEV], [//sgeev_], [not using sgeev_().])
+else
+  AC_MSG_NOTICE([will use external sgeev_()])
+  AC_DEFINE([ADD_DGEMM_EXTERNAL_DECLARATION], [1], [Add declaration for sgeev_() external.])
+  AC_DEFINE([SGEEV], [sgeev_], [External sgeev_().])
+fi
+
 dnl Find out whether we support SSE and SSE4.1.
 AC_MSG_CHECKING([for SSE support])
 AC_RUN_IFELSE([AC_LANG_PROGRAM([],

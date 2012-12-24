@@ -1,3 +1,4 @@
+#include "config.h"
 #include <spamm.h>
 
 #include <stdio.h>
@@ -59,7 +60,7 @@ main (int argc, char **argv)
   vr = malloc(ldvr*sizeof(float));
   lwork = 3*N[0];
   work = malloc(lwork*sizeof(float));
-  sgeev_("N", "N", &N[0], A_dense, &N[0], wr, wi, vl, &ldvl, vr, &ldvr, work, &lwork, &info);
+  SGEEV("N", "N", &N[0], A_dense, &N[0], wr, wi, vl, &ldvl, vr, &ldvr, work, &lwork, &info);
 
   for(i[0] = 0; i[0] < N[0]; i[0]++)
   {

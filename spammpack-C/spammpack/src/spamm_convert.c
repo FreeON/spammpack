@@ -111,3 +111,37 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
 
   return A;
 }
+
+/** Convert a SpAMM matrix to a dense matrix.
+ *
+ * @param A The SpAMM matrix.
+ *
+ * @return The newly allocated dense matrix. This matrix has to be freed by
+ * the caller when it is not needed anymore.
+ */
+float *
+spamm_convert_spamm_to_dense (const struct spamm_matrix_t *const A)
+{
+  float *ADense = NULL;
+  unsigned int *i;
+
+  switch(A->number_dimensions)
+  {
+    case 2:
+      ADense = calloc(A->N[0]*A->N[1], sizeof(float));
+      i = calloc(2, sizeof(unsigned int));
+      for (i[0] = 0; i[0] < A->N[0]; i[0]++) {
+        for (i[1] = 0; i[1] < A->N[1]; i[1]++)
+        {
+          ADense[spamm_index_column_major_3(A->number_dimensions, A->N, i)] = spamm_get(i, A);
+        }
+      }
+      break;
+
+    default:
+      SPAMM_FATAL("FIXME\n");
+      break;
+  }
+
+  return ADense;
+}

@@ -134,16 +134,15 @@ spamm_recursive_multiply_scalar (const float alpha,
  * @param B The matrix \f$B\f$.
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
- * @param kernel The stream kernel to use.
  *
  * @return The square of the Frobenius norm of the chunk.
  */
 float
 spamm_linear_multiply (const float tolerance,
     const float alpha,
-    spamm_chunk_t *chunk_A,
-    spamm_chunk_t *chunk_B,
-    spamm_chunk_t *chunk_C)
+    const spamm_chunk_t *const chunk_A,
+    const spamm_chunk_t *const chunk_B,
+    spamm_chunk_t *const chunk_C)
 {
   unsigned int *index_A;
   unsigned int *index_B;
@@ -334,9 +333,9 @@ spamm_linear_multiply (const float tolerance,
 float
 spamm_chunk_multiply (const float tolerance,
     const float alpha,
-    spamm_chunk_t *chunk_A,
-    spamm_chunk_t *chunk_B,
-    spamm_chunk_t *chunk_C,
+    const spamm_chunk_t *const chunk_A,
+    const spamm_chunk_t *const chunk_B,
+    spamm_chunk_t **const chunk_C,
     sgemm_func sgemm)
 {
   unsigned int i, j, k;
@@ -367,22 +366,29 @@ spamm_chunk_multiply (const float tolerance,
 
   if(use_linear_tree)
   {
-    return spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, chunk_C);
+    return spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, *chunk_C);
   }
 
   else
   {
+    if(*chunk_C == NULL)
+    {
+      *chunk_C = spamm_new_chunk(*spamm_chunk_get_number_dimensions(chunk_A),
+          *spamm_chunk_get_use_linear_tree(chunk_A), spamm_chunk_get_N(chunk_A),
+          spamm_chunk_get_N_lower(chunk_A), spamm_chunk_get_N_upper(chunk_A));
+    }
+
     norm_A = spamm_chunk_get_norm(chunk_A);
     norm_B = spamm_chunk_get_norm(chunk_B);
 
-    norm_C = spamm_chunk_get_norm(chunk_C);
-    norm2_C = spamm_chunk_get_norm2(chunk_C);
+    norm_C = spamm_chunk_get_norm(*chunk_C);
+    norm2_C = spamm_chunk_get_norm2(*chunk_C);
 
     if(norm_A[0]*norm_B[0] > tolerance)
     {
       matrix_A = spamm_chunk_get_matrix(chunk_A);
       matrix_B = spamm_chunk_get_matrix(chunk_B);
-      matrix_C = spamm_chunk_get_matrix(chunk_C);
+      matrix_C = spamm_chunk_get_matrix(*chunk_C);
 
       N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
 
@@ -412,7 +418,7 @@ spamm_chunk_multiply (const float tolerance,
       norm2_C[0] = 0;
       for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
       {
-        norm2_C[0] += ipow(matrix_C[i], 2);
+        norm2_C[0] += matrix_C[i]*matrix_C[i];
       }
       norm_C[0] = sqrt(norm2_C[0]);
     }
@@ -443,7 +449,6 @@ spamm_recursive_multiply (const float tolerance,
     struct spamm_recursive_node_t *node_B,
     struct spamm_recursive_node_t **node_C,
     sgemm_func sgemm,
-    const enum spamm_kernel_t kernel,
     const unsigned int number_dimensions_A,
     const unsigned int number_dimensions_B,
     const unsigned int number_dimensions_C,
@@ -517,10 +522,10 @@ spamm_recursive_multiply (const float tolerance,
 #pragma omp task untied
                 spamm_recursive_multiply(tolerance, alpha,
                     node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
-                    &(*node_C)->tree.child[i+2*j], sgemm, kernel,
-                    number_dimensions_A, number_dimensions_B,
-                    number_dimensions_C, N, new_N_lower, new_N_upper, tier+1,
-                    chunk_tier, use_linear_tree, number_products);
+                    &(*node_C)->tree.child[i+2*j], sgemm, number_dimensions_A,
+                    number_dimensions_B, number_dimensions_C, N, new_N_lower,
+                    new_N_upper, tier+1, chunk_tier, use_linear_tree,
+                    number_products);
               }
             }
           }
@@ -539,6 +544,27 @@ spamm_recursive_multiply (const float tolerance,
   }
 }
 
+/** Multiply a matrix by a scalar, @f$ A \leftarrow \alpha A @f$.
+ *
+ * @param alpha The scalar.
+ * @param A The matrix.
+ */
+void
+spamm_multiply_scalar (const float alpha,
+    struct spamm_matrix_t *const A)
+{
+  if(A->chunk_tier == 0)
+  {
+    spamm_chunk_multiply_scalar(alpha, A->tree.chunk);
+  }
+
+  else
+  {
+    spamm_recursive_multiply_scalar(alpha, A->tree.recursive_tree,
+        A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
+  }
+}
+
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
  *
  * @param tolerance The SpAMM tolerance of this product.
@@ -552,23 +578,30 @@ spamm_recursive_multiply (const float tolerance,
 void
 spamm_multiply (const float tolerance,
     const float alpha,
-    struct spamm_matrix_t *A,
-    struct spamm_matrix_t *B,
+    const struct spamm_matrix_t *const A,
+    const struct spamm_matrix_t *const B,
     const float beta,
-    struct spamm_matrix_t *C,
+    struct spamm_matrix_t *const C,
     sgemm_func sgemm,
-    const enum spamm_kernel_t kernel,
     unsigned int *number_products)
 {
   int dim;
   unsigned int *N_lower;
   unsigned int *N_upper;
 
+  if(A == NULL)
+  {
+    SPAMM_FATAL("not implemented\n");
+  }
+
+  SPAMM_WARN("A\n");
+  spamm_matlab_print(A);
+
   if(A->chunk_tier == 0)
   {
     spamm_chunk_multiply_scalar(beta, C->tree.chunk);
     spamm_chunk_multiply(tolerance, alpha, A->tree.chunk, B->tree.chunk,
-        C->tree.chunk, sgemm);
+        &(C->tree.chunk), sgemm);
   }
 
   else
@@ -605,7 +638,7 @@ spamm_multiply (const float tolerance,
 #pragma omp master
 #pragma omp task untied
       spamm_recursive_multiply(tolerance, alpha, A->tree.recursive_tree,
-          B->tree.recursive_tree, &(C->tree.recursive_tree), sgemm, kernel,
+          B->tree.recursive_tree, &(C->tree.recursive_tree), sgemm,
           A->number_dimensions, B->number_dimensions, C->number_dimensions,
           A->N, N_lower, N_upper, 0, A->chunk_tier, A->use_linear_tree,
           number_products);
@@ -614,4 +647,7 @@ spamm_multiply (const float tolerance,
       free(N_upper);
     }
   }
+
+  SPAMM_WARN("after product, C\n");
+  spamm_matlab_print(C);
 }

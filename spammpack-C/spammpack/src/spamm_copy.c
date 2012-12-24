@@ -136,6 +136,8 @@ spamm_copy (struct spamm_matrix_t **A,
     const float beta,
     const struct spamm_matrix_t *const B)
 {
+  if(*A == B) { return; }
+
   spamm_delete(A);
   *A = spamm_new(B->number_dimensions, B->N, B->chunk_tier, B->use_linear_tree);
 

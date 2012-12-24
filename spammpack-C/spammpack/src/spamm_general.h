@@ -112,9 +112,9 @@ spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj);
 float
 spamm_linear_multiply (const float tolerance,
     const float alpha,
-    spamm_chunk_t *chunk_A,
-    spamm_chunk_t *chunk_B,
-    spamm_chunk_t *chunk_C);
+    const spamm_chunk_t *const chunk_A,
+    const spamm_chunk_t *const chunk_B,
+    spamm_chunk_t *const chunk_C);
 
 void
 spamm_recursive_multiply_scalar (const float alpha,
@@ -125,21 +125,24 @@ spamm_recursive_multiply_scalar (const float alpha,
     const short use_linear_tree);
 
 void
+spamm_multiply_scalar (const float alpha,
+    struct spamm_matrix_t *const A);
+
+void
 spamm_multiply (const float tolerance,
     const float alpha,
-    struct spamm_matrix_t *A,
-    struct spamm_matrix_t *B,
+    const struct spamm_matrix_t *const A,
+    const struct spamm_matrix_t *const B,
     const float beta,
-    struct spamm_matrix_t *C,
+    struct spamm_matrix_t *const C,
     sgemm_func sgemm,
-    const enum spamm_kernel_t kernel,
     unsigned int *number_products);
 
 void
 spamm_add (const float alpha,
-    struct spamm_matrix_t *A,
+    struct spamm_matrix_t *const A,
     const float beta,
-    struct spamm_matrix_t *B);
+    const struct spamm_matrix_t *const B);
 
 unsigned int
 spamm_number_nonzero (const struct spamm_matrix_t *A);
@@ -161,7 +164,10 @@ struct spamm_recursive_node_t *
 spamm_recursive_new_node ();
 
 void
-spamm_print (const struct spamm_matrix_t *A);
+spamm_print (const struct spamm_matrix_t *const A);
+
+void
+spamm_matlab_print (const struct spamm_matrix_t *const A);
 
 void
 spamm_print_info (const struct spamm_matrix_t *const A);
@@ -193,6 +199,9 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const enum spamm_layout_t dense_type,
     const float *const A_dense);
 
+float *
+spamm_convert_spamm_to_dense (const struct spamm_matrix_t *const A);
+
 void
 spamm_spectral_bounds (float *const a_min,
     float *const a_max,
@@ -216,5 +225,8 @@ void spamm_dgemm (char * transA, char * transB,
 unsigned int
 spamm_chunk_get_total_number_norms (const unsigned int number_tiers,
     const unsigned int number_dimensions);
+
+float
+spamm_trace (const struct spamm_matrix_t *const A);
 
 #endif
