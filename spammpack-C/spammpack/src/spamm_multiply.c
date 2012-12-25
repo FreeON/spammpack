@@ -336,6 +336,10 @@ spamm_chunk_multiply (const float tolerance,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
     spamm_chunk_t **const chunk_C,
+    const unsigned int number_dimensions,
+    const unsigned int *const N,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
     sgemm_func sgemm)
 {
   unsigned int i, j, k;
@@ -357,12 +361,9 @@ spamm_chunk_multiply (const float tolerance,
 
   short use_linear_tree;
 
-  unsigned int number_dimensions;
-
   if(chunk_A == NULL || chunk_B == NULL) { return 0.0; }
 
   use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk_A);
-  number_dimensions = *spamm_chunk_get_number_dimensions(chunk_A);
 
   if(use_linear_tree)
   {
@@ -471,7 +472,8 @@ spamm_recursive_multiply (const float tolerance,
     omp_set_lock(&(*node_C)->lock);
 #endif
     (*node_C)->norm2 = spamm_chunk_multiply(tolerance, alpha,
-        node_A->tree.chunk, node_B->tree.chunk, &(*node_C)->tree.chunk, sgemm);
+        node_A->tree.chunk, node_B->tree.chunk, &(*node_C)->tree.chunk,
+        number_dimensions_C, N, N_lower, N_upper, sgemm);
     (*node_C)->norm = sqrt((*node_C)->norm2);
 #ifdef _OPENMP
     omp_unset_lock(&(*node_C)->lock);
@@ -591,14 +593,24 @@ spamm_multiply (const float tolerance,
     SPAMM_FATAL("not implemented\n");
   }
 
-  //SPAMM_WARN("A\n");
-  //spamm_matlab_print(A);
-
   if(A->chunk_tier == 0)
   {
     spamm_chunk_multiply_scalar(beta, C->tree.chunk);
+
+    N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
+    N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
+
+    for(dim = 0; dim < A->number_dimensions; dim++)
+    {
+      N_upper[dim] = A->N_padded;
+    }
+
     spamm_chunk_multiply(tolerance, alpha, A->tree.chunk, B->tree.chunk,
-        &(C->tree.chunk), sgemm);
+        &(C->tree.chunk), C->number_dimensions, A->N, N_lower, N_upper,
+        sgemm);
+
+    free(N_lower);
+    free(N_upper);
   }
 
   else
@@ -644,7 +656,4 @@ spamm_multiply (const float tolerance,
       free(N_upper);
     }
   }
-
-  //SPAMM_WARN("after product, C\n");
-  //spamm_matlab_print(C);
 }

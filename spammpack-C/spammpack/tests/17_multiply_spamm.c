@@ -9,7 +9,7 @@
 #define TEST_ABS_TOLERANCE 2e-8
 #define TEST_REL_TOLERANCE 2e-6
 
-inline unsigned int
+unsigned int
 matrix_index (const unsigned int i,
     const unsigned int j,
     const unsigned int M,
@@ -39,6 +39,7 @@ main (int argc, char **argv)
   short check_matrices = 0;
   short random_matrix = 1;
   short print_debug = 0;
+  short null_C = 0;
 
   float gamma = 1.0;
 
@@ -64,27 +65,26 @@ main (int argc, char **argv)
 
   unsigned int max_i[] = { 0, 0 };
   unsigned int max_rel_i[] = { 0, 0 };
+  unsigned int max_float_i[] = { 0, 0 };
 
   double max_diff;
   double max_rel_diff;
   double max_diff_float;
 
-  enum spamm_kernel_t kernel = kernel_standard_SSE;
   struct spamm_timer_t *timer;
   char *timer_string;
 
   int option_index;
   int parse_result;
-  char *short_options = "hk:N:la:b:t:c:rds1g:vx";
+  char *short_options = "hN:la:b:t:c:rds1g:vxn";
   static struct option long_options[] = {
     { "help",       no_argument,        NULL, 'h' },
-    { "kernel",     required_argument,  NULL, 'k' },
     { "N",          required_argument,  NULL, 'N' },
     { "linear",     no_argument,        NULL, 'l' },
     { "alpha",      required_argument,  NULL, 'a' },
     { "beta",       required_argument,  NULL, 'b' },
     { "tolerance",  required_argument,  NULL, 't' },
-    { "contiguous", required_argument,  NULL, 'c' },
+    { "chunk",      required_argument,  NULL, 'c' },
     { "no-random",  no_argument,        NULL, 'r' },
     { "debug",      no_argument,        NULL, 'd' },
     { "sgemm",      no_argument,        NULL, 's' },
@@ -92,6 +92,7 @@ main (int argc, char **argv)
     { "gamma",      required_argument,  NULL, 'g' },
     { "verify",     no_argument,        NULL, 'v' },
     { "check",      no_argument,        NULL, 'x' },
+    { "nullC",      no_argument,        NULL, 'n' },
     { NULL,         0,                  NULL,  0  }
   };
 
@@ -106,13 +107,12 @@ main (int argc, char **argv)
       case 'h':
         printf("Usage:\n");
         printf("\n");
-        printf("{ -k | --kernel } kernel      Use the kernel\n");
         printf("{ -N | --N } N                Set N\n");
         printf("{ -l | --linear }             Use a linear tier\n");
         printf("{ -a | --alpha } alpha        Set alpha\n");
         printf("{ -b | --beta } beta          Set beta\n");
         printf("{ -t | --tolerance } tau      Multiply with tolerance tau\n");
-        printf("{ -c | --contiguous } c       Set contiguous tier to c\n");
+        printf("{ -c | --chunk } c            Set chunk tier to c\n");
         printf("{ -r | --no-random }          Do not create random matrix\n");
         printf("{ -d | --debug }              Print matrices\n");
         printf("{ -s | --sgemm }              Use sgemm\n");
@@ -120,11 +120,8 @@ main (int argc, char **argv)
         printf("{ -g | --gamma } g            Set decay for diagonal to g\n");
         printf("{ -v | --verify }             Verify result\n");
         printf("{ -x | --check }              Check matrices\n");
+        printf("{ -n | --nullC }              Initialize C as empty matrix\n");
         exit(0);
-        break;
-
-      case 'k':
-        kernel = spamm_kernel_get_kernel(optarg);
         break;
 
       case 'N':
@@ -140,10 +137,12 @@ main (int argc, char **argv)
 
       case 'a':
         alpha = strtod(optarg, NULL);
+        alpha_float = alpha;
         break;
 
       case 'b':
         beta = strtod(optarg, NULL);
+        beta_float = beta;
         break;
 
       case 't':
@@ -182,6 +181,10 @@ main (int argc, char **argv)
         check_matrices = 1;
         break;
 
+      case 'n':
+        null_C = 1;
+        break;
+
       default:
         printf("unknown option\n");
         break;
@@ -206,14 +209,20 @@ main (int argc, char **argv)
       {
         A_dense[matrix_index(i[0], i[0], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
         B_dense[matrix_index(i[0], i[0], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
-        C_dense[matrix_index(i[0], i[0], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
+        if(!null_C)
+        {
+          C_dense[matrix_index(i[0], i[0], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
+        }
       }
 
       else
       {
         A_dense[matrix_index(i[0], i[0], N[0], N[1])] = i[0]*N[1]+i[0]+1;
         B_dense[matrix_index(i[0], i[0], N[0], N[1])] = i[0]*N[1]+i[0]+1;
-        C_dense[matrix_index(i[0], i[0], N[0], N[1])] = i[0]*N[1]+i[0]+1;
+        if(!null_C)
+        {
+          C_dense[matrix_index(i[0], i[0], N[0], N[1])] = i[0]*N[1]+i[0]+1;
+        }
       }
     }
 
@@ -225,7 +234,10 @@ main (int argc, char **argv)
         {
           A_dense[matrix_index(i[0], i[1], N[0], N[1])] = A_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
           B_dense[matrix_index(i[0], i[1], N[0], N[1])] = B_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
-          C_dense[matrix_index(i[0], i[1], N[0], N[1])] = C_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
+          if(!null_C)
+          {
+            C_dense[matrix_index(i[0], i[1], N[0], N[1])] = C_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
+          }
         }
       }
 
@@ -235,14 +247,20 @@ main (int argc, char **argv)
         {
           A_dense[matrix_index(i[0], i[1], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
           B_dense[matrix_index(i[0], i[1], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
-          C_dense[matrix_index(i[0], i[1], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
+          if(!null_C)
+          {
+            C_dense[matrix_index(i[0], i[1], N[0], N[1])] = (float) rand()/(float) RAND_MAX;
+          }
         }
 
         else
         {
           A_dense[matrix_index(i[0], i[1], N[0], N[1])] = i[0]*N[1]+i[1];
           B_dense[matrix_index(i[0], i[1], N[0], N[1])] = i[0]*N[1]+i[1];
-          C_dense[matrix_index(i[0], i[1], N[0], N[1])] = i[0]*N[1]+i[1];
+          if(!null_C)
+          {
+            C_dense[matrix_index(i[0], i[1], N[0], N[1])] = i[0]*N[1]+i[1];
+          }
         }
       }
     }
@@ -251,9 +269,9 @@ main (int argc, char **argv)
   for (i[0] = 0; i[0] < N[0]; i[0]++) {
     for (i[1] = 0; i[1] < N[1]; i[1]++)
     {
-      A_float[matrix_index(i[0], i[1], N[0], N[1])] = A_dense[i[0]*N[1]+i[1]];
-      B_float[matrix_index(i[0], i[1], N[0], N[1])] = B_dense[i[0]*N[1]+i[1]];
-      C_float[matrix_index(i[0], i[1], N[0], N[1])] = C_dense[i[0]*N[1]+i[1]];
+      A_float[matrix_index(i[0], i[1], N[0], N[1])] = A_dense[matrix_index(i[0], i[1], N[0], N[1])];
+      B_float[matrix_index(i[0], i[1], N[0], N[1])] = B_dense[matrix_index(i[0], i[1], N[0], N[1])];
+      C_float[matrix_index(i[0], i[1], N[0], N[1])] = C_dense[matrix_index(i[0], i[1], N[0], N[1])];
     }
   }
   printf("done\n");
@@ -261,13 +279,22 @@ main (int argc, char **argv)
   printf("creating SpAMM matrices... ");
   fflush(stdout);
 
-  A = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, A_float);
-  B = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, B_float);
-  C = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, C_float);
+  A = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, column_major, A_float);
+  B = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, column_major, B_float);
+  if(null_C)
+  {
+    C = spamm_new(2, N, chunk_tier, use_linear_tree);
+  }
+
+  else
+  {
+    C = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, column_major, C_float);
+  }
 
   printf("done\n");
 
-  printf("multiply: alpha = %f, beta = %f, tolerance = %f\n", alpha, beta, tolerance);
+  printf("multiply: alpha = %f, beta = %f, tolerance = %f, chunk_tier = %u, use_linear_tree = %u\n",
+      alpha, beta, tolerance, chunk_tier, use_linear_tree);
 
   //spamm_print_info(A);
   //spamm_print_info(B);
@@ -312,6 +339,15 @@ main (int argc, char **argv)
       }
     }
 
+    printf("B =\n");
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        printf(" %5.2e", spamm_get(i, B));
+      }
+      printf("\n");
+    }
+
     printf("C_dense = zeros(%u,%u);\n", N[0], N[1]);
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
@@ -320,10 +356,22 @@ main (int argc, char **argv)
       }
     }
 
-    printf("A =\n");
+    printf("C =\n");
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        printf(" %5.2e", spamm_get(i, C));
+      }
+      printf("\n");
+    }
+
+    printf("A (tree) =\n");
     spamm_print_tree(A);
 
-    printf("C =\n");
+    printf("B (tree) =\n");
+    spamm_print_tree(B);
+
+    printf("C (tree) =\n");
     spamm_print_tree(C);
   }
 
@@ -368,6 +416,14 @@ main (int argc, char **argv)
 
   if(print_debug)
   {
+    printf("C_ref_float = zeros(%u,%u);\n", N[0], N[1]);
+    for(i[0] = 0; i[0] < N[0]; i[0]++) {
+      for(i[1] = 0; i[1] < N[1]; i[1]++)
+      {
+        printf("C_ref_float(%u,%u) = %e;\n", i[0]+1, i[1]+1, C_float[matrix_index(i[0], i[1], N[0], N[1])]);
+      }
+    }
+
     printf("C_ref_dense = zeros(%u,%u);\n", N[0], N[1]);
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
@@ -380,7 +436,7 @@ main (int argc, char **argv)
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
   spamm_timer_start(timer);
-  spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), kernel, NULL);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), NULL);
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
   printf("timer: %s\n", timer_string);
@@ -389,6 +445,9 @@ main (int argc, char **argv)
 
   if(print_debug)
   {
+    printf("C (tree)\n");
+    spamm_print_tree(C);
+
     printf("C =\n");
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
@@ -414,28 +473,27 @@ main (int argc, char **argv)
     fflush(stdout);
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++) {
-        for(k = 0; k < N[0]; k++)
+        if(fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C)) > max_diff)
         {
-          if(fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C)) > max_diff)
-          {
-            max_diff = fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C));
-            max_i[0] = i[0];
-            max_i[1] = i[1];
-          }
+          max_diff = fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C));
+          max_i[0] = i[0];
+          max_i[1] = i[1];
+        }
 
-          if(fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-C_float[matrix_index(i[0], i[1], N[0], N[1])]) > max_diff_float)
-          {
-            max_diff_float = fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-C_float[matrix_index(i[0], i[1], N[0], N[1])]);
-          }
+        if(fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-C_float[matrix_index(i[0], i[1], N[0], N[1])]) > max_diff_float)
+        {
+          max_diff_float = fabs(C_dense[matrix_index(i[0], i[1], N[0], N[1])]-C_float[matrix_index(i[0], i[1], N[0], N[1])]);
+          max_float_i[0] = i[0];
+          max_float_i[1] = i[1];
+        }
 
-          if(C_dense[matrix_index(i[0], i[1], N[0], N[1])] != 0)
+        if(C_dense[matrix_index(i[0], i[1], N[0], N[1])] != 0)
+        {
+          if(fabs((C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C))/C_dense[matrix_index(i[0], i[1], N[0], N[1])]) > max_rel_diff)
           {
-            if(fabs((C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C))/C_dense[matrix_index(i[0], i[1], N[0], N[1])]) > max_rel_diff)
-            {
-              max_rel_diff = fabs((C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C))/C_dense[matrix_index(i[0], i[1], N[0], N[1])]);
-              max_rel_i[0] = i[0];
-              max_rel_i[1] = i[1];
-            }
+            max_rel_diff = fabs((C_dense[matrix_index(i[0], i[1], N[0], N[1])]-spamm_get(i, C))/C_dense[matrix_index(i[0], i[1], N[0], N[1])]);
+            max_rel_i[0] = i[0];
+            max_rel_i[1] = i[1];
           }
         }
       }
@@ -447,7 +505,10 @@ main (int argc, char **argv)
         (C_dense[matrix_index(max_i[0], max_i[1], N[0], N[1])] != 0.0 ? max_diff/C_dense[matrix_index(max_i[0], max_i[1], N[0], N[1])] : 0.0),
         max_i[0], max_i[1], spamm_get(max_i, C),
         max_i[0], max_i[1], C_dense[matrix_index(max_i[0], max_i[1], N[0], N[1])]);
-    printf("max float diff = %e\n", max_diff_float);
+    printf("max float diff = %e, C_dense[%u][%u] = %e, C_float[%u][%u] = %e\n",
+        max_diff_float,
+        max_float_i[0], max_float_i[1], C_dense[matrix_index(max_float_i[0], max_float_i[1], N[0], N[1])],
+        max_float_i[0], max_float_i[1], C_float[matrix_index(max_float_i[0], max_float_i[1], N[0], N[1])]);
     printf("max rel. diff =  %e, diff =      %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
         max_rel_diff,
         fabs(C_dense[matrix_index(max_rel_i[0], max_rel_i[1], N[0], N[1])]-spamm_get(max_rel_i, C)),

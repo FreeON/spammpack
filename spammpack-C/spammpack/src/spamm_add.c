@@ -168,6 +168,12 @@ spamm_add (const float alpha,
     const float beta,
     const struct spamm_matrix_t *const B)
 {
+  SPAMM_WARN("A");
+  spamm_matlab_print(A);
+
+  SPAMM_WARN("B");
+  spamm_matlab_print(B);
+
   if(A->chunk_tier == 0)
   {
     spamm_chunk_add(alpha, &A->tree.chunk, beta, B->tree.chunk);
@@ -179,4 +185,7 @@ spamm_add (const float alpha,
         &((struct spamm_matrix_t*) B)->tree.recursive_tree,
         A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
   }
+
+  SPAMM_WARN("A");
+  spamm_matlab_print(A);
 }

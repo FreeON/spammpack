@@ -96,10 +96,12 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
   printf(" ]\n");
   N_lower = spamm_chunk_get_N_lower(chunk);
   N_upper = spamm_chunk_get_N_upper(chunk);
+  printf("N = {");
   for(dim = 0; dim < number_dimensions; dim++)
   {
-    printf("N[%u] = [ %u, %u ]\n", dim, N_lower[dim], N_upper[dim]);
+    printf(" [ %u --> %u ]", N_lower[dim], N_upper[dim]);
   }
+  printf(" }\n");
 
   for(i = 0; i < number_tiers; i++)
   {
@@ -164,20 +166,17 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
 
   if(node == NULL) { return; }
 
-  printf("node (tier = %u, %p): N = {", tier, node);
+  printf("node at %p (tier = %u): N = {", node, tier);
   for(dim = 0; dim < number_dimensions; dim++)
   {
     printf(" [ %u --> %u ]", N_lower[dim], N_upper[dim]);
   }
   printf(" }, norm = %1.2e, ", node->norm);
+
   if(tier == chunk_tier)
   {
+    printf("chunk = %p\n", node->tree.chunk);
     spamm_print_chunk(node->tree.chunk);
-  }
-
-  else if(tier == chunk_tier)
-  {
-    return;
   }
 
   else
@@ -244,14 +243,17 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
   printf("depth = %u, ", A->depth);
   printf("chunk_tier = %u, ", A->chunk_tier);
   printf("use_linear_tree = %u, ", A->use_linear_tree);
-  printf("chunk_tier = %u\n", A->chunk_tier);
+  printf("chunk_tier = %u, ", A->chunk_tier);
 
   if(A->chunk_tier == 0)
   {
+    printf("chunk = %p\n", A->tree.chunk);
     spamm_print_chunk(A->tree.chunk);
   }
   else
   {
+    printf("recursive_tree = %p\n", A->tree.recursive_tree);
+
     N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
     N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
 
