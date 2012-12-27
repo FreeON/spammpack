@@ -198,13 +198,5 @@ spamm_check (const struct spamm_matrix_t *A, const float tolerance)
 {
   float norm2;
 
-  if(A->chunk_tier == 0)
-  {
-    norm2 = spamm_chunk_check(A->tree.chunk, tolerance);
-  }
-
-  else
-  {
-    norm2 = spamm_recursive_check(A->tree.recursive_tree, A->number_dimensions, 0, A->chunk_tier, tolerance);
-  }
+  norm2 = spamm_recursive_check(A->recursive_tree, A->number_dimensions, 0, A->chunk_tier, tolerance);
 }

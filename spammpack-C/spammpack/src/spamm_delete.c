@@ -1,6 +1,7 @@
 #include "spamm.h"
 #include "spamm_types_private.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,20 +70,17 @@ spamm_recursive_delete (const unsigned int number_dimensions,
 void
 spamm_delete (struct spamm_matrix_t **A)
 {
+  assert(A != NULL);
+
   if(*A == NULL) { return; }
 
-  if((*A)->chunk_tier == 0)
-  {
-    free((*A)->tree.chunk);
-  }
+  spamm_recursive_delete((*A)->number_dimensions, 0, (*A)->chunk_tier,
+      (*A)->use_linear_tree, &(*A)->recursive_tree);
 
-  else
-  {
-    spamm_recursive_delete((*A)->number_dimensions, 0, (*A)->chunk_tier, (*A)->use_linear_tree, &(*A)->tree.recursive_tree);
-  }
-
+  /* Free memory. */
   free((*A)->N);
-
   free(*A);
+
+  /* Reset pointer. */
   *A = NULL;
 }

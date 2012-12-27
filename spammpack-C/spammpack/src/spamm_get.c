@@ -205,27 +205,19 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
 
   float Aij;
 
-  if(A->chunk_tier == 0)
+  N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
+  N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
+
+  for(dim = 0; dim < A->number_dimensions; dim++)
   {
-    Aij = spamm_chunk_get(i, A->tree.chunk);
+    N_upper[dim] = A->N_padded;
   }
 
-  else
-  {
-    N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
-    N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
+  Aij = spamm_recursive_get(A->number_dimensions, i, N_lower, N_upper, 0,
+      A->chunk_tier, A->use_linear_tree, A->recursive_tree);
 
-    for(dim = 0; dim < A->number_dimensions; dim++)
-    {
-      N_upper[dim] = A->N_padded;
-    }
-
-    Aij = spamm_recursive_get(A->number_dimensions, i, N_lower, N_upper, 0,
-        A->chunk_tier, A->use_linear_tree, A->tree.recursive_tree);
-
-    free(N_lower);
-    free(N_upper);
-  }
+  free(N_lower);
+  free(N_upper);
 
   return Aij;
 }

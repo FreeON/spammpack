@@ -156,6 +156,8 @@ spamm_linear_multiply (const float tolerance,
   unsigned int stream_index;
   unsigned int i_stream;
 
+  int tier;
+
   unsigned int norm_offset_C;
   unsigned int offset_C;
 
@@ -336,19 +338,24 @@ spamm_linear_multiply (const float tolerance,
   }
 #endif
 
+  /* Free memory. */
+  free(stream);
+
   /* Update norms. */
   norm_C = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
   norm2_C = spamm_chunk_get_tier_norm2(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
+  norm_C_next = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-1, chunk_C);
+  norm2_C_next = spamm_chunk_get_tier_norm2(*spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-1, chunk_C);
   matrix_C = spamm_chunk_get_matrix(chunk_C);
 
   for(i_stream = 0; i_stream < ipow(N_contiguous/SPAMM_N_KERNEL, 2); i_stream++) {
-    for(i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
+    for(i = 0, norm2_C_next[i_stream] = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
       for(j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
       {
-        norm_offset_C = stream[i_stream]*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED
+        norm_offset_C = i_stream*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED
           +i*SPAMM_N_KERNEL_BLOCKED+j;
 
-        offset_C = stream[i_stream]*SPAMM_N_KERNEL*SPAMM_N_KERNEL
+        offset_C = i_stream*SPAMM_N_KERNEL*SPAMM_N_KERNEL
           +(i*SPAMM_N_KERNEL_BLOCKED+j)*SPAMM_N_BLOCK*SPAMM_N_BLOCK;
 
         for(i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
@@ -357,27 +364,32 @@ spamm_linear_multiply (const float tolerance,
             norm2_C[norm_offset_C] += matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block]*matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
           }
         }
+        norm_C[norm_offset_C] = sqrt(norm2_C[norm_offset_C]);
+
+        norm2_C_next[i_stream] += norm2_C[norm_offset_C];
       }
-      norm_C[norm_offset_C] = sqrt(norm2_C[norm_offset_C]);
     }
+    norm_C_next[i_stream] = sqrt(norm2_C_next[i_stream]);
   }
 
-  norm_C_next = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-1, chunk_C);
-  norm2_C_next = spamm_chunk_get_tier_norm2(*spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-1, chunk_C);
-
-  for(i = 0; i < ipow(N_contiguous/SPAMM_N_KERNEL, 2); i++)
+  for(tier = *spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-2; tier >= 0; tier--)
   {
-    for(j = i*ipow(SPAMM_N_KERNEL_BLOCKED, 2), norm2_C_next[i] = 0; j < (i+1)*ipow(SPAMM_N_KERNEL_BLOCKED, 2); j++)
+    norm2_C = spamm_chunk_get_tier_norm2(tier+1, chunk_C);
+
+    norm_C_next = spamm_chunk_get_tier_norm(tier, chunk_C);
+    norm2_C_next = spamm_chunk_get_tier_norm2(tier, chunk_C);
+
+    for(i = 0; i < ipow(4, tier); i++)
     {
-      norm2_C_next[i] += norm2_C[j];
+      for(j = 4*i, norm2_C_next[i] = 0; j < 4*(i+1); j++)
+      {
+        norm2_C_next[i] += norm2_C[j];
+      }
+      norm_C_next[i] = sqrt(norm2_C_next[i]);
     }
-    norm_C_next[i] = sqrt(norm2_C_next[i]);
   }
 
-  /* Free memory. */
-  free(stream);
-
-  return norm2_C[0];
+  return norm2_C_next[0];
 }
 
 /** Multiply two SpAMM chunks.
@@ -407,70 +419,59 @@ spamm_chunk_multiply (const float tolerance,
   float *matrix_B;
   float *matrix_C;
 
-  short use_linear_tree;
-
   unsigned int number_dimensions;
 
   assert(chunk_C != NULL);
 
   if(chunk_A == NULL || chunk_B == NULL) { return 0.0; }
 
-  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk_A);
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk_A);
 
-  if(use_linear_tree)
+  norm_A = spamm_chunk_get_norm(chunk_A);
+  norm_B = spamm_chunk_get_norm(chunk_B);
+
+  norm_C = spamm_chunk_get_norm(chunk_C);
+  norm2_C = spamm_chunk_get_norm2(chunk_C);
+
+  if(norm_A[0]*norm_B[0] > tolerance)
   {
-    return spamm_linear_multiply(tolerance, alpha, chunk_A, chunk_B, chunk_C);
-  }
+    matrix_A = spamm_chunk_get_matrix(chunk_A);
+    matrix_B = spamm_chunk_get_matrix(chunk_B);
+    matrix_C = spamm_chunk_get_matrix(chunk_C);
 
-  else
-  {
-    norm_A = spamm_chunk_get_norm(chunk_A);
-    norm_B = spamm_chunk_get_norm(chunk_B);
+    N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
 
-    norm_C = spamm_chunk_get_norm(chunk_C);
-    norm2_C = spamm_chunk_get_norm2(chunk_C);
-
-    if(norm_A[0]*norm_B[0] > tolerance)
+    if(sgemm)
     {
-      matrix_A = spamm_chunk_get_matrix(chunk_A);
-      matrix_B = spamm_chunk_get_matrix(chunk_B);
-      matrix_C = spamm_chunk_get_matrix(chunk_C);
+      sgemm("N", "N", &N_contiguous, &N_contiguous, &N_contiguous,
+          &alpha_sgemm, matrix_A, &N_contiguous, matrix_B, &N_contiguous,
+          &beta, matrix_C, &N_contiguous);
+    }
 
-      N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
-
-      if(sgemm)
-      {
-        sgemm("N", "N", &N_contiguous, &N_contiguous, &N_contiguous,
-            &alpha_sgemm, matrix_A, &N_contiguous, matrix_B, &N_contiguous,
-            &beta, matrix_C, &N_contiguous);
-      }
-
-      else
-      {
-        /* Braindead multiply in nested loops. */
-        for(i = 0; i < N_contiguous; i++) {
-          for(j = 0; j < N_contiguous; j++) {
-            for(k = 0; k < N_contiguous; k++)
-            {
-              matrix_C[spamm_index_column_major(i, j, N_contiguous, N_contiguous)] += alpha
-                *matrix_A[spamm_index_column_major(i, k, N_contiguous, N_contiguous)]
-                *matrix_B[spamm_index_column_major(k, j, N_contiguous, N_contiguous)];
-            }
+    else
+    {
+      /* Braindead multiply in nested loops. */
+      for(i = 0; i < N_contiguous; i++) {
+        for(j = 0; j < N_contiguous; j++) {
+          for(k = 0; k < N_contiguous; k++)
+          {
+            matrix_C[spamm_index_column_major(i, j, N_contiguous, N_contiguous)] += alpha
+              *matrix_A[spamm_index_column_major(i, k, N_contiguous, N_contiguous)]
+              *matrix_B[spamm_index_column_major(k, j, N_contiguous, N_contiguous)];
           }
         }
       }
-
-      /* Update norm on C. */
-      for(i = 0, norm2_C[0] = 0; i < ipow(N_contiguous, number_dimensions); i++)
-      {
-        norm2_C[0] += matrix_C[i]*matrix_C[i];
-      }
-      norm_C[0] = sqrt(norm2_C[0]);
     }
 
-    return norm2_C[0];
+    /* Update norm on C. */
+    for(i = 0, norm2_C[0] = 0; i < ipow(N_contiguous, number_dimensions); i++)
+    {
+      norm2_C[0] += matrix_C[i]*matrix_C[i];
+    }
+    norm_C[0] = sqrt(norm2_C[0]);
   }
+
+  return norm2_C[0];
 }
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -521,8 +522,18 @@ spamm_recursive_multiply (const float tolerance,
       node_C->tree.chunk = spamm_new_chunk(number_dimensions_C, use_linear_tree, N, N_lower, N_upper);
     }
 
-    node_C->norm2 = spamm_chunk_multiply(tolerance, alpha, node_A->tree.chunk,
-        node_B->tree.chunk, node_C->tree.chunk, sgemm);
+    if(use_linear_tree)
+    {
+      node_C->norm2 = spamm_linear_multiply(tolerance, alpha,
+          node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk);
+    }
+
+    else
+    {
+      node_C->norm2 = spamm_chunk_multiply(tolerance, alpha,
+          node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk, sgemm);
+    }
+
     node_C->norm = sqrt(node_C->norm2);
 #ifdef _OPENMP
     omp_unset_lock(&node_C->lock);
@@ -611,16 +622,8 @@ void
 spamm_multiply_scalar (const float alpha,
     struct spamm_matrix_t *const A)
 {
-  if(A->chunk_tier == 0)
-  {
-    spamm_chunk_multiply_scalar(alpha, A->tree.chunk);
-  }
-
-  else
-  {
-    spamm_recursive_multiply_scalar(alpha, A->tree.recursive_tree,
-        A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
-  }
+  spamm_recursive_multiply_scalar(alpha, A->recursive_tree,
+      A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
 }
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -655,10 +658,11 @@ spamm_multiply (const float tolerance,
     SPAMM_FATAL("not implemented\n");
   }
 
-  if(A->chunk_tier == 0)
-  {
-    spamm_chunk_multiply_scalar(beta, C->tree.chunk);
+  spamm_recursive_multiply_scalar(beta, C->recursive_tree,
+      C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree);
 
+  if(alpha != 0.0)
+  {
     N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
     N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
 
@@ -667,60 +671,30 @@ spamm_multiply (const float tolerance,
       N_upper[dim] = A->N_padded;
     }
 
-    if(C->tree.chunk == NULL)
+    /* Allocate a new tree node before we enter the recursive portion of the
+     * multiply. Note that we need to do this in the serial section of the
+     * code to prevent a race condition.
+     */
+    if(C->recursive_tree == NULL)
     {
-      C->tree.chunk = spamm_new_chunk(C->number_dimensions,
-          C->use_linear_tree, C->N, N_lower, N_upper);
+      C->recursive_tree = spamm_recursive_new_node();
     }
 
-    spamm_chunk_multiply(tolerance, alpha, A->tree.chunk, B->tree.chunk,
-        C->tree.chunk, sgemm);
-
-    free(N_lower);
-    free(N_upper);
-  }
-
-  else
-  {
-    spamm_recursive_multiply_scalar(beta, C->tree.recursive_tree,
-        C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree);
-
-    if(alpha != 0.0)
-    {
-      N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
-      N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
-
-      for(dim = 0; dim < A->number_dimensions; dim++)
-      {
-        N_upper[dim] = A->N_padded;
-      }
-
-      /* Allocate a new tree node before we enter the recursive portion of the
-       * multiply. Note that we need to do this in the serial section of the
-       * code to prevent a race condition.
-       */
-      if(C->tree.recursive_tree == NULL)
-      {
-        C->tree.recursive_tree = spamm_recursive_new_node();
-      }
-
 #ifdef _OPENMP
-      /* Set some OpenMP defaults. */
-      omp_set_dynamic(0);
-      omp_set_nested(1);
+    /* Set some OpenMP defaults. */
+    omp_set_dynamic(0);
+    omp_set_nested(1);
 #endif
 
 #pragma omp parallel
 #pragma omp master
 #pragma omp task untied
-      spamm_recursive_multiply(tolerance, alpha, A->tree.recursive_tree,
-          B->tree.recursive_tree, C->tree.recursive_tree, sgemm,
-          A->number_dimensions, B->number_dimensions, C->number_dimensions,
-          A->N, N_lower, N_upper, 0, A->chunk_tier, A->use_linear_tree,
-          number_products);
+    spamm_recursive_multiply(tolerance, alpha, A->recursive_tree,
+        B->recursive_tree, C->recursive_tree, sgemm, A->number_dimensions,
+        B->number_dimensions, C->number_dimensions, A->N, N_lower, N_upper, 0,
+        A->chunk_tier, A->use_linear_tree, number_products);
 
-      free(N_lower);
-      free(N_upper);
-    }
+    free(N_lower);
+    free(N_upper);
   }
 }

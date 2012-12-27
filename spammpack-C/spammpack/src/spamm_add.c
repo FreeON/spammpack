@@ -168,15 +168,7 @@ spamm_add (const float alpha,
     const float beta,
     const struct spamm_matrix_t *const B)
 {
-  if(A->chunk_tier == 0)
-  {
-    spamm_chunk_add(alpha, &A->tree.chunk, beta, B->tree.chunk);
-  }
-
-  else
-  {
-    spamm_recursive_add(alpha, &A->tree.recursive_tree, beta,
-        &((struct spamm_matrix_t*) B)->tree.recursive_tree,
-        A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
-  }
+  spamm_recursive_add(alpha, &A->recursive_tree, beta,
+      &((struct spamm_matrix_t*) B)->recursive_tree,
+      A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
 }

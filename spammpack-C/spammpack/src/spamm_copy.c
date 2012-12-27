@@ -141,15 +141,6 @@ spamm_copy (struct spamm_matrix_t **A,
   spamm_delete(A);
   *A = spamm_new(B->number_dimensions, B->N, B->chunk_tier, B->use_linear_tree);
 
-  if(B->chunk_tier == 0)
-  {
-    spamm_chunk_copy(&(*A)->tree.chunk, beta, B->tree.chunk, B->use_linear_tree);
-  }
-
-  else
-  {
-    spamm_recursive_copy(&(*A)->tree.recursive_tree, beta,
-        B->tree.recursive_tree, B->number_dimensions, 0, B->chunk_tier,
-        B->use_linear_tree);
-  }
+  spamm_recursive_copy(&(*A)->recursive_tree, beta, B->recursive_tree,
+      B->number_dimensions, 0, B->chunk_tier, B->use_linear_tree);
 }

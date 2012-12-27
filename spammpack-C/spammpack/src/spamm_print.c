@@ -246,29 +246,21 @@ spamm_print_tree (const struct spamm_matrix_t *const A)
   printf("use_linear_tree = %u, ", A->use_linear_tree);
   printf("chunk_tier = %u, ", A->chunk_tier);
 
-  if(A->chunk_tier == 0)
+  printf("recursive_tree = %p\n", A->recursive_tree);
+
+  N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
+  N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
+
+  for(dim = 0; dim < A->number_dimensions; dim++)
   {
-    printf("chunk = %p\n", A->tree.chunk);
-    spamm_print_chunk(A->tree.chunk);
+    N_upper[dim] = A->N_padded;
   }
-  else
-  {
-    printf("recursive_tree = %p\n", A->tree.recursive_tree);
 
-    N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
-    N_upper = calloc(A->number_dimensions, sizeof(unsigned int));
+  spamm_recursive_print_node(A->recursive_tree, A->number_dimensions, N_lower,
+      N_upper, 0, A->chunk_tier, A->use_linear_tree);
 
-    for(dim = 0; dim < A->number_dimensions; dim++)
-    {
-      N_upper[dim] = A->N_padded;
-    }
-
-    spamm_recursive_print_node(A->tree.recursive_tree, A->number_dimensions,
-        N_lower, N_upper, 0, A->chunk_tier, A->use_linear_tree);
-
-    free(N_lower);
-    free(N_upper);
-  }
+  free(N_lower);
+  free(N_upper);
 }
 
 /** Print a SpAMM matrix in the same format a dense matrix is printed.

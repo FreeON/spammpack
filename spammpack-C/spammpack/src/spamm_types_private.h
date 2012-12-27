@@ -39,15 +39,8 @@ struct spamm_matrix_t
    * linear. */
   short use_linear_tree;
 
-  union tree_t
-  {
-    /** The root node of the recursive tree. */
-    struct spamm_recursive_node_t *recursive_tree;
-
-    /** The SpAMM chunk. */
-    spamm_chunk_t *chunk;
-  }
-  tree;
+  /** The root node of the recursive tree. */
+  struct spamm_recursive_node_t *recursive_tree;
 };
 
 /** A recursive node. */
