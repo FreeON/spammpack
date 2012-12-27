@@ -111,7 +111,8 @@ spamm_recursive_add (const float alpha,
 
     else if((*A) != NULL && (*B) == NULL)
     {
-      SPAMM_FATAL("FIXME\n");
+      (*A)->norm2 = spamm_chunk_multiply_scalar(alpha, (*A)->tree.chunk);
+      (*A)->norm = sqrt((*A)->norm2);
     }
 
     else
