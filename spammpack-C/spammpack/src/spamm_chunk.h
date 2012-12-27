@@ -16,11 +16,7 @@ spamm_chunk_multiply (const float tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
-    spamm_chunk_t **const chunk_C,
-    const unsigned int number_dimensions,
-    const unsigned int *const N,
-    const unsigned int *const N_lower,
-    const unsigned int *const N_upper,
+    spamm_chunk_t *const chunk_C,
     sgemm_func sgemm);
 
 size_t

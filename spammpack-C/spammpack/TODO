@@ -1,0 +1,4 @@
+* Remove tree.chunk from spamm_matrix_t. This only ducliates code such as
+  if(tier == chunk_tier).
+
+* Add code to check for N_lower, N_upper checks in spamm_check().

@@ -172,6 +172,7 @@ spamm_recursive_print_node (const struct spamm_recursive_node_t *const node,
     printf(" [ %u --> %u ]", N_lower[dim], N_upper[dim]);
   }
   printf(" }, norm = %1.2e, ", node->norm);
+  printf("norm^2 = %1.2e, ", node->norm2);
 
   if(tier == chunk_tier)
   {
