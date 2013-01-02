@@ -116,10 +116,13 @@ spamm_recursive_multiply_scalar (const float alpha,
 
   else
   {
-    for(i = 0; i < ipow(2, number_dimensions); i++)
+    if(A->tree.child != NULL)
     {
-      spamm_recursive_multiply_scalar(alpha, A->tree.child[i],
-          number_dimensions, tier+1, chunk_tier, use_linear_tree);
+      for(i = 0; i < ipow(2, number_dimensions); i++)
+      {
+        spamm_recursive_multiply_scalar(alpha, A->tree.child[i],
+            number_dimensions, tier+1, chunk_tier, use_linear_tree);
+      }
     }
   }
 }
@@ -593,14 +596,17 @@ spamm_recursive_multiply (const float tolerance,
 #pragma omp taskwait
 
       /* Fix up norms. */
-      for(i = 0, node_C->norm2 = 0; i < ipow(2, number_dimensions_C); i++)
+      if(node_C->tree.child != NULL)
       {
-        if(node_C->tree.child[i] != NULL)
+        for(i = 0, node_C->norm2 = 0; i < ipow(2, number_dimensions_C); i++)
         {
-          node_C->norm2 += node_C->tree.child[i]->norm2;
+          if(node_C->tree.child[i] != NULL)
+          {
+            node_C->norm2 += node_C->tree.child[i]->norm2;
+          }
         }
+        node_C->norm = sqrt(node_C->norm2);
       }
-      node_C->norm = sqrt(node_C->norm2);
     }
 
     else

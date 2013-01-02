@@ -96,6 +96,9 @@ spamm_recursive_add (const float alpha,
 {
   unsigned int i;
 
+  assert(A != NULL);
+  assert(B != NULL);
+
   /* There is nothing to do here. */
   if((*A) == NULL && (*B) == NULL)
   {
