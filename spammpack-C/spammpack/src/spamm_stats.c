@@ -124,18 +124,10 @@ spamm_number_nodes (unsigned int *const number_recursive_nodes,
 
   (*number_recursive_nodes)++;
 
-  if(A->chunk_tier == 0)
+  for(i = 0; i < ipow(2, A->number_dimensions); i++)
   {
-    (*number_chunks)++;
-  }
-
-  else
-  {
-    for(i = 0; i < ipow(2, A->number_dimensions); i++)
-    {
-      spamm_recursive_number_nodes(1, A->chunk_tier, A->number_dimensions,
-          number_recursive_nodes, number_chunks, A->tree.recursive_tree);
-    }
+    spamm_recursive_number_nodes(1, A->chunk_tier, A->number_dimensions,
+        number_recursive_nodes, number_chunks, A->recursive_tree);
   }
 }
 

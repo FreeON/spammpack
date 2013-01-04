@@ -96,6 +96,9 @@ spamm_recursive_add (const float alpha,
 {
   unsigned int i;
 
+  assert(A != NULL);
+  assert(B != NULL);
+
   /* There is nothing to do here. */
   if((*A) == NULL && (*B) == NULL)
   {
@@ -111,7 +114,8 @@ spamm_recursive_add (const float alpha,
 
     else if((*A) != NULL && (*B) == NULL)
     {
-      SPAMM_FATAL("FIXME\n");
+      (*A)->norm2 = spamm_chunk_multiply_scalar(alpha, (*A)->tree.chunk);
+      (*A)->norm = sqrt((*A)->norm2);
     }
 
     else
@@ -168,24 +172,7 @@ spamm_add (const float alpha,
     const float beta,
     const struct spamm_matrix_t *const B)
 {
-  SPAMM_WARN("A");
-  spamm_matlab_print(A);
-
-  SPAMM_WARN("B");
-  spamm_matlab_print(B);
-
-  if(A->chunk_tier == 0)
-  {
-    spamm_chunk_add(alpha, &A->tree.chunk, beta, B->tree.chunk);
-  }
-
-  else
-  {
-    spamm_recursive_add(alpha, &A->tree.recursive_tree, beta,
-        &((struct spamm_matrix_t*) B)->tree.recursive_tree,
-        A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
-  }
-
-  SPAMM_WARN("A");
-  spamm_matlab_print(A);
+  spamm_recursive_add(alpha, &A->recursive_tree, beta,
+      &((struct spamm_matrix_t*) B)->recursive_tree,
+      A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
 }
