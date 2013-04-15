@@ -203,13 +203,29 @@ dnl Store the command line.
 AC_DEFINE_UNQUOTED([SPAMM_CONFIGURE_ARGUMENTS], ["${ac_configure_args}"], [The command line with which spammpack was configured.])
 
 dnl Get the git commit tag.
-AC_MSG_NOTICE([sourcing ${srcdir}/git_commit])
-if test -f ${srcdir}/git_commit; then
-  source ${srcdir}/git_commit
+${srcdir}/update_git_commit_tag.sh
+if test $? -eq 0; then
+  # Check for git_commit_tag.
+  if test -f ${srcdir}/git_commit_tag; then
+    # git_commit_tag came with the dist.
+    source ${srcdir}/git_commit_tag
+    if test -n "`diff ${srcdir}/git_commit_tag ./git_commit_tag 2>&1`"; then
+      # Copy git_commit_tag so that we don't keep remaking it.
+      cp -f ${srcdir}/git_commit_tag .
+    fi
+  else
+    if test -f ./git_commit_tag; then
+      # git_commit_tag is in the current builddir.
+      source ./git_commit_tag
+    else
+      AC_MSG_FAILURE([FIXME])
+    fi
+  fi
 else
-  git_commit="unknown"
+  source ./git_commit_tag
 fi
-AC_SUBST([GIT_COMMIT], [${git_commit}])
+AC_SUBST([GIT_COMMIT], [${git_commit_tag}])
+AC_MSG_NOTICE([configuring for git tag ${branch}:${git_commit_tag}])
 
 dnl Get the current date.
 timestamp=`date +%Y-%m-%d`
