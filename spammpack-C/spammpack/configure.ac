@@ -158,7 +158,7 @@ fi
 AM_CONDITIONAL(HAVE_SSE4_1_IN_CPU, [test "${have_SSE4_1_in_CPU}" = "yes"])
 
 #AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Extra debugging output in the multiply.])
-AC_DEFINE([RUN_ASSEMBLY_KERNEL], [1], [Run the assembly kernel.])
+#AC_DEFINE([RUN_ASSEMBLY_KERNEL], [1], [Run the assembly kernel.])
 
 dnl Define basic tree properties.
 have_N_block=4

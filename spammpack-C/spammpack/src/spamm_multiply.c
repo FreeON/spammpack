@@ -265,6 +265,8 @@ spamm_linear_multiply (const float tolerance,
 #endif
 
   /* Run kernel. */
+  //spamm_print_chunk(chunk_C);
+
 #ifdef RUN_ASSEMBLY_KERNEL
   spamm_stream_kernel(stream_index, alpha, tolerance, stream, chunk_A, chunk_B, chunk_C);
 #else
@@ -664,8 +666,22 @@ spamm_multiply (const float tolerance,
     SPAMM_FATAL("not implemented\n");
   }
 
+  //SPAMM_WARN("alpha = %e, beta = %e\n", alpha, beta);
+
+  //SPAMM_WARN("A:\n");
+  //spamm_print(A);
+
+  //SPAMM_WARN("B:\n");
+  //spamm_print(B);
+
+  //SPAMM_WARN("C:\n");
+  //spamm_print(C);
+
   spamm_recursive_multiply_scalar(beta, C->recursive_tree,
       C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree);
+
+  //SPAMM_WARN("beta * C:\n");
+  //spamm_print(C);
 
   if(alpha != 0.0)
   {
@@ -703,4 +719,7 @@ spamm_multiply (const float tolerance,
     free(N_lower);
     free(N_upper);
   }
+
+  //SPAMM_WARN("C = alpha*A*B+beta*C:\n");
+  //spamm_print(C);
 }

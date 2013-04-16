@@ -76,6 +76,14 @@ spamm_get_tree_depth (const unsigned int number_dimensions,
     depth--;
   }
 
+  if(use_linear_tree)
+  {
+    while((int) (ipow(2, depth)) < SPAMM_N_KERNEL)
+    {
+      depth++;
+    }
+  }
+
   return depth;
 }
 
@@ -274,12 +282,19 @@ spamm_new (const unsigned int number_dimensions,
   /* Adjust the depth. */
   if(number_dimensions == 2 && use_linear_tree)
   {
-    A->depth -= 4; /* 16x16 submatrix blocks for linear kernel. */
+    if(A->depth >= 4)
+    {
+      A->depth -= 4; /* 16x16 submatrix blocks for linear kernel. */
+    }
+
+    else
+    {
+      A->depth = 0;
+    }
   }
 
   if(chunk_tier > A->depth)
   {
-    SPAMM_WARN("chunk tier (%u) is greater than depth (%u)\n", chunk_tier, A->depth);
     A->chunk_tier = A->depth;
   }
 
