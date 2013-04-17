@@ -158,7 +158,18 @@ fi
 AM_CONDITIONAL(HAVE_SSE4_1_IN_CPU, [test "${have_SSE4_1_in_CPU}" = "yes"])
 
 #AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Extra debugging output in the multiply.])
-#AC_DEFINE([RUN_ASSEMBLY_KERNEL], [1], [Run the assembly kernel.])
+AC_MSG_CHECKING([whether to use the assembly kernel])
+AC_ARG_ENABLE([assembly-kernel],
+              [AS_HELP_STRING([--disable-assembly-kernel],
+                              [Disable the assembly kernel.])],
+              [disable_assembly_kernel=$enableval],
+              [disable_assembly_kernel="no"])
+if test "${disable_assembly_kernel}" != "yes"; then
+  AC_MSG_RESULT([Using assembly kernel])
+  AC_DEFINE([RUN_ASSEMBLY_KERNEL], [1], [Run the assembly kernel.])
+else
+  AC_MSG_RESULT([not using assembly kernel])
+fi
 
 dnl Define basic tree properties.
 have_N_block=4
