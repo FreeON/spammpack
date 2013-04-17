@@ -66,13 +66,22 @@ spamm_chunk_copy (spamm_chunk_t **A,
     }
   }
 
+  N_contiguous = spamm_chunk_get_N_contiguous(B);
+
   A_matrix = spamm_chunk_get_matrix(*A);
   B_matrix = spamm_chunk_get_matrix(B);
 
-  N_contiguous = spamm_chunk_get_N_contiguous(B);
-
   /* Copy matrix elements. */
   for(i = 0; i < ipow(N_contiguous, *number_dimensions); i++)
+  {
+    A_matrix[i] = beta*B_matrix[i];
+  }
+
+  A_matrix = spamm_chunk_get_matrix_dilated(*A);
+  B_matrix = spamm_chunk_get_matrix_dilated(B);
+
+  /* Copy matrix elements. */
+  for(i = 0; i < 4*ipow(N_contiguous, *number_dimensions); i++)
   {
     A_matrix[i] = beta*B_matrix[i];
   }

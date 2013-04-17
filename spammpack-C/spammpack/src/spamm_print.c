@@ -142,7 +142,11 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
 
   printf("matrix:\n");
   A = spamm_chunk_get_matrix(chunk);
-  spamm_print_dense(N_contiguous, N_contiguous, column_major, A);
+  spamm_print_dense(N_contiguous, N_contiguous, row_major, A);
+
+  printf("matrix dilated:\n");
+  A = spamm_chunk_get_matrix_dilated(chunk);
+  spamm_print_dense(4*N_contiguous, N_contiguous, row_major, A);
 }
 
 /** Print a recursive tree node and all nodes underneath.
