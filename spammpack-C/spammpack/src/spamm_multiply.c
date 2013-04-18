@@ -697,22 +697,28 @@ spamm_multiply (const float tolerance,
     SPAMM_FATAL("not implemented\n");
   }
 
-  //SPAMM_WARN("alpha = %e, beta = %e\n", alpha, beta);
+#ifdef SUPERDEBUG
+  SPAMM_WARN("alpha = %e, beta = %e\n", alpha, beta);
 
-  //SPAMM_WARN("A:\n");
-  //spamm_print(A);
+  SPAMM_WARN("A:\n");
+  spamm_print_tree(A);
+  spamm_print(A);
 
-  //SPAMM_WARN("B:\n");
-  //spamm_print(B);
+  SPAMM_WARN("B:\n");
+  spamm_print_tree(B);
+  spamm_print(B);
 
-  //SPAMM_WARN("C:\n");
-  //spamm_print(C);
+  SPAMM_WARN("C:\n");
+  spamm_print(C);
+#endif
 
   spamm_recursive_multiply_scalar(beta, C->recursive_tree,
       C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree);
 
-  //SPAMM_WARN("beta * C:\n");
-  //spamm_print(C);
+#ifdef SUPERDEBUG
+  SPAMM_WARN("beta * C:\n");
+  spamm_print(C);
+#endif
 
   if(alpha != 0.0)
   {
@@ -751,6 +757,9 @@ spamm_multiply (const float tolerance,
     free(N_upper);
   }
 
-  //SPAMM_WARN("C = alpha*A*B+beta*C:\n");
-  //spamm_print(C);
+#ifdef SUPERDEBUG
+  SPAMM_WARN("C = alpha*A*B+beta*C:\n");
+  spamm_print_tree(C);
+  spamm_print(C);
+#endif
 }
