@@ -173,6 +173,7 @@ spamm_linear_multiply (const float tolerance,
   float *norm2_C_next;
 
   float *matrix_C;
+  float *matrix_dilated_C;
 
 #if !defined(RUN_ASSEMBLY_KERNEL)
   float *matrix_A;
@@ -346,12 +347,14 @@ spamm_linear_multiply (const float tolerance,
   /* Free memory. */
   free(stream);
 
-  /* Update norms. */
+  matrix_C = spamm_chunk_get_matrix(chunk_C);
+  matrix_dilated_C = spamm_chunk_get_matrix_dilated(chunk_C);
+
+  /* Update norms and dilated matrix. */
   norm_C = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
   norm2_C = spamm_chunk_get_tier_norm2(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
   norm_C_next = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-1, chunk_C);
   norm2_C_next = spamm_chunk_get_tier_norm2(*spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-1, chunk_C);
-  matrix_C = spamm_chunk_get_matrix(chunk_C);
 
   for(i_stream = 0; i_stream < ipow(N_contiguous/SPAMM_N_KERNEL, 2); i_stream++) {
     for(i = 0, norm2_C_next[i_stream] = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
@@ -367,6 +370,11 @@ spamm_linear_multiply (const float tolerance,
           for(j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
           {
             norm2_C[norm_offset_C] += matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block]*matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
+
+            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK)+0] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK];
+            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK)+1] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK];
+            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK)+2] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK];
+            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK)+3] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK];
           }
         }
         norm_C[norm_offset_C] = sqrt(norm2_C[norm_offset_C]);
