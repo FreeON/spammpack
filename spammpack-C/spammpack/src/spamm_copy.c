@@ -32,6 +32,8 @@ spamm_chunk_copy (spamm_chunk_t **A,
   float *A_matrix;
   float *B_matrix;
 
+  float *A_matrix_dilated;
+
   unsigned int N_contiguous;
 
   unsigned int i;
@@ -71,20 +73,21 @@ spamm_chunk_copy (spamm_chunk_t **A,
   A_matrix = spamm_chunk_get_matrix(*A);
   B_matrix = spamm_chunk_get_matrix(B);
 
+  A_matrix_dilated = spamm_chunk_get_matrix_dilated(*A);
+
   /* Copy matrix elements. */
   for(i = 0; i < ipow(N_contiguous, *number_dimensions); i++)
   {
     A_matrix[i] = beta*B_matrix[i];
+
+    A_matrix_dilated[4*i+0] = beta*A_matrix[i];
+    A_matrix_dilated[4*i+1] = beta*A_matrix[i];
+    A_matrix_dilated[4*i+2] = beta*A_matrix[i];
+    A_matrix_dilated[4*i+3] = beta*A_matrix[i];
   }
 
-  A_matrix = spamm_chunk_get_matrix_dilated(*A);
-  B_matrix = spamm_chunk_get_matrix_dilated(B);
-
-  /* Copy matrix elements. */
-  for(i = 0; i < 4*ipow(N_contiguous, *number_dimensions); i++)
-  {
-    A_matrix[i] = beta*B_matrix[i];
-  }
+  //SPAMM_WARN("A chunk (copy):\n");
+  //spamm_print_chunk(*A);
 }
 
 /** Copy a matrix. \f$ A \leftarrow \beta B \f$.

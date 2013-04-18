@@ -36,6 +36,8 @@ spamm_chunk_add (const float alpha,
   float *A_matrix;
   float *B_matrix;
 
+  float *A_matrix_dilated;
+
   unsigned int N_contiguous;
 
   unsigned int i;
@@ -68,11 +70,18 @@ spamm_chunk_add (const float alpha,
   A_matrix = spamm_chunk_get_matrix(*A);
   B_matrix = spamm_chunk_get_matrix(B);
 
+  A_matrix_dilated = spamm_chunk_get_matrix_dilated(*A);
+
   N_contiguous = spamm_chunk_get_N_contiguous(B);
 
   for(i = 0; i < ipow(N_contiguous, *number_dimensions); i++)
   {
     A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
+
+    A_matrix_dilated[4*i+0] = A_matrix[i];
+    A_matrix_dilated[4*i+1] = A_matrix[i];
+    A_matrix_dilated[4*i+2] = A_matrix[i];
+    A_matrix_dilated[4*i+3] = A_matrix[i];
   }
 }
 

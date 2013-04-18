@@ -64,6 +64,8 @@ spamm_chunk_multiply_scalar (const float alpha,
   unsigned int number_dimensions;
 
   float *A;
+  float *A_dilated;
+
   float *norm;
   float *norm2;
 
@@ -73,10 +75,16 @@ spamm_chunk_multiply_scalar (const float alpha,
   number_tiers = *spamm_chunk_get_number_tiers(chunk);
   N_contiguous = spamm_chunk_get_N_contiguous(chunk);
   A = spamm_chunk_get_matrix(chunk);
+  A_dilated = spamm_chunk_get_matrix_dilated(chunk);
 
   for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
   {
     A[i] *= alpha;
+
+    A_dilated[4*i+0] *= A[i];
+    A_dilated[4*i+1] *= A[i];
+    A_dilated[4*i+2] *= A[i];
+    A_dilated[4*i+3] *= A[i];
   }
 
   norm = spamm_chunk_get_norm(chunk);
@@ -371,10 +379,10 @@ spamm_linear_multiply (const float tolerance,
           {
             norm2_C[norm_offset_C] += matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block]*matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
 
-            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK)+0] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK];
-            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK)+1] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK];
-            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK)+2] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK];
-            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK)+3] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK];
+            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK+j_block)+0] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
+            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK+j_block)+1] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
+            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK+j_block)+2] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
+            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK+j_block)+3] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
           }
         }
         norm_C[norm_offset_C] = sqrt(norm2_C[norm_offset_C]);
@@ -401,6 +409,9 @@ spamm_linear_multiply (const float tolerance,
       norm_C_next[i] = sqrt(norm2_C_next[i]);
     }
   }
+
+  //SPAMM_WARN("C chunk alpha*A*B\n");
+  //spamm_print_chunk(chunk_C);
 
   return norm2_C_next[0];
 }
@@ -535,14 +546,14 @@ spamm_recursive_multiply (const float tolerance,
       node_C->tree.chunk = spamm_new_chunk(number_dimensions_C, use_linear_tree, N, N_lower, N_upper);
     }
 
-    SPAMM_WARN("A chunk\n");
-    spamm_print_chunk(node_A->tree.chunk);
+    //SPAMM_WARN("A chunk\n");
+    //spamm_print_chunk(node_A->tree.chunk);
 
-    SPAMM_WARN("B chunk\n");
-    spamm_print_chunk(node_B->tree.chunk);
+    //SPAMM_WARN("B chunk\n");
+    //spamm_print_chunk(node_B->tree.chunk);
 
-    SPAMM_WARN("C chunk\n");
-    spamm_print_chunk(node_C->tree.chunk);
+    //SPAMM_WARN("C chunk\n");
+    //spamm_print_chunk(node_C->tree.chunk);
 
     if(use_linear_tree)
     {
@@ -556,8 +567,8 @@ spamm_recursive_multiply (const float tolerance,
           node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk, sgemm);
     }
 
-    SPAMM_WARN("C chunk = alpha*A*B\n");
-    spamm_print_chunk(node_C->tree.chunk);
+    //SPAMM_WARN("C chunk = alpha*A*B\n");
+    //spamm_print_chunk(node_C->tree.chunk);
 
     node_C->norm = sqrt(node_C->norm2);
 #ifdef _OPENMP
@@ -686,22 +697,22 @@ spamm_multiply (const float tolerance,
     SPAMM_FATAL("not implemented\n");
   }
 
-  SPAMM_WARN("alpha = %e, beta = %e\n", alpha, beta);
+  //SPAMM_WARN("alpha = %e, beta = %e\n", alpha, beta);
 
-  SPAMM_WARN("A:\n");
-  spamm_print(A);
+  //SPAMM_WARN("A:\n");
+  //spamm_print(A);
 
-  SPAMM_WARN("B:\n");
-  spamm_print(B);
+  //SPAMM_WARN("B:\n");
+  //spamm_print(B);
 
-  SPAMM_WARN("C:\n");
-  spamm_print(C);
+  //SPAMM_WARN("C:\n");
+  //spamm_print(C);
 
   spamm_recursive_multiply_scalar(beta, C->recursive_tree,
       C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree);
 
-  SPAMM_WARN("beta * C:\n");
-  spamm_print(C);
+  //SPAMM_WARN("beta * C:\n");
+  //spamm_print(C);
 
   if(alpha != 0.0)
   {
@@ -740,6 +751,6 @@ spamm_multiply (const float tolerance,
     free(N_upper);
   }
 
-  SPAMM_WARN("C = alpha*A*B+beta*C:\n");
-  spamm_print(C);
+  //SPAMM_WARN("C = alpha*A*B+beta*C:\n");
+  //spamm_print(C);
 }
