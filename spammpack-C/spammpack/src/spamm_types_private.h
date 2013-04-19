@@ -47,6 +47,11 @@ struct spamm_matrix_t
 struct
 spamm_recursive_node_t
 {
+  /** The reference count, i.e. a count of how many non-zero nodes are
+   * underneath this node.
+   */
+  int refcount;
+
   /** The norm of this block. */
   float norm;
 

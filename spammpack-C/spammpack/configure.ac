@@ -242,6 +242,8 @@ dnl Get the current date.
 timestamp=`date +%Y-%m-%d`
 AC_DEFINE_UNQUOTED([SPAMM_TIMESTAMP], ["${timestamp}"], [The build date.])
 
+#AC_DEFINE([SUPERDEBUG], [1], [Print out lots of debugging information.])
+
 dnl Write headers.
 AC_CONFIG_HEADERS([config.h])
 

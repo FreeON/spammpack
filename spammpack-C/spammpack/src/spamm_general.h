@@ -32,6 +32,12 @@ void
 spamm_delete_chunk (spamm_chunk_t **chunk);
 
 void
+spamm_recursive_delete (const unsigned int number_dimensions,
+    const unsigned int tier,
+    const unsigned int chunk_tier,
+    struct spamm_recursive_node_t **node);
+
+void
 spamm_delete (struct spamm_matrix_t **A);
 
 unsigned int

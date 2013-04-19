@@ -34,7 +34,6 @@ void
 spamm_recursive_delete (const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const short use_linear_tree,
     struct spamm_recursive_node_t **node)
 {
   unsigned int i;
@@ -50,7 +49,7 @@ spamm_recursive_delete (const unsigned int number_dimensions,
   {
     for(i = 0; i < ipow(2, number_dimensions); i++)
     {
-      spamm_recursive_delete(number_dimensions, tier+1, chunk_tier, use_linear_tree, &(*node)->tree.child[i]);
+      spamm_recursive_delete(number_dimensions, tier+1, chunk_tier, &(*node)->tree.child[i]);
     }
 #ifdef _OPENMP
     omp_destroy_lock(&(*node)->lock);
@@ -74,8 +73,7 @@ spamm_delete (struct spamm_matrix_t **A)
 
   if(*A == NULL) { return; }
 
-  spamm_recursive_delete((*A)->number_dimensions, 0, (*A)->chunk_tier,
-      (*A)->use_linear_tree, &(*A)->recursive_tree);
+  spamm_recursive_delete((*A)->number_dimensions, 0, (*A)->chunk_tier, &(*A)->recursive_tree);
 
   /* Free memory. */
   free((*A)->N);

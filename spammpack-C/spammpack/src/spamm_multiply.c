@@ -536,6 +536,10 @@ spamm_recursive_multiply (const float tolerance,
 
   short i, j, k;
 
+#ifdef SUPERDEBUG
+  SPAMM_WARN("tier = %i\n", tier);
+#endif
+
   if(tier == chunk_tier)
   {
 #ifdef _OPENMP
@@ -546,14 +550,16 @@ spamm_recursive_multiply (const float tolerance,
       node_C->tree.chunk = spamm_new_chunk(number_dimensions_C, use_linear_tree, N, N_lower, N_upper);
     }
 
-    //SPAMM_WARN("A chunk\n");
-    //spamm_print_chunk(node_A->tree.chunk);
+#ifdef SUPERDEBUG
+    SPAMM_WARN("A chunk\n");
+    spamm_print_chunk(node_A->tree.chunk);
 
-    //SPAMM_WARN("B chunk\n");
-    //spamm_print_chunk(node_B->tree.chunk);
+    SPAMM_WARN("B chunk\n");
+    spamm_print_chunk(node_B->tree.chunk);
 
-    //SPAMM_WARN("C chunk\n");
-    //spamm_print_chunk(node_C->tree.chunk);
+    SPAMM_WARN("C chunk\n");
+    spamm_print_chunk(node_C->tree.chunk);
+#endif
 
     if(use_linear_tree)
     {
@@ -567,8 +573,10 @@ spamm_recursive_multiply (const float tolerance,
           node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk, sgemm);
     }
 
-    //SPAMM_WARN("C chunk = alpha*A*B\n");
-    //spamm_print_chunk(node_C->tree.chunk);
+#ifdef SUPERDEBUG
+    SPAMM_WARN("C chunk = alpha*A*B\n");
+    spamm_print_chunk(node_C->tree.chunk);
+#endif
 
     node_C->norm = sqrt(node_C->norm2);
 #ifdef _OPENMP
@@ -598,6 +606,11 @@ spamm_recursive_multiply (const float tolerance,
             {
               if(node_A->tree.child[i+2*k]->norm*node_B->tree.child[k+2*j]->norm > tolerance)
               {
+#ifdef SUPERDEBUG
+                SPAMM_WARN("descending: C[%i][%i] <- A[%i][%i]*B[%i][%i] (%e)\n", i, j, i, k, k, j,
+                    node_A->tree.child[i+2*k]->norm*node_B->tree.child[k+2*j]->norm);
+#endif
+
 #ifdef _OPENMP
                 omp_set_lock(&node_C->lock);
 #endif
@@ -622,6 +635,14 @@ spamm_recursive_multiply (const float tolerance,
                     new_N_upper, tier+1, chunk_tier, use_linear_tree,
                     number_products);
               }
+
+#ifdef SUPERDEBUG
+              else
+              {
+                SPAMM_WARN("skipping product below tolerance: C[%i][%i] <- A[%i][%i]*B[%i][%i] (%e)\n", i, j, i, k, k, j,
+                    node_A->tree.child[i+2*k]->norm*node_B->tree.child[k+2*j]->norm);
+              }
+#endif
             }
           }
         }
@@ -702,12 +723,16 @@ spamm_multiply (const float tolerance,
 
   SPAMM_WARN("A:\n");
   spamm_print_tree(A);
+  SPAMM_WARN("A:\n");
   spamm_print(A);
 
   SPAMM_WARN("B:\n");
   spamm_print_tree(B);
+  SPAMM_WARN("B:\n");
   spamm_print(B);
 
+  SPAMM_WARN("C:\n");
+  spamm_print_tree(C);
   SPAMM_WARN("C:\n");
   spamm_print(C);
 #endif
@@ -753,6 +778,11 @@ spamm_multiply (const float tolerance,
         B->number_dimensions, C->number_dimensions, A->N, N_lower, N_upper, 0,
         A->chunk_tier, A->use_linear_tree, number_products);
 
+    //if(C->recursive_tree->refcount == 0)
+    //{
+    //  spamm_recursive_delete(C->number_dimensions, 0, C->chunk_tier, &C->recursive_tree);
+    //}
+
     free(N_lower);
     free(N_upper);
   }
@@ -760,6 +790,7 @@ spamm_multiply (const float tolerance,
 #ifdef SUPERDEBUG
   SPAMM_WARN("C = alpha*A*B+beta*C:\n");
   spamm_print_tree(C);
+  SPAMM_WARN("C = alpha*A*B+beta*C:\n");
   spamm_print(C);
 #endif
 }
