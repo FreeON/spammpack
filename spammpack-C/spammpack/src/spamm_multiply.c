@@ -218,22 +218,26 @@ spamm_linear_multiply (const float tolerance,
   }
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-  printf("potentially %u products\n", ipow(index_length, 3));
+  SPAMM_WARN("potentially %u product(s)\n", ipow(index_length, 3));
 #endif
 
   /* Convolute. */
-  stream = malloc(ipow(index_length, 3)*3*sizeof(unsigned int));
+  if((stream = malloc(ipow(index_length, 3)*3*sizeof(unsigned int))) == NULL)
+  {
+    SPAMM_FATAL("can not allocate stream\n");
+  }
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-  printf("stream (%p):\n", stream);
+  SPAMM_WARN("allocated stream (%p) with %i triple elements\n", stream, ipow(index_length, 3));
 #endif
+
   for(i = 0, stream_index = 0; i < index_length; i++)
   {
     for(j_A = i*index_length; j_A < (i+1)*index_length; j_A++) {
       for(j_B = i*index_length; j_B < (i+1)*index_length; j_B++)
       {
 #ifdef SPAMM_MULTIPLY_DEBUG
-        printf("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e",
+        SPAMM_WARN("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e",
             norm_A[index_A[j_A]],
             index_A[j_A],
             norm_B[index_B[j_B]],
@@ -257,7 +261,7 @@ spamm_linear_multiply (const float tolerance,
         else
         {
 #ifdef SPAMM_MULTIPLY_DEBUG
-          printf(", done\n");
+          printf(" -> done\n");
 #endif
           break;
         }
@@ -270,11 +274,9 @@ spamm_linear_multiply (const float tolerance,
   free(index_B);
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-  printf("[multiply] Added %u (out of %u possible) block products to stream\n", stream_index, ipow(index_length, 3));
+  SPAMM_WARN("Added %u (out of %u possible) block products to stream\n", stream_index, ipow(index_length, 3));
+  SPAMM_WARN("stream = %p\n", stream);
 #endif
-
-  /* Run kernel. */
-  //spamm_print_chunk(chunk_C);
 
 #ifdef RUN_ASSEMBLY_KERNEL
   spamm_stream_kernel(stream_index, alpha, tolerance, stream, chunk_A, chunk_B, chunk_C);
@@ -353,6 +355,9 @@ spamm_linear_multiply (const float tolerance,
 #endif
 
   /* Free memory. */
+#ifdef SPAMM_MULTIPLY_DEBUG
+  SPAMM_WARN("freeing stream = %p\n", stream);
+#endif
   free(stream);
 
   matrix_C = spamm_chunk_get_matrix(chunk_C);

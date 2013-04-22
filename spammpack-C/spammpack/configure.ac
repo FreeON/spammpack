@@ -161,14 +161,14 @@ AM_CONDITIONAL(HAVE_SSE4_1_IN_CPU, [test "${have_SSE4_1_in_CPU}" = "yes"])
 AC_MSG_CHECKING([whether to use the assembly kernel])
 AC_ARG_ENABLE([assembly-kernel],
               [AS_HELP_STRING([--disable-assembly-kernel],
-                              [Disable the assembly kernel.])],
-              [disable_assembly_kernel=$enableval],
-              [disable_assembly_kernel="no"])
-if test "${disable_assembly_kernel}" != "yes"; then
-  AC_MSG_RESULT([Using assembly kernel])
+                              [Disable the assembly kernel (enabled by default).])],
+              [enable_assembly_kernel=$enableval],
+              [enable_assembly_kernel="yes"])
+if test "${enable_assembly_kernel}" = "yes"; then
+  AC_MSG_RESULT([yes])
   AC_DEFINE([RUN_ASSEMBLY_KERNEL], [1], [Run the assembly kernel.])
 else
-  AC_MSG_RESULT([not using assembly kernel])
+  AC_MSG_RESULT([no])
 fi
 
 dnl Define basic tree properties.
@@ -243,6 +243,7 @@ timestamp=`date +%Y-%m-%d`
 AC_DEFINE_UNQUOTED([SPAMM_TIMESTAMP], ["${timestamp}"], [The build date.])
 
 #AC_DEFINE([SUPERDEBUG], [1], [Print out lots of debugging information.])
+#AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Print out lots of debugging information.])
 
 dnl Write headers.
 AC_CONFIG_HEADERS([config.h])
