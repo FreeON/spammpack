@@ -107,6 +107,8 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 {
   short i;
 
+  struct spamm_recursive_node_t *B_pointer;
+
   if(B == NULL) { return; }
 
   if(*A == NULL)
@@ -128,7 +130,13 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 
     for(i = 0; i < ipow(2, number_dimensions); i++)
     {
-      spamm_recursive_copy(&(*A)->tree.child[i], beta, B->tree.child[i],
+      B_pointer = NULL;
+      if(B->tree.child != NULL)
+      {
+        B_pointer = B->tree.child[i];
+      }
+
+      spamm_recursive_copy(&(*A)->tree.child[i], beta, B_pointer,
           number_dimensions, tier+1, chunk_tier, use_linear_tree);
     }
   }
@@ -148,11 +156,28 @@ spamm_copy (struct spamm_matrix_t **A,
     const float beta,
     const struct spamm_matrix_t *const B)
 {
+  struct spamm_recursive_node_t *A_pointer;
+  struct spamm_recursive_node_t *B_pointer;
+
+  assert(A != NULL);
+
   if(*A == B) { return; }
 
   spamm_delete(A);
   *A = spamm_new(B->number_dimensions, B->N, B->chunk_tier, B->use_linear_tree);
 
-  spamm_recursive_copy(&(*A)->recursive_tree, beta, B->recursive_tree,
+  A_pointer = NULL;
+  if(*A != NULL)
+  {
+    A_pointer = (*A)->recursive_tree;
+  }
+
+  B_pointer = NULL;
+  if(B != NULL)
+  {
+    B_pointer = B->recursive_tree;
+  }
+
+  spamm_recursive_copy(&A_pointer, beta, B_pointer,
       B->number_dimensions, 0, B->chunk_tier, B->use_linear_tree);
 }

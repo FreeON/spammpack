@@ -105,23 +105,26 @@ spamm_recursive_add (const float alpha,
 {
   unsigned int i;
 
+  struct spamm_recursive_node_t *A_pointer;
+  struct spamm_recursive_node_t *B_pointer;
+
   assert(A != NULL);
   assert(B != NULL);
 
   /* There is nothing to do here. */
-  if((*A) == NULL && (*B) == NULL)
+  if(*A == NULL && *B == NULL)
   {
     return;
   }
 
   if(tier == chunk_tier)
   {
-    if((*A) == NULL && (*B) != NULL)
+    if(*A == NULL && *B != NULL)
     {
       SPAMM_FATAL("FIXME\n");
     }
 
-    else if((*A) != NULL && (*B) == NULL)
+    else if(*A != NULL && *B == NULL)
     {
       (*A)->norm2 = spamm_chunk_multiply_scalar(alpha, (*A)->tree.chunk);
       (*A)->norm = sqrt((*A)->norm2);
@@ -138,14 +141,14 @@ spamm_recursive_add (const float alpha,
 
   else
   {
-    if((*A) == NULL && (*B) != NULL)
+    if(*A == NULL && *B != NULL)
     {
       /* Copy B node to A. */
       spamm_recursive_copy(&(*A), beta, (*B), number_dimensions, tier,
           chunk_tier, use_linear_tree);
     }
 
-    else if((*A) != NULL && (*B) == NULL)
+    else if(*A != NULL && *B == NULL)
     {
       /* Multiply A by alpha. */
       spamm_recursive_multiply_scalar(alpha, *A, number_dimensions, tier,
@@ -154,11 +157,28 @@ spamm_recursive_add (const float alpha,
 
     else
     {
-      /* Recurse. */
       for(i = 0; i < ipow(2, number_dimensions); i++)
       {
-        spamm_recursive_add(alpha, &(*A)->tree.child[i], beta,
-            (const struct spamm_recursive_node_t**const) &(*B)->tree.child[i],
+        A_pointer = NULL;
+        if(*A != NULL)
+        {
+          if((*A)->tree.child != NULL)
+          {
+            A_pointer = (*A)->tree.child[i];
+          }
+        }
+
+        B_pointer = NULL;
+        if(*B != NULL)
+        {
+          if((*B)->tree.child != NULL)
+          {
+            B_pointer = (*B)->tree.child[i];
+          }
+        }
+
+        spamm_recursive_add(alpha, &A_pointer, beta,
+            (const struct spamm_recursive_node_t**const) &B_pointer,
             number_dimensions, tier+1, chunk_tier, use_linear_tree);
 
         (*A)->norm2 = alpha*alpha*(*A)->norm2+beta*beta*(*B)->norm2+2*alpha*beta*(*A)->norm*(*B)->norm;
@@ -181,16 +201,23 @@ spamm_add (const float alpha,
     const float beta,
     const struct spamm_matrix_t *const B)
 {
-  struct spamm_recursive_node_t *B_temp = NULL;
+  struct spamm_recursive_node_t *A_pointer;
+  struct spamm_recursive_node_t *B_pointer;
 
   assert(A != NULL);
 
-  if(B != NULL)
+  A_pointer = A->recursive_tree;
+  if(B == NULL)
   {
-    B_temp = (struct spamm_recursive_node_t*const) B->recursive_tree;
+    B_pointer = NULL;
   }
 
-  spamm_recursive_add(alpha, &A->recursive_tree, beta,
-      (const struct spamm_recursive_node_t**const) &B_temp,
+  else
+  {
+    B_pointer = B->recursive_tree;
+  }
+
+  spamm_recursive_add(alpha, &A_pointer, beta,
+      (const struct spamm_recursive_node_t**const) &B_pointer,
       A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
 }

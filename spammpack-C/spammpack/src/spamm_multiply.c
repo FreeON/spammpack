@@ -566,6 +566,11 @@ spamm_recursive_multiply (const float tolerance,
       &tolerance, node_A, &node_A, node_B, &node_B, node_C, &node_C);
 #endif
 
+  if(node_A == NULL || node_B == NULL)
+  {
+    return;
+  }
+
   if(tier == chunk_tier)
   {
 #ifdef _OPENMP
@@ -612,6 +617,11 @@ spamm_recursive_multiply (const float tolerance,
 
   else
   {
+    if(node_A->tree.child == NULL || node_B->tree.child == NULL)
+    {
+      return;
+    }
+
     if(number_dimensions_A == 2 &&
        number_dimensions_B == 2 &&
        number_dimensions_C == 2)
@@ -752,13 +762,14 @@ spamm_multiply (const float tolerance,
   unsigned int *N_lower;
   unsigned int *N_upper;
 
+  assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
 
-  if(A == NULL)
-  {
-    SPAMM_FATAL("not implemented\n");
-  }
+  SPAMM_WARN("C[%i][%i] <- A[%i][%i]*B[%i][%i]\n",
+      C->N[0], C->N[1],
+      A->N[0], A->N[1],
+      B->N[0], B->N[1]);
 
 #ifdef SUPERDEBUG
   SPAMM_WARN("alpha = %e, beta = %e\n", alpha, beta);
@@ -789,14 +800,6 @@ spamm_multiply (const float tolerance,
 
   if(alpha != 0.0)
   {
-    N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
-    N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
-
-    for(dim = 0; dim < A->number_dimensions; dim++)
-    {
-      N_upper[dim] = A->N_padded;
-    }
-
     /* Allocate a new tree node before we enter the recursive portion of the
      * multiply. Note that we need to do this in the serial section of the
      * code to prevent a race condition.
@@ -827,22 +830,31 @@ spamm_multiply (const float tolerance,
           SPAMM_WARN("B->recursive_tree = %p, &B->recursive_tree = %p\n", B->recursive_tree, &B->recursive_tree);
           SPAMM_WARN("C->recursive_tree = %p, &C->recursive_tree = %p\n", C->recursive_tree, &C->recursive_tree);
 #endif
+          N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
+          N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
+
+          for(dim = 0; dim < A->number_dimensions; dim++)
+          {
+            N_upper[dim] = A->N_padded;
+          }
+
           spamm_recursive_multiply(tolerance, alpha, A->recursive_tree,
               B->recursive_tree, C->recursive_tree, sgemm, A->number_dimensions,
               B->number_dimensions, C->number_dimensions, A->N, N_lower, N_upper, 0,
               A->chunk_tier, A->use_linear_tree, number_products);
+
+          free(N_lower);
+          free(N_upper);
         }
       }
     }
 #pragma omp taskwait
 
+    /* Prune tree. */
     //if(C->recursive_tree->refcount == 0)
     //{
     //  spamm_recursive_delete(C->number_dimensions, 0, C->chunk_tier, &C->recursive_tree);
     //}
-
-    free(N_lower);
-    free(N_upper);
   }
 
 #ifdef SUPERDEBUG
