@@ -1,10 +1,19 @@
 #include "spamm_error.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include <execinfo.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _OPENMP
+static short print_lock_is_initialized = 0;
+static omp_lock_t spamm_print_lock;
+#endif
 
 /** Print a backtrace. */
 void
@@ -44,19 +53,38 @@ spamm_error_warning (const char *const filename, const int line, ...)
   char *old_format;
   char *new_format;
 
+#ifdef _OPENMP
+  /* Initialize lock. */
+  if(!print_lock_is_initialized)
+  {
+    omp_init_lock(&spamm_print_lock);
+    print_lock_is_initialized = 1;
+  }
+#endif
+
   /* Initialize variadic argument list. */
   va_start(va, line);
 
   /* Get format string. */
   old_format = va_arg(va, char*);
 
-  format_length = 6+strlen(filename)+14+strlen(old_format);
+  format_length = 6+strlen(filename)+100+strlen(old_format);
   new_format = calloc(format_length, sizeof(char));
-  snprintf(new_format, format_length, "[%s:%i WARNING] ", filename, line);
+#ifdef _OPENMP
+  snprintf(new_format, format_length-1, "[%s:%i thread %i WARNING] ", filename, line, omp_get_thread_num());
+#else
+  snprintf(new_format, format_length-1, "[%s:%i WARNING] ", filename, line);
+#endif
   strncat(new_format, old_format, format_length);
 
   /* Print error. */
+#ifdef _OPENMP
+  omp_set_lock(&spamm_print_lock);
+#endif
   vprintf(new_format, va);
+#ifdef _OPENMP
+  omp_unset_lock(&spamm_print_lock);
+#endif
 
   /* Cleanup. */
   va_end(va);
@@ -78,22 +106,41 @@ spamm_error_fatal (const char *const filename, const int line, ...)
   char *old_format;
   char *new_format;
 
+#ifdef _OPENMP
+  /* Initialize lock. */
+  if(!print_lock_is_initialized)
+  {
+    omp_init_lock(&spamm_print_lock);
+    print_lock_is_initialized = 1;
+  }
+#endif
+
   /* Initialize variadic argument list. */
   va_start(va, line);
 
   /* Get format string. */
   old_format = va_arg(va, char*);
 
-  format_length = 6+strlen(filename)+14+strlen(old_format);
+  format_length = 6+strlen(filename)+100+strlen(old_format);
   new_format = calloc(format_length, sizeof(char));
-  snprintf(new_format, format_length, "[%s:%i FATAL] ", filename, line);
+#ifdef _OPENMP
+  snprintf(new_format, format_length-1, "[%s:%i thread %i FATAL] ", filename, line, omp_get_thread_num());
+#else
+  snprintf(new_format, format_length-1, "[%s:%i FATAL] ", filename, line);
+#endif
   strncat(new_format, old_format, format_length);
 
   /* Print error. */
+#ifdef _OPENMP
+  omp_set_lock(&spamm_print_lock);
+#endif
   vprintf(new_format, va);
-  va_end(va);
+#ifdef _OPENMP
+  omp_unset_lock(&spamm_print_lock);
+#endif
 
   /* Cleanup. */
+  va_end(va);
   free(new_format);
 
   /* Print backtrace. */

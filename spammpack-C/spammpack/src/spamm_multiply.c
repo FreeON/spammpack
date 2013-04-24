@@ -13,6 +13,10 @@
 #include <omp.h>
 #endif
 
+#ifdef SPAMM_MULTIPLY_DEBUG
+#include <string.h>
+#endif
+
 #ifdef HAVE_SSE
 #include <xmmintrin.h>
 #endif
@@ -236,21 +240,19 @@ spamm_linear_multiply (const float tolerance,
     for(j_A = i*index_length; j_A < (i+1)*index_length; j_A++) {
       for(j_B = i*index_length; j_B < (i+1)*index_length; j_B++)
       {
-#ifdef SPAMM_MULTIPLY_DEBUG
-        SPAMM_WARN("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e",
-            norm_A[index_A[j_A]],
-            index_A[j_A],
-            norm_B[index_B[j_B]],
-            index_B[j_B],
-            norm_A[index_A[j_A]]*norm_B[index_B[j_B]]);
-#endif
         if(norm_A[index_A[j_A]]*norm_B[index_B[j_B]] > tolerance)
         {
           stream[3*stream_index+0] = index_A[j_A];
           stream[3*stream_index+1] = index_B[j_B];
           stream[3*stream_index+2] = (index_A[j_A] & MASK_2D_I) | (index_B[j_B] & MASK_2D_J);
 #ifdef SPAMM_MULTIPLY_DEBUG
-          printf(" -> adding stream[%u] = { %u, %u, %u }\n", stream_index,
+          SPAMM_WARN("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e -> adding stream[%u] = { %u, %u, %u }\n",
+              norm_A[index_A[j_A]],
+              index_A[j_A],
+              norm_B[index_B[j_B]],
+              index_B[j_B],
+              norm_A[index_A[j_A]]*norm_B[index_B[j_B]],
+              stream_index,
               stream[3*stream_index+0],
               stream[3*stream_index+1],
               stream[3*stream_index+2]);
@@ -261,7 +263,13 @@ spamm_linear_multiply (const float tolerance,
         else
         {
 #ifdef SPAMM_MULTIPLY_DEBUG
-          printf(" -> done\n");
+          SPAMM_WARN("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e -> skipping\n",
+              norm_A[index_A[j_A]],
+              index_A[j_A],
+              norm_B[index_B[j_B]],
+              index_B[j_B],
+              norm_A[index_A[j_A]]*norm_B[index_B[j_B]],
+              stream);
 #endif
           break;
         }
@@ -541,8 +549,21 @@ spamm_recursive_multiply (const float tolerance,
 
   short i, j, k;
 
-#ifdef SUPERDEBUG
-  SPAMM_WARN("tier = %i\n", tier);
+#ifdef SPAMM_MULTIPLY_DEBUG
+  char temp[100];
+  char output_buffer[5000];
+
+  snprintf(output_buffer, 2000-1, "tier = %i, node_A = %p, node_B = %p, node_C = %p, C", tier, node_A, node_B, node_C);
+  for(i = 0; i < number_dimensions_C; i++)
+  {
+    snprintf(temp, 100-1, "[%i->%i]", N_lower[i], N_upper[i]);
+    strcat(output_buffer, temp);
+  }
+  strcat(output_buffer, "\n");
+  SPAMM_WARN(output_buffer);
+
+  SPAMM_WARN("&tolerance = %p, node_A = %p, &node_A = %p, node_B = %p, &node_B = %p, node_C = %p, &node_C = %p\n",
+      &tolerance, node_A, &node_A, node_B, &node_B, node_C, &node_C);
 #endif
 
   if(tier == chunk_tier)
@@ -591,31 +612,18 @@ spamm_recursive_multiply (const float tolerance,
 
   else
   {
-    new_N_lower = calloc(number_dimensions_C, sizeof(unsigned int));
-    new_N_upper = calloc(number_dimensions_C, sizeof(unsigned int));
-
     if(number_dimensions_A == 2 &&
        number_dimensions_B == 2 &&
        number_dimensions_C == 2)
     {
-      for(i = 0; i < 2; i++) {
-        for(j = 0; j < 2; j++) {
-          for(k = 0; k < 2; k++)
+      for(k = 0; k < 2; k++) {
+        for(i = 0; i < 2; i++) {
+          for(j = 0; j < 2; j++)
           {
-            new_N_lower[0] = N_lower[0]+(N_upper[0]-N_lower[0])/2*i;
-            new_N_upper[0] = N_lower[0]+(N_upper[0]-N_lower[0])/2*(i+1);
-            new_N_lower[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*j;
-            new_N_upper[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*(j+1);
-
             if(node_A->tree.child[i+2*k] != NULL && node_B->tree.child[k+2*j] != NULL)
             {
               if(node_A->tree.child[i+2*k]->norm*node_B->tree.child[k+2*j]->norm > tolerance)
               {
-#ifdef SUPERDEBUG
-                SPAMM_WARN("descending: C[%i][%i] <- A[%i][%i]*B[%i][%i] (%e)\n", i, j, i, k, k, j,
-                    node_A->tree.child[i+2*k]->norm*node_B->tree.child[k+2*j]->norm);
-#endif
-
 #ifdef _OPENMP
                 omp_set_lock(&node_C->lock);
 #endif
@@ -632,13 +640,38 @@ spamm_recursive_multiply (const float tolerance,
                 omp_unset_lock(&node_C->lock);
 #endif
 
+#ifdef SPAMM_MULTIPLY_DEBUG
+                SPAMM_WARN("descending: C[%i][%i] (%p) <- A[%i][%i]*B[%i][%i] (%e)\n", i, j, node_C->tree.child[i+2*j],
+                    i, k, k, j, node_A->tree.child[i+2*k]->norm*node_B->tree.child[k+2*j]->norm);
+#endif
+
 #pragma omp task untied
-                spamm_recursive_multiply(tolerance, alpha,
-                    node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
-                    node_C->tree.child[i+2*j], sgemm, number_dimensions_A,
-                    number_dimensions_B, number_dimensions_C, N, new_N_lower,
-                    new_N_upper, tier+1, chunk_tier, use_linear_tree,
-                    number_products);
+                {
+                  new_N_lower = calloc(number_dimensions_C, sizeof(unsigned int));
+                  new_N_upper = calloc(number_dimensions_C, sizeof(unsigned int));
+
+                  new_N_lower[0] = N_lower[0]+(N_upper[0]-N_lower[0])/2*i;
+                  new_N_upper[0] = N_lower[0]+(N_upper[0]-N_lower[0])/2*(i+1);
+                  new_N_lower[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*j;
+                  new_N_upper[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*(j+1);
+
+#ifdef SPAMM_MULTIPLY_DEBUG
+                  SPAMM_WARN("created thread: node_C = %p, node_C->tree.child[%i] C[%i->%i][%i->%i] = %p\n",
+                      node_C, i+2*j,
+                      new_N_lower[0], new_N_upper[0], new_N_lower[1], new_N_upper[1],
+                      node_C->tree.child[i+2*j]);
+#endif
+
+                  spamm_recursive_multiply(tolerance, alpha,
+                      node_A->tree.child[i+2*k], node_B->tree.child[k+2*j],
+                      node_C->tree.child[i+2*j], sgemm, number_dimensions_A,
+                      number_dimensions_B, number_dimensions_C, N, new_N_lower,
+                      new_N_upper, tier+1, chunk_tier, use_linear_tree,
+                      number_products);
+
+                  free(new_N_lower);
+                  free(new_N_upper);
+                }
               }
 
 #ifdef SUPERDEBUG
@@ -652,7 +685,14 @@ spamm_recursive_multiply (const float tolerance,
           }
         }
       }
+#ifdef SUPERDEBUG
+      SPAMM_WARN("taskwait...\n");
+#endif
 #pragma omp taskwait
+
+#ifdef SUPERDEBUG
+      SPAMM_WARN("fixing norms...\n");
+#endif
 
       /* Fix up norms. */
       if(node_C->tree.child != NULL)
@@ -672,9 +712,6 @@ spamm_recursive_multiply (const float tolerance,
     {
       SPAMM_FATAL("not implemented\n");
     }
-
-    free(new_N_lower);
-    free(new_N_upper);
   }
 }
 
@@ -773,15 +810,31 @@ spamm_multiply (const float tolerance,
     /* Set some OpenMP defaults. */
     omp_set_dynamic(0);
     omp_set_nested(1);
+#ifdef SUPERDEBUG
+#pragma omp master
+    SPAMM_WARN("running in parallel with %i thread(s)\n", omp_get_num_threads());
+#endif
 #endif
 
 #pragma omp parallel
+    {
 #pragma omp master
+      {
 #pragma omp task untied
-    spamm_recursive_multiply(tolerance, alpha, A->recursive_tree,
-        B->recursive_tree, C->recursive_tree, sgemm, A->number_dimensions,
-        B->number_dimensions, C->number_dimensions, A->N, N_lower, N_upper, 0,
-        A->chunk_tier, A->use_linear_tree, number_products);
+        {
+#ifdef SPAMM_MULTIPLY_DEBUG
+          SPAMM_WARN("A->recursive_tree = %p, &A->recursive_tree = %p\n", A->recursive_tree, &A->recursive_tree);
+          SPAMM_WARN("B->recursive_tree = %p, &B->recursive_tree = %p\n", B->recursive_tree, &B->recursive_tree);
+          SPAMM_WARN("C->recursive_tree = %p, &C->recursive_tree = %p\n", C->recursive_tree, &C->recursive_tree);
+#endif
+          spamm_recursive_multiply(tolerance, alpha, A->recursive_tree,
+              B->recursive_tree, C->recursive_tree, sgemm, A->number_dimensions,
+              B->number_dimensions, C->number_dimensions, A->N, N_lower, N_upper, 0,
+              A->chunk_tier, A->use_linear_tree, number_products);
+        }
+      }
+    }
+#pragma omp taskwait
 
     //if(C->recursive_tree->refcount == 0)
     //{
