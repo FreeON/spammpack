@@ -20,6 +20,12 @@ spamm_copy (struct spamm_matrix_t **A,
     const struct spamm_matrix_t *const B);
 
 void
+spamm_chunk_copy (spamm_chunk_t **A,
+    const float beta,
+    spamm_chunk_t *B,
+    const short use_linear_tree);
+
+void
 spamm_recursive_copy (struct spamm_recursive_node_t **A,
     const float beta,
     const struct spamm_recursive_node_t *const B,

@@ -41,6 +41,9 @@ spamm_chunk_copy (spamm_chunk_t **A,
 
   unsigned int tier;
 
+  assert(A != NULL);
+  assert(B != NULL);
+
   spamm_delete_chunk(A);
 
   number_dimensions = spamm_chunk_get_number_dimensions(B);
@@ -109,6 +112,8 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 
   struct spamm_recursive_node_t *B_pointer;
 
+  assert(A != NULL);
+
   if(B == NULL) { return; }
 
   if(*A == NULL)
@@ -164,20 +169,11 @@ spamm_copy (struct spamm_matrix_t **A,
   if(*A == B) { return; }
 
   spamm_delete(A);
+
+  if(B == NULL) { return; }
+
   *A = spamm_new(B->number_dimensions, B->N, B->chunk_tier, B->use_linear_tree);
 
-  A_pointer = NULL;
-  if(*A != NULL)
-  {
-    A_pointer = (*A)->recursive_tree;
-  }
-
-  B_pointer = NULL;
-  if(B != NULL)
-  {
-    B_pointer = B->recursive_tree;
-  }
-
-  spamm_recursive_copy(&A_pointer, beta, B_pointer,
+  spamm_recursive_copy(&(*A)->recursive_tree, beta, B->recursive_tree,
       B->number_dimensions, 0, B->chunk_tier, B->use_linear_tree);
 }

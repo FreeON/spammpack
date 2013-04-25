@@ -566,6 +566,9 @@ spamm_recursive_multiply (const float tolerance,
       &tolerance, node_A, &node_A, node_B, &node_B, node_C, &node_C);
 #endif
 
+  /* node_C has to be set, otherwise we won't have a lock. */
+  assert(node_C != NULL);
+
   if(node_A == NULL || node_B == NULL)
   {
     return;
@@ -573,6 +576,11 @@ spamm_recursive_multiply (const float tolerance,
 
   if(tier == chunk_tier)
   {
+    if(node_A->tree.chunk == NULL || node_B->tree.chunk == NULL)
+    {
+      return;
+    }
+
 #ifdef _OPENMP
     omp_set_lock(&node_C->lock);
 #endif
@@ -766,10 +774,10 @@ spamm_multiply (const float tolerance,
   assert(B != NULL);
   assert(C != NULL);
 
-  SPAMM_WARN("C[%i][%i] <- A[%i][%i]*B[%i][%i]\n",
-      C->N[0], C->N[1],
-      A->N[0], A->N[1],
-      B->N[0], B->N[1]);
+  //SPAMM_WARN("C[%i][%i] <- A[%i][%i]*B[%i][%i]\n",
+  //    C->N[0], C->N[1],
+  //    A->N[0], A->N[1],
+  //    B->N[0], B->N[1]);
 
 #ifdef SUPERDEBUG
   SPAMM_WARN("alpha = %e, beta = %e\n", alpha, beta);
@@ -814,8 +822,11 @@ spamm_multiply (const float tolerance,
     omp_set_dynamic(0);
     omp_set_nested(1);
 #ifdef SUPERDEBUG
+#pragma omp parallel
+    {
 #pragma omp master
-    SPAMM_WARN("running in parallel with %i thread(s)\n", omp_get_num_threads());
+      SPAMM_WARN("running in parallel with %i thread(s)\n", omp_get_num_threads());
+    }
 #endif
 #endif
 
@@ -830,6 +841,9 @@ spamm_multiply (const float tolerance,
           SPAMM_WARN("B->recursive_tree = %p, &B->recursive_tree = %p\n", B->recursive_tree, &B->recursive_tree);
           SPAMM_WARN("C->recursive_tree = %p, &C->recursive_tree = %p\n", C->recursive_tree, &C->recursive_tree);
 #endif
+          /* Allocate and set within task region. Otherwise we will end up
+           * with wrong N_{upper,lower} values in the
+           * spamm_recursive_multiply() call. */
           N_lower = calloc(C->number_dimensions, sizeof(unsigned int));
           N_upper = calloc(C->number_dimensions, sizeof(unsigned int));
 
