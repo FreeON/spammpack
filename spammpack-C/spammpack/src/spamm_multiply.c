@@ -423,9 +423,6 @@ spamm_linear_multiply (const float tolerance,
     }
   }
 
-  //SPAMM_WARN("C chunk alpha*A*B\n");
-  //spamm_print_chunk(chunk_C);
-
   return norm2_C_next[0];
 }
 
@@ -584,21 +581,11 @@ spamm_recursive_multiply (const float tolerance,
 #ifdef _OPENMP
     omp_set_lock(&node_C->lock);
 #endif
+
     if(node_C->tree.chunk == NULL)
     {
       node_C->tree.chunk = spamm_new_chunk(number_dimensions_C, use_linear_tree, N, N_lower, N_upper);
     }
-
-#ifdef SUPERDEBUG
-    SPAMM_WARN("A chunk\n");
-    spamm_print_chunk(node_A->tree.chunk);
-
-    SPAMM_WARN("B chunk\n");
-    spamm_print_chunk(node_B->tree.chunk);
-
-    SPAMM_WARN("C chunk\n");
-    spamm_print_chunk(node_C->tree.chunk);
-#endif
 
     if(use_linear_tree)
     {
@@ -612,12 +599,8 @@ spamm_recursive_multiply (const float tolerance,
           node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk, sgemm);
     }
 
-#ifdef SUPERDEBUG
-    SPAMM_WARN("C chunk = alpha*A*B\n");
-    spamm_print_chunk(node_C->tree.chunk);
-#endif
-
     node_C->norm = sqrt(node_C->norm2);
+
 #ifdef _OPENMP
     omp_unset_lock(&node_C->lock);
 #endif
@@ -692,7 +675,7 @@ spamm_recursive_multiply (const float tolerance,
                 }
               }
 
-#ifdef SUPERDEBUG
+#ifdef SPAMM_MULTIPLY_DEBUG
               else
               {
                 SPAMM_WARN("skipping product below tolerance: C[%i][%i] <- A[%i][%i]*B[%i][%i] (%e)\n", i, j, i, k, k, j,
@@ -703,14 +686,7 @@ spamm_recursive_multiply (const float tolerance,
           }
         }
       }
-#ifdef SUPERDEBUG
-      SPAMM_WARN("taskwait...\n");
-#endif
 #pragma omp taskwait
-
-#ifdef SUPERDEBUG
-      SPAMM_WARN("fixing norms...\n");
-#endif
 
       /* Fix up norms. */
       if(node_C->tree.child != NULL)
@@ -774,37 +750,8 @@ spamm_multiply (const float tolerance,
   assert(B != NULL);
   assert(C != NULL);
 
-  //SPAMM_WARN("C[%i][%i] <- A[%i][%i]*B[%i][%i]\n",
-  //    C->N[0], C->N[1],
-  //    A->N[0], A->N[1],
-  //    B->N[0], B->N[1]);
-
-#ifdef SUPERDEBUG
-  SPAMM_WARN("alpha = %e, beta = %e\n", alpha, beta);
-
-  SPAMM_WARN("A:\n");
-  spamm_print_tree(A);
-  SPAMM_WARN("A:\n");
-  spamm_print(A);
-
-  SPAMM_WARN("B:\n");
-  spamm_print_tree(B);
-  SPAMM_WARN("B:\n");
-  spamm_print(B);
-
-  SPAMM_WARN("C:\n");
-  spamm_print_tree(C);
-  SPAMM_WARN("C:\n");
-  spamm_print(C);
-#endif
-
   spamm_recursive_multiply_scalar(beta, C->recursive_tree,
       C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree);
-
-#ifdef SUPERDEBUG
-  SPAMM_WARN("beta * C:\n");
-  spamm_print(C);
-#endif
 
   if(alpha != 0.0)
   {
@@ -821,13 +768,6 @@ spamm_multiply (const float tolerance,
     /* Set some OpenMP defaults. */
     omp_set_dynamic(0);
     omp_set_nested(1);
-#ifdef SUPERDEBUG
-#pragma omp parallel
-    {
-#pragma omp master
-      SPAMM_WARN("running in parallel with %i thread(s)\n", omp_get_num_threads());
-    }
-#endif
 #endif
 
 #pragma omp parallel
@@ -836,11 +776,6 @@ spamm_multiply (const float tolerance,
       {
 #pragma omp task untied
         {
-#ifdef SPAMM_MULTIPLY_DEBUG
-          SPAMM_WARN("A->recursive_tree = %p, &A->recursive_tree = %p\n", A->recursive_tree, &A->recursive_tree);
-          SPAMM_WARN("B->recursive_tree = %p, &B->recursive_tree = %p\n", B->recursive_tree, &B->recursive_tree);
-          SPAMM_WARN("C->recursive_tree = %p, &C->recursive_tree = %p\n", C->recursive_tree, &C->recursive_tree);
-#endif
           /* Allocate and set within task region. Otherwise we will end up
            * with wrong N_{upper,lower} values in the
            * spamm_recursive_multiply() call. */
@@ -870,11 +805,4 @@ spamm_multiply (const float tolerance,
     //  spamm_recursive_delete(C->number_dimensions, 0, C->chunk_tier, &C->recursive_tree);
     //}
   }
-
-#ifdef SUPERDEBUG
-  SPAMM_WARN("C = alpha*A*B+beta*C:\n");
-  spamm_print_tree(C);
-  SPAMM_WARN("C = alpha*A*B+beta*C:\n");
-  spamm_print(C);
-#endif
 }

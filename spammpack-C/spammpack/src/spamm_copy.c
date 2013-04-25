@@ -88,9 +88,6 @@ spamm_chunk_copy (spamm_chunk_t **A,
     A_matrix_dilated[4*i+2] = beta*A_matrix[i];
     A_matrix_dilated[4*i+3] = beta*A_matrix[i];
   }
-
-  //SPAMM_WARN("A chunk (copy):\n");
-  //spamm_print_chunk(*A);
 }
 
 /** Copy a matrix. \f$ A \leftarrow \beta B \f$.

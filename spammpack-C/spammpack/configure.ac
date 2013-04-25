@@ -242,8 +242,17 @@ dnl Get the current date.
 timestamp=`date +%Y-%m-%d`
 AC_DEFINE_UNQUOTED([SPAMM_TIMESTAMP], ["${timestamp}"], [The build date.])
 
-#AC_DEFINE([SUPERDEBUG], [1], [Print out lots of debugging information.])
-#AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Print out lots of debugging information.])
+AC_MSG_CHECKING([whether to enable debugging output in spamm_multiply()])
+AC_ARG_ENABLE([multiply-debug],
+              [AS_HELP_STRING([--enable-multiply-debug],
+                              [Enable debugging printout for spamm_multiply().])],
+              [enable_multiply_debug=$enableval],
+              [enable_multiply_debug="no"])
+AC_MSG_RESULT([${enable_multiply_debug}])
+
+if test "${enable_multiply_debug}" = "yes"; then
+  AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Print out lots of debugging information.])
+fi
 
 dnl Write headers.
 AC_CONFIG_HEADERS([config.h])

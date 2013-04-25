@@ -197,8 +197,6 @@ spamm_add (const float alpha,
 
   assert(A != NULL);
 
-  //SPAMM_WARN("alpha = %e, beta = %e\n", alpha, beta);
-
   B_pointer = NULL;
   if(B != NULL)
   {
