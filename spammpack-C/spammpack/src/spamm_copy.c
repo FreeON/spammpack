@@ -97,7 +97,7 @@ spamm_chunk_copy (spamm_chunk_t **A,
  * @param B The matrix to copy from.
  */
 void
-spamm_recursive_copy (struct spamm_recursive_node_t **A,
+spamm_recursive_copy (struct spamm_recursive_node_t *const A,
     const float beta,
     const struct spamm_recursive_node_t *const B,
     const unsigned int number_dimensions,
@@ -109,42 +109,56 @@ spamm_recursive_copy (struct spamm_recursive_node_t **A,
 
   struct spamm_recursive_node_t *B_pointer;
 
+  /* We need access to a lock on A, which is why A can not be NULL. We need to
+   * allocate a new node if we need to a tier above. */
   assert(A != NULL);
 
   if(B == NULL) { return; }
 
-  if(*A == NULL)
-  {
-    *A = spamm_recursive_new_node();
-  }
-
   if(tier == chunk_tier)
   {
-    spamm_chunk_copy(&(*A)->tree.chunk, beta, B->tree.chunk, use_linear_tree);
+    spamm_chunk_copy(&A->tree.chunk, beta, B->tree.chunk, use_linear_tree);
   }
 
   else
   {
-    if((*A)->tree.child == NULL)
+    if(B->tree.child == NULL)
     {
-      (*A)->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
+      return;
     }
+
+#ifdef _OPENMP
+    omp_set_lock(&A->lock);
+#endif
+
+    if(A->tree.child == NULL)
+    {
+      A->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
+    }
+
+#ifdef _OPENMP
+    omp_unset_lock(&A->lock);
+#endif
 
     for(i = 0; i < ipow(2, number_dimensions); i++)
     {
-      B_pointer = NULL;
-      if(B->tree.child != NULL)
-      {
-        B_pointer = B->tree.child[i];
-      }
-
-      spamm_recursive_copy(&(*A)->tree.child[i], beta, B_pointer,
+#pragma omp task untied
+      spamm_recursive_copy(A->tree.child[i], beta, B->tree.child[i],
           number_dimensions, tier+1, chunk_tier, use_linear_tree);
     }
+#pragma taskwait
   }
 
-  (*A)->norm2 = beta*beta*B->norm2;
-  (*A)->norm = sqrt((*A)->norm2);
+#ifdef _OPENMP
+    omp_set_lock(&A->lock);
+#endif
+
+  A->norm2 = beta*beta*B->norm2;
+  A->norm = sqrt(A->norm2);
+
+#ifdef _OPENMP
+    omp_unset_lock(&A->lock);
+#endif
 }
 
 /** Copy a matrix. \f$ A \leftarrow \beta B \f$.
@@ -171,6 +185,13 @@ spamm_copy (struct spamm_matrix_t **A,
 
   *A = spamm_new(B->number_dimensions, B->N, B->chunk_tier, B->use_linear_tree);
 
-  spamm_recursive_copy(&(*A)->recursive_tree, beta, B->recursive_tree,
-      B->number_dimensions, 0, B->chunk_tier, B->use_linear_tree);
+#pragma omp parallel
+  {
+#pragma omp single
+    {
+#pragma omp task untied
+      spamm_recursive_copy((*A)->recursive_tree, beta, B->recursive_tree,
+          B->number_dimensions, 0, B->chunk_tier, B->use_linear_tree);
+    }
+  }
 }

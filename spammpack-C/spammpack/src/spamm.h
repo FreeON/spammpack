@@ -11,6 +11,7 @@
 #include "spamm_timer.h"
 #include "spamm_sort.h"
 #include "spamm_chunk.h"
+#include "spamm_prune.h"
 
 #include "spamm_general.h"
 

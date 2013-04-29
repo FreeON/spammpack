@@ -47,6 +47,7 @@ libspammpack_fortran_la_SOURCES = \
   spammpack_algebra.F90 \
   spammpack_chunk.F90 \
   spammpack_management.F90 \
+  spammpack_omp.F90 \
   spammpack_types.F90 \
   spammpack.F90
 
@@ -89,7 +90,9 @@ libspamm_tree_la_SOURCES = \
   spamm_lapack.c \
   spamm_multiply.c \
   spamm_new.c \
+  spamm_omp_init.c \
   spamm_print.c \
+  spamm_prune.c \
   spamm_set.c \
   spamm_sort.c \
   spamm_spectral_bounds.c \
@@ -108,6 +111,7 @@ libspamm_tree_headers = \
   spamm_error.h \
   spamm_errno.h \
   spamm_general.h \
+  spamm_prune.h \
   spamm_sort.h \
   spamm_timer.h \
   spamm_types.h

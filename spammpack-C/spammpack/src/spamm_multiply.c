@@ -764,15 +764,9 @@ spamm_multiply (const float tolerance,
       C->recursive_tree = spamm_recursive_new_node();
     }
 
-#ifdef _OPENMP
-    /* Set some OpenMP defaults. */
-    omp_set_dynamic(0);
-    omp_set_nested(1);
-#endif
-
 #pragma omp parallel
     {
-#pragma omp master
+#pragma omp single
       {
 #pragma omp task untied
         {
@@ -797,12 +791,8 @@ spamm_multiply (const float tolerance,
         }
       }
     }
-#pragma omp taskwait
 
     /* Prune tree. */
-    //if(C->recursive_tree->refcount == 0)
-    //{
-    //  spamm_recursive_delete(C->number_dimensions, 0, C->chunk_tier, &C->recursive_tree);
-    //}
+    spamm_prune(C);
   }
 }

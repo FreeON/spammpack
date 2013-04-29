@@ -26,7 +26,7 @@ spamm_chunk_copy (spamm_chunk_t **A,
     const short use_linear_tree);
 
 void
-spamm_recursive_copy (struct spamm_recursive_node_t **A,
+spamm_recursive_copy (struct spamm_recursive_node_t *const A,
     const float beta,
     const struct spamm_recursive_node_t *const B,
     const unsigned int number_dimensions,
@@ -240,5 +240,8 @@ spamm_chunk_get_total_number_norms (const unsigned int number_tiers,
 
 float
 spamm_trace (const struct spamm_matrix_t *const A);
+
+void
+spamm_omp_init ();
 
 #endif
