@@ -136,6 +136,14 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
       A->tree.child = calloc(ipow(2, number_dimensions), sizeof(struct spamm_recursive_node_t*));
     }
 
+    for(i = 0; i < ipow(2, number_dimensions); i++)
+    {
+      if(B->tree.child[i] != NULL && A->tree.child[i] == NULL)
+      {
+        A->tree.child[i] = spamm_recursive_new_node();
+      }
+    }
+
 #ifdef _OPENMP
     omp_unset_lock(&A->lock);
 #endif
@@ -143,8 +151,11 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
     for(i = 0; i < ipow(2, number_dimensions); i++)
     {
 #pragma omp task untied
-      spamm_recursive_copy(A->tree.child[i], beta, B->tree.child[i],
-          number_dimensions, tier+1, chunk_tier, use_linear_tree);
+      if(B->tree.child[i] != NULL)
+      {
+        spamm_recursive_copy(A->tree.child[i], beta, B->tree.child[i],
+            number_dimensions, tier+1, chunk_tier, use_linear_tree);
+      }
     }
 #pragma taskwait
   }
@@ -184,6 +195,7 @@ spamm_copy (struct spamm_matrix_t **A,
   if(B == NULL) { return; }
 
   *A = spamm_new(B->number_dimensions, B->N, B->chunk_tier, B->use_linear_tree);
+  (*A)->recursive_tree = spamm_recursive_new_node();
 
 #pragma omp parallel
   {

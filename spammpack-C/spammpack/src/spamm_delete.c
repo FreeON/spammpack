@@ -38,6 +38,8 @@ spamm_recursive_delete (const unsigned int number_dimensions,
 {
   unsigned int i;
 
+  assert(node != NULL);
+
   if(*node == NULL) { return; }
 
   if(tier == chunk_tier)
@@ -47,15 +49,19 @@ spamm_recursive_delete (const unsigned int number_dimensions,
 
   else
   {
-    for(i = 0; i < ipow(2, number_dimensions); i++)
+    if((*node)->tree.child != NULL)
     {
-      spamm_recursive_delete(number_dimensions, tier+1, chunk_tier, &(*node)->tree.child[i]);
-    }
+      for(i = 0; i < ipow(2, number_dimensions); i++)
+      {
+        spamm_recursive_delete(number_dimensions, tier+1, chunk_tier, &(*node)->tree.child[i]);
+      }
+
 #ifdef _OPENMP
-    omp_destroy_lock(&(*node)->lock);
+      omp_destroy_lock(&(*node)->lock);
 #endif
-    free((*node)->tree.child);
-    (*node)->tree.child = NULL;
+      free((*node)->tree.child);
+      (*node)->tree.child = NULL;
+    }
   }
 
   free(*node);
