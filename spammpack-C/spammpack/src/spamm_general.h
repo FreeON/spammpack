@@ -11,7 +11,7 @@ ipow (unsigned int b, unsigned int n);
 void *
 spamm_allocate (const size_t size, const short zero_memory);
 
-void
+int
 spamm_check (const struct spamm_matrix_t *A, const float tolerance);
 
 void
@@ -127,7 +127,7 @@ spamm_linear_multiply (const float tolerance,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
     spamm_chunk_t *const chunk_C,
-    double *flop);
+    double *const flop);
 
 void
 spamm_recursive_multiply_scalar (const float alpha,
@@ -135,11 +135,13 @@ spamm_recursive_multiply_scalar (const float alpha,
     const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const short use_linear_tree);
+    const short use_linear_tree,
+    double *const flop);
 
 void
 spamm_multiply_scalar (const float alpha,
-    struct spamm_matrix_t *const A);
+    struct spamm_matrix_t *const A,
+    double *const flop);
 
 void
 spamm_multiply (const float tolerance,
@@ -149,13 +151,14 @@ spamm_multiply (const float tolerance,
     const float beta,
     struct spamm_matrix_t *const C,
     sgemm_func sgemm,
-    double *flop);
+    double *const flop);
 
 void
 spamm_add (const float alpha,
     struct spamm_matrix_t *const A,
     const float beta,
-    const struct spamm_matrix_t *const B);
+    const struct spamm_matrix_t *const B,
+    double *const flop);
 
 unsigned int
 spamm_number_nonzero (const struct spamm_matrix_t *A);

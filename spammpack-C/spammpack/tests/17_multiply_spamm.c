@@ -304,11 +304,20 @@ main (int argc, char **argv)
   {
     printf("checking SpAMM matrices...\n");
     printf("checking A\n");
-    spamm_check(A, 1e-7);
+    if(spamm_check(A, 1e-7) != SPAMM_OK)
+    {
+      SPAMM_FATAL("failed\n");
+    }
     printf("checking B\n");
-    spamm_check(B, 1e-7);
+    if(spamm_check(B, 1e-7) != SPAMM_OK)
+    {
+      SPAMM_FATAL("failed\n");
+    }
     printf("checking C\n");
-    spamm_check(C, 1e-7);
+    if(spamm_check(C, 1e-7) != SPAMM_OK)
+    {
+      SPAMM_FATAL("failed\n");
+    }
     printf("done\n");
   }
 
@@ -461,7 +470,10 @@ main (int argc, char **argv)
   if(check_matrices)
   {
     printf("checking C\n");
-    spamm_check(C, 1e-7);
+    if(spamm_check(C, 1e-7) != SPAMM_OK)
+    {
+      SPAMM_FATAL("failed\n");
+    }
   }
 
   if(verify_result)

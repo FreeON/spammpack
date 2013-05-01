@@ -45,7 +45,7 @@ main (int argc, char **argv)
 #endif
 
   /* Check matrix. */
-  spamm_check(A, 1e-7);
+  if(spamm_check(A, 1e-7) != SPAMM_OK)
   {
     printf("failed spamm_hashed_check()\n");
     return result;

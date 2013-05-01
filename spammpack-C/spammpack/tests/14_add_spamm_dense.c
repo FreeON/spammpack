@@ -105,6 +105,8 @@ main (int argc, char **argv)
   struct spamm_matrix_t *A;
   struct spamm_matrix_t *B;
 
+  double flop;
+
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++)
   {
     i = calloc(number_dimensions, sizeof(unsigned int));
@@ -184,10 +186,15 @@ main (int argc, char **argv)
               break;
           }
 
-          spamm_add(alpha, A, beta, B);
+          flop = 0;
+          spamm_add(alpha, A, beta, B, &flop);
+          printf("[add_spamm] %e flop\n", flop);
 
           /* Check tree consistency. */
-          spamm_check(A, TEST_TOLERANCE);
+          if(spamm_check(A, TEST_TOLERANCE) != SPAMM_OK)
+          {
+            SPAMM_FATAL("failed\n");
+          }
 
           /* Compare result. */
           max_diff = 0.0;

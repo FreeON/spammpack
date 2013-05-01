@@ -15,12 +15,14 @@
  * @param A Chunk A.
  * @param beta The factor @f$ \beta @f$.
  * @param B Chunk B.
+ * @param flop The flop count.
  */
 void
 spamm_chunk_add (const float alpha,
     spamm_chunk_t **A,
     const float beta,
-    spamm_chunk_t *B)
+    spamm_chunk_t *B,
+    double *const flop)
 {
   unsigned int *number_dimensions;
   unsigned int *number_tiers;
@@ -83,6 +85,9 @@ spamm_chunk_add (const float alpha,
     A_matrix_dilated[4*i+2] = A_matrix[i];
     A_matrix_dilated[4*i+3] = A_matrix[i];
   }
+
+  /* Update flop count. */
+  *flop += ipow(N_contiguous, *number_dimensions);
 }
 
 /** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.
@@ -92,6 +97,10 @@ spamm_chunk_add (const float alpha,
  * @param beta The factor @f$ \beta @f$.
  * @param B The matrix B.
  * @param number_dimensions The number of dimensions.
+ * @param tier The tier.
+ * @param chunk_tier The chunk tier.
+ * @param use_linear_tree Are we using a linear tree?
+ * @param flop The flop count.
  */
 void
 spamm_recursive_add (const float alpha,
@@ -101,7 +110,8 @@ spamm_recursive_add (const float alpha,
     const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const short use_linear_tree)
+    const short use_linear_tree,
+    double *const flop)
 {
   unsigned int i;
 
@@ -138,7 +148,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk);
+      A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk, flop);
       A->norm = sqrt(A->norm2);
 
 #ifdef _OPENMP
@@ -152,7 +162,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      spamm_chunk_add(alpha, &A->tree.chunk, beta, B->tree.chunk);
+      spamm_chunk_add(alpha, &A->tree.chunk, beta, B->tree.chunk, flop);
 
       A->norm2 = alpha*alpha*A->norm2+beta*beta*B->norm2+2*alpha*beta*A->norm*B->norm;
       A->norm = sqrt(A->norm2);
@@ -176,7 +186,7 @@ spamm_recursive_add (const float alpha,
     {
       /* Multiply A by alpha. */
       spamm_recursive_multiply_scalar(alpha, A, number_dimensions, tier,
-          chunk_tier, use_linear_tree);
+          chunk_tier, use_linear_tree, flop);
     }
 
     else
@@ -217,7 +227,7 @@ spamm_recursive_add (const float alpha,
 #pragma omp task untied
         spamm_recursive_add(alpha, A->tree.child[i], beta,
             (const struct spamm_recursive_node_t*const) B->tree.child[i],
-            number_dimensions, tier+1, chunk_tier, use_linear_tree);
+            number_dimensions, tier+1, chunk_tier, use_linear_tree, flop);
       }
 #pragma taskwait
 
@@ -237,12 +247,14 @@ spamm_recursive_add (const float alpha,
  * @param A The matrix A.
  * @param beta The factor @f$ \beta @f$.
  * @param B The matrix B.
+ * @param flop The flop count.
  */
 void
 spamm_add (const float alpha,
     struct spamm_matrix_t *const A,
     const float beta,
-    const struct spamm_matrix_t *const B)
+    const struct spamm_matrix_t *const B,
+    double *const flop)
 {
   struct spamm_recursive_node_t *B_pointer;
 
@@ -266,7 +278,7 @@ spamm_add (const float alpha,
 #pragma omp task untied
       spamm_recursive_add(alpha, A->recursive_tree, beta,
           (const struct spamm_recursive_node_t*const) B_pointer,
-          A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree);
+          A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree, flop);
     }
   }
 }

@@ -9,7 +9,8 @@
 
 float
 spamm_chunk_multiply_scalar (const float alpha,
-    spamm_chunk_t *chunk);
+    spamm_chunk_t *chunk,
+    double *const flop);
 
 float
 spamm_chunk_multiply (const float tolerance,
@@ -17,7 +18,8 @@ spamm_chunk_multiply (const float tolerance,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
     spamm_chunk_t *const chunk_C,
-    sgemm_func sgemm);
+    sgemm_func sgemm,
+    double *const flop);
 
 size_t
 spamm_chunk_pad (const size_t address,

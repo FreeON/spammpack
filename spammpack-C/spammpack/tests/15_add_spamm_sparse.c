@@ -36,6 +36,8 @@ main (int argc, char **argv)
   const short sparse_A[] = { 0, 0, 1, 1 };
   const short sparse_B[] = { 0, 1, 0, 1 };
 
+  double flop;
+
   for(sparse_test = 0; sparse_test < 4; sparse_test++)
   {
     printf("sparse_A = %i, sparse_B = %i, ", sparse_A[sparse_test], sparse_B[sparse_test]);
@@ -89,8 +91,14 @@ main (int argc, char **argv)
     A = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, A_dense);
     B = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, B_dense);
 
-    spamm_check(A, TEST_TOLERANCE);
-    spamm_check(B, TEST_TOLERANCE);
+    if(spamm_check(A, TEST_TOLERANCE) != SPAMM_OK)
+    {
+      SPAMM_FATAL("failed\n");
+    }
+    if(spamm_check(B, TEST_TOLERANCE) != SPAMM_OK)
+    {
+      SPAMM_FATAL("failed\n");
+    }
 
     for(i[0] = 0; i[0] < N[0]; i[0]++) {
       for(i[1] = 0; i[1] < N[1]; i[1]++)
@@ -128,7 +136,9 @@ main (int argc, char **argv)
     spamm_print_dense(N[0], N[1], row_major, A_dense);
 #endif
 
-    spamm_add(alpha, A, beta, B);
+    flop = 0;
+    spamm_add(alpha, A, beta, B, &flop);
+    printf("%e flop\n", flop);
 
 #ifdef PRINT_MATRIX
     printf("A =\n");
@@ -136,7 +146,10 @@ main (int argc, char **argv)
 #endif
 
     /* Check tree consistency. */
-    spamm_check(A, TEST_TOLERANCE);
+    if(spamm_check(A, TEST_TOLERANCE) != SPAMM_OK)
+    {
+      SPAMM_FATAL("failed\n");
+    }
 
     /* Compare result. */
     max_diff = 0.0;

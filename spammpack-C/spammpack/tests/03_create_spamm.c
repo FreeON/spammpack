@@ -148,7 +148,10 @@ main (int argc, char **argv)
 
         printf("A info: ");
         spamm_print_info(A);
-        spamm_check(A, 1e-8);
+        if(spamm_check(A, 1e-8) != SPAMM_OK)
+        {
+          SPAMM_FATAL("failed\n");
+        }
 
         switch(number_dimensions)
         {

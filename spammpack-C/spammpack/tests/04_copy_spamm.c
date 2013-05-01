@@ -151,13 +151,19 @@ main (int argc, char **argv)
 
         printf("B info: ");
         spamm_print_info(B);
-        spamm_check(B, 1e-8);
+        if(spamm_check(B, 1e-8) != SPAMM_OK)
+        {
+          SPAMM_FATAL("failed\n");
+        }
 
         spamm_copy(&A, beta, B);
 
         printf("A info: ");
         spamm_print_info(A);
-        spamm_check(A, 1e-6);
+        if(spamm_check(A, 1e-6) != SPAMM_OK)
+        {
+          SPAMM_FATAL("failed\n");
+        }
 
         switch(number_dimensions)
         {

@@ -22,7 +22,10 @@ main ()
     }
   }
 
-  spamm_check(A, 1e-7);
+  if(spamm_check(A, 1e-7) != SPAMM_OK)
+  {
+    SPAMM_FATAL("failed\n");
+  }
 
   spamm_delete(&A);
 
