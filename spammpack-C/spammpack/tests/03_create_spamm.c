@@ -4,7 +4,7 @@
 
 //#define PRINT_DEBUG
 
-#define REL_TOLERANCE 1e-5
+#define REL_TOLERANCE 1e-8
 
 int
 main (int argc, char **argv)

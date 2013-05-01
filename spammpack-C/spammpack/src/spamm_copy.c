@@ -24,10 +24,10 @@ spamm_chunk_copy (spamm_chunk_t **A,
   unsigned int *N_lower;
   unsigned int *N_upper;
 
-  float *norm_A;
-  float *norm_B;
-  float *norm2_A;
-  float *norm2_B;
+  double *norm_A;
+  double *norm_B;
+  double *norm2_A;
+  double *norm2_B;
 
   float *A_matrix;
   float *B_matrix;

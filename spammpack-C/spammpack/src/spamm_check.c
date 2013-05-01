@@ -19,10 +19,10 @@
 int
 spamm_chunk_check (spamm_chunk_t *chunk,
     const float rel_tolerance,
-    float *const norm2_reference)
+    double *const norm2_reference)
 {
-  float *norm;
-  float *norm2;
+  double *norm;
+  double *norm2;
   float *matrix;
 
   unsigned i, j, k;
@@ -62,7 +62,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
         if(*norm2_reference > 0 && fabs(*norm2_reference - norm2[linear_index])/(*norm2_reference) > rel_tolerance)
         {
-          SPAMM_WARN("norm2 mismatch: tier = %u, linear index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
+          SPAMM_WARN("chunk norm2 mismatch: tier = %u, linear index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
               tier, linear_index,
               norm2[linear_index], *norm2_reference,
               fabs(norm2[linear_index]-*norm2_reference),
@@ -72,7 +72,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
         if(*norm2_reference > 0 && fabs(sqrt(*norm2_reference) - norm[linear_index])/sqrt(*norm2_reference) > rel_tolerance)
         {
-          SPAMM_WARN("norm  mismatch: tier = %u, linear index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
+          SPAMM_WARN("chunk norm  mismatch: tier = %u, linear index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
               tier, linear_index,
               norm[linear_index], sqrt(*norm2_reference),
               fabs(norm[linear_index]-sqrt(*norm2_reference)),
@@ -102,7 +102,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
           if(*norm2_reference > 0 && fabs(*norm2_reference - norm2[linear_index])/(*norm2_reference) > rel_tolerance)
           {
-            SPAMM_WARN("norm2 mismatch: tier = %u, linear_index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
+            SPAMM_WARN("chunk norm2 mismatch: tier = %u, linear_index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
                 number_tiers-1, linear_index,
                 norm2[linear_index], *norm2_reference,
                 fabs(norm2[linear_index]-*norm2_reference),
@@ -112,7 +112,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
           if(*norm2_reference > 0 && fabs(sqrt(*norm2_reference) - norm[linear_index])/sqrt(*norm2_reference) > rel_tolerance)
           {
-            SPAMM_WARN("norm  mismatch\n");
+            SPAMM_WARN("chunk norm  mismatch\n");
             result |= SPAMM_ERROR;
           }
         }
@@ -130,7 +130,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
   if(*norm2_reference > 0 && fabs(*norm2_reference - norm2[0])/(*norm2_reference) > rel_tolerance)
   {
-    SPAMM_WARN("norm2 mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
+    SPAMM_WARN("chunk norm2 mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
         norm2[0],
         *norm2_reference,
         fabs(norm2[0]-*norm2_reference),
@@ -140,7 +140,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
   if(*norm2_reference > 0 && fabs(sqrt(*norm2_reference) - norm[0])/sqrt(*norm2_reference) > rel_tolerance)
   {
-    SPAMM_WARN("norm  mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
+    SPAMM_WARN("chunk norm  mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
         norm[0],
         sqrt(*norm2_reference),
         fabs(norm[0]-sqrt(*norm2_reference)),
@@ -170,9 +170,9 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
     const unsigned int tier,
     const unsigned int chunk_tier,
     const float rel_tolerance,
-    float *const norm2_reference)
+    double *const norm2_reference)
 {
-  float norm2_temp;
+  double norm2_temp;
   int result = SPAMM_OK;
   int child_index;
 
@@ -206,7 +206,8 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
 
     if(*norm2_reference > 0 && fabs(*norm2_reference - node->norm2)/(*norm2_reference) > rel_tolerance)
     {
-      SPAMM_WARN("norm2 mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
+      SPAMM_WARN("norm2 mismatch: tier = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
+          tier,
           node->norm2,
           *norm2_reference,
           fabs(node->norm2-*norm2_reference),
@@ -216,7 +217,8 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
 
     if(*norm2_reference > 0 && fabs(sqrt(*norm2_reference) - node->norm)/sqrt(*norm2_reference) > rel_tolerance)
     {
-      SPAMM_WARN("norm  mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
+      SPAMM_WARN("norm  mismatch: tier = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
+          tier,
           node->norm,
           sqrt(*norm2_reference),
           fabs(node->norm-sqrt(*norm2_reference)),
@@ -241,7 +243,7 @@ int
 spamm_check (const struct spamm_matrix_t *A, const float rel_tolerance)
 {
   int result;
-  float norm2_reference = 0.0;
+  double norm2_reference = 0.0;
 
   result = spamm_recursive_check(A->recursive_tree, A->number_dimensions, 0,
       A->chunk_tier, rel_tolerance, &norm2_reference);

@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define REL_TOLERANCE 1e-8
+
 #define TEST_TOLERANCE 5e-7
 
 //#define PRINT_MATRIX
@@ -191,7 +193,7 @@ main (int argc, char **argv)
           printf("[add_spamm] %e flop\n", flop);
 
           /* Check tree consistency. */
-          if(spamm_check(A, TEST_TOLERANCE) != SPAMM_OK)
+          if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
           {
             SPAMM_FATAL("failed\n");
           }

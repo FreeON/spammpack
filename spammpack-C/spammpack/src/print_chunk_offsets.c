@@ -27,8 +27,8 @@ main (int argc, char **argv)
   unsigned int *N_upper_pointer;
   float *A_pointer;
   float *A_dilated_pointer;
-  float *norm_pointer;
-  float *norm2_pointer;
+  double *norm_pointer;
+  double *norm2_pointer;
 
   int dim;
 

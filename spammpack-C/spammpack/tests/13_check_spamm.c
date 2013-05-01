@@ -1,6 +1,8 @@
 #include "spamm.h"
 #include <stdlib.h>
 
+#define REL_TOLERANCE 1e-8
+
 int
 main ()
 {
@@ -22,7 +24,7 @@ main ()
     }
   }
 
-  if(spamm_check(A, 1e-7) != SPAMM_OK)
+  if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
   {
     SPAMM_FATAL("failed\n");
   }

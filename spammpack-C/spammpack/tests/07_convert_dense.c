@@ -4,6 +4,8 @@
 
 //#define PRINT_DEBUG
 
+#define REL_TOLERANCE 1e-8
+
 int
 main (int argc, char **argv)
 {
@@ -45,7 +47,7 @@ main (int argc, char **argv)
 #endif
 
   /* Check matrix. */
-  if(spamm_check(A, 1e-7) != SPAMM_OK)
+  if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
   {
     printf("failed spamm_hashed_check()\n");
     return result;

@@ -103,8 +103,8 @@ spamm_get_tree_depth (const unsigned int number_dimensions,
  *   unsigned int *N_upper_pointer;
  *   float        *A_pointer;
  *   float        *A_dilated_pointer;
- *   float        *norm_pointer;
- *   float        *norm2_pointer;
+ *   double       *norm_pointer;
+ *   double       *norm2_pointer;
  *
  *   unsigned int number_dimensions;
  *   unsigned int N_block;
@@ -115,8 +115,8 @@ spamm_get_tree_depth (const unsigned int number_dimensions,
  *
  *   spamm_float_t *A_dilated;
  *
- *   spamm_float_t norm[];
- *   spamm_float_t norm2[];
+ *   spamm_double_t norm[];
+ *   spamm_double_t norm2[];
  * };
  * \endcode
  *
@@ -145,8 +145,8 @@ spamm_new_chunk (const unsigned int number_dimensions,
   unsigned int *N_upper_pointer;
   float *A_pointer;
   float *A_dilated_pointer;
-  float *norm_pointer;
-  float *norm2_pointer;
+  double *norm_pointer;
+  double *norm2_pointer;
 
   int dim;
 

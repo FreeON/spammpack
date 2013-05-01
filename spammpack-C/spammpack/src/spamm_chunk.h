@@ -7,12 +7,12 @@
 
 #include <stdlib.h>
 
-float
+double
 spamm_chunk_multiply_scalar (const float alpha,
     spamm_chunk_t *chunk,
     double *const flop);
 
-float
+double
 spamm_chunk_multiply (const float tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
@@ -55,17 +55,17 @@ spamm_chunk_get_matrix_dilated (const spamm_chunk_t *const chunk);
 unsigned int
 spamm_chunk_get_number_norm_entries (const spamm_chunk_t *const chunk);
 
-float *
+double *
 spamm_chunk_get_norm (const spamm_chunk_t *const chunk);
 
-float *
+double *
 spamm_chunk_get_tier_norm (const unsigned int tier,
     const spamm_chunk_t *const chunk);
 
-float *
+double *
 spamm_chunk_get_norm2 (const spamm_chunk_t *const chunk);
 
-float *
+double *
 spamm_chunk_get_tier_norm2 (const unsigned int tier,
     spamm_chunk_t *chunk);
 
@@ -86,8 +86,8 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     unsigned int **N_upper_pointer,
     float **A_pointer,
     float **A_dilated_pointer,
-    float **norm_pointer,
-    float **norm2_pointer);
+    double **norm_pointer,
+    double **norm2_pointer);
 
 void
 spamm_chunk_print (spamm_chunk_t *chunk);

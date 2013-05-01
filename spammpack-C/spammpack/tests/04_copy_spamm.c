@@ -4,6 +4,8 @@
 
 //#define PRINT_DEBUG
 
+#define REL_TOLERANCE 1e-6
+
 int
 main (int argc, char **argv)
 {
@@ -151,7 +153,7 @@ main (int argc, char **argv)
 
         printf("B info: ");
         spamm_print_info(B);
-        if(spamm_check(B, 1e-8) != SPAMM_OK)
+        if(spamm_check(B, REL_TOLERANCE) != SPAMM_OK)
         {
           SPAMM_FATAL("failed\n");
         }
@@ -160,7 +162,7 @@ main (int argc, char **argv)
 
         printf("A info: ");
         spamm_print_info(A);
-        if(spamm_check(A, 1e-6) != SPAMM_OK)
+        if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
         {
           SPAMM_FATAL("failed\n");
         }

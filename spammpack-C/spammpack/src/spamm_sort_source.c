@@ -18,18 +18,14 @@ spamm_sort_masked (const unsigned int length,
 #elif defined(SPAMM_SORT_NORM)
 spamm_sort_norm (const unsigned int length,
     unsigned int *const list,
-    float *norm)
+    double *norm)
 #endif
 {
   unsigned int i, j, j_next, i_left, i_right;
   unsigned int sub_current, sub_next;
   unsigned int sub_length;
   unsigned int *sublist;
-#if defined(SPAMM_SORT_MASKED)
   unsigned int *scratch;
-#elif defined(SPAMM_SORT_NORM)
-  float *scratch;
-#endif
 
   /* The list is trivially already sorted. */
   if(length <= 1) { return; }
@@ -39,11 +35,7 @@ spamm_sort_norm (const unsigned int length,
   sublist = (unsigned int*) malloc(sizeof(unsigned int)*2*(length+1));
 
   /* Allocate scratch space. */
-#if defined(SPAMM_SORT_MASKED)
   scratch = (unsigned int*) calloc(sizeof(unsigned int), length);
-#elif defined(SPAMM_SORT_NORM)
-  scratch = (float*) calloc(sizeof(float), length);
-#endif
 
   /* Break the original list into at most N pieces, i.e. single element
    * sublists. If adajacent list elements are already in the right order, we

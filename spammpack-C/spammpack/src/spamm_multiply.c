@@ -58,7 +58,7 @@ struct spamm_multiply_k_lookup_t
  *
  * @return The new squared norm.
  */
-float
+double
 spamm_chunk_multiply_scalar (const float alpha,
     spamm_chunk_t *chunk,
     double *const flop)
@@ -72,8 +72,8 @@ spamm_chunk_multiply_scalar (const float alpha,
   float *A;
   float *A_dilated;
 
-  float *norm;
-  float *norm2;
+  double *norm;
+  double *norm2;
 
   if(chunk == NULL) { return 0.0; }
 
@@ -157,7 +157,7 @@ spamm_recursive_multiply_scalar (const float alpha,
  *
  * @return The square of the Frobenius norm of the chunk.
  */
-float
+double
 spamm_linear_multiply (const float tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
@@ -184,13 +184,13 @@ spamm_linear_multiply (const float tolerance,
   unsigned int norm_offset_C;
   unsigned int offset_C;
 
-  float *norm_A;
-  float *norm_B;
+  double *norm_A;
+  double *norm_B;
 
-  float *norm_C;
-  float *norm2_C;
-  float *norm_C_next;
-  float *norm2_C_next;
+  double *norm_C;
+  double *norm2_C;
+  double *norm_C_next;
+  double *norm2_C_next;
 
   float *matrix_C;
   float *matrix_dilated_C;
@@ -446,8 +446,10 @@ spamm_linear_multiply (const float tolerance,
  * @param chunk_C Chunk C.
  * @param sgemm The sgemm() function to call.
  * @param flop The flop count.
+ *
+ * @return The square of the norm.
  */
-float
+double
 spamm_chunk_multiply (const float tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
@@ -458,11 +460,11 @@ spamm_chunk_multiply (const float tolerance,
 {
   unsigned int i, j, k;
 
-  float *norm_A;
-  float *norm_B;
+  double *norm_A;
+  double *norm_B;
 
-  float *norm_C;
-  float *norm2_C;
+  double *norm_C;
+  double *norm2_C;
 
   float alpha_sgemm = alpha;
   float beta = 1.0;

@@ -67,8 +67,8 @@ spamm_print_chunk (spamm_chunk_t *const chunk)
   unsigned int *N_upper;
 
   float *A;
-  float *norm;
-  float *norm2;
+  double *norm;
+  double *norm2;
 
   if(chunk == NULL) { return; }
 

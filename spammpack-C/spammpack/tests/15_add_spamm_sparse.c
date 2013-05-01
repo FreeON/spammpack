@@ -5,6 +5,9 @@
 #include <stdlib.h>
 
 #define TEST_TOLERANCE 5e-7
+
+#define REL_TOLERANCE 1e-8
+
 #define DECAY 2.5
 
 //#define PRINT_MATRIX
@@ -91,11 +94,11 @@ main (int argc, char **argv)
     A = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, A_dense);
     B = spamm_convert_dense_to_spamm(2, N, chunk_tier, use_linear_tree, row_major, B_dense);
 
-    if(spamm_check(A, TEST_TOLERANCE) != SPAMM_OK)
+    if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
     {
       SPAMM_FATAL("failed\n");
     }
-    if(spamm_check(B, TEST_TOLERANCE) != SPAMM_OK)
+    if(spamm_check(B, REL_TOLERANCE) != SPAMM_OK)
     {
       SPAMM_FATAL("failed\n");
     }
@@ -146,7 +149,7 @@ main (int argc, char **argv)
 #endif
 
     /* Check tree consistency. */
-    if(spamm_check(A, TEST_TOLERANCE) != SPAMM_OK)
+    if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
     {
       SPAMM_FATAL("failed\n");
     }

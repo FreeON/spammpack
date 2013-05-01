@@ -41,8 +41,8 @@ spamm_chunk_set (const unsigned int *const i,
   unsigned int offset;
   unsigned int norm_offset;
 
-  float *norm;
-  float *norm2;
+  double *norm;
+  double *norm2;
 
   float *A;
   float *A_dilated;

@@ -11,6 +11,6 @@ spamm_sort_masked (const unsigned int length,
 void
 spamm_sort_norm (const unsigned int length,
     unsigned int *list,
-    float *norm);
+    double *norm);
 
 #endif
