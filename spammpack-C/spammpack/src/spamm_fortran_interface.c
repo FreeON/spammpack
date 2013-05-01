@@ -20,11 +20,10 @@ spamm_multiply_interface (const float *const tolerance,
     const struct spamm_matrix_t **const A,
     const struct spamm_matrix_t **const B,
     const float *const beta,
-    struct spamm_matrix_t **const C)
+    struct spamm_matrix_t **const C,
+    double *flop)
 {
-  unsigned int number_products = 0;
-
-  spamm_multiply(*tolerance, *alpha, *A, *B, *beta, *C, SGEMM, &number_products);
+  spamm_multiply(*tolerance, *alpha, *A, *B, *beta, *C, SGEMM, flop);
 }
 
 /** Fortran interface for spamm_multiply_scalar().

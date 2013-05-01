@@ -126,7 +126,8 @@ spamm_linear_multiply (const float tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
-    spamm_chunk_t *const chunk_C);
+    spamm_chunk_t *const chunk_C,
+    double *flop);
 
 void
 spamm_recursive_multiply_scalar (const float alpha,
@@ -148,7 +149,7 @@ spamm_multiply (const float tolerance,
     const float beta,
     struct spamm_matrix_t *const C,
     sgemm_func sgemm,
-    unsigned int *number_products);
+    double *flop);
 
 void
 spamm_add (const float alpha,

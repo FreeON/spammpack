@@ -9,9 +9,10 @@ MODULE SpAMMPACK_ALGEBRA
 
   INTERFACE SpAMM_Multiply
 
-    MODULE PROCEDURE SpAMM_Multiply_SpAMM_RNK2_x_SpAMM_RNK2, &
-      SpAMM_Multiply_SpAMM_C_x_SpAMM_C, &
-      SpAMM_Multiply_SpAMM_C_x_Scalar
+    MODULE PROCEDURE &
+        SpAMM_Multiply_SpAMM_RNK2_x_SpAMM_RNK2, &
+        SpAMM_Multiply_SpAMM_C_x_SpAMM_C, &
+        SpAMM_Multiply_SpAMM_C_x_Scalar
 
   END INTERFACE SpAMM_Multiply
 
@@ -32,18 +33,18 @@ MODULE SpAMMPACK_ALGEBRA
     SUBROUTINE spamm_multiply_interface (tolerance, alpha, A, B, beta, C) &
       BIND(C, name = "spamm_multiply_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(IN) :: tolerance
-      REAL(c_float), INTENT(IN) :: alpha
-      TYPE(c_ptr), INTENT(IN) :: A
-      TYPE(c_ptr), INTENT(IN) :: B
-      REAL(c_float), INTENT(IN) :: beta
+      REAL(c_float), INTENT(IN)  :: tolerance
+      REAL(c_float), INTENT(IN)  :: alpha
+      TYPE(c_ptr), INTENT(IN)    :: A
+      TYPE(c_ptr), INTENT(IN)    :: B
+      REAL(c_float), INTENT(IN)  :: beta
       TYPE(c_ptr), INTENT(INOUT) :: C
     END SUBROUTINE spamm_multiply_interface
 
     SUBROUTINE spamm_multiply_scalar (alpha, A) &
         BIND(C, name = "spamm_multiply_scalar_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(IN) :: alpha
+      REAL(c_float), INTENT(IN)  :: alpha
       TYPE(c_ptr), INTENT(INOUT) :: A
     END SUBROUTINE spamm_multiply_scalar
 
@@ -51,16 +52,16 @@ MODULE SpAMMPACK_ALGEBRA
         BIND(C, name = "spamm_trace_interface")
       USE, INTRINSIC :: iso_C_binding
       REAL(c_float), INTENT(INOUT) :: trace
-      TYPE(c_ptr), INTENT(IN) :: A
+      TYPE(c_ptr), INTENT(IN)      :: A
     END SUBROUTINE spamm_trace_interface
 
     SUBROUTINE spamm_add_interface (alpha, A, beta, B, C) &
         BIND(C, name = "spamm_add_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(IN) :: alpha
-      TYPE(c_ptr), INTENT(IN) :: A
-      REAL(c_float), INTENT(IN) :: beta
-      TYPE(c_ptr), INTENT(IN) :: B
+      REAL(c_float), INTENT(IN)  :: alpha
+      TYPE(c_ptr), INTENT(IN)    :: A
+      REAL(c_float), INTENT(IN)  :: beta
+      TYPE(c_ptr), INTENT(IN)    :: B
       TYPE(c_ptr), INTENT(INOUT) :: C
     END SUBROUTINE spamm_add_interface
 
@@ -69,15 +70,24 @@ MODULE SpAMMPACK_ALGEBRA
 CONTAINS
 
   !> Multiply a SpAMM rank 2 matrix with another one.
+  !!
+  !! @param tolerance The SpAMM tolerance.
+  !! @param alpha The scalar alpha.
+  !! @param A The matrix A.
+  !! @param B The matrix B.
+  !! @param beta The scalar beta.
+  !! @param C The matrix C.
+  !! @param flop The flop count.
   SUBROUTINE SpAMM_Multiply_SpAMM_RNK2_x_SpAMM_RNK2 (tolerance, &
-      alpha, A, B, beta, C)
+      alpha, A, B, beta, C, flop)
 
-    REAL*4, INTENT(IN) :: tolerance
-    REAL*4, INTENT(IN) :: alpha
-    TYPE(SpAMM_RNK2), INTENT(IN) :: A
-    TYPE(SpAMM_RNK2), INTENT(IN) :: B
+    REAL*4, INTENT(IN)              :: tolerance
+    REAL*4, INTENT(IN)              :: alpha
+    TYPE(SpAMM_RNK2), INTENT(IN)    :: A
+    TYPE(SpAMM_RNK2), INTENT(IN)    :: B
     TYPE(SpAMM_RNK2), INTENT(INOUT) :: C
-    REAL*4, INTENT(IN) :: beta
+    REAL*4, INTENT(IN)              :: beta
+    REAL*8, INTENT(INOUT), OPTIONAL :: flop
 
     IF(A%chunkTier == 0) THEN
       CALL spamm_chunk_multiply_scalar(beta, C%root%chunk, C%root%norm2)
@@ -237,11 +247,13 @@ CONTAINS
   !> @param A Matrix A.
   !> @param B Matrix B.
   !> @param C Matrix C.
-  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_SpAMM_C (tolerance, A, B, C)
+  !> @param flop The flop count.
+  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_SpAMM_C (tolerance, A, B, C, flop)
 
-    REAL*4, INTENT(IN) :: tolerance
-    TYPE(c_ptr), INTENT(IN) :: A, B
-    TYPE(c_ptr), INTENT(INOUT) :: C
+    REAL*4, INTENT(IN)              :: tolerance
+    TYPE(c_ptr), INTENT(IN)         :: A, B
+    TYPE(c_ptr), INTENT(INOUT)      :: C
+    REAL*8, INTENT(INOUT), OPTIONAL :: flop
 
     CALL spamm_multiply_interface(tolerance, 1.0, A, B, 0.0, C)
 
@@ -251,10 +263,12 @@ CONTAINS
   !>
   !> @param A Matrix A.
   !> @param alpha The factor @f$ \alpha @f$.
-  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_Scalar (A, alpha)
+  !> @param flop The flop count.
+  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_Scalar (A, alpha, flop)
 
-    TYPE(c_ptr), INTENT(INOUT) :: A
-    REAL*4, INTENT(IN) :: alpha
+    TYPE(c_ptr), INTENT(INOUT)      :: A
+    REAL*4, INTENT(IN)              :: alpha
+    REAL*8, INTENT(INOUT), OPTIONAL :: flop
 
     CALL spamm_multiply_scalar(alpha, A)
 

@@ -147,6 +147,7 @@ spamm_recursive_multiply_scalar (const float alpha,
  * @param B The matrix \f$B\f$.
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
+ * @param flop Number of floating point operations.
  *
  * @return The square of the Frobenius norm of the chunk.
  */
@@ -155,7 +156,8 @@ spamm_linear_multiply (const float tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
-    spamm_chunk_t *const chunk_C)
+    spamm_chunk_t *const chunk_C,
+    double *flop)
 {
   unsigned int *index_A;
   unsigned int *index_B;
@@ -355,6 +357,9 @@ spamm_linear_multiply (const float tolerance,
 #endif
               }
             }
+
+            /* Update flop count. */
+            *flop += 0;
           }
         }
       }
@@ -539,7 +544,7 @@ spamm_recursive_multiply (const float tolerance,
     const unsigned int tier,
     const unsigned int chunk_tier,
     const short use_linear_tree,
-    unsigned int *number_products)
+    double *flop)
 {
   unsigned int *new_N_lower;
   unsigned int *new_N_upper;
@@ -590,7 +595,7 @@ spamm_recursive_multiply (const float tolerance,
     if(use_linear_tree)
     {
       node_C->norm2 = spamm_linear_multiply(tolerance, alpha,
-          node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk);
+          node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk, flop);
     }
 
     else
@@ -668,7 +673,7 @@ spamm_recursive_multiply (const float tolerance,
                       node_C->tree.child[i+2*j], sgemm, number_dimensions_A,
                       number_dimensions_B, number_dimensions_C, N, new_N_lower,
                       new_N_upper, tier+1, chunk_tier, use_linear_tree,
-                      number_products);
+                      flop);
 
                   free(new_N_lower);
                   free(new_N_upper);
@@ -731,6 +736,7 @@ spamm_multiply_scalar (const float alpha,
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
  * @param sgemm The external sgemm function to use.
+ * @param flop The number of floating point operations.
  */
 void
 spamm_multiply (const float tolerance,
@@ -740,7 +746,7 @@ spamm_multiply (const float tolerance,
     const float beta,
     struct spamm_matrix_t *const C,
     sgemm_func sgemm,
-    unsigned int *number_products)
+    double *flop)
 {
   int dim;
   unsigned int *N_lower;
@@ -784,7 +790,7 @@ spamm_multiply (const float tolerance,
           spamm_recursive_multiply(tolerance, alpha, A->recursive_tree,
               B->recursive_tree, C->recursive_tree, sgemm, A->number_dimensions,
               B->number_dimensions, C->number_dimensions, A->N, N_lower, N_upper, 0,
-              A->chunk_tier, A->use_linear_tree, number_products);
+              A->chunk_tier, A->use_linear_tree, flop);
 
           free(N_lower);
           free(N_upper);
