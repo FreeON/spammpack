@@ -12,7 +12,7 @@ void *
 spamm_allocate (const size_t size, const short zero_memory);
 
 int
-spamm_check (const struct spamm_matrix_t *A, const float tolerance);
+spamm_check (const struct spamm_matrix_t *A, const float rel_tolerance);
 
 void
 spamm_copy (struct spamm_matrix_t **A,

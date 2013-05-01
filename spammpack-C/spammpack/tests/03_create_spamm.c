@@ -4,6 +4,8 @@
 
 //#define PRINT_DEBUG
 
+#define REL_TOLERANCE 1e-5
+
 int
 main (int argc, char **argv)
 {
@@ -49,7 +51,7 @@ main (int argc, char **argv)
       {
         A_dense = (float*) calloc(N_contiguous, sizeof(float));
 
-        printf("dim: %u, linTree: %u, sparse: %u\n", number_dimensions, use_linear_tree, is_sparse);
+        printf("dim: %u, linTree: %u, sparse: %u, ", number_dimensions, use_linear_tree, is_sparse);
         if(is_sparse)
         {
           switch(number_dimensions)
@@ -148,7 +150,7 @@ main (int argc, char **argv)
 
         printf("A info: ");
         spamm_print_info(A);
-        if(spamm_check(A, 1e-8) != SPAMM_OK)
+        if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
         {
           SPAMM_FATAL("failed\n");
         }

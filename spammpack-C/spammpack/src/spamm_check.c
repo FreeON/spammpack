@@ -7,10 +7,18 @@
 #include <stdlib.h>
 
 /** Check the consistency of a chunk.
+ *
+ * @param chunk The chunk.
+ * @param rel_tolerance The relative tolerance for the norms.
+ * @param norm2_reference The square of the norm of this chunk.
+ *
+ * @return The following error codes are returned:
+ *   - SPAMM_OK - The matrix is consistent.
+ *   - SPAMM_ERROR - Something is not consistent.
  */
 int
 spamm_chunk_check (spamm_chunk_t *chunk,
-    const float tolerance,
+    const float rel_tolerance,
     float *const norm2_reference)
 {
   float *norm;
@@ -52,7 +60,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
           *norm2_reference += matrix[i]*matrix[i];
         }
 
-        if(fabs(*norm2_reference - norm2[linear_index]) > tolerance)
+        if(*norm2_reference > 0 && fabs(*norm2_reference - norm2[linear_index])/(*norm2_reference) > rel_tolerance)
         {
           SPAMM_WARN("norm2 mismatch: tier = %u, linear index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
               tier, linear_index,
@@ -62,7 +70,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
           result |= SPAMM_ERROR;
         }
 
-        if(fabs(sqrt(*norm2_reference) - norm[linear_index]) > tolerance)
+        if(*norm2_reference > 0 && fabs(sqrt(*norm2_reference) - norm[linear_index])/sqrt(*norm2_reference) > rel_tolerance)
         {
           SPAMM_WARN("norm  mismatch: tier = %u, linear index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e))\n",
               tier, linear_index,
@@ -92,7 +100,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
             *norm2_reference += matrix[offset+k]*matrix[offset+k];
           }
 
-          if(fabs(*norm2_reference - norm2[linear_index]) > tolerance)
+          if(*norm2_reference > 0 && fabs(*norm2_reference - norm2[linear_index])/(*norm2_reference) > rel_tolerance)
           {
             SPAMM_WARN("norm2 mismatch: tier = %u, linear_index = %u, found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
                 number_tiers-1, linear_index,
@@ -102,7 +110,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
             result |= SPAMM_ERROR;
           }
 
-          if(fabs(sqrt(*norm2_reference) - norm[linear_index]) > tolerance)
+          if(*norm2_reference > 0 && fabs(sqrt(*norm2_reference) - norm[linear_index])/sqrt(*norm2_reference) > rel_tolerance)
           {
             SPAMM_WARN("norm  mismatch\n");
             result |= SPAMM_ERROR;
@@ -120,7 +128,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
     *norm2_reference += matrix[i]*matrix[i];
   }
 
-  if(fabs(*norm2_reference - norm2[0]) > tolerance)
+  if(*norm2_reference > 0 && fabs(*norm2_reference - norm2[0])/(*norm2_reference) > rel_tolerance)
   {
     SPAMM_WARN("norm2 mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
         norm2[0],
@@ -130,7 +138,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
     result |= SPAMM_ERROR;
   }
 
-  if(fabs(sqrt(*norm2_reference) - norm[0]) > tolerance)
+  if(*norm2_reference > 0 && fabs(sqrt(*norm2_reference) - norm[0])/sqrt(*norm2_reference) > rel_tolerance)
   {
     SPAMM_WARN("norm  mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
         norm[0],
@@ -149,7 +157,8 @@ spamm_chunk_check (spamm_chunk_t *chunk,
  * @param number_dimensions The number of dimensions.
  * @param tier The current tier.
  * @param chunk_tier The chunk tier.
- * @param tolerance The test tolerance for the norms.
+ * @param rel_tolerance The relative tolerance when comparing values.
+ * @param norm2_reference The square of the norm of this node.
  *
  * @return The following error codes are returned:
  *   - SPAMM_OK - The matrix is consistent.
@@ -160,17 +169,21 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
     const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const float tolerance,
+    const float rel_tolerance,
     float *const norm2_reference)
 {
+  float norm2_temp;
   int result = SPAMM_OK;
   int child_index;
+
+  /* Reset the norm. */
+  *norm2_reference = 0;
 
   if(node != NULL)
   {
     if(tier == chunk_tier)
     {
-      result |= spamm_chunk_check(node->tree.chunk, tolerance, norm2_reference);
+      result |= spamm_chunk_check(node->tree.chunk, rel_tolerance, norm2_reference);
     }
 
     else
@@ -181,14 +194,17 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
         {
           if(node->tree.child[child_index] != NULL)
           {
+            norm2_temp = 0.0;
             result |= spamm_recursive_check(node->tree.child[child_index],
-                number_dimensions, tier+1, chunk_tier, tolerance, norm2_reference);
+                number_dimensions, tier+1, chunk_tier, rel_tolerance,
+                &norm2_temp);
+            *norm2_reference += norm2_temp;
           }
         }
       }
     }
 
-    if(fabs(*norm2_reference - node->norm2) > tolerance)
+    if(*norm2_reference > 0 && fabs(*norm2_reference - node->norm2)/(*norm2_reference) > rel_tolerance)
     {
       SPAMM_WARN("norm2 mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
           node->norm2,
@@ -198,7 +214,7 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
       result |= SPAMM_ERROR;
     }
 
-    if(fabs(sqrt(*norm2_reference) - node->norm) > tolerance)
+    if(*norm2_reference > 0 && fabs(sqrt(*norm2_reference) - node->norm)/sqrt(*norm2_reference) > rel_tolerance)
     {
       SPAMM_WARN("norm  mismatch: found %e, should be %e (abs. diff = %e, rel. diff = %e)\n",
           node->norm,
@@ -215,17 +231,25 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
 /** Check the internal consistency of a matrix.
  *
  * @param A The matrix to check
- * @param tolerance The absolute tolerance when comparing values.
+ * @param rel_tolerance The relative tolerance when comparing values.
  *
  * @return The following error codes are returned:
  *   - SPAMM_OK - The matrix is consistent.
  *   - SPAMM_ERROR - Something is not consistent.
  */
 int
-spamm_check (const struct spamm_matrix_t *A, const float tolerance)
+spamm_check (const struct spamm_matrix_t *A, const float rel_tolerance)
 {
+  int result;
   float norm2_reference = 0.0;
 
-  return spamm_recursive_check(A->recursive_tree, A->number_dimensions, 0,
-      A->chunk_tier, tolerance, &norm2_reference);
+  result = spamm_recursive_check(A->recursive_tree, A->number_dimensions, 0,
+      A->chunk_tier, rel_tolerance, &norm2_reference);
+
+  if(result != SPAMM_OK)
+  {
+    SPAMM_WARN("failed, tolerance = %e\n", rel_tolerance);
+  }
+
+  return result;
 }
