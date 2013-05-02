@@ -86,6 +86,7 @@ libspamm_tree_la_SOURCES = \
   spamm_error.c \
   spamm_get.c \
   spamm_index.c \
+  spamm_introspection.c \
   spamm_ipow.c \
   spamm_lapack.c \
   spamm_multiply.c \
@@ -108,9 +109,10 @@ pkginclude_HEADERS = \
 libspamm_tree_headers = \
   spamm.h \
   spamm_chunk.h \
-  spamm_error.h \
   spamm_errno.h \
+  spamm_error.h \
   spamm_general.h \
+  spamm_introspection.h \
   spamm_prune.h \
   spamm_sort.h \
   spamm_timer.h \

@@ -76,6 +76,8 @@ main (int argc, char **argv)
   struct spamm_timer_t *timer;
   char *timer_string;
 
+  double flops;
+
   int option_index;
   int parse_result;
   char *short_options = "hN:la:b:t:c:rds1g:vxn";
@@ -447,7 +449,7 @@ main (int argc, char **argv)
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
   spamm_timer_start(timer);
-  spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), NULL);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), &flops);
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
   printf("timer: %s\n", timer_string);

@@ -777,6 +777,7 @@ spamm_multiply (const float tolerance,
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
+  assert(flop != NULL);
 
   spamm_recursive_multiply_scalar(beta, C->recursive_tree,
       C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree, flop);

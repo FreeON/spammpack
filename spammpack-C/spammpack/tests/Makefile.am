@@ -6,6 +6,12 @@ TAGS_FILES = \
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
+check_LTLIBRARIES = libtest.la
+
+libtest_la_SOURCES = \
+	libtest.c \
+	test.h
+
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/src
@@ -21,6 +27,7 @@ endif
 
 multiply_tests = $(multiply_spamm_SSE) $(multiply_spamm_SSE4_1)
 
+03_create_spamm_LDADD = libtest.la
 06_chunk_test_SOURCES = 06_chunk_test.F90
 06_chunk_test_LDADD = $(top_builddir)/src/libspammpack_fortran.la
 08_get_version_SOURCES = 08_get_version.F90
