@@ -55,24 +55,25 @@ spamm_chunk_get_matrix_dilated (const spamm_chunk_t *const chunk);
 unsigned int
 spamm_chunk_get_number_norm_entries (const spamm_chunk_t *const chunk);
 
-double *
+spamm_norm_t *
 spamm_chunk_get_norm (const spamm_chunk_t *const chunk);
 
-double *
+spamm_norm_t *
 spamm_chunk_get_tier_norm (const unsigned int tier,
     const spamm_chunk_t *const chunk);
 
-double *
+spamm_norm_t *
 spamm_chunk_get_norm2 (const spamm_chunk_t *const chunk);
 
-double *
+spamm_norm_t *
 spamm_chunk_get_tier_norm2 (const unsigned int tier,
     spamm_chunk_t *chunk);
 
 unsigned int
 spamm_chunk_matrix_index (const unsigned int number_dimensions,
-    const unsigned int N_block,
+    const short use_linear_tree,
     const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
     const unsigned int *const i);
 
 size_t
@@ -86,8 +87,8 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     unsigned int **N_upper_pointer,
     float **A_pointer,
     float **A_dilated_pointer,
-    double **norm_pointer,
-    double **norm2_pointer);
+    spamm_norm_t **norm_pointer,
+    spamm_norm_t **norm2_pointer);
 
 void
 spamm_chunk_print (spamm_chunk_t *chunk);

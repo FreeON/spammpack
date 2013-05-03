@@ -53,10 +53,10 @@ spamm_recursive_node_t
   int refcount;
 
   /** The norm of this block. */
-  double norm;
+  spamm_norm_t norm;
 
   /** The square of the norm of this block. */
-  double norm2;
+  spamm_norm_t norm2;
 
 #ifdef _OPENMP
   /** A lock. */

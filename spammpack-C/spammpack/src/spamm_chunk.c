@@ -197,11 +197,11 @@ spamm_chunk_get_number_norm_entries (const spamm_chunk_t *const chunk)
  *
  * @return The pointer to the norm arrays.
  */
-double *
+spamm_norm_t *
 spamm_chunk_get_norm (const spamm_chunk_t *const chunk)
 {
   void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
-  return (double*) ((intptr_t) chunk + (intptr_t) chunk_pointer[5]);
+  return (spamm_norm_t*) ((intptr_t) chunk + (intptr_t) chunk_pointer[5]);
 }
 
 /** Calculate the starting address of the norm arrays inside a SpAMM chunk.
@@ -214,11 +214,11 @@ spamm_chunk_get_norm (const spamm_chunk_t *const chunk)
  *
  * @return A pointer to the start of the norm chunk at this tier.
  */
-double *
+spamm_norm_t *
 spamm_chunk_get_tier_norm (const unsigned int tier,
     const spamm_chunk_t *const chunk)
 {
-  double *norm;
+  spamm_norm_t *norm;
   unsigned int number_dimensions;
   unsigned int offset = 0;
 
@@ -241,11 +241,11 @@ spamm_chunk_get_tier_norm (const unsigned int tier,
  *
  * @return The pointer to the norm2 arrays.
  */
-double *
+spamm_norm_t *
 spamm_chunk_get_norm2 (const spamm_chunk_t *const chunk)
 {
   void **chunk_pointer = (void*) ((intptr_t) chunk + 4*sizeof(unsigned int));
-  return (double*) ((intptr_t) chunk + (intptr_t) chunk_pointer[6]);
+  return (spamm_norm_t*) ((intptr_t) chunk + (intptr_t) chunk_pointer[6]);
 }
 
 /** Calculate the starting address of the norm2 arrays inside a SpAMM chunk.
@@ -258,11 +258,11 @@ spamm_chunk_get_norm2 (const spamm_chunk_t *const chunk)
  *
  * @return A pointer to the start of the norm chunk at this tier.
  */
-double *
+spamm_norm_t *
 spamm_chunk_get_tier_norm2 (const unsigned int tier,
     spamm_chunk_t *chunk)
 {
-  double *norm2;
+  spamm_norm_t *norm2;
   unsigned int number_dimensions;
   unsigned int offset = 0;
 
@@ -279,43 +279,65 @@ spamm_chunk_get_tier_norm2 (const unsigned int tier,
   return &norm2[offset];
 }
 
-/** Calculate a linear offset into a SpAMM chunk matrix. The matrix data is
- * stored in a matrix of width N_contiguous, of submatrices of width N_block.
- * Storage order is column-major (for reasons of compatibilty with Fortran).
+/** Calculate a linear offset into a SpAMM chunk matrix. When using a linear
+ * tree, the matrix data is stored in a matrix of width N_contiguous, in
+ * submatrices of width N_block.  The blocks are stored in Z-curve order, and
+ * the matrix elements inside the blocks are stored in column-major order for
+ * reasons of compatibilty with Fortran. When not using a linear tree, the
+ * matrix elements are stored in a N_contiguous x N_contiguous matrix in
+ * column-major storage order.
  *
  * @param number_dimensions The number of dimensions.
- * @param N_block The block size.
- * @param N_lower The bounding box upper index array.
+ * @param use_linear_tree Whether we are using the linear tree.
+ * @param N_lower The bounding box lower index array.
+ * @param N_upper The bounding box upper index array.
  * @param i The index array.
  *
  * @return The linear offset into the matrix data.
  */
 unsigned int
 spamm_chunk_matrix_index (const unsigned int number_dimensions,
-    const unsigned int N_block,
+    const short use_linear_tree,
     const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
     const unsigned int *const i)
 {
   unsigned int offset;
-  unsigned int block_offset = 0;
+  unsigned int block_offset;
   unsigned int *i_temp;
 
   int dim;
 
   i_temp = calloc(number_dimensions, sizeof(unsigned int));
-  for(dim = 0; dim < number_dimensions; dim++)
-  {
-    i_temp[dim] = (i[dim]-N_lower[dim])/N_block;
-  }
-  offset = ipow(N_block, number_dimensions)*spamm_index_linear(number_dimensions, i_temp);
-  free(i_temp);
 
-  for(dim = number_dimensions-1; dim >= 1; dim--)
+  if(use_linear_tree)
   {
-    block_offset = N_block*(block_offset+(i[dim]-N_lower[dim])%N_block);
+    for(dim = 0; dim < number_dimensions; dim++)
+    {
+      i_temp[dim] = (i[dim]-N_lower[dim])/SPAMM_N_BLOCK;
+    }
+    offset = ipow(SPAMM_N_BLOCK, number_dimensions)*spamm_index_linear(number_dimensions, i_temp);
+    free(i_temp);
+
+    for(dim = number_dimensions-1, block_offset = 0; dim >= 1; dim--)
+    {
+      block_offset = SPAMM_N_BLOCK*(block_offset+(i[dim]-N_lower[dim])%SPAMM_N_BLOCK);
+    }
+    block_offset += (i[0]-N_lower[0])%SPAMM_N_BLOCK;
+    offset += block_offset;
   }
-  block_offset += (i[0]-N_lower[0])%N_block;
-  offset += block_offset;
+
+  else
+  {
+    i_temp = calloc(number_dimensions, sizeof(unsigned int));
+    for(dim = 0; dim < number_dimensions; dim++)
+    {
+      i_temp[dim] = i[dim]-N_lower[dim];
+    }
+    offset = spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], i_temp);
+  }
+
+  free(i_temp);
 
   return offset;
 }
@@ -353,8 +375,8 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     unsigned int **N_upper_pointer,
     float **A_pointer,
     float **A_dilated_pointer,
-    double **norm_pointer,
-    double **norm2_pointer)
+    spamm_norm_t **norm_pointer,
+    spamm_norm_t **norm2_pointer)
 {
   unsigned int N_contiguous;
   int dim;
@@ -424,8 +446,8 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   size += sizeof(unsigned int*); /* N_upper_pointer */
   size += sizeof(float*);        /* A_pointer */
   size += sizeof(float*);        /* A_dilated_pointer */
-  size += sizeof(double*);       /* norm_pointer */
-  size += sizeof(double*);       /* norm2_pointer */
+  size += sizeof(spamm_norm_t*); /* norm_pointer */
+  size += sizeof(spamm_norm_t*); /* norm2_pointer */
 
   /* Fields. */
   *N_pointer       = (unsigned int*) size; size += number_dimensions*sizeof(unsigned int); /* N[number_dimensions] */
@@ -445,16 +467,16 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   *A_dilated_pointer = (float*) size; size += 4*ipow(N_contiguous, number_dimensions)*sizeof(float); /* A_dilated[4*N_contiguous, number_dimensions)] */
 
   /* Norm. */
-  *norm_pointer = (double*) size;
+  *norm_pointer = (spamm_norm_t*) size;
 
   /* Add up all tiers. */
-  size += spamm_chunk_get_total_number_norms(*number_tiers, number_dimensions)*sizeof(double);
+  size += spamm_chunk_get_total_number_norms(*number_tiers, number_dimensions)*sizeof(spamm_norm_t);
 
   /* Squared norm. */
-  *norm2_pointer = (double*) size;
+  *norm2_pointer = (spamm_norm_t*) size;
 
   /* Add up all tiers. */
-  size += spamm_chunk_get_total_number_norms(*number_tiers, number_dimensions)*sizeof(double);
+  size += spamm_chunk_get_total_number_norms(*number_tiers, number_dimensions)*sizeof(spamm_norm_t);
 
   return size;
 }

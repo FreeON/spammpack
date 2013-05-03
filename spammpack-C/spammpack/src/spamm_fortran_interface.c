@@ -39,7 +39,7 @@ spamm_multiply_scalar_interface (const float *const alpha,
 /** Fortran interface for spamm_get().
  */
 void
-spamm_get_interface (const int *const i,
+spamm_get_interface (const unsigned int *const i,
     const struct spamm_matrix_t **const A,
     float *const Aij)
 {
@@ -50,7 +50,7 @@ spamm_get_interface (const int *const i,
  */
 void
 spamm_chunk_multiply_scalar_interface (const float *const alpha,
-    spamm_chunk_t **chunk, float *const norm2, double *const flop)
+    spamm_chunk_t **chunk, spamm_norm_t *const norm2, double *const flop)
 {
   *norm2 = spamm_chunk_multiply_scalar(*alpha, *chunk, flop);
 }
@@ -63,7 +63,7 @@ spamm_chunk_multiply_interface (const float *const tolerance,
     spamm_chunk_t **chunk_A,
     spamm_chunk_t **chunk_B,
     spamm_chunk_t **chunk_C,
-    float *const norm2,
+    spamm_norm_t *const norm2,
     double *const flop)
 {
   *norm2 = spamm_chunk_multiply(*tolerance, *alpha, *chunk_A, *chunk_B,
@@ -174,7 +174,7 @@ spamm_chunk_get_matrix_dilated_interface (float **A, spamm_chunk_t **chunk)
  * @param chunk The chunk.
  */
 void
-spamm_chunk_get_norm_interface (double **norm, spamm_chunk_t **chunk)
+spamm_chunk_get_norm_interface (spamm_norm_t **norm, spamm_chunk_t **chunk)
 {
   *norm = spamm_chunk_get_norm(*chunk);
 }
@@ -185,7 +185,7 @@ spamm_chunk_get_norm_interface (double **norm, spamm_chunk_t **chunk)
  * @param chunk The chunk.
  */
 void
-spamm_chunk_get_norm2_interface (double **norm2, spamm_chunk_t **chunk)
+spamm_chunk_get_norm2_interface (spamm_norm_t **norm2, spamm_chunk_t **chunk)
 {
   *norm2 = spamm_chunk_get_norm2(*chunk);
 }

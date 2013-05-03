@@ -72,8 +72,8 @@ spamm_chunk_multiply_scalar (const float alpha,
   float *A;
   float *A_dilated;
 
-  double *norm;
-  double *norm2;
+  spamm_norm_t *norm;
+  spamm_norm_t *norm2;
 
   if(chunk == NULL) { return 0.0; }
 
@@ -173,8 +173,8 @@ spamm_linear_multiply (const float tolerance,
   unsigned int N_contiguous;
   unsigned int index_length;
 
-  unsigned int i, j, k;
-  unsigned int i_block, j_block, k_block;
+  unsigned int i, j;
+  unsigned int i_block, j_block;
   unsigned int j_A, j_B;
   unsigned int stream_index;
   unsigned int i_stream;
@@ -184,13 +184,13 @@ spamm_linear_multiply (const float tolerance,
   unsigned int norm_offset_C;
   unsigned int offset_C;
 
-  double *norm_A;
-  double *norm_B;
+  spamm_norm_t *norm_A;
+  spamm_norm_t *norm_B;
 
-  double *norm_C;
-  double *norm2_C;
-  double *norm_C_next;
-  double *norm2_C_next;
+  spamm_norm_t *norm_C;
+  spamm_norm_t *norm2_C;
+  spamm_norm_t *norm_C_next;
+  spamm_norm_t *norm2_C_next;
 
   float *matrix_C;
   float *matrix_dilated_C;
@@ -460,11 +460,11 @@ spamm_chunk_multiply (const float tolerance,
 {
   unsigned int i, j, k;
 
-  double *norm_A;
-  double *norm_B;
+  spamm_norm_t *norm_A;
+  spamm_norm_t *norm_B;
 
-  double *norm_C;
-  double *norm2_C;
+  spamm_norm_t *norm_C;
+  spamm_norm_t *norm2_C;
 
   float alpha_sgemm = alpha;
   float beta = 1.0;

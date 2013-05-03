@@ -3,6 +3,8 @@
 #ifndef __SPAMM_SORT_H
 #define __SPAMM_SORT_H
 
+#include "spamm_types.h"
+
 void
 spamm_sort_masked (const unsigned int length,
     unsigned int *list,
@@ -11,6 +13,6 @@ spamm_sort_masked (const unsigned int length,
 void
 spamm_sort_norm (const unsigned int length,
     unsigned int *list,
-    double *norm);
+    spamm_norm_t *norm);
 
 #endif

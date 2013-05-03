@@ -96,7 +96,7 @@ spamm_index_kernel_block_transpose_hierarchical (const unsigned int i_block,
 float
 spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A);
 
-float
+spamm_norm_t
 spamm_get_norm (const struct spamm_matrix_t *const A);
 
 unsigned int

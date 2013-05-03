@@ -18,7 +18,7 @@ spamm_sort_masked (const unsigned int length,
 #elif defined(SPAMM_SORT_NORM)
 spamm_sort_norm (const unsigned int length,
     unsigned int *const list,
-    double *norm)
+    spamm_norm_t *norm)
 #endif
 {
   unsigned int i, j, j_next, i_left, i_right;

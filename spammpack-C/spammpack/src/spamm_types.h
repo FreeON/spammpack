@@ -3,6 +3,8 @@
 #ifndef __SPAMM_TYPES_H
 #define __SPAMM_TYPES_H
 
+#include "config.h"
+
 typedef void (*sgemm_func) (char *transA, char *transB, int *M, int *N, int
     *K, float *alpha, float *A, int *LDA, float *B, int *LDB, float *beta,
     float *C, int *LDC);
@@ -42,5 +44,8 @@ struct spamm_recursive_node_t;
 
 /** A data chunk. */
 typedef void spamm_chunk_t;
+
+/** The SpAMM norm type. */
+typedef SPAMM_NORM_TYPE spamm_norm_t;
 
 #endif

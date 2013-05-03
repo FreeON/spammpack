@@ -24,10 +24,9 @@ spamm_chunk_copy (spamm_chunk_t **A,
   unsigned int *N_lower;
   unsigned int *N_upper;
 
-  double *norm_A;
-  double *norm_B;
-  double *norm2_A;
-  double *norm2_B;
+  spamm_norm_t *norm_A;
+  spamm_norm_t *norm2_A;
+  spamm_norm_t *norm2_B;
 
   float *A_matrix;
   float *B_matrix;
@@ -56,7 +55,6 @@ spamm_chunk_copy (spamm_chunk_t **A,
   *A = spamm_new_chunk(*number_dimensions, use_linear_tree, N, N_lower, N_upper);
 
   norm_A = spamm_chunk_get_norm(*A);
-  norm_B = spamm_chunk_get_norm(B);
   norm2_A = spamm_chunk_get_norm2(*A);
   norm2_B = spamm_chunk_get_norm2(B);
 
@@ -107,8 +105,6 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
 {
   short i;
 
-  struct spamm_recursive_node_t *B_pointer;
-
   /* We need access to a lock on A, which is why A can not be NULL. We need to
    * allocate a new node if we need to a tier above. */
   assert(A != NULL);
@@ -157,7 +153,7 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
             number_dimensions, tier+1, chunk_tier, use_linear_tree);
       }
     }
-#pragma taskwait
+#pragma omp taskwait
   }
 
 #ifdef _OPENMP
@@ -183,9 +179,6 @@ spamm_copy (struct spamm_matrix_t **A,
     const float beta,
     const struct spamm_matrix_t *const B)
 {
-  struct spamm_recursive_node_t *A_pointer;
-  struct spamm_recursive_node_t *B_pointer;
-
   assert(A != NULL);
 
   if(*A == B) { return; }

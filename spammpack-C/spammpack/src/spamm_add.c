@@ -26,14 +26,11 @@ spamm_chunk_add (const float alpha,
 {
   unsigned int *number_dimensions;
   unsigned int *number_tiers;
-  unsigned int *N;
-  unsigned int *N_lower;
-  unsigned int *N_upper;
 
-  double *norm_A;
-  double *norm_B;
-  double *norm2_A;
-  double *norm2_B;
+  spamm_norm_t *norm_A;
+  spamm_norm_t *norm_B;
+  spamm_norm_t *norm2_A;
+  spamm_norm_t *norm2_B;
 
   float *A_matrix;
   float *B_matrix;
@@ -49,9 +46,6 @@ spamm_chunk_add (const float alpha,
 
   number_dimensions = spamm_chunk_get_number_dimensions(B);
   number_tiers = spamm_chunk_get_number_tiers(B);
-  N = spamm_chunk_get_N(B);
-  N_lower = spamm_chunk_get_N_lower(B);
-  N_upper = spamm_chunk_get_N_upper(B);
 
   norm_A = spamm_chunk_get_norm(*A);
   norm_B = spamm_chunk_get_norm(B);
@@ -114,9 +108,6 @@ spamm_recursive_add (const float alpha,
     double *const flop)
 {
   unsigned int i;
-
-  struct spamm_recursive_node_t *A_pointer;
-  struct spamm_recursive_node_t *B_pointer;
 
   /* We need access to a lock on A, which is why A can not be NULL. We need to
    * allocate a new node if we need to a tier above. */
@@ -229,7 +220,7 @@ spamm_recursive_add (const float alpha,
             (const struct spamm_recursive_node_t*const) B->tree.child[i],
             number_dimensions, tier+1, chunk_tier, use_linear_tree, flop);
       }
-#pragma taskwait
+#pragma omp taskwait
 
       A->norm2 = alpha*alpha*A->norm2+beta*beta*B->norm2+2*alpha*beta*A->norm*B->norm;
       A->norm = sqrt(A->norm2);

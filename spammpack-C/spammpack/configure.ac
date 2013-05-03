@@ -254,6 +254,9 @@ if test "${enable_multiply_debug}" = "yes"; then
   AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Print out lots of debugging information.])
 fi
 
+dnl Define some data types.
+AC_DEFINE([SPAMM_NORM_TYPE], [float], [The data type of the norms.])
+
 dnl Write headers.
 AC_CONFIG_HEADERS([config.h])
 

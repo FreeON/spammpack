@@ -19,13 +19,15 @@
 int
 spamm_chunk_check (spamm_chunk_t *chunk,
     const float rel_tolerance,
-    double *const norm2_reference)
+    spamm_norm_t *const norm2_reference)
 {
-  double *norm;
-  double *norm2;
-  float *matrix;
+  spamm_norm_t *norm;
+  spamm_norm_t *norm2;
 
-  unsigned i, j, k;
+  float *matrix;
+  float *matrix_dilated;
+
+  unsigned int i, j, k;
   unsigned int tier;
   unsigned int number_dimensions;
   unsigned int N_contiguous;
@@ -47,6 +49,23 @@ spamm_chunk_check (spamm_chunk_t *chunk,
 
   if(use_linear_tree)
   {
+    /* Check dilated matrix against matrix. */
+    matrix_dilated = spamm_chunk_get_matrix_dilated(chunk);
+
+    for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
+    {
+      for(j = 0; j < 4; j++)
+      {
+        if(matrix[i] != 0 && fabs((matrix[i]-matrix_dilated[4*i+j])/matrix[i]) > rel_tolerance)
+        {
+          SPAMM_WARN("matrix (%e) and matrix_dilated (%e) mismatch, i = %i, j = %i\n",
+              matrix[i], matrix_dilated[4*i+j], i, j);
+          result |= SPAMM_ERROR;
+        }
+      }
+    }
+
+    /* Check norms. */
     for(tier = 0; tier < number_tiers-SPAMM_KERNEL_DEPTH; tier++)
     {
       norm = spamm_chunk_get_tier_norm(tier, chunk);
@@ -170,9 +189,9 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
     const unsigned int tier,
     const unsigned int chunk_tier,
     const float rel_tolerance,
-    double *const norm2_reference)
+    spamm_norm_t *const norm2_reference)
 {
-  double norm2_temp;
+  spamm_norm_t norm2_temp;
   int result = SPAMM_OK;
   int child_index;
 
@@ -243,14 +262,14 @@ int
 spamm_check (const struct spamm_matrix_t *A, const float rel_tolerance)
 {
   int result;
-  double norm2_reference = 0.0;
+  spamm_norm_t norm2_reference = 0.0;
 
   result = spamm_recursive_check(A->recursive_tree, A->number_dimensions, 0,
       A->chunk_tier, rel_tolerance, &norm2_reference);
 
   if(result != SPAMM_OK)
   {
-    SPAMM_WARN("failed, tolerance = %e\n", rel_tolerance);
+    SPAMM_WARN("failed, relative tolerance = %e\n", rel_tolerance);
   }
 
   return result;

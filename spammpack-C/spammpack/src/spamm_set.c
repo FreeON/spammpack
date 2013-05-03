@@ -41,14 +41,13 @@ spamm_chunk_set (const unsigned int *const i,
   unsigned int offset;
   unsigned int norm_offset;
 
-  double *norm;
-  double *norm2;
+  spamm_norm_t *norm;
+  spamm_norm_t *norm2;
 
   float *A;
   float *A_dilated;
 
   number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
-  number_tiers = *spamm_chunk_get_number_tiers(chunk);
   use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);
 
   N_lower = spamm_chunk_get_N_lower(chunk);
@@ -57,95 +56,16 @@ spamm_chunk_set (const unsigned int *const i,
   A = spamm_chunk_get_matrix(chunk);
   A_dilated = spamm_chunk_get_matrix_dilated(chunk);
 
-  if(use_linear_tree)
-  {
-    new_N_lower = calloc(2, sizeof(unsigned int));
-    new_N_upper = calloc(2, sizeof(unsigned int));
+  offset = spamm_chunk_matrix_index(number_dimensions, use_linear_tree, N_lower, N_upper, i);
 
-    for(dim = 0; dim < 2; dim++)
-    {
-      new_N_lower[dim] = N_lower[dim];
-      new_N_upper[dim] = N_upper[dim];
-    }
+  /* Set the matrix element. */
+  A[offset] = Aij;
+  A_dilated[0+4*offset] = Aij;
+  A_dilated[1+4*offset] = Aij;
+  A_dilated[2+4*offset] = Aij;
+  A_dilated[3+4*offset] = Aij;
 
-    /* Z-curve ordering down to SPAMM_N_KERNEL. */
-    for(tier = 0, linear_index = 0; tier < number_tiers-SPAMM_KERNEL_DEPTH; tier++)
-    {
-      norm = spamm_chunk_get_tier_norm(tier, chunk);
-      norm2 = spamm_chunk_get_tier_norm2(tier, chunk);
-
-      /* Update norm. */
-      norm2[linear_index] += Aij*Aij;
-      norm[linear_index] = sqrt(norm2[linear_index]);
-
-      if(tier+1 < number_tiers-SPAMM_KERNEL_DEPTH)
-      {
-        /* Recurse. */
-        linear_index <<= 2;
-
-        for(dim = 0; dim < 2; dim++)
-        {
-          if(i[dim] < new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2)
-          {
-            new_N_upper[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
-          }
-
-          else
-          {
-            new_N_lower[dim] = new_N_lower[dim]+(new_N_upper[dim]-new_N_lower[dim])/2;
-            linear_index |= (1 << (1-dim));
-          }
-        }
-      }
-
-      else
-      {
-        break;
-      }
-    }
-
-    norm = spamm_chunk_get_tier_norm(number_tiers-1, chunk);
-    norm2 = spamm_chunk_get_tier_norm2(number_tiers-1, chunk);
-
-    norm_offset = linear_index*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED
-      +(i[0]-new_N_lower[0])/SPAMM_N_BLOCK*SPAMM_N_KERNEL_BLOCKED
-      +(i[1]-new_N_lower[1])/SPAMM_N_BLOCK;
-
-    norm2[norm_offset] += Aij*Aij;
-    norm[norm_offset] = sqrt(norm2[norm_offset]);
-
-    offset = linear_index*SPAMM_N_KERNEL*SPAMM_N_KERNEL
-      +((i[0]-new_N_lower[0])/SPAMM_N_BLOCK*SPAMM_N_KERNEL_BLOCKED
-          +(i[1]-new_N_lower[1])/SPAMM_N_BLOCK)*SPAMM_N_BLOCK*SPAMM_N_BLOCK
-      +(i[0]-new_N_lower[0])%SPAMM_N_BLOCK*SPAMM_N_BLOCK
-      +(i[1]-new_N_lower[1])%SPAMM_N_BLOCK;
-
-    A[offset] = Aij;
-    A_dilated[0+4*offset] = Aij;
-    A_dilated[1+4*offset] = Aij;
-    A_dilated[2+4*offset] = Aij;
-    A_dilated[3+4*offset] = Aij;
-
-    free(new_N_lower);
-    free(new_N_upper);
-  }
-
-  else
-  {
-    new_i = calloc(number_dimensions, sizeof(unsigned int));
-    for(dim = 0; dim < number_dimensions; dim++)
-    {
-      new_i[dim] = i[dim]-N_lower[dim];
-    }
-    A[spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], new_i)] = Aij;
-
-    norm = spamm_chunk_get_norm(chunk);
-    norm2 = spamm_chunk_get_norm2(chunk);
-
-    norm2[0] += Aij*Aij;
-    norm[0] = sqrt(norm2[0]);
-    free(new_i);
-  }
+  /* Set the norms. */
 }
 
 /** Recursively set a matrix element.
