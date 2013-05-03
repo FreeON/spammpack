@@ -28,10 +28,12 @@ endif
 multiply_tests = $(multiply_spamm_SSE) $(multiply_spamm_SSE4_1)
 
 03_create_spamm_LDADD = libtest.la
+04_copy_spamm_LDADD = libtest.la
 06_chunk_test_SOURCES = 06_chunk_test.F90
 06_chunk_test_LDADD = $(top_builddir)/src/libspammpack_fortran.la
 08_get_version_SOURCES = 08_get_version.F90
 08_get_version_LDADD = $(top_builddir)/src/libspammpack_fortran.la
+14_add_spamm_dense_LDADD = libtest.la
 20_seteq_SOURCES = 20_seteq.F90
 20_seteq_LDADD = $(top_builddir)/src/libspammpack_fortran.la
 21_trace_SOURCES = 21_trace.F90

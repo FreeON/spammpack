@@ -3,23 +3,23 @@
  * Header file for generate_matrix.c
  */
 
-#ifndef __GENERATE_MATRIX_H
-#define __GENERATE_MATRIX_H
+#ifndef __TEST_H
+#define __TEST_H
+
+#include <spamm_types.h>
+
+unsigned int *
+generate_shape (const unsigned int number_dimensions,
+    const short is_square);
 
 float *
 generate_matrix (const unsigned int number_dimensions,
     const short is_sparse,
-    unsigned int **const N);
-
-struct spamm_matrix_t *
-create_spamm_from_dense (const unsigned int number_dimensions,
-    const unsigned int *const N,
-    const unsigned int chunk_tier,
-    const short use_linear_tree,
-    const float *const A_dense);
+    const unsigned int *const N);
 
 int
 compare_spamm_to_dense (const struct spamm_matrix_t *const A,
-    const float *const A_dense);
+    const float *const A_dense,
+    const double abs_tolerance);
 
 #endif

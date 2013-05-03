@@ -8,6 +8,8 @@
 
 #define REL_TOLERANCE 1e-8
 
+#define ABS_TOLERANCE 1e-8
+
 int
 main (int argc, char **argv)
 {
@@ -37,9 +39,9 @@ main (int argc, char **argv)
       {
         printf("dim: %u, linTree: %u, sparse: %u, ", number_dimensions, use_linear_tree, is_sparse);
 
-        i = calloc(number_dimensions, sizeof(unsigned int));
-        A_dense = generate_matrix(number_dimensions, is_sparse, &N);
-        A = create_spamm_from_dense(number_dimensions, N, chunk_tier, use_linear_tree, A_dense);
+        N = generate_shape(number_dimensions, 0);
+        A_dense = generate_matrix(number_dimensions, is_sparse, N);
+        A = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, A_dense);
 
         printf("A info: ");
         spamm_print_info(A);
@@ -48,7 +50,7 @@ main (int argc, char **argv)
           SPAMM_FATAL("failed\n");
         }
 
-        if(compare_spamm_to_dense(A, A_dense) != SPAMM_OK)
+        if(compare_spamm_to_dense(A, A_dense, ABS_TOLERANCE) != SPAMM_OK)
         {
           SPAMM_FATAL("comparison failed\n");
         }
@@ -58,12 +60,10 @@ main (int argc, char **argv)
 #endif
 
         free(A_dense);
+        free(N);
         spamm_delete(&A);
       }
-      if(number_dimensions != 2) { break; }
     }
-    free(i);
-    free(N);
   }
 
   return result;
