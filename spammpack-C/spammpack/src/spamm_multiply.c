@@ -158,7 +158,7 @@ spamm_recursive_multiply_scalar (const float alpha,
  * @return The square of the Frobenius norm of the chunk.
  */
 double
-spamm_linear_multiply (const float tolerance,
+spamm_linear_multiply (const spamm_norm_t tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
@@ -450,7 +450,7 @@ spamm_linear_multiply (const float tolerance,
  * @return The square of the norm.
  */
 double
-spamm_chunk_multiply (const float tolerance,
+spamm_chunk_multiply (const spamm_norm_t tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
@@ -549,7 +549,7 @@ spamm_chunk_multiply (const float tolerance,
  * @param flop The number of floating point operations.
  */
 void
-spamm_recursive_multiply (const float tolerance,
+spamm_recursive_multiply (const spamm_norm_t tolerance,
     const float alpha,
     struct spamm_recursive_node_t *node_A,
     struct spamm_recursive_node_t *node_B,
@@ -761,7 +761,7 @@ spamm_multiply_scalar (const float alpha,
  * @param flop The number of floating point operations.
  */
 void
-spamm_multiply (const float tolerance,
+spamm_multiply (const spamm_norm_t tolerance,
     const float alpha,
     const struct spamm_matrix_t *const A,
     const struct spamm_matrix_t *const B,

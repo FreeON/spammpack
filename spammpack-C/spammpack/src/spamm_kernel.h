@@ -37,26 +37,26 @@ spamm_kernel_get_layout (const char *name);
 void
 spamm_stream_kernel_SSE (const unsigned int number_stream_elements,
     float alpha,
-    float tolerance,
+    spamm_norm_t tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
 
 void
 spamm_stream_kernel_SSE4_1 (const unsigned int number_stream_elements,
     float alpha,
-    float tolerance,
+    spamm_norm_t tolerance,
     struct spamm_multiply_stream_t *multiply_stream);
 
 void
 spamm_stream_external_sgemm (const unsigned int number_stream_elements,
     float alpha,
-    float tolerance,
+    spamm_norm_t tolerance,
     struct spamm_multiply_stream_t *multiply_stream,
     const short call_external_sgemm);
 
 void
 spamm_stream_kernel (const unsigned int number_stream_elements,
     float alpha,
-    float tolerance,
+    spamm_norm_t tolerance,
     unsigned int *stream,
     const void *const chunk_A,
     const void *const chunk_B,

@@ -12,7 +12,8 @@ void *
 spamm_allocate (const size_t size, const short zero_memory);
 
 int
-spamm_check (const struct spamm_matrix_t *A, const float rel_tolerance);
+spamm_check (const struct spamm_matrix_t *A,
+    const spamm_norm_t rel_tolerance);
 
 void
 spamm_copy (struct spamm_matrix_t **A,
@@ -122,7 +123,7 @@ unsigned int
 spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj);
 
 double
-spamm_linear_multiply (const float tolerance,
+spamm_linear_multiply (const spamm_norm_t tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
@@ -144,7 +145,7 @@ spamm_multiply_scalar (const float alpha,
     double *const flop);
 
 void
-spamm_multiply (const float tolerance,
+spamm_multiply (const spamm_norm_t tolerance,
     const float alpha,
     const struct spamm_matrix_t *const A,
     const struct spamm_matrix_t *const B,

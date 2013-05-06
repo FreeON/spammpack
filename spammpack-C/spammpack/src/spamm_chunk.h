@@ -13,7 +13,7 @@ spamm_chunk_multiply_scalar (const float alpha,
     double *const flop);
 
 double
-spamm_chunk_multiply (const float tolerance,
+spamm_chunk_multiply (const spamm_norm_t tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,

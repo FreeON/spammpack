@@ -15,7 +15,7 @@ spamm_trace_interface (float *const trace,
 /** Fortran interface for spamm_multiply().
  */
 void
-spamm_multiply_interface (const float *const tolerance,
+spamm_multiply_interface (const spamm_norm_t *const tolerance,
     const float *const alpha,
     const struct spamm_matrix_t **const A,
     const struct spamm_matrix_t **const B,
@@ -58,7 +58,7 @@ spamm_chunk_multiply_scalar_interface (const float *const alpha,
 /** Fortran interface for spamm_chunk_multiply().
  */
 void
-spamm_chunk_multiply_interface (const float *const tolerance,
+spamm_chunk_multiply_interface (const spamm_norm_t *const tolerance,
     const float *const alpha,
     spamm_chunk_t **chunk_A,
     spamm_chunk_t **chunk_B,

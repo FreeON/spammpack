@@ -18,7 +18,7 @@
  */
 int
 spamm_chunk_check (spamm_chunk_t *chunk,
-    const float rel_tolerance,
+    const spamm_norm_t rel_tolerance,
     spamm_norm_t *const norm2_reference)
 {
   spamm_norm_t *norm;
@@ -188,7 +188,7 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
     const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const float rel_tolerance,
+    const spamm_norm_t rel_tolerance,
     spamm_norm_t *const norm2_reference)
 {
   spamm_norm_t norm2_temp;
@@ -259,7 +259,8 @@ spamm_recursive_check (const struct spamm_recursive_node_t *const node,
  *   - SPAMM_ERROR - Something is not consistent.
  */
 int
-spamm_check (const struct spamm_matrix_t *A, const float rel_tolerance)
+spamm_check (const struct spamm_matrix_t *A,
+    const spamm_norm_t rel_tolerance)
 {
   int result;
   spamm_norm_t norm2_reference = 0.0;
