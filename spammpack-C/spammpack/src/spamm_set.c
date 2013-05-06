@@ -20,26 +20,15 @@ spamm_chunk_set (const unsigned int *const i,
     const float Aij,
     spamm_chunk_t *chunk)
 {
-  int dim;
-
   short use_linear_tree;
 
   unsigned int tier;
-  unsigned int linear_index;
-
   unsigned int number_dimensions;
-  unsigned int number_tiers;
 
   unsigned int *N_lower;
   unsigned int *N_upper;
 
-  unsigned int *new_N_lower;
-  unsigned int *new_N_upper;
-
-  unsigned int *new_i;
-
   unsigned int offset;
-  unsigned int norm_offset;
 
   spamm_norm_t *norm;
   spamm_norm_t *norm2;
@@ -66,6 +55,16 @@ spamm_chunk_set (const unsigned int *const i,
   A_dilated[3+4*offset] = Aij;
 
   /* Set the norms. */
+  for(tier = 0; tier < *spamm_chunk_get_number_tiers(chunk); tier++)
+  {
+    norm = spamm_chunk_get_tier_norm(tier, chunk);
+    norm2 = spamm_chunk_get_tier_norm2(tier, chunk);
+
+    offset = spamm_chunk_norm_index(tier, i, chunk);
+
+    norm2[offset] += Aij*Aij;
+    norm[offset] = sqrt(norm2[offset]);
+  }
 }
 
 /** Recursively set a matrix element.

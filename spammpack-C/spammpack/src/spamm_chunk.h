@@ -76,6 +76,11 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
     const unsigned int *const N_upper,
     const unsigned int *const i);
 
+unsigned int
+spamm_chunk_norm_index (const unsigned int tier,
+    const unsigned int *const i,
+    const spamm_chunk_t *const chunk);
+
 size_t
 spamm_chunk_get_size (const unsigned int number_dimensions,
     const short use_linear_tree,

@@ -317,7 +317,6 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
       i_temp[dim] = (i[dim]-N_lower[dim])/SPAMM_N_BLOCK;
     }
     offset = ipow(SPAMM_N_BLOCK, number_dimensions)*spamm_index_linear(number_dimensions, i_temp);
-    free(i_temp);
 
     for(dim = number_dimensions-1, block_offset = 0; dim >= 1; dim--)
     {
@@ -329,12 +328,81 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
 
   else
   {
-    i_temp = calloc(number_dimensions, sizeof(unsigned int));
     for(dim = 0; dim < number_dimensions; dim++)
     {
       i_temp[dim] = i[dim]-N_lower[dim];
     }
     offset = spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], i_temp);
+  }
+
+  free(i_temp);
+
+  return offset;
+}
+
+/** Get the linear offset into the norm array.
+ *
+ * @param tier The tier.
+ * @param i The array of indices of the matrix element the norm should cover.
+ * @param N_lower The array of the lower bounds of the bounding box.
+ * @param chunk The chunk.
+ *
+ * @return The offset into the tier norm.
+ */
+unsigned int
+spamm_chunk_norm_index (const unsigned int tier,
+    const unsigned int *const i,
+    const spamm_chunk_t *const chunk)
+{
+  unsigned int offset;
+
+  unsigned int dim;
+  unsigned int N_contiguous;
+  unsigned int N_block;
+  unsigned int number_dimensions;
+  unsigned int number_tiers;
+  unsigned int *i_temp;
+  unsigned int *N_lower;
+
+  assert(chunk != NULL);
+  assert(tier < *spamm_chunk_get_number_tiers(chunk));
+
+  number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  number_tiers = *spamm_chunk_get_number_tiers(chunk);
+  N_contiguous = spamm_chunk_get_N_contiguous(chunk);
+  N_lower = spamm_chunk_get_N_lower(chunk);
+
+  /* The norms are Z-curve ordered except for the last two tiers (in case we
+   * are using the linear tree). Within the kernel part of size SPAMM_N_KERNEL
+   * x SPAMM_N_KERNEL, there are SPAMM_KERNEL_DEPTH tiers in which the norms
+   * are row-major ordered.
+   *
+   * This should eventually get cleaned up a bit. It's kind of a mess right
+   * now.
+   */
+
+  /* Calculate submatrix size at tier. */
+  N_block = N_contiguous/(1 << tier);
+
+  i_temp = calloc(number_dimensions, sizeof(unsigned int));
+
+  for(dim = 0; dim < number_dimensions; dim++)
+  {
+    i_temp[dim] = (i[dim]-N_lower[dim])/N_block;
+  }
+
+  if(number_tiers > SPAMM_KERNEL_DEPTH && tier+SPAMM_KERNEL_DEPTH < number_tiers)
+  {
+    offset = spamm_index_linear(number_dimensions, i_temp);
+  }
+
+  else
+  {
+    for(dim = 0; dim < number_dimensions; dim++)
+    {
+      i_temp[dim] = (i[dim]-N_lower[dim])/N_block;
+    }
+    offset = spamm_index_row_major_2(number_dimensions, 1 << tier, i_temp);
   }
 
   free(i_temp);

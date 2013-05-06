@@ -150,6 +150,7 @@ def block_product (i, k, j):
   norm = SSERegister(log, "norm")
 
   print("  # Check norm of product ||A(%d,%d)||*||B(%d,%d)||." % (i+1, k+1, k+1, j+1))
+  print("#if SPAMM_NORM_TYPE == float")
   print("  movss 0x%x(%%r10), %s" % (row_major_index(i, k, 4)*4, norm))
   print("  mulss 0x%x(%%r11), %s" % (row_major_index(k, j, 4)*4, norm))
 
@@ -158,6 +159,13 @@ def block_product (i, k, j):
   # At&T syntax, which means that the order of operand 1 and 2 are the
   # opposite which includes the comparison instruction.
   print("  comiss %s, %s" % (tolerance, norm))
+  print("#elif SPAMM_NORM_TYPE == double")
+  print("  movsd 0x%x(%%r10), %s" % (row_major_index(i, k, 4)*8, norm))
+  print("  mulsd 0x%x(%%r11), %s" % (row_major_index(k, j, 4)*8, norm))
+  print("  comisd %s, %s" % (tolerance, norm))
+  print("#else")
+  print("#error \"Unknown SPAMM_NORM_TYPE\"")
+  print("#endif")
   print("  jbe jump_%d" % (block_counter.get()))
 
   norm.release()

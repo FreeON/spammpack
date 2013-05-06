@@ -566,8 +566,8 @@ spamm_recursive_multiply (const float tolerance,
     const short use_linear_tree,
     double *const flop)
 {
-  unsigned int *new_N_lower;
-  unsigned int *new_N_upper;
+  unsigned int *new_N_lower = NULL;
+  unsigned int *new_N_upper = NULL;
 
   short i, j, k;
 

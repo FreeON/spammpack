@@ -17,12 +17,7 @@ main (int argc, char **argv)
 
   unsigned int number_dimensions;
 
-  unsigned int *i;
   unsigned int *N;
-
-  unsigned int N_contiguous;
-
-  unsigned int dim;
 
   const unsigned int chunk_tier = 3;
 

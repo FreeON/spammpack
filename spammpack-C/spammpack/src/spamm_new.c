@@ -112,7 +112,6 @@ spamm_get_tree_depth (const unsigned int number_dimensions,
  *   unsigned int N_upper[number_dimensions];
  *
  *   spamm_float_t *A;
- *
  *   spamm_float_t *A_dilated;
  *
  *   spamm_norm_t norm[];
