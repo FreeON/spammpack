@@ -255,7 +255,18 @@ if test "${enable_multiply_debug}" = "yes"; then
 fi
 
 dnl Define some data types.
-AC_DEFINE([SPAMM_NORM_TYPE], [float], [The data type of the norms.])
+AC_MSG_CHECKING([for norm type])
+AC_ARG_WITH([norm-type],
+            [AS_HELP_STRING([--with-norm-type],
+                            [Set the norm type to either float or double.])],
+            [norm_type=$withval],
+            [norm_type="float"])
+if test $norm_type = "float" -o $norm_type = "double"; then
+  AC_MSG_RESULT([$norm_type])
+  AC_DEFINE_UNQUOTED([SPAMM_NORM_TYPE], [$norm_type], [The data type of the norms.])
+else
+  AC_MSG_FAILURE([unknown type ($norm_type)])
+fi
 
 dnl Write headers.
 AC_CONFIG_HEADERS([config.h])
