@@ -58,7 +58,7 @@ spamm_chunk_check (spamm_chunk_t *chunk,
       {
         if(matrix[i] != 0 && fabs((matrix[i]-matrix_dilated[4*i+j])/matrix[i]) > rel_tolerance)
         {
-          SPAMM_WARN("matrix (%e) and matrix_dilated (%e) mismatch, i = %i, j = %i\n",
+          SPAMM_WARN("chunk: matrix (%e) and matrix_dilated (%e) mismatch, i = %i, j = %i\n",
               matrix[i], matrix_dilated[4*i+j], i, j);
           result |= SPAMM_ERROR;
         }

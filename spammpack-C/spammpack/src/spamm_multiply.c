@@ -87,10 +87,10 @@ spamm_chunk_multiply_scalar (const float alpha,
   {
     A[i] *= alpha;
 
-    A_dilated[4*i+0] *= A[i];
-    A_dilated[4*i+1] *= A[i];
-    A_dilated[4*i+2] *= A[i];
-    A_dilated[4*i+3] *= A[i];
+    A_dilated[4*i+0] = A[i];
+    A_dilated[4*i+1] = A[i];
+    A_dilated[4*i+2] = A[i];
+    A_dilated[4*i+3] = A[i];
   }
 
   /* Update the flop count. */

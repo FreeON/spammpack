@@ -1,10 +1,14 @@
 #include "config.h"
+
+#include "test.h"
+
 #include <spamm.h>
 
 #include <getopt.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define REL_TOLERANCE 1e-8
 
@@ -37,8 +41,8 @@ main (int argc, char **argv)
   short use_linear_tree = 0;
   short use_sgemm = 0;
   short use_diagonal = 0;
-  short verify_result = 0;
-  short check_matrices = 0;
+  short verify_result = 1;
+  short check_matrices = 1;
   short random_matrix = 1;
   short print_debug = 0;
   short null_C = 0;
@@ -76,28 +80,34 @@ main (int argc, char **argv)
   struct spamm_timer_t *timer;
   char *timer_string;
 
+  time_t random_seed = time(NULL);
+
+  enum matrix_t matrix_type = full;
+
   double flops;
 
   int option_index;
   int parse_result;
-  char *short_options = "hN:la:b:t:c:rds1g:vxn";
+  char *short_options = "hN:la:b:t:c:rds1g:vxnm:2:";
   static struct option long_options[] = {
-    { "help",       no_argument,        NULL, 'h' },
-    { "N",          required_argument,  NULL, 'N' },
-    { "linear",     no_argument,        NULL, 'l' },
-    { "alpha",      required_argument,  NULL, 'a' },
-    { "beta",       required_argument,  NULL, 'b' },
-    { "tolerance",  required_argument,  NULL, 't' },
-    { "chunk",      required_argument,  NULL, 'c' },
-    { "no-random",  no_argument,        NULL, 'r' },
-    { "debug",      no_argument,        NULL, 'd' },
-    { "sgemm",      no_argument,        NULL, 's' },
-    { "diagonal",   no_argument,        NULL, '1' },
-    { "gamma",      required_argument,  NULL, 'g' },
-    { "verify",     no_argument,        NULL, 'v' },
-    { "check",      no_argument,        NULL, 'x' },
-    { "nullC",      no_argument,        NULL, 'n' },
-    { NULL,         0,                  NULL,  0  }
+    { "help",         no_argument,        NULL, 'h' },
+    { "N",            required_argument,  NULL, 'N' },
+    { "linear",       no_argument,        NULL, 'l' },
+    { "alpha",        required_argument,  NULL, 'a' },
+    { "beta",         required_argument,  NULL, 'b' },
+    { "tolerance",    required_argument,  NULL, 't' },
+    { "chunk",        required_argument,  NULL, 'c' },
+    { "no-random",    no_argument,        NULL, 'r' },
+    { "debug",        no_argument,        NULL, 'd' },
+    { "sgemm",        no_argument,        NULL, 's' },
+    { "diagonal",     no_argument,        NULL, '1' },
+    { "gamma",        required_argument,  NULL, 'g' },
+    { "verify",       no_argument,        NULL, 'v' },
+    { "check",        no_argument,        NULL, 'x' },
+    { "nullC",        no_argument,        NULL, 'n' },
+    { "matrix-type",  required_argument,  NULL, 'm' },
+    { "seed",         required_argument,  NULL, '2' },
+    { NULL,           0,                  NULL,  0  }
   };
 
   while(1)
@@ -125,6 +135,8 @@ main (int argc, char **argv)
         printf("{ -v | --verify }             Verify result\n");
         printf("{ -x | --check }              Check matrices\n");
         printf("{ -n | --nullC }              Initialize C as empty matrix\n");
+        printf("{ -m | --matrix-type } TYPE   Matrix type: %s\n", print_matrix_types());
+        printf("{ --seed } SEED               Seed random number generator with SEED\n");
         exit(0);
         break;
 
@@ -178,15 +190,23 @@ main (int argc, char **argv)
         break;
 
       case 'v':
-        verify_result = 1;
+        verify_result = (verify_result+1)%2;
         break;
 
       case 'x':
-        check_matrices = 1;
+        check_matrices = (check_matrices+1)%2;
         break;
 
       case 'n':
         null_C = 1;
+        break;
+
+      case 'm':
+        matrix_type = parse_matrix_type(optarg);
+        break;
+
+      case '2':
+        random_seed = strtol(optarg, NULL, 10);
         break;
 
       default:
@@ -194,6 +214,9 @@ main (int argc, char **argv)
         break;
     }
   }
+
+  /* Initialize random number generator. */
+  srand(random_seed);
 
   A_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
   B_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
@@ -378,13 +401,13 @@ main (int argc, char **argv)
       printf("\n");
     }
 
-    printf("A (tree) =\n");
+    printf("A (tree)\n");
     spamm_print_tree(A);
 
-    printf("B (tree) =\n");
+    printf("B (tree)\n");
     spamm_print_tree(B);
 
-    printf("C (tree) =\n");
+    printf("C (tree)\n");
     spamm_print_tree(C);
   }
 

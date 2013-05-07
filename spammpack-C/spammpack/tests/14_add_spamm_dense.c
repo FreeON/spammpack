@@ -29,8 +29,8 @@ main (int argc, char **argv)
   const unsigned int chunk_tier = 4;
 
   short use_linear_tree;
-  short is_sparse_A;
-  short is_sparse_B;
+  enum matrix_t matrix_type_A;
+  enum matrix_t matrix_type_B;
 
   double alpha = 1.2;
   double beta = 0.8;
@@ -48,11 +48,12 @@ main (int argc, char **argv)
 
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++) {
     for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++) {
-      for(is_sparse_A = 0; is_sparse_A < 2; is_sparse_A++) {
-        for(is_sparse_B = 0; is_sparse_B < 2; is_sparse_B++)
+      for(matrix_type_A = 0; matrix_type_A < NUMBER_MATRIX_TYPES; matrix_type_A++) {
+        for(matrix_type_B = 0; matrix_type_B < NUMBER_MATRIX_TYPES; matrix_type_B++)
         {
-          printf("dim: %u, linTree: %u, sparse A: %u, sparse B: %u\n",
-              number_dimensions, use_linear_tree, is_sparse_A, is_sparse_B);
+          printf("dim: %u, linTree: %u, matrix_type_A: %s, matrix_type_B: %s\n",
+              number_dimensions, use_linear_tree,
+              get_matrix_type_name(matrix_type_A), get_matrix_type_name(matrix_type_B));
 
           i = calloc(number_dimensions, sizeof(unsigned int));
           N = generate_shape(number_dimensions, 0);
@@ -62,8 +63,8 @@ main (int argc, char **argv)
             N_contiguous *= N[dim];
           }
 
-          A_dense = generate_matrix(number_dimensions, is_sparse_A, N);
-          B_dense = generate_matrix(number_dimensions, is_sparse_B, N);
+          A_dense = generate_matrix_float(number_dimensions, matrix_type_A, N);
+          B_dense = generate_matrix_float(number_dimensions, matrix_type_B, N);
 
           /* Convert to SpAMM matrix. */
           A = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, A_dense);
@@ -124,7 +125,7 @@ main (int argc, char **argv)
             SPAMM_FATAL("failed\n");
           }
 
-          if(compare_spamm_to_dense(A, A_dense, TEST_TOLERANCE) != SPAMM_OK)
+          if(compare_spamm_to_dense_float(A, A_dense, TEST_TOLERANCE) != SPAMM_OK)
           {
             SPAMM_FATAL("comparison failed\n");
           }

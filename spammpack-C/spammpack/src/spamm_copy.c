@@ -81,10 +81,10 @@ spamm_chunk_copy (spamm_chunk_t **A,
   {
     A_matrix[i] = beta*B_matrix[i];
 
-    A_matrix_dilated[4*i+0] = beta*A_matrix[i];
-    A_matrix_dilated[4*i+1] = beta*A_matrix[i];
-    A_matrix_dilated[4*i+2] = beta*A_matrix[i];
-    A_matrix_dilated[4*i+3] = beta*A_matrix[i];
+    A_matrix_dilated[4*i+0] = A_matrix[i];
+    A_matrix_dilated[4*i+1] = A_matrix[i];
+    A_matrix_dilated[4*i+2] = A_matrix[i];
+    A_matrix_dilated[4*i+3] = A_matrix[i];
   }
 }
 

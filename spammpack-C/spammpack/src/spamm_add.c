@@ -19,7 +19,7 @@
  */
 void
 spamm_chunk_add (const float alpha,
-    spamm_chunk_t **A,
+    spamm_chunk_t *A,
     const float beta,
     spamm_chunk_t *B,
     double *const flop)
@@ -44,32 +44,20 @@ spamm_chunk_add (const float alpha,
 
   unsigned int tier;
 
+  assert(A != NULL);
+  assert(B != NULL);
+
   number_dimensions = spamm_chunk_get_number_dimensions(B);
   number_tiers = spamm_chunk_get_number_tiers(B);
 
-  norm_A = spamm_chunk_get_norm(*A);
-  norm_B = spamm_chunk_get_norm(B);
-  norm2_A = spamm_chunk_get_norm2(*A);
-  norm2_B = spamm_chunk_get_norm2(B);
-
-  /* Update norms. */
-  for(tier = 0, i_norm = 0; tier < *number_tiers; tier++)
-  {
-    for(i = 0; i < ipow(ipow(2, *number_dimensions), tier); i++)
-    {
-      norm2_A[i_norm] = alpha*alpha*norm2_A[i_norm]+beta*beta*norm2_B[i_norm]+2*alpha*beta*norm_A[i_norm]*norm_B[i_norm];
-      norm_A[i_norm] = sqrt(norm2_A[i_norm]);
-      i_norm++;
-    }
-  }
-
-  A_matrix = spamm_chunk_get_matrix(*A);
+  A_matrix = spamm_chunk_get_matrix(A);
   B_matrix = spamm_chunk_get_matrix(B);
 
-  A_matrix_dilated = spamm_chunk_get_matrix_dilated(*A);
+  A_matrix_dilated = spamm_chunk_get_matrix_dilated(A);
 
-  N_contiguous = spamm_chunk_get_N_contiguous(B);
+  N_contiguous = spamm_chunk_get_N_contiguous(A);
 
+  /* Add matrices. */
   for(i = 0; i < ipow(N_contiguous, *number_dimensions); i++)
   {
     A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
@@ -79,6 +67,12 @@ spamm_chunk_add (const float alpha,
     A_matrix_dilated[4*i+2] = A_matrix[i];
     A_matrix_dilated[4*i+3] = A_matrix[i];
   }
+
+  /* Update norms. */
+  norm_A = spamm_chunk_get_norm(A);
+  norm_B = spamm_chunk_get_norm(B);
+  norm2_A = spamm_chunk_get_norm2(A);
+  norm2_B = spamm_chunk_get_norm2(B);
 
   /* Update flop count. */
   *flop += ipow(N_contiguous, *number_dimensions);
@@ -153,7 +147,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      spamm_chunk_add(alpha, &A->tree.chunk, beta, B->tree.chunk, flop);
+      spamm_chunk_add(alpha, A->tree.chunk, beta, B->tree.chunk, flop);
 
       A->norm2 = alpha*alpha*A->norm2+beta*beta*B->norm2+2*alpha*beta*A->norm*B->norm;
       A->norm = sqrt(A->norm2);

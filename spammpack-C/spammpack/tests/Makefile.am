@@ -10,7 +10,15 @@ check_LTLIBRARIES = libtest.la
 
 libtest_la_SOURCES = \
 	libtest.c \
+  libtest_generate_matrix.c \
+  libtest_compare_spamm_to_dense.c \
 	test.h
+
+pkginclude_HEADERS = \
+  libtest_generate_matrix_sources.c \
+  libtest_compare_spamm_to_dense_sources.c
+
+include_HEADERS = test.h
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
@@ -34,6 +42,7 @@ multiply_tests = $(multiply_spamm_SSE) $(multiply_spamm_SSE4_1)
 08_get_version_SOURCES = 08_get_version.F90
 08_get_version_LDADD = $(top_builddir)/src/libspammpack_fortran.la
 14_add_spamm_dense_LDADD = libtest.la
+17_multiply_spamm_LDADD = libtest.la
 20_seteq_SOURCES = 20_seteq.F90
 20_seteq_LDADD = $(top_builddir)/src/libspammpack_fortran.la
 21_trace_SOURCES = 21_trace.F90

@@ -29,7 +29,7 @@ main (int argc, char **argv)
   const unsigned int chunk_tier = 5;
 
   short use_linear_tree;
-  short is_sparse;
+  enum matrix_t matrix_type;
 
   struct spamm_matrix_t *A = NULL;
   struct spamm_matrix_t *B = NULL;
@@ -39,9 +39,9 @@ main (int argc, char **argv)
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++)
   {
     for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++) {
-      for(is_sparse = 0; is_sparse < 2; is_sparse++)
+      for(matrix_type = 0; matrix_type < NUMBER_MATRIX_TYPES; matrix_type++)
       {
-        printf("dim: %u, linTree: %u, sparse: %u, ", number_dimensions, use_linear_tree, is_sparse);
+        printf("dim: %u, linTree: %u, matrix_type: %s, ", number_dimensions, use_linear_tree, get_matrix_type_name(matrix_type));
 
         N = generate_shape(number_dimensions, 0);
         N_contiguous = 1;
@@ -49,7 +49,7 @@ main (int argc, char **argv)
         {
           N_contiguous *= N[dim];
         }
-        B_dense = generate_matrix(number_dimensions, is_sparse, N);
+        B_dense = generate_matrix_float(number_dimensions, matrix_type, N);
         B = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, B_dense);
 
         printf("B info: ");
@@ -73,7 +73,7 @@ main (int argc, char **argv)
           B_dense[i] *= beta;
         }
 
-        if(compare_spamm_to_dense(A, B_dense, ABS_TOLERANCE) != SPAMM_OK)
+        if(compare_spamm_to_dense_float(A, B_dense, ABS_TOLERANCE) != SPAMM_OK)
         {
           SPAMM_FATAL("comparison failed\n");
         }

@@ -258,9 +258,9 @@ dnl Define some data types.
 AC_MSG_CHECKING([for norm type])
 AC_ARG_WITH([norm-type],
             [AS_HELP_STRING([--with-norm-type],
-                            [Set the norm type to either float or double.])],
+                            [Set the norm type to either float or double (default = double).])],
             [norm_type=$withval],
-            [norm_type="float"])
+            [norm_type="double"])
 if test $norm_type = "float" -o $norm_type = "double"; then
   AC_MSG_RESULT([$norm_type])
   AC_DEFINE_UNQUOTED([SPAMM_NORM_TYPE], [$norm_type], [The data type of the norms.])
