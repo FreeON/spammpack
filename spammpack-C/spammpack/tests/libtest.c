@@ -15,6 +15,7 @@
 const char *matrix_type_name[] = {
   "full",
   "diagonally-banded",
+  "exponential-decay",
   "sparse-random"
 };
 

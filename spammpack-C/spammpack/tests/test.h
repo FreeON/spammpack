@@ -9,7 +9,7 @@
 #include <spamm_types.h>
 
 /** The number of matrix types. */
-#define NUMBER_MATRIX_TYPES 3
+#define NUMBER_MATRIX_TYPES 4
 
 /** The matrix types for the tests. */
 enum matrix_t
@@ -19,6 +19,10 @@ enum matrix_t
 
   /** A sparse matrix that is diagonally banded. */
   diagonally_banded,
+
+  /** A diagonally dominant matrix with exponential decay away from the
+   * diagonal. */
+  exponential_decay,
 
   /** A sparse matrix that has few randomly placed non-zero elements. */
   sparse_random

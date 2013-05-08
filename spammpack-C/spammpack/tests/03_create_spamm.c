@@ -29,7 +29,13 @@ main (int argc, char **argv)
   float *A_dense;
 
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++) {
-    for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++) {
+    for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++)
+    {
+      if(number_dimensions != 2 && use_linear_tree)
+      {
+        continue;
+      }
+
       for(matrix_type = 0; matrix_type < NUMBER_MATRIX_TYPES; matrix_type++)
       {
         printf("dim: %u, linTree: %u, matrix_type: %s, ", number_dimensions, use_linear_tree, get_matrix_type_name(matrix_type));

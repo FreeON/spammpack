@@ -41,7 +41,7 @@ multiply_tests = $(multiply_spamm_SSE) $(multiply_spamm_SSE4_1)
 06_chunk_test_LDADD = $(top_builddir)/src/libspammpack_fortran.la
 08_get_version_SOURCES = 08_get_version.F90
 08_get_version_LDADD = $(top_builddir)/src/libspammpack_fortran.la
-14_add_spamm_dense_LDADD = libtest.la
+14_add_spamm_LDADD = libtest.la
 17_multiply_spamm_LDADD = libtest.la
 20_seteq_SOURCES = 20_seteq.F90
 20_seteq_LDADD = $(top_builddir)/src/libspammpack_fortran.la
@@ -61,8 +61,7 @@ check_PROGRAMS = \
 	12_index \
 	12_linear_index \
 	13_check_spamm \
-	14_add_spamm_dense \
-	15_add_spamm_sparse \
+	14_add_spamm \
 	16_stats \
 	17_multiply_spamm \
 	18_spectral_bounds \

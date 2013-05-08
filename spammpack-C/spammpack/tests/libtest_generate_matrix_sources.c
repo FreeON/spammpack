@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #define SPARSITY 0.9
+#define DECAY 2.5
 
 /** Generate a random test matrix.
  *
@@ -23,8 +24,9 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
 {
   MATRIX_TYPE *A;
 
-  unsigned int dim;
-  unsigned int *i;
+  int *i;
+  int dim;
+
   unsigned int N_linear;
   unsigned int nonzero_elements;
 
@@ -34,7 +36,7 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
     N_linear *= N[dim];
   }
 
-  i = calloc(number_dimensions, sizeof(unsigned int));
+  i = calloc(number_dimensions, sizeof(int));
   A = (MATRIX_TYPE*) calloc(N_linear, sizeof(MATRIX_TYPE));
 
   switch(matrix_type)
@@ -78,6 +80,57 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
 
         default:
           SPAMM_FATAL("FIXME\n");
+          break;
+      }
+      break;
+
+    case exponential_decay:
+      switch(number_dimensions)
+      {
+        case 1:
+          for(i[0] = 0; i[0] < N[0]; i[0]++)
+          {
+            A[i[0]] = 0.8+rand()/(double) RAND_MAX;
+          }
+          break;
+
+        case 2:
+          for(i[0] = 0; i[0] < N[0]; i[0]++)
+          {
+            A[i[0]+N[0]*i[0]] = 0.8+rand()/(double) RAND_MAX;
+          }
+
+          for(i[0] = 0; i[0] < N[0]; i[0]++) {
+            for(i[1] = i[0]+1; i[1] < N[1]; i[1]++)
+            {
+              /* Exponential decay. */
+              A[i[0]+N[0]*i[1]] = A[i[0]+N[0]*i[0]]*expf(-fabsf(i[0]-i[1])/DECAY);
+              A[i[1]+N[0]*i[0]] = A[i[0]+N[0]*i[1]];
+            }
+          }
+          break;
+
+        case 3:
+          for(i[0] = 0; i[0] < N[0]; i[0]++)
+          {
+            A[i[0]+N[0]*(i[0]+N[1]*i[0])] = 0.8+rand()/(double) RAND_MAX;
+          }
+
+          for(i[0] = 0; i[0] < N[0]; i[0]++) {
+            for(i[1] = i[0]+1; i[1] < N[1]; i[1]++) {
+              for(i[2] = i[0]+1; i[2] < N[2]; i[2]++)
+              {
+                /* Exponential decay. */
+                A[i[0]+N[0]*(i[1]+N[1]*i[2])] = A[i[0]+N[0]*(i[0]+N[1]*i[0])]*expf(-fabsf(i[0]-i[1])/DECAY);
+                A[i[0]+N[0]*(i[1]+N[1]*i[2])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
+                A[i[0]+N[0]*(i[2]+N[1]*i[1])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
+                A[i[1]+N[0]*(i[0]+N[1]*i[2])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
+                A[i[1]+N[0]*(i[2]+N[1]*i[0])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
+                A[i[2]+N[0]*(i[0]+N[1]*i[1])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
+                A[i[2]+N[0]*(i[1]+N[1]*i[0])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
+              }
+            }
+          }
           break;
       }
       break;
