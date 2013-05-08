@@ -9,11 +9,13 @@
 #define SPARSITY 0.9
 #define DECAY 2.5
 
-/** Generate a random test matrix.
+/** Generate a random test matrix. The matrix elements are stored in row-major
+ * order.
  *
  * @param number_dimensions The number of dimensions of the matrix.
  * @param matrix_type The matrix type.
  * @param N The shape of the matrix.
+ * @param symmetric Whether to produce a symmetric matrix.
  *
  * @return The newly allocated matrix.
  */
@@ -27,8 +29,19 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
   int *i;
   int dim;
 
+  short is_square;
+
   unsigned int N_linear;
   unsigned int nonzero_elements;
+
+  for(dim = 1, is_square = 1; dim < number_dimensions; dim++)
+  {
+    if(N[dim-1] != N[dim])
+    {
+      is_square = 0;
+      break;
+    }
+  }
 
   N_linear = 1;
   for(dim = 0; dim < number_dimensions; dim++)
@@ -62,7 +75,7 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
           for(i[0] = 0; i[0] < N[0]; i[0]++) {
             for((i[0] >= 10 ? i[1] = i[0]-10 : 0); i[1] < i[0]+10 && i[1] < N[1]; i[1]++)
             {
-              A[spamm_index_row_major(i[0], i[1], N[0], N[1])] = rand()/(MATRIX_TYPE) RAND_MAX;
+              A[i[1]+N[1]*i[0]] = rand()/(MATRIX_TYPE) RAND_MAX;
             }
           }
           break;
@@ -72,7 +85,7 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
             for((i[0] >= 10 ? i[1] = i[0]-10 : 0); i[1] < i[0]+10 && i[1] < N[1]; i[1]++) {
               for((i[0] >= 10 ? i[2] = i[0]-10 : 0); i[2] < i[0]+10 && i[2] < N[2]; i[2]++)
               {
-                A[i[0]+N[0]*(i[1]+N[1]*i[2])] = rand()/(MATRIX_TYPE) RAND_MAX;
+                A[i[2]+N[2]*(i[1]+N[1]*i[0])] = rand()/(MATRIX_TYPE) RAND_MAX;
               }
             }
           }
@@ -85,6 +98,11 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
       break;
 
     case exponential_decay:
+      if(!is_square)
+      {
+        SPAMM_FATAL("FIXME\n");
+      }
+
       switch(number_dimensions)
       {
         case 1:
@@ -97,15 +115,15 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
         case 2:
           for(i[0] = 0; i[0] < N[0]; i[0]++)
           {
-            A[i[0]+N[0]*i[0]] = 0.8+rand()/(double) RAND_MAX;
+            A[i[0]+N[1]*i[0]] = 0.8+rand()/(double) RAND_MAX;
           }
 
           for(i[0] = 0; i[0] < N[0]; i[0]++) {
             for(i[1] = i[0]+1; i[1] < N[1]; i[1]++)
             {
               /* Exponential decay. */
-              A[i[0]+N[0]*i[1]] = A[i[0]+N[0]*i[0]]*expf(-fabsf(i[0]-i[1])/DECAY);
-              A[i[1]+N[0]*i[0]] = A[i[0]+N[0]*i[1]];
+              A[i[1]+N[1]*i[0]] = A[i[0]+N[1]*i[0]]*expf(-fabsf(i[0]-i[1])/DECAY);
+              A[i[0]+N[1]*i[1]] = A[i[1]+N[1]*i[0]];
             }
           }
           break;
@@ -113,24 +131,27 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
         case 3:
           for(i[0] = 0; i[0] < N[0]; i[0]++)
           {
-            A[i[0]+N[0]*(i[0]+N[1]*i[0])] = 0.8+rand()/(double) RAND_MAX;
+            A[i[0]+N[2]*(i[0]+N[1]*i[0])] = 0.8+rand()/(double) RAND_MAX;
           }
 
           for(i[0] = 0; i[0] < N[0]; i[0]++) {
             for(i[1] = i[0]+1; i[1] < N[1]; i[1]++) {
-              for(i[2] = i[0]+1; i[2] < N[2]; i[2]++)
+              for(i[2] = i[1]+1; i[2] < N[2]; i[2]++)
               {
                 /* Exponential decay. */
-                A[i[0]+N[0]*(i[1]+N[1]*i[2])] = A[i[0]+N[0]*(i[0]+N[1]*i[0])]*expf(-fabsf(i[0]-i[1])/DECAY);
-                A[i[0]+N[0]*(i[1]+N[1]*i[2])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
-                A[i[0]+N[0]*(i[2]+N[1]*i[1])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
-                A[i[1]+N[0]*(i[0]+N[1]*i[2])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
-                A[i[1]+N[0]*(i[2]+N[1]*i[0])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
-                A[i[2]+N[0]*(i[0]+N[1]*i[1])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
-                A[i[2]+N[0]*(i[1]+N[1]*i[0])] = A[i[0]+N[0]*(i[1]+N[1]*i[2])];
+                A[i[2]+N[2]*(i[1]+N[1]*i[0])] = A[i[0]+N[2]*(i[0]+N[1]*i[0])]*expf(-fabsf(i[0]-i[1])/DECAY);
+                A[i[2]+N[2]*(i[0]+N[1]*i[1])] = A[i[2]+N[2]*(i[1]+N[1]*i[0])];
+                A[i[1]+N[2]*(i[0]+N[1]*i[2])] = A[i[2]+N[2]*(i[1]+N[1]*i[0])];
+                A[i[1]+N[2]*(i[2]+N[1]*i[0])] = A[i[2]+N[2]*(i[1]+N[1]*i[0])];
+                A[i[0]+N[2]*(i[1]+N[1]*i[2])] = A[i[2]+N[2]*(i[1]+N[1]*i[0])];
+                A[i[0]+N[2]*(i[2]+N[1]*i[1])] = A[i[2]+N[2]*(i[1]+N[1]*i[0])];
               }
             }
           }
+          break;
+
+        default:
+          SPAMM_FATAL("FIXME\n");
           break;
       }
       break;

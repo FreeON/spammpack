@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#define PRINT_DEBUG
-
 #define REL_TOLERANCE 1e-6
 
 #define ABS_TOLERANCE 1e-8
@@ -38,12 +36,27 @@ main (int argc, char **argv)
 
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++)
   {
-    for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++) {
+    for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++)
+    {
+      if(number_dimensions != 2 && use_linear_tree)
+      {
+        continue;
+      }
+
       for(matrix_type = 0; matrix_type < NUMBER_MATRIX_TYPES; matrix_type++)
       {
         printf("dim: %u, linTree: %u, matrix_type: %s, ", number_dimensions, use_linear_tree, get_matrix_type_name(matrix_type));
 
-        N = generate_shape(number_dimensions, 0);
+        if(matrix_type == exponential_decay)
+        {
+          N = generate_shape(number_dimensions, 1);
+        }
+
+        else
+        {
+          N = generate_shape(number_dimensions, 0);
+        }
+
         N_contiguous = 1;
         for(dim = 0; dim < number_dimensions; dim++)
         {
@@ -61,8 +74,6 @@ main (int argc, char **argv)
 
         spamm_copy(&A, beta, B);
 
-        //printf("A info: ");
-        //spamm_print_info(A);
         if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
         {
           SPAMM_FATAL("failed\n");

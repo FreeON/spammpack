@@ -103,14 +103,27 @@ unsigned int *
 generate_shape (const unsigned int number_dimensions,
     const short is_square)
 {
+  int dim;
   unsigned int *N;
-  unsigned int dim;
 
   N = calloc(number_dimensions, sizeof(unsigned int));
 
-  for(dim = 0; dim < number_dimensions; dim++)
+  if(is_square)
   {
-    N[dim] = 150+(int) ((0.5-(float) rand()/(float) RAND_MAX)*30);
+    N[0] = 150+(int) floor((0.5-rand()/(float) RAND_MAX)*30);
+
+    for(dim = 1; dim < number_dimensions; dim++)
+    {
+      N[dim] = N[0];
+    }
+  }
+
+  else
+  {
+    for(dim = 0; dim < number_dimensions; dim++)
+    {
+      N[dim] = 150+(int) floor((0.5-rand()/(float) RAND_MAX)*30);
+    }
   }
 
   return N;

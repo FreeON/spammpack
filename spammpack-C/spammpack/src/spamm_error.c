@@ -71,9 +71,25 @@ spamm_error_message (const char *const tag,
   format_length = 6+strlen(filename)+100+strlen(old_format);
   new_format = calloc(format_length, sizeof(char));
 #ifdef _OPENMP
-  snprintf(new_format, format_length-1, "[%s:%i thread %i %s] ", filename, line, omp_get_thread_num(), tag);
+  if(strlen(tag) > 0)
+  {
+    snprintf(new_format, format_length-1, "[%s:%i thread %i %s] ", filename, line, omp_get_thread_num(), tag);
+  }
+
+  else
+  {
+    snprintf(new_format, format_length-1, "[%s:%i thread %i] ", filename, line, omp_get_thread_num());
+  }
 #else
-  snprintf(new_format, format_length-1, "[%s:%i %s] ", filename, line, tag);
+  if(strlen(tag) > 0)
+  {
+    snprintf(new_format, format_length-1, "[%s:%i %s] ", filename, line, tag);
+  }
+
+  else
+  {
+    snprintf(new_format, format_length-1, "[%s:%i] ", filename, line);
+  }
 #endif
   strncat(new_format, old_format, format_length);
 
@@ -103,7 +119,7 @@ spamm_error_info (const char *const filename,
   va_list va;
 
   va_start(va, line);
-  spamm_error_message("INFO", filename, line, va);
+  spamm_error_message("", filename, line, va);
   va_end(va);
 }
 

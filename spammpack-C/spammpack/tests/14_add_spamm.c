@@ -3,7 +3,6 @@
 #include "test.h"
 
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #define REL_TOLERANCE 1e-8
@@ -22,13 +21,11 @@ main (int argc, char **argv)
   unsigned int *N;
   unsigned int *i;
 
-  unsigned int N_contiguous;
-
-  unsigned int dim;
-
   const unsigned int chunk_tier = 4;
 
   short use_linear_tree;
+  short symmetric;
+
   enum matrix_t matrix_type_A;
   enum matrix_t matrix_type_B;
 
@@ -44,21 +41,32 @@ main (int argc, char **argv)
   double flop;
 
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++) {
-    for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++) {
+    for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++)
+    {
+      if(number_dimensions != 2 && use_linear_tree)
+      {
+        continue;
+      }
+
       for(matrix_type_A = 0; matrix_type_A < NUMBER_MATRIX_TYPES; matrix_type_A++) {
         for(matrix_type_B = 0; matrix_type_B < NUMBER_MATRIX_TYPES; matrix_type_B++)
         {
-          printf("dim: %u, linTree: %u, matrix_type_A: %s, matrix_type_B: %s\n",
+          SPAMM_INFO("dim: %u, linTree: %u, matrix_type_A: %s, matrix_type_B: %s\n",
               number_dimensions, use_linear_tree,
               get_matrix_type_name(matrix_type_A), get_matrix_type_name(matrix_type_B));
 
-          i = calloc(number_dimensions, sizeof(unsigned int));
-          N = generate_shape(number_dimensions, 0);
-          N_contiguous = 1;
-          for(dim = 0; dim < number_dimensions; dim++)
+          if(matrix_type_A == exponential_decay || matrix_type_B == exponential_decay)
           {
-            N_contiguous *= N[dim];
+            symmetric = 1;
           }
+
+          else
+          {
+            symmetric = 0;
+          }
+
+          i = calloc(number_dimensions, sizeof(unsigned int));
+          N = generate_shape(number_dimensions, symmetric);
 
           A_dense = generate_matrix_float(number_dimensions, matrix_type_A, N);
           B_dense = generate_matrix_float(number_dimensions, matrix_type_B, N);
@@ -67,10 +75,10 @@ main (int argc, char **argv)
           A = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, A_dense);
           B = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, B_dense);
 
-          printf("A: ");
+          SPAMM_INFO("A: ");
           spamm_print_info(A);
 
-          printf("B: ");
+          SPAMM_INFO("B: ");
           spamm_print_info(B);
 
           /* Add by hand for verification. */
@@ -114,7 +122,7 @@ main (int argc, char **argv)
 
           flop = 0;
           spamm_add(alpha, A, beta, B, &flop);
-          printf("[add_spamm] %e flop\n", flop);
+          SPAMM_INFO("%e flop\n", flop);
 
           /* Check tree consistency. */
           if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)

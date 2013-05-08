@@ -323,29 +323,40 @@ main (int argc, char **argv)
   printf("multiply: alpha = %f, beta = %f, tolerance = %f, chunk_tier = %u, use_linear_tree = %u\n",
       alpha, beta, tolerance, chunk_tier, use_linear_tree);
 
-  //spamm_print_info(A);
-  //spamm_print_info(B);
-  //spamm_print_info(C);
-
   if(check_matrices)
   {
-    printf("checking SpAMM matrices...\n");
-    printf("checking A\n");
+    printf("checking A... ");
     if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
     {
       SPAMM_FATAL("failed\n");
     }
-    printf("checking B\n");
+
+    else
+    {
+      printf("ok\n");
+    }
+
+    printf("checking B... ");
     if(spamm_check(B, REL_TOLERANCE) != SPAMM_OK)
     {
       SPAMM_FATAL("failed\n");
     }
-    printf("checking C\n");
+
+    else
+    {
+      printf("ok\n");
+    }
+
+    printf("checking C... ");
     if(spamm_check(C, REL_TOLERANCE) != SPAMM_OK)
     {
       SPAMM_FATAL("failed\n");
     }
-    printf("done\n");
+
+    else
+    {
+      printf("ok\n");
+    }
   }
 
   if(print_debug)
@@ -496,10 +507,15 @@ main (int argc, char **argv)
 
   if(check_matrices)
   {
-    printf("checking C\n");
+    printf("checking C... ");
     if(spamm_check(C, REL_TOLERANCE) != SPAMM_OK)
     {
       SPAMM_FATAL("failed\n");
+    }
+
+    else
+    {
+      printf("ok\n");
     }
   }
 

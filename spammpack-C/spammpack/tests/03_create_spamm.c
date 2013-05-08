@@ -22,6 +22,7 @@ main (int argc, char **argv)
   const unsigned int chunk_tier = 3;
 
   short use_linear_tree;
+
   enum matrix_t matrix_type;
 
   struct spamm_matrix_t *A;
@@ -40,7 +41,16 @@ main (int argc, char **argv)
       {
         printf("dim: %u, linTree: %u, matrix_type: %s, ", number_dimensions, use_linear_tree, get_matrix_type_name(matrix_type));
 
-        N = generate_shape(number_dimensions, 0);
+        if(matrix_type == exponential_decay)
+        {
+          N = generate_shape(number_dimensions, 1);
+        }
+
+        else
+        {
+          N = generate_shape(number_dimensions, 0);
+        }
+
         A_dense = generate_matrix_float(number_dimensions, matrix_type, N);
         A = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, A_dense);
 
@@ -57,7 +67,7 @@ main (int argc, char **argv)
         }
 
 #ifdef PRINT_DEBUG
-        printf("test passed\n");
+        SPAMM_INFO("test passed\n");
 #endif
 
         free(A_dense);
