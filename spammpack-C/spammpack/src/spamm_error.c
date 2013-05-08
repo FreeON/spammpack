@@ -38,16 +38,19 @@ spamm_error_print_backtrace ()
   free(strings);
 }
 
-/** Print out a warning message.
+/** Print out a message with a debug level tag.
  *
+ * @param tag The debug level tag.
  * @param filename The filename this error message was generated in.
  * @param line The line number this error message was generated on.
  * @param format The format of the error message.
  */
 void
-spamm_error_warning (const char *const filename, const int line, ...)
+spamm_error_message (const char *const tag,
+    const char *const filename,
+    const int line,
+    va_list va)
 {
-  va_list va;
   int format_length;
 
   char *old_format;
@@ -62,18 +65,15 @@ spamm_error_warning (const char *const filename, const int line, ...)
   }
 #endif
 
-  /* Initialize variadic argument list. */
-  va_start(va, line);
-
   /* Get format string. */
   old_format = va_arg(va, char*);
 
   format_length = 6+strlen(filename)+100+strlen(old_format);
   new_format = calloc(format_length, sizeof(char));
 #ifdef _OPENMP
-  snprintf(new_format, format_length-1, "[%s:%i thread %i WARNING] ", filename, line, omp_get_thread_num());
+  snprintf(new_format, format_length-1, "[%s:%i thread %i %s] ", filename, line, omp_get_thread_num(), tag);
 #else
-  snprintf(new_format, format_length-1, "[%s:%i WARNING] ", filename, line);
+  snprintf(new_format, format_length-1, "[%s:%i %s] ", filename, line, tag);
 #endif
   strncat(new_format, old_format, format_length);
 
@@ -87,8 +87,41 @@ spamm_error_warning (const char *const filename, const int line, ...)
 #endif
 
   /* Cleanup. */
-  va_end(va);
   free(new_format);
+}
+
+/** Print out an info message.
+ *
+ * @param filename The filename this error message was generated in.
+ * @param line The line number this error message was generated on.
+ * @param format The format of the error message.
+ */
+void
+spamm_error_info (const char *const filename,
+    const int line, ...)
+{
+  va_list va;
+
+  va_start(va, line);
+  spamm_error_message("INFO", filename, line, va);
+  va_end(va);
+}
+
+/** Print out a warning message.
+ *
+ * @param filename The filename this error message was generated in.
+ * @param line The line number this error message was generated on.
+ * @param format The format of the error message.
+ */
+void
+spamm_error_warning (const char *const filename,
+    const int line, ...)
+{
+  va_list va;
+
+  va_start(va, line);
+  spamm_error_message("WARNING", filename, line, va);
+  va_end(va);
 }
 
 /** Print out a fatal error message.
@@ -101,47 +134,10 @@ void
 spamm_error_fatal (const char *const filename, const int line, ...)
 {
   va_list va;
-  int format_length;
 
-  char *old_format;
-  char *new_format;
-
-#ifdef _OPENMP
-  /* Initialize lock. */
-  if(!print_lock_is_initialized)
-  {
-    omp_init_lock(&spamm_print_lock);
-    print_lock_is_initialized = 1;
-  }
-#endif
-
-  /* Initialize variadic argument list. */
   va_start(va, line);
-
-  /* Get format string. */
-  old_format = va_arg(va, char*);
-
-  format_length = 6+strlen(filename)+100+strlen(old_format);
-  new_format = calloc(format_length, sizeof(char));
-#ifdef _OPENMP
-  snprintf(new_format, format_length-1, "[%s:%i thread %i FATAL] ", filename, line, omp_get_thread_num());
-#else
-  snprintf(new_format, format_length-1, "[%s:%i FATAL] ", filename, line);
-#endif
-  strncat(new_format, old_format, format_length);
-
-  /* Print error. */
-#ifdef _OPENMP
-  omp_set_lock(&spamm_print_lock);
-#endif
-  vprintf(new_format, va);
-#ifdef _OPENMP
-  omp_unset_lock(&spamm_print_lock);
-#endif
-
-  /* Cleanup. */
+  spamm_error_message("ERROR", filename, line, va);
   va_end(va);
-  free(new_format);
 
   /* Print backtrace. */
   printf("\n");
