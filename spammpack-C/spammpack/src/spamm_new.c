@@ -272,6 +272,11 @@ spamm_new (const unsigned int number_dimensions,
     A->use_linear_tree = use_linear_tree;
   }
 
+  if(number_dimensions != 2 && use_linear_tree)
+  {
+    SPAMM_FATAL("the linear tree can only be used in 2 dimensions\n");
+  }
+
   /* Get tree depth. */
   A->depth = spamm_get_tree_depth(number_dimensions, A->N, use_linear_tree);
 
