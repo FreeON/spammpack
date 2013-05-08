@@ -38,9 +38,6 @@ main (int argc, char **argv)
   float *A_dense;
   float *B_dense;
 
-  float max_diff;
-  unsigned int *max_diff_i;
-
   struct spamm_matrix_t *A;
   struct spamm_matrix_t *B;
 
@@ -51,6 +48,10 @@ main (int argc, char **argv)
       for(matrix_type_A = 0; matrix_type_A < NUMBER_MATRIX_TYPES; matrix_type_A++) {
         for(matrix_type_B = 0; matrix_type_B < NUMBER_MATRIX_TYPES; matrix_type_B++)
         {
+          /* Debug. */
+          //number_dimensions = 2;
+          //use_linear_tree = 1;
+
           printf("dim: %u, linTree: %u, matrix_type_A: %s, matrix_type_B: %s\n",
               number_dimensions, use_linear_tree,
               get_matrix_type_name(matrix_type_A), get_matrix_type_name(matrix_type_B));
@@ -134,7 +135,6 @@ main (int argc, char **argv)
           free(N);
           free(A_dense);
           free(B_dense);
-          free(max_diff_i);
           spamm_delete(&A);
           spamm_delete(&B);
         }

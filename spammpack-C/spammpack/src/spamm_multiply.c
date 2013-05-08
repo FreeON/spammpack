@@ -58,7 +58,7 @@ struct spamm_multiply_k_lookup_t
  *
  * @return The new squared norm.
  */
-double
+spamm_norm_t
 spamm_chunk_multiply_scalar (const float alpha,
     spamm_chunk_t *chunk,
     double *const flop)
@@ -379,60 +379,8 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
 #endif
   free(stream);
 
-  matrix_C = spamm_chunk_get_matrix(chunk_C);
-  matrix_dilated_C = spamm_chunk_get_matrix_dilated(chunk_C);
-
-  /* Update norms and dilated matrix. */
-  norm_C = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
-  norm2_C = spamm_chunk_get_tier_norm2(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
-  norm_C_next = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-1, chunk_C);
-  norm2_C_next = spamm_chunk_get_tier_norm2(*spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-1, chunk_C);
-
-  for(i_stream = 0; i_stream < ipow(N_contiguous/SPAMM_N_KERNEL, 2); i_stream++) {
-    for(i = 0, norm2_C_next[i_stream] = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
-      for(j = 0; j < SPAMM_N_KERNEL_BLOCKED; j++)
-      {
-        norm_offset_C = i_stream*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED
-          +i*SPAMM_N_KERNEL_BLOCKED+j;
-
-        offset_C = i_stream*SPAMM_N_KERNEL*SPAMM_N_KERNEL
-          +(i*SPAMM_N_KERNEL_BLOCKED+j)*SPAMM_N_BLOCK*SPAMM_N_BLOCK;
-
-        for(i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
-          for(j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
-          {
-            norm2_C[norm_offset_C] += matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block]*matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
-
-            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK+j_block)+0] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
-            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK+j_block)+1] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
-            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK+j_block)+2] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
-            matrix_dilated_C[4*(offset_C+i_block*SPAMM_N_BLOCK+j_block)+3] = matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block];
-          }
-        }
-        norm_C[norm_offset_C] = sqrt(norm2_C[norm_offset_C]);
-
-        norm2_C_next[i_stream] += norm2_C[norm_offset_C];
-      }
-    }
-    norm_C_next[i_stream] = sqrt(norm2_C_next[i_stream]);
-  }
-
-  for(tier = *spamm_chunk_get_number_tiers(chunk_C)-SPAMM_KERNEL_DEPTH-2; tier >= 0; tier--)
-  {
-    norm2_C = spamm_chunk_get_tier_norm2(tier+1, chunk_C);
-
-    norm_C_next = spamm_chunk_get_tier_norm(tier, chunk_C);
-    norm2_C_next = spamm_chunk_get_tier_norm2(tier, chunk_C);
-
-    for(i = 0; i < ipow(4, tier); i++)
-    {
-      for(j = 4*i, norm2_C_next[i] = 0; j < 4*(i+1); j++)
-      {
-        norm2_C_next[i] += norm2_C[j];
-      }
-      norm_C_next[i] = sqrt(norm2_C_next[i]);
-    }
-  }
+  /* Update norms. */
+  spamm_chunk_fix(chunk_C);
 
   return norm2_C_next[0];
 }

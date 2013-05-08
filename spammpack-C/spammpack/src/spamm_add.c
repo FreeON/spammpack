@@ -16,16 +16,18 @@
  * @param beta The factor @f$ \beta @f$.
  * @param B Chunk B.
  * @param flop The flop count.
+ *
+ * @return The square of the norm of the chunk.
  */
-void
+spamm_norm_t
 spamm_chunk_add (const float alpha,
     spamm_chunk_t *A,
     const float beta,
     spamm_chunk_t *B,
     double *const flop)
 {
-  unsigned int *number_dimensions;
-  unsigned int *number_tiers;
+  unsigned int number_dimensions;
+  unsigned int number_tiers;
 
   spamm_norm_t *norm_A;
   spamm_norm_t *norm_B;
@@ -47,8 +49,8 @@ spamm_chunk_add (const float alpha,
   assert(A != NULL);
   assert(B != NULL);
 
-  number_dimensions = spamm_chunk_get_number_dimensions(B);
-  number_tiers = spamm_chunk_get_number_tiers(B);
+  number_dimensions = *spamm_chunk_get_number_dimensions(B);
+  number_tiers = *spamm_chunk_get_number_tiers(B);
 
   A_matrix = spamm_chunk_get_matrix(A);
   B_matrix = spamm_chunk_get_matrix(B);
@@ -58,24 +60,16 @@ spamm_chunk_add (const float alpha,
   N_contiguous = spamm_chunk_get_N_contiguous(A);
 
   /* Add matrices. */
-  for(i = 0; i < ipow(N_contiguous, *number_dimensions); i++)
+  for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
   {
     A_matrix[i] = alpha*A_matrix[i]+beta*B_matrix[i];
-
-    A_matrix_dilated[4*i+0] = A_matrix[i];
-    A_matrix_dilated[4*i+1] = A_matrix[i];
-    A_matrix_dilated[4*i+2] = A_matrix[i];
-    A_matrix_dilated[4*i+3] = A_matrix[i];
   }
 
-  /* Update norms. */
-  norm_A = spamm_chunk_get_norm(A);
-  norm_B = spamm_chunk_get_norm(B);
-  norm2_A = spamm_chunk_get_norm2(A);
-  norm2_B = spamm_chunk_get_norm2(B);
-
   /* Update flop count. */
-  *flop += ipow(N_contiguous, *number_dimensions);
+  *flop += ipow(N_contiguous, number_dimensions);
+
+  /* Update norms. */
+  return spamm_chunk_fix(A);
 }
 
 /** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.
@@ -102,6 +96,7 @@ spamm_recursive_add (const float alpha,
     double *const flop)
 {
   unsigned int i;
+  spamm_norm_t norm2_temp;
 
   /* We need access to a lock on A, which is why A can not be NULL. We need to
    * allocate a new node if we need to a tier above. */
@@ -147,9 +142,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      spamm_chunk_add(alpha, A->tree.chunk, beta, B->tree.chunk, flop);
-
-      A->norm2 = alpha*alpha*A->norm2+beta*beta*B->norm2+2*alpha*beta*A->norm*B->norm;
+      A->norm2 = spamm_chunk_add(alpha, A->tree.chunk, beta, B->tree.chunk, flop);
       A->norm = sqrt(A->norm2);
 
 #ifdef _OPENMP
@@ -209,14 +202,18 @@ spamm_recursive_add (const float alpha,
         omp_unset_lock(&A->lock);
 #endif
 
-#pragma omp task untied
+#pragma omp task untied private(norm2_temp)
         spamm_recursive_add(alpha, A->tree.child[i], beta,
             (const struct spamm_recursive_node_t*const) B->tree.child[i],
             number_dimensions, tier+1, chunk_tier, use_linear_tree, flop);
       }
 #pragma omp taskwait
 
-      A->norm2 = alpha*alpha*A->norm2+beta*beta*B->norm2+2*alpha*beta*A->norm*B->norm;
+      /* Sum up norms. */
+      for(i = 0, A->norm2 = 0.0; i < ipow(2, number_dimensions); i++)
+      {
+        A->norm2 += A->tree.child[i]->norm2;
+      }
       A->norm = sqrt(A->norm2);
 
 #ifdef _OPENMP

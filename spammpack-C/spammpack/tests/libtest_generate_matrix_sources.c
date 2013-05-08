@@ -3,7 +3,10 @@
 #include "test.h"
 #include "spamm.h"
 
+#include <math.h>
 #include <stdlib.h>
+
+#define SPARSITY 0.9
 
 /** Generate a random test matrix.
  *
@@ -22,21 +25,22 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
 
   unsigned int dim;
   unsigned int *i;
-  unsigned int N_contiguous;
+  unsigned int N_linear;
+  unsigned int nonzero_elements;
 
-  N_contiguous = 1;
+  N_linear = 1;
   for(dim = 0; dim < number_dimensions; dim++)
   {
-    N_contiguous *= N[dim];
+    N_linear *= N[dim];
   }
 
   i = calloc(number_dimensions, sizeof(unsigned int));
-  A = (MATRIX_TYPE*) calloc(N_contiguous, sizeof(MATRIX_TYPE));
+  A = (MATRIX_TYPE*) calloc(N_linear, sizeof(MATRIX_TYPE));
 
   switch(matrix_type)
   {
     case full:
-      for(i[0] = 0; i[0] < N_contiguous; i[0]++)
+      for(i[0] = 0; i[0] < N_linear; i[0]++)
       {
         A[i[0]] = rand()/(MATRIX_TYPE) RAND_MAX;
       }
@@ -79,6 +83,15 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
       break;
 
     case sparse_random:
+      for(nonzero_elements = 0; nonzero_elements < (unsigned int) ceil((1-SPARSITY)*N_linear); )
+      {
+        i[0] = (unsigned int) floor(rand()/(double) RAND_MAX * N_linear);
+        if(A[i[0]] == 0.0)
+        {
+          A[i[0]] = rand()/(MATRIX_TYPE) RAND_MAX;
+          nonzero_elements++;
+        }
+      }
       break;
 
     default:

@@ -341,10 +341,13 @@ spamm_index_column_major_2 (const unsigned int number_dimensions,
   unsigned int offset;
   int dim;
 
+  //printf("i = {");
   for(dim = number_dimensions-1, offset = 0; dim >= 0; dim--)
   {
+    //printf(" %u", i[dim]);
     offset = i[dim]+N*offset;
   }
+  //printf(" }\n");
 
   return offset;
 }

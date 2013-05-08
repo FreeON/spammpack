@@ -98,4 +98,7 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
 void
 spamm_chunk_print (spamm_chunk_t *chunk);
 
+spamm_norm_t
+spamm_chunk_fix (spamm_chunk_t *const chunk);
+
 #endif

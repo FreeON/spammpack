@@ -548,3 +548,188 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
 
   return size;
 }
+
+/** Set the norms and the dilated matrix in a chunk.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The square of the norm of the chunk.
+ */
+spamm_norm_t
+spamm_chunk_fix (spamm_chunk_t *const chunk)
+{
+  float *matrix;
+  float *matrix_dilated;
+
+  spamm_norm_t *norm;
+  spamm_norm_t *next_norm;
+  spamm_norm_t *norm2;
+  spamm_norm_t *next_norm2;
+
+  short terminate;
+
+  unsigned int N_contiguous;
+  unsigned int number_dimensions;
+  unsigned int use_linear_tree;
+  unsigned int number_linear_indices;
+  unsigned int number_tiers;
+
+  int tier;
+
+  unsigned int dim;
+  unsigned int i_stream;
+  unsigned int *i;
+  unsigned int i_block, j_block;
+  unsigned int norm_offset;
+  unsigned int matrix_offset;
+  unsigned int block_offset;
+
+  assert(chunk != NULL);
+
+  N_contiguous = spamm_chunk_get_N_contiguous(chunk);
+  use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);
+  number_tiers = *spamm_chunk_get_number_tiers(chunk);
+
+  matrix = spamm_chunk_get_matrix(chunk);
+  matrix_dilated = spamm_chunk_get_matrix_dilated(chunk);
+
+  /* Norms at deepest tier. */
+  norm = spamm_chunk_get_tier_norm(number_tiers-1, chunk);
+  norm2 = spamm_chunk_get_tier_norm2(number_tiers-1, chunk);
+
+  if(use_linear_tree)
+  {
+    /* Norms at kernel tier. */
+    if(number_tiers > SPAMM_KERNEL_DEPTH)
+    {
+      next_norm = spamm_chunk_get_tier_norm(number_tiers-SPAMM_KERNEL_DEPTH-1, chunk);
+      next_norm2 = spamm_chunk_get_tier_norm2(number_tiers-SPAMM_KERNEL_DEPTH-1, chunk);
+    }
+
+    /* Linear trees are only used in 2 dimensions. */
+    i = calloc(2, sizeof(unsigned int));
+
+    /* Fix norms on lowest tier, and update matrix_dilated. */
+    for(i_stream = 0; i_stream < ipow(N_contiguous/SPAMM_N_KERNEL, 2); i_stream++)
+    {
+      if(number_tiers > SPAMM_KERNEL_DEPTH)
+      {
+        next_norm2[i_stream] = 0.0;
+      }
+
+      /* We are at the SPAMM_N_KERNEL tier. The submatrix blocks are Z-curve
+       * ordered. Below this tier we store row-major ordered submatrices of
+       * size SPAMM_N_BLOCK.
+       */
+      for(i[0] = 0; i[0] < SPAMM_N_KERNEL_BLOCKED; i[0]++) {
+        for(i[1] = 0; i[1] < SPAMM_N_KERNEL_BLOCKED; i[1]++)
+        {
+          norm_offset = i_stream*SPAMM_N_KERNEL_BLOCKED*SPAMM_N_KERNEL_BLOCKED /* Z-curve ordered offset. */
+            +i[0]*SPAMM_N_KERNEL_BLOCKED+i[1]; /* Row-major ordered offset. */
+
+          matrix_offset = i_stream*SPAMM_N_KERNEL*SPAMM_N_KERNEL /* Z-curve ordered offset. */
+            +(i[0]*SPAMM_N_KERNEL_BLOCKED+i[1])*SPAMM_N_BLOCK*SPAMM_N_BLOCK; /* Row-major ordered offset. */
+
+          /* Loop over matrix elements within the submatrices of size SPAMM_N_BLOCK. */
+          norm2[norm_offset] = 0.0;
+          for(i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
+            for(j_block = 0; j_block < SPAMM_N_BLOCK; j_block++)
+            {
+              block_offset = i_block*SPAMM_N_BLOCK+j_block; /* Row-major order of matrix elements. */
+
+              /* Fix norm. */
+              norm2[norm_offset] += matrix[matrix_offset+block_offset]*matrix[matrix_offset+block_offset];
+
+              /* Fix dilated matrix. */
+              matrix_dilated[4*(matrix_offset+block_offset)+0] = matrix[matrix_offset+block_offset];
+              matrix_dilated[4*(matrix_offset+block_offset)+1] = matrix[matrix_offset+block_offset];
+              matrix_dilated[4*(matrix_offset+block_offset)+2] = matrix[matrix_offset+block_offset];
+              matrix_dilated[4*(matrix_offset+block_offset)+3] = matrix[matrix_offset+block_offset];
+            }
+          }
+          norm[norm_offset] = sqrt(norm2[norm_offset]);
+
+          /* Fix norms at kernel tier. */
+          if(number_tiers > SPAMM_KERNEL_DEPTH)
+          {
+            next_norm2[i_stream] += norm2[norm_offset];
+          }
+        }
+      }
+      if(number_tiers > SPAMM_KERNEL_DEPTH)
+      {
+        next_norm[i_stream] = sqrt(next_norm2[i_stream]);
+      }
+    }
+
+    /* Update norms up to the root tier of this chunk. */
+    for(tier = number_tiers-SPAMM_KERNEL_DEPTH-2; tier >= 0; tier--)
+    {
+      SPAMM_WARN("updating tier %u\n", tier);
+
+      norm2 = spamm_chunk_get_tier_norm2(tier+1, chunk);
+
+      next_norm = spamm_chunk_get_tier_norm(tier, chunk);
+      next_norm2 = spamm_chunk_get_tier_norm2(tier, chunk);
+
+      for(i[0] = 0; i[0] < ipow(4, tier); i[0]++)
+      {
+        for(i[1] = 4*i[0], next_norm2[i[0]] = 0; i[1] < 4*(i[0]+1); i[1]++)
+        {
+          next_norm2[i[0]] += norm2[i[1]];
+        }
+        next_norm[i[0]] = sqrt(next_norm2[i[0]]);
+      }
+    }
+
+    free(i);
+
+    return next_norm2[0];
+  }
+
+  else
+  {
+    /* Allocate matrix index. */
+    number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+    i = calloc(number_dimensions, sizeof(unsigned int));
+
+    for(norm2[0] = 0.0, terminate = 0; !terminate; )
+    {
+      matrix_offset = spamm_index_column_major_2(number_dimensions, N_contiguous, i);
+
+      /* Update norm. */
+      norm2[0] += matrix[matrix_offset]*matrix[matrix_offset];
+
+      /* Update dilated matrix. */
+      matrix_dilated[4*matrix_offset+0] = matrix[matrix_offset];
+      matrix_dilated[4*matrix_offset+1] = matrix[matrix_offset];
+      matrix_dilated[4*matrix_offset+2] = matrix[matrix_offset];
+      matrix_dilated[4*matrix_offset+3] = matrix[matrix_offset];
+
+      /* Increment matrix index. */
+      for(dim = 0; dim < number_dimensions; dim++)
+      {
+        i[dim]++;
+        if(i[dim] >= N_contiguous)
+        {
+          if(dim >= number_dimensions-1)
+          {
+            terminate = 1;
+            break;
+          }
+          i[dim] = 0;
+        }
+
+        else
+        {
+          break;
+        }
+      }
+    }
+    norm[0] = sqrt(norm2[0]);
+
+    free(i);
+
+    return norm2[0];
+  }
+}
