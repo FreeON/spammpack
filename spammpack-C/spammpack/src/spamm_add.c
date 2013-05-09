@@ -16,6 +16,7 @@
  * @param beta The factor @f$ \beta @f$.
  * @param B Chunk B.
  * @param flop The flop count.
+ * @param memop The memory operation count
  *
  * @return The square of the norm of the chunk.
  */
@@ -24,7 +25,8 @@ spamm_chunk_add (const float alpha,
     spamm_chunk_t *A,
     const float beta,
     spamm_chunk_t *B,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   unsigned int number_dimensions;
 
@@ -52,10 +54,10 @@ spamm_chunk_add (const float alpha,
   }
 
   /* Update flop count. */
-  *flop += ipow(N_contiguous, number_dimensions);
+  *flop += 3*ipow(N_contiguous, number_dimensions);
 
   /* Update norms. */
-  return spamm_chunk_fix(A);
+  return spamm_chunk_fix(A, flop, memop);
 }
 
 /** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.
@@ -69,6 +71,7 @@ spamm_chunk_add (const float alpha,
  * @param chunk_tier The chunk tier.
  * @param use_linear_tree Are we using a linear tree?
  * @param flop The flop count.
+ * @param memop The memory operation count
  */
 void
 spamm_recursive_add (const float alpha,
@@ -79,7 +82,8 @@ spamm_recursive_add (const float alpha,
     const unsigned int tier,
     const unsigned int chunk_tier,
     const short use_linear_tree,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   unsigned int i;
 
@@ -100,7 +104,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      spamm_chunk_copy(&A->tree.chunk, beta, B->tree.chunk, use_linear_tree);
+      spamm_chunk_copy(&A->tree.chunk, beta, B->tree.chunk, use_linear_tree, flop, memop);
 
 #ifdef _OPENMP
       omp_unset_lock(&A->lock);
@@ -113,7 +117,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk, flop);
+      A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk, flop, memop);
       A->norm = sqrt(A->norm2);
 
 #ifdef _OPENMP
@@ -127,7 +131,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      A->norm2 = spamm_chunk_add(alpha, A->tree.chunk, beta, B->tree.chunk, flop);
+      A->norm2 = spamm_chunk_add(alpha, A->tree.chunk, beta, B->tree.chunk, flop, memop);
       A->norm = sqrt(A->norm2);
 
 #ifdef _OPENMP
@@ -142,14 +146,14 @@ spamm_recursive_add (const float alpha,
     {
       /* Copy B node to A. */
       spamm_recursive_copy(A, beta, B, number_dimensions, tier,
-          chunk_tier, use_linear_tree);
+          chunk_tier, use_linear_tree, flop, memop);
     }
 
     else if(A->tree.child != NULL && B == NULL)
     {
       /* Multiply A by alpha. */
       spamm_recursive_multiply_scalar(alpha, A, number_dimensions, tier,
-          chunk_tier, use_linear_tree, flop);
+          chunk_tier, use_linear_tree, flop, memop);
     }
 
     else
@@ -190,7 +194,7 @@ spamm_recursive_add (const float alpha,
 #pragma omp task untied
         spamm_recursive_add(alpha, A->tree.child[i], beta,
             (const struct spamm_recursive_node_t*const) B->tree.child[i],
-            number_dimensions, tier+1, chunk_tier, use_linear_tree, flop);
+            number_dimensions, tier+1, chunk_tier, use_linear_tree, flop, memop);
       }
 #pragma omp taskwait
 
@@ -215,13 +219,15 @@ spamm_recursive_add (const float alpha,
  * @param beta The factor @f$ \beta @f$.
  * @param B The matrix B.
  * @param flop The flop count.
+ * @param memop The memory operation count
  */
 void
 spamm_add (const float alpha,
     struct spamm_matrix_t *const A,
     const float beta,
     const struct spamm_matrix_t *const B,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   struct spamm_recursive_node_t *B_pointer;
 
@@ -245,7 +251,8 @@ spamm_add (const float alpha,
 #pragma omp task untied
       spamm_recursive_add(alpha, A->recursive_tree, beta,
           (const struct spamm_recursive_node_t*const) B_pointer,
-          A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree, flop);
+          A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree, flop,
+          memop);
     }
   }
 }

@@ -492,7 +492,7 @@ main (int argc, char **argv)
   spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), &flops);
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
-  printf("%s\n", timer_string);
+  printf("%si, %e flops\n", timer_string, flops);
   free(timer_string);
   spamm_timer_delete(&timer);
 

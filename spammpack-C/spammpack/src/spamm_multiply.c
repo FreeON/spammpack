@@ -55,13 +55,15 @@ struct spamm_multiply_k_lookup_t
  * @param alpha The factor.
  * @param chunk The chunk.
  * @param flop The flop count.
+ * @param memop The memory operation count.
  *
  * @return The new squared norm.
  */
 spamm_norm_t
 spamm_chunk_multiply_scalar (const float alpha,
     spamm_chunk_t *chunk,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   unsigned int i;
   unsigned int number_norms;
@@ -71,6 +73,8 @@ spamm_chunk_multiply_scalar (const float alpha,
 
   float *A;
   float *A_dilated;
+
+  float alpha2;
 
   spamm_norm_t *norm;
   spamm_norm_t *norm2;
@@ -95,15 +99,20 @@ spamm_chunk_multiply_scalar (const float alpha,
 
   /* Update the flop count. */
   *flop += ipow(N_contiguous, number_dimensions);
+  *memop += 4*ipow(N_contiguous, number_dimensions);
 
   norm = spamm_chunk_get_norm(chunk);
   norm2 = spamm_chunk_get_norm2(chunk);
   number_norms = spamm_chunk_get_total_number_norms(number_tiers, number_dimensions);
+  alpha2 = alpha*alpha;
   for(i = 0; i < number_norms; i++)
   {
-    norm[i] *= alpha;
-    norm2[i] *= alpha*alpha;
+    norm2[i] *= alpha2;
+    norm[i] = sqrt(norm2[i]);
   }
+
+  /* Update flop count. */
+  *flop += 2*number_norms;
 
   return norm2[0];
 }
@@ -120,7 +129,8 @@ spamm_recursive_multiply_scalar (const float alpha,
     const unsigned int tier,
     const unsigned int chunk_tier,
     const short use_linear_tree,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   unsigned int i;
 
@@ -128,7 +138,7 @@ spamm_recursive_multiply_scalar (const float alpha,
 
   if(tier == chunk_tier)
   {
-    A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk, flop);
+    A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk, flop, memop);
     A->norm = sqrt(A->norm2);
   }
 
@@ -139,7 +149,8 @@ spamm_recursive_multiply_scalar (const float alpha,
       for(i = 0; i < ipow(2, number_dimensions); i++)
       {
         spamm_recursive_multiply_scalar(alpha, A->tree.child[i],
-            number_dimensions, tier+1, chunk_tier, use_linear_tree, flop);
+            number_dimensions, tier+1, chunk_tier, use_linear_tree, flop,
+            memop);
       }
     }
   }
@@ -154,6 +165,7 @@ spamm_recursive_multiply_scalar (const float alpha,
  * @param beta The paramater \f$\beta\f$.
  * @param C The matrix \f$C\f$.
  * @param flop Number of floating point operations.
+ * @param memop The memory operation count
  *
  * @return The square of the Frobenius norm of the chunk.
  */
@@ -163,7 +175,8 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
     spamm_chunk_t *const chunk_C,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   unsigned int *index_A;
   unsigned int *index_B;
@@ -366,7 +379,7 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
   if(stream_index > 0)
   {
     /* Update norms. */
-    return spamm_chunk_fix(chunk_C);
+    return spamm_chunk_fix(chunk_C, flop, memop);
   }
 
   else
@@ -385,6 +398,7 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
  * @param chunk_C Chunk C.
  * @param sgemm The sgemm() function to call.
  * @param flop The flop count.
+ * @param memop The memory operation count
  *
  * @return The square of the norm.
  */
@@ -395,7 +409,8 @@ spamm_chunk_multiply (const spamm_norm_t tolerance,
     const spamm_chunk_t *const chunk_B,
     spamm_chunk_t *const chunk_C,
     sgemm_func sgemm,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   unsigned int i, j, k;
 
@@ -454,7 +469,7 @@ spamm_chunk_multiply (const spamm_norm_t tolerance,
     *flop += 2*N_contiguous*N_contiguous*N_contiguous;
 
     /* Fix up norms. */
-    return spamm_chunk_fix(chunk_C);
+    return spamm_chunk_fix(chunk_C, flop, memop);
   }
 
   else
@@ -478,6 +493,7 @@ spamm_chunk_multiply (const spamm_norm_t tolerance,
  * @param use_linear_tree If set to 1 then we will switch to a linear tree at
  * chunk_tier.
  * @param flop The number of floating point operations.
+ * @param memop The memory operation count
  */
 void
 spamm_recursive_multiply (const spamm_norm_t tolerance,
@@ -495,7 +511,8 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
     const unsigned int tier,
     const unsigned int chunk_tier,
     const short use_linear_tree,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   unsigned int *new_N_lower = NULL;
   unsigned int *new_N_upper = NULL;
@@ -546,13 +563,15 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
     if(use_linear_tree)
     {
       node_C->norm2 = spamm_linear_multiply(tolerance, alpha,
-          node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk, flop);
+          node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk, flop,
+          memop);
     }
 
     else
     {
       node_C->norm2 = spamm_chunk_multiply(tolerance, alpha,
-          node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk, sgemm, flop);
+          node_A->tree.chunk, node_B->tree.chunk, node_C->tree.chunk, sgemm,
+          flop, memop);
     }
 
     node_C->norm = sqrt(node_C->norm2);
@@ -624,7 +643,7 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
                       node_C->tree.child[i+2*j], sgemm, number_dimensions_A,
                       number_dimensions_B, number_dimensions_C, N, new_N_lower,
                       new_N_upper, tier+1, chunk_tier, use_linear_tree,
-                      flop);
+                      flop, memop);
 
                   free(new_N_lower);
                   free(new_N_upper);
@@ -674,10 +693,12 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
 void
 spamm_multiply_scalar (const float alpha,
     struct spamm_matrix_t *const A,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   spamm_recursive_multiply_scalar(alpha, A->recursive_tree,
-      A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree, flop);
+      A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree, flop,
+      memop);
 }
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -690,6 +711,7 @@ spamm_multiply_scalar (const float alpha,
  * @param C The matrix \f$C\f$.
  * @param sgemm The external sgemm function to use.
  * @param flop The number of floating point operations.
+ * @param memop The memory operation count
  */
 void
 spamm_multiply (const spamm_norm_t tolerance,
@@ -699,7 +721,8 @@ spamm_multiply (const spamm_norm_t tolerance,
     const float beta,
     struct spamm_matrix_t *const C,
     sgemm_func sgemm,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   int dim;
   unsigned int *N_lower;
@@ -711,7 +734,8 @@ spamm_multiply (const spamm_norm_t tolerance,
   assert(flop != NULL);
 
   spamm_recursive_multiply_scalar(beta, C->recursive_tree,
-      C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree, flop);
+      C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree, flop,
+      memop);
 
   if(alpha != 0.0)
   {
@@ -744,7 +768,7 @@ spamm_multiply (const spamm_norm_t tolerance,
           spamm_recursive_multiply(tolerance, alpha, A->recursive_tree,
               B->recursive_tree, C->recursive_tree, sgemm, A->number_dimensions,
               B->number_dimensions, C->number_dimensions, A->N, N_lower, N_upper, 0,
-              A->chunk_tier, A->use_linear_tree, flop);
+              A->chunk_tier, A->use_linear_tree, flop, memop);
 
           free(N_lower);
           free(N_upper);

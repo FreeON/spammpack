@@ -18,13 +18,17 @@ spamm_check (const struct spamm_matrix_t *A,
 void
 spamm_copy (struct spamm_matrix_t **A,
     const float beta,
-    const struct spamm_matrix_t *const B);
+    const struct spamm_matrix_t *const B,
+    double *const flop,
+    double *const memop);
 
 void
 spamm_chunk_copy (spamm_chunk_t **A,
     const float beta,
     spamm_chunk_t *B,
-    const short use_linear_tree);
+    const short use_linear_tree,
+    double *const flop,
+    double *const memop);
 
 void
 spamm_recursive_copy (struct spamm_recursive_node_t *const A,
@@ -33,7 +37,9 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
     const unsigned int number_dimensions,
     const unsigned int tier,
     const unsigned int chunk_tier,
-    const short use_linear_tree);
+    const short use_linear_tree,
+    double *const flop,
+    double *const memop);
 
 void
 spamm_delete_chunk (spamm_chunk_t **chunk);
@@ -128,7 +134,8 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
     const spamm_chunk_t *const chunk_A,
     const spamm_chunk_t *const chunk_B,
     spamm_chunk_t *const chunk_C,
-    double *const flop);
+    double *const flop,
+    double *const memop);
 
 void
 spamm_recursive_multiply_scalar (const float alpha,
@@ -137,12 +144,14 @@ spamm_recursive_multiply_scalar (const float alpha,
     const unsigned int tier,
     const unsigned int chunk_tier,
     const short use_linear_tree,
-    double *const flop);
+    double *const flop,
+    double *const memop);
 
 void
 spamm_multiply_scalar (const float alpha,
     struct spamm_matrix_t *const A,
-    double *const flop);
+    double *const flop,
+    double *const memop);
 
 void
 spamm_multiply (const spamm_norm_t tolerance,
@@ -152,14 +161,16 @@ spamm_multiply (const spamm_norm_t tolerance,
     const float beta,
     struct spamm_matrix_t *const C,
     sgemm_func sgemm,
-    double *const flop);
+    double *const flop,
+    double *const memop);
 
 void
 spamm_add (const float alpha,
     struct spamm_matrix_t *const A,
     const float beta,
     const struct spamm_matrix_t *const B,
-    double *const flop);
+    double *const flop,
+    double *const memop);
 
 unsigned int
 spamm_number_nonzero (const struct spamm_matrix_t *A);

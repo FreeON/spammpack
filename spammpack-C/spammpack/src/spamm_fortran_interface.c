@@ -21,9 +21,10 @@ spamm_multiply_interface (const spamm_norm_t *const tolerance,
     const struct spamm_matrix_t **const B,
     const float *const beta,
     struct spamm_matrix_t **const C,
-    double *flop)
+    double *const flop,
+    double *const memop)
 {
-  spamm_multiply(*tolerance, *alpha, *A, *B, *beta, *C, SGEMM, flop);
+  spamm_multiply(*tolerance, *alpha, *A, *B, *beta, *C, SGEMM, flop, memop);
 }
 
 /** Fortran interface for spamm_multiply_scalar().
@@ -31,9 +32,10 @@ spamm_multiply_interface (const spamm_norm_t *const tolerance,
 void
 spamm_multiply_scalar_interface (const float *const alpha,
     struct spamm_matrix_t **const A,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
-  spamm_multiply_scalar(*alpha, *A, flop);
+  spamm_multiply_scalar(*alpha, *A, flop, memop);
 }
 
 /** Fortran interface for spamm_get().
@@ -50,9 +52,11 @@ spamm_get_interface (const unsigned int *const i,
  */
 void
 spamm_chunk_multiply_scalar_interface (const float *const alpha,
-    spamm_chunk_t **chunk, spamm_norm_t *const norm2, double *const flop)
+    spamm_chunk_t **chunk, spamm_norm_t *const norm2,
+    double *const flop,
+    double *const memop)
 {
-  *norm2 = spamm_chunk_multiply_scalar(*alpha, *chunk, flop);
+  *norm2 = spamm_chunk_multiply_scalar(*alpha, *chunk, flop, memop);
 }
 
 /** Fortran interface for spamm_chunk_multiply().
@@ -64,10 +68,11 @@ spamm_chunk_multiply_interface (const spamm_norm_t *const tolerance,
     spamm_chunk_t **chunk_B,
     spamm_chunk_t **chunk_C,
     spamm_norm_t *const norm2,
-    double *const flop)
+    double *const flop,
+    double *const memop)
 {
   *norm2 = spamm_chunk_multiply(*tolerance, *alpha, *chunk_A, *chunk_B,
-      *chunk_C, SGEMM, flop);
+      *chunk_C, SGEMM, flop, memop);
 }
 
 /** Fortran interface for spamm_convert_dense_to_spamm().
@@ -213,9 +218,11 @@ spamm_new_interface (const unsigned int *const number_dimensions,
 void
 spamm_copy_interface (struct spamm_matrix_t **const A,
     const float *alpha,
-    const struct spamm_matrix_t **const B)
+    const struct spamm_matrix_t **const B,
+    double *const flop,
+    double *const memop)
 {
-  spamm_copy(A, *alpha, *B);
+  spamm_copy(A, *alpha, *B, flop, memop);
 }
 
 /** Fortran interface for spamm_add(), @f$ C \leftarrow \alpha A + \beta B
@@ -227,8 +234,9 @@ spamm_add_interface (const float *const alpha,
     const float *const beta,
     const struct spamm_matrix_t **const B,
     struct spamm_matrix_t **const C,
-    double *flop)
+    double *const flop,
+    double *const memop)
 {
-  spamm_copy(C, 1.0, *A);
-  spamm_add(*alpha, *C, *beta, *B, flop);
+  spamm_copy(C, 1.0, *A, flop, memop);
+  spamm_add(*alpha, *C, *beta, *B, flop, memop);
 }
