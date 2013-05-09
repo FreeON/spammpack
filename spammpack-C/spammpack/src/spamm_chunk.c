@@ -664,8 +664,6 @@ spamm_chunk_fix (spamm_chunk_t *const chunk)
     /* Update norms up to the root tier of this chunk. */
     for(tier = number_tiers-SPAMM_KERNEL_DEPTH-2; tier >= 0; tier--)
     {
-      SPAMM_WARN("updating tier %u\n", tier);
-
       norm2 = spamm_chunk_get_tier_norm2(tier+1, chunk);
 
       next_norm = spamm_chunk_get_tier_norm(tier, chunk);

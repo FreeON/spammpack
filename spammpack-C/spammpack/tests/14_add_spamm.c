@@ -5,10 +5,8 @@
 #include <stdlib.h>
 
 #define REL_TOLERANCE 1e-8
-
 #define TEST_TOLERANCE 5e-7
-
-//#define PRINT_MATRIX
+#define DECAY 2.5
 
 int
 main (int argc, char **argv)
@@ -67,8 +65,8 @@ main (int argc, char **argv)
           i = calloc(number_dimensions, sizeof(unsigned int));
           N = generate_shape(number_dimensions, symmetric);
 
-          A_dense = generate_matrix_float(number_dimensions, matrix_type_A, N);
-          B_dense = generate_matrix_float(number_dimensions, matrix_type_B, N);
+          A_dense = generate_matrix_float(number_dimensions, matrix_type_A, N, DECAY);
+          B_dense = generate_matrix_float(number_dimensions, matrix_type_B, N, DECAY);
 
           /* Convert to SpAMM matrix. */
           A = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, A_dense);

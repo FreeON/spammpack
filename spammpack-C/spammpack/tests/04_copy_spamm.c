@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 #define REL_TOLERANCE 1e-6
-
 #define ABS_TOLERANCE 1e-8
+#define DECAY 2.5
 
 int
 main (int argc, char **argv)
@@ -62,7 +62,7 @@ main (int argc, char **argv)
         {
           N_contiguous *= N[dim];
         }
-        B_dense = generate_matrix_float(number_dimensions, matrix_type, N);
+        B_dense = generate_matrix_float(number_dimensions, matrix_type, N, DECAY);
         B = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, B_dense);
 
         printf("B info: ");

@@ -229,7 +229,7 @@ main (int argc, char **argv)
   B_float = (float*) malloc(sizeof(float)*N[0]*N[1]);
   C_float = (float*) malloc(sizeof(float)*N[0]*N[1]);
 
-  printf("creating random matrices... ");
+  printf("creating random matrices (%ux%u)... ", N[0], N[1]);
   fflush(stdout);
   for(i[0] = 0; i[0] < N[0]; i[0]++)
   {
@@ -483,13 +483,16 @@ main (int argc, char **argv)
     }
   }
 
+  printf("multiplying SpAMM... ");
+  fflush(stdout);
+
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
   spamm_timer_start(timer);
   spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), &flops);
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
-  printf("timer: %s\n", timer_string);
+  printf("%s\n", timer_string);
   free(timer_string);
   spamm_timer_delete(&timer);
 
@@ -558,16 +561,16 @@ main (int argc, char **argv)
     }
     printf("done\n");
 
-    printf("max diff =       %e, rel. diff = %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
+    printf("max float diff =       %e, C_dense[%u][%u] = %e, C_float[%u][%u] = %e\n",
+        max_diff_float,
+        max_float_i[0], max_float_i[1], C_dense[matrix_index(max_float_i[0], max_float_i[1], N[0], N[1])],
+        max_float_i[0], max_float_i[1], C_float[matrix_index(max_float_i[0], max_float_i[1], N[0], N[1])]);
+    printf("max SpAMM diff =       %e, rel. diff = %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
         max_diff,
         (C_dense[matrix_index(max_i[0], max_i[1], N[0], N[1])] != 0.0 ? max_diff/C_dense[matrix_index(max_i[0], max_i[1], N[0], N[1])] : 0.0),
         max_i[0], max_i[1], spamm_get(max_i, C),
         max_i[0], max_i[1], C_dense[matrix_index(max_i[0], max_i[1], N[0], N[1])]);
-    printf("max float diff = %e, C_dense[%u][%u] = %e, C_float[%u][%u] = %e\n",
-        max_diff_float,
-        max_float_i[0], max_float_i[1], C_dense[matrix_index(max_float_i[0], max_float_i[1], N[0], N[1])],
-        max_float_i[0], max_float_i[1], C_float[matrix_index(max_float_i[0], max_float_i[1], N[0], N[1])]);
-    printf("max rel. diff =  %e, diff =      %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
+    printf("max SpAMM rel. diff =  %e, diff =      %e, A[%u][%u] = %e, A_reference[%u][%u] = %e\n",
         max_rel_diff,
         fabs(C_dense[matrix_index(max_rel_i[0], max_rel_i[1], N[0], N[1])]-spamm_get(max_rel_i, C)),
         max_rel_i[0], max_rel_i[1], spamm_get(max_rel_i, C),

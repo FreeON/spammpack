@@ -125,13 +125,11 @@ AC_SEARCH_LIBS([sgeev_], [],
 
 if test "${have_sgeev}" = "no"; then
   AC_MSG_NOTICE([no external sgeev_(), will not use sgeev()])
-  sgeev="; / ## / no external sgeev_"
 else
   AC_MSG_NOTICE([will use external sgeev_()])
   AC_DEFINE([ADD_DGEMM_EXTERNAL_DECLARATION], [1], [Add declaration for sgeev_() external.])
-  sgeev="sgeev_"
+  AC_DEFINE_UNQUOTED([SGEEV], [sgeev_], [External sgeev_().])
 fi
-AC_DEFINE_UNQUOTED([SGEEV], [${sgeev}], [External sgeev_().])
 
 dnl Find out whether we support SSE and SSE4.1.
 AC_MSG_CHECKING([for SSE support])

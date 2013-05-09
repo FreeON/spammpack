@@ -7,7 +7,6 @@
 #include <stdlib.h>
 
 #define SPARSITY 0.9
-#define DECAY 2.5
 
 /** Generate a random test matrix. The matrix elements are stored in row-major
  * order.
@@ -15,14 +14,15 @@
  * @param number_dimensions The number of dimensions of the matrix.
  * @param matrix_type The matrix type.
  * @param N The shape of the matrix.
- * @param symmetric Whether to produce a symmetric matrix.
+ * @param gamma The decay factor for exponential-decay type matrices.
  *
  * @return The newly allocated matrix.
  */
 MATRIX_TYPE *
 SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensions,
     const enum matrix_t matrix_type,
-    const unsigned int *const N)
+    const unsigned int *const N,
+    const MATRIX_TYPE gamma)
 {
   MATRIX_TYPE *A;
 
@@ -122,7 +122,11 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
             for(i[1] = i[0]+1; i[1] < N[1]; i[1]++)
             {
               /* Exponential decay. */
-              A[i[1]+N[1]*i[0]] = A[i[0]+N[1]*i[0]]*expf(-fabsf(i[0]-i[1])/DECAY);
+#if MATRIX_TYPE == float
+              A[i[1]+N[1]*i[0]] = A[i[0]+N[1]*i[0]]*expf(-fabsf(i[0]-i[1])/gamma);
+#else
+              A[i[1]+N[1]*i[0]] = A[i[0]+N[1]*i[0]]*exp(-fabs(i[0]-i[1])/gamma);
+#endif
               A[i[0]+N[1]*i[1]] = A[i[1]+N[1]*i[0]];
             }
           }
@@ -139,7 +143,11 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
               for(i[2] = i[1]+1; i[2] < N[2]; i[2]++)
               {
                 /* Exponential decay. */
-                A[i[2]+N[2]*(i[1]+N[1]*i[0])] = A[i[0]+N[2]*(i[0]+N[1]*i[0])]*expf(-fabsf(i[0]-i[1])/DECAY);
+#if MATRIX_TYPE == float
+                A[i[2]+N[2]*(i[1]+N[1]*i[0])] = A[i[0]+N[2]*(i[0]+N[1]*i[0])]*expf(-fabsf(i[0]-i[1])/gamma);
+#else
+                A[i[2]+N[2]*(i[1]+N[1]*i[0])] = A[i[0]+N[2]*(i[0]+N[1]*i[0])]*exp(-fabs(i[0]-i[1])/gamma);
+#endif
                 A[i[2]+N[2]*(i[0]+N[1]*i[1])] = A[i[2]+N[2]*(i[1]+N[1]*i[0])];
                 A[i[1]+N[2]*(i[0]+N[1]*i[2])] = A[i[2]+N[2]*(i[1]+N[1]*i[0])];
                 A[i[1]+N[2]*(i[2]+N[1]*i[0])] = A[i[2]+N[2]*(i[1]+N[1]*i[0])];

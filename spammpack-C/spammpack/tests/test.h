@@ -44,12 +44,14 @@ generate_shape (const unsigned int number_dimensions,
 float *
 generate_matrix_float (const unsigned int number_dimensions,
     const enum matrix_t matrix_type,
-    const unsigned int *const N);
+    const unsigned int *const N,
+    const float gamma);
 
 double *
 generate_matrix_double (const unsigned int number_dimensions,
     const enum matrix_t matrix_type,
-    const unsigned int *const N);
+    const unsigned int *const N,
+    const double gamma);
 
 int
 compare_spamm_to_dense_float (const struct spamm_matrix_t *const A,

@@ -88,7 +88,6 @@ libspamm_tree_la_SOURCES = \
   spamm_index.c \
   spamm_introspection.c \
   spamm_ipow.c \
-  spamm_lapack.c \
   spamm_multiply.c \
   spamm_new.c \
   spamm_omp_init.c \

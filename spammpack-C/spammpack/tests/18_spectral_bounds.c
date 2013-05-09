@@ -4,8 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+#ifdef ADD_DGEMM_EXTERNAL_DECLARATION
 void
-sgeev_ (char * jobvl, char *jobvr, int *N, float *A, int *lda, float *wr, float *wi, float *vl, int *ldvl, float *vr, int *ldvr, float *work, int *lwork, int *info);
+sgeev_ (char * jobvl, char *jobvr, int *N, float *A, int *lda, float *wr,
+    float *wi, float *vl, int *ldvl, float *vr, int *ldvr, float *work,
+    int *lwork, int *info);
+#endif
 
 int
 main (int argc, char **argv)
@@ -60,7 +65,11 @@ main (int argc, char **argv)
   vr = malloc(ldvr*sizeof(float));
   lwork = 3*N[0];
   work = malloc(lwork*sizeof(float));
+#ifdef SGEEV
   SGEEV("N", "N", &N[0], A_dense, &N[0], wr, wi, vl, &ldvl, vr, &ldvr, work, &lwork, &info);
+#else
+  SPAMM_FATAL("need sgeev()\n");
+#endif
 
   for(i[0] = 0; i[0] < N[0]; i[0]++)
   {

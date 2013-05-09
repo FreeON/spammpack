@@ -48,7 +48,8 @@ struct spamm_timer_t
  * @param message The message to prepend to the error string.
  */
 void
-spamm_timer_handle_PAPI_error (const int error_code, const char *message)
+spamm_timer_handle_PAPI_error (const int error_code,
+    const char *const message)
 {
   printf("[timer, PAPI error] %s: %s\n", message, PAPI_strerror(error_code));
   exit(1);
@@ -122,7 +123,8 @@ spamm_timer_new ()
  * @param timer The timer to add to.
  */
 void
-spamm_timer_add_event (int event, struct spamm_timer_t *timer)
+spamm_timer_add_event (int event,
+    struct spamm_timer_t *const timer)
 {
 #ifdef HAVE_PAPI
   short i;
@@ -163,7 +165,7 @@ spamm_timer_add_event (int event, struct spamm_timer_t *timer)
  * freed and the pointer to the timer will be set to NULL.
  */
 void
-spamm_timer_delete (struct spamm_timer_t **timer)
+spamm_timer_delete (struct spamm_timer_t **const timer)
 {
 #ifdef HAVE_PAPI
   int i;
@@ -191,7 +193,7 @@ spamm_timer_delete (struct spamm_timer_t **timer)
  * @param timer The timer to start.
  */
 void
-spamm_timer_start (struct spamm_timer_t *timer)
+spamm_timer_start (struct spamm_timer_t *const timer)
 {
 #ifdef HAVE_PAPI
   int papi_result;
@@ -230,7 +232,7 @@ spamm_timer_start (struct spamm_timer_t *timer)
  * @param timer The timer to stop.
  */
 void
-spamm_timer_stop (struct spamm_timer_t *timer)
+spamm_timer_stop (struct spamm_timer_t *const timer)
 {
 #ifdef HAVE_PAPI
   int papi_result;
@@ -275,7 +277,9 @@ spamm_timer_stop (struct spamm_timer_t *timer)
  * @param timer The timer.
  */
 void
-spamm_timer_get (short *length, unsigned long long **values, const struct spamm_timer_t *timer)
+spamm_timer_get (short *length,
+    unsigned long long **const values,
+    const struct spamm_timer_t *const timer)
 {
 #ifdef HAVE_PAPI
   short i;
@@ -320,7 +324,7 @@ spamm_timer_get (short *length, unsigned long long **values, const struct spamm_
  * free()'ed by the caller.
  */
 char *
-spamm_timer_get_string (const struct spamm_timer_t *timer)
+spamm_timer_get_string (const struct spamm_timer_t *const timer)
 {
   const int maxlength = 2000;
   char *result = calloc(maxlength, sizeof(char));
@@ -353,7 +357,7 @@ spamm_timer_get_string (const struct spamm_timer_t *timer)
   unsigned long long *event_counter;
 
   spamm_timer_get(&number_events, &event_counter, timer);
-  sprintf(result, "%llu (walltime)", event_counter[0]);
+  sprintf(result, "%1.6e s (walltime)", (double) event_counter[0]/1.0e6);
 
   free(event_counter);
 #endif
@@ -369,7 +373,9 @@ spamm_timer_get_string (const struct spamm_timer_t *timer)
  * @param maxlength The length of the output string.
  */
 void
-spamm_timer_info (const struct spamm_timer_t *timer, char *infostring, const int maxlength)
+spamm_timer_info (const struct spamm_timer_t *const timer,
+    char *infostring,
+    const int maxlength)
 {
 #ifdef HAVE_PAPI
   int i;
@@ -415,7 +421,7 @@ spamm_timer_info (const struct spamm_timer_t *timer, char *infostring, const int
  * @return The timer.
  */
 enum spamm_timer_type_t
-spamm_timer_get_timer_type (const char *name)
+spamm_timer_get_timer_type (const char *const name)
 {
   enum spamm_timer_type_t timer_type = uninitialized;
 
