@@ -122,7 +122,7 @@ spamm_index_3D_i0j_to_2D (const unsigned int index_3D_i0j);
 unsigned int
 spamm_index_3D_ikj_to_k (const unsigned int index_3D_ikj);
 
-double
+spamm_norm_t
 spamm_linear_multiply (const spamm_norm_t tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,

@@ -1,7 +1,7 @@
 /** @file */
 
 #include "test.h"
-#include "spamm.h"
+#include <spamm.h>
 
 #include <math.h>
 #include <stdlib.h>

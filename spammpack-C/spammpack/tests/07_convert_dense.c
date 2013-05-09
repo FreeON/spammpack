@@ -18,13 +18,6 @@ main (int argc, char **argv)
   struct spamm_matrix_t *A = NULL;
   float *A_dense = (float*) malloc(sizeof(float)*N[0]*N[1]);
 
-  enum spamm_layout_t layout = row_major;
-
-  if(argc == 2)
-  {
-    layout = spamm_kernel_get_layout(argv[1]);
-  }
-
   for(i[0] = 0; i[0] < N[0]*N[1]; i[0]++)
   {
     A_dense[i[0]] = rand()/(float) RAND_MAX;

@@ -31,7 +31,10 @@ main (int argc, char **argv)
 
   unsigned int dim;
   unsigned int i[2];
+
+#if !defined(DGEMM) && !defined(SGEMM)
   unsigned int k;
+#endif
 
   unsigned int N[] = { 513, 513 };
 

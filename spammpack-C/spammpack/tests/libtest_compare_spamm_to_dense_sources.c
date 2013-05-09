@@ -1,8 +1,8 @@
 /** @file */
 
-#include "spamm.h"
 #include "test.h"
 
+#include <spamm.h>
 #include <math.h>
 
 /** Compare a SpAMM matrix with a dense matrix.

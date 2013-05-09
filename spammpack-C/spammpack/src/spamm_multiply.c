@@ -157,7 +157,7 @@ spamm_recursive_multiply_scalar (const float alpha,
  *
  * @return The square of the Frobenius norm of the chunk.
  */
-double
+spamm_norm_t
 spamm_linear_multiply (const spamm_norm_t tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
@@ -173,27 +173,14 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
   unsigned int N_contiguous;
   unsigned int index_length;
 
-  unsigned int i, j;
-  unsigned int i_block, j_block;
+  unsigned int i;
   unsigned int j_A, j_B;
   unsigned int stream_index;
-  unsigned int i_stream;
-
-  int tier;
-
-  unsigned int norm_offset_C;
-  unsigned int offset_C;
 
   spamm_norm_t *norm_A;
   spamm_norm_t *norm_B;
 
-  spamm_norm_t *norm_C;
   spamm_norm_t *norm2_C;
-  spamm_norm_t *norm_C_next;
-  spamm_norm_t *norm2_C_next;
-
-  float *matrix_C;
-  float *matrix_dilated_C;
 
 #if !defined(RUN_ASSEMBLY_KERNEL)
   float *matrix_A;
@@ -300,9 +287,6 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
   norm_A = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_A)-1, chunk_A);
   norm_B = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_B)-1, chunk_B);
 
-  norm_C = spamm_chunk_get_tier_norm(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
-  norm2_C = spamm_chunk_get_tier_norm2(*spamm_chunk_get_number_tiers(chunk_C)-1, chunk_C);
-
   matrix_A = spamm_chunk_get_matrix(chunk_A);
   matrix_B = spamm_chunk_get_matrix(chunk_B);
   matrix_C = spamm_chunk_get_matrix(chunk_C);
@@ -379,10 +363,17 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
 #endif
   free(stream);
 
-  /* Update norms. */
-  spamm_chunk_fix(chunk_C);
+  if(stream_index > 0)
+  {
+    /* Update norms. */
+    return spamm_chunk_fix(chunk_C);
+  }
 
-  return norm2_C_next[0];
+  else
+  {
+    norm2_C = spamm_chunk_get_tier_norm2(0, chunk_C);
+    return norm2_C[0];
+  }
 }
 
 /** Multiply two SpAMM chunks.
@@ -397,7 +388,7 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
  *
  * @return The square of the norm.
  */
-double
+spamm_norm_t
 spamm_chunk_multiply (const spamm_norm_t tolerance,
     const float alpha,
     const spamm_chunk_t *const chunk_A,
@@ -411,7 +402,6 @@ spamm_chunk_multiply (const spamm_norm_t tolerance,
   spamm_norm_t *norm_A;
   spamm_norm_t *norm_B;
 
-  spamm_norm_t *norm_C;
   spamm_norm_t *norm2_C;
 
   float alpha_sgemm = alpha;
@@ -423,19 +413,12 @@ spamm_chunk_multiply (const spamm_norm_t tolerance,
   float *matrix_B;
   float *matrix_C;
 
-  unsigned int number_dimensions;
-
   assert(chunk_C != NULL);
 
   if(chunk_A == NULL || chunk_B == NULL) { return 0.0; }
 
-  number_dimensions = *spamm_chunk_get_number_dimensions(chunk_A);
-
   norm_A = spamm_chunk_get_norm(chunk_A);
   norm_B = spamm_chunk_get_norm(chunk_B);
-
-  norm_C = spamm_chunk_get_norm(chunk_C);
-  norm2_C = spamm_chunk_get_norm2(chunk_C);
 
   if(norm_A[0]*norm_B[0] > tolerance)
   {
@@ -470,15 +453,15 @@ spamm_chunk_multiply (const spamm_norm_t tolerance,
     /* Update flop count. */
     *flop += 2*N_contiguous*N_contiguous*N_contiguous;
 
-    /* Update norm on C. */
-    for(i = 0, norm2_C[0] = 0; i < ipow(N_contiguous, number_dimensions); i++)
-    {
-      norm2_C[0] += matrix_C[i]*matrix_C[i];
-    }
-    norm_C[0] = sqrt(norm2_C[0]);
+    /* Fix up norms. */
+    return spamm_chunk_fix(chunk_C);
   }
 
-  return norm2_C[0];
+  else
+  {
+    norm2_C = spamm_chunk_get_norm2(chunk_C);
+    return norm2_C[0];
+  }
 }
 
 /** Multiply two matrices, i.e. \f$ C = \alpha A \times B + \beta C\f$.
@@ -661,7 +644,7 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
       }
 #pragma omp taskwait
 
-      /* Fix up norms. */
+      /* Add up norms. */
       if(node_C->tree.child != NULL)
       {
         for(i = 0, node_C->norm2 = 0; i < ipow(2, number_dimensions_C); i++)

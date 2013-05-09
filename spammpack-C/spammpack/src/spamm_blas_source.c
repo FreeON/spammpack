@@ -15,8 +15,6 @@ void FUNC(spamm, FUNCNAME) (char * transA, char * transB,
 {
   int i, j, k;
 
-  //SPAMM_WARN("using SpAMM sgemm()\n");
-
   if(*transA != 'N')
   {
     SPAMM_FATAL("FIXME\n");

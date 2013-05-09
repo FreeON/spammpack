@@ -1,4 +1,4 @@
-#include "spamm.h"
+#include <spamm.h>
 #include <stdlib.h>
 
 #define REL_TOLERANCE 1e-8

@@ -20,7 +20,7 @@ noinst_PROGRAMS = print_chunk_offsets
 print_chunk_offsets_LDFLAGS = libspamm.la
 print_chunk_offsets_DEPENDENCIES = libspamm.la
 
-EXTRA_DIST = SSERegister.py generate_SSE_assembly_for_chunks.py spamm_blas_source.c
+EXTRA_DIST = SSERegister.py generate_SSE_assembly_for_chunks.py
 
 spamm_stream_kernel.S : $(srcdir)/generate_SSE_assembly_for_chunks.py
 	PYTHONPATH=$(builddir) $(PYTHON) $(srcdir)/generate_SSE_assembly_for_chunks.py > $@
@@ -104,7 +104,8 @@ libspamm_tree_la_SOURCES = \
   spamm_version.c
 
 pkginclude_HEADERS = \
-  spamm_sort_source.c
+  spamm_sort_source.c \
+  spamm_blas_source.c
 
 libspamm_tree_headers = \
   spamm.h \

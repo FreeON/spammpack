@@ -1,4 +1,4 @@
-#include "spamm.h"
+#include <spamm.h>
 #include <stdio.h>
 #include <stdlib.h>
 

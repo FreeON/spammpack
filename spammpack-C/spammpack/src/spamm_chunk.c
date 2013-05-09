@@ -571,7 +571,6 @@ spamm_chunk_fix (spamm_chunk_t *const chunk)
   unsigned int N_contiguous;
   unsigned int number_dimensions;
   unsigned int use_linear_tree;
-  unsigned int number_linear_indices;
   unsigned int number_tiers;
 
   int tier;
