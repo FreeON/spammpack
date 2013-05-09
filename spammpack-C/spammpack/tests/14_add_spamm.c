@@ -36,6 +36,7 @@ main (int argc, char **argv)
   struct spamm_matrix_t *B;
 
   double flop;
+  double memop;
 
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++) {
     for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++)
@@ -118,8 +119,9 @@ main (int argc, char **argv)
           }
 
           flop = 0;
-          spamm_add(alpha, A, beta, B, &flop);
-          SPAMM_INFO("%e flop\n", flop);
+          memop = 0;
+          spamm_add(alpha, A, beta, B, &flop, &memop);
+          SPAMM_INFO("%e flop, %e memop\n", flop, memop);
 
           /* Check tree consistency. */
           if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)

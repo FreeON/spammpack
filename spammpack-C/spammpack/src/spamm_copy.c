@@ -124,7 +124,15 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
 
   if(tier == chunk_tier)
   {
+#ifdef _OPENMP
+    omp_set_lock(&A->lock);
+#endif
+
     spamm_chunk_copy(&A->tree.chunk, beta, B->tree.chunk, use_linear_tree, flop, memop);
+
+#ifdef _OPENMP
+    omp_unset_lock(&A->lock);
+#endif
   }
 
   else
@@ -157,9 +165,9 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
 
     for(i = 0; i < ipow(2, number_dimensions); i++)
     {
-#pragma omp task untied
       if(B->tree.child[i] != NULL)
       {
+#pragma omp task untied
         spamm_recursive_copy(A->tree.child[i], beta, B->tree.child[i],
             number_dimensions, tier+1, chunk_tier, use_linear_tree, flop,
             memop);

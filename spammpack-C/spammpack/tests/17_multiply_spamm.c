@@ -87,7 +87,8 @@ main (int argc, char **argv)
 
   enum matrix_t matrix_type = full;
 
-  double flops;
+  double flop;
+  double memop;
 
   int option_index;
   int parse_result;
@@ -486,13 +487,15 @@ main (int argc, char **argv)
   printf("multiplying SpAMM... ");
   fflush(stdout);
 
+  flop = 0;
+  memop = 0;
   timer = spamm_timer_new();
   spamm_timer_add_event(0x8000003b, timer);
   spamm_timer_start(timer);
-  spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), &flops);
+  spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), &flop, &memop);
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
-  printf("%si, %e flops\n", timer_string, flops);
+  printf("%si, %e flop, %e memop\n", timer_string, flop, memop);
   free(timer_string);
   spamm_timer_delete(&timer);
 

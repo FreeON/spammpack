@@ -32,6 +32,9 @@ main (int argc, char **argv)
   struct spamm_matrix_t *A = NULL;
   struct spamm_matrix_t *B = NULL;
 
+  double flop;
+  double memop;
+
   float *B_dense;
 
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++)
@@ -72,7 +75,7 @@ main (int argc, char **argv)
           SPAMM_FATAL("failed\n");
         }
 
-        spamm_copy(&A, beta, B);
+        spamm_copy(&A, beta, B, &flop, &memop);
 
         if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
         {
