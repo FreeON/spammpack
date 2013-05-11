@@ -96,12 +96,16 @@ parse_matrix_type (const char *const type_name)
  *
  * @param number_dimensions The number of dimensions.
  * @param is_square Whether the matrix is square shaped.
+ * @param N_mean The mean size per dimensions.
+ * @param N_width The width of randomness around N.
  *
  * @return The shape of the matrix.
  */
 unsigned int *
 generate_shape (const unsigned int number_dimensions,
-    const short is_square)
+    const short is_square,
+    const unsigned int N_mean,
+    const unsigned int N_width)
 {
   int dim;
   unsigned int *N;
@@ -110,7 +114,7 @@ generate_shape (const unsigned int number_dimensions,
 
   if(is_square)
   {
-    N[0] = 150+(int) floor((0.5-rand()/(float) RAND_MAX)*30);
+    N[0] = N_mean+(int) floor((0.5-rand()/(float) RAND_MAX)*N_width);
 
     for(dim = 1; dim < number_dimensions; dim++)
     {
@@ -122,7 +126,7 @@ generate_shape (const unsigned int number_dimensions,
   {
     for(dim = 0; dim < number_dimensions; dim++)
     {
-      N[dim] = 150+(int) floor((0.5-rand()/(float) RAND_MAX)*30);
+      N[dim] = N_mean+(int) floor((0.5-rand()/(float) RAND_MAX)*N_width);
     }
   }
 

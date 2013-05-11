@@ -1,8 +1,10 @@
 #include "test.h"
 
+#include <getopt.h>
 #include <spamm.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define REL_TOLERANCE 1e-8
 #define TEST_TOLERANCE 5e-7
@@ -14,6 +16,9 @@ main (int argc, char **argv)
   int result = 0;
 
   unsigned int number_dimensions;
+
+  unsigned int N_mean = 150;
+  unsigned int N_width = 30;
 
   unsigned int *N;
   unsigned int *i;
@@ -37,6 +42,46 @@ main (int argc, char **argv)
 
   double flop;
   double memop;
+
+  int option_index;
+  int parse_result;
+  char *short_options = "hN:";
+  static struct option long_options[] = {
+    { "help",     no_argument,        NULL, 'h' },
+    { "N-mean",   required_argument,  NULL, 'N' },
+    { "N-width",  required_argument,  NULL, 'w' },
+    { NULL,       0,                  NULL,  0  }
+  };
+
+  while(1)
+  {
+    parse_result = getopt_long(argc, argv, short_options, long_options, &option_index);
+
+    if(parse_result == -1) { break; }
+
+    switch(parse_result)
+    {
+      case 'h':
+        printf("Usage:\n");
+        printf("\n");
+        printf("{ -N | --N-mean } N     Set the mean value of N\n");
+        printf("{ -w | --N-width } w    Set the width of N\n");
+        exit(0);
+        break;
+
+      case 'N':
+        N_mean = strtol(optarg, NULL, 10);
+        break;
+
+      case 'w':
+        N_width = strtol(optarg, NULL, 10);
+        break;
+
+      default:
+        printf("unknown option\n");
+        break;
+    }
+  }
 
   for(number_dimensions = 1; number_dimensions <= 3; number_dimensions++) {
     for(use_linear_tree = 0; use_linear_tree < 2; use_linear_tree++)
@@ -64,7 +109,7 @@ main (int argc, char **argv)
           }
 
           i = calloc(number_dimensions, sizeof(unsigned int));
-          N = generate_shape(number_dimensions, symmetric);
+          N = generate_shape(number_dimensions, symmetric, N_mean, N_width);
 
           A_dense = generate_matrix_float(number_dimensions, matrix_type_A, N, DECAY);
           B_dense = generate_matrix_float(number_dimensions, matrix_type_B, N, DECAY);
@@ -120,7 +165,9 @@ main (int argc, char **argv)
 
           flop = 0;
           memop = 0;
+          SPAMM_INFO("adding... "); fflush(stdout);
           spamm_add(alpha, A, beta, B, &flop, &memop);
+          printf("ok\n");
           SPAMM_INFO("%e flop, %e memop\n", flop, memop);
 
           /* Check tree consistency. */

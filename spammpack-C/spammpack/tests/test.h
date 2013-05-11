@@ -39,7 +39,9 @@ parse_matrix_type (const char *const type_name);
 
 unsigned int *
 generate_shape (const unsigned int number_dimensions,
-    const short is_square);
+    const short is_square,
+    const unsigned int N_mean,
+    const unsigned int N_width);
 
 float *
 generate_matrix_float (const unsigned int number_dimensions,

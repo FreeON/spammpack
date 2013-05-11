@@ -20,6 +20,9 @@ main (int argc, char **argv)
   unsigned int i;
   unsigned int *N;
 
+  const unsigned int N_mean = 150;
+  const unsigned int N_width = 30;
+
   unsigned int N_contiguous;
 
   unsigned int dim;
@@ -48,16 +51,16 @@ main (int argc, char **argv)
 
       for(matrix_type = 0; matrix_type < NUMBER_MATRIX_TYPES; matrix_type++)
       {
-        printf("dim: %u, linTree: %u, matrix_type: %s, ", number_dimensions, use_linear_tree, get_matrix_type_name(matrix_type));
+        printf("dim: %u, linTree: %u, matrix_type: %s\n", number_dimensions, use_linear_tree, get_matrix_type_name(matrix_type));
 
         if(matrix_type == exponential_decay)
         {
-          N = generate_shape(number_dimensions, 1);
+          N = generate_shape(number_dimensions, 1, N_mean, N_width);
         }
 
         else
         {
-          N = generate_shape(number_dimensions, 0);
+          N = generate_shape(number_dimensions, 0, N_mean, N_width);
         }
 
         N_contiguous = 1;
@@ -68,13 +71,15 @@ main (int argc, char **argv)
         B_dense = generate_matrix_float(number_dimensions, matrix_type, N, DECAY);
         B = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, B_dense);
 
-        printf("B info: ");
-        spamm_print_info(B);
+        //printf("B info: ");
+        //spamm_print_info(B);
+
         if(spamm_check(B, REL_TOLERANCE) != SPAMM_OK)
         {
           SPAMM_FATAL("failed\n");
         }
 
+        /* Copy matrix. */
         spamm_copy(&A, beta, B, &flop, &memop);
 
         if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)

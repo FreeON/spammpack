@@ -19,6 +19,9 @@ main (int argc, char **argv)
 
   unsigned int *N;
 
+  const unsigned int N_mean = 150;
+  const unsigned int N_width = 30;
+
   const unsigned int chunk_tier = 3;
 
   short use_linear_tree;
@@ -39,23 +42,24 @@ main (int argc, char **argv)
 
       for(matrix_type = 0; matrix_type < NUMBER_MATRIX_TYPES; matrix_type++)
       {
-        printf("dim: %u, linTree: %u, matrix_type: %s, ", number_dimensions, use_linear_tree, get_matrix_type_name(matrix_type));
+        printf("dim: %u, linTree: %u, matrix_type: %s\n", number_dimensions, use_linear_tree, get_matrix_type_name(matrix_type));
 
         if(matrix_type == exponential_decay)
         {
-          N = generate_shape(number_dimensions, 1);
+          N = generate_shape(number_dimensions, 1, N_mean, N_width);
         }
 
         else
         {
-          N = generate_shape(number_dimensions, 0);
+          N = generate_shape(number_dimensions, 0, N_mean, N_width);
         }
 
         A_dense = generate_matrix_float(number_dimensions, matrix_type, N, DECAY);
         A = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, A_dense);
 
-        printf("A info: ");
-        spamm_print_info(A);
+        //printf("A info: ");
+        //spamm_print_info(A);
+
         if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)
         {
           SPAMM_FATAL("failed\n");
