@@ -81,12 +81,14 @@ MODULE SpAMMPACK_MANAGEMENT
       TYPE(c_ptr), INTENT(INOUT) :: A
     END SUBROUTINE spamm_new_interface
 
-    SUBROUTINE spamm_copy (A, beta, B) &
+    SUBROUTINE spamm_copy (A, beta, B, flop, mop) &
         BIND(C, name = "spamm_copy_interface")
       USE, INTRINSIC :: iso_C_binding
-      TYPE(c_ptr), INTENT(INOUT) :: A
-      REAL(c_float), INTENT(IN) :: beta
-      TYPE(c_ptr), INTENT(IN) :: B
+      TYPE(c_ptr), INTENT(INOUT)    :: A
+      REAL(c_float), INTENT(IN)     :: beta
+      TYPE(c_ptr), INTENT(IN)       :: B
+      REAL(c_double), INTENT(INOUT) :: flop
+      REAL(c_double), INTENT(INOUT) :: mop
     END SUBROUTINE spamm_copy
 
   END INTERFACE
@@ -257,12 +259,26 @@ CONTAINS
 
   END SUBROUTINE SpAMM_SetEq_SpAMM_C_to_Dense
 
-  SUBROUTINE SpAMM_SetEq_SpAMM_C_to_SpAMM_C (A, B)
+  SUBROUTINE SpAMM_SetEq_SpAMM_C_to_SpAMM_C (A, B, flop_O, mop_O)
 
-    TYPE(c_ptr), INTENT(INOUT) :: A
-    TYPE(c_ptr), INTENT(IN) :: B
+    TYPE(c_ptr), INTENT(INOUT)      :: A
+    TYPE(c_ptr), INTENT(IN)         :: B
+    REAL*8, INTENT(INOUT), OPTIONAL :: flop_O
+    REAL*8, INTENT(INOUT), OPTIONAL :: mop_O
+    REAL(c_double)                  :: flop
+    REAL(c_double)                  :: mop
 
-    CALL spamm_copy(A, 1.0, B)
+    flop = 0.0D0
+    mop = 0.0D0
+
+    CALL spamm_copy(A, 1.0, B, flop, mop)
+
+    IF(PRESENT(flop_O)) THEN
+      flop_O = flop_O+flop
+    ENDIF
+    IF(PRESENT(mop_O)) THEN
+      mop_O = mop_O+mop
+    ENDIF
 
   END SUBROUTINE SpAMM_SetEq_SpAMM_C_to_SpAMM_C
 

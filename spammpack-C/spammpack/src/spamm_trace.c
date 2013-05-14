@@ -3,11 +3,15 @@
 #include "spamm.h"
 #include "spamm_types_private.h"
 
+#include <assert.h>
+
 float
 spamm_trace (const struct spamm_matrix_t *const A)
 {
   unsigned int i[2];
   float trace;
+
+  assert(A != NULL);
 
   switch(A->number_dimensions)
   {

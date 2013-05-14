@@ -553,14 +553,14 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
  *
  * @param chunk The chunk.
  * @param flop The flop count.
- * @param memop The memory operation count
+ * @param mop The memory operation count
  *
  * @return The square of the norm of the chunk.
  */
 spamm_norm_t
 spamm_chunk_fix (spamm_chunk_t *const chunk,
     double *const flop,
-    double *const memop)
+    double *const mop)
 {
   float *matrix;
   float *matrix_dilated;
@@ -665,8 +665,8 @@ spamm_chunk_fix (spamm_chunk_t *const chunk,
       }
     }
 
-    /* Update memop count. */
-    *memop += ipow(N_contiguous/SPAMM_N_KERNEL, 2)*SPAMM_N_BLOCK*SPAMM_N_BLOCK;
+    /* Update mop count. */
+    *mop += ipow(N_contiguous/SPAMM_N_KERNEL, 2)*SPAMM_N_BLOCK*SPAMM_N_BLOCK;
 
     /* Update norms up to the root tier of this chunk. */
     for(tier = number_tiers-SPAMM_KERNEL_DEPTH-2; tier >= 0; tier--)

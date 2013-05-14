@@ -16,7 +16,7 @@
  * @param beta The factor @f$ \beta @f$.
  * @param B Chunk B.
  * @param flop The flop count.
- * @param memop The memory operation count
+ * @param mop The memory operation count
  *
  * @return The square of the norm of the chunk.
  */
@@ -26,7 +26,7 @@ spamm_chunk_add (const float alpha,
     const float beta,
     spamm_chunk_t *B,
     double *const flop,
-    double *const memop)
+    double *const mop)
 {
   unsigned int number_dimensions;
 
@@ -57,7 +57,7 @@ spamm_chunk_add (const float alpha,
   *flop += 3*ipow(N_contiguous, number_dimensions);
 
   /* Update norms. */
-  return spamm_chunk_fix(A, flop, memop);
+  return spamm_chunk_fix(A, flop, mop);
 }
 
 /** Add two spamm matrices. @f$ A \leftarrow \alpha A + \beta B @f$.
@@ -71,7 +71,7 @@ spamm_chunk_add (const float alpha,
  * @param chunk_tier The chunk tier.
  * @param use_linear_tree Are we using a linear tree?
  * @param flop The flop count.
- * @param memop The memory operation count
+ * @param mop The memory operation count
  */
 void
 spamm_recursive_add (const float alpha,
@@ -83,7 +83,7 @@ spamm_recursive_add (const float alpha,
     const unsigned int chunk_tier,
     const short use_linear_tree,
     double *const flop,
-    double *const memop)
+    double *const mop)
 {
   unsigned int i;
 
@@ -104,7 +104,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      spamm_chunk_copy(&A->tree.chunk, beta, B->tree.chunk, use_linear_tree, flop, memop);
+      spamm_chunk_copy(&A->tree.chunk, beta, B->tree.chunk, use_linear_tree, flop, mop);
 
 #ifdef _OPENMP
       omp_unset_lock(&A->lock);
@@ -117,7 +117,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk, flop, memop);
+      A->norm2 = spamm_chunk_multiply_scalar(alpha, A->tree.chunk, flop, mop);
       A->norm = sqrt(A->norm2);
 
 #ifdef _OPENMP
@@ -131,7 +131,7 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      A->norm2 = spamm_chunk_add(alpha, A->tree.chunk, beta, B->tree.chunk, flop, memop);
+      A->norm2 = spamm_chunk_add(alpha, A->tree.chunk, beta, B->tree.chunk, flop, mop);
       A->norm = sqrt(A->norm2);
 
 #ifdef _OPENMP
@@ -146,14 +146,14 @@ spamm_recursive_add (const float alpha,
     {
       /* Copy B node to A. */
       spamm_recursive_copy(A, beta, B, number_dimensions, tier,
-          chunk_tier, use_linear_tree, flop, memop);
+          chunk_tier, use_linear_tree, flop, mop);
     }
 
     else if(A->tree.child != NULL && B == NULL)
     {
       /* Multiply A by alpha. */
       spamm_recursive_multiply_scalar(alpha, A, number_dimensions, tier,
-          chunk_tier, use_linear_tree, flop, memop);
+          chunk_tier, use_linear_tree, flop, mop);
     }
 
     else
@@ -194,7 +194,7 @@ spamm_recursive_add (const float alpha,
 #pragma omp task untied
         spamm_recursive_add(alpha, A->tree.child[i], beta,
             (const struct spamm_recursive_node_t*const) B->tree.child[i],
-            number_dimensions, tier+1, chunk_tier, use_linear_tree, flop, memop);
+            number_dimensions, tier+1, chunk_tier, use_linear_tree, flop, mop);
       }
 #pragma omp taskwait
 
@@ -219,7 +219,7 @@ spamm_recursive_add (const float alpha,
  * @param beta The factor @f$ \beta @f$.
  * @param B The matrix B.
  * @param flop The flop count.
- * @param memop The memory operation count
+ * @param mop The memory operation count
  */
 void
 spamm_add (const float alpha,
@@ -227,7 +227,7 @@ spamm_add (const float alpha,
     const float beta,
     const struct spamm_matrix_t *const B,
     double *const flop,
-    double *const memop)
+    double *const mop)
 {
   struct spamm_recursive_node_t *B_pointer;
 
@@ -252,7 +252,7 @@ spamm_add (const float alpha,
       spamm_recursive_add(alpha, A->recursive_tree, beta,
           (const struct spamm_recursive_node_t*const) B_pointer,
           A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree, flop,
-          memop);
+          mop);
     }
   }
 }

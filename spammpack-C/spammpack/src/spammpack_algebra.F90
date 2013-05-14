@@ -30,22 +30,26 @@ MODULE SpAMMPACK_ALGEBRA
 
   INTERFACE
 
-    SUBROUTINE spamm_multiply_interface (tolerance, alpha, A, B, beta, C) &
+    SUBROUTINE spamm_multiply_interface (tolerance, alpha, A, B, beta, C, flop, mop) &
       BIND(C, name = "spamm_multiply_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(IN)  :: tolerance
-      REAL(c_float), INTENT(IN)  :: alpha
-      TYPE(c_ptr), INTENT(IN)    :: A
-      TYPE(c_ptr), INTENT(IN)    :: B
-      REAL(c_float), INTENT(IN)  :: beta
-      TYPE(c_ptr), INTENT(INOUT) :: C
+      REAL(c_float), INTENT(IN)     :: tolerance
+      REAL(c_float), INTENT(IN)     :: alpha
+      TYPE(c_ptr), INTENT(IN)       :: A
+      TYPE(c_ptr), INTENT(IN)       :: B
+      REAL(c_float), INTENT(IN)     :: beta
+      TYPE(c_ptr), INTENT(INOUT)    :: C
+      REAL(c_double), INTENT(INOUT) :: flop
+      REAL(c_double), INTENT(INOUT) :: mop
     END SUBROUTINE spamm_multiply_interface
 
-    SUBROUTINE spamm_multiply_scalar (alpha, A) &
+    SUBROUTINE spamm_multiply_scalar (alpha, A, flop, mop) &
         BIND(C, name = "spamm_multiply_scalar_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(IN)  :: alpha
-      TYPE(c_ptr), INTENT(INOUT) :: A
+      REAL(c_float), INTENT(IN)     :: alpha
+      TYPE(c_ptr), INTENT(INOUT)    :: A
+      REAL(c_double), INTENT(INOUT) :: flop
+      REAL(c_double), INTENT(INOUT) :: mop
     END SUBROUTINE spamm_multiply_scalar
 
     SUBROUTINE spamm_trace_interface (trace, A) &
@@ -55,14 +59,16 @@ MODULE SpAMMPACK_ALGEBRA
       TYPE(c_ptr), INTENT(IN)      :: A
     END SUBROUTINE spamm_trace_interface
 
-    SUBROUTINE spamm_add_interface (alpha, A, beta, B, C) &
+    SUBROUTINE spamm_add_interface (alpha, A, beta, B, C, flop, mop) &
         BIND(C, name = "spamm_add_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(IN)  :: alpha
-      TYPE(c_ptr), INTENT(IN)    :: A
-      REAL(c_float), INTENT(IN)  :: beta
-      TYPE(c_ptr), INTENT(IN)    :: B
-      TYPE(c_ptr), INTENT(INOUT) :: C
+      REAL(c_float), INTENT(IN)     :: alpha
+      TYPE(c_ptr), INTENT(IN)       :: A
+      REAL(c_float), INTENT(IN)     :: beta
+      TYPE(c_ptr), INTENT(IN)       :: B
+      TYPE(c_ptr), INTENT(INOUT)    :: C
+      REAL(c_double), INTENT(INOUT) :: flop
+      REAL(c_double), INTENT(INOUT) :: mop
     END SUBROUTINE spamm_add_interface
 
   END INTERFACE
@@ -248,14 +254,27 @@ CONTAINS
   !> @param B Matrix B.
   !> @param C Matrix C.
   !> @param flop The flop count.
-  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_SpAMM_C (tolerance, A, B, C, flop)
+  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_SpAMM_C (tolerance, A, B, C, flop_O, mop_O)
 
     REAL*4, INTENT(IN)              :: tolerance
     TYPE(c_ptr), INTENT(IN)         :: A, B
     TYPE(c_ptr), INTENT(INOUT)      :: C
-    REAL*8, INTENT(INOUT), OPTIONAL :: flop
+    REAL*8, INTENT(INOUT), OPTIONAL :: flop_O
+    REAL*8, INTENT(INOUT), OPTIONAL :: mop_O
+    REAL(c_double)                  :: flop
+    REAL(c_double)                  :: mop
 
-    CALL spamm_multiply_interface(tolerance, 1.0, A, B, 0.0, C)
+    flop = 0.0D0
+    mop = 0.0D0
+
+    CALL spamm_multiply_interface(tolerance, 1.0, A, B, 0.0, C, flop, mop)
+
+    IF(PRESENT(flop_O)) THEN
+      flop_O = flop_O+flop
+    ENDIF
+    IF(PRESENT(mop_O)) THEN
+      mop_O = mop_O+mop
+    ENDIF
 
   END SUBROUTINE SpAMM_Multiply_SpAMM_C_x_SpAMM_C
 
@@ -264,13 +283,26 @@ CONTAINS
   !> @param A Matrix A.
   !> @param alpha The factor @f$ \alpha @f$.
   !> @param flop The flop count.
-  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_Scalar (A, alpha, flop)
+  SUBROUTINE SpAMM_Multiply_SpAMM_C_x_Scalar (A, alpha, flop_O, mop_O)
 
     TYPE(c_ptr), INTENT(INOUT)      :: A
     REAL*4, INTENT(IN)              :: alpha
-    REAL*8, INTENT(INOUT), OPTIONAL :: flop
+    REAL*8, INTENT(INOUT), OPTIONAL :: flop_O
+    REAL*8, INTENT(INOUT), OPTIONAL :: mop_O
+    REAL(c_double)                  :: flop
+    REAL(c_double)                  :: mop
 
-    CALL spamm_multiply_scalar(alpha, A)
+    flop = 0.0D0
+    mop = 0.0D0
+
+    CALL spamm_multiply_scalar(alpha, A, flop, mop)
+
+    IF(PRESENT(flop_O)) THEN
+      flop_O = flop_O+flop
+    ENDIF
+    IF(PRESENT(mop_O)) THEN
+      mop_O = mop_O+mop
+    ENDIF
 
   END SUBROUTINE SpAMM_Multiply_SpAMM_C_x_Scalar
 
@@ -279,12 +311,26 @@ CONTAINS
   !> A Matrix A.
   !> B Matrix B.
   !> C Matrix C.
-  SUBROUTINE SpAMM_Add_SpAMM_C (A, B, C)
+  SUBROUTINE SpAMM_Add_SpAMM_C (A, B, C, flop_O, mop_O)
 
-    TYPE(c_ptr), INTENT(IN) :: A, B
-    TYPE(c_ptr), INTENT(INOUT) :: C
+    TYPE(c_ptr), INTENT(IN)         :: A, B
+    TYPE(c_ptr), INTENT(INOUT)      :: C
+    REAL*8, INTENT(INOUT), OPTIONAL :: flop_O
+    REAL*8, INTENT(INOUT), OPTIONAL :: mop_O
+    REAL(c_double)                  :: flop
+    REAL(c_double)                  :: mop
 
-    CALL spamm_add_interface(1.0, A, 1.0, B, C)
+    flop = 0.0D0
+    mop = 0.0D0
+
+    CALL spamm_add_interface(1.0, A, 1.0, B, C, flop, mop)
+
+    IF(PRESENT(flop_O)) THEN
+      flop_O = flop_O+flop
+    ENDIF
+    IF(PRESENT(mop_O)) THEN
+      mop_O = mop_O+mop
+    ENDIF
 
   END SUBROUTINE SpAMM_Add_SpAMM_C
 

@@ -118,11 +118,11 @@ main (int argc, char **argv)
           A = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, A_dense);
           B = spamm_convert_dense_to_spamm(number_dimensions, N, chunk_tier, use_linear_tree, row_major, B_dense);
 
-          SPAMM_INFO("A: ");
-          spamm_print_info(A);
+          //SPAMM_INFO("A: ");
+          //spamm_print_info(A);
 
-          SPAMM_INFO("B: ");
-          spamm_print_info(B);
+          //SPAMM_INFO("B: ");
+          //spamm_print_info(B);
 
           /* Add by hand for verification. */
           switch(number_dimensions)
@@ -165,10 +165,10 @@ main (int argc, char **argv)
 
           flop = 0;
           memop = 0;
-          SPAMM_INFO("adding... "); fflush(stdout);
+          //SPAMM_INFO("adding... "); fflush(stdout);
           spamm_add(alpha, A, beta, B, &flop, &memop);
-          printf("ok\n");
-          SPAMM_INFO("%e flop, %e memop\n", flop, memop);
+          //printf("ok\n");
+          //SPAMM_INFO("%e flop, %e memop\n", flop, memop);
 
           /* Check tree consistency. */
           if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)

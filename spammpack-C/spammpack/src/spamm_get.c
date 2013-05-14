@@ -55,8 +55,8 @@ spamm_chunk_get (const unsigned int *i,
 float
 spamm_recursive_get (const unsigned int number_dimensions,
     const unsigned int *const i,
-    const unsigned int *N_lower,
-    const unsigned int *N_upper,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
     const unsigned int tier,
     const unsigned int chunk_tier,
     const short use_linear_tree,
@@ -119,7 +119,8 @@ spamm_recursive_get (const unsigned int number_dimensions,
  * @return The matrix element.
  */
 float
-spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
+spamm_get (const unsigned int *const i,
+    const struct spamm_matrix_t *const A)
 {
   unsigned int *N_lower;
   unsigned int *N_upper;
@@ -127,6 +128,8 @@ spamm_get (const unsigned int *const i, const struct spamm_matrix_t *A)
   int dim;
 
   float Aij;
+
+  assert(A != NULL);
 
   N_lower = calloc(A->number_dimensions, sizeof(unsigned int));
   N_upper = calloc(A->number_dimensions, sizeof(unsigned int));

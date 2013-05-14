@@ -12,7 +12,7 @@
  * @param beta The scalar \f$ \beta \f$.
  * @param B Chunk B.
  * @param flop The flop count.
- * @param memop The memory operation count
+ * @param mop The memory operation count
  */
 void
 spamm_chunk_copy (spamm_chunk_t **A,
@@ -20,7 +20,7 @@ spamm_chunk_copy (spamm_chunk_t **A,
     spamm_chunk_t *B,
     const short use_linear_tree,
     double *const flop,
-    double *const memop)
+    double *const mop)
 {
   unsigned int number_dimensions;
   unsigned int number_tiers;
@@ -92,7 +92,7 @@ spamm_chunk_copy (spamm_chunk_t **A,
   }
 
   *flop += ipow(N_contiguous, number_dimensions);
-  *memop += 4*ipow(N_contiguous, number_dimensions);
+  *mop += 4*ipow(N_contiguous, number_dimensions);
 }
 
 /** Copy a matrix. \f$ A \leftarrow \beta B \f$.
@@ -101,7 +101,7 @@ spamm_chunk_copy (spamm_chunk_t **A,
  * @param beta The scalar beta.
  * @param B The matrix to copy from.
  * @param flop The flop count.
- * @param memop The memory operation count
+ * @param mop The memory operation count
  */
 void
 spamm_recursive_copy (struct spamm_recursive_node_t *const A,
@@ -112,7 +112,7 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
     const unsigned int chunk_tier,
     const short use_linear_tree,
     double *const flop,
-    double *const memop)
+    double *const mop)
 {
   short i;
 
@@ -128,7 +128,7 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
     omp_set_lock(&A->lock);
 #endif
 
-    spamm_chunk_copy(&A->tree.chunk, beta, B->tree.chunk, use_linear_tree, flop, memop);
+    spamm_chunk_copy(&A->tree.chunk, beta, B->tree.chunk, use_linear_tree, flop, mop);
 
 #ifdef _OPENMP
     omp_unset_lock(&A->lock);
@@ -170,7 +170,7 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
 #pragma omp task untied
         spamm_recursive_copy(A->tree.child[i], beta, B->tree.child[i],
             number_dimensions, tier+1, chunk_tier, use_linear_tree, flop,
-            memop);
+            mop);
       }
     }
 #pragma omp taskwait
@@ -194,14 +194,14 @@ spamm_recursive_copy (struct spamm_recursive_node_t *const A,
  * @param beta The scalar beta.
  * @param B The matrix to copy from.
  * @param flop The flop count.
- * @param memop The memory operation count
+ * @param mop The memory operation count
  */
 void
 spamm_copy (struct spamm_matrix_t **A,
     const float beta,
     const struct spamm_matrix_t *const B,
     double *const flop,
-    double *const memop)
+    double *const mop)
 {
   assert(A != NULL);
 
@@ -221,7 +221,7 @@ spamm_copy (struct spamm_matrix_t **A,
 #pragma omp task untied
       spamm_recursive_copy((*A)->recursive_tree, beta, B->recursive_tree,
           B->number_dimensions, 0, B->chunk_tier, B->use_linear_tree, flop,
-          memop);
+          mop);
     }
   }
 }
