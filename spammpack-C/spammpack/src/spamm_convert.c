@@ -34,6 +34,8 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
 
   assert(A_dense != NULL);
 
+  SPAMM_INFO("number dimensions = %u\n", number_dimensions);
+
   A = spamm_new(number_dimensions, N, chunk_tier, use_linear_tree);
 
   i = calloc(number_dimensions, sizeof(unsigned int));

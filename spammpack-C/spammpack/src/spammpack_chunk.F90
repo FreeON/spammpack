@@ -37,7 +37,7 @@ MODULE SpAMMPACK_CHUNK
       USE, INTRINSIC :: iso_C_binding
       INTEGER(c_int), INTENT(IN) :: ndim, N_block
       INTEGER(c_int), DIMENSION(ndim), INTENT(IN) :: N, N_lower, N_upper
-      TYPE(c_ptr), INTENT(OUT) :: chunk
+      TYPE(c_ptr), INTENT(INOUT) :: chunk
     END SUBROUTINE spamm_new_chunk
 
     !> Interface for spamm_delete_chunk().

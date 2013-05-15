@@ -18,7 +18,8 @@ MODULE SpAMMPACK_MANAGEMENT
 
   INTERFACE SpAMM_Set
 
-    MODULE PROCEDURE SpAMM_Set_SpAMM_RNK2
+    MODULE PROCEDURE &
+        SpAMM_Set_SpAMM_RNK2
 
   END INTERFACE SpAMM_Set
 
@@ -51,7 +52,7 @@ MODULE SpAMMPACK_MANAGEMENT
       INTEGER(c_int), INTENT(IN) :: chunk_tier
       INTEGER(c_int), INTENT(IN) :: use_linear_tree
       REAL(c_float), DIMENSION(*), INTENT(IN) :: A_dense
-      TYPE(c_ptr), INTENT(OUT) :: A
+      TYPE(c_ptr), INTENT(INOUT) :: A
     END subroutine spamm_convert_dense_to_spamm
 
     !> Interface for spamm_convert_spamm_to_dense().
@@ -90,6 +91,12 @@ MODULE SpAMMPACK_MANAGEMENT
       REAL(c_double), INTENT(INOUT) :: flop
       REAL(c_double), INTENT(INOUT) :: mop
     END SUBROUTINE spamm_copy
+
+    SUBROUTINE spamm_print (A) &
+        BIND(C, name = "spamm_print_interface")
+      USE, INTRINSIC :: iso_C_binding
+      TYPE(c_ptr), INTENT(IN) :: A
+    END SUBROUTINE spamm_print
 
   END INTERFACE
 

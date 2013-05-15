@@ -281,6 +281,15 @@ spamm_print (const struct spamm_matrix_t *const A)
   i = calloc(A->number_dimensions, sizeof(unsigned int));
   switch(A->number_dimensions)
   {
+    case 1:
+      printf("{");
+      for(i[0] = 0; i[0] < A->N[0]; i[0]++)
+      {
+        printf(" % 1.2e", spamm_get(i, A));
+      }
+      printf(" }\n");
+      break;
+
     case 2:
       for(i[0] = 0; i[0] < A->N[0]; i[0]++) {
         for(i[1] = 0; i[1] < A->N[1]; i[1]++)
@@ -292,11 +301,14 @@ spamm_print (const struct spamm_matrix_t *const A)
       break;
 
     default:
-      SPAMM_FATAL("not implemented\n");
+      SPAMM_FATAL("not implemented (number dimensions = %i)\n", A->number_dimensions);
   }
+  free(i);
 }
 
 /** Print a matrix in matlab format.
+ *
+ * @param A The matrix.
  */
 void
 spamm_matlab_print (const struct spamm_matrix_t *const A)
