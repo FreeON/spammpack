@@ -156,7 +156,7 @@ else
 fi
 AM_CONDITIONAL(HAVE_SSE4_1_IN_CPU, [test "${have_SSE4_1_in_CPU}" = "yes"])
 
-#AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Extra debugging output in the multiply.])
+AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Extra debugging output in the multiply.])
 AC_MSG_CHECKING([whether to use the assembly kernel])
 AC_ARG_ENABLE([assembly-kernel],
               [AS_HELP_STRING([--disable-assembly-kernel],
@@ -257,9 +257,9 @@ dnl Define some data types.
 AC_MSG_CHECKING([for norm type])
 AC_ARG_WITH([norm-type],
             [AS_HELP_STRING([--with-norm-type],
-                            [Set the norm type to either float or double (default = double).])],
+                            [Set the norm type to either float or double (default = float).])],
             [norm_type=$withval],
-            [norm_type="double"])
+            [norm_type="float"])
 if test $norm_type = "float" -o $norm_type = "double"; then
   AC_MSG_RESULT([$norm_type])
   AC_DEFINE_UNQUOTED([SPAMM_NORM_TYPE], [$norm_type], [The data type of the norms.])

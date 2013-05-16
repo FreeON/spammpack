@@ -53,7 +53,7 @@ spamm_print_dense (const unsigned int M, const unsigned int N,
  * @param chunk The chunk.
  */
 void
-spamm_print_chunk (spamm_chunk_t *const chunk)
+spamm_print_chunk (const spamm_chunk_t *const chunk)
 {
   int dim;
   unsigned int i, j;

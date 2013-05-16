@@ -85,7 +85,6 @@ spamm_convert_dense_to_spamm_interface (const unsigned int *const number_dimensi
     const float *const A_dense,
     struct spamm_matrix_t **const A)
 {
-  SPAMM_INFO("numer dimensions = %u\n", *number_dimensions);
   *A = spamm_convert_dense_to_spamm(*number_dimensions, N, *chunk_tier,
       *use_linear_tree, column_major, A_dense);
 }

@@ -47,19 +47,19 @@ MODULE SpAMMPACK_MANAGEMENT
     SUBROUTINE spamm_convert_dense_to_spamm (ndim, N, chunk_tier, use_linear_tree, A_dense, A) &
         BIND(C, NAME = "spamm_convert_dense_to_spamm_interface")
       USE, INTRINSIC :: iso_C_binding
-      INTEGER(c_int), INTENT(IN) :: ndim
+      INTEGER(c_int), INTENT(IN)                  :: ndim
       INTEGER(c_int), DIMENSION(ndim), INTENT(IN) :: N
-      INTEGER(c_int), INTENT(IN) :: chunk_tier
-      INTEGER(c_int), INTENT(IN) :: use_linear_tree
-      REAL(c_float), DIMENSION(*), INTENT(IN) :: A_dense
-      TYPE(c_ptr), INTENT(INOUT) :: A
+      INTEGER(c_int), INTENT(IN)                  :: chunk_tier
+      INTEGER(c_int), INTENT(IN)                  :: use_linear_tree
+      REAL(c_float), DIMENSION(*), INTENT(IN)     :: A_dense
+      TYPE(c_ptr), INTENT(INOUT)                  :: A
     END subroutine spamm_convert_dense_to_spamm
 
     !> Interface for spamm_convert_spamm_to_dense().
     SUBROUTINE spamm_convert_spamm_to_dense (A, ADense) &
         BIND(C, name = "spamm_convert_spamm_to_dense_interface")
       USE, INTRINSIC :: iso_C_binding
-      TYPE(c_ptr), INTENT(IN) :: A
+      TYPE(c_ptr), INTENT(IN)                 :: A
       REAL(c_float), DIMENSION(*), INTENT(IN) :: ADense
     END SUBROUTINE spamm_convert_spamm_to_dense
 
@@ -68,18 +68,18 @@ MODULE SpAMMPACK_MANAGEMENT
         BIND(C, name = "spamm_get_interface")
       USE, INTRINSIC :: iso_C_binding
       INTEGER(c_int), DIMENSION(*) :: i
-      TYPE(c_ptr), INTENT(IN) :: A
-      REAL(c_float), INTENT(OUT) :: Aij
+      TYPE(c_ptr), INTENT(IN)      :: A
+      REAL(c_float), INTENT(OUT)  :: Aij
     END SUBROUTINE spamm_get_element
 
     SUBROUTINE spamm_new_interface (ndim, N, chunkTier, useLinearTree, A) &
         BIND(C, name = "spamm_new_interface")
       USE, INTRINSIC :: iso_C_binding
-      INTEGER(c_int), INTENT(IN) :: ndim
+      INTEGER(c_int), INTENT(IN)               :: ndim
       INTEGER(c_int), DIMENSION(2), INTENT(IN) :: N
-      INTEGER(c_int), INTENT(IN) :: chunkTier
-      INTEGER(c_int), INTENT(IN) :: useLinearTree
-      TYPE(c_ptr), INTENT(INOUT) :: A
+      INTEGER(c_int), INTENT(IN)               :: chunkTier
+      INTEGER(c_int), INTENT(IN)               :: useLinearTree
+      TYPE(c_ptr), INTENT(INOUT)               :: A
     END SUBROUTINE spamm_new_interface
 
     SUBROUTINE spamm_copy (A, beta, B, flop, mop) &
@@ -110,9 +110,9 @@ CONTAINS
 
   INTEGER FUNCTION get_tree_depth (numberDimensions, N, useLinearTree) RESULT(depth)
 
-    INTEGER, INTENT(IN) :: numberDimensions
+    INTEGER, INTENT(IN)                              :: numberDimensions
     INTEGER, DIMENSION(numberDimensions), INTENT(IN) :: N
-    LOGICAL, INTENT(IN) :: useLinearTree
+    LOGICAL, INTENT(IN)                              :: useLinearTree
 
     INTEGER :: NTemp, dim
     REAL*4 :: x, xN
@@ -154,9 +154,9 @@ CONTAINS
   SUBROUTINE SpAMM_New_SpAMM_RNK2 (N, chunkTier, useLinearTree, A)
 
     INTEGER, DIMENSION(2), INTENT(IN) :: N
-    INTEGER, INTENT(IN) :: chunkTier
-    LOGICAL, INTENT(IN) :: useLinearTree
-    TYPE(SpAMM_RNK2), INTENT(INOUT) :: A
+    INTEGER, INTENT(IN)               :: chunkTier
+    LOGICAL, INTENT(IN)               :: useLinearTree
+    TYPE(SpAMM_RNK2), INTENT(INOUT)   :: A
 
     A%N = N
     A%depth = get_tree_depth(2, N, useLinearTree)
@@ -173,9 +173,9 @@ CONTAINS
   SUBROUTINE SpAMM_New_SpAMM_C (N, chunkTier, useLinearTree, A)
 
     INTEGER, DIMENSION(2), INTENT(IN) :: N
-    INTEGER, INTENT(IN) :: chunkTier
-    LOGICAL, INTENT(IN) :: useLinearTree
-    TYPE(c_ptr), INTENT(INOUT) :: A
+    INTEGER, INTENT(IN)               :: chunkTier
+    LOGICAL, INTENT(IN)               :: useLinearTree
+    TYPE(c_ptr), INTENT(INOUT)        :: A
 
     INTEGER(c_int) :: use_linear_tree
 
@@ -191,15 +191,15 @@ CONTAINS
 
   SUBROUTINE SpAMM_Set_SpAMM_RNK2 (i, j, Aij, A)
 
-    INTEGER, INTENT(IN) :: i, j
-    REAL*4, INTENT(IN) :: Aij
+    INTEGER, INTENT(IN)             :: i, j
+    REAL*4, INTENT(IN)              :: Aij
     TYPE(SpAMM_RNK2), INTENT(INOUT) :: A
 
   END SUBROUTINE SpAMM_Set_SpAMM_RNK2
 
   REAL*4 FUNCTION SpAMM_Get_SpAMM_RNK2 (i, j, A) RESULT(Aij)
 
-    INTEGER, INTENT(IN) :: i, j
+    INTEGER, INTENT(IN)          :: i, j
     TYPE(SpAMM_RNK2), INTENT(IN) :: A
 
     Aij = 0
@@ -217,7 +217,7 @@ CONTAINS
 
   SUBROUTINE SpAMM_SetEq_SpAMM_RNK2_to_Dense (A, ADense)
 
-    TYPE(SpAMM_RNK2), INTENT(INOUT) :: A
+    TYPE(SpAMM_RNK2), INTENT(INOUT)    :: A
     REAL*4, DIMENSION(:,:), INTENT(IN) :: ADense
 
     INTEGER :: i, j
@@ -240,10 +240,10 @@ CONTAINS
 
   SUBROUTINE SpAMM_SetEq_SpAMM_C_to_Dense (A, ADense, chunkTier, useLinearTree)
 
-    TYPE(c_ptr), INTENT(INOUT) :: A
+    TYPE(c_ptr), INTENT(INOUT)         :: A
     REAL*8, DIMENSION(:,:), INTENT(IN) :: ADense
-    INTEGER, INTENT(IN) :: chunkTier
-    LOGICAL, INTENT(IN) :: useLinearTree
+    INTEGER, INTENT(IN)                :: chunkTier
+    LOGICAL, INTENT(IN)                :: useLinearTree
 
     REAL*4, DIMENSION(SIZE(ADense, 1), SIZE(ADense, 2)) :: ADenseSingle
     INTEGER :: i, j
@@ -272,8 +272,9 @@ CONTAINS
     TYPE(c_ptr), INTENT(IN)         :: B
     REAL*8, INTENT(INOUT), OPTIONAL :: flop_O
     REAL*8, INTENT(INOUT), OPTIONAL :: mop_O
-    REAL(c_double)                  :: flop
-    REAL(c_double)                  :: mop
+
+    REAL(c_double) :: flop
+    REAL(c_double) :: mop
 
     flop = 0.0D0
     mop = 0.0D0
@@ -292,7 +293,7 @@ CONTAINS
   SUBROUTINE SpAMM_SetEq_Dense_to_SpAMM_C (ADense, A)
 
     REAL*8, DIMENSION(:,:), INTENT(INOUT) :: ADense
-    TYPE(c_ptr), INTENT(IN) :: A
+    TYPE(c_ptr), INTENT(IN)               :: A
 
     INTEGER :: i, j
 

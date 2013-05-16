@@ -202,7 +202,7 @@ void
 spamm_print_info (const struct spamm_matrix_t *const A);
 
 void
-spamm_print_chunk (spamm_chunk_t *const chunk);
+spamm_print_chunk (const spamm_chunk_t *const chunk);
 
 void
 spamm_print_tree (const struct spamm_matrix_t *A);

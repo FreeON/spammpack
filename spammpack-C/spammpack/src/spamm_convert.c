@@ -29,12 +29,10 @@ spamm_convert_dense_to_spamm (const unsigned int number_dimensions,
     const enum spamm_layout_t dense_type,
     const float *const A_dense)
 {
-  struct spamm_matrix_t *A = NULL;
+  struct spamm_matrix_t *A;
   unsigned int *i;
 
   assert(A_dense != NULL);
-
-  SPAMM_INFO("number dimensions = %u\n", number_dimensions);
 
   A = spamm_new(number_dimensions, N, chunk_tier, use_linear_tree);
 

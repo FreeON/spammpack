@@ -260,7 +260,7 @@ spamm_chunk_get_norm2 (const spamm_chunk_t *const chunk)
  */
 spamm_norm_t *
 spamm_chunk_get_tier_norm2 (const unsigned int tier,
-    spamm_chunk_t *chunk)
+    const spamm_chunk_t *const chunk)
 {
   spamm_norm_t *norm2;
   unsigned int number_dimensions;
@@ -279,13 +279,19 @@ spamm_chunk_get_tier_norm2 (const unsigned int tier,
   return &norm2[offset];
 }
 
-/** Calculate a linear offset into a SpAMM chunk matrix. When using a linear
- * tree, the matrix data is stored in a matrix of width N_contiguous, in
- * submatrices of width N_block.  The blocks are stored in Z-curve order, and
- * the matrix elements inside the blocks are stored in column-major order for
- * reasons of compatibilty with Fortran. When not using a linear tree, the
- * matrix elements are stored in a N_contiguous x N_contiguous matrix in
- * column-major storage order.
+/** Calculate a linear offset into a SpAMM chunk matrix.
+ *
+ * When using a linear tree, the matrix data is stored in a hierarchy of
+ * submatrices. At the highest level, the chunk stores the matrix elements in
+ * a matrix of size N_contiguous x N_contiguous. The next tier are submatrices
+ * of size SPAMM_N_KERNEL x SPAMM_N_KERNEL which are Z-curve ordered. This is
+ * the kernel tier. Inside a kernel submatrix, there are submatrices of size
+ * SPAMM_N_BLOCK x SPAMM_N_BLOCK, which are in row-major order. The elements
+ * inside each such basic block are also stored in row-major order.
+ *
+ * When not using a linear tree, the matrix elements are stored in a
+ * N_contiguous x N_contiguous matrix in column-major storage order (so we are
+ * compatible with Fortran).
  *
  * @param number_dimensions The number of dimensions.
  * @param use_linear_tree Whether we are using the linear tree.
@@ -312,18 +318,32 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
 
   if(use_linear_tree)
   {
-    for(dim = 0; dim < number_dimensions; dim++)
+    /* Shift indices to lower corner and divide by SPAMM_N_KERNEL. */
+    for(dim = 0; dim < 2; dim++)
     {
-      i_temp[dim] = (i[dim]-N_lower[dim])/SPAMM_N_BLOCK;
+      i_temp[dim] = (i[dim]-N_lower[dim])/SPAMM_N_KERNEL;
     }
-    offset = ipow(SPAMM_N_BLOCK, number_dimensions)*spamm_index_linear(number_dimensions, i_temp);
 
-    for(dim = number_dimensions-1, block_offset = 0; dim >= 1; dim--)
+    /* Calculate Z-curve offset. */
+    offset = SPAMM_N_KERNEL*SPAMM_N_KERNEL*spamm_index_linear(number_dimensions, i_temp);
+
+    /* Shift indices to lower corner and divide by SPAMM_N_KERNEL_BLOCKED. */
+    for(dim = 0; dim < 2; dim++)
     {
-      block_offset = SPAMM_N_BLOCK*(block_offset+(i[dim]-N_lower[dim])%SPAMM_N_BLOCK);
+      i_temp[dim] = (i[dim]-N_lower[dim])/SPAMM_N_KERNEL_BLOCKED;
     }
-    block_offset += (i[0]-N_lower[0])%SPAMM_N_BLOCK;
-    offset += block_offset;
+
+    /* Add offset within kernel block. */
+    offset += SPAMM_N_BLOCK*SPAMM_N_BLOCK*(i_temp[0]*SPAMM_N_KERNEL_BLOCKED+i_temp[1]);
+
+    /* Shift indices to lower corner and divide by SPAMM_N_BLOCK. */
+    for(dim = 0; dim < 2; dim++)
+    {
+      i_temp[dim] = (i[dim]-N_lower[dim])%SPAMM_N_BLOCK;
+    }
+
+    /* Add offset within basic block. */
+    offset += i_temp[0]*SPAMM_N_BLOCK+i_temp[1];
   }
 
   else

@@ -198,9 +198,13 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
 #if !defined(RUN_ASSEMBLY_KERNEL)
   float *matrix_A;
   float *matrix_B;
+  float *matrix_C;
 
-  unsigned int norm_offset_A, norm_offset_B;
-  unsigned int offset_A, offset_B;
+  unsigned int i_stream;
+  unsigned int j, k;
+  unsigned int i_block, j_block, k_block;
+  unsigned int norm_offset_A, norm_offset_B, norm_offset_C;
+  unsigned int offset_A, offset_B, offset_C;
 #endif
 
   N_contiguous = spamm_chunk_get_N_contiguous(chunk_A);
@@ -230,7 +234,7 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
   }
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-  SPAMM_WARN("potentially %u product(s)\n", ipow(index_length, 3));
+  SPAMM_INFO("potentially %u product(s)\n", ipow(index_length, 3));
 #endif
 
   /* Convolute. */
@@ -240,7 +244,7 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
   }
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-  SPAMM_WARN("allocated stream (%p) with %i triple elements\n", stream, ipow(index_length, 3));
+  SPAMM_INFO("allocated stream (%p) with %i triple elements\n", stream, ipow(index_length, 3));
 #endif
 
   for(i = 0, stream_index = 0; i < index_length; i++)
@@ -254,7 +258,7 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
           stream[3*stream_index+1] = index_B[j_B];
           stream[3*stream_index+2] = (index_A[j_A] & MASK_2D_I) | (index_B[j_B] & MASK_2D_J);
 #ifdef SPAMM_MULTIPLY_DEBUG
-          SPAMM_WARN("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e -> adding stream[%u] = { %u, %u, %u }\n",
+          SPAMM_INFO("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e -> adding stream[%u] = { %u, %u, %u }\n",
               norm_A[index_A[j_A]],
               index_A[j_A],
               norm_B[index_B[j_B]],
@@ -271,7 +275,7 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
         else
         {
 #ifdef SPAMM_MULTIPLY_DEBUG
-          SPAMM_WARN("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e -> skipping\n",
+          SPAMM_INFO("comparing norms: %e (norm_A[%u]) * %e (norm_B[%u]) = %e -> skipping\n",
               norm_A[index_A[j_A]],
               index_A[j_A],
               norm_B[index_B[j_B]],
@@ -290,8 +294,14 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
   free(index_B);
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-  SPAMM_WARN("Added %u (out of %u possible) block products to stream\n", stream_index, ipow(index_length, 3));
-  SPAMM_WARN("stream = %p\n", stream);
+  SPAMM_INFO("Added %u (out of %u possible) block products to stream\n", stream_index, ipow(index_length, 3));
+  SPAMM_INFO("stream = %p\n", stream);
+#endif
+
+#ifdef SPAMM_MULTIPLY_DEBUG
+  SPAMM_INFO("A: "); spamm_print_chunk(chunk_A);
+  SPAMM_INFO("B: "); spamm_print_chunk(chunk_B);
+  SPAMM_INFO("C: "); spamm_print_chunk(chunk_C);
 #endif
 
 #ifdef RUN_ASSEMBLY_KERNEL
@@ -305,19 +315,13 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
   matrix_C = spamm_chunk_get_matrix(chunk_C);
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-  printf("A: "); spamm_print_chunk(chunk_A);
-  printf("B: "); spamm_print_chunk(chunk_B);
-  printf("C: "); spamm_print_chunk(chunk_C);
-#endif
-
-#ifdef SPAMM_MULTIPLY_DEBUG
-  printf("starting to calculate product\n");
+  SPAMM_INFO("starting to calculate product\n");
   fflush(stdout);
 #endif
   for(i_stream = 0; i_stream < stream_index; i_stream++)
   {
 #ifdef SPAMM_MULTIPLY_DEBUG
-    printf("lin.index (%u,%u,%u)\n", stream[3*i_stream+0], stream[3*i_stream+1], stream[3*i_stream+2]);
+    SPAMM_INFO("lin.index (%u,%u,%u)\n", stream[3*i_stream+0], stream[3*i_stream+1], stream[3*i_stream+2]);
 #endif
 
     for(i = 0; i < SPAMM_N_KERNEL_BLOCKED; i++) {
@@ -339,23 +343,39 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
             +(i*SPAMM_N_KERNEL_BLOCKED+j)*SPAMM_N_BLOCK*SPAMM_N_BLOCK;
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-          printf("(%u,%u,%u) -> norm_offset_C = %u, offset_C = %u\n", i, j, k, norm_offset_C, offset_C);
+          SPAMM_INFO("(i = %u, j = %u, k = %u) -> norm_A = %e, norm_B = %e, "
+              "norm_offset_C = %u, offset_A = %u, offset_B = %u, "
+              "offset_C = %u\n", i, j, k, norm_A[norm_offset_A],
+              norm_B[norm_offset_B], norm_offset_C, offset_A, offset_B,
+              offset_C);
 #endif
 
           if(norm_A[norm_offset_A]*norm_B[norm_offset_B] > tolerance)
           {
+#ifdef SPAMM_MULTIPLY_DEBUG
+            SPAMM_INFO("multiplying %ux%u block\n", SPAMM_N_BLOCK, SPAMM_N_BLOCK);
+#endif
             for(i_block = 0; i_block < SPAMM_N_BLOCK; i_block++) {
               for(j_block = 0; j_block < SPAMM_N_BLOCK; j_block++) {
                 for(k_block = 0; k_block < SPAMM_N_BLOCK; k_block++)
                 {
+                  SPAMM_INFO("matrix_C[%u] = %e\n",
+                      offset_C+i_block*SPAMM_N_BLOCK+j_block,
+                      matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block]);
+
                   matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block] +=
                     alpha
                     *matrix_A[offset_A+i_block*SPAMM_N_BLOCK+k_block]
                     *matrix_B[offset_B+k_block*SPAMM_N_BLOCK+j_block];
+
+                  SPAMM_INFO("matrix_C[%u] = %e\n",
+                      offset_C+i_block*SPAMM_N_BLOCK+j_block,
+                      matrix_C[offset_C+i_block*SPAMM_N_BLOCK+j_block]);
+
                 }
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-                printf("(%u,%u) -> row_maj = %u\n", i_block, j_block, i_block*SPAMM_N_BLOCK+j_block);
+                SPAMM_INFO("(i_block = %u, j_block = %u) -> row_maj = %u\n", i_block, j_block, i_block*SPAMM_N_BLOCK+j_block);
                 fflush(stdout);
 #endif
               }
@@ -372,21 +392,26 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
 
   /* Free memory. */
 #ifdef SPAMM_MULTIPLY_DEBUG
-  SPAMM_WARN("freeing stream = %p\n", stream);
+  SPAMM_INFO("freeing stream = %p\n", stream);
 #endif
   free(stream);
 
   if(stream_index > 0)
   {
     /* Update norms. */
-    return spamm_chunk_fix(chunk_C, flop, mop);
+    norm2_C[0] = spamm_chunk_fix(chunk_C, flop, mop);
   }
 
   else
   {
     norm2_C = spamm_chunk_get_tier_norm2(0, chunk_C);
-    return norm2_C[0];
   }
+
+#ifdef SPAMM_MULTIPLY_DEBUG
+  SPAMM_INFO("C+alpha*A*B: "); spamm_print_chunk(chunk_C);
+#endif
+
+  return norm2_C[0];
 }
 
 /** Multiply two SpAMM chunks.
@@ -530,9 +555,9 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
     strcat(output_buffer, temp);
   }
   strcat(output_buffer, "\n");
-  SPAMM_WARN(output_buffer);
+  SPAMM_INFO(output_buffer);
 
-  SPAMM_WARN("&tolerance = %p, node_A = %p, &node_A = %p, node_B = %p, &node_B = %p, node_C = %p, &node_C = %p\n",
+  SPAMM_INFO("&tolerance = %p, node_A = %p, &node_A = %p, node_B = %p, &node_B = %p, node_C = %p, &node_C = %p\n",
       &tolerance, node_A, &node_A, node_B, &node_B, node_C, &node_C);
 #endif
 
@@ -617,7 +642,7 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
 #endif
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-                SPAMM_WARN("descending: C[%i][%i] (%p) <- A[%i][%i]*B[%i][%i] (%e)\n", i, j, node_C->tree.child[i+2*j],
+                SPAMM_INFO("descending: C[%i][%i] (%p) <- A[%i][%i]*B[%i][%i] (%e)\n", i, j, node_C->tree.child[i+2*j],
                     i, k, k, j, node_A->tree.child[i+2*k]->norm*node_B->tree.child[k+2*j]->norm);
 #endif
 
@@ -632,7 +657,7 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
                   new_N_upper[1] = N_lower[1]+(N_upper[1]-N_lower[1])/2*(j+1);
 
 #ifdef SPAMM_MULTIPLY_DEBUG
-                  SPAMM_WARN("created thread: node_C = %p, node_C->tree.child[%i] C[%i->%i][%i->%i] = %p\n",
+                  SPAMM_INFO("created thread: node_C = %p, node_C->tree.child[%i] C[%i->%i][%i->%i] = %p\n",
                       node_C, i+2*j,
                       new_N_lower[0], new_N_upper[0], new_N_lower[1], new_N_upper[1],
                       node_C->tree.child[i+2*j]);
@@ -653,7 +678,7 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
 #ifdef SPAMM_MULTIPLY_DEBUG
               else
               {
-                SPAMM_WARN("skipping product below tolerance: C[%i][%i] <- A[%i][%i]*B[%i][%i] (%e)\n", i, j, i, k, k, j,
+                SPAMM_INFO("skipping product below tolerance: C[%i][%i] <- A[%i][%i]*B[%i][%i] (%e)\n", i, j, i, k, k, j,
                     node_A->tree.child[i+2*k]->norm*node_B->tree.child[k+2*j]->norm);
               }
 #endif

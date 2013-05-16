@@ -69,7 +69,7 @@ spamm_chunk_get_norm2 (const spamm_chunk_t *const chunk);
 
 spamm_norm_t *
 spamm_chunk_get_tier_norm2 (const unsigned int tier,
-    spamm_chunk_t *chunk);
+    const spamm_chunk_t *const chunk);
 
 unsigned int
 spamm_chunk_matrix_index (const unsigned int number_dimensions,
