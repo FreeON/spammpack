@@ -15,10 +15,13 @@ libspamm_la_SOURCES =
 libspamm_la_LIBADD  = libspamm_tree.la libspamm_kernel.la
 
 noinst_SCRIPTS = SSERegister.py generate_SSE_assembly_for_chunks.py # spammOffsets.py
-noinst_PROGRAMS = print_chunk_offsets
+noinst_PROGRAMS = print_chunk_offsets get_chunk_index
 
 print_chunk_offsets_LDFLAGS = libspamm.la
 print_chunk_offsets_DEPENDENCIES = libspamm.la
+
+get_chunk_index_LDFLAGS = libspamm.la
+get_chunk_index_DEPENDENCIES = libspamm.la
 
 EXTRA_DIST = SSERegister.py generate_SSE_assembly_for_chunks.py
 

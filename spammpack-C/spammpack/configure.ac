@@ -156,18 +156,35 @@ else
 fi
 AM_CONDITIONAL(HAVE_SSE4_1_IN_CPU, [test "${have_SSE4_1_in_CPU}" = "yes"])
 
-AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Extra debugging output in the multiply.])
-AC_MSG_CHECKING([whether to use the assembly kernel])
+AC_ARG_ENABLE([multiply-debug],
+              [AS_HELP_STRING([--enable-multiply-debug],
+                              [Print lots of information during the multiply.])],
+              [enable_multiply_debug=$enableval],
+              [enable_multiply_debug="no"])
+if test "${enable_multiply_debug}" = "yes"; then
+  AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Extra debugging output in the multiply.])
+fi
+
 AC_ARG_ENABLE([assembly-kernel],
               [AS_HELP_STRING([--disable-assembly-kernel],
                               [Disable the assembly kernel (enabled by default).])],
               [enable_assembly_kernel=$enableval],
               [enable_assembly_kernel="yes"])
 if test "${enable_assembly_kernel}" = "yes"; then
-  AC_MSG_RESULT([yes])
   AC_DEFINE([RUN_ASSEMBLY_KERNEL], [1], [Run the assembly kernel.])
+fi
+
+dnl Define some data types.
+AC_ARG_WITH([norm-type],
+            [AS_HELP_STRING([--with-norm-type],
+                            [Set the norm type to either float or double (default = float).])],
+            [norm_type=$withval],
+            [norm_type="float"])
+if test $norm_type = "float" -o $norm_type = "double"; then
+  AC_MSG_NOTICE([$norm_type])
+  AC_DEFINE_UNQUOTED([SPAMM_NORM_TYPE], [$norm_type], [The data type of the norms.])
 else
-  AC_MSG_RESULT([no])
+  AC_MSG_FAILURE([unknown type ($norm_type)])
 fi
 
 dnl Define basic tree properties.
@@ -240,32 +257,6 @@ AC_MSG_NOTICE([configuring for git tag ${branch}:${git_commit_tag}])
 dnl Get the current date.
 timestamp=`date +%Y-%m-%d`
 AC_DEFINE_UNQUOTED([SPAMM_TIMESTAMP], ["${timestamp}"], [The build date.])
-
-AC_MSG_CHECKING([whether to enable debugging output in spamm_multiply()])
-AC_ARG_ENABLE([multiply-debug],
-              [AS_HELP_STRING([--enable-multiply-debug],
-                              [Enable debugging printout for spamm_multiply().])],
-              [enable_multiply_debug=$enableval],
-              [enable_multiply_debug="no"])
-AC_MSG_RESULT([${enable_multiply_debug}])
-
-if test "${enable_multiply_debug}" = "yes"; then
-  AC_DEFINE([SPAMM_MULTIPLY_DEBUG], [1], [Print out lots of debugging information.])
-fi
-
-dnl Define some data types.
-AC_MSG_CHECKING([for norm type])
-AC_ARG_WITH([norm-type],
-            [AS_HELP_STRING([--with-norm-type],
-                            [Set the norm type to either float or double (default = float).])],
-            [norm_type=$withval],
-            [norm_type="float"])
-if test $norm_type = "float" -o $norm_type = "double"; then
-  AC_MSG_RESULT([$norm_type])
-  AC_DEFINE_UNQUOTED([SPAMM_NORM_TYPE], [$norm_type], [The data type of the norms.])
-else
-  AC_MSG_FAILURE([unknown type ($norm_type)])
-fi
 
 dnl Write headers.
 AC_CONFIG_HEADERS([config.h])

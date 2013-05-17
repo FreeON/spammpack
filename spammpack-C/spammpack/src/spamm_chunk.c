@@ -310,52 +310,62 @@ spamm_chunk_matrix_index (const unsigned int number_dimensions,
 {
   unsigned int offset;
   unsigned int block_offset;
-  unsigned int *i_temp;
+  unsigned int *i_mapped;
+  unsigned int *i_remainder;
 
   int dim;
 
-  i_temp = calloc(number_dimensions, sizeof(unsigned int));
+  i_mapped = calloc(number_dimensions, sizeof(unsigned int));
+  i_remainder = calloc(number_dimensions, sizeof(unsigned int));
 
   if(use_linear_tree)
   {
+#ifdef INDEX_DEBUG
+    SPAMM_INFO("i        = { % 3u, % 3u }\n", i[0], i[1]);
+#endif
+
     /* Shift indices to lower corner and divide by SPAMM_N_KERNEL. */
     for(dim = 0; dim < 2; dim++)
     {
-      i_temp[dim] = (i[dim]-N_lower[dim])/SPAMM_N_KERNEL;
+      i_mapped[dim] = (i[dim]-N_lower[dim])/SPAMM_N_KERNEL;
+      i_remainder[dim] = (i[dim]-N_lower[dim])%SPAMM_N_KERNEL;
     }
+#ifdef INDEX_DEBUG
+    SPAMM_INFO("i_mapped = { % 3u, % 3u } -> i_remainder = { % 3u, % 3u }\n",
+        i_mapped[0], i_mapped[1], i_remainder[0], i_remainder[1]);
+#endif
 
-    /* Calculate Z-curve offset. */
-    offset = SPAMM_N_KERNEL*SPAMM_N_KERNEL*spamm_index_linear(number_dimensions, i_temp);
+    /* Calculate Z-curve offset for top tier. */
+    offset = SPAMM_N_KERNEL*SPAMM_N_KERNEL*spamm_index_linear(number_dimensions, i_mapped);
 
-    /* Shift indices to lower corner and divide by SPAMM_N_KERNEL_BLOCKED. */
     for(dim = 0; dim < 2; dim++)
     {
-      i_temp[dim] = (i[dim]-N_lower[dim])/SPAMM_N_KERNEL_BLOCKED;
+      i_mapped[dim] = i_remainder[dim]/SPAMM_N_KERNEL_BLOCKED;
+      i_remainder[dim] = i_remainder[dim]%SPAMM_N_KERNEL_BLOCKED;
     }
+#ifdef INDEX_DEBUG
+    SPAMM_INFO("i_mapped = { % 3u, % 3u } -> i_remainder = { % 3u, % 3u }\n",
+        i_mapped[0], i_mapped[1], i_remainder[0], i_remainder[1]);
+#endif
 
     /* Add offset within kernel block. */
-    offset += SPAMM_N_BLOCK*SPAMM_N_BLOCK*(i_temp[0]*SPAMM_N_KERNEL_BLOCKED+i_temp[1]);
-
-    /* Shift indices to lower corner and divide by SPAMM_N_BLOCK. */
-    for(dim = 0; dim < 2; dim++)
-    {
-      i_temp[dim] = (i[dim]-N_lower[dim])%SPAMM_N_BLOCK;
-    }
+    offset += SPAMM_N_BLOCK*SPAMM_N_BLOCK*(i_mapped[0]*SPAMM_N_KERNEL_BLOCKED+i_mapped[1]);
 
     /* Add offset within basic block. */
-    offset += i_temp[0]*SPAMM_N_BLOCK+i_temp[1];
+    offset += i_remainder[0]*SPAMM_N_BLOCK+i_remainder[1];
   }
 
   else
   {
     for(dim = 0; dim < number_dimensions; dim++)
     {
-      i_temp[dim] = i[dim]-N_lower[dim];
+      i_mapped[dim] = i[dim]-N_lower[dim];
     }
-    offset = spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], i_temp);
+    offset = spamm_index_column_major_2(number_dimensions, N_upper[0]-N_lower[0], i_mapped);
   }
 
-  free(i_temp);
+  free(i_mapped);
+  free(i_remainder);
 
   return offset;
 }
