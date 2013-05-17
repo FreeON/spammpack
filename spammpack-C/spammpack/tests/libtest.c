@@ -16,7 +16,8 @@ const char *matrix_type_name[] = {
   "full",
   "diagonally-banded",
   "exponential-decay",
-  "sparse-random"
+  "sparse-random",
+  "hyper-sparse"
 };
 
 /** Return a matrix type name. */

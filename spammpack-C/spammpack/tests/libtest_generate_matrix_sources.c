@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #define SPARSITY 0.9
+#define HYPER_SPARSE 50
 
 /** Generate a random test matrix. The matrix elements are stored in row-major
  * order.
@@ -166,6 +167,18 @@ SPAMM_FUNCTION(generate_matrix, MATRIX_TYPE) (const unsigned int number_dimensio
 
     case sparse_random:
       for(nonzero_elements = 0; nonzero_elements < (unsigned int) ceil((1-SPARSITY)*N_linear); )
+      {
+        i[0] = (unsigned int) floor(rand()/(double) RAND_MAX * N_linear);
+        if(A[i[0]] == 0.0)
+        {
+          A[i[0]] = rand()/(MATRIX_TYPE) RAND_MAX;
+          nonzero_elements++;
+        }
+      }
+      break;
+
+    case hyper_sparse:
+      for(nonzero_elements = 0; nonzero_elements < HYPER_SPARSE; )
       {
         i[0] = (unsigned int) floor(rand()/(double) RAND_MAX * N_linear);
         if(A[i[0]] == 0.0)

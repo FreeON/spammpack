@@ -9,7 +9,7 @@
 #include <spamm_types.h>
 
 /** The number of matrix types. */
-#define NUMBER_MATRIX_TYPES 4
+#define NUMBER_MATRIX_TYPES 5
 
 /** The matrix types for the tests. */
 enum matrix_t
@@ -25,7 +25,10 @@ enum matrix_t
   exponential_decay,
 
   /** A sparse matrix that has few randomly placed non-zero elements. */
-  sparse_random
+  sparse_random,
+
+  /** A matrix with just a handfull of non-zero elements. */
+  hyper_sparse
 };
 
 const char *const

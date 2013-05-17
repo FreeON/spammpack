@@ -2,7 +2,7 @@ dnl vim:tw=0
 
 dnl Define some basic information of this package.
 AC_INIT([spammpack],
-        [2011-02-03],
+        [2013-05-17],
         [freeon-devel@nongnu.org],
         [],
         [http://www.freeon.org])
@@ -181,7 +181,7 @@ AC_ARG_WITH([norm-type],
             [norm_type=$withval],
             [norm_type="float"])
 if test $norm_type = "float" -o $norm_type = "double"; then
-  AC_MSG_NOTICE([$norm_type])
+  AC_MSG_NOTICE([norm-type is $norm_type])
   AC_DEFINE_UNQUOTED([SPAMM_NORM_TYPE], [$norm_type], [The data type of the norms.])
 else
   AC_MSG_FAILURE([unknown type ($norm_type)])
