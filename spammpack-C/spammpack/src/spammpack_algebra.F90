@@ -33,7 +33,8 @@ MODULE SpAMMPACK_ALGEBRA
     SUBROUTINE spamm_multiply_interface (tolerance, alpha, A, B, beta, C, flop, mop) &
       BIND(C, name = "spamm_multiply_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(IN)     :: tolerance
+      USE SpAMMPACK_TYPES
+      REAL(NORM_TYPE), INTENT(IN)   :: tolerance
       REAL(c_float), INTENT(IN)     :: alpha
       TYPE(c_ptr), INTENT(IN)       :: A
       TYPE(c_ptr), INTENT(IN)       :: B
@@ -87,7 +88,7 @@ CONTAINS
   SUBROUTINE SpAMM_Multiply_SpAMM_RNK2_x_SpAMM_RNK2 (tolerance, &
       alpha, A, B, beta, C, flop)
 
-    REAL*4, INTENT(IN)              :: tolerance
+    REAL(NORM_TYPE), INTENT(IN)     :: tolerance
     REAL*4, INTENT(IN)              :: alpha
     TYPE(SpAMM_RNK2), INTENT(IN)    :: A
     TYPE(SpAMM_RNK2), INTENT(IN)    :: B
@@ -182,16 +183,16 @@ CONTAINS
   RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recursive (tolerance, &
       alpha, qA, qB, qC, N, NLower, NUpper, tier, chunkTier, useLinearTree)
 
-    REAL*4, INTENT(IN) :: tolerance
-    REAL*4, INTENT(IN) :: alpha
-    TYPE(QuTree), POINTER, INTENT(IN) :: qA, qB
+    REAL(NORM_TYPE), INTENT(IN)          :: tolerance
+    REAL*4, INTENT(IN)                   :: alpha
+    TYPE(QuTree), POINTER, INTENT(IN)    :: qA, qB
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
-    INTEGER, DIMENSION(2), INTENT(IN) :: N
-    INTEGER, DIMENSION(2), INTENT(IN) :: NLower
-    INTEGER, DIMENSION(2), INTENT(IN) :: NUpper
-    INTEGER, INTENT(IN) :: tier
-    INTEGER, INTENT(IN) :: chunkTier
-    LOGICAL, INTENT(IN) :: useLinearTree
+    INTEGER, DIMENSION(2), INTENT(IN)    :: N
+    INTEGER, DIMENSION(2), INTENT(IN)    :: NLower
+    INTEGER, DIMENSION(2), INTENT(IN)    :: NUpper
+    INTEGER, INTENT(IN)                  :: tier
+    INTEGER, INTENT(IN)                  :: chunkTier
+    LOGICAL, INTENT(IN)                  :: useLinearTree
 
     INTEGER :: i, j, k
 
@@ -256,7 +257,7 @@ CONTAINS
   !> @param flop The flop count.
   SUBROUTINE SpAMM_Multiply_SpAMM_C_x_SpAMM_C (tolerance, A, B, C, flop_O, mop_O)
 
-    REAL*4, INTENT(IN)              :: tolerance
+    REAL(NORM_TYPE), INTENT(IN)     :: tolerance
     TYPE(c_ptr), INTENT(IN)         :: A, B
     TYPE(c_ptr), INTENT(INOUT)      :: C
     REAL*8, INTENT(INOUT), OPTIONAL :: flop_O

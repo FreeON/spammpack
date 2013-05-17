@@ -8,6 +8,15 @@ MODULE SpAMMPACK_TYPES
 
   IMPLICIT NONE
 
+  !> Type for norms and tolerances.
+#if SPAMM_NORM_TYPE == float
+  INTEGER, PARAMETER :: NORM_TYPE = c_float
+#elif SPAMM_NORM_TYPE == double
+  INTEGER, PARAMETER :: NORM_TYPE = c_double
+#else
+#error "unknown type"
+#endif
+
   !> Rank 2 SpAMM matrix.
   TYPE SpAMM_RNK2
 

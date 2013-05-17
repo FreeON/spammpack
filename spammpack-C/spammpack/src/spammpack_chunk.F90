@@ -6,6 +6,7 @@
 MODULE SpAMMPACK_CHUNK
 
   USE, INTRINSIC :: iso_C_binding
+  USE SPAMMPACK_TYPES
 
   IMPLICIT NONE
 
@@ -15,29 +16,31 @@ MODULE SpAMMPACK_CHUNK
     SUBROUTINE spamm_chunk_multiply (tolerance, alpha, chunkA, chunkB, chunkC, norm2) &
         BIND(C, name = "spamm_chunk_multiply_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(IN) :: tolerance
-      REAL(c_float), INTENT(IN) :: alpha
-      TYPE(c_ptr), INTENT(IN) :: chunkA
-      TYPE(c_ptr), INTENT(IN) :: chunkB
-      TYPE(c_ptr), INTENT(INOUT) :: chunkC
-      REAL(c_float), INTENT(OUT) :: norm2
+      USE SPAMMPACK_TYPES
+      REAL(NORM_TYPE), INTENT(IN)   :: tolerance
+      REAL(c_float), INTENT(IN)     :: alpha
+      TYPE(c_ptr), INTENT(IN)       :: chunkA
+      TYPE(c_ptr), INTENT(IN)       :: chunkB
+      TYPE(c_ptr), INTENT(INOUT)    :: chunkC
+      REAL(NORM_TYPE), INTENT(OUT)  :: norm2
     END SUBROUTINE spamm_chunk_multiply
 
     SUBROUTINE spamm_chunk_multiply_scalar (alpha, chunk, norm2) &
         BIND(C, name = "spamm_chunk_multiply_scalar_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(IN) :: alpha
-      TYPE(c_ptr), INTENT(INOUT) :: chunk
-      REAL(c_float), INTENT(OUT) :: norm2
+      USE SPAMMPACK_TYPES
+      REAL(c_float), INTENT(IN)     :: alpha
+      TYPE(c_ptr), INTENT(INOUT)    :: chunk
+      REAL(NORM_TYPE), INTENT(OUT)  :: norm2
     END SUBROUTINE spamm_chunk_multiply_scalar
 
     !> Interface for spamm_new_chunk().
     SUBROUTINE spamm_new_chunk (ndim, N_block, N, N_lower, N_upper, chunk) &
         BIND(C, name = "spamm_new_chunk_interface")
       USE, INTRINSIC :: iso_C_binding
-      INTEGER(c_int), INTENT(IN) :: ndim, N_block
+      INTEGER(c_int), INTENT(IN)                  :: ndim, N_block
       INTEGER(c_int), DIMENSION(ndim), INTENT(IN) :: N, N_lower, N_upper
-      TYPE(c_ptr), INTENT(INOUT) :: chunk
+      TYPE(c_ptr), INTENT(INOUT)                  :: chunk
     END SUBROUTINE spamm_new_chunk
 
     !> Interface for spamm_delete_chunk().
@@ -218,7 +221,7 @@ CONTAINS
   !> @param chunk The chunk.
   SUBROUTINE spamm_chunk_get_norm2 (norm2, chunk)
 
-    REAL(c_float), DIMENSION(:), POINTER, INTENT(OUT) :: norm2
+    REAL(NORM_TYPE), DIMENSION(:), POINTER, INTENT(OUT) :: norm2
     TYPE(c_ptr), INTENT(IN) :: chunk
 
     INTEGER(c_int) :: N_contiguous
