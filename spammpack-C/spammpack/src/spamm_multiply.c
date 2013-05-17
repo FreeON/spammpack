@@ -195,6 +195,8 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
 
   spamm_norm_t *norm2_C;
 
+  spamm_norm_t norm2_result;
+
 #if !defined(RUN_ASSEMBLY_KERNEL)
   float *matrix_A;
   float *matrix_B;
@@ -399,19 +401,20 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
   if(stream_index > 0)
   {
     /* Update norms. */
-    norm2_C[0] = spamm_chunk_fix(chunk_C, flop, mop);
+    norm2_result = spamm_chunk_fix(chunk_C, flop, mop);
   }
 
   else
   {
     norm2_C = spamm_chunk_get_tier_norm2(0, chunk_C);
+    norm2_result = norm2_C[0];
   }
 
 #ifdef SPAMM_MULTIPLY_DEBUG
   SPAMM_INFO("C+alpha*A*B: "); spamm_print_chunk(chunk_C);
 #endif
 
-  return norm2_C[0];
+  return norm2_result;
 }
 
 /** Multiply two SpAMM chunks.
