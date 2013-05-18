@@ -448,6 +448,9 @@ main (int argc, char **argv)
 
     printf("multiplying sgemm... ");
     fflush(stdout);
+    timer = spamm_timer_new();
+    spamm_timer_add_event(0x8000003b, timer);
+    spamm_timer_start(timer);
 #ifdef SGEMM
     SGEMM("N", "N", &N[0], &N[0], &N[0], &alpha_float, A_float, &N[0], B_float, &N[0], &beta_float, C_float, &N[0]);
 #else
@@ -462,7 +465,11 @@ main (int argc, char **argv)
       }
     }
 #endif
-    printf("done\n");
+    spamm_timer_stop(timer);
+    timer_string = spamm_timer_get_string(timer);
+    printf("%s\n", timer_string);
+    free(timer_string);
+    spamm_timer_delete(&timer);
   }
 
   if(print_debug)
@@ -495,7 +502,7 @@ main (int argc, char **argv)
   spamm_multiply(tolerance, alpha, A, B, beta, C, (use_sgemm ? SGEMM : NULL), &flop, &memop);
   spamm_timer_stop(timer);
   timer_string = spamm_timer_get_string(timer);
-  printf("%si, %e flop, %e memop\n", timer_string, flop, memop);
+  printf("%s, %e flop, %e memop\n", timer_string, flop, memop);
   free(timer_string);
   spamm_timer_delete(&timer);
 

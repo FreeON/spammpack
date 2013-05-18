@@ -265,6 +265,7 @@ CONTAINS
     REAL(c_double)                  :: flop
     REAL(c_double)                  :: mop
 
+    ! Reset counts.
     flop = 0.0D0
     mop = 0.0D0
 
@@ -293,6 +294,7 @@ CONTAINS
     REAL(c_double)                  :: flop
     REAL(c_double)                  :: mop
 
+    ! Reset counts.
     flop = 0.0D0
     mop = 0.0D0
 
@@ -321,6 +323,7 @@ CONTAINS
     REAL(c_double)                  :: flop
     REAL(c_double)                  :: mop
 
+    ! Reset counts.
     flop = 0.0D0
     mop = 0.0D0
 

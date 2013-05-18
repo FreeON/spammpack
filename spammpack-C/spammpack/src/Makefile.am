@@ -66,6 +66,8 @@ spammpack_algebra.lo : \
 	spammpack_types.lo
 spammpack_management.lo : \
 	spammpack_types.lo
+spammpack_chunk.lo : \
+	spammpack_types.lo
 
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \

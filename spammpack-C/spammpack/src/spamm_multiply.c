@@ -76,6 +76,10 @@ spamm_chunk_multiply_scalar (const float alpha,
 
   float alpha2;
 
+  assert(chunk != NULL);
+  assert(flop != NULL);
+  assert(mop != NULL);
+
   spamm_norm_t *norm;
   spamm_norm_t *norm2;
 
@@ -111,8 +115,8 @@ spamm_chunk_multiply_scalar (const float alpha,
     norm[i] = sqrt(norm2[i]);
   }
 
-  /* Update flop count. */
-  *flop += 2*number_norms;
+  /* Update flop count for updating norms. */
+  //*flop += 2*number_norms;
 
   return norm2[0];
 }
@@ -133,6 +137,9 @@ spamm_recursive_multiply_scalar (const float alpha,
     double *const mop)
 {
   unsigned int i;
+
+  assert(flop != NULL);
+  assert(mop != NULL);
 
   if(A == NULL) { return; }
 
@@ -189,6 +196,9 @@ spamm_linear_multiply (const spamm_norm_t tolerance,
   unsigned int i;
   unsigned int j_A, j_B;
   unsigned int stream_index;
+
+  assert(flop != NULL);
+  assert(mop != NULL);
 
   spamm_norm_t *norm_A;
   spamm_norm_t *norm_B;
@@ -457,6 +467,8 @@ spamm_chunk_multiply (const spamm_norm_t tolerance,
   float *matrix_C;
 
   assert(chunk_C != NULL);
+  assert(flop != NULL);
+  assert(mop != NULL);
 
   if(chunk_A == NULL || chunk_B == NULL) { return 0.0; }
 
@@ -566,6 +578,9 @@ spamm_recursive_multiply (const spamm_norm_t tolerance,
 
   /* node_C has to be set, otherwise we won't have a lock. */
   assert(node_C != NULL);
+
+  assert(flop != NULL);
+  assert(mop != NULL);
 
   if(node_A == NULL || node_B == NULL)
   {
@@ -760,6 +775,7 @@ spamm_multiply (const spamm_norm_t tolerance,
   assert(B != NULL);
   assert(C != NULL);
   assert(flop != NULL);
+  assert(mop != NULL);
 
   spamm_recursive_multiply_scalar(beta, C->recursive_tree,
       C->number_dimensions, 0, C->chunk_tier, C->use_linear_tree, flop,
