@@ -43,6 +43,8 @@ main (int argc, char **argv)
   double flop;
   double memop;
 
+  int dim;
+
   int option_index;
   int parse_result;
   char *short_options = "hN:";
@@ -94,10 +96,6 @@ main (int argc, char **argv)
       for(matrix_type_A = 0; matrix_type_A < NUMBER_MATRIX_TYPES; matrix_type_A++) {
         for(matrix_type_B = 0; matrix_type_B < NUMBER_MATRIX_TYPES; matrix_type_B++)
         {
-          SPAMM_INFO("dim: %u, linTree: %u, matrix_type_A: %s, matrix_type_B: %s\n",
-              number_dimensions, use_linear_tree,
-              get_matrix_type_name(matrix_type_A), get_matrix_type_name(matrix_type_B));
-
           if(matrix_type_A == exponential_decay || matrix_type_B == exponential_decay)
           {
             symmetric = 1;
@@ -110,6 +108,19 @@ main (int argc, char **argv)
 
           i = calloc(number_dimensions, sizeof(unsigned int));
           N = generate_shape(number_dimensions, symmetric, N_mean, N_width);
+
+          SPAMM_INFO("dim: %u, N = {", number_dimensions);
+          for(dim = 0; dim < number_dimensions; dim++)
+          {
+            printf(" %u", N[dim]);
+            if(dim+1 < number_dimensions)
+            {
+              printf(",");
+            }
+          }
+          printf(" }, linTree: %u, matrix_type_A: %s, matrix_type_B: %s\n",
+              use_linear_tree, get_matrix_type_name(matrix_type_A),
+              get_matrix_type_name(matrix_type_B));
 
           A_dense = generate_matrix_float(number_dimensions, matrix_type_A, N, DECAY);
           B_dense = generate_matrix_float(number_dimensions, matrix_type_B, N, DECAY);
@@ -165,10 +176,9 @@ main (int argc, char **argv)
 
           flop = 0;
           memop = 0;
-          //SPAMM_INFO("adding... "); fflush(stdout);
+          SPAMM_INFO("adding... "); fflush(stdout);
           spamm_add(alpha, A, beta, B, &flop, &memop);
-          //printf("ok\n");
-          //SPAMM_INFO("%e flop, %e memop\n", flop, memop);
+          printf("%e flop, %e memop\n", flop, memop);
 
           /* Check tree consistency. */
           if(spamm_check(A, REL_TOLERANCE) != SPAMM_OK)

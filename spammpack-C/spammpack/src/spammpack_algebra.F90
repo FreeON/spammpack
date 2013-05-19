@@ -53,11 +53,12 @@ MODULE SpAMMPACK_ALGEBRA
       REAL(c_double), INTENT(INOUT) :: mop
     END SUBROUTINE spamm_multiply_scalar
 
-    SUBROUTINE spamm_trace_interface (trace, A) &
+    SUBROUTINE spamm_trace_interface (trace, A, flop) &
         BIND(C, name = "spamm_trace_interface")
       USE, INTRINSIC :: iso_C_binding
-      REAL(c_float), INTENT(INOUT) :: trace
-      TYPE(c_ptr), INTENT(IN)      :: A
+      REAL(c_float), INTENT(INOUT)  :: trace
+      TYPE(c_ptr), INTENT(IN)       :: A
+      REAL(c_double), INTENT(INOUT) :: flop
     END SUBROUTINE spamm_trace_interface
 
     SUBROUTINE spamm_add_interface (alpha, A, beta, B, C, flop, mop) &
@@ -240,11 +241,20 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recursive
 
-  REAL*4 FUNCTION SpAMM_Trace_SpAMM_C (A) RESULT(trace)
+  REAL*4 FUNCTION SpAMM_Trace_SpAMM_C (A, flop_O) RESULT(trace)
 
-    TYPE(c_ptr), INTENT(IN) :: A
+    TYPE(c_ptr), INTENT(IN)         :: A
+    REAL*8, INTENT(INOUT), OPTIONAL :: flop_O
+    REAL(c_double)                  :: flop
 
-    CALL spamm_trace_interface(trace, A)
+    ! Reset counts.
+    flop = 0.0D0
+
+    CALL spamm_trace_interface(trace, A, flop)
+
+    IF(PRESENT(flop_O)) THEN
+      flop_O = flop_O+flop
+    ENDIF
 
   END FUNCTION SpAMM_Trace_SpAMM_C
 

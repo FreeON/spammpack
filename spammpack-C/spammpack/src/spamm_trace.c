@@ -5,13 +5,22 @@
 
 #include <assert.h>
 
+/** The trace of a matrix.
+ *
+ * @param A The matrix.
+ * @param flop The flop count.
+ *
+ * @return The trace of A.
+ */
 float
-spamm_trace (const struct spamm_matrix_t *const A)
+spamm_trace (const struct spamm_matrix_t *const A,
+    double *const flop)
 {
   unsigned int i[2];
   float trace;
 
   assert(A != NULL);
+  assert(flop != NULL);
 
   switch(A->number_dimensions)
   {
@@ -31,6 +40,8 @@ spamm_trace (const struct spamm_matrix_t *const A)
       SPAMM_FATAL("not defined\n");
       break;
   }
+
+  *flop += A->N[0];
 
   return trace;
 }

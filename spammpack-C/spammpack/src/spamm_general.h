@@ -256,7 +256,8 @@ spamm_chunk_get_total_number_norms (const unsigned int number_tiers,
     const unsigned int number_dimensions);
 
 float
-spamm_trace (const struct spamm_matrix_t *const A);
+spamm_trace (const struct spamm_matrix_t *const A,
+    double *const flop);
 
 void
 spamm_omp_init ();

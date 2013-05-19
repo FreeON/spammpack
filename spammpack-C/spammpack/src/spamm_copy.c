@@ -46,6 +46,8 @@ spamm_chunk_copy (spamm_chunk_t **A,
 
   assert(A != NULL);
   assert(B != NULL);
+  assert(flop != NULL);
+  assert(mop != NULL);
 
   spamm_delete_chunk(A);
 

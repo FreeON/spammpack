@@ -7,9 +7,10 @@
  */
 void
 spamm_trace_interface (float *const trace,
-    const struct spamm_matrix_t **const A)
+    const struct spamm_matrix_t **const A,
+    double *const flop)
 {
-  *trace = spamm_trace(*A);
+  *trace = spamm_trace(*A, flop);
 }
 
 /** Fortran interface for spamm_multiply().
