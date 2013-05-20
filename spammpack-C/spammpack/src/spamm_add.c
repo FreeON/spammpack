@@ -54,7 +54,7 @@ spamm_chunk_add (const float alpha,
   }
 
   /* Update flop count. */
-  *flop += 3*ipow(N_contiguous, number_dimensions);
+  *flop += ipow(N_contiguous, number_dimensions);
 
   /* Update norms. */
   return spamm_chunk_fix(A, flop, mop);

@@ -83,18 +83,33 @@ spamm_chunk_copy (spamm_chunk_t **A,
   A_matrix_dilated = spamm_chunk_get_matrix_dilated(*A);
 
   /* Copy matrix elements. */
-  for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
+  if(beta == 1.0)
   {
-    A_matrix[i] = beta*B_matrix[i];
+    for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
+    {
+      A_matrix[i] = beta*B_matrix[i];
 
-    A_matrix_dilated[4*i+0] = A_matrix[i];
-    A_matrix_dilated[4*i+1] = A_matrix[i];
-    A_matrix_dilated[4*i+2] = A_matrix[i];
-    A_matrix_dilated[4*i+3] = A_matrix[i];
+      A_matrix_dilated[4*i+0] = A_matrix[i];
+      A_matrix_dilated[4*i+1] = A_matrix[i];
+      A_matrix_dilated[4*i+2] = A_matrix[i];
+      A_matrix_dilated[4*i+3] = A_matrix[i];
+    }
   }
 
-  *flop += ipow(N_contiguous, number_dimensions);
-  *mop += 4*ipow(N_contiguous, number_dimensions);
+  else
+  {
+    for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
+    {
+      A_matrix[i] = beta*B_matrix[i];
+
+      A_matrix_dilated[4*i+0] = A_matrix[i];
+      A_matrix_dilated[4*i+1] = A_matrix[i];
+      A_matrix_dilated[4*i+2] = A_matrix[i];
+      A_matrix_dilated[4*i+3] = A_matrix[i];
+    }
+    *flop += ipow(N_contiguous, number_dimensions);
+    *mop += 4*ipow(N_contiguous, number_dimensions);
+  }
 }
 
 /** Copy a matrix. \f$ A \leftarrow \beta B \f$.

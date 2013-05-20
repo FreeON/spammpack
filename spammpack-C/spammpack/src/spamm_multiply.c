@@ -76,7 +76,6 @@ spamm_chunk_multiply_scalar (const float alpha,
 
   float alpha2;
 
-  assert(chunk != NULL);
   assert(flop != NULL);
   assert(mop != NULL);
 
@@ -91,19 +90,38 @@ spamm_chunk_multiply_scalar (const float alpha,
   A = spamm_chunk_get_matrix(chunk);
   A_dilated = spamm_chunk_get_matrix_dilated(chunk);
 
-  for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
+  if(alpha == 0.0)
   {
-    A[i] *= alpha;
+    for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
+    {
+      A[i] = 0.0;
 
-    A_dilated[4*i+0] = A[i];
-    A_dilated[4*i+1] = A[i];
-    A_dilated[4*i+2] = A[i];
-    A_dilated[4*i+3] = A[i];
+      A_dilated[4*i+0] = 0.0;
+      A_dilated[4*i+1] = 0.0;
+      A_dilated[4*i+2] = 0.0;
+      A_dilated[4*i+3] = 0.0;
+    }
   }
 
-  /* Update the flop count. */
-  *flop += ipow(N_contiguous, number_dimensions);
-  *mop += 4*ipow(N_contiguous, number_dimensions);
+  else
+  {
+    if(alpha != 1.0)
+    {
+      for(i = 0; i < ipow(N_contiguous, number_dimensions); i++)
+      {
+        A[i] *= alpha;
+
+        A_dilated[4*i+0] = A[i];
+        A_dilated[4*i+1] = A[i];
+        A_dilated[4*i+2] = A[i];
+        A_dilated[4*i+3] = A[i];
+      }
+
+      /* Update the flop count. */
+      *flop += ipow(N_contiguous, number_dimensions);
+      *mop += 4*ipow(N_contiguous, number_dimensions);
+    }
+  }
 
   norm = spamm_chunk_get_norm(chunk);
   norm2 = spamm_chunk_get_norm2(chunk);
