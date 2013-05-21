@@ -308,6 +308,9 @@ spamm_new (const unsigned int number_dimensions,
     A->depth = chunk_tier;
   }
 
+  SPAMM_INFO("N_padded = %u, depth = %u, chunk tier = %u, N contiguous = %u\n",
+      A->N_padded, A->depth, A->chunk_tier, A->N_padded/ipow(2, A->chunk_tier));
+
   /* Done. */
   return A;
 }
