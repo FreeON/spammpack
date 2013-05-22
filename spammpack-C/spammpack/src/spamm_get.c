@@ -80,32 +80,35 @@ spamm_recursive_get (const unsigned int number_dimensions,
 
   else
   {
-    new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
-    new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
-
-    child_index = 0;
-
-    for(dim = 0; dim < number_dimensions; dim++)
+    if(node->tree.child != NULL)
     {
-      if(i[dim] < N_lower[dim]+(N_upper[dim]-N_lower[dim])/2)
+      new_N_lower = calloc(number_dimensions, sizeof(unsigned int));
+      new_N_upper = calloc(number_dimensions, sizeof(unsigned int));
+
+      child_index = 0;
+
+      for(dim = 0; dim < number_dimensions; dim++)
       {
-        new_N_lower[dim] = N_lower[dim];
-        new_N_upper[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
+        if(i[dim] < N_lower[dim]+(N_upper[dim]-N_lower[dim])/2)
+        {
+          new_N_lower[dim] = N_lower[dim];
+          new_N_upper[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
+        }
+
+        else
+        {
+          new_N_lower[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
+          new_N_upper[dim] = N_upper[dim];
+          child_index |= (1 << dim);
+        }
       }
 
-      else
-      {
-        new_N_lower[dim] = N_lower[dim]+(N_upper[dim]-N_lower[dim])/2;
-        new_N_upper[dim] = N_upper[dim];
-        child_index |= (1 << dim);
-      }
+      Aij = spamm_recursive_get(number_dimensions, i, new_N_lower, new_N_upper,
+          tier+1, chunk_tier, use_linear_tree, node->tree.child[child_index]);
+
+      free(new_N_lower);
+      free(new_N_upper);
     }
-
-    Aij = spamm_recursive_get(number_dimensions, i, new_N_lower, new_N_upper,
-        tier+1, chunk_tier, use_linear_tree, node->tree.child[child_index]);
-
-    free(new_N_lower);
-    free(new_N_upper);
   }
 
   return Aij;
