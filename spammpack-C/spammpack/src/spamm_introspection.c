@@ -36,3 +36,20 @@ spamm_get_N (const struct spamm_matrix_t *const A)
 
   return A->N;
 }
+
+/** Get the Frobenius norm of a matrix.
+ *
+ * @param A The matrix.
+ *
+ * @return The Frobenius norm.
+ */
+spamm_norm_t
+spamm_get_norm (const struct spamm_matrix_t *const A)
+{
+  if(A == NULL) { return 0; }
+  else if(A->recursive_tree == NULL) { return 0; }
+  else
+  {
+    return A->recursive_tree->norm;
+  }
+}

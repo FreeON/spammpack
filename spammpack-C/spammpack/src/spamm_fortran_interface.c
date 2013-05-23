@@ -255,3 +255,40 @@ spamm_add_interface (const float *const alpha,
   spamm_copy(C, 1.0, *A, flop, mop);
   spamm_add(*alpha, *C, *beta, *B, flop, mop);
 }
+
+/** Fortran interface for spamm_get_norm().
+ */
+spamm_norm_t
+spamm_get_norm_interface (const struct spamm_matrix_t **const A)
+{
+  return spamm_get_norm(*A);
+}
+
+/** Fortran interface for spamm_get_number_dimensions().
+ */
+unsigned int
+spamm_get_number_dimensions_interface (const struct spamm_matrix_t **const A)
+{
+  return spamm_get_number_dimensions(*A);
+}
+
+/** Fortran interface for spamm_get_N().
+ */
+void
+spamm_get_N_interface (unsigned int *const M,
+    unsigned int *const N,
+    const struct spamm_matrix_t **A)
+{
+  unsigned int *N_temp;
+  N_temp = spamm_get_N(*A);
+  *M = N_temp[0];
+  *N = N_temp[1];
+}
+
+/** Fortran interface for spamm_check().
+ */
+void
+spamm_check_interface (const struct spamm_matrix_t **const A)
+{
+  spamm_check(*A, 1e-4);
+}
