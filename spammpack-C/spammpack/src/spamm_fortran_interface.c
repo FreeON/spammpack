@@ -93,8 +93,8 @@ spamm_convert_dense_to_spamm_interface (const unsigned int *const number_dimensi
 /** Fortran interface for spamm_convert_spamm_to_dense().
  */
 void
-spamm_convert_spamm_to_dense_interface (float **const A_dense,
-    struct spamm_matrix_t **const A)
+spamm_convert_spamm_to_dense_interface (const struct spamm_matrix_t **const A,
+    float **const A_dense)
 {
   *A_dense = spamm_convert_spamm_to_dense(*A);
 }
@@ -106,12 +106,12 @@ spamm_convert_spamm_to_dense_interface (float **const A_dense,
  * @param chunk[out] The chunk.
  */
 void
-spamm_new_chunk_interface (unsigned int *number_dimensions,
-    unsigned int *use_linear_tree,
-    unsigned int *N,
-    unsigned int *N_lower,
-    unsigned int *N_upper,
-    spamm_chunk_t **chunk)
+spamm_new_chunk_interface (const unsigned int *const number_dimensions,
+    const unsigned int *const use_linear_tree,
+    const unsigned int *const N,
+    const unsigned int *const N_lower,
+    const unsigned int *const N_upper,
+    spamm_chunk_t **const chunk)
 {
   *chunk = spamm_new_chunk(*number_dimensions, *use_linear_tree, N, N_lower, N_upper);
 }

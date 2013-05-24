@@ -91,8 +91,8 @@ MODULE SpAMMPACK_MANAGEMENT
     SUBROUTINE spamm_convert_spamm_to_dense (A, ADense) &
         BIND(C, name = "spamm_convert_spamm_to_dense_interface")
       USE, INTRINSIC :: iso_C_binding
-      TYPE(c_ptr), INTENT(IN)                 :: A
-      REAL(c_float), DIMENSION(*), INTENT(IN) :: ADense
+      TYPE(c_ptr), INTENT(IN)    :: A
+      TYPE(c_ptr), INTENT(INOUT) :: ADense
     END SUBROUTINE spamm_convert_spamm_to_dense
 
     !> Interface for spamm_get().
@@ -334,67 +334,20 @@ CONTAINS
   !! @param A The SpAMM matrix.
   SUBROUTINE SpAMM_SetEq_Dense_to_SpAMM_C (ADense, A)
 
-    REAL*8, DIMENSION(:,:), INTENT(INOUT) :: ADense
     TYPE(c_ptr), INTENT(IN)               :: A
+    REAL*8, DIMENSION(:,:), INTENT(INOUT) :: ADense
 
-    REAL*4 :: temp
-
-    INTEGER :: i, j
+    TYPE(c_ptr) :: Atemp
+    REAL(c_float), DIMENSION(:,:), POINTER :: Afloat
     INTEGER :: M, N
 
     ! Get matrix size.
     CALL spamm_get_N(M, N, A)
 
-    IF(size(ADense, 1) /= M .OR. size(ADense, 2) /= N) THEN
-      WRITE(*, *) "dimension mismatch, ADense = ", size(ADense, 1), size(ADense, 2)
-      WRITE(*, *) "dimension mismatch, SpAMM = ", M, N
-      STOP
-    ENDIF
-
-    DO i = 1, M
-      DO j = 1, N
-        temp = SpAMM_Get(i, j, A)
-        ADense(i, j) = temp
-
-        ! This is an ugly hack to fix an apparent compiler bug. Without those
-        ! lines the compiler translates the 2 lines above as:
-        !
-        ! 356	        temp = SpAMM_Get(i, j, A)
-        !    0x000000000000046b <+1131>:	mov    -0x4d0(%rbp),%rdx
-        !    0x0000000000000472 <+1138>:	lea    -0x54(%rbp),%rcx
-        !    0x0000000000000476 <+1142>:	lea    -0x50(%rbp),%rax
-        !    0x000000000000047a <+1146>:	mov    %rcx,%rsi
-        !    0x000000000000047d <+1149>:	mov    %rax,%rdi
-        !    0x0000000000000480 <+1152>:	callq  0x485 <__spammpack_management_MOD_spamm_seteq_dense_to_spamm_c+1157>
-        !    0x0000000000000485 <+1157>:	movss  %xmm0,-0x4c(%rbp)
-        !
-        ! 357	        ADense(i, j) = temp
-        !    0x000000000000048a <+1162>:	mov    -0x50(%rbp),%eax
-        !    0x000000000000048d <+1165>:	cltq
-        !    0x000000000000048f <+1167>:	mov    %rax,%rdx
-        !    0x0000000000000492 <+1170>:	imul   %rbx,%rdx
-        !    0x0000000000000496 <+1174>:	mov    -0x54(%rbp),%eax
-        !    0x0000000000000499 <+1177>:	cltq
-        !    0x000000000000049b <+1179>:	imul   %r12,%rax
-        !    0x000000000000049f <+1183>:	add    %rdx,%rax
-        !    0x00000000000004a2 <+1186>:	lea    (%rax,%r15,1),%rdx
-        !    0x00000000000004a6 <+1190>:	movss  -0x4c(%rbp),%xmm0
-        !    0x00000000000004ab <+1195>:	cvtps2pd %xmm0,%xmm0
-        !    0x00000000000004ae <+1198>:	mov    -0x38(%rbp),%rax
-        !    0x00000000000004b2 <+1202>:	movsd  %xmm0,(%rax,%rdx,8)
-        !
-        ! With the two lines below, the compiler inserts an additional
-        ! statement:
-        !
-        !    0x00000000000004af <+1199>:	unpcklps %xmm0,%xmm0
-        !
-        ! When spamm_get() returns a zero, the high quadword in the double after
-        ! cvtps2pd contains junk and ADense ends up with very large numbers.
-        IF(abs(temp) > 1.0e4) THEN
-          WRITE(*, *) "large matrix element: ", i, j, temp
-        ENDIF
-      ENDDO
-    ENDDO
+    CALL spamm_convert_spamm_to_dense(A, Atemp)
+    CALL c_f_pointer(Atemp, Afloat, [ M, N ])
+    ADense = Afloat
+    DEALLOCATE(Afloat)
 
   END SUBROUTINE SpAMM_SetEq_Dense_to_SpAMM_C
 

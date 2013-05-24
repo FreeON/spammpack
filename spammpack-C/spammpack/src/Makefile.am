@@ -21,7 +21,7 @@ libspamm_la_LIBADD  = \
   libspamm_tree.la \
   libspamm_kernel.la
 
-libspammpack_fortran_la_LDFLAGS = -version-info 0:1:0
+libspammpack_fortran_la_LDFLAGS = -version-info 0:3:0
 
 noinst_SCRIPTS = SSERegister.py generate_SSE_assembly_for_chunks.py # spammOffsets.py
 noinst_PROGRAMS = print_chunk_offsets get_chunk_index
