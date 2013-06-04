@@ -1,7 +1,7 @@
-/* vim: syntax=cpp
- */
-
-module
-testmodule
+mainmodule testmodule
 {
+  mainchare Main
+  {
+    entry Main (CkArgMsg *msg);
+  }
 }
