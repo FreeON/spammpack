@@ -1,0 +1,20 @@
+mainmodule charmtest_02
+{
+  mainchare Main
+  {
+    entry Main (CkArgMsg *msg);
+    entry void done ();
+  };
+
+  chare SpAMM
+  {
+    entry SpAMM (const int N,
+        const int chunksize);
+  };
+
+  chare SpAMMNode
+  {
+    entry SpAMMNode (const int N_lower[2],
+        const int N_upper[2]);
+  };
+};
