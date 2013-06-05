@@ -1,0 +1,14 @@
+mainmodule linkedList
+{
+  mainchare Main
+  {
+    entry Main (CkArgMsg *msg);
+  };
+
+  chare LinkedListNode
+  {
+    entry LinkedListNode ();
+    entry void set (const int ID);
+    entry void append (const int ID);
+  };
+};

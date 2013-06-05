@@ -1,4 +1,4 @@
-noinst_PROGRAMS = charmtest
+include $(top_srcdir)/Makefile.charm
 
 charmtest_SOURCES = \
   charmtest.cc \
