@@ -22,10 +22,42 @@ AC_CONFIG_MACRO_DIR([m4])
 
 dnl Identify compilers.
 AC_PROG_CC_STDC
-AC_PROG_CXX
-AC_PROG_F77
 AM_PROG_AS
+AC_PROG_F77
 AC_PROG_FC
+
+dnl Get libraries for linking Fortran and C code.
+AC_F77_LIBRARY_LDFLAGS
+AC_FC_LIBRARY_LDFLAGS
+
+dnl Check for Charm++.
+AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
+AC_CHECK_PROG([CHARMC], [charmc], [charmc])
+
+AC_ARG_ENABLE([charm],
+  [AS_HELP_STRING([--enable-charm],
+                  [Enable Charm++ parallelization.])],
+  [enable_charm=$enableval],
+  [enable_charm="no"])
+
+if test $enable_charm = "yes"; then
+  if test -z "${CHARMC}"; then
+    AC_MSG_FAILURE([no Charm++ compiler wrapper found])
+  fi
+  charm_version=$( ${CHARMC} -V | sed -e 's/^.*Version\s*//' )
+  if test -z "${charm_version}"; then
+    AC_MSG_FAILURE([failed to run Charm++ compiler wrapper ${CHARMC}])
+  fi
+  AC_MSG_NOTICE([Charm++ compiler wrapper version ${charm_version}])
+  AC_DEFINE([ENABLE_CHARM], [1], [Enable charm parallelization.])
+
+  CXXCOMPILERS="charmc"
+
+fi
+AM_CONDITIONAL([HAVE_CHARM], [test $enable_charm = "yes"])
+
+dnl Get the C++ compiler.
+AC_PROG_CXX([${CXXCOMPILERS}])
 
 dnl Get pointer int type.
 AC_TYPE_INTPTR_T
@@ -188,28 +220,6 @@ else
   AC_MSG_FAILURE([unknown type ($norm_type)])
 fi
 
-dnl Check for Charm++.
-AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
-AC_CHECK_PROG([CHARMC], [charmc], [charmc])
-
-AC_ARG_ENABLE([charm],
-  [AS_HELP_STRING([--enable-charm],
-                  [Enable Charm++ parallelization.])],
-  [enable_charm=$enableval],
-  [enable_charm="no"])
-if test $enable_charm = "yes"; then
-  if test -z "${CHARMC}"; then
-    AC_MSG_FAILURE([no Charm++ compiler wrapper found])
-  fi
-  charm_version=$( ${CHARMC} -V | sed -e 's/^.*Version\s*//' )
-  if test -z "${charm_version}"; then
-    AC_MSG_FAILURE([failed to run Charm++ compiler wrapper ${CHARMC}])
-  fi
-  AC_MSG_NOTICE([Charm++ compiler wrapper version ${charm_version}])
-  AC_DEFINE([ENABLE_CHARM], [1], [Enable charm parallelization.])
-fi
-AM_CONDITIONAL([HAVE_CHARM], [test $enable_charm = "yes"])
-
 dnl Define basic tree properties.
 have_N_block=4
 have_N_stride=1
@@ -305,6 +315,7 @@ interfaces/Makefile
 interfaces/python/Makefile
 src/Makefile
 src/spamm_manual_mainpage.h
+charm/Makefile
 tests/Makefile
 prototype/Makefile
 prototype/charm/Makefile

@@ -1,0 +1,7 @@
+mainmodule spammmultiply
+{
+  mainchare SpAMMMultiply
+  {
+    entry SpAMMMultiply (CkArgMsg *msg);
+  };
+};

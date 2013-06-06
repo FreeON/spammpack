@@ -1,0 +1,7 @@
+module spamm
+{
+  chare SpAMMMatrix
+  {
+    entry SpAMMMatrix (const int N);
+  };
+};

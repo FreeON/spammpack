@@ -6,7 +6,7 @@ DISTCLEANFILES = config_fortran.h
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src interfaces tests prototype
+SUBDIRS = src charm interfaces tests prototype
 
 CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/Doxyfile.in \
