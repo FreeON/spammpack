@@ -13,11 +13,14 @@ class LinkedListNode : public CBase_LinkedListNode
     {
       ID = -1;
       next = NULL;
+      CkPrintf("initializing node\n");
     }
 
     void set (const int ID)
     {
+      CkPrintf("setting ID to %i\n", ID);
       this->ID = ID;
+      CkPrintf("done setting ID to %i\n", ID);
     }
 
     void append (const int ID)
@@ -25,9 +28,10 @@ class LinkedListNode : public CBase_LinkedListNode
       if(next != NULL) { next->append(ID); }
       else
       {
-        next = CProxy_LinkedListNode::ckNew();
+        *next = CProxy_LinkedListNode::ckNew();
         next->set(ID);
       }
+      CkPrintf("done appending\n");
     }
 };
 
