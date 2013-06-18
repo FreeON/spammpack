@@ -1,5 +1,5 @@
 #include "spammmultiply.decl.h"
-#include "spamm.decl.h"
+#include "spammmatrix.h"
 
 #include <getopt.h>
 
@@ -9,7 +9,8 @@ class SpAMMMultiply : public CBase_SpAMMMultiply
 
     SpAMMMultiply (CkArgMsg *msg)
     {
-      //SpAMMMatrix A;
+      CProxy_SpAMMMatrix A;
+      CProxy_SpAMMMatrix B;
 
       int N = 1;
 
@@ -45,7 +46,12 @@ class SpAMMMultiply : public CBase_SpAMMMultiply
       }
 
       /* Create random matrix of size N. */
-      //A = CProxy_SpAMMMatrix::ckNew(N);
+      A = CProxy_SpAMMMatrix::ckNew(N);
+
+      /* Form matrix square. */
+
+      /* Done. */
+      CkExit();
     }
 
     SpAMMMultiply (CkMigrateMessage *msg) {}

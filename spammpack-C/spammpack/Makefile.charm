@@ -1,4 +1,5 @@
+BUILT_SOURCES = $(foreach i, $(INTERFACE_FILES), $(basename $i).decl.h $(basename $i).def.h)
+CLEANFILES = $(BUILT_SOURCES)
+
 %.decl.h %.def.h : %.ci
 	$(AM_V_CXX)$(CHARMC) $<
-
-CLEANFILES = *.decl.h *.def.h

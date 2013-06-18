@@ -4,19 +4,17 @@ include $(top_srcdir)/Makefile.charm
 
 bin_PROGRAMS = spammmultiply
 
-BUILT_SOURCES = \
-	spamm.decl.h \
-	spamm.def.h \
-	spammmultiply.def.h \
-	spammmultiply.def.h
-
 INTERFACE_FILES = \
-	spamm.ci \
+	spammmatrix.ci \
 	spammmultiply.ci
+
+HEADER_FILES = \
+	spammmatrix.h
 
 spammmultiply_SOURCES = \
 	$(INTERFACE_FILES) \
-	spamm.cc \
+	$(HEADER_FILES) \
+	spammmatrix.cc \
 	spammmultiply.cc
 
 endif
