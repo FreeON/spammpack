@@ -1,7 +1,9 @@
 mainmodule spammmultiply
 {
+  extern module spammmatrix;
   mainchare SpAMMMultiply
   {
     entry SpAMMMultiply (CkArgMsg *msg);
+    entry void multiply (CProxy_SpAMMMatrix A, CProxy_SpAMMMatrix B, CProxy_SpAMMMatrix C);
   };
 };
