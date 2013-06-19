@@ -19,18 +19,7 @@ class Main : public CBase_Main
         CkExit();
       }
 
-      run(strtol(msg->argv[1], NULL, 10));
-    }
-
-    void run (int n)
-    {
-      printf("calculating F(%d)... ", n); fflush(stdout);
-      CkFuture f = CkCreateFuture();
-      printf("created future... "); fflush(stdout);
-      CProxy_Fib::ckNew(n, f);
-      printf("created instance of Fib proxy... "); fflush(stdout);
-      ValueMsg *m = (ValueMsg*) CkWaitFuture(f);
-      printf("F(%d) = %d\n", n, m->value); fflush(stdout);
+      CProxy_Fib::ckNew(true, strtol(msg->argv[1], NULL, 10), CkFuture());
     }
 };
 
@@ -38,17 +27,17 @@ class Fib : public CBase_Fib
 {
   public:
 
-    Fib (int n, CkFuture f)
+    Fib (bool amIRoot, int n, CkFuture f)
     {
-      printf("Fib: constructor with n = %d\n", n); fflush(stdout);
-      run(n, f);
+      printf("Fib%s: constructor with n = %d\n", (amIRoot ? " (root)" : ""), n); fflush(stdout);
+      run(amIRoot, n, f);
     }
 
-    void run (int n, CkFuture f)
+    void run (bool amIRoot, int n, CkFuture f)
     {
       ValueMsg *m = new ValueMsg();
 
-      printf("run: calculating F(%d)\n", n); fflush(stdout);
+      printf("[Fib::run] calculating F(%d)... ", n); fflush(stdout);
 
       if(n < 0)
       {
@@ -58,24 +47,40 @@ class Fib : public CBase_Fib
 
       else if(n <= 1)
       {
-        printf("Fib: direct evaluation\n"); fflush(stdout);
+        printf("direct evaluation... "); fflush(stdout);
         m->value = n;
       }
 
       else
       {
+        printf("recursive evaluation... "); fflush(stdout);
         CkFuture f1 = CkCreateFuture();
         CkFuture f2 = CkCreateFuture();
-        CProxy_Fib::ckNew(n-1, f1);
-        CProxy_Fib::ckNew(n-2, f2);
+        printf("created futures... "); fflush(stdout);
+        CProxy_Fib::ckNew(false, n-1, f1);
+        CProxy_Fib::ckNew(false, n-2, f2);
+        printf("waiting for results...\n"); fflush(stdout);
         ValueMsg *m1 = (ValueMsg*) CkWaitFuture(f1);
         ValueMsg *m2 = (ValueMsg*) CkWaitFuture(f2);
+        printf("received results... "); fflush(stdout);
         m->value = m1->value+m2->value;
         delete m1;
         delete m2;
       }
 
-      CkSendToFuture(f, m);
+      if(amIRoot)
+      {
+        printf("\n"); fflush(stdout);
+        CkPrintf("F[%d] = %d\n", n, m->value);
+        delete m;
+        CkExit();
+      }
+
+      else
+      {
+        printf("sending to future\n"); fflush(stdout);
+        CkSendToFuture(f, m);
+      }
     }
 };
 
