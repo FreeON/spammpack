@@ -1,0 +1,14 @@
+mainmodule fib
+{
+  mainchare Main
+  {
+    entry Main (CkArgMsg *msg);
+    entry [threaded] void run (int n);
+  };
+
+  chare Fib
+  {
+    entry Fib (int n, CkFuture f);
+    entry [threaded] void run (int n, CkFuture f);
+  };
+};
