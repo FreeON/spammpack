@@ -2,11 +2,13 @@ mainmodule fib
 {
   mainchare Main
   {
+    entry Main (CkMigrateMessage *msg);
     entry Main (CkArgMsg *msg);
   };
 
   chare Fib
   {
+    entry Fib (CkMigrateMessage *msg);
     entry Fib (bool amIRoot, int n, CkFuture f);
     entry [threaded] void run (bool amIRoot, int n, CkFuture f);
   };
