@@ -4,6 +4,7 @@ mainmodule spammmultiply
   mainchare SpAMMMultiply
   {
     entry SpAMMMultiply (CkArgMsg *msg);
+    entry [threaded] void run (int argc, char **argv);
     entry void multiply (CProxy_SpAMMMatrix A, CProxy_SpAMMMatrix B, CProxy_SpAMMMatrix C);
   };
 };

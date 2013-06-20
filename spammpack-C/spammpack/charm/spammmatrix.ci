@@ -1,18 +1,12 @@
 module spammmatrix
 {
+  extern module messages;
+  extern module matrixnode;
   chare SpAMMMatrix
   {
     entry SpAMMMatrix (const int N, const int chunksize);
     entry void get (const int i, const int j, float &aij);
-    entry void set (const int i, const int j, const float aij);
+    entry [threaded] void set (const int i, const int j, const float aij);
     entry void print ();
-  };
-
-  chare MatrixNode
-  {
-    entry MatrixNode (const int NLower[2], const int NUpper[2],
-        const int chunksize);
-    entry void get (const int i, const int j, float &aij);
-    entry void set (const int i, const int j, const float aij);
   };
 };

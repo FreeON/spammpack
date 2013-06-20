@@ -8,6 +8,11 @@ class SpAMMMultiply : public CBase_SpAMMMultiply
 
     SpAMMMultiply (CkArgMsg *msg)
     {
+      run(msg->argc, msg->argv);
+    }
+
+    void run (int argc, char **argv)
+    {
       CProxy_SpAMMMatrix A;
       CProxy_SpAMMMatrix C;
 
@@ -23,7 +28,7 @@ class SpAMMMultiply : public CBase_SpAMMMultiply
         { NULL, 0, NULL, 0 }
       };
 
-      while((c = getopt_long(msg->argc, msg->argv, shortoptions, longoptions, NULL)) != -1)
+      while((c = getopt_long(argc, argv, shortoptions, longoptions, NULL)) != -1)
       {
         switch(c)
         {
