@@ -116,4 +116,20 @@ EmptyMsg* Matrix::print ()
   return new EmptyMsg();
 }
 
+/** Multiply matrices.
+ *
+ * @param A Matrix A.
+ * @param B Matrix B.
+ *
+ * @return An empty message.
+ * */
+EmptyMsg * Matrix::multiply (CProxy_Matrix A, CProxy_Matrix B)
+{
+  /* Get root and check A and B. */
+
+  /* Call multiply method on MatrixNode. */
+
+  return new EmptyMsg();
+}
+
 #include "matrix.def.h"

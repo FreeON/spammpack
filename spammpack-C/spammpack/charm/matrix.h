@@ -10,6 +10,7 @@ class Matrix : public CBase_Matrix
     int N;
     int chunksize;
     int NPadded;
+
     CProxy_MatrixNode *root;
 
   public:
@@ -23,6 +24,7 @@ class Matrix : public CBase_Matrix
     FloatMsg * get (int i, int j);
     EmptyMsg * set (int i, int j, float aij);
     EmptyMsg * print ();
+    EmptyMsg * multiply (CProxy_Matrix A, CProxy_Matrix B);
 };
 
 #endif

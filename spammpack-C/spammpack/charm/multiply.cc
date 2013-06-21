@@ -109,7 +109,7 @@ class Multiply : public CBase_Multiply
       if(N_A->i != N_B->i)
       {
         LOG_ERROR("mismatch in matrix dimensions\n");
-        CkExit();
+        return new EmptyMsg;
       }
 
       IntMsg *chunksize_A = A.getChunksize();
@@ -121,6 +121,9 @@ class Multiply : public CBase_Multiply
       /* Initialize C. */
       LOG_INFO("initializing C with N = %d, and chunksize = %d\n", N_A->i, chunksize_A->i);
       m = C.initialize(N_A->i, chunksize_A->i); delete m;
+
+      /* Multiply matrices. */
+      m = C.multiply(A, B); delete m;
 
       return new EmptyMsg;
     }
