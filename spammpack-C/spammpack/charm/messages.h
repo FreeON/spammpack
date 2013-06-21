@@ -3,11 +3,18 @@
 
 #include "messages.decl.h"
 
-class SetMsg : public CMessage_SetMsg
+class EmptyMsg : public CMessage_EmptyMsg
 {
   public:
 
-    SetMsg ();
+    EmptyMsg ();
+};
+
+class GetMsg : public CMessage_GetMsg
+{
+  public:
+
+    float a;
 };
 
 #endif

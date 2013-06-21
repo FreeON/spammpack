@@ -1,5 +1,5 @@
 #include "messages.h"
 
-SetMsg::SetMsg () {}
+EmptyMsg::EmptyMsg () {}
 
 #include "messages.def.h"

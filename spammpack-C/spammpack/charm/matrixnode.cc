@@ -2,8 +2,9 @@
 #include "messages.h"
 
 /** Constructor. */
-MatrixNode::MatrixNode (const int NLower[2], const int NUpper[2],
-    const int chunksize)
+MatrixNode::MatrixNode (int NLower[2],
+    int NUpper[2],
+    int chunksize)
 {
   for(int i = 0; i < 2; i++)
   {
@@ -21,21 +22,24 @@ MatrixNode::MatrixNode (const int NLower[2], const int NUpper[2],
 
 /** Get a matrix element.
  */
-void MatrixNode::get (const int i, const int j, float &aij)
+void MatrixNode::get (int i,
+    int j,
+    CkFuture f)
 {
   int N = NUpper[0]-NLower[0];
+  GetMsg *aij = new GetMsg();
 
   if(N == chunksize)
   {
     if(block == NULL)
     {
-      aij = 0;
+      aij->a = 0;
     }
 
     else
     {
       int index = (i-NLower[0])+(j-NLower[1])*chunksize;
-      aij = block[index];
+      aij->a = block[index];
     }
   }
 
@@ -71,9 +75,16 @@ void MatrixNode::get (const int i, const int j, float &aij)
     else
     {
       /* Recurse. */
-      child[childindex]->get(i, j, aij);
+      CkFuture f_child = CkCreateFuture();
+      child[childindex]->get(i, j, f_child);
+      GetMsg *result = (GetMsg*) CkWaitFuture(f_child);
+      aij->a = result->a;
+      delete result;
+      CkReleaseFuture(f_child);
     }
   }
+
+  CkSendToFuture(f, aij);
 }
 
 /** Set a matrix element.
@@ -82,9 +93,9 @@ void MatrixNode::get (const int i, const int j, float &aij)
  * @param j The column index.
  * @param aij The matrix element.
  */
-void MatrixNode::set (const int i,
-    const int j,
-    const float aij,
+void MatrixNode::set (int i,
+    int j,
+    float aij,
     CkFuture f)
 {
   int N = this->NUpper[0]-this->NLower[0];
@@ -154,11 +165,12 @@ void MatrixNode::set (const int i,
     /* Recurse. */
     CkFuture f_child = CkCreateFuture();
     child[childindex]->set(i, j, aij, f_child);
-    SetMsg *m = (SetMsg*) CkWaitFuture(f_child);
+    EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f_child);
+    CkReleaseFuture(f_child);
     delete m;
   }
 
-  SetMsg *m = new SetMsg();
+  EmptyMsg *m = new EmptyMsg();
   CkSendToFuture(f, m);
 }
 

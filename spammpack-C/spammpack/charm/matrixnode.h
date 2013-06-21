@@ -16,10 +16,9 @@ class MatrixNode : public CBase_MatrixNode
 
   public:
 
-    MatrixNode (const int NLower[2], const int NUpper[2],
-        const int chunksize);
-    void get (const int i, const int j, float &aij);
-    void set (const int i, const int j, const float aij, CkFuture f);
+    MatrixNode (int NLower[2], int NUpper[2], int chunksize);
+    void get (int i, int j, CkFuture f);
+    void set (int i, int j, float aij, CkFuture f);
 };
 
 #endif

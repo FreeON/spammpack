@@ -2,25 +2,27 @@ if HAVE_CHARM
 
 include $(top_srcdir)/Makefile.charm
 
-bin_PROGRAMS = spammmultiply
+bin_PROGRAMS = multiply
 
 INTERFACE_FILES = \
+	matrix.ci \
 	matrixnode.ci \
 	messages.ci \
-	spammmatrix.ci \
-	spammmultiply.ci
+	multiply.ci
 
 HEADER_FILES = \
+	matrix.h \
 	matrixnode.h \
 	messages.h \
-	spammmatrix.h
+	utilities.h
 
-spammmultiply_SOURCES = \
+multiply_SOURCES = \
 	$(INTERFACE_FILES) \
 	$(HEADER_FILES) \
+	matrix.cc \
 	matrixnode.cc \
 	messages.cc \
-	spammmatrix.cc \
-	spammmultiply.cc
+	multiply.cc \
+	utilities.cc
 
 endif

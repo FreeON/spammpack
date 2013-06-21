@@ -1,21 +1,15 @@
-#include "spammmultiply.decl.h"
+#include "multiply.decl.h"
+#include "messages.h"
+#include "utilities.h"
 
 #include <getopt.h>
 
-class SpAMMMultiply : public CBase_SpAMMMultiply
+class Multiply : public CBase_Multiply
 {
   public:
 
-    SpAMMMultiply (CkArgMsg *msg)
+    Multiply (CkArgMsg *msg)
     {
-      run(msg->argc, msg->argv);
-    }
-
-    void run (int argc, char **argv)
-    {
-      CProxy_SpAMMMatrix A;
-      CProxy_SpAMMMatrix C;
-
       int N = 1;
       int chunksize = 1;
 
@@ -28,7 +22,7 @@ class SpAMMMultiply : public CBase_SpAMMMultiply
         { NULL, 0, NULL, 0 }
       };
 
-      while((c = getopt_long(argc, argv, shortoptions, longoptions, NULL)) != -1)
+      while((c = getopt_long(msg->argc, msg->argv, shortoptions, longoptions, NULL)) != -1)
       {
         switch(c)
         {
@@ -56,31 +50,54 @@ class SpAMMMultiply : public CBase_SpAMMMultiply
         }
       }
 
+      run(N, chunksize);
+    }
+
+    void run (int N, int chunksize)
+    {
+      CProxy_Matrix A;
+      CProxy_Matrix C;
+
       /* Done reading command line. */
-      CkPrintf("starting...\n");
+      LOG_INFO("starting...\n");
 
       /* Create new matrix. */
-      A = CProxy_SpAMMMatrix::ckNew(N, chunksize);
+      A = CProxy_Matrix::ckNew(N, chunksize);
+
+      /* Create future to implement barrier style blocking. */
+      CkFuture f = CkCreateFuture();
 
       /* Create random matrix of size N. */
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++)
         {
-          A.set(i, j, rand()/(float) RAND_MAX);
+          float aij = rand()/(float) RAND_MAX;
+          LOG_INFO("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
+
+          A.set(i, j, aij, f);
+          LOG_INFO("called set method\n");
+          EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f);
+          delete m;
         }
       }
+      LOG_INFO("done setting matrix\n");
 
       /* Print matrix for debugging. */
-      A.print();
+      A.print(f);
+      EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f);
+      delete m;
 
       /* Form matrix square. */
-      multiply(A, A, C);
+      //multiply(A, A, C);
+
+      /* Free some memory. */
+      CkReleaseFuture(f);
 
       /* Done. */
-      //CkExit();
+      CkExit();
     }
 
-    SpAMMMultiply (CkMigrateMessage *msg) {}
+    Multiply (CkMigrateMessage *msg) {}
 
     /** Multiply two matrices and store the produce in a third one, @f$ C
      * \leftarrow A \times B @f$. The result matrix C is overwritten.
@@ -89,11 +106,11 @@ class SpAMMMultiply : public CBase_SpAMMMultiply
      * @param B The matrix B.
      * @param C The matrix C.
      */
-    void multiply (CProxy_SpAMMMatrix A,
-        CProxy_SpAMMMatrix B,
-        CProxy_SpAMMMatrix C)
+    void multiply (CProxy_Matrix A,
+        CProxy_Matrix B,
+        CProxy_Matrix C)
     {
     }
 };
 
-#include "spammmultiply.def.h"
+#include "multiply.def.h"

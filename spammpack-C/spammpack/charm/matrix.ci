@@ -1,10 +1,12 @@
-module matrixnode
+module matrix
 {
   extern module messages;
-  chare MatrixNode
+  extern module matrixnode;
+  chare Matrix
   {
-    entry MatrixNode (int NLower[2], int NUpper[2], int chunksize);
+    entry Matrix (int N, int chunksize);
     entry [threaded] void get (int i, int j, CkFuture f);
     entry [threaded] void set (int i, int j, float aij, CkFuture f);
+    entry [threaded] void print (CkFuture f);
   };
 };

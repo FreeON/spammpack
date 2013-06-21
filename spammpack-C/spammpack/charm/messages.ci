@@ -1,4 +1,5 @@
 module messages
 {
-  message SetMsg;
+  message EmptyMsg;
+  message GetMsg;
 };
