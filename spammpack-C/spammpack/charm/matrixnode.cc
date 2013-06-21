@@ -69,7 +69,7 @@ void MatrixNode::get (int i,
 
     if(child[childindex] == NULL)
     {
-      aij = 0;
+      aij->a = 0;
     }
 
     else

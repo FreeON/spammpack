@@ -7,8 +7,7 @@
  * @param N The size of the matrix.
  * @param chunksize The size of the submatrix chunks.
  */
-Matrix::Matrix (int N,
-    int chunksize)
+Matrix::Matrix (int N, int chunksize)
 {
   this->N = N;
   this->chunksize = chunksize;
@@ -24,15 +23,11 @@ Matrix::Matrix (int N,
       NPadded);
 }
 
-void Matrix::get (int i,
-    int j,
-    CkFuture f)
+GetMsg* Matrix::get (int i, int j)
 {
-  GetMsg *aij = new GetMsg();
-
   if(this->root == NULL)
   {
-    aij->a = 0;
+    return new GetMsg(0);
   }
 
   else
@@ -40,18 +35,13 @@ void Matrix::get (int i,
     CkFuture f_child = CkCreateFuture();
     root->get(i, j, f_child);
     GetMsg *result = (GetMsg*) CkWaitFuture(f_child);
-    aij->a = result->a;
+    GetMsg *m = new GetMsg(result->a);
     delete result;
-    CkReleaseFuture(f_child);
+    return m;
   }
-
-  CkSendToFuture(f, aij);
 }
 
-void Matrix::set (int i,
-    int j,
-    float aij,
-    CkFuture f)
+EmptyMsg* Matrix::set (int i, int j, float aij)
 {
   LOG_INFO("setting A(%d,%d) <- %f\n", i, j, aij);
 
@@ -68,23 +58,21 @@ void Matrix::set (int i,
   LOG_INFO("created future\n");
   root->set(i, j, aij, f_child);
   EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f_child);
+  delete m;
   CkReleaseFuture(f_child);
 
-  EmptyMsg *result = new EmptyMsg();
-  CkSendToFuture(f_child, result);
+  return new EmptyMsg();
 }
 
 /** Print a matrix. */
-void Matrix::print (CkFuture f)
+EmptyMsg* Matrix::print ()
 {
-  CkFuture f_child = CkCreateFuture();
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++)
     {
-      float aij;
-      get(i, j, f_child);
-      GetMsg *result = (GetMsg*) CkWaitFuture(f_child);
-      CkPrintf(" %1.2f", aij);
+      GetMsg *m = get(i, j);
+      CkPrintf(" %1.2f", m->a);
+      delete m;
     }
     CkPrintf("\n");
   }

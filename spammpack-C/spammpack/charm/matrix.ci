@@ -5,8 +5,8 @@ module matrix
   chare Matrix
   {
     entry Matrix (int N, int chunksize);
-    entry [threaded] void get (int i, int j, CkFuture f);
-    entry [threaded] void set (int i, int j, float aij, CkFuture f);
-    entry [threaded] void print (CkFuture f);
+    entry [sync] GetMsg* get (int i, int j);
+    entry [sync] EmptyMsg* set (int i, int j, float aij);
+    entry [sync] EmptyMsg* print ();
   };
 };

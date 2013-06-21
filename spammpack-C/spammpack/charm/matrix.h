@@ -15,9 +15,9 @@ class Matrix : public CBase_Matrix
   public:
 
     Matrix (int N, int chunksize);
-    void get (int i, int j, CkFuture f);
-    void set (int i, int j, float aij, CkFuture f);
-    void print (CkFuture f);
+    GetMsg* get (int i, int j);
+    EmptyMsg* set (int i, int j, float aij);
+    EmptyMsg* print ();
 };
 
 #endif

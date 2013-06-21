@@ -1,10 +1,11 @@
 mainmodule multiply
 {
   extern module matrix;
+  extern module messages;
   mainchare Multiply
   {
     entry Multiply (CkArgMsg *msg);
     entry [threaded] void run (int N, int chunksize);
-    entry void multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C);
+    entry [threaded] void multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C);
   };
 };

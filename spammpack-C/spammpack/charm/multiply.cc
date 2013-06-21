@@ -64,40 +64,27 @@ class Multiply : public CBase_Multiply
       /* Create new matrix. */
       A = CProxy_Matrix::ckNew(N, chunksize);
 
-      /* Create future to implement barrier style blocking. */
-      CkFuture f = CkCreateFuture();
-
       /* Create random matrix of size N. */
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++)
         {
           float aij = rand()/(float) RAND_MAX;
           LOG_INFO("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
-
-          A.set(i, j, aij, f);
-          LOG_INFO("called set method\n");
-          EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f);
+          EmptyMsg *m = A.set(i, j, aij);
           delete m;
         }
       }
       LOG_INFO("done setting matrix\n");
 
       /* Print matrix for debugging. */
-      A.print(f);
-      EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f);
-      delete m;
+      A.print();
 
       /* Form matrix square. */
       //multiply(A, A, C);
 
-      /* Free some memory. */
-      CkReleaseFuture(f);
-
       /* Done. */
       CkExit();
     }
-
-    Multiply (CkMigrateMessage *msg) {}
 
     /** Multiply two matrices and store the produce in a third one, @f$ C
      * \leftarrow A \times B @f$. The result matrix C is overwritten.

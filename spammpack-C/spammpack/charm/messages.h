@@ -15,6 +15,9 @@ class GetMsg : public CMessage_GetMsg
   public:
 
     float a;
+
+    GetMsg ();
+    GetMsg (float a);
 };
 
 #endif
