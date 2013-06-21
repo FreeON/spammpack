@@ -13,15 +13,26 @@ class Main : public CBase_Main
     Main (CkArgMsg *msg)
     {
       CkPrintf("starting...\n");
-      run();
-      CkExit();
+      thisProxy.run();
     }
 
-    void run ()
+    void run()
     {
-      ValueMsg *m = get();
-      CkPrintf("got %d\n", m->i);
+      CProxy_Worker r = CProxy_Worker::ckNew();
+      CkPrintf("calling get method...\n");
+      ValueMsg *m = r.get();
+      CkPrintf("received %d from chare\n", m->i);
       delete m;
+    }
+};
+
+class Worker : public CBase_Worker
+{
+  public:
+
+    Worker ()
+    {
+      CkPrintf("initializing chare...\n");
     }
 
     ValueMsg * get ()

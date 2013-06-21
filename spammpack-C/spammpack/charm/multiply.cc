@@ -50,7 +50,7 @@ class Multiply : public CBase_Multiply
         }
       }
 
-      run(N, chunksize);
+      thisProxy.run(N, chunksize);
     }
 
     void run (int N, int chunksize)

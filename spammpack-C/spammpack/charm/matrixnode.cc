@@ -1,5 +1,6 @@
 #include "matrixnode.h"
 #include "messages.h"
+#include "utilities.h"
 
 /** Constructor. */
 MatrixNode::MatrixNode (int NLower[2],
@@ -100,7 +101,7 @@ void MatrixNode::set (int i,
 {
   int N = this->NUpper[0]-this->NLower[0];
 
-  CkPrintf("setting A[%d][%d] to %f\n", i, j, aij);
+  LOG_INFO("setting A[%d][%d] to %f\n", i, j, aij);
 
   if(N == chunksize)
   {

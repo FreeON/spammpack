@@ -61,6 +61,8 @@ EmptyMsg* Matrix::set (int i, int j, float aij)
   delete m;
   CkReleaseFuture(f_child);
 
+  LOG_INFO("done\n");
+
   return new EmptyMsg();
 }
 
@@ -76,6 +78,8 @@ EmptyMsg* Matrix::print ()
     }
     CkPrintf("\n");
   }
+
+  return new EmptyMsg();
 }
 
 #include "matrix.def.h"

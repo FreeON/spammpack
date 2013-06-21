@@ -4,7 +4,12 @@ mainmodule synctest
   mainchare Main
   {
     entry Main(CkArgMsg *msg);
-    entry [threaded] void run();
+    entry void run();
+  };
+
+  chare Worker
+  {
+    entry Worker();
     entry [sync] ValueMsg* get();
   };
 };
