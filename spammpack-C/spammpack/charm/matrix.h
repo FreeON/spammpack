@@ -14,10 +14,15 @@ class Matrix : public CBase_Matrix
 
   public:
 
+    Matrix ();
     Matrix (int N, int chunksize);
-    GetMsg* get (int i, int j);
-    EmptyMsg* set (int i, int j, float aij);
-    EmptyMsg* print ();
+    EmptyMsg * initialize (int N, int chunksize);
+    EmptyMsg * remove();
+    IntMsg * getN ();
+    IntMsg * getChunksize ();
+    FloatMsg * get (int i, int j);
+    EmptyMsg * set (int i, int j, float aij);
+    EmptyMsg * print ();
 };
 
 #endif

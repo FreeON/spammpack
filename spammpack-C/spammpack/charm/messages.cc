@@ -2,12 +2,22 @@
 
 EmptyMsg::EmptyMsg () {}
 
-GetMsg::GetMsg ()
+IntMsg::IntMsg ()
+{
+  this->i = 0;
+}
+
+IntMsg::IntMsg (int i)
+{
+  this->i = i;
+}
+
+FloatMsg::FloatMsg ()
 {
   this->a = 0;
 }
 
-GetMsg::GetMsg (float a)
+FloatMsg::FloatMsg (float a)
 {
   this->a = a;
 }

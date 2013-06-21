@@ -10,14 +10,24 @@ class EmptyMsg : public CMessage_EmptyMsg
     EmptyMsg ();
 };
 
-class GetMsg : public CMessage_GetMsg
+class IntMsg : public CMessage_IntMsg
+{
+  public:
+
+    float i;
+
+    IntMsg ();
+    IntMsg (int i);
+};
+
+class FloatMsg : public CMessage_FloatMsg
 {
   public:
 
     float a;
 
-    GetMsg ();
-    GetMsg (float a);
+    FloatMsg ();
+    FloatMsg (float a);
 };
 
 #endif

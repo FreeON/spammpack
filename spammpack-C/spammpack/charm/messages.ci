@@ -1,5 +1,6 @@
 module messages
 {
   message EmptyMsg;
-  message GetMsg;
+  message IntMsg;
+  message FloatMsg;
 };

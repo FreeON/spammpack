@@ -28,7 +28,7 @@ void MatrixNode::get (int i,
     CkFuture f)
 {
   int N = NUpper[0]-NLower[0];
-  GetMsg *aij = new GetMsg();
+  FloatMsg *aij = new FloatMsg();
 
   if(N == chunksize)
   {
@@ -78,7 +78,7 @@ void MatrixNode::get (int i,
       /* Recurse. */
       CkFuture f_child = CkCreateFuture();
       child[childindex]->get(i, j, f_child);
-      GetMsg *result = (GetMsg*) CkWaitFuture(f_child);
+      FloatMsg *result = (FloatMsg*) CkWaitFuture(f_child);
       aij->a = result->a;
       delete result;
       CkReleaseFuture(f_child);

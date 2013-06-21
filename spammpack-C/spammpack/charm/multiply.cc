@@ -55,6 +55,7 @@ class Multiply : public CBase_Multiply
 
     void run (int N, int chunksize)
     {
+      EmptyMsg *m;
       CProxy_Matrix A;
       CProxy_Matrix C;
 
@@ -63,6 +64,7 @@ class Multiply : public CBase_Multiply
 
       /* Create new matrix. */
       A = CProxy_Matrix::ckNew(N, chunksize);
+      C = CProxy_Matrix::ckNew();
 
       /* Create random matrix of size N. */
       for(int i = 0; i < N; i++) {
@@ -70,17 +72,21 @@ class Multiply : public CBase_Multiply
         {
           float aij = rand()/(float) RAND_MAX;
           LOG_INFO("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
-          EmptyMsg *m = A.set(i, j, aij);
-          delete m;
+          m = A.set(i, j, aij); delete m;
         }
       }
       LOG_INFO("done setting matrix\n");
 
       /* Print matrix for debugging. */
-      A.print();
+      LOG_INFO("printing A\n");
+      m = A.print(); delete m;
 
       /* Form matrix square. */
-      //multiply(A, A, C);
+      m = thisProxy.multiply(A, A, C); delete m;
+
+      /* Print result. */
+      LOG_INFO("printing C <- A*A\n");
+      m = C.print(); delete m;
 
       /* Done. */
       CkExit();
@@ -93,10 +99,30 @@ class Multiply : public CBase_Multiply
      * @param B The matrix B.
      * @param C The matrix C.
      */
-    void multiply (CProxy_Matrix A,
-        CProxy_Matrix B,
-        CProxy_Matrix C)
+    EmptyMsg * multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C)
     {
+      EmptyMsg *m;
+
+      IntMsg *N_A = A.getN();
+      IntMsg *N_B = B.getN();
+
+      if(N_A->i != N_B->i)
+      {
+        LOG_ERROR("mismatch in matrix dimensions\n");
+        CkExit();
+      }
+
+      IntMsg *chunksize_A = A.getChunksize();
+
+      /* Delete C matrix. */
+      LOG_INFO("Setting C to zero\n");
+      m = C.remove(); delete m;
+
+      /* Initialize C. */
+      LOG_INFO("initializing C with N = %d, and chunksize = %d\n", N_A->i, chunksize_A->i);
+      m = C.initialize(N_A->i, chunksize_A->i); delete m;
+
+      return new EmptyMsg;
     }
 };
 
