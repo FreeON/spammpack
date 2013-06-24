@@ -71,7 +71,7 @@ class Multiply : public CBase_Multiply
         for(int j = 0; j < N; j++)
         {
           float aij = rand()/(float) RAND_MAX;
-          LOG_INFO("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
+          LOG_DEBUG("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
           m = A.set(i, j, aij); delete m;
         }
       }
@@ -115,15 +115,18 @@ class Multiply : public CBase_Multiply
       IntMsg *chunksize_A = A.getChunksize();
 
       /* Delete C matrix. */
-      LOG_INFO("Setting C to zero\n");
+      LOG_DEBUG("Setting C to zero\n");
       m = C.remove(); delete m;
 
       /* Initialize C. */
-      LOG_INFO("initializing C with N = %d, and chunksize = %d\n", N_A->i, chunksize_A->i);
       m = C.initialize(N_A->i, chunksize_A->i); delete m;
 
+      delete N_A;
+      delete N_B;
+      delete chunksize_A;
+
       /* Multiply matrices. */
-      LOG_INFO("multiplying\n");
+      LOG_DEBUG("multiplying\n");
       m = C.multiply(A, B); delete m;
 
       return new EmptyMsg;

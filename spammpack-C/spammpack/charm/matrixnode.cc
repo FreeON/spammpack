@@ -96,7 +96,7 @@ void MatrixNode::set (int i, int j, float aij, CkFuture f)
   int N = this->NUpper[0]-this->NLower[0];
 
   LOG_DEBUG("N = %d (chunksize = %d)\n", N, chunksize);
-  LOG_INFO("setting A[%d][%d] to %f\n", i, j, aij);
+  LOG_DEBUG("setting A[%d][%d] to %f\n", i, j, aij);
 
   if(N == chunksize)
   {
@@ -240,9 +240,9 @@ void MatrixNode::multiply (CProxy_MatrixNode A, CProxy_MatrixNode B, CkFuture f)
       BlockMsg *A_block = A.getBlock();
       BlockMsg *B_block = B.getBlock();
 
-      logging::printBlock(chunksize, "A_block", A_block->block);
-      logging::printBlock(chunksize, "B_block", B_block->block);
-      logging::printBlock(chunksize, "C_block", block);
+      logging::printBlock(logging::DEBUG, chunksize, "A_block", A_block->block);
+      logging::printBlock(logging::DEBUG, chunksize, "B_block", B_block->block);
+      logging::printBlock(logging::DEBUG, chunksize, "C_block", block);
 
       LOG_DEBUG("calling matmul()\n");
       matmul(chunksize, A_block->block, B_block->block, block);

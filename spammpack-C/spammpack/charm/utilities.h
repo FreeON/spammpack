@@ -6,12 +6,18 @@
 
 class logging
 {
+  private:
+
+    int loglevel;
+
   public:
 
     static const int DEBUG = 0;
     static const int INFO  = 1;
     static const int ERROR = 2;
 
+    logging (const int loglevel);
+
     static void log (const int level, const char *const filename, const int line, const char *const format, ...);
-    static void printBlock (const int chunksize, const std::string name, const float *const A);
+    static void printBlock (const int level, const int chunksize, const std::string name, const float *const A);
 };

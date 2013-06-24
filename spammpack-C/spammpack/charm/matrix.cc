@@ -44,22 +44,22 @@ EmptyMsg * Matrix::initialize (int N, int chunksize)
 /** Deallocate a matrix. */
 EmptyMsg * Matrix::remove ()
 {
-  return new EmptyMsg;
+  return new EmptyMsg();
 }
 
 IntMsg * Matrix::getN ()
 {
-  return new IntMsg(this->N);
+  return new IntMsg(N);
 }
 
 IntMsg * Matrix::getChunksize ()
 {
-  return new IntMsg(this->chunksize);
+  return new IntMsg(chunksize);
 }
 
 FloatMsg* Matrix::get (int i, int j)
 {
-  if(this->root == NULL)
+  if(root == NULL)
   {
     return new FloatMsg(0);
   }
@@ -77,7 +77,7 @@ FloatMsg* Matrix::get (int i, int j)
 
 EmptyMsg* Matrix::set (int i, int j, float aij)
 {
-  LOG_INFO("setting A(%d,%d) <- %f\n", i, j, aij);
+  LOG_DEBUG("setting A(%d,%d) <- %f\n", i, j, aij);
 
   if(root == NULL)
   {
@@ -89,13 +89,13 @@ EmptyMsg* Matrix::set (int i, int j, float aij)
   }
 
   CkFuture f_child = CkCreateFuture();
-  LOG_INFO("created future\n");
+  LOG_DEBUG("created future\n");
   root->set(i, j, aij, f_child);
   EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f_child);
   delete m;
   CkReleaseFuture(f_child);
 
-  LOG_INFO("done\n");
+  LOG_DEBUG("done\n");
 
   return new EmptyMsg();
 }

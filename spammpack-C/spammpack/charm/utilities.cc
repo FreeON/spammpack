@@ -5,6 +5,11 @@
 
 #include "utilities.h"
 
+logging::logging (const int loglevel)
+{
+  this->loglevel = loglevel;
+}
+
 void logging::log (const int level,
     const char *const filename,
     const int line,
@@ -13,35 +18,41 @@ void logging::log (const int level,
   va_list va;
   std::string levelname;
 
-  switch(level)
+  if(level >= logging::INFO)
   {
-    case logging::DEBUG:
-      levelname = "DEBUG";
-      break;
+    switch(level)
+    {
+      case logging::DEBUG:
+        levelname = "DEBUG";
+        break;
 
-    case logging::INFO:
-      levelname = "INFO";
-      break;
+      case logging::INFO:
+        levelname = "INFO";
+        break;
 
-    case logging::ERROR:
-      levelname = "ERROR";
-      break;
+      case logging::ERROR:
+        levelname = "ERROR";
+        break;
 
-    default:
-      levelname = "UNKNOWN";
-      break;
-  };
+      default:
+        levelname = "UNKNOWN";
+        break;
+    };
 
-  std::ostringstream format_stream;
-  format_stream << "[" << filename << ":" << line << " - " << levelname << "] " << format;
-  const char *new_format = format_stream.str().c_str();
+    std::ostringstream format_stream;
+    format_stream << "[" << filename << ":" << line << " - " << levelname << "] " << format;
+    const char *new_format = format_stream.str().c_str();
 
-  va_start(va, format);
-  vprintf(new_format, va);
-  va_end(va);
+    va_start(va, format);
+    vprintf(new_format, va);
+    va_end(va);
+  }
 }
 
-void logging::printBlock (const int chunksize, const std::string name, const float *const A)
+void logging::printBlock (const int level,
+    const int chunksize,
+    const std::string name,
+    const float *const A)
 {
   std::ostringstream debugString;
   debugString.precision(3);
