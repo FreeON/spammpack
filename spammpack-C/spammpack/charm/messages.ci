@@ -3,4 +3,10 @@ module messages
   message EmptyMsg;
   message IntMsg;
   message FloatMsg;
+  message MatrixInfoMsg;
+  message NodeInfoMsg;
+  message BlockMsg
+  {
+    float block[];
+  };
 };

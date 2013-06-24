@@ -11,6 +11,7 @@ INTERFACE_FILES = \
 	multiply.ci
 
 HEADER_FILES = \
+	algebra.h \
 	matrix.h \
 	matrixnode.h \
 	messages.h \
@@ -19,6 +20,7 @@ HEADER_FILES = \
 multiply_SOURCES = \
 	$(INTERFACE_FILES) \
 	$(HEADER_FILES) \
+	algebra.cc \
 	matrix.cc \
 	matrixnode.cc \
 	messages.cc \

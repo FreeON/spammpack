@@ -10,6 +10,7 @@ module matrix
     entry [sync] EmptyMsg * remove();
     entry [sync] IntMsg * getN ();
     entry [sync] IntMsg * getChunksize ();
+    entry [sync] MatrixInfoMsg * getInfo ();
     entry [sync] FloatMsg * get (int i, int j);
     entry [sync] EmptyMsg * set (int i, int j, float aij);
     entry [sync] EmptyMsg * print ();

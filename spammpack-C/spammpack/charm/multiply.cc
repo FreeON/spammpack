@@ -123,6 +123,7 @@ class Multiply : public CBase_Multiply
       m = C.initialize(N_A->i, chunksize_A->i); delete m;
 
       /* Multiply matrices. */
+      LOG_INFO("multiplying\n");
       m = C.multiply(A, B); delete m;
 
       return new EmptyMsg;

@@ -126,10 +126,38 @@ EmptyMsg* Matrix::print ()
 EmptyMsg * Matrix::multiply (CProxy_Matrix A, CProxy_Matrix B)
 {
   /* Get root and check A and B. */
+  MatrixInfoMsg *A_info = A.getInfo();
+  MatrixInfoMsg *B_info = B.getInfo();
 
   /* Call multiply method on MatrixNode. */
+  if(A_info->root != NULL && B_info->root != NULL)
+  {
+    if(root == NULL)
+    {
+      LOG_DEBUG("creating new node in C\n");
+      root = new CProxy_MatrixNode();
+      int NLower[2] = { 0, 0 };
+      int NUpper[2] = { NPadded, NPadded };
+      *root = CProxy_MatrixNode::ckNew(NLower, NUpper, chunksize);
+    }
+
+    LOG_DEBUG("multiplying root nodes\n");
+    CkFuture f = CkCreateFuture();
+    root->multiply(*A_info->root, *B_info->root, f);
+    EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f);
+    delete m;
+    CkReleaseFuture(f);
+  }
+
+  LOG_INFO("done multiplying\n");
 
   return new EmptyMsg();
+}
+
+
+MatrixInfoMsg * Matrix::getInfo ()
+{
+  return new MatrixInfoMsg(N, chunksize, root);
 }
 
 #include "matrix.def.h"

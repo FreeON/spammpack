@@ -21,6 +21,7 @@ class Matrix : public CBase_Matrix
     EmptyMsg * remove();
     IntMsg * getN ();
     IntMsg * getChunksize ();
+    MatrixInfoMsg * getInfo ();
     FloatMsg * get (int i, int j);
     EmptyMsg * set (int i, int j, float aij);
     EmptyMsg * print ();

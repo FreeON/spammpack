@@ -15,6 +15,10 @@ void logging::log (const int level,
 
   switch(level)
   {
+    case logging::DEBUG:
+      levelname = "DEBUG";
+      break;
+
     case logging::INFO:
       levelname = "INFO";
       break;
@@ -35,4 +39,20 @@ void logging::log (const int level,
   va_start(va, format);
   vprintf(new_format, va);
   va_end(va);
+}
+
+void logging::printBlock (const int chunksize, const std::string name, const float *const A)
+{
+  std::ostringstream debugString;
+  debugString.precision(3);
+  debugString.setf(std::ios::fixed);
+  debugString << name << std::endl;
+  for(int i = 0; i < chunksize; i++) {
+    for(int j = 0; j < chunksize; j++)
+    {
+      debugString << " " << A[i+j*chunksize];
+    }
+    debugString << std::endl;
+  }
+  LOG_DEBUG(debugString.str().c_str());
 }
