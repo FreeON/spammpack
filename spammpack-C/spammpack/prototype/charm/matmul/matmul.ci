@@ -3,6 +3,7 @@ mainmodule matmul {
   mainchare Main {
     entry Main(CkArgMsg *m);
     entry [reductiontarget] void done();
+    entry [reductiontarget] void print();
   };
 
   array [2D] Block {
@@ -48,5 +49,7 @@ mainmodule matmul {
     };
     entry void inputA(int blockIdA, double blockA[M*KA], unsigned int M, unsigned int KA);
     entry void inputB(int blockIdB, double blockB[KB*N], unsigned int KB, unsigned int N);
+
+    entry void print (const char matrixName[1], CkCallback done);
   };
 };

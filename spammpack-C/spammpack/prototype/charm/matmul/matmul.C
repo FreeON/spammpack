@@ -22,6 +22,10 @@ public:
     b = CProxy_Block::ckNew(blockSize, numBlocks, numBlocks, numBlocks);
     c = CProxy_Block::ckNew(blockSize, numBlocks, numBlocks, numBlocks);
 
+    a.print("A", CkCallback(CkReductionTarget(Main, print), thisProxy));
+    b.print("B", CkCallback(CkReductionTarget(Main, print), thisProxy));
+    c.print("C", CkCallback(CkReductionTarget(Main, print), thisProxy));
+
     startTime = CkWallTimer();
 
     a.pdgemmSendInput(c, true);
@@ -33,7 +37,11 @@ public:
     double endTime = CkWallTimer();
     CkPrintf("Matrix multiply of %u blocks with %u elements each (%u^2) finished in %f seconds\n",
              numBlocks, blockSize, numBlocks*blockSize, endTime - startTime);
-    CkExit();
+    c.print("C", CkCallback(CkReductionTarget(Main, print), thisProxy));
+  }
+
+  void print ()
+  {
   }
 };
 
@@ -49,6 +57,12 @@ class Block : public CBase_Block {
     data = new double[elems];
     for (int i = 0; i < elems; ++i)
       data[i] = drand48();
+  }
+
+  void print (const char matrixName[1], CkCallback done)
+  {
+    CkPrintf("printing %s(%d,%d)\n", matrixName, thisIndex.x, thisIndex.y);
+    contribute(done);
   }
 
   Block(CkMigrateMessage*) {}

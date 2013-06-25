@@ -6,7 +6,7 @@ CXXFLAGS=$(OPTS)
 BINARY=matmul
 
 $(BINARY): matmul.o
-	$(CHARMC) -o $@ $< $(OPTS) -lblas
+	$(CHARMC) -o $@ $< $(OPTS) -lcblas
 
 matmul.o: matmul.C matmul.decl.h
 matmul.decl.h: matmul.ci
