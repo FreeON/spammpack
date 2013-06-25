@@ -1,5 +1,6 @@
 #include "multiply.decl.h"
 #include "messages.h"
+#include "timer.h"
 #include "utilities.h"
 
 #include <getopt.h>
@@ -66,7 +67,11 @@ class Multiply : public CBase_Multiply
       A = CProxy_Matrix::ckNew(N, chunksize);
       C = CProxy_Matrix::ckNew();
 
+      /* Create timer. */
+      timer timestamp = timer();
+
       /* Create random matrix of size N. */
+      timestamp.start();
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++)
         {
@@ -75,18 +80,20 @@ class Multiply : public CBase_Multiply
           m = A.set(i, j, aij); delete m;
         }
       }
-      LOG_INFO("done setting matrix\n");
+      LOG_INFO("done setting matrix, %f seconds\n", timestamp.stop());
 
       /* Print matrix for debugging. */
-      LOG_INFO("printing A\n");
-      m = A.print(); delete m;
+      //LOG_INFO("printing A\n");
+      //m = A.print(); delete m;
 
       /* Form matrix square. */
+      timestamp.start();
       m = thisProxy.multiply(A, A, C); delete m;
+      LOG_INFO("multiply took %f seconds\n", timestamp.stop());
 
       /* Print result. */
-      LOG_INFO("printing C <- A*A\n");
-      m = C.print(); delete m;
+      //LOG_INFO("printing C <- A*A\n");
+      //m = C.print(); delete m;
 
       /* Done. */
       CkExit();

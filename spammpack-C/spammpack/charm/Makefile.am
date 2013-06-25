@@ -15,6 +15,7 @@ HEADER_FILES = \
 	matrix.h \
 	matrixnode.h \
 	messages.h \
+	timer.h \
 	utilities.h
 
 multiply_SOURCES = \
@@ -25,6 +26,7 @@ multiply_SOURCES = \
 	matrixnode.cc \
 	messages.cc \
 	multiply.cc \
+	timer.cc \
 	utilities.cc
 
 endif

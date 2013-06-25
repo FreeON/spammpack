@@ -31,6 +31,7 @@ EmptyMsg * Matrix::initialize (int N, int chunksize)
   root = NULL;
 
   int depth = (int) floor(log(N/(double) chunksize)/log(2.));
+  if(depth < 0) { depth = 0; }
   while(chunksize*pow(2, depth) < N) { depth++; }
   NPadded = chunksize*pow(2, depth);
 

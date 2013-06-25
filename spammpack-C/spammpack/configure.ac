@@ -107,6 +107,9 @@ if test "${declared_posix_memalign}" = "yes"; then
                 memory.])], [], [])
 fi
 
+dnl Check for clock_gettime.
+AC_SEARCH_LIBS([clock_gettime], [rt], [], [AC_MSG_FAILURE([could not find clock_gettime()])])
+
 dnl Check for SSE.
 AC_CHECK_HEADERS([xmmintrin.h])
 if test "${ac_cv_header_xmmintrin_h}" = "yes"; then
