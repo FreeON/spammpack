@@ -11,12 +11,16 @@ int main (int argc, char **argv)
   /* The submatrix size at the leaf nodes. */
   int blocksize = 1;
 
+  /* Whether to print some debugging stuff. */
+  bool debug = false;
+
   int c;
   const char *short_options = "hN:b:";
   const option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
     { "block", required_argument, NULL, 'b' },
+    { "debug", no_argument, NULL, 'd' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -25,7 +29,12 @@ int main (int argc, char **argv)
     switch(c)
     {
       case 'h':
-        printf("Usage:\n");
+        printf("Usage: strassenOMP [options]\n");
+        printf("\n");
+        printf("{ --help | -h }       This help\n");
+        printf("-N N                  The matrix size, NxN\n");
+        printf("{ --block | -b } N    The block size, NxN\n");
+        printf("{ --debug | -d }      Print the matrices for debugging\n");
         exit(0);
         break;
 
@@ -35,6 +44,10 @@ int main (int argc, char **argv)
 
       case 'b':
         blocksize = strtol(optarg, NULL, 10);
+        break;
+
+      case 'd':
+        debug = !debug;
         break;
 
       default:
@@ -60,4 +73,19 @@ int main (int argc, char **argv)
   Matrix C = Matrix(N, blocksize);
 
   A.random();
+  B.random();
+  //C.random();
+
+  if(debug)
+  {
+    A.print("A:");
+    B.print("B:");
+  }
+
+  Timer timer;
+  timer.start();
+  C.matmul(A, B);
+  timer.stop();
+
+  if(debug) C.print("C:");
 }
