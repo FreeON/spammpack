@@ -68,6 +68,14 @@ int main (int argc, char **argv)
     exit(1);
   }
 
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+#pragma omp master
+    printf("running on %d cores... ", omp_get_num_threads()); fflush(stdout);
+  }
+#endif
+
   Matrix A = Matrix(N, blocksize);
   Matrix B = Matrix(N, blocksize);
   Matrix C = Matrix(N, blocksize);
@@ -82,7 +90,7 @@ int main (int argc, char **argv)
     B.print("B:");
   }
 
-  Timer timer;
+  Timer timer("multiply");
   timer.start();
   C.matmul(A, B);
   timer.stop();

@@ -137,7 +137,7 @@ void Node::matmul (Node A, Node B)
           if(A.child[childIndexA] == NULL || B.child[childIndexB] == NULL)
           {
             /* [FIXME] delete C. */
-            return;
+            continue;
           }
 #ifdef _OPENMP
           omp_set_lock(&lock);
@@ -149,7 +149,7 @@ void Node::matmul (Node A, Node B)
 #ifdef _OPENMP
           omp_unset_lock(&lock);
 #endif
-#pragma omp task untied
+#pragma omp task untied default(none) shared(A, B) firstprivate(childIndexA, childIndexB, childIndex)
           child[childIndex]->matmul(*A.child[childIndexA], *B.child[childIndexB]);
         }
       }

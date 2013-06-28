@@ -104,10 +104,11 @@ void Matrix::matmul (Matrix A, Matrix B)
 
 #pragma omp parallel
   {
-#pragma omp master
+#pragma omp single
     {
-#pragma omp task untied
+#pragma omp task untied default(none) shared(A, B)
       root->matmul(*A.root, *B.root);
+#pragma omp taskwait
     }
   }
 }

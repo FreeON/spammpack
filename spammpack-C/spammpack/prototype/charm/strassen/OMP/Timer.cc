@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string>
 #include "strassenOMP.h"
 
-Timer::Timer ()
+Timer::Timer (std::string name)
 {
   isRunning = false;
+  this->name = name;
 }
 
 void Timer::start ()
@@ -23,7 +25,7 @@ void Timer::start ()
   }
 
   isRunning = true;
-  printf("starting timer... "); fflush(stdout);
+  printf("starting %s... ", name.c_str()); fflush(stdout);
 }
 
 void Timer::stop ()
