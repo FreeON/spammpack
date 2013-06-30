@@ -126,6 +126,10 @@ void Node::matmul (Node A, Node B)
 
   else
   {
+    /* Create necessary child nodes. */
+#ifdef _OPENMP
+    omp_set_lock(&lock);
+#endif
     for(int i = 0; i < 2; i++) {
       for(int j = 0; j < 2; j++)
       {
@@ -139,16 +143,31 @@ void Node::matmul (Node A, Node B)
             /* [FIXME] delete C. */
             continue;
           }
-#ifdef _OPENMP
-          omp_set_lock(&lock);
-#endif
           if(child[childIndex] == NULL)
           {
             child[childIndex] = new Node(blocksize, iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1), jLower+width/2*(j+1));
           }
+        }
+      }
+    }
 #ifdef _OPENMP
-          omp_unset_lock(&lock);
+    omp_unset_lock(&lock);
 #endif
+
+    /* Multiply recursively. */
+    for(int i = 0; i < 2; i++) {
+      for(int j = 0; j < 2; j++)
+      {
+        int childIndex = (i << 1) | j;
+        for(int k = 0; k < 2; k++)
+        {
+          int childIndexA = (i << 1) | k;
+          int childIndexB = (k << 1) | j;
+          if(A.child[childIndexA] == NULL || B.child[childIndexB] == NULL)
+          {
+            /* [FIXME] delete C. */
+            continue;
+          }
 #pragma omp task untied default(none) shared(A, B) firstprivate(childIndexA, childIndexB, childIndex)
           child[childIndex]->matmul(*A.child[childIndexA], *B.child[childIndexB]);
         }
