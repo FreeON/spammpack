@@ -82,7 +82,7 @@ int main (int argc, char **argv)
 
   A.random();
   B.random();
-  //C.random();
+  C.zero();
 
   if(debug)
   {

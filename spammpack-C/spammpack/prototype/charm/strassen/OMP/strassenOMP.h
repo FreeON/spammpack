@@ -51,6 +51,7 @@ class Matrix
 
     Matrix (int N, int blocksize);
     void random ();
+    void zero ();
     void set (int i, int j, double aij);
     double get (int i, int j);
     void print (std::string name);

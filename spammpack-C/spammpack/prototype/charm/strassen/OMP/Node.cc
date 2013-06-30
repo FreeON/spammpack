@@ -103,14 +103,14 @@ void Node::matmul (Node A, Node B)
       /* [FIXME] delete C. */
       return;
     }
-#ifdef _OPENMP
-    omp_set_lock(&lock);
-#endif
-    if(data == NULL)
-    {
-      data = new double[blocksize*blocksize];
-      memset(data, 0, blocksize*blocksize*sizeof(double));
-    }
+//#ifdef _OPENMP
+//    omp_set_lock(&lock);
+//#endif
+//    if(data == NULL)
+//    {
+//      data = new double[blocksize*blocksize];
+//      memset(data, 0, blocksize*blocksize*sizeof(double));
+//    }
     for(int i = iLower; i < iUpper; i++) {
       for(int j = jLower; j < jUpper; j++) {
         for(int k = A.jLower; k < A.jUpper; k++)
@@ -119,40 +119,40 @@ void Node::matmul (Node A, Node B)
         }
       }
     }
-#ifdef _OPENMP
-    omp_unset_lock(&lock);
-#endif
+//#ifdef _OPENMP
+//    omp_unset_lock(&lock);
+//#endif
   }
 
   else
   {
     /* Create necessary child nodes. */
-#ifdef _OPENMP
-    omp_set_lock(&lock);
-#endif
-    for(int i = 0; i < 2; i++) {
-      for(int j = 0; j < 2; j++)
-      {
-        int childIndex = (i << 1) | j;
-        for(int k = 0; k < 2; k++)
-        {
-          int childIndexA = (i << 1) | k;
-          int childIndexB = (k << 1) | j;
-          if(A.child[childIndexA] == NULL || B.child[childIndexB] == NULL)
-          {
-            /* [FIXME] delete C. */
-            continue;
-          }
-          if(child[childIndex] == NULL)
-          {
-            child[childIndex] = new Node(blocksize, iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1), jLower+width/2*(j+1));
-          }
-        }
-      }
-    }
-#ifdef _OPENMP
-    omp_unset_lock(&lock);
-#endif
+//#ifdef _OPENMP
+//    omp_set_lock(&lock);
+//#endif
+//    for(int i = 0; i < 2; i++) {
+//      for(int j = 0; j < 2; j++)
+//      {
+//        int childIndex = (i << 1) | j;
+//        for(int k = 0; k < 2; k++)
+//        {
+//          int childIndexA = (i << 1) | k;
+//          int childIndexB = (k << 1) | j;
+//          if(A.child[childIndexA] == NULL || B.child[childIndexB] == NULL)
+//          {
+//            /* [FIXME] delete C. */
+//            continue;
+//          }
+//          if(child[childIndex] == NULL)
+//          {
+//            child[childIndex] = new Node(blocksize, iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1), jLower+width/2*(j+1));
+//          }
+//        }
+//      }
+//    }
+//#ifdef _OPENMP
+//    omp_unset_lock(&lock);
+//#endif
 
     /* Multiply recursively. */
     for(int i = 0; i < 2; i++) {

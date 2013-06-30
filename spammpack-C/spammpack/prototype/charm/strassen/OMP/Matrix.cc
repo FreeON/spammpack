@@ -34,6 +34,16 @@ void Matrix::random ()
   }
 }
 
+void Matrix::zero ()
+{
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      set(i, j, 0.0);
+    }
+  }
+}
+
 void Matrix::set (int i, int j, double aij)
 {
   if(i < 0 || j < 0 || i >= N || j >= N)
