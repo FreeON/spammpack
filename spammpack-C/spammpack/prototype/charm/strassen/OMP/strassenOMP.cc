@@ -72,7 +72,7 @@ int main (int argc, char **argv)
 #pragma omp parallel
   {
 #pragma omp master
-    printf("running on %d cores... ", omp_get_num_threads()); fflush(stdout);
+    printf("running on % 2d cores... ", omp_get_num_threads()); fflush(stdout);
   }
 #endif
 
