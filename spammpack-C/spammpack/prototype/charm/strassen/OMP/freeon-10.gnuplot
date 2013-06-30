@@ -22,9 +22,7 @@ set ylabel 'walltiem [s]'
 
 set logscale xy
 set output 'freeon-10.performance.ps'
-plot 'freeon-10.dat' index 0 using 1:2 with linespoints title 'Intel', \
-     'freeon-10.dat' index 0 using 1:3 with linespoints title 'Intel', \
-     'freeon-10.dat' index 1 using 1:2 with linespoints title 'gcc 4.6.3', \
-     'freeon-10.dat' index 1 using 1:3 with linespoints title 'gcc 4.6.3', \
+plot for [COL=2:4] 'freeon-10.dat' index 0 using 1:COL with linespoints title 'Intel', \
+     for [COL=2:4] 'freeon-10.dat' index 1 using 1:COL with linespoints title 'gcc 4.6.3', \
      '' using 1:(61.502654) with lines title 'Intel - serial', \
      '' using 1:(22.347782) with lines title 'gcc - serial'
