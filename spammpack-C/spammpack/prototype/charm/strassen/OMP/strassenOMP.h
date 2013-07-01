@@ -50,6 +50,7 @@ class Matrix
   public:
 
     Matrix (int N, int blocksize);
+    void convert (int N, double *A);
     void random ();
     void zero ();
     void set (int i, int j, double aij);

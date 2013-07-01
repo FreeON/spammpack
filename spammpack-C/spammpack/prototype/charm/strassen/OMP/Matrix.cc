@@ -20,8 +20,22 @@ Matrix::Matrix (int N, int blocksize)
     depth++;
   }
   if(blocksize*(1 << depth) < N) depth++;
-  //printf("depth = %d, NPadded = %d\n", depth, blocksize*(1 << depth));
   NPadded = blocksize*(1 << depth);
+}
+
+/** Convert a matrix in dense row-major storage to a Matrix.
+ *
+ * @param N The matrix dimension.
+ * @param A Pointer to the dense matrix.
+ */
+void Matrix::convert (int N, double *A)
+{
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      set(i, j, A[i*N+j]);
+    }
+  }
 }
 
 void Matrix::random ()

@@ -1,7 +1,57 @@
 #include <getopt.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "strassenOMP.h"
+
+#define TOLERANCE 1e-10
+
+/** Multiply two matrices, @f$ C \leftarrow A \times B @f$.
+ *
+ * @param N The matrix dimension.
+ * @Param A Matrix A.
+ * @Param B Matrix B.
+ *
+ * @return The result, matrix C.
+ */
+double * multiply (int N, double *A, double *B)
+{
+  double *C = new double[N*N];
+
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      C[i*N+j] = 0;
+
+      for(int k = 0; k < N; k++)
+      {
+        C[i*N+j] += A[i*N+k]*B[k*N+j];
+      }
+    }
+  }
+
+  return C;
+}
+
+/** Allocate and fill a random NxN matrix.
+ *
+ * @param N The size of the matrix.
+ *
+ * @return The newly allocated matrix.
+ */
+double * randomDense (int N)
+{
+  double *A = new double[N*N];
+
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      A[i*N+j] = rand()/(double) RAND_MAX;
+    }
+  }
+
+  return A;
+}
 
 int main (int argc, char **argv)
 {
@@ -92,8 +142,12 @@ int main (int argc, char **argv)
   Matrix B = Matrix(N, blocksize);
   Matrix C = Matrix(N, blocksize);
 
-  A.random();
-  B.random();
+  ADense = randomDense(N);
+  BDense = randomDense(N);
+
+  A.convert(N, ADense);
+  B.convert(N, BDense);
+
   C.zero();
 
   if(debug)
@@ -108,4 +162,21 @@ int main (int argc, char **argv)
   timer.stop();
 
   if(debug) C.print("C:");
+
+  if(verify)
+  {
+    double *CDense = multiply(N, ADense, BDense);
+    for(int i = 0; i < N; i++) {
+      for(int j = 0; j < N; j++)
+      {
+        if(fabs(CDense[i*N+j]-C.get(i, j)) > TOLERANCE)
+        {
+          printf("comparison failed for C(%d,%d): %e <-> %e\n",
+              i, j, CDense[i*N+j], C.get(i, j));
+          exit(1);
+        }
+      }
+    }
+    printf("result verified\n");
+  }
 }

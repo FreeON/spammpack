@@ -1,10 +1,10 @@
 .SUFFIXES : .o .cc
 
-#CXX = g++
-#CXXFLAGS = -O3 -march=native -g -Wall -fopenmp
+CXX = g++
+CXXFLAGS = -O3 -march=native -g -Wall -fopenmp
 
-CXX = icpc
-CXXFLAGS = -O3 -xHost -g -Wall -fopenmp
+#CXX = icpc
+#CXXFLAGS = -O3 -xHost -g -Wall -fopenmp
 
 LIBS = -lrt
 
