@@ -10,4 +10,24 @@ DoubleMsg::DoubleMsg (double x)
   this->x = x;
 }
 
+MatrixMsg::MatrixMsg (int N, int blocksize, CProxy_Node *root)
+{
+  this->N = N;
+  this->blocksize = blocksize;
+  this->root = root;
+}
+
+NodeMsg::NodeMsg (int iLower, int iUpper, int jLower, int jUpper, int blocksize, CProxy_Node *child[4])
+{
+  this->iLower = iLower;
+  this->iUpper = iUpper;
+  this->jLower = jLower;
+  this->jUpper = jUpper;
+  this->blocksize = blocksize;
+  for(int i = 0; i < 4; i++)
+  {
+    this->child[i] = child[i];
+  }
+}
+
 #include "Messages.def.h"

@@ -2,6 +2,7 @@
 #define __MATRIX_H
 
 #include "Matrix.decl.h"
+#include "Messages.h"
 
 #include <string>
 
@@ -20,10 +21,11 @@ class Matrix : public CBase_Matrix
 
     Matrix (int N, int blocksize);
     void random ();
-    void set (int i, int j, double aij);
+    EmptyMsg * set (int i, int j, double aij);
     DoubleMsg * get (int i, int j);
     void print (std::string name);
-    void matmul (Matrix A, Matrix B);
+    EmptyMsg * matmul (CProxy_Matrix A, CProxy_Matrix B);
+    MatrixMsg * info ();
 };
 
 #endif

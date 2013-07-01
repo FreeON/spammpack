@@ -33,7 +33,7 @@ void Matrix::random ()
   }
 }
 
-void Matrix::set (int i, int j, double aij)
+EmptyMsg * Matrix::set (int i, int j, double aij)
 {
   if(i < 0 || j < 0 || i >= N || j >= N)
   {
@@ -46,7 +46,8 @@ void Matrix::set (int i, int j, double aij)
     root = new CProxy_Node;
     *root = CProxy_Node::ckNew(blocksize, 0, 0, NPadded, NPadded);
   }
-  root->set(i, j, aij);
+  EmptyMsg *msg = root->set(i, j, aij);
+  return msg;
 }
 
 DoubleMsg * Matrix::get (int i, int j)
@@ -65,40 +66,42 @@ DoubleMsg * Matrix::get (int i, int j)
   return aij;
 }
 
-void Matrix::print (std::string name)
+/** Get some information on the matrix.
+ *
+ * @return The MatrixMsg object.
+ */
+MatrixMsg * Matrix::info ()
 {
-  std::ostringstream o;
-  o.setf(std::ios::fixed);
-  o << name << std::endl;
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < N; j++)
-    {
-      o << " " << get(i, j);
-    }
-    o << std::endl;
-  }
-  printf("%s", o.str().c_str());
+  return new MatrixMsg(N, blocksize, root);
 }
 
-void Matrix::matmul (Matrix A, Matrix B)
+/** Multiply two matrices.
+ *
+ * @param A Matrix A.
+ * @param B Matrix B.
+ */
+EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
 {
-  if(A.N != B.N || A.N != N)
+  MatrixMsg *A_msg = A.info();
+  MatrixMsg *B_msg = B.info();
+
+  if(A_msg->N != B_msg->N || A_msg->N != N)
   {
-    printf("dimension mismatch (A = %d, B = %d, C = %d)\n", A.N, B.N, N);
+    printf("dimension mismatch (A = %d, B = %d, C = %d)\n", A_msg->N, B_msg->N, N);
     exit(1);
   }
 
-  if(A.blocksize != B.blocksize || A.blocksize != blocksize)
+  if(A_msg->blocksize != B_msg->blocksize || A_msg->blocksize != blocksize)
   {
     printf("blocksize mismatch (A = %d, B = %d, C = %d)\n",
-        A.blocksize, B.blocksize, blocksize);
+        A_msg->blocksize, B_msg->blocksize, blocksize);
     exit(1);
   }
 
-  if(A.root == NULL || B.root == NULL)
+  if(A_msg->root == NULL || B_msg->root == NULL)
   {
     /* [FIXME] Delete C. */
-    return;
+    return new EmptyMsg();
   }
 
   if(root == NULL)
@@ -107,7 +110,7 @@ void Matrix::matmul (Matrix A, Matrix B)
     *root = CProxy_Node::ckNew(blocksize, 0, 0, NPadded, NPadded);
   }
 
-  root->matmul(*A.root, *B.root);
+  return root->matmul(*A_msg->root, *B_msg->root);
 }
 
 #include "Matrix.def.h"

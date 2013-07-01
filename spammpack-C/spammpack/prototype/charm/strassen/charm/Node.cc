@@ -1,5 +1,4 @@
 #include "Node.h"
-#include "Messages.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,12 +19,12 @@ Node::Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper)
 }
 
 inline
-int Node::blockIndex (int i, int j)
+int blockIndex (int i, int j, int iLower, int jLower, int blocksize)
 {
   return (i-iLower)*blocksize+(j-jLower);
 }
 
-void Node::set (int i, int j, double aij)
+EmptyMsg * Node::set (int i, int j, double aij)
 {
   if(iUpper-iLower == blocksize)
   {
@@ -34,7 +33,8 @@ void Node::set (int i, int j, double aij)
       data = new double[blocksize*blocksize];
       memset(data, 0, blocksize*blocksize*sizeof(double));
     }
-    data[blockIndex(i, j)] = aij;
+    data[blockIndex(i, j, iLower, jLower, blocksize)] = aij;
+    return new EmptyMsg();
   }
 
   else
@@ -55,10 +55,11 @@ void Node::set (int i, int j, double aij)
     }
     if(child[childIndex] == NULL)
     {
-      child[childIndex] = new Node(blocksize, newILower, newJLower,
+      child[childIndex] = new CProxy_Node;
+      *child[childIndex] = CProxy_Node::ckNew(blocksize, newILower, newJLower,
           newILower+width, newJLower+width);
     }
-    child[childIndex]->set(i, j, aij);
+    return child[childIndex]->set(i, j, aij);
   }
 }
 
@@ -66,8 +67,8 @@ DoubleMsg * Node::get (int i, int j)
 {
   if(iUpper-iLower == blocksize)
   {
-    if(data == NULL) return new DoubleMsg(0.0);
-    else return new DoubleMsg(data[blockIndex(i, j)]);
+    if(data == NULL) return new DoubleMsg(0);
+    else return new DoubleMsg(data[blockIndex(i, j, iLower, jLower, blocksize)]);
   }
 
   else
@@ -82,21 +83,44 @@ DoubleMsg * Node::get (int i, int j)
     {
       childIndex |= 1;
     }
-    if(child[childIndex] == NULL) return 0;
+    if(child[childIndex] == NULL) return new DoubleMsg(0);
     else return child[childIndex]->get(i, j);
   }
 }
 
-void Node::matmul (CProxy_Node A, CProxy_Node B)
+/** Get information on node.
+ *
+ * @return A NodeMsg object.
+ */
+NodeMsg * Node::info ()
+{
+  return new NodeMsg (iLower, iUpper, jLower, jUpper, blocksize, child);
+}
+
+/** Get the matrix data from a Node.
+ *
+ * @return A DataMsg object.
+ */
+DataMsg * Node::getData ()
+{
+  return new DataMsg();
+}
+
+EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
 {
   int width = iUpper-iLower;
+  NodeMsg *A_info = A.info();
+  NodeMsg *B_info = B.info();
 
   if(width == blocksize)
   {
-    if(A.data == NULL || B.data == NULL)
+    DataMsg *A_data = A.getData();
+    DataMsg *B_data = B.getData();
+
+    if(A_data->data == NULL || B_data->data == NULL)
     {
       /* [FIXME] delete C. */
-      return;
+      return new EmptyMsg();
     }
     if(data == NULL)
     {
@@ -105,9 +129,11 @@ void Node::matmul (CProxy_Node A, CProxy_Node B)
     }
     for(int i = iLower; i < iUpper; i++) {
       for(int j = jLower; j < jUpper; j++) {
-        for(int k = A.jLower; k < A.jUpper; k++)
+        for(int k = A_info->jLower; k < A_info->jUpper; k++)
         {
-          data[blockIndex(i, j)] += A.data[A.blockIndex(i, k)]*B.data[B.blockIndex(k, j)];
+          data[blockIndex(i, j, iLower, jLower, blocksize)] +=
+            A_data->data[blockIndex(i, k, A_info->iLower, A_info->jLower, A_info->blocksize)]
+            *B_data->data[blockIndex(k, j, B_info->iLower, B_info->jLower, B_info->blocksize)];
         }
       }
     }
@@ -123,20 +149,25 @@ void Node::matmul (CProxy_Node A, CProxy_Node B)
         {
           int childIndexA = (i << 1) | k;
           int childIndexB = (k << 1) | j;
-          if(A.child[childIndexA] == NULL || B.child[childIndexB] == NULL)
+          if(A_info->child[childIndexA] == NULL || B_info->child[childIndexB] == NULL)
           {
             /* [FIXME] delete C. */
             continue;
           }
           if(child[childIndex] == NULL)
           {
-            child[childIndex] = new Node(blocksize, iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1), jLower+width/2*(j+1));
+            child[childIndex] = new CProxy_Node;
+            *child[childIndex] = CProxy_Node::ckNew(blocksize,
+                iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1),
+                jLower+width/2*(j+1));
           }
-          child[childIndex]->matmul(*A.child[childIndexA], *B.child[childIndexB]);
+          child[childIndex]->matmul(*A_info->child[childIndexA], *B_info->child[childIndexB]);
         }
       }
     }
   }
+
+  return new EmptyMsg();
 }
 
 #include "Node.def.h"

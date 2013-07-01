@@ -1,4 +1,8 @@
 module Messages
 {
+  message EmptyMsg;
   message DoubleMsg;
+  message MatrixMsg;
+  message NodeMsg;
+  message DataMsg;
 };

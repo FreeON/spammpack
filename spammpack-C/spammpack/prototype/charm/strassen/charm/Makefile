@@ -2,6 +2,8 @@
 
 CXX = charmc
 CXXFLAGS = -O3 -march=native -g -Wall
+CTAGS = ctags
+LIBS = -lrt
 
 %.decl.h %.def.h : %.ci
 	$(CXX) $<
@@ -36,15 +38,21 @@ OBJ = $(foreach i, $(SOURCEFILES), $(basename $i).o)
 strassen : $(OBJ)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $(LIBS) $^
 
+ctags : $(INTERFACEFILES) $(SOURCEFILES) $(HEADERFILES)
+	$(CTAGS) $^
+
 $(OBJ) : $(HEADERFILES) $(GENERATEDHEADERFILES)
+
+N = 2048
+B = 32
 
 run :
 	for P in 1 2 4 8 12 16 20 24 28 32 36 40 44 48; do \
-		bash -c "OMP_NUM_THREADS=$$P ./strassenOMP -N 2048 -b 32"; \
+		bash -c "./strassen +p$$P -N $N -b $B"; \
 	done
 
 run-serial :
-	./strassenOMP -N 2048 -b 32
+	./strassen +p1 -N $N -b $B
 
 clean :
 	rm -f $(OBJ)

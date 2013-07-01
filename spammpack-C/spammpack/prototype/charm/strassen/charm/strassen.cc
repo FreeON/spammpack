@@ -1,9 +1,13 @@
 #include "strassen.h"
+#include "Messages.h"
+#include "Timer.h"
 
 #include <getopt.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
+#include <sstream>
 
 #define TOLERANCE 1e-10
 
@@ -39,12 +43,13 @@ double * multiply (int N, double *A, double *B)
  * @param N The matrix dimension.
  * @param A Pointer to the dense matrix.
  */
-void convert (int N, CProxy_Matrix A, double *Adense)
+void convert (int N, CProxy_Matrix A, double *ADense)
 {
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++)
     {
-      A.set(i, j, ADense[i*N+j]);
+      EmptyMsg *msg = A.set(i, j, ADense[i*N+j]);
+      delete msg;
     }
   }
 }
@@ -55,12 +60,39 @@ void convert (int N, CProxy_Matrix A, double *Adense)
  */
 void zero (CProxy_Matrix A)
 {
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < N; j++)
+  MatrixMsg *AInfo = A.info();
+  for(int i = 0; i < AInfo->N; i++) {
+    for(int j = 0; j < AInfo->N; j++)
     {
-      A.set(i, j, 0.0);
+      EmptyMsg *msg = A.set(i, j, 0.0);
+      delete msg;
     }
   }
+  delete AInfo;
+}
+
+/** Print a matrix.
+ *
+ * @param name The name of the matrix.
+ * @param A The matrix.
+ */
+void print (std::string name, CProxy_Matrix A)
+{
+  MatrixMsg *AInfo = A.info();
+  std::ostringstream o;
+  o.setf(std::ios::fixed);
+  o << name << std::endl;
+  for(int i = 0; i < AInfo->N; i++) {
+    for(int j = 0; j < AInfo->N; j++)
+    {
+      DoubleMsg *msg = A.get(i, j);
+      o << " " << msg->x;
+      delete msg;
+    }
+    o << std::endl;
+  }
+  CkPrintf("%s", o.str().c_str());
+  delete AInfo;
 }
 
 /** Allocate and fill a random NxN matrix.
@@ -97,9 +129,6 @@ Main::Main (CkArgMsg *msg)
   /* Whether to verify the correctness of the matrix product. */
   bool verify = false;
 
-  double *ADense;
-  double *BDense;
-
   int c;
   const char *short_options = "hN:b:dv";
   const option long_options[] = {
@@ -116,13 +145,13 @@ Main::Main (CkArgMsg *msg)
     switch(c)
     {
       case 'h':
-        printf("Usage: strassen [options]\n");
-        printf("\n");
-        printf("{ --help | -h }       This help\n");
-        printf("-N N                  The matrix size, NxN\n");
-        printf("{ --block | -b } N    The block size, NxN\n");
-        printf("{ --debug | -d }      Print the matrices for debugging\n");
-        printf("{ --verify | -v }     Verify correctness of matrix product\n");
+        CkPrintf("Usage: strassen [options]\n");
+        CkPrintf("\n");
+        CkPrintf("{ --help | -h }       This help\n");
+        CkPrintf("-N N                  The matrix size, NxN\n");
+        CkPrintf("{ --block | -b } N    The block size, NxN\n");
+        CkPrintf("{ --debug | -d }      Print the matrices for debugging\n");
+        CkPrintf("{ --verify | -v }     Verify correctness of matrix product\n");
         exit(0);
         break;
 
@@ -143,7 +172,7 @@ Main::Main (CkArgMsg *msg)
         break;
 
       default:
-        printf("illegal command line argument\n");
+        CkPrintf("illegal command line argument\n");
         exit(1);
         break;
     }
@@ -151,44 +180,44 @@ Main::Main (CkArgMsg *msg)
 
   if(optind < msg->argc)
   {
-    printf("additional command line arguments, that will be ignored\n");
+    CkPrintf("additional command line arguments, that will be ignored\n");
   }
 
   if(N < 1 || blocksize < 1)
   {
-    printf("matrix dimensions should be > 0\n");
+    CkPrintf("matrix dimensions should be > 0\n");
     exit(1);
   }
 
-  run (N, blocksize);
+  run (N, blocksize, debug, verify);
 }
 
-void Main::run (int N, int blocksize)
+void Main::run (int N, int blocksize, bool debug, bool verify)
 {
   CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
   CProxy_Matrix B = CProxy_Matrix::ckNew(N, blocksize);
   CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
-  ADense = randomDense(N);
-  BDense = randomDense(N);
+  double *ADense = randomDense(N);
+  double *BDense = randomDense(N);
 
   convert(N, A, ADense);
   convert(N, B, BDense);
 
-  zero(N, C);
+  zero(C);
 
   if(debug)
   {
-    A.print("A:");
-    B.print("B:");
+    print("A:", A);
+    print("B:", A);
   }
 
   Timer timer("multiply");
   timer.start();
-  C.matmul(A, B);
+  EmptyMsg *msg = C.matmul(A, B); delete msg;
   timer.stop();
 
-  if(debug) C.print("C:");
+  if(debug) print("C:", C);
 
   if(verify)
   {
@@ -196,15 +225,17 @@ void Main::run (int N, int blocksize)
     for(int i = 0; i < N; i++) {
       for(int j = 0; j < N; j++)
       {
-        if(fabs(CDense[i*N+j]-C.get(i, j)) > TOLERANCE)
+        DoubleMsg *cij = C.get(i, j);
+        if(fabs(CDense[i*N+j]-cij->x) > TOLERANCE)
         {
-          printf("comparison failed for C(%d,%d): %e <-> %e\n",
-              i, j, CDense[i*N+j], C.get(i, j));
+          CkPrintf("comparison failed for C(%d,%d): %e <-> %e\n",
+              i, j, CDense[i*N+j], cij->x);
           exit(1);
         }
+        delete cij;
       }
     }
-    printf("result verified\n");
+    CkPrintf("result verified\n");
   }
 }
 
