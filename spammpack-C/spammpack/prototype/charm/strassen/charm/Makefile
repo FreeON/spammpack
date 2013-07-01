@@ -11,6 +11,7 @@ CXXFLAGS = -O3 -march=native -g -Wall
 
 INTERFACEFILES = \
 	Matrix.ci \
+	Messages.ci \
 	Node.ci \
 	strassen.ci
 
@@ -18,12 +19,14 @@ GENERATEDHEADERFILES = $(foreach i, $(INTERFACEFILES), $(basename $i).def.h $(ba
 
 HEADERFILES = \
 	Matrix.h \
+	Messages.h \
 	Node.h \
 	Timer.h \
 	strassen.h
 
 SOURCEFILES = \
 	Matrix.cc \
+	Messages.cc \
 	Node.cc \
 	Timer.cc \
 	strassen.cc

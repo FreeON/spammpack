@@ -23,37 +23,12 @@ Matrix::Matrix (int N, int blocksize)
   NPadded = blocksize*(1 << depth);
 }
 
-/** Convert a matrix in dense row-major storage to a Matrix.
- *
- * @param N The matrix dimension.
- * @param A Pointer to the dense matrix.
- */
-void Matrix::convert (int N, double *A)
-{
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < N; j++)
-    {
-      set(i, j, A[i*N+j]);
-    }
-  }
-}
-
 void Matrix::random ()
 {
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++)
     {
       set(i, j, rand()/(double) RAND_MAX);
-    }
-  }
-}
-
-void Matrix::zero ()
-{
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < N; j++)
-    {
-      set(i, j, 0.0);
     }
   }
 }
@@ -68,14 +43,15 @@ void Matrix::set (int i, int j, double aij)
 
   if(root == NULL)
   {
-    root = new Node(blocksize, 0, 0, NPadded, NPadded);
+    root = new CProxy_Node;
+    *root = CProxy_Node::ckNew(blocksize, 0, 0, NPadded, NPadded);
   }
   root->set(i, j, aij);
 }
 
-double Matrix::get (int i, int j)
+DoubleMsg * Matrix::get (int i, int j)
 {
-  double aij;
+  DoubleMsg *aij;
 
   if(i < 0 || j < 0 || i >= N || j >= N)
   {
@@ -127,7 +103,8 @@ void Matrix::matmul (Matrix A, Matrix B)
 
   if(root == NULL)
   {
-    root = new Node(blocksize, 0, 0, NPadded, NPadded);
+    root = new CProxy_Node;
+    *root = CProxy_Node::ckNew(blocksize, 0, 0, NPadded, NPadded);
   }
 
   root->matmul(*A.root, *B.root);

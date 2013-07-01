@@ -34,6 +34,35 @@ double * multiply (int N, double *A, double *B)
   return C;
 }
 
+/** Convert a matrix in dense row-major storage to a Matrix.
+ *
+ * @param N The matrix dimension.
+ * @param A Pointer to the dense matrix.
+ */
+void convert (int N, CProxy_Matrix A, double *Adense)
+{
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      A.set(i, j, ADense[i*N+j]);
+    }
+  }
+}
+
+/** Set a matrix to zero.
+ *
+ * @param A The matrix.
+ */
+void zero (CProxy_Matrix A)
+{
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      A.set(i, j, 0.0);
+    }
+  }
+}
+
 /** Allocate and fill a random NxN matrix.
  *
  * @param N The size of the matrix.
@@ -131,17 +160,22 @@ Main::Main (CkArgMsg *msg)
     exit(1);
   }
 
-  Matrix A = Matrix(N, blocksize);
-  Matrix B = Matrix(N, blocksize);
-  Matrix C = Matrix(N, blocksize);
+  run (N, blocksize);
+}
+
+void Main::run (int N, int blocksize)
+{
+  CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
+  CProxy_Matrix B = CProxy_Matrix::ckNew(N, blocksize);
+  CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
   ADense = randomDense(N);
   BDense = randomDense(N);
 
-  A.convert(N, ADense);
-  B.convert(N, BDense);
+  convert(N, A, ADense);
+  convert(N, B, BDense);
 
-  C.zero();
+  zero(N, C);
 
   if(debug)
   {

@@ -8,6 +8,7 @@ class Main : public CBase_Main
   public:
 
     Main (CkArgMsg *msg);
+    void run (int N, int blocksize);
 };
 
 #endif

@@ -1,7 +1,11 @@
 module Node
 {
+  extern module Messages;
   chare Node
   {
     entry Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper);
+    entry [threaded] void set (int i, int j, double aij);
+    entry [sync] DoubleMsg * get (int i, int j);
+    entry [threaded] void matmul (CProxy_Node A, CProxy_Node B);
   };
 };

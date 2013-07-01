@@ -1,7 +1,9 @@
 #ifndef __NODE_H
 #define __NODE_H
 
-class Node
+#include "Node.decl.h"
+
+class Node : public CBase_Node
 {
   private:
 
@@ -21,8 +23,8 @@ class Node
 
     Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper);
     void set (int i, int j, double aij);
-    double get (int i, int j);
-    void matmul (Node A, Node B);
+    DoubleMsg * get (int i, int j);
+    void matmul (CProxy_Node A, CProxy_Node B);
 };
 
 #endif

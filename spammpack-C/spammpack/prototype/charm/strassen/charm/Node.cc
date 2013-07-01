@@ -1,4 +1,5 @@
 #include "Node.h"
+#include "Messages.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -61,12 +62,12 @@ void Node::set (int i, int j, double aij)
   }
 }
 
-double Node::get (int i, int j)
+DoubleMsg * Node::get (int i, int j)
 {
   if(iUpper-iLower == blocksize)
   {
-    if(data == NULL) return 0;
-    else return data[blockIndex(i, j)];
+    if(data == NULL) return new DoubleMsg(0.0);
+    else return new DoubleMsg(data[blockIndex(i, j)]);
   }
 
   else
@@ -86,7 +87,7 @@ double Node::get (int i, int j)
   }
 }
 
-void Node::matmul (Node A, Node B)
+void Node::matmul (CProxy_Node A, CProxy_Node B)
 {
   int width = iUpper-iLower;
 

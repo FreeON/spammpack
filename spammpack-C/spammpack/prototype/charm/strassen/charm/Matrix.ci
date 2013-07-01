@@ -1,6 +1,7 @@
 module Matrix
 {
   extern module Node;
+  extern module Messages;
   chare Matrix
   {
     entry Matrix (int N, int blocksize);

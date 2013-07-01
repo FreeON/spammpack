@@ -4,5 +4,6 @@ mainmodule strassen
   mainchare Main
   {
     entry Main (CkArgMsg *msg);
+    entry [threaded] void run (int N, int blocksize);
   };
 };
