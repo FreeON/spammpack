@@ -14,13 +14,20 @@ int main (int argc, char **argv)
   /* Whether to print some debugging stuff. */
   bool debug = false;
 
+  /* Whether to verify the correctness of the matrix product. */
+  bool verify = false;
+
+  double *ADense;
+  double *BDense;
+
   int c;
-  const char *short_options = "hN:b:";
+  const char *short_options = "hN:b:dv";
   const option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "N", required_argument, NULL, 'N' },
     { "block", required_argument, NULL, 'b' },
     { "debug", no_argument, NULL, 'd' },
+    { "verify", no_argument, NULL, 'v' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -35,6 +42,7 @@ int main (int argc, char **argv)
         printf("-N N                  The matrix size, NxN\n");
         printf("{ --block | -b } N    The block size, NxN\n");
         printf("{ --debug | -d }      Print the matrices for debugging\n");
+        printf("{ --verify | -v }     Verify correctness of matrix product\n");
         exit(0);
         break;
 
@@ -48,6 +56,10 @@ int main (int argc, char **argv)
 
       case 'd':
         debug = !debug;
+        break;
+
+      case 'v':
+        verify = !verify;
         break;
 
       default:
