@@ -1,0 +1,8 @@
+module Matrix
+{
+  extern module Node;
+  chare Matrix
+  {
+    entry Matrix (int N, int blocksize);
+  };
+};

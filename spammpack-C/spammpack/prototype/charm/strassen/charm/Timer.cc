@@ -1,4 +1,4 @@
-#include "strassen.h"
+#include "Timer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,5 +46,3 @@ void Timer::stop ()
   isRunning = false;
   printf("%f seconds\n", endTime.tv_sec+endTime.tv_nsec/1.0e9-(startTime.tv_sec+startTime.tv_nsec/1.0e9));
 }
-
-#include "strassen.def.h"

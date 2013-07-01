@@ -9,11 +9,18 @@ CXXFLAGS = -O3 -march=native -g -Wall
 .cc.o :
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-INTERFACEFILES = strassen.ci
+INTERFACEFILES = \
+	Matrix.ci \
+	Node.ci \
+	strassen.ci
 
 GENERATEDHEADERFILES = $(foreach i, $(INTERFACEFILES), $(basename $i).def.h $(basename $i).decl.h)
 
-HEADERFILES = strassen.h
+HEADERFILES = \
+	Matrix.h \
+	Node.h \
+	Timer.h \
+	strassen.h
 
 SOURCEFILES = \
 	Matrix.cc \

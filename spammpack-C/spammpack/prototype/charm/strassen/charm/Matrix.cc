@@ -1,4 +1,4 @@
-#include "strassen.h"
+#include "Matrix.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -75,14 +75,18 @@ void Matrix::set (int i, int j, double aij)
 
 double Matrix::get (int i, int j)
 {
+  double aij;
+
   if(i < 0 || j < 0 || i >= N || j >= N)
   {
     printf("index out of bounds\n");
     exit(1);
   }
 
-  if(root == NULL) return 0;
-  else return root->get(i, j);
+  if(root == NULL) aij = 0;
+  else aij = root->get(i, j);
+
+  return aij;
 }
 
 void Matrix::print (std::string name)
@@ -129,4 +133,4 @@ void Matrix::matmul (Matrix A, Matrix B)
   root->matmul(*A.root, *B.root);
 }
 
-#include "strassen.def.h"
+#include "Matrix.def.h"

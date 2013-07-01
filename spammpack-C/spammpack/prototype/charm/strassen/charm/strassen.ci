@@ -1,10 +1,6 @@
 mainmodule strassen
 {
-  chare Matrix
-  {
-    entry Matrix (int N, int blocksize);
-  };
-
+  extern module Matrix;
   mainchare Main
   {
     entry Main (CkArgMsg *msg);

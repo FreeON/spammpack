@@ -1,4 +1,4 @@
-#include "strassen.h"
+#include "Node.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -138,4 +138,4 @@ void Node::matmul (Node A, Node B)
   }
 }
 
-#include "strassen.def.h"
+#include "Node.def.h"

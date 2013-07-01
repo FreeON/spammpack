@@ -1,0 +1,7 @@
+module Node
+{
+  chare Node
+  {
+    entry Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper);
+  };
+};
