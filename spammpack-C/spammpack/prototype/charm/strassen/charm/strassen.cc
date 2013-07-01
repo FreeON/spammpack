@@ -152,7 +152,7 @@ Main::Main (CkArgMsg *msg)
         CkPrintf("{ --block | -b } N    The block size, NxN\n");
         CkPrintf("{ --debug | -d }      Print the matrices for debugging\n");
         CkPrintf("{ --verify | -v }     Verify correctness of matrix product\n");
-        exit(0);
+        CkExit();
         break;
 
       case 'N':
@@ -173,7 +173,7 @@ Main::Main (CkArgMsg *msg)
 
       default:
         CkPrintf("illegal command line argument\n");
-        exit(1);
+        CkExit();
         break;
     }
   }
@@ -186,10 +186,11 @@ Main::Main (CkArgMsg *msg)
   if(N < 1 || blocksize < 1)
   {
     CkPrintf("matrix dimensions should be > 0\n");
-    exit(1);
+    CkExit();
   }
 
-  run (N, blocksize, debug, verify);
+  /* Enter threaded main method. */
+  run(N, blocksize, debug, verify);
 }
 
 void Main::run (int N, int blocksize, bool debug, bool verify)

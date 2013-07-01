@@ -1,7 +1,7 @@
 .SUFFIXES : .o .cc .ci
 
 CXX = charmc
-CXXFLAGS = -O3 -march=native -g -Wall
+CXXFLAGS = -O0 -march=native -g -Wall
 CTAGS = ctags
 LIBS = -lrt
 
@@ -36,7 +36,7 @@ SOURCEFILES = \
 OBJ = $(foreach i, $(SOURCEFILES), $(basename $i).o)
 
 strassen : $(OBJ)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $(LIBS) $^
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(LIBS)
 
 ctags : $(INTERFACEFILES) $(SOURCEFILES) $(HEADERFILES)
 	$(CTAGS) $^
