@@ -19,13 +19,17 @@ OBJ = strassenOMP.o \
 strassenOMP : $(OBJ)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $(LIBS) $^
 
+
+N = 4096
+b = 64
+
 run :
 	for P in 1 2 4 8 12 16 20 24 28 32 36 40 44 48; do \
-		bash -c "OMP_NUM_THREADS=$$P ./strassenOMP -N 4096 -b 64"; \
+		bash -c "OMP_NUM_THREADS=$$P ./strassenOMP -N $N -b $b"; \
 	done
 
 run-serial :
-	./strassenOMP -N 2048 -b 32
+	./strassenOMP -N $N -b $b --verify
 
 clean :
 	rm -f $(OBJ)

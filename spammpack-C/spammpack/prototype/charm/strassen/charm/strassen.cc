@@ -196,6 +196,8 @@ Main::Main (CkArgMsg *msg)
     CkExit();
   }
 
+  LOG_INFO("running on %d PEs\n", CkNumPes());
+
   /* Enter threaded main method. */
   thisProxy.run(N, blocksize, debug, verify);
 }
