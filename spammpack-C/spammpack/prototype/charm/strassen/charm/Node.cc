@@ -4,6 +4,12 @@
 #include <stdio.h>
 #include <cstring>
 
+inline
+int blockIndex (int i, int j, int iLower, int jLower, int blocksize)
+{
+  return (i-iLower)*blocksize+(j-jLower);
+}
+
 Node::Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper)
 {
   this->blocksize = blocksize;
@@ -18,10 +24,47 @@ Node::Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper)
   data = NULL;
 }
 
-inline
-int blockIndex (int i, int j, int iLower, int jLower, int blocksize)
+/** Get information on node.
+ *
+ * @return A NodeMsg object.
+ */
+NodeMsg * Node::info ()
 {
-  return (i-iLower)*blocksize+(j-jLower);
+  return new NodeMsg (iLower, iUpper, jLower, jUpper, blocksize, child);
+}
+
+/** Get the matrix data from a Node.
+ *
+ * @return A DataMsg object.
+ */
+DataMsg * Node::getData ()
+{
+  return new DataMsg();
+}
+
+DoubleMsg * Node::get (int i, int j)
+{
+  if(iUpper-iLower == blocksize)
+  {
+    if(data == NULL) return new DoubleMsg(0);
+    else return new DoubleMsg(data[blockIndex(i, j, iLower, jLower, blocksize)]);
+  }
+
+  else
+  {
+    int childIndex = 0;
+    int width = (iUpper-iLower)/2;
+    if(iLower+width <= i)
+    {
+      childIndex |= 2;
+    }
+    if(jLower+width <= j)
+    {
+      childIndex |= 1;
+    }
+    if(child[childIndex] == NULL) return new DoubleMsg(0);
+    else return child[childIndex]->get(i, j);
+  }
 }
 
 EmptyMsg * Node::set (int i, int j, double aij)
@@ -61,49 +104,6 @@ EmptyMsg * Node::set (int i, int j, double aij)
     }
     return child[childIndex]->set(i, j, aij);
   }
-}
-
-DoubleMsg * Node::get (int i, int j)
-{
-  if(iUpper-iLower == blocksize)
-  {
-    if(data == NULL) return new DoubleMsg(0);
-    else return new DoubleMsg(data[blockIndex(i, j, iLower, jLower, blocksize)]);
-  }
-
-  else
-  {
-    int childIndex = 0;
-    int width = (iUpper-iLower)/2;
-    if(iLower+width <= i)
-    {
-      childIndex |= 2;
-    }
-    if(jLower+width <= j)
-    {
-      childIndex |= 1;
-    }
-    if(child[childIndex] == NULL) return new DoubleMsg(0);
-    else return child[childIndex]->get(i, j);
-  }
-}
-
-/** Get information on node.
- *
- * @return A NodeMsg object.
- */
-NodeMsg * Node::info ()
-{
-  return new NodeMsg (iLower, iUpper, jLower, jUpper, blocksize, child);
-}
-
-/** Get the matrix data from a Node.
- *
- * @return A DataMsg object.
- */
-DataMsg * Node::getData ()
-{
-  return new DataMsg();
 }
 
 EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)

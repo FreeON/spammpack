@@ -4,10 +4,10 @@ module Node
   chare Node
   {
     entry Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper);
-    entry [sync] EmptyMsg * set (int i, int j, double aij);
+    entry [sync] NodeMsg   * info ();
+    entry [sync] DataMsg   * getData ();
     entry [sync] DoubleMsg * get (int i, int j);
-    entry [sync] EmptyMsg * matmul (CProxy_Node A, CProxy_Node B);
-    entry [sync] NodeMsg * info ();
-    entry [sync] DataMsg * getData ();
+    entry [sync] EmptyMsg  * set (int i, int j, double aij);
+    entry [sync] EmptyMsg  * matmul (CProxy_Node A, CProxy_Node B);
   };
 };

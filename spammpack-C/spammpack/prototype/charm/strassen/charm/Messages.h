@@ -4,8 +4,11 @@
 #include "Messages.decl.h"
 #include "Node.h"
 
-class EmptyMsg : public CMessage_EmptyMsg
+class DataMsg : public CMessage_DataMsg
 {
+  public:
+
+    double *data;
 };
 
 class DoubleMsg : public CMessage_DoubleMsg
@@ -15,6 +18,10 @@ class DoubleMsg : public CMessage_DoubleMsg
     double x;
     DoubleMsg ();
     DoubleMsg (double x);
+};
+
+class EmptyMsg : public CMessage_EmptyMsg
+{
 };
 
 class MatrixMsg : public CMessage_MatrixMsg
@@ -38,13 +45,6 @@ class NodeMsg : public CMessage_NodeMsg
     int blocksize;
     CProxy_Node *child[4];
     NodeMsg (int iLower, int iUpper, int jLower, int jUpper, int blocksize, CProxy_Node *child[4]);
-};
-
-class DataMsg : public CMessage_DataMsg
-{
-  public:
-
-    double *data;
 };
 
 #endif
