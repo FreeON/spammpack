@@ -121,7 +121,9 @@ EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
     *root = CProxy_Node::ckNew(blocksize, 0, 0, NPadded, NPadded);
   }
 
-  return root->matmul(*AInfo->root, *BInfo->root);
+  root->matmul(*AInfo->root, *BInfo->root, 0, CkCallbackResumeThread());
+
+  return new EmptyMsg();
 }
 
 #include "Matrix.def.h"

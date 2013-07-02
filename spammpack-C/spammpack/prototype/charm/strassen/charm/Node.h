@@ -15,17 +15,19 @@ class Node : public CBase_Node
     int jLower;
     int jUpper;
 
+    bool matmulComplete[8];
     CProxy_Node *child[4];
     double *data;
 
   public:
 
     Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper);
-    EmptyMsg * set (int i, int j, double aij);
+    NodeMsg   * info ();
+    DataMsg   * getData ();
+    EmptyMsg  * set (int i, int j, double aij);
     DoubleMsg * get (int i, int j);
-    EmptyMsg * matmul (CProxy_Node A, CProxy_Node B);
-    NodeMsg * info ();
-    DataMsg * getData ();
+    void matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done);
+    void matmulDone (int index);
 };
 
 #endif

@@ -7,6 +7,7 @@ module Messages
   };
   message DoubleMsg;
   message EmptyMsg;
+  message IntMsg;
   message MatrixMsg;
   message NodeMsg;
 };

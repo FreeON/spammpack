@@ -1,4 +1,5 @@
 #include "Node.h"
+#include "Utilities.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -113,7 +114,7 @@ EmptyMsg * Node::set (int i, int j, double aij)
  *
  * @return A message indicating completion.
  */
-EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
+void Node::matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done)
 {
   int width = iUpper-iLower;
   NodeMsg *AInfo = A.info();
@@ -126,8 +127,8 @@ EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
 
     if(AData->data == NULL || BData->data == NULL)
     {
-      /* [FIXME] delete C. */
-      return new EmptyMsg();
+      LOG_ERROR("[FIXME] delete C.\n");
+      done.send(new EmptyMsg());
     }
     if(data == NULL)
     {
@@ -148,6 +149,11 @@ EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
 
   else
   {
+    for(int i = 0; i < 8; i++)
+    {
+      matmulComplete[i] = false;
+    }
+
     for(int i = 0; i < 2; i++) {
       for(int j = 0; j < 2; j++)
       {
@@ -158,7 +164,8 @@ EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
           int childIndexB = (k << 1) | j;
           if(AInfo->child[childIndexA] == NULL || BInfo->child[childIndexB] == NULL)
           {
-            /* [FIXME] delete C. */
+            LOG_ERROR("[FIXME] delete C.\n");
+            matmulComplete[(i << 2) | (j << 1) | k] = true;
             continue;
           }
           if(child[childIndex] == NULL)
@@ -168,13 +175,22 @@ EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
                 iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1),
                 jLower+width/2*(j+1));
           }
-          child[childIndex]->matmul(*AInfo->child[childIndexA], *BInfo->child[childIndexB]);
+          IntMsg *childIndex = new IntMsg((i << 2) | (j << 1) | k);
+          child[childIndex]->matmul(*AInfo->child[childIndexA],
+              *BInfo->child[childIndexB],
+              childIndex,
+              CkCallback(CkIndex_Node::matmulDone(childIndex), thisProxy));
         }
       }
     }
   }
 
-  return new EmptyMsg();
+  done.send(index);
+}
+
+void Node::matmulDone (int index)
+{
+  LOG_DEBUG("called with index = %d\n", index);
 }
 
 #include "Node.def.h"

@@ -26,6 +26,11 @@ class EmptyMsg : public CMessage_EmptyMsg
 {
 };
 
+class IntMsg : public CMessage_IntMsg
+{
+  public:
+};
+
 class MatrixMsg : public CMessage_MatrixMsg
 {
   public:
