@@ -36,7 +36,7 @@ SOURCEFILES = \
 OBJ = $(foreach i, $(SOURCEFILES), $(basename $i).o)
 
 strassen : $(OBJ)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(LIBS)
+	$(CXX) -language charm++ -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(LIBS)
 
 ctags : $(INTERFACEFILES) $(SOURCEFILES) $(HEADERFILES)
 	$(CTAGS) $^

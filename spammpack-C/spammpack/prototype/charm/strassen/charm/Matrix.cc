@@ -23,16 +23,45 @@ Matrix::Matrix (int N, int blocksize)
   NPadded = blocksize*(1 << depth);
 }
 
-void Matrix::random ()
+/** Get some information on the matrix.
+ *
+ * @return The MatrixMsg object.
+ */
+MatrixMsg * Matrix::info ()
 {
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < N; j++)
-    {
-      set(i, j, rand()/(double) RAND_MAX);
-    }
-  }
+  return new MatrixMsg(N, blocksize, root);
 }
 
+/** Get a matrix element.
+ *
+ * @param i Row index.
+ * @param j Column index.
+ *
+ * @return The matrix element.
+ */
+DoubleMsg * Matrix::get (int i, int j)
+{
+  DoubleMsg *aij;
+
+  if(i < 0 || j < 0 || i >= N || j >= N)
+  {
+    printf("index out of bounds\n");
+    exit(1);
+  }
+
+  if(root == NULL) aij = 0;
+  else aij = root->get(i, j);
+
+  return aij;
+}
+
+/** Set a matrix element.
+ *
+ * @param i Row index.
+ * @param j Column index.
+ *
+ * @return A message signifying completion.
+ */
 EmptyMsg * Matrix::set (int i, int j, double aij)
 {
   if(i < 0 || j < 0 || i >= N || j >= N)
@@ -50,35 +79,12 @@ EmptyMsg * Matrix::set (int i, int j, double aij)
   return msg;
 }
 
-DoubleMsg * Matrix::get (int i, int j)
-{
-  DoubleMsg *aij;
-
-  if(i < 0 || j < 0 || i >= N || j >= N)
-  {
-    printf("index out of bounds\n");
-    exit(1);
-  }
-
-  if(root == NULL) aij = 0;
-  else aij = root->get(i, j);
-
-  return aij;
-}
-
-/** Get some information on the matrix.
- *
- * @return The MatrixMsg object.
- */
-MatrixMsg * Matrix::info ()
-{
-  return new MatrixMsg(N, blocksize, root);
-}
-
 /** Multiply two matrices.
  *
  * @param A Matrix A.
  * @param B Matrix B.
+ *
+ * @return A message signifying completion.
  */
 EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
 {

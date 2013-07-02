@@ -181,6 +181,10 @@ Main::Main (CkArgMsg *msg)
   if(optind < msg->argc)
   {
     CkPrintf("additional command line arguments, that will be ignored\n");
+    for(int i = optind; i < msg->argc; i++)
+    {
+      CkPrintf("ignoring argument \"%s\"\n", msg->argv[i]);
+    }
   }
 
   if(N < 1 || blocksize < 1)
@@ -199,12 +203,15 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
   CProxy_Matrix B = CProxy_Matrix::ckNew(N, blocksize);
   CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
+  CkPrintf("N = %d, blocksize = %d\n", N, blocksize);
   double *ADense = randomDense(N);
   double *BDense = randomDense(N);
 
+  CkPrintf("converting dense matrices to Matrix\n");
   convert(N, A, ADense);
   convert(N, B, BDense);
 
+  CkPrintf("setting C to zero\n");
   zero(C);
 
   if(debug)
@@ -238,6 +245,7 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
     }
     CkPrintf("result verified\n");
   }
+  CkExit();
 }
 
 #include "strassen.def.h"
