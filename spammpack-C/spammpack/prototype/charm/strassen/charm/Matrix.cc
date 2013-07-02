@@ -1,4 +1,5 @@
 #include "Matrix.h"
+#include "Utilities.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -7,8 +8,21 @@
 #include <string>
 #include <sstream>
 
+Matrix::Matrix ()
+{
+  LOG_DEBUG("default constructor\n");
+
+  N = 0;
+  blocksize = 0;
+  depth = 0;
+  NPadded = 0;
+  root = NULL;
+}
+
 Matrix::Matrix (int N, int blocksize)
 {
+  LOG_DEBUG("full constructor\n");
+
   this->N = N;
   this->blocksize = blocksize;
   this->root = NULL;

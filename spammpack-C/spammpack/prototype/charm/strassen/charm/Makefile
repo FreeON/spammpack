@@ -1,7 +1,7 @@
 .SUFFIXES : .o .cc .ci
 
 CXX = charmc
-CXXFLAGS = -O0 -march=native -g -Wall
+CXXFLAGS = -O0 -g -Wall
 CTAGS = ctags
 LIBS = -lrt
 
@@ -23,15 +23,17 @@ HEADERFILES = \
 	Matrix.h \
 	Messages.h \
 	Node.h \
+	strassen.h \
 	Timer.h \
-	strassen.h
+	Utilities.h
 
 SOURCEFILES = \
 	Matrix.cc \
 	Messages.cc \
 	Node.cc \
+	strassen.cc \
 	Timer.cc \
-	strassen.cc
+	Utilities.cc
 
 OBJ = $(foreach i, $(SOURCEFILES), $(basename $i).o)
 

@@ -1,6 +1,7 @@
 #include "strassen.h"
 #include "Messages.h"
 #include "Timer.h"
+#include "Utilities.h"
 
 #include <getopt.h>
 #include <math.h>
@@ -203,15 +204,15 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
   CProxy_Matrix B = CProxy_Matrix::ckNew(N, blocksize);
   CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
-  CkPrintf("N = %d, blocksize = %d\n", N, blocksize);
+  LOG_DEBUG("N = %d, blocksize = %d\n", N, blocksize);
   double *ADense = randomDense(N);
   double *BDense = randomDense(N);
 
-  CkPrintf("converting dense matrices to Matrix\n");
+  LOG_DEBUG("converting dense matrices to Matrix\n");
   convert(N, A, ADense);
   convert(N, B, BDense);
 
-  CkPrintf("setting C to zero\n");
+  LOG_DEBUG("setting C to zero\n");
   zero(C);
 
   if(debug)
