@@ -1,6 +1,10 @@
 module Messages
 {
-  message DataMsg;
+  message DataMsg
+  {
+    int blocksize;
+    double data[];
+  };
   message DoubleMsg;
   message EmptyMsg;
   message MatrixMsg;

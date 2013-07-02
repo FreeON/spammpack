@@ -4,7 +4,6 @@ module Matrix
   extern module Messages;
   chare Matrix
   {
-    entry Matrix ();
     entry Matrix (int N, int blocksize);
     entry [sync] MatrixMsg * info ();
     entry [sync] DoubleMsg * get (int i, int j);

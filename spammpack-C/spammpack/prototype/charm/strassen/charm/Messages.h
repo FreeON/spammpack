@@ -8,7 +8,9 @@ class DataMsg : public CMessage_DataMsg
 {
   public:
 
+    int blocksize;
     double *data;
+    DataMsg (int blocksize, double *data);
 };
 
 class DoubleMsg : public CMessage_DoubleMsg

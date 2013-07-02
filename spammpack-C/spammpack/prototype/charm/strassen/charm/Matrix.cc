@@ -8,17 +8,6 @@
 #include <string>
 #include <sstream>
 
-Matrix::Matrix ()
-{
-  LOG_DEBUG("default constructor\n");
-
-  N = 0;
-  blocksize = 0;
-  depth = 0;
-  NPadded = 0;
-  root = NULL;
-}
-
 Matrix::Matrix (int N, int blocksize)
 {
   LOG_DEBUG("full constructor\n");
@@ -59,8 +48,8 @@ DoubleMsg * Matrix::get (int i, int j)
 
   if(i < 0 || j < 0 || i >= N || j >= N)
   {
-    printf("index out of bounds\n");
-    exit(1);
+    LOG_ERROR("index out of bounds\n");
+    CkExit();
   }
 
   if(root == NULL) aij = 0;
@@ -78,10 +67,12 @@ DoubleMsg * Matrix::get (int i, int j)
  */
 EmptyMsg * Matrix::set (int i, int j, double aij)
 {
+  LOG_DEBUG("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
+
   if(i < 0 || j < 0 || i >= N || j >= N)
   {
-    printf("index out of bounds\n");
-    exit(1);
+    LOG_ERROR("index out of bounds\n");
+    CkExit();
   }
 
   if(root == NULL)
@@ -102,25 +93,25 @@ EmptyMsg * Matrix::set (int i, int j, double aij)
  */
 EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
 {
-  MatrixMsg *A_msg = A.info();
-  MatrixMsg *B_msg = B.info();
+  MatrixMsg *AInfo = A.info();
+  MatrixMsg *BInfo = B.info();
 
-  if(A_msg->N != B_msg->N || A_msg->N != N)
+  if(AInfo->N != BInfo->N || AInfo->N != N)
   {
-    printf("dimension mismatch (A = %d, B = %d, C = %d)\n", A_msg->N, B_msg->N, N);
-    exit(1);
+    LOG_ERROR("dimension mismatch (A = %d, B = %d, C = %d)\n", AInfo->N, BInfo->N, N);
+    CkExit();
   }
 
-  if(A_msg->blocksize != B_msg->blocksize || A_msg->blocksize != blocksize)
+  if(AInfo->blocksize != BInfo->blocksize || AInfo->blocksize != blocksize)
   {
-    printf("blocksize mismatch (A = %d, B = %d, C = %d)\n",
-        A_msg->blocksize, B_msg->blocksize, blocksize);
-    exit(1);
+    LOG_ERROR("blocksize mismatch (A = %d, B = %d, C = %d)\n",
+        AInfo->blocksize, BInfo->blocksize, blocksize);
+    CkExit();
   }
 
-  if(A_msg->root == NULL || B_msg->root == NULL)
+  if(AInfo->root == NULL || BInfo->root == NULL)
   {
-    /* [FIXME] Delete C. */
+    LOG_ERROR("[FIXME] Delete C\n");
     return new EmptyMsg();
   }
 
@@ -130,7 +121,7 @@ EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
     *root = CProxy_Node::ckNew(blocksize, 0, 0, NPadded, NPadded);
   }
 
-  return root->matmul(*A_msg->root, *B_msg->root);
+  return root->matmul(*AInfo->root, *BInfo->root);
 }
 
 #include "Matrix.def.h"

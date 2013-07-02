@@ -46,6 +46,7 @@ double * multiply (int N, double *A, double *B)
  */
 void convert (int N, CProxy_Matrix A, double *ADense)
 {
+  LOG_DEBUG("converting matrix\n");
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++)
     {
@@ -61,6 +62,7 @@ void convert (int N, CProxy_Matrix A, double *ADense)
  */
 void zero (CProxy_Matrix A)
 {
+  LOG_DEBUG("zeroing matrix\n");
   MatrixMsg *AInfo = A.info();
   for(int i = 0; i < AInfo->N; i++) {
     for(int j = 0; j < AInfo->N; j++)
@@ -195,7 +197,7 @@ Main::Main (CkArgMsg *msg)
   }
 
   /* Enter threaded main method. */
-  run(N, blocksize, debug, verify);
+  thisProxy.run(N, blocksize, debug, verify);
 }
 
 void Main::run (int N, int blocksize, bool debug, bool verify)
@@ -218,7 +220,7 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
   if(debug)
   {
     print("A:", A);
-    print("B:", A);
+    print("B:", B);
   }
 
   Timer timer("multiply");
@@ -239,13 +241,14 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
         {
           CkPrintf("comparison failed for C(%d,%d): %e <-> %e\n",
               i, j, CDense[i*N+j], cij->x);
-          exit(1);
+          CkExit();
         }
         delete cij;
       }
     }
     CkPrintf("result verified\n");
   }
+
   CkExit();
 }
 

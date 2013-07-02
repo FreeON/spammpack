@@ -39,7 +39,7 @@ NodeMsg * Node::info ()
  */
 DataMsg * Node::getData ()
 {
-  return new DataMsg();
+  return new (blocksize*blocksize) DataMsg(blocksize, data);
 }
 
 DoubleMsg * Node::get (int i, int j)
@@ -106,18 +106,25 @@ EmptyMsg * Node::set (int i, int j, double aij)
   }
 }
 
+/** Multiply two matrices.
+ *
+ * @param A Node A.
+ * @param B Node B.
+ *
+ * @return A message indicating completion.
+ */
 EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
 {
   int width = iUpper-iLower;
-  NodeMsg *A_info = A.info();
-  NodeMsg *B_info = B.info();
+  NodeMsg *AInfo = A.info();
+  NodeMsg *BInfo = B.info();
 
   if(width == blocksize)
   {
-    DataMsg *A_data = A.getData();
-    DataMsg *B_data = B.getData();
+    DataMsg *AData = A.getData();
+    DataMsg *BData = B.getData();
 
-    if(A_data->data == NULL || B_data->data == NULL)
+    if(AData->data == NULL || BData->data == NULL)
     {
       /* [FIXME] delete C. */
       return new EmptyMsg();
@@ -129,11 +136,11 @@ EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
     }
     for(int i = iLower; i < iUpper; i++) {
       for(int j = jLower; j < jUpper; j++) {
-        for(int k = A_info->jLower; k < A_info->jUpper; k++)
+        for(int k = AInfo->jLower; k < AInfo->jUpper; k++)
         {
           data[blockIndex(i, j, iLower, jLower, blocksize)] +=
-            A_data->data[blockIndex(i, k, A_info->iLower, A_info->jLower, A_info->blocksize)]
-            *B_data->data[blockIndex(k, j, B_info->iLower, B_info->jLower, B_info->blocksize)];
+            AData->data[blockIndex(i, k, AInfo->iLower, AInfo->jLower, AInfo->blocksize)]
+            *BData->data[blockIndex(k, j, BInfo->iLower, BInfo->jLower, BInfo->blocksize)];
         }
       }
     }
@@ -149,7 +156,7 @@ EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
         {
           int childIndexA = (i << 1) | k;
           int childIndexB = (k << 1) | j;
-          if(A_info->child[childIndexA] == NULL || B_info->child[childIndexB] == NULL)
+          if(AInfo->child[childIndexA] == NULL || BInfo->child[childIndexB] == NULL)
           {
             /* [FIXME] delete C. */
             continue;
@@ -161,7 +168,7 @@ EmptyMsg * Node::matmul (CProxy_Node A, CProxy_Node B)
                 iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1),
                 jLower+width/2*(j+1));
           }
-          child[childIndex]->matmul(*A_info->child[childIndexA], *B_info->child[childIndexB]);
+          child[childIndex]->matmul(*AInfo->child[childIndexA], *BInfo->child[childIndexB]);
         }
       }
     }

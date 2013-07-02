@@ -1,5 +1,11 @@
 #include "Messages.h"
 
+DataMsg::DataMsg (int blocksize, double *data)
+{
+  this->blocksize = blocksize;
+  memcpy(this->data, data, blocksize*blocksize*sizeof(double));
+}
+
 DoubleMsg::DoubleMsg ()
 {
   x = 0;

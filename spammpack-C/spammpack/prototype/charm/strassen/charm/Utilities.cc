@@ -18,7 +18,7 @@ void Logging::log (const int level,
   va_list va;
   std::string levelname;
 
-  if(level >= Logging::DEBUG)
+  if(level >= Logging::LOGLEVEL)
   {
     switch(level)
     {

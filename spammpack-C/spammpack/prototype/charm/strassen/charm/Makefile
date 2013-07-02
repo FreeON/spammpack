@@ -4,12 +4,13 @@ CXX = charmc
 CXXFLAGS = -O0 -g -Wall
 CTAGS = ctags
 LIBS = -lrt
+LOGLEVEL = INFO
 
 %.decl.h %.def.h : %.ci
 	$(CXX) $<
 
 .cc.o :
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
+	$(CXX) -c -o $@ -DLOGLEVEL=$(LOGLEVEL) $(CXXFLAGS) $<
 
 INTERFACEFILES = \
 	Matrix.ci \

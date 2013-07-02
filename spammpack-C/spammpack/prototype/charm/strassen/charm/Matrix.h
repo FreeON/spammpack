@@ -19,7 +19,6 @@ class Matrix : public CBase_Matrix
 
   public:
 
-    Matrix ();
     Matrix (int N, int blocksize);
     MatrixMsg * info ();
     DoubleMsg * get (int i, int j);
