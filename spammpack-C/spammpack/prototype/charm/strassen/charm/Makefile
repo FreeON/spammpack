@@ -4,7 +4,7 @@ CXX = charmc
 CXXFLAGS = -O0 -g -Wall
 CTAGS = ctags
 LIBS = -lrt
-LOGLEVEL = INFO
+LOGLEVEL = DEBUG
 
 %.decl.h %.def.h : %.ci
 	$(CXX) $<

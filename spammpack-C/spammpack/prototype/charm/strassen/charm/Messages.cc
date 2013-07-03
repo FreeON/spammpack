@@ -16,6 +16,16 @@ DoubleMsg::DoubleMsg (double x)
   this->x = x;
 }
 
+IntMsg::IntMsg ()
+{
+  i = 0;
+}
+
+IntMsg::IntMsg (int i)
+{
+  this->i = i;
+}
+
 MatrixMsg::MatrixMsg (int N, int blocksize, CProxy_Node *root)
 {
   this->N = N;

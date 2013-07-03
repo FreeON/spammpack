@@ -29,6 +29,10 @@ class EmptyMsg : public CMessage_EmptyMsg
 class IntMsg : public CMessage_IntMsg
 {
   public:
+
+    int i;
+    IntMsg ();
+    IntMsg (int i);
 };
 
 class MatrixMsg : public CMessage_MatrixMsg

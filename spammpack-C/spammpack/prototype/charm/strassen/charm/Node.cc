@@ -11,7 +11,7 @@ int blockIndex (int i, int j, int iLower, int jLower, int blocksize)
   return (i-iLower)*blocksize+(j-jLower);
 }
 
-Node::Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper)
+Node::Node (int tier, int blocksize, int iLower, int jLower, int iUpper, int jUpper)
 {
   this->blocksize = blocksize;
   this->iLower = iLower;
@@ -23,6 +23,7 @@ Node::Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper)
     child[i] = NULL;
   }
   data = NULL;
+  this->tier = tier;
 }
 
 /** Get information on node.
@@ -100,8 +101,8 @@ EmptyMsg * Node::set (int i, int j, double aij)
     if(child[childIndex] == NULL)
     {
       child[childIndex] = new CProxy_Node;
-      *child[childIndex] = CProxy_Node::ckNew(blocksize, newILower, newJLower,
-          newILower+width, newJLower+width);
+      *child[childIndex] = CProxy_Node::ckNew(tier+1, blocksize, newILower,
+          newJLower, newILower+width, newJLower+width);
     }
     return child[childIndex]->set(i, j, aij);
   }
@@ -120,6 +121,12 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done)
   NodeMsg *AInfo = A.info();
   NodeMsg *BInfo = B.info();
 
+  IntMsg *indexMsg = new IntMsg(index);
+  matmulIndex = index;
+  parentDone = done;
+
+  LOG_DEBUG("(%d:%d) starting multiply\n", tier, index);
+
   if(width == blocksize)
   {
     DataMsg *AData = A.getData();
@@ -127,7 +134,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done)
 
     if(AData->data == NULL || BData->data == NULL)
     {
-      LOG_ERROR("[FIXME] delete C.\n");
+      LOG_ERROR("[FIXME] (%d:%d) delete C.\n", tier, index);
       done.send(new EmptyMsg());
     }
     if(data == NULL)
@@ -135,6 +142,8 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done)
       data = new double[blocksize*blocksize];
       memset(data, 0, blocksize*blocksize*sizeof(double));
     }
+
+    LOG_DEBUG("(%d:%d) block multiply\n", tier, index);
     for(int i = iLower; i < iUpper; i++) {
       for(int j = jLower; j < jUpper; j++) {
         for(int k = AInfo->jLower; k < AInfo->jUpper; k++)
@@ -145,6 +154,9 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done)
         }
       }
     }
+    /* Signal that we are done. */
+    LOG_DEBUG("(%d:%d) sending to callback\n", tier, index);
+    parentDone.send(indexMsg);
   }
 
   else
@@ -154,6 +166,8 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done)
       matmulComplete[i] = false;
     }
 
+    LOG_DEBUG("(%d:%d) descending...\n", tier, index);
+
     for(int i = 0; i < 2; i++) {
       for(int j = 0; j < 2; j++)
       {
@@ -162,35 +176,43 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done)
         {
           int childIndexA = (i << 1) | k;
           int childIndexB = (k << 1) | j;
+          int productIndex = (i << 2) | (j << 1) | k;
           if(AInfo->child[childIndexA] == NULL || BInfo->child[childIndexB] == NULL)
           {
-            LOG_ERROR("[FIXME] delete C.\n");
-            matmulComplete[(i << 2) | (j << 1) | k] = true;
+            LOG_ERROR("[FIXME] (%d:%d) delete C (product %d is NULL).\n", tier, index, productIndex);
+            matmulComplete[productIndex] = true;
             continue;
           }
           if(child[childIndex] == NULL)
           {
             child[childIndex] = new CProxy_Node;
-            *child[childIndex] = CProxy_Node::ckNew(blocksize,
+            *child[childIndex] = CProxy_Node::ckNew(tier+1, blocksize,
                 iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1),
                 jLower+width/2*(j+1));
           }
-          IntMsg *childIndex = new IntMsg((i << 2) | (j << 1) | k);
+          LOG_DEBUG("(%d:%d) calling multiply on index %d\n", tier, index, productIndex);
           child[childIndex]->matmul(*AInfo->child[childIndexA],
               *BInfo->child[childIndexB],
-              childIndex,
-              CkCallback(CkIndex_Node::matmulDone(childIndex), thisProxy));
+              productIndex,
+              CkCallback(CkIndex_Node::matmulDone(indexMsg), thisProxy));
         }
       }
     }
   }
 
-  done.send(index);
+  LOG_DEBUG("(%d:%d) done\n", tier, index);
 }
 
-void Node::matmulDone (int index)
+void Node::matmulDone (IntMsg *index)
 {
-  LOG_DEBUG("called with index = %d\n", index);
+  LOG_DEBUG("(%d:%d) called with index = %d\n", tier, matmulIndex, index->i);
+  matmulComplete[index->i] = true;
+  for(int i = 0; i < 8; i++)
+  {
+    if(!matmulComplete[i]) return;
+  }
+  LOG_DEBUG("(%d:%d) done, sending to parent\n", tier, matmulIndex);
+  parentDone.send(new IntMsg(matmulIndex));
 }
 
 #include "Node.def.h"

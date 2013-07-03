@@ -3,12 +3,12 @@ module Node
   extern module Messages;
   chare Node
   {
-    entry Node (int blocksize, int iLower, int jLower, int iUpper, int jUpper);
+    entry Node (int tier, int blocksize, int iLower, int jLower, int iUpper, int jUpper);
     entry [sync] NodeMsg   * info ();
     entry [sync] DataMsg   * getData ();
     entry [sync] DoubleMsg * get (int i, int j);
     entry [sync] EmptyMsg  * set (int i, int j, double aij);
     entry void matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done);
-    entry void matmulDone (int index);
+    entry void matmulDone (IntMsg *index);
   };
 };

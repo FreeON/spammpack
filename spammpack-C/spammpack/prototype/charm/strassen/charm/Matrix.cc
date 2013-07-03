@@ -78,7 +78,7 @@ EmptyMsg * Matrix::set (int i, int j, double aij)
   if(root == NULL)
   {
     root = new CProxy_Node;
-    *root = CProxy_Node::ckNew(blocksize, 0, 0, NPadded, NPadded);
+    *root = CProxy_Node::ckNew(0, blocksize, 0, 0, NPadded, NPadded);
   }
   EmptyMsg *msg = root->set(i, j, aij);
   return msg;
@@ -118,10 +118,12 @@ EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
   if(root == NULL)
   {
     root = new CProxy_Node;
-    *root = CProxy_Node::ckNew(blocksize, 0, 0, NPadded, NPadded);
+    *root = CProxy_Node::ckNew(0, blocksize, 0, 0, NPadded, NPadded);
   }
 
+  LOG_DEBUG("descending...\n");
   root->matmul(*AInfo->root, *BInfo->root, 0, CkCallbackResumeThread());
+  LOG_DEBUG("done\n");
 
   return new EmptyMsg();
 }
