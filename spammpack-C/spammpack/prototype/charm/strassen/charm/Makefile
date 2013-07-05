@@ -4,6 +4,7 @@ CXX = charmc
 CXXFLAGS = -O0 -g -Wall
 CTAGS = ctags
 LIBS = -lrt
+LDFLAGS = -tracemode projections
 LOGLEVEL = DEBUG
 
 %.decl.h %.def.h : %.ci

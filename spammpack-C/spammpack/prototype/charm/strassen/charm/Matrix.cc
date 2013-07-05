@@ -122,7 +122,7 @@ EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
   }
 
   LOG_DEBUG("descending...\n");
-  root->matmul(*AInfo->root, *BInfo->root, 0, CkCallbackResumeThread());
+  root->matmul(*AInfo->root, *BInfo->root, 1 << 3, CkCallbackResumeThread());
   LOG_DEBUG("done\n");
 
   return new EmptyMsg();

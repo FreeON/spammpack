@@ -15,7 +15,8 @@ class Node : public CBase_Node
     int jLower;
     int jUpper;
 
-    bool matmulComplete[8];
+    int numberChildProducts;
+    int childProducts[8];
     int matmulIndex;
     int tier;
     CkCallback parentDone;

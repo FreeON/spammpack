@@ -225,6 +225,10 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
     print("B:", B);
   }
 
+  /* Terminate on quiescence detection (for debug). */
+  LOG_INFO("terminating on quiescence detection\n");
+  CkStartQD(CkCallback::ckExit);
+
   Timer timer("multiply");
   timer.start();
   EmptyMsg *msg = C.matmul(A, B); delete msg;

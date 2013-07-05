@@ -1,3 +1,5 @@
+#include <charm++.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string>
@@ -17,6 +19,9 @@ void Logging::log (const int level,
 {
   va_list va;
   std::string levelname;
+  const int bufferlength = 2000;
+  char outputBuffer[bufferlength];
+  int status;
 
   if(level >= Logging::LOGLEVEL)
   {
@@ -44,8 +49,17 @@ void Logging::log (const int level,
     const char *new_format = format_stream.str().c_str();
 
     va_start(va, format);
-    vprintf(new_format, va);
+    if((status = vsnprintf(outputBuffer, bufferlength, new_format, va)) < 0)
+    {
+      CkPrintf("error logging to string\n");
+      CkExit();
+    }
+    if(status >= bufferlength)
+    {
+      CkPrintf("string buffer too short\n");
+    }
     va_end(va);
+    CkPrintf(outputBuffer); fflush(stdout);
   }
 }
 
