@@ -112,32 +112,39 @@ EmptyMsg * Node::set (int i, int j, double aij)
   }
 }
 
+std::string getTagString (int tier, int productIndex)
+{
+  std::bitset<20> bitIndex = std::bitset<20>(productIndex);
+  std::ostringstream tag;
+  tag << "(" << tier << ":" << productIndex << ":" << bitIndex.to_string() << ")";
+  return tag.str();
+}
+
 /** Multiply two matrices.
  *
  * @param A Node A.
  * @param B Node B.
- *
- * @return A message indicating completion.
+ * @param productIndex The 3D linear index of the product contribution.
+ * @param done The callback of the parent product contribution.
  */
 void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &done)
 {
+  /* Store callback. */
+  parentDone = done;
+
+  /* Construct an integer message. */
+  IntMsg *indexMsg = new IntMsg(productIndex);
+
+  /* The width of the C matrix block. */
   int width = iUpper-iLower;
+
   NodeMsg *AInfo = A.info();
   NodeMsg *BInfo = B.info();
 
-  parentDone = done;
+  std::string tagstr = getTagString(tier, productIndex);
 
-  IntMsg *indexMsg = new IntMsg(productIndex);
-  int CIndex = (productIndex & 6) >> 1;
-  std::bitset<20> bitIndex = std::bitset<20>(productIndex);
-
-  std::ostringstream tag;
-  tag << "(" << tier << ":" << productIndex << ":" << bitIndex.to_string() << ")";
-
-  LOG_DEBUG("%s starting multiply (C index = %d), "
-      "C(%d:%d,%d:%d) += A(%d:%d,%d:%d)*B(%d:%d,%d:%d)\n",
-      tag.str().c_str(),
-      CIndex,
+  LOG_DEBUG("%s starting multiply, C(%d:%d,%d:%d) += A(%d:%d,%d:%d)*B(%d:%d,%d:%d)\n",
+      tagstr.c_str(),
       iLower+1, iUpper, jLower+1, jUpper,
       AInfo->iLower+1, AInfo->iUpper, AInfo->jLower+1, AInfo->jUpper,
       BInfo->iLower+1, BInfo->iUpper, BInfo->jLower+1, BInfo->jUpper);
@@ -155,7 +162,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &d
         memset(data, 0, blocksize*blocksize*sizeof(double));
       }
 
-      LOG_DEBUG("%s block multiply\n", tag.str().c_str());
+      LOG_DEBUG("%s block multiply\n", tagstr.c_str());
       for(int i = iLower; i < iUpper; i++) {
         for(int j = jLower; j < jUpper; j++) {
           for(int k = AInfo->jLower; k < AInfo->jUpper; k++)
@@ -170,17 +177,17 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &d
 
     else
     {
-      LOG_ERROR("%s [FIXME] delete C\n", tag.str().c_str());
+      LOG_ERROR("%s [FIXME] delete C\n", tagstr.c_str());
     }
 
     /* Signal that we are done. */
-    LOG_DEBUG("%s sending %d to done\n", tag.str().c_str(), productIndex);
+    LOG_DEBUG("%s sending %d to done\n", tagstr.c_str(), productIndex);
     done.send(indexMsg);
   }
 
   else
   {
-    LOG_DEBUG("%s descending...\n", tag.str().c_str());
+    LOG_DEBUG("%s descending...\n", tagstr.c_str());
 
     for(int i = 0; i < 2; i++) {
       for(int j = 0; j < 2; j++)
@@ -193,13 +200,18 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &d
 
           int convolutionIndex = (i << 2) | (j << 1) | k;
           int childProductIndex = (productIndex << 3) | convolutionIndex;
-          queuedProducts[productIndex & 1][numberQueued[productIndex & 1]++] = childProductIndex;
-          LOG_DEBUG("%s added %d to queue\n", tag.str().c_str(), childProductIndex);
+
+
+          int kIndex = productIndex & 1;
+          queuedProducts[kIndex][numberQueued[kIndex]++] = childProductIndex;
+
+          LOG_DEBUG("%s added %d to queue[%d], has %d elements now\n",
+              tagstr.c_str(), childProductIndex, kIndex, numberQueued[kIndex]);
 
           if(AInfo->child[childIndexA] == NULL || BInfo->child[childIndexB] == NULL)
           {
             LOG_ERROR("%s [FIXME] delete C (product %d is NULL).\n",
-                tag.str().c_str(), childProductIndex);
+                tagstr.c_str(), childProductIndex);
             thisProxy.matmulDone(new IntMsg(childProductIndex));
             continue;
           }
@@ -211,7 +223,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &d
                 jLower+width/2*(j+1));
           }
           LOG_DEBUG("%s calling multiply on index %d (%d:%d:%d)\n",
-              tag.str().c_str(), childProductIndex, i, j, k);
+              tagstr.c_str(), childProductIndex, i, j, k);
           child[childIndex]->matmul(*AInfo->child[childIndexA],
               *BInfo->child[childIndexB],
               childProductIndex,
@@ -221,42 +233,39 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &d
     }
   }
 
-  LOG_DEBUG("%s done\n", tag.str().c_str());
+  LOG_DEBUG("%s done\n", tagstr.c_str());
 }
 
 void Node::matmulDone (IntMsg *productIndex)
 {
-  std::bitset<20> bitIndex = std::bitset<20>(productIndex->i);
+  std::string tagstr = getTagString(tier, productIndex->i >> 3);
+
   int kIndex = (productIndex->i >> 3) & 1;
   int CIndex = (productIndex->i & 6) >> 1;
   int tierIndex = productIndex->i & 7;
 
-  std::ostringstream tag;
-  tag << "(" << tier << ":" << (productIndex->i >> 3) << ":" << bitIndex.to_string();
-
   LOG_DEBUG("%s matmulDone called with index = %d, CIndex = %d, "
       "kIndex = %d, tierIndex = %d, numberQueued = %i\n",
-      tag.str().c_str(), productIndex->i, CIndex, kIndex, tierIndex,
+      tagstr.c_str(), productIndex->i, CIndex, kIndex, tierIndex,
       numberQueued[(productIndex->i >> 3) & 1]);
 
-  for(int i = 0; i < numberQueued[(productIndex->i >> 3) & 1]; i++)
+  for(int i = 0; i < numberQueued[kIndex]; i++)
   {
-    if(queuedProducts[(productIndex->i >> 3) & 1][i] == productIndex->i)
+    if(queuedProducts[kIndex][i] == productIndex->i)
     {
-      for(int j = i+1; j < numberQueued[(productIndex->i >> 3) & 1]; j++)
+      for(int j = i+1; j < numberQueued[kIndex]; j++)
       {
-        queuedProducts[(productIndex->i >> 3) & 1][j-1] = queuedProducts[(productIndex->i >> 3) & 1][j];
+        queuedProducts[kIndex][j-1] = queuedProducts[kIndex][j];
       }
-      numberQueued[(productIndex->i >> 3) & 1]--;
-      LOG_DEBUG("%s removed %d from queue\n", tag.str().c_str(), productIndex->i);
+      numberQueued[kIndex]--;
+      LOG_DEBUG("%s removed %d from queue\n", tagstr.c_str(), productIndex->i);
       break;
     }
   }
 
-  if(numberQueued[(productIndex->i >> 3) & 1] == 0)
+  if(numberQueued[kIndex] == 0)
   {
-    LOG_DEBUG("%s matmulDone sending %d to parent\n", tag.str().c_str(),
-        productIndex->i >> 3);
+    LOG_DEBUG("%s matmulDone sending %d to parent\n", tagstr.c_str(), productIndex->i >> 3);
     parentDone.send(new IntMsg(productIndex->i >> 3));
   }
 }

@@ -10,7 +10,7 @@
 
 Matrix::Matrix (int N, int blocksize)
 {
-  LOG_DEBUG("full constructor\n");
+  //LOG_DEBUG("full constructor\n");
 
   this->N = N;
   this->blocksize = blocksize;
@@ -67,7 +67,7 @@ DoubleMsg * Matrix::get (int i, int j)
  */
 EmptyMsg * Matrix::set (int i, int j, double aij)
 {
-  LOG_DEBUG("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
+  //LOG_DEBUG("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
 
   if(i < 0 || j < 0 || i >= N || j >= N)
   {
@@ -121,9 +121,9 @@ EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
     *root = CProxy_Node::ckNew(0, blocksize, 0, 0, NPadded, NPadded);
   }
 
-  LOG_DEBUG("descending...\n");
+  //LOG_DEBUG("descending...\n");
   root->matmul(*AInfo->root, *BInfo->root, 1 << 3, CkCallbackResumeThread());
-  LOG_DEBUG("done\n");
+  //LOG_DEBUG("done\n");
 
   return new EmptyMsg();
 }
