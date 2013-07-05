@@ -15,10 +15,11 @@ class Node : public CBase_Node
     int jLower;
     int jUpper;
 
-    int numberChildProducts;
-    int childProducts[8];
-    int matmulIndex;
     int tier;
+
+    int numberQueued[2];
+    int queuedProducts[2][8];
+
     CkCallback parentDone;
 
     CProxy_Node *child[4];
@@ -31,7 +32,7 @@ class Node : public CBase_Node
     DataMsg   * getData ();
     EmptyMsg  * set (int i, int j, double aij);
     DoubleMsg * get (int i, int j);
-    void matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done);
+    void matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &done);
     void matmulDone (IntMsg *index);
 };
 

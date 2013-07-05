@@ -8,7 +8,7 @@ module Node
     entry [sync] DataMsg   * getData ();
     entry [sync] DoubleMsg * get (int i, int j);
     entry [sync] EmptyMsg  * set (int i, int j, double aij);
-    entry void matmul (CProxy_Node A, CProxy_Node B, int index, CkCallback &done);
+    entry void matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &done);
     entry void matmulDone (IntMsg *index);
   };
 };
