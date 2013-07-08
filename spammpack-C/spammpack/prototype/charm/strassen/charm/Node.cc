@@ -90,6 +90,7 @@ EmptyMsg * Node::set (int i, int j, double aij)
     int width = (iUpper-iLower)/2;
     int newILower = iLower;
     int newJLower = jLower;
+
     if(iLower+width <= i)
     {
       childIndex |= 2;
@@ -140,7 +141,6 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
   /* Construct an integer message. */
   IntMsg *indexMsg = new IntMsg(productIndex);
 #endif
-
   /* The width of the C matrix block. */
   int width = iUpper-iLower;
 
@@ -149,7 +149,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
 
   std::string tagstr = getTagString(tier, productIndex);
 
-  LOG_DEBUG("%s starting multiply, C(%d:%d,%d:%d) += A(%d:%d,%d:%d)*B(%d:%d,%d:%d)\n",
+  LOG_INFO("%s starting multiply, C(%d:%d,%d:%d) += A(%d:%d,%d:%d)*B(%d:%d,%d:%d)\n",
       tagstr.c_str(),
       iLower+1, iUpper, jLower+1, jUpper,
       AInfo->iLower+1, AInfo->iUpper, AInfo->jLower+1, AInfo->jUpper,
@@ -169,11 +169,18 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
       DataMsg *AData = A.getData();
       DataMsg *BData = B.getData();
 
+      if(iLower < 0 || jLower < 0 || iUpper < 0 || jUpper < 0)
+      {
+        LOG_INFO("negative\n");
+        CkExit();
+      }
+
       LOG_DEBUG("%s block multiply\n", tagstr.c_str());
       for(int i = iLower; i < iUpper; i++) {
         for(int j = jLower; j < jUpper; j++) {
           for(int k = AInfo->jLower; k < AInfo->jUpper; k++)
           {
+            LOG_INFO("multiplying C(%d,%d) += A(%d,%d)*B(%d,%d)\n", i, j, i, k, k, j);
             data[blockIndex(i, j, iLower, jLower, blocksize)] +=
               AData->data[blockIndex(i, k, AInfo->iLower, AInfo->jLower, AInfo->blocksize)]
               *BData->data[blockIndex(k, j, BInfo->iLower, BInfo->jLower, BInfo->blocksize)];
@@ -187,9 +194,12 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
 
     else
     {
-      LOG_DEBUG("%s [FIXME] delete C\n", tagstr.c_str());
+      LOG_INFO("%s [FIXME] skipping C(%d:%d,%d:%d) += A(%d:%d,%d:%d)*B(%d:%d,%d:%d), delete C\n",
+          iLower, iUpper, jLower, jUpper,
+          AInfo->iLower, AInfo->iUpper, AInfo->jLower, AInfo->jUpper,
+          BInfo->iLower, BInfo->iUpper, BInfo->jLower, BInfo->jUpper,
+          tagstr.c_str());
     }
-
 #ifdef CALLBACK
     /* Signal that we are done. */
     LOG_DEBUG("%s sending %d to done\n", tagstr.c_str(), productIndex);
@@ -206,7 +216,6 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
     CkFuture product_f[8];
     int numberProducts = 0;
 #endif
-
     for(int i = 0; i < 2; i++) {
       for(int j = 0; j < 2; j++)
       {
@@ -227,9 +236,14 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
           LOG_DEBUG("%s added %d to queue[%d], has %d elements now\n",
               tagstr.c_str(), childProductIndex, kIndex, numberQueued[kIndex]);
 #endif
-
           if(AInfo->child[childIndexA] == NULL || BInfo->child[childIndexB] == NULL)
           {
+            LOG_INFO("%s [FIXME] skipping C(%d:%d,%d:%d)->child[%d] += "
+                "A(%d:%d,%d:%d)->child[%d]*B(%d:%d,%d:%d)->child[%d], delete C\n",
+                tagstr.c_str(),
+                iLower, iUpper, jLower, jUpper, childIndex,
+                AInfo->iLower, AInfo->iUpper, AInfo->jLower, AInfo->jUpper, childIndexA,
+                BInfo->iLower, BInfo->iUpper, BInfo->jLower, BInfo->jUpper, childIndexB);
             LOG_DEBUG("%s [FIXME] delete C (product %d is NULL).\n",
                 tagstr.c_str(), childProductIndex);
 #ifdef CALLBACK
@@ -240,14 +254,17 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
 
           if(child[childIndex] == NULL)
           {
+            LOG_INFO("creating new C node\n");
             child[childIndex] = new CProxy_Node;
             *child[childIndex] = CProxy_Node::ckNew(tier+1, blocksize,
                 iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1),
                 jLower+width/2*(j+1));
           }
 
-          LOG_DEBUG("%s calling multiply on index %d (%d:%d:%d)\n",
-              tagstr.c_str(), childProductIndex, i, j, k);
+          LOG_INFO("%s calling multiply on child[%d] += "
+              "A->child[%d]*B->child[%d] %d (%d:%d:%d)\n",
+              tagstr.c_str(), childIndex, childIndexA, childIndexB,
+              childProductIndex, i, j, k);
 #if defined(CALLBACK)
           child[childIndex]->matmul(*AInfo->child[childIndexA],
               *BInfo->child[childIndexB],
@@ -271,23 +288,25 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
         }
       }
     }
-
 #ifdef FUTURES
-    LOG_DEBUG("waiting on %d futures\n", numberProducts);
+    if(numberProducts < 8)
+    {
+      LOG_ERROR("insufficient number of products %d\n", numberProducts);
+    }
+    LOG_INFO("%s waiting on %d futures\n", tagstr.c_str(), numberProducts);
     for(int i = 0; i < numberProducts; i++)
     {
       EmptyMsg *m = (EmptyMsg*) CkWaitFuture(product_f[i]); delete m;
       CkReleaseFuture(product_f[i]);
-      LOG_DEBUG("product_f[%d] finished\n", i);
+      LOG_INFO("%s product_f[%d] finished\n", tagstr.c_str(), i);
     }
 #endif
   }
 
-  LOG_DEBUG("%s done\n", tagstr.c_str());
+  LOG_INFO("%s done\n", tagstr.c_str());
 
   delete AInfo;
   delete BInfo;
-
 #if defined(FUTURES)
   CkSendToFuture(f, new EmptyMsg());
 #endif

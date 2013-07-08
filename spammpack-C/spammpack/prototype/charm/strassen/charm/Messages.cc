@@ -26,9 +26,11 @@ IntMsg::IntMsg (int i)
   this->i = i;
 }
 
-MatrixMsg::MatrixMsg (int N, int blocksize, int depth, CProxy_Node *root)
+MatrixMsg::MatrixMsg (int N, int NPadded, int blocksize, int depth,
+    CProxy_Node *root)
 {
   this->N = N;
+  this->NPadded = NPadded;
   this->blocksize = blocksize;
   this->depth = depth;
   this->root = root;

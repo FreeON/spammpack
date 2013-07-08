@@ -209,7 +209,8 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
   CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
   MatrixMsg *AInfo = A.info();
-  LOG_INFO("N = %d, blocksize = %d, depth = %d\n", N, blocksize, AInfo->depth);
+  LOG_INFO("N = %d, NPadded = %d, blocksize = %d, depth = %d\n", N,
+      AInfo->NPadded, blocksize, AInfo->depth);
   delete AInfo;
 
   double *ADense = randomDense(N);
@@ -226,6 +227,53 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
   {
     print("A:", A);
     print("B:", B);
+  }
+
+  if(verify)
+  {
+    for(int i = 0; i < N; i++) {
+      for(int j = 0; j < N; j++)
+      {
+        DoubleMsg *aij = A.get(i, j);
+        if(fabs(ADense[i*N+j]-aij->x) > TOLERANCE)
+        {
+          CkPrintf("A(%d,%d) failed: %e <-> %e\n",
+              i, j, ADense[i*N+j], aij->x);
+          CkExit();
+        }
+        delete aij;
+      }
+    }
+    CkPrintf("verified A\n");
+
+    for(int i = 0; i < N; i++) {
+      for(int j = 0; j < N; j++)
+      {
+        DoubleMsg *bij = B.get(i, j);
+        if(fabs(BDense[i*N+j]-bij->x) > TOLERANCE)
+        {
+          CkPrintf("B(%d,%d) failed: %e <-> %e\n",
+              i, j, BDense[i*N+j], bij->x);
+          CkExit();
+        }
+        delete bij;
+      }
+    }
+    CkPrintf("verified B\n");
+
+    for(int i = 0; i < N; i++) {
+      for(int j = 0; j < N; j++)
+      {
+        DoubleMsg *cij = C.get(i, j);
+        if(fabs(cij->x) > TOLERANCE)
+        {
+          CkPrintf("C(%d,%d) failed: %e\n", i, j, cij->x);
+          CkExit();
+        }
+        delete cij;
+      }
+    }
+    CkPrintf("verified C\n");
   }
 
   Timer timer("multiply");

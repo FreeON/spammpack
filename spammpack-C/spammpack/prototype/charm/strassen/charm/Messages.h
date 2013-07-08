@@ -43,11 +43,12 @@ class MatrixMsg : public CMessage_MatrixMsg
   public:
 
     int N;
+    int NPadded;
     int blocksize;
     int depth;
     CProxy_Node *root;
 
-    MatrixMsg (int N, int blocksize, int depth, CProxy_Node *root);
+    MatrixMsg (int N, int NPadded, int blocksize, int depth, CProxy_Node *root);
 };
 
 class NodeMsg : public CMessage_NodeMsg
