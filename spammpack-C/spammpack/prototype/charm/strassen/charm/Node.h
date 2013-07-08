@@ -32,8 +32,14 @@ class Node : public CBase_Node
     DataMsg   * getData ();
     EmptyMsg  * set (int i, int j, double aij);
     DoubleMsg * get (int i, int j);
+#ifdef CALLBACK
     void matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &done);
     void matmulDone (IntMsg *index);
+#elif defined(FUTURES)
+    void matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f);
+#else
+#error "FIXME"
+#endif
 };
 
 #endif

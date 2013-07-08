@@ -25,8 +25,6 @@ Node::Node (int tier, int blocksize, int iLower, int jLower, int iUpper, int jUp
     child[i] = NULL;
   }
   data = NULL;
-  this->numberQueued[0] = 0;
-  this->numberQueued[1] = 0;
   this->tier = tier;
 }
 
@@ -127,13 +125,21 @@ std::string getTagString (int tier, int productIndex)
  * @param productIndex The 3D linear index of the product contribution.
  * @param done The callback of the parent product contribution.
  */
+#ifdef CALLBACK
 void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &done)
+#elif defined(FUTURES)
+void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
+#else
+#error "FIXME"
+#endif
 {
+#ifdef CALLBACK
   /* Store callback. */
   parentDone = done;
 
   /* Construct an integer message. */
   IntMsg *indexMsg = new IntMsg(productIndex);
+#endif
 
   /* The width of the C matrix block. */
   int width = iUpper-iLower;
@@ -180,14 +186,22 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &d
       LOG_ERROR("%s [FIXME] delete C\n", tagstr.c_str());
     }
 
+#ifdef CALLBACK
     /* Signal that we are done. */
     LOG_DEBUG("%s sending %d to done\n", tagstr.c_str(), productIndex);
     done.send(indexMsg);
+#endif
   }
 
   else
   {
     LOG_DEBUG("%s descending...\n", tagstr.c_str());
+
+
+#if defined(FUTURES)
+    CkFuture product_f[8];
+    int numberProducts = 0;
+#endif
 
     for(int i = 0; i < 2; i++) {
       for(int j = 0; j < 2; j++)
@@ -201,20 +215,25 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &d
           int convolutionIndex = (i << 2) | (j << 1) | k;
           int childProductIndex = (productIndex << 3) | convolutionIndex;
 
-
+#ifdef CALLBACK
           int kIndex = productIndex & 1;
+
           queuedProducts[kIndex][numberQueued[kIndex]++] = childProductIndex;
 
           LOG_DEBUG("%s added %d to queue[%d], has %d elements now\n",
               tagstr.c_str(), childProductIndex, kIndex, numberQueued[kIndex]);
+#endif
 
           if(AInfo->child[childIndexA] == NULL || BInfo->child[childIndexB] == NULL)
           {
             LOG_ERROR("%s [FIXME] delete C (product %d is NULL).\n",
                 tagstr.c_str(), childProductIndex);
+#ifdef CALLBACK
             thisProxy.matmulDone(new IntMsg(childProductIndex));
+#endif
             continue;
           }
+
           if(child[childIndex] == NULL)
           {
             child[childIndex] = new CProxy_Node;
@@ -222,20 +241,48 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &d
                 iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1),
                 jLower+width/2*(j+1));
           }
+
           LOG_DEBUG("%s calling multiply on index %d (%d:%d:%d)\n",
               tagstr.c_str(), childProductIndex, i, j, k);
+#if defined(CALLBACK)
           child[childIndex]->matmul(*AInfo->child[childIndexA],
               *BInfo->child[childIndexB],
               childProductIndex,
               CkCallback(CkIndex_Node::matmulDone(indexMsg), thisProxy));
+#elif defined(FUTURES)
+          product_f[numberProducts] = CkCreateFuture();
+          child[childIndex]->matmul(*AInfo->child[childIndexA],
+              *BInfo->child[childIndexB],
+              childProductIndex,
+              product_f[numberProducts]);
+          numberProducts++;
+
+#else
+#error "FIXME"
+#endif
         }
       }
     }
+
+#ifdef FUTURES
+    LOG_DEBUG("waiting on %d futures\n", numberProducts);
+    for(int i = 0; i < numberProducts; i++)
+    {
+      EmptyMsg *m = (EmptyMsg*) CkWaitFuture(product_f[i]); delete m;
+      CkReleaseFuture(product_f[i]);
+      LOG_DEBUG("product_f[%d] finished\n", i);
+    }
+#endif
   }
 
   LOG_DEBUG("%s done\n", tagstr.c_str());
+
+#if defined(FUTURES)
+  CkSendToFuture(f, new EmptyMsg());
+#endif
 }
 
+#ifdef CALLBACK
 void Node::matmulDone (IntMsg *productIndex)
 {
   std::string tagstr = getTagString(tier, productIndex->i >> 3);
@@ -269,5 +316,6 @@ void Node::matmulDone (IntMsg *productIndex)
     parentDone.send(new IntMsg(productIndex->i >> 3));
   }
 }
+#endif
 
 #include "Node.def.h"

@@ -121,9 +121,16 @@ EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
     *root = CProxy_Node::ckNew(0, blocksize, 0, 0, NPadded, NPadded);
   }
 
-  //LOG_DEBUG("descending...\n");
+#if defined(CALLBACK)
   root->matmul(*AInfo->root, *BInfo->root, 1 << 3, CkCallbackResumeThread());
-  //LOG_DEBUG("done\n");
+#elif defined(FUTURES)
+  CkFuture f = CkCreateFuture();
+  root->matmul(*AInfo->root, *BInfo->root, 1 << 3, f);
+  EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f); delete m;
+  CkReleaseFuture(f);
+#else
+#error "FIXME"
+#endif
 
   return new EmptyMsg();
 }

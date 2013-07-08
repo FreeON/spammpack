@@ -6,12 +6,15 @@ CTAGS = ctags
 LIBS = -lrt
 LDFLAGS = -tracemode projections
 LOGLEVEL = DEBUG
+ALGORITHM = FUTURES
+#ALGORITHM = CALLBACKS
+CPPFLAGS = -DLOGLEVEL=$(LOGLEVEL) -D$(ALGORITHM)
 
 %.decl.h %.def.h : %.ci
-	$(CXX) $<
+	$(CXX) -preprocess $(CPPFLAGS) $<
 
 .cc.o :
-	$(CXX) -c -o $@ -DLOGLEVEL=$(LOGLEVEL) $(CXXFLAGS) $<
+	$(CXX) -c -o $@ $(CPPFLAGS) $(CXXFLAGS) $<
 
 INTERFACEFILES = \
 	Matrix.ci \
@@ -40,7 +43,7 @@ SOURCEFILES = \
 OBJ = $(foreach i, $(SOURCEFILES), $(basename $i).o)
 
 strassen : $(OBJ)
-	$(CXX) -language charm++ -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(LIBS)
+	$(CXX) -language charm++ -o $@ $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $^ $(LIBS)
 
 ctags : $(INTERFACEFILES) $(SOURCEFILES) $(HEADERFILES)
 	$(CTAGS) $^
