@@ -208,7 +208,10 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
   CProxy_Matrix B = CProxy_Matrix::ckNew(N, blocksize);
   CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
-  LOG_DEBUG("N = %d, blocksize = %d\n", N, blocksize);
+  MatrixMsg *AInfo = A.info();
+  LOG_INFO("N = %d, blocksize = %d, depth = %d\n", N, blocksize, AInfo->depth);
+  delete AInfo;
+
   double *ADense = randomDense(N);
   double *BDense = randomDense(N);
 
@@ -224,10 +227,6 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
     print("A:", A);
     print("B:", B);
   }
-
-  /* Terminate on quiescence detection (for debug). */
-  //LOG_INFO("terminating on quiescence detection\n");
-  //CkStartQD(CkCallback::ckExit);
 
   Timer timer("multiply");
   timer.start();

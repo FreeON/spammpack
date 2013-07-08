@@ -32,7 +32,7 @@ Matrix::Matrix (int N, int blocksize)
  */
 MatrixMsg * Matrix::info ()
 {
-  return new MatrixMsg(N, blocksize, root);
+  return new MatrixMsg(N, blocksize, depth, root);
 }
 
 /** Get a matrix element.

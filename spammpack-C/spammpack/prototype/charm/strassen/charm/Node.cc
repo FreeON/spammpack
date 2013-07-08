@@ -34,7 +34,7 @@ Node::Node (int tier, int blocksize, int iLower, int jLower, int iUpper, int jUp
  */
 NodeMsg * Node::info ()
 {
-  return new NodeMsg (iLower, iUpper, jLower, jUpper, blocksize, child);
+  return new NodeMsg (iLower, iUpper, jLower, jUpper, blocksize, child, data);
 }
 
 /** Get the matrix data from a Node.
@@ -157,16 +157,17 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
 
   if(width == blocksize)
   {
-    DataMsg *AData = A.getData();
-    DataMsg *BData = B.getData();
-
-    if(AData->data != NULL && BData->data != NULL)
+    if(AInfo->data != NULL && BInfo->data != NULL)
     {
       if(data == NULL)
       {
         data = new double[blocksize*blocksize];
         memset(data, 0, blocksize*blocksize*sizeof(double));
       }
+
+      /* Get matrix blocks from A and B. */
+      DataMsg *AData = A.getData();
+      DataMsg *BData = B.getData();
 
       LOG_DEBUG("%s block multiply\n", tagstr.c_str());
       for(int i = iLower; i < iUpper; i++) {
@@ -179,11 +180,14 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
           }
         }
       }
+
+      delete AData;
+      delete BData;
     }
 
     else
     {
-      LOG_ERROR("%s [FIXME] delete C\n", tagstr.c_str());
+      LOG_DEBUG("%s [FIXME] delete C\n", tagstr.c_str());
     }
 
 #ifdef CALLBACK
@@ -226,7 +230,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
 
           if(AInfo->child[childIndexA] == NULL || BInfo->child[childIndexB] == NULL)
           {
-            LOG_ERROR("%s [FIXME] delete C (product %d is NULL).\n",
+            LOG_DEBUG("%s [FIXME] delete C (product %d is NULL).\n",
                 tagstr.c_str(), childProductIndex);
 #ifdef CALLBACK
             thisProxy.matmulDone(new IntMsg(childProductIndex));
@@ -256,7 +260,11 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
               childProductIndex,
               product_f[numberProducts]);
           numberProducts++;
-
+          if(numberProducts > 8)
+          {
+            LOG_ERROR("numberProducts = %d\n", numberProducts);
+            CkExit();
+          }
 #else
 #error "FIXME"
 #endif
@@ -276,6 +284,9 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
   }
 
   LOG_DEBUG("%s done\n", tagstr.c_str());
+
+  delete AInfo;
+  delete BInfo;
 
 #if defined(FUTURES)
   CkSendToFuture(f, new EmptyMsg());

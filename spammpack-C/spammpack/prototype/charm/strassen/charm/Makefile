@@ -1,13 +1,16 @@
 .SUFFIXES : .o .cc .ci
 
-CXX = charmc
-CXXFLAGS = -O0 -g -Wall
-CTAGS = ctags
-LIBS = -lrt
-LDFLAGS = -tracemode projections
-LOGLEVEL = DEBUG
 ALGORITHM = FUTURES
 #ALGORITHM = CALLBACKS
+#LOGLEVEL = DEBUG
+LOGLEVEL = INFO
+
+CXX = charmc
+#CXXFLAGS = -O0 -g -Wall
+CXXFLAGS = -O3 -g
+CTAGS = ctags
+LIBS = -lrt
+#LDFLAGS = -tracemode projections
 CPPFLAGS = -DLOGLEVEL=$(LOGLEVEL) -D$(ALGORITHM)
 
 %.decl.h %.def.h : %.ci

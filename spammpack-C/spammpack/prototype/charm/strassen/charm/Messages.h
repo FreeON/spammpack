@@ -10,6 +10,7 @@ class DataMsg : public CMessage_DataMsg
 
     int blocksize;
     double *data;
+
     DataMsg (int blocksize, double *data);
 };
 
@@ -18,6 +19,7 @@ class DoubleMsg : public CMessage_DoubleMsg
   public :
 
     double x;
+
     DoubleMsg ();
     DoubleMsg (double x);
 };
@@ -31,6 +33,7 @@ class IntMsg : public CMessage_IntMsg
   public:
 
     int i;
+
     IntMsg ();
     IntMsg (int i);
 };
@@ -41,8 +44,10 @@ class MatrixMsg : public CMessage_MatrixMsg
 
     int N;
     int blocksize;
+    int depth;
     CProxy_Node *root;
-    MatrixMsg (int N, int blocksize, CProxy_Node *root);
+
+    MatrixMsg (int N, int blocksize, int depth, CProxy_Node *root);
 };
 
 class NodeMsg : public CMessage_NodeMsg
@@ -55,7 +60,10 @@ class NodeMsg : public CMessage_NodeMsg
     int jUpper;
     int blocksize;
     CProxy_Node *child[4];
-    NodeMsg (int iLower, int iUpper, int jLower, int jUpper, int blocksize, CProxy_Node *child[4]);
+    double *data;
+
+    NodeMsg (int iLower, int iUpper, int jLower, int jUpper, int blocksize,
+        CProxy_Node *child[4], double *data);
 };
 
 #endif

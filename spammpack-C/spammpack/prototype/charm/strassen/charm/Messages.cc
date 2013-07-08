@@ -26,14 +26,16 @@ IntMsg::IntMsg (int i)
   this->i = i;
 }
 
-MatrixMsg::MatrixMsg (int N, int blocksize, CProxy_Node *root)
+MatrixMsg::MatrixMsg (int N, int blocksize, int depth, CProxy_Node *root)
 {
   this->N = N;
   this->blocksize = blocksize;
+  this->depth = depth;
   this->root = root;
 }
 
-NodeMsg::NodeMsg (int iLower, int iUpper, int jLower, int jUpper, int blocksize, CProxy_Node *child[4])
+NodeMsg::NodeMsg (int iLower, int iUpper, int jLower, int jUpper,
+    int blocksize, CProxy_Node *child[4], double *data)
 {
   this->iLower = iLower;
   this->iUpper = iUpper;
@@ -44,6 +46,7 @@ NodeMsg::NodeMsg (int iLower, int iUpper, int jLower, int jUpper, int blocksize,
   {
     this->child[i] = child[i];
   }
+  this->data = data;
 }
 
 #include "Messages.def.h"
