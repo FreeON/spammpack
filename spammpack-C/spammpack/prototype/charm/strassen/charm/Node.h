@@ -17,8 +17,8 @@ class Node : public CBase_Node
 
     int tier;
 
-    int numberQueued[2];
-    int queuedProducts[2][8];
+    /* Store productIndex -> { childProductIndex, ... } so that we can track
+     * at what point a recursion is done. */
 
     CkCallback parentDone;
 
