@@ -2,6 +2,6 @@ BUILT_SOURCES = $(foreach i, $(INTERFACE_FILES), $(basename $i).decl.h $(basenam
 CLEANFILES = $(BUILT_SOURCES) charmrun
 
 %.decl.h %.def.h : %.ci
-	$(AM_V_CXX)$(CHARMC) $<
+	$(AM_V_CXX)$(CHARMC) -preprocess $<
 
 AM_LDFLAGS = -Xcompiler "-language charm++"
