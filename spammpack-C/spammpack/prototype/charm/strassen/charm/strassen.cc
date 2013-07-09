@@ -10,7 +10,7 @@
 #include <string>
 #include <sstream>
 
-#define TOLERANCE 1e-10
+#define TOLERANCE 1e-12
 
 /** Multiply two matrices, @f$ C \leftarrow A \times B @f$.
  *

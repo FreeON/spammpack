@@ -59,7 +59,14 @@ void Logging::log (const int level,
       CkPrintf("string buffer too short\n");
     }
     va_end(va);
-    CkPrintf(outputBuffer); fflush(stdout);
+#ifdef LOGMETHOD_CKPRINTF
+    CkPrintf(outputBuffer);
+#elif defined (LOGMETHOD_PRINTF)
+    printf("%s", outputBuffer);
+#else
+#error "FIXME"
+#endif
+    fflush(stdout);
   }
 }
 

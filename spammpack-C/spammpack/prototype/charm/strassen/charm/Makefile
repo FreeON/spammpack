@@ -4,20 +4,22 @@ ALGORITHM = FUTURES
 #ALGORITHM = CALLBACKS
 #LOGLEVEL = DEBUG
 LOGLEVEL = INFO
+#LOGMETHOD = LOGMETHOD_PRINTF
+LOGMETHOD = LOGMETHOD_CKPRINTF
 
 CXX = charmc
 #CXXFLAGS = -O0 -g -Wall
 CXXFLAGS = -O3 -g
 CTAGS = ctags
 LIBS = -lrt
-#LDFLAGS = -tracemode projections
-CPPFLAGS = -DLOGLEVEL=$(LOGLEVEL) -D$(ALGORITHM)
+LDFLAGS = -tracemode projections
+CPPFLAGS = -DLOGLEVEL=$(LOGLEVEL) -D$(ALGORITHM) -D$(LOGMETHOD)
 
 %.decl.h %.def.h : %.ci
 	$(CXX) -preprocess $(CPPFLAGS) $<
 
 .cc.o :
-	$(CXX) -c -o $@ $(CPPFLAGS) $(CXXFLAGS) $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 INTERFACEFILES = \
 	Matrix.ci \
