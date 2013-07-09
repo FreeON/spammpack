@@ -292,7 +292,7 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
         DoubleMsg *cij = C.get(i, j);
         if(fabs(CDense[i*N+j]-cij->x) > TOLERANCE)
         {
-          CkPrintf("comparison failed for C(%d,%d): %e <-> %e\n",
+          CkPrintf("verification failed for C(%d,%d): %e <-> %e\n",
               i, j, CDense[i*N+j], cij->x);
           CkExit();
         }
@@ -302,7 +302,8 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
     CkPrintf("result verified\n");
   }
 
-  CkExit();
+  /* Exit upon quiescence. */
+  CkStartQD(CkCallback::ckExit);
 }
 
 #include "strassen.def.h"

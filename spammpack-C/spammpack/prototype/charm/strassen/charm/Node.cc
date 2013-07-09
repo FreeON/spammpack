@@ -104,8 +104,9 @@ EmptyMsg * Node::set (int i, int j, double aij)
     if(child[childIndex] == NULL)
     {
       child[childIndex] = new CProxy_Node;
-      *child[childIndex] = CProxy_Node::ckNew(tier+1, blocksize, newILower,
-          newJLower, newILower+width, newJLower+width);
+      *child[childIndex] = CProxy_Node::ckNew(tier+1, blocksize,
+          newILower, newJLower,
+          newILower+width, newJLower+width);
     }
     return child[childIndex]->set(i, j, aij);
   }
@@ -143,6 +144,8 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
 #endif
   /* The width of the C matrix block. */
   int width = iUpper-iLower;
+
+  int counter = 0;
 
   NodeMsg *AInfo = A.info();
   NodeMsg *BInfo = B.info();
@@ -257,8 +260,8 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
             LOG_INFO("creating new C node\n");
             child[childIndex] = new CProxy_Node;
             *child[childIndex] = CProxy_Node::ckNew(tier+1, blocksize,
-                iLower+width/2*i, jLower+width/2*j, iLower+width/2*(i+1),
-                jLower+width/2*(j+1));
+                iLower+width/2*i, jLower+width/2*j,
+                iLower+width/2*(i+1), jLower+width/2*(j+1));
           }
 
           LOG_INFO("%s calling multiply on child[%d] += "
@@ -294,6 +297,11 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
       LOG_ERROR("insufficient number of products %d\n", numberProducts);
     }
     LOG_INFO("%s waiting on %d futures\n", tagstr.c_str(), numberProducts);
+    if(counter > 0)
+    {
+      LOG_INFO("counter > 0\n");
+    }
+    counter++;
     for(int i = 0; i < numberProducts; i++)
     {
       EmptyMsg *m = (EmptyMsg*) CkWaitFuture(product_f[i]); delete m;
@@ -302,7 +310,6 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
     }
 #endif
   }
-
   LOG_INFO("%s done\n", tagstr.c_str());
 
   delete AInfo;
