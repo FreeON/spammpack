@@ -5,6 +5,8 @@
 
 #include <getopt.h>
 
+#define TOLERANCE 1e-8
+
 class Multiply : public CBase_Multiply
 {
   public:
@@ -57,6 +59,8 @@ class Multiply : public CBase_Multiply
     void run (int N, int chunksize)
     {
       EmptyMsg *m;
+      float ADense[N*N];
+      float CDense[N*N];
       CProxy_Matrix A;
       CProxy_Matrix C;
 
@@ -75,9 +79,9 @@ class Multiply : public CBase_Multiply
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++)
         {
-          float aij = rand()/(float) RAND_MAX;
-          LOG_DEBUG("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
-          m = A.set(i, j, aij); delete m;
+          ADense[i*N+j] = rand()/(float) RAND_MAX;
+          LOG_DEBUG("setting matrix element A(%d,%d) <- %f\n", i, j, ADense[i*N+j]);
+          m = A.set(i, j, ADense[i*N+j]); delete m;
         }
       }
       LOG_INFO("done setting matrix, %f seconds\n", timestamp.stop());
@@ -94,6 +98,25 @@ class Multiply : public CBase_Multiply
       /* Print result. */
       //LOG_INFO("printing C <- A*A\n");
       //m = C.print(); delete m;
+
+      for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++)
+        {
+          CDense[i*N+j] = 0;
+          for(int k = 0; k < N; k++)
+          {
+            CDense[i*N+j] += ADense[i*N+k]*ADense[k*N+j];
+          }
+          FloatMsg *aij = C.get(i, j);
+          if(fabs(CDense[i*N+j]-aij->a) > TOLERANCE)
+          {
+            CkPrintf("validation failed, C(%d,%d): %e <-> %e\n",
+                i, j, CDense[i*N+j], aij->a);
+            CkExit();
+          }
+        }
+      }
+      CkPrintf("result validated\n");
 
       /* Done. */
       CkExit();
