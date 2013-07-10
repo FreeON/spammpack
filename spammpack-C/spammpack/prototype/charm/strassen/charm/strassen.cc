@@ -118,6 +118,20 @@ double * randomDense (int N)
   return A;
 }
 
+double * orderedDense (int N)
+{
+  double *A = new double[N*N];
+
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      A[i*N+j] = i*N+j+1;
+    }
+  }
+
+  return A;
+}
+
 Main::Main (CkArgMsg *msg)
 {
   /* Matrix size. */
@@ -213,8 +227,10 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
       AInfo->NPadded, blocksize, AInfo->depth);
   delete AInfo;
 
-  double *ADense = randomDense(N);
-  double *BDense = randomDense(N);
+  //double *ADense = randomDense(N);
+  //double *BDense = randomDense(N);
+  double *ADense = orderedDense(N);
+  double *BDense = orderedDense(N);
 
   LOG_DEBUG("converting dense matrices to Matrix\n");
   convert(N, A, ADense);
@@ -277,9 +293,11 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
   }
 
   Timer timer("multiply");
+  Counter::reset();
   timer.start();
   EmptyMsg *msg = C.matmul(A, B); delete msg;
   timer.stop();
+  CkPrintf("counted %d calls\n", Counter::get());
 
   if(debug) print("C:", C);
 

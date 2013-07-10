@@ -7,6 +7,8 @@
 
 #include "Utilities.h"
 
+int count;
+
 Logging::Logging (const int loglevel)
 {
   this->loglevel = loglevel;
@@ -87,4 +89,19 @@ void Logging::printBlock (const int level,
     debugString << std::endl;
   }
   LOG_DEBUG(debugString.str().c_str());
+}
+
+void Counter::reset ()
+{
+  count = 0;
+}
+
+void Counter::increment ()
+{
+  count++;
+}
+
+int Counter::get ()
+{
+  return count;
 }

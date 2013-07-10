@@ -152,7 +152,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
 
   std::string tagstr = getTagString(tier, productIndex);
 
-  LOG_INFO("%s starting multiply, C(%d:%d,%d:%d) += A(%d:%d,%d:%d)*B(%d:%d,%d:%d)\n",
+  LOG_DEBUG("%s starting multiply, C(%d:%d,%d:%d) += A(%d:%d,%d:%d)*B(%d:%d,%d:%d)\n",
       tagstr.c_str(),
       iLower+1, iUpper, jLower+1, jUpper,
       AInfo->iLower+1, AInfo->iUpper, AInfo->jLower+1, AInfo->jUpper,
@@ -264,10 +264,11 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
                 iLower+width/2*(i+1), jLower+width/2*(j+1));
           }
 
-          LOG_INFO("%s calling multiply on child[%d] += "
+          LOG_DEBUG("%s calling multiply on child[%d] += "
               "A->child[%d]*B->child[%d] %d (%d:%d:%d)\n",
               tagstr.c_str(), childIndex, childIndexA, childIndexB,
               childProductIndex, i, j, k);
+          Counter::increment();
 #if defined(CALLBACK)
           child[childIndex]->matmul(*AInfo->child[childIndexA],
               *BInfo->child[childIndexB],
@@ -296,7 +297,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
     {
       LOG_ERROR("insufficient number of products %d\n", numberProducts);
     }
-    LOG_INFO("%s waiting on %d futures\n", tagstr.c_str(), numberProducts);
+    LOG_DEBUG("%s waiting on %d futures\n", tagstr.c_str(), numberProducts);
     if(counter > 0)
     {
       LOG_INFO("counter > 0\n");
@@ -306,11 +307,11 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
     {
       EmptyMsg *m = (EmptyMsg*) CkWaitFuture(product_f[i]); delete m;
       CkReleaseFuture(product_f[i]);
-      LOG_INFO("%s product_f[%d] finished\n", tagstr.c_str(), i);
+      LOG_DEBUG("%s product_f[%d] finished\n", tagstr.c_str(), i);
     }
 #endif
   }
-  LOG_INFO("%s done\n", tagstr.c_str());
+  LOG_DEBUG("%s done\n", tagstr.c_str());
 
   delete AInfo;
   delete BInfo;

@@ -9,7 +9,7 @@ LOGMETHOD = LOGMETHOD_CKPRINTF
 
 CXX = charmc
 #CXXFLAGS = -O0 -g -Wall
-CXXFLAGS = -O3 -g
+CXXFLAGS = -O2 -g
 CTAGS = ctags
 LIBS = -lrt
 LDFLAGS = -tracemode projections
