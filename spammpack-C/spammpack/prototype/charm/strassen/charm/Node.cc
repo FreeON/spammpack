@@ -183,7 +183,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
         for(int j = jLower; j < jUpper; j++) {
           for(int k = AInfo->jLower; k < AInfo->jUpper; k++)
           {
-            LOG_INFO("multiplying C(%d,%d) += A(%d,%d)*B(%d,%d)\n", i, j, i, k, k, j);
+            LOG_DEBUG("multiplying C(%d,%d) += A(%d,%d)*B(%d,%d)\n", i, j, i, k, k, j);
             data[blockIndex(i, j, iLower, jLower, blocksize)] +=
               AData->data[blockIndex(i, k, AInfo->iLower, AInfo->jLower, AInfo->blocksize)]
               *BData->data[blockIndex(k, j, BInfo->iLower, BInfo->jLower, BInfo->blocksize)];
@@ -306,7 +306,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
     for(int i = 0; i < numberProducts; i++)
     {
       EmptyMsg *m = (EmptyMsg*) CkWaitFuture(product_f[i]); delete m;
-      CkReleaseFuture(product_f[i]);
+      //CkReleaseFuture(product_f[i]);
       LOG_DEBUG("%s product_f[%d] finished\n", tagstr.c_str(), i);
     }
 #endif

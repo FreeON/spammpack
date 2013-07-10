@@ -7,7 +7,7 @@ LOGLEVEL = INFO
 #LOGMETHOD = LOGMETHOD_PRINTF
 LOGMETHOD = LOGMETHOD_CKPRINTF
 
-CXX = charmc
+CXX = ~/charm/bin/charmc
 #CXXFLAGS = -O0 -g -Wall
 CXXFLAGS = -O2 -g
 CTAGS = ctags
