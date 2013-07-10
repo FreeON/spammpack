@@ -8,6 +8,6 @@ module Matrix
     entry [sync] MatrixMsg * info ();
     entry [sync] DoubleMsg * get (int i, int j);
     entry [sync] EmptyMsg  * set (int i, int j, double aij);
-    entry [sync] EmptyMsg  * matmul (CProxy_Matrix A, CProxy_Matrix B);
+    entry [sync] IntMsg    * matmul (CProxy_Matrix A, CProxy_Matrix B);
   };
 };

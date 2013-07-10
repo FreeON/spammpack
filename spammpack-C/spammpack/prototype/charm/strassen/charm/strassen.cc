@@ -295,9 +295,10 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
   Timer timer("multiply");
   Counter::reset();
   timer.start();
-  EmptyMsg *msg = C.matmul(A, B); delete msg;
+  IntMsg *msg = C.matmul(A, B);
   timer.stop();
-  CkPrintf("counted %d calls\n", Counter::get());
+  CkPrintf("counted %d calls, %d block multiplies\n", Counter::get(), msg->i);
+  delete msg;
 
   if(debug) print("C:", C);
 

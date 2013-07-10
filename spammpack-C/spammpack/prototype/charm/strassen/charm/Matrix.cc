@@ -91,7 +91,7 @@ EmptyMsg * Matrix::set (int i, int j, double aij)
  *
  * @return A message signifying completion.
  */
-EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
+IntMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
 {
   MatrixMsg *AInfo = A.info();
   MatrixMsg *BInfo = B.info();
@@ -112,7 +112,7 @@ EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
   if(AInfo->root == NULL || BInfo->root == NULL)
   {
     LOG_ERROR("[FIXME] Delete C\n");
-    return new EmptyMsg();
+    return new IntMsg();
   }
 
   if(root == NULL)
@@ -123,16 +123,16 @@ EmptyMsg * Matrix::matmul (CProxy_Matrix A, CProxy_Matrix B)
 
 #if defined(CALLBACK)
   root->matmul(*AInfo->root, *BInfo->root, 1 << 3, CkCallbackResumeThread());
+  return new IntMsg();
 #elif defined(FUTURES)
   CkFuture f = CkCreateFuture();
   root->matmul(*AInfo->root, *BInfo->root, 1 << 3, f);
-  EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f); delete m;
+  IntMsg *m = (IntMsg*) CkWaitFuture(f);
   CkReleaseFuture(f);
+  return m;
 #else
 #error "FIXME"
 #endif
-
-  return new EmptyMsg();
 }
 
 #include "Matrix.def.h"

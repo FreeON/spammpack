@@ -12,7 +12,7 @@ module Node
     entry void matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &done);
     entry void matmulDone (IntMsg *index);
 #elif defined(FUTURES)
-    entry void matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f);
+    entry [threaded] void matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f);
 #else
 #error "FIXME"
 #endif

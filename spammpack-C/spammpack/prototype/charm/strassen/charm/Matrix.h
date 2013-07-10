@@ -23,7 +23,7 @@ class Matrix : public CBase_Matrix
     MatrixMsg * info ();
     DoubleMsg * get (int i, int j);
     EmptyMsg  * set (int i, int j, double aij);
-    EmptyMsg  * matmul (CProxy_Matrix A, CProxy_Matrix B);
+    IntMsg    * matmul (CProxy_Matrix A, CProxy_Matrix B);
 };
 
 #endif

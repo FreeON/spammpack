@@ -142,6 +142,10 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
   /* Construct an integer message. */
   IntMsg *indexMsg = new IntMsg(productIndex);
 #endif
+#ifdef FUTURES
+  IntMsg *result = new IntMsg();
+#endif
+
   /* The width of the C matrix block. */
   int width = iUpper-iLower;
 
@@ -193,6 +197,8 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
 
       delete AData;
       delete BData;
+
+      result->i = 1;
     }
 
     else
@@ -293,10 +299,6 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
       }
     }
 #ifdef FUTURES
-    if(numberProducts < 8)
-    {
-      LOG_ERROR("insufficient number of products %d\n", numberProducts);
-    }
     LOG_DEBUG("%s waiting on %d futures\n", tagstr.c_str(), numberProducts);
     if(counter > 0)
     {
@@ -305,8 +307,10 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
     counter++;
     for(int i = 0; i < numberProducts; i++)
     {
-      EmptyMsg *m = (EmptyMsg*) CkWaitFuture(product_f[i]); delete m;
-      //CkReleaseFuture(product_f[i]);
+      IntMsg *m = (IntMsg*) CkWaitFuture(product_f[i]);
+      result->i += m->i;
+      delete m;
+      CkReleaseFuture(product_f[i]);
       LOG_DEBUG("%s product_f[%d] finished\n", tagstr.c_str(), i);
     }
 #endif
@@ -315,8 +319,9 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
 
   delete AInfo;
   delete BInfo;
+
 #if defined(FUTURES)
-  CkSendToFuture(f, new EmptyMsg());
+  CkSendToFuture(f, result);
 #endif
 }
 
