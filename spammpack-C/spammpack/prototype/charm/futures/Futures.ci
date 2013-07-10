@@ -9,6 +9,6 @@ mainmodule Futures
   chare Node
   {
     entry Node ();
-    entry [threaded] void compute (int tier, unsigned int index, int depth, CkFuture f);
+    entry [threaded] void compute (int tier, int depth, CkFuture f);
   };
 };

@@ -1,9 +1,5 @@
 #include "Futures.decl.h"
 
-#ifdef DEBUG
-#include <bitset>
-#endif
-
 class IntMsg : public CMessage_IntMsg
 {
   public:
@@ -32,24 +28,11 @@ class Node : public CBase_Node
       }
     }
 
-    void compute (int tier, unsigned int index, int depth, CkFuture f)
+    void compute (int tier, int depth, CkFuture f)
     {
       IntMsg *result = new IntMsg();
       if(tier == depth)
       {
-        /* Do some work. */
-        for(int i = 0; i < 1000; i++)
-        {
-          double x = rand()/(double) RAND_MAX;
-          if(x == -1)
-          {
-            CkExit();
-          }
-        }
-#ifdef DEBUG
-        std::bitset<32> bits = index;
-        CkPrintf("returning from %s\n", bits.to_string().c_str());
-#endif
         result->counter = 1;
       }
 
@@ -64,7 +47,7 @@ class Node : public CBase_Node
             *(child[i]) = CProxy_Node::ckNew();
           }
           f_child[i] = CkCreateFuture();
-          child[i]->compute(tier+1, (index << 3) | i, depth, f_child[i]);
+          child[i]->compute(tier+1, depth, f_child[i]);
         }
 
         for(int i = 0; i < 8; i++)
@@ -91,18 +74,19 @@ class Futures : public CBase_Futures
       {
         depth = strtol(msg->argv[1], NULL, 10);
       }
+      CkPrintf("running on %d PEs\n", CkNumPes());
       thisProxy.run(depth);
     }
 
     void run (int depth)
     {
-      CkPrintf("Testing depth = %d\n", depth);
+      CkPrintf("depth = %d\n", depth);
       CProxy_Node root = CProxy_Node::ckNew();
 
       CkFuture f = CkCreateFuture();
-      root.compute(0, 1, depth, f);
+      root.compute(0, depth, f);
       IntMsg *m = (IntMsg*) CkWaitFuture(f);
-      CkPrintf("done, counted %d (should have counted %d)\n", m->counter, 1 << (3*depth));
+      CkPrintf("done, counter = %d (%d)\n", m->counter, 1 << (3*depth));
       delete m;
       CkExit();
     }

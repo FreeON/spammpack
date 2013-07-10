@@ -6,7 +6,7 @@ CXXFLAGS = -O2 -g
 CTAGS = ctags
 #LIBS =
 #LDFLAGS = -tracemode projections
-CPPFLAGS = #-DDEBUG
+#CPPFLAGS =
 
 %.decl.h %.def.h : %.ci
 	$(CXX) -preprocess $(CPPFLAGS) $<
