@@ -1,6 +1,6 @@
 mainmodule Futures
 {
-  message EmptyMsg;
+  message IntMsg;
   mainchare Futures
   {
     entry Futures (CkArgMsg *msg);
@@ -9,6 +9,6 @@ mainmodule Futures
   chare Node
   {
     entry Node ();
-    entry void compute (int tier, unsigned int index, int depth, CkFuture f);
+    entry [threaded] void compute (int tier, unsigned int index, int depth, CkFuture f);
   };
 };

@@ -1,11 +1,19 @@
 #include "Futures.decl.h"
 
+#ifdef DEBUG
 #include <bitset>
+#endif
 
-unsigned int counter;
-
-class EmptyMsg : public CMessage_EmptyMsg
+class IntMsg : public CMessage_IntMsg
 {
+  public:
+
+    unsigned int counter;
+
+    IntMsg ()
+    {
+      counter = 0;
+    }
 };
 
 class Node : public CBase_Node
@@ -26,6 +34,7 @@ class Node : public CBase_Node
 
     void compute (int tier, unsigned int index, int depth, CkFuture f)
     {
+      IntMsg *result = new IntMsg();
       if(tier == depth)
       {
         /* Do some work. */
@@ -37,11 +46,11 @@ class Node : public CBase_Node
             CkExit();
           }
         }
-        counter++;
 #ifdef DEBUG
         std::bitset<32> bits = index;
         CkPrintf("returning from %s\n", bits.to_string().c_str());
 #endif
+        result->counter = 1;
       }
 
       else
@@ -60,13 +69,14 @@ class Node : public CBase_Node
 
         for(int i = 0; i < 8; i++)
         {
-          EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f_child[i]);
+          IntMsg *m = (IntMsg*) CkWaitFuture(f_child[i]);
+          result->counter += m->counter;
           delete m;
           CkReleaseFuture(f_child[i]);
         }
       }
 
-      CkSendToFuture(f, new EmptyMsg());
+      CkSendToFuture(f, result);
     }
 };
 
@@ -77,7 +87,6 @@ class Futures : public CBase_Futures
     Futures (CkArgMsg *msg)
     {
       int depth = 1;
-      counter = 0;
       if(msg->argc > 1)
       {
         depth = strtol(msg->argv[1], NULL, 10);
@@ -92,9 +101,9 @@ class Futures : public CBase_Futures
 
       CkFuture f = CkCreateFuture();
       root.compute(0, 1, depth, f);
-      EmptyMsg *m = (EmptyMsg*) CkWaitFuture(f);
+      IntMsg *m = (IntMsg*) CkWaitFuture(f);
+      CkPrintf("done, counted %d (should have counted %d)\n", m->counter, 1 << (3*depth));
       delete m;
-      CkPrintf("done, counted %d\n", counter);
       CkExit();
     }
 };
