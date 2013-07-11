@@ -182,6 +182,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
         CkExit();
       }
 
+#ifdef BLOCK_MULTIPLY
       LOG_DEBUG("%s block multiply\n", tagstr.c_str());
       for(int i = iLower; i < iUpper; i++) {
         for(int j = jLower; j < jUpper; j++) {
@@ -194,6 +195,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
           }
         }
       }
+#endif
 
       delete AData;
       delete BData;

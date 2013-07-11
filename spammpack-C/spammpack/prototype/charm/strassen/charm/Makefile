@@ -7,14 +7,14 @@ LOGLEVEL = INFO
 #LOGMETHOD = LOGMETHOD_PRINTF
 LOGMETHOD = LOGMETHOD_CKPRINTF
 
-#CXX = charmc
-CXX = ~/charm/bin/charmc
-CXXFLAGS = -O0 -g -Wall
-#CXXFLAGS = -O2 -g
+CXX = charmc
+#CXX = ~/charm/bin/charmc
+#CXXFLAGS = -O0 -g -Wall
+CXXFLAGS = -O2 -g
 CTAGS = ctags
 LIBS = -lrt
 #LDFLAGS = -tracemode projections
-CPPFLAGS = -DLOGLEVEL=$(LOGLEVEL) -D$(ALGORITHM) -D$(LOGMETHOD)
+CPPFLAGS = -DLOGLEVEL=$(LOGLEVEL) -D$(ALGORITHM) -D$(LOGMETHOD) -DBLOCK_MULTIPLY
 
 %.decl.h %.def.h : %.ci
 	$(CXX) -preprocess $(CPPFLAGS) $<
