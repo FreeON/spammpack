@@ -14,7 +14,7 @@ CXXFLAGS = -O2 -g
 CTAGS = ctags
 LIBS = -lrt
 #LDFLAGS = -tracemode projections
-CPPFLAGS = -DLOGLEVEL=$(LOGLEVEL) -D$(ALGORITHM) -D$(LOGMETHOD) -DBLOCK_MULTIPLY
+CPPFLAGS = -DLOGLEVEL=$(LOGLEVEL) -D$(ALGORITHM) -D$(LOGMETHOD) #-DBLOCK_MULTIPLY
 
 %.decl.h %.def.h : %.ci
 	$(CXX) -preprocess $(CPPFLAGS) $<
@@ -56,16 +56,17 @@ ctags : $(INTERFACEFILES) $(SOURCEFILES) $(HEADERFILES)
 
 $(OBJ) : $(HEADERFILES) $(GENERATEDHEADERFILES)
 
-N = 2048
-B = 32
+# Can't go deeper than depth = 4 right now.
+N = 1024
+B = 64
 
 run :
 	for P in 1 2 4 8 12 16 20 24 28 32 36 40 44 48; do \
-		bash -c "./strassen +p$$P -N $N -b $B"; \
+		bash -c "./strassen +p$$P +setcpuaffinity +maffinity -N $N -b $B"; \
 	done
 
 run-serial :
-	./strassen +p1 -N $N -b $B
+	./strassen +p1 -N $N -b $B --verify
 
 clean :
 	rm -f $(OBJ)

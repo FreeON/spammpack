@@ -39,6 +39,41 @@ double * multiply (int N, double *A, double *B)
   return C;
 }
 
+/** Multiply two matrices, @f$ C \leftarrow A \times B @f$.
+ *
+ * @param N The matrix dimension.
+ * @param blocksize The blocksize.
+ * @Param A Matrix A.
+ * @Param B Matrix B.
+ *
+ * @return The result, matrix C.
+ */
+double * multiply_blocked (int N, int blocksize, double *A, double *B)
+{
+  double *C = new double[N*N];
+
+  memset(C, 0, N*N*sizeof(double));
+  for(int i = 0; i < N/blocksize; i++) {
+    for(int j = 0; j < N/blocksize; j++) {
+      for(int k = 0; k < N/blocksize; k++)
+      {
+        Counter::increment();
+        for(int i_block = i*blocksize; i_block < (i+1)*blocksize && i_block < N; i_block++) {
+          for(int j_block = j*blocksize; j_block < (j+1)*blocksize && j_block < N; j_block++)
+          {
+            for(int k_block = k*blocksize; k_block < (k+1)*blocksize && k_block < N; k_block++)
+            {
+              C[i_block*N+j_block] += A[i_block*N+k_block]*B[k_block*N+j_block];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return C;
+}
+
 /** Convert a matrix in dense row-major storage to a Matrix.
  *
  * @param N The matrix dimension.
@@ -304,7 +339,13 @@ void Main::run (int N, int blocksize, bool debug, bool verify)
 
   if(verify)
   {
-    double *CDense = multiply(N, ADense, BDense);
+    Timer verifyTimer("verify");
+    Counter::reset();
+    verifyTimer.start();
+    //double *CDense = multiply(N, ADense, BDense);
+    double *CDense = multiply_blocked(N, blocksize, ADense, BDense);
+    verifyTimer.stop();
+    CkPrintf("counted %d block multiplies\n", Counter::get());
     for(int i = 0; i < N; i++) {
       for(int j = 0; j < N; j++)
       {
