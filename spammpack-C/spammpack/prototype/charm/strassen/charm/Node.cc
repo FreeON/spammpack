@@ -195,6 +195,17 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
           }
         }
       }
+#else
+      for(int i = iLower; i < iUpper; i++) {
+        for(int j = jLower; j < jUpper; j++) {
+          for(int k = AInfo->jLower; k < AInfo->jUpper; k++)
+          {
+            if(AData->data[blockIndex(i, k, AInfo->iLower, AInfo->jLower, AInfo->blocksize)] < 0) { printf("A\n"); }
+            if(BData->data[blockIndex(k, j, BInfo->iLower, BInfo->jLower, BInfo->blocksize)] < 0) { printf("B\n"); }
+            if(data[blockIndex(i, j, iLower, jLower, blocksize)] < 0)                             { printf("C\n"); }
+          }
+        }
+      }
 #endif
 
       delete AData;
