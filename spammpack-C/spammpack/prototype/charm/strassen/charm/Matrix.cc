@@ -82,6 +82,34 @@ EmptyMsg * Matrix::set (int i, int j, double aij)
   return msg;
 }
 
+/** Set a block of matrix elements.
+ *
+ * @param iLower Lower row index.
+ * @param jLower Lower column index.
+ * @param iUpper Upper row index.
+ * @param jUpper Upper column index.
+ * @param ABlock The matrix block. The size is assumed to be
+ * (iUpper-iLower)*(jUpper-jLower) elements.
+ *
+ * @return A message indicating completion.
+ */
+EmptyMsg * setBlock (int iLower, int jLower, int iUpper, int jUpper, double *ABlock)
+{
+  if(iUpper-iLower != blocksize || jUpper-jLower != blocksize)
+  {
+    LOG_ERROR("incorrect block size\n");
+    CkExit();
+  }
+
+  if(root == NULL)
+  {
+    root = new CProxy_Node;
+    *root = CProxy_Node::ckNew(0, blocksize, 0, 0, NPadded, NPadded);
+  }
+  EmptyMsg *msg = root->set(i, j, aij);
+  return msg;
+}
+
 /** Multiply two matrices.
  *
  * @param A Matrix A.

@@ -176,7 +176,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
         CkExit();
       }
 
-#define BLOCK_MULTIPLY
+//#define BLOCK_MULTIPLY
 
 #ifdef BLOCK_MULTIPLY
       for(int i = iLower; i < iUpper; i++) {
@@ -191,11 +191,11 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
       }
 #else
 
-//#define BLOCK_FAKE_SKIP
-#define BLOCK_FAKE_AB_READ
+#define BLOCK_FAKE_SKIP
+//#define BLOCK_FAKE_AB_READ
 //#define BLOCK_FAKE_AB_READ_MULTIPLY
 //#define BLOCK_FAKE_C_READ
-#define BLOCK_FAKE_C_READ_WRITE
+//#define BLOCK_FAKE_C_READ_WRITE
 
 #ifndef BLOCK_FAKE_SKIP
       for(int i = iLower; i < iUpper; i++) {
