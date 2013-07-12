@@ -112,6 +112,49 @@ EmptyMsg * Node::set (int i, int j, double aij)
   }
 }
 
+EmptyMsg * Node::setBlock (int iLower_arg, int jLower_arg, int iUpper_arg,
+    int jUpper_arg, const double *ABlock)
+{
+  if(iUpper-iLower == blocksize)
+  {
+    if(data == NULL)
+    {
+      data = new double[blocksize*blocksize];
+      memset(data, 0, blocksize*blocksize*sizeof(double));
+    }
+    memcpy(data, ABlock, blocksize*blocksize*sizeof(double));
+    return new EmptyMsg();
+  }
+
+  else
+  {
+    int childIndex = 0;
+    int width = (iUpper-iLower)/2;
+    int newILower = iLower;
+    int newJLower = jLower;
+
+    if(iLower+width <= iLower_arg)
+    {
+      childIndex |= 2;
+      newILower = iLower+width;
+    }
+    if(jLower+width <= jLower_arg)
+    {
+      childIndex |= 1;
+      newJLower = jLower+width;
+    }
+    if(child[childIndex] == NULL)
+    {
+      child[childIndex] = new CProxy_Node;
+      *child[childIndex] = CProxy_Node::ckNew(tier+1, blocksize,
+          newILower, newJLower,
+          newILower+width, newJLower+width);
+    }
+    return child[childIndex]->setBlock(iLower_arg, jLower_arg, iUpper_arg,
+        jUpper_arg, ABlock);
+  }
+}
+
 std::string getTagString (int tier, int productIndex)
 {
   std::bitset<20> bitIndex = std::bitset<20>(productIndex);
@@ -176,7 +219,7 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
         CkExit();
       }
 
-//#define BLOCK_MULTIPLY
+#define BLOCK_MULTIPLY
 
 #ifdef BLOCK_MULTIPLY
       for(int i = iLower; i < iUpper; i++) {

@@ -8,6 +8,8 @@ module Node
     entry [sync] DataMsg   * getData ();
     entry [sync] DoubleMsg * get (int i, int j);
     entry [sync] EmptyMsg  * set (int i, int j, double aij);
+    entry [sync] EmptyMsg  * setBlock (int iLower, int jLower, int iUpper, int jUpper,
+        double ABlock[(iUpper-iLower)*(jUpper-jLower)]);
 #if defined(CALLBACK)
     entry void matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &done);
     entry void matmulDone (IntMsg *index);

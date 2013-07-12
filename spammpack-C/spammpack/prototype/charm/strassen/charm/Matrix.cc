@@ -93,7 +93,8 @@ EmptyMsg * Matrix::set (int i, int j, double aij)
  *
  * @return A message indicating completion.
  */
-EmptyMsg * setBlock (int iLower, int jLower, int iUpper, int jUpper, double *ABlock)
+EmptyMsg * Matrix::setBlock (int iLower, int jLower, int iUpper, int jUpper,
+    const double *ABlock)
 {
   if(iUpper-iLower != blocksize || jUpper-jLower != blocksize)
   {
@@ -106,7 +107,7 @@ EmptyMsg * setBlock (int iLower, int jLower, int iUpper, int jUpper, double *ABl
     root = new CProxy_Node;
     *root = CProxy_Node::ckNew(0, blocksize, 0, 0, NPadded, NPadded);
   }
-  EmptyMsg *msg = root->set(i, j, aij);
+  EmptyMsg *msg = root->setBlock(iLower, jLower, iUpper, jUpper, ABlock);
   return msg;
 }
 

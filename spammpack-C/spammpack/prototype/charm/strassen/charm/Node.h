@@ -31,6 +31,7 @@ class Node : public CBase_Node
     NodeMsg   * info ();
     DataMsg   * getData ();
     EmptyMsg  * set (int i, int j, double aij);
+    EmptyMsg  * setBlock (int iLower_arg, int jLower_arg, int iUpper_arg, int jUpper_arg, const double *ABlock);
     DoubleMsg * get (int i, int j);
 #ifdef CALLBACK
     void matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkCallback &done);
