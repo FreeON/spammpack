@@ -8,7 +8,7 @@ class DoubleMsg : public CMessage_DoubleMsg
   public:
 
     double x;
-    DoubleMsg ();
+    DoubleMsg (double x);
 };
 
 #endif

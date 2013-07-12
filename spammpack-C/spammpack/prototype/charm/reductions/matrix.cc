@@ -1,4 +1,5 @@
 #include "matrix.h"
+#include "messages.h"
 
 Matrix::Matrix (int depth, int childsize)
 {
@@ -8,8 +9,14 @@ Matrix::Matrix (int depth, int childsize)
 
 void Matrix::norm (const CkCallback &cb)
 {
-  CkPrintf("sending norm\n");
-  cb.send();
+  normCB = cb;
+  CkCallback cb2 = CkCallback(CkReductionTarget(Matrix, normDone), thisProxy);
+  root->norm(cb2);
+}
+
+void Matrix::normDone (double norm)
+{
+  normCB.send(new DoubleMsg(norm));
 }
 
 #include "matrix.def.h"

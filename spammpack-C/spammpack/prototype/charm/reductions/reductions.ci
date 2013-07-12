@@ -5,6 +5,6 @@ mainmodule reductions
   mainchare Main
   {
     entry Main (CkArgMsg *msg);
-    entry [reductiontarget] void normDone (DoubleMsg *norm);
+    entry void normDone (DoubleMsg *norm);
   };
 };

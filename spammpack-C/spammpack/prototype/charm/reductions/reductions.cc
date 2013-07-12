@@ -12,7 +12,7 @@ class Main : public CBase_Main
       int childsize = 2;
 
       int c;
-      const char *short_options = "h";
+      const char *short_options = "hd:c:";
       const option long_options[] = {
         { "help", no_argument, NULL, 0 },
         { "depth", required_argument, NULL, 'd' },
@@ -26,6 +26,9 @@ class Main : public CBase_Main
         {
           case 'h':
             CkPrintf("Usage:\n");
+            CkPrintf("{ -h | --help }       This help\n");
+            CkPrintf("{ -d | --depth } d    Create d tiers\n");
+            CkPrintf("{ -c | --child } c    Create c x c children nodes on each tier\n");
             CkExit();
             break;
 
@@ -44,7 +47,7 @@ class Main : public CBase_Main
       }
 
       CkPrintf("creating matrix of depth %d with %dx%d node grid\n", depth,
-          childsize);
+          childsize, childsize);
 
       CProxy_Matrix A = CProxy_Matrix::ckNew(depth, childsize);
 
