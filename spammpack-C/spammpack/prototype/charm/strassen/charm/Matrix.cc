@@ -67,8 +67,6 @@ DoubleMsg * Matrix::get (int i, int j)
  */
 EmptyMsg * Matrix::set (int i, int j, double aij)
 {
-  //LOG_DEBUG("setting matrix element A(%d,%d) <- %f\n", i, j, aij);
-
   if(i < 0 || j < 0 || i >= N || j >= N)
   {
     LOG_ERROR("index out of bounds\n");
