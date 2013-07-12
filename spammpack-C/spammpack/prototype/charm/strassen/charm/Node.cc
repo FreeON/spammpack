@@ -182,13 +182,15 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
         CkExit();
       }
 
+#define BLOCK_MULTIPLY
+
 #ifdef BLOCK_MULTIPLY
-      LOG_DEBUG("%s block multiply\n", tagstr.c_str());
+      //LOG_DEBUG("%s block multiply\n", tagstr.c_str());
       for(int i = iLower; i < iUpper; i++) {
         for(int j = jLower; j < jUpper; j++) {
           for(int k = AInfo->jLower; k < AInfo->jUpper; k++)
           {
-            LOG_DEBUG("multiplying C(%d,%d) += A(%d,%d)*B(%d,%d)\n", i, j, i, k, k, j);
+            //LOG_DEBUG("multiplying C(%d,%d) += A(%d,%d)*B(%d,%d)\n", i, j, i, k, k, j);
             data[blockIndex(i, j, iLower, jLower, blocksize)] +=
               AData->data[blockIndex(i, k, AInfo->iLower, AInfo->jLower, AInfo->blocksize)]
               *BData->data[blockIndex(k, j, BInfo->iLower, BInfo->jLower, BInfo->blocksize)];
@@ -196,16 +198,42 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
         }
       }
 #else
+
+//#define BLOCK_FAKE_SKIP
+#define BLOCK_FAKE_AB_READ
+//#define BLOCK_FAKE_AB_READ_MULTIPLY
+//#define BLOCK_FAKE_C_READ
+#define BLOCK_FAKE_C_READ_WRITE
+
+#ifndef BLOCK_FAKE_SKIP
       for(int i = iLower; i < iUpper; i++) {
         for(int j = jLower; j < jUpper; j++) {
           for(int k = AInfo->jLower; k < AInfo->jUpper; k++)
           {
+#ifdef BLOCK_FAKE_AB_READ
+            /* Read matrix elements of A and B. */
             if(AData->data[blockIndex(i, k, AInfo->iLower, AInfo->jLower, AInfo->blocksize)] < 0) { printf("A\n"); }
             if(BData->data[blockIndex(k, j, BInfo->iLower, BInfo->jLower, BInfo->blocksize)] < 0) { printf("B\n"); }
-            if(data[blockIndex(i, j, iLower, jLower, blocksize)] < 0)                             { printf("C\n"); }
+#elif defined(BLOCK_FAKE_AB_READ_MULTIPLY)
+            /* Read and multiply matrix elements of A and B. */
+            if(AData->data[blockIndex(i, k, AInfo->iLower, AInfo->jLower, AInfo->blocksize)]
+                *BData->data[blockIndex(k, j, BInfo->iLower, BInfo->jLower, BInfo->blocksize)] < 0)
+            {
+              printf("B\n");
+            }
+#endif
+#ifdef BLOCK_FAKE_C_READ
+            /* Read matrix elements of C. */
+            if(data[blockIndex(i, j, iLower, jLower, blocksize)] < 0) { printf("C\n"); }
+#elif defined(BLOCK_FAKE_C_READ_WRITE)
+            /* Read and write matrix elements of C. */
+            data[blockIndex(i, j, iLower, jLower, blocksize)]++;
+#endif
           }
         }
       }
+#endif
+
 #endif
 
       delete AData;
