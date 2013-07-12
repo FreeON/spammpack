@@ -1,5 +1,5 @@
 #include "reductions.decl.h"
-
+#include "messages.h"
 #include <getopt.h>
 
 class Main : public CBase_Main
@@ -49,12 +49,13 @@ class Main : public CBase_Main
       CProxy_Matrix A = CProxy_Matrix::ckNew(depth, childsize);
 
       CkPrintf("getting norm\n");
-      A.norm();
+      CkCallback cb = CkCallback(CkIndex_Main::normDone(NULL), thisProxy);
+      A.norm(cb);
     }
 
-    void normDone (double norm)
+    void normDone (DoubleMsg *norm)
     {
-      CkPrintf("norm = %f\n", norm);
+      CkPrintf("norm = %f\n", norm->x);
       CkExit();
     }
 };

@@ -2,6 +2,7 @@ EXTRA_DIST = $(INTERFACE_FILES)
 
 INTERFACE_FILES = \
 	matrix.ci \
+	messages.ci \
 	node.ci \
 	reductions.ci
 
@@ -10,6 +11,8 @@ bin_PROGRAMS = reductions
 reductions_SOURCES = \
 	matrix.cc \
 	matrix.h \
+	messages.cc \
+	messages.h \
 	node.cc \
 	node.h \
 	reductions.cc

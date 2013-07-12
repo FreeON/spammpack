@@ -12,7 +12,7 @@ class Matrix : public CBase_Matrix
   public:
 
     Matrix (int depth, int childsize);
-    void norm ();
+    void norm (const CkCallback &cb);
 };
 
 #endif

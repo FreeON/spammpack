@@ -4,6 +4,6 @@ module matrix
   chare Matrix
   {
     entry Matrix (int depth, int childsize);
-    entry void norm ();
+    entry void norm (const CkCallback &cb);
   };
 };
