@@ -13,7 +13,8 @@ CXX = charmc
 CXXFLAGS = -O2 -g
 CTAGS = ctags
 LIBS = -lrt
-#LDFLAGS = -tracemode projections
+TRACINGFLAGS = #-tracemode projections
+LDFLAGS = -module CommonLBs $(TRACINGFLAGS)
 CPPFLAGS = -DLOGLEVEL=$(LOGLEVEL) -D$(ALGORITHM) -D$(LOGMETHOD)
 
 %.decl.h %.def.h : %.ci
