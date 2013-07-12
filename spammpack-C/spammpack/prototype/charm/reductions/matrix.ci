@@ -1,0 +1,8 @@
+module matrix
+{
+  extern module node;
+  chare Matrix
+  {
+    entry Matrix ();
+  };
+};

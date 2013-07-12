@@ -1,0 +1,7 @@
+module node
+{
+  chare Node
+  {
+    entry Node ();
+  };
+};

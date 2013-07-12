@@ -1,0 +1,8 @@
+mainmodule reductions
+{
+  extern module matrix;
+  mainchare Main
+  {
+    entry Main (CkArgMsg *msg);
+  };
+};
