@@ -1,7 +1,7 @@
 module node
 {
-  chare Node
+  array [2D] Node
   {
-    entry Node ();
+    entry Node (int depth, int childsize, int tier);
   };
 };

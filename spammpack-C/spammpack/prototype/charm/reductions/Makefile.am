@@ -1,3 +1,5 @@
+EXTRA_DIST = $(INTERFACE_FILES)
+
 INTERFACE_FILES = \
 	matrix.ci \
 	node.ci \

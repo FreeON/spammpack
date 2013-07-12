@@ -5,9 +5,14 @@
 
 class Matrix : public CBase_Matrix
 {
+  private:
+
+    CProxy_Node *root;
+
   public:
 
-    Matrix ();
+    Matrix (int depth, int childsize);
+    void norm ();
 };
 
 #endif

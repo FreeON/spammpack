@@ -3,6 +3,7 @@ module matrix
   extern module node;
   chare Matrix
   {
-    entry Matrix ();
+    entry Matrix (int depth, int childsize);
+    entry void norm ();
   };
 };

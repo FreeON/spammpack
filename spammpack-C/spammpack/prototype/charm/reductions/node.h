@@ -5,9 +5,17 @@
 
 class Node : public CBase_Node
 {
+  private:
+
+    int depth;
+    int childsize;
+    int tier;
+    CProxy_Node *child;
+
   public:
 
-    Node ();
+    Node (int depth, int childsize, int tier);
+    Node (CkMigrateMessage *m);
 };
 
 #endif
