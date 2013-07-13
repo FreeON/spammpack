@@ -1,4 +1,4 @@
-mainmodule reductions
+mainmodule matmul
 {
   extern module matrix;
   extern module messages;

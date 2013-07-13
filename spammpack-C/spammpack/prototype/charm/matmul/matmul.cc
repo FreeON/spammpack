@@ -1,4 +1,4 @@
-#include "reductions.decl.h"
+#include "matmul.decl.h"
 #include "messages.h"
 #include <getopt.h>
 
@@ -63,4 +63,4 @@ class Main : public CBase_Main
     }
 };
 
-#include "reductions.def.h"
+#include "matmul.def.h"
