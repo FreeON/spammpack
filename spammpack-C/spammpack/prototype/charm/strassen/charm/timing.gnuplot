@@ -22,6 +22,7 @@ set xrange [1:48]
 set xtics ( "1" 1, "2" 2, "4" 4, "8" 8, "16" 16, "32" 32, "48" 48 )
 
 plot for [COL=2:3] 'timing.dat' using 1:COL with linespoints title columnheader, \
+  '' using 1:($2-$3) with linespoints title 'work', \
   '' using 1:(full_2048_128_t1/$1) with lines linecolor 0 notitle, \
   '' using 1:(charm_2048_128_t1/$1) with lines linecolor 0 notitle
 
