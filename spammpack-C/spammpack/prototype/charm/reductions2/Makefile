@@ -2,7 +2,7 @@
 CHARMC = charmc
 
 reductions : reductions.cc reductions.decl.h
-	$(CHARMC) -language charm++ -o $@ $< -lrt
+	$(CHARMC) -language charm++ -module CommonLBs -o $@ $< -lrt
 
 %.decl.h : %.ci
 	$(CHARMC) $^
