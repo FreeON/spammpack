@@ -3,8 +3,6 @@ module matrix
   extern module node;
   chare Matrix
   {
-    entry Matrix (int depth, int childsize);
-    entry void norm (const CkCallback &cb);
-    entry [reductiontarget] void normDone (double norm);
+    entry Matrix (int N, int blocksize);
   };
 };

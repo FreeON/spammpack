@@ -1,10 +1,10 @@
 mainmodule matmul
 {
   extern module matrix;
-  extern module messages;
+  initnode void matmulInit();
   mainchare Main
   {
     entry Main (CkArgMsg *msg);
-    entry void normDone (DoubleMsg *norm);
+    entry [threaded] void run (int N, int blocksize);
   };
 };

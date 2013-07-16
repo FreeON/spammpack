@@ -7,14 +7,15 @@ class Matrix : public CBase_Matrix
 {
   private:
 
-    CkCallback normCB;
+    int N;
+    int blocksize;
+    int depth;
+    int NPadded;
     CProxy_Node *root;
 
   public:
 
-    Matrix (int depth, int childsize);
-    void norm (const CkCallback &cb);
-    void normDone (double norm);
+    Matrix (int N, int blocksize);
 };
 
 #endif

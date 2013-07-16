@@ -1,6 +1,12 @@
 #include "matmul.decl.h"
-#include "messages.h"
+
 #include <getopt.h>
+
+void matmulInit()
+{
+  CkPrintf("on PE %d, turning manual LB on\n", CkMyPe());
+  TurnManualLBOn();
+}
 
 class Main : public CBase_Main
 {
@@ -8,15 +14,15 @@ class Main : public CBase_Main
 
     Main (CkArgMsg *msg)
     {
-      int depth = 0;
-      int childsize = 2;
+      int N = 1;
+      int blocksize = 1;
 
       int c;
-      const char *short_options = "hd:c:";
+      const char *short_options = "hN:b:";
       const option long_options[] = {
-        { "help", no_argument, NULL, 0 },
-        { "depth", required_argument, NULL, 'd' },
-        { "child", required_argument, NULL, 'c' }
+        { "help",  no_argument,       NULL, 0 },
+        { "N",     required_argument, NULL, 'N' },
+        { "block", required_argument, NULL, 'b' }
       };
 
       while((c = getopt_long(msg->argc, msg->argv, short_options,
@@ -27,39 +33,32 @@ class Main : public CBase_Main
           case 'h':
             CkPrintf("Usage:\n");
             CkPrintf("{ -h | --help }       This help\n");
-            CkPrintf("{ -d | --depth } d    Create d tiers\n");
-            CkPrintf("{ -c | --child } c    Create c x c children nodes on each tier\n");
+            CkPrintf("{ -N | --N } N        Create NxN matrix (default: %d)\n", N);
+            CkPrintf("{ -b | --block } B    Create BxB dense blocks at leaf "
+                "nodes (default: %d)\n", blocksize);
             CkExit();
             break;
 
-          case 'd':
-            depth = strtol(optarg, NULL, 10);
+          case 'N':
+            N = strtol(optarg, NULL, 10);
             break;
 
-          case 'c':
-            childsize = strtol(optarg, NULL, 10);
+          case 'b':
+            blocksize = strtol(optarg, NULL, 10);
             break;
 
           default:
             CkExit();
             break;
         }
+
+        thisProxy.run(N, blocksize);
       }
-
-      CkPrintf("creating matrix of depth %d with %dx%d node grid\n", depth,
-          childsize, childsize);
-
-      CProxy_Matrix A = CProxy_Matrix::ckNew(depth, childsize);
-
-      CkPrintf("getting norm\n");
-      CkCallback cb = CkCallback(CkIndex_Main::normDone(NULL), thisProxy);
-      A.norm(cb);
     }
 
-    void normDone (DoubleMsg *norm)
+    void run (int N, int blocksize)
     {
-      CkPrintf("norm = %f\n", norm->x);
-      CkExit();
+      CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
     }
 };
 

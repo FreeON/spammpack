@@ -19,6 +19,10 @@ class Node : public CBase_Node
 
     /* Store productIndex -> { childProductIndex, ... } so that we can track
      * at what point a recursion is done. */
+#ifdef CALLBACK
+    int numberQueued[2];
+    int queuedProducts[2][8];
+#endif
 
     CkCallback parentDone;
 

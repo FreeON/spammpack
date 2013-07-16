@@ -192,7 +192,9 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
   /* The width of the C matrix block. */
   int width = iUpper-iLower;
 
+#ifdef FUTURES
   int counter = 0;
+#endif
 
   NodeMsg *AInfo = A.info();
   NodeMsg *BInfo = B.info();
@@ -274,7 +276,9 @@ void Node::matmul (CProxy_Node A, CProxy_Node B, int productIndex, CkFuture f)
       delete AData;
       delete BData;
 
+#ifdef FUTURES
       result->i = 1;
+#endif
     }
 
     else

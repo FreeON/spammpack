@@ -1,22 +1,19 @@
 #include "matrix.h"
-#include "messages.h"
 
-Matrix::Matrix (int depth, int childsize)
+Matrix::Matrix (int N, int blocksize)
 {
-  root = new CProxy_Node;
-  *root = CProxy_Node::ckNew(depth, childsize, 0, 1, 1);
-}
+  this->N = N;
+  this->blocksize = blocksize;
+  this->root = NULL;
 
-void Matrix::norm (const CkCallback &cb)
-{
-  normCB = cb;
-  CkCallback cb2 = CkCallback(CkReductionTarget(Matrix, normDone), thisProxy);
-  root->norm(cb2);
-}
-
-void Matrix::normDone (double norm)
-{
-  normCB.send(new DoubleMsg(norm));
+  /* Calculate tree depth. */
+  depth = -1;
+  for(int i = N/blocksize; i > 0; i >>= 1)
+  {
+    depth++;
+  }
+  if(blocksize*(1 << depth) < N) depth++;
+  NPadded = blocksize*(1 << depth);
 }
 
 #include "matrix.def.h"

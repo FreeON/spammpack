@@ -1,23 +1,20 @@
 EXTRA_DIST = $(INTERFACE_FILES)
 
 INTERFACE_FILES = \
+	matmul.ci \
 	matrix.ci \
-	messages.ci \
-	node.ci \
-	matmul.ci
+	node.ci
 
-AM_CXXFLAGS = -module CommonLBs
+AM_CXXFLAGS = @LOADBALANCER_FLAGS@
 
 bin_PROGRAMS = matmul
 
 matmul_SOURCES = \
+	matmul.cc \
 	matrix.cc \
 	matrix.h \
-	messages.cc \
-	messages.h \
 	node.cc \
-	node.h \
-	matmul.cc
+	node.h
 
 %.decl.h %.def.h : %.ci
 	$(AM_V_CXX)$(CHARMC) -preprocess $<
