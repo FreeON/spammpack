@@ -1,0 +1,13 @@
+mainmodule reductions
+{
+  mainchare Driver
+  {
+    entry Driver (CkArgMsg *msg);
+    entry [reductiontarget] void done (int result);
+  };
+  array [2D] Worker
+  {
+    entry Worker ();
+    entry void reduce (void);
+  };
+};
