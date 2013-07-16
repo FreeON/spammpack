@@ -6,6 +6,8 @@ INTERFACE_FILES = \
 	node.ci \
 	matmul.ci
 
+AM_CXXFLAGS = -module CommonLBs
+
 bin_PROGRAMS = matmul
 
 matmul_SOURCES = \
