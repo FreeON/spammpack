@@ -1,10 +1,11 @@
 module matrix
 {
-  extern module node;
   extern module messages;
+  extern module node;
   chare Matrix
   {
     entry Matrix (int N, int blocksize);
+    entry [sync] MatrixInfoMsg * getInfo ();
     entry void random (CkCallback &cb);
     entry void zero (CkCallback &cb);
     entry void print (CkCallback &cb);

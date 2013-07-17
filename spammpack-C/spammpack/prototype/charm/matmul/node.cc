@@ -13,121 +13,7 @@ Node::Node (int depth, int blocksize, int tier,
   {
     child[i] = NULL;
   }
-  callbackSet = false;
   this->block = NULL;
-}
-
-void Node::random (int index, CkCallback &cb)
-{
-  LOG("(%d) random\n", index);
-
-  if(callbackSet)
-  {
-    LOG("(%d) callback already set\n", index);
-    CkExit();
-  }
-
-  callbackSet = true;
-  this->cb = cb;
-
-  if(tier == depth)
-  {
-    LOG("(%d) reached depth\n", index);
-    if(block == NULL)
-    {
-      block = new double[blocksize*blocksize];
-    }
-    for(int i = 0; i < blocksize*blocksize; i++)
-    {
-      block[i] = rand();
-    }
-    cb.send(new IntMsg(index));
-  }
-
-  else
-  {
-    for(int i = 0; i < 4; i++)
-    {
-      childDone[i] = false;
-      child[i] = new CProxy_Node;
-      *child[i] = CProxy_Node::ckNew(depth, blocksize, tier+1,
-          iLower+(iUpper-iLower)/2*(i >> 1), iLower+(iUpper-iLower)/2*((i >> 1)+1),
-          jLower+(jUpper-jLower)/2*(i & 1), jLower+(jUpper-jLower)/2*((i & 1)+1));
-      CkCallback thisCB(CkIndex_Node::randomDone(NULL), thisProxy);
-      child[i]->random((index << 2) | i, thisCB);
-    }
-  }
-}
-
-void Node::randomDone (IntMsg *index)
-{
-  LOG("(%d) received index %d\n", index->i >> 2, index->i);
-  childDone[index->i & 3] = true;
-  for(int i = 0; i < 4; i++)
-  {
-    if(!childDone[i])
-    {
-      return;
-    }
-  }
-  LOG("(%d) sending to callback\n", index->i >> 2);
-  callbackSet = false;
-  cb.send(new IntMsg(index->i >> 2));
-}
-
-void Node::zero (int index, CkCallback &cb)
-{
-  LOG("(%d) zero\n", index);
-
-  if(callbackSet)
-  {
-    LOG("(%d) callback already set\n", index);
-    CkExit();
-  }
-
-  callbackSet = true;
-  this->cb = cb;
-
-  if(tier == depth)
-  {
-    LOG("(%d) reached depth\n", index);
-    if(block == NULL)
-    {
-      block = new double[blocksize*blocksize];
-    }
-    memset(block, 0, blocksize*blocksize*sizeof(double));
-    cb.send(new IntMsg(index));
-  }
-
-  else
-  {
-    for(int i = 0; i < 4; i++)
-    {
-      childDone[i] = false;
-      child[i] = new CProxy_Node;
-      *child[i] = CProxy_Node::ckNew(depth, blocksize, tier+1,
-          iLower+(iUpper-iLower)/2*(i >> 1), iLower+(iUpper-iLower)/2*((i >> 1)+1),
-          jLower+(jUpper-jLower)/2*(i & 1), jLower+(jUpper-jLower)/2*((i & 1)+1));
-      CkCallback thisCB(CkIndex_Node::zeroDone(NULL), thisProxy);
-      child[i]->zero((index << 2) | i, thisCB);
-    }
-  }
-}
-
-void Node::zeroDone (IntMsg *index)
-{
-  LOG("(%d) received index %d\n", index->i >> 2, index->i);
-  childDone[index->i & 3] = true;
-  for(int i = 0; i < 4; i++)
-  {
-    if(!childDone[i])
-    {
-      return;
-    }
-  }
-  LOG("(%d) sending to callback\n", index->i >> 2);
-  callbackSet = false;
-  cb.send(new IntMsg(index->i >> 2));
 }
 
 DoubleMsg * Node::get (int i, int j)
@@ -141,6 +27,96 @@ DoubleMsg * Node::get (int i, int j)
   }
 
   return new DoubleMsg(0);
+}
+
+void Node::initialize (int initType, int index, CkCallback &cb)
+{
+  LOG("(%d) initializing\n", index);
+
+  if(callbackSet[index])
+  {
+    LOG("(%d) callback already set\n", index);
+    CkExit();
+  }
+
+  callbackSet[index] = true;
+  this->cb[index] = cb;
+
+  if(tier == depth)
+  {
+    LOG("(%d) reached depth\n", index);
+    if(block == NULL)
+    {
+      block = new double[blocksize*blocksize];
+    }
+    switch(initType)
+    {
+      case initRandom:
+        for(int i = 0; i < blocksize*blocksize; i++)
+        {
+          block[i] = rand();
+        }
+        break;
+
+      case initZero:
+        memset(block, 0, blocksize*blocksize*sizeof(double));
+        break;
+
+      default:
+        ERROR("unknown initType\n");
+        CkExit();
+        break;
+    }
+    cb.send(new IntMsg(index));
+  }
+
+  else
+  {
+    std::list<int> tempDone;
+    childWorking[index] = tempDone;
+    for(int i = 0; i < 4; i++)
+    {
+      int childIndex = (index << 2) | i;
+      childWorking[index].push_back(childIndex);
+      child[i] = new CProxy_Node;
+      *child[i] = CProxy_Node::ckNew(depth, blocksize, tier+1,
+          iLower+(iUpper-iLower)/2*(i >> 1), iLower+(iUpper-iLower)/2*((i >> 1)+1),
+          jLower+(jUpper-jLower)/2*(i & 1), jLower+(jUpper-jLower)/2*((i & 1)+1));
+      CkCallback thisCB(CkIndex_Node::initializeDone(NULL), thisProxy);
+      child[i]->initialize(initType, childIndex, thisCB);
+    }
+  }
+}
+
+void Node::initializeDone (IntMsg *index)
+{
+  int thisIndex = index->i >> 2;
+  LOG("(%d) received index %d\n", thisIndex, index->i);
+  for(std::list<int>::iterator i = childWorking[thisIndex].begin();
+      i != childWorking[thisIndex].end();
+      i++)
+  {
+    if(*i == index->i)
+    {
+      childWorking[thisIndex].erase(i);
+      break;
+    }
+  }
+
+  if(childWorking[thisIndex].size() > 0)
+  {
+    return;
+  }
+
+  LOG("(%d) sending to callback\n", thisIndex);
+  callbackSet[index->i] = false;
+  cb[thisIndex].send(new IntMsg(thisIndex));
+}
+
+void Node::matmul (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb)
+{
+  LOG("(%d) starting\n", index);
+  cb.send(new IntMsg(index));
 }
 
 #include "node.def.h"

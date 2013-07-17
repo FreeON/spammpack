@@ -3,6 +3,8 @@
 
 #include "messages.decl.h"
 
+#include "node.h"
+
 class DoubleMsg : public CMessage_DoubleMsg
 {
   public:
@@ -21,6 +23,14 @@ class IntMsg : public CMessage_IntMsg
 
     int i;
     IntMsg (int i);
+};
+
+class MatrixInfoMsg : public CMessage_MatrixInfoMsg
+{
+  public:
+
+    CProxy_Node *root;
+    MatrixInfoMsg (CProxy_Node *root);
 };
 
 #endif

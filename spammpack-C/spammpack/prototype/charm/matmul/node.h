@@ -2,6 +2,9 @@
 #define __NODE_H
 
 #include "node.decl.h"
+#include "types.h"
+#include <map>
+#include <list>
 
 class Node : public CBase_Node
 {
@@ -14,10 +17,10 @@ class Node : public CBase_Node
     int iLower, iUpper;
     int jLower, jUpper;
 
-    bool callbackSet;
-    CkCallback cb;
+    std::map<int, bool> callbackSet;
+    std::map<int, CkCallback> cb;
 
-    bool childDone[4];
+    std::map<int, std::list<int> > childWorking;
     CProxy_Node *child[4];
 
     double *block;
@@ -26,11 +29,10 @@ class Node : public CBase_Node
 
     Node (int depth, int blocksize, int tier,
         int iLower, int iUpper, int jLower, int jUpper);
-    void random (int index, CkCallback &cb);
-    void randomDone (IntMsg *index);
-    void zero (int index, CkCallback &cb);
-    void zeroDone (IntMsg *index);
     DoubleMsg * get (int i, int j);
+    void initialize (int initType, int index, CkCallback &cb);
+    void initializeDone (IntMsg *index);
+    void matmul (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb);
 };
 
 #endif

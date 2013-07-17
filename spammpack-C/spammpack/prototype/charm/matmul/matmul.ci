@@ -1,7 +1,7 @@
 mainmodule matmul
 {
-  extern module matrix;
   initnode void matmulInit();
+  extern module matrix;
   mainchare Main
   {
     entry Main (CkArgMsg *msg);

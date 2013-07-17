@@ -18,7 +18,8 @@ matmul_SOURCES = \
 	messages.cc \
 	messages.h \
 	node.cc \
-	node.h
+	node.h \
+	types.h
 
 %.decl.h %.def.h : %.ci
 	$(AM_V_CXX)$(CHARMC) -preprocess $<

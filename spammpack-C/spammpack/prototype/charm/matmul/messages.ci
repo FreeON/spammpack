@@ -3,4 +3,5 @@ module messages
   message DoubleMsg;
   message EmptyMsg;
   message IntMsg;
+  message MatrixInfoMsg;
 };

@@ -2,6 +2,8 @@
 #define __MATRIX_H
 
 #include "matrix.decl.h"
+#include "messages.h"
+#include "types.h"
 
 class Matrix : public CBase_Matrix
 {
@@ -16,8 +18,10 @@ class Matrix : public CBase_Matrix
   public:
 
     Matrix (int N, int blocksize);
+    MatrixInfoMsg * getInfo ();
     void random (CkCallback &cb);
     void zero (CkCallback &cb);
+    void initialize (enum init_t initType, CkCallback &cb);
     void print (CkCallback &cb);
     void multiply (CProxy_Matrix A, CProxy_Matrix B, CkCallback &cb);
 };

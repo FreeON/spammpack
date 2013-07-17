@@ -5,10 +5,9 @@ module node
   {
     entry Node (int depth, int blocksize, int tier,
         int iLower, int iUpper, int jLower, int jUpper);
-    entry void random (int index, CkCallback &cb);
-    entry void randomDone (IntMsg *index);
-    entry void zero (int index, CkCallback &cb);
-    entry void zeroDone (IntMsg *index);
     entry [sync] DoubleMsg * get (int i, int j);
+    entry void initialize (int initType, int index, CkCallback &cb);
+    entry void initializeDone (IntMsg *index);
+    entry void matmul (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb);
   };
 };

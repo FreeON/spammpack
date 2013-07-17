@@ -1,9 +1,6 @@
-#include "matmul.decl.h"
-
 #include "config.h"
+#include "matmul.decl.h"
 #include "logger.h"
-#include "messages.h"
-
 #include <getopt.h>
 
 void matmulInit()
