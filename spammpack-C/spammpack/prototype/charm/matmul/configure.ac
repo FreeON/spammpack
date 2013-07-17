@@ -23,7 +23,7 @@ AC_ARG_ENABLE([debug],
   [enable_debug=$enableval],
   [enable_debug="no"])
 if test "${enable_debug}" = "yes"; then
-  AC_DEFINE([DEBUG], [1], [Enable a lot of extra output])
+  AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output])
 fi
 
 AC_CONFIG_HEADERS([config.h])

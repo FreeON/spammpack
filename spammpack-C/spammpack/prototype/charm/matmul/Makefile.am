@@ -11,6 +11,7 @@ AM_CXXFLAGS = @LOADBALANCER_FLAGS@
 bin_PROGRAMS = matmul
 
 matmul_SOURCES = \
+	index.h \
 	logger.h \
 	matmul.cc \
 	matrix.cc \

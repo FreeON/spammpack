@@ -5,7 +5,7 @@
 
 void matmulInit()
 {
-  LOG("on PE %d, turning manual LB on\n", CkMyPe());
+  DEBUG("on PE %d, turning manual LB on\n", CkMyPe());
   //TurnManualLBOn();
 }
 
@@ -56,7 +56,7 @@ class Main : public CBase_Main
 
       CkPrintf("running on %d PEs\n", CkNumPes());
 
-      LOG("calling run on this proxy\n");
+      DEBUG("calling run on this proxy\n");
       thisProxy.run(N, blocksize);
     }
 
@@ -65,26 +65,26 @@ class Main : public CBase_Main
       CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
       CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
-      LOG("generating random matrix\n");
+      DEBUG("generating random matrix\n");
       A.random(CkCallbackResumeThread());
 
-      LOG("setting C to zero\n");
+      DEBUG("setting C to zero\n");
       C.zero(CkCallbackResumeThread());
 
-#ifdef DEBUG
+#ifdef DEBUG_OUTPUT
       CkPrintf("A\n");
       A.print(CkCallbackResumeThread());
 #endif
 
-      LOG("multiplying C = A*A\n");
+      DEBUG("multiplying C = A*A\n");
       C.multiply(A, A, CkCallbackResumeThread());
 
-#ifdef DEBUG
+#ifdef DEBUG_OUTPUT
       CkPrintf("C\n");
       C.print(CkCallbackResumeThread());
 #endif
 
-      LOG("done\n");
+      DEBUG("done\n");
       CkExit();
     }
 };

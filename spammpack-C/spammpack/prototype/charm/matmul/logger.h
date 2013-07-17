@@ -1,14 +1,14 @@
-#ifndef __LOG_H
-#define __LOG_H
+#ifndef __LOGGER_H
+#define __LOGGER_H
 
 #include "config.h"
 
 #include <stdarg.h>
 
-#ifdef DEBUG
-#define LOG(format, ...) logger(__FILE__, __LINE__, "", format, ##__VA_ARGS__)
+#ifdef DEBUG_OUTPUT
+#define DEBUG(format, ...) logger(__FILE__, __LINE__, "", format, ##__VA_ARGS__)
 #else
-#define LOG(format, ...)
+#define DEBUG(format, ...)
 #endif
 
 #define ERROR(format, ...) logger(__FILE__, __LINE__, "ERROR", format, ##__VA_ARGS__)
@@ -27,12 +27,12 @@ void logger (const char *const filename, const int linenumber,
 
   if(strlen(tag) > 0)
   {
-    snprintf(new_format, FORMAT_LENGTH, "[%s:%d %s] %s", filename, linenumber, tag, format);
+    snprintf(new_format, FORMAT_LENGTH, "[%s:%d PE:%d %s] %s", filename, linenumber, CkMyPe(), tag, format);
   }
 
   else
   {
-    snprintf(new_format, FORMAT_LENGTH, "[%s:%d] %s", filename, linenumber, format);
+    snprintf(new_format, FORMAT_LENGTH, "[%s:%d PE:%d] %s", filename, linenumber, CkMyPe(), format);
   }
 
   va_start(ap, format);

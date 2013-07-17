@@ -33,13 +33,13 @@ MatrixInfoMsg * Matrix::getInfo ()
 
 void Matrix::random (CkCallback &cb)
 {
-  LOG("generating random matrix\n");
+  DEBUG("generating random matrix\n");
   initialize(initRandom, cb);
 }
 
 void Matrix::zero (CkCallback &cb)
 {
-  LOG("setting matrix to zero\n");
+  DEBUG("setting matrix to zero\n");
   initialize(initZero, cb);
 }
 
@@ -86,13 +86,13 @@ void Matrix::multiply (CProxy_Matrix A, CProxy_Matrix B, CkCallback &cb)
 
   if(AInfo->rootNull || AInfo->rootNull)
   {
-    LOG("nothing to multiply\n");
+    DEBUG("nothing to multiply\n");
     cb.send();
   }
 
-  LOG("starting multiply\n");
+  DEBUG("starting multiply\n");
   root.multiply(1, AInfo->root, BInfo->root, CkCallbackResumeThread());
-  LOG("done\n");
+  DEBUG("done\n");
   cb.send();
 }
 
