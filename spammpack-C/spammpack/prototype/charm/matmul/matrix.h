@@ -13,7 +13,9 @@ class Matrix : public CBase_Matrix
     int blocksize;
     int depth;
     int NPadded;
-    CProxy_Node *root;
+
+    bool rootNull;
+    CProxy_Node root;
 
   public:
 

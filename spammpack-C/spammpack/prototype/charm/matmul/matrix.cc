@@ -1,12 +1,13 @@
 #include "matrix.h"
 #include "logger.h"
 #include "types.h"
+#include <sstream>
 
 Matrix::Matrix (int N, int blocksize)
 {
   this->N = N;
   this->blocksize = blocksize;
-  this->root = NULL;
+  this->rootNull = true;
 
   /* Calculate tree depth. */
   depth = -1;
@@ -20,7 +21,14 @@ Matrix::Matrix (int N, int blocksize)
 
 MatrixInfoMsg * Matrix::getInfo ()
 {
-  return new MatrixInfoMsg(root);
+  if(rootNull)
+  {
+    return new MatrixInfoMsg();
+  }
+  else
+  {
+    return new MatrixInfoMsg(root);
+  }
 }
 
 void Matrix::random (CkCallback &cb)
@@ -37,34 +45,35 @@ void Matrix::zero (CkCallback &cb)
 
 void Matrix::initialize (enum init_t initType, CkCallback &cb)
 {
-  if(root != NULL)
+  if(!rootNull)
   {
     ERROR("root is not NULL\n");
     CkExit();
   }
 
-  root = new CProxy_Node;
-  *root = CProxy_Node::ckNew(depth, blocksize, 0, 0, NPadded, 0, NPadded);
-  root->initialize(initType, 1, CkCallbackResumeThread());
+  root = CProxy_Node::ckNew(depth, blocksize, 0, 0, NPadded, 0, NPadded);
+  root.initialize(initType, 1, CkCallbackResumeThread());
   cb.send();
 }
 
 void Matrix::print (CkCallback &cb)
 {
-  if(root == NULL)
+  if(rootNull)
   {
     cb.send();
   }
 
+  std::ostringstream o;
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++)
     {
-      DoubleMsg *m = root->get(i, j);
-      printf(" % 1.3f", m->x);
+      DoubleMsg *m = root.get(i, j);
+      o << " " << m->x;
       delete m;
     }
-    printf("\n");
+    o << std::endl;
   }
+  CkPrintf(o.str().c_str());
   cb.send();
 }
 
@@ -73,7 +82,15 @@ void Matrix::multiply (CProxy_Matrix A, CProxy_Matrix B, CkCallback &cb)
   MatrixInfoMsg *AInfo = A.getInfo();
   MatrixInfoMsg *BInfo = B.getInfo();
 
-  root->matmul(1, *AInfo->root, *BInfo->root, CkCallbackResumeThread());
+  if(AInfo->rootNull || AInfo->rootNull)
+  {
+    LOG("nothing to multiply\n");
+    cb.send();
+  }
+
+  LOG("starting multiply\n");
+  root.multiply(1, AInfo->root, BInfo->root, CkCallbackResumeThread());
+  LOG("done\n");
   cb.send();
 }
 

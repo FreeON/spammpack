@@ -32,7 +32,8 @@ class Node : public CBase_Node
     DoubleMsg * get (int i, int j);
     void initialize (int initType, int index, CkCallback &cb);
     void initializeDone (IntMsg *index);
-    void matmul (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb);
+    void multiply (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb);
+    void multiplyDone (IntMsg *index);
 };
 
 #endif

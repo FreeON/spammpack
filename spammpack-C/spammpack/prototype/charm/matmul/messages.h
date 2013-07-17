@@ -10,6 +10,7 @@ class DoubleMsg : public CMessage_DoubleMsg
   public:
 
     double x;
+
     DoubleMsg (double x);
 };
 
@@ -22,6 +23,7 @@ class IntMsg : public CMessage_IntMsg
   public:
 
     int i;
+
     IntMsg (int i);
 };
 
@@ -29,8 +31,11 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
 {
   public:
 
-    CProxy_Node *root;
-    MatrixInfoMsg (CProxy_Node *root);
+    bool rootNull;
+    CProxy_Node root;
+
+    MatrixInfoMsg ();
+    MatrixInfoMsg (CProxy_Node root);
 };
 
 #endif

@@ -10,8 +10,14 @@ IntMsg::IntMsg (int i)
   this->i = i;
 }
 
-MatrixInfoMsg::MatrixInfoMsg (CProxy_Node *root)
+MatrixInfoMsg::MatrixInfoMsg ()
 {
+  rootNull = true;
+}
+
+MatrixInfoMsg::MatrixInfoMsg (CProxy_Node root)
+{
+  this->rootNull = false;
   this->root = root;
 }
 

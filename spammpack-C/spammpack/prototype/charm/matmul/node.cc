@@ -113,10 +113,14 @@ void Node::initializeDone (IntMsg *index)
   cb[thisIndex].send(new IntMsg(thisIndex));
 }
 
-void Node::matmul (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb)
+void Node::multiply (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb)
 {
   LOG("(%d) starting\n", index);
-  cb.send(new IntMsg(index));
+  //cb.send(new IntMsg(index));
+}
+
+void Node::multiplyDone (IntMsg *index)
+{
 }
 
 #include "node.def.h"

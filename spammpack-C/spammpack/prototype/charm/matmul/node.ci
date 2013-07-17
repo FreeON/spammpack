@@ -8,6 +8,7 @@ module node
     entry [sync] DoubleMsg * get (int i, int j);
     entry void initialize (int initType, int index, CkCallback &cb);
     entry void initializeDone (IntMsg *index);
-    entry void matmul (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb);
+    entry void multiply (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb);
+    entry void multiplyDone (IntMsg *index);
   };
 };
