@@ -1,8 +1,13 @@
 module matrix
 {
   extern module node;
+  extern module messages;
   chare Matrix
   {
     entry Matrix (int N, int blocksize);
+    entry void random (CkCallback &cb);
+    entry void zero (CkCallback &cb);
+    entry void print (CkCallback &cb);
+    entry void multiply (CProxy_Matrix A, CProxy_Matrix B, CkCallback &cb);
   };
 };

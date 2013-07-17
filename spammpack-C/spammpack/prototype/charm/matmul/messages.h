@@ -11,4 +11,16 @@ class DoubleMsg : public CMessage_DoubleMsg
     DoubleMsg (double x);
 };
 
+class EmptyMsg : public CMessage_EmptyMsg
+{
+};
+
+class IntMsg : public CMessage_IntMsg
+{
+  public:
+
+    int i;
+    IntMsg (int i);
+};
+
 #endif

@@ -16,6 +16,10 @@ class Matrix : public CBase_Matrix
   public:
 
     Matrix (int N, int blocksize);
+    void random (CkCallback &cb);
+    void zero (CkCallback &cb);
+    void print (CkCallback &cb);
+    void multiply (CProxy_Matrix A, CProxy_Matrix B, CkCallback &cb);
 };
 
 #endif

@@ -17,6 +17,15 @@ if test "${enable_LB}" = "yes"; then
   AC_SUBST([LOADBALANCER_FLAGS], [-module CommonLBs])
 fi
 
+AC_ARG_ENABLE([debug],
+  [AS_HELP_STRING([--enable-debug],
+                  [Enable a lot of extra output])],
+  [enable_debug=$enableval],
+  [enable_debug="no"])
+if test "${enable_debug}" = "yes"; then
+  AC_DEFINE([DEBUG], [1], [Enable a lot of extra output])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
 

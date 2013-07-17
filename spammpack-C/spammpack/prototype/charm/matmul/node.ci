@@ -1,7 +1,14 @@
 module node
 {
+  extern module messages;
   chare Node
   {
-    entry Node (int depth, int childsize, int tier);
+    entry Node (int depth, int blocksize, int tier,
+        int iLower, int iUpper, int jLower, int jUpper);
+    entry void random (int index, CkCallback &cb);
+    entry void randomDone (IntMsg *index);
+    entry void zero (int index, CkCallback &cb);
+    entry void zeroDone (IntMsg *index);
+    entry [sync] DoubleMsg * get (int i, int j);
   };
 };

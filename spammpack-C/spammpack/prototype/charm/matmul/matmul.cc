@@ -1,11 +1,15 @@
 #include "matmul.decl.h"
 
+#include "config.h"
+#include "logger.h"
+#include "messages.h"
+
 #include <getopt.h>
 
 void matmulInit()
 {
-  CkPrintf("on PE %d, turning manual LB on\n", CkMyPe());
-  TurnManualLBOn();
+  LOG("on PE %d, turning manual LB on\n", CkMyPe());
+  //TurnManualLBOn();
 }
 
 class Main : public CBase_Main
@@ -51,14 +55,40 @@ class Main : public CBase_Main
             CkExit();
             break;
         }
-
-        thisProxy.run(N, blocksize);
       }
+
+      CkPrintf("running on %d PEs\n", CkNumPes());
+
+      LOG("calling run on this proxy\n");
+      thisProxy.run(N, blocksize);
     }
 
     void run (int N, int blocksize)
     {
       CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
+      CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
+
+      LOG("generating random matrix\n");
+      A.random(CkCallbackResumeThread());
+
+      LOG("setting C to zero\n");
+      C.zero(CkCallbackResumeThread());
+
+#ifdef DEBUG
+      CkPrintf("A\n");
+      A.print(CkCallbackResumeThread());
+#endif
+
+      LOG("multiplying C = A*A\n");
+      C.multiply(A, A, CkCallbackResumeThread());
+
+#ifdef DEBUG
+      CkPrintf("C\n");
+      C.print(CkCallbackResumeThread());
+#endif
+
+      LOG("done\n");
+      CkExit();
     }
 };
 
