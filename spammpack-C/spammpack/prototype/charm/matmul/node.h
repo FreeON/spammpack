@@ -21,7 +21,9 @@ class Node : public CBase_Node
     std::map<int, CkCallback> cb;
 
     std::map<int, std::list<int> > childWorking;
-    CProxy_Node *child[4];
+
+    bool childNull[4];
+    CProxy_Node child[4];
 
     double *block;
 

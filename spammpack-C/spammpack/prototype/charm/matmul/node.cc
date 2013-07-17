@@ -11,7 +11,7 @@ Node::Node (int depth, int blocksize, int tier,
   this->tier = tier;
   for(int i = 0; i < 4; i++)
   {
-    child[i] = NULL;
+    childNull[i] = NULL;
   }
   this->block = NULL;
 }
@@ -78,12 +78,12 @@ void Node::initialize (int initType, int index, CkCallback &cb)
     {
       int childIndex = (index << 2) | i;
       childWorking[index].push_back(childIndex);
-      child[i] = new CProxy_Node;
-      *child[i] = CProxy_Node::ckNew(depth, blocksize, tier+1,
+      child[i] = CProxy_Node::ckNew(depth, blocksize, tier+1,
           iLower+(iUpper-iLower)/2*(i >> 1), iLower+(iUpper-iLower)/2*((i >> 1)+1),
           jLower+(jUpper-jLower)/2*(i & 1), jLower+(jUpper-jLower)/2*((i & 1)+1));
+      childNull[i] = false;
       CkCallback thisCB(CkIndex_Node::initializeDone(NULL), thisProxy);
-      child[i]->initialize(initType, childIndex, thisCB);
+      child[i].initialize(initType, childIndex, thisCB);
     }
   }
 }

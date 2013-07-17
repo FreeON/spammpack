@@ -52,6 +52,7 @@ void Matrix::initialize (enum init_t initType, CkCallback &cb)
   }
 
   root = CProxy_Node::ckNew(depth, blocksize, 0, 0, NPadded, 0, NPadded);
+  rootNull = false;
   root.initialize(initType, 1, CkCallbackResumeThread());
   cb.send();
 }
@@ -64,6 +65,7 @@ void Matrix::print (CkCallback &cb)
   }
 
   std::ostringstream o;
+  o.setf(std::ios::fixed);
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++)
     {
