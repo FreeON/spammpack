@@ -1,7 +1,13 @@
 #include "config.h"
 #include "matmul.decl.h"
 #include "logger.h"
+#include "messages.h"
+#include "timer.h"
 #include <getopt.h>
+
+#ifdef VERIFY_MULTIPLY
+#include "index.h"
+#endif
 
 void matmulInit()
 {
@@ -68,6 +74,10 @@ class Main : public CBase_Main
       DEBUG("generating random matrix\n");
       A.random(CkCallbackResumeThread());
 
+#ifdef VERIFY_MULTIPLY
+      DenseMatrixMsg *ADense = A.getDense();
+#endif
+
       DEBUG("setting C to zero\n");
       C.zero(CkCallbackResumeThread());
 
@@ -75,11 +85,41 @@ class Main : public CBase_Main
       A.print(CkCallbackResumeThread());
 #endif
 
-      DEBUG("multiplying C = A*A\n");
+      Timer t("multiplying C = A*A");
       C.multiply(A, A, CkCallbackResumeThread());
+      t.stop();
+      CkPrintf(t.to_str());
 
 #ifdef DEBUG_OUTPUT
       C.print(CkCallbackResumeThread());
+#endif
+
+#ifdef VERIFY_MULTIPLY
+      DenseMatrixMsg *CDense = C.getDense();
+
+      for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++)
+        {
+          double CExact = 0;
+          for(int k = 0; k < N; k++)
+          {
+            CExact += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
+              *ADense->A[BLOCK_INDEX(k, j, 0, 0, N)];
+          }
+
+          if(fabs(CExact-CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]) > VERIFY_TOLERANCE)
+          {
+            ABORT("result mismatch (abs. tolerance = %e), "
+                "C(%d,%d): %e vs. %e\n", VERIFY_TOLERANCE, i, j,
+                CExact, CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
+          }
+        }
+      }
+
+      CkPrintf("result verified\n");
+
+      delete ADense;
+      delete CDense;
 #endif
 
       DEBUG("done\n");

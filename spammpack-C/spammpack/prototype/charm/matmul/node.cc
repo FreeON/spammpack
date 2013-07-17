@@ -3,10 +3,11 @@
 #include "messages.h"
 #include "index.h"
 
-Node::Node (int depth, int blocksize, int tier,
+Node::Node (int N, int depth, int blocksize, int tier,
     int iLower, int iUpper,
     int jLower, int jUpper)
 {
+  this->N = N;
   this->depth = depth;
   this->blocksize = blocksize;
   this->tier = tier;
@@ -96,18 +97,21 @@ void Node::initialize (int initType, int index, CkCallback &cb)
     if(block == NULL)
     {
       block = new double[blocksize*blocksize];
+      memset(block, 0, sizeof(double)*blocksize*blocksize);
     }
+
     switch(initType)
     {
       case initRandom:
-        for(int i = 0; i < blocksize*blocksize; i++)
-        {
-          block[i] = rand()/(double) RAND_MAX;
+        for(int i = 0; i < blocksize && i+iLower < N; i++) {
+          for(int j = 0; j < blocksize && j+jLower < N; j++)
+          {
+            block[BLOCK_INDEX(i, i, 0, 0, blocksize)] = rand()/(double) RAND_MAX;
+          }
         }
         break;
 
       case initZero:
-        memset(block, 0, blocksize*blocksize*sizeof(double));
         break;
 
       default:
@@ -127,7 +131,7 @@ void Node::initialize (int initType, int index, CkCallback &cb)
         int childIndex = (index << 2) | CHILD_INDEX(i, j);
         DEBUG("creating child[%d] with index %d\n", CHILD_INDEX(i, j), childIndex);
         childWorking[index].push_back(childIndex);
-        child[CHILD_INDEX(i, j)] = CProxy_Node::ckNew(depth, blocksize,
+        child[CHILD_INDEX(i, j)] = CProxy_Node::ckNew(N, depth, blocksize,
             tier+1,
             iLower+(iUpper-iLower)/2*i, iLower+(iUpper-iLower)/2*(i+1),
             jLower+(jUpper-jLower)/2*j, jLower+(jUpper-jLower)/2*(j+1));

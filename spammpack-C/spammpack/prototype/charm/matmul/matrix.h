@@ -21,6 +21,7 @@ class Matrix : public CBase_Matrix
 
     Matrix (int N, int blocksize);
     MatrixInfoMsg * info ();
+    DenseMatrixMsg * getDense ();
     void random (CkCallback &cb);
     void zero (CkCallback &cb);
     void initialize (enum init_t initType, CkCallback &cb);

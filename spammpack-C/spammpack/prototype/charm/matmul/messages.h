@@ -5,6 +5,13 @@
 
 #include "node.h"
 
+class DenseMatrixMsg : public CMessage_DenseMatrixMsg
+{
+  public:
+
+    double *A;
+};
+
 class DoubleMsg : public CMessage_DoubleMsg
 {
   public:

@@ -10,6 +10,7 @@ class Node : public CBase_Node
 {
   private:
 
+    int N;
     int depth;
     int blocksize;
     int tier;
@@ -29,7 +30,7 @@ class Node : public CBase_Node
 
   public:
 
-    Node (int depth, int blocksize, int tier,
+    Node (int N, int depth, int blocksize, int tier,
         int iLower, int iUpper, int jLower, int jUpper);
     NodeInfoMsg * info ();
     NodeBlockMsg * getBlock ();

@@ -1,5 +1,9 @@
 module messages
 {
+  message DenseMatrixMsg
+  {
+    double A[];
+  };
   message DoubleMsg;
   message EmptyMsg;
   message IntMsg;

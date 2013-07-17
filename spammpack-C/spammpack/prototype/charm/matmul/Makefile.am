@@ -20,6 +20,8 @@ matmul_SOURCES = \
 	messages.h \
 	node.cc \
 	node.h \
+	timer.cc \
+	timer.h \
 	types.h
 
 %.decl.h %.def.h : %.ci

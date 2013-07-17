@@ -8,6 +8,10 @@ AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
 AC_CHECK_PROG([CHARMC], [charmc], [charmc])
 AC_PROG_CXX([${CHARMC}])
 
+AC_SEARCH_LIBS([clock_gettime], [rt],
+               [],
+               [AC_MSG_FAILURE([need clock_gettime()])])
+
 AC_ARG_ENABLE([load-balance],
   [AS_HELP_STRING([--enable-load-balance],
                   [Enable a common set of load balancers during compile])],
@@ -25,6 +29,23 @@ AC_ARG_ENABLE([debug],
 if test "${enable_debug}" = "yes"; then
   AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output])
 fi
+
+AC_ARG_ENABLE([verify],
+  [AS_HELP_STRING([--enable-verify],
+                  [Verify multiplication result])],
+  [enable_verify=$enableval],
+  [enable_verify="no"])
+if test "${enable_verify}" = "yes"; then
+  AC_DEFINE([VERIFY_MULTIPLY], [1], [Verify multiplication result])
+fi
+
+AC_ARG_WITH([verify-tolerance],
+  [AS_HELP_STRING([--with-verify-tolerance],
+                  [Set the absolute tolerance of the verification])],
+  [verify_tolerance=$withval],
+  [verify_tolerance="1.0e-10"])
+AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absoluve
+                    toleranc of the multiply verification])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])

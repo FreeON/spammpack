@@ -3,7 +3,7 @@ module node
   extern module messages;
   chare Node
   {
-    entry Node (int depth, int blocksize, int tier,
+    entry Node (int N, int depth, int blocksize, int tier,
         int iLower, int iUpper, int jLower, int jUpper);
     entry [sync] NodeInfoMsg * info ();
     entry [sync] NodeBlockMsg * getBlock ();

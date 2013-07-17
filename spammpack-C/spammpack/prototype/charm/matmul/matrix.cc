@@ -1,6 +1,7 @@
 #include "matrix.h"
 #include "logger.h"
 #include "types.h"
+#include "index.h"
 #include <sstream>
 
 Matrix::Matrix (int N, int blocksize)
@@ -31,6 +32,30 @@ MatrixInfoMsg * Matrix::info ()
   }
 }
 
+DenseMatrixMsg * Matrix::getDense ()
+{
+  DenseMatrixMsg *A = new (N*N) DenseMatrixMsg();
+
+  if(rootNull)
+  {
+    memset(A->A, 0, sizeof(double)*N*N);
+  }
+
+  else
+  {
+    for(int i = 0; i < N; i++) {
+      for(int j = 0; j < N; j++)
+      {
+        DoubleMsg *m = root.get(i, j);
+        A->A[BLOCK_INDEX(i, j, 0, 0, N)] = m->x;
+        delete m;
+      }
+    }
+  }
+
+  return A;
+}
+
 void Matrix::random (CkCallback &cb)
 {
   DEBUG("generating random matrix\n");
@@ -50,7 +75,7 @@ void Matrix::initialize (enum init_t initType, CkCallback &cb)
     ABORT("root is not NULL\n");
   }
 
-  root = CProxy_Node::ckNew(depth, blocksize, 0, 0, NPadded, 0, NPadded);
+  root = CProxy_Node::ckNew(N, depth, blocksize, 0, 0, NPadded, 0, NPadded);
   rootNull = false;
   root.initialize(initType, 1, CkCallbackResumeThread());
   cb.send();

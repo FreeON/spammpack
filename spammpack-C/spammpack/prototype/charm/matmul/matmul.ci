@@ -2,6 +2,7 @@ mainmodule matmul
 {
   initnode void matmulInit();
   extern module matrix;
+  extern module messages;
   mainchare Main
   {
     entry Main (CkArgMsg *msg);
