@@ -38,4 +38,19 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
     MatrixInfoMsg (CProxy_Node root);
 };
 
+class NodeBlockMsg : public CMessage_NodeBlockMsg
+{
+  public:
+
+    double *block;
+};
+
+class NodeInfoMsg : public CMessage_NodeInfoMsg
+{
+  public:
+
+    bool childNull[4];
+    CProxy_Node child[4];
+};
+
 #endif

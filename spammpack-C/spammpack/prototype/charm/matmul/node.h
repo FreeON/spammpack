@@ -31,6 +31,8 @@ class Node : public CBase_Node
 
     Node (int depth, int blocksize, int tier,
         int iLower, int iUpper, int jLower, int jUpper);
+    NodeInfoMsg * info ();
+    NodeBlockMsg * getBlock ();
     DoubleMsg * get (int i, int j);
     void initialize (int initType, int index, CkCallback &cb);
     void initializeDone (IntMsg *index);

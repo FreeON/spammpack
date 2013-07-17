@@ -19,7 +19,7 @@ Matrix::Matrix (int N, int blocksize)
   NPadded = blocksize*(1 << depth);
 }
 
-MatrixInfoMsg * Matrix::getInfo ()
+MatrixInfoMsg * Matrix::info ()
 {
   if(rootNull)
   {
@@ -47,8 +47,7 @@ void Matrix::initialize (enum init_t initType, CkCallback &cb)
 {
   if(!rootNull)
   {
-    ERROR("root is not NULL\n");
-    CkExit();
+    ABORT("root is not NULL\n");
   }
 
   root = CProxy_Node::ckNew(depth, blocksize, 0, 0, NPadded, 0, NPadded);
@@ -66,6 +65,7 @@ void Matrix::print (CkCallback &cb)
 
   std::ostringstream o;
   o.setf(std::ios::fixed);
+
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++)
     {
@@ -81,8 +81,8 @@ void Matrix::print (CkCallback &cb)
 
 void Matrix::multiply (CProxy_Matrix A, CProxy_Matrix B, CkCallback &cb)
 {
-  MatrixInfoMsg *AInfo = A.getInfo();
-  MatrixInfoMsg *BInfo = B.getInfo();
+  MatrixInfoMsg *AInfo = A.info();
+  MatrixInfoMsg *BInfo = B.info();
 
   if(AInfo->rootNull || AInfo->rootNull)
   {

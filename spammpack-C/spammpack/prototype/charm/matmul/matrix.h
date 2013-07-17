@@ -20,7 +20,7 @@ class Matrix : public CBase_Matrix
   public:
 
     Matrix (int N, int blocksize);
-    MatrixInfoMsg * getInfo ();
+    MatrixInfoMsg * info ();
     void random (CkCallback &cb);
     void zero (CkCallback &cb);
     void initialize (enum init_t initType, CkCallback &cb);

@@ -72,7 +72,6 @@ class Main : public CBase_Main
       C.zero(CkCallbackResumeThread());
 
 #ifdef DEBUG_OUTPUT
-      CkPrintf("A\n");
       A.print(CkCallbackResumeThread());
 #endif
 
@@ -80,7 +79,6 @@ class Main : public CBase_Main
       C.multiply(A, A, CkCallbackResumeThread());
 
 #ifdef DEBUG_OUTPUT
-      CkPrintf("C\n");
       C.print(CkCallbackResumeThread());
 #endif
 

@@ -21,6 +21,24 @@ Node::Node (int depth, int blocksize, int tier,
   this->block = NULL;
 }
 
+NodeInfoMsg * Node::info ()
+{
+  NodeInfoMsg *m = new NodeInfoMsg();
+  for(int i = 0; i < 4; i++)
+  {
+    m->childNull[i] = childNull[i];
+    m->child[i] = child[i];
+  }
+  return m;
+}
+
+NodeBlockMsg * Node::getBlock ()
+{
+  NodeBlockMsg *m = new (blocksize*blocksize) NodeBlockMsg();
+  memcpy(m->block, block, sizeof(double)*blocksize*blocksize);
+  return m;
+}
+
 DoubleMsg * Node::get (int i, int j)
 {
   DEBUG("tier %d, i = [%d,%d), j = [%d,%d), getting (%d,%d)\n",
@@ -93,8 +111,7 @@ void Node::initialize (int initType, int index, CkCallback &cb)
         break;
 
       default:
-        ERROR("unknown initType\n");
-        CkExit();
+        ABORT("unknown initType\n");
         break;
     }
     cb.send(new IntMsg(index));
@@ -155,7 +172,57 @@ void Node::multiply (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb)
 {
   DEBUG("(%d) starting\n", index);
 
-  cb.send(new IntMsg(index));
+  callbackSet[index] = true;
+  this->cb[index] = cb;
+
+  if(tier == depth)
+  {
+    DEBUG("(%d) reached depth\n", index);
+    NodeBlockMsg *ABlock = A.getBlock();
+    NodeBlockMsg *BBlock = B.getBlock();
+
+    for(int i = 0; i < blocksize; i++) {
+      for(int j = 0; j < blocksize; j++) {
+        for(int k = 0; k < blocksize; k++)
+        {
+          block[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
+            ABlock->block[BLOCK_INDEX(i, k, 0, 0, blocksize)]
+            *BBlock->block[BLOCK_INDEX(k, j, 0, 0, blocksize)];
+        }
+      }
+    }
+
+    cb.send(new IntMsg(index));
+  }
+
+  else
+  {
+    NodeInfoMsg *AInfo = A.info();
+    NodeInfoMsg *BInfo = B.info();
+
+    for(int i = 0; i < 2; i++) {
+      for(int j = 0; j < 2; j++)
+      {
+        if(childNull[CHILD_INDEX(i, j)])
+        {
+          ABORT("create new child\n");
+        }
+
+        for(int k = 0; k < 2; k++)
+        {
+          int childIndex = (index << 3) | (i << 2) | (j << 1) | k;
+          childWorking[index].push_back(childIndex);
+          CkCallback thisCB(CkIndex_Node::multiplyDone(NULL), thisProxy);
+          DEBUG("(%d) descending C(%d,%d) <- A(%d,%d)*B(%d,%d)\n", index,
+              i, j, i, k, k, j);
+          child[CHILD_INDEX(i, j)].multiply(childIndex,
+              AInfo->child[CHILD_INDEX(i, k)],
+              BInfo->child[CHILD_INDEX(k, j)],
+              thisCB);
+        }
+      }
+    }
+  }
 }
 
 void Node::multiplyDone (IntMsg *index)

@@ -4,4 +4,9 @@ module messages
   message EmptyMsg;
   message IntMsg;
   message MatrixInfoMsg;
+  message NodeBlockMsg
+  {
+    double block[];
+  };
+  message NodeInfoMsg;
 };

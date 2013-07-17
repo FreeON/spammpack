@@ -5,6 +5,8 @@ module node
   {
     entry Node (int depth, int blocksize, int tier,
         int iLower, int iUpper, int jLower, int jUpper);
+    entry [sync] NodeInfoMsg * info ();
+    entry [sync] NodeBlockMsg * getBlock ();
     entry [sync] DoubleMsg * get (int i, int j);
     entry void initialize (int initType, int index, CkCallback &cb);
     entry void initializeDone (IntMsg *index);
