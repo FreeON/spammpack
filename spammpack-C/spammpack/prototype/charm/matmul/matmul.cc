@@ -60,8 +60,6 @@ class Main : public CBase_Main
         }
       }
 
-      CkPrintf("running on %d PEs\n", CkNumPes());
-
       DEBUG("calling run on this proxy\n");
       thisProxy.run(N, blocksize);
     }
@@ -85,7 +83,7 @@ class Main : public CBase_Main
       A.print(CkCallbackResumeThread());
 #endif
 
-      Timer t("multiplying C = A*A");
+      Timer t("%d PEs, multiplying C = A*A", CkNumPes());
       C.multiply(A, A, CkCallbackResumeThread());
       t.stop();
       CkPrintf(t.to_str());

@@ -4,10 +4,20 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
-Timer::Timer (std::string message)
+#define BUFFER_SIZE 2000
+
+Timer::Timer (const char *format, ...)
 {
-  this->message = message;
+  char output_buffer[BUFFER_SIZE];
+  va_list ap;
+
+  va_start(ap, format);
+  vsnprintf(output_buffer, BUFFER_SIZE, format, ap);
+  va_end(ap);
+
+  message = std::string(output_buffer);
   if(clock_gettime(CLOCK_MONOTONIC_RAW, &startTime) < 0)
   {
     printf("can not start timer\n");

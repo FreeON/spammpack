@@ -3,6 +3,7 @@
 
 #include <string>
 #include <time.h>
+#include <stdarg.h>
 
 class Timer
 {
@@ -14,7 +15,7 @@ class Timer
 
   public:
 
-    Timer (std::string message);
+    Timer (const char *format, ...);
     void stop ();
     const char * to_str ();
 };

@@ -24,6 +24,14 @@ matmul_SOURCES = \
 	timer.h \
 	types.h
 
+N = 2048
+B = 64
+
+run : matmul
+	for i in 1 2 4 8 12 16 20 24 28 32 36 40 44 48; do \
+		./charmrun +p$$i matmul -N $(N) -b $(B); \
+	done
+
 %.decl.h %.def.h : %.ci
 	$(AM_V_CXX)$(CHARMC) -preprocess $<
 
