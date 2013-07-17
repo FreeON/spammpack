@@ -11,7 +11,7 @@
 
 void matmulInit()
 {
-  DEBUG("on PE %d, turning manual LB on\n", CkMyPe());
+  //DEBUG("on PE %d, turning manual LB on\n", CkMyPe());
   //TurnManualLBOn();
 }
 
