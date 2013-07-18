@@ -2,10 +2,10 @@ AC_INIT([matmul], [2], [nicolasbock@gmail.com])
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
-AC_PROG_CC
-
 AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
 AC_CHECK_PROG([CHARMC], [charmc], [charmc])
+
+AC_PROG_CC([${CHARMC}])
 AC_PROG_CXX([${CHARMC}])
 
 AC_SEARCH_LIBS([clock_gettime], [rt],
