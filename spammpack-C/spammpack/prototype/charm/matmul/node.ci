@@ -12,5 +12,6 @@ module node
     entry void initializeDone (IntMsg *index);
     entry void multiply (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb);
     entry void multiplyDone (IntMsg *index);
+    entry void printLeafPes (int index, CkCallback &cb);
   };
 };

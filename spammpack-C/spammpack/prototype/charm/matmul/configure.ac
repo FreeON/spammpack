@@ -1,5 +1,5 @@
-AC_INIT([matmul], [1], [nicolasbock@gmail.com])
-AM_INIT_AUTOMAKE([silent-rules])
+AC_INIT([matmul], [2], [nicolasbock@gmail.com])
+AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
 AC_PROG_CC

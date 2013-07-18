@@ -27,6 +27,7 @@ class Matrix : public CBase_Matrix
     void initialize (enum init_t initType, CkCallback &cb);
     void print (CkCallback &cb);
     void multiply (CProxy_Matrix A, CProxy_Matrix B, CkCallback &cb);
+    void printLeafPes (CkCallback &cb);
 };
 
 #endif

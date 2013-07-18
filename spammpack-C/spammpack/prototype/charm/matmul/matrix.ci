@@ -11,5 +11,6 @@ module matrix
     entry void zero (CkCallback &cb);
     entry void print (CkCallback &cb);
     entry void multiply (CProxy_Matrix A, CProxy_Matrix B, CkCallback &cb);
+    entry void printLeafPes (CkCallback &cb);
   };
 };

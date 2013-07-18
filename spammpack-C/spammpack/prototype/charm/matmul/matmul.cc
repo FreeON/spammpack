@@ -23,13 +23,16 @@ class Main : public CBase_Main
     {
       int N = 1;
       int blocksize = 1;
+      int numberIterations = 1;
 
       int c;
-      const char *short_options = "hN:b:";
+      const char *short_options = "hN:b:i:";
       const option long_options[] = {
-        { "help",  no_argument,       NULL, 0 },
-        { "N",     required_argument, NULL, 'N' },
-        { "block", required_argument, NULL, 'b' }
+        { "help",       no_argument,        NULL, 0 },
+        { "N",          required_argument,  NULL, 'N' },
+        { "block",      required_argument,  NULL, 'b' },
+        { "iterations", no_argument,        NULL, 'i' },
+        { NULL, 0, NULL, 0 }
       };
 
       while((c = getopt_long(msg->argc, msg->argv, short_options,
@@ -39,10 +42,12 @@ class Main : public CBase_Main
         {
           case 'h':
             CkPrintf("Usage:\n");
-            CkPrintf("{ -h | --help }       This help\n");
-            CkPrintf("{ -N | --N } N        Create NxN matrix (default: %d)\n", N);
-            CkPrintf("{ -b | --block } B    Create BxB dense blocks at leaf "
+            CkPrintf("{ -h | --help }           This help\n");
+            CkPrintf("{ -N | --N } N            Create NxN matrix (default: %d)\n", N);
+            CkPrintf("{ -b | --block } B        Create BxB dense blocks at leaf "
                 "nodes (default: %d)\n", blocksize);
+            CkPrintf("{ -i | --iterations } N   Iterate on the product N times (default: "
+                " %d)\n", numberIterations);
             CkExit();
             break;
 
@@ -54,6 +59,10 @@ class Main : public CBase_Main
             blocksize = strtol(optarg, NULL, 10);
             break;
 
+          case 'i':
+            numberIterations = strtol(optarg, NULL, 10);
+            break;
+
           default:
             CkExit();
             break;
@@ -61,10 +70,10 @@ class Main : public CBase_Main
       }
 
       DEBUG("calling run on this proxy\n");
-      thisProxy.run(N, blocksize);
+      thisProxy.run(N, blocksize, numberIterations);
     }
 
-    void run (int N, int blocksize)
+    void run (int N, int blocksize, bool numberIterations)
     {
       CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
       CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
@@ -83,10 +92,14 @@ class Main : public CBase_Main
       A.print(CkCallbackResumeThread());
 #endif
 
-      Timer t("%d PEs, multiplying C = A*A", CkNumPes());
-      C.multiply(A, A, CkCallbackResumeThread());
-      t.stop();
-      CkPrintf(t.to_str());
+      for(int i = 0; i < numberIterations; i++)
+      {
+        Timer t("iteration %d on %d PEs, multiplying C = A*A", i, CkNumPes());
+        C.multiply(A, A, CkCallbackResumeThread());
+        t.stop();
+        CkPrintf(t.to_str());
+        C.printLeafPes(CkCallbackResumeThread());
+      }
 
 #ifdef DEBUG_OUTPUT
       C.print(CkCallbackResumeThread());

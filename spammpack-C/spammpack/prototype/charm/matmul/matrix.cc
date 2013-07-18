@@ -121,4 +121,15 @@ void Matrix::multiply (CProxy_Matrix A, CProxy_Matrix B, CkCallback &cb)
   cb.send();
 }
 
+void Matrix::printLeafPes (CkCallback &cb)
+{
+  if(rootNull)
+  {
+    cb.send();
+  }
+
+  root.printLeafPes(1, CkCallbackResumeThread());
+  cb.send();
+}
+
 #include "matrix.def.h"

@@ -2,6 +2,8 @@
 #include "logger.h"
 #include "messages.h"
 #include "index.h"
+#include <bitset>
+#include <string>
 
 Node::Node (int N, int depth, int blocksize, int tier,
     int iLower, int iUpper,
@@ -256,6 +258,33 @@ void Node::multiplyDone (IntMsg *index)
   CkCallback tempCb = cb[thisIndex];
   cb.erase(thisIndex);
   tempCb.send(new IntMsg(thisIndex));
+}
+
+void Node::printLeafPes (int index, CkCallback &cb)
+{
+  if(tier == depth)
+  {
+    std::string bitString = std::bitset<32>(index).to_string();
+    while(bitString[0] == '0')
+    {
+      bitString.erase(0, 1);
+    }
+    CkPrintf("leaf %s on PE %d\n", bitString.c_str(), CkMyPe());
+    cb.send();
+  }
+
+  else
+  {
+    for(int i = 0; i < 2; i++) {
+      for(int j = 0; j < 2; j++)
+      {
+        if(childNull[CHILD_INDEX(i, j)]) { continue; }
+        child[CHILD_INDEX(i, j)].printLeafPes((index << 2) | CHILD_INDEX(i, j),
+            CkCallbackResumeThread());
+      }
+    }
+    cb.send();
+  }
 }
 
 #include "node.def.h"

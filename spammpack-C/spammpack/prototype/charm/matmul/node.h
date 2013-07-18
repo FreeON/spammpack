@@ -39,6 +39,7 @@ class Node : public CBase_Node
     void initializeDone (IntMsg *index);
     void multiply (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb);
     void multiplyDone (IntMsg *index);
+    void printLeafPes (int index, CkCallback &cb);
 };
 
 #endif
