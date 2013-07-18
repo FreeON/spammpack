@@ -27,9 +27,11 @@ matmul_SOURCES = \
 N = 2048
 B = 64
 
+RSH = rsh
+
 run : matmul
 	for i in 1 2 4 8 12 16 20 24 28 32 36 40 44 48; do \
-		./charmrun +p$$i matmul -N $(N) -b $(B); \
+		./charmrun +p$$i ++remote-shell $(RSH) matmul -N $(N) -b $(B); \
 	done
 
 run-local : matmul
