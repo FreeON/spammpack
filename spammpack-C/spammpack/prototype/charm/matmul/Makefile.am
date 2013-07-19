@@ -1,4 +1,8 @@
-EXTRA_DIST = $(INTERFACE_FILES)
+EXTRA_DIST = \
+	$(INTERFACE_FILES) \
+	freeon-submit.sh \
+	freeon.job.template \
+	moonlight.sh
 
 INTERFACE_FILES = \
 	matmul.ci \
