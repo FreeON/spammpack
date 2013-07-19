@@ -26,7 +26,7 @@ class Main : public CBase_Main
       int numberIterations = 1;
 
       int c;
-      const char *short_options = "hN:b:i:";
+      const char *short_options = "hN:b:i";
       const option long_options[] = {
         { "help",       no_argument,        NULL, 0 },
         { "N",          required_argument,  NULL, 'N' },
