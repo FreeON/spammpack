@@ -2,7 +2,7 @@
 #
 # vim: tw=0
 #
-#PBS -N matmul
+#PBS -N matmul-1
 #PBS -l procs=1
 #PBS -m abe
 
@@ -13,4 +13,4 @@ B=32
 ITERATIONS=1
 
 cd ${PBS_O_WORKDIR}
-./charmrun -np ${NUMBER_NODES} matmul +isomalloc_sync -N ${N} -b ${B} -i ${ITERATIONS} --verify
+./charmrun -np ${NUMBER_NODES} matmul -N ${N} -b ${B} -i ${ITERATIONS}
