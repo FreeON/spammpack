@@ -5,7 +5,7 @@ AM_SILENT_RULES([yes])
 AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
 AC_CHECK_PROG([CHARMC], [charmc], [charmc])
 
-AC_PROG_CC([${CHARMC}])
+AC_PROG_CC
 AC_PROG_CXX([${CHARMC}])
 
 AC_SEARCH_LIBS([clock_gettime], [rt],
