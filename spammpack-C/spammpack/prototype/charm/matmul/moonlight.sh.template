@@ -3,4 +3,5 @@
 srun --mail-type=ALL --mail-user=nbock@lanl.gov \
   --nodes=1 \
   --job-name=matmul-1 \
+  --label \
   ./charmrun -np 1 matmul -N 2048 -b 64
