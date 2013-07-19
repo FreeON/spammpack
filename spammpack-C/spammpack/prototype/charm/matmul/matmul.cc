@@ -26,12 +26,12 @@ class Main : public CBase_Main
       int numberIterations = 1;
 
       int c;
-      const char *short_options = "hN:b:i";
+      const char *short_options = "hN:b:i:";
       const option long_options[] = {
         { "help",       no_argument,        NULL, 0 },
         { "N",          required_argument,  NULL, 'N' },
         { "block",      required_argument,  NULL, 'b' },
-        { "iterations", no_argument,        NULL, 'i' },
+        { "iterations", required_argument,  NULL, 'i' },
         { NULL, 0, NULL, 0 }
       };
 
@@ -73,7 +73,7 @@ class Main : public CBase_Main
       thisProxy.run(N, blocksize, numberIterations);
     }
 
-    void run (int N, int blocksize, bool numberIterations)
+    void run (int N, int blocksize, int numberIterations)
     {
       CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
       CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
@@ -92,6 +92,7 @@ class Main : public CBase_Main
       A.print(CkCallbackResumeThread());
 #endif
 
+      CkPrintf("running %d iterations\n", numberIterations);
       for(int i = 0; i < numberIterations; i++)
       {
         Timer t("iteration %d on %d PEs, multiplying C = A*A", i, CkNumPes());

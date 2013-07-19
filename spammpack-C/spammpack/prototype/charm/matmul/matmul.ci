@@ -6,6 +6,6 @@ mainmodule matmul
   mainchare Main
   {
     entry Main (CkArgMsg *msg);
-    entry [threaded] void run (int N, int blocksize, bool iterate);
+    entry [threaded] void run (int N, int blocksize, int numberIterations);
   };
 };
