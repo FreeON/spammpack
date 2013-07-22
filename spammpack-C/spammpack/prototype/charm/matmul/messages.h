@@ -38,11 +38,19 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
 {
   public:
 
-    bool rootNull;
-    CProxy_Node root;
+    /** The matrix size. */
+    int N;
 
-    MatrixInfoMsg ();
-    MatrixInfoMsg (CProxy_Node root);
+    /** The submatrix size at the lowest tier. */
+    int blocksize;
+
+    /** The tree depth of the matrix. */
+    int depth;
+
+    /** The array of nodes at tier == depth. */
+    CProxy_Node tierNode;
+
+    MatrixInfoMsg (int N, int blocksize, int depth, CProxy_Node tierNode);
 };
 
 class NodeBlockMsg : public CMessage_NodeBlockMsg

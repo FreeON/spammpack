@@ -41,6 +41,7 @@ Matrix::Matrix (int N, int blocksize)
             i*width, (i+1)*width, j*width, (j+1)*width);
       }
     }
+    tierNode[tier].doneInserting();
   }
 }
 
@@ -131,6 +132,18 @@ void Matrix::printLeafPes (CkCallback &cb)
     }
   }
   cb.send();
+}
+
+/** Get some basic information on the matrix.
+ *
+ * @return The matrix information.
+ */
+MatrixInfoMsg * Matrix::info ()
+{
+  DEBUG("here\n");
+  MatrixInfoMsg *msg = new MatrixInfoMsg(N, blocksize, depth, tierNode[depth]);
+  DEBUG("here\n");
+  return msg;
 }
 
 #include "matrix.def.h"

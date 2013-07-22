@@ -10,5 +10,6 @@ module matrix
     entry void zero (CkCallback &cb);
     entry void print (CkCallback &cb);
     entry void printLeafPes (CkCallback &cb);
+    entry [sync] MatrixInfoMsg * info ();
   };
 };

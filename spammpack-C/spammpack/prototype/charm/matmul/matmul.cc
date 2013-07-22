@@ -84,6 +84,7 @@ class Main : public CBase_Main
 
 #ifdef DEBUG_OUTPUT
       A.print(CkCallbackResumeThread());
+      C.print(CkCallbackResumeThread());
 #endif
 
       CkPrintf("running %d iterations\n", numberIterations);

@@ -52,6 +52,7 @@ Node::Node (int N, int depth, int blocksize, int tier,
 /** The migration method. */
 Node::Node (CkMigrateMessage *msg)
 {
+  ABORT("migrating\n");
 }
 
 /** Get the dense submatrix block.

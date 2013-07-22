@@ -44,6 +44,7 @@ class Matrix : public CBase_Matrix
     void initialize (enum init_t initType, CkCallback &cb);
     void print (CkCallback &cb);
     void printLeafPes (CkCallback &cb);
+    MatrixInfoMsg * info ();
 };
 
 #endif

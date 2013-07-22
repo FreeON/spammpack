@@ -7,7 +7,26 @@
  */
 
 #include "multiply.h"
+#include "messages.h"
+#include "logger.h"
+#include "index.h"
 
+/** The constructor.
+ *
+ * @param ANode The node of matrix A.
+ * @param BNode The node of matrix B.
+ * @param CNode The node of matrix C.
+ */
+MultiplyElement::MultiplyElement (int blocksize,
+    CProxyElement_Node ANode,
+    CProxyElement_Node BNode,
+    CProxyElement_Node CNode)
+{
+  this->blocksize = blocksize;
+  this->ANode = ANode;
+  this->BNode = BNode;
+  this->CNode = CNode;
+}
 
 /** The migration method.
  *
@@ -15,15 +34,73 @@
  */
 MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
+  ABORT("migrating\n");
 }
 
+/** Multiply nodes.
+ */
+void MultiplyElement::multiply (CkCallback &cb)
+{
+  NodeBlockMsg *ABlock = ANode.getBlock();
+  NodeBlockMsg *BBlock = BNode.getBlock();
+  NodeBlockMsg *CBlock = CNode.getBlock();
+
+  for(int i = 0; i < blocksize; i++) {
+    for(int j = 0; j < blocksize; j++) {
+      for(int k = 0; k < blocksize; k++)
+      {
+        CBlock->block[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
+          ABlock->block[BLOCK_INDEX(i, k, 0, 0, blocksize)]
+          *BBlock->block[BLOCK_INDEX(k, j, 0, 0, blocksize)];
+      }
+    }
+  }
+}
+
+/** The constructor.
+ *
+ * A full convolution (as a space filling curve) is constructed.
+ *
+ * @param A Matrix A.
+ * @param B Matrix B.
+ * @param C Matrix C.
+ */
 Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C)
 {
-}
+  DEBUG("initializing multiply\n");
 
-/** The constructor. */
-MultiplyElement::MultiplyElement ()
-{
+  MatrixInfoMsg *AInfo = A.info();
+  DEBUG("here\n");
+  MatrixInfoMsg *BInfo = B.info();
+  DEBUG("here\n");
+  MatrixInfoMsg *CInfo = C.info();
+  DEBUG("here\n");
+
+  if(AInfo->N != BInfo->N || AInfo->N != CInfo->N)
+  {
+    ABORT("matrix dimension mismatch\n");
+  }
+
+  if(AInfo->blocksize != BInfo->blocksize || AInfo->blocksize != CInfo->blocksize)
+  {
+    ABORT("blocksize mismatch\n");
+  }
+
+  convolution = CProxy_MultiplyElement::ckNew();
+  for(int i = 0; i < (1 << CInfo->depth); i++) {
+    for(int j = 0; j < (1 << CInfo->depth); j++) {
+      for(int k = 0; k < (1 << CInfo->depth); k++)
+      {
+        DEBUG("inserting convolution at (%d,%d) <- (%d,%d) * (%d,%d)\n",
+            i, j, i, k, k, j);
+        convolution(i, j, k).insert(CInfo->blocksize,
+            AInfo->tierNode(i, k),
+            BInfo->tierNode(k, j),
+            CInfo->tierNode(i, j));
+      }
+    }
+  }
+  convolution.doneInserting();
 }
 
 /** Multiply two Matrix objects.
@@ -32,7 +109,18 @@ MultiplyElement::MultiplyElement ()
  */
 void Multiply::multiply (CkCallback &cb)
 {
-  cb.send();
+  done = cb;
+
+  CkCallback elementsDone(CkReductionTarget(Multiply, multiplyDone), thisProxy);
+
+  convolution.multiply(elementsDone);
+}
+
+/** Reduction target.
+ */
+void Multiply::multiplyDone ()
+{
+  done.send();
 }
 
 //void Node::multiply (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb)
