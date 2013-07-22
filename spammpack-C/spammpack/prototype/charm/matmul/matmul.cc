@@ -9,12 +9,6 @@
 #include "index.h"
 #endif
 
-void matmulInit()
-{
-  //DEBUG("on PE %d, turning manual LB on\n", CkMyPe());
-  //TurnManualLBOn();
-}
-
 class Main : public CBase_Main
 {
   public:

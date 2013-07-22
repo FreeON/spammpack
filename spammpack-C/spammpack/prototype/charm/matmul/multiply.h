@@ -16,7 +16,7 @@ class MultiplyElement : public CBase_MultiplyElement
   public:
 
     MultiplyElement ();
-    MultiplyElement(CkMigrateMessage *msg);
+    MultiplyElement (CkMigrateMessage *msg);
 };
 
 class Multiply : public CBase_Multiply

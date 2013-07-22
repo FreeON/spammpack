@@ -9,6 +9,5 @@ module multiply
   array [3D] MultiplyElement
   {
     entry MultiplyElement ();
-    entry MultiplyElement(CkMigrateMessage *msg);
   };
 };

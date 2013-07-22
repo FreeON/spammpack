@@ -88,12 +88,10 @@ void Matrix::zero (CkCallback &cb)
  */
 void Matrix::initialize (enum init_t initType, CkCallback &cb)
 {
-  for(int tier = depth; tier >= 0; tier--) {
-    for(int i = 0; i < (1 << tier); i++) {
-      for(int j = 0; j < (1 << tier); j++)
-      {
-        tierNode[tier](i, j).initialize(initType, 1, CkCallbackResumeThread());
-      }
+  for(int i = 0; i < (1 << depth); i++) {
+    for(int j = 0; j < (1 << depth); j++)
+    {
+      tierNode[depth](i, j).initialize(initType, CkCallbackResumeThread());
     }
   }
   cb.send();
@@ -107,9 +105,9 @@ void Matrix::print (CkCallback &cb)
   o.setf(std::ios::fixed);
 
   for(int i = 0; i < (1 << depth); i++) {
-    for(int i_block = i*blocksize; i_block < (i+1)*blocksize && i_block < N; i++) {
+    for(int i_block = i*blocksize; i_block < (i+1)*blocksize && i_block < N; i_block++) {
       for(int j = 0; j < (1 << depth); j++) {
-        for(int j_block = j*blocksize; j_block < (j+1)*blocksize && j_block < N; i++)
+        for(int j_block = j*blocksize; j_block < (j+1)*blocksize && j_block < N; j_block++)
         {
           DoubleMsg *m = tierNode[depth](i, j).get(i_block, j_block);
           o << " " << m->x;

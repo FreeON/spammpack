@@ -2,10 +2,9 @@ AC_INIT([matmul], [3], [nicolasbock@gmail.com])
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
-AC_ARG_VAR([DOXYGEN], [The doxygen executable])
+AC_ARG_VAR([DOXYGEN], [The doxygen executable (for building the documentation)])
 AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen])
 
-AC_ARG_VAR([DOT], [The filter for drawing directed graphs])
 AC_CHECK_PROG([DOT], [dot], [dot])
 if test -n ${DOT}; then
   have_dot="yes"

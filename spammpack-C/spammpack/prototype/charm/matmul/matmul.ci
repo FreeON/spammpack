@@ -1,6 +1,5 @@
 mainmodule matmul
 {
-  initnode void matmulInit();
   extern module multiply;
   extern module matrix;
   extern module messages;

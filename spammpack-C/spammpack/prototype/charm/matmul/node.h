@@ -43,6 +43,9 @@ class Node : public CBase_Node
     /** The upper column index. */
     int jUpper;
 
+    /** The linear index of this node. */
+    int index;
+
     std::map<int, bool> callbackSet;
     std::map<int, CkCallback> cb;
 
@@ -54,13 +57,10 @@ class Node : public CBase_Node
 
     Node (int N, int depth, int blocksize, int tier, int iLower, int iUpper,
         int jLower, int jUpper);
-    NodeInfoMsg * info ();
+    Node (CkMigrateMessage *msg);
     NodeBlockMsg * getBlock ();
     DoubleMsg * get (int i, int j);
-    void initialize (int initType, int index, CkCallback &cb);
-    void initializeDone (IntMsg *index);
-    void multiply (int index, CProxy_Node A, CProxy_Node B, CkCallback &cb);
-    void multiplyDone (IntMsg *index);
+    void initialize (int initType, CkCallback &cb);
     void printLeafPes (int index, CkCallback &cb);
 };
 
