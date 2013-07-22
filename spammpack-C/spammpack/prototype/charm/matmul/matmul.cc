@@ -93,10 +93,11 @@ class Main : public CBase_Main
 #endif
 
       CkPrintf("running %d iterations\n", numberIterations);
+      CProxy_Multiply M = CProxy_Multiply::ckNew(A, A, C);
       for(int i = 0; i < numberIterations; i++)
       {
         Timer t("iteration %d on %d PEs, multiplying C = A*A", i, CkNumPes());
-        C.multiply(A, A, CkCallbackResumeThread());
+        M.multiply(CkCallbackResumeThread());
         t.stop();
         CkPrintf(t.to_str());
         C.printLeafPes(CkCallbackResumeThread());

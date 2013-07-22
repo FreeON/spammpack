@@ -1,10 +1,10 @@
 module node
 {
   extern module messages;
-  chare Node
+  array [2D] Node
   {
-    entry Node (int N, int depth, int blocksize, int tier,
-        int iLower, int iUpper, int jLower, int jUpper);
+    entry Node (int N, int depth, int blocksize, int tier, int iLower,
+        int iUpper, int jLower, int jUpper);
     entry [sync] NodeInfoMsg * info ();
     entry [sync] NodeBlockMsg * getBlock ();
     entry [sync] DoubleMsg * get (int i, int j);

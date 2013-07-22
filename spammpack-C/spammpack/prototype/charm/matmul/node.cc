@@ -1,3 +1,11 @@
+/** @file
+ *
+ * The implementation of the Node class.
+ *
+ * @author Nicolas Bock <nicolas.bock@freeon.org>
+ * @author Matt Challacombe <matt.challacombe@freeon.org>
+ */
+
 #include "node.h"
 #include "logger.h"
 #include "messages.h"
@@ -5,6 +13,7 @@
 #include <bitset>
 #include <string>
 
+/** The constructor. */
 Node::Node (int N, int depth, int blocksize, int tier,
     int iLower, int iUpper,
     int jLower, int jUpper)
@@ -17,10 +26,6 @@ Node::Node (int N, int depth, int blocksize, int tier,
   this->iUpper = iUpper;
   this->jLower = jLower;
   this->jUpper = jUpper;
-  for(int i = 0; i < 4; i++)
-  {
-    childNull[i] = true;
-  }
   this->block = NULL;
 }
 
@@ -80,6 +85,11 @@ DoubleMsg * Node::get (int i, int j)
   }
 }
 
+/** Initialize a Node.
+ *
+ * @param initType How to initialize the Matrix.
+ * @param index The linear matrix index.
+ */
 void Node::initialize (int initType, int index, CkCallback &cb)
 {
   DEBUG("(%d) initializing\n", index);
@@ -120,29 +130,8 @@ void Node::initialize (int initType, int index, CkCallback &cb)
         ABORT("unknown initType\n");
         break;
     }
-    cb.send(new IntMsg(index));
   }
-
-  else
-  {
-    std::list<int> tempDone;
-    childWorking[index] = tempDone;
-    for(int i = 0; i < 2; i++) {
-      for(int j = 0; j < 2; j++)
-      {
-        int childIndex = (index << 2) | CHILD_INDEX(i, j);
-        DEBUG("creating child[%d] with index %d\n", CHILD_INDEX(i, j), childIndex);
-        childWorking[index].push_back(childIndex);
-        child[CHILD_INDEX(i, j)] = CProxy_Node::ckNew(N, depth, blocksize,
-            tier+1,
-            iLower+(iUpper-iLower)/2*i, iLower+(iUpper-iLower)/2*(i+1),
-            jLower+(jUpper-jLower)/2*j, jLower+(jUpper-jLower)/2*(j+1));
-        childNull[CHILD_INDEX(i, j)] = false;
-        CkCallback thisCB(CkIndex_Node::initializeDone(NULL), thisProxy);
-        child[CHILD_INDEX(i, j)].initialize(initType, childIndex, thisCB);
-      }
-    }
-  }
+  cb.send(new IntMsg(index));
 }
 
 void Node::initializeDone (IntMsg *index)

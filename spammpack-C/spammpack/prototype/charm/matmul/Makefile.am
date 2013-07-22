@@ -9,6 +9,7 @@ INTERFACE_FILES = \
 	matmul.ci \
 	matrix.ci \
 	messages.ci \
+	multiply.ci \
 	node.ci
 
 AM_CXXFLAGS = @LOADBALANCER_FLAGS@
@@ -23,6 +24,8 @@ matmul_SOURCES = \
 	matrix.h \
 	messages.cc \
 	messages.h \
+	multiply.cc \
+	multiply.h \
 	node.cc \
 	node.h \
 	timer.cc \

@@ -1,0 +1,14 @@
+module multiply
+{
+  extern module matrix;
+  chare Multiply
+  {
+    entry Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C);
+    entry void multiply (CkCallback &cb);
+  };
+  array [3D] MultiplyElement
+  {
+    entry MultiplyElement ();
+    entry MultiplyElement(CkMigrateMessage *msg);
+  };
+};
