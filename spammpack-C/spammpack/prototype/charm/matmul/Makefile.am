@@ -47,6 +47,10 @@ run-local : matmul
 %.decl.h %.def.h : %.ci
 	$(AM_V_CXX)$(CHARMC) -preprocess $<
 
+
+docs :
+	$(DOXYGEN)
+
 AM_LDFLAGS = -language charm++
 
 BUILT_SOURCES = $(foreach i, $(INTERFACE_FILES), $(basename $i).decl.h $(basename $i).def.h)

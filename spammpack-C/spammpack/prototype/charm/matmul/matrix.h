@@ -5,6 +5,8 @@
 #include "messages.h"
 #include "types.h"
 
+/** A matrix.
+ */
 class Matrix : public CBase_Matrix
 {
   private:

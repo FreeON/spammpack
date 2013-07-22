@@ -2,6 +2,22 @@ AC_INIT([matmul], [2], [nicolasbock@gmail.com])
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
+AC_ARG_VAR([DOXYGEN], [The doxygen executable])
+AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen])
+
+AC_ARG_VAR([DOT], [The filter for drawing directed graphs])
+AC_CHECK_PROG([DOT], [dot], [dot])
+if test -n ${DOT}; then
+  have_dot="yes"
+else
+  have_dot="no"
+fi
+AC_SUBST([PROJECT_NAME], [${PACKAGE_NAME}])
+AC_SUBST([PROJECT_NUMBER], [${PACKAGE_VERSION}])
+AC_SUBST([HAVE_DOT], [${have_dot}])
+
+AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
+
 AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
 AC_CHECK_PROG([CHARMC], [charmc], [charmc])
 
@@ -48,6 +64,6 @@ AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absoluve
                     toleranc of the multiply verification])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile Doxyfile])
 
 AC_OUTPUT
