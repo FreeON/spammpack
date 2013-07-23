@@ -32,7 +32,7 @@ class MultiplyElement : public CBase_MultiplyElement
         CProxyElement_Node BNode,
         CProxyElement_Node CNode);
     MultiplyElement (CkMigrateMessage *msg);
-    void multiply (CkCallback &cb);
+    void multiply (CkCallback &done);
 };
 
 class Multiply : public CBase_Multiply

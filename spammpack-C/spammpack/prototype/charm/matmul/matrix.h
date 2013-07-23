@@ -39,12 +39,12 @@ class Matrix : public CBase_Matrix
 
     Matrix (int N, int blocksize);
     DenseMatrixMsg * getDense ();
+    MatrixInfoMsg * info ();
     void random (CkCallback &cb);
     void zero (CkCallback &cb);
     void initialize (enum init_t initType, CkCallback &cb);
     void print (CkCallback &cb);
     void printLeafPes (CkCallback &cb);
-    MatrixInfoMsg * info ();
 };
 
 #endif

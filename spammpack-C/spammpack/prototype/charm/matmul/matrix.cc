@@ -27,6 +27,9 @@ Matrix::Matrix (int N, int blocksize)
   if(blocksize*(1 << depth) < N) depth++;
   NPadded = blocksize*(1 << depth);
 
+  DEBUG("N = %d, blocksize = %d, depth = %d, NPadded = %d\n",
+      N, blocksize, depth, NPadded);
+
   tierNode.resize(depth+1);
   for(int tier = 0; tier <= depth; tier++)
   {
@@ -66,6 +69,20 @@ DenseMatrixMsg * Matrix::getDense ()
   }
 
   return A;
+}
+
+/** Get some basic information on the matrix.
+ *
+ * @return The matrix information.
+ */
+MatrixInfoMsg * Matrix::info ()
+{
+  DEBUG("getting matrix info\n");
+  NodeInfoMsg *nodeInfo = tierNode[depth](0,0).info();
+  DEBUG("node(0,0)->index = %d\n", nodeInfo->index);
+  delete nodeInfo;
+  MatrixInfoMsg *msg = new MatrixInfoMsg(N, blocksize, depth, tierNode[depth]);
+  return msg;
 }
 
 /** Initialize a Matrix with random numbers. */
@@ -132,18 +149,6 @@ void Matrix::printLeafPes (CkCallback &cb)
     }
   }
   cb.send();
-}
-
-/** Get some basic information on the matrix.
- *
- * @return The matrix information.
- */
-MatrixInfoMsg * Matrix::info ()
-{
-  DEBUG("here\n");
-  MatrixInfoMsg *msg = new MatrixInfoMsg(N, blocksize, depth, tierNode[depth]);
-  DEBUG("here\n");
-  return msg;
 }
 
 #include "matrix.def.h"

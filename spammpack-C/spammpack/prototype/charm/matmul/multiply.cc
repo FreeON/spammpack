@@ -22,6 +22,7 @@ MultiplyElement::MultiplyElement (int blocksize,
     CProxyElement_Node BNode,
     CProxyElement_Node CNode)
 {
+  DEBUG("initializing multiply element\n");
   this->blocksize = blocksize;
   this->ANode = ANode;
   this->BNode = BNode;
@@ -39,8 +40,10 @@ MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 
 /** Multiply nodes.
  */
-void MultiplyElement::multiply (CkCallback &cb)
+void MultiplyElement::multiply (CkCallback &done)
 {
+  DEBUG("(%d,%d,%d) multiply\n", thisIndex.x, thisIndex.y, thisIndex.z);
+
   NodeBlockMsg *ABlock = ANode.getBlock();
   NodeBlockMsg *BBlock = BNode.getBlock();
   NodeBlockMsg *CBlock = CNode.getBlock();
@@ -55,6 +58,7 @@ void MultiplyElement::multiply (CkCallback &cb)
       }
     }
   }
+  contribute(done);
 }
 
 /** The constructor.
@@ -101,6 +105,7 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C)
     }
   }
   convolution.doneInserting();
+  DEBUG("done initializing convolution\n");
 }
 
 /** Multiply two Matrix objects.
@@ -109,10 +114,9 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C)
  */
 void Multiply::multiply (CkCallback &cb)
 {
+  DEBUG("multiplying...\n");
   done = cb;
-
   CkCallback elementsDone(CkReductionTarget(Multiply, multiplyDone), thisProxy);
-
   convolution.multiply(elementsDone);
 }
 

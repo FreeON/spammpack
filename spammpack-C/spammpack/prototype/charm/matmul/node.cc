@@ -103,6 +103,17 @@ DoubleMsg * Node::get (int i, int j)
   }
 }
 
+/** Get information on a Node.
+ *
+ * @return A message.
+ */
+NodeInfoMsg * Node::info ()
+{
+  DEBUG("getting node info on index %d\n", index);
+  NodeInfoMsg *msg = new NodeInfoMsg(index);
+  return msg;
+}
+
 /** Initialize a Node.
  *
  * @param initType How to initialize the Matrix.
@@ -114,7 +125,7 @@ void Node::initialize (int initType, CkCallback &cb)
     ABORT("not at depth\n");
   }
 
-  DEBUG("(%d) initializing\n", index);
+  DEBUG("(%d,%d) index %d, initializing\n", thisIndex.x, thisIndex.y, index);
 
   if(callbackSet[index])
   {

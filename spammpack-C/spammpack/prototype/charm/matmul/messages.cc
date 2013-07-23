@@ -7,6 +7,7 @@
  */
 
 #include "messages.h"
+#include "logger.h"
 
 DoubleMsg::DoubleMsg (double x)
 {
@@ -23,10 +24,16 @@ IntMsg::IntMsg (int i)
 MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth,
     CProxy_Node tierNode)
 {
+  DEBUG("getting matrix info\n");
   this->N = N;
   this->blocksize = blocksize;
   this->depth = depth;
   this->tierNode = tierNode;
+}
+
+NodeInfoMsg::NodeInfoMsg (int index)
+{
+  this->index = index;
 }
 
 #include "messages.def.h"

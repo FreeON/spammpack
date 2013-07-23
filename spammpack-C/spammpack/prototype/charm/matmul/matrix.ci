@@ -6,10 +6,10 @@ module matrix
   {
     entry Matrix (int N, int blocksize);
     entry [sync] DenseMatrixMsg * getDense ();
+    entry [sync] MatrixInfoMsg * info ();
     entry void random (CkCallback &cb);
     entry void zero (CkCallback &cb);
     entry void print (CkCallback &cb);
     entry void printLeafPes (CkCallback &cb);
-    entry [sync] MatrixInfoMsg * info ();
   };
 };

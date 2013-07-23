@@ -7,7 +7,7 @@ module multiply
         CProxyElement_Node ANode,
         CProxyElement_Node BNode,
         CProxyElement_Node CNode);
-    entry void multiply (CkCallback &cb);
+    entry void multiply (CkCallback &done);
   };
   chare Multiply
   {

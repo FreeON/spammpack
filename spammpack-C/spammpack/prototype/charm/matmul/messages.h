@@ -64,8 +64,10 @@ class NodeInfoMsg : public CMessage_NodeInfoMsg
 {
   public:
 
-    bool childNull[4];
-    CProxy_Node child[4];
+    /** The linear index of this node. */
+    int index;
+
+    NodeInfoMsg (int index);
 };
 
 #endif
