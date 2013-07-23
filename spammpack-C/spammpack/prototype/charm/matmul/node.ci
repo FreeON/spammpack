@@ -8,6 +8,7 @@ module node
     entry [sync] NodeBlockMsg * getBlock ();
     entry [sync] DoubleMsg * get (int i, int j);
     entry [sync] NodeInfoMsg * info ();
+    entry [sync] EmptyMsg * printPE ();
     entry void initialize (int initType, CkCallback &cb);
     entry void printLeafPes (int index, CkCallback &cb);
   };

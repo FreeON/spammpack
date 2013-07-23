@@ -114,6 +114,13 @@ NodeInfoMsg * Node::info ()
   return msg;
 }
 
+/** Print the PE this Node is on. */
+EmptyMsg * Node::printPE ()
+{
+  CkPrintf("node is on PE %d\n", CkMyPe());
+  return new EmptyMsg();
+}
+
 /** Initialize a Node.
  *
  * @param initType How to initialize the Matrix.
@@ -148,7 +155,7 @@ void Node::initialize (int initType, CkCallback &cb)
       for(int i = 0; i < blocksize && i+iLower < N; i++) {
         for(int j = 0; j < blocksize && j+jLower < N; j++)
         {
-          block[BLOCK_INDEX(i, i, 0, 0, blocksize)] = rand()/(double) RAND_MAX;
+          block[BLOCK_INDEX(i, j, 0, 0, blocksize)] = rand()/(double) RAND_MAX;
         }
       }
       break;

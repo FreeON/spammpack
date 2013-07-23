@@ -61,6 +61,7 @@ class Node : public CBase_Node
     NodeBlockMsg * getBlock ();
     DoubleMsg * get (int i, int j);
     NodeInfoMsg * info ();
+    EmptyMsg * printPE ();
     void initialize (int initType, CkCallback &cb);
     void printLeafPes (int index, CkCallback &cb);
 };

@@ -30,22 +30,19 @@ Matrix::Matrix (int N, int blocksize)
   DEBUG("N = %d, blocksize = %d, depth = %d, NPadded = %d\n",
       N, blocksize, depth, NPadded);
 
-  tierNode.resize(depth+1);
-  for(int tier = 0; tier <= depth; tier++)
-  {
-    int NTier = 1 << tier;
-    int width = NPadded >> tier;
+  int NTier = 1 << depth;
+  int width = NPadded >> depth;
 
-    tierNode[tier] = CProxy_Node::ckNew();
-    for(int i = 0; i < NTier; i++) {
-      for(int j = 0; j < NTier; j++)
-      {
-        tierNode[tier](i, j).insert(N, depth, blocksize, tier,
-            i*width, (i+1)*width, j*width, (j+1)*width);
-      }
+  tierNode = CProxy_Node::ckNew();
+  for(int i = 0; i < NTier; i++) {
+    for(int j = 0; j < NTier; j++)
+    {
+      DEBUG("adding node(%d,%d)\n", i, j);
+      tierNode(i, j).insert(N, depth, blocksize, depth,
+          i*width, (i+1)*width, j*width, (j+1)*width);
     }
-    tierNode[tier].doneInserting();
   }
+  tierNode.doneInserting();
 }
 
 /** Convert a Matrix to a dense array. */
@@ -60,7 +57,7 @@ DenseMatrixMsg * Matrix::getDense ()
       for(int i_block = i*blocksize; i_block < (i+1)*blocksize && i_block < N; i_block++) {
         for(int j_block = j*blocksize; j_block < (j+1)*blocksize && j_block < N; j_block++)
         {
-          DoubleMsg *m = tierNode[depth](i, j).get(i_block, j_block);
+          DoubleMsg *m = tierNode(i, j).get(i_block, j_block);
           A->A[BLOCK_INDEX(i_block, j_block, 0, 0, N)] = m->x;
           delete m;
         }
@@ -77,11 +74,8 @@ DenseMatrixMsg * Matrix::getDense ()
  */
 MatrixInfoMsg * Matrix::info ()
 {
-  DEBUG("getting matrix info\n");
-  NodeInfoMsg *nodeInfo = tierNode[depth](0,0).info();
-  DEBUG("node(0,0)->index = %d\n", nodeInfo->index);
-  delete nodeInfo;
-  MatrixInfoMsg *msg = new MatrixInfoMsg(N, blocksize, depth, tierNode[depth]);
+  DEBUG("getting matrix info, depth = %d\n", depth);
+  MatrixInfoMsg *msg = new MatrixInfoMsg(N, blocksize, depth, tierNode);
   return msg;
 }
 
@@ -89,14 +83,14 @@ MatrixInfoMsg * Matrix::info ()
 void Matrix::random (CkCallback &cb)
 {
   DEBUG("generating random matrix\n");
-  initialize(initRandom, cb);
+  thisProxy.initialize(initRandom, cb);
 }
 
 /** Initialize a Matrix with zeros. */
 void Matrix::zero (CkCallback &cb)
 {
   DEBUG("setting matrix to zero\n");
-  initialize(initZero, cb);
+  thisProxy.initialize(initZero, cb);
 }
 
 /** Initialize a Matrix.
@@ -104,12 +98,12 @@ void Matrix::zero (CkCallback &cb)
  * @param initType How to initialize the Matrix.
  * @param cb The callback.
  */
-void Matrix::initialize (enum init_t initType, CkCallback &cb)
+void Matrix::initialize (int initType, CkCallback &cb)
 {
   for(int i = 0; i < (1 << depth); i++) {
     for(int j = 0; j < (1 << depth); j++)
     {
-      tierNode[depth](i, j).initialize(initType, CkCallbackResumeThread());
+      tierNode(i, j).initialize(initType, CkCallbackResumeThread());
     }
   }
   cb.send();
@@ -127,7 +121,7 @@ void Matrix::print (CkCallback &cb)
       for(int j = 0; j < (1 << depth); j++) {
         for(int j_block = j*blocksize; j_block < (j+1)*blocksize && j_block < N; j_block++)
         {
-          DoubleMsg *m = tierNode[depth](i, j).get(i_block, j_block);
+          DoubleMsg *m = tierNode(i, j).get(i_block, j_block);
           o << " " << m->x;
           delete m;
         }
@@ -139,13 +133,14 @@ void Matrix::print (CkCallback &cb)
   cb.send();
 }
 
-/** Print the PEs the leafs sit on. */
+/** Print the PEs the leafs sit on.
+ */
 void Matrix::printLeafPes (CkCallback &cb)
 {
   for(int i = 0; i < (1 << depth); i++) {
     for(int j = 0; j < (1 << depth); j++)
     {
-      tierNode[depth](i, j).printLeafPes(1, CkCallbackResumeThread());
+      tierNode(i, j).printLeafPes(1, CkCallbackResumeThread());
     }
   }
   cb.send();

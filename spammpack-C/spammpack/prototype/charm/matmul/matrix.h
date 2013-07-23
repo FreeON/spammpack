@@ -12,7 +12,6 @@
 #include "matrix.decl.h"
 #include "messages.h"
 #include "types.h"
-#include <vector>
 
 /** A matrix.
  */
@@ -33,7 +32,7 @@ class Matrix : public CBase_Matrix
     int NPadded;
 
     /** The array of Node objects. There is one array per tier. */
-    std::vector<CProxy_Node> tierNode;
+    CProxy_Node tierNode;
 
   public:
 
@@ -42,7 +41,7 @@ class Matrix : public CBase_Matrix
     MatrixInfoMsg * info ();
     void random (CkCallback &cb);
     void zero (CkCallback &cb);
-    void initialize (enum init_t initType, CkCallback &cb);
+    void initialize (int initType, CkCallback &cb);
     void print (CkCallback &cb);
     void printLeafPes (CkCallback &cb);
 };

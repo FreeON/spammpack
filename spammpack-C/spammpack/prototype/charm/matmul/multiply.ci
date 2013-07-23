@@ -1,6 +1,7 @@
 module multiply
 {
   extern module matrix;
+  extern module node;
   array [3D] MultiplyElement
   {
     entry MultiplyElement (int blocksize,
