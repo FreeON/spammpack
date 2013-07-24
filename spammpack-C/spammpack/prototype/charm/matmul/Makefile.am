@@ -5,6 +5,7 @@ EXTRA_DIST = \
 	moonlight-submit.sh \
 	moonlight.sh.template \
 	mustang-submit.sh \
+	mustang-results.sh \
 	mustang.job.template
 
 INTERFACE_FILES = \
