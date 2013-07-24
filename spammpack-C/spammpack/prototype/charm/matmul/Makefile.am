@@ -3,7 +3,9 @@ EXTRA_DIST = \
 	freeon-submit.sh \
 	freeon.job.template \
 	moonlight-submit.sh \
-	moonlight.sh.template
+	moonlight.sh.template \
+	mustang-submit.sh \
+	mustang.job
 
 INTERFACE_FILES = \
 	matmul.ci \
