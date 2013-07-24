@@ -9,28 +9,44 @@
 #include "messages.h"
 #include "logger.h"
 
+/** The constructor.
+ *
+ * @param x The double value.
+ */
 DoubleMsg::DoubleMsg (double x)
 {
   this->x = x;
 }
 
+/** The constructor.
+ *
+ * @param i The integer value.
+ */
 IntMsg::IntMsg (int i)
 {
   this->i = i;
 }
 
 /** The contructor.
+ *
+ * @param N The matrix size.
+ * @param blocksize The submatrix size at the lowest tier.
+ * @param depth The tree depth of the matrix.
+ * @param tierNode The array of Node objects. There is one array per tier.
  */
 MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth,
     CProxy_Node tierNode)
 {
-  DEBUG("getting matrix info\n");
   this->N = N;
   this->blocksize = blocksize;
   this->depth = depth;
   this->tierNode = tierNode;
 }
 
+/** The constructor.
+ *
+ * @param index The linear index of this node.
+ */
 NodeInfoMsg::NodeInfoMsg (int index)
 {
   this->index = index;

@@ -74,7 +74,6 @@ DenseMatrixMsg * Matrix::getDense ()
  */
 MatrixInfoMsg * Matrix::info ()
 {
-  DEBUG("getting matrix info, depth = %d\n", depth);
   MatrixInfoMsg *msg = new MatrixInfoMsg(N, blocksize, depth, tierNode);
   return msg;
 }

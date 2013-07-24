@@ -11,6 +11,7 @@
 
 #include "multiply.decl.h"
 
+/** An element in the convolution curve. */
 class MultiplyElement : public CBase_MultiplyElement
 {
   private:
@@ -21,8 +22,13 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The submatrix size at the lowest tier. */
     int blocksize;
 
+    /** Submatrix A. */
     CProxyElement_Node ANode;
+
+    /** Submatrix B. */
     CProxyElement_Node BNode;
+
+    /** Submatrix C. */
     CProxyElement_Node CNode;
 
   public:
@@ -35,17 +41,22 @@ class MultiplyElement : public CBase_MultiplyElement
     void multiply (CkCallback &done);
 };
 
+/** A multiplication. */
 class Multiply : public CBase_Multiply
 {
   private:
 
+    /** The convolution. A 3D space filling curve in the product space. */
     CProxy_MultiplyElement convolution;
+
+    /** A callback to signal the completion of the multiplication. */
     CkCallback done;
 
   public:
 
-    Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C);
-    void multiply (CkCallback &cb);
+    Multiply ();
+    void multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
+        CkCallback &cb);
     void multiplyDone ();
 };
 
