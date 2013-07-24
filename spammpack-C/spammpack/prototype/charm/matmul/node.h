@@ -44,7 +44,7 @@ class Node : public CBase_Node
     int jUpper;
 
     /** The linear index of this node. */
-    int index;
+    unsigned int index;
 
     std::map<int, bool> callbackSet;
     std::map<int, CkCallback> cb;
@@ -61,9 +61,10 @@ class Node : public CBase_Node
     NodeBlockMsg * getBlock ();
     DoubleMsg * get (int i, int j);
     NodeInfoMsg * info ();
-    EmptyMsg * printPE ();
+    void printPE (CkCallback &cb);
     void initialize (int initType, CkCallback &cb);
-    void printLeafPes (int index, CkCallback &cb);
+    void printLeafPes (CkCallback &cb);
+    void add (int blocksize, double *A);
 };
 
 #endif

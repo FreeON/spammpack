@@ -32,17 +32,12 @@ Node::Node (int N, int depth, int blocksize, int tier,
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
   std::bitset<8*sizeof(int)> jIndex(thisIndex.y);
-  std::bitset<8*sizeof(int)> tempIndex(0);
-  for(int i = 0; i < 4*sizeof(int); i++)
+  std::bitset<8*sizeof(int)> tempIndex(1);
+  for(int i = 0; i < tier; i++)
   {
-    if(iIndex[i] == 1)
-    {
-      tempIndex[(i << 1)+1] = 1;
-    }
-    if(jIndex[i] == 1)
-    {
-      tempIndex[(i << 1)] = 1;
-    }
+    tempIndex <<= 2;
+    if(iIndex[i]) { tempIndex |= 2; }
+    if(jIndex[i]) { tempIndex |= 1; }
   }
   index = tempIndex.to_ulong();
 
@@ -115,10 +110,10 @@ NodeInfoMsg * Node::info ()
 }
 
 /** Print the PE this Node is on. */
-EmptyMsg * Node::printPE ()
+void Node::printPE (CkCallback &cb)
 {
   CkPrintf("node is on PE %d\n", CkMyPe());
-  return new EmptyMsg();
+  contribute(cb);
 }
 
 /** Initialize a Node.
@@ -172,24 +167,29 @@ void Node::initialize (int initType, CkCallback &cb)
 }
 
 /** Print the PEs the leafs sit on. */
-void Node::printLeafPes (int index, CkCallback &cb)
+void Node::printLeafPes (CkCallback &cb)
 {
-  if(tier == depth)
+  std::string bitString = std::bitset<8*sizeof(unsigned int)>(index).to_string();
+  while(bitString[0] == '0')
   {
-    std::string bitString = std::bitset<8*sizeof(int)>(index).to_string();
-    while(bitString[0] == '0')
-    {
-      bitString.erase(0, 1);
-    }
-    CkPrintf("leaf %s on PE %d\n", bitString.c_str(), CkMyPe());
+    bitString.erase(0, 1);
   }
+  CkPrintf("leaf %s on PE %d\n", bitString.c_str(), CkMyPe());
+  contribute(cb);
+}
 
-  else
+/** Add a submatrix block to this Node.
+ *
+ * @param A The dense matrix.
+ */
+void Node::add (int blocksize, double *A)
+{
+  DEBUG("Adding block to A(%d,%d)\n", thisIndex.x, thisIndex.y);
+
+  for(int i = 0; i < blocksize*blocksize; i++)
   {
-    ABORT("not at leaf node\n");
+    block[i] += A[i];
   }
-
-  cb.send();
 }
 
 #include "node.def.h"

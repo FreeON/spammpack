@@ -136,12 +136,7 @@ void Matrix::print (CkCallback &cb)
  */
 void Matrix::printLeafPes (CkCallback &cb)
 {
-  for(int i = 0; i < (1 << depth); i++) {
-    for(int j = 0; j < (1 << depth); j++)
-    {
-      tierNode(i, j).printLeafPes(1, CkCallbackResumeThread());
-    }
-  }
+  tierNode.printLeafPes(CkCallbackResumeThread());
   cb.send();
 }
 

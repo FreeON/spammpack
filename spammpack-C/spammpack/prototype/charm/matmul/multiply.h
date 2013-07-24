@@ -31,14 +31,16 @@ class MultiplyElement : public CBase_MultiplyElement
     /** Submatrix C. */
     CProxyElement_Node CNode;
 
+    /** The result matrix. */
+    double *CResult;
+
   public:
 
-    MultiplyElement (int blocksize,
-        CProxyElement_Node ANode,
-        CProxyElement_Node BNode,
-        CProxyElement_Node CNode);
+    MultiplyElement (int blocksize, CProxy_Node A,
+        CProxy_Node B, CProxy_Node C);
     MultiplyElement (CkMigrateMessage *msg);
     void multiply (CkCallback &done);
+    void storeBack (CkCallback &done);
 };
 
 /** A multiplication. */
@@ -49,15 +51,11 @@ class Multiply : public CBase_Multiply
     /** The convolution. A 3D space filling curve in the product space. */
     CProxy_MultiplyElement convolution;
 
-    /** A callback to signal the completion of the multiplication. */
-    CkCallback done;
-
   public:
 
     Multiply ();
     void multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
         CkCallback &cb);
-    void multiplyDone ();
 };
 
 #endif

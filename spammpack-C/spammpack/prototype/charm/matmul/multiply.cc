@@ -10,6 +10,7 @@
 #include "messages.h"
 #include "logger.h"
 #include "index.h"
+#include <string.h>
 
 /** The constructor.
  *
@@ -17,16 +18,14 @@
  * @param BNode The node of matrix B.
  * @param CNode The node of matrix C.
  */
-MultiplyElement::MultiplyElement (int blocksize,
-    CProxyElement_Node ANode,
-    CProxyElement_Node BNode,
-    CProxyElement_Node CNode)
+MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
+    CProxy_Node B, CProxy_Node C)
 {
   DEBUG("initializing multiply element\n");
   this->blocksize = blocksize;
-  this->ANode = ANode;
-  this->BNode = BNode;
-  this->CNode = CNode;
+  this->ANode = A(thisIndex.x, thisIndex.z);
+  this->BNode = B(thisIndex.z, thisIndex.y);
+  this->CNode = C(thisIndex.x, thisIndex.y);
 }
 
 /** The migration method.
@@ -46,18 +45,28 @@ void MultiplyElement::multiply (CkCallback &done)
 
   NodeBlockMsg *ABlock = ANode.getBlock();
   NodeBlockMsg *BBlock = BNode.getBlock();
-  NodeBlockMsg *CBlock = CNode.getBlock();
+
+  CResult = new double[blocksize*blocksize];
+  memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
   for(int i = 0; i < blocksize; i++) {
     for(int j = 0; j < blocksize; j++) {
       for(int k = 0; k < blocksize; k++)
       {
-        CBlock->block[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
+        CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
           ABlock->block[BLOCK_INDEX(i, k, 0, 0, blocksize)]
           *BBlock->block[BLOCK_INDEX(k, j, 0, 0, blocksize)];
       }
     }
   }
+  contribute(done);
+}
+
+/** Push the C Nodes back into the C Matrix.
+ */
+void MultiplyElement::storeBack (CkCallback &done)
+{
+  CNode.add(blocksize, CResult);
   contribute(done);
 }
 
@@ -95,19 +104,23 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     ABORT("blocksize mismatch\n");
   }
 
-  CProxyElement_Node ANode = AInfo->tierNode(0, 0);
-
   convolution = CProxy_MultiplyElement::ckNew();
   for(int i = 0; i < (1 << CInfo->depth); i++) {
-    for(int j = 0; j < (1 << CInfo->depth); j++) {
+    for(int j = 0; j < (1 << CInfo->depth); j++)
+    {
+      CProxyElement_Node CNode = CInfo->tierNode(i, j);
       for(int k = 0; k < (1 << CInfo->depth); k++)
       {
+        CProxyElement_Node ANode = AInfo->tierNode(i, k);
+        CProxyElement_Node BNode = BInfo->tierNode(k, j);
+
         DEBUG("inserting convolution at C(%d,%d) <- A(%d,%d) * B(%d,%d)\n",
             i, j, i, k, k, j);
-        convolution(i, j, k).insert(CInfo->blocksize,
-            AInfo->tierNode(i, k),
-            BInfo->tierNode(k, j),
-            CInfo->tierNode(i, j));
+
+        convolution(i, j, k).insert(CInfo->blocksize, AInfo->tierNode,
+            BInfo->tierNode, CInfo->tierNode);
+
+        DEBUG("inserted element\n");
       }
     }
   }
@@ -115,18 +128,9 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   DEBUG("done initializing convolution\n");
 
   DEBUG("multiplying...\n");
-  done = cb;
-  CkCallback elementsDone(CkReductionTarget(Multiply, multiplyDone), thisProxy);
-  convolution.multiply(elementsDone);
-  DEBUG("done here\n");
-}
-
-/** Reduction target.
- */
-void Multiply::multiplyDone ()
-{
-  DEBUG("done, sending back\n");
-  done.send();
+  convolution.multiply(CkCallbackResumeThread());
+  convolution.storeBack(CkCallbackResumeThread());
+  cb.send();
 }
 
 #include "multiply.def.h"
