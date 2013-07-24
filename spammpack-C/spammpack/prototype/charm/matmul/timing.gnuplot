@@ -3,7 +3,7 @@
 set terminal postscript color
 set output 'timing.ps'
 
-set title 'mustang - matmul 8192x256'
+set title 'matmul on mustang'
 
 set logscale xy
 

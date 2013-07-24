@@ -6,7 +6,8 @@ EXTRA_DIST = \
 	moonlight.sh.template \
 	mustang-submit.sh \
 	mustang-results.sh \
-	mustang.job.template
+	mustang.job.template \
+	configure.mustang
 
 INTERFACE_FILES = \
 	matmul.ci \
