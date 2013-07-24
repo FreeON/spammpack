@@ -7,7 +7,8 @@ EXTRA_DIST = \
 	mustang-submit.sh \
 	mustang-results.sh \
 	mustang.job.template \
-	configure.mustang
+	configure.mustang \
+	configure.LB
 
 INTERFACE_FILES = \
 	matmul.ci \
