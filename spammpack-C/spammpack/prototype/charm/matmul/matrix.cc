@@ -27,7 +27,7 @@ Matrix::Matrix (int N, int blocksize)
   if(blocksize*(1 << depth) < N) depth++;
   NPadded = blocksize*(1 << depth);
 
-  DEBUG("N = %d, blocksize = %d, depth = %d, NPadded = %d\n",
+  INFO("N = %d, blocksize = %d, depth = %d, NPadded = %d\n",
       N, blocksize, depth, NPadded);
 
   int NTier = 1 << depth;

@@ -11,6 +11,7 @@
 #define DEBUG(format, ...)
 #endif
 
+#define INFO(format, ...) logger(__FILE__, __LINE__, "INFO", format, ##__VA_ARGS__)
 #define ABORT(format, ...) logger(__FILE__, __LINE__, "ERROR", format, ##__VA_ARGS__); CkExit()
 
 #define FORMAT_LENGTH 2000

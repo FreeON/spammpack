@@ -95,7 +95,9 @@ class Main : public CBase_Main
         M.multiply(A, A, C, CkCallbackResumeThread());
         t.stop();
         CkPrintf(t.to_str());
+#ifdef DEBUG_OUTPUT
         C.printLeafPes(CkCallbackResumeThread());
+#endif
       }
 
 #ifdef DEBUG_OUTPUT
@@ -104,6 +106,8 @@ class Main : public CBase_Main
 
 #ifdef VERIFY_MULTIPLY
       DenseMatrixMsg *CDense = C.getDense();
+
+      CkPrintf("verifying result...\n");
 
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++)
