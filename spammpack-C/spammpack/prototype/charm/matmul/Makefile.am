@@ -5,7 +5,7 @@ EXTRA_DIST = \
 	moonlight-submit.sh \
 	moonlight.sh.template \
 	mustang-submit.sh \
-	mustang.job
+	mustang.job.template
 
 INTERFACE_FILES = \
 	matmul.ci \
