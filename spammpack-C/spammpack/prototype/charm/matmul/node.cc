@@ -15,6 +15,13 @@
 
 /** The constructor.
  */
+Node::Node ()
+{
+  block = NULL;
+}
+
+/** The constructor.
+ */
 Node::Node (int N, int depth, int blocksize, int tier,
     int iLower, int iUpper,
     int jLower, int jUpper)
@@ -44,10 +51,17 @@ Node::Node (int N, int depth, int blocksize, int tier,
   DEBUG("tier %d, index %d, constructing\n", tier, index);
 }
 
+/** The migration constructor. */
+Node::Node (CkMigrateMessage *msg)
+{
+  INFO("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
+}
+
 /** The destructor.
  */
 Node::~Node ()
 {
+  INFO("Node(%d,%d) destructor\n", thisIndex.x, thisIndex.y);
   delete[] block;
 }
 
@@ -65,25 +79,38 @@ void Node::pup (PUP::er &p)
   p|jLower;
   p|jUpper;
   p|index;
-  int blockNull = (block == NULL);
-  p|blockNull;
-  if(blockNull)
+
+  int numberElements = (block == NULL ? 0 : blocksize*blocksize);
+  p|numberElements;
+
+  if(p.isUnpacking())
   {
-    block = NULL;
+    INFO("pup: Node(%d,%d) unpacking %d elements\n", thisIndex.x, thisIndex.y, numberElements);
   }
   else
   {
+    if(p.isSizing())
+    {
+      INFO("pup: Node(%d,%d) sizing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
+    }
+    else
+    {
+      INFO("pup: Node(%d,%d) packing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
+    }
+  }
+
+  if(numberElements > 0)
+  {
     if(p.isUnpacking())
     {
-      block = new double[blocksize*blocksize];
+      block = new double[numberElements];
     }
-    p|*block;
+    PUParray(p, block, numberElements);
   }
-}
-
-/** The migration method. */
-Node::Node (CkMigrateMessage *msg)
-{
+  else
+  {
+    if(p.isUnpacking()) { block = NULL; }
+  }
 }
 
 /** Get the dense submatrix block.

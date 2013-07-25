@@ -22,17 +22,19 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The submatrix size at the lowest tier. */
     int blocksize;
 
-    /** Submatrix A. */
-    CProxyElement_Node ANode;
+    /** Matrix A. */
+    CProxy_Node A;
 
-    /** Submatrix B. */
-    CProxyElement_Node BNode;
+    /** Matrix B. */
+    CProxy_Node B;
 
-    /** Submatrix C. */
-    CProxyElement_Node CNode;
+    /** Matrix C. */
+    CProxy_Node C;
 
     /** The result matrix. */
     double *CResult;
+
+    int numberCalls;
 
   public:
 
@@ -41,8 +43,8 @@ class MultiplyElement : public CBase_MultiplyElement
     ~MultiplyElement ();
     MultiplyElement (CkMigrateMessage *msg);
     virtual void pup (PUP::er &p);
-    void multiply (CkCallback &done);
-    void storeBack (CkCallback &done);
+    void multiply ();
+    void storeBack ();
 };
 
 /** A multiplication. */
@@ -53,11 +55,16 @@ class Multiply : public CBase_Multiply
     /** The convolution. A 3D space filling curve in the product space. */
     CProxy_MultiplyElement convolution;
 
+    /** The callback. */
+    CkCallback cb;
+
   public:
 
     Multiply ();
     void multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
         CkCallback &cb);
+    void multiplyDone ();
+    void storeBackDone ();
 };
 
 #endif

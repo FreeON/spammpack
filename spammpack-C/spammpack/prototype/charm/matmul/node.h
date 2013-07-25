@@ -51,6 +51,7 @@ class Node : public CBase_Node
 
   public:
 
+    Node ();
     Node (int N, int depth, int blocksize, int tier, int iLower, int iUpper,
         int jLower, int jUpper);
     ~Node ();

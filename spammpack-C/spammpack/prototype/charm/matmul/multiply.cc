@@ -23,25 +23,29 @@ MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
 {
   DEBUG("initializing multiply element\n");
   this->blocksize = blocksize;
-  this->ANode = A(thisIndex.x, thisIndex.z);
-  this->BNode = B(thisIndex.z, thisIndex.y);
-  this->CNode = C(thisIndex.x, thisIndex.y);
+  this->A = A;
+  this->B = B;
+  this->C = C;
   CResult = NULL;
+  numberCalls = 0;
+}
+
+/** The migration constructor.
+ *
+ * @param msg The migration message.
+ */
+MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
+{
+  INFO("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 /** The destructor.
  */
 MultiplyElement::~MultiplyElement ()
 {
+  INFO("ME(%d,%d,%d) destructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
   delete[] CResult;
-}
-
-/** The migration method.
- *
- * @param msg The migration message.
- */
-MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
-{
+  INFO("ME(%d,%d,%d) destructor done\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 /** The PUP method.
@@ -51,35 +55,71 @@ void MultiplyElement::pup (PUP::er &p)
 {
   p|index;
   p|blocksize;
-  p|ANode;
-  p|BNode;
-  p|CNode;
-  int CResultNull = (CResult == NULL);
-  if(CResultNull)
+  p|A;
+  p|B;
+  p|C;
+
+  int numberElements = (CResult == NULL ? 0 : blocksize*blocksize);
+  p|numberElements;
+
+  if(p.isUnpacking())
   {
-    CResult = NULL;
+    INFO("pup: ME(%d,%d,%d) unpacking %d elements\n",
+        thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
   }
   else
   {
+    if(p.isSizing())
+    {
+      INFO("pup: ME(%d,%d,%d) sizing %d elements\n",
+          thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
+    }
+    else
+    {
+      INFO("pup: ME(%d,%d,%d) packing %d elements\n",
+          thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
+    }
+  }
+
+  if(numberElements > 0)
+  {
     if(p.isUnpacking())
     {
-      CResult = new double[blocksize*blocksize];
+      CResult = new double[numberElements];
     }
-    p|*CResult;
+    PUParray(p, CResult, numberElements);
   }
+  else
+  {
+    if(p.isUnpacking()) { CResult = NULL; }
+  }
+
+  p|numberCalls;
 }
 
 /** Multiply nodes.
  */
-void MultiplyElement::multiply (CkCallback &done)
+void MultiplyElement::multiply ()
 {
-  DEBUG("(%d,%d,%d) multiply\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  INFO("ME(%d,%d,%d) multiply\n", thisIndex.x, thisIndex.y, thisIndex.z);
 
-  NodeBlockMsg *ABlock = ANode.getBlock();
-  NodeBlockMsg *BBlock = BNode.getBlock();
+  if(numberCalls > 0)
+  {
+    ABORT("ME(%d,%d,%d) this MultiplyElement has been called before\n",
+        thisIndex.x, thisIndex.y, thisIndex.z);
+  }
+  numberCalls++;
+
+  if(CResult != NULL)
+  {
+    ABORT("ME(%d,%d,%d) CResult is not NULL\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  }
 
   CResult = new double[blocksize*blocksize];
   memset(CResult, 0, sizeof(double)*blocksize*blocksize);
+
+  NodeBlockMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
+  NodeBlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
   for(int i = 0; i < blocksize; i++) {
     for(int j = 0; j < blocksize; j++) {
@@ -91,15 +131,17 @@ void MultiplyElement::multiply (CkCallback &done)
       }
     }
   }
-  contribute(done);
+  contribute();
+  migrateMe(0);
 }
 
 /** Push the C Nodes back into the C Matrix.
  */
-void MultiplyElement::storeBack (CkCallback &done)
+void MultiplyElement::storeBack ()
 {
-  CNode.add(blocksize, CResult);
-  contribute(done);
+  INFO("ME(%d,%d,%d) storing back\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
+  contribute();
 }
 
 /** The constructor.
@@ -160,8 +202,23 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   DEBUG("done initializing convolution\n");
 
   DEBUG("multiplying...\n");
-  convolution.multiply(CkCallbackResumeThread());
-  convolution.storeBack(CkCallbackResumeThread());
+  this->cb = cb;
+  convolution.ckSetReductionClient(new CkCallback(CkReductionTarget(Multiply, multiplyDone), thisProxy));
+  convolution.multiply();
+}
+
+/** Reduction target for MultiplyElement::multiply().
+ */
+void Multiply::multiplyDone ()
+{
+  INFO("multiplyDone\n");
+  convolution.ckSetReductionClient(new CkCallback(CkReductionTarget(Multiply, storeBackDone), thisProxy));
+  convolution.storeBack();
+}
+
+void Multiply::storeBackDone ()
+{
+  INFO("storeBackDone\n");
   cb.send();
 }
 

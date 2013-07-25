@@ -3,4 +3,4 @@
 ./configure \
   CHARMC=~/charm-6.5.1/bin/charmc \
   CXX=~/charm-6.5.1/bin/charmc \
-  CXXFLAGS="-Ofast -g -module CommonLBs"
+  CXXFLAGS="-O0 -g -module CommonLBs"

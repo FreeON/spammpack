@@ -1,4 +1,4 @@
 #!/bin/bash
 
 ./configure \
-  CXXFLAGS="-Ofast -g -balancer GreedyCommLB"
+  CXXFLAGS="-O0 -g -balancer GreedyCommLB"
