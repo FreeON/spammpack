@@ -46,18 +46,16 @@ class Node : public CBase_Node
     /** The linear index of this node. */
     unsigned int index;
 
-    std::map<int, bool> callbackSet;
-    std::map<int, CkCallback> cb;
-
-    std::map<int, std::list<int> > childWorking;
-
+    /** The submatrix of size blocksize x blocksize. */
     double *block;
 
   public:
 
     Node (int N, int depth, int blocksize, int tier, int iLower, int iUpper,
         int jLower, int jUpper);
+    ~Node ();
     Node (CkMigrateMessage *msg);
+    virtual void pup (PUP::er &p);
     NodeBlockMsg * getBlock ();
     DoubleMsg * get (int i, int j);
     NodeInfoMsg * info ();

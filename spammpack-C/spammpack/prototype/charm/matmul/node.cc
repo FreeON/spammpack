@@ -44,10 +44,47 @@ Node::Node (int N, int depth, int blocksize, int tier,
   DEBUG("tier %d, index %d, constructing\n", tier, index);
 }
 
+/** The destructor.
+ */
+Node::~Node ()
+{
+  delete[] block;
+}
+
+/** The PUP method.
+ */
+void Node::pup (PUP::er &p)
+{
+  DEBUG("pup...\n");
+  CBase_Node::pup(p);
+  p|N;
+  p|blocksize;
+  p|depth;
+  p|tier;
+  p|iLower;
+  p|iUpper;
+  p|jLower;
+  p|jUpper;
+  p|index;
+  int blockNull = (block == NULL);
+  p|blockNull;
+  if(blockNull)
+  {
+    block = NULL;
+  }
+  else
+  {
+    if(p.isUnpacking())
+    {
+      block = new double[blocksize*blocksize];
+    }
+    p|*block;
+  }
+}
+
 /** The migration method. */
 Node::Node (CkMigrateMessage *msg)
 {
-  ABORT("migrating\n");
 }
 
 /** Get the dense submatrix block.
@@ -128,15 +165,6 @@ void Node::initialize (int initType, CkCallback &cb)
   }
 
   DEBUG("(%d,%d) index %d, initializing\n", thisIndex.x, thisIndex.y, index);
-
-  if(callbackSet[index])
-  {
-    DEBUG("(%d) callback already set\n", index);
-    CkExit();
-  }
-
-  callbackSet[index] = true;
-  this->cb[index] = cb;
 
   if(block == NULL)
   {

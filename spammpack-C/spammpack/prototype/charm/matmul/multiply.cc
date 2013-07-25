@@ -26,6 +26,14 @@ MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
   this->ANode = A(thisIndex.x, thisIndex.z);
   this->BNode = B(thisIndex.z, thisIndex.y);
   this->CNode = C(thisIndex.x, thisIndex.y);
+  CResult = NULL;
+}
+
+/** The destructor.
+ */
+MultiplyElement::~MultiplyElement ()
+{
+  delete[] CResult;
 }
 
 /** The migration method.
@@ -35,6 +43,31 @@ MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
 MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
   ABORT("migrating\n");
+}
+
+/** The PUP method.
+ */
+
+void MultiplyElement::pup (PUP::er &p)
+{
+  p|index;
+  p|blocksize;
+  p|ANode;
+  p|BNode;
+  p|CNode;
+  int CResultNull = (CResult == NULL);
+  if(CResultNull)
+  {
+    CResult = NULL;
+  }
+  else
+  {
+    if(p.isUnpacking())
+    {
+      CResult = new double[blocksize*blocksize];
+    }
+    p|*CResult;
+  }
 }
 
 /** Multiply nodes.

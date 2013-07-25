@@ -1,4 +1,4 @@
 #!/bin/bash
 
 ./configure \
-  CXXFLAGS="-Ofast -g -module CommonLBs"
+  CXXFLAGS="-Ofast -g -balancer GreedyCommLB"

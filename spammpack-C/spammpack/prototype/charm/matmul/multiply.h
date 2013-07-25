@@ -38,7 +38,9 @@ class MultiplyElement : public CBase_MultiplyElement
 
     MultiplyElement (int blocksize, CProxy_Node A,
         CProxy_Node B, CProxy_Node C);
+    ~MultiplyElement ();
     MultiplyElement (CkMigrateMessage *msg);
+    virtual void pup (PUP::er &p);
     void multiply (CkCallback &done);
     void storeBack (CkCallback &done);
 };

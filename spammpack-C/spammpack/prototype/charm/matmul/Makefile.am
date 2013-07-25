@@ -55,6 +55,13 @@ run-local : matmul
 %.decl.h %.def.h : %.ci
 	$(AM_V_CXX)$(CHARMC) -preprocess $<
 
+valgrind : matmul
+	valgrind --log-file=valgrind.%p.log \
+		--track-origins=yes \
+		--leak-check=full \
+		--show-reachable=yes \
+		--max-stackframe=40000000000 \
+		./$< -N 1
 
 docs :
 	$(DOXYGEN)
