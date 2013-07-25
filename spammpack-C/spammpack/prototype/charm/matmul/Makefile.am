@@ -10,16 +10,17 @@ EXTRA_DIST = \
 	configure.mustang \
 	configure.LB
 
+AM_LDFLAGS = -language charm++
+AM_CXXFLAGS = @LOADBALANCER_FLAGS@
+
+bin_PROGRAMS = matmul
+
 INTERFACE_FILES = \
 	matmul.ci \
 	matrix.ci \
 	messages.ci \
 	multiply.ci \
 	node.ci
-
-AM_CXXFLAGS = @LOADBALANCER_FLAGS@
-
-bin_PROGRAMS = matmul
 
 matmul_SOURCES = \
 	index.h \
@@ -37,36 +38,35 @@ matmul_SOURCES = \
 	timer.h \
 	types.h
 
+$(matmul_OBJECTS) : $(BUILT_SOURCES)
+
 N = 2048
 B = 64
 
 RSH = rsh
 
-run : matmul
+run : matmul$(EXEEXT)
 	for i in 1 2 4 8 12 16 20 24 28 32 36 40 44 48; do \
 		./charmrun +p$$i ++remote-shell $(RSH) matmul -N $(N) -b $(B); \
 	done
 
-run-local : matmul
+run-local : matmul$(EXEEXT)
 	for i in 1 2 4 8 12 16 20 24 28 32 36 40 44 48; do \
 		./matmul +p$$i -N $(N) -b $(B); \
 	done
 
-%.decl.h %.def.h : %.ci
-	$(AM_V_CXX)$(CHARMC) -preprocess $<
-
-valgrind : matmul
+valgrind : matmul$(EXEEXT)
 	valgrind --log-file=valgrind.%p.log \
 		--track-origins=yes \
 		--leak-check=full \
 		--show-reachable=yes \
-		--max-stackframe=40000000000 \
 		./$< -N 1
 
 docs :
 	$(DOXYGEN)
 
-AM_LDFLAGS = -language charm++
+%.decl.h %.def.h : %.ci
+	$(AM_V_CXX)$(CHARMC) -preprocess $<
 
 BUILT_SOURCES = $(foreach i, $(INTERFACE_FILES), $(basename $i).decl.h $(basename $i).def.h)
 

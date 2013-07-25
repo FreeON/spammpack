@@ -42,7 +42,6 @@ MultiplyElement::~MultiplyElement ()
  */
 MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
-  ABORT("migrating\n");
 }
 
 /** The PUP method.

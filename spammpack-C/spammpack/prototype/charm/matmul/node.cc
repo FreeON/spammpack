@@ -55,7 +55,6 @@ Node::~Node ()
  */
 void Node::pup (PUP::er &p)
 {
-  DEBUG("pup...\n");
   CBase_Node::pup(p);
   p|N;
   p|blocksize;
