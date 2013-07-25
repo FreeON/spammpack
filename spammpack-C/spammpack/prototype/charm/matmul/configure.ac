@@ -1,4 +1,8 @@
-AC_INIT([matmul], [4], [nicolasbock@gmail.com])
+AC_INIT([matmul],
+        [5],
+        [nicolas.bock@freeon.org],
+        [matmul],
+        [http://www.freeon.org/])
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 

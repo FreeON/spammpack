@@ -1,0 +1,4 @@
+2013-07-24 Nicolas Bock <nicolas.bock@freeon.org>
+
+	* Dense multiplication is working.
+	* Chare migration is not implemented yet.
