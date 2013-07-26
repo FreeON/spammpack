@@ -3,9 +3,11 @@ mainmodule matmul
   extern module multiply;
   extern module matrix;
   extern module messages;
+  extern module reduction;
   mainchare Main
   {
     entry Main (CkArgMsg *msg);
     entry [threaded] void run (int N, int blocksize, int numberIterations);
+    entry [threaded] void reduceTest (int N);
   };
 };

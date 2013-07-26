@@ -64,7 +64,8 @@ class Main : public CBase_Main
       }
 
       DEBUG("calling run on this proxy\n");
-      thisProxy.run(N, blocksize, numberIterations);
+      //thisProxy.run(N, blocksize, numberIterations);
+      thisProxy.reduceTest(N);
     }
 
     void run (int N, int blocksize, int numberIterations)
@@ -135,6 +136,28 @@ class Main : public CBase_Main
 #endif
 
       DEBUG("done\n");
+      CkExit();
+    }
+
+    void reduceTest (int N)
+    {
+      INFO("reduce test, N = %d\n", N);
+
+      CProxy_ReductionData d = CProxy_ReductionData::ckNew(N, N);
+      CProxy_Reduction r = CProxy_Reduction::ckNew();
+
+      for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
+          for(int k = 0; k < N; k++)
+          {
+            r(i, j, k).insert(N, d);
+          }
+        }
+      }
+      r.doneInserting();
+
+      r.reduce(CkCallbackResumeThread());
+
       CkExit();
     }
 };

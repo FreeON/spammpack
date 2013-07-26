@@ -1,0 +1,14 @@
+module reduction
+{
+  extern module messages;
+  array [2D] ReductionData
+  {
+    entry ReductionData ();
+    entry [sync] DoubleMsg * get ();
+  };
+  array [3D] Reduction
+  {
+    entry Reduction (int N, CProxy_ReductionData a);
+    entry void reduce (CkCallback &cb);
+  };
+};

@@ -20,7 +20,8 @@ INTERFACE_FILES = \
 	matrix.ci \
 	messages.ci \
 	multiply.ci \
-	node.ci
+	node.ci \
+	reduction.ci
 
 matmul_SOURCES = \
 	index.h \
@@ -34,6 +35,8 @@ matmul_SOURCES = \
 	multiply.h \
 	node.cc \
 	node.h \
+	reduction.cc \
+	reduction.h \
 	timer.cc \
 	timer.h \
 	types.h
