@@ -66,6 +66,15 @@ AC_ARG_WITH([verify-tolerance],
 AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absoluve
                     toleranc of the multiply verification])
 
+AC_ARG_ENABLE([reduction-test],
+  [AS_HELP_STRING([--enable-reduction-test],
+                  [Instead of multiplying, run a simple reduction test.])],
+  [reduction_test=$enableval],
+  [reduction_test="no"])
+if test "${reduction_test}" = "yes"; then
+  AC_DEFINE([REDUCTION_TEST], [1], [Instead of multiplying, run a simple reduction test.])
+fi
+
 AC_ARG_ENABLE([direct-multiply],
   [AS_HELP_STRING([--enable-direct-multiply],
                   [Construct the convolution directly in the main program.])],

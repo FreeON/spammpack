@@ -64,9 +64,13 @@ class Main : public CBase_Main
         }
       }
 
-      DEBUG("calling run on this proxy\n");
+#if REDUCTION_TEST
+      INFO("calling reduceTest() on this proxy\n");
+      thisProxy.reduceTest(N);
+#else
+      DEBUG("calling run() on this proxy\n");
       thisProxy.run(N, blocksize, numberIterations);
-      //thisProxy.reduceTest(N);
+#endif
     }
 
     void run (int N, int blocksize, int numberIterations)
