@@ -17,7 +17,7 @@ Reduction::Reduction (int N, CProxy_ReductionData a)
   this->callCount = 0;
   this->result = NULL;
   this->a = a;
-  INFO("(%d) constructor\n", index);
+  INFO("R(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 Reduction::Reduction (CkMigrateMessage *msg)
@@ -26,16 +26,16 @@ Reduction::Reduction (CkMigrateMessage *msg)
 
 Reduction::~Reduction ()
 {
-  INFO("(%d) destructor\n", index);
+  INFO("R(%d,%d,%d) destructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
   delete[] result;
 }
 
 void Reduction::reduce (CkCallback &cb)
 {
-  INFO("(%d) reduce\n", index);
+  INFO("R(%d,%d,%d) reduce\n", thisIndex.x, thisIndex.y, thisIndex.z);
   if(callCount > 0)
   {
-    ABORT("(%d) this chare has been called before\n");
+    ABORT("R(%d,%d,%d) this chare has been called before\n", thisIndex.x, thisIndex.y, thisIndex.z);
   }
   callCount++;
 
@@ -67,12 +67,18 @@ void Reduction::pup (PUP::er &p)
 
   if(p.isUnpacking())
   {
-    INFO("(%d) pup unpacking\n", index);
+    INFO("R(%d,%d,%d) pup: unpacking\n", thisIndex.x, thisIndex.y, thisIndex.z);
   }
   else
   {
-    if(p.isSizing()) { INFO("(%d) pup sizing\n", index); }
-    else { INFO("(%d) pup packing\n", index); }
+    if(p.isSizing())
+    {
+      INFO("R(%d,%d,%d) pup: sizing\n", thisIndex.x, thisIndex.y, thisIndex.z);
+    }
+    else
+    {
+      INFO("R(%d,%d,%d) pup: packing\n", thisIndex.x, thisIndex.y, thisIndex.z);
+    }
   }
 
   int numberElements = (result == NULL ? 0 : N*N);

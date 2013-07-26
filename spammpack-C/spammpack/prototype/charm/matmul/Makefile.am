@@ -20,6 +20,7 @@ INTERFACE_FILES = \
 	matrix.ci \
 	messages.ci \
 	multiply.ci \
+	multiplyelement.ci \
 	node.ci \
 	reduction.ci \
 	reductiondata.ci
@@ -34,6 +35,8 @@ matmul_SOURCES = \
 	messages.h \
 	multiply.cc \
 	multiply.h \
+	multiplyelement.cc \
+	multiplyelement.h \
 	node.cc \
 	node.h \
 	reduction.cc \

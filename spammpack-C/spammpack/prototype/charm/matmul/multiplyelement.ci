@@ -1,0 +1,11 @@
+module multiplyelement
+{
+  extern module node;
+  array [3D] MultiplyElement
+  {
+    entry MultiplyElement (int blocksize, CProxy_Node A,
+        CProxy_Node B, CProxy_Node C);
+    entry void multiply (CkCallback &cb);
+    entry void storeBack (CkCallback &cb);
+  };
+};

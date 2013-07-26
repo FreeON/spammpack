@@ -16,7 +16,7 @@ ReductionData::ReductionData (int N)
   this->index = thisIndex.x*N + thisIndex.y;
   this->x = new double[1];
   this->x[0] = rand()/(double) RAND_MAX;
-  INFO("(%d) constructor\n", index);
+  INFO("RD(%d,%d) constructor\n", thisIndex.x, thisIndex.y);
 }
 
 ReductionData::ReductionData (CkMigrateMessage *msg)
@@ -25,7 +25,7 @@ ReductionData::ReductionData (CkMigrateMessage *msg)
 
 ReductionData::~ReductionData ()
 {
-  INFO("(%d) destructor\n", index);
+  INFO("RD(%d,%d) destructor\n", thisIndex.x, thisIndex.y);
   delete[] x;
 }
 
@@ -42,12 +42,18 @@ void ReductionData::pup (PUP::er &p)
 
   if(p.isUnpacking())
   {
-    INFO("(%d) pup unpacking\n", index);
+    INFO("RD(%d,%d) pup: unpacking\n", thisIndex.x, thisIndex.y);
   }
   else
   {
-    if(p.isSizing()) { INFO("(%d) pup sizing\n", index); }
-    else { INFO("(%d) pup packing\n", index); }
+    if(p.isSizing())
+    {
+      INFO("RD(%d,%d) pup: sizing\n", thisIndex.x, thisIndex.y);
+    }
+    else
+    {
+      INFO("RD(%d,%d) pup: packing\n", thisIndex.x, thisIndex.y);
+    }
   }
 
   int numberElements = (x == NULL ? 0 : N*N);
