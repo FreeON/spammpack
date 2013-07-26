@@ -21,13 +21,14 @@
 MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
     CProxy_Node B, CProxy_Node C)
 {
-  DEBUG("initializing multiply element\n");
+  DEBUG("ME(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
   this->blocksize = blocksize;
   this->A = A;
   this->B = B;
   this->C = C;
   CResult = NULL;
   numberCalls = 0;
+  DEBUG("ME(%d,%d,%d) constructor done\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 /** The migration constructor.

@@ -7,6 +7,7 @@
  */
 
 #include "multiply.h"
+#include "multiplyelement.h"
 #include "messages.h"
 #include "logger.h"
 #include "index.h"
@@ -16,6 +17,7 @@
  */
 Multiply::Multiply ()
 {
+  INFO("Multiply constructor\n");
 }
 
 /** Multiply two Matrix objects.
@@ -59,16 +61,36 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
             BInfo->tierNode,
             CInfo->tierNode);
 
-        DEBUG("inserted element\n");
+        DEBUG("inserted element ME(%d,%d,%d)\n", i, j, k);
       }
     }
   }
   convolution.doneInserting();
   INFO("done initializing convolution\n");
 
-  INFO("multiplying...\n");
-  convolution.multiply(CkCallbackResumeThread());
-  convolution.storeBack(CkCallbackResumeThread());
+  /* Store callback. */
+  this->cb = cb;
+
+  INFO("multiplying\n");
+  CkCallback done(CkReductionTarget(Multiply, multiplyDone), thisProxy);
+  convolution.multiply(done);
+
+  delete AInfo;
+  delete BInfo;
+  delete CInfo;
+}
+
+/** The reduction target for the multiply method. */
+void Multiply::multiplyDone ()
+{
+  INFO("storing result back\n");
+  CkCallback done(CkReductionTarget(Multiply, storeBackDone), thisProxy);
+  convolution.storeBack(done);
+}
+
+/** The reduction target for the storeBack method. */
+void Multiply::storeBackDone ()
+{
   INFO("done\n");
   cb.send();
 }

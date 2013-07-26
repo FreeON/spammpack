@@ -106,7 +106,10 @@ class Main : public CBase_Main
 
       CkPrintf("running %d iterations\n", numberIterations);
 #ifndef DIRECT_MULTIPLY
-      CProxy_Multiply M = CProxy_Multiply::ckNew();
+      /* The Multiply chare has to live on PE 0 so that it can later on
+       * populate the MultiplyElement array. This only works from PE 0.
+       */
+      CProxy_Multiply M = CProxy_Multiply::ckNew(0);
 #endif
       for(int i = 0; i < numberIterations; i++)
       {
