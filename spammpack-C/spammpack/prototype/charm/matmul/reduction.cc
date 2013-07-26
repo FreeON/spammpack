@@ -1,30 +1,14 @@
+/** @file
+ *
+ * The implementation of the Reduction class.
+ *
+ * @author Nicolas Bock <nicolas.bock@freeon.org>
+ * @author Matt Challacombe <matt.challacombe@freeon.org>
+ */
+
 #include "reduction.h"
 #include "logger.h"
 #include "messages.h"
-
-ReductionData::ReductionData ()
-{
-  x = rand()/(double) RAND_MAX;
-}
-
-ReductionData::ReductionData (CkMigrateMessage *msg)
-{
-}
-
-ReductionData::~ReductionData ()
-{
-}
-
-DoubleMsg * ReductionData::get ()
-{
-  return new DoubleMsg(x);
-}
-
-void ReductionData::pup (PUP::er &p)
-{
-  CBase_ReductionData::pup(p);
-  p|x;
-}
 
 Reduction::Reduction (int N, CProxy_ReductionData a)
 {

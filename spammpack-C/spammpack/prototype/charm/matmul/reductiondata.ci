@@ -1,0 +1,9 @@
+module reductiondata
+{
+  extern module messages;
+  array [2D] ReductionData
+  {
+    entry ReductionData (int N);
+    entry [sync] DoubleMsg * get ();
+  };
+};

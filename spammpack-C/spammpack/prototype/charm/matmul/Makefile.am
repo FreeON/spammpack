@@ -11,7 +11,7 @@ EXTRA_DIST = \
 	configure.LB
 
 AM_LDFLAGS = -language charm++
-AM_CXXFLAGS = @LOADBALANCER_FLAGS@
+AM_CXXFLAGS = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@
 
 bin_PROGRAMS = matmul
 
@@ -21,7 +21,8 @@ INTERFACE_FILES = \
 	messages.ci \
 	multiply.ci \
 	node.ci \
-	reduction.ci
+	reduction.ci \
+	reductiondata.ci
 
 matmul_SOURCES = \
 	index.h \
@@ -37,6 +38,8 @@ matmul_SOURCES = \
 	node.h \
 	reduction.cc \
 	reduction.h \
+	reductiondata.cc \
+	reductiondata.h \
 	timer.cc \
 	timer.h \
 	types.h

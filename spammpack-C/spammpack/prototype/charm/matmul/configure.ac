@@ -1,5 +1,5 @@
 AC_INIT([matmul],
-        [5],
+        [6],
         [nicolas.bock@freeon.org],
         [matmul],
         [http://www.freeon.org/])
@@ -37,7 +37,18 @@ AC_ARG_ENABLE([load-balance],
   [enable_LB=$enableval],
   [enable_LB="no"])
 if test "${enable_LB}" = "yes"; then
-  AC_SUBST([LOADBALANCER_FLAGS], [-module CommonLBs])
+  AC_SUBST([LOADBALANCER_FLAGS], ["-module CommonLBs"])
+fi
+
+AC_ARG_WITH([default-LB],
+  [AS_HELP_STRING([--with-default-LB],
+                  [Set the default load balancer.])],
+  [default_LB=$withval], [])
+if test -n "${default_LB}"; then
+  if test "${default_LB}" = "yes"; then
+    default_LB="GreedyCommLB"
+  fi
+  AC_SUBST([DEFAULT_LB_FLAGS], ["-balancer ${default_LB}"])
 fi
 
 AC_ARG_ENABLE([debug],

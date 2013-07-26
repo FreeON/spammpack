@@ -1,4 +1,3 @@
 #!/bin/bash
 
-./configure \
-  CXXFLAGS="-O0 -g -balancer GreedyCommLB"
+./configure --enable-load-balance --with-default-LB

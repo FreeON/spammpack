@@ -1,22 +1,16 @@
+/** @file
+ *
+ * The header file for the Reduction class.
+ *
+ * @author Nicolas Bock <nicolas.bock@freeon.org>
+ * @author Matt Challacombe <matt.challacombe@freeon.org>
+ */
+
 #ifndef __REDUCTION_H
 #define __REDUCTION_H
 
 #include "reduction.decl.h"
-
-class ReductionData : public CBase_ReductionData
-{
-  private:
-
-    double x;
-
-  public:
-
-    ReductionData ();
-    ReductionData (CkMigrateMessage *msg);
-    ~ReductionData ();
-    DoubleMsg * get ();
-    void pup (PUP::er &p);
-};
+#include "reductiondata.h"
 
 class Reduction : public CBase_Reduction
 {

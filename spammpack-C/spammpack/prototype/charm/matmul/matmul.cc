@@ -182,20 +182,29 @@ class Main : public CBase_Main
     {
       INFO("reduce test, N = %d\n", N);
 
-      CProxy_ReductionData d = CProxy_ReductionData::ckNew(N, N);
-      CProxy_Reduction r = CProxy_Reduction::ckNew();
+      CProxy_ReductionData data = CProxy_ReductionData::ckNew();
+
+      for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++)
+        {
+          data(i, j).insert(N);
+        }
+      }
+      data.doneInserting();
+
+      CProxy_Reduction convolution = CProxy_Reduction::ckNew();
 
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++) {
           for(int k = 0; k < N; k++)
           {
-            r(i, j, k).insert(N, d);
+            convolution(i, j, k).insert(N, data);
           }
         }
       }
-      r.doneInserting();
+      convolution.doneInserting();
 
-      r.reduce(CkCallbackResumeThread());
+      convolution.reduce(CkCallbackResumeThread());
 
       INFO("done\n");
       CkExit();

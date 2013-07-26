@@ -1,11 +1,6 @@
 module reduction
 {
-  extern module messages;
-  array [2D] ReductionData
-  {
-    entry ReductionData ();
-    entry [sync] DoubleMsg * get ();
-  };
+  extern module reductiondata;
   array [3D] Reduction
   {
     entry Reduction (int N, CProxy_ReductionData a);
