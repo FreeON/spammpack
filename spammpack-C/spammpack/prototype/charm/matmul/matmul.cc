@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "messages.h"
 #include "timer.h"
+#include "multiply.h"
 #include <getopt.h>
 
 #ifdef VERIFY_MULTIPLY
@@ -64,14 +65,25 @@ class Main : public CBase_Main
       }
 
       DEBUG("calling run on this proxy\n");
-      //thisProxy.run(N, blocksize, numberIterations);
-      thisProxy.reduceTest(N);
+      thisProxy.run(N, blocksize, numberIterations);
+      //thisProxy.reduceTest(N);
     }
 
     void run (int N, int blocksize, int numberIterations)
     {
+#ifdef DIRECT_MULTIPLY
+      CProxy_Node A = CProxy_Node::ckNew();
+      CProxy_Node C = CProxy_Node::ckNew();
+
+      A(0, 0).insert(N, 0, blocksize, 0, 0, N, 0, N);
+      C(0, 0).insert(N, 0, blocksize, 0, 0, N, 0, N);
+
+      A.doneInserting();
+      C.doneInserting();
+#else
       CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
       CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
+#endif
 
       DEBUG("generating random matrix\n");
       A.random(CkCallbackResumeThread());
@@ -89,11 +101,34 @@ class Main : public CBase_Main
 #endif
 
       CkPrintf("running %d iterations\n", numberIterations);
+#ifndef DIRECT_MULTIPLY
       CProxy_Multiply M = CProxy_Multiply::ckNew();
+#endif
       for(int i = 0; i < numberIterations; i++)
       {
         Timer t("iteration %d on %d PEs, multiplying C = A*A", i, CkNumPes());
+#ifdef DIRECT_MULTIPLY
+        int depth = 0;
+        CProxy_MultiplyElement convolution = CProxy_MultiplyElement::ckNew();
+        for(int i = 0; i < (1 << depth); i++) {
+          for(int j = 0; j < (1 << depth); j++) {
+            for(int k = 0; k < (1 << depth); k++)
+            {
+              DEBUG("inserting convolution at C(%d,%d) <- A(%d,%d) * B(%d,%d)\n",
+                  i, j, i, k, k, j);
+
+              convolution(i, j, k).insert(blocksize, A, A, C);
+            }
+          }
+        }
+        convolution.doneInserting();
+        INFO("multiplying...\n");
+        convolution.multiply(CkCallbackResumeThread());
+        convolution.storeBack(CkCallbackResumeThread());
+        INFO("done\n");
+#else
         M.multiply(A, A, C, CkCallbackResumeThread());
+#endif
         t.stop();
         CkPrintf(t.to_str());
 #ifdef DEBUG_OUTPUT
@@ -158,6 +193,7 @@ class Main : public CBase_Main
 
       r.reduce(CkCallbackResumeThread());
 
+      INFO("done\n");
       CkExit();
     }
 };

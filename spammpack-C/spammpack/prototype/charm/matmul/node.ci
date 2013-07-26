@@ -10,6 +10,8 @@ module node
     entry [sync] DoubleMsg * get (int i, int j);
     entry [sync] NodeInfoMsg * info ();
     entry void printPE (CkCallback &cb);
+    entry void random (CkCallback &cb);
+    entry void zero (CkCallback &cb);
     entry void initialize (int initType, CkCallback &cb);
     entry void printLeafPes (CkCallback &cb);
     entry void add (int blocksize, double A[blocksize*blocksize]);

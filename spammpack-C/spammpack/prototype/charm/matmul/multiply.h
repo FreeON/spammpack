@@ -34,6 +34,7 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The result matrix. */
     double *CResult;
 
+    /** A counter, counting how many times this MultiplyElement was called. */
     int numberCalls;
 
   public:
@@ -43,8 +44,8 @@ class MultiplyElement : public CBase_MultiplyElement
     ~MultiplyElement ();
     MultiplyElement (CkMigrateMessage *msg);
     virtual void pup (PUP::er &p);
-    void multiply ();
-    void storeBack ();
+    void multiply (CkCallback &cb);
+    void storeBack (CkCallback &cb);
 };
 
 /** A multiplication. */
@@ -55,16 +56,11 @@ class Multiply : public CBase_Multiply
     /** The convolution. A 3D space filling curve in the product space. */
     CProxy_MultiplyElement convolution;
 
-    /** The callback. */
-    CkCallback cb;
-
   public:
 
     Multiply ();
     void multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
         CkCallback &cb);
-    void multiplyDone ();
-    void storeBackDone ();
 };
 
 #endif

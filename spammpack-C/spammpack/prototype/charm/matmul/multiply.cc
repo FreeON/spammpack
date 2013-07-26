@@ -49,8 +49,9 @@ MultiplyElement::~MultiplyElement ()
 }
 
 /** The PUP method.
+ *
+ * @param p The object.
  */
-
 void MultiplyElement::pup (PUP::er &p)
 {
   p|index;
@@ -64,19 +65,19 @@ void MultiplyElement::pup (PUP::er &p)
 
   if(p.isUnpacking())
   {
-    INFO("pup: ME(%d,%d,%d) unpacking %d elements\n",
+    INFO("ME(%d,%d,%d) pup: unpacking %d elements\n",
         thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
   }
   else
   {
     if(p.isSizing())
     {
-      INFO("pup: ME(%d,%d,%d) sizing %d elements\n",
+      INFO("ME(%d,%d,%d) pup: sizing %d elements\n",
           thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
     }
     else
     {
-      INFO("pup: ME(%d,%d,%d) packing %d elements\n",
+      INFO("ME(%d,%d,%d) pup: packing %d elements\n",
           thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
     }
   }
@@ -98,8 +99,10 @@ void MultiplyElement::pup (PUP::er &p)
 }
 
 /** Multiply nodes.
+ *
+ * @param cb The callback.
  */
-void MultiplyElement::multiply ()
+void MultiplyElement::multiply (CkCallback &cb)
 {
   INFO("ME(%d,%d,%d) multiply\n", thisIndex.x, thisIndex.y, thisIndex.z);
 
@@ -131,17 +134,21 @@ void MultiplyElement::multiply ()
       }
     }
   }
-  contribute();
+  INFO("ME(%d,%d,%d) contribute\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  contribute(cb);
+  INFO("ME(%d,%d,%d) migrate request\n", thisIndex.x, thisIndex.y, thisIndex.z);
   migrateMe(0);
 }
 
-/** Push the C Nodes back into the C Matrix.
+/** Push the C submatrices back into the C Matrix.
+ *
+ * @param cb The callback.
  */
-void MultiplyElement::storeBack ()
+void MultiplyElement::storeBack (CkCallback &cb)
 {
   INFO("ME(%d,%d,%d) storing back\n", thisIndex.x, thisIndex.y, thisIndex.z);
   C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
-  contribute();
+  contribute(cb);
 }
 
 /** The constructor.
@@ -180,45 +187,28 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
 
   convolution = CProxy_MultiplyElement::ckNew();
   for(int i = 0; i < (1 << CInfo->depth); i++) {
-    for(int j = 0; j < (1 << CInfo->depth); j++)
-    {
-      CProxyElement_Node CNode = CInfo->tierNode(i, j);
+    for(int j = 0; j < (1 << CInfo->depth); j++) {
       for(int k = 0; k < (1 << CInfo->depth); k++)
       {
-        CProxyElement_Node ANode = AInfo->tierNode(i, k);
-        CProxyElement_Node BNode = BInfo->tierNode(k, j);
-
         DEBUG("inserting convolution at C(%d,%d) <- A(%d,%d) * B(%d,%d)\n",
             i, j, i, k, k, j);
 
-        convolution(i, j, k).insert(CInfo->blocksize, AInfo->tierNode,
-            BInfo->tierNode, CInfo->tierNode);
+        convolution(i, j, k).insert(CInfo->blocksize,
+            AInfo->tierNode,
+            BInfo->tierNode,
+            CInfo->tierNode);
 
         DEBUG("inserted element\n");
       }
     }
   }
   convolution.doneInserting();
-  DEBUG("done initializing convolution\n");
+  INFO("done initializing convolution\n");
 
-  DEBUG("multiplying...\n");
-  this->cb = cb;
-  convolution.ckSetReductionClient(new CkCallback(CkReductionTarget(Multiply, multiplyDone), thisProxy));
-  convolution.multiply();
-}
-
-/** Reduction target for MultiplyElement::multiply().
- */
-void Multiply::multiplyDone ()
-{
-  INFO("multiplyDone\n");
-  convolution.ckSetReductionClient(new CkCallback(CkReductionTarget(Multiply, storeBackDone), thisProxy));
-  convolution.storeBack();
-}
-
-void Multiply::storeBackDone ()
-{
-  INFO("storeBackDone\n");
+  INFO("multiplying...\n");
+  convolution.multiply(CkCallbackResumeThread());
+  convolution.storeBack(CkCallbackResumeThread());
+  INFO("done\n");
   cb.send();
 }
 

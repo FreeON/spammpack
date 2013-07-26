@@ -66,6 +66,15 @@ AC_ARG_WITH([verify-tolerance],
 AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absoluve
                     toleranc of the multiply verification])
 
+AC_ARG_ENABLE([direct-multiply],
+  [AS_HELP_STRING([--enable-direct-multiply],
+                  [Construct the convolution directly in the main program.])],
+  [direct_multiply=$enableval],
+  [direct_multiply="no"])
+if test "${direct_multiply}" = "yes"; then
+  AC_DEFINE([DIRECT_MULTIPLY], [1], [Construct the convolution curve directly in the main program.])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile Doxyfile])
 

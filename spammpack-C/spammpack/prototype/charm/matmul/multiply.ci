@@ -6,15 +6,13 @@ module multiply
   {
     entry MultiplyElement (int blocksize, CProxy_Node A,
         CProxy_Node B, CProxy_Node C);
-    entry void multiply ();
-    entry void storeBack ();
+    entry void multiply (CkCallback &cb);
+    entry void storeBack (CkCallback &cb);
   };
   chare Multiply
   {
     entry Multiply ();
     entry void multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
         CkCallback &cb);
-    entry [reductiontarget] void multiplyDone ();
-    entry [reductiontarget] void storeBackDone ();
   };
 };

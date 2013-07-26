@@ -179,6 +179,20 @@ void Node::printPE (CkCallback &cb)
   contribute(cb);
 }
 
+/** Initialize a Matrix with random numbers. */
+void Node::random (CkCallback &cb)
+{
+  DEBUG("generating random matrix\n");
+  thisProxy.initialize(initRandom, cb);
+}
+
+/** Initialize a Matrix with zeros. */
+void Node::zero (CkCallback &cb)
+{
+  DEBUG("setting matrix to zero\n");
+  thisProxy.initialize(initZero, cb);
+}
+
 /** Initialize a Node.
  *
  * @param initType How to initialize the Matrix.
