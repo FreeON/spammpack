@@ -1,14 +1,14 @@
 EXTRA_DIST = \
 	$(INTERFACE_FILES) \
+	configure.LB \
+	configure.mustang \
 	freeon-submit.sh \
 	freeon.job.template \
 	moonlight-submit.sh \
 	moonlight.sh.template \
-	mustang-submit.sh \
 	mustang-results.sh \
-	mustang.job.template \
-	configure.mustang \
-	configure.LB
+	mustang-submit.sh \
+	mustang.job.template
 
 AM_LDFLAGS = -language charm++
 AM_CXXFLAGS = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@

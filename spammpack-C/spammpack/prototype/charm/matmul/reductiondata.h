@@ -17,7 +17,7 @@ class ReductionData : public CBase_ReductionData
 
     int N;
     int index;
-    double x;
+    double *x;
 
   public:
 
