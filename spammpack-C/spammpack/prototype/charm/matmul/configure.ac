@@ -95,6 +95,17 @@ if test "${direct_multiply}" = "yes"; then
   AC_DEFINE([DIRECT_MULTIPLY], [1], [Construct the convolution curve directly in the main program.])
 fi
 
+AC_ARG_ENABLE([reduction-target],
+  [AS_HELP_STRING([--enable-reduction-target],
+                  [Use an explicit reduction target in the multiply instead of
+                   suspending the calling thread.])],
+  [reduction_target=$enableval],
+  [reduction_target="no"])
+if test "${reduction_target}" = "yes"; then
+  AC_DEFINE([USE_REDUCTION_TARGET], [1], [Use an explicit reduction target in
+             the multiply instead of suspending the calling thread.])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile Doxyfile])
 

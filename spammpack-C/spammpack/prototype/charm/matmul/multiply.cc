@@ -6,6 +6,7 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
+#include "config.h"
 #include "multiply.h"
 #include "multiplyelement.h"
 #include "messages.h"
@@ -70,12 +71,33 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   /* Store callback. */
   this->cb = cb;
 
-  DEBUG("multiplying\n");
+#ifdef USE_REDUCTION_TARGET
+  INFO("multiplying\n");
+  CkCallback done(CkReductionTarget(Multiply, multiplyDone), thisProxy);
+  convolution.multiply(done);
+#else
+  INFO("multiplying\n");
   convolution.multiply(CkCallbackResumeThread());
 
-  DEBUG("store back\n");
+  DEBUG("storing result back\n");
   convolution.storeBack(CkCallbackResumeThread());
 
+  DEBUG("sending back\n");
+  cb.send();
+#endif
+}
+
+/** The reduction target for the multiply method. */
+void Multiply::multiplyDone ()
+{
+  DEBUG("storing result back\n");
+  CkCallback done(CkReductionTarget(Multiply, storeBackDone), thisProxy);
+  convolution.storeBack(done);
+}
+
+/** The reduction target for the storeBack method. */
+void Multiply::storeBackDone ()
+{
   DEBUG("sending back\n");
   cb.send();
 }
