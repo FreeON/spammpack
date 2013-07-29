@@ -85,8 +85,8 @@ class Main : public CBase_Main
       A.doneInserting();
       C.doneInserting();
 #else
-      CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
-      CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
+      CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize, 0);
+      CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize, 0);
 #endif
 
       DEBUG("generating random matrix\n");

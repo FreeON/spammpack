@@ -119,6 +119,7 @@ void Node::pup (PUP::er &p)
  */
 NodeBlockMsg * Node::getBlock ()
 {
+  INFO("Node(%d,%d) here\n", thisIndex.x, thisIndex.y);
   NodeBlockMsg *m = new (blocksize*blocksize) NodeBlockMsg();
   memcpy(m->block, block, sizeof(double)*blocksize*blocksize);
   return m;
@@ -204,7 +205,7 @@ void Node::initialize (int initType, CkCallback &cb)
     ABORT("not at depth\n");
   }
 
-  DEBUG("(%d,%d) index %d, initializing\n", thisIndex.x, thisIndex.y, index);
+  INFO("Node(%d,%d) index %d, initializing\n", thisIndex.x, thisIndex.y, index);
 
   if(block == NULL)
   {
@@ -231,7 +232,7 @@ void Node::initialize (int initType, CkCallback &cb)
       break;
   }
 
-  cb.send(new IntMsg(index));
+  cb.send();
 }
 
 /** Print the PEs the leafs sit on. */

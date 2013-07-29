@@ -21,14 +21,14 @@
 MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
     CProxy_Node B, CProxy_Node C)
 {
-  DEBUG("ME(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  INFO("ME(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
   this->blocksize = blocksize;
   this->A = A;
   this->B = B;
   this->C = C;
   CResult = NULL;
   numberCalls = 0;
-  DEBUG("ME(%d,%d,%d) constructor done\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  INFO("ME(%d,%d,%d) constructor done\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 /** The migration constructor.
@@ -114,6 +114,8 @@ void MultiplyElement::multiply (CkCallback &cb)
   }
   numberCalls++;
 
+  INFO("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
+
   if(CResult != NULL)
   {
     ABORT("ME(%d,%d,%d) CResult is not NULL\n", thisIndex.x, thisIndex.y, thisIndex.z);
@@ -122,8 +124,12 @@ void MultiplyElement::multiply (CkCallback &cb)
   CResult = new double[blocksize*blocksize];
   memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
+  INFO("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
+
   NodeBlockMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
   NodeBlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
+
+  INFO("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
 
   for(int i = 0; i < blocksize; i++) {
     for(int j = 0; j < blocksize; j++) {

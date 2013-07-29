@@ -33,11 +33,16 @@ Matrix::Matrix (int N, int blocksize)
   int NTier = 1 << depth;
   int width = NPadded >> depth;
 
+  if(CkMyPe() != 0)
+  {
+    ABORT("not on PE 0\n");
+  }
+
   tierNode = CProxy_Node::ckNew();
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++)
     {
-      DEBUG("adding node(%d,%d)\n", i, j);
+      INFO("adding node(%d,%d)\n", i, j);
       tierNode(i, j).insert(N, depth, blocksize, depth,
           i*width, (i+1)*width, j*width, (j+1)*width);
     }

@@ -32,7 +32,7 @@ Multiply::Multiply ()
 void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     CkCallback &cb)
 {
-  DEBUG("initializing multiply\n");
+  INFO("initializing multiply\n");
 
   MatrixInfoMsg *AInfo = A.info();
   MatrixInfoMsg *BInfo = B.info();
@@ -48,12 +48,20 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     ABORT("blocksize mismatch\n");
   }
 
+  if(CkMyPe() != 0)
+  {
+    ABORT("not on PE 0\n");
+  }
+
+  INFO("filling %dx%dx%d chare array\n", (1 << CInfo->depth),
+      (1 << CInfo->depth), (1 << CInfo->depth));
+
   convolution = CProxy_MultiplyElement::ckNew();
   for(int i = 0; i < (1 << CInfo->depth); i++) {
     for(int j = 0; j < (1 << CInfo->depth); j++) {
       for(int k = 0; k < (1 << CInfo->depth); k++)
       {
-        DEBUG("inserting convolution at C(%d,%d) <- A(%d,%d) * B(%d,%d)\n",
+        INFO("inserting convolution at C(%d,%d) <- A(%d,%d) * B(%d,%d)\n",
             i, j, i, k, k, j);
 
         convolution(i, j, k).insert(CInfo->blocksize,
@@ -72,8 +80,14 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   this->cb = cb;
 
   INFO("multiplying\n");
-  CkCallback done(CkReductionTarget(Multiply, multiplyDone), thisProxy);
-  convolution.multiply(done);
+  //CkCallback done(CkReductionTarget(Multiply, multiplyDone), thisProxy);
+  //convolution.multiply(done);
+
+  convolution.multiply(CkCallbackResumeThread());
+
+  INFO("here\n");
+  cb.send();
+  INFO("here\n");
 
   delete AInfo;
   delete BInfo;
