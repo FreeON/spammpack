@@ -90,7 +90,8 @@ class Main : public CBase_Main
 #endif
 
       DEBUG("generating random matrix\n");
-      A.random(CkCallbackResumeThread());
+      //A.random(CkCallbackResumeThread());
+      A.decay(0.1, CkCallbackResumeThread());
 
 #ifdef VERIFY_MULTIPLY
       DenseMatrixMsg *ADense = A.getDense();

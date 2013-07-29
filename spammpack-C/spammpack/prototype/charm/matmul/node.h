@@ -64,6 +64,7 @@ class Node : public CBase_Node
     void printPE (CkCallback &cb);
     void random (CkCallback &cb);
     void zero (CkCallback &cb);
+    void set (int numberElements, double *A, CkCallback &cb);
     void initialize (int initType, CkCallback &cb);
     void printLeafPes (CkCallback &cb);
     void add (int blocksize, double *A);

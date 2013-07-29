@@ -58,9 +58,13 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   DEBUG("filling %dx%dx%d chare array\n", convolutionSize,
       convolutionSize, convolutionSize);
 
+#ifdef DENSE_ARRAYS
   convolution = CProxy_MultiplyElement::ckNew(CInfo->blocksize,
       AInfo->tierNode, BInfo->tierNode, CInfo->tierNode, convolutionSize,
       convolutionSize, convolutionSize);
+#else
+  convolution = CProxy_MultiplyElement::ckNew();
+#endif
 
   delete AInfo;
   delete BInfo;

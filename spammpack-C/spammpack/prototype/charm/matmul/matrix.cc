@@ -6,6 +6,7 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
+#include "config.h"
 #include "matrix.h"
 #include "logger.h"
 #include "types.h"
@@ -38,7 +39,11 @@ Matrix::Matrix (int N, int blocksize)
     INFO("not on PE 0\n");
   }
 
+#ifdef DENSE_ARRAYS
   tierNode = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
+#else
+  tierNode = CProxy_Node::ckNew();
+#endif
 }
 
 /** Convert a Matrix to a dense array. */
@@ -88,6 +93,55 @@ void Matrix::zero (CkCallback &cb)
   thisProxy.initialize(initZero, cb);
 }
 
+/** Initialize a Matrix with zeros.
+ *
+ * @param gamma The decay constant.
+ */
+void Matrix::decay (double gamma, CkCallback &cb)
+{
+  DEBUG("setting matrix to a matrix with decay (gamma = %f)\n", gamma);
+  double *ADense = new double[N*N];
+
+  for(int i = 0; i < N; i++)
+  {
+    ADense[BLOCK_INDEX(i, i, 0, 0, N)] = 1+0.3*(rand()/(double) RAND_MAX - 0.5);
+    for(int j = i+1; j < N; j++)
+    {
+      ADense[BLOCK_INDEX(i, j, 0, 0, N)] = exp(-fabs(i-j)/gamma)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
+      ADense[BLOCK_INDEX(j, i, 0, 0, N)] = exp(-fabs(i-j)/gamma)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
+    }
+  }
+
+  DEBUG("created dense matrix\n");
+#ifdef DEBUG_OUTPUT
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+    }
+  }
+#endif
+
+  double *ABuffer = new double[blocksize*blocksize];
+  for(int i = 0; i < (1 << depth); i++) {
+    for(int j = 0; j < (1 << depth); j++) {
+      for(int i_block = i*blocksize; i_block < N && i_block < (i+1)*blocksize; i_block++) {
+        for(int j_block = j*blocksize; j_block < N && j_block < (j+1)*blocksize; j_block++)
+        {
+          ABuffer[BLOCK_INDEX(i_block-i*blocksize, j_block-j*blocksize, 0, 0, blocksize)] =
+            ADense[BLOCK_INDEX(i_block, j_block, i*blocksize, j*blocksize, N)];
+#ifndef DENSE_ARRAYS
+          tierNode(i, j).insert(N, depth, blocksize, depth);
+#endif
+          tierNode(i, j).set(blocksize*blocksize, ADense, CkCallbackResumeThread());
+        }
+      }
+    }
+  }
+
+  delete[] ABuffer;
+  delete[] ADense;
+}
+
 /** Initialize a Matrix.
  *
  * @param initType How to initialize the Matrix.
@@ -98,9 +152,15 @@ void Matrix::initialize (int initType, CkCallback &cb)
   for(int i = 0; i < (1 << depth); i++) {
     for(int j = 0; j < (1 << depth); j++)
     {
+#ifndef DENSE_ARRAYS
+      tierNode(i, j).insert(N, depth, blocksize, depth);
+#endif
       tierNode(i, j).initialize(initType, CkCallbackResumeThread());
     }
   }
+#ifndef DENSE_ARRAYS
+  tierNode.doneInserting();
+#endif
   cb.send();
 }
 

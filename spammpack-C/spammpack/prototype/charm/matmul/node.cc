@@ -195,6 +195,29 @@ void Node::zero (CkCallback &cb)
   thisProxy.initialize(initZero, cb);
 }
 
+/** Set a matrix block directly.
+ *
+ * @param numberElements The number of elements contained in A.
+ * @param A The dense submatrix.
+ * @param cb The callback.
+ */
+void Node::set (int numberElements, double *A, CkCallback &cb)
+{
+  if(numberElements != blocksize*blocksize)
+  {
+    ABORT("blocksize mismatch\n");
+  }
+
+  if(block == NULL)
+  {
+    block = new double[blocksize*blocksize];
+  }
+
+  memcpy(block, A, numberElements*sizeof(double));
+
+  cb.send();
+}
+
 /** Initialize a Node.
  *
  * @param initType How to initialize the Matrix.

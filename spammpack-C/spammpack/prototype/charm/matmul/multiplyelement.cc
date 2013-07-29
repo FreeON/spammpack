@@ -143,8 +143,6 @@ void MultiplyElement::multiply (CkCallback &cb)
   }
   DEBUG("ME(%d,%d,%d) contribute\n", thisIndex.x, thisIndex.y, thisIndex.z);
   contribute(cb);
-  DEBUG("ME(%d,%d,%d) migrate request\n", thisIndex.x, thisIndex.y, thisIndex.z);
-  migrateMe(0);
 }
 
 /** Push the C submatrices back into the C Matrix.

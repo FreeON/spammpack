@@ -42,6 +42,7 @@ class Matrix : public CBase_Matrix
     MatrixInfoMsg * info ();
     void random (CkCallback &cb);
     void zero (CkCallback &cb);
+    void decay (double gamma, CkCallback &cb);
     void initialize (int initType, CkCallback &cb);
     void print (CkCallback &cb);
     void printLeafPes (CkCallback &cb);

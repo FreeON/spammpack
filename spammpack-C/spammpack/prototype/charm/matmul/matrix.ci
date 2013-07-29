@@ -9,6 +9,7 @@ module matrix
     entry [sync] MatrixInfoMsg * info ();
     entry void random (CkCallback &cb);
     entry void zero (CkCallback &cb);
+    entry void decay (double gamma, CkCallback &cb);
     entry void initialize (int initType, CkCallback &cb);
     entry void print (CkCallback &cb);
     entry void printLeafPes (CkCallback &cb);

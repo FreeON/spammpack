@@ -118,6 +118,15 @@ if test "${reduction_target}" = "yes"; then
              the multiply instead of suspending the calling thread.])
 fi
 
+AC_ARG_ENABLE([dense-arrays],
+  [AS_HELP_STRING([--enable-dense-arrays],
+                  [Allocate chare arrays as dense arrays.])],
+  [dense_arrays=$enableval],
+  [dense_arrays="no"])
+if test "${dense_arrays}" = "yes"; then
+  AC_DEFINE([DENSE_ARRAYS], [1], [Allocate chare arrays as dense arrays.])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile Doxyfile])
 
