@@ -4,8 +4,7 @@ module node
   array [2D] Node
   {
     entry Node ();
-    entry Node (int N, int depth, int blocksize, int tier, int iLower,
-        int iUpper, int jLower, int jUpper);
+    entry Node (int N, int depth, int blocksize, int tier);
     entry [sync] NodeBlockMsg * getBlock ();
     entry [sync] DoubleMsg * get (int i, int j);
     entry [sync] NodeInfoMsg * info ();

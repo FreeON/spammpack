@@ -21,14 +21,14 @@
 MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
     CProxy_Node B, CProxy_Node C)
 {
-  INFO("ME(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
   this->blocksize = blocksize;
   this->A = A;
   this->B = B;
   this->C = C;
   CResult = NULL;
   numberCalls = 0;
-  INFO("ME(%d,%d,%d) constructor done\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) constructor done\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 /** The migration constructor.
@@ -37,16 +37,16 @@ MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
  */
 MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
-  INFO("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 /** The destructor.
  */
 MultiplyElement::~MultiplyElement ()
 {
-  INFO("ME(%d,%d,%d) destructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) destructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
   delete[] CResult;
-  INFO("ME(%d,%d,%d) destructor done\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) destructor done\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 /** The PUP method.
@@ -66,19 +66,19 @@ void MultiplyElement::pup (PUP::er &p)
 
   if(p.isUnpacking())
   {
-    INFO("ME(%d,%d,%d) pup: unpacking %d elements\n",
+    DEBUG("ME(%d,%d,%d) pup: unpacking %d elements\n",
         thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
   }
   else
   {
     if(p.isSizing())
     {
-      INFO("ME(%d,%d,%d) pup: sizing %d elements\n",
+      DEBUG("ME(%d,%d,%d) pup: sizing %d elements\n",
           thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
     }
     else
     {
-      INFO("ME(%d,%d,%d) pup: packing %d elements\n",
+      DEBUG("ME(%d,%d,%d) pup: packing %d elements\n",
           thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
     }
   }
@@ -105,7 +105,7 @@ void MultiplyElement::pup (PUP::er &p)
  */
 void MultiplyElement::multiply (CkCallback &cb)
 {
-  INFO("ME(%d,%d,%d) multiply\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) multiply\n", thisIndex.x, thisIndex.y, thisIndex.z);
 
   if(numberCalls > 0)
   {
@@ -114,7 +114,7 @@ void MultiplyElement::multiply (CkCallback &cb)
   }
   numberCalls++;
 
-  INFO("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
 
   if(CResult != NULL)
   {
@@ -124,12 +124,12 @@ void MultiplyElement::multiply (CkCallback &cb)
   CResult = new double[blocksize*blocksize];
   memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
-  INFO("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
 
   NodeBlockMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
   NodeBlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
-  INFO("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
 
   for(int i = 0; i < blocksize; i++) {
     for(int j = 0; j < blocksize; j++) {
@@ -141,9 +141,9 @@ void MultiplyElement::multiply (CkCallback &cb)
       }
     }
   }
-  INFO("ME(%d,%d,%d) contribute\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) contribute\n", thisIndex.x, thisIndex.y, thisIndex.z);
   contribute(cb);
-  INFO("ME(%d,%d,%d) migrate request\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) migrate request\n", thisIndex.x, thisIndex.y, thisIndex.z);
   migrateMe(0);
 }
 
@@ -153,7 +153,7 @@ void MultiplyElement::multiply (CkCallback &cb)
  */
 void MultiplyElement::storeBack (CkCallback &cb)
 {
-  INFO("ME(%d,%d,%d) storing back\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) storing back\n", thisIndex.x, thisIndex.y, thisIndex.z);
   C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
   contribute(cb);
 }

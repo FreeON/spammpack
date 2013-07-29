@@ -22,18 +22,23 @@ Node::Node ()
 
 /** The constructor.
  */
-Node::Node (int N, int depth, int blocksize, int tier,
-    int iLower, int iUpper,
-    int jLower, int jUpper)
+Node::Node (int N, int depth, int blocksize, int tier)
 {
   this->N = N;
   this->depth = depth;
   this->blocksize = blocksize;
   this->tier = tier;
-  this->iLower = iLower;
-  this->iUpper = iUpper;
-  this->jLower = jLower;
-  this->jUpper = jUpper;
+
+  //this->iLower = iLower;
+  //this->iUpper = iUpper;
+  //this->jLower = jLower;
+  //this->jUpper = jUpper;
+
+  this->iLower = thisIndex.x*blocksize;
+  this->iUpper = (thisIndex.x+1)*blocksize;
+  this->jLower = thisIndex.y*blocksize;
+  this->jUpper = (thisIndex.y+1)*blocksize;
+
   this->block = NULL;
 
   /* Calculate the linear index. */
@@ -54,14 +59,14 @@ Node::Node (int N, int depth, int blocksize, int tier,
 /** The migration constructor. */
 Node::Node (CkMigrateMessage *msg)
 {
-  INFO("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
+  DEBUG("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
 }
 
 /** The destructor.
  */
 Node::~Node ()
 {
-  INFO("Node(%d,%d) destructor\n", thisIndex.x, thisIndex.y);
+  DEBUG("Node(%d,%d) destructor\n", thisIndex.x, thisIndex.y);
   delete[] block;
 }
 
@@ -85,17 +90,17 @@ void Node::pup (PUP::er &p)
 
   if(p.isUnpacking())
   {
-    INFO("pup: Node(%d,%d) unpacking %d elements\n", thisIndex.x, thisIndex.y, numberElements);
+    DEBUG("pup: Node(%d,%d) unpacking %d elements\n", thisIndex.x, thisIndex.y, numberElements);
   }
   else
   {
     if(p.isSizing())
     {
-      INFO("pup: Node(%d,%d) sizing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
+      DEBUG("pup: Node(%d,%d) sizing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
     }
     else
     {
-      INFO("pup: Node(%d,%d) packing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
+      DEBUG("pup: Node(%d,%d) packing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
     }
   }
 
@@ -119,7 +124,7 @@ void Node::pup (PUP::er &p)
  */
 NodeBlockMsg * Node::getBlock ()
 {
-  INFO("Node(%d,%d) here\n", thisIndex.x, thisIndex.y);
+  DEBUG("Node(%d,%d) here\n", thisIndex.x, thisIndex.y);
   NodeBlockMsg *m = new (blocksize*blocksize) NodeBlockMsg();
   memcpy(m->block, block, sizeof(double)*blocksize*blocksize);
   return m;
@@ -205,7 +210,7 @@ void Node::initialize (int initType, CkCallback &cb)
     ABORT("not at depth\n");
   }
 
-  INFO("Node(%d,%d) index %d, initializing\n", thisIndex.x, thisIndex.y, index);
+  DEBUG("Node(%d,%d) index %d, initializing\n", thisIndex.x, thisIndex.y, index);
 
   if(block == NULL)
   {

@@ -28,8 +28,6 @@ class Multiply : public CBase_Multiply
     Multiply ();
     void multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
         CkCallback &cb);
-    void multiplyDone ();
-    void storeBackDone ();
 };
 
 #endif

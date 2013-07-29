@@ -38,16 +38,7 @@ Matrix::Matrix (int N, int blocksize)
     ABORT("not on PE 0\n");
   }
 
-  tierNode = CProxy_Node::ckNew();
-  for(int i = 0; i < NTier; i++) {
-    for(int j = 0; j < NTier; j++)
-    {
-      INFO("adding node(%d,%d)\n", i, j);
-      tierNode(i, j).insert(N, depth, blocksize, depth,
-          i*width, (i+1)*width, j*width, (j+1)*width);
-    }
-  }
-  tierNode.doneInserting();
+  tierNode = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
 }
 
 /** Convert a Matrix to a dense array. */

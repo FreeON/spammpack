@@ -17,7 +17,7 @@
  */
 Multiply::Multiply ()
 {
-  INFO("Multiply constructor\n");
+  DEBUG("Multiply constructor\n");
 }
 
 /** Multiply two Matrix objects.
@@ -32,7 +32,7 @@ Multiply::Multiply ()
 void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     CkCallback &cb)
 {
-  INFO("initializing multiply\n");
+  DEBUG("initializing multiply\n");
 
   MatrixInfoMsg *AInfo = A.info();
   MatrixInfoMsg *BInfo = B.info();
@@ -53,59 +53,30 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     ABORT("not on PE 0\n");
   }
 
-  INFO("filling %dx%dx%d chare array\n", (1 << CInfo->depth),
-      (1 << CInfo->depth), (1 << CInfo->depth));
+  int convolutionSize = 1 << CInfo->depth;
+  DEBUG("filling %dx%dx%d chare array\n", convolutionSize,
+      convolutionSize, convolutionSize);
 
-  convolution = CProxy_MultiplyElement::ckNew();
-  for(int i = 0; i < (1 << CInfo->depth); i++) {
-    for(int j = 0; j < (1 << CInfo->depth); j++) {
-      for(int k = 0; k < (1 << CInfo->depth); k++)
-      {
-        INFO("inserting convolution at C(%d,%d) <- A(%d,%d) * B(%d,%d)\n",
-            i, j, i, k, k, j);
-
-        convolution(i, j, k).insert(CInfo->blocksize,
-            AInfo->tierNode,
-            BInfo->tierNode,
-            CInfo->tierNode);
-
-        DEBUG("inserted element ME(%d,%d,%d)\n", i, j, k);
-      }
-    }
-  }
-  convolution.doneInserting();
-  INFO("done initializing convolution\n");
-
-  /* Store callback. */
-  this->cb = cb;
-
-  INFO("multiplying\n");
-  //CkCallback done(CkReductionTarget(Multiply, multiplyDone), thisProxy);
-  //convolution.multiply(done);
-
-  convolution.multiply(CkCallbackResumeThread());
-
-  INFO("here\n");
-  cb.send();
-  INFO("here\n");
+  convolution = CProxy_MultiplyElement::ckNew(CInfo->blocksize,
+      AInfo->tierNode, BInfo->tierNode, CInfo->tierNode, convolutionSize,
+      convolutionSize, convolutionSize);
 
   delete AInfo;
   delete BInfo;
   delete CInfo;
-}
 
-/** The reduction target for the multiply method. */
-void Multiply::multiplyDone ()
-{
-  INFO("storing result back\n");
-  CkCallback done(CkReductionTarget(Multiply, storeBackDone), thisProxy);
-  convolution.storeBack(done);
-}
+  DEBUG("done initializing convolution\n");
 
-/** The reduction target for the storeBack method. */
-void Multiply::storeBackDone ()
-{
-  INFO("done\n");
+  /* Store callback. */
+  this->cb = cb;
+
+  DEBUG("multiplying\n");
+  convolution.multiply(CkCallbackResumeThread());
+
+  DEBUG("store back\n");
+  convolution.storeBack(CkCallbackResumeThread());
+
+  DEBUG("sending back\n");
   cb.send();
 }
 
