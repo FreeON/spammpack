@@ -85,8 +85,8 @@ class Main : public CBase_Main
       A.doneInserting();
       C.doneInserting();
 #else
-      CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize, 0);
-      CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize, 0);
+      CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
+      CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 #endif
 
       DEBUG("generating random matrix\n");
@@ -106,10 +106,7 @@ class Main : public CBase_Main
 
       CkPrintf("running %d iterations\n", numberIterations);
 #ifndef DIRECT_MULTIPLY
-      /* The Multiply chare has to live on PE 0 so that it can later on
-       * populate the MultiplyElement array. This only works from PE 0.
-       */
-      CProxy_Multiply M = CProxy_Multiply::ckNew(0);
+      CProxy_Multiply M = CProxy_Multiply::ckNew();
 #endif
       for(int i = 0; i < numberIterations; i++)
       {

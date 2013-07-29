@@ -51,7 +51,7 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
 
   if(CkMyPe() != 0)
   {
-    ABORT("not on PE 0\n");
+    INFO("not on PE 0\n");
   }
 
   int convolutionSize = 1 << CInfo->depth;

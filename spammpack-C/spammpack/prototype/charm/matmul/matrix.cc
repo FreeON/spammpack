@@ -35,7 +35,7 @@ Matrix::Matrix (int N, int blocksize)
 
   if(CkMyPe() != 0)
   {
-    ABORT("not on PE 0\n");
+    INFO("not on PE 0\n");
   }
 
   tierNode = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
