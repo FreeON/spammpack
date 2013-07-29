@@ -49,7 +49,7 @@ Node::Node (int N, int depth, int blocksize, int tier)
   index = tempIndex.to_ulong();
 
   DEBUG("tier %d, index %d, constructing\n", tier, index);
-  INFO("Node(%d,%d) constructor\n", thisIndex.x, thisIndex.y);
+  DEBUG("Node(%d,%d) constructor\n", thisIndex.x, thisIndex.y);
 }
 
 /** The migration constructor. */

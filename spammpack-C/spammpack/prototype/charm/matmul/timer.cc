@@ -1,3 +1,4 @@
+#include "config.h"
 #include "timer.h"
 #include <string>
 #include <sstream>
@@ -18,7 +19,7 @@ Timer::Timer (const char *format, ...)
   va_end(ap);
 
   message = std::string(output_buffer);
-  if(clock_gettime(CLOCK_MONOTONIC_RAW, &startTime) < 0)
+  if(clock_gettime(CLOCKTYPE, &startTime) < 0)
   {
     printf("can not start timer\n");
     exit(1);
@@ -27,7 +28,7 @@ Timer::Timer (const char *format, ...)
 
 void Timer::stop ()
 {
-  if(clock_gettime(CLOCK_MONOTONIC_RAW, &endTime) < 0)
+  if(clock_gettime(CLOCKTYPE, &endTime) < 0)
   {
     printf("can not stop timer\n");
     exit(1);

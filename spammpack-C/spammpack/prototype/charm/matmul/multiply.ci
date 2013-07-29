@@ -1,7 +1,7 @@
 module multiply
 {
   extern module matrix;
-  //extern module multiplyelement;
+  extern module multiplyelement;
   chare Multiply
   {
     entry Multiply ();

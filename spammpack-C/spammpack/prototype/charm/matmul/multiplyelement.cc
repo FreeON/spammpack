@@ -21,7 +21,7 @@
 MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
     CProxy_Node B, CProxy_Node C)
 {
-  INFO("ME(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
   this->blocksize = blocksize;
   this->A = A;
   this->B = B;
@@ -37,7 +37,7 @@ MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
  */
 MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
-  INFO("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 /** The destructor.
@@ -55,6 +55,7 @@ MultiplyElement::~MultiplyElement ()
  */
 void MultiplyElement::pup (PUP::er &p)
 {
+  CBase_MultiplyElement::pup(p);
   p|index;
   p|blocksize;
   p|numberCalls;
@@ -67,19 +68,19 @@ void MultiplyElement::pup (PUP::er &p)
 
   if(p.isUnpacking())
   {
-    INFO("ME(%d,%d,%d) pup: unpacking %d elements\n",
+    DEBUG("ME(%d,%d,%d) pup: unpacking %d elements\n",
         thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
   }
   else
   {
     if(p.isSizing())
     {
-      INFO("ME(%d,%d,%d) pup: sizing %d elements\n",
+      DEBUG("ME(%d,%d,%d) pup: sizing %d elements\n",
           thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
     }
     else
     {
-      INFO("ME(%d,%d,%d) pup: packing %d elements\n",
+      DEBUG("ME(%d,%d,%d) pup: packing %d elements\n",
           thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
     }
   }
@@ -142,7 +143,7 @@ void MultiplyElement::multiply (CkCallback &cb)
   }
   DEBUG("ME(%d,%d,%d) contribute\n", thisIndex.x, thisIndex.y, thisIndex.z);
   contribute(cb);
-  INFO("ME(%d,%d,%d) migrate request\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("ME(%d,%d,%d) migrate request\n", thisIndex.x, thisIndex.y, thisIndex.z);
   migrateMe(0);
 }
 

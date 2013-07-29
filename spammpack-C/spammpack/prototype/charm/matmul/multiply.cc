@@ -72,11 +72,11 @@ void Multiply::multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   this->cb = cb;
 
 #ifdef USE_REDUCTION_TARGET
-  INFO("multiplying\n");
+  DEBUG("multiplying\n");
   CkCallback done(CkReductionTarget(Multiply, multiplyDone), thisProxy);
   convolution.multiply(done);
 #else
-  INFO("multiplying\n");
+  DEBUG("multiplying\n");
   convolution.multiply(CkCallbackResumeThread());
 
   DEBUG("storing result back\n");

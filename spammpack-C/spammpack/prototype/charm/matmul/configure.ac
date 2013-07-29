@@ -27,9 +27,21 @@ AC_CHECK_PROG([CHARMC], [charmc], [charmc])
 AC_PROG_CC
 AC_PROG_CXX([${CHARMC}])
 
+AC_LANG([C])
+
 AC_SEARCH_LIBS([clock_gettime], [rt],
-               [],
-               [AC_MSG_FAILURE([need clock_gettime()])])
+  [],
+  [AC_MSG_FAILURE([need clock_gettime()])])
+
+for CLOCKTYPE in CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC CLOCK_REALTIME; do
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>]],
+    [[struct timespec p; clock_gettime(${CLOCKTYPE}, &p);]])],
+    [break], [CLOCKTYPE="unset"])
+done
+if test ${CLOCKTYPE} = "unset"; then
+  AC_MSG_FAILURE([no known clock type])
+fi
+AC_DEFINE_UNQUOTED([CLOCKTYPE], [${CLOCKTYPE}], [The clock type to use with clock_gettime()])
 
 AC_ARG_ENABLE([load-balance],
   [AS_HELP_STRING([--enable-load-balance],
