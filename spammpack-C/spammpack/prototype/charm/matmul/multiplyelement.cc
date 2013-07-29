@@ -21,7 +21,7 @@
 MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
     CProxy_Node B, CProxy_Node C)
 {
-  DEBUG("ME(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  INFO("ME(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
   this->blocksize = blocksize;
   this->A = A;
   this->B = B;
@@ -57,6 +57,7 @@ void MultiplyElement::pup (PUP::er &p)
 {
   p|index;
   p|blocksize;
+  p|numberCalls;
   p|A;
   p|B;
   p|C;
@@ -66,19 +67,19 @@ void MultiplyElement::pup (PUP::er &p)
 
   if(p.isUnpacking())
   {
-    DEBUG("ME(%d,%d,%d) pup: unpacking %d elements\n",
+    INFO("ME(%d,%d,%d) pup: unpacking %d elements\n",
         thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
   }
   else
   {
     if(p.isSizing())
     {
-      DEBUG("ME(%d,%d,%d) pup: sizing %d elements\n",
+      INFO("ME(%d,%d,%d) pup: sizing %d elements\n",
           thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
     }
     else
     {
-      DEBUG("ME(%d,%d,%d) pup: packing %d elements\n",
+      INFO("ME(%d,%d,%d) pup: packing %d elements\n",
           thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
     }
   }
@@ -95,8 +96,6 @@ void MultiplyElement::pup (PUP::er &p)
   {
     if(p.isUnpacking()) { CResult = NULL; }
   }
-
-  p|numberCalls;
 }
 
 /** Multiply nodes.

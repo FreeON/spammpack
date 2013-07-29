@@ -8,6 +8,6 @@ mainmodule matmul
   {
     entry Main (CkArgMsg *msg);
     entry [threaded] void run (int N, int blocksize, int numberIterations);
-    entry [threaded] void reduceTest (int N);
+    entry [threaded] void reduceTest (int N, int blocksize, int numberIterations);
   };
 };

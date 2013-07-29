@@ -10,13 +10,15 @@
 #include "logger.h"
 #include "messages.h"
 
-Reduction::Reduction (int N, CProxy_ReductionData a)
+Reduction::Reduction (int N, CProxy_ReductionData a,
+    CProxy_ReductionData b)
 {
   this->N = N;
   this->index = thisIndex.x*N*N + thisIndex.y*N + thisIndex.z;
   this->callCount = 0;
   this->result = NULL;
   this->a = a;
+  this->b = b;
   INFO("R(%d,%d,%d) constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
@@ -45,10 +47,10 @@ void Reduction::reduce (CkCallback &cb)
       for(int k = 0; k < N; k++)
       {
         DoubleMsg * aik = a(i, k).get();
-        DoubleMsg * akj = a(k, j).get();
-        result[i*N+j] += aik->x * akj->x;
+        DoubleMsg * bkj = b(k, j).get();
+        result[i*N+j] += aik->x * bkj->x;
         delete aik;
-        delete akj;
+        delete bkj;
       }
     }
   }
@@ -64,6 +66,7 @@ void Reduction::pup (PUP::er &p)
   p|index;
   p|callCount;
   p|a;
+  p|b;
 
   if(p.isUnpacking())
   {

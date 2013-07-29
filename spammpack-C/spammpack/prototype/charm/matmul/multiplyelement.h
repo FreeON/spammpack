@@ -22,6 +22,9 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The submatrix size at the lowest tier. */
     int blocksize;
 
+    /** A counter, counting how many times this MultiplyElement was called. */
+    int numberCalls;
+
     /** Matrix A. */
     CProxy_Node A;
 
@@ -33,9 +36,6 @@ class MultiplyElement : public CBase_MultiplyElement
 
     /** The result matrix. */
     double *CResult;
-
-    /** A counter, counting how many times this MultiplyElement was called. */
-    int numberCalls;
 
   public:
 

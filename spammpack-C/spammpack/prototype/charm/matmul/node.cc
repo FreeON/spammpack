@@ -29,11 +29,6 @@ Node::Node (int N, int depth, int blocksize, int tier)
   this->blocksize = blocksize;
   this->tier = tier;
 
-  //this->iLower = iLower;
-  //this->iUpper = iUpper;
-  //this->jLower = jLower;
-  //this->jUpper = jUpper;
-
   this->iLower = thisIndex.x*blocksize;
   this->iUpper = (thisIndex.x+1)*blocksize;
   this->jLower = thisIndex.y*blocksize;
@@ -54,6 +49,7 @@ Node::Node (int N, int depth, int blocksize, int tier)
   index = tempIndex.to_ulong();
 
   DEBUG("tier %d, index %d, constructing\n", tier, index);
+  INFO("Node(%d,%d) constructor\n", thisIndex.x, thisIndex.y);
 }
 
 /** The migration constructor. */

@@ -66,7 +66,7 @@ class Main : public CBase_Main
 
 #if REDUCTION_TEST
       INFO("calling reduceTest() on this proxy\n");
-      thisProxy.reduceTest(N);
+      thisProxy.reduceTest(N, blocksize, numberIterations);
 #else
       DEBUG("calling run() on this proxy\n");
       thisProxy.run(N, blocksize, numberIterations);
@@ -178,19 +178,22 @@ class Main : public CBase_Main
       CkExit();
     }
 
-    void reduceTest (int N)
+    void reduceTest (int N, int blocksize, int numberIterations)
     {
-      INFO("reduce test, N = %d\n", N);
+      INFO("reduction test, N = %d\n", N);
 
-      CProxy_ReductionData data = CProxy_ReductionData::ckNew();
+      CProxy_ReductionData A = CProxy_ReductionData::ckNew();
+      CProxy_ReductionData C = CProxy_ReductionData::ckNew();
 
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++)
         {
-          data(i, j).insert(N);
+          A(i, j).insert(N);
+          C(i, j).insert(N);
         }
       }
-      data.doneInserting();
+      A.doneInserting();
+      C.doneInserting();
 
       CProxy_Reduction convolution = CProxy_Reduction::ckNew();
 
@@ -198,16 +201,17 @@ class Main : public CBase_Main
         for(int j = 0; j < N; j++) {
           for(int k = 0; k < N; k++)
           {
-            convolution(i, j, k).insert(N, data);
+            convolution(i, j, k).insert(N, A, C);
           }
         }
       }
       convolution.doneInserting();
 
+      INFO("reduce\n");
       convolution.reduce(CkCallbackResumeThread());
 
-      INFO("done\n");
-      CkExit();
+      INFO("done with reduction test\n");
+      thisProxy.run(N, blocksize, numberIterations);
     }
 };
 

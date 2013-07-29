@@ -22,10 +22,11 @@ class Reduction : public CBase_Reduction
     int callCount;
     double *result;
     CProxy_ReductionData a;
+    CProxy_ReductionData b;
 
   public:
 
-    Reduction (int N, CProxy_ReductionData a);
+    Reduction (int N, CProxy_ReductionData a, CProxy_ReductionData b);
     Reduction (CkMigrateMessage *msg);
     ~Reduction ();
     void reduce (CkCallback &cb);
