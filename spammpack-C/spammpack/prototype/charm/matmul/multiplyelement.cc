@@ -37,7 +37,7 @@ MultiplyElement::MultiplyElement (int blocksize, CProxy_Node A,
  */
 MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
-  DEBUG("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  INFO("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y, thisIndex.z);
 }
 
 /** The destructor.
@@ -143,7 +143,7 @@ void MultiplyElement::multiply (CkCallback &cb)
   }
   DEBUG("ME(%d,%d,%d) contribute\n", thisIndex.x, thisIndex.y, thisIndex.z);
   contribute(cb);
-  DEBUG("ME(%d,%d,%d) migrate request\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  INFO("ME(%d,%d,%d) migrate request\n", thisIndex.x, thisIndex.y, thisIndex.z);
   migrateMe(0);
 }
 

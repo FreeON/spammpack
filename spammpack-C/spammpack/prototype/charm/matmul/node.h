@@ -9,8 +9,10 @@
 #ifndef __NODE_H
 #define __NODE_H
 
-#include "node.decl.h"
 #include "types.h"
+
+#include "node.decl.h"
+
 #include <map>
 #include <list>
 

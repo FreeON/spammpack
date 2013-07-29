@@ -9,8 +9,9 @@
 #ifndef __MULTIPLY_H
 #define __MULTIPLY_H
 
-#include "multiply.decl.h"
 #include "multiplyelement.h"
+
+#include "multiply.decl.h"
 
 /** A multiplication. */
 class Multiply : public CBase_Multiply

@@ -1,9 +1,9 @@
 #ifndef __MESSAGES_H
 #define __MESSAGES_H
 
-#include "messages.decl.h"
-
 #include "node.h"
+
+#include "messages.decl.h"
 
 class DenseMatrixMsg : public CMessage_DenseMatrixMsg
 {

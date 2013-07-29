@@ -9,8 +9,9 @@
 #ifndef __REDUCTION_H
 #define __REDUCTION_H
 
-#include "reduction.decl.h"
 #include "reductiondata.h"
+
+#include "reduction.decl.h"
 
 class Reduction : public CBase_Reduction
 {

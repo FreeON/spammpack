@@ -9,9 +9,10 @@
 #ifndef __MATRIX_H
 #define __MATRIX_H
 
-#include "matrix.decl.h"
 #include "messages.h"
 #include "types.h"
+
+#include "matrix.decl.h"
 
 /** A matrix.
  */
