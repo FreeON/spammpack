@@ -15,5 +15,7 @@ module node
     entry void initialize (int initType, CkCallback &cb);
     entry void printLeafPes (CkCallback &cb);
     entry void add (int blocksize, double A[blocksize*blocksize]);
+    entry void updateNorms (CkCallback &cb);
+    entry void setTierNode (CProxy_Node tierNode, CkCallback &cb);
   };
 };

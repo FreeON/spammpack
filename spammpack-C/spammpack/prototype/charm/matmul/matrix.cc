@@ -39,11 +39,12 @@ Matrix::Matrix (int N, int blocksize)
     INFO("not on PE 0\n");
   }
 
-#ifdef DENSE_ARRAYS
-  tierNode = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
-#else
-  tierNode = CProxy_Node::ckNew();
-#endif
+  tierNode = new CProxy_Node[depth+1];
+  for(int i = 0; i < depth+1; i++)
+  {
+    tierNode[i] = CProxy_Node::ckNew(N, depth, blocksize, i,
+        (1 << i), (1 << i));
+  }
 }
 
 /** Convert a Matrix to a dense array. */
@@ -58,7 +59,7 @@ DenseMatrixMsg * Matrix::getDense ()
       for(int i_block = i*blocksize; i_block < (i+1)*blocksize && i_block < N; i_block++) {
         for(int j_block = j*blocksize; j_block < (j+1)*blocksize && j_block < N; j_block++)
         {
-          DoubleMsg *m = tierNode(i, j).get(i_block, j_block);
+          DoubleMsg *m = tierNode[depth](i, j).get(i_block, j_block);
           A->A[BLOCK_INDEX(i_block, j_block, 0, 0, N)] = m->x;
           delete m;
         }
@@ -75,7 +76,13 @@ DenseMatrixMsg * Matrix::getDense ()
  */
 MatrixInfoMsg * Matrix::info ()
 {
-  MatrixInfoMsg *msg = new MatrixInfoMsg(N, blocksize, depth, tierNode);
+  DEBUG("getting matrix info\n");
+  MatrixInfoMsg *msg = new (depth+1) MatrixInfoMsg(N, blocksize, depth);
+  msg->tierNode = new CProxy_Node[depth+1];
+  for(int i = 0; i < depth+1; i++)
+  {
+    msg->tierNode[i] = tierNode[i];
+  }
   return msg;
 }
 
@@ -93,53 +100,11 @@ void Matrix::zero (CkCallback &cb)
   thisProxy.initialize(initZero, cb);
 }
 
-/** Initialize a Matrix with zeros.
- *
- * @param gamma The decay constant.
- */
-void Matrix::decay (double gamma, CkCallback &cb)
+/** Initialize a Matrix with zeros. */
+void Matrix::decay (CkCallback &cb)
 {
-  DEBUG("setting matrix to a matrix with decay (gamma = %f)\n", gamma);
-  double *ADense = new double[N*N];
-
-  for(int i = 0; i < N; i++)
-  {
-    ADense[BLOCK_INDEX(i, i, 0, 0, N)] = 1+0.3*(rand()/(double) RAND_MAX - 0.5);
-    for(int j = i+1; j < N; j++)
-    {
-      ADense[BLOCK_INDEX(i, j, 0, 0, N)] = exp(-fabs(i-j)/gamma)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
-      ADense[BLOCK_INDEX(j, i, 0, 0, N)] = exp(-fabs(i-j)/gamma)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
-    }
-  }
-
-  DEBUG("created dense matrix\n");
-#ifdef DEBUG_OUTPUT
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < N; j++)
-    {
-    }
-  }
-#endif
-
-  double *ABuffer = new double[blocksize*blocksize];
-  for(int i = 0; i < (1 << depth); i++) {
-    for(int j = 0; j < (1 << depth); j++) {
-      for(int i_block = i*blocksize; i_block < N && i_block < (i+1)*blocksize; i_block++) {
-        for(int j_block = j*blocksize; j_block < N && j_block < (j+1)*blocksize; j_block++)
-        {
-          ABuffer[BLOCK_INDEX(i_block-i*blocksize, j_block-j*blocksize, 0, 0, blocksize)] =
-            ADense[BLOCK_INDEX(i_block, j_block, i*blocksize, j*blocksize, N)];
-#ifndef DENSE_ARRAYS
-          tierNode(i, j).insert(N, depth, blocksize, depth);
-#endif
-          tierNode(i, j).set(blocksize*blocksize, ADense, CkCallbackResumeThread());
-        }
-      }
-    }
-  }
-
-  delete[] ABuffer;
-  delete[] ADense;
+  DEBUG("setting matrix to a matrix with decay (gamma = %f)\n", MATRIX_DECAY);
+  thisProxy.initialize(initDecay, cb);
 }
 
 /** Initialize a Matrix.
@@ -149,18 +114,75 @@ void Matrix::decay (double gamma, CkCallback &cb)
  */
 void Matrix::initialize (int initType, CkCallback &cb)
 {
-  for(int i = 0; i < (1 << depth); i++) {
-    for(int j = 0; j < (1 << depth); j++)
-    {
-#ifndef DENSE_ARRAYS
-      tierNode(i, j).insert(N, depth, blocksize, depth);
+  switch(initType)
+  {
+    case initZero:
+    case initRandom:
+      for(int i = 0; i < (1 << depth); i++) {
+        for(int j = 0; j < (1 << depth); j++)
+        {
+          tierNode[depth](i, j).initialize(initType, CkCallbackResumeThread());
+        }
+      }
+      break;
+
+    case initDecay:
+      {
+        double *ADense = new double[N*N];
+        double *ABuffer = new double[blocksize*blocksize];
+
+        for(int i = 0; i < N; i++)
+        {
+          ADense[BLOCK_INDEX(i, i, 0, 0, N)] = 1+0.3*(rand()/(double) RAND_MAX - 0.5);
+          for(int j = i+1; j < N; j++)
+          {
+            ADense[BLOCK_INDEX(i, j, 0, 0, N)] = exp(-fabs(i-j)/MATRIX_DECAY)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
+            ADense[BLOCK_INDEX(j, i, 0, 0, N)] = exp(-fabs(i-j)/MATRIX_DECAY)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
+          }
+        }
+
+        DEBUG("created dense matrix\n");
+#ifdef DEBUG_OUTPUT
+        for(int i = 0; i < N; i++) {
+          for(int j = 0; j < N; j++)
+          {
+            CkPrintf(" %e", ADense[BLOCK_INDEX(i, j, 0, 0, N)]);
+          }
+          CkPrintf("\n");
+        }
 #endif
-      tierNode(i, j).initialize(initType, CkCallbackResumeThread());
-    }
+
+        for(int i = 0; i < (1 << depth); i++) {
+          for(int j = 0; j < (1 << depth); j++) {
+            for(int i_block = i*blocksize; i_block < N && i_block < (i+1)*blocksize; i_block++) {
+              for(int j_block = j*blocksize; j_block < N && j_block < (j+1)*blocksize; j_block++)
+              {
+                ABuffer[BLOCK_INDEX(i_block, j_block, i*blocksize, j*blocksize, blocksize)] =
+                  ADense[BLOCK_INDEX(i_block, j_block, 0, 0, N)];
+              }
+            }
+            tierNode[depth](i, j).set(blocksize*blocksize, ABuffer, CkCallbackResumeThread());
+          }
+        }
+
+        delete[] ABuffer;
+        delete[] ADense;
+      }
+      break;
+
+    default:
+      ABORT("unknown matrix type\n");
+      break;
   }
-#ifndef DENSE_ARRAYS
-  tierNode.doneInserting();
-#endif
+
+  /* Build the upper tiers. */
+  DEBUG("Building upper tiers\n");
+  for(int i = depth-1; i >= 0; i--)
+  {
+    tierNode[i].setTierNode(tierNode[i+1], CkCallbackResumeThread());
+    tierNode[i].updateNorms(CkCallbackResumeThread());
+  }
+
   cb.send();
 }
 
@@ -169,14 +191,14 @@ void Matrix::initialize (int initType, CkCallback &cb)
 void Matrix::print (CkCallback &cb)
 {
   std::ostringstream o;
-  o.setf(std::ios::fixed);
+  o.setf(std::ios::scientific);
 
   for(int i = 0; i < (1 << depth); i++) {
     for(int i_block = i*blocksize; i_block < (i+1)*blocksize && i_block < N; i_block++) {
       for(int j = 0; j < (1 << depth); j++) {
         for(int j_block = j*blocksize; j_block < (j+1)*blocksize && j_block < N; j_block++)
         {
-          DoubleMsg *m = tierNode(i, j).get(i_block, j_block);
+          DoubleMsg *m = tierNode[depth](i, j).get(i_block, j_block);
           o << " " << m->x;
           delete m;
         }
@@ -192,7 +214,7 @@ void Matrix::print (CkCallback &cb)
  */
 void Matrix::printLeafPes (CkCallback &cb)
 {
-  tierNode.printLeafPes(CkCallbackResumeThread());
+  tierNode[depth].printLeafPes(CkCallbackResumeThread());
   cb.send();
 }
 

@@ -16,7 +16,10 @@ enum init_t
   initRandom,
   
   /** Zero matrix. */
-  initZero
+  initZero,
+
+  /** Matrices with decay. */
+  initDecay
 };
 
 #endif

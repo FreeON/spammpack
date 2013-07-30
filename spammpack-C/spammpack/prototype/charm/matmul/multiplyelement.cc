@@ -114,8 +114,6 @@ void MultiplyElement::multiply (CkCallback &cb)
   }
   numberCalls++;
 
-  DEBUG("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
-
   if(CResult != NULL)
   {
     ABORT("ME(%d,%d,%d) CResult is not NULL\n", thisIndex.x, thisIndex.y, thisIndex.z);
@@ -124,12 +122,8 @@ void MultiplyElement::multiply (CkCallback &cb)
   CResult = new double[blocksize*blocksize];
   memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
-  DEBUG("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
-
   NodeBlockMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
   NodeBlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
-
-  DEBUG("ME(%d,%d,%d) here\n", thisIndex.x, thisIndex.y, thisIndex.z);
 
   for(int i = 0; i < blocksize; i++) {
     for(int j = 0; j < blocksize; j++) {

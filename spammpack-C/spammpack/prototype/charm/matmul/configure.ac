@@ -54,7 +54,7 @@ fi
 
 AC_ARG_WITH([default-LB],
   [AS_HELP_STRING([--with-default-LB],
-                  [Set the default load balancer.])],
+  [Set the default load balancer (default = GreedyCommLB).])],
   [default_LB=$withval], [])
 if test -n "${default_LB}"; then
   if test "${default_LB}" = "yes"; then
@@ -65,7 +65,7 @@ fi
 
 AC_ARG_ENABLE([debug],
   [AS_HELP_STRING([--enable-debug],
-                  [Enable a lot of extra output])],
+  [Enable a lot of extra output])],
   [enable_debug=$enableval],
   [enable_debug="no"])
 if test "${enable_debug}" = "yes"; then
@@ -74,7 +74,7 @@ fi
 
 AC_ARG_ENABLE([verify],
   [AS_HELP_STRING([--enable-verify],
-                  [Verify multiplication result])],
+  [Verify multiplication result])],
   [enable_verify=$enableval],
   [enable_verify="no"])
 if test "${enable_verify}" = "yes"; then
@@ -83,7 +83,7 @@ fi
 
 AC_ARG_WITH([verify-tolerance],
   [AS_HELP_STRING([--with-verify-tolerance],
-                  [Set the absolute tolerance of the verification])],
+  [Set the absolute tolerance of the verification (default = 1.0e-10).])],
   [verify_tolerance=$withval],
   [verify_tolerance="1.0e-10"])
 AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absoluve
@@ -91,7 +91,7 @@ AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absoluve
 
 AC_ARG_ENABLE([reduction-test],
   [AS_HELP_STRING([--enable-reduction-test],
-                  [Instead of multiplying, run a simple reduction test.])],
+  [Instead of multiplying, run a simple reduction test.])],
   [reduction_test=$enableval],
   [reduction_test="no"])
 if test "${reduction_test}" = "yes"; then
@@ -100,7 +100,7 @@ fi
 
 AC_ARG_ENABLE([direct-multiply],
   [AS_HELP_STRING([--enable-direct-multiply],
-                  [Construct the convolution directly in the main program.])],
+  [Construct the convolution directly in the main program.])],
   [direct_multiply=$enableval],
   [direct_multiply="no"])
 if test "${direct_multiply}" = "yes"; then
@@ -109,8 +109,8 @@ fi
 
 AC_ARG_ENABLE([reduction-target],
   [AS_HELP_STRING([--enable-reduction-target],
-                  [Use an explicit reduction target in the multiply instead of
-                   suspending the calling thread.])],
+  [Use an explicit reduction target in the multiply instead of suspending the
+   calling thread.])],
   [reduction_target=$enableval],
   [reduction_target="no"])
 if test "${reduction_target}" = "yes"; then
@@ -118,14 +118,13 @@ if test "${reduction_target}" = "yes"; then
              the multiply instead of suspending the calling thread.])
 fi
 
-AC_ARG_ENABLE([dense-arrays],
-  [AS_HELP_STRING([--enable-dense-arrays],
-                  [Allocate chare arrays as dense arrays.])],
-  [dense_arrays=$enableval],
-  [dense_arrays="no"])
-if test "${dense_arrays}" = "yes"; then
-  AC_DEFINE([DENSE_ARRAYS], [1], [Allocate chare arrays as dense arrays.])
-fi
+AC_ARG_WITH([decay],
+  [AS_HELP_STRING([--with-decay],
+  [Set the decay constant for matrics with decay (default = 0.1).])],
+  [matrix_decay=$withval],
+  [matrix_decay="0.1"])
+AC_DEFINE_UNQUOTED([MATRIX_DECAY], [${matrix_decay}], [Set the decay constant
+                    for matrics with decay.])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile Doxyfile])

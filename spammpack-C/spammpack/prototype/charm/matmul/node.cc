@@ -6,6 +6,7 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
+#include "config.h"
 #include "node.h"
 #include "logger.h"
 #include "messages.h"
@@ -33,6 +34,8 @@ Node::Node (int N, int depth, int blocksize, int tier)
   this->iUpper = (thisIndex.x+1)*blocksize;
   this->jLower = thisIndex.y*blocksize;
   this->jUpper = (thisIndex.y+1)*blocksize;
+
+  this->tierNodeSet = false;
 
   this->block = NULL;
 
@@ -80,6 +83,14 @@ void Node::pup (PUP::er &p)
   p|jLower;
   p|jUpper;
   p|index;
+  p|norm;
+  p|norm_2;
+  p|tierNodeSet;
+
+  if(tierNodeSet)
+  {
+    p|tierNode;
+  }
 
   int numberElements = (block == NULL ? 0 : blocksize*blocksize);
   p|numberElements;
@@ -120,7 +131,7 @@ void Node::pup (PUP::er &p)
  */
 NodeBlockMsg * Node::getBlock ()
 {
-  DEBUG("Node(%d,%d) here\n", thisIndex.x, thisIndex.y);
+  DEBUG("Node(%d,%d) getting block\n", thisIndex.x, thisIndex.y);
   NodeBlockMsg *m = new (blocksize*blocksize) NodeBlockMsg();
   memcpy(m->block, block, sizeof(double)*blocksize*blocksize);
   return m;
@@ -151,8 +162,10 @@ DoubleMsg * Node::get (int i, int j)
       {
         ABORT("out of bounds\n");
       }
-      DEBUG("found block[%d] = %f\n", BLOCK_INDEX(i, j, iLower, jLower, blocksize),
-          block[BLOCK_INDEX(i, j, iLower, jLower, blocksize)]);
+      DEBUG("found block[%d] = %f (block norm = %f)\n",
+          BLOCK_INDEX(i, j, iLower, jLower, blocksize),
+          block[BLOCK_INDEX(i, j, iLower, jLower, blocksize)],
+          norm);
       return new DoubleMsg(block[BLOCK_INDEX(i, j, iLower, jLower, blocksize)]);
     }
   }
@@ -170,7 +183,7 @@ DoubleMsg * Node::get (int i, int j)
 NodeInfoMsg * Node::info ()
 {
   DEBUG("getting node info on index %d\n", index);
-  NodeInfoMsg *msg = new NodeInfoMsg(index);
+  NodeInfoMsg *msg = new NodeInfoMsg(index, norm, norm_2);
   return msg;
 }
 
@@ -215,6 +228,24 @@ void Node::set (int numberElements, double *A, CkCallback &cb)
 
   memcpy(block, A, numberElements*sizeof(double));
 
+#ifdef DEBUG_OUTPUT
+  DEBUG("Node(%d,%d) setting block\n", thisIndex.x, thisIndex.y);
+  for(int i = 0; i < blocksize; i++) {
+    for(int j = 0; j < blocksize; j++)
+    {
+      CkPrintf(" %e", block[BLOCK_INDEX(i, j, 0, 0, blocksize)]);
+    }
+    CkPrintf("\n");
+  }
+#endif
+
+  norm_2 = 0;
+  for(int i = 0; i < numberElements; i++)
+  {
+    norm_2 += block[i]*block[i];
+  }
+  norm = sqrt(norm_2);
+
   cb.send();
 }
 
@@ -240,15 +271,21 @@ void Node::initialize (int initType, CkCallback &cb)
   switch(initType)
   {
     case initRandom:
+      norm_2 = 0;
       for(int i = 0; i < blocksize && i+iLower < N; i++) {
         for(int j = 0; j < blocksize && j+jLower < N; j++)
         {
-          block[BLOCK_INDEX(i, j, 0, 0, blocksize)] = rand()/(double) RAND_MAX;
+          double aij = rand()/(double) RAND_MAX;
+          block[BLOCK_INDEX(i, j, 0, 0, blocksize)] = aij;
+          norm_2 += aij*aij;
         }
       }
+      norm = sqrt(norm_2);
       break;
 
     case initZero:
+      norm = 0;
+      norm_2 = 0;
       break;
 
     default:
@@ -283,6 +320,35 @@ void Node::add (int blocksize, double *A)
   {
     block[i] += A[i];
   }
+}
+
+/** Update norms of a tier. */
+void Node::updateNorms (CkCallback &cb)
+{
+  /* Get norms from nodes underneath this one. */
+  norm_2 = 0;
+  for(int i = 0; i < 2; i++) {
+    for(int j = 0; j < 2; j++)
+    {
+      NodeInfoMsg *childInfo = tierNode((thisIndex.x << 1)+i, (thisIndex.y << 1)+j).info();
+      norm_2 += childInfo->norm_2;
+      delete childInfo;
+    }
+  }
+  norm = sqrt(norm_2);
+  DEBUG("tier %d, Node(%d,%d) setting norm = %f\n", tier, thisIndex.x, thisIndex.y, norm);
+  contribute(cb);
+}
+
+/** Set the tierNode
+ *
+ * @param tierNode The node list for the next tier.
+ */
+void Node::setTierNode (CProxy_Node tierNode, CkCallback &cb)
+{
+  this->tierNodeSet = true;
+  this->tierNode = tierNode;
+  contribute(cb);
 }
 
 #include "node.def.h"

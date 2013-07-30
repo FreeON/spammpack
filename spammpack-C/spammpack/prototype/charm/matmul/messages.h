@@ -48,9 +48,9 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
     int depth;
 
     /** The array of nodes at tier == depth. */
-    CProxy_Node tierNode;
+    CProxy_Node *tierNode;
 
-    MatrixInfoMsg (int N, int blocksize, int depth, CProxy_Node tierNode);
+    MatrixInfoMsg (int N, int blocksize, int depth);
 };
 
 class NodeBlockMsg : public CMessage_NodeBlockMsg
@@ -67,7 +67,13 @@ class NodeInfoMsg : public CMessage_NodeInfoMsg
     /** The linear index of this node. */
     int index;
 
-    NodeInfoMsg (int index);
+    /** The norm of this matrix block. */
+    double norm;
+
+    /** The square of the norm of this matrix block. */
+    double norm_2;
+
+    NodeInfoMsg (int index, double norm, double norm_2);
 };
 
 #endif

@@ -48,6 +48,18 @@ class Node : public CBase_Node
     /** The linear index of this node. */
     unsigned int index;
 
+    /** The norm of this matrix block. */
+    double norm;
+
+    /** The square of the norm of this matrix block. */
+    double norm_2;
+
+    /** A flag to indicate whether tierNode is set. */
+    bool tierNodeSet;
+
+    /** The nodes for the next tier. */
+    CProxy_Node tierNode;
+
     /** The submatrix of size blocksize x blocksize. */
     double *block;
 
@@ -68,6 +80,8 @@ class Node : public CBase_Node
     void initialize (int initType, CkCallback &cb);
     void printLeafPes (CkCallback &cb);
     void add (int blocksize, double *A);
+    void updateNorms (CkCallback &cb);
+    void setTierNode (CProxy_Node tierNode, CkCallback &cb);
 };
 
 #endif

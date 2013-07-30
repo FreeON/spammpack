@@ -34,22 +34,25 @@ IntMsg::IntMsg (int i)
  * @param depth The tree depth of the matrix.
  * @param tierNode The array of Node objects. There is one array per tier.
  */
-MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth,
-    CProxy_Node tierNode)
+MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth)
 {
   this->N = N;
   this->blocksize = blocksize;
   this->depth = depth;
-  this->tierNode = tierNode;
+  this->tierNode = NULL;
 }
 
 /** The constructor.
  *
  * @param index The linear index of this node.
+ * @param norm The norm of this node.
+ * @param norm_2 The square of the norm of this node.
  */
-NodeInfoMsg::NodeInfoMsg (int index)
+NodeInfoMsg::NodeInfoMsg (int index, double norm, double norm_2)
 {
   this->index = index;
+  this->norm = norm;
+  this->norm_2 = norm_2;
 }
 
 #include "messages.def.h"
