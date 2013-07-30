@@ -73,6 +73,9 @@ class NodeInfoMsg : public CMessage_NodeInfoMsg
     /** The square of the norm of this matrix block. */
     double norm_2;
 
+    /** The nodes of the next tier. */
+    CProxy_Node tierNode;
+
     NodeInfoMsg (int index, double norm, double norm_2);
 };
 

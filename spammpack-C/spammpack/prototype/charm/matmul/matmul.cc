@@ -19,14 +19,16 @@ class Main : public CBase_Main
       int N = 1;
       int blocksize = 1;
       int numberIterations = 1;
+      double tolerance = 0.0;
 
       int c;
-      const char *short_options = "hN:b:i:";
+      const char *short_options = "hN:b:i:t:";
       const option long_options[] = {
         { "help",       no_argument,        NULL, 0 },
         { "N",          required_argument,  NULL, 'N' },
         { "block",      required_argument,  NULL, 'b' },
         { "iterations", required_argument,  NULL, 'i' },
+        { "tolerance",  required_argument,  NULL, 't' },
         { NULL, 0, NULL, 0 }
       };
 
@@ -43,6 +45,8 @@ class Main : public CBase_Main
                 "nodes (default: %d)\n", blocksize);
             CkPrintf("{ -i | --iterations } N   Iterate on the product N times (default: "
                 " %d)\n", numberIterations);
+            CkPrintf("{ -t | --tolerance } T    Multiply with tolerance T (default: %1.2e)\n",
+                tolerance);
             CkExit();
             break;
 
@@ -58,6 +62,10 @@ class Main : public CBase_Main
             numberIterations = strtol(optarg, NULL, 10);
             break;
 
+          case 't':
+            tolerance = strtod(optarg, NULL);
+            break;
+
           default:
             CkExit();
             break;
@@ -66,14 +74,14 @@ class Main : public CBase_Main
 
 #if REDUCTION_TEST
       INFO("calling reduceTest() on this proxy\n");
-      thisProxy.reduceTest(N, blocksize, numberIterations);
+      thisProxy.reduceTest(N, blocksize, numberIterations, tolerance);
 #else
       DEBUG("calling run() on this proxy\n");
-      thisProxy.run(N, blocksize, numberIterations);
+      thisProxy.run(N, blocksize, numberIterations, tolerance);
 #endif
     }
 
-    void run (int N, int blocksize, int numberIterations)
+    void run (int N, int blocksize, int numberIterations, double tolerance)
     {
 #ifdef DIRECT_MULTIPLY
       CProxy_Node A = CProxy_Node::ckNew();
@@ -132,7 +140,7 @@ class Main : public CBase_Main
         convolution.storeBack(CkCallbackResumeThread());
         INFO("done\n");
 #else
-        M.multiply(A, A, C, CkCallbackResumeThread());
+        M.multiply(tolerance, A, A, C, CkCallbackResumeThread());
 #endif
         t.stop();
         CkPrintf(t.to_str());
@@ -179,7 +187,7 @@ class Main : public CBase_Main
       CkExit();
     }
 
-    void reduceTest (int N, int blocksize, int numberIterations)
+    void reduceTest (int N, int blocksize, int numberIterations, double tolerance)
     {
       INFO("reduction test, N = %d\n", N);
 
@@ -212,7 +220,7 @@ class Main : public CBase_Main
       convolution.reduce(CkCallbackResumeThread());
 
       INFO("done with reduction test\n");
-      thisProxy.run(N, blocksize, numberIterations);
+      thisProxy.run(N, blocksize, numberIterations, tolerance);
     }
 };
 

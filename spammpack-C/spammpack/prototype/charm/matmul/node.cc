@@ -184,6 +184,10 @@ NodeInfoMsg * Node::info ()
 {
   DEBUG("getting node info on index %d\n", index);
   NodeInfoMsg *msg = new NodeInfoMsg(index, norm, norm_2);
+  if(tier < depth)
+  {
+    msg->tierNode = tierNode;
+  }
   return msg;
 }
 

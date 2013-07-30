@@ -3,8 +3,11 @@ module multiplyelement
   extern module node;
   array [3D] MultiplyElement
   {
-    entry MultiplyElement (int blocksize, CProxy_Node A, CProxy_Node B, CProxy_Node C);
-    entry void multiply (CkCallback &cb);
+    entry MultiplyElement (int blocksize, int tier, int depth, CProxy_Node A,
+        CProxy_Node B, CProxy_Node C);
+    entry void setNextTier (CProxy_MultiplyElement nextConvolution,
+        CProxy_Node nextA, CProxy_Node nextB, CkCallback &cb);
+    entry void multiply (double tolerance, CkCallback &cb);
     entry void storeBack (CkCallback &cb);
   };
 };

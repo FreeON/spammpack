@@ -25,6 +25,12 @@ class MultiplyElement : public CBase_MultiplyElement
     /** A counter, counting how many times this MultiplyElement was called. */
     int numberCalls;
 
+    /** The tree depth of the matrix. */
+    int depth;
+
+    /** The tier of this Node. */
+    int tier;
+
     /** Matrix A. */
     CProxy_Node A;
 
@@ -34,16 +40,32 @@ class MultiplyElement : public CBase_MultiplyElement
     /** Matrix C. */
     CProxy_Node C;
 
+    /** A mask that indicates whether the 8 convolution elements below this
+     * tier exist or not. */
+    bool convolutionExists[2][2][2];
+
+    /** The convolution below this tier. */
+    CProxy_MultiplyElement nextConvolution;
+
+    /** The A matrix below this tier. */
+    CProxy_Node nextA;
+
+    /** The B matrix below this tier. */
+    CProxy_Node nextB;
+
     /** The result matrix. */
     double *CResult;
 
   public:
 
-    MultiplyElement (int blocksize, CProxy_Node A, CProxy_Node B, CProxy_Node C);
+    MultiplyElement (int blocksize, int tier, int depth, CProxy_Node A,
+        CProxy_Node B, CProxy_Node C);
     ~MultiplyElement ();
     MultiplyElement (CkMigrateMessage *msg);
+    void setNextTier (CProxy_MultiplyElement nextConvolution,
+        CProxy_Node nextA, CProxy_Node nextB, CkCallback &cb);
     virtual void pup (PUP::er &p);
-    void multiply (CkCallback &cb);
+    void multiply (double tolerance, CkCallback &cb);
     void storeBack (CkCallback &cb);
 };
 
