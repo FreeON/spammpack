@@ -245,25 +245,37 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
         {
           if(AInfo[i][k]->norm*BInfo[k][j]->norm > tolerance)
           {
-            DEBUG("tier %d ME(%d,%d,%d) adding next product C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
             if(!convolutionExists[i][j][k])
             {
+              DEBUG("tier %d ME(%d,%d,%d) adding product C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
+                  tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
               nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                   (thisIndex.z << 1)+k).insert(blocksize, tier+1, depth, A, B, C);
               convolutionExists[i][j][k] = true;
+            }
+
+            else
+            {
+              DEBUG("tier %d ME(%d,%d,%d) keeping product C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
+                  tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
             }
           }
 
           else
           {
-            DEBUG("tier %d ME(%d,%d,%d) removing next product C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
             if(convolutionExists[i][j][k])
             {
+              DEBUG("tier %d ME(%d,%d,%d) dropping product C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
+                  tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
               nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                   (thisIndex.z << 1)+k).ckDestroy();
               convolutionExists[i][j][k] = false;
+            }
+
+            else
+            {
+              DEBUG("tier %d ME(%d,%d,%d) product already does not exist C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
+                  tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
             }
           }
         }

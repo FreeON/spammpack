@@ -35,7 +35,7 @@ Multiply::Multiply ()
 void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
     CProxy_Matrix C, CkCallback &cb)
 {
-  DEBUG("initializing multiply\n");
+  DEBUG("initializing multiply, tolerance = %e\n", tolerance);
 
   MatrixInfoMsg *AInfo = A.info();
   MatrixInfoMsg *BInfo = B.info();
@@ -112,6 +112,13 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
   {
     DEBUG("tier %d: multiplying\n", i);
     convolution[i].multiply(tolerance, CkCallbackResumeThread());
+    if(i < depth)
+    {
+      /* In case the last reduction inserted new MultiplyElements, we need to
+       * tell the load balancer. */
+      DEBUG("tier %d: calling doneInserting() on tier %d\n", i, i+1);
+      convolution[i+1].doneInserting();
+    }
   }
 
   DEBUG("storing result back\n");

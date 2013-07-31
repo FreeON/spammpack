@@ -168,11 +168,14 @@ class Main : public CBase_Main
               *ADense->A[BLOCK_INDEX(k, j, 0, 0, N)];
           }
 
-          if(fabs(CExact-CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]) > VERIFY_TOLERANCE)
+          double absDiff = fabs(CExact-CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
+          double relDiff = (CExact != 0 ? absDiff/CExact : 0);
+          if(absDiff > VERIFY_TOLERANCE)
           {
-            ABORT("result mismatch (abs. tolerance = %e), "
-                "C(%d,%d): %e vs. %e\n", VERIFY_TOLERANCE, i, j,
-                CExact, CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
+            ABORT("result mismatch (abs. tolerance = %e, "
+                "abs. diff = %e, rel. diff = %e), "
+                "C(%d,%d): %e vs. %e\n", VERIFY_TOLERANCE, absDiff, relDiff,
+                i, j, CExact, CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
           }
         }
       }

@@ -25,6 +25,8 @@ INTERFACE_FILES = \
 	reduction.ci \
 	reductiondata.ci
 
+multiply.decl.h : $(top_builddir)/config.h
+
 matmul_SOURCES = \
 	index.h \
 	logger.h \

@@ -340,7 +340,7 @@ void Node::updateNorms (CkCallback &cb)
     }
   }
   norm = sqrt(norm_2);
-  DEBUG("tier %d, Node(%d,%d) setting norm = %f\n", tier, thisIndex.x, thisIndex.y, norm);
+  DEBUG("tier %d, Node(%d,%d) setting norm = %e\n", tier, thisIndex.x, thisIndex.y, norm);
   contribute(cb);
 }
 
