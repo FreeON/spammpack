@@ -139,8 +139,8 @@ void Matrix::initialize (int initType, CkCallback &cb)
           }
         }
 
-        DEBUG("created dense matrix with decay\n");
 #ifdef DEBUG_OUTPUT
+        DEBUG("created dense matrix with decay\n");
         printDense(N, ADense);
 #endif
 
@@ -190,20 +190,29 @@ void Matrix::print (CkCallback &cb)
   std::ostringstream o;
   o.setf(std::ios::scientific);
 
-  for(int i = 0; i < (1 << depth); i++) {
-    for(int i_block = i*blocksize; i_block < (i+1)*blocksize && i_block < N; i_block++) {
-      for(int j = 0; j < (1 << depth); j++) {
-        for(int j_block = j*blocksize; j_block < (j+1)*blocksize && j_block < N; j_block++)
-        {
-          DoubleMsg *m = tierNode[depth](i, j).get(i_block, j_block);
-          o << " " << m->x;
-          delete m;
+  if(N <= 32)
+  {
+    for(int i = 0; i < (1 << depth); i++) {
+      for(int i_block = i*blocksize; i_block < (i+1)*blocksize && i_block < N; i_block++) {
+        for(int j = 0; j < (1 << depth); j++) {
+          for(int j_block = j*blocksize; j_block < (j+1)*blocksize && j_block < N; j_block++)
+          {
+            DoubleMsg *m = tierNode[depth](i, j).get(i_block, j_block);
+            o << " " << m->x;
+            delete m;
+          }
         }
+        o << std::endl;
       }
-      o << std::endl;
     }
+    CkPrintf(o.str().c_str());
   }
-  CkPrintf(o.str().c_str());
+
+  else
+  {
+    INFO("matrix size too large for printing\n");
+  }
+
   cb.send();
 }
 

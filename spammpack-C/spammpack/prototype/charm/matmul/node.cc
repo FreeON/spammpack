@@ -51,14 +51,14 @@ Node::Node (int N, int depth, int blocksize, int tier)
   }
   index = tempIndex.to_ulong();
 
-  DEBUG("tier %d, index %d, constructing\n", tier, index);
-  DEBUG("Node(%d,%d) constructor\n", thisIndex.x, thisIndex.y);
+  DEBUG("tier %d, Node(%d,%d), index %s, constructing\n", tier, thisIndex.x,
+      thisIndex.y, toBinary(index).c_str());
 }
 
 /** The migration constructor. */
 Node::Node (CkMigrateMessage *msg)
 {
-  DEBUG("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
+  INFO("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
 }
 
 /** The destructor.
@@ -107,7 +107,7 @@ void Node::pup (PUP::er &p)
     }
     else
     {
-      DEBUG("pup: Node(%d,%d) packing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
+      INFO("pup: Node(%d,%d) packing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
     }
   }
 
@@ -235,13 +235,7 @@ void Node::set (int numberElements, double *A, CkCallback &cb)
 
 #ifdef DEBUG_OUTPUT
   DEBUG("Node(%d,%d) setting block\n", thisIndex.x, thisIndex.y);
-  for(int i = 0; i < blocksize; i++) {
-    for(int j = 0; j < blocksize; j++)
-    {
-      CkPrintf(" %e", block[BLOCK_INDEX(i, j, 0, 0, blocksize)]);
-    }
-    CkPrintf("\n");
-  }
+  printDense(blocksize, block);
 #endif
 
   norm_2 = 0;

@@ -68,7 +68,7 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
 
   if(convolution == NULL)
   {
-    INFO("creating new convolutions\n");
+    DEBUG("creating new convolutions\n");
 
     convolution = new CProxy_MultiplyElement[depth+1];
 

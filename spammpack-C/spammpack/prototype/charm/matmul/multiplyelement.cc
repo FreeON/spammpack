@@ -54,8 +54,8 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
  */
 MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
-  DEBUG("tier %d ME(%d,%d,%d) migration constructor\n", tier, thisIndex.x,
-      thisIndex.y, thisIndex.z);
+  INFO("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y,
+      thisIndex.z);
 
   /* Reset the migration flag on the new PE. */
   wasMigrated = false;
@@ -180,7 +180,7 @@ void MultiplyElement::pup (PUP::er &p)
     }
     else
     {
-      DEBUG("tier %d ME(%d,%d,%d) pup: packing %d elements\n",
+      INFO("tier %d ME(%d,%d,%d) pup: packing %d elements\n",
           tier, thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
 
       /* Set the wasMigrated flag to indicate that this instance is going to
@@ -251,6 +251,10 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
           }
         }
       }
+
+      INFO("tier %d ME(%d,%d,%d) sleeping\n", tier, thisIndex.x,
+          thisIndex.y, thisIndex.z);
+      sleep(30);
     }
 
     else

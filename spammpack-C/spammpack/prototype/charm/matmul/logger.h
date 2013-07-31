@@ -58,14 +58,22 @@ void printDense (int N, double *A)
   std::ostringstream o;
   o.setf(std::ios::scientific);
 
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < N; j++)
-    {
-      o << " " << A[BLOCK_INDEX(i, j, 0, 0, N)];
+  if(N <= 32)
+  {
+    for(int i = 0; i < N; i++) {
+      for(int j = 0; j < N; j++)
+      {
+        o << " " << A[BLOCK_INDEX(i, j, 0, 0, N)];
+      }
+      o << std::endl;
     }
-    o << std::endl;
+    CkPrintf(o.str().c_str());
   }
-  CkPrintf(o.str().c_str());
+
+  else
+  {
+    INFO("matrix size too large for printing\n");
+  }
 }
 
 inline
