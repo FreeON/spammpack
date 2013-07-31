@@ -187,7 +187,7 @@ void MultiplyElement::pup (PUP::er &p)
        * get destroyed because of a migration, and not because of pruning. */
       wasMigrated = true;
 
-      print("packing");
+      //print("packing");
     }
   }
 
@@ -199,7 +199,7 @@ void MultiplyElement::pup (PUP::er &p)
     }
     PUParray(p, CResult, numberElements);
 
-    print("unpacking");
+    //print("unpacking");
   }
   else
   {
