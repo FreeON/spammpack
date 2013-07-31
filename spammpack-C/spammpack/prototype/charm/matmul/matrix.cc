@@ -175,6 +175,7 @@ void Matrix::initialize (int initType, CkCallback &cb)
   DEBUG("Building upper tiers\n");
   for(int tier = depth-1; tier >= 0; tier--)
   {
+    DEBUG("tier %d, setting tierNode[%d]\n", tier, tier+1);
     tierNode[tier].setTierNode(tierNode[tier+1], CkCallbackResumeThread());
     tierNode[tier].updateNorms(CkCallbackResumeThread());
   }

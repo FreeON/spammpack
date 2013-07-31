@@ -45,6 +45,7 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
 
   CResult = NULL;
   numberCalls = 0;
+  pruneMe = false;
 }
 
 /** The migration constructor.
@@ -66,8 +67,11 @@ MultiplyElement::~MultiplyElement ()
 
   delete[] CResult;
 
-  if(tier < depth)
+  if(pruneMe && (tier < depth))
   {
+    DEBUG("tier %d ME(%d,%d,%d) destructor, pruning lower tier elements\n",
+        tier, thisIndex.x, thisIndex.y, thisIndex.z);
+
     /* Recursively prune convolution elements. */
     for(int i = 0; i < 2; i++) {
       for(int j = 0; j < 2; j++) {
@@ -95,6 +99,16 @@ void MultiplyElement::setNextTier (CProxy_MultiplyElement nextConvolution,
   this->nextA = nextA;
   this->nextB = nextB;
   contribute(cb);
+}
+
+/** Set the pruneMe flag.
+ *
+ * @param pruneMe The value of the flag.
+ */
+void MultiplyElement::setPruneMe (bool pruneMe, CkCallback &cb)
+{
+  this->pruneMe = pruneMe;
+  cb.send();
 }
 
 /** The PUP method.
@@ -163,6 +177,8 @@ void MultiplyElement::pup (PUP::er &p)
   {
     if(p.isUnpacking()) { CResult = NULL; }
   }
+
+  p|pruneMe;
 }
 
 /** Multiply nodes.
@@ -280,9 +296,12 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
                   (thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                   (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
                   (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
+
+              convolutionExists[i][j][k] = false;
+              nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
+                  (thisIndex.z << 1)+k).setPruneMe(true, CkCallbackResumeThread());
               nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                   (thisIndex.z << 1)+k).ckDestroy();
-              convolutionExists[i][j][k] = false;
             }
 
             else
