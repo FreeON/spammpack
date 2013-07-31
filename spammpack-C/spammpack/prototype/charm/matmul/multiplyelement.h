@@ -11,6 +11,8 @@
 
 #include "multiplyelement.decl.h"
 
+#include <string>
+
 /** An element in the convolution curve. */
 class MultiplyElement : public CBase_MultiplyElement
 {
@@ -70,6 +72,7 @@ class MultiplyElement : public CBase_MultiplyElement
     virtual void pup (PUP::er &p);
     void multiply (double tolerance, CkCallback &cb);
     void storeBack (CkCallback &cb);
+    void print (std::string tag);
 };
 
 #endif

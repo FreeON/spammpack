@@ -168,7 +168,7 @@ void MultiplyElement::pup (PUP::er &p)
 
   if(p.isUnpacking())
   {
-    DEBUG("tier %d ME(%d,%d,%d) pup: unpacking %d elements\n",
+    INFO("tier %d ME(%d,%d,%d) pup: unpacking %d elements\n",
         tier, thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
   }
   else
@@ -186,6 +186,8 @@ void MultiplyElement::pup (PUP::er &p)
       /* Set the wasMigrated flag to indicate that this instance is going to
        * get destroyed because of a migration, and not because of pruning. */
       wasMigrated = true;
+
+      print("packing");
     }
   }
 
@@ -196,6 +198,8 @@ void MultiplyElement::pup (PUP::er &p)
       CResult = new double[numberElements];
     }
     PUParray(p, CResult, numberElements);
+
+    print("unpacking");
   }
   else
   {
@@ -355,10 +359,10 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       thisIndex.z);
   contribute(cb);
 
-#ifdef DEBUG_OUTPUT
+#ifdef FORCED_MIGRATION
   if(CkNumPes() > 1)
   {
-    DEBUG("tier %d ME(%d,%d,%d) requesting migration to PE %d\n",
+    INFO("tier %d ME(%d,%d,%d) requesting migration to PE %d\n",
         tier, thisIndex.x, thisIndex.y, thisIndex.z, (CkMyPe()+1)%CkNumPes());
     migrateMe((CkMyPe()+1)%CkNumPes());
   }
@@ -377,6 +381,14 @@ void MultiplyElement::storeBack (CkCallback &cb)
 #endif
   C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
   contribute(cb);
+}
+
+/** Print a MultiplyElement.
+ */
+void MultiplyElement::print (std::string tag)
+{
+  INFO("tier %d ME(%d,%d,%d) [%s] CResult = %p\n", tier, thisIndex.x, thisIndex.y,
+      thisIndex.z, tag.c_str(), CResult);
 }
 
 #include "multiplyelement.def.h"

@@ -75,6 +75,16 @@ if test "${enable_debug}" = "yes"; then
   AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output])
 fi
 
+AC_ARG_ENABLE([forced-migration],
+  [AS_HELP_STRING([--enable-forced-migration],
+  [enable the forced migration of array elements])],
+  [enable_forced_migration=$enableval],
+  [enable_forced_migration="no"])
+if test "${enable_forced_migration}" = "yes"; then
+  AC_DEFINE([FORCED_MIGRATION], [1], [Enable the forced migration of array
+             elements])
+fi
+
 AC_ARG_ENABLE([verify],
   [AS_HELP_STRING([--enable-verify],
   [verify multiplication result])],
