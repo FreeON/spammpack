@@ -5,6 +5,7 @@
 
 #include "index.h"
 
+#include <bitset>
 #include <string>
 #include <sstream>
 #include <stdarg.h>
@@ -65,6 +66,17 @@ void printDense (int N, double *A)
     o << std::endl;
   }
   CkPrintf(o.str().c_str());
+}
+
+inline
+std::string toBinary (unsigned int i)
+{
+  std::string bitString = std::bitset<8*sizeof(unsigned int)>(i).to_string();
+  while(bitString[0] == '0')
+  {
+    bitString.erase(0, 1);
+  }
+  return bitString;
 }
 
 #endif

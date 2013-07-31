@@ -139,7 +139,7 @@ void Matrix::initialize (int initType, CkCallback &cb)
           }
         }
 
-        DEBUG("created dense matrix\n");
+        DEBUG("created dense matrix with decay\n");
 #ifdef DEBUG_OUTPUT
         printDense(N, ADense);
 #endif

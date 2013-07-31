@@ -162,7 +162,7 @@ DoubleMsg * Node::get (int i, int j)
       {
         ABORT("out of bounds\n");
       }
-      DEBUG("found block[%d] = %f (block norm = %f)\n",
+      DEBUG("found block[%d] = %e (block norm = %f)\n",
           BLOCK_INDEX(i, j, iLower, jLower, blocksize),
           block[BLOCK_INDEX(i, j, iLower, jLower, blocksize)],
           norm);
@@ -182,7 +182,8 @@ DoubleMsg * Node::get (int i, int j)
  */
 NodeInfoMsg * Node::info ()
 {
-  DEBUG("getting node info on index %d\n", index);
+  DEBUG("Node(%d,%d) getting node info on index %s\n",
+      thisIndex.x, thisIndex.y, toBinary(index).c_str());
   NodeInfoMsg *msg = new NodeInfoMsg(index, norm, norm_2);
   if(tier < depth)
   {
@@ -303,12 +304,7 @@ void Node::initialize (int initType, CkCallback &cb)
 /** Print the PEs the leafs sit on. */
 void Node::printLeafPes (CkCallback &cb)
 {
-  std::string bitString = std::bitset<8*sizeof(unsigned int)>(index).to_string();
-  while(bitString[0] == '0')
-  {
-    bitString.erase(0, 1);
-  }
-  CkPrintf("leaf %s on PE %d\n", bitString.c_str(), CkMyPe());
+  CkPrintf("leaf %s on PE %d\n", toBinary(index).c_str(), CkMyPe());
   contribute(cb);
 }
 
@@ -318,8 +314,10 @@ void Node::printLeafPes (CkCallback &cb)
  */
 void Node::add (int blocksize, double *A)
 {
-  DEBUG("Adding block to A(%d,%d)\n", thisIndex.x, thisIndex.y);
+#ifdef DEBUG_OUTPUT
+  DEBUG("Node(%d,%d) Adding block\n", thisIndex.x, thisIndex.y);
   printDense(blocksize, A);
+#endif
 
   for(int i = 0; i < blocksize*blocksize; i++)
   {

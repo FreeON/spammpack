@@ -234,8 +234,8 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     for(int i = 0; i < 2; i++) {
       for(int j = 0; j < 2; j++)
       {
-        AInfo[i][j] = A(thisIndex.x+i, thisIndex.z+j).info();
-        BInfo[i][j] = B(thisIndex.z+i, thisIndex.y+j).info();
+        AInfo[i][j] = A((thisIndex.x << 1)+i, (thisIndex.z << 1)+j).info();
+        BInfo[i][j] = B((thisIndex.z << 1)+i, (thisIndex.y << 1)+j).info();
       }
     }
 
@@ -248,8 +248,12 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
           {
             if(!convolutionExists[i][j][k])
             {
-              DEBUG("tier %d ME(%d,%d,%d) adding product C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                  tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
+              DEBUG("tier %d ME(%d,%d,%d) adding product ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
+                  tier, thisIndex.x, thisIndex.y, thisIndex.z,
+                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j, (thisIndex.z << 1)+k,
+                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
+                  (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
+                  (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
               nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                   (thisIndex.z << 1)+k).insert(blocksize, tier+1, depth, A, B, C);
               convolutionExists[i][j][k] = true;
@@ -257,8 +261,12 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
             else
             {
-              DEBUG("tier %d ME(%d,%d,%d) keeping product C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                  tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
+              DEBUG("tier %d ME(%d,%d,%d) keeping product ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
+                  tier, thisIndex.x, thisIndex.y, thisIndex.z,
+                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j, (thisIndex.z << 1)+k,
+                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
+                  (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
+                  (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
             }
           }
 
@@ -266,8 +274,12 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
           {
             if(convolutionExists[i][j][k])
             {
-              DEBUG("tier %d ME(%d,%d,%d) dropping product C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                  tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
+              DEBUG("tier %d ME(%d,%d,%d) dropping product ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
+                  tier, thisIndex.x, thisIndex.y, thisIndex.z,
+                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j, (thisIndex.z << 1)+k,
+                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
+                  (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
+                  (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
               nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                   (thisIndex.z << 1)+k).ckDestroy();
               convolutionExists[i][j][k] = false;
@@ -275,8 +287,12 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
             else
             {
-              DEBUG("tier %d ME(%d,%d,%d) product already does not exist C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                  tier, thisIndex.x, thisIndex.y, thisIndex.z, i, j, i, k, k, j);
+              DEBUG("tier %d ME(%d,%d,%d) product already does not exist ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
+                  tier, thisIndex.x, thisIndex.y, thisIndex.z,
+                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j, (thisIndex.z << 1)+k,
+                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
+                  (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
+                  (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
             }
           }
         }

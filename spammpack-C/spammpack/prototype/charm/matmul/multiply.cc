@@ -77,9 +77,13 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
     MatrixInfoMsg *CInfoTier = C.info(depth);
 
     /* First the lowest tier. */
+    int convolutionSize = 1 << depth;
+    DEBUG("tier %d, filling %dx%dx%d chare array\n", depth, convolutionSize,
+        convolutionSize, convolutionSize);
     convolution[depth] = CProxy_MultiplyElement::ckNew(CInfo->blocksize,
         depth, depth, AInfoTier->tierNode, BInfoTier->tierNode,
-        CInfoTier->tierNode, 1 << depth, 1 << depth, 1 << depth);
+        CInfoTier->tierNode, convolutionSize, convolutionSize,
+        convolutionSize);
 
     delete AInfoTier;
     delete BInfoTier;
@@ -89,7 +93,7 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
     for(int tier = depth-1; tier >= 0; tier--)
     {
       int convolutionSize = 1 << tier;
-      DEBUG("filling %dx%dx%d chare array\n", convolutionSize,
+      DEBUG("tier %d, filling %dx%dx%d chare array\n", tier, convolutionSize,
           convolutionSize, convolutionSize);
 
       MatrixInfoMsg *AInfoTier = A.info(tier+1);
