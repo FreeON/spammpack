@@ -77,7 +77,7 @@ docs :
 	$(DOXYGEN)
 
 %.decl.h %.def.h : %.ci
-	$(AM_V_CXX)$(CHARMC) -preprocess $<
+	$(AM_V_CXX)$(CHARMC) $(DEFAULT_INCLUDES) -preprocess $<
 
 BUILT_SOURCES = $(foreach i, $(INTERFACE_FILES), $(basename $i).decl.h $(basename $i).def.h)
 

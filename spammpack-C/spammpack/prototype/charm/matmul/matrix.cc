@@ -13,26 +13,6 @@
 #include "index.h"
 #include <sstream>
 
-/** Print a dense matrix.
- *
- * @param N The matrix size.
- * @param A The matrix.
- */
-void printDense (int N, double *A)
-{
-  std::ostringstream o;
-  o.setf(std::ios::scientific);
-
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < N; j++)
-    {
-      o << " " << A[BLOCK_INDEX(i, j, 0, 0, N)];
-    }
-    o << std::endl;
-  }
-  CkPrintf(o.str().c_str());
-}
-
 /** The constructor. */
 Matrix::Matrix (int N, int blocksize)
 {

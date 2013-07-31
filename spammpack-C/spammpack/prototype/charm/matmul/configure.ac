@@ -33,7 +33,10 @@ AC_SEARCH_LIBS([clock_gettime], [rt],
   [],
   [AC_MSG_FAILURE([need clock_gettime()])])
 
-for CLOCKTYPE in CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC CLOCK_REALTIME; do
+for CLOCKTYPE in \
+  CLOCK_MONOTONIC_RAW \
+  CLOCK_MONOTONIC \
+  CLOCK_REALTIME; do
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>]],
     [[struct timespec p; clock_gettime(${CLOCKTYPE}, &p);]])],
     [break], [CLOCKTYPE="unset"])
@@ -86,8 +89,11 @@ AC_ARG_WITH([verify-tolerance],
   [Set the absolute tolerance of the verification (default = 1.0e-10).])],
   [verify_tolerance=$withval],
   [verify_tolerance="1.0e-10"])
-AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absoluve
-                    toleranc of the multiply verification])
+if test "${verify_tolerance}" = "yes"; then
+  verify_tolerance="1.0e-10"
+fi
+AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absolute
+                    tolerance of the multiply verification.])
 
 AC_ARG_ENABLE([reduction-test],
   [AS_HELP_STRING([--enable-reduction-test],
@@ -123,6 +129,9 @@ AC_ARG_WITH([decay],
   [Set the decay constant for matrics with decay (default = 0.1).])],
   [matrix_decay=$withval],
   [matrix_decay="0.1"])
+if test "${matrix_decay}" = "yes"; then
+  matrix_decay="0.1"
+fi
 AC_DEFINE_UNQUOTED([MATRIX_DECAY], [${matrix_decay}], [Set the decay constant
                     for matrics with decay.])
 

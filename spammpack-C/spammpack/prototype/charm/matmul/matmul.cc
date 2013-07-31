@@ -158,29 +158,50 @@ class Main : public CBase_Main
 
       CkPrintf("verifying result...\n");
 
+      int maxDiffRow;
+      int maxDiffColumn;
+      double maxAbsDiff = 0;
+
+      double *CExact = new double[N*N];
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++)
         {
-          double CExact = 0;
+          CExact[BLOCK_INDEX(i, j, 0, 0, N)] = 0;
+
           for(int k = 0; k < N; k++)
           {
-            CExact += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
+            CExact[BLOCK_INDEX(i, j, 0, 0, N)] += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
               *ADense->A[BLOCK_INDEX(k, j, 0, 0, N)];
           }
 
-          double absDiff = fabs(CExact-CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
-          double relDiff = (CExact != 0 ? absDiff/CExact : 0);
-          if(absDiff > VERIFY_TOLERANCE)
+          double absDiff = fabs(CExact[BLOCK_INDEX(i, j, 0, 0, N)]
+              -CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
+
+          if(absDiff > maxAbsDiff)
           {
-            ABORT("result mismatch (abs. tolerance = %e, "
-                "abs. diff = %e, rel. diff = %e), "
-                "C(%d,%d): %e vs. %e\n", VERIFY_TOLERANCE, absDiff, relDiff,
-                i, j, CExact, CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
+            maxDiffRow = i;
+            maxDiffColumn = j;
+            maxAbsDiff = absDiff;
           }
         }
       }
 
+      if(maxAbsDiff > VERIFY_TOLERANCE)
+      {
+        double relDiff = (CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)] != 0
+            ? maxAbsDiff/CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]
+            : 0);
+        ABORT("result mismatch (abs. tolerance = %e, "
+            "abs. diff = %e, rel. diff = %e), "
+            "C(%d,%d): %e (reference) vs. %e (matmul)\n",
+            VERIFY_TOLERANCE, maxAbsDiff, relDiff,
+            maxDiffRow, maxDiffColumn,
+            CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)],
+            CDense->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]);
+      }
       CkPrintf("result verified\n");
+
+      delete CExact;
 
       delete ADense;
       delete CDense;

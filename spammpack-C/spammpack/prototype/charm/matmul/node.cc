@@ -319,6 +319,7 @@ void Node::printLeafPes (CkCallback &cb)
 void Node::add (int blocksize, double *A)
 {
   DEBUG("Adding block to A(%d,%d)\n", thisIndex.x, thisIndex.y);
+  printDense(blocksize, A);
 
   for(int i = 0; i < blocksize*blocksize; i++)
   {

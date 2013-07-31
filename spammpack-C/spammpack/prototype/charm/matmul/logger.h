@@ -3,6 +3,10 @@
 
 #include "config.h"
 
+#include "index.h"
+
+#include <string>
+#include <sstream>
 #include <stdarg.h>
 
 #ifdef DEBUG_OUTPUT
@@ -40,6 +44,27 @@ void logger (const char *const filename, const int linenumber,
   vsnprintf(output_string, STRING_LENGTH, new_format, ap);
   va_end(ap);
   CkPrintf(output_string);
+}
+
+/** Print a dense matrix.
+ *
+ * @param N The matrix size.
+ * @param A The matrix.
+ */
+inline
+void printDense (int N, double *A)
+{
+  std::ostringstream o;
+  o.setf(std::ios::scientific);
+
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      o << " " << A[BLOCK_INDEX(i, j, 0, 0, N)];
+    }
+    o << std::endl;
+  }
+  CkPrintf(o.str().c_str());
 }
 
 #endif

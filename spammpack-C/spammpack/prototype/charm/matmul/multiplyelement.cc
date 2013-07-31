@@ -302,7 +302,10 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
  */
 void MultiplyElement::storeBack (CkCallback &cb)
 {
+#ifdef DEBUG_OUTPUT
   DEBUG("ME(%d,%d,%d) storing back\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  printDense(blocksize, CResult);
+#endif
   C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
   contribute(cb);
 }
