@@ -56,8 +56,8 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The result matrix. */
     double *CResult;
 
-    /** A flag indicating whether this element should be pruned. */
-    bool pruneMe;
+    /** A flag indicating whether this element was migrated. */
+    bool wasMigrated;
 
   public:
 
@@ -67,7 +67,6 @@ class MultiplyElement : public CBase_MultiplyElement
     MultiplyElement (CkMigrateMessage *msg);
     void setNextTier (CProxy_MultiplyElement nextConvolution,
         CProxy_Node nextA, CProxy_Node nextB, CkCallback &cb);
-    void setPruneMe (CkCallback &cb);
     virtual void pup (PUP::er &p);
     void multiply (double tolerance, CkCallback &cb);
     void storeBack (CkCallback &cb);

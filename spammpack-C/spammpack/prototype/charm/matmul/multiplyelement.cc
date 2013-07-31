@@ -45,7 +45,7 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
 
   CResult = NULL;
   numberCalls = 0;
-  pruneMe = false;
+  wasMigrated = false;
 }
 
 /** The migration constructor.
@@ -56,6 +56,9 @@ MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
   DEBUG("tier %d ME(%d,%d,%d) migration constructor\n", tier, thisIndex.x,
       thisIndex.y, thisIndex.z);
+
+  /* Reset the migration flag on the new PE. */
+  wasMigrated = false;
 }
 
 /** The destructor.
@@ -67,7 +70,7 @@ MultiplyElement::~MultiplyElement ()
 
   delete[] CResult;
 
-  if(pruneMe && (tier < depth))
+  if(!wasMigrated && (tier < depth))
   {
     DEBUG("tier %d ME(%d,%d,%d) destructor, pruning lower tier elements\n",
         tier, thisIndex.x, thisIndex.y, thisIndex.z);
@@ -80,16 +83,6 @@ MultiplyElement::~MultiplyElement ()
           if(nextConvolutionExists[i][j][k])
           {
             DEBUG("tier %d ME(%d,%d,%d) destructor, pruning tier %d ME(%d,%d,%d)\n",
-                tier, thisIndex.x, thisIndex.y, thisIndex.z,
-                tier+1,
-                (thisIndex.x << 1)+i,
-                (thisIndex.y << 1)+j,
-                (thisIndex.z << 1)+k);
-
-            nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                (thisIndex.z << 1)+k).setPruneMe(CkCallbackResumeThread());
-
-            DEBUG("tier %d ME(%d,%d,%d) destructor, pruning tier %d ME(%d,%d,%d), here 1\n",
                 tier, thisIndex.x, thisIndex.y, thisIndex.z,
                 tier+1,
                 (thisIndex.x << 1)+i,
@@ -136,15 +129,6 @@ void MultiplyElement::setNextTier (CProxy_MultiplyElement nextConvolution,
   this->nextA = nextA;
   this->nextB = nextB;
   contribute(cb);
-}
-
-/** Set the pruneMe flag.
- */
-void MultiplyElement::setPruneMe (CkCallback &cb)
-{
-  DEBUG("tier %d ME(%d,%d,%d) setting pruneMe\n", tier, thisIndex.x, thisIndex.y, thisIndex.z);
-  this->pruneMe = true;
-  cb.send();
 }
 
 /** The PUP method.
@@ -198,6 +182,10 @@ void MultiplyElement::pup (PUP::er &p)
     {
       DEBUG("tier %d ME(%d,%d,%d) pup: packing %d elements\n",
           tier, thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
+
+      /* Set the wasMigrated flag to indicate that this instance is going to
+       * get destroyed because of a migration, and not because of pruning. */
+      wasMigrated = true;
     }
   }
 
@@ -213,8 +201,6 @@ void MultiplyElement::pup (PUP::er &p)
   {
     if(p.isUnpacking()) { CResult = NULL; }
   }
-
-  p|pruneMe;
 }
 
 /** Multiply nodes.
@@ -334,8 +320,6 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
                   (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
 
               nextConvolutionExists[i][j][k] = false;
-              nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                  (thisIndex.z << 1)+k).setPruneMe(CkCallbackResumeThread());
               nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                   (thisIndex.z << 1)+k).ckDestroy();
             }

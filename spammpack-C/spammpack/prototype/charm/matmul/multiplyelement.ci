@@ -7,7 +7,6 @@ module multiplyelement
         CProxy_Node B, CProxy_Node C);
     entry void setNextTier (CProxy_MultiplyElement nextConvolution,
         CProxy_Node nextA, CProxy_Node nextB, CkCallback &cb);
-    entry void setPruneMe (CkCallback &cb);
     entry void multiply (double tolerance, CkCallback &cb);
     entry void storeBack (CkCallback &cb);
   };
