@@ -21,11 +21,7 @@ INTERFACE_FILES = \
 	messages.ci \
 	multiply.ci \
 	multiplyelement.ci \
-	node.ci \
-	reduction.ci \
-	reductiondata.ci
-
-multiply.decl.h : $(top_builddir)/config.h
+	node.ci
 
 matmul_SOURCES = \
 	index.h \
@@ -41,10 +37,6 @@ matmul_SOURCES = \
 	multiplyelement.h \
 	node.cc \
 	node.h \
-	reduction.cc \
-	reduction.h \
-	reductiondata.cc \
-	reductiondata.h \
 	timer.cc \
 	timer.h \
 	types.h

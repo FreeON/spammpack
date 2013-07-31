@@ -1,4 +1,3 @@
-#include "config.h"
 module multiply
 {
   extern module matrix;
@@ -8,9 +7,5 @@ module multiply
     entry Multiply ();
     entry [threaded] void multiply (double tolerance, CProxy_Matrix A,
         CProxy_Matrix B, CProxy_Matrix C, CkCallback &cb);
-#ifdef USE_REDUCTION_TARGET
-    entry [reductiontarget] void multiplyDone ();
-    entry [reductiontarget] void storeBackDone ();
-#endif
   };
 };

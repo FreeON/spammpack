@@ -1,9 +1,0 @@
-module reduction
-{
-  extern module reductiondata;
-  array [3D] Reduction
-  {
-    entry Reduction (int N, CProxy_ReductionData a, CProxy_ReductionData b);
-    entry void reduce (CkCallback &cb);
-  };
-};

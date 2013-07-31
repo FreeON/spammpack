@@ -48,17 +48,17 @@ AC_DEFINE_UNQUOTED([CLOCKTYPE], [${CLOCKTYPE}], [The clock type to use with cloc
 
 AC_ARG_ENABLE([load-balance],
   [AS_HELP_STRING([--enable-load-balance],
-                  [Enable a common set of load balancers during compile])],
+  [enable a common set of load balancers during compilation])],
   [enable_LB=$enableval],
   [enable_LB="no"])
 if test "${enable_LB}" = "yes"; then
   AC_SUBST([LOADBALANCER_FLAGS], ["-module CommonLBs"])
 fi
 
-AC_ARG_WITH([default-LB],
-  [AS_HELP_STRING([--with-default-LB],
-  [Set the default load balancer (default = GreedyCommLB).])],
-  [default_LB=$withval], [])
+AC_ARG_ENABLE([default-LB],
+  [AS_HELP_STRING([--enable-default-LB],
+  [set the default load balancer (default = GreedyCommLB)])],
+  [default_LB=$enableval], [])
 if test -n "${default_LB}"; then
   if test "${default_LB}" = "yes"; then
     default_LB="GreedyCommLB"
@@ -68,7 +68,7 @@ fi
 
 AC_ARG_ENABLE([debug],
   [AS_HELP_STRING([--enable-debug],
-  [Enable a lot of extra output])],
+  [enable a lot of extra output])],
   [enable_debug=$enableval],
   [enable_debug="no"])
 if test "${enable_debug}" = "yes"; then
@@ -77,17 +77,17 @@ fi
 
 AC_ARG_ENABLE([verify],
   [AS_HELP_STRING([--enable-verify],
-  [Verify multiplication result])],
+  [verify multiplication result])],
   [enable_verify=$enableval],
   [enable_verify="no"])
 if test "${enable_verify}" = "yes"; then
   AC_DEFINE([VERIFY_MULTIPLY], [1], [Verify multiplication result])
 fi
 
-AC_ARG_WITH([verify-tolerance],
-  [AS_HELP_STRING([--with-verify-tolerance],
-  [Set the absolute tolerance of the verification (default = 1.0e-10).])],
-  [verify_tolerance=$withval],
+AC_ARG_ENABLE([verify-tolerance],
+  [AS_HELP_STRING([--enable-verify-tolerance],
+  [set the absolute tolerance of the verification (default = 1.0e-10)])],
+  [verify_tolerance=$enableval],
   [verify_tolerance="1.0e-10"])
 if test "${verify_tolerance}" = "yes"; then
   verify_tolerance="1.0e-10"
@@ -95,39 +95,10 @@ fi
 AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absolute
                     tolerance of the multiply verification.])
 
-AC_ARG_ENABLE([reduction-test],
-  [AS_HELP_STRING([--enable-reduction-test],
-  [Instead of multiplying, run a simple reduction test.])],
-  [reduction_test=$enableval],
-  [reduction_test="no"])
-if test "${reduction_test}" = "yes"; then
-  AC_DEFINE([REDUCTION_TEST], [1], [Instead of multiplying, run a simple reduction test.])
-fi
-
-AC_ARG_ENABLE([direct-multiply],
-  [AS_HELP_STRING([--enable-direct-multiply],
-  [Construct the convolution directly in the main program.])],
-  [direct_multiply=$enableval],
-  [direct_multiply="no"])
-if test "${direct_multiply}" = "yes"; then
-  AC_DEFINE([DIRECT_MULTIPLY], [1], [Construct the convolution curve directly in the main program.])
-fi
-
-AC_ARG_ENABLE([reduction-target],
-  [AS_HELP_STRING([--enable-reduction-target],
-  [Use an explicit reduction target in the multiply instead of suspending the
-   calling thread.])],
-  [reduction_target=$enableval],
-  [reduction_target="no"])
-if test "${reduction_target}" = "yes"; then
-  AC_DEFINE([USE_REDUCTION_TARGET], [1], [Use an explicit reduction target in
-             the multiply instead of suspending the calling thread.])
-fi
-
-AC_ARG_WITH([decay],
-  [AS_HELP_STRING([--with-decay],
-  [Set the decay constant for matrics with decay (default = 0.1).])],
-  [matrix_decay=$withval],
+AC_ARG_ENABLE([decay],
+  [AS_HELP_STRING([--enable-decay],
+  [set the decay constant for matrics with decay (default = 0.1)])],
+  [matrix_decay=$enableval],
   [matrix_decay="0.1"])
 if test "${matrix_decay}" = "yes"; then
   matrix_decay="0.1"

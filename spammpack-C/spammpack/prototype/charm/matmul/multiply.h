@@ -9,8 +9,6 @@
 #ifndef __MULTIPLY_H
 #define __MULTIPLY_H
 
-#include "config.h"
-
 #include "multiplyelement.h"
 
 #include "multiply.decl.h"
@@ -27,20 +25,11 @@ class Multiply : public CBase_Multiply
      * per tier. */
     CProxy_MultiplyElement *convolution;
 
-#ifdef USE_REDUCTION_TARGET
-    /** The callback. */
-    CkCallback cb;
-#endif
-
   public:
 
     Multiply ();
     void multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
         CProxy_Matrix C, CkCallback &cb);
-#ifdef USE_REDUCTION_TARGET
-    void multiplyDone ();
-    void storeBackDone ();
-#endif
 };
 
 #endif

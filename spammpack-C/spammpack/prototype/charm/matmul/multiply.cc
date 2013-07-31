@@ -125,14 +125,6 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
 
   DEBUG("done initializing convolution\n");
 
-#ifdef USE_REDUCTION_TARGET
-  /* Store callback. */
-  this->cb = cb;
-
-  DEBUG("multiplying\n");
-  CkCallback done(CkReductionTarget(Multiply, multiplyDone), thisProxy);
-  convolution.multiply(done);
-#else
   DEBUG("starting multiply\n");
   for(int tier = 0; tier < depth+1; tier++)
   {
@@ -156,24 +148,6 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
 
   DEBUG("sending back\n");
   cb.send();
-#endif
 }
-
-#ifdef USE_REDUCTION_TARGET
-/** The reduction target for the multiply method. */
-void Multiply::multiplyDone ()
-{
-  DEBUG("storing result back\n");
-  CkCallback done(CkReductionTarget(Multiply, storeBackDone), thisProxy);
-  convolution[depth].storeBack(done);
-}
-
-/** The reduction target for the storeBack method. */
-void Multiply::storeBackDone ()
-{
-  DEBUG("sending back\n");
-  cb.send();
-}
-#endif
 
 #include "multiply.def.h"
