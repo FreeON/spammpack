@@ -37,7 +37,7 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
       for(int j = 0; j < 2; j++) {
         for(int k = 0; k < 2; k++)
         {
-          convolutionExists[i][j][k] = true;
+          nextConvolutionExists[i][j][k] = true;
         }
       }
     }
@@ -77,15 +77,51 @@ MultiplyElement::~MultiplyElement ()
       for(int j = 0; j < 2; j++) {
         for(int k = 0; k < 2; k++)
         {
-          if(convolutionExists[i][j][k])
+          if(nextConvolutionExists[i][j][k])
           {
+            DEBUG("tier %d ME(%d,%d,%d) destructor, pruning tier %d ME(%d,%d,%d)\n",
+                tier, thisIndex.x, thisIndex.y, thisIndex.z,
+                tier+1,
+                (thisIndex.x << 1)+i,
+                (thisIndex.y << 1)+j,
+                (thisIndex.z << 1)+k);
+
+            nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
+                (thisIndex.z << 1)+k).setPruneMe(CkCallbackResumeThread());
+
+            DEBUG("tier %d ME(%d,%d,%d) destructor, pruning tier %d ME(%d,%d,%d), here 1\n",
+                tier, thisIndex.x, thisIndex.y, thisIndex.z,
+                tier+1,
+                (thisIndex.x << 1)+i,
+                (thisIndex.y << 1)+j,
+                (thisIndex.z << 1)+k);
+
             nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                 (thisIndex.z << 1)+k).ckDestroy();
+
+            DEBUG("tier %d ME(%d,%d,%d) destructor, pruning tier %d ME(%d,%d,%d), here 2\n",
+                tier, thisIndex.x, thisIndex.y, thisIndex.z,
+                tier+1,
+                (thisIndex.x << 1)+i,
+                (thisIndex.y << 1)+j,
+                (thisIndex.z << 1)+k);
+
+            nextConvolutionExists[i][j][k] = false;
+
+            DEBUG("tier %d ME(%d,%d,%d) destructor, pruning tier %d ME(%d,%d,%d), here 3\n",
+                tier, thisIndex.x, thisIndex.y, thisIndex.z,
+                tier+1,
+                (thisIndex.x << 1)+i,
+                (thisIndex.y << 1)+j,
+                (thisIndex.z << 1)+k);
           }
         }
       }
     }
   }
+
+  DEBUG("tier %d ME(%d,%d,%d) destructor done\n", tier, thisIndex.x,
+      thisIndex.y, thisIndex.z);
 }
 
 /** The the next convolution array.
@@ -95,6 +131,7 @@ MultiplyElement::~MultiplyElement ()
 void MultiplyElement::setNextTier (CProxy_MultiplyElement nextConvolution,
     CProxy_Node nextA, CProxy_Node nextB, CkCallback &cb)
 {
+  DEBUG("tier %d ME(%d,%d,%d) setting nextTier\n", tier, thisIndex.x, thisIndex.y, thisIndex.z);
   this->nextConvolution = nextConvolution;
   this->nextA = nextA;
   this->nextB = nextB;
@@ -102,12 +139,11 @@ void MultiplyElement::setNextTier (CProxy_MultiplyElement nextConvolution,
 }
 
 /** Set the pruneMe flag.
- *
- * @param pruneMe The value of the flag.
  */
-void MultiplyElement::setPruneMe (bool pruneMe, CkCallback &cb)
+void MultiplyElement::setPruneMe (CkCallback &cb)
 {
-  this->pruneMe = pruneMe;
+  DEBUG("tier %d ME(%d,%d,%d) setting pruneMe\n", tier, thisIndex.x, thisIndex.y, thisIndex.z);
+  this->pruneMe = true;
   cb.send();
 }
 
@@ -131,7 +167,7 @@ void MultiplyElement::pup (PUP::er &p)
     for(int j = 0; j < 2; j++) {
       for(int k = 0; k < 2; k++)
       {
-        p|convolutionExists[i][j][k];
+        p|nextConvolutionExists[i][j][k];
       }
     }
   }
@@ -262,7 +298,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
         {
           if(AInfo[i][k]->norm*BInfo[k][j]->norm > tolerance)
           {
-            if(!convolutionExists[i][j][k])
+            if(!nextConvolutionExists[i][j][k])
             {
               DEBUG("tier %d ME(%d,%d,%d) adding product ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
                   tier, thisIndex.x, thisIndex.y, thisIndex.z,
@@ -272,7 +308,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
                   (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
               nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                   (thisIndex.z << 1)+k).insert(blocksize, tier+1, depth, A, B, C);
-              convolutionExists[i][j][k] = true;
+              nextConvolutionExists[i][j][k] = true;
             }
 
             else
@@ -288,7 +324,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
           else
           {
-            if(convolutionExists[i][j][k])
+            if(nextConvolutionExists[i][j][k])
             {
               DEBUG("tier %d ME(%d,%d,%d) dropping product ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
                   tier, thisIndex.x, thisIndex.y, thisIndex.z,
@@ -297,9 +333,9 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
                   (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
                   (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
 
-              convolutionExists[i][j][k] = false;
+              nextConvolutionExists[i][j][k] = false;
               nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                  (thisIndex.z << 1)+k).setPruneMe(true, CkCallbackResumeThread());
+                  (thisIndex.z << 1)+k).setPruneMe(CkCallbackResumeThread());
               nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
                   (thisIndex.z << 1)+k).ckDestroy();
             }
@@ -330,6 +366,15 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) contribute\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z);
   contribute(cb);
+
+#ifdef DEBUG_OUTPUT
+  if(CkNumPes() > 1)
+  {
+    DEBUG("tier %d ME(%d,%d,%d) requesting migration to PE %d\n",
+        tier, thisIndex.x, thisIndex.y, thisIndex.z, (CkMyPe()+1)%CkNumPes());
+    migrateMe((CkMyPe()+1)%CkNumPes());
+  }
+#endif
 }
 
 /** Push the C submatrices back into the C Matrix.
@@ -339,7 +384,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 void MultiplyElement::storeBack (CkCallback &cb)
 {
 #ifdef DEBUG_OUTPUT
-  DEBUG("ME(%d,%d,%d) storing back\n", thisIndex.x, thisIndex.y, thisIndex.z);
+  DEBUG("tier %d ME(%d,%d,%d) storing back\n", tier, thisIndex.x, thisIndex.y, thisIndex.z);
   printDense(blocksize, CResult);
 #endif
   C(thisIndex.x, thisIndex.y).add(blocksize, CResult);

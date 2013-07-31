@@ -93,6 +93,7 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
     for(int tier = depth-1; tier >= 0; tier--)
     {
       int convolutionSize = 1 << tier;
+
       DEBUG("tier %d, filling %dx%dx%d chare array\n", tier, convolutionSize,
           convolutionSize, convolutionSize);
 
@@ -106,6 +107,11 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
           convolutionSize);
       convolution[tier].setNextTier(convolution[tier+1], AInfoTier->tierNode,
           BInfoTier->tierNode, CkCallbackResumeThread());
+
+      DEBUG("tier %d, done with convolution\n", tier);
+
+      DEBUG("tier %d, waiting for tier to finish\n", tier);
+      CkWaitQD();
 
       delete AInfoTier;
       delete BInfoTier;
@@ -127,17 +133,22 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
   CkCallback done(CkReductionTarget(Multiply, multiplyDone), thisProxy);
   convolution.multiply(done);
 #else
+  DEBUG("starting multiply\n");
   for(int tier = 0; tier < depth+1; tier++)
   {
     DEBUG("tier %d: multiplying\n", tier);
     convolution[tier].multiply(tolerance, CkCallbackResumeThread());
     if(tier < depth)
     {
-      /* In case the last reduction inserted new MultiplyElements, we need to
-       * tell the load balancer. */
+      /* In case the reduction inserted or destroyed MultiplyElements, we need
+       * to tell the load balancer. */
       DEBUG("tier %d: calling doneInserting() on tier %d\n", tier, tier+1);
       convolution[tier+1].doneInserting();
     }
+
+    /* Hang out until this tier is done. */
+    DEBUG("tier %d: waiting for tier to finish\n", tier);
+    CkWaitQD();
   }
 
   DEBUG("storing result back\n");
