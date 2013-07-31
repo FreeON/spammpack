@@ -40,10 +40,10 @@ Matrix::Matrix (int N, int blocksize)
   }
 
   tierNode = new CProxy_Node[depth+1];
-  for(int i = 0; i < depth+1; i++)
+  for(int tier = 0; tier < depth+1; tier++)
   {
-    tierNode[i] = CProxy_Node::ckNew(N, depth, blocksize, i,
-        (1 << i), (1 << i));
+    tierNode[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier,
+        (1 << tier), (1 << tier));
   }
 }
 
@@ -72,17 +72,15 @@ DenseMatrixMsg * Matrix::getDense ()
 
 /** Get some basic information on the matrix.
  *
+ * @param tier The tier to return.
+ *
  * @return The matrix information.
  */
-MatrixInfoMsg * Matrix::info ()
+MatrixInfoMsg * Matrix::info (int tier)
 {
-  DEBUG("getting matrix info\n");
-  MatrixInfoMsg *msg = new (depth+1) MatrixInfoMsg(N, blocksize, depth);
-  msg->tierNode = new CProxy_Node[depth+1];
-  for(int i = 0; i < depth+1; i++)
-  {
-    msg->tierNode[i] = tierNode[i];
-  }
+  DEBUG("getting matrix info (depth = %d, tier = %d)\n", depth, tier);
+  MatrixInfoMsg *msg = new MatrixInfoMsg(N, blocksize, depth);
+  msg->tierNode = tierNode[tier];
   return msg;
 }
 
@@ -147,7 +145,11 @@ void Matrix::initialize (int initType, CkCallback &cb)
 #endif
 
         for(int i = 0; i < (1 << depth); i++) {
-          for(int j = 0; j < (1 << depth); j++) {
+          for(int j = 0; j < (1 << depth); j++)
+          {
+            /* Reset buffer. */
+            memset(ABuffer, 0, sizeof(double)*blocksize*blocksize);
+
             for(int i_block = i*blocksize; i_block < N && i_block < (i+1)*blocksize; i_block++) {
               for(int j_block = j*blocksize; j_block < N && j_block < (j+1)*blocksize; j_block++)
               {
@@ -171,10 +173,10 @@ void Matrix::initialize (int initType, CkCallback &cb)
 
   /* Build the upper tiers. */
   DEBUG("Building upper tiers\n");
-  for(int i = depth-1; i >= 0; i--)
+  for(int tier = depth-1; tier >= 0; tier--)
   {
-    tierNode[i].setTierNode(tierNode[i+1], CkCallbackResumeThread());
-    tierNode[i].updateNorms(CkCallbackResumeThread());
+    tierNode[tier].setTierNode(tierNode[tier+1], CkCallbackResumeThread());
+    tierNode[tier].updateNorms(CkCallbackResumeThread());
   }
 
   cb.send();

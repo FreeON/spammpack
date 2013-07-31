@@ -7,13 +7,7 @@ module messages
   message DoubleMsg;
   message EmptyMsg;
   message IntMsg;
-  message MatrixInfoMsg
-  {
-    int N;
-    int blocksize;
-    int depth;
-    CProxy_Node tierNode[];
-  };
+  message MatrixInfoMsg;
   message NodeBlockMsg
   {
     double block[];

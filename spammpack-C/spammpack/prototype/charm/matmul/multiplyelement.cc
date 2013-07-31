@@ -63,6 +63,7 @@ MultiplyElement::~MultiplyElement ()
 {
   DEBUG("tier %d ME(%d,%d,%d) destructor\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z);
+
   delete[] CResult;
 
   if(tier < depth)
@@ -216,7 +217,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
     else
     {
-      ABORT("tier %d ME(%d,%d,%d) skipping block produce\n", tier,
+      ABORT("tier %d ME(%d,%d,%d) skipping block product\n", tier,
           thisIndex.x, thisIndex.y, thisIndex.z);
     }
 

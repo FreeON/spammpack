@@ -39,7 +39,7 @@ class Matrix : public CBase_Matrix
 
     Matrix (int N, int blocksize);
     DenseMatrixMsg * getDense ();
-    MatrixInfoMsg * info ();
+    MatrixInfoMsg * info (int tier);
     void random (CkCallback &cb);
     void zero (CkCallback &cb);
     void decay (CkCallback &cb);

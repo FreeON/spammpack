@@ -39,7 +39,6 @@ MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth)
   this->N = N;
   this->blocksize = blocksize;
   this->depth = depth;
-  this->tierNode = NULL;
 }
 
 /** The constructor.

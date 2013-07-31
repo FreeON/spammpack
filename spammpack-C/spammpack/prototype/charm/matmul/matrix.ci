@@ -6,7 +6,7 @@ module matrix
   {
     entry Matrix (int N, int blocksize);
     entry [sync] DenseMatrixMsg * getDense ();
-    entry [sync] MatrixInfoMsg * info ();
+    entry [sync] MatrixInfoMsg * info (int tier);
     entry void random (CkCallback &cb);
     entry void zero (CkCallback &cb);
     entry void decay (CkCallback &cb);

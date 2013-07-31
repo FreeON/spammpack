@@ -37,9 +37,9 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
 {
   DEBUG("initializing multiply, tolerance = %e\n", tolerance);
 
-  MatrixInfoMsg *AInfo = A.info();
-  MatrixInfoMsg *BInfo = B.info();
-  MatrixInfoMsg *CInfo = C.info();
+  MatrixInfoMsg *AInfo = A.info(0);
+  MatrixInfoMsg *BInfo = B.info(0);
+  MatrixInfoMsg *CInfo = C.info(0);
 
   if(AInfo->N != BInfo->N || AInfo->N != CInfo->N)
   {
@@ -72,25 +72,40 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
 
     convolution = new CProxy_MultiplyElement[depth+1];
 
+    MatrixInfoMsg *AInfoTier = A.info(depth);
+    MatrixInfoMsg *BInfoTier = B.info(depth);
+    MatrixInfoMsg *CInfoTier = C.info(depth);
+
     /* First the lowest tier. */
     convolution[depth] = CProxy_MultiplyElement::ckNew(CInfo->blocksize,
-        depth, depth, AInfo->tierNode[depth], BInfo->tierNode[depth],
-        CInfo->tierNode[depth], 1 << depth, 1 << depth,
-        1 << depth);
+        depth, depth, AInfoTier->tierNode, BInfoTier->tierNode,
+        CInfoTier->tierNode, 1 << depth, 1 << depth, 1 << depth);
+
+    delete AInfoTier;
+    delete BInfoTier;
+    delete CInfoTier;
 
     /* The the upper tiers. */
-    for(int i = depth-1; i >= 0; i--)
+    for(int tier = depth-1; tier >= 0; tier--)
     {
-      int convolutionSize = 1 << i;
+      int convolutionSize = 1 << tier;
       DEBUG("filling %dx%dx%d chare array\n", convolutionSize,
           convolutionSize, convolutionSize);
 
-      convolution[i] = CProxy_MultiplyElement::ckNew(CInfo->blocksize, i,
-          depth, AInfo->tierNode[i+1], BInfo->tierNode[i+1],
-          CInfo->tierNode[i+1], convolutionSize, convolutionSize,
+      MatrixInfoMsg *AInfoTier = A.info(tier+1);
+      MatrixInfoMsg *BInfoTier = B.info(tier+1);
+      MatrixInfoMsg *CInfoTier = C.info(tier+1);
+
+      convolution[tier] = CProxy_MultiplyElement::ckNew(CInfo->blocksize,
+          tier, depth, AInfoTier->tierNode, BInfoTier->tierNode,
+          CInfoTier->tierNode, convolutionSize, convolutionSize,
           convolutionSize);
-      convolution[i].setNextTier(convolution[i+1], AInfo->tierNode[i+1],
-          BInfo->tierNode[i+1], CkCallbackResumeThread());
+      convolution[tier].setNextTier(convolution[tier+1], AInfoTier->tierNode,
+          BInfoTier->tierNode, CkCallbackResumeThread());
+
+      delete AInfoTier;
+      delete BInfoTier;
+      delete CInfoTier;
     }
   }
 
@@ -108,16 +123,16 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
   CkCallback done(CkReductionTarget(Multiply, multiplyDone), thisProxy);
   convolution.multiply(done);
 #else
-  for(int i = 0; i < depth+1; i++)
+  for(int tier = 0; tier < depth+1; tier++)
   {
-    DEBUG("tier %d: multiplying\n", i);
-    convolution[i].multiply(tolerance, CkCallbackResumeThread());
-    if(i < depth)
+    DEBUG("tier %d: multiplying\n", tier);
+    convolution[tier].multiply(tolerance, CkCallbackResumeThread());
+    if(tier < depth)
     {
       /* In case the last reduction inserted new MultiplyElements, we need to
        * tell the load balancer. */
-      DEBUG("tier %d: calling doneInserting() on tier %d\n", i, i+1);
-      convolution[i+1].doneInserting();
+      DEBUG("tier %d: calling doneInserting() on tier %d\n", tier, tier+1);
+      convolution[tier+1].doneInserting();
     }
   }
 

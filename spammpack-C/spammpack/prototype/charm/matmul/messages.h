@@ -47,8 +47,8 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
     /** The tree depth of the matrix. */
     int depth;
 
-    /** The array of nodes at tier == depth. */
-    CProxy_Node *tierNode;
+    /** The tierNode. */
+    CProxy_Node tierNode;
 
     MatrixInfoMsg (int N, int blocksize, int depth);
 };
