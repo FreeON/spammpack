@@ -112,8 +112,8 @@ class Main : public CBase_Main
         int matrixType, double decayConstant, bool verify,
         double verifyTolerance)
     {
-      CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
-      CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
+      CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize, 0);
+      CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize, 0);
 
       switch(matrixType)
       {
@@ -141,7 +141,7 @@ class Main : public CBase_Main
 #endif
 
       CkPrintf("running %d iterations\n", numberIterations);
-      CProxy_Multiply M = CProxy_Multiply::ckNew();
+      CProxy_Multiply M = CProxy_Multiply::ckNew(0);
       for(int iteration = 0; iteration < numberIterations; iteration++)
       {
         Timer t("iteration %d on %d PEs, multiplying C = A*A, tolerance = %e",
