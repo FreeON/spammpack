@@ -398,4 +398,11 @@ void MultiplyElement::print (std::string tag)
       thisIndex.z, tag.c_str(), CResult);
 }
 
+/** Get the number of products performed, i.e. the complexity of the multiply.
+ */
+void MultiplyElement::getComplexity (CkCallback &cb)
+{
+  contribute(sizeof(int), &numberCalls, CkReduction::sum_int, cb);
+}
+
 #include "multiplyelement.def.h"

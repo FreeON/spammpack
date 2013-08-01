@@ -35,7 +35,7 @@ Multiply::Multiply ()
 void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
     CProxy_Matrix C, CkCallback &cb)
 {
-  DEBUG("initializing multiply, tolerance = %e\n", tolerance);
+  DEBUG("multiply, tolerance = %e\n", tolerance);
 
   MatrixInfoMsg *AInfo = A.info(0);
   MatrixInfoMsg *BInfo = B.info(0);
@@ -147,6 +147,19 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
   convolution[depth].storeBack(CkCallbackResumeThread());
 
   DEBUG("sending back\n");
+  cb.send();
+}
+
+void Multiply::getComplexity (CkCallback &cb)
+{
+  DEBUG("getting complexity\n");
+  this->cb = cb;
+  convolution[depth].getComplexity(CkCallback(CkReductionTarget(Multiply, getComplexityDone), thisProxy));
+}
+
+void Multiply::getComplexityDone (int complexity)
+{
+  CkPrintf("complexity = %d block products\n", complexity);
   cb.send();
 }
 

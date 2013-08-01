@@ -25,11 +25,16 @@ class Multiply : public CBase_Multiply
      * per tier. */
     CProxy_MultiplyElement *convolution;
 
+    /** A callback for reductions. */
+    CkCallback cb;
+
   public:
 
     Multiply ();
     void multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
         CProxy_Matrix C, CkCallback &cb);
+    void getComplexity (CkCallback &cb);
+    void getComplexityDone (int complexity);
 };
 
 #endif

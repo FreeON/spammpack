@@ -87,7 +87,7 @@ class Main : public CBase_Main
             break;
 
           case 'v':
-            verify |= verify;
+            verify = !verify;
             break;
 
           default:
@@ -136,7 +136,8 @@ class Main : public CBase_Main
       CProxy_Multiply M = CProxy_Multiply::ckNew();
       for(int iteration = 0; iteration < numberIterations; iteration++)
       {
-        Timer t("iteration %d on %d PEs, multiplying C = A*A", iteration+1, CkNumPes());
+        Timer t("iteration %d on %d PEs, multiplying C = A*A, tolerance = %e",
+            iteration+1, CkNumPes(), tolerance);
         M.multiply(tolerance, A, A, C, CkCallbackResumeThread());
         t.stop();
         CkPrintf(t.to_str());
@@ -144,6 +145,8 @@ class Main : public CBase_Main
         C.printLeafPes(CkCallbackResumeThread());
 #endif
       }
+
+      M.getComplexity(CkCallbackResumeThread());
 
 #ifdef DEBUG_OUTPUT
       C.print(CkCallbackResumeThread());

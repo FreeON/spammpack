@@ -9,5 +9,6 @@ module multiplyelement
         CProxy_Node nextA, CProxy_Node nextB, CkCallback &cb);
     entry [threaded] void multiply (double tolerance, CkCallback &cb);
     entry void storeBack (CkCallback &cb);
+    entry void getComplexity (CkCallback &cb);
   };
 };

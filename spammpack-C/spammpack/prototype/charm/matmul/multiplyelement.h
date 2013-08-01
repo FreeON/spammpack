@@ -73,6 +73,7 @@ class MultiplyElement : public CBase_MultiplyElement
     void multiply (double tolerance, CkCallback &cb);
     void storeBack (CkCallback &cb);
     void print (std::string tag);
+    void getComplexity (CkCallback &cb);
 };
 
 #endif
