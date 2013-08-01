@@ -13,8 +13,7 @@
 
 #include "node.decl.h"
 
-#include <map>
-#include <list>
+#include <string>
 
 /** The Node class. */
 class Node : public CBase_Node
@@ -82,6 +81,7 @@ class Node : public CBase_Node
     void add (int blocksize, double *A);
     void updateNorms (CkCallback &cb);
     void setTierNode (CProxy_Node tierNode, CkCallback &cb);
+    void print (std::string tag);
 };
 
 #endif

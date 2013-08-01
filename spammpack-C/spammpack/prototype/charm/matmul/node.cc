@@ -74,6 +74,7 @@ Node::~Node ()
 void Node::pup (PUP::er &p)
 {
   CBase_Node::pup(p);
+
   p|N;
   p|blocksize;
   p|depth;
@@ -123,6 +124,24 @@ void Node::pup (PUP::er &p)
   {
     if(p.isUnpacking()) { block = NULL; }
   }
+
+#ifdef DEBUG_OUTPUT
+  if(p.isUnpacking())
+  {
+    print("unpacking");
+  }
+  else
+  {
+    if(p.isSizing())
+    {
+      print("   sizing");
+    }
+    else
+    {
+      print("  packing");
+    }
+  }
+#endif
 }
 
 /** Get the dense submatrix block.
@@ -346,6 +365,28 @@ void Node::setTierNode (CProxy_Node tierNode, CkCallback &cb)
   this->tierNodeSet = true;
   this->tierNode = tierNode;
   contribute(cb);
+}
+
+/** Print this Node.
+ */
+void Node::print (std::string tag)
+{
+  INFO("[%d,%d] %s: { N = %d, "
+      "blocksize = %d, "
+      "depth = %d, "
+      "tier = %d, "
+      "iLower = %d, "
+      "iUpper = %d, "
+      "jLower = %d, "
+      "jUpper = %d, "
+      "index = %u, "
+      "norm = %e, "
+      "norm2 = %e, "
+      "tierNodeSet = %d, "
+      "block = %p }\n",
+      thisIndex.x, thisIndex.y, tag.c_str(), N, blocksize, depth, tier,
+      iLower, iUpper, jLower, jUpper, index, norm, norm_2, tierNodeSet,
+      block);
 }
 
 #include "node.def.h"

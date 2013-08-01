@@ -138,6 +138,7 @@ void MultiplyElement::setNextTier (CProxy_MultiplyElement nextConvolution,
 void MultiplyElement::pup (PUP::er &p)
 {
   CBase_MultiplyElement::pup(p);
+
   p|index;
   p|blocksize;
   p|numberCalls;
