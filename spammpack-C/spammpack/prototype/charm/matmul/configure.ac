@@ -87,26 +87,6 @@ if test "${enable_forced_migration}" = "yes"; then
              elements])
 fi
 
-AC_ARG_ENABLE([verify],
-  [AS_HELP_STRING([--enable-verify],
-  [verify multiplication result])],
-  [enable_verify=$enableval],
-  [enable_verify="no"])
-if test "${enable_verify}" = "yes"; then
-  AC_DEFINE([VERIFY_MULTIPLY], [1], [Verify multiplication result])
-fi
-
-AC_ARG_ENABLE([verify-tolerance],
-  [AS_HELP_STRING([--enable-verify-tolerance],
-  [set the absolute tolerance of the verification (default = 1.0e-10)])],
-  [verify_tolerance=$enableval],
-  [verify_tolerance="1.0e-10"])
-if test "${verify_tolerance}" = "yes"; then
-  verify_tolerance="1.0e-10"
-fi
-AC_DEFINE_UNQUOTED([VERIFY_TOLERANCE], [${verify_tolerance}], [The absolute
-                    tolerance of the multiply verification.])
-
 AC_ARG_ENABLE([decay],
   [AS_HELP_STRING([--enable-decay],
   [set the decay constant for matrics with decay (default = 0.1)])],

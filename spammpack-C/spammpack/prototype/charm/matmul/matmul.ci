@@ -7,6 +7,7 @@ mainmodule matmul
   {
     entry Main (CkArgMsg *msg);
     entry [threaded] void run (int N, int blocksize, int numberIterations,
-        double tolerance, int matrixType);
+        double tolerance, int matrixType, bool verify,
+        double verifyTolerance);
   };
 };

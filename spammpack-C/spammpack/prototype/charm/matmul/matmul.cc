@@ -4,11 +4,8 @@
 #include "messages.h"
 #include "timer.h"
 #include "multiply.h"
-#include <getopt.h>
-
-#ifdef VERIFY_MULTIPLY
 #include "index.h"
-#endif
+#include <getopt.h>
 
 class Main : public CBase_Main
 {
@@ -21,6 +18,8 @@ class Main : public CBase_Main
       int numberIterations = 1;
       double tolerance = 0.0;
       enum matrix_t matrixType = full;
+      bool verify = false;
+      double verifyTolerance = 1.0e-10;
 
       int c;
       const char *short_options = "hN:b:i:t:m:";
@@ -31,6 +30,7 @@ class Main : public CBase_Main
         { "iterations", required_argument,  NULL, 'i' },
         { "tolerance",  required_argument,  NULL, 't' },
         { "type",       required_argument,  NULL, 'm' },
+        { "verify",     no_argument,        NULL, 'v' },
         { NULL, 0, NULL, 0 }
       };
 
@@ -51,6 +51,7 @@ class Main : public CBase_Main
                 tolerance);
             CkPrintf("{ -m | --type } TYPE      Use matrices of TYPE { full, decay } "
                 "(default: full)\n");
+            CkPrintf("{ -v | --verify }         Verify matmul product\n");
             CkExit();
             break;
 
@@ -85,6 +86,10 @@ class Main : public CBase_Main
             }
             break;
 
+          case 'v':
+            verify |= verify;
+            break;
+
           default:
             CkExit();
             break;
@@ -92,11 +97,12 @@ class Main : public CBase_Main
       }
 
       DEBUG("calling run() on this proxy\n");
-      thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType);
+      thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
+          verify, verifyTolerance);
     }
 
     void run (int N, int blocksize, int numberIterations, double tolerance,
-        int matrixType)
+        int matrixType, bool verify, double verifyTolerance)
     {
       CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
       CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
@@ -117,10 +123,6 @@ class Main : public CBase_Main
           ABORT("unknown matrix type\n");
           break;
       }
-
-#ifdef VERIFY_MULTIPLY
-      DenseMatrixMsg *ADense = A.getDense();
-#endif
 
       DEBUG("setting C to zero\n");
       C.zero(CkCallbackResumeThread());
@@ -147,59 +149,60 @@ class Main : public CBase_Main
       C.print(CkCallbackResumeThread());
 #endif
 
-#ifdef VERIFY_MULTIPLY
-      DenseMatrixMsg *CDense = C.getDense();
+      if(verify)
+      {
+        DenseMatrixMsg *ADense = A.getDense();
+        DenseMatrixMsg *CDense = C.getDense();
 
-      CkPrintf("verifying result...\n");
+        CkPrintf("verifying result...\n");
 
-      int maxDiffRow;
-      int maxDiffColumn;
-      double maxAbsDiff = 0;
+        int maxDiffRow;
+        int maxDiffColumn;
+        double maxAbsDiff = 0;
 
-      double *CExact = new double[N*N];
-      for(int i = 0; i < N; i++) {
-        for(int j = 0; j < N; j++)
-        {
-          CExact[BLOCK_INDEX(i, j, 0, 0, N)] = 0;
-
-          for(int k = 0; k < N; k++)
+        double *CExact = new double[N*N];
+        for(int i = 0; i < N; i++) {
+          for(int j = 0; j < N; j++)
           {
-            CExact[BLOCK_INDEX(i, j, 0, 0, N)] += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
-              *ADense->A[BLOCK_INDEX(k, j, 0, 0, N)];
-          }
+            CExact[BLOCK_INDEX(i, j, 0, 0, N)] = 0;
 
-          double absDiff = fabs(CExact[BLOCK_INDEX(i, j, 0, 0, N)]
-              -CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
+            for(int k = 0; k < N; k++)
+            {
+              CExact[BLOCK_INDEX(i, j, 0, 0, N)] += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
+                *ADense->A[BLOCK_INDEX(k, j, 0, 0, N)];
+            }
 
-          if(absDiff > maxAbsDiff)
-          {
-            maxDiffRow = i;
-            maxDiffColumn = j;
-            maxAbsDiff = absDiff;
+            double absDiff = fabs(CExact[BLOCK_INDEX(i, j, 0, 0, N)]
+                -CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
+
+            if(absDiff > maxAbsDiff)
+            {
+              maxDiffRow = i;
+              maxDiffColumn = j;
+              maxAbsDiff = absDiff;
+            }
           }
         }
+
+        if(maxAbsDiff > verifyTolerance)
+        {
+          double relDiff = (CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)] != 0
+              ? maxAbsDiff/CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]
+              : 0);
+          ABORT("result mismatch (abs. tolerance = %e, "
+              "abs. diff = %e, rel. diff = %e), "
+              "C(%d,%d): %e (reference) vs. %e (matmul)\n",
+              verifyTolerance, maxAbsDiff, relDiff,
+              maxDiffRow, maxDiffColumn,
+              CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)],
+              CDense->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]);
+        }
+        CkPrintf("result verified\n");
+
+        delete CExact;
+        delete ADense;
+        delete CDense;
       }
-
-      if(maxAbsDiff > VERIFY_TOLERANCE)
-      {
-        double relDiff = (CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)] != 0
-            ? maxAbsDiff/CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]
-            : 0);
-        ABORT("result mismatch (abs. tolerance = %e, "
-            "abs. diff = %e, rel. diff = %e), "
-            "C(%d,%d): %e (reference) vs. %e (matmul)\n",
-            VERIFY_TOLERANCE, maxAbsDiff, relDiff,
-            maxDiffRow, maxDiffColumn,
-            CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)],
-            CDense->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]);
-      }
-      CkPrintf("result verified\n");
-
-      delete CExact;
-
-      delete ADense;
-      delete CDense;
-#endif
 
       DEBUG("done\n");
       CkExit();
