@@ -58,7 +58,7 @@ Node::Node (int N, int depth, int blocksize, int tier)
 /** The migration constructor. */
 Node::Node (CkMigrateMessage *msg)
 {
-  INFO("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
+  DEBUG("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
 }
 
 /** The destructor.
@@ -107,7 +107,7 @@ void Node::pup (PUP::er &p)
     }
     else
     {
-      INFO("pup: Node(%d,%d) packing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
+      DEBUG("pup: Node(%d,%d) packing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
     }
   }
 
