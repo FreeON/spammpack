@@ -33,6 +33,8 @@ AC_SEARCH_LIBS([clock_gettime], [rt],
   [],
   [AC_MSG_FAILURE([need clock_gettime()])])
 
+# Check for supported clocks. Thanks to Jonathan Lifflander
+# <jliffl2@illinois.edu> for suggesting this test.
 for CLOCKTYPE in \
   CLOCK_MONOTONIC_RAW \
   CLOCK_MONOTONIC \

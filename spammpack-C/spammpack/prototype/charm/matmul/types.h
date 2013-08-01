@@ -22,4 +22,14 @@ enum init_t
   initDecay
 };
 
+/** The matrix types. */
+enum matrix_t
+{
+  /** A full matrix. */
+  full,
+
+  /** A matrix with decay. */
+  decay
+};
+
 #endif

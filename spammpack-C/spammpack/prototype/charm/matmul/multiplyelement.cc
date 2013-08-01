@@ -184,10 +184,10 @@ void MultiplyElement::pup (PUP::er &p)
           tier, thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
 
       /* Set the wasMigrated flag to indicate that this instance is going to
-       * get destroyed because of a migration, and not because of pruning. */
+       * get destroyed because of a migration, and not because of pruning.
+       * Thanks to Pritish Jetley <pjetley2@uiuc.edu> for suggesting this
+       * trick. */
       wasMigrated = true;
-
-      //print("packing");
     }
   }
 
@@ -198,8 +198,6 @@ void MultiplyElement::pup (PUP::er &p)
       CResult = new double[numberElements];
     }
     PUParray(p, CResult, numberElements);
-
-    //print("unpacking");
   }
   else
   {

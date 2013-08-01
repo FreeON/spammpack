@@ -20,15 +20,17 @@ class Main : public CBase_Main
       int blocksize = 1;
       int numberIterations = 1;
       double tolerance = 0.0;
+      enum matrix_t matrixType = full;
 
       int c;
-      const char *short_options = "hN:b:i:t:";
+      const char *short_options = "hN:b:i:t:m:";
       const option long_options[] = {
         { "help",       no_argument,        NULL, 0 },
         { "N",          required_argument,  NULL, 'N' },
         { "block",      required_argument,  NULL, 'b' },
         { "iterations", required_argument,  NULL, 'i' },
         { "tolerance",  required_argument,  NULL, 't' },
+        { "type",       required_argument,  NULL, 'm' },
         { NULL, 0, NULL, 0 }
       };
 
@@ -47,6 +49,8 @@ class Main : public CBase_Main
                 " %d)\n", numberIterations);
             CkPrintf("{ -t | --tolerance } T    Multiply with tolerance T (default: %1.2e)\n",
                 tolerance);
+            CkPrintf("{ -m | --type } TYPE      Use matrices of TYPE { full, decay } "
+                "(default: full)\n");
             CkExit();
             break;
 
@@ -66,6 +70,21 @@ class Main : public CBase_Main
             tolerance = strtod(optarg, NULL);
             break;
 
+          case 'm':
+            if(strcasecmp(optarg, "full") == 0)
+            {
+              matrixType = full;
+            }
+            else if (strcasecmp(optarg, "decay") == 0)
+            {
+              matrixType = decay;
+            }
+            else
+            {
+              ABORT("unknown matrix type\n");
+            }
+            break;
+
           default:
             CkExit();
             break;
@@ -73,17 +92,31 @@ class Main : public CBase_Main
       }
 
       DEBUG("calling run() on this proxy\n");
-      thisProxy.run(N, blocksize, numberIterations, tolerance);
+      thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType);
     }
 
-    void run (int N, int blocksize, int numberIterations, double tolerance)
+    void run (int N, int blocksize, int numberIterations, double tolerance,
+        int matrixType)
     {
       CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
       CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
-      DEBUG("generating random matrix\n");
-      //A.random(CkCallbackResumeThread());
-      A.decay(CkCallbackResumeThread());
+      switch(matrixType)
+      {
+        case full:
+          DEBUG("generating random matrix\n");
+          A.random(CkCallbackResumeThread());
+          break;
+
+        case decay:
+          DEBUG("generating matrix with decay\n");
+          A.decay(CkCallbackResumeThread());
+          break;
+
+        default:
+          ABORT("unknown matrix type\n");
+          break;
+      }
 
 #ifdef VERIFY_MULTIPLY
       DenseMatrixMsg *ADense = A.getDense();
