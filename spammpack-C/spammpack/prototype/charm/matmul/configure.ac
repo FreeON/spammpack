@@ -77,27 +77,6 @@ if test "${enable_debug}" = "yes"; then
   AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output])
 fi
 
-AC_ARG_ENABLE([forced-migration],
-  [AS_HELP_STRING([--enable-forced-migration],
-  [enable the forced migration of array elements])],
-  [enable_forced_migration=$enableval],
-  [enable_forced_migration="no"])
-if test "${enable_forced_migration}" = "yes"; then
-  AC_DEFINE([FORCED_MIGRATION], [1], [Enable the forced migration of array
-             elements])
-fi
-
-AC_ARG_ENABLE([decay],
-  [AS_HELP_STRING([--enable-decay],
-  [set the decay constant for matrics with decay (default = 0.1)])],
-  [matrix_decay=$enableval],
-  [matrix_decay="0.1"])
-if test "${matrix_decay}" = "yes"; then
-  matrix_decay="0.1"
-fi
-AC_DEFINE_UNQUOTED([MATRIX_DECAY], [${matrix_decay}], [Set the decay constant
-                    for matrics with decay.])
-
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile Doxyfile])
 

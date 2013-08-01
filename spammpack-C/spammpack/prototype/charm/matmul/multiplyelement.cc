@@ -360,15 +360,6 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) contribute\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z);
   contribute(cb);
-
-#ifdef FORCED_MIGRATION
-  if(CkNumPes() > 1)
-  {
-    INFO("tier %d ME(%d,%d,%d) requesting migration to PE %d\n",
-        tier, thisIndex.x, thisIndex.y, thisIndex.z, (CkMyPe()+1)%CkNumPes());
-    migrateMe((CkMyPe()+1)%CkNumPes());
-  }
-#endif
 }
 
 /** Push the C submatrices back into the C Matrix.
