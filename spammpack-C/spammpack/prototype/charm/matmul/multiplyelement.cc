@@ -210,6 +210,7 @@ void MultiplyElement::pup (PUP::er &p)
 
 /** Multiply nodes.
  *
+ * @param tolerance The multiplication tolerance.
  * @param cb The callback.
  */
 void MultiplyElement::multiply (double tolerance, CkCallback &cb)

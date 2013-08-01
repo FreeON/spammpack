@@ -22,9 +22,9 @@ class Main : public CBase_Main
       double verifyTolerance = 1.0e-10;
 
       int c;
-      const char *short_options = "hN:b:i:t:m:";
+      const char *short_options = "hN:b:i:t:m:v";
       const option long_options[] = {
-        { "help",       no_argument,        NULL, 0 },
+        { "help",       no_argument,        NULL, 'h' },
         { "N",          required_argument,  NULL, 'N' },
         { "block",      required_argument,  NULL, 'b' },
         { "iterations", required_argument,  NULL, 'i' },
