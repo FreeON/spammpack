@@ -134,9 +134,9 @@ class Main : public CBase_Main
 
       CkPrintf("running %d iterations\n", numberIterations);
       CProxy_Multiply M = CProxy_Multiply::ckNew();
-      for(int i = 0; i < numberIterations; i++)
+      for(int iteration = 0; iteration < numberIterations; iteration++)
       {
-        Timer t("iteration %d on %d PEs, multiplying C = A*A", i, CkNumPes());
+        Timer t("iteration %d on %d PEs, multiplying C = A*A", iteration+1, CkNumPes());
         M.multiply(tolerance, A, A, C, CkCallbackResumeThread());
         t.stop();
         CkPrintf(t.to_str());
@@ -151,27 +151,33 @@ class Main : public CBase_Main
 
       if(verify)
       {
+        CkPrintf("verifying result...\n");
+
         DenseMatrixMsg *ADense = A.getDense();
         DenseMatrixMsg *CDense = C.getDense();
-
-        CkPrintf("verifying result...\n");
 
         int maxDiffRow;
         int maxDiffColumn;
         double maxAbsDiff = 0;
 
         double *CExact = new double[N*N];
+        memset(CExact, 0, sizeof(double)*N*N);
+
+        for(int iteration = 0; iteration < numberIterations; iteration++) {
+          for(int i = 0; i < N; i++) {
+            for(int j = 0; j < N; j++) {
+              for(int k = 0; k < N; k++)
+              {
+                CExact[BLOCK_INDEX(i, j, 0, 0, N)] += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
+                  *ADense->A[BLOCK_INDEX(k, j, 0, 0, N)];
+              }
+            }
+          }
+        }
+
         for(int i = 0; i < N; i++) {
           for(int j = 0; j < N; j++)
           {
-            CExact[BLOCK_INDEX(i, j, 0, 0, N)] = 0;
-
-            for(int k = 0; k < N; k++)
-            {
-              CExact[BLOCK_INDEX(i, j, 0, 0, N)] += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
-                *ADense->A[BLOCK_INDEX(k, j, 0, 0, N)];
-            }
-
             double absDiff = fabs(CExact[BLOCK_INDEX(i, j, 0, 0, N)]
                 -CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
 

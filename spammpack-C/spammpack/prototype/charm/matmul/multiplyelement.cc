@@ -218,11 +218,9 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) multiply\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z);
 
-  if(numberCalls > 0)
-  {
-    ABORT("tier %d ME(%d,%d,%d) this MultiplyElement has been called before\n",
-        tier, thisIndex.x, thisIndex.y, thisIndex.z);
-  }
+  DEBUG("tier %d ME(%d,%d,%d) this MultiplyElement has been "
+      "called %d times before\n", tier, thisIndex.x, thisIndex.y, thisIndex.z,
+      numberCalls);
   numberCalls++;
 
   if(tier == depth)
@@ -232,14 +230,14 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
     if(AInfo->norm*BInfo->norm > tolerance)
     {
+      DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
+          thisIndex.y, thisIndex.z);
+
       if(CResult != NULL)
       {
         ABORT("tier %d ME(%d,%d,%d) CResult is not NULL\n", tier, thisIndex.x,
             thisIndex.y, thisIndex.z);
       }
-
-      DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
-          thisIndex.y, thisIndex.z);
 
       CResult = new double[blocksize*blocksize];
       memset(CResult, 0, sizeof(double)*blocksize*blocksize);
@@ -384,6 +382,11 @@ void MultiplyElement::storeBack (CkCallback &cb)
   printDense(blocksize, CResult);
 #endif
   C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
+
+  /* Reset result for possible next iteration. */
+  delete[] CResult;
+  CResult = NULL;
+
   contribute(cb);
 }
 
