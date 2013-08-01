@@ -88,29 +88,32 @@ MatrixInfoMsg * Matrix::info (int tier)
 void Matrix::random (CkCallback &cb)
 {
   DEBUG("generating random matrix\n");
-  thisProxy.initialize(initRandom, cb);
+  initialize(initRandom, 0);
+  cb.send();
 }
 
 /** Initialize a Matrix with zeros. */
 void Matrix::zero (CkCallback &cb)
 {
   DEBUG("setting matrix to zero\n");
-  thisProxy.initialize(initZero, cb);
+  initialize(initZero, 0);
+  cb.send();
 }
 
 /** Initialize a Matrix with zeros. */
-void Matrix::decay (CkCallback &cb)
+void Matrix::decay (double decayConstant, CkCallback &cb)
 {
-  DEBUG("setting matrix to a matrix with decay (gamma = %f)\n", MATRIX_DECAY);
-  thisProxy.initialize(initDecay, cb);
+  INFO("setting matrix to a matrix with decay (gamma = %f)\n", decayConstant);
+  initialize(initDecay, decayConstant);
+  cb.send();
 }
 
 /** Initialize a Matrix.
  *
  * @param initType How to initialize the Matrix.
- * @param cb The callback.
+ * @param decayConstant The decay constant for matrices with decay.
  */
-void Matrix::initialize (int initType, CkCallback &cb)
+void Matrix::initialize (int initType, double decayConstant)
 {
   switch(initType)
   {
@@ -134,8 +137,8 @@ void Matrix::initialize (int initType, CkCallback &cb)
           ADense[BLOCK_INDEX(i, i, 0, 0, N)] = 1+0.3*(rand()/(double) RAND_MAX - 0.5);
           for(int j = i+1; j < N; j++)
           {
-            ADense[BLOCK_INDEX(i, j, 0, 0, N)] = exp(-fabs(i-j)/MATRIX_DECAY)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
-            ADense[BLOCK_INDEX(j, i, 0, 0, N)] = exp(-fabs(i-j)/MATRIX_DECAY)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
+            ADense[BLOCK_INDEX(i, j, 0, 0, N)] = exp(-fabs(i-j)/decayConstant)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
+            ADense[BLOCK_INDEX(j, i, 0, 0, N)] = exp(-fabs(i-j)/decayConstant)*ADense[BLOCK_INDEX(i, i, 0, 0, N)];
           }
         }
 
@@ -179,8 +182,6 @@ void Matrix::initialize (int initType, CkCallback &cb)
     tierNode[tier].setTierNode(tierNode[tier+1], CkCallbackResumeThread());
     tierNode[tier].updateNorms(CkCallbackResumeThread());
   }
-
-  cb.send();
 }
 
 /** Print a Matrix.

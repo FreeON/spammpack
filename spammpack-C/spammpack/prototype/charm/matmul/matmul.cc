@@ -20,9 +20,10 @@ class Main : public CBase_Main
       enum matrix_t matrixType = full;
       bool verify = false;
       double verifyTolerance = 1.0e-10;
+      double decayConstant = 0.1;
 
       int c;
-      const char *short_options = "hN:b:i:t:m:v";
+      const char *short_options = "hN:b:i:t:m:vd:";
       const option long_options[] = {
         { "help",       no_argument,        NULL, 'h' },
         { "N",          required_argument,  NULL, 'N' },
@@ -31,6 +32,7 @@ class Main : public CBase_Main
         { "tolerance",  required_argument,  NULL, 't' },
         { "type",       required_argument,  NULL, 'm' },
         { "verify",     no_argument,        NULL, 'v' },
+        { "decay",      required_argument,  NULL, 'd' },
         { NULL, 0, NULL, 0 }
       };
 
@@ -52,6 +54,7 @@ class Main : public CBase_Main
             CkPrintf("{ -m | --type } TYPE      Use matrices of TYPE { full, decay } "
                 "(default: full)\n");
             CkPrintf("{ -v | --verify }         Verify matmul product\n");
+            CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
             CkExit();
             break;
 
@@ -90,6 +93,10 @@ class Main : public CBase_Main
             verify = !verify;
             break;
 
+          case 'd':
+            decayConstant = strtod(optarg, NULL);
+            break;
+
           default:
             CkExit();
             break;
@@ -98,11 +105,12 @@ class Main : public CBase_Main
 
       DEBUG("calling run() on this proxy\n");
       thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
-          verify, verifyTolerance);
+          decayConstant, verify, verifyTolerance);
     }
 
     void run (int N, int blocksize, int numberIterations, double tolerance,
-        int matrixType, bool verify, double verifyTolerance)
+        int matrixType, double decayConstant, bool verify,
+        double verifyTolerance)
     {
       CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
       CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
@@ -116,7 +124,7 @@ class Main : public CBase_Main
 
         case decay:
           DEBUG("generating matrix with decay\n");
-          A.decay(CkCallbackResumeThread());
+          A.decay(decayConstant, CkCallbackResumeThread());
           break;
 
         default:
