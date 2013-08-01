@@ -96,10 +96,12 @@ void Node::pup (PUP::er &p)
   int numberElements = (block == NULL ? 0 : blocksize*blocksize);
   p|numberElements;
 
+#ifdef DEBUG_OUTPUT
   if(p.isUnpacking())
   {
     DEBUG("pup: Node(%d,%d) unpacking %d elements\n", thisIndex.x, thisIndex.y, numberElements);
   }
+
   else
   {
     if(p.isSizing())
@@ -111,6 +113,7 @@ void Node::pup (PUP::er &p)
       DEBUG("pup: Node(%d,%d) packing %d elements\n", thisIndex.x, thisIndex.y, numberElements);
     }
   }
+#endif
 
   if(numberElements > 0)
   {

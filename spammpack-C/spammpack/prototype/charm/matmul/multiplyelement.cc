@@ -167,6 +167,7 @@ void MultiplyElement::pup (PUP::er &p)
   int numberElements = (CResult == NULL ? 0 : blocksize*blocksize);
   p|numberElements;
 
+#ifdef DEBUG_OUTPUT
   if(p.isUnpacking())
   {
     DEBUG("tier %d ME(%d,%d,%d) pup: unpacking %d elements\n",
@@ -183,14 +184,9 @@ void MultiplyElement::pup (PUP::er &p)
     {
       DEBUG("tier %d ME(%d,%d,%d) pup: packing %d elements\n",
           tier, thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
-
-      /* Set the wasMigrated flag to indicate that this instance is going to
-       * get destroyed because of a migration, and not because of pruning.
-       * Thanks to Pritish Jetley <pjetley2@uiuc.edu> for suggesting this
-       * trick. */
-      wasMigrated = true;
     }
   }
+#endif
 
   if(numberElements > 0)
   {
@@ -203,6 +199,14 @@ void MultiplyElement::pup (PUP::er &p)
   else
   {
     if(p.isUnpacking()) { CResult = NULL; }
+  }
+
+  if(p.isPacking())
+  {
+    /* Set the wasMigrated flag to indicate that this instance is going to get
+     * destroyed because of a migration, and not because of pruning.  Thanks
+     * to Pritish Jetley <pjetley2@uiuc.edu> for suggesting this trick. */
+    wasMigrated = true;
   }
 
   DEBUG("tier %d ME(%d,%d,%d) pup: done\n", tier, thisIndex.x, thisIndex.y,
