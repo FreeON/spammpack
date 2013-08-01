@@ -205,6 +205,9 @@ void MultiplyElement::pup (PUP::er &p)
   {
     if(p.isUnpacking()) { CResult = NULL; }
   }
+
+  INFO("tier %d ME(%d,%d,%d) pup: done\n", tier, thisIndex.x, thisIndex.y,
+      thisIndex.z);
 }
 
 /** Multiply nodes.
