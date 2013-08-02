@@ -134,8 +134,10 @@ void Multiply::multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
     {
       /* In case the reduction inserted or destroyed MultiplyElements, we need
        * to tell the load balancer. */
+#ifdef PRUNE_CONVOLUTION
       DEBUG("tier %d: calling doneInserting() on tier %d\n", tier, tier+1);
       convolution[tier+1].doneInserting();
+#endif
     }
 
     /* Hang out until this tier is done. */

@@ -43,6 +43,7 @@ class Main : public CBase_Main
         {
           case 'h':
             CkPrintf("Usage:\n");
+            CkPrintf("\n");
             CkPrintf("{ -h | --help }           This help\n");
             CkPrintf("{ -N | --N } N            Create NxN matrix (default: %d)\n", N);
             CkPrintf("{ -b | --block } B        Create BxB dense blocks at leaf "
@@ -55,6 +56,7 @@ class Main : public CBase_Main
                 "(default: full)\n");
             CkPrintf("{ -v | --verify }         Verify matmul product\n");
             CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
+            CkPrintf("\n");
             CkExit();
             break;
 

@@ -6,6 +6,7 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
+#include "config.h"
 #include "multiplyelement.h"
 #include "messages.h"
 #include "logger.h"
@@ -268,16 +269,19 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 #endif
     }
 
+#ifdef PRUNE_CONVOLUTION
     else
     {
       ABORT("tier %d ME(%d,%d,%d) skipping block product\n", tier,
           thisIndex.x, thisIndex.y, thisIndex.z);
     }
+#endif
 
     delete AInfo;
     delete BInfo;
   }
 
+#ifdef PRUNE_CONVOLUTION
   else
   {
     /* Get information on A and B matrices. */
@@ -361,6 +365,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       }
     }
   }
+#endif
 
   DEBUG("tier %d ME(%d,%d,%d) contribute\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z);
@@ -377,11 +382,15 @@ void MultiplyElement::storeBack (CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) storing back\n", tier, thisIndex.x, thisIndex.y, thisIndex.z);
   printDense(blocksize, CResult);
 #endif
-  C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
 
-  /* Reset result for possible next iteration. */
-  delete[] CResult;
-  CResult = NULL;
+  if(CResult != NULL)
+  {
+    C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
+
+    /* Reset result for possible next iteration. */
+    delete[] CResult;
+    CResult = NULL;
+  }
 
   contribute(cb);
 }
