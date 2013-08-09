@@ -68,6 +68,15 @@ if test -n "${default_LB}"; then
   AC_SUBST([DEFAULT_LB_FLAGS], ["-balancer ${default_LB}"])
 fi
 
+AC_ARG_ENABLE([charmdebug],
+  [AS_HELP_STRING([--enable-charmdebug],
+  [enable the use of charmdebug on the executable])],
+  [enable_charmdebug=$enableval],
+  [enable_charmdebug="no"])
+if test "${enable_charmdebug}" = "yes"; then
+  AC_SUBST([CHARMDEBUG_FLAGS], ["-memory charmdebug"])
+fi
+
 AC_ARG_ENABLE([debug],
   [AS_HELP_STRING([--enable-debug],
   [enable a lot of extra output])],

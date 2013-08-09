@@ -10,8 +10,7 @@ EXTRA_DIST = \
 	mustang-submit.sh \
 	mustang.job.template
 
-AM_LDFLAGS = -language charm++
-AM_CXXFLAGS = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@
+AM_LDFLAGS = -language charm++ @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
 bin_PROGRAMS = matmul
 
