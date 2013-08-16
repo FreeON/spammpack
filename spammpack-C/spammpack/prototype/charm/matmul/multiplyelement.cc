@@ -10,8 +10,6 @@
 #include "multiplyelement.h"
 #include "messages.h"
 #include "logger.h"
-#include "index.h"
-#include <string.h>
 
 /** The constructor.
  *
@@ -32,21 +30,21 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
   this->B = B;
   this->C = C;
 
-  if(tier < depth)
+  /* Calculate the linear index. */
+  std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
+  std::bitset<8*sizeof(int)> jIndex(thisIndex.y);
+  std::bitset<8*sizeof(int)> kIndex(thisIndex.z);
+  std::bitset<8*sizeof(int)> tempIndex(1);
+  for(int i = 0; i < tier; i++)
   {
-    for(int i = 0; i < 2; i++) {
-      for(int j = 0; j < 2; j++) {
-        for(int k = 0; k < 2; k++)
-        {
-          nextConvolutionExists[i][j][k] = true;
-        }
-      }
-    }
+    tempIndex <<= 3;
+    if(iIndex[i]) { tempIndex |= 4; }
+    if(jIndex[i]) { tempIndex |= 2; }
+    if(kIndex[i]) { tempIndex |= 1; }
   }
+  index = tempIndex.to_ulong();
 
   CResult = NULL;
-  numberCalls = 0;
-  wasMigrated = false;
 }
 
 /** The migration constructor.
@@ -57,9 +55,6 @@ MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
   DEBUG("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y,
       thisIndex.z);
-
-  /* Reset the migration flag on the new PE. */
-  wasMigrated = false;
 }
 
 /** The destructor.
@@ -70,66 +65,6 @@ MultiplyElement::~MultiplyElement ()
       thisIndex.z);
 
   delete[] CResult;
-
-  if(!wasMigrated && (tier < depth))
-  {
-    DEBUG("tier %d ME(%d,%d,%d) destructor, pruning lower tier elements\n",
-        tier, thisIndex.x, thisIndex.y, thisIndex.z);
-
-    /* Recursively prune convolution elements. */
-    for(int i = 0; i < 2; i++) {
-      for(int j = 0; j < 2; j++) {
-        for(int k = 0; k < 2; k++)
-        {
-          if(nextConvolutionExists[i][j][k])
-          {
-            DEBUG("tier %d ME(%d,%d,%d) destructor, pruning tier %d ME(%d,%d,%d)\n",
-                tier, thisIndex.x, thisIndex.y, thisIndex.z,
-                tier+1,
-                (thisIndex.x << 1)+i,
-                (thisIndex.y << 1)+j,
-                (thisIndex.z << 1)+k);
-
-            nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                (thisIndex.z << 1)+k).ckDestroy();
-
-            DEBUG("tier %d ME(%d,%d,%d) destructor, pruning tier %d ME(%d,%d,%d), here 2\n",
-                tier, thisIndex.x, thisIndex.y, thisIndex.z,
-                tier+1,
-                (thisIndex.x << 1)+i,
-                (thisIndex.y << 1)+j,
-                (thisIndex.z << 1)+k);
-
-            nextConvolutionExists[i][j][k] = false;
-
-            DEBUG("tier %d ME(%d,%d,%d) destructor, pruning tier %d ME(%d,%d,%d), here 3\n",
-                tier, thisIndex.x, thisIndex.y, thisIndex.z,
-                tier+1,
-                (thisIndex.x << 1)+i,
-                (thisIndex.y << 1)+j,
-                (thisIndex.z << 1)+k);
-          }
-        }
-      }
-    }
-  }
-
-  DEBUG("tier %d ME(%d,%d,%d) destructor done\n", tier, thisIndex.x,
-      thisIndex.y, thisIndex.z);
-}
-
-/** The the next convolution array.
- *
- * @param nextConvolution The next convolution array.
- */
-void MultiplyElement::setNextTier (CProxy_MultiplyElement nextConvolution,
-    CProxy_Node nextA, CProxy_Node nextB, CkCallback &cb)
-{
-  DEBUG("tier %d ME(%d,%d,%d) setting nextTier\n", tier, thisIndex.x, thisIndex.y, thisIndex.z);
-  this->nextConvolution = nextConvolution;
-  this->nextA = nextA;
-  this->nextB = nextB;
-  contribute(cb);
 }
 
 /** The PUP method.
@@ -142,52 +77,14 @@ void MultiplyElement::pup (PUP::er &p)
 
   p|index;
   p|blocksize;
-  p|numberCalls;
   p|depth;
   p|tier;
   p|A;
   p|B;
   p|C;
 
-  for(int i = 0; i < 2; i++) {
-    for(int j = 0; j < 2; j++) {
-      for(int k = 0; k < 2; k++)
-      {
-        p|nextConvolutionExists[i][j][k];
-      }
-    }
-  }
-
-  if(tier < depth)
-  {
-    p|nextConvolution;
-    p|nextA;
-    p|nextB;
-  }
-
   int numberElements = (CResult == NULL ? 0 : blocksize*blocksize);
   p|numberElements;
-
-#ifdef DEBUG_OUTPUT
-  if(p.isUnpacking())
-  {
-    DEBUG("tier %d ME(%d,%d,%d) pup: unpacking %d elements\n",
-        tier, thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
-  }
-  else
-  {
-    if(p.isSizing())
-    {
-      DEBUG("tier %d ME(%d,%d,%d) pup: sizing %d elements\n",
-          tier, thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
-    }
-    else
-    {
-      DEBUG("tier %d ME(%d,%d,%d) pup: packing %d elements\n",
-          tier, thisIndex.x, thisIndex.y, thisIndex.z, numberElements);
-    }
-  }
-#endif
 
   if(numberElements > 0)
   {
@@ -202,15 +99,7 @@ void MultiplyElement::pup (PUP::er &p)
     if(p.isUnpacking()) { CResult = NULL; }
   }
 
-  if(p.isPacking())
-  {
-    /* Set the wasMigrated flag to indicate that this instance is going to get
-     * destroyed because of a migration, and not because of pruning.  Thanks
-     * to Pritish Jetley <pjetley2@uiuc.edu> for suggesting this trick. */
-    wasMigrated = true;
-  }
-
-  DEBUG("tier %d ME(%d,%d,%d) pup: done\n", tier, thisIndex.x, thisIndex.y,
+  DEBUG("tier %d ME(%d,%d,%d) pup()\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z);
 }
 
@@ -224,151 +113,35 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) multiply\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z);
 
-  DEBUG("tier %d ME(%d,%d,%d) this MultiplyElement has been "
-      "called %d times before\n", tier, thisIndex.x, thisIndex.y, thisIndex.z,
-      numberCalls);
-  numberCalls++;
+  NodeInfoMsg *AInfo = A(thisIndex.x, thisIndex.z).info();
+  NodeInfoMsg *BInfo = B(thisIndex.z, thisIndex.y).info();
 
-  if(tier == depth)
+  DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
+      thisIndex.y, thisIndex.z);
+
+  if(CResult != NULL)
   {
-    NodeInfoMsg *AInfo = A(thisIndex.x, thisIndex.z).info();
-    NodeInfoMsg *BInfo = B(thisIndex.z, thisIndex.y).info();
-
-    if(AInfo->norm*BInfo->norm > tolerance)
-    {
-      DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
-          thisIndex.y, thisIndex.z);
-
-      if(CResult != NULL)
-      {
-        ABORT("tier %d ME(%d,%d,%d) CResult is not NULL\n", tier, thisIndex.x,
-            thisIndex.y, thisIndex.z);
-      }
-
-      CResult = new double[blocksize*blocksize];
-      memset(CResult, 0, sizeof(double)*blocksize*blocksize);
-
-      NodeBlockMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
-      NodeBlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
-
-      for(int i = 0; i < blocksize; i++) {
-        for(int j = 0; j < blocksize; j++) {
-          for(int k = 0; k < blocksize; k++)
-          {
-            CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
-              ABlock->block[BLOCK_INDEX(i, k, 0, 0, blocksize)]
-              *BBlock->block[BLOCK_INDEX(k, j, 0, 0, blocksize)];
-          }
-        }
-      }
-
-#ifdef NOT_USED
-      INFO("tier %d ME(%d,%d,%d) sleeping\n", tier, thisIndex.x,
-          thisIndex.y, thisIndex.z);
-      sleep(30);
-#endif
-    }
-
-#ifdef PRUNE_CONVOLUTION
-    else
-    {
-      ABORT("tier %d ME(%d,%d,%d) skipping block product\n", tier,
-          thisIndex.x, thisIndex.y, thisIndex.z);
-    }
-#endif
-
-    delete AInfo;
-    delete BInfo;
+    ABORT("tier %d ME(%d,%d,%d) CResult is not NULL\n", tier, thisIndex.x,
+        thisIndex.y, thisIndex.z);
   }
 
-#ifdef PRUNE_CONVOLUTION
-  else
-  {
-    /* Get information on A and B matrices. */
-    NodeInfoMsg *AInfo[2][2];
-    NodeInfoMsg *BInfo[2][2];
+  CResult = new double[blocksize*blocksize];
+  memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
-    for(int i = 0; i < 2; i++) {
-      for(int j = 0; j < 2; j++)
+  DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
+  DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
+
+  for(int i = 0; i < blocksize; i++) {
+    for(int j = 0; j < blocksize; j++) {
+      for(int k = 0; k < blocksize; k++)
       {
-        AInfo[i][j] = A((thisIndex.x << 1)+i, (thisIndex.z << 1)+j).info();
-        BInfo[i][j] = B((thisIndex.z << 1)+i, (thisIndex.y << 1)+j).info();
-      }
-    }
-
-    /* Check what products are necessary one tier down. */
-    for(int i = 0; i < 2; i++) {
-      for(int j = 0; j < 2; j++) {
-        for(int k = 0; k < 2; k++)
-        {
-          if(AInfo[i][k]->norm*BInfo[k][j]->norm > tolerance)
-          {
-            if(!nextConvolutionExists[i][j][k])
-            {
-              DEBUG("tier %d ME(%d,%d,%d) adding product ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                  tier, thisIndex.x, thisIndex.y, thisIndex.z,
-                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j, (thisIndex.z << 1)+k,
-                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                  (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
-                  (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
-              nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                  (thisIndex.z << 1)+k).insert(blocksize, tier+1, depth, A, B, C);
-              nextConvolutionExists[i][j][k] = true;
-            }
-
-            else
-            {
-              DEBUG("tier %d ME(%d,%d,%d) keeping product ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                  tier, thisIndex.x, thisIndex.y, thisIndex.z,
-                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j, (thisIndex.z << 1)+k,
-                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                  (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
-                  (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
-            }
-          }
-
-          else
-          {
-            if(nextConvolutionExists[i][j][k])
-            {
-              DEBUG("tier %d ME(%d,%d,%d) dropping product ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                  tier, thisIndex.x, thisIndex.y, thisIndex.z,
-                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j, (thisIndex.z << 1)+k,
-                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                  (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
-                  (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
-
-              nextConvolutionExists[i][j][k] = false;
-              nextConvolution((thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                  (thisIndex.z << 1)+k).ckDestroy();
-            }
-
-            else
-            {
-              DEBUG("tier %d ME(%d,%d,%d) product already does not exist ME(%d,%d,%d): C(%d,%d) <- A(%d,%d)*B(%d,%d)\n",
-                  tier, thisIndex.x, thisIndex.y, thisIndex.z,
-                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j, (thisIndex.z << 1)+k,
-                  (thisIndex.x << 1)+i, (thisIndex.y << 1)+j,
-                  (thisIndex.x << 1)+i, (thisIndex.z << 1)+k,
-                  (thisIndex.z << 1)+k, (thisIndex.y << 1)+j);
-            }
-          }
-        }
-      }
-    }
-
-    for(int i = 0; i < 2; i++) {
-      for(int j = 0; j < 2; j++)
-      {
-        delete AInfo[i][j];
-        delete BInfo[i][j];
+        CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
+          ABlock->A[BLOCK_INDEX(i, k, 0, 0, blocksize)]
+          *BBlock->A[BLOCK_INDEX(k, j, 0, 0, blocksize)];
       }
     }
   }
-#endif
 
-  DEBUG("tier %d ME(%d,%d,%d) contribute\n", tier, thisIndex.x, thisIndex.y,
-      thisIndex.z);
   contribute(cb);
 }
 
@@ -378,10 +151,8 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
  */
 void MultiplyElement::storeBack (CkCallback &cb)
 {
-#ifdef DEBUG_OUTPUT
-  DEBUG("tier %d ME(%d,%d,%d) storing back\n", tier, thisIndex.x, thisIndex.y, thisIndex.z);
-  printDense(blocksize, CResult);
-#endif
+  DEBUG("tier %d ME(%d,%d,%d) storing in C\n", tier, thisIndex.x, thisIndex.y,
+      thisIndex.z);
 
   if(CResult != NULL)
   {
@@ -393,21 +164,6 @@ void MultiplyElement::storeBack (CkCallback &cb)
   }
 
   contribute(cb);
-}
-
-/** Print a MultiplyElement.
- */
-void MultiplyElement::print (std::string tag)
-{
-  INFO("tier %d ME(%d,%d,%d) [%s] CResult = %p\n", tier, thisIndex.x, thisIndex.y,
-      thisIndex.z, tag.c_str(), CResult);
-}
-
-/** Get the number of products performed, i.e. the complexity of the multiply.
- */
-void MultiplyElement::getComplexity (CkCallback &cb)
-{
-  contribute(sizeof(int), &numberCalls, CkReduction::sum_int, cb);
 }
 
 #include "multiplyelement.def.h"

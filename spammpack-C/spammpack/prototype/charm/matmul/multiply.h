@@ -9,8 +9,6 @@
 #ifndef __MULTIPLY_H
 #define __MULTIPLY_H
 
-#include "multiplyelement.h"
-
 #include "multiply.decl.h"
 
 /** A multiplication. */
@@ -18,23 +16,24 @@ class Multiply : public CBase_Multiply
 {
   private:
 
-    /** The tree depth of the matrix. */
-    int depth;
+    /** Matrix A. */
+    CProxy_Matrix A;
 
-    /** The convolution. A 3D space filling curve in the product space, one
-     * per tier. */
-    CProxy_MultiplyElement *convolution;
+    /** Matrix B. */
+    CProxy_Matrix B;
 
-    /** A callback for reductions. */
-    CkCallback cb;
+    /** Matrix C. */
+    CProxy_Matrix C;
+
+    /** The convolution. */
+    CProxy_MultiplyElement convolution;
 
   public:
 
-    Multiply ();
-    void multiply (double tolerance, CProxy_Matrix A, CProxy_Matrix B,
-        CProxy_Matrix C, CkCallback &cb);
-    void getComplexity (CkCallback &cb);
-    void getComplexityDone (int complexity);
+    Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
+        int blocksize, int depth, CProxy_Node ANodes, CProxy_Node BNodes,
+        CProxy_Node CNodes);
+    void multiply (double tolerance, CkCallback &cb);
 };
 
 #endif

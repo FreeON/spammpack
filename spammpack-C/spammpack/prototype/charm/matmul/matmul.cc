@@ -1,10 +1,16 @@
+/** @file
+ *
+ * Multiply two matrices with threshold.
+ */
+
 #include "config.h"
 #include "matmul.decl.h"
-#include "logger.h"
 #include "messages.h"
 #include "timer.h"
-#include "multiply.h"
+#include "logger.h"
+#include "types.h"
 #include "index.h"
+
 #include <getopt.h>
 
 class Main : public CBase_Main
@@ -114,84 +120,65 @@ class Main : public CBase_Main
         int matrixType, double decayConstant, bool verify,
         double verifyTolerance)
     {
-      CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize, 0);
-      CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize, 0);
+      CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
+      CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
-      switch(matrixType)
+      DenseMatrixMsg *ADense = NULL;
+      DenseMatrixMsg *CExact = NULL;
+
+      if(verify)
       {
-        case full:
-          DEBUG("generating random matrix\n");
-          A.random(CkCallbackResumeThread());
-          break;
-
-        case decay:
-          DEBUG("generating matrix with decay\n");
-          A.decay(decayConstant, CkCallbackResumeThread());
-          break;
-
-        default:
-          ABORT("unknown matrix type\n");
-          break;
+        ADense = A.toDense();
+        CExact = C.toDense();
       }
 
-      DEBUG("setting C to zero\n");
-      C.zero(CkCallbackResumeThread());
+      MatrixInfoMsg *AInfo = A.info();
+      MatrixInfoMsg *CInfo = C.info();
 
-#ifdef DEBUG_OUTPUT
-      A.print(CkCallbackResumeThread());
-      C.print(CkCallbackResumeThread());
-#endif
+      CProxy_Multiply M = CProxy_Multiply::ckNew(A, A, C, AInfo->blocksize,
+          AInfo->depth, AInfo->nodes, AInfo->nodes, CInfo->nodes);
+
+      delete AInfo;
+      delete CInfo;
 
       CkPrintf("running %d iterations\n", numberIterations);
-      CProxy_Multiply M = CProxy_Multiply::ckNew(0);
       for(int iteration = 0; iteration < numberIterations; iteration++)
       {
         Timer t("iteration %d on %d PEs, multiplying C = A*A, tolerance = %e",
             iteration+1, CkNumPes(), tolerance);
-        M.multiply(tolerance, A, A, C, CkCallbackResumeThread());
+        M.multiply(tolerance, CkCallbackResumeThread());
         t.stop();
         CkPrintf(t.to_str());
-#ifdef DEBUG_OUTPUT
-        C.printLeafPes(CkCallbackResumeThread());
-#endif
-      }
 
-      M.getComplexity(CkCallbackResumeThread());
-
-#ifdef DEBUG_OUTPUT
-      C.print(CkCallbackResumeThread());
-#endif
-
-      if(verify)
-      {
-        CkPrintf("verifying result...\n");
-
-        DenseMatrixMsg *ADense = A.getDense();
-        DenseMatrixMsg *CDense = C.getDense();
-
-        int maxDiffRow;
-        int maxDiffColumn;
-        double maxAbsDiff = 0;
-
-        double *CExact = new double[N*N];
-        memset(CExact, 0, sizeof(double)*N*N);
-
-        for(int iteration = 0; iteration < numberIterations; iteration++) {
+        if(verify)
+        {
+          CkPrintf("calculating reference result\n");
           for(int i = 0; i < N; i++) {
             for(int j = 0; j < N; j++) {
               for(int k = 0; k < N; k++)
               {
-                CExact[BLOCK_INDEX(i, j, 0, 0, N)] += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
+                CExact->A[BLOCK_INDEX(i, j, 0, 0, N)] += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
                   *ADense->A[BLOCK_INDEX(k, j, 0, 0, N)];
               }
             }
           }
         }
+      }
+
+      if(verify)
+      {
+        CkPrintf("verifying result\n");
+
+        DenseMatrixMsg *CDense = C.toDense();
+
+        int maxDiffRow;
+        int maxDiffColumn;
+        double maxAbsDiff = 0;
 
         for(int i = 0; i < N; i++) {
           for(int j = 0; j < N; j++)
           {
-            double absDiff = fabs(CExact[BLOCK_INDEX(i, j, 0, 0, N)]
+            double absDiff = fabs(CExact->A[BLOCK_INDEX(i, j, 0, 0, N)]
                 -CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
 
             if(absDiff > maxAbsDiff)
@@ -205,22 +192,22 @@ class Main : public CBase_Main
 
         if(maxAbsDiff > verifyTolerance)
         {
-          double relDiff = (CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)] != 0
-              ? maxAbsDiff/CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]
+          double relDiff = (CExact->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)] != 0
+              ? maxAbsDiff/CExact->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]
               : 0);
           ABORT("result mismatch (abs. tolerance = %e, "
               "abs. diff = %e, rel. diff = %e), "
               "C(%d,%d): %e (reference) vs. %e (matmul)\n",
               verifyTolerance, maxAbsDiff, relDiff,
               maxDiffRow, maxDiffColumn,
-              CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)],
+              CExact->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)],
               CDense->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]);
         }
         CkPrintf("result verified\n");
 
-        delete CExact;
         delete ADense;
         delete CDense;
+        delete CExact;
       }
 
       DEBUG("done\n");

@@ -1,7 +1,7 @@
 mainmodule matmul
 {
-  extern module multiply;
   extern module matrix;
+  extern module multiply;
   extern module messages;
   mainchare Main
   {

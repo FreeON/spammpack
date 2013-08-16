@@ -6,39 +6,42 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
+#include "config.h"
 #include "messages.h"
 #include "logger.h"
-
-/** The constructor.
- *
- * @param x The double value.
- */
-DoubleMsg::DoubleMsg (double x)
-{
-  this->x = x;
-}
-
-/** The constructor.
- *
- * @param i The integer value.
- */
-IntMsg::IntMsg (int i)
-{
-  this->i = i;
-}
 
 /** The contructor.
  *
  * @param N The matrix size.
  * @param blocksize The submatrix size at the lowest tier.
  * @param depth The tree depth of the matrix.
- * @param tierNode The array of Node objects. There is one array per tier.
+ * @param NPadded The padded matrix size.
+ * @param nodes The array of Node objects. There is one array per tier.
  */
-MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth)
+MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth, int NPadded, CProxy_Node nodes)
 {
   this->N = N;
   this->blocksize = blocksize;
   this->depth = depth;
+  this->NPadded = NPadded;
+  this->nodes = nodes;
+}
+
+/** Compare with another MatrixInfoMsg object.
+ *
+ * @param b The message to compare to.
+ *
+ * @return Whether they are the same or not.
+ */
+bool MatrixInfoMsg::equal (MatrixInfoMsg *b)
+{
+  if(this->N != b->N)
+  {
+    INFO("mismatch in N\n");
+    return false;
+  }
+
+  return true;
 }
 
 /** The constructor.

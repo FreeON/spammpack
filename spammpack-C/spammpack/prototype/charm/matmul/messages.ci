@@ -1,16 +1,9 @@
 module messages
 {
+  message MatrixInfoMsg;
+  message NodeInfoMsg;
   message DenseMatrixMsg
   {
     double A[];
   };
-  message DoubleMsg;
-  message EmptyMsg;
-  message IntMsg;
-  message MatrixInfoMsg;
-  message NodeBlockMsg
-  {
-    double block[];
-  };
-  message NodeInfoMsg;
 };

@@ -11,8 +11,6 @@
 
 #include "multiplyelement.decl.h"
 
-#include <string>
-
 /** An element in the convolution curve. */
 class MultiplyElement : public CBase_MultiplyElement
 {
@@ -23,9 +21,6 @@ class MultiplyElement : public CBase_MultiplyElement
 
     /** The submatrix size at the lowest tier. */
     int blocksize;
-
-    /** A counter, counting how many times this MultiplyElement was called. */
-    int numberCalls;
 
     /** The tree depth of the matrix. */
     int depth;
@@ -42,38 +37,18 @@ class MultiplyElement : public CBase_MultiplyElement
     /** Matrix C. */
     CProxy_Node C;
 
-    /** A mask that indicates whether the 8 convolution elements below this
-     * tier exist or not. */
-    bool nextConvolutionExists[2][2][2];
-
-    /** The convolution below this tier. */
-    CProxy_MultiplyElement nextConvolution;
-
-    /** The A matrix below this tier. */
-    CProxy_Node nextA;
-
-    /** The B matrix below this tier. */
-    CProxy_Node nextB;
-
     /** The result matrix. */
     double *CResult;
-
-    /** A flag indicating whether this element was migrated. */
-    bool wasMigrated;
 
   public:
 
     MultiplyElement (int blocksize, int tier, int depth, CProxy_Node A,
         CProxy_Node B, CProxy_Node C);
-    ~MultiplyElement ();
     MultiplyElement (CkMigrateMessage *msg);
-    void setNextTier (CProxy_MultiplyElement nextConvolution,
-        CProxy_Node nextA, CProxy_Node nextB, CkCallback &cb);
-    virtual void pup (PUP::er &p);
+    ~MultiplyElement ();
+    void pup (PUP::er &p);
     void multiply (double tolerance, CkCallback &cb);
     void storeBack (CkCallback &cb);
-    void print (std::string tag);
-    void getComplexity (CkCallback &cb);
 };
 
 #endif

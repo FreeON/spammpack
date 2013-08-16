@@ -1,38 +1,8 @@
 #ifndef __MESSAGES_H
 #define __MESSAGES_H
 
-#include "node.h"
-
 #include "messages.decl.h"
-
-class DenseMatrixMsg : public CMessage_DenseMatrixMsg
-{
-  public:
-
-    double *A;
-};
-
-class DoubleMsg : public CMessage_DoubleMsg
-{
-  public:
-
-    double x;
-
-    DoubleMsg (double x);
-};
-
-class EmptyMsg : public CMessage_EmptyMsg
-{
-};
-
-class IntMsg : public CMessage_IntMsg
-{
-  public:
-
-    int i;
-
-    IntMsg (int i);
-};
+#include "node.h"
 
 class MatrixInfoMsg : public CMessage_MatrixInfoMsg
 {
@@ -47,17 +17,14 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
     /** The tree depth of the matrix. */
     int depth;
 
-    /** The tierNode. */
-    CProxy_Node tierNode;
+    /** The padded size of the matrix. */
+    int NPadded;
 
-    MatrixInfoMsg (int N, int blocksize, int depth);
-};
+    /** The Node matrix at tier == depth. */
+    CProxy_Node nodes;
 
-class NodeBlockMsg : public CMessage_NodeBlockMsg
-{
-  public:
-
-    double *block;
+    MatrixInfoMsg (int N, int blocksize, int depth, int NPadded, CProxy_Node nodes);
+    bool equal (MatrixInfoMsg *b);
 };
 
 class NodeInfoMsg : public CMessage_NodeInfoMsg
@@ -73,10 +40,14 @@ class NodeInfoMsg : public CMessage_NodeInfoMsg
     /** The square of the norm of this matrix block. */
     double norm_2;
 
-    /** The nodes of the next tier. */
-    CProxy_Node tierNode;
-
     NodeInfoMsg (int index, double norm, double norm_2);
+};
+
+class DenseMatrixMsg : public CMessage_DenseMatrixMsg
+{
+  public:
+
+    double *A;
 };
 
 #endif

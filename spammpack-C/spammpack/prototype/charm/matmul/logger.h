@@ -7,23 +7,27 @@
 
 #include <bitset>
 #include <string>
+#include <string.h>
 #include <sstream>
 #include <stdarg.h>
+#include <stdio.h>
 
 #ifdef DEBUG_OUTPUT
-#define DEBUG(format, ...) logger(__FILE__, __LINE__, "", format, ##__VA_ARGS__)
+#define DEBUG(format, ...) logger(__FILE__, __LINE__, __func__, "", format, ##__VA_ARGS__)
 #else
 #define DEBUG(format, ...)
 #endif
 
-#define INFO(format, ...) logger(__FILE__, __LINE__, "INFO", format, ##__VA_ARGS__)
-#define ABORT(format, ...) logger(__FILE__, __LINE__, "ERROR", format, ##__VA_ARGS__); CkExit()
+#define INFO(format, ...) logger(__FILE__, __LINE__, __func__, "INFO", format, ##__VA_ARGS__)
+#define ABORT(format, ...) logger(__FILE__, __LINE__, __func__, "ERROR", format, ##__VA_ARGS__); CkExit()
 
 #define FORMAT_LENGTH 2000
 #define STRING_LENGTH 5000
 
 inline
-void logger (const char *const filename, const int linenumber,
+void logger (const char *const filename,
+    const int linenumber,
+    const char *const function_name,
     const char *const tag,
     const char *const format, ...)
 {
@@ -33,12 +37,14 @@ void logger (const char *const filename, const int linenumber,
 
   if(strlen(tag) > 0)
   {
-    snprintf(new_format, FORMAT_LENGTH, "[%s:%d PE:%d %s] %s", filename, linenumber, CkMyPe(), tag, format);
+    snprintf(new_format, FORMAT_LENGTH, "[%s:%d (%s) PE:%d %s] %s", filename,
+        linenumber, function_name, CkMyPe(), tag, format);
   }
 
   else
   {
-    snprintf(new_format, FORMAT_LENGTH, "[%s:%d PE:%d] %s", filename, linenumber, CkMyPe(), format);
+    snprintf(new_format, FORMAT_LENGTH, "[%s:%d (%s) PE:%d] %s", filename,
+        linenumber, function_name, CkMyPe(), format);
   }
 
   va_start(ap, format);

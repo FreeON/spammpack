@@ -9,11 +9,7 @@
 #ifndef __NODE_H
 #define __NODE_H
 
-#include "types.h"
-
 #include "node.decl.h"
-
-#include <string>
 
 /** The Node class. */
 class Node : public CBase_Node
@@ -53,35 +49,18 @@ class Node : public CBase_Node
     /** The square of the norm of this matrix block. */
     double norm_2;
 
-    /** A flag to indicate whether tierNode is set. */
-    bool tierNodeSet;
-
-    /** The nodes for the next tier. */
-    CProxy_Node tierNode;
-
     /** The submatrix of size blocksize x blocksize. */
     double *block;
 
   public:
 
-    Node ();
     Node (int N, int depth, int blocksize, int tier);
-    ~Node ();
     Node (CkMigrateMessage *msg);
-    virtual void pup (PUP::er &p);
-    NodeBlockMsg * getBlock ();
-    DoubleMsg * get (int i, int j);
-    NodeInfoMsg * info ();
-    void printPE (CkCallback &cb);
-    void random (CkCallback &cb);
-    void zero (CkCallback &cb);
-    void set (int numberElements, double *A, CkCallback &cb);
-    void initialize (int initType, CkCallback &cb);
-    void printLeafPes (CkCallback &cb);
+    ~Node (void);
+    void pup (PUP::er &p);
+    NodeInfoMsg * info (void);
+    DenseMatrixMsg * getBlock (void);
     void add (int blocksize, double *A);
-    void updateNorms (CkCallback &cb);
-    void setTierNode (CProxy_Node tierNode, CkCallback &cb);
-    void print (std::string tag);
 };
 
 #endif

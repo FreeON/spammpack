@@ -3,19 +3,9 @@ module node
   extern module messages;
   array [2D] Node
   {
-    entry Node ();
     entry Node (int N, int depth, int blocksize, int tier);
-    entry [sync] NodeBlockMsg * getBlock ();
-    entry [sync] DoubleMsg * get (int i, int j);
-    entry [sync] NodeInfoMsg * info ();
-    entry void printPE (CkCallback &cb);
-    entry void random (CkCallback &cb);
-    entry void zero (CkCallback &cb);
-    entry void set (int numberElements, double A[numberElements], CkCallback &cb);
-    entry void initialize (int initType, CkCallback &cb);
-    entry void printLeafPes (CkCallback &cb);
+    entry [sync] NodeInfoMsg * info (void);
+    entry [sync] DenseMatrixMsg * getBlock (void);
     entry void add (int blocksize, double A[blocksize*blocksize]);
-    entry void updateNorms (CkCallback &cb);
-    entry void setTierNode (CProxy_Node tierNode, CkCallback &cb);
   };
 };

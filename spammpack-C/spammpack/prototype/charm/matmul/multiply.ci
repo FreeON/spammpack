@@ -2,12 +2,12 @@ module multiply
 {
   extern module matrix;
   extern module multiplyelement;
+  extern module messages;
   chare Multiply
   {
-    entry Multiply ();
-    entry [threaded] void multiply (double tolerance, CProxy_Matrix A,
-        CProxy_Matrix B, CProxy_Matrix C, CkCallback &cb);
-    entry void getComplexity (CkCallback &cb);
-    entry [reductiontarget] void getComplexityDone (int complexity);
+    entry Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
+        int blocksize, int depth, CProxy_Node ANodes, CProxy_Node BNodes,
+        CProxy_Node CNodes);
+    entry [threaded] void multiply (double tolerance, CkCallback &cb);
   };
 };
