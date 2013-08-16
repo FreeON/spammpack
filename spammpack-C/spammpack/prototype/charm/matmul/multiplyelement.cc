@@ -116,6 +116,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   NodeInfoMsg *AInfo = A(thisIndex.x, thisIndex.z).info();
   NodeInfoMsg *BInfo = B(thisIndex.z, thisIndex.y).info();
 
+#ifdef NO
   DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
       thisIndex.y, thisIndex.z);
 
@@ -141,6 +142,15 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       }
     }
   }
+#else
+  for(int i = 0; i < blocksize*blocksize*blocksize; i++)
+  {
+    if(rand()/(double) RAND_MAX < 0)
+    {
+      ABORT("here\n");
+    }
+  }
+#endif
 
   contribute(cb);
 }

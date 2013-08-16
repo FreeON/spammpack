@@ -17,7 +17,7 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     int blocksize, int depth, CProxy_Node ANodes, CProxy_Node BNodes,
     CProxy_Node CNodes)
 {
-  DEBUG("Multiply constructor\n");
+  INFO("Multiply constructor\n");
 
   this->A = A;
   this->B = B;
@@ -41,10 +41,10 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
  */
 void Multiply::multiply (double tolerance, CkCallback &cb)
 {
-  DEBUG("tolerance = %e\n", tolerance);
+  INFO("tolerance = %e\n", tolerance);
   convolution.multiply(tolerance, CkCallbackResumeThread());
 
-  DEBUG("storeBack\n");
+  INFO("storeBack\n");
   convolution.storeBack(CkCallbackResumeThread());
 
   cb.send();
