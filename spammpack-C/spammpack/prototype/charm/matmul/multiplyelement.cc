@@ -128,22 +128,28 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   CResult = new double[blocksize*blocksize];
   memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
-  DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
-  DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
+  //DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
+  //DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
+
+  double *ADense = new double[blocksize*blocksize];
+  double *BDense = new double[blocksize*blocksize];
 
   for(int i = 0; i < blocksize; i++) {
     for(int j = 0; j < blocksize; j++) {
       for(int k = 0; k < blocksize; k++)
       {
         CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
-          ABlock->A[BLOCK_INDEX(i, k, 0, 0, blocksize)]
-          *ABlock->A[BLOCK_INDEX(k, j, 0, 0, blocksize)];
+          ADense[BLOCK_INDEX(i, k, 0, 0, blocksize)]
+          *BDense[BLOCK_INDEX(k, j, 0, 0, blocksize)];
       }
     }
   }
 
-  delete ABlock;
-  delete BBlock;
+  //delete ABlock;
+  //delete BBlock;
+
+  delete[] ADense;
+  delete[] BDense;
 
   contribute(cb);
 }
