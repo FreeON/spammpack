@@ -1,0 +1,19 @@
+mainmodule migration
+{
+  message IntMsg;
+  array [1D] Data
+  {
+    entry Data (void);
+    entry [sync] IntMsg * info (void);
+  };
+  array [1D] Work
+  {
+    entry Work (CProxy_Data stuff);
+    entry [threaded] void doSomething (CkCallback &cb);
+  };
+  mainchare Main
+  {
+    entry Main (CkArgMsg *msg);
+    entry [threaded] void run (void);
+  };
+};

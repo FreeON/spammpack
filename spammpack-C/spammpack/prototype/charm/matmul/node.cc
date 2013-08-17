@@ -123,7 +123,14 @@ DenseMatrixMsg * Node::getBlock (void)
 {
   DEBUG("Node(%d,%d) getting block\n", thisIndex.x, thisIndex.y);
   DenseMatrixMsg *m = new (blocksize*blocksize) DenseMatrixMsg();
-  memcpy(m->A, block, sizeof(double)*blocksize*blocksize);
+  if(block != NULL)
+  {
+    memcpy(m->A, block, sizeof(double)*blocksize*blocksize);
+  }
+  else
+  {
+    memset(m->A, 0, sizeof(double)*blocksize*blocksize);
+  }
   return m;
 }
 

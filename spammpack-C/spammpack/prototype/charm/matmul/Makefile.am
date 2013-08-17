@@ -58,7 +58,7 @@ run-local : matmul$(EXEEXT)
 	done
 
 run-LB : matmul$(EXEEXT)
-	./charmrun +p4 matmul -N 1024 -b 128 --verify +LBDebug
+	./charmrun +p4 matmul -N 2048 -b 256 --verify +LBDebug
 
 valgrind : matmul$(EXEEXT)
 	valgrind --log-file=valgrind.%p.log \
