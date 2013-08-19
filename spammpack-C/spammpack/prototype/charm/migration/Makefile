@@ -7,7 +7,7 @@ migration.decl.h : migration.ci
 run-serial : migration
 	./charmrun +p1 migration +LBDebug
 
-run-parallel : migration
+run : migration
 	./charmrun +p4 migration +LBDebug
 
 dist :

@@ -1,9 +1,6 @@
 mainmodule migration
 {
-  message DataMsg
-  {
-    double A[];
-  };
+  message DataMsg;
   array [1D] Data
   {
     entry Data (void);
