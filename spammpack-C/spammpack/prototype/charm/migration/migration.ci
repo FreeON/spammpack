@@ -11,7 +11,7 @@ mainmodule migration
   };
   array [1D] Work
   {
-    entry Work (CProxy_Data stuff);
+    entry Work (CProxy_Data data);
     entry [threaded] void doSomething (CkCallback &cb);
   };
   mainchare Main

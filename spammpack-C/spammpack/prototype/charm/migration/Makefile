@@ -4,8 +4,10 @@ migration : migration.cc migration.decl.h
 migration.decl.h : migration.ci
 	charmc $<
 
-run : migration
+run-serial : migration
 	./charmrun +p1 migration +LBDebug
+
+run-parallel : migration
 	./charmrun +p4 migration +LBDebug
 
 dist :

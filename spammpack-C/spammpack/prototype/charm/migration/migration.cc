@@ -19,7 +19,7 @@ class Data : public CBase_Data
 
     Data (void)
     {
-      numberElements = (int) floor(rand()/(double) RAND_MAX * 3000 + 100000);
+      numberElements = (int) floor(rand()/(double) RAND_MAX * 3000 + 10000);
       A = new double[numberElements];
       for(int i = 0; i < numberElements; i++)
       {
@@ -28,6 +28,11 @@ class Data : public CBase_Data
     }
 
     Data (CkMigrateMessage *msg) {}
+
+    ~Data (void)
+    {
+      delete[] A;
+    }
 
     DataMsg * info (void)
     {
@@ -41,18 +46,10 @@ class Data : public CBase_Data
     {
       CBase_Data::pup(p);
       p|numberElements;
-      if(numberElements > 0)
-      {
-        if(p.isUnpacking())
-        {
-          A = new double[numberElements];
-        }
-        PUParray(p, A, numberElements);
-      }
-      else
-      {
-        if(p.isUnpacking()) { A = NULL; }
-      }
+      if(p.isUnpacking()) { A = new double[numberElements]; }
+      /* Following the example in section 6.3, we pup the A array even if
+       * numberElements == 0. */
+      PUParray(p, A, numberElements);
     }
 };
 
@@ -61,38 +58,54 @@ class Work : public CBase_Work
   private:
 
     int numberElements;
-    double *data;
-    CProxy_Data stuff;
+    double *A;
+    CProxy_Data data;
 
   public:
 
-    Work (CProxy_Data stuff)
+    Work (CProxy_Data data)
     {
       numberElements = 0;
-      data = NULL;
-      this->stuff = stuff;
+      A = NULL;
+      this->data = data;
     }
 
     Work (CkMigrateMessage *msg) {}
 
     ~Work (void)
     {
-      delete[] data;
+      delete[] A;
     }
 
     void doSomething (CkCallback &cb)
     {
-      DataMsg *msg = stuff(thisIndex).info();
+      DataMsg *msg = data(thisIndex).info();
 
       if(numberElements == 0)
       {
         numberElements = msg->numberElements;
-        data = new double[numberElements];
+        A = new double[numberElements];
+      }
+
+      else
+      {
+        /* Sanity check. */
+        if(numberElements != msg->numberElements)
+        {
+          CkPrintf("mismatching numberElements\n");
+          CkExit();
+        }
       }
 
       for(int i = 0; i < numberElements; i++)
       {
-        data[i] = msg->A[i]+rand()/(double) RAND_MAX;
+        A[i] = msg->A[i]+rand()/(double) RAND_MAX;
+        /* Do some extra work. */
+        if(A[i] < 0) { CkExit(); }
+        for(int j = 0; j < 100; j++)
+        {
+          if(sin(j) < -2) { CkExit(); }
+        }
       }
 
       delete msg;
@@ -104,19 +117,11 @@ class Work : public CBase_Work
     {
       CBase_Work::pup(p);
       p|numberElements;
-      if(numberElements > 0)
-      {
-        if(p.isUnpacking())
-        {
-          data = new double[numberElements];
-        }
-        PUParray(p, data, numberElements);
-      }
-
-      else
-      {
-        if(p.isUnpacking()) { data = NULL; }
-      }
+      if(p.isUnpacking()) { A = new double[numberElements]; }
+      /* Following the example in section 6.3, we pup the A array even if
+       * numberElements == 0. */
+      PUParray(p, A, numberElements);
+      p|data;
     }
 };
 
@@ -140,7 +145,13 @@ class Main : public CBase_Main
 
       data = CProxy_Data::ckNew(N);
       work = CProxy_Work::ckNew(data, N);
-      work.doSomething(CkCallbackResumeThread());
+
+      for(int iteration = 0; iteration < 10; iteration++)
+      {
+        CkPrintf("iteration %d\n", iteration+1);
+        work.doSomething(CkCallbackResumeThread());
+      }
+      CkPrintf("done\n");
       CkExit();
     }
 };
