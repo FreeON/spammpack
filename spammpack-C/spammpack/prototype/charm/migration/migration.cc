@@ -1,35 +1,58 @@
 #include "migration.decl.h"
 
-class IntMsg : public CMessage_IntMsg
+class DataMsg : public CMessage_DataMsg
 {
   public:
 
-    int i;
-
-    IntMsg (int i)
-    {
-      this->i = i;
-    }
+    int numberElements;
+    double *A;
 };
 
 class Data : public CBase_Data
 {
   private:
 
-    int i;
+    int numberElements;
+    double *A;
 
   public:
 
     Data (void)
     {
-      i = thisIndex;
+      numberElements = (int) floor(rand()/(double) RAND_MAX * 3000 + 100000);
+      A = new double[numberElements];
+      for(int i = 0; i < numberElements; i++)
+      {
+        A[i] = rand()/(double) RAND_MAX;
+      }
     }
 
     Data (CkMigrateMessage *msg) {}
 
-    IntMsg * info (void)
+    DataMsg * info (void)
     {
-      return new IntMsg(i);
+      DataMsg *m = new (numberElements) DataMsg();
+      memcpy(m->A, A, numberElements*sizeof(double));
+      m->numberElements = numberElements;
+      return m;
+    }
+
+    void pup (PUP::er &p)
+    {
+      CBase_Data::pup(p);
+      p|numberElements;
+      if(numberElements > 0)
+      {
+        if(p.isUnpacking())
+        {
+          A = new double[numberElements];
+        }
+        PUParray(p, A, numberElements);
+      }
+      else
+      {
+        if(p.isUnpacking()) { A = NULL; }
+      }
     }
 };
 
@@ -59,30 +82,20 @@ class Work : public CBase_Work
 
     void doSomething (CkCallback &cb)
     {
-#define SUSPEND
-#ifdef SUSPEND
-      /* When this code block is used, the code segfaults during object
-       * migration when the load balancer kicks in. My best guess here is that
-       * since the call to Data::info() suspends this chare, it can sometimes
-       * accidentally happen that the load balancer migrates the chare before
-       * it continues.
-       */
-      IntMsg *msg = stuff(thisIndex).info();
-      delete msg;
-#endif
+      DataMsg *msg = stuff(thisIndex).info();
 
       if(numberElements == 0)
       {
-        numberElements = (int) (floor(rand()/(double) RAND_MAX * 100 + 100000));
+        numberElements = msg->numberElements;
         data = new double[numberElements];
       }
 
       for(int i = 0; i < numberElements; i++)
       {
-        data[i] = rand()/(double) RAND_MAX;
-        if(data[i] < 0) { CkExit(); }
-        data[i] = sqrt(data[i]);
+        data[i] = msg->A[i]+rand()/(double) RAND_MAX;
       }
+
+      delete msg;
 
       contribute(cb);
     }

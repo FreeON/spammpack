@@ -1,10 +1,13 @@
 mainmodule migration
 {
-  message IntMsg;
+  message DataMsg
+  {
+    double A[];
+  };
   array [1D] Data
   {
     entry Data (void);
-    entry [sync] IntMsg * info (void);
+    entry [sync] DataMsg * info (void);
   };
   array [1D] Work
   {
