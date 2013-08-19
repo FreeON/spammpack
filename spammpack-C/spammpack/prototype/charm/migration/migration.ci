@@ -4,6 +4,7 @@ mainmodule migration
   {
     entry Work (void);
     entry [threaded] void doSomething (CkCallback &cb);
+    //entry void doSomething (CkCallback &cb);
   };
   mainchare Main
   {

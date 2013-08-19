@@ -9,12 +9,14 @@ class Work : public CBase_Work
 {
   private:
 
+    unsigned int seed;
     double A[NUMBER_ELEMENTS];
 
   public:
 
     Work (void)
     {
+      seed = 1;
       memset(A, 0, NUMBER_ELEMENTS*sizeof(double));
     }
 
@@ -24,7 +26,7 @@ class Work : public CBase_Work
     {
       for(int i = 0; i < NUMBER_ELEMENTS; i++)
       {
-        A[i] += rand()/(double) RAND_MAX;
+        A[i] += rand_r(&seed)/(double) RAND_MAX;
         if(A[i] < 0) { CkExit(); }
         A[i] = sqrt(A[i]);
         for(int i = 0; i < 10; i++)
@@ -38,6 +40,7 @@ class Work : public CBase_Work
     void pup (PUP::er &p)
     {
       CBase_Work::pup(p);
+      p|seed;
       PUParray(p, A, NUMBER_ELEMENTS);
     }
 };
