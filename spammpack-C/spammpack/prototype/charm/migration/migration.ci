@@ -1,20 +1,8 @@
 mainmodule migration
 {
-#ifdef WITH_DATA
-  message DataMsg;
-  array [1D] Data
-  {
-    entry Data (void);
-    entry [sync] DataMsg * info (void);
-  };
-#endif
   array [1D] Work
   {
-#ifdef WITH_DATA
-    entry Work (CProxy_Data data);
-#else
     entry Work (void);
-#endif
     entry [threaded] void doSomething (CkCallback &cb);
   };
   mainchare Main

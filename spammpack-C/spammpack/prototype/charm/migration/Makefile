@@ -1,10 +1,8 @@
-#EXTRA_CPPFLAGS = -DWITH_DATA
-
 migration : migration.cc migration.decl.h
-	charmc -language charm++ -balancer GreedyCommLB $(EXTRA_CPPFLAGS) -o $@ $< -lm
+	charmc -language charm++ -balancer GreedyCommLB -o $@ $< -lm
 
 migration.decl.h : migration.ci
-	charmc -preprocess $<
+	charmc $<
 
 run-serial : migration
 	./charmrun +p1 migration +LBDebug
