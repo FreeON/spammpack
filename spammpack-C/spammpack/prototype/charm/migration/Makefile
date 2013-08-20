@@ -12,3 +12,6 @@ run : migration
 
 dist :
 	tar cvf - Makefile migration.c? | bzip2 > migration.tar.bz2
+
+clean :
+	rm -f migration.{decl,def}.h charmrun migration
