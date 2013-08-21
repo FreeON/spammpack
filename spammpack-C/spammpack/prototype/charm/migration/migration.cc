@@ -24,6 +24,7 @@ class Work : public CBase_Work
 
     void doSomething (CkCallback &cb)
     {
+      /* Do some work. */
       for(int i = 0; i < NUMBER_ELEMENTS; i++)
       {
         A[i] += rand_r(&seed)/(double) RAND_MAX;
@@ -34,6 +35,7 @@ class Work : public CBase_Work
           if(sin(i) < -2) { CkExit(); }
         }
       }
+      /* Done. */
       contribute(cb);
     }
 
@@ -61,9 +63,7 @@ class Main : public CBase_Main
     void run (void)
     {
       const int N = 1000;
-
       work = CProxy_Work::ckNew(N);
-
       for(int iteration = 0; iteration < 50; iteration++)
       {
         CkPrintf("iteration %d\n", iteration+1);

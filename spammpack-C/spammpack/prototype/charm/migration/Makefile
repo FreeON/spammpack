@@ -1,8 +1,11 @@
+#CHARMC = charmc
+CHARMC = /var/tmp/charm-6.5.1/bin/charmc
+
 migration : migration.cc migration.decl.h
-	charmc -language charm++ -balancer GreedyCommLB -o $@ $< -lm
+	$(CHARMC) -language charm++ -balancer GreedyCommLB -o $@ $< -lm
 
 migration.decl.h : migration.ci
-	charmc $<
+	$(CHARMC) $<
 
 run-serial : migration
 	./charmrun +p1 migration +LBDebug
