@@ -1,6 +1,5 @@
 mainmodule migration
 {
-  initnode void setLBTiming (void);
   message DataMsg;
   array [1D] Data
   {
@@ -10,11 +9,11 @@ mainmodule migration
   array [1D] Work
   {
     entry Work (CProxy_Data data);
-    entry [threaded] void doSomething (CkCallback &cb);
+    entry [threaded] void doSomething (void);
   };
   mainchare Main
   {
     entry Main (CkArgMsg *msg);
-    entry [threaded] void iterate (void);
+    entry [reductiontarget] void done (int numberMismatchedPEs);
   };
 };

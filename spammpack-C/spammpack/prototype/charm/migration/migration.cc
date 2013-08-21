@@ -5,20 +5,17 @@
 
 #define NUMBER_ELEMENTS 100000
 
-void setLBTiming (void)
-{
-  TurnManualLBOn();
-}
-
 class DataMsg : public CMessage_DataMsg
 {
   public:
 
     int i;
+    int PE;
 
-    DataMsg (int i)
+    DataMsg (int i, int PE)
     {
       this->i = i;
+      this->PE = PE;
     }
 };
 
@@ -39,7 +36,7 @@ class Data : public CBase_Data
 
     DataMsg * info (void)
     {
-      return new DataMsg(numberElements);
+      return new DataMsg(numberElements, CkMyPe());
     }
 
     void pup (PUP::er &p)
@@ -53,6 +50,7 @@ class Work : public CBase_Work
 {
   private:
 
+    int mismatchedPE;
     unsigned int seed;
     double A[NUMBER_ELEMENTS];
     CProxy_Data data;
@@ -69,10 +67,13 @@ class Work : public CBase_Work
 
     Work (CkMigrateMessage *msg) {}
 
-    void doSomething (CkCallback &cb)
+    void doSomething ()
     {
       /* Get some data. */
       DataMsg *msg = data(thisIndex).info();
+
+      /* Check PE. */
+      mismatchedPE = (CkMyPe() == msg->PE ? 0 : 1);
 
       /* Do some work. */
       for(int i = 0; i < NUMBER_ELEMENTS; i++)
@@ -90,15 +91,21 @@ class Work : public CBase_Work
       delete msg;
 
       /* Done. */
-      contribute(cb);
+      AtSync();
     }
 
     void pup (PUP::er &p)
     {
       CBase_Work::pup(p);
+      p|mismatchedPE;
       p|seed;
       PUParray(p, A, NUMBER_ELEMENTS);
       p|data;
+    }
+
+    void ResumeFromSync (void)
+    {
+      contribute(sizeof(int), &mismatchedPE, CkReduction::sum_int);
     }
 };
 
@@ -106,6 +113,8 @@ class Main : public CBase_Main
 {
   private:
 
+    int iteration;
+    int maxIteration;
     CProxy_Data data;
     CProxy_Work work;
 
@@ -117,21 +126,32 @@ class Main : public CBase_Main
 
       data = CProxy_Data::ckNew(N);
       work = CProxy_Work::ckNew(data, N);
+      work.ckSetReductionClient(new CkCallback(CkReductionTarget(Main, done), thisProxy));
 
-      thisProxy.iterate();
+      iteration = 0;
+      maxIteration = 50;
+
+      /* First iteration. */
+      CkPrintf("iteration %d\n", iteration+1);
+      work.doSomething();
     }
 
-    void iterate (void)
+    void done (int numberMismatchedPEs)
     {
-      for(int iteration = 0; iteration < 50; iteration++)
+      CkPrintf("iteration %d done (%d mismatched PEs)\n", iteration+1,
+          numberMismatchedPEs);
+      iteration++;
+      if(iteration < maxIteration)
       {
         CkPrintf("iteration %d\n", iteration+1);
-        work.doSomething(CkCallbackResumeThread());
-        StartLB();
-        CkWaitQD();
+        work.doSomething();
       }
-      CkPrintf("done\n");
-      CkExit();
+
+      else
+      {
+        CkPrintf("done\n");
+        CkExit();
+      }
     }
 };
 
