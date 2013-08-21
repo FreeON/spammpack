@@ -3,12 +3,11 @@ mainmodule migration
   array [1D] Work
   {
     entry Work (void);
-    entry [threaded] void doSomething (CkCallback &cb);
-    //entry void doSomething (CkCallback &cb);
+    entry [threaded] void doSomething (void);
   };
   mainchare Main
   {
     entry Main (CkArgMsg *msg);
-    entry [threaded] void run (void);
+    entry [reductiontarget] void done (void);
   };
 };

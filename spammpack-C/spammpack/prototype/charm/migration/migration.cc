@@ -18,11 +18,12 @@ class Work : public CBase_Work
     {
       seed = 1;
       memset(A, 0, NUMBER_ELEMENTS*sizeof(double));
+      usesAtSync = true;
     }
 
     Work (CkMigrateMessage *msg) {}
 
-    void doSomething (CkCallback &cb)
+    void doSomething ()
     {
       /* Do some work. */
       for(int i = 0; i < NUMBER_ELEMENTS; i++)
@@ -36,7 +37,7 @@ class Work : public CBase_Work
         }
       }
       /* Done. */
-      contribute(cb);
+      AtSync();
     }
 
     void pup (PUP::er &p)
@@ -45,32 +46,53 @@ class Work : public CBase_Work
       p|seed;
       PUParray(p, A, NUMBER_ELEMENTS);
     }
+
+    void ResumeFromSync (void)
+    {
+      contribute();
+    }
 };
 
 class Main : public CBase_Main
 {
   private:
 
+    int iteration;
+    int maxIteration;
     CProxy_Work work;
 
   public:
 
     Main (CkArgMsg *msg)
     {
-      thisProxy.run();
+      const int N = 1000;
+
+      work = CProxy_Work::ckNew(N);
+      work.ckSetReductionClient(new CkCallback(CkReductionTarget(Main, done), thisProxy));
+
+      iteration = 0;
+      maxIteration = 50;
+
+      /* First iteration. */
+      CkPrintf("iteration %d\n", iteration+1);
+      work.doSomething();
     }
 
-    void run (void)
+    void done (void)
     {
-      const int N = 1000;
-      work = CProxy_Work::ckNew(N);
-      for(int iteration = 0; iteration < 50; iteration++)
+      CkPrintf("iteration %d done\n", iteration+1);
+      iteration++;
+      if(iteration < maxIteration)
       {
         CkPrintf("iteration %d\n", iteration+1);
-        work.doSomething(CkCallbackResumeThread());
+        work.doSomething();
       }
-      CkPrintf("done\n");
-      CkExit();
+
+      else
+      {
+        CkPrintf("done\n");
+        CkExit();
+      }
     }
 };
 
