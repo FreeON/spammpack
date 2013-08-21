@@ -2,7 +2,7 @@ CHARMC = charmc
 #CHARMC = /var/tmp/charm-6.5.1/bin/charmc
 
 migration : migration.cc migration.decl.h
-	$(CHARMC) -language charm++ -balancer GreedyCommLB -o $@ $< -lm
+	$(CHARMC) -language charm++ -module CommonLBs -balancer GreedyCommLB -o $@ $< -lm
 
 migration.decl.h : migration.ci
 	$(CHARMC) $<

@@ -5,6 +5,11 @@
 
 #define NUMBER_ELEMENTS 100000
 
+void setLBTiming (void)
+{
+  TurnManualLBOn();
+}
+
 class DataMsg : public CMessage_DataMsg
 {
   public:
@@ -64,7 +69,7 @@ class Work : public CBase_Work
 
     Work (CkMigrateMessage *msg) {}
 
-    void doSomething ()
+    void doSomething (CkCallback &cb)
     {
       /* Get some data. */
       DataMsg *msg = data(thisIndex).info();
@@ -85,7 +90,7 @@ class Work : public CBase_Work
       delete msg;
 
       /* Done. */
-      AtSync();
+      contribute(cb);
     }
 
     void pup (PUP::er &p)
@@ -95,19 +100,12 @@ class Work : public CBase_Work
       PUParray(p, A, NUMBER_ELEMENTS);
       p|data;
     }
-
-    void ResumeFromSync (void)
-    {
-      contribute();
-    }
 };
 
 class Main : public CBase_Main
 {
   private:
 
-    int iteration;
-    int maxIteration;
     CProxy_Data data;
     CProxy_Work work;
 
@@ -119,31 +117,21 @@ class Main : public CBase_Main
 
       data = CProxy_Data::ckNew(N);
       work = CProxy_Work::ckNew(data, N);
-      work.ckSetReductionClient(new CkCallback(CkReductionTarget(Main, done), thisProxy));
 
-      iteration = 0;
-      maxIteration = 50;
-
-      /* First iteration. */
-      CkPrintf("iteration %d\n", iteration+1);
-      work.doSomething();
+      thisProxy.iterate();
     }
 
-    void done (void)
+    void iterate (void)
     {
-      CkPrintf("iteration %d done\n", iteration+1);
-      iteration++;
-      if(iteration < maxIteration)
+      for(int iteration = 0; iteration < 50; iteration++)
       {
         CkPrintf("iteration %d\n", iteration+1);
-        work.doSomething();
+        work.doSomething(CkCallbackResumeThread());
+        StartLB();
+        CkWaitQD();
       }
-
-      else
-      {
-        CkPrintf("done\n");
-        CkExit();
-      }
+      CkPrintf("done\n");
+      CkExit();
     }
 };
 

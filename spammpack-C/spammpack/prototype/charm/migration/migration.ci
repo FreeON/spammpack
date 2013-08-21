@@ -1,5 +1,6 @@
 mainmodule migration
 {
+  initnode void setLBTiming (void);
   message DataMsg;
   array [1D] Data
   {
@@ -9,11 +10,11 @@ mainmodule migration
   array [1D] Work
   {
     entry Work (CProxy_Data data);
-    entry [threaded] void doSomething (void);
+    entry [threaded] void doSomething (CkCallback &cb);
   };
   mainchare Main
   {
     entry Main (CkArgMsg *msg);
-    entry [reductiontarget] void done (void);
+    entry [threaded] void iterate (void);
   };
 };
