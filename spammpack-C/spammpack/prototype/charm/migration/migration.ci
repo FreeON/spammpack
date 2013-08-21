@@ -1,8 +1,14 @@
 mainmodule migration
 {
+  message DataMsg;
+  array [1D] Data
+  {
+    entry Data (void);
+    entry [sync] DataMsg * info (void);
+  };
   array [1D] Work
   {
-    entry Work (void);
+    entry Work (CProxy_Data data);
     entry [threaded] void doSomething (void);
   };
   mainchare Main
