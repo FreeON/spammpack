@@ -3,7 +3,17 @@
 #include <math.h>
 #include <stdlib.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #define NUMBER_ELEMENTS 100000
+
+void setManualLB (void)
+{
+  CkPrintf("(%d) turning manual LB on\n", CkMyPe());
+  TurnManualLBOn();
+}
 
 class DataMsg : public CMessage_DataMsg
 {
@@ -67,7 +77,7 @@ class Work : public CBase_Work
 
     Work (CkMigrateMessage *msg) {}
 
-    void doSomething ()
+    void doSomething (CkCallback &cb)
     {
       /* Get some data. */
       DataMsg *msg = data(thisIndex).info();
@@ -76,8 +86,10 @@ class Work : public CBase_Work
       mismatchedPE = (CkMyPe() == msg->PE ? 0 : 1);
 
       /* Do some work. */
+#pragma omp parallel for
       for(int i = 0; i < NUMBER_ELEMENTS; i++)
       {
+        CkPrintf("(%d) i = %d, running on thread %d\n", thisIndex, i, omp_get_thread_num());
         A[i] += rand_r(&seed)/(double) RAND_MAX;
         if(A[i] < 0) { CkExit(); }
         A[i] = sqrt(A[i]);
@@ -91,7 +103,7 @@ class Work : public CBase_Work
       delete msg;
 
       /* Done. */
-      AtSync();
+      contribute(cb);
     }
 
     void pup (PUP::er &p)
@@ -102,19 +114,12 @@ class Work : public CBase_Work
       PUParray(p, A, NUMBER_ELEMENTS);
       p|data;
     }
-
-    void ResumeFromSync (void)
-    {
-      contribute(sizeof(int), &mismatchedPE, CkReduction::sum_int);
-    }
 };
 
 class Main : public CBase_Main
 {
   private:
 
-    int iteration;
-    int maxIteration;
     CProxy_Data data;
     CProxy_Work work;
 
@@ -124,34 +129,29 @@ class Main : public CBase_Main
     {
       const int N = 1000;
 
+#ifdef _OPENMP
+      CkPrintf("OpenMP hybrid on %d OpenMP nodes\n", omp_get_num_threads());
+#endif
+
       data = CProxy_Data::ckNew(N);
       work = CProxy_Work::ckNew(data, N);
-      work.ckSetReductionClient(new CkCallback(CkReductionTarget(Main, done), thisProxy));
-
-      iteration = 0;
-      maxIteration = 50;
-
-      /* First iteration. */
-      CkPrintf("iteration %d\n", iteration+1);
-      work.doSomething();
+      thisProxy.iterate();
     }
 
-    void done (int numberMismatchedPEs)
+    void iterate (void)
     {
-      CkPrintf("iteration %d done (%d mismatched PEs)\n", iteration+1,
-          numberMismatchedPEs);
-      iteration++;
-      if(iteration < maxIteration)
+      LBDatabase *db = LBDatabaseObj();
+
+      for(int iteration = 0; iteration < 5; iteration++)
       {
         CkPrintf("iteration %d\n", iteration+1);
-        work.doSomething();
+        work.doSomething(CkCallbackResumeThread());
+        //db->StartLB();
+        //CkWaitQD();
       }
 
-      else
-      {
-        CkPrintf("done\n");
-        CkExit();
-      }
+      CkPrintf("done\n");
+      CkExit();
     }
 };
 
