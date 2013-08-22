@@ -6,20 +6,20 @@ AC_ARG_VAR([CHARMC], [Charm++ compiler command])
 if test -z "${CHARMC}"; then
   CHARMC="charmc"
 fi
-AC_CHECK_PROG([CHARMC],
-              ["${CHARMC}"],
-              ["${CHARMC}"],
-              [undefined],
-              [PATH = $(dirname "${CHARMC}") ])
-if test "${CHARMC}" = "undefined"; then
-  AC_MSG_FAILURE([need CHARMC])
-fi
+CXX="${CHARMC}"
 
 AC_PROG_CC
-AC_PROG_CXX([${CHARMC}])
+AC_PROG_CXX
 
-AC_LANG(C++)
+dnl Test everything else with the C compiler. The CHARMC wrapper can not be
+dnl tested with standard autoconf macros.
+AC_LANG(C)
 
+dnl Test for OpenMP flags.
+AC_OPENMP
+CXXFLAGS="${CXXFLAGS:+${CXXFLAGS} }${OPENMP_CFLAGS}"
+
+dnl Test for some libraries.
 AC_SEARCH_LIBS([sqrt], [m])
 
 AC_CONFIG_FILES([Makefile])
