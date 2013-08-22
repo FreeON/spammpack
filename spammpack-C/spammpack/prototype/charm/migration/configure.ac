@@ -15,10 +15,6 @@ dnl Test everything else with the C compiler. The CHARMC wrapper can not be
 dnl tested with standard autoconf macros.
 AC_LANG(C)
 
-dnl Test for OpenMP flags.
-AC_OPENMP
-CXXFLAGS="${CXXFLAGS:+${CXXFLAGS} }${OPENMP_CFLAGS}"
-
 dnl Test for some libraries.
 AC_SEARCH_LIBS([sqrt], [m])
 

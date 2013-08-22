@@ -3,10 +3,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #define NUMBER_ELEMENTS 100000
 
 void setManualLB (void)
@@ -86,10 +82,8 @@ class Work : public CBase_Work
       mismatchedPE = (CkMyPe() == msg->PE ? 0 : 1);
 
       /* Do some work. */
-#pragma omp parallel for
       for(int i = 0; i < NUMBER_ELEMENTS; i++)
       {
-        CkPrintf("(%d) i = %d, running on thread %d\n", thisIndex, i, omp_get_thread_num());
         A[i] += rand_r(&seed)/(double) RAND_MAX;
         if(A[i] < 0) { CkExit(); }
         A[i] = sqrt(A[i]);
@@ -129,10 +123,6 @@ class Main : public CBase_Main
     {
       const int N = 1000;
 
-#ifdef _OPENMP
-      CkPrintf("OpenMP hybrid on %d OpenMP nodes\n", omp_get_num_threads());
-#endif
-
       data = CProxy_Data::ckNew(N);
       work = CProxy_Work::ckNew(data, N);
       thisProxy.iterate();
@@ -146,8 +136,8 @@ class Main : public CBase_Main
       {
         CkPrintf("iteration %d\n", iteration+1);
         work.doSomething(CkCallbackResumeThread());
-        //db->StartLB();
-        //CkWaitQD();
+        db->StartLB();
+        CkWaitQD();
       }
 
       CkPrintf("done\n");
