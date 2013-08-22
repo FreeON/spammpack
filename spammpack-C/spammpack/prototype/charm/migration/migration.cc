@@ -56,17 +56,18 @@ class Work : public CBase_Work
 {
   private:
 
-    int mismatchedPE;
     unsigned int seed;
     double A[NUMBER_ELEMENTS];
+    CProxy_Main mainProxy;
     CProxy_Data data;
 
   public:
 
-    Work (CProxy_Data data)
+    Work (CProxy_Main mainProxy, CProxy_Data data)
     {
       seed = 1;
       memset(A, 0, NUMBER_ELEMENTS*sizeof(double));
+      this->mainProxy = mainProxy;
       this->data = data;
       usesAtSync = true;
     }
@@ -79,7 +80,10 @@ class Work : public CBase_Work
       DataMsg *msg = data(thisIndex).info();
 
       /* Check PE. */
-      mismatchedPE = (CkMyPe() == msg->PE ? 0 : 1);
+      if(CkMyPe() != msg->PE)
+      {
+        mainProxy.addMismatched();
+      }
 
       /* Do some work. */
       for(int i = 0; i < NUMBER_ELEMENTS; i++)
@@ -103,9 +107,9 @@ class Work : public CBase_Work
     void pup (PUP::er &p)
     {
       CBase_Work::pup(p);
-      p|mismatchedPE;
       p|seed;
       PUParray(p, A, NUMBER_ELEMENTS);
+      p|mainProxy;
       p|data;
     }
 };
@@ -114,6 +118,7 @@ class Main : public CBase_Main
 {
   private:
 
+    int numberMismatched;
     CProxy_Data data;
     CProxy_Work work;
 
@@ -124,7 +129,7 @@ class Main : public CBase_Main
       const int N = 1000;
 
       data = CProxy_Data::ckNew(N);
-      work = CProxy_Work::ckNew(data, N);
+      work = CProxy_Work::ckNew(thisProxy, data, N);
       thisProxy.iterate();
     }
 
@@ -134,14 +139,21 @@ class Main : public CBase_Main
 
       for(int iteration = 0; iteration < 5; iteration++)
       {
-        CkPrintf("iteration %d\n", iteration+1);
+        CkPrintf("iteration %d, ", iteration+1);
+        numberMismatched = 0;
         work.doSomething(CkCallbackResumeThread());
+        CkPrintf("%d mismatched elements\n", numberMismatched);
         db->StartLB();
         CkWaitQD();
       }
 
       CkPrintf("done\n");
       CkExit();
+    }
+
+    void addMismatched (void)
+    {
+      numberMismatched++;
     }
 };
 
