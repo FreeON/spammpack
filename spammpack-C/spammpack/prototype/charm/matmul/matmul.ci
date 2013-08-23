@@ -1,5 +1,6 @@
 mainmodule matmul
 {
+  initnode void setLBMode (void);
   extern module matrix;
   extern module multiply;
   extern module messages;

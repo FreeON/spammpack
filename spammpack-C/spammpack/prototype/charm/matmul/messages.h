@@ -1,9 +1,18 @@
+/** @file
+ *
+ * The header file for the messages.
+ *
+ * @author Nicolas Bock <nicolas.bock@freeon.org>
+ * @author Matt Challacombe <matt.challacombe@freeon.org>
+ */
+
 #ifndef __MESSAGES_H
 #define __MESSAGES_H
 
 #include "messages.decl.h"
 #include "node.h"
 
+/** A message containing some matrix information. */
 class MatrixInfoMsg : public CMessage_MatrixInfoMsg
 {
   public:
@@ -27,6 +36,7 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
     bool equal (MatrixInfoMsg *b);
 };
 
+/** A message containing information on matrix nodes. */
 class NodeInfoMsg : public CMessage_NodeInfoMsg
 {
   public:
@@ -43,10 +53,12 @@ class NodeInfoMsg : public CMessage_NodeInfoMsg
     NodeInfoMsg (int index, double norm, double norm_2);
 };
 
+/** A message containing a dense matrix. */
 class DenseMatrixMsg : public CMessage_DenseMatrixMsg
 {
   public:
 
+    /** The dense matrix. */
     double *A;
 };
 

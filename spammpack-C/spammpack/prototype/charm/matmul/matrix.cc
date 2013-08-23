@@ -1,4 +1,4 @@
-/* @file
+/** @file
  *
  * The implementation of the Matrix class.
  *
@@ -10,6 +10,7 @@
 #include "matrix.h"
 #include "messages.h"
 #include "logger.h"
+#include "index.h"
 
 /** The constructor. */
 Matrix::Matrix (int N, int blocksize)
@@ -28,15 +29,13 @@ Matrix::Matrix (int N, int blocksize)
 
   int NTier = 1 << depth;
 
-  DEBUG("N = %d, blocksize = %d, depth = %d, NPadded = %d, NTier = %d\n",
+  INFO("N = %d, blocksize = %d, depth = %d, NPadded = %d, NTier = %d\n",
       N, blocksize, depth, NPadded, NTier);
 
-  nodes = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
+  nodes = CProxy_Node::ckNew(N, depth, blocksize, depth, 1, NTier, NTier);
 }
 
 /** Get some basic information on the matrix.
- *
- * @param tier The tier to return.
  *
  * @return The matrix information.
  */
@@ -63,7 +62,8 @@ DenseMatrixMsg * Matrix::toDense (void)
       for(int l = i*blocksize; l < (i+1)*blocksize && l < N; l++) {
         for(int m = j*blocksize; m < (j+1)*blocksize && m < N; m++)
         {
-          A->A[BLOCK_INDEX(l, m, 0, 0, N)] = block->A[BLOCK_INDEX(l, m, i*blocksize, j*blocksize, blocksize)];
+          A->A[BLOCK_INDEX(l, m, 0, 0, N)] = block->A[BLOCK_INDEX(l, m,
+              i*blocksize, j*blocksize, blocksize)];
         }
       }
 

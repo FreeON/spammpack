@@ -10,12 +10,18 @@
 #include "multiplyelement.h"
 #include "messages.h"
 #include "logger.h"
+#include "index.h"
+
+#include <bitset>
 
 /** The constructor.
  *
- * @param ANode The node of matrix A.
- * @param BNode The node of matrix B.
- * @param CNode The node of matrix C.
+ * @param blocksize The blocksize.
+ * @param tier The tier.
+ * @param depth The depth of the matrix.
+ * @param A The node of matrix A.
+ * @param B The node of matrix B.
+ * @param C The node of matrix C.
  */
 MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
     CProxy_Node A, CProxy_Node B, CProxy_Node C)
@@ -128,28 +134,28 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   CResult = new double[blocksize*blocksize];
   memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
-  //DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
-  //DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
-
-  double *ADense = new double[blocksize*blocksize];
-  double *BDense = new double[blocksize*blocksize];
+  DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
+  DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
   for(int i = 0; i < blocksize; i++) {
     for(int j = 0; j < blocksize; j++) {
       for(int k = 0; k < blocksize; k++)
       {
         CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
-          ADense[BLOCK_INDEX(i, k, 0, 0, blocksize)]
-          *BDense[BLOCK_INDEX(k, j, 0, 0, blocksize)];
+          ABlock->A[BLOCK_INDEX(i, k, 0, 0, blocksize)]
+          *BBlock->A[BLOCK_INDEX(k, j, 0, 0, blocksize)];
       }
     }
   }
 
-  //delete ABlock;
-  //delete BBlock;
+#ifdef DEBUG_OUTPUT
+  /** For debugging. */
+  printDense(blocksize, CResult, "tier %d ME(%d,%d,%d) result:", tier,
+      thisIndex.x, thisIndex.y, thisIndex.z);
+#endif
 
-  delete[] ADense;
-  delete[] BDense;
+  delete ABlock;
+  delete BBlock;
 
   contribute(cb);
 }

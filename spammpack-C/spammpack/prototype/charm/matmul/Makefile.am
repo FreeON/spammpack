@@ -24,6 +24,7 @@ INTERFACE_FILES = \
 
 matmul_SOURCES = \
 	index.h \
+	logger.cc \
 	logger.h \
 	matmul.cc \
 	matrix.cc \

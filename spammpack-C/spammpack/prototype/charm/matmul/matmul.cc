@@ -1,6 +1,24 @@
 /** @file
  *
  * Multiply two matrices with threshold.
+ *
+ * @author Nicolas Bock <nicolas.bock@freeon.org>
+ * @author Matt Challacombe <matt.challacombe@freeon.org>
+ *
+ * @mainpage
+ *
+ * @section Introduction
+ *
+ * Charm++ prototype implementation of the SpAMM algorithm.
+ *
+ * @section Publications
+ *
+ * - "Fast Multiplication of Matrices with Decay", http://arxiv.org/abs/1011.3534
+ * - "An Optimized Sparse Approximate Matrix Multiply for Matrices with
+ *   Decay", http://arxiv.org/abs/1203.1692
+ *
+ * @author Nicolas Bock <nicolas.bock@freeon.org>
+ * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
 #include "config.h"
@@ -13,10 +31,21 @@
 
 #include <getopt.h>
 
+/** Set the load balancing mode to manual. */
+void setLBMode (void)
+{
+  TurnManualLBOn();
+}
+
+/** The main entry method. */
 class Main : public CBase_Main
 {
   public:
 
+    /** The main method.
+     *
+     * @param msg The command line argument list.
+     */
     Main (CkArgMsg *msg)
     {
       int N = 1;
@@ -116,10 +145,25 @@ class Main : public CBase_Main
           decayConstant, verify, verifyTolerance);
     }
 
+    /** The main method.
+     *
+     * @param N The size of the matrix.
+     * @param blocksize The blocksize of the matrix.
+     * @param numberIterations Total number of iterations for multiply.
+     * @param tolerance The SpAMM tolerance.
+     * @param matrixType The matrix type.
+     * @param decayConstant The decay constant for matrices with exponential
+     * decay.
+     * @param verify Whether to verify the matrix product.
+     * @param verifyTolerance The absolute tolerance in the matrix
+     * verification.
+     */
     void run (int N, int blocksize, int numberIterations, double tolerance,
         int matrixType, double decayConstant, bool verify,
         double verifyTolerance)
     {
+      LBDatabase *db = LBDatabaseObj();
+
       CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
       CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
@@ -150,8 +194,13 @@ class Main : public CBase_Main
         t.stop();
         CkPrintf(t.to_str());
 
+        /* Load balance. */
+        db->StartLB();
+        CkWaitQD();
+
         if(verify)
         {
+          /* Calculate the reference matrix. */
           CkPrintf("calculating reference result\n");
           for(int i = 0; i < N; i++) {
             for(int j = 0; j < N; j++) {

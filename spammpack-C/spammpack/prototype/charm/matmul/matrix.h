@@ -1,4 +1,4 @@
-/* @file
+/** @file
  *
  * The header file for the Matrix class.
  *

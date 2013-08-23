@@ -10,17 +10,25 @@
 #include "node.h"
 #include "messages.h"
 #include "logger.h"
+#include "index.h"
 
 #include <bitset>
 
 /** The constructor.
+ *
+ * @param N The matrix size.
+ * @param depth The matrix depth.
+ * @param blocksize The blocksize.
+ * @param tier The tier this node is on.
+ * @param seed The random number seed.
  */
-Node::Node (int N, int depth, int blocksize, int tier)
+Node::Node (int N, int depth, int blocksize, int tier, unsigned int seed)
 {
   this->N = N;
   this->depth = depth;
   this->blocksize = blocksize;
   this->tier = tier;
+  this->seed = seed;
 
   this->iLower = thisIndex.x*blocksize;
   this->iUpper = (thisIndex.x+1)*blocksize;
@@ -28,13 +36,21 @@ Node::Node (int N, int depth, int blocksize, int tier)
   this->jUpper = (thisIndex.y+1)*blocksize;
 
   this->block = new double[blocksize*blocksize];
+  memset(this->block, 0, sizeof(double)*blocksize*blocksize);
 
-  for(int i = 0; i < blocksize; i++) {
-    for(int j = 0; j < blocksize; j++)
+  for(int i = iLower; i < iUpper && i < N; i++) {
+    for(int j = jLower; j < jUpper && j < N; j++)
     {
-      this->block[BLOCK_INDEX(i, j, 0, 0, blocksize)] = rand()/(double) RAND_MAX;
+      this->block[BLOCK_INDEX(i, j, iLower, jLower, blocksize)] =
+        rand_r(&seed)/(double) RAND_MAX;
     }
   }
+
+#ifdef DEBUG_OUTPUT
+  /* For debugging. */
+  printDense(blocksize, this->block, "tier %d, Node(%d,%d), initial matrix",
+      tier, thisIndex.x, thisIndex.y);
+#endif
 
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
@@ -52,7 +68,10 @@ Node::Node (int N, int depth, int blocksize, int tier)
       thisIndex.y, toBinary(index).c_str());
 }
 
-/** The migration constructor. */
+/** The migration constructor.
+ *
+ * @param msg The migration message.
+ */
 Node::Node (CkMigrateMessage *msg)
 {
   DEBUG("tier %d, Node(%d,%d) migration constructor\n", -1, thisIndex.x, thisIndex.y);
@@ -72,6 +91,7 @@ void Node::pup (PUP::er &p)
 {
   CBase_Node::pup(p);
 
+  p|seed;
   p|N;
   p|blocksize;
   p|depth;
@@ -146,6 +166,12 @@ void Node::add (int blocksize, double *A)
   {
     block[i] += A[i];
   }
+
+#ifdef DEBUG_OUTPUT
+  /* For debugging. */
+  printDense(blocksize, block, "tier %d, Node(%d,%d) Adding back to C", tier,
+      thisIndex.x, thisIndex.y);
+#endif
 }
 
 #include "node.def.h"

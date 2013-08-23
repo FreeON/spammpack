@@ -9,6 +9,10 @@
 
 #define BUFFER_SIZE 2000
 
+/** The constructor.
+ *
+ * @param format The format string. See printf() for details.
+ */
 Timer::Timer (const char *format, ...)
 {
   char output_buffer[BUFFER_SIZE];
@@ -26,6 +30,7 @@ Timer::Timer (const char *format, ...)
   }
 }
 
+/** Stop the timer. */
 void Timer::stop ()
 {
   if(clock_gettime(CLOCKTYPE, &endTime) < 0)
@@ -35,6 +40,10 @@ void Timer::stop ()
   }
 }
 
+/** Convert the timer to a string.
+ *
+ * @return The timer as a string. The string should not be free()'ed.
+ */
 const char * Timer::to_str ()
 {
   std::ostringstream o;
