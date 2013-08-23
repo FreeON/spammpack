@@ -27,6 +27,9 @@ class Timer
     /** The end time. */
     struct timespec endTime;
 
+    /** The string buffer for to_str(). */
+    char *string_buffer;
+
   public:
 
     Timer (const char *format, ...);

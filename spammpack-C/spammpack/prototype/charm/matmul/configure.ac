@@ -22,10 +22,10 @@ AC_SUBST([HAVE_DOT], [${have_dot}])
 AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
 
 AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
-AC_CHECK_PROG([CHARMC], [charmc], [charmc])
+CXX=${CHARMC}
 
 AC_PROG_CC
-AC_PROG_CXX([${CHARMC}])
+AC_PROG_CXX
 
 AC_LANG([C])
 
@@ -43,10 +43,18 @@ for CLOCKTYPE in \
     [[struct timespec p; clock_gettime(${CLOCKTYPE}, &p);]])],
     [break], [CLOCKTYPE="unset"])
 done
-if test ${CLOCKTYPE} = "unset"; then
+if test "${CLOCKTYPE}" = "unset"; then
   AC_MSG_FAILURE([no known clock type])
 fi
 AC_DEFINE_UNQUOTED([CLOCKTYPE], [${CLOCKTYPE}], [The clock type to use with clock_gettime()])
+
+for DGEMM in dgemm dgemm_ dgemm__; do
+  AC_SEARCH_LIBS([${DGEMM}], [blas], [break], [DGEMM="unset"])
+done
+if test "${DGEMM}" != "unset"; then
+  AC_DEFINE_UNQUOTED([DGEMM], [${DGEMM}], [The call to BLAS dgemm() including
+                      all necessary underscores.])
+fi
 
 AC_ARG_ENABLE([load-balance],
   [AS_HELP_STRING([--enable-load-balance],

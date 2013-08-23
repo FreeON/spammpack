@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "multiplyelement.h"
+#include "blas_interface.h"
 #include "messages.h"
 #include "logger.h"
 #include "index.h"
@@ -125,6 +126,9 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
       thisIndex.y, thisIndex.z);
 
+  delete AInfo;
+  delete BInfo;
+
   if(CResult != NULL)
   {
     ABORT("tier %d ME(%d,%d,%d) CResult is not NULL\n", tier, thisIndex.x,
@@ -137,6 +141,12 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
   DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
+#ifdef DGEMM
+  double alpha = 1;
+  double beta = 1;
+  DGEMM("N", "N", &blocksize, &blocksize, &blocksize, &alpha, ABlock->A,
+      &blocksize, BBlock->A, &blocksize, &beta, CResult, &blocksize);
+#else
   for(int i = 0; i < blocksize; i++) {
     for(int j = 0; j < blocksize; j++) {
       for(int k = 0; k < blocksize; k++)
@@ -147,6 +157,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       }
     }
   }
+#endif
 
 #ifdef DEBUG_OUTPUT
   /** For debugging. */

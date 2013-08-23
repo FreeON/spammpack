@@ -1,6 +1,7 @@
 #include "config.h"
 #include "timer.h"
 #include <string>
+#include <string.h>
 #include <sstream>
 #include <time.h>
 #include <stdio.h>
@@ -28,6 +29,8 @@ Timer::Timer (const char *format, ...)
     printf("can not start timer\n");
     exit(1);
   }
+
+  string_buffer = NULL;
 }
 
 /** Stop the timer. */
@@ -52,5 +55,10 @@ const char * Timer::to_str ()
   o << endTime.tv_sec+endTime.tv_nsec/1.0e9
     -(startTime.tv_sec+startTime.tv_nsec/1.0e9);
   o << " seconds" << std::endl;
-  return o.str().c_str();
+  if(string_buffer != NULL)
+  {
+    free(string_buffer);
+  }
+  string_buffer = strdup(o.str().c_str());
+  return string_buffer;
 }
