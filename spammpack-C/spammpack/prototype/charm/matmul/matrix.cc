@@ -12,7 +12,11 @@
 #include "logger.h"
 #include "index.h"
 
-/** The constructor. */
+/** The constructor.
+ *
+ * @param N The matrix size.
+ * @param blocksize The SpAMM blocksize.
+ */
 Matrix::Matrix (int N, int blocksize)
 {
   this->N = N;
@@ -29,8 +33,11 @@ Matrix::Matrix (int N, int blocksize)
 
   int NTier = 1 << depth;
 
-  INFO("N = %d, blocksize = %d, depth = %d, NPadded = %d, NTier = %d\n",
-      N, blocksize, depth, NPadded, NTier);
+  INFO("N = %d, blocksize = %d, depth = %d, NPadded = %d, "
+      "NTier = %d, creating %d Nodes using %d bytes (%1.2f MB)\n",
+      N, blocksize, depth, NPadded, NTier, NTier*NTier,
+      NTier*NTier*(sizeof(Node)+blocksize*blocksize*sizeof(double)),
+      NTier*NTier*(sizeof(Node)+blocksize*blocksize*sizeof(double))/1024./1024.);
 
   nodes = CProxy_Node::ckNew(N, depth, blocksize, depth, 1, NTier, NTier);
 }

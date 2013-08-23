@@ -12,6 +12,15 @@
 #include "logger.h"
 
 /** The constructor.
+ *
+ * @param A Matrix A.
+ * @param B Matrix B.
+ * @param C Matrix C.
+ * @param blocksize The SpAMM blocksize.
+ * @param depth The depth of the matrix trees.
+ * @param ANodes The Node objects of A.
+ * @param BNodes The Node objects of B.
+ * @param CNodes The Node objects of C.
  */
 Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     int blocksize, int depth, CProxy_Node ANodes, CProxy_Node BNodes,

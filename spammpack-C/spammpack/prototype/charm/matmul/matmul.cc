@@ -136,6 +136,8 @@ Main::Main (CkArgMsg *msg)
     }
   }
 
+  CkPrintf("matmul version %s\n", PACKAGE_VERSION);
+
   DEBUG("calling run() on this proxy\n");
   thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
       decayConstant, verify, verifyTolerance);
