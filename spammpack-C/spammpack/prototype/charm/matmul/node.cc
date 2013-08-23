@@ -11,6 +11,7 @@
 #include "messages.h"
 #include "logger.h"
 #include "index.h"
+#include "types.h"
 
 #include <bitset>
 
@@ -25,26 +26,22 @@
 Node::Node (int N, int depth, int blocksize, int tier, unsigned int seed)
 {
   this->N = N;
-  this->depth = depth;
   this->blocksize = blocksize;
+  this->depth = depth;
   this->tier = tier;
-  this->seed = seed;
 
   this->iLower = thisIndex.x*blocksize;
   this->iUpper = (thisIndex.x+1)*blocksize;
   this->jLower = thisIndex.y*blocksize;
   this->jUpper = (thisIndex.y+1)*blocksize;
 
+  this->seed = seed;
+
+  this->norm = 0;
+  this->norm_2 = 0;
+
   this->block = new double[blocksize*blocksize];
   memset(this->block, 0, sizeof(double)*blocksize*blocksize);
-
-  for(int i = iLower; i < iUpper && i < N; i++) {
-    for(int j = jLower; j < jUpper && j < N; j++)
-    {
-      this->block[BLOCK_INDEX(i, j, iLower, jLower, blocksize)] =
-        rand_r(&seed)/(double) RAND_MAX;
-    }
-  }
 
 #ifdef DEBUG_OUTPUT
   /* For debugging. */
@@ -86,6 +83,8 @@ Node::~Node (void)
 }
 
 /** The PUP method.
+ *
+ * @param p The Pup::er object.
  */
 void Node::pup (PUP::er &p)
 {
@@ -152,6 +151,16 @@ DenseMatrixMsg * Node::getBlock (void)
     memset(m->A, 0, sizeof(double)*blocksize*blocksize);
   }
   return m;
+}
+
+/** Set a matrix block in this Node.
+ *
+ * @param blocksize The blocksize.
+ * @param A The matrix.
+ */
+void Node::set (int blocksize, double *A)
+{
+  memcpy(block, A, sizeof(double)*blocksize*blocksize);
 }
 
 /** Add a submatrix block to this Node.

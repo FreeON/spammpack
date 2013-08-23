@@ -9,19 +9,6 @@
 #ifndef __TYPES_H
 #define __TYPES_H
 
-/** The initialization type. */
-enum init_t
-{
-  /** Random matrix. */
-  initRandom,
-  
-  /** Zero matrix. */
-  initZero,
-
-  /** Matrices with decay. */
-  initDecay
-};
-
 /** The matrix types. */
 enum matrix_t
 {
@@ -29,7 +16,10 @@ enum matrix_t
   full,
 
   /** A matrix with decay. */
-  decay
+  decay,
+
+  /** A diagonal matrix. */
+  diagonal
 };
 
 #endif

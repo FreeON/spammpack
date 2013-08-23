@@ -63,6 +63,7 @@ class Node : public CBase_Node
     void pup (PUP::er &p);
     NodeInfoMsg * info (void);
     DenseMatrixMsg * getBlock (void);
+    void set (int blocksize, double *A);
     void add (int blocksize, double *A);
 };
 

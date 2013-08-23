@@ -9,7 +9,12 @@
  *
  * @section Introduction
  *
- * Charm++ prototype implementation of the SpAMM algorithm.
+ * Charm++ prototype implementation of the SpAMM algorithm. The main program
+ * is documented as Main.
+ *
+ * @section example Example Use
+ *
+ * @code ./charmrun +p3 matmul -N 1024 -b 16 --verify @endcode
  *
  * @section Publications
  *
@@ -83,7 +88,7 @@ Main::Main (CkArgMsg *msg)
             " %d)\n", numberIterations);
         CkPrintf("{ -t | --tolerance } T    Multiply with tolerance T (default: %1.2e)\n",
             tolerance);
-        CkPrintf("{ -m | --type } TYPE      Use matrices of TYPE { full, decay } "
+        CkPrintf("{ -m | --type } TYPE      Use matrices of TYPE { full, decay, diagonal } "
             "(default: full)\n");
         CkPrintf("{ -v | --verify }         Verify matmul product\n");
         CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
@@ -115,6 +120,10 @@ Main::Main (CkArgMsg *msg)
         else if (strcasecmp(optarg, "decay") == 0)
         {
           matrixType = decay;
+        }
+        else if (strcasecmp(optarg, "diagonal") == 0)
+        {
+          matrixType = diagonal;
         }
         else
         {
@@ -164,12 +173,21 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
   CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
-  DenseMatrixMsg *ADense = NULL;
+  /* Initialize the matrices. */
+  ABORT("FIXME\n");
+
+  double *ADense = NULL;
   DenseMatrixMsg *CExact = NULL;
+
+  switch(matrixType)
+  {
+    default:
+      ABORT("unknown matrix type\n");
+      break;
+  }
 
   if(verify)
   {
-    ADense = A.toDense();
     CExact = C.toDense();
   }
 
@@ -202,14 +220,14 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 #ifdef DGEMM
       double alpha = 1;
       double beta = 1;
-      DGEMM("N", "N", &N, &N, &N, &alpha, ADense->A, &N, ADense->A, &N, &beta, CExact->A, &N);
+      DGEMM("N", "N", &N, &N, &N, &alpha, ADense, &N, ADense, &N, &beta, CExact->A, &N);
 #else
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++) {
           for(int k = 0; k < N; k++)
           {
-            CExact->A[BLOCK_INDEX(i, j, 0, 0, N)] += ADense->A[BLOCK_INDEX(i, k, 0, 0, N)]
-              *ADense->A[BLOCK_INDEX(k, j, 0, 0, N)];
+            CExact->A[BLOCK_INDEX(i, j, 0, 0, N)] += ADense[BLOCK_INDEX(i, k, 0, 0, N)]
+              *ADense[BLOCK_INDEX(k, j, 0, 0, N)];
           }
         }
       }
@@ -259,7 +277,8 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     }
     CkPrintf("result verified\n");
 
-    delete ADense;
+    delete[] ADense;
+
     delete CDense;
     delete CExact;
   }

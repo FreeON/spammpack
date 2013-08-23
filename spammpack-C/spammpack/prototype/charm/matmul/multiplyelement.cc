@@ -76,7 +76,7 @@ MultiplyElement::~MultiplyElement ()
 
 /** The PUP method.
  *
- * @param p The object.
+ * @param p The PUP::er object.
  */
 void MultiplyElement::pup (PUP::er &p)
 {
@@ -126,47 +126,50 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
       thisIndex.y, thisIndex.z);
 
-  delete AInfo;
-  delete BInfo;
-
-  if(CResult != NULL)
+  if(AInfo->norm*BInfo->norm > tolerance)
   {
-    ABORT("tier %d ME(%d,%d,%d) CResult is not NULL\n", tier, thisIndex.x,
-        thisIndex.y, thisIndex.z);
-  }
+    if(CResult != NULL)
+    {
+      ABORT("tier %d ME(%d,%d,%d) CResult is not NULL\n", tier, thisIndex.x,
+          thisIndex.y, thisIndex.z);
+    }
 
-  CResult = new double[blocksize*blocksize];
-  memset(CResult, 0, sizeof(double)*blocksize*blocksize);
+    CResult = new double[blocksize*blocksize];
+    memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
-  DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
-  DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
+    DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
+    DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
 #ifdef DGEMM
-  double alpha = 1;
-  double beta = 1;
-  DGEMM("N", "N", &blocksize, &blocksize, &blocksize, &alpha, ABlock->A,
-      &blocksize, BBlock->A, &blocksize, &beta, CResult, &blocksize);
+    double alpha = 1;
+    double beta = 1;
+    DGEMM("N", "N", &blocksize, &blocksize, &blocksize, &alpha, ABlock->A,
+        &blocksize, BBlock->A, &blocksize, &beta, CResult, &blocksize);
 #else
-  for(int i = 0; i < blocksize; i++) {
-    for(int j = 0; j < blocksize; j++) {
-      for(int k = 0; k < blocksize; k++)
-      {
-        CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
-          ABlock->A[BLOCK_INDEX(i, k, 0, 0, blocksize)]
-          *BBlock->A[BLOCK_INDEX(k, j, 0, 0, blocksize)];
+    for(int i = 0; i < blocksize; i++) {
+      for(int j = 0; j < blocksize; j++) {
+        for(int k = 0; k < blocksize; k++)
+        {
+          CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
+            ABlock->A[BLOCK_INDEX(i, k, 0, 0, blocksize)]
+            *BBlock->A[BLOCK_INDEX(k, j, 0, 0, blocksize)];
+        }
       }
     }
-  }
 #endif
 
 #ifdef DEBUG_OUTPUT
-  /** For debugging. */
-  printDense(blocksize, CResult, "tier %d ME(%d,%d,%d) result:", tier,
-      thisIndex.x, thisIndex.y, thisIndex.z);
+    /** For debugging. */
+    printDense(blocksize, CResult, "tier %d ME(%d,%d,%d) result:", tier,
+        thisIndex.x, thisIndex.y, thisIndex.z);
 #endif
 
-  delete ABlock;
-  delete BBlock;
+    delete ABlock;
+    delete BBlock;
+  }
+
+  delete AInfo;
+  delete BInfo;
 
   contribute(cb);
 }

@@ -11,6 +11,7 @@
 
 #include "matrix.decl.h"
 #include "node.h"
+#include "types.h"
 
 /** A matrix.
  */
