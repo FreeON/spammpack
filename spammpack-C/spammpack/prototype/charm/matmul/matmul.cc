@@ -174,25 +174,83 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
 
   /* Initialize the matrices. */
-  ABORT("FIXME\n");
-
-  double *ADense = NULL;
-  DenseMatrixMsg *CExact = NULL;
+  double *ADense = new double[N*N];
+  memset(ADense, 0, sizeof(double)*N*N);
 
   switch(matrixType)
   {
+    case full:
+      for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++)
+        {
+          ADense[BLOCK_INDEX(i, j, 0, 0, N)] = rand()/(double) RAND_MAX;
+        }
+      }
+      break;
+
+    case diagonal:
+      for(int i = 0; i < N; i++)
+      {
+        ADense[BLOCK_INDEX(i, i, 0, 0, N)] = 0.3*(rand()/(double) RAND_MAX - 0.5)+1;
+      }
+      break;
+
+    case decay:
+      for(int i = 0; i < N; i++)
+      {
+        ADense[BLOCK_INDEX(i, i, 0, 0, N)] = 0.3*(rand()/(double) RAND_MAX - 0.5)+1;
+      }
+
+      for(int i = 0; i < N; i++) {
+        for(int j = i+1; j < N; j++)
+        {
+          ADense[BLOCK_INDEX(i, j, 0, 0, N)] = exp(-fabs(i-j)/decayConstant)
+            *ADense[BLOCK_INDEX(i, i, 0, 0, N)];
+          ADense[BLOCK_INDEX(j, i, 0, 0, N)] = ADense[BLOCK_INDEX(i, j, 0, 0, N)];
+        }
+      }
+      break;
+
     default:
       ABORT("unknown matrix type\n");
       break;
   }
 
-  if(verify)
-  {
-    CExact = C.toDense();
-  }
+  printDense(N, ADense, "ADense:");
 
   MatrixInfoMsg *AInfo = A.info();
   MatrixInfoMsg *CInfo = C.info();
+
+  /* Set the A matrix. */
+  {
+    double *block = new double[blocksize*blocksize];
+
+    for(int i = 0; i < AInfo->NPadded/blocksize; i++) {
+      for(int j = 0; j < AInfo->NPadded/blocksize; j++)
+      {
+        memset(block, 0, sizeof(double)*blocksize*blocksize);
+
+        for(int l = i*blocksize; l < (i+1)*blocksize && l < N; l++) {
+          for(int m = j*blocksize; m < (j+1)*blocksize && m < N; m++)
+          {
+            block[BLOCK_INDEX(l, m, i*blocksize, j*blocksize, blocksize)] =
+              ADense[BLOCK_INDEX(l, m, 0, 0, N)];
+          }
+        }
+
+        AInfo->nodes(i, j).set(blocksize, block);
+      }
+    }
+
+    delete[] block;
+  }
+
+  double *CExact = NULL;
+  if(verify)
+  {
+    CExact = new double[N*N];
+    memset(CExact, 0, sizeof(double)*N*N);
+  }
 
   CProxy_Multiply M = CProxy_Multiply::ckNew(A, A, C, AInfo->blocksize,
       AInfo->depth, AInfo->nodes, AInfo->nodes, CInfo->nodes);
@@ -220,13 +278,13 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 #ifdef DGEMM
       double alpha = 1;
       double beta = 1;
-      DGEMM("N", "N", &N, &N, &N, &alpha, ADense, &N, ADense, &N, &beta, CExact->A, &N);
+      DGEMM("N", "N", &N, &N, &N, &alpha, ADense, &N, ADense, &N, &beta, CExact, &N);
 #else
       for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++) {
           for(int k = 0; k < N; k++)
           {
-            CExact->A[BLOCK_INDEX(i, j, 0, 0, N)] += ADense[BLOCK_INDEX(i, k, 0, 0, N)]
+            CExact[BLOCK_INDEX(i, j, 0, 0, N)] += ADense[BLOCK_INDEX(i, k, 0, 0, N)]
               *ADense[BLOCK_INDEX(k, j, 0, 0, N)];
           }
         }
@@ -250,7 +308,7 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     for(int i = 0; i < N; i++) {
       for(int j = 0; j < N; j++)
       {
-        double absDiff = fabs(CExact->A[BLOCK_INDEX(i, j, 0, 0, N)]
+        double absDiff = fabs(CExact[BLOCK_INDEX(i, j, 0, 0, N)]
             -CDense->A[BLOCK_INDEX(i, j, 0, 0, N)]);
 
         if(absDiff > maxAbsDiff)
@@ -264,23 +322,23 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 
     if(maxAbsDiff > verifyTolerance)
     {
-      double relDiff = (CExact->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)] != 0
-          ? maxAbsDiff/CExact->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]
+      double relDiff = (CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)] != 0
+          ? maxAbsDiff/CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]
           : 0);
       ABORT("result mismatch (abs. tolerance = %e, "
           "abs. diff = %e, rel. diff = %e), "
           "C(%d,%d): %e (reference) vs. %e (matmul)\n",
           verifyTolerance, maxAbsDiff, relDiff,
           maxDiffRow, maxDiffColumn,
-          CExact->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)],
+          CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)],
           CDense->A[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)]);
     }
     CkPrintf("result verified\n");
 
     delete[] ADense;
+    delete[] CExact;
 
     delete CDense;
-    delete CExact;
   }
 
   DEBUG("done\n");

@@ -39,7 +39,7 @@ Matrix::Matrix (int N, int blocksize)
       NTier*NTier*(sizeof(Node)+blocksize*blocksize*sizeof(double)),
       NTier*NTier*(sizeof(Node)+blocksize*blocksize*sizeof(double))/1024./1024.);
 
-  nodes = CProxy_Node::ckNew(N, depth, blocksize, depth, 1, NTier, NTier);
+  nodes = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
 }
 
 /** Get some basic information on the matrix.

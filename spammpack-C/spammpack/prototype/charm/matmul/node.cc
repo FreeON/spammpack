@@ -21,9 +21,8 @@
  * @param depth The matrix depth.
  * @param blocksize The blocksize.
  * @param tier The tier this node is on.
- * @param seed The random number seed.
  */
-Node::Node (int N, int depth, int blocksize, int tier, unsigned int seed)
+Node::Node (int N, int depth, int blocksize, int tier)
 {
   this->N = N;
   this->blocksize = blocksize;
@@ -35,19 +34,10 @@ Node::Node (int N, int depth, int blocksize, int tier, unsigned int seed)
   this->jLower = thisIndex.y*blocksize;
   this->jUpper = (thisIndex.y+1)*blocksize;
 
-  this->seed = seed;
-
   this->norm = 0;
   this->norm_2 = 0;
 
-  this->block = new double[blocksize*blocksize];
-  memset(this->block, 0, sizeof(double)*blocksize*blocksize);
-
-#ifdef DEBUG_OUTPUT
-  /* For debugging. */
-  printDense(blocksize, this->block, "tier %d, Node(%d,%d), initial matrix",
-      tier, thisIndex.x, thisIndex.y);
-#endif
+  this->block = NULL;
 
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
@@ -90,7 +80,6 @@ void Node::pup (PUP::er &p)
 {
   CBase_Node::pup(p);
 
-  p|seed;
   p|N;
   p|blocksize;
   p|depth;
@@ -160,7 +149,21 @@ DenseMatrixMsg * Node::getBlock (void)
  */
 void Node::set (int blocksize, double *A)
 {
+  if(block == NULL)
+  {
+    block = new double[blocksize*blocksize];
+    memset(block, 0, sizeof(double)*blocksize*blocksize);
+  }
   memcpy(block, A, sizeof(double)*blocksize*blocksize);
+
+  norm_2 = 0;
+  for(int i = 0; i < blocksize*blocksize; i++)
+  {
+    norm_2 += block[i]*block[i];
+  }
+  norm = sqrt(norm_2);
+
+  printDense(blocksize, block, "Node(%d,%d) setting block:", thisIndex.x, thisIndex.y);
 }
 
 /** Add a submatrix block to this Node.
@@ -171,10 +174,19 @@ void Node::set (int blocksize, double *A)
 void Node::add (int blocksize, double *A)
 {
   DEBUG("tier %d, Node(%d,%d) Adding back to C\n", tier, thisIndex.x, thisIndex.y);
+  if(block == NULL)
+  {
+    block = new double[blocksize*blocksize];
+    memset(block, 0, sizeof(double)*blocksize*blocksize);
+  }
+
+  norm_2 = 0;
   for(int i = 0; i < blocksize*blocksize; i++)
   {
     block[i] += A[i];
+    norm_2 += block[i]*block[i];
   }
+  norm = sqrt(norm_2);
 
 #ifdef DEBUG_OUTPUT
   /* For debugging. */

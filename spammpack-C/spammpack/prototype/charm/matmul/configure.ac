@@ -97,6 +97,15 @@ if test "${enable_debug}" = "yes"; then
   AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output])
 fi
 
+AC_ARG_ENABLE([print-matrices],
+  [AS_HELP_STRING([--enable-print-matrices],
+  [print matrices for debugging])],
+  [enable_print_matrices=$enableval],
+  [enable_print_matrices="no"])
+if test "${enable_print_matrices}" = "yes"; then
+  AC_DEFINE([PRINT_MATRICES], [1], [Print matrices for debugging])
+fi
+
 AC_ARG_ENABLE([pruning],
   [AS_HELP_STRING([--disable-pruning],
   [disable pruning of convolution space])],
