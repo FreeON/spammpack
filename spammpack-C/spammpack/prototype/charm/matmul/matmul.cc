@@ -9,18 +9,16 @@
  *
  * @section Introduction
  *
- * Charm++ prototype implementation of the SpAMM algorithm. The main program
- * is documented as Main.
+ * @link http://charm.cs.uiuc.edu/ Charm++ @endlink prototype implementation
+ * of the SpAMM algorithm
+ * @cite ChallacombeBock2010
+ * @cite BockChallacombe2012
+ * @cite BockSISC2013.
+ * The main program is documented as Main.
  *
  * @section example Example Use
  *
  * @code ./charmrun +p3 matmul -N 1024 -b 16 --verify @endcode
- *
- * @section Publications
- *
- * - "Fast Multiplication of Matrices with Decay", http://arxiv.org/abs/1011.3534
- * - "An Optimized Sparse Approximate Matrix Multiply for Matrices with
- *   Decay", http://arxiv.org/abs/1203.1692
  *
  * @author Nicolas Bock <nicolas.bock@freeon.org>
  * @author Matt Challacombe <matt.challacombe@freeon.org>

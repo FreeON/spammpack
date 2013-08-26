@@ -2,6 +2,7 @@ TAGS_FILES = config.h
 
 EXTRA_DIST = \
 	$(INTERFACE_FILES) \
+	matmul.bib \
 	configure.LB \
 	configure.mustang \
 	freeon-submit.sh \
