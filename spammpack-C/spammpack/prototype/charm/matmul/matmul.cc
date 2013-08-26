@@ -21,7 +21,7 @@
  * @code
  * ./configure.LB
  * make
- * ./charmrun +p3 matmul -N 1024 -b 16 --verify --iterations 10
+ * ./charmrun +p3 matmul -N 1024 -b 16 --type decay --decay 8 --tolerance 1e-8 --verify --iterations 10
  * @endcode
  *
  * @author Nicolas Bock <nicolas.bock@freeon.org>
