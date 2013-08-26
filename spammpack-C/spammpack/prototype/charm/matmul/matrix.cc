@@ -80,4 +80,14 @@ DenseMatrixMsg * Matrix::toDense (void)
   return A;
 }
 
+/** Print the PEs all Nodes are on.
+ *
+ * @param cb The callback to signal once all Nodes have printed.
+ */
+void Matrix::printPE (CkCallback &cb)
+{
+  nodes.printPE(CkCallbackResumeThread());
+  cb.send();
+}
+
 #include "matrix.def.h"

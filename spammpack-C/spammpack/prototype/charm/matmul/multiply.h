@@ -34,6 +34,7 @@ class Multiply : public CBase_Multiply
         int blocksize, int depth, CProxy_Node ANodes, CProxy_Node BNodes,
         CProxy_Node CNodes);
     void multiply (double tolerance, CkCallback &cb);
+    void printPE (CkCallback &cb);
 };
 
 #endif

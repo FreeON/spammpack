@@ -60,4 +60,14 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
   cb.send();
 }
 
+/** Print the PEs all MultiplyElements are on.
+ *
+ * @param cb The callback to signal once all MultiplyElements have printed.
+ */
+void Multiply::printPE (CkCallback &cb)
+{
+  convolution.printPE(CkCallbackResumeThread());
+  cb.send();
+}
+
 #include "multiply.def.h"

@@ -7,5 +7,6 @@ module matrix
     entry Matrix (int N, int blocksize);
     entry [sync] MatrixInfoMsg * info (void);
     entry [sync] DenseMatrixMsg * toDense (void);
+    entry [threaded] void printPE (CkCallback &cb);
   };
 };

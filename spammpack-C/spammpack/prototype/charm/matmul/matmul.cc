@@ -9,8 +9,8 @@
  *
  * @section Introduction
  *
- * <a href="http://charm.cs.uiuc.edu/">Charm++</a> @endlink prototype
- * implementation of the SpAMM algorithm
+ * <a href="http://charm.cs.uiuc.edu/">Charm++</a> prototype implementation of
+ * the SpAMM algorithm
  * @cite ChallacombeBock2010
  * @cite BockChallacombe2012
  * @cite BockSISC2013.
@@ -270,6 +270,17 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     M.multiply(tolerance, CkCallbackResumeThread());
     t.stop();
     CkPrintf(t.to_str());
+
+#ifdef PRINT_PE
+    INFO("PE map for A\n");
+    A.printPE(CkCallbackResumeThread());
+
+    INFO("PE map for C\n");
+    C.printPE(CkCallbackResumeThread());
+
+    INFO("PE map for convolution\n");
+    M.printPE(CkCallbackResumeThread());
+#endif
 
     /* Load balance. */
     db->StartLB();

@@ -197,4 +197,15 @@ void Node::add (int blocksize, double *A)
 #endif
 }
 
+/** Print the PE this Node is on.
+ *
+ * @param cb The callback for the reduction.
+ */
+void Node::printPE (CkCallback &cb)
+{
+  INFO("tier %d, Node(%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
+      CkMyPe());
+  contribute(cb);
+}
+
 #include "node.def.h"

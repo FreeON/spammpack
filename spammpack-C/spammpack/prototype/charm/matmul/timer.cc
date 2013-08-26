@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+/** The buffer size for string outputs. */
 #define BUFFER_SIZE 2000
 
 /** The constructor.

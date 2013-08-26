@@ -39,6 +39,7 @@ class Matrix : public CBase_Matrix
     Matrix (int N, int blocksize);
     MatrixInfoMsg * info (void);
     DenseMatrixMsg * toDense (void);
+    void printPE (CkCallback &cb);
 };
 
 #endif

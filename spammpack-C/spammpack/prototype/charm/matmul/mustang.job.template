@@ -10,7 +10,7 @@ module load openmpi/1.6.3
 cd $SLURM_SUBMIT_DIR
 
 N=8192
-B=32
+B=256
 
 ./charmrun -np ${SLURM_NTASKS} matmul -N ${N} -b ${B} \
   --type full \

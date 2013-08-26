@@ -203,4 +203,15 @@ void MultiplyElement::storeBack (CkCallback &cb)
   contribute(cb);
 }
 
+/** Print the PE this Node is on.
+ *
+ * @param cb The callback for the reduction.
+ */
+void MultiplyElement::printPE (CkCallback &cb)
+{
+  INFO("tier %d ME(%d,%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
+      thisIndex.z, CkMyPe());
+  contribute(cb);
+}
+
 #include "multiplyelement.def.h"

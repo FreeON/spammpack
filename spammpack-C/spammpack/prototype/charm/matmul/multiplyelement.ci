@@ -8,5 +8,6 @@ module multiplyelement
         CProxy_Node B, CProxy_Node C);
     entry [threaded] void multiply (double tolerance, CkCallback &cb);
     entry void storeBack (CkCallback &cb);
+    entry void printPE (CkCallback &cb);
   };
 };

@@ -8,5 +8,6 @@ module node
     entry [sync] DenseMatrixMsg * getBlock (void);
     entry void set (int blocksize, double A[blocksize*blocksize]);
     entry void add (int blocksize, double A[blocksize*blocksize]);
+    entry void printPE (CkCallback &cb);
   };
 };

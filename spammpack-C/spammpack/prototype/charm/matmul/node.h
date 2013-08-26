@@ -62,6 +62,7 @@ class Node : public CBase_Node
     DenseMatrixMsg * getBlock (void);
     void set (int blocksize, double *A);
     void add (int blocksize, double *A);
+    void printPE (CkCallback &cb);
 };
 
 #endif

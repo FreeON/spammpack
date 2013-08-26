@@ -49,6 +49,7 @@ class MultiplyElement : public CBase_MultiplyElement
     void pup (PUP::er &p);
     void multiply (double tolerance, CkCallback &cb);
     void storeBack (CkCallback &cb);
+    void printPE (CkCallback &cb);
 };
 
 #endif

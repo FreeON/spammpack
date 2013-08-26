@@ -9,5 +9,6 @@ module multiply
         int blocksize, int depth, CProxy_Node ANodes, CProxy_Node BNodes,
         CProxy_Node CNodes);
     entry [threaded] void multiply (double tolerance, CkCallback &cb);
+    entry [threaded] void printPE (CkCallback &cb);
   };
 };
