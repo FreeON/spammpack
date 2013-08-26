@@ -114,7 +114,7 @@ std::string toBinary (unsigned int i)
 }
 
 /** Convert some number of bytes into a human readable form. For instance, n =
- * 1024 would result in "1 kB".
+ * 1024 would result in "1 kiB".
  *
  * @param n The number of bytes to convert.
  *
