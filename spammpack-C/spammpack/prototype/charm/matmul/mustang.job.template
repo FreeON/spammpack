@@ -9,4 +9,13 @@ module load openmpi/1.6.3
 
 cd $SLURM_SUBMIT_DIR
 
-./charmrun -np ${SLURM_NTASKS} matmul -N 8192 -b 256 --verify --iterations 10
+./charmrun -np ${SLURM_NTASKS} matmul -N 8192 -b 256 \
+  --type full \
+  --verify --iterations 10
+./charmrun -np ${SLURM_NTASKS} matmul -N 8192 -b 256 \
+  --type decay --decay 10 \
+  --tolerance 1e-8 \
+  --verify --iterations 10
+./charmrun -np ${SLURM_NTASKS} matmul -N 8192 -b 256 \
+  --type diagonal \
+  --verify --iterations 10
