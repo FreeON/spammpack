@@ -9,8 +9,8 @@
  *
  * @section Introduction
  *
- * @link http://charm.cs.uiuc.edu/ Charm++ @endlink prototype implementation
- * of the SpAMM algorithm
+ * <a href="http://charm.cs.uiuc.edu/">Charm++</a> @endlink prototype
+ * implementation of the SpAMM algorithm
  * @cite ChallacombeBock2010
  * @cite BockChallacombe2012
  * @cite BockSISC2013.

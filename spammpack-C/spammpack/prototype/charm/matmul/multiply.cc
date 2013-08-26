@@ -7,6 +7,7 @@
  */
 
 #include "multiply.h"
+#include "multiplyelement.h"
 #include "messages.h"
 #include "logger.h"
 
@@ -25,8 +26,6 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     int blocksize, int depth, CProxy_Node ANodes, CProxy_Node BNodes,
     CProxy_Node CNodes)
 {
-  INFO("Multiply constructor\n");
-
   this->A = A;
   this->B = B;
   this->C = C;
@@ -36,8 +35,11 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   this->convolution = CProxy_MultiplyElement::ckNew(blocksize, depth, depth,
       ANodes, BNodes, CNodes, NTier, NTier, NTier);
 
-  DEBUG("Multiply constructor, created %dx%dx%d convolution\n", NTier, NTier,
-      NTier);
+  INFO("created %dx%dx%d convolution, %d MultiplyElements "
+      "using %d bytes (%1.2f MB)\n", NTier, NTier, NTier,
+      NTier*NTier*NTier,
+      NTier*NTier*NTier*(sizeof(MultiplyElement)+blocksize*blocksize*sizeof(double)),
+      NTier*NTier*NTier*(sizeof(MultiplyElement)+blocksize*blocksize*sizeof(double))/1024./1024.);
 }
 
 /** Multiply two Matrix objects.
