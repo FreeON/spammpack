@@ -1,5 +1,5 @@
 AC_INIT([matmul],
-        [9],
+        [10],
         [nicolas.bock@freeon.org],
         [matmul],
         [http://www.freeon.org/])
