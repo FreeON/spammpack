@@ -32,11 +32,12 @@ Matrix::Matrix (int N, int blocksize)
 
   int NTier = 1 << depth;
 
+  unsigned long bytes = NTier*NTier*(sizeof(Node)
+      +blocksize*blocksize*sizeof(double));
   INFO("N = %d, blocksize = %d, depth = %d, NPadded = %d, "
-      "NTier = %d, creating %d Nodes using %d bytes (%1.2f MB)\n",
-      N, blocksize, depth, NPadded, NTier, NTier*NTier,
-      NTier*NTier*(sizeof(Node)+blocksize*blocksize*sizeof(double)),
-      NTier*NTier*(sizeof(Node)+blocksize*blocksize*sizeof(double))/1024./1024.);
+      "NTier = %d, creating %d Nodes using %d bytes (%s)\n",
+      N, blocksize, depth, NPadded,
+      NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
 
   nodes = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
 }

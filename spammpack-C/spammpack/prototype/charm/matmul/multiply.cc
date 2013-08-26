@@ -35,11 +35,11 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   this->convolution = CProxy_MultiplyElement::ckNew(blocksize, depth, depth,
       ANodes, BNodes, CNodes, NTier, NTier, NTier);
 
+  unsigned long bytes = NTier*NTier*NTier*(sizeof(MultiplyElement)+blocksize*blocksize*sizeof(double));
   INFO("created %dx%dx%d convolution, %d MultiplyElements "
-      "using %d bytes (%1.2f MB)\n", NTier, NTier, NTier,
-      NTier*NTier*NTier,
-      NTier*NTier*NTier*(sizeof(MultiplyElement)+blocksize*blocksize*sizeof(double)),
-      NTier*NTier*NTier*(sizeof(MultiplyElement)+blocksize*blocksize*sizeof(double))/1024./1024.);
+      "using %d bytes (%s)\n",
+      NTier, NTier, NTier, NTier*NTier*NTier,
+      bytes, humanReadableSize(bytes).c_str());
 }
 
 /** Multiply two Matrix objects.

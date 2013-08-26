@@ -23,6 +23,8 @@ void printDense (int N, double *A, const char *const format, ...);
 
 std::string toBinary (unsigned int i);
 
+std::string humanReadableSize (unsigned long n);
+
 /** A convenience macro for debugging messages. */
 #ifdef DEBUG_OUTPUT
 #define DEBUG(format, ...) logger(__FILE__, __LINE__, __func__, "", format, ##__VA_ARGS__)

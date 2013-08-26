@@ -112,3 +112,37 @@ std::string toBinary (unsigned int i)
   }
   return bitString;
 }
+
+/** Convert some number of bytes into a human readable form. For instance, n =
+ * 1024 would result in "1 kB".
+ *
+ * @param n The number of bytes to convert.
+ *
+ * @return The string representation of the human readable form.
+ */
+std::string humanReadableSize (unsigned long n)
+{
+  std::ostringstream o;
+  double size = 0;
+  const int numberUnits = 5;
+  std::string unit[numberUnits] = { "B", "kiB", "MiB", "GiB", "TiB" };
+
+  for(int i = 0; i < numberUnits; i++)
+  {
+    size /= 1024.;
+
+    if(n/1024 > 0)
+    {
+      size += (n%1024);
+      n /= 1024;
+    }
+
+    else
+    {
+      size += n;
+      o << size << " " << unit[i];
+      return o.str();
+    }
+  }
+  ABORT("can not convert this number\n");
+}
