@@ -1,7 +1,7 @@
 #!/usr/bin/env gnuplot
 
 set terminal postscript color
-set output 'timing.ps'
+set output 'mustang.ps'
 
 set title 'matmul on mustang'
 
