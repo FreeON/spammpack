@@ -76,6 +76,9 @@ valgrind : matmul$(EXEEXT)
 docs :
 	$(DOXYGEN)
 
+docs-pdf : docs
+	$(MAKE) -C latex
+
 %.decl.h %.def.h : %.ci
 	$(AM_V_CXX)$(CHARMC) $(DEFAULT_INCLUDES) -preprocess $<
 

@@ -18,7 +18,11 @@
  *
  * @section example Example Use
  *
- * @code ./charmrun +p3 matmul -N 1024 -b 16 --verify @endcode
+ * @code
+ * ./configure.LB
+ * make
+ * ./charmrun +p3 matmul -N 1024 -b 16 --verify --iterations 10
+ * @endcode
  *
  * @author Nicolas Bock <nicolas.bock@freeon.org>
  * @author Matt Challacombe <matt.challacombe@freeon.org>
