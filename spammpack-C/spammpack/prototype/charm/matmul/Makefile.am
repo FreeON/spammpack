@@ -1,3 +1,5 @@
+TAGS_FILES = config.h
+
 EXTRA_DIST = \
 	$(INTERFACE_FILES) \
 	configure.LB \

@@ -1,3 +1,11 @@
+/** @file
+ *
+ * Implementation of the Timer class.
+ *
+ * @author Nicolas Bock <nicolas.bock@freeon.org>
+ * @author Matt Challacombe <matt.challacombe@freeon.org>
+ */
+
 #include "config.h"
 #include "timer.h"
 #include <string>

@@ -6,7 +6,6 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
-#include "config.h"
 #include "matrix.h"
 #include "messages.h"
 #include "logger.h"

@@ -141,6 +141,13 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
     DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
+#ifdef DEBUG_OUTPUT
+    printDense(blocksize, ABlock->A, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
+        thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.x, thisIndex.z);
+    printDense(blocksize, BBlock->A, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
+        thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
+#endif
+
 #ifdef DGEMM
     double alpha = 1;
     double beta = 1;
@@ -159,7 +166,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     }
 #endif
 
-#ifdef PRINT_MATRICES
+#ifdef DEBUG_OUTPUT
     /** For debugging. */
     printDense(blocksize, CResult, "tier %d ME(%d,%d,%d) result:", tier,
         thisIndex.x, thisIndex.y, thisIndex.z);

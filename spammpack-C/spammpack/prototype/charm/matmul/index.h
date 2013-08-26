@@ -9,8 +9,8 @@
 #ifndef __INDEX_H
 #define __INDEX_H
 
-/** The linear offset inside a dense square matrix block. */
-#define BLOCK_INDEX(i, j, iLower, jLower, blocksize) ((i-iLower)*blocksize+(j-jLower))
+/** The linear offset inside a dense square matrix block. Column-major order. */
+#define BLOCK_INDEX(i, j, iLower, jLower, blocksize) ((i-iLower)+(j-jLower)*blocksize)
 
 /** The linear tree index. */
 #define CHILD_INDEX(i, j) ((i << 1) | j)
