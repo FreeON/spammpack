@@ -163,7 +163,9 @@ void Node::set (int blocksize, double *A)
   }
   norm = sqrt(norm_2);
 
+#ifdef DEBUG_OUTPUT
   printDense(blocksize, block, "Node(%d,%d) setting block:", thisIndex.x, thisIndex.y);
+#endif
 }
 
 /** Add a submatrix block to this Node.

@@ -137,6 +137,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     CResult = new double[blocksize*blocksize];
     memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
+    /* Calculate C_{ij} = A_{ik} B_{kj}. */
     DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
     DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
@@ -158,7 +159,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     }
 #endif
 
-#ifdef DEBUG_OUTPUT
+#ifdef PRINT_MATRICES
     /** For debugging. */
     printDense(blocksize, CResult, "tier %d ME(%d,%d,%d) result:", tier,
         thisIndex.x, thisIndex.y, thisIndex.z);

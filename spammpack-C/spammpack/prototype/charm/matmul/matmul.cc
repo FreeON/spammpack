@@ -216,7 +216,9 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
       break;
   }
 
+#ifdef PRINT_MATRICES
   printDense(N, ADense, "ADense:");
+#endif
 
   MatrixInfoMsg *AInfo = A.info();
   MatrixInfoMsg *CInfo = C.info();
@@ -294,6 +296,18 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
       CkPrintf(t.to_str());
     }
   }
+
+#ifdef PRINT_MATRICES
+  {
+    if(verify)
+    {
+      printDense(N, CExact, "CExact");
+    }
+    DenseMatrixMsg *CDense = C.toDense();
+    printDense(N, CDense->A, "C");
+    delete CDense;
+  }
+#endif
 
   if(verify)
   {
