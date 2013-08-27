@@ -30,16 +30,22 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   this->B = B;
   this->C = C;
 
-  int NTier = 1 << depth;
+  this->depth = depth;
 
-  this->convolution = CProxy_MultiplyElement::ckNew(blocksize, depth, depth,
-      ANodes, BNodes, CNodes, NTier, NTier, NTier);
+  convolution = new CProxy_MultiplyElement[depth+1];
+  for(int tier = 0; tier <= depth; tier++)
+  {
+    int NTier = 1 << tier;
 
-  unsigned long bytes = NTier*NTier*NTier*(sizeof(MultiplyElement)+blocksize*blocksize*sizeof(double));
-  INFO("created %dx%dx%d convolution, %d MultiplyElements "
-      "using %d bytes (%s)\n",
-      NTier, NTier, NTier, NTier*NTier*NTier,
-      bytes, humanReadableSize(bytes).c_str());
+    unsigned long bytes = NTier*NTier*NTier*(sizeof(MultiplyElement)+blocksize*blocksize*sizeof(double));
+    INFO("created %dx%dx%d convolution, %d MultiplyElements "
+        "using %d bytes (%s)\n",
+        NTier, NTier, NTier, NTier*NTier*NTier,
+        bytes, humanReadableSize(bytes).c_str());
+
+    convolution[tier] = CProxy_MultiplyElement::ckNew(blocksize, depth, depth,
+        ANodes, BNodes, CNodes, NTier, NTier, NTier);
+  }
 }
 
 /** Multiply two Matrix objects.
@@ -52,10 +58,10 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
 void Multiply::multiply (double tolerance, CkCallback &cb)
 {
   INFO("tolerance = %e\n", tolerance);
-  convolution.multiply(tolerance, CkCallbackResumeThread());
+  convolution[depth].multiply(tolerance, CkCallbackResumeThread());
 
   INFO("storeBack\n");
-  convolution.storeBack(CkCallbackResumeThread());
+  convolution[depth].storeBack(CkCallbackResumeThread());
 
   cb.send();
 }
@@ -66,7 +72,7 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
  */
 void Multiply::printPE (CkCallback &cb)
 {
-  convolution.printPE(CkCallbackResumeThread());
+  convolution[depth].printPE(CkCallbackResumeThread());
   cb.send();
 }
 

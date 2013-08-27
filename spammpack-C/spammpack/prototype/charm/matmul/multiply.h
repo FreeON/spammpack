@@ -25,8 +25,11 @@ class Multiply : public CBase_Multiply
     /** Matrix C. */
     CProxy_Matrix C;
 
-    /** The convolution. */
-    CProxy_MultiplyElement convolution;
+    /** The tree depth of the matrix. */
+    int depth;
+
+    /** The convolution. There is a convolution for each tier. */
+    CProxy_MultiplyElement *convolution;
 
   public:
 
