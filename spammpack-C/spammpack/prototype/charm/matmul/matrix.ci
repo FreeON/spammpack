@@ -9,5 +9,6 @@ module matrix
     entry [sync] DenseMatrixMsg * toDense (void);
     entry [sync] MatrixNodeMsg * getNodes (int tier);
     entry [threaded] void printPE (CkCallback &cb);
+    entry [threaded] void set (int N, double A[N*N], CkCallback &cb);
   };
 };

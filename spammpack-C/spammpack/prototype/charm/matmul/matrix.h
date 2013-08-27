@@ -42,6 +42,7 @@ class Matrix : public CBase_Matrix
     DenseMatrixMsg * toDense (void);
     MatrixNodeMsg * getNodes (int tier);
     void printPE (CkCallback &cb);
+    void set (int N, double *A, CkCallback &cb);
 };
 
 #endif

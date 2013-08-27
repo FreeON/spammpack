@@ -7,6 +7,11 @@ module multiplyelement
     entry MultiplyElement (int blocksize, int tier, int depth, CProxy_Node A,
         CProxy_Node B, CProxy_Node C);
     entry [threaded] void multiply (double tolerance, CkCallback &cb);
+    entry [threaded] void pruneProduct (double tolerance,
+        CProxy_Node ANodes,
+        CProxy_Node BNodes,
+        CProxy_MultiplyElement convolution,
+        CkCallback &cb);
     entry void storeBack (CkCallback &cb);
     entry void printPE (CkCallback &cb);
   };

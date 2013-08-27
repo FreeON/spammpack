@@ -43,7 +43,7 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
         NTier, NTier, NTier, NTier*NTier*NTier,
         bytes, humanReadableSize(bytes).c_str());
 
-    convolution[tier] = CProxy_MultiplyElement::ckNew(blocksize, depth, depth,
+    convolution[tier] = CProxy_MultiplyElement::ckNew(blocksize, tier, depth,
         ANodes, BNodes, CNodes, NTier, NTier, NTier);
   }
 }
@@ -58,6 +58,25 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
 void Multiply::multiply (double tolerance, CkCallback &cb)
 {
   INFO("tolerance = %e\n", tolerance);
+
+  for(int tier = 0; tier < depth; tier)
+  {
+    /* Prune convolution to achieve reduced complexity in symbolic part of the
+     * multiply. */
+    MatrixNodeMsg *ANodes = A.getNodes(tier);
+    MatrixNodeMsg *BNodes = B.getNodes(tier);
+    INFO("pruning tier %d\n", tier);
+    convolution[tier].pruneProduct(tolerance, ANodes->nodes, BNodes->nodes,
+        convolution[tier+1], CkCallbackResumeThread());
+    delete ANodes;
+    delete BNodes;
+
+    /* Mark the next tier as complete so that the load balancer can work. */
+    convolution[tier+1].doneInserting();
+
+    /* Wait until things have settled down. */
+    CkWaitQD();
+  }
   convolution[depth].multiply(tolerance, CkCallbackResumeThread());
 
   INFO("storeBack\n");

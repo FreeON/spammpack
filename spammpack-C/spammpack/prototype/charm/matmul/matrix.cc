@@ -110,4 +110,40 @@ void Matrix::printPE (CkCallback &cb)
   cb.send();
 }
 
+/** Set a matrix using a dense array.
+ *
+ * @param N The matrix size.
+ * @param A The dense matrix.
+ * @param cb The callback to signal once done.
+ */
+void Matrix::set (int N, double *A, CkCallback &cb)
+{
+  assert(this->N == N);
+
+  INFO("setting matrix\n");
+
+  /* Set the A matrix. */
+  double *block = new double[blocksize*blocksize];
+
+  for(int i = 0; i < NPadded/blocksize; i++) {
+    for(int j = 0; j < NPadded/blocksize; j++)
+    {
+      memset(block, 0, sizeof(double)*blocksize*blocksize);
+
+      for(int l = i*blocksize; l < (i+1)*blocksize && l < N; l++) {
+        for(int m = j*blocksize; m < (j+1)*blocksize && m < N; m++)
+        {
+          block[BLOCK_INDEX(l, m, i*blocksize, j*blocksize, blocksize)] =
+            A[BLOCK_INDEX(l, m, 0, 0, N)];
+        }
+      }
+
+      nodes[depth](i, j).set(blocksize, block);
+    }
+  }
+  delete[] block;
+
+  cb.send();
+}
+
 #include "matrix.def.h"

@@ -48,6 +48,11 @@ class MultiplyElement : public CBase_MultiplyElement
     ~MultiplyElement ();
     void pup (PUP::er &p);
     void multiply (double tolerance, CkCallback &cb);
+    void pruneProduct (double tolerance,
+        CProxy_Node ANodes,
+        CProxy_Node BNodes,
+        CProxy_MultiplyElement convolution,
+        CkCallback &cb);
     void storeBack (CkCallback &cb);
     void printPE (CkCallback &cb);
 };

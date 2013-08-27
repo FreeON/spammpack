@@ -33,10 +33,12 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
     bool equal (MatrixInfoMsg *b);
 };
 
+/** A message containing the Node chare array on a particular tier. */
 class MatrixNodeMsg : public CMessage_MatrixNodeMsg
 {
   public:
 
+    /** The Node chare array. */
     CProxy_Node nodes;
 
     MatrixNodeMsg (CProxy_Node nodes);

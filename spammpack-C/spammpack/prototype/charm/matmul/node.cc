@@ -117,8 +117,8 @@ void Node::pup (PUP::er &p)
  */
 NodeInfoMsg * Node::info (void)
 {
-  DEBUG("Node(%d,%d) getting node info on index %s\n",
-      thisIndex.x, thisIndex.y, toBinary(index).c_str());
+  INFO("Node(%d,%d) getting node info on index %s, norm = %e, norm_2 = %e\n",
+      thisIndex.x, thisIndex.y, toBinary(index).c_str(), norm, norm_2);
 
   return new NodeInfoMsg(index, norm, norm_2);
 }

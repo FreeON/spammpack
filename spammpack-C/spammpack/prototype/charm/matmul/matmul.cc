@@ -222,35 +222,7 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   printDense(N, ADense, "ADense:");
 #endif
 
-  MatrixInfoMsg *AInfo = A.info();
-  MatrixInfoMsg *CInfo = C.info();
-
-  MatrixNodeMsg *ANodes = A.getNodes(AInfo->depth);
-  MatrixNodeMsg *CNodes = C.getNodes(AInfo->depth);
-
-  /* Set the A matrix. */
-  {
-    double *block = new double[blocksize*blocksize];
-
-    for(int i = 0; i < AInfo->NPadded/blocksize; i++) {
-      for(int j = 0; j < AInfo->NPadded/blocksize; j++)
-      {
-        memset(block, 0, sizeof(double)*blocksize*blocksize);
-
-        for(int l = i*blocksize; l < (i+1)*blocksize && l < N; l++) {
-          for(int m = j*blocksize; m < (j+1)*blocksize && m < N; m++)
-          {
-            block[BLOCK_INDEX(l, m, i*blocksize, j*blocksize, blocksize)] =
-              ADense[BLOCK_INDEX(l, m, 0, 0, N)];
-          }
-        }
-
-        ANodes->nodes(i, j).set(blocksize, block);
-      }
-    }
-
-    delete[] block;
-  }
+  A.set(N, ADense, CkCallbackResumeThread());
 
   double *CExact = NULL;
   if(verify)
@@ -259,14 +231,20 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     memset(CExact, 0, sizeof(double)*N*N);
   }
 
+  MatrixInfoMsg *AInfo = A.info();
+  MatrixInfoMsg *CInfo = C.info();
+
+  MatrixNodeMsg *ANodes = A.getNodes(AInfo->depth);
+  MatrixNodeMsg *CNodes = C.getNodes(CInfo->depth);
+
   CProxy_Multiply M = CProxy_Multiply::ckNew(A, A, C, AInfo->blocksize,
       AInfo->depth, ANodes->nodes, ANodes->nodes, CNodes->nodes);
 
-  delete AInfo;
-  delete CInfo;
-
   delete ANodes;
   delete CNodes;
+
+  delete AInfo;
+  delete CInfo;
 
   CkPrintf("running %d iterations\n", numberIterations);
   for(int iteration = 0; iteration < numberIterations; iteration++)

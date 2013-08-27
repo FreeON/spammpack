@@ -9,13 +9,12 @@
 #include "messages.h"
 #include "logger.h"
 
-/** The contructor.
+/** The constructor.
  *
  * @param N The matrix size.
  * @param blocksize The submatrix size at the lowest tier.
  * @param depth The tree depth of the matrix.
  * @param NPadded The padded matrix size.
- * @param nodes The array of Node objects. There is one array per tier.
  */
 MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth, int NPadded)
 {

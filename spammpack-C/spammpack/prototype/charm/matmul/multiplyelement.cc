@@ -182,6 +182,53 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   contribute(cb);
 }
 
+/** Prune the next tier based on the Node norms by applying the SpAMM
+ * tolerance.
+ *
+ * @param tolerance The SpAMM tolerance.
+ * @param ANodes The @link Node nodes @endlink of Matrix A on the tier below this one.
+ * @param BNodes The @link Node nodes @endlink of Matrix B on the tier below this one.
+ * @param convolution The MultiplyElement chare array of the next tier.
+ * @param cb The callback to reduce to.
+ */
+void MultiplyElement::pruneProduct (double tolerance,
+    CProxy_Node ANodes,
+    CProxy_Node BNodes,
+    CProxy_MultiplyElement convolution,
+    CkCallback &cb)
+{
+  INFO("tier %d ME(%d,%d,%d) pruning next tier\n", tier, thisIndex.x,
+      thisIndex.y, thisIndex.z);
+
+  for(int i = 0; i < 2; i++) {
+    for(int j = 0; j < 2; j++) {
+      for(int k = 0; k < 2; k++)
+      {
+        NodeInfoMsg *AInfo = ANodes(i, k).info();
+        NodeInfoMsg *BInfo = BNodes(k, j).info();
+        if(AInfo->norm*BInfo->norm > tolerance)
+        {
+          /* If necessary, create MultiplyElement. */
+          INFO("tier %d ME(%d,%d,%d) need convolution(%d,%d,%d)\n", tier,
+              thisIndex.x, thisIndex.y, thisIndex.z,
+              i, j, k);
+        }
+
+        else
+        {
+          /* If necessary, destroy MultiplyElement. */
+          INFO("tier %d ME(%d,%d,%d) pruning convolution(%d,%d,%d)\n", tier,
+              thisIndex.x, thisIndex.y, thisIndex.z,
+              i, j, k);
+        }
+        delete AInfo;
+        delete BInfo;
+      }
+    }
+  }
+  contribute(cb);
+}
+
 /** Push the C submatrices back into the C Matrix.
  *
  * @param cb The callback.
