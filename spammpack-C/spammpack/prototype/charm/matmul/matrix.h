@@ -31,14 +31,16 @@ class Matrix : public CBase_Matrix
     /** The padded size of the matrix. */
     int NPadded;
 
-    /** The Node matrix at tier == depth. */
-    CProxy_Node nodes;
+    /** The Nodes per tier. The variable Matrix::nodes points to an array of
+     * size Matrix::depth containing the Node proxy on each tier. */
+    CProxy_Node *nodes;
 
   public:
 
     Matrix (int N, int blocksize);
     MatrixInfoMsg * info (void);
     DenseMatrixMsg * toDense (void);
+    MatrixNodeMsg * getNodes (int tier);
     void printPE (CkCallback &cb);
 };
 

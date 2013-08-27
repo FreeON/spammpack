@@ -1,6 +1,7 @@
 module messages
 {
   message MatrixInfoMsg;
+  message MatrixNodeMsg;
   message NodeInfoMsg;
   message DenseMatrixMsg
   {

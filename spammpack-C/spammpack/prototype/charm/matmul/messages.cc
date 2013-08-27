@@ -17,13 +17,12 @@
  * @param NPadded The padded matrix size.
  * @param nodes The array of Node objects. There is one array per tier.
  */
-MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth, int NPadded, CProxy_Node nodes)
+MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth, int NPadded)
 {
   this->N = N;
   this->blocksize = blocksize;
   this->depth = depth;
   this->NPadded = NPadded;
-  this->nodes = nodes;
 }
 
 /** Compare with another MatrixInfoMsg object.
@@ -41,6 +40,15 @@ bool MatrixInfoMsg::equal (MatrixInfoMsg *b)
   }
 
   return true;
+}
+
+/** The constructor.
+ *
+ * @param nodes The Node array.
+ */
+MatrixNodeMsg::MatrixNodeMsg (CProxy_Node nodes)
+{
+  this->nodes = nodes;
 }
 
 /** The constructor.

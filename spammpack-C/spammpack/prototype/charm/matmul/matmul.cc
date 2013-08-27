@@ -225,6 +225,9 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   MatrixInfoMsg *AInfo = A.info();
   MatrixInfoMsg *CInfo = C.info();
 
+  MatrixNodeMsg *ANodes = A.getNodes(AInfo->depth);
+  MatrixNodeMsg *CNodes = C.getNodes(AInfo->depth);
+
   /* Set the A matrix. */
   {
     double *block = new double[blocksize*blocksize];
@@ -242,7 +245,7 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
           }
         }
 
-        AInfo->nodes(i, j).set(blocksize, block);
+        ANodes->nodes(i, j).set(blocksize, block);
       }
     }
 
@@ -257,10 +260,13 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   }
 
   CProxy_Multiply M = CProxy_Multiply::ckNew(A, A, C, AInfo->blocksize,
-      AInfo->depth, AInfo->nodes, AInfo->nodes, CInfo->nodes);
+      AInfo->depth, ANodes->nodes, ANodes->nodes, CNodes->nodes);
 
   delete AInfo;
   delete CInfo;
+
+  delete ANodes;
+  delete CNodes;
 
   CkPrintf("running %d iterations\n", numberIterations);
   for(int iteration = 0; iteration < numberIterations; iteration++)

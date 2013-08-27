@@ -11,6 +11,8 @@
 #include "logger.h"
 #include "index.h"
 
+#include <assert.h>
+
 /** The constructor.
  *
  * @param N The matrix size.
@@ -30,16 +32,20 @@ Matrix::Matrix (int N, int blocksize)
   if(blocksize*(1 << depth) < N) depth++;
   NPadded = blocksize*(1 << depth);
 
-  int NTier = 1 << depth;
+  nodes = new CProxy_Node[depth+1];
+  for(int tier = 0; tier <= depth; tier++)
+  {
+    int NTier = 1 << tier;
 
-  unsigned long bytes = NTier*NTier*(sizeof(Node)
-      +blocksize*blocksize*sizeof(double));
-  INFO("N = %d, blocksize = %d, depth = %d, NPadded = %d, "
-      "NTier = %d, creating %d Nodes using %d bytes (%s)\n",
-      N, blocksize, depth, NPadded,
-      NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
+    unsigned long bytes = NTier*NTier*(sizeof(Node)
+        +blocksize*blocksize*sizeof(double));
+    INFO("N = %d, blocksize = %d, tier = %d, depth = %d, NPadded = %d, "
+        "NTier = %d, creating %d Nodes using %d bytes (%s)\n",
+        N, blocksize, tier, depth, NPadded,
+        NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
 
-  nodes = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
+    nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
+  }
 }
 
 /** Get some basic information on the matrix.
@@ -48,7 +54,7 @@ Matrix::Matrix (int N, int blocksize)
  */
 MatrixInfoMsg * Matrix::info (void)
 {
-  return new MatrixInfoMsg (N, blocksize, depth, NPadded, nodes);
+  return new MatrixInfoMsg (N, blocksize, depth, NPadded);
 }
 
 /** Convert a Matrix to a dense matrix.
@@ -64,7 +70,7 @@ DenseMatrixMsg * Matrix::toDense (void)
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++)
     {
-      DenseMatrixMsg *block = nodes(i, j).getBlock();
+      DenseMatrixMsg *block = nodes[depth](i, j).getBlock();
 
       for(int l = i*blocksize; l < (i+1)*blocksize && l < N; l++) {
         for(int m = j*blocksize; m < (j+1)*blocksize && m < N; m++)
@@ -81,13 +87,26 @@ DenseMatrixMsg * Matrix::toDense (void)
   return A;
 }
 
-/** Print the PEs all Nodes are on.
+/** Get the Node array on a particular tier.
  *
- * @param cb The callback to signal once all Nodes have printed.
+ * @param tier The tier.
+ *
+ * @return The Node array on that tier.
+ */
+MatrixNodeMsg * Matrix::getNodes (int tier)
+{
+  assert(tier >= 0 && tier <= depth);
+  return new MatrixNodeMsg(nodes[tier]);
+}
+
+/** Print the PEs all @link Node Nodes @endlink are on.
+ *
+ * @param cb The callback to signal once all @link Node Nodes @endlink have
+ * printed.
  */
 void Matrix::printPE (CkCallback &cb)
 {
-  nodes.printPE(CkCallbackResumeThread());
+  nodes[depth].printPE(CkCallbackResumeThread());
   cb.send();
 }
 

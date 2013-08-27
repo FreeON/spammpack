@@ -29,11 +29,17 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
     /** The padded size of the matrix. */
     int NPadded;
 
-    /** The Node matrix at tier == depth. */
+    MatrixInfoMsg (int N, int blocksize, int depth, int NPadded);
+    bool equal (MatrixInfoMsg *b);
+};
+
+class MatrixNodeMsg : public CMessage_MatrixNodeMsg
+{
+  public:
+
     CProxy_Node nodes;
 
-    MatrixInfoMsg (int N, int blocksize, int depth, int NPadded, CProxy_Node nodes);
-    bool equal (MatrixInfoMsg *b);
+    MatrixNodeMsg (CProxy_Node nodes);
 };
 
 /** A message containing information on matrix nodes. */
