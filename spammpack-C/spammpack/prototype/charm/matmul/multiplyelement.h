@@ -40,6 +40,10 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The result matrix. */
     double *CResult;
 
+    /** A flag indicating whether this MultiplyElement is enabled or not (as a
+     * hack while real pruning doesn't work. */
+    bool isEnabled;
+
   public:
 
     MultiplyElement (int blocksize, int tier, int depth, CProxy_Node A,
@@ -55,6 +59,8 @@ class MultiplyElement : public CBase_MultiplyElement
         bool *convolutionExists,
         CProxy_MultiplyElement convolution,
         CkCallback &cb);
+    void enable (void);
+    void disable (void);
     void storeBack (CkCallback &cb);
     void printPE (CkCallback &cb);
 };

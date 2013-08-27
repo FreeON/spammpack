@@ -14,6 +14,8 @@ module multiplyelement
         bool convolutionExists[NElement*NElement*NElement],
         CProxy_MultiplyElement convolution,
         CkCallback &cb);
+    entry void enable (void);
+    entry void disable (void);
     entry void storeBack (CkCallback &cb);
     entry void printPE (CkCallback &cb);
   };

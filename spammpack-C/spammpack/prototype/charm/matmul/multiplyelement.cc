@@ -52,6 +52,7 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
   index = tempIndex.to_ulong();
 
   CResult = NULL;
+  isEnabled = true;
 }
 
 /** The migration constructor.
@@ -89,6 +90,7 @@ void MultiplyElement::pup (PUP::er &p)
   p|A;
   p|B;
   p|C;
+  p|isEnabled;
 
   int numberElements = (CResult == NULL ? 0 : blocksize*blocksize);
   p|numberElements;
@@ -120,64 +122,67 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) multiply\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z);
 
-  NodeInfoMsg *AInfo = A(thisIndex.x, thisIndex.z).info();
-  NodeInfoMsg *BInfo = B(thisIndex.z, thisIndex.y).info();
-
-  DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
-      thisIndex.y, thisIndex.z);
-
-  if(AInfo->norm*BInfo->norm > tolerance)
+  if(isEnabled)
   {
-    if(CResult != NULL)
+    NodeInfoMsg *AInfo = A(thisIndex.x, thisIndex.z).info();
+    NodeInfoMsg *BInfo = B(thisIndex.z, thisIndex.y).info();
+
+    DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
+        thisIndex.y, thisIndex.z);
+
+    if(AInfo->norm*BInfo->norm > tolerance)
     {
-      ABORT("tier %d ME(%d,%d,%d) CResult is not NULL\n", tier, thisIndex.x,
-          thisIndex.y, thisIndex.z);
-    }
+      if(CResult != NULL)
+      {
+        ABORT("tier %d ME(%d,%d,%d) CResult is not NULL\n", tier, thisIndex.x,
+            thisIndex.y, thisIndex.z);
+      }
 
-    CResult = new double[blocksize*blocksize];
-    memset(CResult, 0, sizeof(double)*blocksize*blocksize);
+      CResult = new double[blocksize*blocksize];
+      memset(CResult, 0, sizeof(double)*blocksize*blocksize);
 
-    /* Calculate C_{ij} = A_{ik} B_{kj}. */
-    DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
-    DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
+      /* Calculate C_{ij} = A_{ik} B_{kj}. */
+      DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
+      DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
 #ifdef DEBUG_OUTPUT
-    printDense(blocksize, ABlock->A, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
-        thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.x, thisIndex.z);
-    printDense(blocksize, BBlock->A, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
-        thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
+      printDense(blocksize, ABlock->A, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
+          thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.x, thisIndex.z);
+      printDense(blocksize, BBlock->A, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
+          thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
 #endif
 
 #ifdef DGEMM
-    double alpha = 1;
-    double beta = 1;
-    DGEMM("N", "N", &blocksize, &blocksize, &blocksize, &alpha, ABlock->A,
-        &blocksize, BBlock->A, &blocksize, &beta, CResult, &blocksize);
+      double alpha = 1;
+      double beta = 1;
+      DGEMM("N", "N", &blocksize, &blocksize, &blocksize, &alpha, ABlock->A,
+          &blocksize, BBlock->A, &blocksize, &beta, CResult, &blocksize);
 #else
-    for(int i = 0; i < blocksize; i++) {
-      for(int j = 0; j < blocksize; j++) {
-        for(int k = 0; k < blocksize; k++)
-        {
-          CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
-            ABlock->A[BLOCK_INDEX(i, k, 0, 0, blocksize)]
-            *BBlock->A[BLOCK_INDEX(k, j, 0, 0, blocksize)];
+      for(int i = 0; i < blocksize; i++) {
+        for(int j = 0; j < blocksize; j++) {
+          for(int k = 0; k < blocksize; k++)
+          {
+            CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
+              ABlock->A[BLOCK_INDEX(i, k, 0, 0, blocksize)]
+              *BBlock->A[BLOCK_INDEX(k, j, 0, 0, blocksize)];
+          }
         }
       }
-    }
 #endif
 
 #ifdef DEBUG_OUTPUT
-    /** For debugging. */
-    printDense(blocksize, CResult, "tier %d ME(%d,%d,%d) result:", tier,
-        thisIndex.x, thisIndex.y, thisIndex.z);
+      /** For debugging. */
+      printDense(blocksize, CResult, "tier %d ME(%d,%d,%d) result:", tier,
+          thisIndex.x, thisIndex.y, thisIndex.z);
 #endif
 
-    delete ABlock;
-    delete BBlock;
-  }
+      delete ABlock;
+      delete BBlock;
+    }
 
-  delete AInfo;
-  delete BInfo;
+    delete AInfo;
+    delete BInfo;
+  }
 
   contribute(cb);
 }
@@ -226,7 +231,11 @@ void MultiplyElement::pruneProduct (double tolerance,
               nextX, nextY, nextZ);
           if(!convolutionExists[nextX+nextY*NElement+nextZ*NElement*NElement])
           {
+#ifdef PRUNE_CONVOLUTION
             convolution(nextX, nextY, nextZ).insert(blocksize, tier+1, depth, A, B, C);
+#else
+            convolution(nextX, nextY, nextZ).enable();
+#endif
             convolutionExists[nextX+nextY*NElement+nextZ*NElement*NElement] = true;
           }
         }
@@ -239,7 +248,11 @@ void MultiplyElement::pruneProduct (double tolerance,
               nextX, nextY, nextZ);
           if(convolutionExists[nextX+nextY*NElement+nextZ*NElement*NElement])
           {
+#ifdef PRUNE_CONVOLUTION
             convolution(nextX, nextY, nextZ).ckDestroy();
+#else
+            convolution(nextX, nextY, nextZ).disable();
+#endif
             convolutionExists[nextX+nextY*NElement+nextZ*NElement*NElement] = false;
           }
         }
@@ -249,6 +262,16 @@ void MultiplyElement::pruneProduct (double tolerance,
     }
   }
   contribute(cb);
+}
+
+/** Enable this MultiplyElement. */
+void MultiplyElement::enable (void)
+{
+}
+
+/** Disable this MultiplyElement. */
+void MultiplyElement::disable (void)
+{
 }
 
 /** Push the C submatrices back into the C Matrix.
