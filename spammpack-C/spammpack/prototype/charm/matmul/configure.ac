@@ -107,10 +107,10 @@ if test "${enable_print_matrices}" = "yes"; then
 fi
 
 AC_ARG_ENABLE([pruning],
-  [AS_HELP_STRING([--disable-pruning],
-  [disable pruning of convolution space])],
+  [AS_HELP_STRING([--enable-pruning],
+  [enable pruning of convolution space])],
   [enable_pruning=$enableval],
-  [enable_pruning="yes"])
+  [enable_pruning="no"])
 if test "${enable_pruning}" = "yes"; then
   AC_DEFINE([PRUNE_CONVOLUTION], [1], [Enable pruning of convolution space])
 fi

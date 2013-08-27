@@ -6,6 +6,7 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
+#include "config.h"
 #include "multiply.h"
 #include "multiplyelement.h"
 #include "messages.h"
@@ -77,6 +78,7 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
 {
   INFO("tolerance = %e\n", tolerance);
 
+#ifdef PRUNE_CONVOLUTION
   for(int tier = 0; tier < depth; tier++)
   {
     /* Prune convolution to achieve reduced complexity in symbolic part of the
@@ -98,6 +100,9 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
     /* Wait until things have settled down. */
     CkWaitQD();
   }
+#endif
+
+  /* Multiply. */
   convolution[depth].multiply(tolerance, CkCallbackResumeThread());
 
   INFO("storeBack\n");
