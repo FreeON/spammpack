@@ -234,7 +234,7 @@ void MultiplyElement::pruneProduct (double tolerance,
         else
         {
           /* If necessary, destroy MultiplyElement. */
-          DEBUG("tier %d ME(%d,%d,%d) pruning tier %d, convolution(%d,%d,%d)\n",
+          INFO("tier %d ME(%d,%d,%d) pruning tier %d, convolution(%d,%d,%d)\n",
               tier, thisIndex.x, thisIndex.y, thisIndex.z, tier+1,
               nextX, nextY, nextZ);
           if(convolutionExists[nextX+nextY*NElement+nextZ*NElement*NElement])

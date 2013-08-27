@@ -57,20 +57,22 @@ Main::Main (CkArgMsg *msg)
   double tolerance = 0.0;
   enum matrix_t matrixType = full;
   bool verify = false;
+  bool loadBalance = false;
   double verifyTolerance = 1.0e-10;
   double decayConstant = 0.1;
 
   int c;
-  const char *short_options = "hN:b:i:t:m:vd:";
+  const char *short_options = "hN:b:i:t:m:vd:l";
   const option long_options[] = {
-    { "help",       no_argument,        NULL, 'h' },
-    { "N",          required_argument,  NULL, 'N' },
-    { "block",      required_argument,  NULL, 'b' },
-    { "iterations", required_argument,  NULL, 'i' },
-    { "tolerance",  required_argument,  NULL, 't' },
-    { "type",       required_argument,  NULL, 'm' },
-    { "verify",     no_argument,        NULL, 'v' },
-    { "decay",      required_argument,  NULL, 'd' },
+    { "help",         no_argument,        NULL, 'h' },
+    { "N",            required_argument,  NULL, 'N' },
+    { "block",        required_argument,  NULL, 'b' },
+    { "iterations",   required_argument,  NULL, 'i' },
+    { "tolerance",    required_argument,  NULL, 't' },
+    { "type",         required_argument,  NULL, 'm' },
+    { "verify",       no_argument,        NULL, 'v' },
+    { "decay",        required_argument,  NULL, 'd' },
+    { "load-balance", no_argument,        NULL, 'l' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -94,6 +96,7 @@ Main::Main (CkArgMsg *msg)
             "(default: full)\n");
         CkPrintf("{ -v | --verify }         Verify matmul product\n");
         CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
+        CkPrintf("{ -l | --load-balance }   Load balance after each iteration\n");
         CkPrintf("\n");
         CkExit();
         break;
@@ -141,6 +144,10 @@ Main::Main (CkArgMsg *msg)
         decayConstant = strtod(optarg, NULL);
         break;
 
+      case 'l':
+        loadBalance = true;
+        break;
+
       default:
         CkExit();
         break;
@@ -151,7 +158,7 @@ Main::Main (CkArgMsg *msg)
 
   DEBUG("calling run() on this proxy\n");
   thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
-      decayConstant, verify, verifyTolerance);
+      decayConstant, verify, verifyTolerance, loadBalance);
 }
 
 /** The main method.
@@ -166,9 +173,11 @@ Main::Main (CkArgMsg *msg)
  * @param verify Whether to verify the matrix product.
  * @param verifyTolerance The absolute tolerance in the matrix
  * verification.
+ * @param loadBalance Whether to load balance.
  */
 void Main::run (int N, int blocksize, int numberIterations, double tolerance,
-    int matrixType, double decayConstant, bool verify, double verifyTolerance)
+    int matrixType, double decayConstant, bool verify, double verifyTolerance,
+    bool loadBalance)
 {
   LBDatabase *db = LBDatabaseObj();
 
@@ -267,8 +276,12 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 #endif
 
     /* Load balance. */
-    db->StartLB();
-    CkWaitQD();
+    if(loadBalance)
+    {
+      INFO("load balancing\n");
+      db->StartLB();
+      CkWaitQD();
+    }
 
     if(verify)
     {

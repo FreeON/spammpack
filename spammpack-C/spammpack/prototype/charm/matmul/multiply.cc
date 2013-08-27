@@ -81,7 +81,7 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
   {
     /* Prune convolution to achieve reduced complexity in symbolic part of the
      * multiply. */
-    DEBUG("pruning tier %d\n", tier);
+    INFO("pruning tier %d\n", tier+1);
     MatrixNodeMsg *ANodes = A.getNodes(tier+1);
     MatrixNodeMsg *BNodes = B.getNodes(tier+1);
     int NTier = 1 << (tier+1);
@@ -92,6 +92,7 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
     delete BNodes;
 
     /* Mark the next tier as complete so that the load balancer can work. */
+    INFO("calling doneInserting() on tier %d\n", tier+1);
     convolution[tier+1].doneInserting();
 
     /* Wait until things have settled down. */
@@ -103,8 +104,10 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
   convolution[depth].storeBack(CkCallbackResumeThread());
 
   /* Update norms. */
+  INFO("updating norms\n");
   C.setNorm(CkCallbackResumeThread());
 
+  INFO("done\n");
   cb.send();
 }
 

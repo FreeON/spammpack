@@ -137,13 +137,22 @@ class Main : public CBase_Main
     {
       LBDatabase *db = LBDatabaseObj();
 
-      for(int iteration = 0; iteration < 5; iteration++)
+      for(int iteration = 0; iteration < 50; iteration++)
       {
         CkPrintf("iteration %d, ", iteration+1);
         numberMismatched = 0;
         work.doSomething(CkCallbackResumeThread());
         CkPrintf("%d mismatched elements\n", numberMismatched);
+
+        if(iteration == 0)
+        {
+          work(0).ckDestroy();
+          work.doneInserting();
+          CkWaitQD();
+        }
+
         db->StartLB();
+
         CkWaitQD();
       }
 

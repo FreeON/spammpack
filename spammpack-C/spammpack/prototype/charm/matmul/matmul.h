@@ -18,7 +18,8 @@ class Main : public CBase_Main
 
     Main (CkArgMsg *msg);
     void run (int N, int blocksize, int numberIterations, double tolerance,
-        int matrixType, double decayConstant, bool verify, double verifyTolerance);
+        int matrixType, double decayConstant, bool verify, double verifyTolerance,
+        bool loadBalance);
 };
 
 #endif

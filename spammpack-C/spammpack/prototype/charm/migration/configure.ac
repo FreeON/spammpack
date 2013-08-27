@@ -1,4 +1,4 @@
-AC_INIT([migration], [1], [nicolasbock@freeon.org])
+AC_INIT([migration], [2], [nicolasbock@freeon.org])
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
