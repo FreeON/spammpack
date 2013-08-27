@@ -10,5 +10,6 @@ module matrix
     entry [sync] MatrixNodeMsg * getNodes (int tier);
     entry [threaded] void printPE (CkCallback &cb);
     entry [threaded] void set (int N, double A[N*N], CkCallback &cb);
+    entry [threaded] void setNorm (CkCallback &cb);
   };
 };

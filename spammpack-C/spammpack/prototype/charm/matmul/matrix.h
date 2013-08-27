@@ -43,6 +43,7 @@ class Matrix : public CBase_Matrix
     MatrixNodeMsg * getNodes (int tier);
     void printPE (CkCallback &cb);
     void set (int N, double *A, CkCallback &cb);
+    void setNorm (CkCallback &cb);
 };
 
 #endif

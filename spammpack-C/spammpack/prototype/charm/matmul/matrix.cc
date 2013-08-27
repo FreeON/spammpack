@@ -44,7 +44,7 @@ Matrix::Matrix (int N, int blocksize)
         N, blocksize, tier, depth, NPadded,
         NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
 
-    nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, depth, NTier, NTier);
+    nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier, NTier, NTier);
   }
 }
 
@@ -120,7 +120,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
 {
   assert(this->N == N);
 
-  INFO("setting matrix\n");
+  DEBUG("setting matrix\n");
 
   /* Set the A matrix. */
   double *block = new double[blocksize*blocksize];
@@ -143,6 +143,24 @@ void Matrix::set (int N, double *A, CkCallback &cb)
   }
   delete[] block;
 
+  /* Update norms. */
+  thisProxy.setNorm(CkCallbackResumeThread());
+
+  cb.send();
+}
+
+/** Update the norms based on the norm information of the leaf @link Node
+ * nodes @endlink.
+ *
+ * @param cb The callback to send back to.
+ */
+void Matrix::setNorm (CkCallback &cb)
+{
+  /* Update the norms on the upper tiers. */
+  for(int tier = depth-1; tier >= 0; tier--)
+  {
+    nodes[tier].setNorm(nodes[tier+1], CkCallbackResumeThread());
+  }
   cb.send();
 }
 

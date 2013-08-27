@@ -117,8 +117,10 @@ void Node::pup (PUP::er &p)
  */
 NodeInfoMsg * Node::info (void)
 {
-  INFO("Node(%d,%d) getting node info on index %s, norm = %e, norm_2 = %e\n",
-      thisIndex.x, thisIndex.y, toBinary(index).c_str(), norm, norm_2);
+  DEBUG("tier %d, Node(%d,%d) getting node info on index %s, "
+      "norm = %e, norm_2 = %e\n",
+      tier, thisIndex.x, thisIndex.y,
+      toBinary(index).c_str(), norm, norm_2);
 
   return new NodeInfoMsg(index, norm, norm_2);
 }
@@ -129,7 +131,8 @@ NodeInfoMsg * Node::info (void)
  */
 DenseMatrixMsg * Node::getBlock (void)
 {
-  DEBUG("Node(%d,%d) getting block\n", thisIndex.x, thisIndex.y);
+  DEBUG("tier %d, Node(%d,%d) getting block\n", tier, thisIndex.x, thisIndex.y);
+
   DenseMatrixMsg *m = new (blocksize*blocksize) DenseMatrixMsg();
   if(block != NULL)
   {
@@ -164,8 +167,31 @@ void Node::set (int blocksize, double *A)
   norm = sqrt(norm_2);
 
 #ifdef DEBUG_OUTPUT
-  printDense(blocksize, block, "Node(%d,%d) setting block:", thisIndex.x, thisIndex.y);
+  printDense(blocksize, block, "tier %d, Node(%d,%d) setting block:", tier, thisIndex.x, thisIndex.y);
 #endif
+}
+
+/** Set the norm of this Node based on the norms of the Node objects
+ * underneath it.
+ *
+ * @param nodes The Node chare array underneath this tier.
+ * @param cb The callback to reduce to.
+ */
+void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
+{
+  DEBUG("tier %d, Node(%d,%d) updating norms\n", tier, thisIndex.x, thisIndex.y);
+
+  norm_2 = 0;
+  for(int i = 0; i < 2; i++) {
+    for(int j = 0; j < 2; j++)
+    {
+      NodeInfoMsg *msg = nodes((thisIndex.x << 1) | i, (thisIndex.y << 1) | j).info();
+      norm_2 += msg->norm_2;
+      delete msg;
+    }
+  }
+  norm = sqrt(norm_2);
+  contribute(cb);
 }
 
 /** Add a submatrix block to this Node.

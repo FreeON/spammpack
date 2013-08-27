@@ -33,6 +33,7 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   this->depth = depth;
 
   convolution = new CProxy_MultiplyElement[depth+1];
+  convolutionExists = new bool*[depth+1];
   for(int tier = 0; tier <= depth; tier++)
   {
     int NTier = 1 << tier;
@@ -45,7 +46,24 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
 
     convolution[tier] = CProxy_MultiplyElement::ckNew(blocksize, tier, depth,
         ANodes, BNodes, CNodes, NTier, NTier, NTier);
+
+    convolutionExists[tier] = new bool[NTier*NTier*NTier];
+    for(int i = 0; i < NTier*NTier*NTier; i++)
+    {
+      convolutionExists[tier][i] = true;
+    }
   }
+}
+
+/** The destructor.
+ */
+Multiply::~Multiply (void)
+{
+  for(int tier = 0; tier <= depth; tier++)
+  {
+    delete[] convolutionExists[tier];
+  }
+  delete[] convolutionExists;
 }
 
 /** Multiply two Matrix objects.
@@ -59,15 +77,17 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
 {
   INFO("tolerance = %e\n", tolerance);
 
-  for(int tier = 0; tier < depth; tier)
+  for(int tier = 0; tier < depth; tier++)
   {
     /* Prune convolution to achieve reduced complexity in symbolic part of the
      * multiply. */
-    MatrixNodeMsg *ANodes = A.getNodes(tier);
-    MatrixNodeMsg *BNodes = B.getNodes(tier);
-    INFO("pruning tier %d\n", tier);
+    DEBUG("pruning tier %d\n", tier);
+    MatrixNodeMsg *ANodes = A.getNodes(tier+1);
+    MatrixNodeMsg *BNodes = B.getNodes(tier+1);
+    int NTier = 1 << (tier+1);
     convolution[tier].pruneProduct(tolerance, ANodes->nodes, BNodes->nodes,
-        convolution[tier+1], CkCallbackResumeThread());
+        NTier, convolutionExists[tier+1], convolution[tier+1],
+        CkCallbackResumeThread());
     delete ANodes;
     delete BNodes;
 
@@ -81,6 +101,9 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
 
   INFO("storeBack\n");
   convolution[depth].storeBack(CkCallbackResumeThread());
+
+  /* Update norms. */
+  C.setNorm(CkCallbackResumeThread());
 
   cb.send();
 }

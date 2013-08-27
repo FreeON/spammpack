@@ -51,6 +51,8 @@ class MultiplyElement : public CBase_MultiplyElement
     void pruneProduct (double tolerance,
         CProxy_Node ANodes,
         CProxy_Node BNodes,
+        int NElement,
+        bool *convolutionExists,
         CProxy_MultiplyElement convolution,
         CkCallback &cb);
     void storeBack (CkCallback &cb);

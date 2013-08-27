@@ -10,6 +10,8 @@ module multiplyelement
     entry [threaded] void pruneProduct (double tolerance,
         CProxy_Node ANodes,
         CProxy_Node BNodes,
+        int NElement,
+        bool convolutionExists[NElement*NElement*NElement],
         CProxy_MultiplyElement convolution,
         CkCallback &cb);
     entry void storeBack (CkCallback &cb);
