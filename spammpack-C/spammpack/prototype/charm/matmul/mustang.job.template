@@ -9,8 +9,11 @@ module load openmpi/1.6.3
 
 cd $SLURM_SUBMIT_DIR
 
+# Matrix will be 32x32 on the leaf node tier.
 N=8192
 B=256
+
+echo "starting on $(date)"
 
 ./charmrun -np ${SLURM_NTASKS} matmul -N ${N} -b ${B} \
   --type full \

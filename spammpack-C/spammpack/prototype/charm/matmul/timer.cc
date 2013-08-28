@@ -35,7 +35,7 @@ Timer::Timer (const char *format, ...)
   message = std::string(output_buffer);
   if(clock_gettime(CLOCKTYPE, &startTime) < 0)
   {
-    printf("can not start timer\n");
+    printf("[%s;%d] can not start timer\n", __FILE__, __LINE__);
     exit(1);
   }
 
@@ -47,7 +47,7 @@ void Timer::stop ()
 {
   if(clock_gettime(CLOCKTYPE, &endTime) < 0)
   {
-    printf("can not stop timer\n");
+    printf("[%s;%d] can not stop timer\n", __FILE__, __LINE__);
     exit(1);
   }
 }

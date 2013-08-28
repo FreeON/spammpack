@@ -13,17 +13,13 @@
 
 #include <string>
 
+void initializeLogger (void);
+
 void logger (const char *const filename,
     const int linenumber,
     const char *const function_name,
     const char *const tag,
     const char *const format, ...);
-
-void printDense (int N, double *A, const char *const format, ...);
-
-std::string toBinary (unsigned int i);
-
-std::string humanReadableSize (unsigned long n);
 
 /** A convenience macro for debugging messages. */
 #ifdef DEBUG_OUTPUT

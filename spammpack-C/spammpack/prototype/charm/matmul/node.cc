@@ -12,6 +12,7 @@
 #include "logger.h"
 #include "index.h"
 #include "types.h"
+#include "utilities.h"
 
 #include <bitset>
 

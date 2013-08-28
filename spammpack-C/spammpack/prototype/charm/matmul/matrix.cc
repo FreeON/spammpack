@@ -9,6 +9,7 @@
 #include "matrix.h"
 #include "messages.h"
 #include "logger.h"
+#include "utilities.h"
 #include "index.h"
 
 #include <assert.h>

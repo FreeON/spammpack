@@ -11,6 +11,7 @@
 #include "multiplyelement.h"
 #include "messages.h"
 #include "logger.h"
+#include "utilities.h"
 
 /** The constructor.
  *

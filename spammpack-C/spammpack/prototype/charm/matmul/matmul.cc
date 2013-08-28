@@ -39,10 +39,14 @@
 
 #include <getopt.h>
 
-/** Set the load balancing mode to manual. */
-void setLBMode (void)
+/** Initialize the node. */
+void initialize (void)
 {
+  /* Set the load balancing mode to manual. */
   TurnManualLBOn();
+
+  /* Initialize the logger. */
+  initializeLogger();
 }
 
 /** The main method.
@@ -365,7 +369,7 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     delete CDense;
   }
 
-  DEBUG("done\n");
+  INFO("done\n");
   CkExit();
 }
 

@@ -26,8 +26,8 @@ INTERFACE_FILES = \
 	node.ci
 
 matmul_SOURCES = \
-	index.h \
 	blas_interface.h \
+	index.h \
 	logger.cc \
 	logger.h \
 	matmul.cc \
@@ -37,34 +37,37 @@ matmul_SOURCES = \
 	messages.cc \
 	messages.h \
 	multiply.cc \
-	multiply.h \
 	multiplyelement.cc \
 	multiplyelement.h \
+	multiply.h \
 	node.cc \
 	node.h \
 	timer.cc \
 	timer.h \
-	types.h
+	types.h \
+	utilities.cc \
+	utilities.h
 
 $(matmul_OBJECTS) : $(BUILT_SOURCES)
 
-N = 2048
-B = 64
+# Matrices are blocked into 32z32 at the leaf level.
+N = 4096
+B = 128
 
 RSH = rsh
 
 run : matmul$(EXEEXT)
-	for i in 1 2 4 8 12 16 20 24 28 32 36 40 44 48; do \
+	for i in 1 2 4; do \
 		./charmrun +p$$i ++remote-shell $(RSH) matmul -N $(N) -b $(B); \
 	done
 
 run-local : matmul$(EXEEXT)
-	for i in 1 2 4 8 12 16 20 24 28 32 36 40 44 48; do \
+	for i in 1 2 4; do \
 		./matmul +p$$i -N $(N) -b $(B); \
 	done
 
 run-LB : matmul$(EXEEXT)
-	./charmrun +p4 matmul -N 2048 -b 256 --verify +LBDebug
+	./charmrun +p4 matmul -N $(N) -b $(B) --verify +LBDebug
 
 valgrind : matmul$(EXEEXT)
 	valgrind --log-file=valgrind.%p.log \
