@@ -6,6 +6,7 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
+#include "config.h"
 #include "multiply.h"
 #include "multiplyelement.h"
 #include "messages.h"
@@ -83,12 +84,14 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
     delete ANodes;
     delete BNodes;
 
+#ifdef PRUNE_CONVOLUTION
     /* Mark the next tier as complete so that the load balancer can work. */
     INFO("calling doneInserting() on tier %d\n", tier+1);
     convolution[tier+1].doneInserting();
 
     /* Wait until things have settled down. */
     CkWaitQD();
+#endif
   }
 
   /* Multiply. */

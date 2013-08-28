@@ -182,10 +182,13 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
   DEBUG("tier %d, Node(%d,%d) updating norms\n", tier, thisIndex.x, thisIndex.y);
 
   norm_2 = 0;
-  for(int i = 0; i < 2; i++) {
+  for(int i = 0; i < 2; i++)
+  {
+    int nextX = (thisIndex.x << 1) | i;
     for(int j = 0; j < 2; j++)
     {
-      NodeInfoMsg *msg = nodes((thisIndex.x << 1) | i, (thisIndex.y << 1) | j).info();
+      int nextY = (thisIndex.y << 1) | j;
+      NodeInfoMsg *msg = nodes(nextX, nextY).info();
       norm_2 += msg->norm_2;
       delete msg;
     }

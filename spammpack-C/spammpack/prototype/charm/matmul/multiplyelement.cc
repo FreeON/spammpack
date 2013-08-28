@@ -304,6 +304,10 @@ void MultiplyElement::disable (CkCallback &cb)
           for(int k = 0; k < 2; k++)
           {
             int nextZ = (thisIndex.z << 1) | k;
+
+            INFO("tier %d ME(%d,%d,%d) disabling nextConvolution(%d,%d,%d)\n",
+                tier, thisIndex.x, thisIndex.y, thisIndex.z,
+                nextX, nextY, nextZ);
             nextConvolution(nextX, nextY, nextZ).disable(CkCallbackResumeThread());
           }
         }
