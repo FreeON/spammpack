@@ -44,6 +44,10 @@ class MultiplyElement : public CBase_MultiplyElement
      * hack while real pruning doesn't work. */
     bool isEnabled;
 
+    /** The next tier convolution. If this MultiplyElement is on tier ==
+     * depth, then the proxy is not defined. */
+    CProxy_MultiplyElement nextConvolution;
+
   public:
 
     MultiplyElement (int blocksize, int tier, int depth, CProxy_Node A,
@@ -55,12 +59,10 @@ class MultiplyElement : public CBase_MultiplyElement
     void pruneProduct (double tolerance,
         CProxy_Node ANodes,
         CProxy_Node BNodes,
-        int NElement,
-        bool *convolutionExists,
-        CProxy_MultiplyElement convolution,
         CkCallback &cb);
-    void enable (void);
-    void disable (void);
+    void setNextConvolution (CProxy_MultiplyElement nextConvolution);
+    void enable (CkCallback &cb);
+    void disable (CkCallback &cb);
     void storeBack (CkCallback &cb);
     void printPE (CkCallback &cb);
 };

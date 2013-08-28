@@ -33,8 +33,7 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
   this->depth = depth;
 
   convolution = new CProxy_MultiplyElement[depth+1];
-  convolutionExists = new bool*[depth+1];
-  for(int tier = 0; tier <= depth; tier++)
+  for(int tier = depth; tier >= 0; tier--)
   {
     int NTier = 1 << tier;
 
@@ -47,10 +46,9 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     convolution[tier] = CProxy_MultiplyElement::ckNew(blocksize, tier, depth,
         ANodes, BNodes, CNodes, NTier, NTier, NTier);
 
-    convolutionExists[tier] = new bool[NTier*NTier*NTier];
-    for(int i = 0; i < NTier*NTier*NTier; i++)
+    if(tier < depth)
     {
-      convolutionExists[tier][i] = true;
+      convolution[tier].setNextConvolution(convolution[tier+1]);
     }
   }
 }
@@ -59,11 +57,6 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
  */
 Multiply::~Multiply (void)
 {
-  for(int tier = 0; tier <= depth; tier++)
-  {
-    delete[] convolutionExists[tier];
-  }
-  delete[] convolutionExists;
 }
 
 /** Multiply two Matrix objects.
@@ -86,7 +79,6 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
     MatrixNodeMsg *BNodes = B.getNodes(tier+1);
     int NTier = 1 << (tier+1);
     convolution[tier].pruneProduct(tolerance, ANodes->nodes, BNodes->nodes,
-        NTier, convolutionExists[tier+1], convolution[tier+1],
         CkCallbackResumeThread());
     delete ANodes;
     delete BNodes;

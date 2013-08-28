@@ -13,6 +13,7 @@
 #include "logger.h"
 #include "index.h"
 
+#include <assert.h>
 #include <bitset>
 
 /** The constructor.
@@ -127,7 +128,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     NodeInfoMsg *AInfo = A(thisIndex.x, thisIndex.z).info();
     NodeInfoMsg *BInfo = B(thisIndex.z, thisIndex.y).info();
 
-    DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
+    INFO("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
         thisIndex.y, thisIndex.z);
 
     if(AInfo->norm*BInfo->norm > tolerance)
@@ -184,6 +185,12 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     delete BInfo;
   }
 
+  else
+  {
+    INFO("tier %d ME(%d,%d,%d) skipping disabled element\n", tier, thisIndex.x,
+        thisIndex.y, thisIndex.z);
+  }
+
   contribute(cb);
 }
 
@@ -193,85 +200,120 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
  * @param tolerance The SpAMM tolerance.
  * @param ANodes The @link Node nodes @endlink of Matrix A on the tier below this one.
  * @param BNodes The @link Node nodes @endlink of Matrix B on the tier below this one.
- * @param NElement The number of elements in the convolution array.
- * @param convolutionExists A boolean array of size NElements^3 indication
- * whether a particular MultiplyElement exists in the convolution or not.
- * @param convolution The MultiplyElement chare array of the next tier.
  * @param cb The callback to reduce to.
  */
 void MultiplyElement::pruneProduct (double tolerance,
     CProxy_Node ANodes,
     CProxy_Node BNodes,
-    int NElement,
-    bool *convolutionExists,
-    CProxy_MultiplyElement convolution,
     CkCallback &cb)
 {
   DEBUG("tier %d ME(%d,%d,%d) pruning next tier\n", tier, thisIndex.x,
       thisIndex.y, thisIndex.z);
 
-  for(int i = 0; i < 2; i++)
+  if(isEnabled)
   {
-    int nextX = (thisIndex.x << 1) | i;
-    for(int j = 0; j < 2; j++)
+    for(int i = 0; i < 2; i++)
     {
-      int nextY = (thisIndex.y << 1) | j;
-      for(int k = 0; k < 2; k++)
+      int nextX = (thisIndex.x << 1) | i;
+      for(int j = 0; j < 2; j++)
       {
-        int nextZ = (thisIndex.z << 1) | k;
-
-        NodeInfoMsg *AInfo = ANodes(nextX, nextZ).info();
-        NodeInfoMsg *BInfo = BNodes(nextZ, nextY).info();
-
-        if(AInfo->norm*BInfo->norm > tolerance)
+        int nextY = (thisIndex.y << 1) | j;
+        for(int k = 0; k < 2; k++)
         {
-          /* If necessary, create MultiplyElement. */
-          DEBUG("tier %d ME(%d,%d,%d) keeping/creating tier %d, convolution(%d,%d,%d)\n",
-              tier, thisIndex.x, thisIndex.y, thisIndex.z, tier+1,
-              nextX, nextY, nextZ);
-          if(!convolutionExists[nextX+nextY*NElement+nextZ*NElement*NElement])
+          int nextZ = (thisIndex.z << 1) | k;
+
+          NodeInfoMsg *AInfo = ANodes(nextX, nextZ).info();
+          NodeInfoMsg *BInfo = BNodes(nextZ, nextY).info();
+
+          if(AInfo->norm*BInfo->norm > tolerance)
           {
+            /* If necessary, create MultiplyElement. */
+            INFO("tier %d ME(%d,%d,%d) keeping/creating tier %d, convolution(%d,%d,%d)\n",
+                tier, thisIndex.x, thisIndex.y, thisIndex.z, tier+1,
+                nextX, nextY, nextZ);
 #ifdef PRUNE_CONVOLUTION
             convolution(nextX, nextY, nextZ).insert(blocksize, tier+1, depth, A, B, C);
 #else
-            convolution(nextX, nextY, nextZ).enable();
+            nextConvolution(nextX, nextY, nextZ).enable(CkCallbackResumeThread());
 #endif
-            convolutionExists[nextX+nextY*NElement+nextZ*NElement*NElement] = true;
           }
-        }
 
-        else
-        {
-          /* If necessary, destroy MultiplyElement. */
-          INFO("tier %d ME(%d,%d,%d) pruning tier %d, convolution(%d,%d,%d)\n",
-              tier, thisIndex.x, thisIndex.y, thisIndex.z, tier+1,
-              nextX, nextY, nextZ);
-          if(convolutionExists[nextX+nextY*NElement+nextZ*NElement*NElement])
+          else
           {
+            /* If necessary, destroy MultiplyElement. */
+            INFO("tier %d ME(%d,%d,%d) pruning tier %d, convolution(%d,%d,%d)\n",
+                tier, thisIndex.x, thisIndex.y, thisIndex.z, tier+1,
+                nextX, nextY, nextZ);
 #ifdef PRUNE_CONVOLUTION
             convolution(nextX, nextY, nextZ).ckDestroy();
 #else
-            convolution(nextX, nextY, nextZ).disable();
+            nextConvolution(nextX, nextY, nextZ).disable(CkCallbackResumeThread());
 #endif
-            convolutionExists[nextX+nextY*NElement+nextZ*NElement*NElement] = false;
           }
+
+          delete AInfo;
+          delete BInfo;
         }
-        delete AInfo;
-        delete BInfo;
       }
     }
   }
+
   contribute(cb);
 }
 
-/** Enable this MultiplyElement. */
-void MultiplyElement::enable (void)
+/** Set the convolution of the next tier.
+ *
+ * @param nextConvolution The chare array of @link MultiplyElement
+ * MultiplyEleemnts @endlink of the next tier.
+ */
+void MultiplyElement::setNextConvolution (CProxy_MultiplyElement nextConvolution)
 {
+  this->nextConvolution = nextConvolution;
 }
 
-/** Disable this MultiplyElement. */
-void MultiplyElement::disable (void)
+/** Enable this MultiplyElement.
+ *
+ * @param cb The callback to send to.
+ */
+void MultiplyElement::enable (CkCallback &cb)
 {
+  isEnabled = true;
+  cb.send();
+}
+
+/** Disable this MultiplyElement.
+ *
+ * @param cb The callback to send to.
+ */
+void MultiplyElement::disable (CkCallback &cb)
+{
+  if(isEnabled == true)
+  {
+    INFO("tier %d ME(%d,%d,%d) disabling\n", tier, thisIndex.x, thisIndex.y,
+        thisIndex.z);
+
+    if(tier < depth)
+    {
+      /* Disable the elements below this one. */
+      for(int i = 0; i < 2; i++)
+      {
+        int nextX = (thisIndex.x << 1) | i;
+        for(int j = 0; j < 2; j++)
+        {
+          int nextY = (thisIndex.y << 1) | j;
+          for(int k = 0; k < 2; k++)
+          {
+            int nextZ = (thisIndex.z << 1) | k;
+            nextConvolution(nextX, nextY, nextZ).disable(CkCallbackResumeThread());
+          }
+        }
+      }
+    }
+
+    /* Disable this MultiplyElement. */
+    isEnabled = false;
+  }
+  cb.send();
 }
 
 /** Push the C submatrices back into the C Matrix.
@@ -280,16 +322,19 @@ void MultiplyElement::disable (void)
  */
 void MultiplyElement::storeBack (CkCallback &cb)
 {
-  DEBUG("tier %d ME(%d,%d,%d) storing in C\n", tier, thisIndex.x, thisIndex.y,
-      thisIndex.z);
-
-  if(CResult != NULL)
+  if(isEnabled)
   {
-    C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
+    INFO("tier %d ME(%d,%d,%d) storing in C\n", tier, thisIndex.x,
+        thisIndex.y, thisIndex.z);
 
-    /* Reset result for possible next iteration. */
-    delete[] CResult;
-    CResult = NULL;
+    if(CResult != NULL)
+    {
+      C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
+
+      /* Reset result for possible next iteration. */
+      delete[] CResult;
+      CResult = NULL;
+    }
   }
 
   contribute(cb);
@@ -301,8 +346,11 @@ void MultiplyElement::storeBack (CkCallback &cb)
  */
 void MultiplyElement::printPE (CkCallback &cb)
 {
-  INFO("tier %d ME(%d,%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
-      thisIndex.z, CkMyPe());
+  if(isEnabled)
+  {
+    INFO("tier %d ME(%d,%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
+        thisIndex.z, CkMyPe());
+  }
   contribute(cb);
 }
 

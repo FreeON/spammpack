@@ -28,12 +28,6 @@ class Multiply : public CBase_Multiply
     /** The tree depth of the matrix. */
     int depth;
 
-    /** An array indicating whether a particular MultiplyElement exists or
-     * not. Unless I find a better way, say by inquiring the proxy directly,
-     * it seems that an additional array is necessary to avoid destroying an
-     * already non-existant element. */
-    bool **convolutionExists;
-
     /** The convolution. There is a convolution for each tier. */
     CProxy_MultiplyElement *convolution;
 
