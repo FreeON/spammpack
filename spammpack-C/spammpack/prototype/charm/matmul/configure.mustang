@@ -1,3 +1,6 @@
 #!/bin/bash
 
-./configure --enable-default-LB CHARMC=~/charm-6.5.1/bin/charmc
+./configure \
+  --enable-default-LB \
+  --enable-print-PE \
+  CHARMC=~/charm-6.5.1/bin/charmc
