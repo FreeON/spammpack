@@ -270,10 +270,10 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 
 #ifdef PRINT_PE
     INFO("PE map for A\n");
-    A.printPE(CkCallbackResumeThread());
+    A.updatePEMap(CkCallbackResumeThread());
 
     INFO("PE map for C\n");
-    C.printPE(CkCallbackResumeThread());
+    C.updatePEMap(CkCallbackResumeThread());
 
     INFO("PE map for convolution\n");
     M.printPE(CkCallbackResumeThread());

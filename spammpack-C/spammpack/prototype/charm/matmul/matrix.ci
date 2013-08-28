@@ -8,7 +8,8 @@ module matrix
     entry [sync] MatrixInfoMsg * info (void);
     entry [sync] DenseMatrixMsg * toDense (void);
     entry [sync] MatrixNodeMsg * getNodes (int tier);
-    entry [threaded] void printPE (CkCallback &cb);
+    entry [threaded] void updatePEMap (CkCallback &cb);
+    entry [reductiontarget] void donePEMap (CkReductionMsg *data);
     entry [threaded] void set (int N, double A[N*N], CkCallback &cb);
     entry [threaded] void setNorm (CkCallback &cb);
   };

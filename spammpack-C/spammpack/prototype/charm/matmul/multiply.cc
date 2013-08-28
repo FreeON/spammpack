@@ -102,7 +102,7 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
   convolution[depth].storeBack(CkCallbackResumeThread());
 
   /* Update norms. */
-  INFO("updating norms\n");
+  INFO("update norms\n");
   C.setNorm(CkCallbackResumeThread());
 
   INFO("done\n");

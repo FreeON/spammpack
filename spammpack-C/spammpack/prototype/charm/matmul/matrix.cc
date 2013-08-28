@@ -46,6 +46,11 @@ Matrix::Matrix (int N, int blocksize)
         NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
 
     nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier, NTier, NTier);
+
+    if(tier == depth)
+    {
+      PEMap = new int[NTier*NTier];
+    }
   }
 }
 
@@ -105,9 +110,33 @@ MatrixNodeMsg * Matrix::getNodes (int tier)
  * @param cb The callback to signal once all @link Node Nodes @endlink have
  * printed.
  */
-void Matrix::printPE (CkCallback &cb)
+void Matrix::updatePEMap (CkCallback &cb)
 {
-  nodes[depth].printPE(CkCallbackResumeThread());
+  this->cb = cb;
+  CkCallback done(CkReductionTarget(Matrix, donePEMap), thisProxy);
+  nodes[depth].PEMap(done);
+}
+
+void Matrix::donePEMap (CkReductionMsg *data)
+{
+  int NTier = 1 << depth;
+  CkReduction::setElement *current = (CkReduction::setElement*) data;
+  while(current != NULL)
+  {
+    int *intPtr = (int*) &current->data;
+    INFO("data = { %d, %d, %d }\n", intPtr[0], intPtr[1], intPtr[2]);
+    PEMap[BLOCK_INDEX(intPtr[0], intPtr[1], 0, 0, NTier)] = intPtr[2];
+    current = current->next();
+  }
+
+  for(int i = 0; i < NTier; i++) {
+    for(int j = 0; j < NTier; j++)
+    {
+      CkPrintf(" %d", PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)]);
+    }
+    CkPrintf("\n");
+  }
+
   cb.send();
 }
 

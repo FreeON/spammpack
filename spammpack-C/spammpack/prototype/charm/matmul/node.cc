@@ -237,15 +237,27 @@ void Node::add (int blocksize, double *A)
 #endif
 }
 
-/** Print the PE this Node is on.
+/** Create a PE map of the Matrix @link Node nodes @endlink.
  *
  * @param cb The callback for the reduction.
  */
-void Node::printPE (CkCallback &cb)
+void Node::PEMap (CkCallback &cb)
 {
-  INFO("tier %d, Node(%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
+  DEBUG("tier %d, Node(%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
       CkMyPe());
-  contribute(cb);
+
+  int resultSize = sizeof(CkReduction::setElement)+3*sizeof(int);
+  CkReduction::setElement *result = (CkReduction::setElement*) new char[resultSize];
+
+  result->dataSize = 3*sizeof(int);
+
+  int *intPtr = (int*) &result->data;
+
+  *((int*) &result->data + 0) = thisIndex.x;
+  *((int*) &result->data + 1) = thisIndex.y;
+  *((int*) &result->data + 2) = CkMyPe();
+
+  contribute(resultSize, result, CkReduction::set, cb);
 }
 
 #include "node.def.h"

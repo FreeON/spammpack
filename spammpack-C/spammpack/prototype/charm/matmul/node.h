@@ -63,7 +63,7 @@ class Node : public CBase_Node
     void set (int blocksize, double *A, CkCallback &cb);
     void setNorm (CProxy_Node nodes, CkCallback &cb);
     void add (int blocksize, double *A);
-    void printPE (CkCallback &cb);
+    void PEMap (CkCallback &cb);
 };
 
 #endif

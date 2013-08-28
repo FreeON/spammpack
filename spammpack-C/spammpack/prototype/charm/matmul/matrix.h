@@ -35,13 +35,20 @@ class Matrix : public CBase_Matrix
      * size Matrix::depth containing the Node proxy on each tier. */
     CProxy_Node *nodes;
 
+    /** The PE map of the nodes at the leaf node tier. */
+    int *PEMap;
+
+    /** A callback. */
+    CkCallback cb;
+
   public:
 
     Matrix (int N, int blocksize);
     MatrixInfoMsg * info (void);
     DenseMatrixMsg * toDense (void);
     MatrixNodeMsg * getNodes (int tier);
-    void printPE (CkCallback &cb);
+    void updatePEMap (CkCallback &cb);
+    void donePEMap (CkReductionMsg *data);
     void set (int N, double *A, CkCallback &cb);
     void setNorm (CkCallback &cb);
 };
