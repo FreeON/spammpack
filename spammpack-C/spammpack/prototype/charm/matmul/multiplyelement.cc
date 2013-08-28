@@ -128,7 +128,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     NodeInfoMsg *AInfo = A(thisIndex.x, thisIndex.z).info();
     NodeInfoMsg *BInfo = B(thisIndex.z, thisIndex.y).info();
 
-    INFO("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
+    DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
         thisIndex.y, thisIndex.z);
 
     if(AInfo->norm*BInfo->norm > tolerance)
@@ -187,8 +187,8 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
   else
   {
-    INFO("tier %d ME(%d,%d,%d) skipping disabled element\n", tier, thisIndex.x,
-        thisIndex.y, thisIndex.z);
+    DEBUG("tier %d ME(%d,%d,%d) skipping disabled element\n", tier,
+        thisIndex.x, thisIndex.y, thisIndex.z);
   }
 
   contribute(cb);
@@ -228,7 +228,7 @@ void MultiplyElement::pruneProduct (double tolerance,
           if(AInfo->norm*BInfo->norm > tolerance)
           {
             /* If necessary, create MultiplyElement. */
-            INFO("tier %d ME(%d,%d,%d) keeping/creating tier %d, convolution(%d,%d,%d)\n",
+            DEBUG("tier %d ME(%d,%d,%d) keeping/creating tier %d, convolution(%d,%d,%d)\n",
                 tier, thisIndex.x, thisIndex.y, thisIndex.z, tier+1,
                 nextX, nextY, nextZ);
 #ifdef PRUNE_CONVOLUTION
@@ -241,7 +241,7 @@ void MultiplyElement::pruneProduct (double tolerance,
           else
           {
             /* If necessary, destroy MultiplyElement. */
-            INFO("tier %d ME(%d,%d,%d) pruning tier %d, convolution(%d,%d,%d)\n",
+            DEBUG("tier %d ME(%d,%d,%d) pruning tier %d, convolution(%d,%d,%d)\n",
                 tier, thisIndex.x, thisIndex.y, thisIndex.z, tier+1,
                 nextX, nextY, nextZ);
 #ifdef PRUNE_CONVOLUTION
@@ -289,7 +289,7 @@ void MultiplyElement::disable (CkCallback &cb)
 {
   if(isEnabled == true)
   {
-    INFO("tier %d ME(%d,%d,%d) disabling\n", tier, thisIndex.x, thisIndex.y,
+    DEBUG("tier %d ME(%d,%d,%d) disabling\n", tier, thisIndex.x, thisIndex.y,
         thisIndex.z);
 
     if(tier < depth)
@@ -305,7 +305,7 @@ void MultiplyElement::disable (CkCallback &cb)
           {
             int nextZ = (thisIndex.z << 1) | k;
 
-            INFO("tier %d ME(%d,%d,%d) disabling nextConvolution(%d,%d,%d)\n",
+            DEBUG("tier %d ME(%d,%d,%d) disabling nextConvolution(%d,%d,%d)\n",
                 tier, thisIndex.x, thisIndex.y, thisIndex.z,
                 nextX, nextY, nextZ);
             nextConvolution(nextX, nextY, nextZ).disable(CkCallbackResumeThread());
@@ -328,7 +328,7 @@ void MultiplyElement::storeBack (CkCallback &cb)
 {
   if(isEnabled)
   {
-    INFO("tier %d ME(%d,%d,%d) storing in C\n", tier, thisIndex.x,
+    DEBUG("tier %d ME(%d,%d,%d) storing in C\n", tier, thisIndex.x,
         thisIndex.y, thisIndex.z);
 
     if(CResult != NULL)

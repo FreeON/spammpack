@@ -138,7 +138,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
         }
       }
 
-      nodes[depth](i, j).set(blocksize, block);
+      nodes[depth](i, j).set(blocksize, block, CkCallbackResumeThread());
     }
   }
   delete[] block;

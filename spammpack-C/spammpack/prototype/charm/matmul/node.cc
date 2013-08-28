@@ -149,8 +149,9 @@ DenseMatrixMsg * Node::getBlock (void)
  *
  * @param blocksize The blocksize.
  * @param A The matrix.
+ * @param cb The callback to send to.
  */
-void Node::set (int blocksize, double *A)
+void Node::set (int blocksize, double *A, CkCallback &cb)
 {
   if(block == NULL)
   {
@@ -166,9 +167,14 @@ void Node::set (int blocksize, double *A)
   }
   norm = sqrt(norm_2);
 
+  DEBUG("tier %d, Node(%d,%d) norm = %e\n", tier, thisIndex.x, thisIndex.y,
+      norm);
+
 #ifdef DEBUG_OUTPUT
   printDense(blocksize, block, "tier %d, Node(%d,%d) setting block:", tier, thisIndex.x, thisIndex.y);
 #endif
+
+  cb.send();
 }
 
 /** Set the norm of this Node based on the norms of the Node objects
@@ -189,11 +195,15 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
     {
       int nextY = (thisIndex.y << 1) | j;
       NodeInfoMsg *msg = nodes(nextX, nextY).info();
+      DEBUG("tier %d, Node(%d,%d) got tier %d, Node(%d,%d) norm = %e\n", tier,
+          thisIndex.x, thisIndex.y, tier+1, nextX, nextY, norm);
       norm_2 += msg->norm_2;
       delete msg;
     }
   }
   norm = sqrt(norm_2);
+  DEBUG("tier %d, Node(%d,%d) norm = %e\n", tier, thisIndex.x, thisIndex.y,
+      norm);
   contribute(cb);
 }
 
