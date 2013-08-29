@@ -92,6 +92,7 @@ void MultiplyElement::pup (PUP::er &p)
   p|B;
   p|C;
   p|isEnabled;
+  p|nextConvolution;
 
   int numberElements = (CResult == NULL ? 0 : blocksize*blocksize);
   p|numberElements;

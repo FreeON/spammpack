@@ -115,15 +115,6 @@ if test "${enable_pruning}" = "yes"; then
   AC_DEFINE([PRUNE_CONVOLUTION], [1], [Enable pruning of convolution space])
 fi
 
-AC_ARG_ENABLE([print-PE],
-  [AS_HELP_STRING([--enable-print-PE],
-  [print the PEs all array elements are on])],
-  [enable_print_PE=$enableval],
-  [enable_print_PE="no"])
-if test "${enable_print_PE}" = "yes"; then
-  AC_DEFINE([PRINT_PE], [1], [Print the PEs all array elements are on])
-fi
-
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile Doxyfile])
 

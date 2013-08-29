@@ -62,11 +62,12 @@ Main::Main (CkArgMsg *msg)
   enum matrix_t matrixType = full;
   bool verify = false;
   bool loadBalance = false;
+  bool printPEMap = false;
   double verifyTolerance = 1.0e-10;
   double decayConstant = 0.1;
 
   int c;
-  const char *short_options = "hN:b:i:t:m:vd:l";
+  const char *short_options = "hN:b:i:t:m:vd:lp";
   const option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
@@ -77,6 +78,7 @@ Main::Main (CkArgMsg *msg)
     { "verify",       no_argument,        NULL, 'v' },
     { "decay",        required_argument,  NULL, 'd' },
     { "load-balance", no_argument,        NULL, 'l' },
+    { "print-PEMap",  no_argument,        NULL, 'p' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -101,6 +103,7 @@ Main::Main (CkArgMsg *msg)
         CkPrintf("{ -v | --verify }         Verify matmul product\n");
         CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
         CkPrintf("{ -l | --load-balance }   Load balance after each iteration\n");
+        CkPrintf("{ -p | --print-PEMap }    Print a PE map in each iteration\n");
         CkPrintf("\n");
         CkExit();
         break;
@@ -152,6 +155,10 @@ Main::Main (CkArgMsg *msg)
         loadBalance = true;
         break;
 
+      case 'p':
+        printPEMap = true;
+        break;
+
       default:
         CkExit();
         break;
@@ -162,7 +169,7 @@ Main::Main (CkArgMsg *msg)
 
   DEBUG("calling run() on this proxy\n");
   thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
-      decayConstant, verify, verifyTolerance, loadBalance);
+      decayConstant, verify, verifyTolerance, loadBalance, printPEMap);
 }
 
 /** The main method.
@@ -178,10 +185,11 @@ Main::Main (CkArgMsg *msg)
  * @param verifyTolerance The absolute tolerance in the matrix
  * verification.
  * @param loadBalance Whether to load balance.
+ * @param printPEMap Whether to print a PE map in each iteration.
  */
 void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     int matrixType, double decayConstant, bool verify, double verifyTolerance,
-    bool loadBalance)
+    bool loadBalance, bool printPEMap)
 {
   LBDatabase *db = LBDatabaseObj();
 
@@ -268,16 +276,17 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     t.stop();
     CkPrintf(t.to_str());
 
-#ifdef PRINT_PE
-    INFO("PE map for A\n");
-    A.updatePEMap(CkCallbackResumeThread());
+    if(printPEMap)
+    {
+      INFO("PE map for A\n");
+      A.updatePEMap(CkCallbackResumeThread());
 
-    INFO("PE map for C\n");
-    C.updatePEMap(CkCallbackResumeThread());
+      INFO("PE map for C\n");
+      C.updatePEMap(CkCallbackResumeThread());
 
-    INFO("PE map for convolution\n");
-    M.updatePEMap(CkCallbackResumeThread());
-#endif
+      INFO("PE map for convolution\n");
+      M.updatePEMap(CkCallbackResumeThread());
+    }
 
     /* Load balance. */
     if(loadBalance)
