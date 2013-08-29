@@ -344,18 +344,23 @@ void MultiplyElement::storeBack (CkCallback &cb)
   contribute(cb);
 }
 
-/** Print the PE this Node is on.
+/** Create a PE map of the Matrix @link Node nodes @endlink.
  *
  * @param cb The callback for the reduction.
  */
-void MultiplyElement::printPE (CkCallback &cb)
+void MultiplyElement::PEMap (CkCallback &cb)
 {
-  if(isEnabled)
-  {
-    INFO("tier %d ME(%d,%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
-        thisIndex.z, CkMyPe());
-  }
-  contribute(cb);
+  DEBUG("tier %d ME(%d,%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
+      thisIndex.z, CkMyPe());
+
+  int *result = new int[4];
+
+  result[0] = thisIndex.x;
+  result[1] = thisIndex.y;
+  result[2] = thisIndex.z;
+  result[3] = CkMyPe();
+
+  contribute(4*sizeof(int), result, CkReduction::set, cb);
 }
 
 #include "multiplyelement.def.h"

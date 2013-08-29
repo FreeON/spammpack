@@ -64,7 +64,7 @@ class MultiplyElement : public CBase_MultiplyElement
     void enable (CkCallback &cb);
     void disable (CkCallback &cb);
     void storeBack (CkCallback &cb);
-    void printPE (CkCallback &cb);
+    void PEMap (CkCallback &cb);
 };
 
 #endif

@@ -246,18 +246,13 @@ void Node::PEMap (CkCallback &cb)
   DEBUG("tier %d, Node(%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
       CkMyPe());
 
-  int resultSize = sizeof(CkReduction::setElement)+3*sizeof(int);
-  CkReduction::setElement *result = (CkReduction::setElement*) new char[resultSize];
+  int *result = new int[3];
 
-  result->dataSize = 3*sizeof(int);
+  result[0] = thisIndex.x;
+  result[1] = thisIndex.y;
+  result[2] = CkMyPe();
 
-  int *intPtr = (int*) &result->data;
-
-  *((int*) &result->data + 0) = thisIndex.x;
-  *((int*) &result->data + 1) = thisIndex.y;
-  *((int*) &result->data + 2) = CkMyPe();
-
-  contribute(resultSize, result, CkReduction::set, cb);
+  contribute(3*sizeof(int), result, CkReduction::set, cb);
 }
 
 #include "node.def.h"

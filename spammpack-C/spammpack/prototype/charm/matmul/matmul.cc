@@ -276,7 +276,7 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     C.updatePEMap(CkCallbackResumeThread());
 
     INFO("PE map for convolution\n");
-    M.printPE(CkCallbackResumeThread());
+    M.updatePEMap(CkCallbackResumeThread());
 #endif
 
     /* Load balance. */

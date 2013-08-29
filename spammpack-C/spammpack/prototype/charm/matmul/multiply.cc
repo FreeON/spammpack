@@ -12,6 +12,7 @@
 #include "messages.h"
 #include "logger.h"
 #include "utilities.h"
+#include "index.h"
 
 /** The constructor.
  *
@@ -52,6 +53,11 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     {
       convolution[tier].setNextConvolution(convolution[tier+1]);
     }
+
+    if(tier == depth)
+    {
+      PEMap = new int[NTier*NTier*NTier];
+    }
   }
 }
 
@@ -59,6 +65,7 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
  */
 Multiply::~Multiply (void)
 {
+  delete[] PEMap;
 }
 
 /** Multiply two Matrix objects.
@@ -109,13 +116,40 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
   cb.send();
 }
 
-/** Print the PEs all MultiplyElements are on.
+/** Print the PEs all @link Node Nodes @endlink are on.
  *
- * @param cb The callback to signal once all MultiplyElements have printed.
+ * @param cb The callback to signal once all @link Node Nodes @endlink have
+ * printed.
  */
-void Multiply::printPE (CkCallback &cb)
+void Multiply::updatePEMap (CkCallback &cb)
 {
-  convolution[depth].printPE(CkCallbackResumeThread());
+  this->cb = cb;
+  CkCallback done(CkReductionTarget(Multiply, donePEMap), thisProxy);
+  convolution[depth].PEMap(done);
+}
+
+void Multiply::donePEMap (CkReductionMsg *msg)
+{
+  int NTier = 1 << depth;
+  CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
+  while(current != NULL)
+  {
+    int *intPtr = (int*) &current->data;
+    DEBUG("data = { %d, %d, %d }\n", intPtr[0], intPtr[1], intPtr[2], intPtr[3]);
+    PEMap[BLOCK_INDEX_3(intPtr[0], intPtr[1], intPtr[2], NTier)] = intPtr[3];
+    current = current->next();
+  }
+
+  for(int i = 0; i < NTier; i++) {
+    for(int j = 0; j < NTier; j++) {
+      for(int k = 0; k < NTier; k++)
+      {
+        CkPrintf("PEMap(%d,%d,%d) = %d\n", i, j, k, PEMap[BLOCK_INDEX_3(i, j,
+              k, NTier)]);
+      }
+    }
+  }
+
   cb.send();
 }
 

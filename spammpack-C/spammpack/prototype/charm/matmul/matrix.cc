@@ -54,6 +54,13 @@ Matrix::Matrix (int N, int blocksize)
   }
 }
 
+/** The destructor.
+ */
+Matrix::~Matrix (void)
+{
+  delete[] PEMap;
+}
+
 /** Get some basic information on the matrix.
  *
  * @return The matrix information.
@@ -117,14 +124,14 @@ void Matrix::updatePEMap (CkCallback &cb)
   nodes[depth].PEMap(done);
 }
 
-void Matrix::donePEMap (CkReductionMsg *data)
+void Matrix::donePEMap (CkReductionMsg *msg)
 {
   int NTier = 1 << depth;
-  CkReduction::setElement *current = (CkReduction::setElement*) data;
+  CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
   while(current != NULL)
   {
     int *intPtr = (int*) &current->data;
-    INFO("data = { %d, %d, %d }\n", intPtr[0], intPtr[1], intPtr[2]);
+    DEBUG("data = { %d, %d, %d }\n", intPtr[0], intPtr[1], intPtr[2]);
     PEMap[BLOCK_INDEX(intPtr[0], intPtr[1], 0, 0, NTier)] = intPtr[2];
     current = current->next();
   }
@@ -132,9 +139,9 @@ void Matrix::donePEMap (CkReductionMsg *data)
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++)
     {
-      CkPrintf(" %d", PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)]);
+      CkPrintf("PEMap(%d,%d) = %d\n", i, j, PEMap[BLOCK_INDEX(i, j, 0, 0,
+            NTier)]);
     }
-    CkPrintf("\n");
   }
 
   cb.send();

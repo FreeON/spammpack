@@ -31,6 +31,12 @@ class Multiply : public CBase_Multiply
     /** The convolution. There is a convolution for each tier. */
     CProxy_MultiplyElement *convolution;
 
+    /** The PE map of the multiply elements at the leaf node tier. */
+    int *PEMap;
+
+    /** A callback. */
+    CkCallback cb;
+
   public:
 
     Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
@@ -38,7 +44,8 @@ class Multiply : public CBase_Multiply
         CProxy_Node CNodes);
     ~Multiply (void);
     void multiply (double tolerance, CkCallback &cb);
-    void printPE (CkCallback &cb);
+    void updatePEMap (CkCallback &cb);
+    void donePEMap (CkReductionMsg *data);
 };
 
 #endif

@@ -15,6 +15,6 @@ module multiplyelement
     entry void enable (CkCallback &cb);
     entry [threaded] void disable (CkCallback &cb);
     entry void storeBack (CkCallback &cb);
-    entry void printPE (CkCallback &cb);
+    entry void PEMap (CkCallback &cb);
   };
 };
