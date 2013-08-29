@@ -1,0 +1,23 @@
+#!/bin/bash -l
+#
+#MSUB -l nodes=1:ppn=1,walltime=28800
+#MSUB -N MM-1
+
+module purge
+module load gcc/4.7.2
+module load openmpi/1.6.3
+
+cd $SLURM_SUBMIT_DIR
+
+# Matrix will be 32x32 on the leaf node tier.
+N=8192
+B=256
+
+echo "starting on $(date)"
+
+./charmrun -np ${SLURM_NTASKS} matmul -N ${N} -b ${B} \
+  --type decay --decay 10 --tolerance 1e-8 \
+  --verify \
+  --iterations 10 \
+  --print-PEMap \
+  --load-balance

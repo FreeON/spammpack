@@ -16,12 +16,8 @@ B=256
 echo "starting on $(date)"
 
 ./charmrun -np ${SLURM_NTASKS} matmul -N ${N} -b ${B} \
-  --type full \
-  --verify --iterations 10
-./charmrun -np ${SLURM_NTASKS} matmul -N ${N} -b ${B} \
-  --type decay --decay 10 \
-  --tolerance 1e-8 \
-  --verify --iterations 10
-./charmrun -np ${SLURM_NTASKS} matmul -N ${N} -b ${B} \
   --type diagonal \
-  --verify --iterations 10
+  --verify \
+  --iterations 10 \
+  --print-PEMap \
+  --load-balance

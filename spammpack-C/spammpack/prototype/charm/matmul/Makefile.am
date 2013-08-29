@@ -11,7 +11,9 @@ EXTRA_DIST = \
 	moonlight.sh.template \
 	mustang-results.sh \
 	mustang-submit.sh \
-	mustang.job.template
+	mustang.job.decay.template \
+	mustang.job.diagonal.template \
+	mustang.job.full.template
 
 AM_LDFLAGS = -language charm++ @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
