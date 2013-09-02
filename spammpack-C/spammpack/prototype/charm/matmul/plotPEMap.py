@@ -103,10 +103,12 @@ for line in fd:
   if result:
     if currentMap == "convolution":
       PEMap[currentMap] = numpy.empty([N, N, N])
+      PEMap[currentMap].fill(-1)
       for (i, j, k, PE) in elementBuffer:
         PEMap[currentMap][i,j,k] = PE
     else:
       PEMap[currentMap] = numpy.empty([N, N])
+      PEMap[currentMap].fill(-1)
       for (i, j, PE) in elementBuffer:
         PEMap[currentMap][i,j] = PE
     print(PEMap[currentMap])
