@@ -6,6 +6,7 @@ AC_INIT([matmul],
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
+# Find doxygen and related programs.
 AC_ARG_VAR([DOXYGEN], [The doxygen executable (for building the documentation)])
 AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen])
 
@@ -19,20 +20,26 @@ AC_SUBST([PROJECT_NAME], [${PACKAGE_NAME}])
 AC_SUBST([PROJECT_NUMBER], [${PACKAGE_VERSION}])
 AC_SUBST([HAVE_DOT], [${have_dot}])
 
+# The doxygen configuration file is generated.
 AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
 
+# Find a python interpreter.
 AM_PATH_PYTHON([2.7], [], [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "${PYTHON}" != ":"])
 
+# Find the Charm++ compiler wrapper.
 AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
 if test -z "${CHARMC}"; then
   CHARMC="charmc"
 fi
 CXX=${CHARMC}
 
+# Find the real compiler.
 AC_PROG_CC
 AC_PROG_CXX
 
+# Compiler tests should be done using the real C compiler and not the charmc
+# wrapper.
 AC_LANG([C])
 
 AC_SEARCH_LIBS([clock_gettime], [rt],
@@ -54,6 +61,7 @@ if test "${CLOCKTYPE}" = "unset"; then
 fi
 AC_DEFINE_UNQUOTED([CLOCKTYPE], [${CLOCKTYPE}], [The clock type to use with clock_gettime()])
 
+# Find dgemm() for matrix block products.
 for DGEMM in dgemm dgemm_ dgemm__; do
   AC_SEARCH_LIBS([${DGEMM}], [blas], [break], [DGEMM="unset"])
 done
@@ -62,6 +70,7 @@ if test "${DGEMM}" != "unset"; then
                       all necessary underscores.])
 fi
 
+# Enable load balancers.
 AC_ARG_ENABLE([load-balance],
   [AS_HELP_STRING([--enable-load-balance],
   [enable a common set of load balancers during compilation])],
@@ -71,6 +80,7 @@ if test "${enable_LB}" = "yes"; then
   AC_SUBST([LOADBALANCER_FLAGS], ["-module CommonLBs"])
 fi
 
+# Enable the default load balancer.
 AC_ARG_ENABLE([default-LB],
   [AS_HELP_STRING([--enable-default-LB],
   [set the default load balancer (default = GreedyCommLB)])],
@@ -82,6 +92,7 @@ if test -n "${default_LB}"; then
   AC_SUBST([DEFAULT_LB_FLAGS], ["-balancer ${default_LB}"])
 fi
 
+# Enable charmdebug.
 AC_ARG_ENABLE([charmdebug],
   [AS_HELP_STRING([--enable-charmdebug],
   [enable the use of charmdebug on the executable])],
@@ -91,6 +102,7 @@ if test "${enable_charmdebug}" = "yes"; then
   AC_SUBST([CHARMDEBUG_FLAGS], ["-memory charmdebug"])
 fi
 
+# Enable debugging.
 AC_ARG_ENABLE([debug],
   [AS_HELP_STRING([--enable-debug],
   [enable a lot of extra output])],
@@ -100,6 +112,7 @@ if test "${enable_debug}" = "yes"; then
   AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output])
 fi
 
+# Print some matrices for debugging.
 AC_ARG_ENABLE([print-matrices],
   [AS_HELP_STRING([--enable-print-matrices],
   [print matrices for debugging])],
@@ -109,6 +122,8 @@ if test "${enable_print_matrices}" = "yes"; then
   AC_DEFINE([PRINT_MATRICES], [1], [Print matrices for debugging])
 fi
 
+# Enable pruning of the convolution. This is done by calling ckDestroy() on
+# convolution elements.
 AC_ARG_ENABLE([pruning],
   [AS_HELP_STRING([--enable-pruning],
   [enable pruning of convolution space])],
