@@ -14,6 +14,8 @@
 #include "utilities.h"
 #include "index.h"
 
+#include <sstream>
+
 /** The constructor.
  *
  * @param A Matrix A.
@@ -140,15 +142,18 @@ void Multiply::donePEMap (CkReductionMsg *msg)
     current = current->next();
   }
 
+  std::ostringstream o;
+  o << "PEMap for convolution:" << std::endl;
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++) {
       for(int k = 0; k < NTier; k++)
       {
-        CkPrintf("PEMap(%d,%d,%d) = %d\n", i, j, k, PEMap[BLOCK_INDEX_3(i, j,
-              k, NTier)]);
+        o << "PEMap(" << i << "," << j << "," << k << ") = "
+          << PEMap[BLOCK_INDEX_3(i, j, k, NTier)] << std::endl;;
       }
     }
   }
+  INFO(o.str().c_str());
 
   cb.send();
 }

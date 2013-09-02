@@ -13,6 +13,7 @@
 #include "index.h"
 
 #include <assert.h>
+#include <sstream>
 
 /** The constructor.
  *
@@ -136,13 +137,16 @@ void Matrix::donePEMap (CkReductionMsg *msg)
     current = current->next();
   }
 
+  std::ostringstream o;
+  o << "PEMap for matrix:" << std::endl;
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++)
     {
-      CkPrintf("PEMap(%d,%d) = %d\n", i, j, PEMap[BLOCK_INDEX(i, j, 0, 0,
-            NTier)]);
+      o << "PEMap(" << i << "," << j << ") = "
+        << PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)] << std::endl;;
     }
   }
+  INFO(o.str().c_str());
 
   cb.send();
 }
