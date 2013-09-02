@@ -142,18 +142,31 @@ void Multiply::donePEMap (CkReductionMsg *msg)
     current = current->next();
   }
 
+#ifdef ATOMIC_PE_MAP
   std::ostringstream o;
   o << "PEMap for convolution:" << std::endl;
+#else
+  INFO("PEMap for convolution:\n");
+#endif
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++) {
       for(int k = 0; k < NTier; k++)
       {
+#ifdef ATOMIC_PE_MAP
         o << "PEMap(" << i << "," << j << "," << k << ") = "
           << PEMap[BLOCK_INDEX_3(i, j, k, NTier)] << std::endl;;
+#else
+        CkPrintf("PEMap(%d,%d,%d) = %d\n", i, j, k, PEMap[BLOCK_INDEX_3(i, j, k, NTier)]);
+#endif
       }
     }
   }
+#ifdef ATOMIC_PE_MAP
+  o << "end of PEMap for convolution" << std::endl;
   INFO(o.str().c_str());
+#else
+  CkPrintf("end of PEMap for convolution\n");
+#endif
 
   cb.send();
 }

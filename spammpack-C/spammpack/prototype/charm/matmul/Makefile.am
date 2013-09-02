@@ -17,6 +17,8 @@ EXTRA_DIST = \
 
 AM_LDFLAGS = -language charm++ @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
+python_PYTHON = plotPEMap.py
+
 bin_PROGRAMS = matmul
 
 INTERFACE_FILES = \

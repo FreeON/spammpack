@@ -21,6 +21,8 @@ AC_SUBST([HAVE_DOT], [${have_dot}])
 
 AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
 
+AM_PATH_PYTHON
+
 AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
 if test -z "${CHARMC}"; then
   CHARMC="charmc"

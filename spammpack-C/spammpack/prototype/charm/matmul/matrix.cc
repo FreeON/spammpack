@@ -149,6 +149,7 @@ void Matrix::donePEMap (CkReductionMsg *msg)
         << PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)] << std::endl;;
     }
   }
+  o << "end of PEMap for matrix " << name << std::endl;
   INFO(o.str().c_str());
 
   cb.send();
