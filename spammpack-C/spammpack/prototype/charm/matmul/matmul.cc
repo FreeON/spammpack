@@ -193,8 +193,8 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 {
   LBDatabase *db = LBDatabaseObj();
 
-  CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize);
-  CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize);
+  CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize, 2, "A");
+  CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize, 2, "C");
 
   /* Initialize the matrices. */
   double *ADense = new double[N*N];

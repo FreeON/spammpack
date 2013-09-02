@@ -19,9 +19,12 @@
  *
  * @param N The matrix size.
  * @param blocksize The SpAMM blocksize.
+ * @param nameLength The strlen of the name.
+ * @param name The matrix name.
  */
-Matrix::Matrix (int N, int blocksize)
+Matrix::Matrix (int N, int blocksize, int nameLength, char *name)
 {
+  this->name = strdup(name);
   this->N = N;
   this->blocksize = blocksize;
 
@@ -41,9 +44,9 @@ Matrix::Matrix (int N, int blocksize)
 
     unsigned long bytes = NTier*NTier*(sizeof(Node)
         +blocksize*blocksize*sizeof(double));
-    INFO("N = %d, blocksize = %d, tier = %d, depth = %d, NPadded = %d, "
-        "NTier = %d, creating %d Nodes using %d bytes (%s)\n",
-        N, blocksize, tier, depth, NPadded,
+    INFO("name = %s, N = %d, blocksize = %d, tier = %d, depth = %d, "
+        "NPadded = %d, NTier = %d, creating %d Nodes using %d bytes (%s)\n",
+        this->name, N, blocksize, tier, depth, NPadded,
         NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
 
     nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier, NTier, NTier);
@@ -138,7 +141,7 @@ void Matrix::donePEMap (CkReductionMsg *msg)
   }
 
   std::ostringstream o;
-  o << "PEMap for matrix:" << std::endl;
+  o << "PEMap for matrix " << name << ":" << std::endl;
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++)
     {

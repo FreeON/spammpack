@@ -19,6 +19,9 @@ class Matrix : public CBase_Matrix
 {
   private:
 
+    /** The matrix name. This is currently used to identify the matrix. */
+    char *name;
+
     /** The matrix size. */
     int N;
 
@@ -43,7 +46,7 @@ class Matrix : public CBase_Matrix
 
   public:
 
-    Matrix (int N, int blocksize);
+    Matrix (int N, int blocksize, int nameLength, char *name);
     ~Matrix (void);
     MatrixInfoMsg * info (void);
     DenseMatrixMsg * toDense (void);
