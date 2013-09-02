@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #
-#MSUB -l nodes=1:ppn=1,walltime=28800
+#MSUB -l nodes=1:ppn=1,walltime=43200
 #MSUB -N MM-1
 
 module purge
