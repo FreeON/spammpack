@@ -153,20 +153,21 @@ def generateMathematica (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution)
   openScriptFile(iteration, "nb")
 
   # Plot convolution.
-  script("Graphics3D[\n");
+  script("Graphics3D[ {\n");
   for i in range(N):
     for j in range(N):
       for k in range(N):
         if PEMap_convolution[i, j, k] >= 0:
           color_vector = getColor(
               PEMap_convolution[i, j, k], numPEs)
-          script("  {{ RGBColor[ {:f}, {:f}, {:f} ], Cuboid[ ".format(
+          script("  RGBColor[ {:f}, {:f}, {:f} ], ".format(
                 color_vector[0],
                 color_vector[1],
                 color_vector[2]))
+          script("Opacity[ 0.1 ], Cuboid[")
           script("{{ {:f}, {:f}, {:f} }}, ".format(0.1+i, 0.1+j, 0.1+k))
-          script("{{ {:f}, {:f}, {:f} }} ]\n".format(0.9+i, 0.9+j, 0.9+k))
-  script("]\n")
+          script("{{ {:f}, {:f}, {:f} }} ],\n".format(0.9+i, 0.9+j, 0.9+k))
+  script("} ]\n")
 
   script_file.close()
 
