@@ -1,20 +1,129 @@
 #!/usr/bin/env python
 
 import argparse
-import numpy
+import numpy as np
 import re
+import subprocess
 import sys
+import tempfile
 
 ##############################################
 
-def add2D (i, j, PE, PEMap):
-  if not i in PEMap:
-    PEMap[i] = {}
-  PEMap[i][j] = PE
+def script (line):
+  """ Print a line in the POVRay script. """
+  global povray_script
+  povray_script.write(bytes(line + "\n", "UTF-8"))
 
-def printMap (PEMap):
-  currentI = -1
-  currentJ = -1
+def openPOVRay ():
+  global povray_script
+  povray_script = tempfile.NamedTemporaryFile(suffix = ".pov", delete = False)
+  print("writing POVRay script into {:s}".format(povray_script.name))
+
+def getColor (value, N):
+  return "red 1 green 0 blue 0"
+
+def render (iteration, filename):
+  try:
+    cmd = [
+        "povray",
+        "-d",
+        "+OPEMap_{:d}.png".format(iteration),
+        "+H1080",
+        "+W1920",
+        filename ]
+    povray = subprocess.Popen(
+        cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    povray.wait()
+  except subprocess.CalledProcessError as e:
+    print("error spawning povray using: " + e.cmd)
+
+  if povray.returncode != 0:
+    print("POVRAY: " + cmd.__str__())
+    for line in povray.stdout:
+      print("POVRAY: " + line.rstrip().decode())
+    for line in povray.stderr:
+      print("POVRAY: " + line.rstrip().decode())
+
+def generatePOVRay (iteration, PEMap_A, PEMap_C, PEMap_convolution):
+  global povray_script
+  openPOVRay()
+
+  ( N, _ ) = PEMap_A.shape
+
+  script("/* Automatically generated... */")
+  script("#include \"colors.inc\"")
+
+  # Place the camera.
+  script("camera {")
+  script("  location  < {:e}, {:e}, {:e} >".format(
+    2*N, 2*N, 2*N))
+  script("  look_at < 0, 0, 0 >")
+  script("}")
+
+  # Plot A map on x-y plane.
+  script("box {")
+  script("  < 0, 0, -0.2 >, < {:f}, {:f}, -0.2 >".format(
+    N, N))
+  script("  pigment { color White }")
+  script("}")
+
+  for i in range(N):
+    for j in range(N):
+      script("box {")
+      script("  < {:f}, {:f}, 0 >, < {:f}, {:f}, 0 >".format(
+        0.1+i, 0.1+j, 0.9+i, 0.9+j))
+      color_vector = getColor(PEMap_A[i, j], PEMap_A.size)
+      script("  pigment {{ color {:s} }}".format(color_vector))
+      script("}")
+
+  # Plot B map on x-z plane.
+  script("box {")
+  script("  < 0, -0.2, 0 >, < {:f}, -0.2, {:f} >".format(
+    N, N))
+  script("  pigment { color White }")
+  script("}")
+
+  for i in range(N):
+    for j in range(N):
+      script("box {")
+      script("  < {:f}, 0, {:f} >, < {:f}, 0, {:f} >".format(
+        0.1+i, 0.1+j, 0.9+i, 0.9+j))
+      color_vector = getColor(PEMap_A[i, j], PEMap_A.size)
+      script("  pigment {{ color {:s} }}".format(color_vector))
+      script("}")
+
+  # Plot C map on y-z plane.
+  script("box {")
+  script("  < -0.2, 0, 0 >, < -0.2, {:f}, {:f} >".format(
+    N, N))
+  script("  pigment { color White }")
+  script("}")
+
+  for i in range(N):
+    for j in range(N):
+      script("box {")
+      script("  < 0, {:f}, {:f} >, < 0, {:f}, {:f} >".format(
+        0.1+i, 0.1+j, 0.9+i, 0.9+j))
+      color_vector = getColor(PEMap_C[i, j], PEMap_C.size)
+      script("  pigment {{ color {:s} }}".format(color_vector))
+      script("}")
+
+  # Plot convolution.
+  for i in range(N):
+    for j in range(N):
+      for k in range(N):
+        script("box {")
+        script("  < {:f}, {:f}, {:f} >, < {:f}, {:f}, {:f} >".format(
+          0.1+i, 0.1+j, 0.1+k, 0.9+i, 0.9+j, 0.9+k))
+        color_vector = getColor(
+            PEMap_convolution[i, j, k], PEMap_convolution.size)
+        script("  pigment {{ color {:s} transmit 0.6 }}".format(color_vector))
+        script("  finish { metallic 0.4 }")
+        script("  hollow")
+        script("}")
+
+  povray_script.close()
+  render(iteration, povray_script.name)
 
 ##############################################
 
@@ -35,7 +144,6 @@ if options.FILE == "-":
 else:
   fd = open(options.FILE)
 
-inIteration = False
 iteration = -1
 
 inMap = False
@@ -47,13 +155,11 @@ for line in fd:
   if options.debug:
     print("read: ", line.rstrip())
 
-  if not inIteration:
-    result = re.compile("iteration ([0-9]+) on").search(line)
-    if result:
-      inIteration = True
-      iteration = int(result.group(1))
-      print("iteration {:d}".format(iteration))
-      continue
+  result = re.compile("iteration ([0-9]+) on").search(line)
+  if result:
+    iteration = int(result.group(1))
+    print("iteration {:d}".format(iteration))
+    continue
 
   result = re.compile("] PEMap for (.*):").search(line)
   if result:
@@ -99,25 +205,22 @@ for line in fd:
       N = k+1
     continue
 
-  result = re.compile("end of PEMap").search(line)
+  result = re.compile("end of PEMap for (.*)").search(line)
   if result:
     if currentMap == "convolution":
-      PEMap[currentMap] = numpy.empty([N, N, N])
+      PEMap[currentMap] = np.empty([N, N, N], dtype = np.int16)
       PEMap[currentMap].fill(-1)
       for (i, j, k, PE) in elementBuffer:
         PEMap[currentMap][i,j,k] = PE
+      generatePOVRay(iteration, PEMap["matrix A"], PEMap["matrix C"], PEMap["convolution"])
     else:
-      PEMap[currentMap] = numpy.empty([N, N])
+      PEMap[currentMap] = np.empty([N, N], dtype = np.int16)
       PEMap[currentMap].fill(-1)
       for (i, j, PE) in elementBuffer:
         PEMap[currentMap][i,j] = PE
-    print(PEMap[currentMap])
     inMap = False
     if options.debug:
       print("closing map {:s}".format(currentMap))
     continue
 
 fd.close()
-
-for name in PEMap:
-  printMap(PEMap[name])
