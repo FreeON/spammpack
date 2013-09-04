@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import math
 import numpy as np
 import re
 import subprocess
@@ -25,7 +26,10 @@ def openScriptFile (iteration, suffix):
   print("writing script into {:s}".format(script_file.name))
 
 def getColor (value, N):
-  return "red 1 green 0 blue 0"
+  return [
+      math.cos(value/float(N-1)*math.pi/2.),
+      math.sin(value/float(N-1)*math.pi/2.),
+      0 ]
 
 def render (iteration, filename):
   try:
@@ -50,7 +54,7 @@ def render (iteration, filename):
     for line in povray.stderr:
       print("POVRAY: " + line.rstrip().decode())
 
-def generatePOVRay (iteration, PEMap_A, PEMap_C, PEMap_convolution):
+def generatePOVRay (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution):
   global script_file
   openScriptFile(iteration, "pov")
 
@@ -78,8 +82,11 @@ def generatePOVRay (iteration, PEMap_A, PEMap_C, PEMap_convolution):
       script("box {\n")
       script("  < {:f}, {:f}, 0 >, < {:f}, {:f}, 0 >\n".format(
         0.1+i, 0.1+j, 0.9+i, 0.9+j))
-      color_vector = getColor(PEMap_A[i, j], PEMap_A.size)
-      script("  pigment {{ color {:s} }}\n".format(color_vector))
+      color_vector = getColor(PEMap_A[i, j], numPEs)
+      script("  pigment {{ color red {:f} green {:f} blue {:f} }}\n".format(
+        color_vector[0],
+        color_vector[1],
+        color_vector[2]))
       script("}\n")
 
   # Plot B map on x-z plane.
@@ -94,8 +101,11 @@ def generatePOVRay (iteration, PEMap_A, PEMap_C, PEMap_convolution):
       script("box {\n")
       script("  < {:f}, 0, {:f} >, < {:f}, 0, {:f} >\n".format(
         0.1+i, 0.1+j, 0.9+i, 0.9+j))
-      color_vector = getColor(PEMap_A[i, j], PEMap_A.size)
-      script("  pigment {{ color {:s} }}\n".format(color_vector))
+      color_vector = getColor(PEMap_A[i, j], numPEs)
+      script("  pigment {{ color red {:f} green {:f} blue {:f} }}\n".format(
+        color_vector[0],
+        color_vector[1],
+        color_vector[2]))
       script("}\n")
 
   # Plot C map on y-z plane.
@@ -110,9 +120,12 @@ def generatePOVRay (iteration, PEMap_A, PEMap_C, PEMap_convolution):
       script("box {\n")
       script("  < 0, {:f}, {:f} >, < 0, {:f}, {:f} >\n".format(
         0.1+i, 0.1+j, 0.9+i, 0.9+j))
-      color_vector = getColor(PEMap_C[i, j], PEMap_C.size)
-      script("  pigment {{ color {:s} }}\n".format(color_vector))
-      script("}")
+      color_vector = getColor(PEMap_C[i, j], numPEs)
+      script("  pigment {{ color red {:f} green {:f} blue {:f} }}\n".format(
+        color_vector[0],
+        color_vector[1],
+        color_vector[2]))
+      script("}\n")
 
   # Plot convolution.
   for i in range(N):
@@ -123,8 +136,11 @@ def generatePOVRay (iteration, PEMap_A, PEMap_C, PEMap_convolution):
           script("  < {:f}, {:f}, {:f} >, < {:f}, {:f}, {:f} >\n".format(
             0.1+i, 0.1+j, 0.1+k, 0.9+i, 0.9+j, 0.9+k))
           color_vector = getColor(
-              PEMap_convolution[i, j, k], PEMap_convolution.size)
-          script("  pigment {{ color {:s} transmit 0.6 }}\n".format(color_vector))
+              PEMap_convolution[i, j, k], numPEs)
+          script("  pigment {{ color red {:f} green {:f} blue {:f} transmit 0.6 }}\n".format(
+            color_vector[0],
+            color_vector[1],
+            color_vector[2]))
           script("  finish { metallic 0.4 }\n")
           script("  hollow\n")
           script("}\n")
@@ -132,7 +148,7 @@ def generatePOVRay (iteration, PEMap_A, PEMap_C, PEMap_convolution):
   script_file.close()
   render(iteration, script_file.name)
 
-def generateMathematica (iteration, PEMap_A, PEMap_C, PEMap_convolution):
+def generateMathematica (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution):
   global script_file
   openScriptFile(iteration, "nb")
 
@@ -143,8 +159,11 @@ def generateMathematica (iteration, PEMap_A, PEMap_C, PEMap_convolution):
       for k in range(N):
         if PEMap_convolution[i, j, k] >= 0:
           color_vector = getColor(
-              PEMap_convolution[i, j, k], PEMap_convolution.size)
-          script("  { Yellow, Cuboid[ ")
+              PEMap_convolution[i, j, k], numPEs)
+          script("  {{ RGBColor[ {:f}, {:f}, {:f} ], Cuboid[ ".format(
+                color_vector[0],
+                color_vector[1],
+                color_vector[2]))
           script("{{ {:f}, {:f}, {:f} }}, ".format(0.1+i, 0.1+j, 0.1+k))
           script("{{ {:f}, {:f}, {:f} }} ]\n".format(0.9+i, 0.9+j, 0.9+k))
   script("]\n")
@@ -205,8 +224,9 @@ inMap = False
 currentMap = ""
 
 PEMap = {}
-
+numPEs = -1
 line_number = 0
+
 for line in fd:
   line_number += 1
   if options.debug:
@@ -245,6 +265,8 @@ for line in fd:
       N = i+1
     if j+1 > N:
       N = j+1
+    if PE+1 > numPEs:
+      numPEs = PE+1
     continue
 
   result = re.compile("PEMap\(([0-9]+),([0-9]+),([0-9]+)\) = ([0-9]+) \(norm = ([0-9.e+-]+)\)").search(line)
@@ -263,6 +285,8 @@ for line in fd:
       N = j+1
     if k+1 > N:
       N = k+1
+    if PE+1 > numPEs:
+      numPEs = PE+1
     continue
 
   result = re.compile("end of PEMap for (.*)").search(line)
@@ -273,15 +297,15 @@ for line in fd:
       for (i, j, k, PE, norm) in elementBuffer:
         if norm > options.tolerance:
           PEMap[currentMap][i,j,k] = PE
-      if options.render:
-        generatePOVRay(
-            iteration, PEMap["matrix A"], PEMap["matrix C"],
-            PEMap["convolution"])
       if options.printPEMap:
         print(PEMap)
+      if options.render:
+        generatePOVRay(
+            iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
+            PEMap["convolution"])
       if options.mathematica:
         generateMathematica(
-            iteration, PEMap["matrix A"], PEMap["matrix C"],
+            iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
             PEMap["convolution"])
     else:
       PEMap[currentMap] = np.empty([N, N], dtype = np.int16)
