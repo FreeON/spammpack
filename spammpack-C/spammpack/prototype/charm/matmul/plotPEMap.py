@@ -175,9 +175,11 @@ currentMap = ""
 
 PEMap = {}
 
+line_number = 0
 for line in fd:
+  line_number += 1
   if options.debug:
-    print("read: ", line.rstrip())
+    print("read ({:d})".format(line_number), line.rstrip())
 
   result = re.compile("iteration ([0-9]+) on").search(line)
   if result:
@@ -189,7 +191,8 @@ for line in fd:
   if result:
     mapName = result.group(1)
     if inMap and mapName != currentMap:
-      raise(Exception("map {:s} already open for reading".format(mapName)))
+      raise(Exception("line {:d}: map {:s} already open for reading".format(
+        line_number, mapName)))
     if not inMap:
       N = 0
       elementBuffer = []
@@ -204,7 +207,7 @@ for line in fd:
     j = int(result.group(2))
     PE = int(result.group(3))
     if not inMap:
-      raise(Exception("no map open for reading"))
+      raise(Exception("line {:d}: no map open for reading".format(line_number)))
     elementBuffer.append( (i, j, PE) )
     if i+1 > N:
       N = i+1
@@ -219,7 +222,7 @@ for line in fd:
     k = int(result.group(3))
     PE = int(result.group(4))
     if not inMap:
-      raise(Exception("no map open for reading"))
+      raise(Exception("line {:d}: no map open for reading".format(line_number)))
     elementBuffer.append( (i, j, k, PE) )
     if i+1 > N:
       N = i+1

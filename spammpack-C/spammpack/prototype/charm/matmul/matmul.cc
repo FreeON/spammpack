@@ -284,12 +284,15 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     {
       INFO("PE map for A\n");
       A.updatePEMap(CkCallbackResumeThread());
+      CkWaitQD();
 
       INFO("PE map for C\n");
       C.updatePEMap(CkCallbackResumeThread());
+      CkWaitQD();
 
       INFO("PE map for convolution\n");
       M.updatePEMap(CkCallbackResumeThread());
+      CkWaitQD();
     }
 
     /* Load balance. */
