@@ -128,6 +128,10 @@ void Matrix::updatePEMap (CkCallback &cb)
   nodes[depth].PEMap(done);
 }
 
+/** The reduction target for Matrix::updatePEMap.
+ *
+ * @param msg The reduction message.
+ */
 void Matrix::donePEMap (CkReductionMsg *msg)
 {
   int NTier = 1 << depth;
@@ -140,17 +144,29 @@ void Matrix::donePEMap (CkReductionMsg *msg)
     current = current->next();
   }
 
+#ifdef ATOMIC_PE_MAP
   std::ostringstream o;
   o << "PEMap for matrix " << name << ":" << std::endl;
+#else
+  INFO("PEMap for matrix %s:\n", name);
+#endif
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++)
     {
+#ifdef ATOMIC_PE_MAP
       o << "PEMap(" << i << "," << j << ") = "
         << PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)] << std::endl;;
+#else
+      CkPrintf("PEMap(%d,%d) = %d\n", i, j, PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)]);
+#endif
     }
   }
+#ifdef ATOMIC_PE_MAP
   o << "end of PEMap for matrix " << name << std::endl;
   INFO(o.str().c_str());
+#else
+  CkPrintf("end of PEMap for matrix %s\n", name);
+#endif
 
   cb.send();
 }

@@ -24,6 +24,10 @@
  * ./charmrun +p3 matmul -N 1024 -b 16 --type decay --decay 8 --tolerance 1e-8 --verify --iterations 10
  * @endcode
  *
+ * @section References
+ *
+ * A list of @link citelist references @endlink can be found here.
+ *
  * @author Nicolas Bock <nicolas.bock@freeon.org>
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */

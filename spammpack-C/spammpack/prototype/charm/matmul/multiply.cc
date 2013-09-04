@@ -130,6 +130,10 @@ void Multiply::updatePEMap (CkCallback &cb)
   convolution[depth].PEMap(done);
 }
 
+/** The reduction target for Multiply::updatePEMap.
+ *
+ * @param msg The reduction message.
+ */
 void Multiply::donePEMap (CkReductionMsg *msg)
 {
   int NTier = 1 << depth;
