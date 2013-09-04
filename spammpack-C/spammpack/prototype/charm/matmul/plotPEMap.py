@@ -12,7 +12,11 @@ import tempfile
 def script (line):
   """ Print a line in the POVRay script. """
   global povray_script
-  povray_script.write(bytes(line + "\n", "UTF-8"))
+  global python_version
+  if python_version.major == 2:
+    povray_script.write(line + "\n")
+  else:
+    povray_script.write(bytes(line + "\n", "UTF-8"))
 
 def openPOVRay ():
   global povray_script
@@ -27,6 +31,7 @@ def render (iteration, filename):
     cmd = [
         "povray",
         "-d",
+        "Verbose=false",
         "+OPEMap_{:d}.png".format(iteration),
         "+H1080",
         "+W1920",
@@ -127,10 +132,29 @@ def generatePOVRay (iteration, PEMap_A, PEMap_C, PEMap_convolution):
 
 ##############################################
 
+global python_version
+python_version = sys.version_info
+
+if python_version.major == 2 and python_version.minor < 7:
+  print("need at least python 2.7 (running {:d}.{:d})".format(
+    python_version.major, python_version.minor))
+  sys.exit(1)
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument("FILE",
     help = "The output file to plot. A value of '-' means standard input.")
+
+parser.add_argument("--render",
+    help = "Render the PEMaps",
+    action = "store_true",
+    default = False)
+
+parser.add_argument("--print",
+    help = "Print the PEMaps to stdout",
+    dest = "printPEMap",
+    action = "store_true",
+    default = False)
 
 parser.add_argument("--debug",
     help = "Print debugging stuff",
@@ -212,7 +236,10 @@ for line in fd:
       PEMap[currentMap].fill(-1)
       for (i, j, k, PE) in elementBuffer:
         PEMap[currentMap][i,j,k] = PE
-      generatePOVRay(iteration, PEMap["matrix A"], PEMap["matrix C"], PEMap["convolution"])
+      if options.render:
+        generatePOVRay(iteration, PEMap["matrix A"], PEMap["matrix C"], PEMap["convolution"])
+      if options.printPEMap:
+        print(PEMap)
     else:
       PEMap[currentMap] = np.empty([N, N], dtype = np.int16)
       PEMap[currentMap].fill(-1)
