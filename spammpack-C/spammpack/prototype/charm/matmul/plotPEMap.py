@@ -11,17 +11,18 @@ import tempfile
 
 def script (line):
   """ Print a line in the POVRay script. """
-  global povray_script
+  global script_file
   global python_version
   if python_version.major == 2:
-    povray_script.write(line + "\n")
+    script_file.write(line)
   else:
-    povray_script.write(bytes(line + "\n", "UTF-8"))
+    script_file.write(bytes(line, "UTF-8"))
 
-def openPOVRay ():
-  global povray_script
-  povray_script = tempfile.NamedTemporaryFile(suffix = ".pov", delete = False)
-  print("writing POVRay script into {:s}".format(povray_script.name))
+def openScriptFile (iteration, suffix):
+  global script_file
+  script_file = tempfile.NamedTemporaryFile(
+      suffix = ".{:d}.{:s}".format(iteration, suffix), delete = False)
+  print("writing script into {:s}".format(script_file.name))
 
 def getColor (value, N):
   return "red 1 green 0 blue 0"
@@ -50,85 +51,105 @@ def render (iteration, filename):
       print("POVRAY: " + line.rstrip().decode())
 
 def generatePOVRay (iteration, PEMap_A, PEMap_C, PEMap_convolution):
-  global povray_script
-  openPOVRay()
+  global script_file
+  openScriptFile(iteration, "pov")
 
   ( N, _ ) = PEMap_A.shape
 
-  script("/* Automatically generated... */")
-  script("#include \"colors.inc\"")
+  script("/* Automatically generated... */\n")
+  script("#include \"colors.inc\"\n")
 
   # Place the camera.
-  script("camera {")
-  script("  location  < {:e}, {:e}, {:e} >".format(
+  script("camera {\n")
+  script("  location  < {:e}, {:e}, {:e} >\n".format(
     2*N, 2*N, 2*N))
-  script("  look_at < 0, 0, 0 >")
-  script("}")
+  script("  look_at < 0, 0, 0 >\n")
+  script("}\n")
 
   # Plot A map on x-y plane.
-  script("box {")
-  script("  < 0, 0, -0.2 >, < {:f}, {:f}, -0.2 >".format(
+  script("box {\n")
+  script("  < 0, 0, -0.2 >, < {:f}, {:f}, -0.2 >\n".format(
     N, N))
-  script("  pigment { color White }")
-  script("}")
+  script("  pigment { color White }\n")
+  script("}\n")
 
   for i in range(N):
     for j in range(N):
-      script("box {")
-      script("  < {:f}, {:f}, 0 >, < {:f}, {:f}, 0 >".format(
+      script("box {\n")
+      script("  < {:f}, {:f}, 0 >, < {:f}, {:f}, 0 >\n".format(
         0.1+i, 0.1+j, 0.9+i, 0.9+j))
       color_vector = getColor(PEMap_A[i, j], PEMap_A.size)
-      script("  pigment {{ color {:s} }}".format(color_vector))
-      script("}")
+      script("  pigment {{ color {:s} }}\n".format(color_vector))
+      script("}\n")
 
   # Plot B map on x-z plane.
-  script("box {")
-  script("  < 0, -0.2, 0 >, < {:f}, -0.2, {:f} >".format(
+  script("box {\n")
+  script("  < 0, -0.2, 0 >, < {:f}, -0.2, {:f} >\n".format(
     N, N))
-  script("  pigment { color White }")
-  script("}")
+  script("  pigment { color White }\n")
+  script("}\n")
 
   for i in range(N):
     for j in range(N):
-      script("box {")
-      script("  < {:f}, 0, {:f} >, < {:f}, 0, {:f} >".format(
+      script("box {\n")
+      script("  < {:f}, 0, {:f} >, < {:f}, 0, {:f} >\n".format(
         0.1+i, 0.1+j, 0.9+i, 0.9+j))
       color_vector = getColor(PEMap_A[i, j], PEMap_A.size)
-      script("  pigment {{ color {:s} }}".format(color_vector))
-      script("}")
+      script("  pigment {{ color {:s} }}\n".format(color_vector))
+      script("}\n")
 
   # Plot C map on y-z plane.
-  script("box {")
-  script("  < -0.2, 0, 0 >, < -0.2, {:f}, {:f} >".format(
+  script("box {\n")
+  script("  < -0.2, 0, 0 >, < -0.2, {:f}, {:f} >\n".format(
     N, N))
-  script("  pigment { color White }")
-  script("}")
+  script("  pigment { color White }\n")
+  script("}\n")
 
   for i in range(N):
     for j in range(N):
-      script("box {")
-      script("  < 0, {:f}, {:f} >, < 0, {:f}, {:f} >".format(
+      script("box {\n")
+      script("  < 0, {:f}, {:f} >, < 0, {:f}, {:f} >\n".format(
         0.1+i, 0.1+j, 0.9+i, 0.9+j))
       color_vector = getColor(PEMap_C[i, j], PEMap_C.size)
-      script("  pigment {{ color {:s} }}".format(color_vector))
+      script("  pigment {{ color {:s} }}\n".format(color_vector))
       script("}")
 
   # Plot convolution.
   for i in range(N):
     for j in range(N):
       for k in range(N):
-        script("box {")
-        script("  < {:f}, {:f}, {:f} >, < {:f}, {:f}, {:f} >".format(
-          0.1+i, 0.1+j, 0.1+k, 0.9+i, 0.9+j, 0.9+k))
-        color_vector = getColor(
-            PEMap_convolution[i, j, k], PEMap_convolution.size)
-        script("  pigment {{ color {:s} transmit 0.6 }}".format(color_vector))
-        script("  finish { metallic 0.4 }")
-        script("  hollow")
-        script("}")
+        if PEMap_convolution[i, j, k] >= 0:
+          script("box {\n")
+          script("  < {:f}, {:f}, {:f} >, < {:f}, {:f}, {:f} >\n".format(
+            0.1+i, 0.1+j, 0.1+k, 0.9+i, 0.9+j, 0.9+k))
+          color_vector = getColor(
+              PEMap_convolution[i, j, k], PEMap_convolution.size)
+          script("  pigment {{ color {:s} transmit 0.6 }}\n".format(color_vector))
+          script("  finish { metallic 0.4 }\n")
+          script("  hollow\n")
+          script("}\n")
 
-  povray_script.close()
-  render(iteration, povray_script.name)
+  script_file.close()
+  render(iteration, script_file.name)
+
+def generateMathematica (iteration, PEMap_A, PEMap_C, PEMap_convolution):
+  global script_file
+  openScriptFile(iteration, "nb")
+
+  # Plot convolution.
+  script("Graphics3D[\n");
+  for i in range(N):
+    for j in range(N):
+      for k in range(N):
+        if PEMap_convolution[i, j, k] >= 0:
+          color_vector = getColor(
+              PEMap_convolution[i, j, k], PEMap_convolution.size)
+          script("  { Yellow, Cuboid[ ")
+          script("{{ {:f}, {:f}, {:f} }}, ".format(0.1+i, 0.1+j, 0.1+k))
+          script("{{ {:f}, {:f}, {:f} }} ]\n".format(0.9+i, 0.9+j, 0.9+k))
+  script("]\n")
+
+  script_file.close()
 
 ##############################################
 
@@ -153,6 +174,11 @@ parser.add_argument("--render",
 parser.add_argument("--print",
     help = "Print the PEMaps to stdout",
     dest = "printPEMap",
+    action = "store_true",
+    default = False)
+
+parser.add_argument("--mathematica",
+    help = "Generate Mathematic statements",
     action = "store_true",
     default = False)
 
@@ -248,9 +274,15 @@ for line in fd:
         if norm > options.tolerance:
           PEMap[currentMap][i,j,k] = PE
       if options.render:
-        generatePOVRay(iteration, PEMap["matrix A"], PEMap["matrix C"], PEMap["convolution"])
+        generatePOVRay(
+            iteration, PEMap["matrix A"], PEMap["matrix C"],
+            PEMap["convolution"])
       if options.printPEMap:
         print(PEMap)
+      if options.mathematica:
+        generateMathematica(
+            iteration, PEMap["matrix A"], PEMap["matrix C"],
+            PEMap["convolution"])
     else:
       PEMap[currentMap] = np.empty([N, N], dtype = np.int16)
       PEMap[currentMap].fill(-1)
