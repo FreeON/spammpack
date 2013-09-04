@@ -156,6 +156,11 @@ parser.add_argument("--print",
     action = "store_true",
     default = False)
 
+parser.add_argument("--tolerance",
+    help = "When printing the convolution, filter with TOLERANCE",
+    type = float,
+    default = 0)
+
 parser.add_argument("--debug",
     help = "Print debugging stuff",
     action = "store_true",
@@ -201,29 +206,31 @@ for line in fd:
     if options.debug:
       print("opening map {:s}".format(currentMap))
 
-  result = re.compile("PEMap\(([0-9]+),([0-9]+)\) = ([0-9]+)").search(line)
+  result = re.compile("PEMap\(([0-9]+),([0-9]+)\) = ([0-9]+) \(norm = ([0-9.e+-]+)\)").search(line)
   if result:
     i = int(result.group(1))
     j = int(result.group(2))
     PE = int(result.group(3))
+    norm = float(result.group(4))
     if not inMap:
       raise(Exception("line {:d}: no map open for reading".format(line_number)))
-    elementBuffer.append( (i, j, PE) )
+    elementBuffer.append( (i, j, PE, norm) )
     if i+1 > N:
       N = i+1
     if j+1 > N:
       N = j+1
     continue
 
-  result = re.compile("PEMap\(([0-9]+),([0-9]+),([0-9]+)\) = ([0-9]+)").search(line)
+  result = re.compile("PEMap\(([0-9]+),([0-9]+),([0-9]+)\) = ([0-9]+) \(norm = ([0-9.e+-]+)\)").search(line)
   if result:
     i = int(result.group(1))
     j = int(result.group(2))
     k = int(result.group(3))
     PE = int(result.group(4))
+    norm = float(result.group(5))
     if not inMap:
       raise(Exception("line {:d}: no map open for reading".format(line_number)))
-    elementBuffer.append( (i, j, k, PE) )
+    elementBuffer.append( (i, j, k, PE, norm) )
     if i+1 > N:
       N = i+1
     if j+1 > N:
@@ -237,8 +244,9 @@ for line in fd:
     if currentMap == "convolution":
       PEMap[currentMap] = np.empty([N, N, N], dtype = np.int16)
       PEMap[currentMap].fill(-1)
-      for (i, j, k, PE) in elementBuffer:
-        PEMap[currentMap][i,j,k] = PE
+      for (i, j, k, PE, norm) in elementBuffer:
+        if norm > options.tolerance:
+          PEMap[currentMap][i,j,k] = PE
       if options.render:
         generatePOVRay(iteration, PEMap["matrix A"], PEMap["matrix C"], PEMap["convolution"])
       if options.printPEMap:
@@ -246,7 +254,7 @@ for line in fd:
     else:
       PEMap[currentMap] = np.empty([N, N], dtype = np.int16)
       PEMap[currentMap].fill(-1)
-      for (i, j, PE) in elementBuffer:
+      for (i, j, PE, norm) in elementBuffer:
         PEMap[currentMap][i,j] = PE
     inMap = False
     if options.debug:

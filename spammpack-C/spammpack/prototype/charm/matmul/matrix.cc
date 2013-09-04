@@ -13,7 +13,6 @@
 #include "index.h"
 
 #include <assert.h>
-#include <sstream>
 
 /** The constructor.
  *
@@ -54,6 +53,7 @@ Matrix::Matrix (int N, int blocksize, int nameLength, char *name)
     if(tier == depth)
     {
       PEMap = new int[NTier*NTier];
+      PEMap_norm = new double[NTier*NTier];
     }
   }
 }
@@ -63,6 +63,7 @@ Matrix::Matrix (int N, int blocksize, int nameLength, char *name)
 Matrix::~Matrix (void)
 {
   delete[] PEMap;
+  delete[] PEMap_norm;
 }
 
 /** Get some basic information on the matrix.
@@ -138,35 +139,23 @@ void Matrix::donePEMap (CkReductionMsg *msg)
   CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
   while(current != NULL)
   {
-    int *intPtr = (int*) &current->data;
-    DEBUG("data = { %d, %d, %d }\n", intPtr[0], intPtr[1], intPtr[2]);
-    PEMap[BLOCK_INDEX(intPtr[0], intPtr[1], 0, 0, NTier)] = intPtr[2];
+    struct PEMap_node_t *result = (struct PEMap_node_t*) &current->data;
+    DEBUG("data = { %d, %d, %d }\n", result->index[0], result->index[1], result->PE);
+    PEMap[BLOCK_INDEX(result->index[0], result->index[1], 0, 0, NTier)] = result->PE;
+    PEMap_norm[BLOCK_INDEX(result->index[0], result->index[1], 0, 0, NTier)] = result->norm;
     current = current->next();
   }
 
-#ifdef ATOMIC_PE_MAP
-  std::ostringstream o;
-  o << "PEMap for matrix " << name << ":" << std::endl;
-#else
   INFO("PEMap for matrix %s:\n", name);
-#endif
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++)
     {
-#ifdef ATOMIC_PE_MAP
-      o << "PEMap(" << i << "," << j << ") = "
-        << PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)] << std::endl;;
-#else
-      CkPrintf("PEMap(%d,%d) = %d\n", i, j, PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)]);
-#endif
+      CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+          PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)],
+          PEMap_norm[BLOCK_INDEX(i, j, 0, 0, NTier)]);
     }
   }
-#ifdef ATOMIC_PE_MAP
-  o << "end of PEMap for matrix " << name << std::endl;
-  INFO(o.str().c_str());
-#else
   CkPrintf("end of PEMap for matrix %s\n", name);
-#endif
 
   cb.send();
 }

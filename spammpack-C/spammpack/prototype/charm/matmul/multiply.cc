@@ -12,9 +12,8 @@
 #include "messages.h"
 #include "logger.h"
 #include "utilities.h"
+#include "types.h"
 #include "index.h"
-
-#include <sstream>
 
 /** The constructor.
  *
@@ -59,6 +58,7 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     if(tier == depth)
     {
       PEMap = new int[NTier*NTier*NTier];
+      PEMap_norm_product = new double[NTier*NTier*NTier];
     }
   }
 }
@@ -68,6 +68,7 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
 Multiply::~Multiply (void)
 {
   delete[] PEMap;
+  delete[] PEMap_norm_product;
 }
 
 /** Multiply two Matrix objects.
@@ -140,37 +141,26 @@ void Multiply::donePEMap (CkReductionMsg *msg)
   CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
   while(current != NULL)
   {
-    int *intPtr = (int*) &current->data;
-    DEBUG("data = { %d, %d, %d }\n", intPtr[0], intPtr[1], intPtr[2], intPtr[3]);
-    PEMap[BLOCK_INDEX_3(intPtr[0], intPtr[1], intPtr[2], NTier)] = intPtr[3];
+    PEMap_convolution_t *result = (PEMap_convolution_t*) &current->data;
+    DEBUG("data = { %d, %d, %d }\n", result->index[0], result->index[1],
+        result->index[2], result->PE);
+    PEMap[BLOCK_INDEX_3(result->index[0], result->index[1], result->index[2], NTier)] = result->PE;
+    PEMap_norm_product[BLOCK_INDEX_3(result->index[0], result->index[1], result->index[2], NTier)] = result->norm_product;
     current = current->next();
   }
 
-#ifdef ATOMIC_PE_MAP
-  std::ostringstream o;
-  o << "PEMap for convolution:" << std::endl;
-#else
   INFO("PEMap for convolution:\n");
-#endif
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++) {
       for(int k = 0; k < NTier; k++)
       {
-#ifdef ATOMIC_PE_MAP
-        o << "PEMap(" << i << "," << j << "," << k << ") = "
-          << PEMap[BLOCK_INDEX_3(i, j, k, NTier)] << std::endl;;
-#else
-        CkPrintf("PEMap(%d,%d,%d) = %d\n", i, j, k, PEMap[BLOCK_INDEX_3(i, j, k, NTier)]);
-#endif
+        CkPrintf("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
+            PEMap[BLOCK_INDEX_3(i, j, k, NTier)],
+            PEMap_norm_product[BLOCK_INDEX_3(i, j, k, NTier)]);
       }
     }
   }
-#ifdef ATOMIC_PE_MAP
-  o << "end of PEMap for convolution" << std::endl;
-  INFO(o.str().c_str());
-#else
   CkPrintf("end of PEMap for convolution\n");
-#endif
 
   cb.send();
 }

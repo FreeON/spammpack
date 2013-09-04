@@ -41,6 +41,9 @@ class Matrix : public CBase_Matrix
     /** The PE map of the nodes at the leaf node tier. */
     int *PEMap;
 
+    /** The norm of the elements in the PEMap. */
+    double *PEMap_norm;
+
     /** A callback. */
     CkCallback cb;
 

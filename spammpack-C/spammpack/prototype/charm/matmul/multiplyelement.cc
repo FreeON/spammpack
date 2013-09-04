@@ -12,6 +12,7 @@
 #include "messages.h"
 #include "logger.h"
 #include "index.h"
+#include "types.h"
 
 #include <assert.h>
 #include <bitset>
@@ -37,6 +38,7 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
   this->A = A;
   this->B = B;
   this->C = C;
+  this->norm_product = 0;
 
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
@@ -91,6 +93,7 @@ void MultiplyElement::pup (PUP::er &p)
   p|A;
   p|B;
   p|C;
+  p|norm_product;
   p|isEnabled;
   p|nextConvolution;
 
@@ -132,7 +135,12 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
         thisIndex.y, thisIndex.z);
 
-    if(AInfo->norm*BInfo->norm > tolerance)
+    norm_product = AInfo->norm*BInfo->norm;
+
+    delete AInfo;
+    delete BInfo;
+
+    if(norm_product > tolerance)
     {
       if(CResult != NULL)
       {
@@ -181,15 +189,13 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       delete ABlock;
       delete BBlock;
     }
-
-    delete AInfo;
-    delete BInfo;
   }
 
   else
   {
     DEBUG("tier %d ME(%d,%d,%d) skipping disabled element\n", tier,
         thisIndex.x, thisIndex.y, thisIndex.z);
+    norm_product = 0;
   }
 
   contribute(cb);
@@ -354,14 +360,15 @@ void MultiplyElement::PEMap (CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z, CkMyPe());
 
-  int *result = new int[4];
+  struct PEMap_convolution_t *result = (struct PEMap_convolution_t*) malloc(sizeof(PEMap_convolution_t));
 
-  result[0] = thisIndex.x;
-  result[1] = thisIndex.y;
-  result[2] = thisIndex.z;
-  result[3] = CkMyPe();
+  result->index[0] = thisIndex.x;
+  result->index[1] = thisIndex.y;
+  result->index[2] = thisIndex.z;
+  result->PE = CkMyPe();
+  result->norm_product = norm_product;
 
-  contribute(4*sizeof(int), result, CkReduction::set, cb);
+  contribute(sizeof(PEMap_convolution_t), result, CkReduction::set, cb);
 }
 
 #include "multiplyelement.def.h"

@@ -37,6 +37,9 @@ class MultiplyElement : public CBase_MultiplyElement
     /** Matrix C. */
     CProxy_Node C;
 
+    /** The norm product of this element. */
+    double norm_product;
+
     /** The result matrix. */
     double *CResult;
 

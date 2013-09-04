@@ -34,6 +34,9 @@ class Multiply : public CBase_Multiply
     /** The PE map of the multiply elements at the leaf node tier. */
     int *PEMap;
 
+    /** The norm products of the elements in the PEMap. */
+    double *PEMap_norm_product;
+
     /** A callback. */
     CkCallback cb;
 
