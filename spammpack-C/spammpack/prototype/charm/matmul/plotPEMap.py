@@ -34,9 +34,14 @@ def script (line):
 # @param iteration The current iteration.
 # @param suffix The script filename suffix.
 def openScriptFile (iteration, suffix):
+  global basename
   global script_file
-  script_file = tempfile.NamedTemporaryFile(
-      suffix = ".{:d}.{:s}".format(iteration, suffix), delete = False)
+  if basename != None:
+    script_file = open("{:s}.{:d}.{:s}".format(
+      basename, iteration, suffix))
+  else:
+    script_file = tempfile.NamedTemporaryFile(
+        suffix = ".{:d}.{:s}".format(iteration, suffix), delete = False)
   print("writing script into {:s}".format(script_file.name))
 
 ## Get a color vector given a PE.
@@ -100,7 +105,9 @@ def label (text, x, y, z):
   script("  pigment { White }\n")
   script("}\n")
 
-def generatePOVRay (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution):
+def generatePOVRay (
+    iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution,
+    norms_convolution):
   global script_file
   openScriptFile(iteration, "pov")
 
@@ -112,14 +119,33 @@ def generatePOVRay (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution):
   # Place the camera.
   script("camera {\n")
   script("  location  < {:e}, {:e}, {:e} >\n".format(
-    0, 2*N, 2*N))
+    2*N/1.5, 2*N, 2*N))
   script("  look_at < 0, 0, 0 >\n")
   script("}\n")
 
+  # Add a few light sources.
   script("light_source {\n")
-  script("  < {:d}, {:d}, {:d} >, White\n".format(N, N, N))
+  script("  < {:d}, {:d}, {:d} >, White\n".format(2*N, 2*N, 2*N))
   script("  parallel\n")
   script("  point_at < 0, 0, 0 >\n")
+  script("}\n")
+
+  script("light_source {\n")
+  script("  < {:f}, {:f}, {:f} >, White\n".format(2*N, 2*N, N/2.))
+  script("  parallel\n")
+  script("  point_at < {:f}, {:f}, {:f} >\n".format(2*N, 2*N, 0))
+  script("}\n")
+
+  script("light_source {\n")
+  script("  < {:f}, {:f}, {:f} >, White\n".format(2*N, N/2., 2*N))
+  script("  parallel\n")
+  script("  point_at < {:f}, {:f}, {:f} >\n".format(2*N, 0, 2*N))
+  script("}\n")
+
+  script("light_source {\n")
+  script("  < {:f}, {:f}, {:f} >, White\n".format(N/2., 2*N, 2*N))
+  script("  parallel\n")
+  script("  point_at < {:f}, {:f}, {:f} >\n".format(0, 2*N, 2*N))
   script("}\n")
 
   # Plot axes.
@@ -178,6 +204,7 @@ def generatePOVRay (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution):
       script("}\n")
 
   # Plot convolution.
+  maxNorm = np.amax(norm_convolution)
   for i in range(N):
     for j in range(N):
       for k in range(N):
@@ -185,10 +212,11 @@ def generatePOVRay (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution):
           box_open(0.1+i, 0.1+j, 0.1+k, 0.9+i, 0.9+j, 0.9+k)
           color_vector = getColor(
               PEMap_convolution[i, j, k], numPEs)
-          script("  pigment {{ color red {:f} green {:f} blue {:f} transmit 0.6 }}\n".format(
+          script("  pigment {{ color red {:f} green {:f} blue {:f} ".format(
             color_vector[0],
             color_vector[1],
             color_vector[2]))
+          script("transmit {:f} }}\n".format(1-norm_convolution[i,j,k]/maxNorm))
           script("  finish { metallic 0.4 }\n")
           script("  hollow\n")
           script("}\n")
@@ -234,6 +262,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("FILE",
     help = "The output file to plot. A value of '-' means standard input.")
 
+parser.add_argument("--output",
+    help = "The output file base name, i.e. OUTPUT.${ITERATION}.${SUFFIX}")
+
 parser.add_argument("--render",
     help = "Render the PEMaps",
     action = "store_true",
@@ -266,6 +297,12 @@ if options.FILE == "-":
   fd = sys.stdin
 else:
   fd = open(options.FILE)
+
+global basename
+if options.output:
+  basename = options.output
+else:
+  basename = None
 
 iteration = -1
 
@@ -343,15 +380,18 @@ for line in fd:
     if currentMap == "convolution":
       PEMap[currentMap] = np.empty([N, N, N], dtype = np.int16)
       PEMap[currentMap].fill(-1)
+      norm_convolution = np.empty([N, N, N], dtype = np.float)
+      norm_convolution.fill(0)
       for (i, j, k, PE, norm) in elementBuffer:
         if norm > options.tolerance:
           PEMap[currentMap][i,j,k] = PE
+        norm_convolution[i,j,k] = norm
       if options.printPEMap:
         print(PEMap)
       if options.render:
         generatePOVRay(
             iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
-            PEMap["convolution"])
+            PEMap["convolution"], norm_convolution)
       if options.mathematica:
         generateMathematica(
             iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
