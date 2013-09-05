@@ -154,7 +154,7 @@ void Multiply::donePEMap (CkReductionMsg *msg)
       for(int k = 0; k < NTier; k++)
       {
         int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
-        DEBUG("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
+        INFO("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
             PEMap[matrix_offset], PEMap_norm_product[matrix_offset]);
       }
     }

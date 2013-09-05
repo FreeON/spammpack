@@ -112,7 +112,7 @@ def generatePOVRay (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution):
   # Place the camera.
   script("camera {\n")
   script("  location  < {:e}, {:e}, {:e} >\n".format(
-    2*N, 2*N, 2*N))
+    0, 2*N, 2*N))
   script("  look_at < 0, 0, 0 >\n")
   script("}\n")
 
@@ -279,7 +279,7 @@ line_number = 0
 for line in fd:
   line_number += 1
   if options.debug:
-    print("read ({:d})".format(line_number), line.rstrip())
+    print("PLOT: read ({:d})".format(line_number), line.rstrip())
 
   result = re.compile("iteration ([0-9]+) on").search(line)
   if result:
@@ -299,7 +299,7 @@ for line in fd:
     inMap = True
     currentMap = mapName
     if options.debug:
-      print("opening map {:s}".format(currentMap))
+      print("PLOT: opening map {:s}".format(currentMap))
 
   result = re.compile("PEMap\(([0-9]+),([0-9]+)\) = ([0-9]+) \(norm = ([0-9.e+-]+)\)").search(line)
   if result:
@@ -363,7 +363,7 @@ for line in fd:
         PEMap[currentMap][i,j] = PE
     inMap = False
     if options.debug:
-      print("closing map {:s}".format(currentMap))
+      print("PLOT: closing map {:s}".format(currentMap))
     continue
 
 fd.close()
