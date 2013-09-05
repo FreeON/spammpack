@@ -14,7 +14,7 @@
  * @cite ChallacombeBock2010
  * @cite BockChallacombe2012
  * @cite BockSISC2013.
- * The main program is documented as Main.
+ * The main program is documented as Main::Main.
  *
  * @section example Example Use
  *
@@ -54,6 +54,19 @@ void initialize (void)
 }
 
 /** The main method.
+ *
+ * Currently known command line arguments are:
+ *
+ * - { -h | --help }           This help
+ * - { -N | --N } N            Create NxN matrix
+ * - { -b | --block } B        Create BxB dense blocks at leaf nodes
+ * - { -i | --iterations } N   Iterate on the product N times
+ * - { -t | --tolerance } T    Multiply with tolerance T
+ * - { -m | --type } TYPE      Use matrices of TYPE
+ * - { -v | --verify }         Verify matmul product
+ * - { -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)
+ * - { -l | --load-balance }   Load balance after each iteration
+ * - { -p | --print-PEMap }    Print a PE map in each iteration
  *
  * @param msg The command line argument list.
  */

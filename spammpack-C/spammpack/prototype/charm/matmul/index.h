@@ -13,7 +13,7 @@
 #define BLOCK_INDEX(i, j, iLower, jLower, blocksize) ((i-iLower)+(j-jLower)*blocksize)
 
 /** The linear offset into a 3D array. */
-#define BLOCK_INDEX_3(i, j, k, N) (i+j*N+j*N*N)
+#define BLOCK_INDEX_3(i, j, k, N) (i+j*N+k*N*N)
 
 /** The linear tree index. */
 #define CHILD_INDEX(i, j) ((i << 1) | j)

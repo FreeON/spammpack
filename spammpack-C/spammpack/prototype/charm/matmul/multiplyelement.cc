@@ -17,6 +17,10 @@
 #include <assert.h>
 #include <bitset>
 
+/** Some convenience macros for logging. */
+#define LB "tier %d ME(%d,%d,%d) "
+#define LE , tier, thisIndex.x, thisIndex.y, thisIndex.z
+
 /** The constructor.
  *
  * @param blocksize The blocksize.
@@ -132,10 +136,10 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     NodeInfoMsg *AInfo = A(thisIndex.x, thisIndex.z).info();
     NodeInfoMsg *BInfo = B(thisIndex.z, thisIndex.y).info();
 
-    DEBUG("tier %d ME(%d,%d,%d) multiplying blocks\n", tier, thisIndex.x,
-        thisIndex.y, thisIndex.z);
-
     norm_product = AInfo->norm*BInfo->norm;
+
+    DEBUG("tier %d ME(%d,%d,%d) multiplying blocks, ANorm*BNorm = %e\n", tier,
+        thisIndex.x, thisIndex.y, thisIndex.z, norm_product);
 
     delete AInfo;
     delete BInfo;
@@ -357,8 +361,8 @@ void MultiplyElement::storeBack (CkCallback &cb)
  */
 void MultiplyElement::PEMap (CkCallback &cb)
 {
-  DEBUG("tier %d ME(%d,%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
-      thisIndex.z, CkMyPe());
+  DEBUG("tier %d ME(%d,%d,%d) PE %d, norm = %e\n", tier, thisIndex.x,
+      thisIndex.y, thisIndex.z, CkMyPe(), norm_product);
 
   struct PEMap_MultiplyElement_t *result = (struct PEMap_MultiplyElement_t*) malloc(sizeof(PEMap_MultiplyElement_t));
 

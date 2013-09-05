@@ -31,12 +31,6 @@ class Multiply : public CBase_Multiply
     /** The convolution. There is a convolution for each tier. */
     CProxy_MultiplyElement *convolution;
 
-    /** The PE map of the multiply elements at the leaf node tier. */
-    int *PEMap;
-
-    /** The norm products of the elements in the PEMap. */
-    double *PEMap_norm_product;
-
     /** A callback. */
     CkCallback cb;
 

@@ -49,12 +49,6 @@ Matrix::Matrix (int N, int blocksize, int nameLength, char *name)
         NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
 
     nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier, NTier, NTier);
-
-    if(tier == depth)
-    {
-      PEMap = new int[NTier*NTier];
-      PEMap_norm = new double[NTier*NTier];
-    }
   }
 }
 
@@ -62,8 +56,6 @@ Matrix::Matrix (int N, int blocksize, int nameLength, char *name)
  */
 Matrix::~Matrix (void)
 {
-  delete[] PEMap;
-  delete[] PEMap_norm;
 }
 
 /** Get some basic information on the matrix.
@@ -136,11 +128,12 @@ void Matrix::updatePEMap (CkCallback &cb)
 void Matrix::donePEMap (CkReductionMsg *msg)
 {
   int NTier = 1 << depth;
+  int *PEMap = new int[NTier*NTier];
+  double *PEMap_norm = new double[NTier*NTier];
+
   CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
   while(current != NULL)
   {
-    INFO("dataSize = %d\n", current->dataSize);
-    INFO("sizeof() = %d\n", sizeof(struct PEMap_Node_t));
     assert(current->dataSize == sizeof(struct PEMap_Node_t));
     struct PEMap_Node_t *result = (struct PEMap_Node_t*) &current->data;
     DEBUG("data = { %d, %d, %d }\n", result->index[0], result->index[1], result->PE);
@@ -158,7 +151,10 @@ void Matrix::donePEMap (CkReductionMsg *msg)
           PEMap_norm[BLOCK_INDEX(i, j, 0, 0, NTier)]);
     }
   }
-  CkPrintf("end of PEMap for matrix %s\n", name);
+  INFO("end of PEMap for matrix %s\n", name);
+
+  delete[] PEMap;
+  delete[] PEMap_norm;
 
   cb.send();
 }

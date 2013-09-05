@@ -243,7 +243,7 @@ void Node::add (int blocksize, double *A)
  */
 void Node::PEMap (CkCallback &cb)
 {
-  INFO("tier %d, Node(%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
+  DEBUG("tier %d, Node(%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
       CkMyPe());
 
   struct PEMap_Node_t *result = (struct PEMap_Node_t*) malloc(sizeof(struct PEMap_Node_t));

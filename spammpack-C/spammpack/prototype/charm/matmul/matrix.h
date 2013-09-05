@@ -38,12 +38,6 @@ class Matrix : public CBase_Matrix
      * size Matrix::depth containing the Node proxy on each tier. */
     CProxy_Node *nodes;
 
-    /** The PE map of the nodes at the leaf node tier. */
-    int *PEMap;
-
-    /** The norm of the elements in the PEMap. */
-    double *PEMap_norm;
-
     /** A callback. */
     CkCallback cb;
 

@@ -56,12 +56,6 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     {
       convolution[tier].setNextConvolution(convolution[tier+1]);
     }
-
-    if(tier == depth)
-    {
-      PEMap = new int[NTier*NTier*NTier];
-      PEMap_norm_product = new double[NTier*NTier*NTier];
-    }
   }
 }
 
@@ -69,8 +63,6 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
  */
 Multiply::~Multiply (void)
 {
-  delete[] PEMap;
-  delete[] PEMap_norm_product;
 }
 
 /** Multiply two Matrix objects.
@@ -140,15 +132,19 @@ void Multiply::updatePEMap (CkCallback &cb)
 void Multiply::donePEMap (CkReductionMsg *msg)
 {
   int NTier = 1 << depth;
+  int *PEMap = new int[NTier*NTier*NTier];
+  double *PEMap_norm_product = new double[NTier*NTier*NTier];
+
   CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
   while(current != NULL)
   {
     assert(current->dataSize == sizeof(struct PEMap_MultiplyElement_t));
     PEMap_MultiplyElement_t *result = (PEMap_MultiplyElement_t*) &current->data;
-    DEBUG("data = { %d, %d, %d }\n", result->index[0], result->index[1],
-        result->index[2], result->PE);
-    PEMap[BLOCK_INDEX_3(result->index[0], result->index[1], result->index[2], NTier)] = result->PE;
-    PEMap_norm_product[BLOCK_INDEX_3(result->index[0], result->index[1], result->index[2], NTier)] = result->norm_product;
+    DEBUG("data = ME(%d,%d,%d) PE %d norm %e\n", result->index[0],
+        result->index[1], result->index[2], result->PE, result->norm_product);
+    int matrix_offset = BLOCK_INDEX_3(result->index[0], result->index[1], result->index[2], NTier);
+    PEMap[matrix_offset] = result->PE;
+    PEMap_norm_product[matrix_offset] = result->norm_product;
     current = current->next();
   }
 
@@ -157,13 +153,16 @@ void Multiply::donePEMap (CkReductionMsg *msg)
     for(int j = 0; j < NTier; j++) {
       for(int k = 0; k < NTier; k++)
       {
-        CkPrintf("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
-            PEMap[BLOCK_INDEX_3(i, j, k, NTier)],
-            PEMap_norm_product[BLOCK_INDEX_3(i, j, k, NTier)]);
+        int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
+        DEBUG("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
+            PEMap[matrix_offset], PEMap_norm_product[matrix_offset]);
       }
     }
   }
-  CkPrintf("end of PEMap for convolution\n");
+  INFO("end of PEMap for convolution\n");
+
+  delete[] PEMap;
+  delete[] PEMap_norm_product;
 
   cb.send();
 }
