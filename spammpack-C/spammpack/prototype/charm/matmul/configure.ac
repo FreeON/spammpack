@@ -103,6 +103,7 @@ if test "${enable_charmdebug}" = "yes"; then
 fi
 
 # Enable debugging.
+AC_MSG_CHECKING([whether to turn on full debugging output])
 AC_ARG_ENABLE([debug],
   [AS_HELP_STRING([--enable-debug],
   [enable a lot of extra output])],
@@ -110,6 +111,9 @@ AC_ARG_ENABLE([debug],
   [enable_debug="no"])
 if test "${enable_debug}" = "yes"; then
   AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output])
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
 fi
 
 # Print some matrices for debugging.

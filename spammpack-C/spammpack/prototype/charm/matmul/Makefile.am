@@ -1,5 +1,7 @@
 TAGS_FILES = config.h
 
+DISTCHECK_CONFIGURE_FLAGS = --enable-debug
+
 EXTRA_DIST = \
 	$(INTERFACE_FILES) \
 	matmul.bib \

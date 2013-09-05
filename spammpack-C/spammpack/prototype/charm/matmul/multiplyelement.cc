@@ -13,12 +13,17 @@
 #include "logger.h"
 #include "index.h"
 #include "types.h"
+#include "utilities.h"
 
 #include <assert.h>
 #include <bitset>
 
-/** Some convenience macros for logging. */
+/** Some convenience macros for logging. Wrap the logging format string with
+ * LB and LE. */
 #define LB "tier %d ME(%d,%d,%d) "
+
+/** Some convenience macros for logging. Wrap the logging format string with
+ * LB and LE. */
 #define LE , tier, thisIndex.x, thisIndex.y, thisIndex.z
 
 /** The constructor.
@@ -33,8 +38,7 @@
 MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
     CProxy_Node A, CProxy_Node B, CProxy_Node C)
 {
-  DEBUG("tier %d ME(%d,%d,%d) constructor\n", tier, thisIndex.x, thisIndex.y,
-      thisIndex.z);
+  DEBUG(LB"constructor\n"LE);
 
   this->blocksize = blocksize;
   this->tier = tier;
@@ -76,9 +80,7 @@ MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
  */
 MultiplyElement::~MultiplyElement ()
 {
-  DEBUG("tier %d ME(%d,%d,%d) destructor\n", tier, thisIndex.x, thisIndex.y,
-      thisIndex.z);
-
+  DEBUG(LB"destructor\n"LE);
   delete[] CResult;
 }
 
@@ -117,8 +119,7 @@ void MultiplyElement::pup (PUP::er &p)
     if(p.isUnpacking()) { CResult = NULL; }
   }
 
-  DEBUG("tier %d ME(%d,%d,%d) pup()\n", tier, thisIndex.x, thisIndex.y,
-      thisIndex.z);
+  DEBUG(LB"pup()\n"LE);
 }
 
 /** Multiply nodes.
@@ -128,8 +129,7 @@ void MultiplyElement::pup (PUP::er &p)
  */
 void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 {
-  DEBUG("tier %d ME(%d,%d,%d) multiply\n", tier, thisIndex.x, thisIndex.y,
-      thisIndex.z);
+  DEBUG(LB"multiply\n"LE);
 
   if(isEnabled)
   {
@@ -138,8 +138,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
     norm_product = AInfo->norm*BInfo->norm;
 
-    DEBUG("tier %d ME(%d,%d,%d) multiplying blocks, ANorm*BNorm = %e\n", tier,
-        thisIndex.x, thisIndex.y, thisIndex.z, norm_product);
+    DEBUG(LB"multiplying blocks, ANorm*BNorm = %e\n"LE, norm_product);
 
     delete AInfo;
     delete BInfo;
@@ -148,8 +147,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     {
       if(CResult != NULL)
       {
-        ABORT("tier %d ME(%d,%d,%d) CResult is not NULL\n", tier, thisIndex.x,
-            thisIndex.y, thisIndex.z);
+        ABORT(LB"CResult is not NULL\n"LE);
       }
 
       CResult = new double[blocksize*blocksize];
@@ -186,8 +184,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
 #ifdef DEBUG_OUTPUT
       /** For debugging. */
-      printDense(blocksize, CResult, "tier %d ME(%d,%d,%d) result:", tier,
-          thisIndex.x, thisIndex.y, thisIndex.z);
+      printDense(blocksize, CResult, LB"result:"LE);
 #endif
 
       delete ABlock;
@@ -197,8 +194,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
   else
   {
-    DEBUG("tier %d ME(%d,%d,%d) skipping disabled element\n", tier,
-        thisIndex.x, thisIndex.y, thisIndex.z);
+    DEBUG(LB"skipping disabled element\n"LE);
     norm_product = 0;
   }
 
@@ -218,8 +214,7 @@ void MultiplyElement::pruneProduct (double tolerance,
     CProxy_Node BNodes,
     CkCallback &cb)
 {
-  DEBUG("tier %d ME(%d,%d,%d) pruning next tier\n", tier, thisIndex.x,
-      thisIndex.y, thisIndex.z);
+  DEBUG(LB"pruning next tier\n"LE);
 
   if(isEnabled)
   {
@@ -239,9 +234,8 @@ void MultiplyElement::pruneProduct (double tolerance,
           if(AInfo->norm*BInfo->norm > tolerance)
           {
             /* If necessary, create MultiplyElement. */
-            DEBUG("tier %d ME(%d,%d,%d) keeping/creating tier %d, convolution(%d,%d,%d)\n",
-                tier, thisIndex.x, thisIndex.y, thisIndex.z, tier+1,
-                nextX, nextY, nextZ);
+            DEBUG(LB"keeping/creating tier %d, convolution(%d,%d,%d)\n"LE,
+                tier+1, nextX, nextY, nextZ);
 #ifdef PRUNE_CONVOLUTION
             convolution(nextX, nextY, nextZ).insert(blocksize, tier+1, depth, A, B, C);
 #else
@@ -252,8 +246,7 @@ void MultiplyElement::pruneProduct (double tolerance,
           else
           {
             /* If necessary, destroy MultiplyElement. */
-            DEBUG("tier %d ME(%d,%d,%d) pruning tier %d, convolution(%d,%d,%d)\n",
-                tier, thisIndex.x, thisIndex.y, thisIndex.z, tier+1,
+            DEBUG(LB"pruning tier %d, convolution(%d,%d,%d)\n"LE, tier+1,
                 nextX, nextY, nextZ);
 #ifdef PRUNE_CONVOLUTION
             convolution(nextX, nextY, nextZ).ckDestroy();
@@ -300,8 +293,7 @@ void MultiplyElement::disable (CkCallback &cb)
 {
   if(isEnabled == true)
   {
-    DEBUG("tier %d ME(%d,%d,%d) disabling\n", tier, thisIndex.x, thisIndex.y,
-        thisIndex.z);
+    DEBUG(LB"disabling\n"LE);
 
     if(tier < depth)
     {
@@ -316,9 +308,8 @@ void MultiplyElement::disable (CkCallback &cb)
           {
             int nextZ = (thisIndex.z << 1) | k;
 
-            DEBUG("tier %d ME(%d,%d,%d) disabling nextConvolution(%d,%d,%d)\n",
-                tier, thisIndex.x, thisIndex.y, thisIndex.z,
-                nextX, nextY, nextZ);
+            DEBUG(LB"disabling nextConvolution(%d,%d,%d)\n"LE, nextX, nextY,
+                nextZ);
             nextConvolution(nextX, nextY, nextZ).disable(CkCallbackResumeThread());
           }
         }
@@ -339,8 +330,7 @@ void MultiplyElement::storeBack (CkCallback &cb)
 {
   if(isEnabled)
   {
-    DEBUG("tier %d ME(%d,%d,%d) storing in C\n", tier, thisIndex.x,
-        thisIndex.y, thisIndex.z);
+    DEBUG(LB"storing in C\n"LE);
 
     if(CResult != NULL)
     {
@@ -361,8 +351,7 @@ void MultiplyElement::storeBack (CkCallback &cb)
  */
 void MultiplyElement::PEMap (CkCallback &cb)
 {
-  DEBUG("tier %d ME(%d,%d,%d) PE %d, norm = %e\n", tier, thisIndex.x,
-      thisIndex.y, thisIndex.z, CkMyPe(), norm_product);
+  DEBUG(LB"PE %d, norm = %e\n"LE, CkMyPe(), norm_product);
 
   struct PEMap_MultiplyElement_t *result = (struct PEMap_MultiplyElement_t*) malloc(sizeof(PEMap_MultiplyElement_t));
 

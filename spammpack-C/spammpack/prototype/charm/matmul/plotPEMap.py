@@ -56,6 +56,10 @@ def getColor (value, N):
       math.sin(value/float(N-1)*math.pi/2.),
       0 ]
 
+## Call POVRay to render the PEMaps.
+#
+# @param iteration The current iteration.
+# @param filename The filename of the POVRay script.
 def render (iteration, filename):
   try:
     cmd = [
@@ -79,11 +83,27 @@ def render (iteration, filename):
     for line in povray.stderr:
       print("POVRAY: " + line.rstrip().decode())
 
+## POVRay helper. Open a box.
+#
+# @param xmin Lower corner.
+# @param ymin Lower corner.
+# @param zmin Lower corner.
+# @param xmax Upper corner.
+# @param ymax Upper corner.
+# @param zmax Upper corner.
 def box_open (xmin, ymin, zmin, xmax, ymax, zmax):
   script("box {\n")
   script("  < {:f}, {:f}, {:f} >, < {:f}, {:f}, {:f} >\n".format(
     xmin, ymin, zmin, xmax, ymax, zmax))
 
+## POVRay helper. Draw a wire.
+#
+# @param xmin Starting point.
+# @param ymin Starting point.
+# @param zmin Starting point.
+# @param xmax End point.
+# @param ymax End point.
+# @param zmax End point.
 def wire (xmin, ymin, zmin, xmax, ymax, zmax):
   script("cylinder {\n")
   script("  < {:f}, {:f}, {:f} >, < {:f}, {:f}, {:f} >, {:f}\n".format(
@@ -105,6 +125,14 @@ def label (text, x, y, z):
   script("  pigment { White }\n")
   script("}\n")
 
+## Generate a POVRay script and render it.
+#
+# @param iteration The current iteration.
+# @param numPEs The total number of PEs.
+# @param PEMap_A The PEMap for matrix A.
+# @param PEMap_C The PEMap for matrix C.
+# @param PEMap_convolution The PEMap for the convolution.
+# @param norms_convolution The product norms of the convolution.
 def generatePOVRay (
     iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution,
     norms_convolution):
@@ -224,6 +252,14 @@ def generatePOVRay (
   script_file.close()
   render(iteration, script_file.name)
 
+## Generate a Mathematica script.
+#
+# @param iteration The current iteration.
+# @param numPEs The total number of PEs.
+# @param PEMap_A The PEMap for matrix A.
+# @param PEMap_C The PEMap for matrix C.
+# @param PEMap_convolution The PEMap for the convolution.
+# @param norms_convolution The product norms of the convolution.
 def generateMathematica (
     iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution,
     norms_convolution):

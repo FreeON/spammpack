@@ -16,6 +16,14 @@
 
 #include <bitset>
 
+/** Some convenience macros for logging. Wrap the logging format string with
+ * LB and LE. */
+#define LB "tier %d Node(%d,%d) "
+
+/** Some convenience macros for logging. Wrap the logging format string with
+ * LB and LE. */
+#define LE , tier, thisIndex.x, thisIndex.y
+
 /** The constructor.
  *
  * @param N The matrix size.
@@ -52,8 +60,7 @@ Node::Node (int N, int depth, int blocksize, int tier)
   }
   index = tempIndex.to_ulong();
 
-  DEBUG("tier %d, Node(%d,%d), index %s, constructing\n", tier, thisIndex.x,
-      thisIndex.y, toBinary(index).c_str());
+  DEBUG(LB"index %s, constructing\n"LE, toBinary(index).c_str());
 }
 
 /** The migration constructor.
@@ -62,14 +69,14 @@ Node::Node (int N, int depth, int blocksize, int tier)
  */
 Node::Node (CkMigrateMessage *msg)
 {
-  DEBUG("tier %d, Node(%d,%d) migration constructor\n", -1, thisIndex.x, thisIndex.y);
+  DEBUG("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
 }
 
 /** The destructor.
  */
 Node::~Node (void)
 {
-  DEBUG("tier %d, Node(%d,%d) destructor\n", tier, thisIndex.x, thisIndex.y);
+  DEBUG(LB"destructor\n"LE);
   delete[] block;
 }
 
@@ -109,7 +116,7 @@ void Node::pup (PUP::er &p)
     if(p.isUnpacking()) { block = NULL; }
   }
 
-  DEBUG("tier %d, Node(%d,%d) pup()\n", tier, thisIndex.x, thisIndex.y);
+  DEBUG(LB"pup()\n"LE);
 }
 
 /** Get information on a Node.
@@ -118,9 +125,8 @@ void Node::pup (PUP::er &p)
  */
 NodeInfoMsg * Node::info (void)
 {
-  DEBUG("tier %d, Node(%d,%d) getting node info on index %s, "
-      "norm = %e, norm_2 = %e\n",
-      tier, thisIndex.x, thisIndex.y,
+  DEBUG(LB"getting node info on index %s, "
+      "norm = %e, norm_2 = %e\n"LE,
       toBinary(index).c_str(), norm, norm_2);
 
   return new NodeInfoMsg(index, norm, norm_2);
@@ -132,7 +138,7 @@ NodeInfoMsg * Node::info (void)
  */
 DenseMatrixMsg * Node::getBlock (void)
 {
-  DEBUG("tier %d, Node(%d,%d) getting block\n", tier, thisIndex.x, thisIndex.y);
+  DEBUG(LB"getting block\n"LE);
 
   DenseMatrixMsg *m = new (blocksize*blocksize) DenseMatrixMsg();
   if(block != NULL)
@@ -168,11 +174,10 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   }
   norm = sqrt(norm_2);
 
-  DEBUG("tier %d, Node(%d,%d) norm = %e\n", tier, thisIndex.x, thisIndex.y,
-      norm);
+  DEBUG(LB"norm = %e\n"LE, norm);
 
 #ifdef DEBUG_OUTPUT
-  printDense(blocksize, block, "tier %d, Node(%d,%d) setting block:", tier, thisIndex.x, thisIndex.y);
+  printDense(blocksize, block, LB"setting block:"LE);
 #endif
 
   cb.send();
@@ -186,7 +191,7 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
  */
 void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
 {
-  DEBUG("tier %d, Node(%d,%d) updating norms\n", tier, thisIndex.x, thisIndex.y);
+  DEBUG(LB"updating norms\n"LE);
 
   norm_2 = 0;
   for(int i = 0; i < 2; i++)
@@ -196,15 +201,14 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
     {
       int nextY = (thisIndex.y << 1) | j;
       NodeInfoMsg *msg = nodes(nextX, nextY).info();
-      DEBUG("tier %d, Node(%d,%d) got tier %d, Node(%d,%d) norm = %e\n", tier,
-          thisIndex.x, thisIndex.y, tier+1, nextX, nextY, norm);
+      DEBUG(LB"got tier %d, Node(%d,%d) norm = %e\n"LE, tier+1, nextX, nextY,
+          norm);
       norm_2 += msg->norm_2;
       delete msg;
     }
   }
   norm = sqrt(norm_2);
-  DEBUG("tier %d, Node(%d,%d) norm = %e\n", tier, thisIndex.x, thisIndex.y,
-      norm);
+  DEBUG(LB"norm = %e\n"LE, norm);
   contribute(cb);
 }
 
@@ -215,7 +219,7 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
  */
 void Node::add (int blocksize, double *A)
 {
-  DEBUG("tier %d, Node(%d,%d) Adding back to C\n", tier, thisIndex.x, thisIndex.y);
+  DEBUG(LB"Adding back to C\n"LE);
   if(block == NULL)
   {
     block = new double[blocksize*blocksize];
@@ -232,8 +236,7 @@ void Node::add (int blocksize, double *A)
 
 #ifdef DEBUG_OUTPUT
   /* For debugging. */
-  printDense(blocksize, block, "tier %d, Node(%d,%d) Adding back to C", tier,
-      thisIndex.x, thisIndex.y);
+  printDense(blocksize, block, LB"Adding back to C"LE);
 #endif
 }
 
@@ -243,8 +246,7 @@ void Node::add (int blocksize, double *A)
  */
 void Node::PEMap (CkCallback &cb)
 {
-  DEBUG("tier %d, Node(%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
-      CkMyPe());
+  DEBUG(LB"PE %d\n"LE, CkMyPe());
 
   struct PEMap_Node_t *result = (struct PEMap_Node_t*) malloc(sizeof(struct PEMap_Node_t));
 
