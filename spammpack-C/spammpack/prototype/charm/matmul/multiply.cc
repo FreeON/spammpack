@@ -15,6 +15,8 @@
 #include "types.h"
 #include "index.h"
 
+#include <assert.h>
+
 /** The constructor.
  *
  * @param A Matrix A.
@@ -141,7 +143,8 @@ void Multiply::donePEMap (CkReductionMsg *msg)
   CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
   while(current != NULL)
   {
-    PEMap_convolution_t *result = (PEMap_convolution_t*) &current->data;
+    assert(current->dataSize == sizeof(struct PEMap_MultiplyElement_t));
+    PEMap_MultiplyElement_t *result = (PEMap_MultiplyElement_t*) &current->data;
     DEBUG("data = { %d, %d, %d }\n", result->index[0], result->index[1],
         result->index[2], result->PE);
     PEMap[BLOCK_INDEX_3(result->index[0], result->index[1], result->index[2], NTier)] = result->PE;

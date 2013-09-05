@@ -139,7 +139,10 @@ void Matrix::donePEMap (CkReductionMsg *msg)
   CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
   while(current != NULL)
   {
-    struct PEMap_node_t *result = (struct PEMap_node_t*) &current->data;
+    INFO("dataSize = %d\n", current->dataSize);
+    INFO("sizeof() = %d\n", sizeof(struct PEMap_Node_t));
+    assert(current->dataSize == sizeof(struct PEMap_Node_t));
+    struct PEMap_Node_t *result = (struct PEMap_Node_t*) &current->data;
     DEBUG("data = { %d, %d, %d }\n", result->index[0], result->index[1], result->PE);
     PEMap[BLOCK_INDEX(result->index[0], result->index[1], 0, 0, NTier)] = result->PE;
     PEMap_norm[BLOCK_INDEX(result->index[0], result->index[1], 0, 0, NTier)] = result->norm;

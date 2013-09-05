@@ -243,17 +243,17 @@ void Node::add (int blocksize, double *A)
  */
 void Node::PEMap (CkCallback &cb)
 {
-  DEBUG("tier %d, Node(%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
+  INFO("tier %d, Node(%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
       CkMyPe());
 
-  struct PEMap_node_t *result = (struct PEMap_node_t*) malloc(sizeof(struct PEMap_node_t));
+  struct PEMap_Node_t *result = (struct PEMap_Node_t*) malloc(sizeof(struct PEMap_Node_t));
 
   result->index[0] = thisIndex.x;
   result->index[1] = thisIndex.y;
   result->PE = CkMyPe();
   result->norm = norm;
 
-  contribute(sizeof(struct PEMap_node_t), result, CkReduction::set, cb);
+  contribute(sizeof(struct PEMap_Node_t), result, CkReduction::set, cb);
 }
 
 #include "node.def.h"

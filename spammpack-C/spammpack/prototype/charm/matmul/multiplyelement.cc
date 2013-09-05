@@ -360,7 +360,7 @@ void MultiplyElement::PEMap (CkCallback &cb)
   DEBUG("tier %d ME(%d,%d,%d) PE %d\n", tier, thisIndex.x, thisIndex.y,
       thisIndex.z, CkMyPe());
 
-  struct PEMap_convolution_t *result = (struct PEMap_convolution_t*) malloc(sizeof(PEMap_convolution_t));
+  struct PEMap_MultiplyElement_t *result = (struct PEMap_MultiplyElement_t*) malloc(sizeof(PEMap_MultiplyElement_t));
 
   result->index[0] = thisIndex.x;
   result->index[1] = thisIndex.y;
@@ -368,7 +368,7 @@ void MultiplyElement::PEMap (CkCallback &cb)
   result->PE = CkMyPe();
   result->norm_product = norm_product;
 
-  contribute(sizeof(PEMap_convolution_t), result, CkReduction::set, cb);
+  contribute(sizeof(PEMap_MultiplyElement_t), result, CkReduction::set, cb);
 }
 
 #include "multiplyelement.def.h"

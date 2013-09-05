@@ -23,7 +23,7 @@ enum matrix_t
 };
 
 /** Data type for Matrix PEMap. */
-struct PEMap_node_t
+struct PEMap_Node_t
 {
   /** The array index of the Node. */
   int index[2];
@@ -36,7 +36,7 @@ struct PEMap_node_t
 };
 
 /** Data type for convolution PEMap. */
-struct PEMap_convolution_t
+struct PEMap_MultiplyElement_t
 {
   /** The array index of the convolution element. */
   int index[3];
