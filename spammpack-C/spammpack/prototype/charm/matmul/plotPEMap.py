@@ -38,7 +38,7 @@ def openScriptFile (iteration, suffix):
   global script_file
   if basename != None:
     script_file = open("{:s}.{:d}.{:s}".format(
-      basename, iteration, suffix))
+      basename, iteration, suffix), "w+b")
   else:
     script_file = tempfile.NamedTemporaryFile(
         suffix = ".{:d}.{:s}".format(iteration, suffix), delete = False)
@@ -224,11 +224,14 @@ def generatePOVRay (
   script_file.close()
   render(iteration, script_file.name)
 
-def generateMathematica (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution):
+def generateMathematica (
+    iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution,
+    norms_convolution):
   global script_file
   openScriptFile(iteration, "nb")
 
   # Plot convolution.
+  maxNorm = np.amax(norm_convolution)
   script("Graphics3D[ {\n");
   for i in range(N):
     for j in range(N):
@@ -240,7 +243,8 @@ def generateMathematica (iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution)
                 color_vector[0],
                 color_vector[1],
                 color_vector[2]))
-          script("Opacity[ 0.1 ], Cuboid[")
+          script("Opacity[ {:f} ], Cuboid[".format(
+            norm_convolution[i,j,k]/maxNorm))
           script("{{ {:f}, {:f}, {:f} }}, ".format(0.1+i, 0.1+j, 0.1+k))
           script("{{ {:f}, {:f}, {:f} }} ],\n".format(0.9+i, 0.9+j, 0.9+k))
   script("} ]\n")
@@ -395,7 +399,7 @@ for line in fd:
       if options.mathematica:
         generateMathematica(
             iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
-            PEMap["convolution"])
+            PEMap["convolution"], norm_convolution)
     else:
       PEMap[currentMap] = np.empty([N, N], dtype = np.int16)
       PEMap[currentMap].fill(-1)
