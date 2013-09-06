@@ -7,4 +7,9 @@ module messages
   {
     double A[];
   };
+  message PEMapMsg
+  {
+    int PEMap[];
+    double PEMap_norm[];
+  };
 };

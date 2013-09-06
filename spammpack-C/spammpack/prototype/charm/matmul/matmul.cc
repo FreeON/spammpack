@@ -295,13 +295,39 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 
     if(printPEMap)
     {
+      int NTier = 1 << AInfo->depth;
+
       INFO("PE map for A\n");
       A.updatePEMap(CkCallbackResumeThread());
-      CkWaitQD();
+      PEMapMsg *PEMap = A.getPEMap();
+
+      INFO("PEMap for matrix A:\n");
+      for(int i = 0; i < NTier; i++) {
+        for(int j = 0; j < NTier; j++)
+        {
+          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+              PEMap->PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)],
+              PEMap->PEMap_norm[BLOCK_INDEX(i, j, 0, 0, NTier)]);
+        }
+      }
+      INFO("end of PEMap for matrix A\n");
+      delete PEMap;
 
       INFO("PE map for C\n");
       C.updatePEMap(CkCallbackResumeThread());
-      CkWaitQD();
+      PEMap = C.getPEMap();
+
+      INFO("PEMap for matrix C:\n");
+      for(int i = 0; i < NTier; i++) {
+        for(int j = 0; j < NTier; j++)
+        {
+          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+              PEMap->PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)],
+              PEMap->PEMap_norm[BLOCK_INDEX(i, j, 0, 0, NTier)]);
+        }
+      }
+      INFO("end of PEMap for matrix C\n");
+      delete PEMap;
 
       INFO("PE map for convolution\n");
       M.updatePEMap(CkCallbackResumeThread());

@@ -38,6 +38,12 @@ class Matrix : public CBase_Matrix
      * size Matrix::depth containing the Node proxy on each tier. */
     CProxy_Node *nodes;
 
+    /** The PEMap, updated by calling updatePEMap(). */
+    int *PEMap;
+
+    /** The norms of the PEMap. */
+    double *PEMap_norm;
+
     /** A callback. */
     CkCallback cb;
 
@@ -52,6 +58,7 @@ class Matrix : public CBase_Matrix
     void donePEMap (CkReductionMsg *data);
     void set (int N, double *A, CkCallback &cb);
     void setNorm (CkCallback &cb);
+    PEMapMsg * getPEMap (void);
 };
 
 #endif

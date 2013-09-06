@@ -70,4 +70,16 @@ class DenseMatrixMsg : public CMessage_DenseMatrixMsg
     double *A;
 };
 
+/** A message for PEMaps. */
+class PEMapMsg : public CMessage_PEMapMsg
+{
+  public:
+
+    /** The PEMap, updated by calling updatePEMap(). */
+    int *PEMap;
+
+    /** The norms of the PEMap. */
+    double *PEMap_norm;
+};
+
 #endif
