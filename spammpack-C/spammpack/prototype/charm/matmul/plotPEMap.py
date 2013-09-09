@@ -364,7 +364,7 @@ for line in fd:
     print("iteration {:d}".format(iteration))
     continue
 
-  result = re.compile("] PEMap for (.*):").search(line)
+  result = re.compile("PEMap for (.*):").search(line)
   if result:
     mapName = result.group(1)
     if inMap and mapName != currentMap:
@@ -427,7 +427,10 @@ for line in fd:
           PEMap[currentMap][i,j,k] = PE
         norm_convolution[i,j,k] = norm
       if options.printPEMap:
-        print(PEMap)
+        for label in PEMap:
+          print("PEMap for {:s}".format(label))
+          print(PEMap[label])
+        print("convolution norms")
         print(norm_convolution)
       if options.render:
         generatePOVRay(

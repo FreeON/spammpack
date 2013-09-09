@@ -294,59 +294,59 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     {
       int NTier = 1 << AInfo->depth;
 
-      INFO("NTier = %d\n", NTier);
+      DEBUG("NTier = %d\n", NTier);
 
-      INFO("PE map for A\n");
+      CkPrintf("PE map for A\n");
       A.updatePEMap(CkCallbackResumeThread());
       PEMapMsg *PEMap = A.getPEMap();
 
-      INFO("PEMap for matrix A:\n");
+      CkPrintf("PEMap for matrix A:\n");
       for(int i = 0; i < NTier; i++) {
         for(int j = 0; j < NTier; j++)
         {
           int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
-          INFO("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
               PEMap->PEMap[matrix_offset],
               PEMap->PEMap_norm[matrix_offset]);
         }
       }
-      INFO("end of PEMap for matrix A\n");
+      CkPrintf("end of PEMap for matrix A\n");
       delete PEMap;
 
-      INFO("PE map for C\n");
+      CkPrintf("PE map for C\n");
       C.updatePEMap(CkCallbackResumeThread());
       PEMap = C.getPEMap();
 
-      INFO("PEMap for matrix C:\n");
+      CkPrintf("PEMap for matrix C:\n");
       for(int i = 0; i < NTier; i++) {
         for(int j = 0; j < NTier; j++)
         {
           int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
-          INFO("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
               PEMap->PEMap[matrix_offset],
               PEMap->PEMap_norm[matrix_offset]);
         }
       }
-      INFO("end of PEMap for matrix C\n");
+      CkPrintf("end of PEMap for matrix C\n");
       delete PEMap;
 
-      INFO("PE map for convolution\n");
+      CkPrintf("PE map for convolution\n");
       M.updatePEMap(CkCallbackResumeThread());
       PEMap = M.getPEMap();
 
-      INFO("PEMap for convolution:\n");
+      CkPrintf("PEMap for convolution:\n");
       for(int i = 0; i < NTier; i++) {
         for(int j = 0; j < NTier; j++) {
           for(int k = 0; k < NTier; k++)
           {
             int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
-            INFO("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
+            CkPrintf("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
                 PEMap->PEMap[matrix_offset],
                 PEMap->PEMap_norm[matrix_offset]);
           }
         }
       }
-      INFO("end of PEMap for convolution\n");
+      CkPrintf("end of PEMap for convolution\n");
       delete PEMap;
     }
 
