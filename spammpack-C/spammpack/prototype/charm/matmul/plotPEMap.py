@@ -428,6 +428,7 @@ for line in fd:
         norm_convolution[i,j,k] = norm
       if options.printPEMap:
         print(PEMap)
+        print(norm_convolution)
       if options.render:
         generatePOVRay(
             iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],

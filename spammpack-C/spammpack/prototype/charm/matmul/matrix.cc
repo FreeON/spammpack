@@ -140,6 +140,7 @@ void Matrix::donePEMap (CkReductionMsg *msg)
   CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
   while(current != NULL)
   {
+    DEBUG("dataSize %d sizeof() %d\n", current->dataSize, sizeof(struct PEMap_Node_t));
     assert(current->dataSize == sizeof(struct PEMap_Node_t));
     struct PEMap_Node_t *result = (struct PEMap_Node_t*) &current->data;
     DEBUG("data = { %d, %d, %d }\n", result->index[0], result->index[1], result->PE);
@@ -213,6 +214,9 @@ PEMapMsg * Matrix::getPEMap (void)
 {
   int NTier = 1 << depth;
   PEMapMsg *msg = new (NTier*NTier, NTier*NTier) PEMapMsg();
+  memcpy(msg->PEMap, PEMap, NTier*NTier*sizeof(int));
+  memcpy(msg->PEMap_norm, PEMap_norm, NTier*NTier*sizeof(double));
+  return msg;
 }
 
 #include "matrix.def.h"

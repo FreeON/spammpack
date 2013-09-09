@@ -281,9 +281,6 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   delete ANodes;
   delete CNodes;
 
-  delete AInfo;
-  delete CInfo;
-
   CkPrintf("running %d iterations\n", numberIterations);
   for(int iteration = 0; iteration < numberIterations; iteration++)
   {
@@ -297,6 +294,8 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     {
       int NTier = 1 << AInfo->depth;
 
+      INFO("NTier = %d\n", NTier);
+
       INFO("PE map for A\n");
       A.updatePEMap(CkCallbackResumeThread());
       PEMapMsg *PEMap = A.getPEMap();
@@ -305,9 +304,10 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
       for(int i = 0; i < NTier; i++) {
         for(int j = 0; j < NTier; j++)
         {
-          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
-              PEMap->PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)],
-              PEMap->PEMap_norm[BLOCK_INDEX(i, j, 0, 0, NTier)]);
+          int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
+          INFO("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+              PEMap->PEMap[matrix_offset],
+              PEMap->PEMap_norm[matrix_offset]);
         }
       }
       INFO("end of PEMap for matrix A\n");
@@ -321,9 +321,10 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
       for(int i = 0; i < NTier; i++) {
         for(int j = 0; j < NTier; j++)
         {
-          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
-              PEMap->PEMap[BLOCK_INDEX(i, j, 0, 0, NTier)],
-              PEMap->PEMap_norm[BLOCK_INDEX(i, j, 0, 0, NTier)]);
+          int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
+          INFO("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+              PEMap->PEMap[matrix_offset],
+              PEMap->PEMap_norm[matrix_offset]);
         }
       }
       INFO("end of PEMap for matrix C\n");
@@ -331,7 +332,22 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 
       INFO("PE map for convolution\n");
       M.updatePEMap(CkCallbackResumeThread());
-      CkWaitQD();
+      PEMap = M.getPEMap();
+
+      INFO("PEMap for convolution:\n");
+      for(int i = 0; i < NTier; i++) {
+        for(int j = 0; j < NTier; j++) {
+          for(int k = 0; k < NTier; k++)
+          {
+            int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
+            INFO("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
+                PEMap->PEMap[matrix_offset],
+                PEMap->PEMap_norm[matrix_offset]);
+          }
+        }
+      }
+      INFO("end of PEMap for convolution\n");
+      delete PEMap;
     }
 
     /* Load balance. */
@@ -423,6 +439,9 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 
     delete CDense;
   }
+
+  delete AInfo;
+  delete CInfo;
 
   INFO("done\n");
   CkExit();

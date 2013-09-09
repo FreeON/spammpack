@@ -34,6 +34,12 @@ class Multiply : public CBase_Multiply
     /** A callback. */
     CkCallback cb;
 
+    /** The PEMap, updated by calling updatePEMap(). */
+    int *PEMap;
+
+    /** The norms of the PEMap. */
+    double *PEMap_norm;
+
   public:
 
     Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
@@ -43,6 +49,7 @@ class Multiply : public CBase_Multiply
     void multiply (double tolerance, CkCallback &cb);
     void updatePEMap (CkCallback &cb);
     void donePEMap (CkReductionMsg *data);
+    PEMapMsg * getPEMap (void);
 };
 
 #endif

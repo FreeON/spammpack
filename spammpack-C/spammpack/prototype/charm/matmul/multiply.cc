@@ -56,6 +56,12 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
     {
       convolution[tier].setNextConvolution(convolution[tier+1]);
     }
+
+    if(tier == depth)
+    {
+      PEMap = new int[NTier*NTier*NTier];
+      PEMap_norm = new double[NTier*NTier*NTier];
+    }
   }
 }
 
@@ -63,6 +69,8 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
  */
 Multiply::~Multiply (void)
 {
+  delete[] PEMap;
+  delete[] PEMap_norm;
 }
 
 /** Multiply two Matrix objects.
@@ -132,8 +140,6 @@ void Multiply::updatePEMap (CkCallback &cb)
 void Multiply::donePEMap (CkReductionMsg *msg)
 {
   int NTier = 1 << depth;
-  int *PEMap = new int[NTier*NTier*NTier];
-  double *PEMap_norm_product = new double[NTier*NTier*NTier];
 
   CkReduction::setElement *current = (CkReduction::setElement*) msg->getData();
   while(current != NULL)
@@ -144,27 +150,24 @@ void Multiply::donePEMap (CkReductionMsg *msg)
         result->index[1], result->index[2], result->PE, result->norm_product);
     int matrix_offset = BLOCK_INDEX_3(result->index[0], result->index[1], result->index[2], NTier);
     PEMap[matrix_offset] = result->PE;
-    PEMap_norm_product[matrix_offset] = result->norm_product;
+    PEMap_norm[matrix_offset] = result->norm_product;
     current = current->next();
   }
 
-  INFO("PEMap for convolution:\n");
-  for(int i = 0; i < NTier; i++) {
-    for(int j = 0; j < NTier; j++) {
-      for(int k = 0; k < NTier; k++)
-      {
-        int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
-        INFO("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
-            PEMap[matrix_offset], PEMap_norm_product[matrix_offset]);
-      }
-    }
-  }
-  INFO("end of PEMap for convolution\n");
-
-  delete[] PEMap;
-  delete[] PEMap_norm_product;
-
   cb.send();
+}
+
+/** Return the PEMap. Call udpatePEMap() first.
+ *
+ * @return a PEMapMsg with the PEMap.
+ */
+PEMapMsg * Multiply::getPEMap (void)
+{
+  int NTier = 1 << depth;
+  PEMapMsg *msg = new (NTier*NTier*NTier, NTier*NTier*NTier) PEMapMsg();
+  memcpy(msg->PEMap, PEMap, NTier*NTier*NTier*sizeof(int));
+  memcpy(msg->PEMap_norm, PEMap_norm, NTier*NTier*NTier*sizeof(double));
+  return msg;
 }
 
 #include "multiply.def.h"
