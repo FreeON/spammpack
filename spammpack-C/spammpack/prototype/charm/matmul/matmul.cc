@@ -107,7 +107,8 @@ Main::Main (CkArgMsg *msg)
     switch(c)
     {
       case 'h':
-        CkPrintf("Usage:\n");
+        CkPrintf("\n");
+        CkPrintf("Usage of matmul version %s\n", PACKAGE_VERSION);
         CkPrintf("\n");
         CkPrintf("{ -h | --help }           This help\n");
         CkPrintf("{ -N | --N } N            Create NxN matrix (default: %d)\n", N);

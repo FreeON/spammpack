@@ -20,4 +20,5 @@ echo "starting on $(date)"
   --verify \
   --iterations 10 \
   --print-PEMap \
+  --intial-PE 0 \
   --load-balance
