@@ -79,12 +79,13 @@ Main::Main (CkArgMsg *msg)
   enum matrix_t matrixType = full;
   bool verify = false;
   bool loadBalance = false;
+  int initialPE = CK_PE_ANY;
   bool printPEMap = false;
   double verifyTolerance = 1.0e-10;
   double decayConstant = 0.1;
 
   int c;
-  const char *short_options = "hN:b:i:t:m:vd:lp";
+  const char *short_options = "hN:b:i:t:m:vd:I:lp";
   const option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
@@ -94,6 +95,7 @@ Main::Main (CkArgMsg *msg)
     { "type",         required_argument,  NULL, 'm' },
     { "verify",       no_argument,        NULL, 'v' },
     { "decay",        required_argument,  NULL, 'd' },
+    { "initial-PE",   required_argument,  NULL, 'I' },
     { "load-balance", no_argument,        NULL, 'l' },
     { "print-PEMap",  no_argument,        NULL, 'p' },
     { NULL, 0, NULL, 0 }
@@ -120,6 +122,7 @@ Main::Main (CkArgMsg *msg)
         CkPrintf("{ -v | --verify }         Verify matmul product\n");
         CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
         CkPrintf("{ -l | --load-balance }   Load balance after each iteration\n");
+        CkPrintf("{ -I | --intial-PE } PE   Put all chares initially on PE\n");
         CkPrintf("{ -p | --print-PEMap }    Print a PE map in each iteration\n");
         CkPrintf("\n");
         CkExit();
@@ -168,6 +171,10 @@ Main::Main (CkArgMsg *msg)
         decayConstant = strtod(optarg, NULL);
         break;
 
+      case 'I':
+        initialPE = strtol(optarg, NULL, 10);
+        break;
+
       case 'l':
         loadBalance = true;
         break;
@@ -186,7 +193,8 @@ Main::Main (CkArgMsg *msg)
 
   DEBUG("calling run() on this proxy\n");
   thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
-      decayConstant, verify, verifyTolerance, loadBalance, printPEMap);
+      decayConstant, verify, verifyTolerance, loadBalance, initialPE,
+      printPEMap);
 }
 
 /** The main method.
@@ -202,16 +210,20 @@ Main::Main (CkArgMsg *msg)
  * @param verifyTolerance The absolute tolerance in the matrix
  * verification.
  * @param loadBalance Whether to load balance.
+ * @param initialPE The initial PE to put chares on.
  * @param printPEMap Whether to print a PE map in each iteration.
  */
 void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     int matrixType, double decayConstant, bool verify, double verifyTolerance,
-    bool loadBalance, bool printPEMap)
+    bool loadBalance, int initialPE, bool printPEMap)
 {
   LBDatabase *db = LBDatabaseObj();
 
-  CProxy_Matrix A = CProxy_Matrix::ckNew(N, blocksize, 2, "A");
-  CProxy_Matrix C = CProxy_Matrix::ckNew(N, blocksize, 2, "C");
+  INFO("creating matrix A\n");
+  CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, N, blocksize, 2, "A");
+  INFO("creating matrix C\n");
+  CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, N, blocksize, 2, "C");
+  INFO("done\n");
 
   /* Initialize the matrices. */
   double *ADense = new double[N*N];
@@ -260,7 +272,9 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   printDense(N, ADense, "ADense:");
 #endif
 
+  INFO("setting matrix A\n");
   A.set(N, ADense, CkCallbackResumeThread());
+  INFO("done\n");
 
   double *CExact = NULL;
   if(verify)

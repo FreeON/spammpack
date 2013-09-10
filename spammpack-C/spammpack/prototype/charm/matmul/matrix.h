@@ -49,7 +49,7 @@ class Matrix : public CBase_Matrix
 
   public:
 
-    Matrix (int N, int blocksize, int nameLength, char *name);
+    Matrix (int initialPE, int N, int blocksize, int nameLength, char *name);
     ~Matrix (void);
     MatrixInfoMsg * info (void);
     DenseMatrixMsg * toDense (void);

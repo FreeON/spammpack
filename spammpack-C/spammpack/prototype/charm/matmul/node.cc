@@ -60,7 +60,7 @@ Node::Node (int N, int depth, int blocksize, int tier)
   }
   index = tempIndex.to_ulong();
 
-  DEBUG(LB"index %s, constructing\n"LE, toBinary(index).c_str());
+  INFO(LB"index %s, constructing\n"LE, toBinary(index).c_str());
 }
 
 /** The migration constructor.
@@ -160,6 +160,8 @@ DenseMatrixMsg * Node::getBlock (void)
  */
 void Node::set (int blocksize, double *A, CkCallback &cb)
 {
+  INFO(LB"setting node\n"LE);
+
   if(block == NULL)
   {
     block = new double[blocksize*blocksize];

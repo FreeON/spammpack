@@ -9,6 +9,7 @@ mainmodule matmul
     entry Main (CkArgMsg *msg);
     entry [threaded] void run (int N, int blocksize, int numberIterations,
         double tolerance, int matrixType, double decayConstant, bool verify,
-        double verifyTolerance, bool loadBalance, bool printPEMap);
+        double verifyTolerance, bool loadBalance, int initialPE,
+        bool printPEMap);
   };
 };

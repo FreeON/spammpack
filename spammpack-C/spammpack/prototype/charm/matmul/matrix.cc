@@ -16,12 +16,13 @@
 
 /** The constructor.
  *
+ * @param initialPE The PE to place the Node chares.
  * @param N The matrix size.
  * @param blocksize The SpAMM blocksize.
  * @param nameLength The strlen of the name.
  * @param name The matrix name.
  */
-Matrix::Matrix (int N, int blocksize, int nameLength, char *name)
+Matrix::Matrix (int initialPE, int N, int blocksize, int nameLength, char *name)
 {
   this->name = strdup(name);
   this->N = N;
@@ -48,7 +49,19 @@ Matrix::Matrix (int N, int blocksize, int nameLength, char *name)
         this->name, N, blocksize, tier, depth, NPadded,
         NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
 
-    nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier, NTier, NTier);
+    INFO("creating nodeMap\n");
+    CProxy_NodeMap nodeMap = CProxy_NodeMap::ckNew(initialPE);
+    INFO("setting options\n");
+    //CkArrayOptions *nodeOptions = new CkArrayOptions(NTier*NTier);
+    CkArrayOptions nodeOptions(NTier, NTier);
+    INFO("setting map on options\n");
+    //nodeOptions->setMap(nodeMap);
+    nodeOptions.setMap(nodeMap);
+    INFO("creating chare array\n");
+    //nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier, *nodeOptions);
+    nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier, nodeOptions);
+    nodes[tier].doneInserting();
+    INFO("done\n");
 
     if(tier == depth)
     {
@@ -56,6 +69,7 @@ Matrix::Matrix (int N, int blocksize, int nameLength, char *name)
       PEMap_norm = new double[NTier*NTier];
     }
   }
+  INFO("done\n");
 }
 
 /** The destructor.
@@ -162,7 +176,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
 {
   assert(this->N == N);
 
-  DEBUG("setting matrix\n");
+  INFO("setting matrix\n");
 
   /* Set the A matrix. */
   double *block = new double[blocksize*blocksize];
@@ -180,7 +194,9 @@ void Matrix::set (int N, double *A, CkCallback &cb)
         }
       }
 
+      INFO("setting Node(%d,%d)\n", i, j);
       nodes[depth](i, j).set(blocksize, block, CkCallbackResumeThread());
+      INFO("done setting Node(%d,%d)\n", i, j);
     }
   }
   delete[] block;

@@ -316,6 +316,11 @@ parser.add_argument("--print",
     action = "store_true",
     default = False)
 
+parser.add_argument("--aligned-print",
+    help = "Print the convolution PEs aligned with their matrix PEs",
+    action = "store_true",
+    default = False)
+
 parser.add_argument("--mathematica",
     help = "Generate Mathematic statements",
     action = "store_true",
@@ -432,6 +437,20 @@ for line in fd:
           print(PEMap[label])
         print("convolution norms")
         print(norm_convolution)
+      if options.aligned_print:
+        for i in range(N):
+          for j in range(N):
+            for k in range(N):
+              if PEMap["convolution"][i, j, k] >= 0:
+                print("convolution({:2d},{:2d},{:2d}): ".format(i, j, k)
+                    +"C({:2d},{:2d}) += ".format(i, j)
+                    +"A({:2d},{:2d}) x ".format(i, k)
+                    +"B({:2d},{:2d}): ".format(k, j)
+                    +"{:2d} <-- {:2d} {:2d} {:2d}".format(
+                      PEMap["convolution"][i, j, k],
+                      PEMap["matrix A"][i, k],
+                      PEMap["matrix A"][k, j],
+                      PEMap["matrix C"][i, j]))
       if options.render:
         generatePOVRay(
             iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
