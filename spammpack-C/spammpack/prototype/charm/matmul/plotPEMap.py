@@ -252,6 +252,40 @@ def generatePOVRay (
   script_file.close()
   render(iteration, script_file.name)
 
+## Generate a POVRay script and render it.
+#
+# @param iteration The current iteration.
+# @param numPEs The total number of PEs.
+# @param PEMap_A The PEMap for matrix A.
+# @param PEMap_C The PEMap for matrix C.
+# @param PEMap_convolution The PEMap for the convolution.
+# @param norms_convolution The product norms of the convolution.
+def generateBlender (
+    iteration, numPEs, PEMap_A, PEMap_C, PEMap_convolution,
+    norms_convolution):
+  global script_file
+  openScriptFile(iteration, "py")
+
+  script("import bpy\n")
+
+  script("bpy.ops.object.select_all(action = 'SELECT')\n")
+  script("bpy.ops.object.delete()\n");
+
+  script("bpy.ops.object.camera_add("
+      + "location = ({:d}, {:d}, {:d}))\n".format(N, N, N))
+
+  script("bpy.ops.mesh.primitive_plane_add(radius = {:d}, ".format(N)
+      + "location = ({:d}, {:d}, {:d}))\n".format(0, 0, 0))
+
+  for i in range(N):
+    for j in range(N):
+      for k in range(N):
+        if PEMap_convolution[i, j, k] >= 0:
+          script("bpy.ops.mesh.primitive_cube_add(radius=0.45, "
+              + "location=({:d}, {:d}, {:d}))\n".format(i, j, k))
+
+  script_file.close()
+
 ## Generate a Mathematica script.
 #
 # @param iteration The current iteration.
@@ -305,11 +339,6 @@ parser.add_argument("FILE",
 parser.add_argument("--output",
     help = "The output file base name, i.e. OUTPUT.${ITERATION}.${SUFFIX}")
 
-parser.add_argument("--render",
-    help = "Render the PEMaps",
-    action = "store_true",
-    default = False)
-
 parser.add_argument("--print",
     help = "Print the PEMaps to stdout",
     dest = "printPEMap",
@@ -318,6 +347,16 @@ parser.add_argument("--print",
 
 parser.add_argument("--aligned-print",
     help = "Print the convolution PEs aligned with their matrix PEs",
+    action = "store_true",
+    default = False)
+
+parser.add_argument("--render",
+    help = "Render the PEMaps",
+    action = "store_true",
+    default = False)
+
+parser.add_argument("--blender",
+    help = "Print out a blender script",
     action = "store_true",
     default = False)
 
@@ -453,6 +492,10 @@ for line in fd:
                       PEMap["matrix C"][i, j]))
       if options.render:
         generatePOVRay(
+            iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
+            PEMap["convolution"], norm_convolution)
+      if options.blender:
+        generateBlender(
             iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
             PEMap["convolution"], norm_convolution)
       if options.mathematica:
