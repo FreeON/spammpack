@@ -1,7 +1,0 @@
-module nodemap
-{
-  group NodeMap
-  {
-    entry NodeMap (int initialPE);
-  };
-}

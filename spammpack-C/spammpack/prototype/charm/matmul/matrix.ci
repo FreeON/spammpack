@@ -1,7 +1,6 @@
 module matrix
 {
   extern module node;
-  extern module nodemap;
   extern module messages;
   chare Matrix
   {

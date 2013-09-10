@@ -28,9 +28,9 @@
  * @param BNodes The Node objects of B.
  * @param CNodes The Node objects of C.
  */
-Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
-    int blocksize, int depth, CProxy_Node ANodes, CProxy_Node BNodes,
-    CProxy_Node CNodes)
+Multiply::Multiply (int initialPE, CProxy_Matrix A, CProxy_Matrix B,
+    CProxy_Matrix C, int blocksize, int depth, CProxy_Node ANodes, CProxy_Node
+    BNodes, CProxy_Node CNodes)
 {
   this->A = A;
   this->B = B;
@@ -49,8 +49,17 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
         NTier, NTier, NTier, NTier*NTier*NTier,
         bytes, humanReadableSize(bytes).c_str());
 
-    convolution[tier] = CProxy_MultiplyElement::ckNew(blocksize, tier, depth,
-        ANodes, BNodes, CNodes, NTier, NTier, NTier);
+    convolution[tier] = CProxy_MultiplyElement::ckNew();
+    for(int i = 0; i < NTier; i++) {
+      for(int j = 0; j < NTier; j++) {
+        for(int k = 0; k < NTier; k++)
+        {
+          convolution[tier](i, j, k).insert(blocksize, tier, depth,
+              ANodes, BNodes, CNodes, initialPE);
+        }
+      }
+    }
+    convolution[tier].doneInserting();
 
     if(tier < depth)
     {

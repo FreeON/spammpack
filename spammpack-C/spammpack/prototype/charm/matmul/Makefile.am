@@ -31,8 +31,7 @@ INTERFACE_FILES = \
 	messages.ci \
 	multiply.ci \
 	multiplyelement.ci \
-	node.ci \
-	nodemap.ci
+	node.ci
 
 matmul_SOURCES = \
 	blas_interface.h \
@@ -51,8 +50,6 @@ matmul_SOURCES = \
 	multiply.h \
 	node.cc \
 	node.h \
-	nodemap.cc \
-	nodemap.h \
 	timer.cc \
 	timer.h \
 	types.h \

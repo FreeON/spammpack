@@ -42,9 +42,9 @@ class Multiply : public CBase_Multiply
 
   public:
 
-    Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C,
-        int blocksize, int depth, CProxy_Node ANodes, CProxy_Node BNodes,
-        CProxy_Node CNodes);
+    Multiply (int initialPE, CProxy_Matrix A, CProxy_Matrix B,
+        CProxy_Matrix C, int blocksize, int depth, CProxy_Node ANodes,
+        CProxy_Node BNodes, CProxy_Node CNodes);
     ~Multiply (void);
     void multiply (double tolerance, CkCallback &cb);
     void updatePEMap (CkCallback &cb);

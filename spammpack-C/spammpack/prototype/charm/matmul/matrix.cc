@@ -49,19 +49,14 @@ Matrix::Matrix (int initialPE, int N, int blocksize, int nameLength, char *name)
         this->name, N, blocksize, tier, depth, NPadded,
         NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
 
-    INFO("creating nodeMap\n");
-    CProxy_NodeMap nodeMap = CProxy_NodeMap::ckNew(initialPE);
-    INFO("setting options\n");
-    //CkArrayOptions *nodeOptions = new CkArrayOptions(NTier*NTier);
-    CkArrayOptions nodeOptions(NTier, NTier);
-    INFO("setting map on options\n");
-    //nodeOptions->setMap(nodeMap);
-    nodeOptions.setMap(nodeMap);
-    INFO("creating chare array\n");
-    //nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier, *nodeOptions);
-    nodes[tier] = CProxy_Node::ckNew(N, depth, blocksize, tier, nodeOptions);
+    nodes[tier] = CProxy_Node::ckNew();
+    for(int i = 0; i < NTier; i++) {
+      for(int j = 0; j < NTier; j++)
+      {
+        nodes[tier](i, j).insert(N, depth, blocksize, tier, initialPE);
+      }
+    }
     nodes[tier].doneInserting();
-    INFO("done\n");
 
     if(tier == depth)
     {
@@ -69,7 +64,6 @@ Matrix::Matrix (int initialPE, int N, int blocksize, int nameLength, char *name)
       PEMap_norm = new double[NTier*NTier];
     }
   }
-  INFO("done\n");
 }
 
 /** The destructor.
@@ -176,7 +170,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
 {
   assert(this->N == N);
 
-  INFO("setting matrix\n");
+  DEBUG("setting matrix\n");
 
   /* Set the A matrix. */
   double *block = new double[blocksize*blocksize];
@@ -194,9 +188,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
         }
       }
 
-      INFO("setting Node(%d,%d)\n", i, j);
       nodes[depth](i, j).set(blocksize, block, CkCallbackResumeThread());
-      INFO("done setting Node(%d,%d)\n", i, j);
     }
   }
   delete[] block;

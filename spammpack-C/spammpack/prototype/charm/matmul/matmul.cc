@@ -219,11 +219,8 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
 {
   LBDatabase *db = LBDatabaseObj();
 
-  INFO("creating matrix A\n");
   CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, N, blocksize, 2, "A");
-  INFO("creating matrix C\n");
   CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, N, blocksize, 2, "C");
-  INFO("done\n");
 
   /* Initialize the matrices. */
   double *ADense = new double[N*N];
@@ -272,9 +269,7 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   printDense(N, ADense, "ADense:");
 #endif
 
-  INFO("setting matrix A\n");
   A.set(N, ADense, CkCallbackResumeThread());
-  INFO("done\n");
 
   double *CExact = NULL;
   if(verify)
@@ -289,8 +284,9 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   MatrixNodeMsg *ANodes = A.getNodes(AInfo->depth);
   MatrixNodeMsg *CNodes = C.getNodes(CInfo->depth);
 
-  CProxy_Multiply M = CProxy_Multiply::ckNew(A, A, C, AInfo->blocksize,
-      AInfo->depth, ANodes->nodes, ANodes->nodes, CNodes->nodes);
+  CProxy_Multiply M = CProxy_Multiply::ckNew(initialPE, A, A, C,
+      AInfo->blocksize, AInfo->depth, ANodes->nodes, ANodes->nodes,
+      CNodes->nodes);
 
   delete ANodes;
   delete CNodes;
