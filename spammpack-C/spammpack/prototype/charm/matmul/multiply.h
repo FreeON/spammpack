@@ -31,6 +31,11 @@ class Multiply : public CBase_Multiply
     /** The convolution. There is a convolution for each tier. */
     CProxy_MultiplyElement *convolution;
 
+#ifdef PRUNE_CONVOLUTION
+    /** A map to indicate which convolution element is currently active. */
+    bool **convolutionMap;
+#endif
+
     /** A callback. */
     CkCallback cb;
 

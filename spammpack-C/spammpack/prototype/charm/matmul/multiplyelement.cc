@@ -63,7 +63,9 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
   index = tempIndex.to_ulong();
 
   CResult = NULL;
+#ifndef PRUNE_CONVOLUTION
   isEnabled = true;
+#endif
 }
 
 /** The migration constructor.
@@ -100,7 +102,9 @@ void MultiplyElement::pup (PUP::er &p)
   p|B;
   p|C;
   p|norm_product;
+#ifndef PRUNE_CONVOLUTION
   p|isEnabled;
+#endif
   p|nextConvolution;
 
   int numberElements = (CResult == NULL ? 0 : blocksize*blocksize);
@@ -131,7 +135,9 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 {
   DEBUG(LB"multiply\n"LE);
 
+#ifndef PRUNE_CONVOLUTION
   if(isEnabled)
+#endif
   {
     NodeInfoMsg *AInfo = A(thisIndex.x, thisIndex.z).info();
     NodeInfoMsg *BInfo = B(thisIndex.z, thisIndex.y).info();
@@ -192,15 +198,36 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
     }
   }
 
+#ifndef PRUNE_CONVOLUTION
   else
   {
     DEBUG(LB"skipping disabled element\n"LE);
     norm_product = 0;
   }
+#endif
 
   contribute(cb);
 }
 
+#ifdef PRUNE_CONVOLUTION
+/** Prune the next tier based on the Node norms by applying the SpAMM
+ * tolerance.
+ *
+ * @param NTier The size of the convolution array.
+ * @param nextConvolutionMap A bool map indicating which MultiplyElement is
+ * active.
+ * @param tolerance The SpAMM tolerance.
+ * @param ANodes The @link Node nodes @endlink of Matrix A on the tier below this one.
+ * @param BNodes The @link Node nodes @endlink of Matrix B on the tier below this one.
+ * @param cb The callback to reduce to.
+ */
+void MultiplyElement::pruneProduct (int NTier,
+    bool *nextConvolutionMap,
+    double tolerance,
+    CProxy_Node ANodes,
+    CProxy_Node BNodes,
+    CkCallback &cb)
+#else
 /** Prune the next tier based on the Node norms by applying the SpAMM
  * tolerance.
  *
@@ -213,10 +240,13 @@ void MultiplyElement::pruneProduct (double tolerance,
     CProxy_Node ANodes,
     CProxy_Node BNodes,
     CkCallback &cb)
+#endif
 {
   DEBUG(LB"pruning next tier\n"LE);
 
+#ifndef PRUNE_CONVOLUTION
   if(isEnabled)
+#endif
   {
     for(int i = 0; i < 2; i++)
     {
@@ -237,7 +267,11 @@ void MultiplyElement::pruneProduct (double tolerance,
             DEBUG(LB"keeping/creating tier %d, convolution(%d,%d,%d)\n"LE,
                 tier+1, nextX, nextY, nextZ);
 #ifdef PRUNE_CONVOLUTION
-            convolution(nextX, nextY, nextZ).insert(blocksize, tier+1, depth, A, B, C);
+            if(!nextConvolutionMap[BLOCK_INDEX_3(nextX, nextY, nextZ, NTier)])
+            {
+              nextConvolution(nextX, nextY, nextZ).insert(blocksize, tier+1, depth, A, B, C);
+              nextConvolutionMap[BLOCK_INDEX_3(nextX, nextY, nextZ, NTier)] = false;
+            }
 #else
             nextConvolution(nextX, nextY, nextZ).enable(CkCallbackResumeThread());
 #endif
@@ -249,7 +283,11 @@ void MultiplyElement::pruneProduct (double tolerance,
             DEBUG(LB"pruning tier %d, convolution(%d,%d,%d)\n"LE, tier+1,
                 nextX, nextY, nextZ);
 #ifdef PRUNE_CONVOLUTION
-            convolution(nextX, nextY, nextZ).ckDestroy();
+            if(nextConvolutionMap[BLOCK_INDEX_3(nextX, nextY, nextZ, NTier)])
+            {
+              nextConvolution(nextX, nextY, nextZ).ckDestroy();
+              nextConvolutionMap[BLOCK_INDEX_3(nextX, nextY, nextZ, NTier)] = true;
+            }
 #else
             nextConvolution(nextX, nextY, nextZ).disable(CkCallbackResumeThread());
 #endif
@@ -275,6 +313,7 @@ void MultiplyElement::setNextConvolution (CProxy_MultiplyElement nextConvolution
   this->nextConvolution = nextConvolution;
 }
 
+#ifndef PRUNE_CONVOLUTION
 /** Enable this MultiplyElement.
  *
  * @param cb The callback to send to.
@@ -321,6 +360,7 @@ void MultiplyElement::disable (CkCallback &cb)
   }
   cb.send();
 }
+#endif
 
 /** Push the C submatrices back into the C Matrix.
  *
@@ -328,7 +368,9 @@ void MultiplyElement::disable (CkCallback &cb)
  */
 void MultiplyElement::storeBack (CkCallback &cb)
 {
+#ifndef PRUNE_CONVOLUTION
   if(isEnabled)
+#endif
   {
     DEBUG(LB"storing in C\n"LE);
 

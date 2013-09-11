@@ -17,8 +17,12 @@
 
 #include <assert.h>
 
-/** The constructor.
+/** The constructor. The multiply is initialized so that a call to
+ * Multiply::multiply() will result in:
  *
+ * @f[ C \leftarrow C + A \times B @f]
+ *
+ * @param initialPE The initial PE of the MultiplyElement chares.
  * @param A Matrix A.
  * @param B Matrix B.
  * @param C Matrix C.
@@ -39,6 +43,9 @@ Multiply::Multiply (int initialPE, CProxy_Matrix A, CProxy_Matrix B,
   this->depth = depth;
 
   convolution = new CProxy_MultiplyElement[depth+1];
+#ifdef PRUNE_CONVOLUTION
+  convolutionMap = new bool*[depth+1];
+#endif
   for(int tier = depth; tier >= 0; tier--)
   {
     int NTier = 1 << tier;
@@ -50,12 +57,18 @@ Multiply::Multiply (int initialPE, CProxy_Matrix A, CProxy_Matrix B,
         bytes, humanReadableSize(bytes).c_str());
 
     convolution[tier] = CProxy_MultiplyElement::ckNew();
+#ifdef PRUNE_CONVOLUTION
+    convolutionMap[tier] = new bool[NTier*NTier*NTier];
+#endif
     for(int i = 0; i < NTier; i++) {
       for(int j = 0; j < NTier; j++) {
         for(int k = 0; k < NTier; k++)
         {
           convolution[tier](i, j, k).insert(blocksize, tier, depth,
               ANodes, BNodes, CNodes, initialPE);
+#ifdef PRUNE_CONVOLUTION
+          convolutionMap[tier][BLOCK_INDEX_3(i, j, k, NTier)] = true;
+#endif
         }
       }
     }
@@ -80,6 +93,13 @@ Multiply::~Multiply (void)
 {
   delete[] PEMap;
   delete[] PEMap_norm;
+#ifdef PRUNE_CONVOLUTION
+  for(int tier = 0; tier <= depth; tier++)
+  {
+    delete[] convolutionMap[tier];
+  }
+  delete[] convolutionMap;
+#endif
 }
 
 /** Multiply two Matrix objects.
@@ -100,9 +120,14 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
     INFO("pruning tier %d\n", tier+1);
     MatrixNodeMsg *ANodes = A.getNodes(tier+1);
     MatrixNodeMsg *BNodes = B.getNodes(tier+1);
+#ifdef PRUNE_CONVOLUTION
     int NTier = 1 << (tier+1);
+    convolution[tier].pruneProduct(NTier, convolutionMap[tier+1], tolerance,
+        ANodes->nodes, BNodes->nodes, CkCallbackResumeThread());
+#else
     convolution[tier].pruneProduct(tolerance, ANodes->nodes, BNodes->nodes,
         CkCallbackResumeThread());
+#endif
     delete ANodes;
     delete BNodes;
 
@@ -110,9 +135,6 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
     /* Mark the next tier as complete so that the load balancer can work. */
     INFO("calling doneInserting() on tier %d\n", tier+1);
     convolution[tier+1].doneInserting();
-
-    /* Wait until things have settled down. */
-    CkWaitQD();
 #endif
   }
 

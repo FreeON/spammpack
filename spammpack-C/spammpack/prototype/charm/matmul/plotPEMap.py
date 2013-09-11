@@ -283,6 +283,7 @@ def generateBlender (
         if PEMap_convolution[i, j, k] >= 0:
           script("bpy.ops.mesh.primitive_cube_add(radius=0.45, "
               + "location=({:d}, {:d}, {:d}))\n".format(i, j, k))
+          script("bpy.ops.material.new()\n")
 
   script_file.close()
 
@@ -323,6 +324,7 @@ def generateMathematica (
 
 ##############################################
 
+## The python version.
 global python_version
 python_version = sys.version_info
 
@@ -331,6 +333,7 @@ if python_version.major == 2 and python_version.minor < 7:
     python_version.major, python_version.minor))
   sys.exit(1)
 
+## The parser object.
 parser = argparse.ArgumentParser()
 
 parser.add_argument("FILE",

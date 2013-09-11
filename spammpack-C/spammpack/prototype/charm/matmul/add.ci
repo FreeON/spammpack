@@ -1,0 +1,8 @@
+module add
+{
+  extern module matrix;
+  chare Add
+  {
+    entry Add ();
+  };
+};

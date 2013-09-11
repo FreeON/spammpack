@@ -26,6 +26,7 @@ endif
 bin_PROGRAMS = matmul
 
 INTERFACE_FILES = \
+	add.ci \
 	matmul.ci \
 	matrix.ci \
 	messages.ci \
@@ -34,6 +35,8 @@ INTERFACE_FILES = \
 	node.ci
 
 matmul_SOURCES = \
+	add.cc \
+	add.h \
 	blas_interface.h \
 	index.h \
 	logger.cc \

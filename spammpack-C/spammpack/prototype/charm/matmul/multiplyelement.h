@@ -9,6 +9,7 @@
 #ifndef __MULTIPLYELEMENT_H
 #define __MULTIPLYELEMENT_H
 
+#include "config.h"
 #include "multiplyelement.decl.h"
 
 /** An element in the convolution curve. */
@@ -43,9 +44,11 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The result matrix. */
     double *CResult;
 
+#ifndef PRUNE_CONVOLUTION
     /** A flag indicating whether this MultiplyElement is enabled or not (as a
      * hack while real pruning doesn't work. */
     bool isEnabled;
+#endif
 
     /** The next tier convolution. If this MultiplyElement is on tier ==
      * depth, then the proxy is not defined. */
@@ -59,13 +62,24 @@ class MultiplyElement : public CBase_MultiplyElement
     ~MultiplyElement ();
     void pup (PUP::er &p);
     void multiply (double tolerance, CkCallback &cb);
+#ifdef PRUNE_CONVOLUTION
+    void pruneProduct (int NTier,
+        bool *nextConvolutionMap,
+        double tolerance,
+        CProxy_Node ANodes,
+        CProxy_Node BNodes,
+        CkCallback &cb);
+#else
     void pruneProduct (double tolerance,
         CProxy_Node ANodes,
         CProxy_Node BNodes,
         CkCallback &cb);
+#endif
     void setNextConvolution (CProxy_MultiplyElement nextConvolution);
+#ifndef PRUNE_CONVOLUTION
     void enable (CkCallback &cb);
     void disable (CkCallback &cb);
+#endif
     void storeBack (CkCallback &cb);
     void PEMap (CkCallback &cb);
 };
