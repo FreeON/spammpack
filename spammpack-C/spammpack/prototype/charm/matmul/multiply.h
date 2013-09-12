@@ -47,7 +47,7 @@ class Multiply : public CBase_Multiply
 
   public:
 
-    Multiply (int initialPE, CProxy_Matrix A, CProxy_Matrix B,
+    Multiply (int initialPE, bool alignPEs, CProxy_Matrix A, CProxy_Matrix B,
         CProxy_Matrix C, int blocksize, int depth, CProxy_Node ANodes,
         CProxy_Node BNodes, CProxy_Node CNodes);
     ~Multiply (void);

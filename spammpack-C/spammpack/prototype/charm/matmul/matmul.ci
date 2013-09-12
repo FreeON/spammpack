@@ -10,6 +10,6 @@ mainmodule matmul
     entry [threaded] void run (int N, int blocksize, int numberIterations,
         double tolerance, int matrixType, double decayConstant, bool verify,
         double verifyTolerance, bool loadBalance, int initialPE,
-        bool printPEMap);
+        bool alignPEs, bool printPEMap);
   };
 };

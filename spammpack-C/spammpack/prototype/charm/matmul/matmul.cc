@@ -80,12 +80,13 @@ Main::Main (CkArgMsg *msg)
   bool verify = false;
   bool loadBalance = false;
   int initialPE = CK_PE_ANY;
+  bool alignPEs = false;
   bool printPEMap = false;
   double verifyTolerance = 1.0e-10;
   double decayConstant = 0.1;
 
   int c;
-  const char *short_options = "hN:b:i:t:m:vd:I:lp";
+  const char *short_options = "hN:b:i:t:m:vd:I:lap";
   const option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
@@ -97,6 +98,7 @@ Main::Main (CkArgMsg *msg)
     { "decay",        required_argument,  NULL, 'd' },
     { "initial-PE",   required_argument,  NULL, 'I' },
     { "load-balance", no_argument,        NULL, 'l' },
+    { "align-PEs",    no_argument,        NULL, 'a' },
     { "print-PEMap",  no_argument,        NULL, 'p' },
     { NULL, 0, NULL, 0 }
   };
@@ -122,8 +124,9 @@ Main::Main (CkArgMsg *msg)
             "(default: full)\n");
         CkPrintf("{ -v | --verify }         Verify matmul product\n");
         CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
-        CkPrintf("{ -l | --load-balance }   Load balance after each iteration\n");
         CkPrintf("{ -I | --intial-PE } PE   Put all chares initially on PE\n");
+        CkPrintf("{ -l | --load-balance }   Load balance after each iteration\n");
+        CkPrintf("{ -a | --align-PEs }      Align PEs for diagonal case\n");
         CkPrintf("{ -p | --print-PEMap }    Print a PE map in each iteration\n");
         CkPrintf("\n");
         CkExit();
@@ -165,7 +168,7 @@ Main::Main (CkArgMsg *msg)
         break;
 
       case 'v':
-        verify = !verify;
+        verify = true;
         break;
 
       case 'd':
@@ -178,6 +181,10 @@ Main::Main (CkArgMsg *msg)
 
       case 'l':
         loadBalance = true;
+        break;
+
+      case 'a':
+        alignPEs = true;
         break;
 
       case 'p':
@@ -195,7 +202,7 @@ Main::Main (CkArgMsg *msg)
   DEBUG("calling run() on this proxy\n");
   thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
       decayConstant, verify, verifyTolerance, loadBalance, initialPE,
-      printPEMap);
+      alignPEs, printPEMap);
 }
 
 /** The main method.
@@ -212,16 +219,17 @@ Main::Main (CkArgMsg *msg)
  * verification.
  * @param loadBalance Whether to load balance.
  * @param initialPE The initial PE to put chares on.
+ * @param alignPEs Align PEs in the diagonal matrix case.
  * @param printPEMap Whether to print a PE map in each iteration.
  */
 void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     int matrixType, double decayConstant, bool verify, double verifyTolerance,
-    bool loadBalance, int initialPE, bool printPEMap)
+    bool loadBalance, int initialPE, bool alignPEs, bool printPEMap)
 {
   LBDatabase *db = LBDatabaseObj();
 
-  CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, N, blocksize, 2, "A");
-  CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, N, blocksize, 2, "C");
+  CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, 2, "A");
+  CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, 2, "C");
 
   /* Initialize the matrices. */
   double *ADense = new double[N*N];
@@ -285,7 +293,7 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   MatrixNodeMsg *ANodes = A.getNodes(AInfo->depth);
   MatrixNodeMsg *CNodes = C.getNodes(CInfo->depth);
 
-  CProxy_Multiply M = CProxy_Multiply::ckNew(initialPE, A, A, C,
+  CProxy_Multiply M = CProxy_Multiply::ckNew(initialPE, alignPEs, A, A, C,
       AInfo->blocksize, AInfo->depth, ANodes->nodes, ANodes->nodes,
       CNodes->nodes);
 

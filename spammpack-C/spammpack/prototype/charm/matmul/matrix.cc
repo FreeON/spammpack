@@ -17,12 +17,14 @@
 /** The constructor.
  *
  * @param initialPE The PE to place the Node chares.
+ * @param alignPEs Align PEs in the diagonal matrix case.
  * @param N The matrix size.
  * @param blocksize The SpAMM blocksize.
  * @param nameLength The strlen of the name.
  * @param name The matrix name.
  */
-Matrix::Matrix (int initialPE, int N, int blocksize, int nameLength, char *name)
+Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
+    int nameLength, char *name)
 {
   this->name = strdup(name);
   this->N = N;
@@ -53,6 +55,10 @@ Matrix::Matrix (int initialPE, int N, int blocksize, int nameLength, char *name)
     for(int i = 0; i < NTier; i++) {
       for(int j = 0; j < NTier; j++)
       {
+        if(alignPEs && i == j)
+        {
+          initialPE = i%CkNumPes();
+        }
         nodes[tier](i, j).insert(N, depth, blocksize, tier, initialPE);
       }
     }

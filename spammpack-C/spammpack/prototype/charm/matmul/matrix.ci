@@ -4,8 +4,8 @@ module matrix
   extern module messages;
   chare Matrix
   {
-    entry Matrix (int initialPE, int N, int blocksize, int nameLength,
-        char name[nameLength+1]);
+    entry Matrix (int initialPE, bool alignPEs, int N, int blocksize,
+        int nameLength, char name[nameLength+1]);
     entry [sync] MatrixInfoMsg * info (void);
     entry [sync] DenseMatrixMsg * toDense (void);
     entry [sync] MatrixNodeMsg * getNodes (int tier);

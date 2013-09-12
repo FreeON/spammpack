@@ -23,6 +23,7 @@
  * @f[ C \leftarrow C + A \times B @f]
  *
  * @param initialPE The initial PE of the MultiplyElement chares.
+ * @param alignPEs Align PEs in the diagonal matrix case.
  * @param A Matrix A.
  * @param B Matrix B.
  * @param C Matrix C.
@@ -32,9 +33,9 @@
  * @param BNodes The Node objects of B.
  * @param CNodes The Node objects of C.
  */
-Multiply::Multiply (int initialPE, CProxy_Matrix A, CProxy_Matrix B,
-    CProxy_Matrix C, int blocksize, int depth, CProxy_Node ANodes, CProxy_Node
-    BNodes, CProxy_Node CNodes)
+Multiply::Multiply (int initialPE, bool alignPEs, CProxy_Matrix A,
+    CProxy_Matrix B, CProxy_Matrix C, int blocksize, int depth,
+    CProxy_Node ANodes, CProxy_Node BNodes, CProxy_Node CNodes)
 {
   this->A = A;
   this->B = B;
@@ -64,6 +65,10 @@ Multiply::Multiply (int initialPE, CProxy_Matrix A, CProxy_Matrix B,
       for(int j = 0; j < NTier; j++) {
         for(int k = 0; k < NTier; k++)
         {
+          if(alignPEs && i == j && i == k)
+          {
+            initialPE = i%CkNumPes();
+          }
           convolution[tier](i, j, k).insert(blocksize, tier, depth,
               ANodes, BNodes, CNodes, initialPE);
 #ifdef PRUNE_CONVOLUTION

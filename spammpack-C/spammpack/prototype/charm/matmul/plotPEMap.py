@@ -337,7 +337,10 @@ if python_version.major == 2 and python_version.minor < 7:
 parser = argparse.ArgumentParser()
 
 parser.add_argument("FILE",
-    help = "The output file to plot. A value of '-' means standard input.")
+    help = "The file to plot. A missing FILE means reading from standard input.",
+    nargs = "?",
+    type = argparse.FileType("r"),
+    default = sys.stdin)
 
 parser.add_argument("--output",
     help = "The output file base name, i.e. OUTPUT.${ITERATION}.${SUFFIX}")
@@ -380,11 +383,6 @@ parser.add_argument("--debug",
 
 options = parser.parse_args()
 
-if options.FILE == "-":
-  fd = sys.stdin
-else:
-  fd = open(options.FILE)
-
 global basename
 if options.output:
   basename = options.output
@@ -400,7 +398,7 @@ PEMap = {}
 numPEs = -1
 line_number = 0
 
-for line in fd:
+for line in options.FILE:
   line_number += 1
   if options.debug:
     print("PLOT: read ({:d})".format(line_number), line.rstrip())
@@ -515,4 +513,4 @@ for line in fd:
       print("PLOT: closing map {:s}".format(currentMap))
     continue
 
-fd.close()
+options.FILE.close()
