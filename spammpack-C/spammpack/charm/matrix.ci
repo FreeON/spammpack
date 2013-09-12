@@ -14,7 +14,8 @@ module matrix
     entry [threaded] void set (int N, double A[N*N], CkCallback &cb);
     entry [threaded] void setNorm (CkCallback &cb);
     entry [sync] PEMapMsg * getPEMap (void);
-    entry [sync] DoubleMsg * trace (void);
+    entry [threaded] void updateTrace (CkCallback &cb);
+    entry [sync] DoubleMsg * getTrace (void);
     entry [reductiontarget] void doneTrace (double trace);
     entry [threaded] void add (double alpha, double beta, CProxy_Matrix B,
         CkCallback &cb);

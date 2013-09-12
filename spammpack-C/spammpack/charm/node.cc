@@ -285,7 +285,7 @@ void Node::trace (CkCallback &cb)
       trace += block[BLOCK_INDEX(i, i, 0, 0, blocksize)];
     }
   }
-  contribute(sizeof(int), &trace, CkReduction::sum_double, cb);
+  contribute(sizeof(double), &trace, CkReduction::sum_double, cb);
 }
 
 /** Create a PE map of the Matrix @link Node nodes @endlink.

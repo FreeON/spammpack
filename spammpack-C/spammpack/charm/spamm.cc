@@ -363,6 +363,15 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
         }
         break;
 
+      case trace:
+        {
+          Timer t("iteration %d on %d PEs, trace(A)", iteration+1, CkNumPes());
+          A.updateTrace(CkCallbackResumeThread());
+          t.stop();
+          CkPrintf(t.to_str());
+        }
+        break;
+
       default:
         ABORT("unknow operation\n");
         break;
@@ -476,6 +485,25 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
           }
           break;
 
+        case trace:
+          {
+            double trace = 0;
+            for(int i = 0; i < N; i++)
+            {
+              trace += ADense[BLOCK_INDEX(i, i, 0, 0, N)];
+            }
+            DoubleMsg *spammTrace = A.getTrace();
+            double absDiff = fabs(trace-spammTrace->x);
+            if(absDiff > verifyTolerance)
+            {
+              ABORT("trace mismatch (abs. tolerance = %e, "
+                  "abs. diff = %e), %e (reference) vs. %e (SpAMM)\n",
+                  verifyTolerance, absDiff, trace, spammTrace->x);
+            }
+            CkPrintf("trace verified\n");
+          }
+          break;
+
         default:
           ABORT("unknown operation\n");
           break;
@@ -495,7 +523,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
   }
 #endif
 
-  if(verify)
+  if(verify && operation != trace)
   {
     CkPrintf("verifying result\n");
 

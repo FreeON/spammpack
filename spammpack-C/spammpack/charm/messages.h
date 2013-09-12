@@ -32,6 +32,8 @@ class DoubleMsg : public CMessage_DoubleMsg
 
     /** The double value. */
     double x;
+
+    DoubleMsg (double x);
 };
 
 /** A message containing some matrix information. */

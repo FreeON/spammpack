@@ -233,12 +233,14 @@ PEMapMsg * Matrix::getPEMap (void)
   return msg;
 }
 
-/** Get the trace of a matrix.
+/** Update the trace on this matrix.
  *
- * @return The trace.
+ * @param cb The callback to send to when done.
  */
-DoubleMsg * Matrix::trace (void)
+void Matrix::updateTrace (CkCallback &cb)
 {
+  this->cb = cb;
+  nodes[depth].trace(CkCallback(CkReductionTarget(Matrix, doneTrace), thisProxy));
 }
 
 /** The reduction target for the trace operation.
@@ -247,6 +249,17 @@ DoubleMsg * Matrix::trace (void)
  */
 void Matrix::doneTrace (double trace)
 {
+  this->trace = trace;
+  cb.send();
+}
+
+/** Get the trace of a matrix.
+ *
+ * @return The trace.
+ */
+DoubleMsg * Matrix::getTrace (void)
+{
+  return new DoubleMsg(trace);
 }
 
 /** Add another matrix to this one.

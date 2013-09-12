@@ -34,6 +34,9 @@ class Matrix : public CBase_Matrix
     /** The padded size of the matrix. */
     int NPadded;
 
+    /** The trace of the matrix. Needs to be updated with Matrix::updateTrace(). */
+    double trace;
+
     /** The Nodes per tier. The variable Matrix::nodes points to an array of
      * size Matrix::depth containing the Node proxy on each tier. */
     CProxy_Node *nodes;
@@ -60,7 +63,8 @@ class Matrix : public CBase_Matrix
     void set (int N, double *A, CkCallback &cb);
     void setNorm (CkCallback &cb);
     PEMapMsg * getPEMap (void);
-    DoubleMsg * trace (void);
+    void updateTrace (CkCallback &cb);
+    DoubleMsg * getTrace (void);
     void doneTrace (double trace);
     void add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb);
 };

@@ -11,6 +11,15 @@
 
 /** The constructor.
  *
+ * @param x The value of this message.
+ */
+DoubleMsg::DoubleMsg (double x)
+{
+  this->x = x;
+}
+
+/** The constructor.
+ *
  * @param N The matrix size.
  * @param blocksize The submatrix size at the lowest tier.
  * @param depth The tree depth of the matrix.
