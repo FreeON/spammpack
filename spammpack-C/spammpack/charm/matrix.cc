@@ -258,9 +258,13 @@ void Matrix::doneTrace (double trace)
  * @param alpha The factor @f$ \alpha @f$.
  * @param beta The factor @f$ \beta @f$.
  * @param B The matrix B.
+ * @param cb The callback to call when done.
  */
-void Matrix::add (double alpha, double beta, CProxy_Matrix B)
+void Matrix::add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb)
 {
+  MatrixNodeMsg *BNodes = B.getNodes(depth);
+  nodes[depth].add(alpha, beta, BNodes->nodes, CkCallbackResumeThread());
+  cb.send();
 }
 
 #include "matrix.def.h"

@@ -95,7 +95,7 @@ fi
 # Enable charmdebug.
 AC_ARG_ENABLE([charmdebug],
   [AS_HELP_STRING([--enable-charmdebug],
-  [enable the use of charmdebug on the executable])],
+  [enable the use of charmdebug on the executable, use with CXXFLAGS="-O0 -g"])],
   [enable_charmdebug=$enableval],
   [enable_charmdebug="no"])
 if test "${enable_charmdebug}" = "yes"; then

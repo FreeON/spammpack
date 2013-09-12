@@ -14,6 +14,7 @@
 #include "types.h"
 #include "utilities.h"
 
+#include <assert.h>
 #include <bitset>
 
 /** Some convenience macros for logging. Wrap the logging format string with
@@ -160,10 +161,11 @@ DenseMatrixMsg * Node::getBlock (void)
  */
 void Node::set (int blocksize, double *A, CkCallback &cb)
 {
+  assert(blocksize == this->blocksize);
+
   if(block == NULL)
   {
     block = new double[blocksize*blocksize];
-    memset(block, 0, sizeof(double)*blocksize*blocksize);
   }
   memcpy(block, A, sizeof(double)*blocksize*blocksize);
 
@@ -219,6 +221,8 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
  */
 void Node::blockAdd (int blocksize, double *A)
 {
+  assert(blocksize == this->blocksize);
+
   DEBUG(LB"Adding back to C\n"LE);
   if(block == NULL)
   {
@@ -247,16 +251,23 @@ void Node::blockAdd (int blocksize, double *A)
  * @param alpha Factor @f$ \alpha @f$.
  * @param beta Factor @f$ \beta @f$.
  * @param B Matrix B.
+ * @param cb The callback for the reduction.
  */
-void Node::add (double alpha, double beta, CProxy_Node B)
+void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
 {
   DEBUG(LB"adding, alpha = %e\n"LE, alpha);
   DenseMatrixMsg *BData = B(thisIndex.x, thisIndex.y).getBlock();
-  for(int i = 0; i < blocksize; i++)
+  if(block == NULL)
+  {
+    block = new double[blocksize*blocksize];
+    memset(block, 0, sizeof(double)*blocksize*blocksize);
+  }
+  for(int i = 0; i < blocksize*blocksize; i++)
   {
     block[i] = alpha*block[i]+beta*BData->A[i];
   }
   delete BData;
+  contribute(cb);
 }
 
 /** Reduce the trace of the matrix.

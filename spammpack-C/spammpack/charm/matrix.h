@@ -62,7 +62,7 @@ class Matrix : public CBase_Matrix
     PEMapMsg * getPEMap (void);
     DoubleMsg * trace (void);
     void doneTrace (double trace);
-    void add (double alpha, double beta, CProxy_Matrix B);
+    void add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb);
 };
 
 #endif

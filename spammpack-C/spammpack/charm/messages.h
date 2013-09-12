@@ -4,6 +4,19 @@
  *
  * @author Nicolas Bock <nicolas.bock@freeon.org>
  * @author Matt Challacombe <matt.challacombe@freeon.org>
+ *
+ * @page API API
+ *
+ * @section Messages
+ *
+ * The following messages are known:
+ *
+ * - DoubleMsg
+ * - MatrixInfoMsg
+ * - MatrixNodeMsg
+ * - NodeInfoMsg
+ * - DenseMatrixMsg
+ * - PEMapMsg
  */
 
 #ifndef __MESSAGES_H

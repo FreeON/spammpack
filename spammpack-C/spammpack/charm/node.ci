@@ -9,7 +9,8 @@ module node
     entry void set (int blocksize, double A[blocksize*blocksize], CkCallback &cb);
     entry [threaded] void setNorm (CProxy_Node nodes, CkCallback &cb);
     entry void blockAdd (int blocksize, double A[blocksize*blocksize]);
-    entry [threaded] void add (double alpha, double beta, CProxy_Node B);
+    entry [threaded] void add (double alpha, double beta, CProxy_Node B,
+        CkCallback &cb);
     entry void trace (CkCallback &cb);
     entry void PEMap (CkCallback &cb);
   };

@@ -5,6 +5,7 @@
  * @author Nicolas Bock <nicolas.bock@freeon.org>
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  *
+ *
  * @mainpage
  *
  * @section Introduction
@@ -14,7 +15,9 @@
  * @cite ChallacombeBock2010
  * @cite BockChallacombe2012
  * @cite BockSISC2013.
- * The main program is documented as SpAMM::SpAMM.
+ * The main program is documented as SpAMM::SpAMM. A more detailed description
+ * of the API and components of this code can be found on the @link API API
+ * @endlink page.
  *
  * @section example Example Use
  *
@@ -63,7 +66,7 @@ void initialize (void)
  * - { -i | --iterations } N   Iterate on the product N times (default:  1)
  * - { -t | --tolerance } T    Multiply with tolerance T (default: 0.00e+00)
  * - { -m | --type } TYPE      Use matrices of TYPE { full, decay, diagonal } (default: full)
- * - { -v | --verify }         Verify matmul product
+ * - { -v | --verify }         Verify result
  * - { -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)
  * - { -I | --intial-PE } PE   Put all chares initially on PE
  * - { -l | --load-balance }   Load balance after each iteration
@@ -115,7 +118,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
     {
       case 'h':
         CkPrintf("\n");
-        CkPrintf("Usage of matmul version %s\n", PACKAGE_VERSION);
+        CkPrintf("Usage of spamm version %s\n", PACKAGE_VERSION);
         CkPrintf("\n");
         CkPrintf("{ -h | --help }           This help\n");
         CkPrintf("{ -N | --N } N            Create NxN matrix (default: %d)\n", N);
@@ -127,7 +130,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
             tolerance);
         CkPrintf("{ -m | --type } TYPE      Use matrices of TYPE { full, decay, diagonal } "
             "(default: full)\n");
-        CkPrintf("{ -v | --verify }         Verify matmul product\n");
+        CkPrintf("{ -v | --verify }         Verify result\n");
         CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
         CkPrintf("{ -I | --intial-PE } PE   Put all chares initially on PE\n");
         CkPrintf("{ -l | --load-balance }   Load balance after each iteration\n");
@@ -225,7 +228,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
     }
   }
 
-  CkPrintf("matmul version %s\n", PACKAGE_VERSION);
+  CkPrintf("SpAMM version %s\n", PACKAGE_VERSION);
 
   DEBUG("calling run() on this proxy\n");
   thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
@@ -353,8 +356,8 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
       case add:
         {
           Timer t("iteration %d on %d PEs, adding C = A+B", iteration+1, CkNumPes());
-          C.add(0.0, 1.0, A);
-          C.add(1.0, 1.0, A);
+          C.add(0.0, 1.0, A, CkCallbackResumeThread());
+          C.add(1.0, 1.0, A, CkCallbackResumeThread());
           t.stop();
           CkPrintf(t.to_str());
         }
@@ -464,6 +467,15 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
           }
           break;
 
+        case add:
+          {
+            for(int i = 0; i < N*N; i++)
+            {
+              CExact[i] = 2*ADense[i];
+            }
+          }
+          break;
+
         default:
           ABORT("unknown operation\n");
           break;
@@ -515,7 +527,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
           : 0);
       ABORT("result mismatch (abs. tolerance = %e, "
           "abs. diff = %e, rel. diff = %e), "
-          "C(%d,%d): %e (reference) vs. %e (matmul)\n",
+          "C(%d,%d): %e (reference) vs. %e (SpAMM)\n",
           verifyTolerance, maxAbsDiff, relDiff,
           maxDiffRow, maxDiffColumn,
           CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)],
