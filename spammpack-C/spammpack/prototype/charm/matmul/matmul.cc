@@ -58,15 +58,18 @@ void initialize (void)
  * Currently known command line arguments are:
  *
  * - { -h | --help }           This help
- * - { -N | --N } N            Create NxN matrix
- * - { -b | --block } B        Create BxB dense blocks at leaf nodes
- * - { -i | --iterations } N   Iterate on the product N times
- * - { -t | --tolerance } T    Multiply with tolerance T
- * - { -m | --type } TYPE      Use matrices of TYPE
+ * - { -N | --N } N            Create NxN matrix (default: 1)
+ * - { -b | --block } B        Create BxB dense blocks at leaf nodes (default: 1)
+ * - { -i | --iterations } N   Iterate on the product N times (default:  1)
+ * - { -t | --tolerance } T    Multiply with tolerance T (default: 0.00e+00)
+ * - { -m | --type } TYPE      Use matrices of TYPE { full, decay, diagonal } (default: full)
  * - { -v | --verify }         Verify matmul product
  * - { -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)
+ * - { -I | --intial-PE } PE   Put all chares initially on PE
  * - { -l | --load-balance }   Load balance after each iteration
+ * - { -a | --align-PEs }      Align PEs for diagonal case
  * - { -p | --print-PEMap }    Print a PE map in each iteration
+ * - { -o | --operation } OP   Test OP { multiply, add, trace }
  *
  * @param msg The command line argument list.
  */
@@ -84,9 +87,10 @@ Main::Main (CkArgMsg *msg)
   bool printPEMap = false;
   double verifyTolerance = 1.0e-10;
   double decayConstant = 0.1;
+  enum operation_t operation = multiply;
 
   int c;
-  const char *short_options = "hN:b:i:t:m:vd:I:lap";
+  const char *short_options = "hN:b:i:t:m:vd:I:lapo:";
   const option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
@@ -100,6 +104,7 @@ Main::Main (CkArgMsg *msg)
     { "load-balance", no_argument,        NULL, 'l' },
     { "align-PEs",    no_argument,        NULL, 'a' },
     { "print-PEMap",  no_argument,        NULL, 'p' },
+    { "operation",    required_argument,  NULL, 'o' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -128,6 +133,7 @@ Main::Main (CkArgMsg *msg)
         CkPrintf("{ -l | --load-balance }   Load balance after each iteration\n");
         CkPrintf("{ -a | --align-PEs }      Align PEs for diagonal case\n");
         CkPrintf("{ -p | --print-PEMap }    Print a PE map in each iteration\n");
+        CkPrintf("{ -o | --operation } OP   Test OP { multiply, add, trace }\n");
         CkPrintf("\n");
         CkExit();
         break;
@@ -191,6 +197,28 @@ Main::Main (CkArgMsg *msg)
         printPEMap = true;
         break;
 
+      case 'o':
+        if(strcasecmp(optarg, "multiply") == 0)
+        {
+          operation = multiply;
+        }
+
+        else if(strcasecmp(optarg, "add") == 0)
+        {
+          operation = add;
+        }
+
+        else if(strcasecmp(optarg, "trace") == 0)
+        {
+          operation = trace;
+        }
+
+        else
+        {
+          ABORT("unknown operation\n");
+        }
+        break;
+
       default:
         CkExit();
         break;
@@ -201,8 +229,8 @@ Main::Main (CkArgMsg *msg)
 
   DEBUG("calling run() on this proxy\n");
   thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
-      decayConstant, verify, verifyTolerance, loadBalance, initialPE,
-      alignPEs, printPEMap);
+      decayConstant, operation, verify, verifyTolerance, loadBalance,
+      initialPE, alignPEs, printPEMap);
 }
 
 /** The main method.
@@ -214,6 +242,7 @@ Main::Main (CkArgMsg *msg)
  * @param matrixType The matrix type.
  * @param decayConstant The decay constant for matrices with exponential
  * decay.
+ * @param operation The operation of type operation_t.
  * @param verify Whether to verify the matrix product.
  * @param verifyTolerance The absolute tolerance in the matrix
  * verification.
@@ -223,8 +252,9 @@ Main::Main (CkArgMsg *msg)
  * @param printPEMap Whether to print a PE map in each iteration.
  */
 void Main::run (int N, int blocksize, int numberIterations, double tolerance,
-    int matrixType, double decayConstant, bool verify, double verifyTolerance,
-    bool loadBalance, int initialPE, bool alignPEs, bool printPEMap)
+    int matrixType, double decayConstant, int operation, bool verify,
+    double verifyTolerance, bool loadBalance, int initialPE, bool alignPEs,
+    bool printPEMap)
 {
   LBDatabase *db = LBDatabaseObj();
 
@@ -293,9 +323,14 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   MatrixNodeMsg *ANodes = A.getNodes(AInfo->depth);
   MatrixNodeMsg *CNodes = C.getNodes(CInfo->depth);
 
-  CProxy_Multiply M = CProxy_Multiply::ckNew(initialPE, alignPEs, A, A, C,
-      AInfo->blocksize, AInfo->depth, ANodes->nodes, ANodes->nodes,
-      CNodes->nodes);
+  CProxy_Multiply M;
+
+  if(operation == multiply)
+  {
+    M = CProxy_Multiply::ckNew(initialPE, alignPEs, A, A, C,
+        AInfo->blocksize, AInfo->depth, ANodes->nodes, ANodes->nodes,
+        CNodes->nodes);
+  }
 
   delete ANodes;
   delete CNodes;
@@ -303,11 +338,32 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   CkPrintf("running %d iterations\n", numberIterations);
   for(int iteration = 0; iteration < numberIterations; iteration++)
   {
-    Timer t("iteration %d on %d PEs, multiplying C = A*A, tolerance = %e",
-        iteration+1, CkNumPes(), tolerance);
-    M.multiply(tolerance, CkCallbackResumeThread());
-    t.stop();
-    CkPrintf(t.to_str());
+    switch(operation)
+    {
+      case multiply:
+        {
+          Timer t("iteration %d on %d PEs, multiplying C = A*A, tolerance = %e",
+              iteration+1, CkNumPes(), tolerance);
+          M.multiply(tolerance, CkCallbackResumeThread());
+          t.stop();
+          CkPrintf(t.to_str());
+        }
+        break;
+
+      case add:
+        {
+          Timer t("iteration %d on %d PEs, adding C = A+B", iteration+1, CkNumPes());
+          C.add(0.0, 1.0, A);
+          C.add(1.0, 1.0, A);
+          t.stop();
+          CkPrintf(t.to_str());
+        }
+        break;
+
+      default:
+        ABORT("unknow operation\n");
+        break;
+    }
 
     if(printPEMap)
     {
@@ -349,24 +405,27 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
       CkPrintf("end of PEMap for matrix C\n");
       delete PEMap;
 
-      CkPrintf("PE map for convolution\n");
-      M.updatePEMap(CkCallbackResumeThread());
-      PEMap = M.getPEMap();
+      if(operation == multiply)
+      {
+        CkPrintf("PE map for convolution\n");
+        M.updatePEMap(CkCallbackResumeThread());
+        PEMap = M.getPEMap();
 
-      CkPrintf("PEMap for convolution:\n");
-      for(int i = 0; i < NTier; i++) {
-        for(int j = 0; j < NTier; j++) {
-          for(int k = 0; k < NTier; k++)
-          {
-            int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
-            CkPrintf("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
-                PEMap->PEMap[matrix_offset],
-                PEMap->PEMap_norm[matrix_offset]);
+        CkPrintf("PEMap for convolution:\n");
+        for(int i = 0; i < NTier; i++) {
+          for(int j = 0; j < NTier; j++) {
+            for(int k = 0; k < NTier; k++)
+            {
+              int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
+              CkPrintf("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
+                  PEMap->PEMap[matrix_offset],
+                  PEMap->PEMap_norm[matrix_offset]);
+            }
           }
         }
+        CkPrintf("end of PEMap for convolution\n");
+        delete PEMap;
       }
-      CkPrintf("end of PEMap for convolution\n");
-      delete PEMap;
     }
 
     /* Load balance. */
@@ -381,23 +440,34 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
     {
       /* Calculate the reference matrix. */
       Timer t("calculating reference result");
-#ifdef DGEMM
-      double alpha = 1;
-      double beta = 1;
-      DGEMM("N", "N", &N, &N, &N, &alpha, ADense, &N, ADense, &N, &beta, CExact, &N);
-#else
-      for(int i = 0; i < N; i++) {
-        for(int j = 0; j < N; j++) {
-          for(int k = 0; k < N; k++)
+      switch(operation)
+      {
+        case multiply:
           {
-            CExact[BLOCK_INDEX(i, j, 0, 0, N)] += ADense[BLOCK_INDEX(i, k, 0, 0, N)]
-              *ADense[BLOCK_INDEX(k, j, 0, 0, N)];
-          }
-        }
-      }
+#ifdef DGEMM
+            double alpha = 1;
+            double beta = 1;
+            DGEMM("N", "N", &N, &N, &N, &alpha, ADense, &N, ADense, &N, &beta, CExact, &N);
+#else
+            for(int i = 0; i < N; i++) {
+              for(int j = 0; j < N; j++) {
+                for(int k = 0; k < N; k++)
+                {
+                  CExact[BLOCK_INDEX(i, j, 0, 0, N)] += ADense[BLOCK_INDEX(i, k, 0, 0, N)]
+                    *ADense[BLOCK_INDEX(k, j, 0, 0, N)];
+                }
+              }
+            }
 #endif
-      t.stop();
-      CkPrintf(t.to_str());
+            t.stop();
+            CkPrintf(t.to_str());
+          }
+          break;
+
+        default:
+          ABORT("unknown operation\n");
+          break;
+      }
     }
   }
 

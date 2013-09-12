@@ -17,6 +17,7 @@ class DoubleMsg : public CMessage_DoubleMsg
 {
   public:
 
+    /** The double value. */
     double x;
 };
 

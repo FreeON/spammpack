@@ -18,8 +18,9 @@ class Main : public CBase_Main
 
     Main (CkArgMsg *msg);
     void run (int N, int blocksize, int numberIterations, double tolerance,
-        int matrixType, double decayConstant, bool verify, double verifyTolerance,
-        bool loadBalance, int initialPE, bool alignPEs, bool printPEMap);
+        int matrixType, double decayConstant, int operation, bool verify,
+        double verifyTolerance, bool loadBalance, int initialPE,
+        bool alignPEs, bool printPEMap);
 };
 
 #endif

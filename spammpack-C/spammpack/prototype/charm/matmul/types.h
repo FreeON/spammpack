@@ -48,4 +48,17 @@ struct PEMap_MultiplyElement_t
   double norm_product;
 };
 
+/** The operation to test. */
+enum operation_t
+{
+  /** A multiplication. */
+  multiply,
+
+  /** An addition. */
+  add,
+
+  /** A trace. */
+  trace
+};
+
 #endif

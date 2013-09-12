@@ -243,9 +243,23 @@ DoubleMsg * Matrix::trace (void)
 
 /** The reduction target for the trace operation.
  *
- * @param data The reduction result.
+ * @param trace The reduction result.
  */
 void Matrix::doneTrace (double trace)
+{
+}
+
+/** Add another matrix to this one.
+ *
+ * @f[ A \leftarrow \alpha A + \beta B @f]
+ *
+ * where A is this Matrix.
+ *
+ * @param alpha The factor @f$ \alpha @f$.
+ * @param beta The factor @f$ \beta @f$.
+ * @param B The matrix B.
+ */
+void Matrix::add (double alpha, double beta, CProxy_Matrix B)
 {
 }
 

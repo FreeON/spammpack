@@ -16,5 +16,6 @@ module matrix
     entry [sync] PEMapMsg * getPEMap (void);
     entry [sync] DoubleMsg * trace (void);
     entry [reductiontarget] void doneTrace (double trace);
+    entry [threaded] void add (double alpha, double beta, CProxy_Matrix B);
   };
 };
