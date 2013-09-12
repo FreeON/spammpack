@@ -58,7 +58,10 @@ enum operation_t
   add,
 
   /** A trace. */
-  trace
+  trace,
+
+  /** An SP2 iteration. */
+  SP2
 };
 
 #endif

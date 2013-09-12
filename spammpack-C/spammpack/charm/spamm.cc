@@ -15,6 +15,8 @@
  * @cite ChallacombeBock2010
  * @cite BockChallacombe2012
  * @cite BockSISC2013.
+ * The SP2 algorithm is described in more detail in
+ * @cite Niklasson2003.
  * The main program is documented as SpAMM::SpAMM. A more detailed description
  * of the API and components of this code can be found on the @link API API
  * @endlink page.
@@ -72,7 +74,7 @@ void initialize (void)
  * - { -l | --load-balance }   Load balance after each iteration
  * - { -a | --align-PEs }      Align PEs for diagonal case
  * - { -p | --print-PEMap }    Print a PE map in each iteration
- * - { -o | --operation } OP   Test OP { multiply, add, trace }
+ * - { -o | --operation } OP   Test OP { multiply, add, trace, SP2 }
  *
  * @param msg The command line argument list.
  */
@@ -91,6 +93,8 @@ SpAMM::SpAMM (CkArgMsg *msg)
   double verifyTolerance = 1.0e-10;
   double decayConstant = 0.1;
   enum operation_t operation = multiply;
+  int Ne;
+  double *PDense;
 
   int c;
   const char *short_options = "hN:b:i:t:m:vd:I:lapo:";
@@ -136,7 +140,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
         CkPrintf("{ -l | --load-balance }   Load balance after each iteration\n");
         CkPrintf("{ -a | --align-PEs }      Align PEs for diagonal case\n");
         CkPrintf("{ -p | --print-PEMap }    Print a PE map in each iteration\n");
-        CkPrintf("{ -o | --operation } OP   Test OP { multiply, add, trace }\n");
+        CkPrintf("{ -o | --operation } OP   Test OP { multiply, add, trace, SP2 }\n");
         CkPrintf("\n");
         CkExit();
         break;
@@ -216,6 +220,11 @@ SpAMM::SpAMM (CkArgMsg *msg)
           operation = trace;
         }
 
+        else if(strcasecmp(optarg, "SP2") == 0)
+        {
+          operation = SP2;
+        }
+
         else
         {
           ABORT("unknown operation\n");
@@ -230,10 +239,20 @@ SpAMM::SpAMM (CkArgMsg *msg)
 
   CkPrintf("SpAMM version %s\n", PACKAGE_VERSION);
 
-  DEBUG("calling run() on this proxy\n");
-  thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
-      decayConstant, operation, verify, verifyTolerance, loadBalance,
-      initialPE, alignPEs, printPEMap);
+  switch(operation)
+  {
+    case SP2:
+      DEBUG("calling runSP2() on this proxy\n");
+      thisProxy.runSP2(N, PDense, Ne);
+      break;
+
+    default:
+      DEBUG("calling run() on this proxy\n");
+      thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
+          decayConstant, operation, verify, verifyTolerance, loadBalance,
+          initialPE, alignPEs, printPEMap);
+      break;
+  }
 }
 
 /** The main method.
@@ -574,6 +593,16 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
 
   INFO("done\n");
   CkExit();
+}
+
+/** The main method for running an SP2 calculation.
+ *
+ * @param N The matrix size.
+ * @param PDense The initial density matrix.
+ * @param Ne The total number of electrons.
+ */
+void SpAMM::runSP2 (int N, double *PDense, int Ne)
+{
 }
 
 #include "spamm.def.h"
