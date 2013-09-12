@@ -233,4 +233,20 @@ PEMapMsg * Matrix::getPEMap (void)
   return msg;
 }
 
+/** Get the trace of a matrix.
+ *
+ * @return The trace.
+ */
+DoubleMsg * Matrix::trace (void)
+{
+}
+
+/** The reduction target for the trace operation.
+ *
+ * @param data The reduction result.
+ */
+void Matrix::doneTrace (double trace)
+{
+}
+
 #include "matrix.def.h"

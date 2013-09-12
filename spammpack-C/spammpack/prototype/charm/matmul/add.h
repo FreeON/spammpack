@@ -14,9 +14,18 @@
 /** An addition. */
 class Add : public CBase_Add
 {
+  private:
+
+    /** Matrix A. */
+    CProxy_Matrix A;
+
+    /** Matrix B. */
+    CProxy_Matrix B;
+
   public:
 
-    Add ();
+    Add (CProxy_Matrix A, CProxy_Matrix B);
+    void add (double alpha);
 };
 
 #endif

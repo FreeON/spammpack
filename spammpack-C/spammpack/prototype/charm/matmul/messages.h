@@ -12,6 +12,14 @@
 #include "messages.decl.h"
 #include "node.h"
 
+/** A simple double value. */
+class DoubleMsg : public CMessage_DoubleMsg
+{
+  public:
+
+    double x;
+};
+
 /** A message containing some matrix information. */
 class MatrixInfoMsg : public CMessage_MatrixInfoMsg
 {

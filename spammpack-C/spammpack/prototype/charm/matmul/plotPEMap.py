@@ -8,13 +8,23 @@
 # @author Nicolas Bock <nicolas.bock@freeon.org>
 # @author Matt Challacombe <matt.challacombe@freeon.org>
 
-import argparse
 import math
-import numpy as np
 import re
 import subprocess
 import sys
 import tempfile
+
+try:
+  import numpy as np
+except ImportError as e:
+  print("can not import numpy: " + str(e))
+  sys.exit(0)
+
+try:
+  import argparse
+except ImportError as e:
+  print("can not import argparse: " + str(e))
+  sys.exit(0)
 
 ##############################################
 

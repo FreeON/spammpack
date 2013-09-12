@@ -217,7 +217,7 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
  * @param blocksize The blocksize.
  * @param A The dense matrix.
  */
-void Node::add (int blocksize, double *A)
+void Node::blockAdd (int blocksize, double *A)
 {
   DEBUG(LB"Adding back to C\n"LE);
   if(block == NULL)
@@ -238,6 +238,43 @@ void Node::add (int blocksize, double *A)
   /* For debugging. */
   printDense(blocksize, block, LB"Adding back to C"LE);
 #endif
+}
+
+/** Add to this matrix a second matrix scaled by a factor, i.e.
+ *
+ * @f[ A \leftarrow \alpha A + \beta B @f]
+ *
+ * @param alpha Factor @f$ \alpha @f$.
+ * @param beta Factor @f$ \beta @f$.
+ * @param B Matrix B.
+ */
+void Node::add (double alpha, double beta, CProxy_Node B)
+{
+  DEBUG(LB"adding, alpha = %e\n"LE, alpha);
+  DenseMatrixMsg *BData = B(thisIndex.x, thisIndex.y).getBlock();
+  for(int i = 0; i < blocksize; i++)
+  {
+    block[i] = alpha*block[i]+beta*BData->A[i];
+  }
+  delete BData;
+}
+
+/** Reduce the trace of the matrix.
+ *
+ * @param cb The reduction target.
+ */
+void Node::trace (CkCallback &cb)
+{
+  double trace = 0;
+
+  if(thisIndex.x == thisIndex.y)
+  {
+    for(int i = 0; i < blocksize; i++)
+    {
+      trace += block[BLOCK_INDEX(i, i, 0, 0, blocksize)];
+    }
+  }
+  contribute(sizeof(int), &trace, CkReduction::sum_double, cb);
 }
 
 /** Create a PE map of the Matrix @link Node nodes @endlink.

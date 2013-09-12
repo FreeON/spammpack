@@ -376,7 +376,7 @@ void MultiplyElement::storeBack (CkCallback &cb)
 
     if(CResult != NULL)
     {
-      C(thisIndex.x, thisIndex.y).add(blocksize, CResult);
+      C(thisIndex.x, thisIndex.y).blockAdd(blocksize, CResult);
 
       /* Reset result for possible next iteration. */
       delete[] CResult;

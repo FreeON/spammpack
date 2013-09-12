@@ -14,5 +14,7 @@ module matrix
     entry [threaded] void set (int N, double A[N*N], CkCallback &cb);
     entry [threaded] void setNorm (CkCallback &cb);
     entry [sync] PEMapMsg * getPEMap (void);
+    entry [sync] DoubleMsg * trace (void);
+    entry [reductiontarget] void doneTrace (double trace);
   };
 };

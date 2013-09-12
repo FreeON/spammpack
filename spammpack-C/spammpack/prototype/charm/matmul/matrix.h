@@ -60,6 +60,8 @@ class Matrix : public CBase_Matrix
     void set (int N, double *A, CkCallback &cb);
     void setNorm (CkCallback &cb);
     PEMapMsg * getPEMap (void);
+    DoubleMsg * trace (void);
+    void doneTrace (double trace);
 };
 
 #endif
