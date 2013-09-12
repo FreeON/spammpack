@@ -45,6 +45,7 @@
 #include "logger.h"
 #include "types.h"
 #include "index.h"
+#include "bcsr.h"
 
 #include <getopt.h>
 
@@ -68,6 +69,8 @@ void initialize (void)
  * - { -i | --iterations } N   Iterate on the product N times (default:  1)
  * - { -t | --tolerance } T    Multiply with tolerance T (default: 0.00e+00)
  * - { -m | --type } TYPE      Use matrices of TYPE { full, decay, diagonal } (default: full)
+ * - { -P | --density } FILE   Load the density matrix from FILE
+ * - { -T | --Ne } NE          The total number of electrons
  * - { -v | --verify }         Verify result
  * - { -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)
  * - { -I | --intial-PE } PE   Put all chares initially on PE
@@ -93,11 +96,12 @@ SpAMM::SpAMM (CkArgMsg *msg)
   double verifyTolerance = 1.0e-10;
   double decayConstant = 0.1;
   enum operation_t operation = multiply;
-  int Ne;
-  double *PDense;
+  int Ne = -1;
+  char *densityFilename = NULL;
+  double *PDense = NULL;
 
   int c;
-  const char *short_options = "hN:b:i:t:m:vd:I:lapo:";
+  const char *short_options = "hN:b:i:t:m:P:T:vd:I:lapo:";
   const option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
@@ -105,6 +109,8 @@ SpAMM::SpAMM (CkArgMsg *msg)
     { "iterations",   required_argument,  NULL, 'i' },
     { "tolerance",    required_argument,  NULL, 't' },
     { "type",         required_argument,  NULL, 'm' },
+    { "density",      required_argument,  NULL, 'P' },
+    { "Ne",           required_argument,  NULL, 'T' },
     { "verify",       no_argument,        NULL, 'v' },
     { "decay",        required_argument,  NULL, 'd' },
     { "initial-PE",   required_argument,  NULL, 'I' },
@@ -134,6 +140,8 @@ SpAMM::SpAMM (CkArgMsg *msg)
             tolerance);
         CkPrintf("{ -m | --type } TYPE      Use matrices of TYPE { full, decay, diagonal } "
             "(default: full)\n");
+        CkPrintf("{ -P | --density } FILE   Load the density matrix from FILE\n");
+        CkPrintf("{ -T | --Ne } NE          The total number of electrons\n");
         CkPrintf("{ -v | --verify }         Verify result\n");
         CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
         CkPrintf("{ -I | --intial-PE } PE   Put all chares initially on PE\n");
@@ -178,6 +186,14 @@ SpAMM::SpAMM (CkArgMsg *msg)
         {
           ABORT("unknown matrix type\n");
         }
+        break;
+
+      case 'P':
+        densityFilename = strdup(optarg);
+        break;
+
+      case 'T':
+        Ne = strtol(optarg, NULL, 10);
         break;
 
       case 'v':
@@ -242,8 +258,23 @@ SpAMM::SpAMM (CkArgMsg *msg)
   switch(operation)
   {
     case SP2:
-      DEBUG("calling runSP2() on this proxy\n");
-      thisProxy.runSP2(N, PDense, Ne);
+      {
+        if(Ne < 0)
+        {
+          ABORT("missing number of electrons, --Ne\n");
+        }
+
+        if(densityFilename == NULL)
+        {
+          ABORT("missing density file\n");
+        }
+
+        BCSR P(densityFilename);
+        P.toDense(&N, &PDense);
+
+        DEBUG("calling runSP2() on this proxy\n");
+        thisProxy.runSP2(N, PDense, Ne);
+      }
       break;
 
     default:

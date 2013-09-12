@@ -34,6 +34,8 @@ INTERFACE_FILES = \
 	node.ci
 
 spamm_SOURCES = \
+	bcsr.cc \
+	bcsr.h \
 	blas_interface.h \
 	index.h \
 	logger.cc \

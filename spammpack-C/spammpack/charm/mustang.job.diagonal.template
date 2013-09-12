@@ -15,7 +15,7 @@ B=256
 
 echo "starting on $(date)"
 
-./charmrun -np ${SLURM_NTASKS} matmul -N ${N} -b ${B} \
+./charmrun -np ${SLURM_NTASKS} spamm -N ${N} -b ${B} \
   --type diagonal \
   --verify \
   --iterations 10 \
