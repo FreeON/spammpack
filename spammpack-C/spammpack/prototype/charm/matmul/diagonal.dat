@@ -1,3 +1,4 @@
+# Test with matmul-18 on mustang. 32 nodes.
 "iteration" "initial PE = 0, GreedyCommLB" "aligned PEs"
         1           4.556713               2.396580
         2           0.650527               0.036727
