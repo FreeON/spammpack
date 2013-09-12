@@ -4,7 +4,7 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-debug
 
 EXTRA_DIST = \
 	$(INTERFACE_FILES) \
-	matmul.bib \
+	spamm.bib \
 	configure.LB \
 	configure.mustang \
 	freeon-submit.sh \
@@ -23,23 +23,23 @@ if HAVE_PYTHON
 python_PYTHON = plotPEMap.py
 endif
 
-bin_PROGRAMS = matmul
+bin_PROGRAMS = spamm
 
 INTERFACE_FILES = \
-	matmul.ci \
+	spamm.ci \
 	matrix.ci \
 	messages.ci \
 	multiply.ci \
 	multiplyelement.ci \
 	node.ci
 
-matmul_SOURCES = \
+spamm_SOURCES = \
 	blas_interface.h \
 	index.h \
 	logger.cc \
 	logger.h \
-	matmul.cc \
-	matmul.h \
+	spamm.cc \
+	spamm.h \
 	matrix.cc \
 	matrix.h \
 	messages.cc \
@@ -56,7 +56,7 @@ matmul_SOURCES = \
 	utilities.cc \
 	utilities.h
 
-$(matmul_OBJECTS) : $(BUILT_SOURCES)
+$(spamm_OBJECTS) : $(BUILT_SOURCES)
 
 # Matrices are blocked into 32z32 at the leaf level.
 N = 4096
@@ -64,20 +64,20 @@ B = 128
 
 RSH = rsh
 
-run : matmul$(EXEEXT)
+run : spamm$(EXEEXT)
 	for i in 1 2 4; do \
-		./charmrun +p$$i ++remote-shell $(RSH) matmul -N $(N) -b $(B); \
+		./charmrun +p$$i ++remote-shell $(RSH) spamm -N $(N) -b $(B); \
 	done
 
-run-local : matmul$(EXEEXT)
+run-local : spamm$(EXEEXT)
 	for i in 1 2 4; do \
-		./matmul +p$$i -N $(N) -b $(B); \
+		./spamm +p$$i -N $(N) -b $(B); \
 	done
 
-run-LB : matmul$(EXEEXT)
-	./charmrun +p4 matmul -N $(N) -b $(B) --verify +LBDebug
+run-LB : spamm$(EXEEXT)
+	./charmrun +p4 spamm -N $(N) -b $(B) --verify +LBDebug
 
-valgrind : matmul$(EXEEXT)
+valgrind : spamm$(EXEEXT)
 	valgrind --log-file=valgrind.%p.log \
 		--track-origins=yes \
 		--leak-check=full \

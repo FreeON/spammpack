@@ -1,22 +1,22 @@
 /** @file
  *
- * The header file for the matmul program.
+ * The header file for the spamm program.
  *
  * @author Nicolas Bock <nicolas.bock@freeon.org>
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
-#ifndef __MATMUL_H
-#define __MATMUL_H
+#ifndef __SPAMM_H
+#define __SPAMM_H
 
-#include "matmul.decl.h"
+#include "spamm.decl.h"
 
 /** The main entry method. */
-class Main : public CBase_Main
+class SpAMM : public CBase_SpAMM
 {
   public:
 
-    Main (CkArgMsg *msg);
+    SpAMM (CkArgMsg *msg);
     void run (int N, int blocksize, int numberIterations, double tolerance,
         int matrixType, double decayConstant, int operation, bool verify,
         double verifyTolerance, bool loadBalance, int initialPE,

@@ -14,14 +14,14 @@
  * @cite ChallacombeBock2010
  * @cite BockChallacombe2012
  * @cite BockSISC2013.
- * The main program is documented as Main::Main.
+ * The main program is documented as SpAMM::SpAMM.
  *
  * @section example Example Use
  *
  * @code
  * ./configure.LB
  * make
- * ./charmrun +p3 matmul -N 1024 -b 16 --type decay --decay 8 --tolerance 1e-8 --verify --iterations 10
+ * ./charmrun +p3 spamm -N 1024 -b 16 --type decay --decay 8 --tolerance 1e-8 --verify --iterations 10
  * @endcode
  *
  * @section References
@@ -33,7 +33,7 @@
  */
 
 #include "config.h"
-#include "matmul.h"
+#include "spamm.h"
 #include "blas_interface.h"
 #include "messages.h"
 #include "timer.h"
@@ -73,7 +73,7 @@ void initialize (void)
  *
  * @param msg The command line argument list.
  */
-Main::Main (CkArgMsg *msg)
+SpAMM::SpAMM (CkArgMsg *msg)
 {
   int N = 1;
   int blocksize = 1;
@@ -251,7 +251,7 @@ Main::Main (CkArgMsg *msg)
  * @param alignPEs Align PEs in the diagonal matrix case.
  * @param printPEMap Whether to print a PE map in each iteration.
  */
-void Main::run (int N, int blocksize, int numberIterations, double tolerance,
+void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
     int matrixType, double decayConstant, int operation, bool verify,
     double verifyTolerance, bool loadBalance, int initialPE, bool alignPEs,
     bool printPEMap)
@@ -536,4 +536,4 @@ void Main::run (int N, int blocksize, int numberIterations, double tolerance,
   CkExit();
 }
 
-#include "matmul.def.h"
+#include "spamm.def.h"

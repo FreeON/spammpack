@@ -1,7 +1,7 @@
-AC_INIT([matmul],
+AC_INIT([spamm],
         [18],
         [nicolas.bock@freeon.org],
-        [matmul],
+        [spamm],
         [http://www.freeon.org/])
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
