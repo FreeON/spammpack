@@ -23,15 +23,16 @@ if HAVE_PYTHON
 python_PYTHON = plotPEMap.py
 endif
 
-bin_PROGRAMS = spamm
+bin_PROGRAMS = spamm BCSRInfo
 
 INTERFACE_FILES = \
-	spamm.ci \
+	bcsrinfo.ci \
 	matrix.ci \
 	messages.ci \
 	multiply.ci \
 	multiplyelement.ci \
-	node.ci
+	node.ci \
+	spamm.ci
 
 spamm_SOURCES = \
 	bcsr.cc \
@@ -59,6 +60,8 @@ spamm_SOURCES = \
 	utilities.h
 
 $(spamm_OBJECTS) : $(BUILT_SOURCES)
+
+BCSRInfo_SOURCES = bcsrinfo.cc bcsr.cc bcsr.h logger.h logger.cc
 
 # Matrices are blocked into 32z32 at the leaf level.
 N = 4096

@@ -1,0 +1,7 @@
+mainmodule bcsrinfo
+{
+  mainchare BCSRInfo
+  {
+    entry BCSRInfo (CkArgMsg *args);
+  };
+};

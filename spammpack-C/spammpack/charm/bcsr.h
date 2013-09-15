@@ -18,6 +18,11 @@ class BCSR
     int numberNonZero;
     int numberBlocks;
 
+    int *rowPointer;
+    int *colPointer;
+    int *blockPointer;
+    double *matrix;
+
   public:
 
     BCSR (char *filename);
