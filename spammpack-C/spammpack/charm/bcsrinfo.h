@@ -1,6 +1,6 @@
 /** @file
  *
- * The header file for BCSRInfo.
+ * The header file for the BCSRInfo program.
  *
  * @author Nicolas Bock <nicolas.bock@freeon.org>
  * @author Matt Challacombe <matt.challacombe@freeon.org>
@@ -11,11 +11,12 @@
 
 #include "bcsrinfo.decl.h"
 
+/** The main class. */
 class BCSRInfo : public CBase_BCSRInfo
 {
   public:
 
-    BCSRInfo (CkArgMsg *args);
+    BCSRInfo (CkArgMsg *msg);
 };
 
 #endif

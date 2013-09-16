@@ -98,11 +98,10 @@ SpAMM::SpAMM (CkArgMsg *msg)
   enum operation_t operation = multiply;
   int Ne = -1;
   char *densityFilename = NULL;
-  double *PDense = NULL;
 
   int c;
   const char *short_options = "hN:b:i:t:m:P:T:vd:I:lapo:";
-  const option long_options[] = {
+  const struct option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
     { "block",        required_argument,  NULL, 'b' },
@@ -121,8 +120,8 @@ SpAMM::SpAMM (CkArgMsg *msg)
     { NULL, 0, NULL, 0 }
   };
 
-  while((c = getopt_long(msg->argc, msg->argv, short_options,
-          long_options, NULL)) != -1)
+  while((c = getopt_long(msg->argc, msg->argv, short_options, long_options,
+          NULL)) != -1)
   {
     switch(c)
     {
@@ -269,11 +268,10 @@ SpAMM::SpAMM (CkArgMsg *msg)
           ABORT("missing density file\n");
         }
 
-        BCSR P(densityFilename);
-        P.toDense(&N, &PDense);
-
         DEBUG("calling runSP2() on this proxy\n");
-        thisProxy.runSP2(N, PDense, Ne);
+        thisProxy.runSP2(strlen(densityFilename), densityFilename, Ne,
+            blocksize, numberIterations, tolerance, loadBalance, initialPE,
+            alignPEs);
       }
       break;
 
@@ -311,8 +309,8 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
 {
   LBDatabase *db = LBDatabaseObj();
 
-  CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, 2, "A");
-  CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, 2, "C");
+  CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, strlen("A"), "A");
+  CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, strlen("B"), "C");
 
   /* Initialize the matrices. */
   double *ADense = new double[N*N];
@@ -579,8 +577,8 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
 
     DenseMatrixMsg *CDense = C.toDense();
 
-    int maxDiffRow;
-    int maxDiffColumn;
+    int maxDiffRow = -1;
+    int maxDiffColumn = -1;
     double maxAbsDiff = 0;
 
     for(int i = 0; i < N; i++) {
@@ -628,12 +626,45 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
 
 /** The main method for running an SP2 calculation.
  *
- * @param N The matrix size.
- * @param PDense The initial density matrix.
+ * @param length The length of the filename string.
+ * @param filename The filename of the densit file.
  * @param Ne The total number of electrons.
+ * @param blocksize The blocksize of the matrix.
+ * @param maxIterations The maximum number of iterations.
+ * @param tolerance The SpAMM tolerance.
+ * @param loadBalance Whether to load balance.
+ * @param initialPE The initial PE to put chares on.
+ * @param alignPEs Align PEs in the diagonal matrix case.
  */
-void SpAMM::runSP2 (int N, double *PDense, int Ne)
+void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
+    int maxIterations, double tolerance, bool loadBalance, int initialPE,
+    bool alignPEs)
 {
+  CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, blocksize,
+      strlen("P"), (char*) "A", length, filename);
+
+  MatrixInfoMsg *PInfo = P.info();
+
+  CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, PInfo->N,
+      blocksize, strlen("P2"), (char*) "P2");
+
+  MatrixNodeMsg *PNodes = P.getNodes(PInfo->depth);
+  MatrixNodeMsg *P2Nodes = P2.getNodes(PInfo->depth);
+
+  CProxy_Multiply M = CProxy_Multiply::ckNew(initialPE, alignPEs, P, P, P2,
+      blocksize, PInfo->depth, PNodes->nodes, PNodes->nodes, P2Nodes->nodes);
+
+  delete PInfo;
+  delete PNodes;
+  delete P2Nodes;
+
+  for(int iteration = 0; iteration < maxIterations; iteration++)
+  {
+    M.multiply(tolerance, CkCallbackResumeThread());
+  }
+
+  INFO("done\n");
+  CkExit();
 }
 
 #include "spamm.def.h"

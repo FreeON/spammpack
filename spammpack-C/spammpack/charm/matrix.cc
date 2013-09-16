@@ -13,6 +13,94 @@
 #include "index.h"
 
 #include <assert.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+
+/** The constructor.
+ *
+ * @param initialPE The PE to place the Node chares.
+ * @param alignPEs Align PEs in the diagonal matrix case.
+ * @param blocksize The SpAMM blocksize.
+ * @param nameLength The strlen of the name.
+ * @param name The matrix name.
+ * @param length The length of the filename string.
+ * @param filename The filename.
+ */
+Matrix::Matrix (int initialPE, bool alignPEs, int blocksize, int nameLength,
+    char *name, int filenamelength, char *filename)
+{
+  name = NULL;
+  nodes = NULL;
+  PEMap = NULL;
+  PEMap_norm = NULL;
+
+  FILE *fd;
+
+  if((fd = fopen(filename, "r")) == NULL)
+  {
+    ABORT("error opening density file \"%s\"\n", filename);
+  }
+
+  INFO("reading density matrix from \"%s\"\n", filename);
+
+  int N = -1;
+  char linebuffer[2000];
+  int i, j;
+  double Aij;
+  int result;
+  while(fgets(linebuffer, 2000, fd) == linebuffer)
+  {
+    if((result = sscanf(linebuffer, "%d %d %le\n", &i, &j, &Aij)) == 3)
+    {
+      DEBUG("read %d %d %e\n", i, j, Aij);
+      if(i > N) { N = i; }
+      if(j > N) { N = j; }
+    }
+
+    else
+    {
+      break;
+    }
+  }
+
+  if(result == EOF)
+  {
+    if(ferror(fd) != 0)
+    {
+      ABORT("error reading file: %s\n", strerror(errno));
+    }
+  }
+
+  if(result == 0)
+  {
+    while(linebuffer[strlen(linebuffer)-1] == '\n')
+    {
+      linebuffer[strlen(linebuffer)-1] = '\0';
+    }
+
+    ABORT("syntax error: \"%s\"\n", linebuffer);
+  }
+
+  if(N < 1)
+  {
+    ABORT("could not read coordinate file\n");
+  }
+
+  INFO("reading %dx%d matrix\n", N, N);
+
+  rewind(fd);
+
+  double *ADense = new double[N*N];
+
+  while(fgets(linebuffer, 2000, fd) == linebuffer)
+  {
+    sscanf(linebuffer, "%d %d %le\n", &i, &j, &Aij);
+    ADense[BLOCK_INDEX(i, j, 0, 0, N)] = Aij;
+  }
+
+  fclose(fd);
+}
 
 /** The constructor.
  *
@@ -27,8 +115,9 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
     int nameLength, char *name)
 {
   this->name = strdup(name);
-  this->N = N;
   this->blocksize = blocksize;
+
+  this->N = N;
 
   /* Calculate tree depth. */
   depth = -1;
@@ -78,6 +167,12 @@ Matrix::~Matrix (void)
 {
   delete[] PEMap;
   delete[] PEMap_norm;
+}
+
+/** Initialize the Matrix.
+ */
+void Matrix::initialize (void)
+{
 }
 
 /** Get some basic information on the matrix.

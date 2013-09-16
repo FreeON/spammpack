@@ -11,7 +11,7 @@
 
 #include "spamm.decl.h"
 
-/** The main entry method. */
+/** The main class. */
 class SpAMM : public CBase_SpAMM
 {
   public:
@@ -21,7 +21,9 @@ class SpAMM : public CBase_SpAMM
         int matrixType, double decayConstant, int operation, bool verify,
         double verifyTolerance, bool loadBalance, int initialPE,
         bool alignPEs, bool printPEMap);
-    void runSP2 (int N, double *PDense, int Ne);
+    void runSP2 (int length, char *filename, int Ne, int blocksize,
+        int maxIterations, double tolerance, bool loadBalance, int initialPE,
+        bool alignPEs);
 };
 
 #endif

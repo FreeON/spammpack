@@ -9,7 +9,6 @@
 #include "bcsr.h"
 #include "logger.h"
 
-#include <charm++.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -19,15 +18,20 @@ BCSR::BCSR (char *filename)
 
   if((fd = fopen(filename, "r")) == NULL)
   {
-    ABORT("error opening BCSR file\n");
+    ABORT("error opening BCSR file \"%s\"\n", filename);
   }
 
   int result;
+  int record_length;
+
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
 
   if((result = fread(&NSMat, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
   if((result = fread(&NAtoms, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
   if((result = fread(&numberNonZero, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
   if((result = fread(&numberBlocks, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
+
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
 
   rowPointer = new int[NAtoms+1];
   colPointer = new int[numberBlocks];
@@ -36,11 +40,25 @@ BCSR::BCSR (char *filename)
 
   double *dummy = new double[numberBlocks];
 
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
   if((result = fread(rowPointer, sizeof(int), NAtoms+1, fd)) != NAtoms+1) { ABORT("read error\n"); }
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
+
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
   if((result = fread(colPointer, sizeof(int), numberBlocks, fd)) != numberBlocks) { ABORT("read error\n"); }
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
+
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
   if((result = fread(blockPointer, sizeof(int), numberBlocks, fd)) != numberBlocks) { ABORT("read error\n"); }
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
+
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
   if((result = fread(dummy, sizeof(double), numberBlocks, fd)) != numberBlocks) { ABORT("read error\n"); }
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
+
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
   if((result = fread(matrix, sizeof(double), numberNonZero, fd)) != numberNonZero) { ABORT("read error\n"); }
+  if((result = fread(&record_length, sizeof(int), 1, fd)) != 1) { ABORT("read error (read %d items)\n", result); }
 
   delete[] dummy;
 
@@ -52,12 +70,6 @@ BCSR::BCSR (char *filename)
 
 void BCSR::toDense (int *N, double **PDense)
 {
-  int NRow, NCol;
-
-  switch(NSMat)
-  {
-    case 1:
-      NRow =
 }
 
 void BCSR::toStr (void)

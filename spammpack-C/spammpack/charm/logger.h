@@ -11,6 +11,7 @@
 
 #include "config.h"
 
+#include <charm++.h>
 #include <string>
 
 void initializeLogger (void);

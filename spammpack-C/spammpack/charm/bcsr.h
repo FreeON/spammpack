@@ -9,6 +9,7 @@
 #ifndef __BCSR_H
 #define __BCSR_H
 
+/** The BCSR Matrix. */
 class BCSR
 {
   private:

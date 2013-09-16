@@ -103,4 +103,5 @@ std::string humanReadableSize (unsigned long n)
     }
   }
   ABORT("can not convert this number\n");
+  return NULL;
 }
