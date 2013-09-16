@@ -54,18 +54,13 @@ class Matrix : public CBase_Matrix
 
     Matrix (int initialPE, bool alignPEs, int N, int blocksize,
         int nameLength, char *name);
-    Matrix (int initialPE, bool alignPEs, int blocksize,
-        int nameLength, char *name, int filenamelength,
-        char *filename);
     ~Matrix (void);
-    void initialize (void);
     MatrixInfoMsg * info (void);
     DenseMatrixMsg * toDense (void);
     MatrixNodeMsg * getNodes (int tier);
     void updatePEMap (CkCallback &cb);
     void donePEMap (CkReductionMsg *data);
     void set (int N, double *A, CkCallback &cb);
-    void loadCoorindateFormat (int length, char *filename, CkCallback &cb);
     void setNorm (CkCallback &cb);
     PEMapMsg * getPEMap (void);
     void updateTrace (CkCallback &cb);

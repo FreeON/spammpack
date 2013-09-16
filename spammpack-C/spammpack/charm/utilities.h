@@ -17,4 +17,6 @@ std::string toBinary (unsigned int i);
 
 std::string humanReadableSize (unsigned long n);
 
+void loadCoordinateFile (char *filename, int *N, double **ADense);
+
 #endif

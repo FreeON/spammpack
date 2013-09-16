@@ -46,6 +46,7 @@
 #include "types.h"
 #include "index.h"
 #include "bcsr.h"
+#include "utilities.h"
 
 #include <getopt.h>
 
@@ -640,14 +641,20 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     int maxIterations, double tolerance, bool loadBalance, int initialPE,
     bool alignPEs)
 {
-  CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, blocksize,
-      strlen("P"), (char*) "A", length, filename);
+  double *PDense;
+  int N;
+
+  loadCoordinateFile(filename, &N, &PDense);
+
+  CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize,
+      strlen("P"), (char*) "A");
+
+  P.set(N, PDense, CkCallbackResumeThread());
+
+  CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize,
+      strlen("P2"), (char*) "P2");
 
   MatrixInfoMsg *PInfo = P.info();
-
-  CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, PInfo->N,
-      blocksize, strlen("P2"), (char*) "P2");
-
   MatrixNodeMsg *PNodes = P.getNodes(PInfo->depth);
   MatrixNodeMsg *P2Nodes = P2.getNodes(PInfo->depth);
 

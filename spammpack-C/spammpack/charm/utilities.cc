@@ -12,9 +12,11 @@
 
 #include <bitset>
 #include <charm++.h>
+#include <errno.h>
 #include <sstream>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 /** Print a dense matrix.
  *
@@ -104,4 +106,73 @@ std::string humanReadableSize (unsigned long n)
   }
   ABORT("can not convert this number\n");
   return NULL;
+}
+
+void loadCoordinateFile (char *filename, int *N, double **ADense)
+{
+  FILE *fd;
+
+  if((fd = fopen(filename, "r")) == NULL)
+  {
+    ABORT("error opening density file \"%s\"\n", filename);
+  }
+
+  INFO("reading density matrix from \"%s\"\n", filename);
+
+  *N = -1;
+  char linebuffer[2000];
+  int i, j;
+  double Aij;
+  int result;
+  while(fgets(linebuffer, 2000, fd) == linebuffer)
+  {
+    if((result = sscanf(linebuffer, "%d %d %le\n", &i, &j, &Aij)) == 3)
+    {
+      DEBUG("read %d %d %e\n", i, j, Aij);
+      if(i > *N) { *N = i; }
+      if(j > *N) { *N = j; }
+    }
+
+    else
+    {
+      break;
+    }
+  }
+
+  if(result == EOF)
+  {
+    if(ferror(fd) != 0)
+    {
+      ABORT("error reading file: %s\n", strerror(errno));
+    }
+  }
+
+  if(result == 0)
+  {
+    while(linebuffer[strlen(linebuffer)-1] == '\n')
+    {
+      linebuffer[strlen(linebuffer)-1] = '\0';
+    }
+
+    ABORT("syntax error: \"%s\"\n", linebuffer);
+  }
+
+  if(*N < 1)
+  {
+    ABORT("could not read coordinate file\n");
+  }
+
+  INFO("reading %dx%d matrix\n", *N, *N);
+
+  rewind(fd);
+
+  *ADense = new double[(*N)*(*N)];
+
+  while(fgets(linebuffer, 2000, fd) == linebuffer)
+  {
+    sscanf(linebuffer, "%d %d %le\n", &i, &j, &Aij);
+    (*ADense)[BLOCK_INDEX(i-1, j-1, 0, 0, *N)] = Aij;
+  }
+
+  fclose(fd);
 }
