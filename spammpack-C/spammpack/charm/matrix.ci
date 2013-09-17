@@ -19,5 +19,7 @@ module matrix
     entry [reductiontarget] void doneTrace (double trace);
     entry [threaded] void add (double alpha, double beta, CProxy_Matrix B,
         CkCallback &cb);
+    entry [threaded] void setEqual (CProxy_Matrix B, CkCallback &cb);
+    entry [threaded] void scale (double alpha, CkCallback &cb);
   };
 };

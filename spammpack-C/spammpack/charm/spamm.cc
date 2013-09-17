@@ -357,7 +357,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
   }
 
 #ifdef PRINT_MATRICES
-  printDense(N, ADense, "ADense:");
+  printDense(N, ADense, "ADense");
 #endif
 
   A.set(N, ADense, CkCallbackResumeThread());
@@ -396,7 +396,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
         {
           Timer t("iteration %d on %d PEs, multiplying C = A*A, tolerance = %e",
               iteration+1, CkNumPes(), tolerance);
-          M.multiply(tolerance, CkCallbackResumeThread());
+          M.multiply(tolerance, 1.0, 1.0, CkCallbackResumeThread());
           t.stop();
           CkPrintf(t.to_str());
         }
@@ -665,10 +665,73 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   delete PNodes;
   delete P2Nodes;
 
+  /* Start SP2 iterations. */
+  double occupation[4] = { 0, 0, 0, 0 };
+  P.updateTrace(CkCallbackResumeThread());
+  DoubleMsg *trace_P = P.getTrace();
+  DEBUG("trace(P0) = %e (Nel/2 = %e)\n", trace_P->x, Ne/2.0);
+  bool converged = false;
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
-    M.multiply(tolerance, CkCallbackResumeThread());
+    M.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread()); /* P2 <- P*P */
+
+    P2.updateTrace(CkCallbackResumeThread());
+    DoubleMsg *trace_P2 = P2.getTrace();
+    DEBUG("trace(P%d^2) = %e (Ne/2 = %e)\n", iteration, trace_P2->x, Ne/2.0);
+
+    if(fabs(trace_P2->x-Ne/2.0) < fabs(2*trace_P->x-trace_P2->x-Ne/2.0))
+    {
+      DEBUG("P%d <- P%d^2\n", iteration+1, iteration);
+      P.setEqual(P2, CkCallbackResumeThread());
+      delete trace_P;
+      trace_P = trace_P2;
+    }
+
+    else
+    {
+      DEBUG("P%d <- 2P%d - P%d^2\n", iteration+1, iteration, iteration);
+      P.add(2, -1, P2, CkCallbackResumeThread());
+      delete trace_P;
+      delete trace_P2;
+      P.updateTrace(CkCallbackResumeThread());
+      trace_P = P.getTrace();
+    }
+
+    INFO("trace(P%d) = %e (Ne/2 = %e)\n", iteration+1, trace_P->x, Ne/2.0);
+
+    occupation[0] = trace_P->x;
+    for(int i = 3; i >= 1; i--)
+    {
+      occupation[i] = occupation[i-1];
+    }
+
+    if(iteration > MIN(20, maxIterations))
+    {
+      double idempotencyErrorNow = fabs(occupation[0]-occupation[1]);
+      if(idempotencyErrorNow < 1.0e-2)
+      {
+        double idempotencyErrorLast = fabs(occupation[2]-occupation[3]);
+        if(idempotencyErrorNow >= idempotencyErrorLast)
+        {
+          INFO("SP2 converged in %d steps\n", iteration+1);
+          converged = true;
+          break;
+        }
+      }
+    }
   }
+
+  if(!converged)
+  {
+    INFO("SP2 did not converge in %d steps\n", maxIterations);
+  }
+
+  INFO("idempotency error          = %e\n", fabs(occupation[0]-occupation[1]));
+  INFO("previous idempotency error = %e\n", fabs(occupation[2]-occupation[3]));
+
+  DenseMatrixMsg *PFinal = P.toDense();
+  printDense(N, PFinal->A, "PFinal");
+  delete PFinal;
 
   INFO("done\n");
   CkExit();

@@ -51,7 +51,7 @@ class Multiply : public CBase_Multiply
         CProxy_Matrix C, int blocksize, int depth, CProxy_Node ANodes,
         CProxy_Node BNodes, CProxy_Node CNodes);
     ~Multiply (void);
-    void multiply (double tolerance, CkCallback &cb);
+    void multiply (double tolerance, double alpha, double beta, CkCallback &cb);
     void updatePEMap (CkCallback &cb);
     void donePEMap (CkReductionMsg *data);
     PEMapMsg * getPEMap (void);

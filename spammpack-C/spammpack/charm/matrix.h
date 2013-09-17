@@ -67,6 +67,8 @@ class Matrix : public CBase_Matrix
     DoubleMsg * getTrace (void);
     void doneTrace (double trace);
     void add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb);
+    void setEqual (CProxy_Matrix B, CkCallback &cb);
+    void scale (double alpha, CkCallback &cb);
 };
 
 #endif

@@ -27,7 +27,7 @@ module multiplyelement
     entry void enable (CkCallback &cb);
     entry [threaded] void disable (CkCallback &cb);
 #endif
-    entry void storeBack (CkCallback &cb);
+    entry void storeBack (double alpha, CkCallback &cb);
     entry void PEMap (CkCallback &cb);
   };
 };

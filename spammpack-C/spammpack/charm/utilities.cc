@@ -33,21 +33,24 @@ void printDense (int N, double *A, const char *const format, ...)
   va_list ap;
   const int message_length = 2000;
   char message[message_length];
+  char numberBuffer[40];
 
   va_start(ap, format);
   vsnprintf(message, message_length, format, ap);
   va_end(ap);
 
-  o << message << std::endl;
   if(N <= 32)
   {
+    o << message << " = [" << std::endl;
     for(int i = 0; i < N; i++) {
       for(int j = 0; j < N; j++)
       {
-        o << " " << A[BLOCK_INDEX(i, j, 0, 0, N)];
+        snprintf(numberBuffer, 40, "% e", A[BLOCK_INDEX(i, j, 0, 0, N)]);
+        o << " " << numberBuffer;
       }
       o << std::endl;
     }
+    o << "]" << std::endl;
     CkPrintf(o.str().c_str());
   }
 
@@ -108,6 +111,16 @@ std::string humanReadableSize (unsigned long n)
   return NULL;
 }
 
+/** Load a matrix in coordinate format, i.e.
+ *
+ * i j A_{ij}
+ *
+ * from file and allocate a dense array.
+ *
+ * @param filename The file name.
+ * @param N [out] The matrix size.
+ * @param ADense [out] The dense matrix.
+ */
 void loadCoordinateFile (char *filename, int *N, double **ADense)
 {
   FILE *fd;
@@ -123,9 +136,11 @@ void loadCoordinateFile (char *filename, int *N, double **ADense)
   char linebuffer[2000];
   int i, j;
   double Aij;
+  int linenumber = 0;
   int result;
   while(fgets(linebuffer, 2000, fd) == linebuffer)
   {
+    linenumber++;
     if((result = sscanf(linebuffer, "%d %d %le\n", &i, &j, &Aij)) == 3)
     {
       DEBUG("read %d %d %e\n", i, j, Aij);
@@ -154,7 +169,7 @@ void loadCoordinateFile (char *filename, int *N, double **ADense)
       linebuffer[strlen(linebuffer)-1] = '\0';
     }
 
-    ABORT("syntax error: \"%s\"\n", linebuffer);
+    ABORT("syntax error, line %d: \"%s\"\n", linenumber, linebuffer);
   }
 
   if(*N < 1)

@@ -266,7 +266,7 @@ DoubleMsg * Matrix::getTrace (void)
  *
  * @f[ A \leftarrow \alpha A + \beta B @f]
  *
- * where A is this Matrix.
+ * where @f$ A @f$ is this Matrix.
  *
  * @param alpha The factor @f$ \alpha @f$.
  * @param beta The factor @f$ \beta @f$.
@@ -277,6 +277,34 @@ void Matrix::add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb)
 {
   MatrixNodeMsg *BNodes = B.getNodes(depth);
   nodes[depth].add(alpha, beta, BNodes->nodes, CkCallbackResumeThread());
+  cb.send();
+}
+/** Set this Matrix equal to another matrix.
+ *
+ * @f[ A \leftarrow B @f]
+ *
+ * where @f$ A @f$ is this Matrix.
+ *
+ * @param B The other matrix.
+ * @param cb The callback to signal when done.
+ */
+void Matrix::setEqual (CProxy_Matrix B, CkCallback &cb)
+{
+  thisProxy.add(0.0, 1.0, B, CkCallbackResumeThread());
+  cb.send();
+}
+
+/** Multiply the matrix by a factor.
+ *
+ * @f[ A \leftarrow \alpha A @f].
+ *
+ * @param alpha The scale factor.
+ * @param cb The callback to signal when done.
+ */
+void Matrix::scale (double alpha, CkCallback &cb)
+{
+  nodes[depth].scale(alpha, CkCallbackResumeThread());
+  thisProxy.setNorm(CkCallbackResumeThread());
   cb.send();
 }
 

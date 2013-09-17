@@ -216,10 +216,12 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
 
 /** Add a submatrix block to this Node.
  *
+ * @param alpha The factor @f$ \alpha @f$.
+ * @param beta The factor @f$ \beta @f$.
  * @param blocksize The blocksize.
  * @param A The dense matrix.
  */
-void Node::blockAdd (int blocksize, double *A)
+void Node::blockAdd (double alpha, int blocksize, double *A)
 {
   assert(blocksize == this->blocksize);
 
@@ -233,7 +235,7 @@ void Node::blockAdd (int blocksize, double *A)
   norm_2 = 0;
   for(int i = 0; i < blocksize*blocksize; i++)
   {
-    block[i] += A[i];
+    block[i] += alpha*A[i];
     norm_2 += block[i]*block[i];
   }
   norm = sqrt(norm_2);
@@ -280,9 +282,12 @@ void Node::trace (CkCallback &cb)
 
   if(thisIndex.x == thisIndex.y)
   {
-    for(int i = 0; i < blocksize; i++)
+    if(block != NULL)
     {
-      trace += block[BLOCK_INDEX(i, i, 0, 0, blocksize)];
+      for(int i = 0; i < blocksize; i++)
+      {
+        trace += block[BLOCK_INDEX(i, i, 0, 0, blocksize)];
+      }
     }
   }
   contribute(sizeof(double), &trace, CkReduction::sum_double, cb);
@@ -304,6 +309,25 @@ void Node::PEMap (CkCallback &cb)
   result->norm = norm;
 
   contribute(sizeof(struct PEMap_Node_t), result, CkReduction::set, cb);
+}
+
+/** Scale a Node by a scalar factor.
+ *
+ * @f[ A \leftarrow \alpha A @f].
+ *
+ * @param alpha The factor @f$ \alpha @f$.
+ * @param cb The reduction target callback.
+ */
+void Node::scale (double alpha, CkCallback &cb)
+{
+  if(block != NULL)
+  {
+    for(int i = 0; i < blocksize*blocksize; i++)
+    {
+      block[i] *= alpha;
+    }
+  }
+  contribute(cb);
 }
 
 #include "node.def.h"

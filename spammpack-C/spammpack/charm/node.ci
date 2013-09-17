@@ -8,10 +8,12 @@ module node
     entry [sync] DenseMatrixMsg * getBlock (void);
     entry void set (int blocksize, double A[blocksize*blocksize], CkCallback &cb);
     entry [threaded] void setNorm (CProxy_Node nodes, CkCallback &cb);
-    entry void blockAdd (int blocksize, double A[blocksize*blocksize]);
+    entry void blockAdd (double alpha, int blocksize,
+        double A[blocksize*blocksize]);
     entry [threaded] void add (double alpha, double beta, CProxy_Node B,
         CkCallback &cb);
     entry void trace (CkCallback &cb);
     entry void PEMap (CkCallback &cb);
+    entry void scale (double alpha, CkCallback &cb);
   };
 };

@@ -109,20 +109,27 @@ Multiply::~Multiply (void)
 
 /** Multiply two Matrix objects.
  *
- * A full convolution (as a space filling curve) is constructed.
+ * A full convolution (as a space filling curve) is constructed, i.e. the
+ * product
+ *
+ * @f[ C \leftarrow \beta C + \alpha A \times B @f]
+ *
+ * is calculated.
  *
  * @param tolerance The SpAMM tolerance.
+ * @param alpha The factor @f$ \alpha @f$.
+ * @param beta The factor @f$ \beta @f$.
  * @param cb The callback.
  */
-void Multiply::multiply (double tolerance, CkCallback &cb)
+void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback &cb)
 {
-  INFO("tolerance = %e\n", tolerance);
+  DEBUG("tolerance = %e\n", tolerance);
 
   for(int tier = 0; tier < depth; tier++)
   {
     /* Prune convolution to achieve reduced complexity in symbolic part of the
      * multiply. */
-    INFO("pruning tier %d\n", tier+1);
+    DEBUG("pruning tier %d\n", tier+1);
     MatrixNodeMsg *ANodes = A.getNodes(tier+1);
     MatrixNodeMsg *BNodes = B.getNodes(tier+1);
 #ifdef PRUNE_CONVOLUTION
@@ -146,14 +153,17 @@ void Multiply::multiply (double tolerance, CkCallback &cb)
   /* Multiply. */
   convolution[depth].multiply(tolerance, CkCallbackResumeThread());
 
-  INFO("storeBack\n");
-  convolution[depth].storeBack(CkCallbackResumeThread());
+  DEBUG("scale by beta\n");
+  C.scale(beta, CkCallbackResumeThread());
+
+  DEBUG("storeBack\n");
+  convolution[depth].storeBack(alpha, CkCallbackResumeThread());
 
   /* Update norms. */
-  INFO("update norms\n");
+  DEBUG("update norms\n");
   C.setNorm(CkCallbackResumeThread());
 
-  INFO("done\n");
+  DEBUG("done\n");
   cb.send();
 }
 

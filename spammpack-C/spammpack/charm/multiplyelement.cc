@@ -128,6 +128,8 @@ void MultiplyElement::pup (PUP::er &p)
 
 /** Multiply nodes.
  *
+ * @f[ C \leftarrow \beta C + \alpha A \times B @f]
+ *
  * @param tolerance The multiplication tolerance.
  * @param cb The callback.
  */
@@ -364,9 +366,10 @@ void MultiplyElement::disable (CkCallback &cb)
 
 /** Push the C submatrices back into the C Matrix.
  *
+ * @param alpha The factor @f$ \alpha @f$.
  * @param cb The callback.
  */
-void MultiplyElement::storeBack (CkCallback &cb)
+void MultiplyElement::storeBack (double alpha, CkCallback &cb)
 {
 #ifndef PRUNE_CONVOLUTION
   if(isEnabled)
@@ -376,7 +379,7 @@ void MultiplyElement::storeBack (CkCallback &cb)
 
     if(CResult != NULL)
     {
-      C(thisIndex.x, thisIndex.y).blockAdd(blocksize, CResult);
+      C(thisIndex.x, thisIndex.y).blockAdd(alpha, blocksize, CResult);
 
       /* Reset result for possible next iteration. */
       delete[] CResult;

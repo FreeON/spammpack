@@ -11,6 +11,8 @@
 
 #include <string>
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 void printDense (int N, double *A, const char *const format, ...);
 
 std::string toBinary (unsigned int i);
