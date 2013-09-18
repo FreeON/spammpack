@@ -14,14 +14,34 @@ class BCSR
 {
   private:
 
+    /** The number of rows. */
+    int M;
+
+    /** The number of columns. */
+    int N;
+
+    /** The number of spin matrices. */
     int NSMat;
+
+    /** The number of atoms. */
     int NAtoms;
+
+    /** The number of non-zero elements. */
     int numberNonZero;
+
+    /** The number of blocks. */
     int numberBlocks;
 
+    /** The array of row indices. */
     int *rowPointer;
-    int *colPointer;
+
+    /** The array of column indices. */
+    int *columnPointer;
+
+    /** The array of block indices. */
     int *blockPointer;
+
+    /** The non-zero matrix elements. */
     double *matrix;
 
   public:
