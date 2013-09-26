@@ -14,6 +14,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+/** The constructor.
+ *
+ * @param filename The filename of the BCSR file.
+ */
 BCSR::BCSR (char *filename)
 {
   FILE *fd = NULL;
@@ -75,6 +79,12 @@ BCSR::BCSR (char *filename)
   }
 }
 
+/** Convert a BCSR matrix into a dense matrix.
+ *
+ * @param M [out] The number of rows.
+ * @param N [out] The number of columns.
+ * @param ADense [out] The dense matrix.
+ */
 void BCSR::toDense (int *M, int *N, double **ADense)
 {
   *M = this->M;
@@ -137,6 +147,8 @@ void BCSR::toDense (int *M, int *N, double **ADense)
   }
 }
 
+/** Print some information on the BCSR matrix.
+ */
 void BCSR::toStr (void)
 {
   printf("BCSR: M             = %d\n", M);

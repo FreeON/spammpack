@@ -14,6 +14,10 @@
 
 #include <getopt.h>
 
+/** The main program.
+ *
+ * @param msg The command line arguments.
+ */
 BCSRInfo::BCSRInfo (CkArgMsg *msg)
 {
   int c;

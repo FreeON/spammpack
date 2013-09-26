@@ -217,7 +217,6 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
 /** Add a submatrix block to this Node.
  *
  * @param alpha The factor @f$ \alpha @f$.
- * @param beta The factor @f$ \beta @f$.
  * @param blocksize The blocksize.
  * @param A The dense matrix.
  */

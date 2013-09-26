@@ -11,6 +11,13 @@
 
 #include <string>
 
+/** The minimum function.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ *
+ * @return The smaller value of a and b.
+ */
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 void printDense (int N, double *A, const char *const format, ...);
