@@ -32,6 +32,15 @@ class BCSR
     /** The number of blocks. */
     int numberBlocks;
 
+    /** The number of basis functions. */
+    int numberBasisFunctions;
+
+    /** The block sizes per atom. */
+    int *blockSize;
+
+    /** The offsets. */
+    int *offset;
+
     /** The array of row indices. */
     int *rowPointer;
 
@@ -47,7 +56,7 @@ class BCSR
   public:
 
     BCSR (char *filename);
-    void toDense (int *N, double **PDense);
+    void toDense (int *M, int *N, double **ADense);
     void toStr (void);
 };
 

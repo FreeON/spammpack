@@ -9,6 +9,8 @@
 #include "bcsrinfo.h"
 #include "bcsr.h"
 #include "logger.h"
+#include "utilities.h"
+#include "index.h"
 
 #include <getopt.h>
 
@@ -43,6 +45,20 @@ BCSRInfo::BCSRInfo (CkArgMsg *msg)
   {
     BCSR A(msg->argv[optind]);
     A.toStr();
+    int M;
+    int N;
+    double *ADense;
+    A.toDense(&M, &N, &ADense);
+    if(M != N)
+    {
+      ABORT("non-square matrices are not supported\n");
+    }
+    for(int i = 0; i < M; i++) {
+      for(int j = 0; j < N; j++)
+      {
+        INFO("%d %d % e\n", i+1, j+1, ADense[BLOCK_INDEX_NONSQUARE(i, j, 0, 0, M, N)]);
+      }
+    }
     CkExit();
   }
 

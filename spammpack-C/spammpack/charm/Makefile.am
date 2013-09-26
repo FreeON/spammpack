@@ -74,7 +74,9 @@ BCSRInfo_SOURCES = \
 	bcsr.cc \
 	bcsr.h \
 	logger.h \
-	logger.cc
+	logger.cc \
+	utilities.cc \
+	utilities.h
 
 BCSRInfo_CHARMHEADERS = $(foreach i, $(BCSRInfo_INTERFACEFILES), $(basename $i).decl.h $(basename $i).def.h)
 
