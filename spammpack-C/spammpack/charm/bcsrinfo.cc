@@ -48,6 +48,7 @@ BCSRInfo::BCSRInfo (CkArgMsg *msg)
   if(optind < msg->argc)
   {
     BCSR A(msg->argv[optind]);
+    A.spectralProject();
     A.toStr();
     int M;
     int N;
@@ -60,7 +61,7 @@ BCSRInfo::BCSRInfo (CkArgMsg *msg)
     for(int i = 0; i < M; i++) {
       for(int j = 0; j < N; j++)
       {
-        INFO("%d %d % e\n", i+1, j+1, ADense[BLOCK_INDEX_NONSQUARE(i, j, 0, 0, M, N)]);
+        CkPrintf("A(%d,%d) = % e\n", i+1, j+1, ADense[BLOCK_INDEX_NONSQUARE(i, j, 0, 0, M, N)]);
       }
     }
     CkExit();

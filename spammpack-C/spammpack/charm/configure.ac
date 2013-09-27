@@ -70,6 +70,15 @@ if test "${DGEMM}" != "unset"; then
                       all necessary underscores.])
 fi
 
+# Find dsyev() for spectral bounds.
+for DSYEV in dsyev dsyev_ dsyev__; do
+  AC_SEARCH_LIBS([${DSYEV}], [lapack], [break], [DSYEV="unset"])
+done
+if test "${DSYEV}" != "unset"; then
+  AC_DEFINE_UNQUOTED([DSYEV], [${DSYEV}], [The call to dsyev() including all
+                      necessary underscores.])
+fi
+
 # Enable load balancers.
 AC_ARG_ENABLE([load-balance],
   [AS_HELP_STRING([--enable-load-balance],

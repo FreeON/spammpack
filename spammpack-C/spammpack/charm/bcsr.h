@@ -56,6 +56,8 @@ class BCSR
   public:
 
     BCSR (char *filename);
+    void getSpectralBounds (int method, double *minBound, double *maxBound);
+    void spectralProject (void);
     void toDense (int *M, int *N, double **ADense);
     void toStr (void);
 };

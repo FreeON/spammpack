@@ -9,7 +9,9 @@
 #include "bcsr.h"
 #include "logger.h"
 #include "index.h"
+#include "lapack_interface.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -79,6 +81,145 @@ BCSR::BCSR (char *filename)
   }
 }
 
+/** Get the spectral bounds of the matrix by using the Gershgorin circle
+ * theorem.
+ *
+ * Estimate spectral bounds via Gersgorin approximation, @f$ \left[
+ * F_{min}-F_{max} \right] @f$.
+ *
+ * In detail:
+ * @f[
+ *   R_{i} = \sum_{j \neq i} \left| F_{ij} \right|
+ * @f]
+ * @f[
+ *   F_{\mathrm{max}} = \max_{i} \left\{ F_{ii} + R_{i} \right\}
+ * @f]
+ * @f[
+ *   F_{\mathrm{min}} = \min_{i} \left\{ F_{ii} - R_{i} \right\}
+ * @f]
+ *
+ * @param method The method to use. method = 0 is Gershgorin; method = 1 is
+ * full eigensolve.
+ * @param minBound [out] The lower bound.
+ * @param maxBound [out] The upper bound.
+ */
+void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
+{
+  bool minInitialized = false;
+  bool maxInitialized = false;
+
+  switch(method)
+  {
+    case 0:
+      for(int atom = 0; atom < NAtoms; atom++)
+      {
+        int MBlock = blockSize[atom];
+        for(int iRow = 0; iRow < MBlock; iRow++)
+        {
+          double sum = 0;
+          bool check = false;
+          double diagonal;
+          for(int j = rowPointer[atom]; j < rowPointer[atom+1]-1; j++)
+          {
+            int iColumn = columnPointer[j];
+            int block = blockPointer[j];
+            int NBlock = blockSize[iColumn];
+            for(int c = 0; c < NBlock; c++)
+            {
+              sum += fabs(matrix[block + c*MBlock+iRow]);
+              if(atom == iColumn && iRow == c)
+              {
+                diagonal = matrix[block+c*MBlock+iRow];
+                check = true;
+              }
+            }
+          }
+
+          if(!check)
+          {
+            diagonal = 0;
+          }
+
+          //double temp_max = diagonal+sum-fabs(diagonal);
+          //double temp_min = diagonal-sum+fabs(diagonal);
+          double temp_max = diagonal+sum;
+          double temp_min = diagonal-sum;
+
+          if(*minBound > temp_min || !minInitialized)
+          {
+            *minBound = temp_min;
+            minInitialized = true;
+          }
+
+          if(*maxBound < temp_max || !maxInitialized)
+          {
+            *maxBound = temp_max;
+            maxInitialized = true;
+          }
+        }
+      }
+      break;
+
+    case 1:
+      {
+        int M, N;
+        double *ADense;
+
+        toDense(&M, &N, &ADense);
+        assert(M == N);
+
+        double *eigenvalue = new double[N];
+        int lwork = 3*N;
+        double *work = new double[lwork];
+        int info;
+
+        DSYEV((char*) "N", (char*) "U", &N, ADense, &N, eigenvalue, work, &lwork, &info);
+
+        if(info != 0)
+        {
+          ABORT("error in dsyev\n");
+        }
+        delete[] work;
+
+        for(int i = 0; i < N; i++)
+        {
+          if(*minBound > eigenvalue[i] || !minInitialized)
+          {
+            *minBound = eigenvalue[i];
+            minInitialized = true;
+          }
+
+          if(*maxBound < eigenvalue[i] || !maxInitialized)
+          {
+            *maxBound = eigenvalue[i];
+            maxInitialized = true;
+          }
+        }
+
+        delete[] eigenvalue;
+      }
+      break;
+
+    default:
+      ABORT("unknow method\n");
+      break;
+  }
+}
+
+/** Project the matrix.
+ *
+ * @f[ F \leftarrow \frac{ F_{\mathrm{max}} - F }
+ *     { F_{\mathrm{max}} - F_{\mathrm{min}} } @f]
+ */
+void BCSR::spectralProject (void)
+{
+  double F_min, F_max;
+  getSpectralBounds(0, &F_min, &F_max);
+  printf("spectral bounds Gershgorin: [ %e, %e ]\n", F_min, F_max);
+  getSpectralBounds(1, &F_min, &F_max);
+  printf("spectral bounds eigensolve: [ %e, %e ]\n", F_min, F_max);
+}
+
 /** Convert a BCSR matrix into a dense matrix.
  *
  * @param M [out] The number of rows.
@@ -95,17 +236,17 @@ void BCSR::toDense (int *M, int *N, double **ADense)
 
   for(int atom = 0; atom < NAtoms; atom++)
   {
-    int MAtom = blockSize[atom];
+    int MBlock = blockSize[atom];
     int rowOffset = offset[atom];
 
     for(int iRow = rowPointer[atom]; iRow < rowPointer[atom+1]; iRow++)
     {
-      int NAtom = blockSize[columnPointer[iRow]];
+      int NBlock = blockSize[columnPointer[iRow]];
       int columnOffset = offset[columnPointer[iRow]];
 
       for(int iSMat = 0; iSMat < NSMat; iSMat++)
       {
-        int pointer = blockPointer[iRow]+iSMat*MAtom*NAtom;
+        int pointer = blockPointer[iRow]+iSMat*MBlock*NBlock;
         int i_block;
         int j_block;
 
@@ -136,10 +277,10 @@ void BCSR::toDense (int *M, int *N, double **ADense)
             break;
         }
 
-        for(int i = 0; i < MAtom; i++) {
-          for(int j = 0; j < NAtom; j++)
+        for(int i = 0; i < MBlock; i++) {
+          for(int j = 0; j < NBlock; j++)
           {
-            (*ADense)[BLOCK_INDEX_NONSQUARE(i+i_block, j+j_block, 0, 0, this->M, this-N)] = matrix[pointer+i+j*MAtom];
+            (*ADense)[BLOCK_INDEX_NONSQUARE(i+i_block, j+j_block, 0, 0, this->M, this-N)] = matrix[pointer+i+j*MBlock];
           }
         }
       }
@@ -166,6 +307,24 @@ void BCSR::toStr (void)
   for(int i = 0; i < NAtoms; i++)
   {
     printf(" %d", offset[i]);
+  }
+  printf(" }\n");
+  printf("BCSR: rowPointer    = {");
+  for(int i = 0; i < NAtoms+1; i++)
+  {
+    printf(" %d", rowPointer[i]);
+  }
+  printf(" }\n");
+  printf("BCSR: columnPointer = {");
+  for(int i = 0; i < numberBlocks; i++)
+  {
+    printf(" %d", columnPointer[i]);
+  }
+  printf(" }\n");
+  printf("BCSR: blockPointer  = {");
+  for(int i = 0; i < numberBlocks; i++)
+  {
+    printf(" %d", blockPointer[i]);
   }
   printf(" }\n");
   printf("BCSR: numberNonZero = %d\n", numberNonZero);

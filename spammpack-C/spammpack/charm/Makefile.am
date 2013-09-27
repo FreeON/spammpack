@@ -40,22 +40,22 @@ spamm_INTERFACEFILES = \
 spamm_SOURCES = \
 	bcsr.cc \
 	bcsr.h \
-	blas_interface.h \
 	index.h \
+	lapack_interface.h \
 	logger.cc \
 	logger.h \
-	spamm.cc \
-	spamm.h \
 	matrix.cc \
 	matrix.h \
 	messages.cc \
 	messages.h \
 	multiply.cc \
+	multiply.h \
 	multiplyelement.cc \
 	multiplyelement.h \
-	multiply.h \
 	node.cc \
 	node.h \
+	spamm.cc \
+	spamm.h \
 	timer.cc \
 	timer.h \
 	types.h \

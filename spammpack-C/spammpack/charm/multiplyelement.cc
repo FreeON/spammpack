@@ -8,7 +8,7 @@
 
 #include "config.h"
 #include "multiplyelement.h"
-#include "blas_interface.h"
+#include "lapack_interface.h"
 #include "messages.h"
 #include "logger.h"
 #include "index.h"

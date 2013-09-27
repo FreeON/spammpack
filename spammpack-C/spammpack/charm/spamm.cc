@@ -39,7 +39,7 @@
 
 #include "config.h"
 #include "spamm.h"
-#include "blas_interface.h"
+#include "lapack_interface.h"
 #include "messages.h"
 #include "timer.h"
 #include "logger.h"
@@ -644,7 +644,9 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   double *PDense;
   int N;
 
-  loadCoordinateFile(filename, &N, &PDense);
+  BCSR F(filename);
+
+  F.spectralProject();
 
   CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize,
       strlen("P"), (char*) "A");
