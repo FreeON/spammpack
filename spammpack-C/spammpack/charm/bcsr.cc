@@ -105,59 +105,99 @@ BCSR::BCSR (char *filename)
  */
 void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
 {
-  bool minInitialized = false;
-  bool maxInitialized = false;
-
   switch(method)
   {
     case 0:
-      for(int atom = 0; atom < NAtoms; atom++)
       {
-        int MBlock = blockSize[atom];
-        for(int iRow = 0; iRow < MBlock; iRow++)
+        assert(M == N);
+
+        double *R = new double[M];
+        double *diagonal = new double[M];
+
+        memset(R, 0, sizeof(double)*M);
+
+        for(int atom = 0; atom < NAtoms; atom++)
         {
-          double sum = 0;
-          bool check = false;
-          double diagonal;
-          for(int j = rowPointer[atom]; j < rowPointer[atom+1]-1; j++)
+          int MBlock = blockSize[atom];
+          int rowOffset = offset[atom];
+
+          for(int iRow = rowPointer[atom]; iRow < rowPointer[atom+1]; iRow++)
           {
-            int iColumn = columnPointer[j];
-            int block = blockPointer[j];
-            int NBlock = blockSize[iColumn];
-            for(int c = 0; c < NBlock; c++)
+            int NBlock = blockSize[columnPointer[iRow]];
+            int columnOffset = offset[columnPointer[iRow]];
+
+            for(int iSMat = 0; iSMat < NSMat; iSMat++)
             {
-              sum += fabs(matrix[block + c*MBlock+iRow]);
-              if(atom == iColumn && iRow == c)
+              int pointer = blockPointer[iRow]+iSMat*MBlock*NBlock;
+              int i_block;
+              int j_block;
+
+              switch(NSMat)
               {
-                diagonal = matrix[block+c*MBlock+iRow];
-                check = true;
+                case 1:
+                  i_block = rowOffset;
+                  j_block = columnOffset;
+                  break;
+
+                case 2:
+                  i_block = rowOffset;
+                  j_block = columnOffset+numberBasisFunctions;
+                  break;
+
+                case 3:
+                  i_block = rowOffset+numberBasisFunctions;
+                  j_block = columnOffset;
+                  break;
+
+                case 4:
+                  i_block = rowOffset+numberBasisFunctions;
+                  j_block = columnOffset+numberBasisFunctions;
+                  break;
+
+                default:
+                  ABORT("error\n");
+                  break;
+              }
+
+              for(int i = 0; i < MBlock; i++) {
+                for(int j = 0; j < NBlock; j++)
+                {
+                  int index = pointer+i+j*MBlock;
+                  if(i+i_block == j+j_block)
+                  {
+                    diagonal[i+i_block] = matrix[index];
+                  }
+
+                  else
+                  {
+                    R[i+i_block] += fabs(matrix[index]);
+                  }
+                }
               }
             }
           }
+        }
 
-          if(!check)
+        *minBound = diagonal[0];
+        *maxBound = diagonal[0];
+
+        for(int i = 0; i < M; i++)
+        {
+          if(*minBound > diagonal[i]-R[i])
           {
-            diagonal = 0;
+            *minBound = diagonal[i]-R[i];
           }
 
-          //double temp_max = diagonal+sum-fabs(diagonal);
-          //double temp_min = diagonal-sum+fabs(diagonal);
-          double temp_max = diagonal+sum;
-          double temp_min = diagonal-sum;
-
-          if(*minBound > temp_min || !minInitialized)
+          if(*maxBound < diagonal[i]+R[i])
           {
-            *minBound = temp_min;
-            minInitialized = true;
-          }
-
-          if(*maxBound < temp_max || !maxInitialized)
-          {
-            *maxBound = temp_max;
-            maxInitialized = true;
+            *maxBound = diagonal[i]+R[i];
           }
         }
+
+        delete[] diagonal;
+        delete[] R;
       }
+
       break;
 
     case 1:
@@ -181,18 +221,19 @@ void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
         }
         delete[] work;
 
+        *minBound = eigenvalue[0];
+        *maxBound = eigenvalue[0];
+
         for(int i = 0; i < N; i++)
         {
-          if(*minBound > eigenvalue[i] || !minInitialized)
+          if(*minBound > eigenvalue[i])
           {
             *minBound = eigenvalue[i];
-            minInitialized = true;
           }
 
-          if(*maxBound < eigenvalue[i] || !maxInitialized)
+          if(*maxBound < eigenvalue[i])
           {
             *maxBound = eigenvalue[i];
-            maxInitialized = true;
           }
         }
 
@@ -280,7 +321,8 @@ void BCSR::toDense (int *M, int *N, double **ADense)
         for(int i = 0; i < MBlock; i++) {
           for(int j = 0; j < NBlock; j++)
           {
-            (*ADense)[BLOCK_INDEX_NONSQUARE(i+i_block, j+j_block, 0, 0, this->M, this-N)] = matrix[pointer+i+j*MBlock];
+            (*ADense)[BLOCK_INDEX_NONSQUARE(i+i_block, j+j_block, 0, 0, this->M, this-N)] =
+              matrix[pointer+i+j*MBlock];
           }
         }
       }
