@@ -48,7 +48,11 @@ BCSRInfo::BCSRInfo (CkArgMsg *msg)
   if(optind < msg->argc)
   {
     BCSR A(msg->argv[optind]);
-    A.spectralProject();
+    double F_min, F_max;
+    A.getSpectralBounds(0, &F_min, &F_max);
+    printf("spectral bounds Gershgorin: [ %e, %e ]\n", F_min, F_max);
+    A.getSpectralBounds(1, &F_min, &F_max);
+    printf("spectral bounds eigensolve: [ %e, %e ]\n", F_min, F_max);
     A.toStr();
     int M;
     int N;

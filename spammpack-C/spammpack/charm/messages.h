@@ -90,6 +90,12 @@ class DenseMatrixMsg : public CMessage_DenseMatrixMsg
 {
   public:
 
+    /** The number of rows of this matrix. */
+    int M;
+
+    /** The number of columns of this matrix. */
+    int N;
+
     /** The dense matrix. */
     double *A;
 };

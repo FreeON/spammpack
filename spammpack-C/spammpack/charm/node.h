@@ -67,6 +67,7 @@ class Node : public CBase_Node
     void trace (CkCallback &cb);
     void PEMap (CkCallback &cb);
     void scale (double alpha, CkCallback &cb);
+    void addScalar (double alpha, CkCallback &cb);
 };
 
 #endif

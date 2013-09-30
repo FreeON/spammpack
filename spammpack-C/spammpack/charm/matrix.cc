@@ -116,6 +116,9 @@ DenseMatrixMsg * Matrix::toDense (void)
     }
   }
 
+  A->M = N;
+  A->N = N;
+
   return A;
 }
 
@@ -202,6 +205,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
   /* Update norms. */
   thisProxy.setNorm(CkCallbackResumeThread());
 
+  INFO("done setting matrix\n");
   cb.send();
 }
 
@@ -277,6 +281,7 @@ void Matrix::add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb)
 {
   MatrixNodeMsg *BNodes = B.getNodes(depth);
   nodes[depth].add(alpha, beta, BNodes->nodes, CkCallbackResumeThread());
+  thisProxy.setNorm(CkCallbackResumeThread());
   cb.send();
 }
 /** Set this Matrix equal to another matrix.
@@ -291,6 +296,7 @@ void Matrix::add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb)
 void Matrix::setEqual (CProxy_Matrix B, CkCallback &cb)
 {
   thisProxy.add(0.0, 1.0, B, CkCallbackResumeThread());
+  thisProxy.setNorm(CkCallbackResumeThread());
   cb.send();
 }
 
@@ -304,6 +310,22 @@ void Matrix::setEqual (CProxy_Matrix B, CkCallback &cb)
 void Matrix::scale (double alpha, CkCallback &cb)
 {
   nodes[depth].scale(alpha, CkCallbackResumeThread());
+  thisProxy.setNorm(CkCallbackResumeThread());
+  cb.send();
+}
+
+/** Add a scalar, i.e. the identity matrix times a scalar to this Matrix.
+ *
+ * @f[ A \leftarrow \alpha A + \beta I @f]
+ *
+ * @param alpha The scalar alpha.
+ * @param beta The scalar beta.
+ * @param cb The callback to signal when done.
+ */
+void Matrix::addScalar (double alpha, double beta, CkCallback &cb)
+{
+  nodes[depth].scale(alpha, CkCallbackResumeThread());
+  nodes[depth].addScalar(beta, CkCallbackResumeThread());
   thisProxy.setNorm(CkCallbackResumeThread());
   cb.send();
 }

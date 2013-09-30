@@ -132,7 +132,7 @@ void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
               int i_block;
               int j_block;
 
-              switch(iSMat)
+              switch(iSMat+1)
               {
                 case 1:
                   i_block = rowOffset;
@@ -155,7 +155,7 @@ void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
                   break;
 
                 default:
-                  ABORT("error\n");
+                  ABORT("error (NSMat = %d)\n", NSMat);
                   break;
               }
 
@@ -247,20 +247,6 @@ void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
   }
 }
 
-/** Project the matrix.
- *
- * @f[ F \leftarrow \frac{ F_{\mathrm{max}} - F }
- *     { F_{\mathrm{max}} - F_{\mathrm{min}} } @f]
- */
-void BCSR::spectralProject (void)
-{
-  double F_min, F_max;
-  getSpectralBounds(0, &F_min, &F_max);
-  printf("spectral bounds Gershgorin: [ %e, %e ]\n", F_min, F_max);
-  getSpectralBounds(1, &F_min, &F_max);
-  printf("spectral bounds eigensolve: [ %e, %e ]\n", F_min, F_max);
-}
-
 /** Convert a BCSR matrix into a dense matrix.
  *
  * @param M [out] The number of rows.
@@ -291,7 +277,7 @@ void BCSR::toDense (int *M, int *N, double **ADense)
         int i_block;
         int j_block;
 
-        switch(iSMat)
+        switch(iSMat+1)
         {
           case 1:
             i_block = rowOffset;

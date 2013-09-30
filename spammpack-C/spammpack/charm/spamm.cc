@@ -48,6 +48,7 @@
 #include "bcsr.h"
 #include "utilities.h"
 
+#include <assert.h>
 #include <getopt.h>
 
 /** Initialize the node. */
@@ -642,19 +643,38 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     bool alignPEs)
 {
   double *PDense;
-  int N;
+  int NRows, NColumns;
+  double F_min, F_max;
 
   BCSR F(filename);
 
-  F.spectralProject();
+  F.getSpectralBounds(0, &F_min, &F_max);
+  INFO("spectral bounds: [ % e, % e ], dF = %e\n", F_min, F_max, F_max-F_min);
 
-  CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize,
-      strlen("P"), (char*) "A");
+  F.toDense(&NRows, &NColumns, &PDense);
 
-  P.set(N, PDense, CkCallbackResumeThread());
+  assert(NRows == NColumns);
 
-  CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize,
-      strlen("P2"), (char*) "P2");
+  printDense(NRows, PDense, "F");
+
+  CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
+      blocksize, strlen("P"), (char*) "P");
+
+  P.set(NRows, PDense, CkCallbackResumeThread());
+
+  /* Scale Fockian to get initial density matrix guess.
+   *
+   * P_0 = (F_max-F)/(F_max-F_min)
+   */
+  P.addScalar(-1, F_max, CkCallbackResumeThread());
+  P.scale(1/(F_max-F_min), CkCallbackResumeThread());
+
+  delete[] PDense;
+  DenseMatrixMsg *P0Dense = P.toDense();
+  printDense(P0Dense->N, P0Dense->A, "P0");
+
+  CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
+      blocksize, strlen("P2"), (char*) "P2");
 
   MatrixInfoMsg *PInfo = P.info();
   MatrixNodeMsg *PNodes = P.getNodes(PInfo->depth);
@@ -732,7 +752,7 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   INFO("previous idempotency error = %e\n", fabs(occupation[2]-occupation[3]));
 
   DenseMatrixMsg *PFinal = P.toDense();
-  printDense(N, PFinal->A, "PFinal");
+  printDense(NRows, PFinal->A, "PFinal");
   delete PFinal;
 
   INFO("done\n");

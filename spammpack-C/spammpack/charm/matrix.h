@@ -69,6 +69,7 @@ class Matrix : public CBase_Matrix
     void add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb);
     void setEqual (CProxy_Matrix B, CkCallback &cb);
     void scale (double alpha, CkCallback &cb);
+    void addScalar (double alpha, double beta, CkCallback &cb);
 };
 
 #endif

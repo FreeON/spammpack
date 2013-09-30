@@ -328,5 +328,27 @@ void Node::scale (double alpha, CkCallback &cb)
   }
   contribute(cb);
 }
+/** Add a scalar to every Node.
+ *
+ * @f[ A \leftarrow A + \alpha I @f]
+ *
+ * @param alpha The scalar alpha.
+ * @param cb The reduction target callback.
+ */
+void Node::addScalar (double alpha, CkCallback &cb)
+{
+  if(block == NULL)
+  {
+    block = new double[blocksize*blocksize];
+    memset(block, 0, sizeof(double)*blocksize*blocksize);
+  }
+
+  for(int i = 0; i < blocksize*blocksize; i++)
+  {
+    block[i] += alpha;
+  }
+
+  contribute(cb);
+}
 
 #include "node.def.h"
