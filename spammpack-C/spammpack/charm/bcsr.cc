@@ -132,7 +132,7 @@ void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
               int i_block;
               int j_block;
 
-              switch(NSMat)
+              switch(iSMat)
               {
                 case 1:
                   i_block = rowOffset;
@@ -291,7 +291,7 @@ void BCSR::toDense (int *M, int *N, double **ADense)
         int i_block;
         int j_block;
 
-        switch(NSMat)
+        switch(iSMat)
         {
           case 1:
             i_block = rowOffset;
