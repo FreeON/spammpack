@@ -21,7 +21,7 @@ module matrix
         CkCallback &cb);
     entry [threaded] void setEqual (CProxy_Matrix B, CkCallback &cb);
     entry [threaded] void scale (double alpha, CkCallback &cb);
-    entry [threaded] void addScalar (double alpha, double beta,
+    entry [threaded] void addIdentity (double alpha, double beta,
         CkCallback &cb);
   };
 };

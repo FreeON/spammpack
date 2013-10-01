@@ -314,7 +314,8 @@ void Matrix::scale (double alpha, CkCallback &cb)
   cb.send();
 }
 
-/** Add a scalar, i.e. the identity matrix times a scalar to this Matrix.
+/** Add a the scaled identity matrix, i.e. the identity matrix times a scalar
+ * to this Matrix.
  *
  * @f[ A \leftarrow \alpha A + \beta I @f]
  *
@@ -322,10 +323,10 @@ void Matrix::scale (double alpha, CkCallback &cb)
  * @param beta The scalar beta.
  * @param cb The callback to signal when done.
  */
-void Matrix::addScalar (double alpha, double beta, CkCallback &cb)
+void Matrix::addIdentity (double alpha, double beta, CkCallback &cb)
 {
   nodes[depth].scale(alpha, CkCallbackResumeThread());
-  nodes[depth].addScalar(beta, CkCallbackResumeThread());
+  nodes[depth].addIdentity(beta, CkCallbackResumeThread());
   thisProxy.setNorm(CkCallbackResumeThread());
   cb.send();
 }

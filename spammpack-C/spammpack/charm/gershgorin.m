@@ -1,4 +1,4 @@
-function [ lMin, lMax ] = gershgorin (A)
+function bounds = gershgorin (A)
     lMin = A(1, 1);
     lMax = A(1, 1);
     for i = 1:size(A, 1)
@@ -15,3 +15,4 @@ function [ lMin, lMax ] = gershgorin (A)
             lMax = A(i, i)+R;
         end
     end
+    bounds = [ lMin, lMax ];

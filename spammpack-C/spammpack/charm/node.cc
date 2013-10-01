@@ -328,24 +328,28 @@ void Node::scale (double alpha, CkCallback &cb)
   }
   contribute(cb);
 }
-/** Add a scalar to every Node.
+/** Add a the scaled identity matrix. This operation affects only those Nodes
+ * which are on the diagonal.
  *
  * @f[ A \leftarrow A + \alpha I @f]
  *
  * @param alpha The scalar alpha.
  * @param cb The reduction target callback.
  */
-void Node::addScalar (double alpha, CkCallback &cb)
+void Node::addIdentity (double alpha, CkCallback &cb)
 {
-  if(block == NULL)
+  if(iLower == jLower && iUpper == jUpper)
   {
-    block = new double[blocksize*blocksize];
-    memset(block, 0, sizeof(double)*blocksize*blocksize);
-  }
+    if(block == NULL)
+    {
+      block = new double[blocksize*blocksize];
+      memset(block, 0, sizeof(double)*blocksize*blocksize);
+    }
 
-  for(int i = 0; i < blocksize*blocksize; i++)
-  {
-    block[i] += alpha;
+    for(int i = 0; i < blocksize; i++)
+    {
+      block[BLOCK_INDEX(i, i, 0, 0, blocksize)] += alpha;
+    }
   }
 
   contribute(cb);

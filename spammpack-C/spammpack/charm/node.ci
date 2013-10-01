@@ -15,6 +15,6 @@ module node
     entry void trace (CkCallback &cb);
     entry void PEMap (CkCallback &cb);
     entry void scale (double alpha, CkCallback &cb);
-    entry void addScalar (double alpha, CkCallback &cb);
+    entry void addIdentity (double alpha, CkCallback &cb);
   };
 };

@@ -664,9 +664,9 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
 
   /* Scale Fockian to get initial density matrix guess.
    *
-   * P_0 = (F_max-F)/(F_max-F_min)
+   * P_0 = (F_max*I-F)/(F_max-F_min)
    */
-  P.addScalar(-1, F_max, CkCallbackResumeThread());
+  P.addIdentity(-1, F_max, CkCallbackResumeThread());
   P.scale(1/(F_max-F_min), CkCallbackResumeThread());
 
   delete[] PDense;
@@ -719,7 +719,8 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
       trace_P = P.getTrace();
     }
 
-    INFO("trace(P%d) = %e (Ne/2 = %e)\n", iteration+1, trace_P->x, Ne/2.0);
+    INFO("trace(P%d) = %e (Ne/2 = %e, trace(P%d)-Ne/2 = %e)\n", iteration+1,
+        trace_P->x, Ne/2.0, iteration+1, trace_P->x-Ne/2.0);
 
     occupation[0] = trace_P->x;
     for(int i = 3; i >= 1; i--)
