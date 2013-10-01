@@ -39,7 +39,7 @@ void printDense (int N, double *A, const char *const format, ...)
   vsnprintf(message, message_length, format, ap);
   va_end(ap);
 
-  if(N <= 42)
+  if(N <= 32)
   {
     o << message << " = [" << std::endl;
     for(int i = 0; i < N; i++) {
@@ -51,13 +51,21 @@ void printDense (int N, double *A, const char *const format, ...)
       o << std::endl;
     }
     o << "]" << std::endl;
-    CkPrintf(o.str().c_str());
   }
 
   else
   {
-    INFO("matrix size too large for printing\n");
+    o << message << " = zeros(" << N << ", " << N << ")" << std::endl;
+    for(int i = 0; i < N; i++) {
+      for(int j = 0; j < N; j++)
+      {
+        snprintf(numberBuffer, 40, "% e", A[BLOCK_INDEX(i, j, 0, 0, N)]);
+        o << i+1 << " " << j+1 << " " << numberBuffer << std::endl;
+      }
+    }
   }
+
+  CkPrintf(o.str().c_str());
 }
 
 /** Convert an integer to a binary as a string.
