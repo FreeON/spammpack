@@ -79,6 +79,8 @@ BCSR::BCSR (char *filename)
   {
     ABORT("error closing BCSR file\n");
   }
+
+  INFO("read BCSR matrix, size %dx%d, %d nonzeros\n", M, N, numberNonZero);
 }
 
 /** Get the spectral bounds of the matrix by using the Gershgorin circle

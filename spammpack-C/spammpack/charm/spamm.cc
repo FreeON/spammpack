@@ -672,6 +672,7 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   delete[] PDense;
   DenseMatrixMsg *P0Dense = P.toDense();
   printDense(P0Dense->N, P0Dense->A, "P0");
+  delete P0Dense;
 
   CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
       blocksize, strlen("P2"), (char*) "P2");
@@ -696,6 +697,10 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
     M.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread()); /* P2 <- P*P */
+
+    P0Dense = P.toDense();
+    printDense(P0Dense->N, P0Dense->A, "P%d^2", iteration+1);
+    delete P0Dense;
 
     P2.updateTrace(CkCallbackResumeThread());
     DoubleMsg *trace_P2 = P2.getTrace();

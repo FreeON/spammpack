@@ -55,7 +55,7 @@ void printDense (int N, double *A, const char *const format, ...)
 
   else
   {
-    o << message << " = zeros(" << N << ", " << N << ")" << std::endl;
+    o << message << " = zeros(" << N << ", " << N << ") % " << N*N << " elements" << std::endl;
     for(int i = 0; i < N; i++) {
       for(int j = 0; j < N; j++)
       {
