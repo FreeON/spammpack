@@ -62,12 +62,7 @@ BCSRInfo::BCSRInfo (CkArgMsg *msg)
     {
       ABORT("non-square matrices are not supported\n");
     }
-    for(int i = 0; i < M; i++) {
-      for(int j = 0; j < N; j++)
-      {
-        CkPrintf("A(%d,%d) = % e\n", i+1, j+1, ADense[BLOCK_INDEX_NONSQUARE(i, j, 0, 0, M, N)]);
-      }
-    }
+    printDense(N, ADense, "A");
     CkExit();
   }
 

@@ -21,7 +21,9 @@ EXTRA_DIST = \
 AM_LDFLAGS = -language charm++ @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
 if HAVE_PYTHON
-python_PYTHON = plotPEMap.py
+python_PYTHON = plotPEMap.py sp2.py spectral_bounds.py matrix_market.py
+noinst_SCRIPTS = sp2_test.sh
+TESTS = sp2_test.sh
 endif
 
 bin_PROGRAMS = spamm BCSRInfo

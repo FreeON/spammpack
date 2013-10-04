@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 
-/** Print a dense matrix.
+/** Print a dense matrix in matrix market format.
  *
  * @param N The matrix size.
  * @param A The matrix.
@@ -55,7 +55,9 @@ void printDense (int N, double *A, const char *const format, ...)
 
   else
   {
-    o << message << " = zeros(" << N << ", " << N << ") % " << N*N << " elements" << std::endl;
+    o << "%%%%MatrixMarket matrix coordinate double general" << std::endl;
+    o << "%% " << message << " = " << N << " x " << N << " --> " << N*N << " elements" << std::endl;
+    o << N << " " << N << " " << N*N << std::endl;
     for(int i = 0; i < N; i++) {
       for(int j = 0; j < N; j++)
       {
