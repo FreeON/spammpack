@@ -279,7 +279,7 @@ void Node::trace (CkCallback &cb)
 {
   double trace = 0;
 
-  if(thisIndex.x == thisIndex.y)
+  if(iLower == jLower && iUpper == jUpper)
   {
     if(block != NULL)
     {
@@ -346,7 +346,7 @@ void Node::addIdentity (double alpha, CkCallback &cb)
       memset(block, 0, sizeof(double)*blocksize*blocksize);
     }
 
-    for(int i = 0; i < blocksize; i++)
+    for(int i = 0; i < blocksize && i+iLower < N; i++)
     {
       block[BLOCK_INDEX(i, i, 0, 0, blocksize)] += alpha;
     }

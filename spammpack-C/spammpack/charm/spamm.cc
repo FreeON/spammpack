@@ -655,7 +655,7 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
 
   assert(NRows == NColumns);
 
-  printDense(NRows, PDense, "F");
+  //printDense(NRows, PDense, "F");
 
   CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
       blocksize, strlen("P"), (char*) "P");
@@ -670,9 +670,10 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   P.scale(1/(F_max-F_min), CkCallbackResumeThread());
 
   delete[] PDense;
-  DenseMatrixMsg *P0Dense = P.toDense();
-  printDense(P0Dense->N, P0Dense->A, "P0");
-  delete P0Dense;
+
+  //DenseMatrixMsg *P0Dense = P.toDense();
+  //printDense(P0Dense->N, P0Dense->A, "P0");
+  //delete P0Dense;
 
   CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
       blocksize, strlen("P2"), (char*) "P2");
@@ -692,15 +693,15 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   double occupation[4] = { 0, 0, 0, 0 };
   P.updateTrace(CkCallbackResumeThread());
   DoubleMsg *trace_P = P.getTrace();
-  DEBUG("trace(P0) = %e (Nel/2 = %e)\n", trace_P->x, Ne/2.0);
+  INFO("iteration  0: trace(P) = %e (Ne/2 = %e)\n", trace_P->x, Ne/2.0);
   bool converged = false;
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
     M.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread()); /* P2 <- P*P */
 
-    P0Dense = P.toDense();
-    printDense(P0Dense->N, P0Dense->A, "P%d^2", iteration+1);
-    delete P0Dense;
+    //P0Dense = P.toDense();
+    //printDense(P0Dense->N, P0Dense->A, "P%d^2", iteration+1);
+    //delete P0Dense;
 
     P2.updateTrace(CkCallbackResumeThread());
     DoubleMsg *trace_P2 = P2.getTrace();
@@ -718,14 +719,12 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     {
       DEBUG("P%d <- 2P%d - P%d^2\n", iteration+1, iteration, iteration);
       P.add(2, -1, P2, CkCallbackResumeThread());
-      delete trace_P;
+      trace_P->x = 2*trace_P->x-trace_P2->x;
       delete trace_P2;
-      P.updateTrace(CkCallbackResumeThread());
-      trace_P = P.getTrace();
     }
 
-    INFO("trace(P%d) = %e (Ne/2 = %e, trace(P%d)-Ne/2 = %e)\n", iteration+1,
-        trace_P->x, Ne/2.0, iteration+1, trace_P->x-Ne/2.0);
+    INFO("iteration %2d: trace(P) = %e (Ne/2 = %e, trace(P)-Ne/2 = % e)\n", iteration+1,
+        trace_P->x, Ne/2.0, trace_P->x-Ne/2.0);
 
     occupation[0] = trace_P->x;
     for(int i = 3; i >= 1; i--)
@@ -735,10 +734,10 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
 
     if(iteration > MIN(20, maxIterations))
     {
-      double idempotencyErrorNow = fabs(occupation[0]-occupation[1]);
+      double idempotencyErrorNow = fabs(occupation[1]-occupation[2]);
       if(idempotencyErrorNow < 1.0e-2)
       {
-        double idempotencyErrorLast = fabs(occupation[2]-occupation[3]);
+        double idempotencyErrorLast = fabs(occupation[3]-occupation[2]);
         if(idempotencyErrorNow >= idempotencyErrorLast)
         {
           INFO("SP2 converged in %d steps\n", iteration+1);
@@ -757,9 +756,9 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   INFO("idempotency error          = %e\n", fabs(occupation[0]-occupation[1]));
   INFO("previous idempotency error = %e\n", fabs(occupation[2]-occupation[3]));
 
-  DenseMatrixMsg *PFinal = P.toDense();
-  printDense(NRows, PFinal->A, "PFinal");
-  delete PFinal;
+  //DenseMatrixMsg *PFinal = P.toDense();
+  //printDense(NRows, PFinal->A, "PFinal");
+  //delete PFinal;
 
   INFO("done\n");
   CkExit();
