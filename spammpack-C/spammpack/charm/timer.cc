@@ -63,7 +63,7 @@ const char * Timer::to_str ()
   o << message << ": ";
   o << endTime.tv_sec+endTime.tv_nsec/1.0e9
     -(startTime.tv_sec+startTime.tv_nsec/1.0e9);
-  o << " seconds" << std::endl;
+  o << " seconds";
   if(string_buffer != NULL)
   {
     free(string_buffer);

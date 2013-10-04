@@ -399,7 +399,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
               iteration+1, CkNumPes(), tolerance);
           M.multiply(tolerance, 1.0, 1.0, CkCallbackResumeThread());
           t.stop();
-          CkPrintf(t.to_str());
+          CkPrintf("%s\n", t.to_str());
         }
         break;
 
@@ -409,7 +409,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
           C.add(0.0, 1.0, A, CkCallbackResumeThread());
           C.add(1.0, 1.0, A, CkCallbackResumeThread());
           t.stop();
-          CkPrintf(t.to_str());
+          CkPrintf("%s\n", t.to_str());
         }
         break;
 
@@ -418,7 +418,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
           Timer t("iteration %d on %d PEs, trace(A)", iteration+1, CkNumPes());
           A.updateTrace(CkCallbackResumeThread());
           t.stop();
-          CkPrintf(t.to_str());
+          CkPrintf("%s\n", t.to_str());
         }
         break;
 
@@ -522,7 +522,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
             }
 #endif
             t.stop();
-            CkPrintf(t.to_str());
+            CkPrintf("%s\n", t.to_str());
           }
           break;
 
@@ -642,9 +642,12 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     int maxIterations, double tolerance, bool loadBalance, int initialPE,
     bool alignPEs)
 {
+  Timer *t;
   double *PDense;
   int NRows, NColumns;
   double F_min, F_max;
+
+  LBDatabase *db = LBDatabaseObj();
 
   BCSR F(filename);
 
@@ -661,6 +664,8 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
       blocksize, strlen("P"), (char*) "P");
 
   P.set(NRows, PDense, CkCallbackResumeThread());
+
+  Timer total_time("total time");
 
   /* Scale Fockian to get initial density matrix guess.
    *
@@ -682,8 +687,12 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   MatrixNodeMsg *PNodes = P.getNodes(PInfo->depth);
   MatrixNodeMsg *P2Nodes = P2.getNodes(PInfo->depth);
 
+  t = new Timer("getting P^2");
   CProxy_Multiply M = CProxy_Multiply::ckNew(initialPE, alignPEs, P, P, P2,
       blocksize, PInfo->depth, PNodes->nodes, PNodes->nodes, P2Nodes->nodes);
+  t->stop();
+  INFO("%s\n", t->to_str());
+  delete t;
 
   delete PInfo;
   delete PNodes;
@@ -697,6 +706,8 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   bool converged = false;
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
+    t = new Timer("iteration %2d", iteration+1);
+
     M.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread()); /* P2 <- P*P */
 
     //P0Dense = P.toDense();
@@ -723,8 +734,10 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
       delete trace_P2;
     }
 
-    INFO("iteration %2d: trace(P) = %e (Ne/2 = %e, trace(P)-Ne/2 = % e)\n", iteration+1,
+    t->stop();
+    INFO("%s: trace(P) = %e (Ne/2 = %e, trace(P)-Ne/2 = % e)\n", t->to_str(),
         trace_P->x, Ne/2.0, trace_P->x-Ne/2.0);
+    delete t;
 
     occupation[0] = trace_P->x;
     for(int i = 3; i >= 1; i--)
@@ -746,6 +759,14 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
         }
       }
     }
+
+    /* Load balance. */
+    if(loadBalance)
+    {
+      INFO("load balancing\n");
+      db->StartLB();
+      CkWaitQD();
+    }
   }
 
   if(!converged)
@@ -759,6 +780,9 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   //DenseMatrixMsg *PFinal = P.toDense();
   //printDense(NRows, PFinal->A, "PFinal");
   //delete PFinal;
+
+  total_time.stop();
+  INFO("%s\n", total_time.to_str());
 
   INFO("done\n");
   CkExit();
