@@ -332,195 +332,200 @@ def generateMathematica (
 
   script_file.close()
 
+## The main program.
+def main ():
+  ## The python version.
+  global python_version
+  python_version = sys.version_info
+
+  if python_version.major == 2 and python_version.minor < 7:
+    print("need at least python 2.7 (running {:d}.{:d})".format(
+      python_version.major, python_version.minor))
+    sys.exit(1)
+
+  ## The parser object.
+  parser = argparse.ArgumentParser()
+
+  parser.add_argument("FILE",
+      help = "The file to plot. A missing FILE means reading from standard input.",
+      nargs = "?",
+      type = argparse.FileType("r"),
+      default = sys.stdin)
+
+  parser.add_argument("--output",
+      help = "The output file base name, i.e. OUTPUT.${ITERATION}.${SUFFIX}")
+
+  parser.add_argument("--print",
+      help = "Print the PEMaps to stdout",
+      dest = "printPEMap",
+      action = "store_true",
+      default = False)
+
+  parser.add_argument("--aligned-print",
+      help = "Print the convolution PEs aligned with their matrix PEs",
+      action = "store_true",
+      default = False)
+
+  parser.add_argument("--render",
+      help = "Render the PEMaps",
+      action = "store_true",
+      default = False)
+
+  parser.add_argument("--blender",
+      help = "Print out a blender script",
+      action = "store_true",
+      default = False)
+
+  parser.add_argument("--mathematica",
+      help = "Generate Mathematic statements",
+      action = "store_true",
+      default = False)
+
+  parser.add_argument("--tolerance",
+      help = "When printing the convolution, filter with TOLERANCE",
+      type = float,
+      default = 0)
+
+  parser.add_argument("--debug",
+      help = "Print debugging stuff",
+      action = "store_true",
+      default = False)
+
+  options = parser.parse_args()
+
+  global basename
+  if options.output:
+    basename = options.output
+  else:
+    basename = None
+
+  iteration = -1
+
+  inMap = False
+  currentMap = ""
+
+  PEMap = {}
+  numPEs = -1
+  line_number = 0
+
+  for line in options.FILE:
+    line_number += 1
+    if options.debug:
+      print("PLOT: read ({:d})".format(line_number), line.rstrip())
+
+    result = re.compile("iteration ([0-9]+) on").search(line)
+    if result:
+      iteration = int(result.group(1))
+      print("iteration {:d}".format(iteration))
+      continue
+
+    result = re.compile("PEMap for (.*):").search(line)
+    if result:
+      mapName = result.group(1)
+      if inMap and mapName != currentMap:
+        raise(Exception("line {:d}: map {:s} already open for reading".format(
+          line_number, mapName)))
+      if not inMap:
+        N = 0
+        elementBuffer = []
+      inMap = True
+      currentMap = mapName
+      if options.debug:
+        print("PLOT: opening map {:s}".format(currentMap))
+
+    result = re.compile("PEMap\(([0-9]+),([0-9]+)\) = ([0-9]+) \(norm = ([0-9.e+-]+)\)").search(line)
+    if result:
+      i = int(result.group(1))
+      j = int(result.group(2))
+      PE = int(result.group(3))
+      norm = float(result.group(4))
+      if not inMap:
+        raise(Exception("line {:d}: no map open for reading".format(line_number)))
+      elementBuffer.append( (i, j, PE, norm) )
+      if i+1 > N:
+        N = i+1
+      if j+1 > N:
+        N = j+1
+      if PE+1 > numPEs:
+        numPEs = PE+1
+      continue
+
+    result = re.compile("PEMap\(([0-9]+),([0-9]+),([0-9]+)\) = ([0-9]+) \(norm = ([0-9.e+-]+)\)").search(line)
+    if result:
+      i = int(result.group(1))
+      j = int(result.group(2))
+      k = int(result.group(3))
+      PE = int(result.group(4))
+      norm = float(result.group(5))
+      if not inMap:
+        raise(Exception("line {:d}: no map open for reading".format(line_number)))
+      elementBuffer.append( (i, j, k, PE, norm) )
+      if i+1 > N:
+        N = i+1
+      if j+1 > N:
+        N = j+1
+      if k+1 > N:
+        N = k+1
+      if PE+1 > numPEs:
+        numPEs = PE+1
+      continue
+
+    result = re.compile("end of PEMap for (.*)").search(line)
+    if result:
+      if currentMap == "convolution":
+        PEMap[currentMap] = np.empty([N, N, N], dtype = np.int16)
+        PEMap[currentMap].fill(-1)
+        norm_convolution = np.empty([N, N, N], dtype = np.float)
+        norm_convolution.fill(0)
+        for (i, j, k, PE, norm) in elementBuffer:
+          if norm > options.tolerance:
+            PEMap[currentMap][i,j,k] = PE
+          norm_convolution[i,j,k] = norm
+        if options.printPEMap:
+          for label in PEMap:
+            print("PEMap for {:s}".format(label))
+            print(PEMap[label])
+          print("convolution norms")
+          print(norm_convolution)
+        if options.aligned_print:
+          for i in range(N):
+            for j in range(N):
+              for k in range(N):
+                if PEMap["convolution"][i, j, k] >= 0:
+                  print("convolution({:2d},{:2d},{:2d}): ".format(i, j, k)
+                      +"C({:2d},{:2d}) += ".format(i, j)
+                      +"A({:2d},{:2d}) x ".format(i, k)
+                      +"B({:2d},{:2d}): ".format(k, j)
+                      +"{:2d} <-- {:2d} {:2d} {:2d}".format(
+                        PEMap["convolution"][i, j, k],
+                        PEMap["matrix A"][i, k],
+                        PEMap["matrix A"][k, j],
+                        PEMap["matrix C"][i, j]))
+        if options.render:
+          generatePOVRay(
+              iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
+              PEMap["convolution"], norm_convolution)
+        if options.blender:
+          generateBlender(
+              iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
+              PEMap["convolution"], norm_convolution)
+        if options.mathematica:
+          generateMathematica(
+              iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
+              PEMap["convolution"], norm_convolution)
+      else:
+        PEMap[currentMap] = np.empty([N, N], dtype = np.int16)
+        PEMap[currentMap].fill(-1)
+        for (i, j, PE, norm) in elementBuffer:
+          PEMap[currentMap][i,j] = PE
+      inMap = False
+      if options.debug:
+        print("PLOT: closing map {:s}".format(currentMap))
+      continue
+
+  options.FILE.close()
+
 ##############################################
 
-## The python version.
-global python_version
-python_version = sys.version_info
-
-if python_version.major == 2 and python_version.minor < 7:
-  print("need at least python 2.7 (running {:d}.{:d})".format(
-    python_version.major, python_version.minor))
-  sys.exit(1)
-
-## The parser object.
-parser = argparse.ArgumentParser()
-
-parser.add_argument("FILE",
-    help = "The file to plot. A missing FILE means reading from standard input.",
-    nargs = "?",
-    type = argparse.FileType("r"),
-    default = sys.stdin)
-
-parser.add_argument("--output",
-    help = "The output file base name, i.e. OUTPUT.${ITERATION}.${SUFFIX}")
-
-parser.add_argument("--print",
-    help = "Print the PEMaps to stdout",
-    dest = "printPEMap",
-    action = "store_true",
-    default = False)
-
-parser.add_argument("--aligned-print",
-    help = "Print the convolution PEs aligned with their matrix PEs",
-    action = "store_true",
-    default = False)
-
-parser.add_argument("--render",
-    help = "Render the PEMaps",
-    action = "store_true",
-    default = False)
-
-parser.add_argument("--blender",
-    help = "Print out a blender script",
-    action = "store_true",
-    default = False)
-
-parser.add_argument("--mathematica",
-    help = "Generate Mathematic statements",
-    action = "store_true",
-    default = False)
-
-parser.add_argument("--tolerance",
-    help = "When printing the convolution, filter with TOLERANCE",
-    type = float,
-    default = 0)
-
-parser.add_argument("--debug",
-    help = "Print debugging stuff",
-    action = "store_true",
-    default = False)
-
-options = parser.parse_args()
-
-global basename
-if options.output:
-  basename = options.output
-else:
-  basename = None
-
-iteration = -1
-
-inMap = False
-currentMap = ""
-
-PEMap = {}
-numPEs = -1
-line_number = 0
-
-for line in options.FILE:
-  line_number += 1
-  if options.debug:
-    print("PLOT: read ({:d})".format(line_number), line.rstrip())
-
-  result = re.compile("iteration ([0-9]+) on").search(line)
-  if result:
-    iteration = int(result.group(1))
-    print("iteration {:d}".format(iteration))
-    continue
-
-  result = re.compile("PEMap for (.*):").search(line)
-  if result:
-    mapName = result.group(1)
-    if inMap and mapName != currentMap:
-      raise(Exception("line {:d}: map {:s} already open for reading".format(
-        line_number, mapName)))
-    if not inMap:
-      N = 0
-      elementBuffer = []
-    inMap = True
-    currentMap = mapName
-    if options.debug:
-      print("PLOT: opening map {:s}".format(currentMap))
-
-  result = re.compile("PEMap\(([0-9]+),([0-9]+)\) = ([0-9]+) \(norm = ([0-9.e+-]+)\)").search(line)
-  if result:
-    i = int(result.group(1))
-    j = int(result.group(2))
-    PE = int(result.group(3))
-    norm = float(result.group(4))
-    if not inMap:
-      raise(Exception("line {:d}: no map open for reading".format(line_number)))
-    elementBuffer.append( (i, j, PE, norm) )
-    if i+1 > N:
-      N = i+1
-    if j+1 > N:
-      N = j+1
-    if PE+1 > numPEs:
-      numPEs = PE+1
-    continue
-
-  result = re.compile("PEMap\(([0-9]+),([0-9]+),([0-9]+)\) = ([0-9]+) \(norm = ([0-9.e+-]+)\)").search(line)
-  if result:
-    i = int(result.group(1))
-    j = int(result.group(2))
-    k = int(result.group(3))
-    PE = int(result.group(4))
-    norm = float(result.group(5))
-    if not inMap:
-      raise(Exception("line {:d}: no map open for reading".format(line_number)))
-    elementBuffer.append( (i, j, k, PE, norm) )
-    if i+1 > N:
-      N = i+1
-    if j+1 > N:
-      N = j+1
-    if k+1 > N:
-      N = k+1
-    if PE+1 > numPEs:
-      numPEs = PE+1
-    continue
-
-  result = re.compile("end of PEMap for (.*)").search(line)
-  if result:
-    if currentMap == "convolution":
-      PEMap[currentMap] = np.empty([N, N, N], dtype = np.int16)
-      PEMap[currentMap].fill(-1)
-      norm_convolution = np.empty([N, N, N], dtype = np.float)
-      norm_convolution.fill(0)
-      for (i, j, k, PE, norm) in elementBuffer:
-        if norm > options.tolerance:
-          PEMap[currentMap][i,j,k] = PE
-        norm_convolution[i,j,k] = norm
-      if options.printPEMap:
-        for label in PEMap:
-          print("PEMap for {:s}".format(label))
-          print(PEMap[label])
-        print("convolution norms")
-        print(norm_convolution)
-      if options.aligned_print:
-        for i in range(N):
-          for j in range(N):
-            for k in range(N):
-              if PEMap["convolution"][i, j, k] >= 0:
-                print("convolution({:2d},{:2d},{:2d}): ".format(i, j, k)
-                    +"C({:2d},{:2d}) += ".format(i, j)
-                    +"A({:2d},{:2d}) x ".format(i, k)
-                    +"B({:2d},{:2d}): ".format(k, j)
-                    +"{:2d} <-- {:2d} {:2d} {:2d}".format(
-                      PEMap["convolution"][i, j, k],
-                      PEMap["matrix A"][i, k],
-                      PEMap["matrix A"][k, j],
-                      PEMap["matrix C"][i, j]))
-      if options.render:
-        generatePOVRay(
-            iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
-            PEMap["convolution"], norm_convolution)
-      if options.blender:
-        generateBlender(
-            iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
-            PEMap["convolution"], norm_convolution)
-      if options.mathematica:
-        generateMathematica(
-            iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
-            PEMap["convolution"], norm_convolution)
-    else:
-      PEMap[currentMap] = np.empty([N, N], dtype = np.int16)
-      PEMap[currentMap].fill(-1)
-      for (i, j, PE, norm) in elementBuffer:
-        PEMap[currentMap][i,j] = PE
-    inMap = False
-    if options.debug:
-      print("PLOT: closing map {:s}".format(currentMap))
-    continue
-
-options.FILE.close()
+if __name__ == "__main__":
+  main()
