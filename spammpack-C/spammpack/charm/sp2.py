@@ -34,7 +34,7 @@ options = parser.parse_args()
 
 F = None
 if len(options.FILE) == 0:
-  F = read_MM(from_stdin = True)
+  F = read_MM()
 else:
   F = read_MM(options.FILE[0])
 
@@ -46,6 +46,7 @@ print("spectral bounds of P: " + str(spectral_bounds(P)))
 
 if options.debug:
   print(P)
+  write_MM(P)
 
 if options.max_iterations < 20:
   i_min = options.max_iterations

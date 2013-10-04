@@ -22,7 +22,7 @@ AM_LDFLAGS = -language charm++ @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEB
 
 if HAVE_PYTHON
 python_PYTHON = plotPEMap.py sp2.py spectral_bounds.py matrix_market.py
-noinst_SCRIPTS = sp2_test.sh
+dist_check_SCRIPTS = sp2_test.sh
 TESTS = sp2_test.sh
 endif
 
