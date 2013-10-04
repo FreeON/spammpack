@@ -18,7 +18,7 @@ EXTRA_DIST = \
 	mustang.job.diagonal.template \
 	mustang.job.full.template
 
-AM_LDFLAGS = -language charm++ @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
+additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
 if HAVE_PYTHON
 python_PYTHON = plotPEMap.py sp2.py spectral_bounds.py matrix_market.py
@@ -28,8 +28,8 @@ endif
 
 bin_PROGRAMS = spamm BCSRInfo
 
-spamm_LDFLAGS = -language charm++
-BCSRInfo_LDFLAGS = -language charm++
+spamm_LDFLAGS = -language charm++ $(additional_linkerflags)
+BCSRInfo_LDFLAGS = -language charm++ $(additional_linkerflags)
 
 spamm_INTERFACEFILES = \
 	matrix.ci \
