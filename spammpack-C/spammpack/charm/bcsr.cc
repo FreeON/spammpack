@@ -83,6 +83,18 @@ BCSR::BCSR (char *filename)
   INFO("read BCSR matrix, size %dx%d, %d nonzeros\n", M, N, numberNonZero);
 }
 
+/** The destructor.
+ */
+BCSR::~BCSR (void)
+{
+  delete[] blockSize;
+  delete[] offset;
+  delete[] rowPointer;
+  delete[] columnPointer;
+  delete[] blockPointer;
+  delete[] matrix;
+}
+
 /** Get the spectral bounds of the matrix by using the Gershgorin circle
  * theorem.
  *
@@ -359,4 +371,13 @@ void BCSR::toStr (void)
   printf(" }\n");
   printf("BCSR: numberNonZero = %d\n", numberNonZero);
   printf("BCSR: numberBlocks  = %d\n", numberBlocks);
+}
+
+/** Put BCSR to file.
+ *
+ * @param filename The filename to write to.
+ */
+void BCSR::put (char *filename)
+{
+  ABORT("FIXME\n");
 }
