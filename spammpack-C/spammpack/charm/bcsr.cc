@@ -80,7 +80,8 @@ BCSR::BCSR (char *filename)
     ABORT("error closing BCSR file\n");
   }
 
-  INFO("read BCSR matrix, size %dx%d, %d nonzeros\n", M, N, numberNonZero);
+  INFO("read BCSR matrix, size %dx%d, %d nonzeros, %1.4f percent nonzero elements\n",
+      M, N, numberNonZero, 100*numberNonZero/(double) (N*N));
 }
 
 /** The destructor.
