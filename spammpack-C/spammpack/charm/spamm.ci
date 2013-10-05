@@ -13,6 +13,6 @@ mainmodule spamm
         bool alignPEs, bool printPEMap);
     entry [threaded] void runSP2 (int length, char filename[length], int Ne,
         int blocksize, int maxIterations, double tolerance, bool loadBalance,
-        int initialPE, bool alignPEs);
+        int initialPE, bool alignPEs, bool printPEMap);
   };
 };

@@ -273,7 +273,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
         DEBUG("calling runSP2() on this proxy\n");
         thisProxy.runSP2(strlen(densityFilename), densityFilename, Ne,
             blocksize, numberIterations, tolerance, loadBalance, initialPE,
-            alignPEs);
+            alignPEs, printPEMap);
       }
       break;
 
@@ -637,10 +637,11 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
  * @param loadBalance Whether to load balance.
  * @param initialPE The initial PE to put chares on.
  * @param alignPEs Align PEs in the diagonal matrix case.
+ * @param printPEMap Whether to print a PE map in each iteration.
  */
 void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     int maxIterations, double tolerance, bool loadBalance, int initialPE,
-    bool alignPEs)
+    bool alignPEs, bool printPEMap)
 {
   Timer *t;
   double *PDense;
@@ -697,70 +698,6 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   delete PInfo;
   delete PNodes;
   delete P2Nodes;
-
-  if(printPEMap)
-  {
-
-    int NTier = 1 << AInfo->depth;
-
-    DEBUG("NTier = %d\n", NTier);
-
-    CkPrintf("PE map for A\n");
-    A.updatePEMap(CkCallbackResumeThread());
-    PEMapMsg *PEMap = A.getPEMap();
-
-    CkPrintf("PEMap for matrix A:\n");
-    for(int i = 0; i < NTier; i++) {
-      for(int j = 0; j < NTier; j++)
-      {
-        int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
-        CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
-            PEMap->PEMap[matrix_offset],
-            PEMap->PEMap_norm[matrix_offset]);
-      }
-    }
-    CkPrintf("end of PEMap for matrix A\n");
-    delete PEMap;
-
-    CkPrintf("PE map for C\n");
-    C.updatePEMap(CkCallbackResumeThread());
-    PEMap = C.getPEMap();
-
-    CkPrintf("PEMap for matrix C:\n");
-    for(int i = 0; i < NTier; i++) {
-      for(int j = 0; j < NTier; j++)
-      {
-        int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
-        CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
-            PEMap->PEMap[matrix_offset],
-            PEMap->PEMap_norm[matrix_offset]);
-      }
-    }
-    CkPrintf("end of PEMap for matrix C\n");
-    delete PEMap;
-
-    if(operation == multiply)
-    {
-      CkPrintf("PE map for convolution\n");
-      M.updatePEMap(CkCallbackResumeThread());
-      PEMap = M.getPEMap();
-
-      CkPrintf("PEMap for convolution:\n");
-      for(int i = 0; i < NTier; i++) {
-        for(int j = 0; j < NTier; j++) {
-          for(int k = 0; k < NTier; k++)
-          {
-            int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
-            CkPrintf("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
-                PEMap->PEMap[matrix_offset],
-                PEMap->PEMap_norm[matrix_offset]);
-          }
-        }
-      }
-      CkPrintf("end of PEMap for convolution\n");
-      delete PEMap;
-    }
-  }
 
   /* Start SP2 iterations. */
   double occupation[4] = { 0, 0, 0, 0 };
@@ -822,6 +759,65 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
           break;
         }
       }
+    }
+
+    /* Print the PE map. */
+    if(printPEMap)
+    {
+      MatrixInfoMsg *PInfo = P.info();
+      int NTier = 1 << PInfo->depth;
+
+      DEBUG("NTier = %d\n", NTier);
+
+      P.updatePEMap(CkCallbackResumeThread());
+      PEMapMsg *PEMap = P.getPEMap();
+
+      CkPrintf("PEMap for matrix P:\n");
+      for(int i = 0; i < NTier; i++) {
+        for(int j = 0; j < NTier; j++)
+        {
+          int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
+          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+              PEMap->PEMap[matrix_offset],
+              PEMap->PEMap_norm[matrix_offset]);
+        }
+      }
+      CkPrintf("end of PEMap for matrix P\n");
+      delete PEMap;
+
+      P2.updatePEMap(CkCallbackResumeThread());
+      PEMap = P2.getPEMap();
+
+      CkPrintf("PEMap for matrix P2:\n");
+      for(int i = 0; i < NTier; i++) {
+        for(int j = 0; j < NTier; j++)
+        {
+          int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
+          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+              PEMap->PEMap[matrix_offset],
+              PEMap->PEMap_norm[matrix_offset]);
+        }
+      }
+      CkPrintf("end of PEMap for matrix P2\n");
+      delete PEMap;
+
+      M.updatePEMap(CkCallbackResumeThread());
+      PEMap = M.getPEMap();
+
+      CkPrintf("PEMap for convolution:\n");
+      for(int i = 0; i < NTier; i++) {
+        for(int j = 0; j < NTier; j++) {
+          for(int k = 0; k < NTier; k++)
+          {
+            int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
+            CkPrintf("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
+                PEMap->PEMap[matrix_offset],
+                PEMap->PEMap_norm[matrix_offset]);
+          }
+        }
+      }
+      CkPrintf("end of PEMap for convolution\n");
+      delete PEMap;
     }
 
     /* Load balance. */

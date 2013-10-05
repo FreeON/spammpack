@@ -23,7 +23,7 @@ class SpAMM : public CBase_SpAMM
         bool alignPEs, bool printPEMap);
     void runSP2 (int length, char *filename, int Ne, int blocksize,
         int maxIterations, double tolerance, bool loadBalance, int initialPE,
-        bool alignPEs);
+        bool alignPEs, bool printPEMap);
 };
 
 #endif
