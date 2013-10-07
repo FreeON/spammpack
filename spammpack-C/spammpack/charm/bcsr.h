@@ -61,6 +61,7 @@ class BCSR
     void toDense (int *M, int *N, double **ADense);
     void toStr (void);
     void put (char *filename);
+    void toMM (char *filename);
 };
 
 #endif

@@ -20,10 +20,12 @@
  */
 BCSRInfo::BCSRInfo (CkArgMsg *msg)
 {
+  char *MM_filename = NULL;
   int c;
-  const char *short_options = "h";
+  const char *short_options = "hw:";
   const struct option long_options[] = {
-    { "help", no_argument, NULL, 'h' },
+    { "help",     no_argument,        NULL, 'h' },
+    { "write-MM", required_argument,  NULL, 'w' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -36,7 +38,14 @@ BCSRInfo::BCSRInfo (CkArgMsg *msg)
     {
       case 'h':
         CkPrintf("Usage:\n");
+        CkPrintf("\n");
+        CkPrintf("{ -h | --help }             This help\n");
+        CkPrintf("{ -w | --write-MM } FILE    Write matrix in MatrixMarket format to FILE\n");
         CkExit();
+        break;
+
+      case 'w':
+        MM_filename = strdup(optarg);
         break;
 
       default:
@@ -54,15 +63,12 @@ BCSRInfo::BCSRInfo (CkArgMsg *msg)
     A.getSpectralBounds(1, &F_min, &F_max);
     printf("spectral bounds eigensolve: [ %e, %e ]\n", F_min, F_max);
     A.toStr();
-    int M;
-    int N;
-    double *ADense;
-    A.toDense(&M, &N, &ADense);
-    if(M != N)
+
+    if(MM_filename != NULL)
     {
-      ABORT("non-square matrices are not supported\n");
+      A.toMM(MM_filename);
     }
-    printDense(N, ADense, "A");
+
     CkExit();
   }
 

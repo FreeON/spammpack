@@ -12,9 +12,13 @@
 #include "lapack_interface.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 /** The constructor.
  *
@@ -381,4 +385,95 @@ void BCSR::toStr (void)
 void BCSR::put (char *filename)
 {
   ABORT("FIXME\n");
+}
+
+/** Write a BCSR matrix into MatrixMarket format.
+ *
+ * @param filename The filename to write to.
+ *
+ * @return A string that contains the matrix in MatrixMarket format.
+ */
+void BCSR::toMM (char *filename)
+{
+  int fd = open(filename, O_CREAT | O_EXCL | O_WRONLY, 00644);
+
+  if(fd == -1)
+  {
+    if(errno == EEXIST)
+    {
+      ABORT("file \"%s\" already exists\n", filename);
+    }
+
+    else
+    {
+      ABORT("error accessing file: %s\n", strerror(errno));
+    }
+  }
+
+  else
+  {
+    FILE *fstream = fdopen(fd, "w");
+
+    fprintf(fstream, "%%%%MatrixMarket matrix coordinate double general\n");
+    fprintf(fstream, "%% %d x %d --> %d elements\n", M, N, M*N);
+    fprintf(fstream, "%d %d %d\n", M, N, numberNonZero);
+
+    for(int atom = 0; atom < NAtoms; atom++)
+    {
+      int MBlock = blockSize[atom];
+      int rowOffset = offset[atom];
+
+      for(int iRow = rowPointer[atom]; iRow < rowPointer[atom+1]; iRow++)
+      {
+        int NBlock = blockSize[columnPointer[iRow]];
+        int columnOffset = offset[columnPointer[iRow]];
+
+        for(int iSMat = 0; iSMat < NSMat; iSMat++)
+        {
+          int pointer = blockPointer[iRow]+iSMat*MBlock*NBlock;
+          int i_block;
+          int j_block;
+
+          switch(iSMat+1)
+          {
+            case 1:
+              i_block = rowOffset;
+              j_block = columnOffset;
+              break;
+
+            case 2:
+              i_block = rowOffset;
+              j_block = columnOffset+numberBasisFunctions;
+              break;
+
+            case 3:
+              i_block = rowOffset+numberBasisFunctions;
+              j_block = columnOffset;
+              break;
+
+            case 4:
+              i_block = rowOffset+numberBasisFunctions;
+              j_block = columnOffset+numberBasisFunctions;
+              break;
+
+            default:
+              ABORT("error\n");
+              break;
+          }
+
+          for(int i = 0; i < MBlock; i++) {
+            for(int j = 0; j < NBlock; j++)
+            {
+              fprintf(fstream, "%d %d % e\n", i+i_block, j+j_block, matrix[pointer+i+j*MBlock]);
+            }
+          }
+        }
+      }
+    }
+
+    if(fclose(fstream) != 0)
+    {
+      ABORT("error closing file\n");
+    }
+  }
 }
