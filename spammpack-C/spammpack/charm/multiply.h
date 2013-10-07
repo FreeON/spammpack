@@ -45,6 +45,9 @@ class Multiply : public CBase_Multiply
     /** The norms of the PEMap. */
     double *PEMap_norm;
 
+    /** The complexity of this Multiply. */
+    int complexity;
+
   public:
 
     Multiply (int initialPE, bool alignPEs, CProxy_Matrix A, CProxy_Matrix B,
@@ -55,6 +58,9 @@ class Multiply : public CBase_Multiply
     void updatePEMap (CkCallback &cb);
     void donePEMap (CkReductionMsg *data);
     PEMapMsg * getPEMap (void);
+    void updateComplexity (CkCallback &cb);
+    void doneComplexity (int complexity);
+    IntMsg * getComplexity (void);
 };
 
 #endif

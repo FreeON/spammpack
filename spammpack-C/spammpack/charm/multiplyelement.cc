@@ -409,4 +409,17 @@ void MultiplyElement::PEMap (CkCallback &cb)
   contribute(sizeof(PEMap_MultiplyElement_t), result, CkReduction::set, cb);
 }
 
+/** Update the complexity of this Multiply.
+ *
+ * @param cb The callback for the reduction.
+ */
+void MultiplyElement::complexity (CkCallback &cb)
+{
+  int complexity = 1;
+#ifndef PRUNE_CONVOLUTION
+  if(!isEnabled) { complexity = 0; }
+#endif
+  contribute(sizeof(int), &complexity, CkReduction::sum_int, cb);
+}
+
 #include "multiplyelement.def.h"

@@ -27,6 +27,7 @@
  * ./configure.LB
  * make
  * ./charmrun +p3 spamm -N 1024 -b 16 --type decay --decay 8 --tolerance 1e-8 --verify --iterations 10
+ * ./charmrun +p3 spamm --operation SP2 --Ne 100 --density something.OrthoF --tolerance 1e-8
  * @endcode
  *
  * @section References
@@ -693,12 +694,8 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   MatrixNodeMsg *PNodes = P.getNodes(PInfo->depth);
   MatrixNodeMsg *P2Nodes = P2.getNodes(PInfo->depth);
 
-  t = new Timer("getting P^2");
   CProxy_Multiply M = CProxy_Multiply::ckNew(initialPE, alignPEs, P, P, P2,
       blocksize, PInfo->depth, PNodes->nodes, PNodes->nodes, P2Nodes->nodes);
-  t->stop();
-  INFO("%s\n", t->to_str());
-  delete t;
 
   delete PInfo;
   delete PNodes;
@@ -715,6 +712,9 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     t = new Timer("iteration %2d", iteration+1);
 
     M.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread()); /* P2 <- P*P */
+
+    M.updateComplexity(CkCallbackResumeThread());
+    IntMsg *complexity = M.getComplexity();
 
     //P0Dense = P.toDense();
     //printDense(P0Dense->N, P0Dense->A, "P%d^2", iteration+1);
@@ -741,9 +741,10 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     }
 
     t->stop();
-    INFO("%s: trace(P) = %e (Ne/2 = %e, trace(P)-Ne/2 = % e)\n", t->to_str(),
-        trace_P->x, Ne/2.0, trace_P->x-Ne/2.0);
+    INFO("%s: trace(P) = %e (Ne/2 = %e, trace(P)-Ne/2 = % e) complexity %d\n", t->to_str(),
+        trace_P->x, Ne/2.0, trace_P->x-Ne/2.0, complexity->i);
     delete t;
+    delete complexity;
 
     occupation[0] = trace_P->x;
     for(int i = 3; i >= 1; i--)

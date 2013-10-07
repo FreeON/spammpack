@@ -82,6 +82,7 @@ class MultiplyElement : public CBase_MultiplyElement
 #endif
     void storeBack (double alpha, CkCallback &cb);
     void PEMap (CkCallback &cb);
+    void complexity (CkCallback &cb);
 };
 
 #endif

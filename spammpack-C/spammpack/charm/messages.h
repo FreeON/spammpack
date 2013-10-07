@@ -36,6 +36,17 @@ class DoubleMsg : public CMessage_DoubleMsg
     DoubleMsg (double x);
 };
 
+/** A simple int value. */
+class IntMsg : public CMessage_IntMsg
+{
+  public:
+
+    /** The int value. */
+    int i;
+
+    IntMsg (int i);
+};
+
 /** A message containing some matrix information. */
 class MatrixInfoMsg : public CMessage_MatrixInfoMsg
 {

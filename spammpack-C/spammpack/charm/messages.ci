@@ -1,6 +1,7 @@
 module messages
 {
   message DoubleMsg;
+  message IntMsg;
   message MatrixInfoMsg;
   message MatrixNodeMsg;
   message NodeInfoMsg;

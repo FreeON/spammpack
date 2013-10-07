@@ -20,6 +20,15 @@ DoubleMsg::DoubleMsg (double x)
 
 /** The constructor.
  *
+ * @param i The value of this message.
+ */
+IntMsg::IntMsg (int i)
+{
+  this->i = i;
+}
+
+/** The constructor.
+ *
  * @param N The matrix size.
  * @param blocksize The submatrix size at the lowest tier.
  * @param depth The tree depth of the matrix.

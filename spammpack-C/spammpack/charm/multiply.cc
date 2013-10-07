@@ -216,4 +216,34 @@ PEMapMsg * Multiply::getPEMap (void)
   return msg;
 }
 
+/** Update the complexity count for this product.
+ *
+ * @param cb The callback to signal when done.
+ */
+void Multiply::updateComplexity (CkCallback &cb)
+{
+  this->cb = cb;
+  CkCallback done(CkReductionTarget(Multiply, doneComplexity), thisProxy);
+  convolution[depth].complexity(done);
+}
+
+/** The reduction target for Multiply::updateComplexity.
+ *
+ * @param complexity The complexity of the Multiply.
+ */
+void Multiply::doneComplexity (int complexity)
+{
+  this->complexity = complexity;
+  cb.send();
+}
+
+/** Return the complexity.
+ *
+ * @return The complexity.
+ */
+IntMsg * Multiply::getComplexity (void)
+{
+  return new IntMsg(complexity);
+}
+
 #include "multiply.def.h"

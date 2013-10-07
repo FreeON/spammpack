@@ -13,5 +13,8 @@ module multiply
     entry [threaded] void updatePEMap (CkCallback &cb);
     entry [reductiontarget] void donePEMap (CkReductionMsg *data);
     entry [sync] PEMapMsg * getPEMap (void);
+    entry [threaded] void updateComplexity (CkCallback &cb);
+    entry [reductiontarget] void doneComplexity (int complexity);
+    entry [sync] IntMsg * getComplexity (void);
   };
 };
