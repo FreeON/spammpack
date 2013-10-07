@@ -125,10 +125,10 @@ void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback
 {
   DEBUG("tolerance = %e\n", tolerance);
 
+  /* Prune convolution to reduce the complexity in the symbolic part of the
+   * multiply. */
   for(int tier = 0; tier < depth; tier++)
   {
-    /* Prune convolution to achieve reduced complexity in symbolic part of the
-     * multiply. */
     DEBUG("pruning tier %d\n", tier+1);
     MatrixNodeMsg *ANodes = A.getNodes(tier+1);
     MatrixNodeMsg *BNodes = B.getNodes(tier+1);

@@ -60,6 +60,7 @@ class Node : public CBase_Node
     void pup (PUP::er &p);
     NodeInfoMsg * info (void);
     DenseMatrixMsg * getBlock (void);
+    void blockNorm (void);
     void set (int blocksize, double *A, CkCallback &cb);
     void setNorm (CProxy_Node nodes, CkCallback &cb);
     void blockAdd (double alpha, int blocksize, double *A);

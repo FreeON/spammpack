@@ -35,7 +35,7 @@ def get_complexity (P, tolerance, blocksize):
   norm = np.matrix(np.zeros(( N, N )))
   for i in range(N):
     for j in range(N):
-      norm[i, j] = np.linalg.norm(P[(i*N):((i+1)*N),(j*N):((j+1)*N)])
+      norm[i, j] = np.linalg.norm(P[(i*N):((i+1)*N),(j*N):((j+1)*N)], "fro")
 
   complexity = 0
   for i in range(N):
@@ -168,7 +168,9 @@ def main ():
       occupation[i] = occupation[i-1]
 
   if converged:
-    print("converged in {:d} steps".format(i+1))
+    print("SP2 converged in {:d} steps".format(i+1))
+    print("idempotency error          = {:e}".format(abs(occupation[1]-occupation[0])))
+    print("previous idempotency error = {:e}".format(abs(occupation[3]-occupation[2])))
 
     if options.bin_density:
       print_histogram(P)

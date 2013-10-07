@@ -198,6 +198,13 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       delete ABlock;
       delete BBlock;
     }
+
+#ifndef PRUNE_CONVOLUTION
+    else
+    {
+      INFO(LB"this product was enabled but its norm product was below the tolerance\n"LE);
+    }
+#endif
   }
 
 #ifndef PRUNE_CONVOLUTION
@@ -322,7 +329,11 @@ void MultiplyElement::setNextConvolution (CProxy_MultiplyElement nextConvolution
  */
 void MultiplyElement::enable (CkCallback &cb)
 {
-  isEnabled = true;
+  if(!isEnabled)
+  {
+    isEnabled = true;
+    DEBUG(LB"enabling previously disabled element\n"LE);
+  }
   cb.send();
 }
 

@@ -697,6 +697,8 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   CProxy_Multiply M = CProxy_Multiply::ckNew(initialPE, alignPEs, P, P, P2,
       blocksize, PInfo->depth, PNodes->nodes, PNodes->nodes, P2Nodes->nodes);
 
+  int full_complexity = (1 << PInfo->depth)*(1 << PInfo->depth)*(1 << PInfo->depth);
+
   delete PInfo;
   delete PNodes;
   delete P2Nodes;
@@ -741,8 +743,8 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     }
 
     t->stop();
-    INFO("%s: trace(P) = %e (Ne/2 = %e, trace(P)-Ne/2 = % e) complexity %d\n", t->to_str(),
-        trace_P->x, Ne/2.0, trace_P->x-Ne/2.0, complexity->i);
+    INFO("%s: trace(P) = %e (Ne/2 = %e, trace(P)-Ne/2 = % e) complexity %d (out of %d)\n", t->to_str(),
+        trace_P->x, Ne/2.0, trace_P->x-Ne/2.0, complexity->i, full_complexity);
     delete t;
     delete complexity;
 
