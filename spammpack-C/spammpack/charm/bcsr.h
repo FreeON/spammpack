@@ -58,6 +58,8 @@ class BCSR
     BCSR (char *filename);
     ~BCSR (void);
     void getSpectralBounds (int method, double *minBound, double *maxBound);
+    int getNumberNonZero (void);
+    double getElement (int i);
     void toDense (int *M, int *N, double **ADense);
     void toStr (void);
     void put (char *filename);

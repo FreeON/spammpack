@@ -34,6 +34,11 @@ def main ():
       type = int,
       default = 100)
 
+  parser.add_argument("--bin-density",
+      help = "Print histogram of binned matrix elements of density guess\n",
+      action = "store_true",
+      default = False)
+
   parser.add_argument("--debug", "-d",
       help = "Print debugging stuff",
       action = "store_true",
@@ -56,6 +61,17 @@ def main ():
   if options.debug:
     print(P)
     write_MM(P)
+
+  if options.bin_density:
+    print("matrix element magnitudes:")
+    hist, bin_edges = np.histogram(abs(P[abs(P) > 0]),
+        [ 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0 ])
+    cumulative = 0
+    for i in range(len(bin_edges)-1):
+      cumulative += hist[i]
+      print("[ {:e}, {:e} ) = {:5d} {:5d} {:6.3f}%".format(
+        bin_edges[i], bin_edges[i+1], hist[i], cumulative,
+        100*cumulative/P.shape[0]/P.shape[1]))
 
   if options.max_iterations < 20:
     i_min = options.max_iterations

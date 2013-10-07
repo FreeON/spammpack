@@ -266,6 +266,29 @@ void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
   }
 }
 
+/** Return the number of non-zero elements.
+ *
+ * @return The number of non-zero elements.
+ */
+int BCSR::getNumberNonZero (void)
+{
+  return numberNonZero;
+}
+
+/** Get a particular non-zero element.
+ *
+ * @param i The index of the non-zero element.
+ *
+ * @return The value of that element.
+ */
+double BCSR::getElement (int i)
+{
+  assert(i >= 0);
+  assert(i < numberNonZero);
+
+  return matrix[i];
+}
+
 /** Convert a BCSR matrix into a dense matrix.
  *
  * @param M [out] The number of rows.
