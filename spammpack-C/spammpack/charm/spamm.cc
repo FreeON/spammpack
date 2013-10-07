@@ -650,6 +650,11 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
 
   LBDatabase *db = LBDatabaseObj();
 
+  if(maxIterations == 1)
+  {
+    maxIterations = 100;
+  }
+
   BCSR F(filename);
 
   F.getSpectralBounds(0, &F_min, &F_max);
@@ -823,7 +828,7 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     /* Load balance. */
     if(loadBalance)
     {
-      INFO("load balancing\n");
+      DEBUG("load balancing\n");
       db->StartLB();
       CkWaitQD();
     }
