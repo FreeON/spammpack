@@ -66,6 +66,7 @@ def main ():
   trace_P = np.trace(P)
   print("iteration  0: trace(P) = {:e}".format(trace_P))
 
+  converged = False
   for i in range(options.max_iterations):
     P2 = P*P
     trace_P2 = np.trace(P2)
@@ -90,11 +91,17 @@ def main ():
       if current_error < 1e-2:
         last_error = abs(occupation[3]-occupation[2])
         if last_error <= current_error:
-          print("converged in {:d} steps".format(i+1))
+          converged = True
           break
 
     for i in range(3, 0, -1):
       occupation[i] = occupation[i-1]
+
+  if converged:
+    print("converged in {:d} steps".format(i+1))
+  else:
+    print("failed to converge")
+    sys.exit(1)
 
 ##############################################
 

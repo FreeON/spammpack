@@ -149,4 +149,29 @@ fi
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile Doxyfile])
 
+AC_CONFIG_COMMANDS([sp2_test.sh],
+[cat > sp2_test.sh << END_OF_SCRIPT
+#!/bin/bash
+${srcdir}/sp2.py --Ne 2 random.mm || exit 1
+END_OF_SCRIPT
+chmod 755 sp2_test.sh
+])
+
+AC_CONFIG_COMMANDS([random.mm],
+[cat > random.mm << END_OF_SCRIPT
+%%MatrixMarket matrix coordinate double general
+% Random matrix
+3 3 9
+1 1 0.18501521481190797
+1 2 1.4468044758617939
+1 3 1.1553404778926066
+2 1 1.4468044758617939
+2 2 1.9687648266446316
+2 3 1.2168112202078234
+3 1 1.1553404778926066
+3 2 1.2168112202078234
+3 3 0.97822861428160168
+END_OF_SCRIPT
+])
+
 AC_OUTPUT

@@ -22,7 +22,7 @@ additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLA
 
 if HAVE_PYTHON
 python_PYTHON = plotPEMap.py sp2.py spectral_bounds.py matrix_market.py
-dist_check_SCRIPTS = sp2_test.sh
+check_SCRIPTS = sp2_test.sh
 TESTS = sp2_test.sh
 endif
 
@@ -119,4 +119,11 @@ docs-pdf : docs
 %.decl.h %.def.h : %.ci
 	$(AM_V_CXX)$(CHARMC) $(DEFAULT_INCLUDES) -preprocess $<
 
-CLEANFILES = $(spamm_CHARMHEADERS) $(BCSRInfo_CHARMHEADERS) charmrun
+CLEANFILES = \
+	$(spamm_CHARMHEADERS) \
+	$(BCSRInfo_CHARMHEADERS) \
+	charmrun
+
+DISTCLEANFILES = \
+	$(TESTS) \
+	random.mm
