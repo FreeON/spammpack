@@ -16,6 +16,36 @@ import sys
 from spectral_bounds import *
 from matrix_market import *
 
+## Calculate the product complexity.
+#
+# @param P The matrix.
+# @param tolerance The SpAMM tolerance.
+# @param blocksize The hypothetical blocksize.
+#
+# @return The complexity.
+def get_complexity (P, tolerance, blocksize):
+  if blocksize <= 0:
+    return 0
+
+  N = 1
+  while N*blocksize < P.shape[0]:
+    N *= 2
+  #print("{:d}x{:d} matrix -> N = {:d}".format(P.shape[0], P.shape[1], N))
+
+  norm = np.matrix(np.zeros(( N, N )))
+  for i in range(N):
+    for j in range(N):
+      norm[i, j] = np.linalg.norm(P[(i*N):((i+1)*N),(j*N):((j+1)*N)])
+
+  complexity = 0
+  for i in range(N):
+    for j in range(N):
+      for k in range(N):
+        if norm[i, k]*norm[k, j] > tolerance:
+          complexity += 1
+
+  return complexity, N**3
+
 ## Print a histogram of the matrix elements.
 #
 # @param P The matrix.
@@ -53,9 +83,19 @@ def main ():
       default = 100)
 
   parser.add_argument("--bin-density",
-      help = "Print histogram of binned matrix elements of density guess\n",
+      help = "Print histogram of binned matrix elements of density guess",
       action = "store_true",
       default = False)
+
+  parser.add_argument("--tolerance",
+      help = "The hypothetical SpAMM tolerance",
+      type = float,
+      default = 0)
+
+  parser.add_argument("--blocksize",
+      help = "Set a hypothetical blocksize to calculate product complexities",
+      type = int,
+      default = 0)
 
   parser.add_argument("--debug", "-d",
       help = "Print debugging stuff",
@@ -96,6 +136,7 @@ def main ():
   for i in range(options.max_iterations):
     P2 = P*P
     trace_P2 = np.trace(P2)
+    complexity, full_complexity = get_complexity(P, options.tolerance, options.blocksize)
 
     if options.debug:
       print(P2)
@@ -109,8 +150,11 @@ def main ():
 
     occupation[0] = trace_P
 
-    print("iteration {:2d}: trace(P) = {:e}, trace(P)-Ne/2 = {: e}".format(
-      i+1, trace_P, trace_P-options.Ne/2.0))
+    print("iteration {:2d}: ".format(i+1)
+        + "trace(P) = {:e}, ".format(trace_P)
+        + "trace(P)-Ne/2 = {: e}, ".format(trace_P-options.Ne/2.0)
+        + "complexity = {:d} ".format(complexity)
+        + "(out of {:d})".format(full_complexity))
 
     if i > i_min:
       current_error = abs(occupation[1]-occupation[0])
