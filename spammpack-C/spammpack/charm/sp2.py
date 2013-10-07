@@ -8,12 +8,30 @@
 # @author Matt Challacombe <matt.challacombe@freeon.org>
 
 import argparse
+import math
 import numpy as np
 import re
 import sys
 
 from spectral_bounds import *
 from matrix_market import *
+
+## Print a histogram of the matrix elements.
+#
+# @param P The matrix.
+def print_histogram (P):
+  print("matrix element magnitudes:")
+  hist, bin_edges = np.histogram(abs(P[abs(P) > 0]),
+      [ 0, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2,
+        1e-1, 1.0, 2.0 ])
+  count_width = int(math.ceil(math.log(P.shape[0]*P.shape[1], 10)))
+  format_string = "[ {:1.2e}, {:1.2e} ) = {:" + str(count_width) + "d} {:" + str(count_width) + "d} {:6.3f}%"
+  cumulative = 0
+  for i in range(len(bin_edges)-1):
+    cumulative += hist[i]
+    print(format_string.format(
+      bin_edges[i], bin_edges[i+1], hist[i], cumulative,
+      100*cumulative/P.shape[0]/P.shape[1]))
 
 ## The main program.
 def main ():
@@ -63,15 +81,7 @@ def main ():
     write_MM(P)
 
   if options.bin_density:
-    print("matrix element magnitudes:")
-    hist, bin_edges = np.histogram(abs(P[abs(P) > 0]),
-        [ 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0 ])
-    cumulative = 0
-    for i in range(len(bin_edges)-1):
-      cumulative += hist[i]
-      print("[ {:e}, {:e} ) = {:5d} {:5d} {:6.3f}%".format(
-        bin_edges[i], bin_edges[i+1], hist[i], cumulative,
-        100*cumulative/P.shape[0]/P.shape[1]))
+    print_histogram(P)
 
   if options.max_iterations < 20:
     i_min = options.max_iterations
@@ -115,6 +125,10 @@ def main ():
 
   if converged:
     print("converged in {:d} steps".format(i+1))
+
+    if options.bin_density:
+      print_histogram(P)
+
   else:
     print("failed to converge")
     sys.exit(1)
