@@ -285,7 +285,7 @@ void MultiplyElement::pruneProduct (double tolerance,
           if(AInfo->norm*BInfo->norm > tolerance)
           {
             /* If necessary, create MultiplyElement. */
-            DEBUG(LB"keeping tier %d, convolution(%d,%d,%d) "
+            INFO(LB"keeping tier %d, convolution(%d,%d,%d) "
                 "A[%d:%d,%d:%d]*B[%d:%d,%d:%d] "
                 "(%e * %e = %e > %e)\n"LE, tier+1,
                 nextX, nextY, nextZ,
@@ -306,7 +306,7 @@ void MultiplyElement::pruneProduct (double tolerance,
           else
           {
             /* If necessary, destroy MultiplyElement. */
-            DEBUG(LB"pruning tier %d, convolution(%d,%d,%d) "
+            INFO(LB"pruning tier %d, convolution(%d,%d,%d) "
                 "A[%d:%d,%d:%d]*B[%d:%d,%d:%d] "
                 "(%e * %e = %e <= %e)\n"LE, tier+1,
                 nextX, nextY, nextZ,

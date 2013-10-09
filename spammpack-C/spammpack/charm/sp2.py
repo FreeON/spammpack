@@ -45,7 +45,22 @@ def get_complexity (P, tolerance, blocksize):
     for j in range(N):
       for k in range(N):
         if norm[i, k]*norm[k, j] > tolerance:
+          print("keeping ({:d},{:d},{:d}) ".format(i, j, k)
+              + "A[{:d}:{:d},{:d}:{:d}]*".format(
+                i*blocksize, (i+1)*blocksize, k*blocksize, (k+1)*blocksize)
+              + "B[{:d}:{:d},{:d}:{:d}] ".format(
+                k*blocksize, (k+1)*blocksize, j*blocksize, (j+1)*blocksize)
+              + "({:e} * {:e} = {:e} ".format(
+                norm[i, k], norm[k, j], norm[i, k]*norm[k, j]))
           complexity += 1
+        else:
+          print("pruning ({:d},{:d},{:d}) ".format(i, j, k)
+              + "A[{:d}:{:d},{:d}:{:d}]*".format(
+                i*blocksize, (i+1)*blocksize, k*blocksize, (k+1)*blocksize)
+              + "B[{:d}:{:d},{:d}:{:d}] ".format(
+                k*blocksize, (k+1)*blocksize, j*blocksize, (j+1)*blocksize)
+              + "({:e} * {:e} = {:e} ".format(
+                norm[i, k], norm[k, j], norm[i, k]*norm[k, j]))
 
   return complexity, (math.ceil(P.shape[0]/blocksize))**3
 
