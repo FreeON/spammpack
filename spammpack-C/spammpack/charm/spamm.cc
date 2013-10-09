@@ -746,7 +746,7 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     }
 
     t->stop();
-    INFO("%s: trace(P) = %e (Ne/2 = %e, trace(P)-Ne/2 = % e) complexity %d (out of %d)\n", t->to_str(),
+    INFO("%s: trace(P) = %e (Ne/2 = %1.1f, trace(P)-Ne/2 = % e) complexity %d (out of %d)\n", t->to_str(),
         trace_P->x, Ne/2.0, trace_P->x-Ne/2.0, complexity->i, full_complexity);
     delete t;
     delete complexity;
