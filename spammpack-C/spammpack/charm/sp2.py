@@ -30,12 +30,15 @@ def get_complexity (P, tolerance, blocksize):
   N = 1
   while N*blocksize < P.shape[0]:
     N *= 2
-  #print("{:d}x{:d} matrix -> N = {:d}".format(P.shape[0], P.shape[1], N))
+
+  PPadded = np.matrix(np.zeros(( N*blocksize, N*blocksize )))
+  PPadded[0:P.shape[0], 0:P.shape[1]] = P
 
   norm = np.matrix(np.zeros(( N, N )))
   for i in range(N):
     for j in range(N):
-      norm[i, j] = np.linalg.norm(P[(i*N):((i+1)*N),(j*N):((j+1)*N)], "fro")
+      norm[i, j] = np.linalg.norm(PPadded[(i*blocksize):((i+1)*blocksize),
+        (j*blocksize):((j+1)*blocksize)], "fro")
 
   complexity = 0
   for i in range(N):
@@ -44,7 +47,7 @@ def get_complexity (P, tolerance, blocksize):
         if norm[i, k]*norm[k, j] > tolerance:
           complexity += 1
 
-  return complexity, N**3
+  return complexity, (math.ceil(P.shape[0]/blocksize))**3
 
 ## Print a histogram of the matrix elements.
 #
