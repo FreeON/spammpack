@@ -58,6 +58,7 @@ class Node : public CBase_Node
     Node (CkMigrateMessage *msg);
     ~Node (void);
     void pup (PUP::er &p);
+    void init (CkCallback &cb);
     NodeInfoMsg * info (void);
     DenseMatrixMsg * getBlock (void);
     void blockNorm (void);

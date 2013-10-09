@@ -3,7 +3,10 @@ module messages
   message DoubleMsg;
   message IntMsg;
   message MatrixInfoMsg;
-  message MatrixNodeMsg;
+  message MatrixNodeMsg
+  {
+    CProxy_Node nodes[];
+  };
   message NodeInfoMsg;
   message DenseMatrixMsg
   {

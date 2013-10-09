@@ -12,6 +12,7 @@
  * The following messages are known:
  *
  * - DoubleMsg
+ * - IntMsg
  * - MatrixInfoMsg
  * - MatrixNodeMsg
  * - NodeInfoMsg
@@ -73,10 +74,13 @@ class MatrixNodeMsg : public CMessage_MatrixNodeMsg
 {
   public:
 
-    /** The Node chare array. */
-    CProxy_Node nodes;
+    /** The size of the Node char array. */
+    int numberTiers;
 
-    MatrixNodeMsg (CProxy_Node nodes);
+    /** The Node chare array. */
+    CProxy_Node *nodes;
+
+    MatrixNodeMsg (int numberTiers);
 };
 
 /** A message containing information on matrix nodes. */
@@ -87,13 +91,31 @@ class NodeInfoMsg : public CMessage_NodeInfoMsg
     /** The linear index of this node. */
     int index;
 
+    /** The lower row index. */
+    int iLower;
+
+    /** The upper row index. */
+    int iUpper;
+
+    /** The lower column index. */
+    int jLower;
+
+    /** The upper column index. */
+    int jUpper;
+
     /** The norm of this matrix block. */
     double norm;
 
     /** The square of the norm of this matrix block. */
     double norm_2;
 
-    NodeInfoMsg (int index, double norm, double norm_2);
+    NodeInfoMsg (int index,
+        int iLower,
+        int iUpper,
+        int jLower,
+        int jUpper,
+        double norm,
+        double norm_2);
 };
 
 /** A message containing a dense matrix. */

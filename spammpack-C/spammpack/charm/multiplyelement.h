@@ -56,11 +56,12 @@ class MultiplyElement : public CBase_MultiplyElement
 
   public:
 
-    MultiplyElement (int blocksize, int tier, int depth, CProxy_Node A,
-        CProxy_Node B, CProxy_Node C);
+    MultiplyElement (int blocksize, int tier, int depth,
+        CProxy_Node A, CProxy_Node B, CProxy_Node C);
     MultiplyElement (CkMigrateMessage *msg);
     ~MultiplyElement ();
     void pup (PUP::er &p);
+    void init (CkCallback &cb);
     void multiply (double tolerance, CkCallback &cb);
 #ifdef PRUNE_CONVOLUTION
     void pruneProduct (int NTier,

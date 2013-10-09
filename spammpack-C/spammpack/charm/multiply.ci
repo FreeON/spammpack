@@ -5,9 +5,8 @@ module multiply
   extern module messages;
   chare Multiply
   {
-    entry Multiply (int initialPE, bool alignPEs, CProxy_Matrix A,
-        CProxy_Matrix B, CProxy_Matrix C, int blocksize, int depth,
-        CProxy_Node ANodes, CProxy_Node BNodes, CProxy_Node CNodes);
+    entry Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C);
+    entry [threaded] void init (int initialPE, bool alignPEs, CkCallback &cb);
     entry [threaded] void multiply (double tolerance, double alpha,
         double beta, CkCallback &cb);
     entry [threaded] void updatePEMap (CkCallback &cb);

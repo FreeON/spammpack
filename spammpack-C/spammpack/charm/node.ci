@@ -4,6 +4,7 @@ module node
   array [2D] Node
   {
     entry Node (int N, int depth, int blocksize, int tier);
+    entry void init (CkCallback &cb);
     entry [sync] NodeInfoMsg * info (void);
     entry [sync] DenseMatrixMsg * getBlock (void);
     entry void set (int blocksize, double A[blocksize*blocksize], CkCallback &cb);

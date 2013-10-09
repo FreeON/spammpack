@@ -120,6 +120,19 @@ void Node::pup (PUP::er &p)
   DEBUG(LB"pup()\n"LE);
 }
 
+/** Intialize the Node.
+ *
+ * This is merely a convenience method to force the Charm++ runtime to
+ * instantiate the Node. The RTS is sometimes a little too lazy...
+ *
+ * @param cb The callback to send to when done.
+ */
+void Node::init (CkCallback &cb)
+{
+  INFO(LB"initializing\n"LE);
+  contribute(cb);
+}
+
 /** Get information on a Node.
  *
  * @return A message.
@@ -130,7 +143,7 @@ NodeInfoMsg * Node::info (void)
       "norm = %e, norm_2 = %e\n"LE,
       toBinary(index).c_str(), norm, norm_2);
 
-  return new NodeInfoMsg(index, norm, norm_2);
+  return new NodeInfoMsg(index, iLower, iUpper, jLower, jUpper, norm, norm_2);
 }
 
 /** Get the dense submatrix block.
@@ -165,6 +178,8 @@ void Node::blockNorm (void)
     norm_2 += block[i]*block[i];
   }
   norm = sqrt(norm_2);
+
+  DEBUG(LB"norm = %e\n"LE, norm);
 }
 
 /** Set a matrix block in this Node.
@@ -185,7 +200,6 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   memcpy(block, A, sizeof(double)*blocksize*blocksize);
 
   blockNorm();
-  DEBUG(LB"norm = %e\n"LE, norm);
 
 #ifdef DEBUG_OUTPUT
   printDense(blocksize, block, LB"setting block:"LE);

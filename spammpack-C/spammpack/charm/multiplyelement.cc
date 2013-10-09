@@ -31,9 +31,9 @@
  * @param blocksize The blocksize.
  * @param tier The tier.
  * @param depth The depth of the matrix.
- * @param A The node of matrix A.
- * @param B The node of matrix B.
- * @param C The node of matrix C.
+ * @param A The Nodes of this tier in A.
+ * @param B The Nodes of this tier in B.
+ * @param C The Nodes of this tier in C.
  */
 MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
     CProxy_Node A, CProxy_Node B, CProxy_Node C)
@@ -126,6 +126,16 @@ void MultiplyElement::pup (PUP::er &p)
   DEBUG(LB"pup()\n"LE);
 }
 
+/** Initialize this MultiplyElement.
+ *
+ * @param cb The callback to reduce to.
+ */
+void MultiplyElement::init (CkCallback &cb)
+{
+  INFO(LB"initializing\n"LE);
+  contribute(cb);
+}
+
 /** Multiply nodes.
  *
  * @f[ C \leftarrow \beta C + \alpha A \times B @f]
@@ -135,6 +145,8 @@ void MultiplyElement::pup (PUP::er &p)
  */
 void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 {
+  assert(tier == depth);
+
   DEBUG(LB"multiply\n"LE);
 
 #ifndef PRUNE_CONVOLUTION
@@ -273,8 +285,13 @@ void MultiplyElement::pruneProduct (double tolerance,
           if(AInfo->norm*BInfo->norm > tolerance)
           {
             /* If necessary, create MultiplyElement. */
-            DEBUG(LB"keeping/creating tier %d, convolution(%d,%d,%d)\n"LE,
-                tier+1, nextX, nextY, nextZ);
+            DEBUG(LB"keeping tier %d, convolution(%d,%d,%d) "
+                "A[%d:%d,%d:%d]*B[%d:%d,%d:%d] "
+                "(%e * %e = %e > %e)\n"LE, tier+1,
+                nextX, nextY, nextZ,
+                AInfo->iLower, AInfo->iUpper, AInfo->jLower, AInfo->jUpper,
+                BInfo->iLower, BInfo->iUpper, BInfo->jLower, BInfo->jUpper,
+                AInfo->norm, BInfo->norm, AInfo->norm*BInfo->norm, tolerance);
 #ifdef PRUNE_CONVOLUTION
             if(!nextConvolutionMap[BLOCK_INDEX_3(nextX, nextY, nextZ, NTier)])
             {
@@ -289,8 +306,13 @@ void MultiplyElement::pruneProduct (double tolerance,
           else
           {
             /* If necessary, destroy MultiplyElement. */
-            DEBUG(LB"pruning tier %d, convolution(%d,%d,%d)\n"LE, tier+1,
-                nextX, nextY, nextZ);
+            DEBUG(LB"pruning tier %d, convolution(%d,%d,%d) "
+                "A[%d:%d,%d:%d]*B[%d:%d,%d:%d] "
+                "(%e * %e = %e <= %e)\n"LE, tier+1,
+                nextX, nextY, nextZ,
+                AInfo->iLower, AInfo->iUpper, AInfo->jLower, AInfo->jUpper,
+                BInfo->iLower, BInfo->iUpper, BInfo->jLower, BInfo->jUpper,
+                AInfo->norm, BInfo->norm, AInfo->norm*BInfo->norm, tolerance);
 #ifdef PRUNE_CONVOLUTION
             if(nextConvolutionMap[BLOCK_INDEX_3(nextX, nextY, nextZ, NTier)])
             {
@@ -382,6 +404,8 @@ void MultiplyElement::disable (CkCallback &cb)
  */
 void MultiplyElement::storeBack (double alpha, CkCallback &cb)
 {
+  assert(tier == depth);
+
 #ifndef PRUNE_CONVOLUTION
   if(isEnabled)
 #endif

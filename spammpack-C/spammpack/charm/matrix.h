@@ -55,9 +55,10 @@ class Matrix : public CBase_Matrix
     Matrix (int initialPE, bool alignPEs, int N, int blocksize,
         int nameLength, char *name);
     ~Matrix (void);
+    void init (CkCallback &cb);
     MatrixInfoMsg * info (void);
     DenseMatrixMsg * toDense (void);
-    MatrixNodeMsg * getNodes (int tier);
+    MatrixNodeMsg * getNodes (void);
     void updatePEMap (CkCallback &cb);
     void donePEMap (CkReductionMsg *data);
     void set (int N, double *A, CkCallback &cb);

@@ -313,7 +313,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
   LBDatabase *db = LBDatabaseObj();
 
   CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, strlen("A"), "A");
-  CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, strlen("B"), "C");
+  CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, strlen("C"), "C");
 
   /* Initialize the matrices. */
   double *ADense = new double[N*N];
@@ -374,16 +374,15 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
   MatrixInfoMsg *AInfo = A.info();
   MatrixInfoMsg *CInfo = C.info();
 
-  MatrixNodeMsg *ANodes = A.getNodes(AInfo->depth);
-  MatrixNodeMsg *CNodes = C.getNodes(CInfo->depth);
+  MatrixNodeMsg *ANodes = A.getNodes();
+  MatrixNodeMsg *CNodes = C.getNodes();
 
   CProxy_Multiply M;
 
   if(operation == multiply)
   {
-    M = CProxy_Multiply::ckNew(initialPE, alignPEs, A, A, C,
-        AInfo->blocksize, AInfo->depth, ANodes->nodes, ANodes->nodes,
-        CNodes->nodes);
+    M = CProxy_Multiply::ckNew(A, A, C);
+    M.init(initialPE, alignPEs, CkCallbackResumeThread());
   }
 
   delete ANodes;
@@ -671,6 +670,7 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
       blocksize, strlen("P"), (char*) "P");
 
   P.set(NRows, PDense, CkCallbackResumeThread());
+  //P.init(CkCallbackResumeThread());
 
   Timer total_time("total time");
 
@@ -689,15 +689,17 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
 
   CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
       blocksize, strlen("P2"), (char*) "P2");
+  //P2.init(CkCallbackResumeThread());
 
   MatrixInfoMsg *PInfo = P.info();
-  MatrixNodeMsg *PNodes = P.getNodes(PInfo->depth);
-  MatrixNodeMsg *P2Nodes = P2.getNodes(PInfo->depth);
+  MatrixNodeMsg *PNodes = P.getNodes();
+  MatrixNodeMsg *P2Nodes = P2.getNodes();
 
-  CProxy_Multiply M = CProxy_Multiply::ckNew(initialPE, alignPEs, P, P, P2,
-      blocksize, PInfo->depth, PNodes->nodes, PNodes->nodes, P2Nodes->nodes);
+  CProxy_Multiply M = CProxy_Multiply::ckNew(P, P, P2);
+  M.init(initialPE, alignPEs, CkCallbackResumeThread());
 
-  int full_complexity = (1 << PInfo->depth)*(1 << PInfo->depth)*(1 << PInfo->depth);
+  int full_complexity = (int) ceil(NRows/(double) blocksize);
+  full_complexity = full_complexity*full_complexity*full_complexity;
 
   delete PInfo;
   delete PNodes;
@@ -707,6 +709,7 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   double occupation[4] = { 0, 0, 0, 0 };
   P.updateTrace(CkCallbackResumeThread());
   DoubleMsg *trace_P = P.getTrace();
+  INFO("tolerance = %e\n", tolerance);
   INFO("iteration  0: trace(P) = %e (Ne/2 = %e)\n", trace_P->x, Ne/2.0);
   bool converged = false;
   for(int iteration = 0; iteration < maxIterations; iteration++)

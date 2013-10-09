@@ -22,36 +22,71 @@
  *
  * @f[ C \leftarrow C + A \times B @f]
  *
- * @param initialPE The initial PE of the MultiplyElement chares.
- * @param alignPEs Align PEs in the diagonal matrix case.
  * @param A Matrix A.
  * @param B Matrix B.
  * @param C Matrix C.
- * @param blocksize The SpAMM blocksize.
- * @param depth The depth of the matrix trees.
- * @param ANodes The Node objects of A.
- * @param BNodes The Node objects of B.
- * @param CNodes The Node objects of C.
  */
-Multiply::Multiply (int initialPE, bool alignPEs, CProxy_Matrix A,
-    CProxy_Matrix B, CProxy_Matrix C, int blocksize, int depth,
-    CProxy_Node ANodes, CProxy_Node BNodes, CProxy_Node CNodes)
+Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C)
 {
   this->A = A;
   this->B = B;
   this->C = C;
 
-  this->depth = depth;
+  depth = -1;
+  convolution = NULL;
+#ifdef PRUNE_CONVOLUTION
+  convolutionMap = NULL;
+#endif
+  PEMap = NULL;
+  PEMap_norm = NULL;
+  complexity = -1;
+}
+
+/** The destructor.
+ */
+Multiply::~Multiply (void)
+{
+  delete[] PEMap;
+  delete[] PEMap_norm;
+#ifdef PRUNE_CONVOLUTION
+  for(int tier = 0; tier <= depth; tier++)
+  {
+    delete[] convolutionMap[tier];
+  }
+  delete[] convolutionMap;
+#endif
+}
+
+/** Initialize the convolution space.
+ *
+ * @param initialPE The initial PE of the MultiplyElement chares.
+ * @param alignPEs Align PEs in the diagonal matrix case.
+ * @param cb The callback to send to when done.
+ */
+void Multiply::init (int initialPE, bool alignPEs, CkCallback &cb)
+{
+  MatrixNodeMsg *ANodes = A.getNodes();
+  MatrixNodeMsg *BNodes = B.getNodes();
+  MatrixNodeMsg *CNodes = C.getNodes();
+
+  MatrixInfoMsg *CInfo = C.info();
+
+  depth = CInfo->depth;
 
   convolution = new CProxy_MultiplyElement[depth+1];
+  memset(convolution, 0, sizeof(CProxy_MultiplyElement)*(depth+1));
+
 #ifdef PRUNE_CONVOLUTION
   convolutionMap = new bool*[depth+1];
 #endif
+
   for(int tier = depth; tier >= 0; tier--)
   {
     int NTier = 1 << tier;
 
-    unsigned long bytes = NTier*NTier*NTier*(sizeof(MultiplyElement)+blocksize*blocksize*sizeof(double));
+    unsigned long bytes = NTier*NTier*NTier
+      *(sizeof(MultiplyElement)
+          +CInfo->blocksize*CInfo->blocksize*sizeof(double));
     INFO("created %dx%dx%d convolution, %d MultiplyElements "
         "using %d bytes (%s)\n",
         NTier, NTier, NTier, NTier*NTier*NTier,
@@ -69,8 +104,9 @@ Multiply::Multiply (int initialPE, bool alignPEs, CProxy_Matrix A,
           {
             initialPE = i%CkNumPes();
           }
-          convolution[tier](i, j, k).insert(blocksize, tier, depth,
-              ANodes, BNodes, CNodes, initialPE);
+          convolution[tier](i, j, k).insert(CInfo->blocksize, tier, depth,
+              ANodes->nodes[tier], BNodes->nodes[tier], CNodes->nodes[tier],
+              initialPE);
 #ifdef PRUNE_CONVOLUTION
           convolutionMap[tier][BLOCK_INDEX_3(i, j, k, NTier)] = true;
 #endif
@@ -90,21 +126,17 @@ Multiply::Multiply (int initialPE, bool alignPEs, CProxy_Matrix A,
       PEMap_norm = new double[NTier*NTier*NTier];
     }
   }
-}
 
-/** The destructor.
- */
-Multiply::~Multiply (void)
-{
-  delete[] PEMap;
-  delete[] PEMap_norm;
-#ifdef PRUNE_CONVOLUTION
-  for(int tier = 0; tier <= depth; tier++)
-  {
-    delete[] convolutionMap[tier];
-  }
-  delete[] convolutionMap;
-#endif
+  //for(int tier = 0; tier <= depth; tier++)
+  //{
+  //  convolution[tier].init(CkCallbackResumeThread());
+  //}
+
+  delete ANodes;
+  delete BNodes;
+  delete CNodes;
+
+  cb.send();
 }
 
 /** Multiply two Matrix objects.
@@ -127,33 +159,37 @@ void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback
 
   /* Prune convolution to reduce the complexity in the symbolic part of the
    * multiply. */
+  MatrixNodeMsg *ANodes = A.getNodes();
+  MatrixNodeMsg *BNodes = B.getNodes();
+
   for(int tier = 0; tier < depth; tier++)
   {
     DEBUG("pruning tier %d\n", tier+1);
-    MatrixNodeMsg *ANodes = A.getNodes(tier+1);
-    MatrixNodeMsg *BNodes = B.getNodes(tier+1);
 #ifdef PRUNE_CONVOLUTION
     int NTier = 1 << (tier+1);
     convolution[tier].pruneProduct(NTier, convolutionMap[tier+1], tolerance,
-        ANodes->nodes, BNodes->nodes, CkCallbackResumeThread());
-#else
-    convolution[tier].pruneProduct(tolerance, ANodes->nodes, BNodes->nodes,
+        ANodes->nodes[tier+1], BNodes->nodes[tier+1],
         CkCallbackResumeThread());
+#else
+    convolution[tier].pruneProduct(tolerance, ANodes->nodes[tier+1],
+        BNodes->nodes[tier+1], CkCallbackResumeThread());
 #endif
-    delete ANodes;
-    delete BNodes;
-
 #ifdef PRUNE_CONVOLUTION
     /* Mark the next tier as complete so that the load balancer can work. */
-    INFO("calling doneInserting() on tier %d\n", tier+1);
+    DEBUG("calling doneInserting() on tier %d\n", tier+1);
     convolution[tier+1].doneInserting();
+#else
+    DEBUG("done with tier %d\n", tier+1);
 #endif
   }
+  delete ANodes;
+  delete BNodes;
 
   /* Multiply. */
+  DEBUG("multiply\n");
   convolution[depth].multiply(tolerance, CkCallbackResumeThread());
 
-  DEBUG("scale by beta\n");
+  DEBUG("scale by beta (%e)\n", beta);
   C.scale(beta, CkCallbackResumeThread());
 
   DEBUG("storeBack\n");

@@ -40,6 +40,8 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
   NPadded = blocksize*(1 << depth);
 
   nodes = new CProxy_Node[depth+1];
+  memset(nodes, 0, sizeof(CProxy_Node)*(depth+1));
+
   for(int tier = 0; tier <= depth; tier++)
   {
     int NTier = 1 << tier;
@@ -70,6 +72,7 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
       PEMap_norm = new double[NTier*NTier];
     }
   }
+  DEBUG("done\n");
 }
 
 /** The destructor.
@@ -78,6 +81,20 @@ Matrix::~Matrix (void)
 {
   delete[] PEMap;
   delete[] PEMap_norm;
+}
+
+/** Initialize the matrix and its Nodes.
+ *
+ * @param cb The callback to notify once done.
+ */
+void Matrix::init (CkCallback &cb)
+{
+  INFO("initializing\n");
+  for(int tier = 0; tier < depth+1; tier++)
+  {
+    nodes[tier].init(CkCallbackResumeThread());
+  }
+  cb.send();
 }
 
 /** Get some basic information on the matrix.
@@ -124,14 +141,18 @@ DenseMatrixMsg * Matrix::toDense (void)
 
 /** Get the Node array on a particular tier.
  *
- * @param tier The tier.
- *
- * @return The Node array on that tier.
+ * @return The Node array of the matrix.
  */
-MatrixNodeMsg * Matrix::getNodes (int tier)
+MatrixNodeMsg * Matrix::getNodes (void)
 {
-  assert(tier >= 0 && tier <= depth);
-  return new MatrixNodeMsg(nodes[tier]);
+  DEBUG("getting nodes of matrix %s\n", name);
+  MatrixNodeMsg *msg = new (depth+1) MatrixNodeMsg(depth+1);
+  for(int tier = 0; tier < depth+1; tier++)
+  {
+    DEBUG("setting tier %d, isDelegated %d\n", tier, nodes[tier].ckIsDelegated());
+    msg->nodes[tier] = nodes[tier];
+  }
+  return msg;
 }
 
 /** Print the PEs all @link Node Nodes @endlink are on.
@@ -179,7 +200,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
 {
   assert(this->N == N);
 
-  DEBUG("setting %dx%d matrix\n", N, N);
+  DEBUG("setting %dx%d matrix %s\n", N, N, name);
 
   /* Set the A matrix. */
   double *block = new double[blocksize*blocksize];
@@ -197,6 +218,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
         }
       }
 
+      DEBUG("calling set on Node(%d,%d)\n", i, j);
       nodes[depth](i, j).set(blocksize, block, CkCallbackResumeThread());
     }
   }
@@ -205,7 +227,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
   /* Update norms. */
   thisProxy.setNorm(CkCallbackResumeThread());
 
-  INFO("done setting matrix\n");
+  DEBUG("done setting matrix\n");
   cb.send();
 }
 
@@ -279,8 +301,8 @@ DoubleMsg * Matrix::getTrace (void)
  */
 void Matrix::add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb)
 {
-  MatrixNodeMsg *BNodes = B.getNodes(depth);
-  nodes[depth].add(alpha, beta, BNodes->nodes, CkCallbackResumeThread());
+  MatrixNodeMsg *BNodes = B.getNodes();
+  nodes[depth].add(alpha, beta, BNodes->nodes[depth], CkCallbackResumeThread());
   thisProxy.setNorm(CkCallbackResumeThread());
   cb.send();
 }

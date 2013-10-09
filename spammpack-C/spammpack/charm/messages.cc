@@ -61,24 +61,44 @@ bool MatrixInfoMsg::equal (MatrixInfoMsg *b)
 
 /** The constructor.
  *
- * @param nodes The Node array.
+ * @param index The linear index of this node.
+ * @param iLower The lower row index.
+ * @param iUpper The upper row index.
+ * @param jLower The lower column index.
+ * @param jUpper The upper column index.
+ * @param norm The norm of this node.
+ * @param norm_2 The square of the norm of this node.
  */
-MatrixNodeMsg::MatrixNodeMsg (CProxy_Node nodes)
+NodeInfoMsg::NodeInfoMsg (int index,
+    int iLower,
+    int iUpper,
+    int jLower,
+    int jUpper,
+    double norm,
+    double norm_2)
 {
-  this->nodes = nodes;
+  this->index = index;
+  this->iLower = iLower;
+  this->iUpper = iUpper;
+  this->jLower = jLower;
+  this->jUpper = jUpper;
+  this->norm = norm;
+  this->norm_2 = norm_2;
 }
 
 /** The constructor.
  *
- * @param index The linear index of this node.
- * @param norm The norm of this node.
- * @param norm_2 The square of the norm of this node.
+ * @param numberTiers The number of tiers.
  */
-NodeInfoMsg::NodeInfoMsg (int index, double norm, double norm_2)
+MatrixNodeMsg::MatrixNodeMsg (int numberTiers)
 {
-  this->index = index;
-  this->norm = norm;
-  this->norm_2 = norm_2;
+  this->numberTiers = numberTiers;
+
+  /* We can't use the assignment CProxy::operator=() here since it will try to
+   * figure out the delegation status of the lhs, i.e. in nodes[tier] =
+   * CProxy_Node::ckNew(), and might segfault if the lhs was not set to 0.
+   */
+  memset(nodes, 0, numberTiers*sizeof(CProxy_Node));
 }
 
 #include "messages.def.h"

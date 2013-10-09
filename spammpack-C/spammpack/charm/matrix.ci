@@ -6,9 +6,10 @@ module matrix
   {
     entry Matrix (int initialPE, bool alignPEs, int N, int blocksize,
         int nameLength, char name[nameLength+1]);
+    entry [threaded] void init (CkCallback &cb);
     entry [sync] MatrixInfoMsg * info (void);
     entry [sync] DenseMatrixMsg * toDense (void);
-    entry [sync] MatrixNodeMsg * getNodes (int tier);
+    entry [sync] MatrixNodeMsg * getNodes (void);
     entry [threaded] void updatePEMap (CkCallback &cb);
     entry [reductiontarget] void donePEMap (CkReductionMsg *data);
     entry [threaded] void set (int N, double A[N*N], CkCallback &cb);

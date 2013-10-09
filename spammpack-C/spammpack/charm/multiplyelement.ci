@@ -6,8 +6,11 @@ module multiplyelement
   extern module messages;
   array [3D] MultiplyElement
   {
-    entry MultiplyElement (int blocksize, int tier, int depth, CProxy_Node A,
-        CProxy_Node B, CProxy_Node C);
+    entry MultiplyElement (int blocksize, int tier, int depth,
+        CProxy_Node A,
+        CProxy_Node B,
+        CProxy_Node C);
+    entry void init (CkCallback &cb);
     entry [threaded] void multiply (double tolerance, CkCallback &cb);
 #ifdef PRUNE_CONVOLUTION
     entry [threaded] void pruneProduct (int NTier,
