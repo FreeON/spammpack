@@ -643,7 +643,6 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     int maxIterations, double tolerance, bool loadBalance, int initialPE,
     bool alignPEs, bool printPEMap)
 {
-  Timer *t;
   double *PDense;
   int NRows, NColumns;
   double F_min, F_max;
@@ -680,6 +679,7 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   //P.init(CkCallbackResumeThread());
 
   Timer total_time("total time");
+  total_time.start();
 
   /* Scale Fockian to get initial density matrix guess.
    *
@@ -721,16 +721,16 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
   bool converged = false;
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
-    t = new Timer("iteration %2d", iteration+1);
+    Timer tMultiply("multiply");
+    Timer tSetEqual("setEq");
+    Timer tAdd("add");
 
+    tMultiply.start();
     M.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread()); /* P2 <- P*P */
+    tMultiply.stop();
 
     M.updateComplexity(CkCallbackResumeThread());
     IntMsg *complexity = M.getComplexity();
-
-    //P0Dense = P.toDense();
-    //printDense(P0Dense->N, P0Dense->A, "P%d^2", iteration+1);
-    //delete P0Dense;
 
     P2.updateTrace(CkCallbackResumeThread());
     DoubleMsg *trace_P2 = P2.getTrace();
@@ -739,7 +739,9 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     if(fabs(trace_P2->x-Ne/2.0) < fabs(2*trace_P->x-trace_P2->x-Ne/2.0))
     {
       DEBUG("P%d <- P%d^2\n", iteration+1, iteration);
+      tSetEqual.start();
       P.setEqual(P2, CkCallbackResumeThread());
+      tSetEqual.stop();
       delete trace_P;
       trace_P = trace_P2;
     }
@@ -747,15 +749,19 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     else
     {
       DEBUG("P%d <- 2P%d - P%d^2\n", iteration+1, iteration, iteration);
+      tAdd.start();
       P.add(2, -1, P2, CkCallbackResumeThread());
+      tAdd.stop();
       trace_P->x = 2*trace_P->x-trace_P2->x;
       delete trace_P2;
     }
 
-    t->stop();
-    INFO("%s: trace(P) = %e (Ne/2 = %1.1f, trace(P)-Ne/2 = % e) complexity %d (out of %d)\n", t->to_str(),
-        trace_P->x, Ne/2.0, trace_P->x-Ne/2.0, complexity->i, full_complexity);
-    delete t;
+    INFO("iteration %2d, %s, %s, %s: trace(P) = %e "
+        "(Ne = %d, 2*trace(P)-Ne = % e) "
+        "complexity %d (out of %d)\n",
+        iteration+1,
+        tMultiply.to_str(), tSetEqual.to_str(), tAdd.to_str(),
+        trace_P->x, Ne, 2*trace_P->x-Ne, complexity->i, full_complexity);
     delete complexity;
 
     occupation[0] = trace_P->x;

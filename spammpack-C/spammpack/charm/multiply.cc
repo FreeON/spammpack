@@ -14,6 +14,7 @@
 #include "utilities.h"
 #include "types.h"
 #include "index.h"
+#include "timer.h"
 
 #include <assert.h>
 
@@ -162,6 +163,8 @@ void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback
   MatrixNodeMsg *ANodes = A.getNodes();
   MatrixNodeMsg *BNodes = B.getNodes();
 
+  //Timer tPrune("pruning");
+  //tPrune.start();
   for(int tier = 0; tier < depth; tier++)
   {
     DEBUG("pruning tier %d\n", tier+1);
@@ -182,22 +185,41 @@ void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback
     DEBUG("done with tier %d\n", tier+1);
 #endif
   }
+  //tPrune.stop();
+  //INFO("%s\n", tPrune.to_str());
+
   delete ANodes;
   delete BNodes;
 
   /* Multiply. */
   DEBUG("multiply\n");
+  //Timer tMultiply("multiply");
+  //tMultiply.start();
   convolution[depth].multiply(tolerance, CkCallbackResumeThread());
+  //tMultiply.stop();
+  //INFO("%s\n", tMultiply.to_str());
 
   DEBUG("scale by beta (%e)\n", beta);
+  //Timer tScale("scale");
+  //tScale.start();
   C.scale(beta, CkCallbackResumeThread());
+  //tScale.stop();
+  //INFO("%s\n", tScale.to_str());
 
   DEBUG("storeBack\n");
+  //Timer tStoreBack("storeBack");
+  //tStoreBack.start();
   convolution[depth].storeBack(alpha, CkCallbackResumeThread());
+  //tStoreBack.stop();
+  //INFO("%s\n", tStoreBack.to_str());
 
   /* Update norms. */
   DEBUG("update norms\n");
+  //Timer tNorm("setNorm");
+  //tNorm.start();
   C.setNorm(CkCallbackResumeThread());
+  //tNorm.stop();
+  //INFO("%s\n", tStoreBack.to_str());
 
   DEBUG("done\n");
   cb.send();

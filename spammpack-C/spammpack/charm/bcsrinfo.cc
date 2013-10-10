@@ -87,8 +87,8 @@ BCSRInfo::BCSRInfo (CkArgMsg *msg)
     double F_min, F_max;
     A.getSpectralBounds(0, &F_min, &F_max);
     printf("spectral bounds Gershgorin: [ %e, %e ]\n", F_min, F_max);
-    A.getSpectralBounds(1, &F_min, &F_max);
-    printf("spectral bounds eigensolve: [ %e, %e ]\n", F_min, F_max);
+    //A.getSpectralBounds(1, &F_min, &F_max);
+    //printf("spectral bounds eigensolve: [ %e, %e ]\n", F_min, F_max);
     A.toStr();
 
     if(linear_bin || log_bin)

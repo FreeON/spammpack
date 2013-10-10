@@ -220,6 +220,7 @@ void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
       break;
 
     case 1:
+#ifdef DSYEV
       {
         int M, N;
         double *ADense;
@@ -258,6 +259,9 @@ void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
 
         delete[] eigenvalue;
       }
+#else
+      ABORT("full eigensolve was not built because lapack was missing at compile time\n");
+#endif
       break;
 
     default:

@@ -21,6 +21,9 @@ class Timer
     /** A tag identifying this timer object. */
     std::string message;
 
+    /** The status of this timer. */
+    bool timerRunning;
+
     /** The start time. */
     struct timespec startTime;
 
@@ -33,8 +36,10 @@ class Timer
   public:
 
     Timer (const char *format, ...);
-    void stop ();
-    const char * to_str ();
+    ~Timer (void);
+    void start (void);
+    void stop (void);
+    const char * to_str (void);
 };
 
 #endif

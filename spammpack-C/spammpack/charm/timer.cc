@@ -32,33 +32,81 @@ Timer::Timer (const char *format, ...)
   vsnprintf(output_buffer, BUFFER_SIZE, format, ap);
   va_end(ap);
 
+  startTime.tv_sec = 0;
+  startTime.tv_nsec = 0;
+
+  endTime.tv_sec = 0;
+  endTime.tv_nsec = 0;
+
   message = std::string(output_buffer);
+  string_buffer = NULL;
+
+  timerRunning = false;
+
+  //printf("new timer %s\n", message.c_str());
+}
+
+/** The destructor. */
+Timer::~Timer (void)
+{
+  if(string_buffer != NULL)
+  {
+    free(string_buffer);
+  }
+
+  //printf("deleting timer %s\n", message.c_str());
+}
+
+/** Reset the timer and start. */
+void Timer::start (void)
+{
+  if(timerRunning)
+  {
+    printf("[%s:%d] timer is already running\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
   if(clock_gettime(CLOCKTYPE, &startTime) < 0)
   {
     printf("[%s;%d] can not start timer\n", __FILE__, __LINE__);
     exit(1);
   }
 
-  string_buffer = NULL;
+  timerRunning = true;
 }
 
 /** Stop the timer. */
-void Timer::stop ()
+void Timer::stop (void)
 {
+  if(!timerRunning)
+  {
+    printf("[%s:%d] timer is not running\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
   if(clock_gettime(CLOCKTYPE, &endTime) < 0)
   {
     printf("[%s;%d] can not stop timer\n", __FILE__, __LINE__);
     exit(1);
   }
+
+  timerRunning = false;
 }
 
 /** Convert the timer to a string.
  *
  * @return The timer as a string. The string should not be free()'ed.
  */
-const char * Timer::to_str ()
+const char * Timer::to_str (void)
 {
   std::ostringstream o;
+
+  if(timerRunning)
+  {
+    printf("[%s;%d] timer is running\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
   o.setf(std::ios::fixed);
   o << message << ": ";
   o << endTime.tv_sec+endTime.tv_nsec/1.0e9

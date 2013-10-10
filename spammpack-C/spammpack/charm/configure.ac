@@ -61,22 +61,30 @@ if test "${CLOCKTYPE}" = "unset"; then
 fi
 AC_DEFINE_UNQUOTED([CLOCKTYPE], [${CLOCKTYPE}], [The clock type to use with clock_gettime()])
 
-# Find dgemm() for matrix block products.
-for DGEMM in dgemm dgemm_ dgemm__; do
-  AC_SEARCH_LIBS([${DGEMM}], [blas], [break], [DGEMM="unset"])
-done
-if test "${DGEMM}" != "unset"; then
-  AC_DEFINE_UNQUOTED([DGEMM], [${DGEMM}], [The call to BLAS dgemm() including
-                      all necessary underscores.])
-fi
+AC_ARG_ENABLE([lapack],
+  [AS_HELP_STRING([--enable-lapack],
+  [Enable external linkage to blas/lapack])],
+  [use_external_lapack=$enableval],
+  [use_external_lapack="no"])
 
-# Find dsyev() for spectral bounds.
-for DSYEV in dsyev dsyev_ dsyev__; do
-  AC_SEARCH_LIBS([${DSYEV}], [lapack], [break], [DSYEV="unset"])
-done
-if test "${DSYEV}" != "unset"; then
-  AC_DEFINE_UNQUOTED([DSYEV], [${DSYEV}], [The call to dsyev() including all
-                      necessary underscores.])
+if test "${use_external_lapack}" = "yes"; then
+  # Find dgemm() for matrix block products.
+  for DGEMM in dgemm dgemm_ dgemm__; do
+    AC_SEARCH_LIBS([${DGEMM}], [blas], [break], [DGEMM="unset"])
+  done
+  if test "${DGEMM}" != "unset"; then
+    AC_DEFINE_UNQUOTED([DGEMM], [${DGEMM}], [The call to BLAS dgemm() including
+                        all necessary underscores.])
+  fi
+
+  # Find dsyev() for spectral bounds.
+  for DSYEV in dsyev dsyev_ dsyev__; do
+    AC_SEARCH_LIBS([${DSYEV}], [lapack], [break], [DSYEV="unset"])
+  done
+  if test "${DSYEV}" != "unset"; then
+    AC_DEFINE_UNQUOTED([DSYEV], [${DSYEV}], [The call to dsyev() including all
+                        necessary underscores.])
+  fi
 fi
 
 # Enable load balancers.
