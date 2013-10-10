@@ -662,6 +662,13 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
 
   F.toDense(&NRows, &NColumns, &PDense);
 
+  //for(int i = 0; i < NRows; i++) {
+  //  for(int j = 0; j < NColumns; j++)
+  //  {
+  //    printf("%d %d % e\n", i, j, PDense[BLOCK_INDEX(i, j, 0, 0, NRows)]);
+  //  }
+  //}
+
   assert(NRows == NColumns);
 
   //printDense(NRows, PDense, "F");
