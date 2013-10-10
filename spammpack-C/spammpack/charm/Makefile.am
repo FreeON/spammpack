@@ -16,7 +16,8 @@ EXTRA_DIST = \
 	mustang-submit.sh \
 	mustang.job.decay.template \
 	mustang.job.diagonal.template \
-	mustang.job.full.template
+	mustang.job.full.template \
+	mustang.job.PP.template
 
 additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
