@@ -25,7 +25,7 @@ from matrix_market import *
 # @return The complexity.
 def get_complexity (P, tolerance, blocksize):
   if blocksize <= 0:
-    return 0
+    return 0, 0
 
   N = 1
   while N*blocksize < P.shape[0]:
