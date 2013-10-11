@@ -51,6 +51,12 @@
 
 #include <assert.h>
 #include <getopt.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
 
 /** Initialize the node. */
 void initialize (void)
@@ -66,21 +72,21 @@ void initialize (void)
  *
  * Currently known command line arguments are:
  *
- * - { -h | --help }           This help
- * - { -N | --N } N            Create NxN matrix (default: 1)
- * - { -b | --block } B        Create BxB dense blocks at leaf nodes (default: 1)
- * - { -i | --iterations } N   Iterate on the product N times (default:  1)
- * - { -t | --tolerance } T    Multiply with tolerance T (default: 0.00e+00)
- * - { -m | --type } TYPE      Use matrices of TYPE { full, decay, diagonal } (default: full)
- * - { -P | --density } FILE   Load the density matrix from FILE
- * - { -T | --Ne } NE          The total number of electrons
- * - { -v | --verify }         Verify result
- * - { -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)
- * - { -I | --intial-PE } PE   Put all chares initially on PE
- * - { -l | --load-balance }   Load balance after each iteration
- * - { -a | --align-PEs }      Align PEs for diagonal case
- * - { -p | --print-PEMap }    Print a PE map in each iteration
- * - { -o | --operation } OP   Test OP { multiply, add, trace, SP2 }
+ * - { -h | --help }              This help
+ * - { -N | --N } N               Create NxN matrix (default: 1)
+ * - { -b | --block } B           Create BxB dense blocks at leaf nodes (default: 1)
+ * - { -i | --iterations } N      Iterate on the product N times (default:  1)
+ * - { -t | --tolerance } T       Multiply with tolerance T (default: 0.00e+00)
+ * - { -m | --type } TYPE         Use matrices of TYPE { full, decay, diagonal } (default: full)
+ * - { -P | --density } FILE      Load the density matrix from FILE
+ * - { -T | --Ne } NE             The total number of electrons
+ * - { -v | --verify }            Verify result
+ * - { -d | --decay} GAMMA        Set matrix element decay, exp(-|i-j|/GAMMA)
+ * - { -I | --intial-PE } PE      Put all chares initially on PE
+ * - { -l | --load-balance }      Load balance after each iteration
+ * - { -a | --align-PEs }         Align PEs for diagonal case
+ * - { -p | --print-PEMap } FILE  Print a PE map in each iteration
+ * - { -o | --operation } OP      Test OP { multiply, add, trace, SP2 }
  *
  * @param msg The command line argument list.
  */
@@ -96,6 +102,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
   int initialPE = CK_PE_ANY;
   bool alignPEs = false;
   bool printPEMap = false;
+  char *filenamePEMap = strdup("");
   double verifyTolerance = 1.0e-10;
   double decayConstant = 0.1;
   enum operation_t operation = multiply;
@@ -103,7 +110,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
   char *densityFilename = NULL;
 
   int c;
-  const char *short_options = "hN:b:i:t:m:P:T:vd:I:lapo:";
+  const char *short_options = "hN:b:i:t:m:P:T:vd:I:lap:o:";
   const struct option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
@@ -118,7 +125,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
     { "initial-PE",   required_argument,  NULL, 'I' },
     { "load-balance", no_argument,        NULL, 'l' },
     { "align-PEs",    no_argument,        NULL, 'a' },
-    { "print-PEMap",  no_argument,        NULL, 'p' },
+    { "print-PEMap",  required_argument,  NULL, 'p' },
     { "operation",    required_argument,  NULL, 'o' },
     { NULL, 0, NULL, 0 }
   };
@@ -132,25 +139,25 @@ SpAMM::SpAMM (CkArgMsg *msg)
         CkPrintf("\n");
         CkPrintf("Usage of spamm version %s\n", PACKAGE_VERSION);
         CkPrintf("\n");
-        CkPrintf("{ -h | --help }           This help\n");
-        CkPrintf("{ -N | --N } N            Create NxN matrix (default: %d)\n", N);
-        CkPrintf("{ -b | --block } B        Create BxB dense blocks at leaf "
+        CkPrintf("{ -h | --help }               This help\n");
+        CkPrintf("{ -N | --N } N                Create NxN matrix (default: %d)\n", N);
+        CkPrintf("{ -b | --block } B            Create BxB dense blocks at leaf "
             "nodes (default: %d)\n", blocksize);
-        CkPrintf("{ -i | --iterations } N   Iterate on the product N times (default: "
+        CkPrintf("{ -i | --iterations } N       Iterate on the product N times (default: "
             " %d)\n", numberIterations);
-        CkPrintf("{ -t | --tolerance } T    Multiply with tolerance T (default: %1.2e)\n",
+        CkPrintf("{ -t | --tolerance } T        Multiply with tolerance T (default: %1.2e)\n",
             tolerance);
-        CkPrintf("{ -m | --type } TYPE      Use matrices of TYPE { full, decay, diagonal } "
+        CkPrintf("{ -m | --type } TYPE          Use matrices of TYPE { full, decay, diagonal } "
             "(default: full)\n");
-        CkPrintf("{ -P | --density } FILE   Load the density matrix from FILE\n");
-        CkPrintf("{ -T | --Ne } NE          The total number of electrons\n");
-        CkPrintf("{ -v | --verify }         Verify result\n");
-        CkPrintf("{ -d | --decay} GAMMA     Set matrix element decay, exp(-|i-j|/GAMMA)\n");
-        CkPrintf("{ -I | --intial-PE } PE   Put all chares initially on PE\n");
-        CkPrintf("{ -l | --load-balance }   Load balance after each iteration\n");
-        CkPrintf("{ -a | --align-PEs }      Align PEs for diagonal case\n");
-        CkPrintf("{ -p | --print-PEMap }    Print a PE map in each iteration\n");
-        CkPrintf("{ -o | --operation } OP   Test OP { multiply, add, trace, SP2 }\n");
+        CkPrintf("{ -P | --density } FILE       Load the density matrix from FILE\n");
+        CkPrintf("{ -T | --Ne } NE              The total number of electrons\n");
+        CkPrintf("{ -v | --verify }             Verify result\n");
+        CkPrintf("{ -d | --decay} GAMMA         Set matrix element decay, exp(-|i-j|/GAMMA)\n");
+        CkPrintf("{ -I | --intial-PE } PE       Put all chares initially on PE\n");
+        CkPrintf("{ -l | --load-balance }       Load balance after each iteration\n");
+        CkPrintf("{ -a | --align-PEs }          Align PEs for diagonal case\n");
+        CkPrintf("{ -p | --print-PEMap } FILE   Print a PE map in each iteration\n");
+        CkPrintf("{ -o | --operation } OP       Test OP { multiply, add, trace, SP2 }\n");
         CkPrintf("\n");
         CkExit();
         break;
@@ -220,6 +227,8 @@ SpAMM::SpAMM (CkArgMsg *msg)
 
       case 'p':
         printPEMap = true;
+        free(filenamePEMap);
+        filenamePEMap = strdup(optarg);
         break;
 
       case 'o':
@@ -274,7 +283,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
         DEBUG("calling runSP2() on this proxy\n");
         thisProxy.runSP2(strlen(densityFilename), densityFilename, Ne,
             blocksize, numberIterations, tolerance, loadBalance, initialPE,
-            alignPEs, printPEMap);
+            alignPEs, printPEMap, strlen(filenamePEMap), filenamePEMap);
       }
       break;
 
@@ -628,7 +637,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
 
 /** The main method for running an SP2 calculation.
  *
- * @param length The length of the filename string.
+ * @param lengthFilename The length of the filename string.
  * @param filename The filename of the densit file.
  * @param Ne The total number of electrons.
  * @param blocksize The blocksize of the matrix.
@@ -638,10 +647,12 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
  * @param initialPE The initial PE to put chares on.
  * @param alignPEs Align PEs in the diagonal matrix case.
  * @param printPEMap Whether to print a PE map in each iteration.
+ * @param lengthPEMap The length of filenamePEMap.
+ * @param filenamePEMap The base name of the PEMap files.
  */
-void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
+void SpAMM::runSP2 (int lengthFilename, char *filename, int Ne, int blocksize,
     int maxIterations, double tolerance, bool loadBalance, int initialPE,
-    bool alignPEs, bool printPEMap)
+    bool alignPEs, bool printPEMap, int lengthPEMap, char *filenamePEMap)
 {
   double *PDense;
   int NRows, NColumns;
@@ -788,6 +799,22 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
     /* Print the PE map. */
     if(printPEMap)
     {
+      char filename[2000];
+
+      snprintf(filename, 2000, "%s.%03d.PEMap", filenamePEMap, iteration+1);
+
+      int fd = open(filename, O_WRONLY | O_EXCL | O_CREAT, 00644);
+      if(fd == -1)
+      {
+        if(errno == EEXIST)
+        {
+          ABORT("PEMap file %s already exists\n", filename);
+        }
+        ABORT("error opening PEMap file %s: %s\n", filename, strerror(errno));
+      }
+
+      FILE *fs = fdopen(fd, "w");
+
       MatrixInfoMsg *PInfo = P.info();
       int NTier = 1 << PInfo->depth;
 
@@ -796,52 +823,54 @@ void SpAMM::runSP2 (int length, char *filename, int Ne, int blocksize,
       P.updatePEMap(CkCallbackResumeThread());
       PEMapMsg *PEMap = P.getPEMap();
 
-      CkPrintf("PEMap for matrix P:\n");
+      fprintf(fs, "PEMap for matrix P:\n");
       for(int i = 0; i < NTier; i++) {
         for(int j = 0; j < NTier; j++)
         {
           int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
-          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+          fprintf(fs, "PEMap(%d,%d) = %d (norm = %e)\n", i, j,
               PEMap->PEMap[matrix_offset],
               PEMap->PEMap_norm[matrix_offset]);
         }
       }
-      CkPrintf("end of PEMap for matrix P\n");
+      fprintf(fs, "end of PEMap for matrix P\n");
       delete PEMap;
 
       P2.updatePEMap(CkCallbackResumeThread());
       PEMap = P2.getPEMap();
 
-      CkPrintf("PEMap for matrix P2:\n");
+      fprintf(fs, "PEMap for matrix P2:\n");
       for(int i = 0; i < NTier; i++) {
         for(int j = 0; j < NTier; j++)
         {
           int matrix_offset = BLOCK_INDEX(i, j, 0, 0, NTier);
-          CkPrintf("PEMap(%d,%d) = %d (norm = %e)\n", i, j,
+          fprintf(fs, "PEMap(%d,%d) = %d (norm = %e)\n", i, j,
               PEMap->PEMap[matrix_offset],
               PEMap->PEMap_norm[matrix_offset]);
         }
       }
-      CkPrintf("end of PEMap for matrix P2\n");
+      fprintf(fs, "end of PEMap for matrix P2\n");
       delete PEMap;
 
       M.updatePEMap(CkCallbackResumeThread());
       PEMap = M.getPEMap();
 
-      CkPrintf("PEMap for convolution:\n");
+      fprintf(fs, "PEMap for convolution:\n");
       for(int i = 0; i < NTier; i++) {
         for(int j = 0; j < NTier; j++) {
           for(int k = 0; k < NTier; k++)
           {
             int matrix_offset = BLOCK_INDEX_3(i, j, k, NTier);
-            CkPrintf("PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
+            fprintf(fs, "PEMap(%d,%d,%d) = %d (norm = %e)\n", i, j, k,
                 PEMap->PEMap[matrix_offset],
                 PEMap->PEMap_norm[matrix_offset]);
           }
         }
       }
-      CkPrintf("end of PEMap for convolution\n");
+      fprintf(fs, "end of PEMap for convolution\n");
       delete PEMap;
+
+      fclose(fs);
     }
 
     /* Load balance. */

@@ -21,9 +21,9 @@ class SpAMM : public CBase_SpAMM
         int matrixType, double decayConstant, int operation, bool verify,
         double verifyTolerance, bool loadBalance, int initialPE,
         bool alignPEs, bool printPEMap);
-    void runSP2 (int length, char *filename, int Ne, int blocksize,
+    void runSP2 (int lengthFilename, char *filename, int Ne, int blocksize,
         int maxIterations, double tolerance, bool loadBalance, int initialPE,
-        bool alignPEs, bool printPEMap);
+        bool alignPEs, bool printPEMap, int lengthPEMap, char *filenamePEMap);
 };
 
 #endif
