@@ -34,6 +34,6 @@ void logger (const char *const filename,
 
 /** A convenience macro for aborting messages. This macro will also terminate
  * the program. */
-#define ABORT(format, ...) logger(__FILE__, __LINE__, __func__, "ERROR", format, ##__VA_ARGS__); CkExit()
+#define ABORT(format, ...) logger(__FILE__, __LINE__, __func__, "ERROR", format, ##__VA_ARGS__); CkAbort("this is fatal\n")
 
 #endif

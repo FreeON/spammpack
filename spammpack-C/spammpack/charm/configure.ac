@@ -165,6 +165,30 @@ END_OF_SCRIPT
 chmod 755 sp2_test.sh
 ])
 
+AC_CONFIG_COMMANDS([spamm_test_add.sh],
+[cat > spamm_test_add.sh << END_OF_SCRIPT
+#!/bin/bash
+./spamm --operation add -N 12 --block 2 --verify || exit 1
+END_OF_SCRIPT
+chmod 755 spamm_test_add.sh
+])
+
+AC_CONFIG_COMMANDS([spamm_test_multiply.sh],
+[cat > spamm_test_multiply.sh << END_OF_SCRIPT
+#!/bin/bash
+./spamm --operation multiply -N 12 --block 2 --verify || exit 1
+END_OF_SCRIPT
+chmod 755 spamm_test_multiply.sh
+])
+
+AC_CONFIG_COMMANDS([spamm_test_trace.sh],
+[cat > spamm_test_trace.sh << END_OF_SCRIPT
+#!/bin/bash
+./spamm --operation trace -N 12 --block 2 --verify || exit 1
+END_OF_SCRIPT
+chmod 755 spamm_test_trace.sh
+])
+
 AC_CONFIG_COMMANDS([random.mm],
 [cat > random.mm << END_OF_SCRIPT
 %%MatrixMarket matrix coordinate double general

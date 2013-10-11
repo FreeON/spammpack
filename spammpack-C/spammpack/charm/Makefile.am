@@ -23,9 +23,14 @@ additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLA
 
 if HAVE_PYTHON
 python_PYTHON = plotPEMap.py sp2.py spectral_bounds.py matrix_market.py
-check_SCRIPTS = sp2_test.sh
-TESTS = sp2_test.sh
+PYTHONTESTS = sp2_test.sh
 endif
+
+check_SCRIPTS = $(PYTHONTESTS) \
+	spamm_test_add.sh \
+	spamm_test_multiply.sh \
+	spamm_test_trace.sh
+TESTS = $(check_SCRIPTS)
 
 bin_PROGRAMS = spamm BCSRInfo
 

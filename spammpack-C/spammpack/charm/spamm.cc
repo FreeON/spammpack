@@ -406,6 +406,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
         {
           Timer t("iteration %d on %d PEs, multiplying C = A*A, tolerance = %e",
               iteration+1, CkNumPes(), tolerance);
+          t.start();
           M.multiply(tolerance, 1.0, 1.0, CkCallbackResumeThread());
           t.stop();
           CkPrintf("%s\n", t.to_str());
@@ -415,6 +416,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
       case add:
         {
           Timer t("iteration %d on %d PEs, adding C = A+B", iteration+1, CkNumPes());
+          t.start();
           C.add(0.0, 1.0, A, CkCallbackResumeThread());
           C.add(1.0, 1.0, A, CkCallbackResumeThread());
           t.stop();
@@ -425,6 +427,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
       case trace:
         {
           Timer t("iteration %d on %d PEs, trace(A)", iteration+1, CkNumPes());
+          t.start();
           A.updateTrace(CkCallbackResumeThread());
           t.stop();
           CkPrintf("%s\n", t.to_str());
@@ -511,6 +514,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
     {
       /* Calculate the reference matrix. */
       Timer t("calculating reference result");
+      t.start();
       switch(operation)
       {
         case multiply:
@@ -530,8 +534,6 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
               }
             }
 #endif
-            t.stop();
-            CkPrintf("%s\n", t.to_str());
           }
           break;
 
@@ -567,6 +569,8 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
           ABORT("unknown operation\n");
           break;
       }
+      t.stop();
+      CkPrintf("%s\n", t.to_str());
     }
   }
 
