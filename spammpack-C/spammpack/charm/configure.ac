@@ -38,6 +38,13 @@ CXX=${CHARMC}
 AC_PROG_CC
 AC_PROG_CXX
 
+# Test whether the charm compiler works.
+AC_LANG([C++])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <charm++.h>],
+  [CkExit();])],
+  [],
+  [AC_MSG_FAILURE([can not compile with the charm compiler: ${CHARMC}])])
+
 # Compiler tests should be done using the real C compiler and not the charmc
 # wrapper.
 AC_LANG([C])
