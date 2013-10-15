@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #
-#MSUB -l nodes=N:ppn=1,walltime=100000
+#MSUB -l nodes=N:ppn=1,walltime=40000
 #MSUB -N JOBNAME
 
 module purge
