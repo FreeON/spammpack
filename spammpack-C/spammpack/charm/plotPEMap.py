@@ -14,6 +14,8 @@ import subprocess
 import sys
 import tempfile
 
+import pdb
+
 try:
   import numpy as np
 except ImportError as e:
@@ -411,7 +413,7 @@ def main ():
   for line in options.FILE:
     line_number += 1
     if options.debug:
-      print("PLOT: read ({:d})".format(line_number), line.rstrip())
+      print("PLOT: line {:d}: ".format(line_number), line.rstrip())
 
     result = re.compile("iteration ([0-9]+) on").search(line)
     if result:
@@ -488,19 +490,21 @@ def main ():
           print("convolution norms")
           print(norm_convolution)
         if options.aligned_print:
+          PEFormat = "{: >" + str(int(math.ceil(math.log(numPEs, 10)))) + "d}"
+          matrixFormat = "{: >" + str(int(math.ceil(math.log(N, 10)))) + "d}"
           for i in range(N):
             for j in range(N):
               for k in range(N):
                 if PEMap["convolution"][i, j, k] >= 0:
-                  print("convolution({:2d},{:2d},{:2d}): ".format(i, j, k)
-                      +"C({:2d},{:2d}) += ".format(i, j)
-                      +"A({:2d},{:2d}) x ".format(i, k)
-                      +"B({:2d},{:2d}): ".format(k, j)
-                      +"{:2d} <-- {:2d} {:2d} {:2d}".format(
+                  print(("convolution(" + matrixFormat + "," + matrixFormat + "," + matrixFormat + "): ").format(i, j, k)
+                      + ("P2(" + matrixFormat + "," + matrixFormat + ") += ").format(i, j)
+                      + ("P(" + matrixFormat + "," + matrixFormat + ") x ").format(i, k)
+                      + ("P(" + matrixFormat + "," + matrixFormat + "): ").format(k, j)
+                      + (PEFormat + " x " + PEFormat + " --> " + PEFormat + " --> " + PEFormat).format(
+                        PEMap["matrix P"][i, k],
+                        PEMap["matrix P"][k, j],
                         PEMap["convolution"][i, j, k],
-                        PEMap["matrix A"][i, k],
-                        PEMap["matrix A"][k, j],
-                        PEMap["matrix C"][i, j]))
+                        PEMap["matrix P2"][i, j]))
         if options.render:
           generatePOVRay(
               iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
