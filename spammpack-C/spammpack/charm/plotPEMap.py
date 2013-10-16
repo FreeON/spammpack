@@ -334,6 +334,29 @@ def generateMathematica (
 
   script_file.close()
 
+## Print the communication complexity.
+def print_load (N, numPEs, PEMap):
+  communication_complexity = 0
+  max_communication_complexity = 0
+  computational_load = np.zeros(numPEs, dtype = "int")
+  for i in range(N):
+    for j in range(N):
+      for k in range(N):
+        if PEMap["convolution"][i, j, k] >= 0:
+          computational_load[PEMap["convolution"][i, j, k]] += 1
+          if PEMap["convolution"][i, j, k] != PEMap["matrix P"][i, k]:
+            communication_complexity += 2
+          max_communication_complexity += 2
+          if PEMap["convolution"][i, j, k] != PEMap["matrix P"][k, j]:
+            communication_complexity += 2
+          max_communication_complexity += 2
+          if PEMap["convolution"][i, j, k] != PEMap["matrix P2"][i, j]:
+            communication_complexity += 1
+          max_communication_complexity += 1
+  print("communication complexity: {:d} out of {:d}".format(
+    communication_complexity, max_communication_complexity))
+  print("computational load: {:d}".format(np.max(computational_load)))
+
 ## The main program.
 def main ():
   ## The python version.
@@ -365,6 +388,11 @@ def main ():
 
   parser.add_argument("--aligned-print",
       help = "Print the convolution PEs aligned with their matrix PEs",
+      action = "store_true",
+      default = False)
+
+  parser.add_argument("--communication-load",
+      help = "Print the communication load",
       action = "store_true",
       default = False)
 
@@ -483,6 +511,7 @@ def main ():
           if norm > options.tolerance:
             PEMap[currentMap][i,j,k] = PE
           norm_convolution[i,j,k] = norm
+
         if options.printPEMap:
           for label in PEMap:
             print("PEMap for {:s}".format(label))
@@ -507,16 +536,18 @@ def main ():
                         PEMap["matrix P2"][i, j]))
         if options.render:
           generatePOVRay(
-              iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
+              iteration, numPEs, PEMap["matrix P"], PEMap["matrix P2"],
               PEMap["convolution"], norm_convolution)
         if options.blender:
           generateBlender(
-              iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
+              iteration, numPEs, PEMap["matrix P"], PEMap["matrix P2"],
               PEMap["convolution"], norm_convolution)
         if options.mathematica:
           generateMathematica(
-              iteration, numPEs, PEMap["matrix A"], PEMap["matrix C"],
+              iteration, numPEs, PEMap["matrix P"], PEMap["matrix P2"],
               PEMap["convolution"], norm_convolution)
+        if options.communication_load:
+          print_load(N, numPEs, PEMap)
       else:
         PEMap[currentMap] = np.empty([N, N], dtype = np.int16)
         PEMap[currentMap].fill(-1)
