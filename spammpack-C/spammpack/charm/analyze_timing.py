@@ -8,6 +8,41 @@ import re
 import signal
 import sys
 
+def make_graph ():
+  for PPV in timing:
+    np = []
+    for i in timing[PPV]:
+      np.append(i)
+    np.sort()
+
+    t = []
+    np_dead = []
+    if iteration < 0:
+      additional_label = "all"
+      for i in np:
+        t.append(timing[PPV][i]["t_total"])
+    else:
+      additional_label = "iteration {:d}".format(iteration)
+      for i in np:
+        if iteration <= len(timing[PPV][i]["t_multiply"]):
+          t.append(
+              timing[PPV][i]["t_multiply"][iteration-1]
+              +timing[PPV][i]["t_add"][iteration-1]
+              +timing[PPV][i]["t_setEq"][iteration-1])
+        else:
+          np_dead.append(i)
+
+    for i in np_dead:
+      np.remove(i)
+
+    plt.loglog(np, t, '-o', label = "PPV{:03d} ({:s})".format(
+      PPV, additional_label), hold = True)
+    plt.loglog(
+        [ np[0], np[-1] ],
+        [ t[0], t[0]/np[-1] ],
+        '-',
+        hold = True)
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument("OUTFILE",
@@ -20,6 +55,11 @@ parser.add_argument("--iteration",
     type = int,
     nargs = "+",
     action = "append")
+
+parser.add_argument("--one-graph",
+    help = "Plot all iterations on one graph",
+    action = "store_true",
+    default = False)
 
 parser.add_argument("--debug",
     help = "Print debug information",
@@ -95,53 +135,29 @@ for f in options.OUTFILE:
 
 pid = []
 for iteration in options.iteration:
-  pid.append(os.fork())
+  if not options.one_graph:
+    pid.append(os.fork())
 
-  if(pid[-1]):
-    pass
+    if(pid[-1]):
+      pass
+
+    else:
+      plt.figure(iteration)
+      make_graph()
+      plt.legend()
+      plt.show()
 
   else:
-    plt.figure(iteration)
+    make_graph()
 
-    for PPV in timing:
-      np = []
-      for i in timing[PPV]:
-        np.append(i)
-      np.sort()
 
-      t = []
-      np_dead = []
-      if iteration < 0:
-        additional_label = "all"
-        for i in np:
-          t.append(timing[PPV][i]["t_total"])
-      else:
-        additional_label = "iteration {:d}".format(iteration)
-        for i in np:
-          if iteration <= len(timing[PPV][i]["t_multiply"]):
-            t.append(
-                timing[PPV][i]["t_multiply"][iteration-1]
-                +timing[PPV][i]["t_add"][iteration-1]
-                +timing[PPV][i]["t_setEq"][iteration-1])
-          else:
-            np_dead.append(i)
+if options.one_graph:
+  plt.legend()
+  plt.show()
 
-      for i in np_dead:
-        np.remove(i)
+else:
+  print("done, please press Enter to close all windows")
+  sys.stdin.readline()
 
-      plt.loglog(np, t, '-o', label = "PPV{:03d} ({:s})".format(
-        PPV, additional_label), hold = True)
-      plt.loglog(
-          [ np[0], np[-1] ],
-          [ t[0], t[0]/np[-1] ],
-          '-',
-          hold = True)
-
-    plt.legend()
-    plt.show()
-
-print("done, please press Enter to close all windows")
-sys.stdin.readline()
-
-for i in pid:
-  os.kill(i, signal.SIGHUP)
+  for i in pid:
+    os.kill(i, signal.SIGHUP)
