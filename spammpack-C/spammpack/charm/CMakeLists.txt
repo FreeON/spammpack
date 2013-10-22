@@ -1,31 +1,35 @@
-include( CheckFunctionExists )
-include( CheckCSourceCompiles )
+INCLUDE( CheckFunctionExists )
+INCLUDE( CheckLibraryExists )
+INCLUDE( CheckCSourceCompiles )
 
-project( spamm C CXX )
-cmake_minimum_required( VERSION 2.8 )
+PROJECT( spamm C CXX )
+CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/cmake_config.h.in
+CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake_config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
 
 # Check for supported clocks. Thanks to Jonathan Lifflander
 # <jliffl2@illinois.edu> for suggesting this test.
-check_function_exists( clock_gettime HAVE_CLOCK_GETTIME )
-message( "${HAVE_CLOCK_GETTIME}" )
-if( ${HAVE_CLOCK_GETTIME} )
-  set( HAVE_CLOCK_GETTIME )
-  check_library_exists( rt HAVE_LIBRT )
-  if( not ${HAVE_LIBRT} )
-    message( FATAL_ERROR "I can't find the clock_gettime function in the
-    following libraries: ${LIBRARIES}" )
-  endif()
-  check_function_exists( clock_gettime HAVE_CLOCK_GETTIME )
-endif()
+SET( HAVE_CLOCK_GETTIME "unset" )
+CHECK_FUNCTION_EXISTS( clock_gettime HAVE_CLOCK_GETTIME )
+IF( HAVE_CLOCK_GETTIME STREQUAL "unset" )
+  CHECK_LIBRARY_EXISTS( rt clock_gettime "" HAVE_LIBRT )
+  IF( NOT HAVE_LIBRT )
+    MESSAGE( FATAL_ERROR "I can't find the clock_gettime function in the following libraries: ${LIBRARIES}" )
+  ENDIF()
+ENDIF()
 
-set( CLOCKTYPE "unset" )
-foreach( CHECK_CLOCKTYPE CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC CLOCK_REALTIME )
-  check_C_source_compiles( "main() { struct timespec p;
-  clock_gettime(${CLOCKTYPE}, &p); }" CLOCKTYPE)
-endforeach()
-if( CLOCKTYPE strequal "unset" )
-  message( FATAL_ERROR "no known clocktype" )
-endif()
+SET( CLOCKTYPE "unset" )
+FOREACH( CHECK_CLOCKTYPE CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC CLOCK_REALTIME )
+  SET( CLOCKTYPE "unset" )
+  MESSAGE( "checking ${CHECK_CLOCKTYPE}" )
+  CHECK_C_SOURCE_COMPILES( "#include <time.h>
+main() { struct timespec p; clock_gettime(${CHECK_CLOCKTYPE}, &p); }" CLOCKTYPE)
+  IF( NOT CLOCKTYPE STREQUAL "unset" )
+    BREAK()
+  ENDIF()
+ENDFOREACH()
+
+IF( CLOCKTYPE STREQUAL "unset" )
+  MESSAGe( FATAL_ERROR "no known clocktype" )
+ENDIF()
