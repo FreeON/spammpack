@@ -1,35 +1,48 @@
-INCLUDE( CheckFunctionExists )
-INCLUDE( CheckLibraryExists )
-INCLUDE( CheckCSourceCompiles )
+cmake_minimum_required( VERSION 2.8 )
 
-PROJECT( spamm C CXX )
-CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
+include( CheckLibraryExists )
+include( CheckCSourceCompiles )
 
-CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake_config.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
+project( spamm-charm C CXX )
+set( PACKAGE_VERSION 1.0 )
+
+set( CHARMC "charmc" CACHE STRING "The Charm++ compiler command" )
+
+check_library_exists( rt clock_gettime "" HAVE_CLOCK_GETTIME )
+if( HAVE_CLOCK_GETTIME STREQUAL "unset" )
+  message( FATAL_ERROR "I need clock_gettime()" )
+endif()
+list( APPEND CMAKE_REQUIRED_LIBRARIES "-lrt" )
 
 # Check for supported clocks. Thanks to Jonathan Lifflander
 # <jliffl2@illinois.edu> for suggesting this test.
-SET( HAVE_CLOCK_GETTIME "unset" )
-CHECK_FUNCTION_EXISTS( clock_gettime HAVE_CLOCK_GETTIME )
-IF( HAVE_CLOCK_GETTIME STREQUAL "unset" )
-  CHECK_LIBRARY_EXISTS( rt clock_gettime "" HAVE_LIBRT )
-  IF( NOT HAVE_LIBRT )
-    MESSAGE( FATAL_ERROR "I can't find the clock_gettime function in the following libraries: ${LIBRARIES}" )
-  ENDIF()
-ENDIF()
+foreach( TRY_CLOCKTYPE
+    CLOCK_MONOTONIC_RAW
+    CLOCK_MONOTONIC
+    CLOCK_REALTIME
+    )
 
-SET( CLOCKTYPE "unset" )
-FOREACH( CHECK_CLOCKTYPE CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC CLOCK_REALTIME )
-  SET( CLOCKTYPE "unset" )
-  MESSAGE( "checking ${CHECK_CLOCKTYPE}" )
-  CHECK_C_SOURCE_COMPILES( "#include <time.h>
-main() { struct timespec p; clock_gettime(${CHECK_CLOCKTYPE}, &p); }" CLOCKTYPE)
-  IF( NOT CLOCKTYPE STREQUAL "unset" )
-    BREAK()
-  ENDIF()
-ENDFOREACH()
+  unset( HAVE_CLOCKTYPE CACHE )
+  message( STATUS "checking clocktype ${TRY_CLOCKTYPE}" )
+  check_c_source_compiles( "#include <time.h>
+int main() {
+  struct timespec p;
+  clock_gettime(${TRY_CLOCKTYPE}, &p);
+  return 0;
+}"
+    HAVE_CLOCKTYPE)
 
-IF( CLOCKTYPE STREQUAL "unset" )
-  MESSAGe( FATAL_ERROR "no known clocktype" )
-ENDIF()
+  if( HAVE_CLOCKTYPE )
+    SET( CLOCKTYPE ${TRY_CLOCKTYPE} )
+    break()
+  endif()
+endforeach()
+
+if( NOT HAVE_CLOCKTYPE )
+  message( FATAL_ERROR "no known clocktype" )
+endif()
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake_config.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h
+  )

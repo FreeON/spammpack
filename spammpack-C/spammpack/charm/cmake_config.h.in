@@ -1,1 +1,2 @@
-#cmakedefine CLOCKTYPE
+/** The clocktype used in clock_gettime(). */
+#define CLOCKTYPE @CLOCKTYPE@
