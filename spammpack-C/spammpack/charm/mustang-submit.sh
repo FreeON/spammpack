@@ -7,7 +7,7 @@ NE=( 2162 4322 6482 )
 BLOCK=( 128 128 128 )
 
 for i in ${NODES[@]}; do
-  for (( j = 0; j < 3; j++ )); do
+  for (( j = 0; j < ${#DENSITY[@]}; j++ )); do
 
     sed \
       -e "s:nodes=N:nodes=${i}:" \

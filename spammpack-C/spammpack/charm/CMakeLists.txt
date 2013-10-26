@@ -6,7 +6,10 @@ include( CheckCSourceCompiles )
 project( spamm-charm C CXX )
 set( PACKAGE_VERSION 1.0 )
 
-set( CHARMC "charmc" CACHE STRING "The Charm++ compiler command" )
+set( CHARMC "charmc" CACHE FILEPATH "The Charm++ compiler command" )
+
+# Try out the Charm compiler.
+set( CMAKE_CXX_COMPILER ${CHARMC} )
 
 check_library_exists( rt clock_gettime "" HAVE_CLOCK_GETTIME )
 if( HAVE_CLOCK_GETTIME STREQUAL "unset" )
