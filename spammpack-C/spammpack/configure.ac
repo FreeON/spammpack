@@ -30,32 +30,6 @@ dnl Get libraries for linking Fortran and C code.
 AC_F77_LIBRARY_LDFLAGS
 AC_FC_LIBRARY_LDFLAGS
 
-dnl Check for Charm++.
-AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
-AC_CHECK_PROG([CHARMC], [charmc], [charmc])
-
-AC_ARG_ENABLE([charm],
-  [AS_HELP_STRING([--enable-charm],
-                  [Enable Charm++ parallelization.])],
-  [enable_charm=$enableval],
-  [enable_charm="no"])
-
-if test $enable_charm = "yes"; then
-  if test -z "${CHARMC}"; then
-    AC_MSG_FAILURE([no Charm++ compiler wrapper found])
-  fi
-  charm_version=$( ${CHARMC} -V | sed -e 's/^.*Version\s*//' )
-  if test -z "${charm_version}"; then
-    AC_MSG_FAILURE([failed to run Charm++ compiler wrapper ${CHARMC}])
-  fi
-  AC_MSG_NOTICE([Charm++ compiler wrapper version ${charm_version}])
-  AC_DEFINE([ENABLE_CHARM], [1], [Enable charm parallelization.])
-
-  CXXCOMPILERS="charmc"
-
-fi
-AM_CONDITIONAL([HAVE_CHARM], [test $enable_charm = "yes"])
-
 dnl Get the C++ compiler.
 AC_PROG_CXX([${CXXCOMPILERS}])
 
@@ -318,10 +292,7 @@ interfaces/Makefile
 interfaces/python/Makefile
 src/Makefile
 src/spamm_manual_mainpage.h
-charm/Makefile
 tests/Makefile
-prototype/Makefile
-prototype/charm/Makefile
 ])
 
 AC_OUTPUT
