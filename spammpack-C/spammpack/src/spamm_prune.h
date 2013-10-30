@@ -1,3 +1,5 @@
+/** @file */
+
 #ifndef __SPAMM_PRUNE_H
 #define __SPAMM_PRUNE_H
 

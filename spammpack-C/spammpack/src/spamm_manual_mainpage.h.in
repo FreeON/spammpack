@@ -2,9 +2,8 @@
 
 /** \mainpage SpAMM - Overview
  *
- * \brief The Sparse Approximate Matrix Multiply (SpAMM) library.
- *
- * The public functions of this library are declared in:
+ * The Sparse Approximate Matrix Multiply (SpAMM) library.  The public
+ * functions of this library are declared in:
  *
  * - spamm.h
  * - config.h
@@ -15,7 +14,7 @@
  * - spamm_timer.h
  * - spamm_types.h
  * - spamm_chunk.h
- * - spamm_fortran_interface.h
+ * - spamm_fortran_interface.c
  *
  * The SpAMM library can be used from Fortran with the
  * \ref spammpack "spammpack module".
@@ -31,8 +30,6 @@
  * - \subpage spamm_matrix "Matrix Data Structure"
  *
  * \version @PACKAGE_VERSION_STRING@ ( @GIT_COMMIT@ )
- *
- * \date Generated on @TIMESTAMP@
  *
  * \copyright
  * This code is part of the FreeON suite of programs for linear scaling
@@ -63,7 +60,7 @@
  * dissemination in future releases.
  *
  * \copyright
- * Los Alamos National Laboratory (LA-CC 01-2; LA-CC-04-086)
+ * &copy; Los Alamos National Laboratory (LA-CC 01-2; LA-CC-04-086; LA-CC-13-066)
  *
  * \author Nicolas Bock <nicolasbock@freeon.org>
  * \author Matt Challacombe <matt.challacombe@freeon.org>

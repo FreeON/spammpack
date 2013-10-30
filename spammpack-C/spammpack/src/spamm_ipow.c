@@ -1,3 +1,5 @@
+/** @file */
+
 #include "spamm.h"
 
 /** Implementation of the fast exponention algorithm by squaring. This

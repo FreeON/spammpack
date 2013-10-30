@@ -1,3 +1,5 @@
+/** @file */
+
 #include "spamm.h"
 
 #include <assert.h>

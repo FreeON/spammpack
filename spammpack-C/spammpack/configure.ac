@@ -264,10 +264,6 @@ fi
 AC_SUBST([GIT_COMMIT], [${git_commit_tag}])
 AC_MSG_NOTICE([configuring for git tag ${branch}:${git_commit_tag}])
 
-dnl Get the current date.
-timestamp=`date +%Y-%m-%d`
-AC_DEFINE_UNQUOTED([SPAMM_TIMESTAMP], ["${timestamp}"], [The build date.])
-
 dnl Write headers.
 AC_CONFIG_HEADERS([config.h])
 

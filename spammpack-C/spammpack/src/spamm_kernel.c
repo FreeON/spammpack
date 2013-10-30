@@ -1,3 +1,5 @@
+/** @file */
+
 #include "spamm_error.h"
 #include "spamm_kernel.h"
 #include "spamm_types_private.h"

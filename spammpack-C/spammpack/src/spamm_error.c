@@ -1,3 +1,5 @@
+/** @file */
+
 #include "spamm_error.h"
 
 #ifdef _OPENMP
