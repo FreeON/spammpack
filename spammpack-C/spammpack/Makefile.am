@@ -11,7 +11,7 @@ SUBDIRS = src interfaces tests
 CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/Doxyfile.in \
   $(top_builddir)/git_commit_tag \
-  $(top_srcdir)/src/spamm_manual_mainpage.h.in
+  $(top_srcdir)/manual.h.in
 
 EXTRA_DIST = \
   extract_conf.py \

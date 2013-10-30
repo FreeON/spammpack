@@ -284,10 +284,10 @@ dnl Write makefiles.
 AC_CONFIG_FILES([
 Doxyfile
 Makefile
+manual.h
 interfaces/Makefile
 interfaces/python/Makefile
 src/Makefile
-src/spamm_manual_mainpage.h
 tests/Makefile
 ])
 

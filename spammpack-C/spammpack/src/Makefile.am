@@ -88,7 +88,6 @@ libspamm_kernel_headers = \
 libspamm_tree_la_SOURCES = \
   $(libspamm_tree_headers) \
   $(libspamm_tree_private_headers) \
-  spamm_manual_mainpage.h \
   spamm_add.c \
   spamm_allocate.c \
   spamm_blas.c \
