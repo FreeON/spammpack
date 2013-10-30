@@ -14,7 +14,6 @@ CONFIG_STATUS_DEPENDENCIES = \
   $(top_srcdir)/src/spamm_manual_mainpage.h.in
 
 EXTRA_DIST = \
-  $(DOCFILES) \
   extract_conf.py \
   update_git_commit_tag.sh \
   $(builddir)/git_commit_tag
@@ -26,10 +25,7 @@ include_HEADERS = config.h config_fortran.h
 TAGS_FILES = src/* tests/*
 AM_CTAGSFLAGS = --C-kinds=+l+x
 
-#DOCFILES = latex/refman.pdf
-
 latex/refman.pdf : docs
 
 docs :
 	doxygen
-	$(MAKE) -C latex
