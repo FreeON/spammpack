@@ -166,9 +166,17 @@ spamm_multiply (const spamm_norm_t tolerance,
     double *const memop);
 
 void
-spamm_add (const float alpha,
+spamm_add_float (const float alpha,
     struct spamm_matrix_t *const A,
     const float beta,
+    const struct spamm_matrix_t *const B,
+    double *const flop,
+    double *const memop);
+
+void
+spamm_add_double (const double alpha,
+    struct spamm_matrix_t *const A,
+    const double beta,
     const struct spamm_matrix_t *const B,
     double *const flop,
     double *const memop);

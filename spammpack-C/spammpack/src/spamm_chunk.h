@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 
-spamm_norm_t
+float
 spamm_chunk_multiply_scalar (const float alpha,
     spamm_chunk_t *chunk,
     double *const flop,

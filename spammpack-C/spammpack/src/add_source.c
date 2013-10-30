@@ -20,10 +20,10 @@
  *
  * @return The square of the norm of the chunk.
  */
-spamm_norm_t
-spamm_chunk_add (const float alpha,
+SPAMM_TYPE
+TYPED_FUNCTION(spamm_chunk_add, SPAMM_TYPE) (const SPAMM_TYPE alpha,
     spamm_chunk_t *A,
-    const float beta,
+    const SPAMM_TYPE beta,
     spamm_chunk_t *B,
     double *const flop,
     double *const mop)
@@ -74,9 +74,9 @@ spamm_chunk_add (const float alpha,
  * @param mop The memory operation count
  */
 void
-spamm_recursive_add (const float alpha,
+TYPED_FUNCTION(spamm_recursive_add, SPAMM_TYPE) (const SPAMM_TYPE alpha,
     struct spamm_recursive_node_t *A,
-    const float beta,
+    const SPAMM_TYPE beta,
     const struct spamm_recursive_node_t *const B,
     const unsigned int number_dimensions,
     const unsigned int tier,
@@ -131,7 +131,8 @@ spamm_recursive_add (const float alpha,
       omp_set_lock(&A->lock);
 #endif
 
-      A->norm2 = spamm_chunk_add(alpha, A->tree.chunk, beta, B->tree.chunk, flop, mop);
+      A->norm2 = TYPED_FUNCTION(spamm_chunk_add, SPAMM_TYPE)(alpha,
+          A->tree.chunk, beta, B->tree.chunk, flop, mop);
       A->norm = sqrt(A->norm2);
 
 #ifdef _OPENMP
@@ -192,9 +193,11 @@ spamm_recursive_add (const float alpha,
 #endif
 
 #pragma omp task untied
-        spamm_recursive_add(alpha, A->tree.child[i], beta,
+        TYPED_FUNCTION(spamm_recursive_add, SPAMM_TYPE)(alpha,
+            A->tree.child[i], beta,
             (const struct spamm_recursive_node_t*const) B->tree.child[i],
-            number_dimensions, tier+1, chunk_tier, use_linear_tree, flop, mop);
+            number_dimensions, tier+1, chunk_tier, use_linear_tree, flop,
+            mop);
       }
 #pragma omp taskwait
 
@@ -222,9 +225,9 @@ spamm_recursive_add (const float alpha,
  * @param mop The memory operation count
  */
 void
-spamm_add (const float alpha,
+TYPED_FUNCTION(spamm_add, SPAMM_TYPE) (const SPAMM_TYPE alpha,
     struct spamm_matrix_t *const A,
-    const float beta,
+    const SPAMM_TYPE beta,
     const struct spamm_matrix_t *const B,
     double *const flop,
     double *const mop)
@@ -249,10 +252,10 @@ spamm_add (const float alpha,
 #pragma omp single
     {
 #pragma omp task untied
-      spamm_recursive_add(alpha, A->recursive_tree, beta,
-          (const struct spamm_recursive_node_t*const) B_pointer,
-          A->number_dimensions, 0, A->chunk_tier, A->use_linear_tree, flop,
-          mop);
+      TYPED_FUNCTION(spamm_recursive_add, SPAMM_TYPE)(alpha,
+          A->recursive_tree, beta, (const struct spamm_recursive_node_t*const)
+          B_pointer, A->number_dimensions, 0, A->chunk_tier,
+          A->use_linear_tree, flop, mop);
     }
   }
 }
