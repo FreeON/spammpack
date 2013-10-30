@@ -184,19 +184,6 @@ if test "${enable_assembly_kernel}" = "yes"; then
   AC_DEFINE([RUN_ASSEMBLY_KERNEL], [1], [Run the assembly kernel.])
 fi
 
-dnl Define some data types.
-AC_ARG_WITH([norm-type],
-            [AS_HELP_STRING([--with-norm-type],
-                            [Set the norm type to either float or double (default = float).])],
-            [norm_type=$withval],
-            [norm_type="float"])
-if test $norm_type = "float" -o $norm_type = "double"; then
-  AC_MSG_NOTICE([norm-type is $norm_type])
-  AC_DEFINE_UNQUOTED([SPAMM_NORM_TYPE], [$norm_type], [The data type of the norms.])
-else
-  AC_MSG_FAILURE([unknown type ($norm_type)])
-fi
-
 dnl Define basic tree properties.
 have_N_block=4
 have_N_stride=1
@@ -288,6 +275,7 @@ manual.h
 interfaces/Makefile
 interfaces/python/Makefile
 src/Makefile
+tools/Makefile
 tests/Makefile
 ])
 
