@@ -38,6 +38,7 @@ AC_TYPE_INTPTR_T
 
 dnl Get some data-type sizes.
 AC_CHECK_SIZEOF([int])
+AC_CHECK_SIZEOF([unsigned int])
 AC_CHECK_SIZEOF([float])
 AC_CHECK_SIZEOF([double])
 
