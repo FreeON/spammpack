@@ -10,14 +10,6 @@ from SSERegister import SSERegister
 
 #########################################################
 #
-# Global Constants.
-#
-#########################################################
-
-sizeof_unsigned_int = 4
-
-#########################################################
-#
 # Class Definitions.
 #
 #########################################################
@@ -355,7 +347,7 @@ def main ():
   print("# void")
   print("# %s (const unsigned int number_stream_elements," % (options.functionName))
   print("#     float alpha,")
-  print("#     float tolerance,")
+  print("#     spamm_norm_t tolerance,")
   print("#     unsigned int *stream,")
   print("#     void *chunk_A,")
   print("#     void *chunk_B,")
