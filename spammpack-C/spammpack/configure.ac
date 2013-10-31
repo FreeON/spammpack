@@ -36,9 +36,13 @@ AC_PROG_CXX([${CXXCOMPILERS}])
 dnl Get pointer int type.
 AC_TYPE_INTPTR_T
 
+dnl Define size_t in case it doesn't exist already.
+AC_TYPE_SIZE_T
+
 dnl Get some data-type sizes.
 AC_CHECK_SIZEOF([int])
 AC_CHECK_SIZEOF([unsigned int])
+AC_CHECK_SIZEOF([size_t])
 AC_CHECK_SIZEOF([float])
 AC_CHECK_SIZEOF([double])
 
