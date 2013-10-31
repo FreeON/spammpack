@@ -1,4 +1,4 @@
-/** @file */
+/** @file spamm_chunk.h */
 
 #include "config.h"
 #include "spamm.h"

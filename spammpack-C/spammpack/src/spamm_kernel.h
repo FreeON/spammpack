@@ -1,9 +1,12 @@
-/** @file */
+/** @file spamm_kernel.h */
 
 #ifndef __SPAMM_KERNEL_H
 #define __SPAMM_KERNEL_H
 
+#include "config.h"
 #include "spamm_types.h"
+
+#include <stddef.h>
 
 /** The different stream kernels.
  */
@@ -34,25 +37,16 @@ spamm_kernel_suggest_layout (const enum spamm_kernel_t kernel);
 enum spamm_layout_t
 spamm_kernel_get_layout (const char *name);
 
-void
-spamm_stream_kernel_SSE (const unsigned int number_stream_elements,
-    float alpha,
-    spamm_norm_t tolerance,
-    struct spamm_multiply_stream_t *multiply_stream);
-
-void
-spamm_stream_kernel_SSE4_1 (const unsigned int number_stream_elements,
-    float alpha,
-    spamm_norm_t tolerance,
-    struct spamm_multiply_stream_t *multiply_stream);
-
-void
-spamm_stream_external_sgemm (const unsigned int number_stream_elements,
-    float alpha,
-    spamm_norm_t tolerance,
-    struct spamm_multiply_stream_t *multiply_stream,
-    const short call_external_sgemm);
-
+/** The stream kernel.
+ *
+ * @param number_stream_elements The size of the stream array.
+ * @param alpha The factor alpha
+ * @param tolerance The SpAMM tolerance.
+ * @param stream The stream index array.
+ * @param chunk_A The A matrix chunk.
+ * @param chunk_B The B matrix chunk.
+ * @param chunk_C The C matrix chunk.
+ */
 void
 spamm_stream_kernel (const unsigned int number_stream_elements,
     float alpha,

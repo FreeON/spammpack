@@ -1,4 +1,4 @@
-/** @file */
+/** @file spamm_chunk.h */
 
 #ifndef __SPAMM_CHUNK_H
 #define __SPAMM_CHUNK_H

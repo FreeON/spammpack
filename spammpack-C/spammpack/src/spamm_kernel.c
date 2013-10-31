@@ -1,4 +1,4 @@
-/** @file */
+/** @file spamm_kernel.h */
 
 #include "spamm_error.h"
 #include "spamm_kernel.h"
