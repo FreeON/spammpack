@@ -36,6 +36,11 @@ AC_PROG_CXX([${CXXCOMPILERS}])
 dnl Get pointer int type.
 AC_TYPE_INTPTR_T
 
+dnl Get some data-type sizes.
+AC_CHECK_SIZEOF([int])
+AC_CHECK_SIZEOF([float])
+AC_CHECK_SIZEOF([double])
+
 dnl Find python.
 AM_PATH_PYTHON
 

@@ -385,6 +385,7 @@ def main ():
   print("# chunk_C                -> %r8")
 
   print("")
+  print("# Include some data type sizes")
   print("#include \"config.h\"")
 
   print("")
@@ -403,11 +404,6 @@ def main ():
   print("#define chunk_A         %rdx")
   print("#define chunk_B         %rcx")
   print("#define chunk_C         %r8")
-
-  print("")
-  print("# Define some constants for clarity of source.")
-  print("#define SIZEOF_INT 4")
-  print("#define SIZEOF_FLOAT 4")
 
   print("")
   print("# Define memory locations for spilling register.")
