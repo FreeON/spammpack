@@ -81,7 +81,7 @@ libspamm_kernel_headers = \
 libspamm_tree_la_SOURCES = \
   $(libspamm_tree_headers) \
   $(libspamm_tree_private_headers) \
-  add.c \
+  spamm_add.c \
   spamm_allocate.c \
   spamm_blas.c \
   spamm_check.c \
@@ -114,7 +114,6 @@ pkginclude_HEADERS = \
 
 libspamm_tree_headers = \
   spamm.h \
-  typed_function.h \
   spamm_chunk.h \
   spamm_errno.h \
   spamm_error.h \

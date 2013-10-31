@@ -45,4 +45,7 @@ struct spamm_recursive_node_t;
 /** A data chunk. */
 typedef void spamm_chunk_t;
 
+/** The SpAMM norm type. */
+typedef SPAMM_NORM_TYPE spamm_norm_t;
+
 #endif

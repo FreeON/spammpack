@@ -1,7 +1,6 @@
 noinst_PROGRAMS = print_chunk_offsets get_chunk_index
 
-print_chunk_offsets_LDFLAGS = libspamm.la
-print_chunk_offsets_DEPENDENCIES = libspamm.la
+CPPFLAGS = -I$(top_srcdir)/src
 
-get_chunk_index_LDFLAGS = libspamm.la
-get_chunk_index_DEPENDENCIES = libspamm.la
+print_chunk_offsets_LDFLAGS = $(top_builddir)/src/libspamm.la
+get_chunk_index_LDFLAGS = $(top_builddir)/src/libspamm.la

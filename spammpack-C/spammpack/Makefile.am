@@ -18,8 +18,6 @@ EXTRA_DIST = \
   update_git_commit_tag.sh \
   $(builddir)/git_commit_tag
 
-DISTCHECK_CONFIGURE_FLAGS = --with-norm-type=double
-
 include_HEADERS = config.h config_fortran.h
 
 TAGS_FILES = src/* tests/*
