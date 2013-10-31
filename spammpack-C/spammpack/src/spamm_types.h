@@ -37,7 +37,6 @@ enum spamm_layout_t
   dense_column_major
 };
 
-struct spamm_multiply_stream_t;
 struct spamm_matrix_t;
 struct spamm_recursive_t;
 struct spamm_recursive_node_t;
