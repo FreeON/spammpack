@@ -53,10 +53,6 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <spammxx.h>],
   [AC_MSG_RESULT([yes])],
   [AC_MSG_FAILURE([I need spammpack])])
 
-# Compiler tests should be done using the real C compiler and not the charmc
-# wrapper.
-AC_LANG([C])
-
 AC_SEARCH_LIBS([clock_gettime], [rt],
   [],
   [AC_MSG_FAILURE([need clock_gettime()])])
