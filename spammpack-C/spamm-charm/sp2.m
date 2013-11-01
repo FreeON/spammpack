@@ -9,4 +9,3 @@ function P = sp2(F)
     else
       P = 2*P-P2;
     end
-
