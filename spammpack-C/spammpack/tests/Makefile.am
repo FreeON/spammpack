@@ -23,7 +23,7 @@ include_HEADERS = test.h
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
-AM_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/src
+AM_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/src -I$(top_builddir)/interfaces/Fortran
 AM_LDFLAGS = $(top_builddir)/src/libspamm.la
 
 if HAVE_SSE_IN_CPU
@@ -39,15 +39,15 @@ multiply_tests = $(multiply_spamm_SSE) $(multiply_spamm_SSE4_1)
 03_create_spamm_LDADD = libtest.la
 04_copy_spamm_LDADD = libtest.la
 06_chunk_test_SOURCES = 06_chunk_test.F90
-06_chunk_test_LDADD = $(top_builddir)/src/libspammpack_fortran.la
+06_chunk_test_LDADD = $(top_builddir)/interfaces/Fortran/libspammpack_fortran.la
 08_get_version_SOURCES = 08_get_version.F90
-08_get_version_LDADD = $(top_builddir)/src/libspammpack_fortran.la
+08_get_version_LDADD = $(top_builddir)/interfaces/Fortran/libspammpack_fortran.la
 14_add_spamm_LDADD = libtest.la
 17_multiply_spamm_LDADD = libtest.la
 20_seteq_SOURCES = 20_seteq.F90
-20_seteq_LDADD = $(top_builddir)/src/libspammpack_fortran.la
+20_seteq_LDADD = $(top_builddir)/interfaces/Fortran/libspammpack_fortran.la
 21_trace_SOURCES = 21_trace.F90
-21_trace_LDADD = $(top_builddir)/src/libspammpack_fortran.la
+21_trace_LDADD = $(top_builddir)/interfaces/Fortran/libspammpack_fortran.la
 
 EXTRA_DIST = $(noinst_SCRIPTS)
 

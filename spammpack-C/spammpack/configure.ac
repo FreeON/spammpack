@@ -287,6 +287,7 @@ Makefile
 manual.h
 interfaces/Makefile
 interfaces/python/Makefile
+interfaces/Fortran/Makefile
 src/Makefile
 tools/Makefile
 tests/Makefile

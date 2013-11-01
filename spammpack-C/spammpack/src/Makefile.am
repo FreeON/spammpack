@@ -7,9 +7,7 @@ AM_FCFLAGS = $(OPENMP_FCFLAGS)
 
 ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
-lib_LTLIBRARIES = \
-  libspamm.la \
-  libspammpack_fortran.la
+lib_LTLIBRARIES = libspamm.la
 
 noinst_LTLIBRARIES = \
   libspamm_tree.la \
@@ -21,8 +19,6 @@ libspamm_la_LIBADD  = \
   libspamm_tree.la \
   libspamm_kernel.la
 
-libspammpack_fortran_la_LDFLAGS = -version-info 0:3:0
-
 noinst_SCRIPTS = SSERegister.py generate_SSE_assembly_for_chunks.py # spammOffsets.py
 
 EXTRA_DIST = SSERegister.py generate_SSE_assembly_for_chunks.py
@@ -32,13 +28,9 @@ spamm_stream_kernel.S : $(srcdir)/generate_SSE_assembly_for_chunks.py
 
 generated_kernel_files = spamm_stream_kernel.S
 
-BUILT_SOURCES = $(generated_kernel_files) spammpack.mod
+BUILT_SOURCES = $(generated_kernel_files)
 
-spammpack.mod : libspammpack_fortran.la
-
-CLEANFILES = \
-  $(generated_kernel_files) \
-  *.mod
+CLEANFILES = $(generated_kernel_files)
 
 DISTCLEANFILES = \
   $(builddir)/spammOffsets.py \
@@ -46,30 +38,6 @@ DISTCLEANFILES = \
   $(builddir)/__pycache__/*
 
 nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
-
-libspammpack_fortran_la_SOURCES = \
-  spamm_fortran_interface.c \
-  spammpack_algebra.F90 \
-  spammpack_chunk.F90 \
-  spammpack_management.F90 \
-  spammpack_omp.F90 \
-  spammpack_types.F90 \
-  spammpack.F90
-
-# Fortran dependencies.
-spammpack.lo : \
-	spammpack_algebra.lo \
-	spammpack_chunk.lo \
-	spammpack_management.lo \
-	spammpack_types.lo
-spammpack_algebra.lo : \
-	spammpack_chunk.lo \
-	spammpack_management.lo \
-	spammpack_types.lo
-spammpack_management.lo : \
-	spammpack_types.lo
-spammpack_chunk.lo : \
-	spammpack_types.lo
 
 libspamm_kernel_la_SOURCES = \
   $(libspamm_kernel_headers) \
@@ -129,5 +97,4 @@ libspamm_tree_private_headers = \
 
 include_HEADERS = \
   $(libspamm_kernel_headers) \
-  $(libspamm_tree_headers) \
-  spammpack.mod
+  $(libspamm_tree_headers)
