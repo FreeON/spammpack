@@ -6,10 +6,10 @@ EXTRA_DIST = \
 
 additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
-check_SCRIPTS = $(PYTHONTESTS) \
-	spamm_test_add.sh \
-	spamm_test_multiply.sh \
-	spamm_test_trace.sh
+check_SCRIPTS = \
+	$(top_builddir)/spamm_test_add.sh \
+	$(top_builddir)/spamm_test_multiply.sh \
+	$(top_builddir)/spamm_test_trace.sh
 TESTS = $(check_SCRIPTS)
 
 bin_PROGRAMS = spamm BCSRInfo
@@ -110,6 +110,4 @@ CLEANFILES = \
 	$(BCSRInfo_CHARMHEADERS) \
 	charmrun
 
-DISTCLEANFILES = \
-	$(TESTS) \
-	random.mm
+DISTCLEANFILES = $(TESTS)

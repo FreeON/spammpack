@@ -167,7 +167,7 @@ AC_CONFIG_FILES([Makefile src/Makefile tools/Makefile Doxyfile])
 AC_CONFIG_COMMANDS([sp2_test.sh],
 [cat > sp2_test.sh << END_OF_SCRIPT
 #!/bin/bash
-${srcdir}/sp2.py --Ne 2 random.mm || exit 1
+\${srcdir}/sp2.py --Ne 2 \${top_builddir}/random.mm || exit 1
 END_OF_SCRIPT
 chmod 755 sp2_test.sh
 ])
