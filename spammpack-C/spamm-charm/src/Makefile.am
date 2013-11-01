@@ -1,30 +1,10 @@
 TAGS_FILES = config.h
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-debug
-
 EXTRA_DIST = \
 	$(spamm_INTERFACEFILES) \
-	$(BCSRInfo_INTERFACEFILES) \
-	spamm.bib \
-	configure.LB \
-	configure.mustang \
-	freeon-submit.sh \
-	freeon.job.template \
-	moonlight-submit.sh \
-	moonlight.sh.template \
-	mustang-results.sh \
-	mustang-submit.sh \
-	mustang.job.decay.template \
-	mustang.job.diagonal.template \
-	mustang.job.full.template \
-	mustang.job.PP.template
+	$(BCSRInfo_INTERFACEFILES)
 
 additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
-
-if HAVE_PYTHON
-python_PYTHON = plotPEMap.py sp2.py spectral_bounds.py matrix_market.py
-PYTHONTESTS = sp2_test.sh
-endif
 
 check_SCRIPTS = $(PYTHONTESTS) \
 	spamm_test_add.sh \

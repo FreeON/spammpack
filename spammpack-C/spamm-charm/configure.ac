@@ -162,7 +162,7 @@ if test "${enable_pruning}" = "yes"; then
 fi
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile Doxyfile])
+AC_CONFIG_FILES([Makefile src/Makefile tools/Makefile Doxyfile])
 
 AC_CONFIG_COMMANDS([sp2_test.sh],
 [cat > sp2_test.sh << END_OF_SCRIPT
