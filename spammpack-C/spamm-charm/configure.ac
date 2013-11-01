@@ -1,7 +1,7 @@
-AC_INIT([spamm],
-        [20],
+AC_INIT([spamm-charm],
+        [1],
         [nicolas.bock@freeon.org],
-        [spamm],
+        [],
         [http://www.freeon.org/])
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
@@ -44,6 +44,14 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <charm++.h>],
   [CkExit();])],
   [],
   [AC_MSG_FAILURE([can not compile with the charm compiler: ${CHARMC}])])
+
+# Test for spammpack.
+AC_CHECK_HEADERS([spammxx.h], [], [AC_MSG_FAILURE([I need spammpack])])
+AC_MSG_CHECKING([whether I can link against spammpack])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <spammxx.h>],
+  [SpAMM::Tree tree(2);])],
+  [AC_MSG_RESULT([yes])],
+  [AC_MSG_FAILURE([I need spammpack])])
 
 # Compiler tests should be done using the real C compiler and not the charmc
 # wrapper.
