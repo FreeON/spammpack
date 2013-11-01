@@ -11,6 +11,8 @@
 
 #include "node.decl.h"
 
+#include <spammxx.h>
+
 /** The Node class. */
 class Node : public CBase_Node
 {
@@ -49,8 +51,8 @@ class Node : public CBase_Node
     /** The square of the norm of this matrix block. */
     double norm_2;
 
-    /** The submatrix of size blocksize x blocksize. */
-    double *block;
+    /** The matrix tree. */
+    SpAMM::Tree tree;
 
   public:
 
