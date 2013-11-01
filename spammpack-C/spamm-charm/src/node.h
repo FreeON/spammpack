@@ -51,8 +51,11 @@ class Node : public CBase_Node
     /** The square of the norm of this matrix block. */
     double norm_2;
 
+    /** The matrix data. */
+    double *block;
+
     /** The matrix tree. */
-    SpAMM::Tree tree;
+    SpAMM::Tree *tree;
 
   public:
 
