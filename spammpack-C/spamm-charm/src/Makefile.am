@@ -1,8 +1,6 @@
 TAGS_FILES = config.h
 
-EXTRA_DIST = \
-	$(spamm_INTERFACEFILES) \
-	$(BCSRInfo_INTERFACEFILES)
+EXTRA_DIST = $(spamm_INTERFACEFILES)
 
 additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
@@ -12,10 +10,9 @@ check_SCRIPTS = \
 	$(top_builddir)/spamm_test_trace.sh
 TESTS = $(check_SCRIPTS)
 
-bin_PROGRAMS = spamm BCSRInfo
+bin_PROGRAMS = spamm
 
 spamm_LDFLAGS = -language charm++ $(additional_linkerflags)
-BCSRInfo_LDFLAGS = -language charm++ $(additional_linkerflags)
 
 spamm_INTERFACEFILES = \
 	matrix.ci \
@@ -54,22 +51,6 @@ spamm_CHARMHEADERS = $(foreach i, $(spamm_INTERFACEFILES), $(basename $i).decl.h
 
 $(spamm_OBJECTS) : $(spamm_CHARMHEADERS)
 
-BCSRInfo_INTERFACEFILES = bcsrinfo.ci
-
-BCSRInfo_SOURCES = \
-	bcsrinfo.cc \
-	bcsrinfo.h \
-	bcsr.cc \
-	bcsr.h \
-	logger.h \
-	logger.cc \
-	utilities.cc \
-	utilities.h
-
-BCSRInfo_CHARMHEADERS = $(foreach i, $(BCSRInfo_INTERFACEFILES), $(basename $i).decl.h $(basename $i).def.h)
-
-$(BCSRInfo_OBJECTS) : $(BCSRInfo_CHARMHEADERS)
-
 # Matrices are blocked into 32z32 at the leaf level.
 N = 4096
 B = 128
@@ -107,7 +88,6 @@ docs-pdf : docs
 
 CLEANFILES = \
 	$(spamm_CHARMHEADERS) \
-	$(BCSRInfo_CHARMHEADERS) \
 	charmrun
 
 DISTCLEANFILES = $(TESTS)
