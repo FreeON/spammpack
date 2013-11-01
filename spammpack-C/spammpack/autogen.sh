@@ -1,3 +1,3 @@
 #!/bin/bash
 
-autoreconf --install --symlink
+autoreconf --force --install --symlink
