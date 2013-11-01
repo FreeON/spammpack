@@ -77,12 +77,6 @@ valgrind : spamm_charm$(EXEEXT)
 		--show-reachable=yes \
 		./$< -N 1
 
-docs :
-	$(DOXYGEN)
-
-docs-pdf : docs
-	$(MAKE) -C latex
-
 %.decl.h %.def.h : %.ci
 	$(AM_V_CXX)$(CHARMC) $(DEFAULT_INCLUDES) -preprocess $<
 

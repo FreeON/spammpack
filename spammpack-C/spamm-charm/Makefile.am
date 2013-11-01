@@ -16,3 +16,9 @@ EXTRA_DIST = \
 	mustang.job.diagonal.template \
 	mustang.job.full.template \
 	mustang.job.PP.template
+
+docs :
+	$(DOXYGEN)
+
+docs-pdf : docs
+	$(MAKE) -C latex
