@@ -17,17 +17,17 @@
  * @cite BockSISC2013.
  * The SP2 algorithm is described in more detail in
  * @cite Niklasson2003.
- * The main program is documented as SpAMM::SpAMM. A more detailed description
- * of the API and components of this code can be found on the @link API API
- * @endlink page.
+ * The main program is documented as SpAMM_Charm::SpAMM_Charm. A more detailed
+ * description of the API and components of this code can be found on the
+ * @link API API @endlink page.
  *
  * @section example Example Use
  *
  * @code
  * ./configure.LB
  * make
- * ./charmrun +p3 spamm -N 1024 -b 16 --type decay --decay 8 --tolerance 1e-8 --verify --iterations 10
- * ./charmrun +p3 spamm --operation SP2 --Ne 100 --density something.OrthoF --tolerance 1e-8
+ * ./charmrun +p3 spamm_charm -N 1024 -b 16 --type decay --decay 8 --tolerance 1e-8 --verify --iterations 10
+ * ./charmrun +p3 spamm_charm --operation SP2 --Ne 100 --density something.OrthoF --tolerance 1e-8
  * @endcode
  *
  * @section References
@@ -39,7 +39,7 @@
  */
 
 #include "config.h"
-#include "spamm.h"
+#include "spamm_charm.h"
 #include "lapack_interface.h"
 #include "messages.h"
 #include "timer.h"
@@ -90,7 +90,7 @@ void initialize (void)
  *
  * @param msg The command line argument list.
  */
-SpAMM::SpAMM (CkArgMsg *msg)
+SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
 {
   int N = 1;
   int blocksize = 1;
@@ -137,7 +137,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
     {
       case 'h':
         CkPrintf("\n");
-        CkPrintf("Usage of spamm version %s\n", PACKAGE_VERSION);
+        CkPrintf("Usage of spamm_charm version %s\n", PACKAGE_VERSION);
         CkPrintf("\n");
         CkPrintf("{ -h | --help }               This help\n");
         CkPrintf("{ -N | --N } N                Create NxN matrix (default: %d)\n", N);
@@ -314,7 +314,7 @@ SpAMM::SpAMM (CkArgMsg *msg)
  * @param alignPEs Align PEs in the diagonal matrix case.
  * @param printPEMap Whether to print a PE map in each iteration.
  */
-void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
+void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolerance,
     int matrixType, double decayConstant, int operation, bool verify,
     double verifyTolerance, bool loadBalance, int initialPE, bool alignPEs,
     bool printPEMap)
@@ -654,7 +654,7 @@ void SpAMM::run (int N, int blocksize, int numberIterations, double tolerance,
  * @param lengthPEMap The length of filenamePEMap.
  * @param filenamePEMap The base name of the PEMap files.
  */
-void SpAMM::runSP2 (int lengthFilename, char *filename, int Ne, int blocksize,
+void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int blocksize,
     int maxIterations, double tolerance, bool loadBalance, int initialPE,
     bool alignPEs, bool printPEMap, int lengthPEMap, char *filenamePEMap)
 {
@@ -905,4 +905,4 @@ void SpAMM::runSP2 (int lengthFilename, char *filename, int Ne, int blocksize,
   CkExit();
 }
 
-#include "spamm.def.h"
+#include "spamm_charm.def.h"

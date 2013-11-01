@@ -1,12 +1,12 @@
-mainmodule spamm
+mainmodule spamm_charm
 {
   initnode void initialize (void);
   extern module matrix;
   extern module multiply;
   extern module messages;
-  mainchare SpAMM
+  mainchare SpAMM_Charm
   {
-    entry SpAMM (CkArgMsg *msg);
+    entry SpAMM_Charm (CkArgMsg *msg);
     entry [threaded] void run (int N, int blocksize, int numberIterations,
         double tolerance, int matrixType, double decayConstant, int operation,
         bool verify, double verifyTolerance, bool loadBalance, int initialPE,

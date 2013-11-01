@@ -6,17 +6,17 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
-#ifndef __SPAMM_H
-#define __SPAMM_H
+#ifndef __SPAMM_CHARM_H
+#define __SPAMM_CHARM_H
 
-#include "spamm.decl.h"
+#include "spamm_charm.decl.h"
 
 /** The main class. */
-class SpAMM : public CBase_SpAMM
+class SpAMM_Charm : public CBase_SpAMM_Charm
 {
   public:
 
-    SpAMM (CkArgMsg *msg);
+    SpAMM_Charm (CkArgMsg *msg);
     void run (int N, int blocksize, int numberIterations, double tolerance,
         int matrixType, double decayConstant, int operation, bool verify,
         double verifyTolerance, bool loadBalance, int initialPE,
