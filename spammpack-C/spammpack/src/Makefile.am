@@ -9,17 +9,9 @@ ACLOCAL_AMFLAGS = -I$(top_srcdir)/m4
 
 lib_LTLIBRARIES = libspamm.la
 
-noinst_LTLIBRARIES = \
-  libspamm_tree.la \
-  libspamm_kernel.la
-
 libspamm_la_LDFLAGS = -version-info 0:1:0
-libspamm_la_SOURCES =
-libspamm_la_LIBADD  = \
-  libspamm_tree.la \
-  libspamm_kernel.la
 
-noinst_SCRIPTS = SSERegister.py generate_SSE_assembly_for_chunks.py # spammOffsets.py
+noinst_SCRIPTS = SSERegister.py generate_SSE_assembly_for_chunks.py
 
 EXTRA_DIST = SSERegister.py generate_SSE_assembly_for_chunks.py
 
@@ -37,18 +29,12 @@ DISTCLEANFILES = \
   $(builddir)/spammOffsets.pyc \
   $(builddir)/__pycache__/*
 
-nodist_libspamm_kernel_la_SOURCES = $(generated_kernel_files)
-
-libspamm_kernel_la_SOURCES = \
+libspamm_la_SOURCES = \
   $(libspamm_kernel_headers) \
-  spamm_kernel.c
-
-libspamm_kernel_headers = \
-  spamm_kernel.h
-
-libspamm_tree_la_SOURCES = \
   $(libspamm_tree_headers) \
+  $(generated_kernel_files) \
   $(libspamm_tree_private_headers) \
+  spamm_kernel.c \
   spamm_add.c \
   spamm_allocate.c \
   spamm_blas.c \
@@ -80,6 +66,8 @@ pkginclude_HEADERS = \
   spamm_sort_source.c \
   spamm_blas_source.c
 
+libspamm_kernel_headers = spamm_kernel.h
+
 libspamm_tree_headers = \
   spamm.h \
   spamm_chunk.h \
@@ -92,8 +80,7 @@ libspamm_tree_headers = \
   spamm_timer.h \
   spamm_types.h
 
-libspamm_tree_private_headers = \
-  spamm_types_private.h
+libspamm_tree_private_headers = spamm_types_private.h
 
 include_HEADERS = \
   $(libspamm_kernel_headers) \
