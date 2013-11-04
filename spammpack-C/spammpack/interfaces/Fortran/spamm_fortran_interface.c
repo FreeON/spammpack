@@ -2,6 +2,7 @@
 
 #include "config.h"
 #include "spamm.h"
+#include "spamm_blas.h"
 
 /** Fortran interface for spamm_trace().
  */

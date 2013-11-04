@@ -15,11 +15,9 @@ libtest_la_SOURCES = \
   libtest_compare_spamm_to_dense.c \
 	test.h
 
-pkginclude_HEADERS = \
+noinst_HEADERS = \
   libtest_generate_matrix_sources.c \
   libtest_compare_spamm_to_dense_sources.c
-
-include_HEADERS = test.h
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_FCFLAGS = $(OPENMP_FCFLAGS)

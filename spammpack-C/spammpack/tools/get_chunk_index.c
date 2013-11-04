@@ -29,6 +29,6 @@ main ()
 
     offset = spamm_chunk_matrix_index(2, 1, N_lower, N_upper, i);
     SPAMM_INFO("i = %i, j = %i, chunk_offset = %u, # kernel blocks = %u\n", i[0],
-        i[1], offset, offset/(SPAMM_N_KERNEL*SPAMM_N_KERNEL));
+        i[1], offset, offset/(spamm_chunk_get_kernel_size()*spamm_chunk_get_kernel_size()));
   }
 }

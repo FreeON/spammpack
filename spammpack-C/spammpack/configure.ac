@@ -237,7 +237,7 @@ dnl Store the command line.
 AC_DEFINE_UNQUOTED([SPAMM_CONFIGURE_ARGUMENTS], ["${ac_configure_args}"], [The command line with which spammpack was configured.])
 
 dnl Define the norm type.
-AC_DEFINE_UNQUOTED([SPAMM_NORM_TYPE], [double], [The data type of the norms.])
+AC_SUBST([SPAMM_NORM_TYPE], [double])
 
 dnl Get the git commit tag.
 ${srcdir}/update_git_commit_tag.sh
@@ -290,6 +290,7 @@ interfaces/python/Makefile
 interfaces/Fortran/Makefile
 interfaces/CXX/Makefile
 src/Makefile
+src/spamm_types.h
 tools/Makefile
 tests/Makefile
 ])

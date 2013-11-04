@@ -5,7 +5,7 @@
 #define CONCAT2(a, b) a ## _ ## b
 #define FUNC(a, b) CONCAT2(a, b)
 
-/** A recursive implementation of {s,d}gemm(). This function is not feature
+/** A simple implementation of {s,d}gemm(). This function is not feature
  * complete, it hardly does anything, but multiply two matrices.
  */
 void FUNC(spamm, FUNCNAME) (char * transA, char * transB,

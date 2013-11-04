@@ -3,7 +3,6 @@
 #ifndef __SPAMM_KERNEL_H
 #define __SPAMM_KERNEL_H
 
-#include "config.h"
 #include "spamm_types.h"
 
 #include <stddef.h>

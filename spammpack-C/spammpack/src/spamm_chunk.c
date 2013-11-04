@@ -8,6 +8,16 @@
 #include <stdio.h>
 #include <stdint.h>
 
+/** Get the kernel block size.
+ *
+ * @return The kernel block size.
+ */
+size_t
+spamm_chunk_get_kernel_size (void)
+{
+  return SPAMM_N_KERNEL;
+}
+
 /** Get the total number of norm entries stored in a SpAMM chunk.
  *
  * @param number_tiers The number of tiers stored in the chunk.

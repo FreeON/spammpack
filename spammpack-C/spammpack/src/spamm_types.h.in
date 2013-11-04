@@ -3,21 +3,9 @@
 #ifndef __SPAMM_TYPES_H
 #define __SPAMM_TYPES_H
 
-#include "config.h"
-
 typedef void (*sgemm_func) (char *transA, char *transB, int *M, int *N, int
     *K, float *alpha, float *A, int *LDA, float *B, int *LDB, float *beta,
     float *C, int *LDC);
-
-#ifdef ADD_SGEMM_EXTERNAL_DECLARATION
-void sgemm_ (char *transA, char *transB, int *M, int *N, int *K, float *alpha,
-    float *A, int *LDA, float *B, int *LDB, float *beta, float *C, int *LDC);
-#endif
-
-#ifdef ADD_DGEMM_EXTERNAL_DECLARATION
-void dgemm_ (char *transA, char *transB, int *M, int *N, int *K, double *alpha,
-    double *A, int *LDA, double *B, int *LDB, double *beta, double *C, int *LDC);
-#endif
 
 /** The layout type for the layout of the basic matrix blocks on the kernel
  * tier.
@@ -38,13 +26,12 @@ enum spamm_layout_t
 };
 
 struct spamm_matrix_t;
-struct spamm_recursive_t;
 struct spamm_recursive_node_t;
 
 /** A data chunk. */
 typedef void spamm_chunk_t;
 
 /** The SpAMM norm type. */
-typedef SPAMM_NORM_TYPE spamm_norm_t;
+typedef @SPAMM_NORM_TYPE@ spamm_norm_t;
 
 #endif

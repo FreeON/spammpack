@@ -1,5 +1,5 @@
 AM_CTAGSFLAGS = --C-kinds=+l+x
-TAGS_FILES = $(top_builddir)/config.h *.py $(pkginclude_HEADERS)
+TAGS_FILES = $(top_builddir)/config.h *.py $(noinst_HEADERS)
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS)
@@ -62,7 +62,7 @@ libspamm_la_SOURCES = \
   spamm_uint_to_bin_string.c \
   spamm_version.c
 
-pkginclude_HEADERS = \
+noinst_HEADERS = \
   spamm_sort_source.c \
   spamm_blas_source.c
 
@@ -80,7 +80,9 @@ libspamm_tree_headers = \
   spamm_timer.h \
   spamm_types.h
 
-libspamm_tree_private_headers = spamm_types_private.h
+libspamm_tree_private_headers = \
+	spamm_types_private.h \
+	spamm_blas.h
 
 include_HEADERS = \
   $(libspamm_kernel_headers) \

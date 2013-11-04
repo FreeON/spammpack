@@ -27,6 +27,9 @@ size_t
 spamm_chunk_pad (const size_t address,
     const size_t alignment);
 
+size_t
+spamm_chunk_get_kernel_size (void);
+
 unsigned int *
 spamm_chunk_get_number_dimensions (const spamm_chunk_t *const chunk);
 

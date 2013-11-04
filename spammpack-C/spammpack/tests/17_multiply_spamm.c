@@ -3,6 +3,7 @@
 #include "test.h"
 
 #include <spamm.h>
+#include <spamm_blas.h>
 
 #include <getopt.h>
 #include <math.h>
