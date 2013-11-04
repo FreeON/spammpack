@@ -46,10 +46,10 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <charm++.h>],
   [AC_MSG_FAILURE([can not compile with the charm compiler: ${CHARMC}])])
 
 # Test for spammpack.
-AC_CHECK_HEADERS([spammxx.h], [], [AC_MSG_FAILURE([I need spammpack])])
+AC_CHECK_HEADERS([spamm.h], [], [AC_MSG_FAILURE([I need spammpack])])
 AC_MSG_CHECKING([whether I can link against spammpack])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <spammxx.h>],
-  [SpAMM::Tree tree(2);])],
+AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <spamm.h>],
+  [struct spamm_matrix_t *M;])],
   [AC_MSG_RESULT([yes])],
   [AC_MSG_FAILURE([I need spammpack])])
 

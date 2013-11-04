@@ -1,4 +1,4 @@
-TAGS_FILES = config.h
+TAGS_FILES = $(top_builddir)/config.h
 
 EXTRA_DIST = $(spamm_charm_INTERFACEFILES)
 

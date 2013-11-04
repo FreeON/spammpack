@@ -11,7 +11,7 @@
 
 #include "node.decl.h"
 
-#include <spammxx.h>
+#include <spamm.h>
 
 /** The Node class. */
 class Node : public CBase_Node
@@ -55,7 +55,7 @@ class Node : public CBase_Node
     double *block;
 
     /** The matrix tree. */
-    SpAMM::Tree *tree;
+    spamm_recursive_node_t *tree;
 
   public:
 
