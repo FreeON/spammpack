@@ -27,10 +27,30 @@ AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
 AM_PATH_PYTHON([2.7], [], [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "${PYTHON}" != ":"])
 
-# Find the real compiler.
+# Find the real C++ compiler.
+AC_PROG_CXX
+
+# Find the Charm++ compiler wrapper. We first reset the cached values autoconf
+# found for the C++ compiler and then test charmc. If we don't, autoconf will
+# not actually do anything, since it thinks that we have already checked.
+unset ac_cv_prog_ac_ct_CXX
+unset ac_cv_cxx_compiler_gnu
+unset ac_cv_prog_cxx_g
+unset am_cv_CXX_dependencies_compiler_type
+AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
+if test -z "${CHARMC}"; then
+  CHARMC="charmc"
+fi
+CXX=${CHARMC}
 AC_PROG_CXX
 
 AC_LANG(C++)
+
+# Test whether the charm compiler works.
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <charm++.h>],
+  [CkExit();])],
+  [],
+  [AC_MSG_FAILURE([can not compile with the charm compiler: ${CHARMC}])])
 
 # Test for spammpack.
 AC_CHECK_HEADERS([spamm.h], [], [AC_MSG_FAILURE([I need spammpack])])
@@ -206,25 +226,5 @@ AC_CONFIG_COMMANDS([random.mm],
 3 3 0.97822861428160168
 END_OF_SCRIPT
 ])
-
-# Find the Charm++ compiler wrapper. We first reset the cached values autoconf
-# found for the C++ compiler and then test charmc. If we don't, autoconf will
-# not actually do anything, since it thinks that we have already checked.
-unset ac_cv_prog_ac_ct_CXX
-unset ac_cv_cxx_compiler_gnu
-unset ac_cv_prog_cxx_g
-unset am_cv_CXX_dependencies_compiler_type
-AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
-if test -z "${CHARMC}"; then
-  CHARMC="charmc"
-fi
-CXX=${CHARMC}
-AC_PROG_CXX
-
-# Test whether the charm compiler works.
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <charm++.h>],
-  [CkExit();])],
-  [],
-  [AC_MSG_FAILURE([can not compile with the charm compiler: ${CHARMC}])])
 
 AC_OUTPUT
