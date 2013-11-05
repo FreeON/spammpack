@@ -53,15 +53,23 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <charm++.h>],
   [AC_MSG_FAILURE([can not compile with the charm compiler: ${CHARMC}])])
 
 # Test for spammpack.
-AC_CHECK_HEADERS([spamm.h], [], [AC_MSG_FAILURE([I need spammpack])])
-AC_MSG_CHECKING([whether I can link against spammpack])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <spamm.h>],
-  [  unsigned int N[[]] = { 16, 16 };
-  unsigned int N_lower[[]] = { 0, 0 };
-  unsigned int N_upper[[]] = { 16, 16 };
-  spamm_chunk_t *M = spamm_new_chunk(2, 1, N, N_lower, N_upper);])],
-  [AC_MSG_RESULT([yes])],
-  [AC_MSG_FAILURE([I need spammpack])])
+AC_ARG_ENABLE([spammpack],
+  [AS_HELP_STRING([--enable-spammpack],
+  [Link against spammpack and store matrix blocks as spamm chunks.])],
+  [use_spammpack=${enableval}],
+  [use_spammpack="no"])
+if test "${use_spammpack}" = "yes"; then
+  AC_DEFINE([USE_SPAMMPACK], [1], [Link against spammpack and store matrix blocks as spamm chunks])
+  AC_CHECK_HEADERS([spamm.h], [], [AC_MSG_FAILURE([I need spammpack])])
+  AC_MSG_CHECKING([whether I can link against spammpack])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <spamm.h>],
+    [  unsigned int N[[]] = { 16, 16 };
+    unsigned int N_lower[[]] = { 0, 0 };
+    unsigned int N_upper[[]] = { 16, 16 };
+    spamm_chunk_t *M = spamm_new_chunk(2, 1, N, N_lower, N_upper);])],
+    [AC_MSG_RESULT([yes])],
+    [AC_MSG_FAILURE([I need spammpack])])
+fi
 
 AC_SEARCH_LIBS([clock_gettime], [rt],
   [],

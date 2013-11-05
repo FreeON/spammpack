@@ -51,11 +51,11 @@ class Node : public CBase_Node
     /** The square of the norm of this matrix block. */
     double norm_2;
 
-    /** The matrix data. */
-    double *block;
-
     /** The matrix tree. */
-    spamm_recursive_node_t *tree;
+    spamm_chunk_t *chunk;
+
+    /** The matrix data. */
+    //double *block;
 
   public:
 

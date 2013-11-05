@@ -17,6 +17,10 @@
 #include <assert.h>
 #include <bitset>
 
+#ifdef USE_SPAMMPACK
+#include <spamm.h>
+#endif
+
 /** Some convenience macros for logging. Wrap the logging format string with
  * LB and LE. */
 #define LB "tier %d Node(%d,%d) "
@@ -47,7 +51,11 @@ Node::Node (int N, int depth, int blocksize, int tier)
   this->norm = 0;
   this->norm_2 = 0;
 
+#ifdef USE_SPAMMPACK
+  this->chunk = NULL;
+#else
   this->block = NULL;
+#endif
 
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
@@ -78,7 +86,11 @@ Node::Node (CkMigrateMessage *msg)
 Node::~Node (void)
 {
   DEBUG(LB"destructor\n"LE);
+#ifdef USE_SPAMMPACK
+  spamm_delete_chunk(&chunk);
+#else
   delete[] block;
+#endif
 }
 
 /** The PUP method.
@@ -101,6 +113,9 @@ void Node::pup (PUP::er &p)
   p|norm;
   p|norm_2;
 
+#ifdef USE_SPAMMPACK
+  unsigned int numberElements = spamm_chunk_get_size(chunk);
+#else
   int numberElements = (block == NULL ? 0 : blocksize*blocksize);
   p|numberElements;
 
@@ -116,6 +131,7 @@ void Node::pup (PUP::er &p)
   {
     if(p.isUnpacking()) { block = NULL; }
   }
+#endif
 
   DEBUG(LB"pup()\n"LE);
 }
@@ -193,6 +209,23 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   assert(tier == depth);
   assert(blocksize == this->blocksize);
 
+#ifdef USE_SPAMMPACK
+  if(chunk == NULL)
+  {
+    unsigned int N[] = { blocksize, blocksize };
+    unsigned int N_lower[] = { 0, 0 };
+    unsigned int N_upper[] = { blocksize, blocksize };
+    chunk = spamm_new_chunk(2, 1, N, N_lower, N_upper);
+  }
+
+  for(int i = 0; i < blocksize; i++) {
+    for(int j = 0; j < blocksize; j++)
+    {
+      unsigned int index[2] = { i, j };
+      spamm_chunk_set(index, A[BLOCK_INDEX(i, j, 0, 0, blocksize)], chunk);
+    }
+  }
+#else
   if(block == NULL)
   {
     block = new double[blocksize*blocksize];
@@ -200,6 +233,7 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   memcpy(block, A, sizeof(double)*blocksize*blocksize);
 
   blockNorm();
+#endif
 
 #ifdef DEBUG_OUTPUT
   printDense(blocksize, block, LB"setting block:"LE);
