@@ -7,6 +7,16 @@
 
 #include <stdlib.h>
 
+#ifdef __cplusplus
+#define __BEGIN_DECLARATIONS extern "C" {
+#define __END_DECLARATIONS }
+#else
+#define __BEGIN_DECLARATIONS
+#define __END_DECLARATIONS
+#endif
+
+__BEGIN_DECLARATIONS
+
 spamm_norm_t
 spamm_chunk_multiply_scalar (const float alpha,
     spamm_chunk_t *chunk,
@@ -104,5 +114,7 @@ spamm_norm_t
 spamm_chunk_fix (spamm_chunk_t *const chunk,
     double *const flop,
     double *const memop);
+
+__END_DECLARATIONS
 
 #endif

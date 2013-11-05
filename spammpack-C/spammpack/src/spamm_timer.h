@@ -7,6 +7,16 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#ifdef __cplusplus
+#define __BEGIN_DECLARATIONS extern "C" {
+#define __END_DECLARATIONS }
+#else
+#define __BEGIN_DECLARATIONS
+#define __END_DECLARATIONS
+#endif
+
+__BEGIN_DECLARATIONS
+
 /** The timer type.
  */
 enum spamm_timer_type_t
@@ -79,5 +89,7 @@ spamm_timer_get_timer_type (const char *const name);
 
 void
 spamm_timer_get_native_events ();
+
+__END_DECLARATIONS
 
 #endif

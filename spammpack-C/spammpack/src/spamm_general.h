@@ -5,6 +5,16 @@
 
 #include "spamm_types.h"
 
+#ifdef __cplusplus
+#define __BEGIN_DECLARATIONS extern "C" {
+#define __END_DECLARATIONS }
+#else
+#define __BEGIN_DECLARATIONS
+#define __END_DECLARATIONS
+#endif
+
+__BEGIN_DECLARATIONS
+
 unsigned int
 ipow (unsigned int b, unsigned int n);
 
@@ -261,5 +271,7 @@ spamm_trace (const struct spamm_matrix_t *const A,
 
 void
 spamm_omp_init ();
+
+__END_DECLARATIONS
 
 #endif

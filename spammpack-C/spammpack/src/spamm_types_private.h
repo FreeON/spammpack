@@ -9,6 +9,16 @@
 #include <omp.h>
 #endif
 
+#ifdef __cplusplus
+#define __BEGIN_DECLARATIONS extern "C" {
+#define __END_DECLARATIONS }
+#else
+#define __BEGIN_DECLARATIONS
+#define __END_DECLARATIONS
+#endif
+
+__BEGIN_DECLARATIONS
+
 /** The matrix. */
 struct spamm_matrix_t
 {
@@ -74,5 +84,7 @@ spamm_recursive_node_t
   }
   tree;
 };
+
+__END_DECLARATIONS
 
 #endif

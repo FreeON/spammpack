@@ -7,6 +7,16 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+#define __BEGIN_DECLARATIONS extern "C" {
+#define __END_DECLARATIONS }
+#else
+#define __BEGIN_DECLARATIONS
+#define __END_DECLARATIONS
+#endif
+
+__BEGIN_DECLARATIONS
+
 /** The different stream kernels.
  */
 enum spamm_kernel_t
@@ -54,5 +64,7 @@ spamm_stream_kernel (const unsigned int number_stream_elements,
     const void *const chunk_A,
     const void *const chunk_B,
     void *const chunk_C);
+
+__END_DECLARATIONS
 
 #endif
