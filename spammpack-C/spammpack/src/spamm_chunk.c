@@ -475,7 +475,7 @@ spamm_chunk_norm_index (const unsigned int tier,
  * @return The size in bytes of the chunk.
  */
 size_t
-spamm_chunk_get_size (const unsigned int number_dimensions,
+spamm_chunk_get_size_for_allocation (const unsigned int number_dimensions,
     const short use_linear_tree,
     unsigned int *number_tiers,
     const unsigned int *const N_lower,
@@ -589,6 +589,38 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
   size += spamm_chunk_get_total_number_norms(*number_tiers, number_dimensions)*sizeof(spamm_norm_t);
 
   return size;
+}
+
+/** Get the size of an already allocated chunk.
+ *
+ * @param chunk The chunk
+ *
+ * @return The size in bytes.
+ */
+size_t
+spamm_chunk_get_size (spamm_chunk_t *const chunk)
+{
+  assert(chunk != NULL);
+
+  unsigned int number_dimensions = *spamm_chunk_get_number_dimensions(chunk);
+  unsigned int use_linear_tree = *spamm_chunk_get_use_linear_tree(chunk);
+  unsigned int *N = spamm_chunk_get_N(chunk);
+  unsigned int *N_lower = spamm_chunk_get_N_lower(chunk);
+  unsigned int *N_upper = spamm_chunk_get_N_upper(chunk);
+
+  unsigned int number_tiers;
+  unsigned int *N_pointer;
+  unsigned int *N_lower_pointer;
+  unsigned int *N_upper_pointer;
+  float *A_pointer;
+  float *A_dilated_pointer;
+  spamm_norm_t *norm_pointer;
+  spamm_norm_t *norm2_pointer;
+
+  return spamm_chunk_get_size_for_allocation(number_dimensions,
+      use_linear_tree, &number_tiers, N_lower, N_upper, &N_pointer,
+      &N_lower_pointer, &N_upper_pointer, &A_pointer, &A_dilated_pointer,
+      &norm_pointer, &norm2_pointer);
 }
 
 /** Set the norms and the dilated matrix in a chunk.

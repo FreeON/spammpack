@@ -97,7 +97,7 @@ spamm_chunk_norm_index (const unsigned int tier,
     const spamm_chunk_t *const chunk);
 
 size_t
-spamm_chunk_get_size (const unsigned int number_dimensions,
+spamm_chunk_get_size_for_allocation (const unsigned int number_dimensions,
     const short use_linear_tree,
     unsigned int *number_tiers,
     const unsigned int *const N_lower,
@@ -110,10 +110,18 @@ spamm_chunk_get_size (const unsigned int number_dimensions,
     spamm_norm_t **norm_pointer,
     spamm_norm_t **norm2_pointer);
 
+size_t
+spamm_chunk_get_size (spamm_chunk_t *const chunk);
+
 spamm_norm_t
 spamm_chunk_fix (spamm_chunk_t *const chunk,
     double *const flop,
     double *const memop);
+
+void
+spamm_chunk_set (const unsigned int *const i,
+    const float Aij,
+    spamm_chunk_t *chunk);
 
 __END_DECLARATIONS
 
