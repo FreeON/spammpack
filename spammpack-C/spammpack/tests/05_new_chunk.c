@@ -48,7 +48,7 @@ main ()
 
   SPAMM_INFO("sizeof(chunk) = %lu\n", spamm_chunk_get_size(chunk));
 
-  spamm_print_chunk(chunk);
+  //spamm_print_chunk(chunk);
 
   spamm_delete_chunk(&chunk);
 }

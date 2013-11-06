@@ -162,6 +162,18 @@ NodeInfoMsg * Node::info (void)
   return new NodeInfoMsg(index, iLower, iUpper, jLower, jUpper, norm, norm_2);
 }
 
+#ifdef USE_SPAMMPACK
+/** Get the SpAMM chunk.
+ *
+ * @return The chunk.
+ */
+ChunkMsg * Node::getChunk (void)
+{
+  ChunkMsg *msg = new (spamm_chunk_get_size(chunk)) ChunkMsg();
+  memcpy(msg->chunk, chunk, spamm_chunk_get_size(chunk));
+  return msg;
+}
+#else
 /** Get the dense submatrix block.
  *
  * @return The submatrix block.
@@ -181,6 +193,7 @@ DenseMatrixMsg * Node::getBlock (void)
   }
   return m;
 }
+#endif
 
 /** Calculate the Frobenius norm of this Node.
  */

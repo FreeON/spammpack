@@ -86,10 +86,10 @@ main (int argc, char **argv)
     N_upper[dim] = N_contiguous;
   }
   chunk = spamm_new_chunk(number_dimensions, use_linear_tree, N, N_lower, N_upper);
-  chunk_size = spamm_chunk_get_size(number_dimensions, use_linear_tree,
-      &number_tiers, N_lower, N_upper, &N_pointer, &N_lower_pointer,
-      &N_upper_pointer, &A_pointer, &A_dilated_pointer, &norm_pointer,
-      &norm2_pointer);
+  chunk_size = spamm_chunk_get_size_for_allocation(number_dimensions,
+      use_linear_tree, &number_tiers, N_lower, N_upper, &N_pointer,
+      &N_lower_pointer, &N_upper_pointer, &A_pointer, &A_dilated_pointer,
+      &norm_pointer, &norm2_pointer);
 
   printf("number_dimensions = %u\n", number_dimensions);
   printf("N_contiguous      = %u\n", N_contiguous);

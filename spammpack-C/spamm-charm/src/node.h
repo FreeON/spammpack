@@ -66,6 +66,7 @@ class Node : public CBase_Node
     void init (CkCallback &cb);
     NodeInfoMsg * info (void);
     DenseMatrixMsg * getBlock (void);
+    ChunkMsg * getChunk (void);
     void blockNorm (void);
     void set (int blocksize, double *A, CkCallback &cb);
     void setNorm (CProxy_Node nodes, CkCallback &cb);

@@ -1,5 +1,9 @@
 module messages
 {
+  message ChunkMsg
+  {
+    char chunk[];
+  };
   message DoubleMsg;
   message IntMsg;
   message MatrixInfoMsg;

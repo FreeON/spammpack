@@ -26,6 +26,15 @@
 #include "messages.decl.h"
 #include "node.h"
 
+/** A SpAMM chunk. */
+class ChunkMsg : public CMessage_ChunkMsg
+{
+  public:
+
+    /** The chunk. */
+    char *chunk;
+};
+
 /** A simple double value. */
 class DoubleMsg : public CMessage_DoubleMsg
 {
