@@ -41,6 +41,8 @@ spamm_charm_SOURCES = \
 	node.h \
 	spamm_charm.cc \
 	spamm_charm.h \
+	spamm_node.cc \
+	spamm_node.h \
 	timer.cc \
 	timer.h \
 	types.h \

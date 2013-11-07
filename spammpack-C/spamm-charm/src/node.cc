@@ -18,10 +18,6 @@
 #include <assert.h>
 #include <bitset>
 
-#ifdef USE_SPAMMPACK
-#include <spamm.h>
-#endif
-
 /** Some convenience macros for logging. Wrap the logging format string with
  * LB and LE. */
 #define LB "tier %d Node(%d,%d) "
@@ -52,7 +48,6 @@ Node::Node (int N, int depth, int blocksize, int tier)
   this->norm = 0;
   this->norm_2 = 0;
 
-  this->chunk = NULL;
   this->block = NULL;
 
   /* Calculate the linear index. */
@@ -84,9 +79,6 @@ Node::Node (CkMigrateMessage *msg)
 Node::~Node (void)
 {
   DEBUG(LB"destructor\n"LE);
-#ifdef USE_SPAMMPACK
-  spamm_delete_chunk(&chunk);
-#endif
   delete[] block;
 }
 
@@ -109,21 +101,6 @@ void Node::pup (PUP::er &p)
   p|index;
   p|norm;
   p|norm_2;
-
-#ifdef USE_SPAMMPACK
-  size_t chunksize = (chunk == NULL ? 0 : spamm_chunk_get_size(chunk));
-  p|chunksize;
-
-  if(chunksize > 0)
-  {
-    p((char*) chunk, chunksize);
-  }
-
-  else
-  {
-    if(p.isUnpacking()) { chunk = NULL; }
-  }
-#endif
 
   int numberElements = (block == NULL ? 0 : blocksize*blocksize);
   p|numberElements;
@@ -171,19 +148,6 @@ NodeInfoMsg * Node::info (void)
   return new NodeInfoMsg(index, iLower, iUpper, jLower, jUpper, norm, norm_2);
 }
 
-#ifdef USE_SPAMMPACK
-/** Get the SpAMM chunk.
- *
- * @return The chunk.
- */
-ChunkMsg * Node::getChunk (void)
-{
-  ChunkMsg *msg = new (spamm_chunk_get_size(chunk)) ChunkMsg();
-  memcpy(msg->chunk, chunk, spamm_chunk_get_size(chunk));
-  return msg;
-}
-#endif
-
 /** Get the dense submatrix block.
  *
  * @return The submatrix block.
@@ -226,7 +190,7 @@ void Node::blockNorm (void)
  * @param A The matrix.
  * @param cb The callback to send to.
  */
-void Node::setBlock (int blocksize, double *A, CkCallback &cb)
+void Node::set (int blocksize, double *A, CkCallback &cb)
 {
   assert(tier == depth);
   assert(blocksize == this->blocksize);
@@ -238,44 +202,6 @@ void Node::setBlock (int blocksize, double *A, CkCallback &cb)
   memcpy(block, A, sizeof(double)*blocksize*blocksize);
 
   blockNorm();
-
-#ifdef DEBUG_OUTPUT
-  printDense(blocksize, block, LB"setting block:"LE);
-#endif
-
-  cb.send();
-}
-
-/** Set a SpAMM chunk in this Node.
- *
- * @param blocksize The blocksize.
- * @param A The matrix.
- * @param cb The callback to send to.
- */
-void Node::setChunk (int blocksize, double *A, CkCallback &cb)
-{
-  assert(tier == depth);
-  assert(blocksize == this->blocksize);
-
-#ifdef USE_SPAMMPACK
-  if(chunk == NULL)
-  {
-    unsigned int N[] = { blocksize, blocksize };
-    unsigned int N_lower[] = { 0, 0 };
-    unsigned int N_upper[] = { blocksize, blocksize };
-    chunk = spamm_new_chunk(2, 1, N, N_lower, N_upper);
-  }
-
-  for(int i = 0; i < blocksize; i++) {
-    for(int j = 0; j < blocksize; j++)
-    {
-      unsigned int index[2] = { i, j };
-      spamm_chunk_set(index, A[BLOCK_INDEX(i, j, 0, 0, blocksize)], chunk);
-    }
-  }
-#else
-  SPAMM_ABORT("not compiled with spammpack");
-#endif
 
 #ifdef DEBUG_OUTPUT
   printDense(blocksize, block, LB"setting block:"LE);
