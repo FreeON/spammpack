@@ -9,9 +9,13 @@
 #ifndef __NODE_H
 #define __NODE_H
 
+#include "config.h"
+
 #include "node.decl.h"
 
+#ifdef USE_SPAMMPACK
 #include <spamm.h>
+#endif
 
 /** The Node class. */
 class Node : public CBase_Node
@@ -51,11 +55,13 @@ class Node : public CBase_Node
     /** The square of the norm of this matrix block. */
     double norm_2;
 
+#ifdef USE_SPAMMPACK
     /** The matrix tree. */
     spamm_chunk_t *chunk;
+#endif
 
     /** The matrix data. */
-    //double *block;
+    double *block;
 
   public:
 
@@ -68,7 +74,8 @@ class Node : public CBase_Node
     DenseMatrixMsg * getBlock (void);
     ChunkMsg * getChunk (void);
     void blockNorm (void);
-    void set (int blocksize, double *A, CkCallback &cb);
+    void setBlock (int blocksize, double *A, CkCallback &cb);
+    void setChunk (int blocksize, double *A, CkCallback &cb);
     void setNorm (CProxy_Node nodes, CkCallback &cb);
     void blockAdd (double alpha, int blocksize, double *A);
     void add (double alpha, double beta, CProxy_Node B, CkCallback &cb);

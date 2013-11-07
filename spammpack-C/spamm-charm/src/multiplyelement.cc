@@ -7,6 +7,7 @@
  */
 
 #include "config.h"
+
 #include "multiplyelement.h"
 #include "lapack_interface.h"
 #include "messages.h"

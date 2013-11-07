@@ -10,6 +10,7 @@
 #define __MULTIPLYELEMENT_H
 
 #include "config.h"
+
 #include "multiplyelement.decl.h"
 
 /** An element in the convolution curve. */

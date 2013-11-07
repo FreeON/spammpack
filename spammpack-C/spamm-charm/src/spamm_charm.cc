@@ -39,6 +39,7 @@
  */
 
 #include "config.h"
+
 #include "spamm_charm.h"
 #include "lapack_interface.h"
 #include "messages.h"

@@ -7,6 +7,7 @@
  */
 
 #include "config.h"
+
 #include "multiply.h"
 #include "multiplyelement.h"
 #include "messages.h"

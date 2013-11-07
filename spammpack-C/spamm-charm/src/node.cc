@@ -7,6 +7,7 @@
  */
 
 #include "config.h"
+
 #include "node.h"
 #include "messages.h"
 #include "logger.h"
@@ -51,11 +52,8 @@ Node::Node (int N, int depth, int blocksize, int tier)
   this->norm = 0;
   this->norm_2 = 0;
 
-#ifdef USE_SPAMMPACK
   this->chunk = NULL;
-#else
   this->block = NULL;
-#endif
 
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
@@ -88,9 +86,8 @@ Node::~Node (void)
   DEBUG(LB"destructor\n"LE);
 #ifdef USE_SPAMMPACK
   spamm_delete_chunk(&chunk);
-#else
-  delete[] block;
 #endif
+  delete[] block;
 }
 
 /** The PUP method.
@@ -114,8 +111,20 @@ void Node::pup (PUP::er &p)
   p|norm_2;
 
 #ifdef USE_SPAMMPACK
-  unsigned int numberElements = spamm_chunk_get_size(chunk);
-#else
+  size_t chunksize = (chunk == NULL ? 0 : spamm_chunk_get_size(chunk));
+  p|chunksize;
+
+  if(chunksize > 0)
+  {
+    p((char*) chunk, chunksize);
+  }
+
+  else
+  {
+    if(p.isUnpacking()) { chunk = NULL; }
+  }
+#endif
+
   int numberElements = (block == NULL ? 0 : blocksize*blocksize);
   p|numberElements;
 
@@ -127,11 +136,11 @@ void Node::pup (PUP::er &p)
     }
     PUParray(p, block, numberElements);
   }
+
   else
   {
     if(p.isUnpacking()) { block = NULL; }
   }
-#endif
 
   DEBUG(LB"pup()\n"LE);
 }
@@ -173,7 +182,8 @@ ChunkMsg * Node::getChunk (void)
   memcpy(msg->chunk, chunk, spamm_chunk_get_size(chunk));
   return msg;
 }
-#else
+#endif
+
 /** Get the dense submatrix block.
  *
  * @return The submatrix block.
@@ -193,9 +203,8 @@ DenseMatrixMsg * Node::getBlock (void)
   }
   return m;
 }
-#endif
 
-/** Calculate the Frobenius norm of this Node.
+/** Update the Frobenius norm of this Node.
  */
 void Node::blockNorm (void)
 {
@@ -217,7 +226,33 @@ void Node::blockNorm (void)
  * @param A The matrix.
  * @param cb The callback to send to.
  */
-void Node::set (int blocksize, double *A, CkCallback &cb)
+void Node::setBlock (int blocksize, double *A, CkCallback &cb)
+{
+  assert(tier == depth);
+  assert(blocksize == this->blocksize);
+
+  if(block == NULL)
+  {
+    block = new double[blocksize*blocksize];
+  }
+  memcpy(block, A, sizeof(double)*blocksize*blocksize);
+
+  blockNorm();
+
+#ifdef DEBUG_OUTPUT
+  printDense(blocksize, block, LB"setting block:"LE);
+#endif
+
+  cb.send();
+}
+
+/** Set a SpAMM chunk in this Node.
+ *
+ * @param blocksize The blocksize.
+ * @param A The matrix.
+ * @param cb The callback to send to.
+ */
+void Node::setChunk (int blocksize, double *A, CkCallback &cb)
 {
   assert(tier == depth);
   assert(blocksize == this->blocksize);
@@ -239,13 +274,7 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
     }
   }
 #else
-  if(block == NULL)
-  {
-    block = new double[blocksize*blocksize];
-  }
-  memcpy(block, A, sizeof(double)*blocksize*blocksize);
-
-  blockNorm();
+  SPAMM_ABORT("not compiled with spammpack");
 #endif
 
 #ifdef DEBUG_OUTPUT

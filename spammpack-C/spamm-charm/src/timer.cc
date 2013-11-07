@@ -7,6 +7,7 @@
  */
 
 #include "config.h"
+
 #include "timer.h"
 #include <string>
 #include <string.h>

@@ -219,7 +219,11 @@ void Matrix::set (int N, double *A, CkCallback &cb)
       }
 
       DEBUG("calling set on Node(%d,%d)\n", i, j);
-      nodes[depth](i, j).set(blocksize, block, CkCallbackResumeThread());
+#ifdef USE_SPAMMPACK
+      nodes[depth](i, j).setChunk(blocksize, block, CkCallbackResumeThread());
+#else
+      nodes[depth](i, j).setBlock(blocksize, block, CkCallbackResumeThread());
+#endif
     }
   }
   delete[] block;
