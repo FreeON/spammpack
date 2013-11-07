@@ -6,7 +6,8 @@ module node
     entry Node (int N, int depth, int blocksize, int tier);
     entry void init (CkCallback &cb);
     entry [sync] NodeInfoMsg * info (void);
-    entry [sync] DenseMatrixMsg * getBlock (void);
+    entry [sync] DenseMatrixMsg * toDense (void);
+    entry [sync] SpAMM_Node toSpAMM (void);
     entry void set (int blocksize, double A[blocksize*blocksize], CkCallback &cb);
     entry [threaded] void setNorm (CProxy_Node nodes, CkCallback &cb);
     entry void blockAdd (double alpha, int blocksize,

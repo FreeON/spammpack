@@ -48,7 +48,7 @@ Node::Node (int N, int depth, int blocksize, int tier)
   this->norm = 0;
   this->norm_2 = 0;
 
-  this->block = NULL;
+  this->matrix = NULL;
 
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
@@ -79,7 +79,7 @@ Node::Node (CkMigrateMessage *msg)
 Node::~Node (void)
 {
   DEBUG(LB"destructor\n"LE);
-  delete[] block;
+  delete matrix;
 }
 
 /** The PUP method.
@@ -101,24 +101,7 @@ void Node::pup (PUP::er &p)
   p|index;
   p|norm;
   p|norm_2;
-
-  int numberElements = (block == NULL ? 0 : blocksize*blocksize);
-  p|numberElements;
-
-  if(numberElements > 0)
-  {
-    if(p.isUnpacking())
-    {
-      block = new double[numberElements];
-    }
-    PUParray(p, block, numberElements);
-  }
-
-  else
-  {
-    if(p.isUnpacking()) { block = NULL; }
-  }
-
+  p|matrix;
   DEBUG(LB"pup()\n"LE);
 }
 
@@ -152,13 +135,14 @@ NodeInfoMsg * Node::info (void)
  *
  * @return The submatrix block.
  */
-DenseMatrixMsg * Node::getBlock (void)
+DenseMatrixMsg * Node::toDense (void)
 {
   DEBUG(LB"getting block\n"LE);
 
   DenseMatrixMsg *m = new (blocksize*blocksize) DenseMatrixMsg();
-  if(block != NULL)
+  if(matrix != NULL)
   {
+    double block[blocksize*blocksize];
     memcpy(m->A, block, sizeof(double)*blocksize*blocksize);
   }
   else
@@ -166,22 +150,6 @@ DenseMatrixMsg * Node::getBlock (void)
     memset(m->A, 0, sizeof(double)*blocksize*blocksize);
   }
   return m;
-}
-
-/** Update the Frobenius norm of this Node.
- */
-void Node::blockNorm (void)
-{
-  assert(tier == depth);
-
-  norm_2 = 0;
-  for(int i = 0; i < blocksize*blocksize; i++)
-  {
-    norm_2 += block[i]*block[i];
-  }
-  norm = sqrt(norm_2);
-
-  DEBUG(LB"norm = %e\n"LE, norm);
 }
 
 /** Set a matrix block in this Node.
@@ -195,13 +163,11 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   assert(tier == depth);
   assert(blocksize == this->blocksize);
 
-  if(block == NULL)
+  if(matrix == NULL)
   {
-    block = new double[blocksize*blocksize];
+    matrix = new SpAMM_Node();
   }
-  memcpy(block, A, sizeof(double)*blocksize*blocksize);
-
-  blockNorm();
+  matrix->set(blocksize, A);
 
 #ifdef DEBUG_OUTPUT
   printDense(blocksize, block, LB"setting block:"LE);
@@ -263,7 +229,6 @@ void Node::blockAdd (double alpha, int blocksize, double *A)
   {
     block[i] += alpha*A[i];
   }
-  blockNorm();
 
 #ifdef DEBUG_OUTPUT
   /* For debugging. */
@@ -285,7 +250,7 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
   assert(tier == depth);
 
   DEBUG(LB"adding, alpha = %e\n"LE, alpha);
-  DenseMatrixMsg *BData = B(thisIndex.x, thisIndex.y).getBlock();
+  DenseMatrixMsg *BData = B(thisIndex.x, thisIndex.y).toDense();
   if(block == NULL)
   {
     block = new double[blocksize*blocksize];
@@ -296,7 +261,6 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
     block[i] = alpha*block[i]+beta*BData->A[i];
   }
   delete BData;
-  blockNorm();
 
   contribute(cb);
 }
@@ -389,7 +353,6 @@ void Node::addIdentity (double alpha, CkCallback &cb)
       block[BLOCK_INDEX(i, i, 0, 0, blocksize)] += alpha;
     }
   }
-  blockNorm();
 
   contribute(cb);
 }

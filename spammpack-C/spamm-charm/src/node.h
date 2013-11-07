@@ -11,6 +11,8 @@
 
 #include "node.decl.h"
 
+#include "spamm_node.h"
+
 /** The Node class. */
 class Node : public CBase_Node
 {
@@ -49,8 +51,8 @@ class Node : public CBase_Node
     /** The square of the norm of this matrix block. */
     double norm_2;
 
-    /** The matrix data. */
-    double *block;
+    /** The local matrix tree. */
+    SpAMM_Node *matrix;
 
   public:
 
@@ -60,8 +62,7 @@ class Node : public CBase_Node
     void pup (PUP::er &p);
     void init (CkCallback &cb);
     NodeInfoMsg * info (void);
-    DenseMatrixMsg * getBlock (void);
-    void blockNorm (void);
+    DenseMatrixMsg * toDense (void);
     void set (int blocksize, double *A, CkCallback &cb);
     void setNorm (CProxy_Node nodes, CkCallback &cb);
     void blockAdd (double alpha, int blocksize, double *A);

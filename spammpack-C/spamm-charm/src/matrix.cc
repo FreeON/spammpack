@@ -119,7 +119,7 @@ DenseMatrixMsg * Matrix::toDense (void)
   for(int i = 0; i < NTier; i++) {
     for(int j = 0; j < NTier; j++)
     {
-      DenseMatrixMsg *block = nodes[depth](i, j).getBlock();
+      DenseMatrixMsg *block = nodes[depth](i, j).toDense();
 
       for(int l = i*blocksize; l < (i+1)*blocksize && l < N; l++) {
         for(int m = j*blocksize; m < (j+1)*blocksize && m < N; m++)

@@ -107,23 +107,7 @@ void MultiplyElement::pup (PUP::er &p)
   p|isEnabled;
 #endif
   p|nextConvolution;
-
-  int numberElements = (CResult == NULL ? 0 : blocksize*blocksize);
-  p|numberElements;
-
-  if(numberElements > 0)
-  {
-    if(p.isUnpacking())
-    {
-      CResult = new double[numberElements];
-    }
-    PUParray(p, CResult, numberElements);
-  }
-  else
-  {
-    if(p.isUnpacking()) { CResult = NULL; }
-  }
-
+  p|CResult;
   DEBUG(LB"pup()\n"LE);
 }
 
@@ -171,12 +155,11 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
         ABORT(LB"CResult is not NULL\n"LE);
       }
 
-      CResult = new double[blocksize*blocksize];
-      memset(CResult, 0, sizeof(double)*blocksize*blocksize);
+      CResult = new SpAMM_Node();
 
       /* Calculate C_{ij} = A_{ik} B_{kj}. */
-      DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
-      DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
+      DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).toDense();
+      DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).toDense();
 
 #ifdef DEBUG_OUTPUT
       printDense(blocksize, ABlock->A, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
@@ -185,23 +168,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
 #endif
 
-#ifdef DGEMM
-      double alpha = 1;
-      double beta = 1;
-      DGEMM("N", "N", &blocksize, &blocksize, &blocksize, &alpha, ABlock->A,
-          &blocksize, BBlock->A, &blocksize, &beta, CResult, &blocksize);
-#else
-      for(int i = 0; i < blocksize; i++) {
-        for(int j = 0; j < blocksize; j++) {
-          for(int k = 0; k < blocksize; k++)
-          {
-            CResult[BLOCK_INDEX(i, j, 0, 0, blocksize)] +=
-              ABlock->A[BLOCK_INDEX(i, k, 0, 0, blocksize)]
-              *BBlock->A[BLOCK_INDEX(k, j, 0, 0, blocksize)];
-          }
-        }
-      }
-#endif
+      CResult->multiply(ABlock->matrix, BBlock->matrix);
 
 #ifdef DEBUG_OUTPUT
       /** For debugging. */
