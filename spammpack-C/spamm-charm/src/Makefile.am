@@ -10,7 +10,7 @@ check_SCRIPTS = \
 	$(top_builddir)/spamm_test_trace.sh
 TESTS = $(check_SCRIPTS)
 
-bin_PROGRAMS = spamm_charm
+bin_PROGRAMS = spamm-charm
 
 spamm_charm_LDFLAGS = -language charm++ $(additional_linkerflags)
 
