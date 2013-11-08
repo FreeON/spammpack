@@ -25,6 +25,8 @@ spamm_charm_INTERFACEFILES = \
 spamm_charm_SOURCES = \
 	bcsr.cc \
 	bcsr.h \
+	block.cc \
+	block.h \
 	index.h \
 	lapack_interface.h \
 	logger.cc \
@@ -41,8 +43,6 @@ spamm_charm_SOURCES = \
 	node.h \
 	spamm_charm.cc \
 	spamm_charm.h \
-	spamm_node.cc \
-	spamm_node.h \
 	timer.cc \
 	timer.h \
 	types.h \

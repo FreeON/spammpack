@@ -6,18 +6,24 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
-#ifndef __SPAMM_NODE_H
-#define __SPAMM_NODE_H
+#ifndef __BLOCK_H
+#define __BLOCK_H
 
 #include <charm++.h>
 
-class SpAMM_Node
+class Block
 {
+  private:
+
+    int blocksize;
+    double *block;
+
   public:
 
+    Block (void);
     void pup (PUP::er &p);
     void set (const int blocksize, const double *const A);
-    void multiply (SpAMM_Node A, SpAMM_Node B);
+    void multiply (Block A, Block B);
 };
 
 #endif

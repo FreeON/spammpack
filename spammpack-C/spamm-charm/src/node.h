@@ -11,7 +11,7 @@
 
 #include "node.decl.h"
 
-#include "spamm_node.h"
+#include "block.h"
 
 /** The Node class. */
 class Node : public CBase_Node
@@ -52,7 +52,7 @@ class Node : public CBase_Node
     double norm_2;
 
     /** The local matrix tree. */
-    SpAMM_Node *matrix;
+    Block *block;
 
   public:
 

@@ -13,7 +13,7 @@
 
 #include "multiplyelement.decl.h"
 
-#include "spamm_node.h"
+#include "block.h"
 
 /** An element in the convolution curve. */
 class MultiplyElement : public CBase_MultiplyElement
@@ -45,7 +45,7 @@ class MultiplyElement : public CBase_MultiplyElement
     double norm_product;
 
     /** The result matrix. */
-    SpAMM_Node *CResult;
+    Block *CResult;
 
 #ifndef PRUNE_CONVOLUTION
     /** A flag indicating whether this MultiplyElement is enabled or not (as a

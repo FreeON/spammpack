@@ -64,6 +64,7 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
   index = tempIndex.to_ulong();
 
   CResult = NULL;
+
 #ifndef PRUNE_CONVOLUTION
   isEnabled = true;
 #endif
@@ -155,7 +156,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
         ABORT(LB"CResult is not NULL\n"LE);
       }
 
-      CResult = new SpAMM_Node();
+      CResult = new Block();
 
       /* Calculate C_{ij} = A_{ik} B_{kj}. */
       DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).toDense();
