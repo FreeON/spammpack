@@ -88,6 +88,16 @@ NodeInfoMsg::NodeInfoMsg (int index,
 
 /** The constructor.
  *
+ * @param M The number of rows.
+ * @param N The number of columns.
+ */
+DenseMatrixMsg::DenseMatrixMsg (int M, int N)
+{
+  memset(A, 0, sizeof(double)*M*N);
+}
+
+/** The constructor.
+ *
  * @param numberTiers The number of tiers.
  */
 MatrixNodeMsg::MatrixNodeMsg (int numberTiers)

@@ -11,6 +11,7 @@
  *
  * The following messages are known:
  *
+ * - BlockMsg
  * - DoubleMsg
  * - IntMsg
  * - MatrixInfoMsg
@@ -26,13 +27,13 @@
 #include "messages.decl.h"
 #include "node.h"
 
-/** A SpAMM chunk. */
-class ChunkMsg : public CMessage_ChunkMsg
+/** A matrix block. */
+class BlockMsg : public CMessage_BlockMsg
 {
   public:
 
-    /** The chunk. */
-    char *chunk;
+    /** The matrix block. */
+    Block block;
 };
 
 /** A simple double value. */
@@ -140,6 +141,8 @@ class DenseMatrixMsg : public CMessage_DenseMatrixMsg
 
     /** The dense matrix. */
     double *A;
+
+    DenseMatrixMsg (int M, int N);
 };
 
 /** A message for PEMaps. */

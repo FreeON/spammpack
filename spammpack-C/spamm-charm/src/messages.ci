@@ -1,8 +1,8 @@
 module messages
 {
-  message ChunkMsg
+  message BlockMsg
   {
-    char chunk[];
+    Block block;
   };
   message DoubleMsg;
   message IntMsg;

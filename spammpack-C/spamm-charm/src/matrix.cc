@@ -112,7 +112,7 @@ MatrixInfoMsg * Matrix::info (void)
  */
 DenseMatrixMsg * Matrix::toDense (void)
 {
-  DenseMatrixMsg *A = new (N*N) DenseMatrixMsg();
+  DenseMatrixMsg *A = new (N*N) DenseMatrixMsg(N, N);
 
   int NTier = 1 << depth;
 

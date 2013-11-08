@@ -11,19 +11,38 @@
 
 #include <charm++.h>
 
+/** The Block class. */
 class Block
 {
   private:
 
+    /** The blocksize. We are using square matrices. */
     int blocksize;
+
+    /** The dense matrix. */
     double *block;
+
+    /** The norm. */
+    double norm;
+
+    /** The square of the norm. */
+    double norm_2;
+
+    void updateNorm (void);
 
   public:
 
     Block (void);
+    Block & operator= (const Block &rhs);
     void pup (PUP::er &p);
     void set (const int blocksize, const double *const A);
+    double getNorm (void);
+    double * toDense (void);
+    void scale (const double alpha);
     void multiply (Block A, Block B);
+    void add (const double alpha, const double beta, const Block A);
+    double trace (void);
+    void addIdentity (const int blocksize, const double alpha);
 };
 
 #endif

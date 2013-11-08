@@ -11,8 +11,6 @@
 
 #include "node.decl.h"
 
-#include "block.h"
-
 /** The Node class. */
 class Node : public CBase_Node
 {
@@ -63,9 +61,10 @@ class Node : public CBase_Node
     void init (CkCallback &cb);
     NodeInfoMsg * info (void);
     DenseMatrixMsg * toDense (void);
+    BlockMsg * getBlock (void);
     void set (int blocksize, double *A, CkCallback &cb);
     void setNorm (CProxy_Node nodes, CkCallback &cb);
-    void blockAdd (double alpha, int blocksize, double *A);
+    void blockAdd (double alpha, Block A);
     void add (double alpha, double beta, CProxy_Node B, CkCallback &cb);
     void trace (CkCallback &cb);
     void PEMap (CkCallback &cb);

@@ -48,7 +48,7 @@ Node::Node (int N, int depth, int blocksize, int tier)
   this->norm = 0;
   this->norm_2 = 0;
 
-  this->matrix = NULL;
+  this->block = NULL;
 
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
@@ -79,7 +79,7 @@ Node::Node (CkMigrateMessage *msg)
 Node::~Node (void)
 {
   DEBUG(LB"destructor\n"LE);
-  delete matrix;
+  delete block;
 }
 
 /** The PUP method.
@@ -101,7 +101,7 @@ void Node::pup (PUP::er &p)
   p|index;
   p|norm;
   p|norm_2;
-  p|matrix;
+  p|*block;
   DEBUG(LB"pup()\n"LE);
 }
 
@@ -139,17 +139,29 @@ DenseMatrixMsg * Node::toDense (void)
 {
   DEBUG(LB"getting block\n"LE);
 
-  DenseMatrixMsg *m = new (blocksize*blocksize) DenseMatrixMsg();
-  if(matrix != NULL)
+  DenseMatrixMsg *msg = new (blocksize*blocksize) DenseMatrixMsg(blocksize, blocksize);
+
+  if(block != NULL)
   {
-    double block[blocksize*blocksize];
-    memcpy(m->A, block, sizeof(double)*blocksize*blocksize);
+    double *A = block->toDense();
+    memcpy(msg->A, A, sizeof(double)*blocksize*blocksize);
   }
-  else
+
+  return msg;
+}
+
+/** Get the matrix Block.
+ *
+ * @return The matrix Block.
+ */
+BlockMsg * Node::getBlock (void)
+{
+  BlockMsg *msg = new BlockMsg();
+  if(block != NULL)
   {
-    memset(m->A, 0, sizeof(double)*blocksize*blocksize);
+    msg->block = *block;
   }
-  return m;
+  return msg;
 }
 
 /** Set a matrix block in this Node.
@@ -163,11 +175,13 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   assert(tier == depth);
   assert(blocksize == this->blocksize);
 
-  if(matrix == NULL)
+  if(block == NULL)
   {
-    matrix = new SpAMM_Node();
+    block = new Block();
   }
-  matrix->set(blocksize, A);
+  block->set(blocksize, A);
+  norm_2 = block->getNorm();
+  norm = sqrt(norm_2);
 
 #ifdef DEBUG_OUTPUT
   printDense(blocksize, block, LB"setting block:"LE);
@@ -207,13 +221,15 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
   contribute(cb);
 }
 
-/** Add a submatrix block to this Node.
+/** Add a scaled submatrix block to this Node.
+ *
+ * @f[ A \leftarrow \alpha A @f]
  *
  * @param alpha The factor @f$ \alpha @f$.
  * @param blocksize The blocksize.
  * @param A The dense matrix.
  */
-void Node::blockAdd (double alpha, int blocksize, double *A)
+void Node::blockAdd (double alpha, Block A)
 {
   assert(tier == depth);
   assert(blocksize == this->blocksize);
@@ -221,14 +237,10 @@ void Node::blockAdd (double alpha, int blocksize, double *A)
   DEBUG(LB"Adding back to C\n"LE);
   if(block == NULL)
   {
-    block = new double[blocksize*blocksize];
-    memset(block, 0, sizeof(double)*blocksize*blocksize);
+    block = new Block();
   }
 
-  for(int i = 0; i < blocksize*blocksize; i++)
-  {
-    block[i] += alpha*A[i];
-  }
+  block->add(1, alpha, A);
 
 #ifdef DEBUG_OUTPUT
   /* For debugging. */
@@ -250,17 +262,14 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
   assert(tier == depth);
 
   DEBUG(LB"adding, alpha = %e\n"LE, alpha);
-  DenseMatrixMsg *BData = B(thisIndex.x, thisIndex.y).toDense();
+  BlockMsg *BBlock = B(thisIndex.x, thisIndex.y).getBlock();
+
   if(block == NULL)
   {
-    block = new double[blocksize*blocksize];
-    memset(block, 0, sizeof(double)*blocksize*blocksize);
+    block = new Block();
   }
-  for(int i = 0; i < blocksize*blocksize; i++)
-  {
-    block[i] = alpha*block[i]+beta*BData->A[i];
-  }
-  delete BData;
+
+  block->add(alpha, beta, BBlock->block);
 
   contribute(cb);
 }
@@ -279,10 +288,7 @@ void Node::trace (CkCallback &cb)
   {
     if(block != NULL)
     {
-      for(int i = 0; i < blocksize; i++)
-      {
-        trace += block[BLOCK_INDEX(i, i, 0, 0, blocksize)];
-      }
+      trace = block->trace();
     }
   }
   contribute(sizeof(double), &trace, CkReduction::sum_double, cb);
@@ -319,13 +325,10 @@ void Node::scale (double alpha, CkCallback &cb)
 
   if(block != NULL)
   {
-    for(int i = 0; i < blocksize*blocksize; i++)
-    {
-      block[i] *= alpha;
-    }
+    block->scale(alpha);
+    norm_2 *= alpha*alpha;
+    norm = sqrt(norm_2);
   }
-  norm_2 *= alpha*alpha;
-  norm = sqrt(norm_2);
   contribute(cb);
 }
 /** Add a the scaled identity matrix. This operation affects only those Nodes
@@ -340,18 +343,14 @@ void Node::addIdentity (double alpha, CkCallback &cb)
 {
   assert(tier == depth);
 
-  if(iLower == jLower && iUpper == jUpper)
+  if(block != NULL)
   {
-    if(block == NULL)
+    if(iLower == jLower && iUpper == jUpper)
     {
-      block = new double[blocksize*blocksize];
-      memset(block, 0, sizeof(double)*blocksize*blocksize);
+      block->addIdentity(blocksize, alpha);
     }
-
-    for(int i = 0; i < blocksize && i+iLower < N; i++)
-    {
-      block[BLOCK_INDEX(i, i, 0, 0, blocksize)] += alpha;
-    }
+    norm_2 = block->getNorm();
+    norm = sqrt(norm_2);
   }
 
   contribute(cb);

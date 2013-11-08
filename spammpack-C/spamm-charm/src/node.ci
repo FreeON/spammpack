@@ -1,5 +1,6 @@
 module node
 {
+  include "block.h";
   extern module messages;
   array [2D] Node
   {
@@ -7,10 +8,10 @@ module node
     entry void init (CkCallback &cb);
     entry [sync] NodeInfoMsg * info (void);
     entry [sync] DenseMatrixMsg * toDense (void);
+    entry [sync] BlockMsg * getBlock (void);
     entry void set (int blocksize, double A[blocksize*blocksize], CkCallback &cb);
     entry [threaded] void setNorm (CProxy_Node nodes, CkCallback &cb);
-    entry void blockAdd (double alpha, int blocksize,
-        double A[blocksize*blocksize]);
+    entry void blockAdd (double alpha, Block A);
     entry [threaded] void add (double alpha, double beta, CProxy_Node B,
         CkCallback &cb);
     entry void trace (CkCallback &cb);

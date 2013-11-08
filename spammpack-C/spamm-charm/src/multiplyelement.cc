@@ -108,7 +108,7 @@ void MultiplyElement::pup (PUP::er &p)
   p|isEnabled;
 #endif
   p|nextConvolution;
-  p|CResult;
+  p|*CResult;
   DEBUG(LB"pup()\n"LE);
 }
 
@@ -159,21 +159,27 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       CResult = new Block();
 
       /* Calculate C_{ij} = A_{ik} B_{kj}. */
-      DenseMatrixMsg *ABlock = A(thisIndex.x, thisIndex.z).toDense();
-      DenseMatrixMsg *BBlock = B(thisIndex.z, thisIndex.y).toDense();
+      BlockMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
+      BlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
 #ifdef DEBUG_OUTPUT
-      printDense(blocksize, ABlock->A, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
+      double *ADense = ABlock->block.toDense();
+      double *BDense = BBlock->block.toDense();
+      printDense(blocksize, ADense, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.x, thisIndex.z);
-      printDense(blocksize, BBlock->A, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
+      printDense(blocksize, BDense, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
+      delete[] ADense;
+      delete[] BDense;
 #endif
 
-      CResult->multiply(ABlock->matrix, BBlock->matrix);
+      CResult->multiply(ABlock->block, BBlock->block);
 
 #ifdef DEBUG_OUTPUT
       /** For debugging. */
-      printDense(blocksize, CResult, LB"result:"LE);
+      double *CDense = CResult->toDense();
+      printDense(blocksize, CDense, LB"result:"LE);
+      delete[] CDense;
 #endif
 
       delete ABlock;
@@ -383,10 +389,10 @@ void MultiplyElement::storeBack (double alpha, CkCallback &cb)
 
     if(CResult != NULL)
     {
-      C(thisIndex.x, thisIndex.y).blockAdd(alpha, blocksize, CResult);
+      C(thisIndex.x, thisIndex.y).blockAdd(alpha, *CResult);
 
       /* Reset result for possible next iteration. */
-      delete[] CResult;
+      delete CResult;
       CResult = NULL;
     }
   }
