@@ -22,7 +22,7 @@ noinst_HEADERS = \
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
 AM_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/src -I$(top_builddir)/interfaces/Fortran
-AM_LDFLAGS = $(top_builddir)/src/libspamm.la
+AM_LDFLAGS = $(top_builddir)/src/libspammpack.la
 
 if HAVE_SSE_IN_CPU
 multiply_spamm_SSE = multiply_spamm_kernel_standard_SSE.sh
