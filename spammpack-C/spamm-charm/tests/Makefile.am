@@ -10,6 +10,6 @@ check_SCRIPTS = \
 
 TESTS = $(check_SCRIPTS)
 
-AM_TESTS_ENVIRONMENT = export top_srcdir=${top_srcdir}; export top_builddir=${top_builddir};
+AM_TESTS_ENVIRONMENT = top_srcdir=${top_srcdir} top_builddir=${top_builddir}
 
 DISTCLEANFILES = $(TESTS) random.mm
