@@ -6,9 +6,10 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
-#include "utilities.h"
+#include "block.h"
 #include "index.h"
 #include "logger.h"
+#include "utilities.h"
 
 #include <bitset>
 #include <charm++.h>
@@ -25,7 +26,7 @@
  * @param format The format string for a message that is printed in front of
  * the matrix. See printf() for details.
  */
-void printDense (int N, double *A, const char *const format, ...)
+void printDense (Block A, const char *const format, ...)
 {
   std::ostringstream o;
   o.setf(std::ios::scientific);
@@ -39,13 +40,15 @@ void printDense (int N, double *A, const char *const format, ...)
   vsnprintf(message, message_length, format, ap);
   va_end(ap);
 
-  if(N <= 32)
+  double *ADense = A.toDense();
+
+  if(A.getBlocksize() <= 32)
   {
     o << message << " = [" << std::endl;
-    for(int i = 0; i < N; i++) {
-      for(int j = 0; j < N; j++)
+    for(int i = 0; i < A.getBlocksize(); i++) {
+      for(int j = 0; j < A.getBlocksize(); j++)
       {
-        snprintf(numberBuffer, 40, "% 1.3e", A[BLOCK_INDEX(i, j, 0, 0, N)]);
+        snprintf(numberBuffer, 40, "% 1.3e", ADense[BLOCK_INDEX(i, j, 0, 0, A.getBlocksize())]);
         o << " " << numberBuffer;
       }
       o << std::endl;
@@ -56,12 +59,12 @@ void printDense (int N, double *A, const char *const format, ...)
   else
   {
     o << "%%%%MatrixMarket matrix coordinate double general" << std::endl;
-    o << "%% " << message << " = " << N << " x " << N << " --> " << N*N << " elements" << std::endl;
-    o << N << " " << N << " " << N*N << std::endl;
-    for(int i = 0; i < N; i++) {
-      for(int j = 0; j < N; j++)
+    o << "%% " << message << " = " << A.getBlocksize() << " x " << A.getBlocksize() << " --> " << A.getBlocksize()*A.getBlocksize() << " elements" << std::endl;
+    o << A.getBlocksize() << " " << A.getBlocksize() << " " << A.getBlocksize()*A.getBlocksize() << std::endl;
+    for(int i = 0; i < A.getBlocksize(); i++) {
+      for(int j = 0; j < A.getBlocksize(); j++)
       {
-        snprintf(numberBuffer, 40, "% e", A[BLOCK_INDEX(i, j, 0, 0, N)]);
+        snprintf(numberBuffer, 40, "% e", ADense[BLOCK_INDEX(i, j, 0, 0, A.getBlocksize())]);
         o << i+1 << " " << j+1 << " " << numberBuffer << std::endl;
       }
     }

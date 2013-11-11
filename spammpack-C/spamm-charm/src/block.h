@@ -36,6 +36,7 @@ class Block
     Block & operator= (const Block &rhs);
     void pup (PUP::er &p);
     void set (const int blocksize, const double *const A);
+    int getBlocksize (void);
     double getNorm (void);
     double * toDense (void);
     void scale (const double alpha);

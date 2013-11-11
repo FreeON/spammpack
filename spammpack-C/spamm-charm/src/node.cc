@@ -184,7 +184,7 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   norm = sqrt(norm_2);
 
 #ifdef DEBUG_OUTPUT
-  printDense(blocksize, block, LB"setting block:"LE);
+  printDense(*block, LB"setting block:"LE);
 #endif
 
   cb.send();
@@ -244,7 +244,7 @@ void Node::blockAdd (double alpha, Block A)
 
 #ifdef DEBUG_OUTPUT
   /* For debugging. */
-  printDense(blocksize, block, LB"Adding back to C"LE);
+  printDense(*block, LB"Adding back to C"LE);
 #endif
 }
 

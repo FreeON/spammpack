@@ -163,23 +163,17 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       BlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
 #ifdef DEBUG_OUTPUT
-      double *ADense = ABlock->block.toDense();
-      double *BDense = BBlock->block.toDense();
-      printDense(blocksize, ADense, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
+      printDense(ABlock->block, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.x, thisIndex.z);
-      printDense(blocksize, BDense, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
+      printDense(BBlock->block, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
-      delete[] ADense;
-      delete[] BDense;
 #endif
 
       CResult->multiply(ABlock->block, BBlock->block);
 
 #ifdef DEBUG_OUTPUT
       /** For debugging. */
-      double *CDense = CResult->toDense();
-      printDense(blocksize, CDense, LB"result:"LE);
-      delete[] CDense;
+      printDense(*CResult, LB"result:"LE);
 #endif
 
       delete ABlock;

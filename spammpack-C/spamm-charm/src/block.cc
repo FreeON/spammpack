@@ -84,6 +84,15 @@ void Block::set (const int blocksize, const double *const A)
   updateNorm();
 }
 
+/** Return the blocksize.
+ *
+ * @return The blocksize.
+ */
+int Block::getBlocksize (void)
+{
+  return blocksize;
+}
+
 /** Return the square of the norm of this Block.
  *
  * @return The square of the norm.
