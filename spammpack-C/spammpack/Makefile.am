@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 
 CLEANFILES = *~
 
-DISTCLEANFILES = config_fortran.h
+DISTCLEANFILES = config_fortran.h git_commit_tag
 
 ACLOCAL_AMFLAGS = -I m4
 
