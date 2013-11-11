@@ -53,7 +53,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <charm++.h>],
   [AC_MSG_FAILURE([can not compile with the charm compiler: ${CHARMC}])])
 
 # Test for spammpack.
-AC_CHECK_HEADERS([spamm.h], [], [AC_MSG_FAILURE([I need spammpack])])
+AC_CHECK_HEADERS([spamm.h], [], [AC_MSG_FAILURE([Cannot find spammpack header files])])
 AC_MSG_CHECKING([whether I can link against spammpack])
 AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <spamm.h>],
   [  unsigned int N[[]] = { 16, 16 };
@@ -61,7 +61,7 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <spamm.h>],
   unsigned int N_upper[[]] = { 16, 16 };
   spamm_chunk_t *M = spamm_new_chunk(2, 1, N, N_lower, N_upper);])],
   [AC_MSG_RESULT([yes])],
-  [AC_MSG_FAILURE([I need spammpack])])
+  [AC_MSG_FAILURE([Cannot link against spammpack library])])
 
 AC_SEARCH_LIBS([clock_gettime], [rt],
   [],
