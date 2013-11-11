@@ -27,7 +27,7 @@
  * ./configure.LB
  * make
  * ./charmrun +p3 spamm_charm -N 1024 -b 16 --type decay --decay 8 --tolerance 1e-8 --verify --iterations 10
- * ./charmrun +p3 spamm_charm --operation SP2 --Ne 100 --density something.OrthoF --tolerance 1e-8
+ * ./charmrun +p3 spamm_charm --operation SP2 --Ne 100 --density something.OrthoF --tolerance 1e-8 --verify
  * @endcode
  *
  * @section References
