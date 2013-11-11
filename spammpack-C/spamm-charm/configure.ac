@@ -191,28 +191,76 @@ END_OF_SCRIPT
 chmod 755 tests/test_sp2.sh
 ])
 
-AC_CONFIG_COMMANDS([tests/spamm_test_add.sh],
-[cat > tests/spamm_test_add.sh << END_OF_SCRIPT
+AC_CONFIG_COMMANDS([tests/spamm_test_add_full.sh],
+[cat > tests/spamm_test_add_full.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/spamm-charm --operation add -N 12 --block 2 --verify || exit 1
+\${top_builddir}/src/spamm-charm --operation add -N 12 --block 2 --type full --verify || exit 1
 END_OF_SCRIPT
-chmod 755 tests/spamm_test_add.sh
+chmod 755 tests/spamm_test_add_full.sh
 ])
 
-AC_CONFIG_COMMANDS([tests/spamm_test_multiply.sh],
-[cat > tests/spamm_test_multiply.sh << END_OF_SCRIPT
+AC_CONFIG_COMMANDS([tests/spamm_test_add_decay.sh],
+[cat > tests/spamm_test_add_decay.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/spamm-charm --operation multiply -N 12 --block 2 --verify || exit 1
+\${top_builddir}/src/spamm-charm --operation add -N 12 --block 2 --type decay --verify || exit 1
 END_OF_SCRIPT
-chmod 755 tests/spamm_test_multiply.sh
+chmod 755 tests/spamm_test_add_decay.sh
 ])
 
-AC_CONFIG_COMMANDS([tests/spamm_test_trace.sh],
-[cat > tests/spamm_test_trace.sh << END_OF_SCRIPT
+AC_CONFIG_COMMANDS([tests/spamm_test_add_diagonal.sh],
+[cat > tests/spamm_test_add_diagonal.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/spamm-charm --operation trace -N 12 --block 2 --verify || exit 1
+\${top_builddir}/src/spamm-charm --operation add -N 12 --block 2 --type diagonal --verify || exit 1
 END_OF_SCRIPT
-chmod 755 tests/spamm_test_trace.sh
+chmod 755 tests/spamm_test_add_diagonal.sh
+])
+
+AC_CONFIG_COMMANDS([tests/spamm_test_multiply_full.sh],
+[cat > tests/spamm_test_multiply_full.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/spamm-charm --operation multiply -N 12 --block 2 --type full --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_multiply_full.sh
+])
+
+AC_CONFIG_COMMANDS([tests/spamm_test_multiply_decay.sh],
+[cat > tests/spamm_test_multiply_decay.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/spamm-charm --operation multiply -N 12 --block 2 --type decay --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_multiply_decay.sh
+])
+
+AC_CONFIG_COMMANDS([tests/spamm_test_multiply_diagonal.sh],
+[cat > tests/spamm_test_multiply_diagonal.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/spamm-charm --operation multiply -N 12 --block 2 --type diagonal --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_multiply_diagonal.sh
+])
+
+AC_CONFIG_COMMANDS([tests/spamm_test_trace_full.sh],
+[cat > tests/spamm_test_trace_full.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/spamm-charm --operation trace -N 12 --block 2 --type full --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_trace_full.sh
+])
+
+AC_CONFIG_COMMANDS([tests/spamm_test_trace_decay.sh],
+[cat > tests/spamm_test_trace_decay.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/spamm-charm --operation trace -N 12 --block 2 --type decay --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_trace_decay.sh
+])
+
+AC_CONFIG_COMMANDS([tests/spamm_test_trace_diagonal.sh],
+[cat > tests/spamm_test_trace_diagonal.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/spamm-charm --operation trace -N 12 --block 2 --type diagonal --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_trace_diagonal.sh
 ])
 
 AC_CONFIG_COMMANDS([tests/random.mm],
