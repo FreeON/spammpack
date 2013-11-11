@@ -1,4 +1,4 @@
-SUBDIRS = src tools
+SUBDIRS = src tools tests
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-debug
 

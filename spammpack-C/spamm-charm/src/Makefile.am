@@ -4,12 +4,6 @@ EXTRA_DIST = $(spamm_charm_INTERFACEFILES)
 
 additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
-check_SCRIPTS = \
-	$(top_builddir)/spamm_test_add.sh \
-	$(top_builddir)/spamm_test_multiply.sh \
-	$(top_builddir)/spamm_test_trace.sh
-TESTS = $(check_SCRIPTS)
-
 bin_PROGRAMS = spamm-charm
 
 spamm_charm_LDFLAGS = -language charm++ $(additional_linkerflags)
@@ -85,5 +79,3 @@ valgrind : spamm_charm$(EXEEXT)
 CLEANFILES = \
 	$(spamm_charm_CHARMHEADERS) \
 	charmrun
-
-DISTCLEANFILES = $(TESTS)

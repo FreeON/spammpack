@@ -176,42 +176,47 @@ if test "${enable_pruning}" = "yes"; then
 fi
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile tools/Makefile Doxyfile])
+AC_CONFIG_FILES([
+Makefile
+src/Makefile
+tools/Makefile
+tests/Makefile
+Doxyfile])
 
-AC_CONFIG_COMMANDS([sp2_test.sh],
-[cat > sp2_test.sh << END_OF_SCRIPT
+AC_CONFIG_COMMANDS([tests/test_sp2.sh],
+[cat > tests/test_sp2.sh << END_OF_SCRIPT
 #!/bin/bash
-\${srcdir}/sp2.py --Ne 2 \${top_builddir}/random.mm || exit 1
+\${top_srcdir}/tools/sp2.py --Ne 2 random.mm || exit 1
 END_OF_SCRIPT
-chmod 755 sp2_test.sh
+chmod 755 tests/test_sp2.sh
 ])
 
-AC_CONFIG_COMMANDS([spamm_test_add.sh],
-[cat > spamm_test_add.sh << END_OF_SCRIPT
+AC_CONFIG_COMMANDS([tests/spamm_test_add.sh],
+[cat > tests/spamm_test_add.sh << END_OF_SCRIPT
 #!/bin/bash
-./spamm --operation add -N 12 --block 2 --verify || exit 1
+\${top_builddir}/src/spamm-charm --operation add -N 12 --block 2 --verify || exit 1
 END_OF_SCRIPT
-chmod 755 spamm_test_add.sh
+chmod 755 tests/spamm_test_add.sh
 ])
 
-AC_CONFIG_COMMANDS([spamm_test_multiply.sh],
-[cat > spamm_test_multiply.sh << END_OF_SCRIPT
+AC_CONFIG_COMMANDS([tests/spamm_test_multiply.sh],
+[cat > tests/spamm_test_multiply.sh << END_OF_SCRIPT
 #!/bin/bash
-./spamm --operation multiply -N 12 --block 2 --verify || exit 1
+\${top_builddir}/src/spamm-charm --operation multiply -N 12 --block 2 --verify || exit 1
 END_OF_SCRIPT
-chmod 755 spamm_test_multiply.sh
+chmod 755 tests/spamm_test_multiply.sh
 ])
 
-AC_CONFIG_COMMANDS([spamm_test_trace.sh],
-[cat > spamm_test_trace.sh << END_OF_SCRIPT
+AC_CONFIG_COMMANDS([tests/spamm_test_trace.sh],
+[cat > tests/spamm_test_trace.sh << END_OF_SCRIPT
 #!/bin/bash
-./spamm --operation trace -N 12 --block 2 --verify || exit 1
+\${top_builddir}/src/spamm-charm --operation trace -N 12 --block 2 --verify || exit 1
 END_OF_SCRIPT
-chmod 755 spamm_test_trace.sh
+chmod 755 tests/spamm_test_trace.sh
 ])
 
-AC_CONFIG_COMMANDS([random.mm],
-[cat > random.mm << END_OF_SCRIPT
+AC_CONFIG_COMMANDS([tests/random.mm],
+[cat > tests/random.mm << END_OF_SCRIPT
 %%MatrixMarket matrix coordinate double general
 % Random matrix
 3 3 9
