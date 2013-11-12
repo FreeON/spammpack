@@ -44,6 +44,7 @@ class Block
     void add (const double alpha, const double beta, const Block A);
     double trace (void);
     void addIdentity (const int blocksize, const double alpha);
+    void print (const char *const format, ...);
 };
 
 #endif

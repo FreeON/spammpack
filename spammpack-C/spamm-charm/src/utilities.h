@@ -9,8 +9,6 @@
 #ifndef __UTILITIES_H
 #define __UTILITIES_H
 
-#include "block.h"
-
 #include <string>
 
 /** The minimum function.
@@ -22,7 +20,7 @@
  */
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-void printDense (Block A, const char *const format, ...);
+void printDense (int N, double *A, const char *const format, ...);
 
 std::string toBinary (unsigned int i);
 

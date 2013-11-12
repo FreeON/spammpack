@@ -60,6 +60,9 @@ enum operation_t
   /** A trace. */
   trace,
 
+  /** Add a scaled identity matrix. */
+  addIdentity,
+
   /** An SP2 iteration. */
   SP2
 };

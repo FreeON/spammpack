@@ -10,6 +10,8 @@
 #include "index.h"
 
 #include <assert.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 /** Update the Frobenius norm. */
 void Block::updateNorm (void)
@@ -249,4 +251,27 @@ void Block::addIdentity (const int blocksize, const double alpha)
   }
 
   updateNorm();
+}
+
+/** Print a block.
+ *
+ * @param format The format. Look into printf() as to what to put there.
+ */
+void Block::print (const char *const format, ...)
+{
+  va_list ap;
+  char buffer[2000];
+
+  va_start(ap, format);
+  vsnprintf(buffer, 2000, format, ap);
+
+  printf("%s = [\n", buffer);
+  for(int i = 0; i < blocksize; i++) {
+    for(int j = 0; j < blocksize; j++)
+    {
+      printf(" % e", block[BLOCK_INDEX(i, j, 0, 0, blocksize)]);
+    }
+    printf("\n");
+  }
+  printf("]\n");
 }

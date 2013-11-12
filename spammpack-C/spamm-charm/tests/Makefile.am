@@ -12,7 +12,10 @@ TESTS = \
 	spamm_test_multiply_diagonal.sh \
 	spamm_test_trace_full.sh \
 	spamm_test_trace_decay.sh \
-	spamm_test_trace_diagonal.sh
+	spamm_test_trace_diagonal.sh \
+	spamm_test_addIdentity_full.sh \
+	spamm_test_addIdentity_decay.sh \
+	spamm_test_addIdentity_diagonal.sh
 
 AM_TESTS_ENVIRONMENT = top_srcdir=${top_srcdir} top_builddir=${top_builddir}
 

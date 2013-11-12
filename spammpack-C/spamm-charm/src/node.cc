@@ -184,7 +184,7 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   norm = sqrt(norm_2);
 
 #ifdef DEBUG_OUTPUT
-  printDense(*block, LB"setting block:"LE);
+  block->print(LB"setting block:"LE);
 #endif
 
   cb.send();
@@ -244,7 +244,7 @@ void Node::blockAdd (double alpha, Block A)
 
 #ifdef DEBUG_OUTPUT
   /* For debugging. */
-  printDense(*block, LB"Adding back to C"LE);
+  block->print(LB"Adding back to C"LE);
 #endif
 }
 
@@ -261,7 +261,7 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
 {
   assert(tier == depth);
 
-  DEBUG(LB"adding, alpha = %e\n"LE, alpha);
+  DEBUG(LB"alpha = %e, beta = %e\n"LE, alpha, beta);
   BlockMsg *BBlock = B(thisIndex.x, thisIndex.y).getBlock();
 
   if(block == NULL)
@@ -323,6 +323,8 @@ void Node::scale (double alpha, CkCallback &cb)
 {
   assert(tier == depth);
 
+  DEBUG(LB"alpha = %e\n"LE, alpha);
+
   if(block != NULL)
   {
     block->scale(alpha);
@@ -342,6 +344,8 @@ void Node::scale (double alpha, CkCallback &cb)
 void Node::addIdentity (double alpha, CkCallback &cb)
 {
   assert(tier == depth);
+
+  DEBUG(LB"alpha = %e\n"LE, alpha);
 
   if(block != NULL)
   {

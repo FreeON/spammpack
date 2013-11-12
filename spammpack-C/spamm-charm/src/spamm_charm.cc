@@ -87,7 +87,7 @@ void initialize (void)
  * - { -l | --load-balance }      Load balance after each iteration
  * - { -a | --align-PEs }         Align PEs for diagonal case
  * - { -p | --print-PEMap } FILE  Print a PE map in each iteration
- * - { -o | --operation } OP      Test OP { multiply, add, trace, SP2 }
+ * - { -o | --operation } OP      Test OP { multiply, add, trace, addIdentity, SP2 }
  *
  * @param msg The command line argument list.
  */
@@ -158,7 +158,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         CkPrintf("{ -l | --load-balance }       Load balance after each iteration\n");
         CkPrintf("{ -a | --align-PEs }          Align PEs for diagonal case\n");
         CkPrintf("{ -p | --print-PEMap } FILE   Print a PE map in each iteration\n");
-        CkPrintf("{ -o | --operation } OP       Test OP { multiply, add, trace, SP2 }\n");
+        CkPrintf("{ -o | --operation } OP       Test OP { multiply, add, trace, addIdentity, SP2 }\n");
         CkPrintf("\n");
         CkExit();
         break;
@@ -248,6 +248,11 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
           operation = trace;
         }
 
+        else if(strcasecmp(optarg, "addIdentity") == 0)
+        {
+          operation = addIdentity;
+        }
+
         else if(strcasecmp(optarg, "SP2") == 0)
         {
           operation = SP2;
@@ -320,6 +325,9 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
     double verifyTolerance, bool loadBalance, int initialPE, bool alignPEs,
     bool printPEMap)
 {
+  double alpha = 0.8;
+  double beta = 0.0;
+
   LBDatabase *db = LBDatabaseObj();
 
   CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, strlen("A"), "A");
@@ -430,6 +438,23 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
           Timer t("iteration %d on %d PEs, trace(A)", iteration+1, CkNumPes());
           t.start();
           A.updateTrace(CkCallbackResumeThread());
+          t.stop();
+          CkPrintf("%s\n", t.to_str());
+        }
+        break;
+
+      case addIdentity:
+        {
+          Timer t("iteration %d on %d PEs, alpha * A + beta * I (alpha = %e, beta = %e)",
+              iteration+1, CkNumPes(), alpha, beta);
+          t.start();
+          C.setEqual(A, CkCallbackResumeThread());
+#ifdef PRINT_MATRICES
+          DenseMatrixMsg *msg = C.toDense();
+          printDense(N, msg->A, "C (after setEqual)");
+          delete msg;
+#endif
+          C.addIdentity(alpha, beta, CkCallbackResumeThread());
           t.stop();
           CkPrintf("%s\n", t.to_str());
         }
@@ -563,6 +588,17 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
                   verifyTolerance, absDiff, trace, spammTrace->x);
             }
             CkPrintf("trace verified\n");
+          }
+          break;
+
+        case addIdentity:
+          for(int i = 0; i < N*N; i++)
+          {
+            CExact[i] = alpha*ADense[i];
+          }
+          for(int i = 0; i < N; i++)
+          {
+            CExact[BLOCK_INDEX(i, i, 0, 0, N)] += beta;
           }
           break;
 

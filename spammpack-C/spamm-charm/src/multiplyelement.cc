@@ -163,9 +163,9 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       BlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
 #ifdef DEBUG_OUTPUT
-      printDense(ABlock->block, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
+      ABlock->block.print("tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.x, thisIndex.z);
-      printDense(BBlock->block, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
+      BBlock->block.print("tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
 #endif
 
@@ -173,7 +173,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
 #ifdef DEBUG_OUTPUT
       /** For debugging. */
-      printDense(*CResult, LB"result:"LE);
+      CResult->print(LB"result:"LE);
 #endif
 
       delete ABlock;
