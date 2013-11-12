@@ -95,7 +95,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
 {
   int N = 1;
   int blocksize = 1;
-  int numberIterations = 1;
+  int numberIterations = 0;
   double tolerance = 0.0;
   enum matrix_t matrixType = full;
   bool verify = false;
@@ -283,17 +283,29 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
 
         if(densityFilename == NULL)
         {
-          ABORT("missing density file\n");
+          INFO("missing density file, will generate random one\n");
+          densityFilename = strdup("");
+        }
+
+        if(numberIterations <= 0)
+        {
+          numberIterations = 100;
         }
 
         DEBUG("calling runSP2() on this proxy\n");
-        thisProxy.runSP2(strlen(densityFilename), densityFilename, Ne,
+        thisProxy.runSP2(strlen(densityFilename), densityFilename, Ne, N,
             blocksize, numberIterations, tolerance, loadBalance, initialPE,
             alignPEs, printPEMap, strlen(filenamePEMap), filenamePEMap);
       }
       break;
 
     default:
+
+      if(numberIterations <= 0)
+      {
+        numberIterations = 1;
+      }
+
       DEBUG("calling run() on this proxy\n");
       thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
           decayConstant, operation, verify, verifyTolerance, loadBalance,
@@ -326,7 +338,7 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
     bool printPEMap)
 {
   double alpha = 0.8;
-  double beta = 0.0;
+  double beta = 1.12;
 
   LBDatabase *db = LBDatabaseObj();
 
@@ -633,7 +645,12 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
     int maxDiffColumn = -1;
     double maxAbsDiff = 0;
 
-    for(int i = 0; i < N; i++) {
+    double trace = 0;
+
+    for(int i = 0; i < N; i++)
+    {
+      trace += CExact[BLOCK_INDEX(i, i, 0, 0, N)];
+
       for(int j = 0; j < N; j++)
       {
         double absDiff = fabs(CExact[BLOCK_INDEX(i, j, 0, 0, N)]
@@ -646,6 +663,19 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
           maxAbsDiff = absDiff;
         }
       }
+    }
+
+    C.updateTrace(CkCallbackResumeThread());
+    DoubleMsg *sTrace = C.getTrace();
+
+    INFO("trace(CExact) = % e\n", trace);
+    INFO("trace(C)      = % e\n", sTrace->x);
+
+    if(fabs(sTrace->x - trace) > verifyTolerance)
+    {
+      ABORT("trace mismatch (abs. tolerance = %e), "
+          "trace(C) = %e, trace(CExact) = %e\n", verifyTolerance,
+          sTrace->x, trace);
     }
 
     if(maxAbsDiff > verifyTolerance)
@@ -681,6 +711,7 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
  * @param lengthFilename The length of the filename string.
  * @param filename The filename of the densit file.
  * @param Ne The total number of electrons.
+ * @param N The matrix size in case the filename is empty.
  * @param blocksize The blocksize of the matrix.
  * @param maxIterations The maximum number of iterations.
  * @param tolerance The SpAMM tolerance.
@@ -691,9 +722,10 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
  * @param lengthPEMap The length of filenamePEMap.
  * @param filenamePEMap The base name of the PEMap files.
  */
-void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int blocksize,
-    int maxIterations, double tolerance, bool loadBalance, int initialPE,
-    bool alignPEs, bool printPEMap, int lengthPEMap, char *filenamePEMap)
+void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int N,
+    int blocksize, int maxIterations, double tolerance, bool loadBalance,
+    int initialPE, bool alignPEs, bool printPEMap, int lengthPEMap,
+    char *filenamePEMap)
 {
   double *PDense;
   int NRows, NColumns;
@@ -701,28 +733,36 @@ void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int blocks
 
   LBDatabase *db = LBDatabaseObj();
 
-  if(maxIterations == 1)
+  if(lengthFilename > 0)
   {
-    maxIterations = 100;
+    BCSR F(filename);
+
+    F.getSpectralBounds(0, &F_min, &F_max);
+    F.toDense(&NRows, &NColumns, &PDense);
+    assert(NRows == NColumns);
   }
 
-  BCSR F(filename);
+  else
+  {
+    INFO("creating random, symmetric %d x %d matrix\n", N, N);
+    NRows = N;
+    NColumns = N;
+    PDense = new double[N*N];
+    for(int i = 0; i < N; i++) {
+      for(int j = i; j < N; j++)
+      {
+        PDense[BLOCK_INDEX(i, j, 0, 0, N)] = rand()/(double) RAND_MAX;
+        PDense[BLOCK_INDEX(j, i, 0, 0, N)] = PDense[BLOCK_INDEX(i, j, 0, 0, N)];
+      }
+    }
+    getSpectralBounds(0, &F_min, &F_max, N, PDense);
+  }
 
-  F.getSpectralBounds(0, &F_min, &F_max);
   INFO("spectral bounds: [ % e, % e ], dF = %e\n", F_min, F_max, F_max-F_min);
 
-  F.toDense(&NRows, &NColumns, &PDense);
-
-  //for(int i = 0; i < NRows; i++) {
-  //  for(int j = 0; j < NColumns; j++)
-  //  {
-  //    printf("%d %d % e\n", i, j, PDense[BLOCK_INDEX(i, j, 0, 0, NRows)]);
-  //  }
-  //}
-
-  assert(NRows == NColumns);
-
-  //printDense(NRows, PDense, "F");
+#ifdef PRINT_MATRICES
+  printDense(NRows, PDense, "F");
+#endif
 
   CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
       blocksize, strlen("P"), (char*) "P");
@@ -742,9 +782,11 @@ void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int blocks
 
   delete[] PDense;
 
-  //DenseMatrixMsg *P0Dense = P.toDense();
-  //printDense(P0Dense->N, P0Dense->A, "P0");
-  //delete P0Dense;
+#ifdef PRINT_MATRICES
+  DenseMatrixMsg *P0Dense = P.toDense();
+  printDense(P0Dense->N, P0Dense->A, "P0");
+  delete P0Dense;
+#endif
 
   CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
       blocksize, strlen("P2"), (char*) "P2");

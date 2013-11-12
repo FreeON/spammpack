@@ -201,3 +201,60 @@ void loadCoordinateFile (char *filename, int *N, double **ADense)
 
   fclose(fd);
 }
+
+/** Get the spectral bounds of the matrix by using the Gershgorin circle
+ * theorem.
+ *
+ * Estimate spectral bounds via Gersgorin approximation, @f$ \left[
+ * F_{min}-F_{max} \right] @f$.
+ *
+ * In detail:
+ * @f[
+ *   R_{i} = \sum_{j \neq i} \left| F_{ij} \right|
+ * @f]
+ * @f[
+ *   F_{\mathrm{max}} = \max_{i} \left\{ F_{ii} + R_{i} \right\}
+ * @f]
+ * @f[
+ *   F_{\mathrm{min}} = \min_{i} \left\{ F_{ii} - R_{i} \right\}
+ * @f]
+ *
+ * @param method The method to use. method = 0 is Gershgorin; method = 1 is
+ * full eigensolve.
+ * @param minBound [out] The lower bound.
+ * @param maxBound [out] The upper bound.
+ * @param N The matrix size.
+ * @param A The dense matrix.
+ */
+void getSpectralBounds (int method, double *minBound, double *maxBound, int N, double *A)
+{
+  for(int i = 0; i < N; i++)
+  {
+    double R = 0;
+    for(int j = 0; j < N; j++)
+    {
+      if(i != j)
+      {
+        R += fabs(A[BLOCK_INDEX(i, j, 0, 0, N)]);
+      }
+    }
+    if(i == 0)
+    {
+      *minBound = A[BLOCK_INDEX(i, i, 0, 0, N)] - R;
+      *maxBound = A[BLOCK_INDEX(i, i, 0, 0, N)] + R;
+    }
+
+    else
+    {
+      if(*minBound > A[BLOCK_INDEX(i, i, 0, 0, N)] - R)
+      {
+        *minBound = A[BLOCK_INDEX(i, i, 0, 0, N)] - R;
+      }
+
+      if(*maxBound < A[BLOCK_INDEX(i, i, 0, 0, N)] + R)
+      {
+        *maxBound = A[BLOCK_INDEX(i, i, 0, 0, N)] + R;
+      }
+    }
+  }
+}

@@ -291,6 +291,8 @@ void Node::trace (CkCallback &cb)
       trace = block->trace();
     }
   }
+  DEBUG(LB"trace(%d,%d) = %e\n"LE, thisIndex.x, thisIndex.y, trace);
+
   contribute(sizeof(double), &trace, CkReduction::sum_double, cb);
 }
 
@@ -351,7 +353,7 @@ void Node::addIdentity (double alpha, CkCallback &cb)
   {
     if(iLower == jLower && iUpper == jUpper)
     {
-      block->addIdentity(blocksize, alpha);
+      block->addIdentity((iUpper <= N ? iUpper-iLower : N-iLower), blocksize, alpha);
     }
     norm_2 = block->getNorm();
     norm = sqrt(norm_2);

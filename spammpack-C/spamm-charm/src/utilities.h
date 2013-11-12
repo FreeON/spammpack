@@ -28,4 +28,6 @@ std::string humanReadableSize (unsigned long n);
 
 void loadCoordinateFile (char *filename, int *N, double **ADense);
 
+void getSpectralBounds (int method, double *minBound, double *maxBound, int N, double *A);
+
 #endif

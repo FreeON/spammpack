@@ -43,7 +43,8 @@ class Block
     void multiply (Block A, Block B);
     void add (const double alpha, const double beta, const Block A);
     double trace (void);
-    void addIdentity (const int blocksize, const double alpha);
+    void addIdentity (const int numberRows, const int blocksize,
+        const double alpha);
     void print (const char *const format, ...);
 };
 

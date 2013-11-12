@@ -12,9 +12,9 @@ mainmodule spamm_charm
         bool verify, double verifyTolerance, bool loadBalance, int initialPE,
         bool alignPEs, bool printPEMap);
     entry [threaded] void runSP2 (int lengthFilename,
-        char filename[lengthFilename+1], int Ne, int blocksize, int
-        maxIterations, double tolerance, bool loadBalance, int initialPE,
-        bool alignPEs, bool printPEMap, int lengthPEMap,
-        char filenamePEMap[lengthPEMap+1]);
+        char filename[lengthFilename+1], int Ne, int N, int blocksize,
+        int maxIterations, double tolerance, bool loadBalance, int initialPE,
+        bool alignPEs, bool printPEMap, int lengthPEMap, char
+        filenamePEMap[lengthPEMap+1]);
   };
 };

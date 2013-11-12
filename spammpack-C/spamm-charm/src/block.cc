@@ -230,8 +230,15 @@ double Block::trace (void)
 }
 
 /** Add the identiy matrix to this Block.
+ *
+ * @param numberRows The number of rows to fill. This can be used in blocks
+ * that are in the padding region to limit the identity matrix to only the
+ * actualy matrix, and not the padding.
+ * @param blocksize The blocksize.
+ * @param alpha The scaling factor alpha.
  */
-void Block::addIdentity (const int blocksize, const double alpha)
+void Block::addIdentity (const int numberRows, const int blocksize,
+    const double alpha)
 {
   if(this->blocksize == 0)
   {
@@ -245,7 +252,9 @@ void Block::addIdentity (const int blocksize, const double alpha)
     assert(this->blocksize == blocksize);
   }
 
-  for(int i = 0; i < blocksize; i++)
+  assert(numberRows <= blocksize);
+
+  for(int i = 0; i < numberRows; i++)
   {
     block[BLOCK_INDEX(i, i, 0, 0, blocksize)] += alpha;
   }

@@ -218,6 +218,10 @@ void Matrix::set (int N, double *A, CkCallback &cb)
         }
       }
 
+#ifdef PRINT_MATRICES
+      printDense(blocksize, block, "block(%i,%i)", i, j);
+#endif
+
       DEBUG("calling set on Node(%d,%d)\n", i, j);
       nodes[depth](i, j).set(blocksize, block, CkCallbackResumeThread());
     }
