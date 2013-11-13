@@ -48,6 +48,8 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C)
  */
 Multiply::~Multiply (void)
 {
+  DEBUG("destructor\n");
+
   if(PEMap != NULL)
   {
     delete[] PEMap;

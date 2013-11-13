@@ -57,9 +57,9 @@ Block::~Block (void)
 Block & Block::operator= (const Block &rhs)
 {
   blocksize = rhs.blocksize;
-  block = new double[blocksize*blocksize];
   norm = rhs.norm;
   norm_2 = rhs.norm_2;
+  block = new double[blocksize*blocksize];
   memcpy(block, rhs.block, sizeof(double)*blocksize*blocksize);
   return *this;
 }
