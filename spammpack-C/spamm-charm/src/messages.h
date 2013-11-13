@@ -27,13 +27,16 @@
 #include "messages.decl.h"
 #include "node.h"
 
-/** A matrix block. */
+/** A custom packed message containing a Block. */
 class BlockMsg : public CMessage_BlockMsg
 {
   public:
 
-    /** The matrix block. */
+    /** The Block. */
     Block block;
+
+    static void * pack (BlockMsg *msg);
+    static BlockMsg * unpack (void *buffer);
 };
 
 /** A simple double value. */

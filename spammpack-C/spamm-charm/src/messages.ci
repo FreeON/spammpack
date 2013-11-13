@@ -1,9 +1,6 @@
 module messages
 {
-  message BlockMsg
-  {
-    Block block;
-  };
+  message BlockMsg;
   message DoubleMsg;
   message IntMsg;
   message MatrixInfoMsg;

@@ -9,6 +9,26 @@
 #include "messages.h"
 #include "logger.h"
 
+/** The pack() method of BlockMsg.
+ *
+ * @param msg The message.
+ *
+ * @return An appropriately sized buffer.
+ */
+void * BlockMsg::pack (BlockMsg *msg)
+{
+}
+
+/** The unpack() method of BlockMsg.
+ *
+ * @param buffer The buffer.
+ *
+ * @return A message.
+ */
+BlockMsg * BlockMsg::unpack (void *buffer)
+{
+}
+
 /** The constructor.
  *
  * @param x The value of this message.
