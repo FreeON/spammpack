@@ -93,7 +93,7 @@ std::string toBinary (unsigned int i)
  *
  * @return The string representation of the human readable form.
  */
-std::string humanReadableSize (unsigned long n)
+std::string humanReadableSize (size_t n)
 {
   std::ostringstream o;
   double size = 0;

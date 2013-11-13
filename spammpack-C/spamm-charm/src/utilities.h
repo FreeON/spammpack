@@ -24,7 +24,7 @@ void printDense (int N, double *A, const char *const format, ...);
 
 std::string toBinary (unsigned int i);
 
-std::string humanReadableSize (unsigned long n);
+std::string humanReadableSize (size_t n);
 
 void loadCoordinateFile (char *filename, int *N, double **ADense);
 

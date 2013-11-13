@@ -48,14 +48,25 @@ Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C)
  */
 Multiply::~Multiply (void)
 {
-  delete[] PEMap;
-  delete[] PEMap_norm;
-#ifdef PRUNE_CONVOLUTION
-  for(int tier = 0; tier <= depth; tier++)
+  if(PEMap != NULL)
   {
-    delete[] convolutionMap[tier];
+    delete[] PEMap;
   }
-  delete[] convolutionMap;
+
+  if(PEMap_norm != NULL)
+  {
+    delete[] PEMap_norm;
+  }
+
+#ifdef PRUNE_CONVOLUTION
+  if(convolutionMap != NULL)
+  {
+    for(int tier = 0; tier <= depth; tier++)
+    {
+      delete[] convolutionMap[tier];
+    }
+    delete[] convolutionMap;
+  }
 #endif
 }
 
@@ -86,12 +97,12 @@ void Multiply::init (int initialPE, bool alignPEs, CkCallback &cb)
   {
     int NTier = 1 << tier;
 
-    unsigned long bytes = NTier*NTier*NTier
+    size_t bytes = NTier*NTier*NTier
       *(sizeof(MultiplyElement)
           +CInfo->blocksize*CInfo->blocksize*sizeof(double));
-    INFO("created %dx%dx%d convolution, %d MultiplyElements "
-        "using %d bytes (%s)\n",
-        NTier, NTier, NTier, NTier*NTier*NTier,
+    INFO("created %dx%dx%d convolution, %llu MultiplyElements "
+        "using %llu bytes (%s)\n",
+        NTier, NTier, NTier, (size_t) NTier*NTier*NTier,
         bytes, humanReadableSize(bytes).c_str());
 
     convolution[tier] = CProxy_MultiplyElement::ckNew();

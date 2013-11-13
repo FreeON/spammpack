@@ -85,7 +85,10 @@ MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 MultiplyElement::~MultiplyElement ()
 {
   DEBUG(LB"destructor\n"LE);
-  delete[] CResult;
+  if(CResult != NULL)
+  {
+    delete[] CResult;
+  }
 }
 
 /** The PUP method.

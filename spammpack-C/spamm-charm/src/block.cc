@@ -1,6 +1,6 @@
 /** @file
  *
- * The implementation of the SpAMM_Node class.
+ * The implementation of the Block class.
  *
  * @author Nicolas Bock <nicolas.bock@freeon.org>
  * @author Matt Challacombe <matt.challacombe@freeon.org>
@@ -12,6 +12,16 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
+
+/** The constructor.
+ */
+Block::Block (void)
+{
+  blocksize = 0;
+  norm = 0;
+  norm_2 = 0;
+  block = NULL;
+}
 
 /** Update the Frobenius norm. */
 void Block::updateNorm (void)
@@ -28,14 +38,14 @@ void Block::updateNorm (void)
   }
 }
 
-/** The constructor.
+/** The destructor.
  */
-Block::Block (void)
+Block::~Block (void)
 {
-  blocksize = 0;
-  norm = 0;
-  norm_2 = 0;
-  block = NULL;
+  if(block != NULL)
+  {
+    delete[] block;
+  }
 }
 
 /** The assignment operator.
@@ -51,6 +61,7 @@ Block & Block::operator= (const Block &rhs)
   norm = rhs.norm;
   norm_2 = rhs.norm_2;
   memcpy(block, rhs.block, sizeof(double)*blocksize*blocksize);
+  return *this;
 }
 
 /** The pup() method.
@@ -80,7 +91,10 @@ void Block::pup (PUP::er &p)
 void Block::set (const int blocksize, const double *const A)
 {
   this->blocksize = blocksize;
-  delete[] block;
+  if(block != NULL)
+  {
+    delete[] block;
+  }
   block = new double[blocksize*blocksize];
   memcpy(block, A, sizeof(double)*blocksize*blocksize);
   updateNorm();
@@ -151,7 +165,11 @@ void Block::scale (const double alpha)
  */
 void Block::multiply (Block A, Block B)
 {
-  delete[] block;
+  if(block != NULL)
+  {
+    delete[] block;
+  }
+
   blocksize = A.blocksize;
   block = new double[blocksize*blocksize];
   memset(block, 0, sizeof(double)*blocksize*blocksize);

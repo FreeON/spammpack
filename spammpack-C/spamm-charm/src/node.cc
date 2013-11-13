@@ -79,7 +79,10 @@ Node::Node (CkMigrateMessage *msg)
 Node::~Node (void)
 {
   DEBUG(LB"destructor\n"LE);
-  delete block;
+  if(block != NULL)
+  {
+    delete block;
+  }
 }
 
 /** The PUP method.

@@ -1,6 +1,6 @@
 /** @file
  *
- * The header file for the SpAMM_Node class.
+ * The header file for the Block class.
  *
  * @author Nicolas Bock <nicolas.bock@freeon.org>
  * @author Matt Challacombe <matt.challacombe@freeon.org>
@@ -19,20 +19,21 @@ class Block
     /** The blocksize. We are using square matrices. */
     int blocksize;
 
-    /** The dense matrix. */
-    double *block;
-
     /** The norm. */
     double norm;
 
     /** The square of the norm. */
     double norm_2;
 
+    /** The dense matrix. */
+    double *block;
+
     void updateNorm (void);
 
   public:
 
     Block (void);
+    ~Block (void);
     Block & operator= (const Block &rhs);
     void pup (PUP::er &p);
     void set (const int blocksize, const double *const A);

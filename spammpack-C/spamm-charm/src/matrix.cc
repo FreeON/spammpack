@@ -226,6 +226,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
       nodes[depth](i, j).set(blocksize, block, CkCallbackResumeThread());
     }
   }
+
   delete[] block;
 
   /* Update norms. */
@@ -335,6 +336,7 @@ void Matrix::setEqual (CProxy_Matrix B, CkCallback &cb)
  */
 void Matrix::scale (double alpha, CkCallback &cb)
 {
+  DEBUG("scale by %e, depth = %d\n", alpha, depth);
   nodes[depth].scale(alpha, CkCallbackResumeThread());
   thisProxy.setNorm(CkCallbackResumeThread());
   cb.send();
