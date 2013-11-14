@@ -33,6 +33,7 @@ class Block
   public:
 
     Block (void);
+    Block (const int blocksize, const double *const block);
     ~Block (void);
     Block & operator= (const Block &rhs);
     void pup (PUP::er &p);
@@ -41,8 +42,8 @@ class Block
     double getNorm (void);
     double * toDense (void);
     void scale (const double alpha);
-    void multiply (Block A, Block B);
-    void add (const double alpha, const double beta, const Block A);
+    void multiply (Block &A, Block &B);
+    void add (const double alpha, const double beta, const Block &A);
     double trace (void);
     void addIdentity (const int numberRows, const int blocksize,
         const double alpha);

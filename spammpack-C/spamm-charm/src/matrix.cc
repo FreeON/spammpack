@@ -243,6 +243,8 @@ void Matrix::set (int N, double *A, CkCallback &cb)
  */
 void Matrix::setNorm (CkCallback &cb)
 {
+  DEBUG("setting norm\n");
+
   /* Update the norms on the upper tiers. */
   for(int tier = depth-1; tier >= 0; tier--)
   {

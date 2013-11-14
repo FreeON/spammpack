@@ -8,20 +8,10 @@
 
 #include "block.h"
 #include "index.h"
+#include "logger.h"
 
 #include <assert.h>
 #include <stdarg.h>
-#include <stdio.h>
-
-/** The constructor.
- */
-Block::Block (void)
-{
-  blocksize = 0;
-  norm = 0;
-  norm_2 = 0;
-  block = NULL;
-}
 
 /** Update the Frobenius norm. */
 void Block::updateNorm (void)
@@ -38,10 +28,41 @@ void Block::updateNorm (void)
   }
 }
 
+/** The constructor.
+ */
+Block::Block (void)
+{
+  blocksize = 0;
+  norm = 0;
+  norm_2 = 0;
+  block = NULL;
+  DEBUG("constructing Block at %p\n", this);
+}
+
+/** Another constructor.
+ *
+ * @param blocksize The blocksize.
+ * @param block The dense block.
+ */
+Block::Block (const int blocksize, const double *const block)
+{
+  this->blocksize = blocksize;
+  this->norm_2 = norm_2;
+  if(norm_2 < 0)
+  {
+    ABORT("norm_2 can not be negative\n");
+    exit(1);
+  }
+  this->norm = sqrt(norm_2);
+  this->block = new double[blocksize*blocksize];
+  memcpy(this->block, block, sizeof(double)*blocksize*blocksize);
+}
+
 /** The destructor.
  */
 Block::~Block (void)
 {
+  DEBUG("deleting Block at %p\n", this);
   if(block != NULL)
   {
     delete[] block;
@@ -56,6 +77,7 @@ Block::~Block (void)
  */
 Block & Block::operator= (const Block &rhs)
 {
+  DEBUG("assigning new Block at %p\n", this);
   blocksize = rhs.blocksize;
   norm = rhs.norm;
   norm_2 = rhs.norm_2;
@@ -70,6 +92,15 @@ Block & Block::operator= (const Block &rhs)
  */
 void Block::pup (PUP::er &p)
 {
+  if(p.isSizing())
+  {
+    DEBUG("sizing\n");
+  }
+  if(p.isPacking())
+  {
+    DEBUG("packing Block at %p\n", this);
+  }
+
   p|blocksize;
   p|norm;
   p|norm_2;
@@ -77,6 +108,7 @@ void Block::pup (PUP::er &p)
   {
     if(p.isUnpacking())
     {
+      DEBUG("unpacking Block at %p\n", this);
       block = new double[blocksize*blocksize];
     }
     PUParray(p, block, blocksize*blocksize);
@@ -163,7 +195,7 @@ void Block::scale (const double alpha)
  * @param A The matrix A.
  * @param B The matrix B.
  */
-void Block::multiply (Block A, Block B)
+void Block::multiply (Block &A, Block &B)
 {
   if(block != NULL)
   {
@@ -192,6 +224,7 @@ void Block::multiply (Block A, Block B)
   }
 #endif
 
+  DEBUG("done\n");
   updateNorm();
 }
 
@@ -200,7 +233,7 @@ void Block::multiply (Block A, Block B)
  * @param alpha The scaling factor.
  * @param A The Block to add.
  */
-void Block::add (const double alpha, const double beta, const Block A)
+void Block::add (const double alpha, const double beta, const Block &A)
 {
   if(blocksize == 0)
   {
@@ -292,13 +325,13 @@ void Block::print (const char *const format, ...)
   va_start(ap, format);
   vsnprintf(buffer, 2000, format, ap);
 
-  printf("%s = [\n", buffer);
+  CkPrintf("%s = [\n", buffer);
   for(int i = 0; i < blocksize; i++) {
     for(int j = 0; j < blocksize; j++)
     {
-      printf(" % e", block[BLOCK_INDEX(i, j, 0, 0, blocksize)]);
+      CkPrintf(" % e", block[BLOCK_INDEX(i, j, 0, 0, blocksize)]);
     }
-    printf("\n");
+    CkPrintf("\n");
   }
-  printf("]\n");
+  CkPrintf("]\n");
 }

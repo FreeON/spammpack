@@ -49,7 +49,7 @@ class Node : public CBase_Node
     /** The square of the norm of this matrix block. */
     double norm_2;
 
-    /** The local matrix tree. */
+    /** The local matrix chunk (if we are at the lowest tier). */
     Block *block;
 
   public:

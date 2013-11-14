@@ -9,6 +9,16 @@
 #include "messages.h"
 #include "logger.h"
 
+/** The constructor.
+ *
+ * @param block The Block.
+ */
+BlockMsg::BlockMsg (Block &block)
+{
+  DEBUG("constructing new BlockMsg with Block at %p\n", &this->block);
+  this->block = block;
+}
+
 /** The pack() method of BlockMsg.
  *
  * @param msg The message.
@@ -18,20 +28,27 @@
 void * BlockMsg::pack (BlockMsg *msg)
 {
   int blocksize = msg->block.getBlocksize();
-  double norm_2 = msg->block.getNorm();
 
   size_t size = sizeof(int)               /* blocksize */
-    + sizeof(double)                      /* norm_2 */
     + sizeof(double)*blocksize*blocksize; /* block */
+
+  DEBUG("packing BlockMsg\n");
 
   void *buffer = (void*) CkAllocBuffer(msg, size);
   intptr_t buf_ptr = (intptr_t) buffer;
 
   memcpy((void*) buf_ptr, &blocksize, sizeof(int));
   buf_ptr += sizeof(int);
-  memcpy((void*) buf_ptr, &norm_2, sizeof(double));
-  buf_ptr += sizeof(double);
-  memcpy((void*) buf_ptr, msg->block.block, sizeof(double)*blocksize*blocksize);
+
+  if(blocksize > 0)
+  {
+    double *block = msg->block.toDense();
+    memcpy((void*) buf_ptr, block, sizeof(double)*blocksize*blocksize);
+    delete[] block;
+  }
+
+  delete msg;
+  return buffer;
 }
 
 /** The unpack() method of BlockMsg.
@@ -42,6 +59,26 @@ void * BlockMsg::pack (BlockMsg *msg)
  */
 BlockMsg * BlockMsg::unpack (void *buffer)
 {
+  intptr_t buf_ptr = (intptr_t) buffer;
+
+  int blocksize;
+
+  memcpy(&blocksize, (void*) buf_ptr, sizeof(int));
+  buf_ptr += sizeof(int);
+
+  double *block = new double[blocksize*blocksize];
+  memcpy(block, (void*) buf_ptr, sizeof(double)*blocksize*blocksize);
+
+  DEBUG("unpacking BlockMsg\n");
+
+  Block newBlock(blocksize, block);
+  BlockMsg *msg = (BlockMsg*) CkAllocBuffer(buffer, sizeof(BlockMsg));
+  msg = new ((void*) msg) BlockMsg(newBlock);
+
+  CkFreeMsg(buffer);
+  delete[] block;
+
+  return msg;
 }
 
 /** The constructor.

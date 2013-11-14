@@ -2,6 +2,7 @@
 
 module multiplyelement
 {
+  include "block.h";
   extern module node;
   extern module messages;
   array [3D] MultiplyElement

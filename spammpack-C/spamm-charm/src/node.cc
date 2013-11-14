@@ -159,11 +159,8 @@ DenseMatrixMsg * Node::toDense (void)
  */
 BlockMsg * Node::getBlock (void)
 {
-  BlockMsg *msg = new BlockMsg();
-  if(block != NULL)
-  {
-    msg->block = *block;
-  }
+  DEBUG(LB"sending BlockMsg with Block at %p\n"LE, block);
+  BlockMsg *msg = new BlockMsg(*block);
   return msg;
 }
 
@@ -181,6 +178,7 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   if(block == NULL)
   {
     block = new Block();
+    DEBUG(LB"creating new Block at %p\n"LE, block);
   }
   block->set(blocksize, A);
   norm_2 = block->getNorm();
@@ -237,12 +235,13 @@ void Node::blockAdd (double alpha, Block A)
   assert(tier == depth);
   assert(blocksize == this->blocksize);
 
-  DEBUG(LB"Adding back to C\n"LE);
   if(block == NULL)
   {
     block = new Block();
+    DEBUG(LB"creating new Block at %p\n"LE, block);
   }
 
+  DEBUG(LB"Adding back to C with Block at %p\n"LE, block);
   block->add(1, alpha, A);
 
 #ifdef DEBUG_OUTPUT
@@ -328,14 +327,19 @@ void Node::scale (double alpha, CkCallback &cb)
 {
   assert(tier == depth);
 
-  DEBUG(LB"alpha = %e\n"LE, alpha);
-
   if(block != NULL)
   {
+    DEBUG(LB"alpha = %e of Block at %p\n"LE, alpha, block);
     block->scale(alpha);
     norm_2 *= alpha*alpha;
     norm = sqrt(norm_2);
   }
+
+  else
+  {
+    DEBUG(LB"block == NULL\n"LE);
+  }
+
   contribute(cb);
 }
 /** Add a the scaled identity matrix. This operation affects only those Nodes

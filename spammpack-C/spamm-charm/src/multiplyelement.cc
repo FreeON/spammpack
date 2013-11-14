@@ -159,9 +159,11 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
         ABORT(LB"CResult is not NULL\n"LE);
       }
 
+      DEBUG(LB"creating CResult Block\n"LE);
       CResult = new Block();
 
       /* Calculate C_{ij} = A_{ik} B_{kj}. */
+      DEBUG(LB"requesting BlockMsg from A and B\n"LE);
       BlockMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
       BlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
 
@@ -172,6 +174,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
 #endif
 
+      DEBUG(LB"calling multiply on CResult\n"LE);
       CResult->multiply(ABlock->block, BBlock->block);
 
 #ifdef DEBUG_OUTPUT
@@ -179,6 +182,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       CResult->print(LB"result:"LE);
 #endif
 
+      DEBUG(LB"deleting BlockMsg from A and B\n"LE);
       delete ABlock;
       delete BBlock;
     }
@@ -386,9 +390,11 @@ void MultiplyElement::storeBack (double alpha, CkCallback &cb)
 
     if(CResult != NULL)
     {
+      DEBUG(LB"calling blockAdd with Block at %p\n"LE, CResult);
       C(thisIndex.x, thisIndex.y).blockAdd(alpha, *CResult);
 
       /* Reset result for possible next iteration. */
+      DEBUG(LB"deleting CResult for next iteration\n"LE);
       delete CResult;
       CResult = NULL;
     }

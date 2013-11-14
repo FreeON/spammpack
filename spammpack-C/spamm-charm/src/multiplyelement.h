@@ -13,8 +13,6 @@
 
 #include "multiplyelement.decl.h"
 
-#include "block.h"
-
 /** An element in the convolution curve. */
 class MultiplyElement : public CBase_MultiplyElement
 {
@@ -44,7 +42,7 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The norm product of this element. */
     double norm_product;
 
-    /** The result matrix. */
+    /** The result matrix chunk. */
     Block *CResult;
 
 #ifndef PRUNE_CONVOLUTION

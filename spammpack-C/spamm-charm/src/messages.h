@@ -35,6 +35,7 @@ class BlockMsg : public CMessage_BlockMsg
     /** The Block. */
     Block block;
 
+    BlockMsg (Block &block);
     static void * pack (BlockMsg *msg);
     static BlockMsg * unpack (void *buffer);
 };
