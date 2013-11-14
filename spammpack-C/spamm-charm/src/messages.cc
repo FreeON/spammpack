@@ -17,6 +17,21 @@
  */
 void * BlockMsg::pack (BlockMsg *msg)
 {
+  int blocksize = msg->block.getBlocksize();
+  double norm_2 = msg->block.getNorm();
+
+  size_t size = sizeof(int)               /* blocksize */
+    + sizeof(double)                      /* norm_2 */
+    + sizeof(double)*blocksize*blocksize; /* block */
+
+  void *buffer = (void*) CkAllocBuffer(msg, size);
+  intptr_t buf_ptr = (intptr_t) buffer;
+
+  memcpy((void*) buf_ptr, &blocksize, sizeof(int));
+  buf_ptr += sizeof(int);
+  memcpy((void*) buf_ptr, &norm_2, sizeof(double));
+  buf_ptr += sizeof(double);
+  memcpy((void*) buf_ptr, msg->block.block, sizeof(double)*blocksize*blocksize);
 }
 
 /** The unpack() method of BlockMsg.
