@@ -63,6 +63,9 @@ enum operation_t
   /** Add a scaled identity matrix. */
   addIdentity,
 
+  /** Scale a matrix by a number. */
+  scale,
+
   /** An SP2 iteration. */
   SP2
 };

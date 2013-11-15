@@ -87,7 +87,7 @@ void initialize (void)
  * - { -l | --load-balance }      Load balance after each iteration
  * - { -a | --align-PEs }         Align PEs for diagonal case
  * - { -p | --print-PEMap } FILE  Print a PE map in each iteration
- * - { -o | --operation } OP      Test OP { multiply, add, trace, addIdentity, SP2 }
+ * - { -o | --operation } OP      Test OP { multiply, add, trace, scale, addIdentity, SP2 }
  *
  * @param msg The command line argument list.
  */
@@ -158,7 +158,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         CkPrintf("{ -l | --load-balance }       Load balance after each iteration\n");
         CkPrintf("{ -a | --align-PEs }          Align PEs for diagonal case\n");
         CkPrintf("{ -p | --print-PEMap } FILE   Print a PE map in each iteration\n");
-        CkPrintf("{ -o | --operation } OP       Test OP { multiply, add, trace, addIdentity, SP2 }\n");
+        CkPrintf("{ -o | --operation } OP       Test OP { multiply, add, trace, addIdentity, scale, SP2 }\n");
         CkPrintf("\n");
         CkExit();
         break;
@@ -251,6 +251,11 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         else if(strcasecmp(optarg, "addIdentity") == 0)
         {
           operation = addIdentity;
+        }
+
+        else if(strcasecmp(optarg, "scale") == 0)
+        {
+          operation = scale;
         }
 
         else if(strcasecmp(optarg, "SP2") == 0)
@@ -455,6 +460,17 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
         }
         break;
 
+      case scale:
+        {
+          Timer t("iteration %d on %d PEs, scale A by %e", iteration+1, CkNumPes(), alpha);
+          t.start();
+          C.setEqual(A, CkCallbackResumeThread());
+          C.scale(alpha, CkCallbackResumeThread());
+          t.stop();
+          CkPrintf("%s\n", t.to_str());
+        }
+        break;
+
       case addIdentity:
         {
           Timer t("iteration %d on %d PEs, alpha * A + beta * I (alpha = %e, beta = %e)",
@@ -576,11 +592,9 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
           break;
 
         case add:
+          for(int i = 0; i < N*N; i++)
           {
-            for(int i = 0; i < N*N; i++)
-            {
-              CExact[i] = 2*ADense[i];
-            }
+            CExact[i] = 2*ADense[i];
           }
           break;
 
@@ -600,6 +614,13 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
                   verifyTolerance, absDiff, trace, spammTrace->x);
             }
             CkPrintf("trace verified\n");
+          }
+          break;
+
+        case scale:
+          for(int i = 0; i < N*N; i++)
+          {
+            CExact[i] = alpha*ADense[i];
           }
           break;
 

@@ -242,6 +242,30 @@ END_OF_SCRIPT
 chmod 755 tests/spamm_test_multiply_diagonal.sh
 ])
 
+AC_CONFIG_COMMANDS([tests/spamm_test_scale_full.sh],
+[cat > tests/spamm_test_scale_full.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/spamm-charm --operation scale -N 21 --block 5 --type full --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_scale_full.sh
+])
+
+AC_CONFIG_COMMANDS([tests/spamm_test_scale_decay.sh],
+[cat > tests/spamm_test_scale_decay.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/spamm-charm --operation scale -N 21 --block 5 --type decay --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_scale_decay.sh
+])
+
+AC_CONFIG_COMMANDS([tests/spamm_test_scale_diagonal.sh],
+[cat > tests/spamm_test_scale_diagonal.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/spamm-charm --operation scale -N 21 --block 5 --type diagonal --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_scale_diagonal.sh
+])
+
 AC_CONFIG_COMMANDS([tests/spamm_test_trace_full.sh],
 [cat > tests/spamm_test_trace_full.sh << END_OF_SCRIPT
 #!/bin/bash

@@ -31,6 +31,7 @@
 
 /** The constructor.
  *
+ * @param The matrix size.
  * @param blocksize The blocksize.
  * @param tier The tier.
  * @param depth The depth of the matrix.
@@ -38,7 +39,7 @@
  * @param B The Nodes of this tier in B.
  * @param C The Nodes of this tier in C.
  */
-MultiplyElement::MultiplyElement (int blocksize, int tier,
+MultiplyElement::MultiplyElement (int N, int blocksize, int tier,
     int depth, CProxy_Node A, CProxy_Node B, CProxy_Node C)
 {
   DEBUG(LB"constructor\n"LE);
@@ -50,6 +51,11 @@ MultiplyElement::MultiplyElement (int blocksize, int tier,
   this->B = B;
   this->C = C;
   this->norm_product = 0;
+
+  this->N = N;
+
+  iLower = thisIndex.x*blocksize;
+  jLower = thisIndex.y*blocksize;
 
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
@@ -65,6 +71,7 @@ MultiplyElement::MultiplyElement (int blocksize, int tier,
   }
   index = tempIndex.to_ulong();
 
+  chunksize = 0;
   CResult = NULL;
 
 #ifndef PRUNE_CONVOLUTION
@@ -116,13 +123,17 @@ void MultiplyElement::pup (PUP::er &p)
 #endif
   p|nextConvolution;
   p|chunksize;
+  p|N;
+  p|iLower;
+  p|jLower;
   bool resultSet = (CResult != NULL);
   p|resultSet;
   if(resultSet)
   {
     if(p.isUnpacking())
     {
-      CResult = chunk_alloc(blocksize);
+      CResult = malloc(chunk_sizeof(blocksize));
+      assert(chunksize == chunk_sizeof(blocksize));
     }
     PUParray(p, (char*) CResult, chunksize);
   }
@@ -173,8 +184,8 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
         ABORT(LB"result is not NULL\n"LE);
       }
 
-      DEBUG(LB"creating result chunk\n"LE);
-      CResult = chunk_alloc(blocksize);
+      DEBUG(LB"creating result chunk, N = %d\n"LE, N);
+      CResult = chunk_alloc(blocksize, N, iLower, jLower);
       chunksize = chunk_sizeof(blocksize);
 
       /* Calculate C_{ij} = A_{ik} B_{kj}. */

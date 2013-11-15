@@ -10,6 +10,9 @@ TESTS = \
 	spamm_test_multiply_full.sh \
 	spamm_test_multiply_decay.sh \
 	spamm_test_multiply_diagonal.sh \
+	spamm_test_scale_full.sh \
+	spamm_test_scale_decay.sh \
+	spamm_test_scale_diagonal.sh \
 	spamm_test_trace_full.sh \
 	spamm_test_trace_decay.sh \
 	spamm_test_trace_diagonal.sh \

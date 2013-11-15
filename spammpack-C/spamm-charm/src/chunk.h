@@ -25,7 +25,10 @@ size_t
 chunk_sizeof (const int blocksize);
 
 void *
-chunk_alloc (const int blocksize);
+chunk_alloc (const int blocksize,
+    const int N,
+    const unsigned int i_lower,
+    const unsigned int j_lower);
 
 void
 chunk_set (void *const chunk, const double *const A);

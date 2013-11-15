@@ -116,7 +116,8 @@ void Node::pup (PUP::er &p)
   {
     if(p.isUnpacking())
     {
-      chunk = chunk_alloc(blocksize);
+      chunk = malloc(chunk_sizeof(blocksize));
+      assert(chunksize == chunk_sizeof(blocksize));
     }
     PUParray(p, (char*) chunk, chunksize);
   }
@@ -192,7 +193,7 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
 
   if(chunk == NULL)
   {
-    chunk = chunk_alloc(blocksize);
+    chunk = chunk_alloc(blocksize, N, iLower, jLower);
     chunksize = chunk_sizeof(blocksize);
     DEBUG(LB"creating new Block at %p, chunksize = %llu\n"LE, chunk, chunksize);
   }
@@ -253,7 +254,7 @@ void Node::chunkAdd (double alpha, size_t chunksize, char *chunk)
 
   if(this->chunk == NULL)
   {
-    this->chunk = chunk_alloc(blocksize);
+    this->chunk = chunk_alloc(blocksize, N, iLower, jLower);
     DEBUG(LB"creating new Block at %p\n"LE, this->chunk);
   }
 
@@ -284,7 +285,7 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
 
   if(chunk == NULL)
   {
-    chunk = chunk_alloc(blocksize);
+    chunk = chunk_alloc(blocksize, N, iLower, jLower);
   }
 
   chunk_add(alpha, chunk, beta, BChunk->chunk);

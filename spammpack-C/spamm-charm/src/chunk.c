@@ -26,6 +26,16 @@
 /** The data layout of a chunk. */
 struct chunk_t
 {
+  /** The lower row bound of this chunk. */
+  unsigned int i_lower;
+
+  /** The lower column bound of this chunk. */
+  unsigned int j_lower;
+
+  /** The matrix size. The chunk's bounds can extend beyond the matrix size,
+   * since we use padding. */
+  int N;
+
   /** The size of this matrix block. */
   int blocksize;
 
@@ -44,11 +54,17 @@ chunk_sizeof (const int blocksize)
 /** Allocate a chunk.
  *
  * @param blocksize The size of the matrix block.
+ * @param N The matrix size.
+ * @param i_lower The lower row bound of this chunk.
+ * @param j_lower The lower column bound of this chunk.
  *
  * @return The newly allocated chunk.
  */
 void *
-chunk_alloc (const int blocksize)
+chunk_alloc (const int blocksize,
+    const int N,
+    const unsigned int i_lower,
+    const unsigned int j_lower)
 {
   void *chunk = malloc(chunk_sizeof(blocksize));
   memset(chunk, 0, chunk_sizeof(blocksize));
@@ -56,8 +72,12 @@ chunk_alloc (const int blocksize)
   struct chunk_t *chunk_ptr = (struct chunk_t*) chunk;
   chunk_ptr->blocksize = blocksize;
 
-  DEBUG("allocating chunk, blocksize = %d, sizeof(chunk) = %lu\n",
-      blocksize, chunk_sizeof(blocksize));
+  chunk_ptr->N = N;
+  chunk_ptr->i_lower = i_lower;
+  chunk_ptr->j_lower = j_lower;
+
+  DEBUG("allocating chunk at %p, N = %d, blocksize = %d, sizeof(chunk) = %lu\n",
+      chunk, N, blocksize, chunk_sizeof(blocksize));
 
   return chunk;
 }
@@ -72,7 +92,7 @@ void chunk_set (void *const chunk, const double *const A)
 {
   struct chunk_t *chunk_ptr = (struct chunk_t*) chunk;
   memcpy(chunk_ptr->block, A, sizeof(double)*chunk_ptr->blocksize*chunk_ptr->blocksize);
-  DEBUG("set chunk, blocksize = %d\n", chunk_ptr->blocksize);
+  DEBUG("set chunk at %p, blocksize = %d\n", chunk, chunk_ptr->blocksize);
   chunk_print(chunk, "chunk");
 }
 
@@ -91,7 +111,7 @@ chunk_get_norm (const void *const chunk)
   {
     norm += chunk_ptr->block[i]*chunk_ptr->block[i];
   }
-  DEBUG("chunk norm = %e\n", norm);
+  DEBUG("chunk at %p, norm = %e\n", chunk, norm);
   return norm;
 }
 
@@ -194,6 +214,7 @@ chunk_trace (const void *const chunk)
   {
     trace += ptr->block[BLOCK_INDEX(i, i, 0, 0, ptr->blocksize)];
   }
+  DEBUG("calculating trace of chunk at %p, trace = %e\n", chunk, trace);
   return trace;
 }
 
@@ -207,7 +228,12 @@ chunk_trace (const void *const chunk)
 void
 chunk_scale (const double alpha, void *const chunk)
 {
-  DEBUG("FIXME\n");
+  struct chunk_t *ptr = (struct chunk_t*) chunk;
+  DEBUG("scaling block at %p by %e\n", chunk, alpha);
+  for(int i = 0; i < ptr->blocksize*ptr->blocksize; i++)
+  {
+    ptr->block[i] *= alpha;
+  }
 }
 
 /** Add a scaled identity matrix to a chunk.
@@ -220,7 +246,15 @@ chunk_scale (const double alpha, void *const chunk)
 void
 chunk_add_identity (const double alpha, void *const chunk)
 {
-  DEBUG("FIXME\n");
+  struct chunk_t *ptr = (struct chunk_t*) chunk;
+  DEBUG("adding %e Id to chunk at %p, N = %d, i_lower = %d, j_lower = %d\n",
+      alpha, chunk, ptr->N, ptr->i_lower, ptr->j_lower);
+  for(int i = 0; i < ptr->blocksize &&
+      i+ptr->i_lower < ptr->N &&
+      i+ptr->j_lower < ptr->N; i++)
+  {
+    ptr->block[BLOCK_INDEX(i, i, 0, 0, ptr->blocksize)] += alpha;
+  }
 }
 
 /** Convert a chunk to a dense matrix.

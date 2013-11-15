@@ -42,6 +42,15 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The norm product of this element. */
     double norm_product;
 
+    /** The matrix size. */
+    int N;
+
+    /** The lower row index of the result chunk. */
+    int iLower;
+
+    /** The lower column index of the result chunk. */
+    int jLower;
+
     /** The size of the result chunk. */
     size_t chunksize;
 
@@ -60,7 +69,7 @@ class MultiplyElement : public CBase_MultiplyElement
 
   public:
 
-    MultiplyElement (int blocksize, int tier, int depth,
+    MultiplyElement (int N, int blocksize, int tier, int depth,
         CProxy_Node A, CProxy_Node B, CProxy_Node C);
     MultiplyElement (CkMigrateMessage *msg);
     ~MultiplyElement ();
