@@ -57,7 +57,7 @@ class Node : public CBase_Node
 
   public:
 
-    Node (int N, int depth, int blocksize, size_t chunksize, int tier);
+    Node (int N, int depth, int blocksize, int tier);
     Node (CkMigrateMessage *msg);
     ~Node (void);
     void pup (PUP::er &p);

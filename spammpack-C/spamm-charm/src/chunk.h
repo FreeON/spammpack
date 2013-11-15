@@ -11,6 +11,19 @@
 
 #include <stdlib.h>
 
+#ifdef __cplusplus
+#define __BEGIN_DECLARATIONS extern "C" {
+#define __END_DECLARATIONS }
+#else
+#define __BEGIN_DECLARATIONS
+#define __END_DECLARATIONS
+#endif
+
+__BEGIN_DECLARATIONS
+
+size_t
+chunk_sizeof (const int blocksize);
+
 void *
 chunk_alloc (const int blocksize);
 
@@ -42,5 +55,7 @@ chunk_add_identity (const double alpha, void *const chunk);
 
 double *
 chunk_to_dense (const void *const chunk);
+
+__END_DECLARATIONS
 
 #endif

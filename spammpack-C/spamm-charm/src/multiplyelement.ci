@@ -6,8 +6,7 @@ module multiplyelement
   extern module messages;
   array [3D] MultiplyElement
   {
-    entry MultiplyElement (int blocksize, size_t chunksize, int tier,
-        int depth,
+    entry MultiplyElement (int blocksize, int tier, int depth,
         CProxy_Node A,
         CProxy_Node B,
         CProxy_Node C);

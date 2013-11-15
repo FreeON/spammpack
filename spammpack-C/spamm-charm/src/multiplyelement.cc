@@ -32,14 +32,13 @@
 /** The constructor.
  *
  * @param blocksize The blocksize.
- * @param chunksize The size of a matrix chunk.
  * @param tier The tier.
  * @param depth The depth of the matrix.
  * @param A The Nodes of this tier in A.
  * @param B The Nodes of this tier in B.
  * @param C The Nodes of this tier in C.
  */
-MultiplyElement::MultiplyElement (int blocksize, size_t chunksize, int tier,
+MultiplyElement::MultiplyElement (int blocksize, int tier,
     int depth, CProxy_Node A, CProxy_Node B, CProxy_Node C)
 {
   DEBUG(LB"constructor\n"LE);
@@ -66,8 +65,7 @@ MultiplyElement::MultiplyElement (int blocksize, size_t chunksize, int tier,
   }
   index = tempIndex.to_ulong();
 
-  this->chunksize = chunksize;
-  result = NULL;
+  CResult = NULL;
 
 #ifndef PRUNE_CONVOLUTION
   isEnabled = true;
@@ -82,7 +80,7 @@ MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
   DEBUG("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y,
       thisIndex.z);
-  result = NULL;
+  CResult = NULL;
 }
 
 /** The destructor.
@@ -90,10 +88,10 @@ MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 MultiplyElement::~MultiplyElement ()
 {
   DEBUG(LB"destructor\n"LE);
-  if(result != NULL)
+  if(CResult != NULL)
   {
-    free(result);
-    result = NULL;
+    free(CResult);
+    CResult = NULL;
   }
 }
 
@@ -118,15 +116,15 @@ void MultiplyElement::pup (PUP::er &p)
 #endif
   p|nextConvolution;
   p|chunksize;
-  bool resultSet = (result != NULL);
+  bool resultSet = (CResult != NULL);
   p|resultSet;
   if(resultSet)
   {
     if(p.isUnpacking())
     {
-      result = chunk_alloc(blocksize);
+      CResult = chunk_alloc(blocksize);
     }
-    PUParray(p, (char*) result, chunksize);
+    PUParray(p, (char*) CResult, chunksize);
   }
   DEBUG(LB"pup()\n"LE);
 }
@@ -170,13 +168,14 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
     if(norm_product > tolerance)
     {
-      if(result != NULL)
+      if(CResult != NULL)
       {
         ABORT(LB"result is not NULL\n"LE);
       }
 
       DEBUG(LB"creating result chunk\n"LE);
-      result = chunk_alloc(blocksize);
+      CResult = chunk_alloc(blocksize);
+      chunksize = chunk_sizeof(blocksize);
 
       /* Calculate C_{ij} = A_{ik} B_{kj}. */
       DEBUG(LB"requesting BlockMsg from A and B\n"LE);
@@ -191,11 +190,11 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 #endif
 
       DEBUG(LB"calling multiply on result\n"LE);
-      chunk_multiply(AChunk->chunk, BChunk->chunk, result);
+      chunk_multiply(AChunk->chunk, BChunk->chunk, CResult);
 
 #ifdef DEBUG_OUTPUT
       /** For debugging. */
-      chunk_print(result, LB"result:"LE);
+      chunk_print(CResult, LB"result:"LE);
 #endif
 
       DEBUG(LB"deleting BlockMsg from A and B\n"LE);
@@ -404,15 +403,15 @@ void MultiplyElement::storeBack (double alpha, CkCallback &cb)
   {
     DEBUG(LB"storing in C\n"LE);
 
-    if(result != NULL)
+    if(CResult != NULL)
     {
-      DEBUG(LB"calling blockAdd with Block at %p\n"LE, result);
-      C(thisIndex.x, thisIndex.y).chunkAdd(alpha, chunksize, (char*) result);
+      DEBUG(LB"calling blockAdd with Block at %p\n"LE, CResult);
+      C(thisIndex.x, thisIndex.y).chunkAdd(alpha, chunksize, (char*) CResult);
 
       /* Reset result for possible next iteration. */
       DEBUG(LB"deleting CResult for next iteration\n"LE);
-      free(result);
-      result = NULL;
+      free(CResult);
+      CResult = NULL;
     }
   }
 

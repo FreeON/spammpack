@@ -35,7 +35,7 @@
  * @param blocksize The blocksize.
  * @param tier The tier this node is on.
  */
-Node::Node (int N, int depth, int blocksize, size_t chunksize, int tier)
+Node::Node (int N, int depth, int blocksize, int tier)
 {
   this->N = N;
   this->blocksize = blocksize;
@@ -50,7 +50,7 @@ Node::Node (int N, int depth, int blocksize, size_t chunksize, int tier)
   this->norm = 0;
   this->norm_2 = 0;
 
-  this->chunksize = chunksize;
+  this->chunksize = 0;
   this->chunk = NULL;
 
   /* Calculate the linear index. */
@@ -193,7 +193,8 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   if(chunk == NULL)
   {
     chunk = chunk_alloc(blocksize);
-    DEBUG(LB"creating new Block at %p\n"LE, chunk);
+    chunksize = chunk_sizeof(blocksize);
+    DEBUG(LB"creating new Block at %p, chunksize = %llu\n"LE, chunk, chunksize);
   }
   chunk_set(chunk, A);
   norm_2 = chunk_get_norm(chunk);

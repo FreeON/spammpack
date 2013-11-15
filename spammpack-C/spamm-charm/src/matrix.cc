@@ -30,9 +30,6 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
   this->N = N;
   this->blocksize = blocksize;
 
-  chunksize = sizeof(double)*blocksize*blocksize;
-  DEBUG("calculating chunksize = %llu\n", chunksize);
-
   /* Calculate tree depth. */
   depth = -1;
   for(int i = N/blocksize; i > 0; i >>= 1)
@@ -41,6 +38,8 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
   }
   if(blocksize*(1 << depth) < N) depth++;
   NPadded = blocksize*(1 << depth);
+
+  DEBUG("depth = %d, NPadded = %d\n", depth, NPadded);
 
   nodes = new CProxy_Node[depth+1];
   memset(nodes, 0, sizeof(CProxy_Node)*(depth+1));
@@ -107,7 +106,7 @@ void Matrix::init (CkCallback &cb)
  */
 MatrixInfoMsg * Matrix::info (void)
 {
-  return new MatrixInfoMsg (N, blocksize, chunksize, depth, NPadded);
+  return new MatrixInfoMsg (N, blocksize, depth, NPadded);
 }
 
 /** Convert a Matrix to a dense matrix.

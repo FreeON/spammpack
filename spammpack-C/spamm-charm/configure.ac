@@ -24,7 +24,7 @@ AC_SUBST([HAVE_DOT], [${have_dot}])
 AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
 
 # Find a C compiler.
-AC_PROG_CC
+AC_PROG_CC_STDC
 
 # Find a python interpreter.
 AM_PATH_PYTHON([2.7], [], [:])

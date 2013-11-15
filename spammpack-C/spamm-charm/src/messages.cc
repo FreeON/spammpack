@@ -42,16 +42,13 @@ IntMsg::IntMsg (int i)
  *
  * @param N The matrix size.
  * @param blocksize The submatrix size at the lowest tier.
- * @param chunksize The size of a Chunk.
  * @param depth The tree depth of the matrix.
  * @param NPadded The padded matrix size.
  */
-MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, size_t chunksize,
-    int depth, int NPadded)
+MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth, int NPadded)
 {
   this->N = N;
   this->blocksize = blocksize;
-  this->chunksize = chunksize;
   this->depth = depth;
   this->NPadded = NPadded;
 }
