@@ -11,74 +11,13 @@
 
 /** The constructor.
  *
- * @param block The Block.
+ * @param chunksize The size of the chunk.
+ * @param chunk The chunk.
  */
-BlockMsg::BlockMsg (Block &block)
+ChunkMsg::ChunkMsg (size_t chunksize, char *chunk)
 {
-  DEBUG("constructing new BlockMsg with Block at %p\n", &this->block);
-  this->block = block;
-}
-
-/** The pack() method of BlockMsg.
- *
- * @param msg The message.
- *
- * @return An appropriately sized buffer.
- */
-void * BlockMsg::pack (BlockMsg *msg)
-{
-  int blocksize = msg->block.getBlocksize();
-
-  size_t size = sizeof(int)               /* blocksize */
-    + sizeof(double)*blocksize*blocksize; /* block */
-
-  DEBUG("packing BlockMsg\n");
-
-  void *buffer = (void*) CkAllocBuffer(msg, size);
-  intptr_t buf_ptr = (intptr_t) buffer;
-
-  memcpy((void*) buf_ptr, &blocksize, sizeof(int));
-  buf_ptr += sizeof(int);
-
-  if(blocksize > 0)
-  {
-    double *block = msg->block.toDense();
-    memcpy((void*) buf_ptr, block, sizeof(double)*blocksize*blocksize);
-    delete[] block;
-  }
-
-  delete msg;
-  return buffer;
-}
-
-/** The unpack() method of BlockMsg.
- *
- * @param buffer The buffer.
- *
- * @return A message.
- */
-BlockMsg * BlockMsg::unpack (void *buffer)
-{
-  intptr_t buf_ptr = (intptr_t) buffer;
-
-  int blocksize;
-
-  memcpy(&blocksize, (void*) buf_ptr, sizeof(int));
-  buf_ptr += sizeof(int);
-
-  double *block = new double[blocksize*blocksize];
-  memcpy(block, (void*) buf_ptr, sizeof(double)*blocksize*blocksize);
-
-  DEBUG("unpacking BlockMsg\n");
-
-  Block newBlock(blocksize, block);
-  BlockMsg *msg = (BlockMsg*) CkAllocBuffer(buffer, sizeof(BlockMsg));
-  msg = new ((void*) msg) BlockMsg(newBlock);
-
-  CkFreeMsg(buffer);
-  delete[] block;
-
-  return msg;
+  this->chunksize = chunksize;
+  this->chunk = chunk;
 }
 
 /** The constructor.
@@ -103,13 +42,16 @@ IntMsg::IntMsg (int i)
  *
  * @param N The matrix size.
  * @param blocksize The submatrix size at the lowest tier.
+ * @param chunksize The size of a Chunk.
  * @param depth The tree depth of the matrix.
  * @param NPadded The padded matrix size.
  */
-MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth, int NPadded)
+MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, size_t chunksize,
+    int depth, int NPadded)
 {
   this->N = N;
   this->blocksize = blocksize;
+  this->chunksize = chunksize;
   this->depth = depth;
   this->NPadded = NPadded;
 }

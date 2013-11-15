@@ -49,22 +49,25 @@ class Node : public CBase_Node
     /** The square of the norm of this matrix block. */
     double norm_2;
 
+    /** The size of the chunk (necessary for message marshalling). */
+    size_t chunksize;
+
     /** The local matrix chunk (if we are at the lowest tier). */
-    Block *block;
+    void *chunk;
 
   public:
 
-    Node (int N, int depth, int blocksize, int tier);
+    Node (int N, int depth, int blocksize, size_t chunksize, int tier);
     Node (CkMigrateMessage *msg);
     ~Node (void);
     void pup (PUP::er &p);
     void init (CkCallback &cb);
     NodeInfoMsg * info (void);
     DenseMatrixMsg * toDense (void);
-    BlockMsg * getBlock (void);
+    ChunkMsg * getChunk (void);
     void set (int blocksize, double *A, CkCallback &cb);
     void setNorm (CProxy_Node nodes, CkCallback &cb);
-    void blockAdd (double alpha, Block A);
+    void chunkAdd (double alpha, size_t chunksize, char *chunk);
     void add (double alpha, double beta, CProxy_Node B, CkCallback &cb);
     void trace (CkCallback &cb);
     void PEMap (CkCallback &cb);

@@ -42,8 +42,11 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The norm product of this element. */
     double norm_product;
 
+    /** The size of the result chunk. */
+    size_t chunksize;
+
     /** The result matrix chunk. */
-    Block *CResult;
+    void *result;
 
 #ifndef PRUNE_CONVOLUTION
     /** A flag indicating whether this MultiplyElement is enabled or not (as a
@@ -57,8 +60,8 @@ class MultiplyElement : public CBase_MultiplyElement
 
   public:
 
-    MultiplyElement (int blocksize, int tier, int depth,
-        CProxy_Node A, CProxy_Node B, CProxy_Node C);
+    MultiplyElement (int blocksize, size_t chunksize, int tier,
+        int depth, CProxy_Node A, CProxy_Node B, CProxy_Node C);
     MultiplyElement (CkMigrateMessage *msg);
     ~MultiplyElement ();
     void pup (PUP::er &p);

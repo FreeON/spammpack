@@ -9,9 +9,11 @@
 #include "config.h"
 
 #include "node.h"
-#include "messages.h"
-#include "logger.h"
+
+#include "chunk.h"
 #include "index.h"
+#include "logger.h"
+#include "messages.h"
 #include "types.h"
 #include "utilities.h"
 
@@ -33,7 +35,7 @@
  * @param blocksize The blocksize.
  * @param tier The tier this node is on.
  */
-Node::Node (int N, int depth, int blocksize, int tier)
+Node::Node (int N, int depth, int blocksize, size_t chunksize, int tier)
 {
   this->N = N;
   this->blocksize = blocksize;
@@ -48,7 +50,8 @@ Node::Node (int N, int depth, int blocksize, int tier)
   this->norm = 0;
   this->norm_2 = 0;
 
-  this->block = NULL;
+  this->chunksize = chunksize;
+  this->chunk = NULL;
 
   /* Calculate the linear index. */
   std::bitset<8*sizeof(int)> iIndex(thisIndex.x);
@@ -72,6 +75,7 @@ Node::Node (int N, int depth, int blocksize, int tier)
 Node::Node (CkMigrateMessage *msg)
 {
   DEBUG("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
+  chunk = NULL;
 }
 
 /** The destructor.
@@ -79,9 +83,10 @@ Node::Node (CkMigrateMessage *msg)
 Node::~Node (void)
 {
   DEBUG(LB"destructor\n"LE);
-  if(block != NULL)
+  if(chunk != NULL)
   {
-    delete block;
+    free(chunk);
+    chunk = NULL;
   }
 }
 
@@ -104,7 +109,17 @@ void Node::pup (PUP::er &p)
   p|index;
   p|norm;
   p|norm_2;
-  p|*block;
+  p|chunksize;
+  bool chunkSet = (chunk != NULL);
+  p|chunkSet;
+  if(chunkSet)
+  {
+    if(p.isUnpacking())
+    {
+      chunk = chunk_alloc(blocksize);
+    }
+    PUParray(p, (char*) chunk, chunksize);
+  }
   DEBUG(LB"pup()\n"LE);
 }
 
@@ -144,23 +159,23 @@ DenseMatrixMsg * Node::toDense (void)
 
   DenseMatrixMsg *msg = new (blocksize*blocksize) DenseMatrixMsg(blocksize, blocksize);
 
-  if(block != NULL)
+  if(chunk != NULL)
   {
-    double *A = block->toDense();
+    double *A = chunk_to_dense(chunk);
     memcpy(msg->A, A, sizeof(double)*blocksize*blocksize);
+    free(A);
   }
 
   return msg;
 }
 
-/** Get the matrix Block.
+/** Get the matrix Chunk.
  *
- * @return The matrix Block.
+ * @return The matrix Chunk.
  */
-BlockMsg * Node::getBlock (void)
+ChunkMsg * Node::getChunk (void)
 {
-  DEBUG(LB"sending BlockMsg with Block at %p\n"LE, block);
-  BlockMsg *msg = new BlockMsg(*block);
+  ChunkMsg *msg = new (chunksize) ChunkMsg(chunksize, (char*) chunk);
   return msg;
 }
 
@@ -175,17 +190,17 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   assert(tier == depth);
   assert(blocksize == this->blocksize);
 
-  if(block == NULL)
+  if(chunk == NULL)
   {
-    block = new Block();
-    DEBUG(LB"creating new Block at %p\n"LE, block);
+    chunk = chunk_alloc(blocksize);
+    DEBUG(LB"creating new Block at %p\n"LE, chunk);
   }
-  block->set(blocksize, A);
-  norm_2 = block->getNorm();
+  chunk_set(chunk, A);
+  norm_2 = chunk_get_norm(chunk);
   norm = sqrt(norm_2);
 
 #ifdef DEBUG_OUTPUT
-  block->print(LB"setting block:"LE);
+  chunk_print(chunk, LB"setting block:"LE);
 #endif
 
   cb.send();
@@ -230,23 +245,23 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
  * @param blocksize The blocksize.
  * @param A The dense matrix.
  */
-void Node::blockAdd (double alpha, Block A)
+void Node::chunkAdd (double alpha, size_t chunksize, char *chunk)
 {
   assert(tier == depth);
   assert(blocksize == this->blocksize);
 
-  if(block == NULL)
+  if(this->chunk == NULL)
   {
-    block = new Block();
-    DEBUG(LB"creating new Block at %p\n"LE, block);
+    this->chunk = chunk_alloc(blocksize);
+    DEBUG(LB"creating new Block at %p\n"LE, this->chunk);
   }
 
-  DEBUG(LB"Adding back to C with Block at %p\n"LE, block);
-  block->add(1, alpha, A);
+  DEBUG(LB"Adding back to C with Block at %p\n"LE, this->chunk);
+  chunk_add(1, this->chunk, alpha, chunk);
 
 #ifdef DEBUG_OUTPUT
   /* For debugging. */
-  block->print(LB"Adding back to C"LE);
+  chunk_print(chunk, LB"Adding back to C"LE);
 #endif
 }
 
@@ -264,14 +279,14 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
   assert(tier == depth);
 
   DEBUG(LB"alpha = %e, beta = %e\n"LE, alpha, beta);
-  BlockMsg *BBlock = B(thisIndex.x, thisIndex.y).getBlock();
+  ChunkMsg *BChunk = B(thisIndex.x, thisIndex.y).getChunk();
 
-  if(block == NULL)
+  if(chunk == NULL)
   {
-    block = new Block();
+    chunk = chunk_alloc(blocksize);
   }
 
-  block->add(alpha, beta, BBlock->block);
+  chunk_add(alpha, chunk, beta, BChunk->chunk);
 
   contribute(cb);
 }
@@ -288,9 +303,9 @@ void Node::trace (CkCallback &cb)
 
   if(iLower == jLower && iUpper == jUpper)
   {
-    if(block != NULL)
+    if(chunk != NULL)
     {
-      trace = block->trace();
+      trace = chunk_trace(chunk);
     }
   }
   DEBUG(LB"trace(%d,%d) = %e\n"LE, thisIndex.x, thisIndex.y, trace);
@@ -327,10 +342,10 @@ void Node::scale (double alpha, CkCallback &cb)
 {
   assert(tier == depth);
 
-  if(block != NULL)
+  if(chunk != NULL)
   {
-    DEBUG(LB"alpha = %e of Block at %p\n"LE, alpha, block);
-    block->scale(alpha);
+    DEBUG(LB"alpha = %e of Block at %p\n"LE, alpha, chunk);
+    chunk_scale(alpha, chunk);
     norm_2 *= alpha*alpha;
     norm = sqrt(norm_2);
   }
@@ -356,13 +371,13 @@ void Node::addIdentity (double alpha, CkCallback &cb)
 
   DEBUG(LB"alpha = %e\n"LE, alpha);
 
-  if(block != NULL)
+  if(chunk != NULL)
   {
     if(iLower == jLower && iUpper == jUpper)
     {
-      block->addIdentity((iUpper <= N ? iUpper-iLower : N-iLower), blocksize, alpha);
+      chunk_add_identity(alpha, chunk);
     }
-    norm_2 = block->getNorm();
+    norm_2 = chunk_get_norm(chunk);
     norm = sqrt(norm_2);
   }
 

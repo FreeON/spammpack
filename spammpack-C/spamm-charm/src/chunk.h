@@ -1,0 +1,46 @@
+/** @file
+ *
+ * The header file for chunk functions.
+ *
+ * @author Nicolas Bock <nicolas.bock@freeon.org>
+ * @author Matt Challacombe <matt.challacombe@freeon.org>
+ */
+
+#ifndef __CHUNK_H
+#define __CHUNK_H
+
+#include <stdlib.h>
+
+void *
+chunk_alloc (const int blocksize);
+
+void
+chunk_set (void *const chunk, const double *const A);
+
+double
+chunk_get_norm (const void *const chunk);
+
+void
+chunk_print (const void *const chunk,
+    const char *const format, ...);
+
+void
+chunk_add (const double alpha, void *const A,
+    const double beta, const void *const B);
+
+void
+chunk_multiply (const void *const A, const void *const B, void *const C);
+
+double
+chunk_trace (const void *const chunk);
+
+void
+chunk_scale (const double alpha, void *const chunk);
+
+void
+chunk_add_identity (const double alpha, void *const chunk);
+
+double *
+chunk_to_dense (const void *const chunk);
+
+#endif

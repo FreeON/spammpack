@@ -30,6 +30,9 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
   this->N = N;
   this->blocksize = blocksize;
 
+  chunksize = sizeof(double)*blocksize*blocksize;
+  DEBUG("calculating chunksize = %llu\n", chunksize);
+
   /* Calculate tree depth. */
   depth = -1;
   for(int i = N/blocksize; i > 0; i >>= 1)
@@ -46,12 +49,13 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
   {
     int NTier = 1 << tier;
 
-    unsigned long bytes = NTier*NTier*(sizeof(Node)
+    size_t bytes = NTier*NTier*(sizeof(Node)
         +blocksize*blocksize*sizeof(double));
     INFO("name = %s, N = %d, blocksize = %d, tier = %d, depth = %d, "
-        "NPadded = %d, NTier = %d, creating %d Nodes using %d bytes (%s)\n",
+        "NPadded = %d, NTier = %d, creating %llu Nodes using %llu bytes (%s)\n",
         this->name, N, blocksize, tier, depth, NPadded,
-        NTier, NTier*NTier, bytes, humanReadableSize(bytes).c_str());
+        NTier, (size_t) NTier*NTier, bytes,
+        humanReadableSize(bytes).c_str());
 
     nodes[tier] = CProxy_Node::ckNew();
     for(int i = 0; i < NTier; i++) {
@@ -103,7 +107,7 @@ void Matrix::init (CkCallback &cb)
  */
 MatrixInfoMsg * Matrix::info (void)
 {
-  return new MatrixInfoMsg (N, blocksize, depth, NPadded);
+  return new MatrixInfoMsg (N, blocksize, chunksize, depth, NPadded);
 }
 
 /** Convert a Matrix to a dense matrix.

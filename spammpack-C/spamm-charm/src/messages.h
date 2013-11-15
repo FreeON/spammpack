@@ -11,7 +11,7 @@
  *
  * The following messages are known:
  *
- * - BlockMsg
+ * - ChunkMsg
  * - DoubleMsg
  * - IntMsg
  * - MatrixInfoMsg
@@ -27,17 +27,18 @@
 #include "messages.decl.h"
 #include "node.h"
 
-/** A custom packed message containing a Block. */
-class BlockMsg : public CMessage_BlockMsg
+/** A custom packed message containing a Chunk. */
+class ChunkMsg : public CMessage_ChunkMsg
 {
   public:
 
-    /** The Block. */
-    Block block;
+    /** The size of the chunk. */
+    size_t chunksize;
 
-    BlockMsg (Block &block);
-    static void * pack (BlockMsg *msg);
-    static BlockMsg * unpack (void *buffer);
+    /** The Chunk. */
+    char *chunk;
+
+    ChunkMsg (size_t chunksize, char *chunk);
 };
 
 /** A simple double value. */
@@ -73,13 +74,16 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
     /** The submatrix size at the lowest tier. */
     int blocksize;
 
+    /** The chunksize. */
+    size_t chunksize;
+
     /** The tree depth of the matrix. */
     int depth;
 
     /** The padded size of the matrix. */
     int NPadded;
 
-    MatrixInfoMsg (int N, int blocksize, int depth, int NPadded);
+    MatrixInfoMsg (int N, int blocksize, size_t chunksize, int depth, int NPadded);
     bool equal (MatrixInfoMsg *b);
 };
 

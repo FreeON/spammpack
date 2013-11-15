@@ -19,8 +19,8 @@ spamm_charm_INTERFACEFILES = \
 spamm_charm_SOURCES = \
 	bcsr.cc \
 	bcsr.h \
-	block.cc \
-	block.h \
+	chunk.c \
+	chunk.h \
 	index.h \
 	lapack_interface.h \
 	logger.cc \

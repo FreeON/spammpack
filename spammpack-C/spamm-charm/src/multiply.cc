@@ -119,9 +119,9 @@ void Multiply::init (int initialPE, bool alignPEs, CkCallback &cb)
           {
             initialPE = i%CkNumPes();
           }
-          convolution[tier](i, j, k).insert(CInfo->blocksize, tier, depth,
-              ANodes->nodes[tier], BNodes->nodes[tier], CNodes->nodes[tier],
-              initialPE);
+          convolution[tier](i, j, k).insert(CInfo->blocksize,
+              CInfo->chunksize, tier, depth, ANodes->nodes[tier],
+              BNodes->nodes[tier], CNodes->nodes[tier], initialPE);
 #ifdef PRUNE_CONVOLUTION
           convolutionMap[tier][BLOCK_INDEX_3(i, j, k, NTier)] = true;
 #endif

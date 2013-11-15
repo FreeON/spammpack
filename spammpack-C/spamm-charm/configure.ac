@@ -23,6 +23,9 @@ AC_SUBST([HAVE_DOT], [${have_dot}])
 # The doxygen configuration file is generated.
 AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
 
+# Find a C compiler.
+AC_PROG_CC
+
 # Find a python interpreter.
 AM_PATH_PYTHON([2.7], [], [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "${PYTHON}" != ":"])

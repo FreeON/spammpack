@@ -9,10 +9,12 @@
 #include "config.h"
 
 #include "multiplyelement.h"
-#include "lapack_interface.h"
-#include "messages.h"
-#include "logger.h"
+
+#include "chunk.h"
 #include "index.h"
+#include "lapack_interface.h"
+#include "logger.h"
+#include "messages.h"
 #include "types.h"
 #include "utilities.h"
 
@@ -30,14 +32,15 @@
 /** The constructor.
  *
  * @param blocksize The blocksize.
+ * @param chunksize The size of a matrix chunk.
  * @param tier The tier.
  * @param depth The depth of the matrix.
  * @param A The Nodes of this tier in A.
  * @param B The Nodes of this tier in B.
  * @param C The Nodes of this tier in C.
  */
-MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
-    CProxy_Node A, CProxy_Node B, CProxy_Node C)
+MultiplyElement::MultiplyElement (int blocksize, size_t chunksize, int tier,
+    int depth, CProxy_Node A, CProxy_Node B, CProxy_Node C)
 {
   DEBUG(LB"constructor\n"LE);
 
@@ -63,7 +66,8 @@ MultiplyElement::MultiplyElement (int blocksize, int tier, int depth,
   }
   index = tempIndex.to_ulong();
 
-  CResult = NULL;
+  this->chunksize = chunksize;
+  result = NULL;
 
 #ifndef PRUNE_CONVOLUTION
   isEnabled = true;
@@ -78,6 +82,7 @@ MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 {
   DEBUG("ME(%d,%d,%d) migration constructor\n", thisIndex.x, thisIndex.y,
       thisIndex.z);
+  result = NULL;
 }
 
 /** The destructor.
@@ -85,9 +90,10 @@ MultiplyElement::MultiplyElement (CkMigrateMessage *msg)
 MultiplyElement::~MultiplyElement ()
 {
   DEBUG(LB"destructor\n"LE);
-  if(CResult != NULL)
+  if(result != NULL)
   {
-    delete[] CResult;
+    free(result);
+    result = NULL;
   }
 }
 
@@ -111,7 +117,17 @@ void MultiplyElement::pup (PUP::er &p)
   p|isEnabled;
 #endif
   p|nextConvolution;
-  p|*CResult;
+  p|chunksize;
+  bool resultSet = (result != NULL);
+  p|resultSet;
+  if(resultSet)
+  {
+    if(p.isUnpacking())
+    {
+      result = chunk_alloc(blocksize);
+    }
+    PUParray(p, (char*) result, chunksize);
+  }
   DEBUG(LB"pup()\n"LE);
 }
 
@@ -154,37 +170,37 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
     if(norm_product > tolerance)
     {
-      if(CResult != NULL)
+      if(result != NULL)
       {
-        ABORT(LB"CResult is not NULL\n"LE);
+        ABORT(LB"result is not NULL\n"LE);
       }
 
-      DEBUG(LB"creating CResult Block\n"LE);
-      CResult = new Block();
+      DEBUG(LB"creating result chunk\n"LE);
+      result = chunk_alloc(blocksize);
 
       /* Calculate C_{ij} = A_{ik} B_{kj}. */
       DEBUG(LB"requesting BlockMsg from A and B\n"LE);
-      BlockMsg *ABlock = A(thisIndex.x, thisIndex.z).getBlock();
-      BlockMsg *BBlock = B(thisIndex.z, thisIndex.y).getBlock();
+      ChunkMsg *AChunk = A(thisIndex.x, thisIndex.z).getChunk();
+      ChunkMsg *BChunk = B(thisIndex.z, thisIndex.y).getChunk();
 
 #ifdef DEBUG_OUTPUT
-      ABlock->block.print("tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
+      chunk_print(AChunk->chunk, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.x, thisIndex.z);
-      BBlock->block.print("tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
+      chunk_print(BChunk->chunk, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
 #endif
 
-      DEBUG(LB"calling multiply on CResult\n"LE);
-      CResult->multiply(ABlock->block, BBlock->block);
+      DEBUG(LB"calling multiply on result\n"LE);
+      chunk_multiply(AChunk->chunk, BChunk->chunk, result);
 
 #ifdef DEBUG_OUTPUT
       /** For debugging. */
-      CResult->print(LB"result:"LE);
+      chunk_print(result, LB"result:"LE);
 #endif
 
       DEBUG(LB"deleting BlockMsg from A and B\n"LE);
-      delete ABlock;
-      delete BBlock;
+      delete AChunk;
+      delete BChunk;
     }
 
 #ifndef PRUNE_CONVOLUTION
@@ -388,15 +404,15 @@ void MultiplyElement::storeBack (double alpha, CkCallback &cb)
   {
     DEBUG(LB"storing in C\n"LE);
 
-    if(CResult != NULL)
+    if(result != NULL)
     {
-      DEBUG(LB"calling blockAdd with Block at %p\n"LE, CResult);
-      C(thisIndex.x, thisIndex.y).blockAdd(alpha, *CResult);
+      DEBUG(LB"calling blockAdd with Block at %p\n"LE, result);
+      C(thisIndex.x, thisIndex.y).chunkAdd(alpha, chunksize, (char*) result);
 
       /* Reset result for possible next iteration. */
       DEBUG(LB"deleting CResult for next iteration\n"LE);
-      delete CResult;
-      CResult = NULL;
+      free(result);
+      result = NULL;
     }
   }
 

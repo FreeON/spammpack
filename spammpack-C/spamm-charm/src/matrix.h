@@ -28,6 +28,9 @@ class Matrix : public CBase_Matrix
     /** The submatrix size at the lowest tier. */
     int blocksize;
 
+    /** The size of a chunk. */
+    size_t chunksize;
+
     /** The tree depth of the matrix. */
     int depth;
 
