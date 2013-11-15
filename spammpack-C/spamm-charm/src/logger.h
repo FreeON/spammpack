@@ -24,13 +24,13 @@ void logger (const char *const filename,
 
 /** A convenience macro for debugging messages. */
 #ifdef DEBUG_OUTPUT
-#define DEBUG(format, ...) logger(__FILE__, __LINE__, __func__, "", format, ##__VA_ARGS__)
+#define DEBUG(format, ...) logger(__FILE__, __LINE__, __func__, "DEBUG", format, ##__VA_ARGS__)
 #else
 #define DEBUG(format, ...)
 #endif
 
 /** A convenience macro for info messages. */
-#define INFO(format, ...) logger(__FILE__, __LINE__, __func__, "INFO", format, ##__VA_ARGS__)
+#define INFO(format, ...) logger(__FILE__, __LINE__, __func__, "", format, ##__VA_ARGS__)
 
 /** A convenience macro for aborting messages. This macro will also terminate
  * the program. */
