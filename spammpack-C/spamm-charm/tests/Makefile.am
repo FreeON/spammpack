@@ -4,6 +4,7 @@ endif
 
 TESTS = \
 	$(python_tests) \
+	spamm_test_SP2_full.sh \
 	spamm_test_add_full.sh \
 	spamm_test_add_decay.sh \
 	spamm_test_add_diagonal.sh \

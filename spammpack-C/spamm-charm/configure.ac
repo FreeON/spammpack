@@ -194,6 +194,14 @@ END_OF_SCRIPT
 chmod 755 tests/test_sp2.sh
 ])
 
+AC_CONFIG_COMMANDS([tests/spamm_test_SP2_full.sh],
+[cat > tests/spamm_test_SP2_full.sh << END_OF_SCRIPT
+#!/bin/bash
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation SP2 -N 21 --Ne 3 --block 5 --type full --iterations 40 --load-balance --verify || exit 1
+END_OF_SCRIPT
+chmod 755 tests/spamm_test_SP2_full.sh
+])
+
 AC_CONFIG_COMMANDS([tests/spamm_test_add_full.sh],
 [cat > tests/spamm_test_add_full.sh << END_OF_SCRIPT
 #!/bin/bash
