@@ -189,14 +189,14 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       chunksize = chunk_sizeof(blocksize);
 
       /* Calculate C_{ij} = A_{ik} B_{kj}. */
-      DEBUG(LB"requesting BlockMsg from A and B\n"LE);
+      DEBUG(LB"requesting ChunkMsg from A and B\n"LE);
       ChunkMsg *AChunk = A(thisIndex.x, thisIndex.z).getChunk();
       ChunkMsg *BChunk = B(thisIndex.z, thisIndex.y).getChunk();
 
 #ifdef DEBUG_OUTPUT
-      chunk_print(AChunk->chunk, "tier %d ME(%d,%d,%d) ABlock(%d,%d):", tier,
+      chunk_print(AChunk->chunk, "tier %d ME(%d,%d,%d) AChunk(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.x, thisIndex.z);
-      chunk_print(BChunk->chunk, "tier %d ME(%d,%d,%d) BBlock(%d,%d):", tier,
+      chunk_print(BChunk->chunk, "tier %d ME(%d,%d,%d) BChunk(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.z, thisIndex.y);
 #endif
 
@@ -208,7 +208,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       chunk_print(CResult, LB"result:"LE);
 #endif
 
-      DEBUG(LB"deleting BlockMsg from A and B\n"LE);
+      DEBUG(LB"deleting ChunkMsg from A and B\n"LE);
       delete AChunk;
       delete BChunk;
     }
@@ -416,7 +416,7 @@ void MultiplyElement::storeBack (double alpha, CkCallback &cb)
 
     if(CResult != NULL)
     {
-      DEBUG(LB"calling blockAdd with Block at %p\n"LE, CResult);
+      DEBUG(LB"calling blockAdd with Chunk at %p\n"LE, CResult);
       C(thisIndex.x, thisIndex.y).chunkAdd(alpha, chunksize, (char*) CResult);
 
       /* Reset result for possible next iteration. */

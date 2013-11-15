@@ -195,7 +195,7 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
   {
     chunk = chunk_alloc(blocksize, N, iLower, jLower);
     chunksize = chunk_sizeof(blocksize);
-    DEBUG(LB"creating new Block at %p, chunksize = %llu\n"LE, chunk, chunksize);
+    DEBUG(LB"creating new Chunk at %p, chunksize = %llu\n"LE, chunk, chunksize);
   }
   chunk_set(chunk, A);
   norm_2 = chunk_get_norm(chunk);
@@ -255,10 +255,10 @@ void Node::chunkAdd (double alpha, size_t chunksize, char *chunk)
   if(this->chunk == NULL)
   {
     this->chunk = chunk_alloc(blocksize, N, iLower, jLower);
-    DEBUG(LB"creating new Block at %p\n"LE, this->chunk);
+    DEBUG(LB"creating new Chunk at %p\n"LE, this->chunk);
   }
 
-  DEBUG(LB"Adding back to C with Block at %p\n"LE, this->chunk);
+  DEBUG(LB"Adding back to C with Chunk at %p\n"LE, this->chunk);
   chunk_add(1, this->chunk, alpha, chunk);
 
 #ifdef DEBUG_OUTPUT
@@ -346,7 +346,7 @@ void Node::scale (double alpha, CkCallback &cb)
 
   if(chunk != NULL)
   {
-    DEBUG(LB"alpha = %e of Block at %p\n"LE, alpha, chunk);
+    DEBUG(LB"alpha = %e of Chunk at %p\n"LE, alpha, chunk);
     chunk_scale(alpha, chunk);
     norm_2 *= alpha*alpha;
     norm = sqrt(norm_2);

@@ -17,7 +17,7 @@
 ChunkMsg::ChunkMsg (size_t chunksize, char *chunk)
 {
   this->chunksize = chunksize;
-  this->chunk = chunk;
+  memcpy(this->chunk, chunk, chunksize);
 }
 
 /** The constructor.
