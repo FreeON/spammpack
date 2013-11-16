@@ -85,6 +85,7 @@ Node::~Node (void)
   DEBUG(LB"destructor\n"LE);
   if(chunk != NULL)
   {
+    DEBUG("free'ing chunk at %p\n", chunk);
     free(chunk);
     chunk = NULL;
   }
@@ -176,7 +177,18 @@ DenseMatrixMsg * Node::toDense (void)
  */
 ChunkMsg * Node::getChunk (void)
 {
-  ChunkMsg *msg = new (chunksize) ChunkMsg(chunksize, (char*) chunk);
+  DEBUG(LB"chunk at %p, chunksize = %d\n"LE, chunk, chunksize);
+  ChunkMsg *msg;
+  if(chunk == NULL)
+  {
+    msg = new (0) ChunkMsg(chunksize, (char*) chunk);
+  }
+
+  else
+  {
+    msg = new (chunksize) ChunkMsg(chunksize, (char*) chunk);
+  }
+
   return msg;
 }
 
@@ -251,14 +263,16 @@ void Node::chunkAdd (double alpha, size_t chunksize, char *chunk)
 {
   assert(tier == depth);
   assert(blocksize == this->blocksize);
+  assert(chunksize == chunk_sizeof(blocksize));
 
   if(this->chunk == NULL)
   {
     this->chunk = chunk_alloc(blocksize, N, iLower, jLower);
+    this->chunksize = chunksize;
     DEBUG(LB"creating new Chunk at %p\n"LE, this->chunk);
   }
 
-  DEBUG(LB"Adding back to C with Chunk at %p\n"LE, this->chunk);
+  DEBUG(LB"Adding back to C with Chunk at %p and alpha = %e\n"LE, this->chunk, alpha);
   chunk_add(1, this->chunk, alpha, chunk);
 
 #ifdef DEBUG_OUTPUT
@@ -280,15 +294,26 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
 {
   assert(tier == depth);
 
-  DEBUG(LB"alpha = %e, beta = %e\n"LE, alpha, beta);
+  DEBUG(LB"alpha = %e, beta = %e, chunk at %p\n"LE, alpha, beta, chunk);
   ChunkMsg *BChunk = B(thisIndex.x, thisIndex.y).getChunk();
 
   if(chunk == NULL)
   {
+    DEBUG(LB"allocating new chunk\n"LE);
     chunk = chunk_alloc(blocksize, N, iLower, jLower);
   }
 
-  chunk_add(alpha, chunk, beta, BChunk->chunk);
+  if(BChunk->chunksize != 0)
+  {
+    chunk_add(alpha, chunk, beta, BChunk->chunk);
+  }
+
+  else
+  {
+    chunk_scale(alpha, chunk);
+  }
+
+  delete BChunk;
 
   contribute(cb);
 }

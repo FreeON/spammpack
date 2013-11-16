@@ -9,6 +9,8 @@
 #include "messages.h"
 #include "logger.h"
 
+#include <assert.h>
+
 /** The constructor.
  *
  * @param chunksize The size of the chunk.
@@ -17,7 +19,11 @@
 ChunkMsg::ChunkMsg (size_t chunksize, char *chunk)
 {
   this->chunksize = chunksize;
-  memcpy(this->chunk, chunk, chunksize);
+  if(chunk != NULL)
+  {
+    DEBUG("copying chunk at %p into chunk at %p\n", chunk, this->chunk);
+    memcpy(this->chunk, chunk, chunksize);
+  }
 }
 
 /** The constructor.

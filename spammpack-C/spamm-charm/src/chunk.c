@@ -23,6 +23,8 @@
 #define DEBUG(message, ...) /* stripped DEBUG statement. */
 #endif
 
+#define INFO(message, ...) printf("[%s:%d (%s)] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+
 /** The data layout of a chunk. */
 struct chunk_t
 {
@@ -70,8 +72,8 @@ chunk_alloc (const int blocksize,
   memset(chunk, 0, chunk_sizeof(blocksize));
 
   struct chunk_t *chunk_ptr = (struct chunk_t*) chunk;
-  chunk_ptr->blocksize = blocksize;
 
+  chunk_ptr->blocksize = blocksize;
   chunk_ptr->N = N;
   chunk_ptr->i_lower = i_lower;
   chunk_ptr->j_lower = j_lower;
@@ -93,7 +95,9 @@ void chunk_set (void *const chunk, const double *const A)
   struct chunk_t *chunk_ptr = (struct chunk_t*) chunk;
   memcpy(chunk_ptr->block, A, sizeof(double)*chunk_ptr->blocksize*chunk_ptr->blocksize);
   DEBUG("set chunk at %p, blocksize = %d\n", chunk, chunk_ptr->blocksize);
+#ifdef DEBUG_OUTPUT
   chunk_print(chunk, "chunk");
+#endif
 }
 
 /** Get the matrix norm of a chunk.
@@ -157,6 +161,8 @@ chunk_add (const double alpha, void *const A,
   struct chunk_t *c_A = (struct chunk_t*) A;
   struct chunk_t *c_B = (struct chunk_t*) B;
 
+  DEBUG("A at %p, blocksize = %d, B at %p, blocksize = %d\n", A, c_A->blocksize, B, c_B->blocksize);
+
   assert(c_A->blocksize == c_B->blocksize);
 
   DEBUG("adding two chunks, alpha = %e, beta = %e\n", alpha, beta);
@@ -185,7 +191,8 @@ chunk_multiply (const void *const A, const void *const B, void *const C)
   assert(c_A->blocksize == c_B->blocksize);
   assert(c_A->blocksize == c_C->blocksize);
 
-  DEBUG("multiplying chunks, blocksize = %d\n", c_A->blocksize);
+  DEBUG("multiplying chunks A(%p) B(%p) C(%p), blocksize = %d\n", A, B, C,
+      c_A->blocksize);
 
   for(int i = 0; i < c_A->blocksize; i++) {
     for(int j = 0; j < c_A->blocksize; j++) {

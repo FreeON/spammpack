@@ -311,6 +311,7 @@ DoubleMsg * Matrix::getTrace (void)
  */
 void Matrix::add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb)
 {
+  DEBUG("adding, alpha = %e, beta = %e\n", alpha, beta);
   MatrixNodeMsg *BNodes = B.getNodes();
   nodes[depth].add(alpha, beta, BNodes->nodes[depth], CkCallbackResumeThread());
   thisProxy.setNorm(CkCallbackResumeThread());
@@ -327,7 +328,9 @@ void Matrix::add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb)
  */
 void Matrix::setEqual (CProxy_Matrix B, CkCallback &cb)
 {
+  DEBUG("calling add\n");
   thisProxy.add(0.0, 1.0, B, CkCallbackResumeThread());
+  DEBUG("calling setNorm\n");
   thisProxy.setNorm(CkCallbackResumeThread());
   cb.send();
 }
