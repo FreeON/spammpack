@@ -22,10 +22,11 @@
 __BEGIN_DECLARATIONS
 
 size_t
-chunk_sizeof (const int blocksize);
+chunk_sizeof (const int N_chunk, const int N_basic);
 
 void *
-chunk_alloc (const int blocksize,
+chunk_alloc (const int N_chunk,
+    const int N_basic,
     const int N,
     const unsigned int i_lower,
     const unsigned int j_lower);

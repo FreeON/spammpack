@@ -74,13 +74,16 @@ class MatrixInfoMsg : public CMessage_MatrixInfoMsg
     /** The submatrix size at the lowest tier. */
     int blocksize;
 
+    /** The size of the basic submatrices. */
+    int N_basic;
+
     /** The tree depth of the matrix. */
     int depth;
 
     /** The padded size of the matrix. */
     int NPadded;
 
-    MatrixInfoMsg (int N, int blocksize, int depth, int NPadded);
+    MatrixInfoMsg (int N, int blocksize, int N_basic, int depth, int NPadded);
     bool equal (MatrixInfoMsg *b);
 };
 

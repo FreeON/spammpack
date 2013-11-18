@@ -35,10 +35,11 @@
  * @param blocksize The blocksize.
  * @param tier The tier this node is on.
  */
-Node::Node (int N, int depth, int blocksize, int tier)
+Node::Node (int N, int depth, int blocksize, int N_basic, int tier)
 {
   this->N = N;
   this->blocksize = blocksize;
+  this->N_basic = N_basic;
   this->depth = depth;
   this->tier = tier;
 
@@ -101,6 +102,7 @@ void Node::pup (PUP::er &p)
 
   p|N;
   p|blocksize;
+  p|N_basic;
   p|depth;
   p|tier;
   p|iLower;
@@ -117,8 +119,8 @@ void Node::pup (PUP::er &p)
   {
     if(p.isUnpacking())
     {
-      chunk = malloc(chunk_sizeof(blocksize));
-      assert(chunksize == chunk_sizeof(blocksize));
+      chunk = malloc(chunk_sizeof(blocksize, N_basic));
+      assert(chunksize == chunk_sizeof(blocksize, N_basic));
     }
     PUParray(p, (char*) chunk, chunksize);
   }
@@ -205,8 +207,8 @@ void Node::set (int blocksize, double *A, CkCallback &cb)
 
   if(chunk == NULL)
   {
-    chunk = chunk_alloc(blocksize, N, iLower, jLower);
-    chunksize = chunk_sizeof(blocksize);
+    chunk = chunk_alloc(blocksize, N_basic, N, iLower, jLower);
+    chunksize = chunk_sizeof(blocksize, N_basic);
     DEBUG(LB"creating new Chunk at %p, chunksize = %llu\n"LE, chunk, chunksize);
   }
   chunk_set(chunk, A);
@@ -263,11 +265,11 @@ void Node::chunkAdd (double alpha, size_t chunksize, char *chunk)
 {
   assert(tier == depth);
   assert(blocksize == this->blocksize);
-  assert(chunksize == chunk_sizeof(blocksize));
+  assert(chunksize == chunk_sizeof(blocksize, N_basic));
 
   if(this->chunk == NULL)
   {
-    this->chunk = chunk_alloc(blocksize, N, iLower, jLower);
+    this->chunk = chunk_alloc(blocksize, N_basic, N, iLower, jLower);
     this->chunksize = chunksize;
     DEBUG(LB"creating new Chunk at %p\n"LE, this->chunk);
   }
@@ -300,7 +302,7 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
   if(chunk == NULL)
   {
     DEBUG(LB"allocating new chunk\n"LE);
-    chunk = chunk_alloc(blocksize, N, iLower, jLower);
+    chunk = chunk_alloc(blocksize, N_basic, N, iLower, jLower);
   }
 
   if(BChunk->chunksize != 0)

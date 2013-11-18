@@ -39,12 +39,13 @@
  * @param B The Nodes of this tier in B.
  * @param C The Nodes of this tier in C.
  */
-MultiplyElement::MultiplyElement (int N, int blocksize, int tier,
-    int depth, CProxy_Node A, CProxy_Node B, CProxy_Node C)
+MultiplyElement::MultiplyElement (int N, int blocksize, int N_basic,
+    int tier, int depth, CProxy_Node A, CProxy_Node B, CProxy_Node C)
 {
   DEBUG(LB"constructor\n"LE);
 
   this->blocksize = blocksize;
+  this->N_basic = N_basic;
   this->tier = tier;
   this->depth = depth;
   this->A = A;
@@ -113,6 +114,7 @@ void MultiplyElement::pup (PUP::er &p)
 
   p|index;
   p|blocksize;
+  p|N_basic;
   p|depth;
   p|tier;
   p|A;
@@ -133,8 +135,8 @@ void MultiplyElement::pup (PUP::er &p)
   {
     if(p.isUnpacking())
     {
-      CResult = malloc(chunk_sizeof(blocksize));
-      assert(chunksize == chunk_sizeof(blocksize));
+      CResult = malloc(chunk_sizeof(blocksize, N_basic));
+      assert(chunksize == chunk_sizeof(blocksize, N_basic));
     }
     PUParray(p, (char*) CResult, chunksize);
   }
@@ -186,8 +188,8 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       }
 
       DEBUG(LB"creating result chunk, N = %d\n"LE, N);
-      CResult = chunk_alloc(blocksize, N, iLower, jLower);
-      chunksize = chunk_sizeof(blocksize);
+      CResult = chunk_alloc(blocksize, N_basic, N, iLower, jLower);
+      chunksize = chunk_sizeof(blocksize, N_basic);
 
       /* Calculate C_{ij} = A_{ik} B_{kj}. */
       DEBUG(LB"requesting ChunkMsg from A and B\n"LE);

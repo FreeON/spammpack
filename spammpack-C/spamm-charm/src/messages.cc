@@ -51,10 +51,11 @@ IntMsg::IntMsg (int i)
  * @param depth The tree depth of the matrix.
  * @param NPadded The padded matrix size.
  */
-MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int depth, int NPadded)
+MatrixInfoMsg::MatrixInfoMsg (int N, int blocksize, int N_basic, int depth, int NPadded)
 {
   this->N = N;
   this->blocksize = blocksize;
+  this->N_basic = N_basic;
   this->depth = depth;
   this->NPadded = NPadded;
 }

@@ -76,6 +76,7 @@ void initialize (void)
  * - { -h | --help }              This help
  * - { -N | --N } N               Create NxN matrix (default: 1)
  * - { -b | --block } B           Create BxB dense blocks at leaf nodes (default: 1)
+ * - { -s | --basic } S           The basic blocksize (default: 1)
  * - { -i | --iterations } N      Iterate on the product N times (default:  1)
  * - { -t | --tolerance } T       Multiply with tolerance T (default: 0.00e+00)
  * - { -m | --type } TYPE         Use matrices of TYPE { full, decay, diagonal } (default: full)
@@ -95,6 +96,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
 {
   int N = 1;
   int blocksize = 1;
+  int N_basic = 1;
   int numberIterations = 0;
   double tolerance = 0.0;
   enum matrix_t matrixType = full;
@@ -111,11 +113,12 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
   char *densityFilename = NULL;
 
   int c;
-  const char *short_options = "hN:b:i:t:m:P:T:vd:I:lap:o:";
+  const char *short_options = "hN:b:s:i:t:m:P:T:vd:I:lap:o:";
   const struct option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
     { "block",        required_argument,  NULL, 'b' },
+    { "basic",        required_argument,  NULL, 's' },
     { "iterations",   required_argument,  NULL, 'i' },
     { "tolerance",    required_argument,  NULL, 't' },
     { "type",         required_argument,  NULL, 'm' },
@@ -144,6 +147,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         CkPrintf("{ -N | --N } N                Create NxN matrix (default: %d)\n", N);
         CkPrintf("{ -b | --block } B            Create BxB dense blocks at leaf "
             "nodes (default: %d)\n", blocksize);
+        CkPrintf("{ -s | --basic } S            Create SxS basic blocks (default: %d)\n", N_basic);
         CkPrintf("{ -i | --iterations } N       Iterate on the product N times (default: "
             " %d)\n", numberIterations);
         CkPrintf("{ -t | --tolerance } T        Multiply with tolerance T (default: %1.2e)\n",
@@ -169,6 +173,10 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
 
       case 'b':
         blocksize = strtol(optarg, NULL, 10);
+        break;
+
+      case 's':
+        N_basic = strtol(optarg, NULL, 10);
         break;
 
       case 'i':
@@ -299,8 +307,9 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
 
         DEBUG("calling runSP2() on this proxy\n");
         thisProxy.runSP2(strlen(densityFilename), densityFilename, Ne, N,
-            blocksize, numberIterations, tolerance, loadBalance, initialPE,
-            alignPEs, printPEMap, strlen(filenamePEMap), filenamePEMap);
+            blocksize, N_basic, numberIterations, tolerance, loadBalance,
+            initialPE, alignPEs, printPEMap, strlen(filenamePEMap),
+            filenamePEMap);
       }
       break;
 
@@ -312,9 +321,9 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
       }
 
       DEBUG("calling run() on this proxy\n");
-      thisProxy.run(N, blocksize, numberIterations, tolerance, matrixType,
-          decayConstant, operation, verify, verifyTolerance, loadBalance,
-          initialPE, alignPEs, printPEMap);
+      thisProxy.run(N, blocksize, N_basic, numberIterations, tolerance,
+          matrixType, decayConstant, operation, verify, verifyTolerance,
+          loadBalance, initialPE, alignPEs, printPEMap);
       break;
   }
 }
@@ -323,6 +332,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
  *
  * @param N The size of the matrix.
  * @param blocksize The blocksize of the matrix.
+ * @param N_basic The size of the basic sub-matrices.
  * @param numberIterations Total number of iterations for multiply.
  * @param tolerance The SpAMM tolerance.
  * @param matrixType The matrix type.
@@ -337,18 +347,18 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
  * @param alignPEs Align PEs in the diagonal matrix case.
  * @param printPEMap Whether to print a PE map in each iteration.
  */
-void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolerance,
-    int matrixType, double decayConstant, int operation, bool verify,
-    double verifyTolerance, bool loadBalance, int initialPE, bool alignPEs,
-    bool printPEMap)
+void SpAMM_Charm::run (int N, int blocksize, int N_basic,
+    int numberIterations, double tolerance, int matrixType,
+    double decayConstant, int operation, bool verify, double verifyTolerance,
+    bool loadBalance, int initialPE, bool alignPEs, bool printPEMap)
 {
   double alpha = 0.8;
   double beta = 1.12;
 
   LBDatabase *db = LBDatabaseObj();
 
-  CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, strlen("A"), "A");
-  CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, strlen("C"), "C");
+  CProxy_Matrix A = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, N_basic, strlen("A"), "A");
+  CProxy_Matrix C = CProxy_Matrix::ckNew(initialPE, alignPEs, N, blocksize, N_basic, strlen("C"), "C");
 
   /* Initialize the matrices. */
   double *ADense = new double[N*N];
@@ -734,6 +744,7 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
  * @param Ne The total number of electrons.
  * @param N The matrix size in case the filename is empty.
  * @param blocksize The blocksize of the matrix.
+ * @param N_basic The size of the basic sub-matrices.
  * @param maxIterations The maximum number of iterations.
  * @param tolerance The SpAMM tolerance.
  * @param loadBalance Whether to load balance.
@@ -744,9 +755,9 @@ void SpAMM_Charm::run (int N, int blocksize, int numberIterations, double tolera
  * @param filenamePEMap The base name of the PEMap files.
  */
 void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int N,
-    int blocksize, int maxIterations, double tolerance, bool loadBalance,
-    int initialPE, bool alignPEs, bool printPEMap, int lengthPEMap,
-    char *filenamePEMap)
+    int blocksize, int N_basic, int maxIterations, double tolerance,
+    bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
+    int lengthPEMap, char *filenamePEMap)
 {
   double *PDense;
   int NRows, NColumns;
@@ -786,7 +797,7 @@ void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int N,
 #endif
 
   CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
-      blocksize, strlen("P"), (char*) "P");
+      blocksize, N_basic, strlen("P"), (char*) "P");
 
   P.set(NRows, PDense, CkCallbackResumeThread());
   //P.init(CkCallbackResumeThread());
@@ -810,7 +821,7 @@ void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int N,
 #endif
 
   CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
-      blocksize, strlen("P2"), (char*) "P2");
+      blocksize, N_basic, strlen("P2"), (char*) "P2");
   //P2.init(CkCallbackResumeThread());
 
   MatrixInfoMsg *PInfo = P.info();

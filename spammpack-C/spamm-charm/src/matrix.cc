@@ -24,11 +24,12 @@
  * @param name The matrix name.
  */
 Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
-    int nameLength, char *name)
+    int N_basic, int nameLength, char *name)
 {
   this->name = strdup(name);
   this->N = N;
   this->blocksize = blocksize;
+  this->N_basic = N_basic;
 
   /* Calculate tree depth. */
   depth = -1;
@@ -106,7 +107,7 @@ void Matrix::init (CkCallback &cb)
  */
 MatrixInfoMsg * Matrix::info (void)
 {
-  return new MatrixInfoMsg (N, blocksize, depth, NPadded);
+  return new MatrixInfoMsg (N, blocksize, N_basic, depth, NPadded);
 }
 
 /** Convert a Matrix to a dense matrix.

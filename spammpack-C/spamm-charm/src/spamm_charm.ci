@@ -7,14 +7,15 @@ mainmodule spamm_charm
   mainchare SpAMM_Charm
   {
     entry SpAMM_Charm (CkArgMsg *msg);
-    entry [threaded] void run (int N, int blocksize, int numberIterations,
-        double tolerance, int matrixType, double decayConstant, int operation,
-        bool verify, double verifyTolerance, bool loadBalance, int initialPE,
+    entry [threaded] void run (int N, int blocksize, int N_basic,
+        int numberIterations, double tolerance, int matrixType,
+        double decayConstant, int operation, bool verify,
+        double verifyTolerance, bool loadBalance, int initialPE,
         bool alignPEs, bool printPEMap);
     entry [threaded] void runSP2 (int lengthFilename,
         char filename[lengthFilename+1], int Ne, int N, int blocksize,
-        int maxIterations, double tolerance, bool loadBalance, int initialPE,
-        bool alignPEs, bool printPEMap, int lengthPEMap, char
-        filenamePEMap[lengthPEMap+1]);
+        int N_basic, int maxIterations, double tolerance, bool loadBalance,
+        int initialPE, bool alignPEs, bool printPEMap, int lengthPEMap,
+        char filenamePEMap[lengthPEMap+1]);
   };
 };

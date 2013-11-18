@@ -28,6 +28,9 @@ class Matrix : public CBase_Matrix
     /** The submatrix size at the lowest tier. */
     int blocksize;
 
+    /** The size of the basic submatrices. */
+    int N_basic;
+
     /** The tree depth of the matrix. */
     int depth;
 
@@ -52,7 +55,7 @@ class Matrix : public CBase_Matrix
 
   public:
 
-    Matrix (int initialPE, bool alignPEs, int N, int blocksize,
+    Matrix (int initialPE, bool alignPEs, int N, int blocksize, int N_basic,
         int nameLength, char *name);
     ~Matrix (void);
     void init (CkCallback &cb);

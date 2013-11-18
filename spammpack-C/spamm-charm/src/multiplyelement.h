@@ -24,6 +24,9 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The submatrix size at the lowest tier. */
     int blocksize;
 
+    /** The size of the basic submatrices. */
+    int N_basic;
+
     /** The tree depth of the matrix. */
     int depth;
 
@@ -69,7 +72,7 @@ class MultiplyElement : public CBase_MultiplyElement
 
   public:
 
-    MultiplyElement (int N, int blocksize, int tier, int depth,
+    MultiplyElement (int N, int blocksize, int N_basic, int tier, int depth,
         CProxy_Node A, CProxy_Node B, CProxy_Node C);
     MultiplyElement (CkMigrateMessage *msg);
     ~MultiplyElement ();

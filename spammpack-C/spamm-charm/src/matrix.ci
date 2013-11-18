@@ -5,7 +5,7 @@ module matrix
   chare Matrix
   {
     entry Matrix (int initialPE, bool alignPEs, int N, int blocksize,
-        int nameLength, char name[nameLength+1]);
+        int N_basic, int nameLength, char name[nameLength+1]);
     entry [threaded] void init (CkCallback &cb);
     entry [sync] MatrixInfoMsg * info (void);
     entry [sync] DenseMatrixMsg * toDense (void);

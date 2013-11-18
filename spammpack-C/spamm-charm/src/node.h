@@ -22,6 +22,9 @@ class Node : public CBase_Node
     /** The submatrix size at the lowest tier. */
     int blocksize;
 
+    /** The size of the basic submatrices. */
+    int N_basic;
+
     /** The tree depth of the matrix. */
     int depth;
 
@@ -57,7 +60,7 @@ class Node : public CBase_Node
 
   public:
 
-    Node (int N, int depth, int blocksize, int tier);
+    Node (int N, int depth, int blocksize, int N_basic, int tier);
     Node (CkMigrateMessage *msg);
     ~Node (void);
     void pup (PUP::er &p);

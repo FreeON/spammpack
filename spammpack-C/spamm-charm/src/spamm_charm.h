@@ -17,13 +17,14 @@ class SpAMM_Charm : public CBase_SpAMM_Charm
   public:
 
     SpAMM_Charm (CkArgMsg *msg);
-    void run (int N, int blocksize, int numberIterations, double tolerance,
-        int matrixType, double decayConstant, int operation, bool verify,
-        double verifyTolerance, bool loadBalance, int initialPE,
+    void run (int N, int blocksize, int N_basic, int numberIterations,
+        double tolerance, int matrixType, double decayConstant, int operation,
+        bool verify, double verifyTolerance, bool loadBalance, int initialPE,
         bool alignPEs, bool printPEMap);
-    void runSP2 (int lengthFilename, char *filename, int Ne, int N, int blocksize,
-        int maxIterations, double tolerance, bool loadBalance, int initialPE,
-        bool alignPEs, bool printPEMap, int lengthPEMap, char *filenamePEMap);
+    void runSP2 (int lengthFilename, char *filename, int Ne, int N,
+        int blocksize, int N_basic, int maxIterations, double tolerance,
+        bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
+        int lengthPEMap, char *filenamePEMap);
 };
 
 #endif
