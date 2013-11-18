@@ -6,7 +6,8 @@ additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLA
 
 bin_PROGRAMS = spamm-charm
 
-spamm_charm_LDFLAGS = -language charm++ $(additional_linkerflags)
+spamm_charm_LDFLAGS = -XCClinker "-language charm++ $(additional_linkerflags)"
+spamm_charm_LDADD = libdummychunk.la
 
 spamm_charm_INTERFACEFILES = \
 	matrix.ci \
@@ -19,8 +20,6 @@ spamm_charm_INTERFACEFILES = \
 spamm_charm_SOURCES = \
 	bcsr.cc \
 	bcsr.h \
-	chunk.c \
-	chunk.h \
 	index.h \
 	lapack_interface.h \
 	logger.cc \
@@ -42,6 +41,11 @@ spamm_charm_SOURCES = \
 	types.h \
 	utilities.cc \
 	utilities.h
+
+lib_LTLIBRARIES = libdummychunk.la
+libdummychunk_la_SOURCES = \
+	chunk.c \
+	chunk.h
 
 spamm_charm_CHARMHEADERS = $(foreach i, $(spamm_charm_INTERFACEFILES), $(basename $i).decl.h $(basename $i).def.h)
 
