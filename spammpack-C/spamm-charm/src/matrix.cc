@@ -51,11 +51,10 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
 
     size_t bytes = NTier*NTier*(sizeof(Node)
         +blocksize*blocksize*sizeof(double));
-    INFO("name = %s, N = %d, blocksize = %d, tier = %d, depth = %d, "
+    INFO("name = %s, N = %d, blocksize = %d, N_basic = %d, tier = %d, depth = %d, "
         "NPadded = %d, NTier = %d, creating %llu Nodes using %llu bytes (%s)\n",
-        this->name, N, blocksize, tier, depth, NPadded,
-        NTier, (size_t) NTier*NTier, bytes,
-        humanReadableSize(bytes).c_str());
+        this->name, N, blocksize, N_basic, tier, depth, NPadded, NTier,
+        (size_t) NTier*NTier, bytes, humanReadableSize(bytes).c_str());
 
     nodes[tier] = CProxy_Node::ckNew();
     for(int i = 0; i < NTier; i++) {
@@ -65,7 +64,7 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
         {
           initialPE = i%CkNumPes();
         }
-        nodes[tier](i, j).insert(N, depth, blocksize, tier, initialPE);
+        nodes[tier](i, j).insert(N, depth, blocksize, N_basic, tier, initialPE);
       }
     }
     nodes[tier].doneInserting();
@@ -227,7 +226,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
 #endif
 
       DEBUG("calling set on Node(%d,%d)\n", i, j);
-      nodes[depth](i, j).set(blocksize, block, CkCallbackResumeThread());
+      nodes[depth](i, j).set(blocksize, N_basic, block, CkCallbackResumeThread());
     }
   }
 

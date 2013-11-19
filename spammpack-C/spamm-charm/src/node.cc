@@ -77,6 +77,7 @@ Node::Node (CkMigrateMessage *msg)
 {
   DEBUG("Node(%d,%d) migration constructor\n", thisIndex.x, thisIndex.y);
   chunk = NULL;
+  chunksize = 0;
 }
 
 /** The destructor.
@@ -89,6 +90,7 @@ Node::~Node (void)
     DEBUG("free'ing chunk at %p\n", chunk);
     free(chunk);
     chunk = NULL;
+    chunksize = 0;
   }
 }
 
@@ -197,13 +199,17 @@ ChunkMsg * Node::getChunk (void)
 /** Set a matrix block in this Node.
  *
  * @param blocksize The blocksize.
+ * @param N_basic The basic blocksize.
  * @param A The matrix.
  * @param cb The callback to send to.
  */
-void Node::set (int blocksize, double *A, CkCallback &cb)
+void Node::set (int blocksize, int N_basic, double *A, CkCallback &cb)
 {
   assert(tier == depth);
   assert(blocksize == this->blocksize);
+  assert(N_basic == this->N_basic);
+
+  DEBUG(LB"blocksize = %d, N_basic = %d\n"LE, blocksize, N_basic);
 
   if(chunk == NULL)
   {
@@ -258,13 +264,12 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
  * @f[ A \leftarrow \alpha A @f]
  *
  * @param alpha The factor @f$ \alpha @f$.
- * @param blocksize The blocksize.
+ * @param chunksize The chunksize.
  * @param A The dense matrix.
  */
 void Node::chunkAdd (double alpha, size_t chunksize, char *chunk)
 {
   assert(tier == depth);
-  assert(blocksize == this->blocksize);
   assert(chunksize == chunk_sizeof(blocksize, N_basic));
 
   if(this->chunk == NULL)
@@ -298,6 +303,9 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
 
   DEBUG(LB"alpha = %e, beta = %e, chunk at %p\n"LE, alpha, beta, chunk);
   ChunkMsg *BChunk = B(thisIndex.x, thisIndex.y).getChunk();
+
+  assert(blocksize == BChunk->N_chunk);
+  assert(N_basic == BChunk->N_basic);
 
   if(chunk == NULL)
   {

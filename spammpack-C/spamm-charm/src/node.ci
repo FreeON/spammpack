@@ -8,7 +8,7 @@ module node
     entry [sync] NodeInfoMsg * info (void);
     entry [sync] DenseMatrixMsg * toDense (void);
     entry [sync] ChunkMsg * getChunk (void);
-    entry void set (int blocksize, double A[blocksize*blocksize], CkCallback &cb);
+    entry void set (int blocksize, int N_basic, double A[blocksize*blocksize], CkCallback &cb);
     entry [threaded] void setNorm (CProxy_Node nodes, CkCallback &cb);
     entry void chunkAdd (double alpha, size_t chunksize, char chunk[chunksize]);
     entry [threaded] void add (double alpha, double beta, CProxy_Node B,

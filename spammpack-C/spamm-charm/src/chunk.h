@@ -34,6 +34,12 @@ chunk_alloc (const int N_chunk,
 void
 chunk_set (void *const chunk, const double *const A);
 
+int
+chunk_get_N_chunk (void *const chunk);
+
+int
+chunk_get_N_basic (void *const chunk);
+
 double
 chunk_get_norm (const void *const chunk);
 

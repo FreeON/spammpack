@@ -45,8 +45,8 @@
     ((struct chunk_t*) (ptr))->norm_2 + (intptr_t) ((struct chunk_t*) ptr)->data)
 
 /** Convert the matrix data offset into a pointer. */
-#define MATRIX_POINTER(i, j, ptr) (double*) ((intptr_t) \
-    ((struct chunk_t*) ptr)->A_block[INDEX(i, j, ((struct chunk_t*) ptr)->N_block)] \
+#define MATRIX_POINTER(i, j, ptr) (double*) ((intptr_t) ((struct chunk_t*) ptr)->A_block \
+    + INDEX(i, j, ((struct chunk_t*) ptr)->N_block)*SQUARE(((struct chunk_t*) ptr)->N_basic)*sizeof(double*) \
     + (intptr_t) ((struct chunk_t*) ptr)->data)
 
 /** A simple square. */
@@ -105,9 +105,11 @@ struct chunk_t
 size_t
 chunk_sizeof (const int N_chunk, const int N_basic)
 {
+  int N_block = N_chunk/N_basic;
+
   return sizeof(struct chunk_t)
-    +sizeof(double)*N_basic*N_basic
-    +sizeof(double)*N_chunk*N_chunk;
+    +sizeof(double)*N_block*N_block /* The norms. */
+    +sizeof(double)*N_chunk*N_chunk; /* The matrix elements. */
 }
 
 /** Allocate a chunk.
@@ -127,8 +129,13 @@ chunk_alloc (const int N_chunk,
     const unsigned int i_lower,
     const unsigned int j_lower)
 {
+  DEBUG("allocating new chunk, N_chunk = %d, N_basic = %d, sizeof(chunk) = %lu\n",
+      N_chunk, N_basic, chunk_sizeof(N_chunk, N_basic));
+
   void *chunk = malloc(chunk_sizeof(N_chunk, N_basic));
   memset(chunk, 0, chunk_sizeof(N_chunk, N_basic));
+
+  DEBUG("setting chunk\n");
 
   struct chunk_t *ptr = (struct chunk_t*) chunk;
 
@@ -148,14 +155,23 @@ chunk_alloc (const int N_chunk,
   /* Set the relative offsets. */
   ptr->norm_2 = 0;
   ptr->A_block = (double**) ((intptr_t) ptr->N_block*ptr->N_block*sizeof(double));
+  double **A_ptr = (double**) ((intptr_t) ptr->data + (intptr_t) ptr->A_block);
+
+  DEBUG("norm_2 = 0x%lx\n", (intptr_t) ptr->norm_2);
+  DEBUG("norm_ptr = %p\n", NORM_POINTER(chunk));
+  DEBUG("A_block = 0x%lx\n", (intptr_t) ptr->A_block);
+  DEBUG("chunk = %p\n", chunk);
+  DEBUG("ptr->data = %p\n", ptr->data);
+  DEBUG("A_ptr = %p\n", A_ptr);
+  DEBUG("end of chunk address = %p\n", (void*) ((intptr_t) chunk + chunk_sizeof(N_chunk, N_basic)));
 
   for(int i = 0; i < ptr->N_block; i++) {
     for(int j = 0; j < ptr->N_block; j++)
     {
-      ptr->A_block[INDEX(i, j, ptr->N_block)] =
-        (double*) (
-            (intptr_t) INDEX(i, j, ptr->N_block)
-            *ptr->N_basic*ptr->N_basic*sizeof(double));
+      A_ptr[INDEX(i, j, ptr->N_block)] = (double*) (
+          (intptr_t) INDEX(i, j, ptr->N_block)
+          *ptr->N_basic*ptr->N_basic*sizeof(double));
+      DEBUG("A_basic(%d,%d) = %p\n", i, j, MATRIX_POINTER(i, j, chunk));
     }
   }
 
@@ -198,6 +214,30 @@ void chunk_set (void *const chunk, const double *const A)
 #ifdef DEBUG_OUTPUT
   chunk_print(chunk, "chunk");
 #endif
+}
+
+/** Return the matrix size of the chunk matrix.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The size N_chunk.
+ */
+int
+chunk_get_N_chunk (void *const chunk)
+{
+  return ((struct chunk_t*) chunk)->N_chunk;
+}
+
+/** Return the matrix size of the basic matrix.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The size N_basic.
+ */
+int
+chunk_get_N_basic (void *const chunk)
+{
+  return ((struct chunk_t*) chunk)->N_basic;
 }
 
 /** Get the matrix norm of a chunk.

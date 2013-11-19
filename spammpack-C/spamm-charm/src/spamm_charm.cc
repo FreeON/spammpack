@@ -997,13 +997,13 @@ void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int N,
     }
   }
 
-  if(!converged)
-  {
-    INFO("SP2 did not converge in %d steps\n", maxIterations);
-  }
-
   INFO("idempotency error          = %e\n", fabs(occupation[0]-occupation[1]));
   INFO("previous idempotency error = %e\n", fabs(occupation[2]-occupation[3]));
+
+  if(!converged)
+  {
+    ABORT("SP2 did not converge in %d steps\n", maxIterations);
+  }
 
   //DenseMatrixMsg *PFinal = P.toDense();
   //printDense(NRows, PFinal->A, "PFinal");

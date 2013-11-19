@@ -101,6 +101,7 @@ MultiplyElement::~MultiplyElement ()
     DEBUG("free'ing chunk at %p\n", CResult);
     free(CResult);
     CResult = NULL;
+    chunksize = 0;
   }
 }
 

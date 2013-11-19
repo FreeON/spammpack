@@ -6,8 +6,9 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
-#include "messages.h"
+#include "chunk.h"
 #include "logger.h"
+#include "messages.h"
 
 #include <assert.h>
 
@@ -19,6 +20,9 @@
 ChunkMsg::ChunkMsg (size_t chunksize, char *chunk)
 {
   this->chunksize = chunksize;
+  this->N_chunk = chunk_get_N_chunk(chunk);
+  this->N_basic = chunk_get_N_basic(chunk);
+
   if(chunk != NULL)
   {
     DEBUG("copying chunk at %p into chunk at %p\n", chunk, this->chunk);

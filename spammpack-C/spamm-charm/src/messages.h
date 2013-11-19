@@ -35,6 +35,12 @@ class ChunkMsg : public CMessage_ChunkMsg
     /** The size of the chunk. */
     size_t chunksize;
 
+    /** The matrix size of the chunk. */
+    int N_chunk;
+
+    /** The size of the basic sub-matrices. */
+    int N_basic;
+
     /** The Chunk. */
     char *chunk;
 
