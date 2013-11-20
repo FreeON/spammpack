@@ -31,26 +31,14 @@
  * code. */
 #define ABORT(message, ...) printf("[%s:%d (%s) FATAL] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(1)
 
+/** A simple square. */
+#define SQUARE(x) (x)*(x)
+
 /** Calculate a row-major offset. */
 #define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
 
 /** Calculate a column-major offset. */
 #define COLUMN_MAJOR(i, j, N) ((i)+(j)*(N))
-
-/** Calculate the offset into a tiled matrix block. */
-#define INDEX(i, j, N) ROW_MAJOR(i, j, N)
-
-/** Convert the norm offset into a pointer. */
-#define NORM_POINTER(ptr) (double*) ((intptr_t) \
-    ((struct chunk_t*) (ptr))->norm_2 + (intptr_t) ((struct chunk_t*) ptr)->data)
-
-/** Convert the matrix data offset into a pointer. */
-#define MATRIX_POINTER(i, j, ptr) (double*) ((intptr_t) ((struct chunk_t*) ptr)->A_block \
-    + INDEX(i, j, ((struct chunk_t*) ptr)->N_block)*SQUARE(((struct chunk_t*) ptr)->N_basic)*sizeof(double*) \
-    + (intptr_t) ((struct chunk_t*) ptr)->data)
-
-/** A simple square. */
-#define SQUARE(x) (x)*(x)
 
 /** The data layout of a chunk. */
 struct chunk_t
@@ -78,24 +66,46 @@ struct chunk_t
    * simply for convenience. */
   int N_block;
 
-  /** The N_chunk/N_basic x N_chunk/N_basic size array of norms of the
-   * sub-matrices at the N_basic level. The pointer is a relative offset from
-   * the start of the data field. */
-  double *norm_2;
-
-  /** The N_chunk/N_basic x N_chunk/N_basic size array of pointers to N_basic
-   * x N_basic sub-matrices. The pointer is a relative offset from the start
-   * of the data field. */
-  double **A_block;
-
   /** The chunk data. This includes the norms and the matrix elements. The
    * exact layout is:
    *
-   * N_block*N_block*sizeof(double)
-   * N_chunk*N_chunk*sizeof(double)
+   * A N_block x N_block array of double norm^2 values: N_block*N_block*sizeof(double)
+   * The matrix data: N_chunk*N_chunk*sizeof(double)
    * */
-  double data[0];
+  char data[0];
 };
+
+/** Calculate the offset into a tiled matrix block. */
+size_t
+chunk_index (const int i, const int j, const int N)
+{
+  assert(i < N);
+  assert(j < N);
+
+  size_t index = ROW_MAJOR(i, j, N);
+  assert(index < SQUARE(N));
+  return index;
+}
+
+/** Return a pointer to the start of the norm_2 array. */
+double *
+chunk_norm_pointer (const void *const chunk)
+{
+  assert(chunk != NULL);
+  struct chunk_t *ptr = (struct chunk_t*) chunk;
+  return (double*) ((intptr_t) ptr->data);
+}
+
+/** Return a pointer to a basic submatrix block. */
+double *
+chunk_matrix_pointer (const int i, const int j, const void *const chunk)
+{
+  assert(chunk != NULL);
+  struct chunk_t *ptr = (struct chunk_t*) chunk;
+  return (double*) ((intptr_t) ptr->data
+      + (intptr_t) SQUARE(ptr->N_block)*sizeof(double)
+      + (intptr_t) SQUARE(ptr->N_basic)*sizeof(double)*chunk_index(i, j, ptr->N_block));
+}
 
 /** Get the chunksize.
  *
@@ -108,7 +118,7 @@ chunk_sizeof (const int N_chunk, const int N_basic)
   int N_block = N_chunk/N_basic;
 
   return sizeof(struct chunk_t)
-    +sizeof(double)*N_block*N_block /* The norms. */
+    +sizeof(double)*N_block*N_block  /* The norms. */
     +sizeof(double)*N_chunk*N_chunk; /* The matrix elements. */
 }
 
@@ -132,10 +142,9 @@ chunk_alloc (const int N_chunk,
   DEBUG("allocating new chunk, N_chunk = %d, N_basic = %d, sizeof(chunk) = %lu\n",
       N_chunk, N_basic, chunk_sizeof(N_chunk, N_basic));
 
-  void *chunk = malloc(chunk_sizeof(N_chunk, N_basic));
-  memset(chunk, 0, chunk_sizeof(N_chunk, N_basic));
+  void *chunk = calloc(chunk_sizeof(N_chunk, N_basic), 1);
 
-  DEBUG("setting chunk\n");
+  DEBUG("setting chunk of size %lu\n", chunk_sizeof(N_chunk, N_basic));
 
   struct chunk_t *ptr = (struct chunk_t*) chunk;
 
@@ -151,29 +160,6 @@ chunk_alloc (const int N_chunk,
   }
 
   ptr->N_block = N_chunk/N_basic;
-
-  /* Set the relative offsets. */
-  ptr->norm_2 = 0;
-  ptr->A_block = (double**) ((intptr_t) ptr->N_block*ptr->N_block*sizeof(double));
-  double **A_ptr = (double**) ((intptr_t) ptr->data + (intptr_t) ptr->A_block);
-
-  DEBUG("norm_2 = 0x%lx\n", (intptr_t) ptr->norm_2);
-  DEBUG("norm_ptr = %p\n", NORM_POINTER(chunk));
-  DEBUG("A_block = 0x%lx\n", (intptr_t) ptr->A_block);
-  DEBUG("chunk = %p\n", chunk);
-  DEBUG("ptr->data = %p\n", ptr->data);
-  DEBUG("A_ptr = %p\n", A_ptr);
-  DEBUG("end of chunk address = %p\n", (void*) ((intptr_t) chunk + chunk_sizeof(N_chunk, N_basic)));
-
-  for(int i = 0; i < ptr->N_block; i++) {
-    for(int j = 0; j < ptr->N_block; j++)
-    {
-      A_ptr[INDEX(i, j, ptr->N_block)] = (double*) (
-          (intptr_t) INDEX(i, j, ptr->N_block)
-          *ptr->N_basic*ptr->N_basic*sizeof(double));
-      DEBUG("A_basic(%d,%d) = %p\n", i, j, MATRIX_POINTER(i, j, chunk));
-    }
-  }
 
   DEBUG("allocating chunk at %p, N = %d, N_chunk = %d, "
       "N_basic = %d, sizeof(chunk) = %lu\n",
@@ -191,20 +177,32 @@ chunk_alloc (const int N_chunk,
  */
 void chunk_set (void *const chunk, const double *const A)
 {
+  assert(chunk != NULL);
+  assert(A != NULL);
+
   struct chunk_t *ptr = (struct chunk_t*) chunk;
 
-  double *norm_2 = NORM_POINTER(chunk);
+  double *norm_2 = chunk_norm_pointer(chunk);
   for(int i = 0; i < ptr->N_block; i++) {
     for(int j = 0; j < ptr->N_block; j++)
     {
-      /* Convert offset pointer into actual pointer. */
-      double *A_basic = MATRIX_POINTER(i, j, chunk);
-      norm_2[INDEX(i, j, ptr->N_block)] = 0;
+      double *A_basic = chunk_matrix_pointer(i, j, chunk);
+
+      int index_norm = chunk_index(i, j, ptr->N_block);
+      assert(index_norm < SQUARE(ptr->N_block));
+
+      norm_2[index_norm] = 0;
       for(int k = 0; k < ptr->N_basic; k++) {
         for(int l = 0; l < ptr->N_basic; l++)
         {
-          A_basic[INDEX(k, l, ptr->N_basic)] = A[COLUMN_MAJOR(i*ptr->N_block+k, j*ptr->N_block+l, ptr->N_chunk)];
-          norm_2[INDEX(i, j, ptr->N_block)] += SQUARE(A_basic[INDEX(k, l, ptr->N_basic)]);
+          int index_basic = chunk_index(k, l, ptr->N_basic);
+          int index_dense = COLUMN_MAJOR(i*ptr->N_basic+k, j*ptr->N_basic+l, ptr->N_chunk);
+
+          assert(index_basic < SQUARE(ptr->N_basic));
+          assert(index_dense < SQUARE(ptr->N_chunk));
+
+          A_basic[index_basic] = A[index_dense];
+          norm_2[index_norm] += SQUARE(A_basic[index_basic]);
         }
       }
     }
@@ -225,6 +223,7 @@ void chunk_set (void *const chunk, const double *const A)
 int
 chunk_get_N_chunk (void *const chunk)
 {
+  assert(chunk != NULL);
   return ((struct chunk_t*) chunk)->N_chunk;
 }
 
@@ -237,6 +236,7 @@ chunk_get_N_chunk (void *const chunk)
 int
 chunk_get_N_basic (void *const chunk)
 {
+  assert(chunk != NULL);
   return ((struct chunk_t*) chunk)->N_basic;
 }
 
@@ -249,9 +249,12 @@ chunk_get_N_basic (void *const chunk)
 double
 chunk_get_norm (const void *const chunk)
 {
+  assert(chunk != NULL);
+
   struct chunk_t *ptr = (struct chunk_t*) chunk;
-  double *norm_2 = NORM_POINTER(chunk);
+  double *norm_2 = chunk_norm_pointer(chunk);
   double norm = 0;
+
   for(int i = 0; i < SQUARE(ptr->N_block); i++)
   {
     norm += norm_2[i];
@@ -269,6 +272,8 @@ void
 chunk_print (const void *const chunk,
     const char *const format, ...)
 {
+  assert(chunk != NULL);
+
   struct chunk_t *ptr = (struct chunk_t*) chunk;
 
   char tag[2000];
@@ -281,12 +286,12 @@ chunk_print (const void *const chunk,
   for(int i = 0; i < ptr->N_block; i++) {
     for(int j = 0; j < ptr->N_block; j++)
     {
-      double *A_basic = MATRIX_POINTER(i, j, chunk);
+      double *A_basic = chunk_matrix_pointer(i, j, chunk);
       printf("block(%d,%d):\n", i, j);
       for(int k = 0; k < ptr->N_basic; k++) {
         for(int l = 0; l < ptr->N_basic; l++)
         {
-          printf(" % e", A_basic[INDEX(k, l, ptr->N_basic)]);
+          printf(" % e", A_basic[chunk_index(k, l, ptr->N_basic)]);
         }
       }
       printf("\n");
@@ -307,6 +312,9 @@ void
 chunk_add (const double alpha, void *const A,
     const double beta, const void *const B)
 {
+  assert(A != NULL);
+  assert(B != NULL);
+
   struct chunk_t *ptr_A = (struct chunk_t*) A;
   struct chunk_t *ptr_B = (struct chunk_t*) B;
 
@@ -320,15 +328,15 @@ chunk_add (const double alpha, void *const A,
   for(int i = 0; i < ptr_A->N_block; i++) {
     for(int j = 0; j < ptr_A->N_block; j++)
     {
-      double *A_basic = MATRIX_POINTER(i, j, A);
-      double *B_basic = MATRIX_POINTER(i, j, B);
+      double *A_basic = chunk_matrix_pointer(i, j, A);
+      double *B_basic = chunk_matrix_pointer(i, j, B);
 
       for(int k = 0; k < ptr_A->N_basic; k++) {
         for(int l = 0; l < ptr_A->N_basic; l++)
         {
-          A_basic[INDEX(k, l, ptr_A->N_basic)] =
-            alpha*A_basic[INDEX(k, l, ptr_A->N_basic)]
-            +beta*B_basic[INDEX(k, l, ptr_A->N_basic)];
+          A_basic[chunk_index(k, l, ptr_A->N_basic)] =
+            alpha*A_basic[chunk_index(k, l, ptr_A->N_basic)]
+            +beta*B_basic[chunk_index(k, l, ptr_A->N_basic)];
         }
       }
     }
@@ -346,6 +354,10 @@ chunk_add (const double alpha, void *const A,
 void
 chunk_multiply (const void *const A, const void *const B, void *const C)
 {
+  assert(A != NULL);
+  assert(B != NULL);
+  assert(C != NULL);
+
   struct chunk_t *ptr_A = (struct chunk_t*) A;
   struct chunk_t *ptr_B = (struct chunk_t*) B;
   struct chunk_t *ptr_C = (struct chunk_t*) C;
@@ -360,27 +372,27 @@ chunk_multiply (const void *const A, const void *const B, void *const C)
       ptr_A->N_chunk);
 
   /* Simple tiling over the basic sub-matrix blocks. */
-  double *norm_2 = NORM_POINTER(C);
+  double *norm_2 = chunk_norm_pointer(C);
   for(int i = 0; i < ptr_A->N_block; i++) {
     for(int j = 0; j < ptr_A->N_block; j++)
     {
-      double *C_basic = MATRIX_POINTER(i, j, C);
+      double *C_basic = chunk_matrix_pointer(i, j, C);
       memset(C_basic, 0, sizeof(double)*ptr_C->N_basic*ptr_C->N_basic);
-      norm_2[INDEX(i, j, ptr_C->N_block)] = 0;
+      norm_2[chunk_index(i, j, ptr_C->N_block)] = 0;
       for(int k = 0; k < ptr_A->N_block; k++)
       {
         /* Multiply the blocks. */
-        double *A_basic = MATRIX_POINTER(i, k, A);
-        double *B_basic = MATRIX_POINTER(k, j, B);
+        double *A_basic = chunk_matrix_pointer(i, k, A);
+        double *B_basic = chunk_matrix_pointer(k, j, B);
         for(int i_basic = 0; i_basic < ptr_A->N_basic; i_basic++) {
           for(int j_basic = 0; j_basic < ptr_A->N_basic; j_basic++) {
             for(int k_basic = 0; k_basic < ptr_A->N_basic; k_basic++)
             {
-              C_basic[INDEX(i_basic, j_basic, ptr_C->N_basic)] +=
-                A_basic[INDEX(i_basic, k_basic, ptr_A->N_basic)]
-                *B_basic[INDEX(k_basic, j_basic, ptr_B->N_basic)];
+              C_basic[chunk_index(i_basic, j_basic, ptr_C->N_basic)] +=
+                A_basic[chunk_index(i_basic, k_basic, ptr_A->N_basic)]
+                *B_basic[chunk_index(k_basic, j_basic, ptr_B->N_basic)];
             }
-            norm_2[INDEX(i, j, ptr_C->N_block)] += SQUARE(C_basic[INDEX(i_basic, j_basic, ptr_C->N_basic)]);
+            norm_2[chunk_index(i, j, ptr_C->N_block)] += SQUARE(C_basic[chunk_index(i_basic, j_basic, ptr_C->N_basic)]);
           }
         }
       }
@@ -397,16 +409,19 @@ chunk_multiply (const void *const A, const void *const B, void *const C)
 double
 chunk_trace (const void *const chunk)
 {
+  assert(chunk != NULL);
+
   struct chunk_t *ptr = (struct chunk_t*) chunk;
   double trace = 0;
+
   for(int i = 0; i < ptr->N_block; i++)
   {
-    double *A_basic = MATRIX_POINTER(i, i, chunk);
+    double *A_basic = chunk_matrix_pointer(i, i, chunk);
     for(int j = 0; j < ptr->N_basic
         && ptr->i_lower+i*ptr->N_basic+j < ptr->N
         && ptr->j_lower+i*ptr->N_basic+j < ptr->N; j++)
     {
-      trace += A_basic[INDEX(j, j, ptr->N_basic)];
+      trace += A_basic[chunk_index(j, j, ptr->N_basic)];
     }
   }
   DEBUG("calculating trace of chunk at %p, trace = %e\n", chunk, trace);
@@ -423,10 +438,12 @@ chunk_trace (const void *const chunk)
 void
 chunk_scale (const double alpha, void *const chunk)
 {
+  assert(chunk != NULL);
+
   struct chunk_t *ptr = (struct chunk_t*) chunk;
   DEBUG("scaling block at %p by %e\n", chunk, alpha);
-  double *A_chunk = MATRIX_POINTER(0, 0, chunk);
-  double *norm_2 = NORM_POINTER(chunk);
+  double *A_chunk = chunk_matrix_pointer(0, 0, chunk);
+  double *norm_2 = chunk_norm_pointer(chunk);
   for(int i = 0; i < ptr->N_chunk*ptr->N_chunk; i++)
   {
     A_chunk[i] *= alpha;
@@ -447,6 +464,8 @@ chunk_scale (const double alpha, void *const chunk)
 void
 chunk_add_identity (const double alpha, void *const chunk)
 {
+  assert(chunk != NULL);
+
   struct chunk_t *ptr = (struct chunk_t*) chunk;
 
   assert(ptr->i_lower == ptr->j_lower);
@@ -454,17 +473,17 @@ chunk_add_identity (const double alpha, void *const chunk)
   DEBUG("adding %e Id to chunk at %p, N = %d, i_lower = %d, j_lower = %d\n",
       alpha, chunk, ptr->N, ptr->i_lower, ptr->j_lower);
 
-  double *norm_2 = NORM_POINTER(chunk);
+  double *norm_2 = chunk_norm_pointer(chunk);
   for(int i = 0; i < ptr->N_block; i++)
   {
-    double *A_basic = MATRIX_POINTER(i, i, chunk);
+    double *A_basic = chunk_matrix_pointer(i, i, chunk);
     for(int j = 0; j < ptr->N_basic &&
         j+ptr->i_lower < ptr->N &&
         j+ptr->j_lower < ptr->N; j++)
     {
-      double old_Aij = A_basic[INDEX(j, j, ptr->N_basic)];
-      A_basic[INDEX(j, j, ptr->N_basic)] += alpha;
-      norm_2[INDEX(i, i, ptr->N_block)] += SQUARE(A_basic[INDEX(j, j, ptr->N_basic)])
+      double old_Aij = A_basic[chunk_index(j, j, ptr->N_basic)];
+      A_basic[chunk_index(j, j, ptr->N_basic)] += alpha;
+      norm_2[chunk_index(i, i, ptr->N_block)] += SQUARE(A_basic[chunk_index(j, j, ptr->N_basic)])
         - SQUARE(old_Aij);
     }
   }
@@ -480,21 +499,24 @@ chunk_add_identity (const double alpha, void *const chunk)
 double *
 chunk_to_dense (const void *const chunk)
 {
-  struct chunk_t *ptr = (struct chunk_t*) chunk;
+  assert(chunk != NULL);
 
+  struct chunk_t *ptr = (struct chunk_t*) chunk;
   double *A = calloc(ptr->N_chunk*ptr->N_chunk, sizeof(double));
+
   for(int i = 0; i < ptr->N_block; i++) {
     for(int j = 0; j < ptr->N_block; j++)
     {
-      double *A_basic = MATRIX_POINTER(i, j, ptr);
+      double *A_basic = chunk_matrix_pointer(i, j, ptr);
       for(int i_basic = 0; i_basic < ptr->N_basic; i_basic++) {
         for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
         {
           A[COLUMN_MAJOR(i*ptr->N_block+i_basic, j*ptr->N_block+j_basic, ptr->N_chunk)] =
-            A_basic[INDEX(i, j, ptr->N_basic)];
+            A_basic[chunk_index(i, j, ptr->N_basic)];
         }
       }
     }
   }
+
   return A;
 }

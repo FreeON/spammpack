@@ -41,23 +41,26 @@
 #include "config.h"
 
 #include "spamm_charm.h"
+
+#include "backtrace.h"
+#include "bcsr.h"
+#include "index.h"
 #include "lapack_interface.h"
+#include "logger.h"
 #include "messages.h"
 #include "timer.h"
-#include "logger.h"
 #include "types.h"
-#include "index.h"
-#include "bcsr.h"
 #include "utilities.h"
 
 #include <assert.h>
 #include <getopt.h>
 #include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 /** Initialize the node. */
 void initialize (void)
@@ -284,6 +287,14 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
   }
 
   CkPrintf("SpAMM version %s\n", PACKAGE_VERSION);
+
+  /* Register backtrace handler. */
+  struct sigaction act;
+  memset(&act, 0, sizeof(struct sigaction));
+  act.sa_handler = spamm_backtrace_handler;
+
+  sigaction(SIGABRT, &act, NULL);
+  sigaction(SIGSEGV, &act, NULL);
 
   switch(operation)
   {

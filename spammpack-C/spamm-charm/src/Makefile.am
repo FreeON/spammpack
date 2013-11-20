@@ -18,6 +18,7 @@ spamm_charm_INTERFACEFILES = \
 	spamm_charm.ci
 
 spamm_charm_SOURCES = \
+	backtrace.h \
 	bcsr.cc \
 	bcsr.h \
 	index.h \
@@ -46,6 +47,8 @@ lib_LTLIBRARIES = libdummychunk.la
 libdummychunk_la_SOURCES = \
 	chunk.c \
 	chunk.h
+
+include_HEADERS = chunk.h
 
 spamm_charm_CHARMHEADERS = $(foreach i, $(spamm_charm_INTERFACEFILES), $(basename $i).decl.h $(basename $i).def.h)
 
