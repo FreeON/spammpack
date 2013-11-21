@@ -511,8 +511,8 @@ chunk_to_dense (const void *const chunk)
       for(int i_basic = 0; i_basic < ptr->N_basic; i_basic++) {
         for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
         {
-          A[COLUMN_MAJOR(i*ptr->N_block+i_basic, j*ptr->N_block+j_basic, ptr->N_chunk)] =
-            A_basic[chunk_index(i, j, ptr->N_basic)];
+          A[COLUMN_MAJOR(i*ptr->N_basic+i_basic, j*ptr->N_basic+j_basic, ptr->N_chunk)] =
+            A_basic[chunk_index(i_basic, j_basic, ptr->N_basic)];
         }
       }
     }

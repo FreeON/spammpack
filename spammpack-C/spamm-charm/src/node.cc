@@ -304,9 +304,6 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
   DEBUG(LB"alpha = %e, beta = %e, chunk at %p\n"LE, alpha, beta, chunk);
   ChunkMsg *BChunk = B(thisIndex.x, thisIndex.y).getChunk();
 
-  assert(blocksize == BChunk->N_chunk);
-  assert(N_basic == BChunk->N_basic);
-
   if(chunk == NULL)
   {
     DEBUG(LB"allocating new chunk\n"LE);
@@ -315,6 +312,8 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
 
   if(BChunk->chunksize != 0)
   {
+    assert(blocksize == BChunk->N_chunk);
+    assert(N_basic == BChunk->N_basic);
     chunk_add(alpha, chunk, beta, BChunk->chunk);
   }
 
