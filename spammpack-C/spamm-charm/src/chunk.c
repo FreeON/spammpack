@@ -117,6 +117,8 @@ chunk_map_linear_index (const size_t index,
     bitmask <<= 1;
     k_mask <<= 1;
   }
+
+  INFO("linear index = %lu, index = { %d, %d, %d }\n", index, *i, *j, *k);
 }
 
 /** Calculate the offset into a tiled matrix block. */
@@ -442,8 +444,6 @@ chunk_multiply (const double tolerance,
     int k = 0;
 
     chunk_map_linear_index(index, &i, &j, &k);
-
-    //DEBUG("index = %lu -> { %d, %d, %d }\n", index, i, j, k);
 
     double *C_basic = chunk_matrix_pointer(i, j, C);
     if(k == 0)
