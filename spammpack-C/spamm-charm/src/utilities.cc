@@ -39,31 +39,14 @@ void printDense (int N, double *A, const char *const format, ...)
   vsnprintf(message, message_length, format, ap);
   va_end(ap);
 
-  if(N <= 32)
-  {
-    o << message << " = [" << std::endl;
-    for(int i = 0; i < N; i++) {
-      for(int j = 0; j < N; j++)
-      {
-        snprintf(numberBuffer, 40, "% 1.3e", A[BLOCK_INDEX(i, j, 0, 0, N)]);
-        o << " " << numberBuffer;
-      }
-      o << std::endl;
-    }
-    o << "]" << std::endl;
-  }
-
-  else
-  {
-    o << "%%%%MatrixMarket matrix coordinate double general" << std::endl;
-    o << "%% " << message << " = " << N << " x " << N << " --> " << N*N << " elements" << std::endl;
-    o << N << " " << N << " " << N*N << std::endl;
-    for(int i = 0; i < N; i++) {
-      for(int j = 0; j < N; j++)
-      {
-        snprintf(numberBuffer, 40, "% e", A[BLOCK_INDEX(i, j, 0, 0, N)]);
-        o << i+1 << " " << j+1 << " " << numberBuffer << std::endl;
-      }
+  o << "%%%%MatrixMarket matrix coordinate double general" << std::endl;
+  o << "%% " << message << " = " << N << " x " << N << " --> " << N*N << " elements" << std::endl;
+  o << N << " " << N << " " << N*N << std::endl;
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      snprintf(numberBuffer, 40, "% e", A[BLOCK_INDEX(i, j, 0, 0, N)]);
+      o << i+1 << " " << j+1 << " " << numberBuffer << std::endl;
     }
   }
 
