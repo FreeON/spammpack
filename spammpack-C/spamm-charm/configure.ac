@@ -26,6 +26,10 @@ AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
 # Find a C compiler.
 AC_PROG_CC_STDC
 
+# Find OpenMP for C.
+AC_LANG(C)
+AC_OPENMP
+
 # Initialize libtool.
 LT_INIT
 
@@ -35,6 +39,7 @@ AM_CONDITIONAL([HAVE_PYTHON], [test "${PYTHON}" != ":"])
 
 # Find the real C++ compiler.
 AC_PROG_CXX
+AC_LANG(C++)
 
 # Test for spammpack.
 AC_CHECK_HEADERS([spamm.h], [], [AC_MSG_FAILURE([Cannot find spammpack header files])])

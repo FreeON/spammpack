@@ -197,7 +197,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
       ChunkMsg *AChunk = A(thisIndex.x, thisIndex.z).getChunk();
       ChunkMsg *BChunk = B(thisIndex.z, thisIndex.y).getChunk();
 
-#ifdef DEBUG_OUTPUT
+#ifdef PRINT_MATRICES
       chunk_print(AChunk->chunk, "tier %d ME(%d,%d,%d) AChunk(%d,%d):", tier,
           thisIndex.x, thisIndex.y, thisIndex.z, thisIndex.x, thisIndex.z);
       chunk_print(BChunk->chunk, "tier %d ME(%d,%d,%d) BChunk(%d,%d):", tier,
@@ -205,9 +205,9 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 #endif
 
       DEBUG(LB"calling multiply on result\n"LE);
-      chunk_multiply(AChunk->chunk, BChunk->chunk, CResult);
+      chunk_multiply(tolerance, AChunk->chunk, BChunk->chunk, CResult);
 
-#ifdef DEBUG_OUTPUT
+#ifdef PRINT_MATRICES
       /** For debugging. */
       chunk_print(CResult, LB"result:"LE);
 #endif

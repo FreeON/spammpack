@@ -44,6 +44,7 @@ spamm_charm_SOURCES = \
 	utilities.h
 
 lib_LTLIBRARIES = libdummychunk.la
+libdummychunk_la_CFLAGS = $(OPENMP_CFLAGS)
 libdummychunk_la_SOURCES = \
 	chunk.c \
 	chunk.h

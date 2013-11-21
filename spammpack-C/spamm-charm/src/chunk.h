@@ -44,7 +44,10 @@ chunk_add (const double alpha, void *const A,
     const double beta, const void *const B);
 
 void
-chunk_multiply (const void *const A, const void *const B, void *const C);
+chunk_multiply (const double tolerance,
+    const void *const A,
+    const void *const B,
+    void *const C);
 
 double
 chunk_trace (const void *const chunk);

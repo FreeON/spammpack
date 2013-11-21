@@ -17,6 +17,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 /** A convenience macro for printing some debugging output. */
 #ifdef DEBUG_OUTPUT
 #define DEBUG(message, ...) printf("[%s:%d (%s) DEBUG] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
@@ -33,6 +37,9 @@
 
 /** A simple square. */
 #define SQUARE(x) (x)*(x)
+
+/** A cube. */
+#define CUBE(x) (x)*(x)*(x)
 
 /** Calculate a row-major offset. */
 #define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
@@ -74,6 +81,43 @@ struct chunk_t
    * */
   char data[0];
 };
+
+/** Map a linear index in 3-D convolution space to three indices.
+ *
+ * @param index The linear index.
+ * @param i The index i;
+ * @param j The index j;
+ * @param k The index k;
+ */
+void
+chunk_map_linear_index (const size_t index,
+    int *const i,
+    int *const j,
+    int *const k)
+{
+  int bitmask = 1;
+
+  *i = 0;
+  *j = 0;
+  *k = 0;
+
+  int i_mask = 1;
+  int j_mask = 1;
+  int k_mask = 1;
+
+  for(int bit = 0; bit < 10; bit++)
+  {
+    if(index & bitmask) *i |= i_mask;
+    bitmask <<= 1;
+    i_mask <<= 1;
+    if(index & bitmask) *j |= j_mask;
+    bitmask <<= 1;
+    j_mask <<= 1;
+    if(index & bitmask) *k |= k_mask;
+    bitmask <<= 1;
+    k_mask <<= 1;
+  }
+}
 
 /** Calculate the offset into a tiled matrix block. */
 size_t
@@ -209,7 +253,7 @@ void chunk_set (void *const chunk, const double *const A)
   }
 
   DEBUG("set chunk at %p, N_chunk = %d\n", chunk, ptr->N_chunk);
-#ifdef DEBUG_OUTPUT
+#ifdef PRINT_MATRICES
   chunk_print(chunk, "chunk");
 #endif
 }
@@ -343,16 +387,20 @@ chunk_add (const double alpha, void *const A,
   }
 }
 
-/** Multiply two chunks.
+/** Multiply two chunks using the SpAMM algorithm.
  *
  * @f[ C \leftarrow A \times B @f]
  *
+ * @param tolerance The SpAMM tolerance.
  * @param A Chunk A.
  * @param B Chunk B.
  * @param C Chunk C.
  */
 void
-chunk_multiply (const void *const A, const void *const B, void *const C)
+chunk_multiply (const double tolerance,
+    const void *const A,
+    const void *const B,
+    void *const C)
 {
   assert(A != NULL);
   assert(B != NULL);
@@ -372,32 +420,68 @@ chunk_multiply (const void *const A, const void *const B, void *const C)
       ptr_A->N_chunk);
 
   /* Simple tiling over the basic sub-matrix blocks. */
-  double *norm_2 = chunk_norm_pointer(C);
-  for(int i = 0; i < ptr_A->N_block; i++) {
-    for(int j = 0; j < ptr_A->N_block; j++)
+  int complexity = 0;
+  double tolerance_2 = SQUARE(tolerance);
+  double *norm_A = chunk_norm_pointer(A);
+  double *norm_B = chunk_norm_pointer(B);
+  double *norm_C = chunk_norm_pointer(C);
+
+#ifdef _OPENMP
+  omp_lock_t C_lock[SQUARE(ptr_A->N_block)];
+  for(int i = 0; i < SQUARE(ptr_A->N_block); i++)
+  {
+    omp_init_lock(&C_lock[i]);
+  }
+#endif
+
+#pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, norm_C, ptr_A, ptr_B, ptr_C, C_lock) reduction(+:complexity)
+  for(size_t index = 0; index < CUBE(ptr_A->N_block); index++)
+  {
+    int i = 0;
+    int j = 0;
+    int k = 0;
+
+    chunk_map_linear_index(index, &i, &j, &k);
+
+    //DEBUG("index = %lu -> { %d, %d, %d }\n", index, i, j, k);
+
+    double *C_basic = chunk_matrix_pointer(i, j, C);
+    if(k == 0)
     {
-      double *C_basic = chunk_matrix_pointer(i, j, C);
       memset(C_basic, 0, sizeof(double)*ptr_C->N_basic*ptr_C->N_basic);
-      norm_2[chunk_index(i, j, ptr_C->N_block)] = 0;
-      for(int k = 0; k < ptr_A->N_block; k++)
-      {
-        /* Multiply the blocks. */
-        double *A_basic = chunk_matrix_pointer(i, k, A);
-        double *B_basic = chunk_matrix_pointer(k, j, B);
-        for(int i_basic = 0; i_basic < ptr_A->N_basic; i_basic++) {
-          for(int j_basic = 0; j_basic < ptr_A->N_basic; j_basic++) {
-            for(int k_basic = 0; k_basic < ptr_A->N_basic; k_basic++)
-            {
-              C_basic[chunk_index(i_basic, j_basic, ptr_C->N_basic)] +=
-                A_basic[chunk_index(i_basic, k_basic, ptr_A->N_basic)]
-                *B_basic[chunk_index(k_basic, j_basic, ptr_B->N_basic)];
-            }
-            norm_2[chunk_index(i, j, ptr_C->N_block)] += SQUARE(C_basic[chunk_index(i_basic, j_basic, ptr_C->N_basic)]);
+      norm_C[chunk_index(i, j, ptr_C->N_block)] = 0;
+    }
+
+    if(norm_A[chunk_index(i, k, ptr_A->N_block)]
+        * norm_B[chunk_index(k ,j, ptr_A->N_block)]
+        > tolerance_2)
+    {
+      /* Multiply the blocks. */
+#ifdef _OPENMP
+      omp_set_lock(&C_lock[chunk_index(i, j, ptr_A->N_block)]);
+#endif
+      double *A_basic = chunk_matrix_pointer(i, k, A);
+      double *B_basic = chunk_matrix_pointer(k, j, B);
+      for(int i_basic = 0; i_basic < ptr_A->N_basic; i_basic++) {
+        for(int j_basic = 0; j_basic < ptr_A->N_basic; j_basic++) {
+          for(int k_basic = 0; k_basic < ptr_A->N_basic; k_basic++)
+          {
+            C_basic[chunk_index(i_basic, j_basic, ptr_C->N_basic)] +=
+              A_basic[chunk_index(i_basic, k_basic, ptr_A->N_basic)]
+              *B_basic[chunk_index(k_basic, j_basic, ptr_B->N_basic)];
           }
+          norm_C[chunk_index(i, j, ptr_C->N_block)] += SQUARE(C_basic[chunk_index(i_basic, j_basic, ptr_C->N_basic)]);
         }
       }
+#ifdef _OPENMP
+      omp_unset_lock(&C_lock[chunk_index(i, j, ptr_A->N_block)]);
+#endif
+
+      complexity++;
     }
   }
+
+  DEBUG("complexity %d out of %d\n", complexity, ptr_A->N_block*ptr_A->N_block*ptr_A->N_block);
 }
 
 /** Get the trace of a chunk.

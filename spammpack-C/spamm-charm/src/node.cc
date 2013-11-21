@@ -221,7 +221,7 @@ void Node::set (int blocksize, int N_basic, double *A, CkCallback &cb)
   norm_2 = chunk_get_norm(chunk);
   norm = sqrt(norm_2);
 
-#ifdef DEBUG_OUTPUT
+#ifdef PRINT_MATRICES
   chunk_print(chunk, LB"setting block:"LE);
 #endif
 
@@ -282,7 +282,7 @@ void Node::chunkAdd (double alpha, size_t chunksize, char *chunk)
   DEBUG(LB"Adding back to C with Chunk at %p and alpha = %e\n"LE, this->chunk, alpha);
   chunk_add(1, this->chunk, alpha, chunk);
 
-#ifdef DEBUG_OUTPUT
+#ifdef PRINT_MATRICES
   /* For debugging. */
   chunk_print(chunk, LB"Adding back to C"LE);
 #endif
