@@ -300,6 +300,7 @@ chunk_print (const void *const chunk,
         {
           printf(" % e", A_basic[chunk_index(k, l, ptr->N_basic)]);
         }
+        printf("\n");
       }
       printf("\n");
     }
@@ -389,6 +390,9 @@ chunk_multiply (const double tolerance,
   double *norm_B = chunk_norm_pointer(B);
   double *norm_C = chunk_norm_pointer(C);
 
+  /* Reset C. */
+  memset(ptr_C->data, 0, sizeof(double)*(SQUARE(ptr_A->N_block)+SQUARE(ptr_A->N_chunk)));
+
 #ifdef _OPENMP
   omp_lock_t C_lock[SQUARE(ptr_A->N_block)];
   for(int i = 0; i < SQUARE(ptr_A->N_block); i++)
@@ -406,15 +410,15 @@ chunk_multiply (const double tolerance,
     int j = k/ptr_A->N_block;
     k %= ptr_A->N_block;
 
-    INFO("linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
-        index, i, j, k, ptr_A->N_block);
+#ifdef _OPENMP
+    DEBUG("(%d) linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
+        omp_get_thread_num(), index, i, j, k, ptr_A->N_block);
+#else
+    DEBUG("linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
+        omp_get_thread_num(), index, i, j, k, ptr_A->N_block);
+#endif
 
-    double *C_basic = chunk_matrix_pointer(i, j, C);
-    if(k == 0)
-    {
-      memset(C_basic, 0, sizeof(double)*ptr_C->N_basic*ptr_C->N_basic);
-      norm_C[chunk_index(i, j, ptr_C->N_block)] = 0;
-    }
+    double *const C_basic = chunk_matrix_pointer(i, j, C);
 
     if(norm_A[chunk_index(i, k, ptr_A->N_block)]
         * norm_B[chunk_index(k ,j, ptr_A->N_block)]
@@ -424,8 +428,8 @@ chunk_multiply (const double tolerance,
 #ifdef _OPENMP
       omp_set_lock(&C_lock[chunk_index(i, j, ptr_A->N_block)]);
 #endif
-      double *A_basic = chunk_matrix_pointer(i, k, A);
-      double *B_basic = chunk_matrix_pointer(k, j, B);
+      const double *const A_basic = chunk_matrix_pointer(i, k, A);
+      const double *const B_basic = chunk_matrix_pointer(k, j, B);
       for(int i_basic = 0; i_basic < ptr_A->N_basic; i_basic++) {
         for(int j_basic = 0; j_basic < ptr_A->N_basic; j_basic++) {
           for(int k_basic = 0; k_basic < ptr_A->N_basic; k_basic++)
@@ -444,6 +448,13 @@ chunk_multiply (const double tolerance,
       complexity++;
     }
   }
+
+#ifdef _OPENMP
+  for(int i = 0; i < SQUARE(ptr_A->N_block); i++)
+  {
+    omp_destroy_lock(&C_lock[i]);
+  }
+#endif
 
   DEBUG("complexity %d out of %d\n", complexity, ptr_A->N_block*ptr_A->N_block*ptr_A->N_block);
 }
