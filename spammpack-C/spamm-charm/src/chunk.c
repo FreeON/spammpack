@@ -476,15 +476,34 @@ chunk_multiply (const double tolerance,
     int j = 0;
     int k = 0;
 
-    struct chunk_linear_state_t state;
+    size_t last_index = 0;
 
-    if(initialized_state == 0)
+    for( ; last_index <= index; last_index++)
     {
-      chunk_init_linear_state(&state);
-      initialized_state = 1;
+      if(last_index > 0)
+      {
+        i += 1;
+        if(i/ptr_A->N_block > 0)
+        {
+          j += i/ptr_A->N_block;
+          i = i%ptr_A->N_block;
+
+          if(j/ptr_A->N_block > 0)
+          {
+            k += j/ptr_A->N_block;
+            j = j%ptr_A->N_block;
+
+            if(k/ptr_A->N_block > 0)
+            {
+              ABORT("error\n");
+            }
+          }
+        }
+      }
     }
 
-    chunk_map_linear_index(index, &i, &j, &k, ptr_A->N_block, &state);
+    INFO("linear index = %lu, index = { %d, %d, %d }, N = %d\n",
+        index, i, j, k, ptr_A->N_block);
 
     double *C_basic = chunk_matrix_pointer(i, j, C);
     if(k == 0)
