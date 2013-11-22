@@ -36,10 +36,10 @@
 #define ABORT(message, ...) printf("[%s:%d (%s) FATAL] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(1)
 
 /** A simple square. */
-#define SQUARE(x) (x)*(x)
+#define SQUARE(x) ((x)*(x))
 
 /** A cube. */
-#define CUBE(x) (x)*(x)*(x)
+#define CUBE(x) ((x)*(x)*(x))
 
 /** Calculate a row-major offset. */
 #define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
@@ -81,76 +81,6 @@ struct chunk_t
    * */
   char data[0];
 };
-
-struct chunk_linear_state_t
-{
-  size_t index;
-  int i;
-  int j;
-  int k;
-};
-
-void
-chunk_init_linear_state (struct chunk_linear_state_t *const state)
-{
-  INFO("initializing state at %p\n", state);
-  memset(state, 0, sizeof(struct chunk_linear_state_t));
-}
-
-/** Map a linear index in 3-D convolution space to three indices.
- *
- * @param index The linear index.
- * @param i The index i.
- * @param j The index j.
- * @param k The index k.
- * @param N The maximum index in each direction.
- * @param state The state.
- */
-void
-chunk_map_linear_index (const size_t index,
-    int *const i,
-    int *const j,
-    int *const k,
-    const int N,
-    struct chunk_linear_state_t *state)
-{
-  int bitmask = 1;
-
-  *i = state->i;
-  *j = state->j;
-  *k = state->k;
-
-  for( ; state->index <= index; state->index++)
-  {
-    if(state->index > 0)
-    {
-      *i += 1;
-      if((*i)/N > 0)
-      {
-        *j += (*i)/N;
-        *i = (*i)%N;
-
-        if((*j)/N > 0)
-        {
-          *k += (*j)/N;
-          *j = (*j)%N;
-
-          if((*k)/N > 0)
-          {
-            ABORT("error\n");
-          }
-        }
-      }
-    }
-  }
-
-  state->i = *i;
-  state->j = *j;
-  state->k = *k;
-
-  INFO("state at %p, linear index = %lu, index = { %d, %d, %d }, N = %d\n",
-      state, index, *i, *j, *k, N);
-}
 
 /** Calculate the offset into a tiled matrix block. */
 size_t
@@ -467,42 +397,16 @@ chunk_multiply (const double tolerance,
   }
 #endif
 
-  short initialized_state = 0;
-
-#pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, norm_C, ptr_A, ptr_B, ptr_C, C_lock) private(initialized_state) reduction(+:complexity)
-  for(size_t index = 0; index < CUBE(ptr_A->N_block); index++)
+#pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, norm_C, ptr_A, ptr_B, ptr_C, C_lock) reduction(+:complexity)
+  for(int index = 0; index < CUBE(ptr_A->N_block); index++)
   {
-    int i = 0;
-    int j = 0;
-    int k = 0;
+    int k = index;
+    int i = k/SQUARE(ptr_A->N_block);
+    k %= SQUARE(ptr_A->N_block);
+    int j = k/ptr_A->N_block;
+    k %= ptr_A->N_block;
 
-    size_t last_index = 0;
-
-    for( ; last_index <= index; last_index++)
-    {
-      if(last_index > 0)
-      {
-        i += 1;
-        if(i/ptr_A->N_block > 0)
-        {
-          j += i/ptr_A->N_block;
-          i = i%ptr_A->N_block;
-
-          if(j/ptr_A->N_block > 0)
-          {
-            k += j/ptr_A->N_block;
-            j = j%ptr_A->N_block;
-
-            if(k/ptr_A->N_block > 0)
-            {
-              ABORT("error\n");
-            }
-          }
-        }
-      }
-    }
-
-    INFO("linear index = %lu, index = { %d, %d, %d }, N = %d\n",
+    INFO("linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
         index, i, j, k, ptr_A->N_block);
 
     double *C_basic = chunk_matrix_pointer(i, j, C);
