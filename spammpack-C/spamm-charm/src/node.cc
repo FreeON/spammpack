@@ -33,6 +33,7 @@
  * @param N The matrix size.
  * @param depth The matrix depth.
  * @param blocksize The blocksize.
+ * @param N_basic The size of the basic submatrix.
  * @param tier The tier this node is on.
  */
 Node::Node (int N, int depth, int blocksize, int N_basic, int tier)
@@ -265,7 +266,7 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
  *
  * @param alpha The factor @f$ \alpha @f$.
  * @param chunksize The chunksize.
- * @param A The dense matrix.
+ * @param chunk The dense matrix.
  */
 void Node::chunkAdd (double alpha, size_t chunksize, char *chunk)
 {

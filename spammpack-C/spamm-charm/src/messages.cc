@@ -57,6 +57,7 @@ IntMsg::IntMsg (int i)
  *
  * @param N The matrix size.
  * @param blocksize The submatrix size at the lowest tier.
+ * @param N_basic The size of the basic submatrix.
  * @param depth The tree depth of the matrix.
  * @param NPadded The padded matrix size.
  */

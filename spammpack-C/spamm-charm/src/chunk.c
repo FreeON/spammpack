@@ -82,7 +82,14 @@ struct chunk_t
   char data[0];
 };
 
-/** Calculate the offset into a tiled matrix block. */
+/** Calculate the offset into a tiled matrix block.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ * @param N The size of the blocked matrix.
+ *
+ * @return The offset in bytes.
+ */
 size_t
 chunk_index (const int i, const int j, const int N)
 {
@@ -94,7 +101,12 @@ chunk_index (const int i, const int j, const int N)
   return index;
 }
 
-/** Return a pointer to the start of the norm_2 array. */
+/** Return a pointer to the start of the norm_2 array.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The pointer to the norm_2 array.
+ */
 double *
 chunk_norm_pointer (const void *const chunk)
 {
@@ -103,7 +115,14 @@ chunk_norm_pointer (const void *const chunk)
   return (double*) ((intptr_t) ptr->data);
 }
 
-/** Return a pointer to a basic submatrix block. */
+/** Return a pointer to a basic submatrix block.
+ *
+ * @param i The row pointer.
+ * @param j The column pointer.
+ * @param chunk The chunk.
+ *
+ * @return The pointer to the start of a (i,j)th basic submatrix.
+ */
 double *
 chunk_matrix_pointer (const int i, const int j, const void *const chunk)
 {
@@ -118,6 +137,8 @@ chunk_matrix_pointer (const int i, const int j, const void *const chunk)
  *
  * @param N_chunk The size of this matrix chunk.
  * @param N_basic The size of the basic sub-matrices.
+ *
+ * @return The size of the chunk in bytes.
  */
 size_t
 chunk_sizeof (const int N_chunk, const int N_basic)
@@ -175,6 +196,29 @@ chunk_alloc (const int N_chunk,
   return chunk;
 }
 
+/** Update the norms.
+ *
+ * @param chunk The chunk.
+ */
+void
+chunk_set_norm (void *const chunk)
+{
+  assert(chunk != NULL);
+
+  struct chunk_t *ptr = (struct chunk_t*) chunk;
+  double *A = chunk_matrix_pointer(0, 0, chunk);
+  double *norm = chunk_norm_pointer(chunk);
+#pragma omp parallel for default(none) shared(ptr, norm, A)
+  for(int i = 0; i < SQUARE(ptr->N_block); i++)
+  {
+    norm[i] = 0;
+    for(int j = 0; j < SQUARE(ptr->N_basic); j++)
+    {
+      norm[i] += SQUARE(A[i*SQUARE(ptr->N_basic)+j]);
+    }
+  }
+}
+
 /** Set a chunk.
  *
  * @param chunk The chunk.
@@ -182,38 +226,33 @@ chunk_alloc (const int N_chunk,
  * this function expects N_chunk x N_chunk elements. The elements of A are
  * expected in column-major order.
  */
-void chunk_set (void *const chunk, const double *const A)
+void
+chunk_set (void *const chunk, const double *const A)
 {
   assert(chunk != NULL);
   assert(A != NULL);
 
   struct chunk_t *ptr = (struct chunk_t*) chunk;
 
-  double *norm_2 = chunk_norm_pointer(chunk);
-  for(int i = 0; i < ptr->N_block; i++) {
-    for(int j = 0; j < ptr->N_block; j++)
-    {
-      double *A_basic = chunk_matrix_pointer(i, j, chunk);
+#pragma omp parallel for default(none) shared(ptr)
+  for(int index = 0; index < SQUARE(ptr->N_block); index++)
+  {
+    int j = index;
+    int i = j/ptr->N_block;
+    j %= ptr->N_block;
 
-      int index_norm = chunk_index(i, j, ptr->N_block);
-      assert(index_norm < SQUARE(ptr->N_block));
+    double *A_basic = chunk_matrix_pointer(i, j, chunk);
 
-      norm_2[index_norm] = 0;
-      for(int k = 0; k < ptr->N_basic; k++) {
-        for(int l = 0; l < ptr->N_basic; l++)
-        {
-          int index_basic = chunk_index(k, l, ptr->N_basic);
-          int index_dense = COLUMN_MAJOR(i*ptr->N_basic+k, j*ptr->N_basic+l, ptr->N_chunk);
-
-          assert(index_basic < SQUARE(ptr->N_basic));
-          assert(index_dense < SQUARE(ptr->N_chunk));
-
-          A_basic[index_basic] = A[index_dense];
-          norm_2[index_norm] += SQUARE(A_basic[index_basic]);
-        }
+    for(int k = 0; k < ptr->N_basic; k++) {
+      for(int l = 0; l < ptr->N_basic; l++)
+      {
+        A_basic[chunk_index(k, l, ptr->N_basic)] =
+          A[COLUMN_MAJOR(i*ptr->N_basic+k, j*ptr->N_basic+l, ptr->N_chunk)];
       }
     }
   }
+
+  chunk_set_norm(chunk);
 
   DEBUG("set chunk at %p, N_chunk = %d\n", chunk, ptr->N_chunk);
 #ifdef PRINT_MATRICES
@@ -289,12 +328,14 @@ chunk_print (const void *const chunk,
   va_start(ap, format);
   vsnprintf(tag, 2000, format, ap);
 
+  double *norm = chunk_norm_pointer(chunk);
+
   printf("%s\n", tag);
   for(int i = 0; i < ptr->N_block; i++) {
     for(int j = 0; j < ptr->N_block; j++)
     {
       double *A_basic = chunk_matrix_pointer(i, j, chunk);
-      printf("block(%d,%d):\n", i, j);
+      printf("block(%d,%d), norm = %e:\n", i, j, norm[chunk_index(i, j, ptr->N_block)]);
       for(int k = 0; k < ptr->N_basic; k++) {
         for(int l = 0; l < ptr->N_basic; l++)
         {
@@ -333,22 +374,16 @@ chunk_add (const double alpha, void *const A,
 
   DEBUG("adding two chunks, alpha = %e, beta = %e\n", alpha, beta);
 
-  for(int i = 0; i < ptr_A->N_block; i++) {
-    for(int j = 0; j < ptr_A->N_block; j++)
-    {
-      double *A_basic = chunk_matrix_pointer(i, j, A);
-      double *B_basic = chunk_matrix_pointer(i, j, B);
+  double *A_dense = chunk_matrix_pointer(0, 0, A);
+  double *B_dense = chunk_matrix_pointer(0, 0, B);
 
-      for(int k = 0; k < ptr_A->N_basic; k++) {
-        for(int l = 0; l < ptr_A->N_basic; l++)
-        {
-          A_basic[chunk_index(k, l, ptr_A->N_basic)] =
-            alpha*A_basic[chunk_index(k, l, ptr_A->N_basic)]
-            +beta*B_basic[chunk_index(k, l, ptr_A->N_basic)];
-        }
-      }
-    }
+#pragma omp parallel for default(none) shared(ptr_A, A_dense, B_dense)
+  for(int i = 0; i < SQUARE(ptr_A->N_chunk); i++)
+  {
+    A_dense[i] = alpha*A_dense[i]+beta*B_dense[i];
   }
+
+  chunk_set_norm(A);
 }
 
 /** Multiply two chunks using the SpAMM algorithm.
@@ -388,7 +423,6 @@ chunk_multiply (const double tolerance,
   double tolerance_2 = SQUARE(tolerance);
   double *norm_A = chunk_norm_pointer(A);
   double *norm_B = chunk_norm_pointer(B);
-  double *norm_C = chunk_norm_pointer(C);
 
   /* Reset C. */
   memset(ptr_C->data, 0, sizeof(double)*(SQUARE(ptr_A->N_block)+SQUARE(ptr_A->N_chunk)));
@@ -401,7 +435,7 @@ chunk_multiply (const double tolerance,
   }
 #endif
 
-#pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, norm_C, ptr_A, ptr_B, ptr_C, C_lock) reduction(+:complexity)
+#pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, ptr_A, ptr_B, ptr_C, C_lock) reduction(+:complexity)
   for(int index = 0; index < CUBE(ptr_A->N_block); index++)
   {
     int k = index;
@@ -438,7 +472,6 @@ chunk_multiply (const double tolerance,
               A_basic[chunk_index(i_basic, k_basic, ptr_A->N_basic)]
               *B_basic[chunk_index(k_basic, j_basic, ptr_B->N_basic)];
           }
-          norm_C[chunk_index(i, j, ptr_C->N_block)] += SQUARE(C_basic[chunk_index(i_basic, j_basic, ptr_C->N_basic)]);
         }
       }
 #ifdef _OPENMP
@@ -455,6 +488,8 @@ chunk_multiply (const double tolerance,
     omp_destroy_lock(&C_lock[i]);
   }
 #endif
+
+  chunk_set_norm(C);
 
   DEBUG("complexity %d out of %d\n", complexity, ptr_A->N_block*ptr_A->N_block*ptr_A->N_block);
 }
@@ -473,6 +508,7 @@ chunk_trace (const void *const chunk)
   struct chunk_t *ptr = (struct chunk_t*) chunk;
   double trace = 0;
 
+#pragma omp parallel for default(none) shared(ptr) reduction(+:trace)
   for(int i = 0; i < ptr->N_block; i++)
   {
     double *A_basic = chunk_matrix_pointer(i, i, chunk);
@@ -492,7 +528,7 @@ chunk_trace (const void *const chunk)
  * @f[ A \leftarrow \alpha A @f]
  *
  * @param alpha The scalar alpha.
- * @param A The chunk.
+ * @param chunk The chunk.
  */
 void
 chunk_scale (const double alpha, void *const chunk)
@@ -501,12 +537,16 @@ chunk_scale (const double alpha, void *const chunk)
 
   struct chunk_t *ptr = (struct chunk_t*) chunk;
   DEBUG("scaling block at %p by %e\n", chunk, alpha);
-  double *A_chunk = chunk_matrix_pointer(0, 0, chunk);
-  double *norm_2 = chunk_norm_pointer(chunk);
-  for(int i = 0; i < ptr->N_chunk*ptr->N_chunk; i++)
+
+  double *A_dense = chunk_matrix_pointer(0, 0, chunk);
+#pragma omp parallel for default(none) shared(ptr, A_dense)
+  for(int i = 0; i < SQUARE(ptr->N_chunk); i++)
   {
-    A_chunk[i] *= alpha;
+    A_dense[i] *= alpha;
   }
+
+  double *norm_2 = chunk_norm_pointer(chunk);
+#pragma omp parallel for default(none) shared(ptr, norm_2)
   for(int i = 0; i < ptr->N_block; i++)
   {
     norm_2[i] *= SQUARE(alpha);
@@ -532,7 +572,7 @@ chunk_add_identity (const double alpha, void *const chunk)
   DEBUG("adding %e Id to chunk at %p, N = %d, i_lower = %d, j_lower = %d\n",
       alpha, chunk, ptr->N, ptr->i_lower, ptr->j_lower);
 
-  double *norm_2 = chunk_norm_pointer(chunk);
+#pragma omp parallel for default(none) shared(ptr)
   for(int i = 0; i < ptr->N_block; i++)
   {
     double *A_basic = chunk_matrix_pointer(i, i, chunk);
@@ -542,10 +582,10 @@ chunk_add_identity (const double alpha, void *const chunk)
     {
       double old_Aij = A_basic[chunk_index(j, j, ptr->N_basic)];
       A_basic[chunk_index(j, j, ptr->N_basic)] += alpha;
-      norm_2[chunk_index(i, i, ptr->N_block)] += SQUARE(A_basic[chunk_index(j, j, ptr->N_basic)])
-        - SQUARE(old_Aij);
     }
   }
+
+  chunk_set_norm(chunk);
 }
 
 /** Convert a chunk to a dense matrix.
@@ -561,18 +601,21 @@ chunk_to_dense (const void *const chunk)
   assert(chunk != NULL);
 
   struct chunk_t *ptr = (struct chunk_t*) chunk;
-  double *A = calloc(ptr->N_chunk*ptr->N_chunk, sizeof(double));
+  double *A = malloc(SQUARE(ptr->N_chunk)*sizeof(double));
 
-  for(int i = 0; i < ptr->N_block; i++) {
-    for(int j = 0; j < ptr->N_block; j++)
-    {
-      double *A_basic = chunk_matrix_pointer(i, j, ptr);
-      for(int i_basic = 0; i_basic < ptr->N_basic; i_basic++) {
-        for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
-        {
-          A[COLUMN_MAJOR(i*ptr->N_basic+i_basic, j*ptr->N_basic+j_basic, ptr->N_chunk)] =
-            A_basic[chunk_index(i_basic, j_basic, ptr->N_basic)];
-        }
+#pragma omp parallel for default(none) shared(ptr, A)
+  for(int index = 0; index < SQUARE(ptr->N_block); index++)
+  {
+    int j = index;
+    int i = j/ptr->N_block;
+    j %= ptr->N_block;
+
+    double *A_basic = chunk_matrix_pointer(i, j, ptr);
+    for(int i_basic = 0; i_basic < ptr->N_basic; i_basic++) {
+      for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
+      {
+        A[COLUMN_MAJOR(i*ptr->N_basic+i_basic, j*ptr->N_basic+j_basic, ptr->N_chunk)] =
+          A_basic[chunk_index(i_basic, j_basic, ptr->N_basic)];
       }
     }
   }

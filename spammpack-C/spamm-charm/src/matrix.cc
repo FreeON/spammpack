@@ -20,6 +20,7 @@
  * @param alignPEs Align PEs in the diagonal matrix case.
  * @param N The matrix size.
  * @param blocksize The SpAMM blocksize.
+ * @param N_basic The size of the basic submatrix.
  * @param nameLength The strlen of the name.
  * @param name The matrix name.
  */

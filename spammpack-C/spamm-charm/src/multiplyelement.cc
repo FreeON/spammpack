@@ -31,8 +31,9 @@
 
 /** The constructor.
  *
- * @param The matrix size.
+ * @param N The matrix size.
  * @param blocksize The blocksize.
+ * @param N_basic The size of the basic submatrix.
  * @param tier The tier.
  * @param depth The depth of the matrix.
  * @param A The Nodes of this tier in A.

@@ -716,8 +716,9 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
     if(fabs(sTrace->x - trace) > verifyTolerance)
     {
       ABORT("trace mismatch (abs. tolerance = %e), "
-          "trace(C) = %e, trace(CExact) = %e\n", verifyTolerance,
-          sTrace->x, trace);
+          "trace(C) = %e, trace(CExact) = %e, "
+          "abs. diff = %e\n", verifyTolerance, sTrace->x, trace,
+          fabs(sTrace->x - trace));
     }
 
     if(maxAbsDiff > verifyTolerance)
