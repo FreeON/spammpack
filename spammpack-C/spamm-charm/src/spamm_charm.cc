@@ -62,6 +62,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 /** Initialize the node. */
 void initialize (void)
 {
@@ -286,7 +290,15 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
     }
   }
 
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+#pragma omp master
+    CkPrintf("SpAMM version %s using %d OpenMP thread(s)\n", PACKAGE_VERSION, omp_get_num_threads());
+  }
+#else
   CkPrintf("SpAMM version %s\n", PACKAGE_VERSION);
+#endif
 
   /* Register backtrace handler. */
   struct sigaction act;

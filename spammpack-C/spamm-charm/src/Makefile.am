@@ -6,6 +6,9 @@ additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLA
 
 bin_PROGRAMS = spamm-charm
 
+AM_CXXFLAGS = $(OPENMP_CXXFLAGS)
+AM_CFLAGS = $(OPENMP_CFLAGS)
+
 spamm_charm_LDFLAGS = -XCClinker "-language charm++ $(additional_linkerflags)"
 spamm_charm_LDADD = libdummychunk.la
 
@@ -44,7 +47,6 @@ spamm_charm_SOURCES = \
 	utilities.h
 
 lib_LTLIBRARIES = libdummychunk.la
-libdummychunk_la_CFLAGS = $(OPENMP_CFLAGS)
 libdummychunk_la_SOURCES = \
 	chunk.c \
 	chunk.h

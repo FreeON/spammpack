@@ -40,6 +40,7 @@ AM_CONDITIONAL([HAVE_PYTHON], [test "${PYTHON}" != ":"])
 # Find the real C++ compiler.
 AC_PROG_CXX
 AC_LANG(C++)
+AC_OPENMP
 
 # Test for spammpack.
 #AC_CHECK_HEADERS([spamm.h], [], [AC_MSG_FAILURE([Cannot find spammpack header files])])
