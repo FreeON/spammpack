@@ -6,7 +6,7 @@ additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLA
 
 bin_PROGRAMS = spamm-charm
 
-AM_CXXFLAGS = $(OPENMP_CXXFLAGS)
+AM_CXXFLAGS = $(CHARMFLAGS) $(OPENMP_CXXFLAGS)
 AM_CFLAGS = $(OPENMP_CFLAGS)
 
 spamm_charm_LDFLAGS = -XCClinker "-language charm++ $(additional_linkerflags)"
@@ -84,7 +84,7 @@ valgrind : spamm_charm$(EXEEXT)
 		./$< -N 1
 
 %.decl.h %.def.h : %.ci
-	$(AM_V_CXX)$(CHARMC) $(DEFAULT_INCLUDES) -preprocess $<
+	$(AM_V_CXX)$(CHARMC) $(CHARMFLAGS) $(DEFAULT_INCLUDES) -preprocess $<
 
 CLEANFILES = \
 	$(spamm_charm_CHARMHEADERS) \

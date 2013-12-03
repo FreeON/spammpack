@@ -112,13 +112,19 @@ fi
 CXX=${CHARMC}
 AC_PROG_CXX
 
+AC_ARG_VAR([CHARMFLAGS], [Extra flags for the Charm++ compiler wrapper])
+
 AC_LANG(C++)
+old_CXXFLAGS=${CXXFLAGS}
+CXXFLAGS="${CXXFLAGS} ${CHARMFLAGS}"
 
 # Test whether the charm compiler works.
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <charm++.h>],
   [CkExit();])],
   [],
   [AC_MSG_FAILURE([can not compile with the charm compiler: ${CHARMC}])])
+
+CXXFLAGS=${old_CXXFLAGS}
 
 # Enable load balancers.
 AC_ARG_ENABLE([load-balance],
