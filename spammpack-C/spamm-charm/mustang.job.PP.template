@@ -18,6 +18,8 @@ echo "starting on $(date)"
   --Ne NE \
   --density DENSITY \
   --block BLOCK \
-  --print-PEMap PEMAP \
-  --initial-PE 0 \
+  --basic BASIC \
   --load-balance
+
+#--print-PEMap PEMAP \
+#--initial-PE 0 \
