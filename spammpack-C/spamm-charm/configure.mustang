@@ -2,4 +2,5 @@
 
 ./configure \
   --enable-default-LB \
-  CHARMC=~/charm-6.5.1/bin/charmc
+  CHARMC=~/charm-6.5.1/bin/charmc \
+  $*
