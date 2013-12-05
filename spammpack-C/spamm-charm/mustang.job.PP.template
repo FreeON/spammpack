@@ -11,6 +11,8 @@ cd $SLURM_SUBMIT_DIR/src
 
 echo "starting on $(date)"
 
+export OMP_NUM_THREADS=24
+
 ./charmrun -np ${SLURM_NTASKS} \
   spamm-charm \
   --operation SP2 \
