@@ -205,6 +205,10 @@ chunk_set_norm (void *const chunk)
 {
   assert(chunk != NULL);
 
+#ifdef FORCE_OMP_NUM_THREADS
+  assert(omp_get_max_threads() == FORCE_OMP_NUM_THREADS);
+#endif
+
   struct chunk_t *ptr = (struct chunk_t*) chunk;
   double *A = chunk_matrix_pointer(0, 0, chunk);
   double *norm = chunk_norm_pointer(chunk);
@@ -231,6 +235,10 @@ chunk_set (void *const chunk, const double *const A)
 {
   assert(chunk != NULL);
   assert(A != NULL);
+
+#ifdef FORCE_OMP_NUM_THREADS
+  assert(omp_get_max_threads() == FORCE_OMP_NUM_THREADS);
+#endif
 
   struct chunk_t *ptr = (struct chunk_t*) chunk;
 
@@ -364,6 +372,10 @@ chunk_add (const double alpha, void *const A,
   assert(A != NULL);
   assert(B != NULL);
 
+#ifdef FORCE_OMP_NUM_THREADS
+  assert(omp_get_max_threads() == FORCE_OMP_NUM_THREADS);
+#endif
+
   struct chunk_t *ptr_A = (struct chunk_t*) A;
   struct chunk_t *ptr_B = (struct chunk_t*) B;
 
@@ -404,6 +416,10 @@ chunk_multiply (const double tolerance,
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
+
+#ifdef FORCE_OMP_NUM_THREADS
+  assert(omp_get_max_threads() == FORCE_OMP_NUM_THREADS);
+#endif
 
   struct chunk_t *ptr_A = (struct chunk_t*) A;
   struct chunk_t *ptr_B = (struct chunk_t*) B;
@@ -505,6 +521,10 @@ chunk_trace (const void *const chunk)
 {
   assert(chunk != NULL);
 
+#ifdef FORCE_OMP_NUM_THREADS
+  assert(omp_get_max_threads() == FORCE_OMP_NUM_THREADS);
+#endif
+
   struct chunk_t *ptr = (struct chunk_t*) chunk;
   double trace = 0;
 
@@ -535,6 +555,10 @@ chunk_scale (const double alpha, void *const chunk)
 {
   assert(chunk != NULL);
 
+#ifdef FORCE_OMP_NUM_THREADS
+  assert(omp_get_max_threads() == FORCE_OMP_NUM_THREADS);
+#endif
+
   struct chunk_t *ptr = (struct chunk_t*) chunk;
   DEBUG("scaling block at %p by %e\n", chunk, alpha);
 
@@ -564,6 +588,10 @@ void
 chunk_add_identity (const double alpha, void *const chunk)
 {
   assert(chunk != NULL);
+
+#ifdef FORCE_OMP_NUM_THREADS
+  assert(omp_get_max_threads() == FORCE_OMP_NUM_THREADS);
+#endif
 
   struct chunk_t *ptr = (struct chunk_t*) chunk;
 
@@ -599,6 +627,10 @@ double *
 chunk_to_dense (const void *const chunk)
 {
   assert(chunk != NULL);
+
+#ifdef FORCE_OMP_NUM_THREADS
+  assert(omp_get_max_threads() == FORCE_OMP_NUM_THREADS);
+#endif
 
   struct chunk_t *ptr = (struct chunk_t*) chunk;
   double *A = malloc(SQUARE(ptr->N_chunk)*sizeof(double));

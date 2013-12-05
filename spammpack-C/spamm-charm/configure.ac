@@ -42,6 +42,16 @@ AC_PROG_CXX
 AC_LANG(C++)
 AC_OPENMP
 
+AC_ARG_ENABLE([set-num-threads],
+  [AS_HELP_STRING([--enable-set-num-threads],
+  [Set the number of threads in OpenMP parallel sections to N])],
+  [enable_set_threads=${enableval}],
+  [enable_set_threads="no"])
+if [[ ${enable_set_threads} != "no" ]]; then
+  AC_DEFINE_UNQUOTED([FORCE_OMP_NUM_THREADS], [${enable_set_threads}],
+    [Set the number of threads in OpenMP parallel sections to N])
+fi
+
 # Test for spammpack.
 #AC_CHECK_HEADERS([spamm.h], [], [AC_MSG_FAILURE([Cannot find spammpack header files])])
 #AC_MSG_CHECKING([whether I can link against spammpack])
