@@ -26,12 +26,15 @@ AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
 # Find a C compiler.
 AC_PROG_CC_STDC
 
+# Initialize libtool.
+LT_INIT
+
 # Find OpenMP for C.
 AC_LANG(C)
 AC_OPENMP
 
-# Initialize libtool.
-LT_INIT
+# Test for math.
+AC_SEARCH_LIBS([sin], [m], [], [AC_MSG_FAILURE([need the math library])])
 
 # Find a python interpreter.
 AM_PATH_PYTHON([2.7], [], [:])
