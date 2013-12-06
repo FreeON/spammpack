@@ -44,36 +44,51 @@ work (void)
 }
 
 int
-main ()
+main (const int argc, char **argv)
 {
   struct timespec start_time;
   struct timespec end_time;
 
   double elapsed;
+  int max_threads = 1;
+
+#ifdef _OPENMP
+  if(argc > 1)
+  {
+    max_threads = strtol(argv[1], NULL, 10);
+    omp_set_num_threads(max_threads);
+  }
+
+  else
+  {
+    max_threads = omp_get_max_threads();
+  }
+#endif
 
 #ifdef _OPENMP
 #pragma omp parallel
   printf("starting thread %d\n", omp_get_thread_num());
 #endif
 
-#ifdef _OPENMP
-  printf("%d threads: ", omp_get_max_threads());
-#endif
+  printf("%d threads: ", max_threads);
   timer_start(&start_time); work(); timer_stop(&end_time);
   elapsed = timer_get(&start_time, &end_time);
   printf("%e seconds", elapsed);
 
 #ifdef _OPENMP
-  printf(", %e seconds serial\n", elapsed*omp_get_max_threads());
+  printf(", %e seconds serial\n", elapsed*max_threads);
 #else
   printf(" in serial\n");
 #endif
 
 #ifdef _OPENMP
-  omp_set_num_threads(1);
-  printf("%d threads: ", omp_get_max_threads());
-  timer_start(&start_time); work(); timer_stop(&end_time);
-  elapsed = timer_get(&start_time, &end_time);
-  printf("%e seconds\n", elapsed);
+  if(max_threads > 1)
+  {
+    omp_set_num_threads(1);
+    printf("%d threads: ", omp_get_max_threads());
+    timer_start(&start_time); work(); timer_stop(&end_time);
+    elapsed = timer_get(&start_time, &end_time);
+    printf("%e seconds\n", elapsed);
+  }
 #endif
 }
