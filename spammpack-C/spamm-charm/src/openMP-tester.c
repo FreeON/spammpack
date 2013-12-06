@@ -66,8 +66,17 @@ main (const int argc, char **argv)
 #endif
 
 #ifdef _OPENMP
+  omp_lock_t write_lock;
+  omp_init_lock(&write_lock);
+  printf("starting thread:");
 #pragma omp parallel
-  printf("starting thread %d\n", omp_get_thread_num());
+  {
+    omp_set_lock(&write_lock);
+    printf(" %d", omp_get_thread_num());
+    omp_unset_lock(&write_lock);
+  }
+  printf("\n");
+  omp_destroy_lock(&write_lock);
 #endif
 
   printf("%d threads: ", max_threads);
