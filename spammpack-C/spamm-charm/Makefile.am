@@ -12,10 +12,11 @@ EXTRA_DIST = \
 	moonlight.sh.template \
 	mustang-results.sh \
 	mustang-submit.sh \
+	mustang.job.PP.template \
 	mustang.job.decay.template \
 	mustang.job.diagonal.template \
 	mustang.job.full.template \
-	mustang.job.PP.template
+	openMP.job
 
 docs :
 	$(DOXYGEN)
