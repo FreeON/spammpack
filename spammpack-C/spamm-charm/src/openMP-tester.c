@@ -66,6 +66,11 @@ main (const int argc, char **argv)
 #endif
 
 #ifdef _OPENMP
+  if(omp_get_dynamic())
+  {
+    printf("OMP_DYNAMIC is set\n");
+    omp_set_dynamic(1 == 0);
+  }
   omp_lock_t write_lock;
   omp_init_lock(&write_lock);
   printf("starting thread:");

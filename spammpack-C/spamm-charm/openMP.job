@@ -10,8 +10,8 @@ module load openmpi/1.6.3
 cd $SLURM_SUBMIT_DIR/src
 
 echo "run 1"
-mpirun -np ${SLURM_NTASKS} openMP-tester
+mpirun -np ${SLURM_NTASKS} openMP-tester.sh
 
 echo "run 2"
 export OMP_NUM_THREADS=24
-mpirun -np ${SLURM_NTASKS} openMP-tester
+mpirun -np ${SLURM_NTASKS} openMP-tester.sh
