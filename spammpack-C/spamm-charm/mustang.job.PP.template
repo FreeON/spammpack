@@ -9,12 +9,13 @@ module load openmpi/1.6.3
 
 cd $SLURM_SUBMIT_DIR/src
 
+export LD_LIBRARY_PATH=${SLURM_SUBMIT_DIR}/install/lib:$LD_LIBRARY_PATH
+
 echo "starting on $(date)"
 
-export OMP_NUM_THREADS=24
-
 ./charmrun -np ${SLURM_NTASKS} \
-  spamm-charm \
+  --mca opal_paffinity_alone 0 \
+  ${SLURM_SUBMIT_DIR}/install/bin/spamm-charm \
   --operation SP2 \
   --tolerance 1e-6 \
   --Ne NE \
