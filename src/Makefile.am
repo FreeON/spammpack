@@ -12,6 +12,8 @@ libspammpack_la_SOURCES = \
   spamm_trap.c \
   spammpack.F90 
 
+include_HEADERS = spammpack.mod
+
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_FCFLAGS = $(OPENMP_FCFLAGS)
 
