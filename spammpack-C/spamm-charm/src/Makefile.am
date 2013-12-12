@@ -46,12 +46,18 @@ spamm_charm_SOURCES = \
 	utilities.cc \
 	utilities.h
 
-lib_LTLIBRARIES = libdummychunk.la
+lib_LTLIBRARIES = libdummychunk.la libtree.la
+
 libdummychunk_la_SOURCES = \
 	chunk.c \
 	chunk.h
 
-include_HEADERS = chunk.h
+libtree_la_SOURCES = \
+	tree.c \
+	tree.h \
+	tree_private.h
+
+include_HEADERS = chunk.h tree.h
 
 spamm_charm_CHARMHEADERS = $(foreach i, $(spamm_charm_INTERFACEFILES), $(basename $i).decl.h $(basename $i).def.h)
 
