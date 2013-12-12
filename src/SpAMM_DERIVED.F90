@@ -102,30 +102,29 @@ MODULE SpAMM_DERIVED
   END TYPE QuTree
 
   TYPE Stats
-     REAL(SpAMM_KIND)   :: Time
+     REAL(SpAMM_DOUBLE) :: Time
      INTEGER            :: Count
      CHARACTER(LEN=50)  :: Routine
   END TYPE Stats
 
+  !! This type includes several different norms.
+  TYPE SpAMM_Norm
+
+    !> The Frobenius norm.
+    !!
+    !! @f$ \Vert A \Vert_{F} = @f$.
+    REAL(SpAMM_KIND) :: FrobeniusNorm = SpAMM_Zero
+
+    !> The max norm.
+    !!
+    !! @f$ \max_{ij} A_{ij} @f$.
+    REAL(SpAMM_KIND) :: MaxNorm = SpAMM_Zero
+
+  END TYPE SpAMM_Norm
+
 CONTAINS
 
 END MODULE SpAMM_DERIVED
-
-!!$
-!!$  !! This type includes several different norms.
-!!$  TYPE SpAMM_Norm
-!!$
-!!$    !> The Frobenius norm.
-!!$    !!
-!!$    !! @f$ \Vert A \Vert_{F} = @f$.
-!!$    REAL(SpAMM_KIND) :: FrobeniusNorm = SpAMM_Zero
-!!$
-!!$    !> The max norm.
-!!$    !!
-!!$    !! @f$ \max_{ij} A_{ij} @f$.
-!!$    REAL(SpAMM_KIND) :: MaxNorm = SpAMM_Zero
-!!$
-!!$  END TYPE SpAMM_Norm
 
 !!$
 !!$
