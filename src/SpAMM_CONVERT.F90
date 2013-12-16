@@ -107,7 +107,7 @@ MODULE SpAMM_CONVERT
         WRITE(*, *) "SpAMM_BLOCK_SIZE = ", SpAMM_BLOCK_SIZE
         CALL SpAMM_Exit(1)
       ELSE
-        !ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
+        ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
 
         ! Set new block to zero.
         qA%Blok = SpAMM_Zero
