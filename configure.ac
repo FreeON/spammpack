@@ -123,6 +123,14 @@ if test "$big_lock" = "yes"; then
   AC_DEFINE([BIGLOCK], [1], [Use the big lock for recursive multiply])
 fi
 
+AC_ARG_ENABLE([double],
+  [AS_HELP_STRING([--enable-double], [Enable double precision SpAMM])],
+  [enable_double=$enableval],
+  [enable_double="no"])
+if [[ "${enable_double}" = "yes" ]]; then
+  AC_DEFINE([SPAMM_DOUBLE], [1], [Enable double precision SpAMM])
+fi
+
 dnl Find out how to enable OpenMP in C.
 AC_LANG(C)
 AC_OPENMP
