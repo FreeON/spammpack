@@ -456,7 +456,7 @@ chunk_multiply (const double tolerance,
   }
 #endif
 
-#pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, ptr_A, ptr_B, ptr_C, C_lock) reduction(+:complexity)
+#pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, ptr_A, ptr_B, ptr_C, C_lock) reduction(+:complexity) schedule(dynamic, 1)
   for(int index = 0; index < CUBE(ptr_A->N_block); index++)
   {
     int k = index;
@@ -465,13 +465,13 @@ chunk_multiply (const double tolerance,
     int j = k/ptr_A->N_block;
     k %= ptr_A->N_block;
 
-#ifdef _OPENMP
-    DEBUG("(%d) linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
-        omp_get_thread_num(), index, i, j, k, ptr_A->N_block);
-#else
-    DEBUG("linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
-        omp_get_thread_num(), index, i, j, k, ptr_A->N_block);
-#endif
+//#ifdef _OPENMP
+//    DEBUG("(%d) linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
+//        omp_get_thread_num(), index, i, j, k, ptr_A->N_block);
+//#else
+//    DEBUG("linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
+//        omp_get_thread_num(), index, i, j, k, ptr_A->N_block);
+//#endif
 
     double *const C_basic = chunk_matrix_pointer(i, j, C);
 
