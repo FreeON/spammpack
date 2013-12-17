@@ -50,6 +50,9 @@
 /** The data layout of a chunk. */
 struct chunk_t
 {
+  /** The total size of this chunk. Used for bounds checks. */
+  size_t chunksize;
+
   /** The lower row bound of this chunk. */
   unsigned int i_lower;
 
@@ -128,9 +131,10 @@ chunk_matrix_pointer (const int i, const int j, const void *const chunk)
 {
   assert(chunk != NULL);
   struct chunk_t *ptr = (struct chunk_t*) chunk;
-  return (double*) ((intptr_t) ptr->data
-      + (intptr_t) SQUARE(ptr->N_block)*sizeof(double)
-      + (intptr_t) SQUARE(ptr->N_basic)*sizeof(double)*chunk_index(i, j, ptr->N_block));
+  size_t offset = (intptr_t) SQUARE(ptr->N_block)*sizeof(double)
+    + (intptr_t) SQUARE(ptr->N_basic)*sizeof(double)*chunk_index(i, j, ptr->N_block);
+  assert(offset < ptr->chunksize);
+  return (double*) ((intptr_t) ptr->data + offset);
 }
 
 /** Get the chunksize.
@@ -176,6 +180,7 @@ chunk_alloc (const int N_chunk,
 
   struct chunk_t *ptr = (struct chunk_t*) chunk;
 
+  ptr->chunksize = chunk_sizeof(N_chunk, N_basic);
   ptr->i_lower = i_lower;
   ptr->j_lower = j_lower;
   ptr->N = N;
