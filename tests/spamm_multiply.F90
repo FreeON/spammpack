@@ -50,6 +50,12 @@ program spamm_multiply
 #ifdef _OPENMP
   call get_command_argument(2, inputbuffer)
   read(inputbuffer, "(I3)") num_threads
+
+  if(num_threads < 1) then
+    num_threads = omp_get_max_threads()
+  endif
+
+  write(*, *) "setting num_threads to ", num_threads
 #endif
 
   call load_matrix(matrixfilename, A_dense)
@@ -108,7 +114,11 @@ program spamm_multiply
 
     write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
     do test_repeat = 1, TEST_REPEAT
+#ifdef SPAMM_DOUBLE
+      call Multiply(A, B, C, LocalThreshold = 1d-7)
+#else
       call Multiply(A, B, C, LocalThreshold = 1e-7)
+#endif
     enddo
 
     CALL SpAMM_Time_Stamp()
