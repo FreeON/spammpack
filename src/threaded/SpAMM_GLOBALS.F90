@@ -1,0 +1,1 @@
+../SpAMM_GLOBALS.F90

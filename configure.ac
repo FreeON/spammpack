@@ -156,6 +156,7 @@ AC_CONFIG_FILES([
 Doxyfile
 Makefile
 src/Makefile
+src/threaded/Makefile
 tests/Makefile
 tests/scaling_test.sh
 ])

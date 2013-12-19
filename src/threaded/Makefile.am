@@ -1,8 +1,6 @@
-SUBDIRS = threaded
+lib_LTLIBRARIES = libspammpack-threaded.la
 
-lib_LTLIBRARIES = libspammpack-serial.la
-
-libspammpack_serial_la_SOURCES = \
+libspammpack_threaded_la_SOURCES = \
   SpAMM_ALGEBRA.F90 \
   SpAMM_CONVERT.F90 \
   SpAMM_DERIVED.F90 \
@@ -12,9 +10,10 @@ libspammpack_serial_la_SOURCES = \
   spamm_exit.c \
   spamm_get_time.c \
   spamm_trap.c \
-  spammpack.F90
+  spammpack.F90 
 
-include_HEADERS = spammpack.mod
+AM_CFLAGS = $(OPENMP_CFLAGS)
+AM_FCFLAGS = $(OPENMP_FCFLAGS)
 
 CLEANFILES = *.mod
 
@@ -25,15 +24,3 @@ SpAMM_GLOBALS.lo : SpAMM_DERIVED.lo
 SpAMM_MNGMENT.lo : SpAMM_DERIVED.lo SpAMM_GLOBALS.lo
 spammpack.lo     : SpAMM_DERIVED.lo SpAMM_GLOBALS.lo SpAMM_MNGMENT.lo SpAMM_ALGEBRA.lo SpAMM_PROJECT.lo
 SpAMM_PROJECT.lo : SpAMM_DERIVED.lo SpAMM_GLOBALS.lo SpAMM_MNGMENT.lo SpAMM_ALGEBRA.lo
-
-.PHONY : depcheck
-depcheck :
-	for i in $(libspammpack_la_OBJECTS); do \
-		echo "depchecking $$i"; \
-		$(MAKE) clean; \
-		$(MAKE) $$i || exit 1; \
-	done
-	$(MAKE) clean
-
-TAGS_FILES = *.F90 *.c
-CTAGSFLAGS = --fortran-kinds=+L+i
