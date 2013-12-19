@@ -46,10 +46,10 @@ MODULE SpAMM_DERIVED
   !> Define float of length 8.
   INTEGER, PARAMETER :: SpAMM_DOUBLE = KIND(0.0D0)   !--Real*8
   !> Define the float type used for SpAMM.
-#ifdef SPAMM_DOUBLE
-  INTEGER, PARAMETER :: SpAMM_KIND = SpAMM_DOUBLE
-#else
+#ifdef SPAMM_SINGLE
   INTEGER, PARAMETER :: SpAMM_KIND = SpAMM_SINGLE
+#else
+  INTEGER, PARAMETER :: SpAMM_KIND = SpAMM_DOUBLE
 #endif
   !> Define the number zero.
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Zero = 0D0

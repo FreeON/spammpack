@@ -114,10 +114,10 @@ program spamm_multiply
 
     write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
     do test_repeat = 1, TEST_REPEAT
-#ifdef SPAMM_DOUBLE
-      call Multiply(A, B, C, LocalThreshold = 1d-7)
-#else
+#ifdef SPAMM_SINGLE
       call Multiply(A, B, C, LocalThreshold = 1e-7)
+#else
+      call Multiply(A, B, C, LocalThreshold = 1d-7)
 #endif
     enddo
 
