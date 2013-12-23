@@ -84,9 +84,9 @@ MODULE SpAMM_CONVERT
 #endif
 
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
-    TYPE(QuTree), POINTER                        :: qA
-    INTEGER                                      :: i_lower, i_upper
-    INTEGER                                      :: j_lower, j_upper
+    TYPE(QuTree), POINTER, INTENT(INOUT)         :: qA
+    INTEGER, INTENT(IN)                          :: i_lower, i_upper
+    INTEGER, INTENT(IN)                          :: j_lower, j_upper
 
     INTEGER :: i, j
     INTEGER :: A_rows, A_cols
@@ -130,26 +130,26 @@ MODULE SpAMM_CONVERT
       RETURN
     ELSE
 
-      ALLOCATE(qA%Quad00)
-      ALLOCATE(qA%Quad01)
-      ALLOCATE(qA%Quad10)
       ALLOCATE(qA%Quad11)
+      ALLOCATE(qA%Quad12)
+      ALLOCATE(qA%Quad21)
+      ALLOCATE(qA%Quad22)
 
 #ifdef OLDCONVERT
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:A_rows/2,        1:A_cols/2),        qA%Quad00)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:A_rows/2,        A_cols/2+1:A_cols), qA%Quad01)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(A_rows/2+1:A_rows, 1:A_cols/2),        qA%Quad10)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(A_rows/2+1:A_rows, A_cols/2+1:A_cols), qA%Quad11)
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:A_rows/2,        1:A_cols/2),        qA%Quad11)
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:A_rows/2,        A_cols/2+1:A_cols), qA%Quad12)
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(A_rows/2+1:A_rows, 1:A_cols/2),        qA%Quad21)
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(A_rows/2+1:A_rows, A_cols/2+1:A_cols), qA%Quad22)
 #else
       ! Avoid slicing here for performance.
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad00, &
-        i_lower,          i_lower+A_rows/2-1, j_lower,          j_lower+A_cols/2-1)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad01, &
-        i_lower,          i_lower+A_rows/2-1, j_lower+A_cols/2, j_upper)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad10, &
-        i_lower+A_rows/2, i_upper,           j_lower,          j_lower+A_cols/2-1)
       CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad11, &
-        i_lower+A_rows/2, i_upper,           j_lower+A_cols/2, j_upper)
+        i_lower,          i_lower+A_rows/2-1, j_lower,          j_lower+A_cols/2-1)
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad12, &
+        i_lower,          i_lower+A_rows/2-1, j_lower+A_cols/2, j_upper)
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad21, &
+        i_lower+A_rows/2, i_upper,            j_lower,          j_lower+A_cols/2-1)
+      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad22, &
+        i_lower+A_rows/2, i_upper,            j_lower+A_cols/2, j_upper)
 #endif
 
     ENDIF

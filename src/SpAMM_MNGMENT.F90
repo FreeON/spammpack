@@ -228,45 +228,6 @@ CONTAINS
       !ENDIF
       qC%Blok=qA%Blok
     ELSE
-      IF(ASSOCIATED(qA%Quad00))THEN
-        !$OMP TASK UNTIED SHARED(qA,qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad00,qC%Quad00,Depth+1)
-        !$OMP END TASK
-      ELSEIF(ASSOCIATED(qC%Quad00))THEN
-        !$OMP TASK UNTIED SHARED(qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad00,Depth+1)
-        !$OMP END TASK
-        !$OMP TASKWAIT
-        DEALLOCATE(qC%Quad00)
-      ENDIF
-      IF(ASSOCIATED(qA%Quad01))THEN
-        !$OMP TASK UNTIED SHARED(qA,qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad01,qC%Quad01,Depth+1)
-        !$OMP END TASK
-      ELSEIF(ASSOCIATED(qC%Quad01))THEN
-        !$OMP TASK UNTIED SHARED(qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad01,Depth+1)
-        !$OMP END TASK
-        !$OMP TASKWAIT
-        DEALLOCATE(qC%Quad01)
-      ENDIF
-      IF(ASSOCIATED(qA%Quad10))THEN
-        !$OMP TASK UNTIED SHARED(qA,qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad10,qC%Quad10,Depth+1)
-        !$OMP END TASK
-      ELSEIF(ASSOCIATED(qC%Quad10))THEN
-        !$OMP TASK UNTIED SHARED(qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad10,Depth+1)
-        !$OMP END TASK
-        !$OMP TASKWAIT
-        DEALLOCATE(qC%Quad10)
-      ENDIF
       IF(ASSOCIATED(qA%Quad11))THEN
         !$OMP TASK UNTIED SHARED(qA,qC) &
         !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
@@ -279,6 +240,45 @@ CONTAINS
         !$OMP END TASK
         !$OMP TASKWAIT
         DEALLOCATE(qC%Quad11)
+      ENDIF
+      IF(ASSOCIATED(qA%Quad12))THEN
+        !$OMP TASK UNTIED SHARED(qA,qC) &
+        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad12,qC%Quad12,Depth+1)
+        !$OMP END TASK
+      ELSEIF(ASSOCIATED(qC%Quad12))THEN
+        !$OMP TASK UNTIED SHARED(qC) &
+        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Delete_QuTree_Recur(qC%Quad12,Depth+1)
+        !$OMP END TASK
+        !$OMP TASKWAIT
+        DEALLOCATE(qC%Quad12)
+      ENDIF
+      IF(ASSOCIATED(qA%Quad21))THEN
+        !$OMP TASK UNTIED SHARED(qA,qC) &
+        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad21,qC%Quad21,Depth+1)
+        !$OMP END TASK
+      ELSEIF(ASSOCIATED(qC%Quad21))THEN
+        !$OMP TASK UNTIED SHARED(qC) &
+        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Delete_QuTree_Recur(qC%Quad21,Depth+1)
+        !$OMP END TASK
+        !$OMP TASKWAIT
+        DEALLOCATE(qC%Quad21)
+      ENDIF
+      IF(ASSOCIATED(qA%Quad22))THEN
+        !$OMP TASK UNTIED SHARED(qA,qC) &
+        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad22,qC%Quad22,Depth+1)
+        !$OMP END TASK
+      ELSEIF(ASSOCIATED(qC%Quad22))THEN
+        !$OMP TASK UNTIED SHARED(qC) &
+        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Delete_QuTree_Recur(qC%Quad22,Depth+1)
+        !$OMP END TASK
+        !$OMP TASKWAIT
+        DEALLOCATE(qC%Quad22)
       ENDIF
     ENDIF
 
@@ -357,10 +357,10 @@ CONTAINS
       Col_01_11=(/Cols(1)+HlfSpn+1,Cols(2)/)
       IF(Col<=Col_00_10(2))THEN
         !
-        IF(ASSOCIATED(qA%Quad00))THEN
+        IF(ASSOCIATED(qA%Quad11))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad00,bC%Sect0,Col,Col_00_10,Depth+1)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad11,bC%Sect0,Col,Col_00_10,Depth+1)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%Sect0))THEN
           !$OMP TASK UNTIED SHARED(bC) &
@@ -371,10 +371,10 @@ CONTAINS
           DEALLOCATE(bC%Sect0)
         ENDIF
         !
-        IF(ASSOCIATED(qA%Quad10))THEN
+        IF(ASSOCIATED(qA%Quad21))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad10,bC%Sect1,Col,Col_00_10,Depth+1)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad21,bC%Sect1,Col,Col_00_10,Depth+1)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%Sect1))THEN
           !$OMP TASK UNTIED SHARED(bC) &
@@ -387,10 +387,10 @@ CONTAINS
         !
       ELSE
         !
-        IF(ASSOCIATED(qA%Quad01))THEN
+        IF(ASSOCIATED(qA%Quad12))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad01,bC%Sect0,Col,Col_01_11,Depth+1)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad12,bC%Sect0,Col,Col_01_11,Depth+1)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%Sect0))THEN
           !$OMP TASK UNTIED SHARED(bC) &
@@ -401,10 +401,10 @@ CONTAINS
           DEALLOCATE(bC%Sect0)
         ENDIF
         !
-        IF(ASSOCIATED(qA%Quad11))THEN
+        IF(ASSOCIATED(qA%Quad22))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad11,bC%Sect1,Col,Col_01_11,Depth+1)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad22,bC%Sect1,Col,Col_01_11,Depth+1)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%Sect1))THEN
           !$OMP TASK UNTIED SHARED(bC) &
@@ -439,47 +439,47 @@ CONTAINS
 #endif
     !$OMP END CRITICAL
 
-    IF(ASSOCIATED(qA%Quad00))THEN
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad00,Depth+1)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      !$OMP CRITICAL
-      DEALLOCATE(qA%Quad00)
-      !$OMP END CRITICAL
-    ENDIF
-
-    IF(ASSOCIATED(qA%Quad01))THEN
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad01,Depth+1)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      !$OMP CRITICAL
-      DEALLOCATE(qA%Quad01)
-      !$OMP END CRITICAL
-    ENDIF
-
-    IF(ASSOCIATED(qA%Quad10))THEN
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad10,Depth+1)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      !$OMP CRITICAL
-      DEALLOCATE(qA%Quad10)
-      !$OMP END CRITICAL
-    ENDIF
-
     IF(ASSOCIATED(qA%Quad11))THEN
-       !$OMP TASK UNTIED SHARED(qA) &
+      !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       CALL SpAMM_Delete_QuTree_Recur(qA%Quad11,Depth+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
       DEALLOCATE(qA%Quad11)
+      !$OMP END CRITICAL
+    ENDIF
+
+    IF(ASSOCIATED(qA%Quad12))THEN
+      !$OMP TASK UNTIED SHARED(qA) &
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad12,Depth+1)
+      !$OMP END TASK
+      !$OMP TASKWAIT
+      !$OMP CRITICAL
+      DEALLOCATE(qA%Quad12)
+      !$OMP END CRITICAL
+    ENDIF
+
+    IF(ASSOCIATED(qA%Quad21))THEN
+      !$OMP TASK UNTIED SHARED(qA) &
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad21,Depth+1)
+      !$OMP END TASK
+      !$OMP TASKWAIT
+      !$OMP CRITICAL
+      DEALLOCATE(qA%Quad21)
+      !$OMP END CRITICAL
+    ENDIF
+
+    IF(ASSOCIATED(qA%Quad22))THEN
+       !$OMP TASK UNTIED SHARED(qA) &
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad22,Depth+1)
+      !$OMP END TASK
+      !$OMP TASKWAIT
+      !$OMP CRITICAL
+      DEALLOCATE(qA%Quad22)
       !$OMP END CRITICAL
     ENDIF
 
@@ -524,7 +524,7 @@ CONTAINS
   !! @param qA Pointer to node.
   SUBROUTINE NewQuNode(qA)
 
-    TYPE(QuTree), POINTER :: qA
+    TYPE(QuTree), POINTER, INTENT(INOUT) :: qA
 
     ! Delete node if it already exists.
     IF(ASSOCIATED(qA)) THEN
@@ -582,10 +582,10 @@ CONTAINS
       qA%Blok=SpAMM_Zero
       RETURN
     ELSE
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad00,Depth+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad01,Depth+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad10,Depth+1)
       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11,Depth+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad12,Depth+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad21,Depth+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad22,Depth+1)
     ENDIF
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur

@@ -84,15 +84,15 @@ MODULE SpAMM_DERIVED
   !> Quaternary tree data structure.
   TYPE QuTree
     !> The Frobenious norm.
-    REAL(SpAMM_KIND) :: Norm
+    REAL(SpAMM_KIND) :: Norm = 0
     !> The pointer to the subtree in quadrant 11.
-    TYPE(QuTree), POINTER :: Quad00 => NULL()
-    !> The pointer to the subtree in quadrant 12.
-    TYPE(QuTree), POINTER :: Quad01 => NULL()
-    !> The pointer to the subtree in quadrant 21.
-    TYPE(QuTree), POINTER :: Quad10 => NULL()
-    !> The pointer to the subtree in quadrant 22.
     TYPE(QuTree), POINTER :: Quad11 => NULL()
+    !> The pointer to the subtree in quadrant 12.
+    TYPE(QuTree), POINTER :: Quad12 => NULL()
+    !> The pointer to the subtree in quadrant 21.
+    TYPE(QuTree), POINTER :: Quad21 => NULL()
+    !> The pointer to the subtree in quadrant 22.
+    TYPE(QuTree), POINTER :: Quad22 => NULL()
     !> The matrix data.
     REAL(SpAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
 #ifdef _OPENMP
@@ -132,10 +132,10 @@ END MODULE SpAMM_DERIVED
 !!$
 !!$    TYPE(QuTree) :: q
 !!$
-!!$    q%Quad00 => NULL()
-!!$    q%Quad01 => NULL()
-!!$    q%Quad10 => NULL()
 !!$    q%Quad11 => NULL()
+!!$    q%Quad12 => NULL()
+!!$    q%Quad21 => NULL()
+!!$    q%Quad22 => NULL()
 !!$
 !!$  END FUNCTION QuTreeConstructor
 !!$

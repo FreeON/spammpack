@@ -594,40 +594,40 @@ CONTAINS
 #endif
       ELSE
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad00%Norm*qB%Quad00%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad00,qB%Quad00, threshold, Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad11%Norm*qB%Quad11%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11, threshold, Depth+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad00%Norm*qB%Quad01%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad00,qB%Quad01, threshold, Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad11%Norm*qB%Quad12%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12,qA%Quad11,qB%Quad12, threshold, Depth+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad10%Norm*qB%Quad00%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad10,qB%Quad00, threshold, Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad21%Norm*qB%Quad11%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21,qA%Quad21,qB%Quad11, threshold, Depth+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad10%Norm*qB%Quad01%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad10,qB%Quad01, threshold, Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad21%Norm*qB%Quad12%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22,qA%Quad21,qB%Quad12, threshold, Depth+1)
         !$OMP END TASK
 
 #ifdef BIGLOCK
         !$OMP TASKWAIT
 #endif
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad01%Norm*qB%Quad10%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad00,qA%Quad01,qB%Quad10, threshold, Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad12%Norm*qB%Quad21%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad12,qB%Quad21, threshold, Depth+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad01%Norm*qB%Quad11%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad01,qA%Quad01,qB%Quad11, threshold, Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad12%Norm*qB%Quad22%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12,qA%Quad12,qB%Quad22, threshold, Depth+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad10%Norm*qB%Quad10%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad10,qA%Quad11,qB%Quad10, threshold, Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad21%Norm*qB%Quad21%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21,qA%Quad22,qB%Quad21, threshold, Depth+1)
         !$OMP END TASK
 
-        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad11%Norm*qB%Quad11%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11, threshold, Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad22%Norm*qB%Quad22%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22,qA%Quad22,qB%Quad22, threshold, Depth+1)
         !$OMP END TASK
 
         !$OMP TASKWAIT
@@ -659,19 +659,19 @@ CONTAINS
     ELSE
       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad00,a,Depth+1)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad11,a,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED  SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad01,a,Depth+1)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad12,a,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad10,a,Depth+1)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad21,a,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad11,a,Depth+1)
+      CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad22,a,Depth+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       qA%Norm=qA%Norm*ABS(a)
@@ -701,16 +701,16 @@ CONTAINS
         qA%Blok=alpha*qA%Blok+beta*qB%Blok
       ELSE
         !$OMP TASK UNTIED SHARED(qA,qB) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad00, qB%Quad00, alpha, beta, Depth+1)
-        !$OMP END TASK
-        !$OMP TASK UNTIED SHARED(qA,qB) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad01, qB%Quad01, alpha, beta, Depth+1)
-        !$OMP END TASK
-        !$OMP TASK UNTIED SHARED(qA,qB) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad10, qB%Quad10, alpha, beta, Depth+1)
-        !$OMP END TASK
-        !$OMP TASK UNTIED SHARED(qA,qB) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
         CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad11, qB%Quad11, alpha, beta, Depth+1)
+        !$OMP END TASK
+        !$OMP TASK UNTIED SHARED(qA,qB) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad12, qB%Quad12, alpha, beta, Depth+1)
+        !$OMP END TASK
+        !$OMP TASK UNTIED SHARED(qA,qB) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad21, qB%Quad21, alpha, beta, Depth+1)
+        !$OMP END TASK
+        !$OMP TASK UNTIED SHARED(qA,qB) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad22, qB%Quad22, alpha, beta, Depth+1)
         !$OMP END TASK
         !$OMP TASKWAIT
       ENDIF
@@ -751,10 +751,10 @@ CONTAINS
     ELSE
       Half=(Rght-Left)/2
       !$OMP TASK UNTIED SHARED(qA) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad00,Left,Left+Half,Depth+1)
+      CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad11,Left,Left+Half,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad11,Left+Half+1,Rght,Depth+1)
+      CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad22,Left+Half+1,Rght,Depth+1)
       !$OMP END TASK
       !$OMP TASKWAIT !! << WTF IS THIS TASKWAIT IMPORTANT FOR IFORT??
     ENDIF
@@ -784,28 +784,28 @@ CONTAINS
       DO I = 1, SpAMM_BLOCK_SIZE
         Trace = Trace+qA%Blok(I,I)
       ENDDO
-    ELSEIF(.NOT.ASSOCIATED(qA%Quad00).AND. &
-        .NOT.ASSOCIATED(qA%Quad11))THEN
+    ELSEIF(.NOT.ASSOCIATED(qA%Quad11).AND. &
+        .NOT.ASSOCIATED(qA%Quad22))THEN
       Trace = SpAMM_Zero
-    ELSEIF(.NOT.ASSOCIATED(qA%Quad11))THEN
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      Trace = SpAMM_Trace_QuTree_Recur(qA%Quad00, Depth+1)
-      !$OMP END TASK
-    ELSEIF(.NOT.ASSOCIATED(qA%Quad00))THEN
+    ELSEIF(.NOT.ASSOCIATED(qA%Quad22))THEN
       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       Trace = SpAMM_Trace_QuTree_Recur(qA%Quad11, Depth+1)
       !$OMP END TASK
+    ELSEIF(.NOT.ASSOCIATED(qA%Quad11))THEN
+      !$OMP TASK UNTIED SHARED(qA) &
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      Trace = SpAMM_Trace_QuTree_Recur(qA%Quad22, Depth+1)
+      !$OMP END TASK
     ELSE
       !$OMP TASK UNTIED SHARED(qA,Trace00) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      Trace00 = SpAMM_Trace_QuTree_Recur(qA%Quad00, Depth+1)
+      Trace00 = SpAMM_Trace_QuTree_Recur(qA%Quad11, Depth+1)
       !$OMP END TASK
 
       !$OMP TASK UNTIED SHARED(qA,Trace11) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      Trace11 = SpAMM_Trace_QuTree_Recur(qA%Quad11, Depth+1)
+      Trace11 = SpAMM_Trace_QuTree_Recur(qA%Quad22, Depth+1)
       !$OMP END TASK
 
       !$OMP TASKWAIT
@@ -847,19 +847,19 @@ CONTAINS
       ENDDO
     ELSE
       !$OMP TASK UNTIED SHARED(qA,qB,Trace_00_00)
-      Trace_00_00 = SpAMM_Trace_QuTree_Product_Recur(qA%Quad00, qB%Quad00, threshold, Depth+1)
+      Trace_00_00 = SpAMM_Trace_QuTree_Product_Recur(qA%Quad11, qB%Quad11, threshold, Depth+1)
       !$OMP END TASK
 
       !$OMP TASK UNTIED SHARED(qA,qB,Trace_10_01)
-      Trace_10_01 = SpAMM_Trace_QuTree_Product_Recur(qA%Quad10, qB%Quad01, threshold, Depth+1)
+      Trace_10_01 = SpAMM_Trace_QuTree_Product_Recur(qA%Quad21, qB%Quad12, threshold, Depth+1)
       !$OMP END TASK
 
       !$OMP TASK UNTIED SHARED(qA,qB,Trace_01_10)
-      Trace_01_10 = SpAMM_Trace_QuTree_Product_Recur(qA%Quad01, qB%Quad10, threshold, Depth+1)
+      Trace_01_10 = SpAMM_Trace_QuTree_Product_Recur(qA%Quad12, qB%Quad21, threshold, Depth+1)
       !$OMP END TASK
 
       !$OMP TASK UNTIED SHARED(qA,qB,Trace_11_11)
-      Trace_11_11 = SpAMM_Trace_QuTree_Product_Recur(qA%Quad11, qB%Quad11, threshold, Depth+1)
+      Trace_11_11 = SpAMM_Trace_QuTree_Product_Recur(qA%Quad22, qB%Quad22, threshold, Depth+1)
       !$OMP END TASK
 
       !$OMP TASKWAIT
@@ -886,19 +886,19 @@ CONTAINS
     ELSE
       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Filter_QuTree_Recur(qA%Quad00,Tau,Depth+1)
-      !$OMP END TASK
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Filter_QuTree_Recur(qA%Quad01,Tau,Depth+1)
-      !$OMP END TASK
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Filter_QuTree_Recur(qA%Quad10,Tau,Depth+1)
-      !$OMP END TASK
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       CALL SpAMM_Filter_QuTree_Recur(qA%Quad11,Tau,Depth+1)
+      !$OMP END TASK
+      !$OMP TASK UNTIED SHARED(qA) &
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Filter_QuTree_Recur(qA%Quad12,Tau,Depth+1)
+      !$OMP END TASK
+      !$OMP TASK UNTIED SHARED(qA) &
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Filter_QuTree_Recur(qA%Quad21,Tau,Depth+1)
+      !$OMP END TASK
+      !$OMP TASK UNTIED SHARED(qA) &
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Filter_QuTree_Recur(qA%Quad22,Tau,Depth+1)
       !$OMP END TASK
     ENDIF
   END SUBROUTINE SpAMM_Filter_QuTree_Recur
@@ -922,19 +922,19 @@ CONTAINS
     ELSE
       !$OMP TASK UNTIED SHARED(qA,Norm00) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      Norm00=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad00,Depth+1)
+      Norm00=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad11,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA,Norm01) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      Norm01=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad01,Depth+1)
+      Norm01=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad12,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA,Norm10) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      Norm10=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad10,Depth+1)
+      Norm10=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad21,Depth+1)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA,Norm11) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      Norm11=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad11,Depth+1)
+      Norm11=SpAMM_Norm_Reduce_QuTree_Recur(qA%Quad22,Depth+1)
       !$OMP END TASK
       !$OMP TASKWAIT
       Norm=Norm00+Norm01+Norm10+Norm11
@@ -976,25 +976,25 @@ CONTAINS
       ELSE
 
         ! 0=00*0
-        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad00%Norm*bB%Sect0%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect0,qA%Quad00,bB%Sect0,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad11%Norm*bB%Sect0%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect0,qA%Quad11,bB%Sect0,Depth+1)
         !$OMP END TASK
 
         ! 1=10*0
-        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad10%Norm*bB%Sect0%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect1,qA%Quad10,bB%Sect0,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad21%Norm*bB%Sect0%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect1,qA%Quad21,bB%Sect0,Depth+1)
         !$OMP END TASK
 
         !$OMP TASKWAIT
 
         ! 0=00*0+01*1
-        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad01%Norm*bB%Sect1%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect0,qA%Quad01,bB%Sect1,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad12%Norm*bB%Sect1%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect0,qA%Quad12,bB%Sect1,Depth+1)
         !$OMP END TASK
 
         ! 1=10*0+11*1
-          !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad11%Norm*bB%Sect1%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect1,qA%Quad11,bB%Sect1,Depth+1)
+          !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad22%Norm*bB%Sect1%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
+        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%Sect1,qA%Quad22,bB%Sect1,Depth+1)
         !$OMP END TASK
 
         !$OMP TASKWAIT
