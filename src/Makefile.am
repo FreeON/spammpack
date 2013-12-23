@@ -14,7 +14,7 @@ libspammpack_serial_la_SOURCES = \
   spamm_trap.c \
   spammpack.F90
 
-include_HEADERS = spammpack.mod
+include_HEADERS = *.mod
 
 CLEANFILES = *.mod
 
