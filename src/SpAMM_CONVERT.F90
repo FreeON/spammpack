@@ -52,6 +52,18 @@ MODULE SpAMM_CONVERT
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+
+    ! Sanity check.
+    IF(SIZE(A, 1) /= SpAMM_MATRIX_DIMENSION) THEN
+      WRITE(*, *) "size(A, 1) ", SIZE(A, 1), " is different than size used for init ", SpAMM_MATRIX_DIMENSION
+      STOP
+    ENDIF
+
+    IF(SIZE(A, 2) /= SpAMM_MATRIX_DIMENSION) THEN
+      WRITE(*, *) "size(A, 2) ", SIZE(A, 2), " is different than size used for init ", SpAMM_MATRIX_DIMENSION
+      STOP
+    ENDIF
+
     TInitial = SpAMM_Get_Time()
     qA=>NULL()
     CALL NewQuNode(qA)
