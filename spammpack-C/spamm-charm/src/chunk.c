@@ -85,17 +85,19 @@ struct chunk_t
   char data[0];
 };
 
-/** Calculate the offset into a tiled matrix block.
+/** Calculate the offset into a matrix.
  *
  * @param i The row index.
  * @param j The column index.
- * @param N The size of the blocked matrix.
+ * @param N The size of the matrix.
  *
- * @return The offset in bytes.
+ * @return The offset.
  */
 size_t
-chunk_index (const int i, const int j, const int N)
+chunk_matrix_offset (const int i, const int j, const int N)
 {
+  assert(i >= 0);
+  assert(j >= 0);
   assert(i < N);
   assert(j < N);
 
@@ -131,9 +133,13 @@ chunk_matrix_pointer (const int i, const int j, const void *const chunk)
 {
   assert(chunk != NULL);
   struct chunk_t *ptr = (struct chunk_t*) chunk;
-  size_t offset = (intptr_t) SQUARE(ptr->N_block)*sizeof(double)
-    + (intptr_t) SQUARE(ptr->N_basic)*sizeof(double)*chunk_index(i, j, ptr->N_block);
-  assert(offset < ptr->chunksize);
+  assert(i >= 0);
+  assert(j >= 0);
+  assert(i < ptr->N_block);
+  assert(j < ptr->N_block);
+  intptr_t offset = (intptr_t) (SQUARE(ptr->N_block)*sizeof(double)) /* The norms. */
+    + (intptr_t) (SQUARE(ptr->N_basic)*sizeof(double)
+        *chunk_matrix_offset(i, j, ptr->N_block)); /* Offset to basic submatrix. */
   return (double*) ((intptr_t) ptr->data + offset);
 }
 
@@ -155,6 +161,9 @@ chunk_sizeof (const int N_chunk, const int N_basic)
 }
 
 /** Allocate a chunk.
+ *
+ * The chunk stores a N_chunk x N_chunk dense matrix. The matrix is stored in
+ * a matrix of N_basic x N_basic submatrices.
  *
  * @param N_chunk The size of the matrix chunk.
  * @param N_basic The size of the basic sub-matrices.
@@ -259,7 +268,7 @@ chunk_set (void *const chunk, const double *const A)
     for(int k = 0; k < ptr->N_basic; k++) {
       for(int l = 0; l < ptr->N_basic; l++)
       {
-        A_basic[chunk_index(k, l, ptr->N_basic)] =
+        A_basic[chunk_matrix_offset(k, l, ptr->N_basic)] =
           A[COLUMN_MAJOR(i*ptr->N_basic+k, j*ptr->N_basic+l, ptr->N_chunk)];
       }
     }
@@ -348,11 +357,11 @@ chunk_print (const void *const chunk,
     for(int j = 0; j < ptr->N_block; j++)
     {
       double *A_basic = chunk_matrix_pointer(i, j, chunk);
-      printf("block(%d,%d), norm = %e:\n", i, j, norm[chunk_index(i, j, ptr->N_block)]);
+      printf("block(%ld,%ld), norm = %e:\n", i, j, norm[chunk_matrix_offset(i, j, ptr->N_block)]);
       for(int k = 0; k < ptr->N_basic; k++) {
         for(int l = 0; l < ptr->N_basic; l++)
         {
-          printf(" % e", A_basic[chunk_index(k, l, ptr->N_basic)]);
+          printf(" % e", A_basic[chunk_matrix_offset(k, l, ptr->N_basic)]);
         }
         printf("\n");
       }
@@ -465,23 +474,15 @@ chunk_multiply (const double tolerance,
     int j = k/ptr_A->N_block;
     k %= ptr_A->N_block;
 
-//#ifdef _OPENMP
-//    DEBUG("(%d) linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
-//        omp_get_thread_num(), index, i, j, k, ptr_A->N_block);
-//#else
-//    DEBUG("linear index = %d, index = { %d, %d, %d }, N_block = %d\n",
-//        omp_get_thread_num(), index, i, j, k, ptr_A->N_block);
-//#endif
-
     double *const C_basic = chunk_matrix_pointer(i, j, C);
 
-    if(norm_A[chunk_index(i, k, ptr_A->N_block)]
-        * norm_B[chunk_index(k ,j, ptr_A->N_block)]
+    if(norm_A[chunk_matrix_offset(i, k, ptr_A->N_block)]
+        * norm_B[chunk_matrix_offset(k ,j, ptr_A->N_block)]
         > tolerance_2)
     {
       /* Multiply the blocks. */
 #ifdef _OPENMP
-      omp_set_lock(&C_lock[chunk_index(i, j, ptr_A->N_block)]);
+      omp_set_lock(&C_lock[chunk_matrix_offset(i, j, ptr_A->N_block)]);
 #endif
       const double *const A_basic = chunk_matrix_pointer(i, k, A);
       const double *const B_basic = chunk_matrix_pointer(k, j, B);
@@ -489,14 +490,14 @@ chunk_multiply (const double tolerance,
         for(int j_basic = 0; j_basic < ptr_A->N_basic; j_basic++) {
           for(int k_basic = 0; k_basic < ptr_A->N_basic; k_basic++)
           {
-            C_basic[chunk_index(i_basic, j_basic, ptr_C->N_basic)] +=
-              A_basic[chunk_index(i_basic, k_basic, ptr_A->N_basic)]
-              *B_basic[chunk_index(k_basic, j_basic, ptr_B->N_basic)];
+            C_basic[chunk_matrix_offset(i_basic, j_basic, ptr_C->N_basic)] +=
+              A_basic[chunk_matrix_offset(i_basic, k_basic, ptr_A->N_basic)]
+              *B_basic[chunk_matrix_offset(k_basic, j_basic, ptr_B->N_basic)];
           }
         }
       }
 #ifdef _OPENMP
-      omp_unset_lock(&C_lock[chunk_index(i, j, ptr_A->N_block)]);
+      omp_unset_lock(&C_lock[chunk_matrix_offset(i, j, ptr_A->N_block)]);
 #endif
 
       complexity++;
@@ -541,7 +542,7 @@ chunk_trace (const void *const chunk)
         && ptr->i_lower+i*ptr->N_basic+j < ptr->N
         && ptr->j_lower+i*ptr->N_basic+j < ptr->N; j++)
     {
-      trace += A_basic[chunk_index(j, j, ptr->N_basic)];
+      trace += A_basic[chunk_matrix_offset(j, j, ptr->N_basic)];
     }
   }
   DEBUG("calculating trace of chunk at %p, trace = %e\n", chunk, trace);
@@ -613,8 +614,7 @@ chunk_add_identity (const double alpha, void *const chunk)
         j+ptr->i_lower < ptr->N &&
         j+ptr->j_lower < ptr->N; j++)
     {
-      double old_Aij = A_basic[chunk_index(j, j, ptr->N_basic)];
-      A_basic[chunk_index(j, j, ptr->N_basic)] += alpha;
+      A_basic[chunk_matrix_offset(j, j, ptr->N_basic)] += alpha;
     }
   }
 
@@ -652,7 +652,7 @@ chunk_to_dense (const void *const chunk)
       for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
       {
         A[COLUMN_MAJOR(i*ptr->N_basic+i_basic, j*ptr->N_basic+j_basic, ptr->N_chunk)] =
-          A_basic[chunk_index(i_basic, j_basic, ptr->N_basic)];
+          A_basic[chunk_matrix_offset(i_basic, j_basic, ptr->N_basic)];
       }
     }
   }

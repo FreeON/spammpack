@@ -19,4 +19,5 @@
 void *
 tree_new (const int N, const int N_chunk)
 {
+  return NULL;
 }
