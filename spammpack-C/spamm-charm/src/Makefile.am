@@ -10,7 +10,7 @@ AM_CXXFLAGS = $(CHARMFLAGS) $(OPENMP_CXXFLAGS)
 AM_CFLAGS = $(OPENMP_CFLAGS)
 
 spamm_charm_LDFLAGS = -XCClinker "-language charm++ $(additional_linkerflags)"
-spamm_charm_LDADD = libdummychunk.la
+spamm_charm_LDADD = libchunk.la
 
 spamm_charm_INTERFACEFILES = \
 	matrix.ci \
@@ -46,9 +46,9 @@ spamm_charm_SOURCES = \
 	utilities.cc \
 	utilities.h
 
-lib_LTLIBRARIES = libdummychunk.la libtree.la
+lib_LTLIBRARIES = libchunk.la libtree.la
 
-libdummychunk_la_SOURCES = \
+libchunk_la_SOURCES = \
 	chunk.c \
 	chunk.h
 
