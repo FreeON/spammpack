@@ -357,7 +357,7 @@ chunk_print (const void *const chunk,
     for(int j = 0; j < ptr->N_block; j++)
     {
       double *A_basic = chunk_matrix_pointer(i, j, chunk);
-      printf("block(%ld,%ld), norm = %e:\n", i, j, norm[chunk_matrix_offset(i, j, ptr->N_block)]);
+      printf("block(%d,%d), norm = %e:\n", i, j, norm[chunk_matrix_offset(i, j, ptr->N_block)]);
       for(int k = 0; k < ptr->N_basic; k++) {
         for(int l = 0; l < ptr->N_basic; l++)
         {
