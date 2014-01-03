@@ -186,11 +186,13 @@ ChunkMsg * Node::getChunk (void)
   ChunkMsg *msg;
   if(chunk == NULL)
   {
+    DEBUG(LB"chunksize is zero\n"LE);
     msg = new (0) ChunkMsg(chunksize, (char*) chunk);
   }
 
   else
   {
+    DEBUG(LB"chunksize is %lu bytes\n"LE, chunksize);
     msg = new (chunksize) ChunkMsg(chunksize, (char*) chunk);
   }
 

@@ -458,7 +458,7 @@ chunk_multiply (const double tolerance,
   memset(ptr_C->data, 0, sizeof(double)*(SQUARE(ptr_A->N_block)+SQUARE(ptr_A->N_chunk)));
 
 #ifdef _OPENMP
-  omp_lock_t C_lock[SQUARE(ptr_A->N_block)];
+  omp_lock_t *C_lock = malloc(sizeof(omp_lock_t)*SQUARE(ptr_A->N_block));
   for(int i = 0; i < SQUARE(ptr_A->N_block); i++)
   {
     omp_init_lock(&C_lock[i]);
@@ -509,6 +509,7 @@ chunk_multiply (const double tolerance,
   {
     omp_destroy_lock(&C_lock[i]);
   }
+  free(C_lock);
 #endif
 
   chunk_set_norm(C);
