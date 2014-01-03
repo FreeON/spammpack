@@ -29,7 +29,11 @@
 #endif
 
 /** A convenience macro for printing some info level message. */
+#ifdef _OPENMP
+#define INFO(message, ...) printf("[%s:%d (%s) thread %d] " message, __FILE__, __LINE__, __func__, omp_get_thread_num(), ##__VA_ARGS__)
+#else
 #define INFO(message, ...) printf("[%s:%d (%s)] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#endif
 
 /** A convenience macro for print a fatal error message and terminating the
  * code. */
@@ -468,11 +472,13 @@ chunk_multiply (const double tolerance,
 #pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, ptr_A, ptr_B, ptr_C, C_lock) reduction(+:complexity) schedule(dynamic, 1)
   for(int index = 0; index < CUBE(ptr_A->N_block); index++)
   {
-    int k = index;
-    int i = k/SQUARE(ptr_A->N_block);
-    k %= SQUARE(ptr_A->N_block);
-    int j = k/ptr_A->N_block;
-    k %= ptr_A->N_block;
+    int i = index;
+    int j = i/SQUARE(ptr_A->N_block);
+    i %= SQUARE(ptr_A->N_block);
+    int k = i/ptr_A->N_block;
+    i %= ptr_A->N_block;
+
+    //INFO("index = %d, i = %d, j = %d, k = %d\n", index, i, j, k);
 
     double *const C_basic = chunk_matrix_pointer(i, j, C);
 
