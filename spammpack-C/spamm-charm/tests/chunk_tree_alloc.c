@@ -1,5 +1,7 @@
 #include "chunk_tree.h"
 
+#include <stdio.h>
+
 int
 main ()
 {
@@ -8,6 +10,8 @@ main ()
   const int N = N_chunk;
 
   struct chunk_tree_t *chunk = chunk_tree_alloc(N_chunk, N_basic, N, 0, 0);
+
+  printf("allocated %ld bytes\n", chunk_tree_sizeof(N_chunk, N_basic));
 
   return 0;
 }

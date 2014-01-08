@@ -13,12 +13,27 @@
 
 __BEGIN_DECLS
 
+size_t
+chunk_tree_sizeof (const int N_chunk, const int N_basic);
+
 void *
 chunk_tree_alloc (const int N_chunk,
     const int N_basic,
     const int N,
     const int i_lower,
     const int j_lower);
+
+void
+chunk_tree_set (void *const chunk, const double *const A);
+
+void
+chunk_tree_multiply (const double tolerance,
+    const void *const A,
+    const void *const B,
+    void *const C);
+
+double *
+chunk_tree_to_dense (const void *const chunk);
 
 __END_DECLS
 

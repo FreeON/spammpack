@@ -6,6 +6,9 @@
  * @author Matt Challacombe <matt.challacombe@freeon.org>
  */
 
+#include "config.h"
+
+#include <assert.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -39,6 +42,12 @@
 /** A cube. */
 #define CUBE(x) ((x)*(x)*(x))
 
+/** Calculate a row-major offset. */
+#define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
+
+/** Calculate a column-major offset. */
+#define COLUMN_MAJOR(i, j, N) ((i)+(j)*(N))
+
 struct chunk_tree_t
 {
   /** The total size of this chunk. Used for bounds checks. */
@@ -66,6 +75,9 @@ struct chunk_tree_t
   /** The tree depth. The tree starts at tier 0, and grows to 4^{depth}
    * submatrices. */
   int depth;
+
+  /** The offset from the start of the chunk to the array of sub-matrices. */
+  intptr_t submatrix_offset;
 
   /** The chunk data. This includes the norms and the matrix elements. The
    * exact layout is:
@@ -192,14 +204,14 @@ chunk_tree_alloc (const int N_chunk,
   ptr->N_basic = N_basic;
   ptr->depth = chunk_tree_get_depth(N_chunk, N_basic);
 
-  INFO("ptr = %p\n", ptr);
-  INFO("ptr->data = %p\n", ptr->data);
-  INFO("ptr->data + chunksize = %p\n", (void*) ((intptr_t) ptr + ptr->chunksize));
-  INFO("sizeof(struct chunk_tree_node_t) = 0x%lx\n", sizeof(struct chunk_tree_node_t));
-  INFO("sizeof(submatrix) = 0x%lx\n", SQUARE(N_basic)*sizeof(double));
+  DEBUG("ptr = %p\n", ptr);
+  DEBUG("ptr->data = %p\n", ptr->data);
+  DEBUG("ptr->data + chunksize = %p\n", (void*) ((intptr_t) ptr + ptr->chunksize));
+  DEBUG("sizeof(struct chunk_tree_node_t) = 0x%lx\n", sizeof(struct chunk_tree_node_t));
+  DEBUG("sizeof(submatrix) = 0x%lx\n", SQUARE(N_basic)*sizeof(double));
 
   /* Fill the chunk with a matrix tree. */
-  INFO("linking tree nodes...\n");
+  DEBUG("linking tree nodes...\n");
   intptr_t tier_ptr = (intptr_t) ptr->data;
   for(int tier = 0; tier < ptr->depth; tier++)
   {
@@ -209,19 +221,19 @@ chunk_tree_alloc (const int N_chunk,
     {
       for(int j = 0; j < ipow2(tier); j++)
       {
-        size_t offset = (i*ipow2(tier)+j)*sizeof(struct chunk_tree_node_t);
+        size_t offset = ROW_MAJOR(i, j, ipow2(tier))*sizeof(struct chunk_tree_node_t);
         struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) (tier_ptr + offset);
 
-        INFO("%d:node(%d,%d) at %p\n", tier, i, j, node);
+        DEBUG("%d:node(%d,%d) at %p\n", tier, i, j, node);
 
         for(int i_child = 0; i_child < 2; i_child++)
         {
           for(int j_child = 0; j_child < 2; j_child++)
           {
-            size_t child_offset = ((2*i+i_child)*ipow2(tier+1)+2*j+j_child)*sizeof(struct chunk_tree_node_t);
+            size_t child_offset = ROW_MAJOR(2*i+i_child, 2*j+j_child, ipow2(tier+1))*sizeof(struct chunk_tree_node_t);
             struct chunk_tree_node_t *child = (struct chunk_tree_node_t*) (next_tier_ptr + child_offset);
-            node->data.child[i_child*2+j_child] = child;
-            INFO("%d:child(%d,%d) -> %d:node(%d,%d) at %p\n",
+            node->data.child[ROW_MAJOR(i_child, j_child, 2)] = child;
+            DEBUG("%d:child(%d,%d) -> %d:node(%d,%d) at %p\n",
                 tier, i_child, j_child, tier+1, 2*i+i_child, 2*j+j_child,
                 child);
           }
@@ -233,22 +245,239 @@ chunk_tree_alloc (const int N_chunk,
   }
 
   /* Store pointers to the basic sub-matrices. */
-  INFO("linking submatrices...\n");
+  DEBUG("linking submatrices...\n");
   intptr_t submatrix_ptr = tier_ptr + ipow2(2*ptr->depth)*sizeof(struct chunk_tree_node_t);
+  ptr->submatrix_offset = submatrix_ptr - (intptr_t) ptr;
+  DEBUG("submatrix_offset = %ld\n", ptr->submatrix_offset);
   for(int i = 0; i < ipow2(ptr->depth); i++)
   {
     for(int j = 0; j < ipow2(ptr->depth); j++)
     {
-      size_t offset = (i*ipow2(ptr->depth)+j)*sizeof(struct chunk_tree_node_t);
-      size_t matrix_offset = (i*ipow2(ptr->depth)+j)*SQUARE(N_basic)*sizeof(double);
+      size_t offset = ROW_MAJOR(i, j, ipow2(ptr->depth))*sizeof(struct chunk_tree_node_t);
+      size_t matrix_offset = ROW_MAJOR(i, j, ipow2(ptr->depth))*SQUARE(N_basic)*sizeof(double);
       struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) (tier_ptr + offset);
       node->data.matrix = (double*) (submatrix_ptr + matrix_offset);
-      INFO("%d:node(%d,%d) at %p, submatrix at %p\n", ptr->depth, i, j, node, &(*node->data.matrix));
+      DEBUG("%d:node(%d,%d) at %p, submatrix at %p\n", ptr->depth, i, j, node, &(*node->data.matrix));
     }
   }
 
-  INFO("chunk ends at %p, done\n", (void *) (submatrix_ptr
+  DEBUG("chunk ends at %p, done\n", (void *) (submatrix_ptr
         + ipow2(2*ptr->depth)*SQUARE(N_basic)*sizeof(double)));
 
   return chunk;
+}
+
+/** Get the pointer to a sub-matrix.
+ *
+ * @param i The row index.
+ * @param j The column index.
+ * @param chunk The chunk.
+ *
+ * @return The pointer to the sub-matrix.
+ */
+double *
+chunk_tree_get_submatrix (const int i,
+    const int j,
+    const struct chunk_tree_t *const chunk)
+{
+  assert(chunk != NULL);
+
+  assert(i >= 0);
+  assert(j >= 0);
+
+  assert(i < chunk->N_chunk/chunk->N_basic);
+  assert(j < chunk->N_chunk/chunk->N_basic);
+
+  double *submatrix_ptr = (double*) ((intptr_t) chunk
+      + chunk->submatrix_offset
+      + ROW_MAJOR(i, j, ipow2(chunk->depth))*SQUARE(chunk->N_basic)*sizeof(double));
+
+  return submatrix_ptr;
+}
+
+/** Get the pointer to a tree node in the chunk.
+ *
+ * @param tier The tier.
+ * @param i The row index.
+ * @param j The column index.
+ * @param chunk The chunk.
+ *
+ * @return The pointer to the tree node.
+ */
+struct chunk_tree_node_t *
+chunk_tree_get_node (const int tier,
+    const int i,
+    const int j,
+    const struct chunk_tree_t *const chunk)
+{
+  assert(chunk != NULL);
+  assert(tier >= 0);
+  assert(tier <= chunk->depth);
+  assert(i >= 0);
+  assert(j >= 0);
+  assert(i < ipow2(tier));
+  assert(j < ipow2(tier));
+
+  intptr_t offset = 0;
+  for(int i = 1; i < tier; i++)
+  {
+    offset += ipow2(2*i)*sizeof(struct chunk_tree_node_t);
+  }
+  return (struct chunk_tree_node_t*) ((intptr_t) chunk->data + offset);
+}
+
+/** Update the norms in the tree part of the chunk.
+ *
+ * @param chunk The chunk.
+ */
+void
+chunk_tree_update_norm (struct chunk_tree_t *const chunk)
+{
+  assert(chunk != NULL);
+
+  for(int tier = chunk->depth; tier >= 0; tier--)
+  {
+    for(int i = 0; i < ipow2(tier); i++)
+    {
+      for(int j = 0; j < ipow2(tier); j++)
+      {
+        if(tier == chunk->depth)
+        {
+          double *submatrix = chunk_tree_get_submatrix(i, j, chunk);
+          struct chunk_tree_node_t *node = chunk_tree_get_node(tier, i, j, chunk);
+
+          for(int i_basic = 0; i_basic < chunk->N_basic; i_basic++)
+          {
+            for(int j_basic = 0; j_basic < chunk->N_basic; j_basic++)
+            {
+              node->norm_2 += SQUARE(submatrix[ROW_MAJOR(i_basic, j_basic, chunk->N_basic)]);
+            }
+          }
+        }
+
+        else
+        {
+          struct chunk_tree_node_t *node = chunk_tree_get_node(tier, i, j, chunk);
+          node->norm_2 = 0;
+          for(int i_child = 0; i_child < 2; i_child++)
+          {
+            for(int j_child = 0; j_child < 2; j_child++)
+            {
+              struct chunk_tree_node_t *child = chunk_tree_get_node(tier+1, 2*i+i_child, 2*j+j_child, chunk);
+              node->norm_2 += child->norm_2;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/** Set a chunk.
+ *
+ * @param chunk The chunk.
+ * @param A The dense matrix A. This matrix has to have the correct size, i.e.
+ * this function expects N_chunk x N_chunk elements. The elements of A are
+ * expected in column-major order.
+ */
+void
+chunk_tree_set (void *const chunk, const double *const A)
+{
+  struct chunk_tree_t *ptr =  (struct chunk_tree_t*) chunk;
+
+  /* Store the matrix elements. The input matrix is colum-major ordered. The
+   * matrix in the chunk is stored in basic submatrix blocks. We need to copy
+   * the matrix elements.
+   */
+  for(int i = 0; i < ptr->N_chunk/ptr->N_basic; i++)
+  {
+    for(int j = 0; j < ptr->N_chunk/ptr->N_basic; j++)
+    {
+      double *submatrix_ptr = chunk_tree_get_submatrix(i, j, chunk);
+
+      for(int i_basic = 0; i_basic < ptr->N_basic; i_basic++)
+      {
+        for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
+        {
+          submatrix_ptr[ROW_MAJOR(i_basic, j_basic, ptr->N_basic)] =
+            A[COLUMN_MAJOR(i*ptr->N_basic+i_basic, j*ptr->N_basic+j_basic, ptr->N_chunk)];
+        }
+      }
+    }
+  }
+
+#ifdef DEBUG_OUTPUT
+  DEBUG("A:\n");
+  for(int i = 0; i < ptr->N_chunk; i++)
+  {
+    DEBUG("");
+    for(int j = 0; j < ptr->N_chunk; j++)
+    {
+      printf(" % 1.3f", A[COLUMN_MAJOR(i, j, ptr->N_chunk)]);
+    }
+    printf("\n");
+  }
+
+  DEBUG("sub-matrices:\n");
+  for(int i = 0; i < ptr->N_chunk/ptr->N_basic; i++)
+  {
+    for(int j = 0; j < ptr->N_chunk/ptr->N_basic; j++)
+    {
+      double *submatrix_ptr = chunk_tree_get_submatrix(i, j, chunk);
+
+      DEBUG("A(%d,%d)\n", i, j);
+      for(int i_basic = 0; i_basic < ptr->N_basic; i_basic++)
+      {
+        DEBUG("");
+        for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
+        {
+          printf(" % 1.3f", submatrix_ptr[ROW_MAJOR(i_basic, j_basic, ptr->N_basic)]);
+        }
+        printf("\n");
+      }
+    }
+  }
+#endif
+
+  /** Update norms. */
+  chunk_tree_update_norm(chunk);
+}
+
+/** Multiply two chunks using the SpAMM algorithm.
+ *
+ * @f[ C \leftarrow A \times B @f]
+ *
+ * @param tolerance The SpAMM tolerance.
+ * @param A Chunk A.
+ * @param B Chunk B.
+ * @param C Chunk C.
+ */
+void
+chunk_tree_multiply (const double tolerance,
+    const void *const A,
+    const void *const B,
+    void *const C)
+{
+  assert(A != NULL);
+  assert(B != NULL);
+  assert(C != NULL);
+
+  ABORT("FIXME\n");
+}
+
+/** Convert a chunk to a dense matrix.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The dense matrix. This matrix is sized to blocksize, which is
+ * stored in the chunk.
+ */
+double *
+chunk_tree_to_dense (const void *const chunk)
+{
+  assert(chunk != NULL);
+
+  ABORT("FIXME\n");
+
+  return NULL;
 }

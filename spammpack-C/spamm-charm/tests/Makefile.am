@@ -2,13 +2,16 @@ if HAVE_PYTHON
 python_tests = test_sp2.sh
 endif
 
+noinst_PROGRAMS = \
+	chunk_multiply \
+	chunk_tree_alloc \
+	chunk_tree_multiply
+
 check_PROGRAMS = \
 	chunk_add \
 	chunk_add_identity \
-	chunk_multiply \
 	chunk_scale \
-	chunk_trace \
-	chunk_tree_alloc
+	chunk_trace
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_LDFLAGS = $(top_builddir)/src/libchunk.la
@@ -16,6 +19,7 @@ AM_LDFLAGS = $(top_builddir)/src/libchunk.la
 TESTS = \
 	$(python_tests) \
 	$(check_PROGRAMS) \
+	$(noinst_PROGRAMS) \
 	spamm_test_SP2_full.sh \
 	spamm_test_add_full.sh \
 	spamm_test_add_decay.sh \
