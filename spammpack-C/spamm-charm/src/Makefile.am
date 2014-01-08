@@ -58,7 +58,10 @@ libtree_la_SOURCES = \
 	tree.h \
 	tree_private.h
 
-include_HEADERS = chunk.h tree.h
+include_HEADERS = \
+	chunk.h \
+	chunk_tree.h \
+	tree.h
 
 spamm_charm_CHARMHEADERS = $(foreach i, $(spamm_charm_INTERFACEFILES), $(basename $i).decl.h $(basename $i).def.h)
 

@@ -7,7 +7,8 @@ check_PROGRAMS = \
 	chunk_add_identity \
 	chunk_multiply \
 	chunk_scale \
-	chunk_trace
+	chunk_trace \
+	chunk_tree_alloc
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_LDFLAGS = $(top_builddir)/src/libchunk.la

@@ -11,6 +11,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+/** A convenience macro for printing some debugging output. */
+#ifdef DEBUG_OUTPUT
+#define DEBUG(message, ...) printf("[%s:%d (%s) DEBUG] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#else
+#define DEBUG(message, ...) /* stripped DEBUG statement. */
+#endif
+
+/** A convenience macro for printing some info level message. */
+#ifdef _OPENMP
+#define INFO(message, ...) printf("[%s:%d (%s) thread %d] " message, __FILE__, __LINE__, __func__, omp_get_thread_num(), ##__VA_ARGS__)
+#else
+#define INFO(message, ...) printf("[%s:%d (%s)] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#endif
+
+/** A convenience macro for print a fatal error message and terminating the
+ * code. */
+#define ABORT(message, ...) printf("[%s:%d (%s) FATAL] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(1)
+
+/** A simple square. */
+#define SQUARE(x) ((x)*(x))
+
+/** A cube. */
+#define CUBE(x) ((x)*(x)*(x))
+
 struct chunk_tree_t
 {
   /** The total size of this chunk. Used for bounds checks. */
@@ -82,9 +110,14 @@ ipow2 (const int i)
     return 1;
   }
 
-  else if(i == 1)
+  else if(i > 0)
   {
-    return 1 << i;
+    return (1 << i);
+  }
+
+  else
+  {
+    ABORT("argument has to be >= 0\n");
   }
 }
 
@@ -99,10 +132,11 @@ int
 chunk_tree_get_depth (const int N_chunk, const int N_basic)
 {
   int depth = (int) ceil(log(N_chunk/(double) N_basic)/log(2.));
-  if(ipow2(depth) != N_chunk)
+  if(N_basic*ipow2(depth) != N_chunk)
   {
-    printf("logic failure\n");
-    exit(1);
+    ABORT("logic error: N_chunk = %d, N_basic = %d, "
+        "depth = %d, N_basic*2^depth = %d\n",
+        N_chunk, N_basic, depth, N_basic*ipow2(depth));
   }
   return depth;
 }
@@ -117,7 +151,7 @@ chunk_tree_get_depth (const int N_chunk, const int N_basic)
 size_t
 chunk_tree_sizeof (const int N_chunk, const int N_basic)
 {
-  size_t matrix_size = ipow2(2*chunk_tree_get_depth(N_chunk, N_basic))*N_basic*N_basic*sizeof(double);
+  size_t matrix_size = SQUARE(N_chunk)*sizeof(double);
   size_t tree_size = 0;
   for(int tier = 0; tier <= chunk_tree_get_depth(N_chunk, N_basic); tier++)
   {
@@ -158,30 +192,63 @@ chunk_tree_alloc (const int N_chunk,
   ptr->N_basic = N_basic;
   ptr->depth = chunk_tree_get_depth(N_chunk, N_basic);
 
+  INFO("ptr = %p\n", ptr);
+  INFO("ptr->data = %p\n", ptr->data);
+  INFO("ptr->data + chunksize = %p\n", (void*) ((intptr_t) ptr + ptr->chunksize));
+  INFO("sizeof(struct chunk_tree_node_t) = 0x%lx\n", sizeof(struct chunk_tree_node_t));
+  INFO("sizeof(submatrix) = 0x%lx\n", SQUARE(N_basic)*sizeof(double));
+
   /* Fill the chunk with a matrix tree. */
+  INFO("linking tree nodes...\n");
+  intptr_t tier_ptr = (intptr_t) ptr->data;
   for(int tier = 0; tier < ptr->depth; tier++)
   {
+    intptr_t next_tier_ptr = tier_ptr + ipow2(2*tier)*sizeof(struct chunk_tree_node_t);
+
     for(int i = 0; i < ipow2(tier); i++)
     {
       for(int j = 0; j < ipow2(tier); j++)
       {
-        struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) ((intptr_t) ptr->data
-            + (i*ipow2(tier)+j)*ipow2(2*tier)*sizeof(struct chunk_tree_node_t));
+        size_t offset = (i*ipow2(tier)+j)*sizeof(struct chunk_tree_node_t);
+        struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) (tier_ptr + offset);
+
+        INFO("%d:node(%d,%d) at %p\n", tier, i, j, node);
 
         for(int i_child = 0; i_child < 2; i_child++)
         {
           for(int j_child = 0; j_child < 2; j_child++)
           {
-            struct chunk_tree_node_t *child = (struct chunk_tree_node_t*) ((intptr_t) ptr->data
-                + ((2*i+i_child)*ipow2(tier)+2*j+j_child)*ipow2(2*(tier+1))*sizeof(struct chunk_tree_node_t));
+            size_t child_offset = ((2*i+i_child)*ipow2(tier+1)+2*j+j_child)*sizeof(struct chunk_tree_node_t);
+            struct chunk_tree_node_t *child = (struct chunk_tree_node_t*) (next_tier_ptr + child_offset);
             node->data.child[i_child*2+j_child] = child;
+            INFO("%d:child(%d,%d) -> %d:node(%d,%d) at %p\n",
+                tier, i_child, j_child, tier+1, 2*i+i_child, 2*j+j_child,
+                child);
           }
         }
       }
     }
+
+    tier_ptr = next_tier_ptr;
   }
 
   /* Store pointers to the basic sub-matrices. */
+  INFO("linking submatrices...\n");
+  intptr_t submatrix_ptr = tier_ptr + ipow2(2*ptr->depth)*sizeof(struct chunk_tree_node_t);
+  for(int i = 0; i < ipow2(ptr->depth); i++)
+  {
+    for(int j = 0; j < ipow2(ptr->depth); j++)
+    {
+      size_t offset = (i*ipow2(ptr->depth)+j)*sizeof(struct chunk_tree_node_t);
+      size_t matrix_offset = (i*ipow2(ptr->depth)+j)*SQUARE(N_basic)*sizeof(double);
+      struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) (tier_ptr + offset);
+      node->data.matrix = (double*) (submatrix_ptr + matrix_offset);
+      INFO("%d:node(%d,%d) at %p, submatrix at %p\n", ptr->depth, i, j, node, &(*node->data.matrix));
+    }
+  }
+
+  INFO("chunk ends at %p, done\n", (void *) (submatrix_ptr
+        + ipow2(2*ptr->depth)*SQUARE(N_basic)*sizeof(double)));
 
   return chunk;
 }
