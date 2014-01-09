@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -96,6 +97,9 @@ struct chunk_tree_node_t
 {
   /** The square of the Frobenius norm of this node. */
   double norm_2;
+
+  /** The size of the basic submatrix. */
+  int N_basic;
 
   union
   {
@@ -223,6 +227,7 @@ chunk_tree_alloc (const int N_chunk,
       {
         size_t offset = ROW_MAJOR(i, j, ipow2(tier))*sizeof(struct chunk_tree_node_t);
         struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) (tier_ptr + offset);
+        node->N_basic = N_basic;
 
         DEBUG("%d:node(%d,%d) at %p\n", tier, i, j, node);
 
@@ -256,6 +261,7 @@ chunk_tree_alloc (const int N_chunk,
       size_t offset = ROW_MAJOR(i, j, ipow2(ptr->depth))*sizeof(struct chunk_tree_node_t);
       size_t matrix_offset = ROW_MAJOR(i, j, ipow2(ptr->depth))*SQUARE(N_basic)*sizeof(double);
       struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) (tier_ptr + offset);
+      node->N_basic = N_basic;
       node->data.matrix = (double*) (submatrix_ptr + matrix_offset);
       DEBUG("%d:node(%d,%d) at %p, submatrix at %p\n", ptr->depth, i, j, node, &(*node->data.matrix));
     }
@@ -391,6 +397,8 @@ chunk_tree_set (void *const chunk, const double *const A)
 {
   struct chunk_tree_t *ptr =  (struct chunk_tree_t*) chunk;
 
+  DEBUG("setting chunk\n");
+
   /* Store the matrix elements. The input matrix is colum-major ordered. The
    * matrix in the chunk is stored in basic submatrix blocks. We need to copy
    * the matrix elements.
@@ -457,7 +465,11 @@ void
 chunk_tree_set_zero(struct chunk_tree_t *const chunk)
 {
   assert(chunk != NULL);
-  ABORT("FIXME\n");
+
+  DEBUG("setting chunk to zero\n");
+  double *matrix = chunk_tree_get_submatrix(0, 0, chunk);
+  memset(matrix, 0, SQUARE(chunk->N_chunk)*sizeof(double));
+  chunk_tree_update_norm(chunk);
 }
 
 /** Get the matrix norm of a chunk.
@@ -494,7 +506,50 @@ chunk_tree_multiply_node (const double tolerance_2,
     const struct chunk_tree_node_t *const B,
     struct chunk_tree_node_t *const C)
 {
-  ABORT("FIXME\n");
+  assert(A != NULL);
+  assert(B != NULL);
+  assert(C != NULL);
+
+  if(tier == depth)
+  {
+    double *A_submatrix = A->data.matrix;
+    double *B_submatrix = B->data.matrix;
+    double *C_submatrix = C->data.matrix;
+
+    for(int i = 0; i < A->N_basic; i++)
+    {
+      for(int j = 0; j < A->N_basic; j++)
+      {
+        for(int k = 0; k < A->N_basic; k++)
+        {
+          C_submatrix[ROW_MAJOR(i, j, A->N_basic)] +=
+            A_submatrix[ROW_MAJOR(i, k, A->N_basic)]
+            * B_submatrix[ROW_MAJOR(k, j, A->N_basic)];
+        }
+      }
+    }
+  }
+
+  else
+  {
+    for(int i = 0; i < 2; i++)
+    {
+      for(int j = 0; j < 2; j++)
+      {
+        for(int k = 0; k < 2; k++)
+        {
+          struct chunk_tree_node_t *A_child = A->data.child[ROW_MAJOR(i, k, 2)];
+          struct chunk_tree_node_t *B_child = B->data.child[ROW_MAJOR(k, j, 2)];
+          struct chunk_tree_node_t *C_child = C->data.child[ROW_MAJOR(i, j, 2)];
+
+          if(A_child->norm_2*B_child->norm_2 > tolerance_2)
+          {
+            chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child, B_child, C_child);
+          }
+        }
+      }
+    }
+  }
 }
 
 /** Multiply two chunks using the SpAMM algorithm.
@@ -547,7 +602,25 @@ chunk_tree_to_dense (const void *const chunk)
 {
   assert(chunk != NULL);
 
-  ABORT("FIXME\n");
+  struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
 
-  return NULL;
+  double *A = calloc(SQUARE(ptr->N_chunk), sizeof(double));
+  for(int i = 0; i < ptr->N_chunk/ptr->N_basic; i++)
+  {
+    for(int j = 0; j < ptr->N_chunk/ptr->N_basic; j++)
+    {
+      double *submatrix = chunk_tree_get_submatrix(i, j, chunk);
+
+      for(int i_basic = 0; i_basic < ptr->N_basic; i_basic++)
+      {
+        for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
+        {
+          A[COLUMN_MAJOR(i*ptr->N_basic+i_basic, j*ptr->N_basic+j_basic, ptr->N_chunk)] =
+            submatrix[ROW_MAJOR(i_basic, j_basic, ptr->N_basic)];
+        }
+      }
+    }
+  }
+
+  return A;
 }

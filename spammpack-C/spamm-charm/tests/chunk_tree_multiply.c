@@ -25,11 +25,12 @@ main (int argc, char **argv)
   matrix_type = full;
 
   short print_complexity = 0;
+  short print_matrix = 0;
 
   double tolerance = 0;
 
   int c;
-  const char short_options[] = "hT:ct:N:b:";
+  const char short_options[] = "hT:ct:N:b:p";
   const struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "type", required_argument, NULL, 'T' },
@@ -37,6 +38,7 @@ main (int argc, char **argv)
     { "tolerance", required_argument, NULL, 't' },
     { "N_chunk", required_argument, NULL, 'N' },
     { "N_basic", required_argument, NULL, 'b' },
+    { "print", no_argument, NULL, 'p' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -54,6 +56,7 @@ main (int argc, char **argv)
         printf("{ -t | --tolerance } TOL  The SpAMM tolerance\n");
         printf("{ -N | --N_chunk } N      The matrix size, N_chunk\n");
         printf("{ -b | --N_basic } N      The basic sub-matrix size, N_basic\n");
+        printf("{ -p | --print }          Print matrices\n");
         exit(0);
         break;
 
@@ -92,6 +95,10 @@ main (int argc, char **argv)
         N_basic = strtol(optarg, NULL, 10);
         break;
 
+      case 'p':
+        print_matrix = 1;
+        break;
+
       default:
         printf("illegal argument\n");
         exit(-1);
@@ -116,7 +123,7 @@ main (int argc, char **argv)
     case diagonal:
       for(int i = 0; i < N_chunk; i++)
       {
-        A_dense[i*N_chunk+i] = rand()/(double) RAND_MAX;
+        A_dense[i+i*N_chunk] = rand()/(double) RAND_MAX;
       }
       break;
 
@@ -124,6 +131,19 @@ main (int argc, char **argv)
       printf("[FIXME] unknown matrix type\n");
       exit(-1);
       break;
+  }
+
+  if(print_matrix)
+  {
+    printf("A:\n");
+    for(int i = 0; i < N; i++)
+    {
+      for(int j = 0; j < N; j++)
+      {
+        printf(" % 1.3f", A_dense[i+j*N_chunk]);
+      }
+      printf("\n");
+    }
   }
 
   chunk_tree_set(A, A_dense);
@@ -152,6 +172,19 @@ main (int argc, char **argv)
 
   double *C_dense = chunk_tree_to_dense(C);
 
+  if(print_matrix)
+  {
+    printf("C:\n");
+    for(int i = 0; i < N; i++)
+    {
+      for(int j = 0; j < N; j++)
+      {
+        printf(" % 1.3f", C_dense[i+j*N_chunk]);
+      }
+      printf("\n");
+    }
+  }
+
   if(print_complexity)
   {
     int complexity = 0;
@@ -167,8 +200,8 @@ main (int argc, char **argv)
           {
             for(int j_basic = 0; j_basic < N_basic; j_basic++)
             {
-              norm_A += SQUARE(A_dense[(i*N_basic+i_basic)*N_chunk+(k*N_basic+j_basic)]);
-              norm_B += SQUARE(A_dense[(k*N_basic+i_basic)*N_chunk+(j*N_basic+j_basic)]);
+              norm_A += SQUARE(A_dense[(i+i_basic*N_basic)*N_chunk+(k+j_basic*N_basic)]);
+              norm_B += SQUARE(A_dense[(k+i_basic*N_basic)*N_chunk+(j+j_basic*N_basic)]);
             }
           }
 
@@ -192,10 +225,10 @@ main (int argc, char **argv)
       C_exact = 0;
       for(int k = 0; k < N_chunk; k++)
       {
-        C_exact += A_dense[i*N_chunk+k]*A_dense[k*N_chunk+j];
+        C_exact += A_dense[i+k*N_chunk]*A_dense[k+j*N_chunk];
       }
 
-      if(fabs(C_exact-C_dense[i*N_chunk+j]) > 1e-10)
+      if(fabs(C_exact-C_dense[i+j*N_chunk]) > 1e-10)
       {
         printf("mismatch C[%d][%d]\n", i, j);
         return -1;
