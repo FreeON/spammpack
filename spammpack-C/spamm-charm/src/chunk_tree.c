@@ -21,7 +21,11 @@
 
 /** A convenience macro for printing some debugging output. */
 #ifdef DEBUG_OUTPUT
+#ifdef _OPENMP
+#define DEBUG(message, ...) printf("[%s:%d (%s) thread %d DEBUG] " message, __FILE__, __LINE__, __func__, omp_get_thread_num(), ##__VA_ARGS__)
+#else
 #define DEBUG(message, ...) printf("[%s:%d (%s) DEBUG] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#endif
 #else
 #define DEBUG(message, ...) /* stripped DEBUG statement. */
 #endif
@@ -100,6 +104,11 @@ struct chunk_tree_node_t
 
   /** The size of the basic submatrix. */
   int N_basic;
+
+#ifdef _OPENMP
+  /** The OpenMP lock on the matrix. */
+  omp_lock_t matrix_lock;
+#endif
 
   union
   {
@@ -227,6 +236,8 @@ chunk_tree_alloc (const int N_chunk,
       {
         size_t offset = ROW_MAJOR(i, j, ipow2(tier))*sizeof(struct chunk_tree_node_t);
         struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) (tier_ptr + offset);
+
+        /* Initialize node. */
         node->N_basic = N_basic;
 
         DEBUG("%d:node(%d,%d) at %p\n", tier, i, j, node);
@@ -261,7 +272,13 @@ chunk_tree_alloc (const int N_chunk,
       size_t offset = ROW_MAJOR(i, j, ipow2(ptr->depth))*sizeof(struct chunk_tree_node_t);
       size_t matrix_offset = ROW_MAJOR(i, j, ipow2(ptr->depth))*SQUARE(N_basic)*sizeof(double);
       struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) (tier_ptr + offset);
+
+      /* Initialize node. */
       node->N_basic = N_basic;
+#ifdef _OPENMP
+      omp_init_lock(&node->matrix_lock);
+#endif
+
       node->data.matrix = (double*) (submatrix_ptr + matrix_offset);
       DEBUG("%d:node(%d,%d) at %p, submatrix at %p\n", ptr->depth, i, j, node, &(*node->data.matrix));
     }
@@ -439,7 +456,7 @@ chunk_tree_set (void *const chunk, const double *const A)
     {
       double *submatrix_ptr = chunk_tree_get_submatrix(i, j, chunk);
 
-      DEBUG("A(%d,%d)\n", i, j);
+      DEBUG("A(%d,%d) at %p\n", i, j, submatrix_ptr);
       for(int i_basic = 0; i_basic < ptr->N_basic; i_basic++)
       {
         DEBUG("");
@@ -510,11 +527,21 @@ chunk_tree_multiply_node (const double tolerance_2,
   assert(B != NULL);
   assert(C != NULL);
 
+  DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
+
   if(tier == depth)
   {
+    DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
+
     double *A_submatrix = A->data.matrix;
     double *B_submatrix = B->data.matrix;
     double *C_submatrix = C->data.matrix;
+
+    DEBUG("mulitplying submatrix, A at %p, B at %p, C at %p\n", &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
+
+#ifdef _OPENMP
+    omp_set_lock(&C->matrix_lock);
+#endif
 
     for(int i = 0; i < A->N_basic; i++)
     {
@@ -528,6 +555,11 @@ chunk_tree_multiply_node (const double tolerance_2,
         }
       }
     }
+
+#ifdef _OPENMP
+    omp_unset_lock(&C->matrix_lock);
+#endif
+    DEBUG("done multiplying\n");
   }
 
   else
@@ -538,17 +570,27 @@ chunk_tree_multiply_node (const double tolerance_2,
       {
         for(int k = 0; k < 2; k++)
         {
-          struct chunk_tree_node_t *A_child = A->data.child[ROW_MAJOR(i, k, 2)];
-          struct chunk_tree_node_t *B_child = B->data.child[ROW_MAJOR(k, j, 2)];
-          struct chunk_tree_node_t *C_child = C->data.child[ROW_MAJOR(i, j, 2)];
-
-          if(A_child->norm_2*B_child->norm_2 > tolerance_2)
+#pragma omp task default(none) firstprivate(i, j, k) untied
           {
-            chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child, B_child, C_child);
+            DEBUG("(%d,%d,%d) starting new task\n", i, j, k);
+
+            struct chunk_tree_node_t *A_child = A->data.child[ROW_MAJOR(i, k, 2)];
+            struct chunk_tree_node_t *B_child = B->data.child[ROW_MAJOR(k, j, 2)];
+            struct chunk_tree_node_t *C_child = C->data.child[ROW_MAJOR(i, j, 2)];
+
+            DEBUG("(%d,%d,%d) A at %p, B at %p, C at %p\n", i, j, k, A_child, B_child, C_child);
+
+            if(A_child->norm_2*B_child->norm_2 > tolerance_2)
+            {
+              chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child, B_child, C_child);
+            }
           }
         }
       }
     }
+    DEBUG("done submitting all tasks, waiting...\n");
+#pragma omp taskwait
+    DEBUG("done\n");
   }
 }
 
@@ -586,7 +628,20 @@ chunk_tree_multiply (const double tolerance,
 
   if(A_root->norm_2*B_root->norm_2 > tolerance_2)
   {
-    chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root, B_root, C_root);
+#pragma omp parallel
+    {
+#pragma omp master
+      {
+#ifdef _OPENMP
+        INFO("running on %d OpenMP threads\n", omp_get_num_threads());
+#endif
+#pragma omp task untied
+        {
+          chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root, B_root, C_root);
+        }
+#pragma omp taskwait
+      }
+    }
   }
 }
 
@@ -623,4 +678,14 @@ chunk_tree_to_dense (const void *const chunk)
   }
 
   return A;
+}
+
+/** Delete the chunk.
+ *
+ * @param chunk The chunk.
+ */
+void
+chunk_tree_delete (void **const chunk)
+{
+  ABORT("FIXME\n");
 }

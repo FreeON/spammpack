@@ -38,6 +38,9 @@ chunk_tree_multiply (const double tolerance,
 double *
 chunk_tree_to_dense (const void *const chunk);
 
+void
+chunk_tree_delete (void **const chunk);
+
 __END_DECLS
 
 #endif
