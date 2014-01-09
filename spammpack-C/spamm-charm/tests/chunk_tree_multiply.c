@@ -128,6 +128,14 @@ main (int argc, char **argv)
 
   chunk_tree_set(A, A_dense);
 
+  double norm_2 = 0;
+  for(int i = 0; i < N*N; i++)
+  {
+    norm_2 += A_dense[i]*A_dense[i];
+  }
+  printf("random matrix, norm_2 = %e, norm_2 of chunk = %e\n",
+      norm_2, chunk_tree_get_norm(A));
+
   struct timespec start_time;
   clock_gettime(CLOCKTYPE, &start_time);
   chunk_tree_multiply(tolerance, A, A, C);

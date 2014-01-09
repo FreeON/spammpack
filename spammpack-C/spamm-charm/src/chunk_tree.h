@@ -26,6 +26,9 @@ chunk_tree_alloc (const int N_chunk,
 void
 chunk_tree_set (void *const chunk, const double *const A);
 
+double
+chunk_tree_get_norm (const void *const chunk);
+
 void
 chunk_tree_multiply (const double tolerance,
     const void *const A,

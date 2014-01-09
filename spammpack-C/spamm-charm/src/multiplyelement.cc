@@ -234,7 +234,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   }
 #endif
 
-  DEBUG(LB"contributing to reduction\n"LE);
+  INFO(LB"contributing to reduction\n"LE);
   contribute(cb);
 }
 

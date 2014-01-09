@@ -319,11 +319,14 @@ chunk_tree_get_node (const int tier,
   assert(j < ipow2(tier));
 
   intptr_t offset = 0;
-  for(int i = 1; i < tier; i++)
+  for(int i_tier = 0; i_tier < tier; i_tier++)
   {
-    offset += ipow2(2*i)*sizeof(struct chunk_tree_node_t);
+    offset += ipow2(2*i_tier)*sizeof(struct chunk_tree_node_t);
   }
-  return (struct chunk_tree_node_t*) ((intptr_t) chunk->data + offset);
+  offset += ROW_MAJOR(i, j, ipow2(tier))*sizeof(struct chunk_tree_node_t);
+  struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) ((intptr_t) chunk->data + offset);
+  DEBUG("%d:node(%d,%d) at %p\n", tier, i, j, node);
+  return node;
 }
 
 /** Update the norms in the tree part of the chunk.
@@ -335,16 +338,18 @@ chunk_tree_update_norm (struct chunk_tree_t *const chunk)
 {
   assert(chunk != NULL);
 
+  DEBUG("depth = %d\n", chunk->depth);
   for(int tier = chunk->depth; tier >= 0; tier--)
   {
     for(int i = 0; i < ipow2(tier); i++)
     {
       for(int j = 0; j < ipow2(tier); j++)
       {
+        struct chunk_tree_node_t *node = chunk_tree_get_node(tier, i, j, chunk);
+
         if(tier == chunk->depth)
         {
           double *submatrix = chunk_tree_get_submatrix(i, j, chunk);
-          struct chunk_tree_node_t *node = chunk_tree_get_node(tier, i, j, chunk);
 
           for(int i_basic = 0; i_basic < chunk->N_basic; i_basic++)
           {
@@ -357,7 +362,6 @@ chunk_tree_update_norm (struct chunk_tree_t *const chunk)
 
         else
         {
-          struct chunk_tree_node_t *node = chunk_tree_get_node(tier, i, j, chunk);
           node->norm_2 = 0;
           for(int i_child = 0; i_child < 2; i_child++)
           {
@@ -368,6 +372,8 @@ chunk_tree_update_norm (struct chunk_tree_t *const chunk)
             }
           }
         }
+
+        DEBUG("%d:node(%d,%d), norm_2 = %e\n", tier, i, j, node->norm_2);
       }
     }
   }
@@ -443,6 +449,54 @@ chunk_tree_set (void *const chunk, const double *const A)
   chunk_tree_update_norm(chunk);
 }
 
+/** Set a chunk to zero.
+ *
+ * @param chunk The chunk.
+ */
+void
+chunk_tree_set_zero(struct chunk_tree_t *const chunk)
+{
+  assert(chunk != NULL);
+  ABORT("FIXME\n");
+}
+
+/** Get the matrix norm of a chunk.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The square of the Frobenius norm.
+ */
+double
+chunk_tree_get_norm (const void *const chunk)
+{
+  assert(chunk != NULL);
+  struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
+  struct chunk_tree_node_t *root = (struct chunk_tree_node_t*) ptr->data;
+  return root->norm_2;
+}
+
+/** Multiply two tree nodes using the SpAMM algorithm.
+ *
+ * @f[ C \leftarrow A \times B @f]
+ *
+ * @param tolerance The SpAMM tolerance.
+ * @param tier The tier.
+ * @param depth The tree depth.
+ * @param A Chunk A.
+ * @param B Chunk B.
+ * @param C Chunk C.
+ */
+void
+chunk_tree_multiply_node (const double tolerance_2,
+    const int tier,
+    const int depth,
+    const struct chunk_tree_node_t *const A,
+    const struct chunk_tree_node_t *const B,
+    struct chunk_tree_node_t *const C)
+{
+  ABORT("FIXME\n");
+}
+
 /** Multiply two chunks using the SpAMM algorithm.
  *
  * @f[ C \leftarrow A \times B @f]
@@ -462,7 +516,23 @@ chunk_tree_multiply (const double tolerance,
   assert(B != NULL);
   assert(C != NULL);
 
-  ABORT("FIXME\n");
+  struct chunk_tree_t *A_ptr = (struct chunk_tree_t*) A;
+  struct chunk_tree_t *B_ptr = (struct chunk_tree_t*) B;
+  struct chunk_tree_t *C_ptr = (struct chunk_tree_t*) C;
+
+  /* Reset C. */
+  chunk_tree_set_zero(C_ptr);
+
+  double tolerance_2 = SQUARE(tolerance);
+
+  struct chunk_tree_node_t *A_root = (struct chunk_tree_node_t*) A_ptr->data;
+  struct chunk_tree_node_t *B_root = (struct chunk_tree_node_t*) B_ptr->data;
+  struct chunk_tree_node_t *C_root = (struct chunk_tree_node_t*) C_ptr->data;
+
+  if(A_root->norm_2*B_root->norm_2 > tolerance_2)
+  {
+    chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root, B_root, C_root);
+  }
 }
 
 /** Convert a chunk to a dense matrix.

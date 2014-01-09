@@ -235,7 +235,7 @@ void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback
   //tNorm.stop();
   //INFO("%s\n", tStoreBack.to_str());
 
-  DEBUG("done\n");
+  INFO("done\n");
   cb.send();
 }
 
