@@ -33,7 +33,8 @@ void
 chunk_tree_multiply (const double tolerance,
     const void *const A,
     const void *const B,
-    void *const C);
+    void *const C,
+    const short tree_only);
 
 double *
 chunk_tree_to_dense (const void *const chunk);

@@ -514,6 +514,9 @@ chunk_tree_get_norm (const void *const chunk)
  * @param A Chunk A.
  * @param B Chunk B.
  * @param C Chunk C.
+ * @param tree_only Only go through the symbolic part, i.e. don't multiply the
+ * basic blocks. Used only for debugging to get a handle on the performance of
+ * the tree.
  */
 void
 chunk_tree_multiply_node (const double tolerance_2,
@@ -521,7 +524,8 @@ chunk_tree_multiply_node (const double tolerance_2,
     const int depth,
     const struct chunk_tree_node_t *const A,
     const struct chunk_tree_node_t *const B,
-    struct chunk_tree_node_t *const C)
+    struct chunk_tree_node_t *const C,
+    const short tree_only)
 {
   assert(A != NULL);
   assert(B != NULL);
@@ -529,7 +533,7 @@ chunk_tree_multiply_node (const double tolerance_2,
 
   DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
 
-  if(tier == depth)
+  if(tier == depth && !tree_only)
   {
     DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
 
@@ -582,7 +586,7 @@ chunk_tree_multiply_node (const double tolerance_2,
 
             if(A_child->norm_2*B_child->norm_2 > tolerance_2)
             {
-              chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child, B_child, C_child);
+              chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child, B_child, C_child, tree_only);
             }
           }
         }
@@ -602,12 +606,16 @@ chunk_tree_multiply_node (const double tolerance_2,
  * @param A Chunk A.
  * @param B Chunk B.
  * @param C Chunk C.
+ * @param tree_only Only go through the symbolic part, i.e. don't multiply the
+ * basic blocks. Used only for debugging to get a handle on the performance of
+ * the tree.
  */
 void
 chunk_tree_multiply (const double tolerance,
     const void *const A,
     const void *const B,
-    void *const C)
+    void *const C,
+    const short tree_only)
 {
   assert(A != NULL);
   assert(B != NULL);
@@ -637,7 +645,7 @@ chunk_tree_multiply (const double tolerance,
 #endif
 #pragma omp task untied
         {
-          chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root, B_root, C_root);
+          chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root, B_root, C_root, tree_only);
         }
 #pragma omp taskwait
       }

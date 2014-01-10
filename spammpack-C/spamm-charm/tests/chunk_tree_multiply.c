@@ -27,11 +27,12 @@ main (int argc, char **argv)
   short print_complexity = 0;
   short print_matrix = 0;
   short verify = 1;
+  short tree_only = 0;
 
   double tolerance = 0;
 
   int c;
-  const char short_options[] = "hT:ct:N:b:pv";
+  const char short_options[] = "hT:ct:N:b:pvr";
   const struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "type", required_argument, NULL, 'T' },
@@ -41,6 +42,7 @@ main (int argc, char **argv)
     { "N_basic", required_argument, NULL, 'b' },
     { "print", no_argument, NULL, 'p' },
     { "no-verify", no_argument, NULL, 'v' },
+    { "tree-only", no_argument, NULL, 'r' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -60,6 +62,7 @@ main (int argc, char **argv)
         printf("{ -b | --N_basic } N      The basic sub-matrix size, N_basic\n");
         printf("{ -p | --print }          Print matrices\n");
         printf("{ -v | --no-verify }      Do not verify result\n");
+        printf("{ -r | --tree-only }      Skip basic block products\n");
         exit(0);
         break;
 
@@ -104,6 +107,10 @@ main (int argc, char **argv)
 
       case 'v':
         verify = 0;
+        break;
+
+      case 'r':
+        tree_only = 1;
         break;
 
       default:
@@ -165,7 +172,7 @@ main (int argc, char **argv)
 
   struct timespec start_time;
   clock_gettime(CLOCKTYPE, &start_time);
-  chunk_tree_multiply(tolerance, A, A, C);
+  chunk_tree_multiply(tolerance, A, A, C, tree_only);
   struct timespec end_time;
   clock_gettime(CLOCKTYPE, &end_time);
 
