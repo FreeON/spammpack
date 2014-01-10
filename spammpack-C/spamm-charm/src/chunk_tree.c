@@ -530,6 +530,49 @@ chunk_tree_get_norm (const void *const chunk)
   return root->norm_2;
 }
 
+/** Add two nodes.
+ *
+ * @f[ A \leftarrow \alpha A + \beta B @f]
+ *
+ * @param tier The tier.
+ * @param depth The depth.
+ * @param alpha The scalar alpha.
+ * @param A The node A.
+ * @param beta The scalar beta.
+ * @param B The node B.
+ */
+void
+chunk_tree_add_node (const int tier,
+    const int depth,
+    const double alpha,
+    struct chunk_tree_node_t *const A,
+    const double beta,
+    const struct chunk_tree_node_t *const B)
+{
+  assert(A != NULL);
+  assert(B != NULL);
+
+  if(tier == depth)
+  {
+    for(int i = 0; i < SQUARE(A->N_basic); i++)
+    {
+      A->data.matrix[i] = alpha*A->data.matrix[i]
+        + beta*B->data.matrix[i];
+    }
+  }
+
+  else
+  {
+    for(int i = 0; i < 4; i++)
+    {
+      struct chunk_tree_node_t *A_child = A->data.child[i];
+      struct chunk_tree_node_t *B_child = B->data.child[i];
+
+      chunk_tree_add_node(tier+1, depth, alpha, A_child, beta, B_child);
+    }
+  }
+}
+
 /** Add two chunks.
  *
  * @f[ A \leftarrow \alpha A + \beta B @f]
@@ -543,7 +586,17 @@ void
 chunk_tree_add (const double alpha, void *const A,
     const double beta, const void *const B)
 {
-  ABORT("FIXME\n");
+  assert(A != NULL);
+  assert(B != NULL);
+
+  struct chunk_tree_t *A_ptr = (struct chunk_tree_t*) A;
+  struct chunk_tree_t *B_ptr = (struct chunk_tree_t*) B;
+
+  struct chunk_tree_node_t *A_root = (struct chunk_tree_node_t*) A_ptr->data;
+  struct chunk_tree_node_t *B_root = (struct chunk_tree_node_t*) B_ptr->data;
+
+  chunk_tree_add_node(0, A_ptr->depth, alpha, A_root, beta, B_root);
+  chunk_tree_update_norm(A);
 }
 
 /** Multiply two tree nodes using the SpAMM algorithm.
@@ -740,6 +793,43 @@ chunk_tree_to_dense (const void *const chunk)
   return A;
 }
 
+/** Scale a node, i.e. multiply it by a scalar.
+ *
+ * @f[ A \leftarrow \alpha A @f]
+ *
+ * @param alpha The scalar alpha.
+ * @param tier The tier.
+ * @param depth The depth.
+ * @param node The node.
+ */
+void
+chunk_tree_scale_node (const double alpha,
+    const int tier,
+    const int depth,
+    struct chunk_tree_node_t *node)
+{
+  assert(node != NULL);
+
+  node->norm_2 *= SQUARE(alpha);
+
+  if(tier == depth)
+  {
+    for(int i = 0; i < SQUARE(node->N_basic); i++)
+    {
+      node->data.matrix[i] *= alpha;
+    }
+  }
+
+  else
+  {
+    for(int i = 0; i < 4; i++)
+    {
+      struct chunk_tree_node_t *child = node->data.child[i];
+      chunk_tree_scale_node(alpha, tier+1, depth, child);
+    }
+  }
+}
+
 /** Scale a chunk, i.e. multiply it by a scalar.
  *
  * @f[ A \leftarrow \alpha A @f]
@@ -750,7 +840,45 @@ chunk_tree_to_dense (const void *const chunk)
 void
 chunk_tree_scale (const double alpha, void *const chunk)
 {
-  ABORT("FIXME\n");
+  assert(chunk != NULL);
+
+  struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
+  struct chunk_tree_node_t *root = (struct chunk_tree_node_t*) ptr->data;
+
+  chunk_tree_scale_node(alpha, 0, ptr->depth, root);
+}
+
+/** Add a scaled identity matrix to a chunk.
+ *
+ * @f[ A \leftarrow A + \alpha \times \mathrm{Id} @f]
+ *
+ * @param alpha The scalar alpha.
+ * @param node The node.
+ */
+void
+chunk_tree_add_identity_node (const int tier,
+    const int depth,
+    const double alpha,
+    struct chunk_tree_node_t *const node)
+{
+  assert(node != NULL);
+
+  if(tier == depth)
+  {
+    for(int i = 0; i < node->N_basic; i++)
+    {
+      node->data.matrix[ROW_MAJOR(i, i, node->N_basic)] += alpha;
+    }
+  }
+
+  else
+  {
+    for(int i = 0; i < 2; i++)
+    {
+      struct chunk_tree_node_t *child = node->data.child[ROW_MAJOR(i, i, 2)];
+      chunk_tree_add_identity_node(tier+1, depth, alpha, child);
+    }
+  }
 }
 
 /** Add a scaled identity matrix to a chunk.
@@ -763,7 +891,48 @@ chunk_tree_scale (const double alpha, void *const chunk)
 void
 chunk_tree_add_identity (const double alpha, void *const chunk)
 {
-  ABORT("FIXME\n");
+  assert(chunk != NULL);
+
+  struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
+  struct chunk_tree_node_t *root = (struct chunk_tree_node_t*) ptr->data;
+
+  chunk_tree_add_identity_node(0, ptr->depth, alpha, root);
+  chunk_tree_update_norm(chunk);
+}
+
+/** Get the trace of a node.
+ *
+ * @param node The node.
+ *
+ * @return The trace of the node.
+ */
+double
+chunk_tree_trace_node (const int tier,
+    const int depth,
+    const struct chunk_tree_node_t *const node)
+{
+  assert(node != NULL);
+
+  double trace = 0;
+
+  if(tier == depth)
+  {
+    for(int i = 0; i < node->N_basic; i++)
+    {
+      trace += node->data.matrix[ROW_MAJOR(i, i, node->N_basic)];
+    }
+  }
+
+  else
+  {
+    for(int i = 0; i < 2; i++)
+    {
+      struct chunk_tree_node_t *child = node->data.child[ROW_MAJOR(i, i, 2)];
+      trace += chunk_tree_trace_node(tier+1, depth, child);
+    }
+  }
+
+  return trace;
 }
 
 /** Get the trace of a chunk.
@@ -775,7 +944,12 @@ chunk_tree_add_identity (const double alpha, void *const chunk)
 double
 chunk_tree_trace (const void *const chunk)
 {
-  ABORT("FIXME\n");
+  assert(chunk != NULL);
+
+  struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
+  struct chunk_tree_node_t *root = (struct chunk_tree_node_t*) ptr->data;
+
+  return chunk_tree_trace_node(0, ptr->depth, root);
 }
 
 /** Delete the chunk.

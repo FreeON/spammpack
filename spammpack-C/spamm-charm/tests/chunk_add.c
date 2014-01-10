@@ -9,9 +9,9 @@
 int
 main (int argc, char **argv)
 {
-  const int N = 2500;
-  const int N_chunk = 2500;
-  const int N_basic = 5;
+  const int N = 2048;
+  const int N_chunk = 2048;
+  const int N_basic = 4;
 
   void *A = chunk_alloc(N_chunk, N_basic, N, 0, 0);
   void *C = chunk_alloc(N_chunk, N_basic, N, 0, 0);

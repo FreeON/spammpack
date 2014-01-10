@@ -14,9 +14,9 @@
 int
 main (int argc, char **argv)
 {
-  int N = 900;
-  int N_chunk = 900;
-  const int N_basic = 5;
+  int N = 1024;
+  int N_chunk = 1024;
+  const int N_basic = 4;
 
   enum
   {
