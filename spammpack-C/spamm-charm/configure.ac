@@ -223,7 +223,7 @@ case ${enable_chunk_implementation} in
     AC_MSG_NOTICE([using tree chunks])
     ;;
   * )
-    AC_MSG_FAILURE([unknown chunk implementation])
+    AC_MSG_FAILURE([unknown chunk implementation: ${enable_chunk_implementation}])
     ;;
 esac
 AC_DEFINE_UNQUOTED([CHUNK_IMPLEMENTATION],
