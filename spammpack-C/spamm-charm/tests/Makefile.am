@@ -13,6 +13,7 @@ check_PROGRAMS = \
 	chunk_scale \
 	chunk_trace
 
+AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_LDFLAGS = $(top_builddir)/src/libchunk.la
 
