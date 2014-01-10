@@ -50,7 +50,7 @@ lib_LTLIBRARIES = libchunk.la libtree.la
 
 libchunk_la_SOURCES = \
 	chunk.c \
-	chunk.h \
+	chunk_tiled.c \
 	chunk_tree.c
 
 libtree_la_SOURCES = \
@@ -60,6 +60,7 @@ libtree_la_SOURCES = \
 
 include_HEADERS = \
 	chunk.h \
+	chunk_tiled.h \
 	chunk_tree.h \
 	tree.h
 

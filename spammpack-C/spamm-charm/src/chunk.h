@@ -47,7 +47,8 @@ void
 chunk_multiply (const double tolerance,
     const void *const A,
     const void *const B,
-    void *const C);
+    void *const C,
+    const short symbolic_only);
 
 double
 chunk_trace (const void *const chunk);

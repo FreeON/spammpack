@@ -206,7 +206,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 #endif
 
       DEBUG(LB"calling multiply on result\n"LE);
-      chunk_multiply(tolerance, AChunk->chunk, BChunk->chunk, CResult);
+      chunk_multiply(tolerance, AChunk->chunk, BChunk->chunk, CResult, 0);
 
 #ifdef PRINT_MATRICES
       /** For debugging. */

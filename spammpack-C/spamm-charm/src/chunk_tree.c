@@ -474,6 +474,32 @@ chunk_tree_set (void *const chunk, const double *const A)
   chunk_tree_update_norm(chunk);
 }
 
+/** Return the matrix size of the chunk matrix.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The size N_chunk.
+ */
+int
+chunk_tree_get_N_chunk (void *const chunk)
+{
+  assert(chunk != NULL);
+  return ((struct chunk_tree_t*) chunk)->N_chunk;
+}
+
+/** Return the matrix size of the basic matrix.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The size N_basic.
+ */
+int
+chunk_tree_get_N_basic (void *const chunk)
+{
+  assert(chunk != NULL);
+  return ((struct chunk_tree_t*) chunk)->N_basic;
+}
+
 /** Set a chunk to zero.
  *
  * @param chunk The chunk.
@@ -504,6 +530,22 @@ chunk_tree_get_norm (const void *const chunk)
   return root->norm_2;
 }
 
+/** Add two chunks.
+ *
+ * @f[ A \leftarrow \alpha A + \beta B @f]
+ *
+ * @param alpha The scalar alpha.
+ * @param A The chunk A.
+ * @param beta The scalar beta.
+ * @param B The chunk B.
+ */
+void
+chunk_tree_add (const double alpha, void *const A,
+    const double beta, const void *const B)
+{
+  ABORT("FIXME\n");
+}
+
 /** Multiply two tree nodes using the SpAMM algorithm.
  *
  * @f[ C \leftarrow A \times B @f]
@@ -514,7 +556,7 @@ chunk_tree_get_norm (const void *const chunk)
  * @param A Chunk A.
  * @param B Chunk B.
  * @param C Chunk C.
- * @param tree_only Only go through the symbolic part, i.e. don't multiply the
+ * @param symbolic_only Only go through the symbolic part, i.e. don't multiply the
  * basic blocks. Used only for debugging to get a handle on the performance of
  * the tree.
  */
@@ -525,7 +567,7 @@ chunk_tree_multiply_node (const double tolerance_2,
     const struct chunk_tree_node_t *const A,
     const struct chunk_tree_node_t *const B,
     struct chunk_tree_node_t *const C,
-    const short tree_only)
+    const short symbolic_only)
 {
   assert(A != NULL);
   assert(B != NULL);
@@ -533,13 +575,13 @@ chunk_tree_multiply_node (const double tolerance_2,
 
   DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
 
-  DEBUG("tree_only = %d\n", tree_only);
+  DEBUG("symbolic_only = %d\n", symbolic_only);
 
   if(tier == depth)
   {
     DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
 
-    if(!tree_only)
+    if(!symbolic_only)
     {
       double *A_submatrix = A->data.matrix;
       double *B_submatrix = B->data.matrix;
@@ -591,7 +633,7 @@ chunk_tree_multiply_node (const double tolerance_2,
 
             if(A_child->norm_2*B_child->norm_2 > tolerance_2)
             {
-              chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child, B_child, C_child, tree_only);
+              chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child, B_child, C_child, symbolic_only);
             }
           }
         }
@@ -611,7 +653,7 @@ chunk_tree_multiply_node (const double tolerance_2,
  * @param A Chunk A.
  * @param B Chunk B.
  * @param C Chunk C.
- * @param tree_only Only go through the symbolic part, i.e. don't multiply the
+ * @param symbolic_only Only go through the symbolic part, i.e. don't multiply the
  * basic blocks. Used only for debugging to get a handle on the performance of
  * the tree.
  */
@@ -620,7 +662,7 @@ chunk_tree_multiply (const double tolerance,
     const void *const A,
     const void *const B,
     void *const C,
-    const short tree_only)
+    const short symbolic_only)
 {
   assert(A != NULL);
   assert(B != NULL);
@@ -639,7 +681,7 @@ chunk_tree_multiply (const double tolerance,
   struct chunk_tree_node_t *B_root = (struct chunk_tree_node_t*) B_ptr->data;
   struct chunk_tree_node_t *C_root = (struct chunk_tree_node_t*) C_ptr->data;
 
-  INFO("tree_only = %d\n", tree_only);
+  INFO("symbolic_only = %d\n", symbolic_only);
 
   INFO("%dx%d blocked matrix, potentially %d products to consider\n",
       ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(A_ptr->depth)));
@@ -655,7 +697,7 @@ chunk_tree_multiply (const double tolerance,
 #endif
 #pragma omp task untied
         {
-          chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root, B_root, C_root, tree_only);
+          chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root, B_root, C_root, symbolic_only);
         }
 #pragma omp taskwait
       }
@@ -696,6 +738,44 @@ chunk_tree_to_dense (const void *const chunk)
   }
 
   return A;
+}
+
+/** Scale a chunk, i.e. multiply it by a scalar.
+ *
+ * @f[ A \leftarrow \alpha A @f]
+ *
+ * @param alpha The scalar alpha.
+ * @param chunk The chunk.
+ */
+void
+chunk_tree_scale (const double alpha, void *const chunk)
+{
+  ABORT("FIXME\n");
+}
+
+/** Add a scaled identity matrix to a chunk.
+ *
+ * @f[ A \leftarrow A + \alpha \times \mathrm{Id} @f]
+ *
+ * @param alpha The scalar alpha.
+ * @param chunk The chunk.
+ */
+void
+chunk_tree_add_identity (const double alpha, void *const chunk)
+{
+  ABORT("FIXME\n");
+}
+
+/** Get the trace of a chunk.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The trace of the chunk.
+ */
+double
+chunk_tree_trace (const void *const chunk)
+{
+  ABORT("FIXME\n");
 }
 
 /** Delete the chunk.

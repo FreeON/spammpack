@@ -26,8 +26,18 @@ chunk_tree_alloc (const int N_chunk,
 void
 chunk_tree_set (void *const chunk, const double *const A);
 
+int
+chunk_tree_get_N_chunk (void *const chunk);
+
+int
+chunk_tree_get_N_basic (void *const chunk);
+
 double
 chunk_tree_get_norm (const void *const chunk);
+
+void
+chunk_tree_add (const double alpha, void *const A,
+    const double beta, const void *const B);
 
 void
 chunk_tree_multiply (const double tolerance,
@@ -35,6 +45,15 @@ chunk_tree_multiply (const double tolerance,
     const void *const B,
     void *const C,
     const short tree_only);
+
+double
+chunk_tree_trace (const void *const chunk);
+
+void
+chunk_tree_scale (const double alpha, void *const chunk);
+
+void
+chunk_tree_add_identity (const double alpha, void *const chunk);
 
 double *
 chunk_tree_to_dense (const void *const chunk);

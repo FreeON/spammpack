@@ -210,6 +210,25 @@ if test "${enable_pruning}" = "yes"; then
   AC_DEFINE([PRUNE_CONVOLUTION], [1], [Enable pruning of convolution space])
 fi
 
+AC_ARG_ENABLE([chunk-implementation],
+  [AS_HELP_STRING([--enable-chunk-implementation],
+  [choose the chunk implementation (tiled, tree)])],
+  [enable_chunk_implementation=$enableval],
+  [enable_chunk_implementation="tiled"])
+case ${enable_chunk_implementation} in
+  "tiled" )
+    AC_MSG_NOTICE([using tiled chunks])
+    ;;
+  "tree" )
+    AC_MSG_NOTICE([using tree chunks])
+    ;;
+  * )
+    AC_MSG_FAILURE([unknown chunk implementation])
+    ;;
+esac
+AC_DEFINE_UNQUOTED([CHUNK_IMPLEMENTATION],
+  [${enable_chunk_implementation}], [The chunk implementation])
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Makefile
