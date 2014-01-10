@@ -125,6 +125,8 @@ main (int argc, char **argv)
 
   double *A_dense = calloc(N_chunk*N_chunk, sizeof(double));
 
+  printf("allocated A_dense, sizeof(A_dense) = %ld bytes\n", N_chunk*N_chunk*sizeof(double));
+
   switch(matrix_type)
   {
     case full:

@@ -533,37 +533,42 @@ chunk_tree_multiply_node (const double tolerance_2,
 
   DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
 
-  if(tier == depth && !tree_only)
+  DEBUG("tree_only = %d\n", tree_only);
+
+  if(tier == depth)
   {
     DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
 
-    double *A_submatrix = A->data.matrix;
-    double *B_submatrix = B->data.matrix;
-    double *C_submatrix = C->data.matrix;
+    if(!tree_only)
+    {
+      double *A_submatrix = A->data.matrix;
+      double *B_submatrix = B->data.matrix;
+      double *C_submatrix = C->data.matrix;
 
-    DEBUG("mulitplying submatrix, A at %p, B at %p, C at %p\n", &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
+      DEBUG("mulitplying submatrix, A at %p, B at %p, C at %p\n", &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
 
 #ifdef _OPENMP
-    omp_set_lock(&C->matrix_lock);
+      omp_set_lock(&C->matrix_lock);
 #endif
 
-    for(int i = 0; i < A->N_basic; i++)
-    {
-      for(int j = 0; j < A->N_basic; j++)
+      for(int i = 0; i < A->N_basic; i++)
       {
-        for(int k = 0; k < A->N_basic; k++)
+        for(int j = 0; j < A->N_basic; j++)
         {
-          C_submatrix[ROW_MAJOR(i, j, A->N_basic)] +=
-            A_submatrix[ROW_MAJOR(i, k, A->N_basic)]
-            * B_submatrix[ROW_MAJOR(k, j, A->N_basic)];
+          for(int k = 0; k < A->N_basic; k++)
+          {
+            C_submatrix[ROW_MAJOR(i, j, A->N_basic)] +=
+              A_submatrix[ROW_MAJOR(i, k, A->N_basic)]
+              * B_submatrix[ROW_MAJOR(k, j, A->N_basic)];
+          }
         }
       }
-    }
 
 #ifdef _OPENMP
-    omp_unset_lock(&C->matrix_lock);
+      omp_unset_lock(&C->matrix_lock);
 #endif
-    DEBUG("done multiplying\n");
+      DEBUG("done multiplying\n");
+    }
   }
 
   else
@@ -634,8 +639,10 @@ chunk_tree_multiply (const double tolerance,
   struct chunk_tree_node_t *B_root = (struct chunk_tree_node_t*) B_ptr->data;
   struct chunk_tree_node_t *C_root = (struct chunk_tree_node_t*) C_ptr->data;
 
+  INFO("tree_only = %d\n", tree_only);
+
   INFO("%dx%d blocked matrix, potentially %d products to consider\n",
-      ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(2*A_ptr->depth)));
+      ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(A_ptr->depth)));
 
   if(A_root->norm_2*B_root->norm_2 > tolerance_2)
   {
