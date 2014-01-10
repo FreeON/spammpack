@@ -626,6 +626,9 @@ chunk_tree_multiply (const double tolerance,
   struct chunk_tree_node_t *B_root = (struct chunk_tree_node_t*) B_ptr->data;
   struct chunk_tree_node_t *C_root = (struct chunk_tree_node_t*) C_ptr->data;
 
+  INFO("%dx%d blocked matrix, potentially %d products to consider\n",
+      ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(2*A_ptr->depth)));
+
   if(A_root->norm_2*B_root->norm_2 > tolerance_2)
   {
 #pragma omp parallel
