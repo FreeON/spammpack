@@ -248,7 +248,7 @@ chmod 755 tests/test_sp2.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_SP2_full.sh],
 [cat > tests/spamm_test_SP2_full.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation SP2 -N 7 --Ne 2 --block 5 --type full --iterations 40 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation SP2 -N 8 --block 4 --Ne 2 --type full --iterations 40 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_SP2_full.sh
 ])
@@ -256,7 +256,7 @@ chmod 755 tests/spamm_test_SP2_full.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_add_full.sh],
 [cat > tests/spamm_test_add_full.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation add -N 21 --block 5 --type full --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation add -N 32 --block 4 --type full --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_add_full.sh
 ])
@@ -264,7 +264,7 @@ chmod 755 tests/spamm_test_add_full.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_add_decay.sh],
 [cat > tests/spamm_test_add_decay.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation add -N 21 --block 5 --type decay --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation add -N 32 --block 4 --type decay --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_add_decay.sh
 ])
@@ -272,7 +272,7 @@ chmod 755 tests/spamm_test_add_decay.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_add_diagonal.sh],
 [cat > tests/spamm_test_add_diagonal.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation add -N 21 --block 5 --type diagonal --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation add -N 32 --block 4 --type diagonal --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_add_diagonal.sh
 ])
@@ -280,7 +280,7 @@ chmod 755 tests/spamm_test_add_diagonal.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_multiply_full.sh],
 [cat > tests/spamm_test_multiply_full.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation multiply -N 21 --block 5 --type full --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation multiply -N 32 --block 4 --type full --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_multiply_full.sh
 ])
@@ -288,7 +288,7 @@ chmod 755 tests/spamm_test_multiply_full.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_multiply_decay.sh],
 [cat > tests/spamm_test_multiply_decay.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation multiply -N 21 --block 5 --type decay --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation multiply -N 32 --block 4 --type decay --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_multiply_decay.sh
 ])
@@ -296,7 +296,7 @@ chmod 755 tests/spamm_test_multiply_decay.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_multiply_diagonal.sh],
 [cat > tests/spamm_test_multiply_diagonal.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation multiply -N 21 --block 5 --type diagonal --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation multiply -N 32 --block 4 --type diagonal --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_multiply_diagonal.sh
 ])
@@ -304,7 +304,7 @@ chmod 755 tests/spamm_test_multiply_diagonal.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_scale_full.sh],
 [cat > tests/spamm_test_scale_full.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation scale -N 21 --block 5 --type full --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation scale -N 32 --block 4 --type full --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_scale_full.sh
 ])
@@ -312,7 +312,7 @@ chmod 755 tests/spamm_test_scale_full.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_scale_decay.sh],
 [cat > tests/spamm_test_scale_decay.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation scale -N 21 --block 5 --type decay --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation scale -N 32 --block 4 --type decay --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_scale_decay.sh
 ])
@@ -320,7 +320,7 @@ chmod 755 tests/spamm_test_scale_decay.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_scale_diagonal.sh],
 [cat > tests/spamm_test_scale_diagonal.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation scale -N 21 --block 5 --type diagonal --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation scale -N 32 --block 4 --type diagonal --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_scale_diagonal.sh
 ])
@@ -328,7 +328,7 @@ chmod 755 tests/spamm_test_scale_diagonal.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_trace_full.sh],
 [cat > tests/spamm_test_trace_full.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation trace -N 21 --block 5 --type full --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation trace -N 32 --block 4 --type full --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_trace_full.sh
 ])
@@ -336,7 +336,7 @@ chmod 755 tests/spamm_test_trace_full.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_trace_decay.sh],
 [cat > tests/spamm_test_trace_decay.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation trace -N 21 --block 5 --type decay --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation trace -N 32 --block 4 --type decay --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_trace_decay.sh
 ])
@@ -344,7 +344,7 @@ chmod 755 tests/spamm_test_trace_decay.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_trace_diagonal.sh],
 [cat > tests/spamm_test_trace_diagonal.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation trace -N 21 --block 5 --type diagonal --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation trace -N 32 --block 4 --type diagonal --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_trace_diagonal.sh
 ])
@@ -352,7 +352,7 @@ chmod 755 tests/spamm_test_trace_diagonal.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_addIdentity_full.sh],
 [cat > tests/spamm_test_addIdentity_full.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation addIdentity -N 21 --block 5 --type full --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation addIdentity -N 32 --block 4 --type full --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_addIdentity_full.sh
 ])
@@ -360,7 +360,7 @@ chmod 755 tests/spamm_test_addIdentity_full.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_addIdentity_decay.sh],
 [cat > tests/spamm_test_addIdentity_decay.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation addIdentity -N 21 --block 5 --type decay --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation addIdentity -N 32 --block 4 --type decay --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_addIdentity_decay.sh
 ])
@@ -368,7 +368,7 @@ chmod 755 tests/spamm_test_addIdentity_decay.sh
 AC_CONFIG_COMMANDS([tests/spamm_test_addIdentity_diagonal.sh],
 [cat > tests/spamm_test_addIdentity_diagonal.sh << END_OF_SCRIPT
 #!/bin/bash
-\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation addIdentity -N 21 --block 5 --type diagonal --iterations 3 --load-balance --verify || exit 1
+\${top_builddir}/src/charmrun +p3 \${top_builddir}/src/spamm-charm --operation addIdentity -N 32 --block 4 --type diagonal --iterations 3 --load-balance --verify || exit 1
 END_OF_SCRIPT
 chmod 755 tests/spamm_test_addIdentity_diagonal.sh
 ])
