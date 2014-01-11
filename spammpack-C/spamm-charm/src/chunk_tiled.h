@@ -62,6 +62,9 @@ chunk_tiled_add_identity (const double alpha, void *const chunk);
 double *
 chunk_tiled_to_dense (const void *const chunk);
 
+void
+chunk_tiled_delete (void **const chunk);
+
 __END_DECLS
 
 #endif

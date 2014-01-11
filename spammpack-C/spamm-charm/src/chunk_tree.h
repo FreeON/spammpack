@@ -36,6 +36,10 @@ double
 chunk_tree_get_norm (const void *const chunk);
 
 void
+chunk_tree_print (const void *const chunk,
+    const char *const format, ...);
+
+void
 chunk_tree_add (const double alpha, void *const A,
     const double beta, const void *const B);
 

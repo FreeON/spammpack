@@ -35,6 +35,14 @@ ChunkMsg::ChunkMsg (size_t chunksize, char *chunk)
   }
 }
 
+/** The destructor.
+ *
+ * @param chunk The chunk.
+ */
+ChunkMsg::~ChunkMsg (void)
+{
+}
+
 /** The constructor.
  *
  * @param x The value of this message.

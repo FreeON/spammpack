@@ -100,7 +100,7 @@ MultiplyElement::~MultiplyElement ()
   if(CResult != NULL)
   {
     DEBUG("free'ing chunk at %p\n", CResult);
-    free(CResult);
+    chunk_delete(&CResult);
     CResult = NULL;
     chunksize = 0;
   }
@@ -422,12 +422,12 @@ void MultiplyElement::storeBack (double alpha, CkCallback &cb)
 
     if(CResult != NULL)
     {
-      DEBUG(LB"calling blockAdd with Chunk at %p\n"LE, CResult);
+      INFO(LB"calling blockAdd with Chunk at %p\n"LE, CResult);
       C(thisIndex.x, thisIndex.y).chunkAdd(alpha, chunksize, (char*) CResult);
 
       /* Reset result for possible next iteration. */
-      DEBUG(LB"deleting CResult at %p for next iteration\n"LE, CResult);
-      free(CResult);
+      INFO(LB"deleting CResult at %p for next iteration\n"LE, CResult);
+      chunk_delete(&CResult);
       CResult = NULL;
     }
   }

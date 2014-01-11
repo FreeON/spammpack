@@ -45,6 +45,7 @@ class ChunkMsg : public CMessage_ChunkMsg
     char *chunk;
 
     ChunkMsg (size_t chunksize, char *chunk);
+    ~ChunkMsg (void);
 };
 
 /** A simple double value. */

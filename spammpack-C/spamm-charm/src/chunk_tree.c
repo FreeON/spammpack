@@ -217,7 +217,7 @@ chunk_tree_alloc (const int N_chunk,
   ptr->N_basic = N_basic;
   ptr->depth = chunk_tree_get_depth(N_chunk, N_basic);
 
-  DEBUG("ptr = %p\n", ptr);
+  INFO("ptr = %p\n", ptr);
   DEBUG("ptr->data = %p\n", ptr->data);
   DEBUG("ptr->data + chunksize = %p\n", (void*) ((intptr_t) ptr + ptr->chunksize));
   DEBUG("sizeof(struct chunk_tree_node_t) = 0x%lx\n", sizeof(struct chunk_tree_node_t));
@@ -530,6 +530,69 @@ chunk_tree_get_norm (const void *const chunk)
   return root->norm_2;
 }
 
+/** Print a node.
+ *
+ * @param tier The tier.
+ * @param depth The depth.
+ * @param node The node.
+ */
+void
+chunk_tree_print_node (const int tier,
+    const int depth,
+    const struct chunk_tree_node_t *node)
+{
+  assert(node != NULL);
+
+  INFO("(%p) norm_2 = %e\n", node, node->norm_2);
+  INFO("(%p) N_basic = %d\n", node, node->N_basic);
+
+  if(tier == depth)
+  {
+    INFO("(%p) submatrix at %p\n", node, node->data.matrix);
+  }
+
+  else
+  {
+    INFO("(%p) children at [ %p %p\n",   node, node->data.child[0], node->data.child[1]);
+    INFO("(%p)               %p %p ]\n", node, node->data.child[2], node->data.child[3]);
+
+    chunk_tree_print_node(tier+1, depth, node->data.child[0]);
+    chunk_tree_print_node(tier+1, depth, node->data.child[1]);
+    chunk_tree_print_node(tier+1, depth, node->data.child[2]);
+    chunk_tree_print_node(tier+1, depth, node->data.child[3]);
+  }
+}
+
+/** Print a chunk.
+ *
+ * @param chunk The chunk.
+ * @param format The format string. This follows the printf() approach.
+ */
+void
+chunk_tree_print (const void *const chunk,
+    const char *const format, ...)
+{
+  INFO("chunk at %p\n", chunk);
+
+  if(chunk != NULL)
+  {
+    struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
+
+    INFO("chunksize = %ld\n", ptr->chunksize);
+    INFO("i_lower = %d\n", ptr->i_lower);
+    INFO("j_lower = %d\n", ptr->j_lower);
+    INFO("N = %d\n", ptr->N);
+    INFO("N_chunk = %d\n", ptr->N_chunk);
+    INFO("N_basic = %d\n", ptr->N_basic);
+    INFO("depth = %d\n", ptr->depth);
+    INFO("submatrix_offset = %ld\n", ptr->submatrix_offset);
+
+    struct chunk_tree_node_t *root = (struct chunk_tree_node_t*) ptr->data;
+
+    chunk_tree_print_node(0, ptr->depth, root);
+  }
+}
+
 /** Add two nodes.
  *
  * @f[ A \leftarrow \alpha A + \beta B @f]
@@ -594,6 +657,11 @@ chunk_tree_add (const double alpha, void *const A,
 
   struct chunk_tree_node_t *A_root = (struct chunk_tree_node_t*) A_ptr->data;
   struct chunk_tree_node_t *B_root = (struct chunk_tree_node_t*) B_ptr->data;
+
+  INFO("adding two chunks\n");
+
+  chunk_tree_print(A, "chunk A\n");
+  chunk_tree_print(B, "chunk B\n");
 
   chunk_tree_add_node(0, A_ptr->depth, alpha, A_root, beta, B_root);
   chunk_tree_update_norm(A);
@@ -959,5 +1027,7 @@ chunk_tree_trace (const void *const chunk)
 void
 chunk_tree_delete (void **const chunk)
 {
-  ABORT("FIXME\n");
+  /* Ignore OpenMP locks for now. */
+  free(*chunk);
+  *chunk = NULL;
 }

@@ -16,6 +16,8 @@
 #include "chunk_tiled.h"
 #include "chunk_tree.h"
 
+#include <stdio.h>
+
 size_t
 chunk_sizeof (const int N_chunk, const int N_basic)
 {
@@ -57,6 +59,14 @@ chunk_get_norm (const void *const chunk)
 }
 
 void
+chunk_print (const void *const chunk,
+    const char *const format, ...)
+{
+  printf("FIXME\n");
+  exit(1);
+}
+
+void
 chunk_add (const double alpha, void *const A,
     const double beta, const void *const B)
 {
@@ -95,4 +105,10 @@ double *
 chunk_to_dense (const void *const chunk)
 {
   return FUNC(to_dense)(chunk);
+}
+
+void
+chunk_delete (void **const chunk)
+{
+  FUNC(delete)(chunk);
 }

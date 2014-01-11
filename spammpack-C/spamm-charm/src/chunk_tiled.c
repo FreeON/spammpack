@@ -670,3 +670,14 @@ chunk_tiled_to_dense (const void *const chunk)
 
   return A;
 }
+
+/** Delete the chunk.
+ *
+ * @param chunk The chunk.
+ */
+void
+chunk_tiled_delete (void **const chunk)
+{
+  free(*chunk);
+  *chunk = NULL;
+}
