@@ -13,5 +13,7 @@ main ()
 
   printf("allocated %ld bytes\n", chunk_tree_sizeof(N_chunk, N_basic));
 
+  chunk_tree_print(chunk, "chunk:\n");
+
   return 0;
 }
