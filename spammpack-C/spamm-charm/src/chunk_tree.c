@@ -229,6 +229,7 @@ chunk_tree_alloc (const int N_chunk,
   ptr->N_basic = N_basic;
   ptr->depth = chunk_tree_get_depth(N_chunk, N_basic);
 
+  DEBUG("allocating new chunk\n");
   DEBUG("ptr = %p\n", ptr);
   DEBUG("ptr->data = %p\n", ptr->data);
   DEBUG("ptr->data + chunksize = %p\n", (void*) ((intptr_t) ptr + ptr->chunksize));
@@ -302,7 +303,7 @@ chunk_tree_alloc (const int N_chunk,
       node->offset.matrix_offset = leaf_tier_size + matrix_offset - node_offset;
 
       DEBUG("%d:node(%d,%d) at %p, submatrix at %p\n",
-          ptr->depth, i, j, node, &(*(double*) ((intptr_t) node + node->data.matrix_offset)));
+          ptr->depth, i, j, node, &(*(double*) ((intptr_t) node + node->offset.matrix_offset)));
     }
   }
 
@@ -334,9 +335,11 @@ chunk_tree_get_submatrix (const int i,
   assert(i < chunk->N_chunk/chunk->N_basic);
   assert(j < chunk->N_chunk/chunk->N_basic);
 
-  double *submatrix_ptr = (double*) ((intptr_t) chunk
+  double *submatrix_ptr = (double*) ((intptr_t) chunk->data
       + chunk->submatrix_offset
       + ROW_MAJOR(i, j, ipow2(chunk->depth))*SQUARE(chunk->N_basic)*sizeof(double));
+
+  DEBUG("submatrix(%d,%d) at %p\n", i, j, submatrix_ptr);
 
   return submatrix_ptr;
 }
