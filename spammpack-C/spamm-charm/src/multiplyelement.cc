@@ -234,7 +234,7 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   }
 #endif
 
-  INFO(LB"contributing to reduction\n"LE);
+  DEBUG(LB"contributing to reduction\n"LE);
   contribute(cb);
 }
 
@@ -422,11 +422,11 @@ void MultiplyElement::storeBack (double alpha, CkCallback &cb)
 
     if(CResult != NULL)
     {
-      INFO(LB"calling blockAdd with Chunk at %p\n"LE, CResult);
+      DEBUG(LB"calling blockAdd with Chunk at %p\n"LE, CResult);
       C(thisIndex.x, thisIndex.y).chunkAdd(alpha, chunksize, (char*) CResult);
 
       /* Reset result for possible next iteration. */
-      INFO(LB"deleting CResult at %p for next iteration\n"LE, CResult);
+      DEBUG(LB"deleting CResult at %p for next iteration\n"LE, CResult);
       chunk_delete(&CResult);
       CResult = NULL;
     }

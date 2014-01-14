@@ -206,21 +206,21 @@ void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback
   delete BNodes;
 
   /* Multiply. */
-  INFO("multiply\n");
+  DEBUG("multiply\n");
   //Timer tMultiply("multiply");
   //tMultiply.start();
   convolution[depth].multiply(tolerance, CkCallbackResumeThread());
   //tMultiply.stop();
   //INFO("%s\n", tMultiply.to_str());
 
-  INFO("scale by beta (%e)\n", beta);
+  DEBUG("scale by beta (%e)\n", beta);
   //Timer tScale("scale");
   //tScale.start();
   C.scale(beta, CkCallbackResumeThread());
   //tScale.stop();
   //INFO("%s\n", tScale.to_str());
 
-  INFO("storeBack\n");
+  DEBUG("storeBack\n");
   //Timer tStoreBack("storeBack");
   //tStoreBack.start();
   convolution[depth].storeBack(alpha, CkCallbackResumeThread());
@@ -228,14 +228,14 @@ void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback
   //INFO("%s\n", tStoreBack.to_str());
 
   /* Update norms. */
-  INFO("update norms\n");
+  DEBUG("update norms\n");
   //Timer tNorm("setNorm");
   //tNorm.start();
   C.setNorm(CkCallbackResumeThread());
   //tNorm.stop();
   //INFO("%s\n", tStoreBack.to_str());
 
-  INFO("done\n");
+  DEBUG("done\n");
   cb.send();
 }
 

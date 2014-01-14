@@ -2,10 +2,15 @@
 
 NODES=( 1 2 4 16 32 64 128 256 )
 
-DENSITY=( PP0020-2 )
-NE=( 1082 )
+#DENSITY=( PP0020-2 )
+#NE=( 1082 )
+#BLOCK=( 256 )
+#BASIC=( 16 )
+
+DENSITY=( PP0050-2 )
+NE=( 2702 )
 BLOCK=( 256 )
-BASIC=( 16 )
+BASIC=( 4 )
 
 for i in ${NODES[@]}; do
   for (( j = 0; j < ${#DENSITY[@]}; j++ )); do

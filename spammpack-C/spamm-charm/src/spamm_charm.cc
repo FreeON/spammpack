@@ -297,7 +297,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
     CkPrintf("SpAMM version %s using %d OpenMP thread(s)\n", PACKAGE_VERSION, omp_get_num_threads());
   }
 #else
-  CkPrintf("SpAMM version %s\n", PACKAGE_VERSION);
+  CkPrintf("SpAMM version %s (serial)\n", PACKAGE_VERSION);
 #endif
 
   /* Register backtrace handler. */

@@ -692,7 +692,7 @@ chunk_tree_add (const double alpha, void *const A,
   struct chunk_tree_node_t *A_root = (struct chunk_tree_node_t*) A_ptr->data;
   struct chunk_tree_node_t *B_root = (struct chunk_tree_node_t*) B_ptr->data;
 
-  INFO("adding two chunks\n");
+  DEBUG("adding two chunks\n");
 
 #ifdef DEBUG_OUTPUT
   chunk_tree_print(A, "chunk A\n");
@@ -838,9 +838,9 @@ chunk_tree_multiply (const double tolerance,
   struct chunk_tree_node_t *B_root = (struct chunk_tree_node_t*) B_ptr->data;
   struct chunk_tree_node_t *C_root = (struct chunk_tree_node_t*) C_ptr->data;
 
-  INFO("symbolic_only = %d\n", symbolic_only);
+  DEBUG("symbolic_only = %d\n", symbolic_only);
 
-  INFO("%dx%d blocked matrix, potentially %d products to consider\n",
+  DEBUG("%dx%d blocked matrix, potentially %d products to consider\n",
       ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(A_ptr->depth)));
 
   if(A_root->norm_2*B_root->norm_2 > tolerance_2)
@@ -850,7 +850,7 @@ chunk_tree_multiply (const double tolerance,
 #pragma omp master
       {
 #ifdef _OPENMP
-        INFO("running on %d OpenMP threads\n", omp_get_num_threads());
+        DEBUG("running on %d OpenMP threads\n", omp_get_num_threads());
 #endif
 #pragma omp task untied
         {

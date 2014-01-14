@@ -279,10 +279,10 @@ void Node::chunkAdd (double alpha, size_t chunksize, char *chunk)
   {
     this->chunk = chunk_alloc(blocksize, N_basic, N, iLower, jLower);
     this->chunksize = chunksize;
-    INFO(LB"creating new Chunk at %p\n"LE, this->chunk);
+    DEBUG(LB"creating new Chunk at %p\n"LE, this->chunk);
   }
 
-  INFO(LB"Adding back to C with Chunk at %p and alpha = %e\n"LE, this->chunk, alpha);
+  DEBUG(LB"Adding back to C with Chunk at %p and alpha = %e\n"LE, this->chunk, alpha);
   chunk_add(1, this->chunk, alpha, chunk);
 
 #ifdef PRINT_MATRICES

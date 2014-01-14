@@ -13,6 +13,8 @@ export LD_LIBRARY_PATH=${SLURM_SUBMIT_DIR}/install/lib:$LD_LIBRARY_PATH
 
 echo "starting on $(date)"
 
+#export OMP_NUM_THREADS=1
+
 ./charmrun -np ${SLURM_NTASKS} \
   --mca opal_paffinity_alone 0 \
   ${SLURM_SUBMIT_DIR}/install/bin/spamm-charm \
