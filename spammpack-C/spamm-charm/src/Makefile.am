@@ -4,6 +4,7 @@ EXTRA_DIST = $(spamm_charm_INTERFACEFILES)
 
 additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
 
+bin_SCRIPTS = charmrun
 bin_PROGRAMS = spamm-charm
 
 AM_CXXFLAGS = $(CHARMFLAGS) $(OPENMP_CXXFLAGS)
