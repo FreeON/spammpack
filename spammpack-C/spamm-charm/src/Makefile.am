@@ -7,6 +7,8 @@ additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLA
 bin_SCRIPTS = charmrun
 bin_PROGRAMS = spamm-charm
 
+charmrun : spamm-charm
+
 AM_CXXFLAGS = $(CHARMFLAGS) $(OPENMP_CXXFLAGS)
 AM_CFLAGS = $(OPENMP_CFLAGS)
 
