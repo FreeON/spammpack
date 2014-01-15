@@ -174,7 +174,7 @@ main (int argc, char **argv)
 
   struct timespec start_time;
   clock_gettime(CLOCKTYPE, &start_time);
-  chunk_multiply(tolerance, A, A, C, 0);
+  chunk_multiply(tolerance, A, A, C, tree_only);
   struct timespec end_time;
   clock_gettime(CLOCKTYPE, &end_time);
 

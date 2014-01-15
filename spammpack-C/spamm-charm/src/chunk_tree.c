@@ -139,7 +139,7 @@ struct chunk_tree_node_t
  *
  * @return 2 raised to the power of i.
  */
-int
+inline int
 ipow2 (const int i)
 {
   if(i == 0)

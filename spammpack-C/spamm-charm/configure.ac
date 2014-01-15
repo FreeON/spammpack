@@ -26,6 +26,9 @@ AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/Doxyfile.in'])
 # Find a C compiler.
 AC_PROG_CC_STDC
 
+# Turn on asserts.
+AC_HEADER_ASSERT
+
 # Initialize libtool.
 LT_INIT
 
