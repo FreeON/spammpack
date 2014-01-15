@@ -490,25 +490,28 @@ chunk_tiled_multiply (const double tolerance,
         * norm_B[chunk_tiled_matrix_offset(k ,j, ptr_A->N_block)]
         > tolerance_2)
     {
-      /* Multiply the blocks. */
+      if(!symbolic_only)
+      {
+        /* Multiply the blocks. */
 #ifdef _OPENMP
-      omp_set_lock(&C_lock[chunk_tiled_matrix_offset(i, j, ptr_A->N_block)]);
+        omp_set_lock(&C_lock[chunk_tiled_matrix_offset(i, j, ptr_A->N_block)]);
 #endif
-      const double *const A_basic = chunk_tiled_matrix_pointer(i, k, A);
-      const double *const B_basic = chunk_tiled_matrix_pointer(k, j, B);
-      for(int i_basic = 0; i_basic < ptr_A->N_basic; i_basic++) {
-        for(int j_basic = 0; j_basic < ptr_A->N_basic; j_basic++) {
-          for(int k_basic = 0; k_basic < ptr_A->N_basic; k_basic++)
-          {
-            C_basic[chunk_tiled_matrix_offset(i_basic, j_basic, ptr_C->N_basic)] +=
-              A_basic[chunk_tiled_matrix_offset(i_basic, k_basic, ptr_A->N_basic)]
-              *B_basic[chunk_tiled_matrix_offset(k_basic, j_basic, ptr_B->N_basic)];
+        const double *const A_basic = chunk_tiled_matrix_pointer(i, k, A);
+        const double *const B_basic = chunk_tiled_matrix_pointer(k, j, B);
+        for(int i_basic = 0; i_basic < ptr_A->N_basic; i_basic++) {
+          for(int j_basic = 0; j_basic < ptr_A->N_basic; j_basic++) {
+            for(int k_basic = 0; k_basic < ptr_A->N_basic; k_basic++)
+            {
+              C_basic[chunk_tiled_matrix_offset(i_basic, j_basic, ptr_C->N_basic)] +=
+                A_basic[chunk_tiled_matrix_offset(i_basic, k_basic, ptr_A->N_basic)]
+                *B_basic[chunk_tiled_matrix_offset(k_basic, j_basic, ptr_B->N_basic)];
+            }
           }
         }
-      }
 #ifdef _OPENMP
-      omp_unset_lock(&C_lock[chunk_tiled_matrix_offset(i, j, ptr_A->N_block)]);
+        omp_unset_lock(&C_lock[chunk_tiled_matrix_offset(i, j, ptr_A->N_block)]);
 #endif
+      }
 
       complexity++;
     }
@@ -524,7 +527,7 @@ chunk_tiled_multiply (const double tolerance,
 
   chunk_tiled_set_norm(C);
 
-  DEBUG("complexity %d out of %d\n", complexity, ptr_A->N_block*ptr_A->N_block*ptr_A->N_block);
+  INFO("complexity %d out of %d\n", complexity, ptr_A->N_block*ptr_A->N_block*ptr_A->N_block);
 }
 
 /** Get the trace of a chunk.
