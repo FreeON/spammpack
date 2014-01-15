@@ -18,9 +18,11 @@ main (int argc, char **argv)
   int N_chunk = 1024;
   int N_basic = 4;
 
+  double gamma = 4.0;
+
   enum
   {
-    full, diagonal
+    full, decay, diagonal
   }
   matrix_type = full;
 
@@ -32,7 +34,7 @@ main (int argc, char **argv)
   double tolerance = 0;
 
   int c;
-  const char short_options[] = "hT:ct:N:b:pvr";
+  const char short_options[] = "hT:ct:N:b:pvrg:";
   const struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "type", required_argument, NULL, 'T' },
@@ -43,6 +45,7 @@ main (int argc, char **argv)
     { "print", no_argument, NULL, 'p' },
     { "no-verify", no_argument, NULL, 'v' },
     { "tree-only", no_argument, NULL, 'r' },
+    { "gamma", required_argument, NULL, 'g' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -55,7 +58,7 @@ main (int argc, char **argv)
         printf("Usage:\n");
         printf("\n");
         printf("{ -h | --help }           This help\n");
-        printf("{ -T | --type } TYPE      The matrix type: { full, diagonal }\n");
+        printf("{ -T | --type } TYPE      The matrix type: { full, decay, diagonal }\n");
         printf("{ -c | --complexity}      Print product complexity\n");
         printf("{ -t | --tolerance } TOL  The SpAMM tolerance\n");
         printf("{ -N | --N_chunk } N      The matrix size, N_chunk\n");
@@ -63,6 +66,7 @@ main (int argc, char **argv)
         printf("{ -p | --print }          Print matrices\n");
         printf("{ -v | --no-verify }      Do not verify result\n");
         printf("{ -r | --tree-only }      Skip basic block products\n");
+        printf("{ -g | --gamma } GAMMA    The decay constant\n");
         exit(0);
         break;
 
@@ -70,6 +74,11 @@ main (int argc, char **argv)
         if(strcasecmp(optarg, "full") == 0)
         {
           matrix_type = full;
+        }
+
+        else if(strcasecmp(optarg, "decay") == 0)
+        {
+          matrix_type = decay;
         }
 
         else if(strcasecmp(optarg, "diagonal") == 0)
@@ -113,6 +122,10 @@ main (int argc, char **argv)
         tree_only = 1;
         break;
 
+      case 'g':
+        gamma = strtod(optarg, NULL);
+        break;
+
       default:
         printf("illegal argument\n");
         exit(-1);
@@ -133,6 +146,21 @@ main (int argc, char **argv)
       for(int i = 0; i < N_chunk*N_chunk; i++)
       {
         A_dense[i] = rand()/(double) RAND_MAX;
+      }
+      break;
+
+    case decay:
+      printf("decay constant = %e\n", gamma);
+      for(int i = 0; i < N_chunk; i++)
+      {
+        A_dense[i+i*N_chunk] = rand()/(double) RAND_MAX;
+        for(int j = 0; j < N_chunk; j++)
+        {
+          if(i != j)
+          {
+            A_dense[i+j*N_chunk] = A_dense[i+i*N_chunk]*exp(-fabs(i-j)/gamma);
+          }
+        }
       }
       break;
 
