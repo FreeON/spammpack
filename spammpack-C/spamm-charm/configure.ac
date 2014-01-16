@@ -239,7 +239,7 @@ AC_ARG_ENABLE([chunk-block-transpose],
   [set the minimum size N of the block matrix that will transpose a matrix to
    allow for loop vectorization])],
   [enable_chunk_block_transpose=$enableval],
-  [enable_chunk_block_transpose="16"])
+  [enable_chunk_block_transpose="32"])
 if [[ ${enable_chunk_block_transpose} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([CHUNK_BLOCK_TRANSPOSE], [${enable_chunk_block_transpose}],
     [The minimum size N of the block matrix that will transpose a matrix to
