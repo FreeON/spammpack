@@ -34,7 +34,7 @@ chunk_block_multiply (const double *const restrict A,
   assert(C != NULL);
 
 #ifdef CHUNK_BLOCK_TRANSPOSE
-  if(N > CHUNK_BLOCK_TRANSPOSE)
+  if(N >= CHUNK_BLOCK_TRANSPOSE)
   {
     double *const restrict B_transpose = calloc(N*N, sizeof(double));
     for(int i = 0; i < N; i++)
