@@ -456,6 +456,8 @@ chunk_tiled_multiply (const double tolerance,
   DEBUG("multiplying chunks A(%p) B(%p) C(%p), N_chunk = %d\n", A, B, C,
       ptr_A->N_chunk);
 
+  INFO("SpAMM tolerance = %e\n", tolerance);
+
 #ifdef _OPENMP
 #pragma omp parallel
   {
