@@ -6,6 +6,9 @@ AC_INIT([spamm-charm],
 AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
+# Place m4 stuff into separate directory.
+AC_CONFIG_MACRO_DIR([m4])
+
 # Find doxygen and related programs.
 AC_ARG_VAR([DOXYGEN], [The doxygen executable (for building the documentation)])
 AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen])

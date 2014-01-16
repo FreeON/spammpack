@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I m4
+
 if HAVE_PYTHON
 python_tests = test_sp2.sh
 endif
