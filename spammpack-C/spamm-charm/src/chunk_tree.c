@@ -850,7 +850,9 @@ chunk_tree_multiply (const double tolerance,
 #pragma omp master
       {
 #ifdef _OPENMP
-        DEBUG("running on %d OpenMP threads\n", omp_get_num_threads());
+        INFO("running on %d OpenMP threads\n", omp_get_num_threads());
+#else
+        INFO("running in serial\n");
 #endif
 #pragma omp task untied
         {
