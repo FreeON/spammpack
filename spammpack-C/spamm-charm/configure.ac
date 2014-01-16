@@ -218,7 +218,7 @@ AC_ARG_ENABLE([chunk-implementation],
   [AS_HELP_STRING([--enable-chunk-implementation],
   [choose the chunk implementation (tiled, tree)])],
   [enable_chunk_implementation=$enableval],
-  [enable_chunk_implementation="tiled"])
+  [enable_chunk_implementation="tree"])
 case ${enable_chunk_implementation} in
   "tiled" )
     AC_MSG_RESULT([tiled chunks])
