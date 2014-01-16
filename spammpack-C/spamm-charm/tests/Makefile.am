@@ -14,8 +14,8 @@ check_PROGRAMS = \
 	chunk_tree_alloc
 
 AM_CFLAGS = $(OPENMP_CFLAGS)
-AM_CPPFLAGS = -I$(top_srcdir)/src
-AM_LDFLAGS = $(top_builddir)/src/libchunk.la
+AM_CPPFLAGS = -I $(top_srcdir)/src -I $(top_srcdir)/libchunk
+AM_LDFLAGS = ../libchunk/libchunk.la
 
 TESTS = \
 	$(python_tests) \

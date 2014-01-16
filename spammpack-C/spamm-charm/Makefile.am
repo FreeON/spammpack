@@ -1,6 +1,6 @@
-SUBDIRS = src tools tests
+SUBDIRS = libchunk src tools tests
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-debug
+#DISTCHECK_CONFIGURE_FLAGS = --enable-debug
 
 EXTRA_DIST = \
 	spamm.bib \

@@ -11,9 +11,10 @@ charmrun : spamm-charm
 
 AM_CXXFLAGS = $(CHARMFLAGS) $(OPENMP_CXXFLAGS)
 AM_CFLAGS = $(OPENMP_CFLAGS)
+AM_CPPFLAGS = -I $(top_srcdir)//libchunk
 
 spamm_charm_LDFLAGS = -XCClinker "-language charm++ $(additional_linkerflags)"
-spamm_charm_LDADD = libchunk.la
+spamm_charm_LDADD = ../libchunk/libchunk.la
 
 spamm_charm_INTERFACEFILES = \
 	matrix.ci \
@@ -49,13 +50,7 @@ spamm_charm_SOURCES = \
 	utilities.cc \
 	utilities.h
 
-lib_LTLIBRARIES = libchunk.la libtree.la
-
-libchunk_la_SOURCES = \
-	chunk.c \
-	chunk_block.c \
-	chunk_tiled.c \
-	chunk_tree.c
+lib_LTLIBRARIES = libtree.la
 
 libtree_la_SOURCES = \
 	tree.c \
@@ -63,10 +58,6 @@ libtree_la_SOURCES = \
 	tree_private.h
 
 include_HEADERS = \
-	chunk.h \
-	chunk_block.h \
-	chunk_tiled.h \
-	chunk_tree.h \
 	tree.h
 
 spamm_charm_CHARMHEADERS = $(foreach i, $(spamm_charm_INTERFACEFILES), $(basename $i).decl.h $(basename $i).def.h)
