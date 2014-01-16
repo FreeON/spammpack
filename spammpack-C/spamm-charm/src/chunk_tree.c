@@ -8,6 +8,9 @@
 
 #include "config.h"
 
+#include "chunk_block.h"
+#include "chunk_tree.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
@@ -750,18 +753,7 @@ chunk_tree_multiply_node (const double tolerance_2,
       omp_set_lock(&C->matrix_lock);
 #endif
 
-      for(int i = 0; i < A->N_basic; i++)
-      {
-        for(int j = 0; j < A->N_basic; j++)
-        {
-          for(int k = 0; k < A->N_basic; k++)
-          {
-            C_submatrix[ROW_MAJOR(i, j, A->N_basic)] +=
-              A_submatrix[ROW_MAJOR(i, k, A->N_basic)]
-              * B_submatrix[ROW_MAJOR(k, j, A->N_basic)];
-          }
-        }
-      }
+      chunk_block_multiply(A_submatrix, B_submatrix, C_submatrix, A->N_basic);
 
 #ifdef _OPENMP
       omp_unset_lock(&C->matrix_lock);

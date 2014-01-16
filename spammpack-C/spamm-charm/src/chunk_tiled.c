@@ -8,6 +8,7 @@
 
 #include "config.h"
 
+#include "chunk_block.h"
 #include "chunk_tiled.h"
 
 #include <assert.h>
@@ -512,16 +513,9 @@ chunk_tiled_multiply (const double tolerance,
 #endif
         const double *const A_basic = chunk_tiled_matrix_pointer(i, k, A);
         const double *const B_basic = chunk_tiled_matrix_pointer(k, j, B);
-        for(int i_basic = 0; i_basic < ptr_A->N_basic; i_basic++) {
-          for(int j_basic = 0; j_basic < ptr_A->N_basic; j_basic++) {
-            for(int k_basic = 0; k_basic < ptr_A->N_basic; k_basic++)
-            {
-              C_basic[chunk_tiled_matrix_offset(i_basic, j_basic, ptr_C->N_basic)] +=
-                A_basic[chunk_tiled_matrix_offset(i_basic, k_basic, ptr_A->N_basic)]
-                *B_basic[chunk_tiled_matrix_offset(k_basic, j_basic, ptr_B->N_basic)];
-            }
-          }
-        }
+
+        chunk_block_multiply(A_basic, B_basic, C_basic, ptr_A->N_basic);
+
 #ifdef _OPENMP
         omp_unset_lock(&C_lock[chunk_tiled_matrix_offset(i, j, ptr_A->N_block)]);
 #endif
