@@ -1,7 +1,5 @@
 SUBDIRS = src tools tests
 
-ACLOCAL_AMFLAGS = -I m4
-
 DISTCHECK_CONFIGURE_FLAGS = --enable-debug
 
 EXTRA_DIST = \

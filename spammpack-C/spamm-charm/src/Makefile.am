@@ -1,7 +1,5 @@
 TAGS_FILES = $(top_builddir)/config.h
 
-ACLOCAL_AMFLAGS = -I m4
-
 EXTRA_DIST = $(spamm_charm_INTERFACEFILES)
 
 additional_linkerflags = @LOADBALANCER_FLAGS@ @DEFAULT_LB_FLAGS@ @CHARMDEBUG_FLAGS@
