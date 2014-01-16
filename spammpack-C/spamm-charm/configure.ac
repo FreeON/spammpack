@@ -234,6 +234,18 @@ esac
 AC_DEFINE_UNQUOTED([CHUNK_IMPLEMENTATION],
   [${enable_chunk_implementation}], [The chunk implementation])
 
+AC_ARG_ENABLE([chunk-block-transpose],
+  [AS_HELP_STRING([--enable-chunk-block-transpose],
+  [set the minimum size N of the block matrix that will transpose a matrix to
+   allow for loop vectorization])],
+  [enable_chunk_block_transpose=$enableval],
+  [enable_chunk_block_transpose="0"])
+if [[ ${enable_chunk_block_transpose} -gt 0 ]]; then
+  AC_DEFINE_UNQUOTED([CHUNK_BLOCK_TRANSPOSE], [${enable_chunk_block_transpose}],
+    [The minimum size N of the block matrix that will transpose a matrix to
+     allow for loop vectorization.])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Makefile

@@ -33,14 +33,46 @@ chunk_block_multiply (const double *const restrict A,
   assert(B != NULL);
   assert(C != NULL);
 
-  for(int i = 0; i < N; i++)
+#ifdef CHUNK_BLOCK_TRANSPOSE
+  if(N > CHUNK_BLOCK_TRANSPOSE)
   {
-    for(int j = 0; j < N; j++)
+    double *const restrict B_transpose = calloc(N*N, sizeof(double));
+    for(int i = 0; i < N; i++)
     {
-      for(int k = 0; k < N; k++)
+      for(int j = 0; j < N; j++)
       {
-        C[ROW_MAJOR(i, j, N)] += A[ROW_MAJOR(i, k, N)] * B[ROW_MAJOR(k, j, N)];
+        B_transpose[ROW_MAJOR(i, j, N)] = B[ROW_MAJOR(j, i, N)];
       }
     }
+
+    for(int i = 0; i < N; i++)
+    {
+      for(int j = 0; j < N; j++)
+      {
+        for(int k = 0; k < N; k++)
+        {
+          C[ROW_MAJOR(i, j, N)] += A[ROW_MAJOR(i, k, N)] * B_transpose[ROW_MAJOR(j, k, N)];
+        }
+      }
+    }
+
+    free(B_transpose);
   }
+
+  else
+  {
+#endif
+    for(int i = 0; i < N; i++)
+    {
+      for(int j = 0; j < N; j++)
+      {
+        for(int k = 0; k < N; k++)
+        {
+          C[ROW_MAJOR(i, j, N)] += A[ROW_MAJOR(i, k, N)] * B[ROW_MAJOR(k, j, N)];
+        }
+      }
+    }
+#ifdef CHUNK_BLOCK_TRANSPOSE
+  }
+#endif
 }
