@@ -488,7 +488,7 @@ chunk_tiled_multiply (const double tolerance,
   }
 #endif
 
-#pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, ptr_A, ptr_B, ptr_C, C_lock) reduction(+:complexity) schedule(dynamic, 1)
+#pragma omp parallel for default(none) shared(tolerance_2, norm_A, norm_B, ptr_A, ptr_B, ptr_C, C_lock) reduction(+:complexity)
   for(int index = 0; index < CUBE(ptr_A->N_block); index++)
   {
     int i = index;

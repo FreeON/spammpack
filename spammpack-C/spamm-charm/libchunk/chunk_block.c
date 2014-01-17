@@ -12,6 +12,10 @@
 
 #include <assert.h>
 
+#ifdef CHUNK_BLOCK_NO_WORK
+#include <time.h>
+#endif
+
 /** Calculate a row-major offset. */
 #define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
 
@@ -32,6 +36,14 @@ chunk_block_multiply (const double *const restrict A,
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
+
+#ifdef CHUNK_BLOCK_NO_WORK
+  struct timespec requested_sleep;
+  requested_sleep.tv_sec = 0;
+  requested_sleep.tv_nsec = 5e6;
+
+  nanosleep(&requested_sleep, NULL);
+#else
 
 #ifdef CHUNK_BLOCK_TRANSPOSE
   if(N >= CHUNK_BLOCK_TRANSPOSE)
@@ -74,5 +86,7 @@ chunk_block_multiply (const double *const restrict A,
     }
 #ifdef CHUNK_BLOCK_TRANSPOSE
   }
+#endif
+
 #endif
 }

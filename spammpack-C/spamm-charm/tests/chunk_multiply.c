@@ -8,6 +8,10 @@
 #include <strings.h>
 #include <time.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #define SQUARE(x) ((x)*(x))
 #define CUBED(x) ((x)*(x)*(x))
 
@@ -206,13 +210,30 @@ main (int argc, char **argv)
   struct timespec end_time;
   clock_gettime(CLOCKTYPE, &end_time);
 
-  printf("done multiplying %dx%d chunk with %dx%d basic blocks, "
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+#pragma omp master
+    {
+      printf("done multiplying using %d OpenMP threads a %dx%d chunk with %dx%d basic blocks, "
+          "tolerance %1.2e, %1.2f seconds\n",
+          omp_get_num_threads(),
+          N_chunk, N_chunk,
+          N_basic, N_basic,
+          tolerance,
+          (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
+          (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+    }
+  }
+#else
+  printf("done multiplying in serial a %dx%d chunk with %dx%d basic blocks, "
       "tolerance %1.2e, %1.2f seconds\n",
       N_chunk, N_chunk,
       N_basic, N_basic,
       tolerance,
       (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
       (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+#endif
 
   if(verify)
   {
