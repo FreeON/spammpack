@@ -235,7 +235,7 @@ AC_DEFINE_UNQUOTED([CHUNK_IMPLEMENTATION],
   [${enable_chunk_implementation}], [The chunk implementation])
 
 AC_ARG_ENABLE([chunk-tree-max-tier],
-  [AS_HELP_STRING([--enable-tree-max-tier],
+  [AS_HELP_STRING([--enable-chunk-tree-max-tier],
   [set the maximum tier at which new tasks are created when recursing the
    chunk tree])],
   [enable_chunk_tree_max_tier=$enableval],
