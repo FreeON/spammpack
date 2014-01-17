@@ -234,6 +234,18 @@ esac
 AC_DEFINE_UNQUOTED([CHUNK_IMPLEMENTATION],
   [${enable_chunk_implementation}], [The chunk implementation])
 
+AC_ARG_ENABLE([chunk-tree-max-tier],
+  [AS_HELP_STRING([--enable-tree-max-tier],
+  [set the maximum tier at which new tasks are created when recursing the
+   chunk tree])],
+  [enable_chunk_tree_max_tier=$enableval],
+  [enable_chunk_tree_max_tier=6])
+if [[ ${enable_chunk_tree_max_tier} -gt 0 ]]; then
+  AC_DEFINE_UNQUOTED([CHUNK_TREE_MAX_TIER], [${enable_chunk_tree_max_tier}],
+    [The maximum tier at which new tasks are created when recursing the chunk
+     tree.])
+fi
+
 AC_ARG_ENABLE([chunk-block-transpose],
   [AS_HELP_STRING([--enable-chunk-block-transpose],
   [set the minimum size N of the block matrix that will transpose a matrix to

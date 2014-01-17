@@ -232,6 +232,8 @@ chunk_tree_alloc (const int N_chunk,
   ptr->N_basic = N_basic;
   ptr->depth = chunk_tree_get_depth(N_chunk, N_basic);
 
+  INFO("new tree chunk, depth = %d\n", ptr->depth);
+
   DEBUG("allocating new chunk\n");
   DEBUG("ptr = %p\n", ptr);
   DEBUG("ptr->data = %p\n", ptr->data);
@@ -770,7 +772,7 @@ chunk_tree_multiply_node (const double tolerance_2,
       {
         for(int k = 0; k < 2; k++)
         {
-#pragma omp task default(none) firstprivate(i, j, k) untied
+#pragma omp task default(none) firstprivate(i, j, k) untied if(tier <= CHUNK_TREE_MAX_TIER)
           {
             DEBUG("(%d,%d,%d) starting new task\n", i, j, k);
 
