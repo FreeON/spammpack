@@ -232,7 +232,7 @@ chunk_tree_alloc (const int N_chunk,
   ptr->N_basic = N_basic;
   ptr->depth = chunk_tree_get_depth(N_chunk, N_basic);
 
-  INFO("new tree chunk, depth = %d\n", ptr->depth);
+  DEBUG("new tree chunk, depth = %d\n", ptr->depth);
 
   DEBUG("allocating new chunk\n");
   DEBUG("ptr = %p\n", ptr);
@@ -837,7 +837,7 @@ chunk_tree_multiply (const double tolerance,
   DEBUG("%dx%d blocked matrix, potentially %d products to consider\n",
       ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(A_ptr->depth)));
 
-  INFO("SpAMM tolerance = %e\n", tolerance);
+  DEBUG("SpAMM tolerance = %e\n", tolerance);
 
   if(A_root->norm_2*B_root->norm_2 > tolerance_2)
   {
@@ -846,9 +846,9 @@ chunk_tree_multiply (const double tolerance,
 #pragma omp master
       {
 #ifdef _OPENMP
-        INFO("running on %d OpenMP threads\n", omp_get_num_threads());
+        DEBUG("running on %d OpenMP threads\n", omp_get_num_threads());
 #else
-        INFO("running in serial\n");
+        DEBUG("running in serial\n");
 #endif
 #pragma omp task untied
         {
