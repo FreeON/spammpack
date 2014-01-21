@@ -34,7 +34,7 @@
 /** Get the current time.
  */
 void
-spamm_get_time (double *timer)
+spamm_get_time_backend (double *timer)
 {
 #ifdef TIMER_GETRUSAGE
 #warning Using getrusage() as timer.
@@ -56,7 +56,6 @@ spamm_get_time (double *timer)
     exit(1);
   }
   *timer = (now.tv_sec*1.0e6+now.tv_usec)/1.0e6;
-  printf("get_time: %e\n", *timer);
 #else
   printf("no timer configured\n");
   exit(1);

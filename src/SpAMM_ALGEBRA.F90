@@ -33,6 +33,11 @@ MODULE SpAMM_ALGEBRA
   USE SpAMM_DERIVED
   USE SpAMM_GLOBALS
   USE SpAMM_MNGMENT
+
+#ifdef _OPENMP
+  use omp_lib
+#endif
+
   IMPLICIT NONE
   PRIVATE
   PUBLIC :: Multiply
@@ -111,13 +116,17 @@ CONTAINS
     INTEGER                              :: Depth
     REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
 
-    CALL SpAMM_Get_Time(TInitial )
+    TInitial = SpAMM_Get_Time()
 
     !$OMP PARALLEL NUM_THREADS(SpAMM_THREAD_COUNT)
 
     ! The master thread will lead execution of the product. All subsequent tasks
     ! are untied and can be executed by any thread in the thread group.
     !$OMP MASTER
+
+#ifdef _OPENMP
+    WRITE(*,*) "Multiply on ", omp_get_num_threads(), " OpenMP threads"
+#endif
 
     IF(PRESENT(LocalThreshold))THEN
       threshold = LocalThreshold
@@ -159,7 +168,7 @@ CONTAINS
     IF(.NOT.ASSOCIATED(qA))RETURN
 
     Depth=0
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
 
     !$OMP TASK SHARED(qA)
     CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA,a,Depth)
@@ -201,7 +210,7 @@ CONTAINS
     ELSE
       InPlace_Beta=SpAMM_One
     ENDIF
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA,qB)
     CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA, qB, &
       InPlace_Alpha, InPlace_Beta, Depth)
@@ -224,7 +233,7 @@ CONTAINS
 
     Depth=0
     SpAMM_Add_Identity_2_QuTree_InPlace_Alpha=Alpha
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA)
     CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA,1,SpAMM_PADDED_MATRIX_DIMENSION,Depth)
     !$OMP END TASK
@@ -249,7 +258,7 @@ CONTAINS
 
     Depth=0
 
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA,a)
     a = SpAMM_Trace_QuTree_Recur(qA,Depth)
     !$OMP END TASK
@@ -285,7 +294,7 @@ CONTAINS
       multiplyThreshold = SpAMM_PRODUCT_TOLERANCE
     ENDIF
 
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
 
     !$OMP TASK UNTIED SHARED(qA,a)
     a = SpAMM_Trace_QuTree_Product_Recur(qA, qB, multiplyThreshold, Depth)
@@ -307,7 +316,7 @@ CONTAINS
     INTEGER                :: Depth
     REAL(SpAMM_DOUBLE)     :: TInitial, TTotal
     Depth=0
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA)
     CALL SpAMM_Filter_QuTree_Recur(qA,Tau,Depth)
     !$OMP END TASK
@@ -328,7 +337,7 @@ CONTAINS
     INTEGER :: Depth
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
     Depth=0
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK SHARED(Norm,qA)
     Norm = SpAMM_Norm_Reduce_QuTree_Recur(qA,Depth)
     !$OMP END TASK
@@ -357,7 +366,7 @@ CONTAINS
     ELSE
       SpAMM_Add_BiTree_2_BiTree_RePlace_Beta=SpAMM_One
     ENDIF
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(bA,bB)
     CALL SpAMM_Add_BiTree_2_BiTree_RePlace_Recur(bA,bB,bC,Depth)
     !$OMP END TASK
@@ -388,7 +397,7 @@ CONTAINS
     ELSE
       SpAMM_Add_BiTree_2_BiTree_InPlace_Beta=SpAMM_One
     ENDIF
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(bA,bB)
     CALL SpAMM_Add_BiTree_2_BiTree_InPlace_Recur(bA,bB,Depth)
     !$OMP END TASK
@@ -408,7 +417,7 @@ CONTAINS
     REAL(SpAMM_KIND)     :: dot
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     Depth=0
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK SHARED(dot,bA,bB)
     dot=SpAMM_Dot_Product_BiTree_Recur(bA,bB,Depth)
     !$OMP END TASK
@@ -434,7 +443,7 @@ CONTAINS
       SpAMM_Threshold_Multiply_QuTree_x_BiTree=SpAMM_PRODUCT_TOLERANCE
     ENDIF
     Depth=0
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     CALL SpAMM_Multiply_BiTree_x_Scalar(bC,SpAMM_Zero)
     !$OMP TASK UNTIED SHARED(qA,bB,bC)
     CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC,qA,bB,Depth)
@@ -456,7 +465,7 @@ CONTAINS
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     IF(.NOT.ASSOCIATED(bA))RETURN
     Depth=0
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK SHARED(bA)
     CALL SpAMM_Multiply_BiTree_x_Scalar_Recur(bA,a,Depth)
     !$OMP END TASK
@@ -477,7 +486,7 @@ CONTAINS
     REAL(SpAMM_DOUBLE)   :: TInitial, TTotal
 
     Depth=0
-    CALL SpAMM_Get_Time(TInitial)
+    TInitial = SpAMM_Get_Time()
     !$OMP TASK SHARED(Norm,bA)
     Norm = SpAMM_Norm_Reduce_BiTree_Recur(bA,Depth)
     !$OMP END TASK

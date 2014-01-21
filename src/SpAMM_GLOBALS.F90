@@ -80,6 +80,7 @@ CONTAINS
   !> The timer.
   !! @return The time passed since some point in time.
   REAL(SpAMM_DOUBLE) FUNCTION SpAMM_Get_Time ()
+    CALL SpAMM_Get_Time_backend(SpAMM_Get_Time)
   END FUNCTION SpAMM_Get_Time
 
   !> Initialize global variables.
