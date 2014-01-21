@@ -231,7 +231,7 @@ main (int argc, char **argv)
   B_float = (float*) malloc(sizeof(float)*N[0]*N[1]);
   C_float = (float*) malloc(sizeof(float)*N[0]*N[1]);
 
-  printf("creating random matrices (%ux%u)... ", N[0], N[1]);
+  printf("creating random matrices (%ux%u), gamma = %e... ", N[0], N[1], gamma);
   fflush(stdout);
   for(i[0] = 0; i[0] < N[0]; i[0]++)
   {
@@ -264,11 +264,14 @@ main (int argc, char **argv)
       {
         if(i[0] != i[1])
         {
-          A_dense[matrix_index(i[0], i[1], N[0], N[1])] = A_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
-          B_dense[matrix_index(i[0], i[1], N[0], N[1])] = B_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
+          A_dense[matrix_index(i[0], i[1], N[0], N[1])] = A_dense[matrix_index(i[0], i[0], N[0], N[1])]
+            *(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
+          B_dense[matrix_index(i[0], i[1], N[0], N[1])] = B_dense[matrix_index(i[0], i[0], N[0], N[1])]
+            *(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
           if(!null_C)
           {
-            C_dense[matrix_index(i[0], i[1], N[0], N[1])] = C_dense[matrix_index(i[0], i[0], N[0], N[1])]*(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
+            C_dense[matrix_index(i[0], i[1], N[0], N[1])] = C_dense[matrix_index(i[0], i[0], N[0], N[1])]
+              *(fabs((float) i[0]-(float) i[1]) > gamma ? expf(-fabsf((float) i[0]-(float) i[1])/gamma) : 1);
           }
         }
       }
