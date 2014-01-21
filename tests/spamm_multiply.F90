@@ -40,7 +40,7 @@ program spamm_multiply
 #ifdef _OPENMP
   integer :: min_threads
   integer :: max_threads
-  integer :: num_threads
+  integer :: num_threads = 1
   character(len = 1000) :: inputbuffer
 #endif
   character(len = 1000) :: matrixfilename
@@ -55,7 +55,7 @@ program spamm_multiply
   call get_command_argument(2, inputbuffer)
   read(inputbuffer, "(I3)") num_threads
 
-  if(num_threads < 1) then
+  if(num_threads < 0) then
     num_threads = omp_get_max_threads()
   endif
 

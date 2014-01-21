@@ -33,10 +33,11 @@
 
 /** Get the current time.
  */
-double
-spamm_get_time ()
+void
+spamm_get_time (double *timer)
 {
 #ifdef TIMER_GETRUSAGE
+#warning Using getrusage() as timer.
   struct rusage now;
 
   if (getrusage(RUSAGE_SELF, &now) != 0)
@@ -44,8 +45,9 @@ spamm_get_time ()
     printf("error running getrusage()\n");
     exit(1);
   }
-  return (now.ru_utime.tv_sec*1e6+now.ru_utime.tv_usec)/1.0e6;
+  *timer = (now.ru_utime.tv_sec*1e6+now.ru_utime.tv_usec)/1.0e6;
 #elif defined(TIMER_GETTIMEOFDAY)
+#warning Using gettimeofday() as timer.
   struct timeval now;
 
   if (gettimeofday(&now, NULL) != 0)
@@ -53,29 +55,10 @@ spamm_get_time ()
     printf("error running gettimeofday()\n");
     exit(1);
   }
-  return (now.tv_sec*1e6+now.tv_usec)/1.0e6;
+  *timer = (now.tv_sec*1.0e6+now.tv_usec)/1.0e6;
+  printf("get_time: %e\n", *timer);
 #else
   printf("no timer configured\n");
   exit(1);
 #endif
-}
-
-/** @private
- *
- * Underscore version of spamm_get_time().
- */
-double
-spamm_get_time_ ()
-{
-  return spamm_get_time();
-}
-
-/** @private
- *
- * Underscore version of spamm_get_time().
- */
-double
-spamm_get_time__ ()
-{
-  return spamm_get_time();
 }

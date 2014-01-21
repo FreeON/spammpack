@@ -43,12 +43,12 @@ MODULE SpAMM_GLOBALS
     END SUBROUTINE SpAMM_Trap
   END INTERFACE SpAMM_Trap
   !> Define interface to the C function spamm_get_time().
-  INTERFACE SpAMM_Get_Time
-    FUNCTION SpAMM_Get_Time ()
-      USE SpAMM_DERIVED
-      REAL(SpAMM_DOUBLE) :: SpAMM_Get_Time
-    END FUNCTION SpAMM_Get_Time
-  END INTERFACE SpAMM_Get_Time
+  INTERFACE SpAMM_Get_Time_backend
+    SUBROUTINE SpAMM_Get_Time_backend (timer) bind(C)
+      use iso_C_binding
+      real(C_DOUBLE), intent(inout) :: timer
+    END SUBROUTINE SpAMM_Get_Time_backend
+  END INTERFACE SpAMM_Get_Time_backend
   !> The size of the basic submatrix blocks.
   INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE = 4
   !> The SpAMM tolerance.
@@ -76,6 +76,11 @@ MODULE SpAMM_GLOBALS
   !> The timers.
   TYPE(Stats), DIMENSION(1:SpAMM_NUMBER_OF_STATS) :: SpAMM_STATS
 CONTAINS
+
+  !> The timer.
+  !! @return The time passed since some point in time.
+  REAL(SpAMM_DOUBLE) FUNCTION SpAMM_Get_Time ()
+  END FUNCTION SpAMM_Get_Time
 
   !> Initialize global variables.
   !!
@@ -210,7 +215,7 @@ CONTAINS
       WRITE(*,22)
       WRITE(*,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
       !         WRITE(77,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
-35    FORMAT("SpAMM_SCALING ",I4," threads ", F20.10)
+35    FORMAT("SpAMM ",I4," threads ", F20.10)
     ELSE
       IF(.NOT.PRESENT(Routine) .OR. .NOT.PRESENT(RoutineID)) THEN
         WRITE(*, *) "missing Routine and/or RoutineID argument"
