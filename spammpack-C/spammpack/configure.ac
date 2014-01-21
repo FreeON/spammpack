@@ -26,6 +26,9 @@ AM_PROG_AS
 AC_PROG_F77
 AC_PROG_FC
 
+dnl Add --disable-assrt command line argument.
+AC_HEADER_ASSERT
+
 dnl Get libraries for linking Fortran and C code.
 AC_F77_LIBRARY_LDFLAGS
 AC_FC_LIBRARY_LDFLAGS

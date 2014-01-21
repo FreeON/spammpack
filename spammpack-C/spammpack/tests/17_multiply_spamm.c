@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #define REL_TOLERANCE 1e-8
 
 #define TEST_ABS_TOLERANCE 2e-8
@@ -222,6 +226,18 @@ main (int argc, char **argv)
 
   /* Initialize random number generator. */
   srand(random_seed);
+
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+#pragma omp master
+    {
+      printf("running on %d OpenMP threads\n", omp_get_num_threads());
+    }
+  }
+#else
+  printf("running serial version\n");
+#endif
 
   A_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
   B_dense = (double*) malloc(sizeof(double)*N[0]*N[1]);
@@ -495,7 +511,18 @@ main (int argc, char **argv)
     }
   }
 
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+#pragma omp master
+    {
+      printf("multiplying SpAMM, %d OpenMP threads... ", omp_get_num_threads());
+    }
+  }
+#else
   printf("multiplying SpAMM... ");
+#endif
+
   fflush(stdout);
 
   flop = 0;
