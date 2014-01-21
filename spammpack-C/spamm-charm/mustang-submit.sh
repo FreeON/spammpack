@@ -1,14 +1,20 @@
 #!/bin/bash
 
-NODES=( 1 2 4 16 32 64 128 256 )
+NODES=( 1 2 4 16 32 64 128 256 512 )
+#NODES=( 1 )
 
 #DENSITY=( PP0020-2 )
 #NE=( 1082 )
 #BLOCK=( 256 )
 #BASIC=( 16 )
 
-DENSITY=( PP0050-2 )
-NE=( 2702 )
+#DENSITY=( PP0050-2 )
+#NE=( 2702 )
+#BLOCK=( 256 )
+#BASIC=( 4 )
+
+DENSITY=( PP0100-2 )
+NE=( 5402 )
 BLOCK=( 256 )
 BASIC=( 4 )
 
