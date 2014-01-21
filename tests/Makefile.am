@@ -35,11 +35,11 @@ SpAMM_TESTONE_SOURCES = SpAMM_TESTONE.F90
 SpAMM_TESTONE_CPPFLAGS = -I$(top_builddir)/.. -I$(top_builddir)/../Modules
 
 spamm_multiply_SOURCES  = spamm_multiply.F90
-spamm_multiply_LDFLAGS  = ../src/libspammpack.la libspammtests.la
+spamm_multiply_LDFLAGS  = ../src/threaded/libspammpack-threaded.la libspammtests.la
 spamm_multiply_CPPFLAGS = -I../src
 
 spamm_SP2_SOURCES  = spamm_SP2.F90
-spamm_SP2_LDFLAGS  = ../src/libspammpack.la libspammtests.la
+spamm_SP2_LDFLAGS  = ../src/threaded/libspammpack-threaded.la libspammtests.la
 spamm_SP2_CPPFLAGS = -I../src
 
 TAGS_FILES = ../src/*.F90 ../src/*.c

@@ -9,6 +9,10 @@ program spamm_multiply
   use spammpack
   use spammtests
 
+#ifdef _OPENMP
+  use omp_lib
+#endif
+
   implicit none
 
   integer :: N, N_padded
