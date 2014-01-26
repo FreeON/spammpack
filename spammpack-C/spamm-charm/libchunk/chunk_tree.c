@@ -11,6 +11,10 @@
 #include "chunk_block.h"
 #include "chunk_tree.h"
 
+#ifdef BLOCK_BLAS
+#include "lapack_interface.h"
+#endif
+
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
@@ -755,7 +759,19 @@ chunk_tree_multiply_node (const double tolerance_2,
       omp_set_lock(&C->matrix_lock);
 #endif
 
+#if defined(BLOCK_MULTIPLY)
       chunk_block_multiply(A_submatrix, B_submatrix, C_submatrix, A->N_basic);
+#elif defined(BLOCK_BLAS)
+      {
+        double alpha = 1.0;
+        double beta = 1.0;
+        DGEMM("T", "T", &A->N_basic, &A->N_basic, &A->N_basic, &alpha,
+            A_submatrix, &A->N_basic, B_submatrix, &A->N_basic, &beta,
+            C_submatrix, &A->N_basic);
+      }
+#else
+#error unknown block multiply implementation.
+#endif
 
 #ifdef _OPENMP
       omp_unset_lock(&C->matrix_lock);

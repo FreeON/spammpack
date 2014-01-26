@@ -92,13 +92,24 @@ AC_CHECK_HEADER([getopt.h], [], [AC_MSG_FAILURE([need getopt.h])])
 AC_SEARCH_LIBS([getopt_long], [],
   [], [AC_MSG_FAILURE([need getopt_long()])])
 
+AC_ARG_ENABLE([block-multiply],
+  [AS_HELP_STRING([--enable-block-multiply],
+  [choose the dense multiply implementation (block, blas), default = block])],
+  [enable_block_multiply=$enableval],
+  [enable_block_multiply="block"])
+case ${enable_block_multiply} in
+  "block") AC_DEFINE([BLOCK_MULTIPLY], [1], [Use simple nested loop matrix multiply.]) ;;
+  "blas")  AC_DEFINE([BLOCK_BLAS], [1], [Use .gemm() matrix multiply.]) ;;
+  *) AC_MSG_FAILURE([unknown multiply implementation]) ;;
+esac
+
 AC_ARG_ENABLE([lapack],
   [AS_HELP_STRING([--enable-lapack],
   [enable external linkage to blas/lapack])],
   [use_external_lapack=$enableval],
   [use_external_lapack="no"])
 
-if test "${use_external_lapack}" = "yes"; then
+if [[ "${use_external_lapack}" = "yes" ]] || [[ "${enable_block_multiply}" = "blas" ]]; then
   # Find dgemm() for matrix block products.
   for DGEMM in dgemm dgemm_ dgemm__; do
     AC_SEARCH_LIBS([${DGEMM}], [blas], [break], [DGEMM="unset"])
