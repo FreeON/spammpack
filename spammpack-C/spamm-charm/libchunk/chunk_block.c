@@ -11,8 +11,7 @@
 #include "chunk_block.h"
 
 #include <assert.h>
-
-#ifdef CHUNK_BLOCK_NO_WORK
+#if defined(BLOCK_SLEEP) || defined(CHUNK_BLOCK_NO_WORK)
 #include <time.h>
 #endif
 
@@ -69,6 +68,15 @@ chunk_block_multiply (const double *const restrict A,
     }
 
     free(B_transpose);
+
+#ifdef BLOCK_SLEEP
+    /* Sleep to add some extra slowness. */
+    struct timespec requested_sleep;
+    requested_sleep.tv_sec = 0;
+    requested_sleep.tv_nsec = BLOCK_SLEEP;
+
+    nanosleep(&requested_sleep, NULL);
+#endif
   }
 
   else

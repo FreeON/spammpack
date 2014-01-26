@@ -7,7 +7,7 @@ AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
 AM_SILENT_RULES([yes])
 
 # Find doxygen and related programs.
-AC_ARG_VAR([DOXYGEN], [The doxygen executable (for building the documentation)])
+AC_ARG_VAR([DOXYGEN], [the doxygen executable (for building the documentation)])
 AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen])
 
 AC_CHECK_PROG([DOT], [dot], [dot])
@@ -50,12 +50,12 @@ AC_OPENMP
 
 AC_ARG_ENABLE([set-num-threads],
   [AS_HELP_STRING([--enable-set-num-threads],
-  [Set the number of threads in OpenMP parallel sections to N])],
+  [set the number of threads in OpenMP parallel sections to N])],
   [enable_set_threads=${enableval}],
   [enable_set_threads="no"])
 if [[ ${enable_set_threads} != "no" ]]; then
   AC_DEFINE_UNQUOTED([FORCE_OMP_NUM_THREADS], [${enable_set_threads}],
-    [Set the number of threads in OpenMP parallel sections to N])
+    [The number of threads in OpenMP parallel sections])
 fi
 
 # Test for spammpack.
@@ -94,7 +94,7 @@ AC_SEARCH_LIBS([getopt_long], [],
 
 AC_ARG_ENABLE([lapack],
   [AS_HELP_STRING([--enable-lapack],
-  [Enable external linkage to blas/lapack])],
+  [enable external linkage to blas/lapack])],
   [use_external_lapack=$enableval],
   [use_external_lapack="no"])
 
@@ -125,14 +125,14 @@ unset ac_cv_prog_ac_ct_CXX
 unset ac_cv_cxx_compiler_gnu
 unset ac_cv_prog_cxx_g
 unset am_cv_CXX_dependencies_compiler_type
-AC_ARG_VAR([CHARMC], [The Charm++ compiler wrapper])
+AC_ARG_VAR([CHARMC], [the Charm++ compiler wrapper])
 if test -z "${CHARMC}"; then
   CHARMC="charmc"
 fi
 CXX=${CHARMC}
 AC_PROG_CXX
 
-AC_ARG_VAR([CHARMFLAGS], [Extra flags for the Charm++ compiler wrapper])
+AC_ARG_VAR([CHARMFLAGS], [extra flags for the Charm++ compiler wrapper])
 
 AC_LANG(C++)
 old_CXXFLAGS=${CXXFLAGS}
@@ -216,7 +216,7 @@ fi
 AC_MSG_CHECKING([which chunk implementation to use])
 AC_ARG_ENABLE([chunk-implementation],
   [AS_HELP_STRING([--enable-chunk-implementation],
-  [choose the chunk implementation (tiled, tree)])],
+  [choose the chunk implementation (tiled, tree), defaults to tree])],
   [enable_chunk_implementation=$enableval],
   [enable_chunk_implementation="tree"])
 case ${enable_chunk_implementation} in
@@ -256,6 +256,16 @@ if [[ ${enable_chunk_block_transpose} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([CHUNK_BLOCK_TRANSPOSE], [${enable_chunk_block_transpose}],
     [The minimum size N of the block matrix that will transpose a matrix to
      allow for loop vectorization.])
+fi
+
+AC_ARG_ENABLE([sleep],
+  [AS_HELP_STRING([--enable-sleep],
+  [add N nanoseconds of sleep during the block multiply])],
+  [enable_sleep=$enableval],
+  [enable_sleep=0])
+if [[ ${enable_sleep} -gt 0 ]]; then
+  AC_DEFINE_UNQUOTED([BLOCK_SLEEP], [${enable_sleep}], [Number of nanoseconds
+    to sleep after block multiply.])
 fi
 
 AC_CONFIG_HEADERS([config.h])
