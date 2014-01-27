@@ -18,6 +18,11 @@ LT_INIT
 # Find OpenMP for C.
 AC_OPENMP
 
+# Check for getopt.
+AC_CHECK_HEADER([getopt.h], [], [AC_MSG_FAILURE([need getopt.h])])
+AC_SEARCH_LIBS([getopt_long], [],
+  [], [AC_MSG_FAILURE([need getopt_long()])])
+
 # Test for math.
 AC_SEARCH_LIBS([ceil], [m], [], [AC_MSG_FAILURE([need the math library])])
 

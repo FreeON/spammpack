@@ -79,6 +79,7 @@ if test "${CLOCKTYPE}" = "unset"; then
 fi
 AC_DEFINE_UNQUOTED([CLOCKTYPE], [${CLOCKTYPE}], [The clock type to use with clock_gettime()])
 
+# Check for getopt.
 AC_CHECK_HEADER([getopt.h], [], [AC_MSG_FAILURE([need getopt.h])])
 AC_SEARCH_LIBS([getopt_long], [],
   [], [AC_MSG_FAILURE([need getopt_long()])])
