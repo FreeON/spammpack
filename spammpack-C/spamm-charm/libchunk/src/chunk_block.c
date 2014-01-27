@@ -18,6 +18,9 @@
 /** Calculate a row-major offset. */
 #define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
 
+/** Calculate a column-major offset. */
+#define COLUMN_MAJOR(i, j, N) ((i)+(j)*(N))
+
 /** A basic matrix product. The matrix elements are assumed to be in row-major
  * order.
  *
@@ -52,7 +55,7 @@ chunk_block_multiply (const double *const restrict A,
     {
       for(int j = 0; j < N; j++)
       {
-        B_transpose[ROW_MAJOR(i, j, N)] = B[ROW_MAJOR(j, i, N)];
+        B_transpose[COLUMN_MAJOR(i, j, N)] = B[COLUMN_MAJOR(j, i, N)];
       }
     }
 
@@ -62,7 +65,7 @@ chunk_block_multiply (const double *const restrict A,
       {
         for(int k = 0; k < N; k++)
         {
-          C[ROW_MAJOR(i, j, N)] += A[ROW_MAJOR(i, k, N)] * B_transpose[ROW_MAJOR(j, k, N)];
+          C[COLUMN_MAJOR(i, j, N)] += A[COLUMN_MAJOR(i, k, N)] * B_transpose[COLUMN_MAJOR(j, k, N)];
         }
       }
     }
@@ -88,7 +91,7 @@ chunk_block_multiply (const double *const restrict A,
       {
         for(int k = 0; k < N; k++)
         {
-          C[ROW_MAJOR(i, j, N)] += A[ROW_MAJOR(i, k, N)] * B[ROW_MAJOR(k, j, N)];
+          C[COLUMN_MAJOR(i, j, N)] += A[COLUMN_MAJOR(i, k, N)] * B[COLUMN_MAJOR(k, j, N)];
         }
       }
     }
