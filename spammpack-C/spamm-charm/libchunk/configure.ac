@@ -1,0 +1,126 @@
+AC_INIT([libchunk],
+        [1],
+        [nicolas.bock@freeon.org],
+        [],
+        [http://www.freeon.org/])
+AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip silent-rules])
+AM_SILENT_RULES([yes])
+
+# Find a C compiler.
+AC_PROG_CC_STDC
+
+# Turn on asserts.
+AC_HEADER_ASSERT
+
+# Initialize libtool.
+LT_INIT
+
+# Find OpenMP for C.
+AC_OPENMP
+
+AC_ARG_ENABLE([set-num-threads],
+  [AS_HELP_STRING([--enable-set-num-threads],
+  [set the number of threads in OpenMP parallel sections to N])],
+  [enable_set_threads=${enableval}],
+  [enable_set_threads="no"])
+if [[ ${enable_set_threads} != "no" ]]; then
+  AC_DEFINE_UNQUOTED([FORCE_OMP_NUM_THREADS], [${enable_set_threads}],
+    [The number of threads in OpenMP parallel sections])
+fi
+
+AC_MSG_CHECKING([which chunk implementation to use])
+AC_ARG_ENABLE([chunk-implementation],
+  [AS_HELP_STRING([--enable-chunk-implementation],
+  [choose the chunk implementation (tiled, tree), defaults to tree])],
+  [enable_chunk_implementation=$enableval],
+  [enable_chunk_implementation="tree"])
+case ${enable_chunk_implementation} in
+  "tiled" )
+    AC_MSG_RESULT([tiled chunks])
+    ;;
+  "tree" )
+    AC_MSG_RESULT([tree chunks])
+    ;;
+  * )
+    AC_MSG_RESULT([unknown])
+    AC_MSG_FAILURE([unknown chunk implementation: ${enable_chunk_implementation}])
+    ;;
+esac
+AC_DEFINE_UNQUOTED([CHUNK_IMPLEMENTATION],
+  [${enable_chunk_implementation}], [The chunk implementation])
+
+AC_ARG_ENABLE([block-multiply],
+  [AS_HELP_STRING([--enable-block-multiply],
+  [choose the dense multiply implementation (block, blas), default = block])],
+  [enable_block_multiply=$enableval],
+  [enable_block_multiply="block"])
+case ${enable_block_multiply} in
+  "block") AC_DEFINE([BLOCK_MULTIPLY], [1], [Use simple nested loop matrix multiply.]) ;;
+  "blas")  AC_DEFINE([BLOCK_BLAS], [1], [Use .gemm() matrix multiply.]) ;;
+  *) AC_MSG_FAILURE([unknown multiply implementation]) ;;
+esac
+
+AC_ARG_ENABLE([lapack],
+  [AS_HELP_STRING([--enable-lapack],
+  [enable external linkage to blas/lapack])],
+  [use_external_lapack=$enableval],
+  [use_external_lapack="no"])
+
+if [[ "${use_external_lapack}" = "yes" ]] || [[ "${enable_block_multiply}" = "blas" ]]; then
+  # Find dgemm() for matrix block products.
+  for DGEMM in dgemm dgemm_ dgemm__; do
+    AC_SEARCH_LIBS([${DGEMM}], [blas], [break], [DGEMM="unset"])
+  done
+  if test "${DGEMM}" != "unset"; then
+    AC_DEFINE_UNQUOTED([DGEMM], [${DGEMM}], [The call to BLAS dgemm() including
+                        all necessary underscores.])
+  fi
+
+  # Find dsyev() for spectral bounds.
+  for DSYEV in dsyev dsyev_ dsyev__; do
+    AC_SEARCH_LIBS([${DSYEV}], [lapack], [break], [DSYEV="unset"])
+  done
+  if test "${DSYEV}" != "unset"; then
+    AC_DEFINE_UNQUOTED([DSYEV], [${DSYEV}], [The call to dsyev() including all
+                        necessary underscores.])
+  fi
+fi
+
+AC_ARG_ENABLE([chunk-tree-max-tier],
+  [AS_HELP_STRING([--enable-chunk-tree-max-tier],
+  [set the maximum tier at which new tasks are created when recursing the
+   chunk tree])],
+  [enable_chunk_tree_max_tier=$enableval],
+  [enable_chunk_tree_max_tier=6])
+if [[ ${enable_chunk_tree_max_tier} -gt 0 ]]; then
+  AC_DEFINE_UNQUOTED([CHUNK_TREE_MAX_TIER], [${enable_chunk_tree_max_tier}],
+    [The maximum tier at which new tasks are created when recursing the chunk
+     tree.])
+fi
+
+AC_ARG_ENABLE([chunk-block-transpose],
+  [AS_HELP_STRING([--enable-chunk-block-transpose],
+  [set the minimum size N of the block matrix that will transpose a matrix to
+   allow for loop vectorization])],
+  [enable_chunk_block_transpose=$enableval],
+  [enable_chunk_block_transpose="32"])
+if [[ ${enable_chunk_block_transpose} -gt 0 ]]; then
+  AC_DEFINE_UNQUOTED([CHUNK_BLOCK_TRANSPOSE], [${enable_chunk_block_transpose}],
+    [The minimum size N of the block matrix that will transpose a matrix to
+     allow for loop vectorization.])
+fi
+
+AC_ARG_ENABLE([sleep],
+  [AS_HELP_STRING([--enable-sleep],
+  [add N nanoseconds of sleep during the block multiply])],
+  [enable_sleep=$enableval],
+  [enable_sleep=0])
+if [[ ${enable_sleep} -gt 0 ]]; then
+  AC_DEFINE_UNQUOTED([BLOCK_SLEEP], [${enable_sleep}], [Number of nanoseconds
+    to sleep after block multiply.])
+fi
+
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_FILES([Makefile])
+
+AC_OUTPUT
