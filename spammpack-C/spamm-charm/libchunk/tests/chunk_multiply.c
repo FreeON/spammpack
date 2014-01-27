@@ -15,6 +15,10 @@
 #define SQUARE(x) ((x)*(x))
 #define CUBED(x) ((x)*(x)*(x))
 
+#define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
+#define COLUMN_MAJOR(i, j, N) ((i)+(j)*(N))
+#define INDEX(i, j, N) COLUMN_MAJOR(i, j, N)
+
 int
 main (int argc, char **argv)
 {
@@ -140,6 +144,7 @@ main (int argc, char **argv)
   void *A = chunk_alloc(N_chunk, N_basic, N, 0, 0);
   void *C = chunk_alloc(N_chunk, N_basic, N, 0, 0);
 
+  /* Fill in column-major order. */
   double *A_dense = calloc(N_chunk*N_chunk, sizeof(double));
 
   printf("allocated A_dense, sizeof(A_dense) = %ld bytes\n", N_chunk*N_chunk*sizeof(double));
@@ -157,12 +162,12 @@ main (int argc, char **argv)
       printf("decay constant = %e\n", gamma);
       for(int i = 0; i < N_chunk; i++)
       {
-        A_dense[i+i*N_chunk] = rand()/(double) RAND_MAX;
+        A_dense[COLUMN_MAJOR(i, i, N_chunk)] = rand()/(double) RAND_MAX;
         for(int j = 0; j < N_chunk; j++)
         {
           if(i != j)
           {
-            A_dense[i+j*N_chunk] = A_dense[i+i*N_chunk]*exp(-fabs(i-j)/gamma);
+            A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)]*exp(-fabs(i-j)/gamma);
           }
         }
       }
@@ -171,7 +176,7 @@ main (int argc, char **argv)
     case diagonal:
       for(int i = 0; i < N_chunk; i++)
       {
-        A_dense[i+i*N_chunk] = rand()/(double) RAND_MAX;
+        A_dense[COLUMN_MAJOR(i, i, N_chunk)] = rand()/(double) RAND_MAX;
       }
       break;
 
@@ -188,13 +193,18 @@ main (int argc, char **argv)
     {
       for(int j = 0; j < N; j++)
       {
-        printf(" % 1.3f", A_dense[i+j*N_chunk]);
+        printf(" % 1.3f", A_dense[COLUMN_MAJOR(i, j, N_chunk)]);
       }
       printf("\n");
     }
   }
 
   chunk_set(A, A_dense);
+
+  if(print_matrix)
+  {
+    chunk_print(A, "A\n");
+  }
 
   double norm_2 = 0;
   for(int i = 0; i < N*N; i++)
@@ -235,24 +245,30 @@ main (int argc, char **argv)
       (start_time.tv_sec+start_time.tv_nsec/1.0e9));
 #endif
 
+  if(print_matrix)
+  {
+    double *C_dense = chunk_to_dense(C);
+
+    printf("C:\n");
+    for(int i = 0; i < N; i++)
+    {
+      for(int j = 0; j < N; j++)
+      {
+        printf(" % 1.3f", C_dense[COLUMN_MAJOR(i, j, N_chunk)]);
+      }
+      printf("\n");
+    }
+
+    free(C_dense);
+
+    chunk_print(C, "C\n");
+  }
+
   if(verify)
   {
     printf("verifying...\n");
 
     double *C_dense = chunk_to_dense(C);
-
-    if(print_matrix)
-    {
-      printf("C:\n");
-      for(int i = 0; i < N; i++)
-      {
-        for(int j = 0; j < N; j++)
-        {
-          printf(" % 1.3f", C_dense[i+j*N_chunk]);
-        }
-        printf("\n");
-      }
-    }
 
     if(print_complexity)
     {
@@ -286,20 +302,43 @@ main (int argc, char **argv)
           complexity, CUBED(N_chunk/N_basic));
     }
 
-    double C_exact;
+    double *C_exact = calloc(SQUARE(N_chunk), sizeof(double));
+
     for(int i = 0; i < N_chunk; i++)
     {
       for(int j = 0; j < N_chunk; j++)
       {
-        C_exact = 0;
         for(int k = 0; k < N_chunk; k++)
         {
-          C_exact += A_dense[i+k*N_chunk]*A_dense[k+j*N_chunk];
+          C_exact[COLUMN_MAJOR(i, j, N_chunk)] +=
+            A_dense[COLUMN_MAJOR(i, k, N_chunk)]*A_dense[COLUMN_MAJOR(k, j, N_chunk)];
         }
+      }
+    }
 
-        if(fabs(C_exact-C_dense[i+j*N_chunk]) > 1e-10)
+    if(print_matrix)
+    {
+      printf("C_exact:\n");
+      for(int i = 0; i < N; i++)
+      {
+        for(int j = 0; j < N; j++)
         {
-          printf("mismatch C[%d][%d]\n", i, j);
+          printf(" % 1.3f", C_exact[COLUMN_MAJOR(i, j, N_chunk)]);
+        }
+        printf("\n");
+      }
+    }
+
+    for(int i = 0; i < N_chunk; i++)
+    {
+      for(int j = 0; j < N_chunk; j++)
+      {
+        if(fabs(C_exact[COLUMN_MAJOR(i, j, N_chunk)]-C_dense[COLUMN_MAJOR(i, j, N_chunk)]) > 1e-10)
+        {
+          printf("mismatch C[%d][%d] = %e "
+              " <-> C_exact = %e\n",
+              i, j, C_dense[COLUMN_MAJOR(i, j, N_chunk)], C_exact[COLUMN_MAJOR(i, j, N_chunk)]);
+
           return -1;
         }
       }
@@ -307,6 +346,7 @@ main (int argc, char **argv)
 
     printf("matrices are identical\n");
 
+    free(C_exact);
     free(C_dense);
   }
 

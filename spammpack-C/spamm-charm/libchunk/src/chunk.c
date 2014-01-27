@@ -62,8 +62,7 @@ void
 chunk_print (const void *const chunk,
     const char *const format, ...)
 {
-  printf("FIXME\n");
-  exit(1);
+  FUNC(print)(chunk, "FIXME\n");
 }
 
 void

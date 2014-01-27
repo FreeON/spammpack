@@ -413,7 +413,7 @@ chunk_tree_update_norm (struct chunk_tree_t *const chunk)
           {
             for(int j_basic = 0; j_basic < chunk->N_basic; j_basic++)
             {
-              node->norm_2 += SQUARE(submatrix[ROW_MAJOR(i_basic, j_basic, chunk->N_basic)]);
+              node->norm_2 += SQUARE(submatrix[COLUMN_MAJOR(i_basic, j_basic, chunk->N_basic)]);
             }
           }
         }
@@ -465,7 +465,7 @@ chunk_tree_set (void *const chunk, const double *const A)
       {
         for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
         {
-          submatrix_ptr[ROW_MAJOR(i_basic, j_basic, ptr->N_basic)] =
+          submatrix_ptr[COLUMN_MAJOR(i_basic, j_basic, ptr->N_basic)] =
             A[COLUMN_MAJOR(i*ptr->N_basic+i_basic, j*ptr->N_basic+j_basic, ptr->N_chunk)];
         }
       }
@@ -497,7 +497,7 @@ chunk_tree_set (void *const chunk, const double *const A)
         DEBUG("");
         for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
         {
-          printf(" % 1.3f", submatrix_ptr[ROW_MAJOR(i_basic, j_basic, ptr->N_basic)]);
+          printf(" % 1.3f", submatrix_ptr[COLUMN_MAJOR(i_basic, j_basic, ptr->N_basic)]);
         }
         printf("\n");
       }
@@ -584,6 +584,16 @@ chunk_tree_print_node (const int tier,
   if(tier == depth)
   {
     INFO("(%p) submatrix at %p\n", node, (void*) ((intptr_t) node + node->offset.matrix_offset));
+    double *submatrix = (double*) ((intptr_t) node + node->offset.matrix_offset);
+    for(int i = 0; i < node->N_basic; i++)
+    {
+      INFO("(%p) ", node);
+      for(int j = 0; j < node->N_basic; j++)
+      {
+        printf(" % 1.3f", submatrix[COLUMN_MAJOR(i, j, node->N_basic)]);
+      }
+      printf("\n");
+    }
   }
 
   else
@@ -755,6 +765,10 @@ chunk_tree_multiply_node (const double tolerance_2,
 
       DEBUG("mulitplying submatrix, A at %p, B at %p, C at %p\n", &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
 
+      //INFO("A[0][0] = % 1.3f\n", A_submatrix[0]);
+      //INFO("B[0][0] = % 1.3f\n", B_submatrix[0]);
+      //INFO("C[0][0] = % 1.3f\n", C_submatrix[0]);
+
 #ifdef _OPENMP
       omp_set_lock(&C->matrix_lock);
 #endif
@@ -765,7 +779,7 @@ chunk_tree_multiply_node (const double tolerance_2,
       {
         double alpha = 1.0;
         double beta = 1.0;
-        DGEMM("T", "T", &A->N_basic, &A->N_basic, &A->N_basic, &alpha,
+        DGEMM("N", "N", &A->N_basic, &A->N_basic, &A->N_basic, &alpha,
             A_submatrix, &A->N_basic, B_submatrix, &A->N_basic, &beta,
             C_submatrix, &A->N_basic);
       }
@@ -880,8 +894,8 @@ chunk_tree_multiply (const double tolerance,
  *
  * @param chunk The chunk.
  *
- * @return The dense matrix. This matrix is sized to blocksize, which is
- * stored in the chunk.
+ * @return The dense matrix in column-major order. This matrix is sized to
+ * blocksize, which is stored in the chunk.
  */
 double *
 chunk_tree_to_dense (const void *const chunk)
@@ -902,7 +916,7 @@ chunk_tree_to_dense (const void *const chunk)
         for(int j_basic = 0; j_basic < ptr->N_basic; j_basic++)
         {
           A[COLUMN_MAJOR(i*ptr->N_basic+i_basic, j*ptr->N_basic+j_basic, ptr->N_chunk)] =
-            submatrix[ROW_MAJOR(i_basic, j_basic, ptr->N_basic)];
+            submatrix[COLUMN_MAJOR(i_basic, j_basic, ptr->N_basic)];
         }
       }
     }
@@ -987,7 +1001,7 @@ chunk_tree_add_identity_node (const int tier,
     double *matrix = (double*) ((intptr_t) node + node->offset.matrix_offset);
     for(int i = 0; i < node->N_basic; i++)
     {
-      matrix[ROW_MAJOR(i, i, node->N_basic)] += alpha;
+      matrix[COLUMN_MAJOR(i, i, node->N_basic)] += alpha;
     }
   }
 
@@ -1040,7 +1054,7 @@ chunk_tree_trace_node (const int tier,
     double *matrix = (double*) ((intptr_t) node + node->offset.matrix_offset);
     for(int i = 0; i < node->N_basic; i++)
     {
-      trace += matrix[ROW_MAJOR(i, i, node->N_basic)];
+      trace += matrix[COLUMN_MAJOR(i, i, node->N_basic)];
     }
   }
 

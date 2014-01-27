@@ -11,6 +11,10 @@
 #define SQUARE(x) ((x)*(x))
 #define CUBED(x) ((x)*(x)*(x))
 
+#define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
+#define COLUMN_MAJOR(i, j, N) ((i)+(j)*(N))
+#define INDEX(i, j, N) COLUMN_MAJOR(i, j, N)
+
 int
 main (int argc, char **argv)
 {
@@ -139,7 +143,7 @@ main (int argc, char **argv)
     case diagonal:
       for(int i = 0; i < N_chunk; i++)
       {
-        A_dense[i+i*N_chunk] = rand()/(double) RAND_MAX;
+        A_dense[COLUMN_MAJOR(i, i, N_chunk)] = rand()/(double) RAND_MAX;
       }
       break;
 
@@ -156,7 +160,7 @@ main (int argc, char **argv)
     {
       for(int j = 0; j < N; j++)
       {
-        printf(" % 1.3f", A_dense[i+j*N_chunk]);
+        printf(" % 1.3f", A_dense[COLUMN_MAJOR(i, j, N_chunk)]);
       }
       printf("\n");
     }
@@ -199,7 +203,7 @@ main (int argc, char **argv)
       {
         for(int j = 0; j < N; j++)
         {
-          printf(" % 1.3f", C_dense[i+j*N_chunk]);
+          printf(" % 1.3f", C_dense[COLUMN_MAJOR(i, j, N_chunk)]);
         }
         printf("\n");
       }
@@ -248,9 +252,12 @@ main (int argc, char **argv)
           C_exact += A_dense[i+k*N_chunk]*A_dense[k+j*N_chunk];
         }
 
-        if(fabs(C_exact-C_dense[i+j*N_chunk]) > 1e-10)
+        if(fabs(C_exact-C_dense[COLUMN_MAJOR(i, j, N_chunk)]) > 1e-10)
         {
-          printf("mismatch C[%d][%d]\n", i, j);
+          printf("mismatch C[%d][%d] = %e "
+              " <-> C_exact = %e\n",
+              i, j, C_dense[COLUMN_MAJOR(i, j, N_chunk)], C_exact);
+
           return -1;
         }
       }
