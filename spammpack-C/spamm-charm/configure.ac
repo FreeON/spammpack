@@ -59,6 +59,7 @@ AC_OPENMP
 #  [AC_MSG_RESULT([yes])],
 #  [AC_MSG_FAILURE([Cannot link against spammpack library])])
 
+# Test for clock_gettime.
 AC_SEARCH_LIBS([clock_gettime], [rt],
   [],
   [AC_MSG_FAILURE([need clock_gettime()])])

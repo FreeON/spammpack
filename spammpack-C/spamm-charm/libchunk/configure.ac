@@ -18,6 +18,29 @@ LT_INIT
 # Find OpenMP for C.
 AC_OPENMP
 
+# Test for math.
+AC_SEARCH_LIBS([ceil], [m], [], [AC_MSG_FAILURE([need the math library])])
+
+# Test for clock_gettime.
+AC_SEARCH_LIBS([clock_gettime], [rt],
+  [],
+  [AC_MSG_FAILURE([need clock_gettime()])])
+
+# Check for supported clocks. Thanks to Jonathan Lifflander
+# <jliffl2@illinois.edu> for suggesting this test.
+for CLOCKTYPE in \
+  CLOCK_MONOTONIC_RAW \
+  CLOCK_MONOTONIC \
+  CLOCK_REALTIME; do
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>]],
+    [[struct timespec p; clock_gettime(${CLOCKTYPE}, &p);]])],
+    [break], [CLOCKTYPE="unset"])
+done
+if test "${CLOCKTYPE}" = "unset"; then
+  AC_MSG_FAILURE([no known clock type])
+fi
+AC_DEFINE_UNQUOTED([CLOCKTYPE], [${CLOCKTYPE}], [The clock type to use with clock_gettime()])
+
 AC_ARG_ENABLE([set-num-threads],
   [AS_HELP_STRING([--enable-set-num-threads],
   [set the number of threads in OpenMP parallel sections to N])],
@@ -121,6 +144,10 @@ if [[ ${enable_sleep} -gt 0 ]]; then
 fi
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([
+Makefile
+src/Makefile
+tests/Makefile
+])
 
 AC_OUTPUT
