@@ -1,3 +1,5 @@
+dist_noinst_SCRIPTS = scaling-mustang.sh
+
 noinst_PROGRAMS = \
 	chunk_multiply \
 	chunk_tree_multiply
