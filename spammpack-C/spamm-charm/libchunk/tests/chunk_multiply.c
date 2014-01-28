@@ -27,11 +27,11 @@ main (int argc, char **argv)
   int N_chunk = 1024;
   int N_basic = 4;
 
-  double gamma = 4.0;
+  double lambda = 0.78;
 
   enum
   {
-    full, decay, diagonal
+    full, exponential_decay, algebraic_decay, diagonal
   }
   matrix_type = full;
 
@@ -44,7 +44,7 @@ main (int argc, char **argv)
   double tolerance = 0;
 
   int c;
-  const char short_options[] = "hT:ct:N:b:pvrg:d";
+  const char short_options[] = "hT:ct:N:b:pvrl:d";
   const struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "type", required_argument, NULL, 'T' },
@@ -55,7 +55,7 @@ main (int argc, char **argv)
     { "print", no_argument, NULL, 'p' },
     { "no-verify", no_argument, NULL, 'v' },
     { "tree-only", no_argument, NULL, 'r' },
-    { "gamma", required_argument, NULL, 'g' },
+    { "lambda", required_argument, NULL, 'l' },
     { "dense", no_argument, NULL, 'd' },
     { NULL, 0, NULL, 0 }
   };
@@ -69,7 +69,7 @@ main (int argc, char **argv)
         printf("Usage:\n");
         printf("\n");
         printf("{ -h | --help }           This help\n");
-        printf("{ -T | --type } TYPE      The matrix type: { full, decay, diagonal }\n");
+        printf("{ -T | --type } TYPE      The matrix type: { full, exp_decay, alg_decay, diagonal }\n");
         printf("{ -c | --complexity}      Print product complexity\n");
         printf("{ -t | --tolerance } TOL  The SpAMM tolerance\n");
         printf("{ -N | --N_chunk } N      The matrix size, N_chunk\n");
@@ -77,7 +77,7 @@ main (int argc, char **argv)
         printf("{ -p | --print }          Print matrices\n");
         printf("{ -v | --no-verify }      Do not verify result\n");
         printf("{ -r | --tree-only }      Skip basic block products\n");
-        printf("{ -g | --gamma } GAMMA    The decay constant\n");
+        printf("{ -l | --lambda } LAMBDA  The decay constant\n");
         printf("{ -d | --dense }          Multiply the matrix with a dense method for timing\n");
         exit(0);
         break;
@@ -88,9 +88,14 @@ main (int argc, char **argv)
           matrix_type = full;
         }
 
-        else if(strcasecmp(optarg, "decay") == 0)
+        else if(strcasecmp(optarg, "exp_decay") == 0)
         {
-          matrix_type = decay;
+          matrix_type = exponential_decay;
+        }
+
+        else if(strcasecmp(optarg, "alg_decay") == 0)
+        {
+          matrix_type = algebraic_decay;
         }
 
         else if(strcasecmp(optarg, "diagonal") == 0)
@@ -134,8 +139,8 @@ main (int argc, char **argv)
         tree_only = 1;
         break;
 
-      case 'g':
-        gamma = strtod(optarg, NULL);
+      case 'l':
+        lambda = strtod(optarg, NULL);
         break;
 
       case 'd':
@@ -166,16 +171,32 @@ main (int argc, char **argv)
       }
       break;
 
-    case decay:
-      printf("decay constant = %e\n", gamma);
+    case exponential_decay:
+      printf("exponential decay, lambda = %e\n", lambda);
       for(int i = 0; i < N_chunk; i++)
       {
-        A_dense[COLUMN_MAJOR(i, i, N_chunk)] = rand()/(double) RAND_MAX;
+        A_dense[COLUMN_MAJOR(i, i, N_chunk)] = 0.5+0.5*(rand()/(double) RAND_MAX);
         for(int j = 0; j < N_chunk; j++)
         {
           if(i != j)
           {
-            A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)]*exp(-fabs(i-j)/gamma);
+            A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)] * exp(log(lambda)*fabs(i-j));
+          }
+        }
+      }
+      break;
+
+    case algebraic_decay:
+      printf("algebraic decay, lambda = %e\n", lambda);
+      for(int i = 0; i < N_chunk; i++)
+      {
+        A_dense[COLUMN_MAJOR(i, i, N_chunk)] = 0.5+0.5*(rand()/(double) RAND_MAX);
+        for(int j = 0; j < N_chunk; j++)
+        {
+          if(i != j)
+          {
+            A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)]
+              / (exp(lambda*log(fabs(i-j))) + 1);
           }
         }
       }
@@ -255,6 +276,7 @@ main (int argc, char **argv)
 
   if(test_dense_product)
   {
+#ifdef DGEMM
     struct timespec start_time;
     clock_gettime(CLOCKTYPE, &start_time);
     double *C_dense = calloc(SQUARE(N_chunk), sizeof(double));
@@ -284,6 +306,9 @@ main (int argc, char **argv)
         N_chunk, N_chunk,
         (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
         (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+#endif
+#else
+    printf("not configured with dgemm()\n");
 #endif
   }
 
