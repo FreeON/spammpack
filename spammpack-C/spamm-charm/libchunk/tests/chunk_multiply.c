@@ -172,18 +172,17 @@ main (int argc, char **argv)
       break;
 
     case exponential_decay:
-      printf("exponential decay, lambda = %e\n", lambda);
+      printf("exponential decay, C = %e, lambda = %e\n", C, lambda);
       for(int i = 0; i < N_chunk; i++)
       {
         A_dense[COLUMN_MAJOR(i, i, N_chunk)] = 0.5+0.5*(rand()/(double) RAND_MAX);
-        for(int j = 0; j < N_chunk; j++)
+        for(int j = i+1; j < N_chunk; j++)
         {
-          if(i != j)
-          {
-            A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)] * exp(log(lambda)*fabs(i-j));
-          }
+          A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)] * exp(log(lambda)*fabs(i-j));
+          A_dense[COLUMN_MAJOR(j, i, N_chunk)] = A_dense[COLUMN_MAJOR(i, j, N_chunk)];
         }
       }
+      printf("A[1][N]/A[1][1] = %e\n", A_dense[COLUMN_MAJOR(0, N_chunk-1, N_chunk)]/A_dense[0]);
       break;
 
     case algebraic_decay:
@@ -331,44 +330,45 @@ main (int argc, char **argv)
     chunk_print(C, "C\n");
   }
 
+  if(print_complexity)
+  {
+    int complexity = 0;
+#pragma omp parallel for reduction(+:complexity)
+    for(int i = 0; i < N_chunk/N_basic; i++)
+    {
+      for(int j = 0; j < N_chunk/N_basic; j++)
+      {
+        for(int k = 0; k < N_chunk/N_basic; k++)
+        {
+          double norm_A = 0;
+          double norm_B = 0;
+          for(int i_basic = 0; i_basic < N_basic; i_basic++)
+          {
+            for(int j_basic = 0; j_basic < N_basic; j_basic++)
+            {
+              norm_A += SQUARE(A_dense[(i+i_basic*N_basic)*N_chunk+(k+j_basic*N_basic)]);
+              norm_B += SQUARE(A_dense[(k+i_basic*N_basic)*N_chunk+(j+j_basic*N_basic)]);
+            }
+          }
+
+          if(norm_A*norm_B > tolerance)
+          {
+            complexity++;
+          }
+        }
+      }
+    }
+
+    printf("product complexity = %d out of %d, complexity ratio = %e\n",
+        complexity, CUBED(N_chunk/N_basic),
+        complexity/(double) CUBED(N_chunk/N_basic));
+  }
+
   if(verify)
   {
     printf("verifying...\n");
 
     double *C_dense = chunk_to_dense(C);
-
-    if(print_complexity)
-    {
-      int complexity = 0;
-      for(int i = 0; i < N_chunk/N_basic; i++)
-      {
-        for(int j = 0; j < N_chunk/N_basic; j++)
-        {
-          for(int k = 0; k < N_chunk/N_basic; k++)
-          {
-            double norm_A = 0;
-            double norm_B = 0;
-            for(int i_basic = 0; i_basic < N_basic; i_basic++)
-            {
-              for(int j_basic = 0; j_basic < N_basic; j_basic++)
-              {
-                norm_A += SQUARE(A_dense[(i+i_basic*N_basic)*N_chunk+(k+j_basic*N_basic)]);
-                norm_B += SQUARE(A_dense[(k+i_basic*N_basic)*N_chunk+(j+j_basic*N_basic)]);
-              }
-            }
-
-            if(norm_A*norm_B > tolerance)
-            {
-              complexity++;
-            }
-          }
-        }
-      }
-
-      printf("product complexity = %d out of %d\n",
-          complexity, CUBED(N_chunk/N_basic));
-    }
-
     double *C_exact = calloc(SQUARE(N_chunk), sizeof(double));
 
     for(int i = 0; i < N_chunk; i++)
