@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include "chunk.h"
+#include "lapack_interface.h"
 
 #include <getopt.h>
 #include <math.h>
@@ -38,11 +39,12 @@ main (int argc, char **argv)
   short print_matrix = 0;
   short verify = 1;
   short tree_only = 0;
+  short test_dense_product = 0;
 
   double tolerance = 0;
 
   int c;
-  const char short_options[] = "hT:ct:N:b:pvrg:";
+  const char short_options[] = "hT:ct:N:b:pvrg:d";
   const struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "type", required_argument, NULL, 'T' },
@@ -54,6 +56,7 @@ main (int argc, char **argv)
     { "no-verify", no_argument, NULL, 'v' },
     { "tree-only", no_argument, NULL, 'r' },
     { "gamma", required_argument, NULL, 'g' },
+    { "dense", no_argument, NULL, 'd' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -75,6 +78,7 @@ main (int argc, char **argv)
         printf("{ -v | --no-verify }      Do not verify result\n");
         printf("{ -r | --tree-only }      Skip basic block products\n");
         printf("{ -g | --gamma } GAMMA    The decay constant\n");
+        printf("{ -d | --dense }          Multiply the matrix with a dense method for timing\n");
         exit(0);
         break;
 
@@ -132,6 +136,10 @@ main (int argc, char **argv)
 
       case 'g':
         gamma = strtod(optarg, NULL);
+        break;
+
+      case 'd':
+        test_dense_product = 1;
         break;
 
       default:
@@ -244,6 +252,40 @@ main (int argc, char **argv)
       (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
       (start_time.tv_sec+start_time.tv_nsec/1.0e9));
 #endif
+
+  if(test_dense_product)
+  {
+    struct timespec start_time;
+    clock_gettime(CLOCKTYPE, &start_time);
+    double *C_dense = calloc(SQUARE(N_chunk), sizeof(double));
+    double alpha = 1.0;
+    double beta = 1.0;
+    DGEMM("N", "N", &N_chunk, &N_chunk, &N_chunk, &alpha, A_dense, &N_chunk,
+        A_dense, &N_chunk, &beta, C_dense, &N_chunk);
+    struct timespec end_time;
+    clock_gettime(CLOCKTYPE, &end_time);
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#pragma omp master
+      {
+        printf("done multiplying dense using %d OpenMP threads a %dx%d chunk, "
+            "%1.2f seconds\n",
+            omp_get_num_threads(),
+            N_chunk, N_chunk,
+            (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
+            (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+      }
+    }
+#else
+    printf("done multiplying dense in serial a %dx%d chunk, "
+        "%1.2f seconds\n",
+        N_chunk, N_chunk,
+        (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
+        (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+#endif
+  }
 
   if(print_matrix)
   {
