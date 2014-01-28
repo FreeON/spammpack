@@ -9,6 +9,8 @@ OPTIONS=(
     "-v"
     )
 
+echo "running ./chunk_multiply ${OPTIONS[*]}" | tee --append scaling.output
+
 # Get product complexity.
 ./chunk_multiply ${OPTIONS[*]} -c | tee --append scaling.output
 

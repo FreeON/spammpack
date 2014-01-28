@@ -816,6 +816,11 @@ chunk_tree_multiply_node (const double tolerance_2,
             {
               chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child, B_child, C_child, symbolic_only);
             }
+
+            else
+            {
+              DEBUG("skipping product, A_norm*B_norm = %e\n", A_child->norm_2*B_child->norm_2);
+            }
           }
         }
       }

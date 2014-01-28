@@ -346,8 +346,8 @@ main (int argc, char **argv)
           {
             for(int j_basic = 0; j_basic < N_basic; j_basic++)
             {
-              norm_A += SQUARE(A_dense[(i+i_basic*N_basic)*N_chunk+(k+j_basic*N_basic)]);
-              norm_B += SQUARE(A_dense[(k+i_basic*N_basic)*N_chunk+(j+j_basic*N_basic)]);
+              norm_A += SQUARE(A_dense[COLUMN_MAJOR(i*N_basic+i_basic, k*N_basic+j_basic, N_chunk)]);
+              norm_B += SQUARE(A_dense[COLUMN_MAJOR(k*N_basic+i_basic, j*N_basic+j_basic, N_chunk)]);
             }
           }
 
