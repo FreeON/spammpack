@@ -27,6 +27,7 @@ main (int argc, char **argv)
   int N_chunk = 1024;
   int N_basic = 4;
 
+  /* Decay constant for large matrices. */
   double lambda = 0.995;
 
   enum
