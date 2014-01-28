@@ -27,7 +27,7 @@ main (int argc, char **argv)
   int N_chunk = 1024;
   int N_basic = 4;
 
-  double lambda = 0.78;
+  double lambda = 0.995;
 
   enum
   {
