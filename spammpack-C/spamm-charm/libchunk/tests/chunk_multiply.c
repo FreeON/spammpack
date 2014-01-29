@@ -361,7 +361,7 @@ main (int argc, char **argv)
       }
     }
 
-    printf("product complexity = %d out of %d, complexity ratio = %e\n",
+    printf("product complexity = %d out of %d, complexity ratio = %1.3f\n",
         complexity, CUBED(N_chunk/N_basic),
         complexity/(double) CUBED(N_chunk/N_basic));
   }

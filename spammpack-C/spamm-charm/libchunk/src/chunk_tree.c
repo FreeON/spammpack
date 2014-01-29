@@ -922,7 +922,7 @@ chunk_tree_multiply (const double tolerance,
   {
     product_complexity += complexity[i];
   }
-  INFO("product complexity = %d out of %d, complexity ratio = %e\n",
+  INFO("product complexity = %d out of %d, complexity ratio = %1.3f\n",
       product_complexity, CUBE(A_ptr->N_chunk/A_ptr->N_basic),
       product_complexity/(double) CUBE(A_ptr->N_chunk/A_ptr->N_basic));
   free(complexity);
