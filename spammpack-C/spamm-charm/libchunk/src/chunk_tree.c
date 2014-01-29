@@ -918,6 +918,7 @@ chunk_tree_multiply (const double tolerance,
 
 #ifdef MEASURE_COMPLEXITY
   int product_complexity = 0;
+#pragma omp parallel for reduction(+:product_complexity)
   for(int i = 0; i < CUBE(A_ptr->N_chunk/A_ptr->N_basic); i++)
   {
     product_complexity += complexity[i];

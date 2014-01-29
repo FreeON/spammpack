@@ -148,7 +148,14 @@ if [[ ${enable_sleep} -gt 0 ]]; then
     to sleep after block multiply.])
 fi
 
-AC_DEFINE([MEASURE_COMPLEXITY], [1], [Measure the product complexity])
+AC_ARG_ENABLE([complexity],
+  [AS_HELP_STRING([--enable-complexity],
+  [count the product complexity in the tree multiply])],
+  [enable_complexity=$enableval],
+  [enable_complexity="no"])
+if [[ ${enable_complexity} = "yes" ]]; then
+  AC_DEFINE([MEASURE_COMPLEXITY], [1], [Measure the product complexity])
+fi
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
