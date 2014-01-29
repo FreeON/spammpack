@@ -5,20 +5,23 @@ OPTIONS=(
     "-b 64"
     "-T exp_decay"
     "-l 0.995"
-    "-t 1.0e-8"
     "-v"
     )
 
-echo "running ./chunk_multiply ${OPTIONS[*]}" | tee --append scaling.output
+TOLERANCE=( 0 1e-8 1e-7 1e-6 )
+THREADS=( 1 2 4 8 12 16 32 40 )
 
-# Get product complexity.
-./chunk_multiply ${OPTIONS[*]} -c | tee --append scaling.output
+for tolerance in ${TOLERANCE[@]}; do
+  # Get product complexity.
+  numactl --interleave=all \
+    ./chunk_multiply ${OPTIONS[*]} --tolerance ${tolerance} -c | tee --append scaling.output
 
-for P in 1 2 4 8 12 16 32 20 24; do
-  OMP_NUM_THREADS=$P \
-    numactl --interleave=all -- \
-    ./chunk_multiply ${OPTIONS[*]} \
-    | tee --append scaling.output
+  for P in ${THREADS[@]}; do
+    OMP_NUM_THREADS=${P} \
+      numactl --interleave=all -- \
+      ./chunk_multiply ${OPTIONS[*]} --tolerance ${tolerance} \
+      | tee --append scaling.output
+  done
 done
 
 grep "done multiplying" scaling.output \

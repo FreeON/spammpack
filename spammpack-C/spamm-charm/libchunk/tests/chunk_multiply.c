@@ -155,6 +155,13 @@ main (int argc, char **argv)
     }
   }
 
+  printf("running: chunk_multiply");
+  for(int i = 1; i < argc; i++)
+  {
+    printf(" %s", argv[i]);
+  }
+  printf("\n");
+
   void *A = chunk_alloc(N_chunk, N_basic, N, 0, 0);
   void *C = chunk_alloc(N_chunk, N_basic, N, 0, 0);
 
