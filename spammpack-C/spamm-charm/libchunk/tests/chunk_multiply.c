@@ -173,7 +173,7 @@ main (int argc, char **argv)
       break;
 
     case exponential_decay:
-      printf("exponential decay, C = %e, lambda = %e\n", C, lambda);
+      printf("exponential decay, lambda = %e\n", lambda);
       for(int i = 0; i < N_chunk; i++)
       {
         A_dense[COLUMN_MAJOR(i, i, N_chunk)] = 0.5+0.5*(rand()/(double) RAND_MAX);
@@ -343,6 +343,7 @@ main (int argc, char **argv)
         {
           double norm_A = 0;
           double norm_B = 0;
+
           for(int i_basic = 0; i_basic < N_basic; i_basic++)
           {
             for(int j_basic = 0; j_basic < N_basic; j_basic++)
@@ -352,7 +353,7 @@ main (int argc, char **argv)
             }
           }
 
-          if(norm_A*norm_B > tolerance)
+          if(norm_A*norm_B > SQUARE(tolerance))
           {
             complexity++;
           }

@@ -735,6 +735,8 @@ chunk_tree_add (const double alpha, void *const A,
  * @param symbolic_only Only go through the symbolic part, i.e. don't multiply the
  * basic blocks. Used only for debugging to get a handle on the performance of
  * the tree.
+ * @param complexity The complexity counter array.
+ * @param product_index The linear index in the product space.
  */
 void
 chunk_tree_multiply_node (const double tolerance_2,
@@ -743,7 +745,9 @@ chunk_tree_multiply_node (const double tolerance_2,
     const struct chunk_tree_node_t *const A,
     const struct chunk_tree_node_t *const B,
     struct chunk_tree_node_t *const C,
-    const short symbolic_only)
+    const short symbolic_only,
+    short *const complexity,
+    const int product_index)
 {
   assert(A != NULL);
   assert(B != NULL);
@@ -763,7 +767,11 @@ chunk_tree_multiply_node (const double tolerance_2,
       double *B_submatrix = (double*) ((intptr_t) B + B->offset.matrix_offset);
       double *C_submatrix = (double*) ((intptr_t) C + C->offset.matrix_offset);
 
-      DEBUG("mulitplying submatrix, A at %p, B at %p, C at %p\n", &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
+      DEBUG("multiplying submatrix, A at %p, B at %p, C at %p\n", &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
+
+#ifdef MEASURE_COMPLEXITY
+      complexity[product_index]++;
+#endif
 
       //INFO("A[0][0] = % 1.3f\n", A_submatrix[0]);
       //INFO("B[0][0] = % 1.3f\n", B_submatrix[0]);
@@ -814,7 +822,13 @@ chunk_tree_multiply_node (const double tolerance_2,
 
             if(A_child->norm_2*B_child->norm_2 > tolerance_2)
             {
-              chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child, B_child, C_child, symbolic_only);
+#ifdef MEASURE_COMPLEXITY
+              int new_product_index = (product_index << 3) | (i << 2) | (j << 1) | k;
+#else
+              int new_product_index = product_index;
+#endif
+              chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child,
+                  B_child, C_child, symbolic_only, complexity, new_product_index);
             }
 
             else
@@ -874,6 +888,12 @@ chunk_tree_multiply (const double tolerance,
 
   DEBUG("SpAMM tolerance = %e\n", tolerance);
 
+#ifdef MEASURE_COMPLEXITY
+  short *complexity = calloc(CUBE(A_ptr->N_chunk/A_ptr->N_basic), sizeof(short));
+#else
+  void *complexity = NULL;
+#endif
+
   if(A_root->norm_2*B_root->norm_2 > tolerance_2)
   {
 #pragma omp parallel
@@ -885,14 +905,28 @@ chunk_tree_multiply (const double tolerance,
 #else
         DEBUG("running in serial\n");
 #endif
+
 #pragma omp task untied
         {
-          chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root, B_root, C_root, symbolic_only);
+          chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root,
+              B_root, C_root, symbolic_only, complexity, 0);
         }
 #pragma omp taskwait
       }
     }
   }
+
+#ifdef MEASURE_COMPLEXITY
+  int product_complexity = 0;
+  for(int i = 0; i < CUBE(A_ptr->N_chunk/A_ptr->N_basic); i++)
+  {
+    product_complexity += complexity[i];
+  }
+  INFO("product complexity = %d out of %d, complexity ratio = %e\n",
+      product_complexity, CUBE(A_ptr->N_chunk/A_ptr->N_basic),
+      product_complexity/(double) CUBE(A_ptr->N_chunk/A_ptr->N_basic));
+  free(complexity);
+#endif
 }
 
 /** Convert a chunk to a dense matrix.

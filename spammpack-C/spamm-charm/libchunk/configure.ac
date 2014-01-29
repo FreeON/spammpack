@@ -148,6 +148,8 @@ if [[ ${enable_sleep} -gt 0 ]]; then
     to sleep after block multiply.])
 fi
 
+AC_DEFINE([MEASURE_COMPLEXITY], [1], [Measure the product complexity])
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Makefile
