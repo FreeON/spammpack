@@ -66,7 +66,9 @@ def main ():
       data.set_walltime(float(result.group(3)))
 
   complexity = data.get_complexity()
-  print(complexity)
+  threads = data.get_threads()
+  for c in complexity:
+    walltime = get_walltime(c)
 
 if __name__ == "__main__":
   main()
