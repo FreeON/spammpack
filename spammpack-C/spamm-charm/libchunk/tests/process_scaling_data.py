@@ -29,10 +29,30 @@ class scaling_data:
   def get_complexity (self):
     c = []
     for i in self.data:
-      print(i)
       if not i["complexity"] in c:
         c.append(i["complexity"])
     return c
+
+  def get_threads (self):
+    t = []
+    for i in self.data:
+      if not i["threads"] in t:
+        t.append(i["threads"])
+    return t
+
+  def get_walltime (complexity = None, threads = None):
+    print(complexity)
+    print(threads)
+    result = []
+    for i in self.data:
+      next_result = i
+      if complexity and i["complexity"] != complexity:
+        next_result = None
+      if threads and i["threads"] != threads:
+        next_result = None
+      if next_result:
+        result.append(next_result)
+    return result
 
 def main ():
   import argparse
@@ -65,10 +85,16 @@ def main ():
       data.set_tolerance(float(result.group(2)))
       data.set_walltime(float(result.group(3)))
 
-  complexity = data.get_complexity()
-  threads = data.get_threads()
-  for c in complexity:
-    walltime = get_walltime(c)
+  complexity_values = data.get_complexity()
+  thread_values = data.get_threads()
+
+  print(complexity_values)
+
+  for t in thread_values:
+    for c in complexity_values:
+      print(c)
+      walltime = data.get_walltime(complexity = c, threads = t)
+      print("{:d} {:f}".format(c, walltime))
 
 if __name__ == "__main__":
   main()
