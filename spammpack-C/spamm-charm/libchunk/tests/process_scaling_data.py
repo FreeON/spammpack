@@ -184,12 +184,12 @@ def main ():
 
   plt.grid(True)
   plt.gca().invert_xaxis()
-  plt.legend()
+  plt.legend(loc = "upper left")
   plt.xlabel("complexity")
   plt.ylabel("speedup vs. dense")
 
   if options.output:
-    plt.savefig(options.output + ".complexity.png")
+    plt.savefig(options.output + "_complexity.png")
 
   figure2 = plt.figure()
 
@@ -215,12 +215,12 @@ def main ():
       )
 
   plt.grid(True)
-  plt.legend()
+  plt.legend(loc = "upper left")
   plt.xlabel("threads")
   plt.ylabel("speedup vs. dense")
 
   if options.output:
-    plt.savefig(options.output + ".threads.png")
+    plt.savefig(options.output + "_threads.png")
 
   plt.show()
 
