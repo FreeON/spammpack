@@ -2,8 +2,36 @@
 
 class scaling_data:
 
-  def __init__ (self):
+  def __init__ (self, filename):
+    import re
+
     self.data = []
+
+    fd = open(filename)
+    for line in fd:
+      if re.compile("running:").search(line):
+        self.append()
+
+      result = re.compile("lambda = (.*)$").search(line)
+      if result:
+        self.set_lambda(float(result.group(1)))
+
+      result = re.compile("complexity ratio = (.*)$").search(line)
+      if result:
+        self.set_complexity(float(result.group(1)))
+
+      result = re.compile("using ([0-9]*) OpenMP.*tolerance (.*), (.*) seconds").search(line)
+      if result:
+        self.set_threads(int(result.group(1)))
+        self.set_tolerance(float(result.group(2)))
+        self.set_walltime(float(result.group(3)))
+
+    fd.close()
+
+  def info (self):
+    info  = "complexity: " + str(self.get_complexity()) + "\n"
+    info += "thread:     " + str(self.get_threads())
+    return info
 
   def append (self):
     self.data.append({})
@@ -24,25 +52,26 @@ class scaling_data:
     self.data[-1]["walltime"] = T
 
   def __str__ (self):
-    return str(self.data)
+    result = ""
+    for i in self.data:
+      result += str(i) + "\n"
+    return result
 
   def get_complexity (self):
     c = []
     for i in self.data:
       if not i["complexity"] in c:
         c.append(i["complexity"])
-    return c
+    return sorted(c, reverse = True)
 
   def get_threads (self):
     t = []
     for i in self.data:
       if not i["threads"] in t:
         t.append(i["threads"])
-    return t
+    return sorted(t)
 
-  def get_walltime (complexity = None, threads = None):
-    print(complexity)
-    print(threads)
+  def get_walltime (self, complexity = None, threads = None):
     result = []
     for i in self.data:
       next_result = i
@@ -54,47 +83,137 @@ class scaling_data:
         result.append(next_result)
     return result
 
+def flatten_list (l):
+  while True:
+    temp = []
+    isFlat = True
+    for i in l:
+      if type(i) == type([]):
+        isFlat = False
+        for j in i:
+          temp.append(j)
+      else:
+        temp.append(i)
+    l = temp
+    if isFlat:
+      break
+  return l
+
 def main ():
   import argparse
-  import re
+  import matplotlib.pyplot as plt
 
   parser = argparse.ArgumentParser()
 
   parser.add_argument("FILE",
       help = "The output file of the scaling script")
 
+  parser.add_argument("--thread",
+      metavar = "N",
+      help = "Plot only results for N threads",
+      nargs = "+",
+      action = "append")
+
+  parser.add_argument("--complexity",
+      metavar = "C",
+      help = "Plot only results for complexity C",
+      nargs = "+",
+      action = "append")
+
+  parser.add_argument("--type",
+      help = "The plot type (default %(default)s)",
+      choices = [
+        "speedup_complexity",
+        "speedup_thread"
+        ],
+      default = "speedup_complexity")
+
   options = parser.parse_args()
 
-  data = scaling_data()
-  fd = open(options.FILE)
-  for line in fd:
-    if re.compile("running:").search(line):
-      data.append()
+  if options.thread:
+    options.thread = flatten_list(options.thread)
+    print("plotting only threads " + str(options.thread))
 
-    result = re.compile("lambda = (.*)$").search(line)
-    if result:
-      data.set_lambda(float(result.group(1)))
+  if options.complexity:
+    options.complexity = flatten_list(options.complexity)
+    print("plotting only complexity " + str(options.complexity))
 
-    result = re.compile("complexity ratio = (.*)$").search(line)
-    if result:
-      data.set_complexity(float(result.group(1)))
+  data = scaling_data(options.FILE)
+  print(data.info())
 
-    result = re.compile("using ([0-9]*) OpenMP.*tolerance (.*), (.*) seconds").search(line)
-    if result:
-      data.set_threads(int(result.group(1)))
-      data.set_tolerance(float(result.group(2)))
-      data.set_walltime(float(result.group(3)))
+  if options.complexity:
+    complexity_values = sorted(
+        [ float(i) for i in options.complexity ],
+        reverse = True
+        )
+  else:
+    complexity_values = data.get_complexity()
 
-  complexity_values = data.get_complexity()
-  thread_values = data.get_threads()
+  if options.thread:
+    thread_values = sorted([ int(i) for i in options.thread ])
+  else:
+    thread_values = data.get_threads()
 
-  print(complexity_values)
+  # Plot walltime vs. complexity.
+  plt.figure()
 
-  for t in thread_values:
+  if options.type == "speedup_complexity":
+    for t in thread_values:
+      walltime = []
+      for c in complexity_values:
+        query = data.get_walltime(complexity = c, threads = t)
+        if len(query) != 1:
+          raise Exception("can not find result for {:d} threads".format(t))
+        walltime.append(query[0]["walltime"])
+      plt.plot(
+          complexity_values,
+          [ walltime[0]/i for i in walltime ],
+          linestyle = "-",
+          marker = "o",
+          label = "{:d} threads".format(t)
+          )
+
+    plt.plot(
+        complexity_values,
+        [ 1/i for i in complexity_values ],
+        label = "ideal"
+        )
+
+    plt.gca().invert_xaxis()
+    plt.legend()
+    plt.xlabel("complexity")
+    plt.ylabel("speedup vs. dense")
+    plt.show()
+
+  if options.type == "speedup_thread":
     for c in complexity_values:
-      print(c)
-      walltime = data.get_walltime(complexity = c, threads = t)
-      print("{:d} {:f}".format(c, walltime))
+      walltime = []
+      for t in thread_values:
+        query = data.get_walltime(complexity = c, threads = t)
+        if len(query) != 1:
+          raise Exception("can not find result for {:d} threads".format(t))
+        walltime.append(query[0]["walltime"])
+      plt.plot(
+          thread_values,
+          [ walltime[0]/i for i in walltime ],
+          linestyle = "-",
+          marker = "o",
+          label = "complexity {:1.3f}".format(c)
+          )
+
+    plt.plot(
+        thread_values,
+        thread_values,
+        label = "ideal"
+        )
+
+    plt.legend()
+    plt.xlabel("threads")
+    plt.ylabel("speedup vs. dense")
+    plt.show()
+
+  else:
+    raise Exception("unknown plot type")
 
 if __name__ == "__main__":
   main()
