@@ -1,10 +1,3 @@
-running: chunk_multiply -N 4096 -b 128 -T exp_decay -l 0.994 -c -v --tolerance 0
-allocated A_dense, sizeof(A_dense) = 134217728 bytes
-exponential decay, lambda = 9.940000e-01
-A[1][N]/A[1][1] = 1.982641e-11
-random matrix, norm_2 = 3.892513e+05, norm_2 of chunk = 3.892513e+05
-done multiplying using 48 OpenMP threads a 4096x4096 chunk with 128x128 basic blocks, tolerance 0.00e+00, 1.18 seconds
-product complexity = 32768 out of 32768, complexity ratio = 1.000
 running: chunk_multiply -N 8192 -b 128 -T exp_decay -l 0.994 -c -v --tolerance 0
 allocated A_dense, sizeof(A_dense) = 536870912 bytes
 exponential decay, lambda = 9.940000e-01

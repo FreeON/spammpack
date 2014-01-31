@@ -108,6 +108,14 @@ def main ():
   parser.add_argument("FILE",
       help = "The output file of the scaling script")
 
+  parser.add_argument("--output",
+      help = "Save figures into FILEBASE")
+
+  parser.add_argument("--print",
+      help = "Print the data file",
+      default = False,
+      action = "store_true")
+
   parser.add_argument("--thread",
       metavar = "N",
       help = "Plot only results for N threads",
@@ -119,14 +127,6 @@ def main ():
       help = "Plot only results for complexity C",
       nargs = "+",
       action = "append")
-
-  parser.add_argument("--type",
-      help = "The plot type (default %(default)s)",
-      choices = [
-        "speedup_complexity",
-        "speedup_thread"
-        ],
-      default = "speedup_complexity")
 
   options = parser.parse_args()
 
@@ -140,6 +140,9 @@ def main ():
 
   data = scaling_data(options.FILE)
   print(data.info())
+
+  if options.print:
+    print(str(data))
 
   if options.complexity:
     complexity_values = sorted(
@@ -155,65 +158,71 @@ def main ():
     thread_values = data.get_threads()
 
   # Plot walltime vs. complexity.
-  plt.figure()
+  figure1 = plt.figure()
 
-  if options.type == "speedup_complexity":
-    for t in thread_values:
-      walltime = []
-      for c in complexity_values:
-        query = data.get_walltime(complexity = c, threads = t)
-        if len(query) != 1:
-          raise Exception("can not find result for {:d} threads".format(t))
-        walltime.append(query[0]["walltime"])
-      plt.plot(
-          complexity_values,
-          [ walltime[0]/i for i in walltime ],
-          linestyle = "-",
-          marker = "o",
-          label = "{:d} threads".format(t)
-          )
-
-    plt.plot(
-        complexity_values,
-        [ 1/i for i in complexity_values ],
-        label = "ideal"
-        )
-
-    plt.gca().invert_xaxis()
-    plt.legend()
-    plt.xlabel("complexity")
-    plt.ylabel("speedup vs. dense")
-    plt.show()
-
-  if options.type == "speedup_thread":
+  for t in thread_values:
+    walltime = []
     for c in complexity_values:
-      walltime = []
-      for t in thread_values:
-        query = data.get_walltime(complexity = c, threads = t)
-        if len(query) != 1:
-          raise Exception("can not find result for {:d} threads".format(t))
-        walltime.append(query[0]["walltime"])
-      plt.plot(
-          thread_values,
-          [ walltime[0]/i for i in walltime ],
-          linestyle = "-",
-          marker = "o",
-          label = "complexity {:1.3f}".format(c)
-          )
-
-    plt.plot(
-        thread_values,
-        thread_values,
-        label = "ideal"
+      query = data.get_walltime(complexity = c, threads = t)
+      if len(query) != 1:
+        raise Exception("can not find result for "
+        + "complexity {:1.3f} and {:d} threads".format(c, t))
+      walltime.append(query[0]["walltime"])
+    plt.loglog(
+        complexity_values,
+        [ walltime[0]/i for i in walltime ],
+        linestyle = "-",
+        marker = "o",
+        label = "{:d} threads".format(t)
         )
 
-    plt.legend()
-    plt.xlabel("threads")
-    plt.ylabel("speedup vs. dense")
-    plt.show()
+  plt.loglog(
+      complexity_values,
+      [ 1/i for i in complexity_values ],
+      label = "ideal"
+      )
 
-  else:
-    raise Exception("unknown plot type")
+  plt.grid(True)
+  plt.gca().invert_xaxis()
+  plt.legend()
+  plt.xlabel("complexity")
+  plt.ylabel("speedup vs. dense")
+
+  if options.output:
+    plt.savefig(options.output + ".complexity.png")
+
+  figure2 = plt.figure()
+
+  for c in complexity_values:
+    walltime = []
+    for t in thread_values:
+      query = data.get_walltime(complexity = c, threads = t)
+      if len(query) != 1:
+        raise Exception("can not find result for {:d} threads".format(t))
+      walltime.append(query[0]["walltime"])
+    plt.loglog(
+        thread_values,
+        [ walltime[0]/i for i in walltime ],
+        linestyle = "-",
+        marker = "o",
+        label = "complexity {:1.3f}".format(c)
+        )
+
+  plt.loglog(
+      thread_values,
+      thread_values,
+      label = "ideal"
+      )
+
+  plt.grid(True)
+  plt.legend()
+  plt.xlabel("threads")
+  plt.ylabel("speedup vs. dense")
+
+  if options.output:
+    plt.savefig(options.output + ".threads.png")
+
+  plt.show()
 
 if __name__ == "__main__":
   main()
