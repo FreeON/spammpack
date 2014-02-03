@@ -168,21 +168,14 @@ def main ():
     if options.print:
       print(str(data))
 
-    if options.complexity:
-      complexity_values = sorted(
-          [ float(i) for i in options.complexity ],
-          reverse = True
-          )
-    else:
-      complexity_values = data.get_complexity()
+    # Plot walltime vs. complexity.
+    figure1 = plt.figure()
 
+    complexity_values = data.get_complexity()
     if options.thread:
       thread_values = sorted([ int(i) for i in options.thread ])
     else:
       thread_values = data.get_threads()
-
-    # Plot walltime vs. complexity.
-    figure1 = plt.figure()
 
     for t in thread_values:
       walltime = []
@@ -208,6 +201,8 @@ def main ():
         )
 
     plt.grid(True)
+    plt.xlim([min(complexity_values), max(complexity_values)])
+    plt.ylim([1/max(complexity_values), 1/min(complexity_values)])
     plt.gca().invert_xaxis()
     plt.legend(loc = "upper left")
     plt.xlabel("complexity")
@@ -217,7 +212,17 @@ def main ():
     if options.output:
       plt.savefig(options.output + "_complexity.png")
 
+    # Plot walltime vs. threads.
     figure2 = plt.figure()
+
+    if options.complexity:
+      complexity_values = sorted(
+          [ float(i) for i in options.complexity ],
+          reverse = True
+          )
+    else:
+      complexity_values = data.get_complexity()
+    thread_values = data.get_threads()
 
     for c in complexity_values:
       walltime = []
@@ -257,6 +262,8 @@ def main ():
 
     plt.grid(True)
     plt.legend(loc = "upper left")
+    plt.xlim([min(thread_values), max(thread_values)])
+    plt.ylim([min(thread_values), max(thread_values)])
     plt.xlabel("threads")
     plt.ylabel("speedup vs. dense")
     plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
