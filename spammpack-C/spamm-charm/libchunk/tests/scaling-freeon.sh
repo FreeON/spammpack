@@ -3,8 +3,8 @@
 #N=8192
 #B=128
 N=4096
-B=32
-REPEAT=10
+B=64
+REPEAT=5
 
 OPTIONS=(
     "-N ${N}"
@@ -17,7 +17,7 @@ OPTIONS=(
     )
 
 TOLERANCE=( 0 1e-8 1e-7 1e-6 1e-5 1e-4 1e-3 )
-THREADS=( 48 1 2 4 8 12 16 20 24 28 32 36 40 )
+THREADS=( 48 1 24 2 4 8 12 16 20 28 32 36 40 )
 
 for tolerance in ${TOLERANCE[@]}; do
   for P in ${THREADS[@]}; do

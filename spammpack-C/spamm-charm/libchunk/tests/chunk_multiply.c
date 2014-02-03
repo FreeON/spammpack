@@ -304,8 +304,11 @@ main (int argc, char **argv)
     double *C_dense = calloc(SQUARE(N_chunk), sizeof(double));
     double alpha = 1.0;
     double beta = 1.0;
-    DGEMM("N", "N", &N_chunk, &N_chunk, &N_chunk, &alpha, A_dense, &N_chunk,
-        A_dense, &N_chunk, &beta, C_dense, &N_chunk);
+    for(int i = 0; i < repeat; i++)
+    {
+      DGEMM("N", "N", &N_chunk, &N_chunk, &N_chunk, &alpha, A_dense, &N_chunk,
+          A_dense, &N_chunk, &beta, C_dense, &N_chunk);
+    }
     struct timespec end_time;
     clock_gettime(CLOCKTYPE, &end_time);
 

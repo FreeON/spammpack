@@ -4,9 +4,13 @@ module purge
 module load intel
 module load mkl
 
+MKL_CPPFLAGS="-I${MKLROOT}/include"
+#MKL_CFLAGS="-mkl=sequential"
+MKL_CFLAGS="-mkl=parallel"
+
 ./configure \
   --enable-block-multiply=blas \
   --disable-assert \
   CC=icc \
-  CPPFLAGS="-I${MKLROOT}/include" \
-  LDFLAGS="-L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -lm"
+  CPPFLAGS=${MKL_CPPFLAGS} \
+  CFLAGS=${MKL_CFLAGS}
