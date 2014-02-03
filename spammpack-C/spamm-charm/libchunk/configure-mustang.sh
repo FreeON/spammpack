@@ -5,8 +5,12 @@ module load intel
 module load mkl
 
 MKL_CPPFLAGS="-I${MKLROOT}/include"
-#MKL_CFLAGS="-mkl=sequential"
-MKL_CFLAGS="-mkl=parallel"
+
+if [[ $1 == "parallel" ]]; then
+  MKL_CFLAGS="-mkl=parallel"
+else
+  MKL_CFLAGS="-mkl=sequential"
+fi
 
 ./configure \
   --enable-block-multiply=blas \
