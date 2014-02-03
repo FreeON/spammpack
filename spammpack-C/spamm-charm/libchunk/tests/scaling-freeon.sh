@@ -3,13 +3,15 @@
 #N=8192
 #B=128
 N=4096
-B=64
+B=32
+REPEAT=10
 
 OPTIONS=(
     "-N ${N}"
     "-b ${B}"
     "-T exp_decay"
     "-l 0.994"
+    "-R ${REPEAT}"
     "-c"
     "-v"
     )

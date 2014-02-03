@@ -26,6 +26,7 @@ main (int argc, char **argv)
   int N = 1024;
   int N_chunk = 1024;
   int N_basic = 4;
+  int repeat = 1;
 
   /* Decay constant for large matrices. */
   double lambda = 0.995;
@@ -45,7 +46,7 @@ main (int argc, char **argv)
   double tolerance = 0;
 
   int c;
-  const char short_options[] = "hT:ct:N:b:pvrl:d";
+  const char short_options[] = "hT:ct:N:b:pvrl:dR:";
   const struct option long_options[] = {
     { "help", no_argument, NULL, 'h' },
     { "type", required_argument, NULL, 'T' },
@@ -58,6 +59,7 @@ main (int argc, char **argv)
     { "tree-only", no_argument, NULL, 'r' },
     { "lambda", required_argument, NULL, 'l' },
     { "dense", no_argument, NULL, 'd' },
+    { "repeat", required_argument, NULL, 'R' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -80,6 +82,7 @@ main (int argc, char **argv)
         printf("{ -r | --tree-only }      Skip basic block products\n");
         printf("{ -l | --lambda } LAMBDA  The decay constant\n");
         printf("{ -d | --dense }          Multiply the matrix with a dense method for timing\n");
+        printf("{ -R | --repeat } N       Repeat multiply N times\n");
         exit(0);
         break;
 
@@ -146,6 +149,15 @@ main (int argc, char **argv)
 
       case 'd':
         test_dense_product = 1;
+        break;
+
+      case 'R':
+        repeat = strtol(optarg, NULL, 10);
+        if(repeat < 1)
+        {
+          printf("repeat can not be less than 1\n");
+          exit(1);
+        }
         break;
 
       default:
@@ -252,7 +264,10 @@ main (int argc, char **argv)
 
   struct timespec start_time;
   clock_gettime(CLOCKTYPE, &start_time);
-  chunk_multiply(tolerance, A, A, C, tree_only);
+  for(int i = 0; i < repeat; i++)
+  {
+    chunk_multiply(tolerance, A, A, C, tree_only);
+  }
   struct timespec end_time;
   clock_gettime(CLOCKTYPE, &end_time);
 
