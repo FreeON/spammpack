@@ -6,9 +6,17 @@ class scaling_data:
     import re
 
     self.data = []
+    self.N_chunk = 0
+    self.N_basic = 0
 
     fd = open(filename)
     for line in fd:
+      if self.N_chunk == 0:
+        result = re.compile("^running.* -N ([0-9]+) -b ([0-9]*) ").search(line)
+        if result:
+          self.N_chunk = int(result.group(1))
+          self.N_basic = int(result.group(2))
+
       if re.compile("running:").search(line):
         self.append()
 
@@ -29,7 +37,9 @@ class scaling_data:
     fd.close()
 
   def info (self):
-    info  = "complexity: " + str(self.get_complexity()) + "\n"
+    info = ""
+    info += "N = {:d}, N_basic = {:d}\n".format(self.N_chunk, self.N_basic)
+    info += "complexity: " + str(self.get_complexity()) + "\n"
     info += "thread:     " + str(self.get_threads())
     return info
 
@@ -106,7 +116,8 @@ def main ():
   parser = argparse.ArgumentParser()
 
   parser.add_argument("FILE",
-      help = "The output file of the scaling script")
+      help = "The output file of the scaling script",
+      nargs = "+")
 
   parser.add_argument("--output",
       help = "Save figures into FILEBASE")
@@ -138,91 +149,94 @@ def main ():
     options.complexity = flatten_list(options.complexity)
     print("plotting only complexity " + str(options.complexity))
 
-  data = scaling_data(options.FILE)
-  print(data.info())
+  for filename in options.FILE:
+    data = scaling_data(filename)
+    print(data.info())
 
-  if options.print:
-    print(str(data))
+    if options.print:
+      print(str(data))
 
-  if options.complexity:
-    complexity_values = sorted(
-        [ float(i) for i in options.complexity ],
-        reverse = True
-        )
-  else:
-    complexity_values = data.get_complexity()
+    if options.complexity:
+      complexity_values = sorted(
+          [ float(i) for i in options.complexity ],
+          reverse = True
+          )
+    else:
+      complexity_values = data.get_complexity()
 
-  if options.thread:
-    thread_values = sorted([ int(i) for i in options.thread ])
-  else:
-    thread_values = data.get_threads()
+    if options.thread:
+      thread_values = sorted([ int(i) for i in options.thread ])
+    else:
+      thread_values = data.get_threads()
 
-  # Plot walltime vs. complexity.
-  figure1 = plt.figure()
+    # Plot walltime vs. complexity.
+    figure1 = plt.figure()
 
-  for t in thread_values:
-    walltime = []
-    for c in complexity_values:
-      query = data.get_walltime(complexity = c, threads = t)
-      if len(query) != 1:
-        raise Exception("can not find result for "
-        + "complexity {:1.3f} and {:d} threads".format(c, t))
-      walltime.append(query[0]["walltime"])
+    for t in thread_values:
+      walltime = []
+      for c in complexity_values:
+        query = data.get_walltime(complexity = c, threads = t)
+        if len(query) != 1:
+          raise Exception("can not find result for "
+          + "complexity {:1.3f} and {:d} threads".format(c, t))
+        walltime.append(query[0]["walltime"])
+      plt.loglog(
+          complexity_values,
+          [ walltime[0]/i for i in walltime ],
+          linestyle = "-",
+          marker = "o",
+          label = "{:d} threads".format(t)
+          )
+
     plt.loglog(
         complexity_values,
-        [ walltime[0]/i for i in walltime ],
-        linestyle = "-",
-        marker = "o",
-        label = "{:d} threads".format(t)
+        [ 1/i for i in complexity_values ],
+        color = "black",
+        label = "ideal"
         )
 
-  plt.loglog(
-      complexity_values,
-      [ 1/i for i in complexity_values ],
-      color = "black",
-      label = "ideal"
-      )
+    plt.grid(True)
+    plt.gca().invert_xaxis()
+    plt.legend(loc = "upper left")
+    plt.xlabel("complexity")
+    plt.ylabel("speedup vs. dense")
+    plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
-  plt.grid(True)
-  plt.gca().invert_xaxis()
-  plt.legend(loc = "upper left")
-  plt.xlabel("complexity")
-  plt.ylabel("speedup vs. dense")
+    if options.output:
+      plt.savefig(options.output + "_complexity.png")
 
-  if options.output:
-    plt.savefig(options.output + "_complexity.png")
+    figure2 = plt.figure()
 
-  figure2 = plt.figure()
+    for c in complexity_values:
+      walltime = []
+      for t in thread_values:
+        query = data.get_walltime(complexity = c, threads = t)
+        if len(query) != 1:
+          raise Exception("can not find result for {:d} threads".format(t))
+        walltime.append(query[0]["walltime"])
+      plt.loglog(
+          thread_values,
+          [ walltime[0]/i for i in walltime ],
+          linestyle = "-",
+          marker = "o",
+          label = "complexity {:1.3f}".format(c)
+          )
 
-  for c in complexity_values:
-    walltime = []
-    for t in thread_values:
-      query = data.get_walltime(complexity = c, threads = t)
-      if len(query) != 1:
-        raise Exception("can not find result for {:d} threads".format(t))
-      walltime.append(query[0]["walltime"])
     plt.loglog(
         thread_values,
-        [ walltime[0]/i for i in walltime ],
-        linestyle = "-",
-        marker = "o",
-        label = "complexity {:1.3f}".format(c)
+        thread_values,
+        color = "black",
+        label = "ideal"
         )
 
-  plt.loglog(
-      thread_values,
-      thread_values,
-      color = "black",
-      label = "ideal"
-      )
+    plt.grid(True)
+    plt.legend(loc = "upper left")
+    plt.xlabel("threads")
+    plt.ylabel("speedup vs. dense")
+    plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
-  plt.grid(True)
-  plt.legend(loc = "upper left")
-  plt.xlabel("threads")
-  plt.ylabel("speedup vs. dense")
-
-  if options.output:
-    plt.savefig(options.output + "_threads.png")
+    if options.output:
+      plt.savefig(options.output + "_threads.png")
 
   plt.show()
 
