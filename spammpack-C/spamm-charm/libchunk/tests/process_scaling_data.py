@@ -179,6 +179,7 @@ def main ():
   plt.loglog(
       complexity_values,
       [ 1/i for i in complexity_values ],
+      color = "black",
       label = "ideal"
       )
 
@@ -211,6 +212,7 @@ def main ():
   plt.loglog(
       thread_values,
       thread_values,
+      color = "black",
       label = "ideal"
       )
 
