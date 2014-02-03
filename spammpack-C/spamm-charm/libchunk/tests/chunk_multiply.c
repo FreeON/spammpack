@@ -262,40 +262,6 @@ main (int argc, char **argv)
   printf("random matrix, norm_2 = %e, norm_2 of chunk = %e\n",
       norm_2, chunk_get_norm(A));
 
-  struct timespec start_time;
-  clock_gettime(CLOCKTYPE, &start_time);
-  for(int i = 0; i < repeat; i++)
-  {
-    chunk_multiply(tolerance, A, A, C, tree_only);
-  }
-  struct timespec end_time;
-  clock_gettime(CLOCKTYPE, &end_time);
-
-#ifdef _OPENMP
-#pragma omp parallel
-  {
-#pragma omp master
-    {
-      printf("done multiplying using %d OpenMP threads a %dx%d chunk with %dx%d basic blocks, "
-          "tolerance %1.2e, %1.2f seconds\n",
-          omp_get_num_threads(),
-          N_chunk, N_chunk,
-          N_basic, N_basic,
-          tolerance,
-          (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-          (start_time.tv_sec+start_time.tv_nsec/1.0e9));
-    }
-  }
-#else
-  printf("done multiplying in serial a %dx%d chunk with %dx%d basic blocks, "
-      "tolerance %1.2e, %1.2f seconds\n",
-      N_chunk, N_chunk,
-      N_basic, N_basic,
-      tolerance,
-      (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-      (start_time.tv_sec+start_time.tv_nsec/1.0e9));
-#endif
-
   if(test_dense_product)
   {
 #ifdef DGEMM
@@ -334,6 +300,43 @@ main (int argc, char **argv)
 #endif
 #else
     printf("not configured with dgemm()\n");
+#endif
+  }
+
+  else
+  {
+    struct timespec start_time;
+    clock_gettime(CLOCKTYPE, &start_time);
+    for(int i = 0; i < repeat; i++)
+    {
+      chunk_multiply(tolerance, A, A, C, tree_only);
+    }
+    struct timespec end_time;
+    clock_gettime(CLOCKTYPE, &end_time);
+
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#pragma omp master
+      {
+        printf("done multiplying using %d OpenMP threads a %dx%d chunk with %dx%d basic blocks, "
+            "tolerance %1.2e, %1.2f seconds\n",
+            omp_get_num_threads(),
+            N_chunk, N_chunk,
+            N_basic, N_basic,
+            tolerance,
+            (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
+            (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+      }
+    }
+#else
+    printf("done multiplying in serial a %dx%d chunk with %dx%d basic blocks, "
+        "tolerance %1.2e, %1.2f seconds\n",
+        N_chunk, N_chunk,
+        N_basic, N_basic,
+        tolerance,
+        (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
+        (start_time.tv_sec+start_time.tv_nsec/1.0e9));
 #endif
   }
 
