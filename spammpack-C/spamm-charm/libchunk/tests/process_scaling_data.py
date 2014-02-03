@@ -28,11 +28,18 @@ class scaling_data:
       if result:
         self.set_complexity(float(result.group(1)))
 
-      result = re.compile("using ([0-9]*) OpenMP.*tolerance (.*), (.*) seconds").search(line)
+      result = re.compile("done multiplying using ([0-9]*) OpenMP.*tolerance (.*), (.*) seconds").search(line)
       if result:
         self.set_threads(int(result.group(1)))
         self.set_tolerance(float(result.group(2)))
+        self.set_dense(False)
         self.set_walltime(float(result.group(3)))
+
+      result = re.compile("done multiplying dense using ([0-9]*) OpenMP.* (.*) seconds").search(line)
+      if result:
+        self.set_threads(int(result.group(1)))
+        self.set_dense(True)
+        self.set_walltime(float(result.group(2)))
 
     fd.close()
 
@@ -45,6 +52,9 @@ class scaling_data:
 
   def append (self):
     self.data.append({})
+
+  def set_dense (self, isDense):
+    self.data[-1]["isDense"] = isDense
 
   def set_lambda (self, l):
     self.data[-1]["lambda"] = l
@@ -81,13 +91,15 @@ class scaling_data:
         t.append(i["threads"])
     return sorted(t)
 
-  def get_walltime (self, complexity = None, threads = None):
+  def get_walltime (self, isDense = False, complexity = None, threads = None):
     result = []
     for i in self.data:
       next_result = i
       if complexity and i["complexity"] != complexity:
         next_result = None
       if threads and i["threads"] != threads:
+        next_result = None
+      if isDense != i["isDense"]:
         next_result = None
       if next_result:
         result.append(next_result)
@@ -221,6 +233,20 @@ def main ():
           marker = "o",
           label = "complexity {:1.3f}".format(c)
           )
+
+    walltime = []
+    for t in thread_values:
+      query = data.get_walltime(isDense = True, threads = t)
+      if len(query) != 1:
+        raise Exception("can not find result for {:d} threads".format(t))
+      walltime.append(query[0]["walltime"])
+    plt.loglog(
+        thread_values,
+        [ walltime[0]/i for i in walltime ],
+        linestyle = "-",
+        marker = "*",
+        label = "dense"
+        )
 
     plt.loglog(
         thread_values,
