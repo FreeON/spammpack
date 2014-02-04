@@ -14,6 +14,7 @@
 #if defined(BLOCK_SLEEP) || defined(CHUNK_BLOCK_NO_WORK)
 #include <time.h>
 #endif
+#include <emmintrin.h>
 
 /** Calculate a row-major offset. */
 #define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
@@ -102,43 +103,24 @@ chunk_block_multiply_general (const double *const restrict A,
 #endif
 }
 
-/** A basic matrix product. The matrix elements are assumed to be in row-major
- * order.
- *
- * @param A The pointer to matrix A.
- * @param B The pointer to matrix B.
- * @param C The pointer to matrix C.
- */
 void
-chunk_block_multiply_4_x_4 (const double *const restrict A,
+chunk_block_multiply_4x4 (const double *const restrict A,
+    const double *const restrict B,
+    double *const restrict C);
+
+void
+chunk_block_multiply_4x4_2 (const double *const restrict A,
     const double *const restrict B,
     double *const restrict C)
 {
-  __assume_aligned(A, 64);
-  __assume_aligned(B, 64);
-  __assume_aligned(C, 64);
-
-  double A_dilated[4*4*4] __attribute__((aligned(64)));
-
-  for(int i = 0; i < 4; i++)
+  for(int i = 0; i < 16; i += 4)
   {
     for(int j = 0; j < 4; j++)
     {
-      A_dilated[COLUMN_MAJOR(i, j, 4)+0] = A[COLUMN_MAJOR(i, j, 4)];
-      A_dilated[COLUMN_MAJOR(i, j, 4)+1] = A[COLUMN_MAJOR(i, j, 4)];
-      A_dilated[COLUMN_MAJOR(i, j, 4)+2] = A[COLUMN_MAJOR(i, j, 4)];
-      A_dilated[COLUMN_MAJOR(i, j, 4)+3] = A[COLUMN_MAJOR(i, j, 4)];
-    }
-  }
-
-  for(int i = 0; i < 4; i++)
-  {
-    for(int j = 0; j < 4; j++)
-    {
-      for(int k = 0; k < 4; k++)
-      {
-        C[COLUMN_MAJOR(i, j, 4)] += A[COLUMN_MAJOR(i, k, 4)] * B[COLUMN_MAJOR(k, j, 4)];
-      }
+      C[i+j] += A[j+0]*B[i+0]
+        + A[j+ 4]*B[i+1]
+        + A[j+ 8]*B[i+2]
+        + A[j+12]*B[i+3];
     }
   }
 }
@@ -158,5 +140,6 @@ chunk_block_multiply (const double *const restrict A,
     const int N)
 {
   //chunk_block_multiply_general(A, B, C, N);
-  chunk_block_multiply_4_x_4(A, B, C);
+  //chunk_block_multiply_4x4(A, B, C);
+  chunk_block_multiply_4x4_2(A, B, C);
 }

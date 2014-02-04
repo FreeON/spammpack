@@ -9,6 +9,9 @@ AM_SILENT_RULES([yes])
 # Find a C compiler.
 AC_PROG_CC_STDC
 
+# Find assembler.
+AM_PROG_AS
+
 # Turn on asserts.
 AC_HEADER_ASSERT
 

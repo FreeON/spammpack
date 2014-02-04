@@ -7,7 +7,8 @@ libchunk_la_SOURCES = \
 	chunk_block.c \
 	chunk_tiled.c \
 	chunk_tree.c \
-	lapack_interface.h
+	lapack_interface.h \
+	matrix_4x4.S
 
 include_HEADERS = \
 	chunk.h \
