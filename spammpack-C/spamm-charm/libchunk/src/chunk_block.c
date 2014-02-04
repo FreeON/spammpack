@@ -30,7 +30,7 @@
  * @param N The size of the matrices.
  */
 void
-chunk_block_multiply (const double *const restrict A,
+chunk_block_multiply_general (const double *const restrict A,
     const double *const restrict B,
     double *const restrict C,
     const int N)
@@ -100,4 +100,63 @@ chunk_block_multiply (const double *const restrict A,
 #endif
 
 #endif
+}
+
+/** A basic matrix product. The matrix elements are assumed to be in row-major
+ * order.
+ *
+ * @param A The pointer to matrix A.
+ * @param B The pointer to matrix B.
+ * @param C The pointer to matrix C.
+ */
+void
+chunk_block_multiply_4_x_4 (const double *const restrict A,
+    const double *const restrict B,
+    double *const restrict C)
+{
+  __assume_aligned(A, 64);
+  __assume_aligned(B, 64);
+  __assume_aligned(C, 64);
+
+  double A_dilated[4*4*4] __attribute__((aligned(64)));
+
+  for(int i = 0; i < 4; i++)
+  {
+    for(int j = 0; j < 4; j++)
+    {
+      A_dilated[COLUMN_MAJOR(i, j, 4)+0] = A[COLUMN_MAJOR(i, j, 4)];
+      A_dilated[COLUMN_MAJOR(i, j, 4)+1] = A[COLUMN_MAJOR(i, j, 4)];
+      A_dilated[COLUMN_MAJOR(i, j, 4)+2] = A[COLUMN_MAJOR(i, j, 4)];
+      A_dilated[COLUMN_MAJOR(i, j, 4)+3] = A[COLUMN_MAJOR(i, j, 4)];
+    }
+  }
+
+  for(int i = 0; i < 4; i++)
+  {
+    for(int j = 0; j < 4; j++)
+    {
+      for(int k = 0; k < 4; k++)
+      {
+        C[COLUMN_MAJOR(i, j, 4)] += A[COLUMN_MAJOR(i, k, 4)] * B[COLUMN_MAJOR(k, j, 4)];
+      }
+    }
+  }
+}
+
+/** A basic matrix product. The matrix elements are assumed to be in row-major
+ * order.
+ *
+ * @param A The pointer to matrix A.
+ * @param B The pointer to matrix B.
+ * @param C The pointer to matrix C.
+ * @param N The size of the matrices.
+ */
+void
+chunk_block_multiply (const double *const restrict A,
+    const double *const restrict B,
+    double *const restrict C,
+    const int N)
+{
+  //chunk_block_multiply_general(A, B, C, N);
+  chunk_block_multiply_4_x_4(A, B, C);
 }

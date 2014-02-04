@@ -1,7 +1,7 @@
 #N=8192
 #B=128
 N=4096
-B=64
+B=4
 REPEAT=5
 
 OPTIONS=(

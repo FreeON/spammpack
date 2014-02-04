@@ -13,7 +13,7 @@ else
 fi
 
 ./configure \
-  --enable-block-multiply=blas \
+  --enable-block-multiply=block \
   --disable-assert \
   CC=icc \
   CPPFLAGS=${MKL_CPPFLAGS} \
