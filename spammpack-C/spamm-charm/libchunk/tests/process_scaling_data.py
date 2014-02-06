@@ -174,7 +174,7 @@ def main ():
       print(str(data))
 
     # Plot walltime vs. complexity.
-    figure1 = plt.figure()
+    plt.figure()
 
     complexity_values = data.get_complexity()
     if options.thread:
@@ -219,7 +219,7 @@ def main ():
       plt.savefig(options.output + "_complexity.png")
 
     # Plot walltime vs. threads.
-    figure2 = plt.figure()
+    figure = plt.figure()
 
     if options.complexity:
       complexity_values = sorted(
@@ -279,7 +279,7 @@ def main ():
       plt.savefig(options.output + "_threads.png")
 
     # Plot parallel efficiency vs. threads.
-    figure3 = plt.figure()
+    figure = plt.figure()
 
     if options.complexity:
       complexity_values = sorted(
