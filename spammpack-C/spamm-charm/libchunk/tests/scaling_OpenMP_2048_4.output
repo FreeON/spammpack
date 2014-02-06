@@ -1,0 +1,735 @@
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.994 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.940000e-01
+A[1][N]/A[1][1] = 4.466104e-06
+random matrix, norm_2 = 1.909570e+05, norm_2 of chunk = 1.909570e+05
+done multiplying dense using 48 OpenMP threads a 2048x2048 chunk, 0.87 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 48 OpenMP threads a 2048x2048 chunk, 0.90 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 1 OpenMP threads a 2048x2048 chunk, 13.77 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 24 OpenMP threads a 2048x2048 chunk, 1.65 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 2 OpenMP threads a 2048x2048 chunk, 7.07 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 4 OpenMP threads a 2048x2048 chunk, 4.02 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 8 OpenMP threads a 2048x2048 chunk, 2.61 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 12 OpenMP threads a 2048x2048 chunk, 2.06 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 16 OpenMP threads a 2048x2048 chunk, 1.70 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 20 OpenMP threads a 2048x2048 chunk, 1.00 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 28 OpenMP threads a 2048x2048 chunk, 1.12 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 32 OpenMP threads a 2048x2048 chunk, 1.49 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 36 OpenMP threads a 2048x2048 chunk, 0.74 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --dense
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying dense using 40 OpenMP threads a 2048x2048 chunk, 0.88 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 48 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 11.91 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 1 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 421.16 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 24 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 20.03 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 2 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 228.78 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 4 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 118.01 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 8 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 58.49 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 12 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 39.50 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 16 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 32.03 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 20 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 24.23 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 28 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 17.80 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 32 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 15.24 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 36 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 14.10 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 0
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 40 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 0.00e+00, 12.60 seconds
+product complexity = 134217728 out of 134217728, complexity ratio = 1.000
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 48 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 10.64 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 1 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 348.79 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 24 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 17.30 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 2 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 195.36 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 4 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 99.88 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 8 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 50.54 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 12 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 33.66 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 16 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 26.11 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 20 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 20.82 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 28 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 15.01 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 32 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 13.21 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 36 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 11.86 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-8
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 40 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-08, 10.96 seconds
+product complexity = 112061232 out of 134217728, complexity ratio = 0.835
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 48 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 9.20 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 1 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 322.97 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 24 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 16.35 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 2 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 178.01 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 4 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 92.01 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 8 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 46.85 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 12 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 30.39 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 16 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 23.28 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 20 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 19.21 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 28 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 13.76 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 32 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 12.24 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 36 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 11.73 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-7
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 40 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-07, 10.18 seconds
+product complexity = 102376314 out of 134217728, complexity ratio = 0.763
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 48 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 7.99 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 1 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 280.21 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 24 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 14.36 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 2 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 156.29 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 4 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 81.11 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 8 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 40.54 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 12 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 27.86 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 16 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 20.85 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 20 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 16.94 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 28 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 13.15 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 32 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 10.71 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 36 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 11.22 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-6
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 40 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-06, 9.85 seconds
+product complexity = 88904440 out of 134217728, complexity ratio = 0.662
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 48 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 7.17 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 1 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 234.22 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 24 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 12.06 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 2 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 130.03 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 4 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 71.69 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 8 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 33.04 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 12 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 22.96 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 16 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 17.04 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 20 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 14.18 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 28 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 10.42 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 32 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 8.96 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 36 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 8.16 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-5
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 40 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-05, 7.33 seconds
+product complexity = 73012778 out of 134217728, complexity ratio = 0.544
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 48 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 5.86 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 1 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 182.65 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 24 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 9.65 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 2 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 102.02 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 4 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 52.45 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 8 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 26.59 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 12 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 17.65 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 16 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 13.61 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 20 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 11.17 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 28 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 8.01 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 32 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 7.66 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 36 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 6.52 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-4
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 40 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-04, 6.41 seconds
+product complexity = 55971794 out of 134217728, complexity ratio = 0.417
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 48 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 4.22 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 1 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 129.58 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 24 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 7.61 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 2 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 78.66 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 4 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 37.06 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 8 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 18.73 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 12 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 12.95 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 16 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 10.15 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 20 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 8.65 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 28 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 6.03 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 32 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 5.62 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 36 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 5.45 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
+running: chunk_multiply -N 2048 -b 4 -T exp_decay -l 0.99 -R 5 -c -v --tolerance 1e-3
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+exponential decay, lambda = 9.900000e-01
+A[1][N]/A[1][1] = 1.162100e-09
+random matrix, norm_2 = 1.162483e+05, norm_2 of chunk = 1.162483e+05
+done multiplying using 40 OpenMP threads a 2048x2048 chunk with 4x4 basic blocks, tolerance 1.00e-03, 4.94 seconds
+product complexity = 39130870 out of 134217728, complexity ratio = 0.292
