@@ -2,7 +2,7 @@
 
 . ./scaling-freeon-common.sh
 
-TOLERANCE=( 0 1e-8 1e-7 1e-6 1e-5 1e-4 1e-3 )
+TOLERANCE=( 0 1e-3 1e-4 1e-5 1e-6 1e-7 1e-8 )
 
 for tolerance in ${TOLERANCE[@]}; do
   for P in ${THREADS[@]}; do
