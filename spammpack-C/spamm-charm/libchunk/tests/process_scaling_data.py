@@ -131,6 +131,11 @@ def main ():
       help = "The output file of the scaling script",
       nargs = "+")
 
+  parser.add_argument("--no-title",
+      help = "Do not add a title to the graphs",
+      default = False,
+      action = "store_true")
+
   parser.add_argument("--output",
       help = "Save figures into FILEBASE")
 
@@ -206,8 +211,9 @@ def main ():
     plt.gca().invert_xaxis()
     plt.legend(loc = "upper left")
     plt.xlabel("complexity")
-    plt.ylabel("speedup vs. dense")
-    plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+    plt.ylabel("parallel speedup")
+    if not options.no_title:
+      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
     if options.output:
       plt.savefig(options.output + "_complexity.png")
@@ -229,7 +235,7 @@ def main ():
       for t in thread_values:
         query = data.get_walltime(complexity = c, threads = t)
         if len(query) != 1:
-          raise Exception("can not find result for {:d} threads".format(t))
+          raise Exception("can not find SpAMM result for {:d} threads".format(t))
         walltime.append(query[0]["walltime"])
       plt.loglog(
           thread_values,
@@ -243,7 +249,7 @@ def main ():
     for t in thread_values:
       query = data.get_walltime(isDense = True, threads = t)
       if len(query) != 1:
-        raise Exception("can not find result for {:d} threads".format(t))
+        raise Exception("can not find dense result for {:d} threads".format(t))
       walltime.append(query[0]["walltime"])
     plt.loglog(
         thread_values,
@@ -265,11 +271,63 @@ def main ():
     plt.xlim([min(thread_values), max(thread_values)])
     plt.ylim([min(thread_values), max(thread_values)])
     plt.xlabel("threads")
-    plt.ylabel("speedup vs. dense")
-    plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+    plt.ylabel("parallel speedup")
+    if not options.no_title:
+      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
     if options.output:
       plt.savefig(options.output + "_threads.png")
+
+    # Plot parallel efficiency vs. threads.
+    figure3 = plt.figure()
+
+    if options.complexity:
+      complexity_values = sorted(
+          [ float(i) for i in options.complexity ],
+          reverse = True
+          )
+    else:
+      complexity_values = data.get_complexity()
+    thread_values = data.get_threads()
+
+    for c in complexity_values:
+      walltime = []
+      for t in thread_values:
+        query = data.get_walltime(complexity = c, threads = t)
+        if len(query) == 0:
+          raise Exception("can not find SpAMM result for {:d} threads".format(t))
+        walltime.append(query[0]["walltime"])
+      plt.plot(
+          thread_values,
+          [ 100*walltime[0]/walltime[i]/thread_values[i] for i in range(len(walltime)) ],
+          linestyle = "-",
+          marker = "o",
+          label = "complexity {:1.3f}".format(c)
+          )
+
+    walltime = []
+    for t in thread_values:
+      query = data.get_walltime(isDense = True, threads = t)
+      if len(query) == 0:
+        raise Exception("can not find dense result for {:d} threads".format(t))
+      walltime.append(query[0]["walltime"])
+    plt.plot(
+        thread_values,
+        [ 100*walltime[0]/walltime[i]/thread_values[i] for i in range(len(walltime)) ],
+        linestyle = "-",
+        marker = "*",
+        label = "dense"
+        )
+
+    plt.grid(True)
+    plt.legend(loc = "lower left")
+    plt.xlabel("threads")
+    plt.ylabel("parallel efficiency")
+    if not options.no_title:
+      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+
+    if options.output:
+      plt.savefig(options.output + "_efficiency.png")
 
   plt.show()
 
