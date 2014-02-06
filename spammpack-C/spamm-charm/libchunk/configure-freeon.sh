@@ -1,9 +1,5 @@
 #!/bin/bash
 
-module purge
-module load intel
-module load mkl
-
 MKL_CPPFLAGS="-I${MKLROOT}/include"
 
 if [[ $1 == "parallel" ]]; then
