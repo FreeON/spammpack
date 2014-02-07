@@ -91,7 +91,7 @@ class scaling_data:
         t.append(i["threads"])
     return sorted(t)
 
-  def get_walltime (self, isDense = False, complexity = None, threads = None):
+  def get_record (self, isDense = False, complexity = None, threads = None):
     result = []
     for i in self.data:
       next_result = i
@@ -180,7 +180,7 @@ def main ():
     for t in thread_values:
       walltime = []
       for c in complexity_values:
-        query = data.get_walltime(complexity = c, threads = t)
+        query = data.get_record(complexity = c, threads = t)
         if len(query) != 1:
           raise Exception("can not find result for "
           + "complexity {:1.3f} and {:d} threads".format(c, t))
@@ -227,7 +227,7 @@ def main ():
     for c in complexity_values:
       walltime = []
       for t in thread_values:
-        query = data.get_walltime(complexity = c, threads = t)
+        query = data.get_record(complexity = c, threads = t)
         if len(query) != 1:
           raise Exception("can not find result for {:d} threads".format(t))
         walltime.append(query[0]["walltime"])
@@ -241,7 +241,7 @@ def main ():
 
     walltime = []
     for t in thread_values:
-      query = data.get_walltime(isDense = True, threads = t)
+      query = data.get_record(isDense = True, threads = t)
       if len(query) != 1:
         raise Exception("can not find result for {:d} threads".format(t))
       walltime.append(query[0]["walltime"])
@@ -270,6 +270,63 @@ def main ():
 
     if options.output:
       plt.savefig(options.output + "_threads.png")
+
+    # Plot walltime.
+    figure, ax = plt.subplots()
+
+    width = 0.3
+    plt.bar(
+        1-width/2,
+        data.get_record(
+          isDense = True,
+          threads = 1
+          )[0]["walltime"],
+        width,
+        color = "red"
+        )
+    plt.bar(
+        2-width/2,
+        data.get_record(
+          complexity = 1,
+          threads = 1
+          )[0]["walltime"],
+        width,
+        color = "blue"
+        )
+
+    plt.bar(
+        3-width/2,
+        data.get_record(
+          isDense = True,
+          threads = max(data.get_threads())
+          )[0]["walltime"],
+        width,
+        color = "red"
+        )
+    plt.bar(
+        4-width/2,
+        data.get_record(
+          complexity = 1,
+          threads = max(data.get_threads())
+          )[0]["walltime"],
+        width,
+        color = "blue"
+        )
+
+    plt.xlabel('linear algebra library')
+    plt.ylabel('walltime [s]')
+
+    ax.set_xticks([ 1, 2, 3, 4 ])
+    ax.set_xticklabels(
+        (
+          "MKL (serial)",
+          "SpAMM (serial)",
+          "MKL (%d threads)" % (max(data.get_threads())),
+          "SpAMM (%d threads)" % (max(data.get_threads()))
+          )
+        )
+
+    plt.xlim([ 0.5, 4.5 ])
 
   plt.show()
 
