@@ -139,7 +139,7 @@ chunk_block_multiply (const double *const restrict A,
     double *const restrict C,
     const int N)
 {
-  //chunk_block_multiply_general(A, B, C, N);
+  chunk_block_multiply_general(A, B, C, N);
   //chunk_block_multiply_4x4(A, B, C);
-  chunk_block_multiply_4x4_2(A, B, C);
+  //chunk_block_multiply_4x4_2(A, B, C);
 }
