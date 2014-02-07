@@ -350,7 +350,7 @@ def main ():
     for c in complexity_values:
       walltime = []
       for t in thread_values:
-        query = data.get_walltime(complexity = c, threads = t)
+        query = data.get_record(complexity = c, threads = t)
         if len(query) == 0:
           raise Exception("can not find SpAMM result for {:d} threads".format(t))
         walltime.append(query[0]["walltime"])
@@ -364,7 +364,7 @@ def main ():
 
     walltime = []
     for t in thread_values:
-      query = data.get_walltime(isDense = True, threads = t)
+      query = data.get_record(isDense = True, threads = t)
       if len(query) == 0:
         raise Exception("can not find dense result for {:d} threads".format(t))
       walltime.append(query[0]["walltime"])
