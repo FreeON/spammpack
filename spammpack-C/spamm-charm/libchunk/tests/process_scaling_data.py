@@ -182,6 +182,7 @@ def main ():
     else:
       thread_values = data.get_threads()
 
+    max_speedup = 1
     for t in thread_values:
       walltime = []
       for c in complexity_values:
@@ -190,6 +191,8 @@ def main ():
           raise Exception("can not find result for "
           + "complexity {:1.3f} and {:d} threads".format(c, t))
         walltime.append(query[0]["walltime"])
+      if max_speedup < max([ walltime[0]/i for i in walltime ]):
+        max_speedup = max([ walltime[0]/i for i in walltime ])
       plt.loglog(
           complexity_values,
           [ walltime[0]/i for i in walltime ],
@@ -207,7 +210,7 @@ def main ():
 
     plt.grid(True)
     plt.xlim([min(complexity_values), max(complexity_values)])
-    plt.ylim([1/max(complexity_values), 1/min(complexity_values)])
+    plt.ylim([1, max_speedup])
     plt.gca().invert_xaxis()
     plt.legend(loc = "upper left")
     plt.xlabel("complexity")
