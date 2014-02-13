@@ -2,7 +2,8 @@ dist_noinst_SCRIPTS = scaling-mustang.sh
 
 noinst_PROGRAMS = \
 	chunk_multiply \
-	chunk_tree_multiply
+	chunk_tree_multiply \
+	chunk_SP2
 
 check_PROGRAMS = \
 	chunk_add \
