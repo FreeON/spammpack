@@ -39,6 +39,7 @@ class scaling_data:
       if result:
         self.set_threads(int(result.group(1)))
         self.set_dense(True)
+        self.set_tolerance(0.0)
         self.set_walltime(float(result.group(2)))
 
     fd.close()
@@ -84,6 +85,13 @@ class scaling_data:
         c.append(i["complexity"])
     return sorted(c, reverse = True)
 
+  def get_tolerance (self):
+    tau = []
+    for i in self.data:
+      if not i["tolerance"] in tau:
+        tau.append(i["tolerance"])
+    return sorted(tau)
+
   def get_threads (self):
     t = []
     for i in self.data:
@@ -91,11 +99,18 @@ class scaling_data:
         t.append(i["threads"])
     return sorted(t)
 
-  def get_record (self, isDense = False, complexity = None, threads = None):
+  def get_record (
+      self,
+      isDense = False,
+      complexity = None,
+      threads = None,
+      tolerance = None):
     result = []
     for i in self.data:
       next_result = i
       if complexity and i["complexity"] != complexity:
+        next_result = None
+      if tolerance and i["tolerance"] != tolerance:
         next_result = None
       if threads and i["threads"] != threads:
         next_result = None
@@ -187,7 +202,7 @@ def main ():
       walltime = []
       for c in complexity_values:
         query = data.get_record(complexity = c, threads = t)
-        if len(query) != 1:
+        if len(query) == 0:
           raise Exception("can not find result for "
           + "complexity {:1.3f} and {:d} threads".format(c, t))
         walltime.append(query[0]["walltime"])
@@ -221,8 +236,46 @@ def main ():
     if options.output:
       plt.savefig(options.output + "_complexity.png")
 
+    # Plot walltime vs. tolerance.
+    plt.figure()
+
+    tolerance_values = data.get_tolerance()
+    if options.thread:
+      thread_values = sorted([ int(i) for i in options.thread ])
+    else:
+      thread_values = data.get_threads()
+
+    max_speedup = 1
+    for t in thread_values:
+      walltime = []
+      for c in tolerance_values:
+        query = data.get_record(tolerance = c, threads = t)
+        if len(query) == 0:
+          raise Exception("can not find result for "
+          + "tolerance {:e} and {:d} threads".format(c, t))
+        walltime.append(query[0]["walltime"])
+      if max_speedup < max([ walltime[0]/i for i in walltime ]):
+        max_speedup = max([ walltime[0]/i for i in walltime ])
+      plt.semilogx(
+          tolerance_values,
+          walltime,
+          linestyle = "-",
+          marker = "o",
+          label = "{:d} threads".format(t)
+          )
+
+    plt.grid(True)
+    plt.legend(loc = "upper right")
+    plt.xlabel("tolerance")
+    plt.ylabel("walltime [s]")
+    if not options.no_title:
+      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+
+    if options.output:
+      plt.savefig(options.output + "_tolerance.png")
+
     # Plot walltime vs. threads.
-    figure = plt.figure()
+    plt.figure()
 
     if options.complexity:
       complexity_values = sorted(
@@ -240,7 +293,7 @@ def main ():
         if len(query) == 0:
           raise Exception("can not find SpAMM result for {:d} threads".format(t))
         walltime.append(query[0]["walltime"])
-      plt.loglog(
+      plt.plot(
           thread_values,
           [ walltime[0]/i for i in walltime ],
           linestyle = "-",
@@ -254,7 +307,7 @@ def main ():
       if len(query) == 0:
         raise Exception("can not find dense result for {:d} threads".format(t))
       walltime.append(query[0]["walltime"])
-    plt.loglog(
+    plt.plot(
         thread_values,
         [ walltime[0]/i for i in walltime ],
         linestyle = "-",
@@ -262,7 +315,7 @@ def main ():
         label = "dense"
         )
 
-    plt.loglog(
+    plt.plot(
         thread_values,
         thread_values,
         color = "black",
@@ -339,7 +392,7 @@ def main ():
     plt.xlim([ 0.5, 4.5 ])
 
     # Plot parallel efficiency vs. threads.
-    figure = plt.figure()
+    plt.figure()
 
     if options.complexity:
       complexity_values = sorted(
