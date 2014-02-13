@@ -136,6 +136,352 @@ def flatten_list (l):
       break
   return l
 
+
+def plot_walltime_vs_complexity (data, options):
+  import matplotlib.pyplot as plt
+
+  plt.figure(
+      figsize = (
+        options.width/100.0,
+        options.height/100.0
+        ),
+      dpi = 100
+      )
+
+  complexity_values = data.get_complexity()
+  if options.thread:
+    thread_values = sorted([ int(i) for i in options.thread ])
+  else:
+    thread_values = data.get_threads()
+
+  max_speedup = 1
+  for t in thread_values:
+    walltime = []
+    for c in complexity_values:
+      query = data.get_record(complexity = c, threads = t)
+      if len(query) == 0:
+        raise Exception("can not find result for "
+        + "complexity {:1.3f} and {:d} threads".format(c, t))
+      walltime.append(query[0]["walltime"])
+    if max_speedup < max([ walltime[0]/i for i in walltime ]):
+      max_speedup = max([ walltime[0]/i for i in walltime ])
+    plt.loglog(
+        complexity_values,
+        [ walltime[0]/i for i in walltime ],
+        linestyle = "-",
+        marker = "o",
+        label = "{:d} threads".format(t)
+        )
+
+  plt.loglog(
+      complexity_values,
+      [ 1/i for i in complexity_values ],
+      color = "black",
+      label = "ideal"
+      )
+
+  plt.grid(True)
+  plt.xlim([min(complexity_values), max(complexity_values)])
+  plt.ylim([1, max_speedup])
+  plt.gca().invert_xaxis()
+  plt.legend(loc = "upper left")
+  plt.xlabel("complexity")
+  plt.ylabel("parallel speedup")
+  if not options.no_title:
+    plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+
+  if options.output:
+    plt.savefig(options.output + "_complexity.png")
+
+def plot_walltime_vs_tolerance (data, options):
+  import matplotlib.pyplot as plt
+
+  plt.figure(
+      figsize = (
+        options.width/100.0,
+        options.height/100.0
+        ),
+      dpi = 100
+      )
+
+  tolerance_values = data.get_tolerance()
+  if options.thread:
+    thread_values = sorted([ int(i) for i in options.thread ])
+  else:
+    thread_values = data.get_threads()
+
+  max_speedup = 1
+  for t in thread_values:
+    walltime = []
+    for c in tolerance_values:
+      query = data.get_record(tolerance = c, threads = t)
+      if len(query) == 0:
+        raise Exception("can not find result for "
+        + "tolerance {:e} and {:d} threads".format(c, t))
+      walltime.append(query[0]["walltime"])
+    if max_speedup < max([ walltime[0]/i for i in walltime ]):
+      max_speedup = max([ walltime[0]/i for i in walltime ])
+    plt.semilogx(
+        tolerance_values,
+        walltime,
+        linestyle = "-",
+        marker = "o",
+        label = "{:d} threads".format(t)
+        )
+
+  plt.grid(True)
+  plt.legend(loc = "upper right")
+  plt.xlabel("tolerance")
+  plt.ylabel("walltime [s]")
+  if not options.no_title:
+    plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+
+  if options.output:
+    plt.savefig(options.output + "_tolerance.png")
+
+def plot_walltime_vs_threads (data, options):
+  import matplotlib.pyplot as plt
+
+  plt.figure(
+      figsize = (
+        options.width/100.0,
+        options.height/100.0
+        ),
+      dpi = 100
+      )
+
+  if options.complexity:
+    complexity_values = sorted(
+        [ float(i) for i in options.complexity ],
+        reverse = True
+        )
+  else:
+    complexity_values = data.get_complexity()
+  thread_values = data.get_threads()
+
+  for c in complexity_values:
+    walltime = []
+    for t in thread_values:
+      query = data.get_record(complexity = c, threads = t)
+      if len(query) == 0:
+        raise Exception("can not find SpAMM result for {:d} threads".format(t))
+      walltime.append(query[0]["walltime"])
+    plt.plot(
+        thread_values,
+        [ walltime[0]/i for i in walltime ],
+        linestyle = "-",
+        marker = "o",
+        label = "complexity {:1.3f}".format(c)
+        )
+
+  walltime = []
+  for t in thread_values:
+    query = data.get_record(isDense = True, threads = t)
+    if len(query) == 0:
+      raise Exception("can not find dense result for {:d} threads".format(t))
+    walltime.append(query[0]["walltime"])
+  plt.plot(
+      thread_values,
+      [ walltime[0]/i for i in walltime ],
+      linestyle = "-",
+      marker = "*",
+      label = "dense"
+      )
+
+  plt.plot(
+      thread_values,
+      thread_values,
+      color = "black",
+      label = "ideal"
+      )
+
+  plt.grid(True)
+  plt.legend(loc = "upper left")
+  plt.xlim([min(thread_values), max(thread_values)])
+  plt.ylim([min(thread_values), max(thread_values)])
+  plt.xlabel("threads")
+  plt.ylabel("parallel speedup")
+  if not options.no_title:
+    plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+
+  if options.output:
+    plt.savefig(options.output + "_threads.png")
+
+def plot_walltime (data, options):
+  import matplotlib.pyplot as plt
+
+  figure, ax = plt.subplots()
+
+  width = 0.3
+  plt.bar(
+      1-width/2,
+      data.get_record(
+        isDense = True,
+        threads = 1
+        )[0]["walltime"],
+      width,
+      color = "red"
+      )
+  plt.bar(
+      2-width/2,
+      data.get_record(
+        complexity = 1,
+        threads = 1
+        )[0]["walltime"],
+      width,
+      color = "blue"
+      )
+
+  plt.bar(
+      3-width/2,
+      data.get_record(
+        isDense = True,
+        threads = max(data.get_threads())
+        )[0]["walltime"],
+      width,
+      color = "red"
+      )
+  plt.bar(
+      4-width/2,
+      data.get_record(
+        complexity = 1,
+        threads = max(data.get_threads())
+        )[0]["walltime"],
+      width,
+      color = "blue"
+      )
+
+  plt.xlabel('linear algebra library')
+  plt.ylabel('walltime [s]')
+
+  ax.set_xticks([ 1, 2, 3, 4 ])
+  ax.set_xticklabels(
+      (
+        "MKL (serial)",
+        "SpAMM (serial)",
+        "MKL (%d threads)" % (max(data.get_threads())),
+        "SpAMM (%d threads)" % (max(data.get_threads()))
+        )
+      )
+
+  plt.xlim([ 0.5, 4.5 ])
+
+  if options.output:
+    plt.savefig(options.output + "_walltimg.png")
+
+def plot_efficiency_vs_threads (data, options):
+  import matplotlib.pyplot as plt
+
+  plt.figure(
+      figsize = (
+        options.width/100.0,
+        options.height/100.0
+        ),
+      dpi = 100
+      )
+
+  if options.complexity:
+    complexity_values = sorted(
+        [ float(i) for i in options.complexity ],
+        reverse = True
+        )
+  else:
+    complexity_values = data.get_complexity()
+  thread_values = data.get_threads()
+
+  for c in complexity_values:
+    walltime = []
+    for t in thread_values:
+      query = data.get_record(complexity = c, threads = t)
+      if len(query) == 0:
+        raise Exception("can not find SpAMM result for {:d} threads".format(t))
+      walltime.append(query[0]["walltime"])
+    plt.plot(
+        thread_values,
+        [ 100*walltime[0]/walltime[i]/thread_values[i] for i in range(len(walltime)) ],
+        linestyle = "-",
+        marker = "o",
+        label = "complexity {:1.3f}".format(c)
+        )
+
+  walltime = []
+  for t in thread_values:
+    query = data.get_record(isDense = True, threads = t)
+    if len(query) == 0:
+      raise Exception("can not find dense result for {:d} threads".format(t))
+    walltime.append(query[0]["walltime"])
+  plt.plot(
+      thread_values,
+      [ 100*walltime[0]/walltime[i]/thread_values[i] for i in range(len(walltime)) ],
+      linestyle = "-",
+      marker = "*",
+      label = "dense"
+      )
+
+  plt.grid(True)
+  plt.legend(loc = "lower left")
+  plt.xlabel("threads")
+  plt.ylabel("parallel efficiency")
+  if not options.no_title:
+    plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+
+  if options.output:
+    plt.savefig(options.output + "_efficiency.png")
+
+def plot_efficiency_vs_complexity (data, options):
+  import matplotlib.pyplot as plt
+
+  plt.figure(
+      figsize = (
+        options.width/100.0,
+        options.height/100.0
+        ),
+      dpi = 100
+      )
+
+  complexity_values = data.get_complexity()
+  if options.thread:
+    thread_values = sorted([ int(i) for i in options.thread ])
+  else:
+    thread_values = data.get_threads()
+
+  if 1 in complexity_values:
+    for t in thread_values:
+      walltime = []
+      walltime_1 = 0
+      for i in range(len(complexity_values)):
+        query = data.get_record(complexity = complexity_values[i], threads = t)
+        if len(query) != 1:
+          raise Exception("can not find result for "
+          + "complexity {:1.3f} and {:d} threads".format(
+            complexity_values[i], t
+            )
+          )
+        walltime.append(query[0]["walltime"])
+        if complexity_values[i] == 1:
+          walltime_1 = walltime[-1]
+      plt.plot(
+          complexity_values,
+          [ 100*complexity_values[i]*walltime_1/walltime[i] for i in range(len(walltime)) ],
+          linestyle = "-",
+          marker = "o",
+          label = "{:d} threads".format(t)
+          )
+
+    plt.grid(True)
+    plt.gca().invert_xaxis()
+    plt.legend(loc = "upper left")
+    plt.xlabel("complexity")
+    plt.ylabel("complexity effciciency")
+    if not options.no_title:
+      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+
+    if options.output:
+      plt.savefig(options.output + "_complexity_efficiency.png")
+
+  else:
+    print("can not plot complexity scaling")
+
 def main ():
   import argparse
   import matplotlib.pyplot as plt
@@ -154,9 +500,14 @@ def main ():
   parser.add_argument("--output",
       help = "Save figures into FILEBASE")
 
-  parser.add_argument("--dpi",
-      help = "The dpi of the png figures",
-      default = 300,
+  parser.add_argument("--width",
+      help = "The width of the figure in pixels",
+      default = 800,
+      type = int)
+
+  parser.add_argument("--height",
+      help = "The height of the figure in pixels",
+      default = 600,
       type = int)
 
   parser.add_argument("--print",
@@ -193,326 +544,12 @@ def main ():
     if options.print:
       print(str(data))
 
-    # Plot walltime vs. complexity.
-    plt.figure()
-
-    complexity_values = data.get_complexity()
-    if options.thread:
-      thread_values = sorted([ int(i) for i in options.thread ])
-    else:
-      thread_values = data.get_threads()
-
-    max_speedup = 1
-    for t in thread_values:
-      walltime = []
-      for c in complexity_values:
-        query = data.get_record(complexity = c, threads = t)
-        if len(query) == 0:
-          raise Exception("can not find result for "
-          + "complexity {:1.3f} and {:d} threads".format(c, t))
-        walltime.append(query[0]["walltime"])
-      if max_speedup < max([ walltime[0]/i for i in walltime ]):
-        max_speedup = max([ walltime[0]/i for i in walltime ])
-      plt.loglog(
-          complexity_values,
-          [ walltime[0]/i for i in walltime ],
-          linestyle = "-",
-          marker = "o",
-          label = "{:d} threads".format(t)
-          )
-
-    plt.loglog(
-        complexity_values,
-        [ 1/i for i in complexity_values ],
-        color = "black",
-        label = "ideal"
-        )
-
-    plt.grid(True)
-    plt.xlim([min(complexity_values), max(complexity_values)])
-    plt.ylim([1, max_speedup])
-    plt.gca().invert_xaxis()
-    plt.legend(loc = "upper left")
-    plt.xlabel("complexity")
-    plt.ylabel("parallel speedup")
-    if not options.no_title:
-      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
-
-    if options.output:
-      plt.savefig(
-          options.output + "_complexity.png",
-          dpi = options.dpi
-          )
-
-    # Plot walltime vs. tolerance.
-    plt.figure()
-
-    tolerance_values = data.get_tolerance()
-    if options.thread:
-      thread_values = sorted([ int(i) for i in options.thread ])
-    else:
-      thread_values = data.get_threads()
-
-    max_speedup = 1
-    for t in thread_values:
-      walltime = []
-      for c in tolerance_values:
-        query = data.get_record(tolerance = c, threads = t)
-        if len(query) == 0:
-          raise Exception("can not find result for "
-          + "tolerance {:e} and {:d} threads".format(c, t))
-        walltime.append(query[0]["walltime"])
-      if max_speedup < max([ walltime[0]/i for i in walltime ]):
-        max_speedup = max([ walltime[0]/i for i in walltime ])
-      plt.semilogx(
-          tolerance_values,
-          walltime,
-          linestyle = "-",
-          marker = "o",
-          label = "{:d} threads".format(t)
-          )
-
-    plt.grid(True)
-    plt.legend(loc = "upper right")
-    plt.xlabel("tolerance")
-    plt.ylabel("walltime [s]")
-    if not options.no_title:
-      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
-
-    if options.output:
-      plt.savefig(
-          options.output + "_tolerance.png",
-          dpi = options.dpi
-          )
-
-    # Plot walltime vs. threads.
-    plt.figure()
-
-    if options.complexity:
-      complexity_values = sorted(
-          [ float(i) for i in options.complexity ],
-          reverse = True
-          )
-    else:
-      complexity_values = data.get_complexity()
-    thread_values = data.get_threads()
-
-    for c in complexity_values:
-      walltime = []
-      for t in thread_values:
-        query = data.get_record(complexity = c, threads = t)
-        if len(query) == 0:
-          raise Exception("can not find SpAMM result for {:d} threads".format(t))
-        walltime.append(query[0]["walltime"])
-      plt.plot(
-          thread_values,
-          [ walltime[0]/i for i in walltime ],
-          linestyle = "-",
-          marker = "o",
-          label = "complexity {:1.3f}".format(c)
-          )
-
-    walltime = []
-    for t in thread_values:
-      query = data.get_record(isDense = True, threads = t)
-      if len(query) == 0:
-        raise Exception("can not find dense result for {:d} threads".format(t))
-      walltime.append(query[0]["walltime"])
-    plt.plot(
-        thread_values,
-        [ walltime[0]/i for i in walltime ],
-        linestyle = "-",
-        marker = "*",
-        label = "dense"
-        )
-
-    plt.plot(
-        thread_values,
-        thread_values,
-        color = "black",
-        label = "ideal"
-        )
-
-    plt.grid(True)
-    plt.legend(loc = "upper left")
-    plt.xlim([min(thread_values), max(thread_values)])
-    plt.ylim([min(thread_values), max(thread_values)])
-    plt.xlabel("threads")
-    plt.ylabel("parallel speedup")
-    if not options.no_title:
-      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
-
-    if options.output:
-      plt.savefig(
-          options.output + "_threads.png",
-          dpi = options.dpi
-          )
-
-    # Plot walltime.
-    figure, ax = plt.subplots()
-
-    width = 0.3
-    plt.bar(
-        1-width/2,
-        data.get_record(
-          isDense = True,
-          threads = 1
-          )[0]["walltime"],
-        width,
-        color = "red"
-        )
-    plt.bar(
-        2-width/2,
-        data.get_record(
-          complexity = 1,
-          threads = 1
-          )[0]["walltime"],
-        width,
-        color = "blue"
-        )
-
-    plt.bar(
-        3-width/2,
-        data.get_record(
-          isDense = True,
-          threads = max(data.get_threads())
-          )[0]["walltime"],
-        width,
-        color = "red"
-        )
-    plt.bar(
-        4-width/2,
-        data.get_record(
-          complexity = 1,
-          threads = max(data.get_threads())
-          )[0]["walltime"],
-        width,
-        color = "blue"
-        )
-
-    plt.xlabel('linear algebra library')
-    plt.ylabel('walltime [s]')
-
-    ax.set_xticks([ 1, 2, 3, 4 ])
-    ax.set_xticklabels(
-        (
-          "MKL (serial)",
-          "SpAMM (serial)",
-          "MKL (%d threads)" % (max(data.get_threads())),
-          "SpAMM (%d threads)" % (max(data.get_threads()))
-          )
-        )
-
-    plt.xlim([ 0.5, 4.5 ])
-
-    if options.output:
-      plt.savefig(
-          options.output + "_walltimg.png",
-          dpi = options.dpi
-          )
-
-    # Plot parallel efficiency vs. threads.
-    plt.figure()
-
-    if options.complexity:
-      complexity_values = sorted(
-          [ float(i) for i in options.complexity ],
-          reverse = True
-          )
-    else:
-      complexity_values = data.get_complexity()
-    thread_values = data.get_threads()
-
-    for c in complexity_values:
-      walltime = []
-      for t in thread_values:
-        query = data.get_record(complexity = c, threads = t)
-        if len(query) == 0:
-          raise Exception("can not find SpAMM result for {:d} threads".format(t))
-        walltime.append(query[0]["walltime"])
-      plt.plot(
-          thread_values,
-          [ 100*walltime[0]/walltime[i]/thread_values[i] for i in range(len(walltime)) ],
-          linestyle = "-",
-          marker = "o",
-          label = "complexity {:1.3f}".format(c)
-          )
-
-    walltime = []
-    for t in thread_values:
-      query = data.get_record(isDense = True, threads = t)
-      if len(query) == 0:
-        raise Exception("can not find dense result for {:d} threads".format(t))
-      walltime.append(query[0]["walltime"])
-    plt.plot(
-        thread_values,
-        [ 100*walltime[0]/walltime[i]/thread_values[i] for i in range(len(walltime)) ],
-        linestyle = "-",
-        marker = "*",
-        label = "dense"
-        )
-
-    plt.grid(True)
-    plt.legend(loc = "lower left")
-    plt.xlabel("threads")
-    plt.ylabel("parallel efficiency")
-    if not options.no_title:
-      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
-
-    if options.output:
-      plt.savefig(
-          options.output + "_efficiency.png",
-          dpi = options.dpi
-          )
-
-    # Plot complexity efficiency vs. complexity.
-    plt.figure()
-
-    complexity_values = data.get_complexity()
-    if options.thread:
-      thread_values = sorted([ int(i) for i in options.thread ])
-    else:
-      thread_values = data.get_threads()
-
-    if 1 in complexity_values:
-      for t in thread_values:
-        walltime = []
-        walltime_1 = 0
-        for i in range(len(complexity_values)):
-          query = data.get_record(complexity = complexity_values[i], threads = t)
-          if len(query) != 1:
-            raise Exception("can not find result for "
-            + "complexity {:1.3f} and {:d} threads".format(
-              complexity_values[i], t
-              )
-            )
-          walltime.append(query[0]["walltime"])
-          if complexity_values[i] == 1:
-            walltime_1 = walltime[-1]
-        plt.plot(
-            complexity_values,
-            [ 100*complexity_values[i]*walltime_1/walltime[i] for i in range(len(walltime)) ],
-            linestyle = "-",
-            marker = "o",
-            label = "{:d} threads".format(t)
-            )
-
-      plt.grid(True)
-      plt.gca().invert_xaxis()
-      plt.legend(loc = "upper left")
-      plt.xlabel("complexity")
-      plt.ylabel("complexity effciciency")
-      if not options.no_title:
-        plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
-
-      if options.output:
-        plt.savefig(
-            options.output + "_complexity_efficiency.png",
-            dpi = options.dpi
-            )
-
-    else:
-      print("can not plot complexity scaling")
+    plot_walltime_vs_complexity(data, options)
+    plot_walltime_vs_tolerance(data, options)
+    plot_walltime_vs_threads(data, options)
+    plot_walltime(data, options)
+    plot_efficiency_vs_threads(data, options)
+    plot_efficiency_vs_complexity(data, options)
 
   if not options.output:
     plt.show()
