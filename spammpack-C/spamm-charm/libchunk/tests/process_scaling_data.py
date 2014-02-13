@@ -470,7 +470,7 @@ def plot_efficiency_vs_complexity (data, options):
 
     plt.grid(True)
     plt.gca().invert_xaxis()
-    plt.legend(loc = "upper left")
+    plt.legend(loc = "lower left")
     plt.xlabel("complexity")
     plt.ylabel("complexity effciciency")
     if not options.no_title:
