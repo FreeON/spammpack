@@ -391,6 +391,9 @@ def main ():
 
     plt.xlim([ 0.5, 4.5 ])
 
+    if options.output:
+      plt.savefig(options.output + "_walltimg.png")
+
     # Plot parallel efficiency vs. threads.
     plt.figure()
 
