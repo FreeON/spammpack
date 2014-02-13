@@ -389,6 +389,52 @@ def main ():
     if options.output:
       plt.savefig(options.output + "_efficiency.png")
 
+    # Plot complexity efficiency vs. complexity.
+    plt.figure()
+
+    complexity_values = data.get_complexity()
+    if options.thread:
+      thread_values = sorted([ int(i) for i in options.thread ])
+    else:
+      thread_values = data.get_threads()
+
+    if 1 in complexity_values:
+      for t in thread_values:
+        walltime = []
+        walltime_1 = 0
+        for i in range(len(complexity_values)):
+          query = data.get_record(complexity = complexity_values[i], threads = t)
+          if len(query) != 1:
+            raise Exception("can not find result for "
+            + "complexity {:1.3f} and {:d} threads".format(
+              complexity_values[i], t
+              )
+            )
+          walltime.append(query[0]["walltime"])
+          if complexity_values[i] == 1:
+            walltime_1 = walltime[-1]
+        plt.plot(
+            complexity_values,
+            [ 100*complexity_values[i]*walltime_1/walltime[i] for i in range(len(walltime)) ],
+            linestyle = "-",
+            marker = "o",
+            label = "{:d} threads".format(t)
+            )
+
+      plt.grid(True)
+      plt.gca().invert_xaxis()
+      plt.legend(loc = "upper left")
+      plt.xlabel("complexity")
+      plt.ylabel("complexity effciciency")
+      if not options.no_title:
+        plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+
+      if options.output:
+        plt.savefig(options.output + "_complexity_efficiency.png")
+
+    else:
+      print("can not plot complexity scaling")
+
   plt.show()
 
 if __name__ == "__main__":
