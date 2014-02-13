@@ -451,7 +451,7 @@ def plot_efficiency_vs_complexity (data, options):
       walltime_1 = 0
       for i in range(len(complexity_values)):
         query = data.get_record(complexity = complexity_values[i], threads = t)
-        if len(query) != 1:
+        if len(query) == 0:
           raise Exception("can not find result for "
           + "complexity {:1.3f} and {:d} threads".format(
             complexity_values[i], t
@@ -480,7 +480,62 @@ def plot_efficiency_vs_complexity (data, options):
       plt.savefig(options.output + "_efficiency_vs_complexity.png")
 
   else:
-    print("can not plot complexity scaling")
+    raise Exception("can not plot complexity scaling")
+
+def plot_efficiency_vs_tolerance (data, options):
+  import matplotlib.pyplot as plt
+
+  plt.figure(
+      figsize = (
+        options.width/100.0,
+        options.height/100.0
+        ),
+      dpi = 100
+      )
+
+  tolerance_values = data.get_tolerance()
+  if options.thread:
+    thread_values = sorted([ int(i) for i in options.thread ])
+  else:
+    thread_values = data.get_threads()
+
+  if 0 in tolerance_values:
+    for t in thread_values:
+      walltime = []
+      complexity_values = []
+      walltime_1 = 0
+      for i in range(len(tolerance_values)):
+        query = data.get_record(tolerance = tolerance_values[i], threads = t)
+        if len(query) == 0:
+          raise Exception("can not find result for "
+          + "tolerance {:1.3f} and {:d} threads".format(
+            tolerance_values[i], t
+            )
+          )
+        walltime.append(query[0]["walltime"])
+        complexity_values.append(query[0]["complexity"])
+        if tolerance_values[i] == 0:
+          walltime_1 = walltime[-1]
+      plt.semilogx(
+          tolerance_values,
+          [ 100*complexity_values[i]*walltime_1/walltime[i] for i in range(len(walltime)) ],
+          linestyle = "-",
+          marker = "o",
+          label = "{:d} threads".format(t)
+          )
+
+    plt.grid(True)
+    plt.legend(loc = "lower left")
+    plt.xlabel("tolerance")
+    plt.ylabel("tolerance effciciency")
+    if not options.no_title:
+      plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
+
+    if options.output:
+      plt.savefig(options.output + "_efficiency_vs_tolerance.png")
+
+  else:
+    raise Exception("can not plot tolerance scaling")
 
 def main ():
   import argparse
@@ -550,6 +605,7 @@ def main ():
     plot_walltime(data, options)
     plot_efficiency_vs_threads(data, options)
     plot_efficiency_vs_complexity(data, options)
+    plot_efficiency_vs_tolerance(data, options)
 
   if not options.output:
     plt.show()
