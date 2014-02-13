@@ -191,7 +191,7 @@ def plot_walltime_vs_complexity (data, options):
     plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
   if options.output:
-    plt.savefig(options.output + "_complexity.png")
+    plt.savefig(options.output + "_walltime_vs_complexity.png")
 
 def plot_walltime_vs_tolerance (data, options):
   import matplotlib.pyplot as plt
@@ -237,7 +237,7 @@ def plot_walltime_vs_tolerance (data, options):
     plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
   if options.output:
-    plt.savefig(options.output + "_tolerance.png")
+    plt.savefig(options.output + "_walltime_vs_tolerance.png")
 
 def plot_walltime_vs_threads (data, options):
   import matplotlib.pyplot as plt
@@ -305,7 +305,7 @@ def plot_walltime_vs_threads (data, options):
     plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
   if options.output:
-    plt.savefig(options.output + "_threads.png")
+    plt.savefig(options.output + "_walltime_vs_threads.png")
 
 def plot_walltime (data, options):
   import matplotlib.pyplot as plt
@@ -426,7 +426,7 @@ def plot_efficiency_vs_threads (data, options):
     plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
   if options.output:
-    plt.savefig(options.output + "_efficiency.png")
+    plt.savefig(options.output + "_efficiency_vs_threads.png")
 
 def plot_efficiency_vs_complexity (data, options):
   import matplotlib.pyplot as plt
@@ -477,7 +477,7 @@ def plot_efficiency_vs_complexity (data, options):
       plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
     if options.output:
-      plt.savefig(options.output + "_complexity_efficiency.png")
+      plt.savefig(options.output + "_efficiency_vs_complexity.png")
 
   else:
     print("can not plot complexity scaling")
