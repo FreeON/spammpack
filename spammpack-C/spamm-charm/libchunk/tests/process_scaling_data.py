@@ -154,6 +154,11 @@ def main ():
   parser.add_argument("--output",
       help = "Save figures into FILEBASE")
 
+  parser.add_argument("--dpi",
+      help = "The dpi of the png figures",
+      default = 300,
+      type = int)
+
   parser.add_argument("--print",
       help = "Print the data file",
       default = False,
@@ -234,7 +239,10 @@ def main ():
       plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
     if options.output:
-      plt.savefig(options.output + "_complexity.png")
+      plt.savefig(
+          options.output + "_complexity.png",
+          dpi = options.dpi
+          )
 
     # Plot walltime vs. tolerance.
     plt.figure()
@@ -272,7 +280,10 @@ def main ():
       plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
     if options.output:
-      plt.savefig(options.output + "_tolerance.png")
+      plt.savefig(
+          options.output + "_tolerance.png",
+          dpi = options.dpi
+          )
 
     # Plot walltime vs. threads.
     plt.figure()
@@ -332,7 +343,10 @@ def main ():
       plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
     if options.output:
-      plt.savefig(options.output + "_threads.png")
+      plt.savefig(
+          options.output + "_threads.png",
+          dpi = options.dpi
+          )
 
     # Plot walltime.
     figure, ax = plt.subplots()
@@ -392,7 +406,10 @@ def main ():
     plt.xlim([ 0.5, 4.5 ])
 
     if options.output:
-      plt.savefig(options.output + "_walltimg.png")
+      plt.savefig(
+          options.output + "_walltimg.png",
+          dpi = options.dpi
+          )
 
     # Plot parallel efficiency vs. threads.
     plt.figure()
@@ -443,7 +460,10 @@ def main ():
       plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
     if options.output:
-      plt.savefig(options.output + "_efficiency.png")
+      plt.savefig(
+          options.output + "_efficiency.png",
+          dpi = options.dpi
+          )
 
     # Plot complexity efficiency vs. complexity.
     plt.figure()
@@ -486,12 +506,16 @@ def main ():
         plt.title("N = {:d}, N_basic = {:d}".format(data.N_chunk, data.N_basic))
 
       if options.output:
-        plt.savefig(options.output + "_complexity_efficiency.png")
+        plt.savefig(
+            options.output + "_complexity_efficiency.png",
+            dpi = options.dpi
+            )
 
     else:
       print("can not plot complexity scaling")
 
-  plt.show()
+  if not options.output:
+    plt.show()
 
 if __name__ == "__main__":
   main()
