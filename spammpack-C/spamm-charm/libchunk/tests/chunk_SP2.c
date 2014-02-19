@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #define ABORT(format, ...) printf(format, ##__VA_ARGS__); exit(-1)
+#define INFO(format, ...) printf(format, ##__VA_ARGS__)
 
 struct bcsr_t
 {
@@ -77,37 +78,37 @@ load_BCSR (const char *const filename)
   A->blockSize = calloc(A->NAtoms, sizeof(int));
   A->offset = calloc(A->NAtoms, sizeof(int));
 
-  if((result = fread(blockSize, sizeof(int), NAtoms, fd)) != NAtoms) { ABORT("read error\n"); }
-  if((result = fread(offset, sizeof(int), NAtoms, fd)) != NAtoms) { ABORT("read error\n"); }
+  if((result = fread(A->blockSize, sizeof(int), A->NAtoms, fd)) != A->NAtoms) { ABORT("read error\n"); }
+  if((result = fread(A->offset, sizeof(int), A->NAtoms, fd)) != A->NAtoms) { ABORT("read error\n"); }
 
-  rowPointer = new int[NAtoms+1];
-  columnPointer = new int[numberBlocks];
-  blockPointer = new int[numberBlocks];
-  matrix = new double[numberNonZero];
+  A->rowPointer = calloc(A->NAtoms+1, sizeof(int));
+  A->columnPointer = calloc(A->numberBlocks, sizeof(int));
+  A->blockPointer = calloc(A->numberBlocks, sizeof(int));
+  A->matrix = calloc(A->numberNonZero, sizeof(double));
 
-  double *dummy = new double[numberBlocks];
+  double *dummy = calloc(A->numberBlocks, sizeof(double));
 
-  if((result = fread(rowPointer, sizeof(int), NAtoms+1, fd)) != NAtoms+1) { ABORT("read error\n"); }
-  if((result = fread(columnPointer, sizeof(int), numberBlocks, fd)) != numberBlocks) { ABORT("read error\n"); }
-  if((result = fread(blockPointer, sizeof(int), numberBlocks, fd)) != numberBlocks) { ABORT("read error\n"); }
-  if((result = fread(dummy, sizeof(double), numberBlocks, fd)) != numberBlocks) { ABORT("read error\n"); }
-  if((result = fread(matrix, sizeof(double), numberNonZero, fd)) != numberNonZero) { ABORT("read error\n"); }
+  if((result = fread(A->rowPointer, sizeof(int), A->NAtoms+1, fd)) != A->NAtoms+1) { ABORT("read error\n"); }
+  if((result = fread(A->columnPointer, sizeof(int), A->numberBlocks, fd)) != A->numberBlocks) { ABORT("read error\n"); }
+  if((result = fread(A->blockPointer, sizeof(int), A->numberBlocks, fd)) != A->numberBlocks) { ABORT("read error\n"); }
+  if((result = fread(dummy, sizeof(double), A->numberBlocks, fd)) != A->numberBlocks) { ABORT("read error\n"); }
+  if((result = fread(A->matrix, sizeof(double), A->numberNonZero, fd)) != A->numberNonZero) { ABORT("read error\n"); }
 
-  delete[] dummy;
+  free(dummy);
 
   /* Fortran counts starting at 1, C starts from 0. */
-  for(int i = 0; i < NAtoms; i++)
+  for(int i = 0; i < A->NAtoms; i++)
   {
-    offset[i]--;
+    A->offset[i]--;
   }
-  for(int i = 0; i < NAtoms+1; i++)
+  for(int i = 0; i < A->NAtoms+1; i++)
   {
-    rowPointer[i]--;
+    A->rowPointer[i]--;
   }
-  for(int i = 0; i < numberBlocks; i++)
+  for(int i = 0; i < A->numberBlocks; i++)
   {
-    columnPointer[i]--;
-    blockPointer[i]--;
+    A->columnPointer[i]--;
+    A->blockPointer[i]--;
   }
 
   if((result = fclose(fd)) != 0)
@@ -116,7 +117,7 @@ load_BCSR (const char *const filename)
   }
 
   INFO("read BCSR matrix, size %dx%d, %d nonzeros, %1.4f percent nonzero elements\n",
-      M, N, numberNonZero, 100*numberNonZero/(double) (N*N));
+      A->M, A->N, A->numberNonZero, 100*A->numberNonZero/(double) (A->N*A->N));
 }
 
 int
