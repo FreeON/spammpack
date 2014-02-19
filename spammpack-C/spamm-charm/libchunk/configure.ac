@@ -62,7 +62,7 @@ fi
 AC_MSG_CHECKING([which chunk implementation to use])
 AC_ARG_ENABLE([chunk-implementation],
   [AS_HELP_STRING([--enable-chunk-implementation],
-  [choose the chunk implementation (tiled, tree), defaults to tree])],
+  [choose the chunk implementation (tiled, tree), default = tree])],
   [enable_chunk_implementation=$enableval],
   [enable_chunk_implementation="tree"])
 case ${enable_chunk_implementation} in
