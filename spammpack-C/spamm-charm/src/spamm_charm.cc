@@ -300,14 +300,6 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
   CkPrintf("SpAMM version %s (serial)\n", PACKAGE_VERSION);
 #endif
 
-#if CHUNK_IMPLEMENTATION == tiled
-  CkPrintf("using tiled chunk implementation\n");
-#elif CHUNK_IMPLEMENTATION == tree
-  CkPrintf("using tree chunk implementation\n");
-#else
-#error Unknown chunk implementation
-#endif
-
   /* Register backtrace handler. */
   struct sigaction act;
   memset(&act, 0, sizeof(struct sigaction));
