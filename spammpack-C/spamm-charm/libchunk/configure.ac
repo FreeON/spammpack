@@ -166,6 +166,20 @@ if [[ ${enable_complexity} = "yes" ]]; then
   AC_DEFINE([MEASURE_COMPLEXITY], [1], [Measure the product complexity])
 fi
 
+# Enable debugging.
+AC_MSG_CHECKING([whether to turn on full debugging output])
+AC_ARG_ENABLE([debug],
+  [AS_HELP_STRING([--enable-debug],
+  [enable a lot of extra output])],
+  [enable_debug=$enableval],
+  [enable_debug="no"])
+if test "${enable_debug}" = "yes"; then
+  AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output])
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Makefile
