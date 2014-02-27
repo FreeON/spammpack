@@ -84,8 +84,16 @@ BCSR::BCSR (char *filename)
     ABORT("error closing BCSR file\n");
   }
 
-  INFO("read BCSR matrix, size %dx%d, %d nonzeros, %1.4f percent nonzero elements\n",
-      M, N, numberNonZero, 100*numberNonZero/(double) (N*N));
+  double norm = 0;
+  for(int i = 0; i < numberNonZero; i++)
+  {
+    norm += matrix[i]*matrix[i];
+  }
+  norm = sqrt(norm);
+
+  INFO("read BCSR matrix, size %dx%d, %d nonzeros, "
+      "||A||_{F} = %1.16e, %1.4f percent nonzero elements\n",
+      M, N, numberNonZero, norm, 100*numberNonZero/(double) (N*N));
 }
 
 /** The destructor.

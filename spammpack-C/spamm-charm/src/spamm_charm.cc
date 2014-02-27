@@ -221,7 +221,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         }
         else
         {
-          ABORT("unknown matrix type\n");
+          ABORT("unknown matrix type (\"%s\" given)\n", optarg);
         }
         break;
 
