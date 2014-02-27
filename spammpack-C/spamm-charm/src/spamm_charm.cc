@@ -915,6 +915,13 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     Timer tSetEqual("setEq");
     Timer tAdd("add");
 
+#ifdef DEBUG_OUTPUT
+    P.updateNorm(CkCallbackResumeThread());
+    DoubleMsg *norm_P = P.getNorm();
+    DEBUG("||P%d|| = %e\n", iteration, norm_P->x);
+    delete norm_P;
+#endif
+
     tMultiply.start();
     M.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread()); /* P2 <- P*P */
     tMultiply.stop();
@@ -925,6 +932,13 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     P2.updateTrace(CkCallbackResumeThread());
     DoubleMsg *trace_P2 = P2.getTrace();
     DEBUG("trace(P%d^2) = %e (Ne/2 = %e)\n", iteration, trace_P2->x, Ne/2.0);
+
+#ifdef DEBUG_OUTPUT
+    P2.updateNorm(CkCallbackResumeThread());
+    DoubleMsg *norm_P2 = P2.getNorm();
+    DEBUG("||P%d^2|| = %e\n", iteration, norm_P2->x);
+    delete norm_P2;
+#endif
 
     if(fabs(trace_P2->x-Ne/2.0) < fabs(2*trace_P->x-trace_P2->x-Ne/2.0))
     {

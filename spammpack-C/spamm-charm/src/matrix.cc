@@ -143,7 +143,7 @@ DenseMatrixMsg * Matrix::toDense (void)
   return A;
 }
 
-/** Get the Node array on a particular tier.
+/** Get the Node arrays on all tiers.
  *
  * @return The Node array of the matrix.
  */
@@ -255,6 +255,31 @@ void Matrix::setNorm (CkCallback &cb)
     nodes[tier].setNorm(nodes[tier+1], CkCallbackResumeThread());
   }
   cb.send();
+}
+
+/** Update the norm information in the Matrix chare. This needs to be done
+ * before Matrix::getNorm() is called.
+ *
+ * @param cb A callback.
+ */
+void Matrix::updateNorm (CkCallback &cb)
+{
+  DEBUG("updating norm\n");
+
+  NodeInfoMsg *msg = nodes[0](0, 0).info();
+  this->norm = msg->norm;
+
+  cb.send();
+}
+
+/** Return the matrix norm.
+ *
+ * @return A DoubleMsg containing the matrix norm.
+ */
+DoubleMsg * Matrix::getNorm (void)
+{
+  DEBUG("getting matrix norm\n");
+  return new DoubleMsg(norm);
 }
 
 /** Return the PEMap. Call udpatePEMap() first.
