@@ -17,6 +17,7 @@ mainmodule spamm_charm
         char densityFilename[lengthDensityFilename+1], int Ne, int N,
         int blocksize, int N_basic, int maxIterations, double tolerance,
         bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
-        int lengthPEMap, char filenamePEMap[lengthPEMap+1]);
+        int lengthPEMap, char filenamePEMap[lengthPEMap+1], double F_min,
+        double F_max);
   };
 };

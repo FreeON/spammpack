@@ -97,6 +97,8 @@ void initialize (void)
  * - { -a | --align-PEs }         Align PEs for diagonal case
  * - { -p | --print-PEMap } FILE  Print a PE map in each iteration
  * - { -o | --operation } OP      Test OP { multiply, add, trace, scale, addIdentity, SP2 }
+ * - { -1 | --F-min } MIN         The lower bound on the eigenspectrum of F\n");
+ * - { -2 | --F-max } MAX         The upper bound on the eigenspectrum of F\n");
  *
  * @param msg The command line argument list.
  */
@@ -120,9 +122,11 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
   int Ne = -1;
   char *fockianFilename = NULL;
   char *densityFilename = NULL;
+  double F_min = 0;
+  double F_max = 0;
 
   int c;
-  const char *short_options = "hN:b:s:i:t:m:F:P:T:vd:I:lap:o:";
+  const char *short_options = "hN:b:s:i:t:m:F:P:T:vd:I:lap:o:1:2:";
   const struct option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
@@ -141,6 +145,8 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
     { "align-PEs",    no_argument,        NULL, 'a' },
     { "print-PEMap",  required_argument,  NULL, 'p' },
     { "operation",    required_argument,  NULL, 'o' },
+    { "F-min",        required_argument,  NULL, '1' },
+    { "F-max",        required_argument,  NULL, '2' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -174,6 +180,8 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         CkPrintf("{ -a | --align-PEs }          Align PEs for diagonal case\n");
         CkPrintf("{ -p | --print-PEMap } FILE   Print a PE map in each iteration\n");
         CkPrintf("{ -o | --operation } OP       Test OP { multiply, add, trace, addIdentity, scale, SP2 }\n");
+        CkPrintf("{ -1 | --F-min } MIN          The lower bound on the eigenspectrum of F\n");
+        CkPrintf("{ -2 | --F-max } MAX          The upper bound on the eigenspectrum of F\n");
         CkPrintf("\n");
         CkExit();
         break;
@@ -292,6 +300,14 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         }
         break;
 
+      case '1':
+        F_min = strtod(optarg, NULL);
+        break;
+
+      case '2':
+        F_max = strtod(optarg, NULL);
+        break;
+
       default:
         CkExit();
         break;
@@ -346,7 +362,8 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         thisProxy.runSP2(strlen(fockianFilename), fockianFilename,
             strlen(densityFilename), densityFilename, Ne, N, blocksize,
             N_basic, numberIterations, tolerance, loadBalance, initialPE,
-            alignPEs, printPEMap, strlen(filenamePEMap), filenamePEMap);
+            alignPEs, printPEMap, strlen(filenamePEMap), filenamePEMap, F_min,
+            F_max);
       }
       break;
 
@@ -793,16 +810,17 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
  * @param printPEMap Whether to print a PE map in each iteration.
  * @param lengthPEMap The length of filenamePEMap.
  * @param filenamePEMap The base name of the PEMap files.
+ * @param F_min The lower bound on the eigenspectrum.
+ * @param F_max The upper bound on the eigenspectrum.
  */
 void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     int lengthDensityFilename, char *densityFilename, int Ne, int N,
     int blocksize, int N_basic, int maxIterations, double tolerance,
     bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
-    int lengthPEMap, char *filenamePEMap)
+    int lengthPEMap, char *filenamePEMap, double F_min, double F_max)
 {
   double *PDense;
   int NRows, NColumns;
-  double F_min, F_max;
 
   LBDatabase *db = LBDatabaseObj();
 
@@ -810,7 +828,12 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   {
     BCSR F(fockianFilename);
 
-    F.getSpectralBounds(0, &F_min, &F_max);
+    if(F_min >= F_max)
+    {
+      F.getSpectralBounds(0, &F_min, &F_max);
+    }
+
+    /* Convert BCSR to dense. */
     F.toDense(&NRows, &NColumns, &PDense);
     assert(NRows == NColumns);
   }

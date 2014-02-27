@@ -100,13 +100,11 @@ BCSR::~BCSR (void)
   delete[] matrix;
 }
 
-/** Get the spectral bounds of the matrix by using the Gershgorin circle
- * theorem.
+/** Get the spectral bounds of the matrix by using different methods.
  *
- * Estimate spectral bounds via Gersgorin approximation, @f$ \left[
- * F_{min}-F_{max} \right] @f$.
+ * Using the Gershgorin circle theorem: Estimate spectral bounds via Gersgorin
+ * approximation, @f$ \left[ F_{min}-F_{max} \right] @f$.  In detail:
  *
- * In detail:
  * @f[
  *   R_{i} = \sum_{j \neq i} \left| F_{ij} \right|
  * @f]
@@ -117,8 +115,10 @@ BCSR::~BCSR (void)
  *   F_{\mathrm{min}} = \min_{i} \left\{ F_{ii} - R_{i} \right\}
  * @f]
  *
- * @param method The method to use. method = 0 is Gershgorin; method = 1 is
- * full eigensolve.
+ * @param method The method to use.
+ *   - method = 0 is Gershgorin
+ *   - method = 1 is full eigensolve
+ *   - method = 2 is RQI
  * @param minBound [out] The lower bound.
  * @param maxBound [out] The upper bound.
  */
@@ -262,6 +262,12 @@ void BCSR::getSpectralBounds (int method, double *minBound, double *maxBound)
 #else
       ABORT("full eigensolve was not built because lapack was missing at compile time\n");
 #endif
+      break;
+
+    case 2:
+      {
+        ABORT("[FIXME]\n");
+      }
       break;
 
     default:
