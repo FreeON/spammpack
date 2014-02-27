@@ -62,7 +62,7 @@ void
 chunk_print (const void *const chunk,
     const char *const format, ...)
 {
-  FUNC(print)(chunk, "FIXME\n");
+  FUNC(print)(chunk, "can not pass the format...\n");
 }
 
 void

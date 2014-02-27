@@ -20,7 +20,11 @@
  */
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-void printDense (int N, double *A, const char *const format, ...);
+void printDenseInMM (int N, double *A, const char *const format, ...);
+
+void printDenseInMatlab (int N, double *A, const char *const format, ...);
+
+void printDenseInPython (int N, double *A, const char *const format, ...);
 
 std::string toBinary (unsigned int i);
 

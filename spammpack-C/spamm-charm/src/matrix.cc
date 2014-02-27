@@ -76,7 +76,7 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
       PEMap_norm = new double[NTier*NTier];
     }
   }
-  DEBUG("done\n");
+  DEBUG("done with constructor\n");
 }
 
 /** The destructor.
@@ -223,7 +223,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
       }
 
 #ifdef PRINT_MATRICES
-      printDense(blocksize, block, "block(%i,%i)", i, j);
+      printDenseInMM(blocksize, block, "block(%i,%i)", i, j);
 #endif
 
       DEBUG("calling set on Node(%d,%d)\n", i, j);
@@ -236,6 +236,7 @@ void Matrix::set (int N, double *A, CkCallback &cb)
   /* Update norms. */
   thisProxy.setNorm(CkCallbackResumeThread());
 
+  DEBUG("norm = %e\n", norm);
   DEBUG("done setting matrix\n");
   cb.send();
 }
@@ -254,6 +255,7 @@ void Matrix::setNorm (CkCallback &cb)
   {
     nodes[tier].setNorm(nodes[tier+1], CkCallbackResumeThread());
   }
+  thisProxy.updateNorm(CkCallbackResumeThread());
   cb.send();
 }
 
@@ -387,6 +389,7 @@ void Matrix::scale (double alpha, CkCallback &cb)
  */
 void Matrix::addIdentity (double alpha, double beta, CkCallback &cb)
 {
+  DEBUG("%e * A + %e * I\n", alpha, beta);
   nodes[depth].scale(alpha, CkCallbackResumeThread());
   nodes[depth].addIdentity(beta, CkCallbackResumeThread());
   thisProxy.setNorm(CkCallbackResumeThread());

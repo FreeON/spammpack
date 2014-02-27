@@ -363,7 +363,10 @@ chunk_tiled_print (const void *const chunk,
     {
       double *A_basic = chunk_tiled_matrix_pointer(i, j, chunk);
       printf("block(%d,%d), norm = %e:\n", i, j, norm[chunk_tiled_matrix_offset(i, j, ptr->N_block)]);
-      for(int k = 0; k < ptr->N_basic; k++) {
+      double trace = 0;
+      for(int k = 0; k < ptr->N_basic; k++)
+      {
+        trace += A_basic[chunk_tiled_matrix_offset(k, k, ptr->N_basic)];
         for(int l = 0; l < ptr->N_basic; l++)
         {
           printf(" % e", A_basic[chunk_tiled_matrix_offset(k, l, ptr->N_basic)]);
@@ -371,6 +374,7 @@ chunk_tiled_print (const void *const chunk,
         printf("\n");
       }
       printf("\n");
+      printf("block(%d,%d), trace = %e\n", i, j, trace);
     }
   }
 }

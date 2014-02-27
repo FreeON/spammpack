@@ -982,6 +982,8 @@ chunk_tree_scale_node (const double alpha,
 {
   assert(node != NULL);
 
+  DEBUG("scaling node with alpha = %e\n", alpha);
+
   node->norm_2 *= SQUARE(alpha);
 
   if(tier == depth)
@@ -1018,6 +1020,7 @@ chunk_tree_scale (const double alpha, void *const chunk)
   struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
   struct chunk_tree_node_t *root = (struct chunk_tree_node_t*) ptr->data;
 
+  DEBUG("scaling tree with alpha = %e\n", alpha);
   chunk_tree_scale_node(alpha, 0, ptr->depth, root);
 }
 

@@ -458,7 +458,7 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
   }
 
 #ifdef PRINT_MATRICES
-  printDense(N, ADense, "ADense");
+  printDenseInPython(N, ADense, "ADense");
 #endif
 
   A.set(N, ADense, CkCallbackResumeThread());
@@ -543,7 +543,7 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
           C.setEqual(A, CkCallbackResumeThread());
 #ifdef PRINT_MATRICES
           DenseMatrixMsg *msg = C.toDense();
-          printDense(N, msg->A, "C (after setEqual)");
+          printDenseInPython(N, msg->A, "C (after setEqual)");
           delete msg;
 #endif
           C.addIdentity(alpha, beta, CkCallbackResumeThread());
@@ -712,10 +712,10 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
   {
     if(verify)
     {
-      printDense(N, CExact, "CExact");
+      printDenseInPython(N, CExact, "CExact");
     }
     DenseMatrixMsg *CDense = C.toDense();
-    printDense(N, CDense->A, "C");
+    printDenseInPython(N, CDense->A, "C");
     delete CDense;
   }
 #endif
@@ -857,7 +857,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   INFO("spectral bounds: [ % e, % e ], dF = %e\n", F_min, F_max, F_max-F_min);
 
 #ifdef PRINT_MATRICES
-  printDense(NRows, PDense, "F");
+  printDenseInPython(NRows, PDense, "F");
 #endif
 
   CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
@@ -880,7 +880,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 
 #ifdef PRINT_MATRICES
   DenseMatrixMsg *P0Dense = P.toDense();
-  printDense(P0Dense->N, P0Dense->A, "P0");
+  printDenseInPython(P0Dense->N, P0Dense->A, "P0");
   delete P0Dense;
 #endif
 

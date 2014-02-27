@@ -25,7 +25,7 @@
  * @param format The format string for a message that is printed in front of
  * the matrix. See printf() for details.
  */
-void printDense (int N, double *A, const char *const format, ...)
+void printDenseInMM (int N, double *A, const char *const format, ...)
 {
   std::ostringstream o;
   o.setf(std::ios::scientific);
@@ -49,6 +49,89 @@ void printDense (int N, double *A, const char *const format, ...)
       o << i+1 << " " << j+1 << " " << numberBuffer << std::endl;
     }
   }
+
+  CkPrintf(o.str().c_str());
+}
+
+/** Print a dense matrix in matlab format.
+ *
+ * @param N The matrix size.
+ * @param A The matrix.
+ * @param format The format string for a message that is printed in front of
+ * the matrix. See printf() for details.
+ */
+void printDenseInMatlab (int N, double *A, const char *const format, ...)
+{
+  std::ostringstream o;
+  o.setf(std::ios::scientific);
+
+  va_list ap;
+  const int message_length = 2000;
+  char message[message_length];
+  char numberBuffer[40];
+
+  va_start(ap, format);
+  vsnprintf(message, message_length, format, ap);
+  va_end(ap);
+
+  o << "%% " << N << " x " << N << " matrix" << std::endl;
+  o << "A = [" << std::endl;
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++)
+    {
+      snprintf(numberBuffer, 40, " % e", A[BLOCK_INDEX(i, j, 0, 0, N)]);
+      o << numberBuffer;
+    }
+    o << std::endl;
+  }
+  o << "];" << std::endl;
+
+  CkPrintf(o.str().c_str());
+}
+
+/** Print a dense matrix in python format.
+ *
+ * @param N The matrix size.
+ * @param A The matrix.
+ * @param format The format string for a message that is printed in front of
+ * the matrix. See printf() for details.
+ */
+void printDenseInPython (int N, double *A, const char *const format, ...)
+{
+  std::ostringstream o;
+  o.setf(std::ios::scientific);
+
+  va_list ap;
+  const int message_length = 2000;
+  char message[message_length];
+  char numberBuffer[40];
+
+  va_start(ap, format);
+  vsnprintf(message, message_length, format, ap);
+  va_end(ap);
+
+  o << "# " << N << " x " << N << " matrix" << std::endl;
+  o << "import numpy" << std::endl;
+  o << "A = numpy.matrix([";
+  for(int i = 0; i < N; i++)
+  {
+    o << "[";
+    for(int j = 0; j < N; j++)
+    {
+      snprintf(numberBuffer, 40, "%e", A[BLOCK_INDEX(i, j, 0, 0, N)]);
+      o << numberBuffer;
+      if(j < N-1)
+      {
+        o << ",";
+      }
+    }
+    o << "]";
+    if(i < N-1)
+    {
+      o << ",";
+    }
+  }
+  o << "])" << std::endl;
 
   CkPrintf(o.str().c_str());
 }
@@ -106,7 +189,7 @@ std::string humanReadableSize (size_t n)
 
 /** Load a matrix in coordinate format, i.e.
  *
- * i j A_{ij}
+ * \f$ i \,\, j \,\, A_{ij} \f$
  *
  * from file and allocate a dense array.
  *
