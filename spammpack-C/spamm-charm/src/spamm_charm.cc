@@ -1078,16 +1078,11 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     DenseMatrixMsg *PFinal = P.toDense();
 
     double errorNorm = 0;
-    for(int i = 0; i < NRows; i++)
+    for(int i = 0; i < NRows*NColumns; i++)
     {
-      for(int j = 0; j < NColumns; j++)
-      {
-        errorNorm +=
-          (PReferenceDense[i*NColumns+j]-PFinal->A[i*NColumns+j])
-          *(PReferenceDense[i*NColumns+j]-PFinal->A[i*NColumns+j]);
-      }
+      errorNorm += (PReferenceDense[i]-PFinal->A[i])*(PReferenceDense[i]-PFinal->A[i]);
     }
-    INFO("||P-P_SpAMM|| = %e\n", sqrt(errorNorm));
+    INFO("||P-P_SpAMM||_{F} = %e\n", sqrt(errorNorm));
 
     delete PFinal;
   }
