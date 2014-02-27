@@ -1069,9 +1069,28 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     ABORT("SP2 did not converge in %d steps\n", maxIterations);
   }
 
-  //DenseMatrixMsg *PFinal = P.toDense();
-  //printDense(NRows, PFinal->A, "PFinal");
-  //delete PFinal;
+  if(lengthDensityFilename > 0)
+  {
+    BCSR PReference = BCSR(densityFilename);
+    double *PReferenceDense;
+    PReference.toDense(&NRows, &NColumns, &PReferenceDense);
+
+    DenseMatrixMsg *PFinal = P.toDense();
+
+    double errorNorm = 0;
+    for(int i = 0; i < NRows; i++)
+    {
+      for(int j = 0; j < NColumns; j++)
+      {
+        errorNorm +=
+          (PReferenceDense[i*NColumns+j]-PFinal->A[i*NColumns+j])
+          *(PReferenceDense[i*NColumns+j]-PFinal->A[i*NColumns+j]);
+      }
+    }
+    INFO("||P-P_SpAMM|| = %e\n", sqrt(errorNorm));
+
+    delete PFinal;
+  }
 
   total_time.stop();
   INFO("%s\n", total_time.to_str());
