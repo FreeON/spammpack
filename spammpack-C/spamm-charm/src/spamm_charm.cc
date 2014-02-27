@@ -27,7 +27,7 @@
  * ./configure.LB
  * make
  * ./charmrun +p3 spamm_charm -N 1024 -b 16 --type decay --decay 8 --tolerance 1e-8 --verify --iterations 10
- * ./charmrun +p3 spamm_charm --operation SP2 --Ne 100 --density something.OrthoF --tolerance 1e-8 --verify
+ * ./charmrun +p3 spamm_charm --operation SP2 --Ne 100 --fockian something.OrthoF --tolerance 1e-8 --verify
  * @endcode
  *
  * @section References
@@ -87,6 +87,7 @@ void initialize (void)
  * - { -i | --iterations } N      Iterate on the product N times (default:  1)
  * - { -t | --tolerance } T       Multiply with tolerance T (default: 0.00e+00)
  * - { -m | --type } TYPE         Use matrices of TYPE { full, decay, diagonal } (default: full)
+ * - { -F | --fockian } FILE      Load the Fockian matrix from FILE
  * - { -P | --density } FILE      Load the density matrix from FILE
  * - { -T | --Ne } NE             The total number of electrons
  * - { -v | --verify }            Verify result
@@ -117,10 +118,11 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
   double decayConstant = 0.1;
   enum operation_t operation = multiply;
   int Ne = -1;
+  char *fockianFilename = NULL;
   char *densityFilename = NULL;
 
   int c;
-  const char *short_options = "hN:b:s:i:t:m:P:T:vd:I:lap:o:";
+  const char *short_options = "hN:b:s:i:t:m:F:P:T:vd:I:lap:o:";
   const struct option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
@@ -129,6 +131,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
     { "iterations",   required_argument,  NULL, 'i' },
     { "tolerance",    required_argument,  NULL, 't' },
     { "type",         required_argument,  NULL, 'm' },
+    { "fockian",      required_argument,  NULL, 'F' },
     { "density",      required_argument,  NULL, 'P' },
     { "Ne",           required_argument,  NULL, 'T' },
     { "verify",       no_argument,        NULL, 'v' },
@@ -161,6 +164,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
             tolerance);
         CkPrintf("{ -m | --type } TYPE          Use matrices of TYPE { full, decay, diagonal } "
             "(default: full)\n");
+        CkPrintf("{ -F | --fockian } FILE       Load the fockian matrix from FILE\n");
         CkPrintf("{ -P | --density } FILE       Load the density matrix from FILE\n");
         CkPrintf("{ -T | --Ne } NE              The total number of electrons\n");
         CkPrintf("{ -v | --verify }             Verify result\n");
@@ -211,6 +215,10 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         {
           ABORT("unknown matrix type\n");
         }
+        break;
+
+      case 'F':
+        fockianFilename = strdup(optarg);
         break;
 
       case 'P':
@@ -317,9 +325,15 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
           ABORT("missing number of electrons, --Ne\n");
         }
 
+        if(fockianFilename == NULL)
+        {
+          INFO("missing fockian file, will generate random one\n");
+          fockianFilename = strdup("");
+        }
+
         if(densityFilename == NULL)
         {
-          INFO("missing density file, will generate random one\n");
+          INFO("missing density file, will not compare result\n");
           densityFilename = strdup("");
         }
 
@@ -329,10 +343,10 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         }
 
         DEBUG("calling runSP2() on this proxy\n");
-        thisProxy.runSP2(strlen(densityFilename), densityFilename, Ne, N,
-            blocksize, N_basic, numberIterations, tolerance, loadBalance,
-            initialPE, alignPEs, printPEMap, strlen(filenamePEMap),
-            filenamePEMap);
+        thisProxy.runSP2(strlen(fockianFilename), fockianFilename,
+            strlen(densityFilename), densityFilename, Ne, N, blocksize,
+            N_basic, numberIterations, tolerance, loadBalance, initialPE,
+            alignPEs, printPEMap, strlen(filenamePEMap), filenamePEMap);
       }
       break;
 
@@ -763,8 +777,10 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
 
 /** The main method for running an SP2 calculation.
  *
- * @param lengthFilename The length of the filename string.
- * @param filename The filename of the densit file.
+ * @param lengthFockianFilename The length of the filename string.
+ * @param fockianFilename The filename of the Fockian matrix file.
+ * @param lengthDensityFilename The length of the filename string.
+ * @param densityFilename The filename of the density matrix file.
  * @param Ne The total number of electrons.
  * @param N The matrix size in case the filename is empty.
  * @param blocksize The blocksize of the matrix.
@@ -778,7 +794,8 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
  * @param lengthPEMap The length of filenamePEMap.
  * @param filenamePEMap The base name of the PEMap files.
  */
-void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int N,
+void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
+    int lengthDensityFilename, char *densityFilename, int Ne, int N,
     int blocksize, int N_basic, int maxIterations, double tolerance,
     bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
     int lengthPEMap, char *filenamePEMap)
@@ -789,9 +806,9 @@ void SpAMM_Charm::runSP2 (int lengthFilename, char *filename, int Ne, int N,
 
   LBDatabase *db = LBDatabaseObj();
 
-  if(lengthFilename > 0)
+  if(lengthFockianFilename > 0)
   {
-    BCSR F(filename);
+    BCSR F(fockianFilename);
 
     F.getSpectralBounds(0, &F_min, &F_max);
     F.toDense(&NRows, &NColumns, &PDense);
