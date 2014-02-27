@@ -73,21 +73,27 @@ case ${enable_chunk_implementation} in
     AC_MSG_RESULT([tree chunks])
     ;;
   * )
-    AC_MSG_RESULT([unknown])
     AC_MSG_FAILURE([unknown chunk implementation: ${enable_chunk_implementation}])
     ;;
 esac
 AC_DEFINE_UNQUOTED([CHUNK_IMPLEMENTATION],
   [${enable_chunk_implementation}], [The chunk implementation])
 
+AC_MSG_CHECKING([which block multiply implementation to use])
 AC_ARG_ENABLE([block-multiply],
   [AS_HELP_STRING([--enable-block-multiply],
   [choose the dense multiply implementation (block, blas), default = block])],
   [enable_block_multiply=$enableval],
   [enable_block_multiply="block"])
 case ${enable_block_multiply} in
-  "block") AC_DEFINE([BLOCK_MULTIPLY], [1], [Use simple nested loop matrix multiply.]) ;;
-  "blas")  AC_DEFINE([BLOCK_BLAS], [1], [Use .gemm() matrix multiply.]) ;;
+  "block" )
+    AC_MSG_RESULT([block])
+    AC_DEFINE([BLOCK_MULTIPLY], [1], [Use simple nested loop matrix multiply.])
+    ;;
+  "blas" )
+    AC_MSG_RESULT([blas])
+    AC_DEFINE([BLOCK_BLAS], [1], [Use .gemm() matrix multiply.])
+    ;;
   *) AC_MSG_FAILURE([unknown multiply implementation]) ;;
 esac
 
