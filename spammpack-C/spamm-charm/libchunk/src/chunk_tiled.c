@@ -332,7 +332,7 @@ chunk_tiled_get_norm_2 (const void *const chunk)
   {
     norm += norm_2[i];
   }
-  DEBUG("chunk at %p, norm = %e\n", chunk, norm);
+  DEBUG("chunk at %p, norm_2 = %e\n", chunk, norm);
   return norm;
 }
 

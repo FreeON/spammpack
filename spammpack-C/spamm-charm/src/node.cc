@@ -272,7 +272,7 @@ void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
   }
 
   norm = sqrt(norm_2);
-  DEBUG(LB"norm = %e\n"LE, norm);
+  DEBUG(LB"norm_2 = %e, norm = %e\n"LE, norm_2, norm);
   contribute(cb);
 }
 

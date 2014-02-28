@@ -253,7 +253,15 @@ void Matrix::setNorm (CkCallback &cb)
   /* Update the norms on all of the upper tiers. */
   for(int tier = depth; tier >= 0; tier--)
   {
-    nodes[tier].setNorm(nodes[tier+1], CkCallbackResumeThread());
+    if(tier < depth)
+    {
+      nodes[tier].setNorm(nodes[tier+1], CkCallbackResumeThread());
+    }
+
+    else
+    {
+      nodes[tier].setNorm(nodes[tier], CkCallbackResumeThread());
+    }
   }
   thisProxy.updateNorm(CkCallbackResumeThread());
   cb.send();
