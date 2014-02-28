@@ -221,7 +221,7 @@ void Node::set (int blocksize, int N_basic, double *A, CkCallback &cb)
     DEBUG(LB"creating new Chunk at %p, chunksize = %llu\n"LE, chunk, chunksize);
   }
   chunk_set(chunk, A);
-  norm_2 = chunk_get_norm(chunk);
+  norm_2 = chunk_get_norm_2(chunk);
   norm = sqrt(norm_2);
 
 #ifdef PRINT_MATRICES
@@ -239,24 +239,38 @@ void Node::set (int blocksize, int N_basic, double *A, CkCallback &cb)
  */
 void Node::setNorm (CProxy_Node nodes, CkCallback &cb)
 {
-  assert(tier < depth);
+  assert(tier <= depth);
 
   DEBUG(LB"updating norms\n"LE);
 
+  /* Reset. */
   norm_2 = 0;
-  for(int i = 0; i < 2; i++)
+
+  if(tier == depth)
   {
-    int nextX = (thisIndex.x << 1) | i;
-    for(int j = 0; j < 2; j++)
+    if(chunk != NULL)
     {
-      int nextY = (thisIndex.y << 1) | j;
-      NodeInfoMsg *msg = nodes(nextX, nextY).info();
-      DEBUG(LB"got tier %d, Node(%d,%d) norm = %e\n"LE, tier+1, nextX, nextY,
-          norm);
-      norm_2 += msg->norm_2;
-      delete msg;
+      norm_2 = chunk_get_norm_2(chunk);
     }
   }
+
+  else
+  {
+    for(int i = 0; i < 2; i++)
+    {
+      int nextX = (thisIndex.x << 1) | i;
+      for(int j = 0; j < 2; j++)
+      {
+        int nextY = (thisIndex.y << 1) | j;
+        NodeInfoMsg *msg = nodes(nextX, nextY).info();
+        DEBUG(LB"got tier %d, Node(%d,%d) norm = %e\n"LE, tier+1, nextX, nextY,
+            norm);
+        norm_2 += msg->norm_2;
+        delete msg;
+      }
+    }
+  }
+
   norm = sqrt(norm_2);
   DEBUG(LB"norm = %e\n"LE, norm);
   contribute(cb);
@@ -416,7 +430,7 @@ void Node::addIdentity (double alpha, CkCallback &cb)
     {
       chunk_add_identity(alpha, chunk);
     }
-    norm_2 = chunk_get_norm(chunk);
+    norm_2 = chunk_get_norm_2(chunk);
     norm = sqrt(norm_2);
   }
 

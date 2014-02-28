@@ -33,7 +33,7 @@ int
 chunk_tiled_get_N_basic (void *const chunk);
 
 double
-chunk_tiled_get_norm (const void *const chunk);
+chunk_tiled_get_norm_2 (const void *const chunk);
 
 void
 chunk_tiled_print (const void *const chunk,

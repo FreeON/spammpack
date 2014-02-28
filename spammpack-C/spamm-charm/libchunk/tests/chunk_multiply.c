@@ -260,7 +260,7 @@ main (int argc, char **argv)
     norm_2 += A_dense[i]*A_dense[i];
   }
   printf("random matrix, norm_2 = %e, norm_2 of chunk = %e\n",
-      norm_2, chunk_get_norm(A));
+      norm_2, chunk_get_norm_2(A));
 
   if(test_dense_product)
   {

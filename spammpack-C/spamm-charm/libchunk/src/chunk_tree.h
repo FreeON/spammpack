@@ -33,7 +33,7 @@ int
 chunk_tree_get_N_basic (void *const chunk);
 
 double
-chunk_tree_get_norm (const void *const chunk);
+chunk_tree_get_norm_2 (const void *const chunk);
 
 void
 chunk_tree_print (const void *const chunk,

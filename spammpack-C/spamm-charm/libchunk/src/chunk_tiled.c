@@ -313,14 +313,14 @@ chunk_tiled_get_N_basic (void *const chunk)
   return ((struct chunk_tiled_t*) chunk)->N_basic;
 }
 
-/** Get the matrix norm of a chunk.
+/** Get the square of the matrix norm of a chunk.
  *
  * @param chunk The chunk.
  *
  * @return The square of the Frobenius norm.
  */
 double
-chunk_tiled_get_norm (const void *const chunk)
+chunk_tiled_get_norm_2 (const void *const chunk)
 {
   assert(chunk != NULL);
 

@@ -53,9 +53,9 @@ chunk_get_N_basic (void *const chunk)
 }
 
 double
-chunk_get_norm (const void *const chunk)
+chunk_get_norm_2 (const void *const chunk)
 {
-  return FUNC(get_norm)(chunk);
+  return FUNC(get_norm_2)(chunk);
 }
 
 void

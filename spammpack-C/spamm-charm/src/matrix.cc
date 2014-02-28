@@ -250,8 +250,8 @@ void Matrix::setNorm (CkCallback &cb)
 {
   DEBUG("setting norm\n");
 
-  /* Update the norms on the upper tiers. */
-  for(int tier = depth-1; tier >= 0; tier--)
+  /* Update the norms on all of the upper tiers. */
+  for(int tier = depth; tier >= 0; tier--)
   {
     nodes[tier].setNorm(nodes[tier+1], CkCallbackResumeThread());
   }

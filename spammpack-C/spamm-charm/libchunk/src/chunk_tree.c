@@ -550,14 +550,14 @@ chunk_tree_set_zero(struct chunk_tree_t *const chunk)
   chunk_tree_update_norm(chunk);
 }
 
-/** Get the matrix norm of a chunk.
+/** Get the square of the matrix norm of a chunk.
  *
  * @param chunk The chunk.
  *
  * @return The square of the Frobenius norm.
  */
 double
-chunk_tree_get_norm (const void *const chunk)
+chunk_tree_get_norm_2 (const void *const chunk)
 {
   assert(chunk != NULL);
   struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
