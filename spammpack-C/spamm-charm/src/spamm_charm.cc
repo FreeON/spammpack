@@ -960,7 +960,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
       delete trace_P2;
     }
 
-    INFO("iteration %2d, %s, %s, %s: trace(P) = %e "
+    INFO("iteration %2d, %s, %s, %s: trace(P) = %1.16e "
         "(Ne = %d, 2*trace(P)-Ne = % e) "
         "complexity %d (out of %d)\n",
         iteration+1,
@@ -983,6 +983,10 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
         if(idempotencyErrorNow >= idempotencyErrorLast)
         {
           INFO("SP2 converged in %d steps\n", iteration+1);
+          P.updateNorm(CkCallbackResumeThread());
+          DoubleMsg *norm_P = P.getNorm();
+          INFO("||P|| = %1.16e\n", norm_P->x);
+          delete norm_P;
           converged = true;
           break;
         }

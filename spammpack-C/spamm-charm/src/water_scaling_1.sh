@@ -1,14 +1,16 @@
 #!/bin/bash
 
-#./spamm-charm \
-#  --block 256 \
-#  --basic 4 \
-#  --tolerance 0 \
-#  --operation SP2 \
-#  --fockian ~/data-sets/water/h2o_10.F_DIIS \
-#  --density ~/data-sets/water/h2o_10.OrthoD \
-#  --Ne 100 \
-#  --iterations 100
+./spamm-charm \
+  --block 256 \
+  --basic 4 \
+  --tolerance 0 \
+  --operation SP2 \
+  --fockian ~/data-sets/water/h2o_10.F_DIIS \
+  --density ~/data-sets/water/h2o_10.OrthoD \
+  --Ne 100 \
+  --iterations 100
+
+exit 0
 
 ./spamm-charm \
   --block 750 \
@@ -19,6 +21,8 @@
   --density ~/data-sets/water/h2o_30.OrthoD \
   --Ne 300 \
   --iterations 100
+
+exit 0
 
 ./spamm-charm \
   --block 1250 \
