@@ -1,9 +1,31 @@
 #include <getopt.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ABORT(format, ...) printf(format, ##__VA_ARGS__); exit(-1)
-#define INFO(format, ...) printf(format, ##__VA_ARGS__)
+#define ABORT(format, ...) print_log("ERROR", __FILE__, __LINE__, __func__, format, ##__VA_ARGS__); exit(-1)
+#define INFO(format, ...) print_log("INFO", __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
+
+#define FORMAT_LENGTH 1000
+
+void
+print_log (const char *const tag,
+    const char *const filename,
+    const int line_number,
+    const char *const function_name,
+    const char *const format,
+    ...)
+{
+  va_list ap;
+  char new_format[FORMAT_LENGTH];
+
+  snprintf(new_format, FORMAT_LENGTH, "[%s - %s:%d (%s)] %s",
+      tag, filename, line_number, function_name, format);
+
+  va_start(ap, format);
+  vprintf(new_format, ap);
+  va_end(ap);
+}
 
 struct bcsr_t
 {
@@ -120,6 +142,15 @@ load_BCSR (const char *const filename)
       A->M, A->N, A->numberNonZero, 100*A->numberNonZero/(double) (A->N*A->N));
 }
 
+void
+print_help_and_exit (void)
+{
+  printf("Usage: chunk_SP2 [options]\n");
+  printf("\n");
+  printf("{ -h | --help }     This help\n");
+  exit(0);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -136,6 +167,10 @@ main (int argc, char **argv)
   {
     switch(c)
     {
+      case 'h':
+        print_help_and_exit();
+        break;
+
       default:
         printf("illegal command line argument\n");
         exit(-1);
@@ -145,8 +180,7 @@ main (int argc, char **argv)
 
   if(F_filename == NULL)
   {
-    printf("missing Fockian matrix file\n");
-    exit(-1);
+    ABORT("missing Fockian matrix file\n");
   }
 
   return 0;
