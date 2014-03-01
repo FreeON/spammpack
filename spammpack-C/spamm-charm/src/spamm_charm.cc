@@ -907,7 +907,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   P.updateTrace(CkCallbackResumeThread());
   DoubleMsg *trace_P = P.getTrace();
   INFO("tolerance = %e\n", tolerance);
-  INFO("iteration  0: trace(P) = %e (Ne/2 = %e)\n", trace_P->x, Ne/2.0);
+  INFO("iteration  0: trace(P) = %1.16e (Ne/2 = %e)\n", trace_P->x, Ne/2.0);
   bool converged = false;
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
@@ -918,7 +918,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 #ifdef DEBUG_OUTPUT
     P.updateNorm(CkCallbackResumeThread());
     DoubleMsg *norm_P = P.getNorm();
-    DEBUG("||P%d|| = %e\n", iteration, norm_P->x);
+    DEBUG("||P%d|| = %1.16e\n", iteration, norm_P->x);
     delete norm_P;
 #endif
 
@@ -931,12 +931,12 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 
     P2.updateTrace(CkCallbackResumeThread());
     DoubleMsg *trace_P2 = P2.getTrace();
-    DEBUG("trace(P%d^2) = %e (Ne/2 = %e)\n", iteration, trace_P2->x, Ne/2.0);
+    DEBUG("trace(P%d^2) = %1.16e (Ne/2 = %e)\n", iteration, trace_P2->x, Ne/2.0);
 
 #ifdef DEBUG_OUTPUT
     P2.updateNorm(CkCallbackResumeThread());
     DoubleMsg *norm_P2 = P2.getNorm();
-    DEBUG("||P%d^2|| = %e\n", iteration, norm_P2->x);
+    DEBUG("||P%d^2|| = %1.16e\n", iteration, norm_P2->x);
     delete norm_P2;
 #endif
 
