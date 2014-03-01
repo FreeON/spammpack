@@ -85,48 +85,63 @@ def print_histogram (P):
 def main ():
   parser = argparse.ArgumentParser()
 
-  parser.add_argument("FILE",
-      help = "The Fockian matrix, in matrix market format.",
-      nargs = "*")
+  parser.add_argument(
+      "FILE",
+      help = "The Fockian matrix, in matrix market format."
+      )
 
-  parser.add_argument("--Ne",
+  parser.add_argument(
+      "--density",
+      help = "The converged density for verification "
+      + "(in matrix market format)."
+      )
+
+  parser.add_argument(
+      "--Ne",
       help = "The number of electrons (default %(default)s)",
       type = int,
-      default = 1)
+      default = 1
+      )
 
-  parser.add_argument("--max-iterations",
+  parser.add_argument(
+      "--max-iterations",
       help = "The maximum number of iterations (default %(default)s)",
       metavar = "MAX",
       type = int,
-      default = 100)
+      default = 100
+      )
 
-  parser.add_argument("--bin-density",
+  parser.add_argument(
+      "--bin-density",
       help = "Print histogram of binned matrix elements of density guess",
       action = "store_true",
-      default = False)
+      default = False
+      )
 
-  parser.add_argument("--tolerance",
+  parser.add_argument(
+      "--tolerance",
       help = "The hypothetical SpAMM tolerance",
       type = float,
-      default = 0)
+      default = 0
+      )
 
-  parser.add_argument("--blocksize",
+  parser.add_argument(
+      "--blocksize",
       help = "Set a hypothetical blocksize to calculate product complexities",
       type = int,
-      default = 0)
+      default = 0
+      )
 
-  parser.add_argument("--debug", "-d",
+  parser.add_argument(
+      "--debug", "-d",
       help = "Print debugging stuff",
       action = "store_true",
-      default = False)
+      default = False
+      )
 
   options = parser.parse_args()
 
-  F = None
-  if len(options.FILE) == 0:
-    F = read_MM()
-  else:
-    F = read_MM(options.FILE[0])
+  F = read_MM(options.FILE)
 
   if options.debug:
     for i in range(F.shape[0]):
@@ -197,6 +212,11 @@ def main ():
 
     if options.bin_density:
       print_histogram(P)
+
+    if options.density:
+      print("loading reference density")
+      D = read_MM(options.density)
+      print("||P-D|| = {:e}".format(np.linalg.norm(P-D, 'fro')))
 
   else:
     print("failed to converge")
