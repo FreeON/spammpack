@@ -168,7 +168,9 @@ def main ():
 
   occupation = np.zeros(4)
   trace_P = np.trace(P)
-  print("iteration  0: trace(P) = {:e}".format(trace_P))
+  print("iteration  0: trace(P) = {:e}, ||P|| = {:1.16e}".format(
+    trace_P,
+    np.linalg.norm(P, "fro")))
 
   converged = False
   for i in range(options.max_iterations):
@@ -190,6 +192,7 @@ def main ():
 
     print("iteration {:2d}: ".format(i+1)
         + "trace(P) = {:e}, ".format(trace_P)
+        + "||P|| = {:1.16e}, ".format(np.linalg.norm(P, "fro"))
         + "trace(P)-Ne/2 = {: e}, ".format(trace_P-options.Ne/2.0)
         + "complexity = {:d} ".format(complexity)
         + "(out of {:d})".format(full_complexity))
@@ -216,7 +219,10 @@ def main ():
     if options.density:
       print("loading reference density")
       D = read_MM(options.density)
-      print("||P-D|| = {:e}".format(np.linalg.norm(P-D, 'fro')))
+      print("||D|| = {:1.16e}, ||P-D|| = {:1.16e}".format(
+        np.linalg.norm(D, "fro"),
+        np.linalg.norm(P-D, "fro")
+        ))
 
   else:
     print("failed to converge")
