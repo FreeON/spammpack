@@ -191,7 +191,7 @@ def main ():
     occupation[0] = trace_P
 
     print("iteration {:2d}: ".format(i+1)
-        + "trace(P) = {:e}, ".format(trace_P)
+        + "trace(P) = {:1.16e}, ".format(trace_P)
         + "||P|| = {:1.16e}, ".format(np.linalg.norm(P, "fro"))
         + "trace(P)-Ne/2 = {: e}, ".format(trace_P-options.Ne/2.0)
         + "complexity = {:d} ".format(complexity)
@@ -218,9 +218,17 @@ def main ():
 
     if options.density:
       D = read_MM(options.density)
-      print("||P-D|| = {:1.16e}".format(np.linalg.norm(P-D, "fro")))
+      norm_PD = np.linalg.norm(P-D, "fro")
+      print("||P-D||     = {:1.16e}".format(norm_PD))
+      print("||P-D||/N^2 = {:1.16e}".format(norm_PD/(D.shape[0]*D.shape[1])**2))
 
-    print("total energy = {:1.16e}".format(np.trace(F*P)))
+    E_P = np.trace(F*P)
+    print("total energy, trace(F.P) = {:1.16e}".format(E_P))
+
+    if options.density:
+      E_D = np.trace(F*D)
+      print("total energy, trace(F.D) = {:1.16e}".format(E_P))
+      print("rel. error in energy = {:1.16e}".format(abs((E_D-E_P)/E_D)))
 
   else:
     print("failed to converge")
