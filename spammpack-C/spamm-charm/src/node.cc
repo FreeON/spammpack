@@ -22,11 +22,11 @@
 
 /** Some convenience macros for logging. Wrap the logging format string with
  * LB and LE. */
-#define LB "tier %d Node(%d,%d) "
+#define LB "tier %d Node(%d,%d) [%s] "
 
 /** Some convenience macros for logging. Wrap the logging format string with
  * LB and LE. */
-#define LE , tier, thisIndex.x, thisIndex.y
+#define LE , tier, thisIndex.x, thisIndex.y, name
 
 /** The constructor.
  *
@@ -35,9 +35,13 @@
  * @param blocksize The blocksize.
  * @param N_basic The size of the basic submatrix.
  * @param tier The tier this node is on.
+ * @param nameLength The strlen of the name.
+ * @param name The matrix name.
  */
-Node::Node (int N, int depth, int blocksize, int N_basic, int tier)
+Node::Node (int N, int depth, int blocksize, int N_basic, int tier,
+    int nameLength, char *name)
 {
+  this->name = strdup(name);
   this->N = N;
   this->blocksize = blocksize;
   this->N_basic = N_basic;
@@ -102,6 +106,14 @@ Node::~Node (void)
 void Node::pup (PUP::er &p)
 {
   CBase_Node::pup(p);
+
+  int nameLength = strlen(name);
+  p|nameLength;
+  if(p.isUnpacking())
+  {
+    name = (char*) calloc(nameLength+1, sizeof(char));
+  }
+  PUParray(p, (char*) name, nameLength+1);
 
   p|N;
   p|blocksize;

@@ -16,6 +16,10 @@ class Node : public CBase_Node
 {
   private:
 
+    /** The name of the matrix this node is part of. This is currently used to
+     * identify the matrix. */
+    char *name;
+
     /** The matrix size. */
     int N;
 
@@ -60,7 +64,8 @@ class Node : public CBase_Node
 
   public:
 
-    Node (int N, int depth, int blocksize, int N_basic, int tier);
+    Node (int N, int depth, int blocksize, int N_basic, int tier,
+        int nameLength, char *name);
     Node (CkMigrateMessage *msg);
     ~Node (void);
     void pup (PUP::er &p);

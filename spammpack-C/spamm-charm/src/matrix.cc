@@ -65,7 +65,8 @@ Matrix::Matrix (int initialPE, bool alignPEs, int N, int blocksize,
         {
           initialPE = i%CkNumPes();
         }
-        nodes[tier](i, j).insert(N, depth, blocksize, N_basic, tier, initialPE);
+        nodes[tier](i, j).insert(N, depth, blocksize, N_basic, tier,
+            nameLength, name, initialPE);
       }
     }
     nodes[tier].doneInserting();
