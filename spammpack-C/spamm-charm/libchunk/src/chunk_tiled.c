@@ -98,7 +98,7 @@ struct chunk_tiled_t
  *
  * @return The offset.
  */
-inline size_t
+static inline size_t
 chunk_tiled_matrix_offset (const int i, const int j, const int N)
 {
   assert(i >= 0);
@@ -117,7 +117,7 @@ chunk_tiled_matrix_offset (const int i, const int j, const int N)
  *
  * @return The pointer to the norm_2 array.
  */
-inline double *
+static inline double *
 chunk_tiled_norm_pointer (const void *const chunk)
 {
   assert(chunk != NULL);
@@ -133,7 +133,7 @@ chunk_tiled_norm_pointer (const void *const chunk)
  *
  * @return The pointer to the start of a (i,j)th basic submatrix.
  */
-inline double *
+static inline double *
 chunk_tiled_matrix_pointer (const int i, const int j, const void *const chunk)
 {
   assert(chunk != NULL);
