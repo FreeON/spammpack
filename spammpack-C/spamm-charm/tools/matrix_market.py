@@ -5,18 +5,19 @@
 # @author Nicolas Bock <nicolas.bock@freeon.org>
 # @author Matt Challacombe <matt.challacombe@freeon.org>
 
-import re
-import sys
-import numpy as np
-
 ## Read a matrix in Matrix Market format and return a matrix object.
 def read_MM (filename = ""):
+  import numpy as np
+  import re
+  import sys
+
   if len(filename) == 0:
-    print("reading from stdin")
+    sys.stdout.write("reading from stdin... ")
     fd = sys.stdin
   else:
-    print("reading from \"" + filename + "\"")
+    sys.stdout.write("reading from \"" + filename + "\"... ")
     fd = open(filename)
+  sys.stdout.flush()
 
   header = fd.readline()
 
@@ -44,6 +45,8 @@ def read_MM (filename = ""):
     F[int(token[0])-1, int(token[1])-1] = float(token[2])
 
   fd.close()
+
+  print("||F|| = {:1.16e}".format(np.linalg.norm(F, "fro")))
 
   return F
 

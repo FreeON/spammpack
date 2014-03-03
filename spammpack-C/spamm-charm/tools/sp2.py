@@ -217,12 +217,10 @@ def main ():
       print_histogram(P)
 
     if options.density:
-      print("loading reference density")
       D = read_MM(options.density)
-      print("||D|| = {:1.16e}, ||P-D|| = {:1.16e}".format(
-        np.linalg.norm(D, "fro"),
-        np.linalg.norm(P-D, "fro")
-        ))
+      print("||P-D|| = {:1.16e}".format(np.linalg.norm(P-D, "fro")))
+
+    print("total energy = {:1.16e}".format(np.trace(F*P)))
 
   else:
     print("failed to converge")
