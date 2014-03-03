@@ -328,6 +328,9 @@ void Matrix::doneTrace (double trace)
 
 /** Get the trace of a matrix.
  *
+ * The Matrix::updateTrace() method has to be called first, to update the
+ * trace information on this Matrix object.
+ *
  * @return The trace.
  */
 DoubleMsg * Matrix::getTrace (void)
@@ -358,7 +361,7 @@ void Matrix::add (double alpha, double beta, CProxy_Matrix B, CkCallback &cb)
  *
  * @f[ A \leftarrow B @f]
  *
- * where @f$ A @f$ is this Matrix.
+ * where @f$ A @f$ is this Matrix, and \f$ B \f$ is the other Matrix.
  *
  * @param B The other matrix.
  * @param cb The callback to signal when done.

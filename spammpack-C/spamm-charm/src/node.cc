@@ -232,6 +232,12 @@ void Node::set (int blocksize, int N_basic, double *A, CkCallback &cb)
     chunksize = chunk_sizeof(blocksize, N_basic);
     DEBUG(LB"creating new Chunk at %p, chunksize = %llu\n"LE, chunk, chunksize);
   }
+
+  else
+  {
+    DEBUG(LB"chunk already allocated\n");
+  }
+
   chunk_set(chunk, A);
   norm_2 = chunk_get_norm_2(chunk);
   norm = sqrt(norm_2);
