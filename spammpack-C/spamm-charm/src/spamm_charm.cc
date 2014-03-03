@@ -819,7 +819,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
     int lengthPEMap, char *filenamePEMap, double F_min, double F_max)
 {
-  double *PDense;
+  double *FDense;
   int NRows, NColumns;
 
   LBDatabase *db = LBDatabaseObj();
@@ -834,7 +834,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     }
 
     /* Convert BCSR to dense. */
-    F.toDense(&NRows, &NColumns, &PDense);
+    F.toDense(&NRows, &NColumns, &FDense);
     assert(NRows == NColumns);
   }
 
@@ -843,28 +843,27 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     INFO("creating random, symmetric %d x %d matrix\n", N, N);
     NRows = N;
     NColumns = N;
-    PDense = new double[N*N];
+    FDense = new double[N*N];
     for(int i = 0; i < N; i++) {
       for(int j = i; j < N; j++)
       {
-        PDense[BLOCK_INDEX(i, j, 0, 0, N)] = rand()/(double) RAND_MAX;
-        PDense[BLOCK_INDEX(j, i, 0, 0, N)] = PDense[BLOCK_INDEX(i, j, 0, 0, N)];
+        FDense[BLOCK_INDEX(i, j, 0, 0, N)] = rand()/(double) RAND_MAX;
+        FDense[BLOCK_INDEX(j, i, 0, 0, N)] = FDense[BLOCK_INDEX(i, j, 0, 0, N)];
       }
     }
-    getSpectralBounds(0, &F_min, &F_max, N, PDense);
+    getSpectralBounds(0, &F_min, &F_max, N, FDense);
   }
 
   INFO("spectral bounds: [ % e, % e ], dF = %e\n", F_min, F_max, F_max-F_min);
 
 #ifdef PRINT_MATRICES
-  printDenseInPython(NRows, PDense, "F");
+  printDenseInPython(NRows, FDense, "F");
 #endif
 
-  CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
-      blocksize, N_basic, strlen("P"), (char*) "P");
+  CProxy_Matrix F = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
+      blocksize, N_basic, strlen("F"), (char*) "F");
 
-  P.set(NRows, PDense, CkCallbackResumeThread());
-  //P.init(CkCallbackResumeThread());
+  F.set(NRows, FDense, CkCallbackResumeThread());
 
   Timer total_time("total time");
   total_time.start();
@@ -873,10 +872,13 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
    *
    * P_0 = (F_max*I-F)/(F_max-F_min)
    */
+  CProxy_Matrix P = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
+      blocksize, N_basic, strlen("P"), (char*) "P");
+  P.setEqual(F, CkCallbackResumeThread());
   P.addIdentity(-1, F_max, CkCallbackResumeThread());
   P.scale(1/(F_max-F_min), CkCallbackResumeThread());
 
-  delete[] PDense;
+  delete[] FDense;
 
 #ifdef PRINT_MATRICES
   DenseMatrixMsg *P0Dense = P.toDense();
@@ -886,7 +888,6 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 
   CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
       blocksize, N_basic, strlen("P2"), (char*) "P2");
-  //P2.init(CkCallbackResumeThread());
 
   MatrixInfoMsg *PInfo = P.info();
   MatrixNodeMsg *PNodes = P.getNodes();
@@ -985,7 +986,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
           INFO("SP2 converged in %d steps\n", iteration+1);
           P.updateNorm(CkCallbackResumeThread());
           DoubleMsg *norm_P = P.getNorm();
-          INFO("||P|| = %1.16e\n", norm_P->x);
+          INFO("||P|| = %1.16e, ||P||/N^2 = %1.16e\n", norm_P->x, norm_P->x/NRows/NColumns);
           delete norm_P;
           converged = true;
           break;
@@ -1104,6 +1105,17 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 
     delete PFinal;
   }
+
+  /* Calculate energy, trace(F.P). */
+  CProxy_Matrix FP = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
+      blocksize, N_basic, strlen("FP"), (char*) "FP");
+  //FP.init(CkCallbackResumeThread());
+  CProxy_Multiply M_FP(P, F, FP);
+  M_FP.init(initialPE, alignPEs, CkCallbackResumeThread());
+  M_FP.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread());
+  FP.updateTrace(CkCallbackResumeThread());
+  DoubleMsg *FP_trace = FP.getTrace();
+  INFO("total energy, trace(F*P) = %e\n", FP_trace->x);
 
   total_time.stop();
   INFO("%s\n", total_time.to_str());

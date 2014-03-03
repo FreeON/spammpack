@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ./spamm-charm \
-  --block 256 \
-  --basic 4 \
+  --block 250 \
+  --basic 250 \
   --tolerance 0 \
   --operation SP2 \
   --fockian ~/data-sets/water/h2o_10.F_DIIS \
