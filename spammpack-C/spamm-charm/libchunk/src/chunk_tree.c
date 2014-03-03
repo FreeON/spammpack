@@ -472,7 +472,7 @@ chunk_tree_set (void *const chunk, const double *const A)
     }
   }
 
-#ifdef DEBUG_OUTPUT
+#ifdef DEBUG_OUTPUT_MATRIX
   DEBUG("A:\n");
   for(int i = 0; i < ptr->N_chunk; i++)
   {
@@ -713,7 +713,7 @@ chunk_tree_add (const double alpha, void *const A,
 
   DEBUG("adding two chunks\n");
 
-#ifdef DEBUG_OUTPUT
+#ifdef DEBUG_OUTPUT_MATRIX
   chunk_tree_print(A, "chunk A\n");
   chunk_tree_print(B, "chunk B\n");
 #endif

@@ -180,6 +180,20 @@ else
   AC_MSG_RESULT([no])
 fi
 
+# Enable matrix printing.
+AC_MSG_CHECKING([whether to print matrices])
+AC_ARG_ENABLE([debug-matrix],
+  [AS_HELP_STRING([--enable-debug-matrix],
+  [print the matrices for debugging])],
+  [enable_debug=$enableval],
+  [enable_debug="no"])
+if test "${enable_debug}" = "yes"; then
+  AC_DEFINE([DEBUG_OUTPUT_MATRIX], [1], [Print the matrices for debugging])
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Makefile
