@@ -696,3 +696,20 @@ chunk_tiled_delete (void **const chunk)
   free(*chunk);
   *chunk = NULL;
 }
+
+/** Get the complexity of the last chunk operation.
+ *
+ * The complexity is simply the number of block operations performed. For the
+ * multiply this is in the worst case \f$ \left( N_{chunk}/N_{basic}
+ * \right)^{3} \f$, but is smaller for matrices with decay and a tolerance \f$
+ * \tau > 0 \f$.
+ *
+ * @param chunk The chunk.
+ *
+ * @return The complexity count.
+ */
+size_t
+chunk_tiled_get_complexity (const void *const chunk)
+{
+  ABORT("FIXME\n");
+}

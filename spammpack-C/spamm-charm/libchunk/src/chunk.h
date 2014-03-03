@@ -65,6 +65,9 @@ chunk_to_dense (const void *const chunk);
 void
 chunk_delete (void **const chunk);
 
+size_t
+chunk_get_complexity (const void *const chunk);
+
 __END_DECLS
 
 #endif
