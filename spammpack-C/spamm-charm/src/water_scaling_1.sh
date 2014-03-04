@@ -50,20 +50,20 @@ run_spamm 4096 4 1.0e-7 900 h2o_90
 run_spamm 4096 4 1.0e-6 900 h2o_90
 run_spamm 4096 4 1.0e-5 900 h2o_90
 
-run_spamm 4096 4 0      1100 h20_110
-run_spamm 4096 4 1.0e-8 1100 h20_110
-run_spamm 4096 4 1.0e-7 1100 h20_110
-run_spamm 4096 4 1.0e-6 1100 h20_110
-run_spamm 4096 4 1.0e-5 1100 h20_110
+run_spamm 4096 4 0      1100 h2o_110
+run_spamm 4096 4 1.0e-8 1100 h2o_110
+run_spamm 4096 4 1.0e-7 1100 h2o_110
+run_spamm 4096 4 1.0e-6 1100 h2o_110
+run_spamm 4096 4 1.0e-5 1100 h2o_110
 
-run_spamm 4096 4 0      1300 h20_130
-run_spamm 4096 4 1.0e-8 1300 h20_130
-run_spamm 4096 4 1.0e-7 1300 h20_130
-run_spamm 4096 4 1.0e-6 1300 h20_130
-run_spamm 4096 4 1.0e-5 1300 h20_130
+run_spamm 4096 4 0      1300 h2o_130
+run_spamm 4096 4 1.0e-8 1300 h2o_130
+run_spamm 4096 4 1.0e-7 1300 h2o_130
+run_spamm 4096 4 1.0e-6 1300 h2o_130
+run_spamm 4096 4 1.0e-5 1300 h2o_130
 
-run_spamm 4096 4 0      1500 h20_150
-run_spamm 4096 4 1.0e-8 1500 h20_150
-run_spamm 4096 4 1.0e-7 1500 h20_150
-run_spamm 4096 4 1.0e-6 1500 h20_150
-run_spamm 4096 4 1.0e-5 1500 h20_150
+run_spamm 4096 4 0      1500 h2o_150
+run_spamm 4096 4 1.0e-8 1500 h2o_150
+run_spamm 4096 4 1.0e-7 1500 h2o_150
+run_spamm 4096 4 1.0e-6 1500 h2o_150
+run_spamm 4096 4 1.0e-5 1500 h2o_150
