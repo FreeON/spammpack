@@ -1,3 +1,5 @@
+TAGS_FILES = $(top_builddir)/config.h
+
 AM_CFLAGS = $(OPENMP_CFLAGS)
 
 lib_LTLIBRARIES = libchunk.la
