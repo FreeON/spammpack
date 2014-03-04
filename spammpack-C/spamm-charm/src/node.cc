@@ -343,6 +343,7 @@ void Node::add (double alpha, double beta, CProxy_Node B, CkCallback &cb)
   {
     DEBUG(LB"allocating new chunk\n"LE);
     chunk = chunk_alloc(blocksize, N_basic, N, iLower, jLower);
+    chunksize = chunk_sizeof(blocksize, N_basic);
   }
 
   if(BChunk->chunksize != 0)
