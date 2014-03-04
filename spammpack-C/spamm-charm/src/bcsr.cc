@@ -91,11 +91,12 @@ BCSR::BCSR (char *filename)
   }
   norm = sqrt(norm);
 
-  INFO("read BCSR matrix, size %dx%d, %d nonzeros, "
+  INFO("read BCSR matrix %s, "
+      "size %dx%d, %d nonzeros, "
       "||A||_{F} = %1.16e, "
       "||A||_{F}/N^2 = %1.16e, "
       "%1.4f percent nonzero elements\n",
-      M, N, numberNonZero, norm, norm/(N*M),
+      filename, M, N, numberNonZero, norm, norm/(N*M),
       100*numberNonZero/(double) (N*N));
 }
 
