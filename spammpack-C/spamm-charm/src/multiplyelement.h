@@ -60,6 +60,9 @@ class MultiplyElement : public CBase_MultiplyElement
     /** The result matrix chunk. */
     void *CResult;
 
+    /** The complexity of the last multiply(). */
+    int complexity;
+
 #ifndef PRUNE_CONVOLUTION
     /** A flag indicating whether this MultiplyElement is enabled or not (as a
      * hack while real pruning doesn't work. */
@@ -99,7 +102,7 @@ class MultiplyElement : public CBase_MultiplyElement
 #endif
     void storeBack (double alpha, CkCallback &cb);
     void PEMap (CkCallback &cb);
-    void complexity (CkCallback &cb);
+    void updateComplexity (CkCallback &cb);
 };
 
 #endif

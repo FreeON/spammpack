@@ -194,6 +194,15 @@ if test "${enable_print_matrices}" = "yes"; then
   AC_DEFINE([PRINT_MATRICES], [1], [Print matrices for debugging])
 fi
 
+AC_ARG_ENABLE([complexity],
+  [AS_HELP_STRING([--enable-complexity],
+  [count the product complexity in the tree multiply])],
+  [enable_complexity=$enableval],
+  [enable_complexity="no"])
+if [[ ${enable_complexity} = "yes" ]]; then
+  AC_DEFINE([MEASURE_COMPLEXITY], [1], [Measure the product complexity])
+fi
+
 # Enable pruning of the convolution. This is done by calling ckDestroy() on
 # convolution elements.
 AC_ARG_ENABLE([pruning],

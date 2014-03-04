@@ -296,7 +296,7 @@ void Multiply::updateComplexity (CkCallback &cb)
 {
   this->cb = cb;
   CkCallback done(CkReductionTarget(Multiply, doneComplexity), thisProxy);
-  convolution[depth].complexity(done);
+  convolution[depth].updateComplexity(done);
 }
 
 /** The reduction target for Multiply::updateComplexity.

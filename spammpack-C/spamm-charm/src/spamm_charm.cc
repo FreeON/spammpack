@@ -892,7 +892,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   CProxy_Multiply M = CProxy_Multiply::ckNew(P, P, P2);
   M.init(initialPE, alignPEs, CkCallbackResumeThread());
 
-  int full_complexity = (int) ceil(NRows/(double) blocksize);
+  int full_complexity = (int) ceil(NRows/(double) N_basic);
   full_complexity = full_complexity*full_complexity*full_complexity;
 
   /* Start SP2 iterations. */
@@ -956,10 +956,11 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 
     INFO("iteration %2d, %s, %s, %s: trace(P) = %1.16e "
         "(Ne = %d, 2*trace(P)-Ne = % e) "
-        "complexity %d (out of %d)\n",
+        "complexity %d (out of %d), ratio = %1.3e\n",
         iteration+1,
         tMultiply.to_str(), tSetEqual.to_str(), tAdd.to_str(),
-        trace_P->x, Ne, 2*trace_P->x-Ne, complexity->i, full_complexity);
+        trace_P->x, Ne, 2*trace_P->x-Ne, complexity->i, full_complexity,
+        complexity->i/(double) full_complexity);
 
     t_total += tMultiply.get()+tSetEqual.get()+tAdd.get();
     complexity_total += complexity->i;

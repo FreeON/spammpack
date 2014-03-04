@@ -65,7 +65,7 @@ chunk_tree_to_dense (const void *const chunk);
 void
 chunk_tree_delete (void **const chunk);
 
-size_t
+int
 chunk_tree_get_complexity (const void *const chunk);
 
 __END_DECLS

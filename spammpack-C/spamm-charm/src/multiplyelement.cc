@@ -53,6 +53,7 @@ MultiplyElement::MultiplyElement (int N, int blocksize, int N_basic,
   this->B = B;
   this->C = C;
   this->norm_product = 0;
+  this->complexity = 0;
 
   this->N = N;
 
@@ -207,6 +208,11 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 
       DEBUG(LB"calling multiply on result\n"LE);
       chunk_multiply(tolerance, AChunk->chunk, BChunk->chunk, CResult, 0);
+
+#ifdef MEASURE_COMPLEXITY
+      complexity = chunk_get_complexity(CResult);
+      DEBUG(LB"setting complexity to %d\n"LE, complexity);
+#endif
 
 #ifdef PRINT_MATRICES
       /** For debugging. */
@@ -443,7 +449,8 @@ void MultiplyElement::PEMap (CkCallback &cb)
 {
   DEBUG(LB"PE %d, norm = %e\n"LE, CkMyPe(), norm_product);
 
-  struct PEMap_MultiplyElement_t *result = (struct PEMap_MultiplyElement_t*) malloc(sizeof(PEMap_MultiplyElement_t));
+  struct PEMap_MultiplyElement_t *result = (struct PEMap_MultiplyElement_t*)
+    malloc(sizeof(PEMap_MultiplyElement_t));
 
   result->index[0] = thisIndex.x;
   result->index[1] = thisIndex.y;
@@ -458,9 +465,8 @@ void MultiplyElement::PEMap (CkCallback &cb)
  *
  * @param cb The callback for the reduction.
  */
-void MultiplyElement::complexity (CkCallback &cb)
+void MultiplyElement::updateComplexity (CkCallback &cb)
 {
-  int complexity = 1;
 #ifndef PRUNE_CONVOLUTION
   if(!isEnabled) { complexity = 0; }
 #endif

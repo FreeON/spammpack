@@ -29,9 +29,11 @@
 /** A convenience macro for printing some debugging output. */
 #ifdef DEBUG_OUTPUT
 #ifdef _OPENMP
-#define DEBUG(message, ...) printf("[%s:%d (%s) thread %d DEBUG] " message, __FILE__, __LINE__, __func__, omp_get_thread_num(), ##__VA_ARGS__)
+#define DEBUG(message, ...) printf("[%s:%d (%s) thread %d DEBUG] " message, \
+    __FILE__, __LINE__, __func__, omp_get_thread_num(), ##__VA_ARGS__)
 #else
-#define DEBUG(message, ...) printf("[%s:%d (%s) DEBUG] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define DEBUG(message, ...) printf("[%s:%d (%s) DEBUG] " message, \
+    __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 #endif
 #else
 #define DEBUG(message, ...) /* stripped DEBUG statement. */
@@ -39,14 +41,17 @@
 
 /** A convenience macro for printing some info level message. */
 #ifdef _OPENMP
-#define INFO(message, ...) printf("[%s:%d (%s) thread %d] " message, __FILE__, __LINE__, __func__, omp_get_thread_num(), ##__VA_ARGS__)
+#define INFO(message, ...) printf("[%s:%d (%s) thread %d] " message, \
+    __FILE__, __LINE__, __func__, omp_get_thread_num(), ##__VA_ARGS__)
 #else
-#define INFO(message, ...) printf("[%s:%d (%s)] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define INFO(message, ...) printf("[%s:%d (%s)] " message, \
+    __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 #endif
 
 /** A convenience macro for print a fatal error message and terminating the
  * code. */
-#define ABORT(message, ...) printf("[%s:%d (%s) FATAL] " message, __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(1)
+#define ABORT(message, ...) printf("[%s:%d (%s) FATAL] " message, \
+    __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(1)
 
 /** A simple square. */
 #define SQUARE(x) ((x)*(x))
@@ -87,6 +92,12 @@ struct chunk_tree_t
   /** The tree depth. The tree starts at tier 0, and grows to 4^{depth}
    * submatrices. */
   int depth;
+
+  /** The complexity (operation count) of the last chunk operation. This
+   * counter gets reset at the beginning of a multiply() or an add()
+   * operation.
+   */
+  int complexity;
 
   /** The offset from data[0] to the array of sub-matrices, skipping the tree,
    * going straight to the sub-matrices attached to the leaf nodes. */
@@ -235,6 +246,7 @@ chunk_tree_alloc (const int N_chunk,
   ptr->N_chunk = N_chunk;
   ptr->N_basic = N_basic;
   ptr->depth = chunk_tree_get_depth(N_chunk, N_basic);
+  ptr->complexity = 0;
 
   DEBUG("new tree chunk, N_chunk = %d, N_basic = %d, N = %d, depth = %d\n",
       N_chunk, N_basic, N, ptr->depth);
@@ -258,7 +270,8 @@ chunk_tree_alloc (const int N_chunk,
       for(int j = 0; j < ipow2(tier); j++)
       {
         intptr_t node_offset = ROW_MAJOR(i, j, ipow2(tier))*sizeof(struct chunk_tree_node_t);
-        struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) ((intptr_t) ptr->data + tier_offset + node_offset);
+        struct chunk_tree_node_t *node = (struct chunk_tree_node_t*)
+          ((intptr_t) ptr->data + tier_offset + node_offset);
 
         DEBUG("%d:node(%d,%d) at %p\n", tier, i, j, node);
 
@@ -271,7 +284,8 @@ chunk_tree_alloc (const int N_chunk,
           {
             /* Offset relative to node. */
             intptr_t child_offset = next_tier_offset
-                + ROW_MAJOR(2*i+i_child, 2*j+j_child, ipow2(tier+1)) * sizeof(struct chunk_tree_node_t)
+                + ROW_MAJOR(2*i+i_child, 2*j+j_child,
+                    ipow2(tier+1)) * sizeof(struct chunk_tree_node_t)
                 - (tier_offset + node_offset);
 
             /* The child_offset is relative to node. */
@@ -300,7 +314,8 @@ chunk_tree_alloc (const int N_chunk,
     {
       /* Pointer to leaf node. */
       intptr_t node_offset = ROW_MAJOR(i, j, ipow2(ptr->depth))*sizeof(struct chunk_tree_node_t);
-      struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) ((intptr_t) ptr->data + tier_offset + node_offset);
+      struct chunk_tree_node_t *node = (struct chunk_tree_node_t*)
+        ((intptr_t) ptr->data + tier_offset + node_offset);
 
       /* Initialize node. */
       node->N_basic = N_basic;
@@ -682,8 +697,10 @@ chunk_tree_add_node (const int tier,
   {
     for(int i = 0; i < 4; i++)
     {
-      struct chunk_tree_node_t *A_child = (struct chunk_tree_node_t*) ((intptr_t) A + A->offset.child_offset[i]);
-      struct chunk_tree_node_t *B_child = (struct chunk_tree_node_t*) ((intptr_t) B + B->offset.child_offset[i]);
+      struct chunk_tree_node_t *A_child = (struct chunk_tree_node_t*)
+        ((intptr_t) A + A->offset.child_offset[i]);
+      struct chunk_tree_node_t *B_child = (struct chunk_tree_node_t*)
+        ((intptr_t) B + B->offset.child_offset[i]);
 
       chunk_tree_add_node(tier+1, depth, alpha, A_child, beta, B_child);
     }
@@ -768,7 +785,8 @@ chunk_tree_multiply_node (const double tolerance_2,
       double *B_submatrix = (double*) ((intptr_t) B + B->offset.matrix_offset);
       double *C_submatrix = (double*) ((intptr_t) C + C->offset.matrix_offset);
 
-      DEBUG("multiplying submatrix, A at %p, B at %p, C at %p\n", &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
+      DEBUG("multiplying submatrix, A at %p, B at %p, C at %p\n",
+          &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
 
 #ifdef MEASURE_COMPLEXITY
       complexity[product_index]++;
@@ -815,9 +833,12 @@ chunk_tree_multiply_node (const double tolerance_2,
           {
             DEBUG("(%d,%d,%d) starting new task\n", i, j, k);
 
-            struct chunk_tree_node_t *A_child = (struct chunk_tree_node_t*) ((intptr_t) A + A->offset.child_offset[ROW_MAJOR(i, k, 2)]);
-            struct chunk_tree_node_t *B_child = (struct chunk_tree_node_t*) ((intptr_t) B + B->offset.child_offset[ROW_MAJOR(k, j, 2)]);
-            struct chunk_tree_node_t *C_child = (struct chunk_tree_node_t*) ((intptr_t) C + C->offset.child_offset[ROW_MAJOR(i, j, 2)]);
+            struct chunk_tree_node_t *A_child = (struct chunk_tree_node_t*)
+              ((intptr_t) A + A->offset.child_offset[ROW_MAJOR(i, k, 2)]);
+            struct chunk_tree_node_t *B_child = (struct chunk_tree_node_t*)
+              ((intptr_t) B + B->offset.child_offset[ROW_MAJOR(k, j, 2)]);
+            struct chunk_tree_node_t *C_child = (struct chunk_tree_node_t*)
+              ((intptr_t) C + C->offset.child_offset[ROW_MAJOR(i, j, 2)]);
 
             DEBUG("(%d,%d,%d) A at %p, B at %p, C at %p\n", i, j, k, A_child, B_child, C_child);
 
@@ -875,6 +896,7 @@ chunk_tree_multiply (const double tolerance,
 
   /* Reset C. */
   chunk_tree_set_zero(C_ptr);
+  C_ptr->complexity = 0;
 
   double tolerance_2 = SQUARE(tolerance);
 
@@ -924,10 +946,12 @@ chunk_tree_multiply (const double tolerance,
   {
     product_complexity += complexity[i];
   }
-  INFO("product complexity = %d out of %d, complexity ratio = %1.3f\n",
+  free(complexity);
+
+  C_ptr->complexity += product_complexity;
+  DEBUG("product complexity = %d out of %d, complexity ratio = %1.3f\n",
       product_complexity, CUBE(A_ptr->N_chunk/A_ptr->N_basic),
       product_complexity/(double) CUBE(A_ptr->N_chunk/A_ptr->N_basic));
-  free(complexity);
 #endif
 }
 
@@ -1000,7 +1024,8 @@ chunk_tree_scale_node (const double alpha,
   {
     for(int i = 0; i < 4; i++)
     {
-      struct chunk_tree_node_t *child = (struct chunk_tree_node_t*) ((intptr_t) node + node->offset.child_offset[i]);
+      struct chunk_tree_node_t *child = (struct chunk_tree_node_t*)
+        ((intptr_t) node + node->offset.child_offset[i]);
       chunk_tree_scale_node(alpha, tier+1, depth, child);
     }
   }
@@ -1053,7 +1078,8 @@ chunk_tree_add_identity_node (const int tier,
   {
     for(int i = 0; i < 2; i++)
     {
-      struct chunk_tree_node_t *child = (struct chunk_tree_node_t*) ((intptr_t) node + node->offset.child_offset[ROW_MAJOR(i, i, 2)]);
+      struct chunk_tree_node_t *child = (struct chunk_tree_node_t*)
+        ((intptr_t) node + node->offset.child_offset[ROW_MAJOR(i, i, 2)]);
       chunk_tree_add_identity_node(tier+1, depth, alpha, child);
     }
   }
@@ -1106,7 +1132,8 @@ chunk_tree_trace_node (const int tier,
   {
     for(int i = 0; i < 2; i++)
     {
-      struct chunk_tree_node_t *child = (struct chunk_tree_node_t*) ((intptr_t) node + node->offset.child_offset[ROW_MAJOR(i, i, 2)]);
+      struct chunk_tree_node_t *child = (struct chunk_tree_node_t*)
+        ((intptr_t) node + node->offset.child_offset[ROW_MAJOR(i, i, 2)]);
       trace += chunk_tree_trace_node(tier+1, depth, child);
     }
   }
@@ -1154,8 +1181,9 @@ chunk_tree_delete (void **const chunk)
  *
  * @return The complexity count.
  */
-size_t
+int
 chunk_tree_get_complexity (const void *const chunk)
 {
-  ABORT("FIXME\n");
+  const struct chunk_tree_t *ptr = chunk;
+  return ptr->complexity;
 }

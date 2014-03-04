@@ -33,6 +33,6 @@ module multiplyelement
 #endif
     entry void storeBack (double alpha, CkCallback &cb);
     entry void PEMap (CkCallback &cb);
-    entry void complexity (CkCallback &cb);
+    entry void updateComplexity (CkCallback &cb);
   };
 };
