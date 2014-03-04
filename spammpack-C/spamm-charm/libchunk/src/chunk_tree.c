@@ -236,7 +236,8 @@ chunk_tree_alloc (const int N_chunk,
   ptr->N_basic = N_basic;
   ptr->depth = chunk_tree_get_depth(N_chunk, N_basic);
 
-  DEBUG("new tree chunk, depth = %d\n", ptr->depth);
+  DEBUG("new tree chunk, N_chunk = %d, N_basic = %d, N = %d, depth = %d\n",
+      N_chunk, N_basic, N, ptr->depth);
 
   DEBUG("allocating new chunk\n");
   DEBUG("ptr = %p\n", ptr);
