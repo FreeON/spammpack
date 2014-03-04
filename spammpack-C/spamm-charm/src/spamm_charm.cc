@@ -889,19 +889,11 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   CProxy_Matrix P2 = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
       blocksize, N_basic, strlen("P2"), (char*) "P2");
 
-  MatrixInfoMsg *PInfo = P.info();
-  MatrixNodeMsg *PNodes = P.getNodes();
-  MatrixNodeMsg *P2Nodes = P2.getNodes();
-
   CProxy_Multiply M = CProxy_Multiply::ckNew(P, P, P2);
   M.init(initialPE, alignPEs, CkCallbackResumeThread());
 
   int full_complexity = (int) ceil(NRows/(double) blocksize);
   full_complexity = full_complexity*full_complexity*full_complexity;
-
-  delete PInfo;
-  delete PNodes;
-  delete P2Nodes;
 
   /* Start SP2 iterations. */
   double occupation[4] = { 0, 0, 0, 0 };
@@ -917,7 +909,6 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     Timer tAdd("add");
 
 #ifdef DEBUG_OUTPUT
-    P.updateNorm(CkCallbackResumeThread());
     DoubleMsg *norm_P = P.getNorm();
     DEBUG("||P%d|| = %1.16e\n", iteration, norm_P->x);
     delete norm_P;
@@ -984,7 +975,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
         if(idempotencyErrorNow >= idempotencyErrorLast)
         {
           INFO("SP2 converged in %d steps\n", iteration+1);
-          P.updateNorm(CkCallbackResumeThread());
+          //P.updateNorm(CkCallbackResumeThread());
           DoubleMsg *norm_P = P.getNorm();
           INFO("||P|| = %1.16e, ||P||/N^2 = %1.16e\n", norm_P->x, norm_P->x/NRows/NColumns);
           delete norm_P;
@@ -1109,13 +1100,16 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   /* Calculate energy, trace(F.P). */
   CProxy_Matrix FP = CProxy_Matrix::ckNew(initialPE, alignPEs, NRows,
       blocksize, N_basic, strlen("FP"), (char*) "FP");
-  //FP.init(CkCallbackResumeThread());
+
   CProxy_Multiply M_FP(P, F, FP);
   M_FP.init(initialPE, alignPEs, CkCallbackResumeThread());
+
   M_FP.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread());
+
   FP.updateTrace(CkCallbackResumeThread());
   DoubleMsg *FP_trace = FP.getTrace();
-  INFO("total energy, trace(F*P) = %e\n", FP_trace->x);
+  INFO("total energy, trace(F*P) = %1.16e\n", FP_trace->x);
+  delete FP_trace;
 
   total_time.stop();
   INFO("%s\n", total_time.to_str());
