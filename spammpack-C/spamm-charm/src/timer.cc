@@ -43,8 +43,6 @@ Timer::Timer (const char *format, ...)
   string_buffer = NULL;
 
   timerRunning = false;
-
-  //printf("new timer %s\n", message.c_str());
 }
 
 /** The destructor. */
@@ -54,8 +52,6 @@ Timer::~Timer (void)
   {
     free(string_buffer);
   }
-
-  //printf("deleting timer %s\n", message.c_str());
 }
 
 /** Reset the timer and start. */
@@ -94,6 +90,22 @@ void Timer::stop (void)
   timerRunning = false;
 }
 
+/** Get the value of the Timer.
+ *
+ * @return The value of the Timer in seconds.
+ */
+double Timer::get (void)
+{
+  if(timerRunning)
+  {
+    printf("[%s:%d] timer is still running\n", __FILE__, __LINE__);
+    exit(1);
+  }
+
+  return endTime.tv_sec+endTime.tv_nsec/1.0e9
+    - (startTime.tv_sec+startTime.tv_nsec/1.0e9);
+}
+
 /** Convert the timer to a string.
  *
  * @return The timer as a string. The string should not be free()'ed.
@@ -109,10 +121,7 @@ const char * Timer::to_str (void)
   }
 
   o.setf(std::ios::fixed);
-  o << message << ": ";
-  o << endTime.tv_sec+endTime.tv_nsec/1.0e9
-    -(startTime.tv_sec+startTime.tv_nsec/1.0e9);
-  o << " seconds";
+  o << message << ": " << get() << " seconds";
   if(string_buffer != NULL)
   {
     free(string_buffer);

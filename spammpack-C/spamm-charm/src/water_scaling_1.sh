@@ -1,36 +1,44 @@
 #!/bin/bash
 
-#./spamm-charm \
-#  --block 256 \
-#  --basic 4 \
-#  --tolerance 0 \
-#  --operation SP2 \
-#  --fockian ~/data-sets/water/h2o_10.F_DIIS \
-#  --density ~/data-sets/water/h2o_10.OrthoD \
-#  --Ne 100 \
-#  --iterations 100
+run_spamm() {
+  local N=$1
+  local N_basic=$2
+  local tolerance=$3
+  local Ne=$4
+  local filename=$5
 
-./spamm-charm \
-  --block 1024 \
-  --basic 4 \
-  --tolerance 0 \
-  --operation SP2 \
-  --fockian ~/data-sets/water/h2o_30.F_DIIS \
-  --density ~/data-sets/water/h2o_30.OrthoD \
-  --Ne 300 \
-  --iterations 100
+  ./spamm-charm \
+    --block ${N} \
+    --basic ${N_basic} \
+    --tolerance ${tolerance} \
+    --operation SP2 \
+    --fockian ~/data-sets/water/${filename}.F_DIIS \
+    --density ~/data-sets/water/${filename}.OrthoD \
+    --Ne ${Ne} \
+    --iterations 100
+}
+
+export OMP_NUM_THREADS=1
+
+run_spamm  256 4 0      100 h2o_10
+run_spamm  256 4 1.0e-8 100 h2o_10
+run_spamm  256 4 1.0e-7 100 h2o_10
+run_spamm  256 4 1.0e-6 100 h2o_10
+run_spamm  256 4 1.0e-5 100 h2o_10
+
+run_spamm 1024 4 0      300 h2o_30
+run_spamm 1024 4 1.0e-8 300 h2o_30
+run_spamm 1024 4 1.0e-7 300 h2o_30
+run_spamm 1024 4 1.0e-6 300 h2o_30
+run_spamm 1024 4 1.0e-5 300 h2o_30
+
+run_spamm 2048 4 0      500 h2o_50
+run_spamm 2048 4 1.0e-8 500 h2o_50
+run_spamm 2048 4 1.0e-7 500 h2o_50
+run_spamm 2048 4 1.0e-6 500 h2o_50
+run_spamm 2048 4 1.0e-5 500 h2o_50
 
 exit 0
-
-./spamm-charm \
-  --block 1250 \
-  --basic 1250 \
-  --tolerance 0 \
-  --operation SP2 \
-  --fockian ~/data-sets/water/h2o_50.F_DIIS \
-  --density ~/data-sets/water/h2o_50.OrthoD \
-  --Ne 500 \
-  --iterations 100
 
 ./spamm-charm \
   --block 1750 \

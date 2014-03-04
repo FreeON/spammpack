@@ -39,6 +39,7 @@ class Timer
     ~Timer (void);
     void start (void);
     void stop (void);
+    double get (void);
     const char * to_str (void);
 };
 

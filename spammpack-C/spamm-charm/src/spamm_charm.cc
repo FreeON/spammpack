@@ -901,6 +901,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   DoubleMsg *trace_P = P.getTrace();
   INFO("tolerance = %e\n", tolerance);
   INFO("iteration  0: trace(P) = %1.16e (Ne/2 = %e)\n", trace_P->x, Ne/2.0);
+  double t_total = 0;
+  int complexity_total = 0;
   bool converged = false;
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
@@ -958,6 +960,10 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
         iteration+1,
         tMultiply.to_str(), tSetEqual.to_str(), tAdd.to_str(),
         trace_P->x, Ne, 2*trace_P->x-Ne, complexity->i, full_complexity);
+
+    t_total += tMultiply.get()+tSetEqual.get()+tAdd.get();
+    complexity_total += complexity->i;
+
     delete complexity;
 
     occupation[0] = trace_P->x;
@@ -1073,6 +1079,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 
   INFO("idempotency error          = %e\n", fabs(occupation[0]-occupation[1]));
   INFO("previous idempotency error = %e\n", fabs(occupation[2]-occupation[3]));
+  INFO("t_total                    = %e seconds\n", t_total);
+  INFO("complexity                 = %d\n", complexity_total);
 
   if(!converged)
   {
