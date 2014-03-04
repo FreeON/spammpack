@@ -1,5 +1,5 @@
 AC_INIT([spamm-charm],
-        [4],
+        [5],
         [nicolas.bock@freeon.org],
         [],
         [http://www.freeon.org/])
