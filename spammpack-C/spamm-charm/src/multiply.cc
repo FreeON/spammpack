@@ -303,7 +303,7 @@ void Multiply::updateComplexity (CkCallback &cb)
  *
  * @param complexity The complexity of the Multiply.
  */
-void Multiply::doneComplexity (int complexity)
+void Multiply::doneComplexity (double complexity)
 {
   this->complexity = complexity;
   cb.send();
@@ -313,9 +313,9 @@ void Multiply::doneComplexity (int complexity)
  *
  * @return The complexity.
  */
-IntMsg * Multiply::getComplexity (void)
+DoubleMsg * Multiply::getComplexity (void)
 {
-  return new IntMsg(complexity);
+  return new DoubleMsg(complexity);
 }
 
 #include "multiply.def.h"

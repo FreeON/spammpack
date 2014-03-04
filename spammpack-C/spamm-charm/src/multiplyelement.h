@@ -61,7 +61,7 @@ class MultiplyElement : public CBase_MultiplyElement
     void *CResult;
 
     /** The complexity of the last multiply(). */
-    int complexity;
+    size_t complexity;
 
 #ifndef PRUNE_CONVOLUTION
     /** A flag indicating whether this MultiplyElement is enabled or not (as a

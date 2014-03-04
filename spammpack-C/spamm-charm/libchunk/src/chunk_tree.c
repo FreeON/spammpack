@@ -97,7 +97,7 @@ struct chunk_tree_t
    * counter gets reset at the beginning of a multiply() or an add()
    * operation.
    */
-  int complexity;
+  size_t complexity;
 
   /** The offset from data[0] to the array of sub-matrices, skipping the tree,
    * going straight to the sub-matrices attached to the leaf nodes. */
@@ -764,7 +764,7 @@ chunk_tree_multiply_node (const double tolerance_2,
     const struct chunk_tree_node_t *const B,
     struct chunk_tree_node_t *const C,
     const short symbolic_only,
-    short *const complexity,
+    size_t *const complexity,
     const int product_index)
 {
   assert(A != NULL);
@@ -912,7 +912,7 @@ chunk_tree_multiply (const double tolerance,
   DEBUG("SpAMM tolerance = %e\n", tolerance);
 
 #ifdef MEASURE_COMPLEXITY
-  short *complexity = calloc(CUBE(A_ptr->N_chunk/A_ptr->N_basic), sizeof(short));
+  size_t *complexity = calloc(CUBE(A_ptr->N_chunk/A_ptr->N_basic), sizeof(size_t));
 #else
   void *complexity = NULL;
 #endif
@@ -940,7 +940,7 @@ chunk_tree_multiply (const double tolerance,
   }
 
 #ifdef MEASURE_COMPLEXITY
-  int product_complexity = 0;
+  size_t product_complexity = 0;
 #pragma omp parallel for reduction(+:product_complexity)
   for(int i = 0; i < CUBE(A_ptr->N_chunk/A_ptr->N_basic); i++)
   {
@@ -1181,7 +1181,7 @@ chunk_tree_delete (void **const chunk)
  *
  * @return The complexity count.
  */
-int
+size_t
 chunk_tree_get_complexity (const void *const chunk)
 {
   const struct chunk_tree_t *ptr = chunk;

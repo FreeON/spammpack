@@ -46,7 +46,7 @@ class Multiply : public CBase_Multiply
     double *PEMap_norm;
 
     /** The complexity of this Multiply. */
-    int complexity;
+    double complexity;
 
   public:
 
@@ -58,8 +58,8 @@ class Multiply : public CBase_Multiply
     void donePEMap (CkReductionMsg *data);
     PEMapMsg * getPEMap (void);
     void updateComplexity (CkCallback &cb);
-    void doneComplexity (int complexity);
-    IntMsg * getComplexity (void);
+    void doneComplexity (double complexity);
+    DoubleMsg * getComplexity (void);
 };
 
 #endif

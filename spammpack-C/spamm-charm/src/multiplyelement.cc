@@ -124,6 +124,7 @@ void MultiplyElement::pup (PUP::er &p)
   p|B;
   p|C;
   p|norm_product;
+  p|complexity;
 #ifndef PRUNE_CONVOLUTION
   p|isEnabled;
 #endif
@@ -467,10 +468,11 @@ void MultiplyElement::PEMap (CkCallback &cb)
  */
 void MultiplyElement::updateComplexity (CkCallback &cb)
 {
+  double converted_complexity = (double) complexity;
 #ifndef PRUNE_CONVOLUTION
   if(!isEnabled) { complexity = 0; }
 #endif
-  contribute(sizeof(int), &complexity, CkReduction::sum_int, cb);
+  contribute(sizeof(double), &converted_complexity, CkReduction::sum_double, cb);
 }
 
 #include "multiplyelement.def.h"

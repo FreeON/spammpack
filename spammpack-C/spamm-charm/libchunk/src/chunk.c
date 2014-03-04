@@ -112,7 +112,7 @@ chunk_delete (void **const chunk)
   FUNC(delete)(chunk);
 }
 
-int
+size_t
 chunk_get_complexity (const void *const chunk)
 {
   return FUNC(get_complexity)(chunk);
