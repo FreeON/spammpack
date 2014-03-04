@@ -370,8 +370,8 @@ void Matrix::setEqual (CProxy_Matrix B, CkCallback &cb)
 {
   DEBUG("calling add\n");
   thisProxy.add(0.0, 1.0, B, CkCallbackResumeThread());
-  DEBUG("calling setNorm\n");
-  thisProxy.setNorm(CkCallbackResumeThread());
+  //DEBUG("calling setNorm\n");
+  //thisProxy.setNorm(CkCallbackResumeThread());
   cb.send();
 }
 
