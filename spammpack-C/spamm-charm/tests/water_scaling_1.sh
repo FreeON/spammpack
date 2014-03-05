@@ -19,7 +19,7 @@ run_spamm() {
     --iterations 100
 }
 
-export OMP_NUM_THREADS=1
+#export OMP_NUM_THREADS=1
 
 run_spamm  256 4 0      100 h2o_10
 run_spamm  256 4 1.0e-9 100 h2o_10
