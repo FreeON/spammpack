@@ -322,14 +322,21 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
     }
   }
 
+  char hostname[1000];
+  if(gethostname(hostname, 1000-1) != 0)
+  {
+    ABORT("can not get hostname, %s\n", strerror(errno));
+  }
+
 #ifdef _OPENMP
 #pragma omp parallel
   {
 #pragma omp master
-    CkPrintf("SpAMM version %s using %d OpenMP thread(s)\n", PACKAGE_VERSION, omp_get_num_threads());
+    CkPrintf("SpAMM version %s using %d OpenMP thread(s) running on %s\n",
+        PACKAGE_VERSION, omp_get_num_threads(), hostname);
   }
 #else
-  CkPrintf("SpAMM version %s (serial)\n", PACKAGE_VERSION);
+  CkPrintf("SpAMM version %s (serial) running on %s\n", PACKAGE_VERSION, hostname);
 #endif
 
   /* Register backtrace handler. */
