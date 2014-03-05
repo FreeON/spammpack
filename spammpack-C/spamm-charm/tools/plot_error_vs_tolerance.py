@@ -38,8 +38,7 @@ def main ():
       filename = result.group(1)
       logging.debug("new run, resetting fields, read " + filename)
       logging.debug("line = {:s}".format(line.rstrip()))
-      if not filename in dataset:
-        dataset[filename] = {}
+      N = None
       tolerance = None
       total_energy = None
       total_energy_D = None
@@ -47,6 +46,11 @@ def main ():
       multiply_time = 0
       complexity = None
       timers = {}
+
+    result = re.compile("name = F, N = ([0-9]+)").search(line)
+    if result:
+      N = int(result.group(1))
+      logging.debug("read N = {:d}".format(N))
 
     result = re.compile("tolerance = ([0-9.e+-]+)$").search(line)
     if result:
@@ -89,42 +93,48 @@ def main ():
       logging.debug("end of run")
       end_of_run = True
 
-      if tolerance in dataset[filename]:
+      if not N in dataset:
+        dataset[N] = {}
+        dataset[N]["filename"] = filename
+        dataset[N]["data"] = {}
+
+      if tolerance in dataset[N]["data"]:
         raise Exception("FIXME")
 
-      dataset[filename][tolerance] = {}
-      dataset[filename][tolerance]["timers"] = timers
-      dataset[filename][tolerance]["energy"] = total_energy
-      dataset[filename][tolerance]["energy (D)"] = total_energy_D
-      dataset[filename][tolerance]["time"] = total_time
-      dataset[filename][tolerance]["complexity"] = complexity
-      dataset[filename][tolerance]["t_multiply"] = multiply_time
+      dataset[N]["data"][tolerance] = {}
+      dataset[N]["data"][tolerance]["timers"] = timers
+      dataset[N]["data"][tolerance]["energy"] = total_energy
+      dataset[N]["data"][tolerance]["energy (D)"] = total_energy_D
+      dataset[N]["data"][tolerance]["time"] = total_time
+      dataset[N]["data"][tolerance]["complexity"] = complexity
+      dataset[N]["data"][tolerance]["t_multiply"] = multiply_time
 
       if tolerance == 0 and total_energy_D:
-        E_0 = dataset[filename][0]["energy"]
-        BCSR_E = dataset[filename][0]["energy (D)"]
-        dataset[filename][0]["BCSR energy error"] = abs((BCSR_E-E_0)/E_0)
+        E_0 = dataset[N]["data"][0]["energy"]
+        BCSR_E = dataset[N]["data"][0]["energy (D)"]
+        dataset[N]["data"][0]["BCSR energy error"] = abs((BCSR_E-E_0)/E_0)
 
-      if 0 in dataset[filename]:
-        E_0 = dataset[filename][0]["energy"]
-        E = dataset[filename][tolerance]["energy"]
-        dataset[filename][tolerance]["energy error"] = abs((E-E_0)/E_0)
+      if 0 in dataset[N]["data"]:
+        E_0 = dataset[N]["data"][0]["energy"]
+        E = dataset[N]["data"][tolerance]["energy"]
+        dataset[N]["data"][tolerance]["energy error"] = abs((E-E_0)/E_0)
 
-        t_0 = dataset[filename][0]["time"]
-        t = dataset[filename][tolerance]["time"]
-        dataset[filename][tolerance]["relative time"] = t/t_0
+        t_0 = dataset[N]["data"][0]["time"]
+        t = dataset[N]["data"][tolerance]["time"]
+        dataset[N]["data"][tolerance]["relative time"] = t/t_0
 
-        t_0 = dataset[filename][0]["t_multiply"]
-        t = dataset[filename][tolerance]["t_multiply"]
-        dataset[filename][tolerance]["relative t_multiply"] = t/t_0
+        t_0 = dataset[N]["data"][0]["t_multiply"]
+        t = dataset[N]["data"][tolerance]["t_multiply"]
+        dataset[N]["data"][tolerance]["relative t_multiply"] = t/t_0
 
-        c_0 = dataset[filename][0]["complexity"]
-        c = dataset[filename][tolerance]["complexity"]
-        dataset[filename][tolerance]["relative complexity"] = c/c_0
+        c_0 = dataset[N]["data"][0]["complexity"]
+        c = dataset[N]["data"][tolerance]["complexity"]
+        dataset[N]["data"][tolerance]["relative complexity"] = c/c_0
 
   fd.close()
 
-  print("{:>10} {:>12} {:>13} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12}".format(
+  print("{:>5} {:>10} {:>12} {:>13} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12}".format(
+    "N",
     "filename",
     "tolerance",
     "energy",
@@ -138,22 +148,23 @@ def main ():
     "rel. compl."
     ))
 
-  filenames = sorted(dataset.keys())
-  for filename in filenames:
-    tolerances = sorted(dataset[filename].keys())
+  Ns = sorted(dataset.keys())
+  for N in Ns:
+    tolerances = sorted(dataset[N]["data"].keys())
     for tolerance in tolerances:
       print(
-          "{:>10} ".format(filename)
+          "{:5d} ".format(N)
+          + "{:>10} ".format(dataset[N]["filename"])
           + "{:e} ".format(tolerance)
-          + "{:e} ".format(dataset[filename][tolerance]["energy"])
-          + "{:e} ".format(dataset[filename][tolerance]["energy error"])
-          + "{:e} ".format(dataset[filename][0]["BCSR energy error"])
-          + "{:e} ".format(dataset[filename][tolerance]["t_multiply"])
-          + "{:e} ".format(dataset[filename][tolerance]["time"])
-          + "{:e} ".format(dataset[filename][tolerance]["complexity"])
-          + "{:e} ".format(dataset[filename][tolerance]["relative t_multiply"])
-          + "{:e} ".format(dataset[filename][tolerance]["relative time"])
-          + "{:e} ".format(dataset[filename][tolerance]["relative complexity"])
+          + "{:e} ".format(dataset[N]["data"][tolerance]["energy"])
+          + "{:e} ".format(dataset[N]["data"][tolerance]["energy error"])
+          + "{:e} ".format(dataset[N]["data"][0]["BCSR energy error"])
+          + "{:e} ".format(dataset[N]["data"][tolerance]["t_multiply"])
+          + "{:e} ".format(dataset[N]["data"][tolerance]["time"])
+          + "{:e} ".format(dataset[N]["data"][tolerance]["complexity"])
+          + "{:e} ".format(dataset[N]["data"][tolerance]["relative t_multiply"])
+          + "{:e} ".format(dataset[N]["data"][tolerance]["relative time"])
+          + "{:e} ".format(dataset[N]["data"][tolerance]["relative complexity"])
         )
 
 if __name__ == "__main__":
