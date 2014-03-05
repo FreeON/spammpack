@@ -178,10 +178,10 @@ main (int argc, char **argv)
     };
   }
 
-  if(F_filename == NULL)
-  {
-    ABORT("missing Fockian matrix file\n");
-  }
+  //if(F_filename == NULL)
+  //{
+  //  ABORT("missing Fockian matrix file\n");
+  //}
 
   return 0;
 }

@@ -2,6 +2,8 @@ if HAVE_PYTHON
 python_tests = test_sp2.sh
 endif
 
+dist_noinst_SCRIPTS = water_scaling_1.sh
+
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = -I $(top_srcdir)/src
 

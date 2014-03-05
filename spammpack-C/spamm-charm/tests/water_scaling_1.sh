@@ -7,7 +7,7 @@ run_spamm() {
   local Ne=$4
   local filename=$5
 
-  ./spamm-charm \
+  ../src/spamm-charm \
     --block ${N} \
     --basic ${N_basic} \
     --tolerance ${tolerance} \
