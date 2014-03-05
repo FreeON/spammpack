@@ -143,14 +143,14 @@ def main ():
     "filename",
     "tolerance",
     "energy",
-    "E_error",
-    "E_BCSR",
-    "t_multiply",
+    "SpAMM_err",
+    "BCSR_err",
+    "t_mul",
     "t_sym",
-    "total time",
-    "complexity",
-    "d(t_mult.)",
-    "d(time)",
+    "t_tot",
+    "compl.",
+    "d(t_mul)",
+    "d(t_tot)",
     "d(compl.)"
     ))
 
