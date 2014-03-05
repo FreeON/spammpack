@@ -103,6 +103,7 @@ def main ():
         dataset[N]["data"] = {}
 
       if tolerance in dataset[N]["data"]:
+        logging.warn("tolerance {:e} already in dataset".format(tolerance))
         raise Exception("FIXME")
 
       dataset[N]["data"][tolerance] = {}
