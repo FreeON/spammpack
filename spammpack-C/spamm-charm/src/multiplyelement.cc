@@ -40,8 +40,15 @@
  * @param B The Nodes of this tier in B.
  * @param C The Nodes of this tier in C.
  */
-MultiplyElement::MultiplyElement (int N, int blocksize, int N_basic,
-    int tier, int depth, CProxy_Node A, CProxy_Node B, CProxy_Node C)
+MultiplyElement::MultiplyElement (
+    int N,
+    int blocksize,
+    int N_basic,
+    int tier,
+    int depth,
+    CProxy_Node A,
+    CProxy_Node B,
+    CProxy_Node C)
 {
   DEBUG(LB"constructor\n"LE);
 
@@ -164,7 +171,10 @@ void MultiplyElement::init (CkCallback &cb)
  * @param tolerance The multiplication tolerance.
  * @param cb The callback.
  */
-void MultiplyElement::multiply (double tolerance, CkCallback &cb)
+void MultiplyElement::multiply (
+    double tolerance,
+    bool symbolic_only,
+    CkCallback &cb)
 {
   assert(tier == depth);
 
@@ -208,7 +218,8 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
 #endif
 
       DEBUG(LB"calling multiply on result\n"LE);
-      chunk_multiply(tolerance, AChunk->chunk, BChunk->chunk, CResult, 0);
+      chunk_multiply(tolerance, AChunk->chunk, BChunk->chunk, CResult,
+          (symbolic_only ? 1 : 0));
 
 #ifdef MEASURE_COMPLEXITY
       complexity = chunk_get_complexity(CResult);
@@ -241,6 +252,13 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
   }
 #endif
 
+  if(symbolic_only)
+  {
+    chunk_delete(&CResult);
+    CResult = NULL;
+    DEBUG(LB"deleted CResult (symbolic_only)\n"LE);
+  }
+
   DEBUG(LB"contributing to reduction\n"LE);
   contribute(cb);
 }
@@ -257,7 +275,8 @@ void MultiplyElement::multiply (double tolerance, CkCallback &cb)
  * @param BNodes The @link Node nodes @endlink of Matrix B on the tier below this one.
  * @param cb The callback to reduce to.
  */
-void MultiplyElement::pruneProduct (int NTier,
+void MultiplyElement::pruneProduct (
+    int NTier,
     bool *nextConvolutionMap,
     double tolerance,
     CProxy_Node ANodes,
@@ -417,7 +436,9 @@ void MultiplyElement::disable (CkCallback &cb)
  * @param alpha The factor @f$ \alpha @f$.
  * @param cb The callback.
  */
-void MultiplyElement::storeBack (double alpha, CkCallback &cb)
+void MultiplyElement::storeBack (
+    double alpha,
+    CkCallback &cb)
 {
   assert(tier == depth);
 

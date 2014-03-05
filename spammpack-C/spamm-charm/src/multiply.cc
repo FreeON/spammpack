@@ -28,7 +28,10 @@
  * @param B Matrix B.
  * @param C Matrix C.
  */
-Multiply::Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C)
+Multiply::Multiply (
+    CProxy_Matrix A,
+    CProxy_Matrix B,
+    CProxy_Matrix C)
 {
   this->A = A;
   this->B = B;
@@ -78,7 +81,10 @@ Multiply::~Multiply (void)
  * @param alignPEs Align PEs in the diagonal matrix case.
  * @param cb The callback to send to when done.
  */
-void Multiply::init (int initialPE, bool alignPEs, CkCallback &cb)
+void Multiply::init (
+    int initialPE,
+    bool alignPEs,
+    CkCallback &cb)
 {
   MatrixNodeMsg *ANodes = A.getNodes();
   MatrixNodeMsg *BNodes = B.getNodes();
@@ -142,11 +148,6 @@ void Multiply::init (int initialPE, bool alignPEs, CkCallback &cb)
     }
   }
 
-  //for(int tier = 0; tier <= depth; tier++)
-  //{
-  //  convolution[tier].init(CkCallbackResumeThread());
-  //}
-
   delete ANodes;
   delete BNodes;
   delete CNodes;
@@ -166,9 +167,16 @@ void Multiply::init (int initialPE, bool alignPEs, CkCallback &cb)
  * @param tolerance The SpAMM tolerance.
  * @param alpha The factor @f$ \alpha @f$.
  * @param beta The factor @f$ \beta @f$.
+ * @param symbolic_only Run through the symbolic (tree) part of the multiply.
+ * The result matrix will not be altered when this is set to true.
  * @param cb The callback.
  */
-void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback &cb)
+void Multiply::multiply (
+    double tolerance,
+    double alpha,
+    double beta,
+    bool symbolic_only,
+    CkCallback &cb)
 {
   DEBUG("tolerance = %e\n", tolerance);
 
@@ -209,31 +217,35 @@ void Multiply::multiply (double tolerance, double alpha, double beta, CkCallback
   DEBUG("multiply\n");
   //Timer tMultiply("multiply");
   //tMultiply.start();
-  convolution[depth].multiply(tolerance, CkCallbackResumeThread());
+  convolution[depth].multiply(tolerance, symbolic_only,
+      CkCallbackResumeThread());
   //tMultiply.stop();
   //INFO("%s\n", tMultiply.to_str());
 
-  DEBUG("scale by beta (%e)\n", beta);
-  //Timer tScale("scale");
-  //tScale.start();
-  C.scale(beta, CkCallbackResumeThread());
-  //tScale.stop();
-  //INFO("%s\n", tScale.to_str());
+  if(!symbolic_only)
+  {
+    DEBUG("scale by beta (%e)\n", beta);
+    //Timer tScale("scale");
+    //tScale.start();
+    C.scale(beta, CkCallbackResumeThread());
+    //tScale.stop();
+    //INFO("%s\n", tScale.to_str());
 
-  DEBUG("storeBack\n");
-  //Timer tStoreBack("storeBack");
-  //tStoreBack.start();
-  convolution[depth].storeBack(alpha, CkCallbackResumeThread());
-  //tStoreBack.stop();
-  //INFO("%s\n", tStoreBack.to_str());
+    DEBUG("storeBack\n");
+    //Timer tStoreBack("storeBack");
+    //tStoreBack.start();
+    convolution[depth].storeBack(alpha, CkCallbackResumeThread());
+    //tStoreBack.stop();
+    //INFO("%s\n", tStoreBack.to_str());
 
-  /* Update norms. */
-  DEBUG("update norms\n");
-  //Timer tNorm("setNorm");
-  //tNorm.start();
-  C.setNorm(CkCallbackResumeThread());
-  //tNorm.stop();
-  //INFO("%s\n", tStoreBack.to_str());
+    /* Update norms. */
+    DEBUG("update norms\n");
+    //Timer tNorm("setNorm");
+    //tNorm.start();
+    C.setNorm(CkCallbackResumeThread());
+    //tNorm.stop();
+    //INFO("%s\n", tStoreBack.to_str());
+  }
 
   DEBUG("done\n");
   cb.send();
@@ -294,9 +306,13 @@ PEMapMsg * Multiply::getPEMap (void)
  */
 void Multiply::updateComplexity (CkCallback &cb)
 {
+#ifdef MEASURE_COMPLEXITY
   this->cb = cb;
   CkCallback done(CkReductionTarget(Multiply, doneComplexity), thisProxy);
   convolution[depth].updateComplexity(done);
+#else
+  cb.send();
+#endif
 }
 
 /** The reduction target for Multiply::updateComplexity.

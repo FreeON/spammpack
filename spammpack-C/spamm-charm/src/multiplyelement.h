@@ -81,7 +81,7 @@ class MultiplyElement : public CBase_MultiplyElement
     ~MultiplyElement ();
     void pup (PUP::er &p);
     void init (CkCallback &cb);
-    void multiply (double tolerance, CkCallback &cb);
+    void multiply (double tolerance, bool symbolic_only, CkCallback &cb);
 #ifdef PRUNE_CONVOLUTION
     void pruneProduct (int NTier,
         bool *nextConvolutionMap,

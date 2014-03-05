@@ -25,7 +25,8 @@ class SpAMM_Charm : public CBase_SpAMM_Charm
         int lengthDensityFilename, char *densityFilename, int Ne, int N,
         int blocksize, int N_basic, int maxIterations, double tolerance,
         bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
-        int lengthPEMap, char *filenamePEMap, double F_min, double F_max);
+        int lengthPEMap, char *filenamePEMap, double F_min, double F_max,
+        bool symbolic_only);
 };
 
 #endif

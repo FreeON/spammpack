@@ -18,6 +18,6 @@ mainmodule spamm_charm
         int blocksize, int N_basic, int maxIterations, double tolerance,
         bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
         int lengthPEMap, char filenamePEMap[lengthPEMap+1], double F_min,
-        double F_max);
+        double F_max, bool symbolic_only);
   };
 };

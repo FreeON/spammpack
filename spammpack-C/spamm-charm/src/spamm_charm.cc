@@ -97,8 +97,9 @@ void initialize (void)
  * - { -a | --align-PEs }         Align PEs for diagonal case
  * - { -p | --print-PEMap } FILE  Print a PE map in each iteration
  * - { -o | --operation } OP      Test OP { multiply, add, trace, scale, addIdentity, SP2 }
- * - { -1 | --F-min } MIN         The lower bound on the eigenspectrum of F\n");
- * - { -2 | --F-max } MAX         The upper bound on the eigenspectrum of F\n");
+ * - { -1 | --F-min } MIN         The lower bound on the eigenspectrum of F
+ * - { -2 | --F-max } MAX         The upper bound on the eigenspectrum of F
+ * - { -S | --symbolic }          Measure the symbolic part of the multiply
  *
  * @param msg The command line argument list.
  */
@@ -124,9 +125,10 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
   char *densityFilename = NULL;
   double F_min = 0;
   double F_max = 0;
+  bool symbolic_only = false;
 
   int c;
-  const char *short_options = "hN:b:s:i:t:m:F:P:T:vd:I:lap:o:1:2:";
+  const char *short_options = "hN:b:s:i:t:m:F:P:T:vd:I:lap:o:1:2:S";
   const struct option long_options[] = {
     { "help",         no_argument,        NULL, 'h' },
     { "N",            required_argument,  NULL, 'N' },
@@ -147,6 +149,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
     { "operation",    required_argument,  NULL, 'o' },
     { "F-min",        required_argument,  NULL, '1' },
     { "F-max",        required_argument,  NULL, '2' },
+    { "symbolic",     no_argument,        NULL, 'S' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -182,6 +185,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         CkPrintf("{ -o | --operation } OP       Test OP { multiply, add, trace, addIdentity, scale, SP2 }\n");
         CkPrintf("{ -1 | --F-min } MIN          The lower bound on the eigenspectrum of F\n");
         CkPrintf("{ -2 | --F-max } MAX          The upper bound on the eigenspectrum of F\n");
+        CkPrintf("{ -S | --symbolic }           Measure the symbolic part of the multiply\n");
         CkPrintf("\n");
         CkExit();
         break;
@@ -308,6 +312,10 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
         F_max = strtod(optarg, NULL);
         break;
 
+      case 'S':
+        symbolic_only = true;
+        break;
+
       default:
         CkExit();
         break;
@@ -363,7 +371,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
             strlen(densityFilename), densityFilename, Ne, N, blocksize,
             N_basic, numberIterations, tolerance, loadBalance, initialPE,
             alignPEs, printPEMap, strlen(filenamePEMap), filenamePEMap, F_min,
-            F_max);
+            F_max, symbolic_only);
       }
       break;
 
@@ -497,7 +505,7 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
           Timer t("iteration %d on %d PEs, multiplying C = A*A, tolerance = %e",
               iteration+1, CkNumPes(), tolerance);
           t.start();
-          M.multiply(tolerance, 1.0, 1.0, CkCallbackResumeThread());
+          M.multiply(tolerance, 1.0, 1.0, false, CkCallbackResumeThread());
           t.stop();
           CkPrintf("%s\n", t.to_str());
         }
@@ -812,12 +820,16 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
  * @param filenamePEMap The base name of the PEMap files.
  * @param F_min The lower bound on the eigenspectrum.
  * @param F_max The upper bound on the eigenspectrum.
+ * @param symbolic_only Measure the symbolic part of the multiply. This
+ * setting does not affect the actual multiply, i.e. the result matrix is not
+ * altered.
  */
 void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     int lengthDensityFilename, char *densityFilename, int Ne, int N,
     int blocksize, int N_basic, int maxIterations, double tolerance,
     bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
-    int lengthPEMap, char *filenamePEMap, double F_min, double F_max)
+    int lengthPEMap, char *filenamePEMap, double F_min, double F_max,
+    bool symbolic_only)
 {
   double *FDense;
   int NRows, NColumns;
@@ -907,6 +919,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
     Timer tMultiply("multiply");
+    Timer tSymbolicMultiply("symbolic multiply");
     Timer tSetEqual("setEq");
     Timer tAdd("add");
 
@@ -917,11 +930,19 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 #endif
 
     tMultiply.start();
-    M.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread()); /* P2 <- P*P */
+    M.multiply(tolerance, 1.0, 0.0, false, CkCallbackResumeThread()); /* P2 <- P*P */
     tMultiply.stop();
 
     M.updateComplexity(CkCallbackResumeThread());
     DoubleMsg *complexity = M.getComplexity();
+
+    if(symbolic_only)
+    {
+      DEBUG("running multiply again with symbolic only\n");
+      tSymbolicMultiply.start();
+      M.multiply(tolerance, 1.0, 0.0, true, CkCallbackResumeThread());
+      tSymbolicMultiply.stop();
+    }
 
     P2.updateTrace(CkCallbackResumeThread());
     DoubleMsg *trace_P2 = P2.getTrace();
@@ -954,12 +975,19 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
       delete trace_P2;
     }
 
-    INFO("iteration %2d, %s, %s, %s: trace(P) = %1.16e "
+    INFO("iteration %2d, %s, %s, %s, %s: trace(P) = %1.16e "
         "(Ne = %d, 2*trace(P)-Ne = % e) "
         "complexity %e (out of %d), ratio = %1.3e\n",
         iteration+1,
-        tMultiply.to_str(), tSetEqual.to_str(), tAdd.to_str(),
-        trace_P->x, Ne, 2*trace_P->x-Ne, complexity->x, full_complexity,
+        tMultiply.to_str(),
+        tSymbolicMultiply.to_str(),
+        tSetEqual.to_str(),
+        tAdd.to_str(),
+        trace_P->x,
+        Ne,
+        2*trace_P->x-Ne,
+        complexity->x,
+        full_complexity,
         complexity->x/(double) full_complexity);
 
     t_total += tMultiply.get()+tSetEqual.get()+tAdd.get();
@@ -1101,9 +1129,19 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     {
       errorNorm += (PReferenceDense[i]-PFinal->A[i])*(PReferenceDense[i]-PFinal->A[i]);
     }
-    INFO("||P-P_SpAMM||_{F} = %e\n", sqrt(errorNorm));
+    INFO("||P-D||_{F}                = %e\n", sqrt(errorNorm));
+
+    /* Check total energy. */
+    DenseMatrixMsg *FDense = F.toDense();
+    double total_energy = 0;
+    for(int i = 0; i < NRows*NColumns; i++)
+    {
+      total_energy += PReferenceDense[i]*FDense->A[i];
+    }
+    INFO("total energy, trace(F*D)   = %1.16e\n", total_energy);
 
     delete PFinal;
+    delete[] PReferenceDense;
   }
 
   /* Calculate energy, trace(F.P). */
@@ -1113,17 +1151,17 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   CProxy_Multiply M_FP(P, F, FP);
   M_FP.init(initialPE, alignPEs, CkCallbackResumeThread());
 
-  M_FP.multiply(tolerance, 1.0, 0.0, CkCallbackResumeThread());
+  M_FP.multiply(tolerance, 1.0, 0.0, false, CkCallbackResumeThread());
 
   FP.updateTrace(CkCallbackResumeThread());
   DoubleMsg *FP_trace = FP.getTrace();
-  INFO("total energy, trace(F*P) = %1.16e\n", FP_trace->x);
+  INFO("total energy, trace(F*P)   = %1.16e\n", FP_trace->x);
   delete FP_trace;
 
   total_time.stop();
   INFO("%s\n", total_time.to_str());
 
-  INFO("done\n");
+  INFO("end of spamm-charm\n");
   CkExit();
 }
 

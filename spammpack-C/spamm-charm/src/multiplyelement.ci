@@ -12,7 +12,7 @@ module multiplyelement
         CProxy_Node B,
         CProxy_Node C);
     entry void init (CkCallback &cb);
-    entry [threaded] void multiply (double tolerance, CkCallback &cb);
+    entry [threaded] void multiply (double tolerance, bool symbolic_only, CkCallback &cb);
 #ifdef PRUNE_CONVOLUTION
     entry [threaded] void pruneProduct (int NTier,
         bool nextConvolutionMap[NTier*NTier*NTier],

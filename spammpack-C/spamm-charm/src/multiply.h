@@ -53,7 +53,7 @@ class Multiply : public CBase_Multiply
     Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C);
     ~Multiply (void);
     void init (int initialPE, bool alignPEs, CkCallback &cb);
-    void multiply (double tolerance, double alpha, double beta, CkCallback &cb);
+    void multiply (double tolerance, double alpha, double beta, bool symbolic_only, CkCallback &cb);
     void updatePEMap (CkCallback &cb);
     void donePEMap (CkReductionMsg *data);
     PEMapMsg * getPEMap (void);

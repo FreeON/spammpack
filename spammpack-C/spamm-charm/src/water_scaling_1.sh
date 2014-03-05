@@ -12,6 +12,7 @@ run_spamm() {
     --basic ${N_basic} \
     --tolerance ${tolerance} \
     --operation SP2 \
+    --symbolic \
     --fockian ~/data-sets/water/${filename}.F_DIIS \
     --density ~/data-sets/water/${filename}.OrthoD \
     --Ne ${Ne} \

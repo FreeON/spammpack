@@ -8,7 +8,7 @@ module multiply
     entry Multiply (CProxy_Matrix A, CProxy_Matrix B, CProxy_Matrix C);
     entry [threaded] void init (int initialPE, bool alignPEs, CkCallback &cb);
     entry [threaded] void multiply (double tolerance, double alpha,
-        double beta, CkCallback &cb);
+        double beta, bool symbolic_only, CkCallback &cb);
     entry [threaded] void updatePEMap (CkCallback &cb);
     entry [reductiontarget] void donePEMap (CkReductionMsg *data);
     entry [sync] PEMapMsg * getPEMap (void);
