@@ -918,8 +918,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   double occupation[4] = { 0, 0, 0, 0 };
   P.updateTrace(CkCallbackResumeThread());
   DoubleMsg *trace_P = P.getTrace();
-  INFO("tolerance = %e\n", tolerance);
-  INFO("iteration  0: trace(P) = %1.16e (Ne/2 = %e)\n", trace_P->x, Ne/2.0);
+  CkPrintf("tolerance = %e\n", tolerance);
+  CkPrintf("iteration  0: trace(P) = %1.16e (Ne/2 = %e)\n", trace_P->x, Ne/2.0);
   double t_total = 0;
   double complexity_total = 0;
   bool converged = false;
@@ -982,7 +982,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
       delete trace_P2;
     }
 
-    INFO("iteration %2d, %s, %s, %s, %s: trace(P) = %1.16e "
+    CkPrintf("iteration %2d, %s, %s, %s, %s: trace(P) = %1.16e "
         "(Ne = %d, 2*trace(P)-Ne = % e) "
         "complexity %e (out of %d), ratio = %1.3e\n",
         iteration+1,
@@ -1016,9 +1016,10 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
         double idempotencyErrorLast = fabs(occupation[3]-occupation[2]);
         if(idempotencyErrorNow >= idempotencyErrorLast)
         {
-          INFO("SP2 converged in %d steps\n", iteration+1);
+          CkPrintf("SP2 converged in %d steps\n", iteration+1);
           DoubleMsg *norm_P = P.getNorm();
-          INFO("||P|| = %1.16e, ||P||/N^2 = %1.16e\n", norm_P->x, norm_P->x/NRows/NColumns);
+          CkPrintf("||P||     = %1.16e\n", norm_P->x);
+          CkPrintf("||P||/N^2 = %1.16e\n", norm_P->x/NRows/NColumns);
           delete norm_P;
           converged = true;
           break;
@@ -1112,11 +1113,11 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     }
   }
 
-  INFO("tolerance                  = %e\n", tolerance);
-  INFO("idempotency error          = %e\n", fabs(occupation[0]-occupation[1]));
-  INFO("previous idempotency error = %e\n", fabs(occupation[2]-occupation[3]));
-  INFO("t_total                    = %e seconds\n", t_total);
-  INFO("complexity                 = %e\n", complexity_total);
+  CkPrintf("tolerance                  = %e\n", tolerance);
+  CkPrintf("idempotency error          = %e\n", fabs(occupation[0]-occupation[1]));
+  CkPrintf("previous idempotency error = %e\n", fabs(occupation[2]-occupation[3]));
+  CkPrintf("t_total                    = %e seconds\n", t_total);
+  CkPrintf("complexity                 = %e\n", complexity_total);
 
   if(!converged)
   {
@@ -1136,7 +1137,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     {
       errorNorm += (PReferenceDense[i]-PFinal->A[i])*(PReferenceDense[i]-PFinal->A[i]);
     }
-    INFO("||P-D||_{F}                = %e\n", sqrt(errorNorm));
+    CkPrintf("||P-D||_{F}                = %e\n", sqrt(errorNorm));
 
     /* Check total energy. */
     DenseMatrixMsg *FDense = F.toDense();
@@ -1145,7 +1146,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     {
       total_energy += PReferenceDense[i]*FDense->A[i];
     }
-    INFO("total energy, trace(F*D)   = %1.16e\n", total_energy);
+    CkPrintf("total energy, trace(F*D)   = %1.16e\n", total_energy);
 
     delete PFinal;
     delete[] PReferenceDense;
@@ -1162,13 +1163,13 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 
   FP.updateTrace(CkCallbackResumeThread());
   DoubleMsg *FP_trace = FP.getTrace();
-  INFO("total energy, trace(F*P)   = %1.16e\n", FP_trace->x);
+  CkPrintf("total energy, trace(F*P)   = %1.16e\n", FP_trace->x);
   delete FP_trace;
 
   total_time.stop();
-  INFO("%s\n", total_time.to_str());
+  CkPrintf("%s\n", total_time.to_str());
 
-  INFO("end of spamm-charm\n");
+  CkPrintf("end of spamm-charm\n");
   CkExit();
 }
 
