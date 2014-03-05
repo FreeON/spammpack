@@ -44,6 +44,7 @@ def main ():
       total_energy_D = None
       total_time = None
       multiply_time = 0
+      symbolic_multiply_time = 0
       complexity = None
       timers = {}
 
@@ -78,7 +79,9 @@ def main ():
       logging.debug("read complexity = {:e}".format(complexity))
 
     result = re.compile(
-        "iteration\s+([0-9]+), multiply:\s([0-9.e+-]+) seconds"
+        "iteration\s+([0-9]+), "
+        + "multiply:\s+([0-9.e+-]+) seconds, "
+        + "symbolic multiply:\s+([0-9.e+-]+) seconds, "
         ).search(line)
     if result:
       iteration = int(result.group(1))
@@ -86,6 +89,7 @@ def main ():
         raise Exception("FIXME")
       timers["multiply"] = float(result.group(2))
       multiply_time += float(result.group(2))
+      symbolic_multiply_time += float(result.group(3))
       logging.debug("read iteration {:d}".format(iteration))
 
     result = re.compile("end of spamm-charm").search(line)
@@ -108,6 +112,7 @@ def main ():
       dataset[N]["data"][tolerance]["time"] = total_time
       dataset[N]["data"][tolerance]["complexity"] = complexity
       dataset[N]["data"][tolerance]["t_multiply"] = multiply_time
+      dataset[N]["data"][tolerance]["t_symbolic_multiply"] = symbolic_multiply_time
 
       if tolerance == 0 and total_energy_D:
         E_0 = dataset[N]["data"][0]["energy"]
@@ -133,19 +138,20 @@ def main ():
 
   fd.close()
 
-  print("{:>5} {:>10} {:>12} {:>13} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12}".format(
+  print("{:>5} {:>10} {:>10} {:>11} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}".format(
     "N",
     "filename",
     "tolerance",
     "energy",
-    "rel. error",
-    "BCSR error",
+    "E_error",
+    "E_BCSR",
     "t_multiply",
+    "t_sym",
     "total time",
     "complexity",
-    "rel. t_mult.",
-    "rel. time",
-    "rel. compl."
+    "d(t_mult.)",
+    "d(time)",
+    "d(compl.)"
     ))
 
   Ns = sorted(dataset.keys())
@@ -155,16 +161,17 @@ def main ():
       print(
           "{:5d} ".format(N)
           + "{:>10} ".format(dataset[N]["filename"])
-          + "{:e} ".format(tolerance)
-          + "{:e} ".format(dataset[N]["data"][tolerance]["energy"])
-          + "{:e} ".format(dataset[N]["data"][tolerance]["energy error"])
-          + "{:e} ".format(dataset[N]["data"][0]["BCSR energy error"])
-          + "{:e} ".format(dataset[N]["data"][tolerance]["t_multiply"])
-          + "{:e} ".format(dataset[N]["data"][tolerance]["time"])
-          + "{:e} ".format(dataset[N]["data"][tolerance]["complexity"])
-          + "{:e} ".format(dataset[N]["data"][tolerance]["relative t_multiply"])
-          + "{:e} ".format(dataset[N]["data"][tolerance]["relative time"])
-          + "{:e} ".format(dataset[N]["data"][tolerance]["relative complexity"])
+          + "{:1.4e} ".format(tolerance)
+          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["energy"])
+          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["energy error"])
+          + "{:1.4e} ".format(dataset[N]["data"][0]["BCSR energy error"])
+          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["t_multiply"])
+          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["t_symbolic_multiply"])
+          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["time"])
+          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["complexity"])
+          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["relative t_multiply"])
+          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["relative time"])
+          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["relative complexity"])
         )
 
 if __name__ == "__main__":
