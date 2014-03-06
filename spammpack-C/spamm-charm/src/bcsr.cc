@@ -315,7 +315,7 @@ double BCSR::getElement (int i)
  *
  * @param M [out] The number of rows.
  * @param N [out] The number of columns.
- * @param ADense [out] The dense matrix.
+ * @param ADense [out] The dense matrix. Free with delete[].
  */
 void BCSR::toDense (int *M, int *N, double **ADense)
 {

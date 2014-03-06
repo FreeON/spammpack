@@ -130,6 +130,8 @@ NodeInfoMsg::NodeInfoMsg (int index,
 DenseMatrixMsg::DenseMatrixMsg (int M, int N)
 {
   memset(A, 0, sizeof(double)*M*N);
+  this->M = M;
+  this->N = N;
 }
 
 /** The constructor.

@@ -93,7 +93,7 @@ Node::~Node (void)
   if(chunk != NULL)
   {
     DEBUG("free'ing chunk at %p\n", chunk);
-    free(chunk);
+    chunk_delete(&chunk);
     chunk = NULL;
     chunksize = 0;
   }

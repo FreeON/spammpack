@@ -47,15 +47,16 @@
 #include "index.h"
 #include "lapack_interface.h"
 #include "logger.h"
+#include "memory.h"
 #include "messages.h"
 #include "timer.h"
 #include "types.h"
 #include "utilities.h"
 
 #include <assert.h>
-#include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <getopt.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -127,6 +128,15 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
   double F_max = 0;
   bool symbolic_only = false;
 
+  /* Register backtrace handler. */
+  struct sigaction act;
+  memset(&act, 0, sizeof(struct sigaction));
+  act.sa_handler = spamm_backtrace_handler;
+
+  sigaction(SIGABRT, &act, NULL);
+  sigaction(SIGSEGV, &act, NULL);
+
+  /* Parse command line. */
   int c;
   const char *short_options = "hN:b:s:i:t:m:F:P:T:vd:I:lap:o:1:2:S";
   const struct option long_options[] = {
@@ -322,6 +332,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
     }
   }
 
+  /* Start... */
   char hostname[1000];
   if(gethostname(hostname, 1000-1) != 0)
   {
@@ -339,13 +350,12 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
   CkPrintf("SpAMM version %s (serial) running on %s\n", PACKAGE_VERSION, hostname);
 #endif
 
-  /* Register backtrace handler. */
-  struct sigaction act;
-  memset(&act, 0, sizeof(struct sigaction));
-  act.sa_handler = spamm_backtrace_handler;
-
-  sigaction(SIGABRT, &act, NULL);
-  sigaction(SIGSEGV, &act, NULL);
+  CkPrintf("command line:");
+  for(int i = 0; i < msg->argc; i++)
+  {
+    CkPrintf(" %s", msg->argv[i]);
+  }
+  CkPrintf("\n");
 
   switch(operation)
   {
@@ -779,6 +789,8 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
           fabs(sTrace->x - trace));
     }
 
+    delete sTrace;
+
     if(maxAbsDiff > verifyTolerance)
     {
       double relDiff = (CExact[BLOCK_INDEX(maxDiffRow, maxDiffColumn, 0, 0, N)] != 0
@@ -923,6 +935,9 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   double t_total = 0;
   double complexity_total = 0;
   bool converged = false;
+
+  INFO("Virtual memory = %d kiB\n", Memory::get_virtual());
+
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
     Timer tMultiply("multiply");
@@ -1018,8 +1033,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
         {
           CkPrintf("SP2 converged in %d steps\n", iteration+1);
           DoubleMsg *norm_P = P.getNorm();
-          CkPrintf("||P||     = %1.16e\n", norm_P->x);
-          CkPrintf("||P||/N^2 = %1.16e\n", norm_P->x/NRows/NColumns);
+          CkPrintf("||P||                      = %1.16e\n", norm_P->x);
+          CkPrintf("||P||/N^2                  = %1.16e\n", norm_P->x/NRows/NColumns);
           delete norm_P;
           converged = true;
           break;
@@ -1111,6 +1126,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
       db->StartLB();
       CkWaitQD();
     }
+
+    INFO("Virtual memory = %d kiB\n", Memory::get_virtual());
   }
 
   CkPrintf("tolerance                  = %e\n", tolerance);
@@ -1138,6 +1155,7 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
       errorNorm += (PReferenceDense[i]-PFinal->A[i])*(PReferenceDense[i]-PFinal->A[i]);
     }
     CkPrintf("||P-D||_{F}                = %e\n", sqrt(errorNorm));
+    delete PFinal;
 
     /* Check total energy. */
     DenseMatrixMsg *FDense = F.toDense();
@@ -1147,9 +1165,10 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
       total_energy += PReferenceDense[i]*FDense->A[i];
     }
     CkPrintf("total energy, trace(F*D)   = %1.16e\n", total_energy);
-
-    delete PFinal;
+    delete FDense;
     delete[] PReferenceDense;
+
+    INFO("Virtual memory = %d kiB\n", Memory::get_virtual());
   }
 
   /* Calculate energy, trace(F.P). */
@@ -1165,6 +1184,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   DoubleMsg *FP_trace = FP.getTrace();
   CkPrintf("total energy, trace(F*P)   = %1.16e\n", FP_trace->x);
   delete FP_trace;
+
+  INFO("Virtual memory = %d kiB\n", Memory::get_virtual());
 
   total_time.stop();
   CkPrintf("%s\n", total_time.to_str());

@@ -138,9 +138,6 @@ DenseMatrixMsg * Matrix::toDense (void)
     }
   }
 
-  A->M = N;
-  A->N = N;
-
   return A;
 }
 

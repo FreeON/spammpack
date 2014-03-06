@@ -34,6 +34,8 @@ spamm_charm_SOURCES = \
 	logger.h \
 	matrix.cc \
 	matrix.h \
+	memory.cc \
+	memory.h \
 	messages.cc \
 	messages.h \
 	multiply.cc \
