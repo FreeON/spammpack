@@ -16,14 +16,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-/** Return the current virtual memory usage of the caller.
+/** Parse the process' status in the /proc FS.
  *
- * @return The current usage in kiB.
+ * @param VmSize The current virtual memory size.
+ * @param VmPeak The peak virtual memory usage.
  */
-int Memory::get_virtual (void)
+void Memory::parse_proc (int *VmSize, int *VmPeak)
 {
-  int result = 0;
-
   /* Get PID of caller (well it's really the PID of this process here). */
   pid_t my_pid = getpid();
   char filename[2000];
@@ -37,17 +36,53 @@ int Memory::get_virtual (void)
   char line[2000];
   while(fgets(line, 2000, stream) != NULL)
   {
-    char *found_it = strstr(line, "VmSize");
-    if(found_it != NULL)
+    if(VmSize != NULL)
     {
-      if(sscanf(line, "VmSize: %d kB", &result) != 1)
+      char *found_it = strstr(line, "VmSize");
+      if(found_it != NULL)
       {
-        printf("can not parse VmSize\n");
-        exit(1);
+        if(sscanf(line, "VmSize: %d kB", VmSize) != 1)
+        {
+          printf("can not parse VmSize\n");
+          exit(1);
+        }
       }
-      break;
+    }
+
+    if(VmPeak != NULL)
+    {
+      char *found_it = strstr(line, "VmPeak");
+      if(found_it != NULL)
+      {
+        if(sscanf(line, "VmPeak: %d kB", VmPeak) != 1)
+        {
+          printf("can not parse VmPeak\n");
+          exit(1);
+        }
+      }
     }
   }
   fclose(stream);
-  return result;
+}
+
+/** Return the current virtual memory usage of the caller.
+ *
+ * @return The current usage in kiB.
+ */
+int Memory::get_virtual (void)
+{
+  int VmSize;
+  Memory::parse_proc(&VmSize, NULL);
+  return VmSize;
+}
+
+/** Return the peak virtual memory usage of the caller.
+ *
+ * @return The peak usage in kiB.
+ */
+int Memory::get_peak_virtual (void)
+{
+  int VmPeak;
+  Memory::parse_proc(NULL, &VmPeak);
+  return VmPeak;
 }

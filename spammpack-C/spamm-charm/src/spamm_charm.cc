@@ -936,7 +936,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   double complexity_total = 0;
   bool converged = false;
 
-  INFO("Virtual memory = %d kiB\n", Memory::get_virtual());
+  INFO("Virtual memory = %d kiB (peak = %d kiB)\n",
+      Memory::get_virtual(), Memory::get_peak_virtual());
 
   for(int iteration = 0; iteration < maxIterations; iteration++)
   {
@@ -1127,7 +1128,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
       CkWaitQD();
     }
 
-    INFO("Virtual memory = %d kiB\n", Memory::get_virtual());
+    INFO("Virtual memory = %d kiB (peak = %d kiB)\n",
+        Memory::get_virtual(), Memory::get_peak_virtual());
   }
 
   CkPrintf("tolerance                  = %e\n", tolerance);
@@ -1168,7 +1170,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
     delete FDense;
     delete[] PReferenceDense;
 
-    INFO("Virtual memory = %d kiB\n", Memory::get_virtual());
+    INFO("Virtual memory = %d kiB (peak = %d kiB)\n",
+        Memory::get_virtual(), Memory::get_peak_virtual());
   }
 
   /* Calculate energy, trace(F.P). */
@@ -1185,7 +1188,8 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
   CkPrintf("total energy, trace(F*P)   = %1.16e\n", FP_trace->x);
   delete FP_trace;
 
-  INFO("Virtual memory = %d kiB\n", Memory::get_virtual());
+  INFO("Virtual memory = %d kiB (peak = %d kiB)\n",
+      Memory::get_virtual(), Memory::get_peak_virtual());
 
   total_time.stop();
   CkPrintf("%s\n", total_time.to_str());

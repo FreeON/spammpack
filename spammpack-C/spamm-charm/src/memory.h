@@ -13,8 +13,12 @@
  */
 class Memory
 {
+  private:
+    static void parse_proc (int *VmSize, int *VmPeak);
+
   public:
     static int get_virtual (void);
+    static int get_peak_virtual (void);
 };
 
 #endif
