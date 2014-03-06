@@ -1,0 +1,1104 @@
+Charm++: standalone mode (not using charmrun)
+Converse/Charm++ Commit ID: 
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Charm++> scheduler running in netpoll mode.
+CharmLB> Load balancer assumes all CPUs are same.
+Charm++> Running on 1 unique compute nodes (8-way SMP).
+Charm++> cpu topology info is gathered in 0.002 seconds.
+SpAMM version 5 using 8 OpenMP thread(s) running on meitner
+command line: /home/nbock/freeon/spamm-charm/src/.libs/spamm-charm --block 128 --basic 4 --tolerance 0 --operation SP2 --symbolic --fockian /home/nbock/data-sets/water/h2o_90.F_DIIS --density /home/nbock/data-sets/water/h2o_90.OrthoD --Ne 900 --iterations 100
+[bcsr.cc:100 (BCSR) 0.03s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.F_DIIS, size 2250x2250, 4917850 nonzeros, ||A||_{F} = 2.0463242620153218e+02, ||A||_{F}/N^2 = 4.0421219990426108e-05, 97.1427 percent nonzero elements
+[spamm_charm.cc:888 (runSP2) 0.08s PE:0] spectral bounds: [ -3.587158e+01,  2.061774e+01 ], dF = 5.648932e+01
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.33s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.33s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.33s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.33s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.33s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.33s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 0.73s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 0.76s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 0.77s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 0.77s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 0.77s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 0.77s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+tolerance = 0.000000e+00
+iteration  0: trace(P) = 1.4681321537865626e+03 (Ne/2 = 4.500000e+02)
+[spamm_charm.cc:939 (runSP2) 1.05s PE:0] Virtual memory = 541568 kiB
+iteration  1, multiply: 100.862752 seconds, symbolic multiply: 100.453124 seconds, setEq: 0.131904 seconds, add: 0.000000 seconds: trace(P) = 5.3917018170749247e+02 (Ne = 900, 2*trace(P)-Ne =  1.783404e+02) complexity 1.713145e+08 (out of 178453547), ratio = 9.600e-01
+[spamm_charm.cc:1130 (runSP2) 202.53s PE:0] Virtual memory = 1208104 kiB
+iteration  2, multiply: 104.715121 seconds, symbolic multiply: 103.170454 seconds, setEq: 0.124279 seconds, add: 0.000000 seconds: trace(P) = 8.4050428639621913e+01 (Ne = 900, 2*trace(P)-Ne = -7.318991e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 410.57s PE:0] Virtual memory = 1208104 kiB
+iteration  3, multiply: 103.247768 seconds, symbolic multiply: 105.018914 seconds, setEq: 0.000000 seconds, add: 0.125196 seconds: trace(P) = 1.6167638082244221e+02 (Ne = 900, 2*trace(P)-Ne = -5.766472e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 619.00s PE:0] Virtual memory = 1208104 kiB
+iteration  4, multiply: 103.617971 seconds, symbolic multiply: 103.981421 seconds, setEq: 0.000000 seconds, add: 0.125032 seconds: trace(P) = 3.0271191918237423e+02 (Ne = 900, 2*trace(P)-Ne = -2.945762e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 826.75s PE:0] Virtual memory = 1208104 kiB
+iteration  5, multiply: 101.986832 seconds, symbolic multiply: 104.604216 seconds, setEq: 0.000000 seconds, add: 0.121344 seconds: trace(P) = 5.4901090043516638e+02 (Ne = 900, 2*trace(P)-Ne =  1.980218e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 1033.50s PE:0] Virtual memory = 1208104 kiB
+iteration  6, multiply: 104.059359 seconds, symbolic multiply: 101.751771 seconds, setEq: 0.122162 seconds, add: 0.000000 seconds: trace(P) = 1.2942505842345776e+02 (Ne = 900, 2*trace(P)-Ne = -6.411499e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 1239.46s PE:0] Virtual memory = 1208104 kiB
+iteration  7, multiply: 103.075969 seconds, symbolic multiply: 103.278891 seconds, setEq: 0.000000 seconds, add: 0.122525 seconds: trace(P) = 2.0021903173544791e+02 (Ne = 900, 2*trace(P)-Ne = -4.995619e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 1445.97s PE:0] Virtual memory = 1208104 kiB
+iteration  8, multiply: 101.934254 seconds, symbolic multiply: 102.292398 seconds, setEq: 0.000000 seconds, add: 0.122345 seconds: trace(P) = 3.1375796991503842e+02 (Ne = 900, 2*trace(P)-Ne = -2.724841e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 1650.35s PE:0] Virtual memory = 1208104 kiB
+iteration  9, multiply: 102.174627 seconds, symbolic multiply: 103.490946 seconds, setEq: 0.000000 seconds, add: 0.122313 seconds: trace(P) = 5.2353744024252182e+02 (Ne = 900, 2*trace(P)-Ne =  1.470749e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 1856.17s PE:0] Virtual memory = 1208104 kiB
+iteration 10, multiply: 103.874778 seconds, symbolic multiply: 101.753622 seconds, setEq: 0.122340 seconds, add: 0.000000 seconds: trace(P) = 1.4323166572941182e+02 (Ne = 900, 2*trace(P)-Ne = -6.135367e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 2061.95s PE:0] Virtual memory = 1208104 kiB
+iteration 11, multiply: 103.268885 seconds, symbolic multiply: 102.300517 seconds, setEq: 0.000000 seconds, add: 0.121812 seconds: trace(P) = 1.9551348140713935e+02 (Ne = 900, 2*trace(P)-Ne = -5.089730e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 2267.68s PE:0] Virtual memory = 1208104 kiB
+iteration 12, multiply: 101.905832 seconds, symbolic multiply: 103.616860 seconds, setEq: 0.000000 seconds, add: 0.123779 seconds: trace(P) = 2.9729991239691549e+02 (Ne = 900, 2*trace(P)-Ne = -3.054002e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 2473.35s PE:0] Virtual memory = 1208104 kiB
+iteration 13, multiply: 104.036672 seconds, symbolic multiply: 101.760769 seconds, setEq: 0.000000 seconds, add: 0.121230 seconds: trace(P) = 4.9027626945649638e+02 (Ne = 900, 2*trace(P)-Ne =  8.055254e+01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 2679.30s PE:0] Virtual memory = 1208104 kiB
+iteration 14, multiply: 101.882167 seconds, symbolic multiply: 102.242833 seconds, setEq: 0.123030 seconds, add: 0.000000 seconds: trace(P) = 1.4295906785377653e+02 (Ne = 900, 2*trace(P)-Ne = -6.140819e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 2883.58s PE:0] Virtual memory = 1208104 kiB
+iteration 15, multiply: 103.606785 seconds, symbolic multiply: 103.493851 seconds, setEq: 0.000000 seconds, add: 0.122288 seconds: trace(P) = 1.9468150866228399e+02 (Ne = 900, 2*trace(P)-Ne = -5.106370e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 3090.84s PE:0] Virtual memory = 1208104 kiB
+iteration 16, multiply: 101.872971 seconds, symbolic multiply: 101.858253 seconds, setEq: 0.000000 seconds, add: 0.123482 seconds: trace(P) = 2.9457142470887618e+02 (Ne = 900, 2*trace(P)-Ne = -3.108572e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 3294.72s PE:0] Virtual memory = 1208104 kiB
+iteration 17, multiply: 103.281200 seconds, symbolic multiply: 101.741659 seconds, setEq: 0.000000 seconds, add: 0.123747 seconds: trace(P) = 4.8112827800966392e+02 (Ne = 900, 2*trace(P)-Ne =  6.225656e+01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 3499.90s PE:0] Virtual memory = 1208104 kiB
+iteration 18, multiply: 104.288917 seconds, symbolic multiply: 103.885856 seconds, setEq: 0.126906 seconds, add: 0.000000 seconds: trace(P) = 1.5405026255268365e+02 (Ne = 900, 2*trace(P)-Ne = -5.918995e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 3708.24s PE:0] Virtual memory = 1208104 kiB
+iteration 19, multiply: 101.526788 seconds, symbolic multiply: 102.836070 seconds, setEq: 0.000000 seconds, add: 0.122695 seconds: trace(P) = 2.1466894861301876e+02 (Ne = 900, 2*trace(P)-Ne = -4.706621e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 3912.75s PE:0] Virtual memory = 1208104 kiB
+iteration 20, multiply: 103.501199 seconds, symbolic multiply: 102.266472 seconds, setEq: 0.000000 seconds, add: 0.122539 seconds: trace(P) = 3.2705098009693347e+02 (Ne = 900, 2*trace(P)-Ne = -2.458980e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 4118.68s PE:0] Virtual memory = 1208104 kiB
+iteration 21, multiply: 101.960615 seconds, symbolic multiply: 102.312773 seconds, setEq: 0.000000 seconds, add: 0.123766 seconds: trace(P) = 5.2393126343864913e+02 (Ne = 900, 2*trace(P)-Ne =  1.478625e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 4323.11s PE:0] Virtual memory = 1208104 kiB
+iteration 22, multiply: 101.474428 seconds, symbolic multiply: 101.862520 seconds, setEq: 0.124713 seconds, add: 0.000000 seconds: trace(P) = 2.0505669284384987e+02 (Ne = 900, 2*trace(P)-Ne = -4.898866e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 4526.60s PE:0] Virtual memory = 1208104 kiB
+iteration 23, multiply: 103.433695 seconds, symbolic multiply: 102.375855 seconds, setEq: 0.000000 seconds, add: 0.122258 seconds: trace(P) = 2.8953442370726600e+02 (Ne = 900, 2*trace(P)-Ne = -3.209312e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 4732.56s PE:0] Virtual memory = 1208104 kiB
+iteration 24, multiply: 104.064458 seconds, symbolic multiply: 103.292748 seconds, setEq: 0.000000 seconds, add: 0.122365 seconds: trace(P) = 4.1823594136153270e+02 (Ne = 900, 2*trace(P)-Ne = -6.352812e+01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 4940.07s PE:0] Virtual memory = 1208104 kiB
+iteration 25, multiply: 104.363902 seconds, symbolic multiply: 102.425907 seconds, setEq: 0.000000 seconds, add: 0.122119 seconds: trace(P) = 6.1645625417134841e+02 (Ne = 900, 2*trace(P)-Ne =  3.329125e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 5147.02s PE:0] Virtual memory = 1208104 kiB
+iteration 26, multiply: 103.989277 seconds, symbolic multiply: 102.250504 seconds, setEq: 0.122257 seconds, add: 0.000000 seconds: trace(P) = 3.1334753459978208e+02 (Ne = 900, 2*trace(P)-Ne = -2.733049e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 5353.41s PE:0] Virtual memory = 1208104 kiB
+iteration 27, multiply: 103.416778 seconds, symbolic multiply: 101.909416 seconds, setEq: 0.000000 seconds, add: 0.124129 seconds: trace(P) = 4.0745090855158082e+02 (Ne = 900, 2*trace(P)-Ne = -8.509818e+01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 5558.89s PE:0] Virtual memory = 1208104 kiB
+iteration 28, multiply: 104.038773 seconds, symbolic multiply: 103.693857 seconds, setEq: 0.000000 seconds, add: 0.126006 seconds: trace(P) = 5.3998123028886562e+02 (Ne = 900, 2*trace(P)-Ne =  1.799625e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 5766.78s PE:0] Virtual memory = 1208104 kiB
+iteration 29, multiply: 101.948324 seconds, symbolic multiply: 104.694663 seconds, setEq: 0.122325 seconds, add: 0.000000 seconds: trace(P) = 3.5552178991417748e+02 (Ne = 900, 2*trace(P)-Ne = -1.889564e+02) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 5973.58s PE:0] Virtual memory = 1208104 kiB
+iteration 30, multiply: 102.773796 seconds, symbolic multiply: 103.790656 seconds, setEq: 0.000000 seconds, add: 0.122122 seconds: trace(P) = 4.1504029017226969e+02 (Ne = 900, 2*trace(P)-Ne = -6.991942e+01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 6180.30s PE:0] Virtual memory = 1208104 kiB
+iteration 31, multiply: 102.581250 seconds, symbolic multiply: 103.284661 seconds, setEq: 0.000000 seconds, add: 0.121898 seconds: trace(P) = 4.7489574324566757e+02 (Ne = 900, 2*trace(P)-Ne =  4.979149e+01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 6386.32s PE:0] Virtual memory = 1208104 kiB
+iteration 32, multiply: 101.648690 seconds, symbolic multiply: 104.643850 seconds, setEq: 0.125186 seconds, add: 0.000000 seconds: trace(P) = 4.0786168381257608e+02 (Ne = 900, 2*trace(P)-Ne = -8.427663e+01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 6592.77s PE:0] Virtual memory = 1208104 kiB
+iteration 33, multiply: 104.420806 seconds, symbolic multiply: 103.377780 seconds, setEq: 0.000000 seconds, add: 0.122833 seconds: trace(P) = 4.3488766029321579e+02 (Ne = 900, 2*trace(P)-Ne = -3.022468e+01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 6800.72s PE:0] Virtual memory = 1208104 kiB
+iteration 34, multiply: 101.831023 seconds, symbolic multiply: 102.243672 seconds, setEq: 0.000000 seconds, add: 0.123544 seconds: trace(P) = 4.5025395218938655e+02 (Ne = 900, 2*trace(P)-Ne =  5.079044e-01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 7004.95s PE:0] Virtual memory = 1208104 kiB
+iteration 35, multiply: 102.822234 seconds, symbolic multiply: 102.280565 seconds, setEq: 0.121354 seconds, add: 0.000000 seconds: trace(P) = 4.4103386061474873e+02 (Ne = 900, 2*trace(P)-Ne = -1.793228e+01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 7210.21s PE:0] Virtual memory = 1208104 kiB
+iteration 36, multiply: 101.790135 seconds, symbolic multiply: 103.735401 seconds, setEq: 0.000000 seconds, add: 0.123822 seconds: trace(P) = 4.4722441046067109e+02 (Ne = 900, 2*trace(P)-Ne = -5.551179e+00) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 7415.89s PE:0] Virtual memory = 1208104 kiB
+iteration 37, multiply: 101.849841 seconds, symbolic multiply: 103.338748 seconds, setEq: 0.000000 seconds, add: 0.125011 seconds: trace(P) = 4.4913662717636049e+02 (Ne = 900, 2*trace(P)-Ne = -1.726746e+00) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 7621.23s PE:0] Virtual memory = 1208104 kiB
+iteration 38, multiply: 103.114606 seconds, symbolic multiply: 103.511616 seconds, setEq: 0.000000 seconds, add: 0.124906 seconds: trace(P) = 4.4987141257586217e+02 (Ne = 900, 2*trace(P)-Ne = -2.571748e-01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 7828.02s PE:0] Virtual memory = 1208104 kiB
+iteration 39, multiply: 104.063951 seconds, symbolic multiply: 104.224785 seconds, setEq: 0.000000 seconds, add: 0.121332 seconds: trace(P) = 4.5021211000289651e+02 (Ne = 900, 2*trace(P)-Ne =  4.242200e-01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 8036.46s PE:0] Virtual memory = 1208104 kiB
+iteration 40, multiply: 103.516629 seconds, symbolic multiply: 101.676075 seconds, setEq: 0.122267 seconds, add: 0.000000 seconds: trace(P) = 4.4994814214922286e+02 (Ne = 900, 2*trace(P)-Ne = -1.037157e-01) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 8241.81s PE:0] Virtual memory = 1208104 kiB
+iteration 41, multiply: 103.379998 seconds, symbolic multiply: 103.410938 seconds, setEq: 0.000000 seconds, add: 0.123680 seconds: trace(P) = 4.4999842803061682e+02 (Ne = 900, 2*trace(P)-Ne = -3.143939e-03) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 8448.75s PE:0] Virtual memory = 1208104 kiB
+iteration 42, multiply: 103.648902 seconds, symbolic multiply: 104.195475 seconds, setEq: 0.000000 seconds, add: 0.122002 seconds: trace(P) = 4.5000012107188581e+02 (Ne = 900, 2*trace(P)-Ne =  2.421438e-04) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 8656.75s PE:0] Virtual memory = 1208104 kiB
+iteration 43, multiply: 102.452278 seconds, symbolic multiply: 104.068318 seconds, setEq: 0.121577 seconds, add: 0.000000 seconds: trace(P) = 4.4999999541398540e+02 (Ne = 900, 2*trace(P)-Ne = -9.172029e-06) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 8863.42s PE:0] Virtual memory = 1208104 kiB
+iteration 44, multiply: 101.728570 seconds, symbolic multiply: 103.314014 seconds, setEq: 0.000000 seconds, add: 0.125943 seconds: trace(P) = 4.4999999999999869e+02 (Ne = 900, 2*trace(P)-Ne = -2.614797e-12) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 9068.62s PE:0] Virtual memory = 1208104 kiB
+iteration 45, multiply: 101.753627 seconds, symbolic multiply: 102.360831 seconds, setEq: 0.000000 seconds, add: 0.121741 seconds: trace(P) = 4.5000000000003905e+02 (Ne = 900, 2*trace(P)-Ne =  7.810286e-11) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 9272.89s PE:0] Virtual memory = 1208104 kiB
+iteration 46, multiply: 102.057332 seconds, symbolic multiply: 102.208832 seconds, setEq: 0.122979 seconds, add: 0.000000 seconds: trace(P) = 4.5000000000000000e+02 (Ne = 900, 2*trace(P)-Ne =  0.000000e+00) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 9477.31s PE:0] Virtual memory = 1208104 kiB
+iteration 47, multiply: 101.912422 seconds, symbolic multiply: 101.748200 seconds, setEq: 0.000000 seconds, add: 0.122945 seconds: trace(P) = 4.5000000000000000e+02 (Ne = 900, 2*trace(P)-Ne =  0.000000e+00) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+[spamm_charm.cc:1130 (runSP2) 9681.13s PE:0] Virtual memory = 1208104 kiB
+iteration 48, multiply: 102.318324 seconds, symbolic multiply: 102.151174 seconds, setEq: 0.000000 seconds, add: 0.122405 seconds: trace(P) = 4.5000000000000000e+02 (Ne = 900, 2*trace(P)-Ne =  0.000000e+00) complexity 1.784540e+08 (out of 178453547), ratio = 1.000e+00
+SP2 converged in 48 steps
+||P||     = 1.1355780896278317e+02
+||P||/N^2 = 2.2431172140796676e-05
+tolerance                  = 0.000000e+00
+idempotency error          = 0.000000e+00
+previous idempotency error = 0.000000e+00
+t_total                    = 4.942994e+03 seconds
+complexity                 = 8.558653e+09
+[bcsr.cc:100 (BCSR) 9886.02s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.OrthoD, size 2250x2250, 4947450 nonzeros, ||A||_{F} = 2.1213203435568868e+01, ||A||_{F}/N^2 = 4.1902624070259489e-06, 97.7274 percent nonzero elements
+||P-D||_{F}                = 1.762308e-03
+total energy, trace(F*D)   = -1.9211695961962589e+03
+[spamm_charm.cc:1171 (runSP2) 9886.26s PE:0] Virtual memory = 1208104 kiB
+[matrix.cc:58 (Matrix) 9886.26s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 9886.26s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 9886.26s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 9886.26s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 9886.26s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 9886.26s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 9886.26s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 9886.29s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 9886.30s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 9886.30s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 9886.30s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 9886.30s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+total energy, trace(F*P)   = -1.9211695979610595e+03
+[spamm_charm.cc:1188 (runSP2) 9987.90s PE:0] Virtual memory = 1308324 kiB
+total time: 9987.569460 seconds
+end of spamm-charm
+Program finished.
+Charm++: standalone mode (not using charmrun)
+Converse/Charm++ Commit ID: 
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Charm++> scheduler running in netpoll mode.
+CharmLB> Load balancer assumes all CPUs are same.
+Charm++> Running on 1 unique compute nodes (8-way SMP).
+Charm++> cpu topology info is gathered in 0.002 seconds.
+SpAMM version 5 using 8 OpenMP thread(s) running on meitner
+command line: /home/nbock/freeon/spamm-charm/src/.libs/spamm-charm --block 128 --basic 4 --tolerance 1.0e-10 --operation SP2 --symbolic --fockian /home/nbock/data-sets/water/h2o_90.F_DIIS --density /home/nbock/data-sets/water/h2o_90.OrthoD --Ne 900 --iterations 100
+[bcsr.cc:100 (BCSR) 0.02s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.F_DIIS, size 2250x2250, 4917850 nonzeros, ||A||_{F} = 2.0463242620153218e+02, ||A||_{F}/N^2 = 4.0421219990426108e-05, 97.1427 percent nonzero elements
+[spamm_charm.cc:888 (runSP2) 0.07s PE:0] spectral bounds: [ -3.587158e+01,  2.061774e+01 ], dF = 5.648932e+01
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 0.70s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 0.74s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 0.74s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 0.74s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 0.74s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 0.74s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+tolerance = 1.000000e-10
+iteration  0: trace(P) = 1.4681321537865626e+03 (Ne/2 = 4.500000e+02)
+[spamm_charm.cc:939 (runSP2) 1.03s PE:0] Virtual memory = 541568 kiB
+iteration  1, multiply: 56.665460 seconds, symbolic multiply: 55.982238 seconds, setEq: 0.127657 seconds, add: 0.000000 seconds: trace(P) = 5.3917018007012052e+02 (Ne = 900, 2*trace(P)-Ne =  1.783404e+02) complexity 5.722437e+07 (out of 178453547), ratio = 3.207e-01
+[spamm_charm.cc:1130 (runSP2) 113.84s PE:0] Virtual memory = 1207316 kiB
+iteration  2, multiply: 58.333057 seconds, symbolic multiply: 59.058619 seconds, setEq: 0.124328 seconds, add: 0.000000 seconds: trace(P) = 8.4050427744540556e+01 (Ne = 900, 2*trace(P)-Ne = -7.318991e+02) complexity 6.182973e+07 (out of 178453547), ratio = 3.465e-01
+[spamm_charm.cc:1130 (runSP2) 231.38s PE:0] Virtual memory = 1207316 kiB
+iteration  3, multiply: 58.477692 seconds, symbolic multiply: 57.893947 seconds, setEq: 0.000000 seconds, add: 0.124799 seconds: trace(P) = 1.6167637910391758e+02 (Ne = 900, 2*trace(P)-Ne = -5.766472e+02) complexity 6.210426e+07 (out of 178453547), ratio = 3.480e-01
+[spamm_charm.cc:1130 (runSP2) 347.91s PE:0] Virtual memory = 1207316 kiB
+iteration  4, multiply: 59.869975 seconds, symbolic multiply: 59.734366 seconds, setEq: 0.000000 seconds, add: 0.122115 seconds: trace(P) = 3.0271191598411519e+02 (Ne = 900, 2*trace(P)-Ne = -2.945762e+02) complexity 6.302111e+07 (out of 178453547), ratio = 3.532e-01
+[spamm_charm.cc:1130 (runSP2) 467.67s PE:0] Virtual memory = 1207316 kiB
+iteration  5, multiply: 60.426026 seconds, symbolic multiply: 61.470510 seconds, setEq: 0.000000 seconds, add: 0.125533 seconds: trace(P) = 5.4901089474509456e+02 (Ne = 900, 2*trace(P)-Ne =  1.980218e+02) complexity 6.570855e+07 (out of 178453547), ratio = 3.682e-01
+[spamm_charm.cc:1130 (runSP2) 589.72s PE:0] Virtual memory = 1207316 kiB
+iteration  6, multiply: 65.021234 seconds, symbolic multiply: 64.934332 seconds, setEq: 0.123630 seconds, add: 0.000000 seconds: trace(P) = 1.2942505660247880e+02 (Ne = 900, 2*trace(P)-Ne = -6.411499e+02) complexity 7.204295e+07 (out of 178453547), ratio = 4.037e-01
+[spamm_charm.cc:1130 (runSP2) 719.83s PE:0] Virtual memory = 1207316 kiB
+iteration  7, multiply: 65.621549 seconds, symbolic multiply: 63.431359 seconds, setEq: 0.000000 seconds, add: 0.122099 seconds: trace(P) = 2.0021902826605972e+02 (Ne = 900, 2*trace(P)-Ne = -4.995619e+02) complexity 7.244168e+07 (out of 178453547), ratio = 4.059e-01
+[spamm_charm.cc:1130 (runSP2) 849.04s PE:0] Virtual memory = 1207316 kiB
+iteration  8, multiply: 66.412860 seconds, symbolic multiply: 64.536486 seconds, setEq: 0.000000 seconds, add: 0.123343 seconds: trace(P) = 3.1375796328791148e+02 (Ne = 900, 2*trace(P)-Ne = -2.724841e+02) complexity 7.349443e+07 (out of 178453547), ratio = 4.118e-01
+[spamm_charm.cc:1130 (runSP2) 980.14s PE:0] Virtual memory = 1207316 kiB
+iteration  9, multiply: 66.187602 seconds, symbolic multiply: 65.900388 seconds, setEq: 0.000000 seconds, add: 0.124965 seconds: trace(P) = 5.2353742789978196e+02 (Ne = 900, 2*trace(P)-Ne =  1.470749e+02) complexity 7.638489e+07 (out of 178453547), ratio = 4.280e-01
+[spamm_charm.cc:1130 (runSP2) 1112.39s PE:0] Virtual memory = 1207316 kiB
+iteration 10, multiply: 70.744266 seconds, symbolic multiply: 69.602805 seconds, setEq: 0.121910 seconds, add: 0.000000 seconds: trace(P) = 1.4323166293109637e+02 (Ne = 900, 2*trace(P)-Ne = -6.135367e+02) complexity 8.308086e+07 (out of 178453547), ratio = 4.656e-01
+[spamm_charm.cc:1130 (runSP2) 1252.89s PE:0] Virtual memory = 1207316 kiB
+iteration 11, multiply: 69.807436 seconds, symbolic multiply: 70.450875 seconds, setEq: 0.000000 seconds, add: 0.122248 seconds: trace(P) = 1.9551347589986466e+02 (Ne = 900, 2*trace(P)-Ne = -5.089730e+02) complexity 8.338341e+07 (out of 178453547), ratio = 4.673e-01
+[spamm_charm.cc:1130 (runSP2) 1393.30s PE:0] Virtual memory = 1207316 kiB
+iteration 12, multiply: 70.166979 seconds, symbolic multiply: 69.793534 seconds, setEq: 0.000000 seconds, add: 0.126093 seconds: trace(P) = 2.9729990173392264e+02 (Ne = 900, 2*trace(P)-Ne = -3.054002e+02) complexity 8.425726e+07 (out of 178453547), ratio = 4.722e-01
+[spamm_charm.cc:1130 (runSP2) 1533.42s PE:0] Virtual memory = 1207316 kiB
+iteration 13, multiply: 71.391733 seconds, symbolic multiply: 72.519706 seconds, setEq: 0.000000 seconds, add: 0.121686 seconds: trace(P) = 4.9027624936912741e+02 (Ne = 900, 2*trace(P)-Ne =  8.055250e+01) complexity 8.682242e+07 (out of 178453547), ratio = 4.865e-01
+[spamm_charm.cc:1130 (runSP2) 1677.48s PE:0] Virtual memory = 1207316 kiB
+iteration 14, multiply: 74.537137 seconds, symbolic multiply: 73.739664 seconds, setEq: 0.122236 seconds, add: 0.000000 seconds: trace(P) = 1.4295906385205478e+02 (Ne = 900, 2*trace(P)-Ne = -6.140819e+02) complexity 9.288748e+07 (out of 178453547), ratio = 5.205e-01
+[spamm_charm.cc:1130 (runSP2) 1825.91s PE:0] Virtual memory = 1207316 kiB
+iteration 15, multiply: 76.222200 seconds, symbolic multiply: 74.099259 seconds, setEq: 0.000000 seconds, add: 0.122005 seconds: trace(P) = 1.9468150082832670e+02 (Ne = 900, 2*trace(P)-Ne = -5.106370e+02) complexity 9.310889e+07 (out of 178453547), ratio = 5.218e-01
+[spamm_charm.cc:1130 (runSP2) 1976.39s PE:0] Virtual memory = 1207316 kiB
+iteration 16, multiply: 76.686558 seconds, symbolic multiply: 76.376969 seconds, setEq: 0.000000 seconds, add: 0.122855 seconds: trace(P) = 2.9457140967952199e+02 (Ne = 900, 2*trace(P)-Ne = -3.108572e+02) complexity 9.379861e+07 (out of 178453547), ratio = 5.256e-01
+[spamm_charm.cc:1130 (runSP2) 2129.60s PE:0] Virtual memory = 1207316 kiB
+iteration 17, multiply: 75.585660 seconds, symbolic multiply: 74.895402 seconds, setEq: 0.000000 seconds, add: 0.121230 seconds: trace(P) = 4.8112825017902685e+02 (Ne = 900, 2*trace(P)-Ne =  6.225650e+01) complexity 9.587036e+07 (out of 178453547), ratio = 5.372e-01
+[spamm_charm.cc:1130 (runSP2) 2280.24s PE:0] Virtual memory = 1207316 kiB
+iteration 18, multiply: 78.212007 seconds, symbolic multiply: 79.434819 seconds, setEq: 0.121932 seconds, add: 0.000000 seconds: trace(P) = 1.5405025558727803e+02 (Ne = 900, 2*trace(P)-Ne = -5.918995e+02) complexity 1.008545e+08 (out of 178453547), ratio = 5.652e-01
+[spamm_charm.cc:1130 (runSP2) 2438.04s PE:0] Virtual memory = 1207316 kiB
+iteration 19, multiply: 78.987636 seconds, symbolic multiply: 78.261572 seconds, setEq: 0.000000 seconds, add: 0.124713 seconds: trace(P) = 2.1466893558546212e+02 (Ne = 900, 2*trace(P)-Ne = -4.706621e+02) complexity 1.010918e+08 (out of 178453547), ratio = 5.665e-01
+[spamm_charm.cc:1130 (runSP2) 2595.44s PE:0] Virtual memory = 1207316 kiB
+iteration 20, multiply: 80.261135 seconds, symbolic multiply: 79.173335 seconds, setEq: 0.000000 seconds, add: 0.124033 seconds: trace(P) = 3.2705095701871858e+02 (Ne = 900, 2*trace(P)-Ne = -2.458981e+02) complexity 1.017974e+08 (out of 178453547), ratio = 5.704e-01
+[spamm_charm.cc:1130 (runSP2) 2755.03s PE:0] Virtual memory = 1207316 kiB
+iteration 21, multiply: 79.464143 seconds, symbolic multiply: 80.544077 seconds, setEq: 0.000000 seconds, add: 0.122014 seconds: trace(P) = 5.2393122558314042e+02 (Ne = 900, 2*trace(P)-Ne =  1.478625e+02) complexity 1.036306e+08 (out of 178453547), ratio = 5.807e-01
+[spamm_charm.cc:1130 (runSP2) 2915.19s PE:0] Virtual memory = 1207316 kiB
+iteration 22, multiply: 81.045290 seconds, symbolic multiply: 79.937556 seconds, setEq: 0.125426 seconds, add: 0.000000 seconds: trace(P) = 2.0505667481679421e+02 (Ne = 900, 2*trace(P)-Ne = -4.898867e+02) complexity 1.075225e+08 (out of 178453547), ratio = 6.025e-01
+[spamm_charm.cc:1130 (runSP2) 3076.33s PE:0] Virtual memory = 1207316 kiB
+iteration 23, multiply: 81.868231 seconds, symbolic multiply: 80.150269 seconds, setEq: 0.000000 seconds, add: 0.121511 seconds: trace(P) = 2.8953439773984837e+02 (Ne = 900, 2*trace(P)-Ne = -3.209312e+02) complexity 1.081973e+08 (out of 178453547), ratio = 6.063e-01
+[spamm_charm.cc:1130 (runSP2) 3238.50s PE:0] Virtual memory = 1207316 kiB
+iteration 24, multiply: 81.720567 seconds, symbolic multiply: 82.131973 seconds, setEq: 0.000000 seconds, add: 0.123933 seconds: trace(P) = 4.1823590662787296e+02 (Ne = 900, 2*trace(P)-Ne = -6.352819e+01) complexity 1.094501e+08 (out of 178453547), ratio = 6.133e-01
+[spamm_charm.cc:1130 (runSP2) 3402.51s PE:0] Virtual memory = 1207316 kiB
+iteration 25, multiply: 82.805873 seconds, symbolic multiply: 82.221815 seconds, setEq: 0.000000 seconds, add: 0.120865 seconds: trace(P) = 6.1645620704132443e+02 (Ne = 900, 2*trace(P)-Ne =  3.329124e+02) complexity 1.115505e+08 (out of 178453547), ratio = 6.251e-01
+[spamm_charm.cc:1130 (runSP2) 3567.69s PE:0] Virtual memory = 1207316 kiB
+iteration 26, multiply: 83.846738 seconds, symbolic multiply: 82.860381 seconds, setEq: 0.124885 seconds, add: 0.000000 seconds: trace(P) = 3.1334750125160627e+02 (Ne = 900, 2*trace(P)-Ne = -2.733050e+02) complexity 1.149986e+08 (out of 178453547), ratio = 6.444e-01
+[spamm_charm.cc:1130 (runSP2) 3734.56s PE:0] Virtual memory = 1207316 kiB
+iteration 27, multiply: 85.619692 seconds, symbolic multiply: 84.154762 seconds, setEq: 0.000000 seconds, add: 0.122266 seconds: trace(P) = 4.0745086609176997e+02 (Ne = 900, 2*trace(P)-Ne = -8.509827e+01) complexity 1.163432e+08 (out of 178453547), ratio = 6.520e-01
+[spamm_charm.cc:1130 (runSP2) 3904.48s PE:0] Virtual memory = 1207316 kiB
+iteration 28, multiply: 84.955564 seconds, symbolic multiply: 86.323660 seconds, setEq: 0.000000 seconds, add: 0.121636 seconds: trace(P) = 5.3998118639778318e+02 (Ne = 900, 2*trace(P)-Ne =  1.799624e+02) complexity 1.184873e+08 (out of 178453547), ratio = 6.640e-01
+[spamm_charm.cc:1130 (runSP2) 4075.92s PE:0] Virtual memory = 1207316 kiB
+iteration 29, multiply: 85.665619 seconds, symbolic multiply: 86.263110 seconds, setEq: 0.121360 seconds, add: 0.000000 seconds: trace(P) = 3.5552174247875564e+02 (Ne = 900, 2*trace(P)-Ne = -1.889565e+02) complexity 1.216452e+08 (out of 178453547), ratio = 6.817e-01
+[spamm_charm.cc:1130 (runSP2) 4248.00s PE:0] Virtual memory = 1207316 kiB
+iteration 30, multiply: 87.260865 seconds, symbolic multiply: 86.987361 seconds, setEq: 0.000000 seconds, add: 0.124812 seconds: trace(P) = 4.1504024827453213e+02 (Ne = 900, 2*trace(P)-Ne = -6.991950e+01) complexity 1.239136e+08 (out of 178453547), ratio = 6.944e-01
+[spamm_charm.cc:1130 (runSP2) 4422.40s PE:0] Virtual memory = 1207316 kiB
+iteration 31, multiply: 87.574171 seconds, symbolic multiply: 89.423824 seconds, setEq: 0.000000 seconds, add: 0.122673 seconds: trace(P) = 4.7489571471645689e+02 (Ne = 900, 2*trace(P)-Ne =  4.979143e+01) complexity 1.272286e+08 (out of 178453547), ratio = 7.130e-01
+[spamm_charm.cc:1130 (runSP2) 4599.55s PE:0] Virtual memory = 1207316 kiB
+iteration 32, multiply: 90.049119 seconds, symbolic multiply: 91.577388 seconds, setEq: 0.122315 seconds, add: 0.000000 seconds: trace(P) = 4.0786164235149431e+02 (Ne = 900, 2*trace(P)-Ne = -8.427672e+01) complexity 1.314504e+08 (out of 178453547), ratio = 7.366e-01
+[spamm_charm.cc:1130 (runSP2) 4781.33s PE:0] Virtual memory = 1207316 kiB
+iteration 33, multiply: 92.173476 seconds, symbolic multiply: 92.466605 seconds, setEq: 0.000000 seconds, add: 0.122512 seconds: trace(P) = 4.3488763547029072e+02 (Ne = 900, 2*trace(P)-Ne = -3.022473e+01) complexity 1.351500e+08 (out of 178453547), ratio = 7.573e-01
+[spamm_charm.cc:1130 (runSP2) 4966.13s PE:0] Virtual memory = 1207316 kiB
+iteration 34, multiply: 93.054751 seconds, symbolic multiply: 92.149593 seconds, setEq: 0.000000 seconds, add: 0.123303 seconds: trace(P) = 4.5025394240086280e+02 (Ne = 900, 2*trace(P)-Ne =  5.078848e-01) complexity 1.395245e+08 (out of 178453547), ratio = 7.819e-01
+[spamm_charm.cc:1130 (runSP2) 5151.49s PE:0] Virtual memory = 1207316 kiB
+iteration 35, multiply: 94.541241 seconds, symbolic multiply: 95.350915 seconds, setEq: 0.122715 seconds, add: 0.000000 seconds: trace(P) = 4.4103384387801856e+02 (Ne = 900, 2*trace(P)-Ne = -1.793231e+01) complexity 1.436496e+08 (out of 178453547), ratio = 8.050e-01
+[spamm_charm.cc:1130 (runSP2) 5341.53s PE:0] Virtual memory = 1207316 kiB
+iteration 36, multiply: 94.749235 seconds, symbolic multiply: 94.557628 seconds, setEq: 0.000000 seconds, add: 0.125100 seconds: trace(P) = 4.4722440481892511e+02 (Ne = 900, 2*trace(P)-Ne = -5.551190e+00) complexity 1.466306e+08 (out of 178453547), ratio = 8.217e-01
+[spamm_charm.cc:1130 (runSP2) 5531.00s PE:0] Virtual memory = 1207316 kiB
+iteration 37, multiply: 96.511229 seconds, symbolic multiply: 97.738051 seconds, setEq: 0.000000 seconds, add: 0.126548 seconds: trace(P) = 4.4913662521161115e+02 (Ne = 900, 2*trace(P)-Ne = -1.726750e+00) complexity 1.493437e+08 (out of 178453547), ratio = 8.369e-01
+[spamm_charm.cc:1130 (runSP2) 5725.40s PE:0] Virtual memory = 1207316 kiB
+iteration 38, multiply: 97.243114 seconds, symbolic multiply: 98.060263 seconds, setEq: 0.000000 seconds, add: 0.121878 seconds: trace(P) = 4.4987141129516351e+02 (Ne = 900, 2*trace(P)-Ne = -2.571774e-01) complexity 1.514256e+08 (out of 178453547), ratio = 8.485e-01
+[spamm_charm.cc:1130 (runSP2) 5920.86s PE:0] Virtual memory = 1207316 kiB
+iteration 39, multiply: 96.875501 seconds, symbolic multiply: 97.259210 seconds, setEq: 0.000000 seconds, add: 0.121791 seconds: trace(P) = 4.5021210858234201e+02 (Ne = 900, 2*trace(P)-Ne =  4.242172e-01) complexity 1.530274e+08 (out of 178453547), ratio = 8.575e-01
+[spamm_charm.cc:1130 (runSP2) 6115.15s PE:0] Virtual memory = 1207316 kiB
+iteration 40, multiply: 97.857342 seconds, symbolic multiply: 97.077362 seconds, setEq: 0.121795 seconds, add: 0.000000 seconds: trace(P) = 4.4994814191167575e+02 (Ne = 900, 2*trace(P)-Ne = -1.037162e-01) complexity 1.542943e+08 (out of 178453547), ratio = 8.646e-01
+[spamm_charm.cc:1130 (runSP2) 6310.23s PE:0] Virtual memory = 1207316 kiB
+iteration 41, multiply: 97.456612 seconds, symbolic multiply: 97.379384 seconds, setEq: 0.000000 seconds, add: 0.123438 seconds: trace(P) = 4.4999842794082952e+02 (Ne = 900, 2*trace(P)-Ne = -3.144118e-03) complexity 1.554267e+08 (out of 178453547), ratio = 8.710e-01
+[spamm_charm.cc:1130 (runSP2) 6505.23s PE:0] Virtual memory = 1207316 kiB
+iteration 42, multiply: 98.722292 seconds, symbolic multiply: 98.594761 seconds, setEq: 0.000000 seconds, add: 0.123035 seconds: trace(P) = 4.5000012094854628e+02 (Ne = 900, 2*trace(P)-Ne =  2.418971e-04) complexity 1.563994e+08 (out of 178453547), ratio = 8.764e-01
+[spamm_charm.cc:1130 (runSP2) 6702.70s PE:0] Virtual memory = 1207316 kiB
+iteration 43, multiply: 98.910183 seconds, symbolic multiply: 97.928311 seconds, setEq: 0.122255 seconds, add: 0.000000 seconds: trace(P) = 4.4999999537835578e+02 (Ne = 900, 2*trace(P)-Ne = -9.243288e-06) complexity 1.572469e+08 (out of 178453547), ratio = 8.812e-01
+[spamm_charm.cc:1130 (runSP2) 6899.69s PE:0] Virtual memory = 1207316 kiB
+iteration 44, multiply: 99.146708 seconds, symbolic multiply: 98.221281 seconds, setEq: 0.000000 seconds, add: 0.123928 seconds: trace(P) = 4.4999999993692637e+02 (Ne = 900, 2*trace(P)-Ne = -1.261473e-07) complexity 1.579973e+08 (out of 178453547), ratio = 8.854e-01
+[spamm_charm.cc:1130 (runSP2) 7097.21s PE:0] Virtual memory = 1207316 kiB
+iteration 45, multiply: 100.650895 seconds, symbolic multiply: 100.266448 seconds, setEq: 0.123676 seconds, add: 0.000000 seconds: trace(P) = 4.4999999996755122e+02 (Ne = 900, 2*trace(P)-Ne = -6.489756e-08) complexity 1.586677e+08 (out of 178453547), ratio = 8.891e-01
+[spamm_charm.cc:1130 (runSP2) 7298.28s PE:0] Virtual memory = 1207316 kiB
+iteration 46, multiply: 99.156485 seconds, symbolic multiply: 98.299905 seconds, setEq: 0.122053 seconds, add: 0.000000 seconds: trace(P) = 4.4999999998604864e+02 (Ne = 900, 2*trace(P)-Ne = -2.790273e-08) complexity 1.592773e+08 (out of 178453547), ratio = 8.925e-01
+[spamm_charm.cc:1130 (runSP2) 7495.89s PE:0] Virtual memory = 1207316 kiB
+iteration 47, multiply: 99.693152 seconds, symbolic multiply: 101.126923 seconds, setEq: 0.121265 seconds, add: 0.000000 seconds: trace(P) = 4.5000000001719803e+02 (Ne = 900, 2*trace(P)-Ne =  3.439607e-08) complexity 1.598301e+08 (out of 178453547), ratio = 8.956e-01
+SP2 converged in 47 steps
+||P||     = 1.1155884291599754e+02
+||P||/N^2 = 2.2036314650073588e-05
+tolerance                  = 1.000000e-10
+idempotency error          = 0.000000e+00
+previous idempotency error = 1.849742e-08
+t_total                    = 3.854025e+03 seconds
+complexity                 = 5.293514e+09
+[bcsr.cc:100 (BCSR) 7696.88s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.OrthoD, size 2250x2250, 4947450 nonzeros, ||A||_{F} = 2.1213203435568868e+01, ||A||_{F}/N^2 = 4.1902624070259489e-06, 97.7274 percent nonzero elements
+||P-D||_{F}                = 1.761735e-03
+total energy, trace(F*D)   = -1.9211695961962589e+03
+[spamm_charm.cc:1171 (runSP2) 7697.08s PE:0] Virtual memory = 1207316 kiB
+[matrix.cc:58 (Matrix) 7697.08s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 7697.08s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 7697.08s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 7697.08s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 7697.08s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 7697.08s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 7697.09s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 7697.12s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 7697.12s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 7697.12s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 7697.12s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 7697.13s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+total energy, trace(F*P)   = -1.9211695980669806e+03
+[spamm_charm.cc:1188 (runSP2) 7797.16s PE:0] Virtual memory = 1308856 kiB
+total time: 7796.849812 seconds
+end of spamm-charm
+Program finished.
+Charm++: standalone mode (not using charmrun)
+Converse/Charm++ Commit ID: 
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Charm++> scheduler running in netpoll mode.
+CharmLB> Load balancer assumes all CPUs are same.
+Charm++> Running on 1 unique compute nodes (8-way SMP).
+Charm++> cpu topology info is gathered in 0.002 seconds.
+SpAMM version 5 using 8 OpenMP thread(s) running on meitner
+command line: /home/nbock/freeon/spamm-charm/src/.libs/spamm-charm --block 128 --basic 4 --tolerance 1.0e-9 --operation SP2 --symbolic --fockian /home/nbock/data-sets/water/h2o_90.F_DIIS --density /home/nbock/data-sets/water/h2o_90.OrthoD --Ne 900 --iterations 100
+[bcsr.cc:100 (BCSR) 0.02s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.F_DIIS, size 2250x2250, 4917850 nonzeros, ||A||_{F} = 2.0463242620153218e+02, ||A||_{F}/N^2 = 4.0421219990426108e-05, 97.1427 percent nonzero elements
+[spamm_charm.cc:888 (runSP2) 0.07s PE:0] spectral bounds: [ -3.587158e+01,  2.061774e+01 ], dF = 5.648932e+01
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.31s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.70s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 0.70s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 0.73s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 0.74s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 0.74s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 0.74s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 0.74s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+tolerance = 1.000000e-09
+iteration  0: trace(P) = 1.4681321537865626e+03 (Ne/2 = 4.500000e+02)
+[spamm_charm.cc:939 (runSP2) 1.02s PE:0] Virtual memory = 541568 kiB
+iteration  1, multiply: 39.077988 seconds, symbolic multiply: 38.288713 seconds, setEq: 0.127248 seconds, add: 0.000000 seconds: trace(P) = 5.3917016743418367e+02 (Ne = 900, 2*trace(P)-Ne =  1.783403e+02) complexity 3.237073e+07 (out of 178453547), ratio = 1.814e-01
+[spamm_charm.cc:1130 (runSP2) 78.55s PE:0] Virtual memory = 1206852 kiB
+iteration  2, multiply: 41.840243 seconds, symbolic multiply: 41.276909 seconds, setEq: 0.127369 seconds, add: 0.000000 seconds: trace(P) = 8.4050420706252709e+01 (Ne = 900, 2*trace(P)-Ne = -7.318992e+02) complexity 3.582570e+07 (out of 178453547), ratio = 2.008e-01
+[spamm_charm.cc:1130 (runSP2) 161.83s PE:0] Virtual memory = 1206852 kiB
+iteration  3, multiply: 42.301977 seconds, symbolic multiply: 41.597465 seconds, setEq: 0.000000 seconds, add: 0.123339 seconds: trace(P) = 1.6167636561411615e+02 (Ne = 900, 2*trace(P)-Ne = -5.766473e+02) complexity 3.603405e+07 (out of 178453547), ratio = 2.019e-01
+[spamm_charm.cc:1130 (runSP2) 245.88s PE:0] Virtual memory = 1206852 kiB
+iteration  4, multiply: 42.845716 seconds, symbolic multiply: 42.036380 seconds, setEq: 0.000000 seconds, add: 0.122076 seconds: trace(P) = 3.0271189091702195e+02 (Ne = 900, 2*trace(P)-Ne = -2.945762e+02) complexity 3.673347e+07 (out of 178453547), ratio = 2.058e-01
+[spamm_charm.cc:1130 (runSP2) 330.92s PE:0] Virtual memory = 1206852 kiB
+iteration  5, multiply: 44.027637 seconds, symbolic multiply: 42.988171 seconds, setEq: 0.000000 seconds, add: 0.121448 seconds: trace(P) = 5.4901085017166508e+02 (Ne = 900, 2*trace(P)-Ne =  1.980217e+02) complexity 3.881767e+07 (out of 178453547), ratio = 2.175e-01
+[spamm_charm.cc:1130 (runSP2) 418.09s PE:0] Virtual memory = 1206852 kiB
+iteration  6, multiply: 47.320461 seconds, symbolic multiply: 47.170005 seconds, setEq: 0.122570 seconds, add: 0.000000 seconds: trace(P) = 1.2942504216387783e+02 (Ne = 900, 2*trace(P)-Ne = -6.411499e+02) complexity 4.391264e+07 (out of 178453547), ratio = 2.461e-01
+[spamm_charm.cc:1130 (runSP2) 512.73s PE:0] Virtual memory = 1206852 kiB
+iteration  7, multiply: 47.603926 seconds, symbolic multiply: 46.859380 seconds, setEq: 0.000000 seconds, add: 0.121286 seconds: trace(P) = 2.0021900079826995e+02 (Ne = 900, 2*trace(P)-Ne = -4.995620e+02) complexity 4.426066e+07 (out of 178453547), ratio = 2.480e-01
+[spamm_charm.cc:1130 (runSP2) 607.35s PE:0] Virtual memory = 1206852 kiB
+iteration  8, multiply: 48.292744 seconds, symbolic multiply: 47.845968 seconds, setEq: 0.000000 seconds, add: 0.121162 seconds: trace(P) = 3.1375791080774053e+02 (Ne = 900, 2*trace(P)-Ne = -2.724842e+02) complexity 4.512281e+07 (out of 178453547), ratio = 2.529e-01
+[spamm_charm.cc:1130 (runSP2) 703.64s PE:0] Virtual memory = 1206852 kiB
+iteration  9, multiply: 49.615904 seconds, symbolic multiply: 49.375411 seconds, setEq: 0.000000 seconds, add: 0.123764 seconds: trace(P) = 5.2353733021010635e+02 (Ne = 900, 2*trace(P)-Ne =  1.470747e+02) complexity 4.748717e+07 (out of 178453547), ratio = 2.661e-01
+[spamm_charm.cc:1130 (runSP2) 802.79s PE:0] Virtual memory = 1206852 kiB
+iteration 10, multiply: 53.347672 seconds, symbolic multiply: 53.114531 seconds, setEq: 0.126490 seconds, add: 0.000000 seconds: trace(P) = 1.4323164061198653e+02 (Ne = 900, 2*trace(P)-Ne = -6.135367e+02) complexity 5.320989e+07 (out of 178453547), ratio = 2.982e-01
+[spamm_charm.cc:1130 (runSP2) 909.41s PE:0] Virtual memory = 1206852 kiB
+iteration 11, multiply: 53.324009 seconds, symbolic multiply: 52.676286 seconds, setEq: 0.000000 seconds, add: 0.124313 seconds: trace(P) = 1.9551343195560236e+02 (Ne = 900, 2*trace(P)-Ne = -5.089731e+02) complexity 5.348683e+07 (out of 178453547), ratio = 2.997e-01
+[spamm_charm.cc:1130 (runSP2) 1015.56s PE:0] Virtual memory = 1206852 kiB
+iteration 12, multiply: 53.748935 seconds, symbolic multiply: 53.823588 seconds, setEq: 0.000000 seconds, add: 0.122434 seconds: trace(P) = 2.9729981665137751e+02 (Ne = 900, 2*trace(P)-Ne = -3.054004e+02) complexity 5.423806e+07 (out of 178453547), ratio = 3.039e-01
+[spamm_charm.cc:1130 (runSP2) 1123.29s PE:0] Virtual memory = 1206852 kiB
+iteration 13, multiply: 55.795974 seconds, symbolic multiply: 54.217980 seconds, setEq: 0.000000 seconds, add: 0.124121 seconds: trace(P) = 4.9027608914184225e+02 (Ne = 900, 2*trace(P)-Ne =  8.055218e+01) complexity 5.646961e+07 (out of 178453547), ratio = 3.164e-01
+[spamm_charm.cc:1130 (runSP2) 1233.46s PE:0] Virtual memory = 1206852 kiB
+iteration 14, multiply: 58.038735 seconds, symbolic multiply: 59.118577 seconds, setEq: 0.124124 seconds, add: 0.000000 seconds: trace(P) = 1.4295903167551435e+02 (Ne = 900, 2*trace(P)-Ne = -6.140819e+02) complexity 6.197621e+07 (out of 178453547), ratio = 3.473e-01
+[spamm_charm.cc:1130 (runSP2) 1350.77s PE:0] Virtual memory = 1206852 kiB
+iteration 15, multiply: 58.316665 seconds, symbolic multiply: 57.571741 seconds, setEq: 0.000000 seconds, add: 0.120759 seconds: trace(P) = 1.9468143783420567e+02 (Ne = 900, 2*trace(P)-Ne = -5.106371e+02) complexity 6.219355e+07 (out of 178453547), ratio = 3.485e-01
+[spamm_charm.cc:1130 (runSP2) 1466.81s PE:0] Virtual memory = 1206852 kiB
+iteration 16, multiply: 60.174460 seconds, symbolic multiply: 59.672469 seconds, setEq: 0.000000 seconds, add: 0.121179 seconds: trace(P) = 2.9457128882080110e+02 (Ne = 900, 2*trace(P)-Ne = -3.108574e+02) complexity 6.285061e+07 (out of 178453547), ratio = 3.522e-01
+[spamm_charm.cc:1130 (runSP2) 1586.81s PE:0] Virtual memory = 1206852 kiB
+iteration 17, multiply: 59.611809 seconds, symbolic multiply: 59.123874 seconds, setEq: 0.000000 seconds, add: 0.121114 seconds: trace(P) = 4.8112802632877271e+02 (Ne = 900, 2*trace(P)-Ne =  6.225605e+01) complexity 6.482399e+07 (out of 178453547), ratio = 3.633e-01
+[spamm_charm.cc:1130 (runSP2) 1705.70s PE:0] Virtual memory = 1206852 kiB
+iteration 18, multiply: 64.101925 seconds, symbolic multiply: 61.455298 seconds, setEq: 0.128124 seconds, add: 0.000000 seconds: trace(P) = 1.5405019973681559e+02 (Ne = 900, 2*trace(P)-Ne = -5.918996e+02) complexity 6.964976e+07 (out of 178453547), ratio = 3.903e-01
+[spamm_charm.cc:1130 (runSP2) 1831.42s PE:0] Virtual memory = 1206852 kiB
+iteration 19, multiply: 63.953936 seconds, symbolic multiply: 63.076196 seconds, setEq: 0.000000 seconds, add: 0.122086 seconds: trace(P) = 2.1466883108797015e+02 (Ne = 900, 2*trace(P)-Ne = -4.706623e+02) complexity 6.992085e+07 (out of 178453547), ratio = 3.918e-01
+[spamm_charm.cc:1130 (runSP2) 1958.60s PE:0] Virtual memory = 1206852 kiB
+iteration 20, multiply: 64.088048 seconds, symbolic multiply: 62.068222 seconds, setEq: 0.000000 seconds, add: 0.123935 seconds: trace(P) = 3.2705077172741306e+02 (Ne = 900, 2*trace(P)-Ne = -2.458985e+02) complexity 7.070820e+07 (out of 178453547), ratio = 3.962e-01
+[spamm_charm.cc:1130 (runSP2) 2084.91s PE:0] Virtual memory = 1206852 kiB
+iteration 21, multiply: 64.262639 seconds, symbolic multiply: 64.548030 seconds, setEq: 0.000000 seconds, add: 0.124512 seconds: trace(P) = 5.2393092094599899e+02 (Ne = 900, 2*trace(P)-Ne =  1.478618e+02) complexity 7.270333e+07 (out of 178453547), ratio = 4.074e-01
+[spamm_charm.cc:1130 (runSP2) 2213.88s PE:0] Virtual memory = 1206852 kiB
+iteration 22, multiply: 66.215042 seconds, symbolic multiply: 66.736467 seconds, setEq: 0.121340 seconds, add: 0.000000 seconds: trace(P) = 2.0505653181385833e+02 (Ne = 900, 2*trace(P)-Ne = -4.898869e+02) complexity 7.681527e+07 (out of 178453547), ratio = 4.304e-01
+[spamm_charm.cc:1130 (runSP2) 2346.99s PE:0] Virtual memory = 1206852 kiB
+iteration 23, multiply: 65.995982 seconds, symbolic multiply: 66.171365 seconds, setEq: 0.000000 seconds, add: 0.122783 seconds: trace(P) = 2.8953419167809602e+02 (Ne = 900, 2*trace(P)-Ne = -3.209316e+02) complexity 7.764274e+07 (out of 178453547), ratio = 4.351e-01
+[spamm_charm.cc:1130 (runSP2) 2479.31s PE:0] Virtual memory = 1206852 kiB
+iteration 24, multiply: 66.883669 seconds, symbolic multiply: 67.155761 seconds, setEq: 0.000000 seconds, add: 0.122193 seconds: trace(P) = 4.1823563035948962e+02 (Ne = 900, 2*trace(P)-Ne = -6.352874e+01) complexity 7.915425e+07 (out of 178453547), ratio = 4.436e-01
+[spamm_charm.cc:1130 (runSP2) 2613.50s PE:0] Virtual memory = 1206852 kiB
+iteration 25, multiply: 69.141222 seconds, symbolic multiply: 68.713880 seconds, setEq: 0.000000 seconds, add: 0.122471 seconds: trace(P) = 6.1645582963517631e+02 (Ne = 900, 2*trace(P)-Ne =  3.329117e+02) complexity 8.158407e+07 (out of 178453547), ratio = 4.572e-01
+[spamm_charm.cc:1130 (runSP2) 2751.51s PE:0] Virtual memory = 1206852 kiB
+iteration 26, multiply: 69.759803 seconds, symbolic multiply: 69.593502 seconds, setEq: 0.125507 seconds, add: 0.000000 seconds: trace(P) = 3.1334724006941042e+02 (Ne = 900, 2*trace(P)-Ne = -2.733055e+02) complexity 8.539020e+07 (out of 178453547), ratio = 4.785e-01
+[spamm_charm.cc:1130 (runSP2) 2891.02s PE:0] Virtual memory = 1206852 kiB
+iteration 27, multiply: 71.189866 seconds, symbolic multiply: 71.257855 seconds, setEq: 0.000000 seconds, add: 0.122778 seconds: trace(P) = 4.0745053221018964e+02 (Ne = 900, 2*trace(P)-Ne = -8.509894e+01) complexity 8.701681e+07 (out of 178453547), ratio = 4.876e-01
+[spamm_charm.cc:1130 (runSP2) 3033.62s PE:0] Virtual memory = 1206852 kiB
+iteration 28, multiply: 72.874407 seconds, symbolic multiply: 72.128116 seconds, setEq: 0.000000 seconds, add: 0.122894 seconds: trace(P) = 5.3998083830056316e+02 (Ne = 900, 2*trace(P)-Ne =  1.799617e+02) complexity 8.951752e+07 (out of 178453547), ratio = 5.016e-01
+[spamm_charm.cc:1130 (runSP2) 3178.78s PE:0] Virtual memory = 1206852 kiB
+iteration 29, multiply: 73.196417 seconds, symbolic multiply: 72.826992 seconds, setEq: 0.121484 seconds, add: 0.000000 seconds: trace(P) = 3.5552137106889182e+02 (Ne = 900, 2*trace(P)-Ne = -1.889573e+02) complexity 9.308012e+07 (out of 178453547), ratio = 5.216e-01
+[spamm_charm.cc:1130 (runSP2) 3324.95s PE:0] Virtual memory = 1206852 kiB
+iteration 30, multiply: 75.883781 seconds, symbolic multiply: 75.544010 seconds, setEq: 0.000000 seconds, add: 0.121301 seconds: trace(P) = 4.1503991947308162e+02 (Ne = 900, 2*trace(P)-Ne = -6.992016e+01) complexity 9.566519e+07 (out of 178453547), ratio = 5.361e-01
+[spamm_charm.cc:1130 (runSP2) 3476.54s PE:0] Virtual memory = 1206852 kiB
+iteration 31, multiply: 77.779544 seconds, symbolic multiply: 77.718611 seconds, setEq: 0.000000 seconds, add: 0.123450 seconds: trace(P) = 4.7489549206583780e+02 (Ne = 900, 2*trace(P)-Ne =  4.979098e+01) complexity 9.929634e+07 (out of 178453547), ratio = 5.564e-01
+[spamm_charm.cc:1130 (runSP2) 3632.19s PE:0] Virtual memory = 1206852 kiB
+iteration 32, multiply: 79.692931 seconds, symbolic multiply: 79.770285 seconds, setEq: 0.122236 seconds, add: 0.000000 seconds: trace(P) = 4.0786131921900835e+02 (Ne = 900, 2*trace(P)-Ne = -8.427736e+01) complexity 1.038087e+08 (out of 178453547), ratio = 5.817e-01
+[spamm_charm.cc:1130 (runSP2) 3791.81s PE:0] Virtual memory = 1206852 kiB
+iteration 33, multiply: 81.300944 seconds, symbolic multiply: 80.001998 seconds, setEq: 0.000000 seconds, add: 0.122474 seconds: trace(P) = 4.3488744732037867e+02 (Ne = 900, 2*trace(P)-Ne = -3.022511e+01) complexity 1.077140e+08 (out of 178453547), ratio = 6.036e-01
+[spamm_charm.cc:1130 (runSP2) 3953.26s PE:0] Virtual memory = 1206852 kiB
+iteration 34, multiply: 81.623706 seconds, symbolic multiply: 83.895368 seconds, setEq: 0.000000 seconds, add: 0.123680 seconds: trace(P) = 4.5025387156623827e+02 (Ne = 900, 2*trace(P)-Ne =  5.077431e-01) complexity 1.122486e+08 (out of 178453547), ratio = 6.290e-01
+[spamm_charm.cc:1130 (runSP2) 4118.94s PE:0] Virtual memory = 1206852 kiB
+iteration 35, multiply: 84.032745 seconds, symbolic multiply: 83.771547 seconds, setEq: 0.122160 seconds, add: 0.000000 seconds: trace(P) = 4.4103372354934368e+02 (Ne = 900, 2*trace(P)-Ne = -1.793255e+01) complexity 1.166375e+08 (out of 178453547), ratio = 6.536e-01
+[spamm_charm.cc:1130 (runSP2) 4286.90s PE:0] Virtual memory = 1206852 kiB
+iteration 36, multiply: 87.038797 seconds, symbolic multiply: 85.787196 seconds, setEq: 0.000000 seconds, add: 0.122521 seconds: trace(P) = 4.4722436631124543e+02 (Ne = 900, 2*trace(P)-Ne = -5.551267e+00) complexity 1.199360e+08 (out of 178453547), ratio = 6.721e-01
+[spamm_charm.cc:1130 (runSP2) 4459.88s PE:0] Virtual memory = 1206852 kiB
+iteration 37, multiply: 86.549370 seconds, symbolic multiply: 88.242570 seconds, setEq: 0.000000 seconds, add: 0.123730 seconds: trace(P) = 4.4913661078560926e+02 (Ne = 900, 2*trace(P)-Ne = -1.726778e+00) complexity 1.230000e+08 (out of 178453547), ratio = 6.893e-01
+[spamm_charm.cc:1130 (runSP2) 4634.82s PE:0] Virtual memory = 1206852 kiB
+iteration 38, multiply: 87.647018 seconds, symbolic multiply: 89.783447 seconds, setEq: 0.000000 seconds, add: 0.124126 seconds: trace(P) = 4.4987140028246904e+02 (Ne = 900, 2*trace(P)-Ne = -2.571994e-01) complexity 1.254714e+08 (out of 178453547), ratio = 7.031e-01
+[spamm_charm.cc:1130 (runSP2) 4812.41s PE:0] Virtual memory = 1206852 kiB
+iteration 39, multiply: 89.261402 seconds, symbolic multiply: 90.950639 seconds, setEq: 0.000000 seconds, add: 0.121189 seconds: trace(P) = 4.5021209520771095e+02 (Ne = 900, 2*trace(P)-Ne =  4.241904e-01) complexity 1.274667e+08 (out of 178453547), ratio = 7.143e-01
+[spamm_charm.cc:1130 (runSP2) 4992.77s PE:0] Virtual memory = 1206852 kiB
+iteration 40, multiply: 89.803193 seconds, symbolic multiply: 89.156730 seconds, setEq: 0.120804 seconds, add: 0.000000 seconds: trace(P) = 4.4994813981763713e+02 (Ne = 900, 2*trace(P)-Ne = -1.037204e-01) complexity 1.291202e+08 (out of 178453547), ratio = 7.236e-01
+[spamm_charm.cc:1130 (runSP2) 5171.89s PE:0] Virtual memory = 1206852 kiB
+iteration 41, multiply: 91.908342 seconds, symbolic multiply: 89.655437 seconds, setEq: 0.000000 seconds, add: 0.123695 seconds: trace(P) = 4.4999842703753234e+02 (Ne = 900, 2*trace(P)-Ne = -3.145925e-03) complexity 1.306084e+08 (out of 178453547), ratio = 7.319e-01
+[spamm_charm.cc:1130 (runSP2) 5353.61s PE:0] Virtual memory = 1206852 kiB
+iteration 42, multiply: 90.332061 seconds, symbolic multiply: 91.616938 seconds, setEq: 0.000000 seconds, add: 0.128696 seconds: trace(P) = 4.5000011967399524e+02 (Ne = 900, 2*trace(P)-Ne =  2.393480e-04) complexity 1.319133e+08 (out of 178453547), ratio = 7.392e-01
+[spamm_charm.cc:1130 (runSP2) 5535.71s PE:0] Virtual memory = 1206852 kiB
+iteration 43, multiply: 90.901544 seconds, symbolic multiply: 90.948968 seconds, setEq: 0.122673 seconds, add: 0.000000 seconds: trace(P) = 4.4999999502379330e+02 (Ne = 900, 2*trace(P)-Ne = -9.952413e-06) complexity 1.330784e+08 (out of 178453547), ratio = 7.457e-01
+[spamm_charm.cc:1130 (runSP2) 5717.72s PE:0] Virtual memory = 1206852 kiB
+iteration 44, multiply: 93.799189 seconds, symbolic multiply: 90.853326 seconds, setEq: 0.000000 seconds, add: 0.121066 seconds: trace(P) = 4.4999999933643124e+02 (Ne = 900, 2*trace(P)-Ne = -1.327138e-06) complexity 1.341309e+08 (out of 178453547), ratio = 7.516e-01
+[spamm_charm.cc:1130 (runSP2) 5902.52s PE:0] Virtual memory = 1206852 kiB
+iteration 45, multiply: 93.135282 seconds, symbolic multiply: 93.862140 seconds, setEq: 0.120977 seconds, add: 0.000000 seconds: trace(P) = 4.4999999965358478e+02 (Ne = 900, 2*trace(P)-Ne = -6.928304e-07) complexity 1.350889e+08 (out of 178453547), ratio = 7.570e-01
+[spamm_charm.cc:1130 (runSP2) 6089.67s PE:0] Virtual memory = 1206852 kiB
+iteration 46, multiply: 92.216092 seconds, symbolic multiply: 91.946934 seconds, setEq: 0.122383 seconds, add: 0.000000 seconds: trace(P) = 4.4999999984831703e+02 (Ne = 900, 2*trace(P)-Ne = -3.033659e-07) complexity 1.359662e+08 (out of 178453547), ratio = 7.619e-01
+[spamm_charm.cc:1130 (runSP2) 6273.99s PE:0] Virtual memory = 1206852 kiB
+iteration 47, multiply: 92.446519 seconds, symbolic multiply: 94.705992 seconds, setEq: 0.121005 seconds, add: 0.000000 seconds: trace(P) = 4.5000000018628896e+02 (Ne = 900, 2*trace(P)-Ne =  3.725779e-07) complexity 1.367772e+08 (out of 178453547), ratio = 7.665e-01
+SP2 converged in 47 steps
+||P||     = 1.1155882406863211e+02
+||P||/N^2 = 2.2036310927137207e-05
+tolerance                  = 1.000000e-09
+idempotency error          = 0.000000e+00
+previous idempotency error = 1.947323e-07
+t_total                    = 3.238083e+03 seconds
+complexity                 = 3.980925e+09
+[bcsr.cc:100 (BCSR) 6461.31s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.OrthoD, size 2250x2250, 4947450 nonzeros, ||A||_{F} = 2.1213203435568868e+01, ||A||_{F}/N^2 = 4.1902624070259489e-06, 97.7274 percent nonzero elements
+||P-D||_{F}                = 1.760142e-03
+total energy, trace(F*D)   = -1.9211695961962589e+03
+[spamm_charm.cc:1171 (runSP2) 6461.51s PE:0] Virtual memory = 1206852 kiB
+[matrix.cc:58 (Matrix) 6461.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 6461.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 6461.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 6461.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 6461.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 6461.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 6461.52s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 6461.55s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 6461.55s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 6461.55s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 6461.55s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 6461.55s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+total energy, trace(F*P)   = -1.9211695989877155e+03
+[spamm_charm.cc:1188 (runSP2) 6554.77s PE:0] Virtual memory = 1308324 kiB
+total time: 6554.465263 seconds
+end of spamm-charm
+Program finished.
+Charm++: standalone mode (not using charmrun)
+Converse/Charm++ Commit ID: 
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Charm++> scheduler running in netpoll mode.
+CharmLB> Load balancer assumes all CPUs are same.
+Charm++> Running on 1 unique compute nodes (8-way SMP).
+Charm++> cpu topology info is gathered in 0.002 seconds.
+SpAMM version 5 using 8 OpenMP thread(s) running on meitner
+command line: /home/nbock/freeon/spamm-charm/src/.libs/spamm-charm --block 128 --basic 4 --tolerance 1.0e-8 --operation SP2 --symbolic --fockian /home/nbock/data-sets/water/h2o_90.F_DIIS --density /home/nbock/data-sets/water/h2o_90.OrthoD --Ne 900 --iterations 100
+[bcsr.cc:100 (BCSR) 0.02s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.F_DIIS, size 2250x2250, 4917850 nonzeros, ||A||_{F} = 2.0463242620153218e+02, ||A||_{F}/N^2 = 4.0421219990426108e-05, 97.1427 percent nonzero elements
+[spamm_charm.cc:888 (runSP2) 0.07s PE:0] spectral bounds: [ -3.587158e+01,  2.061774e+01 ], dF = 5.648932e+01
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.08s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.30s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.30s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.30s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.30s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.30s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.30s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.69s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.69s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.69s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.69s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.69s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.69s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 0.69s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 0.73s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 0.73s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 0.73s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 0.73s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 0.73s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+tolerance = 1.000000e-08
+iteration  0: trace(P) = 1.4681321537865626e+03 (Ne/2 = 4.500000e+02)
+[spamm_charm.cc:939 (runSP2) 1.03s PE:0] Virtual memory = 541568 kiB
+iteration  1, multiply: 24.231613 seconds, symbolic multiply: 23.229652 seconds, setEq: 0.133820 seconds, add: 0.000000 seconds: trace(P) = 5.3917006855241925e+02 (Ne = 900, 2*trace(P)-Ne =  1.783401e+02) complexity 1.534222e+07 (out of 178453547), ratio = 8.597e-02
+[spamm_charm.cc:1130 (runSP2) 48.66s PE:0] Virtual memory = 1203752 kiB
+iteration  2, multiply: 26.106582 seconds, symbolic multiply: 25.275923 seconds, setEq: 0.125071 seconds, add: 0.000000 seconds: trace(P) = 8.4050364649168372e+01 (Ne = 900, 2*trace(P)-Ne = -7.318993e+02) complexity 1.743030e+07 (out of 178453547), ratio = 9.767e-02
+[spamm_charm.cc:1130 (runSP2) 100.20s PE:0] Virtual memory = 1203752 kiB
+iteration  3, multiply: 26.661359 seconds, symbolic multiply: 25.512813 seconds, setEq: 0.000000 seconds, add: 0.124729 seconds: trace(P) = 1.6167625841045165e+02 (Ne = 900, 2*trace(P)-Ne = -5.766475e+02) complexity 1.756338e+07 (out of 178453547), ratio = 9.842e-02
+[spamm_charm.cc:1130 (runSP2) 152.53s PE:0] Virtual memory = 1203752 kiB
+iteration  4, multiply: 26.670664 seconds, symbolic multiply: 26.010819 seconds, setEq: 0.000000 seconds, add: 0.124298 seconds: trace(P) = 3.0271169227329028e+02 (Ne = 900, 2*trace(P)-Ne = -2.945766e+02) complexity 1.800350e+07 (out of 178453547), ratio = 1.009e-01
+[spamm_charm.cc:1130 (runSP2) 205.36s PE:0] Virtual memory = 1203752 kiB
+iteration  5, multiply: 28.075704 seconds, symbolic multiply: 27.182613 seconds, setEq: 0.000000 seconds, add: 0.123060 seconds: trace(P) = 5.4901049790114780e+02 (Ne = 900, 2*trace(P)-Ne =  1.980210e+02) complexity 1.932241e+07 (out of 178453547), ratio = 1.083e-01
+[spamm_charm.cc:1130 (runSP2) 260.78s PE:0] Virtual memory = 1203752 kiB
+iteration  6, multiply: 30.928862 seconds, symbolic multiply: 30.408666 seconds, setEq: 0.121679 seconds, add: 0.000000 seconds: trace(P) = 1.2942492609940405e+02 (Ne = 900, 2*trace(P)-Ne = -6.411501e+02) complexity 2.264679e+07 (out of 178453547), ratio = 1.269e-01
+[spamm_charm.cc:1130 (runSP2) 322.27s PE:0] Virtual memory = 1203752 kiB
+iteration  7, multiply: 31.171535 seconds, symbolic multiply: 30.389691 seconds, setEq: 0.000000 seconds, add: 0.121098 seconds: trace(P) = 2.0021878046426531e+02 (Ne = 900, 2*trace(P)-Ne = -4.995624e+02) complexity 2.290337e+07 (out of 178453547), ratio = 1.283e-01
+[spamm_charm.cc:1130 (runSP2) 383.98s PE:0] Virtual memory = 1203752 kiB
+iteration  8, multiply: 31.602794 seconds, symbolic multiply: 30.941326 seconds, setEq: 0.000000 seconds, add: 0.121236 seconds: trace(P) = 3.1375748990970271e+02 (Ne = 900, 2*trace(P)-Ne = -2.724850e+02) complexity 2.349407e+07 (out of 178453547), ratio = 1.317e-01
+[spamm_charm.cc:1130 (runSP2) 446.68s PE:0] Virtual memory = 1203752 kiB
+iteration  9, multiply: 32.991215 seconds, symbolic multiply: 32.339168 seconds, setEq: 0.000000 seconds, add: 0.125540 seconds: trace(P) = 5.2353654654091872e+02 (Ne = 900, 2*trace(P)-Ne =  1.470731e+02) complexity 2.508535e+07 (out of 178453547), ratio = 1.406e-01
+[spamm_charm.cc:1130 (runSP2) 512.16s PE:0] Virtual memory = 1203752 kiB
+iteration 10, multiply: 36.570404 seconds, symbolic multiply: 36.151482 seconds, setEq: 0.126464 seconds, add: 0.000000 seconds: trace(P) = 1.4323145981251048e+02 (Ne = 900, 2*trace(P)-Ne = -6.135371e+02) complexity 2.909461e+07 (out of 178453547), ratio = 1.630e-01
+[spamm_charm.cc:1130 (runSP2) 585.04s PE:0] Virtual memory = 1203752 kiB
+iteration 11, multiply: 36.490336 seconds, symbolic multiply: 35.734189 seconds, setEq: 0.000000 seconds, add: 0.121949 seconds: trace(P) = 1.9551307565800749e+02 (Ne = 900, 2*trace(P)-Ne = -5.089738e+02) complexity 2.930773e+07 (out of 178453547), ratio = 1.642e-01
+[spamm_charm.cc:1130 (runSP2) 657.42s PE:0] Virtual memory = 1203752 kiB
+iteration 12, multiply: 37.102409 seconds, symbolic multiply: 36.381376 seconds, setEq: 0.000000 seconds, add: 0.121415 seconds: trace(P) = 2.9729912682985582e+02 (Ne = 900, 2*trace(P)-Ne = -3.054017e+02) complexity 2.984979e+07 (out of 178453547), ratio = 1.673e-01
+[spamm_charm.cc:1130 (runSP2) 731.06s PE:0] Virtual memory = 1203752 kiB
+iteration 13, multiply: 38.344625 seconds, symbolic multiply: 37.459929 seconds, setEq: 0.000000 seconds, add: 0.123295 seconds: trace(P) = 4.9027479103926112e+02 (Ne = 900, 2*trace(P)-Ne =  8.054958e+01) complexity 3.145701e+07 (out of 178453547), ratio = 1.763e-01
+[spamm_charm.cc:1130 (runSP2) 807.02s PE:0] Virtual memory = 1203752 kiB
+iteration 14, multiply: 41.393548 seconds, symbolic multiply: 40.711573 seconds, setEq: 0.122979 seconds, add: 0.000000 seconds: trace(P) = 1.4295876708784220e+02 (Ne = 900, 2*trace(P)-Ne = -6.140825e+02) complexity 3.558528e+07 (out of 178453547), ratio = 1.994e-01
+[spamm_charm.cc:1130 (runSP2) 889.28s PE:0] Virtual memory = 1203752 kiB
+iteration 15, multiply: 41.847413 seconds, symbolic multiply: 41.049644 seconds, setEq: 0.000000 seconds, add: 0.121276 seconds: trace(P) = 1.9468092003775422e+02 (Ne = 900, 2*trace(P)-Ne = -5.106382e+02) complexity 3.576734e+07 (out of 178453547), ratio = 2.004e-01
+[spamm_charm.cc:1130 (runSP2) 972.33s PE:0] Virtual memory = 1203752 kiB
+iteration 16, multiply: 41.816550 seconds, symbolic multiply: 41.126070 seconds, setEq: 0.000000 seconds, add: 0.122106 seconds: trace(P) = 2.9457029609104347e+02 (Ne = 900, 2*trace(P)-Ne = -3.108594e+02) complexity 3.629208e+07 (out of 178453547), ratio = 2.034e-01
+[spamm_charm.cc:1130 (runSP2) 1055.42s PE:0] Virtual memory = 1203752 kiB
+iteration 17, multiply: 42.793324 seconds, symbolic multiply: 42.099455 seconds, setEq: 0.000000 seconds, add: 0.121789 seconds: trace(P) = 4.8112618942528428e+02 (Ne = 900, 2*trace(P)-Ne =  6.225238e+01) complexity 3.786153e+07 (out of 178453547), ratio = 2.122e-01
+[spamm_charm.cc:1130 (runSP2) 1140.47s PE:0] Virtual memory = 1203752 kiB
+iteration 18, multiply: 45.532993 seconds, symbolic multiply: 44.734273 seconds, setEq: 0.124020 seconds, add: 0.000000 seconds: trace(P) = 1.5404973734034684e+02 (Ne = 900, 2*trace(P)-Ne = -5.919005e+02) complexity 4.178080e+07 (out of 178453547), ratio = 2.341e-01
+[spamm_charm.cc:1130 (runSP2) 1230.89s PE:0] Virtual memory = 1203752 kiB
+iteration 19, multiply: 45.567406 seconds, symbolic multiply: 45.258188 seconds, setEq: 0.000000 seconds, add: 0.123118 seconds: trace(P) = 2.1466796667521513e+02 (Ne = 900, 2*trace(P)-Ne = -4.706641e+02) complexity 4.204029e+07 (out of 178453547), ratio = 2.356e-01
+[spamm_charm.cc:1130 (runSP2) 1321.87s PE:0] Virtual memory = 1203752 kiB
+iteration 20, multiply: 52.424065 seconds, symbolic multiply: 61.201569 seconds, setEq: 0.000000 seconds, add: 0.131737 seconds: trace(P) = 3.2704924125754530e+02 (Ne = 900, 2*trace(P)-Ne = -2.459015e+02) complexity 4.278543e+07 (out of 178453547), ratio = 2.398e-01
+[spamm_charm.cc:1130 (runSP2) 1435.66s PE:0] Virtual memory = 1203752 kiB
+iteration 21, multiply: 58.643872 seconds, symbolic multiply: 54.159687 seconds, setEq: 0.000000 seconds, add: 0.132037 seconds: trace(P) = 5.2392840948038599e+02 (Ne = 900, 2*trace(P)-Ne =  1.478568e+02) complexity 4.464101e+07 (out of 178453547), ratio = 2.502e-01
+[spamm_charm.cc:1130 (runSP2) 1548.63s PE:0] Virtual memory = 1203752 kiB
+iteration 22, multiply: 58.783695 seconds, symbolic multiply: 57.308911 seconds, setEq: 0.129083 seconds, add: 0.000000 seconds: trace(P) = 2.0505534762239472e+02 (Ne = 900, 2*trace(P)-Ne = -4.898893e+02) complexity 4.836821e+07 (out of 178453547), ratio = 2.710e-01
+[spamm_charm.cc:1130 (runSP2) 1664.88s PE:0] Virtual memory = 1203752 kiB
+iteration 23, multiply: 61.142873 seconds, symbolic multiply: 57.306042 seconds, setEq: 0.000000 seconds, add: 0.124431 seconds: trace(P) = 2.8953249027304503e+02 (Ne = 900, 2*trace(P)-Ne = -3.209350e+02) complexity 4.924116e+07 (out of 178453547), ratio = 2.759e-01
+[spamm_charm.cc:1130 (runSP2) 1783.48s PE:0] Virtual memory = 1203752 kiB
+iteration 24, multiply: 59.189119 seconds, symbolic multiply: 52.367129 seconds, setEq: 0.000000 seconds, add: 0.123835 seconds: trace(P) = 4.1823335587126724e+02 (Ne = 900, 2*trace(P)-Ne = -6.353329e+01) complexity 5.082986e+07 (out of 178453547), ratio = 2.848e-01
+[spamm_charm.cc:1130 (runSP2) 1895.20s PE:0] Virtual memory = 1203752 kiB
+iteration 25, multiply: 57.241041 seconds, symbolic multiply: 59.776290 seconds, setEq: 0.000000 seconds, add: 0.122977 seconds: trace(P) = 6.1645272523754863e+02 (Ne = 900, 2*trace(P)-Ne =  3.329055e+02) complexity 5.329771e+07 (out of 178453547), ratio = 2.987e-01
+[spamm_charm.cc:1130 (runSP2) 2012.37s PE:0] Virtual memory = 1203752 kiB
+iteration 26, multiply: 65.593052 seconds, symbolic multiply: 63.872647 seconds, setEq: 0.125896 seconds, add: 0.000000 seconds: trace(P) = 3.1334509861185722e+02 (Ne = 900, 2*trace(P)-Ne = -2.733098e+02) complexity 5.700187e+07 (out of 178453547), ratio = 3.194e-01
+[spamm_charm.cc:1130 (runSP2) 2141.99s PE:0] Virtual memory = 1203752 kiB
+iteration 27, multiply: 63.900786 seconds, symbolic multiply: 60.205427 seconds, setEq: 0.000000 seconds, add: 0.122861 seconds: trace(P) = 4.0744780273578294e+02 (Ne = 900, 2*trace(P)-Ne = -8.510439e+01) complexity 5.873055e+07 (out of 178453547), ratio = 3.291e-01
+[spamm_charm.cc:1130 (runSP2) 2266.26s PE:0] Virtual memory = 1203752 kiB
+iteration 28, multiply: 60.947236 seconds, symbolic multiply: 59.190896 seconds, setEq: 0.000000 seconds, add: 0.123137 seconds: trace(P) = 5.3997800274076394e+02 (Ne = 900, 2*trace(P)-Ne =  1.799560e+02) complexity 6.128830e+07 (out of 178453547), ratio = 3.434e-01
+[spamm_charm.cc:1130 (runSP2) 2386.55s PE:0] Virtual memory = 1203752 kiB
+iteration 29, multiply: 64.785135 seconds, symbolic multiply: 66.111185 seconds, setEq: 0.127797 seconds, add: 0.000000 seconds: trace(P) = 3.5551834234556196e+02 (Ne = 900, 2*trace(P)-Ne = -1.889633e+02) complexity 6.479278e+07 (out of 178453547), ratio = 3.631e-01
+[spamm_charm.cc:1130 (runSP2) 2517.60s PE:0] Virtual memory = 1203752 kiB
+iteration 30, multiply: 69.612493 seconds, symbolic multiply: 68.474108 seconds, setEq: 0.000000 seconds, add: 0.804922 seconds: trace(P) = 4.1503723518125338e+02 (Ne = 900, 2*trace(P)-Ne = -6.992553e+01) complexity 6.735115e+07 (out of 178453547), ratio = 3.774e-01
+[spamm_charm.cc:1130 (runSP2) 2656.54s PE:0] Virtual memory = 1203752 kiB
+iteration 31, multiply: 69.215747 seconds, symbolic multiply: 64.530757 seconds, setEq: 0.000000 seconds, add: 0.128367 seconds: trace(P) = 4.7489364747353858e+02 (Ne = 900, 2*trace(P)-Ne =  4.978729e+01) complexity 7.077546e+07 (out of 178453547), ratio = 3.966e-01
+[spamm_charm.cc:1130 (runSP2) 2790.45s PE:0] Virtual memory = 1203752 kiB
+iteration 32, multiply: 73.387599 seconds, symbolic multiply: 71.728070 seconds, setEq: 0.126954 seconds, add: 0.000000 seconds: trace(P) = 4.0785864488377780e+02 (Ne = 900, 2*trace(P)-Ne = -8.428271e+01) complexity 7.488292e+07 (out of 178453547), ratio = 4.196e-01
+[spamm_charm.cc:1130 (runSP2) 2935.72s PE:0] Virtual memory = 1203752 kiB
+iteration 33, multiply: 76.284518 seconds, symbolic multiply: 73.238264 seconds, setEq: 0.000000 seconds, add: 0.126891 seconds: trace(P) = 4.3488583581258786e+02 (Ne = 900, 2*trace(P)-Ne = -3.022833e+01) complexity 7.838351e+07 (out of 178453547), ratio = 4.392e-01
+[spamm_charm.cc:1130 (runSP2) 3085.40s PE:0] Virtual memory = 1203752 kiB
+iteration 34, multiply: 73.705496 seconds, symbolic multiply: 70.839514 seconds, setEq: 0.000000 seconds, add: 0.123882 seconds: trace(P) = 4.5025323591998915e+02 (Ne = 900, 2*trace(P)-Ne =  5.064718e-01) complexity 8.231609e+07 (out of 178453547), ratio = 4.613e-01
+[spamm_charm.cc:1130 (runSP2) 3230.11s PE:0] Virtual memory = 1203752 kiB
+iteration 35, multiply: 89.529120 seconds, symbolic multiply: 82.318025 seconds, setEq: 4.796665 seconds, add: 0.000000 seconds: trace(P) = 4.4103265002106002e+02 (Ne = 900, 2*trace(P)-Ne = -1.793470e+01) complexity 8.616583e+07 (out of 178453547), ratio = 4.828e-01
+[spamm_charm.cc:1130 (runSP2) 3406.79s PE:0] Virtual memory = 1203752 kiB
+iteration 36, multiply: 82.786520 seconds, symbolic multiply: 81.599668 seconds, setEq: 0.000000 seconds, add: 0.213591 seconds: trace(P) = 4.4722400495038937e+02 (Ne = 900, 2*trace(P)-Ne = -5.551990e+00) complexity 8.918088e+07 (out of 178453547), ratio = 4.997e-01
+[spamm_charm.cc:1130 (runSP2) 3571.42s PE:0] Virtual memory = 1203752 kiB
+iteration 37, multiply: 83.800066 seconds, symbolic multiply: 81.023799 seconds, setEq: 0.000000 seconds, add: 0.943344 seconds: trace(P) = 4.4913648367985229e+02 (Ne = 900, 2*trace(P)-Ne = -1.727033e+00) complexity 9.199654e+07 (out of 178453547), ratio = 5.155e-01
+[spamm_charm.cc:1130 (runSP2) 3737.22s PE:0] Virtual memory = 1203752 kiB
+iteration 38, multiply: 82.530964 seconds, symbolic multiply: 86.685211 seconds, setEq: 0.000000 seconds, add: 6.924028 seconds: trace(P) = 4.4987131269944490e+02 (Ne = 900, 2*trace(P)-Ne = -2.573746e-01) complexity 9.436286e+07 (out of 178453547), ratio = 5.288e-01
+[spamm_charm.cc:1130 (runSP2) 3913.63s PE:0] Virtual memory = 1203752 kiB
+iteration 39, multiply: 79.769437 seconds, symbolic multiply: 75.010276 seconds, setEq: 0.000000 seconds, add: 0.233122 seconds: trace(P) = 4.5021199344378579e+02 (Ne = 900, 2*trace(P)-Ne =  4.239869e-01) complexity 9.636139e+07 (out of 178453547), ratio = 5.400e-01
+[spamm_charm.cc:1130 (runSP2) 4068.67s PE:0] Virtual memory = 1203752 kiB
+iteration 40, multiply: 78.259035 seconds, symbolic multiply: 77.966227 seconds, setEq: 0.204002 seconds, add: 0.000000 seconds: trace(P) = 4.4994812137155304e+02 (Ne = 900, 2*trace(P)-Ne = -1.037573e-01) complexity 9.808140e+07 (out of 178453547), ratio = 5.496e-01
+[spamm_charm.cc:1130 (runSP2) 4225.13s PE:0] Virtual memory = 1203752 kiB
+iteration 41, multiply: 79.232827 seconds, symbolic multiply: 79.021748 seconds, setEq: 0.000000 seconds, add: 0.228280 seconds: trace(P) = 4.4999841872556942e+02 (Ne = 900, 2*trace(P)-Ne = -3.162549e-03) complexity 9.963103e+07 (out of 178453547), ratio = 5.583e-01
+[spamm_charm.cc:1130 (runSP2) 4383.65s PE:0] Virtual memory = 1203752 kiB
+iteration 42, multiply: 79.889613 seconds, symbolic multiply: 79.600521 seconds, setEq: 0.000000 seconds, add: 0.162963 seconds: trace(P) = 4.5000010811620280e+02 (Ne = 900, 2*trace(P)-Ne =  2.162324e-04) complexity 1.010217e+08 (out of 178453547), ratio = 5.661e-01
+[spamm_charm.cc:1130 (runSP2) 4543.33s PE:0] Virtual memory = 1203752 kiB
+iteration 43, multiply: 78.786190 seconds, symbolic multiply: 79.748354 seconds, setEq: 0.196814 seconds, add: 0.000000 seconds: trace(P) = 4.4999999167616534e+02 (Ne = 900, 2*trace(P)-Ne = -1.664767e-05) complexity 1.022785e+08 (out of 178453547), ratio = 5.731e-01
+[spamm_charm.cc:1130 (runSP2) 4702.09s PE:0] Virtual memory = 1203752 kiB
+iteration 44, multiply: 79.165158 seconds, symbolic multiply: 79.432274 seconds, setEq: 0.000000 seconds, add: 0.125256 seconds: trace(P) = 4.4999999385315891e+02 (Ne = 900, 2*trace(P)-Ne = -1.229368e-05) complexity 1.034330e+08 (out of 178453547), ratio = 5.796e-01
+[spamm_charm.cc:1130 (runSP2) 4860.85s PE:0] Virtual memory = 1203752 kiB
+iteration 45, multiply: 79.357145 seconds, symbolic multiply: 79.011516 seconds, setEq: 0.124979 seconds, add: 0.000000 seconds: trace(P) = 4.4999999654118415e+02 (Ne = 900, 2*trace(P)-Ne = -6.917632e-06) complexity 1.044961e+08 (out of 178453547), ratio = 5.856e-01
+SP2 converged in 45 steps
+||P||     = 1.0744922717412904e+02
+||P||/N^2 = 2.1224538701062527e-05
+tolerance                  = 1.000000e-08
+idempotency error          = 0.000000e+00
+previous idempotency error = 2.176994e-06
+t_total                    = 2.542939e+03 seconds
+complexity                 = 2.502523e+09
+[bcsr.cc:100 (BCSR) 5019.67s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.OrthoD, size 2250x2250, 4947450 nonzeros, ||A||_{F} = 2.1213203435568868e+01, ||A||_{F}/N^2 = 4.1902624070259489e-06, 97.7274 percent nonzero elements
+||P-D||_{F}                = 2.022842e-03
+total energy, trace(F*D)   = -1.9211695961962589e+03
+[spamm_charm.cc:1171 (runSP2) 5023.49s PE:0] Virtual memory = 1203752 kiB
+[matrix.cc:58 (Matrix) 5023.50s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 5023.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 5023.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 5023.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 5023.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 5023.51s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 5023.52s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 5023.58s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 5023.59s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 5023.59s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 5023.59s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 5023.59s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+total energy, trace(F*P)   = -1.9211696065608762e+03
+[spamm_charm.cc:1188 (runSP2) 5105.85s PE:0] Virtual memory = 1308848 kiB
+total time: 5105.547570 seconds
+end of spamm-charm
+Program finished.
+Charm++: standalone mode (not using charmrun)
+Converse/Charm++ Commit ID: 
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Charm++> scheduler running in netpoll mode.
+CharmLB> Load balancer assumes all CPUs are same.
+Charm++> Running on 1 unique compute nodes (8-way SMP).
+Charm++> cpu topology info is gathered in 0.131 seconds.
+SpAMM version 5 using 8 OpenMP thread(s) running on meitner
+command line: /home/nbock/freeon/spamm-charm/src/.libs/spamm-charm --block 128 --basic 4 --tolerance 1.0e-7 --operation SP2 --symbolic --fockian /home/nbock/data-sets/water/h2o_90.F_DIIS --density /home/nbock/data-sets/water/h2o_90.OrthoD --Ne 900 --iterations 100
+[bcsr.cc:100 (BCSR) 0.41s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.F_DIIS, size 2250x2250, 4917850 nonzeros, ||A||_{F} = 2.0463242620153218e+02, ||A||_{F}/N^2 = 4.0421219990426108e-05, 97.1427 percent nonzero elements
+[spamm_charm.cc:888 (runSP2) 0.46s PE:0] spectral bounds: [ -3.587158e+01,  2.061774e+01 ], dF = 5.648932e+01
+[matrix.cc:58 (Matrix) 0.47s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.47s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.47s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.47s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.47s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.47s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 1.11s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 1.11s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 1.11s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 1.11s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 1.11s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 1.11s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 1.12s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 1.15s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 1.15s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 1.15s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 1.15s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 1.15s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+tolerance = 1.000000e-07
+iteration  0: trace(P) = 1.4681321537865626e+03 (Ne/2 = 4.500000e+02)
+[spamm_charm.cc:939 (runSP2) 1.44s PE:0] Virtual memory = 541568 kiB
+iteration  1, multiply: 13.730079 seconds, symbolic multiply: 12.712210 seconds, setEq: 0.131519 seconds, add: 0.000000 seconds: trace(P) = 5.3916934596730800e+02 (Ne = 900, 2*trace(P)-Ne =  1.783387e+02) complexity 6.011542e+06 (out of 178453547), ratio = 3.369e-02
+[spamm_charm.cc:1130 (runSP2) 28.05s PE:0] Virtual memory = 1195068 kiB
+iteration  2, multiply: 14.836290 seconds, symbolic multiply: 14.062353 seconds, setEq: 0.128483 seconds, add: 0.000000 seconds: trace(P) = 8.4049949265060434e+01 (Ne = 900, 2*trace(P)-Ne = -7.319001e+02) complexity 7.001112e+06 (out of 178453547), ratio = 3.923e-02
+[spamm_charm.cc:1130 (runSP2) 57.11s PE:0] Virtual memory = 1195068 kiB
+iteration  3, multiply: 15.014512 seconds, symbolic multiply: 14.002980 seconds, setEq: 0.000000 seconds, add: 0.128119 seconds: trace(P) = 1.6167546588562391e+02 (Ne = 900, 2*trace(P)-Ne = -5.766491e+02) complexity 7.069406e+06 (out of 178453547), ratio = 3.961e-02
+[spamm_charm.cc:1130 (runSP2) 86.29s PE:0] Virtual memory = 1195068 kiB
+iteration  4, multiply: 15.223339 seconds, symbolic multiply: 14.642124 seconds, setEq: 0.000000 seconds, add: 0.131868 seconds: trace(P) = 3.0271022828339778e+02 (Ne = 900, 2*trace(P)-Ne = -2.945795e+02) complexity 7.293890e+06 (out of 178453547), ratio = 4.087e-02
+[spamm_charm.cc:1130 (runSP2) 116.32s PE:0] Virtual memory = 1195068 kiB
+iteration  5, multiply: 16.258021 seconds, symbolic multiply: 15.298237 seconds, setEq: 0.000000 seconds, add: 0.126600 seconds: trace(P) = 5.4900790969066202e+02 (Ne = 900, 2*trace(P)-Ne =  1.980158e+02) complexity 7.961488e+06 (out of 178453547), ratio = 4.461e-02
+[spamm_charm.cc:1130 (runSP2) 148.03s PE:0] Virtual memory = 1195068 kiB
+iteration  6, multiply: 18.268140 seconds, symbolic multiply: 17.422011 seconds, setEq: 0.127731 seconds, add: 0.000000 seconds: trace(P) = 1.2942405767854484e+02 (Ne = 900, 2*trace(P)-Ne = -6.411519e+02) complexity 9.682940e+06 (out of 178453547), ratio = 5.426e-02
+[spamm_charm.cc:1130 (runSP2) 183.89s PE:0] Virtual memory = 1195068 kiB
+iteration  7, multiply: 18.518894 seconds, symbolic multiply: 17.406292 seconds, setEq: 0.000000 seconds, add: 0.126280 seconds: trace(P) = 2.0021713678179995e+02 (Ne = 900, 2*trace(P)-Ne = -4.995657e+02) complexity 9.837662e+06 (out of 178453547), ratio = 5.513e-02
+[spamm_charm.cc:1130 (runSP2) 219.97s PE:0] Virtual memory = 1195068 kiB
+iteration  8, multiply: 19.000964 seconds, symbolic multiply: 18.033074 seconds, setEq: 0.000000 seconds, add: 0.126422 seconds: trace(P) = 3.1375435029747138e+02 (Ne = 900, 2*trace(P)-Ne = -2.724913e+02) complexity 1.016852e+07 (out of 178453547), ratio = 5.698e-02
+[spamm_charm.cc:1130 (runSP2) 257.16s PE:0] Virtual memory = 1195068 kiB
+iteration  9, multiply: 19.966158 seconds, symbolic multiply: 18.683330 seconds, setEq: 0.000000 seconds, add: 0.126581 seconds: trace(P) = 5.2353069993610870e+02 (Ne = 900, 2*trace(P)-Ne =  1.470614e+02) complexity 1.103171e+07 (out of 178453547), ratio = 6.182e-02
+[spamm_charm.cc:1130 (runSP2) 295.97s PE:0] Virtual memory = 1195068 kiB
+iteration 10, multiply: 22.315753 seconds, symbolic multiply: 21.220640 seconds, setEq: 0.126040 seconds, add: 0.000000 seconds: trace(P) = 1.4323010599421724e+02 (Ne = 900, 2*trace(P)-Ne = -6.135398e+02) complexity 1.327314e+07 (out of 178453547), ratio = 7.438e-02
+[spamm_charm.cc:1130 (runSP2) 339.67s PE:0] Virtual memory = 1195068 kiB
+iteration 11, multiply: 22.442269 seconds, symbolic multiply: 21.619582 seconds, setEq: 0.000000 seconds, add: 0.127291 seconds: trace(P) = 1.9551040727252817e+02 (Ne = 900, 2*trace(P)-Ne = -5.089792e+02) complexity 1.340867e+07 (out of 178453547), ratio = 7.514e-02
+[spamm_charm.cc:1130 (runSP2) 383.89s PE:0] Virtual memory = 1195068 kiB
+iteration 12, multiply: 22.733966 seconds, symbolic multiply: 21.705902 seconds, setEq: 0.000000 seconds, add: 0.126247 seconds: trace(P) = 2.9729395982589796e+02 (Ne = 900, 2*trace(P)-Ne = -3.054121e+02) complexity 1.372770e+07 (out of 178453547), ratio = 7.693e-02
+[spamm_charm.cc:1130 (runSP2) 428.49s PE:0] Virtual memory = 1195068 kiB
+iteration 13, multiply: 23.698905 seconds, symbolic multiply: 22.728963 seconds, setEq: 0.000000 seconds, add: 0.128181 seconds: trace(P) = 4.9026506835530654e+02 (Ne = 900, 2*trace(P)-Ne =  8.053014e+01) complexity 1.466464e+07 (out of 178453547), ratio = 8.218e-02
+[spamm_charm.cc:1130 (runSP2) 475.08s PE:0] Virtual memory = 1195068 kiB
+iteration 14, multiply: 26.298128 seconds, symbolic multiply: 25.508014 seconds, setEq: 0.126364 seconds, add: 0.000000 seconds: trace(P) = 1.4295676615129346e+02 (Ne = 900, 2*trace(P)-Ne = -6.140865e+02) complexity 1.715086e+07 (out of 178453547), ratio = 9.611e-02
+[spamm_charm.cc:1130 (runSP2) 527.04s PE:0] Virtual memory = 1195068 kiB
+iteration 15, multiply: 26.172600 seconds, symbolic multiply: 25.360356 seconds, setEq: 0.000000 seconds, add: 0.126574 seconds: trace(P) = 1.9467700464073835e+02 (Ne = 900, 2*trace(P)-Ne = -5.106460e+02) complexity 1.727406e+07 (out of 178453547), ratio = 9.680e-02
+[spamm_charm.cc:1130 (runSP2) 578.74s PE:0] Virtual memory = 1195068 kiB
+iteration 16, multiply: 26.487512 seconds, symbolic multiply: 25.806447 seconds, setEq: 0.000000 seconds, add: 0.126337 seconds: trace(P) = 2.9456279213555922e+02 (Ne = 900, 2*trace(P)-Ne = -3.108744e+02) complexity 1.761448e+07 (out of 178453547), ratio = 9.871e-02
+[spamm_charm.cc:1130 (runSP2) 631.19s PE:0] Virtual memory = 1195068 kiB
+iteration 17, multiply: 27.330858 seconds, symbolic multiply: 26.260523 seconds, setEq: 0.000000 seconds, add: 0.126745 seconds: trace(P) = 4.8111232204099969e+02 (Ne = 900, 2*trace(P)-Ne =  6.222464e+01) complexity 1.862746e+07 (out of 178453547), ratio = 1.044e-01
+[spamm_charm.cc:1130 (runSP2) 684.94s PE:0] Virtual memory = 1195068 kiB
+iteration 18, multiply: 29.564493 seconds, symbolic multiply: 29.068460 seconds, setEq: 0.128203 seconds, add: 0.000000 seconds: trace(P) = 1.5404618775709187e+02 (Ne = 900, 2*trace(P)-Ne = -5.919076e+02) complexity 2.120217e+07 (out of 178453547), ratio = 1.188e-01
+[spamm_charm.cc:1130 (runSP2) 743.74s PE:0] Virtual memory = 1195068 kiB
+iteration 19, multiply: 29.960866 seconds, symbolic multiply: 28.883775 seconds, setEq: 0.000000 seconds, add: 0.126084 seconds: trace(P) = 2.1466132786247465e+02 (Ne = 900, 2*trace(P)-Ne = -4.706773e+02) complexity 2.140270e+07 (out of 178453547), ratio = 1.199e-01
+[spamm_charm.cc:1130 (runSP2) 802.74s PE:0] Virtual memory = 1195068 kiB
+iteration 20, multiply: 31.062666 seconds, symbolic multiply: 29.631860 seconds, setEq: 0.000000 seconds, add: 0.126374 seconds: trace(P) = 3.2703747480634172e+02 (Ne = 900, 2*trace(P)-Ne = -2.459251e+02) complexity 2.197338e+07 (out of 178453547), ratio = 1.231e-01
+[spamm_charm.cc:1130 (runSP2) 863.60s PE:0] Virtual memory = 1195068 kiB
+iteration 21, multiply: 31.773779 seconds, symbolic multiply: 30.405992 seconds, setEq: 0.000000 seconds, add: 0.126127 seconds: trace(P) = 5.2390906698431752e+02 (Ne = 900, 2*trace(P)-Ne =  1.478181e+02) complexity 2.338053e+07 (out of 178453547), ratio = 1.310e-01
+[spamm_charm.cc:1130 (runSP2) 925.93s PE:0] Virtual memory = 1195068 kiB
+iteration 22, multiply: 33.461083 seconds, symbolic multiply: 32.556057 seconds, setEq: 0.126138 seconds, add: 0.000000 seconds: trace(P) = 2.0504627483193315e+02 (Ne = 900, 2*trace(P)-Ne = -4.899075e+02) complexity 2.618314e+07 (out of 178453547), ratio = 1.467e-01
+[spamm_charm.cc:1130 (runSP2) 992.11s PE:0] Virtual memory = 1195068 kiB
+iteration 23, multiply: 34.074885 seconds, symbolic multiply: 33.297192 seconds, setEq: 0.000000 seconds, add: 0.127709 seconds: trace(P) = 2.8951934997252727e+02 (Ne = 900, 2*trace(P)-Ne = -3.209613e+02) complexity 2.693697e+07 (out of 178453547), ratio = 1.509e-01
+[spamm_charm.cc:1130 (runSP2) 1059.64s PE:0] Virtual memory = 1195068 kiB
+iteration 24, multiply: 36.116626 seconds, symbolic multiply: 34.371714 seconds, setEq: 0.000000 seconds, add: 0.128173 seconds: trace(P) = 4.1821562982396722e+02 (Ne = 900, 2*trace(P)-Ne = -6.356874e+01) complexity 2.830917e+07 (out of 178453547), ratio = 1.586e-01
+[spamm_charm.cc:1130 (runSP2) 1130.29s PE:0] Virtual memory = 1195068 kiB
+iteration 25, multiply: 36.678699 seconds, symbolic multiply: 35.965679 seconds, setEq: 0.000000 seconds, add: 0.126908 seconds: trace(P) = 6.1642851089859585e+02 (Ne = 900, 2*trace(P)-Ne =  3.328570e+02) complexity 3.041167e+07 (out of 178453547), ratio = 1.704e-01
+[spamm_charm.cc:1130 (runSP2) 1203.11s PE:0] Virtual memory = 1195068 kiB
+iteration 26, multiply: 40.433874 seconds, symbolic multiply: 38.321080 seconds, setEq: 0.127665 seconds, add: 0.000000 seconds: trace(P) = 3.1332820555480993e+02 (Ne = 900, 2*trace(P)-Ne = -2.733436e+02) complexity 3.348023e+07 (out of 178453547), ratio = 1.876e-01
+[spamm_charm.cc:1130 (runSP2) 1282.02s PE:0] Virtual memory = 1195068 kiB
+iteration 27, multiply: 40.463077 seconds, symbolic multiply: 39.489933 seconds, setEq: 0.000000 seconds, add: 0.126342 seconds: trace(P) = 4.0742632786313368e+02 (Ne = 900, 2*trace(P)-Ne = -8.514734e+01) complexity 3.502194e+07 (out of 178453547), ratio = 1.963e-01
+[spamm_charm.cc:1130 (runSP2) 1362.13s PE:0] Virtual memory = 1195068 kiB
+iteration 28, multiply: 41.791768 seconds, symbolic multiply: 40.860273 seconds, setEq: 0.000000 seconds, add: 0.126608 seconds: trace(P) = 5.3995588354741449e+02 (Ne = 900, 2*trace(P)-Ne =  1.799118e+02) complexity 3.724139e+07 (out of 178453547), ratio = 2.087e-01
+[spamm_charm.cc:1130 (runSP2) 1444.95s PE:0] Virtual memory = 1195068 kiB
+iteration 29, multiply: 44.308875 seconds, symbolic multiply: 43.074984 seconds, setEq: 0.126418 seconds, add: 0.000000 seconds: trace(P) = 3.5549446335074958e+02 (Ne = 900, 2*trace(P)-Ne = -1.890111e+02) complexity 4.018921e+07 (out of 178453547), ratio = 2.252e-01
+[spamm_charm.cc:1130 (runSP2) 1532.49s PE:0] Virtual memory = 1195068 kiB
+iteration 30, multiply: 45.571685 seconds, symbolic multiply: 44.257894 seconds, setEq: 0.000000 seconds, add: 0.126560 seconds: trace(P) = 4.1501625158138074e+02 (Ne = 900, 2*trace(P)-Ne = -6.996750e+01) complexity 4.234520e+07 (out of 178453547), ratio = 2.373e-01
+[spamm_charm.cc:1130 (runSP2) 1622.48s PE:0] Virtual memory = 1195068 kiB
+iteration 31, multiply: 47.626282 seconds, symbolic multiply: 46.664007 seconds, setEq: 0.000000 seconds, add: 0.128118 seconds: trace(P) = 4.7487934787823218e+02 (Ne = 900, 2*trace(P)-Ne =  4.975870e+01) complexity 4.509664e+07 (out of 178453547), ratio = 2.527e-01
+[spamm_charm.cc:1130 (runSP2) 1716.93s PE:0] Virtual memory = 1195068 kiB
+iteration 32, multiply: 48.859532 seconds, symbolic multiply: 49.157768 seconds, setEq: 0.126927 seconds, add: 0.000000 seconds: trace(P) = 4.0783786171669595e+02 (Ne = 900, 2*trace(P)-Ne = -8.432428e+01) complexity 4.827913e+07 (out of 178453547), ratio = 2.705e-01
+[spamm_charm.cc:1130 (runSP2) 1815.11s PE:0] Virtual memory = 1195068 kiB
+iteration 33, multiply: 50.689215 seconds, symbolic multiply: 50.728630 seconds, setEq: 0.000000 seconds, add: 0.127230 seconds: trace(P) = 4.3487331130661084e+02 (Ne = 900, 2*trace(P)-Ne = -3.025338e+01) complexity 5.096761e+07 (out of 178453547), ratio = 2.856e-01
+[spamm_charm.cc:1130 (runSP2) 1916.69s PE:0] Virtual memory = 1195068 kiB
+iteration 34, multiply: 53.387285 seconds, symbolic multiply: 52.298485 seconds, setEq: 0.000000 seconds, add: 0.126363 seconds: trace(P) = 4.5024834384895013e+02 (Ne = 900, 2*trace(P)-Ne =  4.966877e-01) complexity 5.388675e+07 (out of 178453547), ratio = 3.020e-01
+[spamm_charm.cc:1130 (runSP2) 2022.53s PE:0] Virtual memory = 1195068 kiB
+iteration 35, multiply: 55.400371 seconds, symbolic multiply: 54.585459 seconds, setEq: 0.125959 seconds, add: 0.000000 seconds: trace(P) = 4.4102428039330960e+02 (Ne = 900, 2*trace(P)-Ne = -1.795144e+01) complexity 5.675040e+07 (out of 178453547), ratio = 3.180e-01
+[spamm_charm.cc:1130 (runSP2) 2132.68s PE:0] Virtual memory = 1195068 kiB
+iteration 36, multiply: 56.719385 seconds, symbolic multiply: 55.789622 seconds, setEq: 0.000000 seconds, add: 0.126350 seconds: trace(P) = 4.4722138448393679e+02 (Ne = 900, 2*trace(P)-Ne = -5.557231e+00) complexity 5.909756e+07 (out of 178453547), ratio = 3.312e-01
+[spamm_charm.cc:1130 (runSP2) 2245.34s PE:0] Virtual memory = 1195068 kiB
+iteration 37, multiply: 58.746265 seconds, symbolic multiply: 56.960554 seconds, setEq: 0.000000 seconds, add: 0.126279 seconds: trace(P) = 4.4913583621061002e+02 (Ne = 900, 2*trace(P)-Ne = -1.728328e+00) complexity 6.129769e+07 (out of 178453547), ratio = 3.435e-01
+[spamm_charm.cc:1130 (runSP2) 2361.21s PE:0] Virtual memory = 1195068 kiB
+iteration 38, multiply: 59.102831 seconds, symbolic multiply: 58.743922 seconds, setEq: 0.000000 seconds, add: 0.126089 seconds: trace(P) = 4.4987087209673825e+02 (Ne = 900, 2*trace(P)-Ne = -2.582558e-01) complexity 6.321378e+07 (out of 178453547), ratio = 3.542e-01
+[spamm_charm.cc:1130 (runSP2) 2479.22s PE:0] Virtual memory = 1195068 kiB
+iteration 39, multiply: 60.642604 seconds, symbolic multiply: 59.286022 seconds, setEq: 0.000000 seconds, add: 0.129535 seconds: trace(P) = 4.5021122739443911e+02 (Ne = 900, 2*trace(P)-Ne =  4.224548e-01) complexity 6.489623e+07 (out of 178453547), ratio = 3.637e-01
+[spamm_charm.cc:1130 (runSP2) 2599.31s PE:0] Virtual memory = 1195068 kiB
+iteration 40, multiply: 61.167212 seconds, symbolic multiply: 61.091243 seconds, setEq: 0.126168 seconds, add: 0.000000 seconds: trace(P) = 4.4994811443485099e+02 (Ne = 900, 2*trace(P)-Ne = -1.037711e-01) complexity 6.642070e+07 (out of 178453547), ratio = 3.722e-01
+[spamm_charm.cc:1130 (runSP2) 2721.73s PE:0] Virtual memory = 1195068 kiB
+iteration 41, multiply: 61.655286 seconds, symbolic multiply: 61.794159 seconds, setEq: 0.000000 seconds, add: 0.126738 seconds: trace(P) = 4.4999836148859220e+02 (Ne = 900, 2*trace(P)-Ne = -3.277023e-03) complexity 6.777213e+07 (out of 178453547), ratio = 3.798e-01
+[spamm_charm.cc:1130 (runSP2) 2845.34s PE:0] Virtual memory = 1195068 kiB
+iteration 42, multiply: 63.306519 seconds, symbolic multiply: 62.847154 seconds, setEq: 0.000000 seconds, add: 0.126308 seconds: trace(P) = 4.5000001414586706e+02 (Ne = 900, 2*trace(P)-Ne =  2.829173e-05) complexity 6.900130e+07 (out of 178453547), ratio = 3.867e-01
+[spamm_charm.cc:1130 (runSP2) 2971.65s PE:0] Virtual memory = 1195068 kiB
+iteration 43, multiply: 63.302553 seconds, symbolic multiply: 63.535152 seconds, setEq: 0.126422 seconds, add: 0.000000 seconds: trace(P) = 4.4999996438732808e+02 (Ne = 900, 2*trace(P)-Ne = -7.122534e-05) complexity 7.013306e+07 (out of 178453547), ratio = 3.930e-01
+[spamm_charm.cc:1130 (runSP2) 3098.65s PE:0] Virtual memory = 1195068 kiB
+iteration 44, multiply: 64.167196 seconds, symbolic multiply: 63.737969 seconds, setEq: 0.126319 seconds, add: 0.000000 seconds: trace(P) = 4.4999997890996582e+02 (Ne = 900, 2*trace(P)-Ne = -4.218007e-05) complexity 7.118472e+07 (out of 178453547), ratio = 3.989e-01
+[spamm_charm.cc:1130 (runSP2) 3226.71s PE:0] Virtual memory = 1195068 kiB
+iteration 45, multiply: 65.098270 seconds, symbolic multiply: 63.345098 seconds, setEq: 0.126671 seconds, add: 0.000000 seconds: trace(P) = 4.5000000533395638e+02 (Ne = 900, 2*trace(P)-Ne =  1.066791e-05) complexity 7.216835e+07 (out of 178453547), ratio = 4.044e-01
+SP2 converged in 45 steps
+||P||     = 1.0744797184100530e+02
+||P||/N^2 = 2.1224290734025740e-05
+tolerance                  = 1.000000e-07
+idempotency error          = 0.000000e+00
+previous idempotency error = 1.452264e-05
+t_total                    = 1.699148e+03 seconds
+complexity                 = 1.510043e+09
+[bcsr.cc:100 (BCSR) 3355.33s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.OrthoD, size 2250x2250, 4947450 nonzeros, ||A||_{F} = 2.1213203435568868e+01, ||A||_{F}/N^2 = 4.1902624070259489e-06, 97.7274 percent nonzero elements
+||P-D||_{F}                = 7.582646e-03
+total energy, trace(F*D)   = -1.9211695961962589e+03
+[spamm_charm.cc:1171 (runSP2) 3355.57s PE:0] Virtual memory = 1195068 kiB
+[matrix.cc:58 (Matrix) 3355.57s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 3355.57s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 3355.57s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 3355.57s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 3355.57s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 3355.57s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 3355.57s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 3355.61s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 3355.61s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 3355.61s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 3355.61s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 3355.61s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+total energy, trace(F*P)   = -1.9211696731090685e+03
+[spamm_charm.cc:1188 (runSP2) 3420.73s PE:0] Virtual memory = 1308324 kiB
+total time: 3420.014682 seconds
+end of spamm-charm
+Program finished.
+Charm++: standalone mode (not using charmrun)
+Converse/Charm++ Commit ID: 
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Charm++> scheduler running in netpoll mode.
+CharmLB> Load balancer assumes all CPUs are same.
+Charm++> Running on 1 unique compute nodes (8-way SMP).
+Charm++> cpu topology info is gathered in 0.002 seconds.
+SpAMM version 5 using 8 OpenMP thread(s) running on meitner
+command line: /home/nbock/freeon/spamm-charm/src/.libs/spamm-charm --block 128 --basic 4 --tolerance 1.0e-6 --operation SP2 --symbolic --fockian /home/nbock/data-sets/water/h2o_90.F_DIIS --density /home/nbock/data-sets/water/h2o_90.OrthoD --Ne 900 --iterations 100
+[bcsr.cc:100 (BCSR) 0.03s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.F_DIIS, size 2250x2250, 4917850 nonzeros, ||A||_{F} = 2.0463242620153218e+02, ||A||_{F}/N^2 = 4.0421219990426108e-05, 97.1427 percent nonzero elements
+[spamm_charm.cc:888 (runSP2) 0.09s PE:0] spectral bounds: [ -3.587158e+01,  2.061774e+01 ], dF = 5.648932e+01
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.10s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.32s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.32s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.32s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.32s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.33s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.33s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.72s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 0.73s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 0.76s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 0.76s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 0.76s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 0.77s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 0.77s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+tolerance = 1.000000e-06
+iteration  0: trace(P) = 1.4681321537865626e+03 (Ne/2 = 4.500000e+02)
+[spamm_charm.cc:939 (runSP2) 1.05s PE:0] Virtual memory = 541568 kiB
+iteration  1, multiply: 7.561323 seconds, symbolic multiply: 6.493630 seconds, setEq: 0.132165 seconds, add: 0.000000 seconds: trace(P) = 5.3916449255674286e+02 (Ne = 900, 2*trace(P)-Ne =  1.783290e+02) complexity 1.937974e+06 (out of 178453547), ratio = 1.086e-02
+[spamm_charm.cc:1130 (runSP2) 15.27s PE:0] Virtual memory = 1171032 kiB
+iteration  2, multiply: 8.017523 seconds, symbolic multiply: 7.104539 seconds, setEq: 0.131192 seconds, add: 0.000000 seconds: trace(P) = 8.4047085219560870e+01 (Ne = 900, 2*trace(P)-Ne = -7.319058e+02) complexity 2.298244e+06 (out of 178453547), ratio = 1.288e-02
+[spamm_charm.cc:1130 (runSP2) 30.56s PE:0] Virtual memory = 1242152 kiB
+iteration  3, multiply: 8.063427 seconds, symbolic multiply: 7.164546 seconds, setEq: 0.000000 seconds, add: 0.126332 seconds: trace(P) = 1.6167002957495345e+02 (Ne = 900, 2*trace(P)-Ne = -5.766599e+02) complexity 2.326348e+06 (out of 178453547), ratio = 1.304e-02
+[spamm_charm.cc:1130 (runSP2) 45.94s PE:0] Virtual memory = 1242152 kiB
+iteration  4, multiply: 8.152611 seconds, symbolic multiply: 7.320127 seconds, setEq: 0.000000 seconds, add: 0.126465 seconds: trace(P) = 3.0270024822684587e+02 (Ne = 900, 2*trace(P)-Ne = -2.945995e+02) complexity 2.418210e+06 (out of 178453547), ratio = 1.355e-02
+[spamm_charm.cc:1130 (runSP2) 61.57s PE:0] Virtual memory = 1242536 kiB
+iteration  5, multiply: 8.721531 seconds, symbolic multiply: 7.772971 seconds, setEq: 0.000000 seconds, add: 0.126233 seconds: trace(P) = 5.4899037079244420e+02 (Ne = 900, 2*trace(P)-Ne =  1.979807e+02) complexity 2.682936e+06 (out of 178453547), ratio = 1.503e-02
+[spamm_charm.cc:1130 (runSP2) 78.22s PE:0] Virtual memory = 1245664 kiB
+iteration  6, multiply: 9.924997 seconds, symbolic multiply: 8.927276 seconds, setEq: 0.126283 seconds, add: 0.000000 seconds: trace(P) = 1.2941807812703280e+02 (Ne = 900, 2*trace(P)-Ne = -6.411638e+02) complexity 3.374040e+06 (out of 178453547), ratio = 1.891e-02
+[spamm_charm.cc:1130 (runSP2) 97.23s PE:0] Virtual memory = 1251304 kiB
+iteration  7, multiply: 9.884164 seconds, symbolic multiply: 8.968977 seconds, setEq: 0.000000 seconds, add: 0.125916 seconds: trace(P) = 2.0020587364970470e+02 (Ne = 900, 2*trace(P)-Ne = -4.995883e+02) complexity 3.451082e+06 (out of 178453547), ratio = 1.934e-02
+[spamm_charm.cc:1130 (runSP2) 116.24s PE:0] Virtual memory = 1251512 kiB
+iteration  8, multiply: 10.236174 seconds, symbolic multiply: 9.359031 seconds, setEq: 0.000000 seconds, add: 0.125883 seconds: trace(P) = 3.1373286188173438e+02 (Ne = 900, 2*trace(P)-Ne = -2.725343e+02) complexity 3.603332e+06 (out of 178453547), ratio = 2.019e-02
+[spamm_charm.cc:1130 (runSP2) 135.99s PE:0] Virtual memory = 1251940 kiB
+iteration  9, multiply: 10.954223 seconds, symbolic multiply: 9.872152 seconds, setEq: 0.000000 seconds, add: 0.126293 seconds: trace(P) = 5.2349072277438790e+02 (Ne = 900, 2*trace(P)-Ne =  1.469814e+02) complexity 3.975492e+06 (out of 178453547), ratio = 2.228e-02
+[spamm_charm.cc:1130 (runSP2) 156.98s PE:0] Virtual memory = 1254140 kiB
+iteration 10, multiply: 12.230624 seconds, symbolic multiply: 11.459013 seconds, setEq: 0.129638 seconds, add: 0.000000 seconds: trace(P) = 1.4322068873548625e+02 (Ne = 900, 2*trace(P)-Ne = -6.135586e+02) complexity 4.961884e+06 (out of 178453547), ratio = 2.780e-02
+[spamm_charm.cc:1130 (runSP2) 180.83s PE:0] Virtual memory = 1242152 kiB
+iteration 11, multiply: 12.311269 seconds, symbolic multiply: 11.430681 seconds, setEq: 0.000000 seconds, add: 0.128236 seconds: trace(P) = 1.9549184555695547e+02 (Ne = 900, 2*trace(P)-Ne = -5.090163e+02) complexity 5.032928e+06 (out of 178453547), ratio = 2.820e-02
+[spamm_charm.cc:1130 (runSP2) 204.73s PE:0] Virtual memory = 1242152 kiB
+iteration 12, multiply: 12.660860 seconds, symbolic multiply: 11.600921 seconds, setEq: 0.000000 seconds, add: 0.126371 seconds: trace(P) = 2.9725803525798966e+02 (Ne = 900, 2*trace(P)-Ne = -3.054839e+02) complexity 5.184746e+06 (out of 178453547), ratio = 2.905e-02
+[spamm_charm.cc:1130 (runSP2) 229.15s PE:0] Virtual memory = 1242152 kiB
+iteration 13, multiply: 13.091156 seconds, symbolic multiply: 12.300337 seconds, setEq: 0.000000 seconds, add: 0.126460 seconds: trace(P) = 4.9019751679131019e+02 (Ne = 900, 2*trace(P)-Ne =  8.039503e+01) complexity 5.619956e+06 (out of 178453547), ratio = 3.149e-02
+[spamm_charm.cc:1130 (runSP2) 254.70s PE:0] Virtual memory = 1242152 kiB
+iteration 14, multiply: 14.791632 seconds, symbolic multiply: 13.817007 seconds, setEq: 0.127069 seconds, add: 0.000000 seconds: trace(P) = 1.4294273655185765e+02 (Ne = 900, 2*trace(P)-Ne = -6.141145e+02) complexity 6.799012e+06 (out of 178453547), ratio = 3.810e-02
+[spamm_charm.cc:1130 (runSP2) 283.46s PE:0] Virtual memory = 1242152 kiB
+iteration 15, multiply: 14.750514 seconds, symbolic multiply: 13.876233 seconds, setEq: 0.000000 seconds, add: 0.125977 seconds: trace(P) = 1.9464955521340278e+02 (Ne = 900, 2*trace(P)-Ne = -5.107009e+02) complexity 6.866052e+06 (out of 178453547), ratio = 3.848e-02
+[spamm_charm.cc:1130 (runSP2) 312.25s PE:0] Virtual memory = 1242152 kiB
+iteration 16, multiply: 15.120905 seconds, symbolic multiply: 14.194893 seconds, setEq: 0.000000 seconds, add: 0.128468 seconds: trace(P) = 2.9451021157806156e+02 (Ne = 900, 2*trace(P)-Ne = -3.109796e+02) complexity 7.044602e+06 (out of 178453547), ratio = 3.948e-02
+[spamm_charm.cc:1130 (runSP2) 341.72s PE:0] Virtual memory = 1242152 kiB
+iteration 17, multiply: 15.652371 seconds, symbolic multiply: 14.893738 seconds, setEq: 0.000000 seconds, add: 0.125806 seconds: trace(P) = 4.8101521218996248e+02 (Ne = 900, 2*trace(P)-Ne =  6.203042e+01) complexity 7.566314e+06 (out of 178453547), ratio = 4.240e-02
+[spamm_charm.cc:1130 (runSP2) 372.43s PE:0] Virtual memory = 1242152 kiB
+iteration 18, multiply: 17.538425 seconds, symbolic multiply: 16.389684 seconds, setEq: 0.126449 seconds, add: 0.000000 seconds: trace(P) = 1.5402125508178327e+02 (Ne = 900, 2*trace(P)-Ne = -5.919575e+02) complexity 8.907738e+06 (out of 178453547), ratio = 4.992e-02
+[spamm_charm.cc:1130 (runSP2) 406.51s PE:0] Virtual memory = 1242152 kiB
+iteration 19, multiply: 17.615143 seconds, symbolic multiply: 16.560724 seconds, setEq: 0.000000 seconds, add: 0.126074 seconds: trace(P) = 2.1461474290947257e+02 (Ne = 900, 2*trace(P)-Ne = -4.707705e+02) complexity 9.028828e+06 (out of 178453547), ratio = 5.059e-02
+[spamm_charm.cc:1130 (runSP2) 440.84s PE:0] Virtual memory = 1242152 kiB
+iteration 20, multiply: 18.085126 seconds, symbolic multiply: 16.702692 seconds, setEq: 0.000000 seconds, add: 0.125898 seconds: trace(P) = 3.2695504611957978e+02 (Ne = 900, 2*trace(P)-Ne = -2.460899e+02) complexity 9.372734e+06 (out of 178453547), ratio = 5.252e-02
+[spamm_charm.cc:1130 (runSP2) 475.79s PE:0] Virtual memory = 1242152 kiB
+iteration 21, multiply: 18.433822 seconds, symbolic multiply: 17.597791 seconds, setEq: 0.000000 seconds, add: 0.128261 seconds: trace(P) = 5.2377382695853305e+02 (Ne = 900, 2*trace(P)-Ne =  1.475477e+02) complexity 1.021898e+07 (out of 178453547), ratio = 5.726e-02
+[spamm_charm.cc:1130 (runSP2) 511.98s PE:0] Virtual memory = 1242152 kiB
+iteration 22, multiply: 20.146197 seconds, symbolic multiply: 19.405067 seconds, setEq: 0.128004 seconds, add: 0.000000 seconds: trace(P) = 2.0498249278295839e+02 (Ne = 900, 2*trace(P)-Ne = -4.900350e+02) complexity 1.188701e+07 (out of 178453547), ratio = 6.661e-02
+[spamm_charm.cc:1130 (runSP2) 551.69s PE:0] Virtual memory = 1242152 kiB
+iteration 23, multiply: 20.649370 seconds, symbolic multiply: 19.910010 seconds, setEq: 0.000000 seconds, add: 0.127454 seconds: trace(P) = 2.8942716022701381e+02 (Ne = 900, 2*trace(P)-Ne = -3.211457e+02) complexity 1.239228e+07 (out of 178453547), ratio = 6.944e-02
+[spamm_charm.cc:1130 (runSP2) 592.41s PE:0] Virtual memory = 1242152 kiB
+iteration 24, multiply: 21.764835 seconds, symbolic multiply: 21.307799 seconds, setEq: 0.000000 seconds, add: 0.126515 seconds: trace(P) = 4.1809146665313267e+02 (Ne = 900, 2*trace(P)-Ne = -6.381707e+01) complexity 1.332335e+07 (out of 178453547), ratio = 7.466e-02
+[spamm_charm.cc:1130 (runSP2) 635.64s PE:0] Virtual memory = 1242152 kiB
+iteration 25, multiply: 22.929287 seconds, symbolic multiply: 22.235676 seconds, setEq: 0.000000 seconds, add: 0.126382 seconds: trace(P) = 6.1625906064781111e+02 (Ne = 900, 2*trace(P)-Ne =  3.325181e+02) complexity 1.473837e+07 (out of 178453547), ratio = 8.259e-02
+[spamm_charm.cc:1130 (runSP2) 680.96s PE:0] Virtual memory = 1242152 kiB
+iteration 26, multiply: 25.044748 seconds, symbolic multiply: 24.667501 seconds, setEq: 0.126914 seconds, add: 0.000000 seconds: trace(P) = 3.1321027763020805e+02 (Ne = 900, 2*trace(P)-Ne = -2.735794e+02) complexity 1.679374e+07 (out of 178453547), ratio = 9.411e-02
+[spamm_charm.cc:1130 (runSP2) 730.83s PE:0] Virtual memory = 1242152 kiB
+iteration 27, multiply: 26.289604 seconds, symbolic multiply: 25.420619 seconds, setEq: 0.000000 seconds, add: 0.127133 seconds: trace(P) = 4.0727714008369804e+02 (Ne = 900, 2*trace(P)-Ne = -8.544572e+01) complexity 1.789625e+07 (out of 178453547), ratio = 1.003e-01
+[spamm_charm.cc:1130 (runSP2) 782.70s PE:0] Virtual memory = 1242152 kiB
+iteration 28, multiply: 27.694575 seconds, symbolic multiply: 26.725091 seconds, setEq: 0.000000 seconds, add: 0.125964 seconds: trace(P) = 5.3980259123422354e+02 (Ne = 900, 2*trace(P)-Ne =  1.796052e+02) complexity 1.945394e+07 (out of 178453547), ratio = 1.090e-01
+[spamm_charm.cc:1130 (runSP2) 837.27s PE:0] Virtual memory = 1242152 kiB
+iteration 29, multiply: 28.858865 seconds, symbolic multiply: 28.163209 seconds, setEq: 0.126245 seconds, add: 0.000000 seconds: trace(P) = 3.5533085168495273e+02 (Ne = 900, 2*trace(P)-Ne = -1.893383e+02) complexity 2.148588e+07 (out of 178453547), ratio = 1.204e-01
+[spamm_charm.cc:1130 (runSP2) 894.45s PE:0] Virtual memory = 1242152 kiB
+iteration 30, multiply: 30.434419 seconds, symbolic multiply: 29.409397 seconds, setEq: 0.000000 seconds, add: 0.128551 seconds: trace(P) = 4.1487310639479762e+02 (Ne = 900, 2*trace(P)-Ne = -7.025379e+01) complexity 2.298916e+07 (out of 178453547), ratio = 1.288e-01
+[spamm_charm.cc:1130 (runSP2) 954.46s PE:0] Virtual memory = 1242152 kiB
+iteration 31, multiply: 31.861738 seconds, symbolic multiply: 31.132993 seconds, setEq: 0.000000 seconds, add: 0.126334 seconds: trace(P) = 4.7478058936308241e+02 (Ne = 900, 2*trace(P)-Ne =  4.956118e+01) complexity 2.483383e+07 (out of 178453547), ratio = 1.392e-01
+[spamm_charm.cc:1130 (runSP2) 1017.61s PE:0] Virtual memory = 1242152 kiB
+iteration 32, multiply: 33.863089 seconds, symbolic multiply: 32.998250 seconds, setEq: 0.126190 seconds, add: 0.000000 seconds: trace(P) = 4.0769685790760553e+02 (Ne = 900, 2*trace(P)-Ne = -8.460628e+01) complexity 2.691963e+07 (out of 178453547), ratio = 1.508e-01
+[spamm_charm.cc:1130 (runSP2) 1084.63s PE:0] Virtual memory = 1242152 kiB
+iteration 33, multiply: 35.468805 seconds, symbolic multiply: 34.419527 seconds, setEq: 0.000000 seconds, add: 0.126188 seconds: trace(P) = 4.3478625731071429e+02 (Ne = 900, 2*trace(P)-Ne = -3.042749e+01) complexity 2.867963e+07 (out of 178453547), ratio = 1.607e-01
+[spamm_charm.cc:1130 (runSP2) 1154.67s PE:0] Virtual memory = 1242152 kiB
+iteration 34, multiply: 37.137872 seconds, symbolic multiply: 35.873034 seconds, setEq: 0.000000 seconds, add: 0.126185 seconds: trace(P) = 4.5021126737918098e+02 (Ne = 900, 2*trace(P)-Ne =  4.225348e-01) complexity 3.053221e+07 (out of 178453547), ratio = 1.711e-01
+[spamm_charm.cc:1130 (runSP2) 1227.84s PE:0] Virtual memory = 1242152 kiB
+iteration 35, multiply: 38.449620 seconds, symbolic multiply: 37.525992 seconds, setEq: 0.128163 seconds, add: 0.000000 seconds: trace(P) = 4.4096312493232034e+02 (Ne = 900, 2*trace(P)-Ne = -1.807375e+01) complexity 3.236826e+07 (out of 178453547), ratio = 1.814e-01
+[spamm_charm.cc:1130 (runSP2) 1303.97s PE:0] Virtual memory = 1242152 kiB
+iteration 36, multiply: 39.491769 seconds, symbolic multiply: 39.084421 seconds, setEq: 0.000000 seconds, add: 0.127066 seconds: trace(P) = 4.4719848830959029e+02 (Ne = 900, 2*trace(P)-Ne = -5.603023e+00) complexity 3.392560e+07 (out of 178453547), ratio = 1.901e-01
+[spamm_charm.cc:1130 (runSP2) 1382.71s PE:0] Virtual memory = 1242152 kiB
+iteration 37, multiply: 40.682114 seconds, symbolic multiply: 39.884401 seconds, setEq: 0.000000 seconds, add: 0.129022 seconds: trace(P) = 4.4912788518824851e+02 (Ne = 900, 2*trace(P)-Ne = -1.744230e+00) complexity 3.539270e+07 (out of 178453547), ratio = 1.983e-01
+[spamm_charm.cc:1130 (runSP2) 1463.43s PE:0] Virtual memory = 1242152 kiB
+iteration 38, multiply: 41.867336 seconds, symbolic multiply: 41.302766 seconds, setEq: 0.000000 seconds, add: 0.127673 seconds: trace(P) = 4.4986613474319131e+02 (Ne = 900, 2*trace(P)-Ne = -2.677305e-01) complexity 3.671703e+07 (out of 178453547), ratio = 2.058e-01
+[spamm_charm.cc:1130 (runSP2) 1546.76s PE:0] Virtual memory = 1242152 kiB
+iteration 39, multiply: 42.953945 seconds, symbolic multiply: 42.342054 seconds, setEq: 0.000000 seconds, add: 0.127399 seconds: trace(P) = 4.5020529733701352e+02 (Ne = 900, 2*trace(P)-Ne =  4.105947e-01) complexity 3.794530e+07 (out of 178453547), ratio = 2.126e-01
+[spamm_charm.cc:1130 (runSP2) 1632.22s PE:0] Virtual memory = 1242152 kiB
+iteration 40, multiply: 43.755877 seconds, symbolic multiply: 42.966148 seconds, setEq: 0.126533 seconds, add: 0.000000 seconds: trace(P) = 4.4994751370011573e+02 (Ne = 900, 2*trace(P)-Ne = -1.049726e-01) complexity 3.915936e+07 (out of 178453547), ratio = 2.194e-01
+[spamm_charm.cc:1130 (runSP2) 1719.10s PE:0] Virtual memory = 1242152 kiB
+iteration 41, multiply: 44.532276 seconds, symbolic multiply: 43.907019 seconds, setEq: 0.000000 seconds, add: 0.127075 seconds: trace(P) = 4.4999789903353576e+02 (Ne = 900, 2*trace(P)-Ne = -4.201933e-03) complexity 4.014960e+07 (out of 178453547), ratio = 2.250e-01
+[spamm_charm.cc:1130 (runSP2) 1807.69s PE:0] Virtual memory = 1242152 kiB
+iteration 42, multiply: 45.163012 seconds, symbolic multiply: 44.647043 seconds, setEq: 0.000000 seconds, add: 0.126412 seconds: trace(P) = 4.4999931286142350e+02 (Ne = 900, 2*trace(P)-Ne = -1.374277e-03) complexity 4.106839e+07 (out of 178453547), ratio = 2.301e-01
+[spamm_charm.cc:1130 (runSP2) 1897.66s PE:0] Virtual memory = 1242152 kiB
+iteration 43, multiply: 45.879901 seconds, symbolic multiply: 44.971707 seconds, setEq: 0.126366 seconds, add: 0.000000 seconds: trace(P) = 4.4999975350067399e+02 (Ne = 900, 2*trace(P)-Ne = -4.929987e-04) complexity 4.193209e+07 (out of 178453547), ratio = 2.350e-01
+[spamm_charm.cc:1130 (runSP2) 1988.67s PE:0] Virtual memory = 1242152 kiB
+iteration 44, multiply: 46.364472 seconds, symbolic multiply: 45.716357 seconds, setEq: 0.126237 seconds, add: 0.000000 seconds: trace(P) = 4.4999990489806112e+02 (Ne = 900, 2*trace(P)-Ne = -1.902039e-04) complexity 4.273828e+07 (out of 178453547), ratio = 2.395e-01
+[spamm_charm.cc:1130 (runSP2) 2080.91s PE:0] Virtual memory = 1242152 kiB
+iteration 45, multiply: 46.962367 seconds, symbolic multiply: 46.337657 seconds, setEq: 0.127464 seconds, add: 0.000000 seconds: trace(P) = 4.5000018099124395e+02 (Ne = 900, 2*trace(P)-Ne =  3.619825e-04) complexity 4.349860e+07 (out of 178453547), ratio = 2.438e-01
+SP2 converged in 45 steps
+||P||     = 1.0743927704654864e+02
+||P||/N^2 = 2.1222573243762694e-05
+tolerance                  = 1.000000e-06
+idempotency error          = 0.000000e+00
+previous idempotency error = 1.513974e-04
+t_total                    = 1.107763e+03 seconds
+complexity                 = 7.994919e+08
+[bcsr.cc:100 (BCSR) 2174.38s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.OrthoD, size 2250x2250, 4947450 nonzeros, ||A||_{F} = 2.1213203435568868e+01, ||A||_{F}/N^2 = 4.1902624070259489e-06, 97.7274 percent nonzero elements
+||P-D||_{F}                = 4.525609e-02
+total energy, trace(F*D)   = -1.9211695961962589e+03
+[spamm_charm.cc:1171 (runSP2) 2174.59s PE:0] Virtual memory = 1242152 kiB
+[matrix.cc:58 (Matrix) 2174.59s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 2174.59s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 2174.59s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 2174.59s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 2174.59s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 2174.59s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 2174.60s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 2174.63s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 2174.63s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 2174.63s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 2174.63s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 2174.63s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+total energy, trace(F*P)   = -1.9211694517286903e+03
+[spamm_charm.cc:1188 (runSP2) 2222.45s PE:0] Virtual memory = 1308228 kiB
+total time: 2222.124463 seconds
+end of spamm-charm
+Program finished.
+Charm++: standalone mode (not using charmrun)
+Converse/Charm++ Commit ID: 
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Charm++> scheduler running in netpoll mode.
+CharmLB> Load balancer assumes all CPUs are same.
+Charm++> Running on 1 unique compute nodes (8-way SMP).
+Charm++> cpu topology info is gathered in 0.002 seconds.
+SpAMM version 5 using 8 OpenMP thread(s) running on meitner
+command line: /home/nbock/freeon/spamm-charm/src/.libs/spamm-charm --block 128 --basic 4 --tolerance 1.0e-5 --operation SP2 --symbolic --fockian /home/nbock/data-sets/water/h2o_90.F_DIIS --density /home/nbock/data-sets/water/h2o_90.OrthoD --Ne 900 --iterations 100
+[bcsr.cc:100 (BCSR) 0.03s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.F_DIIS, size 2250x2250, 4917850 nonzeros, ||A||_{F} = 2.0463242620153218e+02, ||A||_{F}/N^2 = 4.0421219990426108e-05, 97.1427 percent nonzero elements
+[spamm_charm.cc:888 (runSP2) 0.09s PE:0] spectral bounds: [ -3.587158e+01,  2.061774e+01 ], dF = 5.648932e+01
+[matrix.cc:58 (Matrix) 0.13s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.13s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.13s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.13s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.13s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.13s PE:0] name = F, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.35s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.35s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.35s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.35s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.35s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.35s PE:0] name = P, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[matrix.cc:58 (Matrix) 0.75s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 0.75s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 0.75s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 0.75s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 0.75s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 0.75s PE:0] name = P2, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 0.75s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 0.79s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 0.79s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 0.79s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 0.79s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 0.79s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+tolerance = 1.000000e-05
+iteration  0: trace(P) = 1.4681321537865626e+03 (Ne/2 = 4.500000e+02)
+[spamm_charm.cc:939 (runSP2) 1.07s PE:0] Virtual memory = 541568 kiB
+iteration  1, multiply: 4.570717 seconds, symbolic multiply: 3.336614 seconds, setEq: 0.135753 seconds, add: 0.000000 seconds: trace(P) = 5.3914148341622877e+02 (Ne = 900, 2*trace(P)-Ne =  1.782830e+02) complexity 5.249380e+05 (out of 178453547), ratio = 2.942e-03
+[spamm_charm.cc:1130 (runSP2) 9.15s PE:0] Virtual memory = 1135712 kiB
+iteration  2, multiply: 4.407787 seconds, symbolic multiply: 3.673534 seconds, setEq: 0.130318 seconds, add: 0.000000 seconds: trace(P) = 8.4032633103457144e+01 (Ne = 900, 2*trace(P)-Ne = -7.319347e+02) complexity 6.200960e+05 (out of 178453547), ratio = 3.475e-03
+[spamm_charm.cc:1130 (runSP2) 17.40s PE:0] Virtual memory = 1208612 kiB
+iteration  3, multiply: 4.428175 seconds, symbolic multiply: 3.671657 seconds, setEq: 0.000000 seconds, add: 0.126683 seconds: trace(P) = 1.6164265129557535e+02 (Ne = 900, 2*trace(P)-Ne = -5.767147e+02) complexity 6.291780e+05 (out of 178453547), ratio = 3.526e-03
+[spamm_charm.cc:1130 (runSP2) 25.66s PE:0] Virtual memory = 1208612 kiB
+iteration  4, multiply: 4.518633 seconds, symbolic multiply: 3.801624 seconds, setEq: 0.000000 seconds, add: 0.126815 seconds: trace(P) = 3.0265021575168743e+02 (Ne = 900, 2*trace(P)-Ne = -2.946996e+02) complexity 6.575980e+05 (out of 178453547), ratio = 3.685e-03
+[spamm_charm.cc:1130 (runSP2) 34.14s PE:0] Virtual memory = 1211292 kiB
+iteration  5, multiply: 4.781970 seconds, symbolic multiply: 4.036580 seconds, setEq: 0.000000 seconds, add: 0.127001 seconds: trace(P) = 5.4890310337590540e+02 (Ne = 900, 2*trace(P)-Ne =  1.978062e+02) complexity 7.367120e+05 (out of 178453547), ratio = 4.128e-03
+[spamm_charm.cc:1130 (runSP2) 43.12s PE:0] Virtual memory = 1215600 kiB
+iteration  6, multiply: 5.364961 seconds, symbolic multiply: 4.615213 seconds, setEq: 0.130558 seconds, add: 0.000000 seconds: trace(P) = 1.2938570997673258e+02 (Ne = 900, 2*trace(P)-Ne = -6.412286e+02) complexity 9.437380e+05 (out of 178453547), ratio = 5.288e-03
+[spamm_charm.cc:1130 (runSP2) 53.26s PE:0] Virtual memory = 1208612 kiB
+iteration  7, multiply: 5.529782 seconds, symbolic multiply: 4.718707 seconds, setEq: 0.000000 seconds, add: 0.126676 seconds: trace(P) = 2.0014508059132433e+02 (Ne = 900, 2*trace(P)-Ne = -4.997098e+02) complexity 9.746060e+05 (out of 178453547), ratio = 5.461e-03
+[spamm_charm.cc:1130 (runSP2) 63.68s PE:0] Virtual memory = 1208612 kiB
+iteration  8, multiply: 5.625943 seconds, symbolic multiply: 4.820431 seconds, setEq: 0.000000 seconds, add: 0.130026 seconds: trace(P) = 3.1361714992225194e+02 (Ne = 900, 2*trace(P)-Ne = -2.727657e+02) complexity 1.029074e+06 (out of 178453547), ratio = 5.767e-03
+[spamm_charm.cc:1130 (runSP2) 74.29s PE:0] Virtual memory = 1208612 kiB
+iteration  9, multiply: 5.958432 seconds, symbolic multiply: 5.079716 seconds, setEq: 0.000000 seconds, add: 0.126853 seconds: trace(P) = 5.2327657813014389e+02 (Ne = 900, 2*trace(P)-Ne =  1.465532e+02) complexity 1.150582e+06 (out of 178453547), ratio = 6.448e-03
+[spamm_charm.cc:1130 (runSP2) 85.48s PE:0] Virtual memory = 1208612 kiB
+iteration 10, multiply: 6.628136 seconds, symbolic multiply: 5.784456 seconds, setEq: 0.126728 seconds, add: 0.000000 seconds: trace(P) = 1.4316604883541430e+02 (Ne = 900, 2*trace(P)-Ne = -6.136679e+02) complexity 1.473202e+06 (out of 178453547), ratio = 8.255e-03
+[spamm_charm.cc:1130 (runSP2) 98.06s PE:0] Virtual memory = 1208612 kiB
+iteration 11, multiply: 6.720543 seconds, symbolic multiply: 5.820731 seconds, setEq: 0.000000 seconds, add: 0.126587 seconds: trace(P) = 1.9538413889465477e+02 (Ne = 900, 2*trace(P)-Ne = -5.092317e+02) complexity 1.502920e+06 (out of 178453547), ratio = 8.422e-03
+[spamm_charm.cc:1130 (runSP2) 110.76s PE:0] Virtual memory = 1208612 kiB
+iteration 12, multiply: 6.772948 seconds, symbolic multiply: 5.991375 seconds, setEq: 0.000000 seconds, add: 0.127392 seconds: trace(P) = 2.9705006420208230e+02 (Ne = 900, 2*trace(P)-Ne = -3.058999e+02) complexity 1.560092e+06 (out of 178453547), ratio = 8.742e-03
+[spamm_charm.cc:1130 (runSP2) 123.68s PE:0] Virtual memory = 1208612 kiB
+iteration 13, multiply: 7.082576 seconds, symbolic multiply: 6.265934 seconds, setEq: 0.000000 seconds, add: 0.136991 seconds: trace(P) = 4.8980863235501732e+02 (Ne = 900, 2*trace(P)-Ne =  7.961726e+01) complexity 1.713484e+06 (out of 178453547), ratio = 9.602e-03
+[spamm_charm.cc:1130 (runSP2) 137.20s PE:0] Virtual memory = 1135712 kiB
+iteration 14, multiply: 7.954450 seconds, symbolic multiply: 6.987254 seconds, setEq: 0.132765 seconds, add: 0.000000 seconds: trace(P) = 1.4285568935210529e+02 (Ne = 900, 2*trace(P)-Ne = -6.142886e+02) complexity 2.138572e+06 (out of 178453547), ratio = 1.198e-02
+[spamm_charm.cc:1130 (runSP2) 152.31s PE:0] Virtual memory = 1135712 kiB
+iteration 15, multiply: 7.930614 seconds, symbolic multiply: 7.082671 seconds, setEq: 0.000000 seconds, add: 0.132823 seconds: trace(P) = 1.9447949722752679e+02 (Ne = 900, 2*trace(P)-Ne = -5.110410e+02) complexity 2.167170e+06 (out of 178453547), ratio = 1.214e-02
+[spamm_charm.cc:1130 (runSP2) 167.49s PE:0] Virtual memory = 1135712 kiB
+iteration 16, multiply: 8.089799 seconds, symbolic multiply: 7.111835 seconds, setEq: 0.000000 seconds, add: 0.133124 seconds: trace(P) = 2.9418579103065457e+02 (Ne = 900, 2*trace(P)-Ne = -3.116284e+02) complexity 2.238954e+06 (out of 178453547), ratio = 1.255e-02
+[spamm_charm.cc:1130 (runSP2) 182.86s PE:0] Virtual memory = 1135712 kiB
+iteration 17, multiply: 8.401735 seconds, symbolic multiply: 7.522298 seconds, setEq: 0.000000 seconds, add: 0.132096 seconds: trace(P) = 4.8042055667606377e+02 (Ne = 900, 2*trace(P)-Ne =  6.084111e+01) complexity 2.446124e+06 (out of 178453547), ratio = 1.371e-02
+[spamm_charm.cc:1130 (runSP2) 198.95s PE:0] Virtual memory = 1135712 kiB
+iteration 18, multiply: 9.272707 seconds, symbolic multiply: 8.324600 seconds, setEq: 0.128978 seconds, add: 0.000000 seconds: trace(P) = 1.5385570701921739e+02 (Ne = 900, 2*trace(P)-Ne = -5.922886e+02) complexity 2.979686e+06 (out of 178453547), ratio = 1.670e-02
+[spamm_charm.cc:1130 (runSP2) 216.71s PE:0] Virtual memory = 1248464 kiB
+iteration 19, multiply: 9.150704 seconds, symbolic multiply: 8.264502 seconds, setEq: 0.000000 seconds, add: 0.127464 seconds: trace(P) = 2.1430722873820520e+02 (Ne = 900, 2*trace(P)-Ne = -4.713855e+02) complexity 3.035998e+06 (out of 178453547), ratio = 1.701e-02
+[spamm_charm.cc:1130 (runSP2) 234.29s PE:0] Virtual memory = 1248736 kiB
+iteration 20, multiply: 9.533149 seconds, symbolic multiply: 8.635145 seconds, setEq: 0.000000 seconds, add: 0.126890 seconds: trace(P) = 3.2641669416925265e+02 (Ne = 900, 2*trace(P)-Ne = -2.471666e+02) complexity 3.193792e+06 (out of 178453547), ratio = 1.790e-02
+[spamm_charm.cc:1130 (runSP2) 252.62s PE:0] Virtual memory = 1249868 kiB
+iteration 21, multiply: 10.124428 seconds, symbolic multiply: 9.237913 seconds, setEq: 0.000000 seconds, add: 0.126675 seconds: trace(P) = 5.2290631866290130e+02 (Ne = 900, 2*trace(P)-Ne =  1.458126e+02) complexity 3.581154e+06 (out of 178453547), ratio = 2.007e-02
+[spamm_charm.cc:1130 (runSP2) 272.14s PE:0] Virtual memory = 1251636 kiB
+iteration 22, multiply: 11.175097 seconds, symbolic multiply: 10.332475 seconds, setEq: 0.126689 seconds, add: 0.000000 seconds: trace(P) = 2.0454166452151841e+02 (Ne = 900, 2*trace(P)-Ne = -4.909167e+02) complexity 4.343810e+06 (out of 178453547), ratio = 2.434e-02
+[spamm_charm.cc:1130 (runSP2) 293.81s PE:0] Virtual memory = 1255280 kiB
+iteration 23, multiply: 11.550398 seconds, symbolic multiply: 10.683459 seconds, setEq: 0.000000 seconds, add: 0.126813 seconds: trace(P) = 2.8880213197926662e+02 (Ne = 900, 2*trace(P)-Ne = -3.223957e+02) complexity 4.600278e+06 (out of 178453547), ratio = 2.578e-02
+[spamm_charm.cc:1130 (runSP2) 316.20s PE:0] Virtual memory = 1243988 kiB
+iteration 24, multiply: 12.216601 seconds, symbolic multiply: 11.232605 seconds, setEq: 0.000000 seconds, add: 0.126542 seconds: trace(P) = 4.1727329943698373e+02 (Ne = 900, 2*trace(P)-Ne = -6.545340e+01) complexity 5.076594e+06 (out of 178453547), ratio = 2.845e-02
+[spamm_charm.cc:1130 (runSP2) 339.81s PE:0] Virtual memory = 1243988 kiB
+iteration 25, multiply: 13.178705 seconds, symbolic multiply: 12.127124 seconds, setEq: 0.000000 seconds, add: 0.126441 seconds: trace(P) = 6.1516347858054621e+02 (Ne = 900, 2*trace(P)-Ne =  3.303270e+02) complexity 5.805864e+06 (out of 178453547), ratio = 3.253e-02
+[spamm_charm.cc:1130 (runSP2) 365.28s PE:0] Virtual memory = 1243988 kiB
+iteration 26, multiply: 14.434724 seconds, symbolic multiply: 13.598787 seconds, setEq: 0.126885 seconds, add: 0.000000 seconds: trace(P) = 3.1242697089475746e+02 (Ne = 900, 2*trace(P)-Ne = -2.751461e+02) complexity 6.860342e+06 (out of 178453547), ratio = 3.844e-02
+[spamm_charm.cc:1130 (runSP2) 393.47s PE:0] Virtual memory = 1243988 kiB
+iteration 27, multiply: 15.114103 seconds, symbolic multiply: 14.178498 seconds, setEq: 0.000000 seconds, add: 0.126894 seconds: trace(P) = 4.0628240126200444e+02 (Ne = 900, 2*trace(P)-Ne = -8.743520e+01) complexity 7.456994e+06 (out of 178453547), ratio = 4.179e-02
+[spamm_charm.cc:1130 (runSP2) 422.92s PE:0] Virtual memory = 1243988 kiB
+iteration 28, multiply: 16.024593 seconds, symbolic multiply: 15.380606 seconds, setEq: 0.000000 seconds, add: 0.128295 seconds: trace(P) = 5.3877862722456052e+02 (Ne = 900, 2*trace(P)-Ne =  1.775573e+02) complexity 8.285158e+06 (out of 178453547), ratio = 4.643e-02
+[spamm_charm.cc:1130 (runSP2) 454.49s PE:0] Virtual memory = 1243988 kiB
+iteration 29, multiply: 17.406165 seconds, symbolic multiply: 16.544848 seconds, setEq: 0.127094 seconds, add: 0.000000 seconds: trace(P) = 3.5422068239129152e+02 (Ne = 900, 2*trace(P)-Ne = -1.915586e+02) complexity 9.370694e+06 (out of 178453547), ratio = 5.251e-02
+[spamm_charm.cc:1130 (runSP2) 488.60s PE:0] Virtual memory = 1243988 kiB
+iteration 30, multiply: 18.452507 seconds, symbolic multiply: 17.878921 seconds, setEq: 0.000000 seconds, add: 0.127153 seconds: trace(P) = 4.1388550257240672e+02 (Ne = 900, 2*trace(P)-Ne = -7.222899e+01) complexity 1.018331e+07 (out of 178453547), ratio = 5.706e-02
+[spamm_charm.cc:1130 (runSP2) 525.09s PE:0] Virtual memory = 1243988 kiB
+iteration 31, multiply: 19.505793 seconds, symbolic multiply: 18.751165 seconds, setEq: 0.000000 seconds, add: 0.126525 seconds: trace(P) = 4.7408753743088675e+02 (Ne = 900, 2*trace(P)-Ne =  4.817507e+01) complexity 1.115000e+07 (out of 178453547), ratio = 6.248e-02
+[spamm_charm.cc:1130 (runSP2) 563.51s PE:0] Virtual memory = 1243988 kiB
+iteration 32, multiply: 20.596674 seconds, symbolic multiply: 19.865002 seconds, setEq: 0.129007 seconds, add: 0.000000 seconds: trace(P) = 4.0669763993200991e+02 (Ne = 900, 2*trace(P)-Ne = -8.660472e+01) complexity 1.224495e+07 (out of 178453547), ratio = 6.862e-02
+[spamm_charm.cc:1130 (runSP2) 604.13s PE:0] Virtual memory = 1243988 kiB
+iteration 33, multiply: 21.863154 seconds, symbolic multiply: 21.178294 seconds, setEq: 0.000000 seconds, add: 0.126777 seconds: trace(P) = 4.3415406054138526e+02 (Ne = 900, 2*trace(P)-Ne = -3.169188e+01) complexity 1.317386e+07 (out of 178453547), ratio = 7.382e-02
+[spamm_charm.cc:1130 (runSP2) 647.34s PE:0] Virtual memory = 1243988 kiB
+iteration 34, multiply: 22.627317 seconds, symbolic multiply: 21.603775 seconds, setEq: 0.000000 seconds, add: 0.127445 seconds: trace(P) = 4.4993544424635587e+02 (Ne = 900, 2*trace(P)-Ne = -1.291115e-01) complexity 1.413399e+07 (out of 178453547), ratio = 7.920e-02
+[spamm_charm.cc:1130 (runSP2) 691.73s PE:0] Virtual memory = 1243988 kiB
+iteration 35, multiply: 23.517724 seconds, symbolic multiply: 22.612106 seconds, setEq: 0.000000 seconds, add: 0.126460 seconds: trace(P) = 4.5936075103733896e+02 (Ne = 900, 2*trace(P)-Ne =  1.872150e+01) complexity 1.510480e+07 (out of 178453547), ratio = 8.464e-02
+[spamm_charm.cc:1130 (runSP2) 738.02s PE:0] Virtual memory = 1243988 kiB
+iteration 36, multiply: 24.602080 seconds, symbolic multiply: 23.784723 seconds, setEq: 0.127847 seconds, add: 0.000000 seconds: trace(P) = 4.4801794267378614e+02 (Ne = 900, 2*trace(P)-Ne = -3.964115e+00) complexity 1.606295e+07 (out of 178453547), ratio = 9.001e-02
+[spamm_charm.cc:1130 (runSP2) 786.57s PE:0] Virtual memory = 1243988 kiB
+iteration 37, multiply: 25.608004 seconds, symbolic multiply: 24.573175 seconds, setEq: 0.000000 seconds, add: 0.127742 seconds: trace(P) = 4.4955369363428161e+02 (Ne = 900, 2*trace(P)-Ne = -8.926127e-01) complexity 1.686100e+07 (out of 178453547), ratio = 9.448e-02
+[spamm_charm.cc:1130 (runSP2) 836.91s PE:0] Virtual memory = 1243988 kiB
+iteration 38, multiply: 26.157325 seconds, symbolic multiply: 25.372114 seconds, setEq: 0.000000 seconds, add: 0.128009 seconds: trace(P) = 4.5012930359500172e+02 (Ne = 900, 2*trace(P)-Ne =  2.586072e-01) complexity 1.759161e+07 (out of 178453547), ratio = 9.858e-02
+[spamm_charm.cc:1130 (runSP2) 888.60s PE:0] Virtual memory = 1243988 kiB
+iteration 39, multiply: 26.975713 seconds, symbolic multiply: 26.188094 seconds, setEq: 0.126709 seconds, add: 0.000000 seconds: trace(P) = 4.4980591743809299e+02 (Ne = 900, 2*trace(P)-Ne = -3.881651e-01) complexity 1.829057e+07 (out of 178453547), ratio = 1.025e-01
+[spamm_charm.cc:1130 (runSP2) 941.92s PE:0] Virtual memory = 1243988 kiB
+iteration 40, multiply: 27.777105 seconds, symbolic multiply: 26.840654 seconds, setEq: 0.000000 seconds, add: 0.126681 seconds: trace(P) = 4.4997969801347932e+02 (Ne = 900, 2*trace(P)-Ne = -4.060397e-02) complexity 1.892314e+07 (out of 178453547), ratio = 1.060e-01
+[spamm_charm.cc:1130 (runSP2) 996.70s PE:0] Virtual memory = 1243988 kiB
+iteration 41, multiply: 28.311005 seconds, symbolic multiply: 27.305486 seconds, setEq: 0.000000 seconds, add: 0.126668 seconds: trace(P) = 4.4999393753931349e+02 (Ne = 900, 2*trace(P)-Ne = -1.212492e-02) complexity 1.951510e+07 (out of 178453547), ratio = 1.094e-01
+[spamm_charm.cc:1130 (runSP2) 1052.48s PE:0] Virtual memory = 1243988 kiB
+iteration 42, multiply: 28.562430 seconds, symbolic multiply: 27.764309 seconds, setEq: 0.127055 seconds, add: 0.000000 seconds: trace(P) = 4.4999808299232086e+02 (Ne = 900, 2*trace(P)-Ne = -3.834015e-03) complexity 2.008398e+07 (out of 178453547), ratio = 1.125e-01
+[spamm_charm.cc:1130 (runSP2) 1108.96s PE:0] Virtual memory = 1243988 kiB
+iteration 43, multiply: 28.995421 seconds, symbolic multiply: 28.120863 seconds, setEq: 0.126879 seconds, add: 0.000000 seconds: trace(P) = 4.4999901257327213e+02 (Ne = 900, 2*trace(P)-Ne = -1.974853e-03) complexity 2.061254e+07 (out of 178453547), ratio = 1.155e-01
+[spamm_charm.cc:1130 (runSP2) 1166.24s PE:0] Virtual memory = 1243988 kiB
+iteration 44, multiply: 29.687099 seconds, symbolic multiply: 29.051002 seconds, setEq: 0.127948 seconds, add: 0.000000 seconds: trace(P) = 4.5000068425294347e+02 (Ne = 900, 2*trace(P)-Ne =  1.368506e-03) complexity 2.111158e+07 (out of 178453547), ratio = 1.183e-01
+SP2 converged in 44 steps
+||P||     = 1.0534031699786644e+02
+||P||/N^2 = 2.0807963851430407e-05
+tolerance                  = 1.000000e-05
+idempotency error          = 0.000000e+00
+previous idempotency error = 9.295810e-04
+t_total                    = 6.328317e+02 seconds
+complexity                 = 3.321408e+08
+[bcsr.cc:100 (BCSR) 1225.16s PE:0] read BCSR matrix /home/nbock/data-sets/water/h2o_90.OrthoD, size 2250x2250, 4947450 nonzeros, ||A||_{F} = 2.1213203435568868e+01, ||A||_{F}/N^2 = 4.1902624070259489e-06, 97.7274 percent nonzero elements
+||P-D||_{F}                = 2.373446e-01
+total energy, trace(F*D)   = -1.9211695961962589e+03
+[spamm_charm.cc:1171 (runSP2) 1225.37s PE:0] Virtual memory = 1243988 kiB
+[matrix.cc:58 (Matrix) 1225.37s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 0, depth = 5, NPadded = 4096, NTier = 1, creating 1 Nodes using 131328 bytes (128.25 kiB)
+[matrix.cc:58 (Matrix) 1225.37s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 1, depth = 5, NPadded = 4096, NTier = 2, creating 4 Nodes using 525312 bytes (513 kiB)
+[matrix.cc:58 (Matrix) 1225.37s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 2, depth = 5, NPadded = 4096, NTier = 4, creating 16 Nodes using 2101248 bytes (2.00391 MiB)
+[matrix.cc:58 (Matrix) 1225.37s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 3, depth = 5, NPadded = 4096, NTier = 8, creating 64 Nodes using 8404992 bytes (8.01562 MiB)
+[matrix.cc:58 (Matrix) 1225.37s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 4, depth = 5, NPadded = 4096, NTier = 16, creating 256 Nodes using 33619968 bytes (32.0625 MiB)
+[matrix.cc:58 (Matrix) 1225.37s PE:0] name = FP, N = 2250, blocksize = 128, N_basic = 4, tier = 5, depth = 5, NPadded = 4096, NTier = 32, creating 1024 Nodes using 134479872 bytes (128.25 MiB)
+[multiply.cc:114 (init) 1225.38s PE:0] created 32x32x32 convolution, 32768 MultiplyElements using 4307550208 bytes (4.01172 GiB)
+[multiply.cc:114 (init) 1225.41s PE:0] created 16x16x16 convolution, 4096 MultiplyElements using 538443776 bytes (513.5 MiB)
+[multiply.cc:114 (init) 1225.41s PE:0] created 8x8x8 convolution, 512 MultiplyElements using 67305472 bytes (64.1875 MiB)
+[multiply.cc:114 (init) 1225.41s PE:0] created 4x4x4 convolution, 64 MultiplyElements using 8413184 bytes (8.02344 MiB)
+[multiply.cc:114 (init) 1225.41s PE:0] created 2x2x2 convolution, 8 MultiplyElements using 1051648 bytes (1.00293 MiB)
+[multiply.cc:114 (init) 1225.41s PE:0] created 1x1x1 convolution, 1 MultiplyElements using 131456 bytes (128.375 kiB)
+total energy, trace(F*P)   = -1.9211488413475322e+03
+[spamm_charm.cc:1188 (runSP2) 1256.50s PE:0] Virtual memory = 1307288 kiB
+total time: 1256.151590 seconds
+end of spamm-charm
+Program finished.
