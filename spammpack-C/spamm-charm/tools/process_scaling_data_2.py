@@ -183,21 +183,43 @@ def main ():
   Ns = sorted(dataset.keys())
   for N in Ns:
     tolerances = sorted(dataset[N]["data"].keys())
+
+    energy_error = 0
+    if "energy error" in dataset[N]["data"][tolerance]:
+      energy_error = dataset[N]["data"][tolerance]["energy error"]
+
+    relative_complexity = 0
+    if "relative complexity" in dataset[N]["data"][tolerance]:
+      relative_complexity = dataset[N]["data"][tolerance]["relative complexity"]
+
+    BCSR_energy_error = 0
+    if 0 in tolerances:
+      if "BCSR energy error" in dataset[N]["data"][0]:
+        BCSR_energy_error = dataset[N]["data"][0]["BCSR energy error"]
+
+    relative_t_multiply = 0
+    if "relative t_multiply" in dataset[N]["data"][tolerance]:
+      relative_t_multiply = dataset[N]["data"][tolerance]["relative t_multiply"]
+
+    relative_time = 0
+    if "relative time" in dataset[N]["data"][tolerance]:
+      relative_time = dataset[N]["data"][tolerance]["relative time"]
+
     for tolerance in tolerances:
       print(
           "{:5d} ".format(N)
           + "{:>10} ".format(dataset[N]["filename"])
           + "{:1.4e} ".format(tolerance)
           + "{:1.4e} ".format(dataset[N]["data"][tolerance]["energy"])
-          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["energy error"])
-          + "{:1.4e} ".format(dataset[N]["data"][0]["BCSR energy error"])
+          + "{:1.4e} ".format(energy_error)
+          + "{:1.4e} ".format(BCSR_energy_error)
           + "{:1.4e} ".format(dataset[N]["data"][tolerance]["t_multiply"])
           + "{:1.4e} ".format(dataset[N]["data"][tolerance]["t_symbolic_multiply"])
           + "{:1.4e} ".format(dataset[N]["data"][tolerance]["time"])
           + "{:1.4e} ".format(dataset[N]["data"][tolerance]["complexity"])
-          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["relative t_multiply"])
-          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["relative time"])
-          + "{:1.4e} ".format(dataset[N]["data"][tolerance]["relative complexity"])
+          + "{:1.4e} ".format(relative_t_multiply)
+          + "{:1.4e} ".format(relative_time)
+          + "{:1.4e} ".format(relative_complexity)
         )
 
 if __name__ == "__main__":
