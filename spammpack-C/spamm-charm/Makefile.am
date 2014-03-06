@@ -3,20 +3,23 @@ SUBDIRS = libchunk src tools tests
 #DISTCHECK_CONFIGURE_FLAGS = --enable-debug
 
 EXTRA_DIST = \
-	spamm.bib \
 	configure.LB \
 	configure.mustang \
-	freeon-submit.sh \
 	freeon.job.template \
-	moonlight-submit.sh \
+	freeon-submit.sh \
 	moonlight.sh.template \
-	mustang-results.sh \
-	mustang-submit.sh \
-	mustang.job.PP.template \
+	moonlight-submit.sh \
 	mustang.job.decay.template \
 	mustang.job.diagonal.template \
 	mustang.job.full.template \
-	openMP.job
+	mustang.job.PP.template \
+	mustang.job.water.template \
+	mustang-results.sh \
+	mustang-submit.sh \
+	mustang-water-openmp-submit.sh \
+	mustang-water-serial-submit.sh \
+	openMP.job \
+	spamm.bib
 
 docs :
 	$(DOXYGEN)
