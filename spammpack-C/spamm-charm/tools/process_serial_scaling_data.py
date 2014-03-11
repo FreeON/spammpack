@@ -60,8 +60,8 @@ def main ():
         if not end_of_run:
           raise Exception("FIXME")
         end_of_run = False
-        filename = result.group(1)
-        logging.debug("new run, resetting fields, read " + filename)
+        short_filename = result.group(1)
+        logging.debug("new run, resetting fields, read " + short_filename)
         logging.debug("line = {:s}".format(line.rstrip()))
         N = None
         tolerance = None
@@ -124,11 +124,12 @@ def main ():
 
         if not N in dataset:
           dataset[N] = {}
-          dataset[N]["filename"] = filename
+          dataset[N]["filename"] = short_filename
           dataset[N]["data"] = {}
 
         if tolerance in dataset[N]["data"]:
           logging.warn("tolerance {:e} already in dataset".format(tolerance))
+          logging.warn("while reading " + filename)
           raise Exception("FIXME")
 
         dataset[N]["data"][tolerance] = {}
