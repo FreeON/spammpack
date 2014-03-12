@@ -145,11 +145,23 @@ def main ():
           E_0 = dataset[N]["data"][0]["energy"]
           BCSR_E = dataset[N]["data"][0]["energy (D)"]
           dataset[N]["data"][0]["BCSR energy error"] = abs((BCSR_E-E_0)/E_0)
+          logging.debug(
+              "tolerance = {:e}, ".format(tolerance)
+              + "E = {:e}, ".format(BCSR_E)
+              + "E_0 = {:e}, ".format(E_0)
+              + "BCSR error = {:e}".format(dataset[N]["data"][0]["BCSR energy error"])
+              )
 
         if 0 in dataset[N]["data"]:
           E_0 = dataset[N]["data"][0]["energy"]
           E = dataset[N]["data"][tolerance]["energy"]
           dataset[N]["data"][tolerance]["energy error"] = abs((E-E_0)/E_0)
+          logging.debug(
+              "tolerance = {:e}, ".format(tolerance)
+              + "E = {:e}, ".format(E)
+              + "E_0 = {:e}, ".format(E_0)
+              + "error = {:e}".format(dataset[N]["data"][tolerance]["energy error"])
+              )
 
           t_0 = dataset[N]["data"][0]["time"]
           t = dataset[N]["data"][tolerance]["time"]
@@ -165,48 +177,49 @@ def main ():
 
     fd.close()
 
-  print("{:>5} {:>10} {:>10} {:>11} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}".format(
-    "N",
-    "filename",
-    "tolerance",
-    "energy",
-    "SpAMM_err",
-    "BCSR_err",
-    "t_mul",
-    "t_sym",
-    "t_tot",
-    "compl.",
-    "d(t_mul)",
-    "d(t_tot)",
-    "d(compl.)"
-    ))
-
   Ns = sorted(dataset.keys())
   for N in Ns:
     tolerances = sorted(dataset[N]["data"].keys())
-
-    energy_error = 0
-    if "energy error" in dataset[N]["data"][tolerance]:
-      energy_error = dataset[N]["data"][tolerance]["energy error"]
-
-    relative_complexity = 0
-    if "relative complexity" in dataset[N]["data"][tolerance]:
-      relative_complexity = dataset[N]["data"][tolerance]["relative complexity"]
 
     BCSR_energy_error = 0
     if 0 in tolerances:
       if "BCSR energy error" in dataset[N]["data"][0]:
         BCSR_energy_error = dataset[N]["data"][0]["BCSR energy error"]
 
-    relative_t_multiply = 0
-    if "relative t_multiply" in dataset[N]["data"][tolerance]:
-      relative_t_multiply = dataset[N]["data"][tolerance]["relative t_multiply"]
-
-    relative_time = 0
-    if "relative time" in dataset[N]["data"][tolerance]:
-      relative_time = dataset[N]["data"][tolerance]["relative time"]
+    print("# " + dataset[N]["filename"])
+    print("# {:>3} {:>10} {:>10} {:>11} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}".format(
+      "N",
+      "filename",
+      "tolerance",
+      "energy",
+      "SpAMM_err",
+      "BCSR_err",
+      "t_mul",
+      "t_sym",
+      "t_tot",
+      "compl.",
+      "d(t_mul)",
+      "d(t_tot)",
+      "d(compl.)"
+      ))
 
     for tolerance in tolerances:
+      energy_error = 0
+      if "energy error" in dataset[N]["data"][tolerance]:
+        energy_error = dataset[N]["data"][tolerance]["energy error"]
+
+      relative_complexity = 0
+      if "relative complexity" in dataset[N]["data"][tolerance]:
+        relative_complexity = dataset[N]["data"][tolerance]["relative complexity"]
+
+      relative_t_multiply = 0
+      if "relative t_multiply" in dataset[N]["data"][tolerance]:
+        relative_t_multiply = dataset[N]["data"][tolerance]["relative t_multiply"]
+
+      relative_time = 0
+      if "relative time" in dataset[N]["data"][tolerance]:
+        relative_time = dataset[N]["data"][tolerance]["relative time"]
+
       print(
           "{:5d} ".format(N)
           + "{:>10} ".format(dataset[N]["filename"])
@@ -220,8 +233,11 @@ def main ():
           + "{:1.4e} ".format(dataset[N]["data"][tolerance]["complexity"])
           + "{:1.4e} ".format(relative_t_multiply)
           + "{:1.4e} ".format(relative_time)
-          + "{:1.4e} ".format(relative_complexity)
+          + "{:1.4e}".format(relative_complexity)
         )
+
+    print("")
+    print("")
 
 if __name__ == "__main__":
   main()
