@@ -155,12 +155,14 @@ def main ():
         if 0 in dataset[N]["data"]:
           E_0 = dataset[N]["data"][0]["energy"]
           E = dataset[N]["data"][tolerance]["energy"]
-          dataset[N]["data"][tolerance]["energy error"] = abs((E-E_0)/E_0)
+          dataset[N]["data"][tolerance]["energy error"] = abs(E-E_0)
+          dataset[N]["data"][tolerance]["relative energy error"] = abs((E-E_0)/E_0)
           logging.debug(
               "tolerance = {:e}, ".format(tolerance)
               + "E = {:e}, ".format(E)
               + "E_0 = {:e}, ".format(E_0)
-              + "error = {:e}".format(dataset[N]["data"][tolerance]["energy error"])
+              + "abs. error = {:e}, ".format(dataset[N]["data"][tolerance]["energy error"])
+              + "rel. error = {:e}".format(dataset[N]["data"][tolerance]["relative energy error"])
               )
 
           t_0 = dataset[N]["data"][0]["time"]
@@ -187,11 +189,12 @@ def main ():
         BCSR_energy_error = dataset[N]["data"][0]["BCSR energy error"]
 
     print("# " + dataset[N]["filename"])
-    print("# {:>3} {:>10} {:>10} {:>11} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}".format(
+    print("# {:>3} {:>10} {:>10} {:>11} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}".format(
       "N",
       "filename",
       "tolerance",
       "energy",
+      "abs_err",
       "SpAMM_err",
       "BCSR_err",
       "t_mul",
@@ -204,9 +207,13 @@ def main ():
       ))
 
     for tolerance in tolerances:
-      energy_error = 0
+      abs_energy_error = 0
       if "energy error" in dataset[N]["data"][tolerance]:
-        energy_error = dataset[N]["data"][tolerance]["energy error"]
+        abs_energy_error = dataset[N]["data"][tolerance]["energy error"]
+
+      energy_error = 0
+      if "relative energy error" in dataset[N]["data"][tolerance]:
+        energy_error = dataset[N]["data"][tolerance]["relative energy error"]
 
       relative_complexity = 0
       if "relative complexity" in dataset[N]["data"][tolerance]:
@@ -225,6 +232,7 @@ def main ():
           + "{:>10} ".format(dataset[N]["filename"])
           + "{:1.4e} ".format(tolerance)
           + "{:1.4e} ".format(dataset[N]["data"][tolerance]["energy"])
+          + "{:1.4e} ".format(abs_energy_error)
           + "{:1.4e} ".format(energy_error)
           + "{:1.4e} ".format(BCSR_energy_error)
           + "{:1.4e} ".format(dataset[N]["data"][tolerance]["t_multiply"])
