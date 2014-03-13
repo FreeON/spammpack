@@ -1,5 +1,27 @@
 #!/bin/bash
 
+run_job() {
+  local NAME=$1
+  local NODES=$2
+  local NE=$3
+  local TOLERANCE=$4
+  local SPAMM_VERSION=$5
+  local BLOCK=$6
+  local BASIC=$7
+
+  sed \
+  -e "s:nodes=N:nodes=${NODES}:" \
+  -e "s:JOBNAME:${NAME}-${SPAMM_VERSION}:" \
+  -e "s:SPAMM_VERSION:${SPAMM_VERSION}:" \
+  -e "s:NE:${NE}:" \
+  -e "s:FOCKIAN:/scratch/nbock/${NAME}.F_DIIS:" \
+  -e "s:TOLERANCE:${TOLERANCE}:" \
+  -e "s:BLOCK:${BLOCK}:" \
+  -e "s:BASIC:${BASIC}:" \
+  mustang.job.water.template | tee mustang.job
+  msub mustang.job
+}
+
 NODES=( 1 )
 WATERS=( h2o_10 h2o_30 h2o_50 h2o_70 h2o_90 h2o_110 h2o_130 h2o_150 )
 NE=( 100 300 500 700 900 1100 1300 1500 )
@@ -8,22 +30,13 @@ BLOCK=128
 BASIC=4
 SPAMM_VERSION=serial
 
+run_job h2o_150 1 1500 1e-10 serial ${BLOCK} ${BASIC}
+exit
+
 for i in ${NODES[@]}; do
   for j in ${TOLERANCES[@]}; do
     for (( k = 0; k < ${#WATERS[@]}; k++ )); do
-
-      sed \
-      -e "s:nodes=N:nodes=${i}:" \
-      -e "s:JOBNAME:${WATERS[$k]}-${SPAMM_VERSION}:" \
-      -e "s:SPAMM_VERSION:${SPAMM_VERSION}:" \
-      -e "s:NE:${NE[$k]}:" \
-      -e "s:FOCKIAN:/scratch/nbock/${WATERS[$k]}.F_DIIS:" \
-      -e "s:TOLERANCE:${j}:" \
-      -e "s:BLOCK:${BLOCK}:" \
-      -e "s:BASIC:${BASIC}:" \
-      mustang.job.water.template | tee mustang.job
-      msub mustang.job
-
+      run_job ${WATERS[$k]} ${i} ${NE[$k]} ${j} ${SPAMM_VERSION} ${BLOCK} ${BASIC}
     done
   done
 done
