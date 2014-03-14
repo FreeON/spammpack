@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+def string_compat (line):
+  import sys
+  if sys.version_info.major > 2:
+    return bytes(line, encoding = "UTF-8")
+  else:
+    return line
+
 def main ():
   import argparse
   import logging
@@ -106,7 +113,7 @@ def main ():
     line = re.sub("BASIC", "%d" % (options.basic), line)
 
     # Write new line.
-    jobscript.write(bytes(line + "\n", encoding = "UTF-8"))
+    jobscript.write(string_compat(line + "\n"))
 
   template.close()
   jobscript.close()
