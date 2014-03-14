@@ -10,6 +10,7 @@ def string_compat (line):
 def main ():
   import argparse
   import logging
+  import os
   import re
   import subprocess
   import tempfile
@@ -84,8 +85,21 @@ def main ():
       )
 
   parser.add_argument(
+      "--walltime",
+      help = "The walltime limit",
+      default = "04:00:00"
+      )
+
+  parser.add_argument(
       "--no-submit",
       help = "do not submit job",
+      default = False,
+      action = "store_true"
+      )
+
+  parser.add_argument(
+      "--no-delete",
+      help = "Do not delete the job script",
       default = False,
       action = "store_true"
       )
@@ -130,8 +144,28 @@ def main ():
     logging.info("not submitting job")
   else:
     logging.info("submitting job")
-    msub = subprocess.Popen([ "msub", jobscript.name ])
+    msub = subprocess.Popen(
+        [ "msub", jobscript.name ],
+        stdout = subprocess.PIPE
+        )
     msub.wait()
+
+    jobid = -1
+    for line in msub.stdout:
+      if len(line.strip()) > 0:
+        jobid = int(line.strip())
+        break
+
+    # Set walltime limit.
+    mjobctl = subprocess.Popen(
+        [ "mjobctl", "-m", "wclimit=" + options.walltime, str(jobid) ]
+        )
+    mjobctl.wait()
+
+  if options.no_delete:
+    logging.info("not deleting job script")
+  else:
+    os.unlink(jobscript.name)
 
 if __name__ == "__main__":
   main()
