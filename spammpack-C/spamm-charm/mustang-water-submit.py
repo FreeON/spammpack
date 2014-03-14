@@ -11,6 +11,7 @@ def main ():
   import argparse
   import logging
   import re
+  import subprocess
   import tempfile
 
   parser = argparse.ArgumentParser()
@@ -82,6 +83,13 @@ def main ():
       default = -1
       )
 
+  parser.add_argument(
+      "--no-submit",
+      help = "do not submit job",
+      default = False,
+      action = "store_true"
+      )
+
   options = parser.parse_args()
 
   logging.basicConfig(level = logging.INFO)
@@ -117,6 +125,13 @@ def main ():
 
   template.close()
   jobscript.close()
+
+  if options.no_submit:
+    logging.info("not submitting job")
+  else:
+    logging.info("submitting job")
+    msub = subprocess.Popen([ "msub", jobscript.name ])
+    msub.wait()
 
 if __name__ == "__main__":
   main()
