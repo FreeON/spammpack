@@ -250,29 +250,39 @@ def plot_walltime_vs_threads (data, options):
       dpi = 100
       )
 
-  if options.complexity:
-    complexity_values = sorted(
-        [ float(i) for i in options.complexity ],
-        reverse = True
-        )
-  else:
-    complexity_values = data.get_complexity()
+  #if options.complexity:
+  #  complexity_values = sorted(
+  #      [ float(i) for i in options.complexity ],
+  #      reverse = True
+  #      )
+  #else:
+  #  complexity_values = data.get_complexity()
+  tolerance_values = data.get_tolerance()
   thread_values = data.get_threads()
 
-  for c in complexity_values:
+  #for c in complexity_values:
+  for c in tolerance_values:
+    if options.print:
+      print("# tolerance = %e" % (c))
     walltime = []
     for t in thread_values:
-      query = data.get_record(complexity = c, threads = t)
+      #query = data.get_record(complexity = c, threads = t)
+      query = data.get_record(tolerance = c, threads = t)
       if len(query) == 0:
         raise Exception("can not find SpAMM result for {:d} threads".format(t))
       walltime.append(query[0]["walltime"])
+    walltime_values = [ walltime[0]/i for i in walltime ]
     plt.plot(
         thread_values,
-        [ walltime[0]/i for i in walltime ],
+        walltime_values,
         linestyle = "-",
         marker = "o",
         label = "complexity {:1.3f}".format(c)
         )
+    if options.print:
+      for i in range(len(thread_values)):
+        print("%3d %e" % (thread_values[i], walltime[i]))
+      print("\n")
 
   walltime = []
   for t in thread_values:
@@ -516,13 +526,17 @@ def plot_efficiency_vs_tolerance (data, options):
         complexity_values.append(query[0]["complexity"])
         if tolerance_values[i] == 0:
           walltime_1 = walltime[-1]
+      efficiency_values = [ 100*complexity_values[i]*walltime_1/walltime[i] for i in range(len(walltime)) ]
       plt.semilogx(
           tolerance_values,
-          [ 100*complexity_values[i]*walltime_1/walltime[i] for i in range(len(walltime)) ],
+          efficiency_values,
           linestyle = "-",
           marker = "o",
           label = "{:d} threads".format(t)
           )
+      if options.print:
+        print("tolerance: ", tolerance_values)
+        print("efficiency:", efficiency_values)
 
     plt.grid(True)
     plt.legend(loc = "lower left")
