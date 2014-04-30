@@ -385,7 +385,7 @@ SpAMM_Charm::SpAMM_Charm (CkArgMsg *msg)
 
         DEBUG("calling runSP2() on this proxy\n");
         thisProxy.runSP2(strlen(fockianFilename), fockianFilename,
-            strlen(densityFilename), densityFilename, Ne, N, blocksize,
+            strlen(densityFilename), densityFilename, Ne, N, matrixType, decayConstant, blocksize,
             N_basic, numberIterations, tolerance, loadBalance, initialPE,
             alignPEs, printPEMap, strlen(filenamePEMap), filenamePEMap, F_min,
             F_max, symbolic_only);
@@ -827,6 +827,7 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
  * @param densityFilename The filename of the density matrix file.
  * @param Ne The total number of electrons.
  * @param N The matrix size in case the filename is empty.
+ * @param matrixType The matrix type.
  * @param blocksize The blocksize of the matrix.
  * @param N_basic The size of the basic sub-matrices.
  * @param maxIterations The maximum number of iterations.
@@ -844,7 +845,7 @@ void SpAMM_Charm::run (int N, int blocksize, int N_basic,
  * altered.
  */
 void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
-    int lengthDensityFilename, char *densityFilename, int Ne, int N,
+    int lengthDensityFilename, char *densityFilename, int Ne, int N, int matrixType, double decayConstant,
     int blocksize, int N_basic, int maxIterations, double tolerance,
     bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
     int lengthPEMap, char *filenamePEMap, double F_min, double F_max,
@@ -871,17 +872,53 @@ void SpAMM_Charm::runSP2 (int lengthFockianFilename, char *fockianFilename,
 
   else
   {
-    INFO("creating random, symmetric %d x %d matrix\n", N, N);
     NRows = N;
     NColumns = N;
     FDense = new double[N*N];
-    for(int i = 0; i < N; i++) {
-      for(int j = i; j < N; j++)
-      {
-        FDense[BLOCK_INDEX(i, j, 0, 0, N)] = rand()/(double) RAND_MAX;
-        FDense[BLOCK_INDEX(j, i, 0, 0, N)] = FDense[BLOCK_INDEX(i, j, 0, 0, N)];
-      }
+    memset(FDense, 0, sizeof(double)*N*N);
+
+    switch(matrixType)
+    {
+      case full:
+        INFO("creating random, symmetric %d x %d matrix\n", N, N);
+        for(int i = 0; i < N; i++) {
+          for(int j = 0; j < N; j++)
+          {
+            FDense[BLOCK_INDEX(i, j, 0, 0, N)] = rand()/(double) RAND_MAX;
+          }
+        }
+        break;
+
+      case diagonal:
+        INFO("creating diagonal %d x %d matrix\n", N, N);
+        for(int i = 0; i < N; i++)
+        {
+          FDense[BLOCK_INDEX(i, i, 0, 0, N)] = 0.3*(rand()/(double) RAND_MAX - 0.5)+1;
+        }
+        break;
+
+      case decay:
+        INFO("creating decay %d x %d matrix, gamma = %e\n", N, N, decayConstant);
+        for(int i = 0; i < N; i++)
+        {
+          FDense[BLOCK_INDEX(i, i, 0, 0, N)] = 0.3*(rand()/(double) RAND_MAX - 0.5)+1;
+        }
+
+        for(int i = 0; i < N; i++) {
+          for(int j = i+1; j < N; j++)
+          {
+            FDense[BLOCK_INDEX(i, j, 0, 0, N)] = exp(-fabs(i-j)/decayConstant)
+              *FDense[BLOCK_INDEX(i, i, 0, 0, N)];
+            FDense[BLOCK_INDEX(j, i, 0, 0, N)] = FDense[BLOCK_INDEX(i, j, 0, 0, N)];
+          }
+        }
+        break;
+
+      default:
+        ABORT("unknown matrix type\n");
+        break;
     }
+
     getSpectralBounds(0, &F_min, &F_max, N, FDense);
   }
 

@@ -22,7 +22,7 @@ class SpAMM_Charm : public CBase_SpAMM_Charm
         bool verify, double verifyTolerance, bool loadBalance, int initialPE,
         bool alignPEs, bool printPEMap);
     void runSP2 (int lengthFockianFilename, char *fockianFilename,
-        int lengthDensityFilename, char *densityFilename, int Ne, int N,
+        int lengthDensityFilename, char *densityFilename, int Ne, int N, int matrixType, double decayConstant,
         int blocksize, int N_basic, int maxIterations, double tolerance,
         bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
         int lengthPEMap, char *filenamePEMap, double F_min, double F_max,

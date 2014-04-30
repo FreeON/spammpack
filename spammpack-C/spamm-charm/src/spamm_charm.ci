@@ -14,7 +14,7 @@ mainmodule spamm_charm
         bool alignPEs, bool printPEMap);
     entry [threaded] void runSP2 (int lengthFockianFilename, char
         fockianFilename[lengthFockianFilename+1], int lengthDensityFilename,
-        char densityFilename[lengthDensityFilename+1], int Ne, int N,
+        char densityFilename[lengthDensityFilename+1], int Ne, int N, int matrixType, double decayConstant,
         int blocksize, int N_basic, int maxIterations, double tolerance,
         bool loadBalance, int initialPE, bool alignPEs, bool printPEMap,
         int lengthPEMap, char filenamePEMap[lengthPEMap+1], double F_min,
