@@ -12,6 +12,16 @@ check_PROGRAMS = \
 	chunk_trace \
 	chunk_tree_alloc
 
+chunk_multiply_SOURCES = \
+	chunk_multiply.c \
+	bcsr.h \
+	bcsr.c
+
+chunk_SP2_SOURCES = \
+	chunk_SP2.c \
+	bcsr.h \
+	bcsr.c
+
 AM_CFLAGS = $(OPENMP_CFLAGS)
 AM_CPPFLAGS = -I $(top_srcdir)/src
 AM_LDFLAGS = ../src/libchunk.la
