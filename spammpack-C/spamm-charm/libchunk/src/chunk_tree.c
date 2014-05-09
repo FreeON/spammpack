@@ -11,6 +11,10 @@
 #include "chunk_block.h"
 #include "chunk_tree.h"
 
+#ifdef MIC_ALLOC
+#include "chunk_mic.h"
+#endif
+
 #ifdef BLOCK_BLAS
 #include "lapack_interface.h"
 #endif
@@ -236,7 +240,12 @@ chunk_tree_alloc (const int N_chunk,
     const int i_lower,
     const int j_lower)
 {
+#ifdef MIC_ALLOC
+  void *chunk = malloc_huge_pages(chunk_tree_sizeof(N_chunk, N_basic));
+  memset(chunk, 0, chunk_tree_sizeof(N_chunk, N_basic));
+#else
   void *chunk = calloc(chunk_tree_sizeof(N_chunk, N_basic), 1);
+#endif
   struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
 
   ptr->chunksize = chunk_tree_sizeof(N_chunk, N_basic);
@@ -906,8 +915,8 @@ chunk_tree_multiply (const double tolerance,
 
   DEBUG("symbolic_only = %d\n", symbolic_only);
 
-  DEBUG("%dx%d blocked matrix, potentially %d products to consider\n",
-      ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(A_ptr->depth)));
+  DEBUG("%dx%d blocked matrix, potentially %d products to consider, max tier = %d\n",
+      ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(A_ptr->depth), CHUNK_TREE_MAX_TIER));
 
   DEBUG("SpAMM tolerance = %e\n", tolerance);
 
@@ -1166,7 +1175,11 @@ void
 chunk_tree_delete (void **const chunk)
 {
   /* Ignore OpenMP locks for now. */
+#ifdef MIC_ALLOC
+  free_huge_pages(*chunk);
+#else
   free(*chunk);
+#endif
   *chunk = NULL;
 }
 

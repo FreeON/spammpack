@@ -54,7 +54,9 @@ AC_ARG_ENABLE([mic],
   [enable Xeon PHI])],
   [enable_mic=${enableval}],
   [enable_mic="no"])
+AC_DEFINE([MIC_ALLOC], [1], [Enable huge page allocation for MIC])
 AC_SUBST([MIC_CFLAGS], [-mmic])
+AC_SUBST([MIC_LDFLAGS], [-static])
 
 AC_ARG_ENABLE([set-num-threads],
   [AS_HELP_STRING([--enable-set-num-threads],
@@ -133,7 +135,7 @@ fi
 AC_ARG_ENABLE([chunk-tree-max-tier],
   [AS_HELP_STRING([--enable-chunk-tree-max-tier],
   [set the maximum tier at which new tasks are created when recursing the
-   chunk tree])],
+   chunk tree (default = 6)])],
   [enable_chunk_tree_max_tier=$enableval],
   [enable_chunk_tree_max_tier=6])
 if [[ ${enable_chunk_tree_max_tier} -gt 0 ]]; then

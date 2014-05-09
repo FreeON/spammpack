@@ -24,7 +24,7 @@ chunk_SP2_SOURCES = \
 
 AM_CFLAGS = $(OPENMP_CFLAGS) $(MIC_CFLAGS)
 AM_CPPFLAGS = -I $(top_srcdir)/src
-AM_LDFLAGS = ../src/libchunk.la
+AM_LDFLAGS = ../src/libchunk.la $(MIC_LDFLAGS)
 
 TESTS = \
 	$(check_PROGRAMS) \

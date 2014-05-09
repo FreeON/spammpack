@@ -557,8 +557,8 @@ main (int argc, char **argv)
   }
 
   free(A_dense);
-  free(A);
-  free(C);
+  chunk_delete(&A);
+  chunk_delete(&C);
 
   return 0;
 }
