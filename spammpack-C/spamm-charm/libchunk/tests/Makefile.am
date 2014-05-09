@@ -22,7 +22,7 @@ chunk_SP2_SOURCES = \
 	bcsr.h \
 	bcsr.c
 
-AM_CFLAGS = $(OPENMP_CFLAGS)
+AM_CFLAGS = $(OPENMP_CFLAGS) $(MIC_CFLAGS)
 AM_CPPFLAGS = -I $(top_srcdir)/src
 AM_LDFLAGS = ../src/libchunk.la
 
