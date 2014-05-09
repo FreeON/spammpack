@@ -49,6 +49,13 @@ if test "${CLOCKTYPE}" = "unset"; then
 fi
 AC_DEFINE_UNQUOTED([CLOCKTYPE], [${CLOCKTYPE}], [The clock type to use with clock_gettime()])
 
+AC_ARG_ENABLE([mic],
+  [AS_HELP_STRING([--enable-mic],
+  [enable Xeon PHI])],
+  [enable_mic=${enableval}],
+  [enable_mic="no"])
+AC_SUBST([MIC_CFLAGS], [-mmic])
+
 AC_ARG_ENABLE([set-num-threads],
   [AS_HELP_STRING([--enable-set-num-threads],
   [set the number of threads in OpenMP parallel sections to N])],
