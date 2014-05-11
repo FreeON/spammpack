@@ -4,8 +4,8 @@ NUM_THREADS=( 48 24 12 1 2 4 8 16 20 28 32 36 40 44 )
 #NUM_THREADS=( 40 44 )
 TOL=( 1.0e-10 1.0e-8 1.0e-6 )
 
-MATRIX=h2o_30.OrthoD
-#MATRIX=h2o_90.OrthoD
+#MATRIX=h2o_30.OrthoD
+MATRIX=h2o_90.OrthoD
 
 for tol in ${TOL[@]}; do
   echo "tolerance = ${tol}"
@@ -17,7 +17,7 @@ for tol in ${TOL[@]}; do
         ./chunk_multiply \
         -T BCSR \
         -f ${MATRIX} \
-        --tolerance ${TOL} \
+        --tolerance ${tol} \
         --no-verify \
         | grep seconds \
         | sed -e 's:^.*using \([0-9]\+\) OpenMP.* \([^ ]\+\) seconds:\1 \2:' \
