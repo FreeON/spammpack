@@ -54,9 +54,11 @@ AC_ARG_ENABLE([mic],
   [enable Xeon PHI])],
   [enable_mic=${enableval}],
   [enable_mic="no"])
-AC_DEFINE([MIC_ALLOC], [1], [Enable huge page allocation for MIC])
-AC_SUBST([MIC_CFLAGS], [-mmic])
-AC_SUBST([MIC_LDFLAGS], [-static])
+if [[ ${enable_mic} = "yes" ]]; then
+  AC_DEFINE([MIC_ALLOC], [1], [Enable huge page allocation for MIC])
+  AC_SUBST([MIC_CFLAGS], [-mmic])
+  AC_SUBST([MIC_LDFLAGS], [-static])
+fi
 
 AC_ARG_ENABLE([set-num-threads],
   [AS_HELP_STRING([--enable-set-num-threads],
