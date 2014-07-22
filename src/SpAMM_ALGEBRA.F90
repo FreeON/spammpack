@@ -4,21 +4,21 @@
 !!
 !! Copyright (c) 2014, Los Alamos National Laboratory
 !! All rights reserved.
-!! 
+!!
 !! Redistribution and use in source and binary forms, with or without
 !! modification, are permitted provided that the following conditions are met:
-!! 
+!!
 !! 1. Redistributions of source code must retain the above copyright notice, this
 !! list of conditions and the following disclaimer.
-!! 
+!!
 !! 2. Redistributions in binary form must reproduce the above copyright notice,
 !! this list of conditions and the following disclaimer in the documentation
 !! and/or other materials provided with the distribution.
-!! 
+!!
 !! 3. Neither the name of the copyright holder nor the names of its contributors
 !! may be used to endorse or promote products derived from this software without
 !! specific prior written permission.
-!! 
+!!
 !! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 !! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 !! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -50,18 +50,20 @@ MODULE SpAMM_ALGEBRA
   PUBLIC :: Filter
   PUBLIC :: Norm
   PUBLIC :: Dot
+
   !> The constant @f$ \alpha @f$ for adding 2 quadtrees in place.
   REAL(SpAMM_KIND) :: SpAMM_Add_BiTree_2_BiTree_InPlace_Alpha
   REAL(SpAMM_KIND) :: SpAMM_Add_BiTree_2_BiTree_InPlace_Beta
   REAL(SpAMM_KIND) :: SpAMM_Add_BiTree_2_BiTree_RePlace_Alpha
   REAL(SpAMM_KIND) :: SpAMM_Add_BiTree_2_BiTree_RePlace_Beta
   REAL(SpAMM_KIND) :: SpAMM_Add_Identity_2_QuTree_InPlace_Alpha
+
   !> The SpAMM threshold for the multiply.
   REAL(SpAMM_KIND) :: SpAMM_Threshold_Multiply_QuTree_x_QuTree
   REAL(SpAMM_KIND) :: SpAMM_Threshold_Multiply_QuTree_x_BiTree
+
   !> Interface for multiplication operations between different SpAMM types.
   !!
-  !! @details
   !! The Sparse Approximate Matrix-Multiply (SpAMM):
   !! @f$ C \leftarrow A \times B @f$.
   INTERFACE Multiply
@@ -70,11 +72,13 @@ MODULE SpAMM_ALGEBRA
     MODULE PROCEDURE SpAMM_Multiply_QuTree_x_BiTree
     MODULE PROCEDURE SpAMM_Multiply_BiTree_x_Scalar
   END INTERFACE
+
   !> Interface for trace operations.
   INTERFACE Trace
     MODULE PROCEDURE SpAMM_Trace_QuTree
     MODULE PROCEDURE SpAMM_Trace_QuTree_Product
   END INTERFACE
+
   !> Interface for additions operations between different SpAMM types.
   INTERFACE Add
     MODULE PROCEDURE SpAMM_Add_QuTree_2_QuTree_InPlace
