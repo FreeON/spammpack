@@ -15,13 +15,14 @@
 !! - @ref spamm_project
 !! - @ref spamm_invfact
 !!
-!! Using the library from Fortran requires a
+!! Using the library from Fortran requires the line
 !!
 !! @code
 !! USE spammpack
 !! @endcode
 !!
-!! See the documentation of @ref spammpack for more details.
+!! See the documentation of @ref spammpack for more details. The SpAMMPack project can also be found online at
+!! http://www.freeon.org/ and https://github.com/FreeON/spammpack.
 !!
 !! @copyright
 !!
