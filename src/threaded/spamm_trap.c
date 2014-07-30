@@ -1,1 +1,0 @@
-../spamm_trap.c

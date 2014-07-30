@@ -55,7 +55,7 @@ MODULE SpAMM_CONVERT
   FUNCTION SpAMM_Convert_Dense_2_QuTree (A) RESULT(qA)
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal, matrix_elements
+    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
     ! Sanity check.
     IF(SIZE(A, 1) /= SpAMM_MATRIX_DIMENSION) THEN
@@ -81,12 +81,6 @@ MODULE SpAMM_CONVERT
     qA%Norm=Norm(qA)
     qA%Norm=SQRT(qA%Norm)
     TTotal=SpAMM_Get_Time()-TInitial
-    matrix_elements = SpAMM_MATRIX_DIMENSION
-    matrix_elements = matrix_elements**2
-    WRITE(*, *) "Stored ", qA%number_nonzeros, &
-      " non-zero elements out of a possible ", &
-      matrix_elements, " elements"
-
     CALL SpAMM_Time_Stamp(TTotal, "SpAMM_Convert_Dense_2_QuTree", 20)
   END FUNCTION SpAMM_Convert_Dense_2_QuTree
 

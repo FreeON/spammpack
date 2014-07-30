@@ -1,1 +1,0 @@
-../spammpack.F90
