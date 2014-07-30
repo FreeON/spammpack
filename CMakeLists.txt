@@ -26,6 +26,14 @@ if( NOT CMAKE_BUILD_TYPE )
     )
 endif()
 
+include( FindDoxygen )
+if( DOXYGEN_FOUND )
+  add_custom_target( docs doxygen )
+  set( PACKAGE_NAME "SpAMMPack" )
+  set( PACKAGE_VERSION "1.0" )
+  configure_file( Doxyfile.in Doxyfile )
+endif()
+
 include( FindOpenMP )
 
 list( APPEND CMAKE_C_FLAGS "-DTIMER_GETTIMEOFDAY" )
