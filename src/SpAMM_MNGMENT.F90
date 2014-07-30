@@ -172,11 +172,10 @@ CONTAINS
 
   !> Create a new quadtree.
   !!
-  !! @details
   !! The newly created quadtree has to be deallocated by calling Delete(). If qA
   !! is already allocated then it will be free'ed by calling Delete().
   !!
-  !! @param qA [inout] A pointer to a type(QuTree) object.
+  !! @param qA A pointer to a type(QuTree) object.
   SUBROUTINE SpAMM_Allocate_Full_QuTree(qA)
 
     TYPE(QuTree),POINTER :: qA
