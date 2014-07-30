@@ -537,8 +537,7 @@ CONTAINS
     ! Allocate new node.
     ALLOCATE(qA)
 
-    !write(*, *) "loc(qA) = ", mod(loc(qA), 64)
-    !write(*, *) "loc(qA%Blok) = ", mod(loc(qA%Blok), 64)
+    qA%number_nonzeros = 0
 
 #ifdef _OPENMP
     ! Initialize Lock.

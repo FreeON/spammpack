@@ -28,4 +28,7 @@ endif()
 
 include( FindOpenMP )
 
+list( APPEND CMAKE_C_FLAGS "-DTIMER_GETTIMEOFDAY" )
+
 add_subdirectory( src )
+add_subdirectory( tests )

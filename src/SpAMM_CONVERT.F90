@@ -55,7 +55,7 @@ MODULE SpAMM_CONVERT
   FUNCTION SpAMM_Convert_Dense_2_QuTree (A) RESULT(qA)
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER                        :: qA
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(SpAMM_DOUBLE) :: TInitial, TTotal, matrix_elements
 
     ! Sanity check.
     IF(SIZE(A, 1) /= SpAMM_MATRIX_DIMENSION) THEN
@@ -81,6 +81,12 @@ MODULE SpAMM_CONVERT
     qA%Norm=Norm(qA)
     qA%Norm=SQRT(qA%Norm)
     TTotal=SpAMM_Get_Time()-TInitial
+    matrix_elements = SpAMM_MATRIX_DIMENSION
+    matrix_elements = matrix_elements**2
+    WRITE(*, *) "Stored ", qA%number_nonzeros, &
+      " non-zero elements out of a possible ", &
+      matrix_elements, " elements"
+
     CALL SpAMM_Time_Stamp(TTotal, "SpAMM_Convert_Dense_2_QuTree", 20)
   END FUNCTION SpAMM_Convert_Dense_2_QuTree
 
@@ -138,6 +144,9 @@ MODULE SpAMM_CONVERT
             ! We have to  be careful not to copy too much of A.
             IF(i <= SpAMM_MATRIX_DIMENSION .AND. j <= SpAMM_MATRIX_DIMENSION) THEN
               qA%Blok(i-i_lower+1, j-j_lower+1) = A(i, j)
+              IF(A(i, j) /= 0.0D0) THEN
+                qA%number_nonzeros = qA%number_nonzeros+1
+              ENDIF
             ENDIF
           ENDDO
         ENDDO
@@ -166,6 +175,12 @@ MODULE SpAMM_CONVERT
         i_lower+A_rows/2, i_upper,            j_lower,          j_lower+A_cols/2-1)
       CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad22, &
         i_lower+A_rows/2, i_upper,            j_lower+A_cols/2, j_upper)
+
+      qA%number_nonzeros = &
+        qA%Quad11%number_nonzeros + &
+        qA%Quad12%number_nonzeros + &
+        qA%Quad21%number_nonzeros + &
+        qA%Quad22%number_nonzeros
 #endif
 
     ENDIF

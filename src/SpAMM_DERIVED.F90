@@ -123,6 +123,9 @@ MODULE SpAMM_DERIVED
     !> The matrix data.
     REAL(SpAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
 
+    !> The number of non-zero elements.
+    REAL(SpAMM_DOUBLE) :: number_nonzeros
+
 #ifdef _OPENMP
     !> Block lock
     INTEGER(KIND = OMP_LOCK_KIND) :: Lock
