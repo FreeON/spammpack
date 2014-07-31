@@ -9,6 +9,13 @@ set( CPACK_PACKAGE_DESCRIPTION_SUMMARY
   "An implementation of the Sparse Approximate Matrix Multiply Algorithm"
   )
 
+set( CPACK_SOURCE_GENERATOR TBZ2 )
+list( APPEND CPACK_SOURCE_IGNORE_FILES
+  "tests/testmatrix_random_4096x4096.coor"
+  )
+
+message( STATUS "ignoring ${CPACK_SOURCE_IGNORE_FILES}" )
+
 include( CPack )
 
 if( CMAKE_C_COMPILER_ID STREQUAL "GNU" )

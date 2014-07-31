@@ -438,7 +438,7 @@ CONTAINS
     !  DEALLOCATE(qA%Blok,STAT=Status)
     !ENDIF
 #ifdef _OPENMP
-    CALL OMP_DESTROY_LOCK(qA%Lock)
+    CALL OMP_DESTROY_LOCK(qA%lock)
 #endif
     !$OMP END CRITICAL
 
@@ -537,11 +537,13 @@ CONTAINS
     ! Allocate new node.
     ALLOCATE(qA)
 
+    ! Initialize.
     qA%number_nonzeros = 0
+    qA%number_operations = 0
 
 #ifdef _OPENMP
-    ! Initialize Lock.
-    CALL OMP_INIT_LOCK(qA%Lock)
+    ! Initialize lock.
+    CALL OMP_INIT_LOCK(qA%lock)
 #endif
 
   END SUBROUTINE NewQuNode

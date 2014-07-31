@@ -113,7 +113,7 @@ CONTAINS
   !! @param qC Pointer to quadtree C.
   !! @param LocalThreshold The SpAMM threshold overriding the global value,
   !! SpAMM_GLOBALS::SpAMM_PRODUCT_TOLERANCE.
-  SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA,qB,qC,LocalThreshold)
+  SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA, qB, qC, LocalThreshold)
 
     TYPE(QuTree), POINTER, INTENT(IN)    :: qA,qB
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
@@ -145,8 +145,9 @@ CONTAINS
     !WRITE(*, "(A,D13.3)") "Multiply with threshold of ", threshold
 
     Depth = 0
+    qC%number_operations = 0
 
-    CALL SpAMM_Multiply_QuTree_x_Scalar(qC,SpAMM_Zero)
+    CALL SpAMM_Multiply_QuTree_x_Scalar(qC, SpAMM_Zero)
 
     !$OMP TASK UNTIED SHARED(qA,qB,qC)
     CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, threshold, Depth)
@@ -513,102 +514,48 @@ CONTAINS
   !! @param threshold The SpAMM product tolerance.
   !! @param Depth The current Depth.
   RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, threshold, Depth)
+
     TYPE(QuTree), POINTER :: qC,qA,qB
     REAL(SpAMM_KIND) :: threshold
     INTEGER :: Depth
     REAL(SpAMM_KIND), DIMENSION(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE) :: temp
     INTEGER :: i, j, k, l
-    !REAL(SpAMM_KIND), DIMENSION(16, 16) :: tempA
-    !REAL(SpAMM_KIND), DIMENSION(16, 16) :: tempB
-    !REAL(SpAMM_KIND), DIMENSION(16, 16) :: tempC
-    REAL(SpAMM_KIND), DIMENSION(:, :), POINTER :: tempA
-    REAL(SpAMM_KIND), DIMENSION(:, :), POINTER :: tempB
-    REAL(SpAMM_KIND), DIMENSION(:, :), POINTER :: tempC
+
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
       IF(qA%Norm*qB%Norm<threshold) RETURN
 #ifdef _OPENMP
-      CALL OMP_SET_LOCK(qC%Lock)
+      CALL OMP_SET_LOCK(qC%lock)
 #endif
       IF(.NOT.ASSOCIATED(qC))THEN
         ! Allocate new node.
         CALL NewQuNode(qC)
       ENDIF
 #ifdef _OPENMP
-      CALL OMP_UNSET_LOCK(qC%Lock)
+      CALL OMP_UNSET_LOCK(qC%lock)
 #endif
       ! At the bottom, calculate the product.
       IF(Depth == SpAMM_TOTAL_DEPTH) THEN
 #ifdef _OPENMP
-        !CALL OMP_SET_LOCK(qC%Lock)
+        CALL OMP_SET_LOCK(qC%lock)
 #endif
-        !IF(.NOT.ALLOCATED(qC%Blok))THEN
-        !  ! Allocate new block.
-        !  ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
-        !  qC%Blok=SpAMM_Zero
-        !ENDIF
+        IF(.NOT.ALLOCATED(qC%Blok))THEN
+          ! Allocate new block.
+          ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
+          qC%Blok=SpAMM_Zero
+        ENDIF
 #ifdef _OPENMP
-        !CALL OMP_UNSET_LOCK(qC%Lock)
+        CALL OMP_UNSET_LOCK(qC%lock)
 #endif
 
 #if defined(_OPENMP) && ! defined(BIGLOCK)
-        CALL OMP_SET_LOCK(qC%Lock)
+        CALL OMP_SET_LOCK(qC%lock)
 #endif
-        tempA => qA%Blok
-        tempB => qB%Blok
-        tempC => qC%Blok
-        ! Medium fast.
-        !DIR$ ASSUME_ALIGNED tempA: 64
-        !DIR$ ASSUME_ALIGNED tempB: 64
-        !DIR$ ASSUME_ALIGNED tempC: 64
-        tempC = tempC + MATMUL(tempA, tempB)
+        qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
+        qC%number_operations = qC%number_operations+1
 
-        ! Faster, 5 seconds.
-        !CALL SGEMM('N', 'N', SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE, &
-        !           1.0, qA%Blok, SpAMM_BLOCK_SIZE, qB%Blok, SpAMM_BLOCK_SIZE, &
-        !           1.0, qC%Blok, SpAMM_BLOCK_SIZE)
-
-        !call cmultiply(qC%Blok, qA%Blok, qB%Blok)
-
-        ! Fastest right now on KNC.
-        !call sgemm_ispc_16x16(qC%Blok, qA%Blok, qB%Blok)
-
-        !temp = MATMUL(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
-        !              qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
-        !qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)= qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) + temp
-
-        !qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
-
-        !qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) = &
-        !  qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE) &
-        !  + MATMUL(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE), &
-        !           qB%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
-
-        ! Slow, 50 seconds.
-        !DO i = 1, 16
-        !  DO j = 1, 16
-        !    DO k = 1, 16
-        !      qC%Blok(i, j) = qC%Blok(i, j) + qA%Blok(i, k)*qB%Blok(k, j)
-        !    ENDDO
-        !  ENDDO
-        !ENDDO
-
-        !write(*, *) "starting"
-        !DxIR$ SIMD
-        !DxIR$ VECTOR ALIGNED
-        !DO l = 0, 4095
-        !  j = MOD(l, 16)+1
-        !  k = MOD(l/16, 16)+1
-        !  i = MOD(l/256, 16)+1
-        !  !write(*, *) i, j, k
-        !  !qC%Blok(i, j) = qC%Blok(i, j) + qA%Blok(i, k)*qB%Blok(k, j)
-        !  tempC(i, j) = tempC(i, j) + tempA(i, k)*tempB(k, j)
-        !ENDDO
-        !write(*, *) "done starting"
-
-        !qC%Blok = tempC
 #if defined(_OPENMP) && ! defined(BIGLOCK)
-        CALL OMP_UNSET_LOCK(qC%Lock)
+        CALL OMP_UNSET_LOCK(qC%lock)
 #endif
       ELSE
 
@@ -649,6 +596,12 @@ CONTAINS
         !$OMP END TASK
 
         !$OMP TASKWAIT
+
+        qC%number_operations = &
+          qC%Quad11%number_operations + &
+          qC%Quad12%number_operations + &
+          qC%Quad21%number_operations + &
+          qC%Quad22%number_operations
 
       ENDIF
     ENDIF

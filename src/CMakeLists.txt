@@ -62,3 +62,7 @@ install(
   ${CMAKE_CURRENT_BINARY_DIR}/spammpack.mod
   DESTINATION include
   )
+
+add_custom_target( ctags
+  ctags *.F90 *.c
+  )

@@ -123,6 +123,7 @@ program spamm_multiply
 #else
       call Multiply(A, B, C, LocalThreshold = 1d-7)
 #endif
+      write(*, "(A,F22.12)") "operation count = ", C%number_operations
     enddo
 
     CALL SpAMM_Time_Stamp()

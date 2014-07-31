@@ -126,9 +126,13 @@ MODULE SpAMM_DERIVED
     !> The number of non-zero elements.
     REAL(SpAMM_DOUBLE) :: number_nonzeros
 
+    !> The number of operations (updated by a Multiply), i.e. the number of dense matrix products of size
+    !! SpAMM_DERIVED::SpAMM_BLOCK_SIZE x SpAMM_DERIVED::SpAMM_BLOCK_SIZE.
+    REAL(SpAMM_DOUBLE) :: number_operations
+
 #ifdef _OPENMP
     !> Block lock
-    INTEGER(KIND = OMP_LOCK_KIND) :: Lock
+    INTEGER(KIND = OMP_LOCK_KIND) :: lock
 #endif
   END TYPE QuTree
 

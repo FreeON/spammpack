@@ -64,13 +64,13 @@ MODULE SpAMM_GLOBALS
 
   !> The SpAMM tolerance.
 #ifdef SPAMM_SINGLE
-  REAL(SpAMM_KIND),PARAMETER :: SpAMM_PRODUCT_TOLERANCE = 1E-8
+  REAL(SpAMM_KIND),PARAMETER :: spamm_product_tolerance = 1E-8
 #else
-  REAL(SpAMM_KIND),PARAMETER :: SpAMM_PRODUCT_TOLERANCE = 1D-12
+  REAL(SpAMM_KIND),PARAMETER :: spamm_product_tolerance = 1D-12
 #endif
 
   !> The "sparsification" tolerance
-  REAL(SpAMM_KIND),PARAMETER :: SpAMM_MATRIX_TOLERANCE = 1D-4*SpAMM_PRODUCT_TOLERANCE
+  REAL(SpAMM_KIND),PARAMETER :: SpAMM_MATRIX_TOLERANCE = 1D-4*spamm_product_tolerance
 
   !> The norm cutoff for tasked recursion.
   REAL(SpAMM_KIND),PARAMETER :: SpAMM_RECURSION_NORMD_CUTOFF = 1E-4
