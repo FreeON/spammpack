@@ -44,7 +44,7 @@ PROJECT_NUMBER         = @CPACK_PACKAGE_VERSION@
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = @CPACK_PACKAGE_DESCRIPTION_SUMMARY@
+PROJECT_BRIEF          = "@CPACK_PACKAGE_DESCRIPTION_SUMMARY@"
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is included in
 # the documentation. The maximum height of the logo should not exceed 55 pixels
@@ -246,7 +246,7 @@ OPTIMIZE_OUTPUT_JAVA   = NO
 # sources. Doxygen will then generate output that is tailored for Fortran.
 # The default value is: NO.
 
-OPTIMIZE_FOR_FORTRAN   = NO
+OPTIMIZE_FOR_FORTRAN   = YES
 
 # Set the OPTIMIZE_OUTPUT_VHDL tag to YES if your project consists of VHDL
 # sources. Doxygen will then generate output that is tailored for VHDL.

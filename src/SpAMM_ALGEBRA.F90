@@ -126,7 +126,7 @@ CONTAINS
 
     TInitial = SpAMM_Get_Time()
 
-    !$OMP PARALLEL NUM_THREADS(SpAMM_THREAD_COUNT)
+    !$OMP PARALLEL
 
     ! The master thread will lead execution of the product. All subsequent tasks
     ! are untied and can be executed by any thread in the thread group.
@@ -515,7 +515,7 @@ CONTAINS
   !! @param Depth The current Depth.
   RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, threshold, Depth)
 
-    TYPE(QuTree), POINTER :: qC,qA,qB
+    TYPE(QuTree), POINTER :: qC, qA, qB
     REAL(SpAMM_KIND) :: threshold
     INTEGER :: Depth
     REAL(SpAMM_KIND), DIMENSION(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE) :: temp

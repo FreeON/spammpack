@@ -40,27 +40,29 @@ MODULE SpAMM_GLOBALS
 
   !> Define interface to the C function spamm_exit().
   INTERFACE SpAMM_Exit
-    SUBROUTINE SpAMM_Exit (exitcode)
-      INTEGER, INTENT(IN) :: exitcode
+    SUBROUTINE SpAMM_Exit (exitcode) bind(C)
+      use, intrinsic :: iso_C_binding
+      integer(c_int), intent(in) :: exitcode
     END SUBROUTINE SpAMM_Exit
   END INTERFACE SpAMM_Exit
 
   !> Define interface to the C function spamm_trap().
   INTERFACE SpAMM_Trap
-    SUBROUTINE SpAMM_Trap ()
+    SUBROUTINE SpAMM_Trap () bind(C)
+      use, intrinsic :: iso_C_binding
     END SUBROUTINE SpAMM_Trap
   END INTERFACE SpAMM_Trap
 
   !> Define interface to the C function spamm_get_time().
-  INTERFACE SpAMM_Get_Time_backend
-    SUBROUTINE SpAMM_Get_Time_backend (timer) bind(C)
-      use iso_C_binding
-      real(C_DOUBLE), intent(inout) :: timer
-    END SUBROUTINE SpAMM_Get_Time_backend
-  END INTERFACE SpAMM_Get_Time_backend
+  INTERFACE spamm_get_time_wrapper
+    SUBROUTINE spamm_get_time_wrapper (timer) bind(C, name = "spamm_get_time")
+      use, intrinsic :: iso_C_binding
+      real(c_double), intent(inout) :: timer
+    END SUBROUTINE spamm_get_time_wrapper
+  END INTERFACE spamm_get_time_wrapper
 
   !> The size of the basic submatrix blocks.
-  INTEGER, PARAMETER :: SpAMM_BLOCK_SIZE = 4
+  integer, parameter :: spamm_block_size = 4
 
   !> The SpAMM tolerance.
 #ifdef SPAMM_SINGLE
@@ -69,11 +71,8 @@ MODULE SpAMM_GLOBALS
   REAL(SpAMM_KIND),PARAMETER :: spamm_product_tolerance = 1D-12
 #endif
 
-  !> The "sparsification" tolerance
-  REAL(SpAMM_KIND),PARAMETER :: SpAMM_MATRIX_TOLERANCE = 1D-4*spamm_product_tolerance
-
   !> The norm cutoff for tasked recursion.
-  REAL(SpAMM_KIND),PARAMETER :: SpAMM_RECURSION_NORMD_CUTOFF = 1E-4
+  real(spamm_kind), parameter :: spamm_recursion_normd_cutoff = 1e-4
 
   !> The depth of the matrix tree.
   INTEGER :: SpAMM_TOTAL_DEPTH
@@ -83,9 +82,6 @@ MODULE SpAMM_GLOBALS
 
   !> The size of the padded matrix.
   INTEGER :: SpAMM_PADDED_MATRIX_DIMENSION
-
-  !> The number of threads requested (only applicable when using OpenMP).
-  INTEGER :: SpAMM_THREAD_COUNT
 
   !> Cutoff the tree depth at some predefined maximum depth.
   INTEGER :: SpAMM_RECURSION_DEPTH_CUTOFF
@@ -99,9 +95,9 @@ CONTAINS
 
   !> The timer.
   !! @return The time passed since some point in time.
-  REAL(SpAMM_DOUBLE) FUNCTION SpAMM_Get_Time ()
-    CALL SpAMM_Get_Time_backend(SpAMM_Get_Time)
-  END FUNCTION SpAMM_Get_Time
+  real(spamm_double) function spamm_get_time ()
+    call spamm_get_time_wrapper(spamm_get_time)
+  end function spamm_get_time
 
   !> Initialize global variables.
   !!
@@ -155,15 +151,8 @@ CONTAINS
     N=SpAMM_PADDED_MATRIX_DIMENSION
 
 #ifdef _OPENMP
-    IF(PRESENT(Threads))THEN
-      SpAMM_THREAD_COUNT=Threads
-    ELSE
-      SpAMM_THREAD_COUNT=1
-    ENDIF
-
     CALL OMP_SET_DYNAMIC(.FALSE.)
     CALL OMP_SET_NESTED(.TRUE.)
-    CALL OMP_SET_NUM_THREADS(SpAMM_THREAD_COUNT)
 
     !$OMP PARALLEL PRIVATE(ThreadID, NThreads)
     ThreadID=OMP_GET_THREAD_NUM()
@@ -234,8 +223,11 @@ CONTAINS
         ENDIF
       ENDDO
       WRITE(*,22)
-      WRITE(*,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
-      !         WRITE(77,35)SpAMM_THREAD_COUNT,SpAMM_Total_Time
+#ifdef _OPENMP
+      WRITE(*,35) omp_get_num_threads(), SpAMM_Total_Time
+#else
+      WRITE(*,35) 1, SpAMM_Total_Time
+#endif
 35    FORMAT("SpAMM ",I4," threads ", F20.10)
     ELSE
       IF(.NOT.PRESENT(Routine) .OR. .NOT.PRESENT(RoutineID)) THEN
@@ -262,7 +254,7 @@ CONTAINS
 
     IF(num_threads >= 1) THEN
       WRITE(*, "(A,I3)") "Setting number of threads to ", num_threads
-      SpAMM_THREAD_COUNT = num_threads
+      !SpAMM_THREAD_COUNT = num_threads
     ENDIF
 
   END SUBROUTINE SpAMM_Set_Num_Threads
