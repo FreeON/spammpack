@@ -9,7 +9,6 @@
 !! - @ref spamm_c_bindings
 !! - @ref spamm_convert
 !! - @ref spamm_globals
-!! - @ref spamm_invfact
 !! - @ref spamm_management
 !! - @ref spamm_project
 !! - @ref spamm_types
