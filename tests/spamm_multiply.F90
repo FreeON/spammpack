@@ -27,9 +27,9 @@ program spamm_multiply
   real(SpAMM_KIND), dimension(:,:), allocatable :: B_dense_padded
   real(SpAMM_KIND), dimension(:,:), allocatable :: C_dense_padded
 
-  type(QuTree), pointer :: A => null()
-  type(QuTree), pointer :: B => null()
-  type(QuTree), pointer :: C => null()
+  type(spamm_matrix), pointer :: A => null()
+  type(spamm_matrix), pointer :: B => null()
+  type(spamm_matrix), pointer :: C => null()
 
 #ifdef VERIFY_RESULT
   type(SpAMM_Norm) :: norms
@@ -97,7 +97,7 @@ program spamm_multiply
   write(*, *) "converting matrices to quadtree"
   A => SpAMM_Convert_Dense_2_QuTree(A_dense_padded)
   B => SpAMM_Convert_Dense_2_QuTree(B_dense_padded)
-  call New(C)
+  C => spamm_zero_matrix(N_padded, N_padded)
   write(*, *) "done converting"
 
 #if defined(_OPENMP)

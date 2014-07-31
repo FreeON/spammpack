@@ -1,12 +1,12 @@
 set( spammpack-sources
-  SpAMM_CONVERT.F90
-  SpAMM_PROJECT.F90
   spamm_algebra.F90
   spamm_c_bindings.F90
+  spamm_convert.F90
   spamm_exit.c
   spamm_get_time.c
   spamm_globals.F90
   spamm_management.F90
+  spamm_project.F90
   spamm_trap.c
   spamm_types.F90
   spammpack.F90

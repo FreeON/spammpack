@@ -614,4 +614,13 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree_Recur
 
+  function spamm_zero_matrix (M, N) result (A)
+
+    type(spamm_matrix), pointer :: A
+    integer, intent(in) :: M, N
+
+    allocate(A)
+
+  end function spamm_zero_matrix
+
 end module spamm_management

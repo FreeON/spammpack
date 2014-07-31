@@ -83,10 +83,10 @@ module spamm_types
   REAL(SpAMM_KIND), PARAMETER :: SpAMM_Eight = 8D0
 
   !> Bigest machine double for ONX_KIND
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_BIG_DBL=HUGE(SpAMM_One)
+  REAL(SpAMM_KIND), PARAMETER :: SpAMM_BIG_DBL = HUGE(SpAMM_One)
 
   !> Bigest machine int for int*4
-  INTEGER,      PARAMETER     :: SpAMM_BIG_INT=2**28
+  INTEGER, PARAMETER :: SpAMM_BIG_INT = 2**28
 
   !> Binary tree data structure.
   TYPE BiTree
@@ -102,6 +102,13 @@ module spamm_types
     !> The vector data.
     REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
   END TYPE BiTree
+
+  !> Matrix type.
+  type spamm_matrix
+    !> The root quadtree pointer.
+    type(qutree), pointer :: root => null()
+
+  end type spamm_matrix
 
   !> Quaternary tree data structure.
   TYPE QuTree
@@ -127,7 +134,7 @@ module spamm_types
     REAL(SpAMM_DOUBLE) :: number_nonzeros
 
     !> The number of operations (updated by a Multiply), i.e. the number of dense matrix products of size
-    !! SpAMM_DERIVED::SpAMM_BLOCK_SIZE x SpAMM_DERIVED::SpAMM_BLOCK_SIZE.
+    !! spamm_globals::spamm_block_size x spamm_globals::spamm_block_size.
     REAL(SpAMM_DOUBLE) :: number_operations
 
 #ifdef _OPENMP
