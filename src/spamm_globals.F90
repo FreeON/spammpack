@@ -181,7 +181,6 @@ CONTAINS
 
   !> Print out a timestamp.
   !!
-  !! @detail
   !! This function keeps track of up to SpAMM_GLOBALS::SpAMM_NUMBER_OF_STATS
   !! timers. Eeach timer slot is identified by a unique RoutineID, which has to
   !! be chose by the caller in some fashion, and a string which describes the
@@ -243,20 +242,5 @@ CONTAINS
     ENDIF
 
   END SUBROUTINE SpAMM_Time_Stamp
-
-  !> Set the number of threads for subsequent operations.
-  !!
-  !! @param num_threads The number of threads to use for subsequent
-  !! calculations.
-  SUBROUTINE SpAMM_Set_Num_Threads (num_threads)
-
-    INTEGER :: num_threads
-
-    IF(num_threads >= 1) THEN
-      WRITE(*, "(A,I3)") "Setting number of threads to ", num_threads
-      !SpAMM_THREAD_COUNT = num_threads
-    ENDIF
-
-  END SUBROUTINE SpAMM_Set_Num_Threads
 
 END MODULE SpAMM_GLOBALS

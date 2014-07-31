@@ -45,17 +45,17 @@ program spamm_multiply
 #endif
   character(len = 1000) :: matrixfilename
 
-  call get_command_argument(1, matrixfilename)
-
-  if(matrixfilename == "") then
+  if(command_argument_count() > 0) then
+    call get_command_argument(1, matrixfilename)
+  else
     matrixfilename = "testmatrix_random_1024x1024.coor"
   endif
 
 #ifdef _OPENMP
-  call get_command_argument(2, inputbuffer)
-  read(inputbuffer, "(I3)") num_threads
-
-  if(num_threads < 0) then
+  if(command_argument_count() > 1) then
+    call get_command_argument(2, inputbuffer)
+    read(inputbuffer, "(I3)") num_threads
+  else
     num_threads = omp_get_max_threads()
   endif
 
@@ -112,7 +112,7 @@ program spamm_multiply
   write(*, "(A,I3,A,I3)") "cycling number of threads between ", min_threads, " and ", max_threads
 
   do num_threads = min_threads, max_threads
-    CALL SpAMM_Set_Num_Threads(num_threads)
+    CALL omp_set_num_threads(num_threads)
     CALL SpAMM_Timer_Reset()
 #endif
 
