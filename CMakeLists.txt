@@ -1,17 +1,32 @@
 project( spammpack Fortran C )
 cmake_minimum_required( VERSION 2.8 )
 
-set( CPACK_PACKAGE_NAME SpAMMPack )
+set( CPACK_PACKAGE_NAME "spammpack" )
 set( CPACK_PACKAGE_VERSION_MAJOR 1 )
 set( CPACK_PACKAGE_VERSION_MINOR 0 )
 set( CPACK_PACKAGE_VERSION_PATCH 0 )
 set( CPACK_PACKAGE_DESCRIPTION_SUMMARY
-  "An implementation of the Sparse Approximate Matrix Multiply Algorithm"
+  "An implementation of the Sparse Approximate Matrix Multiply (SpAMM) Algorithm"
   )
+set( CPACK_PACKAGE_CONTACT "www.freeon.org" )
 
+set( CPACK_GENERATOR DEB RPM )
 set( CPACK_SOURCE_GENERATOR TBZ2 )
+
+set( CPACK_RPM_PACKAGE_LICENSE "BSD" )
+set( CPACK_RPM_PACKAGE_URL "http://www.freeon.org" )
+
+set( CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://www.freeon.org" )
+
 list( APPEND CPACK_SOURCE_IGNORE_FILES
-  "tests/testmatrix_random_4096x4096.coor"
+  "/.git/"
+  "/CMakeFiles/"
+  "/_CPack_Packages/"
+  "tests/testmatrix.*$"
+  "/Makefile$"
+  "/.*\\\\.cmake$"
+  "/CMakeCache\\\\.txt$"
+  "/${CPACK_PACKAGE_NAME}.*$"
   )
 
 message( STATUS "ignoring ${CPACK_SOURCE_IGNORE_FILES}" )

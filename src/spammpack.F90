@@ -57,7 +57,7 @@
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolas.bock@freeon.org
 
-!> The main module of SpAMMPack.
+!> The main module of SpAMMPack. Only this module needs to be "use"'ed.
 !!
 !! @copyright
 !!
