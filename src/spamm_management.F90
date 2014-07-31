@@ -34,8 +34,8 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE SpAMM_MNGMENT
 
-  USE SpAMM_DERIVED
   use spamm_types
+  use spamm_globals
 
   IMPLICIT NONE
 

@@ -32,7 +32,7 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolas.bock@freeon.org
-MODULE SpAMM_DERIVED
+module spamm_types
 
   !$ USE OMP_LIB
 
@@ -165,4 +165,4 @@ MODULE SpAMM_DERIVED
 
 CONTAINS
 
-END MODULE SpAMM_DERIVED
+end module spamm_types

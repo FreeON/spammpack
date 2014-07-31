@@ -34,7 +34,7 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE SpAMM_PROJECT
 
-  USE SpAMM_DERIVED
+  use spamm_globals
   use spamm_types
   USE SpAMM_MNGMENT
   USE SpAMM_ALGEBRA

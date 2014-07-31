@@ -34,8 +34,8 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE SpAMM_ALGEBRA
 
-  USE SpAMM_DERIVED
   use spamm_types
+  use spamm_globals
   USE SpAMM_MNGMENT
 
 #ifdef _OPENMP

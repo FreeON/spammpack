@@ -34,9 +34,9 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolas.bock@freeon.org
-MODULE spamm_types
+MODULE spamm_globals
 
-  USE SpAMM_DERIVED
+  use spamm_types
   use spamm_c_bindings
 
   IMPLICIT NONE
@@ -223,4 +223,4 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Time_Stamp
 
-END MODULE spamm_types
+END MODULE spamm_globals

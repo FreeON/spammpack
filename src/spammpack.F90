@@ -92,7 +92,7 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE spammpack
 
-  USE SpAMM_DERIVED
+  use spamm_globals
   USE SpAMM_CONVERT
   use spamm_types
   USE SpAMM_MNGMENT
