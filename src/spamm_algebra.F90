@@ -35,7 +35,7 @@
 MODULE SpAMM_ALGEBRA
 
   USE SpAMM_DERIVED
-  USE SpAMM_GLOBALS
+  use spamm_types
   USE SpAMM_MNGMENT
 
 #ifdef _OPENMP
@@ -112,7 +112,7 @@ CONTAINS
   !! @param qB Pointer to quadtree B.
   !! @param qC Pointer to quadtree C.
   !! @param LocalThreshold The SpAMM threshold overriding the global value,
-  !! SpAMM_GLOBALS::SpAMM_PRODUCT_TOLERANCE.
+  !! spamm_types::spamm_product_tolerance.
   SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA, qB, qC, LocalThreshold)
 
     TYPE(QuTree), POINTER, INTENT(IN)    :: qA,qB

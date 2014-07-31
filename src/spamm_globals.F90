@@ -1,5 +1,7 @@
 !> Defines global parameters and variables.
 !!
+!! @todo Move matrix related global parameters or values into appropriate types and make things much less global.
+!!
 !! @copyright
 !!
 !! Copyright (c) 2014, Los Alamos National Laboratory
@@ -32,34 +34,12 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolas.bock@freeon.org
-MODULE SpAMM_GLOBALS
+MODULE spamm_types
 
   USE SpAMM_DERIVED
+  use spamm_c_bindings
 
   IMPLICIT NONE
-
-  !> Define interface to the C function spamm_exit().
-  INTERFACE SpAMM_Exit
-    SUBROUTINE SpAMM_Exit (exitcode) bind(C)
-      use, intrinsic :: iso_C_binding
-      integer(c_int), intent(in) :: exitcode
-    END SUBROUTINE SpAMM_Exit
-  END INTERFACE SpAMM_Exit
-
-  !> Define interface to the C function spamm_trap().
-  INTERFACE SpAMM_Trap
-    SUBROUTINE SpAMM_Trap () bind(C)
-      use, intrinsic :: iso_C_binding
-    END SUBROUTINE SpAMM_Trap
-  END INTERFACE SpAMM_Trap
-
-  !> Define interface to the C function spamm_get_time().
-  INTERFACE spamm_get_time_wrapper
-    SUBROUTINE spamm_get_time_wrapper (timer) bind(C, name = "spamm_get_time")
-      use, intrinsic :: iso_C_binding
-      real(c_double), intent(inout) :: timer
-    END SUBROUTINE spamm_get_time_wrapper
-  END INTERFACE spamm_get_time_wrapper
 
   !> The size of the basic submatrix blocks.
   integer, parameter :: spamm_block_size = 4
@@ -181,7 +161,7 @@ CONTAINS
 
   !> Print out a timestamp.
   !!
-  !! This function keeps track of up to SpAMM_GLOBALS::SpAMM_NUMBER_OF_STATS
+  !! This function keeps track of up to spamm_types::spamm_number_of_stats
   !! timers. Eeach timer slot is identified by a unique RoutineID, which has to
   !! be chose by the caller in some fashion, and a string which describes the
   !! timer. Repeated calls with the same RoutineID will increment the total time
@@ -243,4 +223,4 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Time_Stamp
 
-END MODULE SpAMM_GLOBALS
+END MODULE spamm_types

@@ -38,9 +38,11 @@
 
 /** Produce an exit code and exit.
  *
- * Fortran does not have a standard way of exiting with an exit code. In
- * some situations it is nice to have one though, and this function provides
- * this functionality.
+ * Fortran does not have a standard way of exiting with an exit code (that is
+ * prior to F2008). In some situations it is nice to have one though, and this
+ * function provides this functionality.
+ *
+ * @todo Will migrate eventually to F08 error stop.
  *
  * @param exitcode The exit code to produce.
  */

@@ -1,4 +1,4 @@
-!> Defines operations on SpAMM trees.
+!> Defines C function bindings.
 !!
 !! @copyright
 !!
@@ -32,26 +32,31 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolas.bock@freeon.org
-MODULE SpAMM_INVFACT
-  USE SpAMM_DERIVED
-  use spamm_types
-  USE SpAMM_MNGMENT
-  USE SpAMM_ALGEBRA
+module spamm_c_bindings
 
-  IMPLICIT NONE
+  implicit none
 
-  PRIVATE
-  INTERFACE RAINV
-    MODULE PROCEDURE SpAMM_AINV_Inverse_Factorization
-  END INTERFACE
+  !> Define interface to the C function spamm_exit().
+  INTERFACE SpAMM_Exit
+    SUBROUTINE SpAMM_Exit (exitcode) bind(C)
+      use, intrinsic :: iso_C_binding
+      integer(c_int), intent(in) :: exitcode
+    END SUBROUTINE SpAMM_Exit
+  END INTERFACE SpAMM_Exit
 
-CONTAINS
+  !> Define interface to the C function spamm_trap().
+  INTERFACE SpAMM_Trap
+    SUBROUTINE SpAMM_Trap () bind(C)
+      use, intrinsic :: iso_C_binding
+    END SUBROUTINE SpAMM_Trap
+  END INTERFACE SpAMM_Trap
 
-  !> Computes the inverse factors \f$ Z \f$ and \f$ Z^T \f$ for SPD matrix \f$ S \f$.
-  !!
-  !! \remark
-  !! This function is not implemented yet.
-  SUBROUTINE SpAMM_AINV_Inverse_Factorization
-  END SUBROUTINE SpAMM_AINV_Inverse_Factorization
+  !> Define interface to the C function spamm_get_time().
+  INTERFACE spamm_get_time_wrapper
+    SUBROUTINE spamm_get_time_wrapper (timer) bind(C, name = "spamm_get_time")
+      use, intrinsic :: iso_C_binding
+      real(c_double), intent(inout) :: timer
+    END SUBROUTINE spamm_get_time_wrapper
+  END INTERFACE spamm_get_time_wrapper
 
-END MODULE SpAMM_INVFACT
+end module spamm_c_bindings

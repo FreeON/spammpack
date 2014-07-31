@@ -34,10 +34,10 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE SpAMM_PROJECT
 
-  USE  SpAMM_DERIVED
-  USE  SpAMM_GLOBALS
-  USE  SpAMM_MNGMENT
-  USE  SpAMM_ALGEBRA
+  USE SpAMM_DERIVED
+  use spamm_types
+  USE SpAMM_MNGMENT
+  USE SpAMM_ALGEBRA
 
   IMPLICIT NONE
 

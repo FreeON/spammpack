@@ -1,7 +1,8 @@
 set( spammpack-sources
-  SpAMM_ALGEBRA.F90
   SpAMM_CONVERT.F90
   SpAMM_PROJECT.F90
+  spamm_algebra.F90
+  spamm_c_bindings.F90
   spamm_exit.c
   spamm_get_time.c
   spamm_globals.F90
@@ -54,11 +55,12 @@ install(
 install(
   FILES 
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_algebra.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_c_bindings.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_convert.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_types.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_mngment.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_project.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_types.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spammpack.mod
   DESTINATION include
   )

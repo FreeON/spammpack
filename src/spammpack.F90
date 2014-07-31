@@ -1,19 +1,18 @@
 !> @mainpage
 !!
-!! @brief
 !! The Sparse Approximate Matrix Multiply Package (SpAMMPack) is a library for
 !! approximation multiplication of sparse matrices.
 !!
-!! @details
 !! The library can be used by loading the main module @ref spammpack which includes the following sub modules:
 !!
 !! - @ref spamm_algebra
+!! - @ref spamm_c_bindings
 !! - @ref spamm_convert
 !! - @ref spamm_derived
-!! - @ref spamm_globals
+!! - @ref spamm_invfact
 !! - @ref spamm_mngment
 !! - @ref spamm_project
-!! - @ref spamm_invfact
+!! - @ref spamm_types
 !!
 !! Using the library from Fortran requires the line
 !!
@@ -21,7 +20,7 @@
 !! USE spammpack
 !! @endcode
 !!
-!! See the documentation of @ref spammpack for more details. The SpAMMPack project can also be found online at
+!! See the documentation of @ref spammpack for more details. The spammpack project can also be found online at
 !! http://www.freeon.org/ and https://github.com/FreeON/spammpack.
 !!
 !! @copyright
@@ -57,7 +56,7 @@
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolas.bock@freeon.org
 
-!> The main module of SpAMMPack. Only this module needs to be "use"'ed.
+!> The main module of spammpack. Only this module needs to be "use"'ed.
 !!
 !! @copyright
 !!
@@ -95,7 +94,7 @@ MODULE spammpack
 
   USE SpAMM_DERIVED
   USE SpAMM_CONVERT
-  USE SpAMM_GLOBALS
+  use spamm_types
   USE SpAMM_MNGMENT
   USE SpAMM_ALGEBRA
   USE SpAMM_PROJECT
