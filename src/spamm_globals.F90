@@ -46,9 +46,9 @@ MODULE spamm_globals
 
   !> The SpAMM tolerance.
 #ifdef SPAMM_SINGLE
-  REAL(SpAMM_KIND),PARAMETER :: spamm_product_tolerance = 1E-8
+  REAL(SpAMM_KIND),PARAMETER :: spamm_product_tolerance = 1e-8
 #else
-  REAL(SpAMM_KIND),PARAMETER :: spamm_product_tolerance = 1D-12
+  REAL(SpAMM_KIND),PARAMETER :: spamm_product_tolerance = 1d-12
 #endif
 
   !> The norm cutoff for tasked recursion.

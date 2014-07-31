@@ -36,14 +36,16 @@ MODULE SpAMM_ALGEBRA
 
   use spamm_types
   use spamm_globals
-  USE SpAMM_MNGMENT
+  use spamm_management
 
 #ifdef _OPENMP
   use omp_lib
 #endif
 
   IMPLICIT NONE
+
   PRIVATE
+
   PUBLIC :: Multiply
   PUBLIC :: Trace
   PUBLIC :: Add

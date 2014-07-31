@@ -36,7 +36,7 @@ MODULE SpAMM_PROJECT
 
   use spamm_globals
   use spamm_types
-  USE SpAMM_MNGMENT
+  use spamm_management
   USE SpAMM_ALGEBRA
 
   IMPLICIT NONE

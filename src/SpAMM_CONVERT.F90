@@ -37,7 +37,7 @@ MODULE SpAMM_CONVERT
   use spamm_globals
   use spamm_types
   USE SpAMM_ALGEBRA
-  USE SpAMM_MNGMENT
+  use spamm_management
 
   IMPLICIT NONE
 

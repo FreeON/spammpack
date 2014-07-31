@@ -35,7 +35,7 @@
 MODULE SpAMM_INVFACT
   USE SpAMM_DERIVED
   use spamm_types
-  USE SpAMM_MNGMENT
+  use spamm_management
   USE SpAMM_ALGEBRA
 
   IMPLICIT NONE

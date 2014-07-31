@@ -36,8 +36,6 @@ list( APPEND CPACK_SOURCE_IGNORE_FILES
   "/Doxyfile$"
   )
 
-message( STATUS "ignoring ${CPACK_SOURCE_IGNORE_FILES}" )
-
 include( CPack )
 
 if( CMAKE_C_COMPILER_ID STREQUAL "GNU" )
@@ -73,7 +71,13 @@ endif()
 
 include( FindOpenMP )
 
-list( APPEND CMAKE_C_FLAGS "-DTIMER_GETTIMEOFDAY" )
+list( APPEND
+  CMAKE_C_FLAGS "-DTIMER_GETTIMEOFDAY"
+  )
+
+list( APPEND
+  CMAKE_Fortran_FLAGS "-DSPAMM_DOUBLE"
+  )
 
 add_subdirectory( src )
 add_subdirectory( tests )

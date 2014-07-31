@@ -8,9 +8,9 @@
 !! - @ref spamm_algebra
 !! - @ref spamm_c_bindings
 !! - @ref spamm_convert
-!! - @ref spamm_derived
+!! - @ref spamm_globals
 !! - @ref spamm_invfact
-!! - @ref spamm_mngment
+!! - @ref spamm_management
 !! - @ref spamm_project
 !! - @ref spamm_types
 !!
@@ -95,7 +95,7 @@ MODULE spammpack
   use spamm_globals
   USE SpAMM_CONVERT
   use spamm_types
-  USE SpAMM_MNGMENT
+  use spamm_management
   USE SpAMM_ALGEBRA
   USE SpAMM_PROJECT
 

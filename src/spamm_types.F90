@@ -51,10 +51,10 @@ module spamm_types
   INTEGER, PARAMETER :: INT8 = SELECTED_INT_KIND(18) !--Integer*8
 
   !> Define float of length 4.
-  INTEGER, PARAMETER :: SpAMM_SINGLE = KIND(0.0E0)   !--Real*4
+  INTEGER, PARAMETER :: SpAMM_SINGLE = KIND(0.0e0)   !--Real*4
 
   !> Define float of length 8.
-  INTEGER, PARAMETER :: SpAMM_DOUBLE = KIND(0.0D0)   !--Real*8
+  INTEGER, PARAMETER :: SpAMM_DOUBLE = KIND(0.0d0)   !--Real*8
 
 #ifdef SPAMM_SINGLE
   !> Define floating point type to single.

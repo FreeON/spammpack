@@ -32,7 +32,7 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolas.bock@freeon.org
-MODULE SpAMM_MNGMENT
+module spamm_management
 
   use spamm_types
   use spamm_globals
@@ -614,4 +614,4 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree_Recur
 
-END MODULE SpAMM_MNGMENT
+end module spamm_management
