@@ -34,6 +34,9 @@ list( APPEND CPACK_SOURCE_IGNORE_FILES
   "/lib.*\\\\.so.*$"
   "/lib.*\\\\.a$"
   "/Doxyfile$"
+  "/latex/"
+  "/html/"
+  "/man/"
   )
 
 include( CPack )

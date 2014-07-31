@@ -58,7 +58,7 @@ install(
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_c_bindings.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_convert.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_mngment.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_management.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_project.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_types.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spammpack.mod
