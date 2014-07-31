@@ -26,7 +26,7 @@ list( APPEND CPACK_SOURCE_IGNORE_FILES
   "/Makefile$"
   "/.*\\\\.cmake$"
   "/CMakeCache\\\\.txt$"
-  "/${CPACK_PACKAGE_NAME}.*$"
+  "/${CPACK_PACKAGE_NAME}.*tar.*$"
   )
 
 message( STATUS "ignoring ${CPACK_SOURCE_IGNORE_FILES}" )
