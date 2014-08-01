@@ -43,7 +43,7 @@ MODULE SpAMM_CONVERT
 
   PRIVATE
 
-  PUBLIC :: SpAMM_Convert_Dense_2_QuTree
+  PUBLIC :: SpAMM_Convert_Dense_2_QuTree, spamm_convert_dense_to_matrix_2nd_order
 
   CONTAINS
 
@@ -180,5 +180,19 @@ MODULE SpAMM_CONVERT
     ENDIF
 
   END SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur
+
+  !> Convert a dense 2nd order matrix to SpAMM matrix.
+  !!
+  !! @param A_dense The dense matrix.
+  !!
+  !! @result A The SpAMM matrix.
+  function spamm_convert_dense_to_matrix_2nd_order (A_dense) result (A)
+
+    type(spamm_matrix_2nd_order), pointer :: A
+    real(spamm_kind), dimension(:, :) :: A_dense
+
+    allocate(A)
+
+  end function spamm_convert_dense_to_matrix_2nd_order
 
 END MODULE SpAMM_CONVERT

@@ -27,12 +27,12 @@ program spamm_multiply
   real(SpAMM_KIND), dimension(:,:), allocatable :: B_dense_padded
   real(SpAMM_KIND), dimension(:,:), allocatable :: C_dense_padded
 
-  type(spamm_matrix), pointer :: A => null()
-  type(spamm_matrix), pointer :: B => null()
-  type(spamm_matrix), pointer :: C => null()
+  type(spamm_matrix_2nd_order), pointer :: A => null()
+  type(spamm_matrix_2nd_order), pointer :: B => null()
+  type(spamm_matrix_2nd_order), pointer :: C => null()
 
 #ifdef VERIFY_RESULT
-  type(SpAMM_Norm) :: norms
+  real(spamm_kind) :: norm
   integer :: i, j
   type(QuTree), pointer :: C_reference => null()
 #endif
@@ -95,8 +95,8 @@ program spamm_multiply
   B_dense_padded = B_dense
 
   write(*, *) "converting matrices to quadtree"
-  A => SpAMM_Convert_Dense_2_QuTree(A_dense_padded)
-  B => SpAMM_Convert_Dense_2_QuTree(B_dense_padded)
+  A => spamm_convert_dense_to_matrix_2nd_order(A_dense_padded)
+  B => spamm_convert_dense_to_matrix_2nd_order(B_dense_padded)
   C => spamm_zero_matrix(N_padded, N_padded)
   write(*, *) "done converting"
 
@@ -119,9 +119,9 @@ program spamm_multiply
     write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
     do test_repeat = 1, TEST_REPEAT
 #ifdef SPAMM_SINGLE
-      call Multiply(A, B, C, LocalThreshold = 1e-7)
+      call multiply(A, B, C, tolerance = 1e-7)
 #else
-      call Multiply(A, B, C, LocalThreshold = 1d-7)
+      call multiply(A, B, C, tolerance = 1d-7)
 #endif
       write(*, "(A,F22.12)") "operation count = ", C%number_operations
     enddo

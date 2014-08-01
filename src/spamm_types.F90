@@ -103,12 +103,19 @@ module spamm_types
     REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
   END TYPE BiTree
 
-  !> Matrix type.
-  type spamm_matrix
+  !> Matrix (2nd order) type.
+  type spamm_matrix_2nd_order
     !> The root quadtree pointer.
     type(qutree), pointer :: root => null()
 
-  end type spamm_matrix
+    !> The number of non-zero elements.
+    REAL(SpAMM_DOUBLE) :: number_nonzeros
+
+    !> The number of operations (updated by a Multiply), i.e. the number of dense matrix products of size
+    !! spamm_globals::spamm_block_size x spamm_globals::spamm_block_size.
+    REAL(SpAMM_DOUBLE) :: number_operations
+
+  end type spamm_matrix_2nd_order
 
   !> Quaternary tree data structure.
   TYPE QuTree
@@ -154,21 +161,6 @@ module spamm_types
     !> The name of a function.
     CHARACTER(LEN=50)  :: Routine
   END TYPE Stats
-
-  !> This type includes several different norms.
-  TYPE SpAMM_Norm
-
-    !> The Frobenius norm.
-    !!
-    !! @f$ \Vert A \Vert_{F} = @f$.
-    REAL(SpAMM_KIND) :: FrobeniusNorm = SpAMM_Zero
-
-    !> The max norm.
-    !!
-    !! @f$ \max_{ij} A_{ij} @f$.
-    REAL(SpAMM_KIND) :: MaxNorm = SpAMM_Zero
-
-  END TYPE SpAMM_Norm
 
 CONTAINS
 

@@ -91,12 +91,12 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE spammpack
 
+  use spamm_algebra
+  use spamm_convert
   use spamm_globals
-  USE SpAMM_CONVERT
-  use spamm_types
   use spamm_management
-  USE SpAMM_ALGEBRA
-  USE SpAMM_PROJECT
+  use spamm_project
+  use spamm_types
 
 CONTAINS
 

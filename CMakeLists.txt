@@ -82,5 +82,7 @@ list( APPEND
   CMAKE_Fortran_FLAGS "-DSPAMM_DOUBLE"
   )
 
+enable_testing()
+
 add_subdirectory( src )
 add_subdirectory( tests )

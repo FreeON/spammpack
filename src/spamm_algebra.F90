@@ -73,6 +73,7 @@ MODULE SpAMM_ALGEBRA
     MODULE PROCEDURE SpAMM_Multiply_QuTree_x_Scalar
     MODULE PROCEDURE SpAMM_Multiply_QuTree_x_BiTree
     MODULE PROCEDURE SpAMM_Multiply_BiTree_x_Scalar
+    module procedure spamm_multiply_2nd_order_x_2nd_order
   END INTERFACE
 
   !> Interface for trace operations.
@@ -98,6 +99,7 @@ MODULE SpAMM_ALGEBRA
   INTERFACE Norm
     MODULE PROCEDURE SpAMM_Norm_Reduce_BiTree
     MODULE PROCEDURE SpAMM_Norm_Reduce_QuTree
+    module procedure spamm_norm_reduce_matrix_2nd_order
   END INTERFACE
 
   !> Interface for dot product operations.
@@ -113,18 +115,17 @@ CONTAINS
   !! @param qA Pointer to quadtree A.
   !! @param qB Pointer to quadtree B.
   !! @param qC Pointer to quadtree C.
-  !! @param LocalThreshold The SpAMM threshold overriding the global value,
+  !! @param threshold The SpAMM threshold overriding the global value,
   !! spamm_types::spamm_product_tolerance.
-  SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA, qB, qC, LocalThreshold)
+  SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA, qB, qC, threshold)
 
-    TYPE(QuTree), POINTER, INTENT(IN)    :: qA,qB
+    TYPE(QuTree), POINTER, INTENT(IN) :: qA,qB
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
-    REAL(SpAMM_KIND), OPTIONAL           :: LocalThreshold
+    REAL(SpAMM_KIND), OPTIONAL :: threshold
+    real(spamm_kind) :: local_threshold
 
-    REAL(SpAMM_KIND)                     :: threshold
-
-    INTEGER                              :: Depth
-    REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
+    INTEGER :: Depth
+    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
     TInitial = SpAMM_Get_Time()
 
@@ -138,13 +139,11 @@ CONTAINS
     WRITE(*,*) "Multiply on ", omp_get_num_threads(), " OpenMP threads"
 #endif
 
-    IF(PRESENT(LocalThreshold))THEN
-      threshold = LocalThreshold
+    IF(PRESENT(threshold))THEN
+      local_threshold = threshold
     ELSE
-      threshold = SpAMM_PRODUCT_TOLERANCE
+      local_threshold = 0
     ENDIF
-
-    !WRITE(*, "(A,D13.3)") "Multiply with threshold of ", threshold
 
     Depth = 0
     qC%number_operations = 0
@@ -152,7 +151,7 @@ CONTAINS
     CALL SpAMM_Multiply_QuTree_x_Scalar(qC, SpAMM_Zero)
 
     !$OMP TASK UNTIED SHARED(qA,qB,qC)
-    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, threshold, Depth)
+    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, local_threshold, Depth)
     !$OMP END TASK
 
     !$OMP END MASTER
@@ -232,9 +231,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! QuTree In Place Add: A <- A + a*I
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> QuTree In Place Add: \f$ A \leftarrow A + \alpha I \f$.
   SUBROUTINE SpAMM_Add_Identity_2_QuTree_InPlace(qA,Alpha)
 
     TYPE(QuTree), POINTER :: qA
@@ -317,9 +314,7 @@ CONTAINS
 
   END FUNCTION SpAMM_Trace_QuTree_Product
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Filter for the QuTree: \tilde{A}=filter[A,tau]
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Filter for the QuTree: \f$ \tilde{A} = \mathrm{filter} [A, \tau] \f$.
   SUBROUTINE SpAMM_Filter_QuTree(qA,Tau)
 
     TYPE(QuTree), POINTER  :: qA
@@ -356,9 +351,8 @@ CONTAINS
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Norm_Reduce_QuTree",9)
   END FUNCTION SpAMM_Norm_Reduce_QuTree
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! C <- Alpha*A+Beta*B
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  !> Add to binary trees: \f$ C \leftarrow \alpha A + \beta B \f$.
   SUBROUTINE SpAMM_Add_BiTree_2_BiTree_RePlace(bC,Alpha,bA,Beta,bB)
 
     TYPE(BiTree), POINTER, INTENT(IN)    :: bA,bB
@@ -387,9 +381,12 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Add_BiTree_2_BiTree_RePlace
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! A<-Apha*A+Beta*B
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> \f$ A \leftarrow \alpha A + \beta B \f$.
+  !!
+  !! @param alpha The parameter \f$ \alpha \f$. If not given, \f$ \alpha = 0 \f$.
+  !! @param A Vector \f$ A \f$.
+  !! @param beta The parameter \f$ \beta \f$. If not given, \f$ \beta = 1 \f$.
+  !! @param B Vector \f$ B \f$.
   SUBROUTINE SpAMM_Add_BiTree_2_BiTree_InPlace(bA,Alpha,bB,Beta)
 
     TYPE(BiTree), POINTER, INTENT(INOUT) :: bA
@@ -397,6 +394,7 @@ CONTAINS
     REAL(SpAMM_KIND), OPTIONAL           :: Alpha,Beta
     INTEGER                              :: Depth
     REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
+
     Depth=0
     IF(PRESENT(Alpha))THEN
       SpAMM_Add_BiTree_2_BiTree_InPlace_Alpha=Alpha
@@ -418,9 +416,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Add_BiTree_2_BiTree_InPlace
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Inner product: (A,B)
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Inner product: \f$ (A,B) \f$.
   FUNCTION SpAMM_Dot_Product_BiTree(bA,bB) RESULT(dot)
 
     INTEGER              :: Depth
@@ -438,9 +434,7 @@ CONTAINS
 
   END FUNCTION SpAMM_Dot_Product_BiTree
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Sparse Approximate Matrix-Vector Multiply (SpAMV): C <- A.B
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Sparse Approximate Matrix-Vector Multiply (SpAMV): \f$ C \leftarrow A.B \f$.
   SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree(qA,bB,bC,LocalThreshold)
 
     TYPE(QuTree), POINTER     :: qA
@@ -465,9 +459,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Scalar multiply: A <- a*A
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Scalar multiply: \f$ A \leftarrow \alpha A \f$.
   RECURSIVE SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar(bA,a)
 
     INTEGER :: Depth
@@ -486,9 +478,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Norm for BiTrees
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Norm for BiTrees.
   FUNCTION SpAMM_Norm_Reduce_BiTree(bA) RESULT(Norm)
 
     INTEGER              :: Depth
@@ -699,11 +689,9 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace_Recur
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! QuTree In Place Add: A <- A + alpha*I
-  ! Note, this routine is not empowered to deal with
-  ! case of missing diagonal blocks from the in place QuTree.
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> QuTree In Place Add: \f$ A \leftarrow A + \alpha I \f$.
+  !!
+  !! @todo Note, this routine is not empowered to deal with case of missing diagonal blocks from the in place QuTree.
   RECURSIVE SUBROUTINE SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA,Left,Rght,Depth)
 
     TYPE(QuTree),POINTER :: qA
@@ -841,9 +829,8 @@ CONTAINS
     ENDIF
 
   END FUNCTION SpAMM_Trace_QuTree_Product_Recur
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! QuTree filter: \tilde{A}=filter[A,tau]
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  !> QuTree filter: \f$ \tilde{A} = \mathrm{filter} [A, \tau] \f$.
   RECURSIVE SUBROUTINE SpAMM_Filter_QuTree_Recur(qA,Tau,Depth)
     TYPE(QuTree), POINTER  :: qA
     REAL(SpAMM_KIND)       :: Tau
@@ -875,12 +862,13 @@ CONTAINS
       !$OMP END TASK
     ENDIF
   END SUBROUTINE SpAMM_Filter_QuTree_Recur
-  !> Calculate the norms recursively on the tree.
+
+  !> Calculate the Frobenius norm recursively on the tree.
   !!
   !! @param qA Pointer to quadtree A.
-  !! @param Depth The current tier.
+  !! @param depth The current tier.
   !!
-  !! @return The norms.
+  !! @return The norm.
   RECURSIVE FUNCTION SpAMM_Norm_Reduce_QuTree_Recur(qA,Depth) RESULT(Norm)
     TYPE(QuTree), POINTER :: qA
     INTEGER               :: Depth
@@ -914,11 +902,8 @@ CONTAINS
       qA%Norm=SQRT(Norm)
     ENDIF
   END FUNCTION SpAMM_Norm_Reduce_QuTree_Recur
-  !=================================================================
-  ! RECURSIVE LINEAR ALGEBRA ROUTINES ON ROW TREE VECTORS
-  !=================================================================
-  !
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  !> Recursive linear algebra routines on row tree vectors
   RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree_Recur(bC,qA,bB,Depth)
 
     TYPE(QuTree), POINTER :: qA
@@ -976,9 +961,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree_Recur
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! BiTree in place add: A <- alpha*A + beta*B
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> BiTree in place add: \f$ A \leftarrow \alpha A + \beta B \f$.
   RECURSIVE SUBROUTINE SpAMM_Add_BiTree_2_BiTree_InPlace_Recur(bA,bB,Depth)
     TYPE(BiTree),POINTER :: bA,bB
     INTEGER              :: Depth
@@ -1006,9 +989,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Add_BiTree_2_BiTree_InPlace_Recur
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! BiTree add with replacement: C <- alpha*A + beta*B
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> BiTree add with replacement: \f$ C \leftarrow \alpha A + \beta B \f$.
   RECURSIVE SUBROUTINE SpAMM_Add_BiTree_2_BiTree_RePlace_Recur(bA,bB,bC,Depth)
 
     TYPE(BiTree),POINTER :: bA,bB,bC
@@ -1041,9 +1022,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Add_BiTree_2_BiTree_RePlace_Recur
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! L_2 norm for BiTrees
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> \f$ L_2 \f$ norm for BiTrees.
   RECURSIVE FUNCTION SpAMM_Norm_Reduce_BiTree_Recur(bA,Depth) RESULT(Norm)
     TYPE(BiTree), POINTER :: bA
     INTEGER               :: Depth
@@ -1068,9 +1047,8 @@ CONTAINS
        bA%Norm=SQRT(Norm)
     ENDIF
   END FUNCTION SpAMM_Norm_Reduce_BiTree_Recur
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Dot product for BiTrees
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  !> Dot product for BiTrees
   RECURSIVE FUNCTION SpAMM_Dot_Product_BiTree_Recur(bA,bB,Depth) RESULT(Dot)
     TYPE(BiTree), POINTER :: bA,bB
     INTEGER               :: Depth
@@ -1097,6 +1075,7 @@ CONTAINS
     ENDIF
   END FUNCTION SpAMM_Dot_Product_BiTree_Recur
 
+  !> Multiply vector with scalar.
   RECURSIVE SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar_Recur(bA,a,Depth)
     INTEGER :: Depth
     TYPE(BiTree), POINTER   :: bA
@@ -1117,4 +1096,47 @@ CONTAINS
        bA%Norm=bA%Norm*ABS(a)
     ENDIF
   END SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar_Recur
+
+  !> Multiply two 2nd order matrices: \f$ C \leftarrow \alpha A B + \beta C \f$.
+  !!
+  !! If the tolerance is not given, then \f$ \tau = 0 \f$ is used, i.e. the product reverts to an exact dense product.
+  !!
+  !! @todo The code for \f$ \alpha \neq 1 \f$ and \f$ \beta \neq 0 \f$ is not implemented yet.
+  !!
+  !! @param A The matrix \f$ A \f$.
+  !! @param B The matrix \f$ B \f$.
+  !! @param C The matrix \f$ C \f$.
+  !! @param tolerance The SpAMM tolerance \f$ \tau \f$.
+  !! @param alpha The scalar \f$ \alpha \f$.
+  !! @param beta The scalar \f$ \beta \f$.
+  subroutine spamm_multiply_2nd_order_x_2nd_order (A, B, C, tolerance, alpha, beta)
+
+    real(spamm_kind), intent(in), optional :: alpha, beta
+    real(spamm_kind), intent(in), optional :: tolerance
+    real(spamm_kind) :: local_tolerance
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A, B
+    type(spamm_matrix_2nd_order), pointer, intent(inout) :: C
+
+    if(present(tolerance)) then
+      local_tolerance = tolerance
+    else
+      local_tolerance = 0
+    endif
+
+  end subroutine spamm_multiply_2nd_order_x_2nd_order
+
+  !> Frobenius norm of 2nd order matrix.
+  !!
+  !! @param A The matrix.
+  !!
+  !! @return The Frobenius norm.
+  function spamm_norm_reduce_matrix_2nd_order (A) result (norm)
+
+    real(spamm_kind) :: norm
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+
+    norm = spamm_norm_reduce_qutree(A%root)
+
+  end function spamm_norm_reduce_matrix_2nd_order
+
 END MODULE SpAMM_ALGEBRA

@@ -48,6 +48,7 @@ module spamm_management
   PUBLIC :: SpAMM_Delete_QuTree_Recur
   PUBLIC :: New
   PUBLIC :: NewQuNode
+  public :: spamm_zero_matrix
 
   !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
@@ -614,9 +615,15 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree_Recur
 
+  !> Construct a zero matrix of size M x N.
+  !!
+  !! @param M The number of rows.
+  !! @param N The number of columns.
+  !!
+  !! @return The matrix.
   function spamm_zero_matrix (M, N) result (A)
 
-    type(spamm_matrix), pointer :: A
+    type(spamm_matrix_2nd_order), pointer :: A
     integer, intent(in) :: M, N
 
     allocate(A)
