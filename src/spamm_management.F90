@@ -49,6 +49,7 @@ module spamm_management
   PUBLIC :: New
   PUBLIC :: NewQuNode
   public :: spamm_zero_matrix
+  public :: get
 
   !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
@@ -68,6 +69,11 @@ module spamm_management
     MODULE PROCEDURE SpAMM_Allocate_Full_QuTree
     MODULE PROCEDURE SpAMM_Allocate_Full_BiTree
   END INTERFACE
+
+  !> Interface for getting single matrix elements of SpAMM objects.
+  interface get
+    module procedure spamm_get_matrix_2nd_order
+  end interface get
 
 CONTAINS
 
@@ -629,5 +635,22 @@ CONTAINS
     allocate(A)
 
   end function spamm_zero_matrix
+
+  !> Get a matrix element from a 2nd order SpAMM matrix.
+  !!
+  !! @param A The matrix.
+  !! @param i The row index.
+  !! @param j The column index.
+  !!
+  !! @return The matrix element.
+  function spamm_get_matrix_2nd_order (A, i, j) result (Aij)
+
+    real(spamm_kind) :: Aij
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    integer, intent(in) :: i, j
+
+    Aij = 0
+
+  end function spamm_get_matrix_2nd_order
 
 end module spamm_management

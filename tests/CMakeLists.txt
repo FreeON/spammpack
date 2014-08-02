@@ -34,6 +34,6 @@ endif()
 add_executable( multiply_2nd_order_x_2nd_order
   multiply_2nd_order_x_2nd_order.F90
   )
-target_link_libraries( multiply_2nd_order_x_2nd_order spammpack_serial_shared )
+target_link_libraries( multiply_2nd_order_x_2nd_order spammpack_serial_shared spammtests )
 target_include_directories( multiply_2nd_order_x_2nd_order PRIVATE ${CMAKE_BINARY_DIR}/src )
 add_test( multiply_2nd_order_x_2nd_order multiply_2nd_order_x_2nd_order )

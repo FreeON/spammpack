@@ -87,7 +87,7 @@ contains
   subroutine print_matrix (A)
 
     integer :: i, j
-    real(SpAMM_KIND), dimension(:, :), allocatable, intent(in) :: A
+    real(SpAMM_KIND), dimension(:, :), intent(in) :: A
 
     do i = 1, size(A, 1)
       do j = 1, size(A, 2)
