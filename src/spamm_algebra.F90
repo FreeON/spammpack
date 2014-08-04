@@ -1123,6 +1123,8 @@ CONTAINS
       local_tolerance = 0
     endif
 
+    call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, tolerance)
+
   end subroutine spamm_multiply_2nd_order_x_2nd_order
 
   !> Frobenius norm of 2nd order matrix.
