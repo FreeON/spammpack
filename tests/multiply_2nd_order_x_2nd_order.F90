@@ -3,14 +3,18 @@ program test_multiply
   use spammpack
   use test_utilities
 
+  integer, parameter :: M = 12
+  integer, parameter :: N = 12
+
   type(spamm_matrix_2nd_order), pointer :: A, B, C
-  real(spamm_kind), dimension(5, 5) :: A_dense, C_dense
+  real(spamm_kind), dimension(M, N) :: A_dense, C_dense
   integer :: i, j
 
   call random_number(A_dense)
 
   A => spamm_convert_dense_to_matrix_2nd_order(A_dense)
   B => A
+  C => spamm_zero_matrix(size(A_dense, 1), size(A_dense, 2))
 
   call multiply(A, B, C)
 

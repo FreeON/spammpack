@@ -105,6 +105,20 @@ module spamm_types
 
   !> Matrix (2nd order) type.
   type spamm_matrix_2nd_order
+
+    !> The number or rows.
+    integer :: M
+
+    !> The number of columns.
+    integer :: N
+
+    !> The tree depth. The root tier is 0, tier == depth is the leaf node tier, i.e. the tier at which actual matrix elements are
+    !! stored.
+    integer :: depth
+
+    !> The padded matrix dimension. Since the padded matrix is always square, we only store one number here.
+    integer :: N_padded
+
     !> The root quadtree pointer.
     type(qutree), pointer :: root => null()
 

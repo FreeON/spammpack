@@ -71,12 +71,8 @@ MODULE SpAMM_CONVERT
     TInitial = SpAMM_Get_Time()
     qA=>NULL()
     CALL NewQuNode(qA)
-#ifdef OLDCONVERT
-    CALL SpAMM_Convert_Dense_2_QuTree_Recur(A,qA)
-#else
     CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA, &
       1, SpAMM_PADDED_MATRIX_DIMENSION, 1, SpAMM_PADDED_MATRIX_DIMENSION)
-#endif
     ! Update norms.
     qA%Norm=Norm(qA)
     qA%Norm=SQRT(qA%Norm)
@@ -92,30 +88,21 @@ MODULE SpAMM_CONVERT
   !! @param i_upper The upper value of the row index.
   !! @param j_lower The lower value of the column index.
   !! @param j_upper The upper value of the column index.
-#ifdef OLDCONVERT
-  RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur (A, qA)
-#else
   RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur (A, qA, &
       i_lower, i_upper, j_lower, j_upper)
-#endif
 
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
-    TYPE(QuTree), POINTER, INTENT(INOUT)         :: qA
-    INTEGER, INTENT(IN)                          :: i_lower, i_upper
-    INTEGER, INTENT(IN)                          :: j_lower, j_upper
+    TYPE(QuTree), POINTER, INTENT(INOUT) :: qA
+    INTEGER, INTENT(IN) :: i_lower, i_upper
+    INTEGER, INTENT(IN) :: j_lower, j_upper
 
     INTEGER :: i, j
     INTEGER :: A_rows, A_cols
 
-#ifdef OLDCONVERT
-    A_rows = SIZE(A,1)
-    A_cols = SIZE(A,2)
-#else
     A_rows = i_upper-i_lower+1
     A_cols = j_upper-j_lower+1
-#endif
 
-    IF(A_rows<=SpAMM_BLOCK_SIZE.AND.A_cols<=SpAMM_BLOCK_SIZE)THEN
+    IF(A_rows <= SpAMM_BLOCK_SIZE .AND. A_cols <= SpAMM_BLOCK_SIZE)THEN
       IF(A_rows < SpAMM_BLOCK_SIZE .OR. A_cols < SpAMM_BLOCK_SIZE) THEN
         WRITE(*, *) "LOGIC ERROR IN SpAMM: padding error"
         WRITE(*, *) "A_rows = ", A_rows
@@ -123,16 +110,11 @@ MODULE SpAMM_CONVERT
         WRITE(*, *) "SpAMM_BLOCK_SIZE = ", SpAMM_BLOCK_SIZE
         CALL SpAMM_Exit(1)
       ELSE
-        ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
+        ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE))
 
         ! Set new block to zero.
         qA%Blok = SpAMM_Zero
 
-#ifdef OLDCONVERT
-        ! This is wrong if the padded dimensions do not line up with the
-        ! original matrix dimension.
-        qA%Blok(1:A_rows, 1:A_cols) = A(1:A_rows, 1:A_cols)
-#else
         DO i = i_lower, i_upper
           DO j = j_lower, j_upper
             ! We have to  be careful not to copy too much of A.
@@ -144,7 +126,6 @@ MODULE SpAMM_CONVERT
             ENDIF
           ENDDO
         ENDDO
-#endif
       ENDIF
       RETURN
     ELSE
@@ -154,12 +135,6 @@ MODULE SpAMM_CONVERT
       ALLOCATE(qA%Quad21)
       ALLOCATE(qA%Quad22)
 
-#ifdef OLDCONVERT
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:A_rows/2,        1:A_cols/2),        qA%Quad11)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(1:A_rows/2,        A_cols/2+1:A_cols), qA%Quad12)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(A_rows/2+1:A_rows, 1:A_cols/2),        qA%Quad21)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A(A_rows/2+1:A_rows, A_cols/2+1:A_cols), qA%Quad22)
-#else
       ! Avoid slicing here for performance.
       CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad11, &
         i_lower,          i_lower+A_rows/2-1, j_lower,          j_lower+A_cols/2-1)
@@ -175,8 +150,6 @@ MODULE SpAMM_CONVERT
         qA%Quad12%number_nonzeros + &
         qA%Quad21%number_nonzeros + &
         qA%Quad22%number_nonzeros
-#endif
-
     ENDIF
 
   END SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur
@@ -189,9 +162,10 @@ MODULE SpAMM_CONVERT
   function spamm_convert_dense_to_matrix_2nd_order (A_dense) result (A)
 
     type(spamm_matrix_2nd_order), pointer :: A
-    real(spamm_kind), dimension(:, :) :: A_dense
+    real(spamm_kind), dimension(:, :), intent(in) :: A_dense
 
-    allocate(A)
+    A => spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2))
+    call spamm_convert_dense_2_qutree_recur(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
 
   end function spamm_convert_dense_to_matrix_2nd_order
 

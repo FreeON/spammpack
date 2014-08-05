@@ -46,6 +46,7 @@ module spamm_management
   PUBLIC :: SpAMM_Copy_BiTree_2_BiTree_Recur
   PUBLIC :: Delete
   PUBLIC :: SpAMM_Delete_QuTree_Recur
+  public :: spamm_allocate_matrix_2nd_order
   PUBLIC :: New
   PUBLIC :: NewQuNode
   public :: spamm_zero_matrix
@@ -633,6 +634,7 @@ CONTAINS
     integer, intent(in) :: M, N
 
     allocate(A)
+    call new(A%root)
 
   end function spamm_zero_matrix
 
@@ -652,5 +654,48 @@ CONTAINS
     Aij = 0
 
   end function spamm_get_matrix_2nd_order
+
+  !> Allocate a 2nd order SpAMM matrix.
+  !!
+  !! @param M The number of rows.
+  !! @param N The number of columns.
+  !!
+  !! @return The new matrix.
+  function spamm_allocate_matrix_2nd_order (M, N) result (A)
+
+    integer, intent(in) :: M, N
+    type(spamm_matrix_2nd_order), pointer :: A
+
+    integer :: K, matrix_N, number_tiles
+
+    allocate(A)
+    A%M = M
+    A%N = N
+
+    matrix_N = max(M, N)
+
+    K = CEILING(LOG10(DBLE(matrix_N))/LOG10(2D0))
+
+    ! Double check padded size.
+    IF(2**K < matrix_N) THEN
+      K = K+1
+    ENDIF
+
+    IF(K > 0 .AND. 2**(K-1) > matrix_N) THEN
+      K = K-1
+    ENDIF
+
+    ! Pad matrix to right size.
+    A%N_padded = 2**K
+
+    ! Depth starts from 0:
+    number_tiles = CEILING(DBLE(A%N_padded)/SpAMM_BLOCK_SIZE)
+    A%depth = FLOOR(LOG(DBLE(number_tiles))/LOG(2D0))
+
+    write(*, *) "allocated ", M, "x", N, " matrix"
+    write(*, *) "N_padded = ", A%N_padded
+    write(*, *) "depth = ", A%depth
+
+  end function spamm_allocate_matrix_2nd_order
 
 end module spamm_management
