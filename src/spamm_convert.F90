@@ -43,42 +43,9 @@ MODULE SpAMM_CONVERT
 
   PRIVATE
 
-  PUBLIC :: SpAMM_Convert_Dense_2_QuTree, spamm_convert_dense_to_matrix_2nd_order
+  PUBLIC :: spamm_convert_dense_to_matrix_2nd_order
 
   CONTAINS
-
-  !> Convert a dense matrix into a quadtree.
-  !!
-  !! @param A The dense matrix.
-  !!
-  !! @return Pointer to a new quadtree.
-  FUNCTION SpAMM_Convert_Dense_2_QuTree (A) RESULT(qA)
-    REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
-    TYPE(QuTree), POINTER                        :: qA
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
-
-    ! Sanity check.
-    IF(SIZE(A, 1) /= SpAMM_MATRIX_DIMENSION) THEN
-      WRITE(*, *) "size(A, 1) ", SIZE(A, 1), " is different than size used for init ", SpAMM_MATRIX_DIMENSION
-      STOP
-    ENDIF
-
-    IF(SIZE(A, 2) /= SpAMM_MATRIX_DIMENSION) THEN
-      WRITE(*, *) "size(A, 2) ", SIZE(A, 2), " is different than size used for init ", SpAMM_MATRIX_DIMENSION
-      STOP
-    ENDIF
-
-    TInitial = SpAMM_Get_Time()
-    qA=>NULL()
-    CALL NewQuNode(qA)
-    CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA, &
-      1, SpAMM_PADDED_MATRIX_DIMENSION, 1, SpAMM_PADDED_MATRIX_DIMENSION)
-    ! Update norms.
-    qA%Norm=Norm(qA)
-    qA%Norm=SQRT(qA%Norm)
-    TTotal=SpAMM_Get_Time()-TInitial
-    CALL SpAMM_Time_Stamp(TTotal, "SpAMM_Convert_Dense_2_QuTree", 20)
-  END FUNCTION SpAMM_Convert_Dense_2_QuTree
 
   !> Recursively convert a dense matrix to a quadtree.
   !!
@@ -88,7 +55,7 @@ MODULE SpAMM_CONVERT
   !! @param i_upper The upper value of the row index.
   !! @param j_lower The lower value of the column index.
   !! @param j_upper The upper value of the column index.
-  RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur (A, qA, &
+  RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree (A, qA, &
       i_lower, i_upper, j_lower, j_upper)
 
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
@@ -96,7 +63,7 @@ MODULE SpAMM_CONVERT
     INTEGER, INTENT(IN) :: i_lower, i_upper
     INTEGER, INTENT(IN) :: j_lower, j_upper
 
-    INTEGER :: i, j
+    INTEGER :: i, j, i_dense, j_dense
     INTEGER :: A_rows, A_cols
 
     A_rows = i_upper-i_lower+1
@@ -115,17 +82,21 @@ MODULE SpAMM_CONVERT
         ! Set new block to zero.
         qA%Blok = SpAMM_Zero
 
-        DO i = i_lower, i_upper
-          DO j = j_lower, j_upper
+        DO i = 1, SpAMM_BLOCK_SIZE
+          DO j = 1, SpAMM_BLOCK_SIZE
             ! We have to  be careful not to copy too much of A.
-            IF(i <= SpAMM_MATRIX_DIMENSION .AND. j <= SpAMM_MATRIX_DIMENSION) THEN
-              qA%Blok(i-i_lower+1, j-j_lower+1) = A(i, j)
-              IF(A(i, j) /= 0.0D0) THEN
+            i_dense = i-1+i_lower
+            j_dense = j-1+j_lower
+
+            IF(i_dense <= size(A, 1) .AND. j_dense <= size(A, 2)) THEN
+              qA%Blok(i, j) = A(i_dense, j_dense)
+              IF(A(i_dense, j_dense) /= 0.0D0) THEN
                 qA%number_nonzeros = qA%number_nonzeros+1
               ENDIF
             ENDIF
           ENDDO
         ENDDO
+
       ENDIF
       RETURN
     ELSE
@@ -136,13 +107,13 @@ MODULE SpAMM_CONVERT
       ALLOCATE(qA%Quad22)
 
       ! Avoid slicing here for performance.
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad11, &
+      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad11, &
         i_lower,          i_lower+A_rows/2-1, j_lower,          j_lower+A_cols/2-1)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad12, &
+      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad12, &
         i_lower,          i_lower+A_rows/2-1, j_lower+A_cols/2, j_upper)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad21, &
+      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad21, &
         i_lower+A_rows/2, i_upper,            j_lower,          j_lower+A_cols/2-1)
-      CALL SpAMM_Convert_Dense_2_QuTree_Recur(A, qA%Quad22, &
+      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad22, &
         i_lower+A_rows/2, i_upper,            j_lower+A_cols/2, j_upper)
 
       qA%number_nonzeros = &
@@ -152,7 +123,7 @@ MODULE SpAMM_CONVERT
         qA%Quad22%number_nonzeros
     ENDIF
 
-  END SUBROUTINE SpAMM_Convert_Dense_2_QuTree_Recur
+  END SUBROUTINE SpAMM_Convert_Dense_2_QuTree
 
   !> Convert a dense 2nd order matrix to SpAMM matrix.
   !!
@@ -165,7 +136,8 @@ MODULE SpAMM_CONVERT
     real(spamm_kind), dimension(:, :), intent(in) :: A_dense
 
     A => spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2))
-    call spamm_convert_dense_2_qutree_recur(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
+    allocate(A%root)
+    call spamm_convert_dense_2_qutree(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
 
   end function spamm_convert_dense_to_matrix_2nd_order
 

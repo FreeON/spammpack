@@ -54,22 +54,22 @@ MODULE spamm_globals
   !> The norm cutoff for tasked recursion.
   real(spamm_kind), parameter :: spamm_recursion_normd_cutoff = 1e-4
 
-  !> The depth of the matrix tree.
+  !> @deprecated The depth of the matrix tree.
   INTEGER :: SpAMM_TOTAL_DEPTH
 
-  !> The size of the unpadded matrix.
+  !> @deprecated The size of the unpadded matrix.
   INTEGER :: SpAMM_MATRIX_DIMENSION
 
-  !> The size of the padded matrix.
+  !> @deprecated The size of the padded matrix.
   INTEGER :: SpAMM_PADDED_MATRIX_DIMENSION
 
   !> Cutoff the tree depth at some predefined maximum depth.
   INTEGER :: SpAMM_RECURSION_DEPTH_CUTOFF
 
-  !> Number of timer stat slots.
+  !> @deprecated Number of timer stat slots.
   INTEGER, PARAMETER :: SpAMM_NUMBER_OF_STATS = 100
 
-  !> The timers.
+  !> @deprecated The timers.
   TYPE(Stats), DIMENSION(1:SpAMM_NUMBER_OF_STATS) :: SpAMM_STATS
 CONTAINS
 
@@ -79,7 +79,7 @@ CONTAINS
     call spamm_get_time_wrapper(spamm_get_time)
   end function spamm_get_time
 
-  !> Initialize global variables.
+  !> @deprecated Initialize global variables.
   !!
   !! @param N The matrix size. This variable gets padded and will be set to
   !! the padded matrix dimension on exit.
