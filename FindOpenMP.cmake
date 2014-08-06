@@ -210,5 +210,5 @@ if(_OPENMP_REQUIRED_VARS)
 
   unset(_OPENMP_REQUIRED_VARS)
 else()
-  message(SEND_ERROR "FindOpenMP requires C or CXX language to be enabled")
+  message(SEND_ERROR "FindOpenMP requires the C, CXX, or Fortran language to be enabled")
 endif()
