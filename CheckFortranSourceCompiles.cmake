@@ -1,4 +1,4 @@
-# - Check if given C source compiles and links into an executable
+# - Check if given Fortran source compiles and links into an executable
 # CHECK_Fortran_SOURCE_COMPILES(<code> <var> [FAIL_REGEX <fail-regex>])
 #  <code>       - source code to try to compile, must define 'main'
 #  <var>        - variable to store whether the source code compiled
@@ -76,14 +76,14 @@ macro(CHECK_Fortran_SOURCE_COMPILES SOURCE VAR)
       set(${VAR} 1 CACHE INTERNAL "Test ${VAR}")
       message(STATUS "Performing Test ${VAR} - Success")
       file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-        "Performing C SOURCE FILE Test ${VAR} succeded with the following output:\n"
+        "Performing Fortran SOURCE FILE Test ${VAR} succeded with the following output:\n"
         "${OUTPUT}\n"
         "Source file was:\n${SOURCE}\n")
     else()
       message(STATUS "Performing Test ${VAR} - Failed")
       set(${VAR} "" CACHE INTERNAL "Test ${VAR}")
       file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-        "Performing C SOURCE FILE Test ${VAR} failed with the following output:\n"
+        "Performing Fortran SOURCE FILE Test ${VAR} failed with the following output:\n"
         "${OUTPUT}\n"
         "Source file was:\n${SOURCE}\n")
     endif()
