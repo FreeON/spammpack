@@ -72,7 +72,7 @@ if( DOXYGEN_FOUND )
   configure_file( Doxyfile.in Doxyfile )
 endif()
 
-include( FindOpenMP )
+include( ${CMAKE_SOURCE_DIR}/FindOpenMP.cmake )
 
 if( OPENMP_FOUND )
   set( OpenMP_Fortran_FLAGS ${OpenMP_C_FLAGS} )
