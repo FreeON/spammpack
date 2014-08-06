@@ -74,11 +74,6 @@ endif()
 
 include( ${CMAKE_SOURCE_DIR}/FindOpenMP.cmake )
 
-if( OPENMP_FOUND )
-  set( OpenMP_Fortran_FLAGS ${OpenMP_C_FLAGS} )
-  message( STATUS "I am guessing the Fortran OpenMP flags: ${OpenMP_Fortran_FLAGS}" )
-endif()
-
 list( APPEND
   CMAKE_C_FLAGS "-DTIMER_GETTIMEOFDAY"
   )
