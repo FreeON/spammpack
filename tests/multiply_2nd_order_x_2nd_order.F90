@@ -24,8 +24,8 @@ program test_multiply
     do j = 1, size(C_dense, 2)
       if(abs(C_dense(i, j)-get(C, i, j)) > 1d-10) then
         write(*, *) "matrix element mismatch"
-        write(*, "(A,I3,A,I3,A,F6.4)") "C_reference(", i, ",", j, ") = ", C_dense(i, j)
-        write(*, "(A,I3,A,I3,A,F6.4)") "          C(", i, ",", j, ") = ", get(C, i, j)
+        write(*, "(A,I3,A,I3,A,F7.4)") "C_reference(", i, ",", j, ") = ", C_dense(i, j)
+        write(*, "(A,I3,A,I3,A,F7.4)") "          C(", i, ",", j, ") = ", get(C, i, j)
         error stop
       endif
     enddo
