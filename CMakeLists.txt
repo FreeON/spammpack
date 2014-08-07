@@ -66,6 +66,21 @@ if( NOT CMAKE_BUILD_TYPE )
     )
 endif()
 
+include( CheckFortranSourceCompiles.cmake )
+
+set( Fortran_TEST_SOURCE
+"
+program test
+error stop
+end program test
+"
+)
+
+check_fortran_source_compiles( ${Fortran_TEST_SOURCE} RESULT_TEST )
+if( NOT RESULT_TEST )
+  message( FATAL_ERROR "The Fortran compiler does not understand the 'error stop' statement" )
+endif()
+
 include( FindDoxygen )
 if( DOXYGEN_FOUND )
   add_custom_target( docs doxygen )

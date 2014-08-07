@@ -107,14 +107,17 @@ module spamm_types
   type spamm_matrix_2nd_order
 
     !> The number or rows.
-    integer :: M
+    integer :: M = -1
 
     !> The number of columns.
-    integer :: N
+    integer :: N = -1
 
     !> The tree depth. The root tier is 0, tier == depth is the leaf node tier, i.e. the tier at which actual matrix elements are
     !! stored.
-    integer :: depth
+    integer :: depth = -1
+
+    !> The Frobenious norm.
+    REAL(SpAMM_KIND) :: Norm = 0
 
     !> The padded matrix dimension. Since the padded matrix is always square, we only store one number here.
     integer :: N_padded
@@ -134,10 +137,17 @@ module spamm_types
   !> Quaternary tree data structure.
   TYPE QuTree
 
-    !> @note This is not really necessary, but convenient.
-    !!
-    !! The depth.
-    integer :: depth
+    !> The lower row index.
+    integer :: i_lower = -1
+
+    !> The upper row index.
+    integer :: i_upper = -1
+
+    !> The lower column index.
+    integer :: j_lower = -1
+
+    !> The upper column index.
+    integer :: j_upper = -1
 
     !> The Frobenious norm.
     REAL(SpAMM_KIND) :: Norm = 0
@@ -158,16 +168,17 @@ module spamm_types
     REAL(SpAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
 
     !> The number of non-zero elements.
-    REAL(SpAMM_DOUBLE) :: number_nonzeros
+    REAL(SpAMM_DOUBLE) :: number_nonzeros = 0
 
     !> The number of operations (updated by a Multiply), i.e. the number of dense matrix products of size
     !! spamm_globals::spamm_block_size x spamm_globals::spamm_block_size.
-    REAL(SpAMM_DOUBLE) :: number_operations
+    REAL(SpAMM_DOUBLE) :: number_operations = 0
 
 #ifdef _OPENMP
     !> Block lock
     INTEGER(KIND = OMP_LOCK_KIND) :: lock
 #endif
+
   END TYPE QuTree
 
   !> A type for performance measurements.

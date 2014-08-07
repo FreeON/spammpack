@@ -93,7 +93,8 @@ CONTAINS
 
     INTEGER :: Depth
 
-    CALL NewQuNode(qC)
+    CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
+
     Depth=0
     !$OMP TASK UNTIED SHARED(qA,qC)
     CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA,qC,Depth)
@@ -102,18 +103,22 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Copy_QuTree_2_QuTree
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Copy a coloumn of A into vector C: C <- Col_I(A)
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  SUBROUTINE SpAMM_Copy_QuTree_2_BiTree(qA,Col,bC)
+  !> Copy a coloumn of A into vector C: \f$ C \leftarrow A(:, i) \f$.
+  !!
+  !! @param qA Pointer to quadtree.
+  !! @param i The column index.
+  !! @param bC Pointer to bitree.
+  SUBROUTINE SpAMM_Copy_QuTree_2_BiTree (qA, i, bC)
 
-    TYPE(QuTree), POINTER :: qA
-    TYPE(BiTree), POINTER :: bC
-    INTEGER               :: Col,Depth
-    INTEGER,DIMENSION(2)  :: Cols
+    TYPE(QuTree), POINTER, intent(in) :: qA
+    TYPE(BiTree), POINTER, intent(inout) :: bC
+    INTEGER, intent(in) :: i
+    INTEGER,DIMENSION(2) :: Cols
 
-    IF(.NOT.ASSOCIATED(bC)) &
-      CALL NewBiNode(bC,init=.TRUE.)
+    IF(.NOT.ASSOCIATED(bC)) then
+      CALL NewBiNode(bC, init = .TRUE.)
+    endif
+
     Depth=0
     Cols=(/1,SpAMM_PADDED_MATRIX_DIMENSION/)
     !$OMP TASK UNTIED SHARED(qA,bC)
@@ -184,14 +189,17 @@ CONTAINS
   !! is already allocated then it will be free'ed by calling Delete().
   !!
   !! @param qA A pointer to a type(QuTree) object.
-  !! @param depth The tree depth.
-  SUBROUTINE SpAMM_Allocate_Full_QuTree(qA, depth)
+  !! @param i_lower The lower row index.
+  !! @param j_lower The lower column index.
+  !! @param i_upper The upper row index.
+  !! @param j_upper The upper column index.
+  SUBROUTINE SpAMM_Allocate_Full_QuTree(qA, i_lower, j_lower, i_upper, j_upper)
 
     TYPE(QuTree), POINTER :: qA
-    integer, intent(in) :: depth
+    integer, intent(in) :: i_lower, j_lower, i_upper, j_upper
 
     IF(ASSOCIATED(qA)) CALL SpAMM_Delete_QuTree(qA)
-    CALL SpAMM_Allocate_Full_QuTree_Recur(qA, 0, depth)
+    CALL SpAMM_Allocate_Full_QuTree_Recur(qA, i_lower, j_lower, i_upper, j_upper)
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree
 
@@ -221,10 +229,10 @@ CONTAINS
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
     INTEGER                              :: Depth
 
-    IF(.NOT.ASSOCIATED(qA))RETURN
+    IF(.NOT.ASSOCIATED(qA)) RETURN
 
     IF(.NOT.ASSOCIATED(qC))THEN
-      CALL NewQuNode(qC)
+      CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
 !    qC%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm
@@ -339,86 +347,91 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Copy_BiTree_2_BiTree_Recur
 
-  RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur(qA,bC,Col,Cols,Depth)
+  !> Copy quadtree column to bitree.
+  !!
+  !! @param qA Pointer to quadtree.
+  !! @param bC Pointer to bitree.
+  !! @param j The column index.
+  RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur(qA, bC, j)
 
-    TYPE(QuTree), POINTER :: qA
-    TYPE(BiTree), POINTER :: bC
-    INTEGER               :: I,Col,Depth,HlfSpn
+    TYPE(QuTree), POINTER, intent(in) :: qA
+    TYPE(BiTree), POINTER, intent(inout) :: bC
+    integer, intent(in) :: j
+
+    INTEGER               :: I,Depth,HlfSpn
     INTEGER,DIMENSION(2)  :: Cols,Col_00_10,Col_01_11
 
-    IF(.NOT.ASSOCIATED(qA))RETURN
+    IF(.NOT.ASSOCIATED(qA)) RETURN
 
-    IF(.NOT.ASSOCIATED(bC)) &
+    IF(.NOT.ASSOCIATED(bC)) then
       CALL NewBiNode(bC)
+    endif
 
-    !IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(qA%Blok))THEN
-    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
-      !IF(.NOT.ALLOCATED(bC%Vect)) &
-      !  ALLOCATE(bC%Vect(1:SpAMM_BLOCK_SIZE))
-      I=Col-Cols(1)+1
-      bC%Vect=qA%Blok(:,I)
-      !       WRITE(*,*)'I = ',I,' Col = ',Col,' Col = ',qA%Blok(:,I)
-    ELSEIF(Depth==SpAMM_TOTAL_DEPTH)THEN
-      bC%Vect=SpAMM_Zero
+    IF(qA%i_upper-qA%i_lower+1 == spamm_block_size) then
+      if(allocated(qA%blok)) then
+        IF(.NOT. ALLOCATED(bC%Vect)) then
+          ALLOCATE(bC%Vect(SpAMM_BLOCK_SIZE))
+        endif
+        bC%Vect = qA%Blok(:, j-qA%i_lower+1)
+      else
+        bC%Vect = SpAMM_Zero
+      endif
     ELSE
       HlfSpn=(Cols(2)-Cols(1))/2
       Col_00_10=(/Cols(1),Cols(1)+HlfSpn/)
       Col_01_11=(/Cols(1)+HlfSpn+1,Cols(2)/)
-      IF(Col<=Col_00_10(2))THEN
-        !
+      IF(j <= qA%i_lower+half) THEN
         IF(ASSOCIATED(qA%Quad11))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad11,bC%Sect0,Col,Col_00_10,Depth+1)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad11, bC%Sect0, j)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%Sect0))THEN
           !$OMP TASK UNTIED SHARED(bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Delete_BiTree_Recur(bC%Sect0,Depth+1)
+          CALL SpAMM_Delete_BiTree_Recur(bC%Sect0)
           !$OMP END TASK
           !$OMP TASKWAIT
           DEALLOCATE(bC%Sect0)
         ENDIF
-        !
+
         IF(ASSOCIATED(qA%Quad21))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad21,bC%Sect1,Col,Col_00_10,Depth+1)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad21, bC%Sect1, j)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%Sect1))THEN
           !$OMP TASK UNTIED SHARED(bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Delete_BiTree_Recur(bC%Sect1,Depth+1)
+          CALL SpAMM_Delete_BiTree_Recur(bC%Sect1)
           !$OMP END TASK
           !$OMP TASKWAIT
           DEALLOCATE(bC%Sect1)
         ENDIF
-        !
       ELSE
-        !
         IF(ASSOCIATED(qA%Quad12))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad12,bC%Sect0,Col,Col_01_11,Depth+1)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad12, bC%Sect0, j)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%Sect0))THEN
           !$OMP TASK UNTIED SHARED(bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Delete_BiTree_Recur(bC%Sect0,Depth+1)
+          CALL SpAMM_Delete_BiTree_Recur(bC%Sect0)
           !$OMP END TASK
           !$OMP TASKWAIT
           DEALLOCATE(bC%Sect0)
         ENDIF
-        !
+
         IF(ASSOCIATED(qA%Quad22))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad22,bC%Sect1,Col,Col_01_11,Depth+1)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad22, bC%Sect1, j)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%Sect1))THEN
           !$OMP TASK UNTIED SHARED(bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Delete_BiTree_Recur(bC%Sect1,Depth+1)
+          CALL SpAMM_Delete_BiTree_Recur(bC%Sect1)
           !$OMP END TASK
           !$OMP TASKWAIT
           DEALLOCATE(bC%Sect1)
@@ -531,9 +544,14 @@ CONTAINS
   !> Allocate a new node in the quadtree.
   !!
   !! @param qA Pointer to node.
-  SUBROUTINE NewQuNode(qA)
+  !! @param i_lower The lower row index.
+  !! @param j_lower The lower column index.
+  !! @param i_upper The upper row index.
+  !! @param j_upper The upper column index.
+  SUBROUTINE NewQuNode (qA, i_lower, j_lower, i_upper, j_upper)
 
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qA
+    integer, intent(in) :: i_lower, j_lower, i_upper, j_upper
 
     ! Delete node if it already exists.
     IF(ASSOCIATED(qA)) THEN
@@ -544,7 +562,6 @@ CONTAINS
     ALLOCATE(qA)
 
     ! Initialize.
-    qA%depth = 0
     qA%number_nonzeros = 0
     qA%number_operations = 0
 
@@ -579,28 +596,41 @@ CONTAINS
   !! Recursive allocation of a quadtree.
   !!
   !! @param qA A pointer to a type(QuTree) object.
-  !! @param tier The current tier.
-  !! @param depth The tree depth.
-  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur(qA, tier, depth)
+  !! @param i_lower The lower row index.
+  !! @param j_lower The lower column index.
+  !! @param i_upper The upper row index.
+  !! @param j_upper The upper column index.
+  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur(qA, i_lower, j_lower, i_upper, j_upper)
 
     TYPE(QuTree), POINTER :: qA
-    INTEGER, intent(in) :: tier
-    integer, intent(in) :: depth
+    integer, intent(in) :: i_lower, j_lower, i_upper, j_upper
+    integer :: rows, columns
+
+    rows = i_upper-i_lower+1
+    columns = j_upper-j_lower+1
+
+    if(rows /= columns) then
+      write(*, *) "non-square submatrix"
+      error stop
+    endif
+
+    if(rows < spamm_block_size .or. columns < spamm_block_size) then
+      write(*, *) "logic error"
+      error stop
+    endif
 
     ! Allocate new node.
-    CALL NewQuNode(qA)
+    CALL NewQuNode(qA, i_lower, j_lower, i_upper, j_upper)
 
-    qA%depth = depth
-
-    IF(tier == depth) THEN
-      ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
-      qA%Blok=SpAMM_Zero
+    IF(rows == spamm_block_size) then
+      ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE))
+      qA%Blok = SpAMM_Zero
       RETURN
     ELSE
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11, tier+1, depth)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad12, tier+1, depth)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad21, tier+1, depth)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad22, tier+1, depth)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11, i_lower, j_lower, i_lower+rows/2, j_lower+columns/2)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad12, i_lower, j_lower+columns/2, i_lower+rows/2, j_upper)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad21, i_lower+rows/2, j_lower, i_upper, j_lower+columns/2)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad22, i_lower+rows/2, j_lower+columns/2, i_upper, j_upper)
     ENDIF
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur
@@ -637,7 +667,7 @@ CONTAINS
     integer, intent(in) :: M, N
 
     A => spamm_allocate_matrix_2nd_order(M, N)
-    call spamm_allocate_full_qutree(A%root, A%depth)
+    call spamm_allocate_full_qutree(A%root, 1, 1, A%N_padded, A%N_padded)
 
   end function spamm_zero_matrix
 
