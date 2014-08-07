@@ -133,6 +133,12 @@ module spamm_types
 
   !> Quaternary tree data structure.
   TYPE QuTree
+
+    !> @note This is not really necessary, but convenient.
+    !!
+    !! The depth.
+    integer :: depth
+
     !> The Frobenious norm.
     REAL(SpAMM_KIND) :: Norm = 0
 

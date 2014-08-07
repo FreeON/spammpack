@@ -184,16 +184,14 @@ CONTAINS
   !! is already allocated then it will be free'ed by calling Delete().
   !!
   !! @param qA A pointer to a type(QuTree) object.
-  SUBROUTINE SpAMM_Allocate_Full_QuTree(qA)
+  !! @param depth The tree depth.
+  SUBROUTINE SpAMM_Allocate_Full_QuTree(qA, depth)
 
-    TYPE(QuTree),POINTER :: qA
-    INTEGER              :: Depth
+    TYPE(QuTree), POINTER :: qA
+    integer, intent(in) :: depth
 
     IF(ASSOCIATED(qA)) CALL SpAMM_Delete_QuTree(qA)
-    CALL NewQuNode(qA)
-
-    Depth=0
-    CALL SpAMM_Allocate_Full_QuTree_Recur(qA,Depth)
+    CALL SpAMM_Allocate_Full_QuTree_Recur(qA, 0, depth)
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree
 
@@ -546,6 +544,7 @@ CONTAINS
     ALLOCATE(qA)
 
     ! Initialize.
+    qA%depth = 0
     qA%number_nonzeros = 0
     qA%number_operations = 0
 
@@ -580,24 +579,28 @@ CONTAINS
   !! Recursive allocation of a quadtree.
   !!
   !! @param qA A pointer to a type(QuTree) object.
-  !! @param Depth The current tier.
-  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur(qA, Depth)
+  !! @param tier The current tier.
+  !! @param depth The tree depth.
+  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur(qA, tier, depth)
 
     TYPE(QuTree), POINTER :: qA
-    INTEGER               :: Depth
+    INTEGER, intent(in) :: tier
+    integer, intent(in) :: depth
 
     ! Allocate new node.
     CALL NewQuNode(qA)
 
-    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
+    qA%depth = depth
+
+    IF(tier == depth) THEN
       ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE,SpAMM_BLOCK_SIZE))
       qA%Blok=SpAMM_Zero
       RETURN
     ELSE
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11,Depth+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad12,Depth+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad21,Depth+1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad22,Depth+1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11, tier+1, depth)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad12, tier+1, depth)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad21, tier+1, depth)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad22, tier+1, depth)
     ENDIF
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur
@@ -633,12 +636,14 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer :: A
     integer, intent(in) :: M, N
 
-    allocate(A)
-    call new(A%root)
+    A => spamm_allocate_matrix_2nd_order(M, N)
+    call spamm_allocate_full_qutree(A%root, A%depth)
 
   end function spamm_zero_matrix
 
   !> Get a matrix element from a 2nd order SpAMM matrix.
+  !!
+  !! @bug This function is not implemented yet.
   !!
   !! @param A The matrix.
   !! @param i The row index.

@@ -109,22 +109,19 @@ MODULE SpAMM_ALGEBRA
 
 CONTAINS
 
-  !> Multiplication operation between a quadtree and a quadtree, @f$ C
-  !! \leftarrow A \times B @f$.
+  !> Multiplication operation between a quadtree and a quadtree, @f$ C \leftarrow A \times B @f$.
   !!
   !! @param qA Pointer to quadtree A.
   !! @param qB Pointer to quadtree B.
   !! @param qC Pointer to quadtree C.
-  !! @param threshold The SpAMM threshold overriding the global value,
-  !! spamm_types::spamm_product_tolerance.
+  !! @param threshold The SpAMM threshold overriding the global value, spamm_types::spamm_product_tolerance.
   SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA, qB, qC, threshold)
 
     TYPE(QuTree), POINTER, INTENT(IN) :: qA,qB
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
     REAL(SpAMM_KIND), OPTIONAL :: threshold
-    real(spamm_kind) :: local_threshold
 
-    INTEGER :: Depth
+    real(spamm_kind) :: local_threshold
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
     TInitial = SpAMM_Get_Time()
@@ -145,13 +142,12 @@ CONTAINS
       local_threshold = 0
     ENDIF
 
-    Depth = 0
     qC%number_operations = 0
 
     CALL SpAMM_Multiply_QuTree_x_Scalar(qC, SpAMM_Zero)
 
     !$OMP TASK UNTIED SHARED(qA,qB,qC)
-    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, local_threshold, Depth)
+    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, local_threshold, 0)
     !$OMP END TASK
 
     !$OMP END MASTER
@@ -504,11 +500,13 @@ CONTAINS
   !! @param qB Pointer to quadtree B.
   !! @param qC Pointer to quadtree C.
   !! @param threshold The SpAMM product tolerance.
-  !! @param Depth The current Depth.
-  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, threshold, Depth)
+  !! @param tier The current tier.
+  !! @param depth The matrix depth.
+  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, threshold, tier, depth)
 
     TYPE(QuTree), POINTER :: qC, qA, qB
     REAL(SpAMM_KIND) :: threshold
+    integer :: tier
     INTEGER :: Depth
     REAL(SpAMM_KIND), DIMENSION(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE) :: temp
     INTEGER :: i, j, k, l
@@ -527,7 +525,7 @@ CONTAINS
       CALL OMP_UNSET_LOCK(qC%lock)
 #endif
       ! At the bottom, calculate the product.
-      IF(Depth == SpAMM_TOTAL_DEPTH) THEN
+      IF(tier == depth) THEN
 #ifdef _OPENMP
         CALL OMP_SET_LOCK(qC%lock)
 #endif
@@ -552,19 +550,19 @@ CONTAINS
       ELSE
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad11%Norm*qB%Quad11%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11, threshold, Depth+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad11,qB%Quad11, threshold, tier+1, Depth)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad11%Norm*qB%Quad12%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12,qA%Quad11,qB%Quad12, threshold, Depth+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12,qA%Quad11,qB%Quad12, threshold, tier+1, Depth)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad21%Norm*qB%Quad11%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21,qA%Quad21,qB%Quad11, threshold, Depth+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21,qA%Quad21,qB%Quad11, threshold, tier+1, Depth)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad21%Norm*qB%Quad12%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22,qA%Quad21,qB%Quad12, threshold, Depth+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22,qA%Quad21,qB%Quad12, threshold, tier+1, Depth)
         !$OMP END TASK
 
 #ifdef BIGLOCK
@@ -572,19 +570,19 @@ CONTAINS
 #endif
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad12%Norm*qB%Quad21%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad12,qB%Quad21, threshold, Depth+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11,qA%Quad12,qB%Quad21, threshold, tier+1, Depth)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad12%Norm*qB%Quad22%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12,qA%Quad12,qB%Quad22, threshold, Depth+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12,qA%Quad12,qB%Quad22, threshold, tier+1, Depth)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad21%Norm*qB%Quad21%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21,qA%Quad22,qB%Quad21, threshold, Depth+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21,qA%Quad22,qB%Quad21, threshold, tier+1, Depth)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad22%Norm*qB%Quad22%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22,qA%Quad22,qB%Quad22, threshold, Depth+1)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22,qA%Quad22,qB%Quad22, threshold, tier+1, Depth)
         !$OMP END TASK
 
         !$OMP TASKWAIT
@@ -1101,7 +1099,7 @@ CONTAINS
   !!
   !! If the tolerance is not given, then \f$ \tau = 0 \f$ is used, i.e. the product reverts to an exact dense product.
   !!
-  !! @todo The code for \f$ \alpha \neq 1 \f$ and \f$ \beta \neq 0 \f$ is not implemented yet.
+  !! @bug The code for \f$ \alpha \neq 1 \f$ and \f$ \beta \neq 0 \f$ is not implemented yet.
   !!
   !! @param A The matrix \f$ A \f$.
   !! @param B The matrix \f$ B \f$.
@@ -1111,11 +1109,12 @@ CONTAINS
   !! @param beta The scalar \f$ \beta \f$.
   subroutine spamm_multiply_2nd_order_x_2nd_order (A, B, C, tolerance, alpha, beta)
 
-    real(spamm_kind), intent(in), optional :: alpha, beta
-    real(spamm_kind), intent(in), optional :: tolerance
-    real(spamm_kind) :: local_tolerance
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A, B
     type(spamm_matrix_2nd_order), pointer, intent(inout) :: C
+    real(spamm_kind), intent(in), optional :: tolerance
+    real(spamm_kind), intent(in), optional :: alpha, beta
+
+    real(spamm_kind) :: local_tolerance
 
     if(present(tolerance)) then
       local_tolerance = tolerance
@@ -1123,7 +1122,7 @@ CONTAINS
       local_tolerance = 0
     endif
 
-    call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, tolerance)
+    call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, tolerance, C%depth)
 
   end subroutine spamm_multiply_2nd_order_x_2nd_order
 
