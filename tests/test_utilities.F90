@@ -6,6 +6,36 @@ module test_utilities
 
 contains
 
+  function load_MM (filename) result (A)
+
+    character(len = *), intent(in) :: filename
+    real(SpAMM_DOUBLE), dimension(:, :), allocatable :: A
+
+    character(len = 1000) :: buffer
+    integer :: M, N, nonzeros
+    integer :: line
+    integer :: i, j
+    real(SpAMM_DOUBLE) :: Aij
+
+    open(unit = 10, file = trim(filename))
+
+    read(10, *) buffer
+    read(10, *) buffer
+
+    read(10, *) M, N, nonzeros
+
+    allocate(A(M, N))
+
+    A = 0
+    do line = 1, nonzeros
+      read(10, *) i, j, Aij
+      A(i, j) = Aij
+    enddo
+
+    close(10)
+
+  end function load_MM
+
   subroutine load_matrix (filename, A)
 
     character(len = *), intent(in) :: filename

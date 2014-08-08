@@ -157,6 +157,9 @@ CONTAINS
 
     !$OMP END PARALLEL
 
+    qC%norm = norm(qC)
+    qC%norm = sqrt(qC%norm)
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_QuTree",1)
 
@@ -184,6 +187,9 @@ CONTAINS
     !$OMP END TASK
 
     !$OMP TASKWAIT
+
+    qA%norm = norm(qA)
+    qA%norm = sqrt(qA%norm)
 
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_Scalar",3)
@@ -225,6 +231,10 @@ CONTAINS
       InPlace_Alpha, InPlace_Beta, Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
+
+    qA%norm = norm(qA)
+    qA%norm = sqrt(qA%norm)
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Add_QuTree_2_QuTree_InPlace",4)
 
@@ -247,6 +257,10 @@ CONTAINS
     CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA,1,SpAMM_PADDED_MATRIX_DIMENSION,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
+
+    qA%norm = norm(qA)
+    qA%norm = sqrt(qA%norm)
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Add_Identity_2_QuTree_InPlace",5)
 
@@ -552,7 +566,7 @@ CONTAINS
         CALL OMP_SET_LOCK(qC%lock)
 #endif
         qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
-        qC%number_operations = qC%number_operations+1
+        qC%number_operations = qC%number_operations+SpAMM_BLOCK_SIZE**3
 
 #if defined(_OPENMP) && ! defined(BIGLOCK)
         CALL OMP_UNSET_LOCK(qC%lock)

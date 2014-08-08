@@ -62,8 +62,14 @@ program spamm_multiply
   write(*, *) "setting num_threads to ", num_threads
 #endif
 
-  call load_matrix(matrixfilename, A_dense)
-  !call load_matrix_binary(matrixfilename, B_dense)
+  if(matrixfilename(len_trim(matrixfilename)-4:) == ".coor") then
+    call load_matrix(matrixfilename, A_dense)
+  elseif(matrixfilename(len_trim(matrixfilename)-2:) == ".mm") then
+    A_dense = load_MM(matrixfilename)
+  else
+    write(*, *) "unknown matrix format"
+    error stop
+  endif
 
   N = size(A_dense, 1)
   allocate(B_dense(N, N))
@@ -123,7 +129,8 @@ program spamm_multiply
 #else
       call Multiply(A, B, C, LocalThreshold = 1d-7)
 #endif
-      write(*, "(A,F22.12)") "operation count = ", C%number_operations
+      write(*, "(A,F22.0)") "operation count = ", C%number_operations
+      write(*, "(A,F12.5)") "ratio to dense = ", C%number_operations/N**3
     enddo
 
     CALL SpAMM_Time_Stamp()
