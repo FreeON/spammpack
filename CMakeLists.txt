@@ -60,9 +60,9 @@ endif()
 if( NOT CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE Debug )
   message( STATUS
-    "Setting build type to ${CMAKE_BUILD_TYPE}. If this is not "
-    "what was intended, please specify another one using the "
-    "variable CMAKE_BUILD_TYPE."
+    "Setting build type to ${CMAKE_BUILD_TYPE}. If this was not "
+    "intended, please specify another one using the variable "
+    "CMAKE_BUILD_TYPE."
     )
 endif()
 
