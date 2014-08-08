@@ -156,6 +156,9 @@ CONTAINS
 
     !$OMP END PARALLEL
 
+    qC%norm = norm(qC)
+    qC%norm = sqrt(qC%norm)
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_QuTree",1)
 
@@ -197,6 +200,9 @@ CONTAINS
 
     !$OMP TASKWAIT
 
+    qA%norm = norm(qA)
+    qA%norm = sqrt(qA%norm)
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_Scalar",3)
 
@@ -237,6 +243,10 @@ CONTAINS
       InPlace_Alpha, InPlace_Beta, Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
+
+    qA%norm = norm(qA)
+    qA%norm = sqrt(qA%norm)
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Add_QuTree_2_QuTree_InPlace",4)
 
@@ -270,6 +280,10 @@ CONTAINS
     CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA, alpha, M, N, i_lower, i_upper)
     !$OMP END TASK
     !$OMP TASKWAIT
+
+    qA%norm = norm(qA)
+    qA%norm = sqrt(qA%norm)
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Add_Identity_2_QuTree_InPlace",5)
 
