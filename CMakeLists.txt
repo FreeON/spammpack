@@ -27,6 +27,16 @@ list( APPEND CPACK_SOURCE_IGNORE_FILES
   "/.*\\\\.cmake$"
   "/CMakeCache\\\\.txt$"
   "/${CPACK_PACKAGE_NAME}.*tar.*$"
+  "/${CPACK_PACKAGE_NAME}.*rpm$"
+  "/${CPACK_PACKAGE_NAME}.*deb$"
+  "/install_manifest\\\\.txt"
+  "\\\\.mod$"
+  "/lib.*\\\\.so.*$"
+  "/lib.*\\\\.a$"
+  "/Doxyfile$"
+  "/latex/"
+  "/html/"
+  "/man/"
   )
 
 message( STATUS "ignoring ${CPACK_SOURCE_IGNORE_FILES}" )
