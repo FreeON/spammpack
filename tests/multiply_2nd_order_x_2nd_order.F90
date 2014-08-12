@@ -1,4 +1,4 @@
-program test_multiply
+program test
 
   use spammpack
   use test_utilities
@@ -31,4 +31,4 @@ program test_multiply
     enddo
   enddo
 
-end program test_multiply
+end program test

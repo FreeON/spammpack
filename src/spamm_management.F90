@@ -57,6 +57,7 @@ module spamm_management
     MODULE PROCEDURE SpAMM_Copy_QuTree_2_QuTree
     MODULE PROCEDURE SpAMM_Copy_QuTree_2_BiTree
     MODULE PROCEDURE SpAMM_Copy_BiTree_2_BiTree
+    module procedure spamm_copy_2nd_order_to_2nd_order
   END INTERFACE
 
   !> Interface for deletion (deallocation) of SpAMM objects.
@@ -78,9 +79,26 @@ module spamm_management
 
 CONTAINS
 
-  !=================================================================
-  ! SPAMM CONTAINERS FOR MEMORY MANEGEMENT ON QUAD TREE MATRICES
-  !=================================================================
+  !> Copy a 2nd order matrix.
+  !!
+  !! @param A The matrix A.
+  !! @param C The matrix C.
+  subroutine spamm_copy_2nd_order_to_2nd_order (A, B)
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_2nd_order), pointer, intent(inout) :: B
+
+    if(.not. associated(A)) then
+      return
+    endif
+
+    if(.not. associated(B)) then
+      B => spamm_allocate_matrix_2nd_order(A%M, A%N)
+    endif
+
+    call spamm_copy_qutree_2_qutree(A%root, B%root)
+
+  end subroutine spamm_copy_2nd_order_to_2nd_order
 
   !> Copy QuTree into another QuTree: @f$ C \leftarrow A @f$.
   !!
@@ -95,9 +113,8 @@ CONTAINS
 
     CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
 
-    Depth=0
     !$OMP TASK UNTIED SHARED(qA,qC)
-    CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA,qC,Depth)
+    CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA, qC)
     !$OMP END TASK
     !$OMP TASKWAIT
 
@@ -149,16 +166,12 @@ CONTAINS
   !! @param qA Pointer to quadtree matrix.
   SUBROUTINE SpAMM_Delete_QuTree(qA)
 
-    TYPE(QuTree), POINTER :: qA
-
-    INTEGER :: Depth
+    TYPE(QuTree), POINTER, intent(inout) :: qA
 
     IF(.NOT.ASSOCIATED(qA)) RETURN
 
-    Depth=0
-
     !$OMP TASK UNTIED SHARED(qA)
-    CALL SpAMM_Delete_QuTree_Recur(qA,Depth)
+    CALL SpAMM_Delete_QuTree_Recur(qA)
     !$OMP END TASK
 
     !$OMP TASKWAIT
@@ -220,12 +233,10 @@ CONTAINS
   !!
   !! @param qA Pointer to matrix A.
   !! @param qC Pointer to matrix C.
-  !! @param Depth The current tier.
-  RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur (qA, qC, Depth)
+  RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur (qA, qC)
 
     TYPE(QuTree), POINTER, INTENT(IN)    :: qA
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
-    INTEGER                              :: Depth
 
     IF(.NOT.ASSOCIATED(qA)) RETURN
 
@@ -233,64 +244,63 @@ CONTAINS
       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
-!    qC%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm
+    ! qC%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm
     qC%Norm=qA%Norm
     !IF(Depth==SpAMM_TOTAL_DEPTH.AND.ASSOCIATED(qA%Blok))THEN
-    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
-      ! IF(qA%Siz==SpAMM_BLOCK_SIZE.AND.ALLOCATED(qA%Blok))THEN
-      !IF(.NOT.ASSOCIATED(qC%Blok)) THEN
-      !  ALLOCATE(qC%Blok)
-      !ENDIF
-      qC%Blok=qA%Blok
+    IF(qA%i_upper-qA%i_lower == SPAMM_BLOCK_SIZE) then
+      IF(.NOT. allocated(qC%Blok)) THEN
+        ALLOCATE(qC%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+      ENDIF
+      qC%Blok = qA%Blok
     ELSE
       IF(ASSOCIATED(qA%Quad11))THEN
-        !$OMP TASK UNTIED SHARED(qA,qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad11,qC%Quad11,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qC)
+        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad11, qC%Quad11)
         !$OMP END TASK
       ELSEIF(ASSOCIATED(qC%Quad11))THEN
-        !$OMP TASK UNTIED SHARED(qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad11,Depth+1)
+        !$OMP TASK UNTIED SHARED(qC)
+        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Delete_QuTree_Recur(qC%Quad11)
         !$OMP END TASK
         !$OMP TASKWAIT
         DEALLOCATE(qC%Quad11)
       ENDIF
       IF(ASSOCIATED(qA%Quad12))THEN
-        !$OMP TASK UNTIED SHARED(qA,qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad12,qC%Quad12,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qC)
+        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad12, qC%Quad12)
         !$OMP END TASK
       ELSEIF(ASSOCIATED(qC%Quad12))THEN
-        !$OMP TASK UNTIED SHARED(qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad12,Depth+1)
+        !$OMP TASK UNTIED SHARED(qC)
+        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Delete_QuTree_Recur(qC%Quad12)
         !$OMP END TASK
         !$OMP TASKWAIT
         DEALLOCATE(qC%Quad12)
       ENDIF
       IF(ASSOCIATED(qA%Quad21))THEN
-        !$OMP TASK UNTIED SHARED(qA,qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad21,qC%Quad21,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qC)
+        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad21, qC%Quad21)
         !$OMP END TASK
       ELSEIF(ASSOCIATED(qC%Quad21))THEN
-        !$OMP TASK UNTIED SHARED(qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad21,Depth+1)
+        !$OMP TASK UNTIED SHARED(qC)
+        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Delete_QuTree_Recur(qC%Quad21)
         !$OMP END TASK
         !$OMP TASKWAIT
         DEALLOCATE(qC%Quad21)
       ENDIF
       IF(ASSOCIATED(qA%Quad22))THEN
-        !$OMP TASK UNTIED SHARED(qA,qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad22,qC%Quad22,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,qC)
+        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad22, qC%Quad22)
         !$OMP END TASK
       ELSEIF(ASSOCIATED(qC%Quad22))THEN
-        !$OMP TASK UNTIED SHARED(qC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad22,Depth+1)
+        !$OMP TASK UNTIED SHARED(qC)
+        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+        CALL SpAMM_Delete_QuTree_Recur(qC%Quad22)
         !$OMP END TASK
         !$OMP TASKWAIT
         DEALLOCATE(qC%Quad22)
@@ -312,7 +322,7 @@ CONTAINS
     bC%Norm=bA%Norm
     IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(bA%Vect))THEN
       IF(.NOT.ALLOCATED(bC%Vect)) &
-        ALLOCATE(bC%Vect(1:SpAMM_BLOCK_SIZE))
+        ALLOCATE(bC%Vect(1:SPAMM_BLOCK_SIZE))
       bC%Vect=bA%Vect
     ELSE
       IF(ASSOCIATED(bA%Sect0))THEN
@@ -365,10 +375,10 @@ CONTAINS
       CALL NewBiNode(bC)
     endif
 
-    IF(qA%i_upper-qA%i_lower+1 == spamm_block_size) then
+    IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       if(allocated(qA%blok)) then
         IF(.NOT. ALLOCATED(bC%Vect)) then
-          ALLOCATE(bC%Vect(SpAMM_BLOCK_SIZE))
+          ALLOCATE(bC%Vect(SPAMM_BLOCK_SIZE))
         endif
         bC%Vect = qA%Blok(:, j-qA%i_lower+1)
       else
@@ -442,28 +452,27 @@ CONTAINS
 
   !> Recursive part of delete quadtree.
   !!
+  !! @bug Instaed of a critical section, use locks.
+  !!
   !! @param qA Pointer to quadtree node.
-  !! @param Depth The current tier.
-  RECURSIVE SUBROUTINE SpAMM_Delete_QuTree_Recur(qA,Depth)
+  RECURSIVE SUBROUTINE SpAMM_Delete_QuTree_Recur(qA)
 
     TYPE(QuTree),POINTER  :: qA
-    INTEGER :: Depth
-    !INTEGER :: Status
 
     IF(.NOT.ASSOCIATED(qA))RETURN
     !$OMP CRITICAL
-    !IF(ALLOCATED(qA%Blok))THEN
-    !  DEALLOCATE(qA%Blok,STAT=Status)
-    !ENDIF
+    IF(ALLOCATED(qA%Blok))THEN
+      DEALLOCATE(qA%Blok)
+    ENDIF
 #ifdef _OPENMP
     CALL OMP_DESTROY_LOCK(qA%lock)
 #endif
     !$OMP END CRITICAL
 
     IF(ASSOCIATED(qA%Quad11))THEN
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad11,Depth+1)
+      !$OMP TASK UNTIED SHARED(qA)
+      !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad11)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -472,9 +481,9 @@ CONTAINS
     ENDIF
 
     IF(ASSOCIATED(qA%Quad12))THEN
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad12,Depth+1)
+      !$OMP TASK UNTIED SHARED(qA)
+      !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad12)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -483,9 +492,9 @@ CONTAINS
     ENDIF
 
     IF(ASSOCIATED(qA%Quad21))THEN
-      !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad21,Depth+1)
+      !$OMP TASK UNTIED SHARED(qA)
+      !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad21)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -494,9 +503,9 @@ CONTAINS
     ENDIF
 
     IF(ASSOCIATED(qA%Quad22))THEN
-       !$OMP TASK UNTIED SHARED(qA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad22,Depth+1)
+      !$OMP TASK UNTIED SHARED(qA)
+      !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      CALL SpAMM_Delete_QuTree_Recur(qA%Quad22)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -618,7 +627,7 @@ CONTAINS
       error stop
     endif
 
-    if(rows < spamm_block_size .or. columns < spamm_block_size) then
+    if(rows < SPAMM_BLOCK_SIZE .or. columns < SPAMM_BLOCK_SIZE) then
       write(*, *) "logic error"
       error stop
     endif
@@ -626,8 +635,8 @@ CONTAINS
     ! Allocate new node.
     CALL NewQuNode(qA, i_lower, j_lower, i_upper, j_upper)
 
-    IF(rows == spamm_block_size) then
-      ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE))
+    IF(rows == SPAMM_BLOCK_SIZE) then
+      ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
       qA%Blok = SpAMM_Zero
       RETURN
     ELSE
@@ -645,7 +654,7 @@ CONTAINS
     INTEGER              :: Depth
 
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
-      ALLOCATE(bA%Vect(SpAMM_BLOCK_SIZE))
+      ALLOCATE(bA%Vect(SPAMM_BLOCK_SIZE))
       bA%Vect=SpAMM_Zero
       NULLIFY(bA%Sect0)
       NULLIFY(bA%Sect1)
@@ -728,7 +737,7 @@ CONTAINS
     A%N_padded = 2**K
 
     ! Depth starts from 0:
-    number_tiles = CEILING(DBLE(A%N_padded)/SpAMM_BLOCK_SIZE)
+    number_tiles = CEILING(DBLE(A%N_padded)/SPAMM_BLOCK_SIZE)
     A%depth = FLOOR(LOG(DBLE(number_tiles))/LOG(2D0))
 
     write(*, *) "allocated ", M, "x", N, " matrix"

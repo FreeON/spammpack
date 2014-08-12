@@ -548,7 +548,7 @@ CONTAINS
     REAL(SpAMM_KIND) :: threshold
     integer :: tier
     INTEGER :: Depth
-    REAL(SpAMM_KIND), DIMENSION(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE) :: temp
+    REAL(SpAMM_KIND), DIMENSION(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE) :: temp
     INTEGER :: i, j, k, l
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
@@ -565,13 +565,13 @@ CONTAINS
       CALL OMP_UNSET_LOCK(qC%lock)
 #endif
       ! At the bottom, calculate the product.
-      IF(qC%i_upper-qC%i_lower+1 == spamm_block_size) then
+      IF(qC%i_upper-qC%i_lower+1 == SPAMM_BLOCK_SIZE) then
 #ifdef _OPENMP
         CALL OMP_SET_LOCK(qC%lock)
 #endif
         IF(.NOT.ALLOCATED(qC%Blok))THEN
           ! Allocate new block.
-          ALLOCATE(qC%Blok(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE))
+          ALLOCATE(qC%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
           qC%Blok = SpAMM_Zero
         ENDIF
 #ifdef _OPENMP
@@ -582,7 +582,7 @@ CONTAINS
         CALL OMP_SET_LOCK(qC%lock)
 #endif
         qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
-        qC%number_operations = qC%number_operations+spamm_block_size**3
+        qC%number_operations = qC%number_operations+SPAMM_BLOCK_SIZE**3
 
 #if defined(_OPENMP) && ! defined(BIGLOCK)
         CALL OMP_UNSET_LOCK(qC%lock)
@@ -656,7 +656,7 @@ CONTAINS
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
       ! At the bottom, multiply the block.
       qA%Norm=qA%Norm*ABS(a)
-      qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)=qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)*a
+      qA%Blok(1:SPAMM_BLOCK_SIZE,1:SPAMM_BLOCK_SIZE)=qA%Blok(1:SPAMM_BLOCK_SIZE,1:SPAMM_BLOCK_SIZE)*a
     ELSE
       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
@@ -717,7 +717,7 @@ CONTAINS
       ENDIF
     ELSEIF(.NOT.TA.AND.TB)THEN
       !$OMP TASK UNTIED SHARED(qA,qB) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qB,qA,Depth)
+      CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qB, qA)
       !$OMP END TASK
       !$OMP TASKWAIT
     ELSEIF(TA .AND. .NOT.TB) THEN
@@ -753,14 +753,14 @@ CONTAINS
 
     IF(i_lower > M .OR. i_lower > N) then
       RETURN
-    ELSEIF(i_upper-i_lower+1 == spamm_block_size) then
+    ELSEIF(i_upper-i_lower+1 == SPAMM_BLOCK_SIZE) then
       IF(.NOT. ASSOCIATED(qA))THEN
         CALL NewQuNode(qA, i_lower, i_upper, i_lower, i_upper)
-        ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE))
+        ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
         qA%Blok = SpAMM_Zero
       ENDIF
 
-      DO i = 1, MIN(SpAMM_BLOCK_SIZE, M-i_lower+1, N-i_lower+1)
+      DO i = 1, MIN(SPAMM_BLOCK_SIZE, M-i_lower+1, N-i_lower+1)
         qA%Blok(i, i) = qA%Blok(I, I)+alpha
       ENDDO
     ELSE
@@ -799,7 +799,7 @@ CONTAINS
     IF(Depth == SpAMM_TOTAL_DEPTH) THEN
       Trace = SpAMM_Zero
       IF(.NOT.ASSOCIATED(qA)) RETURN
-      DO I = 1, SpAMM_BLOCK_SIZE
+      DO I = 1, SPAMM_BLOCK_SIZE
         Trace = Trace+qA%Blok(I,I)
       ENDDO
     ELSEIF(.NOT.ASSOCIATED(qA%Quad11).AND. &
@@ -860,8 +860,8 @@ CONTAINS
     IF(qA%Norm*qB%Norm < threshold) RETURN
 
     IF(Depth == SpAMM_TOTAL_DEPTH)THEN
-      DO I = 1, SpAMM_BLOCK_SIZE
-        Trace = Trace+DOT_PRODUCT(qA%Blok(I, 1:SpAMM_BLOCK_SIZE), qB%Blok(1:SpAMM_BLOCK_SIZE, I))
+      DO I = 1, SPAMM_BLOCK_SIZE
+        Trace = Trace+DOT_PRODUCT(qA%Blok(I, 1:SPAMM_BLOCK_SIZE), qB%Blok(1:SPAMM_BLOCK_SIZE, I))
       ENDDO
     ELSE
       !$OMP TASK UNTIED SHARED(qA,qB,Trace_00_00)
@@ -892,11 +892,12 @@ CONTAINS
     TYPE(QuTree), POINTER  :: qA
     REAL(SpAMM_KIND)       :: Tau
     INTEGER                :: Depth
+
     IF(.NOT.ASSOCIATED(qA))RETURN
     IF(qA%Norm<Tau)THEN
       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA,Depth)
+      CALL SpAMM_Delete_QuTree_Recur(qA)
       !$OMP END TASK
       !$OMP TASKWAIT
       CALL Delete(qA)
@@ -935,7 +936,7 @@ CONTAINS
       Norm=SpAMM_Zero
       RETURN
     ELSEIF(Depth==SpAMM_TOTAL_DEPTH)THEN
-      Norm=SUM(qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)**2)
+      Norm=SUM(qA%Blok(1:SPAMM_BLOCK_SIZE,1:SPAMM_BLOCK_SIZE)**2)
       qA%Norm=SQRT(Norm)
     ELSE
       !$OMP TASK UNTIED SHARED(qA,Norm00) &
@@ -981,13 +982,13 @@ CONTAINS
         ! Allocate
         IF(.NOT.ALLOCATED(bC%Vect))THEN
           !$OMP CRITICAL
-          ALLOCATE(bC%Vect(1:SpAMM_BLOCK_SIZE))
+          ALLOCATE(bC%Vect(1:SPAMM_BLOCK_SIZE))
           bC%Vect=SpAMM_Zero
           !$OMP END CRITICAL
         END IF
         ! Accumulate
-        bC%Vect(1:SpAMM_BLOCK_SIZE)=bC%Vect(1:SpAMM_BLOCK_SIZE)+MATMUL( &
-          qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE),bB%Vect(1:SpAMM_BLOCK_SIZE))
+        bC%Vect(1:SPAMM_BLOCK_SIZE)=bC%Vect(1:SPAMM_BLOCK_SIZE)+MATMUL( &
+          qA%Blok(1:SPAMM_BLOCK_SIZE,1:SPAMM_BLOCK_SIZE),bB%Vect(1:SPAMM_BLOCK_SIZE))
       ELSE
 
         ! 0=00*0
@@ -1088,7 +1089,7 @@ CONTAINS
        Norm=SpAMM_Zero
        RETURN
     ELSEIF(Depth==SpAMM_TOTAL_DEPTH)THEN
-       Norm=SUM(bA%Vect(1:SpAMM_BLOCK_SIZE)**2)
+       Norm=SUM(bA%Vect(1:SPAMM_BLOCK_SIZE)**2)
        bA%Norm=SQRT(Norm)
     ELSE
        !$OMP TASK UNTIED SHARED(bA) &
@@ -1117,7 +1118,7 @@ CONTAINS
        Dot=SpAMM_Zero
        RETURN
     ELSEIF(Depth==SpAMM_TOTAL_DEPTH)THEN
-       Dot=DOT_PRODUCT(bA%Vect(1:SpAMM_BLOCK_SIZE),bB%Vect(1:SpAMM_BLOCK_SIZE))
+       Dot=DOT_PRODUCT(bA%Vect(1:SPAMM_BLOCK_SIZE),bB%Vect(1:SPAMM_BLOCK_SIZE))
     ELSE
        !$OMP TASK UNTIED SHARED(bA,bB,Dot0) &
        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)

@@ -22,7 +22,10 @@ def main ():
     parser.add_argument(
             "--spammpack-lib",
             help = "The spammpack library to link against",
-            choices = [ "spammpack_serial_shared" ],
+            choices = [
+                "spammpack_serial_shared",
+                "spammpack_serial_static"
+                ],
             default = "spammpack_serial_shared"
             )
 
@@ -37,12 +40,13 @@ def main ():
 
     for source in options.SOURCE:
         import os.path
-        testname = os.path.splitext(os.path.basename(source))[0]
+        testbasename = os.path.splitext(os.path.basename(source))[0]
+        testexename = "unit-test-" + testbasename
         fd.write("# Unit test from %s\n" % (source))
-        fd.write("add_executable( %s %s )\n" % (testname, source))
-        fd.write("target_link_libraries( %s %s spammtests)\n" % (testname, options.spammpack_lib))
-        fd.write("target_include_directories( %s PRIVATE ${CMAKE_BINARY_DIR}/src )\n" % (testname))
-        fd.write("add_test( %s %s )\n" % (testname, testname))
+        fd.write("add_executable( %s %s )\n" % (testexename, source))
+        fd.write("target_link_libraries( %s %s spammtests)\n" % (testexename, options.spammpack_lib))
+        fd.write("target_include_directories( %s PRIVATE ${CMAKE_BINARY_DIR}/src )\n" % (testexename))
+        fd.write("add_test( %s %s )\n" % (testbasename, testexename))
 
     fd.close()
 

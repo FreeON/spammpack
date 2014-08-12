@@ -69,21 +69,21 @@ MODULE SpAMM_CONVERT
     A_rows = i_upper-i_lower+1
     A_cols = j_upper-j_lower+1
 
-    IF(A_rows <= SpAMM_BLOCK_SIZE .AND. A_cols <= SpAMM_BLOCK_SIZE)THEN
-      IF(A_rows < SpAMM_BLOCK_SIZE .OR. A_cols < SpAMM_BLOCK_SIZE) THEN
+    IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
+      IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
         WRITE(*, *) "LOGIC ERROR IN SpAMM: padding error"
         WRITE(*, *) "A_rows = ", A_rows
         WRITE(*, *) "A_cols = ", A_cols
-        WRITE(*, *) "SpAMM_BLOCK_SIZE = ", SpAMM_BLOCK_SIZE
+        WRITE(*, *) "SPAMM_BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
         CALL SpAMM_Exit(1)
       ELSE
-        ALLOCATE(qA%Blok(SpAMM_BLOCK_SIZE, SpAMM_BLOCK_SIZE))
+        ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
 
         ! Set new block to zero.
         qA%Blok = SpAMM_Zero
 
-        DO i = 1, SpAMM_BLOCK_SIZE
-          DO j = 1, SpAMM_BLOCK_SIZE
+        DO i = 1, SPAMM_BLOCK_SIZE
+          DO j = 1, SPAMM_BLOCK_SIZE
             ! We have to  be careful not to copy too much of A.
             i_dense = i-1+i_lower
             j_dense = j-1+j_lower
