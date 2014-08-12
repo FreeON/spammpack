@@ -766,10 +766,12 @@ CONTAINS
     ELSE
       half = (i_upper-i_lower+1)/2
 
-      !$OMP TASK UNTIED SHARED(qA) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      !$OMP TASK UNTIED SHARED(qA)
+      !IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad11, alpha, M, N, i_lower, i_lower+half)
       !$OMP END TASK
-      !$OMP TASK UNTIED SHARED(qA) IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      !$OMP TASK UNTIED SHARED(qA)
+      !!IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
       CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad22, alpha, M, N, i_lower+half+1, i_upper)
       !$OMP END TASK
       !$OMP TASKWAIT !! << WTF IS THIS TASKWAIT IMPORTANT FOR IFORT??

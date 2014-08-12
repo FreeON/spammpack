@@ -103,26 +103,24 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Copy_QuTree_2_QuTree
 
-  !> Copy a coloumn of A into vector C: \f$ C \leftarrow A(:, i) \f$.
+  !> Copy a coloumn of A into vector C: \f$ C \leftarrow A(:, j) \f$.
   !!
   !! @param qA Pointer to quadtree.
-  !! @param i The column index.
+  !! @param j The column index.
   !! @param bC Pointer to bitree.
-  SUBROUTINE SpAMM_Copy_QuTree_2_BiTree (qA, i, bC)
+  SUBROUTINE SpAMM_Copy_QuTree_2_BiTree (qA, j, bC)
 
     TYPE(QuTree), POINTER, intent(in) :: qA
     TYPE(BiTree), POINTER, intent(inout) :: bC
-    INTEGER, intent(in) :: i
+    INTEGER, intent(in) :: j
     INTEGER,DIMENSION(2) :: Cols
 
     IF(.NOT.ASSOCIATED(bC)) then
       CALL NewBiNode(bC, init = .TRUE.)
     endif
 
-    Depth=0
-    Cols=(/1,SpAMM_PADDED_MATRIX_DIMENSION/)
     !$OMP TASK UNTIED SHARED(qA,bC)
-    CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA,bC,Col,Cols,Depth)
+    CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA, bC, j)
     !$OMP END TASK
     !$OMP TASKWAIT
 
@@ -168,16 +166,16 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Delete_QuTree
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Delete a BiTree: A <- NULL()
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Delete a BiTree: \f$ A \leftarrow NULL() \f$.
+  !!
+  !! @param bA A pointer to a bitree.
   SUBROUTINE SpAMM_Delete_BiTree(bA)
     TYPE(BiTree),POINTER :: bA
     INTEGER              :: Depth
     IF(.NOT.ASSOCIATED(bA))RETURN
     Depth=0
     !$OMP TASK UNTIED SHARED(bA)
-    CALL SpAMM_Delete_BiTree_Recur(bA,Depth)
+    CALL SpAMM_Delete_BiTree_Recur(bA)
     !$OMP END TASK
     !$OMP TASKWAIT
     DEALLOCATE(bA)
@@ -325,7 +323,7 @@ CONTAINS
       ELSEIF(ASSOCIATED(bC%Sect0))THEN
         !$OMP TASK UNTIED SHARED(bC) &
         !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_BiTree_Recur(bC%Sect0,Depth+1)
+        CALL SpAMM_Delete_BiTree_Recur(bC%Sect0)
         !$OMP END TASK
         !$OMP TASKWAIT
         DEALLOCATE(bC%Sect0)
@@ -338,7 +336,7 @@ CONTAINS
       ELSEIF(ASSOCIATED(bC%Sect1))THEN
         !$OMP TASK UNTIED SHARED(bC) &
         !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_BiTree_Recur(bC%Sect1,Depth+1)
+        CALL SpAMM_Delete_BiTree_Recur(bC%Sect1)
         !$OMP END TASK
         !$OMP TASKWAIT
         DEALLOCATE(bC%Sect1)
@@ -358,7 +356,7 @@ CONTAINS
     TYPE(BiTree), POINTER, intent(inout) :: bC
     integer, intent(in) :: j
 
-    INTEGER               :: I,Depth,HlfSpn
+    INTEGER               :: I, Depth, half
     INTEGER,DIMENSION(2)  :: Cols,Col_00_10,Col_01_11
 
     IF(.NOT.ASSOCIATED(qA)) RETURN
@@ -377,9 +375,10 @@ CONTAINS
         bC%Vect = SpAMM_Zero
       endif
     ELSE
-      HlfSpn=(Cols(2)-Cols(1))/2
-      Col_00_10=(/Cols(1),Cols(1)+HlfSpn/)
-      Col_01_11=(/Cols(1)+HlfSpn+1,Cols(2)/)
+      half = (Cols(2)-Cols(1))/2
+      Col_00_10 = (/ Cols(1), Cols(1)+half /)
+      Col_01_11 = (/ Cols(1)+half+1, Cols(2) /)
+
       IF(j <= qA%i_lower+half) THEN
         IF(ASSOCIATED(qA%Quad11))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
@@ -507,7 +506,12 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Delete_QuTree_Recur
 
-  RECURSIVE SUBROUTINE SpAMM_Delete_BiTree_Recur(bA,Depth)
+  !> Delete a bitree.
+  !!
+  !! @bug Instead of a critical section, use locks.
+  !!
+  !! @param bA A pointer to a bitree.
+  RECURSIVE SUBROUTINE SpAMM_Delete_BiTree_Recur(bA)
 
     TYPE(BiTree),POINTER  :: bA
     INTEGER               :: Status,Depth
@@ -521,7 +525,7 @@ CONTAINS
     IF(ASSOCIATED(bA%Sect0))THEN
       !$OMP TASK UNTIED SHARED(bA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_BiTree_Recur(bA%Sect0,Depth+1)
+      CALL SpAMM_Delete_BiTree_Recur(bA%Sect0)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
@@ -531,7 +535,7 @@ CONTAINS
     IF(ASSOCIATED(bA%Sect1))THEN
       !$OMP TASK UNTIED SHARED(bA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_BiTree_Recur(bA%Sect1,Depth+1)
+      CALL SpAMM_Delete_BiTree_Recur(bA%Sect1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL

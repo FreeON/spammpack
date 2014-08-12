@@ -19,12 +19,16 @@ if( OPENMP_FOUND )
   target_include_directories( spamm_multiply-threaded PRIVATE ${CMAKE_BINARY_DIR}/src )
 endif()
 
-add_executable( multiply_2nd_order_x_2nd_order multiply_2nd_order_x_2nd_order.F90)
-target_link_libraries( multiply_2nd_order_x_2nd_order spammpack_serial_shared spammtests )
-target_include_directories( multiply_2nd_order_x_2nd_order PRIVATE ${CMAKE_BINARY_DIR}/src )
-add_test( multiply_2nd_order_x_2nd_order multiply_2nd_order_x_2nd_order )
+# More unit-like tests.
+set( UNIT_TESTS
+  allocate_2nd_order.F90
+  multiply_2nd_order_x_2nd_order.F90
+  )
 
-add_executable( allocate_2nd_order allocate_2nd_order.F90)
-target_link_libraries( allocate_2nd_order spammpack_serial_shared spammtests )
-target_include_directories( allocate_2nd_order PRIVATE ${CMAKE_BINARY_DIR}/src )
-add_test( allocate_2nd_order allocate_2nd_order )
+execute_process( COMMAND
+  ${CMAKE_CURRENT_SOURCE_DIR}/generate_unit_tests.py
+  --output ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.cmake
+  ${UNIT_TESTS}
+  )
+
+include( ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.cmake )

@@ -88,10 +88,12 @@ CONTAINS
 
   !> Remaping spectral bounds to \f$ [0, 1] \f$.
   !!
+  !! @bug Commented out "call add(A, -RQMax)" statement.
+  !!
   !! @param A Pointer to matrix.
   SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree (A)
 
-    TYPE(spamm_matrix_2nd_order), POINTER, intent(inout) :: A
+    TYPE(qutree), POINTER, intent(inout) :: A
     REAL(SpAMM_KIND) :: RQIMin,RQIMax,SpectralExtent
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_MULTIPLY_THRESHOLD   =1D-7 !SpAMM_PRODUCT_TOLERANCE
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !100d0*SpAMM_RQI_MULTIPLY_THRESHOLD
@@ -106,25 +108,24 @@ CONTAINS
     RQIMin=RQIMin-SpAMM_RQI_EVAL_ERROR_ESTIMATE*ABS(RQIMin)
     RQIMax=RQIMax+SpAMM_RQI_EVAL_ERROR_ESTIMATE*ABS(RQIMax)
     SpectralExtent=RQIMax-RQIMin
-    CALL Add(A, -RQIMax)
+    !CALL Add(A, -RQIMax)
     CALL Multiply(A, -SpAMM_One/SpectralExtent)
     A%Norm = SQRT(Norm(A))
     TTotal = SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree",31)
 
   END SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_Zero_And_One_QuTree
-  !=================================================================
-  ! SPAMM ROUTINES FOR SPECTRAL ESTIMATION (EXTREMAL EIGENVALUES)
-  !=================================================================
-  ! RQI for finding the eigen bounds (Min/Max E.V.s)
-  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  !> Spamm routines for spectral estimation (extremal eigenvalues)
+  !!
+  !! RQI for finding the eigen bounds (Min/Max E.V.s).
   SUBROUTINE SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree(A,RQIMin,RQIMax, &
       SpAMM_RQI_MULTIPLY_THRESHOLD,SpAMM_RQI_CONVERGENCE_THRESHOLD)
 
     INTEGER              :: I,CG
     REAL(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD
     INTEGER, PARAMETER   :: NCG=1000
-    TYPE(spamm_matrix_2nd_order), POINTER :: A
+    TYPE(qutree), POINTER :: A
     TYPE(BiTree),POINTER :: x=>NULL(),g=>NULL(),h=>NULL(),Ax=>NULL(),Ah=>NULL(),xOld=>NULL(),gOld=>NULL(),hOld=>NULL()
     REAL(SpAMM_KIND)     :: beta,LambdaPlus,LambdaMins,RQIPlus,RQIMins,omega, &
       xx,hh,xh,hx,xAx,xAh,hAx,hAh,xnorm
