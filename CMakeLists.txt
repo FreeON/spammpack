@@ -104,6 +104,8 @@ else()
   list( APPEND CMAKE_Fortran_FLAGS "-DSPAMM_SINGLE" )
 endif()
 
+find_program( VALGRIND valgrind )
+
 enable_testing()
 
 add_subdirectory( src )

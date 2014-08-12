@@ -47,6 +47,11 @@ def main ():
         fd.write("target_link_libraries( %s %s spammtests)\n" % (testexename, options.spammpack_lib))
         fd.write("target_include_directories( %s PRIVATE ${CMAKE_BINARY_DIR}/src )\n" % (testexename))
         fd.write("add_test( %s %s )\n" % (testbasename, testexename))
+        fd.write("\n")
+        fd.write("# Unit test using valgrind from %s\n" % (source))
+        fd.write("if( VALGRIND )\n")
+        fd.write("  add_test( valgrind-%s ${VALGRIND} --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/%s )\n" % (testbasename, testexename))
+        fd.write("endif()\n")
 
     fd.close()
 

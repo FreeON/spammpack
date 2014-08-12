@@ -64,6 +64,7 @@ module spamm_management
   INTERFACE Delete
     MODULE PROCEDURE SpAMM_Delete_QuTree
     MODULE PROCEDURE SpAMM_Delete_BiTree
+    module procedure spamm_delete_matrix_2nd_order
   END INTERFACE
 
   !> Interface for creation (allocation) of SpAMM objects.
@@ -160,6 +161,18 @@ CONTAINS
     !$OMP TASKWAIT
 
   END SUBROUTINE SpAMM_Copy_BiTree_2_BiTree
+
+  !> Delete a 2nd order matrix.
+  !!
+  !! @param A The matrix.
+  subroutine spamm_delete_matrix_2nd_order (A)
+
+    type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
+
+    call spamm_delete_qutree(A%root)
+    deallocate(A)
+
+  end subroutine spamm_delete_matrix_2nd_order
 
   !> Delete a quadtree matrix.
   !!
