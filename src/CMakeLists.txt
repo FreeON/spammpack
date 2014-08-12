@@ -15,6 +15,12 @@ set( spammpack-sources-Fortran
   spammpack.F90
   )
 
+if( SPAMM_SINGLE )
+  set( LIBRARY_BASENAME "spammpack_single" )
+else()
+  set( LIBRARY_BASENAME "spammpack" )
+endif()
+
 add_library( spammpack-serial-C SHARED OBJECT ${spammpack-sources-C} )
 set_target_properties( spammpack-serial-C
   PROPERTIES
@@ -34,7 +40,7 @@ add_library( spammpack_serial_static
   )
 set_target_properties( spammpack_serial_static
   PROPERTIES
-  OUTPUT_NAME spammpack
+  OUTPUT_NAME ${LIBRARY_BASENAME}
   )
 
 add_library( spammpack_serial_shared
@@ -46,7 +52,7 @@ set_target_properties( spammpack_serial_shared
   PROPERTIES
   SOVERSION 0
   VERSION 0.0.0
-  OUTPUT_NAME spammpack
+  OUTPUT_NAME ${LIBRARY_BASENAME}
   )
 
 install(
@@ -77,7 +83,7 @@ if( OPENMP_FOUND )
     )
   set_target_properties( spammpack_threaded_static
     PROPERTIES
-    OUTPUT_NAME spammpack_threaded
+    OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
 
   add_library( spammpack_threaded_shared
@@ -90,7 +96,7 @@ if( OPENMP_FOUND )
     SOVERSION 0
     VERSION 0.0.0
     COMPILE_FLAGS ${OpenMP_C_FLAGS}
-    OUTPUT_NAME spammpack_threaded
+    OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
 
   install(
