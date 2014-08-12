@@ -78,5 +78,16 @@ include( FindOpenMP )
 
 list( APPEND CMAKE_C_FLAGS "-DTIMER_GETTIMEOFDAY" )
 
+if( NOT SPAMM_SINGLE )
+  set( SPAMM_SINGLE FALSE
+    CACHE BOOL "Build the single precision version"
+    )
+else()
+  set( SPAMM_SINGLE TRUE
+    CACHE BOOL "Build the single precision version"
+    )
+  list( APPEND CMAKE_Fortran_FLAGS "-DSPAMM_SINGLE" )
+endif()
+
 add_subdirectory( src )
 add_subdirectory( tests )
