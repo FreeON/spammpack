@@ -19,24 +19,24 @@ set( CPACK_RPM_PACKAGE_URL "http://www.freeon.org" )
 set( CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://www.freeon.org" )
 
 list( APPEND CPACK_SOURCE_IGNORE_FILES
-  "/.git/"
-  "/CMakeFiles/"
-  "/_CPack_Packages/"
-  "tests/testmatrix.*$"
-  "/Makefile$"
-  "/.*\\\\.cmake$"
-  "/CMakeCache\\\\.txt$"
-  "/${CPACK_PACKAGE_NAME}.*tar.*$"
-  "/${CPACK_PACKAGE_NAME}.*rpm$"
   "/${CPACK_PACKAGE_NAME}.*deb$"
-  "/install_manifest\\\\.txt"
-  "\\\\.mod$"
-  "/lib.*\\\\.so.*$"
-  "/lib.*\\\\.a$"
+  "/${CPACK_PACKAGE_NAME}.*rpm$"
+  "/${CPACK_PACKAGE_NAME}.*tar.*$"
+  "/.*\\\\.cmake$"
+  "/[.]git/"
+  "/CMakeCache\\\\.txt$"
+  "/CMakeFiles/"
   "/Doxyfile$"
-  "/latex/"
+  "/Makefile$"
+  "/_CPack_Packages/"
   "/html/"
+  "/install_manifest\\\\.txt"
+  "/latex/"
+  "/lib.*\\\\.a$"
+  "/lib.*\\\\.so.*$"
   "/man/"
+  "\\\\.mod$"
+  "tests/testmatrix.*$"
   )
 
 include( CPack )
