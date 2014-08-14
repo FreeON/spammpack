@@ -29,8 +29,8 @@ set( UNIT_TESTS
 
 execute_process( COMMAND
   ${CMAKE_CURRENT_SOURCE_DIR}/generate_unit_tests.py
-  --output ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.cmake
+  --output ${CMAKE_CURRENT_BINARY_DIR}/unit-tests.cmake
   ${UNIT_TESTS}
   )
 
-include( ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.cmake )
+include( ${CMAKE_CURRENT_BINARY_DIR}/unit-tests.cmake )

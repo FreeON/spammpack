@@ -42,7 +42,7 @@ list( APPEND CPACK_SOURCE_IGNORE_FILES
 include( CPack )
 
 if( CMAKE_C_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_C_FLAGS_DEBUG "-O0 -g -Wall" )
+  set( CMAKE_C_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -Wall" )
 elseif( CMAKE_C_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_C_FLAGS_DEBUG "-O0 -g -check=conversions,stack,uninit" )
 else()
@@ -50,7 +50,7 @@ else()
 endif()
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fcheck=all" )
+  set( CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all" )
 elseif( CMAKE_Fotran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG   "-stand f08 -O0 -g -debug all -check all -traceback -assume realloc_lhs -heap-arrays" )
 else()
@@ -105,6 +105,9 @@ else()
 endif()
 
 find_program( VALGRIND valgrind )
+if( VALGRIND )
+  message( STATUS "Setting up valgrind tests" )
+endif()
 
 enable_testing()
 

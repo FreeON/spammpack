@@ -26,7 +26,7 @@ def main ():
                 "spammpack_serial_shared",
                 "spammpack_serial_static"
                 ],
-            default = "spammpack_serial_shared"
+            default = "spammpack_serial_static"
             )
 
     options = parser.parse_args()
