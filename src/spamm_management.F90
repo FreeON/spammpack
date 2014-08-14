@@ -699,8 +699,6 @@ CONTAINS
 
   !> Get a matrix element from a 2nd order SpAMM matrix.
   !!
-  !! @bug This function is not implemented yet.
-  !!
   !! @param A The matrix.
   !! @param i The row index.
   !! @param j The column index.
@@ -712,9 +710,51 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A
     integer, intent(in) :: i, j
 
-    Aij = 0
+    write(*, *) "getting ", i, j
+    Aij = spamm_get_qutree(A%root, i, j)
 
   end function spamm_get_matrix_2nd_order
+
+  !> Get a matrix element from a spamm_types::qutree.
+  !!
+  !! @param qA A pointer to a qutree.
+  !! @param i The row index.
+  !! @param j The column index.
+  !!
+  !! @return The matrix element.
+  recursive function spamm_get_qutree (qA, i, j) result (Aij)
+
+    real(spamm_kind) :: Aij
+    type(qutree), pointer, intent(in) :: qA
+    integer, intent(in) :: i, j
+    integer :: half
+
+    Aij = 0
+
+    write(*, *) qA%i_lower, qA%i_upper, qA%j_lower, qA%j_upper
+
+    if(.not. associated(qA)) return
+    if(i > qA%i_upper .or. j > qA%j_upper) return
+    if(i < qA%i_lower .or. j < qA%j_lower) return
+
+    if(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE .and. qA%j_upper-qA%j_lower+1 == SPAMM_BLOCK_SIZE) then
+      if(allocated(qA%blok)) then
+        Aij = qA%blok(i-qA%i_lower+1, j-qA%j_lower+1)
+      endif
+    else
+      half = (qA%i_upper-qA%i_lower+1)/2
+      if(i <= qA%i_lower+half .and. j <= qA%j_lower+half .and. associated(qA%quad11)) then
+        Aij = spamm_get_qutree(qA%quad11, i, j)
+      elseif(i <= qA%i_lower+half .and. j > qA%j_lower+half .and. associated(qA%quad12)) then
+        Aij = spamm_get_qutree(qA%quad12, i, j)
+      elseif(i > qA%i_lower+half .and. j <= qA%j_lower+half .and. associated(qA%quad21)) then
+        Aij = spamm_get_qutree(qA%quad21, i, j)
+      elseif(i > qA%i_lower+half .and. j > qA%j_lower+half .and. associated(qA%quad22)) then
+        Aij = spamm_get_qutree(qA%quad22, i, j)
+      endif
+    endif
+
+  end function spamm_get_qutree
 
   !> Allocate a 2nd order SpAMM matrix.
   !!
@@ -733,25 +773,15 @@ CONTAINS
     A%M = M
     A%N = N
 
-    matrix_N = max(M, N)
+    A%depth = 0
+    A%N_padded = SPAMM_BLOCK_SIZE
 
-    K = CEILING(LOG10(DBLE(matrix_N))/LOG10(2D0))
-
-    ! Double check padded size.
-    IF(2**K < matrix_N) THEN
-      K = K+1
-    ENDIF
-
-    IF(K > 0 .AND. 2**(K-1) > matrix_N) THEN
-      K = K-1
-    ENDIF
-
-    ! Pad matrix to right size.
-    A%N_padded = 2**K
-
-    ! Depth starts from 0:
-    number_tiles = CEILING(DBLE(A%N_padded)/SPAMM_BLOCK_SIZE)
-    A%depth = FLOOR(LOG(DBLE(number_tiles))/LOG(2D0))
+    ! This should be pretty efficient for reasonable matrix sizes and is presumably faster than some logarithm calculation since it
+    ! only involves an increment and a bit shift.
+    do while(A%N_padded < max(M, N))
+      A%depth = A%depth+1
+      A%N_padded = 2*A%N_padded
+    enddo
 
     write(*, *) "allocated ", M, "x", N, " matrix"
     write(*, *) "N_padded = ", A%N_padded

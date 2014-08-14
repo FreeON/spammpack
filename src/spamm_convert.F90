@@ -69,38 +69,36 @@ MODULE SpAMM_CONVERT
     A_rows = i_upper-i_lower+1
     A_cols = j_upper-j_lower+1
 
+    write(*, *) i_lower, i_upper, j_lower, j_upper
+
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
         WRITE(*, *) "LOGIC ERROR IN SpAMM: padding error"
         WRITE(*, *) "A_rows = ", A_rows
         WRITE(*, *) "A_cols = ", A_cols
         WRITE(*, *) "SPAMM_BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
-        CALL SpAMM_Exit(1)
+        error stop
       ELSE
         ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
 
         ! Set new block to zero.
-        qA%Blok = SpAMM_Zero
+        qA%Blok = 0
+        qA%Blok = A(i_lower:min(i_upper, size(A, 1)), j_lower:min(j_upper, size(A, 2)))
 
+        do i = 1, SPAMM_BLOCK_SIZE
+          write(*, "(4E9.2)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
+        enddo
+
+        ! Count number non-zeros.
         DO i = 1, SPAMM_BLOCK_SIZE
           DO j = 1, SPAMM_BLOCK_SIZE
-            ! We have to  be careful not to copy too much of A.
-            i_dense = i-1+i_lower
-            j_dense = j-1+j_lower
-
-            IF(i_dense <= size(A, 1) .AND. j_dense <= size(A, 2)) THEN
-              qA%Blok(i, j) = A(i_dense, j_dense)
-              IF(A(i_dense, j_dense) /= 0.0D0) THEN
-                qA%number_nonzeros = qA%number_nonzeros+1
-              ENDIF
+            IF(qA%Blok(i, j) /= 0.0D0) THEN
+              qA%number_nonzeros = qA%number_nonzeros+1
             ENDIF
           ENDDO
         ENDDO
-
       ENDIF
-      RETURN
     ELSE
-
       ALLOCATE(qA%Quad11)
       ALLOCATE(qA%Quad12)
       ALLOCATE(qA%Quad21)
@@ -108,13 +106,25 @@ MODULE SpAMM_CONVERT
 
       ! Avoid slicing here for performance.
       CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad11, &
-        i_lower,          i_lower+A_rows/2-1, j_lower,          j_lower+A_cols/2-1)
+        i_lower, &
+        i_lower+A_rows/2-1, &
+        j_lower, &
+        j_lower+A_cols/2-1)
       CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad12, &
-        i_lower,          i_lower+A_rows/2-1, j_lower+A_cols/2, j_upper)
+        i_lower, &
+        i_lower+A_rows/2-1, &
+        j_lower+A_cols/2, &
+        j_upper)
       CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad21, &
-        i_lower+A_rows/2, i_upper,            j_lower,          j_lower+A_cols/2-1)
+        i_lower+A_rows/2, &
+        i_upper, &
+        j_lower, &
+        j_lower+A_cols/2-1)
       CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad22, &
-        i_lower+A_rows/2, i_upper,            j_lower+A_cols/2, j_upper)
+        i_lower+A_rows/2, &
+        i_upper, &
+        j_lower+A_cols/2, &
+        j_upper)
 
       qA%number_nonzeros = &
         qA%Quad11%number_nonzeros + &
