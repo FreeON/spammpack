@@ -75,11 +75,6 @@ program spamm_multiply
 
   ! Get new, padded matrix size.
   N_padded = N
-#ifdef _OPENMP
-  call SpAMM_Init_Globals(N_padded, num_threads)
-#else
-  call SpAMM_Init_Globals(N_padded)
-#endif
 
   write(*, *) "padded matrix to N_padded = ", N_padded
 
