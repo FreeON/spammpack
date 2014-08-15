@@ -26,6 +26,7 @@ set( UNIT_TESTS
   copy_2nd_order.F90
   norm_2nd_order.F90
   multiply_2nd_order_x_2nd_order.F90
+  multiply_2nd_order_x_scalar.F90
   )
 
 execute_process( COMMAND
