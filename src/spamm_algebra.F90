@@ -549,10 +549,6 @@ CONTAINS
 
     TYPE(QuTree), POINTER :: qC, qA, qB
     REAL(SpAMM_KIND) :: threshold
-    integer :: tier
-    INTEGER :: Depth
-    REAL(SpAMM_KIND), DIMENSION(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE) :: temp
-    INTEGER :: i, j, k, l
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
@@ -925,7 +921,6 @@ CONTAINS
   RECURSIVE FUNCTION SpAMM_Norm_Reduce_QuTree_Recur(qA) RESULT(Norm)
     TYPE(QuTree), POINTER :: qA
     REAL(SpAMM_KIND)      :: Norm,Norm00,Norm01,Norm10,Norm11
-    INTEGER               :: i, j
 
     IF(.NOT.ASSOCIATED(qA))THEN
       Norm = SpAMM_Zero
@@ -1083,17 +1078,21 @@ CONTAINS
        Norm=SUM(bA%Vect(1:SPAMM_BLOCK_SIZE)**2)
        bA%Norm=SQRT(Norm)
     ELSE
-       !$OMP TASK UNTIED SHARED(bA) &
-       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-       Norm0=SpAMM_Norm_Reduce_BiTree_Recur(bA%Sect0,Depth+1)
-       !$OMP END TASK
-       !$OMP TASK UNTIED SHARED(bA) &
-       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-       Norm1=SpAMM_Norm_Reduce_BiTree_Recur(bA%Sect1,Depth+1)
-       !$OMP END TASK
-       !$OMP TASKWAIT
-       Norm=Norm0+Norm1
-       bA%Norm=SQRT(Norm)
+      Norm0 = 0
+      !$OMP TASK UNTIED SHARED(bA) &
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      Norm0=SpAMM_Norm_Reduce_BiTree_Recur(bA%Sect0,Depth+1)
+      !$OMP END TASK
+
+      norm1 = 0
+      !$OMP TASK UNTIED SHARED(bA) &
+      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+      Norm1=SpAMM_Norm_Reduce_BiTree_Recur(bA%Sect1,Depth+1)
+      !$OMP END TASK
+      !$OMP TASKWAIT
+
+      Norm=Norm0+Norm1
+      bA%Norm=SQRT(Norm)
     ENDIF
   END FUNCTION SpAMM_Norm_Reduce_BiTree_Recur
 

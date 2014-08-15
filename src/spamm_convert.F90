@@ -63,7 +63,7 @@ MODULE SpAMM_CONVERT
     INTEGER, INTENT(IN) :: i_lower, i_upper
     INTEGER, INTENT(IN) :: j_lower, j_upper
 
-    INTEGER :: i, j, i_dense, j_dense
+    INTEGER :: i, j
     INTEGER :: A_rows, A_cols
     integer :: convert_rows, convert_columns
 
