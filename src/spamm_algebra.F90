@@ -260,7 +260,7 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
     real(spamm_kind), intent(in) :: alpha
 
-    call spamm_add_identity_2_qutree_inplace(A%root, alpha, A%M, A%N, 1, 1)
+    call spamm_add_identity_2_qutree_inplace_recur(A%root, alpha, A%M, A%N)
 
   end subroutine spamm_add_identity_to_matrix_2nd_order
 
@@ -268,16 +268,18 @@ CONTAINS
   !!
   !! @param qA A pointer to a quadtree.
   !! @param alpha The factor \f$ \alpha \f$.
-  SUBROUTINE SpAMM_Add_Identity_2_QuTree_InPlace(qA, alpha, M, N, i_lower, i_upper)
+  !! @param M The number of rows of the matrix.
+  !! @param N The number of columns of the matrix.
+  SUBROUTINE SpAMM_Add_Identity_2_QuTree_InPlace(qA, alpha, M, N)
 
     TYPE(QuTree), POINTER, intent(inout) :: qA
     REAL(SpAMM_KIND), intent(in) :: Alpha
-    integer, intent(in) :: M, N, i_lower, i_upper
+    integer, intent(in) :: M, N
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
     TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA)
-    CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA, alpha, M, N, i_lower, i_upper)
+    CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA, alpha, M, N)
     !$OMP END TASK
     !$OMP TASKWAIT
 
@@ -725,50 +727,50 @@ CONTAINS
   !!
   !! @param qA A pointer to a quadtree.
   !! @param alpha The factor \f$ \alpha \f$.
-  !! @param M The number or rows in the matrix.
-  !! @param N The number of columns in the matrix.
-  !! @param i_lower The lower row/column index.
-  !! @param i_upper The upper row/column index.
-  !!
-  !! @todo Note, this routine is not empowered to deal with case of missing diagonal blocks from the in place QuTree.
-  RECURSIVE SUBROUTINE SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA, alpha, M, N, i_lower, i_upper)
+  !! @param M The number of rows of the matrix.
+  !! @param N The number of columns of the matrix.
+  RECURSIVE SUBROUTINE SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA, alpha, M, N)
 
     TYPE(QuTree), POINTER, intent(inout) :: qA
     real(spamm_kind), intent(in) :: alpha
     integer, intent(in) :: M, N
-    integer, intent(in) :: i_lower, i_upper
-    integer :: i
-    integer :: half
+    integer :: i, j
 
-    if(i_lower > i_upper) then
-      write(*, *) "[BqSA2qow8eGIMcmR] logic error"
-      error stop
-    endif
+    write(*, *) "q:", qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper
 
-    IF(i_lower > M .OR. i_lower > N) then
-      RETURN
-    ELSEIF(i_upper-i_lower+1 == SPAMM_BLOCK_SIZE) then
-      IF(.NOT. ASSOCIATED(qA))THEN
-        CALL NewQuNode(qA, i_lower, i_upper, i_lower, i_upper)
+    IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
+      if(.not. allocated(qA%blok)) then
         ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
         qA%Blok = SpAMM_Zero
       ENDIF
 
-      DO i = 1, MIN(SPAMM_BLOCK_SIZE, M-i_lower+1, N-i_lower+1)
-        qA%Blok(i, i) = qA%Blok(I, I)+alpha
-      ENDDO
-    ELSE
-      half = (i_upper-i_lower+1)/2
+      write(*, *) "before"
+      do i = 1, SPAMM_BLOCK_SIZE
+        write(*, "(4f10.3)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
+      enddo
 
-      !$OMP TASK UNTIED SHARED(qA)
-      !IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad11, alpha, M, N, i_lower, i_lower+half)
-      !$OMP END TASK
-      !$OMP TASK UNTIED SHARED(qA)
-      !!IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad22, alpha, M, N, i_lower+half+1, i_upper)
-      !$OMP END TASK
-      !$OMP TASKWAIT !! << WTF IS THIS TASKWAIT IMPORTANT FOR IFORT??
+      do i = 1, MIN(SPAMM_BLOCK_SIZE, M-qA%i_lower+1, N-qA%j_lower+1)
+        qA%Blok(i:i, i:i) = qA%Blok(i:i, i:i)+alpha
+      enddo
+
+      write(*, *) "after"
+      do i = 1, SPAMM_BLOCK_SIZE
+        write(*, "(4f10.3)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
+      enddo
+    ELSE
+      if(associated(qA%quad11)) then
+        !$OMP TASK UNTIED SHARED(qA)
+        CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad11, alpha, M, N)
+        !$OMP END TASK
+      endif
+
+      if(associated(qA%quad22)) then
+        !$OMP TASK UNTIED SHARED(qA)
+        CALL SpAMM_Add_Identity_2_QuTree_InPlace_Recur(qA%Quad22, alpha, M, N)
+        !$OMP END TASK
+      endif
+
+      !$OMP TASKWAIT
     ENDIF
 
   END SUBROUTINE SpAMM_Add_Identity_2_QuTree_InPlace_Recur

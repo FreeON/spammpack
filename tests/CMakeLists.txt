@@ -25,6 +25,7 @@ set( UNIT_TESTS
   delete_2nd_order.F90
   copy_2nd_order.F90
   norm_2nd_order.F90
+  add_identify_to_2nd_order.F90
   multiply_2nd_order_x_2nd_order.F90
   multiply_2nd_order_x_scalar.F90
   )
