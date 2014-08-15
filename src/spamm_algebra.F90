@@ -1085,6 +1085,7 @@ CONTAINS
     TYPE(BiTree), POINTER :: bA
     INTEGER               :: Depth
     REAL(SpAMM_KIND)      :: Norm, Norm0, Norm1
+
     IF(.NOT.ASSOCIATED(bA))THEN
        Norm=SpAMM_Zero
        RETURN
@@ -1111,6 +1112,7 @@ CONTAINS
     TYPE(BiTree), POINTER :: bA,bB
     INTEGER               :: Depth
     REAL(SpAMM_KIND)      :: Dot, Dot0, Dot1
+
     IF(.NOT.ASSOCIATED(bA))THEN
        Dot=SpAMM_Zero
        RETURN

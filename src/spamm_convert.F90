@@ -70,7 +70,15 @@ MODULE SpAMM_CONVERT
     A_rows = i_upper-i_lower+1
     A_cols = j_upper-j_lower+1
 
-    write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
+    if(.not. associated(qA)) then
+      allocate(qA)
+      qA%i_lower = i_lower
+      qA%i_upper = i_upper
+      qA%j_lower = j_lower
+      qA%j_upper = j_upper
+    endif
+
+    !write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
@@ -93,12 +101,13 @@ MODULE SpAMM_CONVERT
         convert_rows = min(i_upper, size(A, 1))
         convert_columns = min(j_upper, size(A, 2))
 
-        qA%Blok(1:convert_rows, 1:convert_columns) = A(i_lower:convert_rows, j_lower:convert_columns)
+        qA%Blok(1:convert_rows-i_lower+1, 1:convert_columns-j_lower+1) = &
+          A(i_lower:convert_rows, j_lower:convert_columns)
 
-        write(*, *) "q%blok"
-        do i = 1, SPAMM_BLOCK_SIZE
-          write(*, "(4E9.2)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
-        enddo
+        !write(*, *) "q%blok"
+        !do i = 1, SPAMM_BLOCK_SIZE
+        !  write(*, "(4E10.3)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
+        !enddo
 
         ! Count number non-zeros.
         DO i = 1, SPAMM_BLOCK_SIZE
@@ -110,11 +119,6 @@ MODULE SpAMM_CONVERT
         ENDDO
       ENDIF
     ELSE
-      ALLOCATE(qA%Quad11)
-      ALLOCATE(qA%Quad12)
-      ALLOCATE(qA%Quad21)
-      ALLOCATE(qA%Quad22)
-
       ! Avoid slicing here for performance.
       CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad11, &
         i_lower, &
@@ -157,7 +161,6 @@ MODULE SpAMM_CONVERT
     real(spamm_kind), dimension(:, :), intent(in) :: A_dense
 
     A => spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2))
-    allocate(A%root)
     call spamm_convert_dense_2_qutree(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
 
   end function spamm_convert_dense_to_matrix_2nd_order

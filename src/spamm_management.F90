@@ -382,6 +382,8 @@ CONTAINS
     INTEGER               :: I, Depth, half
     INTEGER,DIMENSION(2)  :: Cols,Col_00_10,Col_01_11
 
+    depth = 0
+
     IF(.NOT.ASSOCIATED(qA)) RETURN
 
     IF(.NOT.ASSOCIATED(bC)) then
@@ -536,7 +538,9 @@ CONTAINS
   RECURSIVE SUBROUTINE SpAMM_Delete_BiTree_Recur(bA)
 
     TYPE(BiTree),POINTER  :: bA
-    INTEGER               :: Status,Depth
+    INTEGER               :: Status, Depth
+
+    depth = 0
 
     IF(.NOT.ASSOCIATED(bA))RETURN
     IF(ALLOCATED(bA%Vect))THEN
@@ -710,7 +714,6 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A
     integer, intent(in) :: i, j
 
-    write(*, *) "getting ", i, j
     Aij = spamm_get_qutree(A%root, i, j)
 
   end function spamm_get_matrix_2nd_order
@@ -731,26 +734,49 @@ CONTAINS
 
     Aij = 0
 
-    write(*, *) qA%i_lower, qA%i_upper, qA%j_lower, qA%j_upper
-
     if(.not. associated(qA)) return
-    if(i > qA%i_upper .or. j > qA%j_upper) return
-    if(i < qA%i_lower .or. j < qA%j_lower) return
+
+    if(i > qA%i_upper .or. j > qA%j_upper) then
+      write(*, *) "logic error, i or j above upper bound"
+      error stop
+    endif
+
+    if(i < qA%i_lower .or. j < qA%j_lower) then
+      write(*, *) "logic error, i or j below lower bound"
+      error stop
+    endif
 
     if(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE .and. qA%j_upper-qA%j_lower+1 == SPAMM_BLOCK_SIZE) then
       if(allocated(qA%blok)) then
         Aij = qA%blok(i-qA%i_lower+1, j-qA%j_lower+1)
       endif
     else
-      half = (qA%i_upper-qA%i_lower+1)/2
-      if(i <= qA%i_lower+half .and. j <= qA%j_lower+half .and. associated(qA%quad11)) then
-        Aij = spamm_get_qutree(qA%quad11, i, j)
-      elseif(i <= qA%i_lower+half .and. j > qA%j_lower+half .and. associated(qA%quad12)) then
-        Aij = spamm_get_qutree(qA%quad12, i, j)
-      elseif(i > qA%i_lower+half .and. j <= qA%j_lower+half .and. associated(qA%quad21)) then
-        Aij = spamm_get_qutree(qA%quad21, i, j)
-      elseif(i > qA%i_lower+half .and. j > qA%j_lower+half .and. associated(qA%quad22)) then
-        Aij = spamm_get_qutree(qA%quad22, i, j)
+      if(associated(qA%quad11)) then
+        if(i >= qA%quad11%i_lower .and. i <= qA%quad11%i_upper .and. j >= qA%quad11%j_lower .and. j <= qA%quad11%j_upper) then
+          Aij = spamm_get_qutree(qA%quad11, i, j)
+          return
+        endif
+      endif
+
+      if(associated(qA%quad12)) then
+        if(i >= qA%quad12%i_lower .and. i <= qA%quad12%i_upper .and. j >= qA%quad12%j_lower .and. j <= qA%quad12%j_upper) then
+          Aij = spamm_get_qutree(qA%quad12, i, j)
+          return
+        endif
+      endif
+
+      if(associated(qA%quad21)) then
+        if(i >= qA%quad21%i_lower .and. i <= qA%quad21%i_upper .and. j >= qA%quad21%j_lower .and. j <= qA%quad21%j_upper) then
+          Aij = spamm_get_qutree(qA%quad21, i, j)
+          return
+        endif
+      endif
+
+      if(associated(qA%quad22)) then
+        if(i >= qA%quad22%i_lower .and. i <= qA%quad22%i_upper .and. j >= qA%quad22%j_lower .and. j <= qA%quad22%j_upper) then
+          Aij = spamm_get_qutree(qA%quad22, i, j)
+          return
+        endif
       endif
     endif
 
@@ -783,9 +809,9 @@ CONTAINS
       A%N_padded = 2*A%N_padded
     enddo
 
-    write(*, *) "allocated ", M, "x", N, " matrix"
-    write(*, *) "N_padded = ", A%N_padded
-    write(*, *) "depth = ", A%depth
+    write(*, *) "[allocate 2nd-order] allocated ", M, "x", N, " matrix"
+    write(*, *) "[allocate 2nd-order] N_padded = ", A%N_padded
+    write(*, *) "[allocate 2nd-order] depth = ", A%depth
 
   end function spamm_allocate_matrix_2nd_order
 

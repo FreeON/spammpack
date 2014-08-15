@@ -13,6 +13,11 @@ program test
   integer :: i, j
 
   call random_number(A_dense)
+
+  !do i = 1, M
+  !  write(*, "(11E10.3)") (A_dense(i, j), j = 1, N)
+  !enddo
+
   A => spamm_convert_dense_to_matrix_2nd_order(A_dense)
 
   do i = 1, M
