@@ -32,4 +32,7 @@ program test
     enddo
   enddo
 
+  call delete(A)
+  call delete(B)
+
 end program test

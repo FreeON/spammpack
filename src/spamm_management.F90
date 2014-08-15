@@ -54,7 +54,7 @@ module spamm_management
 
   !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
-    MODULE PROCEDURE SpAMM_Copy_QuTree_2_QuTree
+    !MODULE PROCEDURE SpAMM_Copy_QuTree_2_QuTree
     MODULE PROCEDURE SpAMM_Copy_QuTree_2_BiTree
     MODULE PROCEDURE SpAMM_Copy_BiTree_2_BiTree
     module procedure spamm_copy_2nd_order_to_2nd_order
@@ -80,10 +80,10 @@ module spamm_management
 
 CONTAINS
 
-  !> Copy a 2nd order matrix.
+  !> Copy a 2nd order matrix: \f$ B \leftarrow A \f$.
   !!
   !! @param A The matrix A.
-  !! @param C The matrix C.
+  !! @param B The matrix B.
   subroutine spamm_copy_2nd_order_to_2nd_order (A, B)
 
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A
@@ -93,11 +93,12 @@ CONTAINS
       return
     endif
 
-    if(.not. associated(B)) then
-      B => spamm_allocate_matrix_2nd_order(A%M, A%N)
+    if(associated(B)) then
+      call delete(B)
     endif
 
-    call spamm_copy_qutree_2_qutree(A%root, B%root)
+    B => spamm_allocate_matrix_2nd_order(A%M, A%N)
+    call spamm_copy_qutree_2_qutree_recur(A%root, B%root)
 
   end subroutine spamm_copy_2nd_order_to_2nd_order
 
@@ -105,16 +106,12 @@ CONTAINS
   !!
   !! @param qA Pointer to matrix A.
   !! @param qC Pointer to matrix C.
-  SUBROUTINE SpAMM_Copy_QuTree_2_QuTree(qA,qC)
+  SUBROUTINE SpAMM_Copy_QuTree_2_QuTree(qA, qC)
 
     TYPE(QuTree), POINTER, INTENT(IN)    :: qA
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
 
-    INTEGER :: Depth
-
-    CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
-
-    !$OMP TASK UNTIED SHARED(qA,qC)
+    !$OMP TASK UNTIED SHARED(qA, qC)
     CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA, qC)
     !$OMP END TASK
     !$OMP TASKWAIT
@@ -131,7 +128,6 @@ CONTAINS
     TYPE(QuTree), POINTER, intent(in) :: qA
     TYPE(BiTree), POINTER, intent(inout) :: bC
     INTEGER, intent(in) :: j
-    INTEGER,DIMENSION(2) :: Cols
 
     IF(.NOT.ASSOCIATED(bC)) then
       CALL NewBiNode(bC, init = .TRUE.)
@@ -242,7 +238,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree
 
-  !> Recursive copy of quadtree.
+  !> Recursive copy of quadtree: \f$ C \leftarrow A \f$.
   !!
   !! @param qA Pointer to matrix A.
   !! @param qC Pointer to matrix C.
@@ -253,70 +249,43 @@ CONTAINS
 
     IF(.NOT.ASSOCIATED(qA)) RETURN
 
-    IF(.NOT.ASSOCIATED(qC))THEN
+    IF(.NOT.ASSOCIATED(qC)) THEN
       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
-    ! qC%Norms%FrobeniusNorm=qA%Norms%FrobeniusNorm
-    qC%Norm=qA%Norm
-    !IF(Depth==SpAMM_TOTAL_DEPTH.AND.ASSOCIATED(qA%Blok))THEN
-    IF(qA%i_upper-qA%i_lower == SPAMM_BLOCK_SIZE) then
+    !write(*, *) "q: ", qA%i_lower, qA%i_upper, qA%j_lower, qA%j_upper
+
+    qC%Norm = qA%Norm
+
+    IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       IF(.NOT. allocated(qC%Blok)) THEN
         ALLOCATE(qC%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
       ENDIF
       qC%Blok = qA%Blok
     ELSE
-      IF(ASSOCIATED(qA%Quad11))THEN
+      IF(ASSOCIATED(qA%Quad11)) THEN
         !$OMP TASK UNTIED SHARED(qA,qC)
         !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
         CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad11, qC%Quad11)
         !$OMP END TASK
-      ELSEIF(ASSOCIATED(qC%Quad11))THEN
-        !$OMP TASK UNTIED SHARED(qC)
-        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad11)
-        !$OMP END TASK
-        !$OMP TASKWAIT
-        DEALLOCATE(qC%Quad11)
       ENDIF
-      IF(ASSOCIATED(qA%Quad12))THEN
+      IF(ASSOCIATED(qA%Quad12)) THEN
         !$OMP TASK UNTIED SHARED(qA,qC)
         !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
         CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad12, qC%Quad12)
         !$OMP END TASK
-      ELSEIF(ASSOCIATED(qC%Quad12))THEN
-        !$OMP TASK UNTIED SHARED(qC)
-        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad12)
-        !$OMP END TASK
-        !$OMP TASKWAIT
-        DEALLOCATE(qC%Quad12)
       ENDIF
-      IF(ASSOCIATED(qA%Quad21))THEN
+      IF(ASSOCIATED(qA%Quad21)) THEN
         !$OMP TASK UNTIED SHARED(qA,qC)
         !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
         CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad21, qC%Quad21)
         !$OMP END TASK
-      ELSEIF(ASSOCIATED(qC%Quad21))THEN
-        !$OMP TASK UNTIED SHARED(qC)
-        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad21)
-        !$OMP END TASK
-        !$OMP TASKWAIT
-        DEALLOCATE(qC%Quad21)
       ENDIF
-      IF(ASSOCIATED(qA%Quad22))THEN
+      IF(ASSOCIATED(qA%Quad22)) THEN
         !$OMP TASK UNTIED SHARED(qA,qC)
         !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
         CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad22, qC%Quad22)
         !$OMP END TASK
-      ELSEIF(ASSOCIATED(qC%Quad22))THEN
-        !$OMP TASK UNTIED SHARED(qC)
-        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_QuTree_Recur(qC%Quad22)
-        !$OMP END TASK
-        !$OMP TASKWAIT
-        DEALLOCATE(qC%Quad22)
       ENDIF
     ENDIF
 
@@ -379,8 +348,10 @@ CONTAINS
     TYPE(BiTree), POINTER, intent(inout) :: bC
     integer, intent(in) :: j
 
-    INTEGER               :: I, Depth, half
+    INTEGER               :: half
     INTEGER,DIMENSION(2)  :: Cols,Col_00_10,Col_01_11
+
+    integer :: depth
 
     depth = 0
 
@@ -591,6 +562,11 @@ CONTAINS
     ! Allocate new node.
     ALLOCATE(qA)
 
+    qA%i_lower = i_lower
+    qA%i_upper = i_upper
+    qA%j_lower = j_lower
+    qA%j_upper = j_upper
+
     ! Initialize.
     qA%number_nonzeros = 0
     qA%number_operations = 0
@@ -608,7 +584,7 @@ CONTAINS
     TYPE(BiTree), POINTER :: bA
 
     IF(PRESENT(init))THEN
-      IF(ASSOCIATED(bA))STOP 'LOGIC ERROR IN NewBiNode'
+      IF(ASSOCIATED(bA))STOP '[PdMh8CTirrvi44hv] LOGIC ERROR IN NewBiNode'
       ALLOCATE(bA)
     ELSE
       IF(.NOT.ASSOCIATED(bA))THEN
@@ -639,13 +615,17 @@ CONTAINS
     rows = i_upper-i_lower+1
     columns = j_upper-j_lower+1
 
+    write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
+
     if(rows /= columns) then
       write(*, *) "non-square submatrix"
       error stop
     endif
 
     if(rows < SPAMM_BLOCK_SIZE .or. columns < SPAMM_BLOCK_SIZE) then
-      write(*, *) "logic error"
+      write(*, *) "[ozC7x7z3HIgTIa0Q] logic error"
+      write(*, *) "rows = ", rows
+      write(*, *) "columns = ", columns
       error stop
     endif
 
@@ -657,9 +637,9 @@ CONTAINS
       qA%Blok = SpAMM_Zero
       RETURN
     ELSE
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11, i_lower, j_lower, i_lower+rows/2, j_lower+columns/2)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad12, i_lower, j_lower+columns/2, i_lower+rows/2, j_upper)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad21, i_lower+rows/2, j_lower, i_upper, j_lower+columns/2)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11, i_lower, j_lower, i_lower+rows/2-1, j_lower+columns/2-1)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad12, i_lower, j_lower+columns/2, i_lower+rows/2-1, j_upper)
+      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad21, i_lower+rows/2, j_lower, i_upper, j_lower+columns/2-1)
       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad22, i_lower+rows/2, j_lower+columns/2, i_upper, j_upper)
     ENDIF
 
@@ -697,7 +677,7 @@ CONTAINS
     integer, intent(in) :: M, N
 
     A => spamm_allocate_matrix_2nd_order(M, N)
-    call spamm_allocate_full_qutree(A%root, 1, 1, A%N_padded, A%N_padded)
+    call spamm_allocate_full_qutree_recur(A%root, 1, 1, A%N_padded, A%N_padded)
 
   end function spamm_zero_matrix
 
@@ -730,19 +710,18 @@ CONTAINS
     real(spamm_kind) :: Aij
     type(qutree), pointer, intent(in) :: qA
     integer, intent(in) :: i, j
-    integer :: half
 
     Aij = 0
 
     if(.not. associated(qA)) return
 
     if(i > qA%i_upper .or. j > qA%j_upper) then
-      write(*, *) "logic error, i or j above upper bound"
+      write(*, *) "[F8xYAsM46GYfJP2j] logic error, i or j above upper bound"
       error stop
     endif
 
     if(i < qA%i_lower .or. j < qA%j_lower) then
-      write(*, *) "logic error, i or j below lower bound"
+      write(*, *) "[3lJNYprqCQWU3ACZ] logic error, i or j below lower bound"
       error stop
     endif
 
@@ -792,8 +771,6 @@ CONTAINS
 
     integer, intent(in) :: M, N
     type(spamm_matrix_2nd_order), pointer :: A
-
-    integer :: K, matrix_N, number_tiles
 
     allocate(A)
     A%M = M

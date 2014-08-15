@@ -82,7 +82,7 @@ MODULE SpAMM_CONVERT
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
-        WRITE(*, *) "LOGIC ERROR IN SpAMM: padding error"
+        WRITE(*, *) "[XgpSLv6M8u5ASgg3] LOGIC ERROR IN SpAMM: padding error"
         WRITE(*, *) "A_rows = ", A_rows
         WRITE(*, *) "A_cols = ", A_cols
         WRITE(*, *) "SPAMM_BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
