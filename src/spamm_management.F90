@@ -265,25 +265,21 @@ CONTAINS
     ELSE
       IF(ASSOCIATED(qA%Quad11)) THEN
         !$OMP TASK UNTIED SHARED(qA,qC)
-        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
         CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad11, qC%Quad11)
         !$OMP END TASK
       ENDIF
       IF(ASSOCIATED(qA%Quad12)) THEN
         !$OMP TASK UNTIED SHARED(qA,qC)
-        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
         CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad12, qC%Quad12)
         !$OMP END TASK
       ENDIF
       IF(ASSOCIATED(qA%Quad21)) THEN
         !$OMP TASK UNTIED SHARED(qA,qC)
-        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
         CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad21, qC%Quad21)
         !$OMP END TASK
       ENDIF
       IF(ASSOCIATED(qA%Quad22)) THEN
         !$OMP TASK UNTIED SHARED(qA,qC)
-        !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
         CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad22, qC%Quad22)
         !$OMP END TASK
       ENDIF

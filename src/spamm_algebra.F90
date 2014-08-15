@@ -376,11 +376,11 @@ CONTAINS
   !!
   !! @return The norm.
   FUNCTION SpAMM_Norm_Reduce_QuTree(qA) RESULT(Norm)
+
     TYPE(QuTree), POINTER, INTENT(IN) :: qA
-    REAL(SpAMM_KIND)                  :: Norm
-    INTEGER :: Depth
+    REAL(SpAMM_KIND) :: Norm
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
-    Depth=0
+
     TInitial = SpAMM_Get_Time()
     !$OMP TASK SHARED(Norm,qA)
     Norm = SpAMM_Norm_Reduce_QuTree_Recur(qA)
@@ -388,6 +388,7 @@ CONTAINS
     !$OMP TASKWAIT
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Norm_Reduce_QuTree",9)
+
   END FUNCTION SpAMM_Norm_Reduce_QuTree
 
   !> Add to binary trees: \f$ C \leftarrow \alpha A + \beta B \f$.
@@ -925,7 +926,7 @@ CONTAINS
     INTEGER               :: i, j
 
     IF(.NOT.ASSOCIATED(qA))THEN
-      Norm=SpAMM_Zero
+      Norm = SpAMM_Zero
     ELSEIF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       Norm = SUM(qA%Blok**2)
       qA%Norm = SQRT(Norm)
@@ -1175,17 +1176,17 @@ CONTAINS
 
   end subroutine spamm_multiply_2nd_order_x_2nd_order
 
-  !> Frobenius norm of 2nd order matrix.
+  !> Frobenius norm of 2nd order matrix. This function updates the norm on the matrix and returns the square of the norm.
   !!
   !! @param A The matrix.
   !!
-  !! @return The Frobenius norm.
+  !! @return The squared Frobenius norm.
   function spamm_norm_reduce_matrix_2nd_order (A) result (norm)
 
     real(spamm_kind) :: norm
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A
 
-    norm = spamm_norm_reduce_qutree(A%root)
+    norm = spamm_norm_reduce_qutree_recur(A%root)
 
   end function spamm_norm_reduce_matrix_2nd_order
 
