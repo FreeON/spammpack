@@ -104,9 +104,17 @@ else()
   list( APPEND CMAKE_Fortran_FLAGS "-DSPAMM_SINGLE" )
 endif()
 
-find_program( VALGRIND valgrind )
-if( VALGRIND )
-  message( STATUS "Setting up valgrind tests" )
+if( NOT VALGRIND_TESTS )
+  set( VALGRIND_TESTS FALSE
+    CACHE BOOL "Build the valgrind tests"
+    )
+endif()
+
+if( VALGRIND_TESTS )
+  find_program( VALGRIND valgrind )
+  if( VALGRIND )
+    message( STATUS "Setting up valgrind tests" )
+  endif()
 endif()
 
 enable_testing()
