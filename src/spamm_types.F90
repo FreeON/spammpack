@@ -126,11 +126,11 @@ module spamm_types
     type(qutree), pointer :: root => null()
 
     !> The number of non-zero elements.
-    REAL(SpAMM_DOUBLE) :: number_nonzeros
+    REAL(SpAMM_DOUBLE) :: number_nonzeros = 0
 
     !> The number of operations (updated by a Multiply), i.e. the number of dense matrix products of size
     !! spamm_globals::spamm_block_size x spamm_globals::spamm_block_size.
-    REAL(SpAMM_DOUBLE) :: number_operations
+    REAL(SpAMM_DOUBLE) :: number_operations = 0
 
   end type spamm_matrix_2nd_order
 

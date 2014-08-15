@@ -65,11 +65,12 @@ MODULE SpAMM_CONVERT
 
     INTEGER :: i, j, i_dense, j_dense
     INTEGER :: A_rows, A_cols
+    integer :: convert_rows, convert_columns
 
     A_rows = i_upper-i_lower+1
     A_cols = j_upper-j_lower+1
 
-    write(*, *) i_lower, i_upper, j_lower, j_upper
+    write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
@@ -79,12 +80,22 @@ MODULE SpAMM_CONVERT
         WRITE(*, *) "SPAMM_BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
         error stop
       ELSE
+        if(allocated(qA%blok)) then
+          deallocate(qA%blok)
+        endif
+
         ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
 
         ! Set new block to zero.
         qA%Blok = 0
-        qA%Blok = A(i_lower:min(i_upper, size(A, 1)), j_lower:min(j_upper, size(A, 2)))
 
+        ! Copy matrix elements.
+        convert_rows = min(i_upper, size(A, 1))
+        convert_columns = min(j_upper, size(A, 2))
+
+        qA%Blok(1:convert_rows, 1:convert_columns) = A(i_lower:convert_rows, j_lower:convert_columns)
+
+        write(*, *) "q%blok"
         do i = 1, SPAMM_BLOCK_SIZE
           write(*, "(4E9.2)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
         enddo
