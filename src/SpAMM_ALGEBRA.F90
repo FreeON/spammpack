@@ -145,7 +145,9 @@ CONTAINS
     !WRITE(*, "(A,D13.3)") "Multiply with threshold of ", threshold
 
     Depth = 0
-    qC%number_operations = 0
+
+    ! Reset all counters.
+    call spamm_reset_counters_qutree(qC)
 
     CALL SpAMM_Multiply_QuTree_x_Scalar(qC, SpAMM_Zero)
 
@@ -164,6 +166,34 @@ CONTAINS
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_QuTree",1)
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree
+
+  !> Reset counters in qutree.
+  !!
+  !! @param q Pointer to qutree.
+  recursive subroutine spamm_reset_counters_qutree (q)
+
+    type(qutree), pointer, intent(inout) :: q
+
+    q%number_operations = 0
+    q%number_nonzeros = 0
+
+    if(associated(q%quad11)) then
+      call spamm_reset_counters_qutree(q%quad11)
+    endif
+
+    if(associated(q%quad12)) then
+      call spamm_reset_counters_qutree(q%quad12)
+    endif
+
+    if(associated(q%quad21)) then
+      call spamm_reset_counters_qutree(q%quad21)
+    endif
+
+    if(associated(q%quad22)) then
+      call spamm_reset_counters_qutree(q%quad22)
+    endif
+
+  end subroutine spamm_reset_counters_qutree
 
   !> Scalar multiply: @f$ A \leftarrow a A @f$.
   !!
@@ -537,7 +567,7 @@ CONTAINS
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
-      IF(qA%Norm*qB%Norm<threshold) RETURN
+      IF(qA%Norm*qB%Norm < threshold) RETURN
 #ifdef _OPENMP
       CALL OMP_SET_LOCK(qC%lock)
 #endif
@@ -555,6 +585,7 @@ CONTAINS
 #endif
         IF(.NOT.ALLOCATED(qC%Blok))THEN
           ! Allocate new block.
+          print *, "allocating new blok"
           ALLOCATE(qC%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE))
           qC%Blok=SpAMM_Zero
         ENDIF
@@ -567,6 +598,7 @@ CONTAINS
 #endif
         qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
         qC%number_operations = qC%number_operations+SpAMM_BLOCK_SIZE**3
+        qC%number_nonzeros = SpAMM_BLOCK_SIZE**2
 
 #if defined(_OPENMP) && ! defined(BIGLOCK)
         CALL OMP_UNSET_LOCK(qC%lock)
@@ -616,6 +648,11 @@ CONTAINS
           qC%Quad12%number_operations + &
           qC%Quad21%number_operations + &
           qC%Quad22%number_operations
+        qC%number_nonzeros = &
+          qC%Quad11%number_nonzeros + &
+          qC%Quad12%number_nonzeros + &
+          qC%Quad21%number_nonzeros + &
+          qC%Quad22%number_nonzeros
 
       ENDIF
     ENDIF
@@ -640,7 +677,7 @@ CONTAINS
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
       ! At the bottom, multiply the block.
       qA%Norm=qA%Norm*ABS(a)
-      qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)=qA%Blok(1:SpAMM_BLOCK_SIZE,1:SpAMM_BLOCK_SIZE)*a
+      qA%Blok=qA%Blok*a
     ELSE
       !$OMP TASK UNTIED SHARED(qA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
