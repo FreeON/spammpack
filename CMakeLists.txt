@@ -3,7 +3,7 @@ cmake_minimum_required( VERSION 2.8 )
 
 set( CPACK_PACKAGE_NAME "spammpack" )
 set( CPACK_PACKAGE_VERSION_MAJOR 1 )
-set( CPACK_PACKAGE_VERSION_MINOR 0 )
+set( CPACK_PACKAGE_VERSION_MINOR 1 )
 set( CPACK_PACKAGE_VERSION_PATCH 0 )
 set( CPACK_PACKAGE_DESCRIPTION_SUMMARY
   "An implementation of the Sparse Approximate Matrix Multiply (SpAMM) Algorithm"
