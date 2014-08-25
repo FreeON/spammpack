@@ -90,6 +90,7 @@ MODULE SpAMM_ALGEBRA
     MODULE PROCEDURE SpAMM_Add_BiTree_2_BiTree_RePlace
     MODULE PROCEDURE SpAMM_Add_Identity_2_QuTree_InPlace
     module procedure spamm_add_identity_to_matrix_2nd_order
+    module procedure spamm_add_2nd_order_to_2nd_order
   END INTERFACE
 
   !> Interface for filter operations (thresholding of small matrix elements).
@@ -117,11 +118,13 @@ CONTAINS
   !! @param qB Pointer to quadtree B.
   !! @param qC Pointer to quadtree C.
   !! @param threshold The SpAMM threshold overriding the global value, spamm_types::spamm_product_tolerance.
-  SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA, qB, qC, threshold)
+  !! @param probabilistic The threshold for probabilistic dropping.
+  SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA, qB, qC, threshold, probabilistic)
 
     TYPE(QuTree), POINTER, INTENT(IN) :: qA, qB
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
     REAL(SpAMM_KIND), OPTIONAL :: threshold
+    real(spamm_kind), optional :: probabilistic
 
     real(spamm_kind) :: local_threshold
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
@@ -149,7 +152,7 @@ CONTAINS
     CALL SpAMM_Multiply_QuTree_x_Scalar(qC, SpAMM_Zero)
 
     !$OMP TASK UNTIED SHARED(qA,qB,qC)
-    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, local_threshold)
+    CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, local_threshold, probabilistic)
     !$OMP END TASK
 
     !$OMP END MASTER
@@ -208,6 +211,25 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar
 
+  !> Add 2 matrices, @f$ A \leftarrow \alpha A + \beta B @f$.
+  !!
+  !! If any of the two factors Alpha or Beta are not supplied then they default
+  !! to one.
+  !!
+  !! @param A Pointer to matrix A.
+  !! @param B Pointer to matrix B.
+  !! @param Alpha Factor @f$ \alpha @f$.
+  !! @param Beta Factor @f$ \beta @f$.
+  subroutine spamm_add_2nd_order_to_2nd_order (A, B, alpha, beta)
+
+    type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: B
+    real(spamm_kind), intent(in), optional :: alpha, beta
+
+    call spamm_add_qutree_2_qutree_inplace_recur(A%root, B%root, alpha, beta, 0)
+
+  end subroutine spamm_add_2nd_order_to_2nd_order
+
   !> Add 2 quadtree matrices, @f$ A \leftarrow \alpha A + \beta B @f$.
   !!
   !! If any of the two factors Alpha or Beta are not supplied then they default
@@ -220,11 +242,11 @@ CONTAINS
   SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace(qA,qB,Alpha,Beta)
 
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qA
-    TYPE(QuTree), POINTER, INTENT(IN)    :: qB
-    REAL(SpAMM_KIND), OPTIONAL           :: Alpha, Beta
-    REAL(SpAMM_KIND)                     :: InPlace_Alpha, InPlace_Beta
-    INTEGER                              :: Depth
-    REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
+    TYPE(QuTree), POINTER, INTENT(IN) :: qB
+    REAL(SpAMM_KIND), intent(in), OPTIONAL :: Alpha, Beta
+    REAL(SpAMM_KIND) :: InPlace_Alpha, InPlace_Beta
+    INTEGER :: Depth
+    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
     Depth=0
     IF(PRESENT(Alpha))THEN
@@ -545,14 +567,22 @@ CONTAINS
   !! @param qB Pointer to quadtree B.
   !! @param qC Pointer to quadtree C.
   !! @param threshold The SpAMM product tolerance.
-  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, threshold)
+  !! @param probabilistic The threshold for probabilistic dropping.
+  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, threshold, probabilistic)
 
     TYPE(QuTree), POINTER :: qC, qA, qB
     REAL(SpAMM_KIND) :: threshold
+    real(spamm_kind) :: temp
+    real(spamm_kind) :: probabilistic
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
       IF(qA%Norm*qB%Norm < threshold) RETURN
+
+      ! Apply probabilistic dropping.
+      call random_number(temp)
+      if(temp > exp(-(probabilistic-qA%norm*qB%norm))) return
+
 #ifdef _OPENMP
       CALL OMP_SET_LOCK(qC%lock)
 #endif
@@ -589,19 +619,19 @@ CONTAINS
       ELSE
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad11%Norm*qB%Quad11%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11, qA%Quad11, qB%Quad11, threshold)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11, qA%Quad11, qB%Quad11, threshold, probabilistic)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad11%Norm*qB%Quad12%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12, qA%Quad11, qB%Quad12, threshold)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12, qA%Quad11, qB%Quad12, threshold, probabilistic)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad21%Norm*qB%Quad11%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21, qA%Quad21, qB%Quad11, threshold)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21, qA%Quad21, qB%Quad11, threshold, probabilistic)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad21%Norm*qB%Quad12%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22, qA%Quad21, qB%Quad12, threshold)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22, qA%Quad21, qB%Quad12, threshold, probabilistic)
         !$OMP END TASK
 
 #ifdef BIGLOCK
@@ -609,19 +639,19 @@ CONTAINS
 #endif
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad12%Norm*qB%Quad21%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11, qA%Quad12, qB%Quad21, threshold)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad11, qA%Quad12, qB%Quad21, threshold, probabilistic)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad12%Norm*qB%Quad22%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12, qA%Quad12, qB%Quad22, threshold)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad12, qA%Quad12, qB%Quad22, threshold, probabilistic)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad21%Norm*qB%Quad21%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21, qA%Quad22, qB%Quad21, threshold)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad21, qA%Quad22, qB%Quad21, threshold, probabilistic)
         !$OMP END TASK
 
         !$OMP TASK UNTIED SHARED(qA,qB,qC) IF(qA%Quad22%Norm*qB%Quad22%Norm > SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22, qA%Quad22, qB%Quad22, threshold)
+        CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC%Quad22, qA%Quad22, qB%Quad22, threshold, probabilistic)
         !$OMP END TASK
 
         !$OMP TASKWAIT
@@ -732,7 +762,7 @@ CONTAINS
     integer, intent(in) :: M, N
     integer :: i, j
 
-    write(*, *) "q:", qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper
+    !write(*, *) "q:", qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       if(.not. allocated(qA%blok)) then
@@ -740,19 +770,19 @@ CONTAINS
         qA%Blok = SpAMM_Zero
       ENDIF
 
-      write(*, *) "before"
-      do i = 1, SPAMM_BLOCK_SIZE
-        write(*, "(4f10.3)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
-      enddo
+      !write(*, *) "before"
+      !do i = 1, SPAMM_BLOCK_SIZE
+      !  write(*, "(4f10.3)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
+      !enddo
 
       do i = 1, MIN(SPAMM_BLOCK_SIZE, M-qA%i_lower+1, N-qA%j_lower+1)
         qA%Blok(i:i, i:i) = qA%Blok(i:i, i:i)+alpha
       enddo
 
-      write(*, *) "after"
-      do i = 1, SPAMM_BLOCK_SIZE
-        write(*, "(4f10.3)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
-      enddo
+      !write(*, *) "after"
+      !do i = 1, SPAMM_BLOCK_SIZE
+      !  write(*, "(4f10.3)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
+      !enddo
     ELSE
       if(associated(qA%quad11)) then
         !$OMP TASK UNTIED SHARED(qA)
@@ -1156,13 +1186,15 @@ CONTAINS
   !! @param B The matrix \f$ B \f$.
   !! @param C The matrix \f$ C \f$.
   !! @param tolerance The SpAMM tolerance \f$ \tau \f$.
+  !! @param probabilistic The threshold for probabilistic dropping. SpAMM applies the Monte Carlo like condition @f$
+  !! e^{-(\sigma-\Vert A \Vert \Vert B \Vert)} @f$ to cull the product space.
   !! @param alpha The scalar \f$ \alpha \f$.
   !! @param beta The scalar \f$ \beta \f$.
-  subroutine spamm_multiply_2nd_order_x_2nd_order (A, B, C, tolerance, alpha, beta)
+  subroutine spamm_multiply_2nd_order_x_2nd_order (A, B, C, tolerance, probabilistic, alpha, beta)
 
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A, B
     type(spamm_matrix_2nd_order), pointer, intent(inout) :: C
-    real(spamm_kind), intent(in), optional :: tolerance
+    real(spamm_kind), intent(in), optional :: tolerance, probabilistic
     real(spamm_kind), intent(in), optional :: alpha, beta
 
     real(spamm_kind) :: local_tolerance
@@ -1173,7 +1205,7 @@ CONTAINS
       local_tolerance = 0
     endif
 
-    call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, tolerance)
+    call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, tolerance, probabilistic)
 
   end subroutine spamm_multiply_2nd_order_x_2nd_order
 

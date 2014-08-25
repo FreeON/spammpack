@@ -611,7 +611,7 @@ CONTAINS
     rows = i_upper-i_lower+1
     columns = j_upper-j_lower+1
 
-    write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
+    !write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
 
     if(rows /= columns) then
       write(*, *) "non-square submatrix"

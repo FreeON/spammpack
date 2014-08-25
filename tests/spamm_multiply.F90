@@ -2,7 +2,7 @@
 #define TEST_REPEAT 1
 #endif
 
-!#define VERIFY_RESULT
+#define VERIFY_RESULT
 
 program spamm_multiply
 
@@ -32,9 +32,9 @@ program spamm_multiply
   type(spamm_matrix_2nd_order), pointer :: C => null()
 
 #ifdef VERIFY_RESULT
-  real(spamm_kind) :: norm
+  real(spamm_kind) :: norms
   integer :: i, j
-  type(QuTree), pointer :: C_reference => null()
+  type(spamm_matrix_2nd_order), pointer :: C_reference => null()
 #endif
 
 #ifdef _OPENMP
@@ -130,29 +130,24 @@ program spamm_multiply
         C_dense_padded(i, j) = C_dense(i, j)
       enddo
     enddo
-    C_reference => SpAMM_Convert_Dense_2_QuTree(C_dense_padded)
+    C_reference => spamm_convert_dense_to_matrix_2nd_order(C_dense_padded)
 
     norms = Norm(A)
-    write(*, "(A,F22.12)") "F-norm (A)             = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (A)           = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (A)             = ", sqrt(norms)
 
     norms = Norm(B)
-    write(*, "(A,F22.12)") "F-norm (B)             = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (B)           = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (B)             = ", sqrt(norms)
 
     norms = Norm(C)
-    write(*, "(A,F22.12)") "F-norm (C)             = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (C)           = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (C)             = ", sqrt(norms)
 
     norms = Norm(C_reference)
-    write(*, "(A,F22.12)") "F-norm (C_reference)   = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (C_reference) = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (C_reference)   = ", sqrt(norms)
 
     call Add(C, C_reference, -SpAMM_ONE, SpAMM_ONE)
 
     norms = Norm(C)
-    write(*, "(A,F22.12)") "F-norm (diff)          = ", sqrt(norms%FrobeniusNorm)
-    write(*, "(A,F22.12)") "max-norm (diff)        = ", norms%MaxNorm
+    write(*, "(A,F22.12)") "F-norm (diff)          = ", sqrt(norms)
 #endif
 
 #if defined(_OPENMP)
