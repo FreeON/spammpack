@@ -41,6 +41,24 @@ list( APPEND CPACK_SOURCE_IGNORE_FILES
 
 include( CPack )
 
+set( INCLUDE_INSTALL_DIR include )
+set( LIB_INSTALL_DIR lib )
+
+include( CMakePackageConfigHelpers )
+configure_package_config_file( spammpackConfig.cmake.in spammpackConfig.cmake
+  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
+  PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
+  )
+write_basic_package_version_file( spammpackConfigVersion.cmake
+  VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}
+  COMPATIBILITY SameMajorVersion
+  )
+install( FILES
+  ${CMAKE_BINARY_DIR}/spammpackConfig.cmake
+  ${CMAKE_BINARY_DIR}/spammpackConfigVersion.cmake
+  DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
+  )
+
 if( CMAKE_C_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_C_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -Wall" )
 elseif( CMAKE_C_COMPILER_ID STREQUAL "Intel" )
