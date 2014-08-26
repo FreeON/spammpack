@@ -87,12 +87,12 @@ contains
   subroutine print_matrix (A)
 
     integer :: i, j
+    character(len = 20) :: format_string
     real(SpAMM_KIND), dimension(:, :), intent(in) :: A
 
+    write(format_string, "(A,I3,A)") "(", size(A, 2), "ES10.3)"
     do i = 1, size(A, 1)
-      do j = 1, size(A, 2)
-        write(*, *) i, j, A(i, j)
-      enddo
+      write(*, format_string) (A(i, j), j = 1, size(A, 2))
     enddo
 
   end subroutine print_matrix

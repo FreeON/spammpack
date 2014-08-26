@@ -28,6 +28,7 @@ set( UNIT_TESTS
   add_identify_to_2nd_order.F90
   multiply_2nd_order_x_2nd_order.F90
   multiply_2nd_order_x_2nd_order_2.F90
+  multiply_2nd_order_x_2nd_order_3.F90
   multiply_2nd_order_x_scalar.F90
   )
 
