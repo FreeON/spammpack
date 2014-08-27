@@ -34,8 +34,6 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE SpAMM_CONVERT
 
-#include "spamm_utility_macros.h"
-
   USE SpAMM_ALGEBRA
   use spamm_globals
   use spamm_management
@@ -82,7 +80,7 @@ MODULE SpAMM_CONVERT
     endif
 
 #if DEBUG >= 2
-    write(*, *) "["//trim(__FILE__)//":"//to_string(__LINE__)//"] q: ", i_lower, i_upper, j_lower, j_upper
+    write(*, *) "["//trim(__FILE__)//":"//trim(to_string(__LINE__))//"] q: ", i_lower, i_upper, j_lower, j_upper
 #endif
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
