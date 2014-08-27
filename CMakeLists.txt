@@ -100,12 +100,26 @@ if( NOT RESULT_TEST )
 endif()
 
 include( FindDoxygen )
-if( DOXYGEN_FOUND )
-  add_custom_target( docs doxygen )
+if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
+  add_custom_target( docs ${DOXYGEN_EXECUTABLE} )
   configure_file( Doxyfile.in Doxyfile )
+else()
+  message( STATUS "Can not build documentation" )
 endif()
 
 include( ${CMAKE_SOURCE_DIR}/FindOpenMP.cmake )
+
+if( NOT DEBUG )
+  set( DEBUG 0
+    CACHE STRING "Build with debug output"
+    )
+endif()
+
+if( DEBUG )
+  list( APPEND
+    CMAKE_Fortran_FLAGS "-DDEBUG=${DEBUG}"
+    )
+endif()
 
 list( APPEND
   CMAKE_C_FLAGS "-DTIMER_GETTIMEOFDAY"

@@ -43,8 +43,8 @@ def main ():
         testbasename = os.path.splitext(os.path.basename(source))[0]
         testexename = "unit-test-" + testbasename
         fd.write("# Unit test from %s\n" % (source))
-        fd.write("add_executable( %s %s )\n" % (testexename, source))
-        fd.write("target_link_libraries( %s %s spammtests)\n" % (testexename, options.spammpack_lib))
+        fd.write("add_executable( %s %s test_utilities.F90 )\n" % (testexename, source))
+        fd.write("target_link_libraries( %s %s )\n" % (testexename, options.spammpack_lib))
         fd.write("target_include_directories( %s PRIVATE ${CMAKE_BINARY_DIR}/src )\n" % (testexename))
         fd.write("add_test( %s %s )\n" % (testbasename, testexename))
         fd.write("\n")

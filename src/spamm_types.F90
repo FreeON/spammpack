@@ -117,7 +117,7 @@ module spamm_types
     integer :: depth = -1
 
     !> The Frobenious norm.
-    REAL(SpAMM_KIND) :: Norm = 0
+    REAL(SpAMM_KIND) :: norm = 0
 
     !> The padded matrix dimension. Since the padded matrix is always square, we only store one number here.
     integer :: N_padded

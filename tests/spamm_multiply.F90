@@ -7,7 +7,7 @@
 program spamm_multiply
 
   use spammpack
-  use spammtests
+  use test_utilities
 
 #ifdef _OPENMP
   use omp_lib

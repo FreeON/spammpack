@@ -3,6 +3,8 @@ program test
   use spammpack
   use test_utilities
 
+  implicit none
+
   integer, parameter :: M = 12
   integer, parameter :: N = 12
   real(kind(0d0)), parameter :: alpha = 1.2

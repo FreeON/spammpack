@@ -34,10 +34,13 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE SpAMM_CONVERT
 
-  use spamm_globals
-  use spamm_types
+#include "spamm_utility_macros.h"
+
   USE SpAMM_ALGEBRA
+  use spamm_globals
   use spamm_management
+  use spamm_types
+  use spamm_utilities
 
   IMPLICIT NONE
 
@@ -78,14 +81,16 @@ MODULE SpAMM_CONVERT
       qA%j_upper = j_upper
     endif
 
-    !write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
+#if DEBUG >= 2
+    write(*, *) "["//trim(__FILE__)//":"//to_string(__LINE__)//"] q: ", i_lower, i_upper, j_lower, j_upper
+#endif
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
-        WRITE(*, *) "[XgpSLv6M8u5ASgg3] LOGIC ERROR IN SpAMM: padding error"
-        WRITE(*, *) "A_rows = ", A_rows
-        WRITE(*, *) "A_cols = ", A_cols
-        WRITE(*, *) "SPAMM_BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
+        write(*, *) "[XgpSLv6M8u5ASgg3] LOGIC ERROR IN SpAMM: padding error"
+        write(*, *) "A_rows = ", A_rows
+        write(*, *) "A_cols = ", A_cols
+        write(*, *) "SPAMM_BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
         error stop
       ELSE
         if(allocated(qA%blok)) then

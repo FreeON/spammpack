@@ -1,21 +1,15 @@
-add_library( spammtests
-  test_utilities.F90
-  spammtests.F90
-  )
-target_include_directories( spammtests PRIVATE ${CMAKE_BINARY_DIR}/src )
-
-add_executable( spamm_multiply spamm_multiply.F90)
-target_link_libraries( spamm_multiply spammpack_serial_shared spammtests )
+add_executable( spamm_multiply test_utilities.F90 spamm_multiply.F90)
+target_link_libraries( spamm_multiply spammpack_serial_shared )
 target_include_directories( spamm_multiply PRIVATE ${CMAKE_BINARY_DIR}/src )
 
 if( OPENMP_FOUND )
-  add_executable( spamm_multiply-threaded spamm_multiply.F90)
+  add_executable( spamm_multiply-threaded test_utilities.F90 spamm_multiply.F90)
   set_target_properties( spamm_multiply-threaded
     PROPERTIES
     COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
     LINK_FLAGS ${OpenMP_Fortran_FLAGS}
     )
-  target_link_libraries( spamm_multiply-threaded spammpack_threaded_shared spammtests )
+  target_link_libraries( spamm_multiply-threaded spammpack_threaded_shared )
   target_include_directories( spamm_multiply-threaded PRIVATE ${CMAKE_BINARY_DIR}/src )
 endif()
 

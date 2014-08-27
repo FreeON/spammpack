@@ -12,6 +12,7 @@
 !! - @ref spamm_management
 !! - @ref spamm_project
 !! - @ref spamm_types
+!! - @ref spamm_utilities
 !!
 !! Using the library from Fortran requires the line
 !!
@@ -97,6 +98,7 @@ MODULE spammpack
   use spamm_management
   use spamm_project
   use spamm_types
+  use spamm_utilities
 
 CONTAINS
 

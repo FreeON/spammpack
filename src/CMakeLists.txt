@@ -10,9 +10,10 @@ set( spammpack-sources-Fortran
   spamm_convert.F90
   spamm_globals.F90
   spamm_management.F90
+  spammpack.F90
   spamm_project.F90
   spamm_types.F90
-  spammpack.F90
+  spamm_utilities.F90
   )
 
 if( SPAMM_SINGLE )

@@ -51,6 +51,7 @@ module spamm_management
   PUBLIC :: NewQuNode
   public :: spamm_zero_matrix
   public :: get
+  public :: reset_counters
 
   !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
@@ -78,6 +79,10 @@ module spamm_management
     module procedure spamm_get_matrix_2nd_order
   end interface get
 
+  interface reset_counters
+    module procedure spamm_reset_counters_2nd_order
+  end interface reset_counters
+
 CONTAINS
 
   !> Copy a 2nd order matrix: \f$ B \leftarrow A \f$.
@@ -101,22 +106,6 @@ CONTAINS
     call spamm_copy_qutree_2_qutree_recur(A%root, B%root)
 
   end subroutine spamm_copy_2nd_order_to_2nd_order
-
-  !> Copy QuTree into another QuTree: @f$ C \leftarrow A @f$.
-  !!
-  !! @param qA Pointer to matrix A.
-  !! @param qC Pointer to matrix C.
-  SUBROUTINE SpAMM_Copy_QuTree_2_QuTree(qA, qC)
-
-    TYPE(QuTree), POINTER, INTENT(IN)    :: qA
-    TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
-
-    !$OMP TASK UNTIED SHARED(qA, qC)
-    CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA, qC)
-    !$OMP END TASK
-    !$OMP TASKWAIT
-
-  END SUBROUTINE SpAMM_Copy_QuTree_2_QuTree
 
   !> Copy a coloumn of A into vector C: \f$ C \leftarrow A(:, j) \f$.
   !!
@@ -253,7 +242,9 @@ CONTAINS
       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
-    !write(*, *) "q: ", qA%i_lower, qA%i_upper, qA%j_lower, qA%j_upper
+#if DEBUG >= 2
+    write(*, *) "q: ", qA%i_lower, qA%i_upper, qA%j_lower, qA%j_upper
+#endif
 
     qC%Norm = qA%Norm
 
@@ -611,7 +602,9 @@ CONTAINS
     rows = i_upper-i_lower+1
     columns = j_upper-j_lower+1
 
-    !write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
+#if DEBUG >= 2
+    write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
+#endif
 
     if(rows /= columns) then
       write(*, *) "non-square submatrix"
@@ -778,14 +771,61 @@ CONTAINS
     ! This should be pretty efficient for reasonable matrix sizes and is presumably faster than some logarithm calculation since it
     ! only involves an increment and a bit shift.
     do while(A%N_padded < max(M, N))
+#if DEBUG >= 1
+      write(*, *) "depth = ", A%depth, ", N_padded = ", A%N_padded
+#endif
       A%depth = A%depth+1
       A%N_padded = 2*A%N_padded
     enddo
 
-    write(*, *) "[allocate 2nd-order] allocated ", M, "x", N, " matrix"
-    write(*, *) "[allocate 2nd-order] N_padded = ", A%N_padded
-    write(*, *) "[allocate 2nd-order] depth = ", A%depth
+#if DEBUG >= 1
+    write(*, *) "[allocate 2nd-order] allocated    ", M, "x", N, " matrix"
+    write(*, *) "[allocate 2nd-order] BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
+    write(*, *) "[allocate 2nd-order] N_padded   = ", A%N_padded
+    write(*, *) "[allocate 2nd-order] depth      = ", A%depth
+#endif
 
   end function spamm_allocate_matrix_2nd_order
+
+  !> Reset all counters in a qutree recursively.
+  !!
+  !! @param qA The qutree node.
+  recursive subroutine spamm_reset_counters_qutree (qA)
+
+    type(qutree), pointer, intent(inout) :: qA
+
+    qA%number_operations = 0
+    qA%number_nonzeros = 0
+
+    if(associated(qA%quad11)) then
+      call spamm_reset_counters_qutree(qA%quad11)
+    endif
+
+    if(associated(qA%quad12)) then
+      call spamm_reset_counters_qutree(qA%quad12)
+    endif
+
+    if(associated(qA%quad21)) then
+      call spamm_reset_counters_qutree(qA%quad21)
+    endif
+
+    if(associated(qA%quad22)) then
+      call spamm_reset_counters_qutree(qA%quad22)
+    endif
+
+  end subroutine spamm_reset_counters_qutree
+
+  !> Reset all counters in a 2nd order SpAMM matrix.
+  !!
+  !! @param A The matrix.
+  subroutine spamm_reset_counters_2nd_order (A)
+
+    type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
+
+    A%number_operations = 0
+    A%number_nonzeros = 0
+    call spamm_reset_counters_qutree(A%root)
+
+  end subroutine spamm_reset_counters_2nd_order
 
 end module spamm_management

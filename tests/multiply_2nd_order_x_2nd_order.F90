@@ -3,11 +3,12 @@ program test
   use spammpack
   use test_utilities
 
-  integer, parameter :: M = 12
-  integer, parameter :: N = 12
+  implicit none
+
+  integer, parameter :: N = 129
 
   type(spamm_matrix_2nd_order), pointer :: A, B, C
-  real(kind(0d0)), dimension(M, N) :: A_dense, C_dense
+  real(kind(0d0)), dimension(N, N) :: A_dense, C_dense
   integer :: i, j
 
   call random_number(A_dense)

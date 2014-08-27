@@ -137,8 +137,8 @@ CONTAINS
     ! are untied and can be executed by any thread in the thread group.
     !$OMP MASTER
 
-#ifdef _OPENMP
-    WRITE(*,*) "Multiply on ", omp_get_num_threads(), " OpenMP threads"
+#if defined(_OPENMP) && DEBUG >= 1
+    write(*,*) "Multiply on ", omp_get_num_threads(), " OpenMP threads"
 #endif
 
     IF(PRESENT(threshold))THEN
@@ -572,16 +572,20 @@ CONTAINS
 
     TYPE(QuTree), POINTER :: qC, qA, qB
     REAL(SpAMM_KIND) :: threshold
-    real(spamm_kind) :: temp
+    !real(spamm_kind) :: temp
     real(spamm_kind) :: probabilistic
+
+#if DEBUG >= 2
+    write(*, *) "q: ", qC%i_lower, qC%i_upper, qC%j_lower, qC%j_upper, ", operations = ", qC%number_operations
+#endif
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
       IF(qA%Norm*qB%Norm < threshold) RETURN
 
       ! Apply probabilistic dropping.
-      call random_number(temp)
-      if(temp > exp(-(probabilistic-qA%norm*qB%norm))) return
+      !call random_number(temp)
+      !if(temp > exp(-(probabilistic-qA%norm*qB%norm))) return
 
 #ifdef _OPENMP
       CALL OMP_SET_LOCK(qC%lock)
@@ -760,9 +764,12 @@ CONTAINS
     TYPE(QuTree), POINTER, intent(inout) :: qA
     real(spamm_kind), intent(in) :: alpha
     integer, intent(in) :: M, N
-    integer :: i, j
+    integer :: i
+    !integer :: j
 
-    !write(*, *) "q:", qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper
+#if DEBUG >= 2
+    write(*, *) "q:", qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper
+#endif
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       if(.not. allocated(qA%blok)) then
@@ -1194,10 +1201,12 @@ CONTAINS
 
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A, B
     type(spamm_matrix_2nd_order), pointer, intent(inout) :: C
-    real(spamm_kind), intent(in), optional :: tolerance, probabilistic
+    real(spamm_kind), intent(in), optional :: tolerance
+    real(spamm_kind), intent(in), optional :: probabilistic
     real(spamm_kind), intent(in), optional :: alpha, beta
 
     real(spamm_kind) :: local_tolerance
+    real(spamm_kind) :: local_probabilistic
 
     if(present(tolerance)) then
       local_tolerance = tolerance
@@ -1205,7 +1214,17 @@ CONTAINS
       local_tolerance = 0
     endif
 
-    call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, tolerance, probabilistic)
+    if(present(probabilistic)) then
+      local_probabilistic = probabilistic
+    else
+      local_probabilistic = 0
+    endif
+
+    call reset_counters(C)
+    call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, local_tolerance, local_probabilistic)
+    C%norm = C%root%norm
+    C%number_operations = C%root%number_operations
+    C%number_nonzeros = C%root%number_nonzeros
 
   end subroutine spamm_multiply_2nd_order_x_2nd_order
 

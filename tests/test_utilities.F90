@@ -1,7 +1,5 @@
 module test_utilities
 
-  use spammpack
-
   implicit none
 
 contains
@@ -9,11 +7,11 @@ contains
   subroutine load_matrix (filename, A)
 
     character(len = *), intent(in) :: filename
-    real(SpAMM_DOUBLE), dimension(:, :), allocatable, intent(inout) :: A
+    real(kind(0d0)), dimension(:, :), allocatable, intent(inout) :: A
 
     integer :: N
     integer :: i, j
-    real(SpAMM_DOUBLE) :: Aij
+    real(kind(0d0)) :: Aij
 
     if(allocated(A)) then
       deallocate(A)
@@ -88,7 +86,7 @@ contains
 
     integer :: i, j
     character(len = 20) :: format_string
-    real(SpAMM_KIND), dimension(:, :), intent(in) :: A
+    real(kind(0d0)), dimension(:, :), intent(in) :: A
 
     write(format_string, "(A,I3,A)") "(", size(A, 2), "ES10.3)"
     do i = 1, size(A, 1)
@@ -96,5 +94,27 @@ contains
     enddo
 
   end subroutine print_matrix
+
+  !> Calculate the Frobenius norm of a dense matrix.
+  !!
+  !! @param A The matrix
+  !!
+  !! @return The Frobenius norm.
+  function matrix_norm (A) result(norm)
+
+    real(kind(0d0)), dimension(:, :) :: A
+    real(kind(0d0)) :: norm
+    integer :: i, j
+
+    if(size(A, 1) == size(A, 2)) then
+      norm = sqrt(sum(matmul(A, transpose(A)), &
+        reshape((/ ((i == j, i = 1, size(A, 1)), j = 1, size(A, 2)) /), &
+        (/ size(A, 1), size(A, 2) /))))
+    else
+      write(*, *) "This implementation can only handle square matrices"
+      norm = -1
+    endif
+
+  end function matrix_norm
 
 end module test_utilities
