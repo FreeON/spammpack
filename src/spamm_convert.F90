@@ -56,8 +56,7 @@ MODULE SpAMM_CONVERT
   !! @param i_upper The upper value of the row index.
   !! @param j_lower The lower value of the column index.
   !! @param j_upper The upper value of the column index.
-  RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree (A, qA, &
-      i_lower, i_upper, j_lower, j_upper)
+  RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree (A, qA, i_lower, i_upper, j_lower, j_upper)
 
     REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qA
@@ -68,12 +67,24 @@ MODULE SpAMM_CONVERT
     INTEGER :: A_rows, A_cols
     integer :: convert_rows, convert_columns
 
-    if(i_upper > size(A, 1) .or. j_upper > size(A, 2)) return
+#if DEBUG >= 2
+    write(*, *) "converting: ", i_lower, i_upper, j_lower, j_upper
+#endif
+
+    if(i_lower > size(A, 1) .or. j_lower > size(A, 2)) then
+#if DEBUG >= 2
+      write(*, *) "outside dense matrix"
+#endif
+      return
+    endif
 
     A_rows = i_upper-i_lower+1
     A_cols = j_upper-j_lower+1
 
     if(.not. associated(qA)) then
+#if DEBUG >= 2
+      write(*, *) "allocating new node"
+#endif
       allocate(qA)
       qA%i_lower = i_lower
       qA%i_upper = i_upper
@@ -82,7 +93,7 @@ MODULE SpAMM_CONVERT
     endif
 
 #if DEBUG >= 2
-    write(*, *) "["//trim(__FILE__)//":"//trim(to_string(__LINE__))//"] q: ", i_lower, i_upper, j_lower, j_upper
+    write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
 #endif
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
@@ -93,6 +104,10 @@ MODULE SpAMM_CONVERT
         write(*, *) "SPAMM_BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
         error stop
       ELSE
+#if DEBUG >= 2
+        write(*, *) "allocating new blok"
+#endif
+
         if(allocated(qA%blok)) then
           deallocate(qA%blok)
         endif
@@ -109,7 +124,7 @@ MODULE SpAMM_CONVERT
         qA%Blok(1:convert_rows-i_lower+1, 1:convert_columns-j_lower+1) = &
           A(i_lower:convert_rows, j_lower:convert_columns)
 
-        qA%norm = sum(matmul(A, transpose(A)), reshape( &
+        qA%norm = sum(matmul(qA%blok, transpose(qA%blok)), reshape( &
           (/ ((i == j, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
           (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
 
@@ -149,19 +164,36 @@ MODULE SpAMM_CONVERT
         j_lower+A_cols/2, &
         j_upper)
 
-      qA%number_nonzeros = &
-        qA%Quad11%number_nonzeros + &
-        qA%Quad12%number_nonzeros + &
-        qA%Quad21%number_nonzeros + &
-        qA%Quad22%number_nonzeros
+      qA%number_nonzeros = 0
+      qA%norm = 0
 
-      qA%norm = sqrt( &
-        qA%quad11%norm**2 + &
-        qA%quad12%norm**2 + &
-        qA%quad21%norm**2 + &
-        qA%quad22%norm**2)
+      if(associated(qA%quad11)) then
+        qA%number_nonzeros = qA%number_nonzeros+qA%quad11%number_nonzeros
+        qA%norm = qA%norm+qA%quad11%norm**2
+      endif
+
+      if(associated(qA%quad12)) then
+        qA%number_nonzeros = qA%number_nonzeros+qA%quad12%number_nonzeros
+        qA%norm = qA%norm+qA%quad12%norm**2
+      endif
+
+      if(associated(qA%quad21)) then
+        qA%number_nonzeros = qA%number_nonzeros+qA%quad21%number_nonzeros
+        qA%norm = qA%norm+qA%quad21%norm**2
+      endif
+
+      if(associated(qA%quad22)) then
+        qA%number_nonzeros = qA%number_nonzeros+qA%quad22%number_nonzeros
+        qA%norm = qA%norm+qA%quad22%norm**2
+      endif
+
+      qA%norm = sqrt(qA%norm)
 
     ENDIF
+
+#if DEBUG >= 2
+    write(*, *) "done, going back up"
+#endif
 
   END SUBROUTINE SpAMM_Convert_Dense_2_QuTree
 
@@ -175,10 +207,20 @@ MODULE SpAMM_CONVERT
     type(spamm_matrix_2nd_order), pointer :: A
     real(spamm_kind), dimension(:, :), intent(in) :: A_dense
 
+#if DEBUG >= 1
+    write(*, *) "allocating new matrix"
+#endif
     A => spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2))
+#if DEBUG >= 1
+    write(*, *) "allocated A"
+#endif
     call spamm_convert_dense_2_qutree(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
     A%norm = A%root%norm
     A%number_nonzeros = A%root%number_nonzeros
+
+#if DEBUG >= 1
+    write(*, *) "done allocating"
+#endif
 
   end function spamm_convert_dense_to_matrix_2nd_order
 

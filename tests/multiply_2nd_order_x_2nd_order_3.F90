@@ -41,9 +41,8 @@ program test
 
   do i = 1, ITERATIONS
     call multiply(A, B, C)
-    write(*, *) "complexity = ", C%number_operations
-    write(*, *) "complexity/N^3 = ", C%number_operations/dble(N)**3
     call copy(C, A)
+    write(*, *) "complexity/N^3 = ", C%number_operations/dble(N)**3
     C_dense = matmul(A_dense, A_dense)
     A_dense = C_dense
   enddo

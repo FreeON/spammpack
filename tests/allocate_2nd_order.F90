@@ -1,6 +1,7 @@
 program test
 
   use spammpack
+  use test_utilities
 
   implicit none
 
@@ -14,9 +15,7 @@ program test
 
   call random_number(A_dense)
 
-  !do i = 1, M
-  !  write(*, "(11E10.3)") (A_dense(i, j), j = 1, N)
-  !enddo
+  call print_matrix(A_dense)
 
   A => spamm_convert_dense_to_matrix_2nd_order(A_dense)
 

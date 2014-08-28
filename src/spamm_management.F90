@@ -762,9 +762,9 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer :: A
 
     allocate(A)
+
     A%M = M
     A%N = N
-
     A%depth = 0
     A%N_padded = SPAMM_BLOCK_SIZE
 
