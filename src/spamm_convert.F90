@@ -68,10 +68,10 @@ MODULE SpAMM_CONVERT
     INTEGER :: A_rows, A_cols
     integer :: convert_rows, convert_columns
 
+    if(i_upper > size(A, 1) .or. j_upper > size(A, 2)) return
+
     A_rows = i_upper-i_lower+1
     A_cols = j_upper-j_lower+1
-
-    if(i_upper > size(A, 1) .or. j_upper > size(A, 2)) return
 
     if(.not. associated(qA)) then
       allocate(qA)
@@ -119,13 +119,12 @@ MODULE SpAMM_CONVERT
         !enddo
 
         ! Count number non-zeros.
-        DO i = 1, SPAMM_BLOCK_SIZE
-          DO j = 1, SPAMM_BLOCK_SIZE
-            IF(qA%Blok(i, j) /= 0.0D0) THEN
-              qA%number_nonzeros = qA%number_nonzeros+1
-            ENDIF
-          ENDDO
-        ENDDO
+        qA%number_nonzeros = sum(reshape( &
+          (/ ((1, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
+          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)), &
+          reshape( &
+          (/ ((qA%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
+          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
       ENDIF
     ELSE
       ! Avoid slicing here for performance.
