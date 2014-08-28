@@ -67,14 +67,14 @@ MODULE SpAMM_CONVERT
     INTEGER :: A_rows, A_cols
     integer :: convert_rows, convert_columns
 
-#if DEBUG >= 2
-    write(*, *) "converting: ", i_lower, i_upper, j_lower, j_upper
-#endif
+    if(associated(qA)) then
+      call write_log(FATAL, "qA should not already be associated")
+    endif
+
+    call write_log(2, "converting: "//to_string(i_lower)//" "//to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper))
 
     if(i_lower > size(A, 1) .or. j_lower > size(A, 2)) then
-#if DEBUG >= 2
-      write(*, *) "outside dense matrix"
-#endif
+      call write_log(2, "outside dense matrix")
       return
     endif
 
@@ -82,9 +82,7 @@ MODULE SpAMM_CONVERT
     A_cols = j_upper-j_lower+1
 
     if(.not. associated(qA)) then
-#if DEBUG >= 2
-      write(*, *) "allocating new node"
-#endif
+      call write_log(2, "allocating new node")
       allocate(qA)
       qA%i_lower = i_lower
       qA%i_upper = i_upper
@@ -92,9 +90,7 @@ MODULE SpAMM_CONVERT
       qA%j_upper = j_upper
     endif
 
-#if DEBUG >= 2
-    write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
-#endif
+    call write_log(2, "q: "//to_string(i_lower)//" "//to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper))
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
@@ -104,9 +100,7 @@ MODULE SpAMM_CONVERT
         write(*, *) "SPAMM_BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
         error stop
       ELSE
-#if DEBUG >= 2
-        write(*, *) "allocating new blok"
-#endif
+        call write_log(2, "allocating new blok")
 
         if(allocated(qA%blok)) then
           deallocate(qA%blok)
@@ -191,9 +185,7 @@ MODULE SpAMM_CONVERT
 
     ENDIF
 
-#if DEBUG >= 2
-    write(*, *) "done, going back up"
-#endif
+    call write_log(2, "done, going back up")
 
   END SUBROUTINE SpAMM_Convert_Dense_2_QuTree
 
@@ -207,20 +199,17 @@ MODULE SpAMM_CONVERT
     type(spamm_matrix_2nd_order), pointer :: A
     real(spamm_kind), dimension(:, :), intent(in) :: A_dense
 
-#if DEBUG >= 1
-    write(*, *) "allocating new matrix"
-#endif
+    call write_log(1, "allocating new matrix")
     A => spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2))
-#if DEBUG >= 1
-    write(*, *) "allocated A"
-#endif
+    call write_log(1, "allocated A")
     call spamm_convert_dense_2_qutree(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
-    A%norm = A%root%norm
-    A%number_nonzeros = A%root%number_nonzeros
 
-#if DEBUG >= 1
-    write(*, *) "done allocating"
-#endif
+    if(associated(A%root)) then
+      A%norm = A%root%norm
+      A%number_nonzeros = A%root%number_nonzeros
+    endif
+
+    call write_log(1, "done allocating")
 
   end function spamm_convert_dense_to_matrix_2nd_order
 

@@ -37,6 +37,7 @@ MODULE SpAMM_ALGEBRA
   use spamm_types
   use spamm_globals
   use spamm_management
+  use spamm_utilities
 
 #ifdef _OPENMP
   use omp_lib
@@ -137,8 +138,8 @@ CONTAINS
     ! are untied and can be executed by any thread in the thread group.
     !$OMP MASTER
 
-#if defined(_OPENMP) && DEBUG >= 1
-    write(*,*) "Multiply on ", omp_get_num_threads(), " OpenMP threads"
+#ifdef _OPENMP
+    call write_log(1, "Multiply on "//to_string(omp_get_num_threads())//" OpenMP threads")
 #endif
 
     IF(PRESENT(threshold))THEN
@@ -575,9 +576,8 @@ CONTAINS
     !real(spamm_kind) :: temp
     real(spamm_kind) :: probabilistic
 
-#if DEBUG >= 2
-    write(*, *) "q: ", qC%i_lower, qC%i_upper, qC%j_lower, qC%j_upper, ", operations = ", qC%number_operations
-#endif
+    call write_log(2, "q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper)//" " &
+      //to_string(qC%j_lower)//" "//to_string(qC%j_upper)//", operations = "//to_string(qC%number_operations))
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
@@ -767,9 +767,8 @@ CONTAINS
     integer :: i
     !integer :: j
 
-#if DEBUG >= 2
-    write(*, *) "q:", qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper
-#endif
+    call write_log(2, "q:"//to_string(qA%i_lower)//" "//to_string(qA%j_lower)//" " &
+      //to_string(qA%i_upper)//" "//to_string(qA%j_upper))
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       if(.not. allocated(qA%blok)) then

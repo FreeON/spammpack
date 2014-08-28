@@ -18,6 +18,8 @@ program test
   C => spamm_zero_matrix(size(A_dense, 1), size(A_dense, 2))
 
   call multiply(A, B, C)
+  write(*, *) "complexity = "//to_string(C%number_operations) &
+    //", complexity/N^3 = "//to_string(C%number_operations/dble(N)**3)
 
   C_dense = matmul(A_dense, A_dense)
 

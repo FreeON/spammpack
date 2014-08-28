@@ -36,8 +36,11 @@ module spamm_utilities
 
   implicit none
 
+  integer, parameter :: FATAL = -1
+
   interface to_string
     module procedure int_to_string
+    module procedure double_to_string
   end interface to_string
 
 contains
@@ -50,12 +53,50 @@ contains
   function int_to_string (i) result(str_i)
 
     integer, intent(in) :: i
+
+    integer :: str_len
     character(len = 100) :: temp
     character(len = :), allocatable :: str_i
 
     write(temp, *) i
-    str_i = trim(temp)
+    str_i = trim(adjustl(temp))
 
   end function int_to_string
+
+  !> Convert a double precision real to a string.
+  !!
+  !! @param x The real
+  !!
+  !! @return The string representation.
+  function double_to_string (x) result(str_x)
+
+    real(kind(0d0)), intent(in) :: x
+    character(len = 100) :: temp
+    character(len = :), allocatable :: str_x
+
+    write(temp, "(ES16.8E3)") x
+    str_x = trim(adjustl(temp))
+
+  end function double_to_string
+
+  !> Print a log message.
+  !!
+  !! @param level The message level. The global debug_level has to be greater or equal to the level.
+  !! @param message The string to print.
+  subroutine write_log (level, message)
+
+    integer, intent(in) :: level
+    character(len = *), intent(in) :: message
+
+    if(DEBUG_LEVEL >= level) then
+      if(level < 0) then
+        write(*, "(A)") "[FATAL] "//message
+        error stop
+      else
+        write(*, "(A)") message
+      endif
+    endif
+
+  end subroutine write_log
 
 end module spamm_utilities

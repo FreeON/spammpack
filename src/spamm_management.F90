@@ -36,6 +36,7 @@ module spamm_management
 
   use spamm_types
   use spamm_globals
+  use spamm_utilities
 
   IMPLICIT NONE
 
@@ -242,9 +243,8 @@ CONTAINS
       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
-#if DEBUG >= 2
-    write(*, *) "q: ", qA%i_lower, qA%i_upper, qA%j_lower, qA%j_upper
-#endif
+    call write_log(2, "q: "//to_string(qA%i_lower)//" "//to_string(qA%i_upper)//" " &
+      //to_string(qA%j_lower)//" "//to_string(qA%j_upper))
 
     qC%Norm = qA%Norm
 
@@ -602,9 +602,7 @@ CONTAINS
     rows = i_upper-i_lower+1
     columns = j_upper-j_lower+1
 
-#if DEBUG >= 2
-    write(*, *) "q: ", i_lower, i_upper, j_lower, j_upper
-#endif
+    call write_log(2, "q: "//to_string(i_lower)//" "//to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper))
 
     if(rows /= columns) then
       write(*, *) "non-square submatrix"
@@ -771,19 +769,15 @@ CONTAINS
     ! This should be pretty efficient for reasonable matrix sizes and is presumably faster than some logarithm calculation since it
     ! only involves an increment and a bit shift.
     do while(A%N_padded < max(M, N))
-#if DEBUG >= 1
-      write(*, *) "depth = ", A%depth, ", N_padded = ", A%N_padded
-#endif
+      call write_log(1, "depth = "//to_string(A%depth)//", N_padded = "//to_string(A%N_padded))
       A%depth = A%depth+1
       A%N_padded = 2*A%N_padded
     enddo
 
-#if DEBUG >= 1
-    write(*, *) "[allocate 2nd-order] allocated    ", M, "x", N, " matrix"
-    write(*, *) "[allocate 2nd-order] BLOCK_SIZE = ", SPAMM_BLOCK_SIZE
-    write(*, *) "[allocate 2nd-order] N_padded   = ", A%N_padded
-    write(*, *) "[allocate 2nd-order] depth      = ", A%depth
-#endif
+    call write_log(1, "allocated    "//to_string(M)//"x"//to_string(N)//" matrix")
+    call write_log(1, "BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
+    call write_log(1, "N_padded   = "//to_string(A%N_padded))
+    call write_log(1, "depth      = "//to_string(A%depth))
 
   end function spamm_allocate_matrix_2nd_order
 

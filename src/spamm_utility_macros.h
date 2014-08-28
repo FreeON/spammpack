@@ -37,7 +37,7 @@
 #ifndef SPAMM_UTILITY_MACROS_H
 #define SPAMM_UTILITY_MACROS_H
 
-#define LOG2(level, filename, linenumber, ...) call write(*, *) __VA_ARGS__
-#define LOG(level, filename, linenumber, ...) LOG2(level, filename, linenumber, ##__VA_ARGS__)
+#define STRINGIFY(EXPRESSION) #EXPRESSION
+#define ASSERT(EXPRESSION) call assert_backend(EXPRESSION, STRINGIFY(EXPRESSION))
 
 #endif

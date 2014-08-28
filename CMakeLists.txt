@@ -109,21 +109,20 @@ endif()
 
 include( ${CMAKE_SOURCE_DIR}/FindOpenMP.cmake )
 
-if( NOT DEBUG )
-  set( DEBUG 0
-    CACHE STRING "Build with debug output"
+if( NOT DEBUG_LEVEL )
+  set( DEBUG_LEVEL 0
+    CACHE STRING "The debugging output verbosity"
     )
+else()
+  if( DEBUG_LEVEL LESS 0 )
+    message( FATAL_ERROR "DEBUG_LEVEL has to be >= 0" )
+  endif()
+  message( STATUS "Setting DEBUG_LEVEL to ${DEBUG_LEVEL}" )
 endif()
+set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DDEBUG_LEVEL=${DEBUG_LEVEL}" )
 
-if( DEBUG )
-  list( APPEND
-    CMAKE_Fortran_FLAGS "-DDEBUG=${DEBUG}"
-    )
-endif()
-
-list( APPEND
-  CMAKE_C_FLAGS "-DTIMER_GETTIMEOFDAY"
-  )
+# For now hard-coded.
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTIMER_GETTIMEOFDAY" )
 
 if( NOT SPAMM_SINGLE )
   set( SPAMM_SINGLE FALSE
@@ -133,7 +132,7 @@ else()
   set( SPAMM_SINGLE TRUE
     CACHE BOOL "Build the single precision version"
     )
-  list( APPEND CMAKE_Fortran_FLAGS "-DSPAMM_SINGLE" )
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DSPAMM_SINGLE" )
 endif()
 
 if( NOT VALGRIND_TESTS )
