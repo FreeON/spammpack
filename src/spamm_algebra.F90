@@ -581,7 +581,7 @@ CONTAINS
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
-      IF(qA%Norm*qB%Norm < threshold) RETURN
+      IF(qA%Norm*qB%Norm <= threshold) RETURN
 
       ! Apply probabilistic dropping.
       !call random_number(temp)

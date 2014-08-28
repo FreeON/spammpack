@@ -71,6 +71,8 @@ MODULE SpAMM_CONVERT
     A_rows = i_upper-i_lower+1
     A_cols = j_upper-j_lower+1
 
+    if(i_upper > size(A, 1) .or. j_upper > size(A, 2)) return
+
     if(.not. associated(qA)) then
       allocate(qA)
       qA%i_lower = i_lower
@@ -106,6 +108,10 @@ MODULE SpAMM_CONVERT
 
         qA%Blok(1:convert_rows-i_lower+1, 1:convert_columns-j_lower+1) = &
           A(i_lower:convert_rows, j_lower:convert_columns)
+
+        qA%norm = sum(matmul(A, transpose(A)), reshape( &
+          (/ ((i == j, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
+          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
 
         !write(*, *) "q%blok"
         !do i = 1, SPAMM_BLOCK_SIZE
@@ -149,6 +155,13 @@ MODULE SpAMM_CONVERT
         qA%Quad12%number_nonzeros + &
         qA%Quad21%number_nonzeros + &
         qA%Quad22%number_nonzeros
+
+      qA%norm = sqrt( &
+        qA%quad11%norm**2 + &
+        qA%quad12%norm**2 + &
+        qA%quad21%norm**2 + &
+        qA%quad22%norm**2)
+
     ENDIF
 
   END SUBROUTINE SpAMM_Convert_Dense_2_QuTree
@@ -165,6 +178,8 @@ MODULE SpAMM_CONVERT
 
     A => spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2))
     call spamm_convert_dense_2_qutree(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
+    A%norm = A%root%norm
+    A%number_nonzeros = A%root%number_nonzeros
 
   end function spamm_convert_dense_to_matrix_2nd_order
 
