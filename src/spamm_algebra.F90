@@ -83,6 +83,7 @@ MODULE SpAMM_ALGEBRA
     MODULE PROCEDURE SpAMM_Trace_QuTree
     MODULE PROCEDURE SpAMM_Trace_QuTree_Product
     module procedure spamm_trace_2nd_order
+    module procedure spamm_trace_2nd_order_product
   END INTERFACE
 
   !> Interface for additions operations between different SpAMM types.
@@ -313,7 +314,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Add_Identity_2_QuTree_InPlace
 
-  !> Trace for QuTree: @f$ a = \mathrm{Tr} A @f$.
+  !> Trace for QuTree: @f$ a = \mathrm{Tr} [ A ] @f$.
   !!
   !! @param qA Pointer to matrix A.
   !!
@@ -339,7 +340,7 @@ CONTAINS
 
   END FUNCTION SpAMM_Trace_QuTree
 
-  !> The trace of a 2nd order matrix.
+  !> The trace of a 2nd order matrix: @f$ a \leftarrow \mathrm{Tr} [ A ] @f$.
   !!
   !! @param A The matrix.
   !!
@@ -385,7 +386,7 @@ CONTAINS
     IF(PRESENT(threshold)) THEN
       multiplyThreshold = threshold
     ELSE
-      multiplyThreshold = SpAMM_PRODUCT_TOLERANCE
+      multiplyThreshold = 0
     ENDIF
 
     TInitial = SpAMM_Get_Time()
@@ -399,6 +400,42 @@ CONTAINS
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Trace_QuTree_Product",7)
 
   END FUNCTION SpAMM_Trace_QuTree_Product
+
+  !> Trace for matrix product, @f$ \mathrm{Tr} \left[ A \times B \right] @f$.
+  !!
+  !! @param A Pointer to matrix A.
+  !! @param B Pointer to matrix B.
+  !!
+  !! @return The trace of the matrix produce, @f$ \mathrm{Tr} \left[ A \times B \right] @f$.
+  function spamm_trace_2nd_order_product (A, B, tolerance) result (trace_ab)
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A, B
+    real(spamm_kind), intent(in), optional :: tolerance
+    real(spamm_kind) :: trace_ab
+
+    real(spamm_kind) :: local_tolerance
+
+    trace_ab = 0
+
+    if(.not. associated(A) .or. .not. associated(B)) then
+      call write_log(1, [ "either A or B are not associated" ])
+      return
+    endif
+
+    if(.not. associated(A%root) .or. .not. associated(B%root)) then
+      call write_log(1, [ "either A%root or B%root are not associated" ])
+      return
+    endif
+
+    if(present(tolerance)) then
+      local_tolerance = tolerance
+    else
+      local_tolerance = 0
+    endif
+
+    trace_ab = spamm_trace_qutree_product(A%root, B%root, local_tolerance)
+
+  end function spamm_trace_2nd_order_product
 
   !> Filter for the QuTree: \f$ \tilde{A} = \mathrm{filter} [A, \tau] \f$.
   SUBROUTINE SpAMM_Filter_QuTree(qA,Tau)
@@ -530,9 +567,9 @@ CONTAINS
     REAL(SpAMM_KIND),OPTIONAL :: LocalThreshold
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     IF(PRESENT(LocalThreshold))THEN
-      SpAMM_Threshold_Multiply_QuTree_x_BiTree=LocalThreshold
+      SpAMM_Threshold_Multiply_QuTree_x_BiTree = LocalThreshold
     ELSE
-      SpAMM_Threshold_Multiply_QuTree_x_BiTree=SpAMM_PRODUCT_TOLERANCE
+      SpAMM_Threshold_Multiply_QuTree_x_BiTree = 0
     ENDIF
     Depth=0
     TInitial = SpAMM_Get_Time()
