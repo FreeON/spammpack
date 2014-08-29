@@ -28,12 +28,12 @@ program test
   logical, parameter :: PRINT_MATRICES = .false.
   integer, parameter :: N = 129
   integer, parameter :: BANDWIDTH = 4
-  integer, parameter :: ITERATIONS = 3
+  integer, parameter :: ITERATIONS = 5
 
   type(spamm_matrix_2nd_order), pointer :: A, B, C
   real(kind(0d0)), dimension(N, N) :: A_dense, C_dense
   real(kind(0d0)) :: reference_norm
-  real(kind(0d0)), dimension(ITERATIONS) :: reference_complexity = [ 18368, 49600, 94528 ]
+  real(kind(0d0)), dimension(ITERATIONS) :: reference_complexity = [ 18368, 49600, 151872, 479808, 1342528 ]
   integer :: i, j
 
   A_dense = 0
