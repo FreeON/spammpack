@@ -9,6 +9,7 @@ program test
 
   type(spamm_matrix_2nd_order), pointer :: A, B, C
   real(kind(0d0)), dimension(N, N) :: A_dense, C_dense
+  real(kind(0d0)) :: reference_complexity
   integer :: i, j
 
   call random_number(A_dense)
@@ -18,8 +19,16 @@ program test
   C => spamm_zero_matrix(size(A_dense, 1), size(A_dense, 2))
 
   call multiply(A, B, C)
-  write(*, *) "complexity = "//to_string(C%number_operations) &
-    //", complexity/N^3 = "//to_string(C%number_operations/dble(N)**3)
+  reference_complexity = dble(N+SPAMM_BLOCK_SIZE-mod(N, SPAMM_BLOCK_SIZE))**3
+
+  write(*, *) "complexity      = "//to_string(C%number_operations)
+  write(*, *) "ref. complexity = "//to_string(reference_complexity)
+  write(*, *) "complexity/N^3  = "//to_string(C%number_operations/dble(N)**3)
+
+  if(abs(C%number_operations-reference_complexity) > 1e-10) then
+    write(*, *) "complexity count wrong"
+    error stop
+  endif
 
   C_dense = matmul(A_dense, A_dense)
 

@@ -13,6 +13,7 @@ program test
   real(kind(0d0)), dimension(N, N) :: A_dense, C_dense
   real(kind(0d0)), dimension(N) :: diagonal
   real(kind(0d0)) :: reference_norm
+  real(kind(0d0)) :: reference_complexity
   integer :: i, j
 
   call random_number(diagonal)
@@ -41,8 +42,18 @@ program test
 
   do i = 1, ITERATIONS
     call multiply(A, B, C)
+
+    reference_complexity = dble(N+SPAMM_BLOCK_SIZE-mod(N, SPAMM_BLOCK_SIZE))**3
+    write(*, *) to_string(i)//": complexity      = "//to_string(C%number_operations)
+    write(*, *) to_string(i)//": ref. complexity = "//to_string(reference_complexity)
+    write(*, *) to_string(i)//": complexity/N^3  = "//to_string(C%number_operations/dble(N)**3)
+
+    if(abs(C%number_operations-reference_complexity) > 1e-10) then
+      write(*, *) "complexity count wrong"
+      error stop
+    endif
+
     call copy(C, A)
-    write(*, *) "complexity/N^3 = ", C%number_operations/dble(N)**3
     C_dense = matmul(A_dense, A_dense)
     A_dense = C_dense
   enddo

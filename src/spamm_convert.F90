@@ -199,9 +199,8 @@ MODULE SpAMM_CONVERT
     type(spamm_matrix_2nd_order), pointer :: A
     real(spamm_kind), dimension(:, :), intent(in) :: A_dense
 
-    call write_log(1, "allocating new matrix")
+    call write_log(1, "converting dense matrix")
     A => spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2))
-    call write_log(1, "allocated A")
     call spamm_convert_dense_2_qutree(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
 
     if(associated(A%root)) then
@@ -209,7 +208,9 @@ MODULE SpAMM_CONVERT
       A%number_nonzeros = A%root%number_nonzeros
     endif
 
-    call write_log(1, "done allocating")
+    call write_log(1, "norm = "//to_string(A%norm))
+    call write_log(1, "nnonzeros = "//to_string(A%number_nonzeros))
+    call write_log(1, "done converting")
 
   end function spamm_convert_dense_to_matrix_2nd_order
 

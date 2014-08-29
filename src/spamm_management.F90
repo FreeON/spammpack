@@ -769,15 +769,15 @@ CONTAINS
     ! This should be pretty efficient for reasonable matrix sizes and is presumably faster than some logarithm calculation since it
     ! only involves an increment and a bit shift.
     do while(A%N_padded < max(M, N))
-      call write_log(1, "depth = "//to_string(A%depth)//", N_padded = "//to_string(A%N_padded))
+      call write_log(2, "depth = "//to_string(A%depth)//", N_padded = "//to_string(A%N_padded))
       A%depth = A%depth+1
       A%N_padded = 2*A%N_padded
     enddo
 
-    call write_log(1, "allocated    "//to_string(M)//"x"//to_string(N)//" matrix")
-    call write_log(1, "BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
-    call write_log(1, "N_padded   = "//to_string(A%N_padded))
-    call write_log(1, "depth      = "//to_string(A%depth))
+    call write_log(1, "allocated "//to_string(M)//"x"//to_string(N)//" matrix")
+    call write_log(1, "  BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
+    call write_log(1, "  N_padded   = "//to_string(A%N_padded))
+    call write_log(1, "  depth      = "//to_string(A%depth))
 
   end function spamm_allocate_matrix_2nd_order
 
