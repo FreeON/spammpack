@@ -34,7 +34,7 @@ contains
 
     if(N == 0) then
       write(*, "(A)") "no matrix elements found in matrix file"
-      stop
+      error stop
     else
       allocate(A(N, N))
       A = 0.0D0
@@ -51,11 +51,11 @@ contains
   subroutine load_matrix_binary (filename, A)
 
     character(len = *), intent(in) :: filename
-    real*8, dimension(:, :), allocatable, intent(inout) :: A
+    real(kind(0d0)), dimension(:, :), allocatable, intent(inout) :: A
 
     integer :: N
     integer :: i, j
-    real*8 :: Aij
+    real(kind(0d0)) :: Aij
 
     if(allocated(A)) then
       deallocate(A)

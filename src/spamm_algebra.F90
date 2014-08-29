@@ -575,6 +575,7 @@ CONTAINS
     REAL(SpAMM_KIND) :: threshold
     !real(spamm_kind) :: temp
     real(spamm_kind) :: probabilistic
+    integer :: i, j
 
     call write_log(2, "q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper)//" " &
       //to_string(qC%j_lower)//" "//to_string(qC%j_upper)//", operations = "//to_string(qC%number_operations))
@@ -616,6 +617,12 @@ CONTAINS
 #endif
         qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
         qC%number_operations = qC%number_operations+SPAMM_BLOCK_SIZE**3
+        qC%number_nonzeros = sum(reshape( &
+          (/ ((1, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
+          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)), &
+          reshape( &
+          (/ ((qC%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
+          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
 
 #if defined(_OPENMP) && ! defined(BIGLOCK)
         CALL OMP_UNSET_LOCK(qC%lock)
@@ -660,11 +667,28 @@ CONTAINS
 
         !$OMP TASKWAIT
 
-        qC%number_operations = &
-          qC%Quad11%number_operations + &
-          qC%Quad12%number_operations + &
-          qC%Quad21%number_operations + &
-          qC%Quad22%number_operations
+        qC%number_operations = 0
+        qC%number_nonzeros = 0
+
+        if(associated(qC%quad11)) then
+          qC%number_operations = qC%number_operations+qC%Quad11%number_operations
+          qC%number_nonzeros = qC%number_nonzeros+qC%Quad11%number_nonzeros
+        endif
+
+        if(associated(qC%quad12)) then
+          qC%number_operations = qC%number_operations+qC%Quad12%number_operations
+          qC%number_nonzeros = qC%number_nonzeros+qC%Quad12%number_nonzeros
+        endif
+
+        if(associated(qC%quad21)) then
+          qC%number_operations = qC%number_operations+qC%Quad21%number_operations
+          qC%number_nonzeros = qC%number_nonzeros+qC%Quad21%number_nonzeros
+        endif
+
+        if(associated(qC%quad22)) then
+          qC%number_operations = qC%number_operations+qC%Quad22%number_operations
+          qC%number_nonzeros = qC%number_nonzeros+qC%Quad22%number_nonzeros
+        endif
 
       ENDIF
     ENDIF
@@ -1206,6 +1230,7 @@ CONTAINS
 
     real(spamm_kind) :: local_tolerance
     real(spamm_kind) :: local_probabilistic
+    real(spamm_kind) :: local_alpha, local_beta
 
     if(present(tolerance)) then
       local_tolerance = tolerance
@@ -1219,11 +1244,26 @@ CONTAINS
       local_probabilistic = 0
     endif
 
+    if(present(alpha)) then
+      local_alpha = alpha
+    else
+      local_alpha = 1
+    endif
+
+    if(present(beta)) then
+      local_beta = beta
+    else
+      local_beta = 0
+    endif
+
     call reset_counters(C)
     call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, local_tolerance, local_probabilistic)
-    C%norm = C%root%norm
-    C%number_operations = C%root%number_operations
-    C%number_nonzeros = C%root%number_nonzeros
+
+    if(associated(C%root)) then
+      C%norm = C%root%norm
+      C%number_operations = C%root%number_operations
+      C%number_nonzeros = C%root%number_nonzeros
+    endif
 
   end subroutine spamm_multiply_2nd_order_x_2nd_order
 

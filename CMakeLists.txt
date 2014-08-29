@@ -70,7 +70,7 @@ endif()
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
-  set( CMAKE_Fortran_FLAGS_DEBUG   "-stand f08 -O0 -g -debug all -check all -traceback -assume realloc_lhs -heap-arrays" )
+  set( CMAKE_Fortran_FLAGS_DEBUG   "-stand f08 -O0 -g -debug all -check all -warn unused -traceback -assume realloc_lhs -heap-arrays" )
 else()
   message( STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}" )
 endif()
@@ -104,7 +104,7 @@ try_run( RUN_RESULT_2 COMPILE_RESULT_2
 if( NOT COMPILE_RESULT_2 )
   message( FATAL_ERROR "The Fortran compiler can not compile deferred length string expressions" )
 endif()
-if( NOT RUN_RESULT_2 OR NOT RUN_RESULT_2 EQUAL 0 )
+if( NOT RUN_RESULT_2 EQUAL 0 )
   message( WARNING
     "The Fortran compiler has trouble with deferred length string "
     "assignments, which might render screen output rather ugly. Please "
@@ -136,17 +136,6 @@ set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DDEBUG_LEVEL=${DEBUG_LEVEL}" )
 
 # For now hard-coded.
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTIMER_GETTIMEOFDAY" )
-
-if( NOT SPAMM_SINGLE )
-  set( SPAMM_SINGLE FALSE
-    CACHE BOOL "Build the single precision version"
-    )
-else()
-  set( SPAMM_SINGLE TRUE
-    CACHE BOOL "Build the single precision version"
-    )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DSPAMM_SINGLE" )
-endif()
 
 if( NOT VALGRIND_TESTS )
   set( VALGRIND_TESTS FALSE

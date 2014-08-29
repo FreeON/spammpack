@@ -134,6 +134,8 @@ MODULE SpAMM_CONVERT
           reshape( &
           (/ ((qA%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
           (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
+
+        call write_log(2, "non-zeros: "//to_string(qA%number_nonzeros))
       ENDIF
     ELSE
       ! Avoid slicing here for performance.

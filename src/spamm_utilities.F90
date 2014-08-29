@@ -54,7 +54,6 @@ contains
 
     integer, intent(in) :: i
 
-    integer :: str_len
     character(len = 100) :: temp
     character(len = :), allocatable :: str_i
 
