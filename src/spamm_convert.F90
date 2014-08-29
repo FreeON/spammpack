@@ -203,7 +203,7 @@ MODULE SpAMM_CONVERT
     real(spamm_kind), dimension(:, :), intent(in) :: A_dense
 
     call write_log(1, [ "converting dense matrix" ])
-    A => spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2))
+    call spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2), A)
     call spamm_convert_dense_2_qutree(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
 
     if(associated(A%root)) then

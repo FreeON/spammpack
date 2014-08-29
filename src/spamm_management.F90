@@ -73,6 +73,7 @@ module spamm_management
   INTERFACE New
     MODULE PROCEDURE SpAMM_Allocate_Full_QuTree
     MODULE PROCEDURE SpAMM_Allocate_Full_BiTree
+    module procedure spamm_allocate_matrix_2nd_order
   END INTERFACE
 
   !> Interface for getting single matrix elements of SpAMM objects.
@@ -103,7 +104,8 @@ CONTAINS
       call delete(B)
     endif
 
-    B => spamm_allocate_matrix_2nd_order(A%M, A%N)
+    B => null()
+    call spamm_allocate_matrix_2nd_order(A%M, A%N, B)
     call spamm_copy_qutree_2_qutree_recur(A%root, B%root)
 
   end subroutine spamm_copy_2nd_order_to_2nd_order
@@ -661,7 +663,8 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer :: A
     integer, intent(in) :: M, N
 
-    A => spamm_allocate_matrix_2nd_order(M, N)
+    A => null()
+    call spamm_allocate_matrix_2nd_order(M, N, A)
     call spamm_allocate_full_qutree_recur(A%root, 1, 1, A%N_padded, A%N_padded)
 
   end function spamm_zero_matrix
@@ -748,13 +751,13 @@ CONTAINS
   !!
   !! @param M The number of rows.
   !! @param N The number of columns.
-  !!
-  !! @return The new matrix.
-  function spamm_allocate_matrix_2nd_order (M, N) result (A)
+  !! @param A The new matrix.
+  subroutine spamm_allocate_matrix_2nd_order (M, N, A)
 
     integer, intent(in) :: M, N
-    type(spamm_matrix_2nd_order), pointer :: A
+    type(spamm_matrix_2nd_order), pointer, intent(out) :: A
 
+    A => null()
     allocate(A)
 
     A%M = M
@@ -775,7 +778,7 @@ CONTAINS
       "  N_padded   = "//to_string(A%N_padded), &
       "  depth      = "//to_string(A%depth) ])
 
-  end function spamm_allocate_matrix_2nd_order
+  end subroutine spamm_allocate_matrix_2nd_order
 
   !> Reset all counters in a qutree recursively.
   !!
