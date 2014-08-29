@@ -1239,13 +1239,13 @@ CONTAINS
       local_beta = 0
     endif
 
-    if(.not. associated(C)) then
-      call write_log(FATAL, [ "C matrix is not allocated" ])
-    endif
-
     if(.not. associated(A) .or. .not. associated(B)) then
       call write_log(1, [ "either A or B are not allocated" ])
       return
+    endif
+
+    if(.not. associated(C)) then
+      call new(A%M, B%N, C)
     endif
 
     call reset_counters(C)
