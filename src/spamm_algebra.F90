@@ -62,13 +62,12 @@ MODULE SpAMM_ALGEBRA
   REAL(SpAMM_KIND) :: SpAMM_Add_Identity_2_QuTree_InPlace_Alpha
 
   !> The SpAMM threshold for the multiply.
-  REAL(SpAMM_KIND) :: SpAMM_Threshold_Multiply_QuTree_x_QuTree
   REAL(SpAMM_KIND) :: SpAMM_Threshold_Multiply_QuTree_x_BiTree
 
   !> Interface for multiplication operations between different SpAMM types.
   !!
   !! The Sparse Approximate Matrix-Multiply (SpAMM):
-  !! @f$ C \leftarrow A \times B @f$.
+  !! @f$ C \leftarrow A \cdot B @f$.
   INTERFACE Multiply
     MODULE PROCEDURE SpAMM_Multiply_QuTree_x_QuTree
     MODULE PROCEDURE SpAMM_Multiply_QuTree_x_Scalar
@@ -115,12 +114,12 @@ MODULE SpAMM_ALGEBRA
 
 CONTAINS
 
-  !> Multiplication operation between a quadtree and a quadtree, @f$ C \leftarrow A \times B @f$.
+  !> Multiplication operation between a quadtree and a quadtree, @f$ C \leftarrow A \cdot B @f$.
   !!
   !! @param qA Pointer to quadtree A.
   !! @param qB Pointer to quadtree B.
   !! @param qC Pointer to quadtree C.
-  !! @param threshold The SpAMM threshold overriding the global value, spamm_types::spamm_product_tolerance.
+  !! @param threshold The SpAMM threshold.
   SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree(qA, qB, qC, threshold)
 
     TYPE(QuTree), POINTER, INTENT(IN) :: qA, qB
@@ -168,7 +167,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree
 
-  !> Scalar multiply of 2nd order matrix.
+  !> Scalar multiply of 2nd order matrix: @f$ A \leftarrow \alpha A @f$.
   !!
   !! @param A The matrix.
   !! @param alpha The scalar \f$ \alpha \f$.
@@ -181,14 +180,14 @@ CONTAINS
 
   end subroutine spamm_multiply_2nd_order_x_scalar
 
-  !> Scalar multiply: @f$ A \leftarrow a A @f$.
+  !> Scalar multiply: @f$ A \leftarrow alpha A @f$.
   !!
   !! @param qA Pointer to matrix A.
-  !! @param a Scalar a.
-  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar(qA, a)
+  !! @param alpha Scalar @f$ \alpha @f$.
+  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar(qA, alpha)
 
     TYPE(QuTree), POINTER        :: qA
-    REAL(SpAMM_KIND), INTENT(IN) :: a
+    REAL(SpAMM_KIND), INTENT(IN) :: alpha
 
     INTEGER            :: Depth
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
@@ -199,7 +198,7 @@ CONTAINS
     TInitial = SpAMM_Get_Time()
 
     !$OMP TASK SHARED(qA)
-    CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA, a)
+    CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA, alpha)
     !$OMP END TASK
 
     !$OMP TASKWAIT
@@ -219,8 +218,8 @@ CONTAINS
   !!
   !! @param A Pointer to matrix A.
   !! @param B Pointer to matrix B.
-  !! @param Alpha Factor @f$ \alpha @f$.
-  !! @param Beta Factor @f$ \beta @f$.
+  !! @param alpha Factor @f$ \alpha @f$.
+  !! @param beta Factor @f$ \beta @f$.
   subroutine spamm_add_2nd_order_to_2nd_order (A, B, alpha, beta)
 
     type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
@@ -238,8 +237,8 @@ CONTAINS
   !!
   !! @param qA [inout] Pointer to matrix A.
   !! @param qB [in] Pointer to matrix B.
-  !! @param Alpha Factor @f$ \alpha @f$.
-  !! @param Beta Factor @f$ \beta @f$.
+  !! @param alpha Factor @f$ \alpha @f$.
+  !! @param beta Factor @f$ \beta @f$.
   SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace(qA,qB,Alpha,Beta)
 
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qA
@@ -275,7 +274,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace
 
-  !> In-place add for 2nd order SpAMM matrix.
+  !> In-place add for 2nd order SpAMM matrix: @f$ A \leftarrow \alpha \mathrm{Id} @f$.
   !!
   !! @param alpha The factor \f$ \alpha \f$.
   subroutine spamm_add_identity_to_matrix_2nd_order (A, alpha)
@@ -287,7 +286,7 @@ CONTAINS
 
   end subroutine spamm_add_identity_to_matrix_2nd_order
 
-  !> QuTree In Place Add: \f$ A \leftarrow A + \alpha I \f$.
+  !> QuTree In Place Add: \f$ A \leftarrow A + \alpha \mathrm{Id} \f$.
   !!
   !! @param qA A pointer to a quadtree.
   !! @param alpha The factor \f$ \alpha \f$.
@@ -364,13 +363,12 @@ CONTAINS
 
   end function spamm_trace_2nd_order
 
-  !> Trace for quadtree product, @f$ \mathrm{Tr} \left[ A \times B \right] @f$.
+  !> Trace for quadtree product, @f$ \mathrm{Tr} \left[ A \cdot B \right] @f$.
   !!
   !! @param qA Pointer to matrix A.
   !! @param qB Pointer to matrix B.
   !!
-  !! @return The trace of the matrix produce, @f$ \mathrm{Tr} \left[ A \times B
-  !! \right] @f$.
+  !! @return The trace of the matrix produce, @f$ \mathrm{Tr} \left[ A \cdot B \right] @f$.
   FUNCTION SpAMM_Trace_QuTree_Product(qA, qB, threshold) RESULT(a)
 
     TYPE(QuTree), POINTER      :: qA,qB
@@ -401,12 +399,12 @@ CONTAINS
 
   END FUNCTION SpAMM_Trace_QuTree_Product
 
-  !> Trace for matrix product, @f$ \mathrm{Tr} \left[ A \times B \right] @f$.
+  !> Trace for matrix product, @f$ \mathrm{Tr} \left[ A \cdot B \right] @f$.
   !!
   !! @param A Pointer to matrix A.
   !! @param B Pointer to matrix B.
   !!
-  !! @return The trace of the matrix produce, @f$ \mathrm{Tr} \left[ A \times B \right] @f$.
+  !! @return The trace of the matrix produce, @f$ \mathrm{Tr} \left[ A \cdot B \right] @f$.
   function spamm_trace_2nd_order_product (A, B, tolerance) result (trace_ab)
 
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A, B
@@ -558,7 +556,12 @@ CONTAINS
 
   END FUNCTION SpAMM_Dot_Product_BiTree
 
-  !> Sparse Approximate Matrix-Vector Multiply (SpAMV): \f$ C \leftarrow A.B \f$.
+  !> Sparse Approximate Matrix-Vector Multiply (SpAMV): \f$ C \leftarrow A \cdot B \f$.
+  !!
+  !! @param qA Pointer to matrix A.
+  !! @param bB Pointer to vector B.
+  !! @param bC Pointer to vector C.
+  !! @param LocalThreshold The SpAMM tolerance.
   SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree(qA,bB,bC,LocalThreshold)
 
     TYPE(QuTree), POINTER     :: qA
@@ -584,17 +587,20 @@ CONTAINS
   END SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree
 
   !> Scalar multiply: \f$ A \leftarrow \alpha A \f$.
-  RECURSIVE SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar(bA,a)
+  !!
+  !! @param bA Pointer to vector A.
+  !! @param alpha Scalar @f$ \alpha @f$.
+  RECURSIVE SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar(bA, alpha)
 
     INTEGER :: Depth
     TYPE(BiTree), POINTER    :: bA
-    REAL(SpAMM_KIND)         :: a
+    REAL(SpAMM_KIND)         :: alpha
     REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
     IF(.NOT.ASSOCIATED(bA))RETURN
     Depth=0
     TInitial = SpAMM_Get_Time()
     !$OMP TASK SHARED(bA)
-    CALL SpAMM_Multiply_BiTree_x_Scalar_Recur(bA,a,Depth)
+    CALL SpAMM_Multiply_BiTree_x_Scalar_Recur(bA,alpha,Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
     TTotal=SpAMM_Get_Time()-TInitial
@@ -603,6 +609,10 @@ CONTAINS
   END SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar
 
   !> Norm for BiTrees.
+  !!
+  !! @param bA Pointer to vector A.
+  !!
+  !! @result The norm of the vector.
   FUNCTION SpAMM_Norm_Reduce_BiTree(bA) RESULT(Norm)
 
     INTEGER              :: Depth
@@ -621,8 +631,7 @@ CONTAINS
 
   END FUNCTION SpAMM_Norm_Reduce_BiTree
 
-  !> Recursive part of the multiplication operation between a quadtree and a
-  !! quadtree, @f$ C \leftarrow A \times B @f$.
+  !> Recursive part of the multiplication operation between a quadtree and a quadtree, @f$ C \leftarrow A \cdot B @f$.
   !!
   !! @param qA Pointer to quadtree A.
   !! @param qB Pointer to quadtree B.
@@ -754,7 +763,6 @@ CONTAINS
   !!
   !! @param qA Pointer to quadtree.
   !! @param alpha The scalar.
-  !! @param Depth The current tier.
   RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar_Recur(qA, alpha)
 
     TYPE(QuTree), POINTER :: qA
@@ -939,16 +947,14 @@ CONTAINS
 
   END FUNCTION SpAMM_Trace_QuTree_Recur
 
-  !> Recursive part of trace for quadtree product, @f$ \mathrm{Tr} \left[ A
-  !! \times B \right] @f$.
+  !> Recursive part of trace for quadtree product, @f$ \mathrm{Tr} \left[ A \cdot B \right] @f$.
   !!
   !! @param qA Pointer to matrix A.
   !! @param qB Pointer to matrix B.
   !! @param threshold The multiply threshold.
   !! @param Depth The current tier.
   !!
-  !! @return The trace of the matrix produce, @f$ \mathrm{Tr} \left[ A \times B
-  !! \right] @f$.
+  !! @return The trace of the matrix produce, @f$ \mathrm{Tr} \left[ A \cdot B \right] @f$.
   RECURSIVE FUNCTION SpAMM_Trace_QuTree_Product_Recur(qA,qB, threshold, Depth) RESULT(Trace)
 
     TYPE(QuTree), POINTER, INTENT(IN) :: qA,qB

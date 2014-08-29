@@ -81,6 +81,7 @@ module spamm_management
     module procedure spamm_get_matrix_2nd_order
   end interface get
 
+  !> Interface for reset_counters functions.
   interface reset_counters
     module procedure spamm_reset_counters_2nd_order
   end interface reset_counters

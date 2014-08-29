@@ -38,6 +38,7 @@ module spamm_utilities
 
   integer, parameter :: FATAL = -1
 
+  !> Interface to to_string functions.
   interface to_string
     module procedure int_to_string
     module procedure double_to_string

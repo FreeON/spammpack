@@ -40,6 +40,8 @@
 #include <sys/resource.h>
 
 /** Get the current time.
+ *
+ * @param timer The time.
  */
 void
 spamm_get_time (double *timer)
