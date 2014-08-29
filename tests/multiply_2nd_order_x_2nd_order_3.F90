@@ -57,8 +57,7 @@ program test
   write(*, *) "ref. non-zeros  = "//to_string(reference_nonzeros(N, BANDWIDTH))
 
   if(abs(A%number_nonzeros-reference_nonzeros(N, BANDWIDTH)) > 1d-10) then
-    write(*, *) "non-zero count wrong"
-    error stop
+    call write_log(FATAL, [ "non-zero count wrong" ])
   endif
 
   do i = 1, ITERATIONS
@@ -71,13 +70,11 @@ program test
     write(*, *) to_string(i)//": complexity/N^3  = "//to_string(C%number_operations/dble(N)**3)
 
     if(abs(C%number_nonzeros-reference_nonzeros(N, 2**i*BANDWIDTH)) > 1e-10) then
-      write(*, *) to_string(i)//": non-zero count wrong"
-      error stop
+      call write_log(FATAL, [ to_string(i)//": non-zero count wrong" ])
     endif
 
     if(abs(C%number_operations-reference_complexity(i)) > 1e-10) then
-      write(*, *) to_string(i)//": complexity count wrong"
-      error stop
+      call write_log(FATAL, [ to_string(i)//": complexity count wrong" ])
     endif
 
     call copy(C, A)
@@ -99,10 +96,9 @@ program test
   do i = 1, size(C_dense, 1)
     do j = 1, size(C_dense, 2)
       if(abs((C_dense(i, j)-get(C, i, j))/C_dense(i, j)) > 1d-10) then
-        write(*, *) "matrix element mismatch"
-        write(*, "(A,I3,A,I3,A,ES11.4)") "C_reference(", i, ",", j, ") = ", C_dense(i, j)
-        write(*, "(A,I3,A,I3,A,ES11.4)") "          C(", i, ",", j, ") = ", get(C, i, j)
-        error stop
+        call write_log(FATAL, [ "matrix element mismatch", &
+          "C_reference("//to_string(i)//","//to_string(j)//") = "//to_string(C_dense(i, j)), &
+          "          C("//to_string(i)//","//to_string(j)//") = "//to_string(get(C, i, j)) ])
       endif
     enddo
   enddo

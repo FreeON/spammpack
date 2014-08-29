@@ -150,6 +150,8 @@ if( VALGRIND_TESTS )
   endif()
 endif()
 
+find_program( CTAGS ctags )
+
 enable_testing()
 
 add_subdirectory( src )

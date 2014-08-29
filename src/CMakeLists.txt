@@ -119,3 +119,9 @@ install(
   ${CMAKE_CURRENT_BINARY_DIR}/spammpack.mod
   DESTINATION include
   )
+
+if( CTAGS )
+  add_custom_target( ctags
+    ${CTAGS} --sort=foldcase --Fortran-kinds=+iL ${spammpack-sources-C} ${spammpack-sources-Fortran}
+    )
+endif()

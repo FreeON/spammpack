@@ -243,8 +243,8 @@ CONTAINS
       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
-    call write_log(2, "q: "//to_string(qA%i_lower)//" "//to_string(qA%i_upper)//" " &
-      //to_string(qA%j_lower)//" "//to_string(qA%j_upper))
+    call write_log(2, (/ "q: "//to_string(qA%i_lower)//" "//to_string(qA%i_upper)//" " &
+      //to_string(qA%j_lower)//" "//to_string(qA%j_upper) /))
 
     qC%Norm = qA%Norm
 
@@ -602,18 +602,16 @@ CONTAINS
     rows = i_upper-i_lower+1
     columns = j_upper-j_lower+1
 
-    call write_log(2, "q: "//to_string(i_lower)//" "//to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper))
+    call write_log(2, [ "q: "//to_string(i_lower)//" "//to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper) ])
 
     if(rows /= columns) then
-      write(*, *) "non-square submatrix"
-      error stop
+      call write_log(FATAL, [ "non-square submatrix" ])
     endif
 
     if(rows < SPAMM_BLOCK_SIZE .or. columns < SPAMM_BLOCK_SIZE) then
-      write(*, *) "[ozC7x7z3HIgTIa0Q] logic error"
-      write(*, *) "rows = ", rows
-      write(*, *) "columns = ", columns
-      error stop
+      call write_log(FATAL, [ "[ozC7x7z3HIgTIa0Q] logic error", &
+        "rows = "//to_string(rows), &
+        "columns = "//to_string(columns) ])
     endif
 
     ! Allocate new node.
@@ -703,13 +701,11 @@ CONTAINS
     if(.not. associated(qA)) return
 
     if(i > qA%i_upper .or. j > qA%j_upper) then
-      write(*, *) "[F8xYAsM46GYfJP2j] logic error, i or j above upper bound"
-      error stop
+      call write_log(FATAL, [ "[F8xYAsM46GYfJP2j] logic error, i or j above upper bound" ])
     endif
 
     if(i < qA%i_lower .or. j < qA%j_lower) then
-      write(*, *) "[3lJNYprqCQWU3ACZ] logic error, i or j below lower bound"
-      error stop
+      call write_log(FATAL, [ "[3lJNYprqCQWU3ACZ] logic error, i or j below lower bound" ])
     endif
 
     if(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE .and. qA%j_upper-qA%j_lower+1 == SPAMM_BLOCK_SIZE) then
@@ -769,15 +765,15 @@ CONTAINS
     ! This should be pretty efficient for reasonable matrix sizes and is presumably faster than some logarithm calculation since it
     ! only involves an increment and a bit shift.
     do while(A%N_padded < max(M, N))
-      call write_log(2, "depth = "//to_string(A%depth)//", N_padded = "//to_string(A%N_padded))
+      call write_log(2, [ "depth = "//to_string(A%depth)//", N_padded = "//to_string(A%N_padded) ])
       A%depth = A%depth+1
       A%N_padded = 2*A%N_padded
     enddo
 
-    call write_log(1, "allocated "//to_string(M)//"x"//to_string(N)//" matrix")
-    call write_log(1, "  BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
-    call write_log(1, "  N_padded   = "//to_string(A%N_padded))
-    call write_log(1, "  depth      = "//to_string(A%depth))
+    call write_log(1, [ "allocated "//to_string(M)//"x"//to_string(N)//" matrix", &
+      "  BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE), &
+      "  N_padded   = "//to_string(A%N_padded), &
+      "  depth      = "//to_string(A%depth) ])
 
   end function spamm_allocate_matrix_2nd_order
 

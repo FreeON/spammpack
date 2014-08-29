@@ -26,8 +26,7 @@ program test
   write(*, *) "complexity/N^3  = "//to_string(C%number_operations/dble(N)**3)
 
   if(abs(C%number_operations-reference_complexity) > 1e-10) then
-    write(*, *) "complexity count wrong"
-    error stop
+    call write_log(FATAL, [ "complexity count wrong" ])
   endif
 
   C_dense = matmul(A_dense, A_dense)
@@ -35,10 +34,9 @@ program test
   do i = 1, size(C_dense, 1)
     do j = 1, size(C_dense, 2)
       if(abs(C_dense(i, j)-get(C, i, j)) > 1d-10) then
-        write(*, *) "matrix element mismatch"
-        write(*, "(A,I3,A,I3,A,F7.4)") "C_reference(", i, ",", j, ") = ", C_dense(i, j)
-        write(*, "(A,I3,A,I3,A,F7.4)") "          C(", i, ",", j, ") = ", get(C, i, j)
-        error stop
+        call write_log(FATAL, [ "matrix element mismatch", &
+          "C_reference("//to_string(i)//","//to_string(j)//") = "//to_string(C_dense(i, j)), &
+          "          C("//to_string(i)//","//to_string(j)//") = "//to_string(get(C, i, j)) ])
       endif
     enddo
   enddo

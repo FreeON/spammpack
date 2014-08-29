@@ -81,18 +81,24 @@ contains
   !> Print a log message.
   !!
   !! @param level The message level. The global debug_level has to be greater or equal to the level.
-  !! @param message The string to print.
+  !! @param message An array of strings to print. Each string will be printed on a separate line.
   subroutine write_log (level, message)
 
     integer, intent(in) :: level
-    character(len = *), intent(in) :: message
+    character(len = *), dimension(:), intent(in) :: message
+
+    integer :: i
 
     if(DEBUG_LEVEL >= level) then
       if(level < 0) then
-        write(*, "(A)") "[FATAL] "//message
+        do i = 1, len(message)
+          write(*, "(A)") "[FATAL] "//message(i)
+        enddo
         error stop
       else
-        write(*, "(A)") message
+        do i = 1, len(message)
+          write(*, "(A)") message(i)
+        enddo
       endif
     endif
 
