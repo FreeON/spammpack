@@ -82,6 +82,7 @@ MODULE SpAMM_ALGEBRA
   INTERFACE Trace
     MODULE PROCEDURE SpAMM_Trace_QuTree
     MODULE PROCEDURE SpAMM_Trace_QuTree_Product
+    module procedure spamm_trace_2nd_order
   END INTERFACE
 
   !> Interface for additions operations between different SpAMM types.
@@ -337,6 +338,30 @@ CONTAINS
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Trace_QuTree",6)
 
   END FUNCTION SpAMM_Trace_QuTree
+
+  !> The trace of a 2nd order matrix.
+  !!
+  !! @param A The matrix.
+  !!
+  !! @return The trace.
+  function spamm_trace_2nd_order (A) result (trace_a)
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    real(spamm_kind) :: trace_a
+
+    trace_a = 0
+
+    if(.not. associated(A)) then
+      return
+    endif
+
+    if(.not. associated(A%root)) then
+      return
+    endif
+
+    trace_a = spamm_trace_qutree(A%root)
+
+  end function spamm_trace_2nd_order
 
   !> Trace for quadtree product, @f$ \mathrm{Tr} \left[ A \times B \right] @f$.
   !!
