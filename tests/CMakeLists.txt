@@ -15,17 +15,19 @@ endif()
 
 # More unit-like tests.
 set( UNIT_TESTS
-  allocate_2nd_order.F90
-  delete_2nd_order.F90
-  copy_2nd_order.F90
-  norm_2nd_order.F90
   add_identify_to_2nd_order.F90
-  multiply_2nd_order_x_2nd_order.F90
+  allocate_2nd_order.F90
+  copy_2nd_order.F90
+  delete_2nd_order.F90
+  multiply_1st_order_x_scalar.F90
+  multiply_2nd_order_x_1st_order.F90
   multiply_2nd_order_x_2nd_order_2.F90
   multiply_2nd_order_x_2nd_order_3.F90
+  multiply_2nd_order_x_2nd_order.F90
   multiply_2nd_order_x_scalar.F90
-  trace_2nd_order.F90
+  norm_2nd_order.F90
   trace_2nd_order_2.F90
+  trace_2nd_order.F90
   )
 
 execute_process( COMMAND

@@ -66,7 +66,7 @@ contains
     N = 0
     open(unit = 1, file = trim(filename), form = "unformatted", recl = 8)
     read(1) Aij
-    N = Aij
+    N = int(Aij)
 
     !write(*, *) "N = ", N
 
