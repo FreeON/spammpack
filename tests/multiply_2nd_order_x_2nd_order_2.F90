@@ -51,9 +51,9 @@ program test
   do i = 1, size(C_dense, 1)
     do j = 1, size(C_dense, 2)
       if(abs((C_dense(i, j)-get(C, i, j))/C_dense(i, j)) > 1d-10) then
-        call write_log(FATAL, [ "matrix element mismatch", &
-          "C_reference("//to_string(i)//","//to_string(j)//") = "//to_string(C_dense(i, j)), &
-          "          C("//to_string(i)//","//to_string(j)//") = "//to_string(get(C, i, j)) ])
+        call write_log(FATAL, "matrix element mismatch, "// &
+          "C_reference("//to_string(i)//","//to_string(j)//") = "//to_string(C_dense(i, j))//", "// &
+          "          C("//to_string(i)//","//to_string(j)//") = "//to_string(get(C, i, j)))
       endif
     enddo
   enddo

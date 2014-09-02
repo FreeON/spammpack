@@ -131,6 +131,12 @@ CONTAINS
 
     TInitial = SpAMM_Get_Time()
 
+    if(.not. associated(qA) .or. .not. associated(qB)) return
+
+    if(.not. associated(qC)) then
+      CALL NewQuNode(qC, qA%i_lower, qB%j_lower, qA%i_upper, qB%j_upper)
+    endif
+
     !$OMP PARALLEL
 
     ! The master thread will lead execution of the product. All subsequent tasks
@@ -138,7 +144,7 @@ CONTAINS
     !$OMP MASTER
 
 #ifdef _OPENMP
-    call write_log(1, [ "Multiply on "//to_string(omp_get_num_threads())//" OpenMP threads" ])
+    call write_log(1, "Multiply on "//to_string(omp_get_num_threads())//" OpenMP threads")
 #endif
 
     IF(PRESENT(threshold))THEN
@@ -416,12 +422,12 @@ CONTAINS
     trace_ab = 0
 
     if(.not. associated(A) .or. .not. associated(B)) then
-      call write_log(1, [ "either A or B are not associated" ])
+      call write_log(1, "either A or B are not associated")
       return
     endif
 
     if(.not. associated(A%root) .or. .not. associated(B%root)) then
-      call write_log(1, [ "either A%root or B%root are not associated" ])
+      call write_log(1, "either A%root or B%root are not associated")
       return
     endif
 
@@ -644,9 +650,9 @@ CONTAINS
     !real(spamm_kind) :: temp
     integer :: i, j
 
-    call write_log(2, [ "q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper)//" " &
+    call write_log(2, "q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper)//" " &
       //to_string(qC%j_lower)//" "//to_string(qC%j_upper) &
-      //", operations = "//to_string(qC%number_operations) ])
+      //", operations = "//to_string(qC%number_operations))
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
@@ -854,8 +860,8 @@ CONTAINS
     integer :: i
     !integer :: j
 
-    call write_log(2, [ "q:"//to_string(qA%i_lower)//" "//to_string(qA%j_lower)//" " &
-      //to_string(qA%i_upper)//" "//to_string(qA%j_upper) ])
+    call write_log(2, "q:"//to_string(qA%i_lower)//" "//to_string(qA%j_lower)//" " &
+      //to_string(qA%i_upper)//" "//to_string(qA%j_upper))
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       if(.not. allocated(qA%blok)) then
@@ -1308,7 +1314,7 @@ CONTAINS
     endif
 
     if(.not. associated(A) .or. .not. associated(B)) then
-      call write_log(1, [ "either A or B are not allocated" ])
+      call write_log(1, "either A or B are not allocated")
       return
     endif
 

@@ -18,9 +18,9 @@ program test
   norm_A = sqrt(norm(A))
 
   if(abs(norm_A-norm_reference) > 1d-12) then
-    call write_log(FATAL, [ "norm mismatch", &
-      "norm_reference = "//to_string(norm_reference), &
-      "       norm(A) = "//to_string(norm_A) ])
+    call write_log(FATAL, "norm mismatch, "// &
+      "norm_reference = "//to_string(norm_reference)//", "// &
+      "       norm(A) = "//to_string(norm_A))
   endif
 
   call delete(A)

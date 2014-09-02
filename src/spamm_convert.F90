@@ -68,14 +68,14 @@ MODULE SpAMM_CONVERT
     integer :: convert_rows, convert_columns
 
     if(associated(qA)) then
-      call write_log(FATAL, [ "qA should not already be associated" ])
+      call write_log(FATAL, "qA should not already be associated")
     endif
 
-    call write_log(2, [ "converting: "//to_string(i_lower)//" " &
-      //to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper) ])
+    call write_log(2, "converting: "//to_string(i_lower)//" "// &
+      to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper))
 
     if(i_lower > size(A, 1) .or. j_lower > size(A, 2)) then
-      call write_log(2, [ "outside dense matrix" ])
+      call write_log(2, "outside dense matrix")
       return
     endif
 
@@ -83,7 +83,7 @@ MODULE SpAMM_CONVERT
     A_cols = j_upper-j_lower+1
 
     if(.not. associated(qA)) then
-      call write_log(2, [ "allocating new node" ])
+      call write_log(2, "allocating new node")
       allocate(qA)
       qA%i_lower = i_lower
       qA%i_upper = i_upper
@@ -91,17 +91,17 @@ MODULE SpAMM_CONVERT
       qA%j_upper = j_upper
     endif
 
-    call write_log(2, [ "q: "//to_string(i_lower)//" "//to_string(i_upper)//" " &
-      //to_string(j_lower)//" "//to_string(j_upper) ])
+    call write_log(2, "q: "//to_string(i_lower)//" "//to_string(i_upper)//" " &
+      //to_string(j_lower)//" "//to_string(j_upper))
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
-        call write_log(FATAL, [ "[XgpSLv6M8u5ASgg3] LOGIC ERROR IN SpAMM: padding error", &
-          "A_rows = "//to_string(A_rows), &
-          "A_cols = "//to_string(A_cols), &
-          "SPAMM_BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE) ])
+        call write_log(FATAL, "[XgpSLv6M8u5ASgg3] LOGIC ERROR IN SpAMM: padding error, "// &
+          "A_rows = "//to_string(A_rows)//", "// &
+          "A_cols = "//to_string(A_cols)//", "// &
+          "SPAMM_BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
       ELSE
-        call write_log(2, [ "allocating new blok" ])
+        call write_log(2, "allocating new blok")
 
         if(allocated(qA%blok)) then
           deallocate(qA%blok)
@@ -136,7 +136,7 @@ MODULE SpAMM_CONVERT
           (/ ((qA%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
           (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
 
-        call write_log(2, [ "non-zeros: "//to_string(qA%number_nonzeros) ])
+        call write_log(2, "non-zeros: "//to_string(qA%number_nonzeros))
       ENDIF
     ELSE
       ! Avoid slicing here for performance.
@@ -188,7 +188,7 @@ MODULE SpAMM_CONVERT
 
     ENDIF
 
-    call write_log(2, [ "done, going back up" ])
+    call write_log(2, "done, going back up")
 
   END SUBROUTINE SpAMM_Convert_Dense_2_QuTree
 
@@ -202,7 +202,7 @@ MODULE SpAMM_CONVERT
     type(spamm_matrix_2nd_order), pointer :: A
     real(spamm_kind), dimension(:, :), intent(in) :: A_dense
 
-    call write_log(1, [ "converting dense matrix" ])
+    call write_log(1, "converting dense matrix")
     call spamm_allocate_matrix_2nd_order(size(A_dense, 1), size(A_dense, 2), A)
     call spamm_convert_dense_2_qutree(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
 
@@ -211,9 +211,9 @@ MODULE SpAMM_CONVERT
       A%number_nonzeros = A%root%number_nonzeros
     endif
 
-    call write_log(1, [ "norm = "//to_string(A%norm), &
-      "nnonzeros = "//to_string(A%number_nonzeros), &
-      "done converting" ])
+    call write_log(1, "norm = "//to_string(A%norm)//", "// &
+      "nnonzeros = "//to_string(A%number_nonzeros)//", "// &
+      "done converting")
 
   end function spamm_convert_dense_to_matrix_2nd_order
 

@@ -23,9 +23,9 @@ program test
   do i = 1, size(A_dense, 1)
     do j = 1, size(A_dense, 2)
       if(abs(A_dense(i, j)-get(A, i, j)) > 1d-10) then
-        call write_log(FATAL, [ "matrix element mismatch", &
-          "A_reference("//to_string(i)//","//to_string(j)//") = "//to_string(A_dense(i, j)), &
-          "          A("//to_string(i)//","//to_string(j)//") = "//to_string(get(A, i, j)) ])
+        call write_log(FATAL, "matrix element mismatch, "// &
+          "A_reference("//to_string(i)//","//to_string(j)//") = "//to_string(A_dense(i, j))//", "// &
+          "          A("//to_string(i)//","//to_string(j)//") = "//to_string(get(A, i, j)))
       endif
     enddo
   enddo

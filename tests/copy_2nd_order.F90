@@ -24,9 +24,9 @@ program test
       Aij = get(A, i, j)
       Bij = get(B, i, j)
       if(abs(Aij-Bij) /= 0) then
-        call write_log(FATAL, [ "A("//to_string(i)//","//to_string(j)//") mismatch", &
-          "           found "//to_string(Bij), &
-          "should have been "//to_string(Aij) ])
+        call write_log(FATAL, "A("//to_string(i)//","//to_string(j)//") mismatch, "// &
+          "           found "//to_string(Bij)//", "// &
+          "should have been "//to_string(Aij))
       endif
     enddo
   enddo

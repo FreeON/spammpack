@@ -86,20 +86,14 @@ contains
   subroutine write_log (level, message)
 
     integer, intent(in) :: level
-    character(len = *), dimension(:), intent(in) :: message
-
-    integer :: i
+    character(len = *), intent(in) :: message
 
     if(DEBUG_LEVEL >= level) then
       if(level < 0) then
-        do i = 1, len(message)
-          write(*, "(A)") "[FATAL] "//message(i)
-        enddo
+        write(*, "(A)") "[FATAL] "//message
         error stop
       else
-        do i = 1, len(message)
-          write(*, "(A)") message(i)
-        enddo
+        write(*, "(A)") message
       endif
     endif
 
