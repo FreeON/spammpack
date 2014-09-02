@@ -34,6 +34,8 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE SpAMM_ALGEBRA
 
+#include "spamm_utility_macros.h"
+
   use spamm_types
   use spamm_globals
   use spamm_management
@@ -144,7 +146,7 @@ CONTAINS
     !$OMP MASTER
 
 #ifdef _OPENMP
-    call write_log(1, "Multiply on "//to_string(omp_get_num_threads())//" OpenMP threads")
+    LOG_INFO("Multiply on "//to_string(omp_get_num_threads())//" OpenMP threads")
 #endif
 
     IF(PRESENT(threshold))THEN
@@ -422,12 +424,12 @@ CONTAINS
     trace_ab = 0
 
     if(.not. associated(A) .or. .not. associated(B)) then
-      call write_log(1, "either A or B are not associated")
+      LOG_INFO("either A or B are not associated")
       return
     endif
 
     if(.not. associated(A%root) .or. .not. associated(B%root)) then
-      call write_log(1, "either A%root or B%root are not associated")
+      LOG_INFO("either A%root or B%root are not associated")
       return
     endif
 
@@ -650,7 +652,7 @@ CONTAINS
     !real(spamm_kind) :: temp
     integer :: i, j
 
-    call write_log(2, "q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper)//" " &
+    LOG_DEBUG("q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper)//" " &
       //to_string(qC%j_lower)//" "//to_string(qC%j_upper) &
       //", operations = "//to_string(qC%number_operations))
 
@@ -860,7 +862,7 @@ CONTAINS
     integer :: i
     !integer :: j
 
-    call write_log(2, "q:"//to_string(qA%i_lower)//" "//to_string(qA%j_lower)//" " &
+    LOG_DEBUG("q:"//to_string(qA%i_lower)//" "//to_string(qA%j_lower)//" " &
       //to_string(qA%i_upper)//" "//to_string(qA%j_upper))
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
@@ -1314,7 +1316,7 @@ CONTAINS
     endif
 
     if(.not. associated(A) .or. .not. associated(B)) then
-      call write_log(1, "either A or B are not allocated")
+      LOG_INFO("either A or B are not allocated")
       return
     endif
 

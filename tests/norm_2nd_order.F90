@@ -1,5 +1,7 @@
 program test
 
+#include "spamm_utility_macros.h"
+
   use spammpack
 
   implicit none
@@ -18,9 +20,10 @@ program test
   norm_A = sqrt(norm(A))
 
   if(abs(norm_A-norm_reference) > 1d-12) then
-    call write_log(FATAL, "norm mismatch, "// &
-      "norm_reference = "//to_string(norm_reference)//", "// &
-      "       norm(A) = "//to_string(norm_A))
+    LOG_FATAL("norm mismatch")
+    LOG_FATAL("norm_reference = "//to_string(norm_reference))
+    LOG_FATAL("       norm(A) = "//to_string(norm_A))
+    error stop
   endif
 
   call delete(A)

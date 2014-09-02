@@ -83,7 +83,7 @@ contains
   !!
   !! @param level The message level. The global debug_level has to be greater or equal to the level.
   !! @param message An array of strings to print. Each string will be printed on a separate line.
-  subroutine write_log (level, message)
+  subroutine xwrite_log (level, message)
 
     integer, intent(in) :: level
     character(len = *), intent(in) :: message
@@ -97,6 +97,6 @@ contains
       endif
     endif
 
-  end subroutine write_log
+  end subroutine xwrite_log
 
 end module spamm_utilities

@@ -1,5 +1,7 @@
 program test
 
+#include "spamm_utility_macros.h"
+
   use spammpack
   use test_utilities
 
@@ -23,9 +25,10 @@ program test
     do j = 1, N
       Aij = get(A, i, j)
       if(abs(Aij-A_dense(i, j)) /= 0) then
-        call write_log(FATAL, "A("//to_string(i)//","//to_string(j)//") mismatch, "// &
-          "           found "//to_string(Aij)//", "// &
-          "should have been "//to_string(A_dense(i, j)))
+        LOG_FATAL("A("//to_string(i)//","//to_string(j)//") mismatch")
+        LOG_FATAL("           found "//to_string(Aij))
+        LOG_FATAL("should have been "//to_string(A_dense(i, j)))
+        error stop
       endif
     enddo
   enddo
