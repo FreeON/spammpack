@@ -61,6 +61,7 @@ install( FILES
 
 if( CMAKE_C_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_C_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -Wall" )
+  set( CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG -g" )
 elseif( CMAKE_C_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_C_FLAGS_DEBUG "-O0 -g -check=conversions,stack,uninit" )
 else()
@@ -68,7 +69,8 @@ else()
 endif()
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-none" )
+  set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-132" )
+  set( CMAKE_Fortran_FLAGS_RELEASE "-O2 -ffree-line-length-132" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG   "-stand f08 -O0 -g -extend-source -debug all -check all -warn unused -traceback -assume realloc_lhs -heap-arrays" )
 else()
@@ -109,7 +111,7 @@ if( NOT RUN_RESULT_2 EQUAL 0 )
     "The Fortran compiler has trouble with deferred length string "
     "assignments, which might render screen output rather ugly. Please "
     "consider using a more recent compiler that fully implements "
-    "the Fortran 2003 standard.")
+    "the Fortran 2003 standard (e.g. >=gcc-4.8).")
 endif()
 
 include( FindDoxygen )
