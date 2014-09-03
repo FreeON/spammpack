@@ -50,6 +50,145 @@ MODULE SpAMM_CONVERT
 
   CONTAINS
 
+  !> Recursively convert a dense vector to a bitree.
+  !!
+  !! @param V The dense vector.
+  !! @param qV A pointer to a bitree node.
+  !! @param i_lower The lower value of the row index.
+  !! @param i_upper The upper value of the row index.
+  recursive subroutine spamm_convert_dense_2_bitree (V, qV, i_lower, i_upper)
+
+    real(spamm_kind), dimension(:), intent(in) :: V
+    type(bitree), pointer, intent(inout) :: qV
+    integer, intent(in) :: i_lower, i_upper
+
+    if(associated(qA)) then
+      LOG_FATAL("qA should not already be associated")
+      error stop
+    endif
+
+    LOG_DEBUG("converting: "//to_string(i_lower)//" "// &
+      to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper))
+
+    if(i_lower > size(A, 1) .or. j_lower > size(A, 2)) then
+      LOG_DEBUG("outside dense matrix")
+      return
+    endif
+
+    A_rows = i_upper-i_lower+1
+    A_cols = j_upper-j_lower+1
+
+    if(.not. associated(qA)) then
+      LOG_DEBUG("allocating new node")
+      allocate(qA)
+      qA%i_lower = i_lower
+      qA%i_upper = i_upper
+      qA%j_lower = j_lower
+      qA%j_upper = j_upper
+    endif
+
+    LOG_DEBUG("q: "//to_string(i_lower)//" "//to_string(i_upper)//" " &
+      //to_string(j_lower)//" "//to_string(j_upper))
+
+    IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
+      IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
+        LOG_FATAL("[XgpSLv6M8u5ASgg3] LOGIC ERROR IN SpAMM: padding error")
+        LOG_FATAL("A_rows = "//to_string(A_rows))
+        LOG_FATAL("A_cols = "//to_string(A_cols))
+        LOG_FATAL("SPAMM_BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
+        error stop
+      ELSE
+        LOG_DEBUG("allocating new blok")
+
+        if(allocated(qA%blok)) then
+          deallocate(qA%blok)
+        endif
+
+        ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+
+        ! Set new block to zero.
+        qA%Blok = 0
+
+        ! Copy matrix elements.
+        convert_rows = min(i_upper, size(A, 1))
+        convert_columns = min(j_upper, size(A, 2))
+
+        qA%Blok(1:convert_rows-i_lower+1, 1:convert_columns-j_lower+1) = &
+          A(i_lower:convert_rows, j_lower:convert_columns)
+
+        qA%norm = sum(matmul(qA%blok, transpose(qA%blok)), reshape( &
+          (/ ((i == j, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
+          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
+
+        !write(*, *) "q%blok"
+        !do i = 1, SPAMM_BLOCK_SIZE
+        !  write(*, "(4E10.3)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
+        !enddo
+
+        ! Count number non-zeros.
+        qA%number_nonzeros = sum(reshape( &
+          (/ ((1, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
+          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)), &
+          reshape( &
+          (/ ((qA%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
+          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
+
+        LOG_DEBUG("non-zeros: "//to_string(qA%number_nonzeros))
+      ENDIF
+    ELSE
+      ! Avoid slicing here for performance.
+      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad11, &
+        i_lower, &
+        i_lower+A_rows/2-1, &
+        j_lower, &
+        j_lower+A_cols/2-1)
+      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad12, &
+        i_lower, &
+        i_lower+A_rows/2-1, &
+        j_lower+A_cols/2, &
+        j_upper)
+      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad21, &
+        i_lower+A_rows/2, &
+        i_upper, &
+        j_lower, &
+        j_lower+A_cols/2-1)
+      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad22, &
+        i_lower+A_rows/2, &
+        i_upper, &
+        j_lower+A_cols/2, &
+        j_upper)
+
+      qA%number_nonzeros = 0
+      qA%norm = 0
+
+      if(associated(qA%quad11)) then
+        qA%number_nonzeros = qA%number_nonzeros+qA%quad11%number_nonzeros
+        qA%norm = qA%norm+qA%quad11%norm**2
+      endif
+
+      if(associated(qA%quad12)) then
+        qA%number_nonzeros = qA%number_nonzeros+qA%quad12%number_nonzeros
+        qA%norm = qA%norm+qA%quad12%norm**2
+      endif
+
+      if(associated(qA%quad21)) then
+        qA%number_nonzeros = qA%number_nonzeros+qA%quad21%number_nonzeros
+        qA%norm = qA%norm+qA%quad21%norm**2
+      endif
+
+      if(associated(qA%quad22)) then
+        qA%number_nonzeros = qA%number_nonzeros+qA%quad22%number_nonzeros
+        qA%norm = qA%norm+qA%quad22%norm**2
+      endif
+
+      qA%norm = sqrt(qA%norm)
+
+    ENDIF
+
+    LOG_DEBUG("done, going back up")
+
+  end subroutine spamm_convert_dense_2_bitree
+
   !> Recursively convert a dense matrix to a quadtree.
   !!
   !! @param A The dense matrix.
@@ -200,7 +339,7 @@ MODULE SpAMM_CONVERT
   !!
   !! @param A_dense The dense matrix.
   !!
-  !! @result A The SpAMM matrix.
+  !! @result The SpAMM matrix.
   function spamm_convert_dense_to_matrix_2nd_order (A_dense) result (A)
 
     type(spamm_matrix_2nd_order), pointer :: A
@@ -220,5 +359,30 @@ MODULE SpAMM_CONVERT
       "done converting")
 
   end function spamm_convert_dense_to_matrix_2nd_order
+
+  !> Convert a dense vector to a 1st order SpAMM object.
+  !!
+  !! @param V_dense The dense vector.
+  !!
+  !! @result The SpAMM vector.
+  function spamm_convert_dense_to_order_1 (V_dense) result(V)
+
+    real(spamm_kind), dimension(:), intent(in) :: V_dense
+    type(spamm_matrix_order_1), pointer :: V
+
+    LOG_INFO("converting dense vector")
+    call spamm_allocate_matrix_order_1(size(V_dense, 1), V)
+    call spamm_convert_dense_to_bitree(V_dense, V%root, 1, V%N_padded)
+
+    if(associated(V%root)) then
+      V%norm = V%root%norm
+      V%number_nonzeros = V%root%number_nonzeros
+    endif
+
+    LOG_INFO("norm = "//to_string(V%norm)//", "// &
+      "nnonzeros = "//to_string(V%number_nonzeros)//", "// &
+      "done converting")
+
+  end function spamm_convert_dense_to_order_1
 
 END MODULE SpAMM_CONVERT

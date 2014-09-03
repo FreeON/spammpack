@@ -76,10 +76,10 @@ else()
 endif()
 
 if( NOT CMAKE_BUILD_TYPE )
-  set( CMAKE_BUILD_TYPE Debug )
+  set( CMAKE_BUILD_TYPE Release )
   message( STATUS
-    "Setting build type to ${CMAKE_BUILD_TYPE}. If this was not "
-    "intended, please specify another one using the variable "
+    "Setting build type to ${CMAKE_BUILD_TYPE}. Known build types "
+    "are Debug and Release, which can be specified using the variable "
     "CMAKE_BUILD_TYPE."
     )
 endif()

@@ -88,10 +88,33 @@ module spamm_types
   !> Bigest machine int for int*4
   INTEGER, PARAMETER :: SpAMM_BIG_INT = 2**28
 
+  !> A vector type.
+  type spamm_matrix_order_1
+
+    !> The number of entries.
+    integer :: N = -1
+
+    !> The padded vector dimension.
+    integer :: N_padded
+
+    !> The Frobenious norm.
+    real(spamm_kind) :: norm = 0
+
+    !> The root of the binary tree.
+    type(bitree), pointer :: root => null()
+
+    !> The number of non-zero elements.
+    real(spamm_double) :: number_nonzeros = 0
+
+  end type spamm_matrix_order_1
+
   !> Binary tree data structure.
   TYPE BiTree
     !> The norm.
     REAL(SpAMM_KIND) :: Norm
+
+    !> The number of non-zero elements.
+    real(spamm_double) :: number_nonzeros = 0
 
     !> The pointer to the left bisecting subtree.
     TYPE(BiTree), POINTER :: Sect0 => NULL()
