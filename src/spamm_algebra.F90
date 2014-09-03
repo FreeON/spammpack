@@ -78,6 +78,7 @@ MODULE SpAMM_ALGEBRA
     module procedure spamm_multiply_order_1_x_scalar
     module procedure spamm_multiply_2nd_order_x_2nd_order
     module procedure spamm_multiply_2nd_order_x_scalar
+    module procedure spamm_multiply_2nd_order_x_1st_order
   END INTERFACE
 
   !> Interface for trace operations.
@@ -1339,6 +1340,25 @@ CONTAINS
     endif
 
   end subroutine spamm_multiply_2nd_order_x_2nd_order
+
+  subroutine spamm_multiply_2nd_order_x_1st_order (A, B, C, threshold)
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_1), pointer, intent(in) :: B
+    type(spamm_matrix_order_1), pointer, intent(out) :: C
+    real(spamm_kind), optional, intent(in) :: threshold
+
+    real(spamm_kind) :: local_threshold
+
+    if(present(threshold)) then
+      local_threshold = threshold
+    else
+      local_threshold = 0
+    endif
+
+    call spamm_multiply_qutree_x_bitree(A%root, B%root, C%root, local_threshold)
+
+  end subroutine spamm_multiply_2nd_order_x_1st_order
 
   !> Frobenius norm of 2nd order matrix. This function updates the norm on the matrix and returns the square of the norm.
   !!
