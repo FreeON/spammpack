@@ -97,6 +97,10 @@ module spamm_types
     !> The padded vector dimension.
     integer :: N_padded
 
+    !> The tree depth. The root tier is 0, tier == depth is the leaf node tier, i.e. the tier at which actual matrix elements are
+    !! stored.
+    integer :: depth = -1
+
     !> The Frobenious norm.
     real(spamm_kind) :: norm = 0
 
@@ -116,11 +120,17 @@ module spamm_types
     !> The number of non-zero elements.
     real(spamm_double) :: number_nonzeros = 0
 
+    !> The lower row index.
+    integer :: i_lower = -1
+
+    !> The upper row index.
+    integer :: i_upper = -1
+
     !> The pointer to the left bisecting subtree.
-    TYPE(BiTree), POINTER :: Sect0 => NULL()
+    TYPE(BiTree), POINTER :: Sect1 => NULL()
 
     !> The pointer to the right bisecting subtree.
-    TYPE(BiTree), POINTER :: Sect1 => NULL()
+    TYPE(BiTree), POINTER :: Sect2 => NULL()
 
     !> The vector data.
     REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect

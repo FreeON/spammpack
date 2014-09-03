@@ -37,18 +37,16 @@
 #ifndef SPAMM_UTILITY_MACROS_H
 #define SPAMM_UTILITY_MACROS_H
 
-#define STRINGIFY(FILENAME, LINENUMBER)
-
-#define LOG_FATAL(msg) write(*, *) STRINGIFY(__FILE__, __LINE__), msg
+#define LOG_FATAL(msg) write(*, "(A,':',I4,' ',A)") trim(__FILE__), __LINE__, msg
 
 #if DEBUG_LEVEL >= 1
-#define LOG_INFO(msg) write(*, *) __FILE__, __LINE__, msg
+#define LOG_INFO(msg) write(*, "(A,':',I4,' ',A)") trim(__FILE__), __LINE__, msg
 #else
 #define LOG_INFO(msg)
 #endif
 
 #if DEBUG_LEVEL >= 2
-#define LOG_DEBUG(msg) write(*, *) __FILE__, __LINE__, msg
+#define LOG_DEBUG(msg) write(*, "(A,':',I4,' ',A)") trim(__FILE__), __LINE__, msg
 #else
 #define LOG_DEBUG(msg)
 #endif

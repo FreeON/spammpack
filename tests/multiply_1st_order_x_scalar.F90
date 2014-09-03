@@ -9,7 +9,7 @@ program test
   integer, parameter :: N = 102
   real(kind(0d0)), parameter :: alpha = 1.2
 
-  type(spamm_order_1), pointer :: V => null()
+  type(spamm_matrix_order_1), pointer :: V => null()
   real(kind(0d0)), dimension(N) :: V_dense
   integer :: i
 
@@ -24,7 +24,7 @@ program test
     if(abs(V_dense(i)-get(V, i)) > 1d-10) then
       LOG_FATAL("vector element mismatch")
       LOG_FATAL("V_reference("//to_string(i)//") = "//to_string(V_dense(i)))
-      LOG_FATAL("          A("//to_string(i)//") = "//to_string(get(V, i)))
+      LOG_FATAL("          V("//to_string(i)//") = "//to_string(get(V, i)))
       error stop
     endif
   enddo

@@ -49,6 +49,7 @@ module spamm_management
   PUBLIC :: SpAMM_Copy_BiTree_2_BiTree_Recur
   PUBLIC :: Delete
   PUBLIC :: SpAMM_Delete_QuTree_Recur
+  public :: spamm_allocate_matrix_order_1
   public :: spamm_allocate_matrix_2nd_order
   PUBLIC :: New
   PUBLIC :: NewQuNode
@@ -75,11 +76,13 @@ module spamm_management
   INTERFACE New
     MODULE PROCEDURE SpAMM_Allocate_Full_QuTree
     MODULE PROCEDURE SpAMM_Allocate_Full_BiTree
+    module procedure spamm_allocate_matrix_order_1
     module procedure spamm_allocate_matrix_2nd_order
   END INTERFACE
 
   !> Interface for getting single matrix elements of SpAMM objects.
   interface get
+    module procedure spamm_get_matrix_order_1
     module procedure spamm_get_matrix_2nd_order
   end interface get
 
@@ -248,8 +251,7 @@ CONTAINS
       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
-    LOG_DEBUG("q: "//to_string(qA%i_lower)//" "//to_string(qA%i_upper)//" " &
-      //to_string(qA%j_lower)//" "//to_string(qA%j_upper))
+    LOG_DEBUG("q: "//to_string(qA%i_lower)//" "//to_string(qA%i_upper)//" "//to_string(qA%j_lower)//" "//to_string(qA%j_upper))
 
     qC%Norm = qA%Norm
 
@@ -299,31 +301,31 @@ CONTAINS
         ALLOCATE(bC%Vect(1:SPAMM_BLOCK_SIZE))
       bC%Vect=bA%Vect
     ELSE
-      IF(ASSOCIATED(bA%Sect0))THEN
+      IF(ASSOCIATED(bA%sect1))THEN
         !$OMP TASK UNTIED SHARED(bA,bC) &
         !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA%Sect0,bC%Sect0,Depth+1)
+        CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA%sect1,bC%sect1,Depth+1)
         !$OMP END TASK
-      ELSEIF(ASSOCIATED(bC%Sect0))THEN
+      ELSEIF(ASSOCIATED(bC%sect1))THEN
         !$OMP TASK UNTIED SHARED(bC) &
         !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_BiTree_Recur(bC%Sect0)
+        CALL SpAMM_Delete_BiTree_Recur(bC%sect1)
         !$OMP END TASK
         !$OMP TASKWAIT
-        DEALLOCATE(bC%Sect0)
+        DEALLOCATE(bC%sect1)
       ENDIF
-      IF(ASSOCIATED(bA%Sect1))THEN
+      IF(ASSOCIATED(bA%sect2))THEN
         !$OMP TASK UNTIED SHARED(bA,bC) &
         !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA%Sect1,bC%Sect1,Depth+1)
+        CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA%sect2,bC%sect2,Depth+1)
         !$OMP END TASK
-      ELSEIF(ASSOCIATED(bC%Sect1))THEN
+      ELSEIF(ASSOCIATED(bC%sect2))THEN
         !$OMP TASK UNTIED SHARED(bC) &
         !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_BiTree_Recur(bC%Sect1)
+        CALL SpAMM_Delete_BiTree_Recur(bC%sect2)
         !$OMP END TASK
         !$OMP TASKWAIT
-        DEALLOCATE(bC%Sect1)
+        DEALLOCATE(bC%sect2)
       ENDIF
     ENDIF
 
@@ -371,57 +373,57 @@ CONTAINS
         IF(ASSOCIATED(qA%Quad11))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad11, bC%Sect0, j)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad11, bC%sect1, j)
           !$OMP END TASK
-        ELSEIF(ASSOCIATED(bC%Sect0))THEN
+        ELSEIF(ASSOCIATED(bC%sect1))THEN
           !$OMP TASK UNTIED SHARED(bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Delete_BiTree_Recur(bC%Sect0)
+          CALL SpAMM_Delete_BiTree_Recur(bC%sect1)
           !$OMP END TASK
           !$OMP TASKWAIT
-          DEALLOCATE(bC%Sect0)
+          DEALLOCATE(bC%sect1)
         ENDIF
 
         IF(ASSOCIATED(qA%Quad21))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad21, bC%Sect1, j)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad21, bC%sect2, j)
           !$OMP END TASK
-        ELSEIF(ASSOCIATED(bC%Sect1))THEN
+        ELSEIF(ASSOCIATED(bC%sect2))THEN
           !$OMP TASK UNTIED SHARED(bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Delete_BiTree_Recur(bC%Sect1)
+          CALL SpAMM_Delete_BiTree_Recur(bC%sect2)
           !$OMP END TASK
           !$OMP TASKWAIT
-          DEALLOCATE(bC%Sect1)
+          DEALLOCATE(bC%sect2)
         ENDIF
       ELSE
         IF(ASSOCIATED(qA%Quad12))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad12, bC%Sect0, j)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad12, bC%sect1, j)
           !$OMP END TASK
-        ELSEIF(ASSOCIATED(bC%Sect0))THEN
+        ELSEIF(ASSOCIATED(bC%sect1))THEN
           !$OMP TASK UNTIED SHARED(bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Delete_BiTree_Recur(bC%Sect0)
+          CALL SpAMM_Delete_BiTree_Recur(bC%sect1)
           !$OMP END TASK
           !$OMP TASKWAIT
-          DEALLOCATE(bC%Sect0)
+          DEALLOCATE(bC%sect1)
         ENDIF
 
         IF(ASSOCIATED(qA%Quad22))THEN
           !$OMP TASK UNTIED SHARED(qA,bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad22, bC%Sect1, j)
+          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad22, bC%sect2, j)
           !$OMP END TASK
-        ELSEIF(ASSOCIATED(bC%Sect1))THEN
+        ELSEIF(ASSOCIATED(bC%sect2))THEN
           !$OMP TASK UNTIED SHARED(bC) &
           !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-          CALL SpAMM_Delete_BiTree_Recur(bC%Sect1)
+          CALL SpAMM_Delete_BiTree_Recur(bC%sect2)
           !$OMP END TASK
           !$OMP TASKWAIT
-          DEALLOCATE(bC%Sect1)
+          DEALLOCATE(bC%sect2)
         ENDIF
       ENDIF
     ENDIF
@@ -511,24 +513,24 @@ CONTAINS
       DEALLOCATE(bA%Vect,STAT=Status)
       !$OMP END CRITICAL
     ENDIF
-    IF(ASSOCIATED(bA%Sect0))THEN
+    IF(ASSOCIATED(bA%sect1))THEN
       !$OMP TASK UNTIED SHARED(bA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_BiTree_Recur(bA%Sect0)
+      CALL SpAMM_Delete_BiTree_Recur(bA%sect1)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
-      DEALLOCATE(bA%Sect0)
+      DEALLOCATE(bA%sect1)
       !$OMP END CRITICAL
     ENDIF
-    IF(ASSOCIATED(bA%Sect1))THEN
+    IF(ASSOCIATED(bA%sect2))THEN
       !$OMP TASK UNTIED SHARED(bA) &
       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_BiTree_Recur(bA%Sect1)
+      CALL SpAMM_Delete_BiTree_Recur(bA%sect2)
       !$OMP END TASK
       !$OMP TASKWAIT
       !$OMP CRITICAL
-      DEALLOCATE(bA%Sect1)
+      DEALLOCATE(bA%sect2)
       !$OMP END CRITICAL
     ENDIF
 
@@ -584,8 +586,8 @@ CONTAINS
       ENDIF
     ENDIF
     bA%Norm=SpAMM_BIG_DBL
-    NULLIFY(bA%Sect0)
-    NULLIFY(bA%Sect1)
+    NULLIFY(bA%sect1)
+    NULLIFY(bA%sect2)
 
   END SUBROUTINE NewBiNode
 
@@ -645,14 +647,14 @@ CONTAINS
     IF(Depth==SpAMM_TOTAL_DEPTH)THEN
       ALLOCATE(bA%Vect(SPAMM_BLOCK_SIZE))
       bA%Vect=SpAMM_Zero
-      NULLIFY(bA%Sect0)
-      NULLIFY(bA%Sect1)
+      NULLIFY(bA%sect1)
+      NULLIFY(bA%sect2)
       RETURN
     ELSE
-      ALLOCATE(bA%Sect0)
-      ALLOCATE(bA%Sect1)
-      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%Sect0,Depth+1)
-      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%Sect1,Depth+1)
+      ALLOCATE(bA%sect1)
+      ALLOCATE(bA%sect2)
+      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect1,Depth+1)
+      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect2,Depth+1)
     ENDIF
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree_Recur
@@ -673,6 +675,73 @@ CONTAINS
     call spamm_allocate_full_qutree_recur(A%root, 1, 1, A%N_padded, A%N_padded)
 
   end function spamm_zero_matrix
+
+  !> Get a vector element from a 1st order SpAMM matrix.
+  !!
+  !! @param A The matrix.
+  !! @param i The row index.
+  !!
+  !! @return The matrix element.
+  function spamm_get_matrix_order_1 (V, i) result (Vi)
+
+    real(spamm_kind) :: Vi
+    type(spamm_matrix_order_1), pointer, intent(in) :: V
+    integer, intent(in) :: i
+
+    Vi = spamm_get_bitree(V%root, i)
+
+  end function spamm_get_matrix_order_1
+
+  !> Get a vector element from a spamm_types::bitree.
+  !!
+  !! @param qV A pointer to a bitree.
+  !! @param i The row index.
+  !!
+  !! @return The matrix element.
+  recursive function spamm_get_bitree (qV, i) result (Vi)
+
+    real(spamm_kind) :: Vi
+    type(bitree), pointer, intent(in) :: qV
+    integer, intent(in) :: i
+
+    Vi = 0
+
+    LOG_DEBUG("q: "//to_string(qV%i_lower)//", "//to_string(qV%i_upper))
+
+    if(.not. associated(qV)) return
+
+    if(i > qV%i_upper) then
+      LOG_FATAL("logic error, i above upper bound")
+      error stop
+    endif
+
+    if(i < qV%i_lower) then
+      LOG_FATAL("logic error, i below lower bound")
+      error stop
+    endif
+
+    if(qV%i_upper-qV%i_lower+1 == SPAMM_BLOCK_SIZE) then
+      if(allocated(qV%vect)) then
+        Vi = qV%vect(i-qV%i_lower+1)
+        LOG_DEBUG("found matrix element: Vi = "//to_string(Vi))
+      endif
+    else
+      if(associated(qV%sect1)) then
+        if(i >= qV%sect1%i_lower .and. i <= qV%sect1%i_upper) then
+          Vi = spamm_get_bitree(qV%sect1, i)
+          return
+        endif
+      endif
+
+      if(associated(qV%sect2)) then
+        if(i >= qV%sect2%i_lower .and. i <= qV%sect2%i_upper) then
+          Vi = spamm_get_bitree(qV%sect2, i)
+          return
+        endif
+      endif
+    endif
+
+  end function spamm_get_bitree
 
   !> Get a matrix element from a 2nd order SpAMM matrix.
   !!
@@ -753,6 +822,37 @@ CONTAINS
     endif
 
   end function spamm_get_qutree
+
+  !> Allocate a 1st order SpAMM matrix.
+  !!
+  !! @param N The number of columns.
+  !! @param V The new vector.
+  subroutine spamm_allocate_matrix_order_1 (N, V)
+
+    integer, intent(in) :: N
+    type(spamm_matrix_order_1), pointer, intent(out) :: V
+
+    V => null()
+    allocate(V)
+
+    V%N = N
+    V%depth = 0
+    V%N_padded = SPAMM_BLOCK_SIZE
+
+    ! This should be pretty efficient for reasonable matrix sizes and is presumably faster than some logarithm calculation since it
+    ! only involves an increment and a bit shift.
+    do while(V%N_padded < N)
+      LOG_DEBUG("depth = "//to_string(V%depth)//", N_padded = "//to_string(V%N_padded))
+      V%depth = V%depth+1
+      V%N_padded = 2*V%N_padded
+    enddo
+
+    LOG_INFO("allocated "//to_string(N)//" vector")
+    LOG_INFO("  BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
+    LOG_INFO("  N_padded   = "//to_string(V%N_padded))
+    LOG_INFO("  depth      = "//to_string(V%depth))
+
+  end subroutine spamm_allocate_matrix_order_1
 
   !> Allocate a 2nd order SpAMM matrix.
   !!

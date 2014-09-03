@@ -68,7 +68,7 @@ else()
 endif()
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall" )
+  set( CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-none" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG   "-stand f08 -O0 -g -debug all -check all -warn unused -traceback -assume realloc_lhs -heap-arrays" )
 else()
