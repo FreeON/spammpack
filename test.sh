@@ -1,21 +1,6 @@
 #!/bin/bash
 
-git clean -df
-
-cmake . \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_C_COMPILER=gcc \
-  -DCMAKE_Fortran_COMPILER=gfortran || exit
-make || exit
-make test || exit
+FC=gfortran CC=gcc CMAKE_BUILD_TYPE=Debug ./tester.sh
 
 . /opt/intel/bin/compilervars.sh intel64
-
-git clean -df
-
-cmake . \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_C_COMPILER=icc \
-  -DCMAKE_Fortran_COMPILER=ifort || exit
-make || exit
-make test || exit
+FC=ifort CC=icc CMAKE_BUILD_TYPE=Debug ./tester.sh

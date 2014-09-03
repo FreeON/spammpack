@@ -27,8 +27,8 @@ program test
     end function reference_nonzeros
   end interface
 
-  logical, parameter :: PRINT_MATRICES = .false.
-  integer, parameter :: N = 129
+  logical, parameter :: PRINT_MATRICES = .true.
+  integer, parameter :: N = 9
   integer, parameter :: BANDWIDTH = 4
   integer, parameter :: ITERATIONS = 5
 
