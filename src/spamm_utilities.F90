@@ -37,6 +37,7 @@ module spamm_utilities
   implicit none
 
   integer, parameter :: FATAL = -1
+  integer, parameter :: DEBUG = 2
 
   !> Interface to to_string functions.
   interface to_string
@@ -82,8 +83,8 @@ contains
   !> Print a log message.
   !!
   !! @param level The message level. The global debug_level has to be greater or equal to the level.
-  !! @param message An array of strings to print. Each string will be printed on a separate line.
-  subroutine xwrite_log (level, message)
+  !! @param message The message to print.
+  subroutine write_log (level, message)
 
     integer, intent(in) :: level
     character(len = *), intent(in) :: message
@@ -97,6 +98,6 @@ contains
       endif
     endif
 
-  end subroutine xwrite_log
+  end subroutine write_log
 
 end module spamm_utilities

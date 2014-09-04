@@ -251,7 +251,8 @@ CONTAINS
       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
-    LOG_DEBUG("q: "//to_string(qA%i_lower)//" "//to_string(qA%i_upper)//" "//to_string(qA%j_lower)//" "//to_string(qA%j_upper))
+    call write_log(DEBUG, "q: "//to_string(qA%i_lower)//" " &
+      //to_string(qA%i_upper)//" "//to_string(qA%j_lower)//" "//to_string(qA%j_upper))
 
     qC%Norm = qA%Norm
 
