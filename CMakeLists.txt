@@ -114,6 +114,15 @@ if( NOT RUN_RESULT_2 EQUAL 0 )
     "the Fortran 2003 standard (e.g. >=gcc-4.8).")
 endif()
 
+try_compile( COMPILE_RESULT_3
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/long_lines.F90
+  )
+if( COMPILE_RESULT_3 )
+  message( STATUS "The Fortran compiler supports lines > 132 characters" )
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_FILENAMES" )
+endif()
+
 include( FindDoxygen )
 if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
   add_custom_target( docs ${DOXYGEN_EXECUTABLE} )

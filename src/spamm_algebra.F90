@@ -661,8 +661,9 @@ CONTAINS
     !real(spamm_kind) :: temp
     integer :: i, j
 
-    LOG_DEBUG("q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper)//" "//to_string(qC%j_lower)//" "//to_string(qC%j_upper))
-    LOG_DEBUG("q:   operations = "//to_string(qC%number_operations))
+    LOG_DEBUG("q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper))
+    LOG_DEBUG("   "//to_string(qC%j_lower)//" "//to_string(qC%j_upper))
+    LOG_DEBUG("   operations = "//to_string(qC%number_operations))
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
@@ -868,7 +869,8 @@ CONTAINS
     integer :: i
     !integer :: j
 
-    LOG_DEBUG("q:"//to_string(qA%i_lower)//" "//to_string(qA%j_lower)//" "//to_string(qA%i_upper)//" "//to_string(qA%j_upper))
+    LOG_DEBUG("q:"//to_string(qA%i_lower)//" "//to_string(qA%j_lower))
+    LOG_DEBUG("  "//to_string(qA%i_upper)//" "//to_string(qA%j_upper))
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       if(.not. allocated(qA%blok)) then

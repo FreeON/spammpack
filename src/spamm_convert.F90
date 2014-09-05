@@ -171,7 +171,8 @@ MODULE SpAMM_CONVERT
       error stop
     endif
 
-    LOG_DEBUG("converting: "//to_string(i_lower)//" "//to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper))
+    LOG_DEBUG("converting: "//to_string(i_lower)//" "//to_string(i_upper))
+    LOG_DEBUG("            "//to_string(j_lower)//" "//to_string(j_upper))
 
     if(i_lower > size(A, 1) .or. j_lower > size(A, 2)) then
       LOG_DEBUG("outside dense matrix")
@@ -190,7 +191,8 @@ MODULE SpAMM_CONVERT
       qA%j_upper = j_upper
     endif
 
-    LOG_DEBUG("q: "//to_string(i_lower)//" "//to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper))
+    LOG_DEBUG("q: "//to_string(i_lower)//" "//to_string(i_upper))
+    LOG_DEBUG("   "//to_string(j_lower)//" "//to_string(j_upper))
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN

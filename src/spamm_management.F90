@@ -610,7 +610,8 @@ CONTAINS
     rows = i_upper-i_lower+1
     columns = j_upper-j_lower+1
 
-    LOG_DEBUG("q: "//to_string(i_lower)//" "//to_string(i_upper)//" "//to_string(j_lower)//" "//to_string(j_upper))
+    LOG_DEBUG("q: "//to_string(i_lower)//" "//to_string(i_upper))
+    LOG_DEBUG("   "//to_string(j_lower)//" "//to_string(j_upper))
 
     if(rows /= columns) then
       LOG_FATAL("non-square submatrix")

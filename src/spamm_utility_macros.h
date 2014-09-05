@@ -37,16 +37,22 @@
 #ifndef SPAMM_UTILITY_MACROS_H
 #define SPAMM_UTILITY_MACROS_H
 
-#define LOG_FATAL(msg) write(*, "(A)") "["//trim(__FILE__)//":"//to_string(__LINE__)//"] "//msg
+#ifdef LOG_FILENAMES
+#define LOCATION_EXPAND() "["//trim(__FILE__)//":"//to_string(__LINE__)//"] "
+#else
+#define LOCATION_EXPAND() ""
+#endif
+
+#define LOG_FATAL(msg) write(*, "(A)") LOCATION_EXPAND()//msg
 
 #if DEBUG_LEVEL >= 1
-#define LOG_INFO(msg) write(*, "(A)") "["//trim(__FILE__)//":"//to_string(__LINE__)//"] "//msg
+#define LOG_INFO(msg) write(*, "(A)") LOCATION_EXPAND()//msg
 #else
 #define LOG_INFO(msg)
 #endif
 
 #if DEBUG_LEVEL >= 2
-#define LOG_DEBUG(msg) write(*, "(A)") "["//trim(__FILE__)//":"//to_string(__LINE__)//"] "//msg
+#define LOG_DEBUG(msg) write(*, "(A)") LOCATION_EXPAND()//msg
 #else
 #define LOG_DEBUG(msg)
 #endif
