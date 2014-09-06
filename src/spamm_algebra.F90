@@ -565,26 +565,30 @@ CONTAINS
   !! @param qA Pointer to matrix A.
   !! @param bB Pointer to vector B.
   !! @param bC Pointer to vector C.
-  !! @param LocalThreshold The SpAMM tolerance.
-  SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree(qA,bB,bC,LocalThreshold)
+  !! @param tolerance The SpAMM tolerance.
+  SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree (qA, bB, bC, tolerance)
 
-    TYPE(QuTree), POINTER     :: qA
-    TYPE(BiTree), POINTER     :: bB,bC
-    INTEGER                   :: Depth
-    REAL(SpAMM_KIND),OPTIONAL :: LocalThreshold
-    REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
-    IF(PRESENT(LocalThreshold))THEN
-      SpAMM_Threshold_Multiply_QuTree_x_BiTree = LocalThreshold
+    TYPE(QuTree), POINTER, intent(in) :: qA
+    TYPE(BiTree), POINTER, intent(in) :: bB
+    TYPE(BiTree), POINTER, intent(inout) :: bC
+    REAL(SpAMM_KIND),OPTIONAL :: tolerance
+    real(spamm_kind) :: local_tolerance
+    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+
+    IF(PRESENT(tolerance))THEN
+      local_tolerance = tolerance
     ELSE
-      SpAMM_Threshold_Multiply_QuTree_x_BiTree = 0
+      local_tolerance = 0
     ENDIF
-    Depth=0
+
     TInitial = SpAMM_Get_Time()
-    CALL SpAMM_Multiply_BiTree_x_Scalar(bC,SpAMM_Zero)
+
+    CALL SpAMM_Multiply_BiTree_x_Scalar(bC, SpAMM_Zero)
     !$OMP TASK UNTIED SHARED(qA,bB,bC)
-    CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC,qA,bB,Depth)
+    CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC, qA, bB, local_tolerance)
     !$OMP END TASK
     !$OMP TASKWAIT
+
     TTotal=SpAMM_Get_Time()-TInitial
     CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_BiTree",13)
 
@@ -1074,56 +1078,63 @@ CONTAINS
     ENDIF
   END FUNCTION SpAMM_Norm_Reduce_QuTree_Recur
 
-  !> Recursive linear algebra routines on row tree vectors
-  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree_Recur(bC,qA,bB,Depth)
+  !> Recursive linear algebra routines on row tree vectors: @f$ C \leftarrow A \dot B @f$.
+  !!
+  !! @param bC Vector C.
+  !! @param qA Matrix A.
+  !! @param bB Vector B.
+  !! @param tolerance The SpAMM tolerance.
+  RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree_Recur(bC, qA, bB, tolerance)
 
-    TYPE(QuTree), POINTER :: qA
-    TYPE(BiTree), POINTER :: bB,bC
-    INTEGER               :: Depth
+    TYPE(QuTree), POINTER, intent(in) :: qA
+    TYPE(BiTree), POINTER, intent(in) :: bB
+    TYPE(BiTree), POINTER, intent(inout) :: bC
+    real(spamm_kind), intent(in) :: tolerance
 
     ! Associated
-    IF(ASSOCIATED(qA).AND.ASSOCIATED(bB))THEN
+    IF(ASSOCIATED(qA).AND.ASSOCIATED(bB)) THEN
       ! Estimate
-      IF(qA%Norm*bB%Norm<SpAMM_Threshold_Multiply_QuTree_x_BiTree)RETURN
+      LOG_DEBUG("norm(A) = "//to_string(qA%norm))
+      LOG_DEBUG("norm(B) = "//to_string(bB%norm))
+
+      IF(qA%Norm*bB%Norm < tolerance) RETURN
+
       IF(.NOT.ASSOCIATED(bC))THEN
-        !$OMP CRITICAL
+        LOG_DEBUG("allocating new node in C bitree")
         ALLOCATE(bC)
-        !$OMP END CRITICAL
       ENDIF
+
       ! Blocks
-      IF(Depth==SpAMM_TOTAL_DEPTH)THEN
+      IF(bC%i_upper-bC%i_lower+1 == SPAMM_BLOCK_SIZE) THEN
         ! Allocate
         IF(.NOT.ALLOCATED(bC%Vect))THEN
           !$OMP CRITICAL
-          ALLOCATE(bC%Vect(1:SPAMM_BLOCK_SIZE))
+          ALLOCATE(bC%Vect(SPAMM_BLOCK_SIZE))
           bC%Vect=SpAMM_Zero
           !$OMP END CRITICAL
         END IF
         ! Accumulate
-        bC%Vect(1:SPAMM_BLOCK_SIZE)=bC%Vect(1:SPAMM_BLOCK_SIZE)+MATMUL( &
-          qA%Blok(1:SPAMM_BLOCK_SIZE,1:SPAMM_BLOCK_SIZE),bB%Vect(1:SPAMM_BLOCK_SIZE))
+        bC%Vect(1:SPAMM_BLOCK_SIZE)=bC%Vect+MATMUL(qA%Blok, bB%Vect)
       ELSE
 
         ! 0=00*0
-        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad11%Norm*bB%sect1%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%sect1,qA%Quad11,bB%sect1,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC)
+        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%sect1, qA%Quad11, bB%sect1, tolerance)
         !$OMP END TASK
 
         ! 1=10*0
-        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad21%Norm*bB%sect1%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%sect2,qA%Quad21,bB%sect1,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC)
+        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%sect2, qA%Quad21, bB%sect1, tolerance)
         !$OMP END TASK
 
-        !$OMP TASKWAIT
-
         ! 0=00*0+01*1
-        !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad12%Norm*bB%sect2%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%sect1,qA%Quad12,bB%sect2,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC)
+        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%sect1, qA%Quad12, bB%sect2, tolerance)
         !$OMP END TASK
 
         ! 1=10*0+11*1
-          !$OMP TASK UNTIED SHARED(qA,bB,bC) IF(qA%Quad22%Norm*bB%sect2%Norm>SpAMM_RECURSION_NORMD_CUTOFF)
-        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%sect2,qA%Quad22,bB%sect2,Depth+1)
+        !$OMP TASK UNTIED SHARED(qA,bB,bC)
+        CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%sect2, qA%Quad22, bB%sect2, tolerance)
         !$OMP END TASK
 
         !$OMP TASKWAIT
@@ -1352,12 +1363,25 @@ CONTAINS
 
     real(spamm_kind) :: local_threshold
 
+    if(.not. associated(C)) then
+      call new(A%M, C)
+    endif
+
+    if(A%N /= B%N) then
+      call write_log(FATAL, "dimension mismatch: A%N ("//to_string(A%N)//" /= "//"B%N ("//to_string(B%N)//")")
+    endif
+
+    if(A%M /= C%N) then
+      call write_log(FATAL, "dimension mismatch: A%M ("//to_string(A%M)//" /= "//"C%N ("//to_string(C%N)//")")
+    endif
+
     if(present(threshold)) then
       local_threshold = threshold
     else
       local_threshold = 0
     endif
 
+    LOG_DEBUG("multiply matrix*vector")
     call spamm_multiply_qutree_x_bitree(A%root, B%root, C%root, local_threshold)
 
   end subroutine spamm_multiply_2nd_order_x_1st_order

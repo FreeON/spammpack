@@ -69,8 +69,8 @@ else()
 endif()
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-132" )
-  set( CMAKE_Fortran_FLAGS_RELEASE "-O2 -ffree-line-length-132" )
+  set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-none" )
+  set( CMAKE_Fortran_FLAGS_RELEASE "-O2 -ffree-line-length-none" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG   "-stand f08 -O0 -g -extend-source -debug all -check all -warn unused -traceback -assume realloc_lhs -heap-arrays" )
 else()
@@ -90,6 +90,8 @@ if( CMAKE_BUILD_TYPE STREQUAL Debug )
   message( STATUS "C compiler flags: ${CMAKE_C_FLAGS_DEBUG}" )
   message( STATUS "Fortran compiler flags: ${CMAKE_Fortran_FLAGS_DEBUG}" )
 endif()
+
+set( CMAKE_TRY_COMPILE_CONFIGURATION ${CMAKE_BUILD_TYPE} )
 
 try_compile( COMPILE_RESULT_1
   ${CMAKE_BINARY_DIR}

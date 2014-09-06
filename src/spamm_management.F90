@@ -69,6 +69,7 @@ module spamm_management
   INTERFACE Delete
     MODULE PROCEDURE SpAMM_Delete_QuTree
     MODULE PROCEDURE SpAMM_Delete_BiTree
+    module procedure spamm_delete_matrix_order_1
     module procedure spamm_delete_matrix_2nd_order
   END INTERFACE
 
@@ -155,6 +156,18 @@ CONTAINS
     !$OMP TASKWAIT
 
   END SUBROUTINE SpAMM_Copy_BiTree_2_BiTree
+
+  !> Delete a 1st order matrix.
+  !!
+  !! @param A The vector.
+  subroutine spamm_delete_matrix_order_1 (A)
+
+    type(spamm_matrix_order_1), pointer, intent(inout) :: A
+
+    call spamm_delete_bitree(A%root)
+    deallocate(A)
+
+  end subroutine spamm_delete_matrix_order_1
 
   !> Delete a 2nd order matrix.
   !!
@@ -573,22 +586,24 @@ CONTAINS
 
   END SUBROUTINE NewQuNode
 
-  SUBROUTINE NewBiNode(bA,init)
+  !> Allocate new bitree node.
+  !!
+  !! @param bA The node pointer.
+  SUBROUTINE NewBiNode(bA, init)
 
     LOGICAL,OPTIONAL :: init
     TYPE(BiTree), POINTER :: bA
 
     IF(PRESENT(init))THEN
-      IF(ASSOCIATED(bA))STOP '[PdMh8CTirrvi44hv] LOGIC ERROR IN NewBiNode'
+      IF(ASSOCIATED(bA)) then
+        call write_log(FATAL, '[PdMh8CTirrvi44hv] LOGIC ERROR IN NewBiNode')
+      endif
       ALLOCATE(bA)
     ELSE
       IF(.NOT.ASSOCIATED(bA))THEN
         ALLOCATE(bA)
       ENDIF
     ENDIF
-    bA%Norm=SpAMM_BIG_DBL
-    NULLIFY(bA%sect1)
-    NULLIFY(bA%sect2)
 
   END SUBROUTINE NewBiNode
 
@@ -713,12 +728,12 @@ CONTAINS
     if(.not. associated(qV)) return
 
     if(i > qV%i_upper) then
-      LOG_FATAL("logic error, i above upper bound")
+      LOG_FATAL("logic error, i ("//to_string(i)//") above upper bound ("//to_string(qV%i_upper)//")")
       error stop
     endif
 
     if(i < qV%i_lower) then
-      LOG_FATAL("logic error, i below lower bound")
+      LOG_FATAL("logic error, i ("//to_string(i)//") below lower bound ("//to_string(qV%i_lower)//")")
       error stop
     endif
 
