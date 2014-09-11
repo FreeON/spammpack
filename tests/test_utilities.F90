@@ -2,7 +2,94 @@ module test_utilities
 
   implicit none
 
+  interface mmio
+
+    subroutine mmread(iunit, rep, field, symm, rows, cols, nnz, nnzmax, indx, jndx,ival,rval,cval)
+      integer, intent(in) :: iunit
+      character(len = 10), intent(inout) :: rep
+      character(len = 7), intent(inout) :: field
+      character(len = 19), intent(inout) :: symm
+      integer, intent(inout) :: rows, cols, nnz
+      integer, intent(in) :: nnzmax
+      integer, dimension(*), intent(inout) :: indx, jndx, ival
+      real(kind(0d0)), dimension(*), intent(inout) :: rval
+      complex(kind(0d0)), dimension(*), intent(inout) :: cval
+    end subroutine mmread
+
+    subroutine mminfo(iunit,rep,field,symm,rows,cols,nnz)
+      integer, intent(in) :: iunit
+      character(len = 10), intent(inout) :: rep
+      character(len = 7), intent(inout) :: field
+      character(len = 19), intent(inout) :: symm
+      integer, intent(inout) :: rows, cols, nnz
+    end subroutine mminfo
+
+  end interface mmio
+
 contains
+
+  !> Read a matrix in MatrixMarket format.
+  !!
+  !! @param filename The filename.
+  !! @param A The dense matrix
+  subroutine read_MM (filename, A)
+
+    implicit none
+
+    character(len = *), intent(in) :: filename
+    real(kind(0d0)), allocatable, dimension(:, :), intent(inout) :: A
+
+    integer :: M
+    integer :: N
+    integer :: number_nonzero, max_number_nonzero
+    integer :: i
+
+    character(len = 10) :: rep
+    character(len = 7) :: field
+    character(len = 19) :: symm
+    integer, allocatable, dimension(:) :: indx, jndx
+    integer, allocatable, dimension(:) :: ival
+    real(kind(0d0)), allocatable, dimension(:) :: rval
+    complex(kind(0d0)), allocatable, dimension(:) :: cval
+
+    write(*, "(A)") "reading matrix from "//trim(filename)
+
+    open(unit = 20, file = filename)
+    call mminfo(20, rep, field, symm, M, N, number_nonzero)
+
+    write(*, *) "M      = ", M
+    write(*, *) "N      = ", N
+    write(*, *) "nnzero = ", number_nonzero
+    write(*, *) "rep    = "//trim(rep)
+    write(*, *) "field  = "//trim(field)
+    write(*, *) "symm   = "//trim(symm)
+    write(*, *) "mem(A) = ", 8*M*N/1024.**2, " MiB"
+
+    allocate(indx(number_nonzero))
+    allocate(jndx(number_nonzero))
+    allocate(ival(number_nonzero))
+    allocate(rval(number_nonzero))
+    allocate(cval(number_nonzero))
+
+    max_number_nonzero = number_nonzero
+
+    call mmread(20, rep, field, symm, M, N, number_nonzero, max_number_nonzero, indx, jndx, ival, rval, cval)
+
+    write(*, *) "allocating A"
+    allocate(A(M, N))
+
+    write(*, *) "converting formats"
+    do i = 1, number_nonzero
+      A(indx(i), jndx(i)) = rval(i)
+    enddo
+
+    deallocate(ival)
+    deallocate(rval)
+    deallocate(cval)
+    deallocate(jndx)
+    deallocate(indx)
+
+  end subroutine read_MM
 
   subroutine load_matrix (filename, A)
 

@@ -15,17 +15,11 @@ program spamm_multiply
 
   implicit none
 
-  integer :: N, N_padded
+  integer :: M, N
   integer :: test_repeat
   integer :: testresult = 0
 
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: A_dense
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: B_dense
-  real(SpAMM_DOUBLE), dimension(:,:), allocatable :: C_dense
-
-  real(SpAMM_KIND), dimension(:,:), allocatable :: A_dense_padded
-  real(SpAMM_KIND), dimension(:,:), allocatable :: B_dense_padded
-  real(SpAMM_KIND), dimension(:,:), allocatable :: C_dense_padded
+  real(kind(0d0)), dimension(:,:), allocatable :: A_dense
 
   type(spamm_matrix_2nd_order), pointer :: A => null()
   type(spamm_matrix_2nd_order), pointer :: B => null()
@@ -33,7 +27,7 @@ program spamm_multiply
 
 #ifdef VERIFY_RESULT
   real(spamm_kind) :: norms
-  integer :: i, j
+  real(kind(0d0)), dimension(:,:), allocatable :: C_dense
   type(spamm_matrix_2nd_order), pointer :: C_reference => null()
 #endif
 
@@ -48,7 +42,8 @@ program spamm_multiply
   if(command_argument_count() > 0) then
     call get_command_argument(1, matrixfilename)
   else
-    matrixfilename = "testmatrix_random_1024x1024.coor"
+    write(*, *) "Please specify a matrix file (in MM format)"
+    error stop
   endif
 
 #ifdef _OPENMP
@@ -62,37 +57,18 @@ program spamm_multiply
   write(*, *) "setting num_threads to ", num_threads
 #endif
 
-  call load_matrix(matrixfilename, A_dense)
+  call read_MM(matrixfilename, A_dense)
+  !call load_matrix(matrixfilename, A_dense)
   !call load_matrix_binary(matrixfilename, B_dense)
 
-  N = size(A_dense, 1)
-  allocate(B_dense(N, N))
-  B_dense = A_dense
-  allocate(C_dense(N, N))
-  C_dense = 0.0D0
+  M = size(A_dense, 1)
+  N = size(A_dense, 2)
 
-  write(*, *) "read matrix N = ", N
-
-  ! Get new, padded matrix size.
-  N_padded = N
-
-  write(*, *) "padded matrix to N_padded = ", N_padded
-
-  allocate(A_dense_padded(N_padded, N_padded))
-  allocate(B_dense_padded(N_padded, N_padded))
-  allocate(C_dense_padded(N_padded, N_padded))
-
-  A_dense_padded = SpAMM_ZERO
-  B_dense_padded = SpAMM_ZERO
-  C_dense_padded = SpAMM_ZERO
-
-  A_dense_padded = A_dense
-  B_dense_padded = B_dense
+  write(*, *) "read matrix N = ", N, ", M = ", M
 
   write(*, *) "converting matrices to quadtree"
-  A => spamm_convert_dense_to_matrix_2nd_order(A_dense_padded)
-  B => spamm_convert_dense_to_matrix_2nd_order(B_dense_padded)
-  C => spamm_zero_matrix(N_padded, N_padded)
+  A => spamm_convert_dense_to_matrix_2nd_order(A_dense)
+  B => A
   write(*, *) "done converting"
 
 #if defined(_OPENMP)
@@ -124,13 +100,9 @@ program spamm_multiply
     CALL SpAMM_Time_Stamp()
 
 #ifdef VERIFY_RESULT
-    C_dense = matmul(A_dense, B_dense)
-    do i = 1, N
-      do j = 1, N
-        C_dense_padded(i, j) = C_dense(i, j)
-      enddo
-    enddo
-    C_reference => spamm_convert_dense_to_matrix_2nd_order(C_dense_padded)
+    allocate(C_dense(M, N))
+    C_dense = matmul(A_dense, A_dense)
+    C_reference => spamm_convert_dense_to_matrix_2nd_order(C_dense)
 
     norms = Norm(A)
     write(*, "(A,F22.12)") "F-norm (A)             = ", sqrt(norms)

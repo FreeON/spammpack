@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. /opt/intel/bin/compilervars.sh intel64
-
 FC=ifort CC=icc CMAKE_BUILD_TYPE=Debug ./configure.sh || exit
 make || exit
 make test || exit

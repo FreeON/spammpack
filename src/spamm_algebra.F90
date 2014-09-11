@@ -665,10 +665,6 @@ CONTAINS
     !real(spamm_kind) :: temp
     integer :: i, j
 
-    LOG_DEBUG("q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper))
-    LOG_DEBUG("   "//to_string(qC%j_lower)//" "//to_string(qC%j_upper))
-    LOG_DEBUG("   operations = "//to_string(qC%number_operations))
-
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       ! Apply the SpAMM condition.
       IF(qA%Norm*qB%Norm <= threshold) RETURN
@@ -683,6 +679,11 @@ CONTAINS
 #ifdef _OPENMP
       CALL OMP_UNSET_LOCK(qC%lock)
 #endif
+
+      LOG_DEBUG("q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper))
+      LOG_DEBUG("   "//to_string(qC%j_lower)//" "//to_string(qC%j_upper))
+      LOG_DEBUG("   operations = "//to_string(qC%number_operations))
+
       ! At the bottom, calculate the product.
       IF(qC%i_upper-qC%i_lower+1 == SPAMM_BLOCK_SIZE) then
 #ifdef _OPENMP
