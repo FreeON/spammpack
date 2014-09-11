@@ -2,7 +2,7 @@
 #define TEST_REPEAT 1
 #endif
 
-#define VERIFY_RESULT
+#undef VERIFY_RESULT
 
 program spamm_multiply
 
@@ -14,6 +14,8 @@ program spamm_multiply
 #endif
 
   implicit none
+
+  real(spamm_kind), parameter :: tolerance = 1d-8
 
   integer :: M, N
   integer :: test_repeat
@@ -89,15 +91,13 @@ program spamm_multiply
 
     write(*, "(A,I4)") "repeat multiply ", TEST_REPEAT
     do test_repeat = 1, TEST_REPEAT
-#ifdef SPAMM_SINGLE
-      call multiply(A, B, C, tolerance = 1e-7)
-#else
-      call multiply(A, B, C, tolerance = 1d-7)
-#endif
-      write(*, "(A,F22.12)") "operation count = ", C%number_operations
+      call multiply(A, B, C, tolerance)
+      write(*, "(A,F14.1)") "operation count = ", C%number_operations
+      write(*, "(A,F14.4)") "count/N         = ", C%number_operations/dble(N)
+      write(*, "(A,F14.4)") "count/N^3       = ", C%number_operations/dble(N)**3
     enddo
 
-    CALL SpAMM_Time_Stamp()
+    !CALL SpAMM_Time_Stamp()
 
 #ifdef VERIFY_RESULT
     allocate(C_dense(M, N))

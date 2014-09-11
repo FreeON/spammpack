@@ -173,7 +173,7 @@ CONTAINS
     qC%norm = sqrt(qC%norm)
 
     TTotal=SpAMM_Get_Time()-TInitial
-    CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_QuTree",1)
+    !CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_QuTree",1)
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree
 
@@ -217,7 +217,7 @@ CONTAINS
     qA%norm = sqrt(qA%norm)
 
     TTotal=SpAMM_Get_Time()-TInitial
-    CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_Scalar",3)
+    !CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Multiply_QuTree_x_Scalar",3)
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar
 
@@ -474,7 +474,7 @@ CONTAINS
     !$OMP END TASK
     !$OMP TASKWAIT
     TTotal=SpAMM_Get_Time()-TInitial
-    CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Norm_Reduce_QuTree",9)
+    !CALL SpAMM_Time_Stamp(TTotal,"SpAMM_Norm_Reduce_QuTree",9)
 
   END FUNCTION SpAMM_Norm_Reduce_QuTree
 

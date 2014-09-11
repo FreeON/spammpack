@@ -57,13 +57,14 @@ contains
     open(unit = 20, file = filename)
     call mminfo(20, rep, field, symm, M, N, number_nonzero)
 
-    write(*, *) "M      = ", M
-    write(*, *) "N      = ", N
-    write(*, *) "nnzero = ", number_nonzero
-    write(*, *) "rep    = "//trim(rep)
-    write(*, *) "field  = "//trim(field)
-    write(*, *) "symm   = "//trim(symm)
-    write(*, *) "mem(A) = ", 8*M*N/1024.**2, " MiB"
+    write(*, *) "M       = ", M
+    write(*, *) "N       = ", N
+    write(*, *) "nnzero  = ", number_nonzero
+    write(*, *) "%fillin = ", number_nonzero/(dble(M)*dble(N))
+    write(*, *) "rep     = "//trim(rep)
+    write(*, *) "field   = "//trim(field)
+    write(*, *) "symm    = "//trim(symm)
+    write(*, *) "mem(A)  = ", 8*M*N/1024.**2, " MiB"
 
     allocate(indx(number_nonzero))
     allocate(jndx(number_nonzero))
