@@ -147,6 +147,20 @@ else()
 endif()
 set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DDEBUG_LEVEL=${DEBUG_LEVEL}" )
 
+if( DEBUG_LEVEL GREATER 0 )
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_INFO='write (*, *)'" )
+else()
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_INFO=!" )
+endif()
+
+if( DEBUG_LEVEL GREATER 1 )
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_DEBUG='write (*, *)'" )
+else()
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_DEBUG=!" )
+endif()
+
+set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_FATAL='write (*, *)'" )
+
 # For now hard-coded.
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTIMER_GETTIMEOFDAY" )
 

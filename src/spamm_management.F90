@@ -34,8 +34,6 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 module spamm_management
 
-#include "spamm_utility_macros.h"
-
   use spamm_types
   use spamm_globals
   use spamm_utilities

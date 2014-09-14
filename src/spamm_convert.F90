@@ -34,8 +34,6 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE SpAMM_CONVERT
 
-#include "spamm_utility_macros.h"
-
   USE SpAMM_ALGEBRA
   use spamm_globals
   use spamm_management
