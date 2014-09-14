@@ -49,6 +49,17 @@ if test "${CLOCKTYPE}" = "unset"; then
 fi
 AC_DEFINE_UNQUOTED([CLOCKTYPE], [${CLOCKTYPE}], [The clock type to use with clock_gettime()])
 
+AC_ARG_ENABLE([mic],
+  [AS_HELP_STRING([--enable-mic],
+  [enable Xeon PHI])],
+  [enable_mic=${enableval}],
+  [enable_mic="no"])
+if [[ ${enable_mic} = "yes" ]]; then
+  AC_DEFINE([MIC_ALLOC], [1], [Enable huge page allocation for MIC])
+  AC_SUBST([MIC_CFLAGS], [-mmic])
+  AC_SUBST([MIC_LDFLAGS], [-static])
+fi
+
 AC_ARG_ENABLE([set-num-threads],
   [AS_HELP_STRING([--enable-set-num-threads],
   [set the number of threads in OpenMP parallel sections to N])],
@@ -126,7 +137,7 @@ fi
 AC_ARG_ENABLE([chunk-tree-max-tier],
   [AS_HELP_STRING([--enable-chunk-tree-max-tier],
   [set the maximum tier at which new tasks are created when recursing the
-   chunk tree])],
+   chunk tree (default = 6)])],
   [enable_chunk_tree_max_tier=$enableval],
   [enable_chunk_tree_max_tier=6])
 if [[ ${enable_chunk_tree_max_tier} -gt 0 ]]; then
