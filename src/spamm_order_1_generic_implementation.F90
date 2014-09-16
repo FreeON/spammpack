@@ -54,7 +54,7 @@ RECURSIVE SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar(bA, alpha)
   IF(.NOT.ASSOCIATED(bA))RETURN
 
   !$OMP TASK SHARED(bA)
-  CALL SpAMM_Multiply_BiTree_x_Scalar_Recur(bA, alpha)
+  !CALL SpAMM_Multiply_BiTree_x_Scalar_Recur(bA, alpha)
   !$OMP END TASK
   !$OMP TASKWAIT
 

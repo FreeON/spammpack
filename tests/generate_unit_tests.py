@@ -29,14 +29,19 @@ def main ():
             default = "spammpack_serial_static"
             )
 
+    parser.add_argument(
+            "--lapack-linker-flags",
+            help = "Lapack linker flags")
+
     options = parser.parse_args()
 
     if options.output:
         fd = open(options.output, "w")
+        print("writing to %s" % (options.output))
     else:
         import sys
         fd = sys.stdout
-        print("writing to %s" % (options.output))
+        sys.stderr.write("writing to stdout\n")
 
     for source in options.SOURCE:
         import os.path
@@ -50,7 +55,9 @@ def main ():
         fd.write("\n")
         fd.write("# Unit test using valgrind from %s\n" % (source))
         fd.write("if( VALGRIND )\n")
-        fd.write("  add_test( valgrind-%s ${VALGRIND} --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/%s )\n" % (testbasename, testexename))
+        fd.write(("  add_test( valgrind-%s ${VALGRIND} " % (testbasename))
+                + "--error-exitcode=1 "
+                + ("${CMAKE_CURRENT_BINARY_DIR}/%s )\n" % (testexename)))
         fd.write("endif()\n")
 
     fd.close()

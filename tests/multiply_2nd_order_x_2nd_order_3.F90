@@ -13,8 +13,6 @@ end function reference_nonzeros
 
 program test
 
-#include "spamm_utility_macros.h"
-
   use spammpack
   use test_utilities
 

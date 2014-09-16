@@ -135,6 +135,12 @@ endif()
 
 include( ${CMAKE_SOURCE_DIR}/FindOpenMP.cmake )
 
+include( FindLAPACK )
+
+if( LAPACK_FOUND )
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLAPACK_FOUND" )
+endif()
+
 if( NOT DEBUG_LEVEL )
   set( DEBUG_LEVEL 0
     CACHE STRING "The debugging output verbosity"

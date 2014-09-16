@@ -9,6 +9,7 @@ set( spammpack-sources-Fortran
   spamm_c_bindings.F90
   spamm_convert.F90
   spamm_globals.F90
+  spamm_inverse.F90
   spamm_management.F90
   spamm_order_1.F90
   spamm_order_1_double.F90

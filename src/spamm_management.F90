@@ -43,17 +43,18 @@ module spamm_management
   PRIVATE
 
   PUBLIC :: Copy
-  PUBLIC :: SpAMM_Copy_QuTree_2_QuTree_Recur
-  PUBLIC :: SpAMM_Copy_BiTree_2_BiTree_Recur
   PUBLIC :: Delete
-  PUBLIC :: SpAMM_Delete_QuTree_Recur
-  public :: spamm_allocate_matrix_order_1
-  public :: spamm_allocate_matrix_2nd_order
   PUBLIC :: New
   PUBLIC :: NewQuNode
-  public :: spamm_zero_matrix
+  PUBLIC :: SpAMM_Copy_BiTree_2_BiTree_Recur
+  PUBLIC :: SpAMM_Copy_QuTree_2_QuTree_Recur
+  PUBLIC :: SpAMM_Delete_QuTree_Recur
   public :: get
   public :: reset_counters
+  public :: spamm_allocate_matrix_2nd_order
+  public :: spamm_allocate_matrix_order_1
+  public :: spamm_identity_matrix 
+  public :: spamm_zero_matrix
 
   !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
@@ -674,6 +675,24 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree_Recur
 
+  !> Construct the identy matrix of size M x N.
+  !!
+  !! @param M The number of rows.
+  !! @param N The number of columns.
+  !!
+  !! @return The matrix.
+  function spamm_identity_matrix (M, N) result (A)
+
+    integer, intent(in) :: M, N
+    type(spamm_matrix_2nd_order), pointer :: A
+
+    LOG_DEBUG("creating "//to_string(M)//"x"//to_string(N)//" identity matrix")
+
+    A => null()
+    call spamm_allocate_matrix_2nd_order(M, N, A)
+
+  end function spamm_identity_matrix
+
   !> Construct a zero matrix of size M x N.
   !!
   !! @param M The number of rows.
@@ -854,8 +873,9 @@ CONTAINS
     V%depth = 0
     V%N_padded = SPAMM_BLOCK_SIZE
 
-    ! This should be pretty efficient for reasonable matrix sizes and is presumably faster than some logarithm calculation since it
-    ! only involves an increment and a bit shift.
+    ! This should be pretty efficient for reasonable matrix sizes and is
+    ! presumably faster than some logarithm calculation since it only involves
+    ! an increment and a bit shift.
     do while(V%N_padded < N)
       LOG_DEBUG("depth = "//to_string(V%depth)//", N_padded = "//to_string(V%N_padded))
       V%depth = V%depth+1
@@ -887,8 +907,9 @@ CONTAINS
     A%depth = 0
     A%N_padded = SPAMM_BLOCK_SIZE
 
-    ! This should be pretty efficient for reasonable matrix sizes and is presumably faster than some logarithm calculation since it
-    ! only involves an increment and a bit shift.
+    ! This should be pretty efficient for reasonable matrix sizes and is
+    ! presumably faster than some logarithm calculation since it only involves
+    ! an increment and a bit shift.
     do while(A%N_padded < max(M, N))
       LOG_DEBUG("depth = "//to_string(A%depth)//", N_padded = "//to_string(A%N_padded))
       A%depth = A%depth+1

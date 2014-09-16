@@ -1,7 +1,5 @@
 program test
 
-#include "spamm_utility_macros.h"
-
   use spammpack
 
   implicit none
