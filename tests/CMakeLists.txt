@@ -38,9 +38,10 @@ set( UNIT_TESTS
   )
 
 if( LAPACK_FOUND )
-  set( UNIT_LAPACK "--lapack-linker-flags ${LAPACK_LINKER_FLAGS}" )
-else()
-  set( UNIT_LAPACK "" )
+  set( UNIT_LAPACK
+    --lapack-linker-flags "\"${LAPACK_LINKER_FLAGS}\""
+    --lapack-libraries "\"${LAPACK_LIBRARIES}\""
+    )
 endif()
 
 execute_process( COMMAND
