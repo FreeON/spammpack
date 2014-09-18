@@ -33,24 +33,17 @@ set( UNIT_TESTS
   multiply_2nd_order_x_2nd_order_3.F90
   multiply_2nd_order_x_scalar.F90
   norm_2nd_order.F90
+  set_2nd_order.F90
   trace_2nd_order.F90
   trace_2nd_order_2.F90
   )
 
-if( LAPACK_FOUND )
-  foreach( ARG ${LAPACK_LINKER_FLAGS} )
-    set( UNIT_LAPACK "${UNIT_LAPACK} --lapack-linker-flags \"${ARG}\"" )
-  endforeach()
-  foreach( ARG ${LAPACK_LIBRARIES} )
-    set( UNIT_LAPACK "${UNIT_LAPACK} --lapack-libraries \"${ARG}\"" )
-  endforeach()
-endif()
-
-execute_process( COMMAND
+execute_process( COMMAND ${PYTHON_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/generate_unit_tests.py
   --spammpack-lib spammpack_serial_shared
   --output ${CMAKE_CURRENT_BINARY_DIR}/unit-tests.cmake
-  ${UNIT_LAPACK}
+  --lapack-libraries ${LAPACK_LIBRARIES}
+  --
   ${UNIT_TESTS}
   )
 

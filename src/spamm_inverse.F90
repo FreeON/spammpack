@@ -60,6 +60,8 @@ contains
     Z => spamm_identity_matrix(S%M, S%N)
     call copy(S, Y)
 
+    X => null()
+
   end function spamm_inverse_schulz
 
 end module spamm_inverse

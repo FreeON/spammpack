@@ -170,6 +170,9 @@ contains
 
   end subroutine load_matrix_binary
 
+  !> Print a matrix.
+  !!
+  !! @param A The matrix.
   subroutine print_matrix (A)
 
     integer :: i, j
@@ -182,6 +185,37 @@ contains
     enddo
 
   end subroutine print_matrix
+
+  !> Print a matrix, python style.
+  !!
+  !! @param A The matrix.
+  !! @param variable_name The name of the python variable.
+  subroutine print_matrix_python (A, variable_name)
+
+    real(kind(0d0)), dimension(:, :), intent(in) :: A
+    character(len = *), intent(in) :: variable_name
+
+    integer :: i, j
+    character(len = 2000) :: line_string
+
+    write(*, "(A,A)") variable_name, " = numpy.matrix(["
+    do i = 1, size(A, 1)
+      write(line_string, "(A)") "  ["
+      do j = 1, size(A, 2)
+        write(line_string, "(A,ES10.3)") trim(line_string), A(i, j)
+        if(j < size(A, 2)) then
+          write(line_string, "(A,A)") trim(line_string), ", "
+        endif
+      enddo
+      write(line_string, "(A,A)") trim(line_string), "]"
+      if(i < size(A, 1)) then
+        write(line_string, "(A,A)") trim(line_string), ","
+      endif
+      write(*, "(A)") trim(line_string)
+    enddo
+    write(*, "(A)") "  ])"
+
+  end subroutine print_matrix_python
 
   !> Calculate the Frobenius norm of a dense matrix.
   !!

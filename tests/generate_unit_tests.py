@@ -32,7 +32,7 @@ def main ():
 
     parser.add_argument(
             "--lapack-linker-flags",
-            nargs = "*",
+            action = "append",
             help = "Lapack linker flags")
 
     parser.add_argument(
@@ -44,7 +44,6 @@ def main ():
 
     if options.output:
         fd = open(options.output, "w")
-        print("writing to %s" % (options.output))
     else:
         import sys
         fd = sys.stdout
@@ -62,17 +61,22 @@ def main ():
         import os.path
         testbasename = os.path.splitext(os.path.basename(source))[0]
         testexename = "unit-test-" + testbasename
+        fd.write("\n")
         fd.write("# Unit test from %s\n" % (source))
         fd.write("add_executable( %s %s )\n" % (testexename, source))
-        fd.write("target_link_libraries( %s %s utilities )\n" % (testexename, options.spammpack_lib))
+        fd.write("target_link_libraries( %s\n" % (testexename))
+        fd.write("  %s\n" % (options.spammpack_lib))
+        for lib in options.lapack_libraries:
+            fd.write("  %s\n" % (lib))
+        fd.write("  utilities )\n")
         fd.write("target_include_directories( %s PRIVATE ${CMAKE_BINARY_DIR}/src )\n" % (testexename))
         fd.write("add_test( %s %s )\n" % (testbasename, testexename))
         fd.write("\n")
         fd.write("# Unit test using valgrind from %s\n" % (source))
         fd.write("if( VALGRIND )\n")
-        fd.write(("  add_test( valgrind-%s ${VALGRIND} " % (testbasename))
-                + "--error-exitcode=1 "
-                + ("${CMAKE_CURRENT_BINARY_DIR}/%s )\n" % (testexename)))
+        fd.write("  add_test( valgrind-%s ${VALGRIND}\n" % (testbasename))
+        fd.write("    --error-exitcode=1\n")
+        fd.write("    ${CMAKE_CURRENT_BINARY_DIR}/%s )\n" % (testexename))
         fd.write("endif()\n")
 
     fd.close()

@@ -50,6 +50,7 @@ module spamm_management
   PUBLIC :: SpAMM_Copy_QuTree_2_QuTree_Recur
   PUBLIC :: SpAMM_Delete_QuTree_Recur
   public :: get
+  public :: set
   public :: reset_counters
   public :: spamm_allocate_matrix_2nd_order
   public :: spamm_allocate_matrix_order_1
@@ -85,6 +86,11 @@ module spamm_management
     module procedure spamm_get_matrix_order_1
     module procedure spamm_get_matrix_2nd_order
   end interface get
+
+  !> Interface for setting matrix elements.
+  interface set
+    module procedure spamm_set_matrix_2nd_order
+  end interface set
 
   !> Interface for reset_counters functions.
   interface reset_counters
@@ -685,11 +691,21 @@ CONTAINS
 
     integer, intent(in) :: M, N
     type(spamm_matrix_2nd_order), pointer :: A
+    integer :: i
+
+    if(M /= N) then
+      LOG_FATAL("M /= N")
+      error stop
+    endif
 
     LOG_DEBUG("creating "//to_string(M)//"x"//to_string(N)//" identity matrix")
 
     A => null()
     call spamm_allocate_matrix_2nd_order(M, N, A)
+
+    do i = 1, N
+      call spamm_set_matrix_2nd_order(A, i, i, 1.0_spamm_kind)
+    enddo
 
   end function spamm_identity_matrix
 
@@ -790,7 +806,11 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A
     integer, intent(in) :: i, j
 
-    Aij = spamm_get_qutree(A%root, i, j)
+    if(associated(A)) then
+      Aij = spamm_get_qutree(A%root, i, j)
+    else
+      Aij = 0
+    endif
 
   end function spamm_get_matrix_2nd_order
 
@@ -856,6 +876,122 @@ CONTAINS
     endif
 
   end function spamm_get_qutree
+
+  !> Set a matrix element from a 2nd order SpAMM matrix.
+  !!
+  !! @param A The matrix.
+  !! @param i The row index.
+  !! @param j The column index.
+  !! @param Aij The matrix element.
+  subroutine spamm_set_matrix_2nd_order (A, i, j, Aij)
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    integer, intent(in) :: i, j
+    real(spamm_kind), intent(in) :: Aij
+
+    if(.not. associated(A)) then
+      LOG_FATAL("A is not associated")
+      error stop
+    endif
+
+    if(.not. associated(A%root)) then
+      allocate(A%root)
+      A%root%i_lower = 1
+      A%root%i_upper = A%N_padded
+      A%root%j_lower = 1
+      A%root%j_upper = A%N_padded
+    endif
+
+    call spamm_set_qutree(A%root, i, j, Aij)
+
+  end subroutine spamm_set_matrix_2nd_order
+
+  !> Set a matrix element from a spamm_types::qutree.
+  !!
+  !! @param qA A pointer to a qutree.
+  !! @param i The row index.
+  !! @param j The column index.
+  !! @param Aij The matrix element.
+  recursive subroutine spamm_set_qutree (qA, i, j, Aij)
+
+    type(qutree), pointer, intent(in) :: qA
+    integer, intent(in) :: i, j
+    real(spamm_kind), intent(in) :: Aij
+    integer :: half
+
+    if(i > qA%i_upper .or. j > qA%j_upper) then
+      LOG_FATAL("logic error, i or j above upper bound")
+      LOG_FATAL("i = "//to_string(i)//", j = "//to_string(j))
+      LOG_FATAL("i_upper = "//to_string(qA%i_upper)//", j_upper = "//to_string(qA%j_upper))
+      error stop
+    endif
+
+    if(i < qA%i_lower .or. j < qA%j_lower) then
+      LOG_FATAL("logic error, i or j below lower bound")
+      LOG_FATAL("i = "//to_string(i)//", j = "//to_string(j))
+      LOG_FATAL("i_lower = "//to_string(qA%i_lower)//", j_lower = "//to_string(qA%j_lower))
+      error stop
+    endif
+
+    if(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE .and. qA%j_upper-qA%j_lower+1 == SPAMM_BLOCK_SIZE) then
+      if(.not. allocated(qA%blok)) then
+        allocate(qA%blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+        qA%blok = 0
+      endif
+      qA%blok(i-qA%i_lower+1, j-qA%j_lower+1) = Aij
+    else
+      half = (qA%i_upper-qA%i_lower+1)/2-1
+
+      if(i <= qA%i_lower+half .and. j <= qA%j_lower+half) then
+        if(.not. associated(qA%quad11)) then
+          allocate(qA%quad11)
+          qA%quad11%i_lower = qA%i_lower
+          qA%quad11%i_upper = qA%i_lower+half
+          qA%quad11%j_lower = qA%j_lower
+          qA%quad11%j_upper = qA%j_lower+half
+        endif
+        call spamm_set_qutree(qA%quad11, i, j, Aij)
+        return
+      endif
+
+      if(i <= qA%i_lower+half .and. j >= qA%j_lower+half+1) then
+        if(.not. associated(qA%quad12)) then
+          allocate(qA%quad12)
+          qA%quad12%i_lower = qA%i_lower
+          qA%quad12%i_upper = qA%i_lower+half
+          qA%quad12%j_lower = qA%j_lower+half+1
+          qA%quad12%j_upper = qA%j_upper
+        endif
+        call spamm_set_qutree(qA%quad11, i, j, Aij)
+        return
+      endif
+
+      if(i >= qA%i_lower+half+1 .and. j <= qA%j_lower+half) then
+        if(.not. associated(qA%quad21)) then
+          allocate(qA%quad21)
+          qA%quad21%i_lower = qA%i_lower+half+1
+          qA%quad21%i_upper = qA%i_upper
+          qA%quad21%j_lower = qA%j_lower
+          qA%quad21%j_upper = qA%j_lower+half
+        endif
+        call spamm_set_qutree(qA%quad21, i, j, Aij)
+        return
+      endif
+
+      if(i >= qA%i_lower+half+1 .and. j >= qA%j_lower+half+1) then
+        if(.not. associated(qA%quad22)) then
+          allocate(qA%quad22)
+          qA%quad22%i_lower = qA%i_lower+half+1
+          qA%quad22%i_upper = qA%i_upper
+          qA%quad22%j_lower = qA%j_lower+half+1
+          qA%quad22%j_upper = qA%j_upper
+        endif
+        call spamm_set_qutree(qA%quad22, i, j, Aij)
+        return
+      endif
+    endif
+
+  end subroutine spamm_set_qutree
 
   !> Allocate a 1st order SpAMM matrix.
   !!

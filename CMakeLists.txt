@@ -141,6 +141,11 @@ if( LAPACK_FOUND )
   set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLAPACK_FOUND" )
 endif()
 
+include( FindPythonInterp )
+if( NOT PYTHONINTERP_FOUND )
+  message( FATAL "Need a working python interpreter" )
+endif()
+
 if( NOT DEBUG_LEVEL )
   set( DEBUG_LEVEL 0
     CACHE STRING "The debugging output verbosity"
