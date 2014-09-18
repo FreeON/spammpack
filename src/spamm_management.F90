@@ -144,9 +144,10 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Copy_QuTree_2_BiTree
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Copy QuTree into another QuTree: C <- A
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Copy bitree into another QuTree: @f$ C \leftarrow A @f$.
+  !!
+  !! @param bA Vector A.
+  !! @param bC Vector C.
   SUBROUTINE SpAMM_Copy_BiTree_2_BiTree(bA,bC)
 
     TYPE(BiTree), POINTER :: bA,bC
@@ -239,9 +240,9 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree
 
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! Delete a BiTree: A <- NULL()
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  !> Delete a BiTree: @f$ A \leftarrow 0 @f$.
+  !!
+  !! @param bA The bitree.
   SUBROUTINE SpAMM_Allocate_Full_BiTree(bA)
 
     TYPE(BiTree),POINTER :: bA
@@ -304,6 +305,11 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur
 
+  !> Recursive copy of bitree to bitree
+  !!
+  !! @param bA Vector A.
+  !! @param bC Vector C.
+  !! @param depth The tree depth.
   RECURSIVE SUBROUTINE SpAMM_Copy_BiTree_2_BiTree_Recur(bA,bC,Depth)
 
     TYPE(BiTree), POINTER  :: bA,bC
