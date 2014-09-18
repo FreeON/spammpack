@@ -38,10 +38,12 @@ set( UNIT_TESTS
   )
 
 if( LAPACK_FOUND )
-  set( UNIT_LAPACK
-    --lapack-linker-flags "\"${LAPACK_LINKER_FLAGS}\""
-    --lapack-libraries "\"${LAPACK_LIBRARIES}\""
-    )
+  foreach( ARG ${LAPACK_LINKER_FLAGS} )
+    set( UNIT_LAPACK "${UNIT_LAPACK} --lapack-linker-flags \"${ARG}\"" )
+  endforeach()
+  foreach( ARG ${LAPACK_LIBRARIES} )
+    set( UNIT_LAPACK "${UNIT_LAPACK} --lapack-libraries \"${ARG}\"" )
+  endforeach()
 endif()
 
 execute_process( COMMAND
