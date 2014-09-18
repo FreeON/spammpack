@@ -55,6 +55,17 @@ def main ():
         fd.write(" %s" % (arg))
     fd.write("\n")
     fd.write("#\n")
+    fd.write("# lapack-linker-flags:")
+    for arg in options.lapack_linker_flags:
+        fd.write(" %s" % (arg))
+    fd.write("\n")
+    fd.write("#\n")
+    fd.write("# lapack-libraries:")
+    for arg in options.lapack_libraries:
+        fd.write(" %s" % (arg))
+    fd.write("\n")
+    fd.write("#\n")
+
     for source in options.SOURCE:
         import os.path
         testbasename = os.path.splitext(os.path.basename(source))[0]
