@@ -42,7 +42,7 @@ program test
   call print_matrix_python(S_dense, "S")
 
   S => spamm_convert_dense_to_matrix_2nd_order(S_dense)
-  X => spamm_inverse_schulz(S)
+  X => spamm_inverse_sqrt_schulz(S)
 
 #ifdef LAPACK_FOUND
   call dsyevd("V", "U", N, S_dense, N, eval, work, LWORK, iwork, LIWORK, info)

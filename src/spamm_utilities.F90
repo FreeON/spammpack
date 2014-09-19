@@ -153,4 +153,33 @@ contains
 
   end subroutine write_log
 
+  !> Print a matrix.
+  !!
+  !! @param A The matrix.
+  !! @param matrix_name The option label.
+  subroutine print_spamm_2nd_order (A, matrix_name)
+
+    use spamm_types
+    use spamm_convert
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    character(len = *), intent(in), optional :: matrix_name
+    real(spamm_kind), dimension(:, :), allocatable :: A_dense
+    character(len = 2000) :: format_string
+    integer :: i, j
+
+    call spamm_convert_order_2_to_dense(A, A_dense)
+
+    write(format_string, "(A)") "("//to_string(size(A_dense, 2))//"ES10.3)"
+
+    if(present(matrix_name)) then
+      write(*, "(A)") "matrix "//trim(matrix_name)//" ="
+    endif
+
+    do i = 1, size(A_dense, 1)
+      write(*, format_string) (A_dense(i, j), j = 1, size(A_dense, 2))
+    enddo
+
+  end subroutine print_spamm_2nd_order
+
 end module spamm_utilities

@@ -43,25 +43,83 @@ contains
   !! @param S The matrix.
   !! @param tolerance The SpAMM tolerance.
   !!
-  !! @return The inverse square root of the matrix, @f$ S^{-1/2} @f$.
-  function spamm_inverse_schulz (S, tolerance) result (X)
+  !! @return The inverse square root of the matrix, @f$ Z \leftarrow S^{-1/2} @f$.
+  function spamm_inverse_sqrt_schulz (S, tolerance) result (Z)
 
-    use spamm_types
+    use spamm_algebra
     use spamm_management
+    use spamm_types
+    use spamm_utilities
 
     type(spamm_matrix_2nd_order), pointer, intent(in) :: S
     real(spamm_kind), intent(in), optional :: tolerance
-    type(spamm_matrix_2nd_order), pointer :: X
+    type(spamm_matrix_2nd_order), pointer :: X, Y, Z, T
 
-    type(spamm_matrix_2nd_order), pointer :: Y, Z
+    integer, parameter :: max_iterations = 5
+    integer :: iteration
+    real(spamm_kind) :: lambda, error(2)
 
-    ! Z_0 = I
-    ! Y_0 = S
+    ! Z_0 <- I
     Z => spamm_identity_matrix(S%M, S%N)
-    call copy(S, Y)
+    call print_spamm_2nd_order(Z, "Z_0")
 
+    ! X_0 <- 0
     X => null()
 
-  end function spamm_inverse_schulz
+    ! Y_0 <- S
+    Y => null()
+    call copy(S, Y)
+    call print_spamm_2nd_order(Y, "Y_0")
+
+    ! Something close to ideal scaling.
+    lambda = 1/S%norm
+    LOG_DEBUG("lambda = "//to_string(lambda))
+
+    ! Initialize error.
+    error = 1
+
+    do iteration = 1, max_iterations
+      ! X_{k} <- \lambda * Y_{k} * Z_{k}
+      call multiply(Y, Z, X, tolerance)
+      call print_spamm_2nd_order(X, "X_"//to_string(iteration))
+      call multiply(X, lambda)
+      call print_spamm_2nd_order(X, "X_"//to_string(iteration))
+
+      ! Error <- ||X_{k} - I||_{F}
+      T => spamm_identity_matrix(S%M, S%N)
+      call add(T, X, -1.0_spamm_kind, 1.0_spamm_kind)
+      error(2) = error(1)
+      error(1) = T%norm
+      call delete(T)
+
+      LOG_DEBUG(to_string(iteration)//": error = "//to_string(error(1)))
+
+      if(error(1)/error(2) < 1) then
+        exit
+      endif
+
+      ! Second order: T_{k} <- 1/2*(3*I-X_{k})
+      T => spamm_identity_matrix(S%M, S%N)
+      call add(T, X, 3.0_spamm_kind, -1.0_spamm_kind)
+      call multiply(T, 0.5_spamm_kind)
+
+      ! Z_{k+1} <- Z_{k}*T_{k}
+      call multiply(Z, T, Z, tolerance)
+
+      ! Y_{k+1} <- T_{k}*Y_{k}
+      call multiply(T, Y, Y, tolerance)
+
+      ! Free up T.
+      call delete(T)
+    enddo
+
+    ! S^{-1/2} <- \sqrt{\lambda} Z_{k}
+    call multiply(Z, sqrt(lambda))
+
+    call delete(X)
+    call delete(Y)
+    call delete(T)
+
+  end function spamm_inverse_sqrt_schulz
 
 end module spamm_inverse

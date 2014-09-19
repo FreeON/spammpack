@@ -116,6 +116,8 @@ CONTAINS
       call delete(B)
     endif
 
+    LOG_DEBUG("copying matrix")
+
     B => null()
     call spamm_allocate_matrix_2nd_order(A%M, A%N, B)
     call spamm_copy_qutree_2_qutree_recur(A%root, B%root)
@@ -182,8 +184,10 @@ CONTAINS
 
     type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
 
-    call spamm_delete_qutree(A%root)
-    deallocate(A)
+    if(associated(A)) then
+      call spamm_delete_qutree(A%root)
+      deallocate(A)
+    endif
 
   end subroutine spamm_delete_matrix_2nd_order
 
@@ -270,8 +274,7 @@ CONTAINS
       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
-    call write_log(DEBUG, "q: "//to_string(qA%i_lower)//" " &
-      //to_string(qA%i_upper)//" "//to_string(qA%j_lower)//" "//to_string(qA%j_upper))
+    LOG_DEBUG(to_string(qA))
 
     qC%Norm = qA%Norm
 

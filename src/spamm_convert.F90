@@ -46,6 +46,7 @@ MODULE SpAMM_CONVERT
 
   PUBLIC :: spamm_convert_dense_to_matrix_2nd_order
   public :: spamm_convert_dense_to_order_1
+  public :: spamm_convert_order_2_to_dense
 
   CONTAINS
 
@@ -340,5 +341,31 @@ MODULE SpAMM_CONVERT
     LOG_INFO("done converting")
 
   end function spamm_convert_dense_to_order_1
+
+  !> Convert a SpAMM matrix 2nd order to a dense matrix.
+  !!
+  !! @param A The SpAMM matrix.
+  !! @param A_dense The dense matrix.
+  subroutine spamm_convert_order_2_to_dense (A, A_dense)
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    real(spamm_kind), dimension(:, :), allocatable, intent(inout) :: A_dense
+    integer :: i, j
+
+    LOG_DEBUG("printing matrix")
+
+    if(allocated(A_dense)) then
+      deallocate(A_dense)
+    endif
+
+    allocate(A_dense(A%M, A%N))
+
+    do i = 1, A%M
+      do j = 1, A%N
+        A_dense(i, j) = get(A, i, j)
+      enddo
+    enddo
+
+  end subroutine spamm_convert_order_2_to_dense
 
 END MODULE SpAMM_CONVERT

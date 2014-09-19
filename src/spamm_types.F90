@@ -101,7 +101,7 @@ module spamm_types
     !! stored.
     integer :: depth = -1
 
-    !> The Frobenious norm.
+    !> The Frobenius norm.
     real(spamm_kind) :: norm = 0
 
     !> The root of the binary tree.
@@ -114,6 +114,7 @@ module spamm_types
 
   !> Binary tree data structure.
   TYPE BiTree
+
     !> The norm.
     REAL(SpAMM_KIND) :: Norm
 
@@ -134,6 +135,7 @@ module spamm_types
 
     !> The vector data.
     REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
+
   END TYPE BiTree
 
   !> Matrix (2nd order) type.
@@ -149,7 +151,7 @@ module spamm_types
     !! stored.
     integer :: depth = -1
 
-    !> The Frobenious norm.
+    !> The Frobenius norm.
     REAL(SpAMM_KIND) :: norm = 0
 
     !> The padded matrix dimension. Since the padded matrix is always square, we only store one number here.
@@ -216,6 +218,7 @@ module spamm_types
 
   !> A type for performance measurements.
   TYPE Stats
+
     !> The time.
     REAL(SpAMM_DOUBLE) :: Time
 
@@ -224,6 +227,7 @@ module spamm_types
 
     !> The name of a function.
     CHARACTER(LEN=50)  :: Routine
+
   END TYPE Stats
 
 CONTAINS

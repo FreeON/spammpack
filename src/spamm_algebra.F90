@@ -247,7 +247,7 @@ CONTAINS
   !! @param qB [in] Pointer to matrix B.
   !! @param alpha Factor @f$ \alpha @f$.
   !! @param beta Factor @f$ \beta @f$.
-  SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace(qA,qB,Alpha,Beta)
+  SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace (qA, qB, Alpha, Beta)
 
     TYPE(QuTree), POINTER, INTENT(INOUT) :: qA
     TYPE(QuTree), POINTER, INTENT(IN) :: qB
@@ -265,6 +265,9 @@ CONTAINS
     ELSE
       InPlace_Beta=SpAMM_One
     ENDIF
+
+    LOG_DEBUG("Adding "//to_string(inplace_alpha)//"*A + "//to_string(inplace_beta)//"*B")
+
     TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA,qB)
     CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA, qB, InPlace_Alpha, InPlace_Beta)
