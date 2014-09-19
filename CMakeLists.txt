@@ -146,31 +146,33 @@ if( NOT PYTHONINTERP_FOUND )
   message( FATAL "Need a working python interpreter" )
 endif()
 
-if( NOT DEBUG_LEVEL )
-  set( DEBUG_LEVEL 0
-    CACHE STRING "The debugging output verbosity"
-    )
+if( NOT SPAMM_DEBUG_LEVEL )
+  set( SPAMM_DEBUG_LEVEL 0 )
 else()
-  if( DEBUG_LEVEL LESS 0 )
-    message( FATAL_ERROR "DEBUG_LEVEL has to be >= 0" )
+  if( SPAMM_DEBUG_LEVEL LESS 0 )
+    message( FATAL_ERROR "SPAMM_DEBUG_LEVEL has to be >= 0" )
   endif()
-  message( STATUS "Setting DEBUG_LEVEL to ${DEBUG_LEVEL}" )
+  message( STATUS "Setting SPAMM_DEBUG_LEVEL to ${SPAMM_DEBUG_LEVEL}" )
 endif()
-set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DDEBUG_LEVEL=${DEBUG_LEVEL}" )
 
-if( DEBUG_LEVEL GREATER 0 )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_INFO='write (*, *)'" )
+set( SPAMM_DEBUG_LEVEL ${SPAMM_DEBUG_LEVEL}
+  CACHE STRING "The debugging output verbosity (valid range 0 <= LEVEL <= 2)"
+  )
+set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DSPAMM_DEBUG_LEVEL=${SPAMM_DEBUG_LEVEL}" )
+
+if( SPAMM_DEBUG_LEVEL GREATER 0 )
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_INFO=\"write (*, '(A)')\"" )
 else()
   set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_INFO=!" )
 endif()
 
-if( DEBUG_LEVEL GREATER 1 )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_DEBUG='write (*, *)'" )
+if( SPAMM_DEBUG_LEVEL GREATER 1 )
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_DEBUG=\"write (*, '(A)')\"" )
 else()
   set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_DEBUG=!" )
 endif()
 
-set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_FATAL='write (*, *)'" )
+set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_FATAL=\"write (*, '(A)')\"" )
 
 # For now hard-coded.
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTIMER_GETTIMEOFDAY" )

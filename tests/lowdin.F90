@@ -14,7 +14,6 @@ program test
   real(kind(0d0)), dimension(N) :: eval
   real(kind(0d0)), dimension(N, N) :: evec
   real(kind(0d0)), dimension(LWORK) :: work
-  real(kind(0d0)) :: vector_norm
   integer, dimension(LIWORK) :: iwork
   integer :: info
   integer :: i, j, k
@@ -79,5 +78,8 @@ program test
     error stop
   endif
 #endif
+
+  call delete(S)
+  call delete(X)
 
 end program test

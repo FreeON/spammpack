@@ -895,6 +895,8 @@ CONTAINS
     integer, intent(in) :: i, j
     real(spamm_kind), intent(in) :: Aij
 
+    LOG_DEBUG("setting matrix element A("//to_string(i)//","//to_string(j)//")")
+
     if(.not. associated(A)) then
       LOG_FATAL("A is not associated")
       error stop
@@ -910,6 +912,8 @@ CONTAINS
 
     call spamm_set_qutree(A%root, i, j, Aij)
 
+    LOG_DEBUG("done setting")
+
   end subroutine spamm_set_matrix_2nd_order
 
   !> Set a matrix element from a spamm_types::qutree.
@@ -924,6 +928,9 @@ CONTAINS
     integer, intent(in) :: i, j
     real(spamm_kind), intent(in) :: Aij
     integer :: half
+
+    LOG_DEBUG("qutree setting matrix element A("//to_string(i)//","//to_string(j)//")")
+    LOG_DEBUG("  "//to_string(qA))
 
     if(i > qA%i_upper .or. j > qA%j_upper) then
       LOG_FATAL("logic error, i or j above upper bound")
@@ -941,61 +948,72 @@ CONTAINS
 
     if(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE .and. qA%j_upper-qA%j_lower+1 == SPAMM_BLOCK_SIZE) then
       if(.not. allocated(qA%blok)) then
+        LOG_DEBUG("allocating new blok")
         allocate(qA%blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
         qA%blok = 0
       endif
+      LOG_DEBUG("setting blok("// &
+        to_string(i-qA%i_lower+1)//","// &
+        to_string(j-qA%j_lower+1)//")")
       qA%blok(i-qA%i_lower+1, j-qA%j_lower+1) = Aij
     else
       half = (qA%i_upper-qA%i_lower+1)/2-1
 
       if(i <= qA%i_lower+half .and. j <= qA%j_lower+half) then
         if(.not. associated(qA%quad11)) then
+          LOG_DEBUG("allocating quad11")
           allocate(qA%quad11)
           qA%quad11%i_lower = qA%i_lower
           qA%quad11%i_upper = qA%i_lower+half
           qA%quad11%j_lower = qA%j_lower
           qA%quad11%j_upper = qA%j_lower+half
         endif
+        LOG_DEBUG("going down quad11")
         call spamm_set_qutree(qA%quad11, i, j, Aij)
         return
-      endif
 
-      if(i <= qA%i_lower+half .and. j >= qA%j_lower+half+1) then
+      else if(i <= qA%i_lower+half .and. j >= qA%j_lower+half+1) then
         if(.not. associated(qA%quad12)) then
+          LOG_DEBUG("allocating quad12")
           allocate(qA%quad12)
           qA%quad12%i_lower = qA%i_lower
           qA%quad12%i_upper = qA%i_lower+half
           qA%quad12%j_lower = qA%j_lower+half+1
           qA%quad12%j_upper = qA%j_upper
         endif
-        call spamm_set_qutree(qA%quad11, i, j, Aij)
+        LOG_DEBUG("going down quad12")
+        call spamm_set_qutree(qA%quad12, i, j, Aij)
         return
-      endif
 
-      if(i >= qA%i_lower+half+1 .and. j <= qA%j_lower+half) then
+      else if(i >= qA%i_lower+half+1 .and. j <= qA%j_lower+half) then
         if(.not. associated(qA%quad21)) then
+          LOG_DEBUG("allocating quad21")
           allocate(qA%quad21)
           qA%quad21%i_lower = qA%i_lower+half+1
           qA%quad21%i_upper = qA%i_upper
           qA%quad21%j_lower = qA%j_lower
           qA%quad21%j_upper = qA%j_lower+half
         endif
+        LOG_DEBUG("going down quad21")
         call spamm_set_qutree(qA%quad21, i, j, Aij)
         return
-      endif
 
-      if(i >= qA%i_lower+half+1 .and. j >= qA%j_lower+half+1) then
+      else if(i >= qA%i_lower+half+1 .and. j >= qA%j_lower+half+1) then
         if(.not. associated(qA%quad22)) then
+          LOG_DEBUG("allocating quad22")
           allocate(qA%quad22)
           qA%quad22%i_lower = qA%i_lower+half+1
           qA%quad22%i_upper = qA%i_upper
           qA%quad22%j_lower = qA%j_lower+half+1
           qA%quad22%j_upper = qA%j_upper
         endif
+        LOG_DEBUG("going down quad22")
         call spamm_set_qutree(qA%quad22, i, j, Aij)
         return
       endif
     endif
+
+    LOG_DEBUG("going back up")
 
   end subroutine spamm_set_qutree
 
@@ -1101,6 +1119,8 @@ CONTAINS
   subroutine spamm_reset_counters_2nd_order (A)
 
     type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
+
+    LOG_DEBUG("resetting counters")
 
     A%number_operations = 0
     A%number_nonzeros = 0

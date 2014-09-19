@@ -34,7 +34,7 @@
 !! @author Nicolas Bock nicolas.bock@freeon.org
 MODULE SpAMM_CONVERT
 
-  USE SpAMM_ALGEBRA
+  use spamm_algebra
   use spamm_globals
   use spamm_management
   use spamm_types

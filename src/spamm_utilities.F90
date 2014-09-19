@@ -43,6 +43,7 @@ module spamm_utilities
   interface to_string
     module procedure int_to_string
     module procedure double_to_string
+    module procedure bitree_to_string
   end interface to_string
 
 contains
@@ -80,6 +81,58 @@ contains
 
   end function double_to_string
 
+  !> Convert a bitree node to a string.
+  !!
+  !! @param q The bitree node.
+  !!
+  !! @return The string representation.
+  function bitree_to_string (q) result(str_q)
+
+    use spamm_types
+
+    type(qutree), pointer, intent(in) :: q
+    character(len = 200) :: temp
+    character(len = :), allocatable :: str_q
+
+    if(associated(q)) then
+      write(temp, "(A)") "q["// &
+        to_string(q%i_lower)//":"// &
+        to_string(q%i_upper)//","// &
+        to_string(q%j_lower)//":"// &
+        to_string(q%j_upper)//"]"
+
+      if(allocated(q%blok)) then
+        write(temp, "(A)") trim(temp)//", blok["// &
+          int_to_string(size(q%blok, 1))//","// &
+          int_to_string(size(q%blok, 2))//"]"
+      else
+        write(temp, "(A)") trim(temp)//", block not allocated"
+      endif
+
+      if(associated(q%quad11)) then
+        write(temp, "(A)") trim(temp)//", quad11"
+      endif
+
+      if(associated(q%quad12)) then
+        write(temp, "(A)") trim(temp)//", quad12"
+      endif
+
+      if(associated(q%quad21)) then
+        write(temp, "(A)") trim(temp)//", quad21"
+      endif
+
+      if(associated(q%quad22)) then
+        write(temp, "(A)") trim(temp)//", quad22"
+      endif
+
+    else
+      write(temp, "(A)") "q not associated"
+    endif
+
+    str_q = trim(adjustl(temp))
+
+  end function bitree_to_string
+
   !> Print a log message.
   !!
   !! @param level The message level. The global debug_level has to be greater or equal to the level.
@@ -89,7 +142,7 @@ contains
     integer, intent(in) :: level
     character(len = *), intent(in) :: message
 
-    if(DEBUG_LEVEL >= level) then
+    if(SPAMM_DEBUG_LEVEL >= level) then
       if(level < 0) then
         write(*, "(A)") "[FATAL] "//message
         error stop
