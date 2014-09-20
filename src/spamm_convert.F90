@@ -31,8 +31,8 @@
 !! OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
-!! @author Nicolas Bock nicolas.bock@freeon.org
-MODULE SpAMM_CONVERT
+!! @author Nicolas Bock nicolasbock@freeon.org
+module spamm_convert
 
   use spamm_algebra
   use spamm_globals
@@ -41,12 +41,6 @@ MODULE SpAMM_CONVERT
   use spamm_utilities
 
   IMPLICIT NONE
-
-  PRIVATE
-
-  PUBLIC :: spamm_convert_dense_to_matrix_2nd_order
-  public :: spamm_convert_dense_to_order_1
-  public :: spamm_convert_order_2_to_dense
 
   CONTAINS
 
@@ -368,4 +362,32 @@ MODULE SpAMM_CONVERT
 
   end subroutine spamm_convert_order_2_to_dense
 
-END MODULE SpAMM_CONVERT
+  !> Print a matrix.
+  !!
+  !! @param A The matrix.
+  !! @param matrix_name The optional label.
+  subroutine print_spamm_2nd_order (A, matrix_name)
+
+    use spamm_utilities
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    character(len = *), intent(in), optional :: matrix_name
+    real(spamm_kind), dimension(:, :), allocatable :: A_dense
+    character(len = 2000) :: format_string
+    integer :: i, j
+
+    call spamm_convert_order_2_to_dense(A, A_dense)
+
+    write(format_string, "(A)") "("//to_string(size(A_dense, 2))//"ES10.3)"
+
+    if(present(matrix_name)) then
+      write(*, "(A)") "matrix "//trim(matrix_name)//" ="
+    endif
+
+    do i = 1, size(A_dense, 1)
+      write(*, format_string) (A_dense(i, j), j = 1, size(A_dense, 2))
+    enddo
+
+  end subroutine print_spamm_2nd_order
+
+end module spamm_convert

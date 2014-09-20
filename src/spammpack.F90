@@ -55,7 +55,7 @@
 !! OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
-!! @author Nicolas Bock nicolas.bock@freeon.org
+!! @author Nicolas Bock nicolasbock@freeon.org
 
 !> The main module of spammpack. Only this module needs to be "use"'ed.
 !!
@@ -90,7 +90,7 @@
 !! OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
-!! @author Nicolas Bock nicolas.bock@freeon.org
+!! @author Nicolas Bock nicolasbock@freeon.org
 MODULE spammpack
 
   use spamm_algebra

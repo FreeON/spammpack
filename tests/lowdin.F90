@@ -5,6 +5,15 @@ program test
 
   implicit none
 
+  interface
+    subroutine dsyevd ( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, IWORK, LIWORK, INFO )
+      CHARACTER          JOBZ, UPLO
+      INTEGER            INFO, LDA, LIWORK, LWORK, N
+      INTEGER            IWORK( * )
+      DOUBLE PRECISION   A( LDA, * ), W( * ), WORK( * )
+    end subroutine dsyevd
+  end interface
+
   integer, parameter :: N = 5
   integer, parameter :: LWORK = 1+6*N+2*N**2
   integer, parameter :: LIWORK = 3+5*N

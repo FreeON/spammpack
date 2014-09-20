@@ -31,7 +31,7 @@
 !! OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
-!! @author Nicolas Bock nicolas.bock@freeon.org
+!! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_inverse
 
   implicit none
@@ -47,6 +47,7 @@ contains
   function spamm_inverse_sqrt_schulz (S, tolerance) result (Z)
 
     use spamm_algebra
+    use spamm_convert
     use spamm_management
     use spamm_types
     use spamm_utilities

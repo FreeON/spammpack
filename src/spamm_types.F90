@@ -31,7 +31,7 @@
 !! OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
-!! @author Nicolas Bock nicolas.bock@freeon.org
+!! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_types
 
   !$ USE OMP_LIB

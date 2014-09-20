@@ -31,7 +31,7 @@
 !! OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
-!! @author Nicolas Bock nicolas.bock@freeon.org
+!! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_management
 
   use spamm_types
@@ -955,9 +955,7 @@ CONTAINS
         allocate(qA%blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
         qA%blok = 0
       endif
-      LOG_DEBUG("setting blok("// &
-        to_string(i-qA%i_lower+1)//","// &
-        to_string(j-qA%j_lower+1)//")")
+      LOG_DEBUG("setting blok("//to_string(i-qA%i_lower+1)//","//to_string(j-qA%j_lower+1)//")")
       qA%blok(i-qA%i_lower+1, j-qA%j_lower+1) = Aij
     else
       half = (qA%i_upper-qA%i_lower+1)/2-1
