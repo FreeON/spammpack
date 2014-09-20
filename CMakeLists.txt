@@ -69,16 +69,26 @@ else()
 endif()
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-none -Wimplicit-interface -Wimplicit-procedure" )
+  set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3" )
+  set( CMAKE_Fortran_FLAGS_DEBUG
+    "${CMAKE_Fortran_FLAGS_DEBUG} -fvar-tracking-assignments -fcheck=all" )
+  set( CMAKE_Fortran_FLAGS_DEBUG
+    "${CMAKE_Fortran_FLAGS_DEBUG} -Wall -ffree-line-length-none" )
+  set( CMAKE_Fortran_FLAGS_DEBUG
+    "${CMAKE_Fortran_FLAGS_DEBUG} -Wimplicit-interface -Wimplicit-procedure" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-O2 -ffree-line-length-none" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
-  set( CMAKE_Fortran_FLAGS_DEBUG   "-stand f08 -O0 -g -extend-source -debug all -check all -warn unused -traceback" )
+  set( CMAKE_Fortran_FLAGS_DEBUG "-stand f08 -O0" )
+  set( CMAKE_Fortran_FLAGS_DEBUG
+    "${CMAKE_Fortran_FLAGS_DEBUG} -g -extend-source -debug all -check all" )
+  set( CMAKE_Fortran_FLAGS_DEBUG
+    "${CMAKE_Fortran_FLAGS_DEBUG} -warn unused -traceback" )
 else()
   message( STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}" )
 endif()
 
 if( NOT CMAKE_BUILD_TYPE )
-  set( CMAKE_BUILD_TYPE Release )
+  set( CMAKE_BUILD_TYPE release )
   message( STATUS
     "Setting build type to ${CMAKE_BUILD_TYPE}. Known build types "
     "are Debug and Release, which can be specified using the variable "
@@ -86,7 +96,9 @@ if( NOT CMAKE_BUILD_TYPE )
     )
 endif()
 
-if( CMAKE_BUILD_TYPE STREQUAL Debug )
+string( TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE )
+
+if( CMAKE_BUILD_TYPE STREQUAL debug )
   message( STATUS "C compiler flags: ${CMAKE_C_FLAGS_DEBUG}" )
   message( STATUS "Fortran compiler flags: ${CMAKE_Fortran_FLAGS_DEBUG}" )
 endif()
