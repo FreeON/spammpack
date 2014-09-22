@@ -125,20 +125,20 @@ CONTAINS
     INTEGER              :: I,CG
     REAL(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD
     INTEGER, PARAMETER   :: NCG=1000
-    TYPE(qutree), POINTER :: A
+    TYPE(qutree), POINTER, intent(in) :: A
     TYPE(BiTree),POINTER :: x=>NULL(),g=>NULL(),h=>NULL(),Ax=>NULL(),Ah=>NULL(),xOld=>NULL(),gOld=>NULL(),hOld=>NULL()
     REAL(SpAMM_KIND)     :: beta,LambdaPlus,LambdaMins,RQIPlus,RQIMins,omega, &
       xx,hh,xh,hx,xAx,xAh,hAx,hAh,xnorm
     REAL(SpAMM_KIND)     :: RQIMin,RQIMax
 
-    CALL New(x)
-    CALL New(g)
-    CALL New(h)
-    CALL New(Ax)
-    CALL New(Ah)
-    CALL New(xOld)
-    CALL New(gOld)
-    CALL New(hOld)
+    CALL New(x, A%i_lower, A%i_upper)
+    CALL New(g, A%i_lower, A%i_upper)
+    CALL New(h, A%i_lower, A%i_upper)
+    CALL New(Ax, A%i_lower, A%i_upper)
+    CALL New(Ah, A%i_lower, A%i_upper)
+    CALL New(xOld, A%i_lower, A%i_upper)
+    CALL New(gOld, A%i_lower, A%i_upper)
+    CALL New(hOld, A%i_lower, A%i_upper)
 
     DO I=1,2
       IF(I==1)THEN

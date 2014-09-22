@@ -175,7 +175,7 @@ module spamm_convert
 
     if(.not. associated(qA)) then
       LOG_DEBUG("allocating new node")
-      call newqunode(qA, i_lower, i_upper, j_lower, j_upper)
+      call newqunode(qA, i_lower, j_lower, i_upper, j_upper)
     endif
 
     LOG_DEBUG(to_string(qA))

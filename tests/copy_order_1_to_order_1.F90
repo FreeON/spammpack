@@ -1,4 +1,4 @@
-test program
+program test
 
   use spammpack
 
@@ -6,4 +6,4 @@ test program
 
   error stop
 
-end test program
+end program test

@@ -44,6 +44,7 @@ module spamm_utilities
     module procedure int_to_string
     module procedure double_to_string
     module procedure bitree_to_string
+    module procedure qutree_to_string
   end interface to_string
 
 contains
@@ -90,6 +91,47 @@ contains
 
     use spamm_types
 
+    type(bitree), pointer, intent(in) :: q
+    character(len = 200) :: temp
+    character(len = :), allocatable :: str_q
+
+    if(associated(q)) then
+      write(temp, "(A)") "b["// &
+        to_string(q%i_lower)//":"// &
+        to_string(q%i_upper)//"]"
+
+      if(allocated(q%vect)) then
+        write(temp, "(A)") trim(temp)//", vect["// &
+          int_to_string(size(q%vect, 1))//"]"
+      else
+        write(temp, "(A)") trim(temp)//", vect not allocated"
+      endif
+
+      if(associated(q%sect1)) then
+        write(temp, "(A)") trim(temp)//", sect1"
+      endif
+
+      if(associated(q%sect2)) then
+        write(temp, "(A)") trim(temp)//", sect2"
+      endif
+
+    else
+      write(temp, "(A)") "q not associated"
+    endif
+
+    str_q = trim(adjustl(temp))
+
+  end function bitree_to_string
+
+  !> Convert a qutree node to a string.
+  !!
+  !! @param q The qutree node.
+  !!
+  !! @return The string representation.
+  function qutree_to_string (q) result(str_q)
+
+    use spamm_types
+
     type(qutree), pointer, intent(in) :: q
     character(len = 200) :: temp
     character(len = :), allocatable :: str_q
@@ -131,7 +173,7 @@ contains
 
     str_q = trim(adjustl(temp))
 
-  end function bitree_to_string
+  end function qutree_to_string
 
   !> Print a log message.
   !!

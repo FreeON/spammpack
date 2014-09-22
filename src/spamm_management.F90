@@ -56,6 +56,7 @@ module spamm_management
   public :: spamm_allocate_matrix_order_1
   public :: spamm_identity_matrix 
   public :: spamm_zero_matrix
+  public :: newbinode
 
   !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
@@ -63,6 +64,7 @@ module spamm_management
     MODULE PROCEDURE SpAMM_Copy_QuTree_2_BiTree
     MODULE PROCEDURE SpAMM_Copy_BiTree_2_BiTree
     module procedure spamm_copy_2nd_order_to_2nd_order
+    module procedure spamm_copy_2nd_order_to_order_1
   END INTERFACE
 
   !> Interface for deletion (deallocation) of SpAMM objects.
@@ -357,6 +359,36 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Copy_BiTree_2_BiTree_Recur
 
+  !> Copy a column from a matrix to a vector.
+  !!
+  !! @param A The matrix.
+  !! @param j The column index.
+  !! @param V The vector.
+  subroutine spamm_copy_2nd_order_to_order_1 (A, j, V)
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    integer, intent(in) :: j
+    type(spamm_matrix_order_1), pointer, intent(inout) :: V
+
+    if(.not. associated(A)) then
+      return
+    endif
+
+    if(associated(V)) then
+      if(V%N /= A%M) then
+        LOG_FATAL("dimension mismatch")
+        error stop
+      endif
+    else
+      call spamm_allocate_matrix_order_1(A%M, V)
+    endif
+
+    LOG_DEBUG("copying column "//to_string(j)//" from A to V")
+
+    call spamm_copy_qutree_2_bitree_recur(A%root, V%root, j)
+
+  end subroutine spamm_copy_2nd_order_to_order_1
+
   !> Copy quadtree column to bitree.
   !!
   !! @param qA Pointer to quadtree.
@@ -367,13 +399,7 @@ CONTAINS
     TYPE(QuTree), POINTER, intent(in) :: qA
     TYPE(BiTree), POINTER, intent(inout) :: bC
     integer, intent(in) :: j
-
     INTEGER               :: half
-    INTEGER,DIMENSION(2)  :: Cols,Col_00_10,Col_01_11
-
-    integer :: depth
-
-    depth = 0
 
     IF(.NOT.ASSOCIATED(qA)) RETURN
 
@@ -381,77 +407,69 @@ CONTAINS
       CALL NewBiNode(bC, qA%i_lower, qA%i_upper)
     endif
 
+    LOG_DEBUG("A: "//to_string(qA))
+    LOG_DEBUG("V: "//to_string(BC))
+
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       if(allocated(qA%blok)) then
         IF(.NOT. ALLOCATED(bC%Vect)) then
           ALLOCATE(bC%Vect(SPAMM_BLOCK_SIZE))
         endif
-        bC%Vect = qA%Blok(:, j-qA%i_lower+1)
+        bC%Vect = qA%Blok(:, j-qA%j_lower+1)
       else
         bC%Vect = SpAMM_Zero
       endif
     ELSE
-      half = (Cols(2)-Cols(1))/2
-      Col_00_10 = (/ Cols(1), Cols(1)+half /)
-      Col_01_11 = (/ Cols(1)+half+1, Cols(2) /)
-
-      IF(j <= qA%i_lower+half) THEN
+      half = (qA%j_upper-qA%j_lower+1)/2-1
+      if(j <= qA%i_lower+half) then
+        LOG_DEBUG("descending upper half")
         IF(ASSOCIATED(qA%Quad11))THEN
-          !$OMP TASK UNTIED SHARED(qA,bC) &
-          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          !$OMP TASK UNTIED SHARED(qA,bC)
           CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad11, bC%sect1, j)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%sect1))THEN
-          !$OMP TASK UNTIED SHARED(bC) &
-          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          !$OMP TASK UNTIED SHARED(bC)
           CALL SpAMM_Delete_BiTree_Recur(bC%sect1)
           !$OMP END TASK
-          !$OMP TASKWAIT
           DEALLOCATE(bC%sect1)
         ENDIF
 
         IF(ASSOCIATED(qA%Quad21))THEN
-          !$OMP TASK UNTIED SHARED(qA,bC) &
-          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          !$OMP TASK UNTIED SHARED(qA,bC)
           CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad21, bC%sect2, j)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%sect2))THEN
-          !$OMP TASK UNTIED SHARED(bC) &
-          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          !$OMP TASK UNTIED SHARED(bC)
           CALL SpAMM_Delete_BiTree_Recur(bC%sect2)
           !$OMP END TASK
-          !$OMP TASKWAIT
           DEALLOCATE(bC%sect2)
         ENDIF
       ELSE
+        LOG_DEBUG("descending lower half")
         IF(ASSOCIATED(qA%Quad12))THEN
-          !$OMP TASK UNTIED SHARED(qA,bC) &
-          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          !$OMP TASK UNTIED SHARED(qA,bC)
           CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad12, bC%sect1, j)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%sect1))THEN
-          !$OMP TASK UNTIED SHARED(bC) &
-          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          !$OMP TASK UNTIED SHARED(bC)
           CALL SpAMM_Delete_BiTree_Recur(bC%sect1)
           !$OMP END TASK
-          !$OMP TASKWAIT
           DEALLOCATE(bC%sect1)
         ENDIF
 
         IF(ASSOCIATED(qA%Quad22))THEN
-          !$OMP TASK UNTIED SHARED(qA,bC) &
-          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          !$OMP TASK UNTIED SHARED(qA,bC)
           CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad22, bC%sect2, j)
           !$OMP END TASK
         ELSEIF(ASSOCIATED(bC%sect2))THEN
-          !$OMP TASK UNTIED SHARED(bC) &
-          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          !$OMP TASK UNTIED SHARED(bC)
           CALL SpAMM_Delete_BiTree_Recur(bC%sect2)
           !$OMP END TASK
-          !$OMP TASKWAIT
           DEALLOCATE(bC%sect2)
         ENDIF
       ENDIF
+      !$OMP TASKWAIT
+      LOG_DEBUG("going back up")
     ENDIF
 
   END SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur
@@ -836,13 +854,23 @@ CONTAINS
 
     if(.not. associated(qA)) return
 
-    if(i > qA%i_upper .or. j > qA%j_upper) then
-      LOG_FATAL("[F8xYAsM46GYfJP2j] logic error, i or j above upper bound")
+    if(i > qA%i_upper) then
+      LOG_FATAL("logic error, i ("//to_string(i)//") above upper bound ("//to_string(qA%i_upper)//")")
       error stop
     endif
 
-    if(i < qA%i_lower .or. j < qA%j_lower) then
-      LOG_FATAL("[3lJNYprqCQWU3ACZ] logic error, i or j below lower bound")
+    if(j > qA%j_upper) then
+      LOG_FATAL("logic error, j ("//to_string(j)//") above upper bound ("//to_string(qA%j_upper)//")")
+      error stop
+    endif
+
+    if(i < qA%i_lower) then
+      LOG_FATAL("logic error, i ("//to_string(i)//") below lower bound ("//to_string(qA%i_lower)//")")
+      error stop
+    endif
+
+    if(j < qA%j_lower) then
+      LOG_FATAL("logic error, j ("//to_string(j)//") below lower bound ("//to_string(qA%j_lower)//")")
       error stop
     endif
 

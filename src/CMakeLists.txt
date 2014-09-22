@@ -112,7 +112,7 @@ if( OPENMP_FOUND )
 endif()
 
 install(
-  FILES 
+  FILES
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_algebra.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_c_bindings.mod
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_convert.mod
