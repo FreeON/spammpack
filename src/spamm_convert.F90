@@ -73,9 +73,7 @@ module spamm_convert
 
     if(.not. associated(qV)) then
       LOG_DEBUG("allocating new node")
-      allocate(qV)
-      qV%i_lower = i_lower
-      qV%i_upper = i_upper
+      call newbinode(qV, i_lower, i_upper)
     endif
 
     LOG_DEBUG("q: "//to_string(i_lower)//" "//to_string(i_upper))
@@ -177,15 +175,10 @@ module spamm_convert
 
     if(.not. associated(qA)) then
       LOG_DEBUG("allocating new node")
-      allocate(qA)
-      qA%i_lower = i_lower
-      qA%i_upper = i_upper
-      qA%j_lower = j_lower
-      qA%j_upper = j_upper
+      call newqunode(qA, i_lower, i_upper, j_lower, j_upper)
     endif
 
-    LOG_DEBUG("q: "//to_string(i_lower)//" "//to_string(i_upper))
-    LOG_DEBUG("   "//to_string(j_lower)//" "//to_string(j_upper))
+    LOG_DEBUG(to_string(qA))
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN

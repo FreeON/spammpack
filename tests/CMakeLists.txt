@@ -23,6 +23,8 @@ set( UNIT_TESTS
   add_identify_to_2nd_order.F90
   allocate_2nd_order.F90
   copy_2nd_order.F90
+  copy_matrix_column_to_vector.F90
+  copy_order_1_to_order_1.F90
   delete_2nd_order.F90
   lowdin.F90
   multiply_1st_order_x_scalar.F90

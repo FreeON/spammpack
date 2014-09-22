@@ -169,7 +169,7 @@ else()
 endif()
 
 if( SPAMM_DEBUG_LEVEL GREATER 1 )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_DEBUG=\"write (*, '(A)')\"" )
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -D\"LOG_DEBUG(msg)=write (*, '(A)') msg\"" )
 else()
   set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_DEBUG=!" )
 endif()

@@ -681,8 +681,7 @@ CONTAINS
       CALL OMP_UNSET_LOCK(qC%lock)
 #endif
 
-      LOG_DEBUG("q: "//to_string(qC%i_lower)//" "//to_string(qC%i_upper))
-      LOG_DEBUG("   "//to_string(qC%j_lower)//" "//to_string(qC%j_upper))
+      LOG_DEBUG(to_string(qC))
       LOG_DEBUG("   operations = "//to_string(qC%number_operations))
 
       ! At the bottom, calculate the product.
@@ -1344,6 +1343,8 @@ CONTAINS
     if(.not. associated(C)) then
       call new(A%M, B%N, C)
     endif
+
+    LOG_DEBUG("multiplying A*B")
 
     call reset_counters(C)
     call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, local_tolerance)

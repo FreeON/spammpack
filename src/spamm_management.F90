@@ -136,7 +136,7 @@ CONTAINS
     INTEGER, intent(in) :: j
 
     IF(.NOT.ASSOCIATED(bC)) then
-      CALL NewBiNode(bC, init = .TRUE.)
+      CALL NewBiNode(bC, qA%i_lower, qA%i_upper)
     endif
 
     !$OMP TASK UNTIED SHARED(qA,bC)
@@ -156,7 +156,7 @@ CONTAINS
     INTEGER               :: Depth
 
     IF(.NOT.ASSOCIATED(bC))&
-      CALL NewBiNode(bC,init=.TRUE.)
+      CALL NewBiNode(bC, bA%i_lower, bA%i_upper)
     Depth=0
     !$OMP TASK UNTIED SHARED(bA,bC)
     CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA,bC,Depth)
@@ -247,15 +247,13 @@ CONTAINS
   !> Delete a BiTree: @f$ A \leftarrow 0 @f$.
   !!
   !! @param bA The bitree.
-  SUBROUTINE SpAMM_Allocate_Full_BiTree(bA)
+  SUBROUTINE SpAMM_Allocate_Full_BiTree(bA, i_lower, i_upper)
 
-    TYPE(BiTree),POINTER :: bA
-    INTEGER              :: Depth
+    TYPE(BiTree), POINTER :: bA
+    integer, intent(in) :: i_lower, i_upper
 
-    IF(ASSOCIATED(bA))CALL SpAMM_Delete_BiTree(bA)
-    CALL NewBiNode(bA,init=.TRUE.)
-    Depth=0
-    CALL SpAMM_Allocate_Full_BiTree_Recur(bA,Depth)
+    CALL NewBiNode(bA, i_lower, i_upper)
+    CALL SpAMM_Allocate_Full_BiTree_Recur(bA)
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree
 
@@ -320,7 +318,7 @@ CONTAINS
 
     IF(.NOT.ASSOCIATED(bA))RETURN
     IF(.NOT.ASSOCIATED(bC))THEN
-      CALL NewBiNode(bC)
+      CALL NewBiNode(bC, bA%i_lower, bA%i_upper)
     ENDIF
     !    bC%Norms%FrobeniusNorm=bA%Norms%FrobeniusNorm
     bC%Norm=bA%Norm
@@ -380,7 +378,7 @@ CONTAINS
     IF(.NOT.ASSOCIATED(qA)) RETURN
 
     IF(.NOT.ASSOCIATED(bC)) then
-      CALL NewBiNode(bC)
+      CALL NewBiNode(bC, qA%i_lower, qA%i_upper)
     endif
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
@@ -603,21 +601,21 @@ CONTAINS
   !> Allocate new bitree node.
   !!
   !! @param bA The node pointer.
-  SUBROUTINE NewBiNode(bA, init)
+  !! @param i_lower The lower index.
+  !! @param i_upper The upper index.
+  SUBROUTINE NewBiNode(bA, i_lower, i_upper)
 
-    LOGICAL,OPTIONAL :: init
     TYPE(BiTree), POINTER :: bA
+    integer, intent(in) :: i_lower, i_upper
 
-    IF(PRESENT(init))THEN
-      IF(ASSOCIATED(bA)) then
-        call write_log(FATAL, '[PdMh8CTirrvi44hv] LOGIC ERROR IN NewBiNode')
-      endif
-      ALLOCATE(bA)
-    ELSE
-      IF(.NOT.ASSOCIATED(bA))THEN
-        ALLOCATE(bA)
-      ENDIF
-    ENDIF
+    if(associated(bA)) then
+      call delete(bA)
+    endif
+
+    allocate(bA)
+
+    bA%i_lower = i_lower
+    bA%i_upper = i_upper
 
   END SUBROUTINE NewBiNode
 
@@ -670,22 +668,20 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur
 
-  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_BiTree_Recur(bA,Depth)
+  RECURSIVE SUBROUTINE SpAMM_Allocate_Full_BiTree_Recur(bA)
 
-    TYPE(BiTree),POINTER :: bA
-    INTEGER              :: Depth
+    TYPE(BiTree), POINTER :: bA
+    integer :: half
 
-    IF(Depth==SpAMM_TOTAL_DEPTH)THEN
+    IF(bA%i_upper-bA%i_lower+1 == SPAMM_BLOCK_SIZE)THEN
       ALLOCATE(bA%Vect(SPAMM_BLOCK_SIZE))
       bA%Vect=SpAMM_Zero
-      NULLIFY(bA%sect1)
-      NULLIFY(bA%sect2)
-      RETURN
     ELSE
-      ALLOCATE(bA%sect1)
-      ALLOCATE(bA%sect2)
-      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect1,Depth+1)
-      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect2,Depth+1)
+      half = (bA%i_upper-bA%i_lower+1)/2-1
+      call newbinode(bA%sect1, bA%i_lower, bA%i_lower+half)
+      call newbinode(bA%sect2, bA%i_lower+half+1, bA%i_upper)
+      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect1)
+      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect2)
     ENDIF
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree_Recur
