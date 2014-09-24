@@ -133,7 +133,10 @@ CONTAINS
 
     TInitial = SpAMM_Get_Time()
 
-    if(.not. associated(qA) .or. .not. associated(qB)) return
+    if(.not. associated(qA) .or. .not. associated(qB)) then
+      LOG_DEBUG("either A or B are not associated")
+      return
+    endif
 
     if(.not. associated(qC)) then
       CALL NewQuNode(qC, qA%i_lower, qB%j_lower, qA%i_upper, qB%j_upper)
@@ -157,7 +160,10 @@ CONTAINS
 
     qC%number_operations = 0
 
+    LOG_DEBUG("resetting C")
     CALL SpAMM_Multiply_QuTree_x_Scalar(qC, SpAMM_Zero)
+
+    LOG_DEBUG("recursive multiplication")
 
     !$OMP TASK UNTIED SHARED(qA,qB,qC)
     CALL SpAMM_Multiply_QuTree_x_QuTree_Recur(qC, qA, qB, local_threshold)
@@ -184,6 +190,7 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
     real(spamm_kind), intent(in) :: alpha
 
+    LOG_DEBUG("multiplying matrix by scalar "//to_string(alpha))
     call spamm_multiply_qutree_x_scalar(A%root, alpha)
 
   end subroutine spamm_multiply_2nd_order_x_scalar
@@ -200,7 +207,10 @@ CONTAINS
     INTEGER            :: Depth
     REAL(SpAMM_DOUBLE) :: TInitial, TTotal
 
-    IF(.NOT.ASSOCIATED(qA))RETURN
+    IF(.NOT.ASSOCIATED(qA)) then
+      LOG_DEBUG("qA not associated")
+      RETURN
+    endif
 
     Depth=0
     TInitial = SpAMM_Get_Time()
@@ -234,6 +244,7 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer, intent(in) :: B
     real(spamm_kind), intent(in), optional :: alpha, beta
 
+    LOG_DEBUG("Adding matrices")
     call spamm_add_qutree_2_qutree_inplace_recur(A%root, B%root, alpha, beta)
 
   end subroutine spamm_add_2nd_order_to_2nd_order
@@ -667,8 +678,14 @@ CONTAINS
     integer :: i, j
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
+      LOG_DEBUG("qA: "//to_string(qA))
+      LOG_DEBUG("qB: "//to_string(qB))
+
       ! Apply the SpAMM condition.
-      IF(qA%Norm*qB%Norm <= threshold) RETURN
+      if(qA%Norm*qB%Norm <= threshold) then
+        LOG_DEBUG("going back up")
+        RETURN
+      endif
 
 #ifdef _OPENMP
       CALL OMP_SET_LOCK(qC%lock)
@@ -777,6 +794,8 @@ CONTAINS
         endif
 
       ENDIF
+    else
+      LOG_DEBUG("either A or B is not associated")
     ENDIF
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree_Recur
@@ -790,7 +809,12 @@ CONTAINS
     TYPE(QuTree), POINTER :: qA
     REAL(SpAMM_KIND) :: alpha
 
-    IF(.NOT.ASSOCIATED(qA)) RETURN
+    IF(.NOT.ASSOCIATED(qA)) then
+      LOG_DEBUG("qA not associated")
+      RETURN
+    endif
+
+    LOG_DEBUG("qA = "//to_string(qA))
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       ! At the bottom, multiply the block.
@@ -831,6 +855,9 @@ CONTAINS
     TB=ASSOCIATED(qB)
 
     IF(TA.AND.TB)THEN
+      LOG_DEBUG("qA = "//to_string(qA))
+      LOG_DEBUG("qB = "//to_string(qB))
+
       IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) THEN
         qA%Blok=alpha*qA%Blok+beta*qB%Blok
       ELSE
@@ -856,6 +883,8 @@ CONTAINS
     ELSEIF(TA .AND. .NOT.TB) THEN
       ! Multiply A tree with alpha.
       CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA, alpha)
+    else
+      LOG_DEBUG("either A or B are not associated")
     ENDIF
 
   END SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace_Recur
@@ -1340,11 +1369,21 @@ CONTAINS
       return
     endif
 
+    if(associated(A, C)) then
+      LOG_FATAL("A == C")
+      error stop
+    endif
+
+    if(associated(B, C)) then
+      LOG_FATAL("B == C")
+      error stop
+    endif
+
     if(.not. associated(C)) then
       call new(A%M, B%N, C)
     endif
 
-    LOG_DEBUG("multiplying A*B")
+    LOG_DEBUG("multiplying A*B with tolerance "//to_string(local_tolerance))
 
     call reset_counters(C)
     call spamm_multiply_qutree_x_qutree(A%root, B%root, C%root, local_tolerance)
@@ -1399,7 +1438,8 @@ CONTAINS
     real(spamm_kind) :: norm
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A
 
-    norm = spamm_norm_reduce_qutree_recur(A%root)
+    A%norm = spamm_norm_reduce_qutree_recur(A%root)
+    norm = A%norm
 
   end function spamm_norm_reduce_matrix_2nd_order
 

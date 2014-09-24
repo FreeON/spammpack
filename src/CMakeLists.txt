@@ -126,6 +126,11 @@ install(
 
 if( CTAGS )
   add_custom_target( ctags
-    ${CTAGS} --sort=foldcase --Fortran-kinds=+iL ${spammpack-sources-C} ${spammpack-sources-Fortran} *.h
+    ${CTAGS}
+    --sort=foldcase
+    --Fortran-kinds=+iL
+    ${spammpack-sources-C}
+    ${spammpack-sources-Fortran}
+    *.h
     )
 endif()

@@ -143,6 +143,8 @@ contains
         to_string(q%j_lower)//":"// &
         to_string(q%j_upper)//"]"
 
+      write(temp, "(A)") trim(temp)//", norm = "//to_string(q%norm)
+
       if(allocated(q%blok)) then
         write(temp, "(A)") trim(temp)//", blok["// &
           int_to_string(size(q%blok, 1))//","// &

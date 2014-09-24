@@ -54,23 +54,22 @@ contains
 
     type(spamm_matrix_2nd_order), pointer, intent(in) :: S
     real(spamm_kind), intent(in), optional :: tolerance
-    type(spamm_matrix_2nd_order), pointer :: X, Y, Z, T
+    type(spamm_matrix_2nd_order), pointer :: Z
+    type(spamm_matrix_2nd_order), pointer :: X => null(), Y => null(), T => null(), temp => null()
 
-    integer, parameter :: max_iterations = 5
+    integer, parameter :: max_iterations = 20
     integer :: iteration
     real(spamm_kind) :: lambda, error(2)
 
+    LOG_DEBUG("Schulz -> approximate inverse sqrt")
+
     ! Z_0 <- I
     Z => spamm_identity_matrix(S%M, S%N)
-    call print_spamm_2nd_order(Z, "Z_0")
-
-    ! X_0 <- 0
-    X => null()
+    call print_spamm_2nd_order(Z, "Z_1")
 
     ! Y_0 <- S
-    Y => null()
     call copy(S, Y)
-    call print_spamm_2nd_order(Y, "Y_0")
+    call print_spamm_2nd_order(Y, "Y_1")
 
     ! Something close to ideal scaling.
     lambda = 1/S%norm
@@ -96,19 +95,27 @@ contains
       LOG_DEBUG(to_string(iteration)//": error = "//to_string(error(1)))
 
       if(error(1)/error(2) < 1) then
+        LOG_DEBUG("error ratio below 1")
         exit
       endif
 
       ! Second order: T_{k} <- 1/2*(3*I-X_{k})
       T => spamm_identity_matrix(S%M, S%N)
+      call print_spamm_2nd_order(T, "T_"//to_string(iteration))
       call add(T, X, 3.0_spamm_kind, -1.0_spamm_kind)
+      call print_spamm_2nd_order(T, "T_"//to_string(iteration))
       call multiply(T, 0.5_spamm_kind)
+      call print_spamm_2nd_order(T, "T_"//to_string(iteration))
 
       ! Z_{k+1} <- Z_{k}*T_{k}
-      call multiply(Z, T, Z, tolerance)
+      call copy(Z, temp)
+      call multiply(temp, T, Z, tolerance)
+      call print_spamm_2nd_order(Z, "Z_"//to_string(iteration+1))
 
       ! Y_{k+1} <- T_{k}*Y_{k}
-      call multiply(T, Y, Y, tolerance)
+      call copy(Y, temp)
+      call multiply(T, temp, Y, tolerance)
+      call print_spamm_2nd_order(Y, "Y_"//to_string(iteration+1))
 
       ! Free up T.
       call delete(T)

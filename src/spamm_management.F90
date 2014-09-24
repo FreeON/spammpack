@@ -939,6 +939,8 @@ CONTAINS
 
     call spamm_set_qutree(A%root, i, j, Aij)
 
+    A%norm = A%root%norm
+
     LOG_DEBUG("done setting")
 
   end subroutine spamm_set_matrix_2nd_order
@@ -981,6 +983,7 @@ CONTAINS
       endif
       LOG_DEBUG("setting blok("//to_string(i-qA%i_lower+1)//","//to_string(j-qA%j_lower+1)//")")
       qA%blok(i-qA%i_lower+1, j-qA%j_lower+1) = Aij
+      qA%norm = sqrt(sum(qA%blok**2))
     else
       half = (qA%i_upper-qA%i_lower+1)/2-1
 
@@ -995,8 +998,6 @@ CONTAINS
         endif
         LOG_DEBUG("going down quad11")
         call spamm_set_qutree(qA%quad11, i, j, Aij)
-        return
-
       else if(i <= qA%i_lower+half .and. j >= qA%j_lower+half+1) then
         if(.not. associated(qA%quad12)) then
           LOG_DEBUG("allocating quad12")
@@ -1008,8 +1009,6 @@ CONTAINS
         endif
         LOG_DEBUG("going down quad12")
         call spamm_set_qutree(qA%quad12, i, j, Aij)
-        return
-
       else if(i >= qA%i_lower+half+1 .and. j <= qA%j_lower+half) then
         if(.not. associated(qA%quad21)) then
           LOG_DEBUG("allocating quad21")
@@ -1021,8 +1020,6 @@ CONTAINS
         endif
         LOG_DEBUG("going down quad21")
         call spamm_set_qutree(qA%quad21, i, j, Aij)
-        return
-
       else if(i >= qA%i_lower+half+1 .and. j >= qA%j_lower+half+1) then
         if(.not. associated(qA%quad22)) then
           LOG_DEBUG("allocating quad22")
@@ -1034,7 +1031,23 @@ CONTAINS
         endif
         LOG_DEBUG("going down quad22")
         call spamm_set_qutree(qA%quad22, i, j, Aij)
-        return
+      endif
+
+      qA%norm = 0
+      if(associated(qA%quad11)) then
+        qA%norm = qA%norm + qA%quad11%norm**2
+      endif
+
+      if(associated(qA%quad12)) then
+        qA%norm = qA%norm + qA%quad12%norm**2
+      endif
+
+      if(associated(qA%quad21)) then
+        qA%norm = qA%norm + qA%quad21%norm**2
+      endif
+
+      if(associated(qA%quad22)) then
+        qA%norm = qA%norm + qA%quad22%norm**2
       endif
     endif
 

@@ -371,7 +371,7 @@ module spamm_convert
 
     call spamm_convert_order_2_to_dense(A, A_dense)
 
-    write(format_string, "(A)") "("//to_string(size(A_dense, 2))//"ES10.3)"
+    write(format_string, "(A)") "("//to_string(size(A_dense, 2))//"ES11.3)"
 
     if(present(matrix_name)) then
       write(*, "(A)") "matrix "//trim(matrix_name)//" ="
