@@ -67,10 +67,10 @@ program test
       Y_dense(i, j) = Y_dense(i, j)+sqrt(eval(k))*S_dense(i, k)*S_dense(j, k)
     end forall
   enddo
-  call print_matrix_python(X_dense, "X")
-  call print_matrix_python(Y_dense, "Y")
-  call print_matrix_python(matmul(Y_dense, Y_dense), "Y2")
-  call print_matrix_python(matmul(X_dense, Y_dense), "X*Y")
+  call print_matrix_python(X_dense, "X (S^{-1/2})")
+  call print_matrix_python(Y_dense, "Y (S^{1/2})")
+  call print_matrix_python(matmul(Y_dense, Y_dense), "Y2 (S)")
+  call print_matrix_python(matmul(X_dense, Y_dense), "X*Y (I)")
 
   max_diff = 0
   do i = 1, N

@@ -58,27 +58,29 @@ contains
     type(spamm_matrix_2nd_order), pointer :: X => null(), Y => null(), T => null(), temp => null()
 
     integer, parameter :: max_iterations = 20
+    real(spamm_kind), parameter :: SCHULZ_THRESHOLD = 1e-10_spamm_kind
     integer :: iteration
-    real(spamm_kind) :: lambda, error(2)
+    real(spamm_kind) :: lambda, error
 
     LOG_DEBUG("Schulz -> approximate inverse sqrt")
 
     ! Z_0 <- I
     Z => spamm_identity_matrix(S%M, S%N)
-    call print_spamm_2nd_order(Z, "Z_1")
 
     ! Y_0 <- S
     call copy(S, Y)
-    call print_spamm_2nd_order(Y, "Y_1")
 
     ! Something close to ideal scaling.
     lambda = 1/S%norm
-    LOG_DEBUG("lambda = "//to_string(lambda))
+    LOG_DEBUG("||S||_{F} = "//to_string(S%norm)//", lambda = "//to_string(lambda))
 
     ! Initialize error.
     error = 1
 
     do iteration = 1, max_iterations
+      call print_spamm_2nd_order(Z, "Z_"//to_string(iteration))
+      call print_spamm_2nd_order(Y, "Y_"//to_string(iteration))
+
       ! X_{k} <- \lambda * Y_{k} * Z_{k}
       call multiply(Y, Z, X, tolerance)
       call print_spamm_2nd_order(X, "X_"//to_string(iteration))
@@ -88,14 +90,13 @@ contains
       ! Error <- ||X_{k} - I||_{F}
       T => spamm_identity_matrix(S%M, S%N)
       call add(T, X, -1.0_spamm_kind, 1.0_spamm_kind)
-      error(2) = error(1)
-      error(1) = T%norm
+      error = T%norm
       call delete(T)
 
-      LOG_DEBUG(to_string(iteration)//": error = "//to_string(error(1)))
+      LOG_DEBUG(to_string(iteration)//": error = "//to_string(error))
 
-      if(error(1)/error(2) < 1) then
-        LOG_DEBUG("error ratio below 1")
+      if(error < SCHULZ_THRESHOLD) then
+        LOG_DEBUG("error ratio below "//to_string(SCHULZ_THRESHOLD))
         exit
       endif
 
@@ -110,12 +111,10 @@ contains
       ! Z_{k+1} <- Z_{k}*T_{k}
       call copy(Z, temp)
       call multiply(temp, T, Z, tolerance)
-      call print_spamm_2nd_order(Z, "Z_"//to_string(iteration+1))
 
       ! Y_{k+1} <- T_{k}*Y_{k}
       call copy(Y, temp)
       call multiply(T, temp, Y, tolerance)
-      call print_spamm_2nd_order(Y, "Y_"//to_string(iteration+1))
 
       ! Free up T.
       call delete(T)
