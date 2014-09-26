@@ -14,7 +14,7 @@ program test
     end subroutine dsyevd
   end interface
 
-  integer, parameter :: N = 10
+  integer, parameter :: N = 304
   integer, parameter :: LWORK = 1+6*N+2*N**2
   integer, parameter :: LIWORK = 3+5*N
 
@@ -32,14 +32,13 @@ program test
   call random_number(evec)
 
   eval = eval/2+0.4
-  write(*, "(A,ES10.3)") "condition number = ", maxval(eval)/minval(eval)
 
   do k = 1, N
     evec(k, :) = evec(k, :)/sqrt(sum(evec(k, :)*evec(k,:)))
   enddo
 
-  call print_matrix_python(reshape(eval, [ 1, size(eval) ]), "lambda")
-  call print_matrix_python(evec, "basis")
+  !call print_matrix_python(reshape(eval, [ 1, size(eval) ]), "lambda")
+  !call print_matrix_python(evec, "basis")
 
   S_dense = 0
   do k = 1, N
@@ -48,7 +47,7 @@ program test
     end forall
   enddo
 
-  call print_matrix_python(S_dense, "S")
+  !call print_matrix_python(S_dense, "S")
 
   S => spamm_convert_dense_to_matrix_2nd_order(S_dense)
   X => spamm_inverse_sqrt_schulz(S)
@@ -58,8 +57,8 @@ program test
 
   write(*, "(A)") "condition number: "//to_string(eval(N)/eval(1))
 
-  call print_matrix_python(reshape(eval, [ 1, size(eval) ]), "eigenvalue")
-  call print_matrix_python(S_dense, "eigenvector")
+  !call print_matrix_python(reshape(eval, [ 1, size(eval) ]), "eigenvalue")
+  !call print_matrix_python(S_dense, "eigenvector")
 
   X_dense = 0
   Y_dense = 0
@@ -69,10 +68,10 @@ program test
       Y_dense(i, j) = Y_dense(i, j)+sqrt(eval(k))*S_dense(i, k)*S_dense(j, k)
     end forall
   enddo
-  call print_matrix_python(X_dense, "X (S^{-1/2})")
-  call print_matrix_python(Y_dense, "Y (S^{1/2})")
-  call print_matrix_python(matmul(Y_dense, Y_dense), "Y2 (S)")
-  call print_matrix_python(matmul(X_dense, Y_dense), "X*Y (I)")
+  !call print_matrix_python(X_dense, "X (S^{-1/2})")
+  !call print_matrix_python(Y_dense, "Y (S^{1/2})")
+  !call print_matrix_python(matmul(Y_dense, Y_dense), "Y2 (S)")
+  !call print_matrix_python(matmul(X_dense, Y_dense), "X*Y (I)")
 
   max_diff = 0
   do i = 1, N

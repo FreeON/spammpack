@@ -1117,10 +1117,10 @@ CONTAINS
       A%N_padded = 2*A%N_padded
     enddo
 
-    LOG_INFO("allocated "//to_string(M)//"x"//to_string(N)//" matrix")
-    LOG_INFO("  BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
-    LOG_INFO("  N_padded   = "//to_string(A%N_padded))
-    LOG_INFO("  depth      = "//to_string(A%depth))
+    LOG_DEBUG("allocated "//to_string(M)//"x"//to_string(N)//" matrix")
+    LOG_DEBUG("  BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
+    LOG_DEBUG("  N_padded   = "//to_string(A%N_padded))
+    LOG_DEBUG("  depth      = "//to_string(A%depth))
 
   end subroutine spamm_allocate_matrix_2nd_order
 

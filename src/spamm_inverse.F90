@@ -55,10 +55,11 @@ contains
     type(spamm_matrix_2nd_order), pointer, intent(in) :: S
     real(spamm_kind), intent(in), optional :: tolerance
     type(spamm_matrix_2nd_order), pointer :: Z
-    type(spamm_matrix_2nd_order), pointer :: X => null(), Y => null(), T => null(), temp => null()
+    type(spamm_matrix_2nd_order), pointer :: X => null(), Y => null(), T => null(), temp => null(), temp2 => null()
 
-    integer, parameter :: max_iterations = 20
-    real(spamm_kind), parameter :: SCHULZ_THRESHOLD = 1e-12_spamm_kind
+    integer, parameter :: SCHULZ_ORDER = 3
+    integer, parameter :: MAX_ITERATIONS = 200
+    real(spamm_kind), parameter :: SCHULZ_THRESHOLD = 1e-10_spamm_kind
     integer :: iteration
     real(spamm_kind) :: lambda, error
 
@@ -77,7 +78,7 @@ contains
     ! Initialize error.
     error = 1
 
-    do iteration = 1, max_iterations
+    do iteration = 1, MAX_ITERATIONS
       !call print_spamm_2nd_order(Z, "Z_"//to_string(iteration))
       !call print_spamm_2nd_order_tree(Z, "Z_"//to_string(iteration))
       !call print_spamm_2nd_order(Y, "Y_"//to_string(iteration))
@@ -102,10 +103,39 @@ contains
         exit
       endif
 
-      ! Second order: T_{k} <- 1/2*(3*I-X_{k})
-      T => spamm_identity_matrix(S%M, S%N)
-      call add(T, X, 3.0_spamm_kind, -1.0_spamm_kind)
-      call multiply(T, 0.5_spamm_kind)
+      select case (SCHULZ_ORDER)
+        case (2)
+          ! Second order: T_{k} <- 1/2*(3*I-X_{k})
+          T => spamm_identity_matrix(S%M, S%N)
+          call add(T, X, 3.0_spamm_kind, -1.0_spamm_kind)
+          call multiply(T, 0.5_spamm_kind)
+
+        case (3)
+          ! Third order: T_{k} = 1/8*(15*I-10*X_{k}+3*X_{k}^{2}) 
+          T => spamm_identity_matrix(S%M, S%N)
+          call add(T, X, 15.0_spamm_kind, -10.0_spamm_kind)
+          call multiply(X, X, temp, tolerance)
+          call add(T, temp, 1.0_spamm_kind, 3.0_spamm_kind)
+          call multiply(T, 1/8.0_spamm_kind)
+          call delete(temp)
+
+        case (4)
+          ! Fourth order: T_{k} = 1/16*(35*I-35*X_{k}+21*X_{k}^2-5*X({k}^3)
+          T => spamm_identity_matrix(S%M, S%N)
+          call add(T, X, 35.0_spamm_kind, -35.0_spamm_kind)
+          call multiply(X, X, temp, tolerance)
+          call add(T, temp, 1.0_spamm_kind, 21.0_spamm_kind)
+          call multiply(X, temp, temp2, tolerance)
+          call add(T, temp2, 1.0_spamm_kind, -5.0_spamm_kind)
+          call multiply(T, 1/16.0_spamm_kind)
+          call delete(temp)
+          call delete(temp2)
+
+        case default
+          LOG_FATAL("Schulz order "//to_string(SCHULZ_ORDER)//" is not implemented")
+          error stop
+      end select
+
       !call print_spamm_2nd_order(T, "T_"//to_string(iteration))
       !call print_spamm_2nd_order_tree(T, "T_"//to_string(iteration))
 
@@ -125,13 +155,13 @@ contains
 
     ! S^{-1/2} <- \sqrt{\lambda} Z_{k}
     call multiply(Z, sqrt(lambda))
-    call print_spamm_2nd_order(Z, "Z (S^{-1/2})")
-    call print_spamm_2nd_order_tree(Z, "Z (S^{-1/2})")
+    !call print_spamm_2nd_order(Z, "Z (S^{-1/2})")
+    !call print_spamm_2nd_order_tree(Z, "Z (S^{-1/2})")
 
     ! S^{1/2} <- \sqrt{\lambda} Y_{k}
     call multiply(Y, sqrt(lambda))
-    call print_spamm_2nd_order(Y, "Y (S^{1/2})")
-    call print_spamm_2nd_order_tree(Y, "Y (S^{1/2})")
+    !call print_spamm_2nd_order(Y, "Y (S^{1/2})")
+    !call print_spamm_2nd_order_tree(Y, "Y (S^{1/2})")
 
     call delete(X)
     call delete(Y)
