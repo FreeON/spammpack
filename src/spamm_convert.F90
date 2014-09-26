@@ -206,14 +206,7 @@ module spamm_convert
         qA%Blok(1:convert_rows-i_lower+1, 1:convert_columns-j_lower+1) = &
           A(i_lower:convert_rows, j_lower:convert_columns)
 
-        qA%norm = sum(matmul(qA%blok, transpose(qA%blok)), reshape( &
-          (/ ((i == j, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
-          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
-
-        !write(*, *) "q%blok"
-        !do i = 1, SPAMM_BLOCK_SIZE
-        !  write(*, "(4E10.3)") (qA%blok(i, j), j = 1, SPAMM_BLOCK_SIZE)
-        !enddo
+        qA%norm = sqrt(sum(qA%blok**2))
 
         ! Count number non-zeros.
         qA%number_nonzeros = sum(reshape( &
@@ -382,5 +375,62 @@ module spamm_convert
     enddo
 
   end subroutine print_spamm_2nd_order
+
+  !> Recursively print a matrix tree.
+  !!
+  !! @param q A matrix node.
+  recursive subroutine print_spamm_2nd_order_tree_node (q)
+
+    type(qutree), pointer, intent(in) :: q
+
+    if(.not. associated(q)) then
+      return
+    endif
+
+    write(*, "(A)") to_string(q)
+
+    if(associated(q%quad11)) then
+      call print_spamm_2nd_order_tree_node(q%quad11)
+    endif
+
+    if(associated(q%quad12)) then
+      call print_spamm_2nd_order_tree_node(q%quad12)
+    endif
+
+    if(associated(q%quad21)) then
+      call print_spamm_2nd_order_tree_node(q%quad21)
+    endif
+
+    if(associated(q%quad22)) then
+      call print_spamm_2nd_order_tree_node(q%quad22)
+    endif
+
+  end subroutine print_spamm_2nd_order_tree_node
+
+  !> Print a matrix tree.
+  !!
+  !! @param A The matrix.
+  !! @param matrix_name The optional label.
+  subroutine print_spamm_2nd_order_tree (A, matrix_name)
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    character(len = *), intent(in), optional :: matrix_name
+
+    if(present(matrix_name)) then
+      write(*, "(A)") "matrix tree "//trim(matrix_name)//" ="
+    endif
+
+    if(.not. associated(A)) then
+      return
+    endif
+
+    if(.not. associated(A%root)) then
+      write(*, "(A)") "root not associated"
+      return
+    endif
+
+    call print_spamm_2nd_order_tree_node(A%root)
+
+  end subroutine print_spamm_2nd_order_tree
 
 end module spamm_convert

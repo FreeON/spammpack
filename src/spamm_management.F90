@@ -274,7 +274,7 @@ CONTAINS
       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
-    LOG_DEBUG(to_string(qA))
+    LOG_DEBUG("q: "//to_string(qA))
 
     qC%Norm = qA%Norm
 
@@ -1034,6 +1034,7 @@ CONTAINS
       endif
 
       qA%norm = 0
+
       if(associated(qA%quad11)) then
         qA%norm = qA%norm + qA%quad11%norm**2
       endif
@@ -1049,6 +1050,8 @@ CONTAINS
       if(associated(qA%quad22)) then
         qA%norm = qA%norm + qA%quad22%norm**2
       endif
+
+      qA%norm = sqrt(qA%norm)
     endif
 
     LOG_DEBUG("going back up")

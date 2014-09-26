@@ -20,6 +20,7 @@ endif()
 
 # More unit-like tests.
 set( UNIT_TESTS
+  add_2nd_order_to_2nd_order.F90
   add_identity_to_2nd_order.F90
   allocate_2nd_order.F90
   copy_2nd_order.F90

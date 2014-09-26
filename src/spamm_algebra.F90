@@ -244,8 +244,18 @@ CONTAINS
     type(spamm_matrix_2nd_order), pointer, intent(in) :: B
     real(spamm_kind), intent(in), optional :: alpha, beta
 
-    LOG_DEBUG("Adding matrices")
+    LOG_DEBUG("Adding matrices: alpha = "//to_string(alpha)//", beta = "//to_string(beta))
+
+    if(.not. associated(B)) then
+      return
+    endif
+
+    if(.not. associated(A)) then
+      call spamm_allocate_matrix_2nd_order(B%M, B%N, A)
+    endif
+
     call spamm_add_qutree_2_qutree_inplace_recur(A%root, B%root, alpha, beta)
+    A%norm = A%root%norm
 
   end subroutine spamm_add_2nd_order_to_2nd_order
 
@@ -698,7 +708,7 @@ CONTAINS
       CALL OMP_UNSET_LOCK(qC%lock)
 #endif
 
-      LOG_DEBUG(to_string(qC))
+      LOG_DEBUG("qC: "//to_string(qC))
       LOG_DEBUG("   operations = "//to_string(qC%number_operations))
 
       ! At the bottom, calculate the product.
@@ -859,7 +869,8 @@ CONTAINS
       LOG_DEBUG("qB = "//to_string(qB))
 
       IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) THEN
-        qA%Blok=alpha*qA%Blok+beta*qB%Blok
+        qA%Blok = alpha*qA%Blok+beta*qB%Blok
+        qA%norm = sqrt(sum(qA%blok**2))
       ELSE
         !$OMP TASK UNTIED SHARED(qA,qB)
         CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad11, qB%Quad11, alpha, beta)
@@ -874,10 +885,31 @@ CONTAINS
         CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad22, qB%Quad22, alpha, beta)
         !$OMP END TASK
         !$OMP TASKWAIT
+
+        qA%norm = 0
+
+        if(associated(qA%quad11)) then
+          qA%norm = qA%norm+qA%quad11%norm**2
+        endif
+
+        if(associated(qA%quad12)) then
+          qA%norm = qA%norm+qA%quad12%norm**2
+        endif
+
+        if(associated(qA%quad21)) then
+          qA%norm = qA%norm+qA%quad21%norm**2
+        endif
+
+        if(associated(qA%quad22)) then
+          qA%norm = qA%norm+qA%quad22%norm**2
+        endif
+
+        qA%norm = sqrt(qA%norm)
       ENDIF
     ELSEIF(.NOT.TA.AND.TB)THEN
       !$OMP TASK UNTIED SHARED(qA,qB)
       CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qB, qA)
+      call spamm_multiply_qutree_x_scalar_recur(qA, beta)
       !$OMP END TASK
       !$OMP TASKWAIT
     ELSEIF(TA .AND. .NOT.TB) THEN

@@ -14,7 +14,7 @@ program test
     end subroutine dsyevd
   end interface
 
-  integer, parameter :: N = 5
+  integer, parameter :: N = 10
   integer, parameter :: LWORK = 1+6*N+2*N**2
   integer, parameter :: LIWORK = 3+5*N
 
@@ -55,6 +55,8 @@ program test
 
 #ifdef LAPACK_FOUND
   call dsyevd("V", "U", N, S_dense, N, eval, work, LWORK, iwork, LIWORK, info)
+
+  write(*, "(A)") "condition number: "//to_string(eval(N)/eval(1))
 
   call print_matrix_python(reshape(eval, [ 1, size(eval) ]), "eigenvalue")
   call print_matrix_python(S_dense, "eigenvector")

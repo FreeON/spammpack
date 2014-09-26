@@ -58,7 +58,7 @@ contains
     type(spamm_matrix_2nd_order), pointer :: X => null(), Y => null(), T => null(), temp => null()
 
     integer, parameter :: max_iterations = 20
-    real(spamm_kind), parameter :: SCHULZ_THRESHOLD = 1e-10_spamm_kind
+    real(spamm_kind), parameter :: SCHULZ_THRESHOLD = 1e-12_spamm_kind
     integer :: iteration
     real(spamm_kind) :: lambda, error
 
@@ -78,14 +78,16 @@ contains
     error = 1
 
     do iteration = 1, max_iterations
-      call print_spamm_2nd_order(Z, "Z_"//to_string(iteration))
-      call print_spamm_2nd_order(Y, "Y_"//to_string(iteration))
+      !call print_spamm_2nd_order(Z, "Z_"//to_string(iteration))
+      !call print_spamm_2nd_order_tree(Z, "Z_"//to_string(iteration))
+      !call print_spamm_2nd_order(Y, "Y_"//to_string(iteration))
+      !call print_spamm_2nd_order_tree(Y, "Y_"//to_string(iteration))
 
       ! X_{k} <- \lambda * Y_{k} * Z_{k}
       call multiply(Y, Z, X, tolerance)
-      call print_spamm_2nd_order(X, "X_"//to_string(iteration))
       call multiply(X, lambda)
-      call print_spamm_2nd_order(X, "X_"//to_string(iteration))
+      !call print_spamm_2nd_order(X, "X_"//to_string(iteration))
+      !call print_spamm_2nd_order_tree(X, "X_"//to_string(iteration))
 
       ! Error <- ||X_{k} - I||_{F}
       T => spamm_identity_matrix(S%M, S%N)
@@ -93,28 +95,29 @@ contains
       error = T%norm
       call delete(T)
 
-      LOG_DEBUG(to_string(iteration)//": error = "//to_string(error))
+      LOG_INFO(to_string(iteration)//": error = "//to_string(error))
 
       if(error < SCHULZ_THRESHOLD) then
-        LOG_DEBUG("error ratio below "//to_string(SCHULZ_THRESHOLD))
+        LOG_INFO("error below "//to_string(SCHULZ_THRESHOLD))
         exit
       endif
 
       ! Second order: T_{k} <- 1/2*(3*I-X_{k})
       T => spamm_identity_matrix(S%M, S%N)
-      call print_spamm_2nd_order(T, "T_"//to_string(iteration))
       call add(T, X, 3.0_spamm_kind, -1.0_spamm_kind)
-      call print_spamm_2nd_order(T, "T_"//to_string(iteration))
       call multiply(T, 0.5_spamm_kind)
-      call print_spamm_2nd_order(T, "T_"//to_string(iteration))
+      !call print_spamm_2nd_order(T, "T_"//to_string(iteration))
+      !call print_spamm_2nd_order_tree(T, "T_"//to_string(iteration))
 
       ! Z_{k+1} <- Z_{k}*T_{k}
-      call copy(Z, temp)
-      call multiply(temp, T, Z, tolerance)
+      call multiply(Z, T, temp, tolerance)
+      call copy(temp, Z)
+      call delete(temp)
 
       ! Y_{k+1} <- T_{k}*Y_{k}
-      call copy(Y, temp)
-      call multiply(T, temp, Y, tolerance)
+      call multiply(T, Y, temp, tolerance)
+      call copy(temp, Y)
+      call delete(temp)
 
       ! Free up T.
       call delete(T)
@@ -122,6 +125,13 @@ contains
 
     ! S^{-1/2} <- \sqrt{\lambda} Z_{k}
     call multiply(Z, sqrt(lambda))
+    call print_spamm_2nd_order(Z, "Z (S^{-1/2})")
+    call print_spamm_2nd_order_tree(Z, "Z (S^{-1/2})")
+
+    ! S^{1/2} <- \sqrt{\lambda} Y_{k}
+    call multiply(Y, sqrt(lambda))
+    call print_spamm_2nd_order(Y, "Y (S^{1/2})")
+    call print_spamm_2nd_order_tree(Y, "Y (S^{1/2})")
 
     call delete(X)
     call delete(Y)
