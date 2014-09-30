@@ -2,7 +2,7 @@
 
 import random
 
-N = 1024
+N = 2048
 
 for i in range(N):
   for j in range(N):
