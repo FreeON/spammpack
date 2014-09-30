@@ -3,20 +3,24 @@ add_library( utilities
   mmio.f
   )
 
-add_executable( spamm_multiply spamm_multiply.F90)
-target_link_libraries( spamm_multiply utilities spammpack_serial_shared )
-target_include_directories( spamm_multiply PRIVATE ${CMAKE_BINARY_DIR}/src )
+add_executable( spamm-multiply spamm-multiply.F90 )
+target_link_libraries( spamm-multiply utilities spammpack_serial_shared )
+target_include_directories( spamm-multiply PRIVATE ${CMAKE_BINARY_DIR}/src )
 
 if( OPENMP_FOUND )
-  add_executable( spamm_multiply-threaded spamm_multiply.F90)
-  set_target_properties( spamm_multiply-threaded
+  add_executable( spamm-multiply-threaded spamm-multiply.F90 )
+  set_target_properties( spamm-multiply-threaded
     PROPERTIES
     COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
     LINK_FLAGS ${OpenMP_Fortran_FLAGS}
     )
-  target_link_libraries( spamm_multiply-threaded utilities spammpack_threaded_shared )
-  target_include_directories( spamm_multiply-threaded PRIVATE ${CMAKE_BINARY_DIR}/src )
+  target_link_libraries( spamm-multiply-threaded utilities spammpack_threaded_shared )
+  target_include_directories( spamm-multiply-threaded PRIVATE ${CMAKE_BINARY_DIR}/src )
 endif()
+
+add_executable( spamm-lowdin spamm-lowdin.F90 )
+target_link_libraries( spamm-lowdin utilities spammpack_serial_shared )
+target_include_directories( spamm-lowdin PRIVATE ${CMAKE_BINARY_DIR}/src )
 
 # More unit-like tests.
 set( UNIT_TESTS
