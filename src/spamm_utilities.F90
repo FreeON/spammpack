@@ -42,6 +42,7 @@ module spamm_utilities
   !> Interface to to_string functions.
   interface to_string
     module procedure int_to_string
+    module procedure single_to_string
     module procedure double_to_string
     module procedure bitree_to_string
     module procedure qutree_to_string
@@ -65,6 +66,22 @@ contains
     str_i = trim(adjustl(temp))
 
   end function int_to_string
+
+  !> Convert a single precision real to a string.
+  !!
+  !! @param x The real
+  !!
+  !! @return The string representation.
+  function single_to_string (x) result(str_x)
+
+    real(kind(0e0)), intent(in) :: x
+    character(len = 100) :: temp
+    character(len = :), allocatable :: str_x
+
+    write(temp, "(ES16.8E3)") x
+    str_x = trim(adjustl(temp))
+
+  end function single_to_string
 
   !> Convert a double precision real to a string.
   !!

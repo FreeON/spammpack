@@ -42,9 +42,11 @@ contains
   !!
   !! @param S The matrix.
   !! @param tolerance The SpAMM tolerance.
+  !! @param schulz_threshold The threshold for convergence. The error is
+  !! defined as the @f$ \Vert X_{k} - I \Vert_{F} / (M N) @f$.
   !!
   !! @return The inverse square root of the matrix, @f$ Z \leftarrow S^{-1/2} @f$.
-  function spamm_inverse_sqrt_schulz (S, tolerance) result (Z)
+  function spamm_inverse_sqrt_schulz (S, tolerance, schulz_threshold) result (Z)
 
     use spamm_algebra
     use spamm_convert
@@ -54,16 +56,30 @@ contains
 
     type(spamm_matrix_2nd_order), pointer, intent(in) :: S
     real(spamm_kind), intent(in), optional :: tolerance
+    real(spamm_kind), intent(in), optional :: schulz_threshold
     type(spamm_matrix_2nd_order), pointer :: Z
     type(spamm_matrix_2nd_order), pointer :: X => null(), Y => null(), T => null(), temp => null(), temp2 => null()
 
     integer, parameter :: SCHULZ_ORDER = 3
     integer, parameter :: MAX_ITERATIONS = 200
-    real(spamm_kind), parameter :: SCHULZ_THRESHOLD = 1e-10_spamm_kind
     integer :: iteration
-    real(spamm_kind) :: lambda, error
+    real(spamm_kind) :: lambda, error, local_tolerance, local_schulz_threshold
 
-    LOG_DEBUG("Schulz -> approximate inverse sqrt")
+    if(present(tolerance)) then
+      local_tolerance = tolerance
+    else
+      local_tolerance = 0
+    endif
+
+    if(present(schulz_threshold)) then
+      local_schulz_threshold = schulz_threshold
+    else
+      local_schulz_threshold = 1e-8_spamm_kind
+    endif
+
+    LOG_INFO("Schulz -> approximate inverse sqrt")
+    LOG_INFO("  tolerance = "//to_string(local_tolerance))
+    LOG_INFO("  schulz threshold = "//to_string(local_schulz_threshold))
 
     ! Z_0 <- I
     Z => spamm_identity_matrix(S%M, S%N)
@@ -85,7 +101,7 @@ contains
       !call print_spamm_2nd_order_tree(Y, "Y_"//to_string(iteration))
 
       ! X_{k} <- \lambda * Y_{k} * Z_{k}
-      call multiply(Y, Z, X, tolerance)
+      call multiply(Y, Z, X, local_tolerance)
       call multiply(X, lambda)
       !call print_spamm_2nd_order(X, "X_"//to_string(iteration))
       !call print_spamm_2nd_order_tree(X, "X_"//to_string(iteration))
@@ -93,13 +109,13 @@ contains
       ! Error <- ||X_{k} - I||_{F}
       T => spamm_identity_matrix(S%M, S%N)
       call add(T, X, -1.0_spamm_kind, 1.0_spamm_kind)
-      error = T%norm
+      error = T%norm/(T%M*T%N)
       call delete(T)
 
       LOG_INFO(to_string(iteration)//": error = "//to_string(error))
 
-      if(error < SCHULZ_THRESHOLD) then
-        LOG_INFO("error below "//to_string(SCHULZ_THRESHOLD))
+      if(error < local_schulz_threshold) then
+        LOG_INFO("error below "//to_string(local_schulz_threshold))
         exit
       endif
 
@@ -114,7 +130,7 @@ contains
           ! Third order: T_{k} = 1/8*(15*I-10*X_{k}+3*X_{k}^{2}) 
           T => spamm_identity_matrix(S%M, S%N)
           call add(T, X, 15.0_spamm_kind, -10.0_spamm_kind)
-          call multiply(X, X, temp, tolerance)
+          call multiply(X, X, temp, local_tolerance)
           call add(T, temp, 1.0_spamm_kind, 3.0_spamm_kind)
           call multiply(T, 1/8.0_spamm_kind)
           call delete(temp)
@@ -123,9 +139,9 @@ contains
           ! Fourth order: T_{k} = 1/16*(35*I-35*X_{k}+21*X_{k}^2-5*X({k}^3)
           T => spamm_identity_matrix(S%M, S%N)
           call add(T, X, 35.0_spamm_kind, -35.0_spamm_kind)
-          call multiply(X, X, temp, tolerance)
+          call multiply(X, X, temp, local_tolerance)
           call add(T, temp, 1.0_spamm_kind, 21.0_spamm_kind)
-          call multiply(X, temp, temp2, tolerance)
+          call multiply(X, temp, temp2, local_tolerance)
           call add(T, temp2, 1.0_spamm_kind, -5.0_spamm_kind)
           call multiply(T, 1/16.0_spamm_kind)
           call delete(temp)
@@ -140,12 +156,13 @@ contains
       !call print_spamm_2nd_order_tree(T, "T_"//to_string(iteration))
 
       ! Z_{k+1} <- Z_{k}*T_{k}
-      call multiply(Z, T, temp, tolerance)
+      call multiply(Z, T, temp, local_tolerance)
+      LOG_INFO("Z: nonzeros = "//to_string(Z%number_nonzeros))
       call copy(temp, Z)
       call delete(temp)
 
       ! Y_{k+1} <- T_{k}*Y_{k}
-      call multiply(T, Y, temp, tolerance)
+      call multiply(T, Y, temp, local_tolerance)
       call copy(temp, Y)
       call delete(temp)
 
@@ -157,6 +174,9 @@ contains
     call multiply(Z, sqrt(lambda))
     !call print_spamm_2nd_order(Z, "Z (S^{-1/2})")
     !call print_spamm_2nd_order_tree(Z, "Z (S^{-1/2})")
+
+    LOG_INFO("Z nnonzero = "//to_string(Z%number_nonzeros))
+    LOG_INFO("Z %fillin  = "//to_string(Z%number_nonzeros/(Z%M*Z%N)))
 
     ! S^{1/2} <- \sqrt{\lambda} Y_{k}
     call multiply(Y, sqrt(lambda))

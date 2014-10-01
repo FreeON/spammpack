@@ -255,7 +255,9 @@ CONTAINS
     endif
 
     call spamm_add_qutree_2_qutree_inplace_recur(A%root, B%root, alpha, beta)
+
     A%norm = A%root%norm
+    A%number_nonzeros = A%root%number_nonzeros
 
   end subroutine spamm_add_2nd_order_to_2nd_order
 
@@ -860,6 +862,7 @@ CONTAINS
     TYPE(QuTree), POINTER :: qA,qB
     REAL(SpAMM_KIND) :: alpha, beta
     LOGICAL :: TA, TB
+    integer :: i, j
 
     TA=ASSOCIATED(qA)
     TB=ASSOCIATED(qB)
@@ -871,6 +874,12 @@ CONTAINS
       IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) THEN
         qA%Blok = alpha*qA%Blok+beta*qB%Blok
         qA%norm = sqrt(sum(qA%blok**2))
+        qA%number_nonzeros = sum(reshape( &
+          [ ((1, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
+          [ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ]), &
+          reshape( &
+          [ ((qA%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
+          [ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ]))
       ELSE
         !$OMP TASK UNTIED SHARED(qA,qB)
         CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad11, qB%Quad11, alpha, beta)
@@ -887,21 +896,26 @@ CONTAINS
         !$OMP TASKWAIT
 
         qA%norm = 0
+        qA%number_nonzeros = 0
 
         if(associated(qA%quad11)) then
           qA%norm = qA%norm+qA%quad11%norm**2
+          qA%number_nonzeros = qA%number_nonzeros+qA%quad11%number_nonzeros
         endif
 
         if(associated(qA%quad12)) then
           qA%norm = qA%norm+qA%quad12%norm**2
+          qA%number_nonzeros = qA%number_nonzeros+qA%quad12%number_nonzeros
         endif
 
         if(associated(qA%quad21)) then
           qA%norm = qA%norm+qA%quad21%norm**2
+          qA%number_nonzeros = qA%number_nonzeros+qA%quad21%number_nonzeros
         endif
 
         if(associated(qA%quad22)) then
           qA%norm = qA%norm+qA%quad22%norm**2
+          qA%number_nonzeros = qA%number_nonzeros+qA%quad22%number_nonzeros
         endif
 
         qA%norm = sqrt(qA%norm)
