@@ -58,7 +58,8 @@ contains
     real(spamm_kind), intent(in), optional :: tolerance
     real(spamm_kind), intent(in), optional :: schulz_threshold
     type(spamm_matrix_2nd_order), pointer :: Z
-    type(spamm_matrix_2nd_order), pointer :: X => null(), Y => null(), T => null(), temp => null(), temp2 => null()
+    type(spamm_matrix_2nd_order), pointer :: X => null(), Y => null(), T => null(), &
+      temp => null(), temp2 => null()
 
     integer, parameter :: SCHULZ_ORDER = 3
     integer, parameter :: MAX_ITERATIONS = 200
