@@ -8,3 +8,5 @@ pages_list:
   Spammpack: "/spammpack/"
   Building: "/spammpack/building.html"
   References: "/spammpack/references.html"
+
+baseurl: "/spammpack"
