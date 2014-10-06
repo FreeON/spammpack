@@ -3,3 +3,8 @@ gems:
 
 footer-links:
   github: nicolasbock
+
+pages_list:
+  Spammpack: "/"
+  Building: "/building.html"
+  References: "/references.html"
