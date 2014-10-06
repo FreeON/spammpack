@@ -6,12 +6,12 @@ title: Spammpack
 Spammpack
 ---------
 
-Spammpack is an implementation of the sparse approximate matrix multiplication
-(spamm) algorithm introduced in the [References](/references.html). it
+Spammpack is an implementation of the Sparse Approximate Matrix Multiplication
+(SpAMM) algorithm introduced in the [References](/references.html). It
 provides a matrix data type, and an approximate matrix product, which exhibits
 linear scaling computational complexity for matrices with decay. The product
 error and the performance of the multiply can be tuned by choosing an
-appropriate tolerance.  The library can be compiled for serial executation or
+appropriate tolerance. The library can be compiled for serial executation or
 parallel execution on shared memory systems with an OpenMP capable compiler.
 Currently under heavy development, you can get the latest version through git:
 
