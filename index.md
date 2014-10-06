@@ -7,7 +7,7 @@ Spammpack
 ---------
 
 Spammpack is an implementation of the Sparse Approximate Matrix Multiplication
-(SpAMM) algorithm introduced in the [[1]](/spammpack/references.html).  It
+(SpAMM) algorithm introduced in [[1]](/spammpack/references.html).  It
 provides a matrix data type, and an approximate matrix product, which exhibits
 linear scaling computational complexity for matrices with decay. The product
 error and the performance of the multiply can be tuned by choosing an
