@@ -1,6 +1,6 @@
 ---
 layout: default
-title: References
+title: Spammpack - References
 ---
 
 References
