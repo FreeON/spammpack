@@ -96,16 +96,9 @@ contains
     error = 1
 
     do iteration = 1, MAX_ITERATIONS
-      !call print_spamm_2nd_order(Z, "Z_"//to_string(iteration))
-      !call print_spamm_2nd_order_tree(Z, "Z_"//to_string(iteration))
-      !call print_spamm_2nd_order(Y, "Y_"//to_string(iteration))
-      !call print_spamm_2nd_order_tree(Y, "Y_"//to_string(iteration))
-
       ! X_{k} <- \lambda * Y_{k} * Z_{k}
       call multiply(Y, Z, X, local_tolerance)
       call multiply(X, lambda)
-      !call print_spamm_2nd_order(X, "X_"//to_string(iteration))
-      !call print_spamm_2nd_order_tree(X, "X_"//to_string(iteration))
 
       ! Error <- ||X_{k} - I||_{F}
       T => spamm_identity_matrix(S%M, S%N)
@@ -124,8 +117,7 @@ contains
         case (2)
           ! Second order: T_{k} <- 1/2*(3*I-X_{k})
           T => spamm_identity_matrix(S%M, S%N)
-          call add(T, X, 3.0_spamm_kind, -1.0_spamm_kind)
-          call multiply(T, 0.5_spamm_kind)
+          call add(T, X, 1.5_spamm_kind, -0.5_spamm_kind)
 
         case (3)
           ! Third order: T_{k} = 1/8*(15*I-10*X_{k}+3*X_{k}^{2}) 
@@ -153,12 +145,8 @@ contains
           error stop
       end select
 
-      !call print_spamm_2nd_order(T, "T_"//to_string(iteration))
-      !call print_spamm_2nd_order_tree(T, "T_"//to_string(iteration))
-
       ! Z_{k+1} <- Z_{k}*T_{k}
       call multiply(Z, T, temp, local_tolerance)
-      LOG_INFO("Z: nonzeros = "//to_string(Z%number_nonzeros))
       call copy(temp, Z)
       call delete(temp)
 
@@ -173,16 +161,12 @@ contains
 
     ! S^{-1/2} <- \sqrt{\lambda} Z_{k}
     call multiply(Z, sqrt(lambda))
-    !call print_spamm_2nd_order(Z, "Z (S^{-1/2})")
-    !call print_spamm_2nd_order_tree(Z, "Z (S^{-1/2})")
 
-    LOG_INFO("Z nnonzero = "//to_string(Z%number_nonzeros))
-    LOG_INFO("Z %fillin  = "//to_string(Z%number_nonzeros/(Z%M*Z%N)))
+    LOG_INFO("Z (S^{-1/2} nnonzero = "//to_string(Z%number_nonzeros))
+    LOG_INFO("  % fillin           = "//to_string(Z%number_nonzeros/(Z%M*Z%N)))
 
     ! S^{1/2} <- \sqrt{\lambda} Y_{k}
-    call multiply(Y, sqrt(lambda))
-    !call print_spamm_2nd_order(Y, "Y (S^{1/2})")
-    !call print_spamm_2nd_order_tree(Y, "Y (S^{1/2})")
+    !call multiply(Y, sqrt(lambda))
 
     call delete(X)
     call delete(Y)

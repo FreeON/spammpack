@@ -14,7 +14,7 @@ program test
     end subroutine dsyevd
   end interface
 
-  integer, parameter :: N = 304
+  integer, parameter :: N = 253
   integer, parameter :: LWORK = 1+6*N+2*N**2
   integer, parameter :: LIWORK = 3+5*N
 
@@ -26,7 +26,7 @@ program test
   integer, dimension(LIWORK) :: iwork
   integer :: info
   integer :: i, j, k
-  real(kind(0d0)) :: abs_diff, max_diff
+  real(kind(0d0)) :: abs_diff, max_diff, X_norm
 
   call random_number(eval)
   call random_number(evec)
@@ -73,19 +73,25 @@ program test
   !call print_matrix_python(matmul(Y_dense, Y_dense), "Y2 (S)")
   !call print_matrix_python(matmul(X_dense, Y_dense), "X*Y (I)")
 
+  X_norm = 0
   max_diff = 0
   do i = 1, N
     do j = 1, N
       abs_diff = abs(X_dense(i, j)-get(X, i, j))
+      X_norm = X_norm+abs_diff**2
       if(abs_diff > max_diff) then
         max_diff = abs_diff
       endif
     end do
   end do
+  X_norm = X_norm/(N*N)
   write(*, "(A,ES10.3)") "max diff = ", max_diff
-  if(max_diff > 1d-10) then
+  write(*, "(A,ES10.3)") "||X-X_dense||_{F}/N**2 = ", X_norm
+  if(X_norm > 1e-8_spamm_kind) then
     write(*, "(A)") "mismatch"
     error stop
+  else
+    write(*, "(A)") "test passed"
   endif
 #endif
 
