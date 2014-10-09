@@ -86,16 +86,6 @@ if( NOT CMAKE_BUILD_TYPE )
     )
 endif()
 
-string( TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE )
-
-if( CMAKE_BUILD_TYPE STREQUAL "debug" )
-  message( STATUS "C compiler flags: ${CMAKE_C_FLAGS_DEBUG}" )
-  message( STATUS "Fortran compiler flags: ${CMAKE_Fortran_FLAGS_DEBUG}" )
-elseif( CMAKE_BUILD_TYPE STREQUAL "release" )
-  message( STATUS "C compiler flags: ${CMAKE_C_FLAGS_RELEASE}" )
-  message( STATUS "Fortran compiler flags: ${CMAKE_Fortran_FLAGS_RELEASE}" )
-endif()
-
 set( CMAKE_TRY_COMPILE_CONFIGURATION ${CMAKE_BUILD_TYPE} )
 
 try_compile( COMPILE_RESULT_1
