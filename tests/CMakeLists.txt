@@ -4,7 +4,7 @@ add_library( utilities
   )
 
 add_executable( spamm-multiply spamm-multiply.F90 )
-target_link_libraries( spamm-multiply utilities spammpack_serial_shared )
+target_link_libraries( spamm-multiply utilities spammpack-serial-shared )
 target_include_directories( spamm-multiply PRIVATE ${CMAKE_BINARY_DIR}/src )
 
 if( OPENMP_FOUND )
@@ -14,12 +14,12 @@ if( OPENMP_FOUND )
     COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
     LINK_FLAGS ${OpenMP_Fortran_FLAGS}
     )
-  target_link_libraries( spamm-multiply-threaded utilities spammpack_threaded_shared )
+  target_link_libraries( spamm-multiply-threaded utilities spammpack-threaded-shared )
   target_include_directories( spamm-multiply-threaded PRIVATE ${CMAKE_BINARY_DIR}/src )
 endif()
 
 add_executable( spamm-lowdin spamm-lowdin.F90 )
-target_link_libraries( spamm-lowdin utilities spammpack_serial_shared )
+target_link_libraries( spamm-lowdin utilities spammpack-serial-shared )
 target_include_directories( spamm-lowdin PRIVATE ${CMAKE_BINARY_DIR}/src )
 
 # More unit-like tests.
@@ -47,7 +47,7 @@ set( UNIT_TESTS
 
 execute_process( COMMAND ${PYTHON_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/generate_unit_tests.py
-  --spammpack-lib spammpack_serial_shared
+  --spammpack-lib spammpack-serial-shared
   --output ${CMAKE_CURRENT_BINARY_DIR}/unit-tests.cmake
   --lapack-libraries ${LAPACK_LIBRARIES}
   --

@@ -61,7 +61,7 @@ install( FILES
 
 if( CMAKE_C_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_C_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -Wall" )
-  set( CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG -g" )
+  set( CMAKE_C_FLAGS_RELEASE "-Ofast -DNDEBUG -g" )
 elseif( CMAKE_C_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_C_FLAGS_DEBUG "-O0 -g -check=conversions,stack,uninit" )
 else()
@@ -70,7 +70,7 @@ endif()
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-none -Wimplicit-interface -Wimplicit-procedure" )
-  set( CMAKE_Fortran_FLAGS_RELEASE "-O2 -ffree-line-length-none" )
+  set( CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG "-stand f08 -O0 -g -extend-source -debug all -check all -warn unused -traceback" )
 else()
@@ -88,9 +88,12 @@ endif()
 
 string( TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE )
 
-if( CMAKE_BUILD_TYPE STREQUAL debug )
+if( CMAKE_BUILD_TYPE STREQUAL "debug" )
   message( STATUS "C compiler flags: ${CMAKE_C_FLAGS_DEBUG}" )
   message( STATUS "Fortran compiler flags: ${CMAKE_Fortran_FLAGS_DEBUG}" )
+elseif( CMAKE_BUILD_TYPE STREQUAL "release" )
+  message( STATUS "C compiler flags: ${CMAKE_C_FLAGS_RELEASE}" )
+  message( STATUS "Fortran compiler flags: ${CMAKE_Fortran_FLAGS_RELEASE}" )
 endif()
 
 set( CMAKE_TRY_COMPILE_CONFIGURATION ${CMAKE_BUILD_TYPE} )

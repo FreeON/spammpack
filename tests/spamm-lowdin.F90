@@ -29,6 +29,7 @@ program spamm_lowdin
   X => spamm_inverse_sqrt_schulz(S, tolerance)
   call cpu_time(end_time)
 
+  write(*, "(A)") "X (S^{-1/2}) fillin: "//to_string(X%number_nonzeros)
   write(*, "(A)") "CPU time: "//to_string(end_time-start_time)
 
 end program spamm_lowdin

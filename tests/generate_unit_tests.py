@@ -24,10 +24,10 @@ def main ():
             "--spammpack-lib",
             help = "The spammpack library to link against",
             choices = [
-                "spammpack_serial_shared",
-                "spammpack_serial_static"
+                "spammpack-serial-shared",
+                "spammpack-serial-static"
                 ],
-            default = "spammpack_serial_static"
+            default = "spammpack-serial-static"
             )
 
     parser.add_argument(

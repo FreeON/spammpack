@@ -38,22 +38,22 @@ set_target_properties( spammpack-serial-Fortran
   POSITION_INDEPENDENT_CODE TRUE
   )
 
-add_library( spammpack_serial_static
+add_library( spammpack-serial-static
   STATIC
   $<TARGET_OBJECTS:spammpack-serial-C>
   $<TARGET_OBJECTS:spammpack-serial-Fortran>
   )
-set_target_properties( spammpack_serial_static
+set_target_properties( spammpack-serial-static
   PROPERTIES
   OUTPUT_NAME ${LIBRARY_BASENAME}
   )
 
-add_library( spammpack_serial_shared
+add_library( spammpack-serial-shared
   SHARED
   $<TARGET_OBJECTS:spammpack-serial-C>
   $<TARGET_OBJECTS:spammpack-serial-Fortran>
   )
-set_target_properties( spammpack_serial_shared
+set_target_properties( spammpack-serial-shared
   PROPERTIES
   SOVERSION 0
   VERSION 0.0.0
@@ -61,42 +61,42 @@ set_target_properties( spammpack_serial_shared
   )
 
 install(
-  TARGETS spammpack_serial_static spammpack_serial_shared
+  TARGETS spammpack-serial-static spammpack-serial-shared
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   )
 
 if( OPENMP_FOUND )
-  add_library( spammpack_threaded-C OBJECT ${spammpack-sources-C} )
-  set_target_properties( spammpack_threaded-C
+  add_library( spammpack-threaded-C OBJECT ${spammpack-sources-C} )
+  set_target_properties( spammpack-threaded-C
     PROPERTIES
     COMPILE_FLAGS ${OpenMP_C_FLAGS}
     POSITION_INDEPENDENT_CODE TRUE
     )
 
-  add_library( spammpack_threaded-Fortran OBJECT ${spammpack-sources-Fortran} )
-  set_target_properties( spammpack_threaded-Fortran
+  add_library( spammpack-threaded-Fortran OBJECT ${spammpack-sources-Fortran} )
+  set_target_properties( spammpack-threaded-Fortran
     PROPERTIES
     COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
     POSITION_INDEPENDENT_CODE TRUE
     )
 
-  add_library( spammpack_threaded_static
+  add_library( spammpack-threaded-static
     STATIC
     $<TARGET_OBJECTS:spammpack-serial-C>
     $<TARGET_OBJECTS:spammpack-serial-Fortran>
     )
-  set_target_properties( spammpack_threaded_static
+  set_target_properties( spammpack-threaded-static
     PROPERTIES
     OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
 
-  add_library( spammpack_threaded_shared
+  add_library( spammpack-threaded-shared
     SHARED
     $<TARGET_OBJECTS:spammpack-serial-C>
     $<TARGET_OBJECTS:spammpack-serial-Fortran>
     )
-  set_target_properties( spammpack_threaded_shared
+  set_target_properties( spammpack-threaded-shared
     PROPERTIES
     SOVERSION 0
     VERSION 0.0.0
@@ -105,7 +105,7 @@ if( OPENMP_FOUND )
     )
 
   install(
-    TARGETS spammpack_threaded_static spammpack_threaded_shared
+    TARGETS spammpack-threaded-static spammpack-threaded-shared
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     )
