@@ -64,6 +64,7 @@ if( CMAKE_C_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_C_FLAGS_RELEASE "-Ofast -DNDEBUG -g" )
 elseif( CMAKE_C_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_C_FLAGS_DEBUG "-O0 -g -check=conversions,stack,uninit" )
+  set( CMAKE_C_FLAGS_RELEASE "-O3 -no-prec-div -fp-model fast=2 -vec-report -g" )
 else()
   message( STATUS "Unknown C compiler ${CMAKE_C_COMPILER_ID}" )
 endif()
@@ -73,6 +74,7 @@ if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG "-stand f08 -O0 -g -extend-source -debug all -check all -warn unused -traceback" )
+  set( CMAKE_Fortran_FLAGS_RELEASE "-O3 -no-prec-div -fp-model fast=2 -vec-report -g" )
 else()
   message( STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}" )
 endif()
@@ -151,8 +153,7 @@ else()
 endif()
 
 set( SPAMM_DEBUG_LEVEL ${SPAMM_DEBUG_LEVEL}
-  CACHE STRING "The debugging output verbosity (valid range 0 <= LEVEL <= 2)"
-  )
+  CACHE STRING "The debugging output verbosity (valid range 0 <= LEVEL <= 2)" )
 set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DSPAMM_DEBUG_LEVEL=${SPAMM_DEBUG_LEVEL}" )
 
 if( SPAMM_DEBUG_LEVEL GREATER 0 )
@@ -172,11 +173,11 @@ set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_FATAL=\"write (*, '(A)')\
 # For now hard-coded.
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTIMER_GETTIMEOFDAY" )
 
-if( NOT VALGRIND_TESTS )
-  set( VALGRIND_TESTS FALSE
-    CACHE BOOL "Build the valgrind tests"
-    )
-endif()
+set( SPAMM_COUNTERS FALSE
+  CACHE BOOL "Add non-zero and number_operations counters" )
+
+set( VALGRIND_TESTS FALSE
+  CACHE BOOL "Build the valgrind tests" )
 
 if( VALGRIND_TESTS )
   find_program( VALGRIND valgrind )

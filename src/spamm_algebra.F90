@@ -192,6 +192,7 @@ CONTAINS
 
     LOG_DEBUG("multiplying matrix by scalar "//to_string(alpha))
     call spamm_multiply_qutree_x_scalar(A%root, alpha)
+    A%number_operations = A%root%number_operations
 
   end subroutine spamm_multiply_2nd_order_x_scalar
 
@@ -215,7 +216,9 @@ CONTAINS
     Depth=0
     TInitial = SpAMM_Get_Time()
 
-    !$OMP TASK SHARED(qA)
+    qA%number_operations = 0
+
+    !$OMP TASK UNTIED SHARED(qA)
     CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA, alpha)
     !$OMP END TASK
 
@@ -676,7 +679,8 @@ CONTAINS
 
   END FUNCTION SpAMM_Norm_Reduce_BiTree
 
-  !> Recursive part of the multiplication operation between a quadtree and a quadtree, @f$ C \leftarrow A \cdot B @f$.
+  !> Recursive part of the multiplication operation between a quadtree and a
+  !! quadtree, @f$ C \leftarrow A \cdot B @f$.
   !!
   !! @param qA Pointer to quadtree A.
   !! @param qB Pointer to quadtree B.
@@ -731,6 +735,7 @@ CONTAINS
         CALL OMP_SET_LOCK(qC%lock)
 #endif
         qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
+#ifdef SPAMM_COUNTERS
         qC%number_operations = qC%number_operations+SPAMM_BLOCK_SIZE**3
         qC%number_nonzeros = sum(reshape( &
           [ ((1, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
@@ -738,6 +743,7 @@ CONTAINS
           reshape( &
           [ ((qC%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
           [ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ]))
+#endif
 
 #if defined(_OPENMP) && ! defined(BIGLOCK)
         CALL OMP_UNSET_LOCK(qC%lock)
@@ -782,6 +788,7 @@ CONTAINS
 
         !$OMP TASKWAIT
 
+#ifdef SPAMM_COUNTERS
         qC%number_operations = 0
         qC%number_nonzeros = 0
 
@@ -804,6 +811,7 @@ CONTAINS
           qC%number_operations = qC%number_operations+qC%Quad22%number_operations
           qC%number_nonzeros = qC%number_nonzeros+qC%Quad22%number_nonzeros
         endif
+#endif
 
       ENDIF
     else
@@ -832,11 +840,14 @@ CONTAINS
       ! At the bottom, multiply the block.
       qA%Norm = qA%Norm*ABS(alpha)
       qA%Blok = alpha*qA%Blok
+#ifdef SPAMM_COUNTERS
+      qA%number_operations = SPAMM_BLOCK_SIZE**2
+#endif
     ELSE
       !$OMP TASK UNTIED SHARED(qA)
       CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad11, alpha)
       !$OMP END TASK
-      !$OMP TASK UNTIED  SHARED(qA)
+      !$OMP TASK UNTIED SHARED(qA)
       CALL SpAMM_Multiply_QuTree_x_Scalar_Recur(qA%Quad12, alpha)
       !$OMP END TASK
       !$OMP TASK UNTIED SHARED(qA)
@@ -847,6 +858,31 @@ CONTAINS
       !$OMP END TASK
       !$OMP TASKWAIT
       qA%Norm = qA%Norm*ABS(alpha)
+
+#ifdef SPAMM_COUNTERS
+      qA%number_operations = 0
+      qA%number_nonzeros = 0
+
+      if(associated(qA%quad11)) then
+        qA%number_operations = qA%number_operations+qA%Quad11%number_operations
+        qA%number_nonzeros = qA%number_nonzeros+qA%Quad11%number_nonzeros
+      endif
+
+      if(associated(qA%quad12)) then
+        qA%number_operations = qA%number_operations+qA%Quad12%number_operations
+        qA%number_nonzeros = qA%number_nonzeros+qA%Quad12%number_nonzeros
+      endif
+
+      if(associated(qA%quad21)) then
+        qA%number_operations = qA%number_operations+qA%Quad21%number_operations
+        qA%number_nonzeros = qA%number_nonzeros+qA%Quad21%number_nonzeros
+      endif
+
+      if(associated(qA%quad22)) then
+        qA%number_operations = qA%number_operations+qA%Quad22%number_operations
+        qA%number_nonzeros = qA%number_nonzeros+qA%Quad22%number_nonzeros
+      endif
+#endif
     ENDIF
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar_Recur
@@ -874,12 +910,14 @@ CONTAINS
       IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) THEN
         qA%Blok = alpha*qA%Blok+beta*qB%Blok
         qA%norm = sqrt(sum(qA%blok**2))
+#ifdef SPAMM_COUNTERS
         qA%number_nonzeros = sum(reshape( &
           [ ((1, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
           [ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ]), &
           reshape( &
           [ ((qA%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
           [ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ]))
+#endif
       ELSE
         !$OMP TASK UNTIED SHARED(qA,qB)
         CALL SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA%Quad11, qB%Quad11, alpha, beta)

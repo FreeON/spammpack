@@ -1,6 +1,7 @@
 !> Defines global parameters and variables.
 !!
-!! @todo Move matrix related global parameters or values into appropriate types and make things much less global.
+!! @todo Move matrix related global parameters or values into appropriate types
+!! and make things much less global.
 !!
 !! @copyright
 !!

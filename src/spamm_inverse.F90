@@ -64,7 +64,9 @@ contains
     integer, parameter :: SCHULZ_ORDER = 3
     integer, parameter :: MAX_ITERATIONS = 200
     integer :: iteration
-    real(spamm_kind) :: lambda, error, local_tolerance, local_schulz_threshold
+    real(spamm_kind) :: lambda, error, local_tolerance, &
+      local_schulz_threshold, number_operations
+
 
     if(present(tolerance)) then
       local_tolerance = tolerance
@@ -95,10 +97,15 @@ contains
     ! Initialize error.
     error = 1
 
+    ! Reset counters.
+    number_operations = 0
+
     do iteration = 1, MAX_ITERATIONS
       ! X_{k} <- \lambda * Y_{k} * Z_{k}
       call multiply(Y, Z, X, local_tolerance)
+      number_operations = number_operations+X%number_operations
       call multiply(X, lambda)
+      number_operations = number_operations+X%number_operations
 
       ! Error <- ||X_{k} - I||_{F}
       T => spamm_identity_matrix(S%M, S%N)
@@ -147,11 +154,13 @@ contains
 
       ! Z_{k+1} <- Z_{k}*T_{k}
       call multiply(Z, T, temp, local_tolerance)
+      number_operations = number_operations+temp%number_operations
       call copy(temp, Z)
       call delete(temp)
 
       ! Y_{k+1} <- T_{k}*Y_{k}
       call multiply(T, Y, temp, local_tolerance)
+      number_operations = number_operations+temp%number_operations
       call copy(temp, Y)
       call delete(temp)
 
@@ -164,6 +173,7 @@ contains
 
     LOG_INFO("Z (S^{-1/2} nnonzero = "//to_string(Z%number_nonzeros))
     LOG_INFO("  % fillin           = "//to_string(Z%number_nonzeros/(Z%M*Z%N)))
+    LOG_INFO("  number operations  = "//to_string(number_operations))
 
     ! S^{1/2} <- \sqrt{\lambda} Y_{k}
     !call multiply(Y, sqrt(lambda))

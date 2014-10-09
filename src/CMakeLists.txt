@@ -29,14 +29,17 @@ endif()
 add_library( spammpack-serial-C SHARED OBJECT ${spammpack-sources-C} )
 set_target_properties( spammpack-serial-C
   PROPERTIES
-  POSITION_INDEPENDENT_CODE TRUE
-  )
+  POSITION_INDEPENDENT_CODE TRUE )
 
 add_library( spammpack-serial-Fortran SHARED OBJECT ${spammpack-sources-Fortran} )
 set_target_properties( spammpack-serial-Fortran
   PROPERTIES
-  POSITION_INDEPENDENT_CODE TRUE
-  )
+  POSITION_INDEPENDENT_CODE TRUE )
+if( SPAMM_COUNTERS )
+  set_target_properties( spammpack-serial-Fortran
+    PROPERTIES
+    COMPILE_DEFINITIONS "SPAMM_COUNTERS" )
+endif()
 
 add_library( spammpack-serial-static
   STATIC
