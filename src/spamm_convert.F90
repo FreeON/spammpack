@@ -85,7 +85,7 @@ module spamm_convert
         LOG_FATAL("SPAMM_BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
         error stop
       ELSE
-        LOG_DEBUG("allocating new blok")
+        LOG_DEBUG("allocating new vect")
 
         if(allocated(qV%vect)) then
           deallocate(qV%vect)
@@ -205,6 +205,15 @@ module spamm_convert
 
         qA%Blok(1:convert_rows-i_lower+1, 1:convert_columns-j_lower+1) = &
           A(i_lower:convert_rows, j_lower:convert_columns)
+
+#ifdef SPAMM_STORE_TRANSPOSE
+        if(allocated(qA%transpose_block)) then
+          deallocate(qA%transpose_block)
+        endif
+
+        ALLOCATE(qA%transpose_block(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+        qA%transpose_block = transpose(qA%blok)
+#endif
 
         qA%norm = sqrt(sum(qA%blok**2))
 

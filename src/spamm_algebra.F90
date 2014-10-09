@@ -734,7 +734,15 @@ CONTAINS
 #if defined(_OPENMP) && ! defined(BIGLOCK)
         CALL OMP_SET_LOCK(qC%lock)
 #endif
+#ifdef SPAMM_STORE_TRANSPOSE
+        do i = 1, SPAMM_BLOCK_SIZE
+          do j = 1, SPAMM_BLOCK_SIZE
+            qC%blok = qC%blok + dot_product(qA%blok(:, i), qB%blok(:, j))
+          enddo
+        enddo
+#else
         qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
+#endif
 #ifdef SPAMM_COUNTERS
         qC%number_operations = qC%number_operations+SPAMM_BLOCK_SIZE**3
         qC%number_nonzeros = sum(reshape( &
@@ -840,6 +848,9 @@ CONTAINS
       ! At the bottom, multiply the block.
       qA%Norm = qA%Norm*ABS(alpha)
       qA%Blok = alpha*qA%Blok
+#ifdef SPAMM_STORE_TRANSPOSE
+      qA%transpose_block = alpha*qA%transpose_block
+#endif
 #ifdef SPAMM_COUNTERS
       qA%number_operations = SPAMM_BLOCK_SIZE**2
 #endif
@@ -909,6 +920,9 @@ CONTAINS
 
       IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) THEN
         qA%Blok = alpha*qA%Blok+beta*qB%Blok
+#ifdef SPAMM_STORE_TRANSPOSE
+        qA%transpose_block = alpha*qA%transpose_block+beta*qB%transpose_block
+#endif
         qA%norm = sqrt(sum(qA%blok**2))
 #ifdef SPAMM_COUNTERS
         qA%number_nonzeros = sum(reshape( &

@@ -176,6 +176,21 @@ set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTIMER_GETTIMEOFDAY" )
 set( SPAMM_COUNTERS FALSE
   CACHE BOOL "Add non-zero and number_operations counters" )
 
+set( SPAMM_STORE_TRANSPOSE FALSE
+  CACHE BOOL "Store the transpose sub-matrix to aid vectorization" )
+
+set( SPAMM_EXTRA_DEFINES "" )
+
+if( SPAMM_COUNTERS )
+  set( SPAMM_EXTRA_DEFINES ${SPAMM_EXTRA_DEFINES} SPAMM_COUNTERS )
+endif()
+
+if( SPAMM_STORE_TRANSPOSE )
+  set( SPAMM_EXTRA_DEFINES ${SPAMM_EXTRA_DEFINES} SPAMM_STORE_TRANSPOSE )
+endif()
+
+message( STATUS "${SPAMM_EXTRA_DEFINES}" )
+
 set( VALGRIND_TESTS FALSE
   CACHE BOOL "Build the valgrind tests" )
 

@@ -202,6 +202,11 @@ module spamm_types
     !> The matrix data.
     REAL(SpAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
 
+#ifdef SPAMM_STORE_TRANSPOSE
+    !> The transposed block.
+    real(spamm_kind), dimension(:, :), ALLOCATABLE :: transpose_block
+#endif
+
     !> The number of non-zero elements.
     REAL(SpAMM_DOUBLE) :: number_nonzeros = 0
 

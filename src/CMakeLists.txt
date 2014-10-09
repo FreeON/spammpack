@@ -34,12 +34,8 @@ set_target_properties( spammpack-serial-C
 add_library( spammpack-serial-Fortran SHARED OBJECT ${spammpack-sources-Fortran} )
 set_target_properties( spammpack-serial-Fortran
   PROPERTIES
-  POSITION_INDEPENDENT_CODE TRUE )
-if( SPAMM_COUNTERS )
-  set_target_properties( spammpack-serial-Fortran
-    PROPERTIES
-    COMPILE_DEFINITIONS "SPAMM_COUNTERS" )
-endif()
+  POSITION_INDEPENDENT_CODE TRUE
+  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}" )
 
 add_library( spammpack-serial-static
   STATIC
