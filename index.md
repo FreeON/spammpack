@@ -21,6 +21,9 @@ Alternatively we offer a snapshot of the latest version in a zip or tar archive
 through the links on the right hand side. See [Building](/spammpack/building.html)
 for more details on how to build the library.
 
+Please go to the FreeON project at [www.freeon.org](http://www.freeon.org) for
+more details.
+
 Authors
 -------
 
