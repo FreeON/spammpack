@@ -24,6 +24,11 @@ for more details on how to build the library.
 Please go to the FreeON project at [www.freeon.org](http://www.freeon.org) for
 more details.
 
+Project Statistics
+------------------
+
+{% include openhub.html %}
+
 Spamm Mini-App
 --------------
 
