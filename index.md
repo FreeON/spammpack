@@ -24,6 +24,14 @@ for more details on how to build the library.
 Please go to the FreeON project at [www.freeon.org](http://www.freeon.org) for
 more details.
 
+Spamm Mini-App
+--------------
+
+We are currently developing a Mini-App to demonstrate the performance of
+Spammpack within a minimal set of electronic structure solvers. You can find
+more details at
+[http://freeon.github.io/spamm-miniapp](http://freeon.github.io/spamm-miniapp).
+
 Authors
 -------
 
