@@ -5,7 +5,7 @@ footer-links:
   github: nicolasbock
 
 pages_list:
-  Spammpack: "/spammpack/"
+  Main: "/spammpack/"
   Building: "/spammpack/building.html"
   References: "/spammpack/references.html"
 
