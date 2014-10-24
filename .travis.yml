@@ -1,6 +1,6 @@
-os:
-  - linux
-  - osx
+language: C
+
+install: gfortran
 
 script:
   - cmake .
