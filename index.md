@@ -29,11 +29,6 @@ Project Statistics
 
 {% include openhub.html %}
 
-Build Status
-------------
-
-[![Build Status](https://travis-ci.org/FreeON/spammpack.svg)](https://travis-ci.org/FreeON/spammpack)
-
 Spamm Mini-App
 --------------
 
