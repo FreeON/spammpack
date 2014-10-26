@@ -2,7 +2,7 @@ language: C
 
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y gfortran
+  - sudo apt-get install -y gfortran cmake cmake-data
 
 script:
   - cmake . -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc
