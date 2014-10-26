@@ -44,7 +44,7 @@ include( CPack )
 set( INCLUDE_INSTALL_DIR include )
 set( LIB_INSTALL_DIR lib )
 
-include( CMakePackageConfigHelpers OPTIONAL PACKAGE_CONFIG_FOUND )
+include( CMakePackageConfigHelpers OPTIONAL RESULT_VARIABLE PACKAGE_CONFIG_FOUND )
 if( PACKAGE_CONFIG_FOUND )
 	configure_package_config_file( spammpackConfig.cmake.in spammpackConfig.cmake
 			INSTALL_DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
