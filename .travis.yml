@@ -1,10 +1,14 @@
 language: C
 
+compiler:
+  - gcc
+
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y gfortran
 
 script:
-  - cmake . -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc
+  - cmake --version
+  - cmake . -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes
   - make
   - make test
