@@ -57,6 +57,8 @@ def main ():
     fd.write("\n")
     fd.write("#\n")
 
+    fd.write("include_directories( ${CMAKE_BINARY_DIR}/src )\n")
+
     for source in options.SOURCE:
         import os.path
         testbasename = os.path.splitext(os.path.basename(source))[0]
@@ -69,7 +71,6 @@ def main ():
         for lib in options.lapack_libraries:
             fd.write("  %s\n" % (lib))
         fd.write("  utilities )\n")
-        fd.write("target_include_directories( %s PRIVATE ${CMAKE_BINARY_DIR}/src )\n" % (testexename))
         fd.write("add_test( %s %s )\n" % (testbasename, testexename))
         fd.write("\n")
         fd.write("# Unit test using valgrind from %s\n" % (source))
