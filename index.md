@@ -32,10 +32,9 @@ Project Statistics
 Spamm Mini-App
 --------------
 
-We are currently developing a Mini-App to demonstrate the performance of
-Spammpack within a minimal set of electronic structure solvers. You can find
-more details at
-[http://freeon.github.io/spamm-miniapp](http://freeon.github.io/spamm-miniapp).
+We are currently developing a
+[Mini-App](http://freeon.github.io/spamm-miniapp) to demonstrate the
+performance of Spammpack within a minimal set of electronic structure solvers.
 
 Authors
 -------
