@@ -20,7 +20,7 @@ And build them using `make`
 
     $ make
 
-{% include thin_add.html %}
+{% include thin_medium_add.html %}
 
 Installing
 ----------
