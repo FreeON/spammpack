@@ -21,9 +21,6 @@ Alternatively we offer a snapshot of the latest version in a zip or tar archive
 through the links on the right hand side. See [Building](/spammpack/building.html)
 for more details on how to build the library.
 
-Please go to the FreeON project at [www.freeon.org](http://www.freeon.org) for
-more details.
-
 Project Statistics
 ------------------
 
@@ -32,8 +29,7 @@ Project Statistics
 Spamm Mini-App
 --------------
 
-We are currently developing a
-[Mini-App](http://freeon.github.io/spamm-miniapp) to demonstrate the
+We are currently developing a [Mini-App](/spamm-miniapp) to demonstrate the
 performance of Spammpack within a minimal set of electronic structure solvers.
 
 Authors
