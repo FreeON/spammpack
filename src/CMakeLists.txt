@@ -1,6 +1,5 @@
 set( spammpack-sources
   spamm_algebra.F90
-  spamm_c_bindings.F90
   spamm_convert.F90
   spamm_globals.F90
   spamm_inverse.F90
@@ -27,8 +26,14 @@ set_target_properties( spammpack-serial-shared
  )
 
 add_library( spammpack-serial-static STATIC ${spammpack-sources} )
+# Without these additional (chaining) dependencies, a parallel build gets all
+# confused because it tries to reuse the .mod files in some weird way.
+# Parallel builds are still possible within a library, but not across
+# unfortunately.
+add_dependencies( spammpack-serial-static spammpack-serial-shared )
 set_target_properties( spammpack-serial-static
   PROPERTIES
+  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
   OUTPUT_NAME ${LIBRARY_BASENAME}
   )
 
@@ -40,10 +45,11 @@ install(
 
 if( OPENMP_FOUND )
   add_library( spammpack-threaded-shared SHARED ${spammpack-sources} )
+  add_dependencies( spammpack-threaded-shared spammpack-serial-static )
   set_target_properties( spammpack-threaded-shared
     PROPERTIES
-    COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
     POSITION_INDEPENDENT_CODE TRUE
+    COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
     SOVERSION 0
     VERSION 0.0.0
     COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
@@ -51,8 +57,10 @@ if( OPENMP_FOUND )
     )
 
   add_library( spammpack-threaded-static STATIC ${spammpack-sources} )
+  add_dependencies( spammpack-threaded-static spammpack-threaded-shared )
   set_target_properties( spammpack-threaded-static
     PROPERTIES
+    COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
     OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
 
@@ -63,18 +71,18 @@ if( OPENMP_FOUND )
     )
 endif()
 
-install(
-  FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_algebra.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_c_bindings.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_convert.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_management.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_project.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_types.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spammpack.mod
-  DESTINATION include
-  )
+#install(
+#  FILES
+#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_algebra.mod
+#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_c_bindings.mod
+#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_convert.mod
+#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.mod
+#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_management.mod
+#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_project.mod
+#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_types.mod
+#  ${CMAKE_CURRENT_BINARY_DIR}/spammpack.mod
+#  DESTINATION include
+#  )
 
 if( CTAGS )
   add_custom_target( ctags

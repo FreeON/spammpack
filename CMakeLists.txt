@@ -110,7 +110,10 @@ try_run( RUN_RESULT_2 COMPILE_RESULT_2
   )
 if( NOT COMPILE_RESULT_2 )
   message( FATAL_ERROR "The Fortran compiler can not compile deferred length string expressions" )
+else()
+  set( HAVE_DEFERRED_STRING_LENGTH TRUE )
 endif()
+
 if( NOT RUN_RESULT_2 EQUAL 0 )
   message( WARNING
     "The Fortran compiler has trouble with deferred length string "
@@ -196,6 +199,10 @@ endif()
 
 if( SPAMM_STORE_TRANSPOSE )
   set( SPAMM_EXTRA_DEFINES ${SPAMM_EXTRA_DEFINES} SPAMM_STORE_TRANSPOSE )
+endif()
+
+if( HAVE_DEFERRED_STRING_LENGTH )
+  set( SPAMM_EXTRA_DEFINES ${SPAMM_EXTRA_DEFINES} HAVE_DEFERRED_STRING_LENGTH )
 endif()
 
 if( SPAMM_EXTRA_DEFINES STRGREATER 0 )
