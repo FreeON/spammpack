@@ -1,6 +1,5 @@
 set( spammpack-sources-C
   spamm_get_time.c
-  spamm_trap.c
   )
 
 set( spammpack-sources-Fortran

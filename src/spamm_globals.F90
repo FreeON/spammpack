@@ -140,7 +140,7 @@ CONTAINS
     ELSE
       IF(.NOT.PRESENT(Routine) .OR. .NOT.PRESENT(RoutineID)) THEN
         WRITE(*, *) "missing Routine and/or RoutineID argument"
-        CALL SpAMM_Trap()
+        error stop
       ENDIF
 
       SpAMM_STATS(RoutineID)%Time=SpAMM_STATS(RoutineID)%Time+Time

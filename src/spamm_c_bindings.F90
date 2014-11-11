@@ -36,13 +36,6 @@ module spamm_c_bindings
 
   implicit none
 
-  !> Define interface to the C function spamm_trap().
-  INTERFACE SpAMM_Trap
-    SUBROUTINE SpAMM_Trap () bind(C)
-      use, intrinsic :: iso_C_binding
-    END SUBROUTINE SpAMM_Trap
-  END INTERFACE SpAMM_Trap
-
   !> Define interface to the C function spamm_get_time().
   INTERFACE spamm_get_time_wrapper
     SUBROUTINE spamm_get_time_wrapper (timer) bind(C, name = "spamm_get_time")
