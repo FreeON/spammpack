@@ -1,5 +1,5 @@
 project( spammpack Fortran )
-cmake_minimum_required( VERSION 2.8.7 )
+cmake_minimum_required( VERSION 2.8 )
 
 if( NOT CMAKE_Fortran_COMPILER )
   message( FATAL_ERROR "Can not find Fortran compiler" )
