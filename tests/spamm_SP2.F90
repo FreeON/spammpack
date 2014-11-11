@@ -37,7 +37,6 @@ program spamm_SP2
   integer :: N, N_padded
   integer :: i, j
   integer :: test_repeat
-  integer :: testresult = 0
 
 #ifdef _OPENMP
   integer :: min_threads
@@ -75,7 +74,7 @@ program spamm_SP2
 
   if(Ne <= 0) then
     write(*, *) "Number of electrons missing or wrong"
-    call SpAMM_Exit(1)
+    error stop
   else
     write(*, "(A,D12.2)") "Setting Ne = ", Ne
   endif
@@ -156,8 +155,5 @@ program spamm_SP2
 #if defined(_OPENMP)
   enddo
 #endif
-
-  ! Exit with some error code.
-  call spamm_exit(testresult)
 
 end program spamm_SP2

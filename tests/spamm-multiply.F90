@@ -19,7 +19,6 @@ program spamm_multiply
 
   integer :: M, N
   integer :: test_repeat
-  integer :: testresult = 0
 
   real(kind(0d0)), dimension(:,:), allocatable :: A_dense
 
@@ -125,8 +124,5 @@ program spamm_multiply
 #if defined(_OPENMP)
   enddo
 #endif
-
-  ! Exit with some error code.
-  call spamm_exit(testresult)
 
 end program spamm_multiply
