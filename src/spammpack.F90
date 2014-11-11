@@ -91,7 +91,7 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-MODULE spammpack
+module spammpack
 
   use spamm_algebra
   use spamm_convert
@@ -102,6 +102,6 @@ MODULE spammpack
   use spamm_types
   use spamm_utilities
 
-CONTAINS
+contains
 
-END MODULE spammpack
+end module spammpack

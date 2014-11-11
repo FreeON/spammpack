@@ -36,14 +36,6 @@ module spamm_c_bindings
 
   implicit none
 
-  !> Define interface to the C function spamm_exit().
-  INTERFACE SpAMM_Exit
-    SUBROUTINE SpAMM_Exit (exitcode) bind(C)
-      use, intrinsic :: iso_C_binding
-      integer(c_int), intent(in) :: exitcode
-    END SUBROUTINE SpAMM_Exit
-  END INTERFACE SpAMM_Exit
-
   !> Define interface to the C function spamm_trap().
   INTERFACE SpAMM_Trap
     SUBROUTINE SpAMM_Trap () bind(C)

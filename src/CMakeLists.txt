@@ -1,5 +1,4 @@
 set( spammpack-sources-C
-  spamm_exit.c
   spamm_get_time.c
   spamm_trap.c
   )

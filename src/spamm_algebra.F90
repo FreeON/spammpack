@@ -1088,7 +1088,8 @@ CONTAINS
 
   END FUNCTION SpAMM_Trace_QuTree_Recur
 
-  !> Recursive part of trace for quadtree product, @f$ \mathrm{Tr} \left[ A \cdot B \right] @f$.
+  !> Recursive part of trace for quadtree product, @f$ \mathrm{Tr} \left[ A
+  !! \cdot B \right] @f$.
   !!
   !! @param qA Pointer to matrix A.
   !! @param qB Pointer to matrix B.
@@ -1206,7 +1207,8 @@ CONTAINS
     ENDIF
   END FUNCTION SpAMM_Norm_Reduce_QuTree_Recur
 
-  !> Recursive linear algebra routines on row tree vectors: @f$ C \leftarrow A \dot B @f$.
+  !> Recursive linear algebra routines on row tree vectors: @f$ C \leftarrow A
+  !! \dot B @f$.
   !!
   !! @param bC Vector C.
   !! @param qA Matrix A.
@@ -1422,11 +1424,14 @@ CONTAINS
     ENDIF
   END SUBROUTINE SpAMM_Multiply_BiTree_x_Scalar_Recur
 
-  !> Multiply two 2nd order matrices: \f$ C \leftarrow \alpha A B + \beta C \f$.
+  !> Multiply two 2nd order matrices: \f$ C \leftarrow \alpha A B + \beta C
+  !! \f$.
   !!
-  !! If the tolerance is not given, then \f$ \tau = 0 \f$ is used, i.e. the product reverts to an exact dense product.
+  !! If the tolerance is not given, then \f$ \tau = 0 \f$ is used, i.e. the
+  !! product reverts to an exact dense product.
   !!
-  !! @bug The code for \f$ \alpha \neq 1 \f$ and \f$ \beta \neq 0 \f$ is not implemented yet.
+  !! @bug The code for \f$ \alpha \neq 1 \f$ and \f$ \beta \neq 0 \f$ is not
+  !! implemented yet.
   !!
   !! @param A The matrix \f$ A \f$.
   !! @param B The matrix \f$ B \f$.
@@ -1526,7 +1531,8 @@ CONTAINS
 
   end subroutine spamm_multiply_2nd_order_x_1st_order
 
-  !> Frobenius norm of 2nd order matrix. This function updates the norm on the matrix and returns the square of the norm.
+  !> Frobenius norm of 2nd order matrix. This function updates the norm on the
+  !! matrix and returns the square of the norm.
   !!
   !! @param A The matrix.
   !!
