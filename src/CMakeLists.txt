@@ -1,8 +1,4 @@
-set( spammpack-sources-C
-  spamm_get_time.c
-  )
-
-set( spammpack-sources-Fortran
+set( spammpack-sources
   spamm_algebra.F90
   spamm_c_bindings.F90
   spamm_convert.F90
@@ -20,36 +16,19 @@ set( spammpack-sources-Fortran
 
 set( LIBRARY_BASENAME "spammpack" )
 
-add_library( spammpack-serial-C SHARED OBJECT ${spammpack-sources-C} )
-set_target_properties( spammpack-serial-C
-  PROPERTIES
-  POSITION_INDEPENDENT_CODE TRUE )
-
-add_library( spammpack-serial-Fortran SHARED OBJECT ${spammpack-sources-Fortran} )
-set_target_properties( spammpack-serial-Fortran
-  PROPERTIES
-  POSITION_INDEPENDENT_CODE TRUE
-  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}" )
-
-add_library( spammpack-serial-static
-  STATIC
-  $<TARGET_OBJECTS:spammpack-serial-C>
-  $<TARGET_OBJECTS:spammpack-serial-Fortran>
-  )
-set_target_properties( spammpack-serial-static
-  PROPERTIES
-  OUTPUT_NAME ${LIBRARY_BASENAME}
-  )
-
-add_library( spammpack-serial-shared
-  SHARED
-  $<TARGET_OBJECTS:spammpack-serial-C>
-  $<TARGET_OBJECTS:spammpack-serial-Fortran>
-  )
+add_library( spammpack-serial-shared SHARED ${spammpack-sources} )
 set_target_properties( spammpack-serial-shared
   PROPERTIES
+  POSITION_INDEPENDENT_CODE TRUE
+  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
   SOVERSION 0
   VERSION 0.0.0
+  OUTPUT_NAME ${LIBRARY_BASENAME}
+ )
+
+add_library( spammpack-serial-static STATIC ${spammpack-sources} )
+set_target_properties( spammpack-serial-static
+  PROPERTIES
   OUTPUT_NAME ${LIBRARY_BASENAME}
   )
 
@@ -60,40 +39,20 @@ install(
   )
 
 if( OPENMP_FOUND )
-  add_library( spammpack-threaded-C OBJECT ${spammpack-sources-C} )
-  set_target_properties( spammpack-threaded-C
-    PROPERTIES
-    COMPILE_FLAGS ${OpenMP_C_FLAGS}
-    POSITION_INDEPENDENT_CODE TRUE
-    )
-
-  add_library( spammpack-threaded-Fortran OBJECT ${spammpack-sources-Fortran} )
-  set_target_properties( spammpack-threaded-Fortran
+  add_library( spammpack-threaded-shared SHARED ${spammpack-sources} )
+  set_target_properties( spammpack-threaded-shared
     PROPERTIES
     COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
     POSITION_INDEPENDENT_CODE TRUE
-    )
-
-  add_library( spammpack-threaded-static
-    STATIC
-    $<TARGET_OBJECTS:spammpack-serial-C>
-    $<TARGET_OBJECTS:spammpack-serial-Fortran>
-    )
-  set_target_properties( spammpack-threaded-static
-    PROPERTIES
+    SOVERSION 0
+    VERSION 0.0.0
+    COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
     OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
 
-  add_library( spammpack-threaded-shared
-    SHARED
-    $<TARGET_OBJECTS:spammpack-serial-C>
-    $<TARGET_OBJECTS:spammpack-serial-Fortran>
-    )
-  set_target_properties( spammpack-threaded-shared
+  add_library( spammpack-threaded-static STATIC ${spammpack-sources} )
+  set_target_properties( spammpack-threaded-static
     PROPERTIES
-    SOVERSION 0
-    VERSION 0.0.0
-    COMPILE_FLAGS ${OpenMP_C_FLAGS}
     OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
 
@@ -122,7 +81,6 @@ if( CTAGS )
     ${CTAGS}
     --sort=foldcase
     --Fortran-kinds=+iL
-    ${spammpack-sources-C}
     ${spammpack-sources-Fortran}
     *.h
     )

@@ -231,10 +231,10 @@ module spamm_types
     REAL(SpAMM_DOUBLE) :: Time
 
     !> Some count.
-    INTEGER            :: Count
+    INTEGER :: Count
 
     !> The name of a function.
-    CHARACTER(LEN=50)  :: Routine
+    CHARACTER(LEN=50) :: Routine
 
   END TYPE Stats
 

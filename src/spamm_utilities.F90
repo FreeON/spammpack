@@ -34,10 +34,21 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_utilities
 
+  use spamm_types
+
   implicit none
 
+  !> Fatal error.
   integer, parameter :: FATAL = -1
+
+  !> Debug messages.
   integer, parameter :: DEBUG = 2
+
+  !> @deprecated Number of timer stat slots.
+  INTEGER, PARAMETER :: SpAMM_NUMBER_OF_STATS = 100
+
+  !> @deprecated The timers.
+  TYPE(Stats), DIMENSION(SpAMM_NUMBER_OF_STATS) :: SpAMM_STATS
 
   !> Interface to to_string functions.
   interface to_string
@@ -213,5 +224,90 @@ contains
     endif
 
   end subroutine write_log
+
+  !> The timer.
+  !! @return The time passed since some point in time.
+  real(kind(0d0)) function spamm_get_time ()
+
+  end function spamm_get_time
+
+  !> @deprecated Initialize global variables.
+  !!
+  !! @param N The matrix size. This variable gets padded and will be set to
+  !! the padded matrix dimension on exit.
+  !! @param Threads The number of threads. This is an optional argument and
+  !! only relevant when compiled with OpenMP.
+  !> Reset the timer.
+  SUBROUTINE SpAMM_Timer_Reset ()
+
+    SpAMM_STATS(:)%Time=0
+    SpAMM_STATS(:)%Count=0
+    SpAMM_STATS(:)%Routine=" "
+
+  END SUBROUTINE SpAMM_Timer_Reset
+
+  !> Print out a timestamp.
+  !!
+  !! This function keeps track of up to spamm_types::spamm_number_of_stats
+  !! timers. Eeach timer slot is identified by a unique RoutineID, which has to
+  !! be chose by the caller in some fashion, and a string which describes the
+  !! timer. Repeated calls with the same RoutineID will increment the total time
+  !! in the timer slot. When called without arguments, the current state of the
+  !! timers is printed.
+  !!
+  !! @param Time The time to print.
+  !! @param Routine A string indicating the part of the code that took this
+  !! amount of time.
+  !! @RoutineID An ID that identifies the routine.
+  SUBROUTINE SpAMM_Time_Stamp (Time, Routine, RoutineID)
+
+    REAL(SpAMM_DOUBLE),OPTIONAL :: Time
+    CHARACTER(LEN=*),OPTIONAL   :: Routine
+    INTEGER,OPTIONAL            :: RoutineID
+
+    REAL(SpAMM_DOUBLE)          :: SpAMM_Total_Time
+    INTEGER                     :: I
+
+    IF(.NOT.PRESENT(Time))THEN
+      WRITE(*,22)
+22    FORMAT(72('-'))
+      DO I=1,SpAMM_NUMBER_OF_STATS
+        IF(SpAMM_STATS(I)%Routine(1:1).NE." ")THEN
+          WRITE(*,33)ADJUSTL(TRIM(ADJUSTL(SpAMM_STATS(I)%Routine))), &
+            SpAMM_STATS(I)%Time/DBLE(SpAMM_STATS(I)%Count),SpAMM_STATS(I)%Count
+          33             FORMAT(A50,' AveTime = ',F20.10,' over ',I3,' counts ')
+        ENDIF
+      ENDDO
+      WRITE(*,22)
+      SpAMM_Total_Time=SpAMM_Zero
+      DO I=1,SpAMM_NUMBER_OF_STATS
+        IF(SpAMM_STATS(I)%Routine(1:1).NE." ")THEN
+          SpAMM_Total_Time=SpAMM_Total_Time+SpAMM_STATS(I)%Time
+          WRITE(*,34)ADJUSTL(TRIM(ADJUSTL(SpAMM_STATS(I)%Routine))), &
+            SpAMM_STATS(I)%Time
+          34             FORMAT(A50,' TotalTime = ',F20.10)
+        ENDIF
+      ENDDO
+      WRITE(*,22)
+#ifdef _OPENMP
+      WRITE(*,35) omp_get_num_threads(), SpAMM_Total_Time
+#else
+      WRITE(*,35) 1, SpAMM_Total_Time
+#endif
+35    FORMAT("SpAMM ",I4," threads ", F20.10)
+    ELSE
+      IF(.NOT.PRESENT(Routine) .OR. .NOT.PRESENT(RoutineID)) THEN
+        WRITE(*, *) "missing Routine and/or RoutineID argument"
+        error stop
+      ENDIF
+
+      SpAMM_STATS(RoutineID)%Time=SpAMM_STATS(RoutineID)%Time+Time
+      SpAMM_STATS(RoutineID)%Count=SpAMM_STATS(RoutineID)%Count+1
+      SpAMM_STATS(RoutineID)%Routine=ADJUSTL(Routine)
+      !         WRITE(*,44)ADJUSTL(TRIM(Routine)),Time
+      !44       FORMAT(A50,': Time = ',F20.10,' CPUsec')
+    ENDIF
+
+  END SUBROUTINE SpAMM_Time_Stamp
 
 end module spamm_utilities
