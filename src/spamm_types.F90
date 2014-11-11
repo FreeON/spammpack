@@ -97,8 +97,8 @@ module spamm_types
     !> The padded vector dimension.
     integer :: N_padded
 
-    !> The tree depth. The root tier is 0, tier == depth is the leaf node tier, i.e. the tier at which actual matrix elements are
-    !! stored.
+    !> The tree depth. The root tier is 0, tier == depth is the leaf node
+    !! tier, i.e. the tier at which actual matrix elements are stored.
     integer :: depth = -1
 
     !> The Frobenius norm.
@@ -147,14 +147,15 @@ module spamm_types
     !> The number of columns.
     integer :: N = -1
 
-    !> The tree depth. The root tier is 0, tier == depth is the leaf node tier, i.e. the tier at which actual matrix elements are
-    !! stored.
+    !> The tree depth. The root tier is 0, tier == depth is the leaf node
+    !! tier, i.e. the tier at which actual matrix elements are stored.
     integer :: depth = -1
 
     !> The Frobenius norm.
     REAL(SpAMM_KIND) :: norm = 0
 
-    !> The padded matrix dimension. Since the padded matrix is always square, we only store one number here.
+    !> The padded matrix dimension. Since the padded matrix is always square,
+    !! we only store one number here.
     integer :: N_padded
 
     !> The root quadtree pointer.
@@ -163,8 +164,9 @@ module spamm_types
     !> The number of non-zero elements.
     REAL(SpAMM_DOUBLE) :: number_nonzeros = 0
 
-    !> The number of operations (updated by a Multiply), i.e. the number of dense matrix products of size
-    !! spamm_globals::spamm_block_size x spamm_globals::spamm_block_size.
+    !> The number of operations (updated by a Multiply), i.e. the number of
+    !! dense matrix products of size spamm_globals::spamm_block_size x
+    !! spamm_globals::spamm_block_size.
     REAL(SpAMM_DOUBLE) :: number_operations = 0
 
   end type spamm_matrix_2nd_order
@@ -210,8 +212,9 @@ module spamm_types
     !> The number of non-zero elements.
     REAL(SpAMM_DOUBLE) :: number_nonzeros = 0
 
-    !> The number of operations (updated by a Multiply), i.e. the number of dense matrix products of size
-    !! spamm_globals::spamm_block_size x spamm_globals::spamm_block_size.
+    !> The number of operations (updated by a Multiply), i.e. the number of
+    !! dense matrix products of size spamm_globals::spamm_block_size x
+    !! spamm_globals::spamm_block_size.
     REAL(SpAMM_DOUBLE) :: number_operations = 0
 
 #ifdef _OPENMP

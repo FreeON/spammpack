@@ -18,11 +18,7 @@ set( spammpack-sources-Fortran
   spammpack.F90
   )
 
-if( SPAMM_SINGLE )
-  set( LIBRARY_BASENAME "spammpack_single" )
-else()
-  set( LIBRARY_BASENAME "spammpack" )
-endif()
+set( LIBRARY_BASENAME "spammpack" )
 
 add_library( spammpack-serial-C SHARED OBJECT ${spammpack-sources-C} )
 set_target_properties( spammpack-serial-C
