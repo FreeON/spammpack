@@ -6,7 +6,6 @@
 !! The library can be used by loading the main module @ref spammpack which includes the following sub modules:
 !!
 !! - @ref spamm_algebra
-!! - @ref spamm_c_bindings
 !! - @ref spamm_convert
 !! - @ref spamm_globals
 !! - @ref spamm_inverse

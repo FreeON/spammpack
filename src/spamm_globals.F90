@@ -38,7 +38,6 @@
 MODULE spamm_globals
 
   use spamm_types
-  use spamm_c_bindings
 
   IMPLICIT NONE
 
@@ -59,7 +58,5 @@ MODULE spamm_globals
 
   !> Cutoff the tree depth at some predefined maximum depth.
   INTEGER :: SpAMM_RECURSION_DEPTH_CUTOFF
-
-CONTAINS
 
 END MODULE spamm_globals

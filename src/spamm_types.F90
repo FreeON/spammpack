@@ -34,7 +34,9 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_types
 
-  !$ USE OMP_LIB
+#ifdef _OPENMP
+  use omp_lib
+#endif
 
   IMPLICIT NONE
 
@@ -223,20 +225,6 @@ module spamm_types
 #endif
 
   END TYPE QuTree
-
-  !> A type for performance measurements.
-  TYPE Stats
-
-    !> The time.
-    REAL(SpAMM_DOUBLE) :: Time
-
-    !> Some count.
-    INTEGER :: Count
-
-    !> The name of a function.
-    CHARACTER(LEN=50) :: Routine
-
-  END TYPE Stats
 
 CONTAINS
 

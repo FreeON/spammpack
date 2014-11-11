@@ -34,7 +34,9 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_utilities
 
-  use spamm_types
+#ifdef _OPENMP
+  use omp_lib
+#endif
 
   implicit none
 
@@ -46,6 +48,20 @@ module spamm_utilities
 
   !> @deprecated Number of timer stat slots.
   INTEGER, PARAMETER :: SpAMM_NUMBER_OF_STATS = 100
+
+  !> A type for performance measurements.
+  TYPE Stats
+
+    !> The time.
+    real(kind(0d0)) :: Time
+
+    !> Some count.
+    INTEGER :: Count
+
+    !> The name of a function.
+    CHARACTER(LEN=50) :: Routine
+
+  END TYPE Stats
 
   !> @deprecated The timers.
   TYPE(Stats), DIMENSION(SpAMM_NUMBER_OF_STATS) :: SpAMM_STATS
@@ -261,12 +277,12 @@ contains
   !! @RoutineID An ID that identifies the routine.
   SUBROUTINE SpAMM_Time_Stamp (Time, Routine, RoutineID)
 
-    REAL(SpAMM_DOUBLE),OPTIONAL :: Time
-    CHARACTER(LEN=*),OPTIONAL   :: Routine
-    INTEGER,OPTIONAL            :: RoutineID
+    REAL(kind(0d0)), OPTIONAL :: Time
+    CHARACTER(LEN=*), OPTIONAL :: Routine
+    INTEGER, OPTIONAL :: RoutineID
 
-    REAL(SpAMM_DOUBLE)          :: SpAMM_Total_Time
-    INTEGER                     :: I
+    REAL(kind(0d0)) :: SpAMM_Total_Time
+    INTEGER :: I
 
     IF(.NOT.PRESENT(Time))THEN
       WRITE(*,22)
@@ -279,7 +295,7 @@ contains
         ENDIF
       ENDDO
       WRITE(*,22)
-      SpAMM_Total_Time=SpAMM_Zero
+      SpAMM_Total_Time = 0
       DO I=1,SpAMM_NUMBER_OF_STATS
         IF(SpAMM_STATS(I)%Routine(1:1).NE." ")THEN
           SpAMM_Total_Time=SpAMM_Total_Time+SpAMM_STATS(I)%Time

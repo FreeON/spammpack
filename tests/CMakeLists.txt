@@ -4,6 +4,7 @@ add_library( utilities
   )
 
 add_executable( spamm-multiply spamm-multiply.F90 )
+add_dependencies( spamm-multiply spammpack-serial-shared )
 target_link_libraries( spamm-multiply utilities spammpack-serial-shared )
 
 if( OPENMP_FOUND )
@@ -13,10 +14,12 @@ if( OPENMP_FOUND )
     COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
     LINK_FLAGS ${OpenMP_Fortran_FLAGS}
     )
+  add_dependencies( spamm-multiply-threaded spammpack-threaded-shared )
   target_link_libraries( spamm-multiply-threaded utilities spammpack-threaded-shared )
 endif()
 
 add_executable( spamm-lowdin spamm-lowdin.F90 )
+add_dependencies( spamm-lowdin spammpack-serial-shared )
 target_link_libraries( spamm-lowdin utilities spammpack-serial-shared )
 
 include_directories( ${CMAKE_BINARY_DIR}/src )
