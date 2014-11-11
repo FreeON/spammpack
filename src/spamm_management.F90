@@ -761,6 +761,7 @@ CONTAINS
     type(spamm_matrix_order_1), pointer, intent(in) :: V
     integer, intent(in) :: i
 
+    LOG_DEBUG("getting element "//to_string(i))
     Vi = spamm_get_bitree(V%root, i)
 
   end function spamm_get_matrix_order_1

@@ -65,22 +65,14 @@ if( PACKAGE_CONFIG_FOUND )
 	       )
 endif()
 
-if( CMAKE_C_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_C_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -Wall" )
-  set( CMAKE_C_FLAGS_RELEASE "-Ofast -DNDEBUG -g" )
-elseif( CMAKE_C_COMPILER_ID STREQUAL "Intel" )
-  set( CMAKE_C_FLAGS_DEBUG "-O0 -g -check=conversions,stack,uninit" )
-  set( CMAKE_C_FLAGS_RELEASE "-O3 -no-prec-div -fp-model fast=2 -vec-report -g" )
-else()
-  message( STATUS "Unknown C compiler ${CMAKE_C_COMPILER_ID}" )
-endif()
-
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-none -Wimplicit-interface -Wimplicit-procedure" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none" )
+  set( MODULE_OUTPUT_ARGUMENT "-J" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG "-stand f08 -O0 -g -extend-source -debug all -check all -warn unused -traceback" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-O3 -no-prec-div -fp-model fast=2 -vec-report -g" )
+  set( MODULE_OUTPUT_ARGUMENT "-module" )
 else()
   message( STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}" )
 endif()
@@ -181,9 +173,6 @@ else()
 endif()
 
 set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_FATAL=\"write (*, '(A)')\"" )
-
-# For now hard-coded.
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTIMER_GETTIMEOFDAY" )
 
 set( SPAMM_COUNTERS FALSE
   CACHE BOOL "Add non-zero and number_operations counters" )

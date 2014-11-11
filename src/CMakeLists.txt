@@ -15,11 +15,15 @@ set( spammpack-sources
 
 set( LIBRARY_BASENAME "spammpack" )
 
+include_directories( ${CMAKE_CURRENT_BINARY_DIR}/include-serial )
+
+file( MAKE_DIRECTORY "include-serial" )
 add_library( spammpack-serial-shared SHARED ${spammpack-sources} )
 set_target_properties( spammpack-serial-shared
   PROPERTIES
   POSITION_INDEPENDENT_CODE TRUE
   COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
+  COMPILE_FLAGS "${MODULE_OUTPUT_ARGUMENT} ${CMAKE_CURRENT_BINARY_DIR}/include-serial"
   SOVERSION 0
   VERSION 0.0.0
   OUTPUT_NAME ${LIBRARY_BASENAME}
@@ -34,6 +38,7 @@ add_dependencies( spammpack-serial-static spammpack-serial-shared )
 set_target_properties( spammpack-serial-static
   PROPERTIES
   COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
+  COMPILE_FLAGS "${MODULE_OUTPUT_ARGUMENT} ${CMAKE_CURRENT_BINARY_DIR}/include-serial"
   OUTPUT_NAME ${LIBRARY_BASENAME}
   )
 
@@ -44,15 +49,18 @@ install(
   )
 
 if( OPENMP_FOUND )
+  include_directories( ${CMAKE_CURRENT_BINARY_DIR}/include-serial )
+
+  file( MAKE_DIRECTORY "include-threaded" )
   add_library( spammpack-threaded-shared SHARED ${spammpack-sources} )
   add_dependencies( spammpack-threaded-shared spammpack-serial-static )
   set_target_properties( spammpack-threaded-shared
     PROPERTIES
     POSITION_INDEPENDENT_CODE TRUE
     COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
+    COMPILE_FLAGS "${OpenMP_Fortran_FLAGS} ${MODULE_OUTPUT_ARGUMENT} ${CMAKE_CURRENT_BINARY_DIR}/include-threaded"
     SOVERSION 0
     VERSION 0.0.0
-    COMPILE_FLAGS ${OpenMP_Fortran_FLAGS}
     OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
 
@@ -61,6 +69,7 @@ if( OPENMP_FOUND )
   set_target_properties( spammpack-threaded-static
     PROPERTIES
     COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
+    COMPILE_FLAGS "${OpenMP_Fortran_FLAGS} ${MODULE_OUTPUT_ARGUMENT} ${CMAKE_CURRENT_BINARY_DIR}/include-threaded"
     OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
 
@@ -69,20 +78,34 @@ if( OPENMP_FOUND )
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     )
+
+  install(
+    FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_algebra.mod
+    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_c_bindings.mod
+    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_convert.mod
+    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_globals.mod
+    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_management.mod
+    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_project.mod
+    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_types.mod
+    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spammpack.mod
+    DESTINATION include-threaded
+    )
+
 endif()
 
-#install(
-#  FILES
-#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_algebra.mod
-#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_c_bindings.mod
-#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_convert.mod
-#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.mod
-#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_management.mod
-#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_project.mod
-#  ${CMAKE_CURRENT_BINARY_DIR}/spamm_types.mod
-#  ${CMAKE_CURRENT_BINARY_DIR}/spammpack.mod
-#  DESTINATION include
-#  )
+install(
+  FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_algebra.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_c_bindings.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_convert.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_globals.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_management.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_project.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_types.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spammpack.mod
+  DESTINATION include-serial
+  )
 
 if( CTAGS )
   add_custom_target( ctags
