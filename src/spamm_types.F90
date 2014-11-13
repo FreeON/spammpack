@@ -220,8 +220,8 @@ module spamm_types
     REAL(SpAMM_DOUBLE) :: number_operations = 0
 
 #ifdef _OPENMP
-    !> Block lock
-    INTEGER(KIND = OMP_LOCK_KIND) :: lock
+    !> Block OpenMP lock
+    integer(kind = OMP_LOCK_KIND) :: lock
 #endif
 
   END TYPE QuTree

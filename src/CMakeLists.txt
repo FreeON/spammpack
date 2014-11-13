@@ -13,6 +13,17 @@ set( spammpack-sources
   spammpack.F90
   )
 
+set( spammpack-modules
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_algebra.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_c_bindings.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_convert.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_management.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_project.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_types.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/spammpack.mod
+  )
+
 set( LIBRARY_BASENAME "spammpack" )
 
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/include-serial )
@@ -23,7 +34,6 @@ set_target_properties( spammpack-serial-shared
   PROPERTIES
   POSITION_INDEPENDENT_CODE TRUE
   COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
-  COMPILE_FLAGS "${MODULE_OUTPUT_ARGUMENT} ${CMAKE_CURRENT_BINARY_DIR}/include-serial"
   SOVERSION 0
   VERSION 0.0.0
   OUTPUT_NAME ${LIBRARY_BASENAME}
@@ -38,7 +48,6 @@ add_dependencies( spammpack-serial-static spammpack-serial-shared )
 set_target_properties( spammpack-serial-static
   PROPERTIES
   COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
-  COMPILE_FLAGS "${MODULE_OUTPUT_ARGUMENT} ${CMAKE_CURRENT_BINARY_DIR}/include-serial"
   OUTPUT_NAME ${LIBRARY_BASENAME}
   )
 
@@ -46,6 +55,24 @@ install(
   TARGETS spammpack-serial-static spammpack-serial-shared
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
+  )
+
+file( COPY
+  ${spammpack-modules}
+  DESTINATION include-serial
+  )
+
+install(
+  FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_algebra.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_c_bindings.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_convert.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_globals.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_management.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_project.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_types.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spammpack.mod
+  DESTINATION include-serial
   )
 
 if( OPENMP_FOUND )
@@ -93,19 +120,6 @@ if( OPENMP_FOUND )
     )
 
 endif()
-
-install(
-  FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_algebra.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_c_bindings.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_convert.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_globals.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_management.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_project.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_types.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spammpack.mod
-  DESTINATION include-serial
-  )
 
 if( CTAGS )
   add_custom_target( ctags
