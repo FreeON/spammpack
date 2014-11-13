@@ -14,21 +14,17 @@ set( spammpack-sources
   )
 
 set( spammpack-modules
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_algebra.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_c_bindings.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_convert.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_management.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_project.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_types.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/spammpack.mod
+  spamm_algebra.mod
+  spamm_convert.mod
+  spamm_globals.mod
+  spamm_management.mod
+  spamm_project.mod
+  spamm_types.mod
+  spammpack.mod
   )
 
 set( LIBRARY_BASENAME "spammpack" )
 
-include_directories( ${CMAKE_CURRENT_BINARY_DIR}/include-serial )
-
-file( MAKE_DIRECTORY "include-serial" )
 add_library( spammpack-serial-shared SHARED ${spammpack-sources} )
 set_target_properties( spammpack-serial-shared
   PROPERTIES
@@ -41,9 +37,12 @@ set_target_properties( spammpack-serial-shared
 
 add_library( spammpack-serial-static STATIC ${spammpack-sources} )
 # Without these additional (chaining) dependencies, a parallel build gets all
-# confused because it tries to reuse the .mod files in some weird way.
-# Parallel builds are still possible within a library, but not across
-# unfortunately.
+# confused because of the way CMake builds Fortran sources: The compilation is
+# done in the src dir, but uses -o to write the .o file into a subdirectory
+# named after the target. CMake does not use -J or something similar to place
+# the generated .mod file in that directory as well. Instead it copies the
+# .mod file from the src directory into the target directory.  Parallel builds
+# are still possible within a library, but not across unfortunately.
 add_dependencies( spammpack-serial-static spammpack-serial-shared )
 set_target_properties( spammpack-serial-static
   PROPERTIES
@@ -57,21 +56,22 @@ install(
   ARCHIVE DESTINATION lib
   )
 
-file( COPY
-  ${spammpack-modules}
-  DESTINATION include-serial
+file( MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include-serial" )
+add_custom_command( TARGET spammpack-serial-static
+  POST_BUILD
+  COMMAND cp ${spammpack-modules} "include-serial"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 
+unset( serial-modfiles )
+foreach( mod in ${spammpack-modules} )
+  list( APPEND serial-modfiles
+    ${CMAKE_CURRENT_BINARY_DIR}/include-serial/${mod}
+    )
+endforeach()
+
 install(
-  FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_algebra.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_c_bindings.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_convert.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_globals.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_management.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_project.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spamm_types.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/include-serial/spammpack.mod
+  FILES ${serial-modfiles}
   DESTINATION include-serial
   )
 
@@ -85,7 +85,7 @@ if( OPENMP_FOUND )
     PROPERTIES
     POSITION_INDEPENDENT_CODE TRUE
     COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
-    COMPILE_FLAGS "${OpenMP_Fortran_FLAGS} ${MODULE_OUTPUT_ARGUMENT} ${CMAKE_CURRENT_BINARY_DIR}/include-threaded"
+    COMPILE_FLAGS "${OpenMP_Fortran_FLAGS}"
     SOVERSION 0
     VERSION 0.0.0
     OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
@@ -96,7 +96,7 @@ if( OPENMP_FOUND )
   set_target_properties( spammpack-threaded-static
     PROPERTIES
     COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
-    COMPILE_FLAGS "${OpenMP_Fortran_FLAGS} ${MODULE_OUTPUT_ARGUMENT} ${CMAKE_CURRENT_BINARY_DIR}/include-threaded"
+    COMPILE_FLAGS "${OpenMP_Fortran_FLAGS}"
     OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
 
@@ -106,16 +106,22 @@ if( OPENMP_FOUND )
     ARCHIVE DESTINATION lib
     )
 
+  file( MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include-threaded" )
+  add_custom_command( TARGET spammpack-threaded-static
+    POST_BUILD
+    COMMAND cp ${spammpack-modules} "include-threaded"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+
+  unset( threaded-modfiles )
+  foreach( mod in ${spammpack-modules} )
+    list( APPEND threaded-modfiles
+      ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/${mod}
+      )
+  endforeach()
+
   install(
-    FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_algebra.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_c_bindings.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_convert.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_globals.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_management.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_project.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spamm_types.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/spammpack.mod
+    FILES ${threaded-modfiles}
     DESTINATION include-threaded
     )
 

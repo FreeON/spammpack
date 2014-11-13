@@ -22,8 +22,6 @@ add_executable( spamm-lowdin spamm-lowdin.F90 )
 add_dependencies( spamm-lowdin spammpack-serial-shared )
 target_link_libraries( spamm-lowdin utilities spammpack-serial-shared )
 
-include_directories( ${CMAKE_BINARY_DIR}/src )
-
 # More unit-like tests.
 set( UNIT_TESTS
   add_2nd_order_to_2nd_order.F90
