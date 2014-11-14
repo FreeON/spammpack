@@ -160,27 +160,13 @@ set( SPAMM_DEBUG_LEVEL ${SPAMM_DEBUG_LEVEL}
   CACHE STRING "The debugging output verbosity (valid range 0 <= LEVEL <= 2)" )
 set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DSPAMM_DEBUG_LEVEL=${SPAMM_DEBUG_LEVEL}" )
 
-if( SPAMM_DEBUG_LEVEL GREATER 0 )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_INFO=\"write (*, '(A)')\"" )
-else()
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_INFO=!" )
-endif()
-
-if( SPAMM_DEBUG_LEVEL GREATER 1 )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -D\"LOG_DEBUG(msg)=write (*, '(A)') msg\"" )
-else()
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_DEBUG=!" )
-endif()
-
-set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_FATAL=\"write (*, '(A)')\"" )
-
 set( SPAMM_COUNTERS FALSE
   CACHE BOOL "Add non-zero and number_operations counters" )
 
 set( SPAMM_STORE_TRANSPOSE FALSE
   CACHE BOOL "Store the transpose sub-matrix to aid vectorization" )
 
-set( SPAMM_EXTRA_DEFINES "" )
+unset( SPAMM_EXTRA_DEFINES )
 
 if( SPAMM_COUNTERS )
   set( SPAMM_EXTRA_DEFINES ${SPAMM_EXTRA_DEFINES} SPAMM_COUNTERS )

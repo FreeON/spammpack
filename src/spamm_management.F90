@@ -38,9 +38,11 @@ module spamm_management
   use spamm_globals
   use spamm_utilities
 
-  IMPLICIT NONE
+#include "spamm_utility_macros.h"
 
-  PRIVATE
+  implicit none
+
+  private
 
   PUBLIC :: Copy
   PUBLIC :: Delete

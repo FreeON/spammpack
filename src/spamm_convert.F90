@@ -40,6 +40,8 @@ module spamm_convert
   use spamm_types
   use spamm_utilities
 
+#include "spamm_utility_macros.h"
+
   IMPLICIT NONE
 
   CONTAINS

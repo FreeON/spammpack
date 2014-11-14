@@ -34,6 +34,8 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_inverse
 
+#include "spamm_utility_macros.h"
+
   implicit none
 
 contains

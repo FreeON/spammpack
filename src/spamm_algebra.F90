@@ -43,7 +43,9 @@ MODULE SpAMM_ALGEBRA
   use omp_lib
 #endif
 
-  IMPLICIT NONE
+#include "spamm_utility_macros.h"
+
+  implicit none
 
   PRIVATE
 

@@ -45,13 +45,13 @@
 
 #define LOG_FATAL(msg) write(*, "(A)") LOCATION_EXPAND()//msg
 
-#if DEBUG_LEVEL >= 1
+#if SPAMM_DEBUG_LEVEL >= 1
 #define LOG_INFO(msg) write(*, "(A)") LOCATION_EXPAND()//msg
 #else
 #define LOG_INFO(msg)
 #endif
 
-#if DEBUG_LEVEL >= 2
+#if SPAMM_DEBUG_LEVEL >= 2
 #define LOG_DEBUG(msg) write(*, "(A)") LOCATION_EXPAND()//msg
 #else
 #define LOG_DEBUG(msg)

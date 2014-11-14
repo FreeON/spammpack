@@ -2,6 +2,8 @@ program test
 
   use spammpack
 
+#include <spamm_utility_macros.h>
+
   implicit none
 
   integer, parameter :: M = 5
