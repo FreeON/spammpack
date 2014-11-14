@@ -26,12 +26,6 @@ Project Statistics
 
 {% include openhub.html %}
 
-Spamm Mini-App
---------------
-
-We are currently developing a [Mini-App](/spamm-miniapp) to demonstrate the
-performance of Spammpack within a minimal set of electronic structure solvers.
-
 Authors
 -------
 
