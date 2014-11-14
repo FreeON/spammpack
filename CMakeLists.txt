@@ -88,7 +88,7 @@ set( CMAKE_TRY_COMPILE_CONFIGURATION ${CMAKE_BUILD_TYPE} )
 
 try_compile( COMPILE_RESULT_1
   ${CMAKE_BINARY_DIR}
-  ${CMAKE_SOURCE_DIR}/error_stop.F90
+  ${CMAKE_SOURCE_DIR}/cmake-tests/error_stop.F90
   )
 if( NOT COMPILE_RESULT_1 )
   message( FATAL_ERROR "The Fortran compiler does not understand the 'error stop' statement" )
@@ -96,7 +96,7 @@ endif()
 
 try_run( RUN_RESULT_2 COMPILE_RESULT_2
   ${CMAKE_BINARY_DIR}
-  ${CMAKE_SOURCE_DIR}/deferred_string_length.F90
+  ${CMAKE_SOURCE_DIR}/cmake-tests/deferred_string_length.F90
   )
 if( NOT COMPILE_RESULT_2 )
   message( FATAL_ERROR "The Fortran compiler can not compile deferred length string expressions" )
@@ -114,7 +114,7 @@ endif()
 
 try_compile( COMPILE_RESULT_3
   ${CMAKE_BINARY_DIR}
-  ${CMAKE_SOURCE_DIR}/long_lines.F90
+  ${CMAKE_SOURCE_DIR}/cmake-tests/long_lines.F90
   )
 if( COMPILE_RESULT_3 )
   message( STATUS "The Fortran compiler supports lines > 132 characters" )
