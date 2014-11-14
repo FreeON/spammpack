@@ -68,11 +68,9 @@ endif()
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-none -Wimplicit-interface -Wimplicit-procedure" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none" )
-  #set( MODULE_OUTPUT_ARGUMENT "-J" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG "-stand f08 -O0 -g -extend-source -debug all -check all -warn unused -traceback" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-O3 -no-prec-div -fp-model fast=2 -vec-report -g" )
-  #set( MODULE_OUTPUT_ARGUMENT "-module" )
 else()
   message( STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}" )
 endif()
@@ -120,7 +118,7 @@ try_compile( COMPILE_RESULT_3
   )
 if( COMPILE_RESULT_3 )
   message( STATUS "The Fortran compiler supports lines > 132 characters" )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLOG_FILENAMES" )
+  set( LOG_FILENAMES TRUE )
 endif()
 
 include( FindDoxygen )
@@ -169,18 +167,23 @@ set( SPAMM_STORE_TRANSPOSE FALSE
 unset( SPAMM_EXTRA_DEFINES )
 
 if( SPAMM_COUNTERS )
-  set( SPAMM_EXTRA_DEFINES ${SPAMM_EXTRA_DEFINES} SPAMM_COUNTERS )
+  list( APPEND SPAMM_EXTRA_DEFINES SPAMM_COUNTERS )
 endif()
 
 if( SPAMM_STORE_TRANSPOSE )
-  set( SPAMM_EXTRA_DEFINES ${SPAMM_EXTRA_DEFINES} SPAMM_STORE_TRANSPOSE )
+  list( APPEND SPAMM_EXTRA_DEFINES SPAMM_STORE_TRANSPOSE )
 endif()
 
 if( HAVE_DEFERRED_STRING_LENGTH )
-  set( SPAMM_EXTRA_DEFINES ${SPAMM_EXTRA_DEFINES} HAVE_DEFERRED_STRING_LENGTH )
+  list( APPEND SPAMM_EXTRA_DEFINES HAVE_DEFERRED_STRING_LENGTH )
 endif()
 
-if( SPAMM_EXTRA_DEFINES STRGREATER 0 )
+if( LOG_FILENAMES )
+  list( APPEND SPAMM_EXTRA_DEFINES LOG_FILENAMES )
+endif()
+
+list( LENGTH SPAMM_EXTRA_DEFINES NUMBER_EXTRAS )
+if( NUMBER_EXTRAS GREATER 0 )
   message( STATUS "SPAMM_EXTRA_DEFINES: ${SPAMM_EXTRA_DEFINES}" )
 endif()
 
