@@ -65,6 +65,8 @@ if( PACKAGE_CONFIG_FOUND )
 	       )
 endif()
 
+set( CMAKE_TRY_COMPILE_CONFIGURATION Debug )
+
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
   set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-none -Wimplicit-interface -Wimplicit-procedure" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none" )
