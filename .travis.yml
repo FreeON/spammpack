@@ -11,4 +11,3 @@ script:
   - cmake --version
   - cmake . -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes
   - make
-  - make test
