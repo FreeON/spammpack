@@ -20,7 +20,7 @@ And build them using `make`
 
     $ make
 
-{% include thin_medium_add.html %}
+{% include responsive_ad.html %}
 
 Installing
 ----------
