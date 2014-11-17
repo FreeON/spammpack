@@ -18,6 +18,7 @@ before_install:
   - ./travis/before_install.sh
 
 script:
-  - "cmake . -DCMAKE_Fortran_COMPILER=gfortran-${GCC_VERSION} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_VERBOSE_MAKEFILE=yes"
+  - "cmake . -DCMAKE_INSTALL_PREFIX=${PWD}/install -DCMAKE_Fortran_COMPILER=gfortran-${GCC_VERSION} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_VERBOSE_MAKEFILE=yes"
   - make
   - "ctest --verbose"
+  - make install
