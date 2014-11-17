@@ -118,7 +118,7 @@ module spamm_types
   TYPE BiTree
 
     !> The norm.
-    REAL(SpAMM_KIND) :: Norm
+    REAL(SpAMM_KIND) :: Norm = 0
 
     !> The number of non-zero elements.
     real(spamm_double) :: number_nonzeros = 0

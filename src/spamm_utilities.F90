@@ -69,10 +69,13 @@ module spamm_utilities
   !> Interface to to_string functions.
   interface to_string
     module procedure int_to_string
+    module procedure double_array_to_string
     module procedure single_to_string
     module procedure double_to_string
     module procedure bitree_to_string
     module procedure qutree_to_string
+    module procedure spamm_matrix_order_1_to_string
+    module procedure spamm_matrix_2nd_order_to_string
   end interface to_string
 
 contains
@@ -110,6 +113,25 @@ contains
 
   end function single_to_string
 
+  !> Convert an array of double precision reals to a string.
+  !!
+  !! @param x The real array.
+  !!
+  !! @return The string representation.
+  function double_array_to_string (x) result(str_x)
+
+    real(kind(0d0)), intent(in) :: x(:)
+    character(len = 1000) :: temp
+    character(len = 100) :: format_string
+    character(len = :), allocatable :: str_x
+    integer :: i
+
+    write(format_string, "(A,I4,A)") "(", size(x), "ES16.8E3)"
+    write(temp, format_string) (x(i), i = 1, size(x))
+    str_x = trim(adjustl(temp))
+
+  end function double_array_to_string
+
   !> Convert a double precision real to a string.
   !!
   !! @param x The real
@@ -144,6 +166,8 @@ contains
         to_string(q%i_lower)//":"// &
         to_string(q%i_upper)//"]"
 
+      write(temp, "(A)") trim(temp)//", norm = "//to_string(q%norm)
+
       if(allocated(q%vect)) then
         write(temp, "(A)") trim(temp)//", vect["// &
           int_to_string(size(q%vect, 1))//"]"
@@ -177,8 +201,8 @@ contains
     use spamm_types
 
     type(qutree), pointer, intent(in) :: q
-    character(len = 200) :: temp
     character(len = :), allocatable :: str_q
+    character(len = 200) :: temp
 
     if(associated(q)) then
       write(temp, "(A)") "q["// &
@@ -220,6 +244,59 @@ contains
     str_q = trim(adjustl(temp))
 
   end function qutree_to_string
+
+  !> Convert a spamm_matrix_order_1 to a string.
+  !!
+  !! @param V The vector.
+  !!
+  !! @return The string representation.
+  function spamm_matrix_order_1_to_string (V) result(str_q)
+
+    use spamm_types
+
+    type(spamm_matrix_order_1), pointer, intent(in) :: V
+    character(len = :), allocatable :: str_q
+    character(len = 200) :: temp
+
+    if(associated(V)) then
+      write(temp, "(A)") "N = "//to_string(V%N)
+      write(temp, "(A)") trim(temp)//", N_padded = "//to_string(V%N_padded)
+      write(temp, "(A)") trim(temp)//", depth = "//to_string(V%depth)
+      write(temp, "(A)") trim(temp)//", norm = "//to_string(V%norm)
+    else
+      write(temp, "(A)") "V not associated"
+    endif
+
+    str_q = trim(adjustl(temp))
+
+  end function spamm_matrix_order_1_to_string
+
+  !> Convert a spamm_matrix_2nd_order to a string.
+  !!
+  !! @param A The matrix.
+  !!
+  !! @return The string representation.
+  function spamm_matrix_2nd_order_to_string (A) result(str_q)
+
+    use spamm_types
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    character(len = :), allocatable :: str_q
+    character(len = 200) :: temp
+
+    if(associated(A)) then
+      write(temp, "(A)") "M = "//to_string(A%M)
+      write(temp, "(A)") trim(temp)//", N = "//to_string(A%N)
+      write(temp, "(A)") trim(temp)//", N_padded = "//to_string(A%N_padded)
+      write(temp, "(A)") trim(temp)//", depth = "//to_string(A%depth)
+      write(temp, "(A)") trim(temp)//", norm = "//to_string(A%norm)
+    else
+      write(temp, "(A)") "A not associated"
+    endif
+
+    str_q = trim(adjustl(temp))
+
+  end function spamm_matrix_2nd_order_to_string
 
   !> Print a log message.
   !!

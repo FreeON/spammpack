@@ -67,6 +67,7 @@ module spamm_management
     MODULE PROCEDURE SpAMM_Copy_BiTree_2_BiTree
     module procedure spamm_copy_2nd_order_to_2nd_order
     module procedure spamm_copy_2nd_order_to_order_1
+    module procedure spamm_copy_order_1_to_order_1
   END INTERFACE
 
   !> Interface for deletion (deallocation) of SpAMM objects.
@@ -102,6 +103,31 @@ module spamm_management
   end interface reset_counters
 
 CONTAINS
+
+  !> Copy a 1st order matrix: \f$ B \leftarrow A \f$.
+  !!
+  !! @param A The vector A.
+  !! @param B The vector B.
+  subroutine spamm_copy_order_1_to_order_1 (A, B)
+
+    type(spamm_matrix_order_1), pointer, intent(in) :: A
+    type(spamm_matrix_order_1), pointer, intent(inout) :: B
+
+    if(.not. associated(A)) then
+      return
+    endif
+
+    if(associated(B)) then
+      call delete(B)
+    endif
+
+    LOG_DEBUG("copying vector")
+
+    B => null()
+    call spamm_allocate_matrix_order_1(A%N, B)
+    call spamm_copy_bitree_2_bitree(A%root, B%root)
+
+  end subroutine spamm_copy_order_1_to_order_1
 
   !> Copy a 2nd order matrix: \f$ B \leftarrow A \f$.
   !!
@@ -320,16 +346,22 @@ CONTAINS
     TYPE(BiTree), POINTER  :: bA,bC
     INTEGER                :: Depth
 
-    IF(.NOT.ASSOCIATED(bA))RETURN
-    IF(.NOT.ASSOCIATED(bC))THEN
-      CALL NewBiNode(bC, bA%i_lower, bA%i_upper)
-    ENDIF
-    !    bC%Norms%FrobeniusNorm=bA%Norms%FrobeniusNorm
+    if(.not. associated(bA)) then
+      LOG_DEBUG("bA not associated")
+      return
+    endif
+
+    if(.not. associated(bC)) then
+      call NewBiNode(bC, bA%i_lower, bA%i_upper)
+    endif
+
     bC%Norm=bA%Norm
-    IF(Depth==SpAMM_TOTAL_DEPTH.AND.ALLOCATED(bA%Vect))THEN
-      IF(.NOT.ALLOCATED(bC%Vect)) &
-        ALLOCATE(bC%Vect(1:SPAMM_BLOCK_SIZE))
-      bC%Vect=bA%Vect
+    if(bA%i_upper-bA%i_lower+1 == SPAMM_BLOCK_SIZE .and. allocated(bA%vect)) then
+      if(.not. allocated(bC%Vect)) then
+        allocate(bC%Vect(SPAMM_BLOCK_SIZE))
+      endif
+      LOG_DEBUG("copying vect")
+      bC%Vect = bA%Vect
     ELSE
       IF(ASSOCIATED(bA%sect1))THEN
         !$OMP TASK UNTIED SHARED(bA,bC) &
@@ -403,7 +435,10 @@ CONTAINS
     integer, intent(in) :: j
     INTEGER               :: half
 
-    IF(.NOT.ASSOCIATED(qA)) RETURN
+    if(.not. associated(qA)) then
+      LOG_DEBUG("A not associated")
+      return
+    endif
 
     IF(.NOT.ASSOCIATED(bC)) then
       CALL NewBiNode(bC, qA%i_lower, qA%i_upper)
@@ -423,7 +458,8 @@ CONTAINS
       endif
     ELSE
       half = (qA%j_upper-qA%j_lower+1)/2-1
-      if(j <= qA%i_lower+half) then
+      LOG_DEBUG("qA%j_lower+half = "//to_string(qA%j_lower+half))
+      if(j <= qA%j_lower+half) then
         LOG_DEBUG("descending upper half")
         IF(ASSOCIATED(qA%Quad11))THEN
           !$OMP TASK UNTIED SHARED(qA,bC)

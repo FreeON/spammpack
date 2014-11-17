@@ -42,9 +42,9 @@ module spamm_convert
 
 #include "spamm_utility_macros.h"
 
-  IMPLICIT NONE
+  implicit none
 
-  CONTAINS
+  contains
 
   !> Recursively convert a dense vector to a bitree.
   !!
@@ -104,7 +104,7 @@ module spamm_convert
         LOG_DEBUG("1:"//to_string(convert_rows-i_lower+1))
         LOG_DEBUG(to_string(i_lower)//":"//to_string(convert_rows))
         qV%vect(1:convert_rows-i_lower+1) = V(i_lower:convert_rows)
-        LOG_DEBUG("stored: "//to_string(qV%vect(1)))
+        LOG_DEBUG("stored: "//to_string(qV%vect))
 
         qV%norm = dot_product(qV%vect, qV%vect)
 

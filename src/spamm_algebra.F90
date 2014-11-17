@@ -1226,20 +1226,24 @@ CONTAINS
     ! Associated
     IF(ASSOCIATED(qA).AND.ASSOCIATED(bB)) THEN
       ! Estimate
-      LOG_DEBUG("norm(A) = "//to_string(qA%norm))
-      LOG_DEBUG("norm(B) = "//to_string(bB%norm))
+      LOG_DEBUG("qA: "//to_string(qA))
+      LOG_DEBUG("bB: "//to_string(bB))
 
-      IF(qA%Norm*bB%Norm < tolerance) RETURN
+      if(qA%Norm*bB%Norm < tolerance) then
+        LOG_DEBUG("norm_A*norm_B = "//to_string(qA%Norm*bB%Norm)//" < "//to_string(tolerance))
+        return
+      endif
 
       IF(.NOT.ASSOCIATED(bC))THEN
         LOG_DEBUG("allocating new node in C bitree")
-        ALLOCATE(bC)
+        call new(bC, bB%i_lower, bB%i_upper)
       ENDIF
 
       ! Blocks
       IF(bC%i_upper-bC%i_lower+1 == SPAMM_BLOCK_SIZE) THEN
         ! Allocate
         IF(.NOT.ALLOCATED(bC%Vect))THEN
+          LOG_DEBUG("allocating new vec in C bitree")
           !$OMP CRITICAL
           ALLOCATE(bC%Vect(SPAMM_BLOCK_SIZE))
           bC%Vect=SpAMM_Zero
@@ -1248,6 +1252,8 @@ CONTAINS
         ! Accumulate
         bC%Vect(1:SPAMM_BLOCK_SIZE)=bC%Vect+MATMUL(qA%Blok, bB%Vect)
       ELSE
+
+        LOG_DEBUG("descending")
 
         ! 0=00*0
         !$OMP TASK UNTIED SHARED(qA,bB,bC)
@@ -1270,7 +1276,11 @@ CONTAINS
         !$OMP END TASK
 
         !$OMP TASKWAIT
+
+        LOG_DEBUG("ascending")
       ENDIF
+    else
+      LOG_DEBUG("either qA or bB are not associated")
     ENDIF
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_BiTree_Recur
@@ -1529,6 +1539,8 @@ CONTAINS
     endif
 
     LOG_DEBUG("multiply matrix*vector")
+    LOG_DEBUG("A: "//to_string(A))
+    LOG_DEBUG("B: "//to_string(B))
     call spamm_multiply_qutree_x_bitree(A%root, B%root, C%root, local_threshold)
 
   end subroutine spamm_multiply_2nd_order_x_1st_order

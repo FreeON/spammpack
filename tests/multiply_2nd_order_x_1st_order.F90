@@ -6,8 +6,8 @@ program test
 
   implicit none
 
-  integer, parameter :: M = 102
-  integer, parameter :: N = 78
+  integer, parameter :: M = 5
+  integer, parameter :: N = 7
 
   type(spamm_matrix_2nd_order), pointer :: A => null()
   type(spamm_matrix_order_1), pointer :: B => null()
