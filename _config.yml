@@ -10,5 +10,12 @@ pages_list:
   Building: "/spammpack/building.html"
   References: "/spammpack/references.html"
 
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: "default"
+
 url: http://www.freeon.org/spammpack
 baseurl: "/spammpack"

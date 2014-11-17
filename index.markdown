@@ -1,9 +1,8 @@
 ---
-layout: default
 title: Spammpack
 ---
 
-## Spammpack
+# Spammpack
 
 Spammpack is an implementation of the Sparse Approximate Matrix Multiplication
 (SpAMM) algorithm introduced in [[1]](/spammpack/references.html#1).  It
@@ -20,16 +19,16 @@ Alternatively we offer a snapshot of the latest version in a zip or tar archive
 through the links on the right hand side. See [Building](/spammpack/building.html)
 for more details on how to build the library.
 
-## License
+# License
 
 Spammpack is licensed under the [BSD 3-clause
 license](http://opensource.org/licenses/BSD-3-Clause).
 
-## Project Statistics
+# Project Statistics
 
 {% include openhub.html %}
 
-## Authors
+# Authors
 
 The principal authors of spammpack are:
 
