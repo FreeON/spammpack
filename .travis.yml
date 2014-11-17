@@ -4,15 +4,15 @@ compiler:
   - gcc
 
 env:
-  - GCC_VERSION=4.6
-  - GCC_VERSION=4.7
-  - GCC_VERSION=4.8
-  - GCC_VERSION=4.9
+  - GCC_VERSION=4.6 FC=gfortran-${GCC_VERSION}
+  - GCC_VERSION=4.7 FC=gfortran-${GCC_VERSION}
+  - GCC_VERSION=4.8 FC=gfortran-${GCC_VERSION}
+  - GCC_VERSION=4.9 FC=gfortran-${GCC_VERSION}
 
 before_install:
-  - sudo ./travis/before_install.sh
+  - ./travis/before_install.sh
 
 script:
-  - cmake . -DCMAKE_Fortran_COMPILER=gfortran-${GCC_VERSION} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes
+  - cmake . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes
   - make
   - make test
