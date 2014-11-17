@@ -3,12 +3,16 @@ language: C
 compiler:
   - gcc
 
+env:
+  - GCC_VERSION=4.6
+  - GCC_VERSION=4.7
+  - GCC_VERSION=4.8
+  - GCC_VERSION=4.9
+
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -y gfortran
+  - sudo ./travis/before_install.sh
 
 script:
-  - cmake --version
-  - cmake . -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes
+  - cmake . -DCMAKE_Fortran_COMPILER=gfortran-${GCC_VERSION} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes
   - make
   - make test
