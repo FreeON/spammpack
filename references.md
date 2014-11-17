@@ -3,8 +3,7 @@ layout: default
 title: Spammpack - References
 ---
 
-References
-----------
+## References
 
   1. <a name="1"></a>Matt Challacombe, Nicolas Bock, **"Fast Multiplication of Matrices with
      Decay"**, [arXiv:1011.3534 [cs.DS] (2010).](http://arxiv.org/abs/1011.3534)

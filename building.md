@@ -3,8 +3,7 @@ layout: default
 title: Spammpack - Building
 ---
 
-Building
---------
+## Building
 
 Download a zip or tar archive using the links on the right. Unpack and change
 into the top level source directory:
@@ -22,8 +21,7 @@ And build them using `make`
 
 {% include responsive_ad.html %}
 
-Installing
-----------
+## Installing
 
 The `install` target will install the library into
 `${CMAKE_INSTALL_PREFIX}/lib`.
