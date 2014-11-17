@@ -21,6 +21,13 @@ And build them using `make`
 
 {% include responsive_ad.html %}
 
+## Testing
+
+Spammpack comes with a regression test suite. If you want to make sure (and
+why wouldn't you?) that everything built correctly, run
+
+    $ make test
+
 ## Installing
 
 The `install` target will install the library into
