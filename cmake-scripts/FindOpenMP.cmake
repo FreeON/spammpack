@@ -176,7 +176,7 @@ if(CMAKE_Fortran_COMPILER_LOADED)
     unset(OpenMP_Fortran_FLAG_CANDIDATES)
   else()
     _OPENMP_FLAG_CANDIDATES("Fortran")
-    include(${CMAKE_SOURCE_DIR}/CheckFortranSourceCompiles.cmake)
+    include(${CMAKE_SOURCE_DIR}/cmake-scripts/CheckFortranSourceCompiles.cmake)
   endif()
 
   foreach(FLAG IN LISTS OpenMP_Fortran_FLAG_CANDIDATES)

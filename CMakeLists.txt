@@ -134,7 +134,7 @@ else()
   message( STATUS "Can not build documentation" )
 endif()
 
-include( ${CMAKE_SOURCE_DIR}/FindOpenMP.cmake )
+include( ${CMAKE_SOURCE_DIR}/cmake-scripts/FindOpenMP.cmake )
 
 include( FindLAPACK )
 
