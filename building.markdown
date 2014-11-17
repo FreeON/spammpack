@@ -27,6 +27,12 @@ why wouldn't you?) that everything built correctly, run
 
     $ make test
 
+In addition, we let
+[Travis-CI](https://travis-ci.org)
+run through the test suite.  The latest result of this build/test process is
+shown on the right. Current condition:
+[![](https://travis-ci.org/FreeON/spammpack.svg)](https://travis-ci.org/FreeON/spammpack).
+
 # Installing
 
 The `install` target will install the library into
