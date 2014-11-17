@@ -64,11 +64,13 @@ add_custom_command( TARGET spammpack-serial-static
   )
 
 unset( serial-modfiles )
-foreach( mod in ${spammpack-modules} )
+foreach( mod ${spammpack-modules} )
   list( APPEND serial-modfiles
     ${CMAKE_CURRENT_BINARY_DIR}/include-serial/${mod}
     )
 endforeach()
+
+message( STATUS "${serial-modfiles}" )
 
 install(
   FILES ${serial-modfiles}
@@ -76,9 +78,6 @@ install(
   )
 
 if( OPENMP_FOUND )
-  include_directories( ${CMAKE_CURRENT_BINARY_DIR}/include-serial )
-
-  file( MAKE_DIRECTORY "include-threaded" )
   add_library( spammpack-threaded-shared SHARED ${spammpack-sources} )
   add_dependencies( spammpack-threaded-shared spammpack-serial-static )
   set_target_properties( spammpack-threaded-shared
@@ -114,7 +113,7 @@ if( OPENMP_FOUND )
     )
 
   unset( threaded-modfiles )
-  foreach( mod in ${spammpack-modules} )
+  foreach( mod ${spammpack-modules} )
     list( APPEND threaded-modfiles
       ${CMAKE_CURRENT_BINARY_DIR}/include-threaded/${mod}
       )
