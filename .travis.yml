@@ -10,7 +10,7 @@ env:
       - GCC_VERSION=4.7 FC=gfortran-${GCC_VERSION}
       - GCC_VERSION=4.8 FC=gfortran-${GCC_VERSION}
       - GCC_VERSION=4.9 FC=gfortran-${GCC_VERSION}
-    - build_type
+    - build_type:
       - CMAKE_BUILD_TYPE=Debug
       - CMAKE_BUILD_TYPE=Release
 
