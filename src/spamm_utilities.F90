@@ -90,7 +90,11 @@ contains
     integer, intent(in) :: i
 
     character(len = 100) :: temp
+#ifdef HAVE_DEFERRED_STRING_LENGTH
     character(len = :), allocatable :: str_i
+#else
+    character(len = 100) :: str_i
+#endif
 
     write(temp, *) i
     str_i = trim(adjustl(temp))
@@ -106,7 +110,11 @@ contains
 
     real(kind(0e0)), intent(in) :: x
     character(len = 100) :: temp
+#ifdef HAVE_DEFERRED_STRING_LENGTH
     character(len = :), allocatable :: str_x
+#else
+    character(len = 100), allocatable :: str_x
+#endif
 
     write(temp, "(ES16.8E3)") x
     str_x = trim(adjustl(temp))
@@ -123,7 +131,11 @@ contains
     real(kind(0d0)), intent(in) :: x(:)
     character(len = 1000) :: temp
     character(len = 100) :: format_string
+#ifdef HAVE_DEFERRED_STRING_LENGTH
     character(len = :), allocatable :: str_x
+#else
+    character(len = 100), allocatable :: str_x
+#endif
     integer :: i
 
     write(format_string, "(A,I4,A)") "(", size(x), "ES16.8E3)"
@@ -141,7 +153,11 @@ contains
 
     real(kind(0d0)), intent(in) :: x
     character(len = 100) :: temp
+#ifdef HAVE_DEFERRED_STRING_LENGTH
     character(len = :), allocatable :: str_x
+#else
+    character(len = 100), allocatable :: str_x
+#endif
 
     write(temp, "(ES16.8E3)") x
     str_x = trim(adjustl(temp))
@@ -159,7 +175,11 @@ contains
 
     type(bitree), pointer, intent(in) :: q
     character(len = 200) :: temp
+#ifdef HAVE_DEFERRED_STRING_LENGTH
     character(len = :), allocatable :: str_q
+#else
+    character(len = 200), allocatable :: str_q
+#endif
 
     if(associated(q)) then
       write(temp, "(A)") "b["// &
@@ -201,8 +221,12 @@ contains
     use spamm_types
 
     type(qutree), pointer, intent(in) :: q
-    character(len = :), allocatable :: str_q
     character(len = 200) :: temp
+#ifdef HAVE_DEFERRED_STRING_LENGTH
+    character(len = :), allocatable :: str_q
+#else
+    character(len = 200), allocatable :: str_q
+#endif
 
     if(associated(q)) then
       write(temp, "(A)") "q["// &
@@ -255,8 +279,12 @@ contains
     use spamm_types
 
     type(spamm_matrix_order_1), pointer, intent(in) :: V
-    character(len = :), allocatable :: str_q
     character(len = 200) :: temp
+#ifdef HAVE_DEFERRED_STRING_LENGTH
+    character(len = :), allocatable :: str_q
+#else
+    character(len = 200), allocatable :: str_q
+#endif
 
     if(associated(V)) then
       write(temp, "(A)") "N = "//to_string(V%N)
@@ -281,8 +309,12 @@ contains
     use spamm_types
 
     type(spamm_matrix_2nd_order), pointer, intent(in) :: A
-    character(len = :), allocatable :: str_q
     character(len = 200) :: temp
+#ifdef HAVE_DEFERRED_STRING_LENGTH
+    character(len = :), allocatable :: str_q
+#else
+    character(len = 200), allocatable :: str_q
+#endif
 
     if(associated(A)) then
       write(temp, "(A)") "M = "//to_string(A%M)

@@ -102,8 +102,6 @@ try_run( RUN_RESULT_2 COMPILE_RESULT_2
   )
 if( NOT COMPILE_RESULT_2 )
   message( FATAL_ERROR "The Fortran compiler can not compile deferred length string expressions" )
-else()
-  set( HAVE_DEFERRED_STRING_LENGTH TRUE )
 endif()
 
 if( NOT RUN_RESULT_2 EQUAL 0 )
@@ -111,7 +109,9 @@ if( NOT RUN_RESULT_2 EQUAL 0 )
     "The Fortran compiler has trouble with deferred length string "
     "assignments, which might render screen output rather ugly. Please "
     "consider using a more recent compiler that fully implements "
-    "the Fortran 2003 standard (e.g. >=gcc-4.8).")
+    "this part of the the Fortran 2003 standard (e.g. >=gcc-4.8).")
+else()
+  set( HAVE_DEFERRED_STRING_LENGTH TRUE )
 endif()
 
 try_compile( COMPILE_RESULT_3
@@ -182,6 +182,10 @@ endif()
 
 if( LOG_FILENAMES )
   list( APPEND SPAMM_EXTRA_DEFINES LOG_FILENAMES )
+endif()
+
+if( HAVE_DEFERRED_STRING_LENGTH )
+  list( APPEND SPAMM_EXTRA_DEFINES HAVE_DEFERRED_STRING_LENGTH )
 endif()
 
 list( LENGTH SPAMM_EXTRA_DEFINES NUMBER_EXTRAS )

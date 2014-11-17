@@ -106,4 +106,6 @@ program test
     enddo
   enddo
 
+  write(*, *) "done"
+
 end program test
