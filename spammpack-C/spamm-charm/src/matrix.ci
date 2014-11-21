@@ -1,0 +1,30 @@
+module matrix
+{
+  extern module node;
+  extern module messages;
+  chare Matrix
+  {
+    entry Matrix (int initialPE, bool alignPEs, int N, int blocksize,
+        int N_basic, int nameLength, char name[nameLength+1]);
+    entry [threaded] void init (CkCallback &cb);
+    entry [sync] MatrixInfoMsg * info (void);
+    entry [sync] DenseMatrixMsg * toDense (void);
+    entry [sync] MatrixNodeMsg * getNodes (void);
+    entry [threaded] void updatePEMap (CkCallback &cb);
+    entry [reductiontarget] void donePEMap (CkReductionMsg *data);
+    entry [threaded] void set (int N, double A[N*N], CkCallback &cb);
+    entry [threaded] void setNorm (CkCallback &cb);
+    entry [threaded] void updateNorm (CkCallback &cb);
+    entry [sync] DoubleMsg * getNorm (void);
+    entry [sync] PEMapMsg * getPEMap (void);
+    entry [threaded] void updateTrace (CkCallback &cb);
+    entry [sync] DoubleMsg * getTrace (void);
+    entry [reductiontarget] void doneTrace (double trace);
+    entry [threaded] void add (double alpha, double beta, CProxy_Matrix B,
+        CkCallback &cb);
+    entry [threaded] void setEqual (CProxy_Matrix B, CkCallback &cb);
+    entry [threaded] void scale (double alpha, CkCallback &cb);
+    entry [threaded] void addIdentity (double alpha, double beta,
+        CkCallback &cb);
+  };
+};

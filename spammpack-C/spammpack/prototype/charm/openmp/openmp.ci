@@ -1,0 +1,13 @@
+mainmodule openmp
+{
+  array [1D] Work
+  {
+    entry Work (void);
+    entry void doSomething (CkCallback &cb);
+  };
+  mainchare Main
+  {
+    entry Main (CkArgMsg *arg);
+    entry [threaded] void run (void);
+  };
+};

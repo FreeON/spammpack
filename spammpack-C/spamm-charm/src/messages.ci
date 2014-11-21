@@ -1,0 +1,24 @@
+module messages
+{
+  message ChunkMsg
+  {
+    char chunk[];
+  };
+  message DoubleMsg;
+  message IntMsg;
+  message MatrixInfoMsg;
+  message MatrixNodeMsg
+  {
+    CProxy_Node nodes[];
+  };
+  message NodeInfoMsg;
+  message DenseMatrixMsg
+  {
+    double A[];
+  };
+  message PEMapMsg
+  {
+    int PEMap[];
+    double PEMap_norm[];
+  };
+};

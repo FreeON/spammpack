@@ -1,0 +1,15 @@
+# vim: tw=0
+
+# GotoBLAS
+./configure --enable-PAPI --prefix=/var/tmp/spammpack CPPFLAGS=-I/usr/local/papi-4.1.1/include\ -DSGEMM=sgemm_ LDFLAGS=-L/usr/local/papi-4.1.1/lib\ -L/home/nbock/blas_install/GotoBLAS LIBS=-lgoto-r1.22
+
+# ATLAS
+./configure --enable-PAPI --prefix=/var/tmp/spammpack CPPFLAGS=-I/usr/local/papi-4.1.1/include\ -DSGEMM=sgemm_ LDFLAGS=-L/usr/local/papi-4.1.1/lib\ -L/home/nbock/blas_install/atlas-3.9.51/lib LIBS=-lf77blas-3.9.51\ -latlas-3.9.51\ -lgfortran
+
+# MKL
+#
+# at home:
+./configure --enable-PAPI --prefix=/var/tmp/spammpack CPPFLAGS=-I/usr/local/papi-4.1.1/include\ -DSGEMM=sgemm_ LDFLAGS=-L/usr/local/papi-4.1.1/lib\ -L/home/nbock/blas_install/mkl LIBS=-lmkl_intel_lp64-composerxe-2011.2.137\ -lmkl_sequential-composerxe-2011.2.137\ -lmkl_core-composerxe-2011.2.137\ -lmkl_intel_lp64-composerxe-2011.2.137\ -lmkl_sequential-composerxe-2011.2.137\ -lmkl_core-composerxe-2011.2.137\ -lpthread
+
+# FreeON cluster:
+~/Research/FreeON//spammpack/configure --enable-PAPI --prefix=/scratch/benchmarks/install/spammpack CPPFLAGS=-I/usr/local/papi-4.1.4/include LDFLAGS=-L/usr/local/papi-4.1.4/lib

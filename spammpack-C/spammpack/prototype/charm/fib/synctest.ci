@@ -1,0 +1,15 @@
+mainmodule synctest
+{
+  message ValueMsg;
+  mainchare Main
+  {
+    entry Main(CkArgMsg *msg);
+    entry void run();
+  };
+
+  chare Worker
+  {
+    entry Worker();
+    entry [sync] ValueMsg* get();
+  };
+};

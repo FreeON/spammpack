@@ -1,0 +1,21 @@
+mainmodule migration
+{
+  initnode void setManualLB (void);
+  message DataMsg;
+  array [1D] Data
+  {
+    entry Data (void);
+    entry [sync] DataMsg * info (void);
+  };
+  mainchare Main
+  {
+    entry Main (CkArgMsg *msg);
+    entry [threaded] void iterate (void);
+    entry void addMismatched (void);
+  };
+  array [1D] Work
+  {
+    entry Work (CProxy_Main mainProxy, CProxy_Data data);
+    entry [threaded] void doSomething (CkCallback &cb);
+  };
+};

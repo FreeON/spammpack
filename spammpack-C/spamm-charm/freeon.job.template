@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# vim: tw=0
+#
+#PBS -N matmul-1
+#PBS -l procs=1
+#PBS -m abe
+
+NUMBER_NODES=1
+
+N=2048
+B=32
+ITERATIONS=1
+
+cd ${PBS_O_WORKDIR}
+./charmrun -np ${NUMBER_NODES} matmul -N ${N} -b ${B} -i ${ITERATIONS}

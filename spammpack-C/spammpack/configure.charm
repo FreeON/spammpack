@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./configure --enable-charm --disable-openmp CXXFLAGS="-O0 -g"

@@ -1,0 +1,38 @@
+#include "config.h"
+
+module multiplyelement
+{
+  extern module node;
+  extern module messages;
+  array [3D] MultiplyElement
+  {
+    entry MultiplyElement (int N, int blocksize, int N_basic,
+        int tier, int depth,
+        CProxy_Node A,
+        CProxy_Node B,
+        CProxy_Node C);
+    entry void init (CkCallback &cb);
+    entry [threaded] void multiply (double tolerance, bool symbolic_only, CkCallback &cb);
+#ifdef PRUNE_CONVOLUTION
+    entry [threaded] void pruneProduct (int NTier,
+        bool nextConvolutionMap[NTier*NTier*NTier],
+        double tolerance,
+        CProxy_Node ANodes,
+        CProxy_Node BNodes,
+        CkCallback &cb);
+#else
+    entry [threaded] void pruneProduct (double tolerance,
+        CProxy_Node ANodes,
+        CProxy_Node BNodes,
+        CkCallback &cb);
+#endif
+    entry void setNextConvolution (CProxy_MultiplyElement nextConvolution);
+#ifndef PRUNE_CONVOLUTION
+    entry void enable (CkCallback &cb);
+    entry [threaded] void disable (CkCallback &cb);
+#endif
+    entry void storeBack (double alpha, CkCallback &cb);
+    entry void PEMap (CkCallback &cb);
+    entry void updateComplexity (CkCallback &cb);
+  };
+};

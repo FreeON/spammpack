@@ -1,0 +1,14 @@
+mainmodule Futures
+{
+  message IntMsg;
+  mainchare Futures
+  {
+    entry Futures (CkArgMsg *msg);
+    entry [threaded] void run (int depth);
+  };
+  chare Node
+  {
+    entry Node ();
+    entry [threaded] void compute (int tier, int depth, CkFuture f);
+  };
+};

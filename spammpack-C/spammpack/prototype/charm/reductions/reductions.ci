@@ -1,0 +1,10 @@
+mainmodule reductions
+{
+  extern module matrix;
+  extern module messages;
+  mainchare Main
+  {
+    entry Main (CkArgMsg *msg);
+    entry void normDone (DoubleMsg *norm);
+  };
+};
