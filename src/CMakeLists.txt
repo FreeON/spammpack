@@ -70,8 +70,6 @@ foreach( mod ${spammpack-modules} )
     )
 endforeach()
 
-message( STATUS "${serial-modfiles}" )
-
 install(
   FILES ${serial-modfiles}
   DESTINATION include-serial

@@ -79,10 +79,10 @@ endif()
 
 if( NOT CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE Release )
-  message( STATUS
-    "Setting build type to ${CMAKE_BUILD_TYPE}. Known build types "
-    "are Debug and Release, which can be specified using the variable "
-    "CMAKE_BUILD_TYPE."
+  message( WARNING
+    "Setting build type to ${CMAKE_BUILD_TYPE}. Known "
+    "build types are Debug and Release, which can be specified using the "
+    "variable CMAKE_BUILD_TYPE."
     )
 endif()
 
