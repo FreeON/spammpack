@@ -15,5 +15,6 @@ title: Spammpack - References
      [SIAM J. Sci. Comput., 35(1), C72--C98 (2013).](http://dx.doi.org/10.1137/120870761)
   3. <a name="3"></a>
      Nicolas Bock, Matt Challacombe, Laxmikant Kale,
-     **"Solvers for O(N) Electronic Structure in the Strong Scaling Limit"**,
-     [arxiv:1403.7458 [cs.NA] (2014).](http://arxiv.org/abs/1403.7458)
+     **"Solvers for $$\mathcal{O} (N)$$ Electronic Structure in the Strong
+     Scaling Limit"**, [arxiv:1403.7458 [cs.NA]
+     (2014).](http://arxiv.org/abs/1403.7458)
