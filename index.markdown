@@ -24,6 +24,8 @@ for more details on how to build the library.
 Spammpack is licensed under the [BSD 3-clause
 license](http://opensource.org/licenses/BSD-3-Clause).
 
+{% include responsive_ad.html %}
+
 # Project Statistics
 
 The latest project statistics including a source code line count and some
