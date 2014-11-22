@@ -39,8 +39,6 @@ list( APPEND CPACK_SOURCE_IGNORE_FILES
   "/man/"
   )
 
-message( STATUS "ignoring ${CPACK_SOURCE_IGNORE_FILES}" )
-
 include( CPack )
 
 if( CMAKE_C_COMPILER_ID STREQUAL "GNU" )
@@ -61,7 +59,7 @@ endif()
 
 if( NOT CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE Debug )
-  message( STATUS
+  message( WARNING
     "Setting build type to ${CMAKE_BUILD_TYPE}. If this is not "
     "what was intended, please specify another one using the "
     "variable CMAKE_BUILD_TYPE."
