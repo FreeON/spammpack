@@ -1,4 +1,4 @@
-project( spammpack Fortran C )
+project( spammpack Fortran C CXX )
 cmake_minimum_required( VERSION 2.8 )
 
 set( CPACK_PACKAGE_NAME "spammpack" )
