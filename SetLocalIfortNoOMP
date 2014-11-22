@@ -1,1 +1,0 @@
-./configure CC=icc FC=ifort F77=ifort --disable-openmp
