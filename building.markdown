@@ -43,3 +43,13 @@ The `install` target will install the library into
 `${CMAKE_INSTALL_PREFIX}/lib`.
 
     $ make install
+
+# Building the documentation
+
+If CMake finds a suitable version of `doxygen` it will add the `doc` target,
+and
+
+    $ make doc
+
+will build the documentation in `html`. To view, simply open `html/index.html`
+with a web-browser.
