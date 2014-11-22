@@ -31,7 +31,11 @@ In addition, we let
 [Travis-CI](https://travis-ci.org)
 run through the test suite.  The latest result of this build/test process is
 shown on the right. Current condition:
-[![](https://travis-ci.org/FreeON/spammpack.svg)](https://travis-ci.org/FreeON/spammpack).
+
+| Branch | Build Status |
+| ------ | ------------ |
+| master | [![Build Status](https://travis-ci.org/FreeON/spammpack.svg?branch=master)](https://travis-ci.org/FreeON/spammpack) |
+| v1.0   | [![Build Status](https://travis-ci.org/FreeON/spammpack.svg?branch=v1.0)](https://travis-ci.org/FreeON/spammpack) |
 
 # Installing
 
