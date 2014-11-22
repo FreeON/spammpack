@@ -26,6 +26,9 @@ license](http://opensource.org/licenses/BSD-3-Clause).
 
 # Project Statistics
 
+The latest project statistics including a source code line count and some
+other factoids can be found on [OpenHub](https://www.openhub.net/p/spammpack):
+
 {% include openhub.html %}
 
 # Authors
