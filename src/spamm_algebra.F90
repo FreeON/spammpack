@@ -743,7 +743,7 @@ CONTAINS
           enddo
         enddo
 #else
-        qC%Blok = qC%Blok + MATMUL(qA%Blok, qB%Blok)
+        qC%Blok = qC%Blok + matmul(qA%Blok, qB%Blok)
 #endif
 #ifdef SPAMM_COUNTERS
         qC%number_operations = qC%number_operations+SPAMM_BLOCK_SIZE**3
@@ -1250,7 +1250,7 @@ CONTAINS
           !$OMP END CRITICAL
         END IF
         ! Accumulate
-        bC%Vect(1:SPAMM_BLOCK_SIZE)=bC%Vect+MATMUL(qA%Blok, bB%Vect)
+        bC%Vect(1:SPAMM_BLOCK_SIZE)=bC%Vect+matmul(qA%Blok, bB%Vect)
       ELSE
 
         LOG_DEBUG("descending")
