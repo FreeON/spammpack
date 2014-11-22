@@ -51,5 +51,5 @@ and
 
     $ make doc
 
-will build the documentation in `html`. To view, simply open `html/index.html`
-with a web-browser.
+will build the documentation in the `html` directory. To view, simply open
+the file `html/index.html` with a web-browser.
