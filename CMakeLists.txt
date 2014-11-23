@@ -20,7 +20,7 @@ set( CPACK_SOURCE_GENERATOR TBZ2 )
 set( CPACK_RPM_PACKAGE_LICENSE "BSD" )
 set( CPACK_RPM_PACKAGE_URL "http://www.freeon.org" )
 
-set( CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://www.freeon.org" )
+set( CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://www.freeon.org/spammpack" )
 
 list( APPEND CPACK_SOURCE_IGNORE_FILES
   "/${CPACK_PACKAGE_NAME}.*deb$"

@@ -1,0 +1,9 @@
+Package: spammpack
+Version: 1.1.0
+Section: devel
+Priority: optional
+Architecture: 
+Homepage: http://www.freeon.org/spammpack
+Installed-Size: 3480
+Maintainer: www.freeon.org
+Description: An implementation of the Sparse Approximate Matrix Multiply (SpAMM) Algorithm
