@@ -5,7 +5,7 @@ function reference_nonzeros (N, bandwidth) result(nonzeros)
   integer :: i
 
   nonzeros = N
-  do i = 1, bandwidth
+  do i = 1, min(N, bandwidth)
     nonzeros = nonzeros+2*(N-i)
   enddo
 
@@ -55,8 +55,8 @@ program test
   B => A
   C => spamm_zero_matrix(N, N)
 
-  write(*, *) "number non-zero = "//to_string(A%number_nonzeros)
-  write(*, *) "ref. non-zeros  = "//to_string(reference_nonzeros(N, BANDWIDTH))
+  write(*, "(A)") "number non-zero = "//to_string(A%number_nonzeros)
+  write(*, "(A)") "ref. non-zeros  = "//to_string(reference_nonzeros(N, BANDWIDTH))
 
   if(abs(A%number_nonzeros-reference_nonzeros(N, BANDWIDTH)) > 1d-10) then
     LOG_FATAL("non-zero count wrong")
@@ -65,11 +65,11 @@ program test
   do i = 1, ITERATIONS
     call multiply(A, B, C)
 
-    write(*, *) to_string(i)//": non-zeros       = "//to_string(C%number_nonzeros)
-    write(*, *) to_string(i)//": ref. non-zeros  = "//to_string(reference_nonzeros(N, 2**i*BANDWIDTH))
-    write(*, *) to_string(i)//": complexity      = "//to_string(C%number_operations)
-    write(*, *) to_string(i)//": ref. complexity = "//to_string(reference_complexity(i))
-    write(*, *) to_string(i)//": complexity/N^3  = "//to_string(C%number_operations/dble(N)**3)
+    write(*, "(A)") to_string(i)//": non-zeros       = "//to_string(C%number_nonzeros)
+    write(*, "(A)") to_string(i)//": ref. non-zeros  = "//to_string(reference_nonzeros(N, 2**i*BANDWIDTH))
+    write(*, "(A)") to_string(i)//": complexity      = "//to_string(C%number_operations)
+    write(*, "(A)") to_string(i)//": ref. complexity = "//to_string(reference_complexity(i))
+    write(*, "(A)") to_string(i)//": complexity/N^3  = "//to_string(C%number_operations/dble(N)**3)
 
     if(abs(C%number_nonzeros-reference_nonzeros(N, 2**i*BANDWIDTH)) > 1e-10) then
       LOG_FATAL(to_string(i)//": non-zero count wrong")
@@ -89,10 +89,10 @@ program test
   endif
 
   reference_norm = matrix_norm(C_dense)
-  write(*, *) "norm_ref = ", reference_norm
-  write(*, *) "norm     = ", C%norm
+  write(*, "(A)") "norm_ref = "//to_string(reference_norm)
+  write(*, "(A)") "norm     = "//to_string(C%norm)
   if(abs(reference_norm-C%norm) > 1d-10) then
-    write(*, *) "norm mismatch"
+    write(*, "(A)") "norm mismatch"
   endif
 
   do i = 1, size(C_dense, 1)

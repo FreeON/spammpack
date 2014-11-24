@@ -127,7 +127,8 @@ CONTAINS
     REAL(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD
     INTEGER, PARAMETER   :: NCG=1000
     TYPE(qutree), POINTER, intent(in) :: A
-    TYPE(BiTree),POINTER :: x=>NULL(),g=>NULL(),h=>NULL(),Ax=>NULL(),Ah=>NULL(),xOld=>NULL(),gOld=>NULL(),hOld=>NULL()
+    TYPE(BiTree),POINTER :: x=>NULL(),g=>NULL(),h=>NULL(),Ax=>NULL(), &
+      Ah=>NULL(),xOld=>NULL(),gOld=>NULL(),hOld=>NULL()
     REAL(SpAMM_KIND)     :: beta,LambdaPlus,LambdaMins,RQIPlus,RQIMins,omega, &
       xx,hh,xh,hx,xAx,xAh,hAx,hAh,xnorm
     REAL(SpAMM_KIND)     :: RQIMin,RQIMax
