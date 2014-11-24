@@ -43,7 +43,7 @@ program spamm_multiply
   if(command_argument_count() > 0) then
     call get_command_argument(1, matrixfilename)
   else
-    write(*, *) "Please specify a matrix file (in MM format)"
+    write(*, "(A)") "Please specify a matrix file (in MM format)"
     error stop
   endif
 
@@ -65,12 +65,12 @@ program spamm_multiply
   M = size(A_dense, 1)
   N = size(A_dense, 2)
 
-  write(*, *) "read matrix N = ", N, ", M = ", M
+  write(*, "(A)") "read matrix N = ", N, ", M = ", M
 
-  write(*, *) "converting matrices to quadtree"
+  write(*, "(A)") "converting matrices to quadtree"
   A => spamm_convert_dense_to_matrix_2nd_order(A_dense)
   B => A
-  write(*, *) "done converting"
+  write(*, "(A)") "done converting"
 
 #if defined(_OPENMP)
   if(num_threads == 0) then
