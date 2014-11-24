@@ -109,8 +109,7 @@ module spamm_convert
         qV%norm = dot_product(qV%vect, qV%vect)
 
         ! Count number non-zeros.
-        qV%number_nonzeros = sum(reshape([ (1, i = 1, SPAMM_BLOCK_SIZE) ], [ SPAMM_BLOCK_SIZE ]), &
-          reshape((/ (qV%vect(i) /= 0.0, i = 1, SPAMM_BLOCK_SIZE) /), (/ SPAMM_BLOCK_SIZE /)))
+        qV%number_nonzeros = count_nonzero(qV%vect)
 
         LOG_DEBUG("non-zeros: "//to_string(qV%number_nonzeros))
       endif
@@ -220,12 +219,7 @@ module spamm_convert
         qA%norm = sqrt(sum(qA%blok**2))
 
         ! Count number non-zeros.
-        qA%number_nonzeros = sum(reshape( &
-          (/ ((1, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
-          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)), &
-          reshape( &
-          (/ ((qA%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) /), &
-          (/ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE /)))
+        qA%number_nonzeros = count_nonzero(qA%blok)
 
         LOG_DEBUG("non-zeros: "//to_string(qA%number_nonzeros))
       ENDIF

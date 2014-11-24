@@ -747,12 +747,7 @@ CONTAINS
 #endif
 #ifdef SPAMM_COUNTERS
         qC%number_operations = qC%number_operations+SPAMM_BLOCK_SIZE**3
-        qC%number_nonzeros = sum(reshape( &
-          [ ((1, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
-          [ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ]), &
-          reshape( &
-          [ ((qC%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
-          [ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ]))
+        qC%number_nonzeros = count_nonzero(qC%blok)
 #endif
 
 #if defined(_OPENMP) && ! defined(BIGLOCK)
@@ -927,12 +922,7 @@ CONTAINS
 #endif
         qA%norm = sqrt(sum(qA%blok**2))
 #ifdef SPAMM_COUNTERS
-        qA%number_nonzeros = sum(reshape( &
-          [ ((1, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
-          [ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ]), &
-          reshape( &
-          [ ((qA%blok(i, j) /= 0.0, i = 1, SPAMM_BLOCK_SIZE), j = 1, SPAMM_BLOCK_SIZE) ], &
-          [ SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ]))
+        qA%number_nonzeros = count_nonzero(qA%blok)
 #endif
       ELSE
         !$OMP TASK UNTIED SHARED(qA,qB)

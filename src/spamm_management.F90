@@ -59,6 +59,7 @@ module spamm_management
   public :: spamm_identity_matrix 
   public :: spamm_zero_matrix
   public :: newbinode
+  public :: count_nonzero
 
   !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
@@ -102,7 +103,13 @@ module spamm_management
     module procedure spamm_reset_counters_2nd_order
   end interface reset_counters
 
-CONTAINS
+  !> Interface for non-zero element counting functions.
+  interface count_nonzero
+    module procedure count_nonzero_order_1
+    module procedure count_nonzero_order_2
+  end Interface count_nonzero
+
+contains
 
   !> Copy a 1st order matrix: \f$ B \leftarrow A \f$.
   !!
@@ -1207,5 +1214,44 @@ CONTAINS
     call spamm_reset_counters_qutree(A%root)
 
   end subroutine spamm_reset_counters_2nd_order
+
+  !> Count the number of non-zero elements in a dense matrix.
+  !!
+  !! @param A The dense matrix.
+  !!
+  !! @return The number of non-zero elements.
+  function count_nonzero_order_2 (A) result(number_nonzeros)
+
+    real(spamm_kind), intent(in) :: A(:, :)
+    real(spamm_kind) :: number_nonzeros
+
+    integer :: i, j
+
+    number_nonzeros = sum(reshape( &
+      [ ((1, i = 1, size(A, 1)), j = 1, size(A, 2)) ], &
+      [ size(A, 1), size(A, 2) ]), &
+      reshape( &
+      [ ((A(i, j) /= 0.0, i = 1, size(A, 1)), j = 1, size(A, 2)) ], &
+      [ size(A, 1), size(A, 2) ]))
+
+  end function count_nonzero_order_2
+
+  !> Count the number of non-zero elements in a dense vector.
+  !!
+  !! @param A The dense vector.
+  !!
+  !! @return The number of non-zero elements.
+  function count_nonzero_order_1 (A) result(number_nonzeros)
+
+    real(spamm_kind), intent(in) :: A(:)
+    real(spamm_kind) :: number_nonzeros
+
+    integer :: i
+
+    number_nonzeros = sum(reshape( &
+      [ (1, i = 1, size(A, 1)) ], [ size(A, 1) ]), &
+      reshape((/ (A(i) /= 0.0, i = 1, size(A, 1)) /), (/ size(A, 1) /)))
+
+  end function count_nonzero_order_1
 
 end module spamm_management
