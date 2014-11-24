@@ -11,6 +11,20 @@ function reference_nonzeros (N, bandwidth) result(nonzeros)
 
 end function reference_nonzeros
 
+!> A matmul that counts the number of non-zero products.
+!!
+!! \f$ C \leftarrow A B \f$
+!!
+!! @param A Matrix A.
+!! @param B Matrix B.
+!! @param C Matrix C.
+subroutine counting_matmul (A, B, C)
+
+  real(kind(0d0)), intent(in) :: A(:, :), B(:, :)
+  real(kind(0d0)), intent(inout) :: C(:, :)
+
+end subroutine counting_matmul
+
 program test
 
   use spammpack
@@ -27,8 +41,8 @@ program test
     end function reference_nonzeros
   end interface
 
-  logical, parameter :: PRINT_MATRICES = .true.
-  integer, parameter :: N = 9
+  logical, parameter :: PRINT_MATRICES = .false.
+  integer, parameter :: N = 129
   integer, parameter :: BANDWIDTH = 4
   integer, parameter :: ITERATIONS = 5
 
