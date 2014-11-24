@@ -52,6 +52,9 @@ program test
   real(kind(0d0)), dimension(ITERATIONS) :: reference_complexity = [ 18368, 49600, 151872, 479808, 1342528 ]
   integer :: i, j
 
+#ifndef SPAMM_COUNTERS 
+  write(*, "(A)") "skipping test, library was not compiled with SPAMM_COUNTERS"
+#else
   A_dense = 0
   do i = 1, N
     do j = 1, N
@@ -74,6 +77,7 @@ program test
 
   if(abs(A%number_nonzeros-reference_nonzeros(N, BANDWIDTH)) > 1d-10) then
     LOG_FATAL("non-zero count wrong")
+    error stop
   endif
 
   do i = 1, ITERATIONS
@@ -87,10 +91,12 @@ program test
 
     if(abs(C%number_nonzeros-reference_nonzeros(N, 2**i*BANDWIDTH)) > 1e-10) then
       LOG_FATAL(to_string(i)//": non-zero count wrong")
+      error stop
     endif
 
     if(abs(C%number_operations-reference_complexity(i)) > 1e-10) then
       LOG_FATAL(to_string(i)//": complexity count wrong")
+      error stop
     endif
 
     call copy(C, A)
@@ -121,5 +127,6 @@ program test
   enddo
 
   write(*, *) "done"
+#endif
 
 end program test

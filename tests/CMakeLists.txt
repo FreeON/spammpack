@@ -3,6 +3,11 @@ add_library( utilities
   mmio.f
   )
 
+set_directory_properties(
+  PROPERTIES
+  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
+  )
+
 add_executable( spamm-multiply spamm-multiply.F90 )
 add_dependencies( spamm-multiply spammpack-serial-shared )
 target_link_libraries( spamm-multiply utilities spammpack-serial-shared )

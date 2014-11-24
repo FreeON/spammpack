@@ -25,11 +25,15 @@ set( spammpack-modules
 
 set( LIBRARY_BASENAME "spammpack" )
 
+set_directory_properties(
+  PROPERTIES
+  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
+  )
+
 add_library( spammpack-serial-shared SHARED ${spammpack-sources} )
 set_target_properties( spammpack-serial-shared
   PROPERTIES
   POSITION_INDEPENDENT_CODE TRUE
-  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
   SOVERSION 0
   VERSION 0.0.0
   OUTPUT_NAME ${LIBRARY_BASENAME}
@@ -46,7 +50,6 @@ add_library( spammpack-serial-static STATIC ${spammpack-sources} )
 add_dependencies( spammpack-serial-static spammpack-serial-shared )
 set_target_properties( spammpack-serial-static
   PROPERTIES
-  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
   OUTPUT_NAME ${LIBRARY_BASENAME}
   )
 
@@ -81,7 +84,6 @@ if( OPENMP_FOUND )
   set_target_properties( spammpack-threaded-shared
     PROPERTIES
     POSITION_INDEPENDENT_CODE TRUE
-    COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
     COMPILE_FLAGS "${OpenMP_Fortran_FLAGS}"
     SOVERSION 0
     VERSION 0.0.0
@@ -92,7 +94,6 @@ if( OPENMP_FOUND )
   add_dependencies( spammpack-threaded-static spammpack-threaded-shared )
   set_target_properties( spammpack-threaded-static
     PROPERTIES
-    COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
     COMPILE_FLAGS "${OpenMP_Fortran_FLAGS}"
     OUTPUT_NAME ${LIBRARY_BASENAME}_threaded
     )
