@@ -21,7 +21,7 @@ subroutine counting_matmul (A, B, C, number_operations)
   real(kind(0d0)) :: norm_A, norm_B
 
   integer :: N, N_padded
-  integer :: i, j, k, i_block, j_block, k_block
+  integer :: i, j, k, i_block, j_block
 
   N = size(A, 1)
   if(mod(N, SPAMM_BLOCK_SIZE) == 0) then
@@ -109,11 +109,13 @@ program test
   integer, parameter :: BANDWIDTH = 4
   integer, parameter :: ITERATIONS = 5
 
+#ifdef SPAMM_COUNTERS
   type(spamm_matrix_2nd_order), pointer :: A, B, C
   real(kind(0d0)), dimension(N, N) :: A_dense, C_dense
   real(kind(0d0)) :: reference_norm
   real(kind(0d0)), dimension(ITERATIONS) :: reference_complexity
   integer :: i, j
+#endif
 
 #ifndef SPAMM_COUNTERS 
   write(*, "(A)") "skipping test, library was not compiled with SPAMM_COUNTERS"

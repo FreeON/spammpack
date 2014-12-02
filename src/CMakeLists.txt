@@ -124,13 +124,3 @@ if( OPENMP_FOUND )
     )
 
 endif()
-
-if( CTAGS )
-  add_custom_target( ctags
-    ${CTAGS}
-    --sort=foldcase
-    --Fortran-kinds=+iL
-    ${spammpack-sources-Fortran}
-    *.h
-    )
-endif()

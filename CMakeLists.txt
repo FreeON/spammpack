@@ -217,6 +217,18 @@ endif()
 
 find_program( CTAGS ctags )
 
+if( CTAGS )
+  add_custom_target( ctags
+    ${CTAGS}
+    --sort=foldcase
+    --Fortran-kinds=+iL
+    --recurse
+    ${CMAKE_SOURCE_DIR}/src/*.F90
+    ${CMAKE_SOURCE_DIR}/src/*.c
+    ${CMAKE_SOURCE_DIR}/src/*.h
+    )
+endif()
+
 enable_testing()
 
 add_subdirectory( src )
