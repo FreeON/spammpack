@@ -68,10 +68,22 @@ endif()
 set( CMAKE_TRY_COMPILE_CONFIGURATION Debug )
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -gdwarf-3 -fvar-tracking-assignments -fcheck=all -Wall -ffree-line-length-none -Wimplicit-interface -Wimplicit-procedure" )
+  set( CMAKE_Fortran_FLAGS_DEBUG
+    "-O0 -g -gdwarf-3"
+    "-fvar-tracking-assignments -fcheck=all -fsanitize=address"
+    "-ffree-line-length-none"
+    "-Wall -Wimplicit-interface -Wimplicit-procedure"
+    )
+  string( REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
-  set( CMAKE_Fortran_FLAGS_DEBUG "-stand f08 -O0 -g -extend-source -debug all -check all -warn unused -traceback" )
+  set( CMAKE_Fortran_FLAGS_DEBUG
+    "-stand f08 -O0 -g"
+    "-extend-source"
+    "-debug all -check all"
+    "-warn unused -traceback"
+    )
+  string( REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-O3 -no-prec-div -fp-model fast=2 -vec-report -g" )
 else()
   message( STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}" )
