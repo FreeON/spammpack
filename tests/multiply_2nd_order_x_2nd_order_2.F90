@@ -11,7 +11,7 @@ program test
   integer, parameter :: N = 129
   integer, parameter :: ITERATIONS = 3
 
-  type(spamm_matrix_2nd_order), pointer :: A, B, C
+  type(spamm_matrix_2nd_order), pointer :: A, C
   real(kind(0d0)), dimension(N, N) :: A_dense, C_dense
   real(kind(0d0)) :: reference_norm
   integer :: i, j
@@ -26,13 +26,12 @@ program test
   endif
 
   A => spamm_convert_dense_to_matrix_2nd_order(A_dense)
-  B => A
   C => spamm_zero_matrix(size(A_dense, 1), size(A_dense, 2))
 
   !call print_matrix(A_dense)
 
   do i = 1, ITERATIONS
-    call multiply(A, B, C)
+    call multiply(A, A, C)
     write(*, *) "complexity/N^3 = ", C%number_operations/dble(N)**3
     call copy(C, A)
     C_dense = matmul(A_dense, A_dense)
