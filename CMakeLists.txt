@@ -90,7 +90,7 @@ if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
       OUTPUT_VARIABLE ADDRESS_SANITIZER_OUTPUT
       )
     if( HAVE_ADDRESS_SANITIZER )
-      message( STATUS "Adding supported address sanitizer compiler flag" )
+      message( STATUS "Adding address sanitizer compiler flag" )
       list( APPEND TEMP_FLAGS "-fsanitize=address" )
     else()
       message( STATUS "Address sanitizer not supported" )
