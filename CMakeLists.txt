@@ -65,16 +65,37 @@ if( PACKAGE_CONFIG_FOUND )
 	       )
 endif()
 
-set( CMAKE_TRY_COMPILE_CONFIGURATION Debug )
+if( NOT CMAKE_BUILD_TYPE )
+  set( CMAKE_BUILD_TYPE Release )
+  message( WARNING
+    "Setting build type to ${CMAKE_BUILD_TYPE}. Known "
+    "build types are Debug and Release, which can be specified using the "
+    "variable CMAKE_BUILD_TYPE."
+    )
+endif()
+
+set( CMAKE_TRY_COMPILE_CONFIGURATION ${CMAKE_BUILD_TYPE} )
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_Fortran_FLAGS_DEBUG
+  set( TEMP_FLAGS
     "-O0 -g -gdwarf-3"
     "-fvar-tracking-assignments -fcheck=all -fsanitize=address"
     "-ffree-line-length-none"
     "-Wall -Wimplicit-interface -Wimplicit-procedure"
     )
-  string( REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" )
+  string( REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${TEMP_FLAGS}" )
+  message( STATUS "Debug flags: ${CMAKE_Fortran_FLAGS_DEBUG}" )
+  try_compile( HAVE_ADDRESS_SANITIZER
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/cmake-tests/dummy.F90
+    OUTPUT_VARIABLE ADDRESS_SANITIZER_OUTPUT
+    )
+  message( STATUS ${ADDRESS_SANITIZER_OUTPUT} )
+  if( NOT HAVE_ADDRESS_SANITIZER )
+    message( STATUS "Removing unsupported address sanitizer compiler flag" )
+    list( REMOVE_ITEM TEMP_FLAGS "-fsanitize=address" )
+    string( REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${TEMP_FLAGS}" )
+  endif()
   set( CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG
@@ -88,17 +109,6 @@ elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
 else()
   message( STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}" )
 endif()
-
-if( NOT CMAKE_BUILD_TYPE )
-  set( CMAKE_BUILD_TYPE Release )
-  message( WARNING
-    "Setting build type to ${CMAKE_BUILD_TYPE}. Known "
-    "build types are Debug and Release, which can be specified using the "
-    "variable CMAKE_BUILD_TYPE."
-    )
-endif()
-
-set( CMAKE_TRY_COMPILE_CONFIGURATION ${CMAKE_BUILD_TYPE} )
 
 try_compile( COMPILE_RESULT_1
   ${CMAKE_BINARY_DIR}
