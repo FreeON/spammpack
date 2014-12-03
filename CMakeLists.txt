@@ -74,28 +74,29 @@ if( NOT CMAKE_BUILD_TYPE )
     )
 endif()
 
-set( CMAKE_TRY_COMPILE_CONFIGURATION ${CMAKE_BUILD_TYPE} )
-
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
   set( TEMP_FLAGS
     "-O0 -g -gdwarf-3"
-    "-fvar-tracking-assignments -fcheck=all -fsanitize=address"
+    "-fvar-tracking-assignments -fcheck=all"
     "-ffree-line-length-none"
     "-Wall -Wimplicit-interface -Wimplicit-procedure"
     )
-  string( REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${TEMP_FLAGS}" )
-  message( STATUS "Debug flags: ${CMAKE_Fortran_FLAGS_DEBUG}" )
-  try_compile( HAVE_ADDRESS_SANITIZER
-    ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/cmake-tests/dummy.F90
-    OUTPUT_VARIABLE ADDRESS_SANITIZER_OUTPUT
-    )
-  message( STATUS ${ADDRESS_SANITIZER_OUTPUT} )
-  if( NOT HAVE_ADDRESS_SANITIZER )
-    message( STATUS "Removing unsupported address sanitizer compiler flag" )
-    list( REMOVE_ITEM TEMP_FLAGS "-fsanitize=address" )
-    string( REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${TEMP_FLAGS}" )
+  string( TOUPPER ${CMAKE_BUILD_TYPE} UPPER_BUILD_TYPE )
+  if( UPPER_BUILD_TYPE STREQUAL "DEBUG" )
+    try_compile( HAVE_ADDRESS_SANITIZER
+      ${CMAKE_BINARY_DIR}/CMakeTmp
+      ${CMAKE_SOURCE_DIR}/cmake-tests/address-sanitizer
+      address-sanitizer
+      OUTPUT_VARIABLE ADDRESS_SANITIZER_OUTPUT
+      )
+    if( HAVE_ADDRESS_SANITIZER )
+      message( STATUS "Adding supported address sanitizer compiler flag" )
+      list( APPEND TEMP_FLAGS "-fsanitize=address" )
+    else()
+      message( STATUS "Address sanitizer not supported" )
+    endif()
   endif()
+  string( REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${TEMP_FLAGS}" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none" )
 elseif( CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" )
   set( CMAKE_Fortran_FLAGS_DEBUG
