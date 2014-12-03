@@ -16,8 +16,6 @@ add_executable( spamm-lowdin spamm-lowdin.F90 )
 add_dependencies( spamm-lowdin spammpack-serial-shared )
 target_link_libraries( spamm-lowdin utilities spammpack-serial-shared )
 
-include_directories( ${CMAKE_CURRENT_BINARY_DIR}/../src/include-serial )
-
 # More unit-like tests.
 set( UNIT_TESTS
   add_2nd_order_to_2nd_order.F90
@@ -51,3 +49,5 @@ execute_process( COMMAND ${PYTHON_EXECUTABLE}
   )
 
 include( ${CMAKE_CURRENT_BINARY_DIR}/unit-tests.cmake )
+
+include_directories( ${CMAKE_CURRENT_BINARY_DIR}/../src-Fortran/include-serial )

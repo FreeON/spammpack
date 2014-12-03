@@ -129,7 +129,7 @@ contains
           call add(T, X, 1.5_spamm_kind, -0.5_spamm_kind)
 
         case (3)
-          ! Third order: T_{k} = 1/8*(15*I-10*X_{k}+3*X_{k}^{2}) 
+          ! Third order: T_{k} = 1/8*(15*I-10*X_{k}+3*X_{k}^{2})
           T => spamm_identity_matrix(S%M, S%N)
           call add(T, X, 15.0_spamm_kind, -10.0_spamm_kind)
           call multiply(X, X, temp, local_tolerance)

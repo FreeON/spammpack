@@ -56,7 +56,7 @@ module spamm_management
   public :: reset_counters
   public :: spamm_allocate_matrix_2nd_order
   public :: spamm_allocate_matrix_order_1
-  public :: spamm_identity_matrix 
+  public :: spamm_identity_matrix
   public :: spamm_zero_matrix
   public :: newbinode
   public :: count_nonzero

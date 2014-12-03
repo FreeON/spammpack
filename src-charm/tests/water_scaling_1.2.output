@@ -1,6 +1,6 @@
 Charm++: standalone mode (not using charmrun)
-Converse/Charm++ Commit ID: 
-Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Converse/Charm++ Commit ID:
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.
 Charm++> scheduler running in netpoll mode.
 CharmLB> Load balancer assumes all CPUs are same.
 Charm++> Running on 1 unique compute nodes (8-way SMP).
@@ -161,8 +161,8 @@ total time: 9987.569460 seconds
 end of spamm-charm
 Program finished.
 Charm++: standalone mode (not using charmrun)
-Converse/Charm++ Commit ID: 
-Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Converse/Charm++ Commit ID:
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.
 Charm++> scheduler running in netpoll mode.
 CharmLB> Load balancer assumes all CPUs are same.
 Charm++> Running on 1 unique compute nodes (8-way SMP).
@@ -321,8 +321,8 @@ total time: 7796.849812 seconds
 end of spamm-charm
 Program finished.
 Charm++: standalone mode (not using charmrun)
-Converse/Charm++ Commit ID: 
-Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Converse/Charm++ Commit ID:
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.
 Charm++> scheduler running in netpoll mode.
 CharmLB> Load balancer assumes all CPUs are same.
 Charm++> Running on 1 unique compute nodes (8-way SMP).
@@ -481,8 +481,8 @@ total time: 6554.465263 seconds
 end of spamm-charm
 Program finished.
 Charm++: standalone mode (not using charmrun)
-Converse/Charm++ Commit ID: 
-Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Converse/Charm++ Commit ID:
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.
 Charm++> scheduler running in netpoll mode.
 CharmLB> Load balancer assumes all CPUs are same.
 Charm++> Running on 1 unique compute nodes (8-way SMP).
@@ -637,8 +637,8 @@ total time: 5105.547570 seconds
 end of spamm-charm
 Program finished.
 Charm++: standalone mode (not using charmrun)
-Converse/Charm++ Commit ID: 
-Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Converse/Charm++ Commit ID:
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.
 Charm++> scheduler running in netpoll mode.
 CharmLB> Load balancer assumes all CPUs are same.
 Charm++> Running on 1 unique compute nodes (8-way SMP).
@@ -793,8 +793,8 @@ total time: 3420.014682 seconds
 end of spamm-charm
 Program finished.
 Charm++: standalone mode (not using charmrun)
-Converse/Charm++ Commit ID: 
-Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Converse/Charm++ Commit ID:
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.
 Charm++> scheduler running in netpoll mode.
 CharmLB> Load balancer assumes all CPUs are same.
 Charm++> Running on 1 unique compute nodes (8-way SMP).
@@ -949,8 +949,8 @@ total time: 2222.124463 seconds
 end of spamm-charm
 Program finished.
 Charm++: standalone mode (not using charmrun)
-Converse/Charm++ Commit ID: 
-Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.  
+Converse/Charm++ Commit ID:
+Warning> Randomization of stack pointer is turned on in kernel, thread migration may not work! Run 'echo 0 > /proc/sys/kernel/randomize_va_space' as root to disable it, or try run with '+isomalloc_sync'.
 Charm++> scheduler running in netpoll mode.
 CharmLB> Load balancer assumes all CPUs are same.
 Charm++> Running on 1 unique compute nodes (8-way SMP).

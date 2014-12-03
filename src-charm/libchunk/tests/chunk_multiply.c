@@ -406,7 +406,7 @@ main (int argc, char **argv)
     double individual_variance = 0;
     for(int i = 0; i < repeat; i++)
     {
-      individual_duration[i] = 
+      individual_duration[i] =
         (individual_end_time[i].tv_sec+individual_end_time[i].tv_nsec/1.0e9)-
         (individual_start_time[i].tv_sec+individual_start_time[i].tv_nsec/1.0e9);
       individual_mean += individual_duration[i];

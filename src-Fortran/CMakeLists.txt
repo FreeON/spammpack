@@ -21,6 +21,7 @@ set( spammpack-modules
   spamm_project.mod
   spamm_types.mod
   spammpack.mod
+  spamm_utility_macros.h
   )
 
 set( LIBRARY_BASENAME "spammpack" )
