@@ -192,10 +192,12 @@ set( SPAMM_STORE_TRANSPOSE FALSE
 unset( SPAMM_EXTRA_DEFINES )
 
 if( SPAMM_COUNTERS )
+  message( STATUS "Compiling with SpAMM counters" )
   list( APPEND SPAMM_EXTRA_DEFINES SPAMM_COUNTERS )
 endif()
 
 if( SPAMM_STORE_TRANSPOSE )
+  message( STATUS "Matrix will store the transpose" )
   list( APPEND SPAMM_EXTRA_DEFINES SPAMM_STORE_TRANSPOSE )
 endif()
 
@@ -207,22 +209,15 @@ if( LOG_FILENAMES )
   list( APPEND SPAMM_EXTRA_DEFINES LOG_FILENAMES )
 endif()
 
-if( HAVE_DEFERRED_STRING_LENGTH )
-  list( APPEND SPAMM_EXTRA_DEFINES HAVE_DEFERRED_STRING_LENGTH )
-endif()
-
-list( LENGTH SPAMM_EXTRA_DEFINES NUMBER_EXTRAS )
-if( NUMBER_EXTRAS GREATER 0 )
-  message( STATUS "SPAMM_EXTRA_DEFINES: ${SPAMM_EXTRA_DEFINES}" )
-endif()
-
 set( VALGRIND_TESTS FALSE
-  CACHE BOOL "Build the valgrind tests" )
+  CACHE BOOL "Build the valgrind tests"
+  )
 
 if( VALGRIND_TESTS )
   find_program( VALGRIND valgrind )
   if( VALGRIND )
-    message( STATUS "Setting up valgrind tests" )
+    message( STATUS "Setting up valgrind tests"
+      )
   endif()
 endif()
 
@@ -242,5 +237,5 @@ endif()
 
 enable_testing()
 
-add_subdirectory( src-Fortran )
+add_subdirectory( src )
 add_subdirectory( tests )
