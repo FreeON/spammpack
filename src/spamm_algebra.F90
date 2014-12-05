@@ -827,6 +827,8 @@ CONTAINS
 
   !> Recursive part of scalar multiply with quadtree matrix, @f$ A \leftarrow \alpha A @f$.
   !!
+  !! @note The number_operations counter is disabled.
+  !!
   !! @param qA Pointer to quadtree.
   !! @param alpha The scalar.
   RECURSIVE SUBROUTINE SpAMM_Multiply_QuTree_x_Scalar_Recur(qA, alpha)
@@ -849,7 +851,8 @@ CONTAINS
       qA%transpose_block = alpha*qA%transpose_block
 #endif
 #ifdef SPAMM_COUNTERS
-      qA%number_operations = SPAMM_BLOCK_SIZE**2
+      ! Disable for now...
+      !qA%number_operations = SPAMM_BLOCK_SIZE**2
 #endif
     ELSE
       !$OMP TASK UNTIED SHARED(qA)
