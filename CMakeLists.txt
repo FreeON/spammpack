@@ -67,11 +67,6 @@ endif()
 
 if( NOT CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE Release )
-  message( WARNING
-    "Setting build type to ${CMAKE_BUILD_TYPE}. Known "
-    "build types are Debug and Release, which can be specified using the "
-    "variable CMAKE_BUILD_TYPE."
-    )
 endif()
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
@@ -170,6 +165,8 @@ if( NOT PYTHONINTERP_FOUND )
   message( FATAL "Need a working python interpreter" )
 endif()
 
+unset( SPAMM_EXTRA_DEFINES )
+
 if( NOT SPAMM_DEBUG_LEVEL )
   set( SPAMM_DEBUG_LEVEL 0 )
 else()
@@ -180,21 +177,22 @@ else()
 endif()
 
 set( SPAMM_DEBUG_LEVEL ${SPAMM_DEBUG_LEVEL}
-  CACHE STRING "The debugging output verbosity (valid range 0 <= LEVEL <= 2)" )
-set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DSPAMM_DEBUG_LEVEL=${SPAMM_DEBUG_LEVEL}" )
+  CACHE STRING "The debugging output verbosity (valid range 0 <= LEVEL <= 2)"
+  )
+list( APPEND SPAMM_EXTRA_DEFINES "SPAMM_DEBUG_LEVEL=${SPAMM_DEBUG_LEVEL}" )
 
 set( SPAMM_COUNTERS FALSE
-  CACHE BOOL "Add non-zero and number_operations counters" )
-
-set( SPAMM_STORE_TRANSPOSE FALSE
-  CACHE BOOL "Store the transpose sub-matrix to aid vectorization" )
-
-unset( SPAMM_EXTRA_DEFINES )
+  CACHE BOOL "Add non-zero and number_operations counters"
+  )
 
 if( SPAMM_COUNTERS )
   message( STATUS "Compiling with SpAMM counters" )
   list( APPEND SPAMM_EXTRA_DEFINES SPAMM_COUNTERS )
 endif()
+
+set( SPAMM_STORE_TRANSPOSE FALSE
+  CACHE BOOL "Store the transpose sub-matrix to aid vectorization"
+  )
 
 if( SPAMM_STORE_TRANSPOSE )
   message( STATUS "Matrix will store the transpose" )
