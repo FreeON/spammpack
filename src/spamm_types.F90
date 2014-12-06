@@ -38,7 +38,7 @@ module spamm_types
   use omp_lib
 #endif
 
-  IMPLICIT NONE
+  implicit none
 
   !> Define integer of length 2.
   INTEGER, PARAMETER :: INT1 = SELECTED_INT_KIND(2)  !--Integer*1

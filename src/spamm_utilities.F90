@@ -351,8 +351,13 @@ contains
   end subroutine write_log
 
   !> The timer.
+  !!
+  !! @bug This is not implemented.
+  !!
   !! @return The time passed since some point in time.
   real(kind(0d0)) function spamm_get_time ()
+
+    spamm_get_time = 0
 
   end function spamm_get_time
 
