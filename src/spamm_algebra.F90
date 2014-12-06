@@ -32,7 +32,7 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-MODULE SpAMM_ALGEBRA
+module spamm_algebra
 
   use spamm_types
   use spamm_globals
@@ -1554,4 +1554,4 @@ CONTAINS
 
   end function spamm_norm_reduce_matrix_2nd_order
 
-END MODULE SpAMM_ALGEBRA
+end module spamm_algebra

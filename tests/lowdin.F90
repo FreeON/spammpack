@@ -5,6 +5,7 @@ program test
 
   implicit none
 
+#ifdef LAPACK_FOUND
   interface
     subroutine dsyevd ( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, IWORK, LIWORK, INFO )
       CHARACTER          JOBZ, UPLO
@@ -13,6 +14,7 @@ program test
       DOUBLE PRECISION   A( LDA, * ), W( * ), WORK( * )
     end subroutine dsyevd
   end interface
+#endif
 
   integer, parameter :: N = 253
   integer, parameter :: LWORK = 1+6*N+2*N**2

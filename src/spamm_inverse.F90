@@ -43,12 +43,12 @@ contains
   !> Compute the inverse square root factorization of a matrix.
   !!
   !! @param S The matrix.
+  !! @param Y The square root of the matrix, @f$ Y \leftarrow S^{1/2} @f$.
+  !! @param Z The inverse square root of the matrix, @f$ Z \leftarrow S^{-1/2} @f$.
   !! @param tolerance The SpAMM tolerance.
   !! @param schulz_threshold The threshold for convergence. The error is
   !! defined as the @f$ \Vert X_{k} - I \Vert_{F} / (M N) @f$.
-  !!
-  !! @return The inverse square root of the matrix, @f$ Z \leftarrow S^{-1/2} @f$.
-  function spamm_inverse_sqrt_schulz (S, tolerance, schulz_threshold) result (Z)
+  subroutine spamm_inverse_sqrt_schulz (S, Y, Z, tolerance, schulz_threshold)
 
     use spamm_algebra
     use spamm_convert
@@ -57,10 +57,10 @@ contains
     use spamm_utilities
 
     type(spamm_matrix_2nd_order), pointer, intent(in) :: S
+    type(spamm_matrix_2nd_order), pointer, intent(inout) :: Y, Z
     real(spamm_kind), intent(in), optional :: tolerance
     real(spamm_kind), intent(in), optional :: schulz_threshold
-    type(spamm_matrix_2nd_order), pointer :: Z
-    type(spamm_matrix_2nd_order), pointer :: X => null(), Y => null(), T => null(), &
+    type(spamm_matrix_2nd_order), pointer :: X => null(), T => null(), &
       temp => null(), temp2 => null()
 
     integer, parameter :: SCHULZ_ORDER = 3
@@ -80,6 +80,14 @@ contains
       local_schulz_threshold = schulz_threshold
     else
       local_schulz_threshold = 1e-8_spamm_kind
+    endif
+
+    if(associated(Y)) then
+      call delete(Y)
+    endif
+
+    if(associated(Z)) then
+      call delete(Z)
     endif
 
     LOG_INFO("Schulz -> approximate inverse sqrt")
@@ -173,17 +181,18 @@ contains
     ! S^{-1/2} <- \sqrt{\lambda} Z_{k}
     call multiply(Z, sqrt(lambda))
 
+    ! S^{1/2} <- \sqrt{\lambda} Y_{k}
+    call multiply(Y, sqrt(lambda))
+
     LOG_INFO("Z (S^{-1/2} nnonzero = "//to_string(Z%number_nonzeros))
     LOG_INFO("  % fillin           = "//to_string(Z%number_nonzeros/(Z%M*Z%N)))
-    LOG_INFO("  number operations  = "//to_string(number_operations))
-
-    ! S^{1/2} <- \sqrt{\lambda} Y_{k}
-    !call multiply(Y, sqrt(lambda))
+    LOG_INFO("Y (S^{+1/2} nnonzero = "//to_string(Y%number_nonzeros))
+    LOG_INFO("  % fillin           = "//to_string(Y%number_nonzeros/(Y%M*Y%N)))
+    LOG_INFO("number operations    = "//to_string(number_operations))
 
     call delete(X)
-    call delete(Y)
     call delete(T)
 
-  end function spamm_inverse_sqrt_schulz
+  end subroutine spamm_inverse_sqrt_schulz
 
 end module spamm_inverse

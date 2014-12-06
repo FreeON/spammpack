@@ -60,6 +60,7 @@ module spamm_management
   public :: spamm_zero_matrix
   public :: newbinode
   public :: count_nonzero
+  public :: absmax
 
   !> Interface for deep copies of SpAMM objects.
   INTERFACE Copy
@@ -108,6 +109,11 @@ module spamm_management
     module procedure count_nonzero_order_1
     module procedure count_nonzero_order_2
   end Interface count_nonzero
+
+  !> Interface for the absmax functions.
+  interface absmax
+    module procedure absmax_order_2
+  end interface absmax
 
 contains
 
@@ -1253,5 +1259,21 @@ contains
       reshape((/ (A(i) /= 0.0, i = 1, size(A, 1)) /), (/ size(A, 1) /)))
 
   end function count_nonzero_order_1
+
+  !> Find the maximum matrix element, \f$ \max | A_{ij} | \f$.
+  !!
+  !! @todo Not implemented yet.
+  !!
+  !! @param A The matrix.
+  !!
+  !! @return The maximum matrix element.
+  function absmax_order_2 (A) result(absmax)
+
+    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    real(spamm_kind) :: absmax
+
+    absmax = 0
+
+  end function absmax_order_2
 
 end module spamm_management

@@ -14,7 +14,11 @@ target_link_libraries( spamm-multiply utilities spammpack-serial-shared )
 
 add_executable( spamm-lowdin spamm-lowdin.F90 )
 add_dependencies( spamm-lowdin spammpack-serial-shared )
-target_link_libraries( spamm-lowdin utilities spammpack-serial-shared )
+target_link_libraries( spamm-lowdin
+  utilities
+  spammpack-serial-shared
+  ${LAPACK_LIBRARIES}
+  )
 
 # More unit-like tests.
 set( UNIT_TESTS
