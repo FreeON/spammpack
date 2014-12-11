@@ -1,9 +1,16 @@
 gems:
   - jekyll-mentions
   - jekyll-sitemap
+  - jekyll/scholar
 
 footer-links:
   github: nicolasbock
+
+exclude:
+  - 'Gemfile'
+  - 'Gemfile.lock'
+  - 'Rakefile'
+  - 'README.markdown'
 
 pages_list:
   Main: "/spammpack/"
