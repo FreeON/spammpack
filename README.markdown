@@ -3,4 +3,4 @@ spammpack
 
 Sparse Approximate Matrix-Matrix Multiply Package
 
-http://freeon.github.io/spammpack
+http://www.freeon.org/spammpack
