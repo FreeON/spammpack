@@ -55,13 +55,13 @@
 <h1 id="spammpack">Spammpack</h1>
 
 <p>Spammpack is an implementation of the Sparse Approximate Matrix Multiplication
-(SpAMM) algorithm introduced in <a href="/spammpack/references.html#1">[1]</a>.  It
-provides a matrix data type, and an approximate matrix product, which exhibits
-linear scaling computational complexity for matrices with decay. The product
-error and the performance of the multiply can be tuned by choosing an
-appropriate tolerance. The library can be compiled for serial executation or
-parallel execution on shared memory systems with an OpenMP capable compiler.
-Currently under heavy development, the latest version can be obtained through git:</p>
+(SpAMM) algorithm introduced in <a href="#Challacombe2010">(Challacombe &amp; Bock, 2010)</a>.  It provides a
+matrix data type, and an approximate matrix product, which exhibits linear
+scaling computational complexity for matrices with decay. The product error
+and the performance of the multiply can be tuned by choosing an appropriate
+tolerance. The library can be compiled for serial executation or parallel
+execution on shared memory systems with an OpenMP capable compiler.  Currently
+under heavy development, the latest version can be obtained through git:</p>
 
 <pre><code>$ git clone https://github.com/FreeON/spammpack.git
 </code></pre>
@@ -99,6 +99,14 @@ other factoids can be found on <a href="https://www.openhub.net/p/spammpack">Ope
   <li>Matt Challacombe <a href="https://github.com/mattchallacombe" class="user-mention">@mattchallacombe</a></li>
   <li>Nicolas Bock <a href="https://github.com/nicolasbock" class="user-mention">@nicolasbock</a></li>
 </ul>
+
+<h1 id="bibliography">Bibliography</h1>
+
+<ol class="bibliography"><li><span id="Challacombe2010">Challacombe, M., &amp; Bock, N. (2010). Fast Multiplication of Matrices with Decay. <i>CoRR</i>, <i>abs/1011.3534</i>. Retrieved from http://arxiv.org/abs/1011.3534</span></li>
+<li><span id="Bock2013">Bock, N., &amp; Challacombe, M. (2013). An optimized sparse approximate matrix multiply for matrices with
+                  decay. <i>SIAM Journal on Scientific Computing</i>, <i>35</i>(1), C72–C98.</span></li>
+<li><span id="Bock2014">Bock, N., Challacombe, M., &amp; Kalé, L. V. (2014). Solvers for O(N) Electronic Structure in the Strong Scaling
+                  Limit. <i>CoRR</i>, <i>abs/1403.7458</i>. Retrieved from http://arxiv.org/abs/1403.7458</span></li></ol>
 
 
         </section>
