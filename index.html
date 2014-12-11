@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="http://www.freeon.org/spammpack/stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="http://www.freeon.org/spammpack/stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="http://www.freeon.org/spammpack/stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Spammpack</title>
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-18986301-3', 'auto');
+      ga('require', 'linkid', 'linkid.js');
+      ga('require', 'displayfeatures');
+      ga('send', 'pageview');
+    </script>
+
+    <script type="text/javascript"
+      src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+    </script>
+
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1><a href="/spammpack/" style="color:#fff">Spammpack</a></h1>
+        <h2>Sparse Approximate Matrix-Matrix Multiply Package</h2>
+        <a href="https://github.com/FreeON/spammpack" class="button">
+          <small>View project on</small> GitHub
+        </a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+
+<h1 id="spammpack">Spammpack</h1>
+
+<p>Spammpack is an implementation of the Sparse Approximate Matrix Multiplication
+(SpAMM) algorithm introduced in <a href="/spammpack/references.html#1">[1]</a>.  It
+provides a matrix data type, and an approximate matrix product, which exhibits
+linear scaling computational complexity for matrices with decay. The product
+error and the performance of the multiply can be tuned by choosing an
+appropriate tolerance. The library can be compiled for serial executation or
+parallel execution on shared memory systems with an OpenMP capable compiler.
+Currently under heavy development, the latest version can be obtained through git:</p>
+
+<pre><code>$ git clone https://github.com/FreeON/spammpack.git
+</code></pre>
+
+<p>Alternatively we offer a snapshot of the latest version in a zip or tar archive
+through the links on the right hand side. See <a href="/spammpack/building.html">Building</a>
+for more details on how to build the library.</p>
+
+<h1 id="license">License</h1>
+
+<p>Spammpack is licensed under the <a href="http://opensource.org/licenses/BSD-3-Clause">BSD 3-clause
+license</a>.</p>
+
+<script async="" src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+<!-- responsive -->
+<p><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4328959315579213" data-ad-slot="1424990250" data-ad-format="auto"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script></p>
+
+<h1 id="project-statistics">Project Statistics</h1>
+
+<p>The latest project statistics including a source code line count and some
+other factoids can be found on <a href="https://www.openhub.net/p/spammpack">OpenHub</a>:</p>
+
+<script type="text/javascript" src="http://www.openhub.net/p/713355/widgets/project_basic_stats.js">
+</script>
+
+<h1 id="authors">Authors</h1>
+
+<p>The principal authors of spammpack are:</p>
+
+<ul>
+  <li>Matt Challacombe <a href="https://github.com/mattchallacombe" class="user-mention">@mattchallacombe</a></li>
+  <li>Nicolas Bock <a href="https://github.com/nicolasbock" class="user-mention">@nicolasbock</a></li>
+</ul>
+
+
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/FreeON/spammpack/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/FreeON/spammpack/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <strong>Navigation</strong>
+          <ul>
+          
+            <li><small><a href="/spammpack/">Main</a></small></li>
+          
+            <li><small><a href="/spammpack/building.html">Building</a></small></li>
+          
+            <li><small><a href="/spammpack/references.html">References</a></small></li>
+          
+          </ul>
+
+          <p class="repo-owner">
+          Spammpack is part of the <a href="/">FreeON Project</a>.
+          </p>
+
+          <p>
+<table>
+  <thead>
+    <tr>
+      <th>Branch</th>
+      <th>Build Status</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <th>master</th>
+    <td>
+      <a href="https://travis-ci.org/FreeON/spammpack"><img
+        src="https://travis-ci.org/FreeON/spammpack.svg?branch=master"
+        alt="master build status" /></a></td>
+  </tr>
+  <tr>
+    <th>v1.0</th>
+      <td>
+        <a href="https://travis-ci.org/FreeON/spammpack"><img
+          src="https://travis-ci.org/FreeON/spammpack.svg?branch=v1.0"
+          alt="master build status" /></a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+          </p>
+
+          <p>
+<script type="text/javascript"
+src="http://www.openhub.net/p/713355/widgets/project_thin_badge.js">
+</script>
+
+          </p>
+
+          <p>This page was initially generated by
+          <a href="https://pages.github.com">GitHub Pages</a>
+          using the Architect theme by
+          <a href="https://twitter.com/jasonlong">Jason Long</a>.
+          Now it is hand groomed by the authors.</p>
+
+          <p>LA-CC-13-066</p>
+
+          <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- responsive -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-4328959315579213"
+     data-ad-slot="1424990250"
+     data-ad-format="auto"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>
