@@ -32,7 +32,7 @@ task :publish => [:generate] do
     message = "Site updated at #{Time.now.utc}"
     system "git commit -am #{message.shellescape}"
     system "git push"
-    system "git checkout master"
+    system "git checkout webpage"
     system "git stash pop"
   end
 end
