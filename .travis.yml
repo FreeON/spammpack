@@ -1,5 +1,9 @@
 language: C
 
+branches:
+  except:
+    - webpage
+
 compiler:
   - gcc
 
