@@ -24,5 +24,8 @@ defaults:
     values:
       layout: "default"
 
+scholar:
+  style: american-physics-society
+
 url: http://www.freeon.org/spammpack
 baseurl: "/spammpack"
