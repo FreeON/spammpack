@@ -31,6 +31,9 @@ set_directory_properties(
   COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
   )
 
+function( build-library use_OpenMP )
+endfunction( build-library )
+
 add_library( spammpack-serial-shared SHARED ${spammpack-sources} )
 set_target_properties( spammpack-serial-shared
   PROPERTIES
