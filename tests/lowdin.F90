@@ -52,6 +52,8 @@ program test
   !call print_matrix_python(S_dense, "S")
 
   S => spamm_convert_dense_to_matrix_2nd_order(S_dense)
+  Y => null()
+  Z => null()
   call spamm_inverse_sqrt_schulz(S, Y, Z)
 
 #ifdef LAPACK_FOUND
