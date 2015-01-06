@@ -102,7 +102,7 @@ if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
     "-O0 -g -gdwarf-3"
     "-fvar-tracking-assignments -fcheck=all"
     "-ffree-line-length-none"
-    "-Wall -Wimplicit-interface -Wimplicit-procedure"
+    "-Wall -Wimplicit-interface -Wuninitialized -Wimplicit-procedure"
     )
   string( TOUPPER ${CMAKE_BUILD_TYPE} UPPER_BUILD_TYPE )
   if( UPPER_BUILD_TYPE STREQUAL "DEBUG" )
