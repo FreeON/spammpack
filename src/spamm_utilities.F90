@@ -75,7 +75,7 @@ module spamm_utilities
     module procedure bitree_to_string
     module procedure qutree_to_string
     module procedure spamm_matrix_order_1_to_string
-    module procedure spamm_matrix_2nd_order_to_string
+    module procedure spamm_matrix_order_2_to_string
   end interface to_string
 
 contains
@@ -299,16 +299,16 @@ contains
 
   end function spamm_matrix_order_1_to_string
 
-  !> Convert a spamm_matrix_2nd_order to a string.
+  !> Convert a spamm_matrix_order_2 to a string.
   !!
   !! @param A The matrix.
   !!
   !! @return The string representation.
-  function spamm_matrix_2nd_order_to_string (A) result(str_q)
+  function spamm_matrix_order_2_to_string (A) result(str_q)
 
     use spamm_types
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     character(len = 200) :: temp
 #ifdef HAVE_DEFERRED_STRING_LENGTH
     character(len = :), allocatable :: str_q
@@ -328,7 +328,7 @@ contains
 
     str_q = trim(adjustl(temp))
 
-  end function spamm_matrix_2nd_order_to_string
+  end function spamm_matrix_order_2_to_string
 
   !> Print a log message.
   !!

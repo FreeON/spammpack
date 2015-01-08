@@ -189,7 +189,7 @@ CONTAINS
   !! @param alpha The scalar \f$ \alpha \f$.
   subroutine spamm_multiply_2nd_order_x_scalar (A, alpha)
 
-    type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
+    type(spamm_matrix_order_2), pointer, intent(inout) :: A
     real(spamm_kind), intent(in) :: alpha
 
     LOG_DEBUG("multiplying matrix by scalar "//to_string(alpha))
@@ -245,8 +245,8 @@ CONTAINS
   !! @param beta Factor @f$ \beta @f$.
   subroutine spamm_add_2nd_order_to_2nd_order (A, B, alpha, beta)
 
-    type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: B
+    type(spamm_matrix_order_2), pointer, intent(inout) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: B
     real(spamm_kind), intent(in), optional :: alpha, beta
 
     LOG_DEBUG("Adding matrices: alpha = "//to_string(alpha)//", beta = "//to_string(beta))
@@ -315,7 +315,7 @@ CONTAINS
   !! @param alpha The factor \f$ \alpha \f$.
   subroutine spamm_add_identity_to_matrix_2nd_order (A, alpha)
 
-    type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
+    type(spamm_matrix_order_2), pointer, intent(inout) :: A
     real(spamm_kind), intent(in) :: alpha
 
     call spamm_add_identity_2_qutree_inplace_recur(A%root, alpha, A%M, A%N)
@@ -379,7 +379,7 @@ CONTAINS
   !! @return The trace.
   function spamm_trace_2nd_order (A) result (trace_a)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     real(spamm_kind) :: trace_a
 
     trace_a = 0
@@ -440,7 +440,7 @@ CONTAINS
   !! @return The trace of the matrix produce, @f$ \mathrm{Tr} \left[ A \cdot B \right] @f$.
   function spamm_trace_2nd_order_product (A, B, tolerance) result (trace_ab)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A, B
+    type(spamm_matrix_order_2), pointer, intent(in) :: A, B
     real(spamm_kind), intent(in), optional :: tolerance
     real(spamm_kind) :: trace_ab
 
@@ -1446,8 +1446,8 @@ CONTAINS
   !! @param beta The scalar \f$ \beta \f$.
   subroutine spamm_multiply_2nd_order_x_2nd_order (A, B, C, tolerance, alpha, beta)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A, B
-    type(spamm_matrix_2nd_order), pointer, intent(inout) :: C
+    type(spamm_matrix_order_2), pointer, intent(in) :: A, B
+    type(spamm_matrix_order_2), pointer, intent(inout) :: C
     real(spamm_kind), intent(in), optional :: tolerance
     real(spamm_kind), intent(in), optional :: alpha, beta
 
@@ -1506,7 +1506,7 @@ CONTAINS
 
   subroutine spamm_multiply_2nd_order_x_1st_order (A, B, C, threshold)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     type(spamm_matrix_order_1), pointer, intent(in) :: B
     type(spamm_matrix_order_1), pointer, intent(out) :: C
     real(spamm_kind), optional, intent(in) :: threshold
@@ -1547,7 +1547,7 @@ CONTAINS
   function spamm_norm_reduce_matrix_2nd_order (A) result (norm)
 
     real(spamm_kind) :: norm
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
 
     A%norm = spamm_norm_reduce_qutree_recur(A%root)
     norm = A%norm

@@ -110,7 +110,7 @@ program test
   integer, parameter :: ITERATIONS = 5
 
 #ifdef SPAMM_COUNTERS
-  type(spamm_matrix_2nd_order), pointer :: A, B, C
+  type(spamm_matrix_order_2), pointer :: A, B, C
   real(kind(0d0)), dimension(N, N) :: A_dense, C_dense
   real(kind(0d0)) :: reference_norm
   real(kind(0d0)), dimension(ITERATIONS) :: reference_complexity

@@ -8,7 +8,7 @@ program test
 
   integer, parameter :: N = 129
 
-  type(spamm_matrix_2nd_order), pointer :: A => null()
+  type(spamm_matrix_order_2), pointer :: A => null()
   real(kind(0d0)), dimension(N, N) :: A_dense
   real(kind(0d0)) :: reference_trace
   integer :: i, j

@@ -148,8 +148,8 @@ contains
   !! @param B The matrix B.
   subroutine spamm_copy_2nd_order_to_2nd_order (A, B)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
-    type(spamm_matrix_2nd_order), pointer, intent(inout) :: B
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(inout) :: B
 
     if(.not. associated(A)) then
       return
@@ -225,7 +225,7 @@ contains
   !! @param A The matrix.
   subroutine spamm_delete_matrix_2nd_order (A)
 
-    type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
+    type(spamm_matrix_order_2), pointer, intent(inout) :: A
 
     if(associated(A)) then
       call spamm_delete_qutree(A%root)
@@ -413,7 +413,7 @@ contains
   !! @param V The vector.
   subroutine spamm_copy_2nd_order_to_order_1 (A, j, V)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     integer, intent(in) :: j
     type(spamm_matrix_order_1), pointer, intent(inout) :: V
 
@@ -764,7 +764,7 @@ contains
   function spamm_identity_matrix (M, N) result (A)
 
     integer, intent(in) :: M, N
-    type(spamm_matrix_2nd_order), pointer :: A
+    type(spamm_matrix_order_2), pointer :: A
     integer :: i
 
     if(M /= N) then
@@ -791,7 +791,7 @@ contains
   !! @return The matrix.
   function spamm_zero_matrix (M, N) result (A)
 
-    type(spamm_matrix_2nd_order), pointer :: A
+    type(spamm_matrix_order_2), pointer :: A
     integer, intent(in) :: M, N
 
     A => null()
@@ -878,7 +878,7 @@ contains
   function spamm_get_matrix_2nd_order (A, i, j) result (Aij)
 
     real(spamm_kind) :: Aij
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     integer, intent(in) :: i, j
 
     if(associated(A)) then
@@ -970,7 +970,7 @@ contains
   !! @param Aij The matrix element.
   subroutine spamm_set_matrix_2nd_order (A, i, j, Aij)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     integer, intent(in) :: i, j
     real(spamm_kind), intent(in) :: Aij
 
@@ -1150,7 +1150,7 @@ contains
   subroutine spamm_allocate_matrix_2nd_order (M, N, A)
 
     integer, intent(in) :: M, N
-    type(spamm_matrix_2nd_order), pointer, intent(out) :: A
+    type(spamm_matrix_order_2), pointer, intent(out) :: A
 
     A => null()
     allocate(A)
@@ -1211,7 +1211,7 @@ contains
   !! @param A The matrix.
   subroutine spamm_reset_counters_2nd_order (A)
 
-    type(spamm_matrix_2nd_order), pointer, intent(inout) :: A
+    type(spamm_matrix_order_2), pointer, intent(inout) :: A
 
     LOG_DEBUG("resetting counters")
 
@@ -1302,7 +1302,7 @@ contains
   !! @return The maximum matrix element.
   function absmax_order_2 (A) result(absmax)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     real(spamm_kind) :: absmax
 
     absmax = 0

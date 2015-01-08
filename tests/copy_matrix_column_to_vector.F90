@@ -9,7 +9,7 @@ program test
   integer, parameter :: M = 13
   integer, parameter :: N = 17
 
-  type(spamm_matrix_2nd_order), pointer :: A
+  type(spamm_matrix_order_2), pointer :: A
   type(spamm_matrix_order_1), pointer :: V
   real(kind(0d0)), dimension(M, N) :: A_dense
   integer :: i

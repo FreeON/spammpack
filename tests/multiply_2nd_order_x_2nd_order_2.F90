@@ -11,7 +11,7 @@ program test
   integer, parameter :: N = 129
   integer, parameter :: ITERATIONS = 3
 
-  type(spamm_matrix_2nd_order), pointer :: A, C
+  type(spamm_matrix_order_2), pointer :: A, C
   real(kind(0d0)), dimension(N, N) :: A_dense, C_dense
   real(kind(0d0)) :: reference_norm
   integer :: i, j

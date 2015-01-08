@@ -11,7 +11,7 @@ program test
   integer, parameter :: N = 12
   real(kind(0d0)), parameter :: alpha = 1.2
 
-  type(spamm_matrix_2nd_order), pointer :: A
+  type(spamm_matrix_order_2), pointer :: A
   real(kind(0d0)), dimension(M, N) :: A_dense
   integer :: i, j
 

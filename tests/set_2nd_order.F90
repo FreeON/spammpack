@@ -8,7 +8,7 @@ program test
 
   integer, parameter :: N = 5
 
-  type(spamm_matrix_2nd_order), pointer :: A
+  type(spamm_matrix_order_2), pointer :: A
   real(kind(0d0)), dimension(N, N) :: A_dense
   integer :: i, j
 

@@ -141,7 +141,7 @@ module spamm_types
   END TYPE BiTree
 
   !> Matrix (2nd order) type.
-  type spamm_matrix_2nd_order
+  type spamm_matrix_order_2
 
     !> The number or rows.
     integer :: M = -1
@@ -171,7 +171,7 @@ module spamm_types
     !! spamm_globals::spamm_block_size.
     REAL(SpAMM_DOUBLE) :: number_operations = 0
 
-  end type spamm_matrix_2nd_order
+  end type spamm_matrix_order_2
 
   !> Quaternary tree data structure.
   TYPE QuTree

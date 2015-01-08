@@ -284,7 +284,7 @@ module spamm_convert
   !! @result The SpAMM matrix.
   function spamm_convert_dense_to_matrix_2nd_order (A_dense) result (A)
 
-    type(spamm_matrix_2nd_order), pointer :: A
+    type(spamm_matrix_order_2), pointer :: A
     real(spamm_kind), dimension(:, :), intent(in) :: A_dense
 
     LOG_INFO("converting dense matrix")
@@ -333,7 +333,7 @@ module spamm_convert
   !! @param A_dense The dense matrix.
   subroutine spamm_convert_order_2_to_dense (A, A_dense)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     real(spamm_kind), dimension(:, :), allocatable, intent(inout) :: A_dense
     integer :: i, j
 
@@ -361,7 +361,7 @@ module spamm_convert
 
     use spamm_utilities
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     character(len = *), intent(in), optional :: matrix_name
     real(spamm_kind), dimension(:, :), allocatable :: A_dense
     character(len = 2000) :: format_string
@@ -418,7 +418,7 @@ module spamm_convert
   !! @param matrix_name The optional label.
   subroutine print_spamm_2nd_order_tree (A, matrix_name)
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: A
+    type(spamm_matrix_order_2), pointer, intent(in) :: A
     character(len = *), intent(in), optional :: matrix_name
 
     if(present(matrix_name)) then

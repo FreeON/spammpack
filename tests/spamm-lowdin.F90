@@ -18,7 +18,7 @@ program spamm_lowdin
 
   real(kind(0d0)), parameter :: tolerance = 1d-8
 
-  type(spamm_matrix_2nd_order), pointer :: S => null(), X => null(), &
+  type(spamm_matrix_order_2), pointer :: S => null(), X => null(), &
     Y => null(), Z => null(), Id => null()
   real(kind(0d0)), allocatable :: S_dense(:, :), Id_dense(:, :)
   character(len = 1000) :: matrix_filename

@@ -10,7 +10,7 @@ program test
   integer, parameter :: M = 6
   integer, parameter :: N = 11
 
-  type(spamm_matrix_2nd_order), pointer :: A
+  type(spamm_matrix_order_2), pointer :: A
   real(kind(0d0)), dimension(M, N) :: A_dense
   real(kind(0d0)) :: Aij
   integer :: i, j

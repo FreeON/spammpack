@@ -10,8 +10,8 @@ program test
   integer, parameter :: N = 14
   real(kind(0d0)), parameter :: alpha = 1.2, beta = 0.3
 
-  type(spamm_matrix_2nd_order), pointer :: A
-  type(spamm_matrix_2nd_order), pointer :: B
+  type(spamm_matrix_order_2), pointer :: A
+  type(spamm_matrix_order_2), pointer :: B
   real(kind(0d0)), dimension(M, N) :: A_dense
   real(kind(0d0)), dimension(M, N) :: B_dense
   integer :: i, j

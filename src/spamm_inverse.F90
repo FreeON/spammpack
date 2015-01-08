@@ -56,11 +56,11 @@ contains
     use spamm_types
     use spamm_utilities
 
-    type(spamm_matrix_2nd_order), pointer, intent(in) :: S
-    type(spamm_matrix_2nd_order), pointer, intent(inout) :: Y, Z
+    type(spamm_matrix_order_2), pointer, intent(in) :: S
+    type(spamm_matrix_order_2), pointer, intent(inout) :: Y, Z
     real(spamm_kind), intent(in), optional :: tolerance
     real(spamm_kind), intent(in), optional :: schulz_threshold
-    type(spamm_matrix_2nd_order), pointer :: X => null(), T => null(), &
+    type(spamm_matrix_order_2), pointer :: X => null(), T => null(), &
       temp => null(), temp2 => null()
 
     integer, parameter :: SCHULZ_ORDER = 3

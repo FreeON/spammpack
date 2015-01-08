@@ -9,7 +9,7 @@ program test
   integer, parameter :: M = 5
   integer, parameter :: N = 7
 
-  type(spamm_matrix_2nd_order), pointer :: A => null()
+  type(spamm_matrix_order_2), pointer :: A => null()
   type(spamm_matrix_order_1), pointer :: B => null()
   type(spamm_matrix_order_1), pointer :: C => null()
 

@@ -22,14 +22,14 @@ program spamm_multiply
 
   real(kind(0d0)), dimension(:,:), allocatable :: A_dense
 
-  type(spamm_matrix_2nd_order), pointer :: A => null()
-  type(spamm_matrix_2nd_order), pointer :: B => null()
-  type(spamm_matrix_2nd_order), pointer :: C => null()
+  type(spamm_matrix_order_2), pointer :: A => null()
+  type(spamm_matrix_order_2), pointer :: B => null()
+  type(spamm_matrix_order_2), pointer :: C => null()
 
 #ifdef VERIFY_RESULT
   real(spamm_kind) :: norms
   real(kind(0d0)), dimension(:,:), allocatable :: C_dense
-  type(spamm_matrix_2nd_order), pointer :: C_reference => null()
+  type(spamm_matrix_order_2), pointer :: C_reference => null()
 #endif
 
 #ifdef _OPENMP

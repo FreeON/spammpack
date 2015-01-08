@@ -20,7 +20,7 @@ program test
   integer, parameter :: LWORK = 1+6*N+2*N**2
   integer, parameter :: LIWORK = 3+5*N
 
-  type(spamm_matrix_2nd_order), pointer :: S, Y, Z
+  type(spamm_matrix_order_2), pointer :: S, Y, Z
   real(kind(0d0)), dimension(N, N) :: S_dense, Y_dense, Z_dense
   real(kind(0d0)), dimension(N) :: eval
   real(kind(0d0)), dimension(N, N) :: evec
