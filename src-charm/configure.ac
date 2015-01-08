@@ -214,8 +214,6 @@ if test "${enable_pruning}" = "yes"; then
   AC_DEFINE([PRUNE_CONVOLUTION], [1], [Enable pruning of convolution space])
 fi
 
-AC_CONFIG_SUBDIRS([libchunk])
-
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Makefile

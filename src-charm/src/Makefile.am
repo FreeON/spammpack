@@ -11,10 +11,8 @@ charmrun : spamm-charm
 
 AM_CXXFLAGS = $(CHARMFLAGS) $(OPENMP_CXXFLAGS)
 AM_CFLAGS = $(OPENMP_CFLAGS)
-AM_CPPFLAGS = -I $(top_srcdir)/libchunk/src
 
 spamm_charm_LDFLAGS = -XCClinker "-language charm++ $(additional_linkerflags)"
-spamm_charm_LDADD = ../libchunk/src/libchunk.la
 
 spamm_charm_INTERFACEFILES = \
 	matrix.ci \

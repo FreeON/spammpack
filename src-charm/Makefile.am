@@ -1,4 +1,4 @@
-SUBDIRS = libchunk src tools tests
+SUBDIRS = src tools tests
 
 #DISTCHECK_CONFIGURE_FLAGS = --enable-debug
 
