@@ -103,7 +103,7 @@ case ${enable_block_multiply} in
     ;;
   "blas" )
     AC_MSG_RESULT([blas])
-    AC_DEFINE([BLOCK_BLAS], [1], [Use .gemm() matrix multiply.])
+    AC_DEFINE([BLOCK_BLAS], [1], [Use gemm() matrix multiply.])
     ;;
   *) AC_MSG_FAILURE([unknown multiply implementation]) ;;
 esac

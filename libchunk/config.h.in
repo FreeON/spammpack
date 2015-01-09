@@ -1,0 +1,48 @@
+#ifndef __CONFIG_H
+#define __CONFIG_H
+
+/* Use gemm() matrix multiply. */
+#cmakedefine BLOCK_BLAS
+
+/* Use simple nested loop matrix multiply. */
+#cmakedefine BLOCK_MULTIPLY
+
+/* Number of nanoseconds to sleep after block multiply. */
+#cmakedefine BLOCK_SLEEP @BLOCK_SLEEP@
+
+/* The minimum size N of the block matrix that will transpose a matrix to
+   allow for loop vectorization. */
+#cmakedefine CHUNK_BLOCK_TRANSPOSE @CHUNK_BLOCK_TRANSPOSE@
+
+/* The chunk implementation */
+#cmakedefine CHUNK_IMPLEMENTATION @CHUNK_IMPLEMENTATION@
+
+/* The maximum tier at which new tasks are created when recursing the chunk
+   tree. */
+#cmakedefine CHUNK_TREE_MAX_TIER @CHUNK_TREE_MAX_TIER@
+
+/* The clock type to use with clock_gettime() */
+#cmakedefine CLOCKTYPE @CLOCKTYPE@
+
+/* Enable a lot of extra output */
+#cmakedefine DEBUG_OUTPUT
+
+/* Print the matrices for debugging */
+#cmakedefine DEBUG_OUTPUT_MATRIX
+
+/* The call to BLAS dgemm() including all necessary underscores. */
+#undef DGEMM
+
+/* The call to dsyev() including all necessary underscores. */
+#undef DSYEV
+
+/* The number of threads in OpenMP parallel sections */
+#cmakedefine FORCE_OMP_NUM_THREADS @FORCE_OMP_NUM_THREADS@
+
+/* Measure the product complexity */
+#cmakedefine MEASURE_COMPLEXITY
+
+/* Enable huge page allocation for MIC */
+#cmakedefine MIC_ALLOC
+
+#endif

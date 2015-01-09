@@ -1,5 +1,7 @@
 #include "config.h"
 
+#ifdef MIC_ALLOC
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,3 +55,5 @@ free_huge_pages (void *ptr)
 		// and must be deallocated via free()
 		free(real_ptr);
 }
+
+#endif
