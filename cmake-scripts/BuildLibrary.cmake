@@ -1,3 +1,9 @@
+# Defines the function build_library.
+#
+# The variable MODULE_FILES has to be set externally before calling this
+# function. It should contain the names of the generated module files. The
+# variable HEADER_FILES should contain the header files from the source tree
+# to install.
 function( build_library use_OpenMP COMPILE_FLAGS )
 
   if( use_OpenMP )
@@ -41,12 +47,17 @@ function( build_library use_OpenMP COMPILE_FLAGS )
   file( MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include-${extension}" )
   add_custom_command( TARGET spammpack-${extension}-static
     POST_BUILD
-    COMMAND cp ${spammpack-modules} "include-${extension}"
+    COMMAND cp ${MODULE_FILES} "include-${extension}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+  add_custom_command( TARGET spammpack-${extension}-static
+    POST_BUILD
+    COMMAND cp ${HEADER_FILES} "${CMAKE_CURRENT_BINARY_DIR}/include-${extension}"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
   unset( ${extension}-modfiles )
-  foreach( mod ${spammpack-modules} )
+  foreach( mod ${MODULE_FILES} )
     list( APPEND ${extension}-modfiles
       ${CMAKE_CURRENT_BINARY_DIR}/include-${extension}/${mod}
       )

@@ -41,7 +41,7 @@ set( spammpack-sources
   spammpack.F90
   )
 
-set( spammpack-modules
+set( MODULE_FILES
   spamm_algebra.mod
   spamm_convert.mod
   spamm_globals.mod
@@ -49,6 +49,9 @@ set( spammpack-modules
   spamm_project.mod
   spamm_types.mod
   spammpack.mod
+  )
+
+set( HEADER_FILES
   spamm_utility_macros.h
   )
 
