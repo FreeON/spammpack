@@ -265,4 +265,6 @@ endif()
 enable_testing()
 
 add_subdirectory( src )
+add_subdirectory( utilities )
+add_subdirectory( tools )
 add_subdirectory( tests )

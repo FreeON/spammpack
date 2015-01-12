@@ -4,7 +4,8 @@ module test_utilities
 
   interface mmio
 
-    subroutine mmread(iunit, rep, field, symm, rows, cols, nnz, nnzmax, indx, jndx,ival,rval,cval)
+    subroutine mmread(iunit, rep, field, symm, rows, cols, nnz, nnzmax, &
+        indx, jndx,ival,rval,cval)
       integer, intent(in) :: iunit
       character(len = 10), intent(inout) :: rep
       character(len = 7), intent(inout) :: field
@@ -74,7 +75,8 @@ contains
 
     max_number_nonzero = number_nonzero
 
-    call mmread(20, rep, field, symm, M, N, number_nonzero, max_number_nonzero, indx, jndx, ival, rval, cval)
+    call mmread(20, rep, field, symm, M, N, number_nonzero, &
+      max_number_nonzero, indx, jndx, ival, rval, cval)
 
     write(*, *) "allocating A"
     allocate(A(M, N))
