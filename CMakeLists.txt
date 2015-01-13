@@ -79,19 +79,19 @@ set( LIB_INSTALL_DIR lib )
 include( CMakePackageConfigHelpers
   OPTIONAL RESULT_VARIABLE PACKAGE_CONFIG_FOUND )
 if( PACKAGE_CONFIG_FOUND )
-	configure_package_config_file( spammpackConfig.cmake.in spammpackConfig.cmake
-			INSTALL_DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
-			PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
-			)
-	write_basic_package_version_file( spammpackConfigVersion.cmake
-			VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}
-			COMPATIBILITY SameMajorVersion
-			)
-	install( FILES
-			${CMAKE_BINARY_DIR}/spammpackConfig.cmake
-			${CMAKE_BINARY_DIR}/spammpackConfigVersion.cmake
-			DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
-	       )
+  configure_package_config_file( spammpackConfig.cmake.in spammpackConfig.cmake
+    INSTALL_DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
+    PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
+    )
+  write_basic_package_version_file( spammpackConfigVersion.cmake
+    VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}
+    COMPATIBILITY SameMajorVersion
+    )
+  install( FILES
+    ${CMAKE_BINARY_DIR}/spammpackConfig.cmake
+    ${CMAKE_BINARY_DIR}/spammpackConfigVersion.cmake
+    DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
+    )
 endif()
 
 if( NOT CMAKE_BUILD_TYPE )
