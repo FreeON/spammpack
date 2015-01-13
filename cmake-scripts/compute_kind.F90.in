@@ -1,0 +1,7 @@
+program compute_kind
+
+  integer, parameter :: SPAMM_KIND = @KIND_EXPRESSION@
+
+  write(*,*) SPAMM_KIND
+
+end program compute_kind

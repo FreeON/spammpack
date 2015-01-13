@@ -34,9 +34,10 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 MODULE SpAMM_PROJECT
 
-  USE spamm_algebra
+  use spamm_algebra
   use spamm_globals
   use spamm_management
+  use spamm_real_precision
   use spamm_types
   use spamm_utilities
 
@@ -72,7 +73,8 @@ CONTAINS
     REAL(SpAMM_KIND), INTENT(OUT)        :: TrP
     TYPE(QuTree), POINTER :: T1
     REAL(SpAMM_KIND)      :: TrP2
-    REAL(SpAMM_DOUBLE)    :: TInitial, TTotal
+    REAL(kind(0d0))    :: TInitial, TTotal
+
     TInitial=SpAMM_Get_Time()
     TrP=Trace(P)
     CALL Multiply(P,P,P2)                          ! P^2 <- P.P
@@ -99,7 +101,7 @@ CONTAINS
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_MULTIPLY_THRESHOLD   =1D-7 !SpAMM_PRODUCT_TOLERANCE
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !100d0*SpAMM_RQI_MULTIPLY_THRESHOLD
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_EVAL_ERROR_ESTIMATE  =2D-2 !100d0*SpAMM_RQI_CONVERGENCE_THRESHOLD
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(Kind(0d0)) :: TInitial, TTotal
 
     TInitial=SpAMM_Get_Time()
     ! Find extremal eigenvalues by RQI
@@ -294,9 +296,9 @@ END MODULE SpAMM_PROJECT
 !!$    REAL(SpAMM_KIND) :: RQIMin,RQIMax,Lambda,Lambdamax,LambdaMin
 !!$
 !!$    INTEGER :: LWork,Info
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(N) :: Vals1
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(N,N) :: Temp
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(3*N) :: Work
+!!$    REAL(Kind(0d0)), DIMENSION(N) :: Vals1
+!!$    REAL(Kind(0d0)), DIMENSION(N,N) :: Temp
+!!$    REAL(Kind(0d0)), DIMENSION(3*N) :: Work
 !!$    LWork=MAX(1,3*N)
 !!$    Vals2=0.0D0
 !!$    Temp=A
@@ -440,9 +442,9 @@ END MODULE SpAMM_PROJECT
 !!$    REAL(SpAMM_KIND) :: RQIMin,RQIMax,Lambda,Lambdamax,LambdaMin
 !!$
 !!$    INTEGER :: LWork,Info
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(N) :: Vals1
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(N,N) :: Temp
-!!$    REAL(SpAMM_DOUBLE), DIMENSION(3*N) :: Work
+!!$    REAL(Kind(0d0)), DIMENSION(N) :: Vals1
+!!$    REAL(Kind(0d0)), DIMENSION(N,N) :: Temp
+!!$    REAL(Kind(0d0)), DIMENSION(3*N) :: Work
 !!$
 !!$    LOGICAL :: MinMaxTest
 !!$

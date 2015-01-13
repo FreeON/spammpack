@@ -34,9 +34,10 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_algebra
 
-  use spamm_types
   use spamm_globals
   use spamm_management
+  use spamm_real_precision
+  use spamm_types
   use spamm_utilities
 
 #ifdef _OPENMP
@@ -131,7 +132,7 @@ CONTAINS
     REAL(SpAMM_KIND), OPTIONAL :: threshold
 
     real(spamm_kind) :: local_threshold
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(kind(0d0)) :: TInitial, TTotal
 
     TInitial = SpAMM_Get_Time()
 
@@ -208,7 +209,7 @@ CONTAINS
     REAL(SpAMM_KIND), INTENT(IN) :: alpha
 
     INTEGER            :: Depth
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(Kind(0d0)) :: TInitial, TTotal
 
     IF(.NOT.ASSOCIATED(qA)) then
       LOG_DEBUG("qA not associated")
@@ -281,7 +282,7 @@ CONTAINS
     TYPE(QuTree), POINTER, INTENT(IN) :: qB
     REAL(SpAMM_KIND), intent(in), OPTIONAL :: Alpha, Beta
     REAL(SpAMM_KIND) :: InPlace_Alpha, InPlace_Beta
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(Kind(0d0)) :: TInitial, TTotal
 
     IF(PRESENT(Alpha))THEN
       InPlace_Alpha=Alpha
@@ -333,7 +334,7 @@ CONTAINS
     TYPE(QuTree), POINTER, intent(inout) :: qA
     REAL(SpAMM_KIND), intent(in) :: Alpha
     integer, intent(in) :: M, N
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(Kind(0d0)) :: TInitial, TTotal
 
     TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA)
@@ -359,7 +360,7 @@ CONTAINS
     TYPE(QuTree), POINTER, INTENT(IN) :: qA
     REAL(SpAMM_KIND)                  :: a
 
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(Kind(0d0)) :: TInitial, TTotal
 
     TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA,a)
@@ -410,7 +411,7 @@ CONTAINS
 
     INTEGER            :: Depth
     REAL(SpAMM_KIND)   :: multiplyThreshold
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(Kind(0d0)) :: TInitial, TTotal
 
     Depth=0
 
@@ -474,7 +475,7 @@ CONTAINS
     TYPE(QuTree), POINTER  :: qA
     REAL(SpAMM_KIND)       :: Tau
     INTEGER                :: Depth
-    REAL(SpAMM_DOUBLE)     :: TInitial, TTotal
+    REAL(Kind(0d0))     :: TInitial, TTotal
     Depth=0
     TInitial = SpAMM_Get_Time()
     !$OMP TASK UNTIED SHARED(qA)
@@ -495,7 +496,7 @@ CONTAINS
 
     TYPE(QuTree), POINTER, INTENT(IN) :: qA
     REAL(SpAMM_KIND) :: Norm
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(Kind(0d0)) :: TInitial, TTotal
 
     TInitial = SpAMM_Get_Time()
     !$OMP TASK SHARED(Norm,qA)
@@ -514,7 +515,7 @@ CONTAINS
     TYPE(BiTree), POINTER, INTENT(INOUT) :: bC
     REAL(SpAMM_KIND), OPTIONAL           :: Alpha,Beta
     INTEGER                              :: Depth
-    REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
+    REAL(Kind(0d0))                   :: TInitial, TTotal
     Depth=0
     IF(PRESENT(Alpha))THEN
       SpAMM_Add_BiTree_2_BiTree_RePlace_Alpha=Alpha
@@ -548,7 +549,7 @@ CONTAINS
     TYPE(BiTree), POINTER, INTENT(IN)    :: bB
     REAL(SpAMM_KIND), OPTIONAL           :: Alpha,Beta
     INTEGER                              :: Depth
-    REAL(SpAMM_DOUBLE)                   :: TInitial, TTotal
+    REAL(Kind(0d0))                   :: TInitial, TTotal
 
     Depth=0
     IF(PRESENT(Alpha))THEN
@@ -577,7 +578,7 @@ CONTAINS
     INTEGER              :: Depth
     TYPE(BiTree),POINTER :: bA,bB
     REAL(SpAMM_KIND)     :: dot
-    REAL(SpAMM_DOUBLE)                                  :: TInitial, TTotal
+    REAL(Kind(0d0))                                  :: TInitial, TTotal
     Depth=0
     TInitial = SpAMM_Get_Time()
     !$OMP TASK SHARED(dot,bA,bB)
@@ -602,7 +603,7 @@ CONTAINS
     TYPE(BiTree), POINTER, intent(inout) :: bC
     REAL(SpAMM_KIND),OPTIONAL :: tolerance
     real(spamm_kind) :: local_tolerance
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(Kind(0d0)) :: TInitial, TTotal
 
     IF(PRESENT(tolerance))THEN
       local_tolerance = tolerance
@@ -631,7 +632,7 @@ CONTAINS
 
     TYPE(BiTree), POINTER :: bA
     REAL(SpAMM_KIND) :: alpha
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    REAL(Kind(0d0)) :: TInitial, TTotal
 
     IF(.NOT.ASSOCIATED(bA))RETURN
 
@@ -668,7 +669,7 @@ CONTAINS
     INTEGER              :: Depth
     TYPE(BiTree),POINTER :: bA
     REAL(SpAMM_KIND)     :: Norm
-    REAL(SpAMM_DOUBLE)   :: TInitial, TTotal
+    REAL(Kind(0d0))   :: TInitial, TTotal
 
     Depth=0
     TInitial = SpAMM_Get_Time()

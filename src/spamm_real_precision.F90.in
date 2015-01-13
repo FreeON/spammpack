@@ -1,7 +1,4 @@
-!> Defines global parameters and variables.
-!!
-!! @todo Move matrix related global parameters or values into appropriate types
-!! and make things much less global.
+!> Defines the real kind for this library.
 !!
 !! @copyright
 !!
@@ -35,29 +32,7 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-MODULE spamm_globals
-
-  use spamm_types
-  use spamm_real_precision
-
-  IMPLICIT NONE
-
-  !> The size of the basic submatrix blocks.
-  integer, parameter :: SPAMM_BLOCK_SIZE = 4
-
-  !> The norm cutoff for tasked recursion.
-  real(SPAMM_KIND), parameter :: spamm_recursion_normd_cutoff = 1e-4
-
-  !> @deprecated The depth of the matrix tree.
-  INTEGER :: SpAMM_TOTAL_DEPTH
-
-  !> @deprecated The size of the unpadded matrix.
-  INTEGER :: SpAMM_MATRIX_DIMENSION
-
-  !> @deprecated The size of the padded matrix.
-  INTEGER :: SpAMM_PADDED_MATRIX_DIMENSION
-
-  !> Cutoff the tree depth at some predefined maximum depth.
-  INTEGER :: SpAMM_RECURSION_DEPTH_CUTOFF
-
-END MODULE spamm_globals
+module spamm_real_precision
+  !> The kind value for the real kind used in this library.
+  integer, parameter :: SPAMM_KIND = @KIND_VALUE@
+end module spamm_real_precision

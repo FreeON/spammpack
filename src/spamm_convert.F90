@@ -37,6 +37,7 @@ module spamm_convert
   use spamm_algebra
   use spamm_globals
   use spamm_management
+  use spamm_real_precision
   use spamm_types
   use spamm_utilities
 

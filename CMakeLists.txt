@@ -248,6 +248,18 @@ if( VALGRIND_TESTS )
   endif()
 endif()
 
+set( SPAMM_PRECISION double
+  CACHE STRING "The real precision of the library, single or double"
+  )
+
+set( SPAMM_PRECISION string( TOLOWER ${SPAMM_PRECISION} ))
+
+if( SPAMM_PRECISION STREQUAL "double" )
+  set( SPAMM_KIND "kind(0d0)" )
+else()
+  set( SPAMM_KIND "kind(0e0)" )
+endif()
+
 find_program( CTAGS ctags )
 
 if( CTAGS )

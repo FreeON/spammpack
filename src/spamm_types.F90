@@ -38,54 +38,30 @@ module spamm_types
   use omp_lib
 #endif
 
+  use spamm_real_precision
+
   implicit none
 
-  !> Define integer of length 2.
-  INTEGER, PARAMETER :: INT1 = SELECTED_INT_KIND(2)  !--Integer*1
-
-  !> Define integer of length 2.
-  INTEGER, PARAMETER :: INT2 = SELECTED_INT_KIND(4)  !--Integer*2
-
-  !> Define integer of length 4.
-  INTEGER, PARAMETER :: INT4 = SELECTED_INT_KIND(9)  !--Integer*4
-
-  !> Define integer of length 8.
-  INTEGER, PARAMETER :: INT8 = SELECTED_INT_KIND(18) !--Integer*8
-
-  !> Define float of length 4.
-  INTEGER, PARAMETER :: SpAMM_SINGLE = KIND(0.0e0)   !--Real*4
-
-  !> Define float of length 8.
-  INTEGER, PARAMETER :: SpAMM_DOUBLE = KIND(0.0d0)   !--Real*8
-
-#ifdef SPAMM_SINGLE
-  !> Define floating point type to single.
-  INTEGER, PARAMETER :: SpAMM_KIND = spamm_single
-#else
-  !> Define floating point type to double.
-  INTEGER, PARAMETER :: SpAMM_KIND = spamm_double
-#endif
-
   !> Define the number zero.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Zero = 0D0
+  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Zero = 0D0
 
   !> Define the number 1/2.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Half = 5D-1
+  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Half = 5D-1
 
   !> Define the number 1.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_One = 1D0
+  REAL(SPAMM_KIND), PARAMETER :: SpAMM_One = 1D0
 
   !> Define the number 2.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Two = 2D0
+  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Two = 2D0
 
   !> Define the number 4.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Four = 4D0
+  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Four = 4D0
 
   !> Define the number 8.
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_Eight = 8D0
+  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Eight = 8D0
 
   !> Bigest machine double for ONX_KIND
-  REAL(SpAMM_KIND), PARAMETER :: SpAMM_BIG_DBL = HUGE(SpAMM_One)
+  REAL(SPAMM_KIND), PARAMETER :: SpAMM_BIG_DBL = HUGE(SpAMM_One)
 
   !> Bigest machine int for int*4
   INTEGER, PARAMETER :: SpAMM_BIG_INT = 2**28
@@ -104,13 +80,13 @@ module spamm_types
     integer :: depth = -1
 
     !> The Frobenius norm.
-    real(spamm_kind) :: norm = 0
+    real(SPAMM_KIND) :: norm = 0
 
     !> The root of the binary tree.
     type(bitree), pointer :: root => null()
 
     !> The number of non-zero elements.
-    real(spamm_double) :: number_nonzeros = 0
+    real(kind(0d0)) :: number_nonzeros = 0
 
   end type spamm_matrix_order_1
 
@@ -118,10 +94,10 @@ module spamm_types
   TYPE BiTree
 
     !> The norm.
-    REAL(SpAMM_KIND) :: Norm = 0
+    REAL(SPAMM_KIND) :: Norm = 0
 
     !> The number of non-zero elements.
-    real(spamm_double) :: number_nonzeros = 0
+    real(kind(0d0)) :: number_nonzeros = 0
 
     !> The lower row index.
     integer :: i_lower = -1
@@ -136,7 +112,7 @@ module spamm_types
     TYPE(BiTree), POINTER :: Sect2 => NULL()
 
     !> The vector data.
-    REAL(SpAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
+    REAL(SPAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
 
   END TYPE BiTree
 
@@ -154,7 +130,7 @@ module spamm_types
     integer :: depth = -1
 
     !> The Frobenius norm.
-    REAL(SpAMM_KIND) :: norm = 0
+    REAL(SPAMM_KIND) :: norm = 0
 
     !> The padded matrix dimension. Since the padded matrix is always square,
     !! we only store one number here.
@@ -164,12 +140,12 @@ module spamm_types
     type(qutree), pointer :: root => null()
 
     !> The number of non-zero elements.
-    REAL(SpAMM_DOUBLE) :: number_nonzeros = 0
+    REAL(kind(0d0)) :: number_nonzeros = 0
 
     !> The number of operations (updated by a Multiply), i.e. the number of
     !! dense matrix products of size spamm_globals::spamm_block_size x
     !! spamm_globals::spamm_block_size.
-    REAL(SpAMM_DOUBLE) :: number_operations = 0
+    REAL(kind(0d0)) :: number_operations = 0
 
   end type spamm_matrix_order_2
 
@@ -189,7 +165,7 @@ module spamm_types
     integer :: j_upper = -1
 
     !> The Frobenious norm.
-    REAL(SpAMM_KIND) :: Norm = 0
+    REAL(SPAMM_KIND) :: Norm = 0
 
     !> The pointer to the subtree in quadrant 11.
     TYPE(QuTree), POINTER :: Quad11 => NULL()
@@ -204,20 +180,20 @@ module spamm_types
     TYPE(QuTree), POINTER :: Quad22 => NULL()
 
     !> The matrix data.
-    REAL(SpAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
+    REAL(SPAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
 
 #ifdef SPAMM_STORE_TRANSPOSE
     !> The transposed block.
-    real(spamm_kind), dimension(:, :), ALLOCATABLE :: transpose_block
+    real(SPAMM_KIND), dimension(:, :), ALLOCATABLE :: transpose_block
 #endif
 
     !> The number of non-zero elements.
-    REAL(SpAMM_DOUBLE) :: number_nonzeros = 0
+    REAL(Kind(0d0)) :: number_nonzeros = 0
 
     !> The number of operations (updated by a Multiply), i.e. the number of
     !! dense matrix products of size spamm_globals::spamm_block_size x
     !! spamm_globals::spamm_block_size.
-    REAL(SpAMM_DOUBLE) :: number_operations = 0
+    REAL(Kind(0d0)) :: number_operations = 0
 
 #ifdef _OPENMP
     !> Block OpenMP lock

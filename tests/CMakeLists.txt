@@ -65,4 +65,7 @@ execute_process( COMMAND ${PYTHON_EXECUTABLE}
 
 include( ${CMAKE_CURRENT_BINARY_DIR}/unit-tests.cmake )
 
-include_directories( ${CMAKE_CURRENT_BINARY_DIR}/../src/include-serial )
+include_directories(
+  ${CMAKE_BINARY_DIR}/src/include-serial
+  ${CMAKE_BINARY_DIR}/utilities
+  )

@@ -26,55 +26,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set( spammpack-sources
-  spamm_algebra.F90
-  spamm_convert.F90
-  spamm_globals.F90
-  spamm_inverse.F90
-  spamm_management.F90
-  spamm_order_1.F90
-  spamm_order_1_double.F90
-  spamm_order_1_single.F90
-  spamm_project.F90
-  spamm_real_precision.F90
-  spamm_types.F90
-  spamm_utilities.F90
-  spammpack.F90
-  )
-
-set( MODULE_FILES
-  spamm_algebra.mod
-  spamm_convert.mod
-  spamm_globals.mod
-  spamm_management.mod
-  spamm_project.mod
-  spamm_types.mod
-  spammpack.mod
-  )
-
-set( HEADER_FILES
-  spamm_utility_macros.h
-  )
-
-set( LIBRARY_BASENAME "spammpack" )
-
-include( ${CMAKE_SOURCE_DIR}/cmake-scripts/FindFortranKind.cmake )
-
-set( KIND_EXPRESSION "kind(0d0)" )
-find_fortran_kind( ${KIND_EXPRESSION} )
-
-configure_file( spamm_real_precision.F90.in spamm_real_precision.F90 )
-
-set_directory_properties(
-  PROPERTIES
-  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
-  )
-
-include( ${CMAKE_SOURCE_DIR}/cmake-scripts/BuildLibrary.cmake )
-
-build_library( FALSE "" )
-
-if( OPENMP_FOUND )
-  build_library( TRUE "${OpenMP_Fortran_FLAGS}")
-  add_dependencies( spammpack-threaded-shared spammpack-serial-static )
-endif()
+# Compute the kind expression using the current Fortran compiler.
+#
+# Runs the given KIND_EXPRESSION and sets
+#
+# KIND_VALUE
+#
+# To the appropriate (integer) value of the kind expression.
+function( find_fortran_kind KIND_EXPRESSION )
+  configure_file( ${CMAKE_SOURCE_DIR}/cmake-scripts/compute_kind.F90.in compute_kind.F90 )
+  try_run( KIND_RUN_RESULT KIND_COMPILE_RESULT
+    ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/compute_kind.F90
+    RUN_OUTPUT_VARIABLE KIND_OUTPUT
+    )
+  string( REPLACE " " "" KIND_OUTPUT "${KIND_OUTPUT}" )
+  set( KIND_VALUE ${KIND_OUTPUT} PARENT_SCOPE )
+endfunction()

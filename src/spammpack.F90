@@ -101,6 +101,7 @@ module spammpack
   use spamm_inverse
   use spamm_management
   use spamm_project
+  use spamm_real_precision
   use spamm_types
   use spamm_utilities
 

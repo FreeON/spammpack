@@ -15,7 +15,7 @@ program spamm_multiply
 
   implicit none
 
-  real(spamm_kind), parameter :: tolerance = 1d-8
+  real(kind(0d0)), parameter :: tolerance = 1d-8
 
   integer :: M, N
   integer :: test_repeat

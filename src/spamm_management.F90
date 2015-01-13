@@ -37,6 +37,7 @@ module spamm_management
   use spamm_types
   use spamm_globals
   use spamm_utilities
+  use spamm_real_precision
 
 #include "spamm_utility_macros.h"
 
@@ -778,7 +779,7 @@ contains
     call spamm_allocate_matrix_2nd_order(M, N, A)
 
     do i = 1, N
-      call spamm_set_matrix_2nd_order(A, i, i, 1.0_spamm_kind)
+      call spamm_set_matrix_2nd_order(A, i, i, 1.0_SPAMM_KIND)
     enddo
 
   end function spamm_identity_matrix
