@@ -15,6 +15,7 @@ exclude:
 pages_list:
   Main: "/spammpack/"
   Building: "/spammpack/building.html"
+  Developer: "/spammpack/developer.html"
   References: "/spammpack/references.html"
 
 defaults:
