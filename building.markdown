@@ -4,8 +4,8 @@ title: Spammpack - Building
 
 # Building
 
-Download a zip or tar archive using the links on the right. Unpack and change
-into the top level source directory:
+Download a zip or tar archive using the links on the right. Unpack and
+change into the top level source directory:
 
     $ tar xf FreeON-spammpack-v1.0.0-104-g24641da.tar.gz
     $ cd FreeON-spammpack-24641da/
@@ -22,15 +22,14 @@ And build them using `make`
 
 # Testing
 
-Spammpack comes with a regression test suite. If you want to make sure (and
-why wouldn't you?) that everything built correctly, run
+Spammpack comes with a regression test suite. If you want to make sure
+(and why wouldn't you?) that everything built correctly, run
 
     $ make test
 
-In addition, we let
-[Travis-CI](https://travis-ci.org)
-run through the test suite.  The latest result of this build/test process is
-shown on the right. Current condition:
+In addition, we let [Travis-CI](https://travis-ci.org) run through the
+test suite.  The latest result of this build/test process is shown on
+the right. Current condition:
 
 {% include travis.html %}
 
@@ -43,10 +42,10 @@ The `install` target will install the library into
 
 # Building the documentation
 
-If CMake finds a suitable version of `doxygen` it will add the `doc` target,
-and
+If CMake finds a suitable version of `doxygen` it will add the `doc`
+target, and
 
     $ make doc
 
-will build the documentation in the `html` directory. To view, simply open
-the file `html/index.html` with a web-browser.
+will build the documentation in the `html` directory. To view, simply
+open the file `html/index.html` with a web-browser.
