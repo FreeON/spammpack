@@ -96,6 +96,7 @@ endif()
 
 if( NOT CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE Debug )
+  message( STATUS "Setting default build type to ${CMAKE_BUILD_TYPE}" )
 endif()
 
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )

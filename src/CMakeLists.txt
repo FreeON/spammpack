@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set( spammpack-sources
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
   spamm_algebra.F90
   spamm_convert.F90
   spamm_globals.F90
@@ -36,7 +37,6 @@ set( spammpack-sources
   spamm_order_1_double.F90
   spamm_order_1_single.F90
   spamm_project.F90
-  spamm_real_precision.F90
   spamm_types.F90
   spamm_utilities.F90
   spammpack.F90
@@ -48,6 +48,7 @@ set( MODULE_FILES
   spamm_globals.mod
   spamm_management.mod
   spamm_project.mod
+  spamm_real_precision.mod
   spamm_types.mod
   spammpack.mod
   )
