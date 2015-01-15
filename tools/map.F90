@@ -12,10 +12,11 @@ program test_random_number
 
   use test_schulz
 
-  integer, parameter :: MAX_RAND=1000
-  integer,parameter :: seed = 86456
-  real*8 :: s(1:MAX_RAND),x(1:MAX_RAND),z(1:MAX_RAND),t(1:MAX_RAND)
-  real*8 :: low1,low2,high1,high2,a
+  integer, parameter :: MAX_RAND = 1000
+  integer, parameter :: seed = 86456
+
+  real*8 :: s(1:MAX_RAND), x(1:MAX_RAND), z(1:MAX_RAND), t(1:MAX_RAND)
+  real*8 :: low1, low2, high1, high2, a
 
   call srand(seed)
 
@@ -32,7 +33,7 @@ program test_random_number
   do i=1,MAX_RAND
      s(i)=low2 + (s(i) - low1) * (high2 - low2) / (high1 - low1)
      s(i)=10d0**s(i)
-     !       WRITE(*,*)s(i)
+     ! WRITE(*,*)s(i)
   enddo
 
   write(*,*)' xo=Lmin/Lmax = '
