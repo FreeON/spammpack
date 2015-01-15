@@ -32,7 +32,7 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-MODULE SpAMM_PROJECT
+module SpAMM_PROJECT
 
   use spamm_algebra
   use spamm_globals
@@ -153,11 +153,11 @@ CONTAINS
       xnorm=SpAMM_One/Dot(x,x)
       CALL Multiply(x,xnorm)
       x%Norm=SQRT(Norm(x))
-      CALL Multiply(h,SpAMM_Zero)
-      CALL Multiply(g,SpAMM_Zero)
-      CALL Multiply(xOld,SpAMM_Zero)
-      CALL Multiply(hOld,SpAMM_Zero)
-      CALL Multiply(gOld,SpAMM_Zero)
+      CALL Multiply(h, 0d0)
+      CALL Multiply(g, 0d0)
+      CALL Multiply(xOld, 0d0)
+      CALL Multiply(hOld, 0d0)
+      CALL Multiply(gOld, 0d0)
       DO CG=1,NCG
         ! Intermediates
         xx=Dot(x,x)
@@ -181,10 +181,10 @@ CONTAINS
         IF(SQRT(Dot(g,g)/ABS(Omega))<SpAMM_RQI_CONVERGENCE_THRESHOLD.AND.CG>16)EXIT
 
         IF(CG>1.AND.MOD(CG,15).NE.0)THEN
-          !             beta=MAX(SpAMM_Zero,Dot(g,g-gOld)/Dot(gOld,gOld))
-          beta=MAX(SpAMM_Zero,Dot(g,g)/Dot(gOld,gOld))
+          !             beta=MAX(0d0, Dot(g,g-gOld)/Dot(gOld,gOld))
+          beta=MAX(0d0, Dot(g,g)/Dot(gOld,gOld))
         ELSE
-          beta=SpAMM_Zero
+          beta=0
         ENDIF
 
         ! h=g+beta*hOld
@@ -262,7 +262,7 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree
 
-END MODULE SpAMM_PROJECT
+end module SpAMM_PROJECT
 
 !!$
 !!$  SUBROUTINE SpAMM_Remap_Spectral_Bounds_To_SpAMM_Zero_And_SpAMM_One(N,A)

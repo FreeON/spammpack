@@ -478,7 +478,7 @@ contains
           bC%Norm=SUM(bC%Vect(:)**2)
        else
           ! shouldn't care about having zeros in vector, we should never see this data ...
-          bC%Norm = SpAMM_Zero
+          bC%Norm = 0
        endif
     ELSE
        IF(qA%Quad11%j_lower.LE.j .AND. qA%Quad11%j_upper.GE.j )THEN
@@ -723,7 +723,7 @@ contains
 
     IF(rows == SPAMM_BLOCK_SIZE) then
       ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
-      qA%Blok = SpAMM_Zero
+      qA%Blok = 0
       RETURN
     ELSE
       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11, i_lower, j_lower, i_lower+rows/2-1, j_lower+columns/2-1)
@@ -741,7 +741,7 @@ contains
 
     IF(bA%i_upper-bA%i_lower+1 == SPAMM_BLOCK_SIZE)THEN
       ALLOCATE(bA%Vect(SPAMM_BLOCK_SIZE))
-      bA%Vect=SpAMM_Zero
+      bA%Vect = 0
     ELSE
       half = (bA%i_upper-bA%i_lower+1)/2-1
       call newbinode(bA%sect1, bA%i_lower, bA%i_lower+half)

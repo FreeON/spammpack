@@ -164,7 +164,7 @@ CONTAINS
     qC%number_operations = 0
 
     LOG_DEBUG("resetting C")
-    CALL SpAMM_Multiply_QuTree_x_Scalar(qC, SpAMM_Zero)
+    CALL SpAMM_Multiply_QuTree_x_Scalar(qC, 0d0)
 
     LOG_DEBUG("recursive multiplication")
 
@@ -225,7 +225,7 @@ CONTAINS
     qC%number_operations = 0
 
     LOG_DEBUG("resetting C")
-    CALL SpAMM_Multiply_QuTree_x_Scalar(qC, SpAMM_Zero)
+    CALL SpAMM_Multiply_QuTree_x_Scalar(qC, 0d0)
 
     LOG_DEBUG("recursive multiplication")
 
@@ -674,7 +674,7 @@ CONTAINS
 
     TInitial = SpAMM_Get_Time()
 
-    CALL SpAMM_Multiply_BiTree_x_Scalar(bC, SpAMM_Zero)
+    CALL SpAMM_Multiply_BiTree_x_Scalar(bC, 0d0)
     !$OMP TASK UNTIED SHARED(qA,bB,bC)
     CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC, qA, bB, local_tolerance)
     ! <<<<<<<<<<< This NORM should be done properly on the fly, in the recursive multiply >>>>>>>>>>>>>>>>>>>
@@ -792,7 +792,7 @@ CONTAINS
         IF(.NOT.ALLOCATED(qC%Blok))THEN
           ! Allocate new block.
           ALLOCATE(qC%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
-          qC%Blok = SpAMM_Zero
+          qC%Blok = 0
         ENDIF
 #ifdef _OPENMP
         CALL OMP_UNSET_LOCK(qC%lock)
@@ -1066,7 +1066,7 @@ CONTAINS
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       if(.not. allocated(qA%blok)) then
         ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
-        qA%Blok = SpAMM_Zero
+        qA%Blok = 0
       ENDIF
 
       !write(*, *) "before"
@@ -1113,17 +1113,17 @@ CONTAINS
     REAL(SpAMM_KIND) :: Trace00, Trace11
     INTEGER          :: I
 
-    Trace = SpAMM_Zero
+    Trace = 0
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) THEN
-      Trace = SpAMM_Zero
+      Trace = 0
       IF(.NOT.ASSOCIATED(qA)) RETURN
       DO I = 1, SPAMM_BLOCK_SIZE
         Trace = Trace+qA%Blok(I,I)
       ENDDO
     ELSEIF(.NOT.ASSOCIATED(qA%Quad11).AND. &
         .NOT.ASSOCIATED(qA%Quad22))THEN
-      Trace = SpAMM_Zero
+      Trace = 0
     ELSEIF(.NOT.ASSOCIATED(qA%Quad22))THEN
       !$OMP TASK UNTIED SHARED(qA)
       Trace = SpAMM_Trace_QuTree_Recur(qA%Quad11)
@@ -1164,7 +1164,7 @@ CONTAINS
     REAL(SpAMM_KIND) :: Trace
     REAL(SpAMM_KIND) :: Trace_00_00, Trace_01_10, Trace_10_01, Trace_11_11
 
-    Trace = SpAMM_Zero
+    Trace = 0
 
     IF(.NOT.ASSOCIATED(qA)) RETURN
     IF(.NOT.ASSOCIATED(qB)) RETURN
@@ -1243,7 +1243,7 @@ CONTAINS
     REAL(SpAMM_KIND)      :: Norm,Norm00,Norm01,Norm10,Norm11
 
     IF(.NOT.ASSOCIATED(qA))THEN
-      Norm = SpAMM_Zero
+      Norm = 0
     ELSEIF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
       Norm = SUM(qA%Blok**2)
       qA%Norm = SQRT(Norm)
@@ -1305,14 +1305,14 @@ CONTAINS
           LOG_DEBUG("allocating new vec in C bitree")
           !$OMP CRITICAL
           ALLOCATE(bC%Vect(SPAMM_BLOCK_SIZE))
-          bC%Vect=SpAMM_Zero
+          bC%Vect = 0
           !$OMP END CRITICAL
         END IF
         ! Accumulate
         bC%Vect(1:SPAMM_BLOCK_SIZE)=bC%Vect+matmul(qA%Blok, bB%Vect)
       ELSE
         LOG_DEBUG("descending")
-        bC%Norm=SpAMM_Zero
+        bC%Norm = 0
         ! 0=00*0
         !$OMP TASK UNTIED SHARED(qA,bB,bC)
         CALL SpAMM_Multiply_QuTree_x_BiTree_Recur(bC%sect1, qA%Quad11, bB%sect1, tolerance)
@@ -1408,7 +1408,7 @@ CONTAINS
     real(SpAMM_KIND)      :: Norm, Norm0, Norm1
 
     if(.not.associated(bA))then
-       Norm=SpAMM_Zero
+       Norm = 0
        return
     elseif(allocated(bA%Vect))then
        Norm=sum(bA%Vect(1:SPAMM_BLOCK_SIZE)**2)
@@ -1437,7 +1437,7 @@ CONTAINS
     INTEGER               :: Depth
     REAL(SpAMM_KIND)      :: Dot, Dot0, Dot1
 
-    Dot=SpAMM_Zero
+    Dot = 0
 
     IF(.NOT.ASSOCIATED(bA))THEN
        RETURN

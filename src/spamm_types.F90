@@ -43,28 +43,28 @@ module spamm_types
   implicit none
 
   !> Define the number zero.
-  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Zero = 0D0
+  !real(SPAMM_KIND), parameter :: SpAMM_Zero = 0D0
 
   !> Define the number 1/2.
-  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Half = 5D-1
+  real(SPAMM_KIND), parameter :: SpAMM_Half = 5D-1
 
   !> Define the number 1.
-  REAL(SPAMM_KIND), PARAMETER :: SpAMM_One = 1D0
+  real(SPAMM_KIND), parameter :: SpAMM_One = 1D0
 
   !> Define the number 2.
-  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Two = 2D0
+  real(SPAMM_KIND), parameter :: SpAMM_Two = 2D0
 
   !> Define the number 4.
-  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Four = 4D0
+  real(SPAMM_KIND), parameter :: SpAMM_Four = 4D0
 
   !> Define the number 8.
-  REAL(SPAMM_KIND), PARAMETER :: SpAMM_Eight = 8D0
+  real(SPAMM_KIND), parameter :: SpAMM_Eight = 8D0
 
   !> Bigest machine double for ONX_KIND
-  REAL(SPAMM_KIND), PARAMETER :: SpAMM_BIG_DBL = HUGE(SpAMM_One)
+  real(SPAMM_KIND), parameter :: SpAMM_BIG_DBL = huge(SpAMM_One)
 
   !> Bigest machine int for int*4
-  INTEGER, PARAMETER :: SpAMM_BIG_INT = 2**28
+  integer, parameter :: SpAMM_BIG_INT = 2**28
 
   !> A vector type.
   type spamm_matrix_order_1
