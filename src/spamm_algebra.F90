@@ -193,7 +193,7 @@ CONTAINS
     REAL(SpAMM_KIND), OPTIONAL :: threshold
 
     real(spamm_kind) :: local_threshold
-    REAL(SpAMM_DOUBLE) :: TInitial, TTotal
+    real(kind(0d0)) :: TInitial, TTotal
 
     TInitial = SpAMM_Get_Time()
 
@@ -756,7 +756,9 @@ CONTAINS
     TYPE(QuTree), POINTER :: qC, qA, qB
     REAL(SpAMM_KIND) :: threshold
     !real(spamm_kind) :: temp
+#ifdef SPAMM_STORE_TRANSPOSE
     integer :: i, j
+#endif
 
     IF(ASSOCIATED(qA).AND.ASSOCIATED(qB)) THEN
       LOG_DEBUG("qA: "//to_string(qA))
@@ -969,10 +971,9 @@ CONTAINS
   !! @param beta Factor @f$ \beta @f$.
   RECURSIVE SUBROUTINE SpAMM_Add_QuTree_2_QuTree_InPlace_Recur(qA, qB, alpha, beta)
 
-    TYPE(QuTree), POINTER :: qA,qB
-    REAL(SpAMM_KIND) :: alpha, beta
-    LOGICAL :: TA, TB
-    integer :: i, j
+    type(QuTree), pointer :: qA,qB
+    real(SpAMM_KIND) :: alpha, beta
+    logical :: TA, TB
 
     TA=ASSOCIATED(qA)
     TB=ASSOCIATED(qB)
@@ -1400,31 +1401,35 @@ CONTAINS
   END SUBROUTINE SpAMM_Add_BiTree_2_BiTree_RePlace_Recur
 
   !> \f$ L_2 \f$ norm for BiTrees.
-  RECURSIVE FUNCTION SpAMM_Norm_Reduce_BiTree_Recur(bA,Depth) RESULT(Norm)
-    TYPE(BiTree), POINTER :: bA
-    INTEGER               :: Depth
-    REAL(SpAMM_KIND)      :: Norm, Norm0, Norm1
+  recursive function SpAMM_Norm_Reduce_BiTree_Recur(bA,Depth) result(Norm)
 
-    IF(.NOT.ASSOCIATED(bA))THEN
+    type(BiTree), pointer :: bA
+    integer               :: Depth
+    real(SpAMM_KIND)      :: Norm, Norm0, Norm1
+
+    if(.not.associated(bA))then
        Norm=SpAMM_Zero
-       RETURN
-    ELSEIF(ALLOCATED(bA%Vect))THEN
-       Norm=SUM(bA%Vect(1:SPAMM_BLOCK_SIZE)**2)
-       bA%Norm=SQRT(Norm)
-    ELSE
-      !$OMP TASK UNTIED SHARED(bA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      Norm0=SpAMM_Norm_Reduce_BiTree_Recur(bA%sect1,Depth+1)
-      !$OMP END TASK
-      !$OMP TASK UNTIED SHARED(bA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      Norm1=SpAMM_Norm_Reduce_BiTree_Recur(bA%sect2,Depth+1)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      Norm=Norm0+Norm1
-      bA%Norm=SQRT(Norm)
-    ENDIF
-  END FUNCTION SpAMM_Norm_Reduce_BiTree_Recur
+       return
+    elseif(allocated(bA%Vect))then
+       Norm=sum(bA%Vect(1:SPAMM_BLOCK_SIZE)**2)
+       bA%Norm=sqrt(Norm)
+    else
+       Norm0 = 0
+       Norm1 = 0
+
+       !$OMP TASK UNTIED SHARED(bA) &
+       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+       Norm0=SpAMM_Norm_Reduce_BiTree_Recur(bA%sect1,Depth+1)
+       !$OMP END TASK
+       !$OMP TASK UNTIED SHARED(bA) &
+       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+       Norm1=SpAMM_Norm_Reduce_BiTree_Recur(bA%sect2,Depth+1)
+       !$OMP END TASK
+       !$OMP TASKWAIT
+       Norm=Norm0+Norm1
+       bA%Norm=sqrt(Norm)
+    endif
+  end function SpAMM_Norm_Reduce_BiTree_Recur
 
   !> Dot product for BiTrees
   RECURSIVE FUNCTION SpAMM_Dot_Product_BiTree_Recur(bA,bB,Depth) RESULT(Dot)

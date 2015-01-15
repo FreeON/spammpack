@@ -450,11 +450,10 @@ contains
 
   RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur(qA, bC, j, Depth)
 
-    TYPE(QuTree), POINTER, intent(in) :: qA
-    TYPE(BiTree), POINTER, intent(inout) :: bC
+    type(QuTree), pointer, intent(in) :: qA
+    type(BiTree), pointer, intent(inout) :: bC
     integer, intent(in) :: j
-    INTEGER               :: half
-    INTEGER                :: Depth
+    integer :: Depth
 
     if(.not. associated(qA)) then
        LOG_DEBUG("A not associated")

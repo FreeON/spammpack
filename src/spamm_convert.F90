@@ -58,7 +58,7 @@ module spamm_convert
     real(spamm_kind), dimension(:), intent(in) :: V
     type(bitree), pointer, intent(inout) :: qV
     integer, intent(in) :: i_lower, i_upper
-    integer :: i, V_rows, convert_rows
+    integer :: V_rows, convert_rows
 
     if(associated(qV)) then
       LOG_FATAL("qV should not already be associated")
@@ -150,13 +150,12 @@ module spamm_convert
   !! @param j_upper The upper value of the column index.
   RECURSIVE SUBROUTINE SpAMM_Convert_Dense_2_QuTree (A, qA, i_lower, i_upper, j_lower, j_upper)
 
-    REAL(SpAMM_KIND), DIMENSION(:,:), INTENT(IN) :: A
-    TYPE(QuTree), POINTER, INTENT(INOUT) :: qA
-    INTEGER, INTENT(IN) :: i_lower, i_upper
-    INTEGER, INTENT(IN) :: j_lower, j_upper
+    real(SpAMM_KIND), dimension(:,:), intent(IN) :: A
+    type(QuTree), pointer, intent(INOUT) :: qA
+    integer, intent(IN) :: i_lower, i_upper
+    integer, intent(IN) :: j_lower, j_upper
 
-    INTEGER :: i, j
-    INTEGER :: A_rows, A_cols
+    integer :: A_rows, A_cols
     integer :: convert_rows, convert_columns
 
     if(associated(qA)) then

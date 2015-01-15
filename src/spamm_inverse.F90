@@ -75,7 +75,7 @@ contains
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_MULTIPLY_THRESHOLD   =1D-7 !SpAMM_PRODUCT_TOLERANCE
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !100d0*SpAMM_RQI_MULTIPLY_THRESHOLD
     REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_EVAL_ERROR_ESTIMATE  =2D-2 !100d0*SpAMM_RQI_CONVERGENCE_THRESHOLD
-    
+
     if(present(tolerance)) then
       local_tolerance = tolerance
     else
@@ -196,7 +196,7 @@ contains
 
 
     goto 9999
-    
+
 !!$    ! Reset counters.
 !!$    number_operations = 0
 !!$    do iteration = 1, MAX_ITERATIONS
@@ -291,15 +291,15 @@ contains
   SUBROUTINE SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree(A,RQIMin,RQIMax, &
       SpAMM_RQI_MULTIPLY_THRESHOLD,SpAMM_RQI_CONVERGENCE_THRESHOLD)
 
-    INTEGER              :: I,CG
-    REAL(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD
-    INTEGER, PARAMETER   :: NCG=1000
-    TYPE(qutree), POINTER, intent(in) :: A
-    TYPE(BiTree),POINTER :: x=>NULL(),g=>NULL(),h=>NULL(),Ax=>NULL(), &
-      Ah=>NULL(),xOld=>NULL(),gOld=>NULL(),hOld=>NULL()
-    REAL(SpAMM_KIND)     :: beta,LambdaPlus,LambdaMins,RQIPlus,RQIMins,omega, &
-      xx,hh,xh,hx,xAx,xAh,hAx,hAh,xnorm
-    REAL(SpAMM_KIND)     :: RQIMin,RQIMax, ddot
+    integer              :: I,CG
+    real(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD
+    integer, parameter   :: NCG=1000
+    type(qutree), pointer, intent(in) :: A
+    type(BiTree),pointer :: x=>NULL(),g=>NULL(),h=>NULL(),Ax=>NULL(), &
+         Ah=>NULL(),xOld=>NULL(),gOld=>NULL(),hOld=>NULL()
+    real(SpAMM_KIND)     :: beta,LambdaPlus,LambdaMins,RQIPlus,RQIMins,omega, &
+         xx,hh,xh,hx,xAx,xAh,hAx,hAh,xnorm
+    real(SpAMM_KIND)     :: RQIMin, RQIMax
 
     CALL New(x, A%i_lower, A%i_upper)
     CALL New(g, A%i_lower, A%i_upper)
