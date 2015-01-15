@@ -23,7 +23,7 @@ program spamm_lowdin
 
   type(spamm_matrix_order_2), pointer :: S => null(), X => null(), &
     Y => null(), Z => null(), Z2 => null(), Id => null()
-  real(kind(0d0)), allocatable :: S_dense(:, :), Id_dense(:, :)
+  real(kind(0d0)), allocatable :: S_dense(:, :)
   character(len = 1000) :: matrix_filename
   real :: start_time, end_time
   integer :: i

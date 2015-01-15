@@ -46,7 +46,7 @@ module spamm_types
   !real(SPAMM_KIND), parameter :: SpAMM_Zero = 0D0
 
   !> Define the number 1/2.
-  real(SPAMM_KIND), parameter :: SpAMM_Half = 5D-1
+  !real(SPAMM_KIND), parameter :: SpAMM_Half = 5D-1
 
   !> Define the number 1.
   real(SPAMM_KIND), parameter :: SpAMM_One = 1D0
@@ -61,7 +61,7 @@ module spamm_types
   real(SPAMM_KIND), parameter :: SpAMM_Eight = 8D0
 
   !> Bigest machine double for ONX_KIND
-  real(SPAMM_KIND), parameter :: SpAMM_BIG_DBL = huge(SpAMM_One)
+  !real(SPAMM_KIND), parameter :: SpAMM_BIG_DBL = huge(SpAMM_One)
 
   !> Bigest machine int for int*4
   integer, parameter :: SpAMM_BIG_INT = 2**28
