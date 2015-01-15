@@ -1,6 +1,8 @@
 program spamm_lowdin
 
   use spammpack
+  use SpAMM_PROJECT
+
   use test_utilities
 
   implicit none
@@ -16,14 +18,15 @@ program spamm_lowdin
   end interface
 #endif
 
+  ! COND(5)
   real(kind(0d0)), parameter :: tolerance = 1d-8
 
   type(spamm_matrix_order_2), pointer :: S => null(), X => null(), &
-    Y => null(), Z => null(), Id => null()
+    Y => null(), Z => null(), Z2 => null(), Id => null()
   real(kind(0d0)), allocatable :: S_dense(:, :), Id_dense(:, :)
   character(len = 1000) :: matrix_filename
   real :: start_time, end_time
-
+  integer :: i
   real(kind(0d0)) :: max_diff
 
 #ifdef LAPACK_FOUND
@@ -31,7 +34,7 @@ program spamm_lowdin
   integer :: LWORK
   integer :: LIWORK
 
-  real(kind(0d0)), allocatable :: eval(:), evec(:, :), work(:)
+  real(kind(0d0)), allocatable :: eval(:), SHalf(:,:),SHlfI(:,:),evec(:, :), work(:)
   integer, allocatable :: iwork(:)
   integer :: info
 #endif
@@ -49,19 +52,16 @@ program spamm_lowdin
   call read_MM(matrix_filename, S_dense)
   S => spamm_convert_dense_to_matrix_2nd_order(S_dense)
 
+  write(*,*)' computing inverse now .... '
+  write(*,*)' using spamm threshold = ',to_string(tolerance)
+
   call cpu_time(start_time)
-  call spamm_inverse_sqrt_schulz(S, Y, Z, tolerance)
+  call spamm_inverse_sqrt_schulz(S, Y, Z, tolerance)  !, schulz_threshold=1.d-12)
   call cpu_time(end_time)
 
   write(*, "(A)") "Y (S^{+1/2}) fillin: "//to_string(Y%number_nonzeros)
   write(*, "(A)") "Z (S^{-1/2}) fillin: "//to_string(Z%number_nonzeros)
-  write(*, "(A)") "CPU time: "//to_string(end_time-start_time)
-
-  Id => spamm_identity_matrix(S%M, S%N)
-  call multiply(Y, Z, X)
-  call add(X, Id, +1.0d0, -1.0d0)
-  max_diff = absmax(X)
-  write(*, "(A)") "|Id-S^{-1/2} S^{1/2}|_{max}: "//to_string(max_diff)
+  write(*, "(A)") "Schulz CPU time: "//to_string(end_time-start_time)
 
 #ifdef LAPACK_FOUND
   N = size(S_dense, 1)
@@ -69,19 +69,60 @@ program spamm_lowdin
   LIWORK = 3+5*N
 
   allocate(eval(N))
-  allocate(evec(N, N))
   allocate(work(LWORK))
   allocate(iwork(LIWORK))
 
   write(*, "(A)") "Getting condition number..."
+
+  call cpu_time(start_time)
   call dsyevd("V", "U", N, S_dense, N, eval, work, LWORK, iwork, LIWORK, info)
+  call cpu_time(end_time)
 
-  write(*, "(A)") "Condition number: "//to_string(eval(N)/eval(1))
-
-  deallocate(iwork)
+  deallocate(iwork)  
   deallocate(work)
+  allocate(evec(N, N))
+  allocate(SHalf(N, N))
+  allocate(SHlfI(N, N))
+
+  WRITE(*,*)' MINMAX =',Eval(1),Eval(N)
+
+  evec=S_dense
+
+  DO i=1,N
+     S_dense(:,I)=S_dense(:,i)*SQRT(eval(i))
+  ENDDO
+
+  SHalf=MATMUL(evec,TRANSPOSE(S_dense))
+
+  DO i=1,N
+     S_dense(:,I)=S_dense(:,i)/eval(i)
+  ENDDO
+
+  SHlfI=MATMUL(evec,TRANSPOSE(S_dense))
+
   deallocate(evec)
   deallocate(eval)
+  deallocate(S_dense)
+
+  Y  => spamm_convert_dense_to_matrix_2nd_order(SHalf)
+  Z2 => spamm_convert_dense_to_matrix_2nd_order(SHlfI)
+
 #endif
+
+  WRITE(*,*)' checking with Z[SpAMM] '
+  Id => spamm_identity_matrix(S%M, S%N)
+  call multiply(Y, Z, X , 0D0)
+  call add(X, Id, +1.0d0, -1.0d0)
+  max_diff = absmax(X)
+  write(*, "(A)") "|Id-S^{-1/2} S^{1/2}_dsyev|_{max}: "//to_string(max_diff)
+
+  WRITE(*,*)' checking with Z[DSYEV] '
+  Id => spamm_identity_matrix(S%M, S%N)
+  call multiply(Y, Z2, X , 0D0)
+  call add(X, Id, +1.0d0, -1.0d0)
+  max_diff = absmax(X)
+  write(*, "(A)") "|Id-S^{-1/2}_dsyev S^{1/2}_dsyev|_{max}: "//to_string(max_diff)
+
+  STOP  
 
 end program spamm_lowdin

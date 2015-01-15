@@ -178,13 +178,15 @@ contains
     TYPE(QuTree), POINTER, intent(in) :: qA
     TYPE(BiTree), POINTER, intent(inout) :: bC
     INTEGER, intent(in) :: j
+    INTEGER :: Depth
 
     IF(.NOT.ASSOCIATED(bC)) then
       CALL NewBiNode(bC, qA%i_lower, qA%i_upper)
     endif
 
+    Depth=0
     !$OMP TASK UNTIED SHARED(qA,bC)
-    CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA, bC, j)
+    CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA, bC, j, Depth)
     !$OMP END TASK
     !$OMP TASKWAIT
 
@@ -417,6 +419,7 @@ contains
     type(spamm_matrix_order_2), pointer, intent(in) :: A
     integer, intent(in) :: j
     type(spamm_matrix_order_1), pointer, intent(inout) :: V
+    integer :: Depth
 
     if(.not. associated(A)) then
       return
@@ -433,8 +436,9 @@ contains
 
     LOG_DEBUG("copying column "//to_string(j)//" from A to V")
 
-    call spamm_copy_qutree_2_bitree_recur(A%root, V%root, j)
-
+    Depth=0
+    call spamm_copy_qutree_2_bitree_recur(A%root, V%root, j, Depth)
+    V%Root%Norm=SQRT(V%Root%Norm)
   end subroutine spamm_copy_2nd_order_to_order_1
 
   !> Copy quadtree column to bitree.
@@ -442,86 +446,79 @@ contains
   !! @param qA Pointer to quadtree.
   !! @param bC Pointer to bitree.
   !! @param j The column index.
-  RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur(qA, bC, j)
+
+
+  RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur(qA, bC, j, Depth)
 
     TYPE(QuTree), POINTER, intent(in) :: qA
     TYPE(BiTree), POINTER, intent(inout) :: bC
     integer, intent(in) :: j
     INTEGER               :: half
+    INTEGER                :: Depth
 
     if(.not. associated(qA)) then
-      LOG_DEBUG("A not associated")
-      return
+       LOG_DEBUG("A not associated")
+       return
     endif
 
     IF(.NOT.ASSOCIATED(bC)) then
-      CALL NewBiNode(bC, qA%i_lower, qA%i_upper)
+       CALL NewBiNode(bC, qA%i_lower, qA%i_upper)
     endif
 
     LOG_DEBUG("A: "//to_string(qA))
     LOG_DEBUG("V: "//to_string(BC))
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
-      if(allocated(qA%blok)) then
-        IF(.NOT. ALLOCATED(bC%Vect)) then
-          ALLOCATE(bC%Vect(SPAMM_BLOCK_SIZE))
-        endif
-        bC%Vect = qA%Blok(:, j-qA%j_lower+1)
-      else
-        bC%Vect = SpAMM_Zero
-      endif
+       bC%i_lower=qA%i_lower
+       bC%i_upper=qA%i_upper
+       if(allocated(qA%blok)) then
+          IF(.NOT. ALLOCATED(bC%Vect)) then
+             ALLOCATE(bC%Vect(SPAMM_BLOCK_SIZE))
+          endif
+          bC%Vect=qA%Blok(:, j-qA%j_lower+1)
+          bC%Norm=SUM(bC%Vect(:)**2)
+       else
+          ! shouldn't care about having zeros in vector, we should never see this data ...
+          bC%Norm = SpAMM_Zero
+       endif
     ELSE
-      half = (qA%j_upper-qA%j_lower+1)/2-1
-      LOG_DEBUG("qA%j_lower+half = "//to_string(qA%j_lower+half))
-      if(j <= qA%j_lower+half) then
-        LOG_DEBUG("descending upper half")
-        IF(ASSOCIATED(qA%Quad11))THEN
-          !$OMP TASK UNTIED SHARED(qA,bC)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad11, bC%sect1, j)
-          !$OMP END TASK
-        ELSEIF(ASSOCIATED(bC%sect1))THEN
-          !$OMP TASK UNTIED SHARED(bC)
-          CALL SpAMM_Delete_BiTree_Recur(bC%sect1)
-          !$OMP END TASK
-          DEALLOCATE(bC%sect1)
-        ENDIF
-
-        IF(ASSOCIATED(qA%Quad21))THEN
-          !$OMP TASK UNTIED SHARED(qA,bC)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad21, bC%sect2, j)
-          !$OMP END TASK
-        ELSEIF(ASSOCIATED(bC%sect2))THEN
-          !$OMP TASK UNTIED SHARED(bC)
-          CALL SpAMM_Delete_BiTree_Recur(bC%sect2)
-          !$OMP END TASK
-          DEALLOCATE(bC%sect2)
-        ENDIF
-      ELSE
-        LOG_DEBUG("descending lower half")
-        IF(ASSOCIATED(qA%Quad12))THEN
-          !$OMP TASK UNTIED SHARED(qA,bC)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad12, bC%sect1, j)
-          !$OMP END TASK
-        ELSEIF(ASSOCIATED(bC%sect1))THEN
-          !$OMP TASK UNTIED SHARED(bC)
-          CALL SpAMM_Delete_BiTree_Recur(bC%sect1)
-          !$OMP END TASK
-          DEALLOCATE(bC%sect1)
-        ENDIF
-
-        IF(ASSOCIATED(qA%Quad22))THEN
-          !$OMP TASK UNTIED SHARED(qA,bC)
-          CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad22, bC%sect2, j)
-          !$OMP END TASK
-        ELSEIF(ASSOCIATED(bC%sect2))THEN
-          !$OMP TASK UNTIED SHARED(bC)
-          CALL SpAMM_Delete_BiTree_Recur(bC%sect2)
-          !$OMP END TASK
-          DEALLOCATE(bC%sect2)
-        ENDIF
-      ENDIF
-      !$OMP TASKWAIT
-      LOG_DEBUG("going back up")
+       IF(qA%Quad11%j_lower.LE.j .AND. qA%Quad11%j_upper.GE.j )THEN
+          bC%Norm=0
+          IF(ASSOCIATED(qA%Quad11))THEN
+             !$OMP TASK UNTIED SHARED(qA,bC)
+             CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad11, bC%sect1, j, Depth+1)
+             !$OMP END TASK
+             bC%Norm=bC%Norm+bC%Sect1%Norm
+             bC%Sect1%Norm=SQRT(bC%Sect1%Norm)
+          ENDIF
+          IF(ASSOCIATED(qA%Quad21))THEN
+             !$OMP TASK UNTIED SHARED(qA,bC)
+             CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad21, bC%sect2, j, Depth+1)
+             !$OMP END TASK
+             bC%Norm=bC%Norm+bC%Sect2%Norm
+             bC%Sect2%Norm=SQRT(bC%Sect2%Norm)
+          ENDIF
+       ELSEIF(qA%Quad12%j_lower.LE.j .AND. qA%Quad12%j_upper.GE.j )THEN
+          bC%Norm=0
+          IF(ASSOCIATED(qA%Quad12))THEN
+             !$OMP TASK UNTIED SHARED(qA,bC)
+             CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad12, bC%sect1, j, Depth+1)
+             !$OMP END TASK
+             bC%Norm=bC%Norm+bC%Sect1%Norm
+             bC%Sect1%Norm=SQRT(bC%Sect1%Norm)
+          ENDIF
+          IF(ASSOCIATED(qA%Quad22))THEN
+             !$OMP TASK UNTIED SHARED(qA,bC)
+             CALL SpAMM_Copy_QuTree_2_BiTree_Recur(qA%Quad22, bC%sect2, j, Depth+1)
+             !$OMP END TASK
+             bC%Norm=bC%Norm+bC%Sect2%Norm
+             bC%Sect2%Norm=SQRT(bC%Sect2%Norm)
+          ENDIF
+       ELSE
+          STOP ' broken logic '
+       ENDIF
+       !$OMP TASKWAIT
+       LOG_DEBUG("going back up")
     ENDIF
 
   END SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur

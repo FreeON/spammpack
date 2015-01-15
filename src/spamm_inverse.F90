@@ -37,6 +37,11 @@ module spamm_inverse
   use spamm_real_precision
 
 #include "spamm_utility_macros.h"
+    use spamm_algebra
+    use spamm_convert
+    use spamm_management
+    use spamm_types
+    use spamm_utilities
 
   implicit none
 
@@ -52,12 +57,6 @@ contains
   !! defined as the @f$ \Vert X_{k} - I \Vert_{F} / (M N) @f$.
   subroutine spamm_inverse_sqrt_schulz (S, Y, Z, tolerance, schulz_threshold)
 
-    use spamm_algebra
-    use spamm_convert
-    use spamm_management
-    use spamm_types
-    use spamm_utilities
-
     type(spamm_matrix_order_2), pointer, intent(in) :: S
     type(spamm_matrix_order_2), pointer, intent(inout) :: Y, Z
     real(spamm_kind), intent(in), optional :: tolerance
@@ -68,10 +67,15 @@ contains
     integer, parameter :: SCHULZ_ORDER = 3
     integer, parameter :: MAX_ITERATIONS = 200
     integer :: iteration
-    real(spamm_kind) :: lambda, error, local_tolerance, &
+    real(spamm_kind) :: lambda, error, error_last, rel_change, local_tolerance, &
       local_schulz_threshold, number_operations
 
 
+    REAL(SpAMM_KIND) :: EvMin, EvMax
+    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_MULTIPLY_THRESHOLD   =1D-7 !SpAMM_PRODUCT_TOLERANCE
+    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_CONVERGENCE_THRESHOLD=1D-3 !100d0*SpAMM_RQI_MULTIPLY_THRESHOLD
+    REAL(SpAMM_KIND),PARAMETER  :: SpAMM_RQI_EVAL_ERROR_ESTIMATE  =2D-2 !100d0*SpAMM_RQI_CONVERGENCE_THRESHOLD
+    
     if(present(tolerance)) then
       local_tolerance = tolerance
     else
@@ -92,6 +96,14 @@ contains
       call delete(Z)
     endif
 
+    WRITE(*,*)' FINDING COND NUMBER = '
+    ! Find extremal eigenvalues by RQI
+    CALL SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree(S%Root,EvMin,EvMax, &
+      SpAMM_RQI_MULTIPLY_THRESHOLD,SpAMM_RQI_CONVERGENCE_THRESHOLD)
+
+    WRITE(*,*)' MINMAX =',EvMin, EvMax
+    WRITE(*,*)' COND S = ',EvMax/EvMin
+
     LOG_INFO("Schulz -> approximate inverse sqrt")
     LOG_INFO("  tolerance = "//to_string(local_tolerance))
     LOG_INFO("  schulz threshold = "//to_string(local_schulz_threshold))
@@ -103,33 +115,38 @@ contains
     call copy(S, Y)
 
     ! Something close to ideal scaling.
-    lambda = 1/S%norm
+
+    lambda = 2d0/(EvMin+EvMax)
+
     LOG_DEBUG("||S||_{F} = "//to_string(S%norm)//", lambda = "//to_string(lambda))
 
     ! Initialize error.
-    error = 1
+    error_last = 1
+
 
     ! Reset counters.
     number_operations = 0
 
-    do iteration = 1, MAX_ITERATIONS
-      ! X_{k} <- \lambda * Y_{k} * Z_{k}
-      call multiply(Y, Z, X, local_tolerance)
+    do iteration = 1, 17 !MAX_ITERATIONS
+      ! X_{k} <- \lambda * Z^t_k * S * Z_k
+      call multiply(S, Z, T, local_tolerance)
+      number_operations = number_operations+T%number_operations
+      call multiply( Z, T, X, local_tolerance)
       number_operations = number_operations+X%number_operations
       call multiply(X, lambda)
       number_operations = number_operations+X%number_operations
-
       ! Error <- ||X_{k} - I||_{F}
       T => spamm_identity_matrix(S%M, S%N)
       call add(T, X, -1.0_spamm_kind, 1.0_spamm_kind)
       error = T%norm/(T%M*T%N)
-      call delete(T)
-
+      rel_change=(error_last-error)/error
+      error_last=error
+      call delete(T)  !<<<<<<<<<<< probably overkill here
+      WRITE(*,*)to_string(iteration)//"::: error = "//to_string(error)
       LOG_INFO(to_string(iteration)//": error = "//to_string(error))
-
-      if(error < local_schulz_threshold) then
-        LOG_INFO("error below "//to_string(local_schulz_threshold))
-        exit
+      if( iteration > 5 .and. rel_change < 1d-2 ) then
+        LOG_INFO("111 error below "//to_string(local_schulz_threshold))
+        !        exit
       endif
 
       select case (SCHULZ_ORDER)
@@ -137,7 +154,6 @@ contains
           ! Second order: T_{k} <- 1/2*(3*I-X_{k})
           T => spamm_identity_matrix(S%M, S%N)
           call add(T, X, 1.5_spamm_kind, -0.5_spamm_kind)
-
         case (3)
           ! Third order: T_{k} = 1/8*(15*I-10*X_{k}+3*X_{k}^{2})
           T => spamm_identity_matrix(S%M, S%N)
@@ -146,7 +162,6 @@ contains
           call add(T, temp, 1.0_spamm_kind, 3.0_spamm_kind)
           call multiply(T, 1/8.0_spamm_kind)
           call delete(temp)
-
         case (4)
           ! Fourth order: T_{k} = 1/16*(35*I-35*X_{k}+21*X_{k}^2-5*X({k}^3)
           T => spamm_identity_matrix(S%M, S%N)
@@ -158,7 +173,6 @@ contains
           call multiply(T, 1/16.0_spamm_kind)
           call delete(temp)
           call delete(temp2)
-
         case default
           LOG_FATAL("Schulz order "//to_string(SCHULZ_ORDER)//" is not implemented")
           error stop
@@ -170,15 +184,88 @@ contains
       call copy(temp, Z)
       call delete(temp)
 
-      ! Y_{k+1} <- T_{k}*Y_{k}
-      call multiply(T, Y, temp, local_tolerance)
-      number_operations = number_operations+temp%number_operations
-      call copy(temp, Y)
-      call delete(temp)
+!      ! Y_{k+1} <- T_{k}*Y_{k}
+!      call multiply(T, Y, temp, local_tolerance)
+!      number_operations = number_operations+temp%number_operations
+!      call copy(temp, Y)
+!      call delete(temp)
 
       ! Free up T.
       call delete(T)
     enddo
+
+
+    goto 9999
+    
+!!$    ! Reset counters.
+!!$    number_operations = 0
+!!$    do iteration = 1, MAX_ITERATIONS
+!!$      ! X_{k} <- \lambda * Y_{k} * Z_{k}
+!!$      call multiply(Y, Z, X, local_tolerance)
+!!$      number_operations = number_operations+X%number_operations
+!!$      call multiply(X, lambda)
+!!$      number_operations = number_operations+X%number_operations
+!!$      ! Error <- ||X_{k} - I||_{F}
+!!$      T => spamm_identity_matrix(S%M, S%N)
+!!$      call add(T, X, -1.0_spamm_kind, 1.0_spamm_kind)
+!!$      error = T%norm/(T%M*T%N)
+!!$      rel_change=(error_last-error)/error
+!!$      error_last=error
+!!$      call delete(T)
+!!$      WRITE(*,*)to_string(iteration)//": error = "//to_string(error)
+!!$      LOG_INFO(to_string(iteration)//": error = "//to_string(error))
+!!$      if( iteration > 5 .and. rel_change < 1d-2 ) then
+!!$!      if(error < local_schulz_threshold) then
+!!$        LOG_INFO("error below "//to_string(local_schulz_threshold))
+!!$        exit
+!!$      endif
+!!$      select case (SCHULZ_ORDER)
+!!$        case (2)
+!!$          ! Second order: T_{k} <- 1/2*(3*I-X_{k})
+!!$          T => spamm_identity_matrix(S%M, S%N)
+!!$          call add(T, X, 1.5_spamm_kind, -0.5_spamm_kind)
+!!$        case (3)
+!!$          ! Third order: T_{k} = 1/8*(15*I-10*X_{k}+3*X_{k}^{2})
+!!$          T => spamm_identity_matrix(S%M, S%N)
+!!$          call add(T, X, 15.0_spamm_kind, -10.0_spamm_kind)
+!!$          call multiply(X, X, temp, local_tolerance)
+!!$          call add(T, temp, 1.0_spamm_kind, 3.0_spamm_kind)
+!!$          call multiply(T, 1/8.0_spamm_kind)
+!!$          call delete(temp)
+!!$        case (4)
+!!$          ! Fourth order: T_{k} = 1/16*(35*I-35*X_{k}+21*X_{k}^2-5*X({k}^3)
+!!$          T => spamm_identity_matrix(S%M, S%N)
+!!$          call add(T, X, 35.0_spamm_kind, -35.0_spamm_kind)
+!!$          call multiply(X, X, temp, local_tolerance)
+!!$          call add(T, temp, 1.0_spamm_kind, 21.0_spamm_kind)
+!!$          call multiply(X, temp, temp2, local_tolerance)
+!!$          call add(T, temp2, 1.0_spamm_kind, -5.0_spamm_kind)
+!!$          call multiply(T, 1/16.0_spamm_kind)
+!!$          call delete(temp)
+!!$          call delete(temp2)
+!!$        case default
+!!$          LOG_FATAL("Schulz order "//to_string(SCHULZ_ORDER)//" is not implemented")
+!!$          error stop
+!!$      end select
+!!$
+!!$      ! Z_{k+1} <- Z_{k}*T_{k}
+!!$      call multiply(Z, T, temp, local_tolerance)
+!!$      number_operations = number_operations+temp%number_operations
+!!$      call copy(temp, Z)
+!!$      call delete(temp)
+!!$
+!!$      ! Y_{k+1} <- T_{k}*Y_{k}
+!!$      call multiply(T, Y, temp, local_tolerance)
+!!$      number_operations = number_operations+temp%number_operations
+!!$      call copy(temp, Y)
+!!$      call delete(temp)
+!!$
+!!$      ! Free up T.
+!!$      call delete(T)
+!!$    enddo
+!!$
+
+9999 continue
 
     ! S^{-1/2} <- \sqrt{\lambda} Z_{k}
     call multiply(Z, sqrt(lambda))
@@ -196,5 +283,153 @@ contains
     call delete(T)
 
   end subroutine spamm_inverse_sqrt_schulz
+
+
+  !> Spamm routines for spectral estimation (extremal eigenvalues)
+  !!
+  !! RQI for finding the eigen bounds (Min/Max E.V.s).
+  SUBROUTINE SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree(A,RQIMin,RQIMax, &
+      SpAMM_RQI_MULTIPLY_THRESHOLD,SpAMM_RQI_CONVERGENCE_THRESHOLD)
+
+    INTEGER              :: I,CG
+    REAL(SpAMM_KIND)     :: SpAMM_RQI_MULTIPLY_THRESHOLD, SpAMM_RQI_CONVERGENCE_THRESHOLD
+    INTEGER, PARAMETER   :: NCG=1000
+    TYPE(qutree), POINTER, intent(in) :: A
+    TYPE(BiTree),POINTER :: x=>NULL(),g=>NULL(),h=>NULL(),Ax=>NULL(), &
+      Ah=>NULL(),xOld=>NULL(),gOld=>NULL(),hOld=>NULL()
+    REAL(SpAMM_KIND)     :: beta,LambdaPlus,LambdaMins,RQIPlus,RQIMins,omega, &
+      xx,hh,xh,hx,xAx,xAh,hAx,hAh,xnorm
+    REAL(SpAMM_KIND)     :: RQIMin,RQIMax, ddot
+
+    CALL New(x, A%i_lower, A%i_upper)
+    CALL New(g, A%i_lower, A%i_upper)
+    CALL New(h, A%i_lower, A%i_upper)
+    CALL New(Ax, A%i_lower, A%i_upper)
+    CALL New(Ah, A%i_lower, A%i_upper)
+    CALL New(xOld, A%i_lower, A%i_upper)
+    CALL New(gOld, A%i_lower, A%i_upper)
+    CALL New(hOld, A%i_lower, A%i_upper)
+
+    DO I=1,2
+!      IF(I==1)THEN
+        CALL Copy(A,1,x)
+!      ELSE
+!         WRITE(*,*)' I=2 copy ....'
+
+!        CALL Copy(A,1,x) !SpAMM_MATRIX_DIMENSION,x)
+!      ENDIF
+
+      write(*,*)' 3'
+
+      xnorm=SpAMM_One/Dot(x,x)
+      CALL Multiply(x,xnorm)
+      ! This call should be redundant  <<<<<<<<<<<>>>>>>>>>>>>>>
+      x%Norm=SQRT(Norm(x))
+      CALL Multiply(h,SpAMM_Zero)
+      CALL Multiply(g,SpAMM_Zero)
+      CALL Multiply(xOld,SpAMM_Zero)
+      CALL Multiply(hOld,SpAMM_Zero)
+      CALL Multiply(gOld,SpAMM_Zero)
+      DO CG=1,NCG
+        ! Intermediates
+        xx=Dot(x,x)
+        CALL Multiply(A,x,Ax,SpAMM_RQI_MULTIPLY_THRESHOLD)
+        xAx=Dot(x,Ax)
+        omega=xAx/xx
+        IF(I==1)THEN
+          RQIMin=omega
+        ELSE
+          RQIMax=omega
+        ENDIF
+        ! Gradient of extremal quotients (eigenvalues): one is + the other is - ...
+        IF(I==1)THEN
+          ! g=2*(Ax-omega*x)/xx
+          CALL Add(g,SpAMM_Two/xx,Ax,-SpAMM_Two*omega/xx,x)
+        ELSE
+          ! g=-2*(Ax-omega*x)/xx
+          CALL Add(g,-SpAMM_Two/xx,Ax,SpAMM_Two*omega/xx,x)
+        ENDIF
+
+        IF(SQRT(Dot(g,g)/ABS(Omega))<SpAMM_RQI_CONVERGENCE_THRESHOLD.AND.CG>16)EXIT
+
+        IF(CG>1.AND.MOD(CG,15).NE.0)THEN
+          !             beta=MAX(SpAMM_Zero,Dot(g,g-gOld)/Dot(gOld,gOld))
+          beta=MAX(SpAMM_Zero,Dot(g,g)/Dot(gOld,gOld))
+        ELSE
+          beta=SpAMM_Zero
+        ENDIF
+
+        ! h=g+beta*hOld
+        CALL Add(h,SpAMM_One,g,beta,hOld)
+        h%Norm=SQRT(Norm(h))
+        CALL Copy(g,gOld)
+        CALL Copy(h,hOld)
+        ! Ah=A.h
+        CALL Multiply(A,h,Ah,SpAMM_RQI_MULTIPLY_THRESHOLD)
+        hx =Dot(h,x)
+        hh =Dot(h,h)
+        xAh=Dot(x,Ah)
+        hAx=Dot(h,Ax)
+        hAh=Dot(h,Ah)
+        ! By symmetry
+        xh=hx
+        hAx=xAh
+        LambdaPlus=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx+SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
+          -SpAMM_Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
+          /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
+        LambdaMins=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx-SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
+          -SpAMM_Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
+          /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
+        !
+        RQIPlus=(xAx+LambdaPlus*(xAh+hAx)+hAh*LambdaPlus**2) &
+          /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2)
+        RQIMins=(xAx+LambdaMins*(xAh+hAx)+hAh*LambdaMins**2) &
+          /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2)
+
+        IF(I==1)THEN
+          IF(RQIMins<RQIPlus)THEN
+            ! x=x+LambdaMins*h
+            CALL Add(x,SpAMM_One,h,LambdaMins)
+          ELSE
+            ! x=x+LambdaPlus*h
+            CALL Add(x,SpAMM_One,h,LambdaPlus)
+          ENDIF
+        ELSE
+          IF(RQIMins>RQIPlus)THEN
+            ! x=x+LambdaMins*h
+            CALL Add(x,SpAMM_One,h,LambdaMins)
+          ELSE
+            ! x=x+LambdaPlus*h
+            CALL Add(x,SpAMM_One,h,LambdaPlus)
+          ENDIF
+        ENDIF
+        x%Norm=SQRT(Norm(x))
+        IF(I==1)THEN
+          WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
+        ELSE
+          WRITE(*,44)omega,SQRT(Dot(g,g))/ABS(Omega),CG
+        ENDIF
+      END DO
+      IF(I==1)THEN
+        WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
+      ELSE
+        WRITE(*,44)omega,SQRT(Dot(g,g))/ABS(Omega),CG
+      ENDIF
+    ENDDO
+
+33  FORMAT(' MIN E.V. = ',E10.3,', GRAD RQI = ',E10.3,' in ',I4,' NLCG steps')
+44  FORMAT(' MAX E.V. = ',E10.3,', GRAD RQI = ',E10.3,' in ',I4,' NLCG steps')
+
+    CALL Delete(x)
+    CALL Delete(g)
+    CALL Delete(h)
+    CALL Delete(Ax)
+    CALL Delete(Ah)
+    CALL Delete(xOld)
+    CALL Delete(gOld)
+    CALL Delete(hOld)
+
+  END SUBROUTINE SpAMM_Spectral_Bounds_Estimated_by_RQI_QuTree
+
 
 end module spamm_inverse
