@@ -38,6 +38,8 @@ target_link_libraries( spamm-lowdin
   ${LAPACK_LIBRARIES}
   )
 
+add_executable( map map.F90 )
+
 include_directories(
   ${CMAKE_BINARY_DIR}/src/include-serial
   ${CMAKE_BINARY_DIR}/utilities
