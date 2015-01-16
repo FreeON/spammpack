@@ -1,8 +1,6 @@
 program spamm_lowdin
 
   use spammpack
-  use SpAMM_PROJECT
-
   use test_utilities
 
   implicit none
@@ -78,7 +76,7 @@ program spamm_lowdin
   call dsyevd("V", "U", N, S_dense, N, eval, work, LWORK, iwork, LIWORK, info)
   call cpu_time(end_time)
 
-  deallocate(iwork)  
+  deallocate(iwork)
   deallocate(work)
   allocate(evec(N, N))
   allocate(SHalf(N, N))
@@ -88,17 +86,17 @@ program spamm_lowdin
 
   evec=S_dense
 
-  DO i=1,N
-     S_dense(:,I)=S_dense(:,i)*SQRT(eval(i))
-  ENDDO
+  do i=1,N
+     S_dense(:,I)=S_dense(:,i)*sqrt(eval(i))
+  enddo
 
-  SHalf=MATMUL(evec,TRANSPOSE(S_dense))
+  SHalf=matmul(evec,transpose(S_dense))
 
-  DO i=1,N
+  do i=1,N
      S_dense(:,I)=S_dense(:,i)/eval(i)
-  ENDDO
+  enddo
 
-  SHlfI=MATMUL(evec,TRANSPOSE(S_dense))
+  SHlfI=matmul(evec,transpose(S_dense))
 
   deallocate(evec)
   deallocate(eval)
@@ -109,20 +107,18 @@ program spamm_lowdin
 
 #endif
 
-  WRITE(*,*)' checking with Z[SpAMM] '
+  write(*,*)' checking with Z[SpAMM] '
   Id => spamm_identity_matrix(S%M, S%N)
   call multiply(Y, Z, X , 0D0)
   call add(X, Id, +1.0d0, -1.0d0)
   max_diff = absmax(X)
   write(*, "(A)") "|Id-S^{-1/2} S^{1/2}_dsyev|_{max}: "//to_string(max_diff)
 
-  WRITE(*,*)' checking with Z[DSYEV] '
+  write(*,*)' checking with Z[DSYEV] '
   Id => spamm_identity_matrix(S%M, S%N)
   call multiply(Y, Z2, X , 0D0)
   call add(X, Id, +1.0d0, -1.0d0)
   max_diff = absmax(X)
   write(*, "(A)") "|Id-S^{-1/2}_dsyev S^{1/2}_dsyev|_{max}: "//to_string(max_diff)
-
-  STOP  
 
 end program spamm_lowdin

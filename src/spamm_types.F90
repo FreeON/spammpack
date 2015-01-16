@@ -69,139 +69,137 @@ module spamm_types
   !> A vector type.
   type spamm_matrix_order_1
 
-    !> The number of entries.
-    integer :: N = -1
+     !> The number of entries.
+     integer :: N = -1
 
-    !> The padded vector dimension.
-    integer :: N_padded
+     !> The padded vector dimension.
+     integer :: N_padded
 
-    !> The tree depth. The root tier is 0, tier == depth is the leaf node
-    !! tier, i.e. the tier at which actual matrix elements are stored.
-    integer :: depth = -1
+     !> The tree depth. The root tier is 0, tier == depth is the leaf node
+!! tier, i.e. the tier at which actual matrix elements are stored.
+     integer :: depth = -1
 
-    !> The Frobenius norm.
-    real(SPAMM_KIND) :: norm = 0
+     !> The Frobenius norm.
+     real(SPAMM_KIND) :: norm = 0
 
-    !> The root of the binary tree.
-    type(bitree), pointer :: root => null()
+     !> The root of the binary tree.
+     type(bitree), pointer :: root => null()
 
-    !> The number of non-zero elements.
-    real(kind(0d0)) :: number_nonzeros = 0
+     !> The number of non-zero elements.
+     real(kind(0d0)) :: number_nonzeros = 0
 
   end type spamm_matrix_order_1
 
   !> Binary tree data structure.
   TYPE BiTree
 
-    !> The norm.
-    REAL(SPAMM_KIND) :: Norm = 0
+     !> The norm.
+     REAL(SPAMM_KIND) :: Norm = 0
 
-    !> The number of non-zero elements.
-    real(kind(0d0)) :: number_nonzeros = 0
+     !> The number of non-zero elements.
+     real(kind(0d0)) :: number_nonzeros = 0
 
-    !> The lower row index.
-    integer :: i_lower = -1
+     !> The lower row index.
+     integer :: i_lower = -1
 
-    !> The upper row index.
-    integer :: i_upper = -1
+     !> The upper row index.
+     integer :: i_upper = -1
 
-    !> The pointer to the left bisecting subtree.
-    TYPE(BiTree), POINTER :: Sect1 => NULL()
+     !> The pointer to the left bisecting subtree.
+     TYPE(BiTree), POINTER :: Sect1 => NULL()
 
-    !> The pointer to the right bisecting subtree.
-    TYPE(BiTree), POINTER :: Sect2 => NULL()
+     !> The pointer to the right bisecting subtree.
+     TYPE(BiTree), POINTER :: Sect2 => NULL()
 
-    !> The vector data.
-    REAL(SPAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
+     !> The vector data.
+     REAL(SPAMM_KIND), DIMENSION(:), ALLOCATABLE :: Vect
 
   END TYPE BiTree
 
   !> Matrix (2nd order) type.
   type spamm_matrix_order_2
 
-    !> The number or rows.
-    integer :: M = -1
+     !> The number or rows.
+     integer :: M = -1
 
-    !> The number of columns.
-    integer :: N = -1
+     !> The number of columns.
+     integer :: N = -1
 
-    !> The tree depth. The root tier is 0, tier == depth is the leaf node
-    !! tier, i.e. the tier at which actual matrix elements are stored.
-    integer :: depth = -1
+     !> The tree depth. The root tier is 0, tier == depth is the leaf node
+!! tier, i.e. the tier at which actual matrix elements are stored.
+     integer :: depth = -1
 
-    !> The Frobenius norm.
-    REAL(SPAMM_KIND) :: norm = 0
+     !> The Frobenius norm.
+     REAL(SPAMM_KIND) :: norm = 0
 
-    !> The padded matrix dimension. Since the padded matrix is always square,
-    !! we only store one number here.
-    integer :: N_padded
+     !> The padded matrix dimension. Since the padded matrix is always square,
+!! we only store one number here.
+     integer :: N_padded
 
-    !> The root quadtree pointer.
-    type(qutree), pointer :: root => null()
+     !> The root quadtree pointer.
+     type(qutree), pointer :: root => null()
 
-    !> The number of non-zero elements.
-    REAL(kind(0d0)) :: number_nonzeros = 0
+     !> The number of non-zero elements.
+     REAL(kind(0d0)) :: number_nonzeros = 0
 
-    !> The number of operations (updated by a Multiply), i.e. the number of
-    !! dense matrix products of size spamm_globals::spamm_block_size x
-    !! spamm_globals::spamm_block_size.
-    REAL(kind(0d0)) :: number_operations = 0
+     !> The number of operations (updated by a Multiply), i.e. the number of
+!! dense matrix products of size spamm_globals::spamm_block_size x
+!! spamm_globals::spamm_block_size.
+     REAL(kind(0d0)) :: number_operations = 0
 
   end type spamm_matrix_order_2
 
   !> Quaternary tree data structure.
-  TYPE QuTree
+  type QuTree
 
-    !> The lower row index.
-    integer :: i_lower = -1
+     !> The lower row index.
+     integer :: i_lower = -1
 
-    !> The upper row index.
-    integer :: i_upper = -1
+     !> The upper row index.
+     integer :: i_upper = -1
 
-    !> The lower column index.
-    integer :: j_lower = -1
+     !> The lower column index.
+     integer :: j_lower = -1
 
-    !> The upper column index.
-    integer :: j_upper = -1
+     !> The upper column index.
+     integer :: j_upper = -1
 
-    !> The Frobenious norm.
-    REAL(SPAMM_KIND) :: Norm = 0
+     !> The Frobenious norm.
+     REAL(SPAMM_KIND) :: Norm = 0
 
-    !> The pointer to the subtree in quadrant 11.
-    TYPE(QuTree), POINTER :: Quad11 => NULL()
+     !> The pointer to the subtree in quadrant 11.
+     TYPE(QuTree), POINTER :: Quad11 => NULL()
 
-    !> The pointer to the subtree in quadrant 12.
-    TYPE(QuTree), POINTER :: Quad12 => NULL()
+     !> The pointer to the subtree in quadrant 12.
+     TYPE(QuTree), POINTER :: Quad12 => NULL()
 
-    !> The pointer to the subtree in quadrant 21.
-    TYPE(QuTree), POINTER :: Quad21 => NULL()
+     !> The pointer to the subtree in quadrant 21.
+     TYPE(QuTree), POINTER :: Quad21 => NULL()
 
-    !> The pointer to the subtree in quadrant 22.
-    TYPE(QuTree), POINTER :: Quad22 => NULL()
+     !> The pointer to the subtree in quadrant 22.
+     TYPE(QuTree), POINTER :: Quad22 => NULL()
 
-    !> The matrix data.
-    REAL(SPAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
+     !> The matrix data.
+     REAL(SPAMM_KIND), DIMENSION(:, :), ALLOCATABLE :: Blok
 
 #ifdef SPAMM_STORE_TRANSPOSE
-    !> The transposed block.
-    real(SPAMM_KIND), dimension(:, :), ALLOCATABLE :: transpose_block
+     !> The transposed block.
+     real(SPAMM_KIND), dimension(:, :), ALLOCATABLE :: transpose_block
 #endif
 
-    !> The number of non-zero elements.
-    REAL(Kind(0d0)) :: number_nonzeros = 0
+     !> The number of non-zero elements.
+     REAL(Kind(0d0)) :: number_nonzeros = 0
 
-    !> The number of operations (updated by a Multiply), i.e. the number of
-    !! dense matrix products of size spamm_globals::spamm_block_size x
-    !! spamm_globals::spamm_block_size.
-    REAL(Kind(0d0)) :: number_operations = 0
+     !> The number of operations (updated by a Multiply), i.e. the number of
+!! dense matrix products of size spamm_globals::spamm_block_size x
+!! spamm_globals::spamm_block_size.
+     REAL(Kind(0d0)) :: number_operations = 0
 
 #ifdef _OPENMP
-    !> Block OpenMP lock
-    integer(kind = OMP_LOCK_KIND) :: lock
+     !> Block OpenMP lock
+     integer(kind = OMP_LOCK_KIND) :: lock
 #endif
 
-  END TYPE QuTree
-
-CONTAINS
+  end type QuTree
 
 end module spamm_types

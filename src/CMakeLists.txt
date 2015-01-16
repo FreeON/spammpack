@@ -33,11 +33,13 @@ set( spammpack-sources
   spamm_globals.F90
   spamm_inverse.F90
   spamm_management.F90
+  spamm_management_1d.F90
   spamm_order_1.F90
   spamm_order_1_double.F90
   spamm_order_1_single.F90
   spamm_project.F90
   spamm_types.F90
+  spamm_types_1d.F90
   spamm_utilities.F90
   spammpack.F90
   )
@@ -47,9 +49,11 @@ set( MODULE_FILES
   spamm_convert.mod
   spamm_globals.mod
   spamm_management.mod
+  spamm_management_1d.mod
   spamm_project.mod
   spamm_real_precision.mod
   spamm_types.mod
+  spamm_types_1d.mod
   spammpack.mod
   )
 

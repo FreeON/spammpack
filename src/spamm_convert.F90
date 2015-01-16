@@ -45,7 +45,7 @@ module spamm_convert
 
   implicit none
 
-  contains
+contains
 
   !> Recursively convert a dense vector to a bitree.
   !!
@@ -61,78 +61,78 @@ module spamm_convert
     integer :: V_rows, convert_rows
 
     if(associated(qV)) then
-      LOG_FATAL("qV should not already be associated")
-      error stop
+       LOG_FATAL("qV should not already be associated")
+       error stop
     endif
 
     LOG_DEBUG("converting: "//to_string(i_lower)//" "//to_string(i_upper))
 
     if(i_lower > size(V, 1)) then
-      LOG_DEBUG("outside dense vector")
-      return
+       LOG_DEBUG("outside dense vector")
+       return
     endif
 
     V_rows = i_upper-i_lower+1
 
     if(.not. associated(qV)) then
-      LOG_DEBUG("allocating new node")
-      call newbinode(qV, i_lower, i_upper)
+       LOG_DEBUG("allocating new node")
+       call newbinode(qV, i_lower, i_upper)
     endif
 
     LOG_DEBUG("q: "//to_string(i_lower)//" "//to_string(i_upper))
 
     if(V_rows <= SPAMM_BLOCK_SIZE) then
-      if(V_rows < SPAMM_BLOCK_SIZE) then
-        LOG_FATAL("LOGIC ERROR IN SpAMM: padding error")
-        LOG_FATAL("V_rows = "//to_string(V_rows))
-        LOG_FATAL("SPAMM_BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
-        error stop
-      ELSE
-        LOG_DEBUG("allocating new vect")
+       if(V_rows < SPAMM_BLOCK_SIZE) then
+          LOG_FATAL("LOGIC ERROR IN SpAMM: padding error")
+          LOG_FATAL("V_rows = "//to_string(V_rows))
+          LOG_FATAL("SPAMM_BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
+          error stop
+       ELSE
+          LOG_DEBUG("allocating new vect")
 
-        if(allocated(qV%vect)) then
-          deallocate(qV%vect)
-        endif
+          if(allocated(qV%vect)) then
+             deallocate(qV%vect)
+          endif
 
-        ALLOCATE(qV%vect(SPAMM_BLOCK_SIZE))
+          allocate(qV%vect(SPAMM_BLOCK_SIZE))
 
-        ! Set new block to zero.
-        qV%vect = 0
+          ! Set new block to zero.
+          qV%vect = 0
 
-        ! Copy matrix elements.
-        convert_rows = min(i_upper, size(V, 1))
+          ! Copy matrix elements.
+          convert_rows = min(i_upper, size(V, 1))
 
-        LOG_DEBUG("1:"//to_string(convert_rows-i_lower+1))
-        LOG_DEBUG(to_string(i_lower)//":"//to_string(convert_rows))
-        qV%vect(1:convert_rows-i_lower+1) = V(i_lower:convert_rows)
-        LOG_DEBUG("stored: "//to_string(qV%vect))
+          LOG_DEBUG("1:"//to_string(convert_rows-i_lower+1))
+          LOG_DEBUG(to_string(i_lower)//":"//to_string(convert_rows))
+          qV%vect(1:convert_rows-i_lower+1) = V(i_lower:convert_rows)
+          LOG_DEBUG("stored: "//to_string(qV%vect))
 
-        qV%norm = dot_product(qV%vect, qV%vect)
+          qV%norm = dot_product(qV%vect, qV%vect)
 
-        ! Count number non-zeros.
-        qV%number_nonzeros = count_nonzero(qV%vect)
+          ! Count number non-zeros.
+          qV%number_nonzeros = count_nonzero(qV%vect)
 
-        LOG_DEBUG("non-zeros: "//to_string(qV%number_nonzeros))
-      endif
+          LOG_DEBUG("non-zeros: "//to_string(qV%number_nonzeros))
+       endif
     else
-      ! Avoid slicing here for performance.
-      CALL spamm_convert_dense_to_bitree(V, qV%sect1, i_lower, i_lower+V_rows/2-1)
-      CALL spamm_convert_dense_to_bitree(V, qV%sect2, i_lower+V_rows/2, i_upper)
+       ! Avoid slicing here for performance.
+       call spamm_convert_dense_to_bitree(V, qV%sect1, i_lower, i_lower+V_rows/2-1)
+       call spamm_convert_dense_to_bitree(V, qV%sect2, i_lower+V_rows/2, i_upper)
 
-      qV%number_nonzeros = 0
-      qV%norm = 0
+       qV%number_nonzeros = 0
+       qV%norm = 0
 
-      if(associated(qV%sect1)) then
-        qV%number_nonzeros = qV%number_nonzeros+qV%sect1%number_nonzeros
-        qV%norm = qV%norm+qV%sect1%norm**2
-      endif
+       if(associated(qV%sect1)) then
+          qV%number_nonzeros = qV%number_nonzeros+qV%sect1%number_nonzeros
+          qV%norm = qV%norm+qV%sect1%norm**2
+       endif
 
-      if(associated(qV%sect2)) then
-        qV%number_nonzeros = qV%number_nonzeros+qV%sect2%number_nonzeros
-        qV%norm = qV%norm+qV%sect2%norm**2
-      endif
+       if(associated(qV%sect2)) then
+          qV%number_nonzeros = qV%number_nonzeros+qV%sect2%number_nonzeros
+          qV%norm = qV%norm+qV%sect2%norm**2
+       endif
 
-      qV%norm = sqrt(qV%norm)
+       qV%norm = sqrt(qV%norm)
 
     ENDIF
 
@@ -159,117 +159,117 @@ module spamm_convert
     integer :: convert_rows, convert_columns
 
     if(associated(qA)) then
-      LOG_FATAL("qA should not already be associated")
-      error stop
+       LOG_FATAL("qA should not already be associated")
+       error stop
     endif
 
     LOG_DEBUG("converting: "//to_string(i_lower)//" "//to_string(i_upper))
     LOG_DEBUG("            "//to_string(j_lower)//" "//to_string(j_upper))
 
     if(i_lower > size(A, 1) .or. j_lower > size(A, 2)) then
-      LOG_DEBUG("outside dense matrix")
-      return
+       LOG_DEBUG("outside dense matrix")
+       return
     endif
 
     A_rows = i_upper-i_lower+1
     A_cols = j_upper-j_lower+1
 
     if(.not. associated(qA)) then
-      LOG_DEBUG("allocating new node")
-      call newqunode(qA, i_lower, j_lower, i_upper, j_upper)
+       LOG_DEBUG("allocating new node")
+       call newqunode(qA, i_lower, j_lower, i_upper, j_upper)
     endif
 
     LOG_DEBUG(to_string(qA))
 
     IF(A_rows <= SPAMM_BLOCK_SIZE .AND. A_cols <= SPAMM_BLOCK_SIZE)THEN
-      IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
-        LOG_FATAL("[XgpSLv6M8u5ASgg3] LOGIC ERROR IN SpAMM: padding error")
-        LOG_FATAL("A_rows = "//to_string(A_rows))
-        LOG_FATAL("A_cols = "//to_string(A_cols))
-        LOG_FATAL("SPAMM_BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
-        error stop
-      ELSE
-        LOG_DEBUG("allocating new blok")
+       IF(A_rows < SPAMM_BLOCK_SIZE .OR. A_cols < SPAMM_BLOCK_SIZE) THEN
+          LOG_FATAL("[XgpSLv6M8u5ASgg3] LOGIC ERROR IN SpAMM: padding error")
+          LOG_FATAL("A_rows = "//to_string(A_rows))
+          LOG_FATAL("A_cols = "//to_string(A_cols))
+          LOG_FATAL("SPAMM_BLOCK_SIZE = "//to_string(SPAMM_BLOCK_SIZE))
+          error stop
+       ELSE
+          LOG_DEBUG("allocating new blok")
 
-        if(allocated(qA%blok)) then
-          deallocate(qA%blok)
-        endif
+          if(allocated(qA%blok)) then
+             deallocate(qA%blok)
+          endif
 
-        ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+          ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
 
-        ! Set new block to zero.
-        qA%Blok = 0
+          ! Set new block to zero.
+          qA%Blok = 0
 
-        ! Copy matrix elements.
-        convert_rows = min(i_upper, size(A, 1))
-        convert_columns = min(j_upper, size(A, 2))
+          ! Copy matrix elements.
+          convert_rows = min(i_upper, size(A, 1))
+          convert_columns = min(j_upper, size(A, 2))
 
-        qA%Blok(1:convert_rows-i_lower+1, 1:convert_columns-j_lower+1) = &
-          A(i_lower:convert_rows, j_lower:convert_columns)
+          qA%Blok(1:convert_rows-i_lower+1, 1:convert_columns-j_lower+1) = &
+               A(i_lower:convert_rows, j_lower:convert_columns)
 
 #ifdef SPAMM_STORE_TRANSPOSE
-        if(allocated(qA%transpose_block)) then
-          deallocate(qA%transpose_block)
-        endif
+          if(allocated(qA%transpose_block)) then
+             deallocate(qA%transpose_block)
+          endif
 
-        ALLOCATE(qA%transpose_block(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
-        qA%transpose_block = transpose(qA%blok)
+          ALLOCATE(qA%transpose_block(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+          qA%transpose_block = transpose(qA%blok)
 #endif
 
-        qA%norm = sqrt(sum(qA%blok**2))
+          qA%norm = sqrt(sum(qA%blok**2))
 
-        ! Count number non-zeros.
-        qA%number_nonzeros = count_nonzero(qA%blok)
+          ! Count number non-zeros.
+          qA%number_nonzeros = count_nonzero(qA%blok)
 
-        LOG_DEBUG("non-zeros: "//to_string(qA%number_nonzeros))
-      ENDIF
+          LOG_DEBUG("non-zeros: "//to_string(qA%number_nonzeros))
+       ENDIF
     ELSE
-      ! Avoid slicing here for performance.
-      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad11, &
-        i_lower, &
-        i_lower+A_rows/2-1, &
-        j_lower, &
-        j_lower+A_cols/2-1)
-      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad12, &
-        i_lower, &
-        i_lower+A_rows/2-1, &
-        j_lower+A_cols/2, &
-        j_upper)
-      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad21, &
-        i_lower+A_rows/2, &
-        i_upper, &
-        j_lower, &
-        j_lower+A_cols/2-1)
-      CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad22, &
-        i_lower+A_rows/2, &
-        i_upper, &
-        j_lower+A_cols/2, &
-        j_upper)
+       ! Avoid slicing here for performance.
+       CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad11, &
+            i_lower, &
+            i_lower+A_rows/2-1, &
+            j_lower, &
+            j_lower+A_cols/2-1)
+       CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad12, &
+            i_lower, &
+            i_lower+A_rows/2-1, &
+            j_lower+A_cols/2, &
+            j_upper)
+       CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad21, &
+            i_lower+A_rows/2, &
+            i_upper, &
+            j_lower, &
+            j_lower+A_cols/2-1)
+       CALL SpAMM_Convert_Dense_2_QuTree(A, qA%Quad22, &
+            i_lower+A_rows/2, &
+            i_upper, &
+            j_lower+A_cols/2, &
+            j_upper)
 
-      qA%number_nonzeros = 0
-      qA%norm = 0
+       qA%number_nonzeros = 0
+       qA%norm = 0
 
-      if(associated(qA%quad11)) then
-        qA%number_nonzeros = qA%number_nonzeros+qA%quad11%number_nonzeros
-        qA%norm = qA%norm+qA%quad11%norm**2
-      endif
+       if(associated(qA%quad11)) then
+          qA%number_nonzeros = qA%number_nonzeros+qA%quad11%number_nonzeros
+          qA%norm = qA%norm+qA%quad11%norm**2
+       endif
 
-      if(associated(qA%quad12)) then
-        qA%number_nonzeros = qA%number_nonzeros+qA%quad12%number_nonzeros
-        qA%norm = qA%norm+qA%quad12%norm**2
-      endif
+       if(associated(qA%quad12)) then
+          qA%number_nonzeros = qA%number_nonzeros+qA%quad12%number_nonzeros
+          qA%norm = qA%norm+qA%quad12%norm**2
+       endif
 
-      if(associated(qA%quad21)) then
-        qA%number_nonzeros = qA%number_nonzeros+qA%quad21%number_nonzeros
-        qA%norm = qA%norm+qA%quad21%norm**2
-      endif
+       if(associated(qA%quad21)) then
+          qA%number_nonzeros = qA%number_nonzeros+qA%quad21%number_nonzeros
+          qA%norm = qA%norm+qA%quad21%norm**2
+       endif
 
-      if(associated(qA%quad22)) then
-        qA%number_nonzeros = qA%number_nonzeros+qA%quad22%number_nonzeros
-        qA%norm = qA%norm+qA%quad22%norm**2
-      endif
+       if(associated(qA%quad22)) then
+          qA%number_nonzeros = qA%number_nonzeros+qA%quad22%number_nonzeros
+          qA%norm = qA%norm+qA%quad22%norm**2
+       endif
 
-      qA%norm = sqrt(qA%norm)
+       qA%norm = sqrt(qA%norm)
 
     ENDIF
 
@@ -292,8 +292,8 @@ module spamm_convert
     call spamm_convert_dense_2_qutree(A_dense, A%root, 1, A%N_padded, 1, A%N_padded)
 
     if(associated(A%root)) then
-      A%norm = A%root%norm
-      A%number_nonzeros = A%root%number_nonzeros
+       A%norm = A%root%norm
+       A%number_nonzeros = A%root%number_nonzeros
     endif
 
     LOG_INFO("norm = "//to_string(A%norm))
@@ -317,8 +317,8 @@ module spamm_convert
     call spamm_convert_dense_to_bitree(V_dense, V%root, 1, V%N_padded)
 
     if(associated(V%root)) then
-      V%norm = V%root%norm
-      V%number_nonzeros = V%root%number_nonzeros
+       V%norm = V%root%norm
+       V%number_nonzeros = V%root%number_nonzeros
     endif
 
     LOG_INFO("norm = "//to_string(V%norm))
@@ -340,15 +340,15 @@ module spamm_convert
     LOG_DEBUG("printing matrix")
 
     if(allocated(A_dense)) then
-      deallocate(A_dense)
+       deallocate(A_dense)
     endif
 
     allocate(A_dense(A%M, A%N))
 
     do i = 1, A%M
-      do j = 1, A%N
-        A_dense(i, j) = get(A, i, j)
-      enddo
+       do j = 1, A%N
+          A_dense(i, j) = get(A, i, j)
+       enddo
     enddo
 
   end subroutine spamm_convert_order_2_to_dense
@@ -372,11 +372,11 @@ module spamm_convert
     write(format_string, "(A)") "("//to_string(size(A_dense, 2))//"ES11.3)"
 
     if(present(matrix_name)) then
-      write(*, "(A)") "matrix "//trim(matrix_name)//" ="
+       write(*, "(A)") "matrix "//trim(matrix_name)//" ="
     endif
 
     do i = 1, size(A_dense, 1)
-      write(*, format_string) (A_dense(i, j), j = 1, size(A_dense, 2))
+       write(*, format_string) (A_dense(i, j), j = 1, size(A_dense, 2))
     enddo
 
   end subroutine print_spamm_2nd_order
@@ -389,25 +389,25 @@ module spamm_convert
     type(qutree), pointer, intent(in) :: q
 
     if(.not. associated(q)) then
-      return
+       return
     endif
 
     write(*, "(A)") to_string(q)
 
     if(associated(q%quad11)) then
-      call print_spamm_2nd_order_tree_node(q%quad11)
+       call print_spamm_2nd_order_tree_node(q%quad11)
     endif
 
     if(associated(q%quad12)) then
-      call print_spamm_2nd_order_tree_node(q%quad12)
+       call print_spamm_2nd_order_tree_node(q%quad12)
     endif
 
     if(associated(q%quad21)) then
-      call print_spamm_2nd_order_tree_node(q%quad21)
+       call print_spamm_2nd_order_tree_node(q%quad21)
     endif
 
     if(associated(q%quad22)) then
-      call print_spamm_2nd_order_tree_node(q%quad22)
+       call print_spamm_2nd_order_tree_node(q%quad22)
     endif
 
   end subroutine print_spamm_2nd_order_tree_node
@@ -422,16 +422,16 @@ module spamm_convert
     character(len = *), intent(in), optional :: matrix_name
 
     if(present(matrix_name)) then
-      write(*, "(A)") "matrix tree "//trim(matrix_name)//" ="
+       write(*, "(A)") "matrix tree "//trim(matrix_name)//" ="
     endif
 
     if(.not. associated(A)) then
-      return
+       return
     endif
 
     if(.not. associated(A%root)) then
-      write(*, "(A)") "root not associated"
-      return
+       write(*, "(A)") "root not associated"
+       return
     endif
 
     call print_spamm_2nd_order_tree_node(A%root)

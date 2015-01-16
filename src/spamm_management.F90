@@ -45,75 +45,75 @@ module spamm_management
 
   private
 
-  PUBLIC :: Copy
-  PUBLIC :: Delete
-  PUBLIC :: New
-  PUBLIC :: NewQuNode
-  PUBLIC :: SpAMM_Copy_BiTree_2_BiTree_Recur
-  PUBLIC :: SpAMM_Copy_QuTree_2_QuTree_Recur
-  PUBLIC :: SpAMM_Delete_QuTree_Recur
+  public :: Copy
+  public :: Delete
+  public :: NewQuNode
+  public :: SpAMM_Copy_BiTree_2_BiTree_Recur
+  public :: SpAMM_Copy_QuTree_2_QuTree_Recur
+  public :: SpAMM_Delete_QuTree_Recur
+  public :: absmax
+  public :: count_nonzero
   public :: get
-  public :: set
+  public :: new
+  public :: newbinode
   public :: reset_counters
+  public :: set
   public :: spamm_allocate_matrix_2nd_order
   public :: spamm_allocate_matrix_order_1
   public :: spamm_identity_matrix
   public :: spamm_zero_matrix
-  public :: newbinode
-  public :: count_nonzero
-  public :: absmax
 
   !> Interface for deep copies of SpAMM objects.
-  INTERFACE Copy
-    !MODULE PROCEDURE SpAMM_Copy_QuTree_2_QuTree
-    MODULE PROCEDURE SpAMM_Copy_QuTree_2_BiTree
-    MODULE PROCEDURE SpAMM_Copy_BiTree_2_BiTree
-    module procedure spamm_copy_2nd_order_to_2nd_order
-    module procedure spamm_copy_2nd_order_to_order_1
-    module procedure spamm_copy_order_1_to_order_1
-  END INTERFACE
+  interface Copy
+     !MODULE PROCEDURE SpAMM_Copy_QuTree_2_QuTree
+     module procedure SpAMM_Copy_QuTree_2_BiTree
+     module procedure SpAMM_Copy_BiTree_2_BiTree
+     module procedure spamm_copy_2nd_order_to_2nd_order
+     module procedure spamm_copy_2nd_order_to_order_1
+     module procedure spamm_copy_order_1_to_order_1
+  end interface Copy
 
   !> Interface for deletion (deallocation) of SpAMM objects.
-  INTERFACE Delete
-    MODULE PROCEDURE SpAMM_Delete_QuTree
-    MODULE PROCEDURE SpAMM_Delete_BiTree
-    module procedure spamm_delete_matrix_order_1
-    module procedure spamm_delete_matrix_2nd_order
-  END INTERFACE
+  interface Delete
+     module procedure SpAMM_Delete_QuTree
+     module procedure SpAMM_Delete_BiTree
+     module procedure spamm_delete_matrix_order_1
+     module procedure spamm_delete_matrix_2nd_order
+  end interface Delete
 
   !> Interface for creation (allocation) of SpAMM objects.
-  INTERFACE New
-    MODULE PROCEDURE SpAMM_Allocate_Full_QuTree
-    MODULE PROCEDURE SpAMM_Allocate_Full_BiTree
-    module procedure spamm_allocate_matrix_order_1
-    module procedure spamm_allocate_matrix_2nd_order
-  END INTERFACE
+  interface new
+     module procedure SpAMM_Allocate_Full_QuTree
+     module procedure SpAMM_Allocate_Full_BiTree
+     module procedure spamm_allocate_matrix_order_1
+     module procedure spamm_allocate_matrix_2nd_order
+  end interface new
 
   !> Interface for getting single matrix elements of SpAMM objects.
   interface get
-    module procedure spamm_get_matrix_order_1
-    module procedure spamm_get_matrix_2nd_order
+     module procedure spamm_get_matrix_order_1
+     module procedure spamm_get_matrix_2nd_order
   end interface get
 
   !> Interface for setting matrix elements.
   interface set
-    module procedure spamm_set_matrix_2nd_order
+     module procedure spamm_set_matrix_2nd_order
   end interface set
 
   !> Interface for reset_counters functions.
   interface reset_counters
-    module procedure spamm_reset_counters_2nd_order
+     module procedure spamm_reset_counters_2nd_order
   end interface reset_counters
 
   !> Interface for non-zero element counting functions.
   interface count_nonzero
-    module procedure count_nonzero_order_1
-    module procedure count_nonzero_order_2
-  end Interface count_nonzero
+     module procedure count_nonzero_order_1
+     module procedure count_nonzero_order_2
+  end interface count_nonzero
 
   !> Interface for the absmax functions.
   interface absmax
-    module procedure absmax_order_2
+     module procedure absmax_order_2
   end interface absmax
 
 contains
@@ -128,11 +128,11 @@ contains
     type(spamm_matrix_order_1), pointer, intent(inout) :: B
 
     if(.not. associated(A)) then
-      return
+       return
     endif
 
     if(associated(B)) then
-      call delete(B)
+       call delete(B)
     endif
 
     LOG_DEBUG("copying vector")
@@ -153,11 +153,11 @@ contains
     type(spamm_matrix_order_2), pointer, intent(inout) :: B
 
     if(.not. associated(A)) then
-      return
+       return
     endif
 
     if(associated(B)) then
-      call delete(B)
+       call delete(B)
     endif
 
     LOG_DEBUG("copying matrix")
@@ -172,16 +172,15 @@ contains
   !!
   !! @param qA Pointer to quadtree.
   !! @param j The column index.
-  !! @param bC Pointer to bitree.
-  SUBROUTINE SpAMM_Copy_QuTree_2_BiTree (qA, j, bC)
+  subroutine SpAMM_Copy_QuTree_2_BiTree (qA, j, bC)
 
-    TYPE(QuTree), POINTER, intent(in) :: qA
-    TYPE(BiTree), POINTER, intent(inout) :: bC
-    INTEGER, intent(in) :: j
-    INTEGER :: Depth
+    type(QuTree), pointer, intent(in) :: qA
+    type(BiTree), pointer, intent(inout) :: bC
+    integer, intent(in) :: j
+    integer :: Depth
 
-    IF(.NOT.ASSOCIATED(bC)) then
-      CALL NewBiNode(bC, qA%i_lower, qA%i_upper)
+    if(.not.associated(bC)) then
+       call NewBiNode(bC, qA%i_lower, qA%i_upper)
     endif
 
     Depth=0
@@ -202,7 +201,7 @@ contains
     INTEGER               :: Depth
 
     IF(.NOT.ASSOCIATED(bC))&
-      CALL NewBiNode(bC, bA%i_lower, bA%i_upper)
+         CALL NewBiNode(bC, bA%i_lower, bA%i_upper)
     Depth=0
     !$OMP TASK UNTIED SHARED(bA,bC)
     CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA,bC,Depth)
@@ -231,8 +230,8 @@ contains
     type(spamm_matrix_order_2), pointer, intent(inout) :: A
 
     if(associated(A)) then
-      call spamm_delete_qutree(A%root)
-      deallocate(A)
+       call spamm_delete_qutree(A%root)
+       deallocate(A)
     endif
 
   end subroutine spamm_delete_matrix_2nd_order
@@ -315,7 +314,7 @@ contains
     IF(.NOT.ASSOCIATED(qA)) RETURN
 
     IF(.NOT.ASSOCIATED(qC)) THEN
-      CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
+       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
     ENDIF
 
     LOG_DEBUG("q: "//to_string(qA))
@@ -323,31 +322,31 @@ contains
     qC%Norm = qA%Norm
 
     IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
-      IF(.NOT. allocated(qC%Blok)) THEN
-        ALLOCATE(qC%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
-      ENDIF
-      qC%Blok = qA%Blok
+       IF(.NOT. allocated(qC%Blok)) THEN
+          ALLOCATE(qC%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+       ENDIF
+       qC%Blok = qA%Blok
     ELSE
-      IF(ASSOCIATED(qA%Quad11)) THEN
-        !$OMP TASK UNTIED SHARED(qA,qC)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad11, qC%Quad11)
-        !$OMP END TASK
-      ENDIF
-      IF(ASSOCIATED(qA%Quad12)) THEN
-        !$OMP TASK UNTIED SHARED(qA,qC)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad12, qC%Quad12)
-        !$OMP END TASK
-      ENDIF
-      IF(ASSOCIATED(qA%Quad21)) THEN
-        !$OMP TASK UNTIED SHARED(qA,qC)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad21, qC%Quad21)
-        !$OMP END TASK
-      ENDIF
-      IF(ASSOCIATED(qA%Quad22)) THEN
-        !$OMP TASK UNTIED SHARED(qA,qC)
-        CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad22, qC%Quad22)
-        !$OMP END TASK
-      ENDIF
+       IF(ASSOCIATED(qA%Quad11)) THEN
+          !$OMP TASK UNTIED SHARED(qA,qC)
+          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad11, qC%Quad11)
+          !$OMP END TASK
+       ENDIF
+       IF(ASSOCIATED(qA%Quad12)) THEN
+          !$OMP TASK UNTIED SHARED(qA,qC)
+          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad12, qC%Quad12)
+          !$OMP END TASK
+       ENDIF
+       IF(ASSOCIATED(qA%Quad21)) THEN
+          !$OMP TASK UNTIED SHARED(qA,qC)
+          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad21, qC%Quad21)
+          !$OMP END TASK
+       ENDIF
+       IF(ASSOCIATED(qA%Quad22)) THEN
+          !$OMP TASK UNTIED SHARED(qA,qC)
+          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad22, qC%Quad22)
+          !$OMP END TASK
+       ENDIF
     ENDIF
 
   END SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur
@@ -363,48 +362,48 @@ contains
     INTEGER                :: Depth
 
     if(.not. associated(bA)) then
-      LOG_DEBUG("bA not associated")
-      return
+       LOG_DEBUG("bA not associated")
+       return
     endif
 
     if(.not. associated(bC)) then
-      call NewBiNode(bC, bA%i_lower, bA%i_upper)
+       call NewBiNode(bC, bA%i_lower, bA%i_upper)
     endif
 
     bC%Norm=bA%Norm
     if(bA%i_upper-bA%i_lower+1 == SPAMM_BLOCK_SIZE .and. allocated(bA%vect)) then
-      if(.not. allocated(bC%Vect)) then
-        allocate(bC%Vect(SPAMM_BLOCK_SIZE))
-      endif
-      LOG_DEBUG("copying vect")
-      bC%Vect = bA%Vect
+       if(.not. allocated(bC%Vect)) then
+          allocate(bC%Vect(SPAMM_BLOCK_SIZE))
+       endif
+       LOG_DEBUG("copying vect")
+       bC%Vect = bA%Vect
     ELSE
-      IF(ASSOCIATED(bA%sect1))THEN
-        !$OMP TASK UNTIED SHARED(bA,bC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA%sect1,bC%sect1,Depth+1)
-        !$OMP END TASK
-      ELSEIF(ASSOCIATED(bC%sect1))THEN
-        !$OMP TASK UNTIED SHARED(bC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_BiTree_Recur(bC%sect1)
-        !$OMP END TASK
-        !$OMP TASKWAIT
-        DEALLOCATE(bC%sect1)
-      ENDIF
-      IF(ASSOCIATED(bA%sect2))THEN
-        !$OMP TASK UNTIED SHARED(bA,bC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA%sect2,bC%sect2,Depth+1)
-        !$OMP END TASK
-      ELSEIF(ASSOCIATED(bC%sect2))THEN
-        !$OMP TASK UNTIED SHARED(bC) &
-        !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-        CALL SpAMM_Delete_BiTree_Recur(bC%sect2)
-        !$OMP END TASK
-        !$OMP TASKWAIT
-        DEALLOCATE(bC%sect2)
-      ENDIF
+       IF(ASSOCIATED(bA%sect1))THEN
+          !$OMP TASK UNTIED SHARED(bA,bC) &
+          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA%sect1,bC%sect1,Depth+1)
+          !$OMP END TASK
+       ELSEIF(ASSOCIATED(bC%sect1))THEN
+          !$OMP TASK UNTIED SHARED(bC) &
+          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          CALL SpAMM_Delete_BiTree_Recur(bC%sect1)
+          !$OMP END TASK
+          !$OMP TASKWAIT
+          DEALLOCATE(bC%sect1)
+       ENDIF
+       IF(ASSOCIATED(bA%sect2))THEN
+          !$OMP TASK UNTIED SHARED(bA,bC) &
+          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          CALL SpAMM_Copy_BiTree_2_BiTree_Recur(bA%sect2,bC%sect2,Depth+1)
+          !$OMP END TASK
+       ELSEIF(ASSOCIATED(bC%sect2))THEN
+          !$OMP TASK UNTIED SHARED(bC) &
+          !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+          CALL SpAMM_Delete_BiTree_Recur(bC%sect2)
+          !$OMP END TASK
+          !$OMP TASKWAIT
+          DEALLOCATE(bC%sect2)
+       ENDIF
     ENDIF
 
   END SUBROUTINE SpAMM_Copy_BiTree_2_BiTree_Recur
@@ -422,16 +421,16 @@ contains
     integer :: Depth
 
     if(.not. associated(A)) then
-      return
+       return
     endif
 
     if(associated(V)) then
-      if(V%N /= A%M) then
-        LOG_FATAL("dimension mismatch")
-        error stop
-      endif
+       if(V%N /= A%M) then
+          LOG_FATAL("dimension mismatch")
+          error stop
+       endif
     else
-      call spamm_allocate_matrix_order_1(A%M, V)
+       call spamm_allocate_matrix_order_1(A%M, V)
     endif
 
     LOG_DEBUG("copying column "//to_string(j)//" from A to V")
@@ -446,9 +445,7 @@ contains
   !! @param qA Pointer to quadtree.
   !! @param bC Pointer to bitree.
   !! @param j The column index.
-
-
-  RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur(qA, bC, j, Depth)
+  recursive subroutine SpAMM_Copy_QuTree_2_BiTree_Recur(qA, bC, j, Depth)
 
     type(QuTree), pointer, intent(in) :: qA
     type(BiTree), pointer, intent(inout) :: bC
@@ -520,21 +517,21 @@ contains
        LOG_DEBUG("going back up")
     ENDIF
 
-  END SUBROUTINE SpAMM_Copy_QuTree_2_BiTree_Recur
+  end subroutine SpAMM_Copy_QuTree_2_BiTree_Recur
 
   !> Recursive part of delete quadtree.
   !!
   !! @bug Instaed of a critical section, use locks.
   !!
   !! @param qA Pointer to quadtree node.
-  RECURSIVE SUBROUTINE SpAMM_Delete_QuTree_Recur(qA)
+  recursive subroutine SpAMM_Delete_QuTree_Recur(qA)
 
     TYPE(QuTree),POINTER  :: qA
 
     IF(.NOT.ASSOCIATED(qA))RETURN
     !$OMP CRITICAL
     IF(ALLOCATED(qA%Blok))THEN
-      DEALLOCATE(qA%Blok)
+       DEALLOCATE(qA%Blok)
     ENDIF
 #ifdef _OPENMP
     CALL OMP_DESTROY_LOCK(qA%lock)
@@ -542,57 +539,57 @@ contains
     !$OMP END CRITICAL
 
     IF(ASSOCIATED(qA%Quad11))THEN
-      !$OMP TASK UNTIED SHARED(qA)
-      !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad11)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      !$OMP CRITICAL
-      DEALLOCATE(qA%Quad11)
-      !$OMP END CRITICAL
+       !$OMP TASK UNTIED SHARED(qA)
+       !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+       CALL SpAMM_Delete_QuTree_Recur(qA%Quad11)
+       !$OMP END TASK
+       !$OMP TASKWAIT
+       !$OMP CRITICAL
+       DEALLOCATE(qA%Quad11)
+       !$OMP END CRITICAL
     ENDIF
 
     IF(ASSOCIATED(qA%Quad12))THEN
-      !$OMP TASK UNTIED SHARED(qA)
-      !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad12)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      !$OMP CRITICAL
-      DEALLOCATE(qA%Quad12)
-      !$OMP END CRITICAL
+       !$OMP TASK UNTIED SHARED(qA)
+       !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+       CALL SpAMM_Delete_QuTree_Recur(qA%Quad12)
+       !$OMP END TASK
+       !$OMP TASKWAIT
+       !$OMP CRITICAL
+       DEALLOCATE(qA%Quad12)
+       !$OMP END CRITICAL
     ENDIF
 
     IF(ASSOCIATED(qA%Quad21))THEN
-      !$OMP TASK UNTIED SHARED(qA)
-      !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad21)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      !$OMP CRITICAL
-      DEALLOCATE(qA%Quad21)
-      !$OMP END CRITICAL
+       !$OMP TASK UNTIED SHARED(qA)
+       !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+       CALL SpAMM_Delete_QuTree_Recur(qA%Quad21)
+       !$OMP END TASK
+       !$OMP TASKWAIT
+       !$OMP CRITICAL
+       DEALLOCATE(qA%Quad21)
+       !$OMP END CRITICAL
     ENDIF
 
     IF(ASSOCIATED(qA%Quad22))THEN
-      !$OMP TASK UNTIED SHARED(qA)
-      !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_QuTree_Recur(qA%Quad22)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      !$OMP CRITICAL
-      DEALLOCATE(qA%Quad22)
-      !$OMP END CRITICAL
+       !$OMP TASK UNTIED SHARED(qA)
+       !!$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+       CALL SpAMM_Delete_QuTree_Recur(qA%Quad22)
+       !$OMP END TASK
+       !$OMP TASKWAIT
+       !$OMP CRITICAL
+       DEALLOCATE(qA%Quad22)
+       !$OMP END CRITICAL
     ENDIF
 
-  END SUBROUTINE SpAMM_Delete_QuTree_Recur
+  end subroutine SpAMM_Delete_QuTree_Recur
 
   !> Delete a bitree.
   !!
   !! @bug Instead of a critical section, use locks.
   !!
   !! @param bA A pointer to a bitree.
-  RECURSIVE SUBROUTINE SpAMM_Delete_BiTree_Recur(bA)
+  recursive subroutine SpAMM_Delete_BiTree_Recur(bA)
 
     TYPE(BiTree),POINTER  :: bA
     INTEGER               :: Status, Depth
@@ -601,32 +598,32 @@ contains
 
     IF(.NOT.ASSOCIATED(bA))RETURN
     IF(ALLOCATED(bA%Vect))THEN
-      !$OMP CRITICAL
-      DEALLOCATE(bA%Vect,STAT=Status)
-      !$OMP END CRITICAL
+       !$OMP CRITICAL
+       DEALLOCATE(bA%Vect,STAT=Status)
+       !$OMP END CRITICAL
     ENDIF
     IF(ASSOCIATED(bA%sect1))THEN
-      !$OMP TASK UNTIED SHARED(bA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_BiTree_Recur(bA%sect1)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      !$OMP CRITICAL
-      DEALLOCATE(bA%sect1)
-      !$OMP END CRITICAL
+       !$OMP TASK UNTIED SHARED(bA) &
+       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+       CALL SpAMM_Delete_BiTree_Recur(bA%sect1)
+       !$OMP END TASK
+       !$OMP TASKWAIT
+       !$OMP CRITICAL
+       DEALLOCATE(bA%sect1)
+       !$OMP END CRITICAL
     ENDIF
     IF(ASSOCIATED(bA%sect2))THEN
-      !$OMP TASK UNTIED SHARED(bA) &
-      !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
-      CALL SpAMM_Delete_BiTree_Recur(bA%sect2)
-      !$OMP END TASK
-      !$OMP TASKWAIT
-      !$OMP CRITICAL
-      DEALLOCATE(bA%sect2)
-      !$OMP END CRITICAL
+       !$OMP TASK UNTIED SHARED(bA) &
+       !$OMP&     IF(Depth<SpAMM_RECURSION_DEPTH_CUTOFF)
+       CALL SpAMM_Delete_BiTree_Recur(bA%sect2)
+       !$OMP END TASK
+       !$OMP TASKWAIT
+       !$OMP CRITICAL
+       DEALLOCATE(bA%sect2)
+       !$OMP END CRITICAL
     ENDIF
 
-  END SUBROUTINE SpAMM_Delete_BiTree_Recur
+  end subroutine SpAMM_Delete_BiTree_Recur
 
   !> Allocate a new node in the quadtree.
   !!
@@ -642,7 +639,7 @@ contains
 
     ! Delete node if it already exists.
     IF(ASSOCIATED(qA)) THEN
-      CALL Delete(qA)
+       CALL Delete(qA)
     ENDIF
 
     ! Allocate new node.
@@ -675,7 +672,7 @@ contains
     integer, intent(in) :: i_lower, i_upper
 
     if(associated(bA)) then
-      call delete(bA)
+       call delete(bA)
     endif
 
     allocate(bA)
@@ -707,29 +704,29 @@ contains
     LOG_DEBUG("   "//to_string(j_lower)//" "//to_string(j_upper))
 
     if(rows /= columns) then
-      LOG_FATAL("non-square submatrix")
-      error stop
+       LOG_FATAL("non-square submatrix")
+       error stop
     endif
 
     if(rows < SPAMM_BLOCK_SIZE .or. columns < SPAMM_BLOCK_SIZE) then
-      LOG_FATAL("[ozC7x7z3HIgTIa0Q] logic error")
-      LOG_FATAL("rows = "//to_string(rows))
-      LOG_FATAL("columns = "//to_string(columns))
-      error stop
+       LOG_FATAL("[ozC7x7z3HIgTIa0Q] logic error")
+       LOG_FATAL("rows = "//to_string(rows))
+       LOG_FATAL("columns = "//to_string(columns))
+       error stop
     endif
 
     ! Allocate new node.
     CALL NewQuNode(qA, i_lower, j_lower, i_upper, j_upper)
 
     IF(rows == SPAMM_BLOCK_SIZE) then
-      ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
-      qA%Blok = 0
-      RETURN
+       ALLOCATE(qA%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+       qA%Blok = 0
+       RETURN
     ELSE
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11, i_lower, j_lower, i_lower+rows/2-1, j_lower+columns/2-1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad12, i_lower, j_lower+columns/2, i_lower+rows/2-1, j_upper)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad21, i_lower+rows/2, j_lower, i_upper, j_lower+columns/2-1)
-      CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad22, i_lower+rows/2, j_lower+columns/2, i_upper, j_upper)
+       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad11, i_lower, j_lower, i_lower+rows/2-1, j_lower+columns/2-1)
+       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad12, i_lower, j_lower+columns/2, i_lower+rows/2-1, j_upper)
+       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad21, i_lower+rows/2, j_lower, i_upper, j_lower+columns/2-1)
+       CALL SpAMM_Allocate_Full_QuTree_Recur(qA%Quad22, i_lower+rows/2, j_lower+columns/2, i_upper, j_upper)
     ENDIF
 
   END SUBROUTINE SpAMM_Allocate_Full_QuTree_Recur
@@ -740,14 +737,14 @@ contains
     integer :: half
 
     IF(bA%i_upper-bA%i_lower+1 == SPAMM_BLOCK_SIZE)THEN
-      ALLOCATE(bA%Vect(SPAMM_BLOCK_SIZE))
-      bA%Vect = 0
+       ALLOCATE(bA%Vect(SPAMM_BLOCK_SIZE))
+       bA%Vect = 0
     ELSE
-      half = (bA%i_upper-bA%i_lower+1)/2-1
-      call newbinode(bA%sect1, bA%i_lower, bA%i_lower+half)
-      call newbinode(bA%sect2, bA%i_lower+half+1, bA%i_upper)
-      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect1)
-      CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect2)
+       half = (bA%i_upper-bA%i_lower+1)/2-1
+       call newbinode(bA%sect1, bA%i_lower, bA%i_lower+half)
+       call newbinode(bA%sect2, bA%i_lower+half+1, bA%i_upper)
+       CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect1)
+       CALL SpAMM_Allocate_Full_BiTree_Recur(bA%sect2)
     ENDIF
 
   END SUBROUTINE SpAMM_Allocate_Full_BiTree_Recur
@@ -765,8 +762,8 @@ contains
     integer :: i
 
     if(M /= N) then
-      LOG_FATAL("M /= N")
-      error stop
+       LOG_FATAL("M /= N")
+       error stop
     endif
 
     LOG_DEBUG("creating "//to_string(M)//"x"//to_string(N)//" identity matrix")
@@ -775,7 +772,7 @@ contains
     call spamm_allocate_matrix_2nd_order(M, N, A)
 
     do i = 1, N
-      call spamm_set_matrix_2nd_order(A, i, i, 1.0_SPAMM_KIND)
+       call spamm_set_matrix_2nd_order(A, i, i, 1.0_SPAMM_KIND)
     enddo
 
   end function spamm_identity_matrix
@@ -833,34 +830,34 @@ contains
     if(.not. associated(qV)) return
 
     if(i > qV%i_upper) then
-      LOG_FATAL("logic error, i ("//to_string(i)//") above upper bound ("//to_string(qV%i_upper)//")")
-      error stop
+       LOG_FATAL("logic error, i ("//to_string(i)//") above upper bound ("//to_string(qV%i_upper)//")")
+       error stop
     endif
 
     if(i < qV%i_lower) then
-      LOG_FATAL("logic error, i ("//to_string(i)//") below lower bound ("//to_string(qV%i_lower)//")")
-      error stop
+       LOG_FATAL("logic error, i ("//to_string(i)//") below lower bound ("//to_string(qV%i_lower)//")")
+       error stop
     endif
 
     if(qV%i_upper-qV%i_lower+1 == SPAMM_BLOCK_SIZE) then
-      if(allocated(qV%vect)) then
-        Vi = qV%vect(i-qV%i_lower+1)
-        LOG_DEBUG("found matrix element: Vi = "//to_string(Vi))
-      endif
+       if(allocated(qV%vect)) then
+          Vi = qV%vect(i-qV%i_lower+1)
+          LOG_DEBUG("found matrix element: Vi = "//to_string(Vi))
+       endif
     else
-      if(associated(qV%sect1)) then
-        if(i >= qV%sect1%i_lower .and. i <= qV%sect1%i_upper) then
-          Vi = spamm_get_bitree(qV%sect1, i)
-          return
-        endif
-      endif
+       if(associated(qV%sect1)) then
+          if(i >= qV%sect1%i_lower .and. i <= qV%sect1%i_upper) then
+             Vi = spamm_get_bitree(qV%sect1, i)
+             return
+          endif
+       endif
 
-      if(associated(qV%sect2)) then
-        if(i >= qV%sect2%i_lower .and. i <= qV%sect2%i_upper) then
-          Vi = spamm_get_bitree(qV%sect2, i)
-          return
-        endif
-      endif
+       if(associated(qV%sect2)) then
+          if(i >= qV%sect2%i_lower .and. i <= qV%sect2%i_upper) then
+             Vi = spamm_get_bitree(qV%sect2, i)
+             return
+          endif
+       endif
     endif
 
   end function spamm_get_bitree
@@ -879,9 +876,9 @@ contains
     integer, intent(in) :: i, j
 
     if(associated(A)) then
-      Aij = spamm_get_qutree(A%root, i, j)
+       Aij = spamm_get_qutree(A%root, i, j)
     else
-      Aij = 0
+       Aij = 0
     endif
 
   end function spamm_get_matrix_2nd_order
@@ -904,57 +901,57 @@ contains
     if(.not. associated(qA)) return
 
     if(i > qA%i_upper) then
-      LOG_FATAL("logic error, i ("//to_string(i)//") above upper bound ("//to_string(qA%i_upper)//")")
-      error stop
+       LOG_FATAL("logic error, i ("//to_string(i)//") above upper bound ("//to_string(qA%i_upper)//")")
+       error stop
     endif
 
     if(j > qA%j_upper) then
-      LOG_FATAL("logic error, j ("//to_string(j)//") above upper bound ("//to_string(qA%j_upper)//")")
-      error stop
+       LOG_FATAL("logic error, j ("//to_string(j)//") above upper bound ("//to_string(qA%j_upper)//")")
+       error stop
     endif
 
     if(i < qA%i_lower) then
-      LOG_FATAL("logic error, i ("//to_string(i)//") below lower bound ("//to_string(qA%i_lower)//")")
-      error stop
+       LOG_FATAL("logic error, i ("//to_string(i)//") below lower bound ("//to_string(qA%i_lower)//")")
+       error stop
     endif
 
     if(j < qA%j_lower) then
-      LOG_FATAL("logic error, j ("//to_string(j)//") below lower bound ("//to_string(qA%j_lower)//")")
-      error stop
+       LOG_FATAL("logic error, j ("//to_string(j)//") below lower bound ("//to_string(qA%j_lower)//")")
+       error stop
     endif
 
     if(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE .and. qA%j_upper-qA%j_lower+1 == SPAMM_BLOCK_SIZE) then
-      if(allocated(qA%blok)) then
-        Aij = qA%blok(i-qA%i_lower+1, j-qA%j_lower+1)
-      endif
+       if(allocated(qA%blok)) then
+          Aij = qA%blok(i-qA%i_lower+1, j-qA%j_lower+1)
+       endif
     else
-      if(associated(qA%quad11)) then
-        if(i >= qA%quad11%i_lower .and. i <= qA%quad11%i_upper .and. j >= qA%quad11%j_lower .and. j <= qA%quad11%j_upper) then
-          Aij = spamm_get_qutree(qA%quad11, i, j)
-          return
-        endif
-      endif
+       if(associated(qA%quad11)) then
+          if(i >= qA%quad11%i_lower .and. i <= qA%quad11%i_upper .and. j >= qA%quad11%j_lower .and. j <= qA%quad11%j_upper) then
+             Aij = spamm_get_qutree(qA%quad11, i, j)
+             return
+          endif
+       endif
 
-      if(associated(qA%quad12)) then
-        if(i >= qA%quad12%i_lower .and. i <= qA%quad12%i_upper .and. j >= qA%quad12%j_lower .and. j <= qA%quad12%j_upper) then
-          Aij = spamm_get_qutree(qA%quad12, i, j)
-          return
-        endif
-      endif
+       if(associated(qA%quad12)) then
+          if(i >= qA%quad12%i_lower .and. i <= qA%quad12%i_upper .and. j >= qA%quad12%j_lower .and. j <= qA%quad12%j_upper) then
+             Aij = spamm_get_qutree(qA%quad12, i, j)
+             return
+          endif
+       endif
 
-      if(associated(qA%quad21)) then
-        if(i >= qA%quad21%i_lower .and. i <= qA%quad21%i_upper .and. j >= qA%quad21%j_lower .and. j <= qA%quad21%j_upper) then
-          Aij = spamm_get_qutree(qA%quad21, i, j)
-          return
-        endif
-      endif
+       if(associated(qA%quad21)) then
+          if(i >= qA%quad21%i_lower .and. i <= qA%quad21%i_upper .and. j >= qA%quad21%j_lower .and. j <= qA%quad21%j_upper) then
+             Aij = spamm_get_qutree(qA%quad21, i, j)
+             return
+          endif
+       endif
 
-      if(associated(qA%quad22)) then
-        if(i >= qA%quad22%i_lower .and. i <= qA%quad22%i_upper .and. j >= qA%quad22%j_lower .and. j <= qA%quad22%j_upper) then
-          Aij = spamm_get_qutree(qA%quad22, i, j)
-          return
-        endif
-      endif
+       if(associated(qA%quad22)) then
+          if(i >= qA%quad22%i_lower .and. i <= qA%quad22%i_upper .and. j >= qA%quad22%j_lower .and. j <= qA%quad22%j_upper) then
+             Aij = spamm_get_qutree(qA%quad22, i, j)
+             return
+          endif
+       endif
     endif
 
   end function spamm_get_qutree
@@ -974,16 +971,16 @@ contains
     LOG_DEBUG("setting matrix element A("//to_string(i)//","//to_string(j)//")")
 
     if(.not. associated(A)) then
-      LOG_FATAL("A is not associated")
-      error stop
+       LOG_FATAL("A is not associated")
+       error stop
     endif
 
     if(.not. associated(A%root)) then
-      allocate(A%root)
-      A%root%i_lower = 1
-      A%root%i_upper = A%N_padded
-      A%root%j_lower = 1
-      A%root%j_upper = A%N_padded
+       allocate(A%root)
+       A%root%i_lower = 1
+       A%root%i_upper = A%N_padded
+       A%root%j_lower = 1
+       A%root%j_upper = A%N_padded
     endif
 
     call spamm_set_qutree(A%root, i, j, Aij)
@@ -1011,96 +1008,96 @@ contains
     LOG_DEBUG("  "//to_string(qA))
 
     if(i > qA%i_upper .or. j > qA%j_upper) then
-      LOG_FATAL("logic error, i or j above upper bound")
-      LOG_FATAL("i = "//to_string(i)//", j = "//to_string(j))
-      LOG_FATAL("i_upper = "//to_string(qA%i_upper)//", j_upper = "//to_string(qA%j_upper))
-      error stop
+       LOG_FATAL("logic error, i or j above upper bound")
+       LOG_FATAL("i = "//to_string(i)//", j = "//to_string(j))
+       LOG_FATAL("i_upper = "//to_string(qA%i_upper)//", j_upper = "//to_string(qA%j_upper))
+       error stop
     endif
 
     if(i < qA%i_lower .or. j < qA%j_lower) then
-      LOG_FATAL("logic error, i or j below lower bound")
-      LOG_FATAL("i = "//to_string(i)//", j = "//to_string(j))
-      LOG_FATAL("i_lower = "//to_string(qA%i_lower)//", j_lower = "//to_string(qA%j_lower))
-      error stop
+       LOG_FATAL("logic error, i or j below lower bound")
+       LOG_FATAL("i = "//to_string(i)//", j = "//to_string(j))
+       LOG_FATAL("i_lower = "//to_string(qA%i_lower)//", j_lower = "//to_string(qA%j_lower))
+       error stop
     endif
 
     if(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE .and. qA%j_upper-qA%j_lower+1 == SPAMM_BLOCK_SIZE) then
-      if(.not. allocated(qA%blok)) then
-        LOG_DEBUG("allocating new blok")
-        allocate(qA%blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
-        qA%blok = 0
-      endif
-      LOG_DEBUG("setting blok("//to_string(i-qA%i_lower+1)//","//to_string(j-qA%j_lower+1)//")")
-      qA%blok(i-qA%i_lower+1, j-qA%j_lower+1) = Aij
-      qA%norm = sqrt(sum(qA%blok**2))
+       if(.not. allocated(qA%blok)) then
+          LOG_DEBUG("allocating new blok")
+          allocate(qA%blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+          qA%blok = 0
+       endif
+       LOG_DEBUG("setting blok("//to_string(i-qA%i_lower+1)//","//to_string(j-qA%j_lower+1)//")")
+       qA%blok(i-qA%i_lower+1, j-qA%j_lower+1) = Aij
+       qA%norm = sqrt(sum(qA%blok**2))
     else
-      half = (qA%i_upper-qA%i_lower+1)/2-1
+       half = (qA%i_upper-qA%i_lower+1)/2-1
 
-      if(i <= qA%i_lower+half .and. j <= qA%j_lower+half) then
-        if(.not. associated(qA%quad11)) then
-          LOG_DEBUG("allocating quad11")
-          allocate(qA%quad11)
-          qA%quad11%i_lower = qA%i_lower
-          qA%quad11%i_upper = qA%i_lower+half
-          qA%quad11%j_lower = qA%j_lower
-          qA%quad11%j_upper = qA%j_lower+half
-        endif
-        LOG_DEBUG("going down quad11")
-        call spamm_set_qutree(qA%quad11, i, j, Aij)
-      else if(i <= qA%i_lower+half .and. j >= qA%j_lower+half+1) then
-        if(.not. associated(qA%quad12)) then
-          LOG_DEBUG("allocating quad12")
-          allocate(qA%quad12)
-          qA%quad12%i_lower = qA%i_lower
-          qA%quad12%i_upper = qA%i_lower+half
-          qA%quad12%j_lower = qA%j_lower+half+1
-          qA%quad12%j_upper = qA%j_upper
-        endif
-        LOG_DEBUG("going down quad12")
-        call spamm_set_qutree(qA%quad12, i, j, Aij)
-      else if(i >= qA%i_lower+half+1 .and. j <= qA%j_lower+half) then
-        if(.not. associated(qA%quad21)) then
-          LOG_DEBUG("allocating quad21")
-          allocate(qA%quad21)
-          qA%quad21%i_lower = qA%i_lower+half+1
-          qA%quad21%i_upper = qA%i_upper
-          qA%quad21%j_lower = qA%j_lower
-          qA%quad21%j_upper = qA%j_lower+half
-        endif
-        LOG_DEBUG("going down quad21")
-        call spamm_set_qutree(qA%quad21, i, j, Aij)
-      else if(i >= qA%i_lower+half+1 .and. j >= qA%j_lower+half+1) then
-        if(.not. associated(qA%quad22)) then
-          LOG_DEBUG("allocating quad22")
-          allocate(qA%quad22)
-          qA%quad22%i_lower = qA%i_lower+half+1
-          qA%quad22%i_upper = qA%i_upper
-          qA%quad22%j_lower = qA%j_lower+half+1
-          qA%quad22%j_upper = qA%j_upper
-        endif
-        LOG_DEBUG("going down quad22")
-        call spamm_set_qutree(qA%quad22, i, j, Aij)
-      endif
+       if(i <= qA%i_lower+half .and. j <= qA%j_lower+half) then
+          if(.not. associated(qA%quad11)) then
+             LOG_DEBUG("allocating quad11")
+             allocate(qA%quad11)
+             qA%quad11%i_lower = qA%i_lower
+             qA%quad11%i_upper = qA%i_lower+half
+             qA%quad11%j_lower = qA%j_lower
+             qA%quad11%j_upper = qA%j_lower+half
+          endif
+          LOG_DEBUG("going down quad11")
+          call spamm_set_qutree(qA%quad11, i, j, Aij)
+       else if(i <= qA%i_lower+half .and. j >= qA%j_lower+half+1) then
+          if(.not. associated(qA%quad12)) then
+             LOG_DEBUG("allocating quad12")
+             allocate(qA%quad12)
+             qA%quad12%i_lower = qA%i_lower
+             qA%quad12%i_upper = qA%i_lower+half
+             qA%quad12%j_lower = qA%j_lower+half+1
+             qA%quad12%j_upper = qA%j_upper
+          endif
+          LOG_DEBUG("going down quad12")
+          call spamm_set_qutree(qA%quad12, i, j, Aij)
+       else if(i >= qA%i_lower+half+1 .and. j <= qA%j_lower+half) then
+          if(.not. associated(qA%quad21)) then
+             LOG_DEBUG("allocating quad21")
+             allocate(qA%quad21)
+             qA%quad21%i_lower = qA%i_lower+half+1
+             qA%quad21%i_upper = qA%i_upper
+             qA%quad21%j_lower = qA%j_lower
+             qA%quad21%j_upper = qA%j_lower+half
+          endif
+          LOG_DEBUG("going down quad21")
+          call spamm_set_qutree(qA%quad21, i, j, Aij)
+       else if(i >= qA%i_lower+half+1 .and. j >= qA%j_lower+half+1) then
+          if(.not. associated(qA%quad22)) then
+             LOG_DEBUG("allocating quad22")
+             allocate(qA%quad22)
+             qA%quad22%i_lower = qA%i_lower+half+1
+             qA%quad22%i_upper = qA%i_upper
+             qA%quad22%j_lower = qA%j_lower+half+1
+             qA%quad22%j_upper = qA%j_upper
+          endif
+          LOG_DEBUG("going down quad22")
+          call spamm_set_qutree(qA%quad22, i, j, Aij)
+       endif
 
-      qA%norm = 0
+       qA%norm = 0
 
-      if(associated(qA%quad11)) then
-        qA%norm = qA%norm + qA%quad11%norm**2
-      endif
+       if(associated(qA%quad11)) then
+          qA%norm = qA%norm + qA%quad11%norm**2
+       endif
 
-      if(associated(qA%quad12)) then
-        qA%norm = qA%norm + qA%quad12%norm**2
-      endif
+       if(associated(qA%quad12)) then
+          qA%norm = qA%norm + qA%quad12%norm**2
+       endif
 
-      if(associated(qA%quad21)) then
-        qA%norm = qA%norm + qA%quad21%norm**2
-      endif
+       if(associated(qA%quad21)) then
+          qA%norm = qA%norm + qA%quad21%norm**2
+       endif
 
-      if(associated(qA%quad22)) then
-        qA%norm = qA%norm + qA%quad22%norm**2
-      endif
+       if(associated(qA%quad22)) then
+          qA%norm = qA%norm + qA%quad22%norm**2
+       endif
 
-      qA%norm = sqrt(qA%norm)
+       qA%norm = sqrt(qA%norm)
     endif
 
     LOG_DEBUG("going back up")
@@ -1127,9 +1124,9 @@ contains
     ! presumably faster than some logarithm calculation since it only involves
     ! an increment and a bit shift.
     do while(V%N_padded < N)
-      LOG_DEBUG("depth = "//to_string(V%depth)//", N_padded = "//to_string(V%N_padded))
-      V%depth = V%depth+1
-      V%N_padded = 2*V%N_padded
+       LOG_DEBUG("depth = "//to_string(V%depth)//", N_padded = "//to_string(V%N_padded))
+       V%depth = V%depth+1
+       V%N_padded = 2*V%N_padded
     enddo
 
     LOG_INFO("allocated "//to_string(N)//" vector")
@@ -1161,9 +1158,9 @@ contains
     ! presumably faster than some logarithm calculation since it only involves
     ! an increment and a bit shift.
     do while(A%N_padded < max(M, N))
-      LOG_DEBUG("depth = "//to_string(A%depth)//", N_padded = "//to_string(A%N_padded))
-      A%depth = A%depth+1
-      A%N_padded = 2*A%N_padded
+       LOG_DEBUG("depth = "//to_string(A%depth)//", N_padded = "//to_string(A%N_padded))
+       A%depth = A%depth+1
+       A%N_padded = 2*A%N_padded
     enddo
 
     LOG_DEBUG("allocated "//to_string(M)//"x"//to_string(N)//" matrix")
@@ -1186,19 +1183,19 @@ contains
     qA%number_nonzeros = 0
 
     if(associated(qA%quad11)) then
-      call spamm_reset_counters_qutree(qA%quad11)
+       call spamm_reset_counters_qutree(qA%quad11)
     endif
 
     if(associated(qA%quad12)) then
-      call spamm_reset_counters_qutree(qA%quad12)
+       call spamm_reset_counters_qutree(qA%quad12)
     endif
 
     if(associated(qA%quad21)) then
-      call spamm_reset_counters_qutree(qA%quad21)
+       call spamm_reset_counters_qutree(qA%quad21)
     endif
 
     if(associated(qA%quad22)) then
-      call spamm_reset_counters_qutree(qA%quad22)
+       call spamm_reset_counters_qutree(qA%quad22)
     endif
 
   end subroutine spamm_reset_counters_qutree
@@ -1231,11 +1228,11 @@ contains
     integer :: i, j
 
     number_nonzeros = sum(reshape( &
-      [ ((1, i = 1, size(A, 1)), j = 1, size(A, 2)) ], &
-      [ size(A, 1), size(A, 2) ]), &
-      reshape( &
-      [ ((A(i, j) /= 0.0, i = 1, size(A, 1)), j = 1, size(A, 2)) ], &
-      [ size(A, 1), size(A, 2) ]))
+         [ ((1, i = 1, size(A, 1)), j = 1, size(A, 2)) ], &
+         [ size(A, 1), size(A, 2) ]), &
+         reshape( &
+         [ ((A(i, j) /= 0.0, i = 1, size(A, 1)), j = 1, size(A, 2)) ], &
+         [ size(A, 1), size(A, 2) ]))
 
   end function count_nonzero_order_2
 
@@ -1252,8 +1249,8 @@ contains
     integer :: i
 
     number_nonzeros = sum(reshape( &
-      [ (1, i = 1, size(A, 1)) ], [ size(A, 1) ]), &
-      reshape((/ (A(i) /= 0.0, i = 1, size(A, 1)) /), (/ size(A, 1) /)))
+         [ (1, i = 1, size(A, 1)) ], [ size(A, 1) ]), &
+         reshape((/ (A(i) /= 0.0, i = 1, size(A, 1)) /), (/ size(A, 1) /)))
 
   end function count_nonzero_order_1
 
@@ -1270,24 +1267,24 @@ contains
     absmax = 0
 
     if(.not. associated(A)) then
-      return
+       return
     endif
 
     if(A%i_upper-A%i_lower+1 == SPAMM_BLOCK_SIZE) then
-      absmax = maxval(abs(A%blok))
+       absmax = maxval(abs(A%blok))
     else
-      if(associated(A%quad11)) then
-        absmax = max(absmax, absmax_qutree(A%quad11))
-      endif
-      if(associated(A%quad12)) then
-        absmax = max(absmax, absmax_qutree(A%quad12))
-      endif
-      if(associated(A%quad21)) then
-        absmax = max(absmax, absmax_qutree(A%quad21))
-      endif
-      if(associated(A%quad22)) then
-        absmax = max(absmax, absmax_qutree(A%quad22))
-      endif
+       if(associated(A%quad11)) then
+          absmax = max(absmax, absmax_qutree(A%quad11))
+       endif
+       if(associated(A%quad12)) then
+          absmax = max(absmax, absmax_qutree(A%quad12))
+       endif
+       if(associated(A%quad21)) then
+          absmax = max(absmax, absmax_qutree(A%quad21))
+       endif
+       if(associated(A%quad22)) then
+          absmax = max(absmax, absmax_qutree(A%quad22))
+       endif
     endif
 
   end function absmax_qutree
@@ -1305,7 +1302,7 @@ contains
     absmax = 0
 
     if(.not. associated(A)) then
-      return
+       return
     endif
 
     absmax = absmax_qutree(A%root)
