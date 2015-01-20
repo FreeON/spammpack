@@ -79,8 +79,10 @@ module spamm_types_1d
 
    contains
 
+#ifdef HAVE_FINALIZE
      !> The destructor.
      final :: delete_matrix_1d
+#endif
 
      !> Copy a vector.
      procedure :: copy_matrix_1d_to_matrix_1d
@@ -97,6 +99,11 @@ module spamm_types_1d
   interface spamm_matrix_1d
      module procedure new_matrix_1d
   end interface spamm_matrix_1d
+
+  !> The destrcutor Interface.
+  interface delete
+     module procedure delete_matrix_1d
+  end interface delete
 
 contains
 
