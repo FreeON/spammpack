@@ -171,6 +171,16 @@ if( COMPILE_RESULT_3 )
   set( LOG_FILENAMES TRUE )
 endif()
 
+try_compile( COMPILE_TEST_4
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/cmake-tests/finalize.F90
+  )
+if( COMPILE_TEST_4 )
+  set( HAVE_FINALIZE TRUE )
+else()
+  message( STATUS "The Fortran compiler does not support final type bound procedures" )
+endif()
+
 include( FindDoxygen )
 if( DOXYGEN_FOUND )
   if( DOXYGEN_DOT_FOUND )
@@ -235,6 +245,10 @@ endif()
 
 if( LOG_FILENAMES )
   list( APPEND SPAMM_EXTRA_DEFINES LOG_FILENAMES )
+endif()
+
+if( HAVE_FINALIZE )
+  list( APPEND SPAMM_EXTRA_DEFINES HAVE_FINALIZE )
 endif()
 
 set( VALGRIND_TESTS FALSE
