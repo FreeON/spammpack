@@ -48,6 +48,17 @@ module spamm_types_1d
 
   end type spamm_node_1d
 
+  !> A bounding box.
+  type :: bounding_box_1d
+
+     !> The center.
+     integer :: center
+
+     !> The width.
+     integer :: width
+
+  end type bounding_box_1d
+
   !> The SpAMM vector type.
   type :: spamm_matrix_1d
 
@@ -68,8 +79,8 @@ module spamm_types_1d
      !> The number of non-zero elements.
      real(kind(0d0)) :: number_nonzeros = -1
 
-     !> The row bounding box.
-     integer :: row_bounding_box(2) = [ -1, -1 ]
+     !> The axis-aligned bounding box.
+     type(bounding_box_1d) :: bounding_box
 
      !> The pointers to the bisecting subtrees.
      type(spamm_node_1d) :: child(2)
@@ -105,12 +116,27 @@ module spamm_types_1d
      module procedure delete_matrix_1d
   end interface delete
 
+  !> The constructor.
+  interface bounding_box_1d
+     module procedure new_bounding_box_1d
+  end interface bounding_box_1d
+
 contains
+
+  !> The constructor.
+  type(bounding_box_1d) function new_bounding_box_1d (center, width) result(box)
+
+    integer, intent(in) :: center, width
+
+    box%center = center
+    box%width = width
+
+  end function new_bounding_box_1d
 
   !> The constructor.
   !!
   !! @param N The matrix dimension.
-  type(spamm_matrix_1d) function new_matrix_1d (N)
+  type(spamm_matrix_1d) function new_matrix_1d (N) result(tree)
 
     use spamm_globals
 
@@ -120,21 +146,21 @@ contains
 
     LOG_DEBUG("constructing new matrix")
 
-    new_matrix_1d%N = N
-    new_matrix_1d%norm = 0
-    new_matrix_1d%number_nonzeros = 0
+    tree%N = N
+    tree%norm = 0
+    tree%number_nonzeros = 0
 
     i = 0
     do while(.true.)
-       new_matrix_1d%depth = i
-       new_matrix_1d%N_padded = SPAMM_BLOCK_SIZE*2**i
-       if(new_matrix_1d%N_padded > N) then
+       tree%depth = i
+       tree%N_padded = SPAMM_BLOCK_SIZE*2**i
+       if(tree%N_padded > N) then
           exit
        endif
        i = i+1
     enddo
 
-    new_matrix_1d%row_bounding_box = [ 1, new_matrix_1d%N_padded ]
+    tree%bounding_box = bounding_box_1d(tree%N_padded/2, tree%N_padded/2)
 
   end function new_matrix_1d
 
@@ -171,7 +197,7 @@ contains
     A%depth = B%depth
     A%norm = B%norm
     A%number_nonzeros = B%number_nonzeros
-    A%row_bounding_box = B%row_bounding_box
+    A%bounding_box = B%bounding_box
 
     if(allocated(B%data)) then
        LOG_DEBUG("copying matrix data")
@@ -213,10 +239,10 @@ contains
     write(temp, "(ES20.10)") A%number_nonzeros
     write(to_string, "(A)") trim(to_string)//", nnonz = "//trim(adjustl(temp))
 
-    write(temp, *) A%row_bounding_box(1)
+    write(temp, *) A%bounding_box%center-A%bounding_box%width+1
     write(to_string, "(A)") trim(to_string)//", bbox = [ "//trim(adjustl(temp))
 
-    write(temp, *) A%row_bounding_box(2)
+    write(temp, *) A%bounding_box%center+A%bounding_box%width-1
     write(to_string, "(A)") trim(to_string)//", "//trim(adjustl(temp))//" ]"
 
     if(allocated(A%data)) then
