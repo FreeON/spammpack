@@ -193,7 +193,7 @@ try_compile( COMPILE_TEST_5
 if( COMPILE_TEST_5 )
   set( HAVE_CONSTRUCTOR TRUE )
 else()
-  message( STATUS "The Fortran compiler does not support type bound initializers" )
+  message( STATUS "The Fortran compiler does not support derived type constructors" )
 endif()
 
 include( FindDoxygen )

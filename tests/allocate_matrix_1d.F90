@@ -8,11 +8,15 @@ contains
     type(spamm_matrix_1d), intent(in) :: A
     type(spamm_matrix_1d), intent(out) :: B
 
+    write(*, "(A)") "entering test()"
+
 #ifdef HAVE_CONSTRUCTOR
     B = spamm_matrix_1d(A%N)
 #else
     B = new_matrix_1d(A%N)
 #endif
+
+    write(*, "(A)") "leaving test()"
 
   end subroutine test
 
@@ -25,7 +29,14 @@ program allocate_matrix_1d
 
   implicit none
 
+  integer, parameter :: N = 10
   type(spamm_matrix_1d) :: A, B
+
+#ifdef HAVE_CONSTRUCTOR
+  A = spamm_matrix_1d(N)
+#else
+  A = new_matrix_1d(N)
+#endif
 
   write(*, "(A)") "calling test()"
   call test(A, B)

@@ -57,6 +57,14 @@ module spamm_types_1d
      !> The width.
      integer :: width
 
+   contains
+
+     !> Get the left edge.
+     procedure :: left_edge
+
+     !> Get the right edge.
+     procedure :: right_edge
+
   end type bounding_box_1d
 
   !> The SpAMM vector type.
@@ -132,10 +140,32 @@ contains
 
     integer, intent(in) :: center, width
 
+    LOG_DEBUG("constructing new bounding box")
+
     box%center = center
     box%width = width
 
   end function new_bounding_box_1d
+
+  !> Get the left edge.
+  !!
+  !! @return The left edge of the bounding box.
+  integer function left_edge (self)
+
+    class(bounding_box_1d), intent(in) :: self
+    left_edge = self%center-self%width+1
+
+  end function left_edge
+
+  !> Get the right edge.
+  !!
+  !! @return The right edge of the bounding box.
+  integer function right_edge (self)
+
+    class(bounding_box_1d), intent(in) :: self
+    right_edge = self%center+self%width
+
+  end function right_edge
 
   !> The constructor.
   !!
@@ -164,7 +194,11 @@ contains
        i = i+1
     enddo
 
+#ifdef HAVE_CONSTRUCTOR
     tree%bounding_box = bounding_box_1d(tree%N_padded/2, tree%N_padded/2)
+#else
+    tree%bounding_box = new_bounding_box_1d(tree%N_padded/2, tree%N_padded/2)
+#endif
 
   end function new_matrix_1d
 
@@ -203,6 +237,8 @@ contains
     A%number_nonzeros = B%number_nonzeros
     A%bounding_box = B%bounding_box
 
+    LOG_DEBUG("here...")
+
     if(allocated(B%data)) then
        LOG_DEBUG("copying matrix data")
        A%data = B%data
@@ -214,6 +250,8 @@ contains
           endif
        enddo
     endif
+
+    LOG_DEBUG("done copying")
 
   end subroutine copy_matrix_1d_to_matrix_1d
 
@@ -237,16 +275,16 @@ contains
     write(temp, *) A%depth
     write(to_string, "(A)") trim(to_string)//", depth = "//trim(adjustl(temp))
 
-    write(temp, "(ES20.10)") A%norm
+    write(temp, "(ES15.5)") A%norm
     write(to_string, "(A)") trim(to_string)//", norm = "//trim(adjustl(temp))
 
-    write(temp, "(ES20.10)") A%number_nonzeros
+    write(temp, "(ES15.5)") A%number_nonzeros
     write(to_string, "(A)") trim(to_string)//", nnonz = "//trim(adjustl(temp))
 
-    write(temp, *) A%bounding_box%center-A%bounding_box%width+1
+    write(temp, *) A%bounding_box%left_edge()
     write(to_string, "(A)") trim(to_string)//", bbox = [ "//trim(adjustl(temp))
 
-    write(temp, *) A%bounding_box%center+A%bounding_box%width-1
+    write(temp, *) A%bounding_box%right_edge()
     write(to_string, "(A)") trim(to_string)//", "//trim(adjustl(temp))//" ]"
 
     if(allocated(A%data)) then
