@@ -44,7 +44,7 @@ module spamm_types_1d
   type :: spamm_node_1d
 
      !> The actual tree node.
-     type(spamm_matrix_1d), pointer :: node => null()
+     type(spamm_tree_1d), pointer :: node => null()
 
   end type spamm_node_1d
 
@@ -68,7 +68,7 @@ module spamm_types_1d
   end type bounding_box_1d
 
   !> The SpAMM vector type.
-  type :: spamm_matrix_1d
+  type :: spamm_tree_1d
 
      !> The number of entries.
      integer :: N = -1
@@ -100,30 +100,30 @@ module spamm_types_1d
 
 #ifdef HAVE_FINALIZE
      !> The destructor.
-     final :: delete_matrix_1d
+     final :: delete_tree_1d
 #endif
 
      !> Copy a vector.
-     procedure :: copy_matrix_1d_to_matrix_1d
+     procedure :: copy_tree_1d_to_tree_1d
 
      !> The assignemnt operator.
-     generic :: assignment(=) => copy_matrix_1d_to_matrix_1d
+     generic :: assignment(=) => copy_tree_1d_to_tree_1d
 
      !> String representation.
      procedure :: to_string
 
-  end type spamm_matrix_1d
+  end type spamm_tree_1d
 
 #ifdef HAVE_CONSTRUCTOR
   !> The constructor interface.
-  interface spamm_matrix_1d
-     module procedure new_matrix_1d
-  end interface spamm_matrix_1d
+  interface spamm_tree_1d
+     module procedure new_tree_1d
+  end interface spamm_tree_1d
 #endif
 
   !> The destrcutor Interface.
   interface delete
-     module procedure delete_matrix_1d
+     module procedure delete_tree_1d
   end interface delete
 
 #ifdef HAVE_CONSTRUCTOR
@@ -170,7 +170,7 @@ contains
   !> The constructor.
   !!
   !! @param N The matrix dimension.
-  type(spamm_matrix_1d) function new_matrix_1d (N) result(tree)
+  type(spamm_tree_1d) function new_tree_1d (N) result(tree)
 
     use spamm_globals
 
@@ -200,20 +200,20 @@ contains
     tree%bounding_box = new_bounding_box_1d(tree%N_padded/2, tree%N_padded/2)
 #endif
 
-  end function new_matrix_1d
+  end function new_tree_1d
 
   !> The destructor.
   !!
   !! @param self The object to deallocate.
-  elemental subroutine delete_matrix_1d (self)
+  elemental subroutine delete_tree_1d (self)
 
-    type(spamm_matrix_1d), intent(inout) :: self
+    type(spamm_tree_1d), intent(inout) :: self
 
     if(allocated(self%data)) then
        deallocate(self%data)
     endif
 
-  end subroutine delete_matrix_1d
+  end subroutine delete_tree_1d
 
   !> Copy a vector to another vector:
   !!
@@ -221,10 +221,10 @@ contains
   !!
   !! @param A The vector A.
   !! @param B The vector B.
-  recursive subroutine copy_matrix_1d_to_matrix_1d (A, B)
+  recursive subroutine copy_tree_1d_to_tree_1d (A, B)
 
-    class(spamm_matrix_1d), intent(out) :: A
-    class(spamm_matrix_1d), intent(in) :: B
+    class(spamm_tree_1d), intent(out) :: A
+    class(spamm_tree_1d), intent(in) :: B
 
     integer :: i
 
@@ -246,14 +246,14 @@ contains
        do i = 1, 2
           if(associated(B%child(i)%node)) then
              LOG_DEBUG("descending")
-             call copy_matrix_1d_to_matrix_1d(A%child(i)%node, B%child(i)%node)
+             call copy_tree_1d_to_tree_1d(A%child(i)%node, B%child(i)%node)
           endif
        enddo
     endif
 
     LOG_DEBUG("done copying")
 
-  end subroutine copy_matrix_1d_to_matrix_1d
+  end subroutine copy_tree_1d_to_tree_1d
 
   !> String representation of matrix.
   !!
@@ -262,7 +262,7 @@ contains
   !! @return The string representation.
   character(len = 1000) function to_string (A)
 
-    class(spamm_matrix_1d), intent(in) :: A
+    class(spamm_tree_1d), intent(in) :: A
 
     character(len = 100) :: temp
 

@@ -49,10 +49,10 @@ contains
   !!
   !! @param A The vector A.
   !! @param B The vector B.
-  !> recursive subroutine copy_matrix_1d_to_matrix_1d (A, B)
+  !> recursive subroutine copy_tree_1d_to_tree_1d (A, B)
 
-  !>   type(spamm_matrix_1d), pointer, intent(in) :: A
-  !>   type(spamm_matrix_1d), pointer, intent(inout) :: B
+  !>   type(spamm_tree_1d), pointer, intent(in) :: A
+  !>   type(spamm_tree_1d), pointer, intent(inout) :: B
 
   !>   if(.not. associated(A)) then
   !>      return
@@ -107,6 +107,6 @@ contains
   !>      ENDIF
   !>   ENDIF
 
-  !> end subroutine copy_matrix_1d_to_matrix_1d
+  !> end subroutine copy_tree_1d_to_tree_1d
 
 end module spamm_management_1d

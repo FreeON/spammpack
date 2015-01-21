@@ -4,12 +4,12 @@ program copy_matrix
 
   implicit none
 
-  type(spamm_matrix_1d) :: A, B
+  type(spamm_tree_1d) :: A, B
 
 #ifdef HAVE_CONSTRUCTOR
-  A = spamm_matrix_1d(10)
+  A = spamm_tree_1d(10)
 #else
-  A = new_matrix_1d(10)
+  A = new_tree_1d(10)
 #endif
   B = A
 
