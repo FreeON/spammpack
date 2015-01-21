@@ -118,6 +118,7 @@ module spamm_types_1d
   !> The constructor interface.
   interface spamm_tree_1d
      module procedure new_tree_1d
+     module procedure new_node_1d
   end interface spamm_tree_1d
 #endif
 
@@ -170,6 +171,8 @@ contains
   !> The constructor.
   !!
   !! @param N The matrix dimension.
+  !!
+  !! @return The tree node.
   type(spamm_tree_1d) function new_tree_1d (N) result(tree)
 
     use spamm_globals
@@ -201,6 +204,35 @@ contains
 #endif
 
   end function new_tree_1d
+
+  !> The constructor.
+  !!
+  !! @param N The matrix dimension.
+  !! @param N_padded The padded matrix dimension.
+  !! @param depth The tree depth.
+  !! @param bounding_box The axis-aligned bounding box.
+  !!
+  !! @return The tree node.
+  type(spamm_tree_1d) function new_node_1d (N, N_padded, depth, bounding_box) result(tree)
+
+    use spamm_globals
+
+    integer, intent(in) :: N, N_padded, depth
+    type(bounding_box_1d), intent(in) :: bounding_box
+
+    integer :: i
+
+    LOG_DEBUG("constructing new matrix")
+
+    tree%N = N
+    tree%depth = depth
+    tree%N_padded = N_padded
+    tree%bounding_box = bounding_box
+
+    tree%norm = 0
+    tree%number_nonzeros = 0
+
+  end function new_node_1d
 
   !> The destructor.
   !!
