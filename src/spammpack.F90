@@ -103,8 +103,8 @@ module spammpack
   use spamm_management
   use spamm_project
   use spamm_real_precision
+  use spamm_tree_1d
   use spamm_types
-  use spamm_types_1d
   use spamm_utilities
 
 contains

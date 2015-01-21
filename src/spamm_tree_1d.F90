@@ -32,7 +32,7 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spamm_types_1d
+module spamm_tree_1d
 
 #include "spamm_utility_macros.h"
 
@@ -46,12 +46,12 @@ module spamm_types_1d
   type :: spamm_node_1d
 
      !> The actual tree node.
-     type(spamm_tree_1d), pointer :: node => null()
+     type(tree_1d), pointer :: node => null()
 
   end type spamm_node_1d
 
   !> The SpAMM vector type.
-  type :: spamm_tree_1d
+  type :: tree_1d
 
      !> The tree node decoration.
      type(decoration_1d) :: decoration
@@ -87,14 +87,14 @@ module spamm_types_1d
      !> String representation.
      procedure :: to_string => tree_1d_to_string
 
-  end type spamm_tree_1d
+  end type tree_1d
 
 #ifdef HAVE_CONSTRUCTOR
   !> The constructor interface.
-  interface spamm_tree_1d
+  interface tree_1d
      module procedure new_tree_1d
      module procedure new_node_1d
-  end interface spamm_tree_1d
+  end interface tree_1d
 #endif
 
   !> The destrcutor Interface.
@@ -109,7 +109,7 @@ contains
   !! @param N The matrix dimension.
   !!
   !! @return The tree node.
-  type(spamm_tree_1d) function new_tree_1d (N) result(tree)
+  type(tree_1d) function new_tree_1d (N) result(tree)
 
     use spamm_globals
 
@@ -150,7 +150,7 @@ contains
   !! @param bounding_box The axis-aligned bounding box.
   !!
   !! @return The tree node.
-  type(spamm_tree_1d) function new_node_1d (decoration, bounding_box) result(tree)
+  type(tree_1d) function new_node_1d (decoration, bounding_box) result(tree)
 
     use spamm_globals
 
@@ -172,7 +172,7 @@ contains
   !! @param self The object to deallocate.
   elemental subroutine delete_tree_1d (self)
 
-    type(spamm_tree_1d), intent(inout) :: self
+    type(tree_1d), intent(inout) :: self
 
     if(allocated(self%data)) then
        deallocate(self%data)
@@ -188,8 +188,8 @@ contains
   !! @param B The vector B.
   recursive subroutine copy_tree_1d_to_tree_1d (A, B)
 
-    class(spamm_tree_1d), intent(out) :: A
-    class(spamm_tree_1d), intent(in) :: B
+    class(tree_1d), intent(out) :: A
+    class(tree_1d), intent(in) :: B
 
     integer :: i
 
@@ -225,7 +225,7 @@ contains
   !! @return The string representation.
   character(len = 1000) function tree_1d_to_string (A) result(string)
 
-    class(spamm_tree_1d), intent(in) :: A
+    class(tree_1d), intent(in) :: A
 
     character(len = 100) :: temp
 
@@ -249,4 +249,4 @@ contains
 
   end function tree_1d_to_string
 
-end module spamm_types_1d
+end module spamm_tree_1d

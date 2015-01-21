@@ -36,26 +36,27 @@ set( spammpack-sources
   spamm_inverse.F90
   spamm_management.F90
   spamm_management_1d.F90
-  spamm_order_1.F90
-  spamm_order_1_double.F90
-  spamm_order_1_single.F90
   spamm_project.F90
+  spamm_tree_1d.F90
   spamm_types.F90
-  spamm_types_1d.F90
   spamm_utilities.F90
   spammpack.F90
   )
 
 set( MODULE_FILES
   spamm_algebra.mod
+  spamm_bounding_box_1d.mod
   spamm_convert.mod
+  spamm_decoration_1d.mod
   spamm_globals.mod
+  spamm_inverse.mod
   spamm_management.mod
   spamm_management_1d.mod
   spamm_project.mod
   spamm_real_precision.mod
+  spamm_tree_1d.mod
   spamm_types.mod
-  spamm_types_1d.mod
+  spamm_utilities.mod
   spammpack.mod
   )
 

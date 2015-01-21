@@ -5,8 +5,8 @@ contains
 
     use spammpack
 
-    type(spamm_tree_1d), intent(in) :: A
-    type(spamm_tree_1d), intent(out) :: B
+    type(tree_1d), intent(in) :: A
+    type(tree_1d), intent(out) :: B
 
     write(*, "(A)") "entering test()"
 
@@ -30,7 +30,7 @@ program allocate_tree_1d
   implicit none
 
   integer, parameter :: N = 10
-  type(spamm_tree_1d) :: A, B
+  type(tree_1d) :: A, B
 
 #ifdef HAVE_CONSTRUCTOR
   A = spamm_tree_1d(N)

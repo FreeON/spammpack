@@ -4,7 +4,7 @@ program copy_matrix
 
   implicit none
 
-  type(spamm_tree_1d) :: A, B
+  type(tree_1d) :: A, B
 
 #ifdef HAVE_CONSTRUCTOR
   A = spamm_tree_1d(10)
