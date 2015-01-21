@@ -11,9 +11,9 @@ contains
     write(*, "(A)") "entering test()"
 
 #ifdef HAVE_CONSTRUCTOR
-    B = spamm_tree_1d(A%N)
+    B = spamm_tree_1d(A%decoration%N)
 #else
-    B = new_tree_1d(A%N)
+    B = new_tree_1d(A%decoration%N)
 #endif
 
     write(*, "(A)") "leaving test()"

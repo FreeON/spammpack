@@ -36,6 +36,8 @@ module spamm_types_1d
 
 #include "spamm_utility_macros.h"
 
+  use spamm_bounding_box_1d
+  use spamm_decoration_1d
   use spamm_real_precision
 
   implicit none
@@ -48,38 +50,11 @@ module spamm_types_1d
 
   end type spamm_node_1d
 
-  !> A bounding box.
-  type :: bounding_box_1d
-
-     !> The center.
-     integer :: center
-
-     !> The width.
-     integer :: width
-
-   contains
-
-     !> Get the left edge.
-     procedure :: left_edge
-
-     !> Get the right edge.
-     procedure :: right_edge
-
-  end type bounding_box_1d
-
   !> The SpAMM vector type.
   type :: spamm_tree_1d
 
-     !> The number of entries.
-     integer :: N = -1
-
-     !> The padded vector dimension.
-     integer :: N_padded = -1
-
-     !> The tree depth. The root tier is 0, tier == depth is the leaf
-     !> node tier, i.e. the tier at which actual matrix elements are
-     !> stored.
-     integer :: depth = -1
+     !> The tree node decoration.
+     type(decoration_1d) :: decoration
 
      !> The Frobenius norm.
      real(SPAMM_KIND) :: norm = -1
@@ -110,7 +85,7 @@ module spamm_types_1d
      generic :: assignment(=) => copy_tree_1d_to_tree_1d
 
      !> String representation.
-     procedure :: to_string
+     procedure :: to_string => tree_1d_to_string
 
   end type spamm_tree_1d
 
@@ -127,46 +102,7 @@ module spamm_types_1d
      module procedure delete_tree_1d
   end interface delete
 
-#ifdef HAVE_CONSTRUCTOR
-  !> The constructor.
-  interface bounding_box_1d
-     module procedure new_bounding_box_1d
-  end interface bounding_box_1d
-#endif
-
 contains
-
-  !> The constructor.
-  type(bounding_box_1d) function new_bounding_box_1d (center, width) result(box)
-
-    integer, intent(in) :: center, width
-
-    LOG_DEBUG("constructing new bounding box")
-
-    box%center = center
-    box%width = width
-
-  end function new_bounding_box_1d
-
-  !> Get the left edge.
-  !!
-  !! @return The left edge of the bounding box.
-  integer function left_edge (self)
-
-    class(bounding_box_1d), intent(in) :: self
-    left_edge = self%center-self%width+1
-
-  end function left_edge
-
-  !> Get the right edge.
-  !!
-  !! @return The right edge of the bounding box.
-  integer function right_edge (self)
-
-    class(bounding_box_1d), intent(in) :: self
-    right_edge = self%center+self%width
-
-  end function right_edge
 
   !> The constructor.
   !!
@@ -179,28 +115,29 @@ contains
 
     integer, intent(in) :: N
 
-    integer :: i
+    integer :: i, N_padded, depth
 
     LOG_DEBUG("constructing new matrix")
 
-    tree%N = N
     tree%norm = 0
     tree%number_nonzeros = 0
 
     i = 0
     do while(.true.)
-       tree%depth = i
-       tree%N_padded = SPAMM_BLOCK_SIZE*2**i
-       if(tree%N_padded > N) then
+       depth = i
+       N_padded = SPAMM_BLOCK_SIZE*2**i
+       if(N_padded > N) then
           exit
        endif
        i = i+1
     enddo
 
+    tree%decoration = decoration_1d(N, N_padded, depth)
+
 #ifdef HAVE_CONSTRUCTOR
-    tree%bounding_box = bounding_box_1d(tree%N_padded/2, tree%N_padded/2)
+    tree%bounding_box = bounding_box_1d(N_padded/2, N_padded/2)
 #else
-    tree%bounding_box = new_bounding_box_1d(tree%N_padded/2, tree%N_padded/2)
+    tree%bounding_box = new_bounding_box_1d(N_padded/2, N_padded/2)
 #endif
 
   end function new_tree_1d
@@ -213,20 +150,16 @@ contains
   !! @param bounding_box The axis-aligned bounding box.
   !!
   !! @return The tree node.
-  type(spamm_tree_1d) function new_node_1d (N, N_padded, depth, bounding_box) result(tree)
+  type(spamm_tree_1d) function new_node_1d (decoration, bounding_box) result(tree)
 
     use spamm_globals
 
-    integer, intent(in) :: N, N_padded, depth
+    type(decoration_1d), intent(in) :: decoration
     type(bounding_box_1d), intent(in) :: bounding_box
-
-    integer :: i
 
     LOG_DEBUG("constructing new matrix")
 
-    tree%N = N
-    tree%depth = depth
-    tree%N_padded = N_padded
+    tree%decoration = decoration
     tree%bounding_box = bounding_box
 
     tree%norm = 0
@@ -262,9 +195,7 @@ contains
 
     LOG_DEBUG("copying vector")
 
-    A%N = B%N
-    A%N_padded = B%N_padded
-    A%depth = B%depth
+    A%decoration = B%decoration
     A%norm = B%norm
     A%number_nonzeros = B%number_nonzeros
     A%bounding_box = B%bounding_box
@@ -292,37 +223,30 @@ contains
   !! @param A The matrix.
   !!
   !! @return The string representation.
-  character(len = 1000) function to_string (A)
+  character(len = 1000) function tree_1d_to_string (A) result(string)
 
     class(spamm_tree_1d), intent(in) :: A
 
     character(len = 100) :: temp
 
-    write(temp, *) A%N
-    write(to_string, "(A)") "N = "//trim(adjustl(temp))
-
-    write(temp, *) A%N_padded
-    write(to_string, "(A)") trim(to_string)//", N_padded = "//trim(adjustl(temp))
-
-    write(temp, *) A%depth
-    write(to_string, "(A)") trim(to_string)//", depth = "//trim(adjustl(temp))
+    write(string, "(A)") "N = "//trim(adjustl(A%decoration%to_string()))
 
     write(temp, "(ES15.5)") A%norm
-    write(to_string, "(A)") trim(to_string)//", norm = "//trim(adjustl(temp))
+    write(string, "(A)") trim(string)//", norm = "//trim(adjustl(temp))
 
     write(temp, "(ES15.5)") A%number_nonzeros
-    write(to_string, "(A)") trim(to_string)//", nnonz = "//trim(adjustl(temp))
+    write(string, "(A)") trim(string)//", nnonz = "//trim(adjustl(temp))
 
     write(temp, *) A%bounding_box%left_edge()
-    write(to_string, "(A)") trim(to_string)//", bbox = [ "//trim(adjustl(temp))
+    write(string, "(A)") trim(string)//", bbox = [ "//trim(adjustl(temp))
 
     write(temp, *) A%bounding_box%right_edge()
-    write(to_string, "(A)") trim(to_string)//", "//trim(adjustl(temp))//" ]"
+    write(string, "(A)") trim(string)//", "//trim(adjustl(temp))//" ]"
 
     if(allocated(A%data)) then
-       write(to_string, "(A)") trim(to_string)//", data is allocated"
+       write(string, "(A)") trim(string)//", data is allocated"
     endif
 
-  end function to_string
+  end function tree_1d_to_string
 
 end module spamm_types_1d
