@@ -6,7 +6,11 @@ program copy_matrix
 
   type(spamm_matrix_1d) :: A, B
 
+#ifdef HAVE_CONSTRUCTOR
   A = spamm_matrix_1d(10)
+#else
+  A = new_matrix_1d(10)
+#endif
   B = A
 
   write(*, "(A)") "A: "//trim(A%to_string())

@@ -8,7 +8,11 @@ contains
     type(spamm_matrix_1d), intent(in) :: A
     type(spamm_matrix_1d), intent(out) :: B
 
+#ifdef HAVE_CONSTRUCTOR
     B = spamm_matrix_1d(A%N)
+#else
+    B = new_matrix_1d(A%N)
+#endif
 
   end subroutine test
 
