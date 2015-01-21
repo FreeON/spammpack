@@ -1,8 +1,6 @@
 #!/bin/bash
 
-git clean -df
-
-mkdir build
+mkdir -p build
 cd build
 
 cmake .. \
