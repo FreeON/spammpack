@@ -106,20 +106,24 @@ module spamm_types_1d
 
   end type spamm_matrix_1d
 
+#ifdef HAVE_CONSTRUCTOR
   !> The constructor interface.
   interface spamm_matrix_1d
      module procedure new_matrix_1d
   end interface spamm_matrix_1d
+#endif
 
   !> The destrcutor Interface.
   interface delete
      module procedure delete_matrix_1d
   end interface delete
 
+#ifdef HAVE_CONSTRUCTOR
   !> The constructor.
   interface bounding_box_1d
      module procedure new_bounding_box_1d
   end interface bounding_box_1d
+#endif
 
 contains
 

@@ -185,6 +185,17 @@ else()
   message( STATUS "The Fortran compiler does not support final type bound procedures" )
 endif()
 
+try_compile( COMPILE_TEST_5
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/cmake-tests/constructor.F90
+  OUTPUT_VARIABLE COMPILE_OUTPUT_5
+  )
+if( COMPILE_TEST_5 )
+  set( HAVE_CONSTRUCTOR TRUE )
+else()
+  message( STATUS "The Fortran compiler does not support type bound initializers" )
+endif()
+
 include( FindDoxygen )
 if( DOXYGEN_FOUND )
   if( DOXYGEN_DOT_FOUND )
@@ -253,6 +264,10 @@ endif()
 
 if( HAVE_FINALIZE )
   list( APPEND SPAMM_EXTRA_DEFINES HAVE_FINALIZE )
+endif()
+
+if( HAVE_FINALIZE )
+  list( APPEND SPAMM_EXTRA_DEFINES HAVE_CONSTRUCTOR )
 endif()
 
 set( VALGRIND_TESTS FALSE
