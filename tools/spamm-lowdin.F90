@@ -19,20 +19,31 @@ program spamm_lowdin
   ! COND(5)
   real(kind(0d0)), parameter :: tolerance = 1d-8
 
-  type(spamm_matrix_order_2), pointer :: S => null(), X => null(), &
-    Y => null(), Z => null(), Z2 => null(), Id => null()
+  type(spamm_matrix_order_2), pointer :: S => null()
+  type(spamm_matrix_order_2), pointer :: X => null()
+  type(spamm_matrix_order_2), pointer :: Y => null()
+  type(spamm_matrix_order_2), pointer :: Z => null()
+  type(spamm_matrix_order_2), pointer :: Z2 => null()
+  type(spamm_matrix_order_2), pointer :: Id => null()
+
   real(kind(0d0)), allocatable :: S_dense(:, :)
   character(len = 1000) :: matrix_filename
   real :: start_time, end_time
   integer :: i
   real(kind(0d0)) :: max_diff
+  logical :: input_file_exists
 
 #ifdef LAPACK_FOUND
   integer :: N
   integer :: LWORK
   integer :: LIWORK
 
-  real(kind(0d0)), allocatable :: eval(:), SHalf(:,:),SHlfI(:,:),evec(:, :), work(:)
+  real(kind(0d0)), allocatable :: eval(:)
+  real(kind(0d0)), allocatable :: SHalf(:,:)
+  real(kind(0d0)), allocatable :: SHlfI(:,:)
+  real(kind(0d0)), allocatable :: evec(:, :)
+  real(kind(0d0)), allocatable :: work(:)
+
   integer, allocatable :: iwork(:)
   integer :: info
 #endif
@@ -45,6 +56,12 @@ program spamm_lowdin
     error stop
   else
     call get_command_argument(1, matrix_filename)
+  endif
+
+  inquire(file=matrix_filename, exist=input_file_exists)
+  if(.not. input_file_exists) then
+     write(*, "(A)") "Input matrix file does not exist"
+     error stop
   endif
 
   call read_MM(matrix_filename, S_dense)
