@@ -99,21 +99,21 @@ program spamm_lowdin
   allocate(SHalf(N, N))
   allocate(SHlfI(N, N))
 
-  WRITE(*,*)' MINMAX =',Eval(1),Eval(N)
+  write(*,*)' MINMAX =',Eval(1),Eval(N)
 
-  evec=S_dense
+  evec = S_dense
 
-  do i=1,N
-     S_dense(:,I)=S_dense(:,i)*sqrt(eval(i))
+  do i = 1, N
+     S_dense(:,I) = S_dense(:,i)*sqrt(eval(i))
   enddo
 
-  SHalf=matmul(evec,transpose(S_dense))
+  SHalf = matmul(evec,transpose(S_dense))
 
-  do i=1,N
-     S_dense(:,I)=S_dense(:,i)/eval(i)
+  do i = 1, N
+     S_dense(:,I) = S_dense(:,i)/eval(i)
   enddo
 
-  SHlfI=matmul(evec,transpose(S_dense))
+  SHlfI = matmul(evec,transpose(S_dense))
 
   deallocate(evec)
   deallocate(eval)
@@ -121,7 +121,6 @@ program spamm_lowdin
 
   Y  => spamm_convert_dense_to_matrix_2nd_order(SHalf)
   Z2 => spamm_convert_dense_to_matrix_2nd_order(SHlfI)
-
 #endif
 
   write(*,*)' checking with Z[SpAMM] '
