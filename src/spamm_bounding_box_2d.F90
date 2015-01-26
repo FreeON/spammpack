@@ -32,7 +32,7 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spamm_bounding_box_1d
+module spamm_bounding_box_2d
 
 #include "spamm_utility_macros.h"
 
@@ -41,7 +41,7 @@ module spamm_bounding_box_1d
   implicit none
 
   !> A bounding box.
-  type :: bounding_box_1d
+  type :: bounding_box_2d
 
      !> The center.
      integer :: center
@@ -57,19 +57,19 @@ module spamm_bounding_box_1d
      !> Get the right edge.
      procedure :: right_edge
 
-  end type bounding_box_1d
+  end type bounding_box_2d
 
 #ifdef HAVE_CONSTRUCTOR
   !> The constructor.
-  interface bounding_box_1d
-     module procedure new_bounding_box_1d
-  end interface bounding_box_1d
+  interface bounding_box_2d
+     module procedure new_bounding_box_2d
+  end interface bounding_box_2d
 #endif
 
 contains
 
   !> The constructor.
-  type(bounding_box_1d) function new_bounding_box_1d (center, width) result(box)
+  type(bounding_box_2d) function new_bounding_box_2d (center, width) result(box)
 
     use spamm_utilities
 
@@ -80,14 +80,14 @@ contains
     box%center = center
     box%width = width
 
-  end function new_bounding_box_1d
+  end function new_bounding_box_2d
 
   !> Get the left edge.
   !!
   !! @return The left edge of the bounding box.
   integer function left_edge (self)
 
-    class(bounding_box_1d), intent(in) :: self
+    class(bounding_box_2d), intent(in) :: self
     left_edge = self%center-self%width+1
 
   end function left_edge
@@ -97,9 +97,9 @@ contains
   !! @return The right edge of the bounding box.
   integer function right_edge (self)
 
-    class(bounding_box_1d), intent(in) :: self
+    class(bounding_box_2d), intent(in) :: self
     right_edge = self%center+self%width
 
   end function right_edge
 
-end module spamm_bounding_box_1d
+end module spamm_bounding_box_2d

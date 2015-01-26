@@ -32,29 +32,29 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spamm_tree_1d
+module spamm_tree_2d
 
 #include "spamm_utility_macros.h"
 
-  use spamm_bounding_box_1d
-  use spamm_decoration_1d
+  use spamm_bounding_box_2d
+  use spamm_decoration_2d
   use spamm_real_precision
 
   implicit none
 
   !> The pointer to a tree node.
-  type :: spamm_node_1d
+  type :: spamm_node_2d
 
      !> The actual tree node.
-     type(tree_1d), pointer :: node => null()
+     type(tree_2d), pointer :: node => null()
 
-  end type spamm_node_1d
+  end type spamm_node_2d
 
   !> The SpAMM vector type.
-  type :: tree_1d
+  type :: tree_2d
 
      !> The tree node decoration.
-     type(decoration_1d) :: decoration
+     type(decoration_2d) :: decoration
 
      !> The Frobenius norm.
      real(SPAMM_KIND) :: norm = -1
@@ -63,10 +63,10 @@ module spamm_tree_1d
      real(kind(0d0)) :: number_nonzeros = -1
 
      !> The axis-aligned bounding box.
-     type(bounding_box_1d) :: bounding_box
+     type(bounding_box_2d) :: bounding_box
 
      !> The pointers to the bisecting subtrees.
-     type(spamm_node_1d) :: child(2)
+     type(spamm_node_2d) :: child(2)
 
      !> The vector data.
      real(SPAMM_KIND), dimension(:), allocatable :: data
@@ -75,31 +75,31 @@ module spamm_tree_1d
 
 #ifdef HAVE_FINALIZE
      !> The destructor.
-     final :: delete_tree_1d
+     final :: delete_tree_2d
 #endif
 
      !> Copy a vector.
-     procedure :: copy_tree_1d_to_tree_1d
+     procedure :: copy_tree_2d_to_tree_2d
 
      !> The assignemnt operator.
-     generic :: assignment(=) => copy_tree_1d_to_tree_1d
+     generic :: assignment(=) => copy_tree_2d_to_tree_2d
 
      !> String representation.
-     procedure :: to_string => tree_1d_to_string
+     procedure :: to_string => tree_2d_to_string
 
-  end type tree_1d
+  end type tree_2d
 
 #ifdef HAVE_CONSTRUCTOR
   !> The constructor interface.
-  interface tree_1d
-     module procedure new_tree_1d
-     module procedure new_node_1d
-  end interface tree_1d
+  interface tree_2d
+     module procedure new_tree_2d
+     module procedure new_node_2d
+  end interface tree_2d
 #endif
 
   !> The destrcutor Interface.
   interface delete
-     module procedure delete_tree_1d
+     module procedure delete_tree_2d
   end interface delete
 
 contains
@@ -109,7 +109,7 @@ contains
   !! @param N The matrix dimension.
   !!
   !! @return The tree node.
-  type(tree_1d) function new_tree_1d (N) result(tree)
+  type(tree_2d) function new_tree_2d (N) result(tree)
 
     use spamm_globals
     use spamm_utilities
@@ -133,15 +133,15 @@ contains
        i = i+1
     enddo
 
-    tree%decoration = decoration_1d(N, N_padded, depth)
+    tree%decoration = decoration_2d(N, N_padded, depth)
 
 #ifdef HAVE_CONSTRUCTOR
-    tree%bounding_box = bounding_box_1d(N_padded/2, N_padded/2)
+    tree%bounding_box = bounding_box_2d(N_padded/2, N_padded/2)
 #else
-    tree%bounding_box = new_bounding_box_1d(N_padded/2, N_padded/2)
+    tree%bounding_box = new_bounding_box_2d(N_padded/2, N_padded/2)
 #endif
 
-  end function new_tree_1d
+  end function new_tree_2d
 
   !> The constructor.
   !!
@@ -151,13 +151,13 @@ contains
   !! @param bounding_box The axis-aligned bounding box.
   !!
   !! @return The tree node.
-  type(tree_1d) function new_node_1d (decoration, bounding_box) result(tree)
+  type(tree_2d) function new_node_2d (decoration, bounding_box) result(tree)
 
     use spamm_globals
     use spamm_utilities
 
-    type(decoration_1d), intent(in) :: decoration
-    type(bounding_box_1d), intent(in) :: bounding_box
+    type(decoration_2d), intent(in) :: decoration
+    type(bounding_box_2d), intent(in) :: bounding_box
 
     LOG_DEBUG("constructing new matrix")
 
@@ -167,20 +167,20 @@ contains
     tree%norm = 0
     tree%number_nonzeros = 0
 
-  end function new_node_1d
+  end function new_node_2d
 
   !> The destructor.
   !!
   !! @param self The object to deallocate.
-  elemental subroutine delete_tree_1d (self)
+  elemental subroutine delete_tree_2d (self)
 
-    type(tree_1d), intent(inout) :: self
+    type(tree_2d), intent(inout) :: self
 
     if(allocated(self%data)) then
        deallocate(self%data)
     endif
 
-  end subroutine delete_tree_1d
+  end subroutine delete_tree_2d
 
   !> Copy a vector to another vector:
   !!
@@ -188,12 +188,12 @@ contains
   !!
   !! @param A The vector A.
   !! @param B The vector B.
-  recursive subroutine copy_tree_1d_to_tree_1d (A, B)
+  recursive subroutine copy_tree_2d_to_tree_2d (A, B)
 
     use spamm_utilities
 
-    class(tree_1d), intent(out) :: A
-    class(tree_1d), intent(in) :: B
+    class(tree_2d), intent(out) :: A
+    class(tree_2d), intent(in) :: B
 
     integer :: i
 
@@ -213,23 +213,23 @@ contains
        do i = 1, 2
           if(associated(B%child(i)%node)) then
              LOG_DEBUG("descending")
-             call copy_tree_1d_to_tree_1d(A%child(i)%node, B%child(i)%node)
+             call copy_tree_2d_to_tree_2d(A%child(i)%node, B%child(i)%node)
           endif
        enddo
     endif
 
     LOG_DEBUG("done copying")
 
-  end subroutine copy_tree_1d_to_tree_1d
+  end subroutine copy_tree_2d_to_tree_2d
 
   !> String representation of matrix.
   !!
   !! @param A The matrix.
   !!
   !! @return The string representation.
-  character(len = 1000) function tree_1d_to_string (A) result(string)
+  character(len = 1000) function tree_2d_to_string (A) result(string)
 
-    class(tree_1d), intent(in) :: A
+    class(tree_2d), intent(in) :: A
 
     character(len = 100) :: temp
 
@@ -251,6 +251,6 @@ contains
        write(string, "(A)") trim(string)//", data is allocated"
     endif
 
-  end function tree_1d_to_string
+  end function tree_2d_to_string
 
-end module spamm_tree_1d
+end module spamm_tree_2d

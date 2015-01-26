@@ -104,6 +104,7 @@ module spammpack
   use spamm_project
   use spamm_real_precision
   use spamm_tree_1d
+  use spamm_tree_2d
   use spamm_types
   use spamm_utilities
 

@@ -32,74 +32,53 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spamm_bounding_box_1d
+module spamm_decoration_2d
 
 #include "spamm_utility_macros.h"
 
-  use spamm_real_precision
-
   implicit none
 
-  !> A bounding box.
-  type :: bounding_box_1d
+  type :: decoration_2d
 
-     !> The center.
-     integer :: center
+     !> The number of entries.
+     integer :: N = -1
 
-     !> The width.
-     integer :: width
+     !> The padded vector dimension.
+     integer :: N_padded = -1
+
+     !> The tree depth. The root tier is 0, tier == depth is the leaf
+     !> node tier, i.e. the tier at which actual matrix elements are
+     !> stored.
+     integer :: depth = -1
 
    contains
 
-     !> Get the left edge.
-     procedure :: left_edge
+     procedure :: to_string => decoration_2d_to_string
 
-     !> Get the right edge.
-     procedure :: right_edge
-
-  end type bounding_box_1d
-
-#ifdef HAVE_CONSTRUCTOR
-  !> The constructor.
-  interface bounding_box_1d
-     module procedure new_bounding_box_1d
-  end interface bounding_box_1d
-#endif
+  end type decoration_2d
 
 contains
 
-  !> The constructor.
-  type(bounding_box_1d) function new_bounding_box_1d (center, width) result(box)
-
-    use spamm_utilities
-
-    integer, intent(in) :: center, width
-
-    LOG_DEBUG("constructing new bounding box")
-
-    box%center = center
-    box%width = width
-
-  end function new_bounding_box_1d
-
-  !> Get the left edge.
+  !> String representation of decoration.
   !!
-  !! @return The left edge of the bounding box.
-  integer function left_edge (self)
-
-    class(bounding_box_1d), intent(in) :: self
-    left_edge = self%center-self%width+1
-
-  end function left_edge
-
-  !> Get the right edge.
+  !! @param decoration The node decoration.
   !!
-  !! @return The right edge of the bounding box.
-  integer function right_edge (self)
+  !! @return The string representation.
+  character(len = 1000) function decoration_2d_to_string (decoration) result(string)
 
-    class(bounding_box_1d), intent(in) :: self
-    right_edge = self%center+self%width
+    class(decoration_2d), intent(in) :: decoration
 
-  end function right_edge
+    character(len = 100) :: temp
 
-end module spamm_bounding_box_1d
+    write(temp, *) decoration%N
+    write(string, "(A)") "N = "//trim(adjustl(temp))
+
+    write(temp, *) decoration%N_padded
+    write(string, "(A)") trim(string)//", N_padded = "//trim(adjustl(temp))
+
+    write(temp, *) decoration%depth
+    write(string, "(A)") trim(string)//", depth = "//trim(adjustl(temp))
+
+  end function decoration_2d_to_string
+
+end module spamm_decoration_2d
