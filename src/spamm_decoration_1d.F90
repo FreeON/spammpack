@@ -57,9 +57,9 @@ module spamm_decoration_1d
 
   end type decoration_1d
 
-  interface new
-     module procedure new_decoration_1d
-  end interface new
+  !interface new
+  !   module procedure new_decoration_1d
+  !end interface new
 
 contains
 

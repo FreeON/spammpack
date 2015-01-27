@@ -61,9 +61,9 @@ module spamm_bounding_box_1d
   end type bounding_box_1d
 
   !> The constructor.
-  interface new
-     module procedure new_bounding_box_1d
-  end interface new
+  !interface new
+  !   module procedure new_bounding_box_1d
+  !end interface new
 
 contains
 
