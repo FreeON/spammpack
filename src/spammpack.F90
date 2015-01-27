@@ -28,7 +28,7 @@
 !!
 !! @copyright
 !!
-!! Copyright (c) 2014, Los Alamos National Laboratory
+!! Copyright (c) 2015, Los Alamos National Laboratory
 !! All rights reserved.
 !!
 !! Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,7 @@
 !!
 !! @copyright
 !!
-!! Copyright (c) 2014, Los Alamos National Laboratory
+!! Copyright (c) 2015, Los Alamos National Laboratory
 !! All rights reserved.
 !!
 !! Redistribution and use in source and binary forms, with or without
