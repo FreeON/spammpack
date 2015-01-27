@@ -32,79 +32,14 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spamm_decoration_1d
+module spamm_initialize_1d
+
+  use spamm_tree_1d
 
 #include "spamm_utility_macros.h"
 
   implicit none
 
-  type :: decoration_1d
-
-     !> The number of entries.
-     integer :: N = -1
-
-     !> The padded vector dimension.
-     integer :: N_padded = -1
-
-     !> The tree depth. The root tier is 0, tier == depth is the leaf
-     !> node tier, i.e. the tier at which actual matrix elements are
-     !> stored.
-     integer :: depth = -1
-
-   contains
-
-     procedure :: to_string => decoration_1d_to_string
-
-  end type decoration_1d
-
-  interface new
-     module procedure new_decoration_1d
-  end interface new
-
 contains
 
-  !> The constructor.
-  !!
-  !! @param N The matrix dimension.
-  !! @param N_padded The padded matrix dimension.
-  !! @param depth The tree depth.
-  !!
-  !! @return The new decoration object.
-  function new_decoration_1d (N, N_padded, depth) result (decoration)
-
-    type(decoration_1d), pointer :: decoration
-    integer, intent(in) :: N
-    integer, intent(in) :: N_padded
-    integer, intent(in) :: depth
-
-    allocate(decoration)
-
-    decoration%N = N
-    decoration%N_padded = N_padded
-    decoration%depth = depth
-
-  end function new_decoration_1d
-
-  !> String representation of decoration.
-  !!
-  !! @param decoration The node decoration.
-  !!
-  !! @return The string representation.
-  character(len = 1000) function decoration_1d_to_string (decoration) result(string)
-
-    class(decoration_1d), intent(in) :: decoration
-
-    character(len = 100) :: temp
-
-    write(temp, *) decoration%N
-    write(string, "(A)") "N = "//trim(adjustl(temp))
-
-    write(temp, *) decoration%N_padded
-    write(string, "(A)") trim(string)//", N_padded = "//trim(adjustl(temp))
-
-    write(temp, *) decoration%depth
-    write(string, "(A)") trim(string)//", depth = "//trim(adjustl(temp))
-
-  end function decoration_1d_to_string
-
-end module spamm_decoration_1d
+end module spamm_initialize_1d

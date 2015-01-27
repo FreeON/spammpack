@@ -89,18 +89,16 @@ module spamm_tree_2d
 
   end type tree_2d
 
-#ifdef HAVE_CONSTRUCTOR
   !> The constructor interface.
-  interface tree_2d
-     module procedure new_tree_2d
-     module procedure new_node_2d
-  end interface tree_2d
-#endif
+  !interface new
+  !   module procedure new_tree_2d
+  !   module procedure new_node_2d
+  !end interface new
 
   !> The destrcutor Interface.
-  interface delete
-     module procedure delete_tree_2d
-  end interface delete
+  !interface delete
+  !   module procedure delete_tree_2d
+  !end interface delete
 
 contains
 

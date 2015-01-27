@@ -29,12 +29,14 @@
 set( spammpack-sources
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
   spamm_algebra.F90
+  spamm_algebra_1d.F90
   spamm_bounding_box_1d.F90
   spamm_bounding_box_2d.F90
   spamm_convert.F90
   spamm_decoration_1d.F90
   spamm_decoration_2d.F90
   spamm_globals.F90
+  spamm_initialize_1d.F90
   spamm_inverse.F90
   spamm_management.F90
   spamm_project.F90
@@ -46,21 +48,6 @@ set( spammpack-sources
   )
 
 set( MODULE_FILES
-  spamm_algebra.mod
-  spamm_bounding_box_1d.mod
-  spamm_bounding_box_2d.mod
-  spamm_convert.mod
-  spamm_decoration_1d.mod
-  spamm_decoration_2d.mod
-  spamm_globals.mod
-  spamm_inverse.mod
-  spamm_management.mod
-  spamm_project.mod
-  spamm_real_precision.mod
-  spamm_tree_1d.mod
-  spamm_tree_2d.mod
-  spamm_types.mod
-  spamm_utilities.mod
   spammpack.mod
   )
 

@@ -8,6 +8,7 @@ cmake .. \
   -DSPAMM_DEBUG_LEVEL=${SPAMM_DEBUG_LEVEL:-2} \
   -DCMAKE_VERBOSE_MAKEFILE=yes \
   -DCMAKE_C_COMPILER=${CC:-gcc} \
-  -DCMAKE_Fortran_COMPILER=${FC:-gfortran} || exit
+  -DCMAKE_Fortran_COMPILER=${FC:-gfortran} \
+  || exit
 
 echo "The sources are configured in the build directory."

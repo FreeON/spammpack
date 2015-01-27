@@ -39,6 +39,7 @@ module spamm_tree_1d
   use spamm_bounding_box_1d
   use spamm_decoration_1d
   use spamm_real_precision
+  use spamm_utilities
 
   implicit none
 
@@ -54,7 +55,7 @@ module spamm_tree_1d
   type :: tree_1d
 
      !> The tree node decoration.
-     type(decoration_1d) :: decoration
+     type(decoration_1d), pointer :: decoration => null()
 
      !> The Frobenius norm.
      real(SPAMM_KIND) :: norm = -1
@@ -63,7 +64,7 @@ module spamm_tree_1d
      real(kind(0d0)) :: number_nonzeros = -1
 
      !> The axis-aligned bounding box.
-     type(bounding_box_1d) :: bounding_box
+     type(bounding_box_1d), pointer :: bounding_box => null()
 
      !> The pointers to the bisecting subtrees.
      type(spamm_node_1d) :: child(2)
@@ -89,18 +90,16 @@ module spamm_tree_1d
 
   end type tree_1d
 
-#ifdef HAVE_CONSTRUCTOR
   !> The constructor interface.
-  interface tree_1d
-     module procedure new_tree_1d
-     module procedure new_node_1d
-  end interface tree_1d
-#endif
+  !interface new
+  !   module procedure new_tree_1d
+  !   module procedure new_node_1d
+  !end interface new
 
-  !> The destrcutor Interface.
-  interface delete
-     module procedure delete_tree_1d
-  end interface delete
+  !> The destructor Interface.
+  !interface delete
+  !   module procedure delete_tree_1d
+  !end interface delete
 
 contains
 
@@ -109,16 +108,18 @@ contains
   !! @param N The matrix dimension.
   !!
   !! @return The tree node.
-  type(tree_1d) function new_tree_1d (N) result(tree)
+  function new_tree_1d (N) result (tree)
 
     use spamm_globals
-    use spamm_utilities
 
+    type(tree_1d), pointer :: tree
     integer, intent(in) :: N
 
     integer :: i, N_padded, depth
 
     LOG_DEBUG("constructing new matrix")
+
+    allocate(tree)
 
     tree%norm = 0
     tree%number_nonzeros = 0
@@ -133,13 +134,8 @@ contains
        i = i+1
     enddo
 
-    tree%decoration = decoration_1d(N, N_padded, depth)
-
-#ifdef HAVE_CONSTRUCTOR
-    tree%bounding_box = bounding_box_1d(N_padded/2, N_padded/2)
-#else
-    tree%bounding_box = new_bounding_box_1d(N_padded/2, N_padded/2)
-#endif
+    tree%decoration => new_decoration_1d(N, N_padded, depth)
+    tree%bounding_box => new_bounding_box_1d(N_padded/2, N_padded/2)
 
   end function new_tree_1d
 
@@ -151,15 +147,15 @@ contains
   !! @param bounding_box The axis-aligned bounding box.
   !!
   !! @return The tree node.
-  type(tree_1d) function new_node_1d (decoration, bounding_box) result(tree)
+  function new_node_1d (decoration, bounding_box) result (tree)
 
-    use spamm_globals
-    use spamm_utilities
-
+    type(tree_1d), pointer :: tree
     type(decoration_1d), intent(in) :: decoration
     type(bounding_box_1d), intent(in) :: bounding_box
 
-    LOG_DEBUG("constructing new matrix")
+    LOG_DEBUG("constructing new matrix node")
+
+    allocate(tree)
 
     tree%decoration = decoration
     tree%bounding_box = bounding_box
@@ -189,8 +185,6 @@ contains
   !! @param A The vector A.
   !! @param B The vector B.
   recursive subroutine copy_tree_1d_to_tree_1d (A, B)
-
-    use spamm_utilities
 
     class(tree_1d), intent(out) :: A
     class(tree_1d), intent(in) :: B

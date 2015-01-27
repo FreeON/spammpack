@@ -37,6 +37,7 @@ module spamm_bounding_box_1d
 #include "spamm_utility_macros.h"
 
   use spamm_real_precision
+  use spamm_utilities
 
   implicit none
 
@@ -59,23 +60,22 @@ module spamm_bounding_box_1d
 
   end type bounding_box_1d
 
-#ifdef HAVE_CONSTRUCTOR
   !> The constructor.
-  interface bounding_box_1d
+  interface new
      module procedure new_bounding_box_1d
-  end interface bounding_box_1d
-#endif
+  end interface new
 
 contains
 
   !> The constructor.
-  type(bounding_box_1d) function new_bounding_box_1d (center, width) result(box)
+  function new_bounding_box_1d (center, width) result(box)
 
-    use spamm_utilities
-
+    type(bounding_box_1d), pointer :: box
     integer, intent(in) :: center, width
 
     LOG_DEBUG("constructing new bounding box")
+
+    allocate(box)
 
     box%center = center
     box%width = width

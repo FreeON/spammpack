@@ -184,8 +184,6 @@ CONTAINS
 
   END SUBROUTINE SpAMM_Multiply_QuTree_x_QuTree
 
-
-
   SUBROUTINE SpAMM_Multiply_QuTreeT_x_QuTree(qA, qB, qC, threshold)
 
     TYPE(QuTree), POINTER, INTENT(IN) :: qA, qB
