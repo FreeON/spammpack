@@ -34,9 +34,9 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_inverse_new
 
-  use spamm_tree_2d
-
 #include "spamm_utility_macros.h"
+
+  use spamm_tree_2d
 
   implicit none
 
@@ -64,6 +64,8 @@ contains
     integer :: iteration
 
     ! Z_0 <- I
+    !Z_0 => spamm_identity_2d(S)
+
     ! Y_0 <- S
 
     do iteration = 1, MAX_ITERATIONS
