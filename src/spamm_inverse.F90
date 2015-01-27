@@ -34,14 +34,14 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_inverse
 
+  use spamm_algebra
+  use spamm_convert
+  use spamm_management
   use spamm_real_precision
+  use spamm_types
+  use spamm_utilities
 
 #include "spamm_utility_macros.h"
-    use spamm_algebra
-    use spamm_convert
-    use spamm_management
-    use spamm_types
-    use spamm_utilities
 
   implicit none
 
