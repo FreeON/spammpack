@@ -5,16 +5,12 @@ contains
 
     use spammpack
 
-    type(tree_1d), intent(in) :: A
-    type(tree_1d), intent(out) :: B
+    type(tree_1d), pointer, intent(in) :: A
+    type(tree_1d), pointer, intent(out) :: B
 
     write(*, "(A)") "entering test()"
 
-#ifdef HAVE_CONSTRUCTOR
-    B = spamm_tree_1d(A%decoration%N)
-#else
-    B = new_tree_1d(A%decoration%N)
-#endif
+    B => new_tree_1d(A%decoration%N)
 
     write(*, "(A)") "leaving test()"
 
@@ -30,13 +26,10 @@ program allocate_tree_1d
   implicit none
 
   integer, parameter :: N = 10
-  type(tree_1d) :: A, B
+  type(tree_1d), pointer :: A, B
 
-#ifdef HAVE_CONSTRUCTOR
-  A = spamm_tree_1d(N)
-#else
-  A = new_tree_1d(N)
-#endif
+  A => new_tree_1d(N)
+  nullify(B)
 
   write(*, "(A)") "calling test()"
   call test(A, B)
