@@ -7,7 +7,25 @@ cmake .
 make
 ~~~~~
 
-to build it.
+to build it. For extra convenience, we provide a shell script that
+configures and builds spammpack out-of-source in a directory called
+`build`.
+
+~~~
+./build.sh
+~~~
+
+will create a new directory `build` and compile the sources in that
+directory. The script honors the following environment variables, and
+passes them to the `cmake` command.
+
+~~~
+CMAKE_BUILD_TYPE
+SPAMM_DEBUG_LEVEL
+CMAKE_VERBOSE_MAKEFILE
+CMAKE_C_COMPILER
+CMAKE_Fortran_COMPILER
+~~~
 
 # Building with full debugging
 
