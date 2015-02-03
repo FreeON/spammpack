@@ -1,0 +1,10 @@
+(add-hook 'f90-mode-hook 'auto-complete-mode)
+(add-hook 'f90-mode-hook 'auto-revert-mode)
+(add-hook 'f90-mode-hook
+	  (lambda ()
+	    (setq comment-continue "!! ")
+	    (setq comment-start "!> ")
+	    (setq electric-pair-mode t)
+	    (setq f90-auto-keyword-case (quote downcase-word))
+	    (setq show-paren-mode t)
+	    (setq show-trailing-whitespace t)))
