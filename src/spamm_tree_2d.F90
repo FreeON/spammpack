@@ -84,7 +84,7 @@ module spamm_tree_2d
      module procedure new_tree_2d
   end interface new_tree_2d
 
-  !> The destrcutor Interface.
+  !> The destructor Interface.
   interface delete_tree
      module procedure delete_tree_2d
   end interface delete_tree
@@ -128,13 +128,32 @@ contains
   !> The destructor.
   !!
   !! @param self The object to deallocate.
-  elemental subroutine delete_tree_2d (self)
+  recursive subroutine delete_tree_2d (self)
 
-    type(tree_2d), intent(inout) :: self
+    type(tree_2d), pointer, intent(inout) :: self
 
     if(allocated(self%data)) then
        deallocate(self%data)
     endif
+
+    if(associated(self%child_00)) then
+       call delete_tree_2d(self%child_00)
+    endif
+
+    if(associated(self%child_01)) then
+       call delete_tree_2d(self%child_01)
+    endif
+
+    if(associated(self%child_10)) then
+       call delete_tree_2d(self%child_10)
+    endif
+
+    if(associated(self%child_11)) then
+       call delete_tree_2d(self%child_11)
+    endif
+
+    deallocate(self)
+    nullify(self)
 
   end subroutine delete_tree_2d
 

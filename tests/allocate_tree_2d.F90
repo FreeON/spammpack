@@ -37,4 +37,7 @@ program allocate_tree_1d
   write(*, "(A)") "A: "//trim(A%to_string())
   write(*, "(A)") "B: "//trim(B%to_string())
 
+  call delete_tree_2d(A)
+  call delete_tree_2d(B)
+
 end program allocate_tree_1d
