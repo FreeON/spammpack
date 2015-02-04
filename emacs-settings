@@ -13,10 +13,10 @@
 (setq-default before-save-hook 'delete-trailing-whitespace)
 
 ;; Electric pair mode...
-(setq electric-pair-mode t)
+(electric-pair-mode)
 
 ;; Show matching parentheses.
-(setq show-paren-mode t)
+(show-paren-mode)
 
 ;; Show trailing whitespace.
 (setq-default show-trailing-whitespace t)

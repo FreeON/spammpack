@@ -37,6 +37,7 @@ set( UNIT_TESTS
   add_identity_to_2nd_order.F90
   allocate_2nd_order.F90
   allocate_tree_1d.F90
+  allocate_tree_2d.F90
   copy_2nd_order.F90
   copy_matrix_column_to_vector.F90
   copy_order_1_to_order_1.F90

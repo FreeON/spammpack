@@ -36,6 +36,8 @@ module spamm_decoration_2d
 
 #include "spamm_utility_macros.h"
 
+  use spamm_real_precision
+
   implicit none
 
   type :: decoration_2d
@@ -51,6 +53,12 @@ module spamm_decoration_2d
      !> stored.
      integer :: depth = -1
 
+     !> The square of the Frobenius norm.
+     real(SPAMM_KIND) :: norm2 = -1
+
+     !> The number of non-zero elements.
+     real(kind(0d0)) :: number_nonzeros = -1
+
    contains
 
      procedure :: to_string => decoration_2d_to_string
@@ -64,8 +72,9 @@ contains
   !! @param decoration The node decoration.
   !!
   !! @return The string representation.
-  character(len = 1000) function decoration_2d_to_string (decoration) result(string)
+  function decoration_2d_to_string (decoration) result (string)
 
+    character(len = 1000) :: string
     class(decoration_2d), intent(in) :: decoration
 
     character(len = 100) :: temp
@@ -79,6 +88,44 @@ contains
     write(temp, *) decoration%depth
     write(string, "(A)") trim(string)//", depth = "//trim(adjustl(temp))
 
+    write(temp, "(ES15.5)") decoration%norm2
+    write(string, "(A)") trim(string)//", norm2 = "//trim(adjustl(temp))
+
+    write(temp, "(ES15.5)") decoration%number_nonzeros
+    write(string, "(A)") trim(string)//", nnonz = "//trim(adjustl(temp))
+
   end function decoration_2d_to_string
+
+  !> Merge two decorations.
+  !!
+  !! @param A Decoration A.
+  !! @param B Decoration B.
+  function decoration_2d_merge (A, B) result (C)
+
+    type(decoration_2d) :: C
+    type(decoration_2d), intent(in) :: A, B
+
+    if(A%N /= B%N) then
+       LOG_FATAL("dimension mismatch in N")
+       error stop
+    endif
+
+    if(A%N_padded /= B%N_padded) then
+       LOG_FATAL("padded dimension mismatch")
+       error stop
+    endif
+
+    if(A%depth /= B%depth) then
+       LOG_FATAL("depth mismatch")
+       error stop
+    endif
+
+    C%N = A%N
+    C%N_padded = A%N_padded
+    C%depth = A%depth
+    C%norm2 = A%norm2+B%norm2
+    C%number_nonzeros = A%number_nonzeros+B%number_nonzeros
+
+  end function decoration_2d_merge
 
 end module spamm_decoration_2d

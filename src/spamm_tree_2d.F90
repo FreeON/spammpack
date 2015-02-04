@@ -42,41 +42,31 @@ module spamm_tree_2d
 
   implicit none
 
-  !> The pointer to a tree node.
-  type :: spamm_node_2d
-
-     !> The actual tree node.
-     type(tree_2d), pointer :: node => null()
-
-  end type spamm_node_2d
-
   !> The SpAMM vector type.
   type :: tree_2d
 
      !> The tree node decoration.
      type(decoration_2d) :: decoration
 
-     !> The Frobenius norm.
-     real(SPAMM_KIND) :: norm = -1
-
-     !> The number of non-zero elements.
-     real(kind(0d0)) :: number_nonzeros = -1
-
      !> The axis-aligned bounding box.
      type(bounding_box_2d) :: bounding_box
 
-     !> The pointers to the bisecting subtrees.
-     type(spamm_node_2d) :: child(2)
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_00 => null()
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_01 => null()
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_10 => null()
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_11 => null()
 
      !> The vector data.
      real(SPAMM_KIND), dimension(:), allocatable :: data
 
    contains
-
-#ifdef HAVE_FINALIZE
-     !> The destructor.
-     final :: delete_tree_2d
-#endif
 
      !> Copy a vector.
      procedure :: copy_tree_2d_to_tree_2d
@@ -90,15 +80,14 @@ module spamm_tree_2d
   end type tree_2d
 
   !> The constructor interface.
-  !interface new
-  !   module procedure new_tree_2d
-  !   module procedure new_node_2d
-  !end interface new
+  interface new_tree_2d
+     module procedure new_tree_2d
+  end interface new_tree_2d
 
   !> The destrcutor Interface.
-  !interface delete
-  !   module procedure delete_tree_2d
-  !end interface delete
+  interface delete_tree
+     module procedure delete_tree_2d
+  end interface delete_tree
 
 contains
 
@@ -107,19 +96,19 @@ contains
   !! @param N The matrix dimension.
   !!
   !! @return The tree node.
-  type(tree_2d) function new_tree_2d (N) result(tree)
+  function new_tree_2d (N) result(tree)
 
     use spamm_globals
     use spamm_utilities
 
+    type(tree_2d), pointer :: tree
     integer, intent(in) :: N
 
     integer :: i, N_padded, depth
 
     LOG_DEBUG("constructing new matrix")
 
-    tree%norm = 0
-    tree%number_nonzeros = 0
+    allocate(tree)
 
     i = 0
     do while(.true.)
@@ -132,40 +121,9 @@ contains
     enddo
 
     tree%decoration = decoration_2d(N, N_padded, depth)
-
-#ifdef HAVE_CONSTRUCTOR
-    tree%bounding_box = bounding_box_2d(N_padded/2, N_padded/2)
-#else
     tree%bounding_box = new_bounding_box_2d(N_padded/2, N_padded/2)
-#endif
 
   end function new_tree_2d
-
-  !> The constructor.
-  !!
-  !! @param N The matrix dimension.
-  !! @param N_padded The padded matrix dimension.
-  !! @param depth The tree depth.
-  !! @param bounding_box The axis-aligned bounding box.
-  !!
-  !! @return The tree node.
-  type(tree_2d) function new_node_2d (decoration, bounding_box) result(tree)
-
-    use spamm_globals
-    use spamm_utilities
-
-    type(decoration_2d), intent(in) :: decoration
-    type(bounding_box_2d), intent(in) :: bounding_box
-
-    LOG_DEBUG("constructing new matrix")
-
-    tree%decoration = decoration
-    tree%bounding_box = bounding_box
-
-    tree%norm = 0
-    tree%number_nonzeros = 0
-
-  end function new_node_2d
 
   !> The destructor.
   !!
@@ -193,13 +151,9 @@ contains
     class(tree_2d), intent(out) :: A
     class(tree_2d), intent(in) :: B
 
-    integer :: i
-
     LOG_DEBUG("copying vector")
 
     A%decoration = B%decoration
-    A%norm = B%norm
-    A%number_nonzeros = B%number_nonzeros
     A%bounding_box = B%bounding_box
 
     LOG_DEBUG("here...")
@@ -208,12 +162,25 @@ contains
        LOG_DEBUG("copying matrix data")
        A%data = B%data
     else
-       do i = 1, 2
-          if(associated(B%child(i)%node)) then
-             LOG_DEBUG("descending")
-             call copy_tree_2d_to_tree_2d(A%child(i)%node, B%child(i)%node)
-          endif
-       enddo
+       if(associated(B%child_00)) then
+          LOG_DEBUG("descending")
+          call copy_tree_2d_to_tree_2d(A%child_00, B%child_00)
+       endif
+
+       if(associated(B%child_01)) then
+          LOG_DEBUG("descending")
+          call copy_tree_2d_to_tree_2d(A%child_01, B%child_01)
+       endif
+
+       if(associated(B%child_10)) then
+          LOG_DEBUG("descending")
+          call copy_tree_2d_to_tree_2d(A%child_10, B%child_10)
+       endif
+
+       if(associated(B%child_11)) then
+          LOG_DEBUG("descending")
+          call copy_tree_2d_to_tree_2d(A%child_11, B%child_11)
+       endif
     endif
 
     LOG_DEBUG("done copying")
@@ -232,12 +199,6 @@ contains
     character(len = 100) :: temp
 
     write(string, "(A)") "N = "//trim(adjustl(A%decoration%to_string()))
-
-    write(temp, "(ES15.5)") A%norm
-    write(string, "(A)") trim(string)//", norm = "//trim(adjustl(temp))
-
-    write(temp, "(ES15.5)") A%number_nonzeros
-    write(string, "(A)") trim(string)//", nnonz = "//trim(adjustl(temp))
 
     write(temp, *) A%bounding_box%left_edge()
     write(string, "(A)") trim(string)//", bbox = [ "//trim(adjustl(temp))

@@ -74,11 +74,6 @@ module spamm_tree_1d
 
    contains
 
-#ifdef HAVE_FINALIZE
-     !> The destructor.
-     final :: delete_tree_1d
-#endif
-
      !> Copy a vector.
      procedure :: copy_tree_1d_to_tree_1d
 
