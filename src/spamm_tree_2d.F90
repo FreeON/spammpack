@@ -43,26 +43,13 @@ module spamm_tree_2d
   implicit none
 
   !> The SpAMM vector type.
-  type :: tree_2d
+  type, abstract :: tree_2d
 
      !> The tree node decoration.
      type(decoration_2d) :: decoration
 
      !> The axis-aligned bounding box.
      type(bounding_box_2d) :: bounding_box
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_00 => null()
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_01 => null()
-
-!     !> Pointer to upper left quadrant.
-!     Default is for upper triagonal, symmetric matrices.  Use EXTEND to add in non-symmetric case?
-!     type(tree_2d), pointer :: child_10 => null()
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_11 => null()
 
      !> The vector data.
      real(SPAMM_KIND), dimension(:), allocatable :: data
@@ -79,6 +66,26 @@ module spamm_tree_2d
      procedure :: to_string => tree_2d_to_string
 
   end type tree_2d
+
+  type, extends(tree_2d) :: tree_2d_symmetric
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_00 => null()
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_01 => null()
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_11 => null()
+
+  end type tree_2d_symmetric
+
+  type, extends(tree_2d_symmetric) :: tree_2d_general
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_10 => null()
+
+  end type tree_2d_general
 
   !> The constructor interface.
   interface new_tree_2d
@@ -131,11 +138,23 @@ contains
   !! @param self The object to deallocate.
   recursive subroutine delete_tree_2d (self)
 
-    type(tree_2d), pointer, intent(inout) :: self
+    class(tree_2d), pointer, intent(inout) :: self
 
     if(allocated(self%data)) then
        deallocate(self%data)
     endif
+
+    deallocate(self)
+    nullify(self)
+
+  end subroutine delete_tree_2d
+
+  !> Destructor for symmetric trees.
+  !!
+  !! @param self The object to deallocate.
+  recursive subroutine delete_tree_2d_symmetric (self)
+
+    class(tree_2d_symmetric), pointer, intent(inout) :: self
 
     if(associated(self%child_00)) then
        call delete_tree_2d(self%child_00)
@@ -145,18 +164,28 @@ contains
        call delete_tree_2d(self%child_01)
     endif
 
-!    if(associated(self%child_10)) then
-!       call delete_tree_2d(self%child_10)
-!    endif
-
     if(associated(self%child_11)) then
        call delete_tree_2d(self%child_11)
     endif
 
-    deallocate(self)
-    nullify(self)
+    call delete_tree_2d(self)
 
-  end subroutine delete_tree_2d
+  end subroutine delete_tree_2d_symmetric
+
+  !> Destructor for general trees.
+  !!
+  !! @param self The object to deallocate.
+  recursive subroutine delete_tree_2d_general (self)
+
+    class(tree_2d_general), pointer, intent(inout) :: self
+
+    if(associated(self%child_10)) then
+       call delete_tree_2d(self%child_10)
+    endif
+
+    call delete_tree_2d_symmetric(self)
+
+  end subroutine delete_tree_2d_general
 
   !> Copy a vector to another vector:
   !!
@@ -219,12 +248,6 @@ contains
     character(len = 100) :: temp
 
     write(string, "(A)") "N = "//trim(adjustl(A%decoration%to_string()))
-
-    write(temp, *) A%bounding_box%left_edge()
-    write(string, "(A)") trim(string)//", bbox = [ "//trim(adjustl(temp))
-
-    write(temp, *) A%bounding_box%right_edge()
-    write(string, "(A)") trim(string)//", "//trim(adjustl(temp))//" ]"
 
     if(allocated(A%data)) then
        write(string, "(A)") trim(string)//", data is allocated"

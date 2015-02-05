@@ -43,63 +43,50 @@ module spamm_bounding_box_2d
   !> A bounding box.
   type :: bounding_box_2d
 
-     !> The center.
-     integer :: center
+     !> Lower row bound.
+     integer :: row_lower
 
-     !> The width.
-     integer :: width
+     !> Upper row bound.
+     integer :: row_upper
+
+     !> Lower column bound.
+     integer :: column_lower
+
+     !> Upper column bound.
+     integer :: column_upper
 
    contains
 
-     !> Get the left edge.
-     procedure :: left_edge
-
-     !> Get the right edge.
-     procedure :: right_edge
+     procedure :: to_string => bounding_box_2d_to_string
 
   end type bounding_box_2d
 
-#ifdef HAVE_CONSTRUCTOR
-  !> The constructor.
-  interface bounding_box_2d
-     module procedure new_bounding_box_2d
-  end interface bounding_box_2d
-#endif
-
 contains
 
-  !> The constructor.
-  type(bounding_box_2d) function new_bounding_box_2d (center, width) result(box)
-
-    use spamm_utilities
-
-    integer, intent(in) :: center, width
-
-    LOG_DEBUG("constructing new bounding box")
-
-    box%center = center
-    box%width = width
-
-  end function new_bounding_box_2d
-
-  !> Get the left edge.
+  !> String representation of bounding box.
   !!
-  !! @return The left edge of the bounding box.
-  integer function left_edge (self)
-
-    class(bounding_box_2d), intent(in) :: self
-    left_edge = self%center-self%width+1
-
-  end function left_edge
-
-  !> Get the right edge.
+  !! @param self The bounding box.
   !!
-  !! @return The right edge of the bounding box.
-  integer function right_edge (self)
+  !! @return The string representation.
+  function bounding_box_2d_to_string (self) result(string)
 
+    character(len = 1000) :: string
     class(bounding_box_2d), intent(in) :: self
-    right_edge = self%center+self%width
 
-  end function right_edge
+    character(len = 200) :: temp
+
+    write(temp, *) self%row_lower
+    write(string, "(A)") trim(string)//", bbox = [ "//trim(adjustl(temp))
+
+    write(temp, *) self%row_upper
+    write(string, "(A)") trim(string)//", "//trim(adjustl(temp))
+
+    write(temp, *) self%column_lower
+    write(string, "(A)") trim(string)//", "//trim(adjustl(temp))
+
+    write(temp, *) self%column_upper
+    write(string, "(A)") trim(string)//", "//trim(adjustl(temp))//" ]"
+
+  end function bounding_box_2d_to_string
 
 end module spamm_bounding_box_2d
