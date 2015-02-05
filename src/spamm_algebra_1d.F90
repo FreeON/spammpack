@@ -36,7 +36,7 @@ module spamm_algebra_1d
 
   use spamm_real_precision
   use spamm_tree_1d
-  use spamm_utilities
+  use spamm_strings
 
 #ifdef _OPENMP
   use omp_lib

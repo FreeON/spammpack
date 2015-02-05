@@ -37,7 +37,6 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 MODULE spamm_globals
 
-  use spamm_types
   use spamm_real_precision
 
   IMPLICIT NONE

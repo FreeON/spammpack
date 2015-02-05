@@ -49,6 +49,7 @@ set( spammpack-new-sources
   spamm_bounding_box_2d.F90
   spamm_decoration_1d.F90
   spamm_decoration_2d.F90
+  spamm_globals.F90
   spamm_strings.F90
   spamm_tree_1d.F90
   spamm_tree_2d.F90

@@ -106,7 +106,7 @@ contains
   function new_tree_2d_symmetric (N) result(tree)
 
     use spamm_globals
-    use spamm_utilities
+    use spamm_strings
 
     type(tree_2d_symmetric), pointer :: tree
     integer, intent(in) :: N

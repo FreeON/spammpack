@@ -70,11 +70,14 @@ contains
   !> Intialize a new decoration object.
   !!
   !! @param self The object to initialize.
-  subroutine Intialize_decoration_2d (self, N, N_padded, depth, norm2, number_nonzeros)
+  subroutine intialize_decoration_2d (self, N, N_padded, depth, norm2, number_nonzeros)
 
     type(decoration_2d), intent(inout) :: self
+    integer, intent(in) :: N, N_padded, depth
+    real(SPAMM_KIND), intent(in) :: norm2
+    real(kind(0d0)), intent(in) :: number_nonzeros
 
-  end subroutine Intialize_decoration_2d
+  end subroutine intialize_decoration_2d
 
   !> String representation of decoration.
   !!

@@ -37,7 +37,7 @@ module spamm_bounding_box_1d
 #include "spamm_utility_macros.h"
 
   use spamm_real_precision
-  use spamm_utilities
+  use spamm_strings
 
   implicit none
 

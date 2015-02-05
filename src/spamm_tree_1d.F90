@@ -39,7 +39,7 @@ module spamm_tree_1d
   use spamm_bounding_box_1d
   use spamm_decoration_1d
   use spamm_real_precision
-  use spamm_utilities
+  use spamm_strings
 
   implicit none
 

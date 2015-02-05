@@ -6,8 +6,10 @@
 (add-hook 'f90-mode-hook
 	  (lambda ()
 	    (setq comment-start "!> ")
-	    (setq comment-continue "!! ")
-      (setq f90-auto-keyword-case 'downcase-word)))
+	    (setq comment-continue "!! ")))
+
+;; Some style.
+(setq f90-auto-keyword-case 'downcase-word)
 
 ;; We don't like trailing whitespace.
 (setq-default before-save-hook 'delete-trailing-whitespace)
