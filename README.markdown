@@ -54,8 +54,10 @@ or without an absolute path.
 # Emacs suggested settings
 
 For emacs users we have a suggested set of settings we use. Have a
-look at `spammpack/emacs-settings`. This file can simply be copy and
-pasted into an existing `~/.emacs` configuration file.
+look at
+`(emacs-settings)[https://github.com/FreeON/blob/master/emacs-settings]`. This
+file can simply be copy and pasted into an existing `~/.emacs`
+configuration file.
 
 # Further Information
 
