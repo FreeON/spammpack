@@ -30,24 +30,29 @@ set( spammpack-sources
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
   spamm_algebra.F90
   spamm_algebra_add.F90
-  spamm_bisect.F90
   spamm_convert.F90
   spamm_decorate.F90
   spamm_globals.F90
   spamm_management.F90
   spamm_project.F90
+  spamm_strings.F90
   spamm_types.F90
   spamm_utilities.F90
   spammpack.F90
   )
 
-#  spamm_decoration_1d.F90
-#  spamm_decoration_2d.F90
-#  spamm_algebra_1d.F90
-#  spamm_bounding_box_1d.F90
-#  spamm_bounding_box_2d.F90
-#  spamm_tree_1d.F90
-#  spamm_tree_2d.F90
+set( spammpack-new-sources
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
+  spamm_algebra_1d.F90
+  spamm_bisect.F90
+  spamm_bounding_box_1d.F90
+  spamm_bounding_box_2d.F90
+  spamm_decoration_1d.F90
+  spamm_decoration_2d.F90
+  spamm_strings.F90
+  spamm_tree_1d.F90
+  spamm_tree_2d.F90
+  )
 
 set( MODULE_FILES
   spammpack.mod
@@ -79,3 +84,5 @@ if( OPENMP_FOUND )
   build_library( TRUE "${OpenMP_Fortran_FLAGS}")
   add_dependencies( spammpack-threaded-shared spammpack-serial-static )
 endif()
+
+add_library( spammpack-new ${spammpack-new-sources} )

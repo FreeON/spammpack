@@ -42,8 +42,8 @@ module spamm_tree_2d
 
   implicit none
 
-  !> The SpAMM vector type.
-  type, abstract :: tree_2d
+  !> Symmetric matrix.
+  type :: tree_2d_symmetric
 
      !> The tree node decoration.
      type(decoration_2d) :: decoration
@@ -54,57 +54,47 @@ module spamm_tree_2d
      !> The vector data.
      real(SPAMM_KIND), dimension(:), allocatable :: data
 
+     !> Pointer to upper left quadrant.
+     type(tree_2d_symmetric), pointer :: child_00 => null()
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d_symmetric), pointer :: child_01 => null()
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d_symmetric), pointer :: child_11 => null()
+
    contains
 
-     !> Copy a vector.
-     procedure :: copy_tree_2d_to_tree_2d
-
-     !> The assignemnt operator.
-     generic :: assignment(=) => copy_tree_2d_to_tree_2d
-
      !> String representation.
-     procedure :: to_string => tree_2d_to_string
-
-  end type tree_2d
-
-  type, extends(tree_2d) :: tree_2d_symmetric
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_00 => null()
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_01 => null()
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_11 => null()
+     procedure :: to_string => tree_2d_symmetric_to_string
 
   end type tree_2d_symmetric
 
-  type, extends(tree_2d) :: tree_2d_general
+  !> General matrix.
+  type :: tree_2d_general
+
+     !> The tree node decoration.
+     type(decoration_2d) :: decoration
+
+     !> The axis-aligned bounding box.
+     type(bounding_box_2d) :: bounding_box
+
+     !> The vector data.
+     real(SPAMM_KIND), dimension(:), allocatable :: data
 
      !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_00 => null()
+     type(tree_2d_general), pointer :: child_00 => null()
 
      !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_01 => null()
+     type(tree_2d_general), pointer :: child_01 => null()
 
      !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_10 => null()
+     type(tree_2d_general), pointer :: child_10 => null()
 
      !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_11 => null()
+     type(tree_2d_general), pointer :: child_11 => null()
 
   end type tree_2d_general
-
-  !> The constructor interface.
-  interface new_tree_2d
-     module procedure new_tree_2d
-  end interface new_tree_2d
-
-  !> The destructor Interface.
-  interface delete_tree
-     module procedure delete_tree_2d
-  end interface delete_tree
 
 contains
 
@@ -113,17 +103,17 @@ contains
   !! @param N The matrix dimension.
   !!
   !! @return The tree node.
-  function new_tree_2d (N) result(tree)
+  function new_tree_2d_symmetric (N) result(tree)
 
     use spamm_globals
     use spamm_utilities
 
-    type(tree_2d), pointer :: tree
+    type(tree_2d_symmetric), pointer :: tree
     integer, intent(in) :: N
 
     integer :: i, N_padded, depth
 
-    LOG_DEBUG("constructing new matrix")
+    LOG_DEBUG("constructing new symmetric matrix")
 
     allocate(tree)
 
@@ -137,17 +127,17 @@ contains
        i = i+1
     enddo
 
-    tree%decoration = decoration_2d(N, N_padded, depth)
-    tree%bounding_box = new_bounding_box_2d(N_padded/2, N_padded/2)
+    tree%decoration = decoration_2d(N, N_padded, depth, 0, 0)
+    tree%bounding_box = bounding_box_2d(1, N_padded, 1, N_padded)
 
-  end function new_tree_2d
+  end function new_tree_2d_symmetric
 
   !> The destructor.
   !!
   !! @param self The object to deallocate.
-  recursive subroutine delete_tree_2d (self)
+  recursive subroutine delete_tree_2d_symmetric (self)
 
-    class(tree_2d), pointer, intent(inout) :: self
+    type(tree_2d_symmetric), pointer, intent(inout) :: self
 
     if(allocated(self%data)) then
        deallocate(self%data)
@@ -156,103 +146,17 @@ contains
     deallocate(self)
     nullify(self)
 
-  end subroutine delete_tree_2d
-
-  !> Destructor for symmetric trees.
-  !!
-  !! @param self The object to deallocate.
-  recursive subroutine delete_tree_2d_symmetric (self)
-
-    class(tree_2d_symmetric), pointer, intent(inout) :: self
-
-    if(associated(self%child_00)) then
-       call delete_tree_2d(self%child_00)
-    endif
-
-    if(associated(self%child_01)) then
-       call delete_tree_2d(self%child_01)
-    endif
-
-    if(associated(self%child_11)) then
-       call delete_tree_2d(self%child_11)
-    endif
-
-    call delete_tree_2d(self)
-
   end subroutine delete_tree_2d_symmetric
-
-  !> Destructor for general trees.
-  !!
-  !! @param self The object to deallocate.
-  recursive subroutine delete_tree_2d_general (self)
-
-    class(tree_2d_general), pointer, intent(inout) :: self
-
-    if(associated(self%child_10)) then
-       call delete_tree_2d(self%child_10)
-    endif
-
-    call delete_tree_2d_symmetric(self)
-
-  end subroutine delete_tree_2d_general
-
-  !> Copy a vector to another vector:
-  !!
-  !! \f$ A \leftarrow B \f$.
-  !!
-  !! @param A The vector A.
-  !! @param B The vector B.
-  recursive subroutine copy_tree_2d_to_tree_2d (A, B)
-
-    use spamm_utilities
-
-    class(tree_2d), intent(out) :: A
-    class(tree_2d), intent(in) :: B
-
-    LOG_DEBUG("copying vector")
-
-    A%decoration = B%decoration
-    A%bounding_box = B%bounding_box
-
-    LOG_DEBUG("here...")
-
-    if(allocated(B%data)) then
-       LOG_DEBUG("copying matrix data")
-       A%data = B%data
-    else
-       if(associated(B%child_00)) then
-          LOG_DEBUG("descending")
-          call copy_tree_2d_to_tree_2d(A%child_00, B%child_00)
-       endif
-
-       if(associated(B%child_01)) then
-          LOG_DEBUG("descending")
-          call copy_tree_2d_to_tree_2d(A%child_01, B%child_01)
-       endif
-
-!       if(associated(B%child_10)) then
-!          LOG_DEBUG("descending")
-!          call copy_tree_2d_to_tree_2d(A%child_10, B%child_10)
-!       endif
-
-       if(associated(B%child_11)) then
-          LOG_DEBUG("descending")
-          call copy_tree_2d_to_tree_2d(A%child_11, B%child_11)
-       endif
-    endif
-
-    LOG_DEBUG("done copying")
-
-  end subroutine copy_tree_2d_to_tree_2d
 
   !> String representation of matrix.
   !!
   !! @param A The matrix.
   !!
   !! @return The string representation.
-  character(len = 1000) function tree_2d_to_string (A) result(string)
+  function tree_2d_symmetric_to_string (A) result(string)
 
-    class(tree_2d), intent(in) :: A
+    character(len = 1000) :: string
+    class(tree_2d_symmetric), intent(in) :: A
 
     character(len = 100) :: temp
 
@@ -262,6 +166,6 @@ contains
        write(string, "(A)") trim(string)//", data is allocated"
     endif
 
-  end function tree_2d_to_string
+  end function tree_2d_symmetric_to_string
 
 end module spamm_tree_2d

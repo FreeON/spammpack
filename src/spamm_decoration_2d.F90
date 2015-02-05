@@ -67,6 +67,15 @@ module spamm_decoration_2d
 
 contains
 
+  !> Intialize a new decoration object.
+  !!
+  !! @param self The object to initialize.
+  subroutine Intialize_decoration_2d (self, N, N_padded, depth, norm2, number_nonzeros)
+
+    type(decoration_2d), intent(inout) :: self
+
+  end subroutine Intialize_decoration_2d
+
   !> String representation of decoration.
   !!
   !! @param self The node decoration.
