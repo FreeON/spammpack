@@ -135,8 +135,7 @@ module spamm_algebra
 
 CONTAINS
 
-
-
+  INCLUDE 'spamm_algebra_add.F90' 
   INCLUDE 'old_spamm_algebra.F90'
 
 end module spamm_algebra
