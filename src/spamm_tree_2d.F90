@@ -57,8 +57,9 @@ module spamm_tree_2d
      !> Pointer to upper left quadrant.
      type(tree_2d), pointer :: child_01 => null()
 
-     !> Pointer to upper left quadrant.
-     type(tree_2d), pointer :: child_10 => null()
+!     !> Pointer to upper left quadrant.
+!     Default is for upper triagonal, symmetric matrices.  Use EXTEND to add in non-symmetric case?
+!     type(tree_2d), pointer :: child_10 => null()
 
      !> Pointer to upper left quadrant.
      type(tree_2d), pointer :: child_11 => null()
@@ -144,9 +145,9 @@ contains
        call delete_tree_2d(self%child_01)
     endif
 
-    if(associated(self%child_10)) then
-       call delete_tree_2d(self%child_10)
-    endif
+!    if(associated(self%child_10)) then
+!       call delete_tree_2d(self%child_10)
+!    endif
 
     if(associated(self%child_11)) then
        call delete_tree_2d(self%child_11)
@@ -191,10 +192,10 @@ contains
           call copy_tree_2d_to_tree_2d(A%child_01, B%child_01)
        endif
 
-       if(associated(B%child_10)) then
-          LOG_DEBUG("descending")
-          call copy_tree_2d_to_tree_2d(A%child_10, B%child_10)
-       endif
+!       if(associated(B%child_10)) then
+!          LOG_DEBUG("descending")
+!          call copy_tree_2d_to_tree_2d(A%child_10, B%child_10)
+!       endif
 
        if(associated(B%child_11)) then
           LOG_DEBUG("descending")

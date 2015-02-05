@@ -38,6 +38,8 @@ module spamm_algebra
   use spamm_management
   use spamm_real_precision
   use spamm_types
+  use spamm_tree_1d
+  use spamm_tree_2d
   use spamm_utilities
 
 #ifdef _OPENMP
