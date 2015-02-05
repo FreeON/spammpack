@@ -69,29 +69,29 @@ contains
 
   !> String representation of decoration.
   !!
-  !! @param decoration The node decoration.
+  !! @param self The node decoration.
   !!
   !! @return The string representation.
-  function decoration_2d_to_string (decoration) result (string)
+  function decoration_2d_to_string (self) result (string)
 
     character(len = 1000) :: string
-    class(decoration_2d), intent(in) :: decoration
+    class(decoration_2d), intent(in) :: self
 
-    character(len = 100) :: temp
+    character(len = 200) :: temp
 
-    write(temp, *) decoration%N
+    write(temp, *) self%N
     write(string, "(A)") "N = "//trim(adjustl(temp))
 
-    write(temp, *) decoration%N_padded
+    write(temp, *) self%N_padded
     write(string, "(A)") trim(string)//", N_padded = "//trim(adjustl(temp))
 
-    write(temp, *) decoration%depth
+    write(temp, *) self%depth
     write(string, "(A)") trim(string)//", depth = "//trim(adjustl(temp))
 
-    write(temp, "(ES15.5)") decoration%norm2
+    write(temp, "(ES15.5)") self%norm2
     write(string, "(A)") trim(string)//", norm2 = "//trim(adjustl(temp))
 
-    write(temp, "(ES15.5)") decoration%number_nonzeros
+    write(temp, "(ES15.5)") self%number_nonzeros
     write(string, "(A)") trim(string)//", nnonz = "//trim(adjustl(temp))
 
   end function decoration_2d_to_string
