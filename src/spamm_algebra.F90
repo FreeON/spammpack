@@ -36,11 +36,9 @@ module spamm_algebra
 
   use spamm_globals
   use spamm_management
-  use spamm_real_precision
   use spamm_types
-  use spamm_tree_1d
-  use spamm_tree_2d
   use spamm_utilities
+  use spamm_algebra_add
 
 #ifdef _OPENMP
   use omp_lib
@@ -54,7 +52,6 @@ module spamm_algebra
 
   PUBLIC :: Multiply
   PUBLIC :: Trace
-  PUBLIC :: Add
   PUBLIC :: Filter
   PUBLIC :: Norm
   PUBLIC :: Dot
@@ -101,21 +98,6 @@ module spamm_algebra
      module procedure spamm_trace_2nd_order_product
   END INTERFACE Trace
 
-  !> Interface for additions operations between different SpAMM types.
-  INTERFACE Add
-!     MODULE PROCEDURE SpAMM_Add_Tree_2d_2_Tree_2d
-!     MODULE PROCEDURE SpAMM_Add_Tree_1d_2_Tree_1d
-!     MODULE PROCEDURE SpAMM_Add_Scalar_2_Tree_2d
-     !--------------------------------------------------------
-     MODULE PROCEDURE SpAMM_Add_QuTree_2_QuTree_InPlace
-     MODULE PROCEDURE SpAMM_Add_BiTree_2_BiTree_InPlace
-     MODULE PROCEDURE SpAMM_Add_BiTree_2_BiTree_RePlace
-     MODULE PROCEDURE SpAMM_Add_Identity_2_QuTree_InPlace
-     !--------------------------------------------------------
-     module procedure spamm_add_identity_to_matrix_2nd_order
-     module procedure spamm_add_2nd_order_to_2nd_order
-  END INTERFACE Add
-
   !> Interface for filter operations (thresholding of small matrix elements).
   INTERFACE Filter
      MODULE PROCEDURE SpAMM_Filter_QuTree
@@ -135,7 +117,6 @@ module spamm_algebra
 
 CONTAINS
 
-  INCLUDE 'spamm_algebra_add.F90' 
   INCLUDE 'old_spamm_algebra.F90'
 
 end module spamm_algebra

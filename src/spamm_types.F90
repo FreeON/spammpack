@@ -66,6 +66,48 @@ module spamm_types
   !> Bigest machine int for int*4
   integer, parameter :: SpAMM_BIG_INT = 2**28
 
+  type :: decoration_1d
+     integer                     :: N = -1
+     integer                     :: N_padded = -1
+     integer                     :: depth = -1
+     integer, dimension(1:2)     :: bb = -1
+     real(kind(0d0))             :: number_nonzeros = -1
+     real(SPAMM_KIND)            :: norm2 = -1
+  end type decoration_1d
+
+  type :: decoration_2d
+     integer                     :: N = -1
+     integer                     :: N_padded = -1
+     integer                     :: depth = -1
+     integer, dimension(1:2,0:1) :: bb = -1
+     real(kind(0d0))             :: number_nonzeros = -1
+     real(SPAMM_KIND)            :: norm2 = -1
+  end type decoration_2d
+
+  type :: SpAMM_tree_1d
+     type(decoration_1d)    :: decoration 
+     type(SpAMM_tree_1d), pointer :: child_0
+     type(SpAMM_tree_1d), pointer :: child_1
+     real(SPAMM_KIND), dimension(:), allocatable :: vect
+  end type SpAMM_tree_1d  
+
+  type :: SpAMM_tree_2d
+     type(decoration_2d)    :: decoration
+     type(SpAMM_tree_2d), pointer :: child_00 => null()
+     type(SpAMM_tree_2d), pointer :: child_01 => null()
+     type(SpAMM_tree_2d), pointer :: child_11 => null()
+     real(SPAMM_KIND), dimension(:), allocatable :: blok
+  end type SpAMM_tree_2d
+
+  type :: SpAMM_tree_2d_full
+     type(decoration_2d)    :: decoration
+     type(SpAMM_tree_2d), pointer :: child_00 => null()
+     type(SpAMM_tree_2d), pointer :: child_01 => null()
+     type(SpAMM_tree_2d), pointer :: child_10 => null()
+     type(SpAMM_tree_2d), pointer :: child_11 => null()
+     real(SPAMM_KIND), dimension(:), allocatable :: blok
+  end type SpAMM_tree_2d_full
+
   !> A vector type.
   type spamm_matrix_order_1
 
