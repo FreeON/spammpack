@@ -80,10 +80,19 @@ module spamm_tree_2d
 
   end type tree_2d_symmetric
 
-  type, extends(tree_2d_symmetric) :: tree_2d_general
+  type, extends(tree_2d) :: tree_2d_general
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_00 => null()
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_01 => null()
 
      !> Pointer to upper left quadrant.
      type(tree_2d), pointer :: child_10 => null()
+
+     !> Pointer to upper left quadrant.
+     type(tree_2d), pointer :: child_11 => null()
 
   end type tree_2d_general
 

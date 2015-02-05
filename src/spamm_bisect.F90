@@ -1,4 +1,4 @@
-!> Defines the real kind for this library.
+!> Defines derived types used in SpAMMPACK.
 !!
 !! @copyright
 !!
@@ -32,8 +32,31 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spamm_real_precision
-  !> The kind value for the real kind used in this library.
-  integer, parameter :: SPAMM_KIND = 8
+module spamm_bisect
 
-end module spamm_real_precision
+#include "spamm_utility_macros.h"
+
+  implicit none
+
+contains
+
+  !> Bisect an index range.
+  !!
+  !! The index range is inclusive, i.e. all integers in the interval
+  !! \f$ [ i_{l}, i_{u} ] \f$ are included. The function splits this
+  !! interval into two. The split intervals are \f$ [ i_{l}, i_{m} ]
+  !! \f$ and \f$ [ i_{m}+1, i_{u} ] \f$.
+  !!
+  !! @param lower The lower index.
+  !! @param upper The upper index.
+  !! @return The middle.
+  function bisect (lower, upper) result (middle)
+
+    integer :: middle
+    integer, intent(in) :: lower, upper
+
+    middle = (upper-lower+1)/2
+
+  end function bisect
+
+end module spamm_bisect

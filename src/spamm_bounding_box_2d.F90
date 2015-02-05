@@ -44,16 +44,16 @@ module spamm_bounding_box_2d
   type :: bounding_box_2d
 
      !> Lower row bound.
-     integer :: row_lower
+     integer :: row_lower = -1
 
      !> Upper row bound.
-     integer :: row_upper
+     integer :: row_upper = -1
 
      !> Lower column bound.
-     integer :: column_lower
+     integer :: column_lower = -1
 
      !> Upper column bound.
-     integer :: column_upper
+     integer :: column_upper = -1
 
    contains
 

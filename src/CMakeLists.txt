@@ -30,8 +30,9 @@ set( spammpack-sources
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
   spamm_algebra.F90
   spamm_algebra_add.F90
-  spamm_decorate.F90
+  spamm_bisect.F90
   spamm_convert.F90
+  spamm_decorate.F90
   spamm_globals.F90
   spamm_management.F90
   spamm_project.F90
