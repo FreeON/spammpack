@@ -52,7 +52,7 @@ module spamm_tree_2d
      type(bounding_box_2d) :: bounding_box
 
      !> The vector data.
-     real(SPAMM_KIND), dimension(:), allocatable :: data
+     real(SPAMM_KIND), allocatable :: data(:, :)
 
      !> Pointer to upper left quadrant.
      type(tree_2d_symmetric), pointer :: child_00 => null()
@@ -80,7 +80,7 @@ module spamm_tree_2d
      type(bounding_box_2d) :: bounding_box
 
      !> The vector data.
-     real(SPAMM_KIND), dimension(:), allocatable :: data
+     real(SPAMM_KIND), allocatable :: data(:, :)
 
      !> Pointer to upper left quadrant.
      type(tree_2d_general), pointer :: child_00 => null()
@@ -132,6 +132,15 @@ contains
 
   end function new_tree_2d_symmetric
 
+  function new_tree_2d_symmetric_decorated (decoration) result (tree)
+
+    type(tree_2d_symmetric), pointer :: tree
+    type(decoration_2d), intent(in) :: decoration
+
+    tree => new_tree_2d_symmetric(decoration%N)
+
+  end function new_tree_2d_symmetric_decorated
+
   !> The identity matrix.
   !!
   !! @param N The matrix dimension.
@@ -142,8 +151,49 @@ contains
     integer, intent(in) :: N
 
     tree => new_tree_2d_symmetric(N)
+    call set_identity_2d_symmetric(tree)
 
   end function identity_tree_2d_symmetric
+
+  recursive subroutine set_identity_2d_symmetric (tree)
+
+    use spamm_bisect
+    use spamm_globals
+
+    type(tree_2d_symmetric), intent(inout) :: tree
+
+    integer :: row_middle, column_middle
+    integer :: i
+
+    row_middle = bisect(tree%bounding_box%row_lower, tree%bounding_box%row_upper)
+    column_middle = bisect(tree%bounding_box%column_lower, tree%bounding_box%column_upper)
+
+    if(row_middle < 0 .or. column_middle < 0) then
+       ! Leaf node.
+       allocate(tree%data(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+       do i = 1, SPAMM_BLOCK_SIZE
+          tree%data(i, i) = 1
+       enddo
+    else
+       ! Recur down the diagonal.
+       tree%child_00 => new_tree_2d_symmetric_decorated(tree%decoration)
+       tree%child_11 => new_tree_2d_symmetric_decorated(tree%decoration)
+
+       tree%child_00%bounding_box = bounding_box_2d(tree%bounding_box%row_lower, &
+            row_middle, &
+            tree%bounding_box%column_lower, &
+            column_middle)
+
+       tree%child_11%bounding_box = bounding_box_2d(row_middle+1, &
+            tree%bounding_box%row_upper, &
+            column_middle+1, &
+            tree%bounding_box%column_upper)
+
+       call set_identity_2d_symmetric(tree%child_00)
+       call set_identity_2d_symmetric(tree%child_11)
+    endif
+
+  end subroutine set_identity_2d_symmetric
 
   !> The destructor.
   !!

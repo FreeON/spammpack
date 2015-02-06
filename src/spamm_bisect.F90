@@ -52,10 +52,27 @@ contains
   !! @return The middle.
   function bisect (lower, upper) result (middle)
 
+    use spamm_globals
+    use spamm_strings
+
     integer :: middle
     integer, intent(in) :: lower, upper
 
-    middle = (upper-lower+1)/2
+    integer :: width
+    character(len=1000) :: error_message
+
+    width = upper-lower+1
+    if(width > SPAMM_BLOCK_SIZE) then
+       middle = width/2+lower-1
+    else if(width == SPAMM_BLOCK_SIZE) then
+       middle = -1
+    else
+       error_message = "can not bisect ["//trim(to_string(lower)) &
+            //", "//trim(to_string(upper))//"] with block size " &
+            //trim(to_string(SPAMM_BLOCK_SIZE))
+       LOG_FATAL(error_message)
+       error stop
+    endif
 
   end function bisect
 
