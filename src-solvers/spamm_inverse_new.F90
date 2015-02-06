@@ -53,8 +53,8 @@ contains
 
     use spamm_utilities
 
-    type(tree_2d), pointer, intent(in) :: S
-    type(tree_2d), pointer, intent(out) :: Y, Z
+    type(tree_2d_symmetric), pointer, intent(in) :: S
+    type(tree_2d_symmetric), pointer, intent(out) :: Y, Z
     real(spamm_kind), intent(in), optional :: tolerance
     real(spamm_kind), intent(in), optional :: schulz_threshold
 

@@ -96,14 +96,9 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spammpack
 
-  use spamm_algebra
-  use spamm_convert
   use spamm_globals
-  use spamm_inverse
-  use spamm_management
-  use spamm_project
   use spamm_real_precision
-  use spamm_types
+  use spamm_tree_2d
   use spamm_utilities
 
 contains

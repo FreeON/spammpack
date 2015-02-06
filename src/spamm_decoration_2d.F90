@@ -42,8 +42,11 @@ module spamm_decoration_2d
 
   type :: decoration_2d
 
-     !> The number of entries.
+     !> The number of rows.
      integer :: N = -1
+
+     !> The number of columns.
+     integer :: M= -1
 
      !> The padded vector dimension.
      integer :: N_padded = -1
@@ -70,12 +73,19 @@ contains
   !> Intialize a new decoration object.
   !!
   !! @param self The object to initialize.
-  subroutine intialize_decoration_2d (self, N, N_padded, depth, norm2, number_nonzeros)
+  subroutine intialize_decoration_2d (self, M, N, N_padded, depth, norm2, number_nonzeros)
 
     type(decoration_2d), intent(inout) :: self
-    integer, intent(in) :: N, N_padded, depth
+    integer, intent(in) :: M, N, N_padded, depth
     real(SPAMM_KIND), intent(in) :: norm2
     real(kind(0d0)), intent(in) :: number_nonzeros
+
+    self%M = M
+    self%N = N
+    self%N_padded = N_padded
+    self%depth = depth
+    self%norm2 = norm2
+    self%number_nonzeros = number_nonzeros
 
   end subroutine intialize_decoration_2d
 
@@ -91,8 +101,11 @@ contains
 
     character(len = 200) :: temp
 
+    write(temp, *) self%M
+    write(string, "(A)") "M = "//trim(adjustl(temp))
+
     write(temp, *) self%N
-    write(string, "(A)") "N = "//trim(adjustl(temp))
+    write(string, "(A)") trim(string)//", N = "//trim(adjustl(temp))
 
     write(temp, *) self%N_padded
     write(string, "(A)") trim(string)//", N_padded = "//trim(adjustl(temp))

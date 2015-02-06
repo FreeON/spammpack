@@ -158,8 +158,6 @@ contains
     character(len = 1000) :: string
     class(tree_2d_symmetric), intent(in) :: A
 
-    character(len = 100) :: temp
-
     write(string, "(A)") "N = "//trim(adjustl(A%decoration%to_string()))
 
     if(allocated(A%data)) then

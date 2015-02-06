@@ -26,7 +26,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set( spammpack-sources
+set( spammpack-old-sources
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
   spamm_algebra.F90
   spamm_algebra_add.F90
@@ -41,7 +41,7 @@ set( spammpack-sources
   spammpack.F90
   )
 
-set( spammpack-new-sources
+set( spammpack-sources
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
   spamm_algebra_1d.F90
   spamm_bisect.F90
@@ -53,6 +53,7 @@ set( spammpack-new-sources
   spamm_strings.F90
   spamm_tree_1d.F90
   spamm_tree_2d.F90
+  spammpack.F90
   )
 
 set( MODULE_FILES
@@ -85,5 +86,3 @@ if( OPENMP_FOUND )
   build_library( TRUE "${OpenMP_Fortran_FLAGS}")
   add_dependencies( spammpack-threaded-shared spammpack-serial-static )
 endif()
-
-add_library( spammpack-new ${spammpack-new-sources} )
