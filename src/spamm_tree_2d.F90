@@ -103,7 +103,7 @@ contains
   !! @param N The matrix dimension.
   !!
   !! @return The tree node.
-  function new_tree_2d_symmetric (N) result(tree)
+  function new_tree_2d_symmetric (N) result (tree)
 
     use spamm_globals
     use spamm_strings
@@ -131,6 +131,19 @@ contains
     tree%bounding_box = bounding_box_2d(1, N_padded, 1, N_padded)
 
   end function new_tree_2d_symmetric
+
+  !> The identity matrix.
+  !!
+  !! @param N The matrix dimension.
+  !! @return The new matrix.
+  function identity_tree_2d_symmetric (N) result (tree)
+
+    type(tree_2d_symmetric), pointer :: tree
+    integer, intent(in) :: N
+
+    tree => new_tree_2d_symmetric(N)
+
+  end function identity_tree_2d_symmetric
 
   !> The destructor.
   !!

@@ -5,12 +5,12 @@ contains
 
     use spammpack
 
-    type(tree_2d), pointer, intent(in) :: A
-    type(tree_2d), pointer, intent(out) :: B
+    type(tree_2d_symmetric), pointer, intent(in) :: A
+    type(tree_2d_symmetric), pointer, intent(out) :: B
 
     write(*, "(A)") "entering test()"
 
-    B => new_tree_2d(A%decoration%N)
+    B => new_tree_2d_symmetric(A%decoration%N)
 
     write(*, "(A)") "leaving test()"
 
@@ -18,7 +18,7 @@ contains
 
 end module a_mod
 
-program allocate_tree_1d
+program testprogram
 
   use a_mod
   use spammpack
@@ -26,9 +26,9 @@ program allocate_tree_1d
   implicit none
 
   integer, parameter :: N = 10
-  type(tree_2d), pointer :: A, B
+  type(tree_2d_symmetric), pointer :: A, B
 
-  A => new_tree_2d(N)
+  A => new_tree_2d_symmetric(N)
   nullify(B)
 
   write(*, "(A)") "calling test()"
@@ -37,7 +37,7 @@ program allocate_tree_1d
   write(*, "(A)") "A: "//trim(A%to_string())
   write(*, "(A)") "B: "//trim(B%to_string())
 
-  call delete_tree_2d(A)
-  call delete_tree_2d(B)
+  call delete_tree_2d_symmetric(A)
+  call delete_tree_2d_symmetric(B)
 
-end program allocate_tree_1d
+end program testprogram

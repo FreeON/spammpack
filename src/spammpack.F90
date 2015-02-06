@@ -96,10 +96,11 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spammpack
 
+  use spamm_add
   use spamm_globals
   use spamm_real_precision
+  use spamm_strings
   use spamm_tree_2d
-  use spamm_utilities
 
 contains
 

@@ -43,15 +43,13 @@ set( spammpack-old-sources
 
 set( spammpack-sources
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
-  spamm_algebra_1d.F90
+  spamm_add.F90
+  spamm_add_2d_2d.F90
   spamm_bisect.F90
-  spamm_bounding_box_1d.F90
   spamm_bounding_box_2d.F90
-  spamm_decoration_1d.F90
   spamm_decoration_2d.F90
   spamm_globals.F90
   spamm_strings.F90
-  spamm_tree_1d.F90
   spamm_tree_2d.F90
   spammpack.F90
   )
