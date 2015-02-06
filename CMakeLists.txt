@@ -308,6 +308,17 @@ if( CTAGS )
     )
 endif()
 
+find_program( ETAGS etags )
+
+if( ETAGS )
+  add_custom_target( etags
+    ${ETAGS}
+    ${CMAKE_SOURCE_DIR}/{src,tests,utilities}/*.F90
+    ${CMAKE_SOURCE_DIR}/{src,tests,utilities}/*.c
+    ${CMAKE_SOURCE_DIR}/{src,tests,utilities}/*.h
+    )
+endif()
+
 enable_testing()
 
 #add_subdirectory( src-solvers )
