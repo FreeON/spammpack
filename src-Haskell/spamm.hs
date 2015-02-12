@@ -1,14 +1,10 @@
 module SpAMM
-( MatrixTree, MatrixList, IndexedMatrixList
+( MatrixTree
 , treeTranspose, treeAdd, treeMult, treeMultTol
 , combineZeros
-, isValidList, isValidIndexedList
-, listToIndexedList, indexedListToList
-, listToTree, treeToList
-, indexedListToTree, treeToIndexedList
-, readMatrixList, writeMatrixList
-, readIndexedList, writeIndexedList
-) where  
+, readTreeFromRowList, writeTreeToRowList
+, readTreeFromIndexedList, writeTreeToIndexedList
+) where
 
 import Data.List (intersperse, nub, transpose)
 import qualified Data.Map as Map (fromList, lookup, Map)
@@ -29,6 +25,20 @@ data MatrixTree = Zero  {trow :: Int, brow :: Int, lcol :: Int, rcol :: Int} |
                          normField :: Norm, tltree :: MatrixTree, trtree :: MatrixTree,
                                             bltree :: MatrixTree, brtree :: MatrixTree}
                   deriving (Eq, Show)
+
+-- reading and writing to file
+
+readTreeFromRowList :: FilePath -> IO MatrixTree
+readTreeFromRowList filePath = readRowList filePath >>= (return . rowListToTree)
+
+writeTreeToRowList :: MatrixTree -> FilePath -> IO ()
+writeTreeToRowList tree filePath = writeRowList (treeToRowList tree) filePath
+
+readTreeFromIndexedList :: FilePath -> IO MatrixTree
+readTreeFromIndexedList filePath = readIndexedList filePath >>= (return . indexedListToTree)
+
+writeTreeToIndexedList :: MatrixTree -> FilePath -> IO ()
+writeTreeToIndexedList tree filePath =writeIndexedList (treeToIndexedList tree) filePath
 
 -- accessing and calculating norms
 
@@ -162,9 +172,9 @@ treeMultTol val@(Value i j m x) (Row k l r n ltree rtree) tol
 treeMultTol (Row i l r m ltree rtree) (Col j t b n ttree btree) tol
             | [l,r] == [t,b] = if m * n <= tol then Zero i i j j
                                else treeAdd (treeMultTol ltree ttree tol)
-                                            (treeMultTol rtree btree tol) 
+                                            (treeMultTol rtree btree tol)
             | otherwise      = error "row and column don't match for multiplication"
-            
+
 treeMultTol (Row k l1 r1 m ltree rtree) (Rect t b l2 r2 n tltree trtree bltree brtree) tol
             | [l1,r1] == [t,b] = if m * n <= tol then Zero k k l2 r2
                                  else ifZeroReplace (Row k l2 r2 x lmult rmult)
@@ -201,7 +211,7 @@ treeMultTol (Col i t b m ttree btree) (Row k l r n ltree rtree) tol
 {-
 treeMultTol (Rect t1 b1 l r m tltree trtree bltree brtree) (Col i t2 b2 n ttree btree) tol
             | [l,r] == [t2,b2] = if m * n <= tol then Zero t1 b1 i i
-                                 else ifZeroReplace (Col i t1 b1 x tmult bmult) 
+                                 else ifZeroReplace (Col i t1 b1 x tmult bmult)
             | otherwise        = error "rectangle and column don't match for multiplication"
             where tmult = treeAdd (treeMultTol tltree ttree tol)
                                   (treeMultTol trtree btree tol)
@@ -228,100 +238,7 @@ treeMultTol (Rect t1 b1 l1 r1 m tltree1 trtree1 bltree1 brtree1)
 
 treeMultTol _ _ _ = error "shapes don't match for multiplication"
 
--- other data types
-
-type MatrixList = [[Value]]
-
-type IndexedMatrixList = [((Int, Int), Value)]
-
-isValidList :: MatrixList -> Bool
-isValidList list = (not $ null list) && (not $ null (head list)) && (all sameLength list)  
-                   where sameLength row = length row == length (head list)
-
-isValidIndexedList :: IndexedMatrixList -> Bool
-isValidIndexedList indexedList = (not $ null indexedList) && list == nub list
-                                 where list = map fst indexedList
-
-listToIndexedList :: MatrixList -> IndexedMatrixList
-listToIndexedList list = filter ((/= 0) . snd) $ zip indexList valueList
-                         where rows = length list
-                               cols = length $ head list
-                               indexList = [(i, j) | i <- [1..rows], j <- [1..cols]]
-                               valueList = concat list
-
-indexedListToList :: IndexedMatrixList -> MatrixList
-indexedListToList ijxs = map (map value) indexList 
-                         where hashTable = Map.fromList ijxs
-                               indices = map fst ijxs
-                               rows = maximum (map fst indices)
-                               cols = maximum (map snd indices)
-                               indexList = [[(i, j) | j <- [1..cols]] | i <- [1..rows]]
-                               value pair | isNothing check = 0
-                                          | otherwise       = fromJust check
-                                          where check = Map.lookup pair hashTable
-
-listToTree :: MatrixList -> MatrixTree
-listToTree list | isValidList list = snd . fillFromList . addListSize $ list
-                | otherwise        = error "Matrix list is invalid"
-
-treeToList :: MatrixTree -> MatrixList
-treeToList (Zero t b l r)            = replicate (b - t + 1) $ replicate (r - l + 1) 0
-treeToList (Value _ _ _ x)           = [[x]]
-treeToList (Row _ _ _ _ ltree rtree) = [concat (treeToList ltree ++ treeToList rtree)]
-treeToList (Col _ _ _ _ ttree btree) = treeToList ttree ++ treeToList btree
-treeToList (Rect _ _ _ _ _ tltree trtree bltree brtree) =
-           zipWith (++) (treeToList tltree ++ treeToList bltree)
-                        (treeToList trtree ++ treeToList brtree)
-
-indexedListToTree :: IndexedMatrixList -> MatrixTree
-indexedListToTree list | isValidIndexedList list = listToTree . indexedListToList $ list
-                       | otherwise               = error "Indexed list is invalid"
-
-treeToIndexedList :: MatrixTree -> IndexedMatrixList
-treeToIndexedList = listToIndexedList . treeToList
-
-{-
-treeToIndexedList (Zero _ _ _ _)  = []
-treeToIndexedList (Value i j _ x) = if x == 0 then [] else [((i,j),x)]
-treeToIndexedList (Row _ _ _ _ ltree rtree) = treeToIndexedList ltree ++ 
-                                              treeToIndexedList rtree
-treeToIndexedList (Col _ _ _ _ ttree btree) = treeToIndexedList ttree ++ 
-                                              treeToIndexedList btree
-treeToIndexedList (Rect _ _ _ _ _ tltree trtree bltree brtree) =
-           treeToIndexedList tltree ++ treeToIndexedList bltree ++
-           treeToIndexedList trtree ++ treeToIndexedList brtree
--}
-
--- reads a MatrixList from a file that lists rows in order on separate lines
--- with entries on each row separated by spaces
-readMatrixList :: FilePath -> IO MatrixList
-readMatrixList filePath = do contents <- readFile filePath
-                             return $ map (map read . words) (lines contents)
-
--- writes a MatrixList to a file of the format read by readMatrixList
-writeMatrixList :: MatrixList -> FilePath -> IO ()
-writeMatrixList rowList filePath =
-                do handle <- openFile filePath WriteMode
-                   mapM_ (hPutStrLn handle) $ map (listToString . (map show)) rowList
-                   hClose handle
-
--- reads an IndexeMatrixList from a file that lists each entry on a separate line
--- with the row index, column index, and value separated by spaces
-readIndexedList :: FilePath -> IO IndexedMatrixList
-readIndexedList filePath = do contents <- readFile filePath
-                              let entryList = map words (lines contents)
-                              let splitList = map (splitAt 2) entryList
-                              let indices = map (map read . fst) splitList
-                              let values = map (read . head . snd) splitList
-                              return $ zipWith (\[i,j] x -> ((i,j),x)) indices values
-
--- writes an IndexedMatrixList to a file of the format read by readIndexedList
-writeIndexedList :: IndexedMatrixList -> FilePath -> IO ()
-writeIndexedList indexedList filePath =
-                 do handle <- openFile filePath WriteMode
-                    mapM_ (hPutStrLn handle) $ map pairToString indexedList
-
--- tree utility functions
+-- utility functions
 
 isZero :: MatrixTree -> Bool
 isZero (Zero _ _ _ _) = True
@@ -357,14 +274,126 @@ combineZeros (Rect t b l r _ tltree trtree bltree brtree) =
                    newbrtree = combineZeros brtree
                    x = addSubtreeNorms . fmap norm $ [newtltree, newtrtree,
                                                       newbltree, newbrtree]
-combineZeros tree = ifZeroReplace tree 
+combineZeros tree = ifZeroReplace tree
+
+-- other data types
+
+type RowList = [[Value]]
+
+type IndexedList = ((Int,Int),[((Int, Int), Value)])
+
+isValidRowList :: RowList -> Bool
+isValidRowList rows = not (null rows) && not (null $ head rows) && all sameLength rows
+                      where sameLength row = length row == length (head rows)
+
+isValidIndexedList :: IndexedList -> Bool
+isValidIndexedList indexedList = not (null ijxs)    && ijs == nub ijs &&
+                                 maxRow <= fst size && maxCol <= snd size
+                                 where ijxs = snd indexedList
+                                       ijs = map fst ijxs
+                                       maxRow = maximum $ map fst ijs
+                                       maxCol = maximum $ map snd ijs
+                                       size = fst indexedList
+
+rowListToIndexedList :: RowList -> IndexedList
+rowListToIndexedList rows = ((nrows, ncols), ijxs)
+                            where nrows = length rows
+                                  ncols = length $ head rows
+                                  indices = [(i, j) | i <- [1..nrows], j <- [1..ncols]]
+                                  values = concat rows
+                                  ijxs = filter ((/= 0) . snd) $ zip indices values
+
+indexedListToRowList :: IndexedList -> RowList
+indexedListToRowList ((m, n), ijxs)
+                     = map (map value) indices
+                       where hashTable = Map.fromList ijxs
+                             ijs = map fst ijxs
+                             indices = [[(i, j) | j <- [1..n]] | i <- [1..m]]
+                             value pair | isNothing check = 0
+                                        | otherwise       = fromJust check
+                                        where check = Map.lookup pair hashTable
+
+rowListToTree :: RowList -> MatrixTree
+rowListToTree rows | isValidRowList rows = snd . fillFromList . addListSize $ rows
+                   | otherwise           = error "Row list is invalid"
+
+treeToRowList :: MatrixTree -> RowList
+treeToRowList (Zero t b l r)            = replicate (b - t + 1) $ replicate (r - l + 1) 0
+treeToRowList (Value _ _ _ x)           = [[x]]
+treeToRowList (Row _ _ _ _ ltree rtree) = [concat (treeToRowList ltree ++ treeToRowList rtree)]
+treeToRowList (Col _ _ _ _ ttree btree) = treeToRowList ttree ++ treeToRowList btree
+treeToRowList (Rect _ _ _ _ _ tltree trtree bltree brtree) =
+              zipWith (++) (treeToRowList tltree ++ treeToRowList bltree)
+                           (treeToRowList trtree ++ treeToRowList brtree)
+
+indexedListToTree :: IndexedList -> MatrixTree
+indexedListToTree list
+                  | isValidIndexedList list = rowListToTree . indexedListToRowList $ list
+                  | otherwise               = error "Indexed list is invalid"
+
+treeToIndexedList :: MatrixTree -> IndexedList
+treeToIndexedList = rowListToIndexedList . treeToRowList
+
+-- reads a RowList from a file that lists rows in order on separate lines
+-- with entries on each row separated by spaces
+readRowList :: FilePath -> IO RowList
+readRowList filePath = do contents <- readFile filePath
+                          return $ map (map read . words) (lines contents)
+
+-- writes a RowList to a file of the format read by readRowList
+writeRowList :: RowList -> FilePath -> IO ()
+writeRowList rowList filePath =
+             do handle <- openFile filePath WriteMode
+                mapM_ (hPutStrLn handle) $ map (listToString . (map show)) rowList
+                hClose handle
+
+-- reads an IndexeMatrixList from a file that lists each entry on a separate line
+-- with the row index, column index, and value separated by spaces
+readIndexedList :: FilePath -> IO IndexedList
+readIndexedList filePath =
+                do contents <- readFile filePath
+                   let filteredContents = map words . filter ((/= '%') . head) $
+                                          lines contents
+                   let size = (\[x,y] -> (x,y)) . (map read) . take 2 $ head filteredContents
+                   let entries = map (splitAt 2) $ tail filteredContents
+                   let indices = map (map read . fst) entries
+                   let values = map (read . head . snd) entries
+                   return (size, zipWith (\[i,j] x -> ((i,j),x)) indices values)
+
+-- writes an IndexedList to a file of the format read by readIndexedList
+writeIndexedList :: IndexedList -> FilePath -> IO ()
+writeIndexedList indexedList filePath =
+                 do let (size, ijxs) = indexedList
+                    handle <- openFile filePath WriteMode
+                    hPutStrLn handle $ (listToString . map show) [fst size, snd size]
+                    mapM_ (hPutStrLn handle) $ map pairToString ijxs
+
+-- tests of internal functions
+
+testRowIndexedEq :: IO ()
+testRowIndexedEq = print $ rowListToTree testRowList == indexedListToTree testIndexedList
+
+testRowList = [[0, 0, 0, 7,  0, 0],
+               [0, 0, 0, 0,  0, 0],
+               [0, 0, 0, 0,  0, 0],
+               [0, 0, 0, 0, 12, 0],
+               [0, 0, 0, 0,  0, 0],
+               [0, 0, 0, 0,  0, 0],
+               [0, 0, 0, 0,  0, 0],
+               [0, 0, 0, 0,  0, 0],
+               [0, 3, 0, 0,  0, 0],
+               [0, 0, 0, 0,  0, 0]] :: RowList
+
+testIndexedList = ( (10, 6), [((1, 4), 7),
+                              ((9, 2), 3),
+                              ((4, 5), 12)] ) :: IndexedList
 
 -- other utility functions
 
-addListSize :: MatrixList -> (MatrixList, Int, Int, Int, Int)
+addListSize :: RowList -> (RowList, Int, Int, Int, Int)
 addListSize xss = (xss, 1, length xss, 1, length . head $ xss)
 
-fillFromList :: (MatrixList, Int, Int, Int, Int) -> (Norm, MatrixTree)
+fillFromList :: (RowList, Int, Int, Int, Int) -> (Norm, MatrixTree)
 fillFromList ([[x]], i, _, j, _) = if x == 0 then (0, Zero i i j j)
                                    else (normNum x, Value i j (normNum x) x)
 fillFromList (xss, t, b, l, r)
