@@ -34,4 +34,19 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_add_2d_2d
 
+  use spamm_tree_2d
+
+  implicit none
+
+contains
+
+  !> Add to matrices, \f$ C \leftarrow A+B \f$.
+  recursive function add_2d_2d_symmetric (A, B) result (C)
+
+    type(tree_2d_symmetric), pointer :: C
+    type(tree_2d_symmetric), pointer, intent(in) :: A
+    type(tree_2d_symmetric), pointer, intent(in) :: B
+
+  end function add_2d_2d_symmetric
+
 end module spamm_add_2d_2d
