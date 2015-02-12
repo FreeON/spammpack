@@ -59,6 +59,16 @@ look at
 file can simply be copy and pasted into an existing `~/.emacs`
 configuration file.
 
+# Some other useful things to know
+
+The `ctags` and `etags` targets generate tags files for `vim` and
+`emacs`, respectively. The tags file is written to the repository root
+directory.
+
+~~~
+make etags
+~~~
+
 # Further Information
 
 For more information, see the doxygen documentation for details, or
