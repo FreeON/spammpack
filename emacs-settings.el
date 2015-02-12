@@ -1,3 +1,5 @@
+;; Copy and paste the commands into your ~/.emacs file.
+
 ;; Some usefile modes.
 (add-hook 'f90-mode-hook 'auto-complete-mode)
 (add-hook 'f90-mode-hook 'auto-revert-mode)
