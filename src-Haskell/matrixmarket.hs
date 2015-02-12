@@ -28,14 +28,16 @@ type IndexedList = ((Int,Int),[((Int, Int), Value)])
 readRowListFromMatrixMarket :: FilePath -> IO RowList
 readRowListFromMatrixMarket filePath = do
            contents <- readFile filePath
-           let fileLines = lines contents
-           let (first, rest) = (words . fmap toLower $ head fileLines,
-                                filter ((/='%') . head) $ tail fileLines)
-           if length first < 3 then error $ filePath ++ " header is invalid"
-           else case first !! 2 of
-                     "array"      -> return $ arrayToRowList rest filePath
-                     "coordinate" -> return $ coordinateToRowList rest filePath
-                     _            -> error $ filePath ++ " has unrecognized format " ++ (first !! 2)
+           if null contents then error $ filePath ++ " is empty"
+           else do
+            let fileLines = lines contents
+            let (first, rest) = (words . fmap toLower $ head fileLines,
+                                 filter ((/='%') . head) $ tail fileLines)
+            if length first < 3 then error $ filePath ++ " header is invalid"
+            else case first !! 2 of
+                      "array"      -> return $ arrayToRowList rest filePath
+                      "coordinate" -> return $ coordinateToRowList rest filePath
+                      _            -> error $ filePath ++ " has unrecognized format " ++ (first !! 2)
 
 writeRowListToMatrixMarket :: RowList -> String -> FilePath -> IO ()
 writeRowListToMatrixMarket rowList format filePath = do
