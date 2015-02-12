@@ -32,7 +32,7 @@ CMAKE_Fortran_COMPILER
 Configurating the library using
 
 ~~~
-cmake -DCMAKE_BUILD_TYPE=Debug .
+cmake -DCMAKE_BUILD_TYPE=Debug -DSPAMM_DEBUG_LEVEL=2 .
 ~~~
 
 will set compiler flag defaults that include bounds checking (we
