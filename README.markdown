@@ -55,7 +55,7 @@ or without an absolute path.
 
 For emacs users we have a suggested set of settings we use. Have a
 look at
-[emacs-settings](https://github.com/FreeON/spammpack/blob/master/emacs-settings). This
+[emacs-settings.el](https://github.com/FreeON/spammpack/blob/master/emacs-settings.el). This
 file can simply be copy and pasted into an existing `~/.emacs`
 configuration file.
 
