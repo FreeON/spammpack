@@ -44,16 +44,10 @@ module spamm_bounding_box_2d
   type :: bounding_box_2d
 
      !> Lower row bound.
-     integer :: row_lower = -1
+     integer :: lower(0:1) = -1
 
      !> Upper row bound.
-     integer :: row_upper = -1
-
-     !> Lower column bound.
-     integer :: column_lower = -1
-
-     !> Upper column bound.
-     integer :: column_upper = -1
+     integer :: upper(0:1) = -1
 
    contains
 
@@ -75,17 +69,17 @@ contains
 
     character(len = 200) :: temp
 
-    write(temp, *) self%row_lower
-    write(string, "(A)") trim(string)//", bbox = [ "//trim(adjustl(temp))
+    write(temp, *) self%lower(0)
+    write(string, "(A)") "bbox = [ "//trim(adjustl(temp))
 
-    write(temp, *) self%row_upper
+    write(temp, *) self%upper(0)
+    write(string, "(A)") trim(string)//":"//trim(adjustl(temp))
+
+    write(temp, *) self%lower(1)
     write(string, "(A)") trim(string)//", "//trim(adjustl(temp))
 
-    write(temp, *) self%column_lower
-    write(string, "(A)") trim(string)//", "//trim(adjustl(temp))
-
-    write(temp, *) self%column_upper
-    write(string, "(A)") trim(string)//", "//trim(adjustl(temp))//" ]"
+    write(temp, *) self%upper(1)
+    write(string, "(A)") trim(string)//":"//trim(adjustl(temp))//" ]"
 
   end function bounding_box_2d_to_string
 

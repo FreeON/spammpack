@@ -49,6 +49,7 @@ contains
   !!
   !! @param lower The lower index.
   !! @param upper The upper index.
+  !!
   !! @return The middle.
   function bisect (lower, upper) result (middle)
 

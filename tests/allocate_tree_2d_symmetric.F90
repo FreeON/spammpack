@@ -10,7 +10,7 @@ contains
 
     write(*, "(A)") "entering test()"
 
-    B => new_tree_2d_symmetric(A%decoration%N)
+    B => new_tree_2d_symmetric(A%extra%M, A%extra%N)
 
     write(*, "(A)") "leaving test()"
 
@@ -28,7 +28,7 @@ program testprogram
   integer, parameter :: N = 10
   type(tree_2d_symmetric), pointer :: A, B
 
-  A => new_tree_2d_symmetric(N)
+  A => new_tree_2d_symmetric(N, N)
   nullify(B)
 
   write(*, "(A)") "calling test()"
