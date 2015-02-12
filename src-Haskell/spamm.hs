@@ -1,58 +1,17 @@
 module SpAMM
 ( MatrixTree
-, treeTranspose, treeAdd, treeMult, treeMultTol
+, treeAdd
+, treeMult
+, treeMultTol
+, treeTranspose
 , combineZeros
-, readTreeFromRowList, writeTreeToRowList
-, readTreeFromIndexedList, writeTreeToIndexedList
 ) where
 
-import Data.List (intersperse, nub, transpose)
-import qualified Data.Map as Map (fromList, lookup, Map)
-import Data.Maybe (fromJust, isNothing)
-import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
+-- matrix algebra on MatrixTrees, including matrix multiplication that recurs on subtrees
+-- and returns Zeros when products of norms fall below tolerance (SpAMM)
 
--- data structure
-
-type Value = Double ; type Norm = Double
-
-data MatrixTree = Zero  {top :: Int, left :: Int, height :: Int, width :: Int} |
-                  Value {top :: Int, left :: Int,
-                         norm :: Norm, value :: Value} |
-                  Rect  {top :: Int, left :: Int, height :: Int, width :: Int,
-                         norm :: Norm, tltree :: MatrixTree, trtree :: MatrixTree,
-                                       bltree :: MatrixTree, brtree :: MatrixTree}
-                  deriving (Eq, Show)
-
--- a Zero with height and width > 0 is a block with all zero entries;
--- a Zero with height or width = 0 is a block with no entries at all
-
--- reading from and writing to a file
-
-readTreeFromRowList :: FilePath -> IO MatrixTree
-readTreeFromRowList filePath = readRowList filePath >>= (return . rowListToTree)
-
-writeTreeToRowList :: MatrixTree -> FilePath -> IO ()
-writeTreeToRowList tree filePath = writeRowList (treeToRowList tree) filePath
-
-readTreeFromIndexedList :: FilePath -> IO MatrixTree
-readTreeFromIndexedList filePath = readIndexedList filePath >>= (return . indexedListToTree)
-
-writeTreeToIndexedList :: MatrixTree -> FilePath -> IO ()
-writeTreeToIndexedList tree filePath =writeIndexedList (treeToIndexedList tree) filePath
-
--- accessing and calculating norms
-
-getNorm :: MatrixTree -> Norm
-getNorm (Zero _ _ _ _) = 0
-getNorm tree = norm tree
-
-valueNorm :: Value -> Norm
-valueNorm = abs
-
-addSubtreeNorms :: [Norm] -> Norm
-addSubtreeNorms = sqrt . sum . fmap (^2)
-
--- matrix algebra
+import MatrixTree (addSubtreeNorms, combineZeros, getNorm, ifZeroReplace, MatrixTree(..),
+                   rectOrder, valueNorm)
 
 treeTranspose :: MatrixTree -> MatrixTree
 treeTranspose (Zero t l h w)               = Zero l t w h
@@ -107,7 +66,7 @@ treeMultTol tree zeroTree@(Zero _ _ _ _) _ =
 
 treeMultTol (Zero t l h w) (Value i j _ _) _
             | l == i && w `elem` [0,1] = Zero t j h w
-            | otherwise      = error "zero and value don't match for multiplication"
+            | otherwise                = error "zero and value don't match for multiplication"
 
 treeMultTol (Zero t1 l1 h1 w1) (Rect t2 l2 h2 w2 _ _ _ _ _) _
             | [l1,w1] == [t2,h2] = Zero t1 l2 h1 w2
@@ -140,190 +99,3 @@ treeMultTol (Rect t1 l1 h1 w1 m tl1 tr1 bl1 br1) (Rect t2 l2 h2 w2 n tl2 tr2 bl2
                   blmult = treeAdd (treeMultTol bl1 tl2 tol) (treeMultTol br1 bl2 tol)
                   brmult = treeAdd (treeMultTol bl1 tr2 tol) (treeMultTol br1 br2 tol)
                   x = addSubtreeNorms . fmap getNorm $ [tlmult, trmult, blmult, brmult]
-
--- utility functions
-
-isZero :: MatrixTree -> Bool
-isZero (Zero _ _ _ _) = True
-isZero _              = False
-
-ifZeroReplace :: MatrixTree -> MatrixTree
-ifZeroReplace tree@(Zero _ _ _ _) = tree
-ifZeroReplace tree@(Value i j _ x) = if x == 0 then Zero i j 1 1 else tree
-ifZeroReplace tree@(Rect t l h w _ tl tr bl br)
-              | null nonZeroTrees        = Zero t l h w
-              | length nonZeroTrees == 1 = head nonZeroTrees
-              | otherwise                = tree
-              where nonZeroTrees = filter (not . isZero) [tl, tr, bl, br]
-
-combineZeros :: MatrixTree -> MatrixTree
-combineZeros (Rect t l h w _ tl tr bl br) =
-             ifZeroReplace (Rect t l h w x newtl newtr newbl newbr)
-             where [newtl, newtr, newbl, newbr] = fmap combineZeros [tl, tr, bl, br]
-                   x = addSubtreeNorms . fmap getNorm $ [newtl, newtr, newbl, newbr]
-combineZeros tree = ifZeroReplace tree
-
-getHeight :: MatrixTree -> Int
-getHeight (Value _ _ _ _) = 1
-getHeight tree = height tree
-
-getWidth :: MatrixTree -> Int
-getWidth (Value _ _ _ _) = 1
-getWidth tree = width tree
-
-rectOrder :: MatrixTree -> MatrixTree
-rectOrder tree@(Zero _ _ _ _) = tree
-rectOrder tree@(Value _ _ _ _) = tree
-rectOrder tree@(Rect t l h w x tl tr bl br)
-          | fmap getHeight [bl, br] == [0, 0] = Rect t l h w x bl br tl tr
-          | fmap getWidth [tr, br]  == [0, 0] = Rect t l h w x tr tl br bl
-          | otherwise                         = tree
-
--- other data types
-
-type RowList = [[Value]]
-
-type IndexedList = ((Int,Int),[((Int, Int), Value)])
-
-isValidRowList :: RowList -> Bool
-isValidRowList rows = not (null rows) && not (null $ head rows) && all sameLength rows
-                      where sameLength row = length row == length (head rows)
-
-isValidIndexedList :: IndexedList -> Bool
-isValidIndexedList indexedList = not (null ijxs)    && ijs == nub ijs &&
-                                 maxRow <= fst size && maxCol <= snd size
-                                 where ijxs = snd indexedList
-                                       ijs = fmap fst ijxs
-                                       maxRow = maximum $ fmap fst ijs
-                                       maxCol = maximum $ fmap snd ijs
-                                       size = fst indexedList
-
-rowListToIndexedList :: RowList -> IndexedList
-rowListToIndexedList rows = ((nrows, ncols), ijxs)
-                            where nrows = length rows
-                                  ncols = length $ head rows
-                                  indices = [(i, j) | i <- [1..nrows], j <- [1..ncols]]
-                                  values = concat rows
-                                  ijxs = filter ((/= 0) . snd) $ zip indices values
-
-indexedListToRowList :: IndexedList -> RowList
-indexedListToRowList ((m, n), ijxs)
-                     = fmap (fmap value) indices
-                       where hashTable = Map.fromList ijxs
-                             ijs = fmap fst ijxs
-                             indices = [[(i, j) | j <- [1..n]] | i <- [1..m]]
-                             value pair | isNothing check = 0
-                                        | otherwise       = fromJust check
-                                        where check = Map.lookup pair hashTable
-
-rowListToTree :: RowList -> MatrixTree
-rowListToTree rows | isValidRowList rows = snd . fillFromList . addListSize $ rows
-                   | otherwise           = error "Row list is invalid"
-
-treeToRowList :: MatrixTree -> RowList
-treeToRowList (Zero t l h w)               = replicate h $ replicate w 0
-treeToRowList (Value _ _ _ x)              = [[x]]
-treeToRowList (Rect _ _ _ _ _ tl tr bl br) =
-              zipWith (++) (treeToRowList tl ++ treeToRowList bl)
-                           (treeToRowList tr ++ treeToRowList br)
-
-indexedListToTree :: IndexedList -> MatrixTree
-indexedListToTree list
-                  | isValidIndexedList list = rowListToTree . indexedListToRowList $ list
-                  | otherwise               = error "Indexed list is invalid"
-
-treeToIndexedList :: MatrixTree -> IndexedList
-treeToIndexedList = rowListToIndexedList . treeToRowList
-
--- reads a RowList from a file that lists rows in order on separate lines
--- with entries on each row separated by spaces
-readRowList :: FilePath -> IO RowList
-readRowList filePath = do contents <- readFile filePath
-                          return $ fmap (fmap read . words) (lines contents)
-
--- writes a RowList to a file of the format read by readRowList
-writeRowList :: RowList -> FilePath -> IO ()
-writeRowList rowList filePath =
-             do handle <- openFile filePath WriteMode
-                mapM_ (hPutStrLn handle) $ fmap (listToString . (fmap show)) rowList
-                hClose handle
-
--- reads an IndexeMatrixList from a file that lists each entry on a separate line
--- with the row index, column index, and value separated by spaces
-readIndexedList :: FilePath -> IO IndexedList
-readIndexedList filePath =
-                do contents <- readFile filePath
-                   let filteredContents = fmap words . filter ((/= '%') . head) $
-                                          lines contents
-                   let size = (\[x,y] -> (x,y)) . (fmap read) $ head filteredContents
-                   let entries = fmap (splitAt 2) $ tail filteredContents
-                   let indices = fmap (fmap read . fst) entries
-                   let values = fmap (read . head . snd) entries
-                   return (size, zipWith (\[i,j] x -> ((i,j),x)) indices values)
-
--- writes an IndexedList to a file of the format read by readIndexedList
-writeIndexedList :: IndexedList -> FilePath -> IO ()
-writeIndexedList indexedList filePath =
-                 do let (size, ijxs) = indexedList
-                    handle <- openFile filePath WriteMode
-                    hPutStrLn handle $ (listToString . fmap show) [fst size, snd size]
-                    mapM_ (hPutStrLn handle) $ fmap pairToString ijxs
-
--- tests of internal functions
-
-testRowIndexedEq :: IO ()
-testRowIndexedEq = print $ rowListToTree testRowList == indexedListToTree testIndexedList
-
-testRowList = [[0, 0, 0, 7,  0, 0],
-               [0, 0, 0, 0,  0, 0],
-               [0, 0, 0, 0,  0, 0],
-               [0, 0, 0, 0, 12, 0],
-               [0, 0, 0, 0,  0, 0],
-               [0, 0, 0, 0,  0, 0],
-               [0, 0, 0, 0,  0, 0],
-               [0, 0, 0, 0,  0, 0],
-               [0, 3, 0, 0,  0, 0],
-               [0, 0, 0, 0,  0, 0]] :: RowList
-
-testIndexedList = ( (10, 6), [((1, 4), 7),
-                              ((9, 2), 3),
-                              ((4, 5), 12)] ) :: IndexedList
-
--- other utility functions
-
-addListSize :: RowList -> (RowList, Int, Int, Int, Int)
-addListSize xss = (xss, 1, 1, length xss, length . head $ xss)
-
-fillFromList :: (RowList, Int, Int, Int, Int) -> (Norm, MatrixTree)
-
-fillFromList ([[x]], i, j, _, _) = if x == 0 then (0, Zero i j 1 1)
-                                   else (valueNorm x, Value i j (valueNorm x) x)
-
-fillFromList (xss, t, l, h, w)
-             | all0 xss  = (0, Zero t l h w)
-             | otherwise = (rectNorm, Rect t l h w rectNorm (tree tl) (tree tr)
-                                                            (tree bl) (tree br))
-             where all0 = and . fmap (== 0) . concat
-                   [xsstl, xsstr, xssbl, xssbr] = partitionList xss
-                   tl = (xsstl, t, l, h `div` 2, w `div` 2)
-                   tr = (xsstr, t, l + w `div` 2, h `div` 2, w - w `div` 2)
-                   bl = (xssbl, t + h `div` 2, l, h - h `div` 2, w `div` 2)
-                   br = (xssbr, t + h `div` 2, l + w `div` 2, h - h `div` 2, w - w `div` 2)
-                   rectNorm = calcNorm [tl, tr, bl, br]
-                   calcNorm = addSubtreeNorms . fmap (fst . fillFromList)
-                   tree = snd . fillFromList
-
-halveList :: [a] -> ([a],[a])
-halveList xs = splitAt (length xs `div` 2) xs
-
-partitionList :: [[a]] -> [[[a]]]
-partitionList xss = fmap transpose [tlxss, trxss, blxss, brxss]
-                    where (txss, bxss)   = halveList xss
-                          (tlxss, trxss) = halveList . transpose $ txss
-                          (blxss, brxss) = halveList . transpose $ bxss
-
-listToString :: [String] -> String
-listToString = concat . (intersperse " ")
-
-pairToString :: (Show a, Show b, Show c) => ((a,b),c) -> String
-pairToString = listToString . (\((i,j),x) -> [show i, show j, show x])
