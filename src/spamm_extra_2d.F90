@@ -1,6 +1,4 @@
-!> Defines derived types used in SpAMMPACK.
-!!
-!! @copyright
+!> @copyright
 !!
 !! Copyright (c) 2015, Los Alamos National Laboratory
 !! All rights reserved.
@@ -32,55 +30,44 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spamm_bounding_box_2d
-
-#include "spamm_utility_macros.h"
-
-  use spamm_real_precision
+module spamm_extra_2d
 
   implicit none
 
-  !> A bounding box.
-  type :: bounding_box_2d
+  type :: extra_2d
 
-     !> Lower row bound.
-     integer :: lower(0:1) = -1
+     !> The number of rows.
+     integer :: N = -1
 
-     !> Upper row bound.
-     integer :: upper(0:1) = -1
+     !> The number of columns.
+     integer :: M = -1
 
    contains
 
-     procedure :: to_string => bounding_box_2d_to_string
+     procedure :: to_string => extra_2d_to_string
 
-  end type bounding_box_2d
+  end type extra_2d
 
 contains
 
-  !> String representation of bounding box.
+  !> String representation of decoration.
   !!
-  !! @param self The bounding box.
+  !! @param self The node decoration.
   !!
   !! @return The string representation.
-  function bounding_box_2d_to_string (self) result(string)
+  function extra_2d_to_string (self) result (string)
 
     character(len = 1000) :: string
-    class(bounding_box_2d), intent(in) :: self
+    class(extra_2d), intent(in) :: self
 
     character(len = 200) :: temp
 
-    write(temp, *) self%lower(0)
-    write(string, "(A)") "bbox = [ "//trim(adjustl(temp))
+    write(temp, *) self%M
+    write(string, "(A)") "M = "//trim(adjustl(temp))
 
-    write(temp, *) self%upper(0)
-    write(string, "(A)") trim(string)//":"//trim(adjustl(temp))
+    write(temp, *) self%N
+    write(string, "(A)") trim(string)//", N = "//trim(adjustl(temp))
 
-    write(temp, *) self%lower(1)
-    write(string, "(A)") trim(string)//", "//trim(adjustl(temp))
+  end function extra_2d_to_string
 
-    write(temp, *) self%upper(1)
-    write(string, "(A)") trim(string)//":"//trim(adjustl(temp))//" ]"
-
-  end function bounding_box_2d_to_string
-
-end module spamm_bounding_box_2d
+end module spamm_extra_2d

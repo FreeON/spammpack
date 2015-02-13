@@ -38,6 +38,7 @@ module spamm_tree_2d
 
   use spamm_bounding_box_2d
   use spamm_decoration_2d
+  use spamm_extra_2d
   use spamm_real_precision
 
   implicit none
@@ -48,8 +49,8 @@ module spamm_tree_2d
      !> The tree node decoration.
      type(decoration_2d) :: decoration
 
-     !> The axis-aligned bounding box.
-     type(bounding_box_2d) :: bounding_box
+     !> Some extra information.
+     type(extra_2d) :: extra
 
      !> The vector data.
      real(SPAMM_KIND), allocatable :: data(:, :)
@@ -70,46 +71,21 @@ module spamm_tree_2d
 
   end type tree_2d_symmetric
 
-  !> General matrix.
-  type :: tree_2d_general
-
-     !> The tree node decoration.
-     type(decoration_2d) :: decoration
-
-     !> The axis-aligned bounding box.
-     type(bounding_box_2d) :: bounding_box
-
-     !> The vector data.
-     real(SPAMM_KIND), allocatable :: data(:, :)
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d_general), pointer :: child_00 => null()
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d_general), pointer :: child_01 => null()
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d_general), pointer :: child_10 => null()
-
-     !> Pointer to upper left quadrant.
-     type(tree_2d_general), pointer :: child_11 => null()
-
-  end type tree_2d_general
-
 contains
 
   !> The constructor.
   !!
-  !! @param N The matrix dimension.
+  !! @param M The number of rows.
+  !! @param N The number of columns.
   !!
   !! @return The tree node.
-  function new_tree_2d_symmetric (N) result (tree)
+  function new_tree_2d_symmetric (M, N) result (tree)
 
     use spamm_globals
     use spamm_strings
 
     type(tree_2d_symmetric), pointer :: tree
-    integer, intent(in) :: N
+    integer, intent(in) :: M, N
 
     integer :: i, N_padded, depth
 
@@ -127,19 +103,23 @@ contains
        i = i+1
     enddo
 
-    tree%decoration = decoration_2d(N, N_padded, depth, 0, 0)
-    tree%bounding_box = bounding_box_2d(1, N_padded, 1, N_padded)
+    tree%decoration = decoration_2d(0, 0, bounding_box_2d([1, 1], [N_padded, N_padded]))
+    tree%extra = extra_2d(M, N)
 
   end function new_tree_2d_symmetric
 
-  function new_tree_2d_symmetric_decorated (decoration) result (tree)
+  function new_node_2d_symmetric (decoration, extra) result (tree)
 
     type(tree_2d_symmetric), pointer :: tree
     type(decoration_2d), intent(in) :: decoration
+    type(extra_2d), intent(in) :: extra
 
-    tree => new_tree_2d_symmetric(decoration%N)
+    allocate(tree)
 
-  end function new_tree_2d_symmetric_decorated
+    tree%decoration = decoration
+    tree%extra = extra
+
+  end function new_node_2d_symmetric
 
   !> The identity matrix.
   !!
@@ -150,7 +130,7 @@ contains
     type(tree_2d_symmetric), pointer :: tree
     integer, intent(in) :: N
 
-    tree => new_tree_2d_symmetric(N)
+    tree => new_tree_2d_symmetric(N, N)
     call set_identity_2d_symmetric(tree)
 
   end function identity_tree_2d_symmetric
@@ -162,13 +142,15 @@ contains
 
     type(tree_2d_symmetric), intent(inout) :: tree
 
-    integer :: row_middle, column_middle
+    integer :: middle(0:1)
     integer :: i
 
-    row_middle = bisect(tree%bounding_box%row_lower, tree%bounding_box%row_upper)
-    column_middle = bisect(tree%bounding_box%column_lower, tree%bounding_box%column_upper)
+    LOG_DEBUG("[identity] "//trim(tree%decoration%to_string()))
 
-    if(row_middle < 0 .or. column_middle < 0) then
+    middle(0) = bisect(tree%decoration%bounding_box%lower(0), tree%decoration%bounding_box%upper(0))
+    middle(1) = bisect(tree%decoration%bounding_box%lower(1), tree%decoration%bounding_box%upper(1))
+
+    if(middle(0) < 0 .or.middle(1) < 0) then
        ! Leaf node.
        allocate(tree%data(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
        do i = 1, SPAMM_BLOCK_SIZE
@@ -176,18 +158,14 @@ contains
        enddo
     else
        ! Recur down the diagonal.
-       tree%child_00 => new_tree_2d_symmetric_decorated(tree%decoration)
-       tree%child_11 => new_tree_2d_symmetric_decorated(tree%decoration)
+       tree%child_00 => new_node_2d_symmetric(decoration_2d(0, 0, &
+            bounding_box_2d( &
+            [tree%decoration%bounding_box%lower(0), tree%decoration%bounding_box%lower(1)], &
+            [middle(0), middle(1)])), tree%extra)
 
-       tree%child_00%bounding_box = bounding_box_2d(tree%bounding_box%row_lower, &
-            row_middle, &
-            tree%bounding_box%column_lower, &
-            column_middle)
-
-       tree%child_11%bounding_box = bounding_box_2d(row_middle+1, &
-            tree%bounding_box%row_upper, &
-            column_middle+1, &
-            tree%bounding_box%column_upper)
+       tree%child_11 => new_node_2d_symmetric(decoration_2d(0, 0, &
+            bounding_box_2d([middle(0)+1, middle(1)+1], &
+            [tree%decoration%bounding_box%upper(0), tree%decoration%bounding_box%upper(1)])), tree%extra)
 
        call set_identity_2d_symmetric(tree%child_00)
        call set_identity_2d_symmetric(tree%child_11)

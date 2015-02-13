@@ -36,31 +36,21 @@ module spamm_decoration_2d
 
 #include "spamm_utility_macros.h"
 
+  use spamm_bounding_box_2d
   use spamm_real_precision
 
   implicit none
 
   type :: decoration_2d
 
-     !> The number of rows.
-     integer :: N = -1
-
-     !> The number of columns.
-     integer :: M= -1
-
-     !> The padded vector dimension.
-     integer :: N_padded = -1
-
-     !> The tree depth. The root tier is 0, tier == depth is the leaf
-     !> node tier, i.e. the tier at which actual matrix elements are
-     !> stored.
-     integer :: depth = -1
+     !> The number of non-zero elements.
+     real(kind(0d0)) :: number_nonzeros = -1
 
      !> The square of the Frobenius norm.
      real(SPAMM_KIND) :: norm2 = -1
 
-     !> The number of non-zero elements.
-     real(kind(0d0)) :: number_nonzeros = -1
+     !> The axis-aligned bounding box.
+     type(bounding_box_2d) :: bounding_box
 
    contains
 
@@ -69,25 +59,6 @@ module spamm_decoration_2d
   end type decoration_2d
 
 contains
-
-  !> Intialize a new decoration object.
-  !!
-  !! @param self The object to initialize.
-  subroutine intialize_decoration_2d (self, M, N, N_padded, depth, norm2, number_nonzeros)
-
-    type(decoration_2d), intent(inout) :: self
-    integer, intent(in) :: M, N, N_padded, depth
-    real(SPAMM_KIND), intent(in) :: norm2
-    real(kind(0d0)), intent(in) :: number_nonzeros
-
-    self%M = M
-    self%N = N
-    self%N_padded = N_padded
-    self%depth = depth
-    self%norm2 = norm2
-    self%number_nonzeros = number_nonzeros
-
-  end subroutine intialize_decoration_2d
 
   !> String representation of decoration.
   !!
@@ -101,56 +72,14 @@ contains
 
     character(len = 200) :: temp
 
-    write(temp, *) self%M
-    write(string, "(A)") "M = "//trim(adjustl(temp))
-
-    write(temp, *) self%N
-    write(string, "(A)") trim(string)//", N = "//trim(adjustl(temp))
-
-    write(temp, *) self%N_padded
-    write(string, "(A)") trim(string)//", N_padded = "//trim(adjustl(temp))
-
-    write(temp, *) self%depth
-    write(string, "(A)") trim(string)//", depth = "//trim(adjustl(temp))
-
     write(temp, "(ES15.5)") self%norm2
-    write(string, "(A)") trim(string)//", norm2 = "//trim(adjustl(temp))
+    write(string, "(A)") "norm2 = "//trim(adjustl(temp))
 
     write(temp, "(ES15.5)") self%number_nonzeros
     write(string, "(A)") trim(string)//", nnonz = "//trim(adjustl(temp))
 
+    write(string, "(A)") trim(string)//", "//trim(self%bounding_box%to_string())
+
   end function decoration_2d_to_string
-
-  !> Merge two decorations.
-  !!
-  !! @param A Decoration A.
-  !! @param B Decoration B.
-  function decoration_2d_merge (A, B) result (C)
-
-    type(decoration_2d) :: C
-    type(decoration_2d), intent(in) :: A, B
-
-    if(A%N /= B%N) then
-       LOG_FATAL("dimension mismatch in N")
-       error stop
-    endif
-
-    if(A%N_padded /= B%N_padded) then
-       LOG_FATAL("padded dimension mismatch")
-       error stop
-    endif
-
-    if(A%depth /= B%depth) then
-       LOG_FATAL("depth mismatch")
-       error stop
-    endif
-
-    C%N = A%N
-    C%N_padded = A%N_padded
-    C%depth = A%depth
-    C%norm2 = A%norm2+B%norm2
-    C%number_nonzeros = A%number_nonzeros+B%number_nonzeros
-
-  end function decoration_2d_merge
 
 end module spamm_decoration_2d
