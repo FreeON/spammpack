@@ -1,57 +1,77 @@
+! The "long weekend hack".  Going for a functional implementation
+! that fits tightly in the edit window (mc,2/2015).
+!
+! ********* The SpAMM Garnish (SGARN) tree enrichments ...
 module spamm_decorate
-  use spamm_globals
-  use spamm_types
+
+  use  spamm_globals
+  use  spamm_types
+  !
   implicit none
   PRIVATE
+
+  ! some vanilla ... 
   PUBLIC :: Decorate
-  !> Interface for additions operations between different SpAMM types.
   INTERFACE Decorate
-     MODULE PROCEDURE SpAMM_Decorate_Tree1d
-     MODULE PROCEDURE SpAMM_Decorate_Tree2d
+     MODULE PROCEDURE SpAMM_redecorate_1d
+     MODULE PROCEDURE SpAMM_redecorate_2d
   END INTERFACE Decorate
+
 CONTAINS
 
-  SUBROUTINE SpAMM_Decorate_Tree2d(A)
-    TYPE(SpAMM_Tree_2d), POINTER, INTENT(INOUT)   :: A    
-    IF(ALLOCATED(A%Blok))THEN
-       A%decoration%norm2=SUM(A%Blok**2)
-       A%decoration%number_nonzeros=SIZE(A%Blok,1)*SIZE(A%Blok,2)
-       RETURN
-    ENDIF
-    IF(ASSOCIATED(A%child_00))CALL DecorateUp_2d(A%decoration,A%child_00%decoration)
-    IF(ASSOCIATED(A%child_01))CALL DecorateUp_2d(A%decoration,A%child_01%decoration)
-    IF(ASSOCIATED(A%child_11))CALL DecorateUp_2d(A%decoration,A%child_11%decoration)
-  END SUBROUTINE SpAMM_Decorate_Tree2d
+  ! Protocols for the uppward, child->parent merge of the SGARN ... 
 
-  SUBROUTINE SpAMM_Decorate_Tree1d(A)
-    TYPE(SpAMM_Tree_1d), POINTER, INTENT(INOUT)   :: A    
-    IF(ALLOCATED(A%Vect))THEN
-       A%decoration%norm2=SUM(A%Vect**2)
-       A%decoration%number_nonzeros=SIZE(A%Vect,1)
-       RETURN
-    ENDIF
-    IF(ASSOCIATED(A%child_0))CALL DecorateUp_1d(A%decoration,A%child_0%decoration)
-    IF(ASSOCIATED(A%child_1))CALL DecorateUp_1d(A%decoration,A%child_1%decoration)
-  END SUBROUTINE SpAMM_Decorate_Tree1d
+  ! - - - - - - - - - - - - - - - - -1d, 1d, 1d - - - - - - - - - - - - - - - - - - 
+  ! 1d decoration merge:
+  SUBROUTINE SpAMM_merge_1d(a,b)
+    TYPE(decoration_1d), INTENT(INOUT) :: a
+    TYPE(decoration_1d), INTENT(IN)    :: b
+    a%Norm2=a%Norm2+a%Norm2
+    a%Non0s=a%Non0s+a%Non0s
+    a%BndBx(0)=MIN(a%BndBx(0),b%BndBx(0))
+    a%BndBx(1)=MAX(a%BndBx(1),b%BndBx(1))
+  END SUBROUTINE SpAMM_merge_1d
 
-  SUBROUTINE DecorateUp_2d(A,B)
-    TYPE(decoration_2d), INTENT(INOUT) :: A
-    TYPE(decoration_2d), INTENT(IN)    :: B
-    A%bb(1,0)=MIN(A%bb(1,0),B%bb(1,0))
-    A%bb(2,0)=MAX(A%bb(2,0),B%bb(2,0))
-    A%bb(1,1)=MIN(A%bb(1,1),B%bb(1,1))
-    A%bb(2,1)=MAX(A%bb(2,1),B%bb(2,1))
-    A%norm2=A%norm2+B%norm2
-    A%number_nonzeros=A%number_nonzeros+B%number_nonzeros    
-  END SUBROUTINE DecorateUp_2d
+  ! uppwards redecoration ...
+  SUBROUTINE SpAMM_redecorate_1d(a)
+    TYPE(SpAMM_Tree_1d), POINTER, INTENT(INOUT) :: a    
+    ! at a leaf ...
+    IF(ALLOCATED(a%chunk))THEN; a%norm2=SUM(a%chunk**2); a%non0s=SIZE(a%chunk)
+    RETURN; ENDIF
+    ! re-init this level
+    a%frill%Norm2=0; a%frill%Non0s=0; a%frill%BndBx=0
+    ! walk back up one level with each decoration ...
+    IF(ASSOCIATED( a%child_0 )) CALL SpAMM_merge_1d( a%frill, a%child_0%frill )
+    IF(ASSOCIATED( a%child_1 )) CALL SpAMM_merge_1d( a%frill, a%child_1%frill )
+  END SUBROUTINE SpAMM_redecorate_1d   
+ 
+  ! - - - - - - - - - - - - - - - - -2d, 2d, 2d - - - - - - - - - - - - - - - - - - 
+  ! the 2d decoration merge:
+  SUBROUTINE SpAMM_merge_2d(a,b)
+    TYPE(decoration_2d), INTENT(INOUT) :: a
+    TYPE(decoration_2d), INTENT(IN)    :: b
+    a%BndBx(0,1)=MIN(a%BndBx(0,1),b%BndBx(0,1))
+    a%BndBx(0,2)=MAX(a%BndBx(0,2),b%BndBx(0,2))
+    a%BndBx(1,1)=MIN(a%BndBx(1,1),b%BndBx(1,1))
+    a%BndBx(1,2)=MAX(a%BndBx(1,2),b%BndBx(1,2))
+    a%Norm2=a%Norm2+a%Norm2
+    a%Non0s=a%Non0s+a%Non0s
+  END SUBROUTINE SpAMM_merge_2d
 
-  SUBROUTINE DecorateUp_1d(A,B)
-    TYPE(decoration_1d), INTENT(INOUT) :: A
-    TYPE(decoration_1d), INTENT(IN)    :: B
-    A%bb(1)=MIN(A%bb(1),B%bb(1))
-    A%bb(2)=MAX(A%bb(2),B%bb(2))
-    A%norm2=A%norm2+B%norm2
-    A%number_nonzeros=A%number_nonzeros+B%number_nonzeros    
-  END SUBROUTINE DecorateUp_1d
+  ! uppwards redecoration ...
+  SUBROUTINE SpAMM_redecorate_2d_symm(a)
+    TYPE(SpAMM_Tree_2d_symm), POINTER, INTENT(INOUT)   :: a    
+    ! at a leaf ...
+    IF(ALLOCATED(a%Blok))THEN; a%norm2=SUM(a%Blok**2); a%Non0s=SIZE(a%Blok,1)*SIZE(a%Blok,2)
+    RETURN; ENDIF
+    ! re-init this level
+    a%frill%Norm2=SpAMM_Zero
+    a%frill%Non0s=SpAMM_Zero
+    a%frill%BndBx=SpAMM_Zero
+    ! walk back up one level with each decoration ...
+    IF(ASSOCIATED(A%child_00))CALL SpAMM_merge_2d( A%frill, A%child_00%frill )
+    IF(ASSOCIATED(A%child_01))CALL SpAMM_merge_2d( A%frill, A%child_01%frill )
+    IF(ASSOCIATED(A%child_11))CALL SpAMM_merge_2d( A%frill, A%child_11%frill )
+  END SUBROUTINE SpAMM_Decorate_2d_symm
 
 END module spamm_decorate
