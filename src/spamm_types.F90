@@ -48,7 +48,7 @@ MODULE spamm_types
   ! Enrichments of the tree_1d ...
   type :: decoration_1d
      !> Integer dimension of the native (non-padded) vector
-     integer                               :: Dimen
+     integer                               :: NDimn
      !> Axis-aligned brakets for the (i-leftmost) index space
      integer,  pointer, dimension(0:1)     :: BndBx
      !> Square of the F-norm.
@@ -62,7 +62,7 @@ MODULE spamm_types
   ! Enrichments of the tree_2d ...
   type :: decoration_2d
      !> Integer dimension of the native (non-padded) matrix 
-     integer,           dimension(1:2)     :: Dimem
+     integer,           dimension(1:2)     :: NDimn
      !> Axis-aligned bounding box for the (i-j) index space
      integer,  pointer, dimension(0:1,1:2) :: BndBx
      !> Square of the F-norm.

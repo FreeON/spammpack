@@ -1,4 +1,7 @@
-  ! ___________ STRCRS __________ : 
+
+  ! SpAMM STuCtuReS ________________ SSTCRS _________________
+  ! SpAMM constructers and destructures -- structures
+
 
   function SpAMM_new_tree_top_2d_symm ( M, N, Alpha ) result (tree)
     !
