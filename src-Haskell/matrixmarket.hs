@@ -26,23 +26,8 @@ type ValueList = [Value]
 type IndexedList = ((Int,Int),[((Int, Int), Value)])
 
 readRowListFromMatrixMarket :: FilePath -> IO RowList
-readRowListFromMatrixMarket filePath = do
-           contents <- readFile filePath
-           if null (words contents) then error $ filePath ++ " is empty"
-           else do
-            let fileLines = lines contents
-            let first = words . head $ fileLines
-            if length first < 4 then error $ filePath ++ " header is invalid"
-            else do
-             let rest = filter (not . null) . fmap words . filter ((/='%') . head) $ tail fileLines
-             if null rest then error $ filePath ++ " has no contents"
-             else do
-              let command =
-                   case fmap toLower (first !! 2) of
-                        "array"      -> arrayToRowList
-                        "coordinate" -> coordinateToRowList
-                        _            -> error $ filePath ++ " has unrecognized format " ++ (first !! 2)
-              return $ command rest filePath
+readRowListFromMatrixMarket filePath = readFile filePath >>=
+                                       (return . matrixMarketToRowList filePath)
 
 writeRowListToMatrixMarket :: RowList -> String -> FilePath -> IO ()
 writeRowListToMatrixMarket rowList format filePath = do
@@ -54,14 +39,29 @@ writeRowListToMatrixMarket rowList format filePath = do
             mapM_ (hPutStrLn handle) list
             hClose handle
 
+matrixMarketToRowList :: FilePath -> String -> RowList
+matrixMarketToRowList filePath contents
+      | null (words contents) = error $ filePath ++ " is empty"
+      | length first < 4      = error $ filePath ++ " header is invalid"
+      | null rest             = error $ filePath ++ " has no contents"
+      | otherwise             = command rest filePath
+      where fileLines = lines contents
+            first = words . head $ fileLines
+            rest = filter (not . null) . fmap words . filter ((/='%') . head) $ tail fileLines
+            command = case fmap toLower (first !! 2) of
+                      "array"      -> arrayToRowList
+                      "coordinate" -> coordinateToRowList
+                      _            -> error $ filePath ++ " has unrecognized format " ++ (first !! 2)
+
 arrayToRowList :: [[String]] -> FilePath -> RowList
 arrayToRowList lineList filePath
-               | isValid   = transpose $ arrangeInCols values
-               | otherwise = error $ "Array format file " ++ filePath ++ " is invalid"
-               where isValid = length firstLine == 2 && all ((== 1) . length) valueLines &&
-                               all (not . null) size && length valueList == nrows * ncols &&
-                               all (not . null) valueReads
-                     (firstLine, valueLines) = (head lineList, tail lineList)
+               | length firstLine /= 2             = error $ filePath ++ " matrix size invalid"
+               | any ((/= 1) . length) valueLines  = error $ filePath ++ " has invalid value lines"
+               | any null size                     = error $ filePath ++ " matrix size invalid"
+               | length valueList /= nrows * ncols = error $ filePath ++ " has wrong matrix size"
+               | any null valueReads               = error $ filePath ++ " has invalid values"
+               | otherwise                         = transpose $ arrangeInCols values
+               where (firstLine, valueLines) = (head lineList, tail lineList)
                      size = fmap reads firstLine :: [[(Int,String)]]
                      [nrows, ncols] = fmap (fst . head) size
                      valueList = concat valueLines
@@ -73,15 +73,18 @@ arrayToRowList lineList filePath
 
 coordinateToRowList :: [[String]] -> FilePath -> RowList
 coordinateToRowList lineList filePath
-                    | isValid   = if nonzeros == 0 then replicate (fst size) $ replicate (snd size) 0
-                                  else indexedListToRowList indexedList
-                    | otherwise = error $ "Coordinate format file " ++ filePath ++ " is invalid"
-                    where isValid = all ((== 3) . length) lineList && all (not . null) firstLineNums &&
-                                    length entryLines == nonzeros &&
-                                    all (all (not . null)) indexReads && indices == nub indices &&
-                                    maxCol <= fst size && maxRow <= snd size &&
-                                    all (not . null) valueReads
-                          (firstLine, entryLines) = (head lineList, tail lineList)
+                    | any ((/= 3) . length) lineList = error $ filePath ++ " has wrong-length line"
+                    | any null firstLineNums         = error $ filePath ++ " has invalid size line"
+                    | length entryLines /= nonzeros  = error $ filePath ++ " has wrong no. of nonzeros"
+                    | any (any null) indexReads      = error $ filePath ++ " has invalid indices"
+                    | indices /= nub indices         = error $ filePath ++ " has duplicate indices"
+                    | maxCol > fst size              = error $ filePath ++ " has indices outside range"
+                    | maxRow > snd size              = error $ filePath ++ " has indices outside range"
+                    | any null valueReads            = error $ filePath ++ " has invalid values"
+                    | otherwise                      = if nonzeros == 0 then
+                                                        replicate (fst size) $ replicate (snd size) 0
+                                                       else indexedListToRowList indexedList
+                    where (firstLine, entryLines) = (head lineList, tail lineList)
                           firstLineNums = fmap reads firstLine :: [[(Int,String)]]
                           firstLineVals = fmap (fst . head) firstLineNums
                           size = (firstLineVals !! 0, firstLineVals !! 1)
