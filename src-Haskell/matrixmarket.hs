@@ -28,16 +28,21 @@ type IndexedList = ((Int,Int),[((Int, Int), Value)])
 readRowListFromMatrixMarket :: FilePath -> IO RowList
 readRowListFromMatrixMarket filePath = do
            contents <- readFile filePath
-           if null contents then error $ filePath ++ " is empty"
+           if null (words contents) then error $ filePath ++ " is empty"
            else do
             let fileLines = lines contents
-            let (first, rest) = (words . fmap toLower $ head fileLines,
-                                 filter ((/='%') . head) $ tail fileLines)
-            if length first < 3 then error $ filePath ++ " header is invalid"
-            else case first !! 2 of
-                      "array"      -> return $ arrayToRowList rest filePath
-                      "coordinate" -> return $ coordinateToRowList rest filePath
-                      _            -> error $ filePath ++ " has unrecognized format " ++ (first !! 2)
+            let first = words . head $ fileLines
+            if length first < 4 then error $ filePath ++ " header is invalid"
+            else do
+             let rest = filter (not . null) . fmap words . filter ((/='%') . head) $ tail fileLines
+             if null rest then error $ filePath ++ " has no contents"
+             else do
+              let command =
+                   case fmap toLower (first !! 2) of
+                        "array"      -> arrayToRowList
+                        "coordinate" -> coordinateToRowList
+                        _            -> error $ filePath ++ " has unrecognized format " ++ (first !! 2)
+              return $ command rest filePath
 
 writeRowListToMatrixMarket :: RowList -> String -> FilePath -> IO ()
 writeRowListToMatrixMarket rowList format filePath = do
@@ -49,28 +54,47 @@ writeRowListToMatrixMarket rowList format filePath = do
             mapM_ (hPutStrLn handle) list
             hClose handle
 
-arrayToRowList :: [String] -> FilePath -> RowList
-arrayToRowList list filePath | isValid   = transpose $ arrangeInCols values
-                             | otherwise = error $ "Array format file " ++ filePath ++
-                                                   " is invalid"
-                             where isValid = isValidArray list nrows ncols
-                                   arrangeInCols [] = []
-                                   arrangeInCols list = (take nrows list):
-                                                        (arrangeInCols . drop nrows $ list)
-                                   [nrows, ncols] = (map read) . words $ head list :: [Int]
-                                   values = fmap read $ tail list :: ValueList
+arrayToRowList :: [[String]] -> FilePath -> RowList
+arrayToRowList lineList filePath
+               | isValid   = transpose $ arrangeInCols values
+               | otherwise = error $ "Array format file " ++ filePath ++ " is invalid"
+               where isValid = length firstLine == 2 && all ((== 1) . length) valueLines &&
+                               all (not . null) size && length valueList == nrows * ncols &&
+                               all (not . null) valueReads
+                     (firstLine, valueLines) = (head lineList, tail lineList)
+                     size = fmap reads firstLine :: [[(Int,String)]]
+                     [nrows, ncols] = fmap (fst . head) size
+                     valueList = concat valueLines
+                     valueReads = fmap reads valueList :: [[(Value,String)]]
+                     values = fmap (fst . head) valueReads
+                     arrangeInCols [] = []
+                     arrangeInCols list = (take nrows list):
+                                          (arrangeInCols . drop nrows $ list)
 
-coordinateToRowList :: [String] -> FilePath -> RowList
-coordinateToRowList list filePath
+coordinateToRowList :: [[String]] -> FilePath -> RowList
+coordinateToRowList lineList filePath
                     | isValid   = if nonzeros == 0 then replicate (fst size) $ replicate (snd size) 0
                                   else indexedListToRowList indexedList
                     | otherwise = error $ "Coordinate format file " ++ filePath ++ " is invalid"
-                    where isValid = isValidCoordinate list firstLine values nonzeros indices size
-                          firstLine = fmap read . words $ head list :: [Int]
-                          (size, nonzeros) = ((firstLine !! 0, firstLine !! 1), firstLine !! 2)
-                          entries = fmap ((splitAt 2) . words) $ tail list
-                          indices = fmap (fmap read . fst) entries :: [[Int]]
-                          values = fmap (read . head . snd) entries :: [Value]
+                    where isValid = all ((== 3) . length) lineList && all (not . null) firstLineNums &&
+                                    length entryLines == nonzeros &&
+                                    all (all (not . null)) indexReads && indices == nub indices &&
+                                    maxCol <= fst size && maxRow <= snd size &&
+                                    all (not . null) valueReads
+                          (firstLine, entryLines) = (head lineList, tail lineList)
+                          firstLineNums = fmap reads firstLine :: [[(Int,String)]]
+                          firstLineVals = fmap (fst . head) firstLineNums
+                          size = (firstLineVals !! 0, firstLineVals !! 1)
+                          nonzeros = firstLineVals !! 2
+                          splitEntries = fmap (splitAt 2) entryLines
+                          indexLines = fmap fst splitEntries
+                          indexReads = fmap (fmap reads) indexLines :: [[[(Int,String)]]]
+                          indices = fmap (fmap (fst . head)) indexReads
+                          [maxCol, maxRow] = if nonzeros == 0 then [1,1] else
+                                             fmap maximum [fmap (!! 0) indices, fmap (!! 1) indices]
+                          valueLines = concat . fmap snd $ splitEntries
+                          valueReads = fmap reads valueLines :: [[(Value,String)]]
+                          values = fmap (fst . head) valueReads
                           indexedList = (size, zipWith (\[i,j] x -> ((i,j),x)) indices values)
 
 rowListToArray :: RowList -> [String]
@@ -101,20 +125,6 @@ rowListToIndexedList rows = ((nrows, ncols), ijxs)
 indexedListToCoordinate :: IndexedList -> [String]
 indexedListToCoordinate ((m, n), ijxs) = (combineStrings [show m, show n, show $ length ijxs]):
                                          (fmap pairToString ijxs)
-
-isValidArray :: [String] -> Int -> Int -> Bool
-isValidArray list nrows ncols = not (null list) && length (words $ head list) == 2 &&
-                                length (tail list) == nrows * ncols
-
-isValidCoordinate :: [String] -> [a] -> [Value] -> Int -> [[Int]] -> (Int,Int) -> Bool
-isValidCoordinate list firstLine values nonzeros indices size =
-                  not (null list) && length firstLine >= 3 &&
-                  all (>= 3) (map (length . words) $ tail list) &&
-                  length values == nonzeros && indices == nub indices &&
-                  maxCol <= fst size && maxRow <= snd size
-                  where [maxCol, maxRow] = if nonzeros == 0 then [1,1] else
-                                           fmap maximum [fmap (!! 0) indices, fmap (!! 1) indices]
-
 
 combineStrings :: [String] -> String
 combineStrings = concat . (intersperse " ")
