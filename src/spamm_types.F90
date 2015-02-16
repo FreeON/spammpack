@@ -37,7 +37,7 @@
 !----------------------------------------------------------------------------------
 ! The "long weekend hack".  Going for a functional implementation
 ! that fits tightly in the edit window (mc,2/2015).
-
+!
 MODULE spamm_types
 
   USE  spamm_real_precision
@@ -45,7 +45,7 @@ MODULE spamm_types
 
   ! SpAMM Garnishments ________________ SGARN _________________
 
-  ! Enrichments of the tree_1d ...
+  ! garnishments of the tree_1d ...
   type :: decoration_1d
      !> Integer dimension of the native (non-padded) vector
      integer                               :: NDimn
@@ -59,7 +59,7 @@ MODULE spamm_types
      real(kind(0d0))                       :: Non0s = -1
   end type decoration_1d
 
-  ! Enrichments of the tree_2d ...
+  ! garnishments of tree_2d ...
   type :: decoration_2d
      !> Integer dimension of the native (non-padded) matrix 
      integer,           dimension(1:2)     :: NDimn
@@ -85,6 +85,15 @@ MODULE spamm_types
 
   ! The tree_2d matrix types...
 
+  ! symmetric (SPD/Hermetian) :
+  type :: SpAMM_tree_2d_symm
+     type(SpAMM_decoration_2d)             :: frill
+     type(SpAMM_tree_2d_symm), pointer     :: child_00 => null()
+     type(SpAMM_tree_2d_symm), pointer     :: child_01 => null()
+     type(SpAMM_tree_2d_symm), pointer     :: child_11 => null()
+     real(SPAMM_KIND),     allocatable     :: chunk(:, :)
+  end type SpAMM_tree_2d_symm
+
   ! full:
   type :: SpAMM_tree_2d_full
      type(SpAMM_decoration_2d)             :: frill
@@ -94,15 +103,6 @@ MODULE spamm_types
      type(SpAMM_tree_2d_full), pointer     :: child_11 => null()
      real(SPAMM_KIND),     allocatable     :: chunk(:, :)
   end type SpAMM_tree_2d_full
-
-  ! symmetric (SPD/Hermetian) :
-  type :: SpAMM_tree_2d_symm
-     type(SpAMM_decoration_2d)             :: frill
-     type(SpAMM_tree_2d_symm), pointer     :: child_00 => null()
-     type(SpAMM_tree_2d_symm), pointer     :: child_01 => null()
-     type(SpAMM_tree_2d_symm), pointer     :: child_11 => null()
-     real(SPAMM_KIND),     allocatable     :: chunk(:, :)
-  end type SpAMM_tree_2d_symm
 
   ! --
   implicit none
