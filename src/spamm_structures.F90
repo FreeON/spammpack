@@ -35,15 +35,14 @@
 !
 !
 !----------------------------------------------------------------------------------
-! The "long weekend hack".  Going for a functional implementation
-! that fits tightly in the edit window (mc,2/2015).
+! The SpAMM data structures, STDEC and SALDS
 !
-MODULE spamm_types
+MODULE spamm_structures
 
   USE  spamm_real_precision
   USE  spamm_numbers
 
-  ! SpAMM Garnishments ________________ SGARN _________________
+  ! SpAMM tree decorations  ________________ STDECs _________________
 
   ! garnishments of the tree_1d ...
   type :: decoration_1d
@@ -73,9 +72,9 @@ MODULE spamm_types
      real(kind(0d0))                       :: Non0s = -1
   end type decoration_2d
 
-  ! SpAMM algebraic data types _______________ SADTS ____________________
+  ! SpAMM algebraic data structures _______________ SALGDSs ____________________
 
-  ! The tree_1d (vector) type ...
+  ! The tree_1d (vector) type:
   type :: SpAMM_tree_1d
      type(SpAMM_decoration_1d)             :: frill
      type(SpAMM_tree_1d_symm), pointer     :: child_0 => null()
@@ -83,9 +82,8 @@ MODULE spamm_types
      real(SPAMM_KIND),     allocatable     :: chunk(:, :)
   end type SpAMM_tree_1d
 
-  ! The tree_2d matrix types...
-
-  ! symmetric (SPD/Hermetian) :
+  ! The tree_2d matrix structures:
+  ! symmetric (SPD/Hermetian) ...
   type :: SpAMM_tree_2d_symm
      type(SpAMM_decoration_2d)             :: frill
      type(SpAMM_tree_2d_symm), pointer     :: child_00 => null()
@@ -94,7 +92,7 @@ MODULE spamm_types
      real(SPAMM_KIND),     allocatable     :: chunk(:, :)
   end type SpAMM_tree_2d_symm
 
-  ! full:
+  ! full ... 
   type :: SpAMM_tree_2d_full
      type(SpAMM_decoration_2d)             :: frill
      type(SpAMM_tree_2d_full), pointer     :: child_00 => null()
@@ -111,4 +109,4 @@ MODULE spamm_types
 contains
 
   ! --
-end module spamm_types ! ... and we're out ...
+end module spamm_structures ! ... and we're out ...
