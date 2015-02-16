@@ -26,32 +26,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set( spammpack-old-sources
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
+set( spammpack-sources
+  spamm_realkind.F90
+  spamm_parameters.F90
+  spamm_structures.F90
+  spamm_conversion.F90
+  spamm_decoration.F90
+  spamm_structors.F90
   spamm_algebra.F90
   spamm_algebra_add.F90
-  spamm_convert.F90
-  spamm_decorate.F90
-  spamm_globals.F90
-  spamm_management.F90
-  spamm_project.F90
-  spamm_strings.F90
-  spamm_types.F90
-  spamm_utilities.F90
-  spammpack.F90
-  )
-
-set( spammpack-sources
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
-  spamm_add.F90
-  spamm_add_2d_2d.F90
-  spamm_bisect.F90
-  spamm_bounding_box_2d.F90
-  spamm_decoration_2d.F90
-  spamm_extra_2d.F90
-  spamm_globals.F90
-  spamm_strings.F90
-  spamm_tree_2d.F90
   spammpack.F90
   )
 

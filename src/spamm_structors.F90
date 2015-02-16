@@ -1,8 +1,7 @@
-
 module spamm_structors
 
-  use spamm_globals
-  use spamm_types
+  use spamm_structures
+
   implicit none
 
 contains
@@ -14,11 +13,11 @@ contains
 
   function SpAMM_new_top_tree_2d_symm ( M, N ) result (tree)
     !
-    integer,        intent(in)  :: M, N
-    integer                     :: M_pad, N_pad
-    type(tree_2d_symm), pointer :: tree
+    integer,                intent(in) :: M, N
+    integer                            :: M_pad, N_pad
+    type(SpAMM_tree_2d_symm), pointer  :: tree
 
-    ! instantiate the root node, tree top ... 
+    ! instantiate the root node.  this is the tree top ... 
     allocate(tree)
 
     ! here are padded dimensions ...
@@ -32,20 +31,24 @@ contains
        if(N_pad>N)exit
     enddo
 
-    ! the [i-j] tree dimensional frill ...
-    tree%frill%ndimn = (/ M, N /)    
+    ! the [i-j] native dimensions ...
+    tree%frill%ndimn        = (/ M, N /)    
+
+    ! and the bounding box
+    allocate( tree%frill%bndbx(0:1,1:2) )
+
+    ! the padded tiles
     tree%frill%bndbx(0:1,1) = (/ 0, M_pad /)  ! [i-lo,i-hi]
     tree%frill%bndbx(0:1,2) = (/ 0, N_pad /)  ! [j-lo,j-hi]
 
   end function SpAMM_new_top_tree_2d_symm
-
   
   ! structor for the lo-lo [00] channel ...
   function SpAMM_construct_tree_2d_00(tree) result(ch00)  
 
     type(SpAMM_tree_2d_symm), intent(inout) :: tree
     type(SpAMM_tree_2d_symm), pointer       :: ch00
-    integer, dimension(0:1,1:2), pointer    :: bb, bb00
+    integer, dimension(:,:),  pointer       :: bb, bb00
     integer, dimension(1:2)                 :: mid,wid
 
     ! instantiate ...
@@ -56,7 +59,7 @@ contains
     endif
 
     ! global... do we really need this? 
-    ch%frill%ndimn = tree%frill%ndimn
+    ch00%frill%ndimn = tree%frill%ndimn
 
     ! local boxes ... 
     bb=>tree%frill%bndbx
@@ -86,7 +89,7 @@ contains
     endif
 
     ! global... do we really need this? 
-    ch%frill%ndimn = tree%frill%ndimn
+    ch01%frill%ndimn = tree%frill%ndimn
 
     ! local boxes ... 
     bb=>tree%frill%bndbx
@@ -116,7 +119,7 @@ contains
     endif
 
     ! global... do we really need this? 
-    ch%frill%ndimn = tree%frill%ndimn
+    ch11%frill%ndimn = tree%frill%ndimn
 
     ! local boxes ... 
     bb=>tree%frill%bndbx
@@ -130,11 +133,11 @@ contains
 
   end function SpAMM_construct_tree_2d_11
 
-  ! Structor to destroy a tree_2d_symm ... 
+  ! Structor to recursively destroy a tree_2d_symm ... 
   recursive subroutine  SpAMM_destruct_tree_2d_symm_recur (self)
     !
-    type(tree_2d_symm), pointer, intent(inout) :: self
-    type(tree_2d_symm), pointer                :: ch ! sub-tree pointer 
+    type(SpAMM_tree_2d_symm), pointer, intent(inout) :: self
+    type(SpAMM_tree_2d_symm), pointer                :: ch ! sub-tree pointer 
  
     ! check for self-non-association (eg. at leaf pntr) ...
     if(.not.associated(self))return
@@ -152,14 +155,16 @@ contains
   end subroutine SpAMM_destruct_tree_2d_symm_recur ! ... and we're out ... 
 
   subroutine  SpAMM_destruct_tree_2d_symm_node (self)
-    type(tree_2d_symm), pointer, intent(inout) :: self
+
+    type(SpAMM_tree_2d_symm), pointer, intent(inout) :: self
+
     ! kill the adornment, mort le accoutrement ...    
     if(allocated(self%chunk))deallocate(self%chunk) 
     deallocate(self%frill%bndbx)   ! fru-fru 
     deallocate(self)               ! done 
     nullify(self)                  ! bye-bye
-  end subroutine SpAMM_destruct_tree_2d_symm_node
 
+  end subroutine SpAMM_destruct_tree_2d_symm_node
 
   function SpAMM_set_new_identity_tree_2d_symm ( M, N, Alpha ) result (tree)
     !
@@ -167,9 +172,9 @@ contains
     REAL(SpAMM_KIND), OPTIONAL  :: Alpha_O
     REAL(SpAMM_KIND)            :: Alpha
     integer                     :: M_pad, N_pad
-    type(tree_2d_symm), pointer :: tree
+    type(SpAMM_tree_2d_symm), pointer :: tree
 
-    tree = SpAMM_new_top_tree_2d_symm ( M, N )
+    tree => SpAMM_new_top_tree_2d_symm ( M, N )
 
     IF(PRESENT(alpha_O))THEN
        alpha=Alpha_O
@@ -191,13 +196,11 @@ contains
   ! putting alpha down, onto the trace of this tree_2d_symm ...
   recursive subroutine SpAMM_init_ident_tree_2d_symm_recur (tree, alpha, depth)
 
-    use spamm_bisect
-    use spamm_globals
-
-    type(tree_2d_symmetric), intent(inout) :: tree
-    real(SpAMM_KIND),        intent(in)    :: alpha
-    integer,                 intent(in)    :: depth 
-    INTEGER, DIMENSION(2,2), pointer       :: bb, bb00, bb11
+    type(SpAMM_tree_2d_symm), intent(inout) :: tree
+    real(SpAMM_KIND),        intent(in)     :: alpha
+    integer,                 intent(in)     :: depth 
+    INTEGER, DIMENSION(:,:), pointer        :: bb, bb00, bb11
+    integer                                 :: i 
 
     bb => tree%frill%bndbx 
     wid=bb(1,1)-bb(0,1) ! w = [i]-[o]   
