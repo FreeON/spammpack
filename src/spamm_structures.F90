@@ -65,7 +65,7 @@ MODULE spamm_structures
      integer,           dimension(1:2)     :: NDimn
      !> Axis-aligned bounding box for the (i-j) index space
      integer,  pointer, dimension(:,:)     :: BndBx
-     !> Square of the F-norm.
+          !> Square of the F-norm.
      real(SPAMM_KIND)                      :: Norm2 = -1
      !> Float Ops needed accumulated to this level 
      real(kind(0d0))                       :: FlOps = -1
@@ -80,7 +80,7 @@ MODULE spamm_structures
      type(SpAMM_decoration_1d)             :: frill
      type(SpAMM_tree_1d),      pointer     :: child_0 => null()
      type(SpAMM_tree_1d),      pointer     :: child_1 => null()
-     real(SPAMM_KIND),     allocatable     :: chunk(:, :)
+     real(SPAMM_KIND),     allocatable     :: chunk(:)
   end type SpAMM_tree_1d
 
   ! The tree_2d matrix structures:

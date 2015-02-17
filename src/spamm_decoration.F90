@@ -3,19 +3,17 @@
 !
 module spamm_decoration
 
-  use  spamm_globals
   use  spamm_structures
   !
   implicit none
 
-  PRIVATE
-
+!  PRIVATE
   ! some vanilla ... 
-  PUBLIC :: Decorate
-  INTERFACE Decorate
-     MODULE PROCEDURE SpAMM_redecorate_1d
-     MODULE PROCEDURE SpAMM_redecorate_2d
-  END INTERFACE Decorate
+!  PUBLIC :: Decorate
+!  INTERFACE Decorate
+!     MODULE PROCEDURE SpAMM_redecorate_1d
+!     MODULE PROCEDURE SpAMM_redecorate_2d
+!  END INTERFACE Decorate
 
 CONTAINS
 
@@ -28,12 +26,12 @@ CONTAINS
   ! uppwards redecoration ...
   SUBROUTINE SpAMM_redecorate_1d(a)
 
-    TYPE(SpAMM_Tree_1d), POINTER, INTENT(INOUT) :: a    
+    TYPE(SpAMM_Tree_1d),  INTENT(INOUT) :: a    
 
     ! at a leaf ...
     IF(ALLOCATED(a%chunk))THEN 
-       a%norm2=SUM(a%chunk**2) 
-       a%non0s=SIZE(a%chunk)
+       a%frill%norm2=SUM(a%chunk**2) 
+       a%frill%non0s=SIZE(a%chunk)
        RETURN 
     ENDIF
 
@@ -49,8 +47,8 @@ CONTAINS
   ! 1d decoration merge:
   SUBROUTINE SpAMM_merge_1d(a,b)
 
-    TYPE(decoration_1d), INTENT(INOUT) :: a
-    TYPE(decoration_1d), INTENT(IN)    :: b
+    TYPE(SpAMM_decoration_1d), INTENT(INOUT) :: a
+    TYPE(SpAMM_decoration_1d), INTENT(IN)    :: b
 
     a%Norm2=a%Norm2+b%Norm2
     a%Non0s=a%Non0s+b%Non0s
@@ -63,19 +61,17 @@ CONTAINS
   ! uppwards redecoration ...
   SUBROUTINE SpAMM_redecorate_tree_2d_symm(a)
 
-    TYPE(SpAMM_Tree_2d_symm), POINTER, INTENT(INOUT)   :: a    
+    TYPE(SpAMM_tree_2d_symm),  INTENT(INOUT) :: a    
 
-    ! at a leaf?
-    IF(ALLOCATED(a%chunk))THEN 
-       a%norm2=SUM(a%chunk*2) 
-       a%Non0s=SIZE(a%chunk,1)*SIZE(a%chunk,2)
+    IF(ALLOCATED(a%chunk))THEN  ! at a leaf?
+       a%frill%Norm2=SUM(a%chunk*2) 
+       a%frill%Non0s=SIZE(a%chunk,1)*SIZE(a%chunk,2)
        RETURN
+    ELSE ! init this level
+       a%frill%Norm2=SpAMM_Zero
+       a%frill%Non0s=SpAMM_Zero
+       a%frill%FlOps=SpAMM_Zero
     ENDIF
-
-    ! init this level
-    a%frill%Norm2=SpAMM_Zero
-    a%frill%Non0s=SpAMM_Zero
-    a%frill%FlOps=SpAMM_Zero
 
     ! walk back up one level with each decoration ...
     IF(ASSOCIATED(A%child_00))CALL SpAMM_merge_decoration_2d(A%frill, A%child_00%frill)
@@ -87,8 +83,8 @@ CONTAINS
   ! the 2d decoration merge:
   SUBROUTINE SpAMM_merge_decoration_2d(a,b)
 
-    TYPE(decoration_2d), INTENT(INOUT) :: a
-    TYPE(decoration_2d), INTENT(IN)    :: b
+    TYPE(SpAMM_decoration_2d), INTENT(INOUT) :: a
+    TYPE(SpAMM_decoration_2d), INTENT(IN)    :: b
 
     a%Norm2=a%Norm2+b%Norm2
     a%Non0s=a%Non0s+b%Non0s

@@ -31,10 +31,11 @@ set( spammpack-sources
   spamm_parameters.F90
   spamm_structures.F90
   spamm_conversion.F90
+  spamm_xstructors.F90
   spamm_decoration.F90
-  spamm_structors.F90
-  spamm_algebra.F90
-  spamm_algebra_add.F90
+  spamm_elementals.F90
+  spamm_nbdyalgbra.F90
+  spamm_nbdyalgbra_add.F90
   spammpack.F90
   )
 
@@ -53,7 +54,7 @@ include( ${CMAKE_SOURCE_DIR}/cmake-scripts/FindFortranKind.cmake )
 set( KIND_EXPRESSION "kind(0d0)" )
 find_fortran_kind( ${KIND_EXPRESSION} )
 
-configure_file( spamm_real_precision.F90.in spamm_real_precision.F90 )
+#configure_file( spamm_real_precision.F90.in spamm_real_precision.F90 )
 
 set_directory_properties(
   PROPERTIES

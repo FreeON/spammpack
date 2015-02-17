@@ -1,6 +1,7 @@
 module spamm_structors
 
   use spamm_structures
+  use spamm_decoration
 
   implicit none
 
@@ -14,7 +15,7 @@ contains
   function SpAMM_new_top_tree_2d_symm ( M, N ) result (tree)
     !
     integer,                intent(in) :: M, N
-    integer                            :: M_pad, N_pad
+    integer                            :: M_pad, N_pad, depth
     type(SpAMM_tree_2d_symm), pointer  :: tree
 
     ! instantiate the root node.  this is the tree top ... 
@@ -51,12 +52,12 @@ contains
     integer, dimension(:,:),  pointer       :: bb, bb00
     integer, dimension(1:2)                 :: mid,wid
 
-    ! instantiate ...
     ch00=>tree%child_00
-    if(.not.associated(ch00))then
-       allocate(ch00)
-       allocate(ch00%frill%bndbx)
-    endif
+    ! pre-existing?  ok, later
+    if(associated(ch00))return
+
+    ! otherwise, instantiate ...
+    allocate(ch00)
 
     ! global... do we really need this? 
     ch00%frill%ndimn = tree%frill%ndimn
@@ -64,8 +65,9 @@ contains
     ! local boxes ... 
     bb=>tree%frill%bndbx
     bb00=>ch00%frill%bndbx
+    if(.not.associated(bb00))allocate(bb00(0:1,1:2))
 
-    ! the split ...
+    ! the 00 split ...
     wid(:)=bb(1,:)-bb(0,:) 
     mid(:)=bb(0,:)+wid(:)/2 
     bb00(:,1)=(/ bb(0,1) , mid(1) /)
@@ -78,15 +80,15 @@ contains
 
     type(SpAMM_tree_2d_symm), intent(inout) :: tree
     type(SpAMM_tree_2d_symm), pointer       :: ch01
-    integer, dimension(0:1,1:2), pointer    :: bb, bb01
+    integer, dimension(:,:) , pointer       :: bb, bb01
     integer, dimension(1:2)                 :: mid,wid
 
-    ! instantiate ...
     ch01=>tree%child_01
-    if(.not.associated(ch01))then
-       allocate(ch01)
-       allocate(ch01%frill%bndbx)
-    endif
+    ! pre-existing?  ok, later
+    if(associated(ch01))return
+
+    ! otherwise, instantiate ...
+    allocate(ch01)
 
     ! global... do we really need this? 
     ch01%frill%ndimn = tree%frill%ndimn
@@ -94,8 +96,9 @@ contains
     ! local boxes ... 
     bb=>tree%frill%bndbx
     bb01=>ch01%frill%bndbx
+    if(.not.associated(bb01))allocate(bb01(0:1,1:2))
 
-    ! the split ...
+    ! the 01 split ...
     wid(:)=bb(1,:)-bb(0,:) 
     mid(:)=bb(0,:)+wid(:)/2 
     bb01(:,1)=(/bb(0,1) , mid(1) /)
@@ -108,15 +111,15 @@ contains
 
     type(SpAMM_tree_2d_symm), intent(inout) :: tree
     type(SpAMM_tree_2d_symm), pointer       :: ch11
-    integer, dimension(0:1,1:2), pointer    :: bb, bb11
+    integer, dimension(:,:),  pointer       :: bb, bb11
     integer, dimension(1:2)                 :: mid,wid
 
-    ! instantiate ...    
     ch11=>tree%child_11
-    if(.not.associated(ch11))then
-       allocate(ch11)
-       allocate(ch11%frill%bndbx)
-    endif
+    ! pre-existing?  ok, later
+    if(associated(ch11))return
+
+    ! otherwise, instantiate ...
+    allocate(ch11)
 
     ! global... do we really need this? 
     ch11%frill%ndimn = tree%frill%ndimn
@@ -124,8 +127,9 @@ contains
     ! local boxes ... 
     bb=>tree%frill%bndbx
     bb11=>ch11%frill%bndbx
+    if(.not.associated(bb11))allocate(bb11(0:1,1:2))
 
-    ! the split ...
+    ! the 11 split ...
     wid(:)=bb(1,:)-bb(0,:) 
     mid(:)=bb(0,:)+wid(:)/2 
     bb11(0,:)=mid(:)+1     ! hi,hi [mid+1, hi]
@@ -166,12 +170,12 @@ contains
 
   end subroutine SpAMM_destruct_tree_2d_symm_node
 
-  function SpAMM_set_new_identity_tree_2d_symm ( M, N, Alpha ) result (tree)
+  function SpAMM_new_identity_tree_2d_symm ( M, N, Alpha_O ) result (tree)
     !
     integer,        intent(in)  :: M, N
     REAL(SpAMM_KIND), OPTIONAL  :: Alpha_O
     REAL(SpAMM_KIND)            :: Alpha
-    integer                     :: M_pad, N_pad
+    integer                     :: depth
     type(SpAMM_tree_2d_symm), pointer :: tree
 
     tree => SpAMM_new_top_tree_2d_symm ( M, N )
@@ -182,46 +186,42 @@ contains
        alpha=SpAMM_One
     ENDIF    
 
-    ! push alpha on 00 down to the trace ...
+    ! push alpha onto the trace ...
     depth=0
-    CALL SpAMM_init_ident_tree_2d_symm_recur (tree%child_00, alpha, depth)
-    ! no diagonals here ...
-    tree%child_01=>Null()
-    ! push alpha on 11 down to the trace ...
-    depth=0
-    CALL SpAMM_init_ident_tree_2d_symm_recur (tree%child_11, alpha, depth)
+    CALL SpAMM_new_identity_tree_2d_symm_recur (tree, alpha, depth)
 
-  end function SpAMM_set_new_identity_tree_2d_symm
+  end function SpAMM_new_identity_tree_2d_symm
 
   ! putting alpha down, onto the trace of this tree_2d_symm ...
-  recursive subroutine SpAMM_init_ident_tree_2d_symm_recur (tree, alpha, depth)
+  recursive subroutine SpAMM_new_identity_tree_2d_symm_recur (tree, alpha, depth)
 
-    type(SpAMM_tree_2d_symm), intent(inout) :: tree
+    type(SpAMM_tree_2d_symm)                :: tree
     real(SpAMM_KIND),        intent(in)     :: alpha
     integer,                 intent(in)     :: depth 
-    INTEGER, DIMENSION(:,:), pointer        :: bb, bb00, bb11
+    INTEGER, DIMENSION(:,:), pointer        :: bb
     integer                                 :: i 
 
     bb => tree%frill%bndbx 
-    wid=bb(1,1)-bb(0,1) ! w = [i]-[o]   
 
-    IF( wid == SPAMM_BLOCK_SIZE )THEN  ! Leaf condition ? 
+    IF( bb(1,1)-bb(0,1) == SPAMM_BLOCK_SIZE )THEN  ! Leaf condition ? 
 
        ! here is a 2d chunk (ch) ... 
        allocate( tree%chunk( SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ) ) 
+
        ! set its trace with scalar alpha ...
        tree%chunk=SpAMM_Zero
        do i=1, SPAMM_BLOCK_SIZE
-          tree%chunk(i:i)=alpha 
+          tree%chunk(i,i)=alpha 
        enddo
 
     ELSEIF(depth>16)THEN ! build the identity tree down
 
        ! child along [00]: [lo,mid]x[lo,mid] ... 
-       CALL SpAMM_init_ident_tree_2d_symm_recur( SpAMM_construct_tree_2d_00(tree) , alpha, depth+1 )
-       tree%child_01=>Null() ! nothing off diagonal 
+       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_2d_00(tree) , alpha, depth+1 )
+       ! nothing off diagonal 
+       tree%child_01=>Null() 
        ! child along [11]: [mid+1,hi]x[mid+1,hi] ... 
-       CALL SpAMM_init_ident_tree_2d_symm_recur( SpAMM_construct_tree_2d_11(tree) , alpha, depth+1 )
+       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_2d_11(tree) , alpha, depth+1 )
 
     ELSE 
        STOP ' depth 16 exceeded in SpAMM_init_ident_tree_2d_symm_recur';  
@@ -230,7 +230,7 @@ contains
     ! merge & regarnish back up the tree ...
     CALL SpAMM_redecorate_tree_2d_symm(tree)
     !
-  end subroutine SpAMM_init_ident_tree_2d_symm_recur
+  end subroutine SpAMM_new_identity_tree_2d_symm_recur
 
 end module spamm_structors
 
