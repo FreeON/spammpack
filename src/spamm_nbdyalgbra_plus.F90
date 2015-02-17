@@ -1,10 +1,10 @@
-module spamm_algebra_add
+module spamm_nbdyalgbra_plus
 
-  use spamm_structures
-  use spamm_structors
-  use spamm_decoration
+   use spamm_structures
+   use spamm_xstructors
+   use spamm_decoration
 
-  implicit none
+   implicit none
 
 CONTAINS
 
@@ -266,4 +266,4 @@ CONTAINS
 
 !  INCLUDE 'spamm_algebra_add_old.F90'
 
-END module spamm_algebra_add
+END module spamm_nbdyalgbra_plus

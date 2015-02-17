@@ -8,6 +8,54 @@ module spamm_elementals
 
 CONTAINS
 
+
+
+ RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur (qA, qC)
+
+    TYPE(QuTree), POINTER, INTENT(IN)    :: qA
+    TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
+
+    IF(.NOT.ASSOCIATED(qA)) RETURN
+
+    IF(.NOT.ASSOCIATED(qC)) THEN
+       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
+    ENDIF
+
+    LOG_DEBUG("q: "//to_string(qA))
+
+    qC%Norm = qA%Norm
+
+    IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
+       IF(.NOT. allocated(qC%Blok)) THEN
+          ALLOCATE(qC%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
+       ENDIF
+       qC%Blok = qA%Blok
+    ELSE
+       IF(ASSOCIATED(qA%Quad11)) THEN
+          !$OMP TASK UNTIED SHARED(qA,qC)
+          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad11, qC%Quad11)
+          !$OMP END TASK
+       ENDIF
+       IF(ASSOCIATED(qA%Quad12)) THEN
+          !$OMP TASK UNTIED SHARED(qA,qC)
+          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad12, qC%Quad12)
+          !$OMP END TASK
+       ENDIF
+       IF(ASSOCIATED(qA%Quad21)) THEN
+          !$OMP TASK UNTIED SHARED(qA,qC)
+          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad21, qC%Quad21)
+          !$OMP END TASK
+       ENDIF
+       IF(ASSOCIATED(qA%Quad22)) THEN
+          !$OMP TASK UNTIED SHARED(qA,qC)
+          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad22, qC%Quad22)
+          !$OMP END TASK
+       ENDIF
+    ENDIF
+
+  END SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur
+
+
   SUBROUTINE SpAMM_scalar_times_tree_2d_symm_recur(beta, a)
 
     type(SpAMM_tree_2d_symm), pointer, intent(in)   :: A

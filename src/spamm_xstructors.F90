@@ -1,4 +1,4 @@
-module spamm_structors
+module spamm_xstructors
 
   use spamm_structures
   use spamm_decoration
@@ -7,7 +7,7 @@ module spamm_structors
 
 contains
 
-  ! SpAMM structor ________________ STCTRS _________________
+  ! SpAMM xstructors ________________ SXTRS _________________
   ! constructors and destructors 
   !
   ! instantiates the tree_2d_symm structure 
@@ -203,14 +203,14 @@ contains
 
     bb => tree%frill%bndbx 
 
-    IF( bb(1,1)-bb(0,1) == SPAMM_BLOCK_SIZE )THEN  ! Leaf condition ? 
+    IF( bb(1,1)-bb(0,1) == SBS )THEN  ! Leaf condition ? 
 
        ! here is a 2d chunk (ch) ... 
-       allocate( tree%chunk( SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE ) ) 
+       allocate( tree%chunk( SBS, SBS ) ) 
 
        ! set its trace with scalar alpha ...
        tree%chunk=SpAMM_Zero
-       do i=1, SPAMM_BLOCK_SIZE
+       do i=1, SBS
           tree%chunk(i,i)=alpha 
        enddo
 
@@ -223,8 +223,7 @@ contains
        ! child along [11]: [mid+1,hi]x[mid+1,hi] ... 
        CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_2d_11(tree) , alpha, depth+1 )
 
-    ELSE 
-       STOP ' depth 16 exceeded in SpAMM_init_ident_tree_2d_symm_recur';  
+    ELSE; STOP ' depth 16 exceeded in SpAMM_init_ident_tree_2d_symm_recur';  
     ENDIF
     
     ! merge & regarnish back up the tree ...
@@ -232,7 +231,7 @@ contains
     !
   end subroutine SpAMM_new_identity_tree_2d_symm_recur
 
-end module spamm_structors
+end module spamm_xstructors
 
 !!$ RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur (qA, qC)
 !!$
