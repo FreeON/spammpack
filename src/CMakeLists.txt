@@ -35,7 +35,9 @@ set( spammpack-sources
   spamm_decoration.F90
   spamm_elementals.F90
   spamm_nbdyalgbra.F90
-  spamm_nbdyalgbra_add.F90
+  spamm_nbdyalgbra_plus.F90
+  spamm_nbdyalgbra_trace.F90
+  spamm_nbdyalgbra_times.F90
   spammpack.F90
   )
 
