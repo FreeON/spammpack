@@ -17,9 +17,9 @@ module spamm_decoration
 
 CONTAINS
 
-  ! Protocols for the uppward, child->parent merge of SpAMM Tree Decorations, STDECs: 
+  ! Protocols for the uppward, child -> parent merge of SpAMM Tree Decorations, STDECs: 
   ! assuming bounding box has been set first in a dowards pass, we should now just be in 
-  ! the backwards accumulation phase for these routines
+  ! the backwards accumulation phase for upwards merge with these data structures
 
   ! - - - - - - - - - - - - - - - - -1d, 1d, 1d - - - - - - - - - - - - - - - - - - 
 
@@ -58,6 +58,22 @@ CONTAINS
 
   ! - - - - - - - - - - - - - - - - -2d, 2d, 2d - - - - - - - - - - - - - - - - - - 
 
+  !  d_2d |cpy> a_2d (can be used top down or bottom up...)
+  SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d(d,a)
+
+    type(SpAMM_decoration_2d) :: d
+    type(SpAMM_decoration_2d) :: a
+
+    d%norm2=a%norm2
+    d%non0s=a%non0s
+    d%flops=a%flops
+    d%ndimn=a%ndimn
+
+    if(.not.associated(d%bndbx)) allocate(d%bndbx(0:1,1:2))
+    d%bndbx=a%bndbx
+
+  END SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d
+
   ! uppwards redecoration ...
   SUBROUTINE SpAMM_redecorate_tree_2d_symm(a)
 
@@ -66,6 +82,7 @@ CONTAINS
     IF(ALLOCATED(a%chunk))THEN  ! at a leaf?
        a%frill%Norm2=SUM(a%chunk*2) 
        a%frill%Non0s=SIZE(a%chunk,1)*SIZE(a%chunk,2)
+       ! application has to fill in the %flops at this level
        RETURN
     ELSE ! init this level
        a%frill%Norm2=SpAMM_Zero

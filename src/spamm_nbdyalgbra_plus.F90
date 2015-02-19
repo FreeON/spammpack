@@ -1,10 +1,11 @@
 module spamm_nbdyalgbra_plus
 
-   use spamm_structures
-   use spamm_xstructors
-   use spamm_decoration
+  use spamm_structures
+  use spamm_xstructors
+  use spamm_decoration
+  use spamm_elementals
 
-   implicit none
+  implicit none
 
 CONTAINS
 
@@ -57,14 +58,15 @@ CONTAINS
 
        ENDIF
 
-     CALL SpAMM_tree_2d_symm_plus_2d_symm_recur(D, A, B, alpha, beta)
+     CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(D, A, B, alpha, beta)
 
   END FUNCTION SpAMM_tree_2d_symm_plus_tree_2d_symm 
 
   ! for tree_2d_symm, A = A + alpha*A + beta*B
+
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(a, b, alpha, beta)
 
-    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT) :: A
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: A
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: B
     TYPE(SpAMM_tree_2d_symm), POINTER                :: ch
     REAL(SpAMM_KIND),                  INTENT(IN)    :: alpha, beta
@@ -92,18 +94,17 @@ CONTAINS
 
           ! A = alpha*A + beta*B
           a%chunk(1:SBS,1:SBS) = alpha*a%chunk(1:SBS,1:SBS) + beta*b%chunk(1:SBS,1:SBS)
-          a%frill%flops=a%frill%flops+3*SBS2
-                  
+          a%frill%flops=a%frill%flops+3*SBS2                  
+
        ELSE
 
           ! recursively decend, possibly building out A if nessesary ...
-          ch=>SpAMM_construct_tree_2d_00(a)                      !00>
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(ch, b%child_00, alpha, beta)
-          ch=>SpAMM_construct_tree_2d_01(a)                      !01>
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(ch, b%child_00, alpha, beta)
-          ch=>SpAMM_construct_tree_2d_11(a)                      !11>
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(ch, b%child_00, alpha, beta)
-
+          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_00(a), & !00>
+                                                                  b%child_00, alpha, beta)
+          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_01(a), & !01> 
+                                                                  b%child_01, alpha, beta)
+          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_11(a), & !11> 
+                                                                  b%child_11, alpha, beta)
        ENDIF
 
        ! enrich the resultnt
@@ -117,7 +118,7 @@ CONTAINS
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(C, A, B, alpha, beta)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A,B
-    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT) :: C
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: C
     TYPE(SpAMM_tree_2d_symm), POINTER                :: ch
     REAL(SpAMM_KIND)                                 :: alpha, beta
     logical                                          :: TA, TB
@@ -154,13 +155,12 @@ CONTAINS
        ELSE
 
           ! recursively decend, popping new children as needed ...
-          ch=>SpAMM_construct_tree_2d_00(c)         !00>
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(ch, a%child_00, b%child_00, alpha, beta)
-          ch=>SpAMM_construct_tree_2d_01(c)         !01>
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(ch, a%child_01, b%child_01, alpha, beta)
-          ch=>SpAMM_construct_tree_2d_11(c)         !11>
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(ch, a%child_11, b%child_11, alpha, beta)
-
+          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_00(c), & !00> 
+                                                           a%child_00, b%child_00, alpha, beta)
+          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_01(c), & !01>
+                                                           a%child_01, b%child_01, alpha, beta)
+          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_11(c), & !11>
+                                                           a%child_11, b%child_11, alpha, beta)
        ENDIF
 
        CALL SpAMM_redecorate_tree_2d_symm(c)

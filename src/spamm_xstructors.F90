@@ -45,7 +45,7 @@ contains
   end function SpAMM_new_top_tree_2d_symm
   
   ! structor for the lo-lo [00] channel ...
-  function SpAMM_construct_tree_2d_00(tree) result(ch00)  
+  function SpAMM_construct_tree_2d_symm_00(tree) result(ch00)  
 
     type(SpAMM_tree_2d_symm), intent(inout) :: tree
     type(SpAMM_tree_2d_symm), pointer       :: ch00
@@ -73,10 +73,10 @@ contains
     bb00(:,1)=(/ bb(0,1) , mid(1) /)
     bb00(:,2)=(/ bb(0,2) , mid(2) /)
 
-  end function SpAMM_construct_tree_2d_00
+  end function SpAMM_construct_tree_2d_symm_00
 
   ! structor for the lo-hi [01] channel ...
-  function SpAMM_construct_tree_2d_01(tree) result(ch01)  
+  function SpAMM_construct_tree_2d_symm_01(tree) result(ch01)  
 
     type(SpAMM_tree_2d_symm), intent(inout) :: tree
     type(SpAMM_tree_2d_symm), pointer       :: ch01
@@ -104,10 +104,10 @@ contains
     bb01(:,1)=(/bb(0,1) , mid(1) /)
     bb01(:,2)=(/mid(2)+1, bb(1,2)/)
 
-  end function SpAMM_construct_tree_2d_01
+  end function SpAMM_construct_tree_2d_symm_01
 
   ! structor for the hi-hi [11] channel ...
-  function SpAMM_construct_tree_2d_11(tree) result(ch11)  
+  function SpAMM_construct_tree_2d_symm_11(tree) result(ch11)  
 
     type(SpAMM_tree_2d_symm), intent(inout) :: tree
     type(SpAMM_tree_2d_symm), pointer       :: ch11
@@ -135,7 +135,7 @@ contains
     bb11(0,:)=mid(:)+1     ! hi,hi [mid+1, hi]
     bb11(1,:)=bb(1,:)      ! hi,hi [mid+1, hi]
 
-  end function SpAMM_construct_tree_2d_11
+  end function SpAMM_construct_tree_2d_symm_11
 
   ! Structor to recursively destroy a tree_2d_symm ... 
   recursive subroutine  SpAMM_destruct_tree_2d_symm_recur (self)
@@ -217,11 +217,11 @@ contains
     ELSEIF(depth>16)THEN ! build the identity tree down
 
        ! child along [00]: [lo,mid]x[lo,mid] ... 
-       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_2d_00(tree) , alpha, depth+1 )
+       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_00(tree) , alpha, depth+1 )
        ! nothing off diagonal 
        tree%child_01=>Null() 
        ! child along [11]: [mid+1,hi]x[mid+1,hi] ... 
-       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_2d_11(tree) , alpha, depth+1 )
+       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_11(tree) , alpha, depth+1 )
 
     ELSE; STOP ' depth 16 exceeded in SpAMM_init_ident_tree_2d_symm_recur';  
     ENDIF
@@ -231,49 +231,55 @@ contains
     !
   end subroutine SpAMM_new_identity_tree_2d_symm_recur
 
+  ! c => a, b = c => a
+  function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, b) result(d)
+
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)              :: a
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT), OPTIONAL :: b
+    TYPE(SpAMM_tree_2d_symm), POINTER                          :: d
+
+    IF(PRESENT(b))THEN
+       d => b
+    ELSEIF(.NOT.ASSOCIATED(a))THEN
+       d => null()
+       RETURN
+    ELSE
+       ! nothing passed in, and we have an associated A, so lets pop a new tree top ...
+       d => SpAMM_new_top_tree_2d_symm ( b%frill%NDimn(1),  b%frill%NDimn(2) )
+    ENDIF
+
+    ! d |cpy> a
+    CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a)
+
+  END function SpAMM_tree_2d_symm_copy_tree_2d_symm
+
+  !  d |cpy> a
+  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a)
+
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: a
+    TYPE(SpAMM_tree_2d_symm), POINTER  :: d
+    INTEGER, dimension(:,:), pointer        :: bb
+    
+    bb=>d%frill%bndbx
+    if (bb(1,1)-bb(0,1) == SBS ) then
+
+       if(.not.allocated(d%chunk)) allocate(d%chunk(1:SBS,1:SBS))
+       ! d%chunk |cpy> a%chunk
+       d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS)
+
+    else
+
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a%child_00)
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01)
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a%child_11)
+
+    endif
+
+    ! d%frill |cpy> a%frill
+    CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill)
+    
+  END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur
+
+
 end module spamm_xstructors
 
-!!$ RECURSIVE SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur (qA, qC)
-!!$
-!!$    TYPE(QuTree), POINTER, INTENT(IN)    :: qA
-!!$    TYPE(QuTree), POINTER, INTENT(INOUT) :: qC
-!!$
-!!$    IF(.NOT.ASSOCIATED(qA)) RETURN
-!!$
-!!$    IF(.NOT.ASSOCIATED(qC)) THEN
-!!$       CALL NewQuNode(qC, qA%i_lower, qA%j_lower, qA%i_upper, qA%j_upper)
-!!$    ENDIF
-!!$
-!!$    LOG_DEBUG("q: "//to_string(qA))
-!!$
-!!$    qC%Norm = qA%Norm
-!!$
-!!$    IF(qA%i_upper-qA%i_lower+1 == SPAMM_BLOCK_SIZE) then
-!!$       IF(.NOT. allocated(qC%Blok)) THEN
-!!$          ALLOCATE(qC%Blok(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE))
-!!$       ENDIF
-!!$       qC%Blok = qA%Blok
-!!$    ELSE
-!!$       IF(ASSOCIATED(qA%Quad11)) THEN
-!!$          !$OMP TASK UNTIED SHARED(qA,qC)
-!!$          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad11, qC%Quad11)
-!!$          !$OMP END TASK
-!!$       ENDIF
-!!$       IF(ASSOCIATED(qA%Quad12)) THEN
-!!$          !$OMP TASK UNTIED SHARED(qA,qC)
-!!$          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad12, qC%Quad12)
-!!$          !$OMP END TASK
-!!$       ENDIF
-!!$       IF(ASSOCIATED(qA%Quad21)) THEN
-!!$          !$OMP TASK UNTIED SHARED(qA,qC)
-!!$          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad21, qC%Quad21)
-!!$          !$OMP END TASK
-!!$       ENDIF
-!!$       IF(ASSOCIATED(qA%Quad22)) THEN
-!!$          !$OMP TASK UNTIED SHARED(qA,qC)
-!!$          CALL SpAMM_Copy_QuTree_2_QuTree_Recur(qA%Quad22, qC%Quad22)
-!!$          !$OMP END TASK
-!!$       ENDIF
-!!$    ENDIF
-!!$
-!!$  END SUBROUTINE SpAMM_Copy_QuTree_2_QuTree_Recur

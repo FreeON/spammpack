@@ -61,6 +61,8 @@ MODULE spamm_structures
 
   ! garnishments of tree_2d ...
   type :: SpAMM_decoration_2d
+     ! Left-Right, ie <L| or |R> ?
+     !     integer                               :: LR
      !> Integer dimension of the native (non-padded) matrix 
      integer,           dimension(1:2)     :: NDimn
      !> Axis-aligned bounding box for the (i-j) index space
