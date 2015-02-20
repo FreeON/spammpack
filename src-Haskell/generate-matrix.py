@@ -19,7 +19,7 @@ def main ():
     print("%d %d %d" % (options.N, options.N, options.N**2))
     for i in range(options.N):
         for j in range(options.N):
-            print("%d %d %e" % (i, j, random.random()))
+            print("%d %d %e" % (i+1, j+1, random.random()))
 
 if __name__ == "__main__":
     main()
