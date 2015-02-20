@@ -43,6 +43,7 @@ set( spammpack-old-sources
 
 set( spammpack-sources
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
+  chunk_tree_2d.F90
   spamm_add.F90
   spamm_add_2d_2d.F90
   spamm_bisect.F90

@@ -35,6 +35,7 @@ set_directory_properties(
 set( UNIT_TESTS
   allocate_tree_2d_symmetric.F90
   identity_2d_symmetric.F90
+  new_chunk_2d.F90
   )
 
 execute_process( COMMAND ${PYTHON_EXECUTABLE}
