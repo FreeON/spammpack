@@ -41,8 +41,14 @@ MODULE spamm_globals
 
   IMPLICIT NONE
 
-  !> The size of the basic submatrix blocks.
+  !> The size of the basic submatrix.
   integer, parameter :: SPAMM_BLOCK_SIZE = 4
+
+  !> The number of tree nodes in the chunk tree.
+  integer, parameter :: SPAMM_CHUNK_NODES = 341
+
+  !> The size of the chunk submatrix.
+  integer, parameter :: SPAMM_CHUNK_SIZE = 32
 
   !> The norm cutoff for tasked recursion.
   real(SPAMM_KIND), parameter :: spamm_recursion_normd_cutoff = 1e-4
