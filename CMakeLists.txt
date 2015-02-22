@@ -313,9 +313,9 @@ find_program( ETAGS etags )
 if( ETAGS )
   add_custom_target( etags
     ${ETAGS}
-    ${CMAKE_SOURCE_DIR}/{src,tests,utilities}/*.F90
-    ${CMAKE_SOURCE_DIR}/{src,tests,utilities}/*.c
-    ${CMAKE_SOURCE_DIR}/{src,tests,utilities}/*.h
+    ${CMAKE_SOURCE_DIR}/{src,tests,utilities,spammsand}/*.F90
+    ${CMAKE_SOURCE_DIR}/{src,tests,utilities,spammsand}/*.c
+    ${CMAKE_SOURCE_DIR}/{src,tests,utilities,spammsand}/*.h
     )
 endif()
 
@@ -323,6 +323,9 @@ enable_testing()
 
 #add_subdirectory( src-solvers )
 #add_subdirectory( tools )
+
 add_subdirectory( src )
-add_subdirectory( tests )
-add_subdirectory( utilities )
+add_subdirectory( spammsand )
+
+#add_subdirectory( tests )
+#add_subdirectory( utilities )

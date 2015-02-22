@@ -1,39 +1,3 @@
-!> Defines derived types used in SpAMMPACK.
-!!
-!! @copyright
-!!
-!! Copyright (c) 2015, Los Alamos National Laboratory
-!! All rights reserved.
-!!
-!! Redistribution and use in source and binary forms, with or without
-!! modification, are permitted provided that the following conditions are met:
-!!
-!! 1. Redistributions of source code must retain the above copyright notice, this
-!! list of conditions and the following disclaimer.
-!!
-!! 2. Redistributions in binary form must reproduce the above copyright notice,
-!! this list of conditions and the following disclaimer in the documentation
-!! and/or other materials provided with the distribution.
-!!
-!! 3. Neither the name of the copyright holder nor the names of its contributors
-!! may be used to endorse or promote products derived from this software without
-!! specific prior written permission.
-!!
-!! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-!! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-!! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-!! DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-!! FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-!! DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-!! SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-!! CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-!! OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-!! OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-!!
-!! @author Matt Challacombe matt.challacombe@freeon.org
-!! @author Nicolas Bock nicolasbock@freeon.org
-!
-!
 !----------------------------------------------------------------------------------
 ! The SpAMM data structures, STDEC and SALDS
 !
@@ -47,6 +11,8 @@ MODULE spamm_structures
 
   ! garnishments of the tree_1d ...
   type :: SpAMM_decoration_1d
+     ! leaf node flag
+     logical                               :: LNode
      !> Integer dimension of the native (non-padded) vector
      integer                               :: NDimn
      !> Axis-aligned brakets for the (i-leftmost) index space
@@ -61,12 +27,12 @@ MODULE spamm_structures
 
   ! garnishments of tree_2d ...
   type :: SpAMM_decoration_2d
-     ! Left-Right, ie <L| or |R> ?
-     !     integer                               :: LR
+     ! leaf node flag
+     logical                               :: LNode
      !> Integer dimension of the native (non-padded) matrix 
      integer,           dimension(1:2)     :: NDimn
-     !> Axis-aligned bounding box for the (i-j) index space
-     integer,  pointer, dimension(:,:)     :: BndBx
+     !> Axis-aligned bounding box for the (i-j) index space, from 1 to padded dimension
+     integer,  dimension(0:1,1:2)          :: BndBx
           !> Square of the F-norm.
      real(SPAMM_KIND)                      :: Norm2 = -1
      !> Float Ops needed accumulated to this level 

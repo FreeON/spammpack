@@ -20,6 +20,8 @@ contains
        a_2d => SpAMM_new_top_tree_2d_symm ( SIZE(A,1), SIZE(A,2) )
     ENDIF
 
+    WRITE(*,*)a_2d%frill%bndbx
+
     CALL SpAMM_convert_dense_to_tree_2d_symm_recur ( A, a_2d )
 
   END FUNCTION SpAMM_convert_dense_to_tree_2d_symm
@@ -28,7 +30,7 @@ contains
   RECURSIVE SUBROUTINE SpAMM_convert_dense_to_tree_2d_symm_recur (A,A_2d)
 
     real(SpAMM_KIND), dimension(:,:),intent(in) :: A
-    type(SpAMM_tree_2d_symm), pointer           :: A_2d
+    type(SpAMM_tree_2d_symm), target, pointer   :: A_2d
     INTEGER, DIMENSION(:,:),  pointer           :: bb
     INTEGER                                     :: M, N, M_marg, N_marg
 
@@ -43,18 +45,13 @@ contains
     if(bb(0,1)>M)RETURN 
     if(bb(0,2)>N)RETURN 
 
-    IF( bb(1,1)-bb(0,1) == SBS )THEN ! Leaf condition ? 
-
-       ! chunk instantiation ...
-       if(.not.allocated(a_2d%chunk)) &
-               allocate(a_2d%chunk(SBS,SBS))
-       a_2d%chunk = SpAMM_Zero
+    if(a_2d%frill%lnode)then! Leaf condition ? 
 
        ! account for margin space ...
        M_marg = MIN( bb(1,1), M )
        N_marg = MIN( bb(1,2), N ) 
  
-       ! data on the page ...    
+       ! move data on the page ...    
        a_2d%chunk( 1:m_marg-bb(0,1)+1, 1:n_marg-bb(0,2)+1 ) = A( bb(0,1):m_marg, bb(0,2):n_marg ) 
 
     ELSE ! recur generically here, poping with construct as needed ...

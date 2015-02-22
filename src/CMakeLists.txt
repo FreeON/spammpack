@@ -37,17 +37,19 @@ set( spammpack-sources
   spamm_nbdyalgbra.F90
   spamm_nbdyalgbra_plus.F90
   spamm_nbdyalgbra_trace.F90
-  spamm_nbdyalgbra_times.F90
   spammpack.F90
   )
+
+#  spamm_nbdyalgbra_times.F90
+
 
 set( MODULE_FILES
   spammpack.mod
   )
 
-set( HEADER_FILES
-  spamm_utility_macros.h
-  )
+#set( HEADER_FILES
+#  spamm_utility_macros.h
+#  )
 
 set( LIBRARY_BASENAME "spammpack" )
 
@@ -67,7 +69,3 @@ include( ${CMAKE_SOURCE_DIR}/cmake-scripts/BuildLibrary.cmake )
 
 build_library( FALSE "" )
 
-if( OPENMP_FOUND )
-  build_library( TRUE "${OpenMP_Fortran_FLAGS}")
-  add_dependencies( spammpack-threaded-shared spammpack-serial-static )
-endif()

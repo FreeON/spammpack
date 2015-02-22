@@ -51,12 +51,12 @@ CONTAINS
 
     ELSE  ! We need a clean tree_2d_symm at this point ...
 
-       D => SpAMM_new_top_tree_2d_symm ( A%frill%NDimn(1), A%frill%NDimn(2) )       
+       D => SpAMM_new_top_tree_2d_symm(A%frill%NDimn)
        ! D => D + alpha*A + beta*B
        CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(C, A, B, Local_alpha, Local_beta)
        D=>C
 
-       ENDIF
+    ENDIF
 
      CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(D, A, B, alpha, beta)
 
@@ -68,7 +68,6 @@ CONTAINS
 
     TYPE(SpAMM_tree_2d_symm), POINTER                :: A
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: B
-    TYPE(SpAMM_tree_2d_symm), POINTER                :: ch
     REAL(SpAMM_KIND),                  INTENT(IN)    :: alpha, beta
     logical                                          :: TA, TB
 
@@ -90,11 +89,11 @@ CONTAINS
 
     ELSEIF(TA.AND.TB)THEN
 
-       IF(ALLOCATED(A%chunk).AND.ALLOCATED(B%chunk))THEN
+       IF(b%frill%lnode)then
 
           ! A = alpha*A + beta*B
           a%chunk(1:SBS,1:SBS) = alpha*a%chunk(1:SBS,1:SBS) + beta*b%chunk(1:SBS,1:SBS)
-          a%frill%flops=a%frill%flops+3*SBS2                  
+          a%frill%flops = a%frill%flops + 3*SBS2                  
 
        ELSE
 
@@ -119,7 +118,6 @@ CONTAINS
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A,B
     TYPE(SpAMM_tree_2d_symm), POINTER                :: C
-    TYPE(SpAMM_tree_2d_symm), POINTER                :: ch
     REAL(SpAMM_KIND)                                 :: alpha, beta
     logical                                          :: TA, TB
 
@@ -138,15 +136,8 @@ CONTAINS
 
     ELSEIF(TA.AND.TB)THEN
 
-       ! fully allocated out leaf situation ...
-       IF(ALLOCATED(a%chunk).AND.ALLOCATED(b%chunk))THEN
-
-          ! if chunk not passed in, instantiate ...
-          if(.not.allocated(c%chunk))then 
-             allocate(c%chunk(1:sbs,1:sbs))
-             c%frill%flops=0
-             c%chunk=SpAMM_Zero
-          endif
+       ! leaf situation ...
+       IF(c%frill%leaf)THEN
 
           ! c = c + alpha*a + beta*b
           c%chunk(1:sbs,1:sbs)=c%chunk(1:sbs,1:sbs)+alpha*a%chunk(1:sbs,1:sbs)+beta*b%chunk(1:sbs,1:sbs)
