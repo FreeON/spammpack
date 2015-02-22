@@ -35,34 +35,34 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-MODULE spamm_globals
+module spamm_globals
 
   use spamm_real_precision
 
-  IMPLICIT NONE
+  implicit none
 
   !> The size of the basic submatrix.
   integer, parameter :: SPAMM_BLOCK_SIZE = 4
 
-  !> The number of tree nodes in the chunk tree.
-  integer, parameter :: SPAMM_CHUNK_NODES = 341
-
   !> The size of the chunk submatrix.
   integer, parameter :: SPAMM_CHUNK_SIZE = 32
+
+  !> The number of tree nodes in the chunk tree.
+  integer, parameter :: SPAMM_CHUNK_NODES = 341
 
   !> The norm cutoff for tasked recursion.
   real(SPAMM_KIND), parameter :: spamm_recursion_normd_cutoff = 1e-4
 
   !> @deprecated The depth of the matrix tree.
-  INTEGER :: SpAMM_TOTAL_DEPTH
+  integer :: SpAMM_TOTAL_DEPTH
 
   !> @deprecated The size of the unpadded matrix.
-  INTEGER :: SpAMM_MATRIX_DIMENSION
+  integer :: SpAMM_MATRIX_DIMENSION
 
   !> @deprecated The size of the padded matrix.
-  INTEGER :: SpAMM_PADDED_MATRIX_DIMENSION
+  integer :: SpAMM_PADDED_MATRIX_DIMENSION
 
   !> Cutoff the tree depth at some predefined maximum depth.
-  INTEGER :: SpAMM_RECURSION_DEPTH_CUTOFF
+  integer :: SpAMM_RECURSION_DEPTH_CUTOFF
 
-END MODULE spamm_globals
+end module spamm_globals
