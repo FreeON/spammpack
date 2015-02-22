@@ -63,20 +63,18 @@ module chunk_tree_2d
   type :: chunk_2d
 
      !> The tree nodes.
-     type(chunk_node_2d), allocatable :: node(:)
+     type(chunk_node_2d) :: node(SPAMM_CHUNK_NODES)
 
      !> The matrices at the leaves.
-     type(chunk_data_2d), allocatable :: data(:, :)
-
-   contains
-
-     procedure :: to_string => chunk_2d_to_string
+     type(chunk_data_2d) :: data(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE)
 
   end type chunk_2d
 
 contains
 
   function new_chunk_2d (N) result (chunk)
+
+    use spamm_strings
 
     type(chunk_2d), pointer :: chunk
     integer, intent(in) :: N
@@ -94,8 +92,8 @@ contains
        depth = depth+1
     enddo
 
-    allocate(chunk%node(number_nodes))
-    allocate(chunk%data(2**depth, 2**depth))
+    write(*,*) "Number of nodes: "//trim(to_string(number_nodes))
+    write(*, *) "chunk size: "//to_string(2**depth)
 
   end function new_chunk_2d
 
