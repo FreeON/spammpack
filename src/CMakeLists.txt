@@ -27,12 +27,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set( spammpack-old-sources
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.F90
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
   spamm_algebra.F90
   spamm_algebra_add.F90
   spamm_convert.F90
   spamm_decorate.F90
-  spamm_globals.F90
   spamm_management.F90
   spamm_project.F90
   spamm_strings.F90
@@ -42,6 +42,7 @@ set( spammpack-old-sources
   )
 
 set( spammpack-sources
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.F90
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
   chunk_tree_2d.F90
   spamm_add.F90
@@ -50,7 +51,6 @@ set( spammpack-sources
   spamm_bounding_box_2d.F90
   spamm_decoration_2d.F90
   spamm_extra_2d.F90
-  spamm_globals.F90
   spamm_strings.F90
   spamm_tree_2d.F90
   spammpack.F90

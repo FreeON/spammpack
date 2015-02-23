@@ -294,6 +294,21 @@ else()
   set( SPAMM_KIND "kind(0e0)" )
 endif()
 
+set( SPAMM_BLOCK_SIZE 4
+  CACHE STRING "The matrix size at the leaves"
+  )
+
+set( SPAMM_CHUNK_SIZE 32
+  CACHE STRING "The matrix size of a chunk"
+  )
+
+math( EXPR N_B "${SPAMM_CHUNK_SIZE}/${SPAMM_BLOCK_SIZE}" )
+math( EXPR SPAMM_CHUNK_NODES "(4*${N_B}*${N_B}-1)/3." )
+
+configure_file( ${CMAKE_SOURCE_DIR}/src/spamm_globals.F90.in
+  ${CMAKE_BINARY_DIR}/src/spamm_globals.F90
+  )
+
 find_program( CTAGS ctags )
 
 if( CTAGS )
