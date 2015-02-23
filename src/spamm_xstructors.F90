@@ -63,17 +63,19 @@ contains
     bb00=>ch00%frill%bndbx
 
     wid(:)=bb(1,:)-bb(0,:)+1              ! ... the 00 split ...
-    mid(:)=bb(0,:)+wid(:)/2 
+    mid(:)=bb(0,:)+wid(:)/2-1 
 
     bb00(:,1)=(/ bb(0,1) , mid(1) /)      ! [lo,mid]
     bb00(:,2)=(/ bb(0,2) , mid(2) /)      ! [lo,mid]
     
     ch00%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
+    !    write(*,*)' 00 ',bb00(:,1), mid(1), wid(1)
+
     ! leaf criterion ... 
-    if(mid(1)==SBS)then
+    if(wid(1)==2*SBS)then
        ch00%frill%Leaf=.TRUE.
-       allocate(ch00%chunk(1:SBS,1:SBS)) ! grab a chunk for each leaf node, always
+       allocate(ch00%chunk(1:SBS,1:SBS))  ! grab a chunk for each leaf node, always
        ch00%chunk=SpAMM_Zero        
        ch00%frill%flops=0
     endif
@@ -99,17 +101,19 @@ contains
     bb01=>ch01%frill%bndbx
 
     wid(:)=bb(1,:)-bb(0,:)+1              ! ... the 01 split ...
-    mid(:)=bb(0,:)+wid(:)/2 
+    mid(:)=bb(0,:)+wid(:)/2-1 
 
     bb01(:,1)=(/bb(0,1) , mid(1) /)       ! [lo   , mid]
     bb01(:,2)=(/mid(2)+1, bb(1,2)/)       ! [mid+1,  hi]
 
     ch01%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
+    !    write(*,*)' 01 ',bb01(:,1), mid(1), wid(1)
+
     ! leaf criterion ... 
-    if(mid(1)==SBS)then
+    if(wid(1)==2*SBS)then
        ch01%frill%Leaf=.TRUE.
-       allocate(ch01%chunk(1:SBS,1:SBS)) ! grab a chunk for the leaf node, always
+       allocate(ch01%chunk(1:SBS,1:SBS))  ! grab a chunk for the leaf node, always
        ch01%chunk=SpAMM_Zero        
        ch01%frill%flops=0
     endif
@@ -135,15 +139,17 @@ contains
     bb11=>ch11%frill%bndbx
 
     wid(:)=bb(1,:)-bb(0,:)+1             ! ... the 11 split ...
-    mid(:)=bb(0,:)+wid(:)/2 
+    mid(:)=bb(0,:)+wid(:)/2-1 
 
     bb11(0,:)=mid(:)+1                   ! [mid+1, hi]
     bb11(1,:)=bb(1,:)                    ! [mid+1, hi]
+
+    !    write(*,*)' 11 ',bb11(:,1), mid(1)
     
     ch11%frill%Leaf=.FALSE.              ! default, not a leaf ...
 
     ! leaf criterion ... 
-    if(mid(1)==SBS)then
+    if(wid(1)==2*SBS)then
        ch11%frill%Leaf=.TRUE.
        allocate(ch11%chunk(1:SBS,1:SBS)) ! grab a chunk for the leaf node, always
        ch11%chunk=SpAMM_Zero        

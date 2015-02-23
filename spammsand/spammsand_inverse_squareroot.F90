@@ -1,4 +1,6 @@
-program SpAMMsand_inverse_squareroot
+! Nested SpAMM solvers (SpAMM sandwitches) for matrix functions
+
+program SpAMMSand_inverse_squareroot
 
   USE spammpack 
   USE sandpack 
@@ -6,7 +8,7 @@ program SpAMMsand_inverse_squareroot
 
   implicit none
 
-  TYPE(SpAMMsand_nested_tree_2d_symm) :: z
+  TYPE(spammsand_tree_2d_symm) :: z
 
   real(kind(0d0)), parameter ::   Tau_1=1d-4
   real(kind(0d0)), parameter ::   Tau_2=1d-6
@@ -79,4 +81,4 @@ program SpAMMsand_inverse_squareroot
 
   STOP  
 
-end program SpAMMsand_nested_spamm_inverse_squareroot
+end program SpAMMSand_inverse_squareroot

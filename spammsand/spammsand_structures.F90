@@ -1,6 +1,5 @@
 !----------------------------------------------------------------------------------
-! Structures for nested SpAMM solvers
-!
+! Nested SpAMM solvers (SpAMM sandwitches) for matrix functions
 MODULE SpAMMsand_structures
 
   USE  spammpack
@@ -8,7 +7,7 @@ MODULE SpAMMsand_structures
   implicit none
 
   ! SpAMM sandwich 4 matrix functions: f(|a>) = |x_0>.|x_1> ... |x_m>
-  type :: SpAMMsand_tree_2d_symm
+  type :: spammsand_tree_2d_symm
 
      ! number of matrices in the nest ...
      integer                                             :: mats
@@ -17,7 +16,7 @@ MODULE SpAMMsand_structures
      ! the preconditioner and residuals ...
      type(SpAMM_tree_2d_symm), dimension(:), pointer     :: trix
 
-  end type SpAMMsand_tree_2d_symm
+  end type spammsand_tree_2d_symm
 
   ! --
 contains
