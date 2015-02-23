@@ -72,31 +72,6 @@ module chunk_tree_2d
 
 contains
 
-  function new_chunk_2d (N) result (chunk)
-
-    use spamm_strings
-
-    type(chunk_2d), pointer :: chunk
-    integer, intent(in) :: N
-    integer :: depth, number_nodes
-
-    allocate(chunk)
-
-    depth = 0
-    number_nodes = 0
-    do while(.true.)
-       if(SPAMM_BLOCK_SIZE*2**depth >= N) then
-          exit
-       endif
-       number_nodes = number_nodes+4**depth
-       depth = depth+1
-    enddo
-
-    write(*,*) "Number of nodes: "//trim(to_string(number_nodes))
-    write(*, *) "chunk size: "//to_string(2**depth)
-
-  end function new_chunk_2d
-
   function chunk_2d_to_string (self) result (string)
 
     use spamm_strings
@@ -105,10 +80,13 @@ contains
     class(chunk_2d), intent(in) :: self
 
     string = "chunk:"
-    write(string, "(A)") trim(string)//" "//trim(to_string(size(self%node)))//" nodes"
-    write(string, "(A)") trim(string)//", self: "//trim(to_string(storage_size(self)/8))//" bytes"
-    write(string, "(A)") trim(string)//", self%node: "//trim(to_string(storage_size(self%node)/8))//" bytes"
-    write(string, "(A)") trim(string)//", self%data: "//trim(to_string(storage_size(self%data)/8))//" bytes"
+    write(string, "(A)") trim(string)//" N_chunk: "//trim(to_string(SPAMM_CHUNK_SIZE))
+    write(string, "(A)") trim(string)//", N_block: "//trim(to_string(SPAMM_BLOCK_SIZE))
+    write(string, "(A)") trim(string)//", "//trim(to_string(size(self%node)))//" nodes"
+    write(string, "(A)") trim(string)//", "//trim(to_string(size(self%data, 1)**2))//" leaves"
+    write(string, "(A)") trim(string)//", total: "//trim(to_string(storage_size(self)/8))//" bytes"
+    write(string, "(A)") trim(string)//", per node: "//trim(to_string(storage_size(self%node)/8))//" bytes"
+    write(string, "(A)") trim(string)//", per matrix: "//trim(to_string(storage_size(self%data)/8))//" bytes"
 
   end function chunk_2d_to_string
 
