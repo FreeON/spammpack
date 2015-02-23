@@ -36,7 +36,7 @@ contains
     tree%frill%ndimn=ndimn
 
     ! not a leaf node, this is the top (root) of the tree, k?
-    tree%frill%LNode=.FALSE.
+    tree%frill%Leaf=.FALSE.
 
     ! the 2-ary tiles
     tree%frill%bndbx(0:1,1) = (/ 1, M_pad /)  ! [i-lo,i-hi]
@@ -54,28 +54,26 @@ contains
 
     ch00=>tree%child_00
 
-    ! pre-existing?  ok been here before, so later ...
-    if(associated(ch00))return    
-    allocate(ch00) ! otherwise, instantiate ...
+    if(associated(ch00))return            ! pre-existing?  ok, so later ...
+    allocate(ch00)                        ! ... otherwise, instantiate
 
-    ch00%frill%ndimn = tree%frill%ndimn ! pass down unpadded dimensions
+    ch00%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
 
-    bb=>tree%frill%bndbx             ! ... local boxes ... 
+    bb=>tree%frill%bndbx                  ! ... local boxes ... 
     bb00=>ch00%frill%bndbx
 
-    wid(:)=bb(1,:)-bb(0,:)+1         ! ... the 00 split ...
+    wid(:)=bb(1,:)-bb(0,:)+1              ! ... the 00 split ...
     mid(:)=bb(0,:)+wid(:)/2 
 
-    bb00(:,1)=(/ bb(0,1) , mid(1) /) ! [lo,mid]
-    bb00(:,2)=(/ bb(0,2) , mid(2) /) ! [lo,mid]
-
-    ! default, not a leaf ...
-    ch00%frill%LNode=.FALSE.
+    bb00(:,1)=(/ bb(0,1) , mid(1) /)      ! [lo,mid]
+    bb00(:,2)=(/ bb(0,2) , mid(2) /)      ! [lo,mid]
+    
+    ch00%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
     ! leaf criterion ... 
-    if(mid(1)==SDS)then
-       ch00%frill%LNode=.TRUE.
-       allocate(ch00%chunk(1:SDS,1:SDS) ! grab a chunk for each leaf node
+    if(mid(1)==SBS)then
+       ch00%frill%Leaf=.TRUE.
+       allocate(ch00%chunk(1:SBS,1:SBS)) ! grab a chunk for each leaf node, always
        ch00%chunk=SpAMM_Zero        
        ch00%frill%flops=0
     endif
@@ -91,29 +89,27 @@ contains
     integer, dimension(1:2)                         :: mid,wid
 
     ch01=>tree%child_01
-
-    ! pre-existing?  ok been here before, so later ...
-    if(associated(ch01))return
-    allocate(ch01)! otherwise, instantiate ...
     
-    ch01%frill%ndimn = tree%frill%ndimn ! pass down unpadded dimensions
+    if(associated(ch01))return            ! pre-existing?  ok, so later ...
+    allocate(ch01)                        ! ... otherwise, instantiate 
+    
+    ch01%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
 
-    bb=>tree%frill%bndbx             ! ... local boxes ... 
+    bb=>tree%frill%bndbx                  ! ... local boxes ... 
     bb01=>ch01%frill%bndbx
 
-    wid(:)=bb(1,:)-bb(0,:)+1         ! ... the 01 split ...
+    wid(:)=bb(1,:)-bb(0,:)+1              ! ... the 01 split ...
     mid(:)=bb(0,:)+wid(:)/2 
 
-    bb01(:,1)=(/bb(0,1) , mid(1) /)  !  [lo   , mid]
-    bb01(:,2)=(/mid(2)+1, bb(1,2)/)  !  [mid+1,  hi]
+    bb01(:,1)=(/bb(0,1) , mid(1) /)       ! [lo   , mid]
+    bb01(:,2)=(/mid(2)+1, bb(1,2)/)       ! [mid+1,  hi]
 
-    ! default, not a leaf ...
-    ch01%frill%LNode=.FALSE.
+    ch01%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
     ! leaf criterion ... 
-    if(mid(1)==SDS)then
-       ch01%frill%LNode=.TRUE.
-       allocate(ch01%chunk(1:SDS,1:SDS) ! grab a chunk for the leaf node
+    if(mid(1)==SBS)then
+       ch01%frill%Leaf=.TRUE.
+       allocate(ch01%chunk(1:SBS,1:SBS)) ! grab a chunk for the leaf node, always
        ch01%chunk=SpAMM_Zero        
        ch01%frill%flops=0
     endif
@@ -129,29 +125,27 @@ contains
     integer, dimension(1:2)                         :: mid,wid
 
     ch11=>tree%child_11
-
-    ! pre-existing?  ok been here before, so later ...
-    if(associated(ch11))return
-    allocate(ch11)! otherwise, instantiate ...
     
-    ch11%frill%ndimn = tree%frill%ndimn ! pass down unpadded dimensions
+    if(associated(ch11))return           ! pre-existing?  ok, so later ...
+    allocate(ch11)                       ! ... otherwise, instantiate
+    
+    ch11%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
 
-    bb=>tree%frill%bndbx     ! ... local boxes ... 
+    bb=>tree%frill%bndbx                 ! ... local boxes ... 
     bb11=>ch11%frill%bndbx
 
-    wid(:)=bb(1,:)-bb(0,:)+1 ! ... the 11 split ...
+    wid(:)=bb(1,:)-bb(0,:)+1             ! ... the 11 split ...
     mid(:)=bb(0,:)+wid(:)/2 
 
-    bb11(0,:)=mid(:)+1       !  [mid+1, hi]
-    bb11(1,:)=bb(1,:)        !  [mid+1, hi]
-
-    ! default, not a leaf ...
-    ch11%frill%LNode=.FALSE.
+    bb11(0,:)=mid(:)+1                   ! [mid+1, hi]
+    bb11(1,:)=bb(1,:)                    ! [mid+1, hi]
+    
+    ch11%frill%Leaf=.FALSE.              ! default, not a leaf ...
 
     ! leaf criterion ... 
-    if(mid(1)==SDS)then
-       ch11%frill%LNode=.TRUE.
-       allocate(ch11%chunk(1:SDS,1:SDS) ! grab a chunk for the leaf node
+    if(mid(1)==SBS)then
+       ch11%frill%Leaf=.TRUE.
+       allocate(ch11%chunk(1:SBS,1:SBS)) ! grab a chunk for the leaf node, always
        ch11%chunk=SpAMM_Zero        
        ch11%frill%flops=0
     endif
@@ -161,31 +155,28 @@ contains
   ! Structor to recursively destroy a tree_2d_symm ... 
   recursive subroutine  SpAMM_destruct_tree_2d_symm_recur (self)
     !
-    type(SpAMM_tree_2d_symm), pointer, target, intent(inout) :: self
-    type(SpAMM_tree_2d_symm), pointer                        :: ch ! sub-tree pointer 
+    type(SpAMM_tree_2d_symm), pointer,  intent(inout) :: self
  
     ! check for self-non-association (eg. at leaf pntr) ...
     if(.not.associated(self))return
     
-    ch=>self%child_00                            ! take the [00] channel
-    call SpAMM_destruct_tree_2d_symm_recur (ch)  ! recur to the botom:    
-    call SpAMM_destruct_tree_2d_symm_node  (ch)  ! kill backwards up the tree
-    ch=>self%child_01                            ! take the [01] channel
-    call SpAMM_destruct_tree_2d_symm_recur (ch)  ! recur to the botom:    
-    call SpAMM_destruct_tree_2d_symm_node  (ch)  ! kill backwards up the tree 
-    ch=>self%child_11                            ! take the [11] channel
-    call SpAMM_destruct_tree_2d_symm_recur (ch)  ! recur to the botom:    
-    call SpAMM_destruct_tree_2d_symm_node  (ch)  ! kill backwards up the tree 
+    call SpAMM_destruct_tree_2d_symm_recur (self%child_00) ! take the [00] channel
+    call SpAMM_destruct_tree_2d_symm_node  (self%child_00) ! kill backwards up the tree
+
+    call SpAMM_destruct_tree_2d_symm_recur (self%child_01) ! take the [01] channel
+    call SpAMM_destruct_tree_2d_symm_node  (self%child_01) ! kill backwards up the tree
+
+    call SpAMM_destruct_tree_2d_symm_recur (self%child_11) ! take the [11] channel
+    call SpAMM_destruct_tree_2d_symm_node  (self%child_11) ! kill backwards up the tree
 
   end subroutine SpAMM_destruct_tree_2d_symm_recur ! ... and we're out ... 
 
+  ! kill the adornment 
   subroutine  SpAMM_destruct_tree_2d_symm_node (self)
 
     type(SpAMM_tree_2d_symm), pointer, intent(inout) :: self
 
-    ! kill the adornment
-    if(self%frill%leaf) &
-         deallocate(self%chunk) 
+    if(self%frill%leaf)deallocate(self%chunk) 
     deallocate(self)               ! done 
     nullify(self)                  ! bye-bye
 
@@ -205,7 +196,7 @@ contains
        RETURN
     ELSE
        ! nothing passed in, and we have an associated A, so lets pop a new tree top ...
-       d => SpAMM_new_top_tree_2d_symm ( b%frill%NDimn(1),  b%frill%NDimn(2) )
+       d => SpAMM_new_top_tree_2d_symm ( b%frill%NDimn )
     ENDIF
 
     ! d |cpy> a
@@ -221,7 +212,7 @@ contains
     
     if(.not.associated(a))return
     
-    if (a%frill%lnode) then       
+    if (a%frill%leaf) then       
 
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
 

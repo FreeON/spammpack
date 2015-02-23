@@ -12,7 +12,7 @@ MODULE spamm_structures
   ! garnishments of the tree_1d ...
   type :: SpAMM_decoration_1d
      ! leaf node flag
-     logical                               :: LNode
+     logical                               :: Leaf
      !> Integer dimension of the native (non-padded) vector
      integer                               :: NDimn
      !> Axis-aligned brakets for the (i-leftmost) index space
@@ -28,7 +28,7 @@ MODULE spamm_structures
   ! garnishments of tree_2d ...
   type :: SpAMM_decoration_2d
      ! leaf node flag
-     logical                               :: LNode
+     logical                               :: Leaf
      !> Integer dimension of the native (non-padded) matrix 
      integer,           dimension(1:2)     :: NDimn
      !> Axis-aligned bounding box for the (i-j) index space, from 1 to padded dimension

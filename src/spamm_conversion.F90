@@ -17,7 +17,7 @@ contains
        a_2d => A_2d_O ! do this in place
     ELSE      
        ! lets get a fresh tree ... 
-       a_2d => SpAMM_new_top_tree_2d_symm ( SIZE(A,1), SIZE(A,2) )
+       a_2d => SpAMM_new_top_tree_2d_symm ((/ SIZE(A,1), SIZE(A,2) /))
     ENDIF
 
     WRITE(*,*)a_2d%frill%bndbx
@@ -30,22 +30,20 @@ contains
   RECURSIVE SUBROUTINE SpAMM_convert_dense_to_tree_2d_symm_recur (A,A_2d)
 
     real(SpAMM_KIND), dimension(:,:),intent(in) :: A
-    type(SpAMM_tree_2d_symm), target, pointer   :: A_2d
-    INTEGER, DIMENSION(:,:),  pointer           :: bb
+    type(SpAMM_tree_2d_symm), pointer           :: A_2d
+    integer, dimension(0:1,1:2)                 :: bb
     INTEGER                                     :: M, N, M_marg, N_marg
 
-    ! some local variables ...
-    !    M=SIZE(A,1)
-    !    N=SIZE(A,2)
-    M =   a_2d%frill%NDimn(1)
-    N =   a_2d%frill%NDimn(2) 
-    bb => a_2d%frill%bndbx 
+    ! local variables ...
+    M  =  a_2d%frill%NDimn(1)
+    N  =  a_2d%frill%NDimn(2) 
+    bb =  a_2d%frill%bndbx 
 
     ! peal off white space as found ... 
     if(bb(0,1)>M)RETURN 
     if(bb(0,2)>N)RETURN 
 
-    if(a_2d%frill%lnode)then! Leaf condition ? 
+    if(a_2d%frill%leaf)then! Leaf condition ? 
 
        ! account for margin space ...
        M_marg = MIN( bb(1,1), M )

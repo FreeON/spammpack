@@ -89,7 +89,7 @@ CONTAINS
 
     ELSEIF(TA.AND.TB)THEN
 
-       IF(b%frill%lnode)then
+       IF(b%frill%leaf)then
 
           ! A = alpha*A + beta*B
           a%chunk(1:SBS,1:SBS) = alpha*a%chunk(1:SBS,1:SBS) + beta*b%chunk(1:SBS,1:SBS)

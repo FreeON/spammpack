@@ -29,10 +29,10 @@ CONTAINS
     TYPE(SpAMM_Tree_1d),  INTENT(INOUT) :: a    
 
     ! at a leaf ...
-    IF(ALLOCATED(a%chunk))THEN 
+    if(a%frill%leaf)then
        a%frill%norm2=SUM(a%chunk**2) 
        a%frill%non0s=SIZE(a%chunk)
-       RETURN 
+       return
     ENDIF
 
     ! re-init this level
@@ -64,12 +64,11 @@ CONTAINS
     type(SpAMM_decoration_2d) :: d
     type(SpAMM_decoration_2d) :: a
 
+    d%leaf =a%leaf
     d%norm2=a%norm2
     d%non0s=a%non0s
     d%flops=a%flops
     d%ndimn=a%ndimn
-
-    if(.not.associated(d%bndbx)) allocate(d%bndbx(0:1,1:2))
     d%bndbx=a%bndbx
 
   END SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d
@@ -79,7 +78,7 @@ CONTAINS
 
     TYPE(SpAMM_tree_2d_symm),  INTENT(INOUT) :: a    
 
-    IF(ALLOCATED(a%chunk))THEN  ! at a leaf?
+    if(a%frill%leaf)then  ! at a leaf?
        a%frill%Norm2=SUM(a%chunk*2) 
        a%frill%Non0s=SIZE(a%chunk,1)*SIZE(a%chunk,2)
        ! application has to fill in the %flops at this level
