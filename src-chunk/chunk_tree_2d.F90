@@ -64,7 +64,7 @@ module chunk_tree_2d
      type(chunk_node_2d) :: node(SPAMM_CHUNK_NODES)
 
      !> The matrices at the leaves.
-     type(chunk_data_2d) :: data(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE)
+     type(chunk_data_2d) :: data(SPAMM_BLOCKS, SPAMM_BLOCKS)
 
   end type chunk_2d
 
@@ -75,7 +75,7 @@ contains
     use spamm_strings
 
     character(len=1000) :: string
-    class(chunk_2d), intent(in) :: self
+    type(chunk_2d), intent(in) :: self
 
     string = "chunk:"
     write(string, "(A)") trim(string)//" N_chunk: "//trim(to_string(SPAMM_CHUNK_SIZE))
@@ -87,5 +87,22 @@ contains
     write(string, "(A)") trim(string)//", per matrix: "//trim(to_string(storage_size(self%data)/8))//" bytes"
 
   end function chunk_2d_to_string
+
+  function chunk_2d_to_dense (A) result (B)
+
+    real(kind(0d0)) :: B(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE)
+    type(chunk_2d), pointer, intent(in) :: A
+
+    integer :: i, j, k, l
+
+    do i = 1, SPAMM_BLOCKS
+       do j = 1, SPAMM_BLOCKS
+          k = (i-1)*SPAMM_BLOCK_SIZE+1
+          l = (j-1)*SPAMM_BLOCK_SIZE+1
+          B(k:k+SPAMM_BLOCK_SIZE-1, l:l+SPAMM_BLOCK_SIZE-1) = A%data(i, j)%data
+       enddo
+    enddo
+
+  end function chunk_2d_to_dense
 
 end module chunk_tree_2d

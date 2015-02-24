@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 add_library( spammchunk
+  chunk_init_2d.F90
   chunk_tree_2d.F90
   spamm_bounding_box_2d.F90
   spamm_decoration_2d.F90
