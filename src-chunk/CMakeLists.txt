@@ -26,62 +26,17 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set( spammpack-old-sources
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/spamm_globals.F90.in
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.F90
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
-  spamm_algebra.F90
-  spamm_algebra_add.F90
-  spamm_convert.F90
-  spamm_decorate.F90
-  spamm_management.F90
-  spamm_project.F90
-  spamm_strings.F90
-  spamm_types.F90
-  spamm_utilities.F90
-  spammpack.F90
   )
 
-set( spammpack-sources
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.F90
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_real_precision.F90
-  spamm_add.F90
-  spamm_add_2d_2d.F90
-  spamm_bisect.F90
+add_library( spammchunk
+  chunk_tree_2d.F90
   spamm_bounding_box_2d.F90
   spamm_decoration_2d.F90
   spamm_extra_2d.F90
+  spamm_globals.F90
   spamm_strings.F90
-  spamm_tree_2d.F90
-  spammpack.F90
+  spammchunk.F90
   )
-
-set( MODULE_FILES
-  spammpack.mod
-  )
-
-set( HEADER_FILES
-  spamm_utility_macros.h
-  )
-
-set( LIBRARY_BASENAME "spammpack" )
-
-include( ${CMAKE_SOURCE_DIR}/cmake-scripts/FindFortranKind.cmake )
-
-set( KIND_EXPRESSION "kind(0d0)" )
-find_fortran_kind( ${KIND_EXPRESSION} )
-
-configure_file( spamm_real_precision.F90.in spamm_real_precision.F90 )
-
-set_directory_properties(
-  PROPERTIES
-  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
-  )
-
-include( ${CMAKE_SOURCE_DIR}/cmake-scripts/BuildLibrary.cmake )
-
-build_library( FALSE "" )
-
-if( OPENMP_FOUND )
-  build_library( TRUE "${OpenMP_Fortran_FLAGS}")
-  add_dependencies( spammpack-threaded-shared spammpack-serial-static )
-endif()

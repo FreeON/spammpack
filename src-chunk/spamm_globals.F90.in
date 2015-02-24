@@ -1,4 +1,9 @@
-!> @copyright
+!> Defines global parameters and variables.
+!!
+!! @todo Move matrix related global parameters or values into appropriate types
+!! and make things much less global.
+!!
+!! @copyright
 !!
 !! Copyright (c) 2015, Los Alamos National Laboratory
 !! All rights reserved.
@@ -30,64 +35,17 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module chunk_tree_2d
-
-#include "spamm_utility_macros.h"
-
-  use spamm_decoration_2d
-  use spamm_extra_2d
-  use spamm_globals
+module spamm_globals
 
   implicit none
 
-  !> The tree-node type.
-  type :: chunk_node_2d
+  !> The size of the basic submatrix.
+  integer, parameter :: SPAMM_BLOCK_SIZE = @SPAMM_BLOCK_SIZE@
 
-     !> The tree node decoration.
-     type(decoration_2d) :: decoration
+  !> The size of the chunk submatrix.
+  integer, parameter :: SPAMM_CHUNK_SIZE = @SPAMM_CHUNK_SIZE@
 
-     !> Some extra information.
-     type(extra_2d) :: extra
+  !> The number of tree nodes in the chunk tree.
+  integer, parameter :: SPAMM_CHUNK_NODES = @SPAMM_CHUNK_NODES@
 
-  end type chunk_node_2d
-
-  !> The leaf-node matrix type.
-  type :: chunk_data_2d
-
-     !> The matrix.
-     real(SPAMM_KIND) :: data(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE)
-
-  end type chunk_data_2d
-
-  !> The 2D chunk type.
-  type :: chunk_2d
-
-     !> The tree nodes.
-     type(chunk_node_2d) :: node(SPAMM_CHUNK_NODES)
-
-     !> The matrices at the leaves.
-     type(chunk_data_2d) :: data(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE)
-
-  end type chunk_2d
-
-contains
-
-  function chunk_2d_to_string (self) result (string)
-
-    use spamm_strings
-
-    character(len=1000) :: string
-    class(chunk_2d), intent(in) :: self
-
-    string = "chunk:"
-    write(string, "(A)") trim(string)//" N_chunk: "//trim(to_string(SPAMM_CHUNK_SIZE))
-    write(string, "(A)") trim(string)//", N_block: "//trim(to_string(SPAMM_BLOCK_SIZE))
-    write(string, "(A)") trim(string)//", "//trim(to_string(size(self%node)))//" nodes"
-    write(string, "(A)") trim(string)//", "//trim(to_string(size(self%data, 1)**2))//" leaves"
-    write(string, "(A)") trim(string)//", total: "//trim(to_string(storage_size(self)/8))//" bytes"
-    write(string, "(A)") trim(string)//", per node: "//trim(to_string(storage_size(self%node)/8))//" bytes"
-    write(string, "(A)") trim(string)//", per matrix: "//trim(to_string(storage_size(self%data)/8))//" bytes"
-
-  end function chunk_2d_to_string
-
-end module chunk_tree_2d
+end module spamm_globals
