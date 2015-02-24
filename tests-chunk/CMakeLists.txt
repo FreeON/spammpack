@@ -26,13 +26,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-add_library( spammchunk
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.F90
-  chunk_init_2d.F90
-  chunk_tree_2d.F90
-  spamm_bounding_box_2d.F90
-  spamm_decoration_2d.F90
-  spamm_extra_2d.F90
-  spamm_strings.F90
-  spammchunk.F90
+include_directories( ${CMAKE_BINARY_DIR}/src-chunk )
+
+set( TEST_SOURCES
+  new_chunk_2d
+  random_chunk_2d
   )
+
+foreach( TEST ${TEST_SOURCES} )
+  add_executable( ${TEST} ${TEST}.F90 )
+  target_link_libraries( ${TEST} spammchunk )
+  add_test( ${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST} )
+endforeach()
