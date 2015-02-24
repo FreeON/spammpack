@@ -6,12 +6,208 @@ module spamm_xstructors
   implicit none
 
 contains
+  !++XSTRUCTORS: SpAMM memory opperations _______________________ XSTRUCTORS _________________
+  !++XSTRUCTORS: constructors and destructors for SpAMM tree-nd structures ...
+  !++XSTRUCTORS:   ... TREE-ONE-D ... TREE-ONE-D ... TREE-ONE-D ... 
+  !++XSTRUCTORS:     SpAMM_new_top_tree_1d 
+  !++XSTRUCTORS:       a_1 => init (vector top) 
+  function SpAMM_new_top_tree_1d(NDimn) result (tree)
+    !
+    integer,           intent(in) :: NDimn
+    integer                       :: M_pad, depth
+    type(SpAMM_tree_1d), pointer  :: tree
 
-  ! SpAMM xstructors ________________ SXTRS _________________
-  ! constructors and destructors 
-  !
-  ! instantiates the tree_2d_symm structure 
+    ! instantiate the root node.  this is the tree top ... 
+    allocate(tree)
 
+    ! here are padded dimensions ...
+    do depth=0,64
+       M_pad=SPAMM_BLOCK_SIZE*2**depth
+       if(M_pad>NDimn(1))exit
+    enddo
+
+    ! the [i] native dimension ...
+    tree%frill%ndimn=ndimn
+
+    ! not a leaf node, this is the top (root) of the tree, k?
+    tree%frill%Leaf=.FALSE.
+
+    ! the 1-ary tile
+    tree%frill%bndbx(0:1) = (/ 1, M_pad /)  ! [i-lo,i-hi]
+
+    ! no kids yet
+    tree%child_0=>NULL()
+    tree%child_1=>NULL()
+
+  end function SpAMM_new_top_tree_1d
+
+  !++XSTRUCTORS:     SpAMM_construct_tree_1d_0
+  !++XSTRUCTORS:       a_1%0 => init (constructor of the lo [0] channel)
+  function SpAMM_construct_tree_1d_0(tree) result(ch0)  
+
+    type(SpAMM_tree_1d),    target, intent(inout) :: tree
+    type(SpAMM_tree_1d),    pointer               :: ch0   
+    integer, dimension(:),  pointer               :: bb, bb0
+    integer, dimension                            :: mid,wid
+
+    ch0=>tree%child_0
+
+    if(associated(ch0))return            ! pre-existing?  ok, so later ...
+    allocate(ch0)                        ! ... otherwise, instantiate
+
+    ch0%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
+
+    bb=>tree%frill%bndbx                 ! ... local boxes ... 
+    bb0=>ch0%frill%bndbx
+
+    wid=bb(1)-bb(0)+1                    ! ... the 0 split ...
+    mid=bb(0)+wid/2-1 
+
+    bb0(:)=(/ bb(0) , mid) /)            ! [lo,mid]
+    
+    ch0%frill%Leaf=.FALSE.               ! default, not a leaf ...
+
+    ! leaf criterion ... 
+    if(wid==2*SBS)then
+       ch0%frill%Leaf=.TRUE.
+       allocate(ch0%chunk(1:SBS))        ! grab a chunk for each leaf node, always
+       ch0%chunk=SpAMM_Zero        
+       ch0%frill%flops=0
+    endif
+
+  end function SpAMM_construct_tree_1d_0
+
+  !++XSTRUCTORS:     SpAMM_construct_tree_1d_1
+  !++XSTRUCTORS:       a_2%1 => init (constructor of the hi [1] channel)
+  function SpAMM_construct_tree_1d_1(tree) result(ch1)  
+
+    type(SpAMM_tree_1d),    target, intent(inout) :: tree
+    type(SpAMM_tree_1d),    pointer               :: ch1
+    integer, dimension(:),  pointer               :: bb, bb1
+    integer                                       :: mid,wid
+
+    ch1=>tree%child_1
+    
+    if(associated(ch1))return           ! pre-existing?  ok, so later ...
+    allocate(ch1)                       ! ... otherwise, instantiate
+    
+    ch1%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
+
+    bb=>tree%frill%bndbx                ! ... local boxes ... 
+    bb1=>ch1%frill%bndbx
+
+    wid=bb(1)-bb(0)+1                   ! ... the 1 split ...
+    mid=bb(0)+wid/2-1 
+    bb1(:)=(/mid+1, bb(1)/)             ! [mid+1, hi]
+    
+    ch1%frill%Leaf=.FALSE.              ! default, not a leaf ...
+
+    ! leaf criterion ... 
+    if(wid==2*SBS)then
+       ch1%frill%Leaf=.TRUE.
+       allocate(ch1%chunk(1:SBS))       ! grab a chunk for the leaf node, always
+       ch1%chunk=SpAMM_Zero        
+       ch1%frill%flops=0
+    endif
+
+  end function SpAMM_construct_tree_1d_1
+
+  !++XSTRUCTORS:     SpAMM_tree_1d_copy_tree_1d
+  !++XSTRUCTORS:       d_1 => a (wrapper)
+  function SpAMM_tree_1d_copy_tree_1d (a, b) result(d)
+
+    TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)              :: a
+    TYPE(SpAMM_tree_1d), POINTER, INTENT(INOUT), OPTIONAL :: b
+    TYPE(SpAMM_tree_1d), POINTER                          :: d
+
+    IF(PRESENT(b))THEN
+       d => b
+    ELSEIF(.NOT.ASSOCIATED(a))THEN
+       d => null()
+       RETURN
+    ELSE
+       ! nothing passed in, and we have an associated A, so lets pop a new tree top ...
+       d => SpAMM_new_top_tree_1d ( b%frill%NDimn )
+    ENDIF
+
+    ! d |cpy> a
+    CALL SpAMM_tree_1d_copy_tree_1d_recur (d, a)
+
+  END function SpAMM_tree_1d_copy_tree_1d
+
+  !++XSTRUCTORS:     SpAMM_tree_1d_copy_tree_1d_recur 
+  !++XSTRUCTORS:       d_1 => a (recursive)
+  RECURSIVE SUBROUTINE SpAMM_tree_1d_copy_tree_1d_recur (d, a)
+
+    TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)    :: a
+    TYPE(SpAMM_tree_1d), POINTER                :: d
+    
+    if(.not.associated(a))return
+    
+    if (a%frill%leaf) then       
+
+       d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
+
+    else
+
+       CALL SpAMM_tree_1d_copy_tree_1d_recur (SpAMM_construct_tree_1d_00(d), a%child_00)
+       CALL SpAMM_tree_1d_copy_tree_1d_recur (SpAMM_construct_tree_1d_01(d), a%child_01)
+       CALL SpAMM_tree_1d_copy_tree_1d_recur (SpAMM_construct_tree_1d_11(d), a%child_11)
+
+    endif    
+
+    CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill) ! d%frill |cpy> a%frill
+    
+  END SUBROUTINE SpAMM_tree_1d_copy_tree_1d_recur
+
+  !++XSTRUCTORS:     SpAMM_init_random_tree_1d
+  !++XSTRUCTORS:       a_1 => rand (wrapper)
+  function SpAMM_init_random_tree_1d(M) result (randm)
+    !
+    integer,         intent(in)  :: M
+    integer                      :: depth
+    type(SpAMM_tree_1d), pointer :: randm
+    real(SpAMM_KIND)             :: renorm
+
+    randm => SpAMM_new_top_tree_1d(M)
+
+    depth=0
+    CALL init_random_seed()    ! fortran intrinsic 
+    CALL SpAMM_random_unormalized_tree_1d_recur (randm, depth)
+
+    ! normalize the vector ...
+    renorm=SpAMM_one/sqrt(randm%frill%norm2)
+    CALL SpAMM_multiply_tree_1d_x_scalar_recur(randm, renorm)
+
+  end function SpAMM_new_identity_tree_2d_symm
+
+  !++XSTRUCTORS:     SpAMM_random_unormalized_tree_1d_recur
+  !++XSTRUCTORS:       a_1 => rand (recursive)
+  recursive subroutine SpAMM_random_unormalized_tree_1d_recur (randm, depth)
+
+    type(SpAMM_tree_1d), pointer :: randm
+    integer,          intent(in) :: depth 
+    integer                      :: i 
+
+    if(.not.associate(randm))return
+
+    IF(randm%frill%leaf)THEN
+       CALL RANDOM_NUMBER(randm%chunk)
+    ELSE
+       ! child along [0]: [lo,mid] ... 
+       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_1d_0(randm), depth+1 )
+       ! child along [1]: [mid+1,hi] ... 
+       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_1d_1(randm), depth+1 )
+    ENDIF
+    
+    ! merge & regarnish back up the tree ...
+    CALL SpAMM_redecorate_tree_1d(randm)
+    !
+  end subroutine SpAMM_random_unormalized_tree_1d_recur
+  !!
+  !++XSTRUCTORS:   ... TREE-TWO-D ... TREE-TWO-D ... TREE-TWO-D ... 
+  !++XSTRUCTORS:     SpAMM_new_top_tree_2d_symm 
+  !++XSTRUCTORS:       a_2 => init (matrix top)
   function SpAMM_new_top_tree_2d_symm (NDimn) result (tree)
     !
     integer, dimension(1:2),intent(in) :: NDimn
@@ -42,9 +238,15 @@ contains
     tree%frill%bndbx(0:1,1) = (/ 1, M_pad /)  ! [i-lo,i-hi]
     tree%frill%bndbx(0:1,2) = (/ 1, N_pad /)  ! [j-lo,j-hi]
 
+    ! no kids yet
+    tree%child_00=>NULL()
+    tree%child_01=>NULL()
+    tree%child_11=>NULL()
+
   end function SpAMM_new_top_tree_2d_symm
-  
-  ! structor for the lo-lo [00] channel ...
+ 
+  !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_00
+  !++XSTRUCTORS:       a_2%00 => init (constructor of the lo-lo [00] channel)
   function SpAMM_construct_tree_2d_symm_00(tree) result(ch00)  
 
     type(SpAMM_tree_2d_symm), target, intent(inout) :: tree
@@ -82,7 +284,8 @@ contains
 
   end function SpAMM_construct_tree_2d_symm_00
 
-  ! structor for the lo-hi [01] channel ...
+  !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_01
+  !++XSTRUCTORS:       a_2%01 => init (constructor of the lo-hi [01] channel)
   function SpAMM_construct_tree_2d_symm_01(tree) result(ch01)  
 
     type(SpAMM_tree_2d_symm), target, intent(inout) :: tree
@@ -108,8 +311,6 @@ contains
 
     ch01%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
-    !    write(*,*)' 01 ',bb01(:,1), mid(1), wid(1)
-
     ! leaf criterion ... 
     if(wid(1)==2*SBS)then
        ch01%frill%Leaf=.TRUE.
@@ -120,7 +321,8 @@ contains
 
   end function SpAMM_construct_tree_2d_symm_01
 
-  ! structor for the hi-hi [11] channel ...
+  !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_01
+  !++XSTRUCTORS:       a_2%11 => init (constructor of the hi-hi [11] channel)
   function SpAMM_construct_tree_2d_symm_11(tree) result(ch11)  
 
     type(SpAMM_tree_2d_symm), target, intent(inout) :: tree
@@ -143,8 +345,6 @@ contains
 
     bb11(0,:)=mid(:)+1                   ! [mid+1, hi]
     bb11(1,:)=bb(1,:)                    ! [mid+1, hi]
-
-    !    write(*,*)' 11 ',bb11(:,1), mid(1)
     
     ch11%frill%Leaf=.FALSE.              ! default, not a leaf ...
 
@@ -158,7 +358,8 @@ contains
 
   end function SpAMM_construct_tree_2d_symm_11
 
-  ! Structor to recursively destroy a tree_2d_symm ... 
+  !++XSTRUCTORS:     SpAMM_destruct_tree_2d_symm_recur 
+  !++XSTRUCTORS:       a_2 => null() (recursive destructor of the symmetric matrix)  
   recursive subroutine  SpAMM_destruct_tree_2d_symm_recur (self)
     !
     type(SpAMM_tree_2d_symm), pointer,  intent(inout) :: self
@@ -177,7 +378,8 @@ contains
 
   end subroutine SpAMM_destruct_tree_2d_symm_recur ! ... and we're out ... 
 
-  ! kill the adornment 
+  !++XSTRUCTORS:     SpAMM_destruct_tree_2d_symm_node
+  !++XSTRUCTORS:       a_2 => null() (node level destructor of the symmetric matrix)  
   subroutine  SpAMM_destruct_tree_2d_symm_node (self)
 
     type(SpAMM_tree_2d_symm), pointer, intent(inout) :: self
@@ -188,7 +390,8 @@ contains
 
   end subroutine SpAMM_destruct_tree_2d_symm_node
 
-  ! c => a, b = c => a
+  !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm
+  !++XSTRUCTORS:       d_2 => a_2  (wrapper)
   function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, b) result(d)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)              :: a
@@ -210,7 +413,8 @@ contains
 
   END function SpAMM_tree_2d_symm_copy_tree_2d_symm
 
-  !  d |cpy> a
+  !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur 
+  !++XSTRUCTORS:       d_2 => a_2  (recursive)
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: a
@@ -233,6 +437,7 @@ contains
     CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill) ! d%frill |cpy> a%frill
     
   END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur
+
 
 
 !!$
