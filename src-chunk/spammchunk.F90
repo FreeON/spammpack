@@ -32,4 +32,7 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spammchunk
 
+  use chunk_tree_2d
+  use spamm_strings
+
 end module spammchunk

@@ -311,6 +311,11 @@ configure_file(
   ${CMAKE_BINARY_DIR}/src/spamm_globals.F90
   )
 
+configure_file(
+  ${CMAKE_SOURCE_DIR}/src-chunk/spamm_globals.F90.in
+  ${CMAKE_BINARY_DIR}/src-chunk/spamm_globals.F90
+  )
+
 find_program( CTAGS ctags )
 
 if( CTAGS )

@@ -1,6 +1,6 @@
 program test
 
-  use spammpack
+  use spammchunk
 
   implicit none
 

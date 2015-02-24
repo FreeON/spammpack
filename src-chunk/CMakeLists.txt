@@ -26,11 +26,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/spamm_globals.F90.in
-  ${CMAKE_CURRENT_BINARY_DIR}/spamm_globals.F90
-  )
-
 add_library( spammchunk
   chunk_tree_2d.F90
   spamm_bounding_box_2d.F90
