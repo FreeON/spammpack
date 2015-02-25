@@ -30,9 +30,9 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module chunk_tree_2d
+module spammchunk_tree_2d
 
-  use spamm_globals
+  use spammchunk_globals
 
   implicit none
 
@@ -80,7 +80,7 @@ contains
   !! @return The string representation.
   function chunk_2d_to_string (A) result (string)
 
-    use spamm_strings
+    use spammchunk_strings
 
     character(len=1000) :: string
     type(chunk_2d), intent(in) :: A
@@ -92,9 +92,9 @@ contains
     write(string, "(A)") trim(string)//"; N_block: "//trim(to_string(SPAMM_BLOCK_SIZE))
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%node)))//" nodes"
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%data, 1)**2))//" leaves"
-    write(string, "(A)") trim(string)//"; total: "//trim(to_string(storage_size(A)/8))//" bytes"
-    write(string, "(A)") trim(string)//"; per node: "//trim(to_string(storage_size(A%node)/8))//" bytes"
-    write(string, "(A)") trim(string)//"; per matrix: "//trim(to_string(storage_size(A%data)/8))//" bytes"
+    write(string, "(A)") trim(string)//"; total: "//trim(to_string(storage_size(A)/8))//" B"
+    write(string, "(A)") trim(string)//"; node: "//trim(to_string(storage_size(A%node)/8))//" B"
+    write(string, "(A)") trim(string)//"; matrix: "//trim(to_string(storage_size(A%data)/8))//" B"
 
   end function chunk_2d_to_string
 
@@ -148,4 +148,4 @@ contains
 
   end function chunk_2d_get
 
-end module chunk_tree_2d
+end module spammchunk_tree_2d

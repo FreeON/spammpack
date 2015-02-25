@@ -30,9 +30,9 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module chunk_init_2d
+module spammchunk_init_2d
 
-  use chunk_tree_2d
+  use spammchunk_tree_2d
 
 contains
 
@@ -54,4 +54,4 @@ contains
 
   end subroutine init_2d_random
 
-end module chunk_init_2d
+end module spammchunk_init_2d
