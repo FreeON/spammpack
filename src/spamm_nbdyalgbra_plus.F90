@@ -4,13 +4,16 @@ module spamm_nbdyalgbra_plus
   use spamm_xstructors
   use spamm_decoration
   use spamm_elementals
-
+  use spamm_nbdyalgbra_times 
   implicit none
 
 CONTAINS
-  !!
-  !! ... TREE-ONE-D ... TREE-ONE-D ... TREE-ONE-D ... TREE-ONE-D ... TREE-ONE-D ...
-  !!
+
+  !++NBODYADDTN: SpAMM generalized n-body algebras for the add ____ NBODYADDTN _________________
+  !++NBODYADDTN: generalized addition (+)
+  !++NBODYADDTN:   ... [TREE-ONE-D + TREE-ONE-D] ... [TREE-ONE-D + TREE-ONE-D] ...   
+  !++NBODYADDTN:   SpAMM_tree_1d_plus_tree_1d 
+  !++NBODYADDTN:     c => gamma*c + alpha*a + beta*b
   FUNCTION SpAMM_tree_1d_plus_tree_1d (A, B, alpha, beta, C, gamma) RESULT(D)   
 
     TYPE(SpAMM_tree_1d), POINTER, INTENT(INOUT)           :: A, B
@@ -76,10 +79,10 @@ CONTAINS
 
     IF(.NOT.TA.AND.TB)THEN
 
-       ! a = b
+       ! a => b
        CALL SpAMM_tree_1d_copy_tree_1d_recur(a, b)
 
-       ! a = beta*b = beta*a  
+       ! a = beta*b  
        CALL SpAMM_scalar_times_tree_1d_recur(beta, a)
 
     ELSEIF(TA .AND. .NOT.TB) THEN
@@ -116,7 +119,7 @@ CONTAINS
 
     TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)    :: A,B
     TYPE(SpAMM_tree_1d), POINTER                :: C
-    REAL(SpAMM_KIND)                                 :: alpha, beta
+    REAL(SpAMM_KIND)                                 :: alpha, beta, gamma
     logical                                          :: TA, TB
 
     TA=ASSOCIATED(A)
@@ -137,7 +140,7 @@ CONTAINS
        ! leaf situation ...
        IF(c%frill%leaf)THEN
 
-          ! c = c + alpha*a + beta*b
+          ! c = gamma*c + alpha*a + beta*b
           c%chunk(1:sbs)=gamma*c%chunk(1:sbs)+alpha*a%chunk(1:sbs)+beta*b%chunk(1:sbs)
           c%frill%flops=c%frill%flops+4*sbs
 

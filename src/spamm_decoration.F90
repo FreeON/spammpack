@@ -24,7 +24,7 @@ CONTAINS
   ! - - - - - - - - - - - - - - - - -1d, 1d, 1d - - - - - - - - - - - - - - - - - - 
 
   ! uppwards redecoration ...
-  SUBROUTINE SpAMM_redecorate_1d(a)
+  SUBROUTINE SpAMM_redecorate_tree_1d(a)
 
     TYPE(SpAMM_Tree_1d),  INTENT(INOUT) :: a    
 
@@ -42,7 +42,7 @@ CONTAINS
     IF(ASSOCIATED( a%child_0 )) CALL SpAMM_merge_1d( a%frill, a%child_0%frill )
     IF(ASSOCIATED( a%child_1 )) CALL SpAMM_merge_1d( a%frill, a%child_1%frill )
 
-  END SUBROUTINE SpAMM_redecorate_1d   
+  END SUBROUTINE SpAMM_redecorate_tree_1d
  
   ! 1d decoration merge:
   SUBROUTINE SpAMM_merge_1d(a,b)
