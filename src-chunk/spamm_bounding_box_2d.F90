@@ -1,6 +1,4 @@
-!> Defines derived types used in SpAMMPACK.
-!!
-!! @copyright
+!> @copyright
 !!
 !! Copyright (c) 2015, Los Alamos National Laboratory
 !! All rights reserved.

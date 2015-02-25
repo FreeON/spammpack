@@ -1,6 +1,4 @@
-!> Defines derived types used in SpAMMPACK.
-!!
-!! @copyright
+!> @copyright
 !!
 !! Copyright (c) 2015, Los Alamos National Laboratory
 !! All rights reserved.
@@ -41,10 +39,10 @@ module spamm_decoration_2d
   type :: decoration_2d
 
      !> The number of non-zero elements.
-     real(kind(0d0)) :: number_nonzeros = -1
+     real(kind(0d0)) :: number_nonzeros = 0
 
      !> The square of the Frobenius norm.
-     real(kind(0d0)) :: norm2 = -1
+     real(kind(0d0)) :: norm2 = 0
 
      !> The axis-aligned bounding box.
      type(bounding_box_2d) :: bounding_box

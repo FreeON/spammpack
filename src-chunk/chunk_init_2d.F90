@@ -36,10 +36,15 @@ module chunk_init_2d
 
 contains
 
+  !> Initialize a chunk with random matrix elements.
+  !!
+  !! @param A The chunk.
   subroutine init_2d_random (A)
 
     type(chunk_2d), pointer, intent(inout) :: A
     integer :: i, j
+
+    if(.not. associated(A)) return
 
     do i = 1, SPAMM_BLOCKS
        do j = 1, SPAMM_BLOCKS
