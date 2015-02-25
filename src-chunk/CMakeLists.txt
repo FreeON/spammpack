@@ -29,6 +29,7 @@
 add_library( spammchunk
   ${CMAKE_CURRENT_BINARY_DIR}/spammchunk_globals.F90
   spammchunk.F90
+  spammchunk_add_2d.F90
   spammchunk_init_2d.F90
   spammchunk_strings.F90
   spammchunk_tree_2d.F90

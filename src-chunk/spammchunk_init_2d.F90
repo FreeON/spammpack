@@ -34,6 +34,8 @@ module spammchunk_init_2d
 
   use spammchunk_tree_2d
 
+  implicit none
+
 contains
 
   !> Initialize a chunk with random matrix elements.
@@ -51,6 +53,8 @@ contains
           call random_number(A%data(i, j)%data)
        enddo
     enddo
+
+    call chunk_2d_decorate(A)
 
   end subroutine init_2d_random
 

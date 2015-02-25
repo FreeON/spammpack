@@ -148,4 +148,14 @@ contains
 
   end function chunk_2d_get
 
+  !> (Re-)decorate a chunk. This step involves computing the norms of
+  !> all the tree nodes.
+  !!
+  !! @param A The chunk.
+  subroutine chunk_2d_decorate (A)
+
+    class(chunk_2d), intent(inout) :: A
+
+  end subroutine chunk_2d_decorate
+
 end module spammchunk_tree_2d

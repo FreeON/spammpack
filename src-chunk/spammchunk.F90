@@ -32,8 +32,9 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spammchunk
 
+  use spammchunk_add_2d
   use spammchunk_init_2d
-  use spammchunk_tree_2d
   use spammchunk_strings
+  use spammchunk_tree_2d
 
 end module spammchunk

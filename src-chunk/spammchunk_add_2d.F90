@@ -32,7 +32,7 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spammchunk_add_2d
 
-  use chunk_tree_2d
+  use spammchunk_tree_2d
 
   implicit none
 
