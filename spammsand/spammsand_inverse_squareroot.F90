@@ -18,24 +18,22 @@ program SpAMMSand_inverse_squareroot
   real(kind(0d0)), parameter ::   Tau_6=1d-14
 
   type(SpAMM_tree_2d_symm), pointer :: S => null()
+  real(SpAMM_KIND),     allocatable :: S_dense(:, :)
 
-  character(len = 1000) :: matrix_filename
-  real(kind(0d0)), allocatable :: S_dense(:, :)
+  character(len = 1000)             :: matrix_filename
+  real(SpAMM_KIND)                  :: x_hi
 
-  real :: start_time, end_time
-
-  integer :: i
-  real(kind(0d0)) :: max_diff, evmax
-
-  integer :: M,N
-
-  logical :: fakeit
+!  real :: start_time, end_time
 
   call get_command_argument(1, matrix_filename)
 
   call read_MM(matrix_filename, S_dense)
 
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
+
+  x_hi=SpAMMSand_rqi_extremal(s,1d-4,high_O=.TRUE.)
+
+  WRITE(*,*)' X + = ',x_hi
 
 
 
