@@ -86,6 +86,7 @@ CONTAINS
 
     IF(randm%frill%leaf)THEN
        CALL RANDOM_NUMBER(randm%chunk)
+       write(*,*)randm%frill%bndbx,' chunk = ',randm%chunk
     ELSE
        ! child along [0]: [lo,mid] ... 
        CALL SpAMM_random_unormalized_tree_1d_recur(SpAMM_construct_tree_1d_0(randm), depth+1 )

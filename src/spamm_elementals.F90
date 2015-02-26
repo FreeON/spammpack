@@ -10,36 +10,36 @@ module spamm_elementals
 CONTAINS
 
 
-  RECURSIVE SUBROUTINE SpAMM_scalar_times_tree_2d_symm_recur(beta, a)
 
-    type(SpAMM_tree_2d_symm), pointer  :: A
-    real(SpAMM_KIND)                   :: beta
-    integer, dimension(:,:),  pointer  :: bb
+  recursive subroutine SpAMM_print_tree_2d_symm_recur (A) 
 
-    if(.not.associated(a))then
-       return
+    type(SpAMM_tree_2d_symm), pointer, intent(in)   :: A
+    integer :: i,k
+
+    if(.not.associated(A))return
+
+    if(a%frill%leaf)then
+
+       WRITE(*,33)a%frill%bndbx(0:1,1),a%frill%bndbx(0:1,2)
+33     FORMAT(' [',I4,", ",I4,"] ")
+       DO I=1,SBS
+          WRITE(*,44)(a%chunk(k,I),k=1,SBS)
+       ENDDO
+44     FORMAT(20(F10.4,", "))
+
     else
 
-       bb => a%frill%bndbx 
-       if(bb(1,1)-bb(0,1)==SBS)then
+       CALL SpAMM_print_tree_2d_symm_recur (a%child_00) 
+       CALL SpAMM_print_tree_2d_symm_recur (a%child_01) 
+       CALL SpAMM_print_tree_2d_symm_recur (a%child_11) 
 
-          a%chunk(1:SBS,1:SBS) = beta*a%chunk(1:SBS,1:SBS)
-          a%frill%flops=a%frill%flops+SBS2
+    endif
 
-       else
+  end subroutine SpAMM_print_tree_2d_symm_recur
 
-          call SpAMM_scalar_times_tree_2d_symm_recur(beta, a%child_00)
-          call SpAMM_scalar_times_tree_2d_symm_recur(beta, a%child_01)
-          call SpAMM_scalar_times_tree_2d_symm_recur(beta, a%child_11)
 
-       end if
 
-       call SpAMM_redecorate_tree_2d_symm(a)
-
-    end if
-
-  END SUBROUTINE SpAMM_scalar_times_tree_2d_symm_recur
-
+  
 
   recursive function SpAMM_absmax_tree_2d_symm_recur (A) result(absmax)
 
