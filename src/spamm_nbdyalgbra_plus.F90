@@ -4,7 +4,7 @@ module spamm_nbdyalgbra_plus
   use spamm_xstructors
   use spamm_decoration
   use spamm_elementals
-!  use spamm_nbdyalgbra_times 
+  use spamm_nbdyalgbra_times 
   implicit none
 
 CONTAINS
@@ -34,7 +34,7 @@ CONTAINS
        alpha=SpAMM_one
     ENDIF
 
-    CALL SpAMM_tree_1d_plus_tree_1d_inplace_recur(D, A, alpha, beta )
+    CALL SpAMM_tree_1d_plus_tree_1d_inplace_recur(d, B, alpha, beta )
     
   END FUNCTION SpAMM_tree_1d_plus_tree_1d 
 

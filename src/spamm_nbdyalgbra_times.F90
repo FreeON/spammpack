@@ -15,7 +15,7 @@ CONTAINS
   RECURSIVE FUNCTION SpAMM_tree_1d_dot_tree_1d_recur(a, b ) result(dot)
 
     TYPE(SpAMM_tree_1d), POINTER :: a,b
-    REAL(SpAMM_KIND)             :: Dot, Dot0, Dot1
+    REAL(SpAMM_KIND)             :: Dot
 
     Dot=SpAMM_Zero
 
@@ -42,14 +42,31 @@ CONTAINS
     randm => SpAMM_new_top_tree_1d(M)
 
     depth=0
-    CALL init_random_seed()    ! fortran intrinsic 
+    CALL init_random_seed()    
     CALL SpAMM_random_unormalized_tree_1d_recur (randm, depth)
 
     ! normalize the vector ...
     renorm=SpAMM_one/sqrt(randm%frill%norm2)
-    CALL SpAMM_multiply_tree_1d_x_scalar_recur(randm, renorm)
+    randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
 
   end function SpAMM_init_random_tree_1d
+
+  ! from the internet ...
+  subroutine init_random_seed()
+    
+    INTEGER :: i, n, clock
+    INTEGER, DIMENSION(:), ALLOCATABLE :: seed
+    
+    CALL RANDOM_SEED(size = n)
+    ALLOCATE(seed(n))
+    
+    CALL SYSTEM_CLOCK(COUNT=clock)
+    
+    seed = clock + 37 * (/ (i - 1, i = 1, n) /)
+    CALL RANDOM_SEED(PUT = seed)
+    
+    DEALLOCATE(seed)
+  end subroutine init_random_seed
 
   !++NBODYTIMES:     SpAMM_random_unormalized_tree_1d_recur
   !++NBODYTIMES:       a_1 => rand (recursive)
@@ -57,7 +74,6 @@ CONTAINS
 
     type(SpAMM_tree_1d), pointer :: randm
     integer,          intent(in) :: depth 
-    integer                      :: i 
 
     if(.not.associated(randm))return
 
@@ -76,14 +92,16 @@ CONTAINS
     !
   end subroutine SpAMM_random_unormalized_tree_1d_recur
 
+
+
+
   !++NBODYTIMES:     SpAMM_scalar_times_tree_1d
-  !++NBODYTIMES:       d_1 => alpha*a_1 wrapper)
+  !++NBODYTIMES:       a_1 => alpha*a_1 wrapper)
   FUNCTION SpAMM_scalar_times_tree_1d(alpha, a) RESULT(d)
  
     type(SpAMM_tree_1d), pointer, intent(inout) :: a
     type(SpAMM_tree_1d), pointer                :: d
     real(SpAMM_KIND)                            :: alpha
-    integer                                     :: i 
 
     d=>a
     if(.not.associated(a))return
@@ -97,7 +115,6 @@ CONTAINS
 
     type(SpAMM_tree_1d), pointer :: a
     real(SpAMM_KIND)             :: alpha
-    integer                      :: i 
 
     if(.not.associated(a))return
 
@@ -156,7 +173,7 @@ CONTAINS
     if(present( beta_O))beta = beta_O
 
     Depth=0
-    CALL SpAMM_tree_2d_symm_times_tree_1d_recur(d, A, B, Tau2, Depth, alpha, beta )
+    CALL SpAMM_tree_2d_symm_n_times_tree_1d_recur(d, A, B, Tau2, Depth, alpha, beta )
 
   END FUNCTION SpAMM_tree_2d_symm_times_tree_1d
 
