@@ -41,7 +41,7 @@ CONTAINS
   ! for tree_1d, A = alpha*A + beta*B
   RECURSIVE SUBROUTINE SpAMM_tree_1d_plus_tree_1d_inplace_recur(a, b, alpha, beta)
 
-    TYPE(SpAMM_tree_1d), POINTER, INTENT(INOUT) :: A
+    TYPE(SpAMM_tree_1d), POINTER                :: A
     TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)    :: B
     REAL(SpAMM_KIND),             INTENT(IN)    :: alpha, beta
     logical                                     :: TA, TB

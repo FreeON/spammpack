@@ -56,6 +56,22 @@ CONTAINS
 
   END SUBROUTINE SpAMM_merge_1d
 
+  !  d_2d |cpy> a_2d (can be used top down or bottom up...)
+  SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d(d,a)
+
+    type(SpAMM_decoration_1d) :: d
+    type(SpAMM_decoration_1d) :: a
+
+    d%leaf =a%leaf
+    d%norm2=a%norm2
+    d%non0s=a%non0s
+    d%flops=a%flops
+    d%ndimn=a%ndimn
+    d%bndbx=a%bndbx
+
+  END SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d
+
+
   ! - - - - - - - - - - - - - - - - -2d, 2d, 2d - - - - - - - - - - - - - - - - - - 
 
   !  d_2d |cpy> a_2d (can be used top down or bottom up...)
