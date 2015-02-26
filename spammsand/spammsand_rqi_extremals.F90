@@ -14,7 +14,7 @@ CONTAINS
 
     TYPE(SpAMM_tree_1d), POINTER :: x=>NULL(),g=>NULL(),h=>NULL()
     TYPE(SpAMM_tree_1d), POINTER :: Ax=>NULL(),Ah=>NULL(),gOld=>NULL(),hOld=>NULL()
-    INTEGER              :: I, CG, MinMax
+    INTEGER              :: CG, MinMax
     INTEGER, PARAMETER   :: NCG=100
 
     REAL(SpAMM_KIND)     :: omega,omega_old
@@ -79,9 +79,9 @@ CONTAINS
        ENDIF
 
        ! convergence criteria
-       IF( SQRT(Dot(g,g))/ABS(Omega) < SQRT(Tau).AND.CG>16 &
-            .OR. (I==1.AND.Omega>Omega_old)                &
-            .OR. (I==2.AND.Omega<Omega_old) )EXIT
+       IF( SQRT(dot_g)/ABS(Omega) < SQRT(Tau).AND.CG>16 &
+            .OR. (MinMax==1.AND.Omega>Omega_old)        &
+            .OR. (MinMax==2.AND.Omega<Omega_old) )EXIT
 
        ! the conjugate gradient, h = g + beta*hOld
        h => SpAMM_tree_1d_plus_tree_1d ( h, SpAMM_one, g, inplace=SpAMM_zero) 

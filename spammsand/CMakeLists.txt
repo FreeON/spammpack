@@ -23,11 +23,13 @@ add_executable( spammsand_invsqrt
 		spammsand_rqi_extremals.F90
                 spammsand_structures.F90 
                 spammsand.F90 
-                test_utilities.F90  )
+                test_utilities.F90 
+		mmio.f )
 
 add_dependencies( spammsand_invsqrt spammpack-serial-shared )
 
 target_link_libraries( spammsand_invsqrt
+  utilities
   spammpack-serial-shared
   ${LAPACK_LIBRARIES}
   )
