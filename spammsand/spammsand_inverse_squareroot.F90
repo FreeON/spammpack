@@ -5,7 +5,7 @@ program SpAMMSand_inverse_squareroot
   USE spammpack 
   USE sandpack 
   use test_utilities
-
+  
   implicit none
 
   TYPE(spammsand_tree_2d_symm) :: z
@@ -36,6 +36,9 @@ program SpAMMSand_inverse_squareroot
   call read_MM(matrix_filename, S_dense)
 
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
+
+
+
 
 !     CALL GSOLVE_NORMALIZE_MATRIX(S, EvMax )
 !  ENDIF

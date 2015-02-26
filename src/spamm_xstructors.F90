@@ -112,6 +112,35 @@ contains
 
   end function SpAMM_construct_tree_1d_1
 
+
+
+  recursive subroutine  SpAMM_destruct_tree_1d_recur (self)   !++
+  !++XSTRUCTORS:       a_1 => null() (recursive vector destruction )  
+    !
+    type(SpAMM_tree_1d), pointer,  intent(inout) :: self
+ 
+    ! check for self-non-association (eg. at leaf pntr) ...
+    if(.not.associated(self))return
+    
+    call SpAMM_destruct_tree_1d_recur (self%child_0) ! take the [0] channel
+    call SpAMM_destruct_tree_1d_node  (self%child_0) ! kill backwards up the tree
+
+    call SpAMM_destruct_tree_1d_recur (self%child_1) ! take the [1] channel
+    call SpAMM_destruct_tree_1d_node  (self%child_1) ! kill backwards up the tree
+
+  end subroutine SpAMM_destruct_tree_1d_recur ! ... and we're out ... 
+
+  subroutine  SpAMM_destruct_tree_1d_node (self)    !++
+  !++XSTRUCTORS:       a_1 => null() (node level destructor of the symmetric matrix)  
+
+    type(SpAMM_tree_1d), pointer, intent(inout) :: self
+
+    if(self%frill%leaf)deallocate(self%chunk) 
+    deallocate(self)               ! done 
+    nullify(self)                  ! bye-bye
+
+  end subroutine SpAMM_destruct_tree_1d_node
+
   !++XSTRUCTORS:     SpAMM_tree_1d_copy_tree_1d
   !++XSTRUCTORS:       d_1 => a (wrapper)
   function SpAMM_tree_1d_copy_tree_1d (a, b) result(d)

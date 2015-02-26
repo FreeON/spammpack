@@ -1,29 +1,26 @@
 MODULE SpAMMSand_rqi_extremals
-  USE SpAMM_nbdyalgebra
-  USE SpAMM_conversion
-  USE SpAMM_management
-  USE SpAMM_types
-  USE SpAMM_utilities
-  USE test_utilities
+
+  USE spammpack 
+
 CONTAINS
   !> SpAMM routines for spectral estimation (extremal eigenvalues)
   !!
   !! RQI for finding the min/max extrema of SpAMM matrix a:
-  FUNCTION SpAMMSand_rqi_extremal(a,tau,high_O)
+  FUNCTION SpAMMSand_rqi_extremal(a,tau,high_O) RESULT(Omega)
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: a
     REAL(SpAMM_KIND),      INTENT(IN)                 :: Tau
+    LOGICAL, OPTIONAL                                 :: high_O
 
-    TYPE(SpAMM_tree_1d), POINTER                      :: EVec=>NULL(),   x=>NULL(), &
-                                                            g=>NULL(),   h=>NULL(), &
-                                                           Ax=>NULL(),  Ah=>NULL(), &
-                                                         xOld=>NULL(),gOld=>NULL(), &
-                                                         hOld=>NULL()
-    INTEGER              :: I,CG, MM
-    INTEGER, PARAMETER   :: NCG=5000
-  
-    REAL(SpAMM_KIND)     :: beta,LambdaPlus,LambdaMins,RQIPlus,RQIMins,omega,omega_old
-    REAL(SpAMM_KIND)     :: xx,hh,xh,hx,xAx,xAh,hAx,hAh,xnorm,dot_old
+    TYPE(SpAMM_tree_1d), POINTER :: x=>NULL(),g=>NULL(),h=>NULL()
+    TYPE(SpAMM_tree_1d), POINTER :: Ax=>NULL(),Ah=>NULL(),gOld=>NULL(),hOld=>NULL()
+    INTEGER              :: I, CG, MinMax
+    INTEGER, PARAMETER   :: NCG=100
+
+    REAL(SpAMM_KIND)     :: omega,omega_old
+    REAL(SpAMM_KIND)     :: xx, hh, xh, hx, xAx, xAh, hAx, hAh
+    REAL(SpAMM_KIND)     :: sclr_Ax, sclr__x, beta, dot_g, dot_gold
+    REAL(SpAMM_KIND)     :: LambdaPlus, LambdaMins, RQIPlus, RQIMins
 
     MINMAX=2 ! default is high (max) extremal
     IF(PRESENT(high_O))THEN
@@ -34,151 +31,128 @@ CONTAINS
        ENDIF
     ENDIF
 
-    M=a%frill%ndimn(1) ! dimension of a along the [i] direction
-
-    x   =>SpAMM_init_random_tree_1d(M) 
-    g   =>SpAMM_new_top_tree_1d(M)
-    h   =>SpAMM_new_top_tree_1d(M)
-    Ax  =>SpAMM_new_top_tree_1d(M)
-    Ah  =>SpAMM_new_top_tree_1d(M)
-    xOld=>SpAMM_new_top_tree_1d(M)
-    gOld=>SpAMM_new_top_tree_1d(M)
-    hOld=>SpAMM_new_top_tree_1d(M)
-
     IF(MinMax==2)THEN
-       omega=-1d10
-       gsign= SpAMM_One
+       omega=-1d10      ! starting eigenvalue (to be maximized)
+       gsign= SpAMM_One ! sign of the cooresponding gradient
     ELSE
-       omega= 1d10
-       gsign=-SpAMM_One
+       omega= 1d10      ! starting eigenvalue (to be minimized)
+       gsign=-SpAMM_One ! sign of the cooresponding gradient
     ENDIF
 
-    DO CG=1,NCG
+    M=a%frill%ndimn(1)              ! dimension of A along the [i] direction
+    g   =>SpAMM_new_top_tree_1d(M)  ! gradient (analytic)
+    h   =>SpAMM_new_top_tree_1d(M)  ! conjugate gradient (corrected g)
+    Ax  =>SpAMM_new_top_tree_1d(M)  ! gradient with the matrix 
+    Ah  =>SpAMM_new_top_tree_1d(M)  ! conjugate gradient with the matrix
+    gOld=>SpAMM_new_top_tree_1d(M) 
+    hOld=>SpAMM_new_top_tree_1d(M)
 
-       Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x)
+    x=>SpAMM_init_random_tree_1d(M) ! our extremal eigenvector
+
+    DO CG=1,NCG ! conjugate gradient iteration
+
+       Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, tau)
        xx =  SpAMM_tree_1d_dot_tree_1d_recur (x, x)
        xAx=  SpAMM_tree_1d_dot_tree_1d_recur (x,Ax)
 
        omega_old=omega
        omega=xAx/xx
 
-       sclr__x = + gsign*SpAMM_Two/xx
-       sclr_Ax = - gsign*SpAMM_Two*omega/xx
-       
-       g => SpAMM_tree_1d_plus_tree_1d ( ax, x, scrl_Ax, sclr__x, g, SpAMM_Zero) 
+       sclr__x = + gsign*SpAMM_Two/xx          ! g= + 2*(Ax-omega*x)/xx (minimizing)
+       sclr_Ax = - gsign*SpAMM_Two*omega/xx    ! g= - 2*(Ax-omega*x)/xx (maximizing)
 
-       WRITE(*,*)'omega = ',omega,omega_old
+       g => SpAMM_tree_1d_plus_tree_1d ( g, sclr_Ax, Ax, inplace=SpAMM_zero) 
+       g => SpAMM_tree_1d_plus_tree_1d ( g, sclr__x,  x)                     
 
-       IF( SQRT(Dot(g,g)/ABS(Omega)) < CnvrgCrit .AND. CG>16 &
-            .OR. (I==1.AND.Omega>Omega_old)                  &
-            .OR. (I==2.AND.Omega<Omega_old)                    )EXIT
-       
+
        IF(CG>1.AND.MOD(CG,15).NE.0)THEN
-          dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g, g)
-          dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)
-          IF(dot_gold.LE.1D-10)THEN
+          dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g,    g   )
+          dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)          
+          IF(dot_gold/abs(omega).LE.1D-10)THEN
+             ! if we are really close, steepest descents should be enuf ...
              beta=SpAMM_Zero
           ELSE
              beta=MAX(SpAMM_Zero,dot_g/dot_gold)
           ENDIF
-        ELSE
+       ELSE
           beta=SpAMM_Zero
-        ENDIF
+       ENDIF
 
-        ! h = g + beta*hOld
-        h => SpAMM_tree_1d_plus_tree_1d ( g, hold, SpAMM_one, beta, h, SpAMM_zero) 
-        ! Ah=A.h
-        CALL Multiply(A%Root,h,Ah, Tau)
+       ! convergence criteria
+       IF( SQRT(Dot(g,g))/ABS(Omega) < SQRT(Tau).AND.CG>16 &
+            .OR. (I==1.AND.Omega>Omega_old)                &
+            .OR. (I==2.AND.Omega<Omega_old) )EXIT
 
-        hx =Dot(h,x)
-        hh =Dot(h,h)
-        xAh=Dot(x,Ah)
-        hAx=Dot(h,Ax)
-        hAh=Dot(h,Ah)
+       ! the conjugate gradient, h = g + beta*hOld
+       h => SpAMM_tree_1d_plus_tree_1d ( h, SpAMM_one, g, inplace=SpAMM_zero) 
+       h => SpAMM_tree_1d_plus_tree_1d ( h,      beta, h)
 
-        ! By symmetry
-        xh=hx
-        hAx=xAh
+       ! Ah = A.h
+       Ah => SpAMM_tree_2d_symm_times_tree_1d(A, h, Tau, alpha_O=SpAMM_one, beta_O=SpAMM_zero, c=Ah)
 
-        ! gOld = g; hOld = h
-        gOld => SpAMM_tree_1d_copy_tree_1d (g, gOld) 
-        hOld => SpAMM_tree_1d_copy_tree_1d (h, hOld) 
+       !
+       hx =SpAMM_tree_1d_dot_tree_1d_recur(h,x)
+       hh =SpAMM_tree_1d_dot_tree_1d_recur(h,h)
+       xAh=SpAMM_tree_1d_dot_tree_1d_recur(x,Ah)
+       hAx=SpAMM_tree_1d_dot_tree_1d_recur(h,Ax)
+       hAh=SpAMM_tree_1d_dot_tree_1d_recur(h,Ah)        
 
-        LambdaPlus=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx+SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
-          -SpAMM_Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
-          /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
-        LambdaMins=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx-SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
-          -SpAMM_Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
-          /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
-        !
-        RQIPlus=(xAx+LambdaPlus*(xAh+hAx)+hAh*LambdaPlus**2) &
-          /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2)
-        RQIMins=(xAx+LambdaMins*(xAh+hAx)+hAh*LambdaMins**2) &
-          /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2)
+       xh=hx      ! By symmetry
+       hAx=xAh
 
-        IF(I==1)THEN
+       ! gOld = g; hOld = h
+       gOld => SpAMM_tree_1d_copy_tree_1d (g, gOld) 
+       hOld => SpAMM_tree_1d_copy_tree_1d (h, hOld) 
+
+       ! roots of the line search (+/-) ...
+       LambdaPlus=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx+SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
+            -SpAMM_Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
+            /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
+       LambdaMins=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx-SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
+            -SpAMM_Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
+            /(SpAMM_Two*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh))
+
+       ! ... and cooresponding update of the objective
+       RQIPlus=(xAx+LambdaPlus*(xAh+hAx)+hAh*LambdaPlus**2) &
+            /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2)
+       RQIMins=(xAx+LambdaMins*(xAh+hAx)+hAh*LambdaMins**2) &
+            /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2)
+
+       ! update of the eigenvector ..
+       IF(MinMax==1)THEN ! for the minimizer ...          
           IF(RQIMins<RQIPlus)THEN
-            ! x=x+LambdaMins*h
-            CALL Add(x,SpAMM_One,h,LambdaMins)
-          ELSE
-            ! x=x+LambdaPlus*h
-            CALL Add(x,SpAMM_One,h,LambdaPlus)
+             x => SpAMM_tree_1d_plus_tree_1d(x, LambdaMins, h) ! x = x + LambdaMins*h
+          ELSE             
+             x => SpAMM_tree_1d_plus_tree_1d(x, LambdaPlus, h) ! x = x + LambdaPlus*h
           ENDIF
-        ELSE
+       ELSE ! for the maximizer ...
           IF(RQIMins>RQIPlus)THEN
-            ! x=x+LambdaMins*h
-            CALL Add(x,SpAMM_One,h,LambdaMins)
-          ELSE
-            ! x=x+LambdaPlus*h
-            CALL Add(x,SpAMM_One,h,LambdaPlus)
+             x => SpAMM_tree_1d_plus_tree_1d(x, LambdaMins, h) ! x = x + LambdaMins*h
+          ELSE             
+             x => SpAMM_tree_1d_plus_tree_1d(x, LambdaPlus, h) ! x = x + LambdaPlus*h
           ENDIF
-        ENDIF
+       ENDIF
 
-        IF(I==1)THEN
-          WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
-!          WRITE(*,33)omega_dense,SQRT(Dot_product(g_dense,g_dense))/ABS(Omega_dense),CG
-        ELSE
-!          WRITE(*,44)omega_dense,SQRT(Dot_product(g_dense,g_dense))/ABS(Omega_dense),CG
-        ENDIF
-      END DO
+       IF(MinMax==1)THEN
+          WRITE(*,33)omega,dot_g,CG
+       ELSE
+          WRITE(*,44)omega,dot_g,CG
+       ENDIF
 
-      IF(I==1)THEN
-         WRITE(*,33)omega,SQRT(Dot(g,g))/ABS(Omega),CG
-         WRITE(*,33)omega_dense,SQRT(Dot_product(g_dense,g_dense))/ABS(Omega_dense),CG
-         MinVec=>x
-      ELSE
-         WRITE(*,44)omega,SQRT(Dot(g,g))/ABS(Omega),CG
-         WRITE(*,44)omega_dense,SQRT(Dot_product(g_dense,g_dense))/ABS(Omega_dense),CG         
-         MaxVec=>x
-      ENDIF
-
-    ENDDO
-!    WRITE(*,*)' EIGEN MIn = ',RQIMin,RQIMax
-!    WRITE(*,*)' EIGEN MIn = ',RQIMin_dense,RQIMax_dense
-
+    END DO
 
 33  FORMAT(' MIN E.V. = ',E24.16,', GRAD RQI = ',E16.8,' in ',I4,' NLCG steps')
 44  FORMAT(' MAX E.V. = ',E24.16,', GRAD RQI = ',E16.8,' in ',I4,' NLCG steps')
 
-    CALL Delete(g)
-    CALL Delete(h)
-    CALL Delete(Ax)
-    CALL Delete(Ah)
-    CALL Delete(xOld)
-    CALL Delete(gOld)
-    CALL Delete(hOld)
+    ! tidy ...
+    CALL SpAMM_destruct_tree_1d_recur (x)
+    CALL SpAMM_destruct_tree_1d_recur (g)
+    CALL SpAMM_destruct_tree_1d_recur (h)
+    CALL SpAMM_destruct_tree_1d_recur (Ax)
+    CALL SpAMM_destruct_tree_1d_recur (Ah)
+    CALL SpAMM_destruct_tree_1d_recur (gOld)
+    CALL SpAMM_destruct_tree_1d_recur (hOld)
 
-    CALL Delete(MinVec)
-    CALL Delete(MaxVec)
+  END FUNCTION SpAMMSand_rqi_extremal
 
-    DEALLOCATE(x_dense)
-    DEALLOCATE(g_dense)
-    DEALLOCATE(h_dense)
-    DEALLOCATE(Ax_dense)
-    DEALLOCATE(Ah_dense)
-    DEALLOCATE(xOld_dense)
-    DEALLOCATE(gOld_dense)
-    DEALLOCATE(hOld_dense)
-
-  END SUBROUTINE GSOLVE_RQI_Extrema_RQI
-END MODULE GSOLVE_RQI
+END MODULE SPAMMSAND_RQI_EXTREMALS 

@@ -1,8 +1,10 @@
 
-!! SpAMM Sandwich (SpAMM_ Solvers: |S^-1/2> = |Z_0>.|Z_1> ... |Z_m>
-module SANDPACK
+!! SpAMM Sandwich (nested preconditioning for SpAMM Solvers: |S^-1/2> = |Z_0>.|Z_1> ... |Z_m>
+MODULE SandPack
 
-  use spammsand_structures
+  USE spammsand_structures
+  USE spammsand_rqi_extremals
+
 
 contains
 
