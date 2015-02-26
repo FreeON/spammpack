@@ -16,7 +16,7 @@ MODULE spamm_structures
      !> Integer dimension of the native (non-padded) vector
      integer                               :: NDimn
      !> Axis-aligned brakets for the (i-leftmost) index space
-     integer,  pointer, dimension(:)       :: BndBx
+     integer,  dimension(0:1)              :: BndBx
      !> Square of the F-norm.
      real(SPAMM_KIND)                      :: Norm2 = -1
      !> Float Ops needed accumulated to this level 

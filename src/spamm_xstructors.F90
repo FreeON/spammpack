@@ -17,6 +17,9 @@ contains
     integer                       :: M_pad, depth
     type(SpAMM_tree_1d), pointer  :: tree
 
+
+    
+
     ! instantiate the root node.  this is the tree top ... 
     allocate(tree)
 
@@ -33,7 +36,7 @@ contains
     tree%frill%Leaf=.FALSE.
 
     ! the 1-ary tile
-    tree%frill%bndbx(0:1) = (/ 1, M_pad /)  ! [i-lo,i-hi]
+    tree%frill%bndbx(0:1)=(/ 1, M_pad /)  ! [i-lo,i-hi]
 
     ! no kids yet
     tree%child_0=>NULL()

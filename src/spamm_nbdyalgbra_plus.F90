@@ -53,11 +53,11 @@ CONTAINS
        ! a => b
        CALL SpAMM_tree_1d_copy_tree_1d_recur(a, b)
        ! a = beta*b  
-       CALL SpAMM_scalar_times_tree_1d_recur(beta, a)
+!       CALL SpAMM_scalar_times_tree_1d_recur(beta, a)
 
     ELSEIF(TA .AND. .NOT.TB) THEN
        ! a=alpha*a
-       CALL SpAMM_scalar_times_tree_1d_recur(alpha, a)
+!       CALL SpAMM_scalar_times_tree_1d_recur(alpha, a)
 
     ELSEIF(TA.AND.TB)THEN
 

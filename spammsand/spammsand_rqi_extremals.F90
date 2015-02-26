@@ -40,15 +40,17 @@ CONTAINS
     ENDIF
 
     M=a%frill%ndimn(1)              ! dimension of A along the [i] direction
+    WRITE(*,*)' M = ',M
     g   =>SpAMM_new_top_tree_1d(M)  ! gradient (analytic)
     h   =>SpAMM_new_top_tree_1d(M)  ! conjugate gradient (corrected g)
     Ax  =>SpAMM_new_top_tree_1d(M)  ! gradient with the matrix 
     Ah  =>SpAMM_new_top_tree_1d(M)  ! conjugate gradient with the matrix
     gOld=>SpAMM_new_top_tree_1d(M) 
     hOld=>SpAMM_new_top_tree_1d(M)
+    x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
 
-    x=>SpAMM_init_random_tree_1d(M) ! our extremal eigenvector
-
+    write(*,*)'2'
+    STOP
     DO CG=1,NCG ! conjugate gradient iteration
 
        Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, tau)

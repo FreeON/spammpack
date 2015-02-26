@@ -32,7 +32,7 @@ CONTAINS
 
   !++NBODYTIMES:   SpAMM_init_random_tree_1d
   !++NBODYTIMES:     a => rand (wrapper)
-  function SpAMM_init_random_tree_1d(M) result (randm)
+  function SpAMM_random_tree_1d(M) result (randm)
     !
     integer,         intent(in)  :: M
     integer                      :: depth
@@ -47,9 +47,16 @@ CONTAINS
 
     ! normalize the vector ...
     renorm=SpAMM_one/sqrt(randm%frill%norm2)
+
+    WRITE(*,*)' b '
+
+    WRITE(*,*)' RENORM =',RENORM,' randm = ',randm%frill%bndbx
     randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
 
-  end function SpAMM_init_random_tree_1d
+    WRITE(*,*)' c '
+
+
+  end function SpAMM_random_tree_1d
 
   ! from the internet ...
   subroutine init_random_seed()
@@ -103,20 +110,33 @@ CONTAINS
     type(SpAMM_tree_1d), pointer                :: d
     real(SpAMM_KIND)                            :: alpha
 
+
+integer :: depth
+depth=0
     d=>a
     if(.not.associated(a))return
-    CALL SpAMM_scalar_times_tree_1d_recur(alpha, d)
+
+    CALL SpAMM_scalar_times_tree_1d_recur(alpha, d,depth)
 
   END FUNCTION SpAMM_scalar_times_tree_1d
 
   !++NBODYTIMES:     SpAMM_scalar_times_tree_1d_recur
   !++NBODYTIMES:       a_1 => alpha*a_1 (recursive)
-  recursive subroutine SpAMM_scalar_times_tree_1d_recur(alpha, a)
+
+
+  recursive subroutine SpAMM_scalar_times_tree_1d_recur(alpha, a, depth)
 
     type(SpAMM_tree_1d), pointer :: a
     real(SpAMM_KIND)             :: alpha
 
+integer :: depth
+
     if(.not.associated(a))return
+
+    write(*,*)depth,a%frill%leaf,a%frill%bndbx
+
+
+    if(depth>6)stop
 
     IF(a%frill%leaf)THEN
 
@@ -125,9 +145,9 @@ CONTAINS
 
     ELSE
        ! child along [0]: [lo,mid] ... 
-       CALL SpAMM_scalar_times_tree_1d_recur(alpha, SpAMM_construct_tree_1d_0(a) )
+       CALL SpAMM_scalar_times_tree_1d_recur(alpha, SpAMM_construct_tree_1d_0(a),depth+1 )
        ! child along [1]: [mid+1,hi] ... 
-       CALL SpAMM_scalar_times_tree_1d_recur(alpha, SpAMM_construct_tree_1d_1(a) )
+       CALL SpAMM_scalar_times_tree_1d_recur(alpha, SpAMM_construct_tree_1d_1(a),depth+1 )
     ENDIF  
 
     ! merge & regarnish back up the tree ...
