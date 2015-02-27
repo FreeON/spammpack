@@ -40,6 +40,8 @@ CONTAINS
     type(SpAMM_tree_1d), pointer :: randm
     real(SpAMM_KIND)             :: renorm
 
+    write(*,*)' random tree'
+
     randm => SpAMM_new_top_tree_1d(M)
 
     depth=0
@@ -53,6 +55,7 @@ CONTAINS
 
     write(*,*)' norm2',randm%frill%norm2
     WRITE(*,*)' dot ', SpAMM_tree_1d_dot_tree_1d_recur (randm, randm)
+    STOP
 
     randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
 
@@ -83,22 +86,17 @@ CONTAINS
 
     type(SpAMM_tree_1d), pointer :: randm
     integer,          intent(in) :: depth 
-    INTEGER                      :: M,M_marg
+    INTEGER                      :: hi,lo
 
     if(.not.associated(randm))return
 
-    ! local variables ...
-    M  =  randm%frill%NDimn
-
-    ! avoid white space ... 
-    if(randm%frill%bndbx(0)>M)RETURN 
-
     IF(randm%frill%leaf)THEN
 
-       ! watch for margin space ...
-       M_marg=MIN(randm%frill%bndbx(1),M)
-       randm%chunk(1:m_marg-randm%frill%bndbx(0)+1)=SpAMM_one
-!       CALL RANDOM_NUMBER(randm%chunk(1:m_marg-randm%frill%bndbx(0)+1))
+       lo=randm%frill%bndbx(0)
+       hi=randm%frill%bndbx(1)
+!       randm%chunk(1:hi-lo+1)=SpAMM_one
+
+       CALL RANDOM_NUMBER(randm%chunk(1:hi-lo+1))
 
     ELSE
 
@@ -111,7 +109,6 @@ CONTAINS
     
     ! merge & regarnish back up the tree ...
     CALL SpAMM_redecorate_tree_1d(randm)
-
     !
   end subroutine SpAMM_random_unormalized_tree_1d_recur
 

@@ -47,21 +47,24 @@ contains
 
     type(SpAMM_tree_1d),    pointer :: tree
     type(SpAMM_tree_1d),    pointer :: ch0   
-    integer                         :: mid,wid
-
+    integer                         :: lo, hi, mid, wid
 
     if(associated(tree%child_0))then
        ch0=>tree%child_0
-       return            ! pre-existing?  ok, so later ...
+       return ! pre-existing?  ok, so later ...
     endif
+
     allocate(tree%child_0)                        ! ... otherwise, instantiate
+    
+    lo=tree%frill%bndbx(0)
+    hi=tree%frill%bndbx(1)
+
+    wid=hi-lo+1                    ! ... the 0 split ...
+    mid=lo+wid/2-1 
 
     tree%child_0%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
 
-    wid=tree%frill%bndbx(1)-tree%frill%bndbx(0)+1                    ! ... the 0 split ...
-    mid=tree%frill%bndbx(0)+wid/2-1 
-
-    tree%child_0%frill%bndbx(:)=(/tree%frill%bndbx(0),mid/)                 ! [lo,mid]
+    tree%child_0%frill%bndbx(:)=(/lo,mid/)                 ! [lo,mid]
     
     tree%child_0%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
@@ -83,20 +86,32 @@ contains
 
     type(SpAMM_tree_1d), pointer :: tree
     type(SpAMM_tree_1d), pointer :: ch1
-    integer                      :: mid,wid
+    integer                      :: lo, hi, mid, wid, M
     
-    if(associated(tree%child_1))then       
+    if(associated(tree%child_1))then
        ch1=>tree%child_1
        return           ! pre-existing?  ok, so later ...
     endif
+
+    lo = tree%frill%bndbx(0)
+    hi = tree%frill%bndbx(1)
+    wid= hi - lo    + 1                           ! ... the 1 split ...
+    mid= lo + wid/2 - 1 
+
+    M  = tree%frill%ndimn
+
+    IF(mid>M)THEN
+       ch1=>tree%child_1
+       RETURN                                    ! margin over-run 
+    ENDIF
+
     allocate(tree%child_1)                       ! ... otherwise, instantiate
     
     tree%child_1%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
 
-    wid=tree%frill%bndbx(1)-tree%frill%bndbx(0)+1                   ! ... the 1 split ...
-    mid=tree%frill%bndbx(0)+wid/2-1 
-    tree%child_1%frill%bndbx(:)=(/mid+1, tree%frill%bndbx(1)/)             ! [mid+1, hi]
-    
+    hi=MIN(M,hi)
+    tree%child_1%frill%bndbx(:)=(/mid+1, hi /)   ! [mid+1, hi]
+
     tree%child_1%frill%Leaf=.FALSE.              ! default, not a leaf ...
 
     ! leaf criterion ... 
@@ -230,18 +245,23 @@ contains
 
     type(SpAMM_tree_2d_symm), POINTER  :: tree
     type(SpAMM_tree_2d_symm), POINTER  :: ch00
-    integer, dimension(1:2)            :: mid,wid
+    integer, dimension(1:2)            :: lo, hi, mid, wid
 
-    if(associated(tree%child_00))return            ! pre-existing?  ok, so later ...
+    if(associated(tree%child_00))then
+       ch00=>tree%child_00
+       return                                      ! pre-existing?  ok, so later ...
+    endif
     allocate(tree%child_00)                        ! ... otherwise, instantiate
 
     tree%child_00%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
 
-    wid(:)=tree%frill%bndbx(1,:)-tree%frill%bndbx(0,:)+1              ! ... the 00 split ...
-    mid(:)=tree%frill%bndbx(0,:)+wid(:)/2-1 
+    lo =tree%frill%bndbx(0,:)
+    hi =tree%frill%bndbx(1,:)
+    wid=hi-lo+1                                                   ! ... the 00 split ...
+    mid=lo+wid/2-1 
 
-    tree%child_00%frill%bndbx(:,1)=(/ tree%frill%bndbx(0,1) , mid(1) /)      ! [lo,mid]
-    tree%child_00%frill%bndbx(:,2)=(/ tree%frill%bndbx(0,2) , mid(2) /)      ! [lo,mid]
+    tree%child_00%frill%bndbx(:,1)=(/ lo(1) , mid(1) /)           ! [lo,mid]
+    tree%child_00%frill%bndbx(:,2)=(/ lo(2) , mid(2) /)           ! [lo,mid]
     
     tree%child_00%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
@@ -262,20 +282,36 @@ contains
   !++XSTRUCTORS:       a_2%01 => init (constructor of the lo-hi [01] channel)
   function SpAMM_construct_tree_2d_symm_01(tree) result(ch01)  
 
-    type(SpAMM_tree_2d_symm), pointer  :: tree
-    type(SpAMM_tree_2d_symm), pointer  :: ch01
-    integer, dimension(1:2)            :: mid,wid
+    type(SpAMM_tree_2d_symm), pointer :: tree
+    type(SpAMM_tree_2d_symm), pointer :: ch01
+    integer, dimension(1:2)           :: lo, hi, mid, wid
+    integer                           :: N
 
-    if(associated(tree%child_01))return            ! pre-existing?  ok, so later ...
-    allocate(tree%child_01)                        ! ... otherwise, instantiate 
+    if(associated(tree%child_01))then
+       ch01=>tree%child_01
+       return                                      ! pre-existing?  ok, so later ...
+    endif
+
+    lo =tree%frill%bndbx(0,:)
+    hi =tree%frill%bndbx(1,:)
+    wid=hi-lo+1                                                   
+    mid=lo+wid/2-1 
+
+    N=tree%frill%ndimn(2)
+
+    IF(mid(2)>N)THEN
+       ch01=>tree%child_01
+       RETURN                                    ! margin over-run 
+    ENDIF
+
+    allocate(tree%child_01)                       ! ... otherwise, instantiate
     
-    tree%child_01%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
+    hi(2)=MIN(N,hi(2))
 
-    wid(:)=tree%frill%bndbx(1,:)-tree%frill%bndbx(0,:)+1  ! ... the 01 split ...
-    mid(:)=tree%frill%bndbx(0,:)+wid(:)/2-1 
+    tree%child_01%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
 
-    tree%child_01%frill%bndbx(:,1)=(/tree%frill%bndbx(0,1) , mid(1) /)       ! [lo   , mid]
-    tree%child_01%frill%bndbx(:,2)=(/mid(2)+1, tree%frill%bndbx(1,2)/)       ! [mid+1,  hi]
+    tree%child_01%frill%bndbx(:,1)=(/ lo(1)  , mid(1)/)       ! [lo   , mid]
+    tree%child_01%frill%bndbx(:,2)=(/mid(2)+1,  hi(2)/)       ! [mid+1,  hi]
 
     tree%child_01%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
@@ -297,18 +333,33 @@ contains
 
     type(SpAMM_tree_2d_symm), pointer :: tree
     type(SpAMM_tree_2d_symm), pointer :: ch11
-    integer, dimension(1:2)           :: mid,wid
+    integer, dimension(1:2)           :: lo, hi, mid, wid
+    integer                           :: M,N
 
-    if(associated(tree%child_11))return           ! pre-existing?  ok, so later ...
+    if(associated(tree%child_11))then
+       ch11=>tree%child_11
+       return                                     ! pre-existing?  ok, so later ...
+    endif
+
+    lo =tree%frill%bndbx(0,:)
+    hi =tree%frill%bndbx(1,:)
+    wid=hi-lo+1                                                   
+    mid=lo+wid/2-1 
+
+    M=tree%frill%ndimn(1)
+    N=tree%frill%ndimn(2)
+
+    IF(mid(1)>M .OR. mid(2)>N)THEN
+       ch11=>tree%child_11
+       RETURN                                    ! margin over-run 
+    ENDIF
+
     allocate(tree%child_11)                       ! ... otherwise, instantiate
     
     tree%child_11%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
 
-    wid(:)=tree%frill%bndbx(1,:)-tree%frill%bndbx(0,:)+1             ! ... the 11 split ...
-    mid(:)=tree%frill%bndbx(0,:)+wid(:)/2-1 
-
-    tree%child_11%frill%bndbx(0,:)=mid(:)+1                   ! [mid+1, hi]
-    tree%child_11%frill%bndbx(1,:)=tree%frill%bndbx(1,:)                    ! [mid+1, hi]
+    tree%child_11%frill%bndbx(0,:)=mid(:)+1                ! [mid+1, hi]
+    tree%child_11%frill%bndbx(1,:)=hi                      ! [mid+1, hi]
     
     tree%child_11%frill%Leaf=.FALSE.              ! default, not a leaf ...
 

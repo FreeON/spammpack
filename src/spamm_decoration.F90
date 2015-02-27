@@ -30,7 +30,7 @@ CONTAINS
 
 
     if(a%frill%leaf)then  ! at a leaf?
-       a%frill%Norm2=SUM(a%chunk*2) 
+       a%frill%Norm2=SUM(a%chunk**2) 
        a%frill%Non0s=SBS
        ! application has to fill in the %flops at this level
        RETURN
@@ -40,9 +40,24 @@ CONTAINS
        a%frill%FlOps=SpAMM_Zero
     ENDIF
 
+!    WRITE(*,*)'-----------------------------------------------'
+!    WRITE(*,*)' bb = ',a%frill%bndbx
+!    WRITE(*,*)'walking back up ...', a%frill%norm2
+
     ! walk back up one level with each decoration ...
     IF(ASSOCIATED( a%child_0 )) CALL SpAMM_merge_1d( a%frill, a%child_0%frill )
     IF(ASSOCIATED( a%child_1 )) CALL SpAMM_merge_1d( a%frill, a%child_1%frill )
+
+!    if(a%child_0%frill%norm2<0d0)stop '0'
+!    if(a%child_1%frill%norm2<0d0)then
+!       write(*,*)' asociated ',ASSOCIATED( a%child_1 ),a%child_1%frill%leaf
+!       write(*,*)a%child_1%frill%bndbx
+!       write(*,*)a%child_1%frill%norm2
+!       stop '1'
+!    endif
+
+!    WRITE(*,*)'done now ', a%frill%norm2
+
 
   END SUBROUTINE SpAMM_redecorate_tree_1d
  
@@ -53,6 +68,11 @@ CONTAINS
     TYPE(SpAMM_decoration_1d), INTENT(IN)    :: b
 
     a%Norm2=a%Norm2+b%Norm2
+        
+!    write(*,*)' parent bb = ',a%bndbx
+!    write(*,*)' child  bb = ',b%bndbx
+!    write(*,*)' child norm= ',b%norm2
+
     a%Non0s=a%Non0s+b%Non0s
     a%FlOps=a%FlOps+b%FlOps
 
@@ -98,8 +118,6 @@ CONTAINS
 
     if(a%frill%leaf)then  ! at a leaf?
        a%frill%Norm2=SUM(a%chunk**2) 
-
-       write(*,*)a%frill%bndbx,' leaf norm2 = ',a%frill%norm2
        a%frill%Non0s=SBS2
        ! application has to fill in the %flops at this level
        RETURN

@@ -58,7 +58,7 @@ contains
 
     ! update the garnish 
     CALL SpAMM_redecorate_tree_2d_symm(A_2d)
-    write(*,*)' bb = ',a_2d%frill%bndbx
+!    write(*,*)' bb = ',a_2d%frill%bndbx
 
   END SUBROUTINE SpAMM_convert_dense_to_tree_2d_symm_recur
 
