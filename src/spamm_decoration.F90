@@ -26,7 +26,7 @@ CONTAINS
   ! uppwards redecoration ...
   SUBROUTINE SpAMM_redecorate_tree_1d(a)
 
-    TYPE(SpAMM_Tree_1d),  INTENT(INOUT) :: a    
+    TYPE(SpAMM_Tree_1d), POINTER, INTENT(INOUT) :: a    
 
     ! at a leaf ...
     if(a%frill%leaf)then
@@ -92,7 +92,7 @@ CONTAINS
   ! uppwards redecoration ...
   SUBROUTINE SpAMM_redecorate_tree_2d_symm(a)
 
-    TYPE(SpAMM_tree_2d_symm),  INTENT(INOUT) :: a    
+    TYPE(SpAMM_tree_2d_symm), POINTER,  INTENT(INOUT) :: a    
 
     if(a%frill%leaf)then  ! at a leaf?
        a%frill%Norm2=SUM(a%chunk*2) 

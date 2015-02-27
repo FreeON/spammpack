@@ -9,8 +9,6 @@ module spamm_elementals
   ! This code contains protocols for solo opperations on structures, copy, scalar multiply etc. 
 CONTAINS
 
-
-
   recursive subroutine SpAMM_print_tree_2d_symm_recur (A) 
 
     type(SpAMM_tree_2d_symm), pointer, intent(in)   :: A
@@ -18,14 +16,14 @@ CONTAINS
 
     if(.not.associated(A))return
 
-    if(a%frill%leaf)then
+    if(a%frill%leaf.and.a%frill%norm2>1d-3)then
 
        WRITE(*,33)a%frill%bndbx(0:1,1),a%frill%bndbx(0:1,2)
-33     FORMAT(' [',I4,", ",I4,"] ")
+33     FORMAT(' [',I4,", ",I4,"]x[",I4,", ",I4,"]")
        DO I=1,SBS
           WRITE(*,44)(a%chunk(k,I),k=1,SBS)
        ENDDO
-44     FORMAT(20(F10.4,", "))
+44     FORMAT(20(E10.4,", "))
 
     else
 
@@ -39,7 +37,27 @@ CONTAINS
 
 
 
-  
+  recursive subroutine SpAMM_print_tree_1d_recur (A) 
+
+    type(SpAMM_tree_1d), pointer, intent(in)   :: A
+
+    if(.not.associated(A))return
+
+    if(a%frill%leaf.and.a%frill%norm2>1d-6)then
+
+       WRITE(*,33)a%frill%bndbx(0:1)
+33     FORMAT(' [',I4,", ",I4,"]")
+       WRITE(*,44)a%chunk
+44     FORMAT(20(E10.4,", "))
+
+    else
+
+       CALL SpAMM_print_tree_1d_recur (a%child_0) 
+       CALL SpAMM_print_tree_1d_recur (a%child_1) 
+
+    endif
+
+  end subroutine SpAMM_print_tree_1d_recur
 
   recursive function SpAMM_absmax_tree_2d_symm_recur (A) result(absmax)
 

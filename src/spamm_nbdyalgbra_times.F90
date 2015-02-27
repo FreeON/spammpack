@@ -3,6 +3,7 @@ module spamm_nbdyalgbra_times
   use spamm_structures
   use spamm_xstructors
   use spamm_decoration
+  use spamm_elementals
 
   implicit none
 
@@ -41,9 +42,17 @@ CONTAINS
 
     randm => SpAMM_new_top_tree_1d(M)
 
+    WRITE(*,*)'A randm = ',randm%frill%bndbx
+
     depth=0
-    CALL init_random_seed()    
+!    CALL init_random_seed()    
+
     CALL SpAMM_random_unormalized_tree_1d_recur (randm, depth)
+
+    WRITE(*,*)'B randm = ',randm%frill%bndbx
+    STOP
+
+    CALL SpAMM_print_tree_1d_recur (randm) 
 
     ! normalize the vector ...
     renorm=SpAMM_one/sqrt(randm%frill%norm2)
@@ -88,15 +97,20 @@ CONTAINS
        CALL RANDOM_NUMBER(randm%chunk)
        write(*,*)randm%frill%bndbx,' chunk = ',randm%chunk
     ELSE
+
+       WRITE(*,*)'A depth = ',depth,' rand%bb = ',randm%frill%bndbx
        ! child along [0]: [lo,mid] ... 
        CALL SpAMM_random_unormalized_tree_1d_recur(SpAMM_construct_tree_1d_0(randm), depth+1 )
+       WRITE(*,*)'B depth = ',depth,' rand%bb = ',randm%frill%bndbx
        ! child along [1]: [mid+1,hi] ... 
        CALL SpAMM_random_unormalized_tree_1d_recur(SpAMM_construct_tree_1d_1(randm), depth+1 )
+       WRITE(*,*)'C depth = ',depth,' rand%bb = ',randm%frill%bndbx
     ENDIF
     
     ! merge & regarnish back up the tree ...
 
     CALL SpAMM_redecorate_tree_1d(randm)
+
     !
   end subroutine SpAMM_random_unormalized_tree_1d_recur
 
@@ -203,7 +217,7 @@ integer :: depth
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A
     TYPE(SpAMM_tree_1d),      POINTER, INTENT(IN)    :: B
-    TYPE(SpAMM_tree_1d),      TARGET,  INTENT(INOUT) :: C
+    TYPE(SpAMM_tree_1d),      POINTER                :: C
     REAL(SpAMM_KIND),                  INTENT(IN)    :: alpha, beta
     REAL(SpAMM_KIND)                                 :: Tau2
     INTEGER                                          :: Depth
@@ -249,7 +263,7 @@ integer :: depth
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A
     TYPE(SpAMM_tree_1d),      POINTER, INTENT(IN)    :: B
-    TYPE(SpAMM_tree_1d),      TARGET,  INTENT(INOUT) :: C
+    TYPE(SpAMM_tree_1d),      POINTER                :: C
     REAL(SpAMM_KIND),                  INTENT(IN)    :: alpha, beta
     REAL(SpAMM_KIND)                                 :: Tau2
     INTEGER                                          :: Depth
@@ -351,7 +365,7 @@ integer :: depth
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(C, A, B, Tau2, Depth, alpha, beta )
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A, B
-    TYPE(SpAMM_tree_2d_symm), TARGET,  INTENT(INOUT) :: C
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: C
     REAL(SpAMM_KIND),                  INTENT(IN)    :: alpha, beta
     REAL(SpAMM_KIND)                                 :: Tau2
     INTEGER                                          :: Depth
@@ -401,7 +415,7 @@ integer :: depth
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_n_times_tree_2d_symm_t_recur(C, A, B, Tau2, Depth, alpha, beta )
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A, B
-    TYPE(SpAMM_tree_2d_symm), TARGET,  INTENT(INOUT) :: C
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: C
     REAL(SpAMM_KIND),                  INTENT(IN)    :: alpha, beta
     REAL(SpAMM_KIND)                                 :: Tau2
     INTEGER                                          :: Depth
@@ -451,7 +465,7 @@ integer :: depth
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_t_times_tree_2d_symm_n_recur(C, A, B, Tau2, Depth, alpha, beta )
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A, B
-    TYPE(SpAMM_tree_2d_symm), TARGET,  INTENT(INOUT) :: C
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: C
     REAL(SpAMM_KIND),                  INTENT(IN)    :: alpha, beta
     REAL(SpAMM_KIND)                                 :: Tau2
     INTEGER                                          :: Depth

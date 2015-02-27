@@ -31,7 +31,9 @@ program SpAMMSand_inverse_squareroot
 
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
 
-  CALL SpAMM_print_tree_2d_symm_recur (s) 
+!  CALL SpAMM_print_tree_2d_symm_recur (s) 
+
+!  STOP
 
   x_hi=SpAMMSand_rqi_extremal(s,1d-4,high_O=.TRUE.)
 

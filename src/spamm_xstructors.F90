@@ -17,9 +17,6 @@ contains
     integer                       :: M_pad, depth
     type(SpAMM_tree_1d), pointer  :: tree
 
-
-    
-
     ! instantiate the root node.  this is the tree top ... 
     allocate(tree)
 
@@ -48,35 +45,31 @@ contains
   !++XSTRUCTORS:       a_1%0 => init (constructor of the lo [0] channel)
   function SpAMM_construct_tree_1d_0(tree) result(ch0)  
 
-    type(SpAMM_tree_1d),    target, intent(inout) :: tree
-    type(SpAMM_tree_1d),    pointer               :: ch0   
-    integer, dimension(:),  pointer               :: bb, bb0
-    integer                                       :: mid,wid
+    type(SpAMM_tree_1d),    pointer :: tree
+    type(SpAMM_tree_1d),    pointer :: ch0   
+    integer                         :: mid,wid
 
-    ch0=>tree%child_0
+    if(associated(tree%child_0))return            ! pre-existing?  ok, so later ...
+    allocate(tree%child_0)                        ! ... otherwise, instantiate
 
-    if(associated(ch0))return            ! pre-existing?  ok, so later ...
-    allocate(ch0)                        ! ... otherwise, instantiate
+    tree%child_0%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
 
-    ch0%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
+    wid=tree%frill%bndbx(1)-tree%frill%bndbx(0)+1                    ! ... the 0 split ...
+    mid=tree%frill%bndbx(0)+wid/2-1 
 
-    bb=>tree%frill%bndbx                 ! ... local boxes ... 
-    bb0=>ch0%frill%bndbx
-
-    wid=bb(1)-bb(0)+1                    ! ... the 0 split ...
-    mid=bb(0)+wid/2-1 
-
-    bb0(:)=(/bb(0),mid/)                 ! [lo,mid]
+    tree%child_0%frill%bndbx(:)=(/tree%frill%bndbx(0),mid/)                 ! [lo,mid]
     
-    ch0%frill%Leaf=.FALSE.               ! default, not a leaf ...
+    tree%child_0%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
     ! leaf criterion ... 
     if(wid==2*SBS)then
-       ch0%frill%Leaf=.TRUE.
-       allocate(ch0%chunk(1:SBS))        ! grab a chunk for each leaf node, always
-       ch0%chunk=SpAMM_Zero        
-       ch0%frill%flops=0
+       tree%child_0%frill%Leaf=.TRUE.
+       allocate(tree%child_0%chunk(1:SBS))        ! grab a chunk for each leaf node, always
+       tree%child_0%chunk=SpAMM_Zero        
+       tree%child_0%frill%flops=0
     endif
+
+    ch0=>tree%child_0
 
   end function SpAMM_construct_tree_1d_0
 
@@ -84,38 +77,32 @@ contains
   !++XSTRUCTORS:       a_2%1 => init (constructor of the hi [1] channel)
   function SpAMM_construct_tree_1d_1(tree) result(ch1)  
 
-    type(SpAMM_tree_1d),    target, intent(inout) :: tree
-    type(SpAMM_tree_1d),    pointer               :: ch1
-    integer, dimension(:),  pointer               :: bb, bb1
-    integer                                       :: mid,wid
-
-    ch1=>tree%child_1
+    type(SpAMM_tree_1d), pointer :: tree
+    type(SpAMM_tree_1d), pointer :: ch1
+    integer                      :: mid,wid
     
-    if(associated(ch1))return           ! pre-existing?  ok, so later ...
-    allocate(ch1)                       ! ... otherwise, instantiate
+    if(associated(tree%child_1))return           ! pre-existing?  ok, so later ...
+    allocate(tree%child_1)                       ! ... otherwise, instantiate
     
-    ch1%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
+    tree%child_1%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
 
-    bb=>tree%frill%bndbx                ! ... local boxes ... 
-    bb1=>ch1%frill%bndbx
-
-    wid=bb(1)-bb(0)+1                   ! ... the 1 split ...
-    mid=bb(0)+wid/2-1 
-    bb1(:)=(/mid+1, bb(1)/)             ! [mid+1, hi]
+    wid=tree%frill%bndbx(1)-tree%frill%bndbx(0)+1                   ! ... the 1 split ...
+    mid=tree%frill%bndbx(0)+wid/2-1 
+    tree%child_1%frill%bndbx(:)=(/mid+1, tree%frill%bndbx(1)/)             ! [mid+1, hi]
     
-    ch1%frill%Leaf=.FALSE.              ! default, not a leaf ...
+    tree%child_1%frill%Leaf=.FALSE.              ! default, not a leaf ...
 
     ! leaf criterion ... 
     if(wid==2*SBS)then
-       ch1%frill%Leaf=.TRUE.
-       allocate(ch1%chunk(1:SBS))       ! grab a chunk for the leaf node, always
-       ch1%chunk=SpAMM_Zero        
-       ch1%frill%flops=0
+       tree%child_1%frill%Leaf=.TRUE.
+       allocate(tree%child_1%chunk(1:SBS))       ! grab a chunk for the leaf node, always
+       tree%child_1%chunk=SpAMM_Zero        
+       tree%child_1%frill%flops=0
     endif
 
+    ch1=>tree%child_1
+
   end function SpAMM_construct_tree_1d_1
-
-
 
   recursive subroutine  SpAMM_destruct_tree_1d_recur (self)   !++
   !++XSTRUCTORS:       a_1 => null() (recursive vector destruction )  
@@ -229,117 +216,105 @@ contains
     tree%child_11=>NULL()
 
   end function SpAMM_new_top_tree_2d_symm
- 
+
+
   !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_00
   !++XSTRUCTORS:       a_2%00 => init (constructor of the lo-lo [00] channel)
   function SpAMM_construct_tree_2d_symm_00(tree) result(ch00)  
 
-    type(SpAMM_tree_2d_symm), target, intent(inout) :: tree
-    type(SpAMM_tree_2d_symm), pointer               :: ch00   
-    integer, dimension(:,:),  pointer               :: bb, bb00
+    type(SpAMM_tree_2d_symm), POINTER  :: tree
+    type(SpAMM_tree_2d_symm), POINTER     :: ch00
     integer, dimension(1:2)                         :: mid,wid
 
-    ch00=>tree%child_00
+    if(associated(tree%child_00))return            ! pre-existing?  ok, so later ...
+    allocate(tree%child_00)                        ! ... otherwise, instantiate
 
-    if(associated(ch00))return            ! pre-existing?  ok, so later ...
-    allocate(ch00)                        ! ... otherwise, instantiate
+    tree%child_00%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
 
-    ch00%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
+    wid(:)=tree%frill%bndbx(1,:)-tree%frill%bndbx(0,:)+1              ! ... the 00 split ...
+    mid(:)=tree%frill%bndbx(0,:)+wid(:)/2-1 
 
-    bb=>tree%frill%bndbx                  ! ... local boxes ... 
-    bb00=>ch00%frill%bndbx
-
-    wid(:)=bb(1,:)-bb(0,:)+1              ! ... the 00 split ...
-    mid(:)=bb(0,:)+wid(:)/2-1 
-
-    bb00(:,1)=(/ bb(0,1) , mid(1) /)      ! [lo,mid]
-    bb00(:,2)=(/ bb(0,2) , mid(2) /)      ! [lo,mid]
+    tree%child_00%frill%bndbx(:,1)=(/ tree%frill%bndbx(0,1) , mid(1) /)      ! [lo,mid]
+    tree%child_00%frill%bndbx(:,2)=(/ tree%frill%bndbx(0,2) , mid(2) /)      ! [lo,mid]
     
-    ch00%frill%Leaf=.FALSE.               ! default, not a leaf ...
-
-    !    write(*,*)' 00 ',bb00(:,1), mid(1), wid(1)
+    tree%child_00%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
     ! leaf criterion ... 
     if(wid(1)==2*SBS)then
-       ch00%frill%Leaf=.TRUE.
-       allocate(ch00%chunk(1:SBS,1:SBS))  ! grab a chunk for each leaf node, always
-       ch00%chunk=SpAMM_Zero        
-       ch00%frill%flops=0
+       tree%child_00%frill%Leaf=.TRUE.
+       allocate(tree%child_00%chunk(1:SBS,1:SBS))  ! grab a chunk for each leaf node, always
+       tree%child_00%chunk=SpAMM_Zero        
+       tree%child_00%frill%flops=0
     endif
 
+    ch00=>tree%child_00
+
   end function SpAMM_construct_tree_2d_symm_00
+ 
 
   !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_01
   !++XSTRUCTORS:       a_2%01 => init (constructor of the lo-hi [01] channel)
   function SpAMM_construct_tree_2d_symm_01(tree) result(ch01)  
 
-    type(SpAMM_tree_2d_symm), target, intent(inout) :: tree
-    type(SpAMM_tree_2d_symm), pointer               :: ch01
-    integer, dimension(:,:) , pointer               :: bb, bb01
-    integer, dimension(1:2)                         :: mid,wid
+    type(SpAMM_tree_2d_symm), pointer  :: tree
+    type(SpAMM_tree_2d_symm), pointer  :: ch01
+    integer, dimension(1:2)            :: mid,wid
 
-    ch01=>tree%child_01
+    if(associated(tree%child_01))return            ! pre-existing?  ok, so later ...
+    allocate(tree%child_01)                        ! ... otherwise, instantiate 
     
-    if(associated(ch01))return            ! pre-existing?  ok, so later ...
-    allocate(ch01)                        ! ... otherwise, instantiate 
-    
-    ch01%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
+    tree%child_01%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
 
-    bb=>tree%frill%bndbx                  ! ... local boxes ... 
-    bb01=>ch01%frill%bndbx
+    wid(:)=tree%frill%bndbx(1,:)-tree%frill%bndbx(0,:)+1  ! ... the 01 split ...
+    mid(:)=tree%frill%bndbx(0,:)+wid(:)/2-1 
 
-    wid(:)=bb(1,:)-bb(0,:)+1              ! ... the 01 split ...
-    mid(:)=bb(0,:)+wid(:)/2-1 
+    tree%child_01%frill%bndbx(:,1)=(/tree%frill%bndbx(0,1) , mid(1) /)       ! [lo   , mid]
+    tree%child_01%frill%bndbx(:,2)=(/mid(2)+1, tree%frill%bndbx(1,2)/)       ! [mid+1,  hi]
 
-    bb01(:,1)=(/bb(0,1) , mid(1) /)       ! [lo   , mid]
-    bb01(:,2)=(/mid(2)+1, bb(1,2)/)       ! [mid+1,  hi]
-
-    ch01%frill%Leaf=.FALSE.               ! default, not a leaf ...
+    tree%child_01%frill%Leaf=.FALSE.               ! default, not a leaf ...
 
     ! leaf criterion ... 
     if(wid(1)==2*SBS)then
-       ch01%frill%Leaf=.TRUE.
-       allocate(ch01%chunk(1:SBS,1:SBS))  ! grab a chunk for the leaf node, always
-       ch01%chunk=SpAMM_Zero        
-       ch01%frill%flops=0
+       tree%child_01%frill%Leaf=.TRUE.
+       allocate(tree%child_01%chunk(1:SBS,1:SBS))  ! grab a chunk for the leaf node, always
+       tree%child_01%chunk=SpAMM_Zero        
+       tree%child_01%frill%flops=0
     endif
 
+    ch01=>tree%child_01
+    
   end function SpAMM_construct_tree_2d_symm_01
 
   !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_01
   !++XSTRUCTORS:       a_2%11 => init (constructor of the hi-hi [11] channel)
   function SpAMM_construct_tree_2d_symm_11(tree) result(ch11)  
 
-    type(SpAMM_tree_2d_symm), target, intent(inout) :: tree
-    type(SpAMM_tree_2d_symm), pointer               :: ch11
-    integer, dimension(:,:),  pointer               :: bb, bb11
-    integer, dimension(1:2)                         :: mid,wid
+    type(SpAMM_tree_2d_symm), pointer :: tree
+    type(SpAMM_tree_2d_symm), pointer :: ch11
+    integer, dimension(1:2)           :: mid,wid
 
-    ch11=>tree%child_11
+    if(associated(tree%child_11))return           ! pre-existing?  ok, so later ...
+    allocate(tree%child_11)                       ! ... otherwise, instantiate
     
-    if(associated(ch11))return           ! pre-existing?  ok, so later ...
-    allocate(ch11)                       ! ... otherwise, instantiate
+    tree%child_11%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
+
+    wid(:)=tree%frill%bndbx(1,:)-tree%frill%bndbx(0,:)+1             ! ... the 11 split ...
+    mid(:)=tree%frill%bndbx(0,:)+wid(:)/2-1 
+
+    tree%child_11%frill%bndbx(0,:)=mid(:)+1                   ! [mid+1, hi]
+    tree%child_11%frill%bndbx(1,:)=tree%frill%bndbx(1,:)                    ! [mid+1, hi]
     
-    ch11%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
-
-    bb=>tree%frill%bndbx                 ! ... local boxes ... 
-    bb11=>ch11%frill%bndbx
-
-    wid(:)=bb(1,:)-bb(0,:)+1             ! ... the 11 split ...
-    mid(:)=bb(0,:)+wid(:)/2-1 
-
-    bb11(0,:)=mid(:)+1                   ! [mid+1, hi]
-    bb11(1,:)=bb(1,:)                    ! [mid+1, hi]
-    
-    ch11%frill%Leaf=.FALSE.              ! default, not a leaf ...
+    tree%child_11%frill%Leaf=.FALSE.              ! default, not a leaf ...
 
     ! leaf criterion ... 
     if(wid(1)==2*SBS)then
-       ch11%frill%Leaf=.TRUE.
-       allocate(ch11%chunk(1:SBS,1:SBS)) ! grab a chunk for the leaf node, always
-       ch11%chunk=SpAMM_Zero        
-       ch11%frill%flops=0
+       tree%child_11%frill%Leaf=.TRUE.
+       allocate(tree%child_11%chunk(1:SBS,1:SBS)) ! grab a chunk for the leaf node, always
+       tree%child_11%chunk=SpAMM_Zero        
+       tree%child_11%frill%flops=0
     endif
+
+    ch11=>tree%child_11
 
   end function SpAMM_construct_tree_2d_symm_11
 
