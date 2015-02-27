@@ -20,10 +20,7 @@ contains
        a_2d => SpAMM_new_top_tree_2d_symm ((/ SIZE(A,1), SIZE(A,2) /))
     ENDIF
 
-    WRITE(*,*)'AAAAAAAAa'
     CALL SpAMM_convert_dense_to_tree_2d_symm_recur ( A, a_2d )
-
-
 
   END FUNCTION SpAMM_convert_dense_to_tree_2d_symm
 

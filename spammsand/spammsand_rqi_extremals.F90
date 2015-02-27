@@ -49,7 +49,9 @@ CONTAINS
     hOld=>SpAMM_new_top_tree_1d(M)
     x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
 
-    write(*,*)'2'
+    xx =  SpAMM_tree_1d_dot_tree_1d_recur (x, x)
+
+    write(*,*)'2',xx
     STOP
     DO CG=1,NCG ! conjugate gradient iteration
 

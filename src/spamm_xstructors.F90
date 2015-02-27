@@ -49,7 +49,11 @@ contains
     type(SpAMM_tree_1d),    pointer :: ch0   
     integer                         :: mid,wid
 
-    if(associated(tree%child_0))return            ! pre-existing?  ok, so later ...
+
+    if(associated(tree%child_0))then
+       ch0=>tree%child_0
+       return            ! pre-existing?  ok, so later ...
+    endif
     allocate(tree%child_0)                        ! ... otherwise, instantiate
 
     tree%child_0%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
@@ -81,7 +85,10 @@ contains
     type(SpAMM_tree_1d), pointer :: ch1
     integer                      :: mid,wid
     
-    if(associated(tree%child_1))return           ! pre-existing?  ok, so later ...
+    if(associated(tree%child_1))then       
+       ch1=>tree%child_1
+       return           ! pre-existing?  ok, so later ...
+    endif
     allocate(tree%child_1)                       ! ... otherwise, instantiate
     
     tree%child_1%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
@@ -217,14 +224,13 @@ contains
 
   end function SpAMM_new_top_tree_2d_symm
 
-
   !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_00
   !++XSTRUCTORS:       a_2%00 => init (constructor of the lo-lo [00] channel)
   function SpAMM_construct_tree_2d_symm_00(tree) result(ch00)  
 
     type(SpAMM_tree_2d_symm), POINTER  :: tree
-    type(SpAMM_tree_2d_symm), POINTER     :: ch00
-    integer, dimension(1:2)                         :: mid,wid
+    type(SpAMM_tree_2d_symm), POINTER  :: ch00
+    integer, dimension(1:2)            :: mid,wid
 
     if(associated(tree%child_00))return            ! pre-existing?  ok, so later ...
     allocate(tree%child_00)                        ! ... otherwise, instantiate

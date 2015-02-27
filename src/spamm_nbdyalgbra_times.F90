@@ -42,28 +42,21 @@ CONTAINS
 
     randm => SpAMM_new_top_tree_1d(M)
 
-    WRITE(*,*)'A randm = ',randm%frill%bndbx
-
     depth=0
-!    CALL init_random_seed()    
-
+    CALL init_random_seed()    
     CALL SpAMM_random_unormalized_tree_1d_recur (randm, depth)
-
-    WRITE(*,*)'B randm = ',randm%frill%bndbx
-    STOP
 
     CALL SpAMM_print_tree_1d_recur (randm) 
 
     ! normalize the vector ...
     renorm=SpAMM_one/sqrt(randm%frill%norm2)
 
-    WRITE(*,*)' b '
+    write(*,*)' norm2',randm%frill%norm2
+    WRITE(*,*)' dot ', SpAMM_tree_1d_dot_tree_1d_recur (randm, randm)
 
-    WRITE(*,*)' RENORM =',RENORM,' randm = ',randm%frill%bndbx
     randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
 
-    WRITE(*,*)' c '
-
+!    CALL SpAMM_print_tree_1d_recur (randm) 
 
   end function SpAMM_random_tree_1d
 
@@ -90,32 +83,37 @@ CONTAINS
 
     type(SpAMM_tree_1d), pointer :: randm
     integer,          intent(in) :: depth 
+    INTEGER                      :: M,M_marg
 
     if(.not.associated(randm))return
 
+    ! local variables ...
+    M  =  randm%frill%NDimn
+
+    ! avoid white space ... 
+    if(randm%frill%bndbx(0)>M)RETURN 
+
     IF(randm%frill%leaf)THEN
-       CALL RANDOM_NUMBER(randm%chunk)
-       write(*,*)randm%frill%bndbx,' chunk = ',randm%chunk
+
+       ! watch for margin space ...
+       M_marg=MIN(randm%frill%bndbx(1),M)
+       randm%chunk(1:m_marg-randm%frill%bndbx(0)+1)=SpAMM_one
+!       CALL RANDOM_NUMBER(randm%chunk(1:m_marg-randm%frill%bndbx(0)+1))
+
     ELSE
 
-       WRITE(*,*)'A depth = ',depth,' rand%bb = ',randm%frill%bndbx
        ! child along [0]: [lo,mid] ... 
        CALL SpAMM_random_unormalized_tree_1d_recur(SpAMM_construct_tree_1d_0(randm), depth+1 )
-       WRITE(*,*)'B depth = ',depth,' rand%bb = ',randm%frill%bndbx
        ! child along [1]: [mid+1,hi] ... 
        CALL SpAMM_random_unormalized_tree_1d_recur(SpAMM_construct_tree_1d_1(randm), depth+1 )
-       WRITE(*,*)'C depth = ',depth,' rand%bb = ',randm%frill%bndbx
+
     ENDIF
     
     ! merge & regarnish back up the tree ...
-
     CALL SpAMM_redecorate_tree_1d(randm)
 
     !
   end subroutine SpAMM_random_unormalized_tree_1d_recur
-
-
-
 
   !++NBODYTIMES:     SpAMM_scalar_times_tree_1d
   !++NBODYTIMES:       a_1 => alpha*a_1 wrapper)
@@ -124,10 +122,9 @@ CONTAINS
     type(SpAMM_tree_1d), pointer, intent(inout) :: a
     type(SpAMM_tree_1d), pointer                :: d
     real(SpAMM_KIND)                            :: alpha
+    integer :: depth
 
-
-integer :: depth
-depth=0
+    depth=0
     d=>a
     if(.not.associated(a))return
 
@@ -137,21 +134,14 @@ depth=0
 
   !++NBODYTIMES:     SpAMM_scalar_times_tree_1d_recur
   !++NBODYTIMES:       a_1 => alpha*a_1 (recursive)
-
-
   recursive subroutine SpAMM_scalar_times_tree_1d_recur(alpha, a, depth)
 
     type(SpAMM_tree_1d), pointer :: a
     real(SpAMM_KIND)             :: alpha
 
-integer :: depth
+    integer :: depth
 
     if(.not.associated(a))return
-
-    write(*,*)depth,a%frill%leaf,a%frill%bndbx
-
-
-    if(depth>6)stop
 
     IF(a%frill%leaf)THEN
 

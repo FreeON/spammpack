@@ -42,10 +42,11 @@ CONTAINS
     type(SpAMM_tree_1d), pointer, intent(in)   :: A
 
     if(.not.associated(A))return
-
+    
+    WRITE(*,33)a%frill%bndbx(0:1)
     if(a%frill%leaf.and.a%frill%norm2>1d-6)then
 
-       WRITE(*,33)a%frill%bndbx(0:1)
+!       WRITE(*,33)a%frill%bndbx(0:1)
 33     FORMAT(' [',I4,", ",I4,"]")
        WRITE(*,44)a%chunk
 44     FORMAT(20(E10.4,", "))

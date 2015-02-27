@@ -28,15 +28,17 @@ CONTAINS
 
     TYPE(SpAMM_Tree_1d), POINTER, INTENT(INOUT) :: a    
 
-    ! at a leaf ...
-    if(a%frill%leaf)then
-       a%frill%norm2=SUM(a%chunk**2) 
-       a%frill%non0s=SIZE(a%chunk)
-       return
-    ENDIF
 
-    ! re-init this level
-    a%frill%Norm2=0; a%frill%Non0s=0; a%frill%BndBx=0
+    if(a%frill%leaf)then  ! at a leaf?
+       a%frill%Norm2=SUM(a%chunk*2) 
+       a%frill%Non0s=SBS
+       ! application has to fill in the %flops at this level
+       RETURN
+    ELSE ! init this level
+       a%frill%Norm2=SpAMM_Zero
+       a%frill%Non0s=SpAMM_Zero
+       a%frill%FlOps=SpAMM_Zero
+    ENDIF
 
     ! walk back up one level with each decoration ...
     IF(ASSOCIATED( a%child_0 )) CALL SpAMM_merge_1d( a%frill, a%child_0%frill )
@@ -95,8 +97,10 @@ CONTAINS
     TYPE(SpAMM_tree_2d_symm), POINTER,  INTENT(INOUT) :: a    
 
     if(a%frill%leaf)then  ! at a leaf?
-       a%frill%Norm2=SUM(a%chunk*2) 
-       a%frill%Non0s=SIZE(a%chunk,1)*SIZE(a%chunk,2)
+       a%frill%Norm2=SUM(a%chunk**2) 
+
+       write(*,*)a%frill%bndbx,' leaf norm2 = ',a%frill%norm2
+       a%frill%Non0s=SBS2
        ! application has to fill in the %flops at this level
        RETURN
     ELSE ! init this level
