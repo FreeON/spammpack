@@ -49,15 +49,21 @@ CONTAINS
     TA=ASSOCIATED(A)
     TB=ASSOCIATED(B)
 
-    IF(.NOT.TA.AND.TB)THEN
-       ! a => b
-       CALL SpAMM_tree_1d_copy_tree_1d_recur(a, b)
-       ! a = beta*b  
+    IF(.NOT.TA.AND..NOT.TB)THEN
+
+       RETURN
+
+!    ELSEIF(.NOT.TA.AND.TB)THEN
+!       ! a => b
+!       CALL SpAMM_tree_1d_copy_tree_1d_recur(a, b)
+!       ! a = beta*b  
 !       CALL SpAMM_scalar_times_tree_1d_recur(beta, a)
+!       write(*,*)' back 1'
 
     ELSEIF(TA .AND. .NOT.TB) THEN
+
        ! a=alpha*a
-!       CALL SpAMM_scalar_times_tree_1d_recur(alpha, a)
+       CALL SpAMM_scalar_times_tree_1d_recur(alpha, a)
 
     ELSEIF(TA.AND.TB)THEN
 
@@ -66,12 +72,13 @@ CONTAINS
           a%chunk(1:SBS) = alpha*a%chunk(1:SBS) + beta*b%chunk(1:SBS)
           a%frill%flops = a%frill%flops + 3*SBS                  
        ELSE ! recursively descend ...
+
           CALL SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_0(a), & !0>
                                                         b%child_0, alpha, beta)
+
           CALL SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_1(a), & !1> 
                                                         b%child_1, alpha, beta)
        ENDIF
-       ! enrich the resultnt
     ENDIF
 
     CALL SpAMM_redecorate_tree_1d(a)

@@ -22,11 +22,7 @@ contains
        a_2d => SpAMM_new_top_tree_2d_symm ((/ SIZE(A,1), SIZE(A,2) /))
     ENDIF
 
-    WRITE(*,*)' a2d% NDIMN = ',a_2d%frill%ndimn
-
-
-!    CALL SpAMM_convert_dense_to_tree_2d_symm_recur ( A, a_2d )
-    WRITE(*,*)' a2d% NDIMN = ',a_2d%frill%ndimn
+    CALL SpAMM_convert_dense_to_tree_2d_symm_recur ( A, a_2d )
 
   END FUNCTION SpAMM_convert_dense_to_tree_2d_symm
 
@@ -54,9 +50,50 @@ contains
 
     ! update the garnish 
     CALL SpAMM_redecorate_tree_2d_symm(A_2d)
-!    write(*,*)' bb = ',a_2d%frill%bndbx
 
   END SUBROUTINE SpAMM_convert_dense_to_tree_2d_symm_recur
+
+
+
+
+  FUNCTION SpAMM_convert_tree_2d_symm_to_dense(A_2d, A_O) RESULT(A)
+
+    type(SpAMM_tree_2d_symm),         pointer           :: A_2d
+    real(SpAMM_KIND), dimension(:,:), pointer, optional :: A_O
+    real(SpAMM_KIND), dimension(:,:), pointer           :: A
+
+    IF(PRESENT(A_O))THEN       
+       A=>A_O 
+    ELSE      
+       ALLOCATE(A( 1:A_2d%frill%bndbx(1,1),  &
+                   1:A_2d%frill%bndbx(1,2) ))
+    ENDIF
+
+    A=SpAMM_zero
+    CALL SpAMM_convert_tree_2d_symm_to_dense_recur (A_2d,A)
+
+  END FUNCTION SpAMM_convert_tree_2d_symm_to_dense
+
+  !> Recursively convert a dense matrix to a quadtree.
+  RECURSIVE SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense_recur (A_2d,A)
+
+    real(SpAMM_KIND), dimension(:,:),pointer :: A
+    type(SpAMM_tree_2d_symm),        pointer :: A_2d
+    integer, dimension(1:2)                  :: lo,hi
+
+    if(.not.associated(a_2d))return
+
+    if(a_2d%frill%leaf)then! Leaf condition ? 
+       lo=a_2d%frill%bndbx(0,:) 
+       hi=a_2d%frill%bndbx(1,:)  
+       ! move data on the page ...    
+       A(lo(1):hi(1),lo(2):hi(2))=a_2d%chunk( 1:(hi(1)-lo(1)+1), 1:(hi(2)-lo(2)+1))
+    ELSE ! recur generically here ...
+       CALL SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_00, A )
+       CALL SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_01, A )
+       CALL SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_11, A )
+    ENDIF
+  END SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense_recur
 
 end module spamm_conversion
 

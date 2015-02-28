@@ -19,6 +19,8 @@ program SpAMMSand_inverse_squareroot
 
   type(SpAMM_tree_2d_symm), pointer :: S => null()
   real(SpAMM_KIND),     allocatable :: S_dense(:, :)
+!  real(SpAMM_KIND),dimension(:,:), pointer :: S_dense(:, :)
+  real(SpAMM_KIND),dimension(:,:), pointer :: S_check(:, :)
 
   character(len = 1000)             :: matrix_filename
   real(SpAMM_KIND)                  :: x_hi
@@ -31,12 +33,14 @@ program SpAMMSand_inverse_squareroot
 
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
 
-  WRITE(*,*)' S% NDIMN = ',s%frill%ndimn
-  STOP
+  S_CHECK=>SpAMM_convert_tree_2d_symm_to_dense(s)
+
+  WRITE(*,*)SUM(ABS(S_CHECK-S_DENSE))
+
+  STOP ' thats all folks '
 
 !  CALL SpAMM_print_tree_2d_symm_recur (s) 
 
-!  STOP
 
   x_hi=SpAMMSand_rqi_extremal(s,1d-4,high_O=.TRUE.)
 

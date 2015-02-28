@@ -190,6 +190,7 @@ contains
     TYPE(SpAMM_tree_1d), POINTER                :: d
     
     if(.not.associated(a))return
+    if(.not.associated(d))return
     
     if (a%frill%leaf) then       
        d%chunk(1:SBS)=a%chunk(1:SBS) 
@@ -217,14 +218,6 @@ contains
     ! instantiate the root node.  this is the tree top ... 
     allocate(tree)
 
-    ! the [i]-[j] native dimensions ...
-    tree%frill%ndimn=ndimn
-
-    write(*,*)' ndimn = ',    tree%frill%ndimn
-
-
-    return
-
     ! here are padded dimensions ...
     do depth=0,64
        M_pad=SPAMM_BLOCK_SIZE*2**depth
@@ -238,11 +231,6 @@ contains
 
     ! the [i]-[j] native dimensions ...
     tree%frill%ndimn=ndimn
-
-    write(*,*)' ndimn = ',    tree%frill%ndimn
-
-
-    return
 
     ! the [i]-[j] padded width
     tree%frill%width=(/M_pad,N_pad/)

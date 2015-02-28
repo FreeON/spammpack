@@ -40,8 +40,6 @@ CONTAINS
     type(SpAMM_tree_1d), pointer :: randm
     real(SpAMM_KIND)             :: renorm
 
-    write(*,*)' random tree, M = ',M
-
     randm => SpAMM_new_top_tree_1d(M)
 
     depth=0
@@ -51,8 +49,6 @@ CONTAINS
     ! normalize the vector ...
     renorm=SpAMM_one/sqrt(randm%frill%norm2)
     randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
-    STOP
-
     !    CALL SpAMM_print_tree_1d_recur (randm) 
 
   end function SpAMM_random_tree_1d
@@ -119,18 +115,18 @@ CONTAINS
     d=>a
     if(.not.associated(a))return
 
-    CALL SpAMM_scalar_times_tree_1d_recur(alpha, d,depth)
+    CALL SpAMM_scalar_times_tree_1d_recur(alpha, d)
 
   END FUNCTION SpAMM_scalar_times_tree_1d
 
   !++NBODYTIMES:     SpAMM_scalar_times_tree_1d_recur
   !++NBODYTIMES:       a_1 => alpha*a_1 (recursive)
-  recursive subroutine SpAMM_scalar_times_tree_1d_recur(alpha, a, depth)
+  recursive subroutine SpAMM_scalar_times_tree_1d_recur(alpha, a)
 
     type(SpAMM_tree_1d), pointer :: a
     real(SpAMM_KIND)             :: alpha
 
-    integer :: depth
+!    integer :: depth
 
     if(.not.associated(a))return
 
@@ -141,9 +137,9 @@ CONTAINS
 
     ELSE
        ! child along [0]: [lo,mid] ... 
-       CALL SpAMM_scalar_times_tree_1d_recur(alpha, SpAMM_construct_tree_1d_0(a),depth+1 )
+       CALL SpAMM_scalar_times_tree_1d_recur(alpha, a%child_0 ) !,depth+1 )
        ! child along [1]: [mid+1,hi] ... 
-       CALL SpAMM_scalar_times_tree_1d_recur(alpha, SpAMM_construct_tree_1d_1(a),depth+1 )
+       CALL SpAMM_scalar_times_tree_1d_recur(alpha, a%child_1 ) !,depth+1 )
     ENDIF  
 
     ! merge & regarnish back up the tree ...
