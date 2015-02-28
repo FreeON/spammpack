@@ -13,6 +13,8 @@ contains
     type(SpAMM_tree_2d_symm) ,pointer,  optional    :: A_2d_O
     type(SpAMM_tree_2d_symm) ,pointer               :: A_2d
     
+    WRITE(*,*)' SIZE A = ',(/ SIZE(A,1), SIZE(A,2) /)
+
     IF(PRESENT(A_2d_O))THEN       
        a_2d => A_2d_O ! do this in place
     ELSE      
@@ -20,7 +22,11 @@ contains
        a_2d => SpAMM_new_top_tree_2d_symm ((/ SIZE(A,1), SIZE(A,2) /))
     ENDIF
 
-    CALL SpAMM_convert_dense_to_tree_2d_symm_recur ( A, a_2d )
+    WRITE(*,*)' a2d% NDIMN = ',a_2d%frill%ndimn
+
+
+!    CALL SpAMM_convert_dense_to_tree_2d_symm_recur ( A, a_2d )
+    WRITE(*,*)' a2d% NDIMN = ',a_2d%frill%ndimn
 
   END FUNCTION SpAMM_convert_dense_to_tree_2d_symm
 
@@ -29,26 +35,16 @@ contains
 
     real(SpAMM_KIND), dimension(:,:),intent(in) :: A
     type(SpAMM_tree_2d_symm), pointer           :: A_2d
-    integer, dimension(0:1,1:2)                 :: bb
-    INTEGER                                     :: M, N, M_marg, N_marg
+    integer, dimension(1:2)                     :: lo,hi
 
-    ! local variables ...
-    M  =  a_2d%frill%NDimn(1)
-    N  =  a_2d%frill%NDimn(2) 
-    bb =  a_2d%frill%bndbx 
-
-    ! peal off white space as found ... 
-    if(bb(0,1)>M)RETURN 
-    if(bb(0,2)>N)RETURN 
-
+    if(.not.associated(a_2d))return
     if(a_2d%frill%leaf)then! Leaf condition ? 
 
-       ! account for margin space ...
-       M_marg = MIN( bb(1,1), M )
-       N_marg = MIN( bb(1,2), N ) 
+       lo=a_2d%frill%bndbx(0,:) 
+       hi=a_2d%frill%bndbx(1,:) 
  
        ! move data on the page ...    
-       a_2d%chunk( 1:m_marg-bb(0,1)+1, 1:n_marg-bb(0,2)+1 ) = A( bb(0,1):m_marg, bb(0,2):n_marg ) 
+       a_2d%chunk( 1:(hi(1)-lo(1)+1), 1:(hi(2)-lo(2)+1))=A(lo(1):hi(1),lo(2):hi(2))
 
     ELSE ! recur generically here, poping with construct as needed ...
        CALL SpAMM_convert_dense_to_tree_2d_symm_recur( A, SpAMM_construct_tree_2d_symm_00(A_2d) )

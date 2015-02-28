@@ -40,26 +40,20 @@ CONTAINS
     type(SpAMM_tree_1d), pointer :: randm
     real(SpAMM_KIND)             :: renorm
 
-    write(*,*)' random tree'
+    write(*,*)' random tree, M = ',M
 
     randm => SpAMM_new_top_tree_1d(M)
 
     depth=0
-    CALL init_random_seed()    
+    CALL init_random_seed()
     CALL SpAMM_random_unormalized_tree_1d_recur (randm, depth)
-
-    CALL SpAMM_print_tree_1d_recur (randm) 
 
     ! normalize the vector ...
     renorm=SpAMM_one/sqrt(randm%frill%norm2)
-
-    write(*,*)' norm2',randm%frill%norm2
-    WRITE(*,*)' dot ', SpAMM_tree_1d_dot_tree_1d_recur (randm, randm)
+    randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
     STOP
 
-    randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
-
-!    CALL SpAMM_print_tree_1d_recur (randm) 
+    !    CALL SpAMM_print_tree_1d_recur (randm) 
 
   end function SpAMM_random_tree_1d
 
@@ -216,14 +210,33 @@ CONTAINS
     ! n-body occlusion & culling of the product for matrices with decay (and some structure)
     if(a%frill%Norm2*b%frill%Norm2<=Tau2)return 
 
+
+       write(*,44)c%frill%bndbx,a%frill%bndbx(:,1),a%frill%bndbx(:,2), &
+             b%frill%bndbx
+44     format(' [ ',I3,", ",I3,' ]=[ ',I3,", ",I3," ][ ",I3,", ",I3, &
+              ' ]. [ ',I3,", ",I3," ]")
     IF( c%frill%leaf )THEN ! Leaf condition ? 
 
+
+       write(*,*)' --------------------------------------'
+       write(*,*)' cbb = ',c%frill%bndbx,c%frill%width
+       WRITE(*,*)' c%sbs = ',c%chunk(1:SBS)
+       write(*,*)' --------------------------------------'
+       write(*,*)' abb = ',a%frill%bndbx,a%frill%width
+       write(*,*)' a leaf ? ',a%frill%leaf
+       write(*,*)' allocated a? ',allocated(a%chunk)
+       WRITE(*,*)' a%sbs = ',a%chunk(1:SBS,1:SBS)
+       write(*,*)' --------------------------------------'
+       write(*,*)' bbb = ',b%frill%bndbx,b%frill%width
+       WRITE(*,*)' b%sbs = ',b%chunk(1:SBS)
+
        c%chunk(1:SBS) = alpha*c%chunk(1:SBS) + beta*matmul(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS))
+
        c%frill%flops  = c%frill%flops + SBS2 + 2*SBS
 
     ELSE
 
-       ! find some memory ...
+       ! the childrens ...
        c0=>SpAMM_construct_tree_1d_0(c)
        c1=>SpAMM_construct_tree_1d_1(c)
 

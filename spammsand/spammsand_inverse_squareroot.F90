@@ -31,6 +31,9 @@ program SpAMMSand_inverse_squareroot
 
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
 
+  WRITE(*,*)' S% NDIMN = ',s%frill%ndimn
+  STOP
+
 !  CALL SpAMM_print_tree_2d_symm_recur (s) 
 
 !  STOP

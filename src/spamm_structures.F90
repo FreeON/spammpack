@@ -13,9 +13,11 @@ MODULE spamm_structures
   type :: SpAMM_decoration_1d
      ! leaf node flag
      logical                               :: Leaf
+     !> tree sub-vector width: M_pad/2**depth 
+     integer                               :: Width
      !> Integer dimension of the native (non-padded) vector
      integer                               :: NDimn
-     !> Axis-aligned brakets for the (i-leftmost) index space
+     !> Axis-aligned bounding box for the [i] index space
      integer,  dimension(0:1)              :: BndBx
      !> Square of the F-norm.
      real(SPAMM_KIND)                      :: Norm2 = -1
@@ -29,9 +31,11 @@ MODULE spamm_structures
   type :: SpAMM_decoration_2d
      ! leaf node flag
      logical                               :: Leaf
+     !> tree sub-matrix width: MN_pad/2**depth 
+     integer,           dimension(1:2)     :: Width
      !> Integer dimension of the native (non-padded) matrix 
      integer,           dimension(1:2)     :: NDimn
-     !> Axis-aligned bounding box for the (i-j) index space, from 1 to padded dimension
+     !> Axis-aligned bounding box for the [i]-[j] index space
      integer,  dimension(0:1,1:2)          :: BndBx
           !> Square of the F-norm.
      real(SPAMM_KIND)                      :: Norm2 = -1
