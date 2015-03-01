@@ -153,6 +153,7 @@ contains
 
     type(SpAMM_tree_1d), pointer, intent(inout) :: self
 
+    if(.not.associated(self))return
     if(self%frill%leaf)deallocate(self%chunk) 
     deallocate(self)               ! done 
     nullify(self)                  ! bye-bye
@@ -446,6 +447,7 @@ contains
 
     type(SpAMM_tree_2d_symm), pointer, intent(inout) :: self
 
+    if(.not.associated(self))return
     if(self%frill%leaf)deallocate(self%chunk) 
     deallocate(self)               ! done 
     nullify(self)                  ! bye-bye
@@ -465,10 +467,9 @@ contains
     ELSEIF(.NOT.ASSOCIATED(a))THEN
        d => null()
        RETURN
-    ELSE
-       ! nothing passed in, and we have an associated A, so lets pop a new tree top ...
-       d => SpAMM_new_top_tree_2d_symm ( b%frill%NDimn )
     ENDIF
+    
+    IF(.not.associated(d)) d => SpAMM_new_top_tree_2d_symm ( b%frill%NDimn )
 
     ! d |cpy> a
     CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a)

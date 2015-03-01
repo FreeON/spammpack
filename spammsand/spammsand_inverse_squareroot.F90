@@ -1,6 +1,5 @@
 ! Nested SpAMM solvers (SpAMM sandwitches) for matrix functions
-
-program SpAMMSand_inverse_squareroot
+program SpAMMSand_nested_inverse_squareroot
 
   USE spammpack 
   USE sandpack 
@@ -8,21 +7,12 @@ program SpAMMSand_inverse_squareroot
   
   implicit none
 
-  TYPE(spammsand_tree_2d_symm) :: z
-
-  real(kind(0d0)), parameter ::   Tau_1=1d-4
-  real(kind(0d0)), parameter ::   Tau_2=1d-6
-  real(kind(0d0)), parameter ::   Tau_3=1d-8
-  real(kind(0d0)), parameter ::   Tau_4=1d-10
-  real(kind(0d0)), parameter ::   Tau_5=1d-12
-  real(kind(0d0)), parameter ::   Tau_6=1d-14
+  TYPE(spammsand_tree_2d_symm)      :: z
 
   type(SpAMM_tree_2d_symm), pointer :: S => null()
-  real(SpAMM_KIND),     allocatable :: S_dense(:, :)
-!  real(SpAMM_KIND),dimension(:,:), pointer :: S_dense(:, :)
-  real(SpAMM_KIND),dimension(:,:), pointer :: S_check(:, :)
 
   character(len = 1000)             :: matrix_filename
+
   real(SpAMM_KIND)                  :: x_hi
 
   integer :: i,j
@@ -33,77 +23,40 @@ program SpAMMSand_inverse_squareroot
 
   call read_MM(matrix_filename, S_dense)
 
-!  do i=1,24
-!     write(*,22)(s_dense(i,j),j=1,24)
-!22   format( 24(E8.2,', ') )
-!  enddo
-
+  ! matrix to inverse factor
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
 
-!  CALL SpAMM_print_tree_2d_symm_recur (s) 
-!  S_CHECK=>SpAMM_convert_tree_2d_symm_to_dense(s)
-
-!  WRITE(*,*)' ------------------------------------------'
-!  do i=1,24
-!     write(*,22)(s_check(i,j)-s_dense(i,j),j=1,24)
-!     write(*,22)(s_check(i,j),j=1,24)
-!  enddo
-
-
-!  WRITE(*,*)SUM(ABS(S_CHECK-S_DENSE))
-
-!  CALL SpAMM_print_tree_2d_symm_recur (s) 
-
-
+  ! the max eigenvalue
   x_hi=SpAMMSand_rqi_extremal(s,1d-4,high_O=.TRUE.)
 
-  WRITE(*,*)' X + = ',x_hi
+  ! normalize the max ev of s to 1.  
+  CALL SpAMM_scalar_times_tree_2d_symm(SpAMM_one/x_hi, s)
 
+  logtau_strt=-4
+  logtau_stop=-12
+  logtau_dlta=(logtau_stop-logtau_strt)/dble(slices+1) !????????????
+  
+  ! initialize the slices
+  allocate(z%tau2(1:slices+1))
+  allocate(z%trix(1:slices))
+  do i=1,slices+1
+     z%tau(i) =  10d0**( logtau_strt + logtau_dlta*float(i-1) )
+     z%trix(i) => SpAMM_new_top_tree_1d(s%frill%ndimn)
+  enddo
 
+  x_nxt => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, x_in)
+  x_tmp => SpAMM_new_top_tree_1d(s%frill%ndimn)
 
+  do i=1,slices
 
-!     CALL GSOLVE_NORMALIZE_MATRIX(S, EvMax )
-!  ENDIF
+     call spammsand_scaled_newton_shulz_inverse_squareroot( x_nxt, z%trix(i), z%tau(i) )
 
-!!$  CALL Copy(S,X1)
-!!$  CALL GSOLVE_SCALED_NEWTON_SCHULZ_INVSQT(X1, Z1, Tau_1 )
-!!$
-!!$  M=S%M
-!!$  N=S%N
-!!$  ZT => SpAMM_identity_matrix(M,N)
-!!$  T1 => SpAMM_identity_matrix(M,N)
-!!$  CALL Multiply( ZT, SpAMM_Zero)       
-!!$  CALL Multiply( T1, SpAMM_Zero)       
-!!$
-!!$  CALL SpAMM_Transpose_QuTree( Z1%root, ZT%root )
-!!$
-!!$  CALL Copy(S,X2)
-!!$
-!!$  CALL spamm_convert_order_2_to_dense (Z1, Z_dense)       
-!!$  ZT=>SpAMM_convert_dense_to_matrix_2nd_order(TRANSPOSE(Z_dense))
-!!$
-!!$  CALL Multiply( X2,  Z1, T1, Tau_2 )
-!!$  CALL Multiply( ZT, T1,  X2, Tau_2      )
-!!$
-!!$  CALL GSOLVE_SCALED_NEWTON_SCHULZ_INVSQT(X2, Z2, Tau_2 )
-!!$
-!!$  STOP
-!!$
-!!$111 CONTINUE
-!!$
-!!$
-!!$  evec=S_dense
-!!$  CALL SetScalarSpectrum(1d10,eval,N)
-!!$  DO i=1,N
-!!$     S_dense(:,I)=S_dense(:,i)*eval(i)
-!!$  ENDDO
-!!$  SNew=MATMUL(evec,TRANSPOSE(S_dense))
-!!$  S => SpAMM_convert_dense_to_matrix_2nd_order(SNew)
-!!$
-!!$  call cpu_time(start_time)
-!!$  call GSOLVE_SCALED_NEWTON_SCHULZ_INVSQT(S, Z, 1d-3)!tolerance) 
-!!$  call cpu_time(end_time)
-
-  STOP  
+     x_tmp=>SpAMM_tree_2d_symm_times_tree_2d_symm( x_nxt,      z%trix(i), z%tau(i+1), &
+          alpha_O=, beta_O=, c_O=x_tmp)
+     
+     x_nxt=>SpAMM_tree_2d_symm_times_tree_2d_symm( z%trix(i),  x_tmp,     z%tau(i+1), &
+          alpha_O=, beta_O=, c_O=x_nxt)
+     
+  enddo
 
 end program SpAMMSand_inverse_squareroot

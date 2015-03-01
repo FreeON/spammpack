@@ -50,36 +50,17 @@ CONTAINS
     x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
     CALL SpAMM_print_tree_1d_recur (x) 
 
-    DO CG=1,2 ! NCG ! conjugate gradient iteration
+    DO CG=1,NCG ! conjugate gradient iteration
 
        Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, Tau, alpha_O=SpAMM_zero, beta_O=SpAMM_one, c=Ax )
-
-       WRITE(*,*)' Ax.Ax = ',SpAMM_tree_1d_dot_tree_1d_recur (Ax, Ax)
-
-!       CALL SpAMM_print_tree_2d_symm_recur (A) 
-
-!       CALL SpAMM_print_tree_1d_recur (Ax) 
-!       STOP
-
-
-
        xx =  SpAMM_tree_1d_dot_tree_1d_recur (x, x)
        xAx=  SpAMM_tree_1d_dot_tree_1d_recur (x,Ax)
 
        omega_old=omega
        omega=xAx/xx
 
-!       WRITE(*,*)' xx = ',xx
-!       write(*,*)' omega = ',omega
-
        sclr_Ax = + gsign*SpAMM_Two/xx          ! g= + 2*(Ax-omega*x)/xx (minimizing)
        sclr__x = - gsign*SpAMM_Two*omega/xx    ! g= - 2*(Ax-omega*x)/xx (maximizing)
-
-!       WRITE(*,*)' scalars = ',sclr__x,sclr_Ax,xx
-
-!       WRITE(*,*)' sclr_ax', sclr_AX
-!       CALL SpAMM_print_tree_1d_recur (ax)       
-!       g => SpAMM_tree_1d_plus_tree_1d ( g, SpAMM_one, Ax, inplace=SpAMM_zero) 
 
        g => SpAMM_tree_1d_plus_tree_1d ( g, sclr_Ax, Ax, inplace=SpAMM_zero) 
        g => SpAMM_tree_1d_plus_tree_1d ( g, sclr__x,  x)                     
@@ -87,14 +68,7 @@ CONTAINS
        dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g,    g   )
        dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)          
 
-!       CALL SpAMM_print_tree_1d_recur (g) 
-
-       WRITE(*,*)' dot_g = ',dot_g,dot_gold
-
        IF(CG>1.AND.MOD(CG,15).NE.0)THEN
-!          dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g,    g   )
-!          dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)          
-
           IF(dot_gold/abs(omega).LE.1D-10)THEN
              ! if we are really close, steepest descents should be enuf ...
              beta=SpAMM_Zero
@@ -104,8 +78,6 @@ CONTAINS
        ELSE
           beta=SpAMM_Zero
        ENDIF
-
-       write(*,*)' beta = ',beta
 
        ! convergence criteria
        IF( SQRT(dot_g)/ABS(Omega) < SQRT(Tau).AND.CG>16 &
@@ -146,10 +118,6 @@ CONTAINS
             /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2)
        RQIMins=(xAx+LambdaMins*(xAh+hAx)+hAh*LambdaMins**2) &
             /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2)
-
-
-       write(*,*)' lambdas = ',lambdaplus, lambdamins
-       write(*,*)' rqis    = ',rqiplus, rqimins
 
        ! update of the eigenvector ..
        IF(MinMax==1)THEN ! for the minimizer ...          

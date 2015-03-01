@@ -1,13 +1,23 @@
+module SpAMMsand_inverse_squareroot
 
-  SUBROUTINE NSolve_scaled_newton_shulz_inverse_squareroot( s, z, tau)
+  USE spammpack 
+!  USE spammsand_structures
+!  USE spammsand_rqi_extremals
 
-    TYPE(SpAMM_type_2d_symm) , POINTER, INTENT(IN)    :: s
+  implicit none
+
+contains
+
+  SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot( x, z, tau )
+
+    TYPE(SpAMM_type_2d_symm) , POINTER, INTENT(IN)    :: x
     TYPE(SpAMM_type_2d_symm) , POINTER, INTENT(INOUT) :: z
     REAL(SpAMM_KIND),                   INTENT(IN)    :: Tau
 
     TYPE(SpAMM_type_2d_symm) , POINTER                :: x =>NULL(),t=>NULL()
     INTEGER                                           :: i,j
-    REAL(SpAMM_KIND)                                  :: EvMin, EvMax, sc, xo, xo_prev, xo_analytic, xmax,delta, FillN, FillN_prev
+    REAL(SpAMM_KIND)                                  :: EvMin, EvMax, sc, xo, xo_prev 
+    REAL(SpAMM_KIND)                                  :: xo_analytic, xmax,delta, FillN, FillN_prev
 
     s%frill%ndimn
     !
@@ -50,7 +60,7 @@
           RETURN
        ELSEIF(FillN<Tau)THEN
           RETURN
-       ENDIF
+`       ENDIF
 
        ! best acceleration we can hope for
        xo_analytic=xo_analytic*(9d0/4d0)*sc
