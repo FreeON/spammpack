@@ -43,9 +43,12 @@ contains
        a_2d%chunk( 1:(hi(1)-lo(1)+1), 1:(hi(2)-lo(2)+1))=A(lo(1):hi(1),lo(2):hi(2))
 
     ELSE ! recur generically here, poping with construct as needed ...
+
        CALL SpAMM_convert_dense_to_tree_2d_symm_recur( A, SpAMM_construct_tree_2d_symm_00(A_2d) )
        CALL SpAMM_convert_dense_to_tree_2d_symm_recur( A, SpAMM_construct_tree_2d_symm_01(A_2d) )
+       CALL SpAMM_convert_dense_to_tree_2d_symm_recur( A, SpAMM_construct_tree_2d_symm_10(A_2d) )
        CALL SpAMM_convert_dense_to_tree_2d_symm_recur( A, SpAMM_construct_tree_2d_symm_11(A_2d) )
+
     ENDIF
 
     ! update the garnish 
@@ -84,13 +87,17 @@ contains
     if(.not.associated(a_2d))return
 
     if(a_2d%frill%leaf)then! Leaf condition ? 
+
        lo=a_2d%frill%bndbx(0,:) 
        hi=a_2d%frill%bndbx(1,:)  
+
        ! move data on the page ...    
        A(lo(1):hi(1),lo(2):hi(2))=a_2d%chunk( 1:(hi(1)-lo(1)+1), 1:(hi(2)-lo(2)+1))
+
     ELSE ! recur generically here ...
        CALL SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_00, A )
        CALL SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_01, A )
+       CALL SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_10, A )
        CALL SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_11, A )
     ENDIF
   END SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense_recur

@@ -247,7 +247,6 @@ contains
     tree%child_01=>NULL()
     tree%child_11=>NULL()
 
-
   end function SpAMM_new_top_tree_2d_symm
 
   !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_00
@@ -307,9 +306,6 @@ contains
     wi = tree%frill%width
     mi = lo+wi/2-1 
 
-!    N=tree%frill%ndimn(2)
-
-    WRITE(*,*)' MI2 = ',mi(2),' HI2 = ',hi(2)
     IF(mi(2)+1>hi(2))THEN
        ch01=>NULL()
        RETURN                                     ! margin over-run 
@@ -335,6 +331,48 @@ contains
     ch01=>tree%child_01
     
   end function SpAMM_construct_tree_2d_symm_01
+
+  function SpAMM_construct_tree_2d_symm_10(tree) result(ch10)  
+
+    type(SpAMM_tree_2d_symm), pointer :: tree
+    type(SpAMM_tree_2d_symm), pointer :: ch10
+    integer, dimension(1:2)           :: lo,hi,mi,wi
+
+    if(associated(tree%child_10))then
+       ch10=>tree%child_10
+       return                                      ! pre-existing?  ok, so later ...
+    endif
+
+    lo = tree%frill%bndbx(0,:)
+    hi = tree%frill%bndbx(1,:)
+    wi = tree%frill%width
+    mi = lo+wi/2-1 
+
+    IF(mi(1)+1>hi(1))THEN
+       ch10=>NULL()
+       RETURN                                     ! margin over-run 
+    ENDIF
+    allocate(tree%child_10)                       ! ... otherwise, instantiate
+
+    tree%child_10%frill%width = wi/2               ! next level width   
+    tree%child_10%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
+    tree%child_10%frill%bndbx(:,1)=(/mi(1)+1,hi(1)/) ! [mid+1, hi][i]
+    tree%child_10%frill%bndbx(:,2)=(/lo(2)  ,mi(2)/) ! [lo   ,mid][j]
+    tree%child_10%frill%Leaf=.FALSE.               ! default, not a leaf     
+    if(wi(1)==2*SBS)then                           ! at resolution?
+       tree%child_10%frill%Leaf=.TRUE.             ! we have a leaf
+       allocate(tree%child_10%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
+       tree%child_10%chunk=SpAMM_Zero              ! init
+       tree%child_10%frill%flops=0
+    endif
+
+    write(*,33) tree%child_10%frill%bndbx(:,1),tree%child_10%frill%bndbx(:,2), &
+            wi,tree%child_10%frill%leaf
+33  format(' 10: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
+
+    ch10=>tree%child_10
+    
+  end function SpAMM_construct_tree_2d_symm_10
 
   !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_01
   !++XSTRUCTORS:       a_2%11 => init (constructor of the hi-hi [11] channel)
@@ -394,6 +432,9 @@ contains
     call SpAMM_destruct_tree_2d_symm_recur (self%child_01) ! take the [01] channel
     call SpAMM_destruct_tree_2d_symm_node  (self%child_01) ! kill backwards up the tree
 
+    call SpAMM_destruct_tree_2d_symm_recur (self%child_10) ! take the [10] channel
+    call SpAMM_destruct_tree_2d_symm_node  (self%child_10) ! kill backwards up the tree
+
     call SpAMM_destruct_tree_2d_symm_recur (self%child_11) ! take the [11] channel
     call SpAMM_destruct_tree_2d_symm_node  (self%child_11) ! kill backwards up the tree
 
@@ -450,6 +491,7 @@ contains
     else
 
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a%child_00)
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a%child_10)
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01)
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a%child_11)
 

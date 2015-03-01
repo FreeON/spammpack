@@ -61,6 +61,7 @@ MODULE spamm_structures
      type(SpAMM_decoration_2d)             :: frill
      type(SpAMM_tree_2d_symm), pointer     :: child_00 => null()
      type(SpAMM_tree_2d_symm), pointer     :: child_01 => null()
+     type(SpAMM_tree_2d_symm), pointer     :: child_10 => null()
      type(SpAMM_tree_2d_symm), pointer     :: child_11 => null()
      real(SPAMM_KIND),     allocatable     :: chunk(:, :)
   end type SpAMM_tree_2d_symm

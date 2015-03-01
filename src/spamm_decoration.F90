@@ -129,6 +129,7 @@ CONTAINS
 
     ! walk back up one level with each decoration ...
     IF(ASSOCIATED(A%child_00))CALL SpAMM_merge_decoration_2d(A%frill, A%child_00%frill)
+    IF(ASSOCIATED(A%child_10))CALL SpAMM_merge_decoration_2d(A%frill, A%child_10%frill)
     IF(ASSOCIATED(A%child_01))CALL SpAMM_merge_decoration_2d(A%frill, A%child_01%frill)
     IF(ASSOCIATED(A%child_11))CALL SpAMM_merge_decoration_2d(A%frill, A%child_11%frill)
 
