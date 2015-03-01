@@ -46,10 +46,10 @@ CONTAINS
     CALL init_random_seed()
     CALL SpAMM_random_unormalized_tree_1d_recur (randm, depth)
 
-    return
     ! normalize the vector ...
     renorm=SpAMM_one/sqrt(randm%frill%norm2)
     randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
+
     !    CALL SpAMM_print_tree_1d_recur (randm) 
 
   end function SpAMM_random_tree_1d
@@ -180,23 +180,25 @@ CONTAINS
     if(.not.associated(d))&
        d => SpAMM_new_top_tree_1d(a%frill%ndimn(1))
 
-    alpha=SpAMM_one
+    if(present(alpha_O))then
+       d=>SpAMM_scalar_times_tree_1d(alpha_O, d)
+    endif
+    
     beta =SpAMM_one
-    if(present(alpha_O))alpha=alpha_O
     if(present( beta_O))beta = beta_O
 
     Depth=0
-    CALL SpAMM_tree_2d_symm_times_tree_1d_recur(d, A, B, Tau2, Depth, alpha, beta )
+    CALL SpAMM_tree_2d_symm_times_tree_1d_recur(d, A, beta, B, Tau2, Depth )
 
   END FUNCTION SpAMM_tree_2d_symm_times_tree_1d
 
-  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur(C, A, B, Tau2, Depth, alpha, beta ) !<++NBODYTIMES|
-   !                    c_1 => alpha*c_1 + beta*(aT_2.b_1) (recursive)                            !<++NBODYTIMES|    
+  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur(C, A, beta, B, Tau2, Depth ) !<++NBODYTIMES|
+   !                    c_1 => alpha*c_1 + beta*(aT_2.b_1) (recursive)                     !<++NBODYTIMES|    
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A
     TYPE(SpAMM_tree_1d),      POINTER, INTENT(IN)    :: B
     TYPE(SpAMM_tree_1d),      POINTER                :: C
-    REAL(SpAMM_KIND),                  INTENT(IN)    :: alpha, beta
+    REAL(SpAMM_KIND),                  INTENT(IN)    :: beta
     REAL(SpAMM_KIND)                                 :: Tau2
     INTEGER                                          :: Depth
     TYPE(SpAMM_tree_1d), POINTER                     :: c0,c1
@@ -209,8 +211,15 @@ CONTAINS
 
     IF( c%frill%leaf )THEN ! Leaf condition ? 
 
-       c%chunk(1:SBS) = alpha*c%chunk(1:SBS) + beta*MATMUL(TRANSPOSE(a%chunk(1:SBS,1:SBS)),b%chunk(1:SBS))
+!       write(*,33) c%frill%bndbx, a%frill%bndbx, b%frill%bndbx
+!33     format("[",i2,"-",i2,"]=[",i2,"-",i2,"]x[",i2,"-",i2,"] . [",i2,"=",i2,"]")
+
+       c%chunk(1:SBS)=c%chunk(1:SBS)+beta*MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS))
        c%frill%flops  = c%frill%flops + SBS2 + 2*SBS
+
+!       WRITE(*,44)c%chunk
+44     format(16(F10.6,", "))
+
 
     ELSE
 
@@ -219,18 +228,14 @@ CONTAINS
        c1=>SpAMM_construct_tree_1d_1(c)
 
        ! a first pass with c[0], c[1] memory ...
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c0, a%child_00, b%child_0, & 
-                                                   Tau2, Depth+1, alpha, beta )      
+       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c0, a%child_00, beta, b%child_0, Tau2, Depth+1 )      
 
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c1,a%child_10, b%child_0, & 
-                                                   Tau2, Depth+1, alpha, beta )      
+       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c1,a%child_10,  beta, b%child_0, Tau2, Depth+1 )      
        
        ! ... & another pass 
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c0, a%child_01, b%child_1, & 
-                                                   Tau2, Depth+1, alpha, beta )      
+       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c0, a%child_01, beta, b%child_1, Tau2,  Depth+1 )      
        
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c1, a%child_11, b%child_1, & 
-                                                  Tau2, Depth+1, alpha, beta )      
+       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c1, a%child_11, beta, b%child_1, Tau2,  Depth+1 )      
        !
     ENDIF
 

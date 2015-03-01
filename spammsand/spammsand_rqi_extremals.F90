@@ -33,10 +33,10 @@ CONTAINS
 
     IF(MinMax==2)THEN
        omega=-1d10      ! starting eigenvalue (to be maximized)
-       gsign= SpAMM_One ! sign of the cooresponding gradient
+       gsign=-SpAMM_One ! sign of the cooresponding gradient
     ELSE
        omega= 1d10      ! starting eigenvalue (to be minimized)
-       gsign=-SpAMM_One ! sign of the cooresponding gradient
+       gsign=+SpAMM_One ! sign of the cooresponding gradient
     ENDIF
 
     M=a%frill%ndimn(1)              ! dimension of A along the [i] direction
@@ -48,13 +48,20 @@ CONTAINS
     hOld=>SpAMM_new_top_tree_1d(M)
 
     x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
-
-    WRITE(*,*)' xx = ',xx
-    
+    CALL SpAMM_print_tree_1d_recur (x) 
 
     DO CG=1,2 ! NCG ! conjugate gradient iteration
 
-       Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, tau)
+       Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, Tau, alpha_O=SpAMM_zero, beta_O=SpAMM_one, c=Ax )
+
+       WRITE(*,*)' Ax.Ax = ',SpAMM_tree_1d_dot_tree_1d_recur (Ax, Ax)
+
+!       CALL SpAMM_print_tree_2d_symm_recur (A) 
+
+!       CALL SpAMM_print_tree_1d_recur (Ax) 
+!       STOP
+
+
 
        xx =  SpAMM_tree_1d_dot_tree_1d_recur (x, x)
        xAx=  SpAMM_tree_1d_dot_tree_1d_recur (x,Ax)
@@ -62,14 +69,17 @@ CONTAINS
        omega_old=omega
        omega=xAx/xx
 
-       write(*,*)' omega = ',omega
+!       WRITE(*,*)' xx = ',xx
+!       write(*,*)' omega = ',omega
 
-       sclr__x = + gsign*SpAMM_Two/xx          ! g= + 2*(Ax-omega*x)/xx (minimizing)
-       sclr_Ax = - gsign*SpAMM_Two*omega/xx    ! g= - 2*(Ax-omega*x)/xx (maximizing)
+       sclr_Ax = + gsign*SpAMM_Two/xx          ! g= + 2*(Ax-omega*x)/xx (minimizing)
+       sclr__x = - gsign*SpAMM_Two*omega/xx    ! g= - 2*(Ax-omega*x)/xx (maximizing)
 
-       WRITE(*,*)' scalars = ',sclr__x,sclr_Ax,xx
+!       WRITE(*,*)' scalars = ',sclr__x,sclr_Ax,xx
 
-       stop
+!       WRITE(*,*)' sclr_ax', sclr_AX
+!       CALL SpAMM_print_tree_1d_recur (ax)       
+!       g => SpAMM_tree_1d_plus_tree_1d ( g, SpAMM_one, Ax, inplace=SpAMM_zero) 
 
        g => SpAMM_tree_1d_plus_tree_1d ( g, sclr_Ax, Ax, inplace=SpAMM_zero) 
        g => SpAMM_tree_1d_plus_tree_1d ( g, sclr__x,  x)                     
@@ -77,15 +87,13 @@ CONTAINS
        dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g,    g   )
        dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)          
 
-       WRITE(*,*)' dot_g = ',dot_g,dot_gold
+!       CALL SpAMM_print_tree_1d_recur (g) 
 
-       STOP
+       WRITE(*,*)' dot_g = ',dot_g,dot_gold
 
        IF(CG>1.AND.MOD(CG,15).NE.0)THEN
 !          dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g,    g   )
 !          dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)          
-
-          
 
           IF(dot_gold/abs(omega).LE.1D-10)THEN
              ! if we are really close, steepest descents should be enuf ...
@@ -109,9 +117,9 @@ CONTAINS
        h => SpAMM_tree_1d_plus_tree_1d ( h,      beta, h)
 
        ! Ah = A.h
-       Ah => SpAMM_tree_2d_symm_times_tree_1d(A, h, Tau, alpha_O=SpAMM_one, beta_O=SpAMM_zero, c=Ah)
 
-       !
+       Ah => SpAMM_tree_2d_symm_times_tree_1d(A, h, Tau, alpha_O=SpAMM_Zero, beta_O=SpAMM_One, c=Ah)
+
        hx =SpAMM_tree_1d_dot_tree_1d_recur(h,x)
        hh =SpAMM_tree_1d_dot_tree_1d_recur(h,h)
        xAh=SpAMM_tree_1d_dot_tree_1d_recur(x,Ah)
@@ -124,9 +132,6 @@ CONTAINS
        ! gOld = g; hOld = h
        gOld => SpAMM_tree_1d_copy_tree_1d (g, gOld) 
        hOld => SpAMM_tree_1d_copy_tree_1d (h, hOld) 
-
-
-       write(*,*)hx,hh,xah,hax,hah
 
        ! roots of the line search (+/-) ...
        LambdaPlus=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx+SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
