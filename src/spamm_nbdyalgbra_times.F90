@@ -46,6 +46,7 @@ CONTAINS
     CALL init_random_seed()
     CALL SpAMM_random_unormalized_tree_1d_recur (randm, depth)
 
+    return
     ! normalize the vector ...
     renorm=SpAMM_one/sqrt(randm%frill%norm2)
     randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
@@ -84,9 +85,9 @@ CONTAINS
 
        lo=randm%frill%bndbx(0)
        hi=randm%frill%bndbx(1)
-!       randm%chunk(1:hi-lo+1)=SpAMM_one
+       randm%chunk(1:hi-lo+1)=SpAMM_one
 
-       CALL RANDOM_NUMBER(randm%chunk(1:hi-lo+1))
+!       CALL RANDOM_NUMBER(randm%chunk(1:hi-lo+1))
 
     ELSE
 

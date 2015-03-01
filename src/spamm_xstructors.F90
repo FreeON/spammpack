@@ -79,7 +79,7 @@ contains
        tree%child_0%frill%flops=0
     endif
 
-    write(*,33) tree%child_0%frill%bndbx(:), wi,tree%child_0%frill%leaf
+!    write(*,33) tree%child_0%frill%bndbx(:), wi,tree%child_0%frill%leaf
 33  format(' 0: [ ',I3,", ",I3," ], wid = ",I4,4L3 )
 
     ch0=>tree%child_0
@@ -125,7 +125,7 @@ contains
        tree%child_1%frill%flops=0
     endif
 
-    write(*,33) tree%child_1%frill%bndbx(:), wi,tree%child_1%frill%leaf
+!    write(*,33) tree%child_1%frill%bndbx(:), wi,tree%child_1%frill%leaf
 33  format(' 1: [ ',I3,", ",I3," ], wid = ",I4,4L3 )
 
     ch1=>tree%child_1
@@ -280,7 +280,7 @@ contains
        tree%child_00%frill%flops=0
     endif
 
-    write(*,33) tree%child_00%frill%bndbx(:,1) ,tree%child_00%frill%bndbx(:,2),wi/2,tree%child_00%frill%leaf
+!    write(*,33) tree%child_00%frill%bndbx(:,1) ,tree%child_00%frill%bndbx(:,2),wi/2,tree%child_00%frill%leaf
 33  format(' 00: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
 
     ch00=>tree%child_00
@@ -324,8 +324,8 @@ contains
        tree%child_01%frill%flops=0
     endif
 
-    write(*,33) tree%child_01%frill%bndbx(:,1),tree%child_01%frill%bndbx(:,2), &
-            wi,tree%child_01%frill%leaf
+!    write(*,33) tree%child_01%frill%bndbx(:,1),tree%child_01%frill%bndbx(:,2), &
+!            wi,tree%child_01%frill%leaf
 33  format(' 01: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
 
     ch01=>tree%child_01
@@ -366,8 +366,8 @@ contains
        tree%child_10%frill%flops=0
     endif
 
-    write(*,33) tree%child_10%frill%bndbx(:,1),tree%child_10%frill%bndbx(:,2), &
-            wi,tree%child_10%frill%leaf
+!    write(*,33) tree%child_10%frill%bndbx(:,1),tree%child_10%frill%bndbx(:,2), &
+!            wi,tree%child_10%frill%leaf
 33  format(' 10: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
 
     ch10=>tree%child_10
@@ -410,7 +410,7 @@ contains
        tree%child_11%frill%flops=0
     endif
 
-    write(*,33) tree%child_11%frill%bndbx(:,1) ,tree%child_11%frill%bndbx(:,2),wi/2,tree%child_11%frill%leaf
+!    write(*,33) tree%child_11%frill%bndbx(:,1) ,tree%child_11%frill%bndbx(:,2),wi/2,tree%child_11%frill%leaf
 33  format(' 11: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
 
     ch11=>tree%child_11

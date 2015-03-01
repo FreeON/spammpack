@@ -46,14 +46,13 @@ CONTAINS
     Ah  =>SpAMM_new_top_tree_1d(M)  ! conjugate gradient with the matrix
     gOld=>SpAMM_new_top_tree_1d(M) 
     hOld=>SpAMM_new_top_tree_1d(M)
-    x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
 
-    xx =  SpAMM_tree_1d_dot_tree_1d_recur (x, x)
+    x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
 
     WRITE(*,*)' xx = ',xx
     
 
-    DO CG=1,NCG ! conjugate gradient iteration
+    DO CG=1,2 ! NCG ! conjugate gradient iteration
 
        Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, tau)
 
@@ -63,16 +62,31 @@ CONTAINS
        omega_old=omega
        omega=xAx/xx
 
+       write(*,*)' omega = ',omega
+
        sclr__x = + gsign*SpAMM_Two/xx          ! g= + 2*(Ax-omega*x)/xx (minimizing)
        sclr_Ax = - gsign*SpAMM_Two*omega/xx    ! g= - 2*(Ax-omega*x)/xx (maximizing)
+
+       WRITE(*,*)' scalars = ',sclr__x,sclr_Ax,xx
+
+       stop
 
        g => SpAMM_tree_1d_plus_tree_1d ( g, sclr_Ax, Ax, inplace=SpAMM_zero) 
        g => SpAMM_tree_1d_plus_tree_1d ( g, sclr__x,  x)                     
 
+       dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g,    g   )
+       dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)          
+
+       WRITE(*,*)' dot_g = ',dot_g,dot_gold
+
+       STOP
 
        IF(CG>1.AND.MOD(CG,15).NE.0)THEN
-          dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g,    g   )
-          dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)          
+!          dot_g    = SpAMM_tree_1d_dot_tree_1d_recur( g,    g   )
+!          dot_gold = SpAMM_tree_1d_dot_tree_1d_recur( gOld, gOld)          
+
+          
+
           IF(dot_gold/abs(omega).LE.1D-10)THEN
              ! if we are really close, steepest descents should be enuf ...
              beta=SpAMM_Zero
@@ -82,6 +96,8 @@ CONTAINS
        ELSE
           beta=SpAMM_Zero
        ENDIF
+
+       write(*,*)' beta = ',beta
 
        ! convergence criteria
        IF( SQRT(dot_g)/ABS(Omega) < SQRT(Tau).AND.CG>16 &
@@ -109,6 +125,9 @@ CONTAINS
        gOld => SpAMM_tree_1d_copy_tree_1d (g, gOld) 
        hOld => SpAMM_tree_1d_copy_tree_1d (h, hOld) 
 
+
+       write(*,*)hx,hh,xah,hax,hah
+
        ! roots of the line search (+/-) ...
        LambdaPlus=(SpAMM_Two*hh*xAx-SpAMM_Two*hAh*xx+SQRT((-SpAMM_Two*hh*xAx+SpAMM_Two*hAh*xx)**2     &
             -SpAMM_Four*(hAh*hx-SpAMM_Two*hh*xAh+hAh*xh)*(-(hx*xAx)-xAx*xh+SpAMM_Two*xAh*xx)))  &
@@ -122,6 +141,10 @@ CONTAINS
             /( xx+LambdaPlus*(xh+hx)  +hh *LambdaPlus**2)
        RQIMins=(xAx+LambdaMins*(xAh+hAx)+hAh*LambdaMins**2) &
             /( xx+LambdaMins*(xh+hx)  +hh *LambdaMins**2)
+
+
+       write(*,*)' lambdas = ',lambdaplus, lambdamins
+       write(*,*)' rqis    = ',rqiplus, rqimins
 
        ! update of the eigenvector ..
        IF(MinMax==1)THEN ! for the minimizer ...          

@@ -33,31 +33,24 @@ program SpAMMSand_inverse_squareroot
 
   call read_MM(matrix_filename, S_dense)
 
-  do i=1,24
-     write(*,22)(s_dense(i,j),j=1,24)
-22   format( 24(E8.2,', ') )
-  enddo
-
+!  do i=1,24
+!     write(*,22)(s_dense(i,j),j=1,24)
+!22   format( 24(E8.2,', ') )
+!  enddo
 
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
 
-  WRITE(*,*)'-----------------------------------------------'
-  WRITE(*,*)' S_2='
-  CALL SpAMM_print_tree_2d_symm_recur (s) 
+!  CALL SpAMM_print_tree_2d_symm_recur (s) 
+!  S_CHECK=>SpAMM_convert_tree_2d_symm_to_dense(s)
 
-
-  S_CHECK=>SpAMM_convert_tree_2d_symm_to_dense(s)
-
-  WRITE(*,*)' ------------------------------------------'
-  do i=1,24
+!  WRITE(*,*)' ------------------------------------------'
+!  do i=1,24
 !     write(*,22)(s_check(i,j)-s_dense(i,j),j=1,24)
-     write(*,22)(s_check(i,j),j=1,24)
-  enddo
+!     write(*,22)(s_check(i,j),j=1,24)
+!  enddo
 
 
-  WRITE(*,*)SUM(ABS(S_CHECK-S_DENSE))
-
-  STOP ' thats all folks '
+!  WRITE(*,*)SUM(ABS(S_CHECK-S_DENSE))
 
 !  CALL SpAMM_print_tree_2d_symm_recur (s) 
 
