@@ -1,19 +1,20 @@
-matrixtree.hs defines a recursive data structure MatrixTree for representing
+MatrixTree.hs defines a recursive data structure MatrixTree for representing
 matrices, with an emphasis on efficient representation of sparse matrices.
 
-matrixmarket.hs contains functions for reading/writing files in MatrixMarket
+MatrixMarket.hs contains functions for reading/writing files in MatrixMarket
 formats, populating MatrixTrees with the results.
 
-rowformat.hs contains functions for reading/writing files in a format that 
-lists the rows of a matrix in order, one per line, with entries in a given 
+RowFormat.hs contains functions for reading/writing files in a format that
+lists the rows of a matrix in order, one per line, with entries in a given
 row separated by spaces.
 
-spamm.hs contains functions for performing matrix algebra on MatrixTrees
+SpAMM.hs contains functions for performing matrix algebra on MatrixTrees
 using the SpAMM algorithm.
 
-tests.hs loads MatrixMarket-formatted files from the folder "Test matrices" 
-and performs SpAMM operations on them, reporting on the correctness of the 
-results.
+The folder Testing contains a script tests.hs that loads MatrixMarket files
+from the folder Matrices, performs SpAMM operations on them, and reports on
+the correctness of the results. Compile tests.hs with -i.:.. so it can
+find the modules it needs.
 
-To use SpAMM in a code, import spamm.hs and the module for the file format(s)
+To use SpAMM in a code, import SpAMM.hs and the module for the file format(s)
 you plan to read/write.
