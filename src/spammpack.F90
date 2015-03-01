@@ -96,7 +96,6 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spammpack
 
-  use chunk_tree_2d
   use spamm_add
   use spamm_globals
   use spamm_real_precision

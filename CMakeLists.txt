@@ -26,8 +26,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-project( spammpack Fortran )
 cmake_minimum_required( VERSION 2.8 )
+
+project( spammpack Fortran )
 
 if( NOT CMAKE_Fortran_COMPILER )
   message( FATAL_ERROR "Can not find Fortran compiler" )
@@ -294,6 +295,27 @@ else()
   set( SPAMM_KIND "kind(0e0)" )
 endif()
 
+set( SPAMM_BLOCK_SIZE 4
+  CACHE STRING "The matrix size at the leaves"
+  )
+
+set( SPAMM_CHUNK_SIZE 32
+  CACHE STRING "The matrix size of a chunk"
+  )
+
+math( EXPR SPAMM_BLOCKS "${SPAMM_CHUNK_SIZE}/${SPAMM_BLOCK_SIZE}" )
+math( EXPR SPAMM_CHUNK_NODES "(4*${SPAMM_BLOCKS}*${SPAMM_BLOCKS}-1)/3." )
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/src/spamm_globals.F90.in
+  ${CMAKE_BINARY_DIR}/src/spamm_globals.F90
+  )
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/src-chunk/spammchunk_globals.F90.in
+  ${CMAKE_BINARY_DIR}/src-chunk/spammchunk_globals.F90
+  )
+
 find_program( CTAGS ctags )
 
 if( CTAGS )
@@ -323,6 +345,9 @@ enable_testing()
 
 #add_subdirectory( src-solvers )
 #add_subdirectory( tools )
+
+add_subdirectory( src-chunk )
 add_subdirectory( src )
 add_subdirectory( tests )
+add_subdirectory( tests-chunk )
 add_subdirectory( utilities )
