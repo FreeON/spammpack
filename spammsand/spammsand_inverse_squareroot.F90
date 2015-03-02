@@ -4,6 +4,11 @@ module SpAMMsand_inverse_squareroot
 
   implicit none
 
+  ! Convergence parameters
+  REAL(SpAMM_KIND), PARAMETER ::  Approx3  = 2.85d00
+  REAL(SPAMM_KIND), PARAMETER ::  ShiftSw  = 5.d-1
+
+
 contains
 
   SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot( x, z, tau , t)
@@ -31,6 +36,9 @@ contains
        !        
        IF(FillN>0.4d0)THEN
           delta=1d-1  ! maybe this should be a variable too, passed in?
+
+
+
 !          X => GSOLVE_SPECTRAL_Shift( X, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
 !          sc=ScaleInvSqrt(0d0)
        ELSE
@@ -38,6 +46,9 @@ contains
        ENDIF
 
 !       X =>  GSOLVE_SPECTRAL_InvSqrt_Scaled_NS( X, sc ) 
+
+
+       WRITE(*,*)' here here here here here here here here '
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=t)
@@ -57,6 +68,49 @@ contains
    
   END SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot
 
+
+  FUNCTION spammsand_shift_tree_2d( x, low_prev, high_prev, low_new, high_new ) RESULT(d)
+    !!!!!    shft=low_new+(x-low_prev)*(high_new-low_new)/(high_prev-low_prev)
+
+    TYPE(spamm_tree_2d_symm) ,   POINTER     :: d
+    TYPE(spamm_tree_2d_symm) ,   POINTER     :: x
+    REAL(SpAMM_KIND), OPTIONAL,INTENT(IN)    :: low_prev, high_prev, low_new, high_new   
+    INTEGER                                  :: M,N
+    REAL(SpAMM_KIND)                         :: SHFT,SCAL 
+
+    SHFT=low_new-low_prev*(high_new-low_new)/(high_prev-low_prev)
+    SCAL=(high_new-low_new)/(high_prev-low_prev)
+
+    d => x
+    d => SpAMM_scalar_times_tree_2d_symm( scal, d)
+    d => SpAMM_scalar_plus_tree_2d_symm(  shft, d)
+
+  END FUNCTION spammsand_shift_tree_2d
+
+  FUNCTION spammsand_scaled_invsqrt_mapping( x, sc ) result(d) 
+    TYPE(spamm_tree_2d_symm), POINTER  :: d
+    TYPE(spamm_tree_2d_symm), POINTER  :: x
+    REAL(SpAMM_KIND),      INTENT(IN)  :: sc 
+    REAL(SpAMM_KIND)                   :: SHFT,SCAL 
+
+    SHFT=SpAMM_half*SQRT(sc)*SpAMM_three
+    SCAL=SpAMM_half*(-sc)*SQRT(sc)
+
+    d => x
+    d => SpAMM_scalar_times_tree_2d_symm( scal, d)
+    d => SpAMM_scalar_plus_tree_2d_symm(  shft, d)
+
+  END FUNCTION spammsand_scaled_invsqrt_mapping
+
+
+  FUNCTION spammsand_scaling_invsqrt(xo) RESULT(sc)
+
+    REAL(SpAMM_KIND) :: xo, sc
+    sc=MIN( Approx3, SpAMM_three/(SpAMM_one+SQRT(xo)+xo) )    
+  END FUNCTION spammsand_scaling_invsqrt
+
+
+  
 end module SpAMMsand_inverse_squareroot
 
 
@@ -108,6 +162,8 @@ program SpAMM_sandwich_inverse_squareroot
      z%tau =  10d0**( logtau_strt + logtau_dlta * float(i-1) )
      z%mtx => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
+     WRITE(*,*)' Z%TAU ',Z%TAU
+
      if(i==slices)then        
         z%nxt => null()
      else
@@ -122,10 +178,13 @@ program SpAMM_sandwich_inverse_squareroot
 
   ! temporary work space ...
   x_tmp => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+
+  WRITE(*,*)' HERE'
   
   z=>sandwtch
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
+     WRITE(*,*)' SCALED ... '
      call spammsand_scaled_newton_shulz_inverse_squareroot( x_prj, z%mtx, z%tau, x_tmp )
      
      write(*,*)z%tau

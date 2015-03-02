@@ -80,6 +80,51 @@ CONTAINS
   !!
   !! ... TREE-TWO-D ... TREE-TWO-D ... TREE-TWO-D ... TREE-TWO-D ... TREE-TWO-D ...
   !!
+
+  FUNCTION SpAMM_scalar_plus_tree_2d_symm(alpha, a) RESULT(d)
+
+    TYPE(SpAMM_tree_2d_symm), POINTER  :: a 
+    TYPE(SpAMM_tree_2d_symm), POINTER  :: d 
+    REAL(SpAMM_KIND),  INTENT(IN) :: alpha
+
+    if(.not.associated(a))then
+       d=>null()
+       return
+    else
+       d=>a
+       call SpAMM_scalar_plus_tree_2d_symm_recur(alpha, d)
+    endif
+
+  END FUNCTION SpAMM_scalar_plus_tree_2d_symm
+
+  recursive subroutine SpAMM_scalar_plus_tree_2d_symm_recur(alpha, a)
+
+   TYPE(SpAMM_tree_2d_symm), POINTER  :: a 
+   REAL(SpAMM_KIND),  INTENT(IN) :: alpha
+   INTEGER, dimension(1:2)       :: lo,hi
+   INTEGER                       :: i
+
+   if(.not.associated(a))return
+
+   IF(a%frill%leaf)THEN
+
+      lo=a%frill%bndbx(0,:)
+      hi=a%frill%bndbx(1,:)
+      
+      do i=1,hi(1)-lo(1)+1
+         a%chunk(i,i)=a%chunk(i,i)+alpha
+      enddo
+
+    ELSE
+       ! child along [00]:
+       CALL SpAMM_scalar_plus_tree_2d_symm_recur(alpha, SpAMM_construct_tree_2d_symm_00(a))
+       ! child along [11]:
+       CALL SpAMM_scalar_plus_tree_2d_symm_recur(alpha, SpAMM_construct_tree_2d_symm_11(a))
+    ENDIF
+    
+  end subroutine SpAMM_scalar_plus_tree_2d_symm_recur
+
+
   FUNCTION SpAMM_tree_2d_symm_plus_tree_2d_symm (A, B, alpha, beta, C) RESULT(D)   
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT)           :: A, B
@@ -98,7 +143,7 @@ CONTAINS
     IF(PRESENT(Alpha))THEN; Local_Alpha=Alpha; ELSE; Local_Alpha=SpAMM_One; ENDIF
     IF(PRESENT(Beta ))THEN; Local_Beta =Beta;  ELSE; Local_Beta=SpAMM_One;  ENDIF
 
-    IF(PRESENT(C))THEN ! we are going for an in place add with an existing C:
+    IF(PRESENT(C))THEN ! we are going for an in place plus with an existing C:
 
        IF(ASSOCIATED(B,C))THEN  ! if passed in C is B, then in place accumulation on B ...
 
