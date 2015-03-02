@@ -6,17 +6,19 @@ MODULE SpAMMsand_structures
 
   implicit none
 
-  integer, parameter :: slices=4
+  ! how big a sandwich ...
+  integer, parameter :: slices=4 
 
-  ! SpAMM sandwich 4 matrix functions: f(|a>) = |x_0>.|x_1> ... |x_m>
-  type :: spammsand_tree_2d_symm
+  ! SpAMM sandwich for matrix functions: f(|a>) = |x_0>.|x_1> ... |x_m>
+  type :: spammsand_tree_2d_slices
 
      ! the SpAMM squared threshold for each algebra
-     integer,                  dimension(:), pointer  :: tau2
-     ! the factor and its nested residuals, a sandwich ...
-     type(SpAMM_tree_2d_symm), dimension(:), pointer  :: trix
+     real(SpAMM_KIND)                        :: tau
+     ! the first approximation its nested residuals ...
+     type(SpAMM_tree_2d_symm),       pointer :: mtx
+     type(spammsand_tree_2d_slices), pointer :: nxt
 
-  end type spammsand_tree_2d_symm
+  end type spammsand_tree_2d_slices
 
   ! --
 contains
