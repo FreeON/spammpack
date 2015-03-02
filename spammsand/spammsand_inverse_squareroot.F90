@@ -15,6 +15,7 @@ contains
     REAL(SpAMM_KIND)                                  :: sc
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev
 
+    n=x%frill%ndimn(1)
     FillN=1d10
     !
     DO i = 1, 22
@@ -98,19 +99,21 @@ program SpAMM_sandwich_inverse_squareroot
 
   logtau_strt=-4
   logtau_stop=-12
-  logtau_dlta=(logtau_stop-logtau_strt)/dble(slices+1) 
+  logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) 
     
+  allocate(z) 
   sandwtch => z ! head of the slices
-
   do i=1,slices
 
-     allocate(z) 
-
-     z%tau =  10d0**( logtau_strt + logtau_dlta*float(i-1) )
+     z%tau =  10d0**( logtau_strt + logtau_dlta * float(i-1) )
      z%mtx => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
-     WRITE(*,*)' tau = ',z%tau, sandwtch%tau
 
-     z     => z%nxt
+     if(i==slices)then        
+        z%nxt => null()
+     else
+        allocate(z%nxt) 
+        z => z%nxt
+     endif
 
   enddo
 
@@ -122,16 +125,20 @@ program SpAMM_sandwich_inverse_squareroot
   
   z=>sandwtch
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
-
-!     call spammsand_scaled_newton_shulz_inverse_squareroot( x_nxt, z%mtx(i), z%tau(i), x_tmp )
-
-     if(.not.associated(z%nxt))exit
-
-!     x_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( x_prj,  z%mtx, z%nxt%tau, &
-!                                                     alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_tmp)
      
-!     x_prj => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,  x_tmp, z%nxt%tau, &
-!                                                     alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_prj)     
+     call spammsand_scaled_newton_shulz_inverse_squareroot( x_prj, z%mtx, z%tau, x_tmp )
+     
+     write(*,*)z%tau
+     
+     if(.not.associated(z%nxt))exit
+     
+     !     x_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( x_prj,  z%mtx, z%nxt%tau, &
+     !                                                     alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_tmp)
+     
+     !     x_prj => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,  x_tmp, z%nxt%tau, &
+     !                                                     alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_prj)     
+     z=>z%nxt
+     
   enddo
 
 end program SpAMM_sandwich_inverse_squareroot
