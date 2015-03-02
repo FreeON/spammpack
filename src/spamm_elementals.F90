@@ -9,6 +9,23 @@ module spamm_elementals
   ! This code contains protocols for solo opperations on structures, copy, scalar multiply etc. 
 CONTAINS
 
+  RECURSIVE FUNCTION SpAMM_trace_tree_2d_symm_recur(a) RESULT(tr)
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: a
+    REAL(SpAMM_KIND)                              :: tr
+    integer                                       :: i
+    tr=SpAMM_Zero
+    IF(.NOT.ASSOCIATED(a))RETURN
+
+    IF(a%frill%leaf)THEN ! Leaf condition ? 
+       do i = 1,SBS
+          tr=tr+a%chunk(i,i)
+       enddo
+    ELSE
+       tr=tr+SpAMM_trace_tree_2d_symm_recur(a%child_00)
+       tr=tr+SpAMM_trace_tree_2d_symm_recur(a%child_11)
+    ENDIF
+  END FUNCTION SpAMM_trace_tree_2d_symm_recur
+
   recursive subroutine SpAMM_print_tree_2d_symm_recur (A) 
 
     type(SpAMM_tree_2d_symm), pointer, intent(in)   :: A

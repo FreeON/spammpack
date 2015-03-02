@@ -8,10 +8,10 @@ module SpAMMsand_inverse_squareroot
 
 contains
 
-  SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot( x, z, tau )
+  SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot( x, z, tau , t)
 
     TYPE(SpAMM_type_2d_symm) , POINTER, INTENT(IN)    :: x
-    TYPE(SpAMM_type_2d_symm) , POINTER, INTENT(INOUT) :: z
+    TYPE(SpAMM_type_2d_symm) , POINTER, INTENT(INOUT) :: z, t
     REAL(SpAMM_KIND),                   INTENT(IN)    :: Tau
 
     TYPE(SpAMM_type_2d_symm) , POINTER                :: x =>NULL(),t=>NULL()
@@ -19,19 +19,13 @@ contains
     REAL(SpAMM_KIND)                                  :: EvMin, EvMax, sc, xo, xo_prev 
     REAL(SpAMM_KIND)                                  :: xo_analytic, xmax,delta, FillN, FillN_prev
 
-    s%frill%ndimn
-    !
-    z => SpAMM_identity_matrix(M,N)
-    x => SpAMM_identity_matrix(M,N)
-    t => SpAMM_identity_matrix(M,N)
-    !
     FillN=1d10
     !
     DO i = 1, 22
 
        ! |X_n> = <Z_n|S> |Z_n>
-       t => SpAMM_tree_2d_symm_t_times_tree_2d_symm( z, s, tau*1d-3, in=t1, alpha=SpAMM_zero, beta=SpAMM_one)
-       x => SpAMM_tree_2d_symm_n_times_tree_2d_symm( t, z, tau     , in=x,  alpha=SpAMM_zero, beta=SpAMM_one)
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z,  x, tau*1d-3, in=t, alpha=SpAMM_zero, beta=SpAMM_one)
+       x => SpAMM_tree_2d_symm_times_tree_2d_symm( t,  z, tau     , in=x, alpha=SpAMM_zero, beta=SpAMM_one)
        
        ! monitor the trace for convergence, maybe look at rate of change at some point too?:
        FillN_prev=FillN
@@ -39,22 +33,18 @@ contains
        !        
        IF(FillN>0.4d0)THEN
           delta=1d-1  ! maybe this should be a variable too, passed in?
-          X => GSOLVE_SPECTRAL_Shift( X, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!          X => GSOLVE_SPECTRAL_Shift( X, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
           sc=ScaleInvSqrt(0d0)
        ELSE
           sc=1d0
        ENDIF
 
-       X =>  GSOLVE_SPECTRAL_InvSqrt_Scaled_NS( X, sc ) 
+!       X =>  GSOLVE_SPECTRAL_InvSqrt_Scaled_NS( X, sc ) 
 
-       ! |Z_n+1> =  <Z_n| X_n>  n or t here ?
-!       t => SpAMM_tree_2d_symm_n_times_tree_2d_symm( z, x, tau, in=t, alpha=SpAMM_zero, beta=SpAMM_one)
-       t => SpAMM_tree_2d_symm_t_times_tree_2d_symm( z, x, tau, in=t, alpha=SpAMM_zero, beta=SpAMM_one)
+       ! |Z_n+1> =  <Z_n| X_n>  
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, in=t, alpha=SpAMM_zero, beta=SpAMM_one)
        ! unfortunately, the update could not be done in place 
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm(z,t)
-
-       ! end debug
-       !--------------------------------------------------------------------------------
 
        IF(FillN<0.1d0.AND.FillN>FillN_prev)THEN
           RETURN
@@ -65,10 +55,8 @@ contains
        ! best acceleration we can hope for
        xo_analytic=xo_analytic*(9d0/4d0)*sc
        !
-
     ENDDO
    
-    call delete(x)
-    call delete(t)
+end SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot
 
-  END SUBROUTINE  GSOLVE_SCALED_NEWTON_SCHULZ_INVSQT
+end module SpAMMsand_inverse_squareroot

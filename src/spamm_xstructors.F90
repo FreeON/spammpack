@@ -149,34 +149,35 @@ contains
   end subroutine SpAMM_destruct_tree_1d_recur ! ... and we're out ... 
 
   subroutine  SpAMM_destruct_tree_1d_node (self)    !++
-  !++XSTRUCTORS:       a_1 => null() (node level destructor of the symmetric matrix)  
 
+    !++XSTRUCTORS:       a_1 => null() (node level destructor of the symmetric matrix)  
     type(SpAMM_tree_1d), pointer, intent(inout) :: self
 
     if(.not.associated(self))return
     if(self%frill%leaf)deallocate(self%chunk) 
-    deallocate(self)               ! done 
+    deallocate(self)           
     nullify(self)                  ! bye-bye
 
   end subroutine SpAMM_destruct_tree_1d_node
 
   !++XSTRUCTORS:     SpAMM_tree_1d_copy_tree_1d
   !++XSTRUCTORS:       d_1 => a (wrapper)
-  function SpAMM_tree_1d_copy_tree_1d (a, b) result(d)
+  function SpAMM_tree_1d_copy_tree_1d (a, in_O) result(d)
 
     TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)              :: a
-    TYPE(SpAMM_tree_1d), POINTER, INTENT(INOUT), OPTIONAL :: b
+    TYPE(SpAMM_tree_1d), POINTER, INTENT(INOUT), OPTIONAL :: in_O
     TYPE(SpAMM_tree_1d), POINTER                          :: d
 
-    IF(PRESENT(b))THEN
-       d => b
+    d => null()
+    IF(PRESENT(in_O))THEN
+       d => in_O
     ELSEIF(.NOT.ASSOCIATED(a))THEN
-       d => null()
        RETURN
-    ELSE
-       ! nothing passed in, and we have an associated A, so lets pop a new tree top ...
-       d => SpAMM_new_top_tree_1d ( b%frill%NDimn )
     ENDIF
+
+       ! nothing passed in, and we have an associated A, so lets pop a new tree top ...
+    if(.not.associated(d)) &
+       d => SpAMM_new_top_tree_1d ( a%frill%NDimn )
 
     ! d |cpy> a
     CALL SpAMM_tree_1d_copy_tree_1d_recur (d, a)
@@ -190,11 +191,18 @@ contains
     TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)    :: a
     TYPE(SpAMM_tree_1d), POINTER                :: d
     
-    if(.not.associated(a))return
-    if(.not.associated(d))return
-    
-    if (a%frill%leaf) then       
+    if(.not.associated(a).and..not.associated(d))then
+
+       return
+
+    elseif(.not.associated(a).and.associated(d))then
+
+       call SpAMM_destruct_tree_1d_recur (d)
+
+    elseif (a%frill%leaf) then       
+
        d%chunk(1:SBS)=a%chunk(1:SBS) 
+
     else
 
        CALL SpAMM_tree_1d_copy_tree_1d_recur (SpAMM_construct_tree_1d_0(d), a%child_0)
@@ -456,20 +464,20 @@ contains
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm
   !++XSTRUCTORS:       d_2 => a_2  (wrapper)
-  function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, b) result(d)
+  function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, in_O) result(d)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)              :: a
-    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT), OPTIONAL :: b
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT), OPTIONAL :: in_O
     TYPE(SpAMM_tree_2d_symm), POINTER                          :: d
 
-    IF(PRESENT(b))THEN
-       d => b
+    d => null()
+    IF(PRESENT(in_O))THEN
+       d => in_O
     ELSEIF(.NOT.ASSOCIATED(a))THEN
-       d => null()
        RETURN
     ENDIF
     
-    IF(.not.associated(d)) d => SpAMM_new_top_tree_2d_symm ( b%frill%NDimn )
+    IF(.not.associated(d)) d => SpAMM_new_top_tree_2d_symm (a%frill%NDimn )
 
     ! d |cpy> a
     CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a)
@@ -483,9 +491,15 @@ contains
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: a
     TYPE(SpAMM_tree_2d_symm), POINTER                :: d
     
-    if(.not.associated(a))return
-    
-    if (a%frill%leaf) then       
+    if(.not.associated(a).and..not.associated(d))then
+
+       return
+
+    elseif(.not.associated(a).and.associated(d))then
+
+       call SpAMM_destruct_tree_2d_symm_recur (d)
+
+    elseif (a%frill%leaf) then       
 
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
 
@@ -501,71 +515,6 @@ contains
     CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill) ! d%frill |cpy> a%frill
     
   END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur
-
-
-
-!!$
-!!$  function SpAMM_new_identity_tree_2d_symm ( M, N, Alpha_O ) result (tree)
-!!$    !
-!!$    integer,        intent(in)  :: M, N
-!!$    REAL(SpAMM_KIND), OPTIONAL  :: Alpha_O
-!!$    REAL(SpAMM_KIND)            :: Alpha
-!!$    integer                     :: depth
-!!$    type(SpAMM_tree_2d_symm), pointer :: tree
-!!$
-!!$    tree => SpAMM_new_top_tree_2d_symm ( M, N )
-!!$
-!!$    IF(PRESENT(alpha_O))THEN
-!!$       alpha=Alpha_O
-!!$    ELSE
-!!$       alpha=SpAMM_One
-!!$    ENDIF    
-!!$
-!!$    ! push alpha onto the trace ...
-!!$    depth=0
-!!$    CALL SpAMM_new_identity_tree_2d_symm_recur (tree, alpha, depth)
-!!$
-!!$  end function SpAMM_new_identity_tree_2d_symm
-
-!!$  ! putting alpha down, onto the trace of this tree_2d_symm ...
-!!$  recursive subroutine SpAMM_new_identity_tree_2d_symm_recur (tree, alpha, depth)
-!!$
-!!$    type(SpAMM_tree_2d_symm)                :: tree
-!!$    real(SpAMM_KIND),        intent(in)     :: alpha
-!!$    integer,                 intent(in)     :: depth 
-!!$    INTEGER, DIMENSION(:,:), pointer        :: bb
-!!$    integer                                 :: i 
-!!$
-!!$    bb => tree%frill%bndbx 
-!!$
-!!$    IF( bb(1,1)-bb(0,1) == SBS )THEN  ! Leaf condition ? 
-!!$
-!!$       ! here is a 2d chunk (ch) ... 
-!!$       allocate( tree%chunk( SBS, SBS ) ) 
-!!$
-!!$       ! set its trace with scalar alpha ...
-!!$       tree%chunk=SpAMM_Zero
-!!$       do i=1, SBS
-!!$          tree%chunk(i,i)=alpha 
-!!$       enddo
-!!$
-!!$    ELSEIF(depth>16)THEN ! build the identity tree down
-!!$
-!!$       ! child along [00]: [lo,mid]x[lo,mid] ... 
-!!$       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_00(tree) , alpha, depth+1 )
-!!$       ! nothing off diagonal 
-!!$       tree%child_01=>Null() 
-!!$       ! child along [11]: [mid+1,hi]x[mid+1,hi] ... 
-!!$       CALL SpAMM_new_identity_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_11(tree) , alpha, depth+1 )
-!!$
-!!$    ELSE; STOP ' depth 16 exceeded in SpAMM_init_ident_tree_2d_symm_recur';  
-!!$    ENDIF
-!!$    
-!!$    ! merge & regarnish back up the tree ...
-!!$    CALL SpAMM_redecorate_tree_2d_symm(tree)
-!!$    !
-!!$  end subroutine SpAMM_new_identity_tree_2d_symm_recur
-!!$
 
 end module spamm_xstructors
 
