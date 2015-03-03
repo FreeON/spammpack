@@ -23,32 +23,35 @@ contains
     n=x%frill%ndimn(1)
     FillN=1d10
     !
-    DO i = 1, 22
+    z => SpAMM_scalar_plus_tree_2d_symm(SpAMM_one, z)
+    WRITE(*,*)' z norm = ',sqrt(z%frill%norm2),z%frill%norm2
 
+    DO i = 1, 20
+
+       WRITE(*,*)' i = ',i
        ! |X_n> = <Z_n|S> |Z_n>
        t => SpAMM_tree_2d_symm_times_tree_2d_symm(z,x,tau*1d-3,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O=t)
+
+!       CALL SpAMM_print_tree_2d_symm_recur (t) 
+       WRITE(*,*)' tnorm = ',sqrt(t%frill%norm2)
+
        x => SpAMM_tree_2d_symm_times_tree_2d_symm(t,z,tau     ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O=x)
-       
+       WRITE(*,*)' xnorm = ',sqrt(x%frill%norm2)
        ! monitor the trace for convergence, maybe look at rate of change at some point too?:
        FillN_prev=FillN
        FillN = ( dble(n) - SpAMM_trace_tree_2d_symm_recur(x) )/dble(n)       
+       WRITE(*,*)' FILL = ',SpAMM_trace_tree_2d_symm_recur(x)
 
        !        
        IF(FillN>0.4d0)THEN
           delta=1d-1  ! maybe this should be a variable too, passed in?
-
-
-
-!          X => GSOLVE_SPECTRAL_Shift( X, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!          sc=ScaleInvSqrt(0d0)
+          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+          sc=spammsand_scaling_invsqrt(SpAMM_zero)
        ELSE
-!          sc=1d0
+          sc=1d0
        ENDIF
 
-!       X =>  GSOLVE_SPECTRAL_InvSqrt_Scaled_NS( X, sc ) 
-
-
-       WRITE(*,*)' here here here here here here here here '
+       x => spammsand_scaled_invsqrt_mapping( x, sc )
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=t)
@@ -56,15 +59,17 @@ contains
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm(t, in_O=z)
      
        IF(FillN<0.1d0.AND.FillN>FillN_prev)THEN
-          RETURN
+!          RETURN
        ELSEIF(FillN<Tau)THEN
-          RETURN
+!          RETURN
        END IF
 
        ! best acceleration we can hope for
        xo_analytic=xo_analytic*(9d0/4d0)*sc
        !
     END DO
+
+    STOP
    
   END SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot
 
@@ -75,7 +80,6 @@ contains
     TYPE(spamm_tree_2d_symm) ,   POINTER     :: d
     TYPE(spamm_tree_2d_symm) ,   POINTER     :: x
     REAL(SpAMM_KIND), OPTIONAL,INTENT(IN)    :: low_prev, high_prev, low_new, high_new   
-    INTEGER                                  :: M,N
     REAL(SpAMM_KIND)                         :: SHFT,SCAL 
 
     SHFT=low_new-low_prev*(high_new-low_new)/(high_prev-low_prev)
@@ -104,7 +108,6 @@ contains
 
 
   FUNCTION spammsand_scaling_invsqrt(xo) RESULT(sc)
-
     REAL(SpAMM_KIND) :: xo, sc
     sc=MIN( Approx3, SpAMM_three/(SpAMM_one+SQRT(xo)+xo) )    
   END FUNCTION spammsand_scaling_invsqrt

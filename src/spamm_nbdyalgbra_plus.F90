@@ -122,6 +122,8 @@ CONTAINS
        CALL SpAMM_scalar_plus_tree_2d_symm_recur(alpha, SpAMM_construct_tree_2d_symm_11(a))
     ENDIF
     
+    CALL SpAMM_redecorate_tree_2d_symm(a)
+
   end subroutine SpAMM_scalar_plus_tree_2d_symm_recur
 
 
