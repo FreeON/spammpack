@@ -131,27 +131,66 @@ CONTAINS
        a%frill%FlOps=SpAMM_Zero
     ENDIF
 
+
+
+
+    WRITE(*,*)' ------------------------------------------------------------------'
     ! walk back up one level with each decoration ...
 
     IF(ASSOCIATED(A%child_00))THEN
        a%frill%Norm2=a%frill%Norm2+a%child_00%frill%Norm2
+
+       if(a%child_00%frill%Norm2<0d0)write(*,*)' ###################################### '
+       write(*,33)a%child_00%frill%bndbx,a%child_00%frill%Norm2
+33     format(' 00: [',I2,'-',I2,']x[',I2,'-',I2,'] = ',E12.6)
+
        a%frill%Non0s=a%frill%Non0s+a%child_00%frill%Non0s
        a%frill%FlOps=a%frill%FlOps+a%child_00%frill%FlOps
     ENDIF
+
     IF(ASSOCIATED(A%child_10))THEN
+
+    if(        a%child_10%frill%bndbx(0,1) == 1  .and. a%child_10%frill%bndbx(1,1) == 4  &
+        .and.  a%child_10%frill%bndbx(0,2) == 13 .and. a%child_10%frill%bndbx(1,2) == 16 )then
+
+       write(*,*) '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
+       write(*,*) '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
+       write(*,*) '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
+       write(*,*) '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
+ !     stop '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
+
+    endif
+
+
+
        a%frill%Norm2=a%frill%Norm2+a%child_10%frill%Norm2
+
+       if(a%child_10%frill%Norm2<0d0)write(*,*)' ###################################### '
+       write(*,34)a%child_10%frill%bndbx,a%child_10%frill%Norm2
+34     format(' 10: [',I2,'-',I2,']x[',I2,'-',I2,'] = ',E12.6)
+
        a%frill%Non0s=a%frill%Non0s+a%child_10%frill%Non0s
        a%frill%FlOps=a%frill%FlOps+a%child_10%frill%FlOps
     ENDIF
 
     IF(ASSOCIATED(A%child_01))THEN
        a%frill%Norm2=a%frill%Norm2+a%child_01%frill%Norm2
+
+       if(a%child_01%frill%Norm2<0d0)write(*,*)' ###################################### '
+       write(*,35)a%child_01%frill%bndbx,a%child_01%frill%Norm2
+35     format(' 01: [',I2,'-',I2,']x[',I2,'-',I2,'] = ',E12.6)
+
        a%frill%Non0s=a%frill%Non0s+a%child_01%frill%Non0s
        a%frill%FlOps=a%frill%FlOps+a%child_01%frill%FlOps
     ENDIF
 
     IF(ASSOCIATED(A%child_11))THEN
        a%frill%Norm2=a%frill%Norm2+a%child_11%frill%Norm2
+
+       if(a%child_11%frill%Norm2<0d0)write(*,*)' ###################################### '
+       write(*,36)a%child_11%frill%bndbx,a%child_11%frill%Norm2
+36     format(' 11: [',I2,'-',I2,']x[',I2,'-',I2,'] = ',E12.6)
+
        a%frill%Non0s=a%frill%Non0s+a%child_11%frill%Non0s
        a%frill%FlOps=a%frill%FlOps+a%child_11%frill%FlOps
     ENDIF
