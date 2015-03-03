@@ -26,8 +26,6 @@ contains
        if(M_pad>=NDimn)exit
     enddo
 
-    WRITE(*,*)' M_Pad = ',m_pad, 'ndim = ',ndimn
-
     ! the [i] native dimension ...
     tree%frill%ndimn=ndimn
 
@@ -198,6 +196,7 @@ contains
     elseif(.not.associated(a).and.associated(d))then
 
        call SpAMM_destruct_tree_1d_recur (d)
+       return
 
     elseif (a%frill%leaf) then       
 
@@ -498,6 +497,7 @@ contains
     elseif(.not.associated(a).and.associated(d))then
 
        call SpAMM_destruct_tree_2d_symm_recur (d)
+       return
 
     elseif (a%frill%leaf) then       
 

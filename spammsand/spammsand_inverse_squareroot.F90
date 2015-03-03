@@ -33,14 +33,16 @@ contains
        t => SpAMM_tree_2d_symm_times_tree_2d_symm(z,x,tau*1d-3,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O=t)
 
 !       CALL SpAMM_print_tree_2d_symm_recur (t) 
-       WRITE(*,*)' tnorm = ',sqrt(t%frill%norm2)
+       WRITE(*,*)' tnorm = ',t%frill%norm2,sqrt(t%frill%norm2)
+
+       STOP 'tnorm'
 
        x => SpAMM_tree_2d_symm_times_tree_2d_symm(t,z,tau     ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O=x)
        WRITE(*,*)' xnorm = ',sqrt(x%frill%norm2)
        ! monitor the trace for convergence, maybe look at rate of change at some point too?:
        FillN_prev=FillN
        FillN = ( dble(n) - SpAMM_trace_tree_2d_symm_recur(x) )/dble(n)       
-       WRITE(*,*)' FILL = ',SpAMM_trace_tree_2d_symm_recur(x)
+       WRITE(*,*)' FILL = ',filln,' tracex = ',SpAMM_trace_tree_2d_symm_recur(x)
 
        !        
        IF(FillN>0.4d0)THEN
@@ -55,6 +57,7 @@ contains
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=t)
+
        ! unfortunately, the update could not be done in place 
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm(t, in_O=z)
      

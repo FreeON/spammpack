@@ -7,14 +7,6 @@ module spamm_decoration
   !
   implicit none
 
-!  PRIVATE
-  ! some vanilla ... 
-!  PUBLIC :: Decorate
-!  INTERFACE Decorate
-!     MODULE PROCEDURE SpAMM_redecorate_1d
-!     MODULE PROCEDURE SpAMM_redecorate_2d
-!  END INTERFACE Decorate
-
 CONTAINS
 
   ! Protocols for the uppward, child -> parent merge of SpAMM Tree Decorations, STDECs: 
@@ -28,6 +20,7 @@ CONTAINS
 
     TYPE(SpAMM_Tree_1d), POINTER, INTENT(INOUT) :: a    
 
+    if(.not.associated(a))return
 
     if(a%frill%leaf)then  ! at a leaf?
        a%frill%Norm2=SUM(a%chunk**2) 
@@ -81,8 +74,13 @@ CONTAINS
   !  d_2d |cpy> a_2d (can be used top down or bottom up...)
   SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d(d,a)
 
+!    type(SpAMM_decoration_1d), pointer :: d
+!    type(SpAMM_decoration_1d), pointer :: a
+
     type(SpAMM_decoration_1d) :: d
     type(SpAMM_decoration_1d) :: a
+
+!    if(.not.associated(a)) return
 
     d%leaf =a%leaf
     d%norm2=a%norm2
@@ -99,8 +97,12 @@ CONTAINS
   !  d_2d |cpy> a_2d (can be used top down or bottom up...)
   SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d(d,a)
 
+!    type(SpAMM_decoration_2d), pointer :: d
+!    type(SpAMM_decoration_2d), pointer :: a
     type(SpAMM_decoration_2d) :: d
     type(SpAMM_decoration_2d) :: a
+
+!    if(.not.associated(a)) return
 
     d%leaf =a%leaf
     d%norm2=a%norm2
@@ -116,8 +118,12 @@ CONTAINS
 
     TYPE(SpAMM_tree_2d_symm), POINTER,  INTENT(INOUT) :: a    
 
+    if(.not.associated(a)) return
+
     if(a%frill%leaf)then  ! at a leaf?
        a%frill%Norm2=SUM(a%chunk**2) 
+
+       write(*,*)' norm = ',a%frill%norm2
        a%frill%Non0s=SBS2
        ! application has to fill in the %flops at this level
        RETURN
@@ -128,10 +134,13 @@ CONTAINS
     ENDIF
 
     ! walk back up one level with each decoration ...
+
     IF(ASSOCIATED(A%child_00))CALL SpAMM_merge_decoration_2d(A%frill, A%child_00%frill)
     IF(ASSOCIATED(A%child_10))CALL SpAMM_merge_decoration_2d(A%frill, A%child_10%frill)
     IF(ASSOCIATED(A%child_01))CALL SpAMM_merge_decoration_2d(A%frill, A%child_01%frill)
     IF(ASSOCIATED(A%child_11))CALL SpAMM_merge_decoration_2d(A%frill, A%child_11%frill)
+
+    write(*,*)a%frill%bndbx, a%frill%norm2
 
   END SUBROUTINE SpAMM_redecorate_tree_2d_symm
 
@@ -141,6 +150,7 @@ CONTAINS
     TYPE(SpAMM_decoration_2d), INTENT(INOUT) :: a
     TYPE(SpAMM_decoration_2d), INTENT(IN)    :: b
 
+    write(*,*)' a before = ',a%norm2,' b%norm = ',b%norm2
     a%Norm2=a%Norm2+b%Norm2
     a%Non0s=a%Non0s+b%Non0s
     a%FlOps=a%FlOps+b%FlOps
