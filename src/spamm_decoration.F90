@@ -4,6 +4,8 @@
 module spamm_decoration
 
   use  spamm_structures
+  use  spamm_xstructors
+
   !
   implicit none
 
@@ -41,16 +43,8 @@ CONTAINS
     IF(ASSOCIATED( a%child_0 )) CALL SpAMM_merge_1d( a%frill, a%child_0%frill )
     IF(ASSOCIATED( a%child_1 )) CALL SpAMM_merge_1d( a%frill, a%child_1%frill )
 
-!    if(a%child_0%frill%norm2<0d0)stop '0'
-!    if(a%child_1%frill%norm2<0d0)then
-!       write(*,*)' asociated ',ASSOCIATED( a%child_1 ),a%child_1%frill%leaf
-!       write(*,*)a%child_1%frill%bndbx
-!       write(*,*)a%child_1%frill%norm2
-!       stop '1'
-!    endif
-
-!    WRITE(*,*)'done now ', a%frill%norm2
-
+    !
+    IF(a%frill%norm2<1d-24)   CALL SpAMM_destruct_tree_1d_recur (a)
 
   END SUBROUTINE SpAMM_redecorate_tree_1d
  
@@ -72,46 +66,6 @@ CONTAINS
   END SUBROUTINE SpAMM_merge_1d
 
   !  d_2d |cpy> a_2d (can be used top down or bottom up...)
-  SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d(d,a)
-
-!    type(SpAMM_decoration_1d), pointer :: d
-!    type(SpAMM_decoration_1d), pointer :: a
-
-    type(SpAMM_decoration_1d) :: d
-    type(SpAMM_decoration_1d) :: a
-
-!    if(.not.associated(a)) return
-
-    d%leaf =a%leaf
-    d%norm2=a%norm2
-    d%non0s=a%non0s
-    d%flops=a%flops
-    d%ndimn=a%ndimn
-    d%bndbx=a%bndbx
-
-  END SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d
-
-
-  ! - - - - - - - - - - - - - - - - -2d, 2d, 2d - - - - - - - - - - - - - - - - - - 
-
-  !  d_2d |cpy> a_2d (can be used top down or bottom up...)
-  SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d(d,a)
-
-!    type(SpAMM_decoration_2d), pointer :: d
-!    type(SpAMM_decoration_2d), pointer :: a
-    type(SpAMM_decoration_2d) :: d
-    type(SpAMM_decoration_2d) :: a
-
-!    if(.not.associated(a)) return
-
-    d%leaf =a%leaf
-    d%norm2=a%norm2
-    d%non0s=a%non0s
-    d%flops=a%flops
-    d%ndimn=a%ndimn
-    d%bndbx=a%bndbx
-
-  END SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d
 
   ! uppwards redecoration ...
   SUBROUTINE SpAMM_redecorate_tree_2d_symm(a)
@@ -131,81 +85,25 @@ CONTAINS
        a%frill%FlOps=SpAMM_Zero
     ENDIF
 
-
-
-
-    WRITE(*,*)' ------------------------------------------------------------------'
     ! walk back up one level with each decoration ...
-
-    IF(ASSOCIATED(A%child_00))THEN
-       a%frill%Norm2=a%frill%Norm2+a%child_00%frill%Norm2
-
-       if(a%child_00%frill%Norm2<0d0)write(*,*)' ###################################### '
-       write(*,33)a%child_00%frill%bndbx,a%child_00%frill%Norm2
-33     format(' 00: [',I2,'-',I2,']x[',I2,'-',I2,'] = ',E12.6)
-
-       a%frill%Non0s=a%frill%Non0s+a%child_00%frill%Non0s
-       a%frill%FlOps=a%frill%FlOps+a%child_00%frill%FlOps
-    ENDIF
-
-    IF(ASSOCIATED(A%child_10))THEN
-
-    if(        a%child_10%frill%bndbx(0,1) == 1  .and. a%child_10%frill%bndbx(1,1) == 4  &
-        .and.  a%child_10%frill%bndbx(0,2) == 13 .and. a%child_10%frill%bndbx(1,2) == 16 )then
-
-       write(*,*) '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
-       write(*,*) '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
-       write(*,*) '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
-       write(*,*) '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
- !     stop '::::::::::::::::              1-4 x 13-16               :::::::::::::::::: '
-
-    endif
-
-
-
-       a%frill%Norm2=a%frill%Norm2+a%child_10%frill%Norm2
-
-       if(a%child_10%frill%Norm2<0d0)write(*,*)' ###################################### '
-       write(*,34)a%child_10%frill%bndbx,a%child_10%frill%Norm2
-34     format(' 10: [',I2,'-',I2,']x[',I2,'-',I2,'] = ',E12.6)
-
-       a%frill%Non0s=a%frill%Non0s+a%child_10%frill%Non0s
-       a%frill%FlOps=a%frill%FlOps+a%child_10%frill%FlOps
-    ENDIF
-
-    IF(ASSOCIATED(A%child_01))THEN
-       a%frill%Norm2=a%frill%Norm2+a%child_01%frill%Norm2
-
-       if(a%child_01%frill%Norm2<0d0)write(*,*)' ###################################### '
-       write(*,35)a%child_01%frill%bndbx,a%child_01%frill%Norm2
-35     format(' 01: [',I2,'-',I2,']x[',I2,'-',I2,'] = ',E12.6)
-
-       a%frill%Non0s=a%frill%Non0s+a%child_01%frill%Non0s
-       a%frill%FlOps=a%frill%FlOps+a%child_01%frill%FlOps
-    ENDIF
-
-    IF(ASSOCIATED(A%child_11))THEN
-       a%frill%Norm2=a%frill%Norm2+a%child_11%frill%Norm2
-
-       if(a%child_11%frill%Norm2<0d0)write(*,*)' ###################################### '
-       write(*,36)a%child_11%frill%bndbx,a%child_11%frill%Norm2
-36     format(' 11: [',I2,'-',I2,']x[',I2,'-',I2,'] = ',E12.6)
-
-       a%frill%Non0s=a%frill%Non0s+a%child_11%frill%Non0s
-       a%frill%FlOps=a%frill%FlOps+a%child_11%frill%FlOps
-    ENDIF
+    IF(ASSOCIATED(A%child_00))CALL SpAMM_merge_decoration_2d(a%frill,a%child_00%frill)
+    IF(ASSOCIATED(A%child_01))CALL SpAMM_merge_decoration_2d(a%frill,a%child_01%frill)
+    IF(ASSOCIATED(A%child_10))CALL SpAMM_merge_decoration_2d(a%frill,a%child_10%frill)
+    IF(ASSOCIATED(A%child_11))CALL SpAMM_merge_decoration_2d(a%frill,a%child_11%frill)
+    ! 
+    IF(a%frill%norm2<1d-24)   CALL SpAMM_destruct_tree_2d_symm_recur (a)
 
   END SUBROUTINE SpAMM_redecorate_tree_2d_symm
 
   ! the 2d decoration merge:
   SUBROUTINE SpAMM_merge_decoration_2d(a,b)
 
-    TYPE(SpAMM_tree_2d_symm), POINTER,  INTENT(INOUT) :: a    
-    TYPE(SpAMM_tree_2d_symm), POINTER,  INTENT(IN)   :: b    
+    TYPE(SpAMM_decoration_2d), INTENT(INOUT) :: a    
+    TYPE(SpAMM_decoration_2d), INTENT(IN)   :: b    
 
-    a%frill%Norm2=a%frill%Norm2+b%frill%Norm2
-    a%frill%Non0s=a%frill%Non0s+b%frill%Non0s
-    a%frill%FlOps=a%frill%FlOps+b%frill%FlOps
+    a%Norm2=a%Norm2+b%Norm2
+    a%Non0s=a%Non0s+b%Non0s
+    a%FlOps=a%FlOps+b%FlOps
 
   END SUBROUTINE SpAMM_merge_decoration_2d
 

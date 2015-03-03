@@ -467,6 +467,57 @@ contains
 
   end subroutine SpAMM_destruct_tree_2d_symm_node
 
+
+
+
+
+
+
+
+  SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d(d,a)
+
+!    type(SpAMM_decoration_1d), pointer :: d
+!    type(SpAMM_decoration_1d), pointer :: a
+
+    type(SpAMM_decoration_1d) :: d
+    type(SpAMM_decoration_1d) :: a
+
+!    if(.not.associated(a)) return
+
+    d%leaf =a%leaf
+    d%norm2=a%norm2
+    d%non0s=a%non0s
+    d%flops=a%flops
+    d%ndimn=a%ndimn
+    d%bndbx=a%bndbx
+
+  END SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d
+
+
+  ! - - - - - - - - - - - - - - - - -2d, 2d, 2d - - - - - - - - - - - - - - - - - - 
+
+  !  d_2d |cpy> a_2d (can be used top down or bottom up...)
+  SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d(d,a)
+
+!    type(SpAMM_decoration_2d), pointer :: d
+!    type(SpAMM_decoration_2d), pointer :: a
+    type(SpAMM_decoration_2d) :: d
+    type(SpAMM_decoration_2d) :: a
+
+!    if(.not.associated(a)) return
+
+    d%leaf =a%leaf
+    d%norm2=a%norm2
+    d%non0s=a%non0s
+    d%flops=a%flops
+    d%ndimn=a%ndimn
+    d%bndbx=a%bndbx
+
+  END SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d
+
+
+
+
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm
   !++XSTRUCTORS:       d_2 => a_2  (wrapper)
   function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, in_O) result(d)

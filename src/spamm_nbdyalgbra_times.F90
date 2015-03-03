@@ -222,17 +222,14 @@ CONTAINS
     ELSE
 
        ! children's place on the tree-1d
-       c0=>SpAMM_construct_tree_1d_0(c)
-       c1=>SpAMM_construct_tree_1d_1(c)
+       c0=> SpAMM_construct_tree_1d_0( c )
+       c1=> SpAMM_construct_tree_1d_1( c )
 
-       ! a first pass with c[0], c[1] memory ...
        CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c0, a%child_00, beta, b%child_0, Tau2, Depth+1 )      
-
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c1,a%child_10,  beta, b%child_0, Tau2, Depth+1 )      
+       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c1, a%child_10, beta, b%child_0, Tau2, Depth+1 )      
        
        ! ... & another pass 
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c0, a%child_01, beta, b%child_1, Tau2,  Depth+1 )      
-       
+       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c0, a%child_01, beta, b%child_1, Tau2,  Depth+1 )             
        CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c1, a%child_11, beta, b%child_1, Tau2,  Depth+1 )      
        !
     ENDIF
@@ -240,8 +237,6 @@ CONTAINS
     CALL SpAMM_redecorate_tree_1d(c)
 
   END SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur
-
-
   !++NBODYTIMES:   ... [TREE-TWO-D X TREE-TWO-D] ... [TREE-TWO-D X TREE-TWO-D] ...   
 
 
