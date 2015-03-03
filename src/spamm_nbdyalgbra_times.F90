@@ -358,7 +358,7 @@ CONTAINS
        c%chunk(1:SBS,1:SBS)=c%chunk(1:SBS,1:SBS)+beta*MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS,1:SBS))
        c%frill%flops = c%frill%flops + SBS3 + 2*SBS2
 
-    ELSE
+   ELSE
 
        ! find some memory ...
        c00=>SpAMM_construct_tree_2d_symm_00(c)
@@ -378,6 +378,12 @@ CONTAINS
 
        CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c11, a%child_01, b%child_01, & 
                                              Tau2, Depth+1, beta )      
+
+
+       c00=>SpAMM_construct_tree_2d_symm_00(c)
+       c01=>SpAMM_construct_tree_2d_symm_01(c)
+       c10=>SpAMM_construct_tree_2d_symm_10(c)
+       c11=>SpAMM_construct_tree_2d_symm_11(c)
 
        ! ... & another pass 
        CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c00, a%child_01, b%child_01, & 

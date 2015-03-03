@@ -122,8 +122,6 @@ CONTAINS
 
     if(a%frill%leaf)then  ! at a leaf?
        a%frill%Norm2=SUM(a%chunk**2) 
-
-       write(*,*)' norm = ',a%frill%norm2
        a%frill%Non0s=SBS2
        ! application has to fill in the %flops at this level
        RETURN
@@ -135,25 +133,40 @@ CONTAINS
 
     ! walk back up one level with each decoration ...
 
-    IF(ASSOCIATED(A%child_00))CALL SpAMM_merge_decoration_2d(A%frill, A%child_00%frill)
-    IF(ASSOCIATED(A%child_10))CALL SpAMM_merge_decoration_2d(A%frill, A%child_10%frill)
-    IF(ASSOCIATED(A%child_01))CALL SpAMM_merge_decoration_2d(A%frill, A%child_01%frill)
-    IF(ASSOCIATED(A%child_11))CALL SpAMM_merge_decoration_2d(A%frill, A%child_11%frill)
+    IF(ASSOCIATED(A%child_00))THEN
+       a%frill%Norm2=a%frill%Norm2+a%child_00%frill%Norm2
+       a%frill%Non0s=a%frill%Non0s+a%child_00%frill%Non0s
+       a%frill%FlOps=a%frill%FlOps+a%child_00%frill%FlOps
+    ENDIF
+    IF(ASSOCIATED(A%child_10))THEN
+       a%frill%Norm2=a%frill%Norm2+a%child_10%frill%Norm2
+       a%frill%Non0s=a%frill%Non0s+a%child_10%frill%Non0s
+       a%frill%FlOps=a%frill%FlOps+a%child_10%frill%FlOps
+    ENDIF
 
-    write(*,*)a%frill%bndbx, a%frill%norm2
+    IF(ASSOCIATED(A%child_01))THEN
+       a%frill%Norm2=a%frill%Norm2+a%child_01%frill%Norm2
+       a%frill%Non0s=a%frill%Non0s+a%child_01%frill%Non0s
+       a%frill%FlOps=a%frill%FlOps+a%child_01%frill%FlOps
+    ENDIF
+
+    IF(ASSOCIATED(A%child_11))THEN
+       a%frill%Norm2=a%frill%Norm2+a%child_11%frill%Norm2
+       a%frill%Non0s=a%frill%Non0s+a%child_11%frill%Non0s
+       a%frill%FlOps=a%frill%FlOps+a%child_11%frill%FlOps
+    ENDIF
 
   END SUBROUTINE SpAMM_redecorate_tree_2d_symm
 
   ! the 2d decoration merge:
   SUBROUTINE SpAMM_merge_decoration_2d(a,b)
 
-    TYPE(SpAMM_decoration_2d), INTENT(INOUT) :: a
-    TYPE(SpAMM_decoration_2d), INTENT(IN)    :: b
+    TYPE(SpAMM_tree_2d_symm), POINTER,  INTENT(INOUT) :: a    
+    TYPE(SpAMM_tree_2d_symm), POINTER,  INTENT(IN)   :: b    
 
-    write(*,*)' a before = ',a%norm2,' b%norm = ',b%norm2
-    a%Norm2=a%Norm2+b%Norm2
-    a%Non0s=a%Non0s+b%Non0s
-    a%FlOps=a%FlOps+b%FlOps
+    a%frill%Norm2=a%frill%Norm2+b%frill%Norm2
+    a%frill%Non0s=a%frill%Non0s+b%frill%Non0s
+    a%frill%FlOps=a%frill%FlOps+b%frill%FlOps
 
   END SUBROUTINE SpAMM_merge_decoration_2d
 
