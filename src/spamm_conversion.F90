@@ -2,6 +2,8 @@ module spamm_conversion
 
   use spamm_structures
   use spamm_xstructors
+  use spamm_decoration
+  use spamm_elementals
 
   implicit none
 

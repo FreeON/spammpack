@@ -345,6 +345,8 @@ CONTAINS
     if(.not.associated(a))return
     if(.not.associated(b))return
 
+    write(*,*)' c%assoce = ',associated(c)
+
     ! n-body occlusion & culling of the product for matrices with decay (and some structure)
     if(a%frill%Norm2*b%frill%Norm2<=Tau2)return  
 
@@ -361,6 +363,19 @@ CONTAINS
        c10=>SpAMM_construct_tree_2d_symm_10(c)
        c11=>SpAMM_construct_tree_2d_symm_11(c)
 
+!       write(*,*)'a assoc 00 ',associated(c00)
+!       write(*,*)'a assoc 01 ',associated(c01)
+!       write(*,*)'a assoc 10 ',associated(c10), associated(a%child_10), associated(b%child_00)
+
+
+
+!       write(*,*)'a assoc 11 ',associated(c11)
+
+!       if(associated(a%child_11).and.associated(a%child_00)) &
+!       
+!       33  format(' 10: [ ',I3,", ",I3," ][ ",I3,", ",I3," ]x[ ",I3,", ",I3," ][ ",I3,", ",I3," ]")
+
+
        ! a first pass with [00], [01] & [11] memory ...
        CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c00, a%child_00, b%child_00, & 
                                              Tau2, Depth+1, beta )      
@@ -371,14 +386,13 @@ CONTAINS
        CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c10, a%child_10, b%child_00, & 
                                              Tau2, Depth+1, beta )      
 
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c11, a%child_01, b%child_01, & 
+       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c11, a%child_10, b%child_01, & 
                                              Tau2, Depth+1, beta )      
 
-
-       c00=>SpAMM_construct_tree_2d_symm_00(c)
-       c01=>SpAMM_construct_tree_2d_symm_01(c)
-       c10=>SpAMM_construct_tree_2d_symm_10(c)
-       c11=>SpAMM_construct_tree_2d_symm_11(c)
+!       write(*,*)'b assoc 00 ',associated(c00)
+!       write(*,*)'b assoc 01 ',associated(c01)
+!       write(*,*)'b assoc 10 ',associated(c10)
+!       write(*,*)'b assoc 11 ',associated(c11)
 
        ! ... & another pass 
        CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c00, a%child_01, b%child_01, & 
@@ -392,6 +406,8 @@ CONTAINS
 
        CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c11, a%child_11, b%child_11, & 
                                              Tau2, Depth+1, beta )      
+
+       WRITE(*,*)' ---------------------------------------------------'
        !
     ENDIF
 

@@ -91,7 +91,7 @@ CONTAINS
     IF(ASSOCIATED(A%child_10))CALL SpAMM_merge_decoration_2d(a%frill,a%child_10%frill)
     IF(ASSOCIATED(A%child_11))CALL SpAMM_merge_decoration_2d(a%frill,a%child_11%frill)
     ! 
-    IF(a%frill%norm2<1d-24)   CALL SpAMM_destruct_tree_2d_symm_recur (a)
+!    IF(a%frill%norm2<1d-24)   CALL SpAMM_destruct_tree_2d_symm_recur (a)
 
   END SUBROUTINE SpAMM_redecorate_tree_2d_symm
 
