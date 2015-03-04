@@ -349,8 +349,13 @@ CONTAINS
     if(a%frill%Norm2*b%frill%Norm2<=Tau2)return  
 
     IF( c%frill%leaf )THEN ! Leaf condition ? 
+       
+!       WRITE(*,*)'before ',SQRT(SUM(c%chunk**2)),' beta = ',beta,SQRT(SUM(a%chunk**2)),SQRT(SUM(b%chunk**2))
 
        c%chunk(1:SBS,1:SBS)=c%chunk(1:SBS,1:SBS)+beta*MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS,1:SBS))
+
+!       WRITE(*,*)'after ',SQRT(SUM(c%chunk**2))
+
        c%frill%flops = c%frill%flops + SBS3 + 2*SBS2
 
    ELSE
@@ -375,7 +380,7 @@ CONTAINS
                                              Tau2, Depth+1, beta )      
 
        ! ... & another pass 
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c00, a%child_01, b%child_01, & 
+       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c00, a%child_01, b%child_10, & 
                                              Tau2, Depth+1, beta )      
 
        CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c01, a%child_01, b%child_11, & 

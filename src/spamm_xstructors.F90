@@ -265,6 +265,7 @@ contains
     type(SpAMM_tree_2d_symm), POINTER  :: tree
     type(SpAMM_tree_2d_symm), POINTER  :: ch00
     integer, dimension(1:2)            :: lo,hi,mi,wi
+    integer                            :: i
 
     if(associated(tree%child_00))then
        ch00=>tree%child_00
@@ -275,8 +276,18 @@ contains
 
     lo = tree%frill%bndbx(0,:)
     hi = tree%frill%bndbx(1,:)
+
+!    if(hi(1)>876.or.hi(2)>876)then
+!       write(*,*)' tree bb above = ',tree%frill%bndbx(1,:)
+!       stop '00'
+!    endif
+
     wi = tree%frill%width
     mi = lo+wi/2-1 
+
+    do i=1,2
+       mi(i)=min(hi(i),mi(i))
+    enddo
 
     tree%child_00%frill%width = wi/2               ! next level width   
     tree%child_00%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
@@ -291,8 +302,8 @@ contains
        tree%child_00%chunk=SpAMM_Zero              ! init
     endif
 
-!    write(*,33) tree%child_00%frill%bndbx(:,1) ,tree%child_00%frill%bndbx(:,2),wi/2,tree%child_00%frill%leaf
-33  format(' 00: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
+!   write(*,33) tree%child_00%frill%bndbx(:,1) ,tree%child_00%frill%bndbx(:,2),wi/2,tree%child_00%frill%leaf
+!33  format(' 00: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
 
     ch00=>tree%child_00
 
@@ -314,9 +325,15 @@ contains
 
     lo = tree%frill%bndbx(0,:)
     hi = tree%frill%bndbx(1,:)
+
+!    if(hi(1)>876.or.hi(2)>876)then
+!       stop '01'
+!    endif
+
     wi = tree%frill%width
     mi = lo+wi/2-1 
 
+    mi(1)=min(hi(1),mi(1))
     IF(mi(2)+1>hi(2))THEN
        ch01=>NULL()
        RETURN                                     ! margin over-run 
@@ -338,7 +355,7 @@ contains
 
 !    write(*,33) tree%child_01%frill%bndbx(:,1),tree%child_01%frill%bndbx(:,2), &
 !            wi,tree%child_01%frill%leaf
-33  format(' 01: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
+!33  format(' 01: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
 
     ch01=>tree%child_01
     
@@ -357,9 +374,15 @@ contains
 
     lo = tree%frill%bndbx(0,:)
     hi = tree%frill%bndbx(1,:)
+
+    if(hi(1)>876.or.hi(2)>876)then
+       stop '10'
+    endif
+
     wi = tree%frill%width
     mi = lo+wi/2-1 
 
+    mi(2)=min(hi(2),mi(2))
     IF(mi(1)+1>hi(1))THEN
        ch10=>NULL()
        RETURN                                     ! margin over-run 
@@ -381,7 +404,7 @@ contains
 
 !    write(*,33) tree%child_10%frill%bndbx(:,1),tree%child_10%frill%bndbx(:,2), &
 !            wi,tree%child_10%frill%leaf
-33  format(' 10: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
+!33  format(' 10: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
 
     ch10=>tree%child_10
     
@@ -402,6 +425,11 @@ contains
 
     lo = tree%frill%bndbx(0,:)
     hi = tree%frill%bndbx(1,:)
+
+!    if(hi(1)>876.or.hi(2)>876)then
+!       stop '11'
+!    endif
+
     wi = tree%frill%width
     mi = lo+wi/2-1 
 
@@ -425,7 +453,8 @@ contains
     endif
 
 !    write(*,33) tree%child_11%frill%bndbx(:,1) ,tree%child_11%frill%bndbx(:,2),wi/2,tree%child_11%frill%leaf
-33  format(' 11: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
+!33  format(' 11: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
+
 
     ch11=>tree%child_11
 
