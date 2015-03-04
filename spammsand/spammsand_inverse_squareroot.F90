@@ -34,8 +34,6 @@ contains
 
     DO i = 1, 20
 
-       WRITE(*,*)' i = ',i
-
        ! |X_n> = <Z_n|S> |Z_n>
        t => SpAMM_tree_2d_symm_times_tree_2d_symm(z,s,tau*1d-3,alpha_O=SpAMM_zero,beta_O=SpAMM_one, in_O = t )
        x => SpAMM_tree_2d_symm_times_tree_2d_symm(t,z,tau     ,alpha_O=SpAMM_zero,beta_O=SpAMM_one, in_O = x )
@@ -44,8 +42,7 @@ contains
        FillN_prev=FillN
        FillN = abs( dble(n) - SpAMM_trace_tree_2d_symm_recur(x) )/dble(n)       
 
-       WRITE(*,*)' FILL = ',filln,' tracex = ',SpAMM_trace_tree_2d_symm_recur(x)
-
+       WRITE(*,*)i,' FILL = ',filln,' tracex = ',SpAMM_trace_tree_2d_symm_recur(x)
        !        
        IF(FillN>0.4d0)THEN
           delta=1d-1  ! maybe this should be a variable too, passed in?
@@ -135,14 +132,14 @@ program SpAMM_sandwich_inverse_squareroot
 
   TYPE(spammsand_tree_2d_slices), pointer        :: z, sndwch
 
-  type(SpAMM_tree_2d_symm),       pointer        :: S     => null()
+  type(SpAMM_tree_2d_symm),       pointer        :: s     => null()
   type(SpAMM_tree_2d_symm),       pointer        :: x_prj => null()
   type(SpAMM_tree_2d_symm),       pointer        :: x_tmp => null()
   real(spamm_kind), dimension(:, :), allocatable :: S_dense
   character(len = 1000)                          :: matrix_filename
   real(SpAMM_KIND)                               :: x_hi, logtau_strt, logtau_stop, logtau_dlta
 
-  integer                                        :: slices=2
+  integer                                        :: slices=4
 
   integer :: i
 
@@ -163,7 +160,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   logtau_strt=-4                                       ! starting accuracy
   logtau_stop=-16                                      ! stoping  "
-  logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! layer breadth of SpAMM thresholds
+  logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
     
   allocate(z) 
   sndwch => z ! head of the slices
@@ -197,10 +194,10 @@ program SpAMM_sandwich_inverse_squareroot
      x_prj => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, x_prj )
 
 
-     x_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( x_prj,  z%mtx, 1d-20, & !z%nxt%tau, &
+     x_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( x_prj,  z%mtx, z%nxt%tau, &
                                                          alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_tmp)
      
-     x_prj => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,  x_tmp, 1d-20, & !z%nxt%tau, &
+     x_prj => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,  x_tmp, z%nxt%tau, &
                                                          alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_prj)     
 
      write(*,*)' trace x_prj =',SpAMM_trace_tree_2d_symm_recur(x_prj)
