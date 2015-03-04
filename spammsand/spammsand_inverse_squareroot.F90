@@ -60,6 +60,8 @@ contains
        ! unfortunately, the update could not be done in place 
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm(t, in_O=z)
 
+       WRITE(*,*)' filln_prev = ',filln_prev,' filln = ',filln
+
        IF(FillN<0.1d0.AND.FillN>FillN_prev)THEN
           WRITE(*,*)' DONE A '
           RETURN
