@@ -42,7 +42,7 @@ contains
 
        ! monitor the trace for convergence, maybe look at rate of change at some point too?:
        FillN_prev=FillN
-       FillN = ( dble(n) - SpAMM_trace_tree_2d_symm_recur(x) )/dble(n)       
+       FillN = abs( dble(n) - SpAMM_trace_tree_2d_symm_recur(x) )/dble(n)       
 
        WRITE(*,*)' FILL = ',filln,' tracex = ',SpAMM_trace_tree_2d_symm_recur(x)
 
