@@ -4,7 +4,7 @@ module spamm_parameters
 
   implicit none
 
-  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE = 1
+  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE = 2
   INTEGER,          PARAMETER :: SBS              = SpAMM_BLOCK_SIZE
   INTEGER,          PARAMETER :: SBS2             = SpAMM_BLOCK_SIZE**2
   INTEGER,          PARAMETER :: SBS3             = SpAMM_BLOCK_SIZE**3

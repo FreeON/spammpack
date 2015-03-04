@@ -6,9 +6,6 @@ MODULE SpAMMsand_structures
 
   implicit none
 
-  ! how big a sandwich ...
-  integer, parameter :: slices=4 
-
   ! SpAMM sandwich for matrix functions: f(|a>) = |x_0>.|x_1> ... |x_m>
   type :: spammsand_tree_2d_slices
 

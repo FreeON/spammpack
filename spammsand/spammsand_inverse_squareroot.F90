@@ -27,22 +27,23 @@ contains
     z => SpAMM_scalar_plus_tree_2d_symm(SpAMM_one, z)
     WRITE(*,*)' z norm = ',sqrt(z%frill%norm2),z%frill%norm2
 
+
+    WRITE(*,*)' To start, trace(s) = ',SpAMM_trace_tree_2d_symm_recur(s)
+
+
+
     DO i = 1, 20
 
        WRITE(*,*)' i = ',i
+
        ! |X_n> = <Z_n|S> |Z_n>
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm(z,s,tau*1d-3,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O=t)
-
-!       CALL SpAMM_print_tree_2d_symm_recur (t) 
-       WRITE(*,*)' tnorm = ',sqrt(t%frill%norm2)
-
-       x => SpAMM_tree_2d_symm_times_tree_2d_symm(t,z,tau     ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O=x)
-
-       WRITE(*,*)' xnorm = ',sqrt(x%frill%norm2)
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm(z,s,tau*1d-3,alpha_O=SpAMM_zero,beta_O=SpAMM_one, in_O = t )
+       x => SpAMM_tree_2d_symm_times_tree_2d_symm(t,z,tau     ,alpha_O=SpAMM_zero,beta_O=SpAMM_one, in_O = x )
 
        ! monitor the trace for convergence, maybe look at rate of change at some point too?:
        FillN_prev=FillN
        FillN = ( dble(n) - SpAMM_trace_tree_2d_symm_recur(x) )/dble(n)       
+
        WRITE(*,*)' FILL = ',filln,' tracex = ',SpAMM_trace_tree_2d_symm_recur(x)
 
        !        
@@ -54,19 +55,7 @@ contains
           sc=1d0
        ENDIF
 
-       WRITE(*,*)' MAXTRIX C = '
-!       CALL SpAMM_print_tree_2d_symm_recur (x) 
-       WRITE(*,*)' xnorm B = ',sqrt(x%frill%norm2)
-
        x => spammsand_scaled_invsqrt_mapping( x, sc )
-
-       WRITE(*,*)' MAXTRIX C = '
-!       CALL SpAMM_print_tree_2d_symm_recur (x) 
-
-       WRITE(*,*)' xnorm C = ',sqrt(x%frill%norm2)
-
-
-!       STOP
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=t)
@@ -74,9 +63,6 @@ contains
        ! unfortunately, the update could not be done in place 
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm(t, in_O=z)
 
-       WRITE(*,*)' Z norm = ',sqrt(z%frill%norm2)
-
-     
        IF(FillN<0.1d0.AND.FillN>FillN_prev)THEN
           WRITE(*,*)' DONE A '
           RETURN
@@ -89,8 +75,6 @@ contains
        xo_analytic=xo_analytic*(9d0/4d0)*sc
        !
     END DO
-
-    STOP
    
   END SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot
 
@@ -129,8 +113,10 @@ contains
 
 
   FUNCTION spammsand_scaling_invsqrt(xo) RESULT(sc)
+
     REAL(SpAMM_KIND) :: xo, sc
-    sc=MIN( Approx3, SpAMM_three/(SpAMM_one+SQRT(xo)+xo) )    
+    sc=MIN( Approx3, SpAMM_three/( SpAMM_one + SQRT(xo) + xo) )    
+
   END FUNCTION spammsand_scaling_invsqrt
  
 end module SpAMMsand_inverse_squareroot
@@ -147,13 +133,16 @@ program SpAMM_sandwich_inverse_squareroot
   
   implicit none
 
-  TYPE(spammsand_tree_2d_slices), pointer        :: z, sandwtch
+  TYPE(spammsand_tree_2d_slices), pointer        :: z, sndwch
+
   type(SpAMM_tree_2d_symm),       pointer        :: S     => null()
   type(SpAMM_tree_2d_symm),       pointer        :: x_prj => null()
   type(SpAMM_tree_2d_symm),       pointer        :: x_tmp => null()
   real(spamm_kind), dimension(:, :), allocatable :: S_dense
   character(len = 1000)                          :: matrix_filename
   real(SpAMM_KIND)                               :: x_hi, logtau_strt, logtau_stop, logtau_dlta
+
+  integer                                        :: slices=2
 
   integer :: i
 
@@ -172,15 +161,15 @@ program SpAMM_sandwich_inverse_squareroot
   ! normalize the max ev of s to 1.  
   s => SpAMM_scalar_times_tree_2d_symm(SpAMM_one/x_hi, s)
 
-  logtau_strt=-4
-  logtau_stop=-12
-  logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) 
+  logtau_strt=-4                                       ! starting accuracy
+  logtau_stop=-16                                      ! stoping  "
+  logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! layer breadth of SpAMM thresholds
     
   allocate(z) 
-  sandwtch => z ! head of the slices
+  sndwch => z ! head of the slices
   do i=1,slices
 
-     z%tau =1d-10 !  10d0**( logtau_strt + logtau_dlta * float(i-1) )
+     z%tau = 10d0**( logtau_strt + logtau_dlta * float(i-1) )
      z%mtx => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
      WRITE(*,*)' Z%TAU ',Z%TAU
@@ -198,18 +187,24 @@ program SpAMM_sandwich_inverse_squareroot
   x_prj => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   x_tmp => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   
-  z=>sandwtch
+  z=>sndwch
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x_prj, z%mtx, z%tau, x_tmp )
      
      if(.not.associated(z%nxt))exit
-     
-     x_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( x_prj,  z%mtx, z%nxt%tau, &
+
+     x_prj => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, x_prj )
+
+
+     x_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( x_prj,  z%mtx, 1d-20, & !z%nxt%tau, &
                                                          alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_tmp)
      
-     x_prj => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,  x_tmp, z%nxt%tau, &
+     x_prj => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,  x_tmp, 1d-20, & !z%nxt%tau, &
                                                          alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_prj)     
+
+     write(*,*)' trace x_prj =',SpAMM_trace_tree_2d_symm_recur(x_prj)
+
 
      s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x_prj, s )
 
