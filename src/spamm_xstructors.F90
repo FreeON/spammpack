@@ -268,11 +268,8 @@ contains
 
     if(associated(tree%child_00))then
        ch00=>tree%child_00
-       write(*,*)' 00, return '
        return                                      ! pre-existing?  ok, so later ...
     endif
-
-       write(*,*)' 00, construct'
 
     allocate(tree%child_00)                        ! ... otherwise, instantiate
 
@@ -312,10 +309,8 @@ contains
 
     if(associated(tree%child_01))then
        ch01=>tree%child_01
-       write(*,*)' 01, return '
        return                                      ! pre-existing?  ok, so later ...
     endif
-    write(*,*)' 01, construct '
 
     lo = tree%frill%bndbx(0,:)
     hi = tree%frill%bndbx(1,:)
@@ -357,11 +352,8 @@ contains
 
     if(associated(tree%child_10))then
        ch10=>tree%child_10
-       write(*,*)' 10, return '
        return                                      ! pre-existing?  ok, so later ...
     endif
-    write(*,*)' 10, construct '
-
 
     lo = tree%frill%bndbx(0,:)
     hi = tree%frill%bndbx(1,:)
@@ -405,12 +397,8 @@ contains
 
     if(associated(tree%child_11))then
        ch11=>tree%child_11
-       write(*,*)' 11, return '
        return                                     ! pre-existing?  ok, so later ...
     endif
-
-    write(*,*)' 11, return '
-
 
     lo = tree%frill%bndbx(0,:)
     hi = tree%frill%bndbx(1,:)
@@ -478,13 +466,6 @@ contains
     nullify(self)                  ! bye-bye
 
   end subroutine SpAMM_destruct_tree_2d_symm_node
-
-
-
-
-
-
-
 
   SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d(d,a)
 

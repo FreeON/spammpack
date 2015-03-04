@@ -58,10 +58,7 @@ contains
 !       CALL SpAMM_print_tree_2d_symm_recur (x) 
        WRITE(*,*)' xnorm B = ',sqrt(x%frill%norm2)
 
-
        x => spammsand_scaled_invsqrt_mapping( x, sc )
-
-
 
        WRITE(*,*)' MAXTRIX C = '
 !       CALL SpAMM_print_tree_2d_symm_recur (x) 
@@ -81,9 +78,11 @@ contains
 
      
        IF(FillN<0.1d0.AND.FillN>FillN_prev)THEN
-!          RETURN
+          WRITE(*,*)' DONE A '
+          RETURN
        ELSEIF(FillN<Tau)THEN
-!          RETURN
+          WRITE(*,*)' DONE B '
+          RETURN
        END IF
 
        ! best acceleration we can hope for
@@ -122,9 +121,6 @@ contains
     SHFT=SpAMM_half*SQRT(sc)*SpAMM_three
     SCAL=SpAMM_half*(-sc)*SQRT(sc)
 
-    write(*,*)' shft = ',shft
-    write(*,*)' scal = ',scal
-
     d => x
     d => SpAMM_scalar_times_tree_2d_symm( scal, d)
     d => SpAMM_scalar_plus_tree_2d_symm(  shft, d)
@@ -136,9 +132,7 @@ contains
     REAL(SpAMM_KIND) :: xo, sc
     sc=MIN( Approx3, SpAMM_three/(SpAMM_one+SQRT(xo)+xo) )    
   END FUNCTION spammsand_scaling_invsqrt
-
-
-  
+ 
 end module SpAMMsand_inverse_squareroot
 
 
@@ -152,7 +146,6 @@ program SpAMM_sandwich_inverse_squareroot
   use test_utilities
   
   implicit none
-
 
   TYPE(spammsand_tree_2d_slices), pointer        :: z, sandwtch
   type(SpAMM_tree_2d_symm),       pointer        :: S     => null()
@@ -201,23 +194,14 @@ program SpAMM_sandwich_inverse_squareroot
 
   enddo
 
-  ! the projector and its residual slices
-!SpAMM_tree_2d_symm_copy_tree_2d_symm( s, x_prj )
-
   ! work matrices ...
   x_prj => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   x_tmp => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
-
-  WRITE(*,*)' HERE'
   
   z=>sandwtch
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
-     WRITE(*,*)' SCALED ... '
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x_prj, z%mtx, z%tau, x_tmp )
-     
-
-     write(*,*)z%tau
      
      if(.not.associated(z%nxt))exit
      

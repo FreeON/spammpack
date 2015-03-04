@@ -35,10 +35,6 @@ CONTAINS
        a%frill%FlOps=SpAMM_Zero
     ENDIF
 
-!    WRITE(*,*)'-----------------------------------------------'
-!    WRITE(*,*)' bb = ',a%frill%bndbx
-!    WRITE(*,*)'walking back up ...', a%frill%norm2
-
     ! walk back up one level with each decoration ...
     IF(ASSOCIATED( a%child_0 )) CALL SpAMM_merge_1d( a%frill, a%child_0%frill )
     IF(ASSOCIATED( a%child_1 )) CALL SpAMM_merge_1d( a%frill, a%child_1%frill )
@@ -55,11 +51,6 @@ CONTAINS
     TYPE(SpAMM_decoration_1d), INTENT(IN)    :: b
 
     a%Norm2=a%Norm2+b%Norm2
-        
-!    write(*,*)' parent bb = ',a%bndbx
-!    write(*,*)' child  bb = ',b%bndbx
-!    write(*,*)' child norm= ',b%norm2
-
     a%Non0s=a%Non0s+b%Non0s
     a%FlOps=a%FlOps+b%FlOps
 
@@ -91,7 +82,7 @@ CONTAINS
     IF(ASSOCIATED(A%child_10))CALL SpAMM_merge_decoration_2d(a%frill,a%child_10%frill)
     IF(ASSOCIATED(A%child_11))CALL SpAMM_merge_decoration_2d(a%frill,a%child_11%frill)
     ! 
-!    IF(a%frill%norm2<1d-24)   CALL SpAMM_destruct_tree_2d_symm_recur (a)
+    IF(a%frill%norm2<1d-24)   CALL SpAMM_destruct_tree_2d_symm_recur (a)
 
   END SUBROUTINE SpAMM_redecorate_tree_2d_symm
 
