@@ -110,7 +110,6 @@ contains
 
   END FUNCTION spammsand_scaled_invsqrt_mapping
 
-
   FUNCTION spammsand_scaling_invsqrt(xo) RESULT(sc)
 
     REAL(SpAMM_KIND) :: xo, sc
@@ -119,8 +118,6 @@ contains
   END FUNCTION spammsand_scaling_invsqrt
  
 end module SpAMMsand_inverse_squareroot
-
-
 
 ! Nested SpAMM solvers (SpAMM sandwitches) for matrix functions
 program SpAMM_sandwich_inverse_squareroot
@@ -141,8 +138,10 @@ program SpAMM_sandwich_inverse_squareroot
   character(len = 1000)                          :: matrix_filename
   real(SpAMM_KIND)                               :: x_hi, logtau_strt, logtau_stop, logtau_dlta
 
-  integer                                        :: slices=6
+  integer, parameter                             :: slices=6
 
+  real(SpAMM_KIND), dimension(1:slices)          :: tau
+ 
   integer :: i
 
 !  real :: start_time, end_time
@@ -155,7 +154,7 @@ program SpAMM_sandwich_inverse_squareroot
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
 
   ! the max eigenvalue
-  x_hi=SpAMMSand_rqi_extremal(s,1d-8,high_O=.TRUE.)
+  x_hi = SpAMMSand_rqi_extremal(s,1d-8,high_O=.TRUE.)
 
   ! normalize the max ev of s to 1.  
   s => SpAMM_scalar_times_tree_2d_symm(SpAMM_one/x_hi, s)
@@ -169,6 +168,7 @@ program SpAMM_sandwich_inverse_squareroot
   do i=1,slices
 
      z%tau = 10d0**( logtau_strt + logtau_dlta * float(i-1) )
+     tau(i)=z%tau
      z%mtx => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
      WRITE(*,*)' Z%TAU ',Z%TAU
@@ -181,6 +181,9 @@ program SpAMM_sandwich_inverse_squareroot
      endif
 
   enddo
+
+  write(*,33)tau
+33 format(' building |Z> = |',10(e5.1,'>.|'))
 
   ! work matrices ...
   x_prj => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
@@ -210,5 +213,12 @@ program SpAMM_sandwich_inverse_squareroot
      z=>z%nxt
      
   enddo
+
+  ! de-normalize the 1 to max_ev.  
+  sndwch%mtx => SpAMM_scalar_times_tree_2d_symm(x_hi, sndwch%mtx)
+
+  ! check the result 
+
+
 
 end program SpAMM_sandwich_inverse_squareroot
