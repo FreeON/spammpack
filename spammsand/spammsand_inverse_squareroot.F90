@@ -141,7 +141,7 @@ program SpAMM_sandwich_inverse_squareroot
   character(len = 1000)                          :: matrix_filename
   real(SpAMM_KIND)                               :: x_hi, logtau_strt, logtau_stop, logtau_dlta
 
-  integer                                        :: slices=4
+  integer                                        :: slices=6
 
   integer :: i
 
