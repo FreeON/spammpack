@@ -472,22 +472,22 @@ CONTAINS
        
 !       WRITE(*,*)'before ',SQRT(SUM(c%chunk**2)),' beta = ',beta,SQRT(SUM(a%chunk**2)),SQRT(SUM(b%chunk**2))
 
-       blo=b%frill%bndbx(0,:)
-       bhi=b%frill%bndbx(1,:)
-       clo=c%frill%bndbx(0,:)
-       chi=c%frill%bndbx(1,:)
-       alo=a%frill%bndbx(0,:)
-       ahi=a%frill%bndbx(1,:)
+ !      blo=b%frill%bndbx(0,:)
+ !      bhi=b%frill%bndbx(1,:)
+ !      clo=c%frill%bndbx(0,:)
+ !      chi=c%frill%bndbx(1,:)
+ !      alo=a%frill%bndbx(0,:)
+ !      ahi=a%frill%bndbx(1,:)
 
-       aTlo(1)=a%frill%bndbx(0,2)
-       aTlo(2)=a%frill%bndbx(0,1)
-       aThi(1)=a%frill%bndbx(1,2)
-       aThi(2)=a%frill%bndbx(1,1)
+ !       aTlo(1)=a%frill%bndbx(0,2)
+ !      aTlo(2)=a%frill%bndbx(0,1)
+ !      aThi(1)=a%frill%bndbx(1,2)
+ !      aThi(2)=a%frill%bndbx(1,1)
 
 
-       WRITE(*,67)clo(1),chi(1), clo(2),chi(2), &  
-                  aTlo(1),aThi(1), aTlo(2),aThi(2), & 
-                  blo(1),bhi(1), blo(2),bhi(2)
+!       WRITE(*,67)clo(1),chi(1), clo(2),chi(2), &  
+!                  aTlo(1),aThi(1), aTlo(2),aThi(2), & 
+!                  blo(1),bhi(1), blo(2),bhi(2)
 
 !       WRITE(*,77)chi(1)-clo(1)+1, chi(2)-clo(2)+1, &  
 !                  ahi(1)-alo(1)+1, ahi(2)-alo(2)+1, & 
@@ -496,13 +496,13 @@ CONTAINS
 67     format('[',I3,'-',I3,', ',I3,'-',I3,'] = [',I3,'-',I3,', ',I3,'-',I3,']^t x [',I3,'-',I3,', ',I3,'-',I3,']')
 77     format('[',I3,', ',I3,'] = [',I3,', ',I3,'] x [',I3,', ',I3,']')
 
-       c%chunk(1:(chi(1)-clo(1)+1), 1:(chi(2)-clo(2)+1)) = &
-       c%chunk(1:(chi(1)-clo(1)+1), 1:(chi(2)-clo(2)+1)) + &
-       beta*MATMUL( TRANSPOSE( a%chunk( 1:ahi(1)-alo(1)+1 , 1:ahi(2)-alo(2)+1 ) ), &
-                   b%chunk(1:(bhi(1)-blo(1)+1), 1:(bhi(2)-blo(2)+1)))
+!       c%chunk(1:(chi(1)-clo(1)+1), 1:(chi(2)-clo(2)+1)) = &
+!       c%chunk(1:(chi(1)-clo(1)+1), 1:(chi(2)-clo(2)+1)) + &
+!       beta*MATMUL( TRANSPOSE( a%chunk( 1:ahi(1)-alo(1)+1 , 1:ahi(2)-alo(2)+1 ) ), &
+!                   b%chunk(1:(bhi(1)-blo(1)+1), 1:(bhi(2)-blo(2)+1)))
 
-!       c%chunk(1:SBS,1:SBS)=c%chunk(1:SBS,1:SBS)+ &
-!               beta*MATMUL(TRANSPOSE(a%chunk(1:SBS,1:SBS)),b%chunk(1:SBS,1:SBS))
+       c%chunk(1:SBS,1:SBS)=c%chunk(1:SBS,1:SBS)+ &
+               beta*MATMUL(TRANSPOSE(a%chunk(1:SBS,1:SBS)),b%chunk(1:SBS,1:SBS))
 
 !       WRITE(*,*)'after ',SQRT(SUM(c%chunk**2))
 
@@ -517,47 +517,47 @@ CONTAINS
        c11=>SpAMM_construct_tree_2d_symm_11(c)
 
        ! a first pass ...
-       WRITE(*,*)' 00 '
+!       WRITE(*,*)' 00 '
        CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c00, a%child_00, b%child_00, & 
                                              Tau2, Depth+1, beta )     
 
-       WRITE(*,*)' 01=00:01 '
+!       WRITE(*,*)' 01=00:01 '
        CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c01, a%child_00, b%child_01, & 
                                              Tau2, Depth+1, beta )      
 
 !       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c10, a%child_10, b%child_00, & 
 !                                             Tau2, Depth+1, beta )      
 
-       WRITE(*,*)' 10=01^t:00 '
+ !      WRITE(*,*)' 10=01^t:00 '
        CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c10, a%child_01, b%child_00, & 
                                              Tau2, Depth+1, beta )      
 
 !       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c11, a%child_10, b%child_01, & 
 !                                             Tau2, Depth+1, beta )      
 
-       WRITE(*,*)' 11=01^t:01 '
+!       WRITE(*,*)' 11=01^t:01 '
        CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c11, a%child_01, b%child_01, & 
                                              Tau2, Depth+1, beta )      
 
-       WRITE(*,*)' ------------------'
+!       WRITE(*,*)' ------------------'
 
        ! ... & another pass 
 !       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c00, a%child_01, b%child_10, & 
 !                                             Tau2, Depth+1, beta )      
-       WRITE(*,*)' 00=10^t:10 '
+!       WRITE(*,*)' 00=10^t:10 '
        CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c00, a%child_10, b%child_10, & 
                                              Tau2, Depth+1, beta )      
 
 
-       WRITE(*,*)' 01=10^t:11 '
+!       WRITE(*,*)' 01=10^t:11 '
        CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c01, a%child_10, b%child_11, & 
                                              Tau2, Depth+1, beta )      
 
-       WRITE(*,*)' 10=11:10 '
+!       WRITE(*,*)' 10=11:10 '
        CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c10, a%child_11, b%child_10, & 
                                              Tau2, Depth+1, beta )      
 
-       WRITE(*,*)' 11=11:11 '
+!       WRITE(*,*)' 11=11:11 '
        CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c11, a%child_11, b%child_11, & 
                                              Tau2, Depth+1, beta )      
 
