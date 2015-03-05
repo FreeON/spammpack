@@ -399,4 +399,175 @@ CONTAINS
 
   END SUBROUTINE SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur
 
+
+
+
+
+
+
+
+
+
+
+
+  FUNCTIOn SpAMM_tree_2d_symm_T_times_tree_2d_symm(a, b, Tau, alpha_O, beta_O, in_O) RESULT(d)
+
+    TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A, B
+    REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
+    REAL(SpAMM_KIND),                  OPTIONAL, INTENT(IN)    :: alpha_O, beta_O
+    TYPE(SpAMM_tree_2d_symm), POINTER, OPTIONAL, INTENT(INOUT) :: In_O
+    TYPE(SpAMM_tree_2d_symm), POINTER                          :: D
+    REAL(SpAMM_KIND)                                           :: alpha, beta
+    INTEGER                                                    :: Depth
+    REAL(SpAMM_KIND)                                           :: Tau2
+    ! figure the starting conditions ...
+    if(present(in_O))then
+       d => in_O
+    else
+       d => NULL()
+    endif
+    ! bail if we can ...
+    if(.not.associated(a))return
+    if(.not.associated(b))return
+
+    ! here is the squared threshold 
+    Tau2=Tau*Tau
+
+    ! need a new tree? then instantiate one ... 
+    if(.not.associated(d))&
+       d => SpAMM_new_top_tree_2d_symm(a%frill%ndimn)
+
+    if(present(alpha_O))then
+       d => SpAMM_scalar_times_tree_2d_symm(alpha_O, d)
+    endif
+
+    beta =SpAMM_one
+    if(present( beta_O))beta = beta_O
+
+    CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(d, A, B, Tau2, Depth, beta )
+
+  END FUNCTION SpAMM_tree_2d_symm_T_times_tree_2d_symm
+
+
+  !++NBODYTIMES:   SpAMM_tree_2d_symm_times_tree_2d_symm_recur
+  !++NBODYTIMES:     c_2 => alpha*c_2 + beta*(a_2.b_2) (recursive)
+  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(C, A, B, Tau2, Depth,  beta )
+
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A, B
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: C
+    REAL(SpAMM_KIND),                  INTENT(IN)    :: beta
+    REAL(SpAMM_KIND)                                 :: Tau2
+    INTEGER                                          :: Depth
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: c00,c01,c10,c11
+
+    integer, dimension(1:2) :: ahi,alo , bhi,blo , chi , clo, athi , atlo
+
+    if(.not.associated(a))return
+    if(.not.associated(b))return
+
+    ! n-body occlusion & culling of the product for matrices with decay (and some structure)
+    if(a%frill%Norm2*b%frill%Norm2<=Tau2)return  
+
+    IF( c%frill%leaf )THEN ! Leaf condition ? 
+       
+!       WRITE(*,*)'before ',SQRT(SUM(c%chunk**2)),' beta = ',beta,SQRT(SUM(a%chunk**2)),SQRT(SUM(b%chunk**2))
+
+       blo=b%frill%bndbx(0,:)
+       bhi=b%frill%bndbx(1,:)
+       clo=c%frill%bndbx(0,:)
+       chi=c%frill%bndbx(1,:)
+       alo=a%frill%bndbx(0,:)
+       ahi=a%frill%bndbx(1,:)
+
+       aTlo(1)=a%frill%bndbx(0,2)
+       aTlo(2)=a%frill%bndbx(0,1)
+       aThi(1)=a%frill%bndbx(1,2)
+       aThi(2)=a%frill%bndbx(1,1)
+
+
+       WRITE(*,67)clo(1),chi(1), clo(2),chi(2), &  
+                  aTlo(1),aThi(1), aTlo(2),aThi(2), & 
+                  blo(1),bhi(1), blo(2),bhi(2)
+
+!       WRITE(*,77)chi(1)-clo(1)+1, chi(2)-clo(2)+1, &  
+!                  ahi(1)-alo(1)+1, ahi(2)-alo(2)+1, & 
+!                  bhi(1)-blo(1)+1, bhi(2)-blo(2)+1
+
+67     format('[',I3,'-',I3,', ',I3,'-',I3,'] = [',I3,'-',I3,', ',I3,'-',I3,']^t x [',I3,'-',I3,', ',I3,'-',I3,']')
+77     format('[',I3,', ',I3,'] = [',I3,', ',I3,'] x [',I3,', ',I3,']')
+
+       c%chunk(1:(chi(1)-clo(1)+1), 1:(chi(2)-clo(2)+1)) = &
+       c%chunk(1:(chi(1)-clo(1)+1), 1:(chi(2)-clo(2)+1)) + &
+       beta*MATMUL( TRANSPOSE( a%chunk( 1:ahi(1)-alo(1)+1 , 1:ahi(2)-alo(2)+1 ) ), &
+                   b%chunk(1:(bhi(1)-blo(1)+1), 1:(bhi(2)-blo(2)+1)))
+
+!       c%chunk(1:SBS,1:SBS)=c%chunk(1:SBS,1:SBS)+ &
+!               beta*MATMUL(TRANSPOSE(a%chunk(1:SBS,1:SBS)),b%chunk(1:SBS,1:SBS))
+
+!       WRITE(*,*)'after ',SQRT(SUM(c%chunk**2))
+
+       c%frill%flops = c%frill%flops + SBS3 + 2*SBS2
+
+   ELSE
+
+       ! find some memory ...
+       c00=>SpAMM_construct_tree_2d_symm_00(c)
+       c01=>SpAMM_construct_tree_2d_symm_01(c)
+       c10=>SpAMM_construct_tree_2d_symm_10(c)
+       c11=>SpAMM_construct_tree_2d_symm_11(c)
+
+       ! a first pass ...
+       WRITE(*,*)' 00 '
+       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c00, a%child_00, b%child_00, & 
+                                             Tau2, Depth+1, beta )     
+
+       WRITE(*,*)' 01=00:01 '
+       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c01, a%child_00, b%child_01, & 
+                                             Tau2, Depth+1, beta )      
+
+!       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c10, a%child_10, b%child_00, & 
+!                                             Tau2, Depth+1, beta )      
+
+       WRITE(*,*)' 10=01^t:00 '
+       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c10, a%child_01, b%child_00, & 
+                                             Tau2, Depth+1, beta )      
+
+!       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c11, a%child_10, b%child_01, & 
+!                                             Tau2, Depth+1, beta )      
+
+       WRITE(*,*)' 11=01^t:01 '
+       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c11, a%child_01, b%child_01, & 
+                                             Tau2, Depth+1, beta )      
+
+       WRITE(*,*)' ------------------'
+
+       ! ... & another pass 
+!       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c00, a%child_01, b%child_10, & 
+!                                             Tau2, Depth+1, beta )      
+       WRITE(*,*)' 00=10^t:10 '
+       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c00, a%child_10, b%child_10, & 
+                                             Tau2, Depth+1, beta )      
+
+
+       WRITE(*,*)' 01=10^t:11 '
+       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c01, a%child_10, b%child_11, & 
+                                             Tau2, Depth+1, beta )      
+
+       WRITE(*,*)' 10=11:10 '
+       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c10, a%child_11, b%child_10, & 
+                                             Tau2, Depth+1, beta )      
+
+       WRITE(*,*)' 11=11:11 '
+       CALL SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur(c11, a%child_11, b%child_11, & 
+                                             Tau2, Depth+1, beta )      
+
+       !
+    ENDIF
+
+    CALL SpAMM_redecorate_tree_2d_symm(c)
+
+  END SUBROUTINE SpAMM_tree_2d_symm_T_times_tree_2d_symm_n_recur
+
+
+
 end module spamm_nbdyalgbra_times

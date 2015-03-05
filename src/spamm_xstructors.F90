@@ -251,9 +251,13 @@ contains
     tree%frill%bndbx(0,:) = (/ 1, 1 /)  ! [lo,lo]
     tree%frill%bndbx(1,:) = NDimn       ! [hi,hi]
 
+    ! check that we might the top may be the leaf
+    if(SBS>=NDimn(1))tree%frill%leaf=.TRUE.
+
     ! no kids
     tree%child_00=>NULL()
     tree%child_01=>NULL()
+    tree%child_10=>NULL()
     tree%child_11=>NULL()
 
   end function SpAMM_new_top_tree_2d_symm
@@ -375,10 +379,6 @@ contains
     lo = tree%frill%bndbx(0,:)
     hi = tree%frill%bndbx(1,:)
 
-    if(hi(1)>876.or.hi(2)>876)then
-       stop '10'
-    endif
-
     wi = tree%frill%width
     mi = lo+wi/2-1 
 
@@ -426,13 +426,11 @@ contains
     lo = tree%frill%bndbx(0,:)
     hi = tree%frill%bndbx(1,:)
 
-!    if(hi(1)>876.or.hi(2)>876)then
-!       stop '11'
-!    endif
-
     wi = tree%frill%width
     mi = lo+wi/2-1 
 
+    mi(1)=min(hi(1),mi(1))
+    mi(2)=min(hi(2),mi(2))
     IF(mi(1)+1>hi(1) .OR. mi(2)+1>hi(2))THEN
        ch11=>NULL()
        RETURN                                    ! margin over-run 

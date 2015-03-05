@@ -18,20 +18,16 @@ CONTAINS
     IF(.NOT.ASSOCIATED(a))RETURN
 
     IF(a%frill%leaf)THEN ! Leaf condition ? 
+
        do i = 1, a%frill%bndbx(1,1) - a%frill%bndbx(0,1)+1
          tr = tr + a%chunk(i,i)
        enddo
 
-       write(*,33)(a%chunk(i,i),i=1,6)
-33     format(' trch = ',10(F12.6,', '))
-
     ELSE
+
        tr00=SpAMM_trace_tree_2d_symm_recur(a%child_00) 
        tr11=SpAMM_trace_tree_2d_symm_recur(a%child_11)
        tr=tr00+tr11
-       write(*,*)' 00 tr = ',tr00
-       write(*,*)' 11 tr = ',tr11
-
 
     ENDIF
   END FUNCTION SpAMM_trace_tree_2d_symm_recur

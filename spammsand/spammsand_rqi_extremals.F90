@@ -15,7 +15,7 @@ CONTAINS
     TYPE(SpAMM_tree_1d), POINTER :: x=>NULL(),g=>NULL(),h=>NULL()
     TYPE(SpAMM_tree_1d), POINTER :: Ax=>NULL(),Ah=>NULL(),gOld=>NULL(),hOld=>NULL()
     INTEGER              :: CG, MinMax
-    INTEGER, PARAMETER   :: NCG=100
+    INTEGER, PARAMETER   :: NCG=500
 
     REAL(SpAMM_KIND)     :: omega,omega_old
     REAL(SpAMM_KIND)     :: xx, hh, xh, hx, xAx, xAh, hAx, hAh

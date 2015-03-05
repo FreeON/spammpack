@@ -15,7 +15,7 @@ contains
     type(SpAMM_tree_2d_symm) ,pointer,  optional    :: A_2d_O
     type(SpAMM_tree_2d_symm) ,pointer               :: A_2d
     
-    WRITE(*,*)' SIZE A = ',(/ SIZE(A,1), SIZE(A,2) /)
+!    WRITE(*,*)' SIZE A = ',(/ SIZE(A,1), SIZE(A,2) /)
 
     IF(PRESENT(A_2d_O))THEN       
        a_2d => A_2d_O ! do this in place
@@ -49,8 +49,8 @@ contains
 
     ELSE ! recur generically here, poping with construct as needed ...
 
-       WRITE(*,*)' ------------------------------------------'
-       WRITE(*,*)a_2d%frill%width,A_2d%frill%BndBx
+!       WRITE(*,*)' ------------------------------------------'
+!       WRITE(*,*)a_2d%frill%width,A_2d%frill%BndBx
 
        CALL SpAMM_convert_dense_to_tree_2d_symm_recur( A, SpAMM_construct_tree_2d_symm_00(A_2d) )
        CALL SpAMM_convert_dense_to_tree_2d_symm_recur( A, SpAMM_construct_tree_2d_symm_01(A_2d) )
