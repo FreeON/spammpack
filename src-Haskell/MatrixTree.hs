@@ -1,24 +1,25 @@
 module MatrixTree
-( Value
-, Norm
-, MatrixTree(..)
-, RowList
-, getNorm
-, valueNorm
-, addSubtreeNorms
-, isZero
-, ifZeroReplace
+( addSubtreeNorms
+, calcNorm
 , combineZeros
 , getHeight
+, getNorm
 , getWidth
+, ifZeroReplace
+, isZero
+, MatrixTree(..)
+, Norm
+, readTreeFromMatrixMarket
 , rectOrder
-, treeToRowList
-, rowListToTree
+, Value
+, valueNorm
+, writeTreeToMatrixMarket
 ) where
 
 -- a recursive data type for matrices that efficiently encodes sparsity
 
-import Data.List (transpose)
+import Data.List (partition)
+import MatrixMarket (IndexedList, readFromMatrixMarket, writeToMatrixMarket)
 
 type Value = Double ; type Norm = Double
 
@@ -33,13 +34,16 @@ data MatrixTree = Zero  {top :: Int, left :: Int, height :: Int, width :: Int} |
 -- a Zero with height and width > 0 is a block with all zero entries;
 -- a Zero with height or width = 0 is a block with no entries at all
 
-type RowList = [[Value]]
-
 -- setting and accessing norms
 
 getNorm :: MatrixTree -> Norm
 getNorm (Zero _ _ _ _) = 0
 getNorm tree = norm tree
+
+calcNorm :: MatrixTree -> Norm
+calcNorm (Zero _ _ _ _)               = 0
+calcNorm (Value _ _ _ x)              = valueNorm x
+calcNorm (Rect _ _ _ _ _ tl tr bl br) = addSubtreeNorms . fmap calcNorm $ [tl, tr, bl, br]
 
 valueNorm :: Value -> Norm
 valueNorm = abs
@@ -47,7 +51,77 @@ valueNorm = abs
 addSubtreeNorms :: [Norm] -> Norm
 addSubtreeNorms = sqrt . sum . fmap (^2)
 
--- MatrixTree utility functions
+-- reading from/writing to MatrixMarket files
+
+readTreeFromMatrixMarket :: FilePath -> IO MatrixTree
+readTreeFromMatrixMarket filePath = readFromMatrixMarket filePath >>=
+                                    (return . indexedListToTree)
+
+writeTreeToMatrixMarket :: MatrixTree -> String -> FilePath -> IO ()
+writeTreeToMatrixMarket tree format filePath =
+                        writeToMatrixMarket (treeToIndexedList tree) format filePath
+
+-- converting between MatrixTrees and IndexedLists
+
+indexedListToTree :: IndexedList -> MatrixTree
+indexedListToTree ((m, n), ijxs) = foldr addValueToTree (Zero 1 1 m n) ijxs
+
+addValueToTree :: (Int, Int, Value) -> MatrixTree -> MatrixTree
+addValueToTree (i, j, x) tree = if (i, j) `inTree` tree then addVal (i, j, x) tree else tree
+
+inTree :: (Int, Int) -> MatrixTree -> Bool
+inTree (i, j) (Value m n _ _) = i == m && j == n
+inTree (i, j) tree            = inRange (i, j) (top tree, left tree, height tree, width tree)
+
+inRange :: (Int, Int) -> (Int, Int, Int, Int) -> Bool
+inRange (i, j) (t, l, h, w) = i >= t && i <= t + h - 1 && j >= l && j <= l + w - 1
+
+addVal :: (Int, Int, Value) -> MatrixTree -> MatrixTree
+
+addVal (i, j, x) tree@(Zero t l h w)
+       | x == 0             = tree
+       | [h,w] == [1,1]     = Value t l (valueNorm x) x
+       | (i,j) `inTree` ztl = Rect t l h w (valueNorm x) (addVal (i, j, x) ztl) ztr zbl zbr
+       | (i,j) `inTree` ztr = Rect t l h w (valueNorm x) ztl (addVal (i, j, x) ztr) zbl zbr
+       | (i,j) `inTree` zbl = Rect t l h w (valueNorm x) ztl ztr (addVal (i, j, x) zbl) zbr
+       | (i,j) `inTree` zbr = Rect t l h w (valueNorm x) ztl ztr zbl (addVal (i, j, x) zbr)
+       where ztl = Zero t l halfh halfw
+             ztr = Zero t (l + halfw) halfh (w - halfw)
+             zbl = Zero (t + halfh) l (h - halfh) halfw
+             zbr = Zero (t + halfh) (l + halfw) (h - halfh) (w - halfw)
+             halfh = h `div` 2 ; halfw = w `div` 2
+
+addVal (i, j, x) (Value _ _ _ _) = if x == 0 then Zero i j 1 1 else Value i j (valueNorm x) x
+
+addVal (i, j, x) (Rect t l h w _ tl tr bl br) = (if x == 0 then ifZeroReplace else id) newTree
+       where newTree = Rect t l h w y newtl newtr newbl newbr
+             [newtl, newtr, newbl, newbr]
+                     | (i,j) `inTree` tl = [addVal (i, j, x) tl, tr, bl, br]
+                     | (i,j) `inTree` tr = [tl, addVal (i, j, x) tr, bl, br]
+                     | (i,j) `inTree` bl = [tl, tr, addVal (i, j, x) bl, br]
+                     | (i,j) `inTree` br = [tl, tr, bl, addVal (i, j, x) br]
+             y = addSubtreeNorms . fmap getNorm $ [newtl, newtr, newbl, newbr]
+
+treeToIndexedList :: MatrixTree -> IndexedList
+treeToIndexedList (Zero _ _ h w)               = ((h, w), [])
+treeToIndexedList (Value _ _ _ x)              = ((1, 1), [(1, 1, x)])
+treeToIndexedList (Rect _ _ h w _ tl tr bl br) = ((h, w), ijxs)
+      where ijxs = concat [tlijxs, fmap wshift trijxs,
+                           fmap hshift blijxs, fmap (hshift . wshift) brijxs]
+            [tlijxs, trijxs, blijxs, brijxs] = fmap (snd. treeToIndexedList) [tl, tr, bl, br]
+            hshift (i, j, x) = (i + halfh, j, x)
+            wshift (i, j, x) = (i, j + halfw, x)
+            halfh = h `div` 2 ; halfw = w `div` 2
+
+-- utility functions
+
+getHeight :: MatrixTree -> Int
+getHeight (Value _ _ _ _) = 1
+getHeight tree            = height tree
+
+getWidth :: MatrixTree -> Int
+getWidth (Value _ _ _ _) = 1
+getWidth tree            = width tree
 
 isZero :: MatrixTree -> Bool
 isZero (Zero _ _ _ _) = True
@@ -57,10 +131,11 @@ ifZeroReplace :: MatrixTree -> MatrixTree
 ifZeroReplace tree@(Zero _ _ _ _) = tree
 ifZeroReplace tree@(Value i j _ x) = if x == 0 then Zero i j 1 1 else tree
 ifZeroReplace tree@(Rect t l h w _ tl tr bl br)
-              | null nonZeroTrees        = Zero t l h w
-              | length nonZeroTrees == 1 = head nonZeroTrees
-              | otherwise                = tree
-              where nonZeroTrees = filter (not . isZero) [tl, tr, bl, br]
+              | null nonZeroTrees       = Zero t l h w
+              | length nonZeroTrees > 1 = tree
+              | otherwise               = if alone then head nonZeroTrees else tree
+              where (zeroTrees, nonZeroTrees) = partition isZero [tl, tr, bl, br]
+                    alone = any (\tr -> getHeight tr == 0 && getWidth tr == 0) zeroTrees
 
 combineZeros :: MatrixTree -> MatrixTree
 combineZeros (Rect t l h w _ tl tr bl br) =
@@ -69,14 +144,6 @@ combineZeros (Rect t l h w _ tl tr bl br) =
                    x = addSubtreeNorms . fmap getNorm $ [newtl, newtr, newbl, newbr]
 combineZeros tree = ifZeroReplace tree
 
-getHeight :: MatrixTree -> Int
-getHeight (Value _ _ _ _) = 1
-getHeight tree = height tree
-
-getWidth :: MatrixTree -> Int
-getWidth (Value _ _ _ _) = 1
-getWidth tree = width tree
-
 rectOrder :: MatrixTree -> MatrixTree
 rectOrder tree@(Zero _ _ _ _) = tree
 rectOrder tree@(Value _ _ _ _) = tree
@@ -84,44 +151,3 @@ rectOrder tree@(Rect t l h w x tl tr bl br)
           | fmap getHeight [bl, br] == [0, 0] = Rect t l h w x bl br tl tr
           | fmap getWidth [tr, br]  == [0, 0] = Rect t l h w x tr tl br bl
           | otherwise                         = tree
-
--- converting between data types
-
-rowListToTree :: RowList -> MatrixTree
-rowListToTree = snd . fillFromList . addListSize
-
-treeToRowList :: MatrixTree -> RowList
-treeToRowList (Zero t l h w)               = replicate h $ replicate w 0
-treeToRowList (Value _ _ _ x)              = [[x]]
-treeToRowList (Rect _ _ _ _ _ tl tr bl br) =
-              zipWith (++) (treeToRowList tl ++ treeToRowList bl)
-                           (treeToRowList tr ++ treeToRowList br)
-
-addListSize :: RowList -> (RowList, Int, Int, Int, Int)
-addListSize xss = (xss, 1, 1, length xss, length . head $ xss)
-
-fillFromList :: (RowList, Int, Int, Int, Int) -> (Norm, MatrixTree)
-fillFromList ([[x]], i, j, _, _) = if x == 0 then (0, Zero i j 1 1)
-                                   else (valueNorm x, Value i j (valueNorm x) x)
-fillFromList (xss, t, l, h, w)
-             | all0 xss  = (0, Zero t l h w)
-             | otherwise = (rectNorm, Rect t l h w rectNorm (tree tl) (tree tr)
-                                                            (tree bl) (tree br))
-             where all0 = and . fmap (== 0) . concat
-                   [xsstl, xsstr, xssbl, xssbr] = partitionList xss
-                   tl = (xsstl, t, l, h `div` 2, w `div` 2)
-                   tr = (xsstr, t, l + w `div` 2, h `div` 2, w - w `div` 2)
-                   bl = (xssbl, t + h `div` 2, l, h - h `div` 2, w `div` 2)
-                   br = (xssbr, t + h `div` 2, l + w `div` 2, h - h `div` 2, w - w `div` 2)
-                   rectNorm = calcNorm [tl, tr, bl, br]
-                   calcNorm = addSubtreeNorms . fmap (fst . fillFromList)
-                   tree = snd . fillFromList
-
-partitionList :: [[a]] -> [[[a]]]
-partitionList xss = fmap transpose [tlxss, trxss, blxss, brxss]
-                    where (txss, bxss)   = halveList xss
-                          (tlxss, trxss) = halveList . transpose $ txss
-                          (blxss, brxss) = halveList . transpose $ bxss
-
-halveList :: [a] -> ([a],[a])
-halveList xs = splitAt (length xs `div` 2) xs

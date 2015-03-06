@@ -1,4 +1,4 @@
-import MatrixMarket ; import SpAMM
+import MatrixTree ; import SpAMM
 
 main = do testAdd ; testMultiply
 
