@@ -48,7 +48,7 @@ CONTAINS
     hOld=>SpAMM_new_top_tree_1d(M)
 
     x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
-    CALL SpAMM_print_tree_1d_recur (x) 
+!!    CALL SpAMM_print_tree_1d_recur (x) 
 
     DO CG=1,NCG ! conjugate gradient iteration
 

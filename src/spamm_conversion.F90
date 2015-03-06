@@ -15,8 +15,6 @@ contains
     type(SpAMM_tree_2d_symm) ,pointer,  optional    :: A_2d_O
     type(SpAMM_tree_2d_symm) ,pointer               :: A_2d
     
-!    WRITE(*,*)' SIZE A = ',(/ SIZE(A,1), SIZE(A,2) /)
-
     IF(PRESENT(A_2d_O))THEN       
        a_2d => A_2d_O ! do this in place
     ELSE      

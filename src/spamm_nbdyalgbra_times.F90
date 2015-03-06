@@ -292,16 +292,19 @@ CONTAINS
 
   !++NBODYTIMES:   SpAMM_tree_2d_symm_times_tree_2d_symm
   !++NBODYTIMES:     c_2 => alpha*c_2 + beta*(a_2.b_2) (wrapper)
-  FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm(a, b, Tau, alpha_O, beta_O, in_O) RESULT(d)
+  FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm(a, b, Tau, NT_O, alpha_O, beta_O, in_O) RESULT(d)
 
     TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A, B
     REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
+    LOGICAL, OPTIONAL,                           INTENT(IN)    :: NT_O
     REAL(SpAMM_KIND),                  OPTIONAL, INTENT(IN)    :: alpha_O, beta_O
     TYPE(SpAMM_tree_2d_symm), POINTER, OPTIONAL, INTENT(INOUT) :: In_O
     TYPE(SpAMM_tree_2d_symm), POINTER                          :: D
     REAL(SpAMM_KIND)                                           :: alpha, beta
     INTEGER                                                    :: Depth
+    LOGICAL                                                    :: NT
     REAL(SpAMM_KIND)                                           :: Tau2
+
     ! figure the starting conditions ...
     if(present(in_O))then
        d => in_O
@@ -319,6 +322,12 @@ CONTAINS
     if(.not.associated(d))&
        d => SpAMM_new_top_tree_2d_symm(a%frill%ndimn)
 
+    if(present(NT_O))then
+       NT=NT_O    ! If NT_O==FALSE, then A^t.B
+    else
+       NT=.TRUE.  ! default is A.B
+    endif
+
     if(present(alpha_O))then
        d => SpAMM_scalar_times_tree_2d_symm(alpha_O, d)
     endif
@@ -326,16 +335,17 @@ CONTAINS
     beta =SpAMM_one
     if(present( beta_O))beta = beta_O
 
-    CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(d, A, B, Tau2, Depth, beta )
+    CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(d, A, NT, B, Tau2, Depth, beta )
 
   END FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm
 
 
   !++NBODYTIMES:   SpAMM_tree_2d_symm_times_tree_2d_symm_recur
   !++NBODYTIMES:     c_2 => alpha*c_2 + beta*(a_2.b_2) (recursive)
-  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(C, A, B, Tau2, Depth,  beta )
+  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_times_tree_2d_symm_recur(C, A, NT, B, Tau2, Depth,  beta )
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A, B
+    LOGICAL,                           INTENT(IN)    :: NT
     TYPE(SpAMM_tree_2d_symm), POINTER                :: C
     REAL(SpAMM_KIND),                  INTENT(IN)    :: beta
     REAL(SpAMM_KIND)                                 :: Tau2
@@ -349,13 +359,13 @@ CONTAINS
     if(a%frill%Norm2*b%frill%Norm2<=Tau2)return  
 
     IF( c%frill%leaf )THEN ! Leaf condition ? 
-       
-!       WRITE(*,*)'before ',SQRT(SUM(c%chunk**2)),' beta = ',beta,SQRT(SUM(a%chunk**2)),SQRT(SUM(b%chunk**2))
 
-       c%chunk(1:SBS,1:SBS)=c%chunk(1:SBS,1:SBS)+beta*MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS,1:SBS))
-
-!       WRITE(*,*)'after ',SQRT(SUM(c%chunk**2))
-
+       IF(NT)THEN
+          c%chunk(1:SBS,1:SBS)=c%chunk(1:SBS,1:SBS)+beta*MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS,1:SBS))
+       ELSE
+          c%chunk(1:SBS,1:SBS)=c%chunk(1:SBS,1:SBS)+ &
+               beta*MATMUL(TRANSPOSE(a%chunk(1:SBS,1:SBS)),b%chunk(1:SBS,1:SBS))
+       ENDIF
        c%frill%flops = c%frill%flops + SBS3 + 2*SBS2
 
    ELSE
@@ -367,37 +377,42 @@ CONTAINS
        c11=>SpAMM_construct_tree_2d_symm_11(c)
 
        ! a first pass ...
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c00, a%child_00, b%child_00, & 
-                                             Tau2, Depth+1, beta )     
+       CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c00,a%child_00,NT,b%child_00,Tau2,Depth+1,beta)     
+       CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c01,a%child_00,NT,b%child_01,Tau2,Depth+1,beta)      
 
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c01, a%child_00, b%child_01, & 
-                                             Tau2, Depth+1, beta )      
+       IF(NT)THEN
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c10,a%child_10,NT,b%child_00,Tau2,Depth+1,beta)      
+       ELSE
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c10,a%child_01,NT,b%child_00,Tau2,Depth+1,beta)      
+       ENDIF
 
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c10, a%child_10, b%child_00, & 
-                                             Tau2, Depth+1, beta )      
-
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c11, a%child_10, b%child_01, & 
-                                             Tau2, Depth+1, beta )      
+       IF(NT)THEN
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c11,a%child_10,NT,b%child_01,Tau2,Depth+1,beta)      
+       ELSE
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c11,a%child_01,NT,b%child_01,Tau2,Depth+1,beta)      
+       ENDIF
 
        ! ... & another pass 
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c00, a%child_01, b%child_10, & 
-                                             Tau2, Depth+1, beta )      
+       IF(NT)THEN
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c00,a%child_01,NT,b%child_10,Tau2,Depth+1,beta)      
+       ELSE
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c00,a%child_10,NT,b%child_10,Tau2,Depth+1,beta)      
+       ENDIF
 
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c01, a%child_01, b%child_11, & 
-                                             Tau2, Depth+1, beta )      
+       IF(NT)THEN
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c01,a%child_01,NT,b%child_11,Tau2,Depth+1,beta)      
+       ELSE
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c01,a%child_10,NT,b%child_11,Tau2,Depth+1,beta)      
+       ENDIF
 
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c10, a%child_11, b%child_10, & 
-                                             Tau2, Depth+1, beta )      
-
-       CALL SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur(c11, a%child_11, b%child_11, & 
-                                             Tau2, Depth+1, beta )      
-
+       CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c10,a%child_11,NT,b%child_10,Tau2,Depth+1,beta)      
+       CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c11,a%child_11,NT,b%child_11,Tau2,Depth+1,beta)      
        !
     ENDIF
 
     CALL SpAMM_redecorate_tree_2d_symm(c)
 
-  END SUBROUTINE SpAMM_tree_2d_symm_n_times_tree_2d_symm_n_recur
+  END SUBROUTINE SpAMM_tree_2d_symm_times_tree_2d_symm_recur
 
 
 

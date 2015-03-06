@@ -43,81 +43,73 @@ contains
     !
     z => SpAMM_scalar_plus_tree_2d_symm(SpAMM_one, z)
     
-    zd=spamm_zero
-    do I=1,s%frill%ndimn(1)
-       zd(i,i)=1d0
-    enddo
-
-
-    trxd=0d0
-    do j=1,n
-       trxd=trxd+xd(j,j)
-    enddo
-
-    trsd=0d0
-    do j=1,n
-       trsd=trsd+sd(j,j)
-    enddo
-
-    WRITE(*,*)' x = ',trxd
-    WRITE(*,*)' s = ',trsd
+!!$    zd=spamm_zero
+!!$    do I=1,s%frill%ndimn(1)
+!!$       zd(i,i)=1d0
+!!$    enddo
+!!$
+!!$
+!!$    trxd=0d0
+!!$    do j=1,n
+!!$       trxd=trxd+xd(j,j)
+!!$    enddo
+!!$
+!!$    trsd=0d0
+!!$    do j=1,n
+!!$       trsd=trsd+sd(j,j)
+!!$    enddo
+!!$
+!!$    WRITE(*,*)' x = ',trxd
+!!$    WRITE(*,*)' s = ',trsd
 
     DO i = 1, 20
 
        ! |X_n> = <Z_n|S> |Z_n>
-       WRITE(*,99)i,i, i,i, i,i, i,i, i,i, i,i, i,i
-99     format(20(i3))
+!!$       WRITE(*,99)i,i, i,i, i,i, i,i, i,i, i,i, i,i
+!!$99     format(20(i3))
 
-       t => SpAMM_tree_2d_symm_T_times_tree_2d_symm( z, s, tau*1d-3, alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
+!       t => SpAMM_tree_2d_symm_T_times_tree_2d_symm( z, s, tau*1d-3, alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm(z,s,tau*1d-3,NT_O=.FALSE.,alpha_O=SpAMM_zero,beta_O=SpAMM_one, in_O = t )
 
-!       Td=MATMUL(Zd,Sd) This vs that is a blow up for high cond
-       Td=MATMUL(TRANSPOSE(Zd),Sd)
-
-       trtd=0d0
-       do j=1,n
-          trtd=trtd+td(j,j)
-       enddo
-       
-       WRITE(*,*)i,' t = ',trtd
-       
-!       WRITE(*,*)' t  = ',ABS(SQRT(t%frill%norm2)-sqrt(sum(td**2)))/sqrt(sum(td**2))       
+!!$!       Td=MATMUL(Zd,Sd) This vs that is a blow up for high cond
+!!$       Td=MATMUL(TRANSPOSE(Zd),Sd)
+!!$       trtd=0d0
+!!$       do j=1,n
+!!$          trtd=trtd+td(j,j)
+!!$       enddo       
+!!$       WRITE(*,*)i,' t = ',trtd       
+!!$!       WRITE(*,*)' t  = ',ABS(SQRT(t%frill%norm2)-sqrt(sum(td**2)))/sqrt(sum(td**2))       
 
        x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau     , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
 
-       Xd=MATMUL(Td,Zd)
-
-       trxd=0d0
-       do j=1,n
-          trxd=trxd+xd(j,j)
-       enddo
-       
-       WRITE(*,*)i,' x = ',trxd
-      
-!       WRITE(*,*)' x  = ',ABS(SQRT(x%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))       
-
-44     format(A3,'= ',F16.8,' dense= ',F16.8)
-
-!       x => SpAMM_convert_dense_to_tree_2d_symm(xd)
+!!$       Xd=MATMUL(Td,Zd)
+!!$       trxd=0d0
+!!$       do j=1,n
+!!$          trxd=trxd+xd(j,j)
+!!$       enddo       
+!!$       WRITE(*,*)i,' x = ',trxd      
+!!$!       WRITE(*,*)' x  = ',ABS(SQRT(x%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))       
+!!$44     format(A3,'= ',F16.8,' dense= ',F16.8)
+!!$!       x => SpAMM_convert_dense_to_tree_2d_symm(xd)
 
        ! monitor the trace for convergence, maybe look at rate of change at some point too?:
        FillN_prev=FillN
 
-
        TrX=SpAMM_trace_tree_2d_symm_recur(x)
 
-       trxd=0d0
-       do j=1,n
-       trxd=trxd+xd(j,j)
-       enddo
+!!$       trxd=0d0
+!!$       do j=1,n
+!!$       trxd=trxd+xd(j,j)
+!!$       enddo
 
        FillN = abs( dble(n) - TrX )/dble(n)       
-       FillN = abs( dble(n) - TrXd )/dble(n)       
 
+!!$       WRITE(*,33)tau, i, TrX, Trxd, FillN
+!!$33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F22.10,F22.10,' dN=',e10.3)
 
+       WRITE(*,33)tau, i, TrX, FillN
+33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3)
 
-       WRITE(*,33)tau, i, TrX, Trxd, FillN
-
-33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F22.10,F22.10,' dN=',e10.3)
        !        
        IF(FillN>0.4d0)THEN
           delta=1d-1  ! maybe this should be a variable too, passed in?
@@ -129,34 +121,29 @@ contains
 
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
-       trxd=0d0
-       do j=1,n
-          trxd=trxd+xd(j,j)
-       enddo
-       
-       WRITE(*,*)i,' x = ',trxd
-
-
+!!$       trxd=0d0
+!!$       do j=1,n
+!!$          trxd=trxd+xd(j,j)
+!!$       enddo       
+!!$       WRITE(*,*)i,' x = ',trxd
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=t)
-       td=MATMUL(Zd,Xd)
 
-!       WRITE(*,*)' td  = ',ABS(SQRT(t%frill%norm2)-sqrt(sum(td**2)))/sqrt(sum(td**2))       
+!!$       td=MATMUL(Zd,Xd)
+!!$!       WRITE(*,*)' td  = ',ABS(SQRT(t%frill%norm2)-sqrt(sum(td**2)))/sqrt(sum(td**2))       
 
        
        ! unfortunately, the update could not be done in place 
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm(t, in_O=z)
 
-       zd=td
-
-       trzd=0d0
-       do j=1,n
-          trzd=trzd+zd(j,j)
-       enddo       
-       WRITE(*,*)i,' z = ',trzd
-
-!       WRITE(*,*)' zd  = ',ABS(SQRT(z%frill%norm2)-sqrt(sum(zd**2)))/sqrt(sum(zd**2))       
+!!$       zd=td
+!!$       trzd=0d0
+!!$       do j=1,n
+!!$          trzd=trzd+zd(j,j)
+!!$       enddo       
+!!$       WRITE(*,*)i,' z = ',trzd
+!!$!       WRITE(*,*)' zd  = ',ABS(SQRT(z%frill%norm2)-sqrt(sum(zd**2)))/sqrt(sum(zd**2))       
 
        IF(FillN<0.1d0.AND.FillN>FillN_prev)THEN
           RETURN
@@ -184,24 +171,17 @@ contains
 
     SHFT=low_new-low_prev*(high_new-low_new)/(high_prev-low_prev)
     SCAL=(high_new-low_new)/(high_prev-low_prev)
-
-!    write(*,*)' remapping/shifting  shft = ',shft, ' scal = ',scal
-
-
+!!$!    write(*,*)' remapping/shifting  shft = ',shft, ' scal = ',scal
+!!$
     d => x
     d => SpAMM_scalar_times_tree_2d_symm( scal, d)
-
-    xd=scal*xd
-!    WRITE(*,*)' scal*x = ',ABS(SQRT(d%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))
-
+!!$    xd=scal*xd
+!!$!    WRITE(*,*)' scal*x = ',ABS(SQRT(d%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))
     d => SpAMM_scalar_plus_tree_2d_symm(  shft, d)
-
-    do i=1,x%frill%ndimn(1)
-       xd(i,i)=xd(i,i)+shft
-    enddo
-
-    WRITE(*,*)' shft(x)= ',ABS(SQRT(d%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))
-
+!!$    do i=1,x%frill%ndimn(1)
+!!$       xd(i,i)=xd(i,i)+shft
+!!$    enddo
+!!$    WRITE(*,*)' shft(x)= ',ABS(SQRT(d%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))
   END FUNCTION spammsand_shift_tree_2d
 
   FUNCTION spammsand_scaled_invsqrt_mapping( x, sc ) result(d) 
@@ -214,21 +194,16 @@ contains
 
     SHFT=SpAMM_half*SQRT(sc)*SpAMM_three
     SCAL=SpAMM_half*(-sc)*SQRT(sc)
-
-!    write(*,*)' NS scaling shft = ',shft, ' scal = ',scal
-
+!!$!    write(*,*)' NS scaling shft = ',shft, ' scal = ',scal
     d => x
     d => SpAMM_scalar_times_tree_2d_symm( scal, d)
-
-    xd=scal*xd
-!    WRITE(*,*)' scal*x = ',ABS(SQRT(d%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))
+!!$    xd=scal*xd
+!!$!    WRITE(*,*)' scal*x = ',ABS(SQRT(d%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))
     d => SpAMM_scalar_plus_tree_2d_symm(  shft, d)
-
-    do i=1,x%frill%ndimn(1)
-       xd(i,i)=xd(i,i)+shft
-    enddo
-
-!    WRITE(*,*)' shft(x)= ',ABS(SQRT(d%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))
+!!$    do i=1,x%frill%ndimn(1)
+!!$       xd(i,i)=xd(i,i)+shft
+!!$    enddo
+!!$!    WRITE(*,*)' shft(x)= ',ABS(SQRT(d%frill%norm2)-sqrt(sum(xd**2)))/sqrt(sum(xd**2))
   END FUNCTION spammsand_scaled_invsqrt_mapping
 
   FUNCTION spammsand_scaling_invsqrt(xo) RESULT(sc)
@@ -257,7 +232,7 @@ program SpAMM_sandwich_inverse_squareroot
   type(SpAMM_tree_2d_symm),       pointer        :: x_tmp => null()
   real(spamm_kind), dimension(:, :), allocatable :: S_dense
   character(len = 1000)                          :: matrix_filename
-  real(SpAMM_KIND)                               :: x_hi, logtau_strt, logtau_stop, logtau_dlta
+  real(SpAMM_KIND)                               :: x_hi, logtau_strt, logtau_stop, logtau_dlta, tau_dlta
 
   integer, parameter                             :: slices=4
 
@@ -290,9 +265,9 @@ program SpAMM_sandwich_inverse_squareroot
   !  call dsyevd("V", "U", N, X_dense, N, eval, work, LWORK, iwork, LIWORK, info)
   !=============================================================
   ! the max eigenvalue
-  x_hi = SpAMMSand_rqi_extremal(s,1d-12,high_O=.TRUE.)
+  x_hi = SpAMMSand_rqi_extremal(s,1d-8,high_O=.TRUE.)
 
-  x_hi=22.70198967961781d0
+!  x_hi=22.70198967961781d0
 
   ! normalize the max ev of s to 1.  
   s => SpAMM_scalar_times_tree_2d_symm(SpAMM_one/x_hi, s)
@@ -300,9 +275,10 @@ program SpAMM_sandwich_inverse_squareroot
   Sd=s_dense/x_hi
   xd=sd
 
-  logtau_strt=-16                                       ! starting accuracy
-  logtau_stop=-32                                      ! stoping  "
+  logtau_strt=-3                                       ! starting accuracy
+  logtau_stop=-12                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
+  tau_dlta=10d0**logtau_dlta
     
   allocate(z) 
   sndwch => z ! head of the slices
@@ -338,17 +314,15 @@ program SpAMM_sandwich_inverse_squareroot
      x_prj => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, x_prj )
 
 
-     x_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( x_prj,  z%mtx, z%nxt%tau, &
+     x_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( x_prj,  z%mtx, tau_dlta*z%nxt%tau, &
                                                          alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_tmp)
      
-     x_prj => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,  x_tmp, z%nxt%tau, &
+     x_prj => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,  x_tmp, tau_dlta*z%nxt%tau, NT_O=.FALSE., &
                                                          alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O=x_prj)     
 
      s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x_prj, s )
 
      z=>z%nxt
-
-     write(*,*)' '
      
   enddo
 
