@@ -1,6 +1,5 @@
 module MatrixTree
 ( addSubtreeNorms
-, calcNorm
 , combineZeros
 , getHeight
 , getNorm
@@ -11,6 +10,7 @@ module MatrixTree
 , Norm
 , readTreeFromMatrixMarket
 , rectOrder
+, setNorm
 , Value
 , valueNorm
 , writeTreeToMatrixMarket
@@ -34,16 +34,16 @@ data MatrixTree = Zero  {top :: Int, left :: Int, height :: Int, width :: Int} |
 -- a Zero with height and width > 0 is a block with all zero entries;
 -- a Zero with height or width = 0 is a block with no entries at all
 
--- setting and accessing norms
+-- getting and setting norms
 
 getNorm :: MatrixTree -> Norm
 getNorm (Zero _ _ _ _) = 0
 getNorm tree = norm tree
 
-calcNorm :: MatrixTree -> Norm
-calcNorm (Zero _ _ _ _)               = 0
-calcNorm (Value _ _ _ x)              = valueNorm x
-calcNorm (Rect _ _ _ _ _ tl tr bl br) = addSubtreeNorms . fmap calcNorm $ [tl, tr, bl, br]
+setNorm :: MatrixTree -> Norm
+setNorm (Zero _ _ _ _)               = 0
+setNorm (Value _ _ _ x)              = valueNorm x
+setNorm (Rect _ _ _ _ _ tl tr bl br) = addSubtreeNorms . fmap setNorm $ [tl, tr, bl, br]
 
 valueNorm :: Value -> Norm
 valueNorm = abs
@@ -61,8 +61,6 @@ writeTreeToMatrixMarket :: MatrixTree -> String -> FilePath -> IO ()
 writeTreeToMatrixMarket tree format filePath =
                         writeToMatrixMarket (treeToIndexedList tree) format filePath
 
--- converting between MatrixTrees and IndexedLists
-
 indexedListToTree :: IndexedList -> MatrixTree
 indexedListToTree ((m, n), ijxs) = foldr addValueToTree (Zero 1 1 m n) ijxs
 
@@ -78,6 +76,8 @@ inRange (i, j) (t, l, h, w) = i >= t && i <= t + h - 1 && j >= l && j <= l + w -
 
 addVal :: (Int, Int, Value) -> MatrixTree -> MatrixTree
 
+addVal (i, j, x) (Value _ _ _ _) = if x == 0 then Zero i j 1 1 else Value i j (valueNorm x) x
+
 addVal (i, j, x) tree@(Zero t l h w)
        | x == 0             = tree
        | [h,w] == [1,1]     = Value t l (valueNorm x) x
@@ -91,9 +91,7 @@ addVal (i, j, x) tree@(Zero t l h w)
              zbr = Zero (t + halfh) (l + halfw) (h - halfh) (w - halfw)
              halfh = h `div` 2 ; halfw = w `div` 2
 
-addVal (i, j, x) (Value _ _ _ _) = if x == 0 then Zero i j 1 1 else Value i j (valueNorm x) x
-
-addVal (i, j, x) (Rect t l h w _ tl tr bl br) = (if x == 0 then ifZeroReplace else id) newTree
+addVal (i, j, x) (Rect t l h w _ tl tr bl br) = if x == 0 then ifZeroReplace newTree else newTree
        where newTree = Rect t l h w y newtl newtr newbl newbr
              [newtl, newtr, newbl, newbr]
                      | (i,j) `inTree` tl = [addVal (i, j, x) tl, tr, bl, br]
