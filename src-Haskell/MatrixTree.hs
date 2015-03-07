@@ -70,7 +70,7 @@ writeTreeToMatrixMarket tree format filePath =
                         writeToMatrixMarket (treeToIndexedList tree) format filePath
 
 indexedListToTree :: IndexedList -> MatrixTree
-indexedListToTree ((m, n), ijxs) = foldr addValueToTree (Zero 1 1 m n) ijxs
+indexedListToTree (m, n, ijxs) = foldr addValueToTree (Zero 1 1 m n) ijxs
 
 addValueToTree :: (Int, Int, Value) -> MatrixTree -> MatrixTree
 addValueToTree (i, j, x) tree = if (i, j) `inTree` tree then addVal (i, j, x) tree else tree
@@ -109,12 +109,13 @@ addVal (i, j, x) (Rect t l h w _ tl tr bl br) = if x == 0 then ifZeroReplace new
              y = addSubtreeNorms . fmap norm $ [newtl, newtr, newbl, newbr]
 
 treeToIndexedList :: MatrixTree -> IndexedList
-treeToIndexedList (Zero _ _ h w)               = ((h, w), [])
-treeToIndexedList (Value _ _ _ x)              = ((1, 1), [(1, 1, x)])
-treeToIndexedList (Rect _ _ h w _ tl tr bl br) = ((h, w), ijxs)
+treeToIndexedList (Zero _ _ h w)               = (h, w, [])
+treeToIndexedList (Value _ _ _ x)              = (1, 1, [(1, 1, x)])
+treeToIndexedList (Rect _ _ h w _ tl tr bl br) = (h, w, ijxs)
       where ijxs = concat [tlijxs, fmap wshift trijxs,
                            fmap hshift blijxs, fmap (hshift . wshift) brijxs]
-            [tlijxs, trijxs, blijxs, brijxs] = fmap (snd. treeToIndexedList) [tl, tr, bl, br]
+            [tlijxs, trijxs, blijxs, brijxs] = fmap (third . treeToIndexedList) [tl, tr, bl, br]
+            third (a, b, c) = c
             hshift (i, j, x) = (i + halfh, j, x)
             wshift (i, j, x) = (i, j + halfw, x)
             halfh = h `div` 2 ; halfw = w `div` 2

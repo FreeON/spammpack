@@ -12,10 +12,9 @@ import qualified Data.Map as Map (fromList, lookup, Map)
 import Data.Maybe (fromJust, isNothing)
 import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
 
-type IndexedList = ( (Int, Int), [ (Int, Int, Double) ] )
+type IndexedList = ( Int, Int, [ (Int, Int, Double) ] )
 
--- first part is matrix height/width
--- second part is list of entries (row, column, value)
+-- matrix height, width, and list of entries (row, column, value)
 -- including zero-value entries is optional
 
 readFromMatrixMarket :: FilePath -> IO IndexedList
@@ -47,7 +46,7 @@ matrixMarketToIndexedList filePath contents
                       _            -> error $ filePath ++ " has unrecognized format " ++ (first !! 2)
 
 indexedListToArray :: IndexedList -> [String]
-indexedListToArray ((m, n), ijxs) = (combineStrings [show m, show n]):showVals
+indexedListToArray (m, n, ijxs) = (combineStrings [show m, show n]):showVals
                    where pairList = fmap (\(i, j, x) -> ((i,j), x)) ijxs
                          hashTable = Map.fromList pairList
                          indices = [(i, j) | j <- [1..n], i <- [1..m]]
@@ -57,7 +56,7 @@ indexedListToArray ((m, n), ijxs) = (combineStrings [show m, show n]):showVals
                                     where check = Map.lookup pair hashTable
 
 indexedListToCoordinate :: IndexedList -> [String]
-indexedListToCoordinate ((m, n), ijxs) = (combineStrings [show m, show n, show $ length ijxs]):
+indexedListToCoordinate (m, n, ijxs) = (combineStrings [show m, show n, show $ length ijxs]):
                                          (fmap pairToString ijxs)
 
 combineStrings :: [String] -> String
@@ -73,7 +72,7 @@ arrayToIndexedList lineList filePath
      | any null size                     = error $ filePath ++ " matrix size invalid"
      | length valueList /= nrows * ncols = error $ filePath ++ " has wrong matrix size"
      | any null valueReads               = error $ filePath ++ " has invalid values"
-     | otherwise                         = ((nrows, ncols), ijxs)
+     | otherwise                         = (nrows, ncols, ijxs)
      where (firstLine, valueLines) = (head lineList, tail lineList)
            size = fmap reads firstLine :: [[(Int,String)]]
            [nrows, ncols] = fmap (fst . head) size
@@ -85,25 +84,24 @@ arrayToIndexedList lineList filePath
 
 coordinateToIndexedList :: [[String]] -> FilePath -> IndexedList
 coordinateToIndexedList lineList filePath
-                    | any ((/= 3) . length) lineList = error $ filePath ++ " has wrong-length line"
-                    | any null firstLineNums         = error $ filePath ++ " has invalid size line"
-                    | length entryLines /= nonzeros  = error $ filePath ++ " has wrong no. of nonzeros"
-                    | any (any null) indexReads      = error $ filePath ++ " has invalid indices"
-                    | indices /= nub indices         = error $ filePath ++ " has duplicate indices"
-                    | maxCol > fst size              = error $ filePath ++ " has indices outside range"
-                    | maxRow > snd size              = error $ filePath ++ " has indices outside range"
-                    | any null valueReads            = error $ filePath ++ " has invalid values"
-                    | otherwise                      = (size, if nonzeros == 0 then [] else ijxs)
+                    | any ((/= 3) . length) lineList   = error $ filePath ++ " has wrong-length line"
+                    | any null firstLineNums           = error $ filePath ++ " has invalid size line"
+                    | length entryLines /= nonzeros    = error $ filePath ++ " has wrong no. of nonzeros"
+                    | any (any null) indexReads        = error $ filePath ++ " has invalid indices"
+                    | indices /= nub indices           = error $ filePath ++ " has duplicate indices"
+                    | maxRow > nrows || maxCol > ncols = error $ filePath ++ " has indices outside range"
+                    | any null valueReads              = error $ filePath ++ " has invalid values"
+                    | otherwise                        = (nrows, ncols, if nonzeros == 0 then [] else ijxs)
                     where (firstLine, entryLines) = (head lineList, tail lineList)
                           firstLineNums = fmap reads firstLine :: [[(Int,String)]]
                           firstLineVals = fmap (fst . head) firstLineNums
-                          size = (firstLineVals !! 0, firstLineVals !! 1)
+                          [nrows, ncols] = take 2 firstLineVals
                           nonzeros = firstLineVals !! 2
                           splitEntries = fmap (splitAt 2) entryLines
                           indexLines = fmap fst splitEntries
                           indexReads = fmap (fmap reads) indexLines :: [[[(Int,String)]]]
                           indices = fmap (fmap $ fst . head) indexReads
-                          [maxCol, maxRow] = if nonzeros == 0 then [1,1] else
+                          [maxRow, maxCol] = if nonzeros == 0 then [1,1] else
                                              fmap maximum [fmap (!! 0) indices, fmap (!! 1) indices]
                           valueLines = concat . fmap snd $ splitEntries
                           valueReads = fmap reads valueLines :: [[(Double,String)]]
