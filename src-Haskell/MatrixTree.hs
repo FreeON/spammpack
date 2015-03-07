@@ -1,18 +1,18 @@
 module MatrixTree
 ( addSubtreeNorms
 , combineZeros
-, getHeight
-, getNorm
-, getWidth
+, height
 , ifZeroReplace
 , isZero
 , MatrixTree(..)
+, norm
 , Norm
 , readTreeFromMatrixMarket
 , rectOrder
 , setNorm
 , Value
 , valueNorm
+, width
 , writeTreeToMatrixMarket
 ) where
 
@@ -23,22 +23,30 @@ import MatrixMarket (IndexedList, readFromMatrixMarket, writeToMatrixMarket)
 
 type Value = Double ; type Norm = Double
 
-data MatrixTree = Zero  {top :: Int, left :: Int, height :: Int, width :: Int} |
+data MatrixTree = Zero  {top :: Int, left :: Int, heightVal :: Int, widthVal :: Int} |
                   Value {top :: Int, left :: Int,
-                         norm :: Norm, value :: Value} |
-                  Rect  {top :: Int, left :: Int, height :: Int, width :: Int,
-                         norm :: Norm, tltree :: MatrixTree, trtree :: MatrixTree,
-                                       bltree :: MatrixTree, brtree :: MatrixTree}
+                         normVal :: Norm, value :: Value} |
+                  Rect  {top :: Int, left :: Int, heightVal :: Int, widthVal :: Int,
+                         normVal :: Norm, tltree :: MatrixTree, trtree :: MatrixTree,
+                                          bltree :: MatrixTree, brtree :: MatrixTree}
                   deriving (Eq, Show)
+
+height :: MatrixTree -> Int
+height (Value _ _ _ _) = 1
+height tree            = heightVal tree
+
+width :: MatrixTree -> Int
+width (Value _ _ _ _) = 1
+width tree            = widthVal tree
+
+norm :: MatrixTree -> Norm
+norm (Zero _ _ _ _) = 0
+norm tree           = normVal tree
 
 -- a Zero with height and width > 0 is a block with all zero entries;
 -- a Zero with height or width = 0 is a block with no entries at all
 
--- getting and setting norms
-
-getNorm :: MatrixTree -> Norm
-getNorm (Zero _ _ _ _) = 0
-getNorm tree = norm tree
+-- setting norms
 
 setNorm :: MatrixTree -> Norm
 setNorm (Zero _ _ _ _)               = 0
@@ -98,7 +106,7 @@ addVal (i, j, x) (Rect t l h w _ tl tr bl br) = if x == 0 then ifZeroReplace new
                      | (i,j) `inTree` tr = [tl, addVal (i, j, x) tr, bl, br]
                      | (i,j) `inTree` bl = [tl, tr, addVal (i, j, x) bl, br]
                      | (i,j) `inTree` br = [tl, tr, bl, addVal (i, j, x) br]
-             y = addSubtreeNorms . fmap getNorm $ [newtl, newtr, newbl, newbr]
+             y = addSubtreeNorms . fmap norm $ [newtl, newtr, newbl, newbr]
 
 treeToIndexedList :: MatrixTree -> IndexedList
 treeToIndexedList (Zero _ _ h w)               = ((h, w), [])
@@ -113,14 +121,6 @@ treeToIndexedList (Rect _ _ h w _ tl tr bl br) = ((h, w), ijxs)
 
 -- utility functions
 
-getHeight :: MatrixTree -> Int
-getHeight (Value _ _ _ _) = 1
-getHeight tree            = height tree
-
-getWidth :: MatrixTree -> Int
-getWidth (Value _ _ _ _) = 1
-getWidth tree            = width tree
-
 isZero :: MatrixTree -> Bool
 isZero (Zero _ _ _ _) = True
 isZero _              = False
@@ -133,19 +133,19 @@ ifZeroReplace tree@(Rect t l h w _ tl tr bl br)
               | length nonZeroTrees > 1 = tree
               | otherwise               = if alone then head nonZeroTrees else tree
               where (zeroTrees, nonZeroTrees) = partition isZero [tl, tr, bl, br]
-                    alone = any (\tr -> getHeight tr == 0 && getWidth tr == 0) zeroTrees
+                    alone = any (\tr -> height tr == 0 && width tr == 0) zeroTrees
 
 combineZeros :: MatrixTree -> MatrixTree
 combineZeros (Rect t l h w _ tl tr bl br) =
              ifZeroReplace (Rect t l h w x newtl newtr newbl newbr)
              where [newtl, newtr, newbl, newbr] = fmap combineZeros [tl, tr, bl, br]
-                   x = addSubtreeNorms . fmap getNorm $ [newtl, newtr, newbl, newbr]
+                   x = addSubtreeNorms . fmap norm $ [newtl, newtr, newbl, newbr]
 combineZeros tree = ifZeroReplace tree
 
 rectOrder :: MatrixTree -> MatrixTree
 rectOrder tree@(Zero _ _ _ _) = tree
 rectOrder tree@(Value _ _ _ _) = tree
 rectOrder tree@(Rect t l h w x tl tr bl br)
-          | fmap getHeight [bl, br] == [0, 0] = Rect t l h w x bl br tl tr
-          | fmap getWidth [tr, br]  == [0, 0] = Rect t l h w x tr tl br bl
-          | otherwise                         = tree
+          | fmap height [bl, br] == [0, 0] = Rect t l h w x bl br tl tr
+          | fmap width  [tr, br] == [0, 0] = Rect t l h w x tr tl br bl
+          | otherwise                      = tree

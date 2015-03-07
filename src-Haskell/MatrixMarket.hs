@@ -15,7 +15,7 @@ import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
 type IndexedList = ( (Int, Int), [ (Int, Int, Double) ] )
 
 -- first part is matrix height/width
--- second part is list of entries (indices and values)
+-- second part is list of entries (row, column, value)
 -- including zero-value entries is optional
 
 readFromMatrixMarket :: FilePath -> IO IndexedList
