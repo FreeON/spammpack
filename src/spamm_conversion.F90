@@ -62,31 +62,25 @@ contains
 
   END SUBROUTINE SpAMM_convert_dense_to_tree_2d_symm_recur
 
-
-
-
-  FUNCTION SpAMM_convert_tree_2d_symm_to_dense(A_2d, A_O) RESULT(A)
+  SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense(A_2d, A)
 
     type(SpAMM_tree_2d_symm),         pointer           :: A_2d
-    real(SpAMM_KIND), dimension(:,:), pointer, optional :: A_O
-    real(SpAMM_KIND), dimension(:,:), pointer           :: A
-
-    IF(PRESENT(A_O))THEN       
-       A=>A_O 
-    ELSE      
+    real(SpAMM_KIND), dimension(:,:), allocatable       :: A
+    
+    IF(.not.allocated(A))THEN
        ALLOCATE(A( 1:A_2d%frill%bndbx(1,1),  &
-                   1:A_2d%frill%bndbx(1,2) ))
+            1:A_2d%frill%bndbx(1,2) ))
     ENDIF
 
     A=SpAMM_zero
     CALL SpAMM_convert_tree_2d_symm_to_dense_recur (A_2d,A)
 
-  END FUNCTION SpAMM_convert_tree_2d_symm_to_dense
+  END SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense
 
   !> Recursively convert a dense matrix to a quadtree.
   RECURSIVE SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense_recur (A_2d,A)
 
-    real(SpAMM_KIND), dimension(:,:),pointer :: A
+    real(SpAMM_KIND), dimension(:,:), allocatable       :: A
     type(SpAMM_tree_2d_symm),        pointer :: A_2d
     integer, dimension(1:2)                  :: lo,hi
 

@@ -350,7 +350,7 @@ CONTAINS
     REAL(SpAMM_KIND),                  INTENT(IN)    :: beta
     REAL(SpAMM_KIND)                                 :: Tau2
     INTEGER                                          :: Depth
-    TYPE(SpAMM_tree_2d_symm), POINTER                :: c00,c01,c10,c11
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: c00,c01,c10,c11,a01,a10
 
     if(.not.associated(a))return
     if(.not.associated(b))return
@@ -376,35 +376,21 @@ CONTAINS
        c10=>SpAMM_construct_tree_2d_symm_10(c)
        c11=>SpAMM_construct_tree_2d_symm_11(c)
 
-       ! a first pass ...
+       IF(NT)THEN
+          a01=>a%child_01
+          a10=>a%child_10
+       ELSE
+          a01=>a%child_10
+          a10=>a%child_01
+       ENDIF
+
        CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c00,a%child_00,NT,b%child_00,Tau2,Depth+1,beta)     
        CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c01,a%child_00,NT,b%child_01,Tau2,Depth+1,beta)      
+       CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c10,a10,       NT,b%child_00,Tau2,Depth+1,beta)      
+       CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c11,a10,       NT,b%child_01,Tau2,Depth+1,beta)      
 
-       IF(NT)THEN
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c10,a%child_10,NT,b%child_00,Tau2,Depth+1,beta)      
-       ELSE
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c10,a%child_01,NT,b%child_00,Tau2,Depth+1,beta)      
-       ENDIF
-
-       IF(NT)THEN
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c11,a%child_10,NT,b%child_01,Tau2,Depth+1,beta)      
-       ELSE
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c11,a%child_01,NT,b%child_01,Tau2,Depth+1,beta)      
-       ENDIF
-
-       ! ... & another pass 
-       IF(NT)THEN
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c00,a%child_01,NT,b%child_10,Tau2,Depth+1,beta)      
-       ELSE
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c00,a%child_10,NT,b%child_10,Tau2,Depth+1,beta)      
-       ENDIF
-
-       IF(NT)THEN
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c01,a%child_01,NT,b%child_11,Tau2,Depth+1,beta)      
-       ELSE
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c01,a%child_10,NT,b%child_11,Tau2,Depth+1,beta)      
-       ENDIF
-
+       CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c00,a01,       NT,b%child_10,Tau2,Depth+1,beta)      
+       CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c01,a01,       NT,b%child_11,Tau2,Depth+1,beta)      
        CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c10,a%child_11,NT,b%child_10,Tau2,Depth+1,beta)      
        CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c11,a%child_11,NT,b%child_11,Tau2,Depth+1,beta)      
        !
