@@ -1,6 +1,6 @@
 import MatrixTree
 import SpAMM
-import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
+import System.IO (hClose, hPutStr, openFile, IOMode(WriteMode))
 import System.Process
 import System.TimeIt
 
@@ -25,5 +25,5 @@ createMatrix :: FilePath -> Int -> IO ()
 createMatrix filePath size = do
              handle <- openFile filePath WriteMode
              matrix <- readProcess "python" ["../generate-matrix.py", "-N " ++ show size] []
-             hPutStrLn handle matrix
+             hPutStr handle matrix
              hClose handle
