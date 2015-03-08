@@ -39,7 +39,7 @@ matrixMarketToIndexedList filePath contents
       | otherwise             = command rest filePath
       where fileLines = lines contents
             first = words . head $ fileLines
-            rest = filter (not . null) . fmap words . filter ((/='%') . head) $ tail fileLines
+            rest = filter ((/='%') . head . head) . filter (not . null) . fmap words $ tail fileLines
             command = case fmap toLower (first !! 2) of
                       "array"      -> arrayToIndexedList
                       "coordinate" -> coordinateToIndexedList
