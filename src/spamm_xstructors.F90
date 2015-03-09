@@ -539,11 +539,13 @@ contains
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm
   !++XSTRUCTORS:       d_2 => a_2  (wrapper)
-  function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, in_O) result(d)
+  function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, in_O, threshold_O) result(d)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)              :: a
+    REAL(SpAMM_KIND),                  INTENT(IN),    OPTIONAL :: threshold_o
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT), OPTIONAL :: in_O
     TYPE(SpAMM_tree_2d_symm), POINTER                          :: d
+    REAL(SpAMM_KIND)                                           :: threshold2
 
     d => null()
     IF(PRESENT(in_O))THEN
@@ -554,16 +556,20 @@ contains
     
     IF(.not.associated(d)) d => SpAMM_new_top_tree_2d_symm (a%frill%NDimn )
 
-    ! d |cpy> a
-    CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a)
+    ! d |cpy>|threshold?> a
+    threshold2=SpAMM_zero
+    IF(PRESENT(threshold_o))threshold2=threshold_O**2
+
+    CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
 
   END function SpAMM_tree_2d_symm_copy_tree_2d_symm
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur 
   !++XSTRUCTORS:       d_2 => a_2  (recursive)
-  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a)
+  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: a
+    REAL(SpAMM_KIND),                  INTENT(IN)    :: threshold2
     TYPE(SpAMM_tree_2d_symm), POINTER                :: d
     
     if(.not.associated(a).and..not.associated(d))then
@@ -579,12 +585,17 @@ contains
 
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
 
-    else
+    elseif( a%frill%norm2 <= threshold2)then
 
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a%child_00)
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a%child_10)
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01)
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a%child_11)
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2 )
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01, threshold2 )
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a%child_11, threshold2 )
+
+    elseif(associated(d))then
+
+       CALL SpAMM_destruct_tree_2d_symm_recur (d)
+       return
 
     endif    
 

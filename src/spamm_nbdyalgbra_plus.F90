@@ -193,8 +193,8 @@ CONTAINS
 
     IF(.NOT.TA.AND.TB)THEN
 
-       ! a = b
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur(a, b)
+       ! a = b (zero thresholding)
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur(a, b, SpAMM_zero )
 
        ! a = beta*b = beta*a  
 !       CALL SpAMM_scalar_times_tree_2d_symm_recur(beta, a)

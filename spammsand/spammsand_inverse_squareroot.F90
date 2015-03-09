@@ -172,7 +172,7 @@ contains
 
        
        ! unfortunately, the update could not be done in place 
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm(t, in_O = z )
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm(t, in_O = z, threshold_O= SQRT(tau) )
 
 !!$       zd=td
 !!$       trzd=0d0
@@ -353,7 +353,7 @@ program SpAMM_sandwich_inverse_squareroot
      first=.FALSE.
      if(.not.associated(z%nxt))exit
 
-     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, x )
+     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = x, threshold_O=1d-12 )
      
      tau_xtra=tau_dlta*z%nxt%tau
      t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, tau_xtra, NT_O=.FALSE. ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = t )
@@ -363,24 +363,14 @@ program SpAMM_sandwich_inverse_squareroot
 !     call dsyevd("V", "U", N, evec, N, eval, work, LWORK, iwork, LIWORK, info)
 !     WRITE(*,*)' after EV = ',eval(1),eval(N)
 
-     x_new = SpAMMSand_rqi_extremal(x,1d-6,high_O=.TRUE.)
-
-!     x_new=eval(N)
-
-
-     WRITE(*,*)' x1 ',x_new, SpAMM_one/x_new
-
-     x => SpAMM_scalar_times_tree_2d_symm(SpAMM_one/x_new, x)
-
-     WRITE(*,*)' x2 ',x%frill%norm2
-
-     x_hi=x_hi*x_new
+     x_new =  SpAMMSand_rqi_extremal( x, tau_xtra , high_O=.TRUE. )
+     x     => SpAMM_scalar_times_tree_2d_symm( SpAMM_one / x_new , x )
+     x_hi  = x_hi * x_new
 
 !#     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, tau_dlta*z%nxt%tau, NT_O=.TRUE. ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = t )
 !#     x => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, tau_dlta*z%nxt%tau, NT_O=.FALSE. ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = x )
 
-
-     s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, s )
+     s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = s , threshold_O = SpAMM_normclean )
      z => z%nxt
      
   enddo
@@ -448,7 +438,7 @@ program SpAMM_sandwich_inverse_squareroot
   ! timers down ...
 
   ! x <= |z_spammsand> = |z_1> . |z_2> ... |z_slices>.  Has to be applied as left (T) and right (N) (its not symmetric)
-  x => SpAMM_tree_2d_symm_copy_tree_2d_symm( z%mtx, x )
+  x => SpAMM_tree_2d_symm_copy_tree_2d_symm( z%mtx, in_O = x )
   z => z%nxt
 
   do while(associated(z)) ! build the inverse factors |z> = |z_1>.|z_2> ... |z_slices> (right handed)
@@ -456,7 +446,7 @@ program SpAMM_sandwich_inverse_squareroot
      t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, z%mtx, 1d-16, nt_O=.TRUE., & 
                    alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )     
 
-     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( t , x )
+     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( t , in_O = x )
 
      z => z%nxt
 
@@ -470,7 +460,6 @@ program SpAMM_sandwich_inverse_squareroot
   s => SpAMM_tree_2d_symm_times_tree_2d_symm( x, t, 1d-16, nt_O=.FALSE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = s )   
 
   write(*,*)' e1 ',SQRT(ABS(DBLE(N)-s%frill%norm2))/DBLE(N)**2
-
 
   ! |error|_F <= [I-1]/N**2
   s => SpAMM_scalar_plus_tree_2d_symm( -SpAMM_one, s) 
