@@ -80,7 +80,7 @@ CONTAINS
        ENDIF
 
        ! convergence criteria
-       IF( SQRT(dot_g)/ABS(Omega) < SQRT(Tau).AND.CG>16 &
+       IF( SQRT(dot_g)/ABS(Omega) < SQRT(Tau) & !.AND.CG>16 &
             .OR. (MinMax==1.AND.Omega>Omega_old)        &
             .OR. (MinMax==2.AND.Omega<Omega_old) )EXIT
 
@@ -135,9 +135,9 @@ CONTAINS
        ENDIF
 
        IF(MinMax==1)THEN
-          WRITE(*,33)omega,dot_g,CG
+!          WRITE(*,33)omega,dot_g,CG
        ELSE
-          WRITE(*,44)omega,dot_g,CG
+!          WRITE(*,44)omega,dot_g,CG
        ENDIF
 
     END DO

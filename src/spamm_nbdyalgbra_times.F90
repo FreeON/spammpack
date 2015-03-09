@@ -47,8 +47,12 @@ CONTAINS
     CALL SpAMM_random_unormalized_tree_1d_recur (randm, depth)
 
     ! normalize the vector ...
+
+
     renorm=SpAMM_one/sqrt(randm%frill%norm2)
     randm=>SpAMM_scalar_times_tree_1d(renorm, randm)
+
+    write(*,*)' randm%frill%norm2 = ',randm%frill%norm2
 
     !    CALL SpAMM_print_tree_1d_recur (randm) 
 

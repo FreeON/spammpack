@@ -32,14 +32,15 @@ module SpAMMsand_inverse_squareroot
   
 contains
 
-  SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, tau , t)
+  SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, t, tau, first)
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: s
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(INOUT) :: x, z, t
     REAL(SpAMM_KIND),                   INTENT(IN)    :: Tau
 
+    LOGICAL, INTENT(IN) :: first
     INTEGER                                           :: i, n, j
-    REAL(SpAMM_KIND)                                  :: sc, TrX
+    REAL(SpAMM_KIND)                                  :: sc, TrX, tau_xtra
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev, &
                                                            trxd, trsd, trtd, trzd
 
@@ -73,7 +74,9 @@ contains
 !!$    WRITE(*,*)' EV = ',eval(1),eval(N)
 
 
-    DO i = 1, 20
+    WRITE(*,*)' s%norm = ',s%frill%norm2
+
+    DO i = 1, 22
 
        ! |X_n> = <Z_n|S> |Z_n>
 !!$       WRITE(*,99)i,i, i,i, i,i, i,i, i,i, i,i, i,i
@@ -83,7 +86,10 @@ contains
 
 !if(i<3)then
 
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau , NT_O=.FALSE.,alpha_O=SpAMM_zero,beta_O=SpAMM_one, in_O = t )
+       tau_xtra=tau*1d-1
+       if(first)tau_xtra=tau*1d-2 ! stabilize xtra the first step ...
+
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra , NT_O=.FALSE.,alpha_O=SpAMM_zero,beta_O=SpAMM_one, in_O = t )
 
 !else
 !       t => SpAMM_tree_2d_symm_times_tree_2d_symm(z,s,tau,NT_O=.FALSE.,alpha_O=SpAMM_zero,beta_O=SpAMM_one, in_O = t )
@@ -120,6 +126,8 @@ contains
 
        TrX=SpAMM_trace_tree_2d_symm_recur(x)
 
+       if(trx>dble(N).and.first)return
+
 !!$       trxd=0d0
 !!$       do j=1,n
 !!$       trxd=trxd+xd(j,j)
@@ -149,8 +157,6 @@ contains
 !!$       CALL SpAMM_convert_tree_2d_symm_to_dense(x,     evec)
 !!$       call dsyevd("V", "U", N, evec, N, eval, work, LWORK, iwork, LIWORK, info)
 !!$       WRITE(*,*)' after EV = ',eval(1),eval(N)
-
-
 
 !!$       trxd=0d0
 !!$       do j=1,n
@@ -265,9 +271,11 @@ program SpAMM_sandwich_inverse_squareroot
 !  real(spamm_kind), dimension(:, :), allocatable :: S_dense
 
   character(len = 1000)                          :: matrix_filename
-  real(SpAMM_KIND)                               :: x_hi, logtau_strt, logtau_stop, logtau_dlta, tau_dlta, error, tmp1,tmp2
+  real(SpAMM_KIND)                               :: x_hi, x_new, logtau_strt, logtau_stop, logtau_dlta, & 
+                                                    tau_dlta, tau_xtra, error, tmp1,tmp2
+  logical :: first
 
-  integer, parameter                             :: slices=2
+  integer, parameter                             :: slices=4
 
   real(SpAMM_KIND), dimension(1:slices)          :: tau
  
@@ -298,9 +306,8 @@ program SpAMM_sandwich_inverse_squareroot
   !  call dsyevd("V", "U", N, X_dense, N, eval, work, LWORK, iwork, LIWORK, info)
   !=============================================================
   ! the max eigenvalue
-  x_hi = SpAMMSand_rqi_extremal(s,1d-6,high_O=.TRUE.)
 
-!  x_hi=22.70198967961781d0
+  x_hi = SpAMMSand_rqi_extremal(s,1d-6,high_O=.TRUE.)
 
   ! normalize the max ev of s to 1.  
   s => SpAMM_scalar_times_tree_2d_symm(SpAMM_one/x_hi, s)
@@ -337,17 +344,42 @@ program SpAMM_sandwich_inverse_squareroot
   x => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   
+  first=.TRUE.
   z=>sndwch
 
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
-     call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, z%tau, t )
-     
+     call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first )
+     first=.FALSE.
      if(.not.associated(z%nxt))exit
 
      x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, x )
-     t => SpAMM_tree_2d_symm_times_tree_2d_symm(z%mtx,x,tau_dlta*z%nxt%tau, NT_O=.FALSE.,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O=t)
-     x => SpAMM_tree_2d_symm_times_tree_2d_symm(t,z%mtx,tau_dlta*z%nxt%tau,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O=x)
+     
+     tau_xtra=tau_dlta*z%nxt%tau
+     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, tau_xtra, NT_O=.FALSE. ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = t )
+     x => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, tau_xtra, NT_O=.TRUE.  ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = x )
+
+!     CALL SpAMM_convert_tree_2d_symm_to_dense(x,     evec)
+!     call dsyevd("V", "U", N, evec, N, eval, work, LWORK, iwork, LIWORK, info)
+!     WRITE(*,*)' after EV = ',eval(1),eval(N)
+
+     x_new = SpAMMSand_rqi_extremal(x,1d-6,high_O=.TRUE.)
+
+!     x_new=eval(N)
+
+
+     WRITE(*,*)' x1 ',x_new, SpAMM_one/x_new
+
+     x => SpAMM_scalar_times_tree_2d_symm(SpAMM_one/x_new, x)
+
+     WRITE(*,*)' x2 ',x%frill%norm2
+
+     x_hi=x_hi*x_new
+
+!#     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, tau_dlta*z%nxt%tau, NT_O=.TRUE. ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = t )
+!#     x => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, tau_dlta*z%nxt%tau, NT_O=.FALSE. ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = x )
+
+
      s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, s )
      z => z%nxt
      

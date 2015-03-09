@@ -100,8 +100,9 @@ contains
     lo = tree%frill%bndbx(0)
     hi = tree%frill%bndbx(1)
     wi = tree%frill%width
+
     mi = lo+wi/2-1 
-    M  = tree%frill%ndimn
+    mi = min(hi,mi)
 
     IF(mi+1>hi)THEN
        ch1=>NULL()
@@ -114,16 +115,14 @@ contains
     tree%child_1%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
     tree%child_1%frill%bndbx(:)=(/mi+1, hi /)   ! [mid+1, hi]
     tree%child_1%frill%Leaf=.FALSE.              ! default, not a leaf ...
-
+    tree%child_1%frill%flops=SpAMM_zero
+    tree%child_1%frill%norm2=SpAMM_zero
     ! leaf criterion ... 
     if(wi==2*SBS)then
        tree%child_1%frill%Leaf=.TRUE.
        allocate(tree%child_1%chunk(1:SBS))       ! grab a chunk for the leaf node, always
        tree%child_1%chunk=SpAMM_Zero        
-       tree%child_1%frill%flops=SpAMM_zero
-       tree%child_1%frill%norm2=SpAMM_zero
     endif
-
 !    write(*,33) tree%child_1%frill%bndbx(:), wi,tree%child_1%frill%leaf
 33  format(' 1: [ ',I3,", ",I3," ], wid = ",I4,4L3 )
 
