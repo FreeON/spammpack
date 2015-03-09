@@ -1,8 +1,5 @@
-import MatrixTree
-import SpAMM
-import System.IO (hClose, hPutStr, openFile, IOMode(WriteMode))
-import System.Process
-import System.TimeIt
+import MatrixTree ; import SpAMM ; import System.CPUTime ; import System.Directory (removeFile)
+import System.IO (hClose, openTempFile)
 
 main = do let sizes = fmap (2^) [11..20]
           putStrLn "treeAdd"
@@ -11,19 +8,19 @@ main = do let sizes = fmap (2^) [11..20]
           mapM_ (doTiming treeMult) sizes
 
 doTiming :: (MatrixTree -> MatrixTree -> MatrixTree) -> Int -> IO ()
-doTiming op size = do let filePath1 = "fst" ++ show size ++ ".txt"
-                      let filePath2 = "snd" ++ show size ++ ".txt"
-                      createMatrix filePath1 size
-                      createMatrix filePath2 size
-                      fstTree <- readTreeFromMatrixMarket filePath1
-                      sndTree <- readTreeFromMatrixMarket filePath2
-                      (time, tree) <- timeItT . return $ op fstTree sndTree
+doTiming op size = do let fstTree = makeRandomTree size ; sndTree = makeRandomTree size
+                      t1 <- getCPUTime
+                      tree <- return $ op fstTree sndTree
+                      t2 <- getCPUTime
+                      (tempName, tempHandle) <- openTempFile "." "temp"
+                      hClose tempHandle
+                      removeFile tempName
+                      writeTreeToMatrixMarket tree "coordinate" tempName
+                      removeFile tempName
+                      let time = fromIntegral (t2 - t1) * 1e-12 :: Double
                       putStrLn $ show size ++ " " ++ show time
-                      callProcess "rm" [filePath1, filePath2]
 
-createMatrix :: FilePath -> Int -> IO ()
-createMatrix filePath size = do
-             handle <- openFile filePath WriteMode
-             matrix <- readProcess "python" ["../generate-matrix.py", "-N " ++ show size] []
-             hPutStr handle matrix
-             hClose handle
+makeRandomTree :: Int -> MatrixTree
+makeRandomTree size = indexedListToTree (size, size, ijxs)
+                      where ijxs = [(i, j, x) | j <- [1..size], i <- [1..size], x <- randomNums]
+                            randomNums = take (size^2) $ randomRs (0.0, 1.0) (mkStdGen 245)

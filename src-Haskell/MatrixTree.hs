@@ -3,6 +3,7 @@ module MatrixTree
 , combineZeros
 , height
 , ifZeroReplace
+, indexedListToTree
 , isZero
 , MatrixTree(..)
 , norm
@@ -10,6 +11,7 @@ module MatrixTree
 , readTreeFromMatrixMarket
 , rectOrder
 , setNorm
+, treeToIndexedList
 , Value
 , valueNorm
 , width

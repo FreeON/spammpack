@@ -1,24 +1,18 @@
-import MatrixTree
-import SpAMM
-import System.IO (hClose, hPutStr, openFile, IOMode(WriteMode))
-import System.Process
-import System.TimeIt
+import MatrixTree ; import System.CPUTime ; import System.Random (mkStdGen, randomRs)
 
 main = do let sizes = fmap (2^) [11..20]
           putStrLn "norm"
           mapM_ (doTiming setNorm) sizes
 
 doTiming :: (MatrixTree -> Norm) -> Int -> IO ()
-doTiming op size = do let filePath = show size ++ ".txt"
-                      createMatrix filePath size
-                      tree <- readTreeFromMatrixMarket filePath
-                      (time, norm) <- timeItT . return $ op tree
-                      putStrLn $ show size ++ " " ++ show time
-                      callProcess "rm" [filePath]
+doTiming op size = do let tree = makeRandomTree size
+                      t1 <- getCPUTime
+                      norm <- return $ op tree
+                      t2 <- getCPUTime
+                      let time = fromIntegral (t2 - t1) * 1e-12 :: Double
+                      putStrLn $ show norm ++ " " ++ show size ++ " " ++ show time
 
-createMatrix :: FilePath -> Int -> IO ()
-createMatrix filePath size = do
-             handle <- openFile filePath WriteMode
-             matrix <- readProcess "python" ["../generate-matrix.py", "-N " ++ show size] []
-             hPutStr handle matrix
-             hClose handle
+makeRandomTree :: Int -> MatrixTree
+makeRandomTree size = indexedListToTree (size, size, ijxs)
+                      where ijxs = [(i, j, x) | j <- [1..size], i <- [1..size], x <- randomNums]
+                            randomNums = take (size^2) $ randomRs (0.0, 1.0) (mkStdGen 245)
