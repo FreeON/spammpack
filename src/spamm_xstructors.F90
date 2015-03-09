@@ -581,21 +581,20 @@ contains
        call SpAMM_destruct_tree_2d_symm_recur (d)
        return
 
+    elseif( a%frill%norm2 <= threshold2)then
+
+      if(associated(d)) call SpAMM_destruct_tree_2d_symm_recur (d)
+
     elseif (a%frill%leaf) then       
 
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
 
-    elseif( a%frill%norm2 <= threshold2)then
+    else
 
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2 )
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01, threshold2 )
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a%child_11, threshold2 )
-
-    elseif(associated(d))then
-
-       CALL SpAMM_destruct_tree_2d_symm_recur (d)
-       return
 
     endif    
 

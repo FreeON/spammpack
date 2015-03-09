@@ -73,9 +73,6 @@ contains
 !!$    call dsyevd("V", "U", N, evec, N, eval, work, LWORK, iwork, LIWORK, info)
 !!$    WRITE(*,*)' EV = ',eval(1),eval(N)
 
-
-    WRITE(*,*)' s%norm = ',s%frill%norm2
-
     DO i = 1, 22
 
        ! |X_n> = <Z_n|S> |Z_n>
@@ -169,10 +166,9 @@ contains
 
 !!$       td=MATMUL(Zd,Xd)
 !!$!       WRITE(*,*)' td  = ',ABS(SQRT(t%frill%norm2)-sqrt(sum(td**2)))/sqrt(sum(td**2))       
-
        
-       ! unfortunately, the update could not be done in place 
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm(t, in_O = z, threshold_O= SQRT(tau) )
+       ! update (threshold)
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm(t, in_O = z, threshold_O=tau) 
 
 !!$       zd=td
 !!$       trzd=0d0
@@ -356,6 +352,7 @@ program SpAMM_sandwich_inverse_squareroot
      x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = x, threshold_O=1d-12 )
      
      tau_xtra=tau_dlta*z%nxt%tau
+
      t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, tau_xtra, NT_O=.FALSE. ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = t )
      x => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, tau_xtra, NT_O=.TRUE.  ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = x )
 
@@ -364,13 +361,14 @@ program SpAMM_sandwich_inverse_squareroot
 !     WRITE(*,*)' after EV = ',eval(1),eval(N)
 
      x_new =  SpAMMSand_rqi_extremal( x, tau_xtra , high_O=.TRUE. )
+     WRITE(*,*)' hi extremal = ',x_new 
      x     => SpAMM_scalar_times_tree_2d_symm( SpAMM_one / x_new , x )
      x_hi  = x_hi * x_new
 
 !#     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, tau_dlta*z%nxt%tau, NT_O=.TRUE. ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = t )
 !#     x => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, tau_dlta*z%nxt%tau, NT_O=.FALSE. ,alpha_O=SpAMM_zero,beta_O=SpAMM_one,in_O = x )
 
-     s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = s , threshold_O = SpAMM_normclean )
+     s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = s )!, threshold_O = SpAMM_normclean )
      z => z%nxt
      
   enddo
