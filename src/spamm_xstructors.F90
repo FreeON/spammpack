@@ -534,15 +534,13 @@ contains
 
   END SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d
 
-
-
-
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm
   !++XSTRUCTORS:       d_2 => a_2  (wrapper)
-  function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, in_O, threshold_O) result(d)
+  function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, in_O, threshold_O, symmetrize_O ) result(d)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)              :: a
     REAL(SpAMM_KIND),                  INTENT(IN),    OPTIONAL :: threshold_o
+    LOGICAL,                           INTENT(IN),    OPTIONAL :: symmetrize_O
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT), OPTIONAL :: in_O
     TYPE(SpAMM_tree_2d_symm), POINTER                          :: d
     REAL(SpAMM_KIND)                                           :: threshold2
@@ -560,8 +558,15 @@ contains
     threshold2=SpAMM_zero
     IF(PRESENT(threshold_o))threshold2=threshold_O**2
 
-    CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
-
+    IF(PRESENT(symmetrize_O))THEN
+       IF(symmetrize_O)THEN
+            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (d, a, threshold2)
+         ELSE
+            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
+         ENDIF
+      ELSE
+            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
+         ENDIF
   END function SpAMM_tree_2d_symm_copy_tree_2d_symm
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur 
@@ -601,6 +606,55 @@ contains
     CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill) ! d%frill |cpy> a%frill
     
   END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur
+
+
+  !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize 
+  !++XSTRUCTORS:       d_2 => a_2  (recursive)
+  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (d, a, threshold2, at)
+
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)           :: a
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN), OPTIONAL :: at
+    REAL(SpAMM_KIND),                  INTENT(IN)    :: threshold2
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: d
+    
+    if(.not.associated(a).and..not.associated(d))then
+
+       return
+
+    elseif(.not.associated(a).and.associated(d))then
+
+       call SpAMM_destruct_tree_2d_symm_recur (d)
+       return
+
+    elseif( a%frill%norm2 <= threshold2)then
+
+      if(associated(d)) call SpAMM_destruct_tree_2d_symm_recur (d)
+
+    elseif (a%frill%leaf) then       
+
+       IF(PRESENT(at))THEN
+
+          d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+TRANSPOSE( at%chunk(1:SBS,1:SBS) ))*SpAMM_half
+
+       ELSE
+
+          d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+TRANSPOSE(  a%chunk(1:SBS,1:SBS) ))*SpAMM_half
+
+       ENDIF
+
+    else
+
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2, at=a%child_01 )
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_01(d), a%child_01, threshold2, at=a%child_10 )
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_11(d), a%child_11, threshold2 )
+
+    endif    
+
+    CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill) ! d%frill |cpy> a%frill
+    
+  END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize
+
 
 end module spamm_xstructors
 
