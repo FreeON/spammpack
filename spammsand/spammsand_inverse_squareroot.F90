@@ -49,24 +49,14 @@ contains
     
     CALL SpAMM_set_identity_2d_symm_recur (Z)
 
-    WRITE(*,*)' ZZZZZZZZZZZZZZZZZZZZZZZZZ '
-    CALL SpAMM_convert_tree_2d_symm_to_dense_recur (z,xd)
-    call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-    write(*,*)' zzzz ev = ',eval(1),eval(n)
-    WRITE(*,*)' ZZZZZZZZZZZZZZZZZZZZZZZZZ '
-
     ! the starting residual; x->I
     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
 
-    CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
-    call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-
 !    OPEN(unit=99,file='h2.evals')
-    WRITE(99,*)24
-    DO i=1,24
-       write(99,*)eval(i)
-    enddo
-
+!    WRITE(99,*)24
+!    DO i=1,24
+!       write(99,*)eval(i)
+!    enddo
 
 
     DO i = 1, 8
@@ -93,26 +83,26 @@ contains
 !       write(*,*)' ev = ',eval(1),eval(n)
 
        !        
-!!$       IF(FillN>0.4d0)THEN
-!!$          delta=1.0d-1 ! maybe this should be a variable too, passed in?
-!!$          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$          sc=spammsand_scaling_invsqrt(SpAMM_zero)
-!!$       ELSE
-!!$!          delta=tau ! maybe this should be a variable too, passed in?
-!!$!          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$          sc=1d0
-!!$       ENDIF
+       IF(FillN>0.4d0)THEN
+          delta=1.0d-1 ! maybe this should be a variable too, passed in?
+          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+          sc=spammsand_scaling_invsqrt(SpAMM_zero)
+       ELSE
+!          delta=tau ! maybe this should be a variable too, passed in?
+!          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+          sc=1d0
+       ENDIF
+
 !!$
-
-
-       sc=1d0
+!!$
+!!$       sc=1d0
 
 !!$       sc=spammsand_scaling_invsqrt(eval(1))
 !!$!       deallocate(xd)
 
-       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
-       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-       write(*,*)' before mapping ev = ',eval(1),eval(n)
+!!$       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
+!!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+!!$       write(*,*)' before mapping ev = ',eval(1),eval(n)
 
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
@@ -120,13 +110,25 @@ contains
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, nt_O=.TRUE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
 
+    CALL SpAMM_convert_tree_2d_symm_to_dense_recur (t,xd)
+    call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+    WRITE(*,*)' IDENT = ',eval
+    STOP
+
+
+
+
+
        ! update (threshold)
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
 
 
-       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (t,xd)
-       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-       write(*,*)' ZZ ev = ',eval(1),eval(n)
+
+!!$
+!!$
+!!$       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (t,xd)
+!!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+!!$       write(*,*)' ZZ ev = ',eval(1),eval(n)
 
 
 !  NEW   0.99999999999999967        1.0220860347515652     
@@ -140,18 +142,23 @@ contains
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra , NT_O=.FALSE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
        x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau      , NT_O=.TRUE. , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
 
-       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
-       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-       write(*,*)' XX ev = ',eval(1),eval(n)
 
-       IF(FillN<0.1d0.AND.FillN>FillN_prev)THEN
-!          RETURN
-       ELSEIF(FillN<Tau)THEN
-!          RETURN
-       END IF
 
-       ! best acceleration we can hope for
-       xo_analytic=xo_analytic*(9d0/4d0)*sc
+
+
+
+!!$       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
+!!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+!!$       write(*,*)' XX ev = ',eval(1),eval(n)
+!!$
+!!$       IF(FillN<0.1d0.AND.FillN>FillN_prev)THEN
+!!$!          RETURN
+!!$       ELSEIF(FillN<Tau)THEN
+!!$!          RETURN
+!!$       END IF
+!!$
+!!$       ! best acceleration we can hope for
+!!$       xo_analytic=xo_analytic*(9d0/4d0)*sc
        !
     END DO
    
