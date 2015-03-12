@@ -25,7 +25,7 @@ CONTAINS
           DO I=1,a%frill%bndbx(1,1)-a%frill%bndbx(0,1)+1
              a%chunk(I,I)=SpAMM_one
           ENDDO
-          
+
        else
 
           CALL SpAMM_set_identity_2d_symm_recur(SpAMM_construct_tree_2d_symm_00(a))
@@ -85,6 +85,7 @@ CONTAINS
 
        CALL SpAMM_print_tree_2d_symm_recur (a%child_00) 
        CALL SpAMM_print_tree_2d_symm_recur (a%child_01) 
+       CALL SpAMM_print_tree_2d_symm_recur (a%child_10) 
        CALL SpAMM_print_tree_2d_symm_recur (a%child_11) 
 
     endif

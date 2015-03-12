@@ -35,7 +35,8 @@ contains
   SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, t, tau, first)
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: s
-    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(INOUT) :: x, z, t
+    TYPE(SpAMM_tree_2d_symm) , POINTER :: x, z, y, t
+!    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(INOUT) :: x, z, t
     REAL(SpAMM_KIND),                   INTENT(IN)    :: Tau
 
     LOGICAL, INTENT(IN) :: first
@@ -47,16 +48,29 @@ contains
     n=x%frill%ndimn(1)
     FillN=1d10
     
+    y => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+    Y => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_O = y, threshold_O = SpAMM_normclean ) 
+
     CALL SpAMM_set_identity_2d_symm_recur (Z)
+
+    xd=0d0
+    CALL SpAMM_convert_tree_2d_symm_to_dense_recur (z,xd)
+    call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+    write(*,*)' zzzz111111zzzzzzz ev = ',eval(1),eval(n)
+    
 
     ! the starting residual; x->I
     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
 
+    xd=0d0
+    CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
+    call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+
 !    OPEN(unit=99,file='h2.evals')
-!    WRITE(99,*)24
-!    DO i=1,24
-!       write(99,*)eval(i)
-!    enddo
+    WRITE(99,*)24
+    DO i=1,24
+       write(99,*)eval(i)
+    enddo
 
 
     DO i = 1, 8
@@ -83,65 +97,65 @@ contains
 !       write(*,*)' ev = ',eval(1),eval(n)
 
        !        
-       IF(FillN>0.4d0)THEN
-          delta=1.0d-1 ! maybe this should be a variable too, passed in?
-          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-          sc=spammsand_scaling_invsqrt(SpAMM_zero)
-       ELSE
-!          delta=tau ! maybe this should be a variable too, passed in?
-!          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-          sc=1d0
-       ENDIF
+!!$       IF(FillN>0.4d0)THEN
+!!$          delta=1.0d-1 ! maybe this should be a variable too, passed in?
+!!$          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$          sc=spammsand_scaling_invsqrt(SpAMM_zero)
+!!$       ELSE
+!!$!          delta=tau ! maybe this should be a variable too, passed in?
+!!$!          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$          sc=1d0
+!!$       ENDIF
+!!$
 
-!!$
-!!$
-!!$       sc=1d0
+
+       sc=1d0
 
 !!$       sc=spammsand_scaling_invsqrt(eval(1))
 !!$!       deallocate(xd)
 
-!!$       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
-!!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-!!$       write(*,*)' before mapping ev = ',eval(1),eval(n)
+       xd=0d0
+       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
+       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+       write(*,*)' before mapping ev = ',eval(1),eval(n)
 
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
+       xd=0d0
+       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
+       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+       write(*,*)' after mapping ev = ',eval(1),eval(n)
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, nt_O=.TRUE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
-
-    CALL SpAMM_convert_tree_2d_symm_to_dense_recur (t,xd)
-    call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-    WRITE(*,*)' IDENT = ',eval
-    STOP
-
-
-
-
-
        ! update (threshold)
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
 
+       ! <Y_n+1|
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau, nt_O=.TRUE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
+       ! update (threshold)
+       y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau ) 
 
+       xd=0d0
+       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (z,xd)
+       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+       write(*,*)' zzzzzzzzzzz ev = ',eval(1),eval(n)
 
-!!$
-!!$
-!!$       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (t,xd)
-!!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-!!$       write(*,*)' ZZ ev = ',eval(1),eval(n)
-
-
-!  NEW   0.99999999999999967        1.0220860347515652     
-!   T    0.98895698262421738        1.0000000000000002     
-!   Z    0.98895698262421738        1.0000000000000002 
 
        tau_xtra=tau*1d-1
        if(first)tau_xtra=tau*1d-2 ! stabilize xtra the first step ...
 
        ! |X_n> = <Z_n|S> |Z_n>
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra , NT_O=.FALSE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
-       x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau      , NT_O=.TRUE. , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
 
+!       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra , NT_O=.false. , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
+!       x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau      , NT_O=.TRUE.  , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
+
+       x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau      , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
+
+       xd=0d0
+       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
+       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+       write(*,*)' xxxxxxxxxxxx ev = ',eval(1),eval(n)
 
 
 
@@ -161,6 +175,8 @@ contains
 !!$       xo_analytic=xo_analytic*(9d0/4d0)*sc
        !
     END DO
+
+    call SpAMM_destruct_tree_2d_symm_recur (y)
    
   END SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot
 
@@ -214,7 +230,7 @@ program SpAMM_sandwich_inverse_squareroot
   
   implicit none
 
-  TYPE(spammsand_tree_2d_slices), pointer        :: z, sndwch
+  TYPE(spammsand_tree_2d_slices), pointer        :: z, z_head, y, y_head
 
   type(SpAMM_tree_2d_symm),       pointer        :: s => null()
   type(SpAMM_tree_2d_symm),       pointer        :: x => null()
@@ -274,12 +290,15 @@ program SpAMM_sandwich_inverse_squareroot
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
     
+!  allocate(y) 
   allocate(z) 
-  sndwch => z ! head of the slices
+!  y_head => y ! head of the slices
+  z_head => z ! head of the slices
   do i=1,slices
 
      z%tau = 10d0**( logtau_strt + logtau_dlta * float(i-1) )
      tau(i)=z%tau
+!     y%mtx => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
      z%mtx => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
      if(i==slices)then        
@@ -302,11 +321,14 @@ program SpAMM_sandwich_inverse_squareroot
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   
   first=.TRUE.
-  z=>sndwch
+  z=>z_head
 
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
+
+     WRITE(*,*)' AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' 
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first )
+     WRITE(*,*)' BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
 
      first=.FALSE.
      if(.not.associated(z%nxt))exit    
@@ -336,18 +358,18 @@ program SpAMM_sandwich_inverse_squareroot
 
      x     => SpAMM_tree_2d_symm_copy_tree_2d_symm( s  , in_O = x, threshold_O = SpAMM_normclean )
      
-     tau_xtra=z%nxt%tau
-!     tau_xtra=1d-16
+!     tau_xtra=z%nxt%tau
+     tau_xtra=1d-16
 
 !     tau_xtra=tau_dlta*z%nxt%tau
 
-     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, tau_xtra, NT_O=.FALSE. ,alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
-
-     x => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, tau_xtra, NT_O=.TRUE.  ,alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
+     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, tau_xtra, NT_O=.FALSE.  ,alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
+     x => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, tau_xtra, NT_O=.TRUE.   ,alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
 
        CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
        call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
        write(*,*)' new res ev = ',eval(1),eval(n)
+       
 
 !!$
 !!$     x_new =  SpAMMSand_rqi_extremal( x, 1d-8 , high_O=.TRUE. )
@@ -367,7 +389,7 @@ program SpAMM_sandwich_inverse_squareroot
 
 
   ! de-normalize, back to max_ev (1->max_ev)...  
-  z=>sndwch
+  z=>z_head
   z%mtx => SpAMM_scalar_times_tree_2d_symm(SpAMM_one/SQRT(x_hi), z%mtx)
 
   ! at this point, we are basically done.  the rest is IO/verification of trace, error, timing & etc
@@ -391,7 +413,7 @@ program SpAMM_sandwich_inverse_squareroot
   ! get the original back ...
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
   
-  ! I = <z_spammsand|s|z_spammsand>
+  ! I = <z^T_spammsand|s|z_spammsand>
   t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, x, 1d-20, nt_O=.TRUE. , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )   
   s => SpAMM_tree_2d_symm_times_tree_2d_symm( x, t, 1d-20, nt_O=.FALSE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = s )   
 

@@ -223,10 +223,6 @@ contains
        
        WRITE(*,*)'  Z  ',minmax(z)
 
-       STOP
-
-
-
        IF(j>1 .AND. xo < ShiftSw )THEN
           xo_analytic=xo_analytic*(9d0/4d0)*sc
        ENDIF

@@ -595,6 +595,7 @@ contains
 
     elseif (a%frill%leaf) then       
 
+       IF(.not.allocated(d%chunk))STOP 'fucked'
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
 
     else
