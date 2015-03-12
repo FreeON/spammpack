@@ -140,7 +140,7 @@ ifZeroReplace tree@(Rect t l h w _ tl tr bl br)
 
 combineZeros :: MatrixTree -> MatrixTree
 combineZeros (Rect t l h w _ tl tr bl br) =
-             ifZeroReplace (Rect t l h w x newtl newtr newbl newbr)
+             ifZeroReplace $ Rect t l h w x newtl newtr newbl newbr
              where [newtl, newtr, newbl, newbr] = fmap combineZeros [tl, tr, bl, br]
                    x = addSubtreeNorms . fmap norm $ [newtl, newtr, newbl, newbr]
 combineZeros tree = ifZeroReplace tree
