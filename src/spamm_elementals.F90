@@ -6,7 +6,7 @@ module spamm_elementals
 
   implicit none
 
-  ! This code contains protocols for solo opperations on structures, copy, scalar multiply etc. 
+  ! This code contains protocols for solo/unit opperations on structures, copy, scalar multiply etc. 
 CONTAINS
 
   RECURSIVE FUNCTION SpAMM_trace_tree_2d_symm_recur(a) RESULT(tr)
@@ -100,6 +100,7 @@ CONTAINS
 
           absmax = max(absmax, SpAMM_absmax_tree_2d_symm_recur(a%child_00) )
           absmax = max(absmax, SpAMM_absmax_tree_2d_symm_recur(a%child_01) )
+          absmax = max(absmax, SpAMM_absmax_tree_2d_symm_recur(a%child_10) )
           absmax = max(absmax, SpAMM_absmax_tree_2d_symm_recur(a%child_11) )
 
        endif
@@ -108,7 +109,34 @@ CONTAINS
 
   end function SpAMM_absmax_tree_2d_symm_recur
 
+  recursive subroutine SpAMM_set_identity_2d_symm_recur (A)
 
+    type(SpAMM_tree_2d_symm), pointer  :: A
+    integer :: i
+
+    if(.not. associated(A))then
+       return
+    else
+
+       if(a%frill%leaf)then
+          
+          a%chunk=SpAMM_zero
+          DO I=1,a%frill%bndbx(1,1)-a%frill%bndbx(0,1)+1
+             a%chunk(I,I)=SpAMM_one
+          ENDDO
+          
+       else
+
+          CALL SpAMM_set_identity_2d_symm_recur(SpAMM_construct_tree_2d_symm_00(a))
+          call SpAMM_destruct_tree_2d_symm_recur (a%child_01)
+          call SpAMM_destruct_tree_2d_symm_recur (a%child_10)
+          CALL SpAMM_set_identity_2d_symm_recur(SpAMM_construct_tree_2d_symm_11(a))
+
+       endif
+
+    endif
+
+  end subroutine SpAMM_set_identity_2d_symm_recur
 
 
 END module spamm_elementals

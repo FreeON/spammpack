@@ -558,15 +558,18 @@ contains
     threshold2=SpAMM_zero
     IF(PRESENT(threshold_o))threshold2=threshold_O**2
 
-    IF(PRESENT(symmetrize_O))THEN
-       IF(symmetrize_O)THEN
-            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (d, a, threshold2)
-         ELSE
+!!$    IF(PRESENT(symmetrize_O))THEN
+!!$       IF(symmetrize_O)THEN
+!!$            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (d, a, threshold2)
+!!$         ELSE
+
             CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
-         ENDIF
-      ELSE
-            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
-         ENDIF
+
+!!$         ENDIF
+!!$      ELSE
+!!$            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
+!!$         ENDIF
+
   END function SpAMM_tree_2d_symm_copy_tree_2d_symm
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur 
@@ -586,9 +589,9 @@ contains
        call SpAMM_destruct_tree_2d_symm_recur (d)
        return
 
-    elseif( a%frill%norm2 <= threshold2)then
-
-      if(associated(d)) call SpAMM_destruct_tree_2d_symm_recur (d)
+!!$    elseif( a%frill%norm2 <= threshold2)then
+!!$
+!!$      if(associated(d)) call SpAMM_destruct_tree_2d_symm_recur (d)
 
     elseif (a%frill%leaf) then       
 
@@ -632,15 +635,25 @@ contains
 
     elseif (a%frill%leaf) then       
 
-       IF(PRESENT(at))THEN
 
-          d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+TRANSPOSE( at%chunk(1:SBS,1:SBS) ))*SpAMM_half
+!!$       if(present(at))then
+!!$
+!!$          if(.not.associated(at))then
+!!$             call SpAMM_destruct_tree_2d_symm_recur (d)
+!!$             return
+!!$          endif
+!!$
+!!$          write(*,*)' associated ',allocated(a%chunk), allocated( at%chunk ), a%frill%leaf, at%frill%leaf
+!!$
+!!$          d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+TRANSPOSE( at%chunk(1:SBS,1:SBS) ))*SpAMM_half
+!!$
+!!$       ELSE
 
-       ELSE
+          d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS)
 
-          d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+TRANSPOSE(  a%chunk(1:SBS,1:SBS) ))*SpAMM_half
+!          d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+TRANSPOSE(  a%chunk(1:SBS,1:SBS) ))*SpAMM_half
 
-       ENDIF
+!!!       ENDIF
 
     else
 

@@ -47,9 +47,27 @@ contains
     n=x%frill%ndimn(1)
     FillN=1d10
     
-    z => SpAMM_scalar_plus_tree_2d_symm(SpAMM_one, z) ! assuming i'm a freshly made top
+    CALL SpAMM_set_identity_2d_symm_recur (Z)
+
+    WRITE(*,*)' ZZZZZZZZZZZZZZZZZZZZZZZZZ '
+    CALL SpAMM_convert_tree_2d_symm_to_dense_recur (z,xd)
+    call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+    write(*,*)' zzzz ev = ',eval(1),eval(n)
+    WRITE(*,*)' ZZZZZZZZZZZZZZZZZZZZZZZZZ '
+
     ! the starting residual; x->I
     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
+
+    CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
+    call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+
+!    OPEN(unit=99,file='h2.evals')
+    WRITE(99,*)24
+    DO i=1,24
+       write(99,*)eval(i)
+    enddo
+
+
 
     DO i = 1, 8
 
@@ -60,7 +78,7 @@ contains
        FillN = abs( dble(n) - TrX )/dble(n)       
 
 !       WRITE(*,*)filln, filln_prev
-       IF(FillN<0.1d0.AND.FillN>FillN_prev)RETURN
+!       IF(FillN<0.1d0.AND.FillN>FillN_prev)RETURN
 
        
 !       WRITE(33,66)i, filln
@@ -75,45 +93,56 @@ contains
 !       write(*,*)' ev = ',eval(1),eval(n)
 
        !        
-       IF(FillN>0.42d0)THEN
-          delta=1.0d-1 ! maybe this should be a variable too, passed in?
-          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-          sc=spammsand_scaling_invsqrt(SpAMM_zero)
-       ELSE
-          delta=tau ! maybe this should be a variable too, passed in?
-          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-          sc=1d0
-       ENDIF
+!!$       IF(FillN>0.4d0)THEN
+!!$          delta=1.0d-1 ! maybe this should be a variable too, passed in?
+!!$          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$          sc=spammsand_scaling_invsqrt(SpAMM_zero)
+!!$       ELSE
+!!$!          delta=tau ! maybe this should be a variable too, passed in?
+!!$!          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$          sc=1d0
+!!$       ENDIF
+!!$
 
 
-
-!       if(i==1)sc=1d0
+       sc=1d0
 
 !!$       sc=spammsand_scaling_invsqrt(eval(1))
 !!$!       deallocate(xd)
 
-       x => spammsand_scaled_invsqrt_mapping( x, sc )
-
        CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
        call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-       write(*,*)' ev after mapp= ',eval(1),eval(n)
+       write(*,*)' before mapping ev = ',eval(1),eval(n)
+
+       x => spammsand_scaled_invsqrt_mapping( x, sc )
+
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, nt_O=.TRUE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
-       
+
        ! update (threshold)
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
 
+
+       CALL SpAMM_convert_tree_2d_symm_to_dense_recur (t,xd)
+       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+       write(*,*)' ZZ ev = ',eval(1),eval(n)
+
+
+!  NEW   0.99999999999999967        1.0220860347515652     
+!   T    0.98895698262421738        1.0000000000000002     
+!   Z    0.98895698262421738        1.0000000000000002 
+
        tau_xtra=tau*1d-1
        if(first)tau_xtra=tau*1d-2 ! stabilize xtra the first step ...
+
        ! |X_n> = <Z_n|S> |Z_n>
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra , NT_O=.FALSE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
        x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau      , NT_O=.TRUE. , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
 
        CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
        call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-
-       write(*,*)' ev = ',eval(1),eval(n)
+       write(*,*)' XX ev = ',eval(1),eval(n)
 
        IF(FillN<0.1d0.AND.FillN>FillN_prev)THEN
 !          RETURN
@@ -151,8 +180,6 @@ contains
     TYPE(spamm_tree_2d_symm), POINTER  :: x
     REAL(SpAMM_KIND),      INTENT(IN)  :: sc 
     REAL(SpAMM_KIND)                   :: SHFT,SCAL 
-
-    integer :: i
 
     SHFT=SpAMM_half*SQRT(sc)*SpAMM_three
     SCAL=SpAMM_half*(-sc)*SQRT(sc)
@@ -198,7 +225,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   real(SpAMM_KIND), dimension(1:slices)          :: tau
  
-  integer :: i,n,j
+  integer :: i,n,j,k
 
 !  real :: start_time, end_time
 
@@ -235,8 +262,8 @@ program SpAMM_sandwich_inverse_squareroot
 !!  Sd=s_dense/x_hi
 !!  xd=sd
 
-  logtau_strt=-4                                       ! starting accuracy
-  logtau_stop=-6                                       ! stoping  "
+  logtau_strt=-2                                       ! starting accuracy
+  logtau_stop=-3                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
     
@@ -264,7 +291,6 @@ program SpAMM_sandwich_inverse_squareroot
 33 format(' building |Z> = ',4('|',e6.1,'>'),'...')
 
   ! work matrices ...
-  zee => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   x => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   
@@ -273,18 +299,43 @@ program SpAMM_sandwich_inverse_squareroot
 
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
-     call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, zee, t, z%tau, first )
+     call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first )
 
      first=.FALSE.
-     if(.not.associated(z%nxt))exit
+     if(.not.associated(z%nxt))exit    
 
-     z%mtx => SpAMM_tree_2d_symm_copy_tree_2d_symm( zee, in_O = z%mtx , threshold_O = SQRT(z%tau), symmetrize_O= .TRUE.)
+!!$     CALL SpAMM_convert_tree_2d_symm_to_dense_recur (zee,zd)
+!!$
+!!$!     write(*,*)' zd before '
+!!$!     do k=1,6
+!!$!        write(*,333)(zd(k,j),j=1,6)
+!!$!     enddo
+!!$!333   format(6(E16.8,', '))
+!!$
+!!$     CALL SpAMM_convert_tree_2d_symm_to_dense_recur (zee,xd)
+!!$     call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+!!$     write(*,*)' zd before ev = ',eval(1),eval(n)
+!!$
+!!$
+!!$     zd=0.5d0*(zd+TRANSPOSE(zd))
+!!$
+!!$     xd=zd
+!!$     call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+!!$     write(*,*)' zd after ev = ',eval(1),eval(n)
+!!$     z%mtx => SpAMM_convert_dense_to_tree_2d_symm(zd)
+     
+!     z%mtx => SpAMM_tree_2d_symm_copy_tree_2d_symm( zee, in_O = z%mtx , threshold_O = SQRT(z%tau), symmetrize_O= .TRUE.)
+
+
      x     => SpAMM_tree_2d_symm_copy_tree_2d_symm( s  , in_O = x, threshold_O = SpAMM_normclean )
      
      tau_xtra=z%nxt%tau
+!     tau_xtra=1d-16
+
 !     tau_xtra=tau_dlta*z%nxt%tau
 
      t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, tau_xtra, NT_O=.FALSE. ,alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
+
      x => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, tau_xtra, NT_O=.TRUE.  ,alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
 
        CALL SpAMM_convert_tree_2d_symm_to_dense_recur (x,xd)
