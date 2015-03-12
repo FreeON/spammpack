@@ -589,13 +589,17 @@ contains
        call SpAMM_destruct_tree_2d_symm_recur (d)
        return
 
+!---------------------------------------------------------------
+!
+!      FILTERING HERE BREAKS EVERYTHING!  EVEN IF THRESHOLD IS ZERO!!
+!
 !!$    elseif( a%frill%norm2 <= threshold2)then
 !!$
-!!$      if(associated(d)) call SpAMM_destruct_tree_2d_symm_recur (d)
+!!$      call SpAMM_destruct_tree_2d_symm_recur (d)
+!!$      return
 
     elseif (a%frill%leaf) then       
 
-       IF(.not.allocated(d%chunk))STOP 'fucked'
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
 
     else

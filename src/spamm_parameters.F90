@@ -4,12 +4,12 @@ module spamm_parameters
 
   implicit none
 
-  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE = 8
+  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE = 16
   INTEGER,          PARAMETER :: SBS              = SpAMM_BLOCK_SIZE
   INTEGER,          PARAMETER :: SBS2             = SpAMM_BLOCK_SIZE**2
   INTEGER,          PARAMETER :: SBS3             = SpAMM_BLOCK_SIZE**3
 
-  REAL(SpAMM_KIND), parameter :: SpAMM_normclean  = 1d-12
+  REAL(SpAMM_KIND), parameter :: SpAMM_normclean  = 0d-12
 
   real(SPAMM_KIND), parameter :: SpAMM_Zero  = 0D0
   real(SPAMM_KIND), parameter :: SpAMM_Half  = 5D-1

@@ -80,9 +80,9 @@ CONTAINS
        ENDIF
 
        IF(MinMax==1)THEN
-          WRITE(*,33)omega,dot_g,CG
+!          WRITE(*,33)omega,dot_g,CG
        ELSE
-          WRITE(*,44)omega,dot_g,CG
+!          WRITE(*,44)omega,dot_g,CG
        ENDIF
 
        ! convergence criteria
