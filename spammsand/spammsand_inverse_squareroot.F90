@@ -68,13 +68,13 @@ contains
        WRITE(101,*)kount, filln
 
        IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
-!          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
-!          write(*,*)' elevation' 
+          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
+          write(*,*)' elevation' 
           RETURN  ! Elevation
        endif
-       IF( FillN <  Tau**2                             )then
-!          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
-!          write(*,*)' anhiliaiton '
+       IF( FillN <  Tau                             )then
+          WRITE(*,*)' fill n = ',filln,' tau**2 = ',tau
+          write(*,*)' anhiliaiton '
           RETURN  ! Anihilation
        end IF
 !       WRITE(33,66)i, filln
@@ -199,7 +199,7 @@ program SpAMM_sandwich_inverse_squareroot
                                                     tau_dlta, tau_xtra, error, tmp1,tmp2
   logical :: first
 
-  integer, parameter                             :: slices=3
+  integer, parameter                             :: slices=4
 
   real(SpAMM_KIND), dimension(1:slices)          :: tau
  
@@ -240,7 +240,7 @@ program SpAMM_sandwich_inverse_squareroot
 !!  Sd=s_dense/x_hi
 !!  xd=sd
 
-  logtau_strt=-3                                       ! starting accuracy
+  logtau_strt=-2                                       ! starting accuracy
   logtau_stop=-11                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
@@ -322,9 +322,7 @@ program SpAMM_sandwich_inverse_squareroot
   t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, x, 1d-20, nt_O=.TRUE. , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )   
   s => SpAMM_tree_2d_symm_times_tree_2d_symm( x, t, 1d-20, nt_O=.FALSE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = s )   
 
-  write(*,*)' e1 ',SQRT(ABS(DBLE(N)-s%frill%norm2))/DBLE(N)**2
-
-  ! |error|_F <= [I-1]/N**2
+  ! error = [ <Zt_1|Zt_2|...<Zt_slice| S |Z_slice>...|Z_2>|Z_1> -1.*I ] /N**2
   s => SpAMM_scalar_plus_tree_2d_symm( -SpAMM_one, s) 
   error=SQRT(s%frill%norm2)/dble(N)**2
 
