@@ -41,7 +41,7 @@ some other factoids can be found on
 # API Documentation
 
 The [API](/spammpack/html/) is documented using
-[Doxygen](http://doxygen.org).
+[Doxygen](http://www.doxygen.org).
 
 # Authors
 
