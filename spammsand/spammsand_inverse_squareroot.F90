@@ -70,12 +70,12 @@ contains
        IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
 !          write(*,*)' elevation' 
-!          RETURN  ! Elevation
+          RETURN  ! Elevation
        endif
        IF( FillN <  Tau**2                             )then
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
 !          write(*,*)' anhiliaiton '
-!          RETURN  ! Anihilation
+          RETURN  ! Anihilation
        end IF
 !       WRITE(33,66)i, filln
 !66     format(i3,' ',e12.6)
@@ -85,28 +85,21 @@ contains
        WRITE(*,33)tau, kount, TrX, FillN, z%frill%non0s/dble(N**2)
 33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3,' Full = ',e5.1)
 
-       if(kount==26)stop
-
        !        
        IF(FillN>0.4d0)THEN
-          delta=0.0d-2 ! maybe this should be a variable too, passed in?
+          delta=1.0d-1 ! maybe this should be a variable too, passed in?
           x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
           sc=spammsand_scaling_invsqrt(SpAMM_zero)
        ELSE
           sc=1d0
        ENDIF
 
-
+!!$       CALL SpAMM_convert_tree_2d_symm_to_dense(x,xd)
+!!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+!!$       sc=spammsand_scaling_invsqrt(eval(1))
 !!$       sc=1d0
 !!$
-       CALL SpAMM_convert_tree_2d_symm_to_dense(x,xd)
-       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-       WRITE(*,*)' eval = ',eval(1),eval(n)
-       
-!!$       sc=spammsand_scaling_invsqrt(eval(1))
-
-!!$!       deallocate(xd)
-
+!!!       WRITE(*,*)' eval = ',eval(1),eval(n),' sc = ',sc
 
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
@@ -247,7 +240,7 @@ program SpAMM_sandwich_inverse_squareroot
 !!  Sd=s_dense/x_hi
 !!  xd=sd
 
-  logtau_strt=-11                                       ! starting accuracy
+  logtau_strt=-3                                       ! starting accuracy
   logtau_stop=-11                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
