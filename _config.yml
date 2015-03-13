@@ -16,6 +16,7 @@ pages_list:
   Main: "/spammpack/"
   Building: "/spammpack/building.html"
   Developer: "/spammpack/developer.html"
+  API: "/spammpack/html/"
   References: "/spammpack/references.html"
 
 defaults:

@@ -38,6 +38,11 @@ some other factoids can be found on
 
 {% include openhub.html %}
 
+# API Documentation
+
+The [API](/spammpack/html/) is documented using
+[Doxygen](http://doxygen.org).
+
 # Authors
 
 The principal authors of spammpack are:

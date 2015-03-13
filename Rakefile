@@ -19,7 +19,7 @@ desc "Generate and publish blog to gh-pages"
 task :publish => [:generate] do
   Dir.mktmpdir do |tmp|
     system "mv _site/* #{tmp}"
-    system "git remote update"
+    system "git fetch origin"
     system "git stash"
     system "git checkout gh-pages"
     system "git reset --hard origin/gh-pages"
