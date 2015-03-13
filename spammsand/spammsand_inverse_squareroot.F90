@@ -58,47 +58,53 @@ contains
     ! the starting residual; x->I
     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
 
-    DO i = 1, 40
-       kount=kount+1
+    DO i = 1, 26
 
        ! monitor the trace for convergence, maybe look at rate of change at some point too?:
        FillN_prev=FillN
        TrX=SpAMM_trace_tree_2d_symm_recur(x)
-!       if(trx>dble(N).and.first)return
-
        FillN = abs( dble(n) - TrX )/dble(n)       
+
+       WRITE(101,*)kount, filln
+
        IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
 !          write(*,*)' elevation' 
-          RETURN  ! Elevation
+!          RETURN  ! Elevation
        endif
        IF( FillN <  Tau**2                             )then
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
 !          write(*,*)' anhiliaiton '
-          RETURN  ! Anihilation
+!          RETURN  ! Anihilation
        end IF
 !       WRITE(33,66)i, filln
 !66     format(i3,' ',e12.6)
 
+       kount=kount+1
+
        WRITE(*,33)tau, kount, TrX, FillN, z%frill%non0s/dble(N**2)
 33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3,' Full = ',e5.1)
 
+       if(kount==26)stop
+
        !        
        IF(FillN>0.4d0)THEN
-          delta=1.0d-1 ! maybe this should be a variable too, passed in?
+          delta=0.0d-2 ! maybe this should be a variable too, passed in?
           x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
           sc=spammsand_scaling_invsqrt(SpAMM_zero)
        ELSE
-!          delta=tau ! maybe this should be a variable too, passed in?
-!          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
           sc=1d0
        ENDIF
-!!$
-!!$
+
+
 !!$       sc=1d0
-
-
+!!$
+       CALL SpAMM_convert_tree_2d_symm_to_dense(x,xd)
+       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+       WRITE(*,*)' eval = ',eval(1),eval(n)
+       
 !!$       sc=spammsand_scaling_invsqrt(eval(1))
+
 !!$!       deallocate(xd)
 
 
@@ -118,8 +124,8 @@ contains
 
        IF(first)then
           ! <X_n> = <Z_n|S|Z_n>
-          tau_xtra=tau*1d-1
-          if(first)tau_xtra=tau*1d-2 ! stabilize xtra the first step ...
+          tau_xtra=tau*1d-2 ! xtra stabilization on first multiply 
+
           t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra , NT_O=.false. , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau      , NT_O=.TRUE.  , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
        else
@@ -200,7 +206,7 @@ program SpAMM_sandwich_inverse_squareroot
                                                     tau_dlta, tau_xtra, error, tmp1,tmp2
   logical :: first
 
-  integer, parameter                             :: slices=4
+  integer, parameter                             :: slices=3
 
   real(SpAMM_KIND), dimension(1:slices)          :: tau
  
@@ -232,7 +238,7 @@ program SpAMM_sandwich_inverse_squareroot
   !=============================================================
   ! the max eigenvalue
 
-  x_hi = SpAMMSand_rqi_extremal(s,1d-8,high_O=.TRUE.)
+  x_hi = SpAMMSand_rqi_extremal(s,1d-10,high_O=.TRUE.)
   WRITE(*,*)' hi extremal = ',x_hi
 
   ! normalize the max ev of s to 1.  
@@ -241,8 +247,8 @@ program SpAMM_sandwich_inverse_squareroot
 !!  Sd=s_dense/x_hi
 !!  xd=sd
 
-  logtau_strt=-3                                       ! starting accuracy
-  logtau_stop=-10                                      ! stoping  "
+  logtau_strt=-11                                       ! starting accuracy
+  logtau_stop=-11                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
     
