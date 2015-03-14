@@ -1,0 +1,34 @@
+set term pngcairo dashed transparent enhanced font 'Courier Bold,16'
+
+set output "8x_33_nanotube_cond11_by_tau.png" 
+
+set logscale y
+set yrange [1.e-12:1.]
+set ylabel 'error' offset 3,0
+set xlabel 'iteration' offset 0,0.5
+
+set style line 1 lt 1 lc rgb "green" lw 3
+set style line 2 lt 1 lc rgb "orange" lw 3
+set style line 3 lt 3 lc rgb "red" lw 2
+set style line 4 lt 4 lc rgb "red" lw 2
+set style line 5 lt 5 lc rgb "red" lw 2
+
+set size ratio .75
+#
+set label 1 'naive'           tc rgb "green"  at 2, 0.000000001 
+set label 2 'scaled'          tc rgb "orange" at 2, 0.00000000022
+set label 3 'rugged, 16x16'   tc rgb "red"    at 2, 0.00000000005
+
+plot [1:40] "8x_33_nanotube_cond11_no_scaling_512by.dat"   using 1:2 w lines ls 1 notitle,\
+	    "8x_33_nanotube_cond11_full_scaling_512by.dat" using 1:2 w lines ls 2 notitle,\
+            "8x_33_nanotube_cond11_16by_tau_mns3.dat"      using 1:2 w lines ls 3 title '1d-3',\
+            "8x_33_nanotube_cond11_16by_tau_mns5.dat"      using 1:2 w lines ls 4 title '1d-5',\
+            "8x_33_nanotube_cond11_16by_tau_mns8.dat"      using 1:2 w lines ls 5 title '1d-8'
+            
+
+
+
+
+
+
+     
