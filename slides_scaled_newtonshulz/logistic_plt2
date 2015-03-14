@@ -1,0 +1,40 @@
+set term png    
+set output "plt.png" 
+set multiplot
+
+a=sqrt(3)
+b=2.85
+
+i(x)=x*b*(9.0/4.0)
+
+h(x)=.5*(a*x)*(3.0-a**2*x**2)
+unstable_scaled(x)=h(sqrt(x))*h(sqrt(x))
+
+stable_scaled(x) = 0.5*(3.0-b*x) * b*x * 0.5*(3.0-b*x)
+
+
+hh(x)=h(sqrt(x))*h(sqrt(x))
+
+set yrange [0.:1.0]
+f(x)=(g(x+1e-3)-g(x-1e-3))/2e-3
+
+r1=3.0/a
+r2=1.0/a
+d1(x)=exp(-100000*(x-r1)**2)
+d2(x)=exp(-100000*(x-r2)**2)
+
+low_old=0.0
+high_old=1.0
+low_new=1e-2
+high_new=1.0
+s(x)=low_new+(x-low_old)*(high_new-low_new)/(high_old-low_old)
+
+plot [0.0:1.0] i(x),unstable_scaled(x),stable_scaled(x),stable_scaled(s(x))
+
+set size 0.4,0.4
+set origin 0.2,0.1
+set xtics 2e-3
+set xrange [-2e-3:2e-3]
+set yrange [0.:i(1e-3)]
+plot i(x),stable_scaled(x),stable_scaled(s(x))
+     
