@@ -1,8 +1,0 @@
-set term png transparent font "courier-bold" size 14     
-set output "plt.png" 
-
-
-plot [1:40] "x,unstable_scaled(x),stable_scaled(x)
-
-
-     
