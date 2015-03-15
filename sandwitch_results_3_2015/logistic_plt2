@@ -1,6 +1,5 @@
-set term png    
-set output "plt.png" 
-set multiplot
+set term pngcairo dashed transparent enhanced font 'Courier Bold,16'
+set output "plt_scaled_logistic_map.png" 
 
 a=sqrt(3)
 b=2.85
@@ -8,10 +7,11 @@ b=2.85
 i(x)=x*b*(9.0/4.0)
 
 h(x)=.5*(a*x)*(3.0-a**2*x**2)
-unstable_scaled(x)=h(sqrt(x))*h(sqrt(x))
+#unstable_scaled(x)=h(sqrt(x))*h(sqrt(x))
 
+unstable_scaled(x) = 0.5*(3.0-3*x) * 3*x * 0.5*(3.0-3*x)
 stable_scaled(x) = 0.5*(3.0-b*x) * b*x * 0.5*(3.0-b*x)
-
+unscaled(x) = 0.5*(3.0-x) * x * 0.5*(3.0-x)
 
 hh(x)=h(sqrt(x))*h(sqrt(x))
 
@@ -29,12 +29,16 @@ low_new=1e-2
 high_new=1.0
 s(x)=low_new+(x-low_old)*(high_new-low_new)/(high_old-low_old)
 
-plot [0.0:1.0] i(x),unstable_scaled(x),stable_scaled(x),stable_scaled(s(x))
+set style line 1 lt 2 lc rgb "orange" lw 3
+set style line 2 lt 2 lc rgb "red" lw 3
+set style line 3 lt 2 lc rgb "green" lw 3
+set size ratio .75
 
-set size 0.4,0.4
-set origin 0.2,0.1
-set xtics 2e-3
-set xrange [-2e-3:2e-3]
-set yrange [0.:i(1e-3)]
-plot i(x),stable_scaled(x),stable_scaled(s(x))
-     
+set label 1 'unscaled (naive)'          tc rgb "green"     at 1.5, 0.9
+set label 2 'scaled (a=3),  unstable'   tc rgb "orange"    at 1.5, 0.85
+set label 3 'scaled (a=2.85), stable'   tc rgb "orange"    at 1.5, 0.8
+
+
+plot [0.0:3.0] unstable_scaled(x) ls 1 notitle,stable_scaled(x) ls 2 notitle, unscaled(x) ls 3 notitle
+
+
