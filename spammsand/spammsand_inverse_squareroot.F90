@@ -48,20 +48,36 @@ contains
     n=x%frill%ndimn(1)
     FillN=1d10
     
-    IF(.nOt.First)tHeN
+!    IF(.nOt.First)tHeN
        y => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+
+
+
+
+
+       WRITE(*,*)' 1111111111111111111111111111111111111111111111'
+       WRITE(*,*)' 1111111111111111111111111111111111111111111111'
+       WRITE(*,*)' NS = ',s%frill%non0s, n**2
+
+       PAUSE 100
+!       stop 'stoped2'
        Y => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_O = y, threshold_O = SpAMM_normclean ) 
-    ENDIF
+
+
+       WRITE(*,*)' 222222222222222222222222222222222222222222222'
+       WRITE(*,*)' 222222222222222222222222222222222222222222222'
+
+!    ENDIF
 
     CALL SpAMM_set_identity_2d_symm_recur (Z)
 
     ! the starting residual; x->I
     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
 
-    DO i = 1, 26
+    DO i = 0, 11!26
 
        ! accounting
-       IF(first.and.i==1)then
+       IF(first.and.i==0)then
           kount=1
        ELSE
           kount=kount+1
@@ -78,12 +94,12 @@ contains
        IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
 !          write(*,*)' elevation' 
-          RETURN  ! Elevation
+!          RETURN  ! Elevation
        endif
        IF( FillN <  Tau*1d1                            )then
 !          WRITE(*,*)' fill n = ',filln,' tau**2 = ',tau
 !          write(*,*)' anhiliaiton '
-          RETURN  ! Anihilation
+!          RETURN  ! Anihilation
        end IF
 
 
@@ -108,7 +124,6 @@ contains
 !!$
 !!       sc=1d0
 !!$
-
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
        ! |Z_n+1> =  <Z_n| X_n>  
@@ -116,23 +131,32 @@ contains
        ! update (threshold)
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
 
-       IF(.nOt.First)tHeN
+!       IF(.nOt.First)tHeN
           ! <Y_n+1|
           t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau, nt_O=.TRUE., alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
           ! update (threshold)
           y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau ) 
-       ENDIF
 
-       IF(first)then
-          ! <X_n> = <Z_n|S|Z_n>
-          tau_xtra=tau*1d-2 ! xtra stabilization on first multiply 
+!       ENDIF
 
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra , NT_O=.false. , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau      , NT_O=.TRUE.  , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
-       else
+!!$       IF(first)then
+!!$          ! <X_n> = <Z_n|S|Z_n>
+!!$          tau_xtra=tau*1d-2 ! xtra stabilization on first multiply 
+!!$          t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra , NT_O=.false. , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = t )
+!!$          x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau      , NT_O=.TRUE.  , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
+!!$       else
           ! <X_n> = <Y_n|Z_n>
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau      , alpha_O=SpAMM_zero, beta_O=SpAMM_one, in_O = x )
-       endif
+
+!       endif
+
+       IF(i>8)then
+          WRITE(*,*)' -----------------------------------------------------------------'
+          WRITE(*,*)' -----------------------------------------------------------------'
+          t => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = t, threshold_O = 0.1d0 ) 
+          write(*,*)' t% = ',t%frill%non0s,n**2
+          stop
+    endif
 
 !!$       ! best acceleration we can hope for
 !!$       xo_analytic=xo_analytic*(9d0/4d0)*sc
@@ -219,8 +243,11 @@ program SpAMM_sandwich_inverse_squareroot
 
   call read_MM(matrix_filename, S_dense)
 
+
   ! matrix to inverse factor
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
+
+
 
   !=============================================================
   allocate(Sd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
@@ -245,10 +272,12 @@ program SpAMM_sandwich_inverse_squareroot
   ! normalize the max ev of s to 1.  
   s => SpAMM_scalar_times_tree_2d_symm(SpAMM_one/x_hi, s)
 
+
+
 !!  Sd=s_dense/x_hi
 !!  xd=sd
 
-  logtau_strt=-3                                       ! starting accuracy
+  logtau_strt=-9                                       ! starting accuracy
   logtau_stop=-11                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
@@ -273,6 +302,8 @@ program SpAMM_sandwich_inverse_squareroot
    write(*,33)tau
 33 format(' building |Z> = ',4('|',e6.1,'>'),'...')
 
+
+
   ! work matrices ...
   x => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
@@ -281,9 +312,14 @@ program SpAMM_sandwich_inverse_squareroot
   first=.TRUE.
   z=>z_head
 
+  WRITE(*,*)' ABOVE DO '
+!  stop 'stoped'
+
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first, kount )
+     stop 'stoped'
+     stop
 
      first=.FALSE.
      if(.not.associated(z%nxt))exit    

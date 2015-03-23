@@ -1,6 +1,7 @@
 module spamm_xstructors
 
   use spamm_structures
+  use spamm_decoration
 
   implicit none
 
@@ -209,7 +210,7 @@ contains
 
     endif    
 
-    CALL SpAMM_decoration_1d_copy_decoration_1d(d%frill,a%frill) ! d%frill |cpy> a%frill
+    CALL SpAMM_redecorate_tree_1d(d)
     
   END SUBROUTINE SpAMM_tree_1d_copy_tree_1d_recur
 
@@ -478,6 +479,8 @@ contains
     call SpAMM_destruct_tree_2d_symm_recur (self%child_11) ! take the [11] channel
     call SpAMM_destruct_tree_2d_symm_node  (self%child_11) ! kill backwards up the tree
 
+    call SpAMM_destruct_tree_2d_symm_node  (self)          ! kill y' self
+
   end subroutine SpAMM_destruct_tree_2d_symm_recur ! ... and we're out ... 
 
   !++XSTRUCTORS:     SpAMM_destruct_tree_2d_symm_node
@@ -487,9 +490,13 @@ contains
     type(SpAMM_tree_2d_symm), pointer, intent(inout) :: self
 
     if(.not.associated(self))return
+    write(*,*)' a1 '
     if(self%frill%leaf)deallocate(self%chunk) 
+    write(*,*)' a2 '
     deallocate(self)               ! done 
+    write(*,*)' a3 '
     nullify(self)                  ! bye-bye
+    write(*,*)' a4 '
 
   end subroutine SpAMM_destruct_tree_2d_symm_node
 
@@ -558,18 +565,16 @@ contains
     threshold2=SpAMM_zero
     IF(PRESENT(threshold_o))threshold2=threshold_O**2
 
-!!$    IF(PRESENT(symmetrize_O))THEN
-!!$       IF(symmetrize_O)THEN
-!!$            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (d, a, threshold2)
-!!$         ELSE
-
-            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
-
-!!$         ENDIF
-!!$      ELSE
-!!$            CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
-!!$         ENDIF
-
+    IF(PRESENT(symmetrize_O))THEN
+       IF(symmetrize_O)THEN
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (d, a, threshold2)
+       ELSE
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)         
+       ENDIF
+    ELSE
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
+    ENDIF
+    
   END function SpAMM_tree_2d_symm_copy_tree_2d_symm
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur 
@@ -582,36 +587,50 @@ contains
     
     if(.not.associated(a).and..not.associated(d))then
 
+       write(*,*)' opt 1'
        return
 
     elseif(.not.associated(a).and.associated(d))then
-
+       
+       write(*,*)' opt 2'
        call SpAMM_destruct_tree_2d_symm_recur (d)
        return
-
-!---------------------------------------------------------------
-!
-!      FILTERING HERE BREAKS EVERYTHING!  EVEN IF THRESHOLD IS ZERO!!
-!
-!!$    elseif( a%frill%norm2 <= threshold2)then
-!!$
-!!$      call SpAMM_destruct_tree_2d_symm_recur (d)
-!!$      return
-
+       !
+    elseif( a%frill%norm2 <= threshold2)then
+       
+       write(*,*)' opt 3'
+       call SpAMM_destruct_tree_2d_symm_recur (d)
+       write(*,*)' associated d ...',associated(d)
+       return
+       
     elseif (a%frill%leaf) then       
-
+       
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
+       d%frill%flops=5d0 !SpAMM_zero
 
     else
 
+       write(*,*)' 00, 11 : '
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2 )
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01, threshold2 )
+       write(*,*)' associated 10 ',associated(d%child_00)
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a%child_11, threshold2 )
+       write(*,*)' associated 10 ',associated(d%child_11)
+       write(*,*)' 10, 01 : '
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2 )
+       write(*,*)' associated 10 ',associated(d%child_10)
+       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01, threshold2 )
+       write(*,*)' associated 01 ',associated(d%child_01)
+       write(*,*)' DONE COPY RECUR  DONE COPY RECUR  DONE COPY RECUR  DONE COPY RECUR  '
 
     endif    
 
-    CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill) ! d%frill |cpy> a%frill
+    CALL SpAMM_redecorate_tree_2d_symm(d)
+    IF(d%frill%leaf)then
+       WRITE(*,*)' DLEAF = ',d%frill%non0s,  d%frill%flops, d%frill%norm2
+    endif
+
+
+!!    CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill) ! d%frill |cpy> a%frill
     
   END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur
 
@@ -636,29 +655,13 @@ contains
 
     elseif( a%frill%norm2 <= threshold2)then
 
-      if(associated(d)) call SpAMM_destruct_tree_2d_symm_recur (d)
+       call SpAMM_destruct_tree_2d_symm_recur (d)
+       return
 
     elseif (a%frill%leaf) then       
 
-
-!!$       if(present(at))then
-!!$
-!!$          if(.not.associated(at))then
-!!$             call SpAMM_destruct_tree_2d_symm_recur (d)
-!!$             return
-!!$          endif
-!!$
-!!$          write(*,*)' associated ',allocated(a%chunk), allocated( at%chunk ), a%frill%leaf, at%frill%leaf
-!!$
-!!$          d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+TRANSPOSE( at%chunk(1:SBS,1:SBS) ))*SpAMM_half
-!!$
-!!$       ELSE
-
-          d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS)
-
-!          d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+TRANSPOSE(  a%chunk(1:SBS,1:SBS) ))*SpAMM_half
-
-!!!       ENDIF
+       d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+TRANSPOSE(  a%chunk(1:SBS,1:SBS) ))*SpAMM_half
+       ! flops
 
     else
 
@@ -669,7 +672,7 @@ contains
 
     endif    
 
-    CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill) ! d%frill |cpy> a%frill
+    CALL SpAMM_redecorate_tree_2d_symm(d)
     
   END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize
 
