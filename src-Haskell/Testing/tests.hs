@@ -1,6 +1,12 @@
-import MatrixTree ; import SpAMM
+import MatrixTree ; import SpAMM ; import System.Directory (removeFile)
 
-main = do testAdd ; testMultiply
+main = do testReadWrite ; testAdd ; testMultiply
+
+testReadWrite = do tree1 <- readTreeFromMatrixMarket "Matrices/rect4arr.txt"
+                   writeTreeToMatrixMarket tree1 "coordinate" "Matrices/tempfile.txt"
+                   tree2 <- readTreeFromMatrixMarket "Matrices/tempfile.txt"
+                   testReport "readWrite" (tree1 == tree2)
+                   removeFile "Matrices/tempfile.txt"
 
 testAdd = do addZeros ; addZeroToValue ; addZeroToRect;
              addValueToValue ; addRectToRect

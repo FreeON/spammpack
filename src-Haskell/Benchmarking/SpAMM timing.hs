@@ -7,7 +7,7 @@ import System.IO (Handle, hClose, hPutStr, openTempFile)
 import System.Random (getStdGen, newStdGen, randomRs, StdGen)
 
 main = do (tempName, tempHandle) <- openTempFile "." "temp"
-          let sizes = fmap (2^) [7..11]
+          let sizes = fmap (2^) [5..10]
           putStrLn "treeAdd"
           mapM_ (doTiming tempHandle treeAdd) sizes
           putStrLn "treeMult"

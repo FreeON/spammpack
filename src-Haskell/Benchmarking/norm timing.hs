@@ -6,7 +6,7 @@ import System.IO (Handle, hClose, hPutStr, openTempFile)
 import System.Random (getStdGen, randomRs, StdGen)
 
 main = do (tempName, tempHandle) <- openTempFile "." "temp"
-          let sizes = fmap (2^) [7..13]
+          let sizes = fmap (2^) [5..11]
           putStrLn "norm"
           mapM_ (doTiming tempHandle setNorm) sizes
           hClose tempHandle; removeFile tempName

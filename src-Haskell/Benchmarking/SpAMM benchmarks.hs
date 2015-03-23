@@ -2,29 +2,24 @@ import Control.DeepSeq (NFData(..))
 import Criterion.Main
 import MatrixTree
 import SpAMM
-import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
-import System.Process
+import System.Random (getStdGen, newStdGen, randomRs, StdGen)
 
 instance NFData MatrixTree
 
-main = do let sizes = fmap (2^) [11..20]
-          let fstFilePaths = fmap (\n -> "fst" ++ show n ++ ".txt") sizes
-          let sndFilePaths = fmap (\n -> "snd" ++ show n ++ ".txt") sizes
-          mapM_ (uncurry createMatrix) (zip fstFilePaths sizes)
-          mapM_ (uncurry createMatrix) (zip sndFilePaths sizes)
-          fstTrees <- mapM readTreeFromMatrixMarket fstFilePaths
-          sndTrees <- mapM readTreeFromMatrixMarket sndFilePaths
-          callProcess "rm" $ fstFilePaths ++ sndFilePaths
+main = do let sizes = fmap (2^) [5..10]
+          gen <- getStdGen
+          let fstTrees = fmap (flip makeRandomTree gen) sizes
+          gen <- newStdGen
+          let sndTrees = fmap (flip makeRandomTree gen) sizes
           let sizeTreeGroups = zip sizes $ zip fstTrees sndTrees
           defaultMain [bgroup "add"  $ fmap (makeBench treeAdd)  sizeTreeGroups,
                        bgroup "mult" $ fmap (makeBench treeMult) sizeTreeGroups]
 
-createMatrix :: FilePath -> Int -> IO ()
-createMatrix filePath size = do
-             handle <- openFile filePath WriteMode
-             matrix <- readProcess "python" ["../generate-matrix.py", "-N " ++ show size] []
-             hPutStrLn handle matrix
-             hClose handle
+makeRandomTree :: Int -> StdGen -> MatrixTree
+makeRandomTree size gen = indexedListToTree (size, size, ijxs)
+               where ijxs = zipWith (\(i, j) x -> (i, j, x)) indices randomNums
+                     indices = [(i, j) | j <- [1..size], i <- [1..size]]
+                     randomNums = take (size^2) $ randomRs (0.0, 1.0) gen
 
 makeBench :: (MatrixTree -> MatrixTree -> MatrixTree) -> (Int, (MatrixTree, MatrixTree)) -> Benchmark
 makeBench op (size, (tree1, tree2)) = bench (show size) $ nf (op tree1) tree2
