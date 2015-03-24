@@ -74,8 +74,8 @@ contains
        tree%child_0%frill%Leaf=.TRUE.
        allocate(tree%child_0%chunk(1:SBS))        ! grab a chunk for each leaf node, always
        tree%child_0%chunk=SpAMM_Zero        
-       tree%child_0%frill%flops=SpAMM_zero
-       tree%child_0%frill%norm2=SpAMM_zero
+       tree%child_0%frill%flops=SpAMM_init
+       tree%child_0%frill%norm2=SpAMM_init
     endif
 
 !    write(*,33) tree%child_0%frill%bndbx(:), wi,tree%child_0%frill%leaf
@@ -116,8 +116,8 @@ contains
     tree%child_1%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
     tree%child_1%frill%bndbx(:)=(/mi+1, hi /)   ! [mid+1, hi]
     tree%child_1%frill%Leaf=.FALSE.              ! default, not a leaf ...
-    tree%child_1%frill%flops=SpAMM_zero
-    tree%child_1%frill%norm2=SpAMM_zero
+    tree%child_1%frill%flops=SpAMM_init
+    tree%child_1%frill%norm2=SpAMM_init
     ! leaf criterion ... 
     if(wi==2*SBS)then
        tree%child_1%frill%Leaf=.TRUE.
@@ -190,22 +190,17 @@ contains
     TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)    :: a
     TYPE(SpAMM_tree_1d), POINTER                :: d
     
-    if(.not.associated(a).and..not.associated(d))then
+    IF(.not.associated(a))return
 
-       return
-
-    elseif(.not.associated(a).and.associated(d))then
-
-       call SpAMM_destruct_tree_1d_recur (d)
-       return
-
-    elseif (a%frill%leaf) then       
+    IF( a%frill%leaf ) then       
 
        d%chunk(1:SBS)=a%chunk(1:SBS) 
 
     else
 
+!       IF(ASSOCIATED(a%child_0))&
        CALL SpAMM_tree_1d_copy_tree_1d_recur (SpAMM_construct_tree_1d_0(d), a%child_0)
+!       IF(ASSOCIATED(a%child_1))&
        CALL SpAMM_tree_1d_copy_tree_1d_recur (SpAMM_construct_tree_1d_1(d), a%child_1)
 
     endif    
@@ -298,8 +293,8 @@ contains
     tree%child_00%frill%bndbx(:,1)=(/lo(1),mi(1)/) ! [lo:mid][i]
     tree%child_00%frill%bndbx(:,2)=(/lo(2),mi(2)/) ! [lo:mid][j]
     tree%child_00%frill%Leaf=.FALSE.               ! default, not a leaf     
-    tree%child_00%frill%flops=SpAMM_zero
-    tree%child_00%frill%norm2=SpAMM_zero
+    tree%child_00%frill%flops=SpAMM_init
+    tree%child_00%frill%norm2=SpAMM_init
     if(wi(1)==2*SBS)then                           ! at resolution?
        tree%child_00%frill%Leaf=.TRUE.             ! we have a leaf
        allocate(tree%child_00%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
@@ -349,8 +344,8 @@ contains
     tree%child_01%frill%bndbx(:,1)=(/lo(1)  ,mi(1)/) ! [lo   ,mid][i]
     tree%child_01%frill%bndbx(:,2)=(/mi(2)+1,hi(2)/) ! [mid+1, hi][j]
     tree%child_01%frill%Leaf=.FALSE.               ! default, not a leaf     
-    tree%child_01%frill%flops=SpAMM_zero
-    tree%child_01%frill%norm2=SpAMM_zero
+    tree%child_01%frill%flops=SpAMM_init
+    tree%child_01%frill%norm2=SpAMM_init
     if(wi(1)==2*SBS)then                           ! at resolution?
        tree%child_01%frill%Leaf=.TRUE.             ! we have a leaf
        allocate(tree%child_01%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
@@ -394,8 +389,8 @@ contains
     tree%child_10%frill%bndbx(:,1)=(/mi(1)+1,hi(1)/) ! [mid+1, hi][i]
     tree%child_10%frill%bndbx(:,2)=(/lo(2)  ,mi(2)/) ! [lo   ,mid][j]
     tree%child_10%frill%Leaf=.FALSE.               ! default, not a leaf     
-    tree%child_10%frill%flops=SpAMM_zero
-    tree%child_10%frill%norm2=SpAMM_zero
+    tree%child_10%frill%flops=SpAMM_init
+    tree%child_10%frill%norm2=SpAMM_init
     if(wi(1)==2*SBS)then                           ! at resolution?
        tree%child_10%frill%Leaf=.TRUE.             ! we have a leaf
        allocate(tree%child_10%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
@@ -442,8 +437,8 @@ contains
     tree%child_11%frill%bndbx(0,:)=mi(:)+1                ! [mid+1, hi]
     tree%child_11%frill%bndbx(1,:)=hi                      ! [mid+1, hi]
     tree%child_11%frill%Leaf=.FALSE.               ! default, not a leaf     
-    tree%child_11%frill%flops=SpAMM_zero
-    tree%child_11%frill%norm2=SpAMM_zero
+    tree%child_11%frill%flops=SpAMM_init
+    tree%child_11%frill%norm2=SpAMM_init
     if(wi(1)==2*SBS)then                           ! at resolution?
        tree%child_11%frill%Leaf=.TRUE.             ! we have a leaf
        allocate(tree%child_11%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
@@ -490,56 +485,14 @@ contains
     type(SpAMM_tree_2d_symm), pointer, intent(inout) :: self
 
     if(.not.associated(self))return
-    write(*,*)' a1 '
     if(self%frill%leaf)deallocate(self%chunk) 
-    write(*,*)' a2 '
     deallocate(self)               ! done 
-    write(*,*)' a3 '
     nullify(self)                  ! bye-bye
-    write(*,*)' a4 '
 
   end subroutine SpAMM_destruct_tree_2d_symm_node
 
-  SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d(d,a)
-
-!    type(SpAMM_decoration_1d), pointer :: d
-!    type(SpAMM_decoration_1d), pointer :: a
-
-    type(SpAMM_decoration_1d) :: d
-    type(SpAMM_decoration_1d) :: a
-
-!    if(.not.associated(a)) return
-
-    d%leaf =a%leaf
-    d%norm2=a%norm2
-    d%non0s=a%non0s
-    d%flops=a%flops
-    d%ndimn=a%ndimn
-    d%bndbx=a%bndbx
-
-  END SUBROUTINE SpAMM_decoration_1d_copy_decoration_1d
-
-
   ! - - - - - - - - - - - - - - - - -2d, 2d, 2d - - - - - - - - - - - - - - - - - - 
 
-  !  d_2d |cpy> a_2d (can be used top down or bottom up...)
-  SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d(d,a)
-
-!    type(SpAMM_decoration_2d), pointer :: d
-!    type(SpAMM_decoration_2d), pointer :: a
-    type(SpAMM_decoration_2d) :: d
-    type(SpAMM_decoration_2d) :: a
-
-!    if(.not.associated(a)) return
-
-    d%leaf =a%leaf
-    d%norm2=a%norm2
-    d%non0s=a%non0s
-    d%flops=a%flops
-    d%ndimn=a%ndimn
-    d%bndbx=a%bndbx
-
-  END SUBROUTINE SpAMM_decoration_2d_copy_decoration_2d
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm
   !++XSTRUCTORS:       d_2 => a_2  (wrapper)
@@ -582,57 +535,48 @@ contains
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: a
-    REAL(SpAMM_KIND),                  INTENT(IN)    :: threshold2
     TYPE(SpAMM_tree_2d_symm), POINTER                :: d
+    REAL(SpAMM_KIND),                  INTENT(IN)    :: threshold2
     
-    if(.not.associated(a).and..not.associated(d))then
-
-       write(*,*)' opt 1'
-       return
-
-    elseif(.not.associated(a).and.associated(d))then
-       
-       write(*,*)' opt 2'
-       call SpAMM_destruct_tree_2d_symm_recur (d)
-       return
-       !
-    elseif( a%frill%norm2 <= threshold2)then
-       
-       write(*,*)' opt 3'
-       call SpAMM_destruct_tree_2d_symm_recur (d)
-       write(*,*)' associated d ...',associated(d)
-       return
-       
-    elseif (a%frill%leaf) then       
-       
+    IF(a%frill%leaf)THEN
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
-       d%frill%flops=5d0 !SpAMM_zero
-
+       d%frill%flops=SpAMM_zero
     else
+       ! diagonal 
+       IF(ChildCheck(a%child_00,threshold2))THEN
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
+       ELSE
+          CALL SpAMM_destruct_tree_2d_symm_recur(d)
+       ENDIF
 
-       write(*,*)' 00, 11 : '
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
-       write(*,*)' associated 10 ',associated(d%child_00)
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a%child_11, threshold2 )
-       write(*,*)' associated 10 ',associated(d%child_11)
-       write(*,*)' 10, 01 : '
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2 )
-       write(*,*)' associated 10 ',associated(d%child_10)
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01, threshold2 )
-       write(*,*)' associated 01 ',associated(d%child_01)
-       write(*,*)' DONE COPY RECUR  DONE COPY RECUR  DONE COPY RECUR  DONE COPY RECUR  '
-
+       IF(ChildCheck(a%child_11,threshold2)) &
+        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a%child_11, threshold2 )
+       ! offdiag
+       IF(ChildCheck(a%child_01,threshold2)) &
+        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01, threshold2 )
+       IF(ChildCheck(a%child_10,threshold2)) &
+        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2 )
     endif    
 
     CALL SpAMM_redecorate_tree_2d_symm(d)
-    IF(d%frill%leaf)then
-       WRITE(*,*)' DLEAF = ',d%frill%non0s,  d%frill%flops, d%frill%norm2
-    endif
 
-
-!!    CALL SpAMM_decoration_2d_copy_decoration_2d(d%frill,a%frill) ! d%frill |cpy> a%frill
-    
   END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur
+
+
+  FUNCTION ChildCheck(child,threshold2)
+    LOGICAL :: ChildCheck=.FALSE.
+
+    IF(.NOT.ASSOCIATED(child))RETURN
+    IF(child%norm2<threshold2)RETURN
+    IF(child%norm2==SpAMM_init)RETURN
+    
+
+
+
+
+
+
+  END FUNCTION ChildCheck
 
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize 
@@ -664,6 +608,8 @@ contains
        ! flops
 
     else
+
+
 
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2, at=a%child_01 )

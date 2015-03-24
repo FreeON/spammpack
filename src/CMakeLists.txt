@@ -42,6 +42,17 @@ set( spammpack-sources
   )
 
 set( MODULE_FILES
+  spamm_realkind.mod
+  spamm_parameters.mod
+  spamm_structures.mod
+  spamm_conversion.mod
+  spamm_xstructors.mod
+  spamm_decoration.mod
+  spamm_elementals.mod
+  spamm_nbdyalgbra.mod
+  spamm_nbdyalgbra_times.mod
+  spamm_nbdyalgbra_plus.mod
+  spamm_nbdyalgbra_trace.mod
   spammpack.mod
   )
 

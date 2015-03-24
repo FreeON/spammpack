@@ -59,9 +59,8 @@ contains
        WRITE(*,*)' 1111111111111111111111111111111111111111111111'
        WRITE(*,*)' NS = ',s%frill%non0s, n**2
 
-       PAUSE 100
-!       stop 'stoped2'
        Y => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_O = y, threshold_O = SpAMM_normclean ) 
+       stop ' y '
 
 
        WRITE(*,*)' 222222222222222222222222222222222222222222222'

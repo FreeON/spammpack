@@ -252,18 +252,21 @@ CONTAINS
     d=>a
     if(.not.associated(a))return
 
-    CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, d)
+    CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, d, depth)
 
   END FUNCTION SpAMM_scalar_times_tree_2d_symm
 
   !++NBODYTIMES:     SpAMM_scalar_times_tree_2d_recur
   !++NBODYTIMES:       a_1 => alpha*a_1 (recursive)
-  recursive subroutine SpAMM_scalar_times_tree_2d_symm_recur(alpha, a)
+  recursive subroutine SpAMM_scalar_times_tree_2d_symm_recur(alpha, a, depth)
 
     type(SpAMM_tree_2d_symm), pointer :: a
     real(SpAMM_KIND)                  :: alpha
+    integer :: depth
 
     if(.not.associated(a))return
+
+    write(*,*)' depth = ',depth
 
     IF(a%frill%leaf)THEN
 
@@ -273,13 +276,13 @@ CONTAINS
     ELSE
 
        ! child along [00]: 
-       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a%child_00 ) !,depth+1 )
+       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a%child_00 ,depth+1 )
        ! child along [01]: 
-       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a%child_01 ) !,depth+1 )
+       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a%child_01 ,depth+1 )
        ! child along [10]: 
-       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a%child_10 ) !,depth+1 )
+       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a%child_10 ,depth+1 )
        ! child along [11]: 
-       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a%child_11 ) !,depth+1 )
+       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a%child_11 ,depth+1 )
 
     ENDIF  
 
