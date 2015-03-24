@@ -1,6 +1,6 @@
 import Data.List (intersperse)
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
-import MatrixTree (indexedListToTree, MatrixTree, Norm, setNorm)
+import MatrixTree (indexedListToTree, MatrixTree, Norm, norm, setNorm)
 import System.Directory (removeFile)
 import System.IO (Handle, hClose, hPutStr, openTempFile)
 import System.Random (getStdGen, randomRs, StdGen)
@@ -14,9 +14,10 @@ main = do (tempName, tempHandle) <- openTempFile "." "temp"
 doTiming :: Handle -> (MatrixTree -> Norm) -> Int -> IO ()
 doTiming handle op size =
          do gen <- getStdGen ; let tree = makeRandomTree size gen
+            hPutStr handle $ show (norm tree)
             t1 <- getCurrentTime
-            let norm = op tree
-            hPutStr handle $ show norm
+            let num = op tree
+            hPutStr handle $ show num
             t2 <- getCurrentTime
             printList [show size, show $ diffUTCTime t2 t1]
 

@@ -1,6 +1,6 @@
 import Data.List (intersperse)
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
-import MatrixTree (indexedListToTree, MatrixTree, Norm, norm, setNorm)
+import MatrixTree (indexedListToTree, MatrixTree, Norm, norm)
 import SpAMM (treeAdd, treeMult)
 import System.Directory (removeFile)
 import System.IO (Handle, hClose, hPutStr, openTempFile)
@@ -18,6 +18,7 @@ doTiming :: Handle -> (MatrixTree -> MatrixTree -> MatrixTree) -> Int -> IO ()
 doTiming handle op size =
          do gen <- getStdGen ; let fstTree = makeRandomTree size gen
             gen <- newStdGen ; let sndTree = makeRandomTree size gen
+            hPutStr handle $ show (norm fstTree) ; hPutStr handle $ show (norm sndTree)
             t1 <- getCurrentTime
             let tree = op fstTree sndTree
             hPutStr handle (show $ norm tree)
