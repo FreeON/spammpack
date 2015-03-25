@@ -532,51 +532,93 @@ contains
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur 
   !++XSTRUCTORS:       d_2 => a_2  (recursive)
-  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
+  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, Tau2)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: a
+    REAL(SpAMM_KIND),                  INTENT(IN)    :: Tau2
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: a00,a11,a01,a10
     TYPE(SpAMM_tree_2d_symm), POINTER                :: d
-    REAL(SpAMM_KIND),                  INTENT(IN)    :: threshold2
+    TYPE(SpAMM_tree_2d_symm), POINTER                :: d00,d11,d01,d10
     
     IF(a%frill%leaf)THEN
+
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
        d%frill%flops=SpAMM_zero
+
     else
-       ! diagonal 
-       IF(ChildCheck(a%child_00,threshold2))THEN
-          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
-       ELSE
-          CALL SpAMM_destruct_tree_2d_symm_recur(d)
+
+       ! local children
+       a00=>a%child_00; a11=>a%child_11; a01=>a%child_01; a10=>a%child_10; 
+       d00=>NULL();     d11=>NULL();     d01=>NULL();     d10=>NULL();
+
+       ! copy diagonal 
+       IF( SpAMM_single_check_tree_2d_symm(a00, Tau2) )THEN
+          d00=>SpAMM_construct_tree_2d_symm_00(d)
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d00, a00, Tau2)
+       ENDIF
+       IF( SpAMM_single_check_tree_2d_symm(a11, Tau2) )THEN
+          d11=>SpAMM_construct_tree_2d_symm_11(d)
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d11, a11, Tau2)
        ENDIF
 
-       IF(ChildCheck(a%child_11,threshold2)) &
-        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a%child_11, threshold2 )
-       ! offdiag
-       IF(ChildCheck(a%child_01,threshold2)) &
-        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a%child_01, threshold2 )
-       IF(ChildCheck(a%child_10,threshold2)) &
-        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2 )
+       ! copy offdiag
+       IF( SpAMM_single_check_tree_2d_symm(a01, Tau2) )THEN
+          d01=>SpAMM_construct_tree_2d_symm_01(d)
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d01, a01, Tau2)
+       ENDIF
+       IF( SpAMM_single_check_tree_2d_symm(a10, Tau2) )THEN
+          d10=>SpAMM_construct_tree_2d_symm_10(d)
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d10, a10, Tau2)
+       ENDIF
+
+       ! prune
+       IF(.NOT.ASSOCIATED(d00))CALL SpAMM_destruct_tree_2d_symm_recur(d%child_00)
+       IF(.NOT.ASSOCIATED(d11))CALL SpAMM_destruct_tree_2d_symm_recur(d%child_11)
+       IF(.NOT.ASSOCIATED(d01))CALL SpAMM_destruct_tree_2d_symm_recur(d%child_01)
+       IF(.NOT.ASSOCIATED(d10))CALL SpAMM_destruct_tree_2d_symm_recur(d%child_10)
+
     endif    
 
+    ! redecorate
     CALL SpAMM_redecorate_tree_2d_symm(d)
 
   END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur
 
 
-  FUNCTION ChildCheck(child,threshold2)
-    LOGICAL :: ChildCheck=.FALSE.
+  LOGICAL FUNCTION SpAMM_single_check_tree_2d_symm( a, Tau2 )
 
-    IF(.NOT.ASSOCIATED(child))RETURN
-    IF(child%norm2<threshold2)RETURN
-    IF(child%norm2==SpAMM_init)RETURN
-    
+    TYPE(SpAMM_tree_2d_symm), POINTER :: a
+    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
 
+    SpAMM_single_check_tree_2d_symm=.FALSE.
 
+    if( .not. associated(a) )return
 
+    ! cull
+    if( a%frill%Norm2 <= Tau2 )return  
 
+    ! passed all the checks ...
+    SpAMM_single_check_tree_2d_symm=.TRUE.
 
+  END FUNCTION SpAMM_single_check_tree_2d_symm
 
-  END FUNCTION ChildCheck
+  LOGICAL FUNCTION SpAMM_double_check_tree_2d_symm( a, b, Tau2 )
+
+    TYPE(SpAMM_tree_2d_symm), POINTER :: a, b 
+    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
+
+    SpAMM_double_check_tree_2d_symm=.FALSE.
+
+    if( .not. associated(a) )return
+    if( .not. associated(b) )return
+
+    ! cull 
+    if( a%frill%Norm2 * b%frill%Norm2 <= Tau2 )return  
+
+    ! passed all the checks ...
+    SpAMM_double_check_tree_2d_symm=.TRUE.
+
+  END FUNCTION SpAMM_double_check_tree_2d_symm
 
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize 
