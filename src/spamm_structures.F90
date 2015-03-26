@@ -11,6 +11,8 @@ MODULE spamm_structures
 
   ! garnishments of the tree_1d ...
   type :: SpAMM_decoration_1d
+     ! initialization status 
+     logical                               :: Init
      ! leaf node flag
      logical                               :: Leaf
      !> tree sub-vector width: M_pad/2**depth 
@@ -29,6 +31,8 @@ MODULE spamm_structures
 
   ! garnishments of tree_2d ...
   type :: SpAMM_decoration_2d
+     ! initialization status 
+     logical                               :: Init
      ! leaf node flag
      logical                               :: Leaf
      !> tree sub-matrix width: MN_pad/2**depth 

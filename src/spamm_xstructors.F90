@@ -38,6 +38,11 @@ contains
     ! the native tile
     tree%frill%bndbx(0:1)=(/1, NDimn /)  ! [i-lo,i-hi]
 
+    ! inited measures
+    tree%frill%non0s=SpAMM_init
+    tree%frill%norm2=SpAMM_init
+    tree%frill%flops=SpAMM_init
+
     ! no kids yet
     tree%child_0=>NULL()
     tree%child_1=>NULL()
@@ -245,6 +250,11 @@ contains
     ! the 2-ary tiles
     tree%frill%bndbx(0,:) = (/ 1, 1 /)  ! [lo,lo]
     tree%frill%bndbx(1,:) = NDimn       ! [hi,hi]
+
+    ! inited measures
+    tree%frill%non0s=SpAMM_init
+    tree%frill%norm2=SpAMM_init
+    tree%frill%flops=SpAMM_init
 
     ! check that we might the top may be the leaf
     if(SBS>=NDimn(1))tree%frill%leaf=.TRUE.
@@ -620,6 +630,15 @@ contains
 
   END FUNCTION SpAMM_double_check_tree_2d_symm
 
+  RECURSIVE SUBROUTINE SpAMM_Flip_Init_tree_2d_symm_recur(a)
+    TYPE(SpAMM_tree_2d_symm), POINTER  :: a
+    IF(.NOT.ASSOCIATED(A))RETURN
+    a%frill%init=.TRUE.
+    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_00)
+    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_11)
+    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_01)
+    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_10)
+  END SUBROUTINE SpAMM_Flip_Init_tree_2d_symm_recur
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize 
   !++XSTRUCTORS:       d_2 => a_2  (recursive)
@@ -650,8 +669,6 @@ contains
        ! flops
 
     else
-
-
 
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2, at=a%child_01 )
