@@ -80,6 +80,9 @@ contains
        TrX=SpAMM_trace_tree_2d_symm_recur(x)
        FillN = abs( dble(n) - TrX )/dble(n)       
 
+       write(*,*)' trx = ',trx, ' n  = ',n,' filln = ',filln
+
+
        WRITE(101,*)kount, filln
        WRITE(*,33)tau, kount, TrX, FillN, z%frill%non0s/dble(N**2)
 
@@ -99,9 +102,11 @@ contains
 
        IF(FillN>0.4d0)THEN
           delta=1.0d-1 ! maybe this should be a variable too, passed in?
+          WRITE(*,*)' aaaaaaaaaaaaaa'
           x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
           sc=spammsand_scaling_invsqrt(SpAMM_zero)
        ELSEIF(FillN>0.1d0)THEN
+          WRITE(*,*)' bbbbbbbbbbbbbb'
           delta=1.0d-2 ! maybe this should be a variable too, passed in?
           x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
           sc=spammsand_scaling_invsqrt(SpAMM_half)
@@ -109,6 +114,8 @@ contains
           sc=1d0
        ENDIF
 
+
+      
        write(*,*)' xxx a = ',X%FRILL%NORM2
 
 
@@ -201,9 +208,18 @@ contains
 
     SHFT=low_new-low_prev*(high_new-low_new)/(high_prev-low_prev)
     SCAL=(high_new-low_new)/(high_prev-low_prev)
+
+    write(*,*)' befr = ',x%frill%norm2
+
     d => x
     d => SpAMM_scalar_times_tree_2d_symm( scal, d)
+
+    write(*,*)' scal = ',scal,' xnorm = ',d%frill%norm2
+
     d => SpAMM_scalar_plus_tree_2d_symm(  shft, d)
+
+    write(*,*)' shft = ',shft,' xnorm = ',d%frill%norm2
+
   END FUNCTION spammsand_shift_tree_2d
 
   FUNCTION spammsand_scaled_invsqrt_mapping( x, sc ) result(d) 
@@ -266,9 +282,9 @@ program SpAMM_sandwich_inverse_squareroot
 
 
   ! matrix to inverse factor
-  s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE) 
+  s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE, in_O=s)
 
-
+  write(*,*)' here ',s%frill%ndimn
 
   !=============================================================
   allocate(Sd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
@@ -277,6 +293,8 @@ program SpAMM_sandwich_inverse_squareroot
   allocate(Zd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
 
   N = s%frill%ndimn(1)
+  WRITE(*,*)' N = ',N
+  STOP
   LWORK = 1+6*N+2*N**2
   LIWORK = 3+5*N    
   allocate(eval(N))
@@ -292,7 +310,6 @@ program SpAMM_sandwich_inverse_squareroot
 
   ! normalize the max ev of s to 1.  
   s => SpAMM_scalar_times_tree_2d_symm(SpAMM_one/x_hi, s)
-
 
 
 !!  Sd=s_dense/x_hi
@@ -323,8 +340,6 @@ program SpAMM_sandwich_inverse_squareroot
    write(*,33)tau
 33 format(' building |Z> = ',4('|',e6.1,'>'),'...')
 
-
-
   ! work matrices ...
   x => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
@@ -340,7 +355,6 @@ program SpAMM_sandwich_inverse_squareroot
      
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first, kount )
      stop 'stoped'
-     stop
 
      first=.FALSE.
      if(.not.associated(z%nxt))exit    

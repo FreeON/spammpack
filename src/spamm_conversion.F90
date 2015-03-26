@@ -9,20 +9,24 @@ module spamm_conversion
 
 contains
 
-  FUNCTION SpAMM_convert_dense_to_tree_2d_symm( A, A_2d_O) RESULT(A_2d)
+  FUNCTION SpAMM_convert_dense_to_tree_2d_symm( A, in_O) RESULT(A_2d)
 
     real(SpAMM_KIND), dimension(:,:), intent(IN)    :: A
-    type(SpAMM_tree_2d_symm) ,pointer,  optional    :: A_2d_O
+    type(SpAMM_tree_2d_symm) ,pointer,  optional    :: in_O
     type(SpAMM_tree_2d_symm) ,pointer               :: A_2d
     
-    IF(PRESENT(A_2d_O))THEN       
-       a_2d => A_2d_O ! do this in place
-    ELSE      
-       ! lets get a fresh tree ... 
-       a_2d => SpAMM_new_top_tree_2d_symm ((/ SIZE(A,1), SIZE(A,2) /))
+    IF(PRESENT(in_o))THEN       
+       a_2d => in_o ! data pass in, keep it in place
+    ELSE             
+       a_2d => SpAMM_new_top_tree_2d_symm ((/ SIZE(A,1), SIZE(A,2) /)) ! a new tree
     ENDIF
 
+    WRITE(*,*)' FRILL = ',a_2d%frill%ndimn
+
     CALL SpAMM_convert_dense_to_tree_2d_symm_recur ( A, a_2d )
+
+    WRITE(*,*)' FRILL = ',a_2d%frill%ndimn
+
 
   END FUNCTION SpAMM_convert_dense_to_tree_2d_symm
 
