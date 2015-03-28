@@ -50,12 +50,20 @@ CONTAINS
     x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
 !!    CALL SpAMM_print_tree_1d_recur (x) 
 
-    DO CG=1,NCG ! conjugate gradient iteration
+    DO CG=1,2!NCG ! conjugate gradient iteration
 
-       Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, Tau, alpha_O=SpAMM_zero, beta_O=SpAMM_one, c=Ax )
+       WRITE(*,*)' --------------------------------------'
+       Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, Tau, in_o = Ax )
+
+       WRITE(*,*)' --------------------------------------'
        xx =  SpAMM_tree_1d_dot_tree_1d_recur (x, x)
-       xAx=  SpAMM_tree_1d_dot_tree_1d_recur (x,Ax)
 
+       write(*,*)' xx = ',xx
+
+       xAx=  SpAMM_tree_1d_dot_tree_1d_recur (x,Ax)
+       write(*,*)' xAx = ',xAx
+
+       stop
        omega_old=omega
        omega=xAx/xx
 
@@ -80,9 +88,9 @@ CONTAINS
        ENDIF
 
        IF(MinMax==1)THEN
-!          WRITE(*,33)omega,dot_g,CG
+          WRITE(*,33)omega,dot_g,CG
        ELSE
-!          WRITE(*,44)omega,dot_g,CG
+          WRITE(*,44)omega,dot_g,CG
        ENDIF
 
        ! convergence criteria
@@ -91,18 +99,18 @@ CONTAINS
             .OR. (MinMax==2.AND.Omega<Omega_old) )EXIT
 
        ! the conjugate gradient, h = g + beta*hOld
-       h => SpAMM_tree_1d_plus_tree_1d ( h, SpAMM_one, g, inplace=SpAMM_zero) 
-       h => SpAMM_tree_1d_plus_tree_1d ( h,      beta, h)
+       h => SpAMM_tree_1d_PLUS_tree_1d ( h, SpAMM_one, g, inplace=SpAMM_zero) 
+       h => SpAMM_tree_1d_PLUS_tree_1d ( h,      beta, h)
 
        ! Ah = A.h
 
-       Ah => SpAMM_tree_2d_symm_times_tree_1d(A, h, Tau, alpha_O=SpAMM_Zero, beta_O=SpAMM_One, c=Ah)
+       Ah => SpAMM_tree_2d_symm_times_tree_1d(A, h, Tau, in_o = Ah )
 
-       hx =SpAMM_tree_1d_dot_tree_1d_recur(h,x)
-       hh =SpAMM_tree_1d_dot_tree_1d_recur(h,h)
-       xAh=SpAMM_tree_1d_dot_tree_1d_recur(x,Ah)
-       hAx=SpAMM_tree_1d_dot_tree_1d_recur(h,Ax)
-       hAh=SpAMM_tree_1d_dot_tree_1d_recur(h,Ah)        
+       hx =SpAMM_tree_1d_DOT_tree_1d_recur(h,x)
+       hh =SpAMM_tree_1d_DOT_tree_1d_recur(h,h)
+       xAh=SpAMM_tree_1d_DOT_tree_1d_recur(x,Ah)
+       hAx=SpAMM_tree_1d_DOT_tree_1d_recur(h,Ax)
+       hAh=SpAMM_tree_1d_DOT_tree_1d_recur(h,Ah)        
 
        xh=hx      ! By symmetry
        hAx=xAh
@@ -153,6 +161,8 @@ CONTAINS
     CALL SpAMM_destruct_tree_1d_recur (Ah)
     CALL SpAMM_destruct_tree_1d_recur (gOld)
     CALL SpAMM_destruct_tree_1d_recur (hOld)
+
+    stop
 
   END FUNCTION SpAMMSand_rqi_extremal
 

@@ -5,12 +5,178 @@ module spamm_xstructors
 
   implicit none
 
+  INTERFACE SpAMM_occlude
+     MODULE PROCEDURE SpAMM_occlude_tree_1d, &
+                     SpAMM_occlude_tree_2d_symm, &
+                     SpAMM_occlude_tree_2d_symm_dot_tree_1d, &
+                     SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm
+  END INTERFACE SpAMM_occlude
+
+  INTERFACE SpAMM_flip
+     MODULE PROCEDURE SpAMM_Flip_Init_tree_1d_recur, &
+                      SpAMM_Flip_Init_tree_2d_symm_recur
+  END INTERFACE SpAMM_flip
+
+  INTERFACE SpAMM_prune
+     MODULE PROCEDURE SpAMM_Prune_Initted_tree_1d_recur, &
+                      SpAMM_Prune_Initted_tree_2d_symm_recur
+  END INTERFACE SpAMM_prune
+
 contains
+
+
+
   !++XSTRUCTORS: SpAMM memory opperations _______________________ XSTRUCTORS _________________
   !++XSTRUCTORS: constructors and destructors for SpAMM tree-nd structures ...
   !++XSTRUCTORS:   ... TREE-ONE-D ... TREE-ONE-D ... TREE-ONE-D ... 
   !++XSTRUCTORS:     SpAMM_new_top_tree_1d 
   !++XSTRUCTORS:       a_1 => init (vector top) 
+
+
+
+
+  LOGICAL FUNCTION SpAMM_occlude_tree_1d( a, Tau2 )
+
+    TYPE(SpAMM_tree_1d), POINTER :: a
+    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
+
+    SpAMM_occlude_tree_1d = .FALSE.
+
+    if( .not. associated(a) )return
+
+    ! cull
+    if( a%frill%Norm2 <= Tau2 )return  
+
+    ! passed all the checks ...
+    SpAMM_occlude_tree_1d = .TRUE.
+
+  END FUNCTION SpAMM_occlude_tree_1d
+
+  LOGICAL FUNCTION SpAMM_occlude_tree_2d_symm( a, Tau2 )
+
+    TYPE(SpAMM_tree_2d_symm), POINTER :: a
+    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
+
+    SpAMM_occlude_tree_2d_symm = .FALSE.
+
+    if( .not. associated(a) )return
+
+    ! cull
+    if( a%frill%Norm2 <= Tau2 )return  
+
+    ! passed all the checks ...
+    SpAMM_occlude_tree_2d_symm = .TRUE.
+
+  END FUNCTION SpAMM_occlude_tree_2d_symm
+
+  LOGICAL FUNCTION SpAMM_occlude_tree_2d_symm_dot_tree_1d( a, b, Tau2 )
+
+    TYPE(SpAMM_tree_2d_symm), POINTER :: a
+    TYPE(SpAMM_tree_1d)     , POINTER :: b
+    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
+    
+    SpAMM_occlude_tree_2d_symm_dot_tree_1d = .FALSE.
+
+    write(*,*)associated(a), associated(b)
+
+    if( .not. associated(a) )return
+    if( .not. associated(b) )return
+
+    ! cull 
+    if( a%frill%Norm2 * b%frill%Norm2 <= Tau2 )return  
+
+    ! passed all the checks ...
+    SpAMM_occlude_tree_2d_symm_dot_tree_1d = .TRUE.
+
+  END FUNCTION SpAMM_occlude_tree_2d_symm_dot_tree_1d
+
+  LOGICAL FUNCTION SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm( a, b, Tau2 )
+
+    TYPE(SpAMM_tree_2d_symm), POINTER :: a, b 
+    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
+
+    SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm = .FALSE.
+
+    if( .not. associated(a) )return
+    if( .not. associated(b) )return
+
+    ! cull 
+    if( a%frill%Norm2 * b%frill%Norm2 <= Tau2 )return  
+
+    ! passed all the checks ...
+    SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm = .TRUE.
+
+  END FUNCTION SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm
+
+  RECURSIVE SUBROUTINE SpAMM_Flip_Init_tree_1d_recur(a)
+
+    TYPE(SpAMM_tree_1d), POINTER  :: a
+
+    IF(.NOT.ASSOCIATED(A))RETURN
+
+    a%frill%init=.TRUE.
+
+    CALL SpAMM_Flip_Init_tree_1d_recur(a%child_0)
+    CALL SpAMM_Flip_Init_tree_1d_recur(a%child_1)
+
+  END SUBROUTINE SpAMM_Flip_Init_tree_1d_recur
+
+
+  RECURSIVE SUBROUTINE SpAMM_Flip_Init_tree_2d_symm_recur(a)
+
+    TYPE(SpAMM_tree_2d_symm), POINTER  :: a
+
+    IF(.NOT.ASSOCIATED(A))RETURN
+
+    a%frill%init=.TRUE.
+
+    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_00)
+    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_11)
+    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_01)
+    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_10)
+
+  END SUBROUTINE SpAMM_Flip_Init_tree_2d_symm_recur
+
+  RECURSIVE SUBROUTINE SpAMM_Prune_Initted_tree_1d_recur(a)
+    
+    TYPE(SpAMM_tree_1d), POINTER  :: a
+
+    IF(.NOT.ASSOCIATED(a))RETURN
+
+    IF(a%frill%init)THEN
+
+       call SpAMM_destruct_tree_1d_recur (a) 
+
+    ELSE
+
+       CALL SpAMM_Prune_Initted_tree_1d_recur(a%child_0)
+       CALL SpAMM_Prune_Initted_tree_1d_recur(a%child_1)
+
+    ENDIF
+
+  END SUBROUTINE SpAMM_Prune_Initted_tree_1d_recur
+
+  RECURSIVE SUBROUTINE SpAMM_Prune_Initted_tree_2d_symm_recur(a)
+    
+    TYPE(SpAMM_tree_2d_symm), POINTER  :: a
+
+    IF(.NOT.ASSOCIATED(a))RETURN
+
+    IF(a%frill%init)THEN
+
+       call SpAMM_destruct_tree_2d_symm_recur (a) 
+
+    ELSE
+
+       CALL SpAMM_Prune_Initted_tree_2d_symm_recur(a%child_00)
+       CALL SpAMM_Prune_Initted_tree_2d_symm_recur(a%child_11)
+       CALL SpAMM_Prune_Initted_tree_2d_symm_recur(a%child_01)
+       CALL SpAMM_Prune_Initted_tree_2d_symm_recur(a%child_10)
+    ENDIF
+
+  END SUBROUTINE SpAMM_Prune_Initted_tree_2d_symm_recur
+
+
   function SpAMM_new_top_tree_1d(NDimn) result (tree)
     !
     integer                       :: NDimn
@@ -528,8 +694,11 @@ contains
     threshold2=SpAMM_zero
     IF(PRESENT(threshold_o))threshold2=threshold_O**2
 
+    CALL SpAMM_flip(d)
+
     IF(PRESENT(symmetrize_O))THEN
        IF(symmetrize_O)THEN
+          stop ' not yet'
           CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (d, a, threshold2)
        ELSE
           CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)         
@@ -537,6 +706,11 @@ contains
     ELSE
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
     ENDIF
+
+    WRITE(*,*)' before ', associated(d)
+
+    CALL SpAMM_prune(d)
+    WRITE(*,*)'after ', associated(d)
     
   END function SpAMM_tree_2d_symm_copy_tree_2d_symm
 
@@ -552,6 +726,7 @@ contains
     
     IF(a%frill%leaf)THEN
 
+       d%frill%init=.FALSE.
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
        d%frill%flops=SpAMM_zero
 
@@ -562,30 +737,14 @@ contains
        d00=>NULL();     d11=>NULL();     d01=>NULL();     d10=>NULL();
 
        ! copy diagonal 
-       IF( SpAMM_single_check_tree_2d_symm(a00, Tau2) )THEN
-          d00=>SpAMM_construct_tree_2d_symm_00(d)
-          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d00, a00, Tau2)
-       ENDIF
-       IF( SpAMM_single_check_tree_2d_symm(a11, Tau2) )THEN
-          d11=>SpAMM_construct_tree_2d_symm_11(d)
-          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d11, a11, Tau2)
-       ENDIF
-
-       ! copy offdiag
-       IF( SpAMM_single_check_tree_2d_symm(a01, Tau2) )THEN
-          d01=>SpAMM_construct_tree_2d_symm_01(d)
-          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d01, a01, Tau2)
-       ENDIF
-       IF( SpAMM_single_check_tree_2d_symm(a10, Tau2) )THEN
-          d10=>SpAMM_construct_tree_2d_symm_10(d)
-          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d10, a10, Tau2)
-       ENDIF
-
-       ! prune
-       IF(.NOT.ASSOCIATED(d00))CALL SpAMM_destruct_tree_2d_symm_recur(d%child_00)
-       IF(.NOT.ASSOCIATED(d11))CALL SpAMM_destruct_tree_2d_symm_recur(d%child_11)
-       IF(.NOT.ASSOCIATED(d01))CALL SpAMM_destruct_tree_2d_symm_recur(d%child_01)
-       IF(.NOT.ASSOCIATED(d10))CALL SpAMM_destruct_tree_2d_symm_recur(d%child_10)
+       IF( SpAMM_occlude( a00, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_00(d), a00, Tau2 )
+       IF( SpAMM_occlude( a11, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_11(d), a11, Tau2 )
+       IF( SpAMM_occlude( a01, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_01(d), a01, Tau2 )
+       IF( SpAMM_occlude( a10, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (SpAMM_construct_tree_2d_symm_10(d), a10, Tau2 )
 
     endif    
 
@@ -594,51 +753,6 @@ contains
 
   END SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur
 
-
-  LOGICAL FUNCTION SpAMM_single_check_tree_2d_symm( a, Tau2 )
-
-    TYPE(SpAMM_tree_2d_symm), POINTER :: a
-    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
-
-    SpAMM_single_check_tree_2d_symm=.FALSE.
-
-    if( .not. associated(a) )return
-
-    ! cull
-    if( a%frill%Norm2 <= Tau2 )return  
-
-    ! passed all the checks ...
-    SpAMM_single_check_tree_2d_symm=.TRUE.
-
-  END FUNCTION SpAMM_single_check_tree_2d_symm
-
-  LOGICAL FUNCTION SpAMM_double_check_tree_2d_symm( a, b, Tau2 )
-
-    TYPE(SpAMM_tree_2d_symm), POINTER :: a, b 
-    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
-
-    SpAMM_double_check_tree_2d_symm=.FALSE.
-
-    if( .not. associated(a) )return
-    if( .not. associated(b) )return
-
-    ! cull 
-    if( a%frill%Norm2 * b%frill%Norm2 <= Tau2 )return  
-
-    ! passed all the checks ...
-    SpAMM_double_check_tree_2d_symm=.TRUE.
-
-  END FUNCTION SpAMM_double_check_tree_2d_symm
-
-  RECURSIVE SUBROUTINE SpAMM_Flip_Init_tree_2d_symm_recur(a)
-    TYPE(SpAMM_tree_2d_symm), POINTER  :: a
-    IF(.NOT.ASSOCIATED(A))RETURN
-    a%frill%init=.TRUE.
-    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_00)
-    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_11)
-    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_01)
-    CALL SpAMM_Flip_Init_tree_2d_symm_recur(a%child_10)
-  END SUBROUTINE SpAMM_Flip_Init_tree_2d_symm_recur
 
   !++XSTRUCTORS:     SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize 
   !++XSTRUCTORS:       d_2 => a_2  (recursive)

@@ -51,18 +51,24 @@ contains
 !    IF(.nOt.First)tHeN
 
     ! y_0 => s
+    write(*,*)' A '
     y => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
-    y => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_O = y, threshold_O = SpAMM_normclean ) 
+    write(*,*)' yyy0 = ',y%FRILL%NORM2
+    write(*,*)' yyy0 = ',y%FRILL%non0s
 
+    y => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_o = y, threshold_O = SpAMM_normclean ) 
+    write(*,*)' B '
+
+    write(*,*)' associated? ',associated(y)
+    write(*,*)' yyy0 = ',y%FRILL%Non0s
 
 
     ! z_0 => I
     CALL SpAMM_set_identity_2d_symm_recur (z)
+
     !  x_0 => s
     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
 
-    write(*,*)' yyy0 = ',y%FRILL%NORM2
-    write(*,*)' xxx0 = ',X%FRILL%NORM2
 
     WRITE(*,*)' ------------------------------------------'
 
@@ -116,7 +122,7 @@ contains
 
 
       
-       write(*,*)' xxx a = ',X%FRILL%NORM2
+!       write(*,*)' xxx a = ',X%FRILL%NORM2
 
 
 
@@ -131,26 +137,27 @@ contains
 
 
 
-       write(*,*)' xxx b = ',X%FRILL%NORM2
+!       write(*,*)' xxx b = ',X%FRILL%NORM2
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, nt_O=.TRUE., in_O = t )
 
-       write(*,*)' ttt = ',t%FRILL%NORM2
+!       write(*,*)' ttt = ',t%FRILL%NORM2
 
 
        ! update (threshold)
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
 
-       write(*,*)' zzz = ',z%FRILL%NORM2
+!       write(*,*)' zzz = ',z%FRILL%NORM2
 
 !       IF(.nOt.First)tHeN
           ! <Y_n+1|
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau, nt_O=.TRUE., in_O = t )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, 0.01d0, nt_O=.TRUE., in_O = t )
+!          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau, nt_O=.TRUE., in_O = t )
 
 
-          write(*,*)' ttt = ',t%FRILL%NORM2
-          STOP
+!          write(*,*)' ttt = ',t%FRILL%NORM2
+!          STOP
 
 
           ! update (threshold)
@@ -171,8 +178,8 @@ contains
           ! <X_n> = <Y_n|Z_n>
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau, in_O = x )
 
-    WRITE(*,*)x%frill%norm2,y%frill%norm2,z%frill%norm2
-    IF(I==2)STOP
+!    WRITE(*,*)x%frill%norm2,y%frill%norm2,z%frill%norm2
+!    IF(I==2)STOP
 
 !    if(i==6)stop
 
@@ -180,9 +187,9 @@ contains
 
 !       endif
 
-       IF(i>2 )then
-          t => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = t, threshold_O = 0.1d0 ) 
-          write(*,*)' t% = ',t%frill%non0s,SQRT(t%frill%norm2),n**2
+       IF(i>0 )then
+          t => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = t, threshold_O = 1d-3 ) 
+          write(*,*)' % fill  = ',t%frill%non0s/n**2
 !          stop
     endif
 
@@ -280,11 +287,10 @@ program SpAMM_sandwich_inverse_squareroot
 
   call read_MM(matrix_filename, S_dense)
 
+  write(*,*)' before'
 
   ! matrix to inverse factor
   s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE, in_O=s)
-
-  write(*,*)' here ',s%frill%ndimn
 
   !=============================================================
   allocate(Sd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
@@ -293,8 +299,6 @@ program SpAMM_sandwich_inverse_squareroot
   allocate(Zd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
 
   N = s%frill%ndimn(1)
-  WRITE(*,*)' N = ',N
-  STOP
   LWORK = 1+6*N+2*N**2
   LIWORK = 3+5*N    
   allocate(eval(N))

@@ -16,7 +16,8 @@ CONTAINS
   RECURSIVE FUNCTION SpAMM_tree_1d_dot_tree_1d_recur(a, b ) result(dot)
 
     TYPE(SpAMM_tree_1d), POINTER :: a,b
-    REAL(SpAMM_KIND)             :: Dot
+
+    REAL(SpAMM_KIND)             :: dot, dot0, dot1
 
     Dot=SpAMM_Zero
 
@@ -24,11 +25,20 @@ CONTAINS
     if(.not.associated(b))return
 
     if(a%frill%leaf)then
-       dot=DOT_PRODUCT(a%chunk(1:SBS),b%chunk(1:SBS))
+
+
+       dot = DOT_PRODUCT( a%chunk(1:SBS), b%chunk(1:SBS) )
+       write(*,*)' leaf dot = ',dot
+
     else
-       dot = dot + SpAMM_tree_1d_dot_tree_1d_recur(a%child_0, b%child_0)
-       dot = dot + SpAMM_tree_1d_dot_tree_1d_recur(a%child_1, b%child_1)
+
+       dot0=SpAMM_tree_1d_dot_tree_1d_recur(a%child_0, b%child_0)
+       dot1=SpAMM_tree_1d_dot_tree_1d_recur(a%child_1, b%child_1)
+       dot=dot0+dot1
+       write(*,*)' back dot = ',dot
+
     endif
+
   END FUNCTION SpAMM_tree_1d_dot_tree_1d_recur
 
   !++NBODYTIMES:   SpAMM_init_random_tree_1d
@@ -44,6 +54,7 @@ CONTAINS
 
     depth=0
     CALL init_random_seed()
+
     CALL SpAMM_random_unormalized_tree_1d_recur (randm, depth)
 
     ! normalize the vector ...
@@ -80,10 +91,14 @@ CONTAINS
 
     if(.not.associated(randm))return
 
+    
     IF(randm%frill%leaf)THEN
 
+       randm%frill%init = .FALSE.
+       
        lo=randm%frill%bndbx(0)
        hi=randm%frill%bndbx(1)
+
 !       randm%chunk(1:hi-lo+1)=SpAMM_one
        CALL RANDOM_NUMBER(randm%chunk(1:hi-lo+1))
 
@@ -131,6 +146,7 @@ CONTAINS
 
     IF(a%frill%leaf)THEN
 
+       a%frill%init = .FALSE.
        a%chunk=alpha*a%chunk
        a%frill%flops=a%frill%flops+SBS
 
@@ -149,21 +165,19 @@ CONTAINS
   !++NBODYTIMES:   ... [TREE-TWO-D X TREE-ONE-D] ... [TREE-TWO-D X TREE-ONE-D] ...   
   !++NBODYTIMES:     SpAMM_tree_2d_symm_times_tree_1d
   !++NBODYTIMES:     c_1 => alpha*c_1 + beta*(a_2.b_1) (wrapper)
-  FUNCTION SpAMM_tree_2d_symm_times_tree_1d(a, b, Tau, alpha_O, beta_O, c) RESULT(d)
+  FUNCTION SpAMM_tree_2d_symm_times_tree_1d(a, b, Tau, in_o) RESULT(d)
 
     TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A
     TYPE(SpAMM_tree_1d),      POINTER,           INTENT(IN)    :: B
     REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
-    REAL(SpAMM_KIND),                  OPTIONAL, INTENT(IN)    :: alpha_O, beta_O
-    TYPE(SpAMM_tree_1d),      POINTER, OPTIONAL, INTENT(INOUT) :: C
+    TYPE(SpAMM_tree_1d),      POINTER, OPTIONAL, INTENT(INOUT) :: in_o
     TYPE(SpAMM_tree_1d),      POINTER                          :: D
-    REAL(SpAMM_KIND)                                           :: alpha, beta
     INTEGER                                                    :: Depth
     REAL(SpAMM_KIND)                                           :: Tau2
 
     ! figure the starting conditions ...
-    if(present(c))then
-       d => c
+    if(present(in_o))then
+       d => in_o
     else
        d => NULL()
     endif
@@ -174,66 +188,78 @@ CONTAINS
     ! here is the squared threshold 
     Tau2=Tau*Tau
 
-    ! need a new tree top? lets instantiate one ... 
-    if(.not.associated(d))&
+    if(.not.associated(d))then
+       ! instantiate a tree if no passed allocation
        d => SpAMM_new_top_tree_1d(a%frill%ndimn(1))
-
-    if(present(alpha_O))then
-       d=>SpAMM_scalar_times_tree_1d(alpha_O, d)
     endif
-    
-    beta =SpAMM_one
-    if(present( beta_O))beta = beta_O
+
+    ! set passed data for initialization
+    CALL SpAMM_flip(d)
 
     Depth=0
-    CALL SpAMM_tree_2d_symm_times_tree_1d_recur(d, A, beta, B, Tau2, Depth )
+    CALL SpAMM_tree_2d_symm_times_tree_1d_recur(d, A, B, Tau2, Depth )
+
+    ! prune unused nodes ... 
+    CALL SpAMM_prune(d)
 
   END FUNCTION SpAMM_tree_2d_symm_times_tree_1d
 
-  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur(C, A, beta, B, Tau2, Depth ) !<++NBODYTIMES|
-   !                    c_1 => alpha*c_1 + beta*(aT_2.b_1) (recursive)                     !<++NBODYTIMES|    
+  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur(C, A, B, Tau2, Depth ) !<++NBODYTIMES|
+   !                    c_1 => alpha*c_1 + beta*(aT_2.b_1) (recursive)               !<++NBODYTIMES|    
 
-    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A
-    TYPE(SpAMM_tree_1d),      POINTER, INTENT(IN)    :: B
-    TYPE(SpAMM_tree_1d),      POINTER                :: C
-    REAL(SpAMM_KIND),                  INTENT(IN)    :: beta
-    REAL(SpAMM_KIND)                                 :: Tau2
-    INTEGER                                          :: Depth
-    TYPE(SpAMM_tree_1d), POINTER                     :: c0,c1
-
-    if(.not.associated(a))return
-    if(.not.associated(b))return
-
-    ! n-body occlusion & culling of the product for matrices with decay (and some structure)
-    if(a%frill%Norm2*b%frill%Norm2<=Tau2)return 
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: A
+    TYPE(SpAMM_tree_1d),      POINTER, INTENT(IN) :: B
+    TYPE(SpAMM_tree_1d),      POINTER             :: C
+    REAL(SpAMM_KIND)                              :: Tau2
+    INTEGER                                       :: Depth
+    TYPE(SpAMM_tree_1d),      POINTER             :: b0,b1
+    TYPE(SpAMM_tree_2d_symm), POINTER             :: a00,a11,a01,a10
 
     IF( c%frill%leaf )THEN ! Leaf condition ? 
 
-!       write(*,33) c%frill%bndbx, a%frill%bndbx, b%frill%bndbx
-!33     format("[",i2,"-",i2,"]=[",i2,"-",i2,"]x[",i2,"-",i2,"] . [",i2,"=",i2,"]")
+       IF( c%frill%init )THEN
 
-       c%chunk(1:SBS)=c%chunk(1:SBS)+beta*MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS))
-       c%frill%flops  = c%frill%flops + SBS2 + 2*SBS
+          c%frill%init = .FALSE.
 
-!       WRITE(*,44)c%chunk
-44     format(16(F10.6,", "))
+          c%chunk(1:SBS) = MATMUL( a%chunk(1:SBS,1:SBS), b%chunk(1:SBS) )
+
+          c%frill%flops = c%frill%flops + SBS2
+          
+       ELSE
+
+          c%chunk(1:SBS)=c%chunk(1:SBS)+MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS))
+
+          c%frill%flops  = c%frill%flops + SBS2 + SBS
+          
+       ENDIF
+
+       write(*,*)' back leaf ',c%frill%init
+
 
     ELSE
 
-       ! children's place on the tree-1d
-       c0=> SpAMM_construct_tree_1d_0( c )
-       c1=> SpAMM_construct_tree_1d_1( c )
+       b0=>b%child_0; b1=>b%child_1
+       a00=>a%child_00; a11=>a%child_11; a01=>a%child_01; a10=>a%child_10
 
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c0, a%child_00, beta, b%child_0, Tau2, Depth+1 )      
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c1, a%child_10, beta, b%child_0, Tau2, Depth+1 )      
-       
-       ! ... & another pass 
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c0, a%child_01, beta, b%child_1, Tau2,  Depth+1 )             
-       CALL SpAMM_tree_2d_symm_times_tree_1d_recur(c1, a%child_11, beta, b%child_1, Tau2,  Depth+1 )      
-       !
+    write(*,*)associated(a00), associated(b0)
+
+       WRITE(*,*)' occlusion list = ',SpAMM_occlude( a00, b0, Tau2 ) !1, SpAMM_occlude( a11, b1, Tau2 ) 
+
+       IF( SpAMM_occlude( a00, b0, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_0(c), a00, b0, Tau2, Depth+1)
+       IF( SpAMM_occlude( a11, b1, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_1(c), a11, b1, Tau2, Depth+1)
+       IF( SpAMM_occlude( a01, b1, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_0(c), a01, b1, Tau2, Depth+1)
+       IF( SpAMM_occlude( a10, b0, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_1(c), a10, b0, Tau2, Depth+1)
+
+       write(*,*)' back 1 ',c%frill%init
+
     ENDIF
 
     CALL SpAMM_redecorate_tree_1d(c)
+       write(*,*)' back 3 ',c%frill%init
 
   END SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur
   !++NBODYTIMES:   ... [TREE-TWO-D X TREE-TWO-D] ... [TREE-TWO-D X TREE-TWO-D] ...   
@@ -248,10 +274,10 @@ CONTAINS
     real(SpAMM_KIND)                                 :: alpha
     integer :: depth
 
-    depth=0
     d=>a
     if(.not.associated(a))return
 
+    depth=0
     CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, d, depth)
 
   END FUNCTION SpAMM_scalar_times_tree_2d_symm
@@ -268,6 +294,7 @@ CONTAINS
 
     IF(a%frill%leaf)THEN
 
+       a%frill%init=.FALSE.
        a%chunk(1:SBS,1:SBS)=alpha*a%chunk(1:SBS,1:SBS)
        a%frill%flops=a%frill%flops+SBS
 
@@ -325,13 +352,16 @@ CONTAINS
     if(.not.associated(d))then
        ! instantiate a tree if no passed allocation
        d => SpAMM_new_top_tree_2d_symm(a%frill%ndimn)
-    else
     endif
-       ! reset passed data for initiation
-       CALL SpAMM_Flip_Init_tree_2d_symm_recur(d)
+  
+    ! set passed data for initialization   
+    CALL SpAMM_flip(d)
 
     Depth=0
-    CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(d, A, B, Tau2, NT, Depth )
+    CALL SpAMM_tree_2d_symm_TIMES_tree_2d_symm_recur(d, A, B, Tau2, NT, Depth )
+
+    ! prune unused nodes ... 
+    CALL SpAMM_prune(d)
 
   END FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm
 
@@ -349,23 +379,24 @@ CONTAINS
     TYPE(SpAMM_tree_2d_symm), POINTER             :: b00,b11,b01,b10
     TYPE(SpAMM_tree_2d_symm), POINTER             :: c00,c11,c01,c10
 
-    integer, dimension(1:2) :: ahi,alo , bhi,blo , chi , clo, athi , atlo
+    real(spamm_kind) :: n00,n11,n01,n10
 
-    integer :: i,j,k
-    logical :: init
+    integer, dimension(1:2) :: ahi,alo , bhi,blo , chi , clo, athi , atlo
 
     IF( c%frill%leaf )THEN ! Leaf condition ... 
 
-       init=c%frill%init
        IF( c%frill%init )THEN
-           c%frill%init = .FALSE.
+
+          c%frill%init = .FALSE.
 
           IF(NT)THEN
              c%chunk(1:SBS,1:SBS)=MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS,1:SBS))
           ELSE
              c%chunk(1:SBS,1:SBS)=MATMUL(TRANSPOSE(a%chunk(1:SBS,1:SBS)),b%chunk(1:SBS,1:SBS))
           ENDIF
-          c%frill%flops = c%frill%flops + SBS3
+
+          c%frill%non0s = SBS2
+          c%frill%flops = SBS3
 
        ELSE
 
@@ -374,34 +405,10 @@ CONTAINS
           ELSE
              c%chunk(1:SBS,1:SBS)=c%chunk(1:SBS,1:SBS)+MATMUL(TRANSPOSE(a%chunk(1:SBS,1:SBS)),b%chunk(1:SBS,1:SBS))
           ENDIF
+
           c%frill%flops = c%frill%flops + SBS2 + SBS3
 
        ENDIF
-
-       blo=b%frill%bndbx(0,:)
-       bhi=b%frill%bndbx(1,:)
-       clo=c%frill%bndbx(0,:)
-       chi=c%frill%bndbx(1,:)
-       alo=a%frill%bndbx(0,:)
-       ahi=a%frill%bndbx(1,:)
-
-       WRITE(*,67)init,clo(1),chi(1), clo(2),chi(2), &  
-                  alo(1),ahi(1), alo(2),ahi(2), & 
-                  blo(1),bhi(1), blo(2),bhi(2), SQRT(SUM(c%chunk**2)),SQRT(SUM(a%chunk**2)),SQRT(SUM(b%chunk**2))
-67     format(L2,'[',I3,'-',I3,', ',I3,'-',I3,'] = [',I3,'-',I3,', ',I3,'-',I3,'] x [',I3,'-',I3,', ',I3,'-',I3,'] : ',E12.6,', ',E12.6,', ',E12.6 )
-
-
-!       WRITE(*,77)chi(1)-clo(1)+1, chi(2)-clo(2)+1, &  
-!                  ahi(1)-alo(1)+1, ahi(2)-alo(2)+1, & 
-!                  bhi(1)-blo(1)+1, bhi(2)-blo(2)+1, SQRT(SUM(c%chunk**2)),SQRT(SUM(a%chunk**2)),SQRT(SUM(b%chunk**2))
-
-!       WRITE(*,77)clo, chi(2), &  
-!                  alo(1), ahi(2), & 
-!                  bhi(1)-blo(1)+1, bhi(2)-blo(2)+1, SQRT(SUM(c%chunk**2)),SQRT(SUM(a%chunk**2)),SQRT(SUM(b%chunk**2))
-
-
-77     format( '[',I3,', ',I3,'] = [',I3,', ',I3,'] x [',I3,', ',I3,'] : ',E12.6,', ',E12.6,', ',E12.6 )
-
 
    ELSE
 
@@ -414,65 +421,62 @@ CONTAINS
           a01=>a%child_10; a10=>a%child_01
        ENDIF
 
-       ! first pass, [i0].[0j]
-       ! diagonal
-       IF( SpAMM_double_check_tree_2d_symm( a00, b00, Tau2 ) )THEN
-          c00=>SpAMM_construct_tree_2d_symm_00(c)
-   !       write(*,*)depth,' 1:00 '
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c00,a00,b00,Tau2,NT,Depth+1)
-       ENDIF
-       IF( SpAMM_double_check_tree_2d_symm( a10, b01, Tau2 ) )THEN
-          c11=>SpAMM_construct_tree_2d_symm_11(c)
-   !       write(*,*)depth,' 1:11 '
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c11,a10,b01,Tau2,NT,Depth+1)
-       ENDIF       
-
-       ! offdiag
-       IF( SpAMM_double_check_tree_2d_symm( a00, b01, Tau2 ) )THEN
-          c01=>SpAMM_construct_tree_2d_symm_01(c)
-    !      write(*,*)depth,' 1:01 '
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c01,a00,b01,Tau2,NT,Depth+1)
-       ENDIF
-       IF( SpAMM_double_check_tree_2d_symm( a10, b00, Tau2 ) )THEN
-          c10=>SpAMM_construct_tree_2d_symm_10(c)
-   !       write(*,*)depth,' 1:10 '
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c10,a10,b00,Tau2,NT,Depth+1)
-       ENDIF
-
-       ! second  pass, [i1].[1j]
-       ! diagonal
-       IF( SpAMM_double_check_tree_2d_symm( a01, b10, Tau2 ) )THEN
-          c00=>SpAMM_construct_tree_2d_symm_00(c)
-  !        write(*,*)depth,' 2:00 '
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c00,a01,b10,Tau2,NT,Depth+1)
-       ENDIF
-       IF( SpAMM_double_check_tree_2d_symm( a11, b11, Tau2 ) )THEN
-          c11=>SpAMM_construct_tree_2d_symm_11(c)
-  !        write(*,*)depth,' 2:11 '
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c11,a11,b11,Tau2,NT,Depth+1)
-       ENDIF
-
-       ! offdiag
-       IF( SpAMM_double_check_tree_2d_symm( a01, b11, Tau2 ) )THEN
-          c01=>SpAMM_construct_tree_2d_symm_01(c)
-  !        write(*,*)depth,' 2:01 '
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c01,a01,b11,Tau2,NT,Depth+1)
-       ENDIF
-       IF( SpAMM_double_check_tree_2d_symm( a11, b10, Tau2 ) )THEN
-          c10=>SpAMM_construct_tree_2d_symm_10(c)
-  !        write(*,*)depth,' 2:10 '
-          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(c10,a11,b10,Tau2,NT,Depth+1)
-       ENDIF
-
-       IF(.NOT.ASSOCIATED(c00))CALL SpAMM_destruct_tree_2d_symm_recur(c%child_00)
-       IF(.NOT.ASSOCIATED(c11))CALL SpAMM_destruct_tree_2d_symm_recur(c%child_11)
-       IF(.NOT.ASSOCIATED(c01))CALL SpAMM_destruct_tree_2d_symm_recur(c%child_01)
-       IF(.NOT.ASSOCIATED(c10))CALL SpAMM_destruct_tree_2d_symm_recur(c%child_10)
+       ! first  pass, [m;0].[0;n]
+       IF( SpAMM_occlude( a00, b00, Tau2 ) ) & 
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_00(c),a00,b00,Tau2,NT,Depth+1)
+       IF( SpAMM_occlude( a10, b01, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_11(c),a10,b01,Tau2,NT,Depth+1)
+       IF( SpAMM_occlude( a00, b01, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_01(c),a00,b01,Tau2,NT,Depth+1)
+       IF( SpAMM_occlude( a10, b00, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_10(c),a10,b00,Tau2,NT,Depth+1)
+       ! second  pass, [m;1].[1;n]
+       IF( SpAMM_occlude( a01, b10, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_00(c),a01,b10,Tau2,NT,Depth+1)
+       IF( SpAMM_occlude( a11, b11, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_11(c),a11,b11,Tau2,NT,Depth+1)
+       IF( SpAMM_occlude( a01, b11, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_01(c),a01,b11,Tau2,NT,Depth+1)
+       IF( SpAMM_occlude( a11, b10, Tau2 ) ) &
+          CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_10(c),a11,b10,Tau2,NT,Depth+1)
        !
     ENDIF
 
     CALL SpAMM_redecorate_tree_2d_symm(c)
 
+!!    IF(c%frill%init) WRITE(*,*)' depth = ',depth,' c%init = ',c%frill%init,' leaf = ',c%frill%leaf
+
+!!$    blo=b%frill%bndbx(0,:)
+!!$    bhi=b%frill%bndbx(1,:)
+!!$    clo=c%frill%bndbx(0,:)
+!!$    chi=c%frill%bndbx(1,:)
+!!$    alo=a%frill%bndbx(0,:)
+!!$    ahi=a%frill%bndbx(1,:)
+!!$
+!!$    IF(depth==1)then
+!!$       n00=0d0
+!!$       n11=0d0
+!!$       n01=0d0
+!!$       n10=0d0
+!!$       if(associated(c%child_00)) &
+!!$       n00=c%child_00%frill%norm2
+!!$       if(associated(c%child_11)) &
+!!$       n11=c%child_11%frill%norm2
+!!$       if(associated(c%child_01)) &
+!!$       n01=c%child_01%frill%norm2
+!!$       if(associated(c%child_10)) &
+!!$       n10=c%child_10%frill%norm2
+!!$       WRITE(*,67)depth,init,clo(1),chi(1), clo(2),chi(2), &  
+!!$                             alo(1),ahi(1), alo(2),ahi(2), & 
+!!$                             blo(1),bhi(1), blo(2),bhi(2), c%frill%norm2,n00,n11,n01,n10
+!!$elseif(depth==2)then
+!!$       WRITE(*,67)depth,init,clo(1),chi(1), clo(2),chi(2), &  
+!!$                             alo(1),ahi(1), alo(2),ahi(2), & 
+!!$                             blo(1),bhi(1), blo(2),bhi(2), c%frill%norm2
+!!$
+!!$endif
+!!$
+!!$67     format(I2,',',L2,'[',I3,'-',I3,', ',I3,'-',I3,'] = [',I3,'-',I3,', ',I3,'-',I3,'] x [',I3,'-',I3,', ',I3,'-',I3,'] : ', 8( E12.6,', ' ) )
 
   END SUBROUTINE SpAMM_tree_2d_symm_times_tree_2d_symm_recur
 
