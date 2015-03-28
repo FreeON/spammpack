@@ -53,6 +53,7 @@ CONTAINS
     DO CG=1,2!NCG ! conjugate gradient iteration
 
        WRITE(*,*)' --------------------------------------'
+       write(*,*)' a%norm = ',a%frill%norm2
        Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, Tau, in_o = Ax )
 
        WRITE(*,*)' --------------------------------------'

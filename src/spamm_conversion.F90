@@ -21,7 +21,9 @@ contains
     IF(.NOT.ASSOCIATED(a_2d)) &
          a_2d => SpAMM_new_top_tree_2d_symm ((/ SIZE(A,1), SIZE(A,2) /)) ! a new tree
 
+    CALL SpAMM_flip(a_2d)
     CALL SpAMM_convert_dense_to_tree_2d_symm_recur ( A, a_2d )
+    CALL SpAMM_prune(a_2d)
 
   END FUNCTION SpAMM_convert_dense_to_tree_2d_symm
 
@@ -33,21 +35,17 @@ contains
     integer, dimension(1:2)                     :: lo,hi
 
     if(.not.associated(a_2d))return
+
     if(a_2d%frill%leaf)then! Leaf condition ? 
 
+       a_2d%frill%init=.FALSE.
        lo=a_2d%frill%bndbx(0,:) 
        hi=a_2d%frill%bndbx(1,:) 
  
        ! move data on the page ...    
-!       write(*,*)' lo = ',lo
-!       write(*,*)' hi = ',hi
-
-       a_2d%chunk( 1:(hi(1)-lo(1)+1), 1:(hi(2)-lo(2)+1))=A(lo(1):hi(1),lo(2):hi(2))
+       a_2d%chunk( 1:(hi(1)-lo(1)+1) , 1:(hi(2)-lo(2)+1) ) = A( lo(1):hi(1) , lo(2):hi(2) ) 
 
     ELSE ! recur generically here, poping with construct as needed ...
-
-!       WRITE(*,*)' ------------------------------------------'
-!       WRITE(*,*)a_2d%frill%width,A_2d%frill%BndBx
 
        CALL SpAMM_convert_dense_to_tree_2d_symm_recur( A, SpAMM_construct_tree_2d_symm_00(A_2d) )
        CALL SpAMM_convert_dense_to_tree_2d_symm_recur( A, SpAMM_construct_tree_2d_symm_01(A_2d) )

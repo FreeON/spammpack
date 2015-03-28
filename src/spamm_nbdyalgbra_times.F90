@@ -199,6 +199,8 @@ CONTAINS
     Depth=0
     CALL SpAMM_tree_2d_symm_times_tree_1d_recur(d, A, B, Tau2, Depth )
 
+    WRITE(*,*)' stop  here' 
+
     ! prune unused nodes ... 
     CALL SpAMM_prune(d)
 
@@ -207,43 +209,37 @@ CONTAINS
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur(C, A, B, Tau2, Depth ) !<++NBODYTIMES|
    !                    c_1 => alpha*c_1 + beta*(aT_2.b_1) (recursive)               !<++NBODYTIMES|    
 
-    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: A
-    TYPE(SpAMM_tree_1d),      POINTER, INTENT(IN) :: B
+    TYPE(SpAMM_tree_2d_symm), POINTER :: A !, INTENT(IN) :: A
+    TYPE(SpAMM_tree_1d),      POINTER :: B !, INTENT(IN) :: B
     TYPE(SpAMM_tree_1d),      POINTER             :: C
-    REAL(SpAMM_KIND)                              :: Tau2
+    REAL(SpAMM_KIND),  INTENT(IN)                 :: Tau2
     INTEGER                                       :: Depth
     TYPE(SpAMM_tree_1d),      POINTER             :: b0,b1
     TYPE(SpAMM_tree_2d_symm), POINTER             :: a00,a11,a01,a10
+
+    logical :: tf
 
     IF( c%frill%leaf )THEN ! Leaf condition ? 
 
        IF( c%frill%init )THEN
 
           c%frill%init = .FALSE.
-
           c%chunk(1:SBS) = MATMUL( a%chunk(1:SBS,1:SBS), b%chunk(1:SBS) )
-
           c%frill%flops = c%frill%flops + SBS2
           
        ELSE
 
           c%chunk(1:SBS)=c%chunk(1:SBS)+MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS))
-
           c%frill%flops  = c%frill%flops + SBS2 + SBS
           
        ENDIF
-
-       write(*,*)' back leaf ',c%frill%init
-
 
     ELSE
 
        b0=>b%child_0; b1=>b%child_1
        a00=>a%child_00; a11=>a%child_11; a01=>a%child_01; a10=>a%child_10
 
-    write(*,*)associated(a00), associated(b0)
-
-       WRITE(*,*)' occlusion list = ',SpAMM_occlude( a00, b0, Tau2 ) !1, SpAMM_occlude( a11, b1, Tau2 ) 
+       !    tf =SpAMM_occlude_tree_2d_symm_dot_tree_1d( a00, b0, Tau2 )
 
        IF( SpAMM_occlude( a00, b0, Tau2 ) ) &
           CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_0(c), a00, b0, Tau2, Depth+1)
@@ -254,12 +250,13 @@ CONTAINS
        IF( SpAMM_occlude( a10, b0, Tau2 ) ) &
           CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_1(c), a10, b0, Tau2, Depth+1)
 
-       write(*,*)' back 1 ',c%frill%init
+!       write(*,*)' back 1 ',c%frill%init
 
     ENDIF
 
     CALL SpAMM_redecorate_tree_1d(c)
-       write(*,*)' back 3 ',c%frill%init
+
+    write(*,*)' back 3 ',c%frill%norm2
 
   END SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur
   !++NBODYTIMES:   ... [TREE-TWO-D X TREE-TWO-D] ... [TREE-TWO-D X TREE-TWO-D] ...   

@@ -71,13 +71,13 @@ contains
 
   LOGICAL FUNCTION SpAMM_occlude_tree_2d_symm_dot_tree_1d( a, b, Tau2 )
 
-    TYPE(SpAMM_tree_2d_symm), POINTER :: a
-    TYPE(SpAMM_tree_1d)     , POINTER :: b
-    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: a
+    TYPE(SpAMM_tree_1d)     , POINTER, INTENT(IN) :: b
+    REAL(SpAMM_KIND),                  INTENT(IN) :: Tau2
     
     SpAMM_occlude_tree_2d_symm_dot_tree_1d = .FALSE.
 
-    write(*,*)associated(a), associated(b)
+    write(*,*)associated(a), associated(b), a%frill%norm2,b%frill%norm2
 
     if( .not. associated(a) )return
     if( .not. associated(b) )return
@@ -92,7 +92,7 @@ contains
 
   LOGICAL FUNCTION SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm( a, b, Tau2 )
 
-    TYPE(SpAMM_tree_2d_symm), POINTER :: a, b 
+    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: a,b
     REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
 
     SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm = .FALSE.

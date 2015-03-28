@@ -290,20 +290,20 @@ program SpAMM_sandwich_inverse_squareroot
   write(*,*)' before'
 
   ! matrix to inverse factor
-  s => SpAMM_convert_dense_to_tree_2d_symm(S_DENSE, in_O=s)
+  s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, in_O = s )
 
   !=============================================================
-  allocate(Sd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
-  allocate(Xd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
-  allocate(Td( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
-  allocate(Zd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
-
-  N = s%frill%ndimn(1)
-  LWORK = 1+6*N+2*N**2
-  LIWORK = 3+5*N    
-  allocate(eval(N))
-  allocate(work(LWORK))
-  allocate(iwork(LIWORK))
+!!$  allocate(Sd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
+!!$  allocate(Xd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
+!!$  allocate(Td( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
+!!$  allocate(Zd( 1:s%frill%ndimn(1), 1:s%frill%ndimn(2)) )
+!!$
+!!$  N = s%frill%ndimn(1)
+!!$  LWORK = 1+6*N+2*N**2
+!!$  LIWORK = 3+5*N    
+!!$  allocate(eval(N))
+!!$  allocate(work(LWORK))
+!!$  allocate(iwork(LIWORK))
 
   !  call dsyevd("V", "U", N, X_dense, N, eval, work, LWORK, iwork, LIWORK, info)
   !=============================================================
@@ -402,8 +402,10 @@ program SpAMM_sandwich_inverse_squareroot
   s => SpAMM_tree_2d_symm_times_tree_2d_symm( x, t, 1d-20, nt_O=.FALSE., in_O = s )   
 
   ! error = [ <Zt_1|Zt_2|...<Zt_slice| S |Z_slice>...|Z_2>|Z_1> -1.*I ] /N**2
+
   s => SpAMM_scalar_plus_tree_2d_symm( -SpAMM_one, s) 
-  error=SQRT(s%frill%norm2)/dble(N)**2
+
+  error=SQRT(s%frill%norm2)/dble(s%frill%ndimn(1))**2
 
   write(*,*)' error = ',error
 
