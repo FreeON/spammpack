@@ -95,8 +95,12 @@ contains
 
     SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm = .FALSE.
 
+!    write(*,*)associated(a),associated(b)
+
     if( .not. associated(a) )return
     if( .not. associated(b) )return
+
+!    write(*,*)a%frill%norm2,b%frill%norm2
 
     ! cull 
     if( a%frill%Norm2 * b%frill%Norm2 <= Tau2 )return  
@@ -705,10 +709,7 @@ contains
        CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, threshold2)
     ENDIF
 
-    WRITE(*,*)' before ', associated(d)
-
     CALL SpAMM_prune(d)
-    WRITE(*,*)'after ', associated(d)
     
   END function SpAMM_tree_2d_symm_copy_tree_2d_symm
 

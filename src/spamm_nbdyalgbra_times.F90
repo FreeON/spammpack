@@ -419,6 +419,7 @@ CONTAINS
           CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_01(c),a00,b01,Tau2,NT,Depth+1)
        IF( SpAMM_occlude( a10, b00, Tau2 ) ) &
           CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_10(c),a10,b00,Tau2,NT,Depth+1)
+
        ! second  pass, [m;1].[1;n]
        IF( SpAMM_occlude( a01, b10, Tau2 ) ) &
           CALL SpAMM_tree_2d_symm_times_tree_2d_symm_recur(SpAMM_construct_tree_2d_symm_00(c),a01,b10,Tau2,NT,Depth+1)
@@ -431,7 +432,9 @@ CONTAINS
        !
     ENDIF
 
+
     CALL SpAMM_redecorate_tree_2d_symm(c)
+
 
 !!    IF(c%frill%init) WRITE(*,*)' depth = ',depth,' c%init = ',c%frill%init,' leaf = ',c%frill%leaf
 

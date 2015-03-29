@@ -21,6 +21,7 @@ CONTAINS
 
        if(a%frill%leaf)then
           
+          a%frill%init=.FALSE. 
           a%chunk=SpAMM_zero
           DO I=1,a%frill%bndbx(1,1)-a%frill%bndbx(0,1)+1
              a%chunk(I,I)=SpAMM_one
@@ -142,5 +143,41 @@ CONTAINS
     endif
 
   end function SpAMM_absmax_tree_2d_symm_recur
+
+  recursive function SpAMM_twist_2d_symm_recur (A, at_o) result(twist)
+
+    type(SpAMM_tree_2d_symm), pointer,           intent(in)   :: A
+    type(SpAMM_tree_2d_symm), pointer, optional, intent(in)   :: At_o
+    real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
+
+    twist  = 0
+
+    if(.not. associated(a))return
+
+       if(a%frill%leaf)then
+
+          IF(PRESENT(at_o))THEN
+             
+             twist=SUM( (a%chunk(1:SBS,1:SBS)-TRANSPOSE(at_o%chunk(1:SBS,1:SBS)))**2 )
+
+          ELSE
+
+             twist=SUM( (a%chunk(1:SBS,1:SBS)-TRANSPOSE(   a%chunk(1:SBS,1:SBS)))**2 )
+
+          ENDIF
+
+       else
+
+          twist_00=SpAMM_twist_2d_symm_recur( a%child_00 ) 
+          twist_11=SpAMM_twist_2d_symm_recur( a%child_11 )
+
+          twist_01=SpAMM_twist_2d_symm_recur( a%child_01, a%child_10 )
+          twist_10=SpAMM_twist_2d_symm_recur( a%child_10, a%child_01 )
+
+          twist = twist_00 + twist_11 + twist_01 + twist_10
+
+       endif
+
+  end function SpAMM_twist_2d_symm_recur
 
 END module spamm_elementals
