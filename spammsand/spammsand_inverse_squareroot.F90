@@ -1,5 +1,5 @@
 module SpAMMsand_inverse_squareroot
-
+! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
   USE spammpack 
 
   implicit none
@@ -137,18 +137,23 @@ contains
 
 
 
-!       write(*,*)' xxx b = ',X%FRILL%NORM2
+       write(*,*)' xxx b = ',X%FRILL%NORM2
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, nt_O=.TRUE., in_O = t )
 
-!       write(*,*)' ttt = ',t%FRILL%NORM2
+       WRITE(*,*)' associated(t) = ',associated(t)
+
+       write(*,*)' ttt = ',t%FRILL%NORM2
 
 
        ! update (threshold)
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
 
-!       write(*,*)' zzz = ',z%FRILL%NORM2
+
+       write(*,*)' zzz = ',z%FRILL%NORM2
+       STOP
+
 
 !       IF(.nOt.First)tHeN
           ! <Y_n+1|
@@ -286,8 +291,6 @@ program SpAMM_sandwich_inverse_squareroot
   call get_command_argument(1, matrix_filename)
 
   call read_MM(matrix_filename, S_dense)
-
-  write(*,*)' before'
 
   ! matrix to inverse factor
   s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, in_O = s )

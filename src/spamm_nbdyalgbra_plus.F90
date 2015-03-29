@@ -13,6 +13,8 @@ CONTAINS
   !++NBODYADDTN: generalized addition (+)
   !++NBODYADDTN:   ... [TREE-ONE-D + TREE-ONE-D] ... [TREE-ONE-D + TREE-ONE-D] ...   
   !++NBODYADDTN:   SpAMM_tree_1d_plus_tree_1d 
+
+
   !++NBODYADDTN:     c => inplace*c + beta*b
   FUNCTION SpAMM_tree_1d_plus_tree_1d (C, beta, B, inplace) RESULT(D)   
 
@@ -62,8 +64,11 @@ CONTAINS
 
        IF(b%frill%leaf)then
           ! A = alpha*A + beta*B
+
+          a%frill%init=.FALSE.
           a%chunk(1:SBS) = alpha*a%chunk(1:SBS) + beta*b%chunk(1:SBS)
           a%frill%flops = a%frill%flops + 3*SBS                  
+
        ELSE ! recursively descend ...
 
           CALL SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_0(a), & !0>
@@ -72,14 +77,18 @@ CONTAINS
           CALL SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_1(a), & !1> 
                                                         b%child_1, alpha, beta)
        ENDIF
+
     ENDIF
 
     CALL SpAMM_redecorate_tree_1d(a)
 
   END SUBROUTINE SpAMM_tree_1d_plus_tree_1d_inplace_recur
+
+
   !!
   !! ... TREE-TWO-D ... TREE-TWO-D ... TREE-TWO-D ... TREE-TWO-D ... TREE-TWO-D ...
   !!
+
 
   FUNCTION SpAMM_scalar_plus_tree_2d_symm(alpha, a) RESULT(d)
 
@@ -108,6 +117,7 @@ CONTAINS
 
    IF(a%frill%leaf)THEN
 
+      a%frill%init=.FALSE.
       lo=a%frill%bndbx(0,:)
       hi=a%frill%bndbx(1,:)
       
@@ -209,6 +219,7 @@ CONTAINS
        IF(b%frill%leaf)then
 
           ! A = alpha*A + beta*B
+          a%frill%init=.false.
           a%chunk(1:SBS,1:SBS) = alpha*a%chunk(1:SBS,1:SBS) + beta*b%chunk(1:SBS,1:SBS)
           a%frill%flops = a%frill%flops + 3*SBS2                  
 
@@ -259,6 +270,7 @@ CONTAINS
        IF(c%frill%leaf)THEN
 
           ! c = c + alpha*a + beta*b
+          c%frill%init=.FALSE.
           c%chunk(1:sbs,1:sbs)=c%chunk(1:sbs,1:sbs)+alpha*a%chunk(1:sbs,1:sbs)+beta*b%chunk(1:sbs,1:sbs)
           c%frill%flops=c%frill%flops+3*sbs2
 

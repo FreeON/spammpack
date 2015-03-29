@@ -77,8 +77,6 @@ contains
     
     SpAMM_occlude_tree_2d_symm_dot_tree_1d = .FALSE.
 
-    write(*,*)associated(a), associated(b), a%frill%norm2,b%frill%norm2
-
     if( .not. associated(a) )return
     if( .not. associated(b) )return
 

@@ -28,14 +28,12 @@ CONTAINS
 
 
        dot = DOT_PRODUCT( a%chunk(1:SBS), b%chunk(1:SBS) )
-       write(*,*)' leaf dot = ',dot
 
     else
 
-       dot0=SpAMM_tree_1d_dot_tree_1d_recur(a%child_0, b%child_0)
-       dot1=SpAMM_tree_1d_dot_tree_1d_recur(a%child_1, b%child_1)
+       dot0=SpAMM_tree_1d_dot_tree_1d_recur( a%child_0, b%child_0 )
+       dot1=SpAMM_tree_1d_dot_tree_1d_recur( a%child_1, b%child_1 )
        dot=dot0+dot1
-       write(*,*)' back dot = ',dot
 
     endif
 
@@ -170,7 +168,7 @@ CONTAINS
     TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A
     TYPE(SpAMM_tree_1d),      POINTER,           INTENT(IN)    :: B
     REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
-    TYPE(SpAMM_tree_1d),      POINTER, OPTIONAL, INTENT(INOUT) :: in_o
+    TYPE(SpAMM_tree_1d),      POINTER, OPTIONAL  :: in_o
     TYPE(SpAMM_tree_1d),      POINTER                          :: D
     INTEGER                                                    :: Depth
     REAL(SpAMM_KIND)                                           :: Tau2
@@ -197,17 +195,15 @@ CONTAINS
     CALL SpAMM_flip(d)
 
     Depth=0
-    CALL SpAMM_tree_2d_symm_times_tree_1d_recur(d, A, B, Tau2, Depth )
-
-    WRITE(*,*)' stop  here' 
+    CALL SpAMM_tree_2d_symm_times_tree_1d_recur( d, A, B, Tau2, Depth )
 
     ! prune unused nodes ... 
     CALL SpAMM_prune(d)
 
   END FUNCTION SpAMM_tree_2d_symm_times_tree_1d
 
-  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur(C, A, B, Tau2, Depth ) !<++NBODYTIMES|
-   !                    c_1 => alpha*c_1 + beta*(aT_2.b_1) (recursive)               !<++NBODYTIMES|    
+  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur( C, A, B, Tau2, Depth ) !<++NBODYTIMES|
+   !                    c_1 => alpha*c_1 + beta*(aT_2.b_1) (recursive)                !<++NBODYTIMES|    
 
     TYPE(SpAMM_tree_2d_symm), POINTER :: A !, INTENT(IN) :: A
     TYPE(SpAMM_tree_1d),      POINTER :: B !, INTENT(IN) :: B
@@ -223,40 +219,36 @@ CONTAINS
 
        IF( c%frill%init )THEN
 
-          c%frill%init = .FALSE.
+          c%frill%init   = .FALSE.
           c%chunk(1:SBS) = MATMUL( a%chunk(1:SBS,1:SBS), b%chunk(1:SBS) )
-          c%frill%flops = c%frill%flops + SBS2
+          c%frill%flops  = c%frill%flops + SBS2
           
        ELSE
 
-          c%chunk(1:SBS)=c%chunk(1:SBS)+MATMUL(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS))
+          c%chunk(1:SBS) = c%chunk(1:SBS) + MATMUL( a%chunk(1:SBS,1:SBS) , b%chunk(1:SBS) )
           c%frill%flops  = c%frill%flops + SBS2 + SBS
           
        ENDIF
 
     ELSE
 
-       b0=>b%child_0; b1=>b%child_1
-       a00=>a%child_00; a11=>a%child_11; a01=>a%child_01; a10=>a%child_10
-
-       !    tf =SpAMM_occlude_tree_2d_symm_dot_tree_1d( a00, b0, Tau2 )
+        b0=>b%child_0;   b1=>b%child_1
+       a00=>a%child_00; a11=>a%child_11 
+       a01=>a%child_01; a10=>a%child_10
 
        IF( SpAMM_occlude( a00, b0, Tau2 ) ) &
           CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_0(c), a00, b0, Tau2, Depth+1)
        IF( SpAMM_occlude( a11, b1, Tau2 ) ) &
           CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_1(c), a11, b1, Tau2, Depth+1)
+
        IF( SpAMM_occlude( a01, b1, Tau2 ) ) &
           CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_0(c), a01, b1, Tau2, Depth+1)
        IF( SpAMM_occlude( a10, b0, Tau2 ) ) &
           CALL SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_1(c), a10, b0, Tau2, Depth+1)
 
-!       write(*,*)' back 1 ',c%frill%init
-
     ENDIF
 
     CALL SpAMM_redecorate_tree_1d(c)
-
-    write(*,*)' back 3 ',c%frill%norm2
 
   END SUBROUTINE SpAMM_tree_2d_symm_times_tree_1d_recur
   !++NBODYTIMES:   ... [TREE-TWO-D X TREE-TWO-D] ... [TREE-TWO-D X TREE-TWO-D] ...   

@@ -21,7 +21,7 @@ CONTAINS
   ! uppwards redecoration ...
   SUBROUTINE SpAMM_redecorate_tree_1d(a)
 
-    TYPE(SpAMM_Tree_1d), POINTER, INTENT(INOUT) :: a    
+    TYPE(SpAMM_Tree_1d), POINTER :: a    
 
     if(.not.associated(a))return
 

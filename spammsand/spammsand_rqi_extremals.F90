@@ -48,23 +48,16 @@ CONTAINS
     hOld=>SpAMM_new_top_tree_1d(M)
 
     x   =>SpAMM_random_tree_1d( M)  ! our extremal eigenvector
+
 !!    CALL SpAMM_print_tree_1d_recur (x) 
 
-    DO CG=1,2!NCG ! conjugate gradient iteration
+    DO CG=1,NCG ! conjugate gradient iteration
 
-       WRITE(*,*)' --------------------------------------'
-       write(*,*)' a%norm = ',a%frill%norm2
        Ax => SpAMM_tree_2d_symm_times_tree_1d(a, x, Tau, in_o = Ax )
-
-       WRITE(*,*)' --------------------------------------'
        xx =  SpAMM_tree_1d_dot_tree_1d_recur (x, x)
 
-       write(*,*)' xx = ',xx
-
        xAx=  SpAMM_tree_1d_dot_tree_1d_recur (x,Ax)
-       write(*,*)' xAx = ',xAx
 
-       stop
        omega_old=omega
        omega=xAx/xx
 
@@ -112,6 +105,8 @@ CONTAINS
        xAh=SpAMM_tree_1d_DOT_tree_1d_recur(x,Ah)
        hAx=SpAMM_tree_1d_DOT_tree_1d_recur(h,Ax)
        hAh=SpAMM_tree_1d_DOT_tree_1d_recur(h,Ah)        
+
+
 
        xh=hx      ! By symmetry
        hAx=xAh
@@ -162,8 +157,6 @@ CONTAINS
     CALL SpAMM_destruct_tree_1d_recur (Ah)
     CALL SpAMM_destruct_tree_1d_recur (gOld)
     CALL SpAMM_destruct_tree_1d_recur (hOld)
-
-    stop
 
   END FUNCTION SpAMMSand_rqi_extremal
 
