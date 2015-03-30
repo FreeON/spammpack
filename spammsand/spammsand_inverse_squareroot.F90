@@ -43,13 +43,16 @@ contains
     INTEGER, INTENT(INOUT)                            :: kount
     INTEGER                                           :: i, n, j
     REAL(SpAMM_KIND)                                  :: sc, TrX, tau_xtra
+
+    REAL(SpAMM_KIND)                                  :: twist_x,twist_z,twist_y,twist_zs
+
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev, &
                                                          trxd, trsd, trtd, trzd
 
     n=x%frill%ndimn(1)
     FillN=1d10
     
-    first=.false.
+!    first=.false.
 
     IF(.nOt.First)tHeN
        ! y_0 => s
@@ -80,7 +83,7 @@ contains
 !       write(*,*)' trx = ',trx, ' n  = ',n,' filln = ',filln
 
        WRITE(101,*)kount, filln
-       WRITE(*,33)tau, kount, TrX, FillN, x%frill%non0s/dble(N)
+       WRITE(*,33)tau, kount, TrX, FillN, x%frill%non0s/dble(N), twist_x,twist_z,twist_y,twist_zs
 
        IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
@@ -93,7 +96,8 @@ contains
           RETURN  ! Anihilation
        end IF
 
-33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3,' non0s/N = ',e10.3)
+33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3,' non0s/N = ',e10.3,' twists = ',e10.3,', ',e10.3,', ',e10.3,', ',e10.3)
+
 
        IF(FillN>0.4d0)THEN
           delta=1.0d-1 ! maybe this should be a variable too, passed in?
@@ -116,29 +120,43 @@ contains
 !!$
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
+
        ! |Z_n+1> =  <Z_n| X_n>  
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau, nt_O=.TRUE., in_O = t )
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, 0d0, nt_O=.TRUE., in_O = t )
        ! update (threshold)
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = 0d0 ) 
+
+       CALL SpAMM_print_tree_2d_symm_recur (z) 
+       twist_z = SpAMM_twist_tree_2d_symm(z)
+       write(*,*)' twist z= ',twist_z
+
+       stop'x'
+
+
 
        IF(.nOt.First)tHeN
           ! <Y_n+1|
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau, nt_O=.TRUE., in_O = t )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, 0d0 , nt_O=.TRUE., in_O = t )
           ! update (threshold)
-          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau ) 
+          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = 0d0 ) 
+!          twist_y =SQRT( SpAMM_twist_2d_symm_recur (y) )
        ENDIF
 
        IF(first)then
+
           ! <X_n> = <Z_n|S|Z_n>
           tau_xtra=tau*1d-2 ! xtra stabilization on first multiply 
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra , NT_O=.false. , in_O = t )
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau      , NT_O=.TRUE.  , in_O = x )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, 0.d0  , NT_O=.false. , in_O = t )
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, 0.d0     , NT_O=.TRUE.  , in_O = x )
 
-          WRITE(*,*)' x_twist = ',SpAMM_twist_2d_symm_recur (x)
+!          twist_zs=SQRT( SpAMM_twist_2d_symm_recur (t) )
+!          twist_x =SQRT( SpAMM_twist_2d_symm_recur (x) )
 
        else
           ! <X_n> = <Y_n|Z_n>
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau      , nt_O=.TRUE. , in_O = x )
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, 0d0      , nt_O=.TRUE. , in_O = x )
+!          twist_x =SQRT( SpAMM_twist_2d_symm_recur (x) )
+
        endif
 !!$
 !!$       ! best acceleration we can hope for
@@ -228,6 +246,8 @@ program SpAMM_sandwich_inverse_squareroot
   call get_command_argument(1, matrix_filename)
 
   call read_MM(matrix_filename, S_dense)
+  S_dense=SpAMM_half*(S_dense+TRANSPOSE(S_dense))
+
 
   ! matrix to inverse factor
   s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, in_O = s )

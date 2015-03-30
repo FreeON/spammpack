@@ -75,11 +75,11 @@ CONTAINS
 
     if(a%frill%leaf.and.a%frill%norm2>1d-3)then
 
-       WRITE(*,33)a%frill%bndbx(0:1,1),a%frill%bndbx(0:1,2)
-33     FORMAT(' [',I4,", ",I4,"]x[",I4,", ",I4,"]")
-       DO I=1,SBS
-          WRITE(*,44)(a%chunk(k,I),k=1,SBS)
-       ENDDO
+       WRITE(*,33)a%frill%bndbx(0:1,1),a%frill%bndbx(0:1,2),a%frill%norm2
+33     FORMAT(' [',I4,", ",I4,"]x[",I4,", ",I4,"] = ",e12.6)
+!       DO I=1,SBS
+!          WRITE(*,44)(a%chunk(k,I),k=1,SBS)
+!       ENDDO
 44     FORMAT(20(E10.4,", "))
 
     else
@@ -144,40 +144,57 @@ CONTAINS
 
   end function SpAMM_absmax_tree_2d_symm_recur
 
-  recursive function SpAMM_twist_2d_symm_recur (A, at_o) result(twist)
+  function SpAMM_twist_tree_2d_symm(A) result(twist)
 
-    type(SpAMM_tree_2d_symm), pointer,           intent(in)   :: A
-    type(SpAMM_tree_2d_symm), pointer, optional, intent(in)   :: At_o
+    type(SpAMM_tree_2d_symm), pointer,  intent(in)  :: A
     real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
 
-    twist  = 0
+    twist  = SpAMM_zero
 
     if(.not. associated(a))return
 
-       if(a%frill%leaf)then
 
-          IF(PRESENT(at_o))THEN
-             
-             twist=SUM( (a%chunk(1:SBS,1:SBS)-TRANSPOSE(at_o%chunk(1:SBS,1:SBS)))**2 )
 
-          ELSE
+       twist_01=SpAMM_twist_2d_symm_double_recur( a%child_01, a%child_10 )
+       twist_10=SpAMM_twist_2d_symm_double_recur( a%child_10, a%child_01 )
 
-             twist=SUM( (a%chunk(1:SBS,1:SBS)-TRANSPOSE(   a%chunk(1:SBS,1:SBS)))**2 )
+!       twist_00=SpAMM_twist_2d_symm_single_recur( a%child_00 ) 
+!       twist_11=SpAMM_twist_2d_symm_single_recur( a%child_11 )
 
-          ENDIF
+       twist=twist_01+twist_10
 
-       else
+       twist=SQRT(twist)
 
-          twist_00=SpAMM_twist_2d_symm_recur( a%child_00 ) 
-          twist_11=SpAMM_twist_2d_symm_recur( a%child_11 )
+     end function SpAMM_twist_tree_2d_symm
 
-          twist_01=SpAMM_twist_2d_symm_recur( a%child_01, a%child_10 )
-          twist_10=SpAMM_twist_2d_symm_recur( a%child_10, a%child_01 )
 
-          twist = twist_00 + twist_11 + twist_01 + twist_10
 
-       endif
+  recursive function SpAMM_twist_tree_2d_symm_double_recur (A, AT) result(twist)
 
-  end function SpAMM_twist_2d_symm_recur
+    type(SpAMM_tree_2d_symm), pointer,  intent(in)  :: A,AT
+    real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
+
+    twist  = SpAMM_zero
+
+    if(.not. associated(a))return
+    if(.not. associated(at))return
+
+    if(a%frill%leaf)then
+       
+       twist=SUM( (a%chunk(1:SBS,1:SBS)-TRANSPOSE(at%chunk(1:SBS,1:SBS)))**2 )
+                 
+    ELSE
+
+       twist_01=SpAMM_twist_tree_2d_symm_double_recur ( a%child_01, a%child_10 )
+       twist_10=SpAMM_twist_tree_2d_symm_double_recur ( a%child_10, a%child_01 )
+
+!       twist_00=SpAMM_twist_2d_symm_single_recur( a%child_00 ) 
+!       twist_11=SpAMM_twist_2d_symm_single_recur( a%child_11 )
+
+       twist = twist_01 + twist_10 !twist_00 + twist_11 + 
+
+    ENDIF
+
+  end function SpAMM_twist_tree_2d_symm_double_recur
 
 END module spamm_elementals
