@@ -342,7 +342,7 @@ CONTAINS
        ! instantiate a tree if no passed allocation
        d => SpAMM_new_top_tree_2d_symm(a%frill%ndimn)
     endif
-  
+ 
     ! set passed data for initialization   
     CALL SpAMM_flip(d)
 
@@ -351,7 +351,7 @@ CONTAINS
 
     ! prune unused nodes ... 
     CALL SpAMM_prune(d)
-
+ 
   END FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm
 
 
@@ -368,10 +368,6 @@ CONTAINS
     TYPE(SpAMM_tree_2d_symm), POINTER             :: b00,b11,b01,b10
     TYPE(SpAMM_tree_2d_symm), POINTER             :: c00,c11,c01,c10
 
-    real(spamm_kind) :: n00,n11,n01,n10
-
-    integer, dimension(1:2) :: ahi,alo , bhi,blo , chi , clo, athi , atlo
-
     IF( c%frill%leaf )THEN ! Leaf condition ... 
 
        IF( c%frill%init )THEN
@@ -384,7 +380,6 @@ CONTAINS
              c%chunk(1:SBS,1:SBS)=MATMUL(TRANSPOSE(a%chunk(1:SBS,1:SBS)),b%chunk(1:SBS,1:SBS))
           ENDIF
 
-          c%frill%non0s = SBS2
           c%frill%flops = SBS3
 
        ELSE
@@ -402,7 +397,6 @@ CONTAINS
    ELSE
 
        b00=>b%child_00; b11=>b%child_11; b01=>b%child_01; b10=>b%child_10
-       c00=>NULL();     c11=>NULL();     c01=>NULL();     c10=>NULL()
        a00=>a%child_00; a11=>a%child_11
        IF(NT)THEN  
           a01=>a%child_01; a10=>a%child_10
@@ -432,43 +426,7 @@ CONTAINS
        !
     ENDIF
 
-
     CALL SpAMM_redecorate_tree_2d_symm(c)
-
-
-!!    IF(c%frill%init) WRITE(*,*)' depth = ',depth,' c%init = ',c%frill%init,' leaf = ',c%frill%leaf
-
-!!$    blo=b%frill%bndbx(0,:)
-!!$    bhi=b%frill%bndbx(1,:)
-!!$    clo=c%frill%bndbx(0,:)
-!!$    chi=c%frill%bndbx(1,:)
-!!$    alo=a%frill%bndbx(0,:)
-!!$    ahi=a%frill%bndbx(1,:)
-!!$
-!!$    IF(depth==1)then
-!!$       n00=0d0
-!!$       n11=0d0
-!!$       n01=0d0
-!!$       n10=0d0
-!!$       if(associated(c%child_00)) &
-!!$       n00=c%child_00%frill%norm2
-!!$       if(associated(c%child_11)) &
-!!$       n11=c%child_11%frill%norm2
-!!$       if(associated(c%child_01)) &
-!!$       n01=c%child_01%frill%norm2
-!!$       if(associated(c%child_10)) &
-!!$       n10=c%child_10%frill%norm2
-!!$       WRITE(*,67)depth,init,clo(1),chi(1), clo(2),chi(2), &  
-!!$                             alo(1),ahi(1), alo(2),ahi(2), & 
-!!$                             blo(1),bhi(1), blo(2),bhi(2), c%frill%norm2,n00,n11,n01,n10
-!!$elseif(depth==2)then
-!!$       WRITE(*,67)depth,init,clo(1),chi(1), clo(2),chi(2), &  
-!!$                             alo(1),ahi(1), alo(2),ahi(2), & 
-!!$                             blo(1),bhi(1), blo(2),bhi(2), c%frill%norm2
-!!$
-!!$endif
-!!$
-!!$67     format(I2,',',L2,'[',I3,'-',I3,', ',I3,'-',I3,'] = [',I3,'-',I3,', ',I3,'-',I3,'] x [',I3,'-',I3,', ',I3,'-',I3,'] : ', 8( E12.6,', ' ) )
 
   END SUBROUTINE SpAMM_tree_2d_symm_times_tree_2d_symm_recur
 

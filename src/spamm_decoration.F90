@@ -54,7 +54,6 @@ CONTAINS
     if( b%frill%init ) return
 
     a%frill%Init =a%frill%Init .AND. b%frill%Init
-
     a%frill%Norm2=a%frill%Norm2+b%frill%Norm2
     a%frill%Non0s=a%frill%Non0s+b%frill%Non0s
     a%frill%FlOps=a%frill%FlOps+b%frill%FlOps
@@ -73,7 +72,6 @@ CONTAINS
     if(a%frill%leaf)then  ! at a leaf?
        a%frill%Norm2=SUM(a%chunk**2) 
        a%frill%Non0s=SBS2
-       a%frill%FlOpS=SpAMM_zero
        ! application has to fill in the %flops at this level
        RETURN
     ELSE ! init this level
@@ -112,10 +110,13 @@ CONTAINS
     ! this is unused, passed in data, don't accumulate
     if( b%frill%init ) return
 
+!    write(*,*)' flops = ',a%frill%FlOps,b%frill%FlOps
+
     a%frill%Init =a%frill%Init .AND. b%frill%Init
     a%frill%Norm2=a%frill%Norm2+b%frill%Norm2
     a%frill%Non0s=a%frill%Non0s+b%frill%Non0s
     a%frill%FlOps=a%frill%FlOps+b%frill%FlOps
+
 
   END SUBROUTINE SpAMM_merge_decoration_2d
 

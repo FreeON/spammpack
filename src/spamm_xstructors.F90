@@ -466,6 +466,7 @@ contains
        mi(i)=min(hi(i),mi(i))
     enddo
 
+    tree%child_00%frill%init = .TRUE.              ! a new node, so set init status true ... 
     tree%child_00%frill%width = wi/2               ! next level width   
     tree%child_00%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
     tree%child_00%frill%bndbx(:,1)=(/lo(1),mi(1)/) ! [lo:mid][i]
@@ -517,6 +518,7 @@ contains
     ENDIF
     allocate(tree%child_01)                       ! ... otherwise, instantiate
 
+    tree%child_01%frill%init = .TRUE.              ! a new node, so set init status true ... 
     tree%child_01%frill%width = wi/2               ! next level width   
     tree%child_01%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
     tree%child_01%frill%bndbx(:,1)=(/lo(1)  ,mi(1)/) ! [lo   ,mid][i]
@@ -562,6 +564,7 @@ contains
     ENDIF
     allocate(tree%child_10)                       ! ... otherwise, instantiate
 
+    tree%child_10%frill%init = .TRUE.              ! a new node, so set init status true ... 
     tree%child_10%frill%width = wi/2               ! next level width   
     tree%child_10%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
     tree%child_10%frill%bndbx(:,1)=(/mi(1)+1,hi(1)/) ! [mid+1, hi][i]
@@ -610,6 +613,7 @@ contains
     ENDIF
     allocate(tree%child_11)                       ! ... otherwise, instantiate
     
+    tree%child_11%frill%init = .TRUE.              ! a new node, so set init status true ... 
     tree%child_11%frill%width = wi/2               ! next level width   
     tree%child_11%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
     tree%child_11%frill%bndbx(0,:)=mi(:)+1                ! [mid+1, hi]

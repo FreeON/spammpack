@@ -22,6 +22,7 @@ module SpAMMsand_inverse_squareroot
   integer :: info
   
   interface
+
      subroutine dsyevd ( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, IWORK, LIWORK, INFO )
        CHARACTER          JOBZ, UPLO
        INTEGER            INFO, LDA, LIWORK, LWORK, N
@@ -45,10 +46,12 @@ contains
     REAL(SpAMM_KIND)                                  :: sc, TrX, tau_xtra
 
     REAL(SpAMM_KIND)                                  :: twist_x,twist_z,twist_y,twist_zs
+    REAL(SpAMM_KIND)                                  :: x_work,z_work,y_work,zs_work
 
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev, &
                                                          trxd, trsd, trtd, trzd
 
+    real(spamm_kind), dimension(:,:), allocatable :: twist
     n=x%frill%ndimn(1)
     FillN=1d10
     
@@ -83,7 +86,8 @@ contains
 !       write(*,*)' trx = ',trx, ' n  = ',n,' filln = ',filln
 
        WRITE(101,*)kount, filln
-       WRITE(*,33)tau, kount, TrX, FillN, x%frill%non0s/dble(N), twist_x,twist_z,twist_y,twist_zs
+       WRITE(*,33)tau, kount, TrX, FillN, 1d2*x%frill%non0s/dble(x%frill%ndimn(1))**2, y_work*1d2 , z_work*1d2 , zs_work*1d2 , x_work*1d2 
+!twist_y,twist_z,twist_zs,twist_x
 
        IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
@@ -96,7 +100,8 @@ contains
           RETURN  ! Anihilation
        end IF
 
-33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3,' non0s/N = ',e10.3,' twists = ',e10.3,', ',e10.3,', ',e10.3,', ',e10.3)
+33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3,' %of N^2 = ',f10.5,'%,  %of N^3 = ',f10.5,'%, ',f10.5,'%, ',f10.5,'%, ',f10.5,'%')
+!e10.3,', ',e10.3,', ',e10.3,', ',e10.3)
 
 
        IF(FillN>0.4d0)THEN
@@ -119,42 +124,56 @@ contains
 !!       sc=1d0
 !!$
        x => spammsand_scaled_invsqrt_mapping( x, sc )
-
-
        ! |Z_n+1> =  <Z_n| X_n>  
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, 0d0, nt_O=.TRUE., in_O = t )
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau , nt_O=.TRUE., in_O = t )
+       z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
+
        ! update (threshold)
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = 0d0 ) 
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau)
 
-       CALL SpAMM_print_tree_2d_symm_recur (z) 
-       twist_z = SpAMM_twist_tree_2d_symm(z)
-       write(*,*)' twist z= ',twist_z
-
-       stop'x'
-
-
+!       CALL SpAMM_convert_tree_2d_symm_to_dense(z, twist)
+!       twist_z=SQRT(SUM(twist-TRANSPOSE(twist))**2)
+!       twist_z = SpAMM_twist_tree_2d_symm(z)
 
        IF(.nOt.First)tHeN
           ! <Y_n+1|
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, 0d0 , nt_O=.TRUE., in_O = t )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau , nt_O=.TRUE., in_O = t )
+          y_work=t%frill%flops/dble(t%frill%ndimn(1))**3
           ! update (threshold)
-          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = 0d0 ) 
-!          twist_y =SQRT( SpAMM_twist_2d_symm_recur (y) )
+          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau ) 
+
+!          twist_y =SQRT( SpAMM_twist_2d_symm_recur (y) 
+!          CALL SpAMM_convert_tree_2d_symm_to_dense(y, twist)
+!          twist_y=SQRT(SUM(twist-TRANSPOSE(twist))**2)
+
        ENDIF
 
        IF(first)then
 
           ! <X_n> = <Z_n|S|Z_n>
-          tau_xtra=tau*1d-2 ! xtra stabilization on first multiply 
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, 0.d0  , NT_O=.false. , in_O = t )
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, 0.d0     , NT_O=.TRUE.  , in_O = x )
+          tau_xtra=tau*1d-2  ! xtra stabilization on first multiply 
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra  , NT_O=.false. , in_O = t )
+          zs_work=t%frill%flops/dble(t%frill%ndimn(1))**3
+!          write(*,*)' z norm = ',SQRT(z%frill%norm2),' total work = ',t%frill%flops/dble(t%frill%ndimn(1))**3
 
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau  , NT_O=.TRUE.  , in_O = x )
+          x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
+
+!          write(*,*)' x norm = ',SQRT(x%frill%norm2),' total work = ',x%frill%flops/dble(x%frill%ndimn(1))**3
+!          CALL SpAMM_convert_tree_2d_symm_to_dense(t, twist)
+!          twist_zs=SQRT(SUM(twist-TRANSPOSE(twist))**2)
+!          CALL SpAMM_convert_tree_2d_symm_to_dense(x, twist)
+!          twist_x=SQRT(SUM(twist-TRANSPOSE(twist))**2)
 !          twist_zs=SQRT( SpAMM_twist_2d_symm_recur (t) )
 !          twist_x =SQRT( SpAMM_twist_2d_symm_recur (x) )
 
        else
           ! <X_n> = <Y_n|Z_n>
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, 0d0      , nt_O=.TRUE. , in_O = x )
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x )
+          x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
+
+!          CALL SpAMM_convert_tree_2d_symm_to_dense(x, twist)
+!          twist_x=SQRT(SUM(twist-TRANSPOSE(twist))**2)
 !          twist_x =SQRT( SpAMM_twist_2d_symm_recur (x) )
 
        endif
@@ -318,7 +337,6 @@ program SpAMM_sandwich_inverse_squareroot
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first, kount )
-     stop 'stoped'
 
      first=.FALSE.
      if(.not.associated(z%nxt))exit    

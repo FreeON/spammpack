@@ -144,34 +144,10 @@ CONTAINS
 
   end function SpAMM_absmax_tree_2d_symm_recur
 
-  function SpAMM_twist_tree_2d_symm(A) result(twist)
-
-    type(SpAMM_tree_2d_symm), pointer,  intent(in)  :: A
-    real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
-
-    twist  = SpAMM_zero
-
-    if(.not. associated(a))return
-
-
-
-       twist_01=SpAMM_twist_2d_symm_double_recur( a%child_01, a%child_10 )
-       twist_10=SpAMM_twist_2d_symm_double_recur( a%child_10, a%child_01 )
-
-!       twist_00=SpAMM_twist_2d_symm_single_recur( a%child_00 ) 
-!       twist_11=SpAMM_twist_2d_symm_single_recur( a%child_11 )
-
-       twist=twist_01+twist_10
-
-       twist=SQRT(twist)
-
-     end function SpAMM_twist_tree_2d_symm
-
-
 
   recursive function SpAMM_twist_tree_2d_symm_double_recur (A, AT) result(twist)
 
-    type(SpAMM_tree_2d_symm), pointer,  intent(in)  :: A,AT
+    type(SpAMM_tree_2d_symm), pointer  :: A,AT
     real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
 
     twist  = SpAMM_zero
@@ -196,5 +172,27 @@ CONTAINS
     ENDIF
 
   end function SpAMM_twist_tree_2d_symm_double_recur
+
+  function SpAMM_twist_tree_2d_symm(A) result(twist)
+
+    type(SpAMM_tree_2d_symm), pointer  :: A
+    real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
+
+    twist  = SpAMM_zero
+
+    if(.not. associated(a))return
+
+       twist_01=SpAMM_twist_tree_2d_symm_double_recur ( a%child_01, a%child_10 )
+       twist_10=SpAMM_twist_tree_2d_symm_double_recur ( a%child_10, a%child_01 )
+
+!       twist_00=SpAMM_twist_2d_symm_single_recur( a%child_00 ) 
+!       twist_11=SpAMM_twist_2d_symm_single_recur( a%child_11 )
+
+       twist=twist_01+twist_10
+
+       twist=SQRT(twist)
+
+     end function SpAMM_twist_tree_2d_symm
+
 
 END module spamm_elementals
