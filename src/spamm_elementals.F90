@@ -10,10 +10,45 @@ module spamm_elementals
 CONTAINS
 
 
-  recursive subroutine SpAMM_set_identity_2d_symm_recur (A)
+  !++NBODYTIMES:   SpAMM_tree_2d_symm_times_tree_2d_symm
+  !++NBODYTIMES:     c_2 => alpha*c_2 + beta*(a_2.b_2) (wrapper)
+  FUNCTION SpAMM_set_identity_2d_symm (MN, in_O ) RESULT(d)
+
+    INTEGER, DIMENSION(2), INTENT(IN) :: MN
+    TYPE(SpAMM_tree_2d_symm), POINTER, OPTIONAL :: In_O
+    TYPE(SpAMM_tree_2d_symm), POINTER           :: D
+    INTEGER                                     :: Depth
+
+    ! figure the starting conditions ...
+    if(present(in_O))then
+       d => in_O
+    else
+       d => NULL()
+    endif
+
+    if(.not.associated(d))then
+       ! instantiate a tree if no passed allocation
+       d => SpAMM_new_top_tree_2d_symm(MN)
+    endif
+ 
+    ! set passed data for initialization   
+    CALL SpAMM_flip(d)
+
+    depth=0
+    CALL SpAMM_set_identity_2d_symm_recur (d, depth)
+
+    ! prune unused nodes ... 
+    CALL SpAMM_prune(d)
+ 
+  END FUNCTION SpAMM_set_identity_2d_symm
+
+
+
+
+  recursive subroutine SpAMM_set_identity_2d_symm_recur (A, depth)
 
     type(SpAMM_tree_2d_symm), pointer  :: A
-    integer :: i
+    integer :: depth, i
 
     if(.not. associated(A))then
        return
@@ -29,10 +64,8 @@ CONTAINS
 
        else
 
-          CALL SpAMM_set_identity_2d_symm_recur(SpAMM_construct_tree_2d_symm_00(a))
-          call SpAMM_destruct_tree_2d_symm_recur (a%child_01)
-          call SpAMM_destruct_tree_2d_symm_recur (a%child_10)
-          CALL SpAMM_set_identity_2d_symm_recur(SpAMM_construct_tree_2d_symm_11(a))
+          CALL SpAMM_set_identity_2d_symm_recur(SpAMM_construct_tree_2d_symm_00(a), depth+1)
+          CALL SpAMM_set_identity_2d_symm_recur(SpAMM_construct_tree_2d_symm_11(a), depth+1)
 
        endif
 
