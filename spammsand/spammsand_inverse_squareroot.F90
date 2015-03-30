@@ -33,14 +33,14 @@ module SpAMMsand_inverse_squareroot
   
 contains
 
-  SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, t, tau, first, kount)
+  SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, t, tau, first, second, kount)
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: s
     TYPE(SpAMM_tree_2d_symm) , POINTER :: x, z, y, t
 !    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(INOUT) :: x, z, t
     REAL(SpAMM_KIND),                   INTENT(IN)    :: Tau
 !    LOGICAL, INTENT(IN)                               :: first
-    LOGICAL                              :: first
+    LOGICAL                              :: first,second
     INTEGER, INTENT(INOUT)                            :: kount
     INTEGER                                           :: i, n, j
     REAL(SpAMM_KIND)                                  :: sc, TrX, tau_xtra
@@ -89,12 +89,12 @@ contains
        WRITE(*,33)tau, kount, TrX, FillN, 1d2*x%frill%non0s/dble(x%frill%ndimn(1))**2, y_work*1d2 , z_work*1d2 , zs_work*1d2 , x_work*1d2 
 !twist_y,twist_z,twist_zs,twist_x
 
-       IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
+       IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev .and. i>3 )then
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
 !          write(*,*)' elevation' 
           RETURN  ! Elevation
        endif
-       IF( FillN <  Tau*1d1                            )then
+       IF( FillN <  Tau*1d1 .and. i>3                           )then
 !          WRITE(*,*)' fill n = ',filln,' tau**2 = ',tau
 !          write(*,*)' anhiliaiton '
           RETURN  ! Anihilation
@@ -129,7 +129,7 @@ contains
        z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
 
        ! update (threshold)
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau)
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau )
 
 !       CALL SpAMM_convert_tree_2d_symm_to_dense(z, twist)
 !       twist_z=SQRT(SUM(twist-TRANSPOSE(twist))**2)
@@ -151,7 +151,14 @@ contains
        IF(first)then
 
           ! <X_n> = <Z_n|S|Z_n>
-          tau_xtra=tau*1d-2  ! xtra stabilization on first multiply 
+          if(second)then
+             tau_xtra=tau*1d-2  ! xtra stabilization on first multiply 
+          else
+             tau_xtra=tau       
+          endif
+
+          write(*,*)' tau extra = ',tau_xtra
+
           t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra  , NT_O=.false. , in_O = t )
           zs_work=t%frill%flops/dble(t%frill%ndimn(1))**3
 !          write(*,*)' z norm = ',SQRT(z%frill%norm2),' total work = ',t%frill%flops/dble(t%frill%ndimn(1))**3
@@ -251,10 +258,10 @@ program SpAMM_sandwich_inverse_squareroot
 
   character(len = 1000)                          :: matrix_filename
   real(SpAMM_KIND)                               :: x_hi, x_new, logtau_strt, logtau_stop, logtau_dlta, & 
-                                                    tau_dlta, tau_xtra, error, tmp1,tmp2
-  logical :: first
+                                                    tau_dlta, tau_xtra, error, tmp1,tmp2, final_tau, s_work, zs_work
+  logical :: first, second
 
-  integer, parameter                             :: slices=3
+  integer, parameter                             :: slices=5
 
   real(SpAMM_KIND), dimension(1:slices)          :: tau
  
@@ -288,7 +295,7 @@ program SpAMM_sandwich_inverse_squareroot
   !=============================================================
   ! the max eigenvalue
 
-  x_hi = SpAMMSand_rqi_extremal(s,1d-10,high_O=.TRUE.)
+  x_hi = SpAMMSand_rqi_extremal(s,1d-4,high_O=.TRUE.)
   WRITE(*,*)' hi extremal = ',x_hi
 
   ! normalize the max ev of s to 1.  
@@ -298,10 +305,11 @@ program SpAMM_sandwich_inverse_squareroot
 !!  Sd=s_dense/x_hi
 !!  xd=sd
 
-  logtau_strt=-3                                       ! starting accuracy
-  logtau_stop=-11                                      ! stoping  "
+  logtau_strt=-2                                       ! starting accuracy
+  logtau_stop=-11                                       ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
+  final_tau=10d0**logtau_stop                          ! penultimate spamm threshold
     
   allocate(z) 
   z_head => z ! head of the slices
@@ -329,30 +337,42 @@ program SpAMM_sandwich_inverse_squareroot
 
   kount=0
   first=.TRUE.
-  z=>z_head
+  second=.TRUE.
 
-  WRITE(*,*)' ABOVE DO '
-!  stop 'stoped'
+  z=>z_head
 
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
-     call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first, kount )
+     call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first, second, kount )
 
-     first=.FALSE.
+!     first=.FALSE.
+     second=.FALSE.
      if(.not.associated(z%nxt))exit    
 
-     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s  , in_O = x, threshold_O = SpAMM_normclean )
 
-     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     x, z%nxt%tau, NT_O=.FALSE., in_O = t )
-     x => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, z%nxt%tau, NT_O=.TRUE. , in_O = x )
+     ! Nested sandwich, to recompute the error every time. 
+     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     s, z%tau*1d-5, NT_O=.FALSE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )
+     s => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, z%tau*1d-5, NT_O=.TRUE. , in_O = s )
 
-     x_new =  SpAMMSand_rqi_extremal( x, 1d-8 , high_O=.TRUE. )
-     WRITE(*,*)' hi extremal = ',x_new 
-     x     => SpAMM_scalar_times_tree_2d_symm( SpAMM_one / x_new , x )
-     x_hi  = x_hi * x_new
+!     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     s, final_tau, NT_O=.FALSE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )
+!     s => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, final_tau, NT_O=.TRUE. , in_O = s )
 
-     s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = s , threshold_O = SpAMM_normclean )
+     zs_work=t%frill%flops/dble(t%frill%ndimn(1))**3
+     s_work=s%frill%flops/dble(s%frill%ndimn(1))**3
+     write(*,*)' t work = ',zs_work,', s_work = ',s_work
+
      z => z%nxt
+
+
+!!$     x_new =  SpAMMSand_rqi_extremal( x, z%nxt%tau , high_O=.TRUE. )
+!!$     WRITE(*,*)' hi extremal = ',x_new 
+!!$
+!!$     x     => SpAMM_scalar_times_tree_2d_symm( SpAMM_one / x_new , x )
+!!$     x_hi  = x_hi * x_new
+!!$
+!!$     s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = s , threshold_O = SpAMM_normclean )
+!!$
+!!$     z => z%nxt
      
   enddo
 
