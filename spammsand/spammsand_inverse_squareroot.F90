@@ -89,12 +89,12 @@ contains
        WRITE(*,33)tau, kount, TrX, FillN, 1d2*x%frill%non0s/dble(x%frill%ndimn(1))**2, y_work*1d2 , z_work*1d2 , zs_work*1d2 , x_work*1d2 
 !twist_y,twist_z,twist_zs,twist_x
 
-       IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev .and. i>3 )then
+       IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
 !          write(*,*)' elevation' 
           RETURN  ! Elevation
        endif
-       IF( FillN <  Tau*1d1 .and. i>3                           )then
+       IF( FillN <  Tau*1d1 )then
 !          WRITE(*,*)' fill n = ',filln,' tau**2 = ',tau
 !          write(*,*)' anhiliaiton '
           RETURN  ! Anihilation
@@ -263,7 +263,7 @@ program SpAMM_sandwich_inverse_squareroot
                                                     tau_dlta, tau_xtra, error, tmp1,tmp2, final_tau, s_work, zs_work
   logical :: first, second
 
-  integer, parameter                             :: slices=5
+  integer, parameter                             :: slices=4
 
   real(SpAMM_KIND), dimension(1:slices)          :: tau
  
@@ -305,7 +305,7 @@ program SpAMM_sandwich_inverse_squareroot
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
   logtau_strt=-3                                       ! starting accuracy
-  logtau_stop=-11                                       ! stoping  "
+  logtau_stop=-9                                        ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
   final_tau=10d0**logtau_stop                          ! penultimate spamm threshold
