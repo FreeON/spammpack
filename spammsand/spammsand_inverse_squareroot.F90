@@ -64,7 +64,7 @@ contains
     endIF
 
     ! z_0 => I
-    CALL SpAMM_set_identity_2d_symm_recur (z)
+    z=>SpAMM_set_identity_2d_symm ( s%frill%ndimn, in_o = z )
 
     !  x_0 => s
     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
@@ -350,14 +350,11 @@ program SpAMM_sandwich_inverse_squareroot
      second=.FALSE.
      if(.not.associated(z%nxt))exit    
 
-     tau_xtra=1d-3*z%tau
+     tau_xtra=z%tau
+!     tau_xtra=1d-3*z%tau
 
-     write(*,*)' z%mtx = ',z%mtx%frill%norm2
-     write(*,*)' ztotal = ',z_total%frill%norm2
-     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx, z_total, z%nxt%tau, NT_O=.TRUE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )
-     write(*,*)' t = ',t%frill%norm2
-     STOP
-     z_total => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z_total, threshold_O = z%tau )!*SQRT(z%mtx%frill%norm2) )
+     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, z%mtx, z%nxt%tau , NT_O=.TRUE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )
+     z_total => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z_total, threshold_O = z%tau)        ! *SQRT(SQRT(z%mtx%frill%norm2)) )
 
      ! Nested sandwich, to recompute the error every time. 
      t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, s_orgnl, z%nxt%tau, NT_O=.FALSE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )
@@ -370,13 +367,13 @@ program SpAMM_sandwich_inverse_squareroot
      zs_work=t%frill%flops/dble(t%frill%ndimn(1))**3
 
 
-!!$     x_new =  SpAMMSand_rqi_extremal( s, tau_xtra , high_O=.TRUE. )
+!!$     x_new =  SpAMMSand_rqi_extremal( s, 1d-8 , high_O=.TRUE. )
 !!$     WRITE(*,*)' hi extremal = ',x_new 
 !!$
 !!$     x     => SpAMM_scalar_times_tree_2d_symm( SpAMM_one / x_new , x )
 !!$     x_hi  = x_hi * x_new
-
-
+!!$
+!!$
 
 
      write(*,*)' t work = ',zs_work,', s_work = ',s_work
