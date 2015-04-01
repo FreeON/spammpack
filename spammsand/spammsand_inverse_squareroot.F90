@@ -238,11 +238,15 @@ contains
 
 
   SUBROUTINE SpAMM_demo_spamm_stabilized_factorization(z,s,tau)
-    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: z,s
-    TYPE(SpAMM_tree_2d_symm) , POINTER :: x_tilde,sz_tilde
-    real(spamm_kind), dimension(:,:), allocatable :: s_d, z_d, x_d,x_tilde_d, e_perp
+    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)   :: z,s
+    TYPE(SpAMM_tree_2d_symm) , POINTER               :: x_tilde=>NULL(),sz_tilde=>NULL()
+    real(spamm_kind), dimension(:,:), allocatable    :: s_d, z_d, x_d,x_tilde_d, e_perp, &
+         delta_sz_d,z_dot_delta_sz_d, sz_tilde_d
     INTEGER :: M
     REAL(SpAMM_kind), intent(in) ::  tau 
+
+    sz_tilde => SpAMM_tree_2d_symm_times_tree_2d_symm( s,         z, tau  , NT_O=.TRUE. , in_O = sz_tilde )
+    x_tilde  => SpAMM_tree_2d_symm_times_tree_2d_symm( z, sz_tilde , tau  , NT_O=.TRUE. , in_O = x_tilde )
 
 
     M=s%frill%ndimn(1)
@@ -251,32 +255,42 @@ contains
     ALLOCATE(s_d(1:M,1:M))
     ALLOCATE(x_tilde_d(1:M,1:M))
     ALLOCATE(e_perp(1:M,1:M))
+    ALLOCATE(delta_sz_d(1:M,1:M))
+    ALLOCATE(z_dot_delta_sz_d(1:M,1:M))
+    ALLOCATE(sz_tilde_d(1:M,1:M))
 
     CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
     CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
 
     x_d=MATMUL(z_d,MATMUL(s_d,z_d))
-
-    sz_tilde => SpAMM_tree_2d_symm_times_tree_2d_symm( s,         z, tau  , NT_O=.TRUE. , in_O = sz_tilde )
-    x_tilde  => SpAMM_tree_2d_symm_times_tree_2d_symm( z, sz_tilde , tau  , NT_O=.TRUE. , in_O = x_tilde )
  
-!!$    CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
-!!$    CALL SpAMM_convert_tree_2d_symm_to_dense( x_tilde, x_tilde_d )
-!!$
-!!$    e_perp=x_d-TRANSPOSE(x_d)
-!!$    write(*,*)' perp error = ',SQRT(SUM(e_perp**2))
-!!$
-!!$
-!!$    call SpAMM_destruct_tree_2d_symm_recur (x_tilde)
-!!$    call SpAMM_destruct_tree_2d_symm_recur (sz_tilde)
-!!$    DEALLOCATE(x_d)
-!!$    DEALLOCATE(s_d)
-!!$    DEALLOCATE(e_perp)
-!!$    DEALLOCATE(x_tilde_d)
+    CALL SpAMM_convert_tree_2d_symm_to_dense( sz_tilde, sz_tilde_d )
+
+    delta_sz_d = sz_tilde_d - MATMUL( s_d , z_d )
+
+    z_dot_delta_sz_d = MATMUL( z_d , delta_sz_d )
+
+    write(*,*)' z.delta[sz] = ',SQRT(SUM(z_dot_delta_sz_d**2))
+
+    CALL SpAMM_convert_tree_2d_symm_to_dense( x_tilde , x_tilde_d )
+
+    e_perp=x_d-TRANSPOSE(x_d)
+
+    write(*,*)' perp error = ',SQRT(SUM(e_perp**2))
+
+    call SpAMM_destruct_tree_2d_symm_recur (x_tilde)
+    call SpAMM_destruct_tree_2d_symm_recur (sz_tilde)
+
+    DEALLOCATE(x_d)
+    DEALLOCATE(s_d)
+    DEALLOCATE(e_perp)
+    DEALLOCATE(x_tilde_d)
+    DEALLOCATE(sz_tilde_d)
+    DEALLOCATE(delta_sz_d)
+    DEALLOCATE(z_dot_delta_sz_d)
 
 !    CALL SpAMM_convert_tree_2d_symm_to_dense( zs, zsd )
 !    CALL SpAMM_convert_tree_2d_symm_to_dense( sz, szd )
-
 
   END SUBROUTINE SpAMM_demo_spamm_stabilized_factorization
 

@@ -314,17 +314,18 @@ CONTAINS
     REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
     LOGICAL, OPTIONAL,                           INTENT(IN)    :: NT_O
     TYPE(SpAMM_tree_2d_symm), POINTER, OPTIONAL, INTENT(INOUT) :: In_O
-    TYPE(SpAMM_tree_2d_symm), POINTER                          :: D
+    TYPE(SpAMM_tree_2d_symm), POINTER                          :: d
     INTEGER                                                    :: Depth
     LOGICAL                                                    :: NT
     REAL(SpAMM_KIND)                                           :: Tau2
 
     ! figure the starting conditions ...
-    if(present(in_O))then
-       d => in_O
+    if(present(in_O))then       
+       if(associated(in_o))d => in_O
     else
        d => NULL()
     endif
+
     ! bail if we can ...
     if(.not.associated(a))return
     if(.not.associated(b))return
