@@ -116,7 +116,15 @@ contains
           sc=1d0
        ENDIF
 
+!!$       !=====================================================================
 !!$       CALL SpAMM_convert_tree_2d_symm_to_dense(x,xd)
+!!$       xd=SpAMM_half*(xd+TRANSPOSE(xd))
+!!$       x => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = x )
+!!$       !=====================================================================
+
+!!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
+
+
 !!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
 !!$       sc=spammsand_scaling_invsqrt(eval(1))
 !!$       WRITE(*,*)' eval = ',eval(1),eval(n),' sc = ',sc
@@ -131,6 +139,12 @@ contains
        ! update (threshold)
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau )
 
+       !=====================================================================
+!!$       CALL SpAMM_convert_tree_2d_symm_to_dense(z,xd)
+!!$       xd=SpAMM_half*(xd+TRANSPOSE(xd))
+!!$       z => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = z )
+       !=====================================================================
+
 !       CALL SpAMM_convert_tree_2d_symm_to_dense(z, twist)
 !       twist_z=SQRT(SUM(twist-TRANSPOSE(twist))**2)
 !       twist_z = SpAMM_twist_tree_2d_symm(z)
@@ -141,6 +155,12 @@ contains
           y_work=t%frill%flops/dble(t%frill%ndimn(1))**3
           ! update (threshold)
           y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau ) 
+
+          !=====================================================================
+!!$          CALL SpAMM_convert_tree_2d_symm_to_dense(y,xd)
+!!$          xd=SpAMM_half*(xd+TRANSPOSE(xd))
+!!$          y => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = y )
+          !=====================================================================
 
 !          twist_y =SQRT( SpAMM_twist_2d_symm_recur (y) 
 !          CALL SpAMM_convert_tree_2d_symm_to_dense(y, twist)
@@ -159,13 +179,28 @@ contains
 
           write(*,*)' tau extra = ',tau_xtra
 
+          CALL SpAMM_demo_spamm_stabilized_factorization(z,s, 1d-2)
+
           t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau_xtra  , NT_O=.false. , in_O = t )
           zs_work=t%frill%flops/dble(t%frill%ndimn(1))**3
+
+          !=====================================================================
+!!$          CALL SpAMM_convert_tree_2d_symm_to_dense(t,xd)
+!!$          xd=SpAMM_half*(xd+TRANSPOSE(xd))
+!!$          t => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = t )
+          !=====================================================================
+
 !          write(*,*)' z norm = ',SQRT(z%frill%norm2),' total work = ',t%frill%flops/dble(t%frill%ndimn(1))**3
 
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau  , NT_O=.TRUE.  , in_O = x )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
 
+          !=====================================================================
+!!$          CALL SpAMM_convert_tree_2d_symm_to_dense(x,xd)
+!!$          xd=SpAMM_half*(xd+TRANSPOSE(xd))
+!!$          x => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = x )
+          !=====================================================================
+          
 !          write(*,*)' x norm = ',SQRT(x%frill%norm2),' total work = ',x%frill%flops/dble(x%frill%ndimn(1))**3
 !          CALL SpAMM_convert_tree_2d_symm_to_dense(t, twist)
 !          twist_zs=SQRT(SUM(twist-TRANSPOSE(twist))**2)
@@ -178,6 +213,12 @@ contains
           ! <X_n> = <Y_n|Z_n>
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
+
+          !=====================================================================
+!!$          CALL SpAMM_convert_tree_2d_symm_to_dense(x,xd)
+!!$          xd=SpAMM_half*(xd+TRANSPOSE(xd))
+!!$          x => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = x )
+          !=====================================================================
 
 !          CALL SpAMM_convert_tree_2d_symm_to_dense(x, twist)
 !          twist_x=SQRT(SUM(twist-TRANSPOSE(twist))**2)
@@ -194,6 +235,50 @@ contains
     IF(.not.first)call SpAMM_destruct_tree_2d_symm_recur (y)
    
   END SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot
+
+
+  SUBROUTINE SpAMM_demo_spamm_stabilized_factorization(z,s,tau)
+    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: z,s
+    TYPE(SpAMM_tree_2d_symm) , POINTER :: x_tilde,sz_tilde
+    real(spamm_kind), dimension(:,:), allocatable :: s_d, z_d, x_d,x_tilde_d, e_perp
+    INTEGER :: M
+    REAL(SpAMM_kind), intent(in) ::  tau 
+
+
+    M=s%frill%ndimn(1)
+
+    ALLOCATE(x_d(1:M,1:M))
+    ALLOCATE(s_d(1:M,1:M))
+    ALLOCATE(x_tilde_d(1:M,1:M))
+    ALLOCATE(e_perp(1:M,1:M))
+
+    CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
+    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
+
+    x_d=MATMUL(z_d,MATMUL(s_d,z_d))
+
+    sz_tilde => SpAMM_tree_2d_symm_times_tree_2d_symm( s,         z, tau  , NT_O=.TRUE. , in_O = sz_tilde )
+    x_tilde  => SpAMM_tree_2d_symm_times_tree_2d_symm( z, sz_tilde , tau  , NT_O=.TRUE. , in_O = x_tilde )
+ 
+!!$    CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
+!!$    CALL SpAMM_convert_tree_2d_symm_to_dense( x_tilde, x_tilde_d )
+!!$
+!!$    e_perp=x_d-TRANSPOSE(x_d)
+!!$    write(*,*)' perp error = ',SQRT(SUM(e_perp**2))
+!!$
+!!$
+!!$    call SpAMM_destruct_tree_2d_symm_recur (x_tilde)
+!!$    call SpAMM_destruct_tree_2d_symm_recur (sz_tilde)
+!!$    DEALLOCATE(x_d)
+!!$    DEALLOCATE(s_d)
+!!$    DEALLOCATE(e_perp)
+!!$    DEALLOCATE(x_tilde_d)
+
+!    CALL SpAMM_convert_tree_2d_symm_to_dense( zs, zsd )
+!    CALL SpAMM_convert_tree_2d_symm_to_dense( sz, szd )
+
+
+  END SUBROUTINE SpAMM_demo_spamm_stabilized_factorization
 
 
   FUNCTION spammsand_shift_tree_2d( x, low_prev, high_prev, low_new, high_new ) RESULT(d)
@@ -354,7 +439,7 @@ program SpAMM_sandwich_inverse_squareroot
 !     tau_xtra=1d-3*z%tau
 
      t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, z%mtx, z%nxt%tau , NT_O=.TRUE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )
-     z_total => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z_total, threshold_O = z%tau)        ! *SQRT(SQRT(z%mtx%frill%norm2)) )
+     z_total => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z_total, threshold_O = z%tau )       ! *SQRT(SQRT(z%mtx%frill%norm2)) )
 
      ! Nested sandwich, to recompute the error every time. 
      t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, s_orgnl, z%nxt%tau, NT_O=.FALSE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )

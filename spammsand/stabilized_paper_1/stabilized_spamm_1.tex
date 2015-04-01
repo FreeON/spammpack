@@ -1,0 +1,81 @@
+%% LyX 2.1.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+%\documentclass[letterpaper,twocol,amsmath,aps,jcp,preprintnumbers,groupaddress,nofootinbib,tightenlines]{revtex4-1}
+%\usepackage[latin9]{inputenc}
+%\usepackage{textcomp}
+
+\documentclass[letterpaper,twocolumn,amsmath,amsfont,amssymb,english,aps,jcp,preprintnumbers,groupaddress,nofootinbib,tightenlines]{revtex4}
+
+%\documentclass[aps,prb,letterpaper,twocolumn,nofootinbib,showkeys]{revtex4-1}
+%\documentclass[aps,amssymb,prl,letterpaper,twocolumn,nofootinbib,showkeys]{revtex4-1}
+
+%\usepackage[backend=bibtex]{biblatex}
+
+
+
+
+
+
+%    backend=biber,
+%    style=authoryear,
+%    natbib=true,
+%    sortlocale=en_US,
+%    url=false,
+%    doi=true,f
+%    eprint=false
+%]{biblatex}
+%\usepackage{hyperref}
+
+
+\newcommand{\mat}[1]{\boldsymbol{#1}}
+
+%%\hypersetup{pdftitle={FreeON Project Report 1}}
+%\hypersetup{pdfauthor={Matt Challacombe and Nicolas Bock}}
+%\hypersetup{pdfsubject={A SpAMM Stabilized Newton Schulz Preconditioner: Fighting Error with Error}}
+
+%\bibstyle{aipnum4-1}
+
+\begin{document}
+
+\title{A SpAMM Stabilized Newton Schulz; Fighting Error with Error. }
+
+% \author{Matt Challacombe}
+% \email{matt.challacombe@freeon.org}
+% \homepage{http://www.freeon.org}
+% \affiliation{Theoretical Division, Los Alamos National Laboratory}
+
+% \author{Nicolas Bock}
+% \email{nicolasbock@freeon.org}
+% \homepage{http://www.freeon.org}
+% \affiliation{Theoretical Division, Los Alamos National Laboratory}
+
+%\begin{abstract}
+%Forward look
+%\end{abstract}
+
+\maketitle
+
+\section{Eigen Basis Corruption}
+
+\begin{equation}
+\boldmath{\large \epsilon}_\perp = \left[ \tilde{\bm{x}}\, \cdot \, \tilde{\bm{x}}^\dagger 
+                                         -\tilde{\bm{x}}^\dagger \,   \cdot \, \tilde{\bm{x}} \right]
+                                     \end{equation}
+
+
+
+\begin{equation}
+\boldmath{\large \epsilon}_\perp = \left[ \tilde{\bm{x}},\tilde{\bm{x}}^\dagger  \right]
+\end{equation}
+
+
+
+
+\begin{eqnarray}
+\widetilde{\mat{x}} &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
+                    &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right] \\[0.1cm]
+                    &=& \mat{x} + \mat{\delta}^{z[sz]} + \mat{z} \cdot \mat{\delta}^{[sz]} %+ \mathcal{O}( \tau^2  ) 
+ \end{eqnarray}
+
+
+\end{document}
