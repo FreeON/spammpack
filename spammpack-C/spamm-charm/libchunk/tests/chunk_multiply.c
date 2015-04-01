@@ -79,7 +79,8 @@ main (int argc, char **argv)
         printf("Usage:\n");
         printf("\n");
         printf("{ -h | --help }           This help\n");
-        printf("{ -T | --type } TYPE      The matrix type: { full, exp_decay, alg_decay, diagonal, BCSR }\n");
+        printf("{ -T | --type } TYPE      The matrix type: { full, exp_decay, "
+               "alg_decay, diagonal, BCSR }\n");
         printf("{ -f | --bcsr } FILE      Load BCSR matrix from FILE\n");
         printf("{ -c | --complexity}      Print product complexity\n");
         printf("{ -t | --tolerance } TOL  The SpAMM tolerance\n");
@@ -266,11 +267,13 @@ main (int argc, char **argv)
           A_dense[COLUMN_MAJOR(i, i, N_chunk)] = 0.5+0.5*(rand()/(double) RAND_MAX);
           for(int j = i+1; j < N_chunk; j++)
           {
-            A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)] * exp(log(lambda)*fabs(i-j));
+            A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)]
+              * exp(log(lambda)*fabs(i-j));
             A_dense[COLUMN_MAJOR(j, i, N_chunk)] = A_dense[COLUMN_MAJOR(i, j, N_chunk)];
           }
         }
-        printf("A[1][N]/A[1][1] = %e\n", A_dense[COLUMN_MAJOR(0, N_chunk-1, N_chunk)]/A_dense[0]);
+        printf("A[1][N]/A[1][1] = %e\n",
+               A_dense[COLUMN_MAJOR(0, N_chunk-1, N_chunk)]/A_dense[0]);
         break;
 
       case algebraic_decay:
@@ -406,7 +409,7 @@ main (int argc, char **argv)
     double individual_variance = 0;
     for(int i = 0; i < repeat; i++)
     {
-      individual_duration[i] = 
+      individual_duration[i] =
         (individual_end_time[i].tv_sec+individual_end_time[i].tv_nsec/1.0e9)-
         (individual_start_time[i].tv_sec+individual_start_time[i].tv_nsec/1.0e9);
       individual_mean += individual_duration[i];
@@ -485,8 +488,10 @@ main (int argc, char **argv)
           {
             for(int j_basic = 0; j_basic < N_basic; j_basic++)
             {
-              norm_A += SQUARE(A_dense[COLUMN_MAJOR(i*N_basic+i_basic, k*N_basic+j_basic, N_chunk)]);
-              norm_B += SQUARE(A_dense[COLUMN_MAJOR(k*N_basic+i_basic, j*N_basic+j_basic, N_chunk)]);
+              norm_A += SQUARE(A_dense[COLUMN_MAJOR(i*N_basic+i_basic,
+                                                    k*N_basic+j_basic, N_chunk)]);
+              norm_B += SQUARE(A_dense[COLUMN_MAJOR(k*N_basic+i_basic,
+                                                    j*N_basic+j_basic, N_chunk)]);
             }
           }
 
@@ -539,7 +544,8 @@ main (int argc, char **argv)
     {
       for(int j = 0; j < N_chunk; j++)
       {
-        if(fabs(C_exact[COLUMN_MAJOR(i, j, N_chunk)]-C_dense[COLUMN_MAJOR(i, j, N_chunk)]) > 1e-10)
+        if(fabs(C_exact[COLUMN_MAJOR(i, j, N_chunk)]
+                -C_dense[COLUMN_MAJOR(i, j, N_chunk)]) > 1e-10)
         {
           printf("mismatch C[%d][%d] = %e "
               " <-> C_exact = %e\n",
