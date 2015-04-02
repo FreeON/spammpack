@@ -357,19 +357,21 @@ main (int argc, char **argv)
 #pragma omp master
       {
         printf("done multiplying dense using %d OpenMP threads a %dx%d chunk, "
-            "%1.2f seconds\n",
+            "%1.2f seconds (%d repeats)\n",
             omp_get_num_threads(),
             N_chunk, N_chunk,
             (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-            (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+            (start_time.tv_sec+start_time.tv_nsec/1.0e9),
+            repeat);
       }
     }
 #else
     printf("done multiplying dense in serial a %dx%d chunk, "
-        "%1.2f seconds\n",
+        "%1.2f seconds (%d repeats)\n",
         N_chunk, N_chunk,
         (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-        (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+        (start_time.tv_sec+start_time.tv_nsec/1.0e9),
+        repeat);
 #endif
 #else
     printf("not configured with dgemm()\n");
@@ -432,23 +434,25 @@ main (int argc, char **argv)
 #pragma omp master
       {
         printf("done multiplying using %d OpenMP threads a %dx%d chunk with %dx%d basic blocks, "
-            "tolerance %1.2e, %1.2f seconds\n",
+            "tolerance %1.2e, %1.2f seconds (%d repeats)\n",
             omp_get_num_threads(),
             N_chunk, N_chunk,
             N_basic, N_basic,
             tolerance,
             (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-            (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+            (start_time.tv_sec+start_time.tv_nsec/1.0e9),
+            repeat);
       }
     }
 #else
     printf("done multiplying in serial a %dx%d chunk with %dx%d basic blocks, "
-        "tolerance %1.2e, %1.2f seconds\n",
+        "tolerance %1.2e, %1.2f seconds (%d repeats)\n",
         N_chunk, N_chunk,
         N_basic, N_basic,
         tolerance,
         (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-        (start_time.tv_sec+start_time.tv_nsec/1.0e9));
+        (start_time.tv_sec+start_time.tv_nsec/1.0e9),
+        repeat);
 #endif
   }
 
