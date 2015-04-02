@@ -28,6 +28,10 @@
 
 
 \newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\matT}[1]{\boldsymbol{#1}^\dagger}
+\newcommand{\ot}[1]{ {\scriptstyle \otimes}_{ \tau } }
+
+
 
 %%\hypersetup{pdftitle={FreeON Project Report 1}}
 %\hypersetup{pdfauthor={Matt Challacombe and Nicolas Bock}}
@@ -37,17 +41,17 @@
 
 \begin{document}
 
-\title{A SpAMM Stabilized Newton Schulz; Fighting Error with Error. }
+\title{A SpAMM Stabilized Newton Schulz}
 
-% \author{Matt Challacombe}
-% \email{matt.challacombe@freeon.org}
-% \homepage{http://www.freeon.org}
-% \affiliation{Theoretical Division, Los Alamos National Laboratory}
+\author{Matt Challacombe}
+\email{matt.challacombe@freeon.org}
+\homepage{http://www.freeon.org}
+\affiliation{Theoretical Division, Los Alamos National Laboratory}
 
-% \author{Nicolas Bock}
-% \email{nicolasbock@freeon.org}
-% \homepage{http://www.freeon.org}
-% \affiliation{Theoretical Division, Los Alamos National Laboratory}
+\author{Nicolas Bock}
+\email{nicolasbock@freeon.org}
+\homepage{http://www.freeon.org}
+\affiliation{Theoretical Division, Los Alamos National Laboratory}
 
 %\begin{abstract}
 %Forward look
@@ -55,12 +59,28 @@
 
 \maketitle
 
-\section{Eigen Basis Corruption}
+\section{Overview}
 
-\begin{equation}
-\boldmath{\large \epsilon}_\perp = \left[ \tilde{\bm{x}}\, \cdot \, \tilde{\bm{x}}^\dagger 
-                                         -\tilde{\bm{x}}^\dagger \,   \cdot \, \tilde{\bm{x}} \right]
-                                     \end{equation}
+\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
+
+\subsubsection{Incompleteness via Partial Inner Iteration}
+Others ... 
+\subsubsection{Incompleteness via Occlusion and Culling}
+
+\paragraph{\bf Basis truncation (BCSR):}
+
+\paragraph{\bf Occlusion by metric querry on Cauchy-Schwarz (SpAMM):}
+
+\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
+
+\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
+
+\section{Accelerated Newton Shulz Iteration for the Inverse Square Root}
+
+\section{SpAMM Stabilization of the Newton Shulz Iteration}
+
+
+SpAMM Stabilized, 
 
 
 
@@ -70,12 +90,53 @@
 
 
 
-
 \begin{eqnarray}
 \widetilde{\mat{x}} &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
                     &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right] \\[0.1cm]
-                    &=& \mat{x} + \mat{\delta}^{z[sz]} + \mat{z} \cdot \mat{\delta}^{[sz]} %+ \mathcal{O}( \tau^2  ) 
+                    &=& \mat{x} + \mat{z} \cdot \mat{\delta}^{[sz]} + \mat{\delta}^{z[sz]} 
  \end{eqnarray}
+
+
+
+
+\begin{eqnarray}
+\widetilde{\mat{x}}^\dagger &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \matT{z}  \right] \\[0.1cm]
+                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \matT{z} + \mat{\delta}^{[sz^\dagger]}  \right] \\[0.1cm]
+                    &=& \matT{x} + \matT{z} \cdot \mat{\delta}^{[sz^\dagger]} + \mat{\delta}^{z^\dagger[sz^\dagger]} 
+ \end{eqnarray}
+
+\pagebreak
+
+%                    &=& \mat{x}_{\text{stab}} + \mat{\delta}^{z^\dagger [sz]} + \matT{z} \cdot \mat{\delta}^{[sz]} %+ \mathcal{O}( \tau^2  ) 
+
+
+\begin{eqnarray}
+\widetilde{\mat{x}}_{\text{stab}} &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
+                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right] \\[0.1cm]
+                    &=& \mat{x} + \left(  \matT{z} \cdot \mat{\delta}^{[sz]} \right)  +  \mat{\delta}^{z^\dagger[sz]}  
+%+ \mathcal{O}( \tau^2  ) 
+\end{eqnarray}
+
+
+\begin{eqnarray}
+\widetilde{\mat{x}}^\dagger_{\text{stab}} &=& \left\{ \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \right\}^\dagger \\[0.1cm]
+                 &=& \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right]^\dagger  {\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
+                 &=& \left[ \matT{z} \cdot  \mat{s} + \mat{\delta}^{[z^\dagger s]}  \right]{\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
+                 &=&  \mat{x} + \mat{\delta}^{[ z^\dagger s ]} \cdot  \mat{z}  +  \mat{\delta}^{[z^\dagger s]z} \\[0.1cm]
+                 &=&  \mat{x} + \left( \matT{z} \cdot \mat{\delta}^{[ s z ]}  \right)^\dagger  +  \mat{\delta}^{[z^\dagger s]z}
+\end{eqnarray}
+
+
+
+
+
+
+
+
+\section{Stabilization of the Accelerated Map}
+
+
+
 
 
 \end{document}

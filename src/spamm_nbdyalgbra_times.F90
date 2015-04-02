@@ -321,7 +321,11 @@ CONTAINS
 
     ! figure the starting conditions ...
     if(present(in_O))then       
-       if(associated(in_o))d => in_O
+       if(associated(in_o))then
+          d => in_O
+       else
+          d => NULL()
+       endif
     else
        d => NULL()
     endif
