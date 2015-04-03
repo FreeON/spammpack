@@ -134,6 +134,7 @@ if [[ "${use_external_lapack}" = "yes" ]] || [[ "${enable_block_multiply}" = "bl
   fi
 fi
 
+AC_MSG_CHECKING([maximum task tier (if using OpenMP)])
 AC_ARG_ENABLE([chunk-tree-max-tier],
   [AS_HELP_STRING([--enable-chunk-tree-max-tier],
   [set the maximum tier at which new tasks are created when recursing the
@@ -144,7 +145,10 @@ if [[ ${enable_chunk_tree_max_tier} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([CHUNK_TREE_MAX_TIER], [${enable_chunk_tree_max_tier}],
     [The maximum tier at which new tasks are created when recursing the chunk
      tree.])
+else
+  enable_chunk_tree_max_tier=0
 fi
+AC_MSG_RESULT([Max. number threads is $((1 << 3*${enable_chunk_tree_max_tier}))])
 
 AC_ARG_ENABLE([chunk-block-transpose],
   [AS_HELP_STRING([--enable-chunk-block-transpose],

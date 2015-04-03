@@ -199,11 +199,12 @@ main (int argc, char **argv)
     /* Load matrix from file before allocating chunks (we need to know the
      * size).
      */
+    int tier;
     A_BCSR = bcsr_load(BCSR_filename);
     N = bcsr_get_N(A_BCSR);
 
     /* Zero pad the matrix. */
-    for(int tier = 0; ; tier++)
+    for(tier = 0; ; tier++)
     {
       //printf("N = %d, tier = %d\n", N, tier);
       int N_tier = N_basic*(1 << tier);
@@ -218,6 +219,7 @@ main (int argc, char **argv)
         break;
       }
     }
+    printf("matrix tree has depth %d\n", tier);
     N_chunk = N;
   }
 
@@ -357,9 +359,11 @@ main (int argc, char **argv)
 #pragma omp master
       {
         printf("done multiplying dense using %d OpenMP threads a %dx%d chunk, "
+            "max. task depth %d, "
             "%1.2f seconds (%d repeats)\n",
             omp_get_num_threads(),
             N_chunk, N_chunk,
+            CHUNK_TREE_MAX_TIER,
             (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
             (start_time.tv_sec+start_time.tv_nsec/1.0e9),
             repeat);

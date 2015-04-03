@@ -838,7 +838,7 @@ chunk_tree_multiply_node (const double tolerance_2,
       {
         for(int k = 0; k < 2; k++)
         {
-#pragma omp task default(none) firstprivate(i, j, k) untied if(tier <= CHUNK_TREE_MAX_TIER)
+#pragma omp task default(none) firstprivate(i, j, k) untied if(tier < CHUNK_TREE_MAX_TIER)
           {
             DEBUG("(%d,%d,%d) starting new task\n", i, j, k);
 

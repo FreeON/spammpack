@@ -6,7 +6,9 @@ for tolerance in 1e-10 1e-6; do
       --interleave=all -- \
       ./chunk_multiply \
       --tolerance ${tolerance} \
-      -f ~/data-sets/water/h2o_90.OrthoD \
+      --N_basic 32 \
+      --type BCSR \
+      --bcsr ~/data-sets/water/h2o_90.OrthoD \
       --no-verify \
       --repeat 10 | tee --append OpenMP.output
   done
