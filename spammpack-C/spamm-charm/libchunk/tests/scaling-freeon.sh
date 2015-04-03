@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# vim: tw=0
 
 echo "building with ${BUILD_TYPE:=gcc}..."
 
@@ -7,7 +9,7 @@ if [[ ${BUILD_TYPE} = "gcc" ]]; then
   # Building with gcc:
   ./configure --disable-assert --enable-chunk-tree-max-tier=4 CC=gcc CFLAGS=-"O3 -ftree-vectorize -g"
 elif [[ ${BUILD_TYPE} = "intel" ]]; then
-  ./configure --disable-assert --enable-chunk-tree-max-tier=4 CC=ifort CFLAGS="-O3 -g"
+  ./configure --disable-assert --enable-chunk-tree-max-tier=4 CC=icc CFLAGS="-fast -g"
 else
   echo "unknown build type ${BUILD_TYPE}"
   exit 1
