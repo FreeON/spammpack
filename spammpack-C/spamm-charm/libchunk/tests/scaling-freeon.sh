@@ -41,6 +41,8 @@ make clean || exit
 make V=1 || exit
 popd
 
+echo "numactl policy: ${NUMA_POLICY}"
+
 for tolerance in 1e-10 1e-6; do
   for threads in ${THREADS[*]}; do
     OMP_NUM_THREADS=${threads} \
