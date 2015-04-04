@@ -2,7 +2,6 @@
 #
 # vim: tw=0
 
-echo -n "building with ${BUILD_COMPILER:=gcc}..."
 if [[ ${BUILD_TYPE:=serial} = "serial" ]]; then
   echo "serial version..."
   THREADS=( 1 )
@@ -19,7 +18,7 @@ else
 fi
 
 pushd ..
-if [[ ${BUILD_COMPILER} = "gcc" ]]; then
+if [[ ${BUILD_COMPILER:=gcc} = "gcc" ]]; then
   # Building with gcc:
   ./configure --disable-assert \
     --enable-chunk-tree-max-tier=4 \
@@ -41,6 +40,7 @@ make clean || exit
 make V=1 || exit
 popd
 
+echo "running ${BUILD_TYPE}-${BUILD_COMPILER}"
 echo "numactl policy: ${NUMA_POLICY}"
 
 for tolerance in 1e-10 1e-6; do
