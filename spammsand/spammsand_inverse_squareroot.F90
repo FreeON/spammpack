@@ -140,39 +140,17 @@ contains
        ! update (threshold)
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau )
 
-
-
-       !=====================================================================
-!!$       CALL SpAMM_convert_tree_2d_symm_to_dense(z,xd)
-!!$       xd=SpAMM_half*(xd+TRANSPOSE(xd))
-!!$       z => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = z )
-       !=====================================================================
-
-!       CALL SpAMM_convert_tree_2d_symm_to_dense(z, twist)
-!       twist_z=SQRT(SUM(twist-TRANSPOSE(twist))**2)
-!       twist_z = SpAMM_twist_tree_2d_symm(z)
-
        IF(.nOt.First)tHeN
+
           ! <Y_n+1|
           t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau , nt_O=.TRUE., in_O = t )
           y_work=t%frill%flops/dble(t%frill%ndimn(1))**3
           ! update (threshold)
           y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau ) 
 
-          !=====================================================================
-!!$          CALL SpAMM_convert_tree_2d_symm_to_dense(y,xd)
-!!$          xd=SpAMM_half*(xd+TRANSPOSE(xd))
-!!$          y => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = y )
-          !=====================================================================
-
-!          twist_y =SQRT( SpAMM_twist_2d_symm_recur (y) 
-!          CALL SpAMM_convert_tree_2d_symm_to_dense(y, twist)
-!          twist_y=SQRT(SUM(twist-TRANSPOSE(twist))**2)
-
        ENDIF
 
        IF(first)then
-
           ! <X_n> = <Z_n|S|Z_n>
           if(second)then
              tau_xtra=tau*1d-2  ! xtra stabilization on first multiply 
@@ -180,74 +158,18 @@ contains
              tau_xtra=tau       
           endif
 
-          write(*,*)' tau extra = ',tau_xtra
-
-!          t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau  , NT_O=.false. , in_O = t )
-!          t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s, tau  , NT_O=.TRUE. , in_O = t )
-
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z, tau  , NT_O=.TRUE. , in_O = t )
-
-          WRITE(*,*)'BEFORE S_OT_Z ',t%frill%norm2
-
-
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z, tau_xtra  , NT_O=.TRUE. , in_O = t )
           zs_work=t%frill%flops/dble(t%frill%ndimn(1))**3
-
-          !=====================================================================
-!!$          CALL SpAMM_convert_tree_2d_symm_to_dense(t,xd)
-!!$          xd=SpAMM_half*(xd+TRANSPOSE(xd))
-!!$          t => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = t )
-          !=====================================================================
-
-!          write(*,*)' z norm = ',SQRT(z%frill%norm2),' total work = ',t%frill%flops/dble(t%frill%ndimn(1))**3
-
-!          x => SpAMM_tree_2d_symm_times_tree_2d_symm( t, z, tau  , NT_O=.TRUE.  , in_O = x )
-
-!          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.FALSE. , in_O = x )
-
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.TRUE. , in_O = x )
-
-          CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_d )
-
-          WRITE(*,*)' XPERP = ',SQRT(SUM( ( x_d-TRANSPOSE(x_d))**2))
-
-          IF(I==6)CALL SpAMM_demo_spamm_stabilized_factorization(z,s, tau)
-
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.FALSE. , in_O = x )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
 
-          !=====================================================================
-!!$          CALL SpAMM_convert_tree_2d_symm_to_dense(x,xd)
-!!$          xd=SpAMM_half*(xd+TRANSPOSE(xd))
-!!$          x => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = x )
-          !=====================================================================
-          
-!          write(*,*)' x norm = ',SQRT(x%frill%norm2),' total work = ',x%frill%flops/dble(x%frill%ndimn(1))**3
-!          CALL SpAMM_convert_tree_2d_symm_to_dense(t, twist)
-!          twist_zs=SQRT(SUM(twist-TRANSPOSE(twist))**2)
-!          CALL SpAMM_convert_tree_2d_symm_to_dense(x, twist)
-!          twist_x=SQRT(SUM(twist-TRANSPOSE(twist))**2)
-!          twist_zs=SQRT( SpAMM_twist_2d_symm_recur (t) )
-!          twist_x =SQRT( SpAMM_twist_2d_symm_recur (x) )
+          IF(I==6)CALL SpAMM_demo_spamm_stabilized_factorization( z, s, tau )
 
        else
           ! <X_n> = <Y_n|Z_n>
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
-
-          !=====================================================================
-!!$          CALL SpAMM_convert_tree_2d_symm_to_dense(x,xd)
-!!$          xd=SpAMM_half*(xd+TRANSPOSE(xd))
-!!$          x => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = x )
-          !=====================================================================
-
-!          CALL SpAMM_convert_tree_2d_symm_to_dense(x, twist)
-!          twist_x=SQRT(SUM(twist-TRANSPOSE(twist))**2)
-!          twist_x =SQRT( SpAMM_twist_2d_symm_recur (x) )
-
        endif
-!!$
-!!$       ! best acceleration we can hope for
-!!$       xo_analytic=xo_analytic*(9d0/4d0)*sc
-       !
 
     END DO
 
@@ -258,122 +180,117 @@ contains
 
   SUBROUTINE SpAMM_demo_spamm_stabilized_factorization(z,s,tau)
 
-    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)   :: z,s
+    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: z, s
+    REAL(SpAMM_kind),                   intent(in) ::  tau 
 
-    TYPE(SpAMM_tree_2d_symm), POINTER :: z_sym=>NULL(),s_ot_z=>NULL(), &
-         zT_ot_s_ot_z=>NULL(), z_ot_s_ot_z=>NULL(), zT=>NULL(), s_ot_zT=>NULL()
+    TYPE(SpAMM_tree_2d_symm), POINTER ::  &
+                s_ot_z=>NULL(), &
+               s_dot_z=>NULL(), &
+           z_ot_s_ot_z=>NULL(), &
+          zT_ot_s_ot_z=>NULL(), &
+          delta_s_ot_z=>NULL(), &
+          z_ot_s_dot_z=>NULL(), &
+         zT_ot_s_dot_z=>NULL(), &
+     z_ot_delta_s_ot_z=>NULL(), &
+    zT_ot_delta_s_ot_z=>NULL(), &
+    delta_z_ot_delta_s_ot_z=>NULL()
+               
 
-    real(spamm_kind), dimension(:,:), allocatable    :: &
+    real(spamm_kind), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) ::  &
     s_d, z_d, x_stab, x_naiv, s_dot_z_d,  s_dot_zT_d,  &
     s_ot_z_d, s_ot_zT_d, delta_s_ot_z_d, delta_s_ot_zT_d,  &
     delta_zT_ot_s_ot_z_d,e_perp,delta_z_ot_s_ot_z_d, &
     z_dot_delta_s_ot_z_d,       zT_dot_delta_s_ot_zT_d,zT_dot_delta_s_ot_z_d,zT_dot_deltaT_s_ot_z_d, &
-    z_ot_s_ot_z_d,zT_ot_s_ot_z_d
-
-    INTEGER :: M
-
-    REAL(SpAMM_kind), intent(in) ::  tau 
-
-    M=s%frill%ndimn(1)
-
-    ALLOCATE(s_d                  (1:M,1:M))
-    ALLOCATE(z_d                  (1:M,1:M))
-    ALLOCATE(x_naiv               (1:M,1:M))
-    ALLOCATE(x_stab               (1:M,1:M))
-    ALLOCATE(e_perp               (1:M,1:M))
-    ALLOCATE(            s_ot_z_d (1:M,1:M))
-    ALLOCATE(           s_dot_z_d (1:M,1:M))
-    ALLOCATE(      delta_s_ot_z_d (1:M,1:M))
-    ALLOCATE(delta_z_ot_s_ot_z_d  (1:M,1:M))
-    ALLOCATE(delta_zT_ot_s_ot_z_d (1:M,1:M))
-    ALLOCATE(       z_ot_s_ot_z_d (1:M,1:M))
-    ALLOCATE(z_dot_delta_s_ot_z_d (1:M,1:M))
-    ALLOCATE(zT_dot_delta_s_ot_z_d(1:M,1:M))
-    ALLOCATE(zT_dot_deltaT_s_ot_z_d(1:M,1:M))
-
+    z_ot_s_ot_z_d, zT_ot_s_ot_z_d, delta_z_ot_delta_s_ot_z_d, delta_z_ot_s_dot_z, &
+    delta_zT_ot_s_dot_z,  zT_ot_s_dot_z_d , zT_ot_delta_s_ot_z_d , delta_z_ot_s_dot_z_d, &
+    delta_zT_ot_delta_s_ot_z, delta_zT_ot_delta_s_ot_z_d, delta_zT_ot_s_dot_z_d, z_ot_delta_s_ot_z_d, &
+    z_ot_s_dot_z_d
+     
+    REAL(SpAMM_kind) :: e_perp_naiv_1st,e_perp_stab_1st,e_norm_1st,e_perp_naiv_2nd_tau1, &
+                        e_perp_stab_2nd_tau1,e_perp_naiv_2nd_tau2,e_perp_stab_2nd_tau2, &
+                        e_perp_naiv,e_perp_stab
+    
     CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
     CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
-    zT => SpAMM_convert_dense_to_tree_2d_symm( TRANSPOSE(z_d), in_O = zT )
-
-    ! Symmetrize 
 
     s_dot_z_d =MATMUL( s_d , z_d )
     s_dot_zT_d=MATMUL( s_d , TRANSPOSE(z_d) )
 
-    ! Errors are relative to a targeted functional form: <zt|s|z> or <z|s|z>  
+    ! Errors are relative to respective target functional forms, eg <zt|s|z> or <z|s|z>,  
     ! for some incoming factor z, which is hopefully the result of stable iteration 
     x_naiv   =MATMUL(           z_d  , s_dot_z_d ) 
     x_stab   =MATMUL( TRANSPOSE(z_d) , s_dot_z_d ) 
  
     ! The approximate (ot is the spamm multiply, dot the matmul) intermediate and final NS products:
           s_ot_z => SpAMM_tree_2d_symm_times_tree_2d_symm( s,      z, tau  , NT_O=.TRUE.  , in_O =       s_ot_z )
-         s_ot_zT => SpAMM_tree_2d_symm_times_tree_2d_symm( s,     zT, tau  , NT_O=.TRUE.  , in_O =      s_ot_zT )
      z_ot_s_ot_z => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s_ot_z, tau  , NT_O=.TRUE.  , in_O =  z_ot_s_ot_z )
     zT_ot_s_ot_z => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s_ot_z, tau  , NT_O=.FALSE. , in_O = zT_ot_s_ot_z )
+
     CALL SpAMM_convert_tree_2d_symm_to_dense(       s_ot_z  ,       s_ot_z_d  )
-    CALL SpAMM_convert_tree_2d_symm_to_dense(       s_ot_zT ,       s_ot_zT_d )
     CALL SpAMM_convert_tree_2d_symm_to_dense(  z_ot_s_ot_z  ,  z_ot_s_ot_z_d  )
     CALL SpAMM_convert_tree_2d_symm_to_dense( zT_ot_s_ot_z  , zT_ot_s_ot_z_d  )
 
-    e_perp=z_ot_s_ot_z_d-TRANSPOSE(z_ot_s_ot_z_d)
-    write(*,*)' perp norm = ',SQRT(SUM(e_perp**2))
-
-    e_perp=zT_ot_s_ot_z_d-TRANSPOSE(zT_ot_s_ot_z_d)
-    write(*,*)' perp norm = ',SQRT(SUM(e_perp**2))
+    e_perp_naiv=SpAMMsand_perp_error(z_ot_s_ot_z_d)
+    e_perp_stab=SpAMMsand_perp_error(zT_ot_s_ot_z_d)
 
     ! Here are primary errors (first multiply)
-            delta_s_ot_z_d  = s_ot_z_d  - s_dot_z_d  
-            delta_s_ot_zT_d = s_ot_zT_d - s_dot_zT_d  
+           delta_s_ot_z_d  = s_ot_z_d  - s_dot_z_d  
+     z_dot_delta_s_ot_z_d  = MATMUL(          z_d ,           delta_s_ot_z_d )
+    zT_dot_delta_s_ot_z_d  = MATMUL(TRANSPOSE(z_d),           delta_s_ot_z_d )
 
+    e_perp_naiv_1st=SQRT(SUM( ( z_dot_delta_s_ot_z_d-TRANSPOSE( z_dot_delta_s_ot_z_d) )**2))
+    e_perp_stab_1st=SQRT(SUM( (zT_dot_delta_s_ot_z_d-TRANSPOSE(zT_dot_delta_s_ot_z_d) )**2))
+    e_norm_1st     =SQRT(SUM( z_dot_delta_s_ot_z_d**2 ))
 
-
-       z_dot_delta_s_ot_z_d  = MATMUL(          z_d ,           delta_s_ot_z_d )
-      zT_dot_delta_s_ot_zT_d = MATMUL(TRANSPOSE(z_d) ,          delta_s_ot_zT_d )
-      zT_dot_delta_s_ot_z_d  = MATMUL(TRANSPOSE(z_d),           delta_s_ot_z_d )
-     zT_dot_deltaT_s_ot_z_d  = MATMUL(TRANSPOSE(z_d), TRANSPOSE(delta_s_ot_z_d))
-
-    ! Here are secondary errors
-     delta_z_ot_s_ot_z_d =  z_ot_s_ot_z_d - x_stab -  z_dot_delta_s_ot_z_d
+    ! Here are secondary errors (total, first & second multiply)
+     delta_z_ot_s_ot_z_d =  z_ot_s_ot_z_d - x_naiv -  z_dot_delta_s_ot_z_d
     delta_zT_ot_s_ot_z_d = zT_ot_s_ot_z_d - x_stab - zT_dot_delta_s_ot_z_d
 
+!    e_perp_naiv_2nd_all = SQRT(SUM( ( delta_z_ot_s_ot_z_d - TRANSPOSE( delta_z_ot_s_ot_z_d) )**2 ))
+!    e_perp_stab_2nd_all = SQRT(SUM( (delta_zT_ot_s_ot_z_d - TRANSPOSE(delta_zT_ot_s_ot_z_d) )**2 ))
 
-    WRITE(*,*)' Check 1 A',SQRT(SUM( (s_ot_z_d   - (s_dot_z_d  + delta_s_ot_z_d)  )**2))
-    WRITE(*,*)' Check 1 B ',SQRT(SUM( (s_ot_zT_d - (s_dot_zT_d + delta_s_ot_zT_d) )**2))
+    ! Here are components of the secondary errors 
 
+          s_dot_z => SpAMM_convert_dense_to_tree_2d_symm( s_dot_z_d, in_O = s_dot_z )
+     z_ot_s_dot_z => SpAMM_tree_2d_symm_times_tree_2d_symm( z,      s_dot_z, tau  , NT_O=.TRUE.  , in_O =  z_ot_s_dot_z )
+    zT_ot_s_dot_z => SpAMM_tree_2d_symm_times_tree_2d_symm( z,      s_dot_z, tau  , NT_O=.FALSE. , in_O = zT_ot_s_dot_z )
 
+    delta_s_ot_z => SpAMM_convert_dense_to_tree_2d_symm( delta_s_ot_z_d, in_O = s_dot_z )
 
+     z_ot_delta_s_ot_z => SpAMM_tree_2d_symm_times_tree_2d_symm( z, delta_s_ot_z, tau  , NT_O=.TRUE.  , in_O =  z_ot_delta_s_ot_z )
+    zT_ot_delta_s_ot_z => SpAMM_tree_2d_symm_times_tree_2d_symm( z, delta_s_ot_z, tau  , NT_O=.FALSE. , in_O = zT_ot_delta_s_ot_z )
 
-    write(*,*)' ||z.delta_s_ot_z||_F    = ',SQRT(SUM( z_dot_delta_s_ot_z_d**2 )), &
-         ' < ',Tau*SQRT(s%frill%norm2)*z%frill%norm2
+    CALL SpAMM_convert_tree_2d_symm_to_dense(      z_ot_s_dot_z ,       z_ot_s_dot_z_d )
+    CALL SpAMM_convert_tree_2d_symm_to_dense(     zT_ot_s_dot_z ,      zT_ot_s_dot_z_d )     
+    CALL SpAMM_convert_tree_2d_symm_to_dense( z_ot_delta_s_ot_z ,  z_ot_delta_s_ot_z_d )
+    CALL SpAMM_convert_tree_2d_symm_to_dense(zT_ot_delta_s_ot_z , zT_ot_delta_s_ot_z_d )
 
-    write(*,*)' naive perp error        = ',SQRT(SUM( (z_dot_delta_s_ot_z_d  &
-                                           - TRANSPOSE(z_dot_delta_s_ot_z_d) )**2 ))
-!                                                     -zT_dot_delta_s_ot_zT_d  )**2 ))
+          delta_z_ot_s_dot_z_d =  x_naiv -  z_ot_s_dot_z_d
+         delta_zT_ot_s_dot_z_d =  x_stab - zT_ot_s_dot_z_d
+     delta_z_ot_delta_s_ot_z_d =  z_dot_delta_s_ot_z_d -  z_ot_delta_s_ot_z_d
+    delta_zT_ot_delta_s_ot_z_d = zT_dot_delta_s_ot_z_d - zT_ot_delta_s_ot_z_d
 
-    write(*,*)' stabilized perp error   = ',SQRT(SUM( (zT_dot_delta_s_ot_z_d  &
-                                           - TRANSPOSE(zT_dot_delta_s_ot_z_d) )**2 ))
+    e_perp_naiv_2nd_tau1 = SpAMMsand_perp_error(delta_z_ot_s_dot_z_d)
+    e_perp_stab_2nd_tau1 = SpAMMsand_perp_error(delta_zT_ot_s_dot_z_d)
 
+    e_perp_naiv_2nd_tau2 = SpAMMsand_perp_error(delta_z_ot_delta_s_ot_z)
+    e_perp_stab_2nd_tau2 = SpAMMsand_perp_error(delta_zT_ot_delta_s_ot_z)
 
-    write(*,*)' naive perp error        = ',SQRT(SUM( (delta_z_ot_s_ot_z_d   &
-                                           - TRANSPOSE(delta_z_ot_s_ot_z_d) )**2 ))
-
-    write(*,*)' stabilized perp error   = ',SQRT(SUM( (delta_zT_ot_s_ot_z_d  &
-                                           - TRANSPOSE(delta_zT_ot_s_ot_z_d) )**2 ))
-    DEALLOCATE(s_d                  )
-    DEALLOCATE(z_d                  )
-    DEALLOCATE(x_stab               )
-    DEALLOCATE(e_perp               )
-    DEALLOCATE(s_ot_z_d             )
-    DEALLOCATE(s_dot_z_d            )
-    DEALLOCATE(delta_s_ot_z_d       )
-    DEALLOCATE(delta_z_ot_s_ot_z_d  )
-    DEALLOCATE(delta_zT_ot_s_ot_z_d )
-    DEALLOCATE(zT_dot_deltaT_s_ot_z_d)
-
-    stop
+    CALL SpAMM_destruct_tree_2d_symm_recur (            s_ot_z)
+    CALL SpAMM_destruct_tree_2d_symm_recur (       z_ot_s_ot_z)
+    CALL SpAMM_destruct_tree_2d_symm_recur (      zT_ot_s_ot_z)
+    CALL SpAMM_destruct_tree_2d_symm_recur (      z_ot_s_dot_z)
+    CALL SpAMM_destruct_tree_2d_symm_recur (     zT_ot_s_dot_z)
+    CALL SpAMM_destruct_tree_2d_symm_recur ( z_ot_delta_s_ot_z)
+    CALL SpAMM_destruct_tree_2d_symm_recur (zT_ot_delta_s_ot_z)
 
   END SUBROUTINE SpAMM_demo_spamm_stabilized_factorization
 
+  FUNCTION SpAMMsand_perp_error(a) RESULT(fnorm)
+    REAL(SpAMM_kind), dimension(:,:), intent(in) :: a
+    REAL(SpAMM_kind) :: fnorm
+    fnorm=SQRT(SUM( (a-TRANSPOSE(a))**2))
+  END FUNCTION SpAMMsand_perp_error
 
   SUBROUTINE SpAMM_demo_spamm_stabilized_factorization2(z,s,tau)
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)   :: z,s
