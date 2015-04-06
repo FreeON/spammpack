@@ -153,7 +153,7 @@ contains
        IF(first)then
           ! <X_n> = <Z_n|S|Z_n>
           if(second)then
-             tau_xtra=tau*1d-2  ! xtra stabilization on first multiply 
+             tau_xtra=tau!*1d-2  ! xtra stabilization on first multiply 
           else
              tau_xtra=tau       
           endif
@@ -163,7 +163,7 @@ contains
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.FALSE. , in_O = x )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
 
-          IF(I==6)CALL SpAMM_demo_spamm_stabilized_factorization( z, s, tau )
+          IF(I==3)CALL SpAMM_demo_spamm_stabilized_factorization( z, s, tau )
 
        else
           ! <X_n> = <Y_n|Z_n>
@@ -195,7 +195,6 @@ contains
     zT_ot_delta_s_ot_z=>NULL(), &
     delta_z_ot_delta_s_ot_z=>NULL()
                
-
     real(spamm_kind), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) ::  &
     s_d, z_d, x_stab, x_naiv, s_dot_z_d,  s_dot_zT_d,  &
     s_ot_z_d, s_ot_zT_d, delta_s_ot_z_d, delta_s_ot_zT_d,  &
@@ -246,8 +245,8 @@ contains
      delta_z_ot_s_ot_z_d =  z_ot_s_ot_z_d - x_naiv -  z_dot_delta_s_ot_z_d
     delta_zT_ot_s_ot_z_d = zT_ot_s_ot_z_d - x_stab - zT_dot_delta_s_ot_z_d
 
-!    e_perp_naiv_2nd_all = SQRT(SUM( ( delta_z_ot_s_ot_z_d - TRANSPOSE( delta_z_ot_s_ot_z_d) )**2 ))
-!    e_perp_stab_2nd_all = SQRT(SUM( (delta_zT_ot_s_ot_z_d - TRANSPOSE(delta_zT_ot_s_ot_z_d) )**2 ))
+    e_perp_naiv_2nd_all = SQRT(SUM( ( delta_z_ot_s_ot_z_d - TRANSPOSE( delta_z_ot_s_ot_z_d) )**2 ))
+    e_perp_stab_2nd_all = SQRT(SUM( (delta_zT_ot_s_ot_z_d - TRANSPOSE(delta_zT_ot_s_ot_z_d) )**2 ))
 
     ! Here are components of the secondary errors 
 
@@ -265,16 +264,27 @@ contains
     CALL SpAMM_convert_tree_2d_symm_to_dense( z_ot_delta_s_ot_z ,  z_ot_delta_s_ot_z_d )
     CALL SpAMM_convert_tree_2d_symm_to_dense(zT_ot_delta_s_ot_z , zT_ot_delta_s_ot_z_d )
 
+
+    WRITE(*,*)' delta_s_ot_z_d = ',SUM(delta_s_ot_z_d**2), SUM(z_d**2)
+
+      z_dot_delta_s_ot_z_d = MATMUL(          z_d , delta_s_ot_z_d)
+     zT_dot_delta_s_ot_z_d = MATMUL(TRANSPOSE(z_d), delta_s_ot_z_d)
+
           delta_z_ot_s_dot_z_d =  x_naiv -  z_ot_s_dot_z_d
          delta_zT_ot_s_dot_z_d =  x_stab - zT_ot_s_dot_z_d
+
      delta_z_ot_delta_s_ot_z_d =  z_dot_delta_s_ot_z_d -  z_ot_delta_s_ot_z_d
     delta_zT_ot_delta_s_ot_z_d = zT_dot_delta_s_ot_z_d - zT_ot_delta_s_ot_z_d
 
     e_perp_naiv_2nd_tau1 = SpAMMsand_perp_error(delta_z_ot_s_dot_z_d)
     e_perp_stab_2nd_tau1 = SpAMMsand_perp_error(delta_zT_ot_s_dot_z_d)
 
-    e_perp_naiv_2nd_tau2 = SpAMMsand_perp_error(delta_z_ot_delta_s_ot_z)
-    e_perp_stab_2nd_tau2 = SpAMMsand_perp_error(delta_zT_ot_delta_s_ot_z)
+    e_perp_naiv_2nd_tau2 = SpAMMsand_perp_error(delta_z_ot_delta_s_ot_z_d)
+    e_perp_stab_2nd_tau2 = SpAMMsand_perp_error(delta_zT_ot_delta_s_ot_z_d)
+
+    WRITE(*,22)' naiv',e_perp_naiv, e_perp_naiv_1st,e_perp_naiv_2nd_tau1,e_perp_naiv_2nd_tau2
+    WRITE(*,22)' stab',e_perp_stab, e_perp_stab_1st,e_perp_stab_2nd_tau1,e_perp_naiv_2nd_tau2
+22  FORMAT(A6,' E_tot = ',F12.6,' z.d[s,z] = ',F12.6,' d[z,s.z] = ',F12.6,' d[z,d[s,z]] = ',F12.6)
 
     CALL SpAMM_destruct_tree_2d_symm_recur (            s_ot_z)
     CALL SpAMM_destruct_tree_2d_symm_recur (       z_ot_s_ot_z)
