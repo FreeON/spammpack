@@ -41,11 +41,12 @@ chunk_block_multiply_general (const double *const restrict A,
   assert(C != NULL);
 
 #ifdef CHUNK_BLOCK_NO_WORK
+#warning skipping block product
   struct timespec requested_sleep;
   requested_sleep.tv_sec = 0;
-  requested_sleep.tv_nsec = 5e6;
+  requested_sleep.tv_nsec = 0;
 
-  nanosleep(&requested_sleep, NULL);
+  //nanosleep(&requested_sleep, NULL);
 #else
 
 #ifdef CHUNK_BLOCK_TRANSPOSE

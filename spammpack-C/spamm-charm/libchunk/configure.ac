@@ -150,6 +150,7 @@ else
 fi
 AC_MSG_RESULT([Max. number threads is $((1 << 3*${enable_chunk_tree_max_tier}))])
 
+AC_MSG_CHECKING([whether to multiply the transpose])
 AC_ARG_ENABLE([chunk-block-transpose],
   [AS_HELP_STRING([--enable-chunk-block-transpose],
   [set the minimum size N of the block matrix that will transpose a matrix to
@@ -160,7 +161,22 @@ if [[ ${enable_chunk_block_transpose} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([CHUNK_BLOCK_TRANSPOSE], [${enable_chunk_block_transpose}],
     [The minimum size N of the block matrix that will transpose a matrix to
      allow for loop vectorization.])
+  AC_MSG_RESULT([yes for N >= ${enable_chunk_block_transpose}])
+else
+  AC_MSG_RESULT([no])
 fi
+
+AC_MSG_CHECKING([whether to skip block multiplies])
+AC_ARG_ENABLE([no-work],
+  [AS_HELP_STRING([--enable-no-work],
+  [do not multiply the basic blocks, i.e. do not do work])],
+  [enable_no_work=$enableval],
+  [enable_no_work="no"])
+if [[ ${enable_no_work} = "yes" ]]; then
+  AC_DEFINE_UNQUOTED([CHUNK_BLOCK_NO_WORK], [${enable_no_work}], [Do not
+    perform work in form of a block multiply at the leaf nodes.])
+fi
+AC_MSG_RESULT([${enable_no_work}])
 
 AC_ARG_ENABLE([sleep],
   [AS_HELP_STRING([--enable-sleep],
