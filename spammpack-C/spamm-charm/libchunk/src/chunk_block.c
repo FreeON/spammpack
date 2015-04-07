@@ -40,15 +40,6 @@ chunk_block_multiply_general (const double *const restrict A,
   assert(B != NULL);
   assert(C != NULL);
 
-#ifdef CHUNK_BLOCK_NO_WORK
-#warning skipping block product
-  struct timespec requested_sleep;
-  requested_sleep.tv_sec = 0;
-  requested_sleep.tv_nsec = 0;
-
-  //nanosleep(&requested_sleep, NULL);
-#else
-
 #ifdef CHUNK_BLOCK_TRANSPOSE
   if(N >= CHUNK_BLOCK_TRANSPOSE)
   {
@@ -99,8 +90,6 @@ chunk_block_multiply_general (const double *const restrict A,
     }
 #ifdef CHUNK_BLOCK_TRANSPOSE
   }
-#endif
-
 #endif
 }
 
@@ -158,6 +147,14 @@ chunk_block_multiply (const double *const restrict A,
     double *const restrict C,
     const int N)
 {
+#ifdef CHUNK_BLOCK_NO_WORK
+#warning skipping block product
+  struct timespec requested_sleep;
+  requested_sleep.tv_sec = 0;
+  requested_sleep.tv_nsec = 0;
+
+  //nanosleep(&requested_sleep, NULL);
+#else
   if(N == 4)
   {
     //chunk_block_multiply_4x4(A, B, C);
@@ -169,4 +166,5 @@ chunk_block_multiply (const double *const restrict A,
   {
     chunk_block_multiply_general(A, B, C, N);
   }
+#endif
 }

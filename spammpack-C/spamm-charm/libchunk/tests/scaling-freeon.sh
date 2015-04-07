@@ -6,16 +6,19 @@ if [[ ${BUILD_TYPE:=serial} = "serial" ]]; then
   echo "serial version..."
   THREADS=( 1 )
   NUMA_POLICY="--physcpubind=0 --membind=0"
-  CONFIGURE="--disable-openmp"
-  CONFIGURE+=" --enable-chunk-block-transpose=0"
-  #CONFIGURE+=" --enable-no-work"
+  CONFIGURE_ARGS="--disable-openmp"
+  CONFIGURE_ARGS+=" --disable-assert"
+  CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
+  CONFIGURE_ARGS+=" --enable-no-work"
 elif [[ ${BUILD_TYPE} = "openmp" ]]; then
   echo "OpenMP version..."
   THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
   NUMA_POLICY="--interleave=all"
-  CONFIGURE="--enable-openmp"
-  CONFIGURE+=" --enable-chunk-block-transpose=0"
-  #CONFIGURE+=" --enable-no-work"
+  CONFIGURE_ARGS="--enable-openmp"
+  CONFIGURE_ARGS+=" --disable-assert"
+  CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
+  CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=3"
+  #CONFIGURE_ARGS+=" --enable-no-work"
 else
   echo "unknown build type, either serial or openmp"
   exit 1
@@ -24,15 +27,13 @@ fi
 pushd ..
 if [[ ${BUILD_COMPILER:=gcc} = "gcc" ]]; then
   # Building with gcc:
-  ./configure --disable-assert \
-    --enable-chunk-tree-max-tier=4 \
-    ${CONFIGURE} \
+  ./configure \
+    ${CONFIGURE_ARGS} \
     CC=gcc \
     CFLAGS="-Ofast -g -ftree-vectorizer-verbose=2 -mfpmath=sse -msse2" || exit
 elif [[ ${BUILD_COMPILER} = "intel" ]]; then
-  ./configure --disable-assert \
-    --enable-chunk-tree-max-tier=4 \
-    ${CONFIGURE} \
+  ./configure \
+    ${CONFIGURE_ARGS} \
     CC=icc \
     CFLAGS="-O3 -g -no-prec-div -static -fp-model fast=2 -qopt-report -xHost -ipo" || exit
 else

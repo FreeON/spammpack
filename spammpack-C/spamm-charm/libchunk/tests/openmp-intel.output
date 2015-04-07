@@ -225,3 +225,230 @@ matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
 can not lock memory
 individual mean = 1.89e+00, variance = 9.65e-03
 48 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 1.889 +- 9.822e-02 seconds (1.889, 20 repeats)
+  $ ./configure --enable-openmp --disable-assert --enable-chunk-block-transpose=0 --enable-chunk-tree-max-tier=3 CC=icc CFLAGS=-O3 -g -no-prec-div -static -fp-model fast=2 -qopt-report -xHost -ipo
+running openmp-intel
+numactl policy: --interleave=all
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.79e+01, variance = 6.19e-02
+1 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 27.912 +- 2.489e-01 seconds (27.912, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 1.81e+01, variance = 2.76e-02
+2 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 18.108 +- 1.661e-01 seconds (18.108, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 9.28e+00, variance = 2.43e-01
+4 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 9.284 +- 4.934e-01 seconds (9.284, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 5.72e+00, variance = 7.60e-02
+8 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 5.724 +- 2.757e-01 seconds (5.724, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 4.41e+00, variance = 6.64e-02
+12 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 4.409 +- 2.576e-01 seconds (4.409, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.82e+00, variance = 3.61e-02
+16 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 3.822 +- 1.901e-01 seconds (3.822, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.93e+00, variance = 1.28e-01
+20 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 3.926 +- 3.584e-01 seconds (3.926, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.71e+00, variance = 9.53e-02
+24 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 3.709 +- 3.088e-01 seconds (3.709, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.70e+00, variance = 6.03e-02
+28 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 3.699 +- 2.455e-01 seconds (3.699, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.26e+00, variance = 5.53e-02
+32 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 3.259 +- 2.352e-01 seconds (3.259, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.42e+00, variance = 7.37e-02
+36 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 3.420 +- 2.715e-01 seconds (3.420, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.33e+00, variance = 7.16e-02
+40 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 3.330 +- 2.676e-01 seconds (3.330, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.78e+00, variance = 2.06e-01
+44 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 2.785 +- 4.536e-01 seconds (2.785, 20 repeats)
+running: chunk_multiply --tolerance 1e-10 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.45e+00, variance = 5.27e-02
+48 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-10, 3.450 +- 2.296e-01 seconds (3.450, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 1.69e+01, variance = 1.11e-02
+1 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 16.938 +- 1.055e-01 seconds (16.938, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 1.11e+01, variance = 3.68e-03
+2 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 11.095 +- 6.066e-02 seconds (11.095, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 6.03e+00, variance = 3.80e-02
+4 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 6.031 +- 1.950e-01 seconds (6.031, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.75e+00, variance = 5.54e-02
+8 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 3.754 +- 2.353e-01 seconds (3.754, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 3.15e+00, variance = 6.49e-02
+12 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 3.151 +- 2.547e-01 seconds (3.151, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.99e+00, variance = 7.58e-02
+16 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 2.988 +- 2.754e-01 seconds (2.988, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.73e+00, variance = 5.78e-02
+20 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 2.726 +- 2.405e-01 seconds (2.726, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.79e+00, variance = 4.24e-02
+24 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 2.794 +- 2.059e-01 seconds (2.794, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.70e+00, variance = 2.14e-02
+28 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 2.698 +- 1.462e-01 seconds (2.698, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.56e+00, variance = 4.02e-02
+32 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 2.563 +- 2.006e-01 seconds (2.563, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.56e+00, variance = 5.74e-02
+36 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 2.558 +- 2.397e-01 seconds (2.558, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.69e+00, variance = 6.91e-02
+40 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 2.693 +- 2.629e-01 seconds (2.693, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.67e+00, variance = 4.49e-02
+44 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 2.673 +- 2.120e-01 seconds (2.673, 20 repeats)
+running: chunk_multiply --tolerance 1e-6 --N_basic 4 --type BCSR --bcsr /home/nbock/data-sets/water/h2o_90.OrthoD --no-verify --repeat 20
+[INFO - bcsr.c:174 (bcsr_load)] read BCSR matrix, size 2250x2250, 4947450 nonzeros, 97.7274 percent nonzero elements
+matrix tree has depth 10
+zero padding 2250x2250 BCSR matrix by 11714716 elements to N_chunk = 4096
+matrix, norm_2 = 4.500000e+02, norm_2 of chunk = 4.500000e+02
+can not lock memory
+individual mean = 2.65e+00, variance = 3.11e-02
+48 OpenMP threads, 4096x4096 chunk with 4x4 basic blocks, tolerance 1.00e-06, 2.649 +- 1.765e-01 seconds (2.649, 20 repeats)
