@@ -410,6 +410,9 @@ main (int argc, char **argv)
     }
     clock_gettime(CLOCKTYPE, &end_time);
 
+    double total_time = ((end_time.tv_sec+end_time.tv_nsec/1.0e9)
+        -(start_time.tv_sec+start_time.tv_nsec/1.0e9))/repeat;
+
     double individual_duration[repeat];
     double individual_mean = 0;
     double individual_variance = 0;
@@ -430,32 +433,34 @@ main (int argc, char **argv)
     }
     individual_variance /= repeat;
 
-    printf("individual mean = %1.2f, variance = %1.2f\n", individual_mean, individual_variance);
+    printf("individual mean = %1.2e, variance = %1.2e\n", individual_mean, individual_variance);
 
 #ifdef _OPENMP
 #pragma omp parallel
     {
 #pragma omp master
       {
-        printf("done multiplying using %d OpenMP threads a %dx%d chunk with %dx%d basic blocks, "
-            "tolerance %1.2e, %1.2f seconds (%d repeats)\n",
+        printf("%d OpenMP threads, %dx%d chunk with %dx%d basic blocks, "
+            "tolerance %1.2e, %1.3f +- %1.3e seconds (%1.3f, %d repeats)\n",
             omp_get_num_threads(),
             N_chunk, N_chunk,
             N_basic, N_basic,
             tolerance,
-            (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-            (start_time.tv_sec+start_time.tv_nsec/1.0e9),
+            individual_mean,
+            sqrt(individual_variance),
+            total_time,
             repeat);
       }
     }
 #else
-    printf("done multiplying in serial a %dx%d chunk with %dx%d basic blocks, "
-        "tolerance %1.2e, %1.2f seconds (%d repeats)\n",
+    printf("serial, %dx%d chunk with %dx%d basic blocks, "
+        "tolerance %1.2e, %1.3f +- %1.3e seconds (%1.3f, %d repeats)\n",
         N_chunk, N_chunk,
         N_basic, N_basic,
         tolerance,
-        (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-        (start_time.tv_sec+start_time.tv_nsec/1.0e9),
+        individual_mean,
+        sqrt(individual_variance),
+        total_time,
         repeat);
 #endif
   }
@@ -556,8 +561,12 @@ main (int argc, char **argv)
                 -C_dense[COLUMN_MAJOR(i, j, N_chunk)]) > 1e-10)
         {
           printf("mismatch C[%d][%d] = %e "
-              " <-> C_exact = %e\n",
-              i, j, C_dense[COLUMN_MAJOR(i, j, N_chunk)], C_exact[COLUMN_MAJOR(i, j, N_chunk)]);
+              " <-> C_exact = %e, abs. diff = %e\n",
+              i, j,
+              C_dense[COLUMN_MAJOR(i, j, N_chunk)],
+              C_exact[COLUMN_MAJOR(i, j, N_chunk)],
+              fabs(C_dense[COLUMN_MAJOR(i, j, N_chunk)]
+                -C_exact[COLUMN_MAJOR(i, j, N_chunk)]));
 
           return -1;
         }

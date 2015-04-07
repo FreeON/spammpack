@@ -104,6 +104,7 @@ chunk_block_multiply_general (const double *const restrict A,
 #endif
 }
 
+/* Interface for the assembly function. */
 void
 chunk_block_multiply_4x4 (const double *const restrict A,
     const double *const restrict B,
@@ -111,6 +112,23 @@ chunk_block_multiply_4x4 (const double *const restrict A,
 
 void
 chunk_block_multiply_4x4_2 (const double *const restrict A,
+    const double *const restrict B,
+    double *const restrict C)
+{
+  for(int i = 0; i < 4; i++)
+  {
+    for(int j = 0; j < 4; j++)
+    {
+      for(int k = 0; k < 4; k++)
+      {
+        C[COLUMN_MAJOR(i, j, 4)] += A[COLUMN_MAJOR(i, k, 4)] * B[COLUMN_MAJOR(k, j, 4)];
+      }
+    }
+  }
+}
+
+void
+chunk_block_multiply_4x4_3 (const double *const restrict A,
     const double *const restrict B,
     double *const restrict C)
 {
@@ -140,7 +158,15 @@ chunk_block_multiply (const double *const restrict A,
     double *const restrict C,
     const int N)
 {
-  chunk_block_multiply_general(A, B, C, N);
-  //chunk_block_multiply_4x4(A, B, C);
-  //chunk_block_multiply_4x4_2(A, B, C);
+  if(N == 4)
+  {
+    //chunk_block_multiply_4x4(A, B, C);
+    chunk_block_multiply_4x4_2(A, B, C);
+    //chunk_block_multiply_4x4_3(A, B, C);
+  }
+
+  else
+  {
+    chunk_block_multiply_general(A, B, C, N);
+  }
 }

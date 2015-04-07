@@ -34,7 +34,7 @@ elif [[ ${BUILD_COMPILER} = "intel" ]]; then
     --enable-chunk-tree-max-tier=4 \
     ${CONFIGURE} \
     CC=icc \
-    CFLAGS="-O3 -g -no-prec-div -static -fp-model fast=2 -vec-report -xSSE2" || exit
+    CFLAGS="-O3 -g -no-prec-div -static -fp-model fast=2 -qopt-report -xHost -ipo" || exit
 else
   echo "unknown build type ${BUILD_COMPILER}"
   exit 1
@@ -44,8 +44,10 @@ make clean || exit
 make V=1 || exit
 popd
 
-echo "running ${BUILD_TYPE}-${BUILD_COMPILER}"
-echo "numactl policy: ${NUMA_POLICY}"
+head ../config.log | grep "$.*config" | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output || exit
+
+echo "running ${BUILD_TYPE}-${BUILD_COMPILER}" | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output || exit
+echo "numactl policy: ${NUMA_POLICY}" | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output || exit
 
 for tolerance in 1e-10 1e-6; do
   for threads in ${THREADS[*]}; do
@@ -57,7 +59,7 @@ for tolerance in 1e-10 1e-6; do
       --type BCSR \
       --bcsr ~/data-sets/water/h2o_90.OrthoD \
       --no-verify \
-      --repeat 10 | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output \
+      --repeat 20 | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output \
       || exit
   done
 done
