@@ -41,7 +41,7 @@
 
 \begin{document}
 
-\title{A SpAMM Stabilized Newton Schulz}
+\title{A SpAMM Stabilized Newton Schulz: Extreme Preconditioning}
 
 \author{Matt Challacombe}
 \email{matt.challacombe@freeon.org}
@@ -58,8 +58,23 @@
 %\end{abstract}
 
 \maketitle
+\section{Introduction}
 
-\section{Overview}
+
+\paragraph{why do we care about  preconditioning} %%!what is spamm}
+
+concerned with extending these incomplete algebras towards the approximations extreme of stability; how sloppy can our SpAMM be 
+and still reliably gain the basin of convergence?.
+
+\paragraph{generalized n-body methods}
+single programing model.  generacity. 
+
+\paragraph{the case for strong scaling}
+
+\section{Overview of Functional Approximation}
+
+with emphasis on the problem of the problem of electronic structure
+Higham's identity
 
 \subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
 
@@ -79,8 +94,10 @@ Others ...
 
 \section{SpAMM Stabilization of the Newton Shulz Iteration}
 
+\subsection{\bf  SpAMM Leftovers are Deterministic}
 
-SpAMM Stabilized, 
+\subsection{\bf  Stabilization of the Inverse Square Root Iteration}
+
 
 
 
@@ -89,20 +106,35 @@ SpAMM Stabilized,
 \end{equation}
 
 
-
 \begin{eqnarray}
-\widetilde{\mat{x}} &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
-                    &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right] \\[0.1cm]
-                    &=& \mat{x} + \mat{z} \cdot \mat{\delta}^{[sz]} + \mat{\delta}^{z[sz]} 
+\widetilde{\mat{x}}_\text{n} &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
+                    &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{s,z}_\tau  \right] \\[0.1cm]
+                    &=& \mat{x}_\text{n} + \mat{z} \cdot \mat{\delta}^{s,z}_\tau + \mat{\delta}^{z,\delta^{s,z}}_\tau 
  \end{eqnarray}
 
 
 
 
 \begin{eqnarray}
-\widetilde{\mat{x}}^\dagger &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \matT{z}  \right] \\[0.1cm]
+\widetilde{\mat{x}}^\dagger_\text{n} &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \matT{z}  \right] \\[0.1cm]
                     &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \matT{z} + \mat{\delta}^{[sz^\dagger]}  \right] \\[0.1cm]
-                    &=& \matT{x} + \matT{z} \cdot \mat{\delta}^{[sz^\dagger]} + \mat{\delta}^{z^\dagger[sz^\dagger]} 
+                    &=& \matT{x}_\text{n} + \matT{z} \cdot \mat{\delta}^{s,z^\dagger}_\tau + \mat{\delta}^{z^\dagger ,\delta^{s,z^\dagger}}_\tau 
+ \end{eqnarray}
+
+
+%\begin{eqnarray}
+%\bm{\large \epsilon}^{\text{n}}_\perp \left(\bm{z}, \bm{s}, \tau \right) &=& test \\
+%
+%                              &=& \left[ \bm{x}+\bm{z}\cdot \bm{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, ,  \right. \\[0.1cm] 
+%                                         && \qquad \left.  \bm{x}^\dagger +\bm{z}\cdot \bm{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2)   \right]
+%\end{eqnarray}
+
+\begin{eqnarray}
+\mat{\epsilon}^{\text{n}}_\perp \left(  \mat{z}, \mat{s}, \tau  \right)  &=& \left[ \tilde{\mat{x}}_\text{n},\tilde{\mat{x}}^\dagger_\text{n}  \right] \\
+&=&\left[ \mat{x}+\mat{z}\cdot \mat{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\ 
+             && \qquad \left.  \mat{x}^\dagger +\mat{z}^\dagger \cdot \mat{\delta}^{s,z^\dagger}_{\tau} + \mathcal{O}(\tau^2)   \right] \nonumber \\[0.2cm] 
+                    &=& \left[ \mat{x}_\text{n}, \matT{x}_\text{n} \right] +  \left[ \mat{x}_\text{n}, \mat{z}^\dagger \cdot \mat{\delta}^{s,z^\dagger}_{\tau} \right] \\
+                    && \qquad + \left[  \mat{z}\cdot \mat{\delta}^{s,z}_{\tau} , \matT{x}_\text{n} \right] \, + \, \mathcal{O}(\tau^2)
  \end{eqnarray}
 
 \pagebreak
@@ -119,23 +151,44 @@ SpAMM Stabilized,
 
 
 \begin{eqnarray}
-\widetilde{\mat{x}}^\dagger_{\text{stab}} &=& \left\{ \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \right\}^\dagger \\[0.1cm]
-                 &=& \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right]^\dagger  {\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
-                 &=& \left[ \matT{z} \cdot  \mat{s} + \mat{\delta}^{[z^\dagger s]}  \right]{\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
-                 &=&  \mat{x} + \mat{\delta}^{[ z^\dagger s ]} \cdot  \mat{z}  +  \mat{\delta}^{[z^\dagger s]z} \\[0.1cm]
-                 &=&  \mat{x} + \left( \matT{z} \cdot \mat{\delta}^{[ s z ]}  \right)^\dagger  +  \mat{\delta}^{[z^\dagger s]z}
+\widetilde{\mat{x}}_{\text{s}} &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
+                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right] \\[0.1cm]
+                    &=& \mat{x} + \left(  \matT{z} \cdot \mat{\delta}^{[sz]} \right)  +  \mat{\delta}^{z^\dagger[sz]}  
+%+ \mathcal{O}( \tau^2  ) 
 \end{eqnarray}
 
 
+\begin{eqnarray}
+\widetilde{\mat{x}}^\dagger_{\text{s}} &=& \left\{ \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \right\}^\dagger \\[0.1cm]
+                 &=& \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right]^\dagger  {\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
+                 &=& \left[ \matT{z} \cdot  \mat{s} + \mat{\delta}^{[z^\dagger s]}  \right]{\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
+                 &=&  \mat{x}_\text{s} + \mat{\delta}^{[ z^\dagger s ]} \cdot  \mat{z}  +  \mat{\delta}^{[z^\dagger s]z} \\[0.1cm]
+                 &=&  \mat{x}_\text{s} + \left( \matT{z} \cdot \mat{\delta}^{[ s z ]}  \right)^\dagger  +  \mat{\delta}^{[z^\dagger s]z}
+\end{eqnarray}
 
+\begin{eqnarray}
+\mat{\epsilon}^{\text{s}}_\perp \left(  \mat{z}, \mat{s}, \tau  \right)
+                    &=& \left[ \mat{x}_\text{s} + \mat{z}\cdot \mat{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\[0.1cm] 
+             && \qquad \left.  \mat{x}^\dagger_s +\mat{z}^\dagger \cdot \bm{\delta}^{s,z^\dagger}_{\tau} + \mathcal{O}(\tau^2)   \right]
+ \end{eqnarray}
 
-
-
+\begin{eqnarray}
+\mat{\epsilon}^{\text{s}}_\perp \left(  \mat{z}, \mat{s}, \tau  \right)  &=& \left[ \tilde{\mat{x}}_\text{s},\tilde{\mat{x}}^\dagger_\text{s}  \right] \\
+&=&\left[ \mat{x}+\matT{z}\cdot \mat{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\ 
+             && \qquad \left.  \mat{x}^\dagger + \left( \mat{z}^\dagger \cdot \mat{\delta}^{s,z}_{\tau} \right)^\dagger + \mathcal{O}(\tau^2)   \right] \nonumber \\[0.2cm] 
+                    &=& \left[ \mat{x}_\text{s}, \matT{x}_\text{s} \right] +  \left[ \mat{x}_\text{s}, 
+\left( \mat{z}^\dagger \cdot \mat{\delta}^{s,z}_{\tau} \right)^\dagger \right] \\
+                    && \qquad + \left[  \matT{z}\cdot \mat{\delta}^{s,z}_{\tau} , \matT{x}_\text{s} \right] \, + \, \mathcal{O}(\tau^2)
+ \end{eqnarray}
 
 
 \section{Stabilization of the Accelerated Map}
 
 
+\section{Conclusion}
+
+\paragraph{potential for data oriented  mathematics}
+%%eg vs row-col picture.  Example of exact exchange w/DBSR 
 
 
 
