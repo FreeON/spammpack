@@ -29,7 +29,7 @@
 
 \newcommand{\mat}[1]{\boldsymbol{#1}}
 \newcommand{\matT}[1]{\boldsymbol{#1}^\dagger}
-\newcommand{\ot}[1]{ {\scriptstyle \otimes}_{ \tau } }
+\newcommand{\ot}{ {\scriptstyle \otimes}_{ \tau } }
 
 
 
@@ -99,11 +99,59 @@ Others ...
 \subsection{\bf  Stabilization of the Inverse Square Root Iteration}
 
 
+\begin{equation}
+\boldmath{\large \epsilon}_\perp\left(\mat{x}\right) = 
+\frac{ \lVert \left[ \mat{s}, \mat{x} \right] \rVert  } { \lVert \mat{s}\rVert \lVert \mat{x} \rVert }
+\end{equation}
+
+\begin{equation}
+\mat{z}_{k+1}  \leftarrow \mat{z}_k  \;  \cdot \; {m\!} \left( \mat{x}_k \right) \qquad
+\end{equation}
+
+\begin{equation}
+\mat{x}_{k+1} \leftarrow \mat{z}_{k+1} \; \cdot \; {m \!} \left( \mat{x} \right) \; \cdot \; \mat{z}_{k+1} \qquad
+\end{equation}
 
 
 \begin{equation}
-\boldmath{\large \epsilon}_\perp = \left[ \tilde{\bm{x}},\tilde{\bm{x}}^\dagger  \right]
+\widetilde {\mat{z}}_{k+1}  \leftarrow \mat{z}_{k}  \;  \ot \; {m\!} \left( \mat{x}_k \right) \qquad
 \end{equation}
+
+
+\begin{equation}
+\widetilde {\mat{z}}_k = {\mat{z}}_k + \mat{\delta}^\tau_k \qquad
+\end{equation}
+
+
+\begin{equation}
+\lVert \mat{\delta}^\tau_k  \rVert \sim \tau \lVert \mat{z}_k \rVert \lVert {m}\left(\mat{x}_k\right) \rVert \qquad
+\end{equation}
+
+
+\begin{equation}
+\widetilde{\mat{x}}_{k+1} \leftarrow \widetilde{\mat{z}}_{k+1} \; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \widetilde{\mat{z}}_{k+1} \qquad
+\end{equation}
+
+\begin{equation}
+\widetilde {\mat{x}}_k = {\mat{x}}_k + \mat{\epsilon}^\tau_k \qquad
+\end{equation}
+
+\begin{equation}
+\widetilde{\mat{x}}_{k+1} \leftarrow \left( \mat{z}_{k+1} +\mat{\delta}_{k} \right) 
+\; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \left( \mat{z}_{k+1} + \mat{\delta}_k \right) \qquad
+\end{equation}
+
+
+\begin{equation}
+\widetilde{\mat{x}}^\text{stab}_{k+1} \leftarrow \left( \mat{z}^\dagger_{k+1} +\mat{\delta}\dagger_{k} \right) 
+\; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \left( \mat{z}_{k+1} + \mat{\delta}_k \right) \qquad
+\end{equation}
+
+
+
+\pagebreak
+
+
 
 
 \begin{eqnarray}
@@ -111,8 +159,6 @@ Others ...
                     &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{s,z}_\tau  \right] \\[0.1cm]
                     &=& \mat{x}_\text{n} + \mat{z} \cdot \mat{\delta}^{s,z}_\tau + \mat{\delta}^{z,\delta^{s,z}}_\tau 
  \end{eqnarray}
-
-
 
 
 \begin{eqnarray}

@@ -36,8 +36,8 @@ contains
   SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, t, tau, first, second, kount)
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: s
-    TYPE(SpAMM_tree_2d_symm) , POINTER :: x, z, y, t
-!    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(INOUT) :: x, z, t
+    TYPE(SpAMM_tree_2d_symm) , POINTER :: x, z, y, t, delta_zx
+!    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(INOUT) :: xx, z, t
     REAL(SpAMM_KIND),                   INTENT(IN)    :: Tau
 !    LOGICAL, INTENT(IN)                              :: first
     LOGICAL                                           :: first,second
@@ -121,29 +121,29 @@ contains
 !!$       xd=SpAMM_half*(xd+TRANSPOSE(xd))
 !!$       x => SpAMM_convert_dense_to_tree_2d_symm( xd, in_O = x )
 !!$       !=====================================================================
-
-!!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
-
-
 !!$       call dsyevd("V", "U", N, Xd, N, eval, work, LWORK, iwork, LIWORK, info)
 !!$       sc=spammsand_scaling_invsqrt(eval(1))
 !!$       WRITE(*,*)' eval = ',eval(1),eval(n),' sc = ',sc
-!!$
-!!       sc=1d0
-!!$
+
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
 !       if(i<2)then
-          tau_xtra=tau*1d-8
+!          tau_xtra=tau*1d-8
 !       else
 !          tau_xtra=tau
 !       endif
 
        ! |Z_n+1> =  <Z_n| X_n>  
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau_xtra , nt_O=.TRUE., in_O = t )
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau , nt_O=.TRUE., in_O = t )
        z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
        ! update 
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau_xtra )
+
+!       delta_zx => SpAMMsand_zee_dot_x_error(z,x,tau)
+
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau )
+
+!       z_twist=SpAMMsand_Basis_Compare(delta_zx,s)
+!       WRITE(*,*)' z twist = ',z_twist
 
        IF(.nOt.First)tHeN
 
@@ -155,33 +155,51 @@ contains
 
        ENDIF
 
+
+
        IF(first)then
           ! <X_n> = <Z_n|S|Z_n>
-          if(i>2)THEN !second)then
-             tau_xtra=tau *1d-8  ! xtra stabilization on first multiply 
-          else
+!          if(i>2)THEN !second)then
+!             tau_xtra=tau *1d-8  ! xtra stabilization on first multiply 
+!          else
              tau_xtra=tau       
-          endif
+!          endif
+
+!!$          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, delta_zx, tau_xtra  , NT_O=.TRUE. , in_O = t )
+!!$          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.TRUE. , in_O = x )
+!!$          x_naiv_twist=SpAMMsand_Basis_Compare(x,s)
+!!$
+!!$          WRITE(*,*)' z.s.dzx = ',x_naiv_twist
+!!$
+!!$          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z, tau_xtra  , NT_O=.TRUE. , in_O = t )
+!!$          x => SpAMM_tree_2d_symm_times_tree_2d_symm( delta_zx, t,  tau  , NT_O=.FALSE. , in_O = x )
+!!$          x_naiv_twist=SpAMMsand_Basis_Compare(x,s)
+!!$
+!!$          WRITE(*,*)' dzT.s.z = ',x_naiv_twist
+
 
           t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z, tau_xtra  , NT_O=.TRUE. , in_O = t )
-          sz_work=t%frill%flops/dble(t%frill%ndimn(1))**3          
-          sz_twist=SpAMMsand_Basis_Compare(t,s)
+!          sz_twist=SpAMMsand_Basis_Compare(t,s)
           
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.TRUE. , in_O = x )
           x_naiv_twist=SpAMMsand_Basis_Compare(x,s)
-
+          
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.FALSE. , in_O = x )
           x_stab_twist=SpAMMsand_Basis_Compare(x,s)
 
-!!$          x => SpAMMsand_dense_naiv(z,s, in_o = x)
-!!$          x_naiv_xact=SpAMMsand_Basis_Compare(x,s)
-!!$
-!!$          x => SpAMMsand_dense_stab(z,s, in_o = x)
-!!$          x_stab_xact=SpAMMsand_Basis_Compare(x,s)
-!!$
+
+ !         x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.FALSE. , in_O = x )
+ !         x_stab_twist=SpAMMsand_Basis_Compare(x,s)
+
+          x => SpAMMsand_dense_naiv(z,s, in_o = x)
+          x_naiv_xact=SpAMMsand_Basis_Compare(x,s)
+
+          x => SpAMMsand_dense_stab(z,s, in_o = x)
+          x_stab_xact=SpAMMsand_Basis_Compare(x,s)
 
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
 
+          WRITE(*, *)x_naiv_xact,x_stab_xact,sz_twist,x_naiv_twist,x_stab_twist
           WRITE(*,55)x_naiv_xact,x_stab_xact,sz_twist,x_naiv_twist,x_stab_twist
 
 55        FORMAT(' x_d_naiv = ',E12.6,' x_d_stab = ',E12.6,' sz = ',E12.6,' x_naiv_twist = ',E12.6,' x_stab_twist = ',E12.6)
@@ -199,6 +217,33 @@ contains
     IF(.not.first)call SpAMM_destruct_tree_2d_symm_recur (y)
    
   END SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot
+
+
+
+  FUNCTION SpAMMsand_zee_dot_x_error( z, x, tau, in_o ) RESULT(d)
+
+    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: z, x
+    TYPE(SpAMM_tree_2d_symm) , POINTER, OPTIONAL   :: in_o
+    TYPE(SpAMM_tree_2d_symm) , POINTER             :: d
+    REAL(spamm_kind) :: tau 
+              
+    real(spamm_kind), dimension(1:z%frill%ndimn(1),1:z%frill%ndimn(2)) :: x_d, z_d, d_d
+    
+    CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_d )
+    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
+
+    d => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau , nt_O=.TRUE., in_O = in_o )
+
+    CALL SpAMM_convert_tree_2d_symm_to_dense( d, d_d )
+
+    d_d = d_d - MATMUL( z_d , x_d )
+
+!    d_d = 0.5d0*(d_d+TRANSPOSE(d_d))
+
+    d => SpAMM_convert_dense_to_tree_2d_symm( d_d, in_o = d )
+
+  END FUNCTION SpAMMsand_zee_dot_x_error
+
 
   FUNCTION SpAMMsand_dense_naiv(z,s, in_o) RESULT(d)
 
@@ -366,7 +411,7 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-3                                       ! starting accuracy
+  logtau_strt=-1                                       ! starting accuracy
   logtau_stop=-9                                        ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
