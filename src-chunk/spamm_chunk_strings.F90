@@ -40,6 +40,7 @@ module spamm_chunk_strings
     module procedure double_array_to_string
     module procedure single_to_string
     module procedure double_to_string
+    module procedure c_ptr_to_string
   end interface to_string
 
 contains
@@ -49,15 +50,15 @@ contains
   !! @param i The integer
   !!
   !! @return The string representation.
-  function int_to_string (i) result(str_i)
+  function int_to_string (i) result (str_i)
 
     integer, intent(in) :: i
 
-    character(len = 100) :: temp
+    character(len=100) :: temp
 #ifdef HAVE_DEFERRED_STRING_LENGTH
-    character(len = :), allocatable :: str_i
+    character(len=:), allocatable :: str_i
 #else
-    character(len = 100) :: str_i
+    character(len=100) :: str_i
 #endif
 
     write(temp, *) i
@@ -70,14 +71,14 @@ contains
   !! @param x The real
   !!
   !! @return The string representation.
-  function single_to_string (x) result(str_x)
+  function single_to_string (x) result (str_x)
 
-    real(kind(0e0)), intent(in) :: x
-    character(len = 100) :: temp
+    real, intent(in) :: x
+    character(len=100) :: temp
 #ifdef HAVE_DEFERRED_STRING_LENGTH
-    character(len = :), allocatable :: str_x
+    character(len=:), allocatable :: str_x
 #else
-    character(len = 100), allocatable :: str_x
+    character(len=100), allocatable :: str_x
 #endif
 
     write(temp, "(ES16.8E3)") x
@@ -90,15 +91,15 @@ contains
   !! @param x The real array.
   !!
   !! @return The string representation.
-  function double_array_to_string (x) result(str_x)
+  function double_array_to_string (x) result (str_x)
 
-    real(kind(0d0)), intent(in) :: x(:)
-    character(len = 1000) :: temp
-    character(len = 100) :: format_string
+    double precision, intent(in) :: x(:)
+    character(len=1000) :: temp
+    character(len=100) :: format_string
 #ifdef HAVE_DEFERRED_STRING_LENGTH
-    character(len = :), allocatable :: str_x
+    character(len=:), allocatable :: str_x
 #else
-    character(len = 100), allocatable :: str_x
+    character(len=100), allocatable :: str_x
 #endif
     integer :: i
 
@@ -113,19 +114,31 @@ contains
   !! @param x The real
   !!
   !! @return The string representation.
-  function double_to_string (x) result(str_x)
+  function double_to_string (x) result (str_x)
 
-    real(kind(0d0)), intent(in) :: x
-    character(len = 100) :: temp
+    double precision, intent(in) :: x
+    character(len=100) :: temp
 #ifdef HAVE_DEFERRED_STRING_LENGTH
-    character(len = :), allocatable :: str_x
+    character(len=:), allocatable :: str_x
 #else
-    character(len = 100), allocatable :: str_x
+    character(len=100), allocatable :: str_x
 #endif
 
     write(temp, "(ES16.8E3)") x
     str_x = trim(adjustl(temp))
 
   end function double_to_string
+
+  function c_ptr_to_string (ptr) result (string)
+
+    use, intrinsic :: iso_C_binding
+
+    type(c_ptr), intent(in) :: ptr
+    character(len=100) :: string
+
+    write(string, "(Z32)") ptr
+    write(string, "(A)") "0x"//trim(adjustl(string))
+
+  end function c_ptr_to_string
 
 end module spamm_chunk_strings

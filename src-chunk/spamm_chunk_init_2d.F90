@@ -32,7 +32,7 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_chunk_init_2d
 
-  use spamm_chunk_tree_2d
+  use spamm_chunk_type_2d
 
   implicit none
 
@@ -43,7 +43,7 @@ contains
   !! @param A The chunk.
   subroutine init_2d_random (A)
 
-    type(chunk_2d), pointer, intent(inout) :: A
+    type(chunk_2d_t), pointer, intent(inout) :: A
     integer :: i, j
 
     if(.not. associated(A)) return
@@ -53,8 +53,6 @@ contains
           call random_number(A%data(i, j)%data)
        enddo
     enddo
-
-    call chunk_2d_decorate(A)
 
   end subroutine init_2d_random
 

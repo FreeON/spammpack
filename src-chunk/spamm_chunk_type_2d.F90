@@ -30,33 +30,33 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spamm_chunk_tree_2d
+module spamm_chunk_type_2d
 
   use spamm_chunk_config
 
   implicit none
 
   !> The tree-node type.
-  type :: chunk_node_2d
+  type :: chunk_node_2d_t
 
      !> The number of non-zero elements.
-     real(kind(0d0)) :: number_nonzeros = 0
+     double precision :: number_nonzeros = 0
 
      !> The square of the Frobenius norm.
-     real(kind(0d0)) :: norm2 = 0
+     double precision :: norm2 = 0
 
-  end type chunk_node_2d
+  end type chunk_node_2d_t
 
   !> The leaf-node matrix type.
-  type :: chunk_data_2d
+  type :: chunk_data_2d_t
 
      !> The matrix.
-     real(kind(0d0)) :: data(SPAMM_CHUNK_BLOCK_SIZE, SPAMM_CHUNK_BLOCK_SIZE) = 0
+     double precision :: data(SPAMM_CHUNK_BLOCK_SIZE, SPAMM_CHUNK_BLOCK_SIZE) = 0
 
-  end type chunk_data_2d
+  end type chunk_data_2d_t
 
   !> The 2D chunk type.
-  type :: chunk_2d
+  type :: chunk_2d_t
 
      !> Lower index bound.
      integer :: lower(0:1) = [ 1, 1 ]
@@ -65,12 +65,12 @@ module spamm_chunk_tree_2d
      integer :: upper(0:1) = [ SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE ]
 
      !> The tree nodes.
-     type(chunk_node_2d) :: node(SPAMM_CHUNK_NODES)
+     type(chunk_node_2d_t) :: node(SPAMM_CHUNK_NODES)
 
      !> The matrices at the leaves.
-     type(chunk_data_2d) :: data(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS)
+     type(chunk_data_2d_t) :: data(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS)
 
-  end type chunk_2d
+  end type chunk_2d_t
 
 contains
 
@@ -83,20 +83,53 @@ contains
     use spamm_chunk_strings
 
     character(len=1000) :: string
-    type(chunk_2d), intent(in) :: A
+    type(chunk_2d_t), intent(in) :: A
 
     string = "chunk:"
-    write(string, "(A)") trim(string)//" N_chunk: "//trim(to_string(SPAMM_CHUNK_SIZE))
-    write(string, "(A)") trim(string)//", [["//trim(to_string(A%lower(0)))//", "//trim(to_string(A%upper(0)))//"]"
-    write(string, "(A)") trim(string)//", ["//trim(to_string(A%lower(1)))//", "//trim(to_string(A%upper(1)))//"]]"
-    write(string, "(A)") trim(string)//"; N_block: "//trim(to_string(SPAMM_CHUNK_BLOCK_SIZE))
+    write(string, "(A)") trim(string)//" N_c: "//trim(to_string(SPAMM_CHUNK_SIZE))
+    write(string, "(A)") trim(string)//", box: [["//trim(to_string(A%lower(0)))// &
+         ", "//trim(to_string(A%upper(0)))//"]"
+    write(string, "(A)") trim(string)//", ["//trim(to_string(A%lower(1)))// &
+         ", "//trim(to_string(A%upper(1)))//"]]"
+    write(string, "(A)") trim(string)//"; N_b: "//trim(to_string(SPAMM_CHUNK_BLOCK_SIZE))
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%node)))//" nodes"
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%data, 1)**2))//" leaves"
     write(string, "(A)") trim(string)//"; total: "//trim(to_string(storage_size(A)/8))//" B"
     write(string, "(A)") trim(string)//"; node: "//trim(to_string(storage_size(A%node)/8))//" B"
-    write(string, "(A)") trim(string)//"; matrix: "//trim(to_string(storage_size(A%data)/8))//" B"
+    write(string, "(A)") trim(string)//"; basic: "// &
+         trim(to_string(storage_size(A%data)/8))//" B"
 
   end function chunk_2d_to_string
+
+  !> Write memory layout of chunk to string.
+  !!
+  !! @param A The chunk.
+  !! @return The string representation.
+  function chunk_2d_memory_layout (A) result (string)
+
+    use spamm_chunk_strings
+    use, intrinsic :: iso_C_binding
+
+    character(len=1000) :: string
+    type(chunk_2d_t), pointer, intent(in) :: A
+
+    write(string, "(A)") "chunk layout:"//C_NEW_LINE// &
+         trim(to_string(c_loc(A)))//C_NEW_LINE// &
+         trim(to_string(c_loc(A%lower(1))))//": lower(1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%upper(1))))//": upper(1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%node(1))))//": node(1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%node(SPAMM_CHUNK_NODES))))// &
+         ": node("//trim(to_string(SPAMM_CHUNK_NODES))//")"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(1, 1))))//": data(1, 1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(2, 1))))//": data(2, 1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(SPAMM_CHUNK_BLOCKS, 1))))// &
+         ": data("//trim(to_string(SPAMM_CHUNK_BLOCKS))//", 1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(1, 2))))//": data(1, 2)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS))))// &
+         ": data("//trim(to_string(SPAMM_CHUNK_BLOCKS))//", "// &
+         trim(to_string(SPAMM_CHUNK_BLOCKS))//")"
+
+  end function chunk_2d_memory_layout
 
   !> Convert a chunk to a dense matrix.
   !!
@@ -104,8 +137,8 @@ contains
   !! @return The dense matrix.
   function chunk_2d_to_dense (A) result (B)
 
-    real(kind(0d0)) :: B(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE)
-    type(chunk_2d), pointer, intent(in) :: A
+    double precision :: B(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE)
+    type(chunk_2d_t), pointer, intent(in) :: A
 
     integer :: i, j, k, l
 
@@ -127,9 +160,9 @@ contains
   !! @return The matrix element.
   function chunk_2d_get (i, j, A) result(Aij)
 
-    real(kind(0d0)) :: Aij
+    double precision :: Aij
     integer, intent(in) :: i, j
-    type(chunk_2d), intent(in) :: A
+    type(chunk_2d_t), intent(in) :: A
 
     integer :: i_leaf(0:1), i_block(0:1)
 
@@ -148,14 +181,4 @@ contains
 
   end function chunk_2d_get
 
-  !> (Re-)decorate a chunk. This step involves computing the norms of
-  !> all the tree nodes.
-  !!
-  !! @param A The chunk.
-  subroutine chunk_2d_decorate (A)
-
-    class(chunk_2d), intent(inout) :: A
-
-  end subroutine chunk_2d_decorate
-
-end module spamm_chunk_tree_2d
+end module spamm_chunk_type_2d

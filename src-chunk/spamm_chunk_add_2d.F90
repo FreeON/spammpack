@@ -32,7 +32,7 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 module spamm_chunk_add_2d
 
-  use spamm_chunk_tree_2d
+  use spamm_chunk_type_2d
 
   implicit none
 
@@ -45,8 +45,8 @@ contains
   !! @return The result.
   function chunk_add_2d_2d (A, B) result (C)
 
-    type(chunk_2d), pointer :: C
-    type(chunk_2d), pointer, intent(in) :: A, B
+    type(chunk_2d_t), pointer :: C
+    type(chunk_2d_t), pointer, intent(in) :: A, B
 
   end function chunk_add_2d_2d
 

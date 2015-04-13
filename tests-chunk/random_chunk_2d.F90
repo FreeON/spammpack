@@ -2,8 +2,8 @@ program test
 
   use spamm_chunk
 
-  type(chunk_2d), pointer :: A
-  real(kind(0d0)) :: B(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE)
+  type(chunk_2d_t), pointer :: A
+  double precision :: B(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE)
 
   allocate(A)
 

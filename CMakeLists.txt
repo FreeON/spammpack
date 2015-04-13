@@ -149,7 +149,7 @@ else()
   message( STATUS "Can not build documentation" )
 endif()
 
-message( STATUS "CMake version ${CMAKE_VERSION}" )
+# Fortran support was added in 3.1.0.
 if( ${CMAKE_VERSION} VERSION_LESS 3.1 )
   include( ${CMAKE_SOURCE_DIR}/cmake-scripts/FindOpenMP.cmake )
 else()
@@ -242,7 +242,7 @@ else()
 endif()
 
 set( SPAMM_CHUNK_BLOCK_SIZE 4
-  CACHE STRING "The matrix size at the leaves"
+  CACHE STRING "The matrix size of basic submatrix blocks at the leaves"
   )
 
 set( SPAMM_CHUNK_SIZE 32
@@ -291,9 +291,10 @@ endif()
 #add_subdirectory( tools )
 
 add_subdirectory( src-chunk )
+add_subdirectory( tests-chunk )
+
 add_subdirectory( src )
 add_subdirectory( tests )
-add_subdirectory( tests-chunk )
 add_subdirectory( utilities )
 
 set( CPACK_PACKAGE_NAME "spammpack" )

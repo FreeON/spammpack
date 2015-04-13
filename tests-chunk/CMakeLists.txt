@@ -36,5 +36,5 @@ set( TEST_SOURCES
 foreach( TEST ${TEST_SOURCES} )
   add_executable( ${TEST} ${TEST}.F90 )
   target_link_libraries( ${TEST} spammchunk )
-  add_test( ${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST} )
+  add_test( chunk:${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST} )
 endforeach()

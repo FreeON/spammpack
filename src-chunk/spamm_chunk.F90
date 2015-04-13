@@ -35,6 +35,6 @@ module spamm_chunk
   use spamm_chunk_add_2d
   use spamm_chunk_init_2d
   use spamm_chunk_strings
-  use spamm_chunk_tree_2d
+  use spamm_chunk_type_2d
 
 end module spamm_chunk
