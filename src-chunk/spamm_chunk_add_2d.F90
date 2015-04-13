@@ -30,9 +30,9 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spammchunk_add_2d
+module spamm_chunk_add_2d
 
-  use spammchunk_tree_2d
+  use spamm_chunk_tree_2d
 
   implicit none
 
@@ -50,4 +50,4 @@ contains
 
   end function chunk_add_2d_2d
 
-end module spammchunk_add_2d
+end module spamm_chunk_add_2d

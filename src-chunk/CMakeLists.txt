@@ -27,10 +27,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 add_library( spammchunk
-  ${CMAKE_CURRENT_BINARY_DIR}/spammchunk_globals.F90
-  spammchunk.F90
-  spammchunk_add_2d.F90
-  spammchunk_init_2d.F90
-  spammchunk_strings.F90
-  spammchunk_tree_2d.F90
+  ${CMAKE_CURRENT_BINARY_DIR}/spamm_chunk_config.F90
+  spamm_chunk.F90
+  spamm_chunk_add_2d.F90
+  spamm_chunk_init_2d.F90
+  spamm_chunk_strings.F90
+  spamm_chunk_tree_2d.F90
   )

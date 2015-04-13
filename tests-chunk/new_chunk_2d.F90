@@ -1,6 +1,6 @@
 program test
 
-  use spammchunk
+  use spamm_chunk
 
   implicit none
 

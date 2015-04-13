@@ -1,6 +1,6 @@
 program test
 
-  use spammchunk
+  use spamm_chunk
 
   type(chunk_2d), pointer :: A
   real(kind(0d0)) :: B(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE)

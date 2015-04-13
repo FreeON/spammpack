@@ -30,7 +30,7 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spammchunk_strings
+module spamm_chunk_strings
 
   implicit none
 
@@ -128,4 +128,4 @@ contains
 
   end function double_to_string
 
-end module spammchunk_strings
+end module spamm_chunk_strings

@@ -30,9 +30,9 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spammchunk_init_2d
+module spamm_chunk_init_2d
 
-  use spammchunk_tree_2d
+  use spamm_chunk_tree_2d
 
   implicit none
 
@@ -48,8 +48,8 @@ contains
 
     if(.not. associated(A)) return
 
-    do i = 1, SPAMM_BLOCKS
-       do j = 1, SPAMM_BLOCKS
+    do i = 1, SPAMM_CHUNK_BLOCKS
+       do j = 1, SPAMM_CHUNK_BLOCKS
           call random_number(A%data(i, j)%data)
        enddo
     enddo
@@ -58,4 +58,4 @@ contains
 
   end subroutine init_2d_random
 
-end module spammchunk_init_2d
+end module spamm_chunk_init_2d

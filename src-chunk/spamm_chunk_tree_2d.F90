@@ -30,9 +30,9 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spammchunk_tree_2d
+module spamm_chunk_tree_2d
 
-  use spammchunk_globals
+  use spamm_chunk_config
 
   implicit none
 
@@ -51,7 +51,7 @@ module spammchunk_tree_2d
   type :: chunk_data_2d
 
      !> The matrix.
-     real(kind(0d0)) :: data(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE) = 0
+     real(kind(0d0)) :: data(SPAMM_CHUNK_BLOCK_SIZE, SPAMM_CHUNK_BLOCK_SIZE) = 0
 
   end type chunk_data_2d
 
@@ -68,7 +68,7 @@ module spammchunk_tree_2d
      type(chunk_node_2d) :: node(SPAMM_CHUNK_NODES)
 
      !> The matrices at the leaves.
-     type(chunk_data_2d) :: data(SPAMM_BLOCKS, SPAMM_BLOCKS)
+     type(chunk_data_2d) :: data(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS)
 
   end type chunk_2d
 
@@ -80,7 +80,7 @@ contains
   !! @return The string representation.
   function chunk_2d_to_string (A) result (string)
 
-    use spammchunk_strings
+    use spamm_chunk_strings
 
     character(len=1000) :: string
     type(chunk_2d), intent(in) :: A
@@ -89,7 +89,7 @@ contains
     write(string, "(A)") trim(string)//" N_chunk: "//trim(to_string(SPAMM_CHUNK_SIZE))
     write(string, "(A)") trim(string)//", [["//trim(to_string(A%lower(0)))//", "//trim(to_string(A%upper(0)))//"]"
     write(string, "(A)") trim(string)//", ["//trim(to_string(A%lower(1)))//", "//trim(to_string(A%upper(1)))//"]]"
-    write(string, "(A)") trim(string)//"; N_block: "//trim(to_string(SPAMM_BLOCK_SIZE))
+    write(string, "(A)") trim(string)//"; N_block: "//trim(to_string(SPAMM_CHUNK_BLOCK_SIZE))
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%node)))//" nodes"
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%data, 1)**2))//" leaves"
     write(string, "(A)") trim(string)//"; total: "//trim(to_string(storage_size(A)/8))//" B"
@@ -109,11 +109,11 @@ contains
 
     integer :: i, j, k, l
 
-    do i = 1, SPAMM_BLOCKS
-       do j = 1, SPAMM_BLOCKS
-          k = (i-1)*SPAMM_BLOCK_SIZE+1
-          l = (j-1)*SPAMM_BLOCK_SIZE+1
-          B(k:k+SPAMM_BLOCK_SIZE-1, l:l+SPAMM_BLOCK_SIZE-1) = A%data(i, j)%data
+    do i = 1, SPAMM_CHUNK_BLOCKS
+       do j = 1, SPAMM_CHUNK_BLOCKS
+          k = (i-1)*SPAMM_CHUNK_BLOCK_SIZE+1
+          l = (j-1)*SPAMM_CHUNK_BLOCK_SIZE+1
+          B(k:k+SPAMM_CHUNK_BLOCK_SIZE-1, l:l+SPAMM_CHUNK_BLOCK_SIZE-1) = A%data(i, j)%data
        enddo
     enddo
 
@@ -138,11 +138,11 @@ contains
     if(i < A%lower(0) .or. i > A%upper(0) .or. &
          j < A%lower(1) .or. j > A%upper(1)) return
 
-    i_leaf(0) = (i-A%lower(0))/SPAMM_BLOCK_SIZE+1
-    i_leaf(1) = (j-A%lower(1))/SPAMM_BLOCK_SIZE+1
+    i_leaf(0) = (i-A%lower(0))/SPAMM_CHUNK_BLOCK_SIZE+1
+    i_leaf(1) = (j-A%lower(1))/SPAMM_CHUNK_BLOCK_SIZE+1
 
-    i_block(0) = mod(i-A%lower(0), SPAMM_BLOCK_SIZE)+1
-    i_block(1) = mod(j-A%lower(1), SPAMM_BLOCK_SIZE)+1
+    i_block(0) = mod(i-A%lower(0), SPAMM_CHUNK_BLOCK_SIZE)+1
+    i_block(1) = mod(j-A%lower(1), SPAMM_CHUNK_BLOCK_SIZE)+1
 
     Aij = A%data(i_leaf(0), i_leaf(1))%data(i_block(0), i_block(1))
 
@@ -158,4 +158,4 @@ contains
 
   end subroutine chunk_2d_decorate
 
-end module spammchunk_tree_2d
+end module spamm_chunk_tree_2d

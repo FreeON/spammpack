@@ -1,9 +1,4 @@
-!> Defines global parameters and variables.
-!!
-!! @todo Move matrix related global parameters or values into appropriate types
-!! and make things much less global.
-!!
-!! @copyright
+!> @copyright
 !!
 !! Copyright (c) 2015, Los Alamos National Laboratory
 !! All rights reserved.
@@ -35,20 +30,11 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
-module spammchunk_globals
+module spamm_chunk
 
-  implicit none
+  use spamm_chunk_add_2d
+  use spamm_chunk_init_2d
+  use spamm_chunk_strings
+  use spamm_chunk_tree_2d
 
-  !> The size of the basic submatrix.
-  integer, parameter :: SPAMM_BLOCK_SIZE = @SPAMM_BLOCK_SIZE@
-
-  !> The size of the chunk submatrix.
-  integer, parameter :: SPAMM_CHUNK_SIZE = @SPAMM_CHUNK_SIZE@
-
-  !> The number of tree nodes in the chunk tree.
-  integer, parameter :: SPAMM_CHUNK_NODES = @SPAMM_CHUNK_NODES@
-
-  !> The number of sub-matrix blocks at the leaf level.
-  integer, parameter :: SPAMM_BLOCKS = @SPAMM_BLOCKS@
-
-end module spammchunk_globals
+end module spamm_chunk
