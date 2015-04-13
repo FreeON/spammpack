@@ -34,72 +34,14 @@ if( NOT CMAKE_Fortran_COMPILER )
   message( FATAL_ERROR "Can not find Fortran compiler" )
 endif()
 
-set( CPACK_PACKAGE_NAME "spammpack" )
-set( CPACK_PACKAGE_VERSION_MAJOR 1 )
-set( CPACK_PACKAGE_VERSION_MINOR 1 )
-set( CPACK_PACKAGE_VERSION_PATCH 0 )
-set( CPACK_PACKAGE_DESCRIPTION_SUMMARY
-  "An implementation of the Sparse Approximate Matrix Multiply (SpAMM) Algorithm"
-  )
-set( CPACK_PACKAGE_CONTACT "www.freeon.org" )
-
-set( CPACK_GENERATOR DEB RPM )
-set( CPACK_SOURCE_GENERATOR TBZ2 )
-
-set( CPACK_RPM_PACKAGE_LICENSE "BSD" )
-set( CPACK_RPM_PACKAGE_URL "http://www.freeon.org" )
-
-set( CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://www.freeon.org/spammpack" )
-
-list( APPEND CPACK_SOURCE_IGNORE_FILES
-  "/${CPACK_PACKAGE_NAME}.*deb$"
-  "/${CPACK_PACKAGE_NAME}.*rpm$"
-  "/${CPACK_PACKAGE_NAME}.*tar.bz2$"
-  "/.*[.]cmake$"
-  "/CMakeCache[.]txt$"
-  "/CMakeFiles/"
-  "/Doxyfile$"
-  "/Makefile$"
-  "/[.]git/"
-  "/_CPack_Packages/"
-  "/html/"
-  "/install_manifest[.]txt"
-  "/latex/"
-  "/lib.*[.]a$"
-  "/lib.*[.]so.*$"
-  "/man/"
-  "[.]mod$"
-  "tests/testmatrix.*$"
-  )
-
-include( CPack )
-
-set( INCLUDE_INSTALL_DIR include )
-set( LIB_INSTALL_DIR lib )
-
-include( CMakePackageConfigHelpers
-  OPTIONAL RESULT_VARIABLE PACKAGE_CONFIG_FOUND )
-if( PACKAGE_CONFIG_FOUND )
-  configure_package_config_file( spammpackConfig.cmake.in spammpackConfig.cmake
-    INSTALL_DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
-    PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
-    )
-  write_basic_package_version_file( spammpackConfigVersion.cmake
-    VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}
-    COMPATIBILITY SameMajorVersion
-    )
-  install( FILES
-    ${CMAKE_BINARY_DIR}/spammpackConfig.cmake
-    ${CMAKE_BINARY_DIR}/spammpackConfigVersion.cmake
-    DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
-    )
-endif()
+enable_testing()
 
 if( NOT CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE Debug )
   message( STATUS "Setting default build type to ${CMAKE_BUILD_TYPE}" )
 endif()
 
+# Set some default compiler flags.
 if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
   set( TEMP_FLAGS
     "-O0 -g -gdwarf-3"
@@ -107,20 +49,17 @@ if( CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" )
     "-ffree-line-length-none"
     "-Wall -Wimplicit-interface -Wuninitialized -Wimplicit-procedure"
     )
-  string( TOUPPER ${CMAKE_BUILD_TYPE} UPPER_BUILD_TYPE )
-  if( UPPER_BUILD_TYPE STREQUAL "DEBUG" )
-    try_compile( HAVE_ADDRESS_SANITIZER
-      ${CMAKE_BINARY_DIR}/CMakeTmp
-      ${CMAKE_SOURCE_DIR}/cmake-tests/address-sanitizer
-      address-sanitizer
-      OUTPUT_VARIABLE ADDRESS_SANITIZER_OUTPUT
-      )
-    if( HAVE_ADDRESS_SANITIZER )
-      message( STATUS "Adding address sanitizer compiler flag" )
-      list( APPEND TEMP_FLAGS "-fsanitize=address" )
-    else()
-      message( STATUS "Address sanitizer not supported" )
-    endif()
+  try_compile( HAVE_ADDRESS_SANITIZER
+    ${CMAKE_BINARY_DIR}/CMakeTmp
+    ${CMAKE_SOURCE_DIR}/cmake-tests/address-sanitizer
+    address-sanitizer
+    OUTPUT_VARIABLE ADDRESS_SANITIZER_OUTPUT
+    )
+  if( HAVE_ADDRESS_SANITIZER )
+    message( STATUS "Adding address sanitizer compiler flag" )
+    list( APPEND TEMP_FLAGS "-fsanitize=address" )
+  else()
+    message( STATUS "Address sanitizer not supported" )
   endif()
   string( REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${TEMP_FLAGS}" )
   set( CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none" )
@@ -143,7 +82,8 @@ try_compile( COMPILE_RESULT_1
   OUTPUT_VARIABLE COMPILE_OUTPUT_1
   )
 if( NOT COMPILE_RESULT_1 )
-  message( FATAL_ERROR "The Fortran compiler does not understand the 'error stop' statement" )
+  message( FATAL_ERROR "The Fortran compiler does not understand the "
+    "'error stop' statement" )
 endif()
 
 try_run( RUN_RESULT_2 COMPILE_RESULT_2
@@ -152,7 +92,8 @@ try_run( RUN_RESULT_2 COMPILE_RESULT_2
   COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT_2
   )
 if( NOT COMPILE_RESULT_2 )
-  message( FATAL_ERROR "The Fortran compiler can not compile deferred length string expressions" )
+  message( FATAL_ERROR "The Fortran compiler can not compile deferred "
+    "length string expressions" )
 endif()
 
 if( NOT RUN_RESULT_2 EQUAL 0 )
@@ -160,7 +101,7 @@ if( NOT RUN_RESULT_2 EQUAL 0 )
     "The Fortran compiler has trouble with deferred length string "
     "assignments, which might render screen output rather ugly. Please "
     "consider using a more recent compiler that fully implements "
-    "this part of the the Fortran 2003 standard (e.g. >=gcc-4.8).")
+    "this part of the the Fortran 2003 standard (e.g. >=gcc-4.8)." )
 else()
   set( HAVE_DEFERRED_STRING_LENGTH TRUE )
 endif()
@@ -208,7 +149,12 @@ else()
   message( STATUS "Can not build documentation" )
 endif()
 
-include( ${CMAKE_SOURCE_DIR}/cmake-scripts/FindOpenMP.cmake )
+message( STATUS "CMake version ${CMAKE_VERSION}" )
+if( ${CMAKE_VERSION} VERSION_LESS 3.1 )
+  include( ${CMAKE_SOURCE_DIR}/cmake-scripts/FindOpenMP.cmake )
+else()
+  include( FindOpenMP )
+endif()
 
 include( FindLAPACK )
 
@@ -341,8 +287,6 @@ if( ETAGS )
     )
 endif()
 
-enable_testing()
-
 #add_subdirectory( src-solvers )
 #add_subdirectory( tools )
 
@@ -351,3 +295,64 @@ add_subdirectory( src )
 add_subdirectory( tests )
 add_subdirectory( tests-chunk )
 add_subdirectory( utilities )
+
+set( CPACK_PACKAGE_NAME "spammpack" )
+set( CPACK_PACKAGE_VERSION_MAJOR 1 )
+set( CPACK_PACKAGE_VERSION_MINOR 1 )
+set( CPACK_PACKAGE_VERSION_PATCH 0 )
+set( CPACK_PACKAGE_DESCRIPTION_SUMMARY
+  "An implementation of the Sparse Approximate Matrix Multiply (SpAMM) Algorithm"
+  )
+set( CPACK_PACKAGE_CONTACT "www.freeon.org" )
+
+set( CPACK_GENERATOR DEB RPM )
+set( CPACK_SOURCE_GENERATOR TBZ2 )
+
+set( CPACK_RPM_PACKAGE_LICENSE "BSD" )
+set( CPACK_RPM_PACKAGE_URL "http://www.freeon.org" )
+
+set( CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://www.freeon.org/spammpack" )
+
+list( APPEND CPACK_SOURCE_IGNORE_FILES
+  "/${CPACK_PACKAGE_NAME}.*deb$"
+  "/${CPACK_PACKAGE_NAME}.*rpm$"
+  "/${CPACK_PACKAGE_NAME}.*tar.bz2$"
+  "/.*[.]cmake$"
+  "/CMakeCache[.]txt$"
+  "/CMakeFiles/"
+  "/Doxyfile$"
+  "/Makefile$"
+  "/[.]git/"
+  "/_CPack_Packages/"
+  "/html/"
+  "/install_manifest[.]txt"
+  "/latex/"
+  "/lib.*[.]a$"
+  "/lib.*[.]so.*$"
+  "/man/"
+  "[.]mod$"
+  "tests/testmatrix.*$"
+  )
+
+include( CPack )
+
+set( INCLUDE_INSTALL_DIR include )
+set( LIB_INSTALL_DIR lib )
+
+include( CMakePackageConfigHelpers
+  OPTIONAL RESULT_VARIABLE PACKAGE_CONFIG_FOUND )
+if( PACKAGE_CONFIG_FOUND )
+  configure_package_config_file( spammpackConfig.cmake.in spammpackConfig.cmake
+    INSTALL_DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
+    PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR
+    )
+  write_basic_package_version_file( spammpackConfigVersion.cmake
+    VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}
+    COMPATIBILITY SameMajorVersion
+    )
+  install( FILES
+    ${CMAKE_BINARY_DIR}/spammpackConfig.cmake
+    ${CMAKE_BINARY_DIR}/spammpackConfigVersion.cmake
+    DESTINATION ${LIB_INSTALL_DIR}/spammpack/cmake
+    )
+endif()
