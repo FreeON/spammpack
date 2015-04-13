@@ -11,6 +11,7 @@ module SpAMMsand_inverse_squareroot
   real(spamm_kind), dimension(:,:), ALLOCATABLE :: &
      i_d,s_d,z_k,z_k1,z_tld_k,z_tld_k1,x_k,x_k1,x_tld_k_naiv, &
      x_tld_k_stab,x_tld_k1,m_x_k1,m_x_tld_k1
+
   REAL(spamm_kind) :: scal_shift,shft_shift, scal_mapp, shft_mapp
   
   integer :: LWORK
@@ -91,9 +92,9 @@ contains
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )
 
-    DO i = 0, 6 !26
+    DO i = 0, 12 !26
 
-       IF(i==4)tau=1d-6
+!       IF(i==4)tau=1d-6
 
        ! accounting
        IF(first.and.i==0)then
@@ -207,10 +208,13 @@ contains
   SUBROUTINE SpAMMsand_Error_Analysis
 
     real(spamm_kind), dimension(:,:), ALLOCATABLE :: &
-         MP, MP_Gateaux, DX,dx_hat, zp_k, fp1, fp2, fp3, fp_naiv, fp_stab, &
-         x_tld_k_naiv,x_tld_k_stab, check,  &
+         MP, MP_Gateaux, DX,dx_hat, zp_k, fp_naiv, fp_stab, &
          x_tld_k_of_xk1_naiv, x_tld_k_of_xk1_stab, &
          xp_tld_k_naiv_gateaux,xp_tld_k_stab_gateaux
+
+!         x_tld_k_naiv,x_tld_k_stab, check,  &
+
+
 
     real(spamm_kind) :: x_tld_k_naiv_compare, x_tld_k_stab_compare, x_tld_k_natv_compare
 
@@ -219,20 +223,14 @@ contains
     ALLOCATE(Mp  (1:N,1:N))
     ALLOCATE(Mp_Gateaux  (1:N,1:N))
     ALLOCATE(zp_k(1:N,1:N))
-    ALLOCATE(fp1 (1:N,1:N))
-    ALLOCATE(fp2 (1:N,1:N))
-    ALLOCATE(fp3 (1:N,1:N))
-    ALLOCATE(check        (1:N,1:N))
     ALLOCATE(fp_naiv      (1:N,1:N))
     ALLOCATE(fp_stab      (1:N,1:N))
-
     ALLOCATE( x_tld_k_of_xk1_naiv (1:N,1:N))
     ALLOCATE( x_tld_k_of_xk1_stab (1:N,1:N))
     ALLOCATE(xp_tld_k_naiv_gateaux (1:N,1:N))
     ALLOCATE(xp_tld_k_stab_gateaux (1:N,1:N))
 
     dx        = x_tld_k1 - x_k1
-
 
     dx_hat    = dx/SQRT(SUM(dx**2))
     mp        = scal_mapp * scal_shift * dx_hat
@@ -244,11 +242,8 @@ contains
     x_tld_k_of_xk1_naiv = MATMUL( MATMUL(           MATMUL(z_tld_k1,m_x_k1) , S_d), MATMUL(z_tld_k1,m_x_k1) )
     x_tld_k_of_xk1_stab = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1,m_x_k1)), S_d), MATMUL(z_tld_k1,m_x_k1) )
 
-!    xp_tld_k_naiv_gateaux = (x_tld_k_naiv-x_tld_k_of_xk1_naiv)/SQRT(SUM(dx**2))
-!    xp_tld_k_naiv_gateaux = (x_tld_k_naiv-x_tld_k_of_xk1_naiv)/SQRT(SUM(dx**2))
-    xp_tld_k_naiv_gateaux = (x_tld_k_naiv)/SQRT(SUM(dx**2))
-
-!    xp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_xk1_stab)/SQRT(SUM(dx**2))
+    xp_tld_k_naiv_gateaux = (x_tld_k_naiv-x_tld_k_of_xk1_naiv)/SQRT(SUM(dx**2))
+    xp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_xk1_stab)/SQRT(SUM(dx**2))
 
     fp_naiv  = MATMUL(     zp_k, MATMUL( s_d,  z_tld_k ) ) + &
                MATMUL(  z_tld_k, MATMUL( s_d,     zp_k ) )
@@ -281,10 +276,6 @@ contains
     deALLOCATE(Mp  )
     deALLOCATE(Mp_Gateaux)
     deALLOCATE(zp_k)
-    deALLOCATE(fp1 )
-    deALLOCATE(fp2 )
-    deALLOCATE(fp3 )
-    deALLOCATE(check    )
     deALLOCATE(fp_naiv  )
     deALLOCATE(fp_stab  )
 
@@ -417,7 +408,7 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-2                                       ! starting accuracy
+  logtau_strt=-4                                       ! starting accuracy
   logtau_stop=-9                                        ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
