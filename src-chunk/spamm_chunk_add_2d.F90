@@ -30,6 +30,8 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
+
+!> Module for adding 2D chunks.
 module spamm_chunk_add_2d
 
   use spamm_chunk_type_2d
@@ -40,6 +42,8 @@ contains
 
   !> Add two 2-d chunks.
   !!
+  !! \f[ C \leftarrow A + B \f]
+  !!
   !! @param A Chunk A.
   !! @param B Chunk B.
   !! @return The result.
@@ -47,6 +51,17 @@ contains
 
     type(chunk_2d_t), pointer :: C
     type(chunk_2d_t), pointer, intent(in) :: A, B
+
+    if(associated(C)) then
+       deallocate(C)
+    endif
+
+    if(.not. associated(A) .and. .not. associated(B)) then
+       return
+    elseif(associated(A) .and. .not. associated(B)) then
+       call chunk_copy_2d(A, C)
+       return
+    endif
 
   end function chunk_add_2d_2d
 

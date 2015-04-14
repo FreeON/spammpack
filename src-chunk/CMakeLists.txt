@@ -26,11 +26,27 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-add_library( spammchunk
+set( SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_chunk_config.F90
   spamm_chunk.F90
   spamm_chunk_add_2d.F90
+  spamm_chunk_copy_2d.F90
   spamm_chunk_init_2d.F90
   spamm_chunk_strings.F90
   spamm_chunk_type_2d.F90
   )
+
+add_library( spammchunk ${SOURCES} )
+
+install( TARGETS spammchunk
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  )
+
+foreach( HEADER ${SOURCES} )
+  get_filename_component( HEADER_FILE ${HEADER} NAME_WE )
+  install( FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/${HEADER_FILE}.mod
+    DESTINATION include
+    )
+endforeach()

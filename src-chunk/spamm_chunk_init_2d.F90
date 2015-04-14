@@ -30,6 +30,8 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
+
+!> Module for 2D chunk initializations.
 module spamm_chunk_init_2d
 
   use spamm_chunk_type_2d

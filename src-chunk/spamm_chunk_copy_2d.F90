@@ -31,13 +31,7 @@
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
 
-!> The main module spamm_chunk.
-module spamm_chunk
+!> Module for deep copy operations.
+module spamm_chunk_copy_2d
 
-  use spamm_chunk_add_2d
-  use spamm_chunk_copy_2d
-  use spamm_chunk_init_2d
-  use spamm_chunk_strings
-  use spamm_chunk_type_2d
-
-end module spamm_chunk
+end module spamm_chunk_copy_2d

@@ -30,6 +30,8 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
+
+!> Module containing string helper functions.
 module spamm_chunk_strings
 
   implicit none
@@ -47,8 +49,7 @@ contains
 
   !> Convert an integer to a string.
   !!
-  !! @param i The integer
-  !!
+  !! @param i The integer.
   !! @return The string representation.
   function int_to_string (i) result (str_i)
 
@@ -89,7 +90,6 @@ contains
   !> Convert an array of double precision reals to a string.
   !!
   !! @param x The real array.
-  !!
   !! @return The string representation.
   function double_array_to_string (x) result (str_x)
 
@@ -111,8 +111,7 @@ contains
 
   !> Convert a double precision real to a string.
   !!
-  !! @param x The real
-  !!
+  !! @param x The real.
   !! @return The string representation.
   function double_to_string (x) result (str_x)
 
@@ -129,6 +128,10 @@ contains
 
   end function double_to_string
 
+  !> Convert a c_ptr to a string.
+  !!
+  !! @param ptr The pointer.
+  !! @return The string representation.
   function c_ptr_to_string (ptr) result (string)
 
     use, intrinsic :: iso_C_binding

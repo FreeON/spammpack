@@ -30,6 +30,8 @@
 !!
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
+
+!> Module containing the 2D chunk data types.
 module spamm_chunk_type_2d
 
   use spamm_chunk_config
@@ -62,7 +64,7 @@ module spamm_chunk_type_2d
   !> The 2D chunk type.
   !!
   !! The components are ordered such that the matrix data comes
-  !! first. The 'sequence' attribute guarantees that the storage order
+  !! first. The `sequence`but attribute guarantees that the storage order
   !! of the components is the same as layed out in the type
   !! definition. All components are guaranteed to be allocated
   !! contiguously (Section 5.3.7 F08 Standard).
@@ -176,6 +178,7 @@ contains
   !!
   !! @param i The row index.
   !! @param j The column index.
+  !! @param A The chunk.
   !! @return The matrix element.
   function chunk_2d_get (i, j, A) result(Aij)
 
