@@ -129,6 +129,7 @@ contains
 !e10.3,', ',e10.3,', ',e10.3,', ',e10.3)
 
        m_x_k1=x_k1
+
        scal_shift=1d0
        shft_shift=0d0 
        scal_mapp =1d0
@@ -189,7 +190,9 @@ contains
           if(i>0)CALL SpAMMsand_Error_Analysis; 
           x_k1=x_k
           z_k1=z_k
+          Z_tld_k1=Z_tld_k 
           x_tld_k1=x_tld_k_stab 
+
 
 55        FORMAT(' sz_twist = ',E12.6,' x_naiv = ',E12.6,' x_stab = ',E12.6)
 
@@ -239,14 +242,31 @@ contains
 
     WRITE(*,*)' mp= ',SQRT(SUM(mp**2)),sqrt(sum(mp_gateaux**2))
 
-    x_tld_k_of_xk1_naiv = MATMUL( MATMUL(           MATMUL(z_tld_k1,m_x_k1) , S_d), MATMUL(z_tld_k1,m_x_k1) )
-    x_tld_k_of_xk1_stab = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1,m_x_k1)), S_d), MATMUL(z_tld_k1,m_x_k1) )
+!    x_tld_k_of_xk1_naiv = MATMUL( MATMUL(           MATMUL(z_tld_k1,m_x_k1) , S_d), MATMUL(z_tld_k1,m_x_k1) )
+!    x_tld_k_of_xk1_stab = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1,m_x_k1)), S_d), MATMUL(z_tld_k1,m_x_k1) )
+
+!    x_tld_k_of_xk1_naiv = MATMUL( MATMUL(           MATMUL(z_tld_k1 , m_x_TLD_k1 ) , S_d), MATMUL(z_tld_k1,m_x_TLD_k1) )
+!    x_tld_k_of_xk1_stab = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_TLD_k1 )), S_d), MATMUL(z_tld_k1,m_x_TLD_k1) )
+
+    x_tld_k_of_xk1_naiv = MATMUL( MATMUL(           MATMUL(z_tld_k1 , m_x_k1 ) , S_d), MATMUL(z_tld_k1,m_x_k1) )
+    x_tld_k_of_xk1_stab = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_k1 )), S_d), MATMUL(z_tld_k1,m_x_k1) )
+
+    WRITE(*,*)' zzzz = ',SQRT(SUM(z_tld_k**2)), SQRT(SUM((MATMUL(z_tld_k1,m_x_tld_k1))**2)) 
 
     xp_tld_k_naiv_gateaux = (x_tld_k_naiv-x_tld_k_of_xk1_naiv)/SQRT(SUM(dx**2))
     xp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_xk1_stab)/SQRT(SUM(dx**2))
 
     fp_naiv  = MATMUL(     zp_k, MATMUL( s_d,  z_tld_k ) ) + &
                MATMUL(  z_tld_k, MATMUL( s_d,     zp_k ) )
+
+    fp_stab = MATMUL(zp_k,    MATMUL( s_d,  z_tld_k ) ) 
+
+    WRITE(*,*)' compare 1 = ',SpAMMsand_Basis_Compare(fp_stab,s_d)
+
+    WRITE(*,*)" ||f'_stab1   ||   = ",SQRT(SUM(fp_stab**2))
+    fp_stab = MATMUL( z_tld_k, MATMUL( s_d,  zp_k ) )
+    WRITE(*,*)' compare 2 = ',SpAMMsand_Basis_Compare(fp_stab,s_d)
+    WRITE(*,*)" ||f'_stab2   ||   = ",SQRT(SUM(fp_stab**2))
 
     fp_stab = MATMUL(TRANSPOSE( zp_k),    MATMUL( s_d,  z_tld_k ) ) + &
               MATMUL(TRANSPOSE( z_tld_k), MATMUL( s_d,  zp_k ) )
@@ -409,7 +429,7 @@ program SpAMM_sandwich_inverse_squareroot
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
   logtau_strt=-4                                       ! starting accuracy
-  logtau_stop=-9                                        ! stoping  "
+  logtau_stop=-10                                        ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
   final_tau=10d0**logtau_stop                          ! penultimate spamm threshold
