@@ -39,6 +39,8 @@ module spamm_chunk_type_2d
   !> The tree-node type.
   type :: chunk_node_2d_t
 
+     sequence
+
      !> The number of non-zero elements.
      double precision :: number_nonzeros = 0
 
@@ -50,25 +52,35 @@ module spamm_chunk_type_2d
   !> The leaf-node matrix type.
   type :: chunk_data_2d_t
 
+     sequence
+
      !> The matrix.
      double precision :: data(SPAMM_CHUNK_BLOCK_SIZE, SPAMM_CHUNK_BLOCK_SIZE) = 0
 
   end type chunk_data_2d_t
 
   !> The 2D chunk type.
+  !!
+  !! The components are ordered such that the matrix data comes
+  !! first. The 'sequence' attribute guarantees that the storage order
+  !! of the components is the same as layed out in the type
+  !! definition. All components are guaranteed to be allocated
+  !! contiguously (Section 5.3.7 F08 Standard).
   type :: chunk_2d_t
+
+     sequence
+
+     !> The matrices at the leaves.
+     type(chunk_data_2d_t) :: data(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS)
+
+     !> The tree nodes.
+     type(chunk_node_2d_t) :: node(SPAMM_CHUNK_NODES)
 
      !> Lower index bound.
      integer :: lower(0:1) = [ 1, 1 ]
 
      !> Upper index bound.
      integer :: upper(0:1) = [ SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE ]
-
-     !> The tree nodes.
-     type(chunk_node_2d_t) :: node(SPAMM_CHUNK_NODES)
-
-     !> The matrices at the leaves.
-     type(chunk_data_2d_t) :: data(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS)
 
   end type chunk_2d_t
 
@@ -113,21 +125,28 @@ contains
     character(len=1000) :: string
     type(chunk_2d_t), pointer, intent(in) :: A
 
+    character(len=100) :: temp
+    integer(c_intptr_t) :: ptr
+
+    ptr = transfer(c_loc(A), ptr)+storage_size(A)
+
+    write(temp, "(Z32)") ptr
     write(string, "(A)") "chunk layout:"//C_NEW_LINE// &
-         trim(to_string(c_loc(A)))//C_NEW_LINE// &
-         trim(to_string(c_loc(A%lower(1))))//": lower(1)"//C_NEW_LINE// &
-         trim(to_string(c_loc(A%upper(1))))//": upper(1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A)))//": chunk start"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(1, 1))))//": data(1, 1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(2, 1))))//": data(2, 1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(1, 2))))//": data(1, 2)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(SPAMM_CHUNK_BLOCKS, 1))))// &
+         ": data("//trim(to_string(SPAMM_CHUNK_BLOCKS))//", 1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%data(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS))))// &
+         ": data("//trim(to_string(SPAMM_CHUNK_BLOCKS))//", "// &
+         trim(to_string(SPAMM_CHUNK_BLOCKS))//")"//C_NEW_LINE// &
          trim(to_string(c_loc(A%node(1))))//": node(1)"//C_NEW_LINE// &
          trim(to_string(c_loc(A%node(SPAMM_CHUNK_NODES))))// &
          ": node("//trim(to_string(SPAMM_CHUNK_NODES))//")"//C_NEW_LINE// &
-         trim(to_string(c_loc(A%data(1, 1))))//": data(1, 1)"//C_NEW_LINE// &
-         trim(to_string(c_loc(A%data(2, 1))))//": data(2, 1)"//C_NEW_LINE// &
-         trim(to_string(c_loc(A%data(SPAMM_CHUNK_BLOCKS, 1))))// &
-         ": data("//trim(to_string(SPAMM_CHUNK_BLOCKS))//", 1)"//C_NEW_LINE// &
-         trim(to_string(c_loc(A%data(1, 2))))//": data(1, 2)"//C_NEW_LINE// &
-         trim(to_string(c_loc(A%data(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS))))// &
-         ": data("//trim(to_string(SPAMM_CHUNK_BLOCKS))//", "// &
-         trim(to_string(SPAMM_CHUNK_BLOCKS))//")"
+         trim(to_string(c_loc(A%lower(1))))//": lower(1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%upper(1))))//": upper(1)"//C_NEW_LINE// &
+         "0x"//trim(adjustl(temp))//": chunk end"
 
   end function chunk_2d_memory_layout
 
