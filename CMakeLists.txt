@@ -293,9 +293,9 @@ endif()
 add_subdirectory( src-chunk )
 add_subdirectory( tests-chunk )
 
-add_subdirectory( src )
-add_subdirectory( tests )
-add_subdirectory( utilities )
+#add_subdirectory( src )
+#add_subdirectory( tests )
+#add_subdirectory( utilities )
 
 set( CPACK_PACKAGE_NAME "spammpack" )
 set( CPACK_PACKAGE_VERSION_MAJOR 1 )
