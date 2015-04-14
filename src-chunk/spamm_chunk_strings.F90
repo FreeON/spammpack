@@ -38,11 +38,12 @@ module spamm_chunk_strings
 
   !> Interface to to_string functions.
   interface to_string
-    module procedure int_to_string
-    module procedure double_array_to_string
-    module procedure single_to_string
-    module procedure double_to_string
     module procedure c_ptr_to_string
+    module procedure double_array_to_string
+    module procedure double_to_string
+    module procedure int_to_string
+    module procedure long_int_to_string
+    module procedure single_to_string
   end interface to_string
 
 contains
@@ -66,6 +67,26 @@ contains
     str_i = trim(adjustl(temp))
 
   end function int_to_string
+
+  !> Convert an integer to a string.
+  !!
+  !! @param i The integer.
+  !! @return The string representation.
+  function long_int_to_string (i) result (str_i)
+
+    integer(selected_int_kind(15)), intent(in) :: i
+
+    character(len=100) :: temp
+#ifdef HAVE_DEFERRED_STRING_LENGTH
+    character(len=:), allocatable :: str_i
+#else
+    character(len=100) :: str_i
+#endif
+
+    write(temp, *) i
+    str_i = trim(adjustl(temp))
+
+  end function long_int_to_string
 
   !> Convert a single precision real to a string.
   !!

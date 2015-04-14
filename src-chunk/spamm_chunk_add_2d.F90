@@ -49,6 +49,8 @@ contains
   !! @return The result.
   function chunk_add_2d_2d (A, B) result (C)
 
+    use spamm_chunk_copy_2d
+
     type(chunk_2d_t), pointer :: C
     type(chunk_2d_t), pointer, intent(in) :: A, B
 
