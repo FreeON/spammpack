@@ -9,8 +9,8 @@ module SpAMMsand_inverse_squareroot
   REAL(SPAMM_KIND), PARAMETER ::  ShiftSw  = 5.d-1
 
   real(spamm_kind), dimension(:,:), ALLOCATABLE :: &
-     i_d,s_d,z_k,z_k1,z_tld_k,z_tld_k1,x_k,x_k1,x_tld_k_naiv, &
-     x_tld_k_stab,x_tld_k1,m_x_k1,m_x_tld_k1
+     i_d,s_d,z_k,z_k1,z_tld_k,z_tld_k1,  y_k,y_k1,y_tld_k,y_tld_k1,x_k,x_k1,x_tld_k_naiv, &
+     x_tld_k_stab,x_tld_k1,m_x_k1,m_x_tld_k1,x_tld_k_yz 
 
   REAL(spamm_kind) :: scal_shift,shft_shift, scal_mapp, shft_mapp
   
@@ -52,7 +52,6 @@ contains
                                                          z_twist, y_twist, x_naiv_xact,x_stab_xact, &
                                                          delta_x_naiv_twist, delta_x_stab_twist
 
-
     n=x%frill%ndimn(1)
     FillN=1d10
     
@@ -71,26 +70,39 @@ contains
 
     ALLOCATE(i_d     (1:N,1:N))
     ALLOCATE(s_d     (1:N,1:N))
+
     ALLOCATE(z_k     (1:N,1:N))
     ALLOCATE(z_k1    (1:N,1:N))
     ALLOCATE(z_tld_k (1:N,1:N))
     ALLOCATE(z_tld_k1(1:N,1:N))
+
+    ALLOCATE(y_k     (1:N,1:N))
+    ALLOCATE(y_k1    (1:N,1:N))
+    ALLOCATE(y_tld_k (1:N,1:N))
+    ALLOCATE(y_tld_k1(1:N,1:N))
+
     ALLOCATE(m_x_k1  (1:N,1:N))
     ALLOCATE(m_x_tld_k1  (1:N,1:N))
+
     ALLOCATE(x_k     (1:N,1:N))
     ALLOCATE(x_k1    (1:N,1:N))
+    ALLOCATE(x_tld_k1(1:N,1:N))
     ALLOCATE(x_tld_k_naiv (1:N,1:N))
     ALLOCATE(x_tld_k_stab (1:N,1:N))
-    ALLOCATE(x_tld_k1(1:N,1:N))
+    ALLOCATE(x_tld_k_yz (1:N,1:N))
 
     CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d  )
     CALL SpAMM_convert_tree_2d_symm_to_dense( z, i_d  )
     CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_k1 )
     CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_tld_k1 )
+    CALL SpAMM_convert_tree_2d_symm_to_dense( s, y_k1 )
+    CALL SpAMM_convert_tree_2d_symm_to_dense( s, y_tld_k1 )
+
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_k1 )
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k1 )
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )
-    CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )
+    CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_naiv )
+    CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_yz )
 
     DO i = 0, 12 !26
 
@@ -155,11 +167,15 @@ contains
        z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
 
        ! update 
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau*1d-10 )
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau) !*1d-10 )
        CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_tld_k )
        z_k = MATMUL( z_k1, m_x_k1 )
 
-       WRITE(*,*)' z_tld_k = ',SQRT(z%frill%norm2),SQRT(SUM(z_k**2))
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau , nt_O=.TRUE., in_O = t )
+       y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau ) 
+
+       CALL SpAMM_convert_tree_2d_symm_to_dense( y, y_tld_k )
+       y_k = MATMUL( m_x_k1,  y_k1 )
 
        IF(.nOt.First)tHeN
           ! <Y_n+1|
@@ -172,25 +188,31 @@ contains
        IF(first)then
           ! <X_n> = <Z_n|S|Z_n>
 
-!          if(i>2)THEN !second)then
-!             tau_xtra=tau *1d-8  ! xtra stabilization on first multiply 
-!          else
+          if(i>2)THEN !second)then
+             tau_xtra=tau *1d-2  ! xtra stabilization on first multiply 
+          else
              tau_xtra=tau       
-!          endif
+          endif
 
           t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z, tau_xtra  , NT_O=.TRUE. , in_O = t )
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.TRUE. , in_O = x )
           CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_naiv )
 
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x )
+          CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_yz )
+
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.FALSE. , in_O = x )
           CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )
 
-          x_k = MATMUL( z_k , MATMUL( s_d, z_k ) )
+          x_k = MATMUL( TRANSPOSE( z_k ) , MATMUL( s_d, z_k ) )
 
           if(i>0)CALL SpAMMsand_Error_Analysis; 
-          x_k1=x_k
+
+          y_k1=z_k
+          y_tld_k1=Z_tld_k 
           z_k1=z_k
           Z_tld_k1=Z_tld_k 
+          x_k1=x_k
           x_tld_k1=x_tld_k_stab 
 
 
@@ -211,13 +233,9 @@ contains
   SUBROUTINE SpAMMsand_Error_Analysis
 
     real(spamm_kind), dimension(:,:), ALLOCATABLE :: &
-         MP, MP_Gateaux, DX,dx_hat, zp_k, fp_naiv, fp_stab, &
-         x_tld_k_of_xk1_naiv, x_tld_k_of_xk1_stab, &
-         xp_tld_k_naiv_gateaux,xp_tld_k_stab_gateaux
-
-!         x_tld_k_naiv,x_tld_k_stab, check,  &
-
-
+         MP, MP_Gateaux, DX,dx_hat, zp_k,yp_k, fp_naiv, fp_stab, fp_yz, &
+         x_tld_k_of_xk1_naiv, x_tld_k_of_xk1_stab, x_tld_k_of_xk1_yz, &
+         xp_tld_k_naiv_gateaux,xp_tld_k_stab_gateaux,xp_tld_k_yz_gateaux
 
     real(spamm_kind) :: x_tld_k_naiv_compare, x_tld_k_stab_compare, x_tld_k_natv_compare
 
@@ -226,63 +244,45 @@ contains
     ALLOCATE(Mp  (1:N,1:N))
     ALLOCATE(Mp_Gateaux  (1:N,1:N))
     ALLOCATE(zp_k(1:N,1:N))
+    ALLOCATE(yp_k(1:N,1:N))
     ALLOCATE(fp_naiv      (1:N,1:N))
     ALLOCATE(fp_stab      (1:N,1:N))
+    ALLOCATE(fp_yz      (1:N,1:N))
     ALLOCATE( x_tld_k_of_xk1_naiv (1:N,1:N))
     ALLOCATE( x_tld_k_of_xk1_stab (1:N,1:N))
+    ALLOCATE( x_tld_k_of_xk1_yz (1:N,1:N))
     ALLOCATE(xp_tld_k_naiv_gateaux (1:N,1:N))
     ALLOCATE(xp_tld_k_stab_gateaux (1:N,1:N))
+    ALLOCATE(xp_tld_k_yz_gateaux (1:N,1:N))
 
     dx        = x_tld_k1 - x_k1
 
     dx_hat    = dx/SQRT(SUM(dx**2))
+
     mp        = scal_mapp * scal_shift * dx_hat
     mp_Gateaux=(m_x_tld_k1-m_x_k1)/SQRT(SUM(dx**2))
+
     zp_k = MATMUL( z_tld_k1, mp ) 
+    yp_k = MATMUL( mp, y_tld_k1 ) 
 
-    WRITE(*,*)' mp= ',SQRT(SUM(mp**2)),sqrt(sum(mp_gateaux**2))
+    x_tld_k_of_xk1_yz     = MATMUL( MATMUL( m_x_k1, y_tld_k1 ) , MATMUL( z_tld_k1 , m_x_k1 ) )
+    x_tld_k_of_xk1_naiv   = MATMUL( MATMUL(           MATMUL(z_tld_k1 , m_x_k1 ) , S_d), MATMUL(z_tld_k1,m_x_k1) )
+    x_tld_k_of_xk1_stab   = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_k1 )), S_d), MATMUL(z_tld_k1,m_x_k1) )
 
-!    x_tld_k_of_xk1_naiv = MATMUL( MATMUL(           MATMUL(z_tld_k1,m_x_k1) , S_d), MATMUL(z_tld_k1,m_x_k1) )
-!    x_tld_k_of_xk1_stab = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1,m_x_k1)), S_d), MATMUL(z_tld_k1,m_x_k1) )
-
-!    x_tld_k_of_xk1_naiv = MATMUL( MATMUL(           MATMUL(z_tld_k1 , m_x_TLD_k1 ) , S_d), MATMUL(z_tld_k1,m_x_TLD_k1) )
-!    x_tld_k_of_xk1_stab = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_TLD_k1 )), S_d), MATMUL(z_tld_k1,m_x_TLD_k1) )
-
-    x_tld_k_of_xk1_naiv = MATMUL( MATMUL(           MATMUL(z_tld_k1 , m_x_k1 ) , S_d), MATMUL(z_tld_k1,m_x_k1) )
-    x_tld_k_of_xk1_stab = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_k1 )), S_d), MATMUL(z_tld_k1,m_x_k1) )
-
-    WRITE(*,*)' zzzz = ',SQRT(SUM(z_tld_k**2)), SQRT(SUM((MATMUL(z_tld_k1,m_x_tld_k1))**2)) 
-
+    xp_tld_k_yz_gateaux   = (x_tld_k_yz  -x_tld_k_of_xk1_yz  )/SQRT(SUM(dx**2))
     xp_tld_k_naiv_gateaux = (x_tld_k_naiv-x_tld_k_of_xk1_naiv)/SQRT(SUM(dx**2))
     xp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_xk1_stab)/SQRT(SUM(dx**2))
 
-    fp_naiv  = MATMUL(     zp_k, MATMUL( s_d,  z_tld_k ) ) + &
-               MATMUL(  z_tld_k, MATMUL( s_d,     zp_k ) )
+    fp_yz    = MATMUL( yp_k , z_tld_k ) + MATMUL( y_tld_k , zp_k )
+    fp_naiv  = MATMUL(     zp_k, MATMUL( s_d,  z_tld_k ) ) + MATMUL(  z_tld_k, MATMUL( s_d,     zp_k ) )
+    fp_stab  = MATMUL(TRANSPOSE(zp_k),MATMUL(s_d,z_tld_k))+MATMUL(TRANSPOSE(z_tld_k),MATMUL(s_d,zp_k))
 
-    fp_stab = MATMUL(zp_k,    MATMUL( s_d,  z_tld_k ) ) 
+ !   WRITE(*,*)' ||  dX_(k-1)||   = ',SQRT(SUM(dX**2))
 
-    WRITE(*,*)' compare 1 = ',SpAMMsand_Basis_Compare(fp_stab,s_d)
-
-    WRITE(*,*)" ||f'_stab1   ||   = ",SQRT(SUM(fp_stab**2))
-    fp_stab = MATMUL( z_tld_k, MATMUL( s_d,  zp_k ) )
-    WRITE(*,*)' compare 2 = ',SpAMMsand_Basis_Compare(fp_stab,s_d)
-    WRITE(*,*)" ||f'_stab2   ||   = ",SQRT(SUM(fp_stab**2))
-
-    fp_stab = MATMUL(TRANSPOSE( zp_k),    MATMUL( s_d,  z_tld_k ) ) + &
-              MATMUL(TRANSPOSE( z_tld_k), MATMUL( s_d,  zp_k ) )
-
-    WRITE(*,*)' ||  dX_(k-1)||   = ',SQRT(SUM(dX**2))
+    WRITE(*,*)" ||f'_yz     ||   = ",SQRT(SUM(fp_yz**2)),   SQRT(SUM( xp_tld_k_yz_gateaux**2)) 
     WRITE(*,*)" ||f'_naiv   ||   = ",SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
     WRITE(*,*)" ||f'_stab   ||   = ",SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
 
-!    x_tld_k_naiv = MATMUL( fp_naiv , dX )
-!    x_tld_k_stab = MATMUL( fp_stab , dX )
-!    WRITE(*,*)" ||f'_naiv.dX||   = ",SQRT(SUM(x_tld_k_naiv**2))
-!    WRITE(*,*)" ||f'_stab.dX||   = ",SQRT(SUM(x_tld_k_stab**2))
-
-!!$    x_tld_k_naiv = x_k + x_tld_k_naiv
-!!$    x_tld_k_stab = x_k + x_tld_k_stab
-!!$
 !!$    x_tld_k_naiv_compare = SpAMMsand_Basis_Compare(x_tld_k_naiv,s_d)
 !!$    x_tld_k_stab_compare = SpAMMsand_Basis_Compare(x_tld_k_stab,s_d)
 !!$    x_tld_k_natv_compare = SpAMMsand_Basis_Compare(x_tld_k     ,s_d)
@@ -291,18 +291,21 @@ contains
 
 33  FORMAT(' <s|x~_k> = ',e12.6,", <s|x_k+f'_naiv.dX> = ",e12.6,", <s|x_k+f'_stab.dX> = ",e12.6)
 
-    deALLOCATE(dX  )
-    deALLOCATE(dX_hat  )
-    deALLOCATE(Mp  )
+    deALLOCATE(dX        )
+    deALLOCATE(dX_hat    )
+    deALLOCATE(Mp        )
     deALLOCATE(Mp_Gateaux)
-    deALLOCATE(zp_k)
-    deALLOCATE(fp_naiv  )
-    deALLOCATE(fp_stab  )
-
+    deALLOCATE(zp_k      )
+    deALLOCATE(yp_k      )
+    deALLOCATE(fp_naiv   )
+    deALLOCATE(fp_stab   )
+    deALLOCATE(fp_yz     )
     deALLOCATE( x_tld_k_of_xk1_naiv  )
     deALLOCATE( x_tld_k_of_xk1_stab  )
+    deALLOCATE( x_tld_k_of_xk1_yz  )
     deALLOCATE(xp_tld_k_naiv_gateaux )
     deALLOCATE(xp_tld_k_stab_gateaux )
+    deALLOCATE(xp_tld_k_yz_gateaux )
 
   END SUBROUTINE SpAMMsand_Error_Analysis
 
