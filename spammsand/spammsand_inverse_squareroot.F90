@@ -57,11 +57,11 @@ contains
     
     first=.TRUE.
 
-    IF(.nOt.First)tHeN
+!    IF(.nOt.First)tHeN
        ! y_0 => s
        y => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
        y => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_o = y, threshold_O = SpAMM_normclean ) 
-    endIF
+!    endIF
 
     ! z_0 => I
     z=>SpAMM_set_identity_2d_symm ( s%frill%ndimn, in_o = z )
@@ -93,8 +93,10 @@ contains
 
     CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d  )
     CALL SpAMM_convert_tree_2d_symm_to_dense( z, i_d  )
+
     CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_k1 )
     CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_tld_k1 )
+
     CALL SpAMM_convert_tree_2d_symm_to_dense( s, y_k1 )
     CALL SpAMM_convert_tree_2d_symm_to_dense( s, y_tld_k1 )
 
@@ -104,9 +106,7 @@ contains
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_naiv )
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_yz )
 
-    DO i = 0, 12 !26
-
-!       IF(i==4)tau=1d-6
+    DO i = 0, 26
 
        ! accounting
        IF(first.and.i==0)then
@@ -134,7 +134,7 @@ contains
        IF( FillN <  Tau*1d1 )then
 !          WRITE(*,*)' fill n = ',filln,' tau**2 = ',tau
 !          write(*,*)' anhiliaiton '
-          RETURN  ! Anihilation
+!          RETURN  ! Anihilation
        end IF
 
 33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3,' %of N^2 = ',f10.5,'%,  %of N^3 = ',f10.5,'%, ',f10.5,'%, ',f10.5,'%, ',f10.5,'%')
@@ -167,7 +167,7 @@ contains
        z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
 
        ! update 
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau) !*1d-10 )
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau) 
        CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_tld_k )
        z_k = MATMUL( z_k1, m_x_k1 )
 
@@ -188,19 +188,18 @@ contains
        IF(first)then
           ! <X_n> = <Z_n|S|Z_n>
 
-          if(i>2)THEN !second)then
-             tau_xtra=tau *1d-2  ! xtra stabilization on first multiply 
-          else
-             tau_xtra=tau       
-          endif
+!!$          if(i>2)THEN !second)then
+!!$             tau_xtra=tau *1d-2  ! xtra stabilization on first multiply 
+!!$          else
+!!$             tau_xtra=tau       
+!!$          endif
 
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z, tau_xtra  , NT_O=.TRUE. , in_O = t )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau*1d-2  , NT_O=.TRUE. , in_O = t )
+
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.TRUE. , in_O = x )
           CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_naiv )
-
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x )
           CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_yz )
-
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.FALSE. , in_O = x )
           CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )
 
@@ -209,14 +208,12 @@ contains
           if(i>0)CALL SpAMMsand_Error_Analysis; 
 
           y_k1=z_k
-          y_tld_k1=Z_tld_k 
           z_k1=z_k
-          Z_tld_k1=Z_tld_k 
           x_k1=x_k
+
+          y_tld_k1=Y_tld_k 
+          Z_tld_k1=Z_tld_k 
           x_tld_k1=x_tld_k_stab 
-
-
-55        FORMAT(' sz_twist = ',E12.6,' x_naiv = ',E12.6,' x_stab = ',E12.6)
 
        else
           ! <X_n> = <Y_n|Z_n>
@@ -232,12 +229,14 @@ contains
 
   SUBROUTINE SpAMMsand_Error_Analysis
 
+    integer :: i
+
     real(spamm_kind), dimension(:,:), ALLOCATABLE :: &
          MP, MP_Gateaux, DX,dx_hat, zp_k,yp_k, fp_naiv, fp_stab, fp_yz, &
          x_tld_k_of_xk1_naiv, x_tld_k_of_xk1_stab, x_tld_k_of_xk1_yz, &
          xp_tld_k_naiv_gateaux,xp_tld_k_stab_gateaux,xp_tld_k_yz_gateaux
 
-    real(spamm_kind) :: x_tld_k_naiv_compare, x_tld_k_stab_compare, x_tld_k_natv_compare
+    real(spamm_kind) :: x_tld_k_naiv_compare, x_tld_k_stab_compare, x_tld_k_natv_compare, trc
 
     ALLOCATE(dX  (1:N,1:N))
     ALLOCATE(dX_hat(1:N,1:N))
@@ -268,10 +267,19 @@ contains
     x_tld_k_of_xk1_yz     = MATMUL( MATMUL( m_x_k1, y_tld_k1 ) , MATMUL( z_tld_k1 , m_x_k1 ) )
     x_tld_k_of_xk1_naiv   = MATMUL( MATMUL(           MATMUL(z_tld_k1 , m_x_k1 ) , S_d), MATMUL(z_tld_k1,m_x_k1) )
     x_tld_k_of_xk1_stab   = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_k1 )), S_d), MATMUL(z_tld_k1,m_x_k1) )
+    
+!    WRITE(*,*)' yz ? ',SQRT(SUM(x_tld_k_of_xk1_yz**2)),SQRT(SUM(x_tld_k_yz**2))
 
     xp_tld_k_yz_gateaux   = (x_tld_k_yz  -x_tld_k_of_xk1_yz  )/SQRT(SUM(dx**2))
     xp_tld_k_naiv_gateaux = (x_tld_k_naiv-x_tld_k_of_xk1_naiv)/SQRT(SUM(dx**2))
     xp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_xk1_stab)/SQRT(SUM(dx**2))
+
+    fp_yz=MATMUL(y_tld_k1,z_tld_k1)
+
+!    fp_yz=MATMUL(y_tld_k,z_tld_k)
+!    fp_yz=MATMUL(z_tld_k1,matmul(s_d,z_tld_k1))
+    trc=0d0; do i=1,n; trc = trc+fp_yz(i,i); enddo
+    write(*,*)' sum = ',trc
 
     fp_yz    = MATMUL( yp_k , z_tld_k ) + MATMUL( y_tld_k , zp_k )
     fp_naiv  = MATMUL(     zp_k, MATMUL( s_d,  z_tld_k ) ) + MATMUL(  z_tld_k, MATMUL( s_d,     zp_k ) )
@@ -283,11 +291,6 @@ contains
     WRITE(*,*)" ||f'_naiv   ||   = ",SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
     WRITE(*,*)" ||f'_stab   ||   = ",SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
 
-!!$    x_tld_k_naiv_compare = SpAMMsand_Basis_Compare(x_tld_k_naiv,s_d)
-!!$    x_tld_k_stab_compare = SpAMMsand_Basis_Compare(x_tld_k_stab,s_d)
-!!$    x_tld_k_natv_compare = SpAMMsand_Basis_Compare(x_tld_k     ,s_d)
-!!$
-!!$    WRITE(*,33) x_tld_k_natv_compare, x_tld_k_naiv_compare, x_tld_k_stab_compare
 
 33  FORMAT(' <s|x~_k> = ',e12.6,", <s|x_k+f'_naiv.dX> = ",e12.6,", <s|x_k+f'_stab.dX> = ",e12.6)
 
@@ -431,7 +434,7 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-4                                       ! starting accuracy
+  logtau_strt=-3.3333                                    ! starting accuracy
   logtau_stop=-10                                        ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
