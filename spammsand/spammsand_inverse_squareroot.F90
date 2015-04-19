@@ -1,7 +1,6 @@
 !#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
-
 module SpAMMsand_inverse_squareroot
   USE spammpack 
 
@@ -53,6 +52,17 @@ contains
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev
 
 
+    IF(DoDuals)tHeN
+       ! y_0 => s
+       y => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+       y => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_o = y, threshold_O = SpAMM_normclean ) 
+    endIF
+
+    ! z_0 => I
+    z=>SpAMM_set_identity_2d_symm ( s%frill%ndimn, in_o = z )
+    !  x_0 => s
+    x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
+
 #ifdef DENSE_DIAGNOSTICS
     n=x%frill%ndimn(1)
     ALLOCATE(i_d     (1:N,1:N))
@@ -84,22 +94,8 @@ contains
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_naiv )
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_yz )
-
     DoDuals=.TRUE.
-
 #endif
-
-    IF(DoDuals)tHeN
-       ! y_0 => s
-       y => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
-       y => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_o = y, threshold_O = SpAMM_normclean ) 
-    endIF
-
-    ! z_0 => I
-    z=>SpAMM_set_identity_2d_symm ( s%frill%ndimn, in_o = z )
-    !  x_0 => s
-    x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
-
     kount=1
     FillN=1d10
     DO i = 0, 26
@@ -157,10 +153,8 @@ contains
        CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_tld_k )
        z_k = MATMUL( z_k1, m_x_k1 )
 #else
-
        IF(DoDuals)tHeN
 #endif
-
           ! <Y_n+1|
           t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau , nt_O=.TRUE., in_O = t )
           y_work=t%frill%flops/dble(t%frill%ndimn(1))**3
@@ -173,13 +167,12 @@ contains
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
 
 #ifdef DENSE_DIAGNOSTICS
-       y_k = MATMUL( m_x_k1,  y_k1 )
-       CALL SpAMM_convert_tree_2d_symm_to_dense( y, y_tld_k )
-       CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_yz )
+          y_k = MATMUL( m_x_k1,  y_k1 )
+          CALL SpAMM_convert_tree_2d_symm_to_dense( y, y_tld_k )
+          CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_yz )
 #else
        ELSE
 #endif
-
           !   |t> =      S|Z_k> 
           t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau*1d-2  , NT_O=.TRUE. , in_O = t )
           sz_work=t%frill%flops/dble(t%frill%ndimn(1))**3
@@ -196,8 +189,9 @@ contains
 #ifdef DENSE_DIAGNOSTICS
           CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )          
           x_k = MATMUL( TRANSPOSE( z_k ) , MATMUL( s_d, z_k ) )
+
           if(i>0)CALL SpAMMsand_Error_Analysis(kount, tau, FillN)
-          y_k1=z_k
+          y_k1=y_k
           z_k1=z_k
           x_k1=x_k
           y_tld_k1=Y_tld_k 
@@ -206,7 +200,6 @@ contains
 #else
        endif
 #endif
-
        kount=kount+1
     END DO
 
@@ -255,8 +248,6 @@ contains
     x_tld_k_of_xk1_naiv   = MATMUL( MATMUL(           MATMUL(z_tld_k1 , m_x_k1 ) , S_d), MATMUL(z_tld_k1,m_x_k1) )
     x_tld_k_of_xk1_stab   = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_k1 )), S_d), MATMUL(z_tld_k1,m_x_k1) )
     
-!    WRITE(*,*)' yz ? ',SQRT(SUM(x_tld_k_of_xk1_yz**2)),SQRT(SUM(x_tld_k_yz**2))
-
     xp_tld_k_yz_gateaux   = (x_tld_k_yz  -x_tld_k_of_xk1_yz  )/SQRT(SUM(dx**2))
     xp_tld_k_naiv_gateaux = (x_tld_k_naiv-x_tld_k_of_xk1_naiv)/SQRT(SUM(dx**2))
     xp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_xk1_stab)/SQRT(SUM(dx**2))
@@ -265,18 +256,21 @@ contains
     fp_naiv  = MATMUL(     zp_k, MATMUL( s_d,  z_tld_k ) ) + MATMUL(  z_tld_k, MATMUL( s_d,     zp_k ) )
     fp_stab  = MATMUL(TRANSPOSE(zp_k),MATMUL(s_d,z_tld_k))+MATMUL(TRANSPOSE(z_tld_k),MATMUL(s_d,zp_k))
 
-!    WRITE(*,*)' ||  dX_(k-1)||   = ',SQRT(SUM(dX**2))
 !    WRITE(*,*)" ||f'_yz     ||   = ",SQRT(SUM(fp_yz**2)),   SQRT(SUM( xp_tld_k_yz_gateaux**2)) 
 !    WRITE(*,*)" ||f'_naiv   ||   = ",SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
 !    WRITE(*,*)" ||f'_stab   ||   = ",SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
 
-    WRITE(*,44)kount, tau, FillN, SQRT(SUM(fp_yz**2)),SQRT(SUM( xp_tld_k_yz_gateaux**2)),      &
-                                  SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)), &
-                                  SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
+!    WRITE(*,*)" ||f'_naiv   ||   = ",SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
+!    WRITE(*,*)" ||f'_stab   ||   = ",SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
 
-44     format(I3," ", 20(e12.6,"   "))
-
-33  FORMAT(' <s|x~_k> = ',e12.6,", <s|x_k+f'_naiv.dX> = ",e12.6,", <s|x_k+f'_stab.dX> = ",e12.6)
+    IF(kount==2)WRITE(*,43)
+    WRITE(*,44)kount, tau, FillN, SQRT(SUM(dX**2))                   , &
+         SQRT(SUM(fp_yz  **2)), SQRT(SUM( xp_tld_k_yz_gateaux  **2)) , &
+         SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) , &
+         SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
+    
+43     FORMAT(" Itr          Tau,             %N,            /\X,        f'_stab,       /\f_stab,        f'_dual,       /\f_dual,        f'_naiv,       /\f_naiv "
+44     format(I3,"   ", 20(e12.6,",   "))
 
     deALLOCATE(dX        )
     deALLOCATE(dX_hat    )
@@ -424,14 +418,14 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-3                                       ! starting accuracy
+  logtau_strt=-4                                       ! starting accuracy
   logtau_stop=-10                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
   final_tau=10d0**logtau_stop                          ! penultimate spamm threshold
     
   allocate(z) 
-  z_head => z ! head of the slices
+  z_head => z ! top of the sandwich
   do i=1,slices
 
      z%tau = 10d0**( logtau_strt + logtau_dlta * float(i-1) )
@@ -454,9 +448,8 @@ program SpAMM_sandwich_inverse_squareroot
   x => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
-  kount=0
-!  first=.FALSE.
-  first=.TRUE.
+  kount=1
+  first=.FALSE.
   second=.TRUE.
 
   z=>z_head
@@ -466,52 +459,32 @@ program SpAMM_sandwich_inverse_squareroot
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first, second, kount )
-     stop
 
-     first=.FALSE.
+     first=.TRUE.
      second=.FALSE.
      if(.not.associated(z%nxt))exit    
 
-     tau_xtra=z%tau
-!     tau_xtra=1d-3*z%tau
-
-     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, z%mtx, z%nxt%tau , NT_O=.TRUE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )
-     z_total => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z_total, threshold_O = z%tau )       ! *SQRT(SQRT(z%mtx%frill%norm2)) )
+     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, z%mtx, z%nxt%tau , NT_O=.TRUE., in_O = t )
+     z_total => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z_total, threshold_O = z%nxt%tau )      
 
      ! Nested sandwich, to recompute the error every time. 
-     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, s_orgnl, z%nxt%tau, NT_O=.FALSE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )
-     s => SpAMM_tree_2d_symm_times_tree_2d_symm(       t, z_total, z%nxt%tau, NT_O=.TRUE. , in_O = s )
-
-!     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx,     s, final_tau, NT_O=.FALSE., in_O = t ) !z%nxt%tau, NT_O=.FALSE., in_O = t )
-!     s => SpAMM_tree_2d_symm_times_tree_2d_symm(     t, z%mtx, final_tau, NT_O=.TRUE. , in_O = s )
+     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, s_orgnl, z%nxt%tau*1d-2, NT_O=.FALSE., in_O = t )
+     s => SpAMM_tree_2d_symm_times_tree_2d_symm(       t, z_total, z%nxt%tau     , NT_O=.TRUE. , in_O = s )
 
       s_work=s%frill%flops/dble(s%frill%ndimn(1))**3
      zs_work=t%frill%flops/dble(t%frill%ndimn(1))**3
 
-
-!!$     x_new =  SpAMMSand_rqi_extremal( s, 1d-8 , high_O=.TRUE. )
-!!$     WRITE(*,*)' hi extremal = ',x_new 
-!!$
-!!$     x     => SpAMM_scalar_times_tree_2d_symm( SpAMM_one / x_new , x )
-!!$     x_hi  = x_hi * x_new
-!!$
-!!$
-
-
      write(*,*)' t work = ',zs_work,', s_work = ',s_work
 
+     x_new =  SpAMMSand_rqi_extremal( x, z%nxt%tau*1d-2 , high_O=.TRUE. )
+     WRITE(*,*)' hi extremal = ',x_new 
+
+     x     => SpAMM_scalar_times_tree_2d_symm( SpAMM_one / x_new , x )
+     x_hi  = x_hi * x_new
+
+     s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = s , threshold_O = SpAMM_normclean )
+
      z => z%nxt
-
-
-!!$     x_new =  SpAMMSand_rqi_extremal( x, z%nxt%tau , high_O=.TRUE. )
-!!$     WRITE(*,*)' hi extremal = ',x_new 
-!!$
-!!$     x     => SpAMM_scalar_times_tree_2d_symm( SpAMM_one / x_new , x )
-!!$     x_hi  = x_hi * x_new
-!!$
-!!$     s => SpAMM_tree_2d_symm_copy_tree_2d_symm( x, in_O = s , threshold_O = SpAMM_normclean )
-!!$
-!!$     z => z%nxt
      
   enddo
 
