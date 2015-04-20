@@ -48,9 +48,10 @@ contains
     INTEGER                                           :: i,  j, k
     REAL(SpAMM_KIND)                                  :: sc, TrX, tau_xtra
     REAL(SpAMM_KIND)                                  :: x_work,z_work,y_work,zs_work,sz_work
+    REAL(SpAMM_KIND)                                  :: x_fill,z_fill,y_fill,zs_fill,sz_fill
 
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev
-
+    REAL(SpAMM_KIND)                                  :: tau_zdotz,sz_norm
 
     IF(DoDuals)tHeN
        ! y_0 => s
@@ -97,6 +98,7 @@ contains
     DoDuals=.TRUE.
 #endif
     kount=1
+    sz_norm=1d0
     FillN=1d10
     DO i = 0, 26
 
@@ -109,14 +111,20 @@ contains
 33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3,' %of N^2 = ',f10.5,'%,  %of N^3 = ',f10.5,'%, ',f10.5,'%, ',f10.5,'%, ',f10.5,'%')
 
        IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
+
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
 !          write(*,*)' elevation' 
+
           RETURN  ! Elevation
+
        endif
        IF( FillN <  Tau )then
+
 !          WRITE(*,*)' fill n = ',filln,' tau**2 = ',tau
 !          write(*,*)' anhiliaiton '
+
           RETURN  ! Anihilation
+
        end IF
 
 #ifdef DENSE_DIAGNOSTICS
@@ -128,7 +136,7 @@ contains
 #endif
 
        IF(FillN>0.4d0)THEN
-          delta=7.d-2 ! maybe this should be a variable too, passed in?
+          delta=10.d-2 ! maybe this should be a variable too, passed in?
           x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
           sc=spammsand_scaling_invsqrt(SpAMM_zero)
        ELSEIF(FillN>0.1d0)THEN
@@ -139,14 +147,20 @@ contains
           sc=1d0
        ENDIF
 
+
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
-       ! |Z_n+1> =  <Z_n| X_n>  
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau , nt_O=.TRUE., in_O = t )
-       z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
+       tau_zdotz=tau*SQRT(SQRT(z%frill%norm2))
+       WRITE(*,*)' tauz = ',tau_zdotz
 
-       ! update 
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
+
+       ! |Z_n+1> =  <Z_n| X_n>  
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau_zdotz , nt_O=.TRUE., in_O = t )
+       ! update (copy+threshold)
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau_zdotz) 
+       ! stats
+       z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
+       z_fill=z%frill%non0s
 
 #ifdef DENSE_DIAGNOSTICS
        CALL SpAMM_convert_tree_2d_symm_to_dense( x, m_x_tld_k1 )
@@ -174,9 +188,10 @@ contains
        ELSE
 #endif
           !   |t> =      S|Z_k> 
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau*1d-2  , NT_O=.TRUE. , in_O = t )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau*1d-4  , NT_O=.TRUE. , in_O = t )
           sz_work=t%frill%flops/dble(t%frill%ndimn(1))**3
-
+          sz_norm=SQRT(t%frill%norm2)
+          
 #ifdef DENSE_DIAGNOSTICS
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.TRUE. , in_O = x )
           CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_naiv )
@@ -418,7 +433,7 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-4                                       ! starting accuracy
+  logtau_strt=-3                                       ! starting accuracy
   logtau_stop=-10                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta

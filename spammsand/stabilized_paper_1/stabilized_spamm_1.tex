@@ -11,11 +11,6 @@
 
 %\usepackage[backend=bibtex]{biblatex}
 
-
-
-
-
-
 %    backend=biber,
 %    style=authoryear,
 %    natbib=true,
@@ -31,8 +26,6 @@
 \newcommand{\matT}[1]{\boldsymbol{#1}^\dagger}
 \newcommand{\ot}{ {\scriptstyle \otimes}_{ \tau } }
 
-
-
 %%\hypersetup{pdftitle={FreeON Project Report 1}}
 %\hypersetup{pdfauthor={Matt Challacombe and Nicolas Bock}}
 %\hypersetup{pdfsubject={A SpAMM Stabilized Newton Schulz Preconditioner: Fighting Error with Error}}
@@ -41,7 +34,7 @@
 
 \begin{document}
 
-\title{A SpAMM Stabilized Newton Schulz: Extreme Preconditioning}
+\title{On Stability of the Newton Schulz Iteration in an Approximate Algebra}
 
 \author{Matt Challacombe}
 \email{matt.challacombe@freeon.org}
@@ -60,39 +53,31 @@
 \maketitle
 \section{Introduction}
 
+Decay principles, often very sparse but very ill-conditioned problems.
 
-\paragraph{why do we care about  preconditioning} %%!what is spamm}
+\subsection{Incomplete Algorithims vs An Aproximate Algebra} %%!what is spamm}
 
-concerned with extending these incomplete algebras towards the approximations extreme of stability; how sloppy can our SpAMM be 
-and still reliably gain the basin of convergence?.
+Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
+Often adhoc.
 
-\paragraph{generalized n-body methods}
-single programing model.  generacity. 
+Philosophy: Don't know which elements to drop, because only make sense in context.  It is very difficult to incorporate this context in a dropping 
+strategies. 
 
-\paragraph{the case for strong scaling}
+Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
+Based on Cauchy Schwarz inequality.
 
-\section{Overview of Functional Approximation}
+Approximate Algebras may lead to incompleteness, but the error is comensurate with the normed SpAMM.
 
-with emphasis on the problem of the problem of electronic structure
-Higham's identity
 
-\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
+\subsection{Matrix Multiplication as N-Body Problem}
+single programing model.  generacity.  communication optimality and strong scaling.
 
-\subsubsection{Incompleteness via Partial Inner Iteration}
-Others ... 
-\subsubsection{Incompleteness via Occlusion and Culling}
+\section{Stability of  the Iteration Under SpAMM Approximation}
 
-\paragraph{\bf Basis truncation (BCSR):}
 
-\paragraph{\bf Occlusion by metric querry on Cauchy-Schwarz (SpAMM):}
+\section{Newton Shulz Iteration}
 
-\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
-
-\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
-
-\section{Accelerated Newton Shulz Iteration for the Inverse Square Root}
-
-\section{SpAMM Stabilization of the Newton Shulz Iteration}
+\subsection
 
 \subsection{\bf  SpAMM Leftovers are Deterministic}
 
@@ -113,7 +98,35 @@ Others ...
 \end{equation}
 
 
-\begin{equation}
+\begin\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
+
+\subsubsection{Incompleteness via Partial Inner I
+teration}
+Others ... 
+\subsubsection{Incompleteness via Occlusion and Culling}
+
+\paragraph{\bf Basis truncation (BCSR):}
+
+\paragraph{\bf Occlusion by metric querry on Cauchy-Schwarz (SpAMM):}
+
+\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
+
+\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
+\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
+
+\subsubsection{Incompleteness via Partial Inner I
+teration}
+Others ... 
+\subsubsection{Incompleteness via Occlusion and Culling}
+
+\paragraph{\bf Basis truncation (BCSR):}
+
+\paragraph{\bf Occlusion by metric querry on Cauchy-Schwarz (SpAMM):}
+
+\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
+
+\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
+{equation}
 \widetilde {\mat{z}}_{k+1}  \leftarrow \mat{z}_{k}  \;  \ot \; {m\!} \left( \mat{x}_k \right) \qquad
 \end{equation}
 
