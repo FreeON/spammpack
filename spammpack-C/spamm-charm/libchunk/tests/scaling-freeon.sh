@@ -2,6 +2,11 @@
 #
 # vim: tw=0
 
+echo "The following environment variables can be used to"
+echo "control this script:"
+echo "BUILD_TYPE = {serial,openmp}"
+echo "BUILD_COMPILER = {gcc,intel}"
+
 if [[ ${BUILD_TYPE:=serial} = "serial" ]]; then
   echo "serial version..."
   THREADS=( 1 )
