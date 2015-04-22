@@ -14,7 +14,7 @@ if [[ ${BUILD_TYPE:=serial} = "serial" ]]; then
   CONFIGURE_ARGS="--disable-openmp"
   CONFIGURE_ARGS+=" --disable-assert"
   CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
-  CONFIGURE_ARGS+=" --enable-no-work"
+  #CONFIGURE_ARGS+=" --enable-no-work"
 elif [[ ${BUILD_TYPE} = "openmp" ]]; then
   echo "OpenMP version..."
   THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
@@ -40,7 +40,7 @@ elif [[ ${BUILD_COMPILER} = "intel" ]]; then
   ./configure \
     ${CONFIGURE_ARGS} \
     CC=icc \
-    CFLAGS="-O3 -g -no-prec-div -static -fp-model fast=2 -qopt-report -xHost -ipo" || exit
+    CFLAGS="-O3 -g -no-prec-div -static -fp-model fast=2 -qopt-report -xSSE2" || exit
 else
   echo "unknown build type ${BUILD_COMPILER}"
   exit 1
