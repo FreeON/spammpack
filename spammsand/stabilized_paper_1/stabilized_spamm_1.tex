@@ -55,7 +55,25 @@
 
 Decay principles, often very sparse but very ill-conditioned problems.
 
-\subsection{Incomplete Algorithims vs An Aproximate Algebra} %%!what is spamm}
+\subsection{Matrix Multiplication as N-Body Problem}
+database orientation, Cauchy sch
+Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
+Based on Cauchy Schwarz inequality.
+
+
+
+\begin{equation}
+\mat{a} \ot \mat{b} \equiv \mat{a}^0_{00} \ot \mat{b}^0_{00} 
+\end{equation}
+
+\begin{equation}
+\mat{a}^l =  \mat{a}_{00} \ot \mat{b}_{00} 
+\end{equation}
+
+error accumulation may be better than row-col
+single programing model.  generacity.  communication optimality and strong scaling.
+
+\subsection{Incomplete Algorithms and Aproximate Algebras} %%!what is spamm}
 
 Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
 Often adhoc.
@@ -66,23 +84,92 @@ strategies.
 Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
 Based on Cauchy Schwarz inequality.
 
-Approximate Algebras may lead to incompleteness, but the error is comensurate with the normed SpAMM.
+\begin{equation}
+\mat{a} \ot \mat{b}=\mat{a}\cdot \mat{b} + \mat{\delta}^{a\cdot b}_{\tau}
+\end{equation}
+where $\mat{\delta}_{\tau}$ is a deterministic first order variation , $\tau \, \widehat{\mat{\delta}}$, cooresponding to the branch pattern set
+by Cauchy-Schwarz culling.  
+Because $\mat{\delta}^{a\cdot b}_{\tau}$ is assymetric (even if $\mat{a}$ and $\mat{b}$ are symmetric and retain the same basis),  
+SpAMM is non-associative, with Lie bracket
+\begin{equation}
+\left[ \mat{a} , \mat{b} \right]_{\tau} =
+\mat{a} \ot \mat{b}-\mat{b} \ot \mat{a} = \mat{\delta}^{a\cdot b}_{\tau} -\mat{\delta}^{b\cdot a}_{\tau} .
+\end{equation}
+defining fields associated 
+%
+% SpAMM approximation introduces the vector field $ \sim \tau \left[\mat{\delta}^{a\cdot b}_{\tau} -\mat{\delta}^{b\cdot a}_{\tau}\right]/
+%\lVert \mat{\delta}^{a\cdot b}_{\tau} -\mat{\delta}^{b\cdot a}_{\tau}] \rVert $.
+Our interest is in minimizing change in these fields under iteration, for ill-conditioned problems and with permisive values of $\tau$. 
 
+\subsection{On ``Variational'' and ``non-Variational'' Iteration}
+Gradients lack convergence properties
+Iteration without orig drives away from basis
+NS has both.  Difference between scalar iteration, Higham page 92.
 
-\subsection{Matrix Multiplication as N-Body Problem}
-single programing model.  generacity.  communication optimality and strong scaling.
+\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
 
-\section{Stability of  the Iteration Under SpAMM Approximation}
+\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
+\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
 
 
 \section{Newton Shulz Iteration}
 
-\subsection
 
-\subsection{\bf  SpAMM Leftovers are Deterministic}
+\subsection{\bf  On the Boundedness of Idempotent Iteration}
 
-\subsection{\bf  Stabilization of the Inverse Square Root Iteration}
 
+\pagebreak
+
+\subsection{\bf  Error Flows in Naive, Dual and Stable Newton Schulz Iterations}
+
+\begin{equation}
+\delta \mat{x}^{\rm{naiv}}_k =   \delta  \widetilde{ \mat{z}}_{k} \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} 
+                           +  \widetilde{\mat{z}}_{k} \cdot \mat{s} \cdot \! \delta \widetilde{\mat{z}}_{k} 
+\end{equations}
+
+
+
+\begin{equation}
+\delta \mat{x}^{\rm{dual}}_k =   \delta  \widetilde{ \mat{y}}_{k} \cdot \widehat{\mat{z}}_{k} 
+                           +  \widetilde{\mat{y}}_{k} \cdot \delta \widetilde{\mat{z}}_{k} 
+\end{equations}
+
+
+
+\begin{eqnarray}
+\delta \mat{x}^{\rm{stab}}_k &=& \delta  \widetilde{ \mat{z}}^\dagger_{k} \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} 
+                           +  \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot \! \delta \widetilde{\mat{z}}_{k} \\ \nonumber
+                           &=& \lVert \delta \mat{z}_{k-1} \rVert \, {f}^{\rm{stab}}_{\delta \mat{z}_{k-1}}  
+                              +\lVert \delta \mat{x}_{k-1} \rVert \, {f}^{\rm{stab}}_{\delta \mat{x}_{k-1}}  
+\end{eqnarray}
+
+generalized Gateaux differential
+
+\begin{equation}
+f_{\mat{\delta}} = \lim_{\tau \rightarrow 0} \frac{ f [\, \mat{x} \, + \, \tau \widehat{\mat{\delta}} \, ]-f\left[\mat{x}\right]}{\tau}  
+\end{equation}
+
+
+
+\begin{multline}
+{f}^{\rm{stab}}_{\delta \mat{z}_{k-1}}  
+= ( \tt{m}\left[\mat{x}_{k-1} \right] \cdot \delta \widehat{\mat{z}}^\dagger_{k-1} ) 
+ \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} \\
++\widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s}  \cdot \left(\delta \widehat{\mat{z}}_{k-1} \cdot \tt{m}\left[\mat{x}_{k-1} \right]  \right) 
+\end{multline}
+
+
+\begin{multline}
+{f}^{\rm{stab}}_{\delta \mat{x}_{k-1}}  
+= \delta \widehat{\mat{x}}^\dagger_{k-1} \cdot \tt{m}'\left[\mat{x}_{k-1} \right]\cdot 
+\{\widetilde{\mat{z}}^\dagger_{k-1}  \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} \}  \\
++ \{
+\widehat{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} \cdot \tt{m}'\left[\mat{x}_{k-1} \right]  
+\cdot \delta \widehat{\mat{x}}_{k-1} 
+\end{multline}
+
+
+\subsection{\bf  An Experiment}
 
 \begin{equation}
 \boldmath{\large \epsilon}_\perp\left(\mat{x}\right) = 
@@ -93,40 +180,13 @@ single programing model.  generacity.  communication optimality and strong scali
 \mat{z}_{k+1}  \leftarrow \mat{z}_k  \;  \cdot \; {m\!} \left( \mat{x}_k \right) \qquad
 \end{equation}
 
+
 \begin{equation}
 \mat{x}_{k+1} \leftarrow \mat{z}_{k+1} \; \cdot \; {m \!} \left( \mat{x} \right) \; \cdot \; \mat{z}_{k+1} \qquad
 \end{equation}
 
 
-\begin\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
-
-\subsubsection{Incompleteness via Partial Inner I
-teration}
-Others ... 
-\subsubsection{Incompleteness via Occlusion and Culling}
-
-\paragraph{\bf Basis truncation (BCSR):}
-
-\paragraph{\bf Occlusion by metric querry on Cauchy-Schwarz (SpAMM):}
-
-\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
-
-\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
-\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
-
-\subsubsection{Incompleteness via Partial Inner I
-teration}
-Others ... 
-\subsubsection{Incompleteness via Occlusion and Culling}
-
-\paragraph{\bf Basis truncation (BCSR):}
-
-\paragraph{\bf Occlusion by metric querry on Cauchy-Schwarz (SpAMM):}
-
-\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
-
-\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
-{equation}
+\begin{equation}
 \widetilde {\mat{z}}_{k+1}  \leftarrow \mat{z}_{k}  \;  \ot \; {m\!} \left( \mat{x}_k \right) \qquad
 \end{equation}
 

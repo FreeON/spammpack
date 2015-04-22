@@ -1,4 +1,4 @@
-#define DENSE_DIAGNOSTICS
+!#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
 module SpAMMsand_inverse_squareroot
@@ -54,6 +54,8 @@ contains
     REAL(SpAMM_KIND)                                  :: tau_zdotz,sz_norm
 
 #ifdef DENSE_DIAGNOSTICS
+    REAL(SpAMM_KIND)                                  :: fprimez
+    fprimez=1d0
 #else
     IF(DoDuals)tHeN
 #endif
@@ -141,7 +143,7 @@ contains
 #endif
 
        IF(FillN>0.4d0)THEN
-          delta=10.d-2 ! maybe this should be a variable too, passed in?
+          delta=8.d-2 ! maybe this should be a variable too, passed in?
           x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
           sc=spammsand_scaling_invsqrt(SpAMM_zero)
        ELSEIF(FillN>0.1d0)THEN
@@ -152,19 +154,17 @@ contains
           sc=1d0
        ENDIF
 
-
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
-       tau_zdotz=1d-3
-
-!tau*SQRT(SQRT(z%frill%norm2))
-!       WRITE(*,*)' tauz = ',tau_zdotz
-
+!       tau_zdotz=1d-3/fprimez
+!       tau_zdotz=1d-3*SQRT(SQRT(z%frill%norm2))
+       tau_zdotz=MAX(tau, 8d-2*tau*SQRT(SQRT(z%frill%norm2) ) )
+       WRITE(*,*)' tau = ',tau_zdotz
 
        ! |Z_n+1> =  <Z_n| X_n>  
        t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau_zdotz , nt_O=.TRUE., in_O = t )
        ! update (copy+threshold)
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau_zdotz) 
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau_zdotz ) 
        ! stats
        z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
        z_fill=z%frill%non0s
@@ -205,14 +205,14 @@ contains
 #endif
 
           ! <X_k> = <Z_k|S|Z_k>
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau      , NT_O=.FALSE. , in_O = x )
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau , NT_O=.FALSE. , in_O = x )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
           
 #ifdef DENSE_DIAGNOSTICS
           CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )          
           x_k = MATMUL( TRANSPOSE( z_k ) , MATMUL( s_d, z_k ) )
 
-          if(i>0)CALL SpAMMsand_Error_Analysis(kount, tau, FillN)
+          if(i>0)CALL SpAMMsand_Error_Analysis(kount, tau, FillN, fprimez)
           y_k1=y_k
           z_k1=z_k
           x_k1=x_k
@@ -230,7 +230,7 @@ contains
   END SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot
 
 #ifdef DENSE_DIAGNOSTICS
-  SUBROUTINE SpAMMsand_Error_Analysis(kount, tau, FillN)
+  SUBROUTINE SpAMMsand_Error_Analysis(kount, tau, FillN, FPrimeZ)
 
     integer :: i,kount
 
@@ -239,7 +239,7 @@ contains
          x_tld_k_of_xk1_naiv, x_tld_k_of_xk1_stab, x_tld_k_of_xk1_yz, &
          xp_tld_k_naiv_gateaux,xp_tld_k_stab_gateaux,xp_tld_k_yz_gateaux, dz, dz_hat
 
-    real(spamm_kind) :: x_tld_k_naiv_compare, x_tld_k_stab_compare, x_tld_k_natv_compare, tau, filln
+    real(spamm_kind) :: x_tld_k_naiv_compare, x_tld_k_stab_compare, x_tld_k_natv_compare, tau, filln, fprimez
 
     ALLOCATE(dX  (1:N,1:N))
     ALLOCATE(dX_hat(1:N,1:N))
@@ -302,9 +302,12 @@ contains
 !         SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
  
 
-    fp_stab  = MATMUL(TRANSPOSE(dz),MATMUL(s_d,z_tld_k))+MATMUL(TRANSPOSE(z_tld_k),MATMUL(s_d,dz))
+    fp_stab  = MATMUL(TRANSPOSE(dz_hat),MATMUL(s_d,z_tld_k))+MATMUL(TRANSPOSE(z_tld_k),MATMUL(s_d,dz_hat))
 
-    WRITE(*,*)" ||f'_stab   ||   = ",SQRT(SUM(dz**2)),SQRT(SUM(fp_stab**2))
+    fprimez=SQRT(SUM(fp_stab**2))
+
+    WRITE(*,*)" ||f'_stab   ||   = ",SQRT(SUM(dz**2)),SQRT(SUM(fp_stab**2)), SQRT(SUM(fp_stab**2))*SQRT(SUM(dz**2))
+    WRITE(33,*)kount,SQRT(SUM(dz**2)),SQRT(SUM(fp_stab**2))
 
 
 
@@ -441,7 +444,7 @@ program SpAMM_sandwich_inverse_squareroot
                                                     tau_dlta, tau_xtra, error, tmp1,tmp2, final_tau, s_work, zs_work
   logical :: first, second
 
-  integer, parameter                             :: slices=4
+  integer, parameter                             :: slices=6
 
   real(SpAMM_KIND), dimension(1:slices)          :: tau
  
@@ -476,7 +479,7 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-9                                       ! starting accuracy
+  logtau_strt=-3                                       ! starting accuracy
   logtau_stop=-10                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
