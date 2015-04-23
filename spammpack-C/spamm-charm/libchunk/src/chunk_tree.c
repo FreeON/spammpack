@@ -30,22 +30,6 @@
 #include <omp.h>
 #endif
 
-#ifdef _OPENMP
-#if CHUNK_LOCK == CHUNK_LOCK_OMP_LOCK
-#define BEGIN_LOCKED_SECTION omp_set_lock(&C->matrix_lock)
-#define END_LOCKED_SECTION omp_unset_lock(&C->matrix_lock)
-#elif CHUNK_LOCK == CHUNK_LOCK_ATOMIC
-#define BEGIN_LOCKED_SECTION _Pragma(omp atomic)
-#define END_LOCKED_SECTION
-#else
-#define BEGIN_LOCKED_SECTION
-#define END_LOCKED_SECTION
-#endif
-#else
-#define BEGIN_LOCKED_SECTION
-#define END_LOCKED_SECTION
-#endif
-
 /** A convenience macro for printing some debugging output. */
 #ifdef DEBUG_OUTPUT
 #ifdef _OPENMP
@@ -145,10 +129,8 @@ struct chunk_tree_node_t
   int N_basic;
 
 #ifdef _OPENMP
-#if CHUNK_LOCK == CHUNK_LOCK_OMP_LOCK
   /** The OpenMP lock on the matrix. */
   omp_lock_t matrix_lock;
-#endif
 #endif
 
   /** The children nodes are linked using relative offsets so we can pass the
@@ -769,6 +751,59 @@ chunk_tree_add (const double alpha, void *const A,
   chunk_tree_update_norm(A);
 }
 
+void
+chunk_tree_multiply_node (const double tolerance_2,
+    const int tier,
+    const int depth,
+    const struct chunk_tree_node_t *const A,
+    const struct chunk_tree_node_t *const B,
+    struct chunk_tree_node_t *const C,
+    const short symbolic_only,
+    size_t *const complexity,
+    const int product_index);
+
+void
+chunk_tree_multiply_node_recur (const double tolerance_2,
+                                const int i,
+                                const int j,
+                                const int k,
+                                const int tier,
+                                const int depth,
+                                const struct chunk_tree_node_t *const A,
+                                const struct chunk_tree_node_t *const B,
+                                struct chunk_tree_node_t *const C,
+                                const short symbolic_only,
+                                size_t *const complexity,
+                                const int product_index)
+{
+  DEBUG("(%d,%d,%d) starting new task\n", i, j, k);
+
+  struct chunk_tree_node_t *A_child = (struct chunk_tree_node_t*)
+    ((intptr_t) A + A->offset.child_offset[ROW_MAJOR(i, k, 2)]);
+  struct chunk_tree_node_t *B_child = (struct chunk_tree_node_t*)
+    ((intptr_t) B + B->offset.child_offset[ROW_MAJOR(k, j, 2)]);
+  struct chunk_tree_node_t *C_child = (struct chunk_tree_node_t*)
+    ((intptr_t) C + C->offset.child_offset[ROW_MAJOR(i, j, 2)]);
+
+  DEBUG("(%d,%d,%d) A at %p, B at %p, C at %p\n", i, j, k, A_child, B_child, C_child);
+
+  if(A_child->norm_2*B_child->norm_2 > tolerance_2)
+  {
+#ifdef MEASURE_COMPLEXITY
+    int new_product_index = (product_index << 3) | (i << 2) | (j << 1) | k;
+#else
+    int new_product_index = product_index;
+#endif
+    chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child,
+                             B_child, C_child, symbolic_only, complexity, new_product_index);
+  }
+
+  else
+  {
+    DEBUG("skipping product, A_norm*B_norm = %e\n", A_child->norm_2*B_child->norm_2);
+  }
+}
+
 /** Multiply two tree nodes using the SpAMM algorithm.
  *
  * @f[ C \leftarrow A \times B @f]
@@ -796,9 +831,25 @@ chunk_tree_multiply_node (const double tolerance_2,
     size_t *const complexity,
     const int product_index)
 {
+  short create_tasks;
+  short lock_data;
+
   assert(A != NULL);
   assert(B != NULL);
   assert(C != NULL);
+
+  if(tier == CHUNK_TREE_MAX_TIER) lock_data = 1;
+  else lock_data = 0;
+
+  if(tier < CHUNK_TREE_MAX_TIER) create_tasks = 1;
+  else create_tasks = 0;
+
+#ifdef _OPENMP
+  if(lock_data)
+  {
+    omp_set_lock(&C->matrix_lock);
+  }
+#endif
 
   DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
 
@@ -815,7 +866,7 @@ chunk_tree_multiply_node (const double tolerance_2,
       double *C_submatrix = (double*) ((intptr_t) C + C->offset.matrix_offset);
 
       DEBUG("multiplying submatrix, A at %p, B at %p, C at %p\n",
-          &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
+            &(*A_submatrix), &(*B_submatrix), &(*C_submatrix));
 
 #ifdef MEASURE_COMPLEXITY
       complexity[product_index]++;
@@ -825,8 +876,6 @@ chunk_tree_multiply_node (const double tolerance_2,
       //INFO("B[0][0] = % 1.3f\n", B_submatrix[0]);
       //INFO("C[0][0] = % 1.3f\n", C_submatrix[0]);
 
-      BEGIN_LOCKED_SECTION;
-
 #if defined(BLOCK_MULTIPLY)
       chunk_block_multiply(A_submatrix, B_submatrix, C_submatrix, A->N_basic);
 #elif defined(BLOCK_BLAS)
@@ -834,14 +883,12 @@ chunk_tree_multiply_node (const double tolerance_2,
         double alpha = 1.0;
         double beta = 1.0;
         DGEMM("N", "N", &A->N_basic, &A->N_basic, &A->N_basic, &alpha,
-            A_submatrix, &A->N_basic, B_submatrix, &A->N_basic, &beta,
-            C_submatrix, &A->N_basic);
+              A_submatrix, &A->N_basic, B_submatrix, &A->N_basic, &beta,
+              C_submatrix, &A->N_basic);
       }
 #else
 #error unknown block multiply implementation.
 #endif
-
-      END_LOCKED_SECTION;
 
       DEBUG("done multiplying\n");
     }
@@ -855,42 +902,37 @@ chunk_tree_multiply_node (const double tolerance_2,
       {
         for(int k = 0; k < 2; k++)
         {
-#pragma omp task default(none) firstprivate(i, j, k) untied if(tier < CHUNK_TREE_MAX_TIER)
+          if(create_tasks)
           {
-            DEBUG("(%d,%d,%d) starting new task\n", i, j, k);
+#pragma omp task default(none) firstprivate(i, j, k) untied
+            chunk_tree_multiply_node_recur(tolerance_2, i, j, k, tier, depth,
+                                           A, B, C, symbolic_only, complexity, product_index);
+          }
 
-            struct chunk_tree_node_t *A_child = (struct chunk_tree_node_t*)
-              ((intptr_t) A + A->offset.child_offset[ROW_MAJOR(i, k, 2)]);
-            struct chunk_tree_node_t *B_child = (struct chunk_tree_node_t*)
-              ((intptr_t) B + B->offset.child_offset[ROW_MAJOR(k, j, 2)]);
-            struct chunk_tree_node_t *C_child = (struct chunk_tree_node_t*)
-              ((intptr_t) C + C->offset.child_offset[ROW_MAJOR(i, j, 2)]);
-
-            DEBUG("(%d,%d,%d) A at %p, B at %p, C at %p\n", i, j, k, A_child, B_child, C_child);
-
-            if(A_child->norm_2*B_child->norm_2 > tolerance_2)
-            {
-#ifdef MEASURE_COMPLEXITY
-              int new_product_index = (product_index << 3) | (i << 2) | (j << 1) | k;
-#else
-              int new_product_index = product_index;
-#endif
-              chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child,
-                  B_child, C_child, symbolic_only, complexity, new_product_index);
-            }
-
-            else
-            {
-              DEBUG("skipping product, A_norm*B_norm = %e\n", A_child->norm_2*B_child->norm_2);
-            }
+          else
+          {
+            chunk_tree_multiply_node_recur(tolerance_2, i, j, k, tier, depth,
+                                           A, B, C, symbolic_only, complexity, product_index);
           }
         }
       }
     }
     DEBUG("done submitting all tasks, waiting...\n");
+
+    if(create_tasks)
+    {
 #pragma omp taskwait
+    }
+
     DEBUG("done\n");
   }
+
+#ifdef _OPENMP
+  if(lock_data)
+  {
+    omp_unset_lock(&C->matrix_lock);
+  }
+#endif
 }
 
 /** Multiply two chunks using the SpAMM algorithm.
@@ -955,7 +997,7 @@ chunk_tree_multiply (const double tolerance,
         DEBUG("running in serial\n");
 #endif
 
-#pragma omp task untied
+#pragma omp task untied default(shared)
         {
           chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root,
               B_root, C_root, symbolic_only, complexity, 0);

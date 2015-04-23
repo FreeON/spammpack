@@ -11,23 +11,23 @@ echo "BUILD_COMPILER = {gcc,intel}"
 REPEAT=4
 
 if [[ ${BUILD_TYPE:=serial} = "serial" ]]; then
-  echo "serial version..."
-  THREADS=( 1 )
-  NUMA_POLICY="--physcpubind=0 --membind=0"
-  CONFIGURE_ARGS="--disable-openmp"
-  CONFIGURE_ARGS+=" --disable-assert"
-  CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
-  #CONFIGURE_ARGS+=" --enable-no-work"
+    echo "serial version..."
+    THREADS=( 1 )
+    NUMA_POLICY="--physcpubind=0 --membind=0"
+    CONFIGURE_ARGS="--disable-openmp"
+    CONFIGURE_ARGS+=" --disable-assert"
+    CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
+    #CONFIGURE_ARGS+=" --enable-no-work"
 elif [[ ${BUILD_TYPE} = "openmp" ]]; then
-  echo "OpenMP version..."
-  #THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
-  THREADS=( 1 2 )
-  NUMA_POLICY="--interleave=all"
-  CONFIGURE_ARGS="--enable-openmp"
-  CONFIGURE_ARGS+=" --disable-assert"
-  CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
-  CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=0"
-  #CONFIGURE_ARGS+=" --enable-no-work"
+    echo "OpenMP version..."
+    #THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
+    THREADS=( 1 2 )
+    NUMA_POLICY="--interleave=all"
+    CONFIGURE_ARGS="--enable-openmp"
+    CONFIGURE_ARGS+=" --disable-assert"
+    CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
+    CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=0"
+    #CONFIGURE_ARGS+=" --enable-no-work"
 else
   echo "unknown build type, either serial or openmp"
   exit 1

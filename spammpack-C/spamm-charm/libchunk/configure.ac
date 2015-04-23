@@ -226,33 +226,6 @@ else
   AC_MSG_RESULT([no])
 fi
 
-# Choose locking model.
-AC_DEFINE([CHUNK_LOCK_OMP_LOCK], [1], [Use omp_lock])
-AC_DEFINE([CHUNK_LOCK_ATOMIC], [2], [Use omp atomic])
-AC_DEFINE([CHUNK_LOCK_NONE], [3], [No locking])
-
-AC_MSG_CHECKING([locking model])
-AC_ARG_ENABLE([lock],
-  [AS_HELP_STRING([--enable-lock],
-  [the locking model (omp_lock, atomic, none)])],
-  [enable_lock=$enableval],
-  [enable_lock="omp_lock"])
-AC_MSG_RESULT([${enable_lock}])
-case ${enable_lock} in
-  "omp_lock")
-    AC_DEFINE_UNQUOTED([CHUNK_LOCK], [CHUNK_LOCK_OMP_LOCK], [The locking model])
-    ;;
-  "atomic")
-    AC_DEFINE_UNQUOTED([CHUNK_LOCK], [CHUNK_LOCK_ATOMIC], [The locking model])
-    ;;
-  "none")
-    AC_DEFINE_UNQUOTED([CHUNK_LOCK], [CHUNK_LOCK_NONE], [The locking model])
-    ;;
-  *)
-    AC_MSG_FAILURE([unknown locking model])
-    ;;
-esac
-
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Makefile
