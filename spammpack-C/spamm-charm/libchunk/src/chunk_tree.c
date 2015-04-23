@@ -30,6 +30,22 @@
 #include <omp.h>
 #endif
 
+#ifdef _OPENMP
+#if CHUNK_LOCK == CHUNK_LOCK_OMP_LOCK
+#define BEGIN_LOCKED_SECTION omp_set_lock(&C->matrix_lock)
+#define END_LOCKED_SECTION omp_unset_lock(&C->matrix_lock)
+#elif CHUNK_LOCK == CHUNK_LOCK_ATOMIC
+#define BEGIN_LOCKED_SECTION _Pragma(omp atomic)
+#define END_LOCKED_SECTION
+#else
+#define BEGIN_LOCKED_SECTION
+#define END_LOCKED_SECTION
+#endif
+#else
+#define BEGIN_LOCKED_SECTION
+#define END_LOCKED_SECTION
+#endif
+
 /** A convenience macro for printing some debugging output. */
 #ifdef DEBUG_OUTPUT
 #ifdef _OPENMP
@@ -129,8 +145,10 @@ struct chunk_tree_node_t
   int N_basic;
 
 #ifdef _OPENMP
+#if CHUNK_LOCK == CHUNK_LOCK_OMP_LOCK
   /** The OpenMP lock on the matrix. */
   omp_lock_t matrix_lock;
+#endif
 #endif
 
   /** The children nodes are linked using relative offsets so we can pass the
@@ -330,7 +348,9 @@ chunk_tree_alloc (const int N_chunk,
       node->N_basic = N_basic;
 
 #ifdef _OPENMP
+#if CHUNK_LOCK == CHUNK_LOCK_OMP_LOCK
       omp_init_lock(&node->matrix_lock);
+#endif
 #endif
 
       size_t matrix_offset = ROW_MAJOR(i, j, ipow2(ptr->depth))*SQUARE(N_basic)*sizeof(double);
@@ -805,9 +825,7 @@ chunk_tree_multiply_node (const double tolerance_2,
       //INFO("B[0][0] = % 1.3f\n", B_submatrix[0]);
       //INFO("C[0][0] = % 1.3f\n", C_submatrix[0]);
 
-#ifdef _OPENMP
-      omp_set_lock(&C->matrix_lock);
-#endif
+      BEGIN_LOCKED_SECTION;
 
 #if defined(BLOCK_MULTIPLY)
       chunk_block_multiply(A_submatrix, B_submatrix, C_submatrix, A->N_basic);
@@ -823,9 +841,8 @@ chunk_tree_multiply_node (const double tolerance_2,
 #error unknown block multiply implementation.
 #endif
 
-#ifdef _OPENMP
-      omp_unset_lock(&C->matrix_lock);
-#endif
+      END_LOCKED_SECTION;
+
       DEBUG("done multiplying\n");
     }
   }

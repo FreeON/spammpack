@@ -3,7 +3,8 @@ dist_noinst_SCRIPTS = scaling-mustang.sh
 noinst_PROGRAMS = \
 	chunk_multiply \
 	chunk_tree_multiply \
-	chunk_SP2
+	chunk_SP2 \
+	task_tester
 
 check_PROGRAMS = \
 	chunk_add \

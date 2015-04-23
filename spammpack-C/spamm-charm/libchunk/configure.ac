@@ -99,11 +99,11 @@ AC_ARG_ENABLE([block-multiply],
 case ${enable_block_multiply} in
   "block" )
     AC_MSG_RESULT([block])
-    AC_DEFINE([BLOCK_MULTIPLY], [1], [Use simple nested loop matrix multiply.])
+    AC_DEFINE([BLOCK_MULTIPLY], [1], [Use simple nested loop matrix multiply])
     ;;
   "blas" )
     AC_MSG_RESULT([blas])
-    AC_DEFINE([BLOCK_BLAS], [1], [Use .gemm() matrix multiply.])
+    AC_DEFINE([BLOCK_BLAS], [1], [Use .gemm() matrix multiply])
     ;;
   *) AC_MSG_FAILURE([unknown multiply implementation]) ;;
 esac
@@ -121,7 +121,7 @@ if [[ "${use_external_lapack}" = "yes" ]] || [[ "${enable_block_multiply}" = "bl
   done
   if test "${DGEMM}" != "unset"; then
     AC_DEFINE_UNQUOTED([DGEMM], [${DGEMM}], [The call to BLAS dgemm() including
-                        all necessary underscores.])
+                        all necessary underscores])
   fi
 
   # Find dsyev() for spectral bounds.
@@ -130,7 +130,7 @@ if [[ "${use_external_lapack}" = "yes" ]] || [[ "${enable_block_multiply}" = "bl
   done
   if test "${DSYEV}" != "unset"; then
     AC_DEFINE_UNQUOTED([DSYEV], [${DSYEV}], [The call to dsyev() including all
-                        necessary underscores.])
+                        necessary underscores])
   fi
 fi
 
@@ -141,10 +141,10 @@ AC_ARG_ENABLE([chunk-tree-max-tier],
    chunk tree (default = 6)])],
   [enable_chunk_tree_max_tier=$enableval],
   [enable_chunk_tree_max_tier=6])
-if [[ ${enable_chunk_tree_max_tier} -gt 0 ]]; then
-  AC_DEFINE_UNQUOTED([CHUNK_TREE_MAX_TIER], [${enable_chunk_tree_max_tier}],
+if [[ ${enable_chunk_tree_max_tier} -ge 0 ]]; then
+  AC_DEFINE_UNQUOTED([CHUNK_TREE_MAX_TIER], [$enable_chunk_tree_max_tier],
     [The maximum tier at which new tasks are created when recursing the chunk
-     tree.])
+     tree])
 else
   enable_chunk_tree_max_tier=0
 fi
@@ -161,7 +161,7 @@ AC_ARG_ENABLE([chunk-block-transpose],
 if [[ ${enable_chunk_block_transpose} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([CHUNK_BLOCK_TRANSPOSE], [${enable_chunk_block_transpose}],
     [The minimum size N of the block matrix that will transpose a matrix to
-     allow for loop vectorization.])
+     allow for loop vectorization])
   AC_MSG_RESULT([yes for N >= ${enable_chunk_block_transpose}])
 else
   AC_MSG_RESULT([no])
@@ -175,7 +175,7 @@ AC_ARG_ENABLE([no-work],
   [enable_no_work="no"])
 if [[ ${enable_no_work} = "yes" ]]; then
   AC_DEFINE_UNQUOTED([CHUNK_BLOCK_NO_WORK], [${enable_no_work}], [Do not
-    perform work in form of a block multiply at the leaf nodes.])
+    perform work in form of a block multiply at the leaf nodes])
 fi
 AC_MSG_RESULT([${enable_no_work}])
 
@@ -186,7 +186,7 @@ AC_ARG_ENABLE([sleep],
   [enable_sleep=0])
 if [[ ${enable_sleep} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([BLOCK_SLEEP], [${enable_sleep}], [Number of nanoseconds
-    to sleep after block multiply.])
+    to sleep after block multiply])
 fi
 
 AC_ARG_ENABLE([complexity],
@@ -225,6 +225,33 @@ if test "${enable_debug}" = "yes"; then
 else
   AC_MSG_RESULT([no])
 fi
+
+# Choose locking model.
+AC_DEFINE([CHUNK_LOCK_OMP_LOCK], [1], [Use omp_lock])
+AC_DEFINE([CHUNK_LOCK_ATOMIC], [2], [Use omp atomic])
+AC_DEFINE([CHUNK_LOCK_NONE], [3], [No locking])
+
+AC_MSG_CHECKING([locking model])
+AC_ARG_ENABLE([lock],
+  [AS_HELP_STRING([--enable-lock],
+  [the locking model (omp_lock, atomic, none)])],
+  [enable_lock=$enableval],
+  [enable_lock="omp_lock"])
+AC_MSG_RESULT([${enable_lock}])
+case ${enable_lock} in
+  "omp_lock")
+    AC_DEFINE_UNQUOTED([CHUNK_LOCK], [CHUNK_LOCK_OMP_LOCK], [The locking model])
+    ;;
+  "atomic")
+    AC_DEFINE_UNQUOTED([CHUNK_LOCK], [CHUNK_LOCK_ATOMIC], [The locking model])
+    ;;
+  "none")
+    AC_DEFINE_UNQUOTED([CHUNK_LOCK], [CHUNK_LOCK_NONE], [The locking model])
+    ;;
+  *)
+    AC_MSG_FAILURE([unknown locking model])
+    ;;
+esac
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
