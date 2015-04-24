@@ -287,6 +287,10 @@ chunk_tree_alloc (const int N_chunk,
         /* Initialize node. */
         node->N_basic = N_basic;
 
+#ifdef _OPENMP
+        omp_init_lock(&node->matrix_lock);
+#endif
+
         for(int i_child = 0; i_child < 2; i_child++)
         {
           for(int j_child = 0; j_child < 2; j_child++)
@@ -330,9 +334,7 @@ chunk_tree_alloc (const int N_chunk,
       node->N_basic = N_basic;
 
 #ifdef _OPENMP
-#if CHUNK_LOCK == CHUNK_LOCK_OMP_LOCK
       omp_init_lock(&node->matrix_lock);
-#endif
 #endif
 
       size_t matrix_offset = ROW_MAJOR(i, j, ipow2(ptr->depth))*SQUARE(N_basic)*sizeof(double);
