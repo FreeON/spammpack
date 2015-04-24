@@ -296,7 +296,7 @@ contains
     WRITE(*,*)" ||f'_dx_k1_yz     ||   = ",SQRT(SUM(fpx_yz**2)),   SQRT(SUM( xp_tld_k_yz_gateaux**2)) 
     WRITE(*,*)" ||f'_dx_k1_naiv   ||   = ",SQRT(SUM(fpx_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
     WRITE(*,*)" ||f'_dx_k1_stab   ||   = ",SQRT(SUM(fpx_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
-    WRITE(*,*)" ||f'_dz_k1_stab   ||   = ",SQRT(SUM(fpz_stab**2)), SQRT(SUM( zp_tld_k_stab_gateaux**2)), SQRT(SUM(dz_k_dz_k1**2))
+    WRITE(*,*)" ||f'_dz_k1_stab   ||   = ",SQRT(SUM(fpz_stab**2)), SQRT(SUM( zp_tld_k_stab_gateaux**2))
 
 !    IF(kount==2)WRITE(*,43)
 !    WRITE(*,44)kount, tau, FillN, SQRT(SUM(dX**2))                   , &
@@ -304,8 +304,6 @@ contains
 !         SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) , &
 !         SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
  
-
-
    
 43     FORMAT(" Itr          Tau,             %N,            /\X,        f'_stab,       /\f_stab,        f'_dual,       /\f_dual,        f'_naiv,       /\f_naiv ")
 44     format(I3,"   ", 20(e12.6,",   "))

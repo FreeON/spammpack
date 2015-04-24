@@ -84,22 +84,24 @@ strategies.
 Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
 Based on Cauchy Schwarz inequality.
 
+We show that this first order error in algebraic context follows the functional analysis, and enables the consideration {\em and seperate treatment} of
+first order error flows in the analysis of complex maps. 
+
 \begin{equation}
 \mat{a} \ot \mat{b}=\mat{a}\cdot \mat{b} + \mat{\Delta}^{a\cdot b}_{\tau}
 \end{equation}
-where $\mat{\Delta}_{\tau}$ is a deterministic first order variation , $\tau \, \widehat{\mat{\Delta}}$, cooresponding to the branch pattern set
-by Cauchy-Schwarz culling.  
-Because $\mat{\Delta}^{a\cdot b}_{\tau}$ is assymetric (even if $\mat{a}$ and $\mat{b}$ are symmetric and retain the same basis),  
-SpAMM is non-associative, with Lie bracket
+where $\mat{\Delta}^{a \cdot b}_{\tau}$ is a deterministic first order variation cooresponding to the branch pattern set
+by Cauchy-Schwarz culling, with length $\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \leq \tau \lVert \mat{a} \rVert  \lVert \mat{b} \rVert$.  
+
+
+Because $\mat{\delta}^{a\cdot b}_{\tau}$ is assymetric (even if $\mat{a}$ and $\mat{b}$ are symmetric and retain the same basis),  
+the opperator $\ot$ is non-associative with Lie bracket
 \begin{equation}
 \left[ \mat{a} , \mat{b} \right]_{\tau} =
 \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a} = \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} .
 \end{equation}
-defining fields associated 
-%
-% SpAMM approximation introduces the vector field $ \sim \tau \left[\mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau}\right]/
-%\lVert \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau}] \rVert $.
-Our interest is in minimizing change in these fields under iteration, for ill-conditioned problems and with permisive values of $\tau$. 
+defining symmetries of the occluded field. Our challenge is to minimizing change in these fields under iteration, 
+for ill-conditioned problems and with permisive values of $\tau$. 
 
 \subsection{On ``Variational'' and ``non-Variational'' Iteration}
 Gradients lack convergence properties
@@ -114,10 +116,10 @@ NS has both.  Difference between scalar iteration, Higham page 92.
 
 \section{Newton Shulz Iteration}
 \begin{multline}
-\Delta \mat{x}_k = {f}_{\Delta \mat{z}_{k-1}}  \, \lVert \Delta \mat{z}_{k-1} \rVert 
-                              +  {f}_{\Delta \mat{x}_{k-1}}   \, \lVert \Delta \mat{x}_{k-1} \rVert \\
-                              +  {f}_{\Delta \mat{z}_{k-1}, \Delta \mat{x}_{k-1} }   \, \lVert \Delta \mat{z}_{k-1} \rVert
-                                                                                      \, \lVert \Delta \mat{x}_{k-1} \rVert
+\delta \mat{x}_k = {f}_{\delta \mat{z}_{k-1}}  \, \lVert \delta \mat{z}_{k-1} \rVert 
+                              +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert \\
+                              +  {f}_{\delta \mat{z}_{k-1}, \delta \mat{x}_{k-1} }   \, \lVert \delta \mat{z}_{k-1} \rVert
+                                                                                      \, \lVert \delta \mat{x}_{k-1} \rVert
                                                                                       + \cal{O} \left(  \tau^\rm{3} \right)
 \end{multline}
 
@@ -131,15 +133,15 @@ NS has both.  Difference between scalar iteration, Higham page 92.
 \subsection{\bf  Error Flows in Naive, Dual and Stable Newton Schulz Iterations}
 
 \begin{equation}
-\Delta \mat{x}^{\rm{naiv}}_k =   \Delta  \widetilde{ \mat{z}}_{k} \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} 
-                           +  \widetilde{\mat{z}}_{k} \cdot \mat{s} \cdot \! \Delta \widetilde{\mat{z}}_{k} 
+\delta \mat{x}^{\rm{naiv}}_k =   \delta  \widetilde{ \mat{z}}_{k} \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} 
+                           +  \widetilde{\mat{z}}_{k} \cdot \mat{s} \cdot \! \delta \widetilde{\mat{z}}_{k} 
                          \end{equations}
 
 
 
 \begin{equation}
-\Delta \mat{x}^{\rm{dual}}_k =   \Delta  \widetilde{ \mat{y}}_{k} \cdot \widehat{\mat{z}}_{k} 
-                           +  \widetilde{\mat{y}}_{k} \cdot \Delta \widetilde{\mat{z}}_{k} 
+\delta \mat{x}^{\rm{dual}}_k =   \delta  \widetilde{ \mat{y}}_{k} \cdot \widehat{\mat{z}}_{k} 
+                           +  \widetilde{\mat{y}}_{k} \cdot \delta \widetilde{\mat{z}}_{k} 
 \end{equation}
 
 
@@ -156,10 +158,10 @@ NS has both.  Difference between scalar iteration, Higham page 92.
 
 
 \begin{multline}
-\Delta \mat{x}_k = {f}_{\Delta \mat{z}_{k-1}}  \, \lVert \Delta \mat{z}_{k-1} \rVert 
-                              +  {f}_{\Delta \mat{x}_{k-1}}   \, \lVert \Delta \mat{x}_{k-1} \rVert \\
-                              +  {f}_{\Delta \mat{z}_{k-1}, \Delta \mat{x}_{k-1} }   \, \lVert \Delta \mat{z}_{k-1} \rVert
-                                                                                      \, \lVert \Delta \mat{x}_{k-1} \rVert
+\delta \mat{x}_k = {f}_{\delta \mat{z}_{k-1}}  \, \lVert \delta \mat{z}_{k-1} \rVert 
+                              +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert \\
+                              +  {f}_{\delta \mat{z}_{k-1}, \delta \mat{x}_{k-1} }   \, \lVert \delta \mat{z}_{k-1} \rVert
+                                                                                      \, \lVert \delta \mat{x}_{k-1} \rVert
                                                                                       + \cal{O} \left(  \tau^\rm{3} \right)
 \end{multline}
 
@@ -169,29 +171,54 @@ generalized Gateaux differential
 
 
 \begin{equation}
-f_{\mat{\Delta}} = \lim_{\tau \rightarrow 0} \frac{ f [\, \mat{x} \, + \, \tau \widehat{\mat{\Delta}} \, ]-f\left[\mat{x}\right]}{\tau}  
+f_{\mat{\delta}} = \lim_{\tau \rightarrow 0} \frac{ f [\, \mat{x} \, + \, \tau \widehat{\mat{\delta}} \, ]-f\left[\mat{x}\right]}{\tau}  
+\end{equation}
+
+\begin{multline}
+{L}_{\mat{x}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{x}}_{k-1} \right) 
+= \delta \widehat{\mat{x}}^\dagger_{k-1} \cdot   \tt{m}'\left[\mat{x}_{k-1} \right] \cdot 
+\{\widetilde{\mat{z}}^\dagger_{k-1}  \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} \}  \\ 
++ \{ \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} 
+\cdot \tt{m}'\left[\mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{x}}_{k-1} 
+\end{multline}
+
+\begin{equation}
+ \{ \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} 
+\rightarrow \mat{p}_+\left[\mat{s} \right]
+\end{equation}
+
+\begin{multline}
+{L}_{\mat{x}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{z}}_{k-1} \right) = 
+\{ \tt{m}\left[\mat{x}_{k-1} \right]  \cdot \delta {\widehat{\mat{z}}}^\dagger_{k-1} 
+ \cdot \mat{s} \} \cdot \widetilde{\mat{z}}_{k} \\
++\widetilde{\mat{z}}^\dagger_{k} \cdot \{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
+\cdot \tt{m}\left[\mat{x}_{k-1} \right]    \} 
+\end{multline}
+
+\begin{equation}
+\{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
+\cdot \tt{m}\left[\mat{x}_{k-1} \right]    \} 
+\rightarrow \mat{n}\left[\mat{s} \right]
 \end{equation}
 
 
+
 \begin{multline}
-%%{f}_{\Delta \mat{z}_{k-1}}  
-{L}_{\mat{x}_k}\left(\widetilde{\mat{z}}_{k} , \Delta \mat{z}_{k-1} \right) 
-= 
-\Delta {\mat{z}}^\dagger_{k-1}  \cdot \{\tt{m}\left[\mat{x}_{k-1} \right] 
- \cdot \mat{s}\} \cdot \widetilde{\mat{z}}_{k} \\
-+\widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot \tt{m}\left[\mat{x}_{k-1} \right]  \cdot \left(\Delta {\mat{z}}_{k-1}  \right) 
+ \delta {\mat{z}}_{k-1} \approx \Delta^{\widetilde{\mat{z}}_{k-2} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
++ \mat{z}_{k-2} \cdot \tt{m}'\left[ \widetilde{\mat{x}}_{k-2}\right] \cdot \delta \mat{x}_{k-2} \\
++\delta \mat{z}_{k-2} \cdot \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right] 
 \end{multline}
 
 
 \begin{multline}
-%{f}^{\rm{stab}}_{\Delta \mat{x}_{k-1}}  
-{L}_{\mat{x}_k}\left(\widetilde{\mat{z}}_{k} , \Delta \mat{x}_{k-1} \right) 
-= \Delta \widehat{\mat{x}}^\dagger_{k-1} \cdot \tt{m}'\left[\mat{x}_{k-1} \right]\cdot 
-\{\widetilde{\mat{z}}^\dagger_{k-1}  \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} \}  \\
-+ \{
-\widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} \cdot \tt{m}'\left[\mat{x}_{k-1} \right]  
-\cdot \Delta \widehat{\mat{x}}_{k-1} 
+\lVert \delta {\mat{z}}_{k-1} \rVert \lesssim
+\lVert \mat{z}_{k-2} \rVert \left( \;  \tau \, \lVert \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert \right.   \\ \left.
++ \; \lVert \delta {\mat{x}}_{k-2} \rVert   \lVert \tt{m}' \left[\widetilde{\mat{x}}_{k-2} \right] \rVert \; \right)
 \end{multline}
+
+\begin{equation}
+\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
+\end{equation}
 
 
 \subsection{\bf  An Experiment}
@@ -217,12 +244,12 @@ f_{\mat{\Delta}} = \lim_{\tau \rightarrow 0} \frac{ f [\, \mat{x} \, + \, \tau \
 
 
 \begin{equation}
-\widetilde {\mat{z}}_k = {\mat{z}}_k + \mat{\Delta}^\tau_k \qquad
+\widetilde {\mat{z}}_k = {\mat{z}}_k + \mat{\delta}^\tau_k \qquad
 \end{equation}
 
 
 \begin{equation}
-\lVert \mat{\Delta}^\tau_k  \rVert \sim \tau \lVert \mat{z}_k \rVert \lVert {m}\left(\mat{x}_k\right) \rVert \qquad
+\lVert \mat{\delta}^\tau_k  \rVert \sim \tau \lVert \mat{z}_k \rVert \lVert {m}\left(\mat{x}_k\right) \rVert \qquad
 \end{equation}
 
 
@@ -235,14 +262,14 @@ f_{\mat{\Delta}} = \lim_{\tau \rightarrow 0} \frac{ f [\, \mat{x} \, + \, \tau \
 \end{equation}
 
 \begin{equation}
-\widetilde{\mat{x}}_{k+1} \leftarrow \left( \mat{z}_{k+1} +\mat{\Delta}_{k} \right) 
-\; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \left( \mat{z}_{k+1} + \mat{\Delta}_k \right) \qquad
+\widetilde{\mat{x}}_{k+1} \leftarrow \left( \mat{z}_{k+1} +\mat{\delta}_{k} \right) 
+\; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \left( \mat{z}_{k+1} + \mat{\delta}_k \right) \qquad
 \end{equation}
 
 
 \begin{equation}
-\widetilde{\mat{x}}^\text{stab}_{k+1} \leftarrow \left( \mat{z}^\dagger_{k+1} +\mat{\Delta}\dagger_{k} \right) 
-\; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \left( \mat{z}_{k+1} + \mat{\Delta}_k \right) \qquad
+\widetilde{\mat{x}}^\text{stab}_{k+1} \leftarrow \left( \mat{z}^\dagger_{k+1} +\mat{\delta}\dagger_{k} \right) 
+\; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \left( \mat{z}_{k+1} + \mat{\delta}_k \right) \qquad
 \end{equation}
 
 
@@ -254,75 +281,75 @@ f_{\mat{\Delta}} = \lim_{\tau \rightarrow 0} \frac{ f [\, \mat{x} \, + \, \tau \
 
 \begin{eqnarray}
 \widetilde{\mat{x}}_\text{n} &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
-                    &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\Delta}^{s,z}_\tau  \right] \\[0.1cm]
-                    &=& \mat{x}_\text{n} + \mat{z} \cdot \mat{\Delta}^{s,z}_\tau + \mat{\Delta}^{z,\Delta^{s,z}}_\tau 
+                    &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{s,z}_\tau  \right] \\[0.1cm]
+                    &=& \mat{x}_\text{n} + \mat{z} \cdot \mat{\delta}^{s,z}_\tau + \mat{\delta}^{z,\delta^{s,z}}_\tau 
  \end{eqnarray}
 
 
 \begin{eqnarray}
 \widetilde{\mat{x}}^\dagger_\text{n} &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \matT{z}  \right] \\[0.1cm]
-                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \matT{z} + \mat{\Delta}^{[sz^\dagger]}  \right] \\[0.1cm]
-                    &=& \matT{x}_\text{n} + \matT{z} \cdot \mat{\Delta}^{s,z^\dagger}_\tau + \mat{\Delta}^{z^\dagger ,\Delta^{s,z^\dagger}}_\tau 
+                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \matT{z} + \mat{\delta}^{[sz^\dagger]}  \right] \\[0.1cm]
+                    &=& \matT{x}_\text{n} + \matT{z} \cdot \mat{\delta}^{s,z^\dagger}_\tau + \mat{\delta}^{z^\dagger ,\delta^{s,z^\dagger}}_\tau 
  \end{eqnarray}
 
 
 %\begin{eqnarray}
 %\bm{\large \epsilon}^{\text{n}}_\perp \left(\bm{z}, \bm{s}, \tau \right) &=& test \\
 %
-%                              &=& \left[ \bm{x}+\bm{z}\cdot \bm{\Delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, ,  \right. \\[0.1cm] 
-%                                         && \qquad \left.  \bm{x}^\dagger +\bm{z}\cdot \bm{\Delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2)   \right]
+%                              &=& \left[ \bm{x}+\bm{z}\cdot \bm{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, ,  \right. \\[0.1cm] 
+%                                         && \qquad \left.  \bm{x}^\dagger +\bm{z}\cdot \bm{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2)   \right]
 %\end{eqnarray}
 
 \begin{eqnarray}
 \mat{\epsilon}^{\text{n}}_\perp \left(  \mat{z}, \mat{s}, \tau  \right)  &=& \left[ \tilde{\mat{x}}_\text{n},\tilde{\mat{x}}^\dagger_\text{n}  \right] \\
-&=&\left[ \mat{x}+\mat{z}\cdot \mat{\Delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\ 
-             && \qquad \left.  \mat{x}^\dagger +\mat{z}^\dagger \cdot \mat{\Delta}^{s,z^\dagger}_{\tau} + \mathcal{O}(\tau^2)   \right] \nonumber \\[0.2cm] 
-                    &=& \left[ \mat{x}_\text{n}, \matT{x}_\text{n} \right] +  \left[ \mat{x}_\text{n}, \mat{z}^\dagger \cdot \mat{\Delta}^{s,z^\dagger}_{\tau} \right] \\
-                    && \qquad + \left[  \mat{z}\cdot \mat{\Delta}^{s,z}_{\tau} , \matT{x}_\text{n} \right] \, + \, \mathcal{O}(\tau^2)
+&=&\left[ \mat{x}+\mat{z}\cdot \mat{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\ 
+             && \qquad \left.  \mat{x}^\dagger +\mat{z}^\dagger \cdot \mat{\delta}^{s,z^\dagger}_{\tau} + \mathcal{O}(\tau^2)   \right] \nonumber \\[0.2cm] 
+                    &=& \left[ \mat{x}_\text{n}, \matT{x}_\text{n} \right] +  \left[ \mat{x}_\text{n}, \mat{z}^\dagger \cdot \mat{\delta}^{s,z^\dagger}_{\tau} \right] \\
+                    && \qquad + \left[  \mat{z}\cdot \mat{\delta}^{s,z}_{\tau} , \matT{x}_\text{n} \right] \, + \, \mathcal{O}(\tau^2)
  \end{eqnarray}
 
 \pagebreak
 
-%                    &=& \mat{x}_{\text{stab}} + \mat{\Delta}^{z^\dagger [sz]} + \matT{z} \cdot \mat{\Delta}^{[sz]} %+ \mathcal{O}( \tau^2  ) 
+%                    &=& \mat{x}_{\text{stab}} + \mat{\delta}^{z^\dagger [sz]} + \matT{z} \cdot \mat{\delta}^{[sz]} %+ \mathcal{O}( \tau^2  ) 
 
 
 \begin{eqnarray}
 \widetilde{\mat{x}}_{\text{stab}} &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
-                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\Delta}^{[sz]}  \right] \\[0.1cm]
-                    &=& \mat{x} + \left(  \matT{z} \cdot \mat{\Delta}^{[sz]} \right)  +  \mat{\Delta}^{z^\dagger[sz]}  
+                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right] \\[0.1cm]
+                    &=& \mat{x} + \left(  \matT{z} \cdot \mat{\delta}^{[sz]} \right)  +  \mat{\delta}^{z^\dagger[sz]}  
 %+ \mathcal{O}( \tau^2  ) 
 \end{eqnarray}
 
 
 \begin{eqnarray}
 \widetilde{\mat{x}}_{\text{s}} &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
-                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\Delta}^{[sz]}  \right] \\[0.1cm]
-                    &=& \mat{x} + \left(  \matT{z} \cdot \mat{\Delta}^{[sz]} \right)  +  \mat{\Delta}^{z^\dagger[sz]}  
+                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right] \\[0.1cm]
+                    &=& \mat{x} + \left(  \matT{z} \cdot \mat{\delta}^{[sz]} \right)  +  \mat{\delta}^{z^\dagger[sz]}  
 %+ \mathcal{O}( \tau^2  ) 
 \end{eqnarray}
 
 
 \begin{eqnarray}
 \widetilde{\mat{x}}^\dagger_{\text{s}} &=& \left\{ \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \right\}^\dagger \\[0.1cm]
-                 &=& \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\Delta}^{[sz]}  \right]^\dagger  {\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
-                 &=& \left[ \matT{z} \cdot  \mat{s} + \mat{\Delta}^{[z^\dagger s]}  \right]{\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
-                 &=&  \mat{x}_\text{s} + \mat{\Delta}^{[ z^\dagger s ]} \cdot  \mat{z}  +  \mat{\Delta}^{[z^\dagger s]z} \\[0.1cm]
-                 &=&  \mat{x}_\text{s} + \left( \matT{z} \cdot \mat{\Delta}^{[ s z ]}  \right)^\dagger  +  \mat{\Delta}^{[z^\dagger s]z}
+                 &=& \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right]^\dagger  {\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
+                 &=& \left[ \matT{z} \cdot  \mat{s} + \mat{\delta}^{[z^\dagger s]}  \right]{\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
+                 &=&  \mat{x}_\text{s} + \mat{\delta}^{[ z^\dagger s ]} \cdot  \mat{z}  +  \mat{\delta}^{[z^\dagger s]z} \\[0.1cm]
+                 &=&  \mat{x}_\text{s} + \left( \matT{z} \cdot \mat{\delta}^{[ s z ]}  \right)^\dagger  +  \mat{\delta}^{[z^\dagger s]z}
 \end{eqnarray}
 
 \begin{eqnarray}
 \mat{\epsilon}^{\text{s}}_\perp \left(  \mat{z}, \mat{s}, \tau  \right)
-                    &=& \left[ \mat{x}_\text{s} + \mat{z}\cdot \mat{\Delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\[0.1cm] 
-             && \qquad \left.  \mat{x}^\dagger_s +\mat{z}^\dagger \cdot \bm{\Delta}^{s,z^\dagger}_{\tau} + \mathcal{O}(\tau^2)   \right]
+                    &=& \left[ \mat{x}_\text{s} + \mat{z}\cdot \mat{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\[0.1cm] 
+             && \qquad \left.  \mat{x}^\dagger_s +\mat{z}^\dagger \cdot \bm{\delta}^{s,z^\dagger}_{\tau} + \mathcal{O}(\tau^2)   \right]
  \end{eqnarray}
 
 \begin{eqnarray}
 \mat{\epsilon}^{\text{s}}_\perp \left(  \mat{z}, \mat{s}, \tau  \right)  &=& \left[ \tilde{\mat{x}}_\text{s},\tilde{\mat{x}}^\dagger_\text{s}  \right] \\
-&=&\left[ \mat{x}+\matT{z}\cdot \mat{\Delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\ 
-             && \qquad \left.  \mat{x}^\dagger + \left( \mat{z}^\dagger \cdot \mat{\Delta}^{s,z}_{\tau} \right)^\dagger + \mathcal{O}(\tau^2)   \right] \nonumber \\[0.2cm] 
+&=&\left[ \mat{x}+\matT{z}\cdot \mat{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\ 
+             && \qquad \left.  \mat{x}^\dagger + \left( \mat{z}^\dagger \cdot \mat{\delta}^{s,z}_{\tau} \right)^\dagger + \mathcal{O}(\tau^2)   \right] \nonumber \\[0.2cm] 
                     &=& \left[ \mat{x}_\text{s}, \matT{x}_\text{s} \right] +  \left[ \mat{x}_\text{s}, 
-\left( \mat{z}^\dagger \cdot \mat{\Delta}^{s,z}_{\tau} \right)^\dagger \right] \\
-                    && \qquad + \left[  \matT{z}\cdot \mat{\Delta}^{s,z}_{\tau} , \matT{x}_\text{s} \right] \, + \, \mathcal{O}(\tau^2)
+\left( \mat{z}^\dagger \cdot \mat{\delta}^{s,z}_{\tau} \right)^\dagger \right] \\
+                    && \qquad + \left[  \matT{z}\cdot \mat{\delta}^{s,z}_{\tau} , \matT{x}_\text{s} \right] \, + \, \mathcal{O}(\tau^2)
  \end{eqnarray}
 
 
