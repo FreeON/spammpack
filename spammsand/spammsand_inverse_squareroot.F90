@@ -1,4 +1,4 @@
-!#define DENSE_DIAGNOSTICS
+#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
 module SpAMMsand_inverse_squareroot
@@ -158,7 +158,7 @@ contains
 
 !       tau_zdotz=1d-3/fprimez
 !       tau_zdotz=1d-3*SQRT(SQRT(z%frill%norm2))
-       tau_zdotz=MAX(tau, 8d-2*tau*SQRT(SQRT(z%frill%norm2) ) )
+       tau_zdotz=tau !MAX(tau, 8d-2*tau*SQRT(SQRT(z%frill%norm2) ) )
        WRITE(*,*)' tau = ',tau_zdotz
 
        ! |Z_n+1> =  <Z_n| X_n>  
@@ -235,31 +235,33 @@ contains
     integer :: i,kount
 
     real(spamm_kind), dimension(:,:), ALLOCATABLE :: &
-         MP, MP_Gateaux, DX,dx_hat, zp_k,yp_k, fp_naiv, fp_stab, fp_yz, &
-         x_tld_k_of_xk1_naiv, x_tld_k_of_xk1_stab, x_tld_k_of_xk1_yz, &
-         xp_tld_k_naiv_gateaux,xp_tld_k_stab_gateaux,xp_tld_k_yz_gateaux, dz, dz_hat
+         dx,dx_hat,dz,dz_hat,mp,mp_Gateaux,dz_k_dx_k1,dy_k_dx_k1,dz_k_dz_k1,               &
+         x_tld_k_of_xk1_yz, x_tld_k_of_xk1_naiv, x_tld_k_of_xk1_stab, x_tld_k_of_zk1_stab, &   
+         xp_tld_k_yz_gateaux, xp_tld_k_naiv_gateaux, xp_tld_k_stab_gateaux, zp_tld_k_stab_gateaux, & 
+         FpX_yz, FpX_naiv, FpX_stab, FpZ_stab
 
     real(spamm_kind) :: x_tld_k_naiv_compare, x_tld_k_stab_compare, x_tld_k_natv_compare, tau, filln, fprimez
 
-    ALLOCATE(dX  (1:N,1:N))
-    ALLOCATE(dX_hat(1:N,1:N))
-
-    ALLOCATE(dZ  (1:N,1:N))
-    ALLOCATE(dZ_hat(1:N,1:N))
-
-    ALLOCATE(Mp  (1:N,1:N))
-    ALLOCATE(Mp_Gateaux  (1:N,1:N))
-    ALLOCATE(zp_k(1:N,1:N))
-    ALLOCATE(yp_k(1:N,1:N))
-    ALLOCATE(fp_naiv      (1:N,1:N))
-    ALLOCATE(fp_stab      (1:N,1:N))
-    ALLOCATE(fp_yz      (1:N,1:N))
-    ALLOCATE( x_tld_k_of_xk1_naiv (1:N,1:N))
-    ALLOCATE( x_tld_k_of_xk1_stab (1:N,1:N))
-    ALLOCATE( x_tld_k_of_xk1_yz (1:N,1:N))
+    ALLOCATE(dX                    (1:N,1:N))
+    ALLOCATE(dX_hat                (1:N,1:N))
+    ALLOCATE(dZ                    (1:N,1:N))
+    ALLOCATE(dZ_hat                (1:N,1:N))
+    ALLOCATE(Mp                    (1:N,1:N))
+    ALLOCATE(Mp_Gateaux            (1:N,1:N))
+!    ALLOCATE(zp_k                  (1:N,1:N))
+!    ALLOCATE(yp_k                  (1:N,1:N))
+    ALLOCATE(fpx_naiv              (1:N,1:N))
+    ALLOCATE(fpx_yz                (1:N,1:N))
+    ALLOCATE(fpx_stab              (1:N,1:N))
+    ALLOCATE(fpz_stab              (1:N,1:N))
+    ALLOCATE( x_tld_k_of_xk1_naiv  (1:N,1:N))
+    ALLOCATE( x_tld_k_of_xk1_yz    (1:N,1:N))
+    ALLOCATE( x_tld_k_of_xk1_stab  (1:N,1:N))
+    ALLOCATE( x_tld_k_of_zk1_stab  (1:N,1:N))
     ALLOCATE(xp_tld_k_naiv_gateaux (1:N,1:N))
+    ALLOCATE(xp_tld_k_yz_gateaux   (1:N,1:N))
     ALLOCATE(xp_tld_k_stab_gateaux (1:N,1:N))
-    ALLOCATE(xp_tld_k_yz_gateaux (1:N,1:N))
+    ALLOCATE(zp_tld_k_stab_gateaux (1:N,1:N))
 
     dx        = x_tld_k1 - x_k1
     dx_hat    = dx/SQRT(SUM(dx**2))
@@ -270,30 +272,31 @@ contains
     mp        = scal_mapp * scal_shift * dx_hat
     mp_Gateaux=(m_x_tld_k1-m_x_k1)/SQRT(SUM(dx**2))
 
-    zp_k = MATMUL( z_tld_k1, mp ) 
-    yp_k = MATMUL( mp, y_tld_k1 ) 
+    dz_k_dx_k1 = MATMUL( z_tld_k1, mp ) 
+    dy_k_dx_k1 = MATMUL( mp, y_tld_k1 ) 
+    dz_k_dz_k1 = MATMUL( dz_hat, m_x_tld_k1 )
+      
+    x_tld_k_of_xk1_yz     = MATMUL( MATMUL( m_x_k1, y_tld_k1 ) , MATMUL( z_tld_k1 , m_x_k1 ) )
+    x_tld_k_of_xk1_naiv   = MATMUL( MATMUL( MATMUL(z_tld_k1 , m_x_k1 ) , S_d), MATMUL(z_tld_k1,m_x_k1) )
+    x_tld_k_of_xk1_stab   = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_k1 )), S_d), MATMUL(z_tld_k1,m_x_k1) )
 
-    x_tld_k_of_xk1_yz     = MATMUL( MATMUL( m_x_k1, y_tld_k1 ) , &
-                            MATMUL( z_tld_k1 , m_x_k1 ) )
-    x_tld_k_of_xk1_naiv   = MATMUL( MATMUL(           MATMUL(z_tld_k1 , m_x_k1 ) , S_d), &
-                            MATMUL(z_tld_k1,m_x_k1) )
-    x_tld_k_of_xk1_stab   = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_k1 )), S_d), &
-                            MATMUL(z_tld_k1,m_x_k1) )
+    x_tld_k_of_zk1_stab   = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_k1 , m_x_tld_k1 )), S_d), MATMUL(z_k1,m_x_tld_k1) )
     
     xp_tld_k_yz_gateaux   = (x_tld_k_yz  -x_tld_k_of_xk1_yz  )/SQRT(SUM(dx**2))
     xp_tld_k_naiv_gateaux = (x_tld_k_naiv-x_tld_k_of_xk1_naiv)/SQRT(SUM(dx**2))
     xp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_xk1_stab)/SQRT(SUM(dx**2))
+    zp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_zk1_stab)/SQRT(SUM(dz**2))
 
-    fp_yz    = MATMUL( yp_k , z_tld_k ) + MATMUL( y_tld_k , zp_k )
-    fp_naiv  = MATMUL(     zp_k, MATMUL( s_d,  z_tld_k ) ) + MATMUL(  z_tld_k, MATMUL( s_d,     zp_k ) )
-    fp_stab  = MATMUL(TRANSPOSE(zp_k),MATMUL(s_d,z_tld_k))+MATMUL(TRANSPOSE(z_tld_k),MATMUL(s_d,zp_k))
+    FpX_yz    = MATMUL( dy_k_dx_k1 , z_tld_k ) + MATMUL( y_tld_k , dz_k_dx_k1 )
+    FpX_naiv  = MATMUL( dz_k_dx_k1, MATMUL( s_d,  z_tld_k ) ) + MATMUL(  z_tld_k, MATMUL( s_d, dz_k_dx_k1 ) )
+    FpX_stab  = MATMUL(TRANSPOSE(dz_k_dx_k1),MATMUL(s_d,z_tld_k))+MATMUL(TRANSPOSE(z_tld_k),MATMUL(s_d,dz_k_dx_k1))
+    FpZ_stab  = MATMUL( TRANSPOSE(dz_k_dz_k1) , MATMUL( s_d, z_tld_k)    ) &
+              + MATMUL( TRANSPOSE(z_tld_k)    , MATMUL( s_d, dz_k_dz_k1) )
 
-!    WRITE(*,*)" ||f'_yz     ||   = ",SQRT(SUM(fp_yz**2)),   SQRT(SUM( xp_tld_k_yz_gateaux**2)) 
-!    WRITE(*,*)" ||f'_naiv   ||   = ",SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
-!    WRITE(*,*)" ||f'_stab   ||   = ",SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
-
-!    WRITE(*,*)" ||f'_naiv   ||   = ",SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
-!    WRITE(*,*)" ||f'_stab   ||   = ",SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
+    WRITE(*,*)" ||f'_dx_k1_yz     ||   = ",SQRT(SUM(fpx_yz**2)),   SQRT(SUM( xp_tld_k_yz_gateaux**2)) 
+    WRITE(*,*)" ||f'_dx_k1_naiv   ||   = ",SQRT(SUM(fpx_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
+    WRITE(*,*)" ||f'_dx_k1_stab   ||   = ",SQRT(SUM(fpx_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
+    WRITE(*,*)" ||f'_dz_k1_stab   ||   = ",SQRT(SUM(fpz_stab**2)), SQRT(SUM( zp_tld_k_stab_gateaux**2)), SQRT(SUM(dz_k_dz_k1**2))
 
 !    IF(kount==2)WRITE(*,43)
 !    WRITE(*,44)kount, tau, FillN, SQRT(SUM(dX**2))                   , &
@@ -302,52 +305,31 @@ contains
 !         SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
  
 
-    fp_stab  = MATMUL(TRANSPOSE(dz_hat),MATMUL(s_d,z_tld_k))+MATMUL(TRANSPOSE(z_tld_k),MATMUL(s_d,dz_hat))
-
-    fprimez=SQRT(SUM(fp_stab**2))
-
-    WRITE(*,*)" ||f'_stab   ||   = ",SQRT(SUM(dz**2)),SQRT(SUM(fp_stab**2)), SQRT(SUM(fp_stab**2))*SQRT(SUM(dz**2))
-    WRITE(33,*)kount,SQRT(SUM(dz**2)),SQRT(SUM(fp_stab**2))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
    
 43     FORMAT(" Itr          Tau,             %N,            /\X,        f'_stab,       /\f_stab,        f'_dual,       /\f_dual,        f'_naiv,       /\f_naiv ")
 44     format(I3,"   ", 20(e12.6,",   "))
 
-    deALLOCATE(dX        )
-    deALLOCATE(dX_hat    )
-
-    deALLOCATE(dZ        )
-    deALLOCATE(dZ_hat    )
-
-    deALLOCATE(Mp        )
-    deALLOCATE(Mp_Gateaux)
-    deALLOCATE(zp_k      )
-    deALLOCATE(yp_k      )
-    deALLOCATE(fp_naiv   )
-    deALLOCATE(fp_stab   )
-    deALLOCATE(fp_yz     )
-    deALLOCATE( x_tld_k_of_xk1_naiv  )
-    deALLOCATE( x_tld_k_of_xk1_stab  )
-    deALLOCATE( x_tld_k_of_xk1_yz  )
-    deALLOCATE(xp_tld_k_naiv_gateaux )
-    deALLOCATE(xp_tld_k_stab_gateaux )
-    deALLOCATE(xp_tld_k_yz_gateaux )
+    DEALLOCATE(dX                    )
+    DEALLOCATE(dX_hat                )
+    DEALLOCATE(dZ                    )
+    DEALLOCATE(dZ_hat                )
+    DEALLOCATE(Mp                    )
+    DEALLOCATE(Mp_Gateaux            )
+ !   DEALLOCATE(zp_k                  )
+ !   DEALLOCATE(yp_k                  )
+    DEALLOCATE(fpx_naiv              )
+    DEALLOCATE(fpx_yz                )
+    DEALLOCATE(fpx_stab              )
+    DEALLOCATE(fpz_stab              )
+    DEALLOCATE( x_tld_k_of_xk1_naiv  )
+    DEALLOCATE( x_tld_k_of_xk1_stab  )
+    DEALLOCATE( x_tld_k_of_xk1_yz    )
+    DEALLOCATE( x_tld_k_of_zk1_stab  )
+    DEALLOCATE(xp_tld_k_naiv_gateaux )
+    DEALLOCATE(xp_tld_k_yz_gateaux   )
+    DEALLOCATE(xp_tld_k_stab_gateaux )
+    DEALLOCATE(zp_tld_k_stab_gateaux )
 
   END SUBROUTINE SpAMMsand_Error_Analysis
 #endif
@@ -479,7 +461,7 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-3                                       ! starting accuracy
+  logtau_strt=-5                                       ! starting accuracy
   logtau_stop=-10                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
