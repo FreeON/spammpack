@@ -26,7 +26,7 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     CONFIGURE_ARGS="--enable-openmp"
     CONFIGURE_ARGS+=" --disable-assert"
     CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
-    CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=0"
+    CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=3"
     #CONFIGURE_ARGS+=" --enable-no-work"
 else
   echo "unknown build type, either serial or openmp"
