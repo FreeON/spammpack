@@ -107,7 +107,7 @@ contains
     kount=1
     sz_norm=1d0
     FillN=1d10
-    DO i = 0, 26
+    DO i = 0, 20
 
        ! check the trace for convergence:
        FillN_prev=FillN
@@ -122,7 +122,7 @@ contains
 !          WRITE(*,*)' fill n = ',filln,' filln_prev ',filln_prev
 !          write(*,*)' elevation' 
 
-          RETURN  ! Elevation
+!          RETURN  ! Elevation
 
        endif
        IF( FillN <  Tau )then
@@ -130,7 +130,7 @@ contains
 !          WRITE(*,*)' fill n = ',filln,' tau**2 = ',tau
 !          write(*,*)' anhiliaiton '
 
-          RETURN  ! Anihilation
+!          RETURN  ! Anihilation
 
        end IF
 
@@ -224,6 +224,9 @@ contains
 #endif
        kount=kount+1
     END DO
+#ifdef DENSE_DIAGNOSTICS
+    STOP ' This has been a diagnostics run, please see fort.99 '
+#endif
 
     CaLl SpAMM_destruct_tree_2d_symm_recuR (Y)
    
@@ -298,11 +301,12 @@ contains
     WRITE(*,*)" ||f'_dx_k1_stab   ||   = ",SQRT(SUM(fpx_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
     WRITE(*,*)" ||f'_dz_k1_stab   ||   = ",SQRT(SUM(fpz_stab**2)), SQRT(SUM( zp_tld_k_stab_gateaux**2))
 
-!    IF(kount==2)WRITE(*,43)
-!    WRITE(*,44)kount, tau, FillN, SQRT(SUM(dX**2))                   , &
-!         SQRT(SUM(fp_yz  **2)), SQRT(SUM( xp_tld_k_yz_gateaux  **2)) , &
-!         SQRT(SUM(fp_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) , &
-!         SQRT(SUM(fp_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
+    IF(kount==2)WRITE(*,43)
+    WRITE(99,44)kount, tau, FillN, SQRT(SUM(dX**2)),SQRT(SUM(dZ**2))  , &
+         SQRT(SUM(fpx_yz  **2)), &!SQRT(SUM( xp_tld_k_yz_gateaux  **2)) , &
+         SQRT(SUM(fpx_naiv**2)), &!SQRT(SUM( xp_tld_k_naiv_gateaux**2)) , &
+         SQRT(SUM(fpx_stab**2)), &!SQRT(SUM( xp_tld_k_stab_gateaux**2)), 
+         SQRT(SUM(fpz_stab**2)) ! , SQRT(SUM( zp_tld_k_stab_gateaux**2))
  
    
 43     FORMAT(" Itr          Tau,             %N,            /\X,        f'_stab,       /\f_stab,        f'_dual,       /\f_dual,        f'_naiv,       /\f_naiv ")
@@ -459,7 +463,7 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-5                                       ! starting accuracy
+  logtau_strt=-3                                       ! starting accuracy
   logtau_stop=-10                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta

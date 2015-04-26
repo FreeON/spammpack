@@ -6,6 +6,9 @@
 
 \documentclass[letterpaper,twocolumn,amsmath,amsfont,amssymb,english,aps,jcp,preprintnumbers,groupaddress,nofootinbib,tightenlines]{revtex4}
 
+\usepackage{graphicx}
+
+
 %\documentclass[aps,prb,letterpaper,twocolumn,nofootinbib,showkeys]{revtex4-1}
 %\documentclass[aps,amssymb,prl,letterpaper,twocolumn,nofootinbib,showkeys]{revtex4-1}
 
@@ -170,14 +173,6 @@ for ill-conditioned problems and with permisive values of $\tau$.
 
 
 
-\begin{multline}
-\delta \mat{x}_k = {f}_{\delta \mat{z}_{k-1}}  \, \lVert \delta \mat{z}_{k-1} \rVert 
-                              +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert \\
-                              +  {f}_{\delta \mat{z}_{k-1}, \delta \mat{x}_{k-1} }   \, \lVert \delta \mat{z}_{k-1} \rVert
-                                                                                      \, \lVert \delta \mat{x}_{k-1} \rVert
-                                                                                      + \cal{O} \left(  \tau^\rm{3} \right)
-\end{multline}
-
 
 
 
@@ -188,7 +183,7 @@ for ill-conditioned problems and with permisive values of $\tau$.
 \begin{equation}
 \delta \mat{x}^{\rm{naiv}}_k =   \delta  \widetilde{ \mat{z}}_{k} \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} 
                            +  \widetilde{\mat{z}}_{k} \cdot \mat{s} \cdot \! \delta \widetilde{\mat{z}}_{k} 
-                         \end{equations}
+\end{equation}
 
 
 
@@ -200,24 +195,21 @@ for ill-conditioned problems and with permisive values of $\tau$.
 
 
 \begin{eqnarray}
- \mat{x}_k \! \left( \mat{s} \right)&=& f \left[\mat{z}_{k-1}\!\left(\mat{s}\right), \mat{x}_{k-1}\!\left(\mat{s}\right) \left] 
-\\ 
+\widetilde{\mat{x}}_k &=& f \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] \\ 
 &=&
-\tt{m} \left[ \mat{x}_{k-1}\!\left(\mat{s} \right)\right] 
-                                    \cdot \mat{z}^\dagger_{k-1} \! \left( \mat{s} \right)
- \cdot \mat{s} \cdot \mat{z}_{k-1} \!\left( \mat{s} \right)  \cdot \tt{m}\left[ \mat{x}_{k-1} \!\left(\mat{s} \right)\right] 
+\tt{m} \left[ \widetilde{\mat{x}}_{k-1}\right] \cdot \widetilde{\mat{z}}^\dagger_{k-1}  
+\cdot \mat{s} \cdot \widetilde{\mat{z}}_{k-1} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-1} \right] 
 \nonumber
 \end{eqnarray}
 
-
-\begin{multline}
+\begin{equation}
 \delta \mat{x}_k = {f}_{\delta \mat{z}_{k-1}}  \, \lVert \delta \mat{z}_{k-1} \rVert 
                               +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert 
+                                                                                      + {\cal{O}} \left(  \tau^2 \right)
+\end{equation}
+
 %                              +  {f}_{\delta \mat{z}_{k-1}, \delta \mat{x}_{k-1} }   \, \lVert \delta \mat{z}_{k-1} \rVert
 %                                                                                      \, \lVert \delta \mat{x}_{k-1} \rVert
-                                                                                      + \cal{O} \left(  \tau^\rm{2} \right)
-\end{multline}
-
 
 
 generalized Gateaux differential
@@ -262,14 +254,11 @@ f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\ma
 \rightarrow \mat{n}\left[\mat{s} \right]
 \end{equation}
 
-
-
 \begin{multline}
  \delta {\mat{z}}_{k-1} \approx \Delta^{\widetilde{\mat{z}}_{k-2} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
 + \mat{z}_{k-2} \cdot \tt{m}'\left[ \widetilde{\mat{x}}_{k-2}\right] \cdot \delta \mat{x}_{k-2} \\
 +\delta \mat{z}_{k-2} \cdot \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right] 
 \end{multline}
-
 
 \begin{multline}
 \lVert \delta {\mat{z}}_{k-1} \rVert \lesssim
@@ -281,8 +270,16 @@ f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\ma
 \lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
 \end{equation}
 
-
 \subsection{\bf  An Experiment}
+
+
+\begin{figure}[htp]
+  \centering
+  \label{figur}\caption{equation...}
+ \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-5.eps}
+ \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-3.eps}
+\end{figure}
+
 
 \begin{equation}
 \boldmath{\large \epsilon}_\perp\left(\mat{x}\right) = 
