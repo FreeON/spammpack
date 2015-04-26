@@ -55,20 +55,74 @@
 
 Decay principles, often very sparse but very ill-conditioned problems.
 
-\subsection{Matrix Multiplication as N-Body Problem}
+\subsection{Incomplete Schemes}
+
+Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
+Often adhoc.
+
+$\tilde{\mat{a}} = \mat{a}+ \delta \mat{a}$
+
+$\tilde{\mat{a}} \cdot \tilde{\mat{b}} = \mat{a}\cdot\mat{b}+ \delta \mat{a} \cdot \mat{b} +  \mat{a} \cdot \delta \mat{b}
++  \delta \mat{a} \cdot \delta \mat{b}$
+
+The variations do not express in the overal context of the product.  Because the error in the incomplete case is additive, the
+
+ For example, 
+$\mat{a}$ may be small, but $\delta \mat{a} \cdot \mat{b}$  large, leading extra work.  Also, 
+once a truncation error is commited, it is encounted in all subsiquent steps; it becomes difficult to impossilbe to manage error flows of differing 
+magnitude in complex maps. 
+
+
+\subsection{On ``Variational'' and ``non-Variational'' Iteration}
+Gradients lack convergence properties
+Iteration without orig drives away from basis
+NS has both.  Difference between scalar iteration, Higham page 92.
+
+\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
+
+\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
+\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
+
+
+\subsection{Approximate Algebras as {\bf \em N}-Body Problem}
+
+\pagebreak
+
+
+SpAMM is the recursive Cauchy-Schwarz occlusion product $\ot$ on matrix quadtrees
+
+\begin{equation}
+\mat{a}^i = \begin{bmatrix} \mat{a}^{i+1}_{00} & \mat{a}^{i+1}_{01} \\ \mat{a}^{i+1}_{10} & \mat{a}^{i+1}_{11} \end{bmatrix}
+\end{equation}
+
+\begin{widetext}
+\begin{equation}
+\mat{a}^{i} \ot \mat{b}^{i} = 
+\left\{
+        \begin{array}{ll}
+                 \emptyset \quad \tt{if}\quad \lVert \mat{a}^i \rVert \lVert \mat{b}^i \rVert < \tau \\[0.2cm]
+                 \mat{a} ^i \cdot \mat{b}^i \quad  \tt{if}(i=\tt{leaf}) \\[0.2cm]
+\begin{bmatrix} \mat{a}^{i+1}_{00} \ot \mat{b}^{i+1}_{00} +\mat{a}^{i+1}_{01} \ot \mat{b}^{i+1}_{10} \; , \; &
+                \mat{a}^{i+1}_{00} \ot \mat{b}^{i+1}_{01} +\mat{a}^{i+1}_{01} \ot \mat{b}^{i+1}_{11}  \\[0.2cm] 
+                \mat{a}^{i+1}_{00} \ot \mat{b}^{i+1}_{01} +\mat{a}^{i+1}_{01} \ot \mat{b}^{i+1}_{11} \; , \; & 
+                \mat{a}^{i+1}_{00} \ot \mat{b}^{i+1}_{01} +\mat{a}^{i+1}_{01} \ot \mat{b}^{i+1}_{11}   
+\end{bmatrix}  \quad \tt{else}
+                \end{array}
+              \right.
+\end{equation}
+\end{widetext}
+
+
+
+
+
+
+
 database orientation, Cauchy sch
 Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
 Based on Cauchy Schwarz inequality.
 
 
-
-\begin{equation}
-\mat{a} \ot \mat{b} \equiv \mat{a}^0_{00} \ot \mat{b}^0_{00} 
-\end{equation}
-
-\begin{equation}
-\mat{a}^l =  \mat{a}_{00} \ot \mat{b}_{00} 
-\end{equation}
 
 error accumulation may be better than row-col
 single programing model.  generacity.  communication optimality and strong scaling.
@@ -93,28 +147,29 @@ first order error flows in the analysis of complex maps.
 where $\mat{\Delta}^{a \cdot b}_{\tau}$ is a deterministic first order variation cooresponding to the branch pattern set
 by Cauchy-Schwarz culling, with length $\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \leq \tau \lVert \mat{a} \rVert  \lVert \mat{b} \rVert$.  
 
-
-Because $\mat{\delta}^{a\cdot b}_{\tau}$ is assymetric (even if $\mat{a}$ and $\mat{b}$ are symmetric and retain the same basis),  
-the opperator $\ot$ is non-associative with Lie bracket
+For a vector space $S$ with $\mat{a},\mat{b} \in S$, the opperator $\ot$ leads to a non-associative algebra with Lie bracket
 \begin{equation}
 \left[ \mat{a} , \mat{b} \right]_{\tau} =
-\mat{a} \ot \mat{b}-\mat{b} \ot \mat{a} = \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} .
+\mat{a} \ot \mat{b}-\mat{b} \ot \mat{a} = \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} ,
 \end{equation}
-defining symmetries of the occluded field. Our challenge is to minimizing change in these fields under iteration, 
+determined by the occlusion field.  Our challenge is to master the error flows of these occlusion fields under iteration, 
 for ill-conditioned problems and with permisive values of $\tau$. 
 
-\subsection{On ``Variational'' and ``non-Variational'' Iteration}
-Gradients lack convergence properties
-Iteration without orig drives away from basis
-NS has both.  Difference between scalar iteration, Higham page 92.
 
-\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
-
-\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
-\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
 
 
 \section{Newton Shulz Iteration}
+
+\subsection{Idempotence }
+
+
+\subsection{The Scaled Map}
+
+
+\subsection{Alternative Formulations}
+
+
+
 \begin{multline}
 \delta \mat{x}_k = {f}_{\delta \mat{z}_{k-1}}  \, \lVert \delta \mat{z}_{k-1} \rVert 
                               +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert \\
@@ -125,12 +180,10 @@ NS has both.  Difference between scalar iteration, Higham page 92.
 
 
 
-\subsection{\bf  On the Boundedness of Idempotent Iteration}
-
 
 \pagebreak
 
-\subsection{\bf  Error Flows in Naive, Dual and Stable Newton Schulz Iterations}
+\section{\bf  Mapping Error Flows}
 
 \begin{equation}
 \delta \mat{x}^{\rm{naiv}}_k =   \delta  \widetilde{ \mat{z}}_{k} \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} 
@@ -147,7 +200,7 @@ NS has both.  Difference between scalar iteration, Higham page 92.
 
 
 \begin{eqnarray}
- \mat{x}_k \! \left( \mat{s} \right)&=& f \left[\mat{z}_{k-1}\!\left(\mat{s}\right), \mat{x}_{k-1}\!\left(\mat{s}\right), \mat{s} \left] 
+ \mat{x}_k \! \left( \mat{s} \right)&=& f \left[\mat{z}_{k-1}\!\left(\mat{s}\right), \mat{x}_{k-1}\!\left(\mat{s}\right) \left] 
 \\ 
 &=&
 \tt{m} \left[ \mat{x}_{k-1}\!\left(\mat{s} \right)\right] 
@@ -159,10 +212,10 @@ NS has both.  Difference between scalar iteration, Higham page 92.
 
 \begin{multline}
 \delta \mat{x}_k = {f}_{\delta \mat{z}_{k-1}}  \, \lVert \delta \mat{z}_{k-1} \rVert 
-                              +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert \\
-                              +  {f}_{\delta \mat{z}_{k-1}, \delta \mat{x}_{k-1} }   \, \lVert \delta \mat{z}_{k-1} \rVert
-                                                                                      \, \lVert \delta \mat{x}_{k-1} \rVert
-                                                                                      + \cal{O} \left(  \tau^\rm{3} \right)
+                              +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert 
+%                              +  {f}_{\delta \mat{z}_{k-1}, \delta \mat{x}_{k-1} }   \, \lVert \delta \mat{z}_{k-1} \rVert
+%                                                                                      \, \lVert \delta \mat{x}_{k-1} \rVert
+                                                                                      + \cal{O} \left(  \tau^\rm{2} \right)
 \end{multline}
 
 
@@ -170,14 +223,22 @@ NS has both.  Difference between scalar iteration, Higham page 92.
 generalized Gateaux differential
 
 
-\begin{equation}
-f_{\mat{\delta}} = \lim_{\tau \rightarrow 0} \frac{ f [\, \mat{x} \, + \, \tau \widehat{\mat{\delta}} \, ]-f\left[\mat{x}\right]}{\tau}  
-\end{equation}
+\begin{eqnarray}
+f_{\delta \mat{z}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1}, \widetilde{\mat{x}}_{k-1} ]
+-f [\, \mat{z}_{k-1}, \widetilde{\mat{x}}_{k-1} ]  }{\tau} \nonumber  \\[0.1cm] 
+&=&{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{z}}_{k-1} \right)  
+\end{eqnarray}
+
+\begin{eqnarray}
+f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\mat{z}}_{k-1}, \mat{x}_{k-1} + \tau \delta \widehat{\mat{x}}_{k-1} ]
+-f [ \widetilde{\mat{z}}_{k-1}, \mat{x}_{k-1} ]  }{\tau} \nonumber  \\[0.1cm] 
+&=&{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{x}}_{k-1} \right)  
+\end{eqnarray}
 
 \begin{multline}
-{L}_{\mat{x}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{x}}_{k-1} \right) 
+{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{x}}_{k-1} \right) 
 = \delta \widehat{\mat{x}}^\dagger_{k-1} \cdot   \tt{m}'\left[\mat{x}_{k-1} \right] \cdot 
-\{\widetilde{\mat{z}}^\dagger_{k-1}  \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} \}  \\ 
+\{\widetilde{\mat{z}}^\dagger_{k-1}  \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} \}  \\
 + \{ \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} 
 \cdot \tt{m}'\left[\mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{x}}_{k-1} 
 \end{multline}
@@ -188,7 +249,7 @@ f_{\mat{\delta}} = \lim_{\tau \rightarrow 0} \frac{ f [\, \mat{x} \, + \, \tau \
 \end{equation}
 
 \begin{multline}
-{L}_{\mat{x}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{z}}_{k-1} \right) = 
+{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{z}}_{k-1} \right) = 
 \{ \tt{m}\left[\mat{x}_{k-1} \right]  \cdot \delta {\widehat{\mat{z}}}^\dagger_{k-1} 
  \cdot \mat{s} \} \cdot \widetilde{\mat{z}}_{k} \\
 +\widetilde{\mat{z}}^\dagger_{k} \cdot \{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
