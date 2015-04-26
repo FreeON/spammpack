@@ -235,11 +235,6 @@ f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\ma
 \cdot \tt{m}'\left[\mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{x}}_{k-1} 
 \end{multline}
 
-\begin{equation}
- \{ \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} 
-\rightarrow \mat{p}_+\left[\mat{s} \right]
-\end{equation}
-
 \begin{multline}
 {L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{z}}_{k-1} \right) = 
 \{ \tt{m}\left[\mat{x}_{k-1} \right]  \cdot \delta {\widehat{\mat{z}}}^\dagger_{k-1} 
@@ -247,6 +242,33 @@ f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\ma
 +\widetilde{\mat{z}}^\dagger_{k} \cdot \{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
 \cdot \tt{m}\left[\mat{x}_{k-1} \right]    \} 
 \end{multline}
+
+
+\subsection{\bf  An Experiment}
+
+\begin{figure}[h]
+  \caption{equation...}
+ \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-5.eps}
+ \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-3.eps}
+\end{figure}
+
+
+\subsection{\bf  Analysis}
+
+
+\begin{figure}[h]
+  \caption{equation...}
+ \includegraphics[width=3.5in]{8x_33_nanotube_cond10_compare_errors.eps}
+\end{figure}
+
+
+
+
+\begin{equation}
+ \{ \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} 
+\rightarrow \mat{p}_+\left[\mat{s} \right]
+\end{equation}
+
 
 \begin{equation}
 \{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
@@ -270,151 +292,8 @@ f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\ma
 \lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
 \end{equation}
 
-\subsection{\bf  An Experiment}
-
-
-\begin{figure}[htp]
-  \centering
-  \label{figur}\caption{equation...}
- \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-5.eps}
- \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-3.eps}
-\end{figure}
-
-
-\begin{equation}
-\boldmath{\large \epsilon}_\perp\left(\mat{x}\right) = 
-\frac{ \lVert \left[ \mat{s}, \mat{x} \right] \rVert  } { \lVert \mat{s}\rVert \lVert \mat{x} \rVert }
-\end{equation}
-
-\begin{equation}
-\mat{z}_{k+1}  \leftarrow \mat{z}_k  \;  \cdot \; {m\!} \left( \mat{x}_k \right) \qquad
-\end{equation}
-
-
-\begin{equation}
-\mat{x}_{k+1} \leftarrow \mat{z}_{k+1} \; \cdot \; {m \!} \left( \mat{x} \right) \; \cdot \; \mat{z}_{k+1} \qquad
-\end{equation}
-
-
-\begin{equation}
-\widetilde {\mat{z}}_{k+1}  \leftarrow \mat{z}_{k}  \;  \ot \; {m\!} \left( \mat{x}_k \right) \qquad
-\end{equation}
-
-
-\begin{equation}
-\widetilde {\mat{z}}_k = {\mat{z}}_k + \mat{\delta}^\tau_k \qquad
-\end{equation}
-
-
-\begin{equation}
-\lVert \mat{\delta}^\tau_k  \rVert \sim \tau \lVert \mat{z}_k \rVert \lVert {m}\left(\mat{x}_k\right) \rVert \qquad
-\end{equation}
-
-
-\begin{equation}
-\widetilde{\mat{x}}_{k+1} \leftarrow \widetilde{\mat{z}}_{k+1} \; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \widetilde{\mat{z}}_{k+1} \qquad
-\end{equation}
-
-\begin{equation}
-\widetilde {\mat{x}}_k = {\mat{x}}_k + \mat{\epsilon}^\tau_k \qquad
-\end{equation}
-
-\begin{equation}
-\widetilde{\mat{x}}_{k+1} \leftarrow \left( \mat{z}_{k+1} +\mat{\delta}_{k} \right) 
-\; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \left( \mat{z}_{k+1} + \mat{\delta}_k \right) \qquad
-\end{equation}
-
-
-\begin{equation}
-\widetilde{\mat{x}}^\text{stab}_{k+1} \leftarrow \left( \mat{z}^\dagger_{k+1} +\mat{\delta}\dagger_{k} \right) 
-\; \ot \; {m \!} \left( \mat{x}_k \right)\;  \ot \; \left( \mat{z}_{k+1} + \mat{\delta}_k \right) \qquad
-\end{equation}
-
-
-
-\pagebreak
-
-
-
-
-\begin{eqnarray}
-\widetilde{\mat{x}}_\text{n} &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
-                    &=& \mat{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{s,z}_\tau  \right] \\[0.1cm]
-                    &=& \mat{x}_\text{n} + \mat{z} \cdot \mat{\delta}^{s,z}_\tau + \mat{\delta}^{z,\delta^{s,z}}_\tau 
- \end{eqnarray}
-
-
-\begin{eqnarray}
-\widetilde{\mat{x}}^\dagger_\text{n} &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \matT{z}  \right] \\[0.1cm]
-                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \matT{z} + \mat{\delta}^{[sz^\dagger]}  \right] \\[0.1cm]
-                    &=& \matT{x}_\text{n} + \matT{z} \cdot \mat{\delta}^{s,z^\dagger}_\tau + \mat{\delta}^{z^\dagger ,\delta^{s,z^\dagger}}_\tau 
- \end{eqnarray}
-
-
-%\begin{eqnarray}
-%\bm{\large \epsilon}^{\text{n}}_\perp \left(\bm{z}, \bm{s}, \tau \right) &=& test \\
-%
-%                              &=& \left[ \bm{x}+\bm{z}\cdot \bm{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, ,  \right. \\[0.1cm] 
-%                                         && \qquad \left.  \bm{x}^\dagger +\bm{z}\cdot \bm{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2)   \right]
-%\end{eqnarray}
-
-\begin{eqnarray}
-\mat{\epsilon}^{\text{n}}_\perp \left(  \mat{z}, \mat{s}, \tau  \right)  &=& \left[ \tilde{\mat{x}}_\text{n},\tilde{\mat{x}}^\dagger_\text{n}  \right] \\
-&=&\left[ \mat{x}+\mat{z}\cdot \mat{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\ 
-             && \qquad \left.  \mat{x}^\dagger +\mat{z}^\dagger \cdot \mat{\delta}^{s,z^\dagger}_{\tau} + \mathcal{O}(\tau^2)   \right] \nonumber \\[0.2cm] 
-                    &=& \left[ \mat{x}_\text{n}, \matT{x}_\text{n} \right] +  \left[ \mat{x}_\text{n}, \mat{z}^\dagger \cdot \mat{\delta}^{s,z^\dagger}_{\tau} \right] \\
-                    && \qquad + \left[  \mat{z}\cdot \mat{\delta}^{s,z}_{\tau} , \matT{x}_\text{n} \right] \, + \, \mathcal{O}(\tau^2)
- \end{eqnarray}
-
-\pagebreak
-
-%                    &=& \mat{x}_{\text{stab}} + \mat{\delta}^{z^\dagger [sz]} + \matT{z} \cdot \mat{\delta}^{[sz]} %+ \mathcal{O}( \tau^2  ) 
-
-
-\begin{eqnarray}
-\widetilde{\mat{x}}_{\text{stab}} &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
-                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right] \\[0.1cm]
-                    &=& \mat{x} + \left(  \matT{z} \cdot \mat{\delta}^{[sz]} \right)  +  \mat{\delta}^{z^\dagger[sz]}  
-%+ \mathcal{O}( \tau^2  ) 
-\end{eqnarray}
-
-
-\begin{eqnarray}
-\widetilde{\mat{x}}_{\text{s}} &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \\[0.1cm]
-                    &=& \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right] \\[0.1cm]
-                    &=& \mat{x} + \left(  \matT{z} \cdot \mat{\delta}^{[sz]} \right)  +  \mat{\delta}^{z^\dagger[sz]}  
-%+ \mathcal{O}( \tau^2  ) 
-\end{eqnarray}
-
-
-\begin{eqnarray}
-\widetilde{\mat{x}}^\dagger_{\text{s}} &=& \left\{ \matT{z} \, {\scriptstyle \otimes}_\tau  \left[  \mat{s} \,\,  {\scriptstyle \otimes}_\tau \, \mat{z}  \right] \right\}^\dagger \\[0.1cm]
-                 &=& \left[  \mat{s}\!\cdot \! \mat{z} + \mat{\delta}^{[sz]}  \right]^\dagger  {\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
-                 &=& \left[ \matT{z} \cdot  \mat{s} + \mat{\delta}^{[z^\dagger s]}  \right]{\scriptstyle \otimes}_\tau \mat{z}  \\[0.1cm]
-                 &=&  \mat{x}_\text{s} + \mat{\delta}^{[ z^\dagger s ]} \cdot  \mat{z}  +  \mat{\delta}^{[z^\dagger s]z} \\[0.1cm]
-                 &=&  \mat{x}_\text{s} + \left( \matT{z} \cdot \mat{\delta}^{[ s z ]}  \right)^\dagger  +  \mat{\delta}^{[z^\dagger s]z}
-\end{eqnarray}
-
-\begin{eqnarray}
-\mat{\epsilon}^{\text{s}}_\perp \left(  \mat{z}, \mat{s}, \tau  \right)
-                    &=& \left[ \mat{x}_\text{s} + \mat{z}\cdot \mat{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\[0.1cm] 
-             && \qquad \left.  \mat{x}^\dagger_s +\mat{z}^\dagger \cdot \bm{\delta}^{s,z^\dagger}_{\tau} + \mathcal{O}(\tau^2)   \right]
- \end{eqnarray}
-
-\begin{eqnarray}
-\mat{\epsilon}^{\text{s}}_\perp \left(  \mat{z}, \mat{s}, \tau  \right)  &=& \left[ \tilde{\mat{x}}_\text{s},\tilde{\mat{x}}^\dagger_\text{s}  \right] \\
-&=&\left[ \mat{x}+\matT{z}\cdot \mat{\delta}^{s,z}_{\tau} + \mathcal{O}(\tau^2) \, , \right.  \\ 
-             && \qquad \left.  \mat{x}^\dagger + \left( \mat{z}^\dagger \cdot \mat{\delta}^{s,z}_{\tau} \right)^\dagger + \mathcal{O}(\tau^2)   \right] \nonumber \\[0.2cm] 
-                    &=& \left[ \mat{x}_\text{s}, \matT{x}_\text{s} \right] +  \left[ \mat{x}_\text{s}, 
-\left( \mat{z}^\dagger \cdot \mat{\delta}^{s,z}_{\tau} \right)^\dagger \right] \\
-                    && \qquad + \left[  \matT{z}\cdot \mat{\delta}^{s,z}_{\tau} , \matT{x}_\text{s} \right] \, + \, \mathcal{O}(\tau^2)
- \end{eqnarray}
-
-
-\section{Stabilization of the Accelerated Map}
-
-
 \section{Conclusion}
+
 
 \paragraph{potential for data oriented  mathematics}
 %%eg vs row-col picture.  Example of exact exchange w/DBSR 
