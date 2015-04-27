@@ -6,9 +6,8 @@ echo "The following environment variables can be used to"
 echo "control this script:"
 echo "BUILD_TYPE = {serial,openmp}"
 echo "BUILD_COMPILER = {gcc,intel}"
-
-REPEAT=20
-#REPEAT=4
+echo "MAX_TIER = N (default = ${MAX_TIER:=5}"
+echo "REPEAT = N (default = ${REPEAT:=4})"
 
 if [[ ${BUILD_TYPE:=serial} = "serial" ]]; then
     echo "serial version..."
@@ -26,7 +25,7 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     CONFIGURE_ARGS="--enable-openmp"
     CONFIGURE_ARGS+=" --disable-assert"
     CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
-    CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=3"
+    CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=${MAX_TIER}"
     #CONFIGURE_ARGS+=" --enable-no-work"
 else
   echo "unknown build type, either serial or openmp"
