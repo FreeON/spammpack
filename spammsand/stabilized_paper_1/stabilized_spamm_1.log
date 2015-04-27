@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.1.9)  26 APR 2015 10:12
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.1.9)  27 APR 2015 07:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -273,11 +273,11 @@ Underfull \hbox (badness 1365) in paragraph at lines 59--60
 
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 Package epstopdf Info: Source file: <8x_33_nanotube_cond10_tau-5.eps>
-(epstopdf)                    date: 2015-04-26 10:07:00
+(epstopdf)                    date: 2015-04-27 07:25:35
 (epstopdf)                    size: 24948 bytes
 (epstopdf)             Output file: <8x_33_nanotube_cond10_tau-5-eps-converted-
 to.pdf>
-(epstopdf)                    date: 2015-04-26 10:09:14
+(epstopdf)                    date: 2015-04-27 07:26:30
 (epstopdf)                    size: 9389 bytes
 (epstopdf)             Command: <repstopdf --outfile=8x_33_nanotube_cond10_tau-
 5-eps-converted-to.pdf 8x_33_nanotube_cond10_tau-5.eps>
@@ -291,12 +291,12 @@ Package pdftex.def Info: 8x_33_nanotube_cond10_tau-5-eps-converted-to.pdf used
 on input line 251.
 (pdftex.def)             Requested size: 252.94499pt x 177.06029pt.
 Package epstopdf Info: Source file: <8x_33_nanotube_cond10_tau-3.eps>
-(epstopdf)                    date: 2015-04-26 10:07:00
-(epstopdf)                    size: 24664 bytes
+(epstopdf)                    date: 2015-04-27 07:25:35
+(epstopdf)                    size: 24941 bytes
 (epstopdf)             Output file: <8x_33_nanotube_cond10_tau-3-eps-converted-
 to.pdf>
-(epstopdf)                    date: 2015-04-26 10:09:15
-(epstopdf)                    size: 9256 bytes
+(epstopdf)                    date: 2015-04-27 07:26:30
+(epstopdf)                    size: 9316 bytes
 (epstopdf)             Command: <repstopdf --outfile=8x_33_nanotube_cond10_tau-
 3-eps-converted-to.pdf 8x_33_nanotube_cond10_tau-3.eps>
 (epstopdf)             \includegraphics on input line 252.
@@ -322,12 +322,12 @@ Overfull \hbox (6.94499pt too wide) in paragraph at lines 251--253
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 Package epstopdf Info: Source file: <8x_33_nanotube_cond10_compare_errors.eps>
-(epstopdf)                    date: 2015-04-26 10:07:00
-(epstopdf)                    size: 21611 bytes
+(epstopdf)                    date: 2015-04-27 07:25:35
+(epstopdf)                    size: 21815 bytes
 (epstopdf)             Output file: <8x_33_nanotube_cond10_compare_errors-eps-c
 onverted-to.pdf>
-(epstopdf)                    date: 2015-04-26 10:09:15
-(epstopdf)                    size: 5949 bytes
+(epstopdf)                    date: 2015-04-27 07:26:30
+(epstopdf)                    size: 5938 bytes
 (epstopdf)             Command: <repstopdf --outfile=8x_33_nanotube_cond10_comp
 are_errors-eps-converted-to.pdf 8x_33_nanotube_cond10_compare_errors.eps>
 (epstopdf)             \includegraphics on input line 261.
@@ -389,7 +389,7 @@ r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texli
 ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on stabilized_spamm_1.pdf (4 pages, 262444 bytes).
+Output written on stabilized_spamm_1.pdf (4 pages, 262707 bytes).
 PDF statistics:
  144 PDF objects out of 1000 (max. 8388607)
  103 compressed objects within 2 object streams
