@@ -1,6 +1,7 @@
 dist_noinst_SCRIPTS = scaling-mustang.sh
 
 noinst_PROGRAMS = \
+	bandwidth \
 	chunk_multiply \
 	chunk_tree_multiply \
 	chunk_SP2 \
