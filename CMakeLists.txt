@@ -138,17 +138,23 @@ else()
   message( STATUS "The Fortran compiler does not support derived type constructors" )
 endif()
 
-include( FindDoxygen )
-if( DOXYGEN_FOUND )
-  if( DOXYGEN_DOT_FOUND )
-    set( HAVE_DOT "YES" )
+set( SPAMM_DOCS TRUE
+  CACHE LOGICAL "Build the spammpack API documentation"
+  )
+
+if( SPAMM_DOCS )
+  include( FindDoxygen )
+  if( DOXYGEN_FOUND )
+    if( DOXYGEN_DOT_FOUND )
+      set( HAVE_DOT "YES" )
+    endif()
+    configure_file( Doxyfile.in Doxyfile )
+    add_custom_target( doc ALL ${DOXYGEN_EXECUTABLE}
+      COMMENT "Generating API documentation"
+      )
+  else()
+    message( STATUS "Can not build documentation" )
   endif()
-  configure_file( Doxyfile.in Doxyfile )
-  add_custom_target( doc ALL ${DOXYGEN_EXECUTABLE}
-    COMMENT "Generating API documentation"
-    )
-else()
-  message( STATUS "Can not build documentation" )
 endif()
 
 # Fortran support was added in 3.1.0.
