@@ -165,20 +165,17 @@ for ill-conditioned problems and with permisive values of $\tau$.
 
 \subsection{Idempotence }
 
-
 \subsection{The Scaled Map}
 
-
 \subsection{Alternative Formulations}
+dual, stabilized and naive
 
+\section{Occlusion Flows}
 
+$\delta \mat{x}_k$ and $\delta \mat{z}_k$ arrize from itteration with $\ot$, and are deterministic 
+flows away from the manifold of $\mat{s}$ determined by sensitivity of the NS iteration to these 
+numerical insults. 
 
-
-
-
-\pagebreak
-
-\section{\bf  Mapping Error Flows}
 
 \begin{equation}
 \delta \mat{x}^{\rm{naiv}}_k =   \delta  \widetilde{ \mat{z}}_{k} \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} 
@@ -191,7 +188,6 @@ for ill-conditioned problems and with permisive values of $\tau$.
 \delta \mat{x}^{\rm{dual}}_k =   \delta  \widetilde{ \mat{y}}_{k} \cdot \widehat{\mat{z}}_{k} 
                            +  \widetilde{\mat{y}}_{k} \cdot \delta \widetilde{\mat{z}}_{k} 
 \end{equation}
-
 
 
 \begin{eqnarray}
@@ -208,12 +204,7 @@ for ill-conditioned problems and with permisive values of $\tau$.
                                                                                       + {\cal{O}} \left(  \tau^2 \right)
 \end{equation}
 
-%                              +  {f}_{\delta \mat{z}_{k-1}, \delta \mat{x}_{k-1} }   \, \lVert \delta \mat{z}_{k-1} \rVert
-%                                                                                      \, \lVert \delta \mat{x}_{k-1} \rVert
-
-
 generalized Gateaux differential
-
 
 \begin{eqnarray}
 f_{\delta \mat{z}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1}, \widetilde{\mat{x}}_{k-1} ]
@@ -243,38 +234,52 @@ f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\ma
 \cdot \tt{m}\left[\mat{x}_{k-1} \right]    \} 
 \end{multline}
 
-
-\subsection{\bf  An Experiment}
-
-\begin{figure}[h]
-  \caption{equation...}
- \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-5.eps}
- \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-3.eps}
-\end{figure}
-
-
-\subsection{\bf  Analysis}
-
-
-\begin{figure}[h]
-  \caption{equation...}
- \includegraphics[width=3.5in]{8x_33_nanotube_cond10_compare_errors.eps}
-\end{figure}
-
-
-
-
 \begin{equation}
  \{ \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} 
 \rightarrow \mat{p}_+\left[\mat{s} \right]
 \end{equation}
-
 
 \begin{equation}
 \{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
 \cdot \tt{m}\left[\mat{x}_{k-1} \right]    \} 
 \rightarrow \mat{n}\left[\mat{s} \right]
 \end{equation}
+
+\section{Basis Set Ill-Conditioning in Electronic Structure}
+
+\subsection{ 3,3 carbon nanotube with diffuse $sp$-function}
+double exponential (Fig.)
+
+\subsection{Water with triple zeta and double polarization}
+Here's looking at you Jurg...
+
+\section{Implementation}
+
+\subsection{Methods}
+FP, F08, OpenMP 4.0
+
+\subsection{A Modified NS Map}
+
+\subsection{$\delta \mat{x}_k$ and $\delta \mat{x}_k$ channels}
+tau= Figure showing channels etc.  
+
+\subsection{Convergence}
+Map switching and etc based on TrX
+
+\section{Experiments}
+
+\subsection{Occlusion Flows}
+\begin{figure}[h]
+  \caption{equation...}
+ \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-5.eps}
+ \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-3.eps}
+\end{figure}
+\begin{figure}[h]
+  \caption{equation...}
+ \includegraphics[width=3.5in]{8x_33_nanotube_cond10_compare_errors.eps}
+\end{figure}
+
+\subsection{Comments}
 
 \begin{multline}
  \delta {\mat{z}}_{k-1} \approx \Delta^{\widetilde{\mat{z}}_{k-2} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
@@ -292,12 +297,14 @@ f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\ma
 \lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
 \end{equation}
 
+\subsection{Scaling}
+
+\subsection{Comments}
+Pictures of the spamm structure
+
 \section{Conclusion}
 
-
-\paragraph{potential for data oriented  mathematics}
 %%eg vs row-col picture.  Example of exact exchange w/DBSR 
-
 
 
 \end{document}
