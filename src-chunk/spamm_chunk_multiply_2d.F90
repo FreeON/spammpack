@@ -31,56 +31,16 @@
 !! @author Matt Challacombe matt.challacombe@freeon.org
 !! @author Nicolas Bock nicolasbock@freeon.org
 
-!> Module for adding 2D chunks.
+!> Module containing functions to multiply two matrix chunks.
 !!
 !! \todo
-!!    - Implement adding two matrices (\f$ C \leftarrow A+B \f$).
+!!    - Implement multiplying two matrices (\f$ C \leftarrow A \otimes (\tau) B \f$).
 !!        - Check matching bounds.
-!!        - Update norms.
-module spamm_chunk_add_2d
+!!        - Update/set norms on \f$ C \f$.
+module spamm_chunk_multiply_2d
 
   use spamm_chunk_type_2d
 
   implicit none
 
-contains
-
-  !> Add two 2-d chunks.
-  !!
-  !! \f[ C \leftarrow A + B \f]
-  !!
-  !! @param A Chunk A.
-  !! @param B Chunk B.
-  !! @return The result.
-  function chunk_add_2d_2d (A, B) result (C)
-
-    use spamm_chunk_copy_2d
-
-    type(chunk_2d_t), pointer :: C
-    type(chunk_2d_t), pointer, intent(in) :: A, B
-
-    nullify(C)
-
-    if(.not. associated(A) .and. .not. associated(B)) then
-       return
-    elseif(associated(A) .and. .not. associated(B)) then
-       C => chunk_copy_2d(A)
-       return
-    elseif(associated(B) .and. .not. associated(A)) then
-       C => chunk_copy_2d(B)
-    endif
-
-    if(.not. equals(A%lower, B%lower)) then
-       write(*, *) "lower bounds mismatch"
-       error stop
-    endif
-
-    if(.not. equals(A%upper, B%upper)) then
-       write(*, *) "upper bounds mismatch"
-       error stop
-    endif
-
-
-  end function chunk_add_2d_2d
-
-end module spamm_chunk_add_2d
+end module spamm_chunk_multiply_2d

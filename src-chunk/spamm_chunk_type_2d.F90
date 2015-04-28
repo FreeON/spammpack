@@ -32,6 +32,11 @@
 !! @author Nicolas Bock nicolasbock@freeon.org
 
 !> Module containing the 2D chunk data types.
+!!
+!! \todo
+!!    - Implement setting a matrix from dense.
+!!        - Update norms.
+!!        - Check/Update bounds.
 module spamm_chunk_type_2d
 
   use spamm_chunk_config
@@ -61,6 +66,16 @@ module spamm_chunk_type_2d
 
   end type chunk_data_2d_t
 
+  !> Bounds.
+  type :: chunk_bounds_t
+
+     sequence
+
+     !> The lower and upper bound along a dimension.
+     integer :: bounds(0:1) = [ -1, -1 ]
+
+  end type chunk_bounds_t
+
   !> The 2D chunk type.
   !!
   !! The components are ordered such that the matrix data comes
@@ -79,14 +94,38 @@ module spamm_chunk_type_2d
      type(chunk_node_2d_t) :: node(SPAMM_CHUNK_NODES)
 
      !> Lower index bound.
-     integer :: lower(0:1) = [ 1, 1 ]
+     type(chunk_bounds_t) :: lower = chunk_bounds_t([ 1, 1 ])
 
      !> Upper index bound.
-     integer :: upper(0:1) = [ SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE ]
+     type(chunk_bounds_t) :: upper = chunk_bounds_t([ SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE ])
 
   end type chunk_2d_t
 
+  !> Interface to the equals functions.
+  interface equals
+     module procedure chunk_bounds_equals
+  end interface equals
+
 contains
+
+  !> Test for equality of chunk_bounds_t
+  !!
+  !! @param A Bounds A.
+  !! @param B Bounds B.
+  !! @return .True. if the bounds are equal to each other.
+  function chunk_bounds_equals (A, B) result(are_equal)
+
+    type(chunk_bounds_t), intent(in) :: A
+    type(chunk_bounds_t), intent(in) :: B
+    logical :: are_equal
+
+    if(A%bounds(0) == B%bounds(0) .and. A%bounds(1) == B%bounds(1)) then
+       are_equal = .true.
+    else
+       are_equal = .false.
+    endif
+
+  end function chunk_bounds_equals
 
   !> Convert the meta-data of a chunk to a string.
   !!
@@ -101,10 +140,10 @@ contains
 
     string = "chunk:"
     write(string, "(A)") trim(string)//" N_c: "//trim(to_string(SPAMM_CHUNK_SIZE))
-    write(string, "(A)") trim(string)//", box: [["//trim(to_string(A%lower(0)))// &
-         ", "//trim(to_string(A%upper(0)))//"]"
-    write(string, "(A)") trim(string)//", ["//trim(to_string(A%lower(1)))// &
-         ", "//trim(to_string(A%upper(1)))//"]]"
+    write(string, "(A)") trim(string)//", box: [["//trim(to_string(A%lower%bounds(0)))// &
+         ", "//trim(to_string(A%upper%bounds(0)))//"]"
+    write(string, "(A)") trim(string)//", ["//trim(to_string(A%lower%bounds(1)))// &
+         ", "//trim(to_string(A%upper%bounds(1)))//"]]"
     write(string, "(A)") trim(string)//"; N_b: "//trim(to_string(SPAMM_CHUNK_BLOCK_SIZE))
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%node)))//" nodes"
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%data, 1)**2))//" leaves"
@@ -146,8 +185,8 @@ contains
          trim(to_string(c_loc(A%node(1))))//": node(1)"//C_NEW_LINE// &
          trim(to_string(c_loc(A%node(SPAMM_CHUNK_NODES))))// &
          ": node("//trim(to_string(SPAMM_CHUNK_NODES))//")"//C_NEW_LINE// &
-         trim(to_string(c_loc(A%lower(1))))//": lower(1)"//C_NEW_LINE// &
-         trim(to_string(c_loc(A%upper(1))))//": upper(1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%lower%bounds(1))))//": lower(1)"//C_NEW_LINE// &
+         trim(to_string(c_loc(A%upper%bounds(1))))//": upper(1)"//C_NEW_LINE// &
          "0x"//trim(adjustl(temp))//": chunk end"
 
   end function chunk_2d_memory_layout
@@ -190,14 +229,14 @@ contains
 
     Aij = 0
 
-    if(i < A%lower(0) .or. i > A%upper(0) .or. &
-         j < A%lower(1) .or. j > A%upper(1)) return
+    if(i < A%lower%bounds(0) .or. i > A%upper%bounds(0) .or. &
+         j < A%lower%bounds(1) .or. j > A%upper%bounds(1)) return
 
-    i_leaf(0) = (i-A%lower(0))/SPAMM_CHUNK_BLOCK_SIZE+1
-    i_leaf(1) = (j-A%lower(1))/SPAMM_CHUNK_BLOCK_SIZE+1
+    i_leaf(0) = (i-A%lower%bounds(0))/SPAMM_CHUNK_BLOCK_SIZE+1
+    i_leaf(1) = (j-A%lower%bounds(1))/SPAMM_CHUNK_BLOCK_SIZE+1
 
-    i_block(0) = mod(i-A%lower(0), SPAMM_CHUNK_BLOCK_SIZE)+1
-    i_block(1) = mod(j-A%lower(1), SPAMM_CHUNK_BLOCK_SIZE)+1
+    i_block(0) = mod(i-A%lower%bounds(0), SPAMM_CHUNK_BLOCK_SIZE)+1
+    i_block(1) = mod(j-A%lower%bounds(1), SPAMM_CHUNK_BLOCK_SIZE)+1
 
     Aij = A%data(i_leaf(0), i_leaf(1))%data(i_block(0), i_block(1))
 

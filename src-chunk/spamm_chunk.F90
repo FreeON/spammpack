@@ -41,3 +41,10 @@ module spamm_chunk
   use spamm_chunk_type_2d
 
 end module spamm_chunk
+
+!> \mainpage SpAMM Chunks
+!!
+!! \section Introduction
+!!
+!! All interfaces expect pointers to SpAMM chunks, and return pointers
+!! to SpAMM chunks.

@@ -34,4 +34,28 @@
 !> Module for deep copy operations.
 module spamm_chunk_copy_2d
 
+  use spamm_chunk_type_2d
+
+  implicit none
+
+contains
+
+  !> Deep copy a chunk.
+  !!
+  !! @param A Chunk A.
+  !! @return The copied chunk.
+  function chunk_copy_2d (A) result (B)
+
+    type(chunk_2d_t), pointer, intent(in) :: A
+    type(chunk_2d_t), pointer :: B
+
+    allocate(B)
+
+    B%data = A%data
+    B%node = A%node
+    B%lower = A%lower
+    B%upper = A%upper
+
+  end function chunk_copy_2d
+
 end module spamm_chunk_copy_2d

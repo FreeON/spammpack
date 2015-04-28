@@ -32,6 +32,7 @@ set( SOURCES
   spamm_chunk_add_2d.F90
   spamm_chunk_copy_2d.F90
   spamm_chunk_init_2d.F90
+  spamm_chunk_multiply_2d.F90
   spamm_chunk_strings.F90
   spamm_chunk_type_2d.F90
   )
