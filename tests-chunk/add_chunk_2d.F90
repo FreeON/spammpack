@@ -40,6 +40,11 @@ program test
      enddo
   enddo
 
+  if(.not. chunk_2d_check(C)) then
+     write(*, *) "chunk check error"
+     error stop
+  endif
+
   write(*, *) "matrices match"
 
 end program test

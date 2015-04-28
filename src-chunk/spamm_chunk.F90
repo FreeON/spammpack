@@ -42,9 +42,9 @@ module spamm_chunk
 
 end module spamm_chunk
 
-!> \mainpage SpAMM Chunks
+!> mainpage SpAMM Chunks
 !!
-!! \section Introduction
+!! section Introduction
 !!
 !! All interfaces expect pointers to SpAMM chunks, and return pointers
 !! to SpAMM chunks.

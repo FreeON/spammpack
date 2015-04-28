@@ -1,3 +1,5 @@
+SpAMM, the Sparse Approximate Matrix Multiply.
+
 # Build Instructions
 
 This library uses CMake. Simply run

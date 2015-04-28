@@ -90,7 +90,15 @@ module spamm_chunk_type_2d
      !> The matrices at the leaves.
      type(chunk_data_2d_t) :: data(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS)
 
-     !> The tree nodes.
+     !> The tree nodes. The tree are stored in a complete quadtree,
+     !! i.e.
+     !!
+     !! The nodes can be indexed from a starting index \f$ i \f$ as
+     !! follows (this assumes that the root is at index 1):
+     !!   - Children of node \f$ i \f$: \f$ \rightarrow 4 (i-1) + \{
+     !!     2, 3, 4, 5 \} \f$.
+     !!   - Parent of node \f$ i \f$: \f$ \lfloor \frac{ i-2 }{4}
+     !!     \rfloor + 1 \f$.
      type(chunk_node_2d_t) :: node(SPAMM_CHUNK_NODES)
 
      !> Lower index bound.
@@ -213,7 +221,7 @@ contains
   end function chunk_2d_to_dense
 
   !> Get a matrix element from a chunk. The matrix indices are based
-  !> off of the stored bounding box, i.e. may not start at 1.
+  !! off of the stored bounding box, i.e. may not start at 1.
   !!
   !! @param i The row index.
   !! @param j The column index.
@@ -241,5 +249,50 @@ contains
     Aij = A%data(i_leaf(0), i_leaf(1))%data(i_block(0), i_block(1))
 
   end function chunk_2d_get
+
+  !> Calculate the matrix norm of a dense matrix. The norm is the
+  !! Frobenius norm.
+  !!
+  !! @param A The dense matrix.
+  !! @return The matrix norm.
+  function matrix_norm (A) result(norm)
+
+    double precision, intent(in) :: A(:, :)
+    double precision :: norm
+
+    norm = 0
+
+  end function matrix_norm
+
+  !> Check the internal consistency and correctness of a chunk. For
+  !! instance, the function verifies that all norms are correct.
+  !!
+  !! In detail:
+  !!   - Verify all norms.
+  !!   - Verify non-zero counts.
+  !!
+  !! @param A The chunk.
+  !! @return Whether the chunk passed the check or not.
+  function chunk_2d_check (A) result(is_verified)
+
+    type(chunk_2d_t), pointer, intent(in) :: A
+    logical :: is_verified
+
+    integer :: i, j
+    double precision :: norms(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS)
+
+    is_verified = .false.
+
+    if(.not. associated(A)) return
+    if(A%lower%bounds(0) <= A%upper%bounds(0)) return
+    if(A%lower%bounds(1) <= A%upper%bounds(1)) return
+
+    do i = 1, SPAMM_CHUNK_BLOCKS
+       do j = 1, SPAMM_CHUNK_BLOCKS
+          norms(i, j) = matrix_norm(A%data(i, j)%data)
+       enddo
+    enddo
+
+  end function chunk_2d_check
 
 end module spamm_chunk_type_2d
