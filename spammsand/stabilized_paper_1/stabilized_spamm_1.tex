@@ -58,7 +58,7 @@
 
 Decay principles, often very sparse but very ill-conditioned problems.
 
-\subsection{Incomplete Schemes}
+\subsection{Incomplete/Inexact Schemes}
 
 Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
 Often adhoc.
@@ -76,20 +76,13 @@ once a truncation error is commited, it is encounted in all subsiquent steps; it
 magnitude in complex maps. 
 
 
-\subsection{On ``Variational'' and ``non-Variational'' Iteration}
+\subsection{Staying on the Manifold}
 Gradients lack convergence properties
 Iteration without orig drives away from basis
 NS has both.  Difference between scalar iteration, Higham page 92.
 
-\subsection{\bf Methods that accumulate incompleteness  (purification, and Krylov subspace):} 
-
-\subsection{\bf ``Variational'' Methods Stay Close to the Basis (LNV Gradients, RQI and Newton Shulz)} 
-\subsection{Approximation with Incompleteness and Iteration: Corruption of the Eigen Basis}
-
 
 \subsection{Approximate Algebras as {\bf \em N}-Body Problem}
-
-\pagebreak
 
 
 SpAMM is the recursive Cauchy-Schwarz occlusion product $\ot$ on matrix quadtrees
@@ -118,9 +111,6 @@ SpAMM is the recursive Cauchy-Schwarz occlusion product $\ot$ on matrix quadtree
 
 
 
-
-
-
 database orientation, Cauchy sch
 Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
 Based on Cauchy Schwarz inequality.
@@ -129,8 +119,6 @@ Based on Cauchy Schwarz inequality.
 
 error accumulation may be better than row-col
 single programing model.  generacity.  communication optimality and strong scaling.
-
-\subsection{Incomplete Algorithms and Aproximate Algebras} %%!what is spamm}
 
 Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
 Often adhoc.
@@ -152,9 +140,17 @@ by Cauchy-Schwarz culling, with length $\lVert \mat{\Delta}^{a \cdot b}_{\tau} \
 
 For a vector space $S$ with $\mat{a},\mat{b} \in S$, the opperator $\ot$ leads to a non-associative algebra with Lie bracket
 \begin{equation}
-\left[ \mat{a} , \mat{b} \right]_{\tau} =
-\mat{a} \ot \mat{b}-\mat{b} \ot \mat{a} = \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} ,
+\left[ \mat{a} , \mat{b} \right]_{\tau} = \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
+=  \left[ \mat{a} , \mat{b} \right]
++ \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau}.
 \end{equation}
+In the particular case where matrix $\mat{a}$ and $\mat{s}$ belong to the same manifold, $\mat{a}\, \rm{span} \,\mat{s}$, 
+we interested in the braket
+\begin{equation}
+\left[ \tilde{\mat{a}} , \mat{s} \right]_{\tau} = \mat{\Delta}^{(\tilde{a}-\tilde{a}^\dagger) \cdot s}_{\tau} 
+\end{equation}
+belonging to the so(n) group.
+
 determined by the occlusion field.  Our challenge is to master the error flows of these occlusion fields under iteration, 
 for ill-conditioned problems and with permisive values of $\tau$. 
 
