@@ -13,7 +13,8 @@ module SpAMMsand_inverse_squareroot
 #ifdef DENSE_DIAGNOSTICS
   real(spamm_kind), dimension(:,:), ALLOCATABLE :: &
      i_d,s_d,z_k,z_k1,z_tld_k,z_tld_k1,  y_k,y_k1,y_tld_k,y_tld_k1,x_k,x_k1,x_tld_k_naiv, &
-     x_tld_k_stab,x_tld_k1,m_x_k1,m_x_tld_k1,x_tld_k_yz 
+     x_tld_k_stab,x_tld_k1,m_x_k1,m_x_tld_k1,x_tld_k_yz, zns_d, zts_d, szn_d
+
 
   REAL(spamm_kind) :: scal_shift,shft_shift, scal_mapp, shft_mapp
   
@@ -39,10 +40,16 @@ contains
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: s
     TYPE(SpAMM_tree_2d_symm) , POINTER :: x, z, y, t
+
+    TYPE(SpAMM_tree_2d_symm) , POINTER :: zns,zts,szn
+
 !    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(INOUT) :: xx, z, t
+
     REAL(SpAMM_KIND) :: Tau
-!    REAL(SpAMM_KIND),                   INTENT(IN)    :: Tau
+
+!    REAL(SpAMM_KIND),                   INTENT(IN)   :: Tau
 !    LOGICAL, INTENT(IN)                              :: first
+
     LOGICAL                                           :: DoDuals,second
     INTEGER, INTENT(INOUT)                            :: kount
     INTEGER                                           :: i,  j, k
@@ -72,7 +79,18 @@ contains
     x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
 
 #ifdef DENSE_DIAGNOSTICS
+
     n=x%frill%ndimn(1)
+
+    szn => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+    zns => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+    zts => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+
+    ALLOCATE(szn_d     (1:N,1:N))
+    ALLOCATE(zns_d     (1:N,1:N))
+    ALLOCATE(zts_d     (1:N,1:N))
+
+
     ALLOCATE(i_d     (1:N,1:N))
     ALLOCATE(s_d     (1:N,1:N))
     ALLOCATE(z_k     (1:N,1:N))
@@ -102,12 +120,21 @@ contains
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_stab )
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_naiv )
     CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_yz )
+
+
+
     DoDuals=.TRUE.
 #endif
     kount=1
     sz_norm=1d0
     FillN=1d10
     DO i = 0, 20
+
+       if(i<4)then
+          tau=1d-20
+       else
+          tau=1d-2
+       endif
 
        ! check the trace for convergence:
        FillN_prev=FillN
@@ -155,16 +182,10 @@ contains
        ENDIF
 
        x => spammsand_scaled_invsqrt_mapping( x, sc )
-
-!       tau_zdotz=1d-3/fprimez
-!       tau_zdotz=1d-3*SQRT(SQRT(z%frill%norm2))
-       tau_zdotz=tau !MAX(tau, 8d-2*tau*SQRT(SQRT(z%frill%norm2) ) )
-       WRITE(*,*)' tau = ',tau_zdotz
-
        ! |Z_n+1> =  <Z_n| X_n>  
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau_zdotz , nt_O=.TRUE., in_O = t )
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau , nt_O=.TRUE., in_O = t )
        ! update (copy+threshold)
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau_zdotz ) 
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
        ! stats
        z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
        z_fill=z%frill%non0s
@@ -195,14 +216,24 @@ contains
        ELSE
 #endif
           !   |t> =      S|Z_k> 
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau*1d-4  , NT_O=.TRUE. , in_O = t )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau*1d-4   , NT_O=.TRUE. , in_O = t )
           sz_work=t%frill%flops/dble(t%frill%ndimn(1))**3
           sz_norm=SQRT(t%frill%norm2)
+
+          szn => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau  , NT_O=.TRUE.  , in_O = szn )
+          zns => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s,  tau  , NT_O=.TRUE.  , in_O = zns )
+          zts => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s,  tau  , NT_O=.FALSE. , in_O = zts )
           
+          CALL SpAMM_convert_tree_2d_symm_to_dense( szn ,szn_d )
+          CALL SpAMM_convert_tree_2d_symm_to_dense( zns ,zns_d )
+          CALL SpAMM_convert_tree_2d_symm_to_dense( zts ,zts_d )
+
+
 #ifdef DENSE_DIAGNOSTICS
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.TRUE. , in_O = x )
           CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_tld_k_naiv )
 #endif
+
 
           ! <X_k> = <Z_k|S|Z_k>
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau , NT_O=.FALSE. , in_O = x )
@@ -241,7 +272,7 @@ contains
          dx,dx_hat,dz,dz_hat,mp,mp_Gateaux,dz_k_dx_k1,dy_k_dx_k1,dz_k_dz_k1,               &
          x_tld_k_of_xk1_yz, x_tld_k_of_xk1_naiv, x_tld_k_of_xk1_stab, x_tld_k_of_zk1_stab, &   
          xp_tld_k_yz_gateaux, xp_tld_k_naiv_gateaux, xp_tld_k_stab_gateaux, zp_tld_k_stab_gateaux, & 
-         FpX_yz, FpX_naiv, FpX_stab, FpZ_stab
+         FpX_yz, FpX_naiv, FpX_stab, FpZ_stab, del_szn_d, del_zns_d, del_zts_d
 
     real(spamm_kind) :: x_tld_k_naiv_compare, x_tld_k_stab_compare, x_tld_k_natv_compare, tau, filln, fprimez
 
@@ -251,8 +282,6 @@ contains
     ALLOCATE(dZ_hat                (1:N,1:N))
     ALLOCATE(Mp                    (1:N,1:N))
     ALLOCATE(Mp_Gateaux            (1:N,1:N))
-!    ALLOCATE(zp_k                  (1:N,1:N))
-!    ALLOCATE(yp_k                  (1:N,1:N))
     ALLOCATE(fpx_naiv              (1:N,1:N))
     ALLOCATE(fpx_yz                (1:N,1:N))
     ALLOCATE(fpx_stab              (1:N,1:N))
@@ -266,40 +295,64 @@ contains
     ALLOCATE(xp_tld_k_stab_gateaux (1:N,1:N))
     ALLOCATE(zp_tld_k_stab_gateaux (1:N,1:N))
 
+    ALLOCATE(del_szn_d (1:N,1:N))    
+    ALLOCATE(del_zns_d (1:N,1:N))
+    ALLOCATE(del_zts_d (1:N,1:N))
+
     dx        = x_tld_k1 - x_k1
     dx_hat    = dx/SQRT(SUM(dx**2))
 
     dz        = z_tld_k1 - z_k1
     dz_hat    = dz/SQRT(SUM(dz**2))
 
+!    CALL RANDOM_NUMBER(dz_hat)
+!    dz_hat    = dz_hat/SQRT(SUM(dz_hat**2))
+
     mp        = scal_mapp * scal_shift * dx_hat
     mp_Gateaux=(m_x_tld_k1-m_x_k1)/SQRT(SUM(dx**2))
 
-    dz_k_dx_k1 = MATMUL( z_tld_k1, mp ) 
-    dy_k_dx_k1 = MATMUL( mp, y_tld_k1 ) 
-    dz_k_dz_k1 = MATMUL( dz_hat, m_x_tld_k1 )
+    del_szn_d=szn_d-MATMUL(s_d, z_tld_k)
+    del_zns_d=zns_d-MATMUL(z_tld_k,s_d)
+    del_zts_d=zts_d-MATMUL(TRANSPOSE(z_tld_k),s_d)
+
+    WRITE(*,*)'1 ',sqrt(sum( (del_szn_d-del_zns_d) **2 ))
+
+
+!    WRITE(*,*)'2 szn = ',del_szn_d(1:2,1:2)
+!    WRITE(*,*)'2 zns = ',del_zns_d(1:2,1:2)
+!    WRITE(*,*)'2 zts = ',del_zts_d(1:2,1:2)
       
+    WRITE(*,*)' a '
     x_tld_k_of_xk1_yz     = MATMUL( MATMUL( m_x_k1, y_tld_k1 ) , MATMUL( z_tld_k1 , m_x_k1 ) )
     x_tld_k_of_xk1_naiv   = MATMUL( MATMUL( MATMUL(z_tld_k1 , m_x_k1 ) , S_d), MATMUL(z_tld_k1,m_x_k1) )
     x_tld_k_of_xk1_stab   = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_tld_k1 , m_x_k1 )), S_d), MATMUL(z_tld_k1,m_x_k1) )
-
     x_tld_k_of_zk1_stab   = MATMUL( MATMUL( TRANSPOSE(MATMUL(z_k1 , m_x_tld_k1 )), S_d), MATMUL(z_k1,m_x_tld_k1) )
+    WRITE(*,*)' b '
     
     xp_tld_k_yz_gateaux   = (x_tld_k_yz  -x_tld_k_of_xk1_yz  )/SQRT(SUM(dx**2))
     xp_tld_k_naiv_gateaux = (x_tld_k_naiv-x_tld_k_of_xk1_naiv)/SQRT(SUM(dx**2))
     xp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_xk1_stab)/SQRT(SUM(dx**2))
     zp_tld_k_stab_gateaux = (x_tld_k_stab-x_tld_k_of_zk1_stab)/SQRT(SUM(dz**2))
 
-    FpX_yz    = MATMUL( dy_k_dx_k1 , z_tld_k ) + MATMUL( y_tld_k , dz_k_dx_k1 )
-    FpX_naiv  = MATMUL( dz_k_dx_k1, MATMUL( s_d,  z_tld_k ) ) + MATMUL(  z_tld_k, MATMUL( s_d, dz_k_dx_k1 ) )
-    FpX_stab  = MATMUL(TRANSPOSE(dz_k_dx_k1),MATMUL(s_d,z_tld_k))+MATMUL(TRANSPOSE(z_tld_k),MATMUL(s_d,dz_k_dx_k1))
-    FpZ_stab  = MATMUL( TRANSPOSE(dz_k_dz_k1) , MATMUL( s_d, z_tld_k)    ) &
-              + MATMUL( TRANSPOSE(z_tld_k)    , MATMUL( s_d, dz_k_dz_k1) )
+    WRITE(*,*)' c '
+
+
+!    FpX_yz    = MATMUL( dy_k_dx_k1 , z_tld_k ) + MATMUL( y_tld_k , dz_k_dx_k1 )
+!    FpX_naiv  = MATMUL( dz_k_dx_k1, MATMUL( s_d,  z_tld_k ) ) + MATMUL(  z_tld_k, MATMUL( s_d, dz_k_dx_k1 ) )
+!    FpX_stab  = MATMUL(TRANSPOSE(dz_k_dx_k1),MATMUL(s_d,z_tld_k))+MATMUL(TRANSPOSE(z_tld_k),MATMUL(s_d,dz_k_dx_k1))
+!    FpZ_stab  = MATMUL( TRANSPOSE(dz_k_dz_k1) , MATMUL( s_d, z_tld_k)    ) &
+!              + MATMUL( TRANSPOSE(z_tld_k)    , MATMUL( s_d, dz_k_dz_k1) )
+
+    WRITE(*,*)' d '
+
 
     WRITE(*,*)" ||f'_dx_k1_yz     ||   = ",SQRT(SUM(fpx_yz**2)),   SQRT(SUM( xp_tld_k_yz_gateaux**2)) 
     WRITE(*,*)" ||f'_dx_k1_naiv   ||   = ",SQRT(SUM(fpx_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
     WRITE(*,*)" ||f'_dx_k1_stab   ||   = ",SQRT(SUM(fpx_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
     WRITE(*,*)" ||f'_dz_k1_stab   ||   = ",SQRT(SUM(fpz_stab**2)), SQRT(SUM( zp_tld_k_stab_gateaux**2))
+
+
+!    WRITE(*,*)' ERROR PHASING, dX = ',SpAMMsand_Basis_Compare(dX, s_d),SpAMMsand_Basis_Compare(dz, s_d)
 
     IF(kount==2)WRITE(*,43)
     WRITE(99,44)kount, tau, FillN, SQRT(SUM(dX**2)),SQRT(SUM(dZ**2))  , &
@@ -311,6 +364,10 @@ contains
    
 43     FORMAT(" Itr          Tau,             %N,            /\X,        f'_stab,       /\f_stab,        f'_dual,       /\f_dual,        f'_naiv,       /\f_naiv ")
 44     format(I3,"   ", 20(e12.6,",   "))
+
+    deALLOCATE(del_szn_d)
+    deALLOCATE(del_zns_d)
+    deALLOCATE(del_zts_d)
 
     DEALLOCATE(dX                    )
     DEALLOCATE(dX_hat                )
