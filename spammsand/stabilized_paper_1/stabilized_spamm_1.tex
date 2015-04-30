@@ -56,6 +56,29 @@
 \maketitle
 \section{Introduction}
 
+In many disciplines, finite correlations coorespond to matrices with decay properties.  Matrix decay involves an approximate (perhaps bounded) inverse 
+relationship between matrix elements and a cooresponding distance;  this may be a simple inverse exponential relationship between elements and the
+Cartesian distance between support functions, or it may involve a statistical distance, e.g. between strings.  In electronic structure, 
+correlations manifest in decay properties of the matrix 
+sign function, as projector of the effective Hamiltonian.  More broadly, matrix decay properties may coorespond to learned correlations in a 
+generalized, non-orthogonal metric, obtained perhaps through first order optimization involving the celebrated PLSEV line search approach to 
+semi-definate programming based on the matrix sign function.  More broadly still, problems with local, non-orothogonal support
+are often solved with congruential transformations based on the matrix inverse square root or inverse factor; these  transformations 
+correlate the non-orthogonal support in a representation independent form, {\em eg.} of the generalized eigenproblem.    
+
+These problems are related through Higham's identity, connecting the matrix sign function with the inverse square root:
+\begin{equation}
+.
+\end{equation}
+Computation of these matrix functions may encounter ill-conditioning, cooresponding to extended (quasi-degenerate) correlations and near 
+complete non-orthogonal support and associated slow rates of decay.  For extremely slow decay, maybe even oscillatory, 
+low order algebraic decay, methods that compresion....     For fast decay, 
+
+correlation and the support  
+
+
+Also, matrices with decay arise from the application of .  Generally, ill-conditining is associated with slower decay, 
+
 Decay principles, often very sparse but very ill-conditioned problems.
 
 \subsection{Incomplete/Inexact Schemes}
@@ -76,13 +99,13 @@ once a truncation error is commited, it is encounted in all subsiquent steps; it
 magnitude in complex maps. 
 
 
-\subsection{Staying on the Manifold}
+\subsection{Retaining the Eigenspace}
 Gradients lack convergence properties
 Iteration without orig drives away from basis
 NS has both.  Difference between scalar iteration, Higham page 92.
 
 
-\subsection{Approximate Algebras as {\bf \em N}-Body Problem}
+\subsection{Approximate Algebra as {\bf \em N}-Body Problem}
 
 
 SpAMM is the recursive Cauchy-Schwarz occlusion product $\ot$ on matrix quadtrees
@@ -117,39 +140,34 @@ Based on Cauchy Schwarz inequality.
 
 
 
-error accumulation may be better than row-col
-single programing model.  generacity.  communication optimality and strong scaling.
+% error accumulation may be better than row-col
+% single programing model.  generacity.  communication optimality and strong scaling.
 
-Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
-Often adhoc.
+% Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
+% Often adhoc.
 
-Philosophy: Don't know which elements to drop, because only make sense in context.  It is very difficult to incorporate this context in a dropping 
-strategies. 
+% Philosophy: Don't know which elements to drop, because only make sense in context.  It is very difficult to incorporate this context in a dropping 
+% strategies. 
 
-Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
-Based on Cauchy Schwarz inequality.
+% Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
+% Based on Cauchy Schwarz inequality.
 
-We show that this first order error in algebraic context follows the functional analysis, and enables the consideration {\em and seperate treatment} of
-first order error flows in the analysis of complex maps. 
+% We show that this first order error in algebraic context follows the functional analysis, and enables the consideration {\em and seperate treatment} of
+% first order error flows in the analysis of complex maps. 
+
+
 
 \begin{equation}
 \mat{a} \ot \mat{b}=\mat{a}\cdot \mat{b} + \mat{\Delta}^{a\cdot b}_{\tau}
 \end{equation}
-where $\mat{\Delta}^{a \cdot b}_{\tau}$ is a deterministic first order variation cooresponding to the branch pattern set
-by Cauchy-Schwarz culling, with length $\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \leq \tau \lVert \mat{a} \rVert  \lVert \mat{b} \rVert$.  
-
-For a vector space $S$ with $\mat{a},\mat{b} \in S$, the opperator $\ot$ leads to a non-associative algebra with Lie bracket
+where $\mat{\Delta}^{a \cdot b}_{\tau}$ is a deterministic (assymetric) first order variation cooresponding to the branch pattern set
+by Cauchy-Schwarz occlusion, with length $\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \leq \tau \lVert \mat{a} \rVert  \lVert \mat{b} \rVert$.  
+The opperator $\ot$ leads to a non-associative algebra with Lie bracket
 \begin{equation}
 \left[ \mat{a} , \mat{b} \right]_{\tau} = \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
 =  \left[ \mat{a} , \mat{b} \right]
 + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau}.
 \end{equation}
-In the particular case where matrix $\mat{a}$ and $\mat{s}$ belong to the same manifold, $\mat{a}\, \rm{span} \,\mat{s}$, 
-we interested in the braket
-\begin{equation}
-\left[ \tilde{\mat{a}} , \mat{s} \right]_{\tau} = \mat{\Delta}^{(\tilde{a}-\tilde{a}^\dagger) \cdot s}_{\tau} 
-\end{equation}
-belonging to the so(n) group.
 
 determined by the occlusion field.  Our challenge is to master the error flows of these occlusion fields under iteration, 
 for ill-conditioned problems and with permisive values of $\tau$. 
