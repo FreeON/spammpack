@@ -1,4 +1,4 @@
-%% LyX 2.1.1 created this file.  For more info, see http://www.lyx.org/.
+% LyX 2.1.1 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
 %\documentclass[letterpaper,twocol,amsmath,aps,jcp,preprintnumbers,groupaddress,nofootinbib,tightenlines]{revtex4-1}
 %\usepackage[latin9]{inputenc}
@@ -57,36 +57,40 @@
 \section{Introduction}
 
 In many disciplines, finite correlations coorespond to matrices with decay properties.  Matrix decay involves an approximate (perhaps bounded) inverse 
-relationship between matrix elements and a cooresponding distance;  this may be a simple inverse exponential relationship between elements and the
-Cartesian distance between support functions, or it may involve a statistical distance, e.g. between strings.  In electronic structure, 
+relationship between matrix elements and a related distance;  this may be a simple inverse exponential relationship between elements and the
+Cartesian distance between support functions, or it may involve a statistical distance, {\em e.g.}~between strings.  In electronic structure, 
 correlations manifest in decay properties of the matrix 
-sign function, as projector of the effective Hamiltonian.  More broadly, matrix decay properties may coorespond to learned correlations in a 
+sign function, as projector of the effective Hamiltonian (See Fig. \ref{figure1}.  
+More broadly, matrix decay properties may coorespond to learned correlations in a 
 generalized, non-orthogonal metric, obtained perhaps through first order optimization involving the celebrated PLSEV line search approach to 
 semi-definate programming based on the matrix sign function.  More broadly still, problems with local, non-orothogonal support
-are often solved with congruential transformations based on the matrix inverse square root or inverse factor; these  transformations 
-correlate the non-orthogonal support in a representation independent form, {\em eg.} of the generalized eigenproblem.    
-
-These problems are related through Higham's identity, connecting the matrix sign function with the inverse square root:
+are often solved with congruential transformations based on the matrix inverse square root; these  transformations determine
+correlations between support functions and the representation independent form [Lowdin], {\em eg.} of the generalized eigenproblem.    
+These matrix functions are related through Higham's identity, connecting the matrix sign function with the inverse square root:
 \begin{equation}
-.
+\rm{sign} \left( \begin{bmatrix} 0 & \mat{s}      \\ \mat{I}       & 0\end{bmatrix} \right)  =
+                 \begin{bmatrix} 0 & \mat{s}^{1/2} \\ \mat{s}^{-1/2} & 0\end{bmatrix}  .
 \end{equation}
-Computation of these matrix functions may encounter ill-conditioning, cooresponding to extended (quasi-degenerate) correlations and near 
-complete non-orthogonal support and associated slow rates of decay.  For extremely slow decay, maybe even oscillatory, 
-low order algebraic decay, methods that compresion....     For fast decay, 
 
-correlation and the support  
+A well conditioned matrix $\mat{s}$ corresponds to rapid decay, and may be approximated with the sparse matrix 
+$\bar{\mat{s}} = \mat{s}+ \mat{\epsilon}^{\mat{s}}_\tau$, where $\mat{\epsilon}^{\mat{s}}_\tau$ is the error introduced according to some 
+criteria $\tau$.   This criteria might be a droptolerence, 
+$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, |s_{ij}|<\tau \}$, a radial cutoff, 
+$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, \lVert \mat{r}_i - \mat{r}_j \rVert > \tau \}$, 
+or some other {\em ad hoc} approach to truncation.  Then, conventional kernels may be employed, such as the Sparse Matrix Multiply 
+($\tt{SpMM}$), yeiding fast solutions for  multiplication rich iterations. 
 
 
-Also, matrices with decay arise from the application of .  Generally, ill-conditining is associated with slower decay, 
+\begin{figure}[h]
+  \caption{equation...}
+ \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-5.eps}
+\end{figure}
 
-Decay principles, often very sparse but very ill-conditioned problems.
-
-\subsection{Incomplete/Inexact Schemes}
 
 Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
 Often adhoc.
 
-$\tilde{\mat{a}} = \mat{a}+ \delta \mat{a}$
+
 
 $\tilde{\mat{a}} \cdot \tilde{\mat{b}} = \mat{a}\cdot\mat{b}+ \delta \mat{a} \cdot \mat{b} +  \mat{a} \cdot \delta \mat{b}
 +  \delta \mat{a} \cdot \delta \mat{b}$
@@ -97,6 +101,19 @@ The variations do not express in the overal context of the product.  Because the
 $\mat{a}$ may be small, but $\delta \mat{a} \cdot \mat{b}$  large, leading extra work.  Also, 
 once a truncation error is commited, it is encounted in all subsiquent steps; it becomes difficult to impossilbe to manage error flows of differing 
 magnitude in complex maps. 
+
+
+
+For extended quasi-degenerate correlations, these matrix functions may encounter ill-conditioning, 
+and associated slow rates of decay.  For extremely slow decay, maybe even oscillatory, 
+low order algebraic decay, methods that compresion....     For fast decay, 
+
+correlation and the support  
+
+
+Also, matrices with decay arise from the application of .  Generally, ill-conditining is associated with slower decay, 
+
+Decay principles, often very sparse but very ill-conditioned problems.
 
 
 \subsection{Retaining the Eigenspace}
