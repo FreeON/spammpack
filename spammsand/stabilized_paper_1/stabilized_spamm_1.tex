@@ -65,25 +65,34 @@ More broadly, matrix decay properties may coorespond to learned correlations in 
 generalized, non-orthogonal metric, obtained perhaps through first order optimization involving the celebrated PLSEV line search approach to 
 semi-definate programming based on the matrix sign function.  More broadly still, problems with local, non-orothogonal support
 are often solved with congruential transformations based on the matrix inverse square root; these  transformations determine
-correlations between support functions and the representation independent form [Lowdin], {\em eg.} of the generalized eigenproblem.    
-These matrix functions are related through Higham's identity, connecting the matrix sign function with the inverse square root:
+correlations between the local support and the representation independent form [Lowdin], {\em eg.} of the generalized eigenproblem.    
+Higham's identity relates the matrix sign function with the matrix inverse square root:
 \begin{equation}
 \rm{sign} \left( \begin{bmatrix} 0 & \mat{s}      \\ \mat{I}       & 0\end{bmatrix} \right)  =
                  \begin{bmatrix} 0 & \mat{s}^{1/2} \\ \mat{s}^{-1/2} & 0\end{bmatrix}  .
 \end{equation}
+A complete overivew of matrix function theory and computation is given in Higham's excellent reference \cite{}. 
 
-A well conditioned matrix $\mat{s}$ corresponds to rapid decay, and may be approximated with the sparse matrix 
-$\bar{\mat{s}} = \mat{s}+ \mat{\epsilon}^{\mat{s}}_\tau$, where $\mat{\epsilon}^{\mat{s}}_\tau$ is the error introduced according to some 
-criteria $\tau$.   This criteria might be a droptolerence, 
+A well conditioned matrix $\mat{s}$ may correspond to matrix sign and inverse square root functions with rapid exponential decay, 
+and be amenable to the sparse matrix approximation
+$\bar{\mat{s}} = \mat{s}+ \mat{\epsilon}^{\mat{s}}_\tau$, where $\mat{\epsilon}^{\mat{s}}_\tau$ is the error introduced according to some  
+criteria $\tau$.   This criteria might be a drop-tolerence, 
 $\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, |s_{ij}|<\tau \}$, a radial cutoff, 
 $\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, \lVert \mat{r}_i - \mat{r}_j \rVert > \tau \}$, 
-or some other {\em ad hoc} approach to truncation.  Then, conventional kernels may be employed, such as the Sparse Matrix Multiply 
-($\tt{SpMM}$), yeiding fast solutions for  multiplication rich iterations. 
+or some other approach to truncation, perhaps involving a sparsity pattern chosen {\em a priori}. 
+Then, conventional computational kernels may be employed, such as the Sparse Matrix Multiply 
+($\tt{SpMM}$) \cite{Gustavson, Toledo, Buluc}, yeiding fast solutions for multiplication rich iterations and a modulated fill in. 
+These and related incomplete/inexact approaches to the computation of sparse approximate matrix functions often lead to ${\cal O}(n)$ 
+algorithms, finding wide use in technologically important preconditioning schemes, the information sciences, electronic structure and many
+other disciplines.  A comprehensive overview of these methods in the numerical linear algebra is given by Benzi \cite{}. 
+See also Bowler for a complete development of these methods in electronic structure \cite{, ARCHIVE_PRL}, and a current summary of
+high performance results \cite{}.
 
 
 \begin{figure}[h]
-  \caption{equation...}
- \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-5.eps}
+ \includegraphics[width=3.5in]{decay_picture.png}
+  \caption{Examples from electronic structure of decay for the spectral projector (gap shifted sign function) with respect to local (atomic) support.  Shown is decay   
+           for systems with correlations that are short (insulating water), medium (semi-conducting 4,3 nanotube), and long (metalic 3,3 nanotube) ranged,  from exponential (insulating) to algebraic (metallic). }
 \end{figure}
 
 
