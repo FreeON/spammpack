@@ -29,6 +29,7 @@ main (int argc, char **argv)
 {
   int N = 1024;
   int N_chunk = 1024;
+  short N_chunk_set = 0;
   int N_basic = 4;
   int repeat = 1;
 
@@ -52,21 +53,22 @@ main (int argc, char **argv)
   double tolerance = 0;
 
   int c;
-  const char short_options[] = "hT:f:ct:N:b:pvrl:dR:";
+  const char short_options[] = "hT:f:Cc:t:N:b:pvrl:dR:";
   const struct option long_options[] = {
-    { "help", no_argument, NULL, 'h' },
-    { "type", required_argument, NULL, 'T' },
-    { "bcsr", required_argument, NULL, 'f' },
-    { "complexity", no_argument, NULL, 'c' },
-    { "tolerance", required_argument, NULL, 't' },
-    { "N_chunk", required_argument, NULL, 'N' },
-    { "N_basic", required_argument, NULL, 'b' },
-    { "print", no_argument, NULL, 'p' },
-    { "no-verify", no_argument, NULL, 'v' },
-    { "tree-only", no_argument, NULL, 'r' },
-    { "lambda", required_argument, NULL, 'l' },
-    { "dense", no_argument, NULL, 'd' },
-    { "repeat", required_argument, NULL, 'R' },
+    { "help",       no_argument,       NULL, 'h' },
+    { "type",       required_argument, NULL, 'T' },
+    { "bcsr",       required_argument, NULL, 'f' },
+    { "complexity", no_argument,       NULL, 'C' },
+    { "tolerance",  required_argument, NULL, 't' },
+    { "N",          required_argument, NULL, 'N' },
+    { "N_chunk",    required_argument, NULL, 'c' },
+    { "N_basic",    required_argument, NULL, 'b' },
+    { "print",      no_argument,       NULL, 'p' },
+    { "no-verify",  no_argument,       NULL, 'v' },
+    { "tree-only",  no_argument,       NULL, 'r' },
+    { "lambda",     required_argument, NULL, 'l' },
+    { "dense",      no_argument,       NULL, 'd' },
+    { "repeat",     required_argument, NULL, 'R' },
     { NULL, 0, NULL, 0 }
   };
 
@@ -82,9 +84,10 @@ main (int argc, char **argv)
         printf("{ -T | --type } TYPE      The matrix type: { full, exp_decay, "
                "alg_decay, diagonal, BCSR }\n");
         printf("{ -f | --bcsr } FILE      Load BCSR matrix from FILE\n");
-        printf("{ -c | --complexity}      Print product complexity\n");
+        printf("{ -C | --complexity}      Print product complexity\n");
         printf("{ -t | --tolerance } TOL  The SpAMM tolerance\n");
-        printf("{ -N | --N_chunk } N      The matrix size, N_chunk\n");
+        printf("{ -N | --N } N            The matrix size N\n");
+        printf("{ -c | --N_chunk } N      The chunk size, N_chunk\n");
         printf("{ -b | --N_basic } N      The basic sub-matrix size, N_basic\n");
         printf("{ -p | --print }          Print matrices\n");
         printf("{ -v | --no-verify }      Do not verify result\n");
@@ -132,7 +135,7 @@ main (int argc, char **argv)
         BCSR_filename = strdup(optarg);
         break;
 
-      case 'c':
+      case 'C':
         print_complexity = 1;
         break;
 
@@ -142,7 +145,11 @@ main (int argc, char **argv)
 
       case 'N':
         N = strtol(optarg, NULL, 10);
-        N_chunk = N;
+        break;
+
+      case 'c':
+        N_chunk = strtol(optarg, NULL, 10);
+        N_chunk_set = 1;
         break;
 
       case 'b':
@@ -193,6 +200,9 @@ main (int argc, char **argv)
   printf("\n");
 
   struct bcsr_t *A_BCSR = NULL;
+  double *A_dense = NULL;
+
+  int N_matrix = 1;
 
   if(matrix_type == BCSR)
   {
@@ -203,60 +213,62 @@ main (int argc, char **argv)
     A_BCSR = bcsr_load(BCSR_filename);
     N = bcsr_get_N(A_BCSR);
 
-    /* Zero pad the matrix. */
-    for(tier = 0; ; tier++)
+    if(!N_chunk_set)
     {
-      //printf("N = %d, tier = %d\n", N, tier);
-      int N_tier = N_basic*(1 << tier);
-      int remainder = N%N_tier;
-      if(remainder != 0)
-      {
-        N += N_tier-remainder;
-      }
+      printf("storing matrix in one chunk\n");
+      N_chunk = N;
 
-      if(N <= N_tier)
+      /* Zero pad the chunks. */
+      for(tier = 0; ; tier++)
       {
-        break;
+        int N_tier = N_basic*(1 << tier);
+        int remainder = N_chunk%N_tier;
+        if(remainder != 0)
+        {
+          N_chunk += N_tier-remainder;
+        }
+
+        if(N_chunk <= N_tier)
+        {
+          break;
+        }
       }
+      printf("matrix chunk has depth %d, N_chunk = %d\n", tier, N_chunk);
     }
-    printf("matrix tree has depth %d\n", tier);
-    N_chunk = N;
-  }
 
-  void *A = chunk_alloc(N_chunk, N_basic, N, 0, 0);
-  void *C = chunk_alloc(N_chunk, N_basic, N, 0, 0);
+    N_matrix = N/N_chunk;
+    if(N%N_chunk != 0) N_matrix++;
 
-  double *A_dense = NULL;
+    printf("storing %dx%d chunk matrix\n", N_matrix, N_matrix);
 
-  if(matrix_type == BCSR)
-  {
     int M_BCSR;
     int N_BCSR;
     A_dense = bcsr_to_dense(&M_BCSR, &N_BCSR, A_BCSR);
 
     /* Zero pad matrix. */
-    A_dense = realloc(A_dense, sizeof(double)*N_chunk*N_chunk);
-    size_t padding_count = N_chunk*N_chunk-M_BCSR*N_BCSR;
-    printf("zero padding %dx%d BCSR matrix by %ld elements to N_chunk = %d\n",
-        M_BCSR, N_BCSR, padding_count, N_chunk);
-    memset(
-        (void*) ((intptr_t) A_dense + sizeof(double)*M_BCSR*N_BCSR),
-        0,
-        sizeof(double)*padding_count
-        );
+    N = N_matrix*N_chunk;
+    A_dense = realloc(A_dense, sizeof(double)*N*N);
+    size_t padding_count = N*N-M_BCSR*N_BCSR;
+    printf("zero padding %dx%d BCSR matrix by %ld elements to %dx%d\n",
+           M_BCSR, N_BCSR, padding_count, N, N);
+    memset((void*) ((intptr_t) A_dense + sizeof(double)*M_BCSR*N_BCSR),
+           0,
+           sizeof(double)*padding_count);
   }
 
   else
   {
     /* Fill in column-major order. */
-    A_dense = calloc(N_chunk*N_chunk, sizeof(double));
+    A_dense = calloc(N*N, sizeof(double));
+    N_matrix = N/N_chunk;
+    if(N%N_chunk != 0) N_matrix++;
 
-    printf("allocated A_dense, sizeof(A_dense) = %ld bytes\n", N_chunk*N_chunk*sizeof(double));
+    printf("allocated A_dense, sizeof(A_dense) = %ld bytes\n", N*N*sizeof(double));
 
     switch(matrix_type)
     {
       case full:
-        for(int i = 0; i < N_chunk*N_chunk; i++)
+        for(int i = 0; i < N*N; i++)
         {
           A_dense[i] = rand()/(double) RAND_MAX;
         }
@@ -264,30 +276,30 @@ main (int argc, char **argv)
 
       case exponential_decay:
         printf("exponential decay, lambda = %e\n", lambda);
-        for(int i = 0; i < N_chunk; i++)
+        for(int i = 0; i < N; i++)
         {
-          A_dense[COLUMN_MAJOR(i, i, N_chunk)] = 0.5+0.5*(rand()/(double) RAND_MAX);
-          for(int j = i+1; j < N_chunk; j++)
+          A_dense[COLUMN_MAJOR(i, i, N)] = 0.5+0.5*(rand()/(double) RAND_MAX);
+          for(int j = i+1; j < N; j++)
           {
-            A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)]
+            A_dense[COLUMN_MAJOR(i, j, N)] = A_dense[COLUMN_MAJOR(i, i, N)]
               * exp(log(lambda)*fabs(i-j));
-            A_dense[COLUMN_MAJOR(j, i, N_chunk)] = A_dense[COLUMN_MAJOR(i, j, N_chunk)];
+            A_dense[COLUMN_MAJOR(j, i, N)] = A_dense[COLUMN_MAJOR(i, j, N)];
           }
         }
         printf("A[1][N]/A[1][1] = %e\n",
-               A_dense[COLUMN_MAJOR(0, N_chunk-1, N_chunk)]/A_dense[0]);
+               A_dense[COLUMN_MAJOR(0, N-1, N)]/A_dense[0]);
         break;
 
       case algebraic_decay:
         printf("algebraic decay, lambda = %e\n", lambda);
-        for(int i = 0; i < N_chunk; i++)
+        for(int i = 0; i < N; i++)
         {
-          A_dense[COLUMN_MAJOR(i, i, N_chunk)] = 0.5+0.5*(rand()/(double) RAND_MAX);
-          for(int j = 0; j < N_chunk; j++)
+          A_dense[COLUMN_MAJOR(i, i, N)] = 0.5+0.5*(rand()/(double) RAND_MAX);
+          for(int j = 0; j < N; j++)
           {
             if(i != j)
             {
-              A_dense[COLUMN_MAJOR(i, j, N_chunk)] = A_dense[COLUMN_MAJOR(i, i, N_chunk)]
+              A_dense[COLUMN_MAJOR(i, j, N)] = A_dense[COLUMN_MAJOR(i, i, N)]
                 / (exp(lambda*log(fabs(i-j))) + 1);
             }
           }
@@ -295,9 +307,9 @@ main (int argc, char **argv)
         break;
 
       case diagonal:
-        for(int i = 0; i < N_chunk; i++)
+        for(int i = 0; i < N; i++)
         {
-          A_dense[COLUMN_MAJOR(i, i, N_chunk)] = rand()/(double) RAND_MAX;
+          A_dense[COLUMN_MAJOR(i, i, N)] = rand()/(double) RAND_MAX;
         }
         break;
 
@@ -314,28 +326,52 @@ main (int argc, char **argv)
       {
         for(int j = 0; j < N; j++)
         {
-          printf(" % 1.3f", A_dense[COLUMN_MAJOR(i, j, N_chunk)]);
+          printf(" % 1.3f", A_dense[COLUMN_MAJOR(i, j, N)]);
         }
         printf("\n");
       }
     }
   }
 
-  /* Set the chunk. */
-  chunk_set(A, A_dense);
+  /* Convert the matrices. The chunks are stored in a N_matrix x
+     N_matrix array. */
+  printf("allocating %dx%d chunks\n", N_matrix, N_matrix);
+  void **A = calloc(N_matrix*N_matrix, sizeof(void*));
+  void **C = calloc(N_matrix*N_matrix, sizeof(void*));
 
-  if(print_matrix)
+  double *A_slice = calloc(N_chunk*N_chunk, sizeof(double));
+  for(int i = 0; i < N_matrix; i++)
   {
-    chunk_print(A, "A\n");
+    for(int j = 0; j < N_matrix; j++)
+    {
+      A[COLUMN_MAJOR(i, j, N_matrix)] = chunk_alloc(N_chunk, N_basic, N, i*N_chunk, j*N_chunk);
+      C[COLUMN_MAJOR(i, j, N_matrix)] = chunk_alloc(N_chunk, N_basic, N, i*N_chunk, j*N_chunk);
+
+      /* Set the chunk. */
+      for(int i_chunk = 0; i_chunk < N_chunk; i_chunk++)
+      {
+        for(int j_chunk = 0; j_chunk < N_chunk; j_chunk++)
+        {
+          A_slice[COLUMN_MAJOR(i_chunk, j_chunk, N_chunk)] =
+            A_dense[COLUMN_MAJOR(i*N_chunk+i_chunk, j*N_chunk+j_chunk, N)];
+        }
+      }
+      chunk_set(A[COLUMN_MAJOR(i, j, N_matrix)], A_slice);
+      //printf("norm(A[%d,%d]) = %e\n", i, j, chunk_get_norm_2(A[COLUMN_MAJOR(i, j, N_matrix)]));
+      if(print_matrix)
+      {
+        chunk_print(A[COLUMN_MAJOR(i, j, N_matrix)], "A\n");
+      }
+    }
   }
+  free(A_slice);
 
   double norm_2 = 0;
   for(int i = 0; i < N*N; i++)
   {
     norm_2 += A_dense[i]*A_dense[i];
   }
-  printf("matrix, norm_2 = %e, norm_2 of chunk = %e\n",
-      norm_2, chunk_get_norm_2(A));
+  printf("matrix, norm_2 = %e\n", norm_2);
 
   if(test_dense_product)
   {
@@ -359,23 +395,23 @@ main (int argc, char **argv)
 #pragma omp master
       {
         printf("done multiplying dense using %d OpenMP threads a %dx%d chunk, "
-            "max. task depth %d, "
-            "%1.2f seconds (%d repeats)\n",
-            omp_get_num_threads(),
-            N_chunk, N_chunk,
-            CHUNK_TREE_MAX_TIER,
-            (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-            (start_time.tv_sec+start_time.tv_nsec/1.0e9),
-            repeat);
+               "max. task depth %d, "
+               "%1.2f seconds (%d repeats)\n",
+               omp_get_num_threads(),
+               N_chunk, N_chunk,
+               CHUNK_TREE_MAX_TIER,
+               (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
+               (start_time.tv_sec+start_time.tv_nsec/1.0e9),
+               repeat);
       }
     }
 #else
     printf("done multiplying dense in serial a %dx%d chunk, "
-        "%1.2f seconds (%d repeats)\n",
-        N_chunk, N_chunk,
-        (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
-        (start_time.tv_sec+start_time.tv_nsec/1.0e9),
-        repeat);
+           "%1.2f seconds (%d repeats)\n",
+           N_chunk, N_chunk,
+           (end_time.tv_sec+end_time.tv_nsec/1.0e9)-
+           (start_time.tv_sec+start_time.tv_nsec/1.0e9),
+           repeat);
 #endif
 #else
     printf("not configured with dgemm()\n");
@@ -405,7 +441,20 @@ main (int argc, char **argv)
     for(int i = 0; i < repeat; i++)
     {
       clock_gettime(CLOCKTYPE, &individual_start_time[i]);
-      chunk_multiply(tolerance, A, A, C, tree_only);
+      for(int i_chunk = 0; i_chunk < N_matrix; i_chunk++)
+      {
+        for(int j_chunk = 0; j_chunk < N_matrix; j_chunk++)
+        {
+          for(int k_chunk = 0; k_chunk < N_matrix; k_chunk++)
+          {
+            chunk_multiply(tolerance,
+                           A[COLUMN_MAJOR(i_chunk, k_chunk, N_matrix)],
+                           A[COLUMN_MAJOR(k_chunk, j_chunk, N_matrix)],
+                           C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)],
+                           tree_only);
+          }
+        }
+      }
       clock_gettime(CLOCKTYPE, &individual_end_time[i]);
     }
     clock_gettime(CLOCKTYPE, &end_time);
@@ -580,8 +629,14 @@ main (int argc, char **argv)
   }
 
   free(A_dense);
-  chunk_delete(&A);
-  chunk_delete(&C);
+  for(int i = 0; i < N_matrix; i++)
+  {
+    for(int j = 0; j < N_matrix; j++)
+    {
+      chunk_delete(&A[COLUMN_MAJOR(i, j, N_matrix)]);
+      chunk_delete(&C[COLUMN_MAJOR(i, j, N_matrix)]);
+    }
+  }
 
   return 0;
 }
