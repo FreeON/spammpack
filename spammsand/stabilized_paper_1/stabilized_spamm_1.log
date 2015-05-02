@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.1.9)  1 MAY 2015 10:16
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.1.9)  2 MAY 2015 13:28
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -268,38 +268,25 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 56.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 
-LaTeX Warning: Reference `figure1' on page 1 undefined on input line 63.
-
-
-Package natbib Warning: Citation `Gustavson' on page 1 undefined on input line 
-84.
-
-
-Package natbib Warning: Citation `Toledo' on page 1 undefined on input line 84.
-
-
-
-Package natbib Warning: Citation `Buluc' on page 1 undefined on input line 84.
-
-
-Package natbib Warning: Citation `ARCHIVE_PRL' on page 1 undefined on input lin
-e 88.
+Package natbib Warning: Citation `Benzi99' on page 1 undefined on input line 88
+.
 
 <decay_picture.png, id=1, 688.07062pt x 492.33937pt>
 File: decay_picture.png Graphic file (type png)
  <use decay_picture.png>
-Package pdftex.def Info: decay_picture.png used on input line 93.
+Package pdftex.def Info: decay_picture.png used on input line 92.
 (pdftex.def)             Requested size: 252.94499pt x 180.99075pt.
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 93--94
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 92--93
  [][] 
  []
 
-[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./decay_picture.png>]
-Underfull \hbox (badness 1365) in paragraph at lines 125--126
+
+Underfull \hbox (badness 1365) in paragraph at lines 129--130
 []\OT1/cmr/m/n/10 Decay prin-ci-ples, of-ten very sparse but very ill-
  []
 
+[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./decay_picture.png>]
 [2]
 Package epstopdf Info: Source file: <8x_33_nanotube_cond10_tau-5.eps>
 (epstopdf)                    date: 2015-04-28 08:21:11
@@ -310,14 +297,14 @@ to.pdf>
 (epstopdf)                    size: 8879 bytes
 (epstopdf)             Command: <repstopdf --outfile=8x_33_nanotube_cond10_tau-
 5-eps-converted-to.pdf 8x_33_nanotube_cond10_tau-5.eps>
-(epstopdf)             \includegraphics on input line 311.
+(epstopdf)             \includegraphics on input line 315.
 Package epstopdf Info: Output file is already uptodate.
 
 <8x_33_nanotube_cond10_tau-5-eps-converted-to.pdf, id=36, 361.35pt x 252.945pt>
 File: 8x_33_nanotube_cond10_tau-5-eps-converted-to.pdf Graphic file (type pdf)
 <use 8x_33_nanotube_cond10_tau-5-eps-converted-to.pdf>
 Package pdftex.def Info: 8x_33_nanotube_cond10_tau-5-eps-converted-to.pdf used 
-on input line 311.
+on input line 315.
 (pdftex.def)             Requested size: 252.94499pt x 177.06029pt.
 Package epstopdf Info: Source file: <8x_33_nanotube_cond10_tau-3.eps>
 (epstopdf)                    date: 2015-04-28 08:21:11
@@ -328,22 +315,22 @@ to.pdf>
 (epstopdf)                    size: 8858 bytes
 (epstopdf)             Command: <repstopdf --outfile=8x_33_nanotube_cond10_tau-
 3-eps-converted-to.pdf 8x_33_nanotube_cond10_tau-3.eps>
-(epstopdf)             \includegraphics on input line 312.
+(epstopdf)             \includegraphics on input line 316.
 Package epstopdf Info: Output file is already uptodate.
 
 <8x_33_nanotube_cond10_tau-3-eps-converted-to.pdf, id=37, 361.35pt x 252.945pt>
 File: 8x_33_nanotube_cond10_tau-3-eps-converted-to.pdf Graphic file (type pdf)
 <use 8x_33_nanotube_cond10_tau-3-eps-converted-to.pdf>
 Package pdftex.def Info: 8x_33_nanotube_cond10_tau-3-eps-converted-to.pdf used 
-on input line 312.
+on input line 316.
 (pdftex.def)             Requested size: 252.94499pt x 177.06029pt.
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 311--313
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 315--317
  [][] 
  []
 
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 311--313
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 315--317
  [] 
  []
 
@@ -356,7 +343,7 @@ onverted-to.pdf>
 (epstopdf)                    size: 5934 bytes
 (epstopdf)             Command: <repstopdf --outfile=8x_33_nanotube_cond10_comp
 are_errors-eps-converted-to.pdf 8x_33_nanotube_cond10_compare_errors.eps>
-(epstopdf)             \includegraphics on input line 316.
+(epstopdf)             \includegraphics on input line 320.
 Package epstopdf Info: Output file is already uptodate.
 
 <8x_33_nanotube_cond10_compare_errors-eps-converted-to.pdf, id=38, 361.35pt x 2
@@ -365,10 +352,10 @@ File: 8x_33_nanotube_cond10_compare_errors-eps-converted-to.pdf Graphic file (t
 ype pdf)
  <use 8x_33_nanotube_cond10_compare_errors-eps-converted-to.pdf>
 Package pdftex.def Info: 8x_33_nanotube_cond10_compare_errors-eps-converted-to.
-pdf used on input line 316.
+pdf used on input line 320.
 (pdftex.def)             Requested size: 252.94499pt x 177.06029pt.
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 316--317
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 320--321
  [][] 
  []
 
@@ -382,55 +369,54 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 0_tau-3-eps-converted-to.pdf>]
 
 LaTeX Warning: A float is stuck (cannot be placed); try class option [floatfix]
- on input line 342.
+ on input line 346.
 
+(./stabilized_spamm_1.bbl)
 
 Package natbib Warning: There were undefined citations.
 
 [4 <./8x_33_nanotube_cond10_compare_errors-eps-converted-to.pdf>]
-(./stabilized_spamm_1.aux)
-
-LaTeX Warning: There were undefined references.
-
- ) 
+(./stabilized_spamm_1.aux) ) 
 Here is how much of TeX's memory you used:
- 4011 strings out of 493307
- 52023 string characters out of 6139906
- 135305 words of memory out of 5000000
- 7393 multiletter control sequences out of 15000+600000
+ 4071 strings out of 493307
+ 53015 string characters out of 6139906
+ 135867 words of memory out of 5000000
+ 7450 multiletter control sequences out of 15000+600000
  17249 words of font info for 66 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
- 37i,17n,29p,502b,295s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texli
-ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/share/texlive/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-d
-ist/fonts/type1/public/amsfonts/cmextra/cmex7.pfb></usr/share/texlive/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/c
-mmib7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cm
-mib9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pf
-b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/
-share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/te
-xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mti9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.p
-fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on stabilized_spamm_1.pdf (4 pages, 631097 bytes).
+ 37i,17n,29p,485b,300s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mbx9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
+/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex7.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1
+/public/amsfonts/cmextra/cmmib7.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/amsfonts/cmextra/cmmib9.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmti9.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmtt8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmtt9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbo
+ls/msam10.pfb>
+Output written on stabilized_spamm_1.pdf (4 pages, 654495 bytes).
 PDF statistics:
- 159 PDF objects out of 1000 (max. 8388607)
- 113 compressed objects within 2 object streams
+ 163 PDF objects out of 1000 (max. 8388607)
+ 116 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

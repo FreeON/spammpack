@@ -1,0 +1,105 @@
+\begin{thebibliography}{15}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname bibnamefont\endcsname\relax
+  \def\bibnamefont#1{#1}\fi
+\expandafter\ifx\csname bibfnamefont\endcsname\relax
+  \def\bibfnamefont#1{#1}\fi
+\expandafter\ifx\csname citenamefont\endcsname\relax
+  \def\citenamefont#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\providecommand{\bibinfo}[2]{#2}
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{\citenamefont{Penrose and Lebowitz}(1974)}]{penrose1974}
+\bibinfo{author}{\bibfnamefont{O.}~\bibnamefont{Penrose}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Lebowitz}},
+  \bibinfo{journal}{Commun. Math. Phys.} \textbf{\bibinfo{volume}{184}}
+  (\bibinfo{year}{1974}).
+
+\bibitem[{\citenamefont{Voit}(2006)}]{voit00}
+\bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Voit}},
+  \emph{\bibinfo{title}{The Statistical Mechanics of Financial Markets}},
+  Theoretical and Mathematical Physics (\bibinfo{publisher}{Springer Berlin
+  Heidelberg}, \bibinfo{year}{2006}), ISBN \bibinfo{isbn}{9783540262893},
+  \urlprefix\url{https://books.google.com/books?id=6zUlh\_TkWSwC}.
+
+\bibitem[{\citenamefont{Anselin}(2003)}]{Anselin2003}
+\bibinfo{author}{\bibfnamefont{L.}~\bibnamefont{Anselin}},
+  \bibinfo{journal}{Int. Reg. Sci. Rev.} \textbf{\bibinfo{volume}{26}},
+  \bibinfo{pages}{153} (\bibinfo{year}{2003}), ISSN \bibinfo{issn}{01600176},
+  \urlprefix\url{http://irx.sagepub.com/cgi/doi/10.1177/0160017602250972}.
+
+\bibitem[{\citenamefont{Hardin et~al.}(2013)\citenamefont{Hardin, Garcia, and
+  Golan}}]{Hardin2013}
+\bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Hardin}},
+  \bibinfo{author}{\bibfnamefont{S.~R.} \bibnamefont{Garcia}},
+  \bibnamefont{and} \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Golan}},
+  \bibinfo{journal}{Ann. Appl. Stat.} \textbf{\bibinfo{volume}{7}},
+  \bibinfo{pages}{1733} (\bibinfo{year}{2013}), ISSN \bibinfo{issn}{1932-6157},
+  \eprint{arXiv:1106.5834v4}.
+
+\bibitem[{\citenamefont{Krishtal et~al.}(2013)\citenamefont{Krishtal, Strohmer,
+  and Wertz}}]{Krishtal2014}
+\bibinfo{author}{\bibfnamefont{I.}~\bibnamefont{Krishtal}},
+  \bibinfo{author}{\bibfnamefont{T.}~\bibnamefont{Strohmer}}, \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{T.}~\bibnamefont{Wertz}},
+  \bibinfo{journal}{Found. Comput. \ldots}  (\bibinfo{year}{2013}), ISSN
+  \bibinfo{issn}{1615-3375}.
+
+\bibitem[{\citenamefont{Lowdin}(1956)}]{Lowdin56}
+\bibinfo{author}{\bibfnamefont{P.~O.} \bibnamefont{Lowdin}},
+  \bibinfo{journal}{Advances in Physics} \textbf{\bibinfo{volume}{5}},
+  \bibinfo{pages}{1} (\bibinfo{year}{1956}).
+
+\bibitem[{\citenamefont{Naidu}(2011)}]{naidu11}
+\bibinfo{author}{\bibfnamefont{A.~R.} \bibnamefont{Naidu}},
+  p.~\bibinfo{pages}{1} (\bibinfo{year}{2011}), \eprint{1105.3571}.
+
+\bibitem[{\citenamefont{Higham}(2008)}]{Higham08}
+\bibinfo{author}{\bibfnamefont{N.~J.} \bibnamefont{Higham}},
+  \emph{\bibinfo{title}{Functions of Matrices}} (\bibinfo{publisher}{Society
+  for Industrial \& Applied Mathematics,}, \bibinfo{year}{2008}).
+
+\bibitem[{\citenamefont{Gustavson}(1978)}]{Gustavson78}
+\bibinfo{author}{\bibfnamefont{F.~G.} \bibnamefont{Gustavson}},
+  \bibinfo{journal}{ACM Transactions on Mathematical Software (TOMS)}
+  \textbf{\bibinfo{volume}{4}}, \bibinfo{pages}{250} (\bibinfo{year}{1978}).
+
+\bibitem[{\citenamefont{Toledo}(1997)}]{Toledo97}
+\bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Toledo}}, \bibinfo{journal}{IBM
+  J. Res. Dev.} \textbf{\bibinfo{volume}{41}}, \bibinfo{pages}{711}
+  (\bibinfo{year}{1997}).
+
+\bibitem[{\citenamefont{Challacombe}(2000)}]{challacombe00}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Challacombe}},
+  \bibinfo{journal}{Comput. Phys. Commun.} \textbf{\bibinfo{volume}{128}},
+  \bibinfo{pages}{93} (\bibinfo{year}{2000}).
+
+\bibitem[{\citenamefont{Bowler and andM. J.~Gillan}(2000)}]{bowler00}
+\bibinfo{author}{\bibfnamefont{D.~R.} \bibnamefont{Bowler}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{T.~M.} \bibnamefont{andM. J.~Gillan}},
+  \bibinfo{journal}{Comp. Phys. Comm.} \textbf{\bibinfo{volume}{137}},
+  \bibinfo{pages}{255} (\bibinfo{year}{2000}).
+
+\bibitem[{\citenamefont{Benzi}(2002)}]{Benzi02}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Benzi}}, \bibinfo{journal}{J.
+  Comput. Phys.} \textbf{\bibinfo{volume}{182}}, \bibinfo{pages}{418}
+  (\bibinfo{year}{2002}).
+
+\bibitem[{\citenamefont{Bowler and Miyazaki}(2012)}]{Bowler12}
+\bibinfo{author}{\bibfnamefont{D.~R.} \bibnamefont{Bowler}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{T.}~\bibnamefont{Miyazaki}},
+  \bibinfo{journal}{Reports Prog. Phys.} \textbf{\bibinfo{volume}{75}},
+  \bibinfo{pages}{36503} (\bibinfo{year}{2012}).
+
+\bibitem[{\citenamefont{Benzi et~al.}(2013)\citenamefont{Benzi, Boito, and
+  Razouk}}]{Benzi13}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Benzi}},
+  \bibinfo{author}{\bibfnamefont{P.}~\bibnamefont{Boito}}, \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{N.}~\bibnamefont{Razouk}},
+  \bibinfo{journal}{SIAM Rev.} \textbf{\bibinfo{volume}{55}},
+  \bibinfo{pages}{3} (\bibinfo{year}{2013}).
+
+\end{thebibliography}
