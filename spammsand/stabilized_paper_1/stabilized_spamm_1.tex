@@ -86,8 +86,8 @@ Then, conventional computational kernels may be employed, such as the sparse gen
 ($\tt{SpGEMM}$) \cite{Gustavson78, Toledo97,challacombe00,bowler00}, yeiding fast solutions for multiplication rich iterations and a modulated fill in. 
 These and related incomplete/inexact approaches to the computation of sparse approximate matrix functions often lead to ${\cal O}(n)$ 
 algorithms, finding wide use in technologically important preconditioning schemes, the information sciences, electronic structure and many
-other disciplines.  Comprehensive surveys of these methods in the numerical linear algebra are given by Benzi \cite{Benzi99,Benzi02}. 
-See also Bowler \cite{Bowler12} and Benzi \cite{Benzi13} for a complete development of these methods in electronic structure.
+other disciplines.  Comprehensive surveys of these methods in the numerical linear algebra are given by Benzi \cite{Benzi99,Benzi02}, and
+by Bowler \cite{Bowler12} and Benzi \cite{Benzi13} for electronic structure.
 
 \begin{figure}[h]\label{figure1}
  \includegraphics[width=3.5in]{decay_picture.png}
@@ -97,63 +97,29 @@ See also Bowler \cite{Bowler12} and Benzi \cite{Benzi13} for a complete developm
 \end{figure}
 
 Extended correlations with degeneracies may correspond to matrix ill-conditioning and slow rates of decay \cite{}.
-Sparse schemes based on matrix truncation control only abolute errors, {\em e.g.}~additive absolute errors in the matrix product  
+Sparse schemes based on matrix truncation control only {\em absolute, addititve errors} in the matrix product,   
 $\overline{ \mat{a} \cdot \mat{b} }\; = \; \mat{a}\cdot\mat{b} \; +\; \mat{\epsilon}^{\mat{a}}_\tau \cdot \mat{b} \;+\;
  \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2)$.  often to unstable iteration when the condition number is large, and 
-before sparsity can be achieved.  For extended degeneracies, matrix problems are often amenable to hierarchical,  compressive 
+before sparsity can be achieved.  However, extended degeneracies  are often amenable to hierarchical,  compressive 
 (reduced rank) solutions \cite{}, H-Matrix, 1/2 and 1/2, .
 It is also worth noting approaches to fast matrix multiplication \cite{}, which can have performance bounds significantly below the
-naive ${\mathcal O}(n^3)$  of conventional dense ${\tt GEMM}$ kernels \cite{}.
-
-In this contribution, we consider problems related to fast approximation of the matrix inverse square root and sign functions 
-for problems that are too ill-conditioned for sparse approximation, but without degeneracy insufficient to yeild 
-an effective rank reduction.   
-
-
-non-pathalogical ill-conditioning and slow decay that are not
+naive ${\mathcal O}(n^3)$  of conventional dense ${\tt GEMM}$ kernels, with interesting fast stragies for achieving fast accumulation
+of product space intermediates \cite{Demmel et. al.}. 
+However, many pratical cases are somewhere in-between sparse and meaningfully degenerate regimes.   This is the case in electronic structure 
+towards the Mott transition \cite{}, and also in the case of local support towards completeness \cite{Others, Hutter, Gigi}. 
 
 
-
-
-
-The variations do not express in the overal context of the product.  Because the error in the incomplete case is additive, the
-systemssystems
-
-
- For example, 
-$\mat{a}$ may be small, but $\delta \mat{a} \cdot \mat{b}$  large, leading extra work.  Also, 
-once a truncation error is commited, it is encounted in all subsiquent steps; it becomes difficult to impossilbe to manage error flows of differing 
-magnitude in complex maps. 
-
-
-
-For extended quasi-degenerate correlations, these matrix functions may encounter ill-conditioning, 
-and associated slow rates of decay.  For extremely slow decay, maybe even oscillatory, 
-low order algebraic decay, methods that compresion....     For fast decay, 
-
-correlation and the support  
-
-
-Also, matrices with decay arise from the application of .  Generally, ill-conditining is associated with slower decay, 
-
-Decay principles, often very sparse but very ill-conditioned problems.
-
-
-\subsection{Retaining the Eigenspace}
-Gradients lack convergence properties
-Iteration without orig drives away from basis
-NS has both.  Difference between scalar iteration, Higham page 92.
-
-
-\subsection{Approximate Algebra as {\bf \em N}-Body Problem}
-
-
-SpAMM is the recursive Cauchy-Schwarz occlusion product $\ot$ on matrix quadtrees
-
+\pagebreak
+In this contribution, we consider an $N$-body approach to the linear algebra underlying the approximation of matrix functions by iteration, 
+based on the matrix quadtree \cite{wise, samet} 
 \begin{equation}
-\mat{a}^i = \begin{bmatrix} \mat{a}^{i+1}_{00} & \mat{a}^{i+1}_{01} \\ \mat{a}^{i+1}_{10} & \mat{a}^{i+1}_{11} \end{bmatrix}
+\mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
 \end{equation}
-
+and orderings that are locality preserving \cite{}, providing matrices with approximate, block-by-magnitude structuring as described in Refs. \cite{}.
+Then, it is possible to obtain fast, data base opperations, such as the metric and the range query \cite{samet} at recursively fine levels of granularity,
+and supporting both sparse \cite{wise} and compressive \cite{} approaches to linear algebra.   With matrix quadtrees structured block-by-magnitude, 
+the Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel $\ot$ achives a reduced ${\cal O}(n)$ cost through recursive Cauchy-Schwarz 
+occlusion of submultiplicative norms:
 \begin{widetext}
 \begin{equation}
 \mat{a}^{i} \ot \mat{b}^{i} = 
@@ -167,52 +133,40 @@ SpAMM is the recursive Cauchy-Schwarz occlusion product $\ot$ on matrix quadtree
                 \mat{a}^{i+1}_{00} \ot \mat{b}^{i+1}_{01} +\mat{a}^{i+1}_{01} \ot \mat{b}^{i+1}_{11}   
 \end{bmatrix}  \quad \tt{else}
                 \end{array}
-              \right.
+              \right.  \, ,
 \end{equation}
 \end{widetext}
-
-
-
-
-database orientation, Cauchy sch
-Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
-Based on Cauchy Schwarz inequality.
-
-
-
-% error accumulation may be better than row-col
-% single programing model.  generacity.  communication optimality and strong scaling.
-
-% Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
-% Often adhoc.
-
-% Philosophy: Don't know which elements to drop, because only make sense in context.  It is very difficult to incorporate this context in a dropping 
-% strategies. 
-
-% Approximate Algebra, SpAMM Cauchy Schwarz occlusion, n-body approach to numerical linear algebra, first order errors in matrix multiplication.
-% Based on Cauchy Schwarz inequality.
-
-% We show that this first order error in algebraic context follows the functional analysis, and enables the consideration {\em and seperate treatment} of
-% first order error flows in the analysis of complex maps. 
-
-
-
+with $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ because computability \cite{kahan}.  In addition to the potential of an 
+${\cal O}(n)$ cost, the $N$-Body approach to the linear algebra of matrices with decay offers the potential for generic high 
+performance implementations and strong parallel scaling \cite{},  
+improved error accumulation relative to row-col contraction \cite{}, and a simple, intuiative code base \cite{}.  
+Perhaps most importantly though, the occlussion error 
 \begin{equation}
-\mat{a} \ot \mat{b}=\mat{a}\cdot \mat{b} + \mat{\Delta}^{a\cdot b}_{\tau}
+\mat{\Delta}^{a\cdot b}_{\tau}=\mat{a} \ot \mat{b}-\mat{a}\cdot \mat{b}
 \end{equation}
-where $\mat{\Delta}^{a \cdot b}_{\tau}$ is a deterministic (assymetric) first order variation cooresponding to the branch pattern set
-by Cauchy-Schwarz occlusion, with length $\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \leq \tau \lVert \mat{a} \rVert  \lVert \mat{b} \rVert$.  
-The opperator $\ot$ leads to a non-associative algebra with Lie bracket
+obeys the multiplicative bound 
+\begin{equation}
+\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert
+\end{equation}
+with the potential for {\em relative} error control during iteration.   Generally, the opperator $\ot$ leads to 
+a non-associative algebra with Lie bracket
 \begin{equation}
 \left[ \mat{a} , \mat{b} \right]_{\tau} = \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
 =  \left[ \mat{a} , \mat{b} \right]
 + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau}.
 \end{equation}
 
-determined by the occlusion field.  Our challenge is to master the error flows of these occlusion fields under iteration, 
+Our challenge is to master the error flows of these occlusion fields under iteration, 
 for ill-conditioned problems and with permisive values of $\tau$. 
 
+
 \section{Newton Shulz Iteration}
+
+\subsection{Retaining the Eigenspace}
+Gradients lack convergence properties
+Iteration without orig drives away from basis
+NS has both.  Difference between scalar iteration, Higham page 92.
+
 
 \subsection{Idempotence }
 
