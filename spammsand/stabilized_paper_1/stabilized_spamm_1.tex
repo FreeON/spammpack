@@ -66,7 +66,7 @@ More broadly, matrix decay properties may coorespond to statistical matrices
 \cite{penrose1974,voit00,Anselin2003,Hardin2013,Krishtal2014}, including learned correlations in a 
 generalized, non-orthogonal metric \cite{}. More broadly still, problems with local, non-orothogonal support 
 are often solved with congruential transformations of the matrix inverse square root \cite{Lowdin56,naidu11} or a related factorization \cite{Krishtal2014};
-these transformations correlate support with a representation independent linear form, {\em eg.} of the generalized eigenproblem. 
+these transformations correlate local support with a representation independent form, {\em eg.}~of the eigenproblem. 
 Interestingly, the matrix sign function and the matrix inverse square root function are related by Higham's identity:
 \begin{equation}
 \rm{sign} \left( \begin{bmatrix} 0 & \mat{s}      \\ \mat{I}       & 0\end{bmatrix} \right)  =
@@ -77,7 +77,8 @@ A complete overivew of matrix function theory and computation is given in Higham
 A well conditioned matrix $\mat{s}$ may often correspond to matrix sign and inverse square root functions with rapid exponential decay, 
 and be amenable to the sparse matrix approximation
 $\bar{\mat{s}} = \mat{s}+ \mat{\epsilon}^{\mat{s}}_\tau$, where $\mat{\epsilon}^{\mat{s}}_\tau$ is the error introduced according to some  
-criteria $\tau$.   This criteria might be a drop-tolerence, 
+criteria $\tau$.  Supporting this approximation are usefull bounds to matrix function elements \cite{Benzi99b, }.  
+The criteria $\tau$ might be a drop-tolerence, 
 $\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, |s_{ij}|<\tau \}$, a radial cutoff, 
 $\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, \lVert \mat{r}_i - \mat{r}_j \rVert > \tau \}$, 
 or some other approach to truncation, perhaps involving a sparsity pattern chosen {\em a priori}. 
@@ -85,7 +86,7 @@ Then, conventional computational kernels may be employed, such as the sparse gen
 ($\tt{SpGEMM}$) \cite{Gustavson78, Toledo97,challacombe00,bowler00}, yeiding fast solutions for multiplication rich iterations and a modulated fill in. 
 These and related incomplete/inexact approaches to the computation of sparse approximate matrix functions often lead to ${\cal O}(n)$ 
 algorithms, finding wide use in technologically important preconditioning schemes, the information sciences, electronic structure and many
-other disciplines.  Comprehensive surveys of these methods in the numerical linear algebra is given by Benzi \cite{Benzi99,Benzi02}. 
+other disciplines.  Comprehensive surveys of these methods in the numerical linear algebra are given by Benzi \cite{Benzi99,Benzi02}. 
 See also Bowler \cite{Bowler12} and Benzi \cite{Benzi13} for a complete development of these methods in electronic structure.
 
 \begin{figure}[h]\label{figure1}
@@ -95,20 +96,29 @@ See also Bowler \cite{Bowler12} and Benzi \cite{Benzi13} for a complete developm
            long (metalic 3,3 nanotube) ranged,  from exponential (insulating) to algebraic (metallic). }
 \end{figure}
 
+Extended correlations with degeneracies may correspond to matrix ill-conditioning and slow rates of decay \cite{}.
+Sparse schemes based on matrix truncation control only abolute errors, {\em e.g.}~additive absolute errors in the matrix product  
+$\overline{ \mat{a} \cdot \mat{b} }\; = \; \mat{a}\cdot\mat{b} \; +\; \mat{\epsilon}^{\mat{a}}_\tau \cdot \mat{b} \;+\;
+ \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2)$.  often to unstable iteration when the condition number is large, and 
+before sparsity can be achieved.  For extended degeneracies, matrix problems are often amenable to hierarchical,  compressive 
+(reduced rank) solutions \cite{}, H-Matrix, 1/2 and 1/2, .
+It is also worth noting approaches to fast matrix multiplication \cite{}, which can have performance bounds significantly below the
+naive ${\mathcal O}(n^3)$  of conventional dense ${\tt GEMM}$ kernels \cite{}.
+
+In this contribution, we consider problems related to fast approximation of the matrix inverse square root and sign functions 
+for problems that are too ill-conditioned for sparse approximation, but without degeneracy insufficient to yeild 
+an effective rank reduction.   
+
+
+non-pathalogical ill-conditioning and slow decay that are not
 
 
 
 
-
-Incompleteness -> sparse approximations dense problems, uses conventional sparse infrastructure, second order errors in matrix multiplication.  
-Often adhoc.
-
-
-
-$\tilde{\mat{a}} \cdot \tilde{\mat{b}} = \mat{a}\cdot\mat{b}+ \delta \mat{a} \cdot \mat{b} +  \mat{a} \cdot \delta \mat{b}
-+  \delta \mat{a} \cdot \delta \mat{b}$
 
 The variations do not express in the overal context of the product.  Because the error in the incomplete case is additive, the
+systemssystems
+
 
  For example, 
 $\mat{a}$ may be small, but $\delta \mat{a} \cdot \mat{b}$  large, leading extra work.  Also, 
