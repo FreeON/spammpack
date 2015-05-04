@@ -24,6 +24,9 @@ if [[ ${BUILD_TYPE:=serial} = "serial" ]]; then
     CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
     if [[ ${NO_WORK} = "TRUE" ]]; then
         CONFIGURE_ARGS+=" --enable-no-work"
+    elif [[ ! ${NO_WORK} = "FALSE" ]]; then
+        echo "unknown value for NO_WORK (${NO_WORK})"
+        exit 1
     fi
 elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     echo "OpenMP version..."
@@ -37,6 +40,9 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=${MAX_TIER}"
     if [[ ${NO_WORK} = "TRUE" ]]; then
         CONFIGURE_ARGS+=" --enable-no-work"
+    elif [[ ! ${NO_WORK} = "FALSE" ]]; then
+        echo "unknown value for NO_WORK (${NO_WORK})"
+        exit 1
     fi
 else
     echo "unknown build type, either serial or openmp"
