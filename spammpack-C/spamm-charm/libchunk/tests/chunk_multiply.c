@@ -489,9 +489,10 @@ main (int argc, char **argv)
     {
 #pragma omp master
       {
-        printf("%d OpenMP threads, %dx%d chunk with %dx%d basic blocks, "
+        printf("%d OpenMP threads, %dx%d matrix with %dx%d chunk and %dx%d basic blocks, "
             "tolerance %1.2e, %1.3f +- %1.3e seconds (%1.3f, %d repeats)\n",
             omp_get_num_threads(),
+            N, N,
             N_chunk, N_chunk,
             N_basic, N_basic,
             tolerance,
@@ -502,8 +503,9 @@ main (int argc, char **argv)
       }
     }
 #else
-    printf("serial, %dx%d chunk with %dx%d basic blocks, "
+    printf("serial, %dx%d matrix with %dx%d chunk and %dx%d basic blocks, "
         "tolerance %1.2e, %1.3f +- %1.3e seconds (%1.3f, %d repeats)\n",
+        N, N,
         N_chunk, N_chunk,
         N_basic, N_basic,
         tolerance,

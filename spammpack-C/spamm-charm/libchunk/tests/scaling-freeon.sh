@@ -10,6 +10,8 @@ echo "BUILD_COMPILER = {gcc,intel}"
 echo "MAX_TIER = N (default = ${MAX_TIER:=5}"
 echo "REPEAT = N (default = ${REPEAT:=4})"
 echo "NO_WORK = {TRUE,FALSE} (default = ${NO_WORK:=FALSE})"
+echo "N_BASIC = N (default = ${N_BASIC:=4})"
+echo "N_CHUNK = N (default = ${N_CHUNK:=128})"
 echo
 
 if [[ ${BUILD_TYPE:=serial} = "serial" ]]; then
@@ -17,6 +19,7 @@ if [[ ${BUILD_TYPE:=serial} = "serial" ]]; then
     THREADS=( 1 )
     NUMA_POLICY="--physcpubind=0 --membind=0"
     CONFIGURE_ARGS="--disable-openmp"
+    CONFIGURE_ARGS+=" --disable-shared"
     CONFIGURE_ARGS+=" --disable-assert"
     CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
     if [[ ${NO_WORK} = "TRUE" ]]; then
@@ -28,6 +31,7 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     #THREADS=( 1 2 )
     NUMA_POLICY="--interleave=all"
     CONFIGURE_ARGS="--enable-openmp"
+    CONFIGURE_ARGS+=" --disable-shared"
     CONFIGURE_ARGS+=" --disable-assert"
     CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
     CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=${MAX_TIER}"
@@ -75,8 +79,8 @@ for tolerance in 1e-10 1e-6; do
                        numactl ${NUMA_POLICY} -- \
                        ./chunk_multiply \
                        --tolerance ${tolerance} \
-                       --N_basic 4 \
-                       --N_chunk 128 \
+                       --N_basic ${N_BASIC} \
+                       --N_chunk ${N_CHUNK} \
                        --type BCSR \
                        --bcsr ~/data-sets/water/h2o_90.OrthoD \
                        --no-verify \
