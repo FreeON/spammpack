@@ -96,7 +96,6 @@ by Bowler \cite{Bowler12} and Benzi \cite{Benzi13} for electronic structure.
            long (metalic 3,3 nanotube) ranged,  from exponential (insulating) to algebraic (metallic). }
 \end{figure}
 
-
 Because the truncated multiplication is controled only by absolute, addititve errors in the  product,   
 \begin{equation}
 \overline{ \mat{a} \cdot \mat{b} }\; = \; \mat{a}\cdot\mat{b} \; +\; \mat{\epsilon}^{\mat{a}}_\tau \cdot \mat{b} \;+\;
@@ -104,8 +103,9 @@ Because the truncated multiplication is controled only by absolute, addititve er
 \end{equation}
 achieving sparse, stable and rapidly convergent iteration for ill-conditioned problems can be challenging \cite{}.  In cases of 
 extreme degeneracy,  hierarchical semi-seperable (reduced rank) algorithms  can offer effective complexity reduction \cite{}.
-However, many pratical cases are somewhere in-between sparse and meaningfully degenerate regimes.   This is the case in electronic structure 
-towards the Mott transition \cite{}, and also in the case of local support towards completeness \cite{Others, Hutter, Gigi}. 
+However, many pratical cases are somewhere in-between sparse and meaningfully degenerate regimes; effectively dense but without
+an exploitable reduction in rank.  This is the case in electronic structure for strong but non-metalic correlation, 
+{\em e.g.}~towards the Mott transition \cite{}, and also in the case of local atomic support towards completeness \cite{Others, Hutter, Gigi}. 
 
 \pagebreak
 In this contribution, we consider an $N$-body approach to the linear algebra underlying the approximation of matrix functions by iteration, 
@@ -113,7 +113,13 @@ based on the matrix quadtree \cite{wise, samet}
 \begin{equation}
 \mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
 \end{equation}
-and orderings that are locality preserving \cite{}, yeilding matrices with an approximate, block-by-magnitude structure as described in Refs. \cite{}.
+and orderings that are locality preserving \cite{}.  In this work, we employ locality preserving Space Filling Curve (SFC) heuristics to arange
+the Cartesian positions of local atomic (LCAO) support functions \cite{}, leading to an approximate block-by-magnitude matrix structuring 
+\cite{Challacombe10,Bock12,Bock15}.  Orderings that preserve locality are cornerstones of database theory \cite{} and $N$-Body methods \cite{},
+and an active area of research as memory hierarchies become increasingly decentralized due to the end of Dennard scaling \cite{cache}.  
+This data-local approach, resulting in approximate block-by-magnitude matrix ordering,  is antipolar to randomization methods employed to achieve
+homogenous decompositions \cite{}.
+
 Then, it is possible to obtain fast, data base opperations, such as the metric and the range query \cite{samet} at recursively fine levels of granularity,
 and supporting both sparse \cite{wise} and compressive \cite{} approaches to linear algebra.   With decay and matrix quadtrees structured block-by-magnitude, 
 the Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel $\ot$ achives a reduced ${\cal O}(n)$ cost through the recursive Cauchy-Schwarz 
@@ -152,7 +158,7 @@ with the potential for {\em relative} error control during iteration.   Generall
 =  \left[ \mat{a} , \mat{b} \right]
 + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau}.
 \end{equation}
-Here, we hope to develop understanding and control the flow of occlusion errors under iteration, 
+Here, we hope to understanding the flow of occlusion errors under Newton Schulz iteration, 
 for ill-conditioned problems and with extreme permisive values of $\tau$. 
 
 \section{Newton Shulz Iteration}
