@@ -411,7 +411,8 @@ chunk_tree_get_node (const int tier,
     offset += ipow2(2*i_tier)*sizeof(struct chunk_tree_node_t);
   }
   offset += ROW_MAJOR(i, j, ipow2(tier))*sizeof(struct chunk_tree_node_t);
-  struct chunk_tree_node_t *node = (struct chunk_tree_node_t*) ((intptr_t) chunk->data + offset);
+  struct chunk_tree_node_t *node = (struct chunk_tree_node_t*)
+    ((intptr_t) chunk->data + offset);
   DEBUG("%d:node(%d,%d) at %p\n", tier, i, j, node);
   return node;
 }
@@ -454,7 +455,8 @@ chunk_tree_update_norm (struct chunk_tree_t *const chunk)
           {
             for(int j_child = 0; j_child < 2; j_child++)
             {
-              struct chunk_tree_node_t *child = chunk_tree_get_node(tier+1, 2*i+i_child, 2*j+j_child, chunk);
+              struct chunk_tree_node_t *child =
+                chunk_tree_get_node(tier+1, 2*i+i_child, 2*j+j_child, chunk);
               node->norm_2 += child->norm_2;
             }
           }
@@ -612,7 +614,8 @@ chunk_tree_print_node (const int tier,
 
   if(tier == depth)
   {
-    INFO("(%p) submatrix at %p\n", node, (void*) ((intptr_t) node + node->offset.matrix_offset));
+    INFO("(%p) submatrix at %p\n", node,
+         (void*) ((intptr_t) node + node->offset.matrix_offset));
     double *submatrix = (double*) ((intptr_t) node + node->offset.matrix_offset);
     for(int i = 0; i < node->N_basic; i++)
     {
@@ -906,7 +909,7 @@ chunk_tree_multiply_node (const double tolerance_2,
         {
           if(create_tasks)
           {
-#pragma omp task default(none) firstprivate(i, j, k) untied
+#pragma omp task default(shared) firstprivate(i, j, k) untied
             chunk_tree_multiply_node_recur(tolerance_2, i, j, k, tier, depth,
                                            A, B, C, symbolic_only, complexity, product_index);
           }
