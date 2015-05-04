@@ -5,6 +5,17 @@ module spamm_nbdyalgbra_times
   use spamm_decoration
   use spamm_elementals
 
+
+  TYPE SpAMM_cubes
+     TYPE(SpAMM_cubes), POINTER  :: Next
+     INTEGER                     :: Lev
+     INTEGER                     :: Hash
+     REAL(DOUBLE)                :: Bound
+     INTEGER,     DIMENSION(3,2) :: Box     
+  END TYPE SpAMM_cubes
+
+  TYPE(SpAMM_cubes),POINTER :: SpAMM_stream
+
   implicit none
 
 CONTAINS
@@ -350,12 +361,38 @@ CONTAINS
  
     ! set passed data for initialization   
     CALL SpAMM_flip(d)
+    
+
+    ALLOCATE(SpAMM_stream)
+    Stream=>SpAMM_stream
 
     Depth=0
     CALL SpAMM_tree_2d_symm_TIMES_tree_2d_symm_recur(d, A, B, Tau2, NT, Depth )
 
     ! prune unused nodes ... 
     CALL SpAMM_prune(d)
+
+    DO WHILE(ASSOCIATED(Stream%Next))
+       Stream=>Stream%Next 
+       IF(Stream%Lev==SpAMM_levels)THEN
+          Opacity=1D0
+       ELSE
+          Opacity=0.4D0*DBLE(Stream%Lev)/DBLE(SpAMM_levels)
+       ENDIF
+       WRITE(44,111)Opacity,Stream%Box(1,1),Stream%Box(2,1),Stream%Box(3,1), &
+            Stream%Box(1,2),Stream%Box(2,2),Stream%Box(3,2)
+111    FORMAT("Opacity[",F10.5,"],Cuboid[{",I6,",",I6,",",I6,"},{",I6,",",I6,",",I6,"}], ")
+    ENDDO
+    
+    WRITE(44,*)'Boxed->False,ViewAngle -> Automatic, ViewCenter -> {0.5, 0.5, 0.5}, '
+    WRITE(44,*)'ViewMatrix -> Automatic, ViewPoint -> {-1.17551, -1.22153, -2.92849},'
+    WRITE(44,*)'ViewRange -> All, ViewVector -> Automatic,'
+    WRITE(44,*)'ViewVertical -> {-0.961419, -0.126619, -0.244213}]'
+    WRITE(*,*)' DONE SPAMM '
+  
+  STOP
+ 
+
  
   END FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm
 
@@ -387,6 +424,7 @@ CONTAINS
 
           c%frill%flops = SBS3
 
+
        ELSE
 
           IF(NT)THEN
@@ -399,6 +437,16 @@ CONTAINS
 
        ENDIF
 
+
+       SpAMM_stream%Lev=qA%Lev
+       SpAMM_stream%Box(1,:)=qA%Box(2,:) ! I
+       SpAMM_stream%Box(2,:)=qA%Box(1,:) ! K
+       SpAMM_stream%Box(3,:)=qB%Box(1,:) ! J
+       ALLOCATE(SpAMM_stream%Next)
+       SpAMM_stream=>SpAMM_stream%Next
+       NULLIFY(SpAMM_stream%Next)
+
+
    ELSE
 
        b00=>b%child_00; b11=>b%child_11; b01=>b%child_01; b10=>b%child_10
@@ -408,6 +456,18 @@ CONTAINS
        ELSE
           a01=>a%child_10; a10=>a%child_01
        ENDIF
+
+
+       ! #ifdef SpAMM_PRINT
+       SpAMM_stream%Lev=qA%Lev
+       SpAMM_stream%Box(1,:)=qA%Box(2,:) ! I
+       SpAMM_stream%Box(2,:)=qA%Box(1,:) ! K
+       SpAMM_stream%Box(3,:)=qB%Box(1,:) ! J
+       ALLOCATE(SpAMM_stream%Next)
+       SpAMM_stream=>SpAMM_stream%Next
+       NULLIFY(SpAMM_stream%Next)
+       ! #endif
+
 
        ! first  pass, [m;0].[0;n]
        IF( SpAMM_occlude( a00, b00, Tau2 ) ) & 
