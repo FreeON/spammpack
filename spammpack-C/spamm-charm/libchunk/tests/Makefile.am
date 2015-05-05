@@ -1,4 +1,4 @@
-dist_noinst_SCRIPTS = scaling-mustang.sh
+dist_noinst_SCRIPTS = scaling-mustang.sh scaling-freeon.sh
 
 noinst_PROGRAMS = \
 	chunk_multiply \
