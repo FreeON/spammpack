@@ -72,7 +72,7 @@ else
 fi
 
 make clean || exit
-make V=1 || exit
+make -j V=1 || exit
 popd
 
 head ../config.log \
@@ -85,20 +85,38 @@ echo "numactl policy: ${NUMA_POLICY}" \
     | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output || exit
 
 for tolerance in 1e-10 1e-6; do
-    for threads in ${THREADS[*]}; do
-      for (( repeat = 0; repeat < ${FULL_REPEAT}; repeat++ )); do
-        OMP_NUM_THREADS=${threads} \
-          numactl ${NUMA_POLICY} -- \
-          ./chunk_multiply \
-          --tolerance ${tolerance} \
-          --N_basic ${N_BASIC} \
-          --N_chunk ${N_CHUNK} \
-          --type BCSR \
-          --bcsr ${BCSR} \
-          --no-verify \
-          --repeat ${REPEAT} \
-          | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output \
-          || exit
-      done
-    done
+  for threads in ${THREADS[*]}; do
+    for (( repeat = 0; repeat < ${FULL_REPEAT}; repeat++ )); do
+      OMP_NUM_THREADS=${threads} \
+        numactl ${NUMA_POLICY} -- \
+        ./chunk_multiply \
+        --tolerance ${tolerance} \
+        --N_basic ${N_BASIC} \
+        --N_chunk ${N_CHUNK} \
+        --type BCSR \
+        --bcsr ${BCSR} \
+        --no-verify \
+        --repeat ${REPEAT} \
+        | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output \
+        || exit
+    done \
+      | grep "seconds" \
+      | awk "{ times[N++] = \$15; };
+             END {
+               avg_time = 0;
+               for(i = 0; i < N; i++) {
+                 avg_time = avg_time+times[i];
+               }
+               avg_time = avg_time/N;
+               var = 0;
+               for(i = 0; i < N; i++) {
+                 var = var+(times[i]-avg_time)**2;
+               }
+               var = var/N;
+               printf(\"%d %e %e\n\", ${threads}, avg_time, sqrt(var));
+             }"
+  done | awk 'BEGIN { t0 = -1; };
+              { if(t0 < 0) { t0 = $2 };
+                printf("% 3d %e %e %6.2f\n", $1, $2, $3, 100*t0/$2/$1);
+              }'
 done
