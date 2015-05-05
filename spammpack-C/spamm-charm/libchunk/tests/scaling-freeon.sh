@@ -11,6 +11,7 @@ echo "MAX_TIER = ${MAX_TIER:=5}"
 echo "REPEAT = ${REPEAT:=4}"
 echo "FULL_REPEAT = ${FULL_REPEAT:=1}"
 echo "NO_WORK = ${NO_WORK:=FALSE} {TRUE,FALSE}"
+echo "EXTRA_WORK = ${EXTRA_WORK:=0}"
 echo "N_BASIC = ${N_BASIC:=4}"
 echo "N_CHUNK = ${N_CHUNK:=128}"
 echo "BCSR = ${BCSR:=~/data-sets/water/h2o_90.OrthoD}"
@@ -23,6 +24,7 @@ if [[ ${BUILD_TYPE} = "serial" ]]; then
     CONFIGURE_ARGS="--disable-openmp"
     CONFIGURE_ARGS+=" --disable-shared"
     CONFIGURE_ARGS+=" --disable-assert"
+    CONFIGURE_ARGS+=" --enable-extra-work=${EXTRA_WORK}"
     CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
     if [[ ${NO_WORK} = "TRUE" ]]; then
         CONFIGURE_ARGS+=" --enable-no-work"
@@ -38,6 +40,7 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     CONFIGURE_ARGS="--enable-openmp"
     CONFIGURE_ARGS+=" --disable-shared"
     CONFIGURE_ARGS+=" --disable-assert"
+    CONFIGURE_ARGS+=" --enable-extra-work=${EXTRA_WORK}"
     CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
     CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=${MAX_TIER}"
     if [[ ${NO_WORK} = "TRUE" ]]; then
