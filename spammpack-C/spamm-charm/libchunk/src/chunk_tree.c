@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -1005,7 +1006,7 @@ chunk_tree_multiply (const double tolerance,
 #pragma omp task untied default(shared)
         {
           chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root,
-              B_root, C_root, symbolic_only, complexity, 0);
+                                   B_root, C_root, symbolic_only, complexity, 0);
         }
 #pragma omp taskwait
       }

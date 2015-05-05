@@ -179,6 +179,7 @@ if [[ ${enable_no_work} = "yes" ]]; then
 fi
 AC_MSG_RESULT([${enable_no_work}])
 
+AC_MSG_CHECKING([whether to add some extra sleep after block multiplies])
 AC_ARG_ENABLE([sleep],
   [AS_HELP_STRING([--enable-sleep],
   [add N nanoseconds of sleep during the block multiply])],
@@ -187,6 +188,23 @@ AC_ARG_ENABLE([sleep],
 if [[ ${enable_sleep} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([BLOCK_SLEEP], [${enable_sleep}], [Number of nanoseconds
     to sleep after block multiply])
+  AC_MSG_RESULT([sleeping ${enable_sleep} nanoseconds])
+else
+  AC_MSG_RESULT([no])
+fi
+
+AC_MSG_CHECKING([whether to add some extra work after block multiplies])
+AC_ARG_ENABLE([extra-work],
+  [AS_HELP_STRING([--enable-extra-work],
+  [add extra work after the block multiply])],
+  [enable_extra_work=$enableval],
+  [enable_extra_work=0])
+if [[ ${enable_extra_work} -gt 0 ]]; then
+  AC_DEFINE_UNQUOTED([EXTRA_WORK], [${enable_extra_work}], [Extra work
+    after block multiply])
+  AC_MSG_RESULT([${enable_extra_work}])
+else
+  AC_MSG_RESULT([no])
 fi
 
 AC_ARG_ENABLE([complexity],

@@ -15,6 +15,7 @@
 #include <time.h>
 #endif
 #include <emmintrin.h>
+#include <stdio.h>
 
 /** Calculate a row-major offset. */
 #define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
@@ -64,15 +65,6 @@ chunk_block_multiply_general (const double *const restrict A,
     }
 
     free(B_transpose);
-
-#ifdef BLOCK_SLEEP
-    /* Sleep to add some extra slowness. */
-    struct timespec requested_sleep;
-    requested_sleep.tv_sec = 0;
-    requested_sleep.tv_nsec = BLOCK_SLEEP;
-
-    nanosleep(&requested_sleep, NULL);
-#endif
   }
 
   else
@@ -151,9 +143,9 @@ chunk_block_multiply (const double *const restrict A,
 #warning skipping block product
   struct timespec requested_sleep;
   requested_sleep.tv_sec = 0;
-  requested_sleep.tv_nsec = 0;
+  requested_sleep.tv_nsec = 0.00001e9;
 
-  //nanosleep(&requested_sleep, NULL);
+  nanosleep(&requested_sleep, NULL);
 #else
   if(N == 4)
   {
@@ -166,5 +158,27 @@ chunk_block_multiply (const double *const restrict A,
   {
     chunk_block_multiply_general(A, B, C, N);
   }
+
+#ifdef BLOCK_SLEEP
+  /* Sleep to add some extra slowness. */
+  struct timespec requested_sleep;
+  requested_sleep.tv_sec = 0;
+  requested_sleep.tv_nsec = BLOCK_SLEEP;
+
+  nanosleep(&requested_sleep, NULL);
+#endif
+
+#ifdef EXTRA_WORK
+  {
+    int j = 0;
+    for(int i = 0; i < EXTRA_WORK; i++)
+    {
+      j = j+1;
+      if(j < 0) break;
+      if(j > EXTRA_WORK) j = 0;
+    }
+    if(j < 0) printf("...\n");
+  }
+#endif
 #endif
 }
