@@ -1,3 +1,4 @@
+#define SpAMM_PRINT_STREAM
 module spamm_nbdyalgbra_times 
 
   use spamm_structures
@@ -5,20 +6,23 @@ module spamm_nbdyalgbra_times
   use spamm_decoration
   use spamm_elementals
 
+  implicit none
 
   TYPE SpAMM_cubes
      TYPE(SpAMM_cubes), POINTER  :: Next
-     INTEGER                     :: Lev
-     INTEGER                     :: Hash
-     REAL(DOUBLE)                :: Bound
-     INTEGER,     DIMENSION(3,2) :: Box     
+     INTEGER                     :: Levl
+     REAL(SpAMM_Kind)            :: Size
+     INTEGER,     DIMENSION(3)   :: Lw, Hi
+     TYPE(SpAMM_tree_2d_symm),POINTER    :: A,B,C
   END TYPE SpAMM_cubes
 
-  TYPE(SpAMM_cubes),POINTER :: SpAMM_stream
+  TYPE(SpAMM_cubes), POINTER     :: Stream
 
-  implicit none
 
 CONTAINS
+
+
+
   !++NBODYTIMES: SpAMM generalized n-body algebras for times ____ NBODYTIMES _________________
   !++NBODYTIMES: generalized products, dots, contractions & convolutions (X)
   !++NBODYTIMES:   ... [TREE-ONE-D X TREE-ONE-D] ... [TREE-ONE-D X TREE-ONE-D] ...   
@@ -319,8 +323,11 @@ CONTAINS
 
   !++NBODYTIMES:   SpAMM_tree_2d_symm_times_tree_2d_symm
   !++NBODYTIMES:     c_2 => alpha*c_2 + beta*(a_2.b_2) (wrapper)
+#ifdef SpAMM_PRINT_STREAM
+  FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm(a, b, Tau, NT_O, In_O , stream_file_O) RESULT(d)
+#else
   FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm(a, b, Tau, NT_O, In_O ) RESULT(d)
-
+#endif
     TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A, B
     REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
     LOGICAL, OPTIONAL,                           INTENT(IN)    :: NT_O
@@ -329,6 +336,13 @@ CONTAINS
     INTEGER                                                    :: Depth
     LOGICAL                                                    :: NT
     REAL(SpAMM_KIND)                                           :: Tau2
+    
+#ifdef SpAMM_PRINT_STREAM
+    TYPE(SpAMM_cubes), POINTER     :: SpAMM_Stream
+    REAL(SpAMM_kind)               :: Opacity, Max_Depth, a_scale, b_scale, c_scale, abc_scale
+    REAL(SpAMM_kind)               :: MaxNorm,MinNorm,Emm,Bee
+    CHARACTER(LEN=*), OPTIONAL     :: stream_file_O
+#endif
 
     ! figure the starting conditions ...
     if(present(in_O))then       
@@ -362,9 +376,13 @@ CONTAINS
     ! set passed data for initialization   
     CALL SpAMM_flip(d)
     
-
+#ifdef SpAMM_PRINT_STREAM
+    IF(PRESENT(STREAM_FILE_O))THEN
+       OPEN(UNIT=44,FILE=STREAM_FILE_O,STATUS='NEW')
+    ENDIF
     ALLOCATE(SpAMM_stream)
     Stream=>SpAMM_stream
+#endif
 
     Depth=0
     CALL SpAMM_tree_2d_symm_TIMES_tree_2d_symm_recur(d, A, B, Tau2, NT, Depth )
@@ -372,27 +390,105 @@ CONTAINS
     ! prune unused nodes ... 
     CALL SpAMM_prune(d)
 
-    DO WHILE(ASSOCIATED(Stream%Next))
-       Stream=>Stream%Next 
-       IF(Stream%Lev==SpAMM_levels)THEN
-          Opacity=1D0
-       ELSE
-          Opacity=0.4D0*DBLE(Stream%Lev)/DBLE(SpAMM_levels)
-       ENDIF
-       WRITE(44,111)Opacity,Stream%Box(1,1),Stream%Box(2,1),Stream%Box(3,1), &
-            Stream%Box(1,2),Stream%Box(2,2),Stream%Box(3,2)
-111    FORMAT("Opacity[",F10.5,"],Cuboid[{",I6,",",I6,",",I6,"},{",I6,",",I6,",",I6,"}], ")
-    ENDDO
-    
-    WRITE(44,*)'Boxed->False,ViewAngle -> Automatic, ViewCenter -> {0.5, 0.5, 0.5}, '
-    WRITE(44,*)'ViewMatrix -> Automatic, ViewPoint -> {-1.17551, -1.22153, -2.92849},'
-    WRITE(44,*)'ViewRange -> All, ViewVector -> Automatic,'
-    WRITE(44,*)'ViewVertical -> {-0.961419, -0.126619, -0.244213}]'
-    WRITE(*,*)' DONE SPAMM '
-  
-  STOP
- 
+#ifdef SpAMM_PRINT_STREAM
+    IF(.NOT.PRESENT(STREAM_FILE_O))RETURN
 
+    do depth=0,64       
+       max_depth=depth
+       if(SPAMM_BLOCK_SIZE*2**depth>=a%frill%NDimn(1))exit
+    enddo
+    WRITE(*,*)' max_depth = ',max_depth
+
+    MaxNorm=-1D100
+    MinNorm= 1D100
+    Stream=>SpAMM_stream
+    DO WHILE(ASSOCIATED(Stream%Next))
+       IF(Stream%Levl==max_depth)THEN
+          MaxNorm=MAX(MaxNorm,SQRT(stream%a%frill%norm2))
+          MaxNorm=MAX(MaxNorm,SQRT(stream%b%frill%norm2))
+          MaxNorm=MAX(MaxNorm,SQRT(stream%c%frill%norm2))
+          MinNorm=MIN(MinNorm,SQRT(stream%a%frill%norm2))
+          MinNorm=MIN(MinNorm,SQRT(stream%b%frill%norm2))
+          MinNorm=MIN(MinNorm,SQRT(stream%c%frill%norm2))
+       ENDIF
+       Stream=>Stream%Next 
+    ENDDO
+    WRITE(*,*)' MaxNorm = ',MinNorm, MaxNorm
+
+
+    MaxNorm=LOG10(MaxNorm)
+    MinNorm=LOG10(MinNorm)
+    WRITE(*,*)' MaxNorm = ',MinNorm, MaxNorm
+
+    Emm=1D0/(MaxNorm-MinNorm)
+    Bee=Emm*MinNorm
+    WRITE(*,*)' Bee, Emm = ',Bee,Emm
+
+
+    WRITE(44,*)'Graphics3D[{EdgeForm[],'
+
+    Stream=>SpAMM_stream
+    DO WHILE(ASSOCIATED(Stream%Next))
+       IF(Stream%Levl==max_depth)THEN
+          Opacity=1D0
+!       ELSE
+!          Opacity=0.4D0*DBLE(Stream%Levl+0.1d0)/DBLE(max_depth)
+!       ENDIF
+
+       IF(ASSOCIATED(Stream%Next%next))THEN
+
+          a_scale  =-Bee+Emm*LOG10(SQRT(stream%a%frill%norm2))
+          b_scale  =-Bee+Emm*LOG10(SQRT(stream%b%frill%norm2))
+          c_scale  =-Bee+Emm*LOG10(SQRT(stream%c%frill%norm2))
+          abc_scale=-Bee+Emm*LOG10(stream%size)
+
+!!$          WRITE(44,111)a_scale,transpose(stream%a%frill%bndbx),  &
+!!$                       b_scale,transpose(stream%b%frill%bndbx),  &
+!!$                       c_scale,transpose(stream%c%frill%bndbx),  &
+!!$                       abc_scale,Stream%Lw(1),Stream%Lw(2),Stream%Lw(3),Stream%Hi(1),Stream%Hi(2),Stream%Hi(3)
+!!$111 FORMAT("Opacity[",F10.5,"], Cuboid[{",I6,",",I6,", -5.0 },{ ",I6,",",I6,", -5.01 }] , ",  &
+!!$           "Opacity[",F10.5,"], Cuboid[{ -5.0 ,",I6,",",I6,"},{ -5.01 ,",I6,",",I6, "}] , ",  &
+!!$           "Opacity[",F10.5,"], Cuboid[{",I6,", -5.0 ,",I6,"},{",I6,", -5.01 ,",I6, "}] , ",  &
+!!$           "Opacity[",F10.5,"], Cuboid[{",I6,",",I6,",",I6,"},{",I6,",",I6,",",I6,"}] , ")
+
+
+          WRITE(44,111)a_scale,dble(transpose(stream%a%frill%bndbx)),  &
+                       b_scale,dble(transpose(stream%b%frill%bndbx)),  &
+                       c_scale,dble(transpose(stream%c%frill%bndbx)),  &
+                       abc_scale,Opacity,dble(Stream%Lw(1:3)),dble(Stream%Hi(1:3))
+
+111 FORMAT('ColorData["Pastel"][',F10.5,"], Cuboid[{",F10.5,",",F10.5,", -5.0 },{ ",F10.5,",",F10.5,", -5.01 }] , ",  &
+           'ColorData["Pastel"][',F10.5,"], Cuboid[{ -5.0 ,",F10.5,",",F10.5,"},{ -5.01 ,",F10.5,",",F10.5, "}] , ",  &
+           'ColorData["Pastel"][',F10.5,"], Cuboid[{",F10.5,", -5.0 ,",F10.5,"},{",F10.5,", -5.01 ,",F10.5, "}] , ",  &
+           'ColorData["Pastel"][',F10.5,"], Opacity[",F10.5,"], Cuboid[{",F10.5,",",F10.5,",",F10.5,"},{",F10.5,",",F10.5,",",F10.5,"}] , ")
+
+
+
+!!$          WRITE(44,111)a_scale,transpose(stream%a%frill%bndbx),  &
+!!$                       b_scale,transpose(stream%b%frill%bndbx),  &
+!!$                       c_scale,transpose(stream%c%frill%bndbx),  &
+!!$                       abc_scale,Opacity,Stream%Lw(1),Stream%Lw(2),Stream%Lw(3),Stream%Hi(1),Stream%Hi(2),Stream%Hi(3)
+!!$111 FORMAT('ColorData["Pastel"][',F10.5,"], Cuboid[{",I6,",",I6,", -5.0 },{ ",I6,",",I6,", -5.01 }] , ",  &
+!!$           'ColorData["Pastel"][',F10.5,"], Cuboid[{ -5.0 ,",I6,",",I6,"},{ -5.01 ,",I6,",",I6, "}] , ",  &
+!!$           'ColorData["Pastel"][',F10.5,"], Cuboid[{",I6,", -5.0 ,",I6,"},{",I6,", -5.01 ,",I6, "}] , ",  &
+!!$           'ColorData["Pastel"][',F10.5,"], Opacity[",F10.5,"], Cuboid[{",I6,",",I6,",",I6,"},{",I6,",",I6,",",I6,"}] , ")
+!!$
+
+
+
+       ENDIF
+
+    ENDIF
+ 
+       Stream=>Stream%Next 
+    ENDDO
+    WRITE(44,*)'Cuboid[{0,0,0},{0,0,0}]  } ]'
+    CLOSE(UNIT=44)
+
+!    Stream=>SpAMM_stream
+!    DO WHILE(ASSOCIATED(Stream%Next))       
+!    ENDDO
+#endif 
  
   END FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm
 
@@ -412,6 +508,12 @@ CONTAINS
 
     IF( c%frill%leaf )THEN ! Leaf condition ... 
 
+#ifdef SpAMM_PRINT_STREAM
+       Stream%a=>a
+       Stream%b=>b
+       Stream%c=>c
+#endif
+
        IF( c%frill%init )THEN
 
           c%frill%init = .FALSE.
@@ -423,7 +525,6 @@ CONTAINS
           ENDIF
 
           c%frill%flops = SBS3
-
 
        ELSE
 
@@ -437,17 +538,69 @@ CONTAINS
 
        ENDIF
 
+#ifdef SpAMM_PRINT_STREAM
 
-       SpAMM_stream%Lev=qA%Lev
-       SpAMM_stream%Box(1,:)=qA%Box(2,:) ! I
-       SpAMM_stream%Box(2,:)=qA%Box(1,:) ! K
-       SpAMM_stream%Box(3,:)=qB%Box(1,:) ! J
-       ALLOCATE(SpAMM_stream%Next)
-       SpAMM_stream=>SpAMM_stream%Next
-       NULLIFY(SpAMM_stream%Next)
+!!$       IF(NT)THEN
+!!$          Stream%Lw(1)=a%frill%bndbx(0,2)
+!!$          Stream%Lw(2)=b%frill%bndbx(0,1)
+!!$          Stream%Lw(3)=c%frill%bndbx(0,1)
+!!$          Stream%Hi(1)=a%frill%bndbx(0,2)
+!!$          Stream%Hi(2)=b%frill%bndbx(0,1)
+!!$          Stream%Hi(3)=c%frill%bndbx(0,1)
+!!$       ELSE
+
+          Stream%Lw(1)=a%frill%bndbx(0,1)
+          Stream%Lw(2)=b%frill%bndbx(0,1)
+          Stream%Lw(3)=c%frill%bndbx(0,1)
+          Stream%Hi(1)=a%frill%bndbx(1,1)
+          Stream%Hi(2)=b%frill%bndbx(1,1)
+          Stream%Hi(3)=c%frill%bndbx(1,1)
+
+!       ENDIF
+
+       Stream%Levl=Depth
+       Stream%Size=SQRT(a%frill%norm2*b%frill%norm2)
+
+       ALLOCATE(Stream%Next)
+       Stream=>Stream%Next
+       NULLIFY(Stream%Next)
+#endif
 
 
    ELSE
+
+#ifdef SpAMM_PRINT_STREAM
+
+
+!!$ !      blo=b%frill%bndbx(0,:)
+!!$ !      bhi=b%frill%bndbx(1,:)
+!!$ !      clo=c%frill%bndbx(0,:)
+!!$ !      chi=c%frill%bndbx(1,:)
+!!$ !      alo=a%frill%bndbx(0,:)
+!!$ !      ahi=a%frill%bndbx(1,:)
+!!$
+!!$ !       aTlo(1)=a%frill%bndbx(0,2)
+!!$ !      aTlo(2)=a%frill%bndbx(0,1)
+!!$ !      aThi(1)=a%frill%bndbx(1,2)
+!!$ !      aThi(2)=a%frill%bndbx(1,1)
+
+
+          Stream%Lw(1)=a%frill%bndbx(0,1)
+          Stream%Lw(2)=b%frill%bndbx(0,1)
+          Stream%Lw(3)=c%frill%bndbx(0,1)
+          Stream%Hi(1)=a%frill%bndbx(1,1)
+          Stream%Hi(2)=b%frill%bndbx(1,1)
+          Stream%Hi(3)=c%frill%bndbx(1,1)
+
+
+       Stream%Levl=Depth
+       Stream%Size=SQRT(a%frill%norm2*b%frill%norm2)
+
+       ALLOCATE(Stream%Next)
+       Stream=>Stream%Next
+       NULLIFY(Stream%Next)
+
+#endif
 
        b00=>b%child_00; b11=>b%child_11; b01=>b%child_01; b10=>b%child_10
        a00=>a%child_00; a11=>a%child_11
@@ -458,15 +611,6 @@ CONTAINS
        ENDIF
 
 
-       ! #ifdef SpAMM_PRINT
-       SpAMM_stream%Lev=qA%Lev
-       SpAMM_stream%Box(1,:)=qA%Box(2,:) ! I
-       SpAMM_stream%Box(2,:)=qA%Box(1,:) ! K
-       SpAMM_stream%Box(3,:)=qB%Box(1,:) ! J
-       ALLOCATE(SpAMM_stream%Next)
-       SpAMM_stream=>SpAMM_stream%Next
-       NULLIFY(SpAMM_stream%Next)
-       ! #endif
 
 
        ! first  pass, [m;0].[0;n]

@@ -1,4 +1,4 @@
-#define DENSE_DIAGNOSTICS
+!#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
 module SpAMMsand_inverse_squareroot
@@ -34,6 +34,15 @@ module SpAMMsand_inverse_squareroot
 #endif
   
 contains
+
+  FUNCTION IntToChar(I)
+    CHARACTER(LEN=*), PARAMETER :: INTERNAL_INT_FMT='(I22)'
+    INTEGER  :: I
+    CHARACTER(LEN=22) :: IntToChar
+    WRITE(UNIT=IntToChar,FMT=INTERNAL_INT_FMT)I
+    IntToChar=ADJUSTL(IntToChar)
+  END FUNCTION IntToChar
+
 
   SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, t, tau, DoDuals, second, kount)
 
@@ -205,7 +214,7 @@ contains
 #endif
 
           ! <X_k> = <Z_k|S|Z_k>
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau , NT_O=.FALSE. , in_O = x )
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau , NT_O=.FALSE. , in_O = x , stream_file_O='x_'//inttoCHAR(I) )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
           
 #ifdef DENSE_DIAGNOSTICS
