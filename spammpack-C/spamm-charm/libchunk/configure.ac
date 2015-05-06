@@ -207,14 +207,16 @@ else
   AC_MSG_RESULT([no])
 fi
 
+AC_MSG_CHECKING([whether to lock the C matrix])
 AC_ARG_ENABLE([lock],
   [AS_HELP_STRING([--enable-lock],
   [lock C matrix])],
   [enable_lock=$enableval],
-  [enable_lock="no"])
+  [enable_lock="yes"])
 if [[ ${enable_lock} = "yes" ]]; then
   AC_DEFINE([LOCK_C_CHUNK], [1], [Lock the C matrix])
 fi
+AC_MSG_RESULT([${enable_lock}])
 
 AC_ARG_ENABLE([complexity],
   [AS_HELP_STRING([--enable-complexity],
