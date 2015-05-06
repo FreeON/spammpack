@@ -11,9 +11,12 @@ echo "MAX_TIER = ${MAX_TIER:=5}"
 echo "REPEAT = ${REPEAT:=4}"
 echo "FULL_REPEAT = ${FULL_REPEAT:=1}"
 echo "NO_WORK = ${NO_WORK:=FALSE} {TRUE,FALSE}"
+echo "MATRIX_TYPE = ${MATRIX_TYPE:=BCSR} {BCSR,full}"
 echo "EXTRA_WORK = ${EXTRA_WORK:=0}"
 echo "N_BASIC = ${N_BASIC:=4}"
 echo "N_CHUNK = ${N_CHUNK:=128}"
+echo "N = ${N:=-1}"
+echo "LOCK = ${LOCK:=TRUE}"
 echo "BCSR = ${BCSR:=~/data-sets/water/h2o_90.OrthoD}"
 echo
 
@@ -47,6 +50,12 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
         CONFIGURE_ARGS+=" --enable-no-work"
     elif [[ ! ${NO_WORK} = "FALSE" ]]; then
         echo "unknown value for NO_WORK (${NO_WORK})"
+        exit 1
+    fi
+    if [[ ${LOCK} = "FALSE" ]]; then
+        CONFIGURE_ARGS+=" --disable-lock"
+    elif [[ ! ${LOCK} = "TRUE" ]]; then
+        echo "unknown value for LOCK (${LOCK})"
         exit 1
     fi
 else
@@ -84,6 +93,12 @@ echo "running ${BUILD_TYPE}-${BUILD_COMPILER}" \
 echo "numactl policy: ${NUMA_POLICY}" \
     | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output || exit
 
+if [[ ${N} -gt 0 ]]; then
+  N_ARG="--N ${N}"
+else
+  N_ARG=""
+fi
+
 for tolerance in 1e-10 1e-6; do
   for threads in ${THREADS[*]}; do
     for (( repeat = 0; repeat < ${FULL_REPEAT}; repeat++ )); do
@@ -93,7 +108,8 @@ for tolerance in 1e-10 1e-6; do
         --tolerance ${tolerance} \
         --N_basic ${N_BASIC} \
         --N_chunk ${N_CHUNK} \
-        --type BCSR \
+        ${N_ARG} \
+        --type ${MATRIX_TYPE} \
         --bcsr ${BCSR} \
         --no-verify \
         --repeat ${REPEAT} \

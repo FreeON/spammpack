@@ -129,7 +129,7 @@ struct chunk_tree_node_t
   /** The size of the basic submatrix. */
   int N_basic;
 
-#ifdef _OPENMP
+#if defined(_OPENMP) && defined(LOCK_C_CHUNK)
   /** The OpenMP lock on the matrix. */
   omp_lock_t matrix_lock;
 #endif
@@ -288,7 +288,7 @@ chunk_tree_alloc (const int N_chunk,
         /* Initialize node. */
         node->N_basic = N_basic;
 
-#ifdef _OPENMP
+#if defined(_OPENMP) && defined(LOCK_C_CHUNK)
         omp_init_lock(&node->matrix_lock);
 #endif
 
@@ -334,7 +334,7 @@ chunk_tree_alloc (const int N_chunk,
       /* Initialize node. */
       node->N_basic = N_basic;
 
-#ifdef _OPENMP
+#if defined(_OPENMP) && defined(LOCK_C_CHUNK)
       omp_init_lock(&node->matrix_lock);
 #endif
 
@@ -850,7 +850,7 @@ chunk_tree_multiply_node (const double tolerance_2,
   if(tier < CHUNK_TREE_MAX_TIER) create_tasks = 1;
   else create_tasks = 0;
 
-#ifdef _OPENMP
+#if defined(_OPENMP) && defined(LOCK_C_CHUNK)
   if(lock_data)
   {
     omp_set_lock(&C->matrix_lock);
@@ -933,7 +933,7 @@ chunk_tree_multiply_node (const double tolerance_2,
     DEBUG("done\n");
   }
 
-#ifdef _OPENMP
+#if defined(_OPENMP) && defined(LOCK_C_CHUNK)
   if(lock_data)
   {
     omp_unset_lock(&C->matrix_lock);

@@ -207,6 +207,15 @@ else
   AC_MSG_RESULT([no])
 fi
 
+AC_ARG_ENABLE([lock],
+  [AS_HELP_STRING([--enable-lock],
+  [lock C matrix])],
+  [enable_lock=$enableval],
+  [enable_lock="no"])
+if [[ ${enable_lock} = "yes" ]]; then
+  AC_DEFINE([LOCK_C_CHUNK], [1], [Lock the C matrix])
+fi
+
 AC_ARG_ENABLE([complexity],
   [AS_HELP_STRING([--enable-complexity],
   [count the product complexity in the tree multiply])],
