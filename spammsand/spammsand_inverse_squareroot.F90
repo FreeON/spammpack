@@ -171,7 +171,7 @@ contains
        WRITE(*,*)' tau = ',tau_zdotz
 
        ! |Z_n+1> =  <Z_n| X_n>  
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau_zdotz , nt_O=.TRUE., in_O = t )
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau_zdotz , nt_O=.TRUE., in_O = t , stream_file_O='z_'//inttoCHAR(I) )
        ! update (copy+threshold)
        z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau_zdotz ) 
        ! stats
@@ -214,7 +214,7 @@ contains
 #endif
 
           ! <X_k> = <Z_k|S|Z_k>
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau , NT_O=.FALSE. , in_O = x , stream_file_O='x_'//inttoCHAR(I) )
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau , NT_O=.FALSE. , in_O = x )!, stream_file_O='x_'//inttoCHAR(I) )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
           
 #ifdef DENSE_DIAGNOSTICS
