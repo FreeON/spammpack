@@ -1,3 +1,4 @@
+
 #define SpAMM_PRINT_STREAM
 module spamm_nbdyalgbra_times 
 
@@ -325,6 +326,7 @@ CONTAINS
   !++NBODYTIMES:     c_2 => alpha*c_2 + beta*(a_2.b_2) (wrapper)
 #ifdef SpAMM_PRINT_STREAM
   FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm(a, b, Tau, NT_O, In_O , stream_file_O) RESULT(d)
+    !
 #else
   FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm(a, b, Tau, NT_O, In_O ) RESULT(d)
 #endif
@@ -338,10 +340,17 @@ CONTAINS
     REAL(SpAMM_KIND)                                           :: Tau2
     
 #ifdef SpAMM_PRINT_STREAM
+
+    integer :: maxi, maxj, maxk, i, j, k, Max_Depth
+
     TYPE(SpAMM_cubes), POINTER     :: SpAMM_Stream
-    REAL(SpAMM_kind)               :: Opacity, Max_Depth, a_scale, b_scale, c_scale, abc_scale
+    REAL(SpAMM_kind)               :: Opacity,  a_scale, b_scale, c_scale, abc_scale
     REAL(SpAMM_kind)               :: MaxNorm,MinNorm,Emm,Bee
+
     CHARACTER(LEN=*), OPTIONAL     :: stream_file_O
+    
+    REAL(SpAMM_Kind), DIMENSION(:,:,:), ALLOCATABLE :: Field
+
 #endif
 
     ! figure the starting conditions ...
@@ -377,9 +386,6 @@ CONTAINS
     CALL SpAMM_flip(d)
     
 #ifdef SpAMM_PRINT_STREAM
-    IF(PRESENT(STREAM_FILE_O))THEN
-       OPEN(UNIT=44,FILE=STREAM_FILE_O,STATUS='NEW')
-    ENDIF
     ALLOCATE(SpAMM_stream)
     Stream=>SpAMM_stream
 #endif
@@ -397,9 +403,12 @@ CONTAINS
        max_depth=depth
        if(SPAMM_BLOCK_SIZE*2**depth>=a%frill%NDimn(1))exit
     enddo
-    WRITE(*,*)' max_depth = ',max_depth
+    WRITE(*,*)' max_depth = ', max_depth,SPAMM_BLOCK_SIZE* 2**max_depth
 
     MaxNorm=-1D100
+    MaxI=-100
+    MaxJ=-100
+    MaxK=-100
     MinNorm= 1D100
     Stream=>SpAMM_stream
     DO WHILE(ASSOCIATED(Stream%Next))
@@ -410,22 +419,37 @@ CONTAINS
           MinNorm=MIN(MinNorm,SQRT(stream%a%frill%norm2))
           MinNorm=MIN(MinNorm,SQRT(stream%b%frill%norm2))
           MinNorm=MIN(MinNorm,SQRT(stream%c%frill%norm2))
+
+          i=ceiling( ( Stream%Lw(1) + SpAMM_Half*( Stream%Hi(1)-Stream%Lw(1) ) )/SPAMM_BLOCK_SIZE )
+          j=ceiling( ( Stream%Lw(2) + SpAMM_Half*( Stream%Hi(2)-Stream%Lw(2) ) )/SPAMM_BLOCK_SIZE )
+          k=ceiling( ( Stream%Lw(3) + SpAMM_Half*( Stream%Hi(3)-Stream%Lw(3) ) )/SPAMM_BLOCK_SIZE )
+          MaxI=MAX(MaxI,I)
+          MaxJ=MAX(MaxJ,J)
+          MaxK=MAX(MaxK,K)
        ENDIF
        Stream=>Stream%Next 
     ENDDO
+
     WRITE(*,*)' MaxNorm = ',MinNorm, MaxNorm
+    WRITE(*,*)' MaxIJK  = ',MaxI,MaxJ,MaxK
+    WRITE(*,*)' MaxIJK  = ',MaxI*SPAMM_BLOCK_SIZE,MaxJ*SPAMM_BLOCK_SIZE,MaxK*SPAMM_BLOCK_SIZE
+
+    ALLOCATE(FIELD(1:MaxI,1:MaxJ,1:MaxK))
+    FIELD=0d0
 
 
-    MaxNorm=LOG10(MaxNorm)
-    MinNorm=LOG10(MinNorm)
-    WRITE(*,*)' MaxNorm = ',MinNorm, MaxNorm
-
-    Emm=1D0/(MaxNorm-MinNorm)
-    Bee=Emm*MinNorm
-    WRITE(*,*)' Bee, Emm = ',Bee,Emm
-
-
-    WRITE(44,*)'Graphics3D[{EdgeForm[],'
+!!$
+!!$
+!!$    MaxNorm=LOG10(MaxNorm)
+!!$    MinNorm=LOG10(MinNorm)
+!!$    WRITE(*,*)' MaxNorm = ',MinNorm, MaxNorm
+!!$
+!!$    Emm=1D0/(MaxNorm-MinNorm)
+!!$    Bee=Emm*MinNorm
+!!$    WRITE(*,*)' Bee, Emm = ',Bee,Emm
+!!$
+!!$
+!!$    WRITE(44,*)'Graphics3D[{EdgeForm[],'
 
     Stream=>SpAMM_stream
     DO WHILE(ASSOCIATED(Stream%Next))
@@ -437,10 +461,10 @@ CONTAINS
 
        IF(ASSOCIATED(Stream%Next%next))THEN
 
-          a_scale  =-Bee+Emm*LOG10(SQRT(stream%a%frill%norm2))
-          b_scale  =-Bee+Emm*LOG10(SQRT(stream%b%frill%norm2))
-          c_scale  =-Bee+Emm*LOG10(SQRT(stream%c%frill%norm2))
-          abc_scale=-Bee+Emm*LOG10(stream%size)
+!!$          a_scale  =-Bee+Emm*LOG10(SQRT(stream%a%frill%norm2))
+!!$          b_scale  =-Bee+Emm*LOG10(SQRT(stream%b%frill%norm2))
+!!$          c_scale  =-Bee+Emm*LOG10(SQRT(stream%c%frill%norm2))
+!!$          abc_scale=-Bee+Emm*LOG10(stream%size)
 
 !!$          WRITE(44,111)a_scale,transpose(stream%a%frill%bndbx),  &
 !!$                       b_scale,transpose(stream%b%frill%bndbx),  &
@@ -452,16 +476,25 @@ CONTAINS
 !!$           "Opacity[",F10.5,"], Cuboid[{",I6,",",I6,",",I6,"},{",I6,",",I6,",",I6,"}] , ")
 
 
-          WRITE(44,111)a_scale,dble(transpose(stream%a%frill%bndbx)),  &
-                       b_scale,dble(transpose(stream%b%frill%bndbx)),  &
-                       c_scale,dble(transpose(stream%c%frill%bndbx)),  &
-                       abc_scale,Opacity,dble(Stream%Lw(1:3)),dble(Stream%Hi(1:3))
+!!$          WRITE(44,111)a_scale,dble(transpose(stream%a%frill%bndbx)),  &
+!!$                       b_scale,dble(transpose(stream%b%frill%bndbx)),  &
+!!$                       c_scale,dble(transpose(stream%c%frill%bndbx)),  &
+!!$                       abc_scale,Opacity,dble(Stream%Lw(1:3)),dble(Stream%Hi(1:3))
+!!$
+!!$111 FORMAT('ColorData["Pastel"][',F10.5,"], Cuboid[{",F10.5,",",F10.5,", -5.0 },{ ",F10.5,",",F10.5,", -5.01 }] , ",  &
+!!$           'ColorData["Pastel"][',F10.5,"], Cuboid[{ -5.0 ,",F10.5,",",F10.5,"},{ -5.01 ,",F10.5,",",F10.5, "}] , ",  &
+!!$           'ColorData["Pastel"][',F10.5,"], Cuboid[{",F10.5,", -5.0 ,",F10.5,"},{",F10.5,", -5.01 ,",F10.5, "}] , ",  &
+!!$           'ColorData["Pastel"][',F10.5,"], Opacity[",F10.5,"], Cuboid[{",F10.5,",",F10.5,",",F10.5,"},{",F10.5,",",F10.5,",",F10.5,"}] , ")
 
-111 FORMAT('ColorData["Pastel"][',F10.5,"], Cuboid[{",F10.5,",",F10.5,", -5.0 },{ ",F10.5,",",F10.5,", -5.01 }] , ",  &
-           'ColorData["Pastel"][',F10.5,"], Cuboid[{ -5.0 ,",F10.5,",",F10.5,"},{ -5.01 ,",F10.5,",",F10.5, "}] , ",  &
-           'ColorData["Pastel"][',F10.5,"], Cuboid[{",F10.5,", -5.0 ,",F10.5,"},{",F10.5,", -5.01 ,",F10.5, "}] , ",  &
-           'ColorData["Pastel"][',F10.5,"], Opacity[",F10.5,"], Cuboid[{",F10.5,",",F10.5,",",F10.5,"},{",F10.5,",",F10.5,",",F10.5,"}] , ")
+          i=ceiling(( Stream%Lw(1) + SpAMM_Half*( Stream%Hi(1)-Stream%Lw(1) ) )/SPAMM_BLOCK_SIZE )
+          j=ceiling(( Stream%Lw(2) + SpAMM_Half*( Stream%Hi(2)-Stream%Lw(2) ) )/SPAMM_BLOCK_SIZE )
+          k=ceiling(( Stream%Lw(3) + SpAMM_Half*( Stream%Hi(3)-Stream%Lw(3) ) )/SPAMM_BLOCK_SIZE )
 
+          Field(i,j,k)=stream%size
+
+!          WRITE(44,111)abc_scale,dble(Stream%Lw(1:3)),dble(Stream%Hi(1:3))
+
+111 FORMAT('ColorData["Pastel"][',F10.5,"], Cuboid[{",F10.5,",",F10.5,",",F10.5,"},{",F10.5,",",F10.5,",",F10.5,"}] , ")
 
 
 !!$          WRITE(44,111)a_scale,transpose(stream%a%frill%bndbx),  &
@@ -478,12 +511,16 @@ CONTAINS
 
        ENDIF
 
+
     ENDIF
  
        Stream=>Stream%Next 
     ENDDO
-    WRITE(44,*)'Cuboid[{0,0,0},{0,0,0}]  } ]'
-    CLOSE(UNIT=44)
+
+
+    CALL VTK_write_scalar_3d(maxi,maxj,maxk,field,STREAM_FILE_O)
+    DEALLOCATE(FIELD)
+
 
 !    Stream=>SpAMM_stream
 !    DO WHILE(ASSOCIATED(Stream%Next))       
@@ -491,6 +528,38 @@ CONTAINS
 #endif 
  
   END FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm
+
+  subroutine VTK_write_scalar_3d(ni,nj,nk, field, STREAM_FILE_O)
+
+    integer, parameter          :: s=selected_real_kind(6)
+    integer :: ni,nj,nk
+    real(kind=SpAMM_Kind), intent(in), dimension(:,:,:) :: field
+    character(len=*), optional                 :: STREAM_FILE_O
+    character(len=1), parameter :: newline=achar(10)
+
+    IF(PRESENT(STREAM_FILE_O))THEN
+       OPEN(UNIT=44,FILE=TRIM(ADJUSTL(STREAM_FILE_O))//'.vtk',STATUS='NEW')
+    ELSE
+       STOP ' Need to pass in file to open '
+    ENDIF
+
+    WRITE(44,'(A)')'# vtk DataFile Version 2.0'
+    WRITE(44,'(A)')'CT scan data of human heart, courtesy by Henk Mastenbroek RuG'
+    WRITE(44,'(A)')'ASCII'
+    WRITE(44,'(A)')' '
+    WRITE(44,'(A)')'DATASET STRUCTURED_POINTS'
+    WRITE(44,*)'DIMENSIONS',ni,nj,nk
+    WRITE(44,'(A)')'ORIGIN    1.000   1.000   1.000 '
+    WRITE(44,*)'SPACING', SPAMM_BLOCK_SIZE,SPAMM_BLOCK_SIZE,SPAMM_BLOCK_SIZE
+    WRITE(44,*)'POINT_DATA',ni*nj*nk
+    WRITE(44,'(A)')'SCALARS scalars float'
+    WRITE(44,'(A)')'LOOKUP_TABLE default'
+    WRITE(44,'(A)')' '
+    write(44,*)real(field(1:ni,1:nj,1:nk),kind=s),newline
+    CLOSE(unit=44)
+
+  end subroutine VTK_write_scalar_3d
+
 
 
   !++NBODYTIMES:   SpAMM_tree_2d_symm_times_tree_2d_symm_recur

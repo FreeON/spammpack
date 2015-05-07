@@ -165,15 +165,10 @@ contains
 
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
-!       tau_zdotz=1d-3/fprimez
-!       tau_zdotz=1d-3*SQRT(SQRT(z%frill%norm2))
-       tau_zdotz=tau !MAX(tau, 8d-2*tau*SQRT(SQRT(z%frill%norm2) ) )
-       WRITE(*,*)' tau = ',tau_zdotz
-
        ! |Z_n+1> =  <Z_n| X_n>  
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau_zdotz , nt_O=.TRUE., in_O = t , stream_file_O='z_'//inttoCHAR(I) )
+       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau , nt_O=.TRUE., in_O = t , stream_file_O='z_'//inttoCHAR(I) )
        ! update (copy+threshold)
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau_zdotz ) 
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
        ! stats
        z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
        z_fill=z%frill%non0s
@@ -472,7 +467,7 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-3                                       ! starting accuracy
+  logtau_strt=-100                                       ! starting accuracy
   logtau_stop=-10                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
