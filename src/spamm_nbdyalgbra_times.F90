@@ -609,23 +609,22 @@ CONTAINS
 
 #ifdef SpAMM_PRINT_STREAM
 
-!!$       IF(NT)THEN
-!!$          Stream%Lw(1)=a%frill%bndbx(0,2)
-!!$          Stream%Lw(2)=b%frill%bndbx(0,1)
-!!$          Stream%Lw(3)=c%frill%bndbx(0,1)
-!!$          Stream%Hi(1)=a%frill%bndbx(0,2)
-!!$          Stream%Hi(2)=b%frill%bndbx(0,1)
-!!$          Stream%Hi(3)=c%frill%bndbx(0,1)
-!!$       ELSE
 
+       IF(NT)THEN
+          Stream%Lw(1)=a%frill%bndbx(0,2)
+          Stream%Lw(2)=a%frill%bndbx(0,1)
+          Stream%Lw(3)=b%frill%bndbx(0,2)
+          Stream%Hi(1)=a%frill%bndbx(1,2)
+          Stream%Hi(2)=a%frill%bndbx(1,1)
+          Stream%Hi(3)=b%frill%bndbx(1,2)
+       ELSE
           Stream%Lw(1)=a%frill%bndbx(0,1)
-          Stream%Lw(2)=b%frill%bndbx(0,1)
-          Stream%Lw(3)=c%frill%bndbx(0,1)
+          Stream%Lw(2)=a%frill%bndbx(0,2)
+          Stream%Lw(3)=b%frill%bndbx(0,2)
           Stream%Hi(1)=a%frill%bndbx(1,1)
-          Stream%Hi(2)=b%frill%bndbx(1,1)
-          Stream%Hi(3)=c%frill%bndbx(1,1)
-
-!       ENDIF
+          Stream%Hi(2)=a%frill%bndbx(1,2)
+          Stream%Hi(3)=b%frill%bndbx(1,2)
+       ENDIF
 
        Stream%Levl=Depth
        Stream%Size=SQRT(a%frill%norm2*b%frill%norm2)
@@ -638,38 +637,6 @@ CONTAINS
 
    ELSE
 
-#ifdef SpAMM_PRINT_STREAM
-
-
-!!$ !      blo=b%frill%bndbx(0,:)
-!!$ !      bhi=b%frill%bndbx(1,:)
-!!$ !      clo=c%frill%bndbx(0,:)
-!!$ !      chi=c%frill%bndbx(1,:)
-!!$ !      alo=a%frill%bndbx(0,:)
-!!$ !      ahi=a%frill%bndbx(1,:)
-!!$
-!!$ !       aTlo(1)=a%frill%bndbx(0,2)
-!!$ !      aTlo(2)=a%frill%bndbx(0,1)
-!!$ !      aThi(1)=a%frill%bndbx(1,2)
-!!$ !      aThi(2)=a%frill%bndbx(1,1)
-
-
-          Stream%Lw(1)=a%frill%bndbx(0,1)
-          Stream%Lw(2)=b%frill%bndbx(0,1)
-          Stream%Lw(3)=c%frill%bndbx(0,1)
-          Stream%Hi(1)=a%frill%bndbx(1,1)
-          Stream%Hi(2)=b%frill%bndbx(1,1)
-          Stream%Hi(3)=c%frill%bndbx(1,1)
-
-
-       Stream%Levl=Depth
-       Stream%Size=SQRT(a%frill%norm2*b%frill%norm2)
-
-       ALLOCATE(Stream%Next)
-       Stream=>Stream%Next
-       NULLIFY(Stream%Next)
-
-#endif
 
        b00=>b%child_00; b11=>b%child_11; b01=>b%child_01; b10=>b%child_10
        a00=>a%child_00; a11=>a%child_11
