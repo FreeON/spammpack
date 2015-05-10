@@ -108,22 +108,28 @@ an exploitable reduction in rank.  This is the case in electronic structure for 
 {\em e.g.}~towards the Mott transition \cite{}, and also in the case of local atomic support towards completeness \cite{Others, Hutter, Gigi}. 
 
 \pagebreak
-In this contribution, we consider an $N$-body approach to the linear algebra underlying the approximation of matrix functions by iteration, 
-based on the matrix quadtree \cite{wise, samet} 
+In this contribution, we consider an $N$-body approach to the approximation of matrix functions with decay, 
+based on the quadtree \cite{wise, samet} 
 \begin{equation}
 \mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
 \end{equation}
-and orderings that are locality preserving \cite{}.  In this work, we employ locality preserving Space Filling Curve (SFC) heuristics to arange
-the Cartesian positions of local atomic (LCAO) support functions \cite{}, leading to an approximate block-by-magnitude matrix structuring 
-\cite{Challacombe10,Bock12,Bock15}.  Orderings that preserve locality are cornerstones of database theory \cite{} and $N$-Body methods \cite{},
-and an active area of research as memory hierarchies become increasingly decentralized due to the end of Dennard scaling \cite{cache}.  
-This data-local approach, resulting in approximate block-by-magnitude matrix ordering,  is antipolar to randomization methods employed to achieve
-homogenous decompositions \cite{}.
+and orderings that are locality preserving \cite{}.  Orderings that preserve data locality are well developed in the
+spatial and metric database theory \cite{}, are the cornerstone of $N$-Body methods \cite{}, and an increasingly important problem 
+for runtime systems, with memory hierarchies becoming increasingly assynchronous and decentralized \cite{cache}.  
+Orderings that enhance locality lead  ideally to  block-by-magnitude matrix structures, with well segregated blocks 
+of like size.  Perhaps the most effective approaches to data locality employ Space filling curve (SFC) heuristics to order the 
+Cartesian positions of local support functions, such as finite elements (FEMs) \cite{} and atomic basis functions (LCAOs) \cite{}.
 
-Then, it is possible to obtain fast, data base opperations, such as the metric and the range query \cite{samet} at recursively fine levels of granularity,
-and supporting both sparse \cite{wise} and compressive \cite{} approaches to linear algebra.   With decay and matrix quadtrees structured block-by-magnitude, 
-the Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel $\ot$ achives a reduced ${\cal O}(n)$ cost through the recursive Cauchy-Schwarz 
-occlusion of submultiplicative norms,
+The data local approach is distinct from sparse radomized methods for the high performance $\tt SpGEMM$ that enjoy work load 
+homogenisation and conventional (dense) communication strategies \cite{}.   Tradinng irregularity for homogenaity, the data-centric 
+methods enable fast range and metric querries that support local approximation \cite{}.
+
+and associated algorithms \cite{samet}.  
+The Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel, $\ot$, 
+employs 
+
+metric querry on sub-multiplicative norms to achieve a reduced ${\cal O}(n)$ cost for occlusion of 
+terms through recursive application of the Cauchy-Schwarz inequality \cite{}, 
 \begin{widetext}
 \begin{equation}
 \mat{a}^{i} \ot \mat{b}^{i} = 
@@ -145,6 +151,16 @@ ${\cal O}(n)$ cost, the $N$-Body approach to the linear algebra of matrices with
 performance implementations and strong parallel scaling \cite{},  
 improved error accumulation relative to row-col contraction \cite{}, and a simple, intuiative code base \cite{}.  
 Perhaps most importantly though, the occlusion error 
+
+at recursively fine levels of granularity,
+and supporting both sparse \cite{wise} and compressive \cite{} approaches to linear algebra.   
+With decay and matrix quadtrees structured block-by-magnitude, 
+
+
+
+
+
+
 \begin{equation}
 \mat{\Delta}^{a\cdot b}_{\tau}=\mat{a} \ot \mat{b}-\mat{a}\cdot \mat{b}
 \end{equation}
@@ -251,13 +267,6 @@ f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\ma
 \rightarrow \mat{n}\left[\mat{s} \right]
 \end{equation}
 
-\section{Basis Set Ill-Conditioning in Electronic Structure}
-
-\subsection{ 3,3 carbon nanotube with diffuse $sp$-function}
-double exponential (Fig.)
-
-\subsection{Water with triple zeta and double polarization}
-Here's looking at you Jurg...
 
 \section{Implementation}
 
@@ -271,6 +280,15 @@ tau= Figure showing channels etc.
 
 \subsection{Convergence}
 Map switching and etc based on TrX
+
+
+\section{Ill-Conditioned Support}
+
+\subsection{ 3,3 carbon nanotube with diffuse $sp$-function}
+double exponential (Fig.)
+
+\subsection{Water with triple zeta and double polarization}
+Here's looking at you Jurg...
 
 \section{Experiments}
 
@@ -302,6 +320,15 @@ Map switching and etc based on TrX
 \begin{equation}
 \lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
 \end{equation}
+
+\subsection{Occlusion Boundaries}
+
+\begin{figure}[h]
+  \caption{equation...}
+ \includegraphics[width=3.5in]{snapshot.png}
+\end{figure}
+
+\subsection{Comments}
 
 \subsection{Scaling}
 

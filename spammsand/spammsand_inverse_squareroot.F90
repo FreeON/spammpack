@@ -116,7 +116,7 @@ contains
     kount=1
     sz_norm=1d0
     FillN=1d10
-    DO i = 0, 20
+    DO i = 0, 13
 
        ! check the trace for convergence:
        FillN_prev=FillN
@@ -209,7 +209,7 @@ contains
 #endif
 
           ! <X_k> = <Z_k|S|Z_k>
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau , NT_O=.FALSE. , in_O = x )!, stream_file_O='x_'//inttoCHAR(I) )
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau , NT_O=.FALSE. , in_O = x , stream_file_O='x_'//inttoCHAR(I) )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
           
 #ifdef DENSE_DIAGNOSTICS
