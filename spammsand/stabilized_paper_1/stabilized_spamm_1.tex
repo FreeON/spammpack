@@ -1,9 +1,3 @@
-% LyX 2.1.1 created this file.  For more info, see http://www.lyx.org/.
-%% Do not edit unless you really know what you are doing.
-%\documentclass[letterpaper,twocol,amsmath,aps,jcp,preprintnumbers,groupaddress,nofootinbib,tightenlines]{revtex4-1}
-%\usepackage[latin9]{inputenc}
-%\usepackage{textcomp}
-
 \documentclass[letterpaper,twocolumn,amsmath,amsfont,amssymb,english,aps,jcp,preprintnumbers,groupaddress,nofootinbib,tightenlines]{revtex4}
 
 \usepackage{graphicx}
@@ -56,10 +50,10 @@
 \maketitle
 \section{Introduction}
 
-In many areas of application, finite correlations lead to matrices with decay properties.  Matrix decay involves an approximate 
-(perhaps bounded \cite{}) inverse 
-relationship between matrix elements and a related distance;  this may be a simple inverse exponential relationship between elements and the
-Cartesian distance between support functions, or it may involve a generalized distance, {\em e.g.}~ a statistical measure between strings.  
+In many areas of application, finite correlations lead to matrices with decay properties.  By decay, we mean an approximate 
+(perhaps bounded \cite{}) inverse relationship between matrix elements and an associated distance;  this may be a simple inverse 
+exponential relationship between elements and the Cartesian distance between support functions, or it may 
+involve a generalized distance, {\em e.g.}~ a statistical measure between strings.  
 In electronic structure,  correlations manifest in decay properties of the gap shifted matrix 
 sign function, as projector of the effective Hamiltonian (Fig.~\ref{figure1}).  
 More broadly, matrix decay properties may coorespond to statistical matrices 
@@ -109,27 +103,18 @@ an exploitable reduction in rank.  This is the case in electronic structure for 
 
 \pagebreak
 In this contribution, we consider an $N$-body approach to the approximation of matrix functions with decay, 
-based on the quadtree \cite{wise, samet} 
+based on the quadtree data structure \cite{wise, samet} 
 \begin{equation}
 \mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
 \end{equation}
 and orderings that are locality preserving \cite{}.  Orderings that preserve data locality are well developed in the
-spatial and metric database theory \cite{}, are the cornerstone of $N$-Body methods \cite{}, and an increasingly important problem 
-for runtime systems, with memory hierarchies becoming increasingly assynchronous and decentralized \cite{cache}.  
-Orderings that enhance locality lead  ideally to  block-by-magnitude matrix structures, with well segregated blocks 
-of like size.  Perhaps the most effective approaches to data locality employ Space filling curve (SFC) heuristics to order the 
-Cartesian positions of local support functions, such as finite elements (FEMs) \cite{} and atomic basis functions (LCAOs) \cite{}.
-
-The data local approach is distinct from sparse radomized methods for the high performance $\tt SpGEMM$ that enjoy work load 
-homogenisation and conventional (dense) communication strategies \cite{}.   Tradinng irregularity for homogenaity, the data-centric 
-methods enable fast range and metric querries that support local approximation \cite{}.
-
-and associated algorithms \cite{samet}.  
-The Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel, $\ot$, 
-employs 
-
-metric querry on sub-multiplicative norms to achieve a reduced ${\cal O}(n)$ cost for occlusion of 
-terms through recursive application of the Cauchy-Schwarz inequality \cite{}, 
+database theory \cite{}, providing fast spatial and metric querries.  
+Locality enabled, fast data access is central to the $N$-Body approximation \cite{}, and an important problem 
+for enterprise \cite{} and runtime systems \cite{}, with memory hierarchies becoming increasingly assynchronous and decentralized \cite{cache}.  
+For matrices with decay, orderings that preserve locality lead to block-by-magnitude matrix structures with well 
+segregated neighborhoods, inhabited by matrix elements of like size, and efficiently resolved by the quadtree data structure \cite{}.
+Then, the Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel, $\ot$, carries out fast, recursive occlusion culling of 
+insignifcant contractions, with errors bounded by sub-multiplicative norms and the Cauchy-Schwarz inequality \cite{}:
 \begin{widetext}
 \begin{equation}
 \mat{a}^{i} \ot \mat{b}^{i} = 
@@ -146,38 +131,37 @@ terms through recursive application of the Cauchy-Schwarz inequality \cite{},
               \right.  \, ,
 \end{equation}
 \end{widetext}
-with $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ because computability \cite{kahan}.  In addition to the potential for 
-${\cal O}(n)$ cost, the $N$-Body approach to the linear algebra of matrices with decay offers the potential for generic high 
-performance implementations and strong parallel scaling \cite{},  
-improved error accumulation relative to row-col contraction \cite{}, and a simple, intuiative code base \cite{}.  
-Perhaps most importantly though, the occlusion error 
+with $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$, because computability \cite{kahan}. 
 
-at recursively fine levels of granularity,
-and supporting both sparse \cite{wise} and compressive \cite{} approaches to linear algebra.   
-With decay and matrix quadtrees structured block-by-magnitude, 
-
-
-
-
-
-
+The total error associated with $\ot$ is 
 \begin{equation}
-\mat{\Delta}^{a\cdot b}_{\tau}=\mat{a} \ot \mat{b}-\mat{a}\cdot \mat{b}
+\mat{\Delta}^{a\cdot b}_{\tau}=\mat{a} \ot \mat{b}-\mat{a}\cdot \mat{b} \, ,
 \end{equation}
-obeys the multiplicative bound 
+corresponding to a {\em volume} of occluded contractions, and obeying the multiplicative bound 
 \begin{equation}
 \lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
-with the potential for {\em relative} error control during iteration.   Generally, $\ot$ yeilds a non-associative algebra with Lie bracket
+offering the potential for {\em relative} error control.  Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
+leading to a non-associative algebra and the iterative development of error flows associated with the Lie bracket
 \begin{equation}
 \left[ \mat{a} , \mat{b} \right]_{\tau} = \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
 =  \left[ \mat{a} , \mat{b} \right]
-+ \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau}.
++ \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
 \end{equation}
+
+As in other $N$-body approximations \cite{}, the space filling curve (SFC) heuristic is employed here to preserve the locality 
+of finite support functions \cite{}, an approach common for domain decomposition in computational physics \cite{}.
+Also,  adaptive (persistence based) methods \cite{} and graph based algorithms \cite{} are available for developing locality in linear algebra.
+Interestingly, locality enhancement is dimetric to recent distributed memory implementations of the $\tt SpGEMM$, which 
+enjoy work load homogenisation through radomization, together with conventional communication strategies \cite{}.    
+Differences between the $\tt SpAMM$ kernel and randomized approaches to the $\tt SpGEMM$ are reviewed in Ref.[\cite{}], and with 
+the $\tt GEMM$ in Ref.\cite{}.
+  
+\section{Newton Shulz Iteration}
+
 Here, we hope to understanding the flow of occlusion errors under Newton Schulz iteration, 
 for ill-conditioned problems and with extreme permisive values of $\tau$. 
 
-\section{Newton Shulz Iteration}
 
 \subsection{Retaining the Eigenspace}
 Gradients lack convergence properties
@@ -267,7 +251,6 @@ f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\ma
 \rightarrow \mat{n}\left[\mat{s} \right]
 \end{equation}
 
-
 \section{Implementation}
 
 \subsection{Methods}
@@ -292,7 +275,7 @@ Here's looking at you Jurg...
 
 \section{Experiments}
 
-\subsection{Occlusion Flows}
+\subsection{Occlusion Error Flows}
 \begin{figure}[h]
   \caption{equation...}
  \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-5.eps}
@@ -321,7 +304,7 @@ Here's looking at you Jurg...
 \lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
 \end{equation}
 
-\subsection{Occlusion Boundaries}
+\subsection{Querry Surfaces}
 
 \begin{figure}[h]
   \caption{equation...}
@@ -330,7 +313,7 @@ Here's looking at you Jurg...
 
 \subsection{Comments}
 
-\subsection{Scaling}
+\subsection{Found Contraction}
 
 \subsection{Comments}
 Pictures of the spamm structure
