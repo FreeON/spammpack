@@ -116,7 +116,7 @@ contains
     kount=1
     sz_norm=1d0
     FillN=1d10
-    DO i = 0, 13
+    DO i = 0, 15
 
        ! check the trace for convergence:
        FillN_prev=FillN
@@ -151,17 +151,19 @@ contains
        shft_mapp =0d0
 #endif
 
-       IF(FillN>0.4d0)THEN
-          delta=8.d-2 ! maybe this should be a variable too, passed in?
-          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-          sc=spammsand_scaling_invsqrt(SpAMM_zero)
-       ELSEIF(FillN>0.1d0)THEN
-          delta=1.0d-2 ! maybe this should be a variable too, passed in?
-          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-          sc=spammsand_scaling_invsqrt(SpAMM_half)
-       ELSE
+!!$       IF(FillN>0.4d0)THEN
+!!$          delta=8.d-2 ! maybe this should be a variable too, passed in?
+!!$          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$          sc=spammsand_scaling_invsqrt(SpAMM_zero)
+!!$       ELSEIF(FillN>0.1d0)THEN
+!!$          delta=1.0d-2 ! maybe this should be a variable too, passed in?
+!!$          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$          sc=spammsand_scaling_invsqrt(SpAMM_half)
+!!$       ELSE
+!!$          sc=1d0
+!!$       ENDIF
+
           sc=1d0
-       ENDIF
 
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
@@ -181,11 +183,13 @@ contains
        IF(DoDuals)tHeN
 #endif
           ! <Y_n+1|
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau , nt_O=.TRUE., in_O = t )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau*1d-2 , nt_O=.TRUE., in_O = t , stream_file_O='y_'//inttoCHAR(I) )
+
           y_work=t%frill%flops/dble(t%frill%ndimn(1))**3
 
+
           ! update (+threshold)
-          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau ) 
+          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau*1d-4 ) 
 
           ! <X_n> = <Y_n|Z_n>
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x )
@@ -199,7 +203,7 @@ contains
        ELSE
 #endif
           !   |t> =      S|Z_k> 
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau*1d-4  , NT_O=.TRUE. , in_O = t )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau*1d-1  , NT_O=.TRUE. , in_O = t )
           sz_work=t%frill%flops/dble(t%frill%ndimn(1))**3
           sz_norm=SQRT(t%frill%norm2)
           
@@ -467,7 +471,7 @@ program SpAMM_sandwich_inverse_squareroot
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
   s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
-  logtau_strt=-2                                       ! starting accuracy
+  logtau_strt=-2                                      ! starting accuracy
   logtau_stop=-10                                      ! stoping  "
   logtau_dlta=(logtau_stop-logtau_strt)/dble(slices-1) ! span (breadth) of SpAMM thresholds 
   tau_dlta=10d0**logtau_dlta
@@ -498,7 +502,8 @@ program SpAMM_sandwich_inverse_squareroot
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
   kount=1
-  first=.FALSE.
+!  first=.FALSE.
+  first=.TRUE.
   second=.TRUE.
 
   z=>z_head
@@ -507,7 +512,13 @@ program SpAMM_sandwich_inverse_squareroot
 
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
+     ! WATER block=32, tau=0.07
+     ! BAD TUBE block=32, tau=0.01
+     z%tau = 0.01d0
+
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first, second, kount )
+
+     STOP
 
      first=.TRUE.
      second=.FALSE.

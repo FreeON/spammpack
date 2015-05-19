@@ -4,7 +4,10 @@ module spamm_parameters
 
   implicit none
 
-  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=32
+  ! h2o_350_6-311G**, blk = 8, tau= 0.05 
+  ! h2o_350_6-311G**, blk = 64, tau= 0.1 
+
+  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=16
 !  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE = 512
 
   INTEGER,          PARAMETER :: SBS              = SpAMM_BLOCK_SIZE
@@ -28,3 +31,7 @@ module spamm_parameters
 contains
 
 end module spamm_parameters
+
+!to 0.13522%,    1.83456%,    0.35217%
+! z 0.17314%,    2.80286%,    0.47922%
+! h 0.16605%,    2.59818%,    0.47009%

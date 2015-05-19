@@ -1,5 +1,4 @@
-
-#define SpAMM_PRINT_STREAM
+!#define SpAMM_PRINT_STREAM
 module spamm_nbdyalgbra_times 
 
   use spamm_structures
@@ -20,7 +19,6 @@ module spamm_nbdyalgbra_times
 
 
 CONTAINS
-
 
 
   !++NBODYTIMES: SpAMM generalized n-body algebras for times ____ NBODYTIMES _________________
