@@ -23,20 +23,23 @@ from mayavi.modules.iso_surface import IsoSurface
 
 
 
-vtk_file_reader1 = engine.open(u'/home/m/spammsand/spammsand/64/z_6.vtk')
-iso_surface1 = IsoSurface()
-engine.add_module(iso_surface1, obj=None)
+#vtk_file_reader1 = engine.open(u'/home/m/spammsand/spammsand/64/z_6.vtk')
+#vtk_file_reader1 = engine.open(u'/home/matcha/Desktop/RESEARCH/spammsand_may_10_2015/spammsand/350_6311gss/z_6.vtk')
+#iso_surface1 = IsoSurface()
+#engine.add_module(iso_surface1, obj=None)
 
-iso_surface1.actor.mapper.scalar_mode = 'use_field_data'
-iso_surface1.actor.property.specular_color = (1.0, 0.0, 0.0)
-iso_surface1.actor.property.diffuse_color  = (1.0, 0.0, 0.0)
-iso_surface1.actor.property.ambient_color  = (1.0, 0.0, 0.0)
-iso_surface1.actor.property.color          = (1.0, 0.0, 0.0)
-iso_surface1.contour.contours[0:1]         = [0.01]
-iso_surface1.actor.property.opacity = 1.0
+#iso_surface1.actor.mapper.scalar_mode = 'use_field_data'
+#iso_surface1.actor.property.specular_color = (1.0, 0.0, 0.0)
+#iso_surface1.actor.property.diffuse_color  = (1.0, 0.0, 0.0)
+#iso_surface1.actor.property.ambient_color  = (1.0, 0.0, 0.0)
+#iso_surface1.actor.property.color          = (1.0, 0.0, 0.0)
+#iso_surface1.contour.contours[0:1]         = [0.01]
+#iso_surface1.actor.property.opacity = 1.0
 
 
-vtk_file_reader2 = engine.open(u'/home/m/spammsand/spammsand/64/z_11.vtk')
+
+#vtk_file_reader2 = engine.open(u'/home/m/spammsand/spammsand/64/z_11.vtk')
+vtk_file_reader2 = engine.open(u'/home/matcha/Desktop/RESEARCH/spammsand_may_10_2015/spammsand/350_6311gss/z_12.vtk')
 iso_surface2 = IsoSurface()
 engine.add_module(iso_surface2, obj=None)
 iso_surface2.actor.mapper.scalar_mode = 'use_field_data'
