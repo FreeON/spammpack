@@ -150,7 +150,8 @@ corresponding to the occluded contraction volume, and obeys the multiplicative b
 \begin{equation}
 \lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
-offering the potential for {\em relative} error control.  Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
+which is {\em stabile} \cite{DemmelnHolz2007} and offering the potential for {\em relative} error control.
+Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
 leading to a non-associative algebra and the development of error flows associated with the Lie bracket
 \begin{equation}
 \left[ \mat{a} , \mat{b} \right]_{\tau} = \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
@@ -162,22 +163,53 @@ there may be alternative criteria for occlusion and related approximations that
 achieve simililar accuracies at lower cost, or that achieve supperior error control under iteration, 
 perhaps involving persistence (learning) and/or probabilistic sampling \cite{Drineas}.  
 
-\section{Newton Shulz Iteration}
+\section{First Order Newton-Shulz Iteration}
 
-The approximation of the matrix sign and inverse square root via Newton Schulz (NS) iteration 
+The approximation of the matrix sign and inverse square root via first order Newton Schulz (NS) iteration 
 has a number of attractive features, notably multiplication richness and quadratic convergence in the basin of convergence. 
-Developed extensively by Higham /cite{}, NS methods yeilds resolution of the identity through the square root and its inverse \cite{}:
+Developed extensively by Higham \cite{}, NS  yeilds resolution of the identity through the square root and its inverse \cite{}:
 \begin{equation}
-\mat{I}=\mat{s}^{1/2} \cdot \mat{s^{-1/2}} \, .
+sign \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s^{-1/2}} \, .
 \end{equation}
 For well conditioned problems, incomplete/inexact approximations and the $\tt SpGEMM$ kernel offer fast solutions \cite{}.
 For ill-conditioned problems however, fill in remains a challenge \cite{}, showing up well before matrix-compression 
 technologies become effective.   
 
-In this contribution, we develop the $\tt SpAMM$ kernel for NS iteration at index $k$, focusing on eigenvector (basis) fidelity of the
-positive definate argument $\mat{s}$, and the stability properties that develop as the residual $\mat{x}_k $ tends towards 
+In this contribution, we develop the $\tt SpAMM$ kernel for NS iteration at index $k$, focusing on eigenvector (basis) fidelity to the
+positive definate argument $\mat{s}$, and stability as the residual $\mat{x}_k $ tends towards 
 idempotence, $\mat{x}_k \rightarrow {sign}\left( \mat{s} \right) $, with 
- $\mat{y}_k \rightarrow \mat{s}^{1/2}$  and $\mat{z}_k \rightarrow \mat{s}^{-1/2}$ \cite{higham}.
+ $\mat{y}_k \rightarrow \mat{s}^{1/2}$  and $\mat{z}_k \rightarrow \mat{s}^{-1/2}$ \cite{higham}.  first order map, scaling and so on
+In the first order $m$ .  Scaling developed by Jie and co.
+There are several NS forms that are in principle equivalent, but which behave very 
+differently for ill-conditioned problems. 
+
+In our notation these iterations naive: 
+\begin{eqnarray}
+\mat{z}^{\tt naiv}_{k}  &\leftarrow& \mat{z}_{k-1}  \cdot m \left( \mat{x}_{k-1} \right) \\
+\mat{x}^{\tt naiv}_{k} &\leftarrow& \mat{z}_{k} \cdot \mat{s} \cdot \mat{z}_{k}
+\end{eqnarray}
+
+
+We begin our development with 
+the analysis of Bai and Demmel \cite{}, Byers, He and Mehrmann \cite{} and Higham, Ref.\cite{} Section 5.7.
+These authors show that, once convergence has been achieved, than any (initial) error $\delta \mat{s}$ about
+$\mat{s}$ is quenched 
+
+
+has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
+
+
+variation of $sign$ about an idempotent fixed point $\mat{s}^*$ with an initial 
+commuting error 
+$\delta \mat{s}$ has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
+sign \left(  \mat{s}^* \right) $.  
+
+
+
+x
+
+\subsubsection{The Scaled Map}
+
 
 In addition to retaining the basis with each step $k$ 
 \footnote{Sometimes refered to as a ``variational'' property, associated with retaining the basis through gradient 
@@ -187,32 +219,13 @@ level of $\tt SpAMM$ precision, {\em e.g.}~after the basin of convergence has be
 The ability to retain the basis in functional approximation is a key feature of the NS method, in 
 contrast to the exponential error growth that develops in nested polynomial approximation \cite{},
 a limiting issue in many applications \cite{}.  Instead, NS allows correction of a converged residual 
-at any previous $\tt SpAMM$ resolution with little additional cost \cite{}, {\em e.g.} 
+at previous $\tt SpAMM$ resolutions with little additional cost \cite{}, {\em e.g.} 
 \begin{equation}  
 \mat{s}^{-1/2} \approx \mat{z}^{\tau_m} \; {\scriptstyle \otimes}_{\tau_m} \; \mat{z}^{\tau_{m-1}}{\scriptstyle \otimes_{\tau_{m-1}}}
 \; \ldots \; {\scriptstyle \otimes}_{\tau_{\scriptscriptstyle 0}} \; \mat{z}^{\tau_{\scriptscriptstyle 0}} \, ,
 \end{equation}
 with $\tau_m \; < \;  \tau_{m-1} \; < \; \ldots  \; < \; \tau_0$.  Efficiency is then determined by stability of the 
 most extreme permisive preconditioning provided by $\mat{z}^{\tau_{\scriptscriptstyle 0}}$.
-
-There are several NS forms that are  in principle equivalent, but which are in practice only for trivial 
-condition numbers or at extended precisions.  
-
-
-
-
-\subsection{Retaining the Eigenspace}
-Gradients lack convergence properties
-Iteration without orig drives away from basis
-NS has both.  Difference between scalar iteration, Higham page 92.
-
-
-\subsection{Idempotence }
-
-\subsection{The Scaled Map}
-
-\subsection{Alternative Formulations}
-dual, stabilized and naive
 
 \section{Occlusion Flows}
 
