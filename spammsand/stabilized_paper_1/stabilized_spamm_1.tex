@@ -113,8 +113,10 @@ Locality enabled, fast data access is central to the $N$-Body approximation \cit
 for enterprise \cite{} and runtime systems \cite{}, with memory hierarchies becoming increasingly assynchronous and decentralized \cite{cache}.  
 For matrices with decay, orderings that preserve locality lead to block-by-magnitude matrix structures with well 
 segregated neighborhoods, inhabited by matrix elements of like size, and efficiently resolved by the quadtree data structure \cite{}.
-Then, the Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel, $\ot$, carries out fast, recursive occlusion culling of 
-insignifcant contractions, with errors bounded by sub-multiplicative norms and the Cauchy-Schwarz inequality \cite{}:
+
+With block-by-magnitude ordering of matrices $\mat{a}$ and $\mat{b}$, 
+the Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel,  $\ot$, carries out fast 
+occlusion culling of insignifcant volumes in the product octree:
 \begin{widetext}
 \begin{equation}
 \mat{a}^{i} \ot \mat{b}^{i} = 
@@ -131,50 +133,99 @@ insignifcant contractions, with errors bounded by sub-multiplicative norms and t
               \right.  \, ,
 \end{equation}
 \end{widetext}
-with $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$, because computability \cite{kahan}. 
+with errors bounded by sub-multiplicative norms, $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$, and the Cauchy-Schwarz inequality \cite{kahan}.
+$\tt SpAMM$ is similar in spirit to compressed sensing kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}.  However, 
+instead of using the FFT to compute the sketch, compression is achieved simply through fast querry of the product decay.
+
+The $\tt SpAMM$ kernel stands in contrast to methods based on random matrix theory, which enhance matrix conditioning via 
+homogenization \cite{pan, DiahLi and Parket Scott}, and also with distributed memory implementations of the $\tt SpGEMM$, which 
+enjoy work load homogenisation through radomization \cite{}.  Differences between the $\tt SpAMM$ kernel and randomized 
+approaches to the $\tt SpGEMM$ are reviewed in Ref.[\cite{}], and with the $\tt GEMM$ in Ref.\cite{}.
 
 The total error associated with $\ot$ is 
 \begin{equation}
 \mat{\Delta}^{a\cdot b}_{\tau}=\mat{a} \ot \mat{b}-\mat{a}\cdot \mat{b} \, ,
 \end{equation}
-corresponding to a {\em volume} of occluded contractions, and obeying the multiplicative bound 
+corresponding to the occluded contraction volume, and obeys the multiplicative bound 
 \begin{equation}
 \lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
-offering the potential for {\em relative} error control.  Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
-leading to a non-associative algebra and the iterative development of error flows associated with the Lie bracket
+which is {\em stabile} \cite{DemmelnHolz2007} and offering the potential for {\em relative} error control.
+Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
+leading to a non-associative algebra and the development of error flows associated with the Lie bracket
 \begin{equation}
 \left[ \mat{a} , \mat{b} \right]_{\tau} = \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
 =  \left[ \mat{a} , \mat{b} \right]
 + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
 \end{equation}
+While the $\tt SpAMM$ occlusion criteria is deterministic, Eq.~(\ref{spamm}), 
+there may be alternative criteria for occlusion and related approximations that 
+achieve simililar accuracies at lower cost, or that achieve supperior error control under iteration, 
+perhaps involving persistence (learning) and/or probabilistic sampling \cite{Drineas}.  
 
-As in other $N$-body approximations \cite{}, the space filling curve (SFC) heuristic is employed here to preserve the locality 
-of finite support functions \cite{}, an approach common for domain decomposition in computational physics \cite{}.
-Also,  adaptive (persistence based) methods \cite{} and graph based algorithms \cite{} are available for developing locality in linear algebra.
-Interestingly, locality enhancement is dimetric to recent distributed memory implementations of the $\tt SpGEMM$, which 
-enjoy work load homogenisation through radomization, together with conventional communication strategies \cite{}.    
-Differences between the $\tt SpAMM$ kernel and randomized approaches to the $\tt SpGEMM$ are reviewed in Ref.[\cite{}], and with 
-the $\tt GEMM$ in Ref.\cite{}.
-  
-\section{Newton Shulz Iteration}
+\section{First Order Newton-Shulz Iteration}
 
-Here, we hope to understanding the flow of occlusion errors under Newton Schulz iteration, 
-for ill-conditioned problems and with extreme permisive values of $\tau$. 
+The approximation of the matrix sign and inverse square root via first order Newton Schulz (NS) iteration 
+has a number of attractive features, notably multiplication richness and quadratic convergence in the basin of convergence. 
+Developed extensively by Higham \cite{}, NS  yeilds resolution of the identity through the square root and its inverse \cite{}:
+\begin{equation}
+sign \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s^{-1/2}} \, .
+\end{equation}
+For well conditioned problems, incomplete/inexact approximations and the $\tt SpGEMM$ kernel offer fast solutions \cite{}.
+For ill-conditioned problems however, fill in remains a challenge \cite{}, showing up well before matrix-compression 
+technologies become effective.   
+
+In this contribution, we develop the $\tt SpAMM$ kernel for NS iteration at index $k$, focusing on eigenvector (basis) fidelity to the
+positive definate argument $\mat{s}$, and stability as the residual $\mat{x}_k $ tends towards 
+idempotence, $\mat{x}_k \rightarrow {sign}\left( \mat{s} \right) $, with 
+ $\mat{y}_k \rightarrow \mat{s}^{1/2}$  and $\mat{z}_k \rightarrow \mat{s}^{-1/2}$ \cite{higham}.  first order map, scaling and so on
+In the first order $m$ .  Scaling developed by Jie and co.
+There are several NS forms that are in principle equivalent, but which behave very 
+differently for ill-conditioned problems. 
+
+In our notation these iterations naive: 
+\begin{eqnarray}
+\mat{z}^{\tt naiv}_{k}  &\leftarrow& \mat{z}_{k-1}  \cdot m \left( \mat{x}_{k-1} \right) \\
+\mat{x}^{\tt naiv}_{k} &\leftarrow& \mat{z}_{k} \cdot \mat{s} \cdot \mat{z}_{k}
+\end{eqnarray}
 
 
-\subsection{Retaining the Eigenspace}
-Gradients lack convergence properties
-Iteration without orig drives away from basis
-NS has both.  Difference between scalar iteration, Higham page 92.
+We begin our development with 
+the analysis of Bai and Demmel \cite{}, Byers, He and Mehrmann \cite{} and Higham, Ref.\cite{} Section 5.7.
+These authors show that, once convergence has been achieved, than any (initial) error $\delta \mat{s}$ about
+$\mat{s}$ is quenched 
 
 
-\subsection{Idempotence }
+has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
 
-\subsection{The Scaled Map}
 
-\subsection{Alternative Formulations}
-dual, stabilized and naive
+variation of $sign$ about an idempotent fixed point $\mat{s}^*$ with an initial 
+commuting error 
+$\delta \mat{s}$ has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
+sign \left(  \mat{s}^* \right) $.  
+
+
+
+x
+
+\subsubsection{The Scaled Map}
+
+
+In addition to retaining the basis with each step $k$ 
+\footnote{Sometimes refered to as a ``variational'' property, associated with retaining the basis through gradient 
+terms, in early work on $\cal$ approximation of the spectral projector through optimization \cite{}.}, 
+NS allows to re-introduce the eigenvectors at any 
+level of $\tt SpAMM$ precision, {\em e.g.}~after the basin of convergence has been reached.   
+The ability to retain the basis in functional approximation is a key feature of the NS method, in 
+contrast to the exponential error growth that develops in nested polynomial approximation \cite{},
+a limiting issue in many applications \cite{}.  Instead, NS allows correction of a converged residual 
+at previous $\tt SpAMM$ resolutions with little additional cost \cite{}, {\em e.g.} 
+\begin{equation}  
+\mat{s}^{-1/2} \approx \mat{z}^{\tau_m} \; {\scriptstyle \otimes}_{\tau_m} \; \mat{z}^{\tau_{m-1}}{\scriptstyle \otimes_{\tau_{m-1}}}
+\; \ldots \; {\scriptstyle \otimes}_{\tau_{\scriptscriptstyle 0}} \; \mat{z}^{\tau_{\scriptscriptstyle 0}} \, ,
+\end{equation}
+with $\tau_m \; < \;  \tau_{m-1} \; < \; \ldots  \; < \; \tau_0$.  Efficiency is then determined by stability of the 
+most extreme permisive preconditioning provided by $\mat{z}^{\tau_{\scriptscriptstyle 0}}$.
 
 \section{Occlusion Flows}
 
