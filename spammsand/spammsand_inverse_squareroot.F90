@@ -66,6 +66,11 @@ contains
     REAL(SpAMM_KIND)                                  :: fprimez
     fprimez=1d0
 #else
+
+    !
+    tau_xtra=5d-3*tau
+
+
     IF(DoDuals)tHeN
 #endif
        ! y_0 => s
@@ -151,20 +156,22 @@ contains
        shft_mapp =0d0
 #endif
 
-!!$       IF(FillN>0.4d0)THEN
-!!$          delta=8.d-2 ! maybe this should be a variable too, passed in?
-!!$          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$          sc=spammsand_scaling_invsqrt(SpAMM_zero)
-!!$       ELSEIF(FillN>0.1d0)THEN
-!!$          delta=1.0d-2 ! maybe this should be a variable too, passed in?
-!!$          x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$          sc=spammsand_scaling_invsqrt(SpAMM_half)
-!!$       ELSE
-!!$          sc=1d0
-!!$       ENDIF
-
+       IF(DoDuals)THEN
           sc=1d0
-
+       ELSE
+          IF(FillN>0.4d0)THEN
+             delta=8.d-2 ! maybe this should be a variable too, passed in?
+             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+             sc=spammsand_scaling_invsqrt(SpAMM_zero)
+          ELSEIF(FillN>0.1d0)THEN
+             delta=1.0d-2 ! maybe this should be a variable too, passed in?
+             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+             sc=spammsand_scaling_invsqrt(SpAMM_half)
+          ELSE
+             sc=1d0
+          ENDIF
+       ENDIF
+       
        x => spammsand_scaled_invsqrt_mapping( x, sc )
 
        ! |Z_n+1> =  <Z_n| X_n>  
@@ -183,13 +190,12 @@ contains
        IF(DoDuals)tHeN
 #endif
           ! <Y_n+1|
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau*1d-2 , nt_O=.TRUE., in_O = t , stream_file_O='y_'//inttoCHAR(I) )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, 5d-2*tau , nt_O=.TRUE., in_O = t , stream_file_O='y_'//inttoCHAR(I) )
 
           y_work=t%frill%flops/dble(t%frill%ndimn(1))**3
 
-
           ! update (+threshold)
-          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau*1d-4 ) 
+          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = 5d-2*tau )
 
           ! <X_n> = <Y_n|Z_n>
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x )
@@ -203,7 +209,7 @@ contains
        ELSE
 #endif
           !   |t> =      S|Z_k> 
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau*1d-1  , NT_O=.TRUE. , in_O = t )
+          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau_XTRA  , NT_O=.TRUE. , in_O = t )
           sz_work=t%frill%flops/dble(t%frill%ndimn(1))**3
           sz_norm=SQRT(t%frill%norm2)
           
@@ -514,7 +520,7 @@ program SpAMM_sandwich_inverse_squareroot
      
      ! WATER block=32, tau=0.07
      ! BAD TUBE block=32, tau=0.01
-     z%tau = 0.01d0
+!     z%tau = 0.01d0
 
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first, second, kount )
 
