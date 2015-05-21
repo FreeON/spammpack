@@ -244,16 +244,6 @@ main (int argc, char **argv)
     int M_BCSR;
     int N_BCSR;
     A_dense = bcsr_to_dense(&M_BCSR, &N_BCSR, A_BCSR);
-
-    /* Zero pad matrix. */
-    N = N_matrix*N_chunk;
-    A_dense = realloc(A_dense, sizeof(double)*N*N);
-    size_t padding_count = N*N-M_BCSR*N_BCSR;
-    printf("zero padding %dx%d BCSR matrix by %ld elements to %dx%d\n",
-           M_BCSR, N_BCSR, padding_count, N, N);
-    memset((void*) ((intptr_t) A_dense + sizeof(double)*M_BCSR*N_BCSR),
-           0,
-           sizeof(double)*padding_count);
   }
 
   else
@@ -263,6 +253,7 @@ main (int argc, char **argv)
     N_matrix = N/N_chunk;
     if(N%N_chunk != 0) N_matrix++;
 
+    printf("N_matrix = %d\n", N_matrix);
     printf("allocated A_dense, sizeof(A_dense) = %ld bytes\n", N*N*sizeof(double));
 
     switch(matrix_type)
@@ -333,13 +324,25 @@ main (int argc, char **argv)
     }
   }
 
+  /* Zero pad matrix. */
+  int old_N = N;
+  N = N_matrix*N_chunk;
+  A_dense = realloc(A_dense, sizeof(double)*N*N);
+  size_t padding_count = SQUARE(N)-SQUARE(old_N);
+  printf("zero padding %dx%d BCSR matrix by %ld elements to %dx%d\n",
+      old_N, old_N, padding_count, N, N);
+  memset((void*) ((intptr_t) A_dense + sizeof(double)*SQUARE(old_N)),
+      0,
+      sizeof(double)*padding_count);
+
   /* Convert the matrices. The chunks are stored in a N_matrix x
      N_matrix array. */
   printf("allocating %dx%d chunks\n", N_matrix, N_matrix);
-  void **A = calloc(N_matrix*N_matrix, sizeof(void*));
-  void **C = calloc(N_matrix*N_matrix, sizeof(void*));
+  void **A = calloc(SQUARE(N_matrix), sizeof(void*));
+  void **C = calloc(SQUARE(N_matrix), sizeof(void*));
 
-  double *A_slice = calloc(N_chunk*N_chunk, sizeof(double));
+  printf("allocating temporary matrix %dx%d\n", N_chunk, N_chunk);
+  double *A_slice = calloc(SQUARE(N_chunk), sizeof(double));
   for(int i = 0; i < N_matrix; i++)
   {
     for(int j = 0; j < N_matrix; j++)
