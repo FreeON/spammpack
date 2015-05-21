@@ -255,6 +255,32 @@ else
   AC_MSG_RESULT([no])
 fi
 
+AC_MSG_CHECKING([whether to create tree tasks (with OpenMP)])
+AC_ARG_ENABLE([tree-tasks],
+  [AS_HELP_STRING([--enable-tree-tasks],
+  [generate tree tasks])],
+  [enable_tree_tasks=$enableval],
+  [enable_tree_tasks="yes"])
+if test "${enable_tree_tasks}" = "yes"; then
+  AC_DEFINE([CREATE_TREE_TASKS], [1], [Generate tree tasks])
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+
+AC_MSG_CHECKING([whether to create leaf tasks (with OpenMP)])
+AC_ARG_ENABLE([leaf-tasks],
+  [AS_HELP_STRING([--enable-leaf-tasks],
+  [generate leaf tasks])],
+  [enable_leaf_tasks=$enableval],
+  [enable_leaf_tasks="no"])
+if test "${enable_leaf_tasks}" = "yes"; then
+  AC_DEFINE([CREATE_LEAF_TASKS], [1], [Generate leaf tasks])
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Makefile

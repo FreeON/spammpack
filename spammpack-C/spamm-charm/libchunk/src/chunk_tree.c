@@ -845,10 +845,17 @@ chunk_tree_multiply_node (const double tolerance_2,
   assert(C != NULL);
 
   if(tier == CHUNK_TREE_MAX_TIER) lock_data = 1;
+#ifdef CREATE_LEAF_TASKS
+  else if(tier == depth) lock_data = 1;
+#endif
   else lock_data = 0;
 
+#ifdef CREATE_TREE_TASKS
   if(tier < CHUNK_TREE_MAX_TIER) create_tasks = 1;
   else create_tasks = 0;
+#else
+  create_tasks = 0;
+#endif
 
 #if defined(_OPENMP) && defined(LOCK_C_CHUNK)
   if(lock_data)
@@ -882,20 +889,26 @@ chunk_tree_multiply_node (const double tolerance_2,
       //INFO("B[0][0] = % 1.3f\n", B_submatrix[0]);
       //INFO("C[0][0] = % 1.3f\n", C_submatrix[0]);
 
-#if defined(BLOCK_MULTIPLY)
-      chunk_block_multiply(A_submatrix, B_submatrix, C_submatrix, A->N_basic);
-#elif defined(BLOCK_BLAS)
+#ifdef CREATE_LEAF_TASKS
+#pragma omp task untied
       {
-        double alpha = 1.0;
-        double beta = 1.0;
-        DGEMM("N", "N", &A->N_basic, &A->N_basic, &A->N_basic, &alpha,
-              A_submatrix, &A->N_basic, B_submatrix, &A->N_basic, &beta,
-              C_submatrix, &A->N_basic);
-      }
+#endif
+#if defined(BLOCK_MULTIPLY)
+        chunk_block_multiply(A_submatrix, B_submatrix, C_submatrix, A->N_basic);
+#elif defined(BLOCK_BLAS)
+        {
+          double alpha = 1.0;
+          double beta = 1.0;
+          DGEMM("N", "N", &A->N_basic, &A->N_basic, &A->N_basic, &alpha,
+                A_submatrix, &A->N_basic, B_submatrix, &A->N_basic, &beta,
+                C_submatrix, &A->N_basic);
+        }
 #else
 #error unknown block multiply implementation.
 #endif
-
+#ifdef CREATE_LEAF_TASKS
+      }
+#endif
       DEBUG("done multiplying\n");
     }
   }
