@@ -257,7 +257,7 @@ fi
 
 AC_MSG_CHECKING([whether to create tree tasks (with OpenMP)])
 AC_ARG_ENABLE([tree-tasks],
-  [AS_HELP_STRING([--enable-tree-tasks],
+  [AS_HELP_STRING([--disable-tree-tasks],
   [generate tree tasks])],
   [enable_tree_tasks=$enableval],
   [enable_tree_tasks="yes"])
@@ -276,6 +276,19 @@ AC_ARG_ENABLE([leaf-tasks],
   [enable_leaf_tasks="no"])
 if test "${enable_leaf_tasks}" = "yes"; then
   AC_DEFINE([CREATE_LEAF_TASKS], [1], [Generate leaf tasks])
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+
+AC_MSG_CHECKING([whether to reset the C matrix])
+AC_ARG_ENABLE([reset-C],
+  [AS_HELP_STRING([--disable-reset-C],
+  [Reset the C matrix])],
+  [enable_reset_C=$enableval],
+  [enable_reset_C="yes"])
+if test "${enable_reset_C}" = "yes"; then
+  AC_DEFINE([RESET_C], [1], [Reset the C matrix])
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])

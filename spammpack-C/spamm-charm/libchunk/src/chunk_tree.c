@@ -982,7 +982,9 @@ chunk_tree_multiply (const double tolerance,
   struct chunk_tree_t *C_ptr = (struct chunk_tree_t*) C;
 
   /* Reset C. */
+#ifdef RESET_C
   chunk_tree_set_zero(C_ptr);
+#endif
   C_ptr->complexity = 0;
 
   double tolerance_2 = SQUARE(tolerance);
