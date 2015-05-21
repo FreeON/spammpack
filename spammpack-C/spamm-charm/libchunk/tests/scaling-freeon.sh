@@ -37,7 +37,8 @@ if [[ ${BUILD_TYPE} = "serial" ]]; then
     fi
 elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     echo "OpenMP version..."
-    THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
+    THREADS=( 1 2 4 8 12 16 )
+    #THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
     #THREADS=( 1 2 )
     NUMA_POLICY="--interleave=all"
     CONFIGURE_ARGS="--enable-openmp"
@@ -74,7 +75,7 @@ elif [[ ${BUILD_COMPILER} = "intel" ]]; then
     ./configure \
         ${CONFIGURE_ARGS} \
         CC=icc \
-        CFLAGS="-O3 -g -no-prec-div -static -fp-model fast=2 -qopt-report -xSSE2" || exit
+        CFLAGS="-O3 -g -no-prec-div -static -fp-model fast=2 -qopt-report -xSSE2 -ipo" || exit
 else
     echo "unknown build compiler ${BUILD_COMPILER}"
     exit 1
@@ -100,19 +101,20 @@ else
 fi
 
 for tolerance in 1e-10 1e-6; do
+  COMMAND_LINE="--tolerance ${tolerance}"
+  COMMAND_LINE+=" --N_basic ${N_BASIC}"
+  COMMAND_LINE+=" --N_chunk ${N_CHUNK}"
+  COMMAND_LINE+=" ${N_ARG}"
+  COMMAND_LINE+=" --type ${MATRIX_TYPE}"
+  COMMAND_LINE+=" --bcsr ${BCSR}"
+  COMMAND_LINE+=" --no-verify"
+  COMMAND_LINE+=" --repeat ${REPEAT}"
+  echo "running ./chunk_multiply ${COMMAND_LINE}"
   for threads in ${THREADS[*]}; do
     for (( repeat = 0; repeat < ${FULL_REPEAT}; repeat++ )); do
       OMP_NUM_THREADS=${threads} \
         numactl ${NUMA_POLICY} -- \
-        ./chunk_multiply \
-        --tolerance ${tolerance} \
-        --N_basic ${N_BASIC} \
-        --N_chunk ${N_CHUNK} \
-        ${N_ARG} \
-        --type ${MATRIX_TYPE} \
-        --bcsr ${BCSR} \
-        --no-verify \
-        --repeat ${REPEAT} \
+        ./chunk_multiply ${COMMAND_LINE} \
         | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.output \
         || exit
     done \
@@ -131,8 +133,8 @@ for tolerance in 1e-10 1e-6; do
                var = var/N;
                printf(\"%d %e %e\n\", ${threads}, avg_time, sqrt(var));
              }"
-  done | awk 'BEGIN { t0 = -1; };
-              { if(t0 < 0) { t0 = $2 };
-                printf("% 3d %e %e %6.2f\n", $1, $2, $3, 100*t0/$2/$1);
+  done | awk 'BEGIN { printf("%3s %12s %12s %5s %8s\n", "P", "walltime", "std.", "s/u", "eff."); };
+              { if(!t0) { t0 = $2 };
+                printf("% 3d %e %e %5.2f %7.3f%%\n", $1, $2, $3, t0/$2, 100*t0/$2/$1);
               }'
 done
