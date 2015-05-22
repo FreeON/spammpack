@@ -363,7 +363,17 @@ main (int argc, char **argv)
       //printf("norm(A[%d,%d]) = %e\n", i, j, chunk_get_norm_2(A[COLUMN_MAJOR(i, j, N_matrix)]));
       if(print_matrix)
       {
-        chunk_print(A[COLUMN_MAJOR(i, j, N_matrix)], "A\n");
+        printf("A_slice:\n");
+        for(int i = 0; i < N_chunk; i++)
+        {
+          for(int j = 0; j < N_chunk; j++)
+          {
+            printf(" % 1.3f", A_slice[COLUMN_MAJOR(i, j, N)]);
+          }
+          printf("\n");
+        }
+
+        chunk_print(A[COLUMN_MAJOR(i, j, N_matrix)], "A_slice\n");
       }
     }
   }
@@ -455,6 +465,10 @@ main (int argc, char **argv)
                            A[COLUMN_MAJOR(k_chunk, j_chunk, N_matrix)],
                            C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)],
                            tree_only);
+            if(print_matrix)
+            {
+              chunk_print(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)], "C\n");
+            }
           }
         }
       }
@@ -521,21 +535,27 @@ main (int argc, char **argv)
 
   if(print_matrix)
   {
-    double *C_dense = chunk_to_dense(C);
-
-    printf("C:\n");
-    for(int i = 0; i < N; i++)
+    for(int i_chunk = 0; i_chunk < N_matrix; i_chunk++)
     {
-      for(int j = 0; j < N; j++)
+      for(int j_chunk = 0; j_chunk < N_matrix; j_chunk++)
       {
-        printf(" % 1.3f", C_dense[COLUMN_MAJOR(i, j, N_chunk)]);
+        double *C_dense = chunk_to_dense(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)]);
+
+        printf("C[%d,%d]:\n", i_chunk, j_chunk);
+        for(int i = 0; i < N_chunk; i++)
+        {
+          for(int j = 0; j < N_chunk; j++)
+          {
+            printf(" % 1.3f", C_dense[COLUMN_MAJOR(i, j, N_chunk)]);
+          }
+          printf("\n");
+        }
+
+        free(C_dense);
+
+        chunk_print(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)], "C\n");
       }
-      printf("\n");
     }
-
-    free(C_dense);
-
-    chunk_print(C, "C\n");
   }
 
   if(print_complexity)
@@ -579,17 +599,16 @@ main (int argc, char **argv)
   {
     printf("verifying...\n");
 
-    double *C_dense = chunk_to_dense(C);
-    double *C_exact = calloc(SQUARE(N_chunk), sizeof(double));
+    double *C_exact = calloc(SQUARE(N), sizeof(double));
 
-    for(int i = 0; i < N_chunk; i++)
+    for(int i = 0; i < N; i++)
     {
-      for(int j = 0; j < N_chunk; j++)
+      for(int j = 0; j < N; j++)
       {
-        for(int k = 0; k < N_chunk; k++)
+        for(int k = 0; k < N; k++)
         {
-          C_exact[COLUMN_MAJOR(i, j, N_chunk)] +=
-            A_dense[COLUMN_MAJOR(i, k, N_chunk)]*A_dense[COLUMN_MAJOR(k, j, N_chunk)];
+          C_exact[COLUMN_MAJOR(i, j, N)] +=
+            A_dense[COLUMN_MAJOR(i, k, N)]*A_dense[COLUMN_MAJOR(k, j, N)];
         }
       }
     }
@@ -601,36 +620,44 @@ main (int argc, char **argv)
       {
         for(int j = 0; j < N; j++)
         {
-          printf(" % 1.3f", C_exact[COLUMN_MAJOR(i, j, N_chunk)]);
+          printf(" % 1.3f", C_exact[COLUMN_MAJOR(i, j, N)]);
         }
         printf("\n");
       }
     }
 
-    for(int i = 0; i < N_chunk; i++)
+    for(int i_chunk = 0; i_chunk < N_matrix; i_chunk++)
     {
-      for(int j = 0; j < N_chunk; j++)
+      for(int j_chunk = 0; j_chunk < N_matrix; j_chunk++)
       {
-        if(fabs(C_exact[COLUMN_MAJOR(i, j, N_chunk)]
-                -C_dense[COLUMN_MAJOR(i, j, N_chunk)]) > 1e-10)
-        {
-          printf("mismatch C[%d][%d] = %e "
-              " <-> C_exact = %e, abs. diff = %e\n",
-              i, j,
-              C_dense[COLUMN_MAJOR(i, j, N_chunk)],
-              C_exact[COLUMN_MAJOR(i, j, N_chunk)],
-              fabs(C_dense[COLUMN_MAJOR(i, j, N_chunk)]
-                -C_exact[COLUMN_MAJOR(i, j, N_chunk)]));
+        double *C_dense = chunk_to_dense(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)]);
 
-          return -1;
+        for(int i = 0; i < N_chunk; i++)
+        {
+          for(int j = 0; j < N_chunk; j++)
+          {
+            if(fabs(C_exact[COLUMN_MAJOR(i+i_chunk*N_chunk, j+j_chunk*N_chunk, N)]
+                    -C_dense[COLUMN_MAJOR(i, j, N_chunk)]) > 1e-10)
+            {
+              printf("mismatch C[%d][%d] = %e "
+                     " <-> C_exact = %e, abs. diff = %e\n",
+                     i+i_chunk*N_chunk, j+j_chunk+N_chunk,
+                     C_dense[COLUMN_MAJOR(i, j, N_chunk)],
+                     C_exact[COLUMN_MAJOR(i+i_chunk*N_chunk, j+j_chunk*N_chunk, N)],
+                     fabs(C_dense[COLUMN_MAJOR(i, j, N_chunk)]
+                          -C_exact[COLUMN_MAJOR(i+i_chunk*N_chunk, j+j_chunk*N_chunk, N)]));
+
+              return -1;
+            }
+          }
         }
+        free(C_dense);
       }
     }
 
     printf("matrices are identical\n");
 
     free(C_exact);
-    free(C_dense);
   }
 
   free(A_dense);
