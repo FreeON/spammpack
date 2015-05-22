@@ -20,12 +20,13 @@ echo "LOCK = ${LOCK:=TRUE}"
 echo "BCSR = ${BCSR:=~/data-sets/water/h2o_90.OrthoD}"
 echo "TREE_TASKS = ${TREE_TASKS:=TRUE}"
 echo "LEAF_TASKS = ${LEAF_TASKS:=FALSE}"
+echo "RESET_C = ${RESET_C:=FALSE}"
 echo
 
 if [[ ${BUILD_TYPE} = "serial" ]]; then
     echo "serial version..."
     THREADS=( 1 )
-    NUMA_POLICY="--physcpubind=0 --membind=0"
+    NUMA_POLICY="${NUMA_POLICY:=--physcpubind=0 --membind=0}"
     CONFIGURE_ARGS="--disable-openmp"
     CONFIGURE_ARGS+=" --disable-shared"
     CONFIGURE_ARGS+=" --disable-assert"
@@ -39,10 +40,10 @@ if [[ ${BUILD_TYPE} = "serial" ]]; then
     fi
 elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     echo "OpenMP version..."
-    #THREADS=( 1 2 4 8 12 16 )
-    THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
+    THREADS=( 1 2 8 16 24 )
+    #THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
     #THREADS=( 1 2 )
-    NUMA_POLICY="--interleave=all"
+    NUMA_POLICY="${NUMA_POLICY:=--interleave=all}"
     CONFIGURE_ARGS="--enable-openmp"
     CONFIGURE_ARGS+=" --disable-shared"
     CONFIGURE_ARGS+=" --disable-assert"
@@ -80,6 +81,15 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
 else
     echo "unknown build type, either serial or openmp"
     exit 1
+fi
+
+if [[ ${RESET_C} = "TRUE" ]]; then
+    CONFIGURE_ARGS+=" --enable-reset-C"
+elif [[ ! ${RESET_C} = "FALSE" ]]; then
+    echo "unknown value for RESET_C (${RESET_C})"
+    exit 1
+else
+    CONFIGURE_ARGS+=" --disable-reset-C"
 fi
 
 pushd ..
@@ -127,7 +137,7 @@ for tolerance in 1e-10 1e-6; do
   COMMAND_LINE+=" --bcsr ${BCSR}"
   COMMAND_LINE+=" --no-verify"
   COMMAND_LINE+=" --repeat ${REPEAT}"
-  echo "running ./chunk_multiply ${COMMAND_LINE}"
+  echo "# running ./chunk_multiply ${COMMAND_LINE}" | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.dat
   for threads in ${THREADS[*]}; do
     for (( repeat = 0; repeat < ${FULL_REPEAT}; repeat++ )); do
       OMP_NUM_THREADS=${threads} \
@@ -154,5 +164,6 @@ for tolerance in 1e-10 1e-6; do
   done | awk 'BEGIN { printf("%3s %12s %12s %5s %8s\n", "P", "walltime", "std.", "s/u", "eff."); };
               { if(!t0) { t0 = $2 };
                 printf("% 3d %e %e %5.2f %7.3f%%\n", $1, $2, $3, t0/$2, 100*t0/$2/$1);
-              }'
+              }' \
+       | tee --append ${BUILD_TYPE}-${BUILD_COMPILER}.dat
 done
