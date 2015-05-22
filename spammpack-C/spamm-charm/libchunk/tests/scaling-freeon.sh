@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# vim: tw=0
+# vim: tw=0:ts=4
 
 echo "The following environment variables can be used to"
 echo "control this script:"
@@ -18,6 +18,8 @@ echo "N_CHUNK = ${N_CHUNK:=128}"
 echo "N = ${N:=-1}"
 echo "LOCK = ${LOCK:=TRUE}"
 echo "BCSR = ${BCSR:=~/data-sets/water/h2o_90.OrthoD}"
+echo "TREE_TASKS = ${TREE_TASKS:=TRUE}"
+echo "LEAF_TASKS = ${LEAF_TASKS:=FALSE}"
 echo
 
 if [[ ${BUILD_TYPE} = "serial" ]]; then
@@ -37,8 +39,8 @@ if [[ ${BUILD_TYPE} = "serial" ]]; then
     fi
 elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     echo "OpenMP version..."
-    THREADS=( 1 2 4 8 12 16 )
-    #THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
+    #THREADS=( 1 2 4 8 12 16 )
+    THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
     #THREADS=( 1 2 )
     NUMA_POLICY="--interleave=all"
     CONFIGURE_ARGS="--enable-openmp"
@@ -58,6 +60,22 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     elif [[ ! ${LOCK} = "TRUE" ]]; then
         echo "unknown value for LOCK (${LOCK})"
         exit 1
+    fi
+    if [[ ${TREE_TASKS} = "TRUE" ]]; then
+        CONFIGURE_ARGS+=" --enable-tree-tasks"
+    elif [[ ! ${TREE_TASKS} = "FALSE" ]]; then
+        echo "unknown value for TREE_TASKS (${TREE_TASKS})"
+        exit 1
+    else
+        CONFIGURE_ARGS+=" --disable-tree-tasks"
+    fi
+    if [[ ${LEAF_TASKS} = "TRUE" ]]; then
+        CONFIGURE_ARGS+=" --enable-leaf-tasks"
+    elif [[ ! ${LEAF_TASKS} = "FALSE" ]]; then
+        echo "unknown value for LEAF_TASKS (${LEAF_TASKS})"
+        exit 1
+    else
+        CONFIGURE_ARGS+=" --disable-leaf-tasks"
     fi
 else
     echo "unknown build type, either serial or openmp"
