@@ -1,7 +1,7 @@
 \documentclass[letterpaper,twocolumn,amsmath,amsfont,amssymb,english,aps,jcp,preprintnumbers,groupaddress,nofootinbib,tightenlines]{revtex4}
 
 \usepackage{graphicx}
-
+\usepackage{epstopdf}
 
 %\documentclass[aps,prb,letterpaper,twocolumn,nofootinbib,showkeys]{revtex4-1}
 %\documentclass[aps,amssymb,prl,letterpaper,twocolumn,nofootinbib,showkeys]{revtex4-1}
@@ -178,35 +178,19 @@ technologies become effective.
 In this contribution, we develop the $\tt SpAMM$ kernel for NS iteration at index $k$, focusing on eigenvector (basis) fidelity to the
 positive definate argument $\mat{s}$, and stability as the residual $\mat{x}_k $ tends towards 
 idempotence, $\mat{x}_k \rightarrow {sign}\left( \mat{s} \right) $, with 
- $\mat{y}_k \rightarrow \mat{s}^{1/2}$  and $\mat{z}_k \rightarrow \mat{s}^{-1/2}$ \cite{higham}.  first order map, scaling and so on
-In the first order $m$ .  Scaling developed by Jie and co.
-There are several NS forms that are in principle equivalent, but which behave very 
-differently for ill-conditioned problems. 
+ $\mat{y}_k \rightarrow \mat{s}^{1/2}$  and $\mat{z}_k \rightarrow \mat{s}^{-1/2}$ \cite{higham}. Convergence
+and stability are controlled by the first order NS map, $m[\mat{x},\alpha]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
+with scaling paramter $\alpha$ \cite{}. Then, $m'$ at the smallest eigenvalue $x_0$ controls progress towards idempotence, along
+with the overall eigenvalue distribution \cite{}. Recently, Jie and Chen demonstrated a factor of two reduction 
+in the number of NS steps for ill-conditioned problems by chosing $\alpha \sim 2.85$, with damping towards $\alpha=1$ at 
+convergence.  
 
-In our notation these iterations naive: 
-\begin{eqnarray}
-\mat{z}^{\tt naiv}_{k}  &\leftarrow& \mat{z}_{k-1}  \cdot m \left( \mat{x}_{k-1} \right) \\
-\mat{x}^{\tt naiv}_{k} &\leftarrow& \mat{z}_{k} \cdot \mat{s} \cdot \mat{z}_{k}
-\end{eqnarray}
-
+From the 
 
 We begin our development with 
 the analysis of Bai and Demmel \cite{}, Byers, He and Mehrmann \cite{} and Higham, Ref.\cite{} Section 5.7.
 These authors show that, once convergence has been achieved, than any (initial) error $\delta \mat{s}$ about
 $\mat{s}$ is quenched 
-
-
-% has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
-
-
-% variation of $sign$ about an idempotent fixed point $\mat{s}^*$ with an initial 
-% commuting error 
-% $\delta \mat{s}$ has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
-% sign \left(  \mat{s}^* \right) $.  
-
-
-
-\subsubsection{The Scaled Map}
 
 
 In addition to retaining the basis with each step $k$ 
@@ -224,6 +208,43 @@ at previous $\tt SpAMM$ resolutions with little additional cost \cite{}, {\em e.
 \end{equation}
 with $\tau_m \; < \;  \tau_{m-1} \; < \; \ldots  \; < \; \tau_0$.  Efficiency is then determined by stability of the 
 most extreme permisive preconditioning provided by $\mat{z}^{\tau_{\scriptscriptstyle 0}}$.
+
+
+
+
+% has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
+
+
+% variation of $sign$ about an idempotent fixed point $\mat{s}^*$ with an initial 
+% commuting error 
+% $\delta \mat{s}$ has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
+% sign \left(  \mat{s}^* \right) $.  
+
+
+
+scaling and so on
+In the first order $m$ .  Scaling developed by Jie and co.
+
+There are several NS forms that are in principle equivalent, but which behave very 
+differently for ill-conditioned problems. 
+
+In our notation these iterations naive: 
+\begin{eqnarray}
+\mat{z}^{\tt naiv}_{k}  &\leftarrow& \mat{z}_{k-1}  \cdot m \left( \mat{x}_{k-1} \right) \\
+\mat{x}^{\tt naiv}_{k} &\leftarrow& \mat{z}_{k} \cdot \mat{s} \cdot \mat{z}_{k}
+\end{eqnarray}
+
+
+
+
+
+\subsubsection{The Scaled Map}
+
+
+
+
+
+
 
 \section{Occlusion Flows}
 
@@ -370,9 +391,14 @@ Here's looking at you Jurg...
 
 \begin{figure}[h]
   \caption{equation...}
-\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_water_to_duals.png}} 
-\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_water_to_duals.png}}
+%%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_water_to_duals.png}} 
+%%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_water_to_duals.png}}
+%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_water_to_duals.png}} 
+\fbox{ \includegraphics[width=3in,trim={8cm 0.1cm 8cm 0.1cm},clip]{z_water_to_duals_scn1.png}}
 \end{figure}
+
+
+
 
 
 \subsection{Comments}
