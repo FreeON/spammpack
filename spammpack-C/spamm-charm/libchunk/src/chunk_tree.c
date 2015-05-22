@@ -782,8 +782,6 @@ chunk_tree_multiply_node_recur (const double tolerance_2,
                                 size_t *const complexity,
                                 const int product_index)
 {
-  DEBUG("(%d,%d,%d) starting new task\n", i, j, k);
-
   struct chunk_tree_node_t *A_child = (struct chunk_tree_node_t*)
     ((intptr_t) A + A->offset.child_offset[ROW_MAJOR(i, k, 2)]);
   struct chunk_tree_node_t *B_child = (struct chunk_tree_node_t*)
@@ -923,6 +921,7 @@ chunk_tree_multiply_node (const double tolerance_2,
         {
           if(create_tasks)
           {
+            DEBUG("creating new task\n");
 #pragma omp task default(shared) firstprivate(i, j, k) untied
             chunk_tree_multiply_node_recur(tolerance_2, i, j, k, tier, depth,
                                            A, B, C, symbolic_only, complexity, product_index);
@@ -996,7 +995,7 @@ chunk_tree_multiply (const double tolerance,
   DEBUG("symbolic_only = %d\n", symbolic_only);
 
   DEBUG("%dx%d blocked matrix, potentially %d products to consider, max tier = %d\n",
-      ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(A_ptr->depth), CHUNK_TREE_MAX_TIER));
+      ipow2(A_ptr->depth), ipow2(A_ptr->depth), CUBE(ipow2(A_ptr->depth)), CHUNK_TREE_MAX_TIER);
 
   DEBUG("SpAMM tolerance = %e\n", tolerance);
 

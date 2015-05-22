@@ -88,12 +88,12 @@ if [[ ${BUILD_COMPILER} = "gcc" ]]; then
     ./configure \
         ${CONFIGURE_ARGS} \
         CC=gcc \
-        CFLAGS="-Ofast -g -ftree-vectorizer-verbose=2 -mfpmath=sse -msse2" || exit
+        CFLAGS="${CFLAGS:=-Ofast -g -ftree-vectorizer-verbose=2 -mfpmath=sse -msse2}" || exit
 elif [[ ${BUILD_COMPILER} = "intel" ]]; then
     ./configure \
         ${CONFIGURE_ARGS} \
         CC=icc \
-        CFLAGS="-O3 -g -no-prec-div -static -fp-model fast=2 -qopt-report -xSSE2 -ipo" || exit
+        CFLAGS="${CFLAGS:=-O3 -g -no-prec-div -static -fp-model fast=2 -qopt-report -xSSE2 -ipo}" || exit
 else
     echo "unknown build compiler ${BUILD_COMPILER}"
     exit 1
