@@ -163,6 +163,8 @@ there may be alternative criteria for occlusion and related approximations that
 achieve simililar accuracies at lower cost, or that achieve supperior error control under iteration, 
 perhaps involving persistence (learning) and/or probabilistic sampling \cite{Drineas}.  
 
+\pagebreak
+
 \section{First Order Newton-Shulz Iteration}
 
 The approximation of the matrix sign and inverse square root via first order Newton Schulz (NS) iteration 
@@ -176,81 +178,58 @@ For ill-conditioned problems however, fill in remains a challenge \cite{}, showi
 technologies become effective.   
 
 In this contribution, we develop the $\tt SpAMM$ kernel for NS iteration at index $k$, focusing on eigenvector (basis) fidelity to the
-positive definate argument $\mat{s}$, and stability as the residual $\mat{x}_k $ tends towards 
+positive definate argument $\mat{s}$, and stability of the iteration as the residual $\mat{x}_k $ tends towards 
 idempotence, $\mat{x}_k \rightarrow {sign}\left( \mat{s} \right) $, with 
- $\mat{y}_k \rightarrow \mat{s}^{1/2}$  and $\mat{z}_k \rightarrow \mat{s}^{-1/2}$ \cite{higham}. Convergence
-and stability are controlled by the first order NS map, $m[\mat{x},\alpha]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
-with scaling paramter $\alpha$ \cite{}. Then, $m'$ at the smallest eigenvalue $x_0$ controls progress towards idempotence, along
+ $\mat{y}_k \rightarrow \mat{s}^{1/2}$  and $\mat{z}_k \rightarrow \mat{s}^{-1/2}$ \cite{higham}. 
+
+Convergence and stability are controlled by the first order NS map, $m[\mat{x},\alpha]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
+with scale $\alpha$ \cite{}. Then, $m'$ at the smallest eigenvalue $x_0$ controls progress towards idempotence, along
 with the overall eigenvalue distribution \cite{}. Recently, Jie and Chen demonstrated a factor of two reduction 
 in the number of NS steps for ill-conditioned problems by chosing $\alpha \sim 2.85$, with damping towards $\alpha=1$ at 
 convergence.  
 
-From the 
+First order NS iteration may converge linearly at first, and then enter a basin of super-linear convergence 
+associated with sign iteration,  $\mat{x} \leftarrow sign \left( \mat{x} \right)$. 
+Bai and Demmel \cite{}, Byers, He and Mehrmann \cite{} and Higham (Ref.\cite{} Section 5.7)
+show that within this basin, commuting errors are anihilated to first order, depending on the 
+Frechet differential $\delta \mat{x}$ \cite{}. 
+Alternatively, NS iteration can diverge due to the unbounded accumulation of errors 
+like $ \tau \cdot \delta \mat{x}_k$. Ideally, a $\tau$ can be found 
+that yeilds fast computation with enough precision to attain the basin of stability.  From the
+preconditioned state then, additional corrections can be made to the residual at little additional 
+cost, allowing the eigenvector basis of the argument to be kept tightly 
+\footnote{Sometimes refered to as the ``variational'' property of early ``spectral projection as optimization'' 
+techniques, with gradients based on the argumental eigenvectors \cite{}.}
 
-We begin our development with 
-the analysis of Bai and Demmel \cite{}, Byers, He and Mehrmann \cite{} and Higham, Ref.\cite{} Section 5.7.
-These authors show that, once convergence has been achieved, than any (initial) error $\delta \mat{s}$ about
-$\mat{s}$ is quenched 
-
-
-In addition to retaining the basis with each step $k$ 
-\footnote{Sometimes refered to as a ``variational'' property, associated with retaining the basis through gradient 
-terms, in early work on $\cal$ approximation of the spectral projector through optimization \cite{}.}, 
-NS allows to re-introduce the eigenvectors at any 
-level of $\tt SpAMM$ precision, {\em e.g.}~after the basin of convergence has been reached.   
-The ability to retain the basis in functional approximation is a key feature of the NS method, in 
-contrast to the exponential error growth that develops in nested polynomial approximation \cite{},
-a limiting issue in many applications \cite{}.  Instead, NS allows correction of a converged residual 
-at previous $\tt SpAMM$ resolutions with little additional cost \cite{}, {\em e.g.} 
-\begin{equation}  
-\mat{s}^{-1/2} \approx \mat{z}^{\tau_m} \; {\scriptstyle \otimes}_{\tau_m} \; \mat{z}^{\tau_{m-1}}{\scriptstyle \otimes_{\tau_{m-1}}}
-\; \ldots \; {\scriptstyle \otimes}_{\tau_{\scriptscriptstyle 0}} \; \mat{z}^{\tau_{\scriptscriptstyle 0}} \, ,
-\end{equation}
-with $\tau_m \; < \;  \tau_{m-1} \; < \; \ldots  \; < \; \tau_0$.  Efficiency is then determined by stability of the 
-most extreme permisive preconditioning provided by $\mat{z}^{\tau_{\scriptscriptstyle 0}}$.
-
-
-
-
-% has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
-
-
-% variation of $sign$ about an idempotent fixed point $\mat{s}^*$ with an initial 
-% commuting error 
-% $\delta \mat{s}$ has the property $sign \left(  \mat{s}^* + \delta \mat{s) } = 
-% sign \left(  \mat{s}^* \right) $.  
-
-
-
-scaling and so on
-In the first order $m$ .  Scaling developed by Jie and co.
-
-There are several NS forms that are in principle equivalent, but which behave very 
-differently for ill-conditioned problems. 
-
-In our notation these iterations naive: 
+For ill-conditioned problems however, the variations that control 
+stability depend sensitively on the order of opperations. 
+There are several NS forms that are in principle equivalent \cite{}, but which behave very differently in an 
+approximate, non-commuting algebra.  Following the terminology of others \cite{}, these forms are: the ``naive'' iteration,
 \begin{eqnarray}
 \mat{z}^{\tt naiv}_{k}  &\leftarrow& \mat{z}_{k-1}  \cdot m \left( \mat{x}_{k-1} \right) \\
-\mat{x}^{\tt naiv}_{k} &\leftarrow& \mat{z}_{k} \cdot \mat{s} \cdot \mat{z}_{k}
+\mat{x}^{\tt naiv}_{k} &\leftarrow& \mat{z}_{k} \cdot \mat{s} \cdot \mat{z}_{k} \; ,
 \end{eqnarray}
 
+the ``stablized'' iteration,
+\begin{eqnarray}
+\mat{z}^{\tt s}_{k}  &\leftarrow& \mat{z}^{\tt s}_{k-1}  \cdot m \left( \mat{x}^{\tt s}_{k-1} \right) \\
+\mat{x}^{\tt s}_{k} &\leftarrow& \mat{z}^{\tt s \, \dagger}_{k} \cdot \mat{s} \cdot \mat{z}^{\tt s}_{k} \; ,
+\end{eqnarray}
+
+and the ``dual y/z'' iteration,
+\begin{eqnarray}
+\mat{y}^{\tt d}_{k}  &\leftarrow& m \left( \mat{x}^{\tt d}_{k-1} \right) \cdot \mat{y}^{\tt d}_{k-1}  \\
+\mat{z}^{\tt d}_{k}  &\leftarrow& \mat{z}^{\tt d}_{k-1}  \cdot m \left( \mat{x}^{\tt d}_{k-1} \right) \\
+\mat{x}^{\tt d}_{k} &\leftarrow& \mat{y}^{\tt d}_{k} \cdot \mat{z}^{\tt d}_{k} \; .
+\end{eqnarray}
+
+Our analysis is concerned with the behavior of these iterations before the basin of convergence
+is reached.  This analysis is complex, involving three $\ot$ mappings at each step.  
 
 
-
-
-\subsubsection{The Scaled Map}
-
-
-
-
-
-
-
-\section{Occlusion Flows}
-
+Our analysis is new, 
 $\delta \mat{x}_k$ and $\delta \mat{z}_k$ arrize from itteration with $\ot$, and are deterministic 
-flows away from the manifold of $\mat{s}$ determined by sensitivity of the NS iteration to these 
-numerical insults. 
+flows away from the manifold of $\mat{s}$ determined b
 
 
 \begin{equation}
