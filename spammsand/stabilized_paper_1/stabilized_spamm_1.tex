@@ -20,6 +20,7 @@
 
 
 \newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\mmat}[1]{\widetilde{\boldsymbol{#1}}}
 \newcommand{\matT}[1]{\boldsymbol{#1}^\dagger}
 \newcommand{\ot}{ {\scriptstyle \otimes}_{ \tau } }
 
@@ -134,36 +135,28 @@ occlusion culling of insignifcant volumes in the product octree:
 \end{equation}
 \end{widetext}
 with errors bounded by sub-multiplicative norms, $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$, and the Cauchy-Schwarz inequality \cite{kahan}.
-$\tt SpAMM$ is similar in spirit to compressed sensing kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}.  However, 
-instead of using the FFT to compute the sketch, compression is achieved simply through fast querry of the product decay.
-
-The $\tt SpAMM$ kernel stands in contrast to methods based on random matrix theory, which enhance matrix conditioning via 
-homogenization \cite{pan, DiahLi and Parket Scott}, and also with distributed memory implementations of the $\tt SpGEMM$, which 
-enjoy work load homogenisation through radomization \cite{}.  Differences between the $\tt SpAMM$ kernel and randomized 
-approaches to the $\tt SpGEMM$ are reviewed in Ref.[\cite{}], and with the $\tt GEMM$ in Ref.\cite{}.
-
-The total error associated with $\ot$ is 
+The $\tt SpAMM$ error 
 \begin{equation}
-\mat{\Delta}^{a\cdot b}_{\tau}=\mat{a} \ot \mat{b}-\mat{a}\cdot \mat{b} \, ,
+\mat{\Delta}^{a\cdot b}_{\tau}=\mat{a} \ot \mat{b}-\mat{a}\cdot \mat{b} 
 \end{equation}
-corresponding to the occluded contraction volume, and obeys the multiplicative bound 
+corresponds to an occlusion volume in the product space,  obeying the multiplicative bound 
 \begin{equation}
-\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
+\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, .
 \end{equation}
-which is {\em stabile} \cite{DemmelnHolz2007} and offering the potential for {\em relative} error control.
-Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
+The $\tt SpAMM$ kernel is {\em fast} and {\em stable} in the Demmel, Dumitriu and Holz sense \cite{Demmel07}, enabling
+a {\em relative} error control in the product.  Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
 leading to a non-associative algebra and the development of error flows associated with the Lie bracket
 \begin{equation}
 \left[ \mat{a} , \mat{b} \right]_{\tau} = \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
 =  \left[ \mat{a} , \mat{b} \right]
 + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
 \end{equation}
-While the $\tt SpAMM$ occlusion criteria is deterministic, Eq.~(\ref{spamm}), 
-there may be alternative criteria for occlusion and related approximations that 
-achieve simililar accuracies at lower cost, or that achieve supperior error control under iteration, 
-perhaps involving persistence (learning) and/or probabilistic sampling \cite{Drineas}.  
-
-\pagebreak
+$\tt SpAMM$ is similar to compressed sensing kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}.  Instead of
+the FFT however, compression is achieved simply through fast metric querry of the occlusion map, which may expreience 
+localiztion effects in the basin of stability.   In addition to complexity reduction, octree locality is 
+important for the communication optimality of $N$-body methods \cite{}.   This $n-$body approach is 
+diemtric to randomization techniques that employ homogenization to well condition matrices 
+\cite{pan, DiahLi and Parket Scott},  and also for distributed memory implementations of the $\tt SpGEMM$ \cite{}.
 
 \section{First Order Newton-Shulz Iteration}
 
@@ -173,63 +166,79 @@ Developed extensively by Higham \cite{}, NS  yeilds resolution of the identity t
 \begin{equation}
 sign \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s^{-1/2}} \, .
 \end{equation}
-For well conditioned problems, incomplete/inexact approximations and the $\tt SpGEMM$ kernel offer fast solutions \cite{}.
-For ill-conditioned problems however, fill in remains a challenge \cite{}, showing up well before matrix-compression 
-technologies become effective.   
-
-In this contribution, we develop the $\tt SpAMM$ kernel for NS iteration at index $k$, focusing on eigenvector (basis) fidelity to the
 positive definate argument $\mat{s}$, and stability of the iteration as the residual $\mat{x}_k $ tends towards 
 idempotence, $\mat{x}_k \rightarrow {sign}\left( \mat{s} \right) $, with 
  $\mat{y}_k \rightarrow \mat{s}^{1/2}$  and $\mat{z}_k \rightarrow \mat{s}^{-1/2}$ \cite{higham}. 
-
-Convergence and stability are controlled by the first order NS map, $m[\mat{x},\alpha]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
-with scale $\alpha$ \cite{}. Then, $m'$ at the smallest eigenvalue $x_0$ controls progress towards idempotence, along
-with the overall eigenvalue distribution \cite{}. Recently, Jie and Chen demonstrated a factor of two reduction 
+Convergence and stability are determined by the first order NS map $m[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
+with scaling $\alpha$ \cite{}. 
+Initially, $m'$ at the smallest eigenvalue $x_0$ controls the rate of progress towards idempotence.  
+Later, the overall eigenvalue distribution becomes important \cite{}. Pan and Scriber .  More recently, 
+Jie and Chen demonstrated a factor of two reduction 
 in the number of NS steps for ill-conditioned problems by chosing $\alpha \sim 2.85$, with damping towards $\alpha=1$ at 
 convergence.  
 
-First order NS iteration may converge linearly at first, and then enter a basin of super-linear convergence 
-associated with sign iteration,  $\mat{x} \leftarrow sign \left( \mat{x} \right)$. 
+First order NS iteration converges linearly towards a basin of stability, marked by super-linear convergence 
+and associated with sign iteration,  $\mat{x}_k \leftarrow sign \left( \mat{x}_{k-1} \right)$. 
 Bai and Demmel \cite{}, Byers, He and Mehrmann \cite{} and Higham (Ref.\cite{} Section 5.7)
-show that within this basin, commuting errors are anihilated to first order, depending on the 
-Frechet differential $\delta \mat{x}$ \cite{}. 
-Alternatively, NS iteration can diverge due to the unbounded accumulation of errors 
-like $ \tau \cdot \delta \mat{x}_k$. Ideally, a $\tau$ can be found 
-that yeilds fast computation with enough precision to attain the basin of stability.  From the
+show that within this basin, commuting errors $\mat{x}_k+\delta \mat{x}_k$ \cite{}  
+are anihilated to first order, depending on the differential $\delta \mat{x}_k < 1 $. 
+Ideally, a $\tau$ can be found yeilding fast computation with precision sufficient to gain the basin of stability.  From the
 preconditioned state then, additional corrections can be made to the residual at little additional 
 cost, allowing the eigenvector basis of the argument to be kept tightly 
 \footnote{Sometimes refered to as the ``variational'' property of early ``spectral projection as optimization'' 
 techniques, with gradients based on the argumental eigenvectors \cite{}.}
 
-For ill-conditioned problems however, the variations that control 
-stability depend sensitively on the order of opperations. 
-There are several NS forms that are in principle equivalent \cite{}, but which behave very differently in an 
-approximate, non-commuting algebra.  Following the terminology of others \cite{}, these forms are: the ``naive'' iteration,
+However, NS iteration can diverge due to the unbounded accumulation of errors ($\delta \mat{x}_k > 1 $).
+For ill-conditioned problems, and with an approximate non-commuting algebra, the stability properties of various NS 
+forms can be very different,  depending on the {\em handedness} of opperations and their proximity to the argument $\mat{s}$.
+Starting with $\mat{z}_0=\mat{I}$ and $\mat{x}_0=\mat{y}_0=\mat{s}$, these nominally equivalent forms include: the ``dual'' iteration,
 \begin{eqnarray}
-\mat{z}^{\tt naiv}_{k}  &\leftarrow& \mat{z}_{k-1}  \cdot m \left( \mat{x}_{k-1} \right) \\
-\mat{x}^{\tt naiv}_{k} &\leftarrow& \mat{z}_{k} \cdot \mat{s} \cdot \mat{z}_{k} \; ,
+\mmat{y}^{\tt d}_{k}  &\leftarrow& m \left( \mmat{x}^{\tt d}_{k-1} \right) \; \ot \;  \mmat{y}^{\tt d}_{k-1}  \\
+\mmat{z}^{\tt d}_{k}  &\leftarrow& \mmat{z}^{\tt d}_{k-1}  \; \ot \;  m \left( \mat{x}^{\tt d}_{k-1} \right) \\
+\mmat{x}^{\tt d}_{k} &\leftarrow& \mmat{y}^{\tt d}_{k} \; \ot \; \mmat{z}^{\tt d}_{k} \; ,
+\end{eqnarray}
+the ``naive'' iteration,
+\begin{eqnarray}
+\mmat{z}^{\tt n}_{k}  &\leftarrow& \mmat{z}^{\tt }_{k-1} \; \ot \; m \left( \mmat{x}^{\tt n}_{k-1} \right) \\
+\mmat{x}^{\tt n}_{k} &\leftarrow& \mmat{z}^{\tt n}_{k} \; \ot \; \mat{s} \; \ot \; \mmat{z}^{\tt n}_{k} \; ,
+\end{eqnarray}
+and the ``stablized'' iteration,
+\begin{eqnarray}
+\mmat{z}^{\tt s}_{k}  &\leftarrow& \mmat{z}^{\tt s}_{k-1}  \; \ot \; m \left( \mmat{x}^{\tt s}_{k-1} \right) \\
+\mmat{x}^{\tt s}_{k} &\leftarrow& \mmat{z}^{\tt s \, \dagger}_{k} \; \ot \; \mat{s} \; \ot \; \mmat{z}^{\tt s}_{k} \; .
 \end{eqnarray}
 
-the ``stablized'' iteration,
+
+$\delta  \mat{x}}_k = \widetilde{\mat{x}}_k - \mat{x}_k $  
+
+
+
+% For well conditioned problems, incomplete/inexact approximations 
+% and the $\tt SpGEMM$ kernel offer fast solutions \cite{}.  For ill-conditioned problems however, fill in remains a 
+% challenge \cite{}, showing up well before matrix-compression technologies become effective.   
+% In this contribution, we develop the $\tt SpAMM$ kernel for NS iteration at index $k$, focusing on eigenvector (basis) fidelity to the
+
+
+
+Analyses of these iterations is challenging, because of accumulated and accumulating errors with each mapping $\ot$, 
+and because the errors are non-commutative.  We model each NS iteration as a multi-channel process of error accumulation, 
+were for example 
 \begin{eqnarray}
-\mat{z}^{\tt s}_{k}  &\leftarrow& \mat{z}^{\tt s}_{k-1}  \cdot m \left( \mat{x}^{\tt s}_{k-1} \right) \\
-\mat{x}^{\tt s}_{k} &\leftarrow& \mat{z}^{\tt s \, \dagger}_{k} \cdot \mat{s} \cdot \mat{z}^{\tt s}_{k} \; ,
+\widetilde{\mat{x}}^{\tt s}_k &=& f^{\tt s} \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] \\ 
+&=&
+\tt{m} \left[ \widetilde{\mat{x}}_{k-1}\right] \cdot \widetilde{\mat{z}}^\dagger_{k-1}  
+\cdot \mat{s} \cdot \widetilde{\mat{z}}_{k-1} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-1} \right] 
+\nonumber
 \end{eqnarray}
 
-and the ``dual y/z'' iteration,
-\begin{eqnarray}
-\mat{y}^{\tt d}_{k}  &\leftarrow& m \left( \mat{x}^{\tt d}_{k-1} \right) \cdot \mat{y}^{\tt d}_{k-1}  \\
-\mat{z}^{\tt d}_{k}  &\leftarrow& \mat{z}^{\tt d}_{k-1}  \cdot m \left( \mat{x}^{\tt d}_{k-1} \right) \\
-\mat{x}^{\tt d}_{k} &\leftarrow& \mat{y}^{\tt d}_{k} \cdot \mat{z}^{\tt d}_{k} \; .
-\end{eqnarray}
-
-Our analysis is concerned with the behavior of these iterations before the basin of convergence
-is reached.  This analysis is complex, involving three $\ot$ mappings at each step.  
+\begin{equation}
+\delta \mat{x}_k = {f}_{\delta \mat{z}_{k-1}}  \, \lVert \delta \mat{z}_{k-1} \rVert 
+                              +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert 
+                                                                                      + {\cal{O}} \left(  \tau^2 \right)
+\end{equation}
 
 
-Our analysis is new, 
-$\delta \mat{x}_k$ and $\delta \mat{z}_k$ arrize from itteration with $\ot$, and are deterministic 
-flows away from the manifold of $\mat{s}$ determined b
+
 
 
 \begin{equation}
@@ -245,19 +254,6 @@ flows away from the manifold of $\mat{s}$ determined b
 \end{equation}
 
 
-\begin{eqnarray}
-\widetilde{\mat{x}}_k &=& f \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] \\ 
-&=&
-\tt{m} \left[ \widetilde{\mat{x}}_{k-1}\right] \cdot \widetilde{\mat{z}}^\dagger_{k-1}  
-\cdot \mat{s} \cdot \widetilde{\mat{z}}_{k-1} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-1} \right] 
-\nonumber
-\end{eqnarray}
-
-\begin{equation}
-\delta \mat{x}_k = {f}_{\delta \mat{z}_{k-1}}  \, \lVert \delta \mat{z}_{k-1} \rVert 
-                              +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert 
-                                                                                      + {\cal{O}} \left(  \tau^2 \right)
-\end{equation}
 
 generalized Gateaux differential
 
