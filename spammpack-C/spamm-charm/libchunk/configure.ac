@@ -55,7 +55,7 @@ AC_ARG_ENABLE([mic],
   [enable_mic=${enableval}],
   [enable_mic="no"])
 if [[ ${enable_mic} = "yes" ]]; then
-  AC_DEFINE([MIC_ALLOC], [1], [Enable huge page allocation for MIC])
+  AC_DEFINE([MIC_ALLOC], [1], [Enable huge page allocation for MIC.])
   AC_SUBST([MIC_CFLAGS], [-mmic])
   AC_SUBST([MIC_LDFLAGS], [-static])
 fi
@@ -67,7 +67,7 @@ AC_ARG_ENABLE([set-num-threads],
   [enable_set_threads="no"])
 if [[ ${enable_set_threads} != "no" ]]; then
   AC_DEFINE_UNQUOTED([FORCE_OMP_NUM_THREADS], [${enable_set_threads}],
-    [The number of threads in OpenMP parallel sections])
+    [The number of threads in OpenMP parallel sections.])
 fi
 
 AC_MSG_CHECKING([which chunk implementation to use])
@@ -88,7 +88,7 @@ case ${enable_chunk_implementation} in
     ;;
 esac
 AC_DEFINE_UNQUOTED([CHUNK_IMPLEMENTATION],
-  [${enable_chunk_implementation}], [The chunk implementation])
+  [${enable_chunk_implementation}], [The chunk implementation.])
 
 AC_MSG_CHECKING([which block multiply implementation to use])
 AC_ARG_ENABLE([block-multiply],
@@ -99,11 +99,11 @@ AC_ARG_ENABLE([block-multiply],
 case ${enable_block_multiply} in
   "block" )
     AC_MSG_RESULT([block])
-    AC_DEFINE([BLOCK_MULTIPLY], [1], [Use simple nested loop matrix multiply])
+    AC_DEFINE([BLOCK_MULTIPLY], [1], [Use simple nested loop matrix multiply.])
     ;;
   "blas" )
     AC_MSG_RESULT([blas])
-    AC_DEFINE([BLOCK_BLAS], [1], [Use .gemm() matrix multiply])
+    AC_DEFINE([BLOCK_BLAS], [1], [Use .gemm() matrix multiply.])
     ;;
   *) AC_MSG_FAILURE([unknown multiply implementation]) ;;
 esac
@@ -121,7 +121,7 @@ if [[ "${use_external_lapack}" = "yes" ]] || [[ "${enable_block_multiply}" = "bl
   done
   if test "${DGEMM}" != "unset"; then
     AC_DEFINE_UNQUOTED([DGEMM], [${DGEMM}], [The call to BLAS dgemm() including
-                        all necessary underscores])
+                        all necessary underscores.])
   fi
 
   # Find dsyev() for spectral bounds.
@@ -130,7 +130,7 @@ if [[ "${use_external_lapack}" = "yes" ]] || [[ "${enable_block_multiply}" = "bl
   done
   if test "${DSYEV}" != "unset"; then
     AC_DEFINE_UNQUOTED([DSYEV], [${DSYEV}], [The call to dsyev() including all
-                        necessary underscores])
+                        necessary underscores.])
   fi
 fi
 
@@ -144,12 +144,22 @@ AC_ARG_ENABLE([chunk-tree-max-tier],
 if [[ ${enable_chunk_tree_max_tier} -ge 0 ]]; then
   AC_DEFINE_UNQUOTED([CHUNK_TREE_MAX_TIER], [$enable_chunk_tree_max_tier],
     [The maximum tier at which new tasks are created when recursing the chunk
-     tree])
+     tree.])
 else
   enable_chunk_tree_max_tier=0
 fi
 AC_MSG_RESULT([${enable_chunk_tree_max_tier}, max. number threads is $((1 <<
                3*${enable_chunk_tree_max_tier}))])
+
+AC_MSG_CHECKING([minimum task creation norm (if using OpenMP)])
+AC_ARG_ENABLE([chunk-tree-min-norm],
+  [AS_HELP_STRING([--enable-chunk-tree-min-norm],
+  [set the minimum norm for recursive task creation (default = 0)])],
+  [enable_chunk_tree_min_norm=$enableval],
+  [enable_chunk_tree_min_norm=0])
+AC_DEFINE_UNQUOTED([CHUNK_TREE_MIN_NORM], [$enable_chunk_tree_min_norm],
+  [The mininum norm at which new recursive tasks are created.])
+AC_MSG_RESULT([creating new tasks if norm >= ${enable_chunk_tree_min_norm}])
 
 AC_MSG_CHECKING([whether to multiply the transpose])
 AC_ARG_ENABLE([chunk-block-transpose],
@@ -161,7 +171,7 @@ AC_ARG_ENABLE([chunk-block-transpose],
 if [[ ${enable_chunk_block_transpose} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([CHUNK_BLOCK_TRANSPOSE], [${enable_chunk_block_transpose}],
     [The minimum size N of the block matrix that will transpose a matrix to
-     allow for loop vectorization])
+     allow for loop vectorization.])
   AC_MSG_RESULT([yes for N >= ${enable_chunk_block_transpose}])
 else
   AC_MSG_RESULT([no])
@@ -175,7 +185,7 @@ AC_ARG_ENABLE([no-work],
   [enable_no_work="no"])
 if [[ ${enable_no_work} = "yes" ]]; then
   AC_DEFINE_UNQUOTED([CHUNK_BLOCK_NO_WORK], [${enable_no_work}], [Do not
-    perform work in form of a block multiply at the leaf nodes])
+    perform work in form of a block multiply at the leaf nodes.])
 fi
 AC_MSG_RESULT([${enable_no_work}])
 
@@ -187,7 +197,7 @@ AC_ARG_ENABLE([sleep],
   [enable_sleep=0])
 if [[ ${enable_sleep} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([BLOCK_SLEEP], [${enable_sleep}], [Number of nanoseconds
-    to sleep after block multiply])
+    to sleep after block multiply.])
   AC_MSG_RESULT([sleeping ${enable_sleep} nanoseconds])
 else
   AC_MSG_RESULT([no])
@@ -201,7 +211,7 @@ AC_ARG_ENABLE([extra-work],
   [enable_extra_work=0])
 if [[ ${enable_extra_work} -gt 0 ]]; then
   AC_DEFINE_UNQUOTED([EXTRA_WORK], [${enable_extra_work}], [Extra work
-    after block multiply])
+    after block multiply.])
   AC_MSG_RESULT([${enable_extra_work}])
 else
   AC_MSG_RESULT([no])
@@ -214,7 +224,7 @@ AC_ARG_ENABLE([lock],
   [enable_lock=$enableval],
   [enable_lock="yes"])
 if [[ ${enable_lock} = "yes" ]]; then
-  AC_DEFINE([LOCK_C_CHUNK], [1], [Lock the C matrix])
+  AC_DEFINE([LOCK_C_CHUNK], [1], [Lock the C matrix.])
 fi
 AC_MSG_RESULT([${enable_lock}])
 
@@ -224,7 +234,7 @@ AC_ARG_ENABLE([complexity],
   [enable_complexity=$enableval],
   [enable_complexity="no"])
 if [[ ${enable_complexity} = "yes" ]]; then
-  AC_DEFINE([MEASURE_COMPLEXITY], [1], [Measure the product complexity])
+  AC_DEFINE([MEASURE_COMPLEXITY], [1], [Measure the product complexity.])
 fi
 
 # Enable debugging.
@@ -235,7 +245,7 @@ AC_ARG_ENABLE([debug],
   [enable_debug=$enableval],
   [enable_debug="no"])
 if test "${enable_debug}" = "yes"; then
-  AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output])
+  AC_DEFINE([DEBUG_OUTPUT], [1], [Enable a lot of extra output.])
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])
@@ -249,7 +259,7 @@ AC_ARG_ENABLE([debug-matrix],
   [enable_debug=$enableval],
   [enable_debug="no"])
 if test "${enable_debug}" = "yes"; then
-  AC_DEFINE([DEBUG_OUTPUT_MATRIX], [1], [Print the matrices for debugging])
+  AC_DEFINE([DEBUG_OUTPUT_MATRIX], [1], [Print the matrices for debugging.])
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])
@@ -262,7 +272,7 @@ AC_ARG_ENABLE([tree-tasks],
   [enable_tree_tasks=$enableval],
   [enable_tree_tasks="yes"])
 if test "${enable_tree_tasks}" = "yes"; then
-  AC_DEFINE([CREATE_TREE_TASKS], [1], [Generate tree tasks])
+  AC_DEFINE([CREATE_TREE_TASKS], [1], [Generate tree tasks.])
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])
@@ -275,7 +285,7 @@ AC_ARG_ENABLE([leaf-tasks],
   [enable_leaf_tasks=$enableval],
   [enable_leaf_tasks="no"])
 if test "${enable_leaf_tasks}" = "yes"; then
-  AC_DEFINE([CREATE_LEAF_TASKS], [1], [Generate leaf tasks])
+  AC_DEFINE([CREATE_LEAF_TASKS], [1], [Generate leaf tasks.])
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])
@@ -288,7 +298,7 @@ AC_ARG_ENABLE([reset-C],
   [enable_reset_C=$enableval],
   [enable_reset_C="yes"])
 if test "${enable_reset_C}" = "yes"; then
-  AC_DEFINE([RESET_C], [1], [Reset the C matrix])
+  AC_DEFINE([RESET_C], [1], [Reset the C matrix.])
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])

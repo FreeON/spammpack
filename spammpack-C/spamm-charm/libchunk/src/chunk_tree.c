@@ -913,6 +913,13 @@ chunk_tree_multiply_node (const double tolerance_2,
 
   else
   {
+#ifdef CHUNK_TREE_MIN_NORM
+    if(A->norm_2*B->norm_2 < CHUNK_TREE_MIN_NORM)
+    {
+      DEBUG("skipping task creation due to small norm product\n");
+      create_tasks = 0;
+    }
+#endif
     for(int i = 0; i < 2; i++)
     {
       for(int j = 0; j < 2; j++)
