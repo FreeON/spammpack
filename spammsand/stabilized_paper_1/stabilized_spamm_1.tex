@@ -137,14 +137,15 @@ occlusion culling of insignifcant volumes in the product octree:
 with errors bounded by sub-multiplicative norms, $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$, and the Cauchy-Schwarz inequality \cite{kahan}.
 The $\tt SpAMM$ error 
 \begin{equation}
-\mat{\Delta}^{a\cdot b}_{\tau}=\mat{a} \ot \mat{b}-\mat{a}\cdot \mat{b} 
+\mat{\Delta}^{a^i\cdot b^i}_{\tau}=\mat{a}^i \ot \mat{b}^i-\mat{a}^i\cdot \mat{b}^i 
 \end{equation}
-corresponds to an occlusion volume in the product space,  obeying the multiplicative bound 
-\begin{equation}
-\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, .
+corresponds to an occlusion map in the product space that statisfies the sub-multiplicative bound 
+\begin{equation}\label{bound}
+\lVert \mat{\Delta}^{a^i \cdot b^i}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a}^i \rVert  \,  \lVert \mat{b}^i \rVert \, .
 \end{equation}
-The $\tt SpAMM$ kernel is {\em fast} and {\em stable} in the Demmel, Dumitriu and Holz sense \cite{Demmel07}, enabling
-a {\em relative} error control in the product.  Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
+In this sense, the $\tt SpAMM$ kernel is fast and stable,  as shown by Demmel, Dumitriu and Holz \cite{Demmel07}. Also,
+the bound,  Eq.~(\ref{bound}), provides {\em relative} error control in the product.  
+Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
 leading to a non-associative algebra and the development of error flows associated with the Lie bracket
 \begin{equation}
 \left[ \mat{a} , \mat{b} \right]_{\tau} = \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
@@ -154,14 +155,14 @@ leading to a non-associative algebra and the development of error flows associat
 $\tt SpAMM$ is similar to compressed sensing kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}.  Instead of
 the FFT however, compression is achieved simply through fast metric querry of the occlusion map, which may expreience 
 localiztion effects in the basin of stability.   In addition to complexity reduction, octree locality is 
-important for the communication optimality of $N$-body methods \cite{}.   This $n-$body approach is 
-diemtric to randomization techniques that employ homogenization to well condition matrices 
-\cite{pan, DiahLi and Parket Scott},  and also for distributed memory implementations of the $\tt SpGEMM$ \cite{}.
+important for the communication optimality of $N$-body methods \cite{}.   This $n-$body approach is contrary to 
+randomization methods that employ homogenization to well condition matrices 
+\cite{pan, DiahLi and Parket Scott},  and also for domain decomposition of the $\tt SpGEMM$ \cite{}.
 
 \section{First Order Newton-Shulz Iteration}
 
 The approximation of the matrix sign and inverse square root via first order Newton Schulz (NS) iteration 
-has a number of attractive features, notably multiplication richness and quadratic convergence in the basin of convergence. 
+has a number of attractive features, notably multiplication richness and super-linear convergence in the basin of convergence. 
 Developed extensively by Higham \cite{}, NS  yeilds resolution of the identity through the square root and its inverse \cite{}:
 \begin{equation}
 sign \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s^{-1/2}} \, .
@@ -184,111 +185,91 @@ show that within this basin, commuting errors $\mat{x}_k+\delta \mat{x}_k$ \cite
 are anihilated to first order, depending on the differential $\delta \mat{x}_k < 1 $. 
 Ideally, a $\tau$ can be found yeilding fast computation with precision sufficient to gain the basin of stability.  From the
 preconditioned state then, additional corrections can be made to the residual at little additional 
-cost, allowing the eigenvector basis of the argument to be kept tightly 
-\footnote{Sometimes refered to as the ``variational'' property of early ``spectral projection as optimization'' 
-techniques, with gradients based on the argumental eigenvectors \cite{}.}
+cost. \footnote{The ability to correct back to the argumental basis is sometimes refered to as 
+the ``variational'' property of early ``spectral projection as optimization'' techniques, with 
+gradients retaining proximity to the basis \cite{}.}
 
 However, NS iteration can diverge due to the unbounded accumulation of errors ($\delta \mat{x}_k > 1 $).
-For ill-conditioned problems, and with an approximate non-commuting algebra, the stability properties of various NS 
-forms can be very different,  depending on the {\em handedness} of opperations and their proximity to the argument $\mat{s}$.
-Starting with $\mat{z}_0=\mat{I}$ and $\mat{x}_0=\mat{y}_0=\mat{s}$, these nominally equivalent forms include: the ``dual'' iteration,
+For ill-conditioned problems, and with an approximate non-commuting algebra, the stability properties of nominally equivalent  NS 
+forms can in practice be very different,  depending on the handedness of opperations and their proximity to the 
+argumental basis, $\{ \mat{s} \}$.  
+Starting with $\mat{z}_0=\mat{I}$ and $\mat{x}_0=\mat{y}_0=\mat{s}$, these forms include: the ``dual'' iteration,
 \begin{eqnarray}
-\mmat{y}^{\tt d}_{k}  &\leftarrow& m \left( \mmat{x}^{\tt d}_{k-1} \right) \; \ot \;  \mmat{y}^{\tt d}_{k-1}  \\
-\mmat{z}^{\tt d}_{k}  &\leftarrow& \mmat{z}^{\tt d}_{k-1}  \; \ot \;  m \left( \mat{x}^{\tt d}_{k-1} \right) \\
-\mmat{x}^{\tt d}_{k} &\leftarrow& \mmat{y}^{\tt d}_{k} \; \ot \; \mmat{z}^{\tt d}_{k} \; ,
+\mmat{y}_{k}  &\leftarrow& m \left( \mmat{x}_{k-1} \right) \; \ot \;  \mmat{y}_{k-1}  \\
+\mmat{z}_{k}  &\leftarrow& \mmat{z}_{k-1}  \; \ot \;  m \left( \mat{x}_{k-1} \right) \\
+\mmat{x}_{k} &\leftarrow& \mmat{y}_{k} \; \ot \; \mmat{z}_{k} \; ,
 \end{eqnarray}
 the ``naive'' iteration,
 \begin{eqnarray}
-\mmat{z}^{\tt n}_{k}  &\leftarrow& \mmat{z}^{\tt }_{k-1} \; \ot \; m \left( \mmat{x}^{\tt n}_{k-1} \right) \\
-\mmat{x}^{\tt n}_{k} &\leftarrow& \mmat{z}^{\tt n}_{k} \; \ot \; \mat{s} \; \ot \; \mmat{z}^{\tt n}_{k} \; ,
+\mmat{z}_{k}  &\leftarrow& \mmat{z}_{k-1} \; \ot \; m \left( \mmat{x}_{k-1} \right) \\
+\mmat{x}_{k} &\leftarrow& \mmat{z}_{k} \; \ot \; \mat{s} \; \ot \; \mmat{z}_{k} \; ,
 \end{eqnarray}
 and the ``stablized'' iteration,
 \begin{eqnarray}
-\mmat{z}^{\tt s}_{k}  &\leftarrow& \mmat{z}^{\tt s}_{k-1}  \; \ot \; m \left( \mmat{x}^{\tt s}_{k-1} \right) \\
-\mmat{x}^{\tt s}_{k} &\leftarrow& \mmat{z}^{\tt s \, \dagger}_{k} \; \ot \; \mat{s} \; \ot \; \mmat{z}^{\tt s}_{k} \; .
+\mmat{z}_{k}  &\leftarrow& \mmat{z}_{k-1}  \; \ot \; m \left( \mmat{x}_{k-1} \right) \\
+\mmat{x}_{k} &\leftarrow& \mmat{z}^\dagger_{k} \; \ot \; \mat{s} \; \ot \; \mmat{z}_{k} \; .
 \end{eqnarray}
 
-
-$\delta  \mat{x}}_k = \widetilde{\mat{x}}_k - \mat{x}_k $  
-
-
-
-% For well conditioned problems, incomplete/inexact approximations 
-% and the $\tt SpGEMM$ kernel offer fast solutions \cite{}.  For ill-conditioned problems however, fill in remains a 
-% challenge \cite{}, showing up well before matrix-compression technologies become effective.   
-% In this contribution, we develop the $\tt SpAMM$ kernel for NS iteration at index $k$, focusing on eigenvector (basis) fidelity to the
-
-
-
-Analyses of these iterations is challenging, because of accumulated and accumulating errors with each mapping $\ot$, 
-and because the errors are non-commutative.  We model each NS iteration as a multi-channel process of error accumulation, 
-were for example 
+For these iterations, we are interested in behavior of the convergence of the approximation matrix sign function 
+$\widetilde{\mat{x}}_{k} = \mat{x}_{k} + \delta  \mat{x}_{k}$.  This differential, $\delta \mat{x}_k$ is the
+accumulation of $\tt SpAMM$ errors $\mat{\Delta}_\tau$ through step $k-1$, and the first order interaction
+of these errors with the NS map.  For example, taking $f$ as the ``stable'' NS map, then
 \begin{eqnarray}
-\widetilde{\mat{x}}^{\tt s}_k &=& f^{\tt s} \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] \\ 
+\widetilde{\mat{x}}_k &=& f \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] \\ 
 &=&
 \tt{m} \left[ \widetilde{\mat{x}}_{k-1}\right] \cdot \widetilde{\mat{z}}^\dagger_{k-1}  
 \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k-1} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-1} \right] 
 \nonumber
 \end{eqnarray}
-
+then we can {\em model} the first order response of the NS map in terms of its partials  
 \begin{equation}
-\delta \mat{x}_k = {f}_{\delta \mat{z}_{k-1}}  \, \lVert \delta \mat{z}_{k-1} \rVert 
-                              +  {f}_{\delta \mat{x}_{k-1}}   \, \lVert \delta \mat{x}_{k-1} \rVert 
-                                                                                      + {\cal{O}} \left(  \tau^2 \right)
+\delta \mat{x}_k = {f}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1} 
+                 + {f}_{\delta \widehat{\mat{x}}_{k-1}}  \, {\scriptstyle \times} \, \delta x_{k-1} 
++ {\cal{O}} \left(  \tau^2 \right) \; ,
 \end{equation}
-
-
-
-
-
+where ${f}_{\delta \mat{z}_{k-1}}$ and ${f}_{\delta \mat{x}_{k-1}}$ are the Frechet derivatives along the directions of the preceeding errors, 
+$\delta \widehat{\mat{z}}_{k-1}$ and $\delta \widehat{\mat{x}}_{k-1}$, with corresponding displacements (magnitudes) 
+$\delta z_{k-1} = \lVert \delta \mat{z}_{k-1} \rVert$  and $\delta x_{k-1}=\lVert \delta \mat{x}_{k-1} \rVert$.  For the 
+stabilized iteration, these derivatives are
 \begin{equation}
-\delta \mat{x}^{\rm{naiv}}_k =   \delta  \widetilde{ \mat{z}}_{k} \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} 
-                           +  \widetilde{\mat{z}}_{k} \cdot \mat{s} \cdot \! \delta \widetilde{\mat{z}}_{k} 
+f_{\delta \widehat{\mat{z}}_{k-1}} = \lim_{\tau \rightarrow 0} \frac{ f [ \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1}, \widetilde{\mat{x}}_{k-1} ]
+-f [\, \mat{z}_{k-1}, \widetilde{\mat{x}}_{k-1} ]  }{\tau} 
 \end{equation}
-
-
-
+and 
 \begin{equation}
-\delta \mat{x}^{\rm{dual}}_k =   \delta  \widetilde{ \mat{y}}_{k} \cdot \widehat{\mat{z}}_{k} 
-                           +  \widetilde{\mat{y}}_{k} \cdot \delta \widetilde{\mat{z}}_{k} 
+f_{\delta \widehat{ \mat{x}}_{k-1}} = \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\mat{z}}_{k-1}, \mat{x}_{k-1} + \tau \delta \widehat{\mat{x}}_{k-1} ]
+-f [ \widetilde{\mat{z}}_{k-1}, \mat{x}_{k-1} ]  }{\tau} \; ,
 \end{equation}
-
-
-
-generalized Gateaux differential
-
-\begin{eqnarray}
-f_{\delta \mat{z}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1}, \widetilde{\mat{x}}_{k-1} ]
--f [\, \mat{z}_{k-1}, \widetilde{\mat{x}}_{k-1} ]  }{\tau} \nonumber  \\[0.1cm] 
-&=&{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{z}}_{k-1} \right)  
-\end{eqnarray}
-
-\begin{eqnarray}
-f_{\delta \mat{x}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\mat{z}}_{k-1}, \mat{x}_{k-1} + \tau \delta \widehat{\mat{x}}_{k-1} ]
--f [ \widetilde{\mat{z}}_{k-1}, \mat{x}_{k-1} ]  }{\tau} \nonumber  \\[0.1cm] 
-&=&{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{x}}_{k-1} \right)  
-\end{eqnarray}
-
+where for the stabilized iteration
 \begin{multline}
-{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{x}}_{k-1} \right) 
-= \delta \widehat{\mat{x}}^\dagger_{k-1} \cdot   \tt{m}'\left[\mat{x}_{k-1} \right] \cdot 
-\{\widetilde{\mat{z}}^\dagger_{k-1}  \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} \}  \\
-+ \{ \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} 
-\cdot \tt{m}'\left[\mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{x}}_{k-1} 
-\end{multline}
-
-\begin{multline}
-{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{z}}_{k-1} \right) = 
+f_{\delta \widehat{\mat{z}}_{k-1}} =
+%{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{z}}_{k-1} \right) = 
 \{ \tt{m}\left[\mat{x}_{k-1} \right]  \cdot \delta {\widehat{\mat{z}}}^\dagger_{k-1} 
  \cdot \mat{s} \} \cdot \widetilde{\mat{z}}_{k} \\
 +\widetilde{\mat{z}}^\dagger_{k} \cdot \{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
 \cdot \tt{m}\left[\mat{x}_{k-1} \right]    \} 
 \end{multline}
+and 
+\begin{multline} \label{fdx}
+f_{\delta \widehat{\mat{x}}_{k-1}} 
+%{L}_{\widetilde{\mat{x}}_k}\left(\delta \mat{z}_{k-1} , \widehat{\mat{x}}_{k-1} \right) 
+= \delta \widehat{\mat{x}}^\dagger_{k-1} \cdot   \tt{m}'\left[\mat{x}_{k-1} \right] \cdot 
+\{\widetilde{\mat{z}}^\dagger_{k-1}  \cdot \mat{s} \cdot \widetilde{\mat{z}}_{k} \}  \\
++ \{ \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} 
+\cdot \tt{m}'\left[\mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{x}}_{k-1}  \;.
+\end{multline}
 
-\begin{equation}
- \{ \widetilde{\mat{z}}^\dagger_{k} \cdot \mat{s} \cdot  \widetilde{\mat{z}}_{k-1} \} 
-\rightarrow \mat{p}_+\left[\mat{s} \right]
-\end{equation}
+An important quality of the stabilized iteration, are the bracketed terms in Eq.~(\ref{fdx}), which
+achieve idempotence in the super-linear regime \cite{}.  Then, any $\delta x_{k-1} < m' $ remains in the
+basin of stability.  The naive iteration is missing one of these bracketed terms, leading to an early instability. 
+
+
+
+
+
+Eq.~(\ref{}),  are the  idempotent terms 
+
+
 
 \begin{equation}
 \{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
