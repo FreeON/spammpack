@@ -212,16 +212,18 @@ and the ``stablized'' iteration,
 
 For these iterations, we are interested in behavior of the convergence of the approximation matrix sign function 
 $\widetilde{\mat{x}}_{k} = \mat{x}_{k} + \delta  \mat{x}_{k}$.  This differential, $\delta \mat{x}_k$ is the
-accumulation of $\tt SpAMM$ errors $\mat{\Delta}_\tau$ through step $k-1$, and the first order interaction
-of these errors with the NS map.  For example, taking $f$ as the ``stable'' NS map, then
-\begin{eqnarray}
-\widetilde{\mat{x}}_k &=& f \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] \\ 
-&=&
-\tt{m} \left[ \widetilde{\mat{x}}_{k-1}\right] \cdot \widetilde{\mat{z}}^\dagger_{k-1}  
-\cdot \mat{s} \cdot \widetilde{\mat{z}}_{k-1} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-1} \right] 
-\nonumber
-\end{eqnarray}
-then we can {\em model} the first order response of the NS map in terms of its partials  
+accumulation of previous errors $\mat{\Delta}_\tau$ through step $k-1$, and the first order interaction
+of these errors with the NS map.  For example, taking $f$ as a {\em model} of the ``stable'' NS map
+\begin{equation}
+f \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] =
+m \left[ \widetilde{\mat{x}}_{k-1}\right] \cdot \widetilde{\mat{z}}^\dagger_{k-1}  
+\cdot \mat{s} \cdot \widetilde{\mat{z}}_{k-1} \cdot m\left[ \widetilde{\mat{x}}_{k-1} \right] 
+\end{equation}
+then taking
+\begin{equation}
+\mat{x}_k + \delta \mat{x}_k = f \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] 
+\end{equation}
+the first order error in the stabilized NS map is 
 \begin{equation}
 \delta \mat{x}_k = {f}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1} 
                  + {f}_{\delta \widehat{\mat{x}}_{k-1}}  \, {\scriptstyle \times} \, \delta x_{k-1} 
@@ -243,7 +245,6 @@ f_{\delta \widehat{ \mat{x}}_{k-1}} = \lim_{\tau \rightarrow 0} \frac{ f [ \wide
 where for the stabilized iteration
 \begin{multline}
 f_{\delta \widehat{\mat{z}}_{k-1}} =
-%{L}_{\widetilde{\mat{x}}_k}\left(\widetilde{\mat{z}}_{k} , \delta \widehat{\mat{z}}_{k-1} \right) = 
 \{ \tt{m}\left[\mat{x}_{k-1} \right]  \cdot \delta {\widehat{\mat{z}}}^\dagger_{k-1} 
  \cdot \mat{s} \} \cdot \widetilde{\mat{z}}_{k} \\
 +\widetilde{\mat{z}}^\dagger_{k} \cdot \{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
@@ -263,11 +264,37 @@ An important quality of the stabilized iteration, are the bracketed terms in Eq.
 achieve idempotence in the super-linear regime \cite{}.  Then, any $\delta x_{k-1} < m' $ remains in the
 basin of stability.  The naive iteration is missing one of these bracketed terms, leading to an early instability. 
 
+\begin{multline} \label{fyzdx}
+f_{\delta \widehat{\mat{x}}_{k-1}} 
+= m'\left[\mmat{x}_{k-1} \right] 
+\cdot \delta \widehat{\mat{x}}_{k-1} \cdot    
+\{\widetilde{\mat{y}}_{k-1}  \cdot \widetilde{\mat{z}}_{k} \}  \\
++ \{ \widetilde{\mat{y}}_{k} \cdot \widetilde{\mat{z}}_{k-1} \} 
+\cdot m'\left[\mmat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{x}}_{k-1}  \;.
+\end{multline}
+
+
+\begin{equation} 
+f_{\delta \widehat{\mat{y}}_{k-1}} 
+= m\left[\mmat{x}_{k-1} \right] \cdot \delta \widehat{\mat{y}}_{k-1} \cdot  \widetilde{\mat{z}}_{k}  
+\end{equation}
+
+
+\begin{multline} \label{fyzdx}
+f_{\delta \widehat{\mat{x}}_{k-1}} 
+= \tt{m}'\left[\mat{x}_{k-1} \right] 
+\cdot \delta \widehat{\mat{x}}_{k-1} \cdot    
+\{\widetilde{\mat{y}}_{k-1}  \cdot \widetilde{\mat{z}}_{k} \}  \\
++ \{ \widetilde{\mat{y}}_{k} \cdot \widetilde{\mat{z}}_{k-1} \} 
+\cdot \tt{m}'\left[\mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{x}}_{k-1}  \;.
+\end{multline}
+
+
+%    x_tld_k_of_xk1_yz     = MATMUL( MATMUL( m_x_k1, y_tld_k1 ) , MATMUL( z_tld_k1 , m_x_k1 ) )
 
 
 
-
-Eq.~(\ref{}),  are the  idempotent terms 
+%Eq.~(\ref{}),  are the  idempotent terms 
 
 
 
