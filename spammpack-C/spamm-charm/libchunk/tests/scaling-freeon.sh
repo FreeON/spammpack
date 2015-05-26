@@ -50,6 +50,7 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     CONFIGURE_ARGS+=" --enable-extra-work=${EXTRA_WORK}"
     CONFIGURE_ARGS+=" --enable-chunk-block-transpose=0"
     CONFIGURE_ARGS+=" --enable-chunk-tree-max-tier=${MAX_TIER}"
+    CONFIGURE_ARGS+=" --enable-chunk-tree-min-norm=${MIN_NORM}"
     if [[ ${NO_WORK} = "TRUE" ]]; then
         CONFIGURE_ARGS+=" --enable-no-work"
     elif [[ ! ${NO_WORK} = "FALSE" ]]; then
@@ -110,7 +111,7 @@ else
 fi
 
 make clean || exit
-make -j V=1 || exit
+make V=1 || exit
 popd
 
 head ../config.log \
