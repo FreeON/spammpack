@@ -607,7 +607,7 @@ main (int argc, char **argv)
 
   if(verify)
   {
-    printf("verifying...\n");
+    printf("calculating exact product...\n");
 
     double *C_exact = calloc(SQUARE(N_padded), sizeof(double));
 
@@ -629,6 +629,13 @@ main (int argc, char **argv)
       print_dense(C_exact, N, "C_exact:");
     }
 
+    double max_diff = 0;
+    int max_diff_i = -1;
+    int max_diff_j = -1;
+    double max_diff_exact = 0;
+    double max_diff_spamm = 0;
+
+    printf("comparing exact vs. spamm...\n");
     for(int i_chunk = 0; i_chunk < N_matrix; i_chunk++)
     {
       for(int j_chunk = 0; j_chunk < N_matrix; j_chunk++)
@@ -647,15 +654,14 @@ main (int argc, char **argv)
             {
               diff = diff/C_temp;
             }
-            if(diff > 1e-10)
+
+            if(diff > max_diff)
             {
-              printf("mismatch C[%d][%d] = %e "
-                     " <-> C_exact = %e, rel. diff = %e\n",
-                     i+i_chunk*N_chunk, j+j_chunk+N_chunk,
-                     C_dense[COLUMN_MAJOR(i, j, N_chunk)],
-                     C_temp,
-                     diff);
-              return -1;
+              max_diff = diff;
+              max_diff_i = i+i_chunk*N_chunk;
+              max_diff_j = j+j_chunk*N_chunk;
+              max_diff_exact = C_temp;
+              max_diff_spamm = C_dense[COLUMN_MAJOR(i, j, N_chunk)];
             }
           }
         }
@@ -663,6 +669,16 @@ main (int argc, char **argv)
       }
     }
 
+    printf("max. mismatch at [%d][%d]: C_spamm = %e "
+           " <-> C_exact = %e, rel. diff = %e\n",
+           max_diff_i, max_diff_j,
+           max_diff_spamm, max_diff_exact,
+           max_diff);
+    if(max_diff > 1e-10)
+    {
+      printf("max. mismatch > 1e-10\n");
+      return -1;
+    }
     printf("matrices are identical\n");
 
     free(C_exact);
