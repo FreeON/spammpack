@@ -8,7 +8,7 @@ echo
 echo "BUILD_TYPE = ${BUILD_TYPE:=serial} {serial,openmp}"
 echo "BUILD_COMPILER = ${BUILD_COMPILER:=gcc} {gcc,intel}"
 echo "MAX_TIER = ${MAX_TIER:=5}"
-echo "REPEAT = ${REPEAT:=4}"
+echo "REPEAT = ${REPEAT:=1}"
 echo "FULL_REPEAT = ${FULL_REPEAT:=1}"
 echo "NO_WORK = ${NO_WORK:=FALSE} {TRUE,FALSE}"
 echo "MATRIX_TYPE = ${MATRIX_TYPE:=BCSR} {BCSR,full}"
@@ -43,7 +43,7 @@ elif [[ ${BUILD_TYPE} = "openmp" ]]; then
     THREADS=( 1 2 8 16 24 )
     #THREADS=( 1 2 4 8 12 16 20 24 28 32 36 40 44 48 )
     #THREADS=( 1 2 )
-    NUMA_POLICY="${NUMA_POLICY:=--interleave=all}"
+    NUMA_POLICY="${NUMA_POLICY:=--localalloc}"
     CONFIGURE_ARGS="--enable-openmp"
     CONFIGURE_ARGS+=" --disable-shared"
     CONFIGURE_ARGS+=" --disable-assert"

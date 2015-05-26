@@ -6,12 +6,13 @@
 
 #include <getopt.h>
 #include <math.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
-#include <time.h>
 #include <sys/mman.h>
+#include <time.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -23,6 +24,27 @@
 #define ROW_MAJOR(i, j, N) ((i)*(N)+(j))
 #define COLUMN_MAJOR(i, j, N) ((i)+(j)*(N))
 #define INDEX(i, j, N) COLUMN_MAJOR(i, j, N)
+
+void
+print_dense (const double *A, const int N, const char *label, ...)
+{
+  va_list ap;
+  char expanded_label[2000];
+
+  va_start(ap, label);
+  vsnprintf(expanded_label, 2000, label, ap);
+  va_end(ap);
+
+  printf("%s\n", expanded_label);
+  for(int i = 0; i < N; i++)
+  {
+    for(int j = 0; j < N; j++)
+    {
+      printf(" % 1.3f", A[COLUMN_MAJOR(i, j, N)]);
+    }
+    printf("\n");
+  }
+}
 
 int
 main (int argc, char **argv)
@@ -312,32 +334,36 @@ main (int argc, char **argv)
 
     if(print_matrix)
     {
-      printf("A:\n");
-      for(int i = 0; i < N; i++)
-      {
-        for(int j = 0; j < N; j++)
-        {
-          printf(" % 1.3f", A_dense[COLUMN_MAJOR(i, j, N)]);
-        }
-        printf("\n");
-      }
+      print_dense(A_dense, N, "A:");
     }
   }
 
   /* Zero pad matrix. */
-  int old_N = N;
-  N = N_matrix*N_chunk;
-  A_dense = realloc(A_dense, sizeof(double)*N*N);
-  size_t padding_count = SQUARE(N)-SQUARE(old_N);
+  int N_padded = N_matrix*N_chunk;
+  double *A_temp = calloc(SQUARE(N_padded), sizeof(double));
+#pragma omp parallel for
+  for(int i = 0; i < N; i++)
+  {
+    for(int j = 0; j < N; j++)
+    {
+      A_temp[COLUMN_MAJOR(i, j, N_padded)] = A_dense[COLUMN_MAJOR(i, j, N)];
+    }
+  }
+  free(A_dense);
+  A_dense = A_temp;
+
+  size_t padding_count = SQUARE(N_padded)-SQUARE(N);
   printf("zero padding %dx%d BCSR matrix by %ld elements to %dx%d\n",
-      old_N, old_N, padding_count, N, N);
-  memset((void*) ((intptr_t) A_dense + sizeof(double)*SQUARE(old_N)),
-      0,
-      sizeof(double)*padding_count);
+         N, N, padding_count, N_padded, N_padded);
+
+  if(print_matrix)
+  {
+    print_dense(A_dense, N_padded, "A(padded):");
+  }
 
   /* Convert the matrices. The chunks are stored in a N_matrix x
      N_matrix array. */
-  printf("allocating %dx%d chunks\n", N_matrix, N_matrix);
+  printf("allocating matrix of %dx%d chunks\n", N_matrix, N_matrix);
   void **A = calloc(SQUARE(N_matrix), sizeof(void*));
   void **C = calloc(SQUARE(N_matrix), sizeof(void*));
 
@@ -356,22 +382,14 @@ main (int argc, char **argv)
         for(int j_chunk = 0; j_chunk < N_chunk; j_chunk++)
         {
           A_slice[COLUMN_MAJOR(i_chunk, j_chunk, N_chunk)] =
-            A_dense[COLUMN_MAJOR(i*N_chunk+i_chunk, j*N_chunk+j_chunk, N)];
+            A_dense[COLUMN_MAJOR(i*N_chunk+i_chunk, j*N_chunk+j_chunk, N_padded)];
         }
       }
       chunk_set(A[COLUMN_MAJOR(i, j, N_matrix)], A_slice);
-      //printf("norm(A[%d,%d]) = %e\n", i, j, chunk_get_norm_2(A[COLUMN_MAJOR(i, j, N_matrix)]));
+
       if(print_matrix)
       {
-        printf("A_slice:\n");
-        for(int i = 0; i < N_chunk; i++)
-        {
-          for(int j = 0; j < N_chunk; j++)
-          {
-            printf(" % 1.3f", A_slice[COLUMN_MAJOR(i, j, N)]);
-          }
-          printf("\n");
-        }
+        print_dense(A_slice, N_chunk, "A_slice[%d,%d]:", i, j);
 
         chunk_print(A[COLUMN_MAJOR(i, j, N_matrix)], "A_slice\n");
       }
@@ -380,7 +398,7 @@ main (int argc, char **argv)
   free(A_slice);
 
   double norm_2 = 0;
-  for(int i = 0; i < N*N; i++)
+  for(int i = 0; i < N_padded*N_padded; i++)
   {
     norm_2 += A_dense[i]*A_dense[i];
   }
@@ -467,7 +485,7 @@ main (int argc, char **argv)
                            tree_only);
             if(print_matrix)
             {
-              chunk_print(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)], "C\n");
+              chunk_print(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)], "C:");
             }
           }
         }
@@ -540,17 +558,7 @@ main (int argc, char **argv)
       for(int j_chunk = 0; j_chunk < N_matrix; j_chunk++)
       {
         double *C_dense = chunk_to_dense(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)]);
-
-        printf("C[%d,%d]:\n", i_chunk, j_chunk);
-        for(int i = 0; i < N_chunk; i++)
-        {
-          for(int j = 0; j < N_chunk; j++)
-          {
-            printf(" % 1.3f", C_dense[COLUMN_MAJOR(i, j, N_chunk)]);
-          }
-          printf("\n");
-        }
-
+        print_dense(C_dense, N_chunk, "C[%d,%d]:", i_chunk, j_chunk);
         free(C_dense);
 
         chunk_print(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)], "C\n");
@@ -560,13 +568,13 @@ main (int argc, char **argv)
 
   if(print_complexity)
   {
-    int complexity = 0;
+    double complexity = 0;
 #pragma omp parallel for reduction(+:complexity)
-    for(int i = 0; i < N_chunk/N_basic; i++)
+    for(int i = 0; i < N_padded/N_basic; i++)
     {
-      for(int j = 0; j < N_chunk/N_basic; j++)
+      for(int j = 0; j < N_padded/N_basic; j++)
       {
-        for(int k = 0; k < N_chunk/N_basic; k++)
+        for(int k = 0; k < N_padded/N_basic; k++)
         {
           double norm_A = 0;
           double norm_B = 0;
@@ -576,9 +584,11 @@ main (int argc, char **argv)
             for(int j_basic = 0; j_basic < N_basic; j_basic++)
             {
               norm_A += SQUARE(A_dense[COLUMN_MAJOR(i*N_basic+i_basic,
-                                                    k*N_basic+j_basic, N_chunk)]);
+                                                    k*N_basic+j_basic,
+                                                    N_padded)]);
               norm_B += SQUARE(A_dense[COLUMN_MAJOR(k*N_basic+i_basic,
-                                                    j*N_basic+j_basic, N_chunk)]);
+                                                    j*N_basic+j_basic,
+                                                    N_padded)]);
             }
           }
 
@@ -590,40 +600,33 @@ main (int argc, char **argv)
       }
     }
 
-    printf("product complexity = %d out of %d, complexity ratio = %1.3f\n",
-        complexity, CUBED(N_chunk/N_basic),
-        complexity/(double) CUBED(N_chunk/N_basic));
+    printf("product complexity = %1.0f out of %1.0f, complexity ratio = %1.3f\n",
+           CUBED(N_basic)*complexity, (double) N * (double) N * (double) N,
+           CUBED(N_basic)*complexity/((double) N * (double) N * (double) N));
   }
 
   if(verify)
   {
     printf("verifying...\n");
 
-    double *C_exact = calloc(SQUARE(N), sizeof(double));
+    double *C_exact = calloc(SQUARE(N_padded), sizeof(double));
 
+#pragma omp parallel for
     for(int i = 0; i < N; i++)
     {
       for(int j = 0; j < N; j++)
       {
         for(int k = 0; k < N; k++)
         {
-          C_exact[COLUMN_MAJOR(i, j, N)] +=
-            A_dense[COLUMN_MAJOR(i, k, N)]*A_dense[COLUMN_MAJOR(k, j, N)];
+          C_exact[COLUMN_MAJOR(i, j, N_padded)] +=
+            A_dense[COLUMN_MAJOR(i, k, N_padded)]*A_dense[COLUMN_MAJOR(k, j, N_padded)];
         }
       }
     }
 
     if(print_matrix)
     {
-      printf("C_exact:\n");
-      for(int i = 0; i < N; i++)
-      {
-        for(int j = 0; j < N; j++)
-        {
-          printf(" % 1.3f", C_exact[COLUMN_MAJOR(i, j, N)]);
-        }
-        printf("\n");
-      }
+      print_dense(C_exact, N, "C_exact:");
     }
 
     for(int i_chunk = 0; i_chunk < N_matrix; i_chunk++)
@@ -636,17 +639,22 @@ main (int argc, char **argv)
         {
           for(int j = 0; j < N_chunk; j++)
           {
-            if(fabs(C_exact[COLUMN_MAJOR(i+i_chunk*N_chunk, j+j_chunk*N_chunk, N)]
-                    -C_dense[COLUMN_MAJOR(i, j, N_chunk)]) > 1e-10)
+            double C_temp = C_exact[COLUMN_MAJOR(i+i_chunk*N_chunk,
+                                                 j+j_chunk*N_chunk,
+                                                 N_padded)];
+            double diff = fabs(C_temp-C_dense[COLUMN_MAJOR(i, j, N_chunk)]);
+            if(C_temp != 0)
+            {
+              diff = diff/C_temp;
+            }
+            if(diff > 1e-10)
             {
               printf("mismatch C[%d][%d] = %e "
-                     " <-> C_exact = %e, abs. diff = %e\n",
+                     " <-> C_exact = %e, rel. diff = %e\n",
                      i+i_chunk*N_chunk, j+j_chunk+N_chunk,
                      C_dense[COLUMN_MAJOR(i, j, N_chunk)],
-                     C_exact[COLUMN_MAJOR(i+i_chunk*N_chunk, j+j_chunk*N_chunk, N)],
-                     fabs(C_dense[COLUMN_MAJOR(i, j, N_chunk)]
-                          -C_exact[COLUMN_MAJOR(i+i_chunk*N_chunk, j+j_chunk*N_chunk, N)]));
-
+                     C_temp,
+                     diff);
               return -1;
             }
           }

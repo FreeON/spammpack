@@ -1,4 +1,4 @@
-dist_noinst_SCRIPTS = scaling-mustang.sh scaling-freeon.sh
+dist_noinst_SCRIPTS = scaling-mustang.sh scaling-freeon.sh chunk_multiply_tester.sh
 
 noinst_PROGRAMS = \
 	chunk_multiply \
@@ -12,6 +12,9 @@ check_PROGRAMS = \
 	chunk_scale \
 	chunk_trace \
 	chunk_tree_alloc
+
+check_SCRIPTS = \
+	chunk_multiply_tester.sh
 
 chunk_multiply_SOURCES = \
 	chunk_multiply.c \
