@@ -8,6 +8,7 @@ echo
 echo "BUILD_TYPE = ${BUILD_TYPE:=serial} {serial,openmp}"
 echo "BUILD_COMPILER = ${BUILD_COMPILER:=gcc} {gcc,intel}"
 echo "MAX_TIER = ${MAX_TIER:=5}"
+echo "MIN_NORM = ${MIN_NORM:=0}"
 echo "REPEAT = ${REPEAT:=1}"
 echo "FULL_REPEAT = ${FULL_REPEAT:=1}"
 echo "NO_WORK = ${NO_WORK:=FALSE} {TRUE,FALSE}"
