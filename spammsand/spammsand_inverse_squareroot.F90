@@ -1,4 +1,4 @@
-!#define DENSE_DIAGNOSTICS
+#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
 module SpAMMsand_inverse_squareroot
@@ -121,7 +121,7 @@ contains
     kount=1
     sz_norm=1d0
     FillN=1d10
-    DO i = 0, 15
+    DO i = 0, 17
 
        ! check the trace for convergence:
        FillN_prev=FillN
@@ -572,8 +572,8 @@ program SpAMM_sandwich_inverse_squareroot
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
   kount=1
-  first=.FALSE.
-!  first=.TRUE.
+!  first=.FALSE.
+  first=.TRUE.
   second=.TRUE.
 
   z=>z_head
