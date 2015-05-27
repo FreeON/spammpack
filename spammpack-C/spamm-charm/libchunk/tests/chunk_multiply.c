@@ -468,34 +468,39 @@ main (int argc, char **argv)
       printf("successfully locked memory\n");
     }
 
-    clock_gettime(CLOCKTYPE, &start_time);
-    for(int i = 0; i < repeat; i++)
+#pragma omp parallel
     {
-      clock_gettime(CLOCKTYPE, &individual_start_time[i]);
-      for(int i_chunk = 0; i_chunk < N_matrix; i_chunk++)
+#pragma omp single
       {
-        for(int j_chunk = 0; j_chunk < N_matrix; j_chunk++)
+        clock_gettime(CLOCKTYPE, &start_time);
+        for(int i = 0; i < repeat; i++)
         {
-          for(int k_chunk = 0; k_chunk < N_matrix; k_chunk++)
+          clock_gettime(CLOCKTYPE, &individual_start_time[i]);
+          for(int i_chunk = 0; i_chunk < N_matrix; i_chunk++)
           {
-            chunk_multiply(tolerance,
-                           A[COLUMN_MAJOR(i_chunk, k_chunk, N_matrix)],
-                           A[COLUMN_MAJOR(k_chunk, j_chunk, N_matrix)],
-                           C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)],
-                           tree_only);
-            if(print_matrix)
+            for(int j_chunk = 0; j_chunk < N_matrix; j_chunk++)
             {
-              chunk_print(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)], "C:");
+              for(int k_chunk = 0; k_chunk < N_matrix; k_chunk++)
+              {
+                chunk_multiply(tolerance,
+                               A[COLUMN_MAJOR(i_chunk, k_chunk, N_matrix)],
+                               A[COLUMN_MAJOR(k_chunk, j_chunk, N_matrix)],
+                               C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)],
+                               tree_only);
+                if(print_matrix)
+                {
+                  chunk_print(C[COLUMN_MAJOR(i_chunk, j_chunk, N_matrix)], "C:");
+                }
+              }
             }
           }
+          clock_gettime(CLOCKTYPE, &individual_end_time[i]);
         }
+        clock_gettime(CLOCKTYPE, &end_time);
       }
-      clock_gettime(CLOCKTYPE, &individual_end_time[i]);
     }
-    clock_gettime(CLOCKTYPE, &end_time);
-
     double total_time = ((end_time.tv_sec+end_time.tv_nsec/1.0e9)
-        -(start_time.tv_sec+start_time.tv_nsec/1.0e9))/repeat;
+                         -(start_time.tv_sec+start_time.tv_nsec/1.0e9))/repeat;
 
     double individual_duration[repeat];
     double individual_mean = 0;

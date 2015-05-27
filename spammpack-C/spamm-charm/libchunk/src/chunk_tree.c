@@ -1012,11 +1012,12 @@ chunk_tree_multiply (const double tolerance,
   void *complexity = NULL;
 #endif
 
+  /* OpenMP startup moved out. */
   if(A_root->norm_2*B_root->norm_2 > tolerance_2)
   {
-#pragma omp parallel
+    //#pragma omp parallel
     {
-#pragma omp master
+      //#pragma omp master
       {
 #ifdef _OPENMP
         DEBUG("running on %d OpenMP threads\n", omp_get_num_threads());
