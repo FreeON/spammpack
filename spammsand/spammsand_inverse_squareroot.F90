@@ -1,4 +1,4 @@
-#define DENSE_DIAGNOSTICS
+!#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
 module SpAMMsand_inverse_squareroot
@@ -47,8 +47,7 @@ contains
   SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, t, tau, DoDuals, second, kount)
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: s
-    TYPE(SpAMM_tree_2d_symm) , POINTER :: x, z, y, t
-!    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(INOUT) :: xx, z, t
+    TYPE(SpAMM_tree_2d_symm) , POINTER :: x, z, y, t, y_tmp, z_tmp
     REAL(SpAMM_KIND) :: Tau
 !    REAL(SpAMM_KIND),                   INTENT(IN)    :: Tau
 !    LOGICAL, INTENT(IN)                              :: first
@@ -57,8 +56,7 @@ contains
     INTEGER                                           :: i,  j, k
     REAL(SpAMM_KIND)                                  :: sc, TrX, tau_xtra
     REAL(SpAMM_KIND)                                  :: x_work,z_work,y_work,zs_work,sz_work
-    REAL(SpAMM_KIND)                                  :: x_fill,z_fill,y_fill,zs_fill,sz_fill
-
+    REAL(SpAMM_KIND)                                  :: x_fill,z_fill,y_fill,zs_fill,sz_fill,y_norm,zs_norm
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev
     REAL(SpAMM_KIND)                                  :: tau_zdotz,sz_norm
 
@@ -68,21 +66,24 @@ contains
 #else
 
     !
-    tau_xtra=5d-2*tau
+    tau_xtra=1d-2*tau
 
     IF(DoDuals)tHeN
 #endif
        ! y_0 => s
-       y => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
-       y => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_o = y, threshold_O = SpAMM_normclean ) 
+       y     => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+       y     => SpAMM_tree_2d_symm_copy_tree_2d_symm( S , in_o = y, threshold_O = SpAMM_normclean ) 
+
 #ifdef DENSE_DIAGNOSTICS
 #else
     endIF
 #endif
     ! z_0 => I
-    z=>SpAMM_set_identity_2d_symm ( s%frill%ndimn, in_o = z )
+    z     => SpAMM_set_identity_2d_symm( s%frill%ndimn, in_o = z )
+    y_tmp => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+    z_tmp => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
     !  x_0 => s
-    x => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
+    x     => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x, threshold_O = SpAMM_normclean ) 
 
 #ifdef DENSE_DIAGNOSTICS
     n=x%frill%ndimn(1)
@@ -127,7 +128,7 @@ contains
        TrX=SpAMM_trace_tree_2d_symm_recur(x)
        FillN = abs( dble(s%frill%ndimn(1)) - TrX )/dble(s%frill%ndimn(1))       
 
-       WRITE(*,33)tau, kount, TrX, FillN, 1d2*x%frill%non0s/dble(x%frill%ndimn(1))**2, y_work*1d2 , z_work*1d2 , sz_work*1d2 , x_work*1d2 
+       WRITE(*,33)tau, kount, TrX, FillN, 1d2*x%frill%non0s/dble(x%frill%ndimn(1))**2, y_work*1d2 , z_work*1d2 , zs_work*1d2 , x_work*1d2 
 33     format('  ... Tr< ',e6.1,', i=',i2,' > = ', F18.10,' dN=',e10.3,' %of N^2 = ',f10.5,'%,  %of N^3 = ',f10.5,'%, ',f10.5,'%, ',f10.5,'%, ',f10.5,'%')
 
        IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )then
@@ -161,37 +162,33 @@ contains
 !!$          write(*,*)' a '
 !!$       ELSE
           
-!!$          IF(FillN>0.4d0)THEN
-!!$             delta=8.d-2 ! maybe this should be a variable too, passed in?
-!!$             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$             sc=spammsand_scaling_invsqrt(SpAMM_zero)
-!!$          write(*,*)' b '
-!!$          ELSEIF(FillN>0.1d0)THEN
-!!$             delta=1.0d-2 ! maybe this should be a variable too, passed in?
-!!$             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$             sc=spammsand_scaling_invsqrt(SpAMM_half)
-!!$          write(*,*)' c '
-!!$
-!!$          ELSE
-!!$             sc=1d0
-!!$
-!!$          write(*,*)' d '
-!!$
-!!$          ENDIF
+          IF(FillN>0.4d0)THEN
+             delta=8.d-2 ! maybe this should be a variable too, passed in?
+             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+             sc=spammsand_scaling_invsqrt(SpAMM_zero)
+          ELSEIF(FillN>0.1d0)THEN
+             delta=1.0d-2 ! maybe this should be a variable too, passed in?
+             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+             sc=spammsand_scaling_invsqrt(SpAMM_half)
+          ELSE
+             sc=1d0
+          ENDIF
+ 
 !       ENDIF
 
-          sc=1d0
+!          sc=1d0
 
        WRITE(*,*)' sc = ',sc
        
        x => spammsand_scaled_invsqrt_mapping( x, sc )
-
+ 
        ! |Z_n+1> =  <Z_n| X_n>  
-       t => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau , nt_O=.TRUE., in_O = t , stream_file_O='z_'//inttoCHAR(I) )
+       z_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( z, x, tau , nt_O=.TRUE., in_O = z_tmp , stream_file_O='z_'//inttoCHAR(I) )
        ! update (copy+threshold)
-       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z, threshold_O = tau ) 
+       z => SpAMM_tree_2d_symm_copy_tree_2d_symm( z_tmp, in_O = z, threshold_O = tau ) 
+
        ! stats
-       z_work=t%frill%flops/dble(t%frill%ndimn(1))**3
+       z_work=z_tmp%frill%flops/dble(z_tmp%frill%ndimn(1))**3
        z_fill=z%frill%non0s
 
 #ifdef DENSE_DIAGNOSTICS
@@ -202,12 +199,13 @@ contains
        IF(DoDuals)tHeN
 #endif
           ! <Y_n+1|
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau_xtra , nt_O=.TRUE., in_O = t , stream_file_O='y_'//inttoCHAR(I) )
+          y_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( x, y, tau_xtra , nt_O=.TRUE., in_O = y_tmp , stream_file_O='y_'//inttoCHAR(I) )
 
-          y_work=t%frill%flops/dble(t%frill%ndimn(1))**3
+          y_work=y_tmp%frill%flops/dble(y_tmp%frill%ndimn(1))**3
+          y_norm=SQRT(y_tmp%frill%norm2)
 
-          ! update (+threshold)
-          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = y, threshold_O = tau_xtra )
+          ! next -> previous 
+          y => SpAMM_tree_2d_symm_copy_tree_2d_symm( y_tmp, in_O = y, threshold_O = tau_xtra )
 
           ! <X_n> = <Y_n|Z_n>
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x )
@@ -220,10 +218,10 @@ contains
 #else
        ELSE
 #endif
-          !   |t> =      S|Z_k> 
-          t => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z,  tau_XTRA  , NT_O=.TRUE. , in_O = t )
-          sz_work=t%frill%flops/dble(t%frill%ndimn(1))**3
-          sz_norm=SQRT(t%frill%norm2)
+          !  | y > = < z^t_k | s >
+          y_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( z, s,  tau_XTRA  , NT_O=.FALSE. , in_O = y_tmp )
+          zs_work=y_tmp%frill%flops/dble(y_tmp%frill%ndimn(1))**3
+          zs_norm=SQRT(y_tmp%frill%norm2)
           
 #ifdef DENSE_DIAGNOSTICS
           x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau  , NT_O=.TRUE. , in_O = x )
@@ -231,7 +229,7 @@ contains
 #endif
 
           ! <X_k> = <Z_k|S|Z_k>
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( z, t,  tau , NT_O=.FALSE. , in_O = x , stream_file_O='x_'//inttoCHAR(I) )
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( y_tmp, z,  tau , NT_O=.TRUE. , in_O = x , stream_file_O='x_'//inttoCHAR(I) )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
           
 #ifdef DENSE_DIAGNOSTICS
@@ -255,6 +253,8 @@ contains
 #endif
 
     CaLl SpAMM_destruct_tree_2d_symm_recuR (Y)
+    CaLl SpAMM_destruct_tree_2d_symm_recuR (Y_tmp)
+    CaLl SpAMM_destruct_tree_2d_symm_recuR (Z_tmp)
    
   END SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot
 
@@ -354,6 +354,7 @@ contains
     FpZ_yz    = MATMUL( y_tld_k , dz_k_dz_k1 )
     FpY_yz    = MATMUL( dy_k_dy_k1 , z_tld_k ) 
 
+    WRITE(*,*)'  dx = ',sqrt(sum(dx**2)),'  dy = ',sqrt(sum(dy**2)),'  dz = ',sqrt(sum(dz**2))
     WRITE(*,*)" ||f'_dx_k1_naiv||   = ",SQRT(SUM(fpx_naiv**2)), SQRT(SUM( xp_tld_k_naiv_gateaux**2)) 
     WRITE(*,*)' '
     WRITE(*,*)" ||f'_dx_k1_stab||   = ",SQRT(SUM(fpx_stab**2)), SQRT(SUM( xp_tld_k_stab_gateaux**2))
@@ -571,8 +572,8 @@ program SpAMM_sandwich_inverse_squareroot
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
   kount=1
-!  first=.FALSE.
-  first=.TRUE.
+  first=.FALSE.
+!  first=.TRUE.
   second=.TRUE.
 
   z=>z_head
