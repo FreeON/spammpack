@@ -8,7 +8,10 @@
 #include <time.h>
 #include <unistd.h>
 
-int work (const long int N, const int P, const int tier, const int depth) {
+int work (const int N,
+          const int P,
+          const int tier,
+          const int depth) {
 
   int result;
   long int i, j;
@@ -118,9 +121,11 @@ int main (int argc, char **argv) {
     printf("result is < 0\n");
   }
 
-  printf("timer resolution: %e ns\n", (double) timer_resolution.tv_nsec
+  printf("timer resolution: %e ns\n",
+         (double) timer_resolution.tv_nsec
          + (double) timer_resolution.tv_sec*1e9);
-  printf("elapsed time: %e s\n", (double) (end_time.tv_nsec-start_time.tv_nsec) * 1e-9
+  printf("elapsed time: %e ns\n",
+         (double) (end_time.tv_nsec-start_time.tv_nsec) * 1e-9
          + (double) (end_time.tv_sec-start_time.tv_sec));
 
   return 0;
