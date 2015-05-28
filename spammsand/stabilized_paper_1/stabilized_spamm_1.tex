@@ -178,21 +178,19 @@ Jie and Chen demonstrated a factor of two reduction
 in the number of NS steps for ill-conditioned problems by chosing $\alpha \sim 2.85$, with damping towards $\alpha=1$ at 
 convergence.  
 
-First order NS iteration converges linearly towards a basin of stability, marked by super-linear convergence 
-and associated with sign iteration,  $\mat{x}_k \leftarrow sign \left( \mat{x}_{k-1} \right)$. 
-Bai and Demmel \cite{}, Byers, He and Mehrmann \cite{} and Higham (Ref.\cite{} Section 5.7)
-show that within this basin, commuting errors $\mat{x}_k+\delta \mat{x}_k$ \cite{}  
-are anihilated to first order, depending on the differential $\delta \mat{x}_k < 1 $. 
-Ideally, a $\tau$ can be found yeilding fast computation with precision sufficient to gain the basin of stability.  From the
-preconditioned state then, additional corrections can be made to the residual at little additional 
-cost. \footnote{The ability to correct back to the argumental basis is sometimes refered to as 
-the ``variational'' property of early ``spectral projection as optimization'' techniques, with 
-gradients retaining proximity to the basis \cite{}.}
+First order NS iteration converges linearly towards a basin of stability, marked by a super-linear convergence 
+associated with sign iteration,  $\mat{x}_k \leftarrow {\rm sign} \left( \mat{x}_{k-1} \right)$. 
+This basin is determined by the differential 
+$\delta \mat{x}_k = \widetilde{\mat{x}}_k -\mat{x}_k = {\rm sign} \left(\mat{x}_{k-1}+\delta \mat{x}_{k-1} \right)
+-{\rm sign} \left(\mat{x}_{k-1} \right)$,  leading to a stable, quenched orbit when $\delta \mat{x}_k < 1 $.  
+Global perturbative bounds on this differential were derived by Bai and Demmel \cite{Bai98usingthe}, while
+Byers, He and Mehrmann \cite{} developed assymptotic bounds.  The first order anihilation of 
+this commuting differential is presented clearly in Ref.\cite{Higham08}, Section 5.7.
 
-However, NS iteration can diverge due to the unbounded accumulation of errors ($\delta \mat{x}_k > 1 $).
-For ill-conditioned problems, and with an approximate non-commuting algebra, the stability properties of nominally equivalent  NS 
-forms can in practice be very different,  depending on the handedness of opperations and their proximity to the 
-argumental basis, $\{ \mat{s} \}$.  
+Alternatively, NS iteration can diverge due to the unbounded accumulation of errors ($\delta \mat{x}_k > 1 $), e.g.~prior
+to the onset of stability.  For ill-conditioned problems, and with an approximate non-commuting algebra, the 
+behavior of $\delta \mat{x}_k $ can be very different in practice for NS forms that are nominally equivalent,
+depending on the handedness of opperations and their proximity to the argumental basis, $\{ \mat{s} \}$.  
 Starting with $\mat{z}_0=\mat{I}$ and $\mat{x}_0=\mat{y}_0=\mat{s}$, these forms include: the ``dual'' iteration,
 \begin{eqnarray}
 \mmat{y}_{k}  &\leftarrow& m \left( \mmat{x}_{k-1} \right) \; \ot \;  \mmat{y}_{k-1}  \\
@@ -210,10 +208,9 @@ and the ``stablized'' iteration,
 \mmat{x}_{k} &\leftarrow& \mmat{z}^\dagger_{k} \; \ot \; \mat{s} \; \ot \; \mmat{z}_{k} \; .
 \end{eqnarray}
 
-For these iterations, we are interested in behavior of the convergence of the approximation matrix sign function 
-$\widetilde{\mat{x}}_{k} = \mat{x}_{k} + \delta  \mat{x}_{k}$.  This differential, $\delta \mat{x}_k$ is the
-accumulation of previous errors $\mat{\Delta}_\tau$ through step $k-1$, and the first order interaction
-of these errors with the NS map.  For example, taking $f$ as a {\em model} of the ``stable'' NS map
+For these iterations, there are $\tt SpAMM$ errors incurred at the $k^{th}$ step,  bounded by Eq.~(\ref{bound}),
+and the interaction of accumulated errors $\delta \mat{x}_{k-1}$,  $\delta \mat{y}_{k-1}$  and $\delta \mat{z}_{k-1}$   
+with the NS map.  We can model these interactions for the ``stable'' NS map as
 \begin{equation}
 f \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] =
 m \left[ \widetilde{\mat{x}}_{k-1}\right] \cdot \widetilde{\mat{z}}^\dagger_{k-1}  
@@ -229,10 +226,9 @@ the first order error in the stabilized NS map is
                  + {f}_{\delta \widehat{\mat{x}}_{k-1}}  \, {\scriptstyle \times} \, \delta x_{k-1} 
 + {\cal{O}} \left(  \tau^2 \right) \; ,
 \end{equation}
-where ${f}_{\delta \mat{z}_{k-1}}$ and ${f}_{\delta \mat{x}_{k-1}}$ are the Frechet derivatives along the directions of the preceeding errors, 
-$\delta \widehat{\mat{z}}_{k-1}$ and $\delta \widehat{\mat{x}}_{k-1}$, with corresponding displacements (magnitudes) 
-$\delta z_{k-1} = \lVert \delta \mat{z}_{k-1} \rVert$  and $\delta x_{k-1}=\lVert \delta \mat{x}_{k-1} \rVert$.  For the 
-stabilized iteration, these derivatives are
+where ${f}_{\delta \mat{z}_{k-1}}$ and ${f}_{\delta \mat{x}_{k-1}}$ are the Fr\'{e}chet differentials \cite{} along  
+$\delta \widehat{\mat{z}}_{k-1}$ and $\delta \widehat{\mat{x}}_{k-1}$, with corresponding displacements 
+$\delta z_{k-1} = \lVert \delta \mat{z}_{k-1} \rVert$  and $\delta x_{k-1}=\lVert \delta \mat{x}_{k-1} \rVert$.  These derivatives are
 \begin{equation}
 f_{\delta \widehat{\mat{z}}_{k-1}} = \lim_{\tau \rightarrow 0} \frac{ f [ \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1}, \widetilde{\mat{x}}_{k-1} ]
 -f [\, \mat{z}_{k-1}, \widetilde{\mat{x}}_{k-1} ]  }{\tau} 
@@ -303,6 +299,15 @@ f_{\delta \widehat{\mat{x}}_{k-1}}
 \cdot \tt{m}\left[\mat{x}_{k-1} \right]    \} 
 \rightarrow \mat{n}\left[\mat{s} \right]
 \end{equation}
+
+Ideally, a $\tau$ can be found yeilding fast computation with precision sufficient to gain the basin of stability.  From the
+preconditioned state then, additional corrections can be made to the residual at little additional 
+cost. \footnote{The ability to correct back to the argumental basis is sometimes refered to as 
+the ``variational'' property of early ``spectral projection as optimization'' techniques, with 
+gradients retaining proximity to the basis \cite{}.}
+
+
+
 
 \section{Implementation}
 
