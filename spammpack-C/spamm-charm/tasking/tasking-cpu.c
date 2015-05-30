@@ -82,7 +82,6 @@ int main (int argc, char **argv) {
       break;
 
     default:
-      fprintf(stderr, "illegal argument\n");
       exit(-1);
     }
   }
