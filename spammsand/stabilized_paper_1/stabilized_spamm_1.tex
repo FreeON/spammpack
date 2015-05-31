@@ -192,7 +192,7 @@ to the onset of stability.  For ill-conditioned problems, and with an approximat
 behavior of $\delta \mat{x}_k $ can be very different in practice for NS forms that are nominally equivalent,
 depending on the handedness of opperations and their proximity to the argumental basis, $\{ \mat{s} \}$.  
 Starting with $\mat{z}_0=\mat{I}$ and $\mat{x}_0=\mat{y}_0=\mat{s}$, these forms include: the ``dual'' iteration,
-\begin{eqnarray}
+\begin{eqnarray} \label{dualsiteration}
 \mmat{y}_{k}  &\leftarrow& m \left( \mmat{x}_{k-1} \right) \; \ot \;  \mmat{y}_{k-1}  \\
 \mmat{z}_{k}  &\leftarrow& \mmat{z}_{k-1}  \; \ot \;  m \left( \mat{x}_{k-1} \right) \\
 \mmat{x}_{k} &\leftarrow& \mmat{y}_{k} \; \ot \; \mmat{z}_{k} \; ,
@@ -320,25 +320,30 @@ Here's looking at you Jurg...
 
 \section{Experiments}
 
-\subsection{Compression in the Basin of Stability}
+In this section, we show  numerical experiments that highlight the effects of 
+ill-conditioning, dimensionality, and the stability of different first order NS approaches to iteration with $\tt SpAMM$. 
+We turn first to complexity reduction for $\ot$ in the basin of stability,  where we find a novel, compressive 
+surface/volume effect in the $\tt SpAMM$ product octree, resulting from occlusion culling in the $ijk$ space.
+This effect is shown in Fig.~\ref{markofzorro},  for unscaled, inverse square root duals iteration, 
+Eqs.~(\ref{dualsiteration}), on the 3,3 carbon nanotube metric at $\kappa=10^6$. 
+In this experiment, we find that diagonal dominance of the matrices cooresponds to a 
+$\times$ pattern, formed by dominant interactions in the $i=j$ and the $i=k$ planes, with axis 
+along the cube-diagonal.  
 
-Two approximate planes, $i-j \ot j-k$, for   
-remarkable algebraic structure
-
- \begin{figure}[h]
+ \begin{figure}[h] \label{markofzorro}
  \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
  \fbox{ \includegraphics[width=2.in,trim={2cm 0cm 10cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene2.png}} 
  \caption{Views of the $\tau =0.03$ sign occlusion surface, for the 
- 128x~u.c.~nanotube, at $\sim \mat{s}_{14k \times 14k}$ and $\kappa(\mat{s})=10^6$. 
- This surface envelopes the $ijk$ (convolution) volume 
- cooresponding to the unscaled dual iteration step $\mmat{x}_{18} \leftarrow \mmat{y}_{18} \ot \mmat{z}_18 $ at $b=64$, $\tau=0.03$ and
- $\tau_y=10^{-3} \, \tau $. The left pannel looks down, from the upper bound, towards the origen and with axis normal to the view plane. 
- This axis is formed by intersection of the $ij$  and the $jk$ planes, which are followed by the occlusion surface, outside of which all
- $\tt SpAMM$ has culled all $ijk$.
-
- The right hand pannel looks along this axis, 
-}
+ 128x~u.c.~nanotube, at $\sim {14k \times 14k}$ and $\kappa(\mat{s})=10^6$. 
+ This surface envelopes the $ijk$ volume of the $\ot$ kernel,  
+ cooresponding to the unscaled dual iteration step $\mmat{x}_{19} \leftarrow \mmat{y}_{19} \ot \mmat{z}_{19} $ at $b=64$, $\tau=0.03$ and
+ $\tau_y=10^{-3} \, \tau $.  The first pannel looks straight down the cube-diagonal $i=j=k$, from the upper bound towards (1,1,1).
+ Remarkably, this surface forms an elongated $\times$, closely following intersection of the $i=j$  and $i=k$ planes 
+ along the cube-diagonal. The second pannel looks along the $i=j=k$ cube-diagonal, with the upper bound at upper left, and (1,1,1) at lower right.}
  \end{figure}
+
+
+
 
 
 \begin{figure}[h]
