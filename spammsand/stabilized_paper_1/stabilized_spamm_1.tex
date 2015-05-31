@@ -241,10 +241,10 @@ f_{\delta \widehat{ \mat{x}}_{k-1}} = \lim_{\tau \rightarrow 0} \frac{ f [ \wide
 where for the stabilized iteration
 \begin{multline}
 f_{\delta \widehat{\mat{z}}_{k-1}} =
-\{ \tt{m}\left[\mat{x}_{k-1} \right]  \cdot \delta {\widehat{\mat{z}}}^\dagger_{k-1} 
+\{ m\left[\mmat{x}^\dagger_{k-1} \right]  \cdot \delta {\widehat{\mat{z}}}^\dagger_{k-1} 
  \cdot \mat{s} \} \cdot \widetilde{\mat{z}}_{k} \\
 +\widetilde{\mat{z}}^\dagger_{k} \cdot \{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
-\cdot \tt{m}\left[\mat{x}_{k-1} \right]    \} 
+\cdot {m}\left[\mmat{x}_{k-1} \right]    \} 
 \end{multline}
 and 
 \begin{multline} \label{fdx}
@@ -256,10 +256,13 @@ f_{\delta \widehat{\mat{x}}_{k-1}}
 \cdot \delta \widehat{\mat{x}}_{k-1} \, m' \;.
 \end{multline}
 
-An important quality of the stabilized iteration, are the bracketed terms in Eq.~(\ref{fdx}), which
-achieve idempotence in the super-linear regime \cite{}.  Then, any $\delta x_{k-1} < m' $ remains in the
+An important quality of the stabilized iteration, is the bracketed terms in Eq.~(\ref{fdx}), which
+tend towards idempotence in the super-linear regime \cite{}.  Then, any $2 m' \delta x_{k-1} < 1 $ remains in the
 basin of stability.  The naive iteration is missing one of these bracketed terms, leading to an early instability. 
-On the other hand, variations for the dual iteration are different. 
+
+On the other hand, the dual iteration is different from the stable iteration in that the basis $\{\mat{s}\}$
+is carried only implicity in $\mat{y}_k$
+
 \begin{equation} 
 f_{\delta \widehat{\mat{y}}_{k-1}} 
 = m\left[\mmat{x}_{k-1} \right]  \cdot  \delta \widehat{\mat{y}}_{k-1} \cdot  \widetilde{\mat{z}}_{k}  
@@ -269,7 +272,6 @@ f_{\delta \widehat{\mat{y}}_{k-1}}
 \begin{equation} 
 f_{\delta \widehat{\mat{z}}_{k-1}} =  \mmat{y}_{k} \cdot  \delta \mat{z}_{k-1}  \cdot m\left[\mmat{x}_{k-1} \right]  
 \end{equation}
-
 
 
 \begin{multline} \label{fyzdx}
@@ -318,6 +320,44 @@ Here's looking at you Jurg...
 
 \section{Experiments}
 
+\subsection{Compression in the Basin of Stability}
+
+Two approximate planes, $i-j \ot j-k$, for   
+remarkable algebraic structure
+
+ \begin{figure}[h]
+ \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
+ \fbox{ \includegraphics[width=2.in,trim={2cm 0cm 10cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene2.png}} 
+ \caption{Views of the $\tau =0.03$ sign occlusion surface, for the 
+ 128x~u.c.~nanotube, at $\sim \mat{s}_{14k \times 14k}$ and $\kappa(\mat{s})=10^6$. 
+ This surface envelopes the $ijk$ (convolution) volume 
+ cooresponding to the unscaled dual iteration step $\mmat{x}_{18} \leftarrow \mmat{y}_{18} \ot \mmat{z}_18 $ at $b=64$, $\tau=0.03$ and
+ $\tau_y=10^{-3} \, \tau $. The left pannel looks down, from the upper bound, towards the origen and with axis normal to the view plane. 
+ This axis is formed by intersection of the $ij$  and the $jk$ planes, which are followed by the occlusion surface, outside of which all
+ $\tt SpAMM$ has culled all $ijk$.
+
+ The right hand pannel looks along this axis, 
+}
+ \end{figure}
+
+
+\begin{figure}[h]
+  \caption{equation...}
+\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_15_water.png}} 
+\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_15_water.png}}
+\end{figure}
+
+\begin{figure}[h]
+  \caption{equation...}
+%%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_water_to_duals.png}} 
+%%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_water_to_duals.png}}
+%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_water_to_duals.png}} 
+\fbox{ \includegraphics[width=3in,trim={8cm 0.1cm 8cm 0.1cm},clip]{z_water_to_duals_scn1.png}}
+\end{figure}
+
+
+
+
 \subsection{Occlusion Error Flows}
 \begin{figure}[h]
   \caption{equation...}
@@ -347,28 +387,6 @@ Here's looking at you Jurg...
 \lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
 \end{equation}
 
-\subsection{Querry Surfaces}
-
-\begin{figure}[h]
-  \caption{equation...}
-\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_15_tube_5_36.png}} 
-\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_15_tube_5_36.png}}
-\end{figure}
-
-
-\begin{figure}[h]
-  \caption{equation...}
-\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_15_water.png}} 
-\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_15_water.png}}
-\end{figure}
-
-\begin{figure}[h]
-  \caption{equation...}
-%%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_water_to_duals.png}} 
-%%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_water_to_duals.png}}
-%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_water_to_duals.png}} 
-\fbox{ \includegraphics[width=3in,trim={8cm 0.1cm 8cm 0.1cm},clip]{z_water_to_duals_scn1.png}}
-\end{figure}
 
 
 
