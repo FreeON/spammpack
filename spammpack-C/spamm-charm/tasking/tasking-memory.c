@@ -35,11 +35,18 @@ void work (const int N, const int i_lower, const int i_upper,
 #endif
     /* Block multiply. */
     int width = i_upper-i_lower;
+    int A_offset = width*width*COLUMN_MAJOR(i_lower/width, k_lower/width, N/width);
+    int B_offset = width*width*COLUMN_MAJOR(k_lower/width, j_lower/width, N/width);
+    int C_offset = width*width*COLUMN_MAJOR(i_lower/width, j_lower/width, N/width);
+    /* printf("[%d:%d,%d:%d,%d:%d]\n", i_lower, i_upper, j_lower, j_upper, k_lower, k_upper); */
+    /* printf("A_offset = %d\n", A_offset); */
+    /* printf("B_offset = %d\n", B_offset); */
+    /* printf("C_offset = %d\n", C_offset); */
     for(int i = 0; i < width; i++) {
       for(int j = 0; j < width; j++) {
         for(int k = 0; k < width; k++) {
-          C[COLUMN_MAJOR(i, j, width)] +=
-            A[COLUMN_MAJOR(i, k, width)]*B[COLUMN_MAJOR(k, j, width)];
+          C[C_offset+COLUMN_MAJOR(i, j, width)] +=
+            A[A_offset+COLUMN_MAJOR(i, k, width)]*B[B_offset+COLUMN_MAJOR(k, j, width)];
         }
       }
     }
@@ -113,6 +120,15 @@ int main (int argc, char **argv)
     default:
       exit(1);
       break;
+    }
+  }
+
+  /* Startup threads. */
+#pragma omp parallel
+  {
+#pragma omp single
+    {
+      printf("starting...\n");
     }
   }
 
