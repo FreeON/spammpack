@@ -92,7 +92,7 @@ by Bowler \cite{Bowler12} and Benzi \cite{Benzi13} for electronic structure.
 \end{figure}
 
 Because the truncated multiplication is controled only by absolute, addititve errors in the  product,   
-\begin{equation}
+\begin{equation} \label{sparseapprox}
 \overline{ \mat{a} \cdot \mat{b} }\; = \; \mat{a}\cdot\mat{b} \; +\; \mat{\epsilon}^{\mat{a}}_\tau \cdot \mat{b} \;+\;
  \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2)
 \end{equation}
@@ -320,16 +320,6 @@ Here's looking at you Jurg...
 
 \section{Experiments}
 
-In this section, we show  numerical experiments that highlight the effects of 
-ill-conditioning, dimensionality, and the stability of different first order NS approaches to iteration with $\tt SpAMM$. 
-We turn first to complexity reduction for $\ot$ in the basin of stability,  where we find a novel, compressive 
-surface/volume effect in the $\tt SpAMM$ product octree, resulting from occlusion culling in the $ijk$ space.
-This effect is shown in Fig.~\ref{markofzorro},  for unscaled, inverse square root duals iteration, 
-Eqs.~(\ref{dualsiteration}), on the 3,3 carbon nanotube metric at $\kappa=10^6$. 
-In this experiment, we find that diagonal dominance of the matrices cooresponds to a 
-$\times$ pattern, formed by dominant interactions in the $i=j$ and the $i=k$ planes, with axis 
-along the cube-diagonal.  
-
  \begin{figure}[h] \label{markofzorro}
  \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
  \fbox{ \includegraphics[width=2.in,trim={2cm 0cm 10cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene2.png}} 
@@ -339,8 +329,23 @@ along the cube-diagonal.
  cooresponding to the unscaled dual iteration step $\mmat{x}_{19} \leftarrow \mmat{y}_{19} \ot \mmat{z}_{19} $ at $b=64$, $\tau=0.03$ and
  $\tau_y=10^{-3} \, \tau $.  The first pannel looks straight down the cube-diagonal $i=j=k$, from the upper bound towards (1,1,1).
  Remarkably, this surface forms an elongated $\times$, closely following intersection of the $i=j$  and $i=k$ planes 
- along the cube-diagonal. The second pannel looks along the $i=j=k$ cube-diagonal, with the upper bound at upper left, and (1,1,1) at lower right.}
+ along the cube-diagonal. The second pannel looks along the cube-diagonal, with the upper bound at upper left, and (1,1,1) at lower right.}
  \end{figure}
+
+In this section, we present  numerical experiments that highlight the effects of 
+ill-conditioning, dimensionality, and the stability of different first order NS approaches to iteration with $\tt SpAMM$. 
+We turn first to complexity reduction for $\ot$ in the basin of stability,  where we find a novel, compressive 
+effect in the product octree.  This effect is shown in Fig.~\ref{markofzorro},  
+for unscaled, inverse square root duals iteration, Eqs.~(\ref{dualsiteration}), on the 3,3 carbon 
+nanotube metric at $\kappa=10^6$.  
+
+In this example, the $\tt SpAMM$ octree culled from the $ijk$-cube is outlined by its occlusion surface, enclosing 
+a volume that closely follows the $i=j$ and $i=k$ planes, forming an $\times$.  The banded distribution
+of large norms along  matrix diagonals leads to cube-diagonal dominance, with plane-following 
+a consequence of moderate ill-conditioning,  large norms along the plane-diagonals and their overlap in $ijk$
+via the multiplicative bound, Eq.~(\ref{bound}). The tightness of this bound, and the compression gained relative
+to  methods that control only the absolute error, {\em e.g.} as given by Eq.~(\ref{sparseapprox}), will hopefully
+be quantified in future work. 
 
 
 
@@ -351,6 +356,8 @@ along the cube-diagonal.
 \fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_15_water.png}} 
 \fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_15_water.png}}
 \end{figure}
+
+
 
 \begin{figure}[h]
   \caption{equation...}
