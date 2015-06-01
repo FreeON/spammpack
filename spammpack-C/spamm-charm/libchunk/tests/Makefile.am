@@ -30,6 +30,12 @@ AM_CFLAGS = $(OPENMP_CFLAGS) $(MIC_CFLAGS)
 AM_CPPFLAGS = -I $(top_srcdir)/src
 AM_LDFLAGS = ../src/libchunk.la $(MIC_LDFLAGS)
 
+if INTEL_TASK_API
+AM_CFLAGS += -I/opt/intel/vtune_amplifier_xe/include
+AM_LDFLAGS += -L/opt/intel/vtune_amplifier_xe/lib64
+LIBS += -littnotify
+endif
+
 TESTS = \
 	$(check_PROGRAMS) \
 	$(noinst_PROGRAMS)

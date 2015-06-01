@@ -304,6 +304,20 @@ else
   AC_MSG_RESULT([no])
 fi
 
+AC_MSG_CHECKING([whether to instrument with VTune])
+AC_ARG_ENABLE([vtune],
+  [AS_HELP_STRING([--enable-vtune],
+  [Enable VTune task instrumentation])],
+  [enable_vtune=$enableval],
+  [enable_vtune="yes"])
+if test "${enable_vtune}" = "yes"; then
+  AC_DEFINE([INTEL_TASK_API], [1], [Enable Intel VTune task API.])
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+AM_CONDITIONAL([INTEL_TASK_API], [test "${enable_vtune}" = "yes"])
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 Makefile

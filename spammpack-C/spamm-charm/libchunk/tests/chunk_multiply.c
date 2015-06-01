@@ -468,9 +468,9 @@ main (int argc, char **argv)
       printf("successfully locked memory\n");
     }
 
-#pragma omp parallel
+//#pragma omp parallel
     {
-#pragma omp single
+//#pragma omp single
       {
         clock_gettime(CLOCKTYPE, &start_time);
         for(int i = 0; i < repeat; i++)

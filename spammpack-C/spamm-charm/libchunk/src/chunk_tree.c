@@ -31,6 +31,11 @@
 #include <omp.h>
 #endif
 
+#ifdef INTEL_TASK_API
+#include <ittnotify.h>
+__itt_domain *domain;
+#endif
+
 /** A convenience macro for printing some debugging output. */
 #ifdef DEBUG_OUTPUT
 #ifdef _OPENMP
@@ -248,6 +253,10 @@ chunk_tree_alloc (const int N_chunk,
   void *chunk = calloc(chunk_tree_sizeof(N_chunk, N_basic), 1);
 #endif
   struct chunk_tree_t *ptr = (struct chunk_tree_t*) chunk;
+
+#ifdef INTEL_TASK_API
+  domain = __itt_domain_create("chunk domain");
+#endif
 
   ptr->chunksize = chunk_tree_sizeof(N_chunk, N_basic);
   ptr->i_lower = i_lower;
@@ -759,14 +768,17 @@ chunk_tree_add (const double alpha, void *const A,
 
 void
 chunk_tree_multiply_node (const double tolerance_2,
-    const int tier,
-    const int depth,
-    const struct chunk_tree_node_t *const A,
-    const struct chunk_tree_node_t *const B,
-    struct chunk_tree_node_t *const C,
-    const short symbolic_only,
-    size_t *const complexity,
-    const int product_index);
+                          const int tier,
+                          const int depth,
+                          const struct chunk_tree_node_t *const A,
+                          const struct chunk_tree_node_t *const B,
+                          struct chunk_tree_node_t *const C,
+                          const short symbolic_only,
+                          size_t *const complexity,
+                          const int product_index,
+                          const int i_lower, const int i_upper,
+                          const int j_lower, const int j_upper,
+                          const int k_lower, const int k_upper);
 
 void
 chunk_tree_multiply_node_recur (const double tolerance_2,
@@ -780,7 +792,10 @@ chunk_tree_multiply_node_recur (const double tolerance_2,
                                 struct chunk_tree_node_t *const C,
                                 const short symbolic_only,
                                 size_t *const complexity,
-                                const int product_index)
+                                const int product_index,
+                                const int i_lower, const int i_upper,
+                                const int j_lower, const int j_upper,
+                                const int k_lower, const int k_upper)
 {
   struct chunk_tree_node_t *A_child = (struct chunk_tree_node_t*)
     ((intptr_t) A + A->offset.child_offset[ROW_MAJOR(i, k, 2)]);
@@ -789,7 +804,23 @@ chunk_tree_multiply_node_recur (const double tolerance_2,
   struct chunk_tree_node_t *C_child = (struct chunk_tree_node_t*)
     ((intptr_t) C + C->offset.child_offset[ROW_MAJOR(i, j, 2)]);
 
+  int half_width = (i_upper-i_lower)/2;
+  int new_i_lower = i_lower+i*half_width;
+  int new_i_upper = i_lower+(i+1)*half_width;
+  int new_j_lower = j_lower+j*half_width;
+  int new_j_upper = j_lower+(j+1)*half_width;
+  int new_k_lower = k_lower+k*half_width;
+  int new_k_upper = k_lower+(k+1)*half_width;
+
   DEBUG("(%d,%d,%d) A at %p, B at %p, C at %p\n", i, j, k, A_child, B_child, C_child);
+
+#ifdef INTEL_TASK_API
+  char task_name[100];
+  sprintf(task_name, "tree [%d %d:%d,%d:%d,%d:%d]", tier,
+          new_i_lower, new_i_upper, new_j_lower, new_j_upper, new_k_lower, new_k_upper);
+  __itt_string_handle *tree_handle = __itt_string_handle_create(task_name);
+  __itt_task_begin(domain, __itt_null, __itt_null, tree_handle);
+#endif
 
   if(A_child->norm_2*B_child->norm_2 > tolerance_2)
   {
@@ -799,13 +830,21 @@ chunk_tree_multiply_node_recur (const double tolerance_2,
     int new_product_index = product_index;
 #endif
     chunk_tree_multiply_node(tolerance_2, tier+1, depth, A_child,
-                             B_child, C_child, symbolic_only, complexity, new_product_index);
+                             B_child, C_child, symbolic_only, complexity,
+                             new_product_index,
+                             new_i_lower, new_i_upper,
+                             new_j_lower, new_j_upper,
+                             new_k_lower, new_k_upper);
   }
 
   else
   {
     DEBUG("skipping product, A_norm*B_norm = %e\n", A_child->norm_2*B_child->norm_2);
   }
+
+#ifdef INTEL_TASK_API
+  __itt_task_end(domain);
+#endif
 }
 
 /** Multiply two tree nodes using the SpAMM algorithm.
@@ -826,14 +865,17 @@ chunk_tree_multiply_node_recur (const double tolerance_2,
  */
 void
 chunk_tree_multiply_node (const double tolerance_2,
-    const int tier,
-    const int depth,
-    const struct chunk_tree_node_t *const A,
-    const struct chunk_tree_node_t *const B,
-    struct chunk_tree_node_t *const C,
-    const short symbolic_only,
-    size_t *const complexity,
-    const int product_index)
+                          const int tier,
+                          const int depth,
+                          const struct chunk_tree_node_t *const A,
+                          const struct chunk_tree_node_t *const B,
+                          struct chunk_tree_node_t *const C,
+                          const short symbolic_only,
+                          size_t *const complexity,
+                          const int product_index,
+                          const int i_lower, const int i_upper,
+                          const int j_lower, const int j_upper,
+                          const int k_lower, const int k_upper)
 {
   short create_tasks;
   short lock_data;
@@ -868,6 +910,13 @@ chunk_tree_multiply_node (const double tolerance_2,
 
   if(tier == depth)
   {
+#ifdef INTEL_TASK_API
+    char task_name[200];
+    sprintf(task_name, "leaf [%d %d:%d,%d:%d,%d:%d]", tier,
+            i_lower, i_upper, j_lower, j_upper, k_lower, k_upper);
+    __itt_string_handle *leaf_task_handle = __itt_string_handle_create(task_name);
+    __itt_task_begin(domain, __itt_null, __itt_null, leaf_task_handle);
+#endif
     DEBUG("%d(%d) A at %p, B at %p, C at %p\n", tier, depth, A, B, C);
 
     if(!symbolic_only)
@@ -909,6 +958,9 @@ chunk_tree_multiply_node (const double tolerance_2,
 #endif
       DEBUG("done multiplying\n");
     }
+#ifdef INTEL_TASK_API
+    __itt_task_end(domain);
+#endif
   }
 
   else
@@ -928,16 +980,21 @@ chunk_tree_multiply_node (const double tolerance_2,
         {
           if(create_tasks)
           {
-            DEBUG("creating new task\n");
-#pragma omp task default(shared) firstprivate(i, j, k) untied
-            chunk_tree_multiply_node_recur(tolerance_2, i, j, k, tier, depth,
-                                           A, B, C, symbolic_only, complexity, product_index);
+#pragma omp task untied firstprivate(i, j, k)
+            {
+              DEBUG("creating new task\n");
+              chunk_tree_multiply_node_recur(tolerance_2, i, j, k, tier, depth,
+                                             A, B, C, symbolic_only, complexity,
+                                             product_index, i_lower, i_upper,
+                                             j_lower, j_upper, k_lower, k_upper);
+            }
           }
-
           else
           {
             chunk_tree_multiply_node_recur(tolerance_2, i, j, k, tier, depth,
-                                           A, B, C, symbolic_only, complexity, product_index);
+                                           A, B, C, symbolic_only, complexity,
+                                           product_index, i_lower, i_upper,
+                                           j_lower, j_upper, k_lower, k_upper);
           }
         }
       }
@@ -1015,9 +1072,9 @@ chunk_tree_multiply (const double tolerance,
   /* OpenMP startup moved out. */
   if(A_root->norm_2*B_root->norm_2 > tolerance_2)
   {
-    //#pragma omp parallel
+#pragma omp parallel
     {
-      //#pragma omp master
+#pragma omp master
       {
 #ifdef _OPENMP
         DEBUG("running on %d OpenMP threads\n", omp_get_num_threads());
@@ -1025,10 +1082,21 @@ chunk_tree_multiply (const double tolerance,
         DEBUG("running in serial\n");
 #endif
 
-#pragma omp task untied default(shared)
+#pragma omp task untied
         {
+#ifdef INTEL_TASK_API
+          char task_name[200];
+          sprintf(task_name, "tree top [%d:%d,%d:%d,%d:%d]",
+                  1, A_ptr->N, 1, B_ptr->N, 1, C_ptr->N);
+          __itt_string_handle *top_tree_handle = __itt_string_handle_create(task_name);
+          __itt_task_begin(domain, __itt_null, __itt_null, top_tree_handle);
+#endif
           chunk_tree_multiply_node(tolerance_2, 0, A_ptr->depth, A_root,
-                                   B_root, C_root, symbolic_only, complexity, 0);
+                                   B_root, C_root, symbolic_only, complexity, 0,
+                                   0, A_ptr->N, 0, B_ptr->N, 0, C_ptr->N);
+#ifdef INTEL_TASK_API
+        __itt_task_end(domain);
+#endif
         }
 #pragma omp taskwait
       }

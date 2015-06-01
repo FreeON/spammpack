@@ -3,6 +3,10 @@ TAGS_FILES = $(top_builddir)/config.h
 AM_CFLAGS = $(OPENMP_CFLAGS) $(MIC_CFLAGS)
 AM_LDFLAGS = $(MIC_LDFLAGS)
 
+if INTEL_TASK_API
+AM_CFLAGS += -I/opt/intel/vtune_amplifier_xe/include
+endif
+
 lib_LTLIBRARIES = libchunk.la
 
 libchunk_la_SOURCES = \
