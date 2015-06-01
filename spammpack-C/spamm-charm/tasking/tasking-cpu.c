@@ -100,6 +100,8 @@ int main (int argc, char **argv) {
     fprintf(stderr, "can not get start time\n");
     exit(1);
   }
+
+#ifdef TASKING
 #pragma omp parallel
   {
 #pragma omp single
@@ -111,6 +113,12 @@ int main (int argc, char **argv) {
 #pragma omp taskwait
     }
   }
+#else
+#pragma omp parallel for
+  for(int i = 0; i < number_tasks; i++) {
+    result = work(N, P, depth, depth);
+  }
+#endif
   if(clock_gettime(CLOCK_MONOTONIC, &end_time) != 0) {
     fprintf(stderr, "can not get end time\n");
     exit(1);

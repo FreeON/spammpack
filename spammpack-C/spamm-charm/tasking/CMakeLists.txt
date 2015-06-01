@@ -10,6 +10,11 @@ if( CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Intel" )
   target_compile_options( tasking-memory PUBLIC "-std=c99" )
 endif()
 
+set( TASKING TRUE CACHE BOOL "Whether to task or to loop" )
+if( TASKING )
+  target_compile_definitions( tasking-cpu PUBLIC "TASKING" )
+endif()
+
 set( OPENMP TRUE CACHE BOOL "Whether to compile using OpenMP" )
 if( OPENMP )
   include( FindOpenMP )
