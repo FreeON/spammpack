@@ -1,4 +1,4 @@
-#define DENSE_DIAGNOSTICS
+!#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
 module SpAMMsand_inverse_squareroot
@@ -66,7 +66,7 @@ contains
 #else
 
     !
-    tau_xtra=1d-2*tau
+    tau_xtra=1d-3*tau
 
     IF(DoDuals)tHeN
 #endif
@@ -121,7 +121,7 @@ contains
     kount=1
     sz_norm=1d0
     FillN=1d10
-    DO i = 0, 17
+    DO i = 0, 20
 
        ! check the trace for convergence:
        FillN_prev=FillN
@@ -162,21 +162,21 @@ contains
 !!$          write(*,*)' a '
 !!$       ELSE
           
-          IF(FillN>0.4d0)THEN
-             delta=8.d-2 ! maybe this should be a variable too, passed in?
-             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-             sc=spammsand_scaling_invsqrt(SpAMM_zero)
-          ELSEIF(FillN>0.1d0)THEN
-             delta=1.0d-2 ! maybe this should be a variable too, passed in?
-             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-             sc=spammsand_scaling_invsqrt(SpAMM_half)
-          ELSE
-             sc=1d0
-          ENDIF
+!!$          IF(FillN>0.4d0)THEN
+!!$             delta=8.d-2 ! maybe this should be a variable too, passed in?
+!!$             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$             sc=spammsand_scaling_invsqrt(SpAMM_zero)
+!!$          ELSEIF(FillN>0.1d0)THEN
+!!$             delta=1.0d-2 ! maybe this should be a variable too, passed in?
+!!$             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$             sc=spammsand_scaling_invsqrt(SpAMM_half)
+!!$          ELSE
+!!$             sc=1d0
+!!$          ENDIF
  
 !       ENDIF
 
-!          sc=1d0
+          sc=1d0
 
        WRITE(*,*)' sc = ',sc
        
@@ -208,7 +208,7 @@ contains
           y => SpAMM_tree_2d_symm_copy_tree_2d_symm( y_tmp, in_O = y, threshold_O = tau_xtra )
 
           ! <X_n> = <Y_n|Z_n>
-          x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x )
+          x => SpAMM_tree_2d_symm_times_tree_2d_symm( y, z, tau   , nt_O=.TRUE. , in_O = x , stream_file_O='x_'//inttoCHAR(I) )
           x_work=x%frill%flops/dble(x%frill%ndimn(1))**3
 
 #ifdef DENSE_DIAGNOSTICS
@@ -584,8 +584,7 @@ program SpAMM_sandwich_inverse_squareroot
      
      ! WATER block=32, tau=0.07
      ! BAD TUBE block=32, tau=0.01
-     z%tau = 0.001d0
-
+     z%tau = 0.03d0
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, t, z%tau, first, second, kount )
 
      STOP
