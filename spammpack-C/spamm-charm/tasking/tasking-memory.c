@@ -3,6 +3,7 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 #ifdef INTEL_TASK_API
 #include <ittnotify.h>
@@ -22,8 +23,8 @@ void work (const int N, const int i_lower, const int i_upper,
            const double *B,
            double *C,
            const int tier,
-           const int depth) {
-
+           const int depth)
+{
   if(tier == depth) {
 #ifdef INTEL_TASK_API
     char task_name[100];
@@ -57,7 +58,7 @@ void work (const int N, const int i_lower, const int i_upper,
                     k_lower, k_upper);
             __itt_string_handle *tree_handle = __itt_string_handle_create(task_name);
 #endif
-#pragma omp task firstprivate(i, j, k)
+#pragma omp task untied firstprivate(i, j, k)
           {
 #ifdef INTEL_TASK_API
             __itt_task_begin(domain, __itt_null, __itt_null, tree_handle);
@@ -78,10 +79,14 @@ void work (const int N, const int i_lower, const int i_upper,
   }
 }
 
-int main (int argc, char **argv) {
-
+int main (int argc, char **argv)
+{
   int N = 256;
   int depth = 0;
+
+  struct timespec timer_resolution;
+  struct timespec start_time;
+  struct timespec end_time;
 
   const char *short_options = "hN:d:";
   char c;
@@ -136,6 +141,15 @@ int main (int argc, char **argv) {
   domain = __itt_domain_create("tasking domain");
 #endif
 
+  if(clock_getres(CLOCK_MONOTONIC, &timer_resolution) != 0) {
+    fprintf(stderr, "can not get timer resolution\n");
+    exit(1);
+  }
+  if(clock_gettime(CLOCK_MONOTONIC, &start_time) != 0) {
+    fprintf(stderr, "can not get start time\n");
+    exit(1);
+  }
+
 #pragma omp parallel
   {
 #pragma omp single
@@ -159,6 +173,18 @@ int main (int argc, char **argv) {
 #pragma omp taskwait
     }
   }
+
+  if(clock_gettime(CLOCK_MONOTONIC, &end_time) != 0) {
+    fprintf(stderr, "can not get end time\n");
+    exit(1);
+  }
+
+  printf("timer resolution: %e ns\n",
+         (double) timer_resolution.tv_nsec
+         + (double) timer_resolution.tv_sec*1e9);
+  printf("elapsed time: %e s\n",
+         (double) (end_time.tv_nsec-start_time.tv_nsec) * 1e-9
+         + (double) (end_time.tv_sec-start_time.tv_sec));
 
   return 0;
 }

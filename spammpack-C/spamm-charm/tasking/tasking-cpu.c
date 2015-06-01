@@ -119,6 +119,7 @@ int main (int argc, char **argv) {
     result = work(N, P, depth, depth);
   }
 #endif
+
   if(clock_gettime(CLOCK_MONOTONIC, &end_time) != 0) {
     fprintf(stderr, "can not get end time\n");
     exit(1);

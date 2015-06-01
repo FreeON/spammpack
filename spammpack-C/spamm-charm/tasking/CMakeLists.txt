@@ -29,7 +29,8 @@ endif()
 target_compile_definitions( tasking-cpu    PUBLIC "_POSIX_C_SOURCE=199309L" )
 target_compile_definitions( tasking-memory PUBLIC "_POSIX_C_SOURCE=199309L" )
 
-target_link_libraries( tasking-cpu "-lrt" )
+target_link_libraries( tasking-cpu    "-lrt" )
+target_link_libraries( tasking-memory "-lrt" )
 
 set( INTEL_TASK_API FALSE CACHE BOOL "Use Intel VTune task API" )
 if( INTEL_TASK_API )
