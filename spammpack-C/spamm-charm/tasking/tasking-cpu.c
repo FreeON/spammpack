@@ -123,7 +123,7 @@ int main (int argc, char **argv) {
   printf("timer resolution: %e ns\n",
          (double) timer_resolution.tv_nsec
          + (double) timer_resolution.tv_sec*1e9);
-  printf("elapsed time: %e ns\n",
+  printf("elapsed time: %e s\n",
          (double) (end_time.tv_nsec-start_time.tv_nsec) * 1e-9
          + (double) (end_time.tv_sec-start_time.tv_sec));
 

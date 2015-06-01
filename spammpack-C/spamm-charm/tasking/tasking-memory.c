@@ -48,16 +48,18 @@ void work (const int N, const int i_lower, const int i_upper,
   } else {
     /* Descend. */
     int half_width = (i_upper-i_lower)/2;
-    for(int i = 0; i < 2; i++) {
-      for(int j = 0; j < 2; j++) {
-        for(int k = 0; k < 2; k++) {
-#pragma omp task untied
-          {
+    for(int k = 0; k < 2; k++) {
+      for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < 2; j++) {
 #ifdef INTEL_TASK_API
             char task_name[100];
             sprintf(task_name, "tree[%d:%d,%d:%d,%d:%d]", i_lower, i_upper, j_lower, j_upper,
                     k_lower, k_upper);
             __itt_string_handle *tree_handle = __itt_string_handle_create(task_name);
+#endif
+#pragma omp task firstprivate(i, j, k)
+          {
+#ifdef INTEL_TASK_API
             __itt_task_begin(domain, __itt_null, __itt_null, tree_handle);
 #endif
             work(N,
@@ -71,8 +73,8 @@ void work (const int N, const int i_lower, const int i_upper,
           }
         }
       }
-    }
 #pragma omp taskwait
+    }
   }
 }
 
