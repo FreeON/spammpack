@@ -309,7 +309,7 @@ AC_ARG_ENABLE([vtune],
   [AS_HELP_STRING([--enable-vtune],
   [Enable VTune task instrumentation])],
   [enable_vtune=$enableval],
-  [enable_vtune="yes"])
+  [enable_vtune="no"])
 if test "${enable_vtune}" = "yes"; then
   AC_DEFINE([INTEL_TASK_API], [1], [Enable Intel VTune task API.])
   AC_MSG_RESULT([yes])
