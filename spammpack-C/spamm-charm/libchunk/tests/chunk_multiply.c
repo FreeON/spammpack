@@ -258,11 +258,6 @@ main (int argc, char **argv)
       printf("matrix chunk has depth %d, N_chunk = %d\n", tier, N_chunk);
     }
 
-    N_matrix = N/N_chunk;
-    if(N%N_chunk != 0) N_matrix++;
-
-    printf("storing %dx%d chunk matrix\n", N_matrix, N_matrix);
-
     int M_BCSR;
     int N_BCSR;
     A_dense = bcsr_to_dense(&M_BCSR, &N_BCSR, A_BCSR);
@@ -272,10 +267,7 @@ main (int argc, char **argv)
   {
     /* Fill in column-major order. */
     A_dense = calloc(N*N, sizeof(double));
-    N_matrix = N/N_chunk;
-    if(N%N_chunk != 0) N_matrix++;
 
-    printf("N_matrix = %d\n", N_matrix);
     printf("allocated A_dense, sizeof(A_dense) = %ld bytes\n", N*N*sizeof(double));
 
     switch(matrix_type)
@@ -339,7 +331,15 @@ main (int argc, char **argv)
   }
 
   /* Zero pad matrix. */
-  int N_padded = N_matrix*N_chunk;
+  int N_padded = N_chunk;
+  while(N_padded < N) {
+    N_padded <<= 1;
+  }
+  N_matrix = N_padded/N_chunk;
+
+  printf("storing %dx%d chunk matrix, resulting in up to %d products\n",
+      N_matrix, N_matrix, CUBED(N_matrix));
+
   double *A_temp = calloc(SQUARE(N_padded), sizeof(double));
 #pragma omp parallel for
   for(int i = 0; i < N; i++)

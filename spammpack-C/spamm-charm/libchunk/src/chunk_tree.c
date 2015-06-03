@@ -75,6 +75,9 @@ __itt_domain *domain;
 /** Calculate a column-major offset. */
 #define COLUMN_MAJOR(i, j, N) ((i)+(j)*(N))
 
+/** Return the mininum of two numbers. */
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 struct chunk_tree_t
 {
   /** The total size of this chunk. Used for bounds checks. */
@@ -884,7 +887,7 @@ chunk_tree_multiply_node (const double tolerance_2,
   assert(B != NULL);
   assert(C != NULL);
 
-  if(tier == CHUNK_TREE_MAX_TIER) lock_data = 1;
+  if(tier == MIN(depth, CHUNK_TREE_MAX_TIER)) lock_data = 1;
 #ifdef CREATE_LEAF_TASKS
   else if(tier == depth) lock_data = 1;
 #endif
