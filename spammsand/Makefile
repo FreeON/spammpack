@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/m/spammpack_matts_long
+CMAKE_SOURCE_DIR = /home/m/spammsand
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/m/spammpack_matts_long
+CMAKE_BINARY_DIR = /home/m/spammsand
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -101,7 +101,7 @@ list_install_components/fast: list_install_components
 # Special rule for the target package
 package: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool..."
-	cd /home/m/spammpack_matts_long && /usr/bin/cpack --config ./CPackConfig.cmake
+	cd /home/m/spammsand && /usr/bin/cpack --config ./CPackConfig.cmake
 .PHONY : package
 
 # Special rule for the target package
@@ -111,7 +111,7 @@ package/fast: package
 # Special rule for the target package_source
 package_source:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool for source..."
-	cd /home/m/spammpack_matts_long && /usr/bin/cpack --config ./CPackSourceConfig.cmake /home/m/spammpack_matts_long/CPackSourceConfig.cmake
+	cd /home/m/spammsand && /usr/bin/cpack --config ./CPackSourceConfig.cmake /home/m/spammsand/CPackSourceConfig.cmake
 .PHONY : package_source
 
 # Special rule for the target package_source
@@ -140,14 +140,14 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/m/spammpack_matts_long && $(CMAKE_COMMAND) -E cmake_progress_start /home/m/spammpack_matts_long/CMakeFiles /home/m/spammpack_matts_long/n-solve/CMakeFiles/progress.marks
-	cd /home/m/spammpack_matts_long && $(MAKE) -f CMakeFiles/Makefile2 n-solve/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/m/spammpack_matts_long/CMakeFiles 0
+	cd /home/m/spammsand && $(CMAKE_COMMAND) -E cmake_progress_start /home/m/spammsand/CMakeFiles /home/m/spammsand/spammsand/CMakeFiles/progress.marks
+	cd /home/m/spammsand && $(MAKE) -f CMakeFiles/Makefile2 spammsand/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/m/spammsand/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f CMakeFiles/Makefile2 n-solve/clean
+	cd /home/m/spammsand && $(MAKE) -f CMakeFiles/Makefile2 spammsand/clean
 .PHONY : clean
 
 # The main clean target
@@ -156,45 +156,45 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/m/spammpack_matts_long && $(MAKE) -f CMakeFiles/Makefile2 n-solve/preinstall
+	cd /home/m/spammsand && $(MAKE) -f CMakeFiles/Makefile2 spammsand/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f CMakeFiles/Makefile2 n-solve/preinstall
+	cd /home/m/spammsand && $(MAKE) -f CMakeFiles/Makefile2 spammsand/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/m/spammpack_matts_long && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/m/spammsand && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
-n-solve/CMakeFiles/n-inv.dir/rule:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f CMakeFiles/Makefile2 n-solve/CMakeFiles/n-inv.dir/rule
-.PHONY : n-solve/CMakeFiles/n-inv.dir/rule
+spammsand/CMakeFiles/spammsand_invsqrt.dir/rule:
+	cd /home/m/spammsand && $(MAKE) -f CMakeFiles/Makefile2 spammsand/CMakeFiles/spammsand_invsqrt.dir/rule
+.PHONY : spammsand/CMakeFiles/spammsand_invsqrt.dir/rule
 
 # Convenience name for target.
-n-inv: n-solve/CMakeFiles/n-inv.dir/rule
-.PHONY : n-inv
+spammsand_invsqrt: spammsand/CMakeFiles/spammsand_invsqrt.dir/rule
+.PHONY : spammsand_invsqrt
 
 # fast build rule for target.
-n-inv/fast:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f n-solve/CMakeFiles/n-inv.dir/build.make n-solve/CMakeFiles/n-inv.dir/build
-.PHONY : n-inv/fast
+spammsand_invsqrt/fast:
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/spammsand_invsqrt.dir/build.make spammsand/CMakeFiles/spammsand_invsqrt.dir/build
+.PHONY : spammsand_invsqrt/fast
 
 # Convenience name for target.
-n-solve/CMakeFiles/utilities.dir/rule:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f CMakeFiles/Makefile2 n-solve/CMakeFiles/utilities.dir/rule
-.PHONY : n-solve/CMakeFiles/utilities.dir/rule
+spammsand/CMakeFiles/utilities.dir/rule:
+	cd /home/m/spammsand && $(MAKE) -f CMakeFiles/Makefile2 spammsand/CMakeFiles/utilities.dir/rule
+.PHONY : spammsand/CMakeFiles/utilities.dir/rule
 
 # Convenience name for target.
-utilities: n-solve/CMakeFiles/utilities.dir/rule
+utilities: spammsand/CMakeFiles/utilities.dir/rule
 .PHONY : utilities
 
 # fast build rule for target.
 utilities/fast:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f n-solve/CMakeFiles/utilities.dir/build.make n-solve/CMakeFiles/utilities.dir/build
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/utilities.dir/build.make spammsand/CMakeFiles/utilities.dir/build
 .PHONY : utilities/fast
 
 mmio.o: mmio.f.o
@@ -202,40 +202,49 @@ mmio.o: mmio.f.o
 
 # target to build an object file
 mmio.f.o:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f n-solve/CMakeFiles/utilities.dir/build.make n-solve/CMakeFiles/utilities.dir/mmio.f.o
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/spammsand_invsqrt.dir/build.make spammsand/CMakeFiles/spammsand_invsqrt.dir/mmio.f.o
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/utilities.dir/build.make spammsand/CMakeFiles/utilities.dir/mmio.f.o
 .PHONY : mmio.f.o
 
-nsolve.o: nsolve.F90.o
-.PHONY : nsolve.o
+spammsand.o: spammsand.F90.o
+.PHONY : spammsand.o
 
 # target to build an object file
-nsolve.F90.o:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f n-solve/CMakeFiles/n-inv.dir/build.make n-solve/CMakeFiles/n-inv.dir/nsolve.F90.o
-.PHONY : nsolve.F90.o
+spammsand.F90.o:
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/spammsand_invsqrt.dir/build.make spammsand/CMakeFiles/spammsand_invsqrt.dir/spammsand.F90.o
+.PHONY : spammsand.F90.o
 
-nsolve_nested_inverse_squareroot.o: nsolve_nested_inverse_squareroot.F90.o
-.PHONY : nsolve_nested_inverse_squareroot.o
-
-# target to build an object file
-nsolve_nested_inverse_squareroot.F90.o:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f n-solve/CMakeFiles/n-inv.dir/build.make n-solve/CMakeFiles/n-inv.dir/nsolve_nested_inverse_squareroot.F90.o
-.PHONY : nsolve_nested_inverse_squareroot.F90.o
-
-nsolve_structures.o: nsolve_structures.F90.o
-.PHONY : nsolve_structures.o
+spammsand_inverse_squareroot.o: spammsand_inverse_squareroot.F90.o
+.PHONY : spammsand_inverse_squareroot.o
 
 # target to build an object file
-nsolve_structures.F90.o:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f n-solve/CMakeFiles/n-inv.dir/build.make n-solve/CMakeFiles/n-inv.dir/nsolve_structures.F90.o
-.PHONY : nsolve_structures.F90.o
+spammsand_inverse_squareroot.F90.o:
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/spammsand_invsqrt.dir/build.make spammsand/CMakeFiles/spammsand_invsqrt.dir/spammsand_inverse_squareroot.F90.o
+.PHONY : spammsand_inverse_squareroot.F90.o
+
+spammsand_rqi_extremals.o: spammsand_rqi_extremals.F90.o
+.PHONY : spammsand_rqi_extremals.o
+
+# target to build an object file
+spammsand_rqi_extremals.F90.o:
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/spammsand_invsqrt.dir/build.make spammsand/CMakeFiles/spammsand_invsqrt.dir/spammsand_rqi_extremals.F90.o
+.PHONY : spammsand_rqi_extremals.F90.o
+
+spammsand_structures.o: spammsand_structures.F90.o
+.PHONY : spammsand_structures.o
+
+# target to build an object file
+spammsand_structures.F90.o:
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/spammsand_invsqrt.dir/build.make spammsand/CMakeFiles/spammsand_invsqrt.dir/spammsand_structures.F90.o
+.PHONY : spammsand_structures.F90.o
 
 test_utilities.o: test_utilities.F90.o
 .PHONY : test_utilities.o
 
 # target to build an object file
 test_utilities.F90.o:
-	cd /home/m/spammpack_matts_long && $(MAKE) -f n-solve/CMakeFiles/n-inv.dir/build.make n-solve/CMakeFiles/n-inv.dir/test_utilities.F90.o
-	cd /home/m/spammpack_matts_long && $(MAKE) -f n-solve/CMakeFiles/utilities.dir/build.make n-solve/CMakeFiles/utilities.dir/test_utilities.F90.o
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/spammsand_invsqrt.dir/build.make spammsand/CMakeFiles/spammsand_invsqrt.dir/test_utilities.F90.o
+	cd /home/m/spammsand && $(MAKE) -f spammsand/CMakeFiles/utilities.dir/build.make spammsand/CMakeFiles/utilities.dir/test_utilities.F90.o
 .PHONY : test_utilities.F90.o
 
 # Help Target
@@ -249,16 +258,17 @@ help:
 	@echo "... install/local"
 	@echo "... install/strip"
 	@echo "... list_install_components"
-	@echo "... n-inv"
 	@echo "... package"
 	@echo "... package_source"
 	@echo "... rebuild_cache"
+	@echo "... spammsand_invsqrt"
 	@echo "... test"
 	@echo "... utilities"
 	@echo "... mmio.o"
-	@echo "... nsolve.o"
-	@echo "... nsolve_nested_inverse_squareroot.o"
-	@echo "... nsolve_structures.o"
+	@echo "... spammsand.o"
+	@echo "... spammsand_inverse_squareroot.o"
+	@echo "... spammsand_rqi_extremals.o"
+	@echo "... spammsand_structures.o"
 	@echo "... test_utilities.o"
 .PHONY : help
 
@@ -271,6 +281,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/m/spammpack_matts_long && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/m/spammsand && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
