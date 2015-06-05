@@ -89,13 +89,17 @@ void work (const int N, const int i_lower, const int i_upper,
 int main (int argc, char **argv)
 {
   int N = 256;
+  int N_basic = 256;
   int depth = 0;
+
+  short depth_set = 0;
+  short N_basic_set = 0;
 
   struct timespec timer_resolution;
   struct timespec start_time;
   struct timespec end_time;
 
-  const char *short_options = "hN:d:";
+  const char *short_options = "hN:d:b:";
   char c;
 
   while((c = getopt(argc, argv, short_options)) != -1) {
@@ -106,6 +110,7 @@ int main (int argc, char **argv)
       printf("-h        This help\n");
       printf("-N N      The matrix size (currently %d)\n", N);
       printf("-d depth  The recursion depth (currently %d)\n", depth);
+      printf("-b N      The basic matrix size (currently %d)\n", N_basic);
       exit(0);
       break;
 
@@ -115,11 +120,44 @@ int main (int argc, char **argv)
 
     case 'd':
       depth = strtol(optarg, NULL, 10);
+      depth_set = 1;
+      break;
+
+    case 'b':
+      N_basic = strtol(optarg, NULL, 10);
+      N_basic_set = 1;
       break;
 
     default:
       exit(1);
       break;
+    }
+  }
+
+  if(depth_set) {
+    if(N_basic_set) {
+      printf("Set only depth or N_basic, not both\n");
+      exit(1);
+    }
+    N_basic = N;
+    for(int tier = 0; tier < depth; tier++) {
+      N_basic >>= 1;
+    }
+    printf("N_basic = %d\n", N_basic);
+  }
+
+  if(N_basic_set) {
+    if(depth_set) {
+      printf("Set only depth or N_basic, not both\n");
+      exit(1);
+    }
+    int N_temp = N;
+    for(depth = 0; N_temp > N_basic; depth++) {
+      N_temp >>= 1;
+    }
+    if(N_temp != N_basic) {
+      printf("logic error, N_basic incorrect, found %d\n", N_temp);
+      exit(1);
     }
   }
 
@@ -134,15 +172,13 @@ int main (int argc, char **argv)
 
   int number_leaf_tasks = 1;
   int number_tree_tasks = 0;
-  int N_basic = N;
   for(int tier = 1; tier <= depth; tier++) {
     number_tree_tasks += number_leaf_tasks;
     number_leaf_tasks *= 8;
-    N_basic /= 2;
   }
   printf("creating %d tree and %d leaf tasks, respectively\n",
          number_tree_tasks, number_leaf_tasks);
-  printf("N_basic = %d\n", N_basic);
+  printf("depth = %d, N_basic = %d\n", depth, N_basic);
   printf("initializing random %dx%d matrix... ", N, N);
   double *A = calloc(N*N, sizeof(double));
   double *C = calloc(N*N, sizeof(double));
