@@ -1,0 +1,1110 @@
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.47e+01, variance = 8.15e-05
+1 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.468e+01 +- 9.027e-03 seconds (7.468e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 5.66e+00, variance = 2.20e-02
+16 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 128x128 basic blocks, tolerance 0.00e+00, 5.657e+00 +- 1.485e-01 seconds (5.657e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.64e+00, variance = 3.85e-03
+24 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 128x128 basic blocks, tolerance 0.00e+00, 3.644e+00 +- 6.206e-02 seconds (3.644e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.11e+00, variance = 5.36e-03
+48 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 128x128 basic blocks, tolerance 0.00e+00, 2.114e+00 +- 7.320e-02 seconds (2.114e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.13e+01, variance = 1.40e-02
+1 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 64x64 basic blocks, tolerance 0.00e+00, 2.131e+01 +- 1.183e-01 seconds (2.131e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.73e+00, variance = 1.43e-03
+16 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.735e+00 +- 3.785e-02 seconds (1.735e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.07e+00, variance = 9.69e-04
+24 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.071e+00 +- 3.114e-02 seconds (1.071e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 6.19e-01, variance = 1.69e-04
+48 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 64x64 basic blocks, tolerance 0.00e+00, 6.192e-01 +- 1.298e-02 seconds (6.192e-01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.28e+01, variance = 1.05e-02
+1 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.275e+01 +- 1.027e-01 seconds (2.275e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.75e+00, variance = 7.68e-03
+16 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.755e+00 +- 8.763e-02 seconds (1.755e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.17e+00, variance = 6.20e-04
+24 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.169e+00 +- 2.491e-02 seconds (1.169e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 6.67e+00, variance = 1.01e-02
+48 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 32x32 basic blocks, tolerance 0.00e+00, 6.666e+00 +- 1.003e-01 seconds (6.666e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.57e+01, variance = 7.97e-05
+1 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.572e+01 +- 8.929e-03 seconds (2.572e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.67e+01, variance = 2.11e-01
+16 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 16x16 basic blocks, tolerance 0.00e+00, 1.674e+01 +- 4.591e-01 seconds (1.674e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.83e+01, variance = 1.52e-01
+24 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.829e+01 +- 3.900e-01 seconds (2.829e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.87e+01, variance = 2.61e+02
+48 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 16x16 basic blocks, tolerance 0.00e+00, 3.870e+01 +- 1.615e+01 seconds (3.870e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.47e+01, variance = 5.88e-05
+1 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.466e+01 +- 7.666e-03 seconds (7.466e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 6.41e+00, variance = 8.41e-03
+16 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 128x128 basic blocks, tolerance 0.00e+00, 6.408e+00 +- 9.170e-02 seconds (6.408e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 4.66e+00, variance = 4.48e-03
+24 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 128x128 basic blocks, tolerance 0.00e+00, 4.662e+00 +- 6.693e-02 seconds (4.662e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.24e+00, variance = 1.50e-02
+48 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 128x128 basic blocks, tolerance 0.00e+00, 3.238e+00 +- 1.223e-01 seconds (3.238e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.14e+01, variance = 3.14e-02
+1 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 64x64 basic blocks, tolerance 0.00e+00, 2.140e+01 +- 1.772e-01 seconds (2.140e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.76e+00, variance = 1.27e-04
+16 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.764e+00 +- 1.127e-02 seconds (1.764e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.28e+00, variance = 1.32e-04
+24 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.275e+00 +- 1.148e-02 seconds (1.275e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.91e-01, variance = 8.10e-05
+48 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 64x64 basic blocks, tolerance 0.00e+00, 7.907e-01 +- 9.000e-03 seconds (7.907e-01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.27e+01, variance = 1.20e-02
+1 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.274e+01 +- 1.098e-01 seconds (2.274e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.81e+00, variance = 1.75e-04
+16 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.807e+00 +- 1.325e-02 seconds (1.807e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.33e+00, variance = 7.56e-04
+24 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.331e+00 +- 2.750e-02 seconds (1.331e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.20e+00, variance = 4.25e-04
+48 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 32x32 basic blocks, tolerance 0.00e+00, 7.203e+00 +- 2.061e-02 seconds (7.203e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.57e+01, variance = 6.05e-07
+1 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.570e+01 +- 7.780e-04 seconds (2.570e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.90e+01, variance = 1.18e-01
+16 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 16x16 basic blocks, tolerance 0.00e+00, 1.896e+01 +- 3.429e-01 seconds (1.896e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.13e+01, variance = 1.76e-01
+24 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 16x16 basic blocks, tolerance 0.00e+00, 3.132e+01 +- 4.193e-01 seconds (3.132e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.47e+01, variance = 6.63e-05
+1 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.469e+01 +- 8.145e-03 seconds (7.469e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 5.48e+00, variance = 3.85e-02
+16 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 128x128 basic blocks, tolerance 0.00e+00, 5.479e+00 +- 1.961e-01 seconds (5.479e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.67e+00, variance = 1.65e-03
+24 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 128x128 basic blocks, tolerance 0.00e+00, 3.669e+00 +- 4.062e-02 seconds (3.669e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.09e+00, variance = 2.27e-03
+48 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 128x128 basic blocks, tolerance 0.00e+00, 2.093e+00 +- 4.763e-02 seconds (2.093e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.18e+01, variance = 8.58e-04
+1 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 64x64 basic blocks, tolerance 0.00e+00, 2.185e+01 +- 2.929e-02 seconds (2.185e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.69e+00, variance = 1.76e-03
+16 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.688e+00 +- 4.194e-02 seconds (1.688e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.10e+00, variance = 1.38e-03
+24 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.101e+00 +- 3.710e-02 seconds (1.101e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 6.25e-01, variance = 1.68e-04
+48 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 64x64 basic blocks, tolerance 0.00e+00, 6.246e-01 +- 1.298e-02 seconds (6.246e-01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.28e+01, variance = 2.08e-02
+1 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.284e+01 +- 1.442e-01 seconds (2.284e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.78e+00, variance = 6.64e-03
+16 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.777e+00 +- 8.146e-02 seconds (1.777e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.19e+00, variance = 9.17e-04
+24 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.188e+00 +- 3.027e-02 seconds (1.188e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 6.62e+00, variance = 1.20e-02
+48 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 32x32 basic blocks, tolerance 0.00e+00, 6.623e+00 +- 1.095e-01 seconds (6.623e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.57e+01, variance = 7.59e-05
+1 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.572e+01 +- 8.711e-03 seconds (2.572e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.65e+01, variance = 5.00e-01
+16 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 16x16 basic blocks, tolerance 0.00e+00, 1.647e+01 +- 7.073e-01 seconds (1.647e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.82e+01, variance = 1.06e+00
+24 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.819e+01 +- 1.029e+00 seconds (2.819e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 2048 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 1x1 chunk matrix, resulting in up to 1 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 1x1 chunks
+allocating temporary matrix 2048x2048
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.65e+01, variance = 2.15e+02
+48 OpenMP threads, 2048x2048 matrix with 2048x2048 chunk and 16x16 basic blocks, tolerance 0.00e+00, 3.652e+01 +- 1.467e+01 seconds (3.652e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.47e+01, variance = 5.33e-05
+1 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.469e+01 +- 7.300e-03 seconds (7.469e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 6.42e+00, variance = 5.65e-03
+16 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 128x128 basic blocks, tolerance 0.00e+00, 6.420e+00 +- 7.520e-02 seconds (6.420e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 4.81e+00, variance = 1.69e-02
+24 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 128x128 basic blocks, tolerance 0.00e+00, 4.805e+00 +- 1.300e-01 seconds (4.805e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.27e+00, variance = 2.13e-03
+48 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 128x128 basic blocks, tolerance 0.00e+00, 3.266e+00 +- 4.620e-02 seconds (3.266e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.16e+01, variance = 6.65e-03
+1 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 64x64 basic blocks, tolerance 0.00e+00, 2.161e+01 +- 8.158e-02 seconds (2.161e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.78e+00, variance = 9.59e-05
+16 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.780e+00 +- 9.792e-03 seconds (1.780e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.24e+00, variance = 2.35e-04
+24 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.239e+00 +- 1.533e-02 seconds (1.239e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.84e-01, variance = 8.88e-05
+48 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 64x64 basic blocks, tolerance 0.00e+00, 7.842e-01 +- 9.424e-03 seconds (7.842e-01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.29e+01, variance = 6.27e-03
+1 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.288e+01 +- 7.917e-02 seconds (2.288e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.81e+00, variance = 1.38e-04
+16 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.814e+00 +- 1.173e-02 seconds (1.814e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.37e+00, variance = 9.08e-04
+24 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.365e+00 +- 3.013e-02 seconds (1.365e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.12e+00, variance = 5.15e-04
+48 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 32x32 basic blocks, tolerance 0.00e+00, 7.120e+00 +- 2.270e-02 seconds (7.120e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.57e+01, variance = 6.92e-05
+1 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.569e+01 +- 8.317e-03 seconds (2.569e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.91e+01, variance = 4.08e-02
+16 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 16x16 basic blocks, tolerance 0.00e+00, 1.914e+01 +- 2.020e-01 seconds (1.914e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.14e+01, variance = 6.76e-02
+24 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 16x16 basic blocks, tolerance 0.00e+00, 3.142e+01 +- 2.599e-01 seconds (3.142e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 1024 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 2x2 chunk matrix, resulting in up to 8 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 2x2 chunks
+allocating temporary matrix 1024x1024
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 4.98e+01, variance = 2.24e+01
+48 OpenMP threads, 2048x2048 matrix with 1024x1024 chunk and 16x16 basic blocks, tolerance 0.00e+00, 4.983e+01 +- 4.735e+00 seconds (4.983e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.47e+01, variance = 4.29e-05
+1 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.474e+01 +- 6.551e-03 seconds (7.474e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 9.53e+00, variance = 2.78e-03
+16 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 128x128 basic blocks, tolerance 0.00e+00, 9.527e+00 +- 5.277e-02 seconds (9.527e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 8.00e+00, variance = 2.61e-03
+24 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.997e+00 +- 5.107e-02 seconds (7.997e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 5.59e+00, variance = 2.11e-03
+48 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 128x128 basic blocks, tolerance 0.00e+00, 5.595e+00 +- 4.592e-02 seconds (5.595e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.16e+01, variance = 1.97e-02
+1 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 64x64 basic blocks, tolerance 0.00e+00, 2.164e+01 +- 1.404e-01 seconds (2.164e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.35e+00, variance = 1.04e-03
+16 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 64x64 basic blocks, tolerance 0.00e+00, 2.352e+00 +- 3.218e-02 seconds (2.352e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.90e+00, variance = 8.88e-04
+24 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.901e+00 +- 2.981e-02 seconds (1.901e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.41e+00, variance = 6.85e-05
+48 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 64x64 basic blocks, tolerance 0.00e+00, 1.409e+00 +- 8.278e-03 seconds (1.409e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.30e+01, variance = 7.17e-03
+1 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.304e+01 +- 8.469e-02 seconds (2.304e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.04e+00, variance = 4.19e-05
+16 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.040e+00 +- 6.472e-03 seconds (2.040e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.60e+00, variance = 4.74e-05
+24 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.599e+00 +- 6.888e-03 seconds (1.599e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.36e+00, variance = 4.80e-04
+48 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 32x32 basic blocks, tolerance 0.00e+00, 7.356e+00 +- 2.192e-02 seconds (7.356e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.57e+01, variance = 6.19e-05
+1 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.569e+01 +- 7.867e-03 seconds (2.569e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.91e+01, variance = 1.35e-02
+16 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 16x16 basic blocks, tolerance 0.00e+00, 1.907e+01 +- 1.164e-01 seconds (1.907e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.14e+01, variance = 4.43e-02
+24 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 16x16 basic blocks, tolerance 0.00e+00, 3.144e+01 +- 2.105e-01 seconds (3.144e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 512 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 4x4 chunk matrix, resulting in up to 64 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 4x4 chunks
+allocating temporary matrix 512x512
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 5.53e+01, variance = 7.94e-01
+48 OpenMP threads, 2048x2048 matrix with 512x512 chunk and 16x16 basic blocks, tolerance 0.00e+00, 5.525e+01 +- 8.912e-01 seconds (5.525e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.48e+01, variance = 4.58e-05
+1 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.480e+01 +- 6.771e-03 seconds (7.480e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.92e+01, variance = 6.05e-04
+16 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 128x128 basic blocks, tolerance 0.00e+00, 1.918e+01 +- 2.460e-02 seconds (1.918e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.92e+01, variance = 5.43e-04
+24 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 128x128 basic blocks, tolerance 0.00e+00, 1.923e+01 +- 2.331e-02 seconds (1.923e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.94e+01, variance = 8.11e-04
+48 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 128x128 basic blocks, tolerance 0.00e+00, 1.944e+01 +- 2.848e-02 seconds (1.944e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.18e+01, variance = 6.69e-02
+1 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 64x64 basic blocks, tolerance 0.00e+00, 2.179e+01 +- 2.587e-01 seconds (2.179e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.71e+00, variance = 1.62e-04
+16 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 64x64 basic blocks, tolerance 0.00e+00, 3.712e+00 +- 1.273e-02 seconds (3.712e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.19e+00, variance = 6.16e-05
+24 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 64x64 basic blocks, tolerance 0.00e+00, 3.193e+00 +- 7.849e-03 seconds (3.193e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.65e+00, variance = 1.06e-03
+48 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 64x64 basic blocks, tolerance 0.00e+00, 2.646e+00 +- 3.249e-02 seconds (2.646e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.28e+01, variance = 1.79e-02
+1 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.283e+01 +- 1.340e-01 seconds (2.283e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.87e+00, variance = 1.18e-04
+16 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.871e+00 +- 1.086e-02 seconds (2.871e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.94e+00, variance = 2.94e-04
+24 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.942e+00 +- 1.715e-02 seconds (2.942e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 8.77e+00, variance = 9.93e-03
+48 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 32x32 basic blocks, tolerance 0.00e+00, 8.767e+00 +- 9.965e-02 seconds (8.767e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.54e+01, variance = 3.19e-05
+1 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.537e+01 +- 5.650e-03 seconds (2.537e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.90e+01, variance = 4.26e-02
+16 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 16x16 basic blocks, tolerance 0.00e+00, 1.900e+01 +- 2.063e-01 seconds (1.900e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.15e+01, variance = 1.65e-02
+24 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 16x16 basic blocks, tolerance 0.00e+00, 3.154e+01 +- 1.283e-01 seconds (3.154e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 256 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 8x8 chunk matrix, resulting in up to 512 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 8x8 chunks
+allocating temporary matrix 256x256
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 5.88e+01, variance = 1.52e-01
+48 OpenMP threads, 2048x2048 matrix with 256x256 chunk and 16x16 basic blocks, tolerance 0.00e+00, 5.884e+01 +- 3.893e-01 seconds (5.884e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.48e+01, variance = 5.27e-05
+1 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.475e+01 +- 7.261e-03 seconds (7.475e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.55e+01, variance = 1.90e-03
+16 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.554e+01 +- 4.364e-02 seconds (7.554e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.61e+01, variance = 8.13e-04
+24 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.614e+01 +- 2.852e-02 seconds (7.614e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 128 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.65e+01, variance = 9.82e-03
+48 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 128x128 basic blocks, tolerance 0.00e+00, 7.653e+01 +- 9.910e-02 seconds (7.653e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.17e+01, variance = 2.08e-01
+1 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 64x64 basic blocks, tolerance 0.00e+00, 2.174e+01 +- 4.559e-01 seconds (2.174e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 8.08e+00, variance = 6.19e-05
+16 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 64x64 basic blocks, tolerance 0.00e+00, 8.080e+00 +- 7.870e-03 seconds (8.080e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 8.28e+00, variance = 1.60e-04
+24 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 64x64 basic blocks, tolerance 0.00e+00, 8.275e+00 +- 1.266e-02 seconds (8.275e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 64 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 9.28e+00, variance = 8.99e-03
+48 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 64x64 basic blocks, tolerance 0.00e+00, 9.284e+00 +- 9.483e-02 seconds (9.284e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.31e+01, variance = 1.23e-01
+1 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 32x32 basic blocks, tolerance 0.00e+00, 2.312e+01 +- 3.507e-01 seconds (2.312e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 4.72e+00, variance = 1.40e-03
+16 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 32x32 basic blocks, tolerance 0.00e+00, 4.718e+00 +- 3.742e-02 seconds (4.718e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 4.93e+00, variance = 1.14e-03
+24 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 32x32 basic blocks, tolerance 0.00e+00, 4.933e+00 +- 3.372e-02 seconds (4.933e+00, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 32 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 1.26e+01, variance = 1.78e-04
+48 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 32x32 basic blocks, tolerance 0.00e+00, 1.261e+01 +- 1.335e-02 seconds (1.261e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.55e+01, variance = 2.81e-05
+1 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.548e+01 +- 5.299e-03 seconds (2.548e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 2.06e+01, variance = 8.48e-03
+16 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 16x16 basic blocks, tolerance 0.00e+00, 2.063e+01 +- 9.207e-02 seconds (2.063e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 3.48e+01, variance = 6.33e-04
+24 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 16x16 basic blocks, tolerance 0.00e+00, 3.485e+01 +- 2.516e-02 seconds (3.485e+01, 5 repeats)
+running: chunk_multiply --type full -N 2048 --N_chunk 128 --N_basic 16 --repeat 5 --no-verify
+allocated A_dense, sizeof(A_dense) = 33554432 bytes
+storing 16x16 chunk matrix, resulting in up to 4096 products
+zero padding 2048x2048 BCSR matrix by 0 elements to 2048x2048
+allocating matrix of 16x16 chunks
+allocating temporary matrix 128x128
+matrix, norm_2 = 1.398070e+06
+can not lock memory
+individual mean = 7.47e+01, variance = 5.68e-01
+48 OpenMP threads, 2048x2048 matrix with 128x128 chunk and 16x16 basic blocks, tolerance 0.00e+00, 7.470e+01 +- 7.538e-01 seconds (7.470e+01, 5 repeats)

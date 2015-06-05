@@ -1,10 +1,14 @@
 #!/bin/bash
 
+./configure CC=gcc CFLAGS="-Ofast -g" --disable-shared --disable-reset-C --enable-chunk-tree-max-tier=8
+make clean
+make
+
 LOGFILE=scan-chunk-sizes
 
 for N_chunk in 2048 1024 512 256 128; do
   for N_basic in 128 64 32 16; do
-    echo "${N_chunk} ${N_basic}"
+    echo "# N_chunk = ${N_chunk}, N_basic = ${N_basic}" >> ${LOGFILE}.dat
     for P in 1 16 24 48; do
       export OMP_NUM_THREADS=${P}
       ./tests/chunk_multiply \
