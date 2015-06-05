@@ -91,6 +91,7 @@ int main (int argc, char **argv)
   int N = 256;
   int N_basic = 256;
   int depth = 0;
+  int repeat = 1;
 
   short depth_set = 0;
   short N_basic_set = 0;
@@ -99,7 +100,7 @@ int main (int argc, char **argv)
   struct timespec start_time;
   struct timespec end_time;
 
-  const char *short_options = "hN:d:b:";
+  const char *short_options = "hN:d:b:r:";
   char c;
 
   while((c = getopt(argc, argv, short_options)) != -1) {
@@ -111,6 +112,7 @@ int main (int argc, char **argv)
       printf("-N N      The matrix size (currently %d)\n", N);
       printf("-d depth  The recursion depth (currently %d)\n", depth);
       printf("-b N      The basic matrix size (currently %d)\n", N_basic);
+      printf("-r R      Number of repetitions (currently %d)\n", repeat);
       exit(0);
       break;
 
@@ -126,6 +128,10 @@ int main (int argc, char **argv)
     case 'b':
       N_basic = strtol(optarg, NULL, 10);
       N_basic_set = 1;
+      break;
+
+    case 'r':
+      repeat = strtol(optarg, NULL, 10);
       break;
 
     default:
@@ -211,18 +217,20 @@ int main (int argc, char **argv)
 #else
       printf("running serial version\n");
 #endif
+      for(int i = 0; i < repeat; i++) {
 #pragma omp task untied
-      {
+        {
 #ifdef INTEL_TASK_API
-        __itt_string_handle *top_tree_handle = __itt_string_handle_create("top tree");
-        __itt_task_begin(domain, __itt_null, __itt_null, top_tree_handle);
+          __itt_string_handle *top_tree_handle = __itt_string_handle_create("top tree");
+          __itt_task_begin(domain, __itt_null, __itt_null, top_tree_handle);
 #endif
-        work(N, 0, N, 0, N, 0, N, A, A, C, 0, depth);
+          work(N, 0, N, 0, N, 0, N, A, A, C, 0, depth);
 #ifdef INTEL_TASK_API
-        __itt_task_end(domain);
+          __itt_task_end(domain);
 #endif
-      }
+        }
 #pragma omp taskwait
+      }
     }
   }
 
