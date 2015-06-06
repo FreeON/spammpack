@@ -321,12 +321,8 @@ CONTAINS
 
   !++NBODYTIMES:   SpAMM_tree_2d_symm_times_tree_2d_symm
   !++NBODYTIMES:     c_2 => alpha*c_2 + beta*(a_2.b_2) (wrapper)
-#ifdef SpAMM_PRINT_STREAM
   FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm(a, b, Tau, NT_O, In_O , stream_file_O) RESULT(d)
-    !
-#else
-  FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm(a, b, Tau, NT_O, In_O ) RESULT(d)
-#endif
+
     TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A, B
     REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
     LOGICAL, OPTIONAL,                           INTENT(IN)    :: NT_O
@@ -335,6 +331,7 @@ CONTAINS
     INTEGER                                                    :: Depth
     LOGICAL                                                    :: NT
     REAL(SpAMM_KIND)                                           :: Tau2
+    CHARACTER(LEN=*), OPTIONAL     :: stream_file_O
     
 #ifdef SpAMM_PRINT_STREAM
 
@@ -344,7 +341,6 @@ CONTAINS
     REAL(SpAMM_kind)               :: Opacity,  a_scale, b_scale, c_scale, abc_scale
     REAL(SpAMM_kind)               :: MaxNorm,MinNorm,Emm,Bee
 
-    CHARACTER(LEN=*), OPTIONAL     :: stream_file_O
     
     REAL(SpAMM_Kind), DIMENSION(:,:,:), ALLOCATABLE :: Field
 
