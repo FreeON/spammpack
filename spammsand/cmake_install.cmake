@@ -1,4 +1,4 @@
-# Install script for directory: /home/m/spammpack_matts_long/n-solve
+# Install script for directory: /home/m/spammsand/spammsand
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
