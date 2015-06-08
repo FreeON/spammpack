@@ -17,7 +17,6 @@ module spamm_nbdyalgbra_times
 
   TYPE(SpAMM_cubes), POINTER     :: Stream
 
-
 CONTAINS
 
 
@@ -38,7 +37,6 @@ CONTAINS
     if(.not.associated(b))return
 
     if(a%frill%leaf)then
-
 
        dot = DOT_PRODUCT( a%chunk(1:SBS), b%chunk(1:SBS) )
 

@@ -84,6 +84,7 @@ contains
        !  x_0 => s
        x_dual => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
        x_dual => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x_dual, threshold_O = SpAMM_normclean ) 
+
        WRITE(*,*)'d tr = ',SpAMM_trace_tree_2d_symm_recur(x_dual)
 #ifdef DENSE_DIAGNOSTICS
 #else
@@ -92,9 +93,11 @@ contains
        !  z_0 => I
        z_stab => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
        z_stab => SpAMM_set_identity_2d_symm( s%frill%ndimn, in_o = z_stab )
+
        !  x_0 => s
        x_stab => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
        x_stab => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x_stab, threshold_O = SpAMM_normclean ) 
+
        WRITE(*,*)'s tr = ',SpAMM_trace_tree_2d_symm_recur(x_stab)
 
 #ifdef DENSE_DIAGNOSTICS
@@ -124,35 +127,26 @@ contains
     allocate(z_tld_k_dual (1:n,1:n)); allocate(z_tld_k1_dual  (1:n,1:n));  allocate(x_tld_k_dual(1:n,1:n));  
     allocate(x_tld_k1_dual(1:n,1:n)); allocate(m_x_tld_k1_dual (1:n,1:n)); allocate(y_tld_k_dual(1:n,1:n));  allocate(y_tld_k1_dual(1:n,1:n)) 
 
+    ! I=diag(1)
+    i_d=SpAMM_zero
+    DO k=1,n
+       i_d(k,k)=SpAMM_one
+    ENDDO
+    !
     CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d  )
-    CALL SpAMM_convert_tree_2d_symm_to_dense( z, i_d  )
     ! --------------------
-    z_k_stab     =i_d
     z_k1_stab    =i_d
-    z_tld_k_stab =i_d
     z_tld_k1_stab=i_d
-
-    x_k_dual     =s_d
-    x_k1_dual    =s_d
-    x_tld_k_dual =s_d
-    x_tld_k1_dual=s_d
+    x_k1_stab    =s_d
+    x_tld_k1_stab=s_d
     ! --------------------
-    z_k_dual     =i_d
+    x_k1_dual    =s_d
+    x_tld_k1_dual=s_d
     z_k1_dual    =i_d
-    z_tld_k_dual =i_d
     z_tld_k1_dual=i_d
-
-    y_k_dual     =s_d
     y_k1_dual    =s_d
-    y_tld_k_dual =s_d
     y_tld_k1_dual=s_d
-
-    x_k_dual     =s_d
-    x_k1_dual    =s_d
-    x_tld_k_dual =s_d
-    x_tld_k1_dual=s_d
     ! --------------------
-
     DoDuals=.TRUE.
 
 #endif
@@ -201,9 +195,11 @@ contains
        end IF
 
 #ifdef DENSE_DIAGNOSTICS
-
        m_x_k1_stab=x_k1_stab
        m_x_k1_dual=x_k1_dual
+
+
+       WRITE(*,*)'A x_stab = ',x_stab%frill%norm2,' m_x_k1_stab = ',SUM(m_x_k1_stab**2)
 
        scal_shift_stab=1d0
        shft_shift_stab=0d0 
@@ -227,16 +223,16 @@ contains
 
              delta=8.d-2 ! maybe this should be a variable too, passed in?
 
-#ifdef DENSE_DIAGNOSTICS
-             x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .TRUE. )
-             x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .FALSE. )
-#else
-             IF(DoDuals)THEN
-                x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-             ELSE
-                x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-             ENDIF
-#endif
+!!$#ifdef DENSE_DIAGNOSTICS
+!!$             x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .TRUE. )
+!!$             x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .FALSE. )
+!!$#else
+!!$             IF(DoDuals)THEN
+!!$                x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$             ELSE
+!!$                x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$             ENDIF
+!!$#endif
              sc=spammsand_scaling_invsqrt(SpAMM_zero)
 
 !!$           ELSEIF(FillN>0.1d0)THEN
@@ -258,16 +254,22 @@ contains
        
 #ifdef DENSE_DIAGNOSTICS       
 
-       x_dual => spammsand_scaled_invsqrt_mapping( x_dual, sc, .FALSE. )
-       z_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( z_dual, x_dual, tau , nt_O=.TRUE., in_O = z_tmp , stream_file_O='z_dual'//inttoCHAR(I) )
-       z_dual=> SpAMM_tree_2d_symm_copy_tree_2d_symm( z_tmp, in_O = z_dual, threshold_O = tau ) 
-
        x_stab => spammsand_scaled_invsqrt_mapping( x_stab, sc, .TRUE.  )
        z_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( z_stab, x_stab, tau , nt_O=.TRUE., in_O = z_tmp , stream_file_O='z_stab'//inttoCHAR(I) )
        z_stab => SpAMM_tree_2d_symm_copy_tree_2d_symm( z_tmp, in_O = z_stab, threshold_O = tau ) 
 
-#else
+       WRITE(*,*)' x_stab = ',x_stab%frill%norm2,' m_x_k1_stab = ',SUM(m_x_k1_stab**2)
 
+       x_dual => spammsand_scaled_invsqrt_mapping( x_dual, sc, .FALSE. )
+       z_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( z_dual, x_dual, tau , nt_O=.TRUE., in_O = z_tmp , stream_file_O='z_dual'//inttoCHAR(I) )
+       z_dual=> SpAMM_tree_2d_symm_copy_tree_2d_symm( z_tmp, in_O = z_dual, threshold_O = tau ) 
+
+       WRITE(*,*)' x_dual = ',x_dual%frill%norm2,' m_x_k1_dual = ',SUM(m_x_k1_dual**2)
+
+       
+       STOP
+
+#else
        IF(DoDuals)THEN
           ! m[x_n-1,c]   
           x_dual => spammsand_scaled_invsqrt_mapping( x_dual, sc)
@@ -289,15 +291,14 @@ contains
  
 #ifdef DENSE_DIAGNOSTICS
        CALL SpAMM_convert_tree_2d_symm_to_dense( z_stab, z_tld_k_stab )
-
-       WRITE(*,*)' zzzzzzzzzzzzz = ',SQRT(SUM(z_tld_k_stab**2))
-
        CALL SpAMM_convert_tree_2d_symm_to_dense( z_dual, z_tld_k_dual )
-
-       WRITE(*,*)' zzzzzzzzzzzzz = ',SQRT(SUM(z_tld_k_dual**2))
 
        z_k_stab = MATMUL( z_k1_stab, m_x_k1_stab )
        z_k_dual = MATMUL( z_k1_dual, m_x_k1_dual )
+
+       WRITE(*,*)' zzzzzzzzzzzzz = ',SQRT(SUM(z_tld_k_stab**2)),SQRT(SUM(z_k_stab**2))
+       WRITE(*,*)' zzzzzzzzzzzzz = ',SQRT(SUM(z_tld_k_dual**2)),SQRT(SUM(z_k_dual**2))
+
 #else
        IF(DoDuals)tHeN
 #endif
@@ -330,8 +331,10 @@ contains
           x_work=x_stab%frill%flops/dble(x_stab%frill%ndimn(1))**3
           
 #ifdef DENSE_DIAGNOSTICS
+
           CALL SpAMM_convert_tree_2d_symm_to_dense( x_stab, x_tld_k_stab )          
           x_k_stab = MATMUL( TRANSPOSE( z_k_stab ) , MATMUL( s_d, z_k_stab ) )
+          WRITE(*,*)" xk = ",SUM(x_k_stab**2),SUM(z_k_stab**2) ,SUM( s_d**2)
 
           if(i>0)CALL SpAMMsand_Error_Analysis(kount, tau)
 
@@ -346,12 +349,6 @@ contains
           x_k1_dual=x_k_dual
           z_k1_stab=z_k_stab
           x_k1_stab=x_k_stab
-
-          y_tld_k1_dual=y_k_dual
-          z_tld_k1_dual=z_k_dual
-          x_tld_k1_dual=x_k_dual
-          z_tld_k1_stab=z_k_stab
-          x_tld_k1_stab=x_k_stab
 
           y_tld_k1_dual=y_k_dual
           z_tld_k1_dual=z_k_dual
@@ -439,6 +436,8 @@ contains
     dz_stab     = z_tld_k1_stab - z_k1_stab
     dz_hat_stab = dz_stab/SQRT(SUM(dz_stab**2))
 
+
+    WRITE(*,*)' dx ',SQRT(SUM(x_tld_k1_stab**2)),    SQRT(SUM(x_k1_stab**2))
     dx_stab     = x_tld_k1_stab - x_k1_stab
     dx_hat_stab = dx_stab/SQRT(SUM(dx_stab**2))
 
@@ -630,23 +629,28 @@ contains
     SHFT=SpAMM_half*SQRT(sc)*SpAMM_three
     SCAL=SpAMM_half*(-sc)*SQRT(sc)
 
+    d => x
+    d => SpAMM_scalar_times_tree_2d_symm( scal, d)
+    d => SpAMM_scalar_plus_tree_2d_symm(  shft, d)
+
+
 #ifdef DENSE_DIAGNOSTICS
     IF(stab)then
        scal_mapp_stab=scal
        shft_mapp_stab=shft       
        m_x_k1_stab=m_x_k1_stab*scal
        m_x_k1_stab=m_x_k1_stab*shft*i_d
+       WRITE(*,*)' stab scal shift = ',scal,shft
+       WRITE(*,*)'stab d = ',d%frill%norm2, SUM(m_x_k1_stab**2)
     ELSE
        scal_mapp_dual=scal
        shft_mapp_dual=shft       
        m_x_k1_dual=m_x_k1_dual*scal
        m_x_k1_dual=m_x_k1_dual+shft*i_d
+       WRITE(*,*)' dual scal shift = ',scal,shft
+       WRITE(*,*)'dual d = ',d%frill%norm2, SUM(m_x_k1_dual**2)
     ENDIF
 #endif
-
-    d => x
-    d => SpAMM_scalar_times_tree_2d_symm( scal, d)
-    d => SpAMM_scalar_plus_tree_2d_symm(  shft, d)
 
   END FUNCTION spammsand_scaled_invsqrt_mapping
 
@@ -758,8 +762,6 @@ program SpAMM_sandwich_inverse_squareroot
   second=.TRUE.
 
   z=>z_head
-  ! z_total => I
-  z_total=>SpAMM_set_identity_2d_symm ( s%frill%ndimn, in_o = z_total )
 
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
      
