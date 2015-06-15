@@ -166,7 +166,13 @@ contains
     DO i = 0, 17
 
 #ifdef DENSE_DIAGNOSTICS
+       TrX=SpAMM_trace_tree_2d_symm_recur(x_dual)
+       FillN = abs( dble(s%frill%ndimn(1)) - TrX )/dble(s%frill%ndimn(1))       
        WRITE(*,33)tau, kount, TrX, FillN, y_work*1d2 , z_work*1d2 , x_work*1d2 
+
+       FillN_prev=FillN
+       TrX=SpAMM_trace_tree_2d_symm_recur(x_stab)
+       FillN = abs( dble(s%frill%ndimn(1)) - TrX )/dble(s%frill%ndimn(1))       
        WRITE(*,34)tau, kount, TrX, FillN, y_work*1d2 , z_work*1d2 , x_work*1d2 
 #else
        ! check the trace for convergence:
@@ -207,11 +213,8 @@ contains
 
 #ifdef DENSE_DIAGNOSTICS
 
-       m_x_k1_stab=x_k1_stab
-       m_x_k1_dual=x_k1_dual
-
-       m_x_tld_k1_stab=x_tld_k1_stab
-       m_x_tld_k1_dual=x_tld_k1_dual
+       m_x_k1_stab=x_k_stab
+       m_x_k1_dual=x_k_dual
 
        scal_shift_stab=1d0
        shft_shift_stab=0d0 
@@ -230,13 +233,18 @@ contains
 !!$          write(*,*)' a '
 !!$       ELSE
           
-          IF(FillN>0.4d0)THEN
+          IF(I<2)THEN !FillN>0.4d0)THEN
 
              delta=8.d-2 ! maybe this should be a variable too, passed in?
 
 #ifdef DENSE_DIAGNOSTICS
+             WRITE(*,*)'a to start mx = ',SQRT(SUM(m_x_k1_stab**2)),SQRT(SUM(m_x_k1_dual**2))
+
              x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .TRUE. )
              x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .FALSE. )
+
+             WRITE(*,*)'b to start mx = ',SQRT(SUM(m_x_k1_stab**2)),SQRT(SUM(m_x_k1_dual**2))
+
 #else
              IF(DoDuals)THEN
                 x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
@@ -246,10 +254,11 @@ contains
 #endif
              sc=spammsand_scaling_invsqrt(SpAMM_zero)
 
-!           ELSEIF(FillN>0.1d0)THEN
-!             delta=1.0d-2 ! maybe this should be a variable too, passed in?
-!             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!             sc=spammsand_scaling_invsqrt(SpAMM_half)
+!!$
+!!$            ELSEIF(FillN>0.1d0)THEN
+!!$             delta=1.0d-2 ! maybe this should be a variable too, passed in?
+!!$             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$             sc=spammsand_scaling_invsqrt(SpAMM_half)
 
           ELSE
 
@@ -265,12 +274,12 @@ contains
        
 #ifdef DENSE_DIAGNOSTICS       
        x_dual => spammsand_scaled_invsqrt_mapping( x_dual, sc,.FALSE.)
+       CALL SpAMM_convert_tree_2d_symm_to_dense( x_dual, m_x_tld_k1_dual)
 #else
        IF(DoDuals)THEN
           ! m[x_n-1,c]   
           x_dual => spammsand_scaled_invsqrt_mapping( x_dual, sc)
 #endif
-
           ! |z_n> =  <z_n-1| m[x_n-1]  
           z_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( z_dual, x_dual, tau, nt_O=.TRUE., in_O = z_tmp , stream_file_O='z_dual'//inttoCHAR(I) )
           z_dual=> SpAMM_tree_2d_symm_copy_tree_2d_symm( z_tmp, in_O = z_dual, threshold_O = tau*0d0 ) 
@@ -279,12 +288,12 @@ contains
 
 #ifdef DENSE_DIAGNOSTICS       
           x_stab => spammsand_scaled_invsqrt_mapping( x_stab, sc,.TRUE.)
+          CALL SpAMM_convert_tree_2d_symm_to_dense( x_stab, m_x_tld_k1_stab)
 #else
        ELSE 
           ! m[x_n-1,c]   
           x_stab => spammsand_scaled_invsqrt_mapping( x_stab, sc)
 #endif
-
           ! |z_n> =  <z_n-1| m[x_n-1]  
           z_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( z_stab, x_stab, tau, nt_O=.TRUE., in_O = z_tmp , stream_file_O='z_stab'//inttoCHAR(I) )
           z_stab=> SpAMM_tree_2d_symm_copy_tree_2d_symm(  z_tmp, in_O = z_stab, threshold_O = tau*0d0 ) 
@@ -607,15 +616,15 @@ contains
            /SQRT( SUM(a**2)) /SQRT( SUM(b**2) )
   END FUNCTION SpAMMsand_Basis_Compare
 
-!#ifdef DENSE_DIAGNOSTICS
+#ifdef DENSE_DIAGNOSTICS
 
   FUNCTION spammsand_shift_tree_2d( x, low_prev, high_prev, low_new, high_new, stab ) RESULT(d)
 
-!#else
-!
-!  FUNCTION spammsand_shift_tree_2d( x, low_prev, high_prev, low_new, high_new ) RESULT(d)
-!
-!#endif
+#else
+
+  FUNCTION spammsand_shift_tree_2d( x, low_prev, high_prev, low_new, high_new ) RESULT(d)
+
+#endif
 
     !!!!!    shft=low_new+(x-low_prev)*(high_new-low_new)/(high_prev-low_prev)
 
@@ -638,7 +647,7 @@ contains
        scal_shift_stab=scal
        shft_shift_stab=shft       
        m_x_k1_stab=m_x_k1_stab*scal
-       m_x_k1_stab=m_x_k1_stab*shft*i_d
+       m_x_k1_stab=m_x_k1_stab+shft*i_d
     ELSE
        scal_shift_dual=scal
        shft_shift_dual=shft       
@@ -685,21 +694,11 @@ contains
        shft_mapp_stab=shft       
        m_x_k1_stab=m_x_k1_stab*scal
        m_x_k1_stab=m_x_k1_stab+shft*i_d
-       m_x_tld_k1_stab=m_x_tld_k1_stab*scal
-       m_x_tld_k1_stab=m_x_tld_k1_stab+shft*i_d
-
-!       WRITE(*,*)' stab scal shift = ',scal,shft
-!       WRITE(*,*)'stab d = ',d%frill%norm2, SUM(m_x_k1_stab**2)
     ELSE
        scal_mapp_dual=scal
        shft_mapp_dual=shft       
        m_x_k1_dual=m_x_k1_dual*scal       
        m_x_k1_dual=m_x_k1_dual+shft*i_d
-       m_x_tld_k1_dual=m_x_tld_k1_dual*scal       
-       m_x_tld_k1_dual=m_x_tld_k1_dual+shft*i_d
-
-!       WRITE(*,*)' dual scal shift = ',scal,shft
-!       WRITE(*,*)'dual d = ',d%frill%norm2, SUM(m_x_k1_dual**2)
     ENDIF
 #endif
 
@@ -808,8 +807,8 @@ program SpAMM_sandwich_inverse_squareroot
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
   kount=1
-!  first=.FALSE.
-  first=.TRUE.
+  first=.FALSE.
+!  first=.TRUE.
   second=.TRUE.
 
   z=>z_head
