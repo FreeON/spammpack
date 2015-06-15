@@ -1,7 +1,6 @@
-/home/mchalla/spammpack_matts_long_3_15_2015/CMakeFiles/ctags.dir
-/home/mchalla/spammpack_matts_long_3_15_2015/CMakeFiles/doc.dir
-/home/mchalla/spammpack_matts_long_3_15_2015/CMakeFiles/etags.dir
-/home/mchalla/spammpack_matts_long_3_15_2015/src/CMakeFiles/spammpack-serial-shared.dir
-/home/mchalla/spammpack_matts_long_3_15_2015/src/CMakeFiles/spammpack-serial-static.dir
-/home/mchalla/spammpack_matts_long_3_15_2015/spammsand/CMakeFiles/spammsand_invsqrt.dir
-/home/mchalla/spammpack_matts_long_3_15_2015/spammsand/CMakeFiles/utilities.dir
+/home/m/spammsand/CMakeFiles/ctags.dir
+/home/m/spammsand/CMakeFiles/etags.dir
+/home/m/spammsand/src/CMakeFiles/spammpack-serial-shared.dir
+/home/m/spammsand/src/CMakeFiles/spammpack-serial-static.dir
+/home/m/spammsand/spammsand/CMakeFiles/spammsand_invsqrt.dir
+/home/m/spammsand/spammsand/CMakeFiles/utilities.dir
