@@ -85,8 +85,6 @@ contains
        x_dual => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
        x_dual => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x_dual, threshold_O = SpAMM_normclean ) 
 
-       WRITE(*,*)'d tr = ',SpAMM_trace_tree_2d_symm_recur(x_dual)
-
 #ifdef DENSE_DIAGNOSTICS
 #else
     ELSE
@@ -98,8 +96,6 @@ contains
        !  x_0 => s
        x_stab => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
        x_stab => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x_stab, threshold_O = SpAMM_normclean ) 
-
-       WRITE(*,*)'s tr = ',SpAMM_trace_tree_2d_symm_recur(x_stab)
 
 #ifdef DENSE_DIAGNOSTICS
 #else
@@ -170,6 +166,8 @@ contains
     DO i = 0, 17
 
 #ifdef DENSE_DIAGNOSTICS
+       WRITE(*,33)tau, kount, TrX, FillN, y_work*1d2 , z_work*1d2 , x_work*1d2 
+       WRITE(*,34)tau, kount, TrX, FillN, y_work*1d2 , z_work*1d2 , x_work*1d2 
 #else
        ! check the trace for convergence:
        FillN_prev=FillN
@@ -236,21 +234,22 @@ contains
 
              delta=8.d-2 ! maybe this should be a variable too, passed in?
 
-!!$#ifdef DENSE_DIAGNOSTICS
-!!$             x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .TRUE. )
-!!$             x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .FALSE. )
-!!$#else
-!!$             IF(DoDuals)THEN
-!!$                x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$             ELSE
-!!$                x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$             ENDIF
-!!$#endif
-!!$             sc=spammsand_scaling_invsqrt(SpAMM_zero)
-!!$           ELSEIF(FillN>0.1d0)THEN
-!!$             delta=1.0d-2 ! maybe this should be a variable too, passed in?
-!!$             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$             sc=spammsand_scaling_invsqrt(SpAMM_half)
+#ifdef DENSE_DIAGNOSTICS
+             x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .TRUE. )
+             x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta , stab= .FALSE. )
+#else
+             IF(DoDuals)THEN
+                x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+             ELSE
+                x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+             ENDIF
+#endif
+             sc=spammsand_scaling_invsqrt(SpAMM_zero)
+
+!           ELSEIF(FillN>0.1d0)THEN
+!             delta=1.0d-2 ! maybe this should be a variable too, passed in?
+!             x => spammsand_shift_tree_2d( x, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!             sc=spammsand_scaling_invsqrt(SpAMM_half)
 
           ELSE
 
@@ -260,7 +259,7 @@ contains
  
 !       ENDIF
 
-       sc=1d0
+!       sc=1d0
 
        WRITE(*,*)' sc = ',sc
        
@@ -522,6 +521,15 @@ contains
     FpX_dual  = MATMUL( MATMUL( mp_dual , y_tld_k1_dual ), z_tld_k_dual    )  & 
               + MATMUL( y_tld_k_dual , MATMUL( z_tld_k1_dual , mp_dual) )
 
+!!$
+!!$    WRITE(*,*)' x_k_dual = ',SQRT(SUM(fpx_dual**2))
+!!$    call dsyevd("V", "U", N, fpx_dual, N, eval, work, LWORK, iwork, LIWORK, info)
+!!$    WRITE(*,*)' evals 1,n = ',SQRT(SUM(eval(1:N)**2))
+!!$
+
+
+
+!    fpx_dual=(0.5d0)*(dx_hat_dual - MATMUL(x_tld_k_dual,MATMUL(dx_hat_dual,x_tld_k_dual)))
 
     FillN_stab=0d0
     FillN_dual=0d0
@@ -529,26 +537,24 @@ contains
        FillN_stab=FillN_stab+x_tld_k_stab(j,j)
        FillN_dual=FillN_dual+x_tld_k_dual(j,j)
     enddo
-    FillN_stab=(FillN_stab-dble(n))/dble(n)
-    FillN_dual=(FillN_dual-dble(n))/dble(n)
+    FillN_stab=(dble(n)-FillN_stab)/dble(n)
+    FillN_dual=(dble(n)-FillN_dual)/dble(n)
 
     WRITE(*,*)'  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - '
     WRITE(*,*)'   stab: '
     WRITE(*,21)SQRT(SUM(fpx_stab**2)), SQRT(SUM(dx_stab**2))
     WRITE(*,22)SQRT(SUM(fpz_stab**2)), SQRT(SUM(dz_stab**2))
-    WRITE(*,24)FillN_stab
+    WRITE(*,24)FillN_stab,0.5d0*(SQRT(SUM(fpx_stab**2))*SQRT(SUM(dx_stab**2))+SQRT(SUM(fpz_stab**2))*SQRT(SUM(dz_stab**2)))
     WRITE(*,*)'   dual: '
     WRITE(*,21)SQRT(SUM(fpx_dual**2)), SQRT(SUM(dx_dual**2))
     WRITE(*,22)SQRT(SUM(fpz_dual**2)), SQRT(SUM(dz_dual**2))
     WRITE(*,23)SQRT(SUM(fpy_dual**2)), SQRT(SUM(dy_dual**2))
     WRITE(*,24)FillN_dual
 
-21  FORMAT("    f'_dx = ",e12.6,", dx = ",e12.6)
-22  FORMAT("    f'_dz = ",e12.6,", dz = ",e12.6)
-23  FORMAT("    f'_dy = ",e12.6,", dy = ",e12.6)
-24  FORMAT('    [ tr x - n ] / n         = ',e12.6)
-
-
+21  FORMAT("    f'_dx_k-1 = ",e12.6,", dx_k-1 = ",e12.6)
+22  FORMAT("    f'_dz_k-1 = ",e12.6,", dz_k-1 = ",e12.6)
+23  FORMAT("    f'_dy_k=1 = ",e12.6,", dy_k-1 = ",e12.6)
+24  FORMAT("    [n-trx]/n = ",e12.6,", dx_k   ~ ",e12.6)
 
 
     WRITE(99,44)kount, tau, FillN_stab, sqrt(sum(dx_stab**2)),sqrt(sum(dz_stab**2)),SQRT(SUM(fpz_stab**2)),SQRT(SUM(fpx_stab**2)), &
@@ -765,8 +771,6 @@ program SpAMM_sandwich_inverse_squareroot
 
   x_hi = SpAMMSand_rqi_extremal(s,1d-10,high_O=.TRUE.)
   WRITE(*,*)' hi extremal = ',x_hi
-
-  x_hi=0.1581732799382736d+01
 
   ! normalize the max ev of s to 1.  
   s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
