@@ -134,42 +134,69 @@ occlusion culling of insignifcant volumes in the product octree:
               \right.  \, ,
 \end{equation}
 \end{widetext}
-with errors bounded by sub-multiplicative norms, $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$, and the Cauchy-Schwarz inequality \cite{kahan}.
-The $\tt SpAMM$ error 
+with errors linear in $\tau$ 
+bounded by the sub-multiplicative norms $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ and the Cauchy-Schwarz inequality \cite{kahan,}.
+In Ref.\cite{Challacombe2014}, we generalize this recursive task occlusion to the problem of Fock exchange.
+
+The approximate $\tt SpAMM$ product is 
 \begin{equation}
-\mat{\Delta}^{a^i\cdot b^i}_{\tau}=\mat{a}^i \ot \mat{b}^i-\mat{a}^i\cdot \mat{b}^i 
+\widetilde{\mat{a}\cdot \mat{b}} \,  \equiv \, \mat{a} \ot \mat{b} \, 
+  = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} 
++ {\cal{O}} \left(  \tau^2 \right) \; ,
 \end{equation}
-corresponds to an occlusion map in the product space that statisfies the sub-multiplicative bound 
+with the culled contractions $\mat{\Delta}^{a \cdot b}_{\tau}$ obeying the $\tt SpAMM$ bound 
 \begin{equation}\label{bound}
-\lVert \mat{\Delta}^{a^i \cdot b^i}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a}^i \rVert  \,  \lVert \mat{b}^i \rVert \, .
+\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, , 
 \end{equation}
-In this sense, the $\tt SpAMM$ kernel is fast and stable,  as shown by Demmel, Dumitriu and Holz \cite{Demmel07}. Also,
-the bound,  Eq.~(\ref{bound}), provides {\em relative} error control in the product.  
-Unlike roundoff error however, the $\tt SpAMM$ error is deterministic,
-leading to a non-associative algebra and the development of error flows associated with the Lie bracket
+at each level of recursion.  This makes $\ot$ {\em stable}, as defined by Demmel, Dumitriu and Holz (see Eq.(1), Ref.~\cite{Demmel07}). 
+However, instead of the roundoff error, we are concerned with the deterministic $\tt SpAMM$ error,  which 
+leads to a non-associative algebra and error flows with properties of the Lie bracket
 \begin{equation}
-\left[ \mat{a} , \mat{b} \right]_{\tau} = \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
+\widetilde{\left[ \mat{a} , \mat{b} \right]} \equiv \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
 =  \left[ \mat{a} , \mat{b} \right]
 + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
 \end{equation}
-$\tt SpAMM$ is similar to compressed sensing kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}.  Instead of
-the FFT however, compression is achieved simply through fast metric querry of the occlusion map, which may expreience 
-localiztion effects in the basin of stability.   In addition to complexity reduction, octree locality is 
-important for the communication optimality of $N$-body methods \cite{}.   This $n-$body approach is contrary to 
+The interesting group theory associated with the construction of matrix functions is developed by Higham, Mackey, Mackey and T 
+in Ref.\cite{}.  
+%In this contibution, we consider only the magnitude of these error flows.     
+
+$\tt SpAMM$ is similar to compressed kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}.  Instead of
+the FFT however, compression is achieved through a recursive two-sided metric querry on the $\tt SpAMM$ bound, Eq.~(\ref{bound}),
+which may exprerience acceleration through localiztion effects in the $ijk$ (octree) space, as demonstrated shortly. 
+These localization techniques are, in most cases, complimentary with other compresive technologies, including methods based on 
+hierarchical semi-seperability and also methods for fast kernel summation \cite{}. 
+In addition to compression by occlusion, octree locality is important for the communication optimality of 
+$n$-body methods \cite{Warren Salmon, Yellik} that may be achieved by minimal locally essential trees \cite{}.    
+Finally, its interesting to note that this data-centric, {\em locality as compression} approach is incompatible with 
 randomization methods that employ homogenization to well condition matrices 
-\cite{pan, DiahLi and Parket Scott},  and also for domain decomposition of the $\tt SpGEMM$ \cite{}.
+\cite{pan, DiahLi and Parket Scott},  and also to achieve domain decomposition of the $\tt SpGEMM$, {\em e.g.} 
+using the conventional SUMMA \cite{}.
 
 \section{First Order Newton-Shulz Iteration}
 
-The approximation of the matrix sign and inverse square root via first order Newton Schulz (NS) iteration 
-has a number of attractive features, notably multiplication richness and super-linear convergence in the basin of convergence. 
-Developed extensively by Higham \cite{}, NS  yeilds resolution of the identity through the square root and its inverse \cite{}:
+There are two common, first order NS iterations; the sign iteration and the square root iteration, related by the square, $\mat{I}\left( \cdot \right)= {\rm sign}^2\left( \cdot \right) $.  The first order NS converges linearly at first, then enters a basin of stability marked by super-linear convergence.   
+For the NS sign iteration, this basin is marked by a behavioral change in the
+difference $\delta \mat{X}_k = \widetilde{\mat{X}}_k -\mat{X}_k = {\rm sign} \left(\mat{X}_{k-1}+\delta \mat{X}_{k-1} \right)
+-{\rm sign} \left(\mat{X}_{k-1} \right)$, where $\delta \mat{X}_{k-1}$ is some previous error.
+The change in behavior is associated with the onset of idempotence and the bounded eigenvalues of ${\rm sign}'\left( \cdot \right)$, leading to stable 
+iteration when ${\rm sign}'\left( \mat{X}_{k-1} \right) \delta \mat{X}_{k-1} < 1 $.  
+Global perturbative bounds on this iteration have been derived by Bai and Demmel \cite{Bai98usingthe}, while
+Byers, He and Mehrmann \cite{} developed assymptotic bounds.  
+The automatic stability of sign iteration is a well developed theme in Ref.\cite{Higham08}.
+
+In this work, we are concerned with the cooresponding square root iteration and resolution of the identity \cite{}
 \begin{equation}
-sign \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s^{-1/2}} \, .
+\mat{I} \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s}^{-1/2} \, ,
 \end{equation}
-positive definate argument $\mat{s}$, and stability of the iteration as the residual $\mat{x}_k $ tends towards 
-idempotence, $\mat{x}_k \rightarrow {sign}\left( \mat{s} \right) $, with 
- $\mat{y}_k \rightarrow \mat{s}^{1/2}$  and $\mat{z}_k \rightarrow \mat{s}^{-1/2}$ \cite{higham}. 
+stability analyses of the iteration 
+\begin{equation}
+\widetilde{\mat{x}}_k \leftarrow \mat{I} \left( \widetilde{\mat{x}}_{k-1} \right) = \widetilde{\mat{y}}_k \left( \widetilde{\mat{x}}_{k-1} \right)
+\, \ot \, \widetilde{\mat{z}}_k \left( \widetilde{\mat{x}}_{k-1} \right) \, ,
+\end{equation}
+with  $\widetilde{\mat{y}}_k \rightarrow \mat{s}^{1/2}$ and $\widetilde{\mat{z}}_k \rightarrow \mat{s}^{-1/2}$, and  
+{\em lensing} of the $\tt SpAMM$ octree along the $i=k$ plane of the cooresponding $ijk$ space, as convergence is reached. 
+
+
 Convergence and stability are determined by the first order NS map $m[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
 with scaling $\alpha$ \cite{}. 
 Initially, $m'$ at the smallest eigenvalue $x_0$ controls the rate of progress towards idempotence.  
@@ -178,14 +205,6 @@ Jie and Chen demonstrated a factor of two reduction
 in the number of NS steps for ill-conditioned problems by chosing $\alpha \sim 2.85$, with damping towards $\alpha=1$ at 
 convergence.  
 
-First order NS iteration converges linearly towards a basin of stability, marked by a super-linear convergence 
-associated with sign iteration,  $\mat{x}_k \leftarrow {\rm sign} \left( \mat{x}_{k-1} \right)$. 
-This basin is determined by the differential 
-$\delta \mat{x}_k = \widetilde{\mat{x}}_k -\mat{x}_k = {\rm sign} \left(\mat{x}_{k-1}+\delta \mat{x}_{k-1} \right)
--{\rm sign} \left(\mat{x}_{k-1} \right)$,  leading to a stable, quenched orbit when $\delta \mat{x}_k < 1 $.  
-Global perturbative bounds on this differential were derived by Bai and Demmel \cite{Bai98usingthe}, while
-Byers, He and Mehrmann \cite{} developed assymptotic bounds.  The first order anihilation of 
-this commuting differential is presented clearly in Ref.\cite{Higham08}, Section 5.7.
 
 Alternatively, NS iteration can diverge due to the unbounded accumulation of errors ($\delta \mat{x}_k > 1 $), e.g.~prior
 to the onset of stability.  For ill-conditioned problems, and with an approximate non-commuting algebra, the 
