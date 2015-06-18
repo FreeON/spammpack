@@ -162,7 +162,7 @@ in Ref.\cite{}.
 
 $\tt SpAMM$ is similar to compressed kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}.  Instead of
 the FFT however, compression is achieved through a recursive two-sided metric querry on the $\tt SpAMM$ bound, Eq.~(\ref{bound}),
-which may exprerience acceleration through localiztion effects in the $ijk$ (octree) space, as demonstrated shortly. 
+which may exprerience acceleration through localiztion effects (lensing) in the $ijk$ (octree) space, as demonstrated shortly. 
 These localization techniques are, in most cases, complimentary with other compresive technologies, including methods based on 
 hierarchical semi-seperability and also methods for fast kernel summation \cite{}. 
 In addition to compression by occlusion, octree locality is important for the communication optimality of 
@@ -193,22 +193,28 @@ stability analyses of the iteration
 \widetilde{\mat{x}}_k \leftarrow \mat{I} \left( \widetilde{\mat{x}}_{k-1} \right) = \widetilde{\mat{y}}_k \left( \widetilde{\mat{x}}_{k-1} \right)
 \, \ot \, \widetilde{\mat{z}}_k \left( \widetilde{\mat{x}}_{k-1} \right) \, ,
 \end{equation}
-with  $\widetilde{\mat{y}}_k \rightarrow \mat{s}^{1/2}$ and $\widetilde{\mat{z}}_k \rightarrow \mat{s}^{-1/2}$, and  
-{\em lensing} of the $\tt SpAMM$ octree along the $i=k$ plane of the cooresponding $ijk$ space, as convergence is reached. 
+and {\em lensing} of the $\tt SpAMM$ octree along the $i=k$ plane of the culled $ijk$ space,  developing as 
+$\widetilde{\mat{y}}_k \rightarrow \mat{s}^{1/2}$, $\widetilde{\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and 
+$\widetilde{\mat{x}}_k \rightarrow {\mat{I}}$.
 
+The square root iteration is cannonically posed as the dual \cite{}
+\begin{eqnarray}
+\mat{y}_k &\leftarrow& h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot \mat{y}_{k-1}  \\ 
+\mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \; ,
+\end{eqnarray}
+with convergence and stability controled by the NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$  \cite{}.
+Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the rate of progress towards idempotence.  
+For very ill-conditioned problems, a factor of two reduction in the number of NS steps can be achieved 
+by chosing $\alpha \sim 2.85$, with damping towards $\alpha=1$ at convergence.   This damping (or swiching) is 
+important to reduce scaling as stability is approached, shifting emphasis away from $h'_\alpha \left(x_0\right)$ 
+towards {\em e.g.} $h'_1 ([0.01,1])$, emphasizing overall convergence of the broad distribution of eigenvalues \cite{Pan and Scriber}. 
 
-Convergence and stability are determined by the first order NS map $m[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
-with scaling $\alpha$ \cite{}. 
-Initially, $m'$ at the smallest eigenvalue $x_0$ controls the rate of progress towards idempotence.  
-Later, the overall eigenvalue distribution becomes important \cite{}. Pan and Scriber .  More recently, 
-Jie and Chen demonstrated a factor of two reduction 
-in the number of NS steps for ill-conditioned problems by chosing $\alpha \sim 2.85$, with damping towards $\alpha=1$ at 
-convergence.  
-
-
-Alternatively, NS iteration can diverge due to the unbounded accumulation of errors ($\delta \mat{x}_k > 1 $), e.g.~prior
+However, such scaling can reduce stability of the iteration, particularly in an approximate algebra.  
+Also, a NS iteration can diverge due to the unbounded accumulation of errors ($\delta \mat{x}_k > 1 $), {\em e.g.}~prior
 to the onset of stability.  For ill-conditioned problems, and with an approximate non-commuting algebra, the 
-behavior of $\delta \mat{x}_k $ can be very different in practice for NS forms that are nominally equivalent,
+behavior of $\delta \mat{x}_k $ can be very different in practice for NS forms that are nominally equivalent, 
+{\em e.g.} through commutation identities \cite{higham2006}.     
+
 depending on the handedness of opperations and their proximity to the argumental basis, $\{ \mat{s} \}$.  
 Starting with $\mat{z}_0=\mat{I}$ and $\mat{x}_0=\mat{y}_0=\mat{s}$, these forms include: the ``dual'' iteration,
 \begin{eqnarray} \label{dualsiteration}
