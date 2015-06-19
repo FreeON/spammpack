@@ -181,39 +181,50 @@ difference $\delta \mat{X}_k = \widetilde{\mat{X}}_k -\mat{X}_k = {\rm sign} \le
 The change in behavior is associated with the onset of idempotence and the bounded eigenvalues of ${\rm sign}'\left( \cdot \right)$, leading to stable 
 iteration when ${\rm sign}'\left( \mat{X}_{k-1} \right) \delta \mat{X}_{k-1} < 1 $.  
 Global perturbative bounds on this iteration have been derived by Bai and Demmel \cite{Bai98usingthe}, while
-Byers, He and Mehrmann \cite{} developed assymptotic bounds.  
-The automatic stability of sign iteration is a well developed theme in Ref.\cite{Higham08}.
+Byers, He and Mehrmann \cite{} developed assymptotic bounds.  The automatic stability of sign iteration is a well developed theme in Ref.\cite{Higham08}.
 
-In this work, we are concerned with the cooresponding square root iteration and resolution of the identity \cite{}
+In this work, we are concerned with  resolution of the identity \cite{}
 \begin{equation}
 \mat{I} \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s}^{-1/2} \, ,
 \end{equation}
+and the cooresponding cannonical (dual) square root iteration \cite{};
+\begin{eqnarray}
+\mat{y}_k &\leftarrow& h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot \mat{y}_{k-1}  \\ 
+\mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \; ,
+\end{eqnarray}
+with eigenvalues in the proper domain aggregated towards 0 or 1 by the 
+NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$  \cite{}. Then,
+${\mat{y}}_k \rightarrow \mat{s}^{1/2}$, ${\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and ${\mat{x}}_k \rightarrow {\mat{I}}$.
+As in the case of sign iteration, this dual iteration was shown by Higham, Mackey,  Mackey and Tisseur \cite{Higham2005} 
+to remain bounded in the superlinear regime, by idempotent Frechet derivatives about the fixed point $\left(\mat{s}^{1/2},\mat{s}^{-1/2}\right)$,
+in the direction $\left( \delta \mat{y}_{k-1} , \delta \mat{z}_{k-1} \right)$:
+\begin{eqnarray}
+\delta \mat{y}_k &=& \frac{1}{2} \delta \mat{y}_{k-1} - \frac{1}{2} \mat{s}^{1/2} \cdot \delta \mat{z}_{k-1} \cdot \mat{s}^{1/2} \\
+\delta \mat{z}_k &=& \frac{1}{2} \delta \mat{z}_{k-1} - \frac{1}{2} \mat{s}^{-1/2} \cdot \delta \mat{y}_{k-1} \cdot \mat{s}^{-1/2} \;.
+\end{eqnarray}
+
+Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the rate of progress towards idempotence.  
+As recently shown by Jie and Chen \cite{Chen2014}, for very ill-conditioned problems, a factor of two reduction in the number of NS steps can be achieved 
+by chosing $\alpha \sim 2.85$, which is at the edge of stability.   As argued by Pan and Schreiber \cite{Pan1991},
+Jie and Chen \cite{Chen2014}, switching or damping the scaling factor towards $\alpha=1$ at convergence is important, shifting emphasis away from the 
+behavior of $x_0$ towards {\em e.g.} $x_i \in [0.01,1]$, emphasizing overall convergence of the broad distribution \cite{Pan and Scriber}. 
+
+However, agressive scaling can reduce stability of the iteration, particularly in an approximate algebra. 
+With a too large value of $\tau$, the unbounded (exponential) accumulation of errors ($\delta \mat{x}_k > 1 $) can arize
+before the onset of stability.  
+
+For ill-conditioned problems, and with an approximate non-commuting algebra, the 
+behavior of $\delta \mat{x}_k $ can be very different in practice for NS forms that are nominally equivalent, 
+{\em e.g.} through commutation identities \cite{higham2006}.     
+
+
 stability analyses of the iteration 
 \begin{equation}
 \widetilde{\mat{x}}_k \leftarrow \mat{I} \left( \widetilde{\mat{x}}_{k-1} \right) = \widetilde{\mat{y}}_k \left( \widetilde{\mat{x}}_{k-1} \right)
 \, \ot \, \widetilde{\mat{z}}_k \left( \widetilde{\mat{x}}_{k-1} \right) \, ,
 \end{equation}
 and {\em lensing} of the $\tt SpAMM$ octree along the $i=k$ plane of the culled $ijk$ space,  developing as 
-$\widetilde{\mat{y}}_k \rightarrow \mat{s}^{1/2}$, $\widetilde{\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and 
-$\widetilde{\mat{x}}_k \rightarrow {\mat{I}}$.
 
-The square root iteration is cannonically posed as the dual \cite{}
-\begin{eqnarray}
-\mat{y}_k &\leftarrow& h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot \mat{y}_{k-1}  \\ 
-\mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \; ,
-\end{eqnarray}
-with convergence and stability controled by the NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$  \cite{}.
-Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the rate of progress towards idempotence.  
-For very ill-conditioned problems, a factor of two reduction in the number of NS steps can be achieved 
-by chosing $\alpha \sim 2.85$, with damping towards $\alpha=1$ at convergence.   This damping (or swiching) is 
-important to reduce scaling as stability is approached, shifting emphasis away from $h'_\alpha \left(x_0\right)$ 
-towards {\em e.g.} $h'_1 ([0.01,1])$, emphasizing overall convergence of the broad distribution of eigenvalues \cite{Pan and Scriber}. 
-
-However, such scaling can reduce stability of the iteration, particularly in an approximate algebra.  
-Also, a NS iteration can diverge due to the unbounded accumulation of errors ($\delta \mat{x}_k > 1 $), {\em e.g.}~prior
-to the onset of stability.  For ill-conditioned problems, and with an approximate non-commuting algebra, the 
-behavior of $\delta \mat{x}_k $ can be very different in practice for NS forms that are nominally equivalent, 
-{\em e.g.} through commutation identities \cite{higham2006}.     
 
 depending on the handedness of opperations and their proximity to the argumental basis, $\{ \mat{s} \}$.  
 Starting with $\mat{z}_0=\mat{I}$ and $\mat{x}_0=\mat{y}_0=\mat{s}$, these forms include: the ``dual'' iteration,
@@ -243,26 +254,52 @@ m \left[ \widetilde{\mat{x}}_{k-1}\right] \cdot \widetilde{\mat{z}}^\dagger_{k-1
 \end{equation}
 then taking
 \begin{equation}
-\mat{x}_k + \delta \mat{x}_k = f \left[\widetilde{\mat{z}}_{k-1} , \widetilde{\mat{x}}_{k-1} \right] \;, 
+\mat{x}_k + \delta \mat{x}_k = \mat{x} \left(\widetilde{\mat{y}}_{k-1} , \widetilde{\mat{z}}_{k-1} \right) \;, 
 \end{equation}
+
+
 the error in the stabilized iteration is to first order
 \begin{equation}
-\delta \mat{x}_k = {f}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1} 
-                 + {f}_{\delta \widehat{\mat{x}}_{k-1}}  \, {\scriptstyle \times} \, \delta x_{k-1} 
-+ {\cal{O}} \left(  \tau^2 \right) \; ,
+\delta \mat{x}_k \, = \,  {\delta \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1} 
+                 \, + \,  {\delta \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1} \, ,
 \end{equation}
-where ${f}_{\delta \mat{z}_{k-1}}$ and ${f}_{\delta \mat{x}_{k-1}}$ are the Fr\'{e}chet differentials \cite{} along  
-$\delta \widehat{\mat{z}}_{k-1}$ and $\delta \widehat{\mat{x}}_{k-1}$, with corresponding displacements 
-$\delta z_{k-1} = \lVert \delta \mat{z}_{k-1} \rVert$  and $\delta x_{k-1}=\lVert \delta \mat{x}_{k-1} \rVert$.  These derivatives are
-\begin{equation}
-f_{\delta \widehat{\mat{z}}_{k-1}} = \lim_{\tau \rightarrow 0} \frac{ f [ \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1}, \widetilde{\mat{x}}_{k-1} ]
--f [\, \mat{z}_{k-1}, \widetilde{\mat{x}}_{k-1} ]  }{\tau} 
-\end{equation}
+where ${\delta \mat{x}}_{\delta \mat{y}_{k-1}}$ and ${\delta \mat{x}}_{\delta \mat{z}_{k-1}}$ are the Fr\'{e}chet derivatives \cite{} at $\mat{x}_{k-1}$, 
+along the unit directions  $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$, and with corresponding displacements 
+$\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$.  These derivatives are
 and 
+
+% \begin{eqnarray}
+%  \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ \mat{x} \left( \mat{y}_{k-1} + \tau \delta {\mat{y}}_{k-1} ,  {\mat{z}}_{k-1}  \right)
+% -\mat{x} \left( \mat{y}_{k-1}  ,  {\mat{z}}_{k-1} \right)  }{\tau}  \\ 
+%                                      &=&   \mat{y}_{\delta \widehat{ \mat{y}}_{k-1}} \cdot \mat{z}_{k-1}  + \mat{y}_{k-1}  \cdot \mat{z}_{\delta \widehat{ \mat{y}}_{k-1}} 
+% \end{eqnarray}
+
 \begin{equation}
-f_{\delta \widehat{ \mat{x}}_{k-1}} = \lim_{\tau \rightarrow 0} \frac{ f [ \widetilde{\mat{z}}_{k-1}, \mat{x}_{k-1} + \tau \delta \widehat{\mat{x}}_{k-1} ]
--f [ \widetilde{\mat{z}}_{k-1}, \mat{x}_{k-1} ]  }{\tau} \; ,
+ \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} =   \mat{y}_{\delta \widehat{ \mat{y}}_{k-1}} \cdot \mat{z}_{k-1}  + \mat{y}_{k-1}  \cdot \mat{z}_{\delta \widehat{ \mat{y}}_{k-1}} 
 \end{equation}
+
+\begin{multline}
+ \mat{y}_{\delta \widehat{ \mat{y}}_{k-1}} = \delta \widehat{\mat{y}}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right]\\ 
+                                     + \mat{y}_{k-1} \cdot h'_\alpha \left[ \mat{x}_{k-1} \right] \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}
+\end{multiline}
+\begin{equation}
+ \mat{z}_{\delta \widehat{ \mat{y}}_{k-1}} =  \mat{z}_{k-1} \cdot h'_\alpha \left[ \mat{x}_{k-1} \right] \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}
+\end{equation}
+
+\begin{multline} 
+ \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} = \delta \widehat{\mat{y}}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right] \\  +
+ \mat{y}_{k-1} \cdot \{  
+h'_\alpha \left[ \mat{x}_{k-1} \right] \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}  \\ +
+\mat{z}_{k-1} \cdot h'_\alpha \left[ \mat{x}_{k-1} \right] \cdot \delta \widehat{\mat{y}}_{k-1} \} \cdot \mat{z}_{k-1} 
+\end{multiline}
+
+
+\begin{equation}
+\mat{x}_{\delta \widehat{\mat{z}}_{k-1}} = \lim_{\tau \rightarrow 0} 
+\frac{ \mat{x} \left( {\mat{y}}_{k-1} , \mat{z}_{k-1} +\tau  \delta {\mat{z}}_{k-1} \right)
+     - \mat{x} \left(\, {\mat{y}}_{k-1} , \mat{z}_{k-1} \right)  }{\tau} 
+\end{equation}
+
 where for the stabilized iteration
 \begin{multline}
 f_{\delta \widehat{\mat{z}}_{k-1}} =
