@@ -160,9 +160,7 @@ contains
        WRITE(*,33)tau, kount, TrX, FillN, y_work*1d2 , z_work*1d2 , x_work*1d2 
        TrX=SpAMM_trace_tree_2d_symm_recur(x_stab)
        WRITE(*,34)tau, kount, TrX, FillN, y_work*1d2 , z_work*1d2 , x_work*1d2 
-
 #else
-
        ! check the trace for convergence:
        FillN_prev=FillN
        IF(DoDuals)THEN
@@ -452,17 +450,17 @@ contains
     WRITE(*,22)SQRT(SUM(dx_dy_stab**2)), SQRT(SUM(dy_stab**2)),SQRT(SUM(dx_dy_stab**2))*SQRT(SUM(dy_stab**2))
     WRITE(*,23)SQRT(SUM(dx_dz_stab**2)), SQRT(SUM(dz_stab**2)),SQRT(SUM(dx_dz_stab**2))*SQRT(SUM(dz_stab**2))
     WRITE(*,21)SQRT(SUM(dx_dx_stab**2)), SQRT(SUM(dx_stab**2)),SQRT(SUM(dx_dx_stab**2))*SQRT(SUM(dx_stab**2))
-    WRITE(*,24)FillN_stab
+    WRITE(*,24)FillN_stab, SQRT(SUM(dx_dy_stab**2))*SQRT(SUM(dy_stab**2))+SQRT(SUM(dx_dz_stab**2))*SQRT(SUM(dz_stab**2))
     WRITE(*,*)'   dual: '
     WRITE(*,22)SQRT(SUM(dx_dy_dual**2)), SQRT(SUM(dy_dual**2)),SQRT(SUM(dx_dy_dual**2))*SQRT(SUM(dy_dual**2))
     WRITE(*,23)SQRT(SUM(dx_dz_dual**2)), SQRT(SUM(dz_dual**2)),SQRT(SUM(dx_dz_dual**2))*SQRT(SUM(dz_dual**2))
     WRITE(*,21)SQRT(SUM(dx_dx_dual**2)), SQRT(SUM(dx_dual**2)),SQRT(SUM(dx_dx_dual**2))*SQRT(SUM(dx_dual**2))
-    WRITE(*,24)FillN_dual
+    WRITE(*,24)FillN_dual,SQRT(SUM(dx_dy_dual**2))*SQRT(SUM(dy_dual**2))+SQRT(SUM(dx_dz_dual**2))*SQRT(SUM(dz_dual**2))
 
-22  FORMAT("    f'_dy_k-1 = ",e12.6,", dy_k-1 = ",e12.6)
-23  FORMAT("    f'_dz_k=1 = ",e12.6,", dz_k-1 = ",e12.6)
-21  FORMAT("    f'_dx_k-1 = ",e12.6,", dx_k-1 = ",e12.6)
-24  FORMAT("    [n-trx]/n = ",e12.6,", dx_k   ~ ",e12.6)
+22  FORMAT("    f'_dy_k1 = ",e12.6,", dy_k1 = ",e12.6,", f'_dy*dy_k1 = ",e12.6)
+23  FORMAT("    f'_dz_k1 = ",e12.6,", dz_k1 = ",e12.6,", f'_dz*dz_k1 = ",e12.6)
+21  FORMAT("    f'_dx_k1 = ",e12.6,", dx_k1 = ",e12.6,", f'_dx*dx_k1 = ",e12.6)
+24  FORMAT("    [n-trx]/n = ",e12.6,", dx(y+z) ",e12.6)
 
 !    WRITE(*,24)FillN_stab,0.5d0*(SQRT(SUM(fpx_stab**2))*SQRT(SUM(dx_stab**2))+SQRT(SUM(fpz_stab**2))*SQRT(SUM(dz_stab**2)))
 
