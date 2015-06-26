@@ -45,7 +45,6 @@ contains
     IntToChar=ADJUSTL(IntToChar)
   END FUNCTION IntToChar
 
-
   SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, tau, DoDuals, second, kount)
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: s
@@ -65,6 +64,9 @@ contains
     REAL(SpAMM_KIND)                                  :: tau_zdotz,sz_norm
 
     tau_xtra=1d-6
+
+    tau=1d-2
+!    tau_xtra=0d0
 
 #ifdef DENSE_DIAGNOSTICS
 #else
@@ -201,7 +203,6 @@ contains
 #ifdef DENSE_DIAGNOSTICS
 
        m_x_k1=x_k
-
        scal_shift=1d0
        shft_shift=0d0 
        scal_mapp =1d0
@@ -359,7 +360,11 @@ contains
 
   SUBROUTINE SpAMMsand_Error_Analysis(kount, tau)
 
-    real(spamm_kind) :: Tau, FillN_stab, FillN_dual
+    real(spamm_kind) :: Tau, FillN_stab, FillN_dual, &
+    dy_stab_sclr,dz_stab_sclr, &
+    dx_stab_sclr,dy_dual_sclr, &
+    dz_dual_sclr,dx_dual_sclr
+
 
     integer :: i,kount,j,k
 
@@ -391,11 +396,17 @@ contains
     !-----------------
     dy_stab     = y_tld_k1_dual - y_k1;   dy_hat_stab = dy_stab/SQRT(SUM(dy_stab**2))
     dz_stab     = z_tld_k1_stab - z_k1;   dz_hat_stab = dz_stab/SQRT(SUM(dz_stab**2))
-    dx_stab     = x_tld_k1_stab - x_k1;   dx_hat_stab = dx_stab/SQRT(SUM(dx_stab**2))
+    dx_stab     = x_tld_k1_stab - x_k1;   dx_hat_stab = dx_stab/SQRT(SUM(dx_stab**2))    
+    dy_stab_sclr=SQRT(SUM(dy_stab**2))
+    dz_stab_sclr=SQRT(SUM(dz_stab**2))
+    dx_stab_sclr=SQRT(SUM(dx_stab**2))
     ! ------
     dy_dual     = y_tld_k1_dual - y_k1;   dy_hat_dual = dy_dual/SQRT(SUM(dy_dual**2))
     dz_dual     = z_tld_k1_dual - z_k1;   dz_hat_dual = dz_dual/SQRT(SUM(dz_dual**2))
     dx_dual     = x_tld_k1_dual - x_k1;   dx_hat_dual = dx_dual/SQRT(SUM(dx_dual**2))
+    dy_dual_sclr=SQRT(SUM(dy_dual**2))
+    dz_dual_sclr=SQRT(SUM(dz_dual**2))
+    dx_dual_sclr=SQRT(SUM(dx_dual**2))
     ! ------
     m_x_k1=x_k1
     m_x_k1=m_x_k1*scal_mapp
@@ -406,6 +417,10 @@ contains
     y_k = MATMUL(m_x_k1,y_k1)
     z_k = MATMUL(z_k1,m_x_k1)
     x_k = MATMUL(y_k,    z_k)
+
+!   x_k = MATMUL(MATMUL(TRANSPOSE(z_k),s_d),z_k)
+
+
     ! ------
     mp_dy_stab  = scal_mapp * scal_shift * MATMUL(dy_hat_stab,z_k1)
     mp_dz_stab  = scal_mapp * scal_shift * MATMUL(y_k1,dz_hat_stab)
@@ -414,14 +429,32 @@ contains
     mp_dy_dual  = scal_mapp * scal_shift * MATMUL(dy_hat_dual,z_k1)
     mp_dz_dual  = scal_mapp * scal_shift * MATMUL(y_k1,dz_hat_dual)
     mp_dx_dual  = scal_mapp * scal_shift * dx_hat_stab
+
+    write(*,*)' scal_mapp * scal_shift = ',scal_mapp * scal_shift  
+
+    WRITE(*,*)' dx = ',dx_stab_sclr, dy_stab_sclr+dz_stab_sclr
+
+!SQRT(SUM( ( MATMUL(dy_stab,z_k1)+MATMUL(y_k1,dz_stab) )**2 ))
+
+
+
+    mp_dz_stab  = scal_mapp * scal_shift * MATMUL(y_k1,dz_hat_stab)
+    mp_dx_stab  = scal_mapp * scal_shift * dx_hat_stab
+
+
+
+    WRITE(*,*)' mp = ',SQRT(SUM((mp_dy_stab*dy_stab_sclr + mp_dz_stab*dz_stab_sclr  )**2)), &
+                       SQRT(SUM((mp_dx_stab*dx_stab_sclr )**2))
+
     ! ------
     dz_dy_stab   = MATMUL(z_k1,mp_dy_stab)
     dy_dy_stab   = MATMUL(m_x_k1,dy_hat_stab)+MATMUL(mp_dy_stab,y_k1)
     dx_dy_stab   = MATMUL(dy_dy_stab,z_k) + MATMUL(y_k,dz_dy_stab)
-    ! ------
+    ! ------ 
     dy_dz_stab   = MATMUL(y_k1,mp_dz_stab)
     dz_dz_stab   = MATMUL(dz_hat_stab,m_x_k1)+MATMUL(z_k1,mp_dz_stab)
     dx_dz_stab   = MATMUL(dy_dz_stab,z_k) + MATMUL(y_k,dz_dz_stab)
+
     ! ------
     dy_dy_dual   = MATMUL(m_x_k1,dy_hat_dual)+MATMUL(mp_dy_dual,y_k1)
     dz_dy_dual   = MATMUL(z_k1,mp_dy_dual)
@@ -433,6 +466,16 @@ contains
     ! ------
     dx_dx_stab   = MATMUL(mp_dx_stab,MATMUL(y_k1,z_k))+MATMUL(y_k,MATMUL(z_k1,mp_dx_stab))
     dx_dx_dual   = MATMUL(mp_dx_dual,MATMUL(y_k1,z_k))+MATMUL(y_k,MATMUL(z_k1,mp_dx_dual))
+
+
+
+!!$    y_k = MATMUL( MATMUL(m_x_k1,y_k1), MATMUL(z_k1,m_x_k1) )
+!!$
+!!$
+!!$    z_k = MATMUL(z_k1,m_x_k1)
+!!$    x_k = MATMUL(y_k,    z_k)
+
+
 
     !    fpx_dual=(0.5d0)*(dx_hat_dual - MATMUL(x_tld_k_dual,MATMUL(dx_hat_dual,x_tld_k_dual)))
 
@@ -458,7 +501,7 @@ contains
     WRITE(*,24)FillN_dual,SQRT(SUM(dx_dy_dual**2))*SQRT(SUM(dy_dual**2))+SQRT(SUM(dx_dz_dual**2))*SQRT(SUM(dz_dual**2))
 
 22  FORMAT("    f'_dy_k1 = ",e12.6,", dy_k1 = ",e12.6,", f'_dy*dy_k1 = ",e12.6)
-23  FORMAT("    f'_dz_k1 = ",e12.6,", dz_k1 = ",e12.6,", f'_dz*dz_k1 = ",e12.6)
+23  FORMAT("    f'_dz_k1 = ",e22.16,", dz_k1 = ",e12.6,", f'_dz*dz_k1 = ",e12.6)
 21  FORMAT("    f'_dx_k1 = ",e12.6,", dx_k1 = ",e12.6,", f'_dx*dx_k1 = ",e12.6)
 24  FORMAT("    [n-trx]/n = ",e12.6,", dx(y+z) ",e12.6)
 
