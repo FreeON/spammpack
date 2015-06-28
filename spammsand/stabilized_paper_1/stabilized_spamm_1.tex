@@ -161,12 +161,15 @@ in Ref.\cite{}.
 %In this contibution, we consider only the magnitude of these error flows.     
 
 $\tt SpAMM$ is similar to compressed kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}. 
-spatial join! Paugh.  MAD.  etc
+spatial join! Paugh.  MAD.  etc    
  Instead of
 the FFT however, compression is achieved through a recursive two-sided metric querry on the $\tt SpAMM$ bound, Eq.~(\ref{bound}),
 which may exprerience acceleration through localiztion effects (lensing) in the $ijk$ (octree) space, as demonstrated shortly. 
 These localization techniques are, in most cases, complimentary with other compresive technologies, including methods based on 
 hierarchical semi-seperability and also methods for fast kernel summation \cite{}. 
+poor-mans approach to eliminating disjoint volumes 
+
+
 In addition to compression by occlusion, octree locality is important for the communication optimality of 
 $n$-body methods \cite{Warren Salmon, Yellik} that may be achieved by minimal locally essential trees \cite{}.    
 Finally, its interesting to note that this data-centric, {\em locality as compression} approach is incompatible with 
@@ -233,9 +236,13 @@ This is addressed in Section.~\ref{}.
 Agressive scaling can reduce stability of the iteration due to the larger derivative $h'_\alpha$.  Also, the previous error, 
 $\delta \mat{x}_{k-1}$, may be to large, {\em e.g.} due to a too large value of $\tau$,  leading to 
 the unbounded (exponential) accumulation of errors $\delta \mat{x}_k > 1 $.  To first order, stability of the 
-iteration is controled by the Frechet derivatives contributing to $\delta \mat{x}_k$.    For ill-conditioned problems
-and the $\ot$ kernel, these derivatives can behave differently amongst nominally equivalent implementations, for example 
-formulations based on the assumption of a commuting algebra.  In this contribution, we are interested in the
+iteration is controled by the Frechet derivatives contributing to $\delta \mat{x}_k$.    In some instances, 
+for example those realized through invocation of commutativity \cite{}, may lead to first Fr\'{e}chet derivatives that are 
+unbounded \cite{}.   Also, for ill-conditioned problems and the $\ot$ kernel, even instances with bounded first derivatives may experience higher order 
+effects that lead to 
+these derivatives can behave differently amongst nominally equivalent implementations, for example 
+formulations based on the assumption of a commuting algebra.  
+In this contribution, we are interested in nominally bounded instances, including the
 cannonical (dual) square root iteration, Eq.~\ref{cannonical}, as well as the ``stabilized'' version 
 with $\mat{y}^{\rm stab}_k = \mat{z}^\dagger_k \cdot \mat{s}$.  
 
@@ -245,16 +252,20 @@ with $\mat{y}^{\rm stab}_k = \mat{z}^\dagger_k \cdot \mat{s}$.
 \subsubsection{lensing}
 
 A feature of square root iteration with the $\ot$ kernel is localization of the culled octree 
-with convergence towards identity, $\widetilde{\mat{x}}_k \leftarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  In the product 
-$\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$, large and small eigenvalues, as well as norms, 
-are recursively brought to unity along the diagonal $i=k$, and within the cube $ijk$.
+with convergence towards identity, $\widetilde{\mat{x}}_k \leftarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
+the product $\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$ involves the product of large and small eigenvalues, and large and small norms, 
+which are recursively brought towards unity along the $i=k$ diagonal. Then, each product involving $\widetilde{\mat{x}}_k$ is a 
+a near reflection onto itself; a near involution about the $ijk$ cube-diagonal.  
+
 Because the $\tt SpAMM$ error obeys the multiplicative Cauchy-Schwarz bound, Eq.~(),  the 
-cooresponding culled-octree follows the $i=k$ plane\footnote{as well as the $i=j$ plane.}, resolving 
+cooresponding culled-octree follows the $i=j$ plane, about the $ijk$ cube-diagonal, resolving 
 the {\em relative} error in identity to within $\tau$.   
+
 This effect is shown in Figure \ref{x_lensing}.   We call this identity related,  plane-wise concentration of the culled octree 
 {\em lensing}.  Ideally, lensing cooresponds to the formation of two-dimensional surfaces, crossing along the cube diagonal, with attenuation 
 off the diagonal in the case of decay.  This is a complexity reduction relative to the naive (full) volume of the cube,
 and also relative to sparsification strategies that preserve only absolute errors, as in Eq.~\ref{}.  
+towards convergence, we should achieve a fast involution, involving reflections about the cube-diagonal. 
 
 \section{Modeling the ${\tt SpAMM}$ NS Iteration}
 
