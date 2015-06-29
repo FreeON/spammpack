@@ -56,7 +56,7 @@ contains
     !    LOGICAL, INTENT(IN)                              :: first
     LOGICAL                                           :: DoDuals,second
     INTEGER, INTENT(INOUT)                            :: kount
-    INTEGER                                           :: i,  j, k
+    INTEGER                                           :: i,  j, k, stat
     REAL(SpAMM_KIND)                                  :: sc, TrX, tau_xtra
     REAL(SpAMM_KIND)                                  :: x_work,z_work,y_work,zs_work,sz_work
     REAL(SpAMM_KIND)                                  :: x_fill,z_fill,y_fill,zs_fill,sz_fill,y_norm,zs_norm
@@ -64,10 +64,23 @@ contains
     REAL(SpAMM_KIND)                                  :: tau_zdotz,sz_norm
 
     tau_xtra=1d-8
-    tau=1d-6
+    tau=1d-3
+
+
+
+
 !    tau_xtra=0d0
 
 #ifdef DENSE_DIAGNOSTICS
+    open(unit=98, iostat=stat, file='spammsand_ns_diagnostics_stablized.dat',status='old')
+    if(stat.eq.0) close(98, status='delete')
+    open(unit=98, iostat=stat, file='spammsand_ns_diagnostics_dual.dat',status='old')
+    if(stat.eq.0) close(98, status='delete')
+
+    open(unit=98, iostat=stat, file='spammsand_ns_diagnostics_stablized.dat',status='new')
+    open(unit=99, iostat=stat, file='spammsand_ns_diagnostics_dual',status='new')
+    close(98)
+    close(99)
 #else
     !
     IF(DoDuals)tHeN
@@ -151,7 +164,7 @@ contains
     kount=1
     sz_norm=1d0
     FillN=1d10
-    DO i = 0, 60
+    DO i = 0, 30
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -217,7 +230,7 @@ contains
 
 !!$       IF(FillN>0.4d0)THEN
 !!$
-!!$          delta=8.d-2 ! maybe this should be a variable too, passed in?
+!!$          delta=8.d-2 
 !!$
 !!$#ifdef DENSE_DIAGNOSTICS
 !!$#else
@@ -295,14 +308,12 @@ contains
 #else
        IF(DoDuals)tHeN
 #endif
-
           ! <y_n| = m[x_n-1]<y_n-1|
           y_tmp  => SpAMM_tree_2d_symm_times_tree_2d_symm( x_dual, y_dual, tau_xtra , nt_O=.TRUE., in_O = y_tmp , stream_file_O='y_dual_'//inttoCHAR(I) )
           y_dual => SpAMM_tree_2d_symm_copy_tree_2d_symm( y_tmp, in_O = y_dual, threshold_O = tau_xtra )
 
           y_work=y_tmp%frill%flops/dble(y_tmp%frill%ndimn(1))**3
           y_norm=SQRT(y_tmp%frill%norm2)
-
 
           ! x_n = <y_n|z_n>
           x_dual => SpAMM_tree_2d_symm_times_tree_2d_symm( y_dual, z_dual, tau   , nt_O=.TRUE. , in_O = x_dual )
@@ -341,7 +352,7 @@ contains
           CALL SpAMM_convert_tree_2d_symm_to_dense( y_stab, y_tld_k_stab )
           CALL SpAMM_convert_tree_2d_symm_to_dense( x_stab, x_tld_k_stab )          
 
-          CALL SpAMMsand_Error_Analysis(kount, tau)
+          calL SpAMMsand_Error_Analysis(kount, tau, tau_xtra, sc, delta)
 #else
        endif
 #endif
@@ -360,12 +371,12 @@ contains
 
 #ifdef DENSE_DIAGNOSTICS
 
-  SUBROUTINE SpAMMsand_Error_Analysis(kount, tau)
+  SUBROUTINE SpAMMsand_Error_Analysis(kount, tau, tau_xtra, sc, delta)
 
-    real(spamm_kind) :: Tau, FillN_stab, FillN_dual, &
-    dy_stab_sclr,dz_stab_sclr, &
-    dx_stab_sclr,dy_dual_sclr, &
-    dz_dual_sclr,dx_dual_sclr
+     real(spamm_kind) :: Tau, Tau_xtra, sc, delta, FillN_stab, FillN_dual, &
+         dy_stab_sclr,dz_stab_sclr, &
+         dx_stab_sclr,dy_dual_sclr, &
+         dz_dual_sclr,dx_dual_sclr
 
     integer :: i,kount,j,k
 
@@ -413,48 +424,52 @@ contains
     dx_dual_sclr=SQRT(SUM(dx_dual**2))
     !    WRITE(*,*)'dual  dy,dz,dx = ',dy_dual_sclr, dz_dual_sclr, dx_dual_sclr
     !---------------------------------------------
-    !  dx/dz_stab 
-
-    m_x_k1=MATMUL(y_k1,z_tld_k1_stab)
-    m_x_k1=m_x_k1*scal_mapp
-    m_x_k1=m_x_k1+shft_mapp*i_d
-    m_x_k1=m_x_k1*scal_shift
-    m_x_k1=m_x_k1+shft_shift*i_d
-    ! ------
-    y_k = MATMUL(m_x_k1,y_k1)
-    z_k = MATMUL(z_tld_k1_stab,m_x_k1)
-    x_k_of_z = MATMUL(y_k,    z_k)
+!!$    !  here are the Gateux differences 
+!!$    !
+!!$    !  dx/dz_stab 
+!!$    m_x_k1=MATMUL(y_k1,z_tld_k1_stab)
+!!$    m_x_k1=m_x_k1*scal_mapp
+!!$    m_x_k1=m_x_k1+shft_mapp*i_d
+!!$    m_x_k1=m_x_k1*scal_shift
+!!$    m_x_k1=m_x_k1+shft_shift*i_d
+!!$    ! ------
+!!$    y_k = MATMUL(m_x_k1,y_k1)
+!!$    z_k = MATMUL(z_tld_k1_stab,m_x_k1)
+!!$    x_k_of_z = MATMUL(y_k,    z_k)
+!!$    !---------------------------------------------
+!!$    !  dx / dy
+!!$    m_x_k1=MATMUL(y_tld_k1_stab,z_k1)
+!!$    m_x_k1=m_x_k1*scal_mapp
+!!$    m_x_k1=m_x_k1+shft_mapp*i_d
+!!$    m_x_k1=m_x_k1*scal_shift
+!!$    m_x_k1=m_x_k1+shft_shift*i_d
+!!$    ! ------
+!!$    y_k = MATMUL(m_x_k1,y_tld_k1_stab)
+!!$    z_k = MATMUL(z_k1, m_x_k1)
+!!$    x_k_of_y = MATMUL(y_k,    z_k)
     !---------------------------------------------
-    !  dx / dy
-    m_x_k1=MATMUL(y_tld_k1_stab,z_k1)
-    m_x_k1=m_x_k1*scal_mapp
-    m_x_k1=m_x_k1+shft_mapp*i_d
-    m_x_k1=m_x_k1*scal_shift
-    m_x_k1=m_x_k1+shft_shift*i_d
-    ! ------
-    y_k = MATMUL(m_x_k1,y_tld_k1_stab)
-    z_k = MATMUL(z_k1, m_x_k1)
-    x_k_of_y = MATMUL(y_k,    z_k)
-    !---------------------------------------------
-
-    ! unperturbed
+    ! unperturbed ...
     m_x_k1=x_k1
-    m_x_k1=m_x_k1*scal_mapp
-    m_x_k1=m_x_k1+shft_mapp*i_d
+    ! apply the shift and scale by delta (stabilization) ...
     m_x_k1=m_x_k1*scal_shift
     m_x_k1=m_x_k1+shft_shift*i_d
-    ! ------
+    ! apply the NS map ...
+    m_x_k1=m_x_k1*scal_mapp
+    m_x_k1=m_x_k1+shft_mapp*i_d
+    ! here is the reference dual, y & k ...
     y_k = MATMUL(m_x_k1,y_k1)
     z_k = MATMUL(z_k1,m_x_k1)
+    ! taking the "dual" reference in double precision ... 
     x_k = MATMUL(y_k,    z_k)
+    !   x_k = MATMUL(MATMUL(TRANSPOSE(z_k),s_d),z_k)
     !---------------------------------------------
-    x_k_of_z=(x_k_of_z-x_k)/dz_stab_sclr
-    x_k_of_y=(x_k_of_y-x_k)/dy_stab_sclr
+!!$    !
+!!$    !  ... and here are the Gateux differentials
+!!$    x_k_of_z=(x_k_of_z-x_k)/dz_stab_sclr
+!!$    x_k_of_y=(x_k_of_y-x_k)/dy_stab_sclr
 
-!    WRITE(*,*)' dx/dz = ',SQRT(SUM(x_k_of_z**2 )),x_k_of_z(1:2,1:2)
-!    WRITE(*,*)' dx/dy = ',SQRT(SUM(x_k_of_y**2 )),x_k_of_y(1:2,1:2)
-
-!   x_k = MATMUL(MATMUL(TRANSPOSE(z_k),s_d),z_k)
+    !    WRITE(*,*)' dx/dz = ',SQRT(SUM(x_k_of_z**2 )),x_k_of_z(1:2,1:2)
+    !    WRITE(*,*)' dx/dy = ',SQRT(SUM(x_k_of_y**2 )),x_k_of_y(1:2,1:2)
 
     ! ------
     mp_dy_stab  = scal_mapp * scal_shift * MATMUL(dy_hat_stab,z_k1)
@@ -467,37 +482,33 @@ contains
 
     mp_dz_stab  = scal_mapp * scal_shift * MATMUL(y_k1,dz_hat_stab)
     mp_dx_stab  = scal_mapp * scal_shift * dx_hat_stab
-
-!    WRITE(*,*)' mp = ',SQRT(SUM((mp_dy_stab*dy_stab_sclr + mp_dz_stab*dz_stab_sclr  )**2)), &
-!                       SQRT(SUM((mp_dx_stab*dx_stab_sclr )**2))
-
     ! ------
     dz_dy_stab   = MATMUL(z_k1,mp_dy_stab)
     dy_dy_stab   = MATMUL(m_x_k1,dy_hat_stab) + MATMUL(mp_dy_stab,y_k1)
     dx_dy_stab   = MATMUL(dy_dy_stab,z_k) + MATMUL(y_k,dz_dy_stab)
 
-    x_k_of_y=MATMUL(y_k,MATMUL(z_k1,mp_dy_stab))
-    WRITE(*,*)' '
-    WRITE(*,*)' ( Y_k          | z_k1 . h_dy  )  = ',x_k_of_y(1:2,1:2)
-    x_k_of_y=MATMUL(MATMUL(mp_dy_stab,y_k1),Z_K)
-    WRITE(*,*)' ( h_dy . y_k1  | Z_k          )  = ',x_k_of_y(1:2,1:2)
-    x_k_of_y=MATMUL(MATMUL(m_x_k1,dy_hat_stab),z_k)
-    WRITE(*,*)' ( h[x_k1] . dy | Z_k          )  = ',x_k_of_y(1:2,1:2)
-    WRITE(*,*)
+!!$    x_k_of_y=MATMUL(y_k,MATMUL(z_k1,mp_dy_stab))
+!!$    WRITE(*,*)' '
+!!$    WRITE(*,*)' ( Y_k          | z_k1 . h_dy  )  = ',x_k_of_y(1:2,1:2)
+!!$    x_k_of_y=MATMUL(MATMUL(mp_dy_stab,y_k1),Z_K)
+!!$    WRITE(*,*)' ( h_dy . y_k1  | Z_k          )  = ',x_k_of_y(1:2,1:2)
+!!$    x_k_of_y=MATMUL(MATMUL(m_x_k1,dy_hat_stab),z_k)
+!!$    WRITE(*,*)' ( h[x_k1] . dy | Z_k          )  = ',x_k_of_y(1:2,1:2)
+!!$    WRITE(*,*)
     ! ------ 
     dy_dz_stab   = MATMUL(mp_dz_stab,y_k1)
     dz_dz_stab   = MATMUL(dz_hat_stab,m_x_k1)+MATMUL(z_k1,mp_dz_stab)
     dx_dz_stab   = MATMUL(dy_dz_stab,z_k) + MATMUL(y_k,dz_dz_stab)
 
-    x_k_of_y=MATMUL(MATMUL(mp_dz_stab,y_k1),Z_k)
-    WRITE(*,*)' ( h_dy . y_k1  | Z_k          )  = ',x_k_of_y(1:2,1:2)
-    x_k_of_y=MATMUL(Y_k, MATMUL(dz_hat_stab,m_x_k1) )
-    WRITE(*,*)' ( Y_k          | dz . h[x_k1] )  = ',x_k_of_y(1:2,1:2)
-    x_k_of_y=MATMUL(Y_k,MATMUL(z_k1,mp_dz_stab))
-    WRITE(*,*)' ( Y_k          | z_k1 . h_dy  )  = ',x_k_of_y(1:2,1:2)
+!!$    x_k_of_y=MATMUL(MATMUL(mp_dz_stab,y_k1),Z_k)
+!!$    WRITE(*,*)' ( h_dy . y_k1  | Z_k          )  = ',x_k_of_y(1:2,1:2)
+!!$    x_k_of_y=MATMUL(Y_k, MATMUL(dz_hat_stab,m_x_k1) )
+!!$    WRITE(*,*)' ( Y_k          | dz . h[x_k1] )  = ',x_k_of_y(1:2,1:2)
+!!$    x_k_of_y=MATMUL(Y_k,MATMUL(z_k1,mp_dz_stab))
+!!$    WRITE(*,*)' ( Y_k          | z_k1 . h_dy  )  = ',x_k_of_y(1:2,1:2)
 
-!    WRITE(*,*)' dx/dz = ',SQRT(SUM( dx_dz_stab**2 )),dx_dz_stab(1:2,1:2)
-!    WRITE(*,*)' dx/dy = ',SQRT(SUM( dx_dy_stab**2 )) ,dx_dy_stab(1:2,1:2)
+    !    WRITE(*,*)' dx/dz = ',SQRT(SUM( dx_dz_stab**2 )),dx_dz_stab(1:2,1:2)
+    !    WRITE(*,*)' dx/dy = ',SQRT(SUM( dx_dy_stab**2 )) ,dx_dy_stab(1:2,1:2)
     ! ------
     dy_dy_dual   = MATMUL(m_x_k1,dy_hat_dual)+MATMUL(mp_dy_dual,y_k1)
     dz_dy_dual   = MATMUL(z_k1,mp_dy_dual)
@@ -510,32 +521,6 @@ contains
     ! ------
     dx_dx_stab   = MATMUL(mp_dx_stab,MATMUL(y_k1,z_k))+MATMUL(y_k,MATMUL(z_k1,mp_dx_stab))
     dx_dx_dual   = MATMUL(mp_dx_dual,MATMUL(y_k1,z_k))+MATMUL(y_k,MATMUL(z_k1,mp_dx_dual))
-
-
-
-
-
-!!$   stab: 
-!!$    f'_dy_k1 = 0.176328E-15, dy_k1 = 0.320052E-02, f'_dy*dy_k1 = 0.564341E-18
-!!$    f'_dz_k1 = 0.1259891080568456E-15, dz_k1 = 0.624297E-02, f'_dz*dz_k1 = 0.786547E-18
-!!$    f'_dx_k1 = 0.100000E+01, dx_k1 = 0.315360E-02, f'_dx*dx_k1 = 0.315360E-02
-!!$    [n-trx]/n = -.479948E-10, dx(y+z) 0.135089E-17
-!!$    dual: 
-!!$    f'_dy_k1 = 0.231192E-15, dy_k1 = 0.185750E-02, f'_dy*dy_k1 = 0.429440E-18
-!!$    f'_dz_k1 = 0.1068232654661206E-15, dz_k1 = 0.601987E-02, f'_dz*dz_k1 = 0.643062E-18
-!!$    f'_dx_k1 = 0.100000E+01, dx_k1 = 0.788165E-03, f'_dx*dx_k1 = 0.788165E-03
-!!$    [n-trx]/n = -.837103E-09, dx(y+z) 0.107250E-17
-!!$  xk1 =    4.8989794855663558       xk =    4.8989794855663558     
-!!$STOP  This has been a diagnostics run, please see fort.99 
-!!$m@U
-
-!!$    y_k = MATMUL( MATMUL(m_x_k1,y_k1), MATMUL(z_k1,m_x_k1) )
-!!$
-!!$
-!!$    z_k = MATMUL(z_k1,m_x_k1)
-!!$    x_k = MATMUL(y_k,    z_k)
-
-    !    fpx_dual=(0.5d0)*(dx_hat_dual - MATMUL(x_tld_k_dual,MATMUL(dx_hat_dual,x_tld_k_dual)))
 
     FillN_stab=0d0
     FillN_dual=0d0
@@ -551,69 +536,56 @@ contains
     WRITE(*,22)SQRT(SUM(dx_dy_stab**2)), SQRT(SUM(dy_stab**2)),SQRT(SUM(dx_dy_stab**2))*SQRT(SUM(dy_stab**2))
     WRITE(*,23)SQRT(SUM(dx_dz_stab**2)), SQRT(SUM(dz_stab**2)),SQRT(SUM(dx_dz_stab**2))*SQRT(SUM(dz_stab**2))
     WRITE(*,21)SQRT(SUM(dx_dx_stab**2)), SQRT(SUM(dx_stab**2)),SQRT(SUM(dx_dx_stab**2))*SQRT(SUM(dx_stab**2))
-    WRITE(*,24)FillN_stab, SQRT(SUM(dx_dy_stab**2))*SQRT(SUM(dy_stab**2))+SQRT(SUM(dx_dz_stab**2))*SQRT(SUM(dz_stab**2))
+    WRITE(*,24)FillN_stab
     WRITE(*,*)'   dual: '
     WRITE(*,22)SQRT(SUM(dx_dy_dual**2)), SQRT(SUM(dy_dual**2)),SQRT(SUM(dx_dy_dual**2))*SQRT(SUM(dy_dual**2))
     WRITE(*,23)SQRT(SUM(dx_dz_dual**2)), SQRT(SUM(dz_dual**2)),SQRT(SUM(dx_dz_dual**2))*SQRT(SUM(dz_dual**2))
     WRITE(*,21)SQRT(SUM(dx_dx_dual**2)), SQRT(SUM(dx_dual**2)),SQRT(SUM(dx_dx_dual**2))*SQRT(SUM(dx_dual**2))
-    WRITE(*,24)FillN_dual,SQRT(SUM(dx_dy_dual**2))*SQRT(SUM(dy_dual**2))+SQRT(SUM(dx_dz_dual**2))*SQRT(SUM(dz_dual**2))
+    WRITE(*,24)FillN_dual
 
 22  FORMAT("    f'_dy_k1 = ",e12.6,", dy_k1 = ",e12.6,", f'_dy*dy_k1 = ",e12.6)
-23  FORMAT("    f'_dz_k1 = ",e22.16,", dz_k1 = ",e12.6,", f'_dz*dz_k1 = ",e12.6)
+23  FORMAT("    f'_dz_k1 = ",e12.6,", dz_k1 = ",e12.6,", f'_dz*dz_k1 = ",e12.6)
 21  FORMAT("    f'_dx_k1 = ",e12.6,", dx_k1 = ",e12.6,", f'_dx*dx_k1 = ",e12.6)
-24  FORMAT("    [n-trx]/n = ",e12.6,", dx(y+z) ",e12.6)
+24  FORMAT("    [n-trx]/n = ",e12.6)
+    !
 
-!    WRITE(*,24)FillN_stab,0.5d0*(SQRT(SUM(fpx_stab**2))*SQRT(SUM(dx_stab**2))+SQRT(SUM(fpz_stab**2))*SQRT(SUM(dz_stab**2)))
+    open(unit=98, file='spammsand_ns_diagnostics_stablized.dat', position='append')
+    open(unit=99, file='spammsand_ns_diagnostics_dual', position='append')
 
-!    WRITE(99,44)kount, tau, FillN_stab, sqrt(sum(dx_stab**2)),sqrt(sum(dz_stab**2)),SQRT(SUM(fpz_stab**2)),SQRT(SUM(fpx_stab**2)), &
-!         FillN_dual, sqrt(sum(dx_dual**2)),sqrt(sum(dz_dual**2)),sqrt(sum(dy_dual**2)),SQRT(SUM(fpy_dual**2)), &
-!         SQRT(SUM(fpz_dual**2)),SQRT(SUM(fpx_dual**2))
+
+    WRITE(98,44)kount, tau, tau_xtra, sc, delta, FillN_stab, &
+    SQRT(SUM(dx_dy_stab**2)), SQRT(SUM(dy_stab**2)), SQRT(SUM(dx_dz_stab**2)), SQRT(SUM(dz_stab**2)),  &
+         SQRT(SUM(dx_dx_stab**2)), SQRT(SUM(dx_stab**2))
+
+    WRITE(99,44)kount, tau, tau_xtra, sc, delta, FillN_dual, &
+    SQRT(SUM(dx_dy_dual**2)), SQRT(SUM(dy_dual**2)), SQRT(SUM(dx_dz_dual**2)), SQRT(SUM(dz_dual**2)),  &
+         SQRT(SUM(dx_dx_dual**2)), SQRT(SUM(dx_dual**2))
+
+
+    close(98)
+    close(99)
 
 44  format(I3,"   ", 20(e12.6,",   "))
 
+    ! free some memory ...
+    DEALLOCATE(x_k_of_y);   DEALLOCATE(x_k_of_z); 
+    DEALLOCATE(dy_stab);    DEALLOCATE(dy_hat_stab); 
+    DEALLOCATE(dz_stab);    DEALLOCATE(dz_hat_stab)
+    DEALLOCATE(dx_stab);    DEALLOCATE(dx_hat_stab)
+    DEALLOCATE(dy_dual);    DEALLOCATE(dy_hat_dual)
+    DEALLOCATE(dz_dual);    DEALLOCATE(dz_hat_dual)
+    DEALLOCATE(dx_dual);    DEALLOCATE(dx_hat_dual)
+    DEALLOCATE(mp_dy_stab); DEALLOCATE(mp_dz_stab);  DEALLOCATE(mp_dx_stab)
+    DEALLOCATE(mp_dy_dual); DEALLOCATE(mp_dz_dual);  DEALLOCATE(mp_dx_dual)
+    DEALLOCATE(dz_dy_stab); DEALLOCATE(dy_dy_stab)
+    DEALLOCATE(dx_dy_stab); DEALLOCATE(dy_dz_stab)
+    DEALLOCATE(dz_dz_stab); DEALLOCATE(dx_dz_stab)
+    DEALLOCATE(dz_dy_dual); DEALLOCATE(dy_dy_dual)
+    DEALLOCATE(dx_dy_dual); DEALLOCATE(dy_dz_dual)
+    DEALLOCATE(dz_dz_dual); DEALLOCATE(dx_dz_dual)
+    DEALLOCATE(dx_dx_stab); DEALLOCATE(dx_dx_dual)
 
-    DEALLOCATE(x_k_of_y)
-    DEALLOCATE(x_k_of_z)
-
-    DEALLOCATE(dy_stab)
-    DEALLOCATE(dy_hat_stab)
-    DEALLOCATE(dz_stab)
-    DEALLOCATE(dz_hat_stab)
-    DEALLOCATE(dx_stab)
-    DEALLOCATE(dx_hat_stab)
-    DEALLOCATE(dy_dual)
-    DEALLOCATE(dy_hat_dual)
-    DEALLOCATE(dz_dual)
-    DEALLOCATE(dz_hat_dual)
-    DEALLOCATE(dx_dual)
-    DEALLOCATE(dx_hat_dual)
-
-    DEALLOCATE(mp_dy_stab)
-    DEALLOCATE(mp_dz_stab)
-    DEALLOCATE(mp_dx_stab)
-
-    DEALLOCATE(mp_dy_dual)
-    DEALLOCATE(mp_dz_dual)
-    DEALLOCATE(mp_dx_dual)
-
-    DEALLOCATE(dz_dy_stab)
-    DEALLOCATE(dy_dy_stab)
-    DEALLOCATE(dx_dy_stab)
-    DEALLOCATE(dy_dz_stab)
-    DEALLOCATE(dz_dz_stab)
-    DEALLOCATE(dx_dz_stab)
-    DEALLOCATE(dz_dy_dual)
-    DEALLOCATE(dy_dy_dual)
-    DEALLOCATE(dx_dy_dual)
-    DEALLOCATE(dy_dz_dual)
-    DEALLOCATE(dz_dz_dual)
-    DEALLOCATE(dx_dz_dual)
-
-    DEALLOCATE(dx_dx_stab)
-    DEALLOCATE(dx_dx_dual)
-
-    WRITE(*,*)' xk1 = ',SQRT(SUM(x_k1**2)),' xk = ',SQRT(SUM(x_k**2))
-
+    ! update the privous iterates ...
     y_k1=y_k
     z_k1=z_k
     x_k1=x_k
@@ -623,7 +595,7 @@ contains
     y_tld_k1_stab=y_tld_k_stab
     z_tld_k1_stab=z_tld_k_stab
     x_tld_k1_stab=x_tld_k_stab
-
+    !
 
   END SUBROUTINE SpAMMsand_Error_Analysis
 
