@@ -330,9 +330,6 @@ CONTAINS
     LOGICAL                                                    :: NT
     REAL(SpAMM_KIND)                                           :: Tau2
     CHARACTER(LEN=*), OPTIONAL     :: stream_file_O
-    
-
-    CHARACTER(LEN=*), OPTIONAL     :: stream_file_O
 
 #ifdef SpAMM_PRINT_STREAM
 

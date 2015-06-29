@@ -63,23 +63,20 @@ contains
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev
     REAL(SpAMM_KIND)                                  :: tau_zdotz,sz_norm
 
-    tau_xtra=1d-8
+    tau_xtra=1d-6
     tau=1d-3
-
-
-
 
 !    tau_xtra=0d0
 
 #ifdef DENSE_DIAGNOSTICS
     open(unit=98, iostat=stat, file='spammsand_ns_diagnostics_stablized.dat',status='old')
     if(stat.eq.0) close(98, status='delete')
-    open(unit=98, iostat=stat, file='spammsand_ns_diagnostics_dual.dat',status='old')
-    if(stat.eq.0) close(98, status='delete')
-
     open(unit=98, iostat=stat, file='spammsand_ns_diagnostics_stablized.dat',status='new')
-    open(unit=99, iostat=stat, file='spammsand_ns_diagnostics_dual',status='new')
     close(98)
+
+    open(unit=99, iostat=stat, file='spammsand_ns_diagnostics_dual.dat',status='old')
+    if(stat.eq.0) close(99, status='delete')
+    open(unit=99, iostat=stat, file='spammsand_ns_diagnostics_dual.dat',status='new')
     close(99)
 #else
     !
@@ -164,7 +161,7 @@ contains
     kount=1
     sz_norm=1d0
     FillN=1d10
-    DO i = 0, 30
+    DO i = 0, 50
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -550,19 +547,16 @@ contains
     !
 
     open(unit=98, file='spammsand_ns_diagnostics_stablized.dat', position='append')
-    open(unit=99, file='spammsand_ns_diagnostics_dual', position='append')
-
-
     WRITE(98,44)kount, tau, tau_xtra, sc, delta, FillN_stab, &
     SQRT(SUM(dx_dy_stab**2)), SQRT(SUM(dy_stab**2)), SQRT(SUM(dx_dz_stab**2)), SQRT(SUM(dz_stab**2)),  &
          SQRT(SUM(dx_dx_stab**2)), SQRT(SUM(dx_stab**2))
+    close(98)
 
+    open(unit=99, file='spammsand_ns_diagnostics_dual.dat', position='append')
     WRITE(99,44)kount, tau, tau_xtra, sc, delta, FillN_dual, &
     SQRT(SUM(dx_dy_dual**2)), SQRT(SUM(dy_dual**2)), SQRT(SUM(dx_dz_dual**2)), SQRT(SUM(dz_dual**2)),  &
          SQRT(SUM(dx_dx_dual**2)), SQRT(SUM(dx_dual**2))
 
-
-    close(98)
     close(99)
 
 44  format(I3,"   ", 20(e12.6,",   "))

@@ -1,0 +1,40 @@
+#set term pngcairo dashed enhanced font 'Courier Bold,16'
+#set term pngcairo dashed transparent enhanced font 
+#set terminal postscript enhanced eps
+set terminal postscript eps enhanced color font 'Courier-Bold,16' 
+
+#set size 3.5,2.5 
+
+set output "33_nanotube_cond10.eps" 
+
+set logscale y
+
+set style line 1 lt 1 lc rgb "red"     lw 3
+set style line 2 lt 1 lc rgb "green"   lw 3
+set style line 3 lt 1 lc rgb "blue"    lw 3
+set style line 4 lt 1 lc rgb "black"   lw 3
+#set style line 5 lt 5 lc rgb "red"   lw 3
+#set style line 6 lt 5 lc rgb "blue"  lw 3
+#set style line 7 lt 1 lc rgb "grey"  lw 1
+
+set size ratio .75
+#set ylabel '' offset 3,0
+set xlabel 'k' offset 0,0.5 
+
+set label 1 "|x_{{/Symbol d}y_{k-1}}|"                tc rgb "red" at 30,  0.1
+set label 2 "|x_{{/Symbol d}z_{k-1}}|"                tc rgb "green" at 30, 0.00001
+set label 3 "|x_{{/Symbol d}x_{k-1}}|"                tc rgb "blue" at 30, 2
+set label 4 "(n-tr x)/n, {/Symbol t}=1d-3"            tc rgb "black" at 30, 0.0002
+#set label 5 "|{ /Symbol d}y^{stab}_{k-1}|, {/Symbol t}=1d-3"  tc rgb "black" at 18, 0.001 
+#set label 6 "|{ /Symbol d}z^{stab}_{k-1}|, {/Symbol t}=1d-3"  tc rgb "black" at 19, 0.001 
+#set label 7 "|{ /Symbol d}x^{stab}_{k-1}|, {/Symbol t}=1d-3"  tc rgb "black" at 20, 0.001 
+
+set yrange [0.00000001:10000.0]
+plot [2:40] "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:7  w lines ls 1 notitle,\
+            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:9  w lines ls 2 notitle,\
+            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:11 w lines ls 3 notitle,\
+            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:6  w lines ls 4 notitle,\
+#            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:8  w lines ls 5 notitle,\
+#            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:10 w lines ls 6 notitle,\
+#            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:12 w lines ls 7 notitle
+
