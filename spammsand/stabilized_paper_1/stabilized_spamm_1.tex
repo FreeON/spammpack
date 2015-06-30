@@ -24,7 +24,7 @@
 \newcommand{\matT}[1]{\boldsymbol{#1}^\dagger}
 \newcommand{\ot}{ {\scriptstyle \otimes}_{ \tau } }
 
-%%\hypersetup{pdftitle={FreeON Project Report 1}}
+%\hypersetup{pdftitle={FreeON Project Report 1}}
 %\hypersetup{pdfauthor={Matt Challacombe and Nicolas Bock}}
 %\hypersetup{pdfsubject={A SpAMM Stabilized Newton Schulz Preconditioner: Fighting Error with Error}}
 
@@ -251,21 +251,23 @@ with $\mat{y}^{\rm stab}_k = \mat{z}^\dagger_k \cdot \mat{s}$.
 
 \subsubsection{lensing}
 
-A feature of square root iteration with the $\ot$ kernel is localization of the culled octree 
-with convergence towards identity, $\widetilde{\mat{x}}_k \leftarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
+A feature of square root iteration with the $\ot$ kernel is localization of the culled octree towards identity iteration, 
+$\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
 the product $\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$ involves the product of large and small eigenvalues, and large and small norms, 
-which are recursively brought towards unity along the $i=k$ diagonal. Then, each product involving $\widetilde{\mat{x}}_k$ is a 
-a near reflection onto itself; a near involution about the $ijk$ cube-diagonal.  
-
-Because the $\tt SpAMM$ error obeys the multiplicative Cauchy-Schwarz bound, Eq.~(),  the 
-cooresponding culled-octree follows the $i=j$ plane, about the $ijk$ cube-diagonal, resolving 
-the {\em relative} error in identity to within $\tau$.   
-
+which are recursively brought towards unity along the $i=k$ diagonal.  Likewise, application of the NS map, Eq.~(\ref{cannonical}),  tend towards 
+reflection about the $ijk$ cube-diagonal.   Because the $\tt SpAMM$ error obeys the multiplicative Cauchy-Schwarz bound, Eq.~(),  the 
+cooresponding culled-octree can likewise follow the $i=j$ plane about the $ijk$ cube-diagonal, resolving the {\em relative} error in identity to within $\tau$.   
 This effect is shown in Figure \ref{x_lensing}.   We call this identity related,  plane-wise concentration of the culled octree 
-{\em lensing}.  Ideally, lensing cooresponds to the formation of two-dimensional surfaces, crossing along the cube diagonal, with attenuation 
-off the diagonal in the case of decay.  This is a complexity reduction relative to the naive (full) volume of the cube,
-and also relative to sparsification strategies that preserve only absolute errors, as in Eq.~\ref{}.  
-towards convergence, we should achieve a fast involution, involving reflections about the cube-diagonal. 
+about the cube-diagonal {\em lensing}.  
+
+Lensing is a complexity reduction relative to the naive (full) volume of the cube,
+and also relative to sparsification strategies that preserve only absolute errors, as in Eq.~\ref{sparseapprox}.  
+The lensed task space offers an enhanced locality of reference, and may also afford fast methods 
+with costs approaching an in-place scalar multiply and copy, {\em e.g.} as $h_\alpha \rightarrow \mat{I}$ in Eq.~\ref{cannonical}.
+Our thesis is that many problems in physical and information sciences can be brought to this lensed state, {\em e.g.} through preconditioning
+as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
+and also with respect to outer simulation or optimization cycles, cooresponding perhaps to time iteration, and requiring only small 
+corrections to resore the identity.
 
 \section{Modeling the ${\tt SpAMM}$ NS Iteration}
 
@@ -283,37 +285,36 @@ However, these displacements are augmented by the $\tt SpAMM$ error at each step
 Also, second order effects can develop (due to ill-conditioning), which invalidate $\mat{x}_{k-1}$ as reference for 
 first order expansion.   
  
-\subsection{Fr\'{e}chet Analyses}
+\subsection{first order in the previous errors}
 
-Our model is based on classical Fr\'{e}chet analyses \cite{} of the matrix function 
+We develop a first order model of the matrix function 
 \begin{multline}
  \mat{x} \left( \mat{y}_{k-1}, \mat{z}_{k-1}  \right)= h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot  \mat{y}_{k-1}  \\
  \cdot  \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \, ,
 \end{multline}
-with all previous errors mapped to $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$ by the complicated logistics of $h_\alpha$ and $\ot$. 
-Later, we will consider the also the  first $\tt SpAMM$ error at step $k$.  At present however, we turn to the Fr\'{e}chet derivatives \cite{}:
- \begin{eqnarray}
-  \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} &=& \lim_{\tau \rightarrow 0} \frac{ \mat{x} \left( \mat{y}_{k-1} + \tau \delta \widehat{\mat{y}}_{k-1} ,  {\mat{z}}_{k-1}  \right)
- -\mat{x} \left( \mat{y}_{k-1}  ,  {\mat{z}}_{k-1} \right)  }{\tau}  \nonumber  \\[0.1cm] 
+with all previous errors mapped to $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$ by the complicated logistics of $h_\alpha$,  $\ot$ 
+and other transformations ({\em e.g.} stabilization schemes, discused later).  Also later, we'll add in the $\tt SpAMM$ error at first order.
+
+At present though,  we consider just the first order error $\delta \mat{x}_k$ that develops from the previous errors $\delta \mat{y}_{k-1}$
+and $\delta \mat{z}_{k-1}$ through the Fr\'{e}chet derivatives \cite{}
+\begin{eqnarray}
+  \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} 
+&=& \lim_{\tau \rightarrow 0} \slantfrac{ \mat{x} \left( \mat{y}_{k-1} + \tau \delta \widehat{\mat{y}}_{k-1} ,  {\mat{z}}_{k-1}  \right)
+                                     -\mat{x}_k    }{\tau}  \nonumber  \\
 &=&   \mat{y}_{\delta \widehat{ \mat{y}}_{k-1}} \cdot \mat{z}_{k}  + \mat{y}_{k}  \cdot \mat{z}_{\delta \widehat{ \mat{y}}_{k-1}} 
  \end{eqnarray}
 and 
  \begin{eqnarray}
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} &=& \lim_{\tau \rightarrow 0} 
-\frac{ \mat{x} \left( {\mat{y}}_{k-1} , \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1} \right)
-     - \mat{x} \left(\, {\mat{y}}_{k-1} , \mat{z}_{k-1} \right)  }{\tau} \nonumber  \\[0.1cm] 
+\slantfrac{ \mat{x} \left( {\mat{y}}_{k-1} , \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1} \right) - \mat{x}_k   }{\tau} \nonumber  \\[0.1cm] 
 &=& \mat{y}_{\delta \widehat{ \mat{z}}_{k-1}} \cdot \mat{z}_{k}  + \mat{y}_{k}  \cdot \mat{z}_{\delta \widehat{ \mat{z}}_{k-1}} \, . 
  \end{eqnarray}
-
-%\pagebreak
-
-\subsubsection{$\mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}$}
 
 For $\mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}$ we have
 \begin{multline}
  \mat{y}_{\delta \widehat{ \mat{y}}_{k-1}} = h_\alpha \left[ \mat{x}_{k-1} \right] \cdot \delta \widehat{\mat{y}}_{k-1} \\ 
                                      + h'_\alpha \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \cdot \mat{y}_{k-1}
-\end{multiline}
+\end{multline}
 and
 \begin{equation}
  \mat{z}_{\delta \widehat{ \mat{y}}_{k-1}} =  \mat{z}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}
@@ -322,19 +323,10 @@ yeilding
 \begin{multline} 
  \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} = h_\alpha \left[ \mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k} \\  
 +  h'_\alpha  \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \cdot  \mat{y}_{k-1} \cdot  \mat{z}_{k} \\ 
-+ \mat{y}_{k} \cdot \mat{z}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} 
-\end{multiline}
-Closer to convergence, 
-\begin{eqnarray} 
- \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} & \rightarrow& \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k} + 2  \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \\
-$\rightarrow$ \delta \mat{y}_{k-1} \cdot \left( \mat{z}_k-\mat{z}_{k-1} \right)
-\end{eqnarray}
++ \mat{y}_{k} \cdot \mat{z}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}  \, .
+\end{multline}
 
-%\pagebreak
-
-\subsubsection{$\mat{x}_{\delta \widehat{\mat{z}}_{k-1}}$}
-
-For $\mat{x}_{\delta \widehat{ \mat{z}}_{k-1}}$ we have
+Also, for $\mat{x}_{\delta \widehat{ \mat{z}}_{k-1}}$ we have
 \begin{equation}
  \mat{y}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1} 
 \end{equation}
@@ -342,70 +334,66 @@ and
 \begin{multline}
  \mat{z}_{\delta \widehat{ \mat{z}}_{k-1}} = \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\ 
                                      + \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1}  \; ,
-\end{multiline}
+\end{multline}
 yeilding 
 \begin{multline} 
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1}  \cdot \mat{z}_{k} \\
 \qquad + \mat{y}_k \cdot  \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\ 
-\qquad \qquad +  \mat{y}_{k} \cdot  \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1}
-\end{multiline}
-
-
-Closer to convergence, 
-\begin{equation} 
- \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} \rightarrow \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k} + 2  \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \,.
-\end{equation}
-
-%\pagebreak 
-
-\subsubsection{$\mat{x}_{\delta \widehat{\mat{x}}_{k-1}}$}
-\begin{multline} \label{fyzdx}
-\mat{x}_{\delta \widehat{\mat{x}}_{k-1}} 
-= h'_\alpha  \, \delta \widehat{\mat{x}}_{k-1} \cdot    
-{\mat{y}}_{k-1}  \cdot \widetilde{\mat{z}}_{k}   \\
-+ {\mat{y}}_{k} \cdot \widetilde{\mat{z}}_{k-1}  
-\cdot  \delta \widehat{\mat{x}}_{k-1} \,  h'_\alpha  \;.
+\qquad \qquad +  \mat{y}_{k} \cdot  \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1} \, .
 \end{multline}
 
+Closer to a fixed point orbit,  $\mat{y}_k \cdot \mat{z}_{k-1} \rightarrow \mat{I}$, $\mat{y}_{k-1} \cdot \mat{z}_{k} \rightarrow \mat{I}$, 
+$\h_\alpha \[ \mat{x}_{k} \] \rightarrow \mat{I}$ and $h'_\alpha \rightarrow - \frac{1}{2}$ \cite{higham2005}.  Then,
+\begin{equation} \label{yorbit}
+ \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} \rightarrow \delta \mat{y}_{k-1} \cdot \left( \mat{z}_k-\mat{z}_{k-1} \right)
+\end{equation}
+and 
+\begin{equation} \label{zorbit}
+ \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} \rightarrow \left( \mat{y}_k-\mat{y}_{k-1} \right) \cdot \delta \mat{z}_{k-1} .
+\end{equation}
+Equations \ref{yorbit} and  \ref{zorbit} illustrate the contractive nature of the NS identity iteration, with contributions 
+from $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$  tightly shut down in the region of superlinear convergence.
+
+\subsection{first order in the $\tt SpAMM$ error}
+
+\begin{multline}
+ \delta {\mat{z}}_{k-1} \approx \Delta^{\widetilde{\mat{z}}_{k-2} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
++ \mat{z}_{k-2} \cdot \tt{m}'\left[ \widetilde{\mat{x}}_{k-2}\right] \cdot \delta \mat{x}_{k-2} \\
++\delta \mat{z}_{k-2} \cdot \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right] 
+\end{multline}
+
+\begin{multline}
+\lVert \delta {\mat{z}}_{k-1} \rVert \lesssim
+\lVert \mat{z}_{k-2} \rVert \left( \;  \tau \, \lVert \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert \right.   \\ \left.
++ \; \lVert \delta {\mat{x}}_{k-2} \rVert   \lVert \tt{m}' \left[\widetilde{\mat{x}}_{k-2} \right] \rVert \; \right)
+\end{multline}
 
 \begin{equation}
-\{ \mat{s} \cdot \delta {\widehat{\mat{z}}}_{k-1}
-\cdot \tt{m}\left[\mat{x}_{k-1} \right]    \} 
-\rightarrow \mat{n}\left[\mat{s} \right]
+\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
 \end{equation}
-
-Ideally, a $\tau$ can be found yeilding fast computation with precision sufficient to gain the basin of stability.  From the
-preconditioned state then, additional corrections can be made to the residual at little additional 
-cost. \footnote{The ability to correct back to the argumental basis is sometimes refered to as 
-the ``variational'' property of early ``spectral projection as optimization'' techniques, with 
-gradients retaining proximity to the basis \cite{}.}
-
-
-
-
 
 
 \section{Implementation}
 
-\subsection{Methods}
+\subsection{codebase}
 FP, F08, OpenMP 4.0
 
-\subsection{A Modified NS Map}
+\subsection{stabilization}
 
-\subsection{$\delta \mat{x}_k$ and $\delta \mat{x}_k$ channels}
-tau= Figure showing channels etc.  
-
-\subsection{Convergence}
+\subsection{switching \& convergence}
 Map switching and etc based on TrX
 
+\section{Ill-Conditioning}
 
-\section{Ill-Conditioned Support}
-
-\subsection{ 3,3 carbon nanotube with diffuse $sp$-function}
+\subsection{double exponential ill-conditioning}
+3,3 carbon nanotube with diffuse $sp$-function}
 double exponential (Fig.)
 
-\subsection{Water with triple zeta and double polarization}
-Here's looking at you Jurg...
+\subsection{three-dimensional, periodic}
+
+\subsubsection{water boxes}
+
+\subsubsection{ordering}
 
 \section{Experiments}
 
@@ -457,48 +445,24 @@ be quantified in future work.
 \end{figure}
 
 
+\subsection{error flows}
 
-
-\subsection{Occlusion Error Flows}
 \begin{figure}[h]
-  \caption{equation...}
- \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-5.eps}
- \includegraphics[width=3.5in]{8x_33_nanotube_cond10_tau-3.eps}
-\end{figure}
-\begin{figure}[h]
-  \caption{equation...}
- \includegraphics[width=3.5in]{8x_33_nanotube_cond10_compare_errors.eps}
+ \includegraphics[width=3.5in]{33_nanotube_cond10_noscale_stab.eps}
+\caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
+Derivatives are full lines, whilst the displacements cooresponding to $\tau=10^{-3}$ and $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}\}$  
+are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
-\subsection{Comments}
 
-\begin{multline}
- \delta {\mat{z}}_{k-1} \approx \Delta^{\widetilde{\mat{z}}_{k-2} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
-+ \mat{z}_{k-2} \cdot \tt{m}'\left[ \widetilde{\mat{x}}_{k-2}\right] \cdot \delta \mat{x}_{k-2} \\
-+\delta \mat{z}_{k-2} \cdot \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right] 
-\end{multline}
-
-\begin{multline}
-\lVert \delta {\mat{z}}_{k-1} \rVert \lesssim
-\lVert \mat{z}_{k-2} \rVert \left( \;  \tau \, \lVert \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert \right.   \\ \left.
-+ \; \lVert \delta {\mat{x}}_{k-2} \rVert   \lVert \tt{m}' \left[\widetilde{\mat{x}}_{k-2} \right] \rVert \; \right)
-\end{multline}
-
-\begin{equation}
-\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
-\end{equation}
+\begin{figure}[h]
+ \includegraphics[width=3.5in]{33_nanotube_cond10_noscale_dual.eps}
+\caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
+Derivatives are full lines, whilst the displacements cooresponding to $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$  
+are the dashed lines.  The trace expectation is shown as a full black line. }
+\end{figure}
 
 
-
-
-
-
-\subsection{Comments}
-
-\subsection{Found Contraction}
-
-\subsection{Comments}
-Pictures of the spamm structure
 
 \section{Conclusion}
 

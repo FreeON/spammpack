@@ -63,7 +63,7 @@ contains
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev
     REAL(SpAMM_KIND)                                  :: tau_zdotz,sz_norm
 
-    tau_xtra=1d-6
+    tau_xtra=1d-8
     tau=1d-3
 
 !    tau_xtra=0d0
