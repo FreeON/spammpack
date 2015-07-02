@@ -71,13 +71,19 @@ contains
 
 
     ! b=64
+!    tau_xtra=1d-10
+!    tau=1d-3
 
-    tau_xtra=1d-10
-    tau=1d-3
+!    b=16 convergese for duals, 100 waters in a bx:
+    tau_xtra=1d-4
+    tau=1d-2
 
-!    b=16
-!    tau_xtra=1d-4
-!    tau=1d-2
+!    b=16 convergese for stab, 100 waters in a bx:
+!    tau_xtra=1d-5
+!    tau=1d-3
+
+!    DoDuals=.FALSE.
+    DoDuals=.TRUE.
 
 !    tau_xtra=0d0
 
@@ -173,7 +179,7 @@ contains
 #endif
     kount=1
     FillN=1d10
-    DO i = 0, 50
+    DO i = 0, 15
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -230,33 +236,33 @@ contains
        scal_mapp =1d0
        shft_mapp =0d0
 #endif
-       IF(FillN>0.1d0)THEN
-          IF(FillN>0.4d0)THEN             
-             delta=8.d-2 
-             sc=spammsand_scaling_invsqrt(SpAMM_zero)             
-          ELSEIF(FillN>0.1d0)THEN
-             delta=1.0d-2 ! maybe this should be a variable too, passed in?
-             sc=spammsand_scaling_invsqrt(SpAMM_half)
-          ENDIF
-
-#ifdef DENSE_DIAGNOSTICS
-#else
-          IF(DoDuals)THEN
-#endif
-             x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-#ifdef DENSE_DIAGNOSTICS
-#else
-          ELSE
-#endif                
-             x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-
-#ifdef DENSE_DIAGNOSTICS
-#else
-          ENDIF
-#endif
-       ELSE
+!!$       IF(FillN>0.1d0)THEN
+!!$          IF(FillN>0.4d0)THEN             
+!!$             delta=8.d-2 
+!!$             sc=spammsand_scaling_invsqrt(SpAMM_zero)             
+!!$          ELSEIF(FillN>0.1d0)THEN
+!!$             delta=1.0d-2 ! maybe this should be a variable too, passed in?
+!!$             sc=spammsand_scaling_invsqrt(SpAMM_half)
+!!$          ENDIF
+!!$
+!!$#ifdef DENSE_DIAGNOSTICS
+!!$#else
+!!$          IF(DoDuals)THEN
+!!$#endif
+!!$             x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$#ifdef DENSE_DIAGNOSTICS
+!!$#else
+!!$          ELSE
+!!$#endif                
+!!$             x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+!!$
+!!$#ifdef DENSE_DIAGNOSTICS
+!!$#else
+!!$          ENDIF
+!!$#endif
+!!$       ELSE
           sc=1d0
-       ENDIF
+!       ENDIF
 
        WRITE(*,*)' sc = ',sc
 
@@ -503,8 +509,8 @@ contains
        FillN_stab=FillN_stab+x_tld_k_stab(j,j)
        FillN_dual=FillN_dual+x_tld_k_dual(j,j)
     enddo
-    FillN_stab=(dble(n)-FillN_stab)/dble(n)
-    FillN_dual=(dble(n)-FillN_dual)/dble(n)
+    FillN_stab=abs(dble(n)-FillN_stab)/dble(n)
+    FillN_dual=abs(dble(n)-FillN_dual)/dble(n)
 
     WRITE(*,*)'  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - '
     WRITE(*,*)'   stab: '

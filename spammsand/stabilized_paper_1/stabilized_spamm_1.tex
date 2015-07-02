@@ -18,7 +18,6 @@
 %]{biblatex}
 %\usepackage{hyperref}
 
-
 \newcommand{\mat}[1]{\boldsymbol{#1}}
 \newcommand{\mmat}[1]{\widetilde{\boldsymbol{#1}}}
 \newcommand{\matT}[1]{\boldsymbol{#1}^\dagger}
@@ -349,7 +348,11 @@ yeilding
 \end{multline}
 
 Closer to a fixed point orbit,  $\mat{y}_k \cdot \mat{z}_{k-1} \rightarrow \mat{I}$, $\mat{y}_{k-1} \cdot \mat{z}_{k} \rightarrow \mat{I}$, 
-$\h_\alpha \[ \mat{x}_{k} \] \rightarrow \mat{I}$ and $h'_\alpha \rightarrow - \frac{1}{2}$ \cite{higham2005}.  Then,
+$h_\alpha \left[ \mat{x}_{k} \right] \rightarrow \mat{I}$ 
+
+
+and $h'_\alpha \rightarrow - \frac{1}{2}$ \cite{higham2005}.  Then,
+
 \begin{equation} \label{yorbit}
  \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} \rightarrow \delta \mat{y}_{k-1} \cdot \left( \mat{z}_k-\mat{z}_{k-1} \right)
 \end{equation}
@@ -392,7 +395,7 @@ Map switching and etc based on TrX
 \section{Ill-Conditioning}
 
 \subsection{double exponential ill-conditioning}
-3,3 carbon nanotube with diffuse $sp$-function}
+3,3 carbon nanotube with diffuse $sp$-function
 double exponential (Fig.)
 
 \subsection{three-dimensional, periodic}
@@ -441,15 +444,16 @@ be quantified in future work.
 \subsubsection{unscaled stability}
 
 \begin{figure}[h]
-\includegraphics[width=3.5in]{33_nanotube_cond10_noscale_stab.eps}
-\caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}\}$  
-are the dashed lines.  The trace expectation is shown as a full black line. }
+\includegraphics[width=3.5in]{33_nanotube_cond10_noscale_stab.pdf}
+\caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) 
+nanotube with $\kappa =10^{10}$. 
+Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
+$\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
 
 \begin{figure}[h]
-\includegraphics[width=3.5in]{33_nanotube_cond10_noscale_dual.eps}
+\includegraphics[width=3.5in]{33_nanotube_cond10_noscale_dual.pdf}
 \caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
 Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$  
 are the dashed lines.  The trace expectation is shown as a full black line. }
@@ -459,15 +463,17 @@ are the dashed lines.  The trace expectation is shown as a full black line. }
 
 
 \begin{figure}[h]
-\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab.eps}
-\caption{Derivatives, displacements and the approximate trace of the scaled, stablized NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-3},10^{-4},10^{-6}\}$  
+\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab.pdf}
+\caption{Derivatives, displacements and the approximate trace of the scaled, stablized NS iteration for a 
+(3,3) nanotube with $\kappa =10^{10}$. 
+Derivatives are full lines, whilst the displacements cooresponding to $b=64$, 
+$\tau=10^{-3}$ and $\tau_y=\{10^{-3},10^{-4},10^{-6}\}$  
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
 
 \begin{figure}[h]
-\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab.eps}
+\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab.pdf}
 \caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
 Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$  
 are the dashed lines.  The trace expectation is shown as a full black line. }
@@ -475,9 +481,33 @@ are the dashed lines.  The trace expectation is shown as a full black line. }
 
 \subsection{water boxes}
 
-\subsubsection{Hilbert order}
+\subsubsection{scaled}
 
-\subsubsection{salesman's order}
+\begin{figure}[h]
+\includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_stab.pdf}
+\caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) 
+nanotube with $\kappa =10^{10}$. 
+Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
+$\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
+\end{figure}
+
+
+\begin{figure}[h]
+\includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_dual.pdf}
+\caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
+Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$  
+are the dashed lines.  The trace expectation is shown as a full black line. }
+\end{figure}
+
+\subsubsection{unscaled}
+
+
+\subsubsection{unscaled, with hilbert order}
+
+
+\subsubsection{unscaled, with salesman's order}
+
+
 
 \section{Conversation}
 
