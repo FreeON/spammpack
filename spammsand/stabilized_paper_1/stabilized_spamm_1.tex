@@ -158,13 +158,20 @@ leads to a non-associative algebra and error flows with properties of the Lie br
 \end{equation}
 The interesting group theory associated with the construction of matrix functions is developed by Higham, Mackey, Mackey and T 
 in Ref.\cite{}.  
+
+
+
+
+communication optimal, compression occurs through two types of localization. 
+
+
 %In this contibution, we consider only the magnitude of these error flows.     
 
 $\tt SpAMM$ is similar to compressed kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}. 
-spatial join! Paugh.  MAD.  etc    
- Instead of
-the FFT however, compression is achieved through a recursive two-sided metric querry on the $\tt SpAMM$ bound, Eq.~(\ref{bound}),
+spatial join! Paugh.  MAD.  etc  
+Instead of the FFT however, compression is achieved through a recursive two-sided metric querry on the $\tt SpAMM$ bound, Eq.~(\ref{bound}),
 which may exprerience acceleration through localiztion effects (lensing) in the $ijk$ (octree) space, as demonstrated shortly. 
+
 These localization techniques are, in most cases, complimentary with other compresive technologies, including methods based on 
 hierarchical semi-seperability and also methods for fast kernel summation \cite{}. 
 poor-mans approach to eliminating disjoint volumes 
@@ -266,26 +273,9 @@ The lensed task space offers an enhanced locality of reference, and may also aff
 with costs approaching an in-place scalar multiply and copy, {\em e.g.} as $h_\alpha \rightarrow \mat{I}$ in Eq.~\ref{cannonical}.
 Our thesis is that many problems in physical and information sciences can be brought to this lensed state, {\em e.g.} through preconditioning
 as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
-and also with respect to outer simulation or optimization cycles, cooresponding perhaps to time iteration, and requiring only small 
-corrections to resore the identity.
+and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
 
 \section{Modeling the ${\tt SpAMM}$ NS Iteration}
-
-There are multiple effects we wish to model in the $\ot$-approximate square root iteration.  Primarily, 
-classical first order errors  in $\delta \mat{x}_k$ are controled by the 
-Fr\'{e}chet derivatives \cite{} ${\mat{x}}_{\delta \mat{y}_{k-1}}$ and ${\mat{x}}_{\delta \mat{z}_{k-1}}$ 
-at $\mat{x}_{k-1}$ and along the unit directions  $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$;
-\begin{equation}
-\delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1} 
-                 \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, ,
-\end{equation}
-with previous displacements $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$.
-However, these displacements are augmented by the $\tt SpAMM$ error at each step.   
-%In the case of the stabilized iteration, we have for example $\delta \mat{y}^{\rm stab}_{k-1}= \mat{\Delta}^{\mat{z}^\dagger \cdot \mat{s}}_\tau$.
-Also, second order effects can develop (due to ill-conditioning), which invalidate $\mat{x}_{k-1}$ as reference for 
-first order expansion.   
- 
-\subsection{first order in the previous errors}
 
 We develop a first order model of the matrix function 
 \begin{multline}
@@ -293,9 +283,25 @@ We develop a first order model of the matrix function
  \cdot  \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \, ,
 \end{multline}
 with all previous errors mapped to $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$ by the complicated logistics of $h_\alpha$,  $\ot$ 
-and other transformations ({\em e.g.} stabilization schemes, discused later).  Also later, we'll add in the $\tt SpAMM$ error at first order.
+and other transformations ({\em e.g.} stabilization schemes, discused later).   
 
-At present though,  we consider just the first order error $\delta \mat{x}_k$ that develops from the previous errors $\delta \mat{y}_{k-1}$
+This model alows to understand {\em relative} deviations from unity, $\delta \mat{x}_k$, involving first order accumulation of previous and $\tt SpAMM$ errors, 
+controled by the Fr\'{e}chet derivatives \cite{} ${\mat{x}}_{\delta \mat{y}_{k-1}}$ and ${\mat{x}}_{\delta \mat{z}_{k-1}}$ 
+at $\mat{x}_{k-1}$ along the unit directions  $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$;
+\begin{equation}
+\delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1} 
+                 \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, ,
+\end{equation}
+with previous displacements $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$.
+
+%However, these displacements are augmented by the $\tt SpAMM$ error at each step.   
+%In the case of the stabilized iteration, we have for example $\delta \mat{y}^{\rm stab}_{k-1}= \mat{\Delta}^{\mat{z}^\dagger \cdot \mat{s}}_\tau$.
+%Also, second order effects can develop (due to ill-conditioning), which invalidate $\mat{x}_{k-1}$ as reference for 
+%first order expansion.   
+ 
+\subsection{first order in the previous errors}
+
+At present we consider just the first order error $\delta \mat{x}_k$ that develops from the previous errors $\delta \mat{y}_{k-1}$
 and $\delta \mat{z}_{k-1}$ through the Fr\'{e}chet derivatives \cite{}
 \begin{eqnarray}
   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} 
@@ -397,6 +403,8 @@ double exponential (Fig.)
 
 \section{Experiments}
 
+\subsection{lensing}
+
  \begin{figure}[h] \label{markofzorro}
  \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
  \fbox{ \includegraphics[width=2.in,trim={2cm 0cm 10cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene2.png}} 
@@ -424,47 +432,54 @@ via the multiplicative bound, Eq.~(\ref{bound}). The tightness of this bound, an
 to  methods that control only the absolute error, {\em e.g.} as given by Eq.~(\ref{sparseapprox}), will hopefully
 be quantified in future work. 
 
+\pagebreak
+--
+\pagebreak
 
+\subsection{(3,3) nanotubes at $\kappa=10^{10}$}
 
-
-
-\begin{figure}[h]
-  \caption{equation...}
-\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_15_water.png}} 
-\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_15_water.png}}
-\end{figure}
-
-
+\subsubsection{unscaled stability}
 
 \begin{figure}[h]
-  \caption{equation...}
-%%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_water_to_duals.png}} 
-%%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{z_water_to_duals.png}}
-%\fbox{ \includegraphics[width=1.5in,trim={6cm 6cm 6cm 6cm},clip]{y_water_to_duals.png}} 
-\fbox{ \includegraphics[width=3in,trim={8cm 0.1cm 8cm 0.1cm},clip]{z_water_to_duals_scn1.png}}
-\end{figure}
-
-
-\subsection{error flows}
-
-\begin{figure}[h]
- \includegraphics[width=3.5in]{33_nanotube_cond10_noscale_stab.eps}
+\includegraphics[width=3.5in]{33_nanotube_cond10_noscale_stab.eps}
 \caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
-Derivatives are full lines, whilst the displacements cooresponding to $\tau=10^{-3}$ and $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}\}$  
+Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}\}$  
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
 
 \begin{figure}[h]
- \includegraphics[width=3.5in]{33_nanotube_cond10_noscale_dual.eps}
+\includegraphics[width=3.5in]{33_nanotube_cond10_noscale_dual.eps}
 \caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
-Derivatives are full lines, whilst the displacements cooresponding to $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$  
+Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$  
+are the dashed lines.  The trace expectation is shown as a full black line. }
+\end{figure}
+
+\subsubsection{with scaling}
+
+
+\begin{figure}[h]
+\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab.eps}
+\caption{Derivatives, displacements and the approximate trace of the scaled, stablized NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
+Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-3},10^{-4},10^{-6}\}$  
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
 
+\begin{figure}[h]
+\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab.eps}
+\caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$. 
+Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$  
+are the dashed lines.  The trace expectation is shown as a full black line. }
+\end{figure}
 
-\section{Conclusion}
+\subsection{water boxes}
+
+\subsubsection{Hilbert order}
+
+\subsubsection{salesman's order}
+
+\section{Conversation}
 
 %%eg vs row-col picture.  Example of exact exchange w/DBSR 
 

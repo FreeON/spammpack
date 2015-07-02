@@ -7,7 +7,8 @@ module spamm_parameters
   ! h2o_350_6-311G**, blk = 8, tau= 0.05 
   ! h2o_350_6-311G**, blk = 64, tau= 0.1 
 
-  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=16
+  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=64
+
 !  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE = 512
 
   INTEGER,          PARAMETER :: SBS              = SpAMM_BLOCK_SIZE
