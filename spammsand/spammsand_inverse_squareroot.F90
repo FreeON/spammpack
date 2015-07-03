@@ -12,6 +12,9 @@ module SpAMMsand_inverse_squareroot
 
 #ifdef DENSE_DIAGNOSTICS
 
+  character(len=132) :: file_dual, file_stab
+
+
   real(spamm_kind), dimension(:,:), ALLOCATABLE ::   i_d, s_d, y_k, y_k1, z_k, z_k1, x_k, x_k1, m_x_k1,          &   
        z_tld_k_stab, z_tld_k1_stab, x_tld_k_stab, x_tld_k1_stab,  m_x_tld_k1_stab,  y_tld_k_stab, y_tld_k1_stab, &
        z_tld_k_dual, z_tld_k1_dual, x_tld_k_dual, x_tld_k1_dual,  m_x_tld_k1_dual,  y_tld_k_dual, y_tld_k1_dual
@@ -73,11 +76,17 @@ contains
     ! b=64
 !    tau_xtra=1d-10
 !    tau=1d-3
+!    tau_xtra=1d-6
+!    tau=1d-3
+!    file_dual='tubes_3_6_64_dual.dat'
+!    file_stab='tubes_3_6_64_stab.dat'
 
 !    b=16 convergese for duals, 100 waters in a bx:
-    tau_xtra=1d-4
+    tau_xtra=1d-3
     tau=1d-2
-
+    file_dual='wtrbxs_2_3_16_dual.dat'
+    file_stab='strbxs_2_3_16_stab.dat'
+    
 !    b=16 convergese for stab, 100 waters in a bx:
 !    tau_xtra=1d-5
 !    tau=1d-3
@@ -88,14 +97,15 @@ contains
 !    tau_xtra=0d0
 
 #ifdef DENSE_DIAGNOSTICS
-    open(unit=98, iostat=stat, file='spammsand_ns_diagnostics_stablized.dat',status='old')
+
+    open(unit=98, iostat=stat, file=file_stab,status='old')
     if(stat.eq.0) close(98, status='delete')
-    open(unit=98, iostat=stat, file='spammsand_ns_diagnostics_stablized.dat',status='new')
+    open(unit=98, iostat=stat, file=file_stab,status='new')
     close(98)
 
-    open(unit=99, iostat=stat, file='spammsand_ns_diagnostics_dual.dat',status='old')
+    open(unit=99, iostat=stat, file=file_dual,status='old')
     if(stat.eq.0) close(99, status='delete')
-    open(unit=99, iostat=stat, file='spammsand_ns_diagnostics_dual.dat',status='new')
+    open(unit=99, iostat=stat, file=file_dual,status='new')
     close(99)
 #else
     !
@@ -530,13 +540,13 @@ contains
 24  FORMAT("    [n-trx]/n = ",e12.6)
     !
 
-    open(unit=98, file='spammsand_ns_diagnostics_stablized.dat', position='append')
+    open(unit=98, file=file_stab, position='append')
     WRITE(98,44)kount, tau, tau_xtra, sc, delta, FillN_stab, &
     SQRT(SUM(dx_dy_stab**2)), SQRT(SUM(dy_stab**2)), SQRT(SUM(dx_dz_stab**2)), SQRT(SUM(dz_stab**2)),  &
          SQRT(SUM(dx_dx_stab**2)), SQRT(SUM(dx_stab**2))
     close(98)
 
-    open(unit=99, file='spammsand_ns_diagnostics_dual.dat', position='append')
+    open(unit=99, file=file_dual, position='append')
     WRITE(99,44)kount, tau, tau_xtra, sc, delta, FillN_dual, &
     SQRT(SUM(dx_dy_dual**2)), SQRT(SUM(dy_dual**2)), SQRT(SUM(dx_dz_dual**2)), SQRT(SUM(dz_dual**2)),  &
          SQRT(SUM(dx_dx_dual**2)), SQRT(SUM(dx_dual**2))
