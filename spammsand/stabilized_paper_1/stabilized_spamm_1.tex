@@ -141,14 +141,15 @@ The approximate $\tt SpAMM$ product is
 \begin{equation}
 \widetilde{\mat{a}\cdot \mat{b}} \,  \equiv \, \mat{a} \ot \mat{b} \, 
   = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} 
-+ {\cal{O}} \left(  \tau^2 \right) \; ,
+%+ {\cal{O}} \left(  \tau^2 \right) \; ,
 \end{equation}
 with the culled contractions $\mat{\Delta}^{a \cdot b}_{\tau}$ obeying the $\tt SpAMM$ bound 
 \begin{equation}\label{bound}
 \lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, , 
 \end{equation}
-at each level of recursion.  This makes $\ot$ {\em stable}, as defined by Demmel, Dumitriu and Holz (see Eq.(1), Ref.~\cite{Demmel07}). 
-However, instead of the roundoff error, we are concerned with the deterministic $\tt SpAMM$ error,  which 
+at each level of recursion.  This makes $\ot$ {\em stable}, as defined by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}). 
+However, instead of the roundoff error, we are concerned with a deterministic $\tt SpAMM$ error \footnote{A non-deterministic
+${\tt SpAMM}$ occlusion error is also possible, {\em e.g.} associated with proablistic stabilization\cite{} or sampling\cite{} methods.},  which 
 leads to a non-associative algebra and error flows with properties of the Lie bracket
 \begin{equation}
 \widetilde{\left[ \mat{a} , \mat{b} \right]} \equiv \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
@@ -156,7 +157,7 @@ leads to a non-associative algebra and error flows with properties of the Lie br
 + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
 \end{equation}
 The interesting group theory associated with the construction of matrix functions is developed by Higham, Mackey, Mackey and T 
-in Ref.\cite{}.  
+(HMMT; Ref.~\cite{}).  
 
 
 
@@ -274,33 +275,27 @@ Our thesis is that many problems in physical and information sciences can be bro
 as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
 and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
 
-\section{Modeling the ${\tt SpAMM}$ NS Iteration}
+\section{Error Flows in Accelerated Square Root Iteration}
 
-We develop a first order model of the matrix function 
-\begin{multline}
- \mat{x} \left( \mat{y}_{k-1}, \mat{z}_{k-1}  \right)= h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot  \mat{y}_{k-1}  \\
- \cdot  \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \, ,
-\end{multline}
-with all previous errors mapped to $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$ by the complicated logistics of $h_\alpha$,  $\ot$ 
-and other transformations ({\em e.g.} stabilization schemes, discused later).   
-
-This model alows to understand {\em relative} deviations from unity, $\delta \mat{x}_k$, involving first order accumulation of previous and $\tt SpAMM$ errors, 
-controled by the Fr\'{e}chet derivatives \cite{} ${\mat{x}}_{\delta \mat{y}_{k-1}}$ and ${\mat{x}}_{\delta \mat{z}_{k-1}}$ 
-at $\mat{x}_{k-1}$ along the unit directions  $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$;
-\begin{equation}
+In the square root iteration, our primary concern is the growth 
+$\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}$, 
+and its amplification of errors, propigated through the complicated logistics of $h_\alpha[\cdot]$,  
+$\ot$ and other transformations, such as stabilization schemes.   Our model of error flow
+includes the previous displacements (errors) $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$,
+the first order error injected by $\tt SpAMM$ acceleration $\mat{\Delta}_\tau$,  and the first order
+Fr\'{e}chet derivatives \cite{} ${\mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}$ and ${\mat{x}}_{\delta \widehat{ \mat{z}}_{k-1}}$ 
+along the unit directions  $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$.
+In this model, we focus on the first order differential in the approach to identity, 
+\begin{equation} \label{firstorder}
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1} 
-                 \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, ,
+                 \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2) ,
 \end{equation}
-with previous displacements $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$.
-
-%However, these displacements are augmented by the $\tt SpAMM$ error at each step.   
-%In the case of the stabilized iteration, we have for example $\delta \mat{y}^{\rm stab}_{k-1}= \mat{\Delta}^{\mat{z}^\dagger \cdot \mat{s}}_\tau$.
-%Also, second order effects can develop (due to ill-conditioning), which invalidate $\mat{x}_{k-1}$ as reference for 
-%first order expansion.   
+with the directional approach to idempotence largely determined by the reference state $\mat{x}_{k-1}$, and stability determined by
+the $\tau$ dependent magnitudes $\delta y_{k-1}$  and $\delta z_{k-1}$. 
  
-\subsection{first order in the previous errors}
+\subsection{First order in the previous errors}
 
-At present we consider just the first order error $\delta \mat{x}_k$ that develops from the previous errors $\delta \mat{y}_{k-1}$
+To start, consider just the first order error $\delta \mat{x}_k$ that develops from the previous errors $\delta \mat{y}_{k-1}$
 and $\delta \mat{z}_{k-1}$ through the Fr\'{e}chet derivatives \cite{}
 \begin{eqnarray}
   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} 
@@ -354,33 +349,56 @@ $h_\alpha \left[ \mat{x}_{k} \right] \rightarrow \mat{I}$
 and $h'_\alpha \rightarrow - \frac{1}{2}$ \cite{higham2005}.  Then,
 
 \begin{equation} \label{yorbit}
- \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} \rightarrow \delta \mat{y}_{k-1} \cdot \left( \mat{z}_k-\mat{z}_{k-1} \right)
+ \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} \rightarrow \delta \widehat{\mat{y}}_{k-1} \cdot \left( \mat{z}_k-\mat{z}_{k-1} \right)
 \end{equation}
 and 
 \begin{equation} \label{zorbit}
- \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} \rightarrow \left( \mat{y}_k-\mat{y}_{k-1} \right) \cdot \delta \mat{z}_{k-1} .
+ \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} \rightarrow \left( \mat{y}_k-\mat{y}_{k-1} \right) \cdot \delta \widehat{\mat{z}}_{k-1} .
 \end{equation}
 Equations \ref{yorbit} and  \ref{zorbit} illustrate the contractive nature of the NS identity iteration, with contributions 
 from $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$  tightly shut down in the region of superlinear convergence.
 
-\subsection{first order in the $\tt SpAMM$ error}
+\subsection{Previous errors to first order}
 
-\begin{multline}
- \delta {\mat{z}}_{k-1} \approx \Delta^{\widetilde{\mat{z}}_{k-2} \cdot \tt{m}\left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
-+ \mat{z}_{k-2} \cdot \tt{m}'\left[ \widetilde{\mat{x}}_{k-2}\right] \cdot \delta \mat{x}_{k-2} \\
-+\delta \mat{z}_{k-2} \cdot \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right] 
-\end{multline}
-
-\begin{multline}
-\lVert \delta {\mat{z}}_{k-1} \rVert \lesssim
-\lVert \mat{z}_{k-2} \rVert \left( \;  \tau \, \lVert \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert \right.   \\ \left.
-+ \; \lVert \delta {\mat{x}}_{k-2} \rVert   \lVert \tt{m}' \left[\widetilde{\mat{x}}_{k-2} \right] \rVert \; \right)
-\end{multline}
 
 \begin{equation}
 \lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
 \end{equation}
 
+
+\begin{equation}
+ \widetilde{\mat{z}}_{k-1} = \Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
++ \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right] 
+\end{equation}
+
+\begin{multline}
+ \mat{z}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]  
+=  \mat{z}_{k-2}  \cdot \left( \right. \\  \left. h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} + {\cal O} \left( \tau^2 \right)  
+\, \right)
+\end{multline}
+
+\begin{multline}
+ \delta {\mat{z}}_{k-1} \approx \Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
+ +\delta \mat{z}_{k-2} \cdot h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \\
++ h'_\alpha \left( \delta \mat{y}_{k-2} \cdot \mat{z}_{k-2} + \mat{y}_{k-2} \cdot \delta \mat{z}_{k-2} \right)
+\end{multline}
+
+%
+%+ \mat{z}_{k-2} \cdot \tt{m}'\left[ \widetilde{\mat{x}}_{k-2}\right] \cdot \delta \mat{x}_{k-2} \\
+%+\delta \mat{z}_{k-2} \cdot \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right] 
+
+
+
+\begin{multline}
+\lVert \delta {\mat{z}}_{k-1} \rVert \lesssim
+\lVert \mat{z}_{k-2} \rVert \left( \;  \tau \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
++ h'_\alpha \lVert \delta {\mat{y}}_{k-2} \rVert  \right)  \\ +
+\lVert \delta {\mat{z}}_{k-2} \rVert  \left( \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert + 
+\lVert  {\mat{y}}_{k-2} \rVert \right)
+\end{multline}
+
+
+In the case of the stabilized iteration, we have for example $\delta \mat{y}^{\rm stab}_{k-1}= \mat{\Delta}^{\mat{z}^\dagger \cdot \mat{s}}_\tau$.
 
 \section{Implementation}
 
