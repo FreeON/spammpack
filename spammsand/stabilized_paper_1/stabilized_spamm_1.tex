@@ -347,10 +347,7 @@ yeilding
 \end{multline}
 
 Closer to a fixed point orbit,  $\mat{y}_k \cdot \mat{z}_{k-1} \rightarrow \mat{I}$, $\mat{y}_{k-1} \cdot \mat{z}_{k} \rightarrow \mat{I}$, 
-$h_\alpha \left[ \mat{x}_{k} \right] \rightarrow \mat{I}$ 
-
-
-and $h'_\alpha \rightarrow - \frac{1}{2}$ \cite{higham2005}.  Then,
+$h_\alpha \left[ \mat{x}_{k} \right] \rightarrow \mat{I}$ and $h'_\alpha \rightarrow - \frac{1}{2}$ \cite{higham2005}.  Then,
 
 \begin{equation} \label{yorbit}
  \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} \rightarrow \delta \widehat{\mat{y}}_{k-1} \cdot \left( \mat{z}_k-\mat{z}_{k-1} \right)
@@ -359,18 +356,21 @@ and
 \begin{equation} \label{zorbit}
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} \rightarrow \left( \mat{y}_k-\mat{y}_{k-1} \right) \cdot \delta \widehat{\mat{z}}_{k-1} .
 \end{equation}
-Equations \ref{yorbit} and  \ref{zorbit} illustrate the contractive nature of the NS identity iteration, with contributions 
-from $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$  tightly shut down in the region of superlinear convergence.
+Equations \ref{yorbit} and  \ref{zorbit} illustrate the contractive nature of the NS identity iteration, with directional 
+contributions from $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$ tightly shut down in the region of superlinear convergence.
 
 \subsection{Previous errors to first order}
 
 In addition to the amplification of previous errors by the Frechet derivatives, errors are compounded to first order in $\tau$
 by the {\tt SpAMM} error.  Our model develops the $\tau$  dependent displacement $\delta \mat{z}_{k-1}$ starting with partially unwinding
 the approxinate  $\widetilde{\mat{z}}_{k-1}$;
-\begin{equation}
- \widetilde{\mat{z}}_{k-1} = \Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
-+ \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right] \, .
-\end{equation}
+%\begin{equation}
+\begin{eqnarray}
+ \widetilde{\mat{z}}_{k-1} &=&  \widetilde{\mat{z}}_{k-2}  \, \ot \, h_\alpha[\widetilde{\mat{x}}_{k-2}]\\
+&=& \Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
++ \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right]  
+%\end{equation}
+\end{eqnarray}
 Then, 
 \begin{equation}
   h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]  
@@ -379,65 +379,42 @@ Then,
 leading to
 \begin{multline}
  \delta {\mat{z}}_{k-1} =\Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
- +\delta \mat{z}_{k-2} \cdot h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \\
-+ h'_\alpha \delta \mat{y}_{k-2} \cdot \mat{z}_{k-2} 
-+ \mat{y}_{k-2} \cdot h'_\alpha  \delta \mat{z}_{k-2}  \, .
+\\ +\delta \mat{z}_{k-2} \cdot h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  
++ h'_\alpha \delta \mat{x}_{k-2} 
 \end{multline}
 
-
-As above, a model for $\delta \mat{y}_{k-1}$ can be developed.  At this point however, the
-distinction between different instances must be considered again.  In this study, we 
-look at the ``stabilized'' version;
-\begin{equation}
-\widetilde{\mat{y}}^{\rm stab}_{k-1} \equiv \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s}}
-\end{equation}
-and the cannonical ``dual'' version;
-\begin{equation}
-\widetilde{\mat{y}}^{\rm dual}_{k-1} \equiv  h_\alpha [ \widetilde{\mat{x}}_{k-2}] \, \ot \, \widetilde{\mat{y}}_{k-2} \, .
-\end{equation}
-
-
-\subsubsection{stabilized}
-
-\begin{equation}
-\widetilde{\mat{y}}_{k-1} = \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}} \, + \,
+Likwise,  for the cannonical instance, the approximate compliment is 
+\begin{eqnarray}
+\widetilde{\mat{y}}^{\rm dual}_{k-1}&=&  
+h_\alpha [ \widetilde{\mat{x}}_{k-2}] \, \ot \, \widetilde{\mat{y}}_{k-2}  \\
+&=&  \mat{\Delta}^{  h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} }  \, + \,
+     h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} 
+\end{eqnarray}
+with 
+\begin{multline}
+\delta \mat{y}^{\rm dual}_{k-1}= \mat{\Delta}^{
+h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \mat{y}_{k-2} }_\tau  \\ +
+h'_\alpha \delta \mat{x}_{k-2} \cdot \mat{y}_{k-2}  
++ h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{y}_{k-2} \, ,
+\end{multline}
+whilst in the ``stabilized'' instance, 
+\begin{eqnarray}
+\widetilde{\mat{y}}^{\rm stab}_{k-1} &=& \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s} \\
+                                  &=& \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}} \, + \,
 \left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
-\end{equation}
-
-
-
-again to first order, we take 
-
-
-\begin{equation}
-h^\dagger_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]   =  
-h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}^\dagger_{k-2} 
-\end{equation}
-
-
+\end{eqnarray}
+the displacement is
 \begin{multline}
-\delta \mat{y}_{k-1}= \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}}_\tau +
-h'_\alpha \delta \mat{x}^\dagger_{k-2} \cdot \mat{y}_{k-2}  \\+ h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{z}_{k-2} \cdot \mat{s}
+%\begin{equation}
+\delta \mat{y}^{\rm stab}_{k-1}= \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}}_\tau  \\ +
+h'_\alpha \delta \mat{x}^\dagger_{k-2} \cdot \mat{y}_{k-2}  
++ h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{y}_{k-2}  \,.
+%%\cdot \delta \mat{z}_{k-2} \cdot \mat{s}
+%\end{equation}
 \end{multline}
 
-\begin{multline}
-\delta \mat{y}_{k-1}= \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}}_\tau \\ +
-h'_\alpha \left(
-\mat{z}^\dagger_{k-2} \cdot \delta \mat{y}^\dagger_{k-2}+
-\delta  \mat{z}^\dagger_{k-2} \cdot \mat{y}^\dagger_{k-2}
- \right)  \cdot \mat{y}_{k-2}  \\+ h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{z}_{k-2} \cdot \mat{s}
-\end{multline}
-
-\subsubsection{dual}
-
-\begin{equation}
-\widetilde{\mat{y}}_{k-1} = \mat{\Delta}^{  h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} }
- \, + \,
-h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} }
-\end{equation}
 
 \subsection{Bounds}
-
 
 \begin{multline}
 \lVert \delta {\mat{z}}_{k-1} \rVert \lesssim
