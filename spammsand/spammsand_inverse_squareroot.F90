@@ -1,4 +1,4 @@
-#define DENSE_DIAGNOSTICS
+!#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
 module SpAMMsand_inverse_squareroot
@@ -73,30 +73,53 @@ contains
     REAL(SpAMM_KIND)                                  :: y_stab_fill,z_stab_fill,x_stab_fill, y_dual_fill,z_dual_fill,x_dual_fill
 
 
-    ! b=64
-!    tau_xtra=1d-10
+!!$    ! tubes, scaled, dual, b=16
+!!$    tau_xtra=1d-9
+!!$    tau=1d-3    
+!!$    DoDuals=.TRUE.
+
+!!$    ! tubes, scaled, stab, b=16
+!!$    tau_xtra=1d-5
+!!$    tau=1d-3    
+!!$    DoDuals=.FALSE.
+
+!!$    ! wtrbx, scaled, dual, b=8
+!    tau_xtra=1d-4
 !    tau=1d-3
-!    tau_xtra=1d-6
+!    DoDuals=.TRUE.
+!!$    ! wtrbx, scaled, stab, b=8
+!    tau_xtra=1d-4
 !    tau=1d-3
+!    DoDuals=.FALSE.
+
+!!$    ! wtrbx, noscale, dual, b=8
+!    tau_xtra=1d-3
+!    tau=1d-2
+!    DoDuals=.TRUE.
+
+!!$    ! wtrbx, noscale, stab, b=8
+!    tau_xtra=1d-4
+!    tau=1d-2
+!    DoDuals=.FALSE.
+
+
+#ifdef DENSE_DIAGNOSTICS
+
+
 !    file_dual='tubes_3_6_64_dual.dat'
 !    file_stab='tubes_3_6_64_stab.dat'
 
 !    b=16 convergese for duals, 100 waters in a bx:
+
     tau_xtra=1d-3
-    tau=1d-2
+    tau=1d-3
     file_dual='wtrbxs_2_3_16_dual.dat'
-    file_stab='strbxs_2_3_16_stab.dat'
+    file_stab='wtrbxs_2_3_16_stab.dat'
     
 !    b=16 convergese for stab, 100 waters in a bx:
 !    tau_xtra=1d-5
 !    tau=1d-3
 
-!    DoDuals=.FALSE.
-    DoDuals=.TRUE.
-
-!    tau_xtra=0d0
-
-#ifdef DENSE_DIAGNOSTICS
 
     open(unit=98, iostat=stat, file=file_stab,status='old')
     if(stat.eq.0) close(98, status='delete')
@@ -189,7 +212,7 @@ contains
 #endif
     kount=1
     FillN=1d10
-    DO i = 0, 15
+    DO i = 0, 18
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -246,33 +269,33 @@ contains
        scal_mapp =1d0
        shft_mapp =0d0
 #endif
-!!$       IF(FillN>0.1d0)THEN
-!!$          IF(FillN>0.4d0)THEN             
-!!$             delta=8.d-2 
-!!$             sc=spammsand_scaling_invsqrt(SpAMM_zero)             
-!!$          ELSEIF(FillN>0.1d0)THEN
-!!$             delta=1.0d-2 ! maybe this should be a variable too, passed in?
-!!$             sc=spammsand_scaling_invsqrt(SpAMM_half)
-!!$          ENDIF
-!!$
-!!$#ifdef DENSE_DIAGNOSTICS
-!!$#else
-!!$          IF(DoDuals)THEN
-!!$#endif
-!!$             x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$#ifdef DENSE_DIAGNOSTICS
-!!$#else
-!!$          ELSE
-!!$#endif                
-!!$             x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-!!$
-!!$#ifdef DENSE_DIAGNOSTICS
-!!$#else
-!!$          ENDIF
-!!$#endif
-!!$       ELSE
+       IF(FillN>0.1d0)THEN
+          IF(FillN>0.4d0)THEN             
+             delta=8.d-2 
+             sc=spammsand_scaling_invsqrt(SpAMM_zero)             
+          ELSEIF(FillN>0.1d0)THEN
+             delta=1.0d-2 ! maybe this should be a variable too, passed in?
+             sc=spammsand_scaling_invsqrt(SpAMM_half)
+          ENDIF
+
+#ifdef DENSE_DIAGNOSTICS
+#else
+          IF(DoDuals)THEN
+#endif
+             x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+#ifdef DENSE_DIAGNOSTICS
+#else
+          ELSE
+#endif                
+             x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+
+#ifdef DENSE_DIAGNOSTICS
+#else
+          ENDIF
+#endif
+       ELSE
           sc=1d0
-!       ENDIF
+        ENDIF
 
        WRITE(*,*)' sc = ',sc
 

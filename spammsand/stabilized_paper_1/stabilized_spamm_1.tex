@@ -31,12 +31,15 @@
 
 \begin{document}
 
-\title{On Stability of Newton Schulz Iterations in an Approximate Algebra}
+\title{On Stability of the First Order Newton Schulz Iteration in an Approximate Algebra}
 
 \author{Matt Challacombe}
 \email{matt.challacombe@freeon.org}
 \homepage{http://www.freeon.org}
 \affiliation{Theoretical Division, Los Alamos National Laboratory}
+
+\author{Terry Haut}
+
 
 \author{Nicolas Bock}
 \email{nicolasbock@freeon.org}
@@ -59,7 +62,8 @@ sign function, as projector of the effective Hamiltonian (Fig.~\ref{figure1}).
 More broadly, matrix decay properties may coorespond to statistical matrices 
 \cite{penrose1974,voit00,Anselin2003,Hardin2013,Krishtal2014}, including learned correlations in a 
 generalized, non-orthogonal metric \cite{}. More broadly still, problems with local, non-orothogonal support 
-are often solved with congruential transformations of the matrix inverse square root \cite{Lowdin56,naidu11} or a related factorization \cite{Krishtal2014};
+are often solved with congruential transformations of the matrix inverse 
+square root \cite{Lowdin56,naidu11} or a related factorization \cite{Krishtal2014};
 these transformations correlate local support with a representation independent form, {\em eg.}~of the eigenproblem. 
 Interestingly, the matrix sign function and the matrix inverse square root function are related by Higham's identity:
 \begin{equation}
@@ -122,7 +126,7 @@ occlusion culling of insignifcant volumes in the product octree:
 \mat{a}^{i} \ot \mat{b}^{i} = 
 \left\{
         \begin{array}{ll}
-                 \emptyset \quad \tt{if}\quad \lVert \mat{a}^i \rVert \lVert \mat{b}^i \rVert < \tau \\[0.2cm]
+                 \emptyset \quad \tt{if}\quad \lVert \mat{a}^i \rVert \lVert \mat{b}^i \rVert < \tau \lVert a \rVert \lVert b \rVert \\[0.2cm]
                  \mat{a} ^i \cdot \mat{b}^i \quad  \tt{if}(i=\tt{leaf}) \\[0.2cm]
 \begin{bmatrix} \mat{a}^{i+1}_{00} \ot \mat{b}^{i+1}_{00} +\mat{a}^{i+1}_{01} \ot \mat{b}^{i+1}_{10} \; , \; &
                 \mat{a}^{i+1}_{00} \ot \mat{b}^{i+1}_{01} +\mat{a}^{i+1}_{01} \ot \mat{b}^{i+1}_{11}  \\[0.2cm] 
@@ -360,33 +364,79 @@ from $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$  tightly shut down in the
 
 \subsection{Previous errors to first order}
 
-
-\begin{equation}
-\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}
-\end{equation}
-
-
+In addition to the amplification of previous errors by the Frechet derivatives, errors are compounded to first order in $\tau$
+by the {\tt SpAMM} error.  Our model develops the $\tau$  dependent displacement $\delta \mat{z}_{k-1}$ starting with partially unwinding
+the approxinate  $\widetilde{\mat{z}}_{k-1}$;
 \begin{equation}
  \widetilde{\mat{z}}_{k-1} = \Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
-+ \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right] 
++ \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right] \, .
+\end{equation}
+Then, 
+\begin{equation}
+  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]  
+=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \,  ,
+\end{equation}
+leading to
+\begin{multline}
+ \delta {\mat{z}}_{k-1} =\Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
+ +\delta \mat{z}_{k-2} \cdot h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \\
++ h'_\alpha \delta \mat{y}_{k-2} \cdot \mat{z}_{k-2} 
++ \mat{y}_{k-2} \cdot h'_\alpha  \delta \mat{z}_{k-2}  \, .
+\end{multline}
+
+
+As above, a model for $\delta \mat{y}_{k-1}$ can be developed.  At this point however, the
+distinction between different instances must be considered again.  In this study, we 
+look at the ``stabilized'' version;
+\begin{equation}
+\widetilde{\mat{y}}^{\rm stab}_{k-1} \equiv \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s}}
+\end{equation}
+and the cannonical ``dual'' version;
+\begin{equation}
+\widetilde{\mat{y}}^{\rm dual}_{k-1} \equiv  h_\alpha [ \widetilde{\mat{x}}_{k-2}] \, \ot \, \widetilde{\mat{y}}_{k-2} \, .
 \end{equation}
 
+
+\subsubsection{stabilized}
+
+\begin{equation}
+\widetilde{\mat{y}}_{k-1} = \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}} \, + \,
+\left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
+\end{equation}
+
+
+
+again to first order, we take 
+
+
+\begin{equation}
+h^\dagger_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]   =  
+h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}^\dagger_{k-2} 
+\end{equation}
+
+
 \begin{multline}
- \mat{z}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]  
-=  \mat{z}_{k-2}  \cdot \left( \right. \\  \left. h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} + {\cal O} \left( \tau^2 \right)  
-\, \right)
+\delta \mat{y}_{k-1}= \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}}_\tau +
+h'_\alpha \delta \mat{x}^\dagger_{k-2} \cdot \mat{y}_{k-2}  \\+ h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{z}_{k-2} \cdot \mat{s}
 \end{multline}
 
 \begin{multline}
- \delta {\mat{z}}_{k-1} \approx \Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau 
- +\delta \mat{z}_{k-2} \cdot h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \\
-+ h'_\alpha \left( \delta \mat{y}_{k-2} \cdot \mat{z}_{k-2} + \mat{y}_{k-2} \cdot \delta \mat{z}_{k-2} \right)
+\delta \mat{y}_{k-1}= \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}}_\tau \\ +
+h'_\alpha \left(
+\mat{z}^\dagger_{k-2} \cdot \delta \mat{y}^\dagger_{k-2}+
+\delta  \mat{z}^\dagger_{k-2} \cdot \mat{y}^\dagger_{k-2}
+ \right)  \cdot \mat{y}_{k-2}  \\+ h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{z}_{k-2} \cdot \mat{s}
 \end{multline}
 
-%
-%+ \mat{z}_{k-2} \cdot \tt{m}'\left[ \widetilde{\mat{x}}_{k-2}\right] \cdot \delta \mat{x}_{k-2} \\
-%+\delta \mat{z}_{k-2} \cdot \tt{m} \left[\widetilde{\mat{x}}_{k-2} \right] 
+\subsubsection{dual}
 
+\begin{equation}
+\widetilde{\mat{y}}_{k-1} = \mat{\Delta}^{  h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} }
+ \, + \,
+h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} }
+\end{equation}
+
+\subsection{Bounds}
 
 
 \begin{multline}
@@ -397,8 +447,6 @@ from $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$  tightly shut down in the
 \lVert  {\mat{y}}_{k-2} \rVert \right)
 \end{multline}
 
-
-In the case of the stabilized iteration, we have for example $\delta \mat{y}^{\rm stab}_{k-1}= \mat{\Delta}^{\mat{z}^\dagger \cdot \mat{s}}_\tau$.
 
 \section{Implementation}
 

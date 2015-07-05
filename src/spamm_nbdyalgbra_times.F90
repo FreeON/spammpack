@@ -179,7 +179,7 @@ CONTAINS
     TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A
     TYPE(SpAMM_tree_1d),      POINTER,           INTENT(IN)    :: B
     REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
-    TYPE(SpAMM_tree_1d),      POINTER, OPTIONAL  :: in_o
+    TYPE(SpAMM_tree_1d),      POINTER, OPTIONAL                :: in_o
     TYPE(SpAMM_tree_1d),      POINTER                          :: D
     INTEGER                                                    :: Depth
     REAL(SpAMM_KIND)                                           :: Tau2
@@ -194,8 +194,8 @@ CONTAINS
     if(.not.associated(a))return
     if(.not.associated(b))return
 
-    ! here is the squared threshold 
-    Tau2=Tau*Tau
+    ! here is the squared & modded SpAMM threshold, tau2 <- (tau*||A||*||B||)^2
+    Tau2=Tau*Tau*a%frill%norm2*b%frill%norm2
 
     if(.not.associated(d))then
        ! instantiate a tree if no passed allocation
