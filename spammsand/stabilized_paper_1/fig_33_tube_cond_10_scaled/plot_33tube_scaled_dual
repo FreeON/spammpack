@@ -25,26 +25,26 @@ set label 4 "(n-tr{~x{.4-}})/n"           tc rgb "black" at 12.2, 0.005
 #set label 46 "{ {/Symbol t}_y=1d-5}"      tc rgb "black"   at 15, 0.0005
 #set label 47 "{ {/Symbol t}_y=1d-6}"      tc rgb "black"   at 15, 0.000005
 
-set label 1  "x_{{/Symbol d}y_{k-1}}"     tc rgb "red"   at 18.3, 0.0003
-set label 15 "{ /Symbol d}y_{k-1}"        tc rgb "red"   at 18, 0.015
-
-#set label 16 "{ {/Symbol t}_y=1d-6}"      tc rgb "red"   at 19, 0.005
-#set label 17 "{ {/Symbol t}_y=1d-4}"      tc rgb "red"   at 18, 0.1
+set label 1  "x_{{/Symbol d}y_{k-1}}"     tc rgb "red"   at 18.3, 0.0001
+set label 15 "{ /Symbol d}y_{k-1}"        tc rgb "red"   at 16.3, 0.1
+set label 16 "{ {/Symbol t}_y=1d-6}"      tc rgb "red"   at 18, 0.005
+set label 17 "{ {/Symbol t}_y=1d-4}"      tc rgb "red"   at 18, 0.1
 
 set label 2 "x_{{/Symbol d}z_{k-1}}"  tc rgb "green" at 14, 0.00001
 set label 22 "{ /Symbol d}z_{k-1}"    tc rgb "green" at 11, 100. 
-set label 25 "{ {/Symbol t}_y=1d-7}"  tc rgb "green" at 10, 50000. 
-set label 26 "{ {/Symbol t}_y=1d-8}"  tc rgb "green" at 17, 9000. 
-set label 27 "{ {/Symbol t}_y=1d-10}"  tc rgb "green" at 17, 350. 
+set label 25 "{ {/Symbol t}_y=1d-3}"  tc rgb "green" at 10, 50000. 
+set label 26 "{ {/Symbol t}_y=1d-4}"  tc rgb "green" at 15, 9000. 
+set label 27 "{ {/Symbol t}_y=1d-6}"  tc rgb "green" at 15, 350. 
 
 set yrange [0.00000001:1000000.0]
-plot [2:20] "tau_3_10_dual.dat"     using 1:7  w lines ls 1 notitle,\
-            "tau_3_10_dual.dat"     using 1:9  w lines ls 2 notitle,\
-            "tau_3_10_dual.dat"     using 1:6  w lines ls 4 notitle,\
-            "tau_3_10_dual.dat"     using 1:8  w lines ls 5 notitle,\
-            "tau_3_10_dual.dat"     using 1:10 w lines ls 6 notitle,\
-            "tau_3_8_dual.dat"     using 1:8  w lines ls 5 notitle,\
-            "tau_3_8_dual.dat"     using 1:10 w lines ls 6 notitle,\
-            "tau_3_8_dual.dat"     using 1:6  w lines ls 4 notitle,\
-            "tau_3_7_dual.dat"     using 1:8  w lines ls 5 notitle,\
-            "tau_3_7_dual.dat"     using 1:10 w lines ls 6 notitle
+
+plot [2:22] "tubes_3_10_16_scaled_dual.dat"      using 1:7  w lines ls 1 notitle,\
+            "tubes_3_10_16_scaled_dual.dat"      using 1:9  w lines ls 2 notitle,\
+            "tubes_3_10_16_scaled_dual.dat"      using 1:6  w lines ls 4 notitle,\
+            "tubes_3_10_16_scaled_dual.dat"      using 1:8  w lines ls 5 notitle,\
+            "tubes_3_10_16_scaled_dual.dat"      using 1:10 w lines ls 6 notitle,\
+            "tubes_3_7_16_scaled_dual.dat"    using 1:8  w lines ls 5 notitle,\
+            "tubes_3_7_16_scaled_dual.dat"    using 1:10 w lines ls 6 notitle,\
+            "tubes_3_6_16_scaled_dual.dat"    using 1:8  w lines ls 5 notitle,\
+            "tubes_3_6_16_scaled_dual.dat"    using 1:10 w lines ls 6 notitle
+

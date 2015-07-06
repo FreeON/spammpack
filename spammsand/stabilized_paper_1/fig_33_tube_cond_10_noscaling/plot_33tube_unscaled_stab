@@ -42,18 +42,14 @@ set label 27 "{ {/Symbol t}_y=1d-6}"  tc rgb "green" at 35, 3500.
 
 
 set yrange [0.00000001:1000000.0]
-plot [2:40] "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"      using 1:7  w lines ls 1 notitle,\
-            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"      using 1:9  w lines ls 2 notitle,\
-            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"      using 1:6  w lines ls 4 notitle,\
-            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"      using 1:8  w lines ls 5 notitle,\
-            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"      using 1:10 w lines ls 6 notitle,\
-            "33_tube_cond_10_tau_3_4_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:8  w lines ls 5 notitle,\
-            "33_tube_cond_10_tau_3_4_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:10 w lines ls 6 notitle,\
-            "33_tube_cond_10_tau_3_5_noscale_spammsand_ns_diagnostics_stablized.dat"      using 1:6  w lines ls 4 notitle,\
-            "33_tube_cond_10_tau_3_5_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:8  w lines ls 5 notitle,\
-            "33_tube_cond_10_tau_3_5_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:10 w lines ls 6 notitle
+plot [2:40] "tubes_3_10_16_noscale_stab.dat"    using 1:7  w lines ls 1 notitle,\
+            "tubes_3_10_16_noscale_stab.dat"    using 1:9  w lines ls 2 notitle,\
+            "tubes_3_10_16_noscale_stab.dat"    using 1:6  w lines ls 4 notitle,\
+            "tubes_3_10_16_noscale_stab.dat"    using 1:8  w lines ls 5 notitle,\
+            "tubes_3_10_16_noscale_stab.dat"    using 1:10 w lines ls 6 notitle,\
+            "tubes_3_10_16_noscale_stab.dat"    using 1:8  w lines ls 5 notitle,\
+            "tubes_3_6_16_noscale_stab.dat"    using 1:10 w lines ls 6 notitle,\
+            "tubes_3_6_16_noscale_stab.dat"    using 1:6  w lines ls 4 notitle,\
+            "tubes_3_7_16_noscale_stab.dat"    using 1:8  w lines ls 5 notitle,\
+            "tubes_3_7_16_noscale_stab.dat"    using 1:10 w lines ls 6 notitle
 
-#            "33_tube_cond_10_tau_3_5_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:12 w lines ls 7 notitle
-#            "33_tube_cond_10_tau_3_4_noscale_spammsand_ns_diagnostics_stablized.dat"    using 1:12 w lines ls 7 notitle,\
-#            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"      using 1:12 w lines ls 7 notitle,\
-#            "33_tube_cond_10_tau_3_noscale_spammsand_ns_diagnostics_stablized.dat"      using 1:11 w lines ls 3 notitle,\
