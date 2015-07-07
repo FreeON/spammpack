@@ -22,34 +22,35 @@ set size ratio .75
 set xlabel 'k' offset 0,0.5 
 
 set label 4 "(n-tr{~x{.4-}})/n"           tc rgb "black" at 18, 0.01
-set label 46 "{ {/Symbol t}_y=1d-5}"      tc rgb "black"   at 35, 0.0005
-set label 47 "{ {/Symbol t}_y=1d-6}"      tc rgb "black"   at 35, 0.000005
+set label 46 "{ {/Symbol t}_y=1d-5}"      tc rgb "black"   at 35, 0.00005
+set label 47 "{ {/Symbol t}_y=1d-6}"      tc rgb "black"   at 35, 0.0000002
 
-set label 1  "x_{{/Symbol d}y_{k-1}}"     tc rgb "red"   at 31.5, 0.01
-set label 15 "{ /Symbol d}y_{k-1}"        tc rgb "red"   at 31.5, 0.9
-set label 16 "{ {/Symbol t}_y=1d-5}"      tc rgb "red"   at 35, 0.8
-set label 17 "{ {/Symbol t}_y=1d-6}"      tc rgb "red"   at 35, 0.08
+set label 1  "x_{{/Symbol d}y_{k-1}}"     tc rgb "red"   at 31.5, 0.001
+set label 15 "{ /Symbol d}y_{k-1}"        tc rgb "red"   at 31.5, 2
+#set label 16 "{ {/Symbol t}_y=1d-5}"      tc rgb "red"   at 35, 0.8
+#set label 17 "{ {/Symbol t}_y=1d-6}"      tc rgb "red"   at 35, 0.08
 
-set label 2 "x_{{/Symbol d}z_{k-1}}"                tc rgb "green" at 25, 0.000001
+set label 2 "x_{{/Symbol d}z_{k-1}}"                tc rgb "green" at 25, 0.00001
 set label 22 "{ /Symbol d}z_{k-1}"  tc rgb "green" at 12, 300. 
-set label 25 "{ {/Symbol t}_y=1d-4}"  tc rgb "green" at 20, 50000. 
-set label 26 "{ {/Symbol t}_y=1d-5}"  tc rgb "green" at 35, 50000. 
-set label 27 "{ {/Symbol t}_y=1d-6}"  tc rgb "green" at 35, 3500. 
+set label 25 "{ {/Symbol t}_y=1d-4}"  tc rgb "green" at 35, 90000. 
+#set label 26 "{ {/Symbol t}_y=1d-5}"  tc rgb "green" at 35, 50000. 
+set label 27 "{ {/Symbol t}_y=1d-6}"  tc rgb "green" at 35, 4500. 
 
 #set label 3 "|x_{{/Symbol d}x_{k-1}}|"                tc rgb "blue"  at 35, 2.5
 #set label 7 "|{ {/Symbol t}=1d-3}|"  tc rgb "blue"  at 35, 0.02 
 #set label 7 "|{ /Symbol d}x_{k-1}|"  tc rgb "blue"  at 32, 0.02 
 
 
-set yrange [0.00000001:1000000.0]
+set yrange [0.00000001:100000.0]
 plot [2:40] "tubes_3_10_16_noscale_stab.dat"    using 1:7  w lines ls 1 notitle,\
             "tubes_3_10_16_noscale_stab.dat"    using 1:9  w lines ls 2 notitle,\
             "tubes_3_10_16_noscale_stab.dat"    using 1:6  w lines ls 4 notitle,\
             "tubes_3_10_16_noscale_stab.dat"    using 1:8  w lines ls 5 notitle,\
             "tubes_3_10_16_noscale_stab.dat"    using 1:10 w lines ls 6 notitle,\
             "tubes_3_10_16_noscale_stab.dat"    using 1:8  w lines ls 5 notitle,\
-            "tubes_3_6_16_noscale_stab.dat"    using 1:10 w lines ls 6 notitle,\
-            "tubes_3_6_16_noscale_stab.dat"    using 1:6  w lines ls 4 notitle,\
             "tubes_3_7_16_noscale_stab.dat"    using 1:8  w lines ls 5 notitle,\
-            "tubes_3_7_16_noscale_stab.dat"    using 1:10 w lines ls 6 notitle
+            "tubes_3_7_16_noscale_stab.dat"    using 1:10 w lines ls 6 notitle,\
+            "tubes_3_6_16_noscale_stab.dat"    using 1:10 w lines ls 6 notitle,\
+            "tubes_3_6_16_noscale_stab.dat"    using 1:8  w lines ls 5 notitle,\
+            "tubes_3_6_16_noscale_stab.dat"    using 1:6  w lines ls 4 notitle
 
