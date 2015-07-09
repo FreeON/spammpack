@@ -138,24 +138,31 @@ towards completeness \cite{Others, Hutter, Gigi}.
 
 \section{Sparse Approximate Matrix Multiplication}
 
-
-In this contribution, we consider an $N$-body approach to the approximation of matrix functions with decay,
-based on the quadtree data structure \cite{wise, samet}
+In this contribution, we consider an $N$-body approach to the
+approximation of matrix functions with decay, based on the quadtree
+data structure \cite{wise, samet}
 \begin{equation}
 \mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
 \end{equation}
-and orderings that are locality preserving \cite{}.  Orderings that preserve data locality are well developed in the
-database theory \cite{}, providing fast spatial and metric querries.
-Locality enabled, fast data access is central to the $N$-Body approximation \cite{}, and an important problem
-for enterprise \cite{} and runtime systems \cite{}, with memory hierarchies becoming increasingly assynchronous and decentralized \cite{cache}.
-For matrices with decay, orderings that preserve locality lead to block-by-magnitude matrix structures with well
-segregated neighborhoods, inhabited by matrix elements of like size, and efficiently resolved by the quadtree data structure \cite{}.
+{\bf (I know we argued about this before, but I still like the normal 1-based notation better :) )}
+and orderings that are locality preserving \cite{}.  Orderings that
+preserve data locality are well developed in the database theory
+\cite{}, providing fast spatial and metric queries.  Locality
+enabled, fast data access is central to the $N$-Body approximation
+\cite{}, and an important problem for enterprise \cite{} and runtime
+systems \cite{}, with memory hierarchies becoming increasingly
+asynchronous and decentralized \cite{cache}.  For matrices with
+decay, orderings that preserve locality lead to blocked-by-magnitude
+matrix structures with well segregated neighborhoods, inhabited by
+matrix elements of like size, and efficiently resolved by the quadtree
+data structure \cite{}.
 
 \subsection{Stable $\tt SpAMM$}
 
-With block-by-magnitude ordering of matrices $\mat{a}$ and $\mat{b}$,
-the Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel,  $\ot$, carries out fast
-occlusion culling of insignifcant volumes in the product octree:
+With blocked-by-magnitude ordering of matrices $\mat{a}$ and
+$\mat{b}$, the Sparse Approximate Matrix Multiplication ($\tt SpAMM$)
+kernel, $\ot$, carries out fast occlusion culling of insignificant
+volumes in the product octree:
 \begin{widetext}
 \begin{equation}
 \mat{a}^{i} \ot \mat{b}^{i} =
@@ -172,8 +179,9 @@ occlusion culling of insignifcant volumes in the product octree:
               \right.  \, ,
 \end{equation}
 \end{widetext}
-with errors linear in $\tau$
-bounded by the sub-multiplicative norms $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ and the Cauchy-Schwarz inequality \cite{kahan,}.
+with errors linear in $\tau$ bounded by the sub-multiplicative norms
+$\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ and the
+Cauchy-Schwarz inequality \cite{kahan,}.
 
 The approximate $\tt SpAMM$ product is
 \begin{equation}
@@ -181,14 +189,20 @@ The approximate $\tt SpAMM$ product is
   = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau}
 %+ {\cal{O}} \left(  \tau^2 \right) \; ,
 \end{equation}
-with the culled contractions $\mat{\Delta}^{a \cdot b}_{\tau}$ obeying the $\tt SpAMM$ bound
+with the culled contractions $\mat{\Delta}^{a \cdot b}_{\tau}$ obeying
+the $\tt SpAMM$ bound
 \begin{equation}\label{bound}
 \lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
-at each level of recursion.  This makes $\ot$ {\em stable}, as defined by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).
-However, instead of the roundoff error, we are concerned with a deterministic $\tt SpAMM$ error \footnote{A non-deterministic
-${\tt SpAMM}$ occlusion error is also possible, {\em e.g.} associated with proablistic stabilization\cite{} or sampling\cite{} methods.},  which
-leads to a non-associative algebra and error flows with properties of the Lie bracket
+at each level of recursion.  This makes $\ot$ {\em stable}, as defined
+by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).  However,
+instead of the roundoff error, we are concerned with a deterministic
+$\tt SpAMM$ error%
+\footnote{A non-deterministic ${\tt SpAMM}$ occlusion error is also
+  possible, {\em e.g.} associated with probabilistic stabilization
+  \cite{} or sampling \cite{} methods.},
+which leads to a non-associative algebra and error flows with
+properties of the Lie bracket
 \begin{equation} \label{braket}
 \widetilde{\left[ \mat{a} , \mat{b} \right]} \equiv \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}
 =  \left[ \mat{a} , \mat{b} \right]
@@ -197,23 +211,30 @@ leads to a non-associative algebra and error flows with properties of the Lie br
 
 \subsection{Related Research}
 
-Here, we note overlaping themes and research related to the results presented here.
-First,  its worth noting that the $\tt SpAMM$ concept has evolved,
-from a row-coloum based occlusion \cite{}, to recursive octree occlusion \cite{}, and in this work, to the
-bounded (stable) occlusion satisfying Eq.~\ref{bound}.    This evolution cooresponds to an  ongoing economization and radical simplification
-of strongly interacting,  high performance solvers in the $\tt freeon$ ecosystem \cite{}.  These economizations
-include $n$-body algorithms for the five common electronic structure solvers \cite{},
-and the (ongoing) development of generic strategies supporting rapid, hierarhcical access of spatial and metric data \cite{sammet, wise}.
-For example, $\tt SpAMM$ has been extended to the {\em triple} metric querry for hextree occlusion of
-the exact Fock exchange \cite{}.
+Here, we note overlaping themes and research related to the results
+presented here.  First, its worth noting that the $\tt SpAMM$ concept
+has evolved, from a row-column based occlusion \cite{}, to recursive
+octree occlusion \cite{}, and in this work, to the bounded (stable)
+occlusion satisfying Eq.~\ref{bound}.  This evolution corresponds to
+an ongoing economization and radical simplification of strongly
+interacting, high performance solvers in the $\tt FreeON$ ecosystem
+\cite{}.  These economizations include $N$-body algorithms for the
+five common electronic structure solvers \cite{}, and the (ongoing)
+development of generic strategies supporting rapid, hierarchical
+access of spatial and metric data \cite{sammet, wise}.  For example,
+$\tt SpAMM$ has been extended to the {\em triple} metric query for
+hextree occlusion of the exact Fock exchange \cite{}.
 
-$\tt SpAMM$ is broadly related to {\em generalized n-body} methods, poularized by Grey \cite{},
-that are simply algorithms based on fast spatial and metric querry \cite{Sammet} and local approximation \cite{}.
-Recently, x, y  and Yellik showed perfect strong scaling and communication optimality
-for pairwise $n$-body methods \cite{Warren Salmon, Yellik}.  Also Demmel and showed  for the related fast matrix multiplicaiton.
-It may be possible to show similar results
-for $\tt SpAMM$, by exploiting the additional locality of reference developed in this work,
-{\em e.g.} based on strong Euclidian locality and with iteration towards the identity.
+$\tt SpAMM$ is broadly related to {\em generalized N-body} methods,
+popularized by Grey \cite{}, that are simply algorithms based on fast
+spatial and metric query \cite{Sammet} and local approximation
+\cite{}.  Recently, x, y and Yellik derived perfect strong scaling
+communication optimal bounds for pairwise $N$-body methods
+\cite{Warren Salmon, Yellik}.  Also, Demmel \emph{et al.}~derived such
+bounds for the related fast matrix multiplication.  It may be possible
+to show similar results for $\tt SpAMM$, by exploiting the additional
+locality of reference developed in this work, {\em e.g.}~based on
+strong Euclidean locality and with iteration towards the identity.
 
 As noted by Aluru \cite{}, the top-down $n$-body model and breadth-first map-reduction are equivalent \cite{}, offering
 the potential for alignment with emergent enterprise frameworks \cite{} and functional programming
