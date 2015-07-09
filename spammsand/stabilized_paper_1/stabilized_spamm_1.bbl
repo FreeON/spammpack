@@ -1,4 +1,4 @@
-\begin{thebibliography}{15}
+\begin{thebibliography}{22}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname bibnamefont\endcsname\relax
   \def\bibnamefont#1{#1}\fi
@@ -83,6 +83,12 @@
   \bibinfo{journal}{Comp. Phys. Comm.} \textbf{\bibinfo{volume}{137}},
   \bibinfo{pages}{255} (\bibinfo{year}{2000}).
 
+\bibitem[{\citenamefont{Benzi and Tuma}(1999)}]{Benzi99}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Benzi}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Tuma}},
+  \bibinfo{journal}{Appl. Numer. Math.} \textbf{\bibinfo{volume}{30}},
+  \bibinfo{pages}{305} (\bibinfo{year}{1999}).
+
 \bibitem[{\citenamefont{Benzi}(2002)}]{Benzi02}
 \bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Benzi}}, \bibinfo{journal}{J.
   Comput. Phys.} \textbf{\bibinfo{volume}{182}}, \bibinfo{pages}{418}
@@ -101,5 +107,39 @@
   \bibinfo{author}{\bibfnamefont{N.}~\bibnamefont{Razouk}},
   \bibinfo{journal}{SIAM Rev.} \textbf{\bibinfo{volume}{55}},
   \bibinfo{pages}{3} (\bibinfo{year}{2013}).
+
+\bibitem[{\citenamefont{Kutzkov}(2012)}]{Kutzkov2012}
+\bibinfo{author}{\bibfnamefont{K.}~\bibnamefont{Kutzkov}}, pp.
+  \bibinfo{pages}{1--15} (\bibinfo{year}{2012}), \eprint{1209.4508}.
+
+\bibitem[{\citenamefont{Pagh}(2013)}]{Pagh2013}
+\bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Pagh}}, \bibinfo{journal}{ACM
+  Trans. Comput. Theory} \textbf{\bibinfo{volume}{5}}, \bibinfo{pages}{1}
+  (\bibinfo{year}{2013}).
+
+\bibitem[{\citenamefont{Bai and Demmel}(1998)}]{Bai98usingthe}
+\bibinfo{author}{\bibfnamefont{Z.}~\bibnamefont{Bai}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Demmel}},
+  \bibinfo{journal}{SIAM J. Matrix Anal. Appl} \textbf{\bibinfo{volume}{19}},
+  \bibinfo{pages}{205} (\bibinfo{year}{1998}).
+
+\bibitem[{\citenamefont{Higham et~al.}(2005)\citenamefont{Higham, D~.
+  Steven~Mackey, and coise Tisseur}}]{Higham2005}
+\bibinfo{author}{\bibfnamefont{N.~J.~.} \bibnamefont{Higham}},
+  \bibinfo{author}{\bibfnamefont{N.~M.} \bibnamefont{D~. Steven~Mackey}},
+  \bibnamefont{and} \bibinfo{author}{\bibfnamefont{F.~Â.} \bibnamefont{coise
+  Tisseur}}, \bibinfo{journal}{SIAM J. Matrix Anal. Appl.}
+  \textbf{\bibinfo{volume}{26}}, \bibinfo{pages}{849} (\bibinfo{year}{2005}).
+
+\bibitem[{\citenamefont{Chen and Chow}(preprint)}]{Chen2014}
+\bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Chen}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{E.}~\bibnamefont{Chow}}
+  (\bibinfo{year}{preprint}),
+  \urlprefix\url{http://www.mcs.anl.gov/papers/P5059-0114.pdf}.
+
+\bibitem[{\citenamefont{Pan and Schreiber}(1991)}]{Pan1991}
+\bibinfo{author}{\bibfnamefont{V.}~\bibnamefont{Pan}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Schreiber}},
+  \bibinfo{journal}{SIAM J. Sci. Stat. Comput.}  (\bibinfo{year}{1991}).
 
 \end{thebibliography}
