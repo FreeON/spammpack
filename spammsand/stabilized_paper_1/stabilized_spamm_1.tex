@@ -160,36 +160,31 @@ at each level of recursion.  This makes $\ot$ {\em stable}, as defined by Demmel
 However, instead of the roundoff error, we are concerned with a deterministic $\tt SpAMM$ error \footnote{A non-deterministic
 ${\tt SpAMM}$ occlusion error is also possible, {\em e.g.} associated with proablistic stabilization\cite{} or sampling\cite{} methods.},  which 
 leads to a non-associative algebra and error flows with properties of the Lie bracket
-\begin{equation}
+\begin{equation} \label{braket}
 \widetilde{\left[ \mat{a} , \mat{b} \right]} \equiv \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}  
 =  \left[ \mat{a} , \mat{b} \right]
 + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
 \end{equation}
-The interesting group theory associated with the construction of matrix functions is developed by Higham, Mackey, Mackey and T 
-(HMMT; Ref.~\cite{}).  
-
-\pagebreak
---
-\pagebreak
 
 \subsection{Related Research} 
 
-Here, we note overarching relationships of research presented here,  with overlaping and related areas of current research and importance. 
+Here, we note overlaping themes and research related to the results presented here.
 First,  its worth noting that the $\tt SpAMM$ concept has evolved, 
 from a row-coloum based occlusion \cite{}, to recursive octree occlusion \cite{}, and in this work, to the
 bounded (stable) occlusion satisfying Eq.~\ref{bound}.    This evolution cooresponds to an  ongoing economization and radical simplification
-of strongly interacting,  high performance solvers in the $\tt freeon$ ecosystem \cite{}, involving the development of 
-common and universal strategies that support rapid, hierarhcical access of spatial and metric data.  
+of strongly interacting,  high performance solvers in the $\tt freeon$ ecosystem \cite{}.  These economizations 
+include $n$-body algorithms for the five common electronic structure solvers \cite{}, 
+and the (ongoing) development of generic strategies supporting rapid, hierarhcical access of spatial and metric data \cite{sammet, wise}.  
 For example, $\tt SpAMM$ has been extended to the {\em triple} metric querry for hextree occlusion of 
 the exact Fock exchange \cite{}.  
 
-$\tt SpAMM$ is also related to other {\em generalized n-body} methods, poularized by Grey \cite{}, which employ spatial and 
-metric querrires \cite{Sammet} together with local approximation \cite{}.  
+$\tt SpAMM$ is broadly related to {\em generalized n-body} methods, poularized by Grey \cite{},  
+that are simply algorithms based on fast spatial and metric querry \cite{Sammet} and local approximation \cite{}.  
 Recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
 for pairwise $n$-body methods \cite{Warren Salmon, Yellik}.  Also Demmel and showed  for the related fast matrix multiplicaiton.
 It may be possible to show similar results 
 for $\tt SpAMM$, by exploiting the additional locality of reference developed in this work, 
-{\em e.g.} for matrices with decay and iteration towards the identity.  
+{\em e.g.} based on strong Euclidian locality and with iteration towards the identity.  
 
 As noted by Aluru \cite{}, the top-down $n$-body model and breadth-first map-reduction are equivalent \cite{}, offering
 the potential for alignment with emergent enterprise frameworks \cite{} and functional programming 
@@ -199,41 +194,48 @@ and following a sustainable commodity trend \cite{softwaresustainanbilty} that o
 increasingly cheap compute cycles over the next few decades \cite{}. 
 
 $\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast matrix multiplication \cite{},  
-which has been on fire with recent new developments \cite{}.  In the Strassen-like approach, disjoint volumes in a tensor 
+which has been on fire with recent new developments \cite{}.  In the Strassen-like approach, disjoint volumes in (abstract) tensor 
 intermediates are omitted recursively \cite{}.  In the $\tt SpAMM$ approach to fast multixplication, a volume of
 significant contributions is culled from the naive $ijk$-cube of the intermediate contraction, 
-with error bounded by Eq.~\ref{bound}.  
+with error bounded by Eq.~\ref{bound}.  These approaches would seem to be compatible and synergystic.
 
-$\tt SpAMM$ is also related closely to non-deterministic methods of compresive sampling,  involving 
-sketching \cite{Kutzkov2012, Pagh2013}, probing \cite{} and joining \cite{}.  These methods involve
-a wheighted (probablistic)  on the fly sampling with the potential for complexity reduction under
-certain assumptions (random distributions) \cite{}.  
-$\tt SpAMM$ also employs an on the fly wheighted sampling, based on relative size of the product norms and with the opposite 
-assumption; namely compression through correlation, including algebraic localization of iteration towards  
-identity, and also a strong Euclidean locality. 
+$\tt SpAMM$ is also related to technologies for the non-deterministic,  compresive sampling of the product.  These 
+technologies have also seen exciting developments, including  sketching \cite{Kutzkov2012, Pagh2013}, joining, sensing and probing \cite{}.
+These methods involve a wheighted (probablistic) and on the fly sampling with the potential for complexity reduction under
+certain assumptions (random distributions) [{\bf is this true for all? what about MAD?}].  
+$\tt SpAMM$ also employs an on the fly wheighted sampling, based on the product of matrix norms, 
+but opperating under the contrary assumption of compresion through locality in the naive $ijk$ space, brought about 
+via correlations in the algebra (towards identity) and in the underlying data (blocked-by-magnitude).
+
+Methods that achieve compression in the product stream are different from reduced rank algorithms that achieve 
+matrix compression \cite{} and/or sparsificiation \cite{} of the matrix in a step preceeding multiplication.  
+However, these approaches are not incompatible, with the quadtree data structure supportive 
+of most approaches to matrix compression \cite{} and sparsification \cite{wise}, as well as most 
+fast solvers they might interact with.  With little deflation in the cost of fast memory, solver ecosystems 
+that can bring multiple levels of approximation to in place data may enjoy significant cumulitive advantages. 
+
+Finally, the mathematical developments in Higham, Mackey, Mackey and T (HMMT; Ref.~\cite{}) demonstrate 
+the convergence of NS iteration under all groups, addressing potential failure due to the development of 
+pathalogical symmetries related to {\em e.g.} Eq.~\ref{braket}.    Also in this key paper, HMMT develop
+the fixed point stability analyses (about 2/3 of the way in), which this work draws heavily upon.  This 
+work also draws on the scaling in Chen and Chow's \cite{} approach to a scaled NS iteration for ill-conditioned 
+problems. 
+
+% like the Hiearchical Semi-Seperable method, 
+% but are similar in structure, complimentary and synergistic. 
+
+% In this work, we are focused on achieving preconditioned (lensed) states for $\ot$ at the edge of stability,  
+% with future work examining sandwich techniques for achieving additional (full) precision \cite{}.  
+
+% Targeted at the preconditioned state: diff factorization and solution of the inverse via SPAI. This
+% approach has the lower dependence on the $\kappa(\mat{s})^{-1/2}$ instead of $\kappa(\mat{s})^{-1}$
+% cost of factorization  Because computing residual corrected . 
+
+% $\tt SpAMM$ is {\em not} an on the fly matrix truncation/sparsification algorithm \cite{}, and shouldn't be associated
 
 
-These methods are different from 
-fully or partially ``pre-compressed'' reduced rank algorithms \cite{} like the Hiearchical Semi-Seperable method, 
-but are similar in structure, complimentary and synergistic. 
-
-
-
-
-In this work, we are focused on achieving preconditioned (lensed) states for $\ot$ at the edge of stability,  
-with future work examining sandwich techniques for achieving additional (full) precision \cite{}.  
-
-Targeted at the preconditioned state: diff factorization and solution of the inverse via SPAI. This
-approach has the lower dependence on the $\kappa(\mat{s})^{-1/2}$ instead of $\kappa(\mat{s})^{-1}$
-cost of factorization  Because computing residual corrected . 
-
-$\tt SpAMM$ is {\em not} an on the fly matrix truncation/sparsification algorithm \cite{}, and shouldn't be associated
-
-
-with algorithms based on the blocked-CSR (BCSR) and distributed-blocked-CSR (DBCSR) structures, 
-introduced previously by one of us \cite{}. 
-
-
+% with algorithms based on the blocked-CSR (BCSR) and distributed-blocked-CSR (DBCSR) structures, 
+% introduced previously by one of us \cite{}. 
 
 
 %In the case of $\tt SpAMM$,  querries are performed on the norm (matrix distance), 
@@ -241,10 +243,6 @@ introduced previously by one of us \cite{}.
 %Also, our recursive approximation is occlusion via the Cauchy-Schwarz 
 %inequality and the sub-multiplicative property, rather than local Taylor expansion.  
 
-
-
-
-\pagebreak
 
 \section{First Order Newton-Shulz Iteration}
 
