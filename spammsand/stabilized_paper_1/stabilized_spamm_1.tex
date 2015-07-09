@@ -107,7 +107,8 @@ an exploitable reduction in rank.  This is the case in electronic structure for 
 
 \pagebreak 
 
-\section{Sparse Approximate Matrix Multiplication and Stability}
+\section{Sparse Approximate Matrix Multiplication}
+
 
 In this contribution, we consider an $N$-body approach to the approximation of matrix functions with decay, 
 based on the quadtree data structure \cite{wise, samet} 
@@ -120,6 +121,8 @@ Locality enabled, fast data access is central to the $N$-Body approximation \cit
 for enterprise \cite{} and runtime systems \cite{}, with memory hierarchies becoming increasingly assynchronous and decentralized \cite{cache}.  
 For matrices with decay, orderings that preserve locality lead to block-by-magnitude matrix structures with well 
 segregated neighborhoods, inhabited by matrix elements of like size, and efficiently resolved by the quadtree data structure \cite{}.
+
+\subsection{Stable $\tt SpAMM$}
 
 With block-by-magnitude ordering of matrices $\mat{a}$ and $\mat{b}$, 
 the Sparse Approximate Matrix Multiplication ($\tt SpAMM$) kernel,  $\ot$, carries out fast 
@@ -142,7 +145,6 @@ occlusion culling of insignifcant volumes in the product octree:
 \end{widetext}
 with errors linear in $\tau$ 
 bounded by the sub-multiplicative norms $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ and the Cauchy-Schwarz inequality \cite{kahan,}.
-In Ref.\cite{Challacombe2014}, we generalize this recursive task occlusion to the problem of Fock exchange.
 
 The approximate $\tt SpAMM$ product is 
 \begin{equation}
@@ -166,30 +168,81 @@ leads to a non-associative algebra and error flows with properties of the Lie br
 The interesting group theory associated with the construction of matrix functions is developed by Higham, Mackey, Mackey and T 
 (HMMT; Ref.~\cite{}).  
 
+\pagebreak
+--
+\pagebreak
+
+\subsection{Related Research} 
+
+Here, we note overarching relationships of research presented here,  with overlaping and related areas of current research and importance. 
+First,  its worth noting that the $\tt SpAMM$ concept has evolved, 
+from a row-coloum based occlusion \cite{}, to recursive octree occlusion \cite{}, and in this work, to the
+bounded (stable) occlusion satisfying Eq.~\ref{bound}.    This evolution cooresponds to an  ongoing economization and radical simplification
+of strongly interacting,  high performance solvers in the $\tt freeon$ ecosystem \cite{}, involving the development of 
+common and universal strategies that support rapid, hierarhcical access of spatial and metric data.  
+For example, $\tt SpAMM$ has been extended to the {\em triple} metric querry for hextree occlusion of 
+the exact Fock exchange \cite{}.  
+
+$\tt SpAMM$ is also related to other {\em generalized n-body} methods, poularized by Grey \cite{}, which employ spatial and 
+metric querrires \cite{Sammet} together with local approximation \cite{}.  
+Recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
+for pairwise $n$-body methods \cite{Warren Salmon, Yellik}.  Also Demmel and showed  for the related fast matrix multiplicaiton.
+It may be possible to show similar results 
+for $\tt SpAMM$, by exploiting the additional locality of reference developed in this work, 
+{\em e.g.} for matrices with decay and iteration towards the identity.  
+
+As noted by Aluru \cite{}, the top-down $n$-body model and breadth-first map-reduction are equivalent \cite{}, offering
+the potential for alignment with emergent enterprise frameworks \cite{} and functional programming 
+languages that support generacity \cite{}. Language support for generic recursion may allow very complex solver ecosystems 
+with very simple (skeletonized) frameworks, lowering barriers to entry, enhancing performance towards decentralized memory landscapes, 
+and following a sustainable commodity trend \cite{softwaresustainanbilty} that offers 
+increasingly cheap compute cycles over the next few decades \cite{}. 
+
+$\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast matrix multiplication \cite{},  
+which has been on fire with recent new developments \cite{}.  In the Strassen-like approach, disjoint volumes in a tensor 
+intermediates are omitted recursively \cite{}.  In the $\tt SpAMM$ approach to fast multixplication, a volume of
+significant contributions is culled from the naive $ijk$-cube of the intermediate contraction, 
+with error bounded by Eq.~\ref{bound}.  
+
+$\tt SpAMM$ is also related closely to non-deterministic methods of compresive sampling,  involving 
+sketching \cite{Kutzkov2012, Pagh2013}, probing \cite{} and joining \cite{}.  These methods involve
+a wheighted (probablistic)  on the fly sampling with the potential for complexity reduction under
+certain assumptions (random distributions) \cite{}.  
+$\tt SpAMM$ also employs an on the fly wheighted sampling, based on relative size of the product norms and with the opposite 
+assumption; namely compression through correlation, including algebraic localization of iteration towards  
+identity, and also a strong Euclidean locality. 
+
+
+These methods are different from 
+fully or partially ``pre-compressed'' reduced rank algorithms \cite{} like the Hiearchical Semi-Seperable method, 
+but are similar in structure, complimentary and synergistic. 
 
 
 
-communication optimal, compression occurs through two types of localization. 
+
+In this work, we are focused on achieving preconditioned (lensed) states for $\ot$ at the edge of stability,  
+with future work examining sandwich techniques for achieving additional (full) precision \cite{}.  
+
+Targeted at the preconditioned state: diff factorization and solution of the inverse via SPAI. This
+approach has the lower dependence on the $\kappa(\mat{s})^{-1/2}$ instead of $\kappa(\mat{s})^{-1}$
+cost of factorization  Because computing residual corrected . 
+
+$\tt SpAMM$ is {\em not} an on the fly matrix truncation/sparsification algorithm \cite{}, and shouldn't be associated
 
 
-%In this contibution, we consider only the magnitude of these error flows.     
-
-$\tt SpAMM$ is similar to compressed kernels for sketching the matrix product \cite{Kutzkov2012, Pagh2013}. 
-spatial join! Paugh.  MAD.  etc  
-Instead of the FFT however, compression is achieved through a recursive two-sided metric querry on the $\tt SpAMM$ bound, Eq.~(\ref{bound}),
-which may exprerience acceleration through localiztion effects (lensing) in the $ijk$ (octree) space, as demonstrated shortly. 
-
-These localization techniques are, in most cases, complimentary with other compresive technologies, including methods based on 
-hierarchical semi-seperability and also methods for fast kernel summation \cite{}. 
-poor-mans approach to eliminating disjoint volumes 
+with algorithms based on the blocked-CSR (BCSR) and distributed-blocked-CSR (DBCSR) structures, 
+introduced previously by one of us \cite{}. 
 
 
-In addition to compression by occlusion, octree locality is important for the communication optimality of 
-$n$-body methods \cite{Warren Salmon, Yellik} that may be achieved by minimal locally essential trees \cite{}.    
-Finally, its interesting to note that this data-centric, {\em locality as compression} approach is incompatible with 
-randomization methods that employ homogenization to well condition matrices 
-\cite{pan, DiahLi and Parket Scott},  and also to achieve domain decomposition of the $\tt SpGEMM$, {\em e.g.} 
-using the conventional SUMMA \cite{}.
+
+
+%In the case of $\tt SpAMM$,  querries are performed on the norm (matrix distance), 
+%rather than a Euclidean distance, as in the case of {\em e.g.}~an astrophisical tree code \cite{}.    
+%Also, our recursive approximation is occlusion via the Cauchy-Schwarz 
+%inequality and the sub-multiplicative property, rather than local Taylor expansion.  
+
+
+
 
 \pagebreak
 
@@ -269,26 +322,39 @@ with $\mat{y}^{\rm stab}_k = \mat{z}^\dagger_k \cdot \mat{s}$.
 \subsection{codebase}
 FP, F08, OpenMP 4.0
 
+In the current implementation, all persistence data 
+(norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
+
+
+
+
+ that may be achieved by minimal locally essential trees \cite{}.    
+
+
+
 \subsection{stabilization}
 
 \subsection{switching \& convergence}
 Map switching and etc based on TrX
 
-\section{Data}
+\subsection{Data}
 
-\subsection{double exponential ill-conditioning}
+\subsubsection{double exponential ill-conditioning}
 3,3 carbon nanotube with diffuse $sp$-function
 double exponential (Fig.)
 
-\subsection{three-dimensional, periodic}
-
-\subsubsection{water boxes}
-
-\subsubsection{ordering}
+\subsubsection{three-dimensional, periodic}
+%\subsubsection{water boxes}
+%\subsubsection{ordering}
+\subsubsection{Matrix Market}
 
 \pagebreak 
+\section{Results}
 
-\section{Lensing}
+\subsection{Stability (Proof)}
+
+
+\subsection{Lensing}
 A feature of square root iteration with the $\ot$ kernel is localization of the culled octree towards identity iteration, 
 $\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
 the product $\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$ involves the product of large and small eigenvalues, and large and small norms, 
@@ -307,7 +373,7 @@ Our thesis is that many problems in physical and information sciences can be bro
 as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
 and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
 
-\subsection{lensing}
+
 
  \begin{figure}[h] \label{markofzorro}
  \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
@@ -338,7 +404,7 @@ be quantified in future work.
 
 \pagebreak
 
-\section{Error Flows in Accelerated Square Root Iteration}
+\subsection{Error Flows in Accelerated Square Root Iteration}
 
 In the square root iteration, our primary concern is the growth 
 $\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}$, 
@@ -356,7 +422,7 @@ In this model, we focus on the first order differential in the approach to ident
 with the directional approach to idempotence largely determined by the reference state $\mat{x}_{k-1}$, and stability determined by
 the $\tau$ dependent magnitudes $\delta y_{k-1}$  and $\delta z_{k-1}$. 
  
-\subsection{First order in the previous errors}
+\subsubsection{First order in the previous errors}
 
 To start, consider just the first order error $\delta \mat{x}_k$ that develops from the previous errors $\delta \mat{y}_{k-1}$
 and $\delta \mat{z}_{k-1}$ through the Fr\'{e}chet derivatives \cite{}
@@ -418,7 +484,7 @@ and
 Equations \ref{yorbit} and  \ref{zorbit} illustrate the contractive nature of the NS identity iteration, with directional 
 contributions from $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$ tightly shut down in the region of superlinear convergence.
 
-\subsection{Previous errors to first order}
+\subsubsection{Previous errors to first order}
 
 In addition to the amplification of previous errors by the Frechet derivatives, errors are compounded to first order in $\tau$
 by the {\tt SpAMM} error.  Our model develops the $\tau$  dependent displacement $\delta \mat{z}_{k-1}$ starting with partially unwinding
@@ -472,8 +538,7 @@ h'_\alpha \delta \mat{x}^\dagger_{k-2} \cdot \mat{y}_{k-2}
 %\end{equation}
 \end{multline}
 
-
-\subsection{Bounds}
+\subsubsection{Bounds}
 
 \begin{multline}
 \lVert \delta {\mat{z}}_{k-1} \rVert \lesssim
@@ -485,11 +550,10 @@ h'_\alpha \delta \mat{x}^\dagger_{k-2} \cdot \mat{y}_{k-2}
 
 \pagebreak 
 
-\section{Stability Experiments}
+\subsubsection{Stability Experiments}
 
-\subsection{(3,3) nanotubes at $\kappa=10^{10}$}
+\subsubsection{(3,3) nanotubes at $\kappa=10^{10}$}
 
-\subsubsection{unscaled stability}
 
 \begin{figure}[h]
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual.eps}
@@ -507,7 +571,6 @@ Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\
 $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
-\subsubsection{with scaling}
 
 \begin{figure}[h]
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual.eps}
@@ -526,9 +589,8 @@ Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
-\subsection{water boxes}
+\subsubsection{water boxes}
 
-\subsubsection{scaled}
 
 \begin{figure}[h]
 \includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_stab.eps}
@@ -546,14 +608,16 @@ Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
-\subsubsection{unscaled}
-
+\subsection{Metric Locality} 
+Metric locality is locality with respect to a Euclidean or generalized distance, {\em e.g.} of the basis.  
 
 \subsubsection{unscaled, with hilbert order}
 
-
 \subsubsection{unscaled, with salesman's order}
 
+\subsection{Algebraic  Locality} 
+
+Reflecting about the cube diagonal is copy in place.  Cooresponds to lensing. 
 
 
 \section{Conversation}
