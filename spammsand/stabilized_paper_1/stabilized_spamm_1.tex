@@ -236,26 +236,39 @@ to show similar results for $\tt SpAMM$, by exploiting the additional
 locality of reference developed in this work, {\em e.g.}~based on
 strong Euclidean locality and with iteration towards the identity.
 
-As noted by Aluru \cite{}, the top-down $n$-body model and breadth-first map-reduction are equivalent \cite{}, offering
-the potential for alignment with emergent enterprise frameworks \cite{} and functional programming
-languages that support generacity \cite{}. Language support for generic recursion may allow very complex solver ecosystems
-with very simple (skeletonized) frameworks, lowering barriers to entry, enhancing performance towards decentralized memory landscapes,
-and following a sustainable commodity trend \cite{softwaresustainanbilty} that offers
-increasingly cheap compute cycles over the next few decades \cite{}.
+As noted by Aluru \cite{}, the top-down $N$-body model and
+breadth-first map-reduction are equivalent \cite{}, offering the
+potential for alignment with emergent enterprise frameworks \cite{}
+and functional programming languages that support generacity
+\cite{}. Language support for generic recursion may allow very complex
+solver ecosystems with very simple (skeletonized) frameworks, lowering
+barriers to entry, enhancing performance towards decentralized memory
+landscapes, and following a sustainable commodity trend
+\cite{softwaresustainanbilty} that offers increasingly cheap compute
+cycles over the next few decades \cite{}.
 
-$\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast matrix multiplication \cite{},
-which has been on fire with recent new developments \cite{}.  In the Strassen-like approach, disjoint volumes in (abstract) tensor
-intermediates are omitted recursively \cite{}.  In the $\tt SpAMM$ approach to fast multixplication, a volume of
-significant contributions is culled from the naive $ijk$-cube of the intermediate contraction,
-with error bounded by Eq.~\ref{bound}.  These approaches would seem to be compatible and synergystic.
+$\tt SpAMM$ is perhaps most closely related to the Strassen-like
+branch of fast matrix multiplication \cite{}, which has been on fire
+with recent new developments \cite{}.  In the Strassen-like approach,
+disjoint volumes in (abstract) tensor intermediates are omitted
+recursively \cite{}.  In the $\tt SpAMM$ approach to fast
+multixplication, a volume of significant contributions is culled from
+the naive $ijk$-cube of the intermediate contraction, with error
+bounded by Eq.~\ref{bound}.  These approaches would seem to be
+compatible and synergistic.
 
-$\tt SpAMM$ is also related to technologies for the non-deterministic,  compresive sampling of the product.  These
-technologies have also seen exciting developments, including  sketching \cite{Kutzkov2012, Pagh2013}, joining, sensing and probing \cite{}.
-These methods involve a wheighted (probablistic) and on the fly sampling with the potential for complexity reduction under
-certain assumptions (random distributions) [{\bf is this true for all? what about MAD?}].
-$\tt SpAMM$ also employs an on the fly wheighted sampling, based on the product of matrix norms,
-but opperating under the contrary assumption of compresion through locality in the naive $ijk$ space, brought about
-via correlations in the algebra (towards identity) and in the underlying data (blocked-by-magnitude).
+$\tt SpAMM$ is also related to technologies for the non-deterministic,
+compressive sampling of the product.  These technologies have also
+seen exciting developments, including sketching \cite{Kutzkov2012,
+  Pagh2013}, joining, sensing and probing \cite{}.  These methods
+involve a weighted (probabilistic) and on the fly sampling with the
+potential for complexity reduction under certain assumptions (random
+distributions) [{\bf is this true for all? what about MAD?}].  $\tt
+SpAMM$ also employs an on the fly weighted sampling, based on the
+product of matrix norms, but operating under the contrary assumption
+of compression through locality in the naive $ijk$ space, brought
+about via correlations in the algebra (towards identity) and in the
+underlying data (blocked-by-magnitude).
 
 Methods that achieve compression in the product stream are different from reduced rank algorithms that achieve
 matrix compression \cite{} and/or sparsificiation \cite{} of the matrix in a step preceeding multiplication.
