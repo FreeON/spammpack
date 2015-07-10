@@ -46,9 +46,8 @@
 \homepage{http://www.freeon.org}
 \affiliation{Theoretical Division, Los Alamos National Laboratory}
 
-%\begin{abstract}
-%Forward look
-%\end{abstract}
+\begin{abstract}
+\end{abstract}
 
 \maketitle
 \section{Introduction}
@@ -226,12 +225,15 @@ $\tt SpAMM$ has been extended to the {\em triple} metric query for
 hextree occlusion of the exact Fock exchange \cite{}.
 
 $\tt SpAMM$ is broadly related to {\em generalized N-body} methods,
-popularized by Grey \cite{}, that are simply algorithms based on fast
-spatial and metric query \cite{Sammet} and local approximation
+popularized by Grey \cite{Gray2001,Gray2003}, that are simply algorithms based on fast
+spatial and metric query \cite{Sammet} together with local approximation
 \cite{}.  Recently, x, y and Yellik derived perfect strong scaling
 communication optimal bounds for pairwise $N$-body methods
-\cite{Warren Salmon, Yellik}.  Also, Demmel \emph{et al.}~derived such
-bounds for the related fast matrix multiplication.  It may be possible
+\cite{10.1109/IPDPSW.2012.303}.  Also, Demmel \emph{et al.}~derived such
+bounds for the related fast matrix multiplication.  
+\cite{Solomonik2011}
+
+It may be possible
 to show similar results for $\tt SpAMM$, by exploiting the additional
 locality of reference developed in this work, {\em e.g.}~based on
 strong Euclidean locality and with iteration towards the identity.
@@ -257,18 +259,15 @@ the naive $ijk$-cube of the intermediate contraction, with error
 bounded by Eq.~\ref{bound}.  These approaches would seem to be
 compatible and synergistic.
 
-$\tt SpAMM$ is also related to technologies for the non-deterministic,
-compressive sampling of the product.  These technologies have also
-seen exciting developments, including sketching \cite{Kutzkov2012,
-  Pagh2013}, joining, sensing and probing \cite{}.  These methods
-involve a weighted (probabilistic) and on the fly sampling with the
-potential for complexity reduction under certain assumptions (random
-distributions) [{\bf is this true for all? what about MAD?}].  $\tt
-SpAMM$ also employs an on the fly weighted sampling, based on the
-product of matrix norms, but operating under the contrary assumption
-of compression through locality in the naive $ijk$ space, brought
-about via correlations in the algebra (towards identity) and in the
-underlying data (blocked-by-magnitude).
+$\tt SpAMM$ is also related to database problems involving the 
+join \cite{Mishra92,Hoel94,Jacox03,Chen07,Amossen09,Lieberman08,Kim09}, and also 
+the matrix sketch  \cite{Sarlos2006,Drineas2006,Mahoney2012,Pagh2013,Sivertsen2014,Woodruff2015}.
+ These methods deliver a relative, probabilistic error 
+and on the fly sampling with the potential for complexity reduction under {\em randomization}.
+$\tt SpAMM$ delivers a rigorous relative error bound and on the fly weighted sampling, 
+but operates under the contrary assumption of compression through {\em correlation}
+in the naive $ijk$ space, brought about via lensing (algebraic localization cooresponding to identity iteration),
+and for matrices with decay, by strong metric (block-by-magnitude) locality in the underlying data. 
 
 Methods that achieve compression in the product stream are different from reduced rank algorithms that achieve
 matrix compression \cite{} and/or sparsificiation \cite{} of the matrix in a step preceeding multiplication.
@@ -654,7 +653,7 @@ are the dashed lines.  The trace expectation is shown as a full black line. }
 
 
 \begin{figure}[h]
-\includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_stab.eps}
+%\includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_stab.eps}
 \caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3)
 nanotube with $\kappa =10^{10}$.
 Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and
@@ -663,7 +662,7 @@ $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectati
 
 
 \begin{figure}[h]
-\includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_dual.eps}
+%\includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_dual.eps}
 \caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$.
 Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$
 are the dashed lines.  The trace expectation is shown as a full black line. }
