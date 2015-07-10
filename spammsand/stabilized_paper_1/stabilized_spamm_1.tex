@@ -250,10 +250,11 @@ landscapes, and following a sustainable commodity trend
 cycles over the next few decades \cite{}.
 
 $\tt SpAMM$ is perhaps most closely related to the Strassen-like
-branch of fast matrix multiplication \cite{}, which has been on fire
-with recent new developments \cite{}.  In the Strassen-like approach,
-disjoint volumes in (abstract) tensor intermediates are omitted
-recursively \cite{}.  In the $\tt SpAMM$ approach to fast
+branch of fast matrix multiplication
+\cite{springerlink:10.1007/BF02165411}, which has been on fire with
+recent new developments \cite{Ballard2014}.  In the Strassen-like
+approach, disjoint volumes in (abstract) tensor intermediates are
+omitted recursively \cite{}.  In the $\tt SpAMM$ approach to fast
 multixplication, a volume of significant contributions is culled from
 the naive $ijk$-cube of the intermediate contraction, with error
 bounded by Eq.~\ref{bound}.  These approaches would seem to be
@@ -269,19 +270,26 @@ but operates under the contrary assumption of compression through {\em correlati
 in the naive $ijk$ space, brought about via lensing (algebraic localization cooresponding to identity iteration),
 and for matrices with decay, by strong metric (block-by-magnitude) locality in the underlying data. 
 
-Methods that achieve compression in the product stream are different from reduced rank algorithms that achieve
-matrix compression \cite{} and/or sparsificiation \cite{} of the matrix in a step preceeding multiplication.
-However, these approaches are not incompatible, with the quadtree data structure supportive
-of most approaches to matrix compression \cite{} and sparsification \cite{wise}, as well as most
-fast solvers they might interact with.  With little deflation in the cost of fast memory, solver ecosystems
-that can bring multiple levels of approximation to in place data may enjoy significant cumulitive advantages.
+Methods that achieve compression in the product stream are different
+from reduced rank algorithms that achieve matrix compression \cite{}
+and/or sparsificiation \cite{} of the matrix in a step preceding
+multiplication.  However, these approaches are not incompatible, with
+the quadtree data structure supportive of most approaches to matrix
+compression \cite{} and sparsification \cite{wise}, as well as most
+fast solvers they might interact with.  With little deflation in the
+cost of fast memory, solver ecosystems that can bring multiple levels
+of approximation to in-place data may enjoy significant cumulative
+advantages.
 
-Finally, the mathematical developments in Higham, Mackey, Mackey and T (HMMT; Ref.~\cite{}) demonstrate
-the convergence of NS iteration under all groups, addressing potential failure due to the development of
-pathalogical symmetries related to {\em e.g.} Eq.~\ref{braket}.    Also in this key paper, HMMT develop
-the fixed point stability analyses (about 2/3 of the way in), which this work draws heavily upon.  This
-work also draws on the scaling in Chen and Chow's \cite{} approach to a scaled NS iteration for ill-conditioned
-problems.
+Finally, the mathematical developments in Higham, Mackey, Mackey and
+Tisseur (HMMT; Ref.~\cite{Higham2005}) demonstrate the convergence of
+Newton-Schulz (NS) iteration under all groups, addressing potential
+failure due to the development of pathalogical symmetries related to
+{\em e.g.}~Eq.~\ref{braket}.  Also in this key paper, HMMT develop the
+fixed point stability analysis (about 2/3 of the way in), which this
+work draws heavily upon.  This work also draws on the scaling in Chen
+and Chow's \cite{} approach to a scaled NS iteration for
+ill-conditioned problems.
 
 % like the Hiearchical Semi-Seperable method,
 % but are similar in structure, complimentary and synergistic.
@@ -305,45 +313,63 @@ problems.
 %Also, our recursive approximation is occlusion via the Cauchy-Schwarz
 %inequality and the sub-multiplicative property, rather than local Taylor expansion.
 
-
 \section{First Order Newton-Shulz Iteration}
 
-There are two common, first order NS iterations; the sign iteration and the square root iteration, related by the square, $\mat{I}\left( \cdot \right)= {\rm sign}^2\left( \cdot \right) $.  These equivalent iterations converge linearly at first, then enters a basin of stability marked by super-linear convergence.
-Our interest is to access this basin with the most permisive $\tau$ possible, building a foundation for future refinement
+There are two common, first order NS iterations; the sign iteration
+and the square root iteration, related by the square, $\mat{I}\left(
+\cdot \right)= {\rm sign}^2\left( \cdot \right) $.  These equivalent
+iterations converge linearly at first, then enter a basin of stability
+marked by super-linear convergence.  Our interest is to access this
+basin with the most permissive $\tau$ possible, building a foundation
+for future refinement
 %, {\em e.g.}
-at a reduced cost and with a higher precision ($\tau \rightarrow 0$) \cite{MChallacombe16}.
+at a reduced cost and with a higher precision ($\tau \rightarrow 0$)
+\cite{MChallacombe16}.
 
 \subsection{Sign iteration}
-For the NS sign iteration, this basin is marked by a behavioral change in the
-difference $\delta \mat{X}_k = \widetilde{\mat{X}}_k -\mat{X}_k = {\rm sign} \left(\mat{X}_{k-1}+\delta \mat{X}_{k-1} \right)
--{\rm sign} \left(\mat{X}_{k-1} \right)$, where $\delta \mat{X}_{k-1}$ is some previous error.
-The change in behavior is associated with the onset of idempotence and the bounded eigenvalues of ${\rm sign}'\left( \cdot \right)$, leading to stable
-iteration when ${\rm sign}'\left( \mat{X}_{k-1} \right) \delta \mat{X}_{k-1} < 1 $.
-Global perturbative bounds on this iteration have been derived by Bai and Demmel \cite{Bai98usingthe}, while
-Byers, He and Mehrmann \cite{} developed assymptotic bounds.  The automatic stability of sign iteration is a well developed theme in Ref.\cite{Higham08}.
+
+For the NS sign iteration, this basin is marked by a behavioral change
+in the difference $\delta \mat{X}_k = \widetilde{\mat{X}}_k -\mat{X}_k
+= {\rm sign} \left(\mat{X}_{k-1}+\delta \mat{X}_{k-1} \right) -{\rm
+  sign} \left(\mat{X}_{k-1} \right)$, where $\delta \mat{X}_{k-1}$ is
+some previous error.  The change in behavior is associated with the
+onset of idempotence and the bounded eigenvalues of ${\rm sign}'\left(
+\cdot \right)$, leading to stable iteration when ${\rm sign}'\left(
+\mat{X}_{k-1} \right) \delta \mat{X}_{k-1} < 1 $.  Global perturbative
+bounds on this iteration have been derived by Bai and Demmel
+\cite{Bai98usingthe}, while Byers, He and Mehrmann \cite{} developed
+asymptotic bounds.  The automatic stability of sign iteration is a
+well developed theme in Ref.\cite{Higham08}.
 
 \subsection{Square root iteration}
-In this work, we are concerned with  resolution of the identity \cite{}
+
+In this work, we are concerned with resolution of the identity \cite{}
 \begin{equation}
 \mat{I} \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s}^{-1/2} \, ,
 \end{equation}
-and the cooresponding cannonical (dual) square root iteration \cite{};
+and the cooresponding canonical (dual) square root iteration \cite{};
 \begin{eqnarray}\label{cannonical}
 \mat{y}_k &\leftarrow& h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot \mat{y}_{k-1}  \nonumber \\
 \mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \; ,
 \end{eqnarray}
 with eigenvalues in the proper domain aggregated towards 0 or 1 by the
-NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$  \cite{}. Then,
-starting with $\mat{z}_0=\mat{I}$ and $\mat{x}_0=\mat{y}_0=\mat{s}$,
-${\mat{y}}_k \rightarrow \mat{s}^{1/2}$, ${\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and ${\mat{x}}_k \rightarrow {\mat{I}}$.
-As in the case of sign iteration, this dual iteration was shown by Higham, Mackey,  Mackey and Tisseur \cite{Higham2005}
-to remain bounded in the superlinear regime, by idempotent Frechet derivatives about the fixed point $\left(\mat{s}^{1/2},\mat{s}^{-1/2}\right)$,
-in the direction $\left( \delta \mat{y}_{k-1} , \delta \mat{z}_{k-1} \right)$:
+NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha
+\mat{x} \right)$ \cite{}.  Then, starting with $\mat{z}_0=\mat{I}$ and
+$\mat{x}_0=\mat{y}_0=\mat{s}$, ${\mat{y}}_k \rightarrow
+\mat{s}^{1/2}$, ${\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and
+${\mat{x}}_k \rightarrow {\mat{I}}$.  As in the case of sign
+iteration, this dual iteration was shown by Higham, Mackey, Mackey and
+Tisseur \cite{Higham2005} to remain bounded in the superlinear regime,
+by idempotent Frechet derivatives about the fixed point
+$\left(\mat{s}^{1/2},\mat{s}^{-1/2}\right)$, in the direction $\left(
+\delta \mat{y}_{k-1} , \delta \mat{z}_{k-1} \right)$:
 \begin{eqnarray}
 \delta \mat{y}_k &=& \frac{1}{2} \delta \mat{y}_{k-1} - \frac{1}{2} \mat{s}^{1/2} \cdot \delta \mat{z}_{k-1} \cdot \mat{s}^{1/2} \\
 \delta \mat{z}_k &=& \frac{1}{2} \delta \mat{z}_{k-1} - \frac{1}{2} \mat{s}^{-1/2} \cdot \delta \mat{y}_{k-1} \cdot \mat{s}^{-1/2} \;.
 \end{eqnarray}
-In this contribution, we consider another aspect of convergence, namely the (hopefully) linear approach towards stability of the iteration
+In this contribution, we consider another aspect of convergence,
+namely the (hopefully) linear approach towards stability of the
+iteration
 \begin{equation}
 \widetilde{\mat{x}}_k \leftarrow
  \widetilde{\mat{y}}_k \left( \widetilde{\mat{x}}_{k-1} \right)
@@ -352,13 +378,20 @@ In this contribution, we consider another aspect of convergence, namely the (hop
 made difficult by ill-conditioning and a sketchy $\ot$.
 
 \subsubsection{the NS map}
-Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the rate of progress towards idempotence.
-As recently shown by Jie and Chen \cite{Chen2014}, for very ill-conditioned problems, a factor of two reduction in the number of NS steps can be achieved
-by chosing $\alpha \sim 2.85$, which is at the edge of stability.   As argued by Pan and Schreiber \cite{Pan1991},
-Jie and Chen \cite{Chen2014}, switching or damping the scaling factor towards $\alpha=1$ at convergence is important, shifting emphasis away from the
-behavior of $x_0$ towards {\em e.g.} $x_i \in [0.01,1]$, emphasizing overall convergence of the broad distribution \cite{Pan and Scriber}.
-In an approximate algebra like $\tt SpAMM$, the potential for eigenvalues to fluctuate out of the domain of convergence must be considered.
-This is addressed in Section.~\ref{}.
+
+Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the
+rate of progress towards idempotence.  As recently shown by Jie and
+Chen \cite{Chen2014}, for very ill-conditioned problems, a factor of
+two reduction in the number of NS steps can be achieved by choosing
+$\alpha \sim 2.85$, which is at the edge of stability.  As argued by
+Pan and Schreiber \cite{Pan1991}, Jie and Chen \cite{Chen2014},
+switching or damping the scaling factor towards $\alpha=1$ at
+convergence is important, shifting emphasis away from the behavior of
+$x_0$ towards {\em e.g.}~$x_i \in [0.01,1]$, emphasizing overall
+convergence of the broad distribution \cite{Pan and Scriber}.  In an
+approximate algebra like $\tt SpAMM$, the potential for eigenvalues to
+fluctuate out of the domain of convergence must be considered.  This
+is addressed in Section \ref{}.
 
 \subsubsection{stability and ill-conditioning}
 
