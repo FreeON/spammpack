@@ -97,6 +97,7 @@ addVal (i, j, x) (Square s _ tl tr bl br) = if x == 0 then ifZeroReplace newTree
              halfs = s `div` 2
 
 treeToMatrixList :: MatrixTree -> MatrixList
+<<<<<<< HEAD
 treeToMatrixList (h, w, mTree) = (h, w, mTreeToList mTree)
 
 mTreeToList :: MTree -> [(Int, Int, Value)]
@@ -109,6 +110,20 @@ mTreeToList (Square s _ tl tr bl br) = concat [tlijxs, fmap wshift trijxs,
             hshift (i, j, x) = (i + halfs, j, x)
             wshift (i, j, x) = (i, j + halfs, x)
             halfs = s `div` 2
+=======
+treeToMatrixList (h, w, tree) = (h, w, treeToList tree)
+
+treeToList :: MTree -> [(Int, Int, Value)]
+treeToList (Zero _)               = []
+treeToList (Value _ x)              = [(1, 1, x)]
+treeToList (Square s _ tl tr bl br) = concat [tlijxs, fmap wshift trijxs,
+                                              fmap hshift blijxs,
+                                              fmap (hshift . wshift) brijxs]
+     where [tlijxs, trijxs, blijxs, brijxs] = fmap treeToList [tl, tr, bl, br]
+           hshift (i, j, x) = (i + halfs, j, x)
+           wshift (i, j, x) = (i, j + halfs, x)
+           halfs = s `div` 2
+>>>>>>> MatrixList
 
 -- utility functions
 
