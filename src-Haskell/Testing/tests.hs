@@ -1,83 +1,83 @@
-import MatrixTree ; import SpAMM ; import System.Directory (removeFile)
+import MatrixPair ; import SpAMM ; import System.Directory (removeFile)
 
 main = do testReadWrite ; testAdd ; testMultiply
 
-testReadWrite = do tree1 <- readTreeFromMatrixMarket "Matrices/rect4arr.txt"
-                   writeTreeToMatrixMarket tree1 "coordinate" "Matrices/tempfile.txt"
-                   tree2 <- readTreeFromMatrixMarket "Matrices/tempfile.txt"
-                   testReport "readWrite" (tree1 == tree2)
+testReadWrite = do pair1 <- readPairFromMatrixMarket "Matrices/rect4arr.txt"
+                   writePairToMatrixMarket pair1 "coordinate" "Matrices/tempfile.txt"
+                   pair2 <- readPairFromMatrixMarket "Matrices/tempfile.txt"
+                   testReport "readWrite" (pair1 == pair2)
                    removeFile "Matrices/tempfile.txt"
 
 testAdd = do addZeros ; addZeroToValue ; addZeroToRect;
              addValueToValue ; addRectToRect
 
-addZeros = do zeroTree <- readTreeFromMatrixMarket "Matrices/zerorectcoor.txt"
-              testReport "addZeros" (zeroTree `treeAdd` zeroTree == zeroTree)
+addZeros = do zeroPair <- readPairFromMatrixMarket "Matrices/zerorectcoor.txt"
+              testReport "addZeros" (zeroPair `pairAdd` zeroPair == zeroPair)
 
-addZeroToValue = do valueTree <- readTreeFromMatrixMarket "Matrices/value1coor.txt"
-                    zeroTree <- readTreeFromMatrixMarket "Matrices/zerovaluecoor.txt"
-                    testReport "addValuetoZero" (valueTree `treeAdd` zeroTree == valueTree)
-                    testReport "addZerotoValue" (zeroTree `treeAdd` valueTree == valueTree)
+addZeroToValue = do valuePair <- readPairFromMatrixMarket "Matrices/value1coor.txt"
+                    zeroPair <- readPairFromMatrixMarket "Matrices/zerovaluecoor.txt"
+                    testReport "addValuetoZero" (valuePair `pairAdd` zeroPair == valuePair)
+                    testReport "addZerotoValue" (zeroPair `pairAdd` valuePair == valuePair)
 
-addZeroToRect = do rectTree <- readTreeFromMatrixMarket "Matrices/rect1coor.txt"
-                   zeroTree <- readTreeFromMatrixMarket "Matrices/zerorectcoor.txt"
-                   testReport "addRectToZero" (rectTree `treeAdd` zeroTree == rectTree)
-                   testReport "addZeroToRect" (zeroTree `treeAdd` rectTree == rectTree)
+addZeroToRect = do rectPair <- readPairFromMatrixMarket "Matrices/rect1coor.txt"
+                   zeroPair <- readPairFromMatrixMarket "Matrices/zerorectcoor.txt"
+                   testReport "addRectToZero" (rectPair `pairAdd` zeroPair == rectPair)
+                   testReport "addZeroToRect" (zeroPair `pairAdd` rectPair == rectPair)
 
-addValueToValue = do valueTree1 <- readTreeFromMatrixMarket "Matrices/value1coor.txt"
-                     valueTree2 <- readTreeFromMatrixMarket "Matrices/value2coor.txt"
-                     valueTree3 <- readTreeFromMatrixMarket "Matrices/value3coor.txt"
-                     testReport "addValueToValue" (valueTree1 `treeAdd` valueTree2 == valueTree3)
+addValueToValue = do valuePair1 <- readPairFromMatrixMarket "Matrices/value1coor.txt"
+                     valuePair2 <- readPairFromMatrixMarket "Matrices/value2coor.txt"
+                     valuePair3 <- readPairFromMatrixMarket "Matrices/value3coor.txt"
+                     testReport "addValueToValue" (valuePair1 `pairAdd` valuePair2 == valuePair3)
 
-addRectToRect = do rectTree1 <- readTreeFromMatrixMarket "Matrices/rect1coor.txt"
-                   rectTree2 <- readTreeFromMatrixMarket "Matrices/rect2coor.txt"
-                   rectTree3 <- readTreeFromMatrixMarket "Matrices/rect3coor.txt"
-                   testReport "addRectToRect" (rectTree1 `treeAdd` rectTree2 == rectTree3)
+addRectToRect = do rectPair1 <- readPairFromMatrixMarket "Matrices/rect1coor.txt"
+                   rectPair2 <- readPairFromMatrixMarket "Matrices/rect2coor.txt"
+                   rectPair3 <- readPairFromMatrixMarket "Matrices/rect3coor.txt"
+                   testReport "addRectToRect" (rectPair1 `pairAdd` rectPair2 == rectPair3)
 
 testMultiply = do multZeros ; multZeroByValue ; multZeroByRect ; multValueByValue ;
                   multValueByRect ; multRectByRect ; multRectByRectArray
 
-multZeros = do zeroTree <- readTreeFromMatrixMarket "Matrices/zerorectcoor.txt"
-               zeroSquare <- readTreeFromMatrixMarket "Matrices/zerosquarecoor.txt"
-               testReport "multZeros" (zeroTree `treeMult` (treeTranspose zeroTree) == zeroSquare)
+multZeros = do zeroPair <- readPairFromMatrixMarket "Matrices/zerorectcoor.txt"
+               zeroSquare <- readPairFromMatrixMarket "Matrices/zerosquarecoor.txt"
+               testReport "multZeros" (zeroPair `pairMult` (pairTranspose zeroPair) == zeroSquare)
 
-multZeroByValue = do zeroRow <- readTreeFromMatrixMarket "Matrices/zerorowcoor.txt"
-                     valueTree <- readTreeFromMatrixMarket "Matrices/value1coor.txt"
-                     testReport "multValueByZero" (valueTree `treeMult` zeroRow == zeroRow)
-                     testReport "multZeroByValue" ((treeTranspose zeroRow) `treeMult`
-                                                  (treeTranspose valueTree) == treeTranspose zeroRow)
+multZeroByValue = do zeroRow <- readPairFromMatrixMarket "Matrices/zerorowcoor.txt"
+                     valuePair <- readPairFromMatrixMarket "Matrices/value1coor.txt"
+                     testReport "multValueByZero" (valuePair `pairMult` zeroRow == zeroRow)
+                     testReport "multZeroByValue" ((pairTranspose zeroRow) `pairMult`
+                                                  (pairTranspose valuePair) == pairTranspose zeroRow)
 
-multZeroByRect = do zeroTree <- readTreeFromMatrixMarket "Matrices/zerorectcoor.txt"
-                    rectTree <- readTreeFromMatrixMarket "Matrices/rect1coor.txt"
-                    zeroSquare <- readTreeFromMatrixMarket "Matrices/zerosquarecoor.txt"
-                    testReport "multZeroByRect" (zeroTree `treeMult`
-                                                (treeTranspose rectTree) == zeroSquare)
-                    testReport "multZeroByRect" (rectTree `treeMult` (treeTranspose zeroTree)
+multZeroByRect = do zeroPair <- readPairFromMatrixMarket "Matrices/zerorectcoor.txt"
+                    rectPair <- readPairFromMatrixMarket "Matrices/rect1coor.txt"
+                    zeroSquare <- readPairFromMatrixMarket "Matrices/zerosquarecoor.txt"
+                    testReport "multZeroByRect" (zeroPair `pairMult`
+                                                (pairTranspose rectPair) == zeroSquare)
+                    testReport "multZeroByRect" (rectPair `pairMult` (pairTranspose zeroPair)
                                                  == zeroSquare)
 
-multValueByValue = do valueTree1 <- readTreeFromMatrixMarket "Matrices/value2coor.txt"
-                      valueTree2 <- readTreeFromMatrixMarket "Matrices/value3coor.txt"
-                      valueTree3 <- readTreeFromMatrixMarket "Matrices/value4coor.txt"
-                      testReport "multValueByValue" (valueTree1 `treeMult` valueTree2 == valueTree3)
+multValueByValue = do valuePair1 <- readPairFromMatrixMarket "Matrices/value2coor.txt"
+                      valuePair2 <- readPairFromMatrixMarket "Matrices/value3coor.txt"
+                      valuePair3 <- readPairFromMatrixMarket "Matrices/value4coor.txt"
+                      testReport "multValueByValue" (valuePair1 `pairMult` valuePair2 == valuePair3)
 
-multValueByRect = do valueTree <- readTreeFromMatrixMarket "Matrices/value2coor.txt"
-                     rowTree <- readTreeFromMatrixMarket "Matrices/rowcoor.txt"
-                     valuetimesrowTree <- readTreeFromMatrixMarket "Matrices/valuetimesrowcoor.txt"
-                     testReport "multValueByRect" (valueTree `treeMult` rowTree == valuetimesrowTree)
-                     testReport "multRectByValue" ((treeTranspose rowTree) `treeMult`
-                                                   (treeTranspose valueTree) ==
-                                                    treeTranspose valuetimesrowTree)
+multValueByRect = do valuePair <- readPairFromMatrixMarket "Matrices/value2coor.txt"
+                     rowPair <- readPairFromMatrixMarket "Matrices/rowcoor.txt"
+                     valuetimesrowPair <- readPairFromMatrixMarket "Matrices/valuetimesrowcoor.txt"
+                     testReport "multValueByRect" (valuePair `pairMult` rowPair == valuetimesrowPair)
+                     testReport "multRectByValue" ((pairTranspose rowPair) `pairMult`
+                                                   (pairTranspose valuePair) ==
+                                                    pairTranspose valuetimesrowPair)
 
-multRectByRect = do rectTree1 <- readTreeFromMatrixMarket "Matrices/rect1coor.txt"
-                    rectTree2 <- readTreeFromMatrixMarket "Matrices/rect2coor.txt"
-                    rectTree4 <- readTreeFromMatrixMarket "Matrices/rect4coor.txt"
-                    testReport "multRectByRect" (rectTree1 `treeMult`
-                                                (treeTranspose rectTree2) == rectTree4)
+multRectByRect = do rectPair1 <- readPairFromMatrixMarket "Matrices/rect1coor.txt"
+                    rectPair2 <- readPairFromMatrixMarket "Matrices/rect2coor.txt"
+                    rectPair4 <- readPairFromMatrixMarket "Matrices/rect4coor.txt"
+                    testReport "multRectByRect" (rectPair1 `pairMult`
+                                                (pairTranspose rectPair2) == rectPair4)
 
-multRectByRectArray = do rectTree1 <- readTreeFromMatrixMarket "Matrices/rect1arr.txt"
-                         rectTree2 <- readTreeFromMatrixMarket "Matrices/rect2arr.txt"
-                         rectTree4 <- readTreeFromMatrixMarket "Matrices/rect4arr.txt"
-                         testReport "multRectByRectArray" (rectTree1 `treeMult`
-                                                          (treeTranspose rectTree2) == rectTree4)
+multRectByRectArray = do rectPair1 <- readPairFromMatrixMarket "Matrices/rect1arr.txt"
+                         rectPair2 <- readPairFromMatrixMarket "Matrices/rect2arr.txt"
+                         rectPair4 <- readPairFromMatrixMarket "Matrices/rect4arr.txt"
+                         testReport "multRectByRectArray" (rectPair1 `pairMult`
+                                                          (pairTranspose rectPair2) == rectPair4)
 
 testReport testName result = putStrLn $ (if result then "Yes " else "No ") ++ testName
