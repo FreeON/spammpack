@@ -84,7 +84,7 @@ expandMTree mTree n = if size mTree >= n then mTree
                             zro = Zero (size mTree)
 
 cutToSize :: MatrixTree -> MatrixTree
-cutToSize tree@(h, w, mTree) = if size mTree == nextPowOf2 (max h w) then tree
+cutToSize tree@(h, w, mTree) = if size mTree <= nextPowOf2 (max h w) then tree
                                else cutToSize (h, w, cut mTree)
                                where cut (Zero s) = Zero (s `div` 2)
                                      cut (Square _ _ tl _ _ _) = tl
