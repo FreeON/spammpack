@@ -110,7 +110,6 @@ mTreeToList (Square s _ tl tr bl br) = concat [tlijxs, fmap wshift trijxs,
             wshift (i, j, x) = (i, j + halfs, x)
             halfs = s `div` 2
 
-
 -- utility functions
 
 isZero :: MTree -> Bool
