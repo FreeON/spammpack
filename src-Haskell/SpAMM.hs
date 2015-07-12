@@ -24,9 +24,9 @@ mTTrans (Square s x tl tr bl br) = Square s x (mTTrans tl) (mTTrans bl)
 mTTrans tree = tree
 
 treeAdd :: MatrixTree -> MatrixTree -> MatrixTree
-treeAdd (h1, w1, mTree1) (h2, w2, mTree2) = if h1 == h2 && w1 == w2
-                                            then (h1, w1, mTAdd mTree1 mTree2)
-                                            else error "matrices don't match for addition"
+treeAdd (h1, w1, mTree1) (h2, w2, mTree2) =
+        if h1 == h2 && w1 == w2 then (h1, w1, mTAdd mTree1 mTree2)
+        else error "matrices don't match for addition"
 
 mTAdd :: MTree -> MTree -> MTree
 
@@ -46,10 +46,10 @@ mTAdd (Square s _ tl1 tr1 bl1 br1) (Square _ _ tl2 tr2 bl2 br2) =
 mTAdd _ _ = error "matrices don't match for addition"
 
 treeMult :: MatrixTree -> MatrixTree -> MatrixTree
-tree1 `treeMult` tree2 = treeMultTol tree1 tree2 0
+treeMult = treeMultTol 0
 
-treeMultTol :: MatrixTree -> MatrixTree -> Double -> MatrixTree
-treeMultTol (h1, w1, mTree1) (h2, w2, mTree2) tol =
+treeMultTol :: Double -> MatrixTree -> MatrixTree -> MatrixTree
+treeMultTol tol (h1, w1, mTree1) (h2, w2, mTree2) =
             if w1 == h2 then cutToSize (h1, w2, mTMult tol expMTree1 expMTree2)
             else error "matrices don't match for multiplication"
             where expMTree1 = expandMTree mTree1 (size mTree2)
