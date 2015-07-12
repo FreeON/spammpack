@@ -24,26 +24,26 @@ import MatrixMarket (MatrixList, readFromMatrixMarket, writeToMatrixMarket)
 
 type Value = Double ; type Norm = Double
 
-data MTree = Zero Int | Node Norm Value | Square Int Norm MTree MTree MTree MTree
+data MTree = Zero Int | Leaf Norm Value | Square Int Norm MTree MTree MTree MTree
              deriving (Eq, Show)
 
 type MatrixTree = (Int, Int, MTree)
 
 size :: MTree -> Int
 size (Zero s)             = s
-size (Node _ _)           = 1
+size (Leaf _ _)           = 1
 size (Square s _ _ _ _ _) = s
 
 norm :: MTree -> Norm
 norm (Zero _)             = 0
-norm (Node n _)           = n
+norm (Leaf n _)           = n
 norm (Square _ n _ _ _ _) = n
 
 -- setting norms
 
 setNorm :: MTree -> Norm
 setNorm (Zero _)   = 0
-setNorm (Node _ x) = valueNorm x
+setNorm (Leaf _ x) = valueNorm x
 setNorm tree       = addSubtreeNorms . fmap setNorm $ subTrees tree
 
 valueNorm :: Value -> Norm
@@ -68,11 +68,11 @@ matrixListToTree (m, n, ijxs) = (m, n, foldr addVal (Zero p) ijxs)
 
 addVal :: (Int, Int, Value) -> MTree -> MTree
 
-addVal (_, _, x) (Node _ _) = if x == 0 then Zero 1 else Node (valueNorm x) x
+addVal (_, _, x) (Leaf _ _) = if x == 0 then Zero 1 else Leaf (valueNorm x) x
 
 addVal (i, j, x) tree@(Zero s)
        | x == 0         = tree
-       | s == 1         = Node (valueNorm x) x
+       | s == 1         = Leaf (valueNorm x) x
        | within [i,j]   = Square s (valueNorm x) (addVal (i,  j,  x) zro) zro zro zro
        | within [i,jr]  = Square s (valueNorm x) zro (addVal (i,  jr, x) zro) zro zro
        | within [ib,j]  = Square s (valueNorm x) zro zro (addVal (ib,  j, x) zro) zro
@@ -99,7 +99,7 @@ treeToMatrixList (h, w, mTree) = (h, w, mTreeToList mTree)
 
 mTreeToList :: MTree -> [(Int, Int, Value)]
 mTreeToList (Zero _)                 = []
-mTreeToList (Node _ x)               = [(1, 1, x)]
+mTreeToList (Leaf _ x)               = [(1, 1, x)]
 mTreeToList (Square s _ tl tr bl br) = concat [tlijxs, fmap wshift trijxs,
                                                fmap hshift blijxs,
                                                fmap (hshift . wshift) brijxs]
@@ -116,7 +116,7 @@ isZero _        = False
 
 ifZeroReplace :: MTree -> MTree
 ifZeroReplace tree@(Zero _)   = tree
-ifZeroReplace tree@(Node _ x) = if x == 0 then Zero 1 else tree
+ifZeroReplace tree@(Leaf _ x) = if x == 0 then Zero 1 else tree
 ifZeroReplace tree@(Square s _ _ _ _ _)
                               = if all isZero (subTrees tree) then Zero s else tree
 

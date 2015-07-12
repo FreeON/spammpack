@@ -34,8 +34,8 @@ mTAdd (Zero _) mTree = mTree
 
 mTAdd mTree (Zero _) = mTree
 
-mTAdd (Node _ x) (Node _ y) = if x + y == 0 then Zero 1
-                              else Node (valueNorm $ x + y) (x + y)
+mTAdd (Leaf _ x) (Leaf _ y) = if x + y == 0 then Zero 1
+                              else Leaf (valueNorm $ x + y) (x + y)
 
 mTAdd (Square s _ tl1 tr1 bl1 br1) (Square _ _ tl2 tr2 bl2 br2) =
       ifZeroReplace $ Square s x tlsum trsum blsum brsum
@@ -61,8 +61,8 @@ mTMult _ zero@(Zero _) _ = zero
 
 mTMult _ _ zero@(Zero _) = zero
 
-mTMult tol (Node m x) (Node n y) = if m * n <= tol then Zero 1
-                                   else Node (valueNorm $ x * y) (x * y)
+mTMult tol (Leaf m x) (Leaf n y) = if m * n <= tol then Zero 1
+                                   else Leaf (valueNorm $ x * y) (x * y)
 
 mTMult tol (Square s m tl1 tr1 bl1 br1) (Square _ n tl2 tr2 bl2 br2) =
          if m * n <= tol then Zero s
