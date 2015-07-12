@@ -9,8 +9,8 @@ module SpAMM
 , treeTranspose
 ) where
 
--- matrix algebra on MatrixTrees, including matrix multiplication that recurs on subtrees
--- and returns Zeros when products of norms fall below tolerance (SpAMM)
+-- matrix algebra on MatrixTrees, including recursive multiplication that
+-- returns Zeros when products of norms fall below tolerance (SpAMM)
 
 import MatrixTree (addSubtreeNorms, ifZeroReplace, MatrixTree, MTree(..), nextPowOf2,
                    norm, size, Size, valueNorm)

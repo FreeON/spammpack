@@ -1,6 +1,6 @@
 module MatrixTree
 ( addSubtreeNorms
-, combineZeros
+--, combineZeros
 , ifZeroReplace
 , isZero
 , matrixListToTree
@@ -39,6 +39,10 @@ norm :: MTree -> Norm
 norm (Zero _)             = 0
 norm (Leaf n _)           = n
 norm (Square _ n _ _ _ _) = n
+
+subTrees :: MTree -> [MTree]
+subTrees (Square _ _ tl tr bl br) = [tl, tr, bl, br]
+subTrees _ = []
 
 -- setting norms
 
@@ -120,17 +124,6 @@ ifZeroReplace tree@(Zero _)   = tree
 ifZeroReplace tree@(Leaf _ x) = if x == 0 then Zero 1 else tree
 ifZeroReplace tree@(Square s _ _ _ _ _)
                               = if all isZero (subTrees tree) then Zero s else tree
-
-combineZeros :: MTree -> MTree
-combineZeros tree@(Square s _ _ _ _ _) = ifZeroReplace newTree
-             where newTree = Square s x newtl newtr newbl newbr
-                   [newtl, newtr, newbl, newbr] = fmap combineZeros $ subTrees tree
-                   x = addSubtreeNorms . fmap norm $ [newtl, newtr, newbl, newbr]
-combineZeros tree = ifZeroReplace tree
-
-subTrees :: MTree -> [MTree]
-subTrees (Square _ _ tl tr bl br) = [tl, tr, bl, br]
-subTrees _                        = []
 
 nextPowOf2 :: Integral a => a -> a
 nextPowOf2 n = head . dropWhile (< n) $ map (2^) [0..]
