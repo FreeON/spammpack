@@ -24,29 +24,27 @@ import MatrixMarket (MatrixList, readFromMatrixMarket, writeToMatrixMarket)
 
 type Value = Double ; type Norm = Double
 
-data MTree = Zero   {sizeVal :: Int} |
-             Value  {normVal :: Norm, value :: Value} |
-             Square {sizeVal :: Int,
-                     normVal :: Norm, tltree :: MTree, trtree :: MTree,
-                                      bltree :: MTree, brtree :: MTree}
+data MTree = Zero Int | Node Norm Value | Square Int Norm MTree MTree MTree MTree
              deriving (Eq, Show)
 
 type MatrixTree = (Int, Int, MTree)
 
 size :: MTree -> Int
-size (Value _ _) = 1
-size tree        = sizeVal tree
+size (Zero s)             = s
+size (Node _ _)           = 1
+size (Square s _ _ _ _ _) = s
 
 norm :: MTree -> Norm
-norm (Zero _) = 0
-norm tree     = normVal tree
+norm (Zero _)             = 0
+norm (Node n _)           = n
+norm (Square _ n _ _ _ _) = n
 
 -- setting norms
 
 setNorm :: MTree -> Norm
-setNorm (Zero _)    = 0
-setNorm (Value _ x) = valueNorm x
-setNorm tree        = addSubtreeNorms . fmap setNorm $ subTrees tree
+setNorm (Zero _)   = 0
+setNorm (Node _ x) = valueNorm x
+setNorm tree       = addSubtreeNorms . fmap setNorm $ subTrees tree
 
 valueNorm :: Value -> Norm
 valueNorm = abs
@@ -70,11 +68,11 @@ matrixListToTree (m, n, ijxs) = (m, n, foldr addVal (Zero p) ijxs)
 
 addVal :: (Int, Int, Value) -> MTree -> MTree
 
-addVal (_, _, x) (Value _ _) = if x == 0 then Zero 1 else Value (valueNorm x) x
+addVal (_, _, x) (Node _ _) = if x == 0 then Zero 1 else Node (valueNorm x) x
 
 addVal (i, j, x) tree@(Zero s)
        | x == 0         = tree
-       | s == 1         = Value (valueNorm x) x
+       | s == 1         = Node (valueNorm x) x
        | within [i,j]   = Square s (valueNorm x) (addVal (i,  j,  x) zro) zro zro zro
        | within [i,jr]  = Square s (valueNorm x) zro (addVal (i,  jr, x) zro) zro zro
        | within [ib,j]  = Square s (valueNorm x) zro zro (addVal (ib,  j, x) zro) zro
@@ -101,7 +99,7 @@ treeToMatrixList (h, w, mTree) = (h, w, mTreeToList mTree)
 
 mTreeToList :: MTree -> [(Int, Int, Value)]
 mTreeToList (Zero _)                 = []
-mTreeToList (Value _ x)              = [(1, 1, x)]
+mTreeToList (Node _ x)               = [(1, 1, x)]
 mTreeToList (Square s _ tl tr bl br) = concat [tlijxs, fmap wshift trijxs,
                                                fmap hshift blijxs,
                                                fmap (hshift . wshift) brijxs]
@@ -117,10 +115,10 @@ isZero (Zero _) = True
 isZero _        = False
 
 ifZeroReplace :: MTree -> MTree
-ifZeroReplace tree@(Zero _)    = tree
-ifZeroReplace tree@(Value _ x) = if x == 0 then Zero 1 else tree
+ifZeroReplace tree@(Zero _)   = tree
+ifZeroReplace tree@(Node _ x) = if x == 0 then Zero 1 else tree
 ifZeroReplace tree@(Square s _ _ _ _ _)
-                               = if all isZero (subTrees tree) then Zero s else tree
+                              = if all isZero (subTrees tree) then Zero s else tree
 
 combineZeros :: MTree -> MTree
 combineZeros tree@(Square s _ _ _ _ _) = ifZeroReplace newTree
