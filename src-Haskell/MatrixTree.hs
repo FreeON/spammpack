@@ -12,24 +12,25 @@ module MatrixTree
 , readTreeFromMatrixMarket
 , setNorm
 , size
+, Size
 , treeToMatrixList
 , Value
 , valueNorm
 , writeTreeToMatrixMarket
 ) where
 
--- a recursive data type for matrices that efficiently encodes sparsity
+-- a recursive matrix data type that efficiently encodes sparsity
 
 import MatrixMarket (MatrixList, readFromMatrixMarket, writeToMatrixMarket)
 
-type Value = Double ; type Norm = Double
+type Size = Int ; type Value = Double ; type Norm = Double
 
-data MTree = Zero Int | Leaf Norm Value | Square Int Norm MTree MTree MTree MTree
+data MTree = Zero Size | Leaf Norm Value | Square Size Norm MTree MTree MTree MTree
              deriving (Eq, Show)
 
 type MatrixTree = (Int, Int, MTree)
 
-size :: MTree -> Int
+size :: MTree -> Size
 size (Zero s)             = s
 size (Leaf _ _)           = 1
 size (Square s _ _ _ _ _) = s

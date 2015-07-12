@@ -13,7 +13,7 @@ module SpAMM
 -- and returns Zeros when products of norms fall below tolerance (SpAMM)
 
 import MatrixTree (addSubtreeNorms, ifZeroReplace, MatrixTree, MTree(..), nextPowOf2,
-                   norm, size, valueNorm)
+                   norm, size, Size, valueNorm)
 
 treeTranspose :: MatrixTree -> MatrixTree
 treeTranspose (h, w, mTree) = (w, h, mTTrans mTree)
@@ -76,7 +76,7 @@ mTMult tol (Square s m tl1 tr1 bl1 br1) (Square _ n tl2 tr2 bl2 br2) =
 
 mTMult _ _ _ = error "matrices don't match for multiplication"
 
-expandMTree :: MTree -> Int -> MTree
+expandMTree :: MTree -> Size -> MTree
 expandMTree mTree n = if size mTree >= n then mTree
                       else expandMTree (Square dbl m mTree zro zro zro) n
                       where dbl = 2 * size mTree

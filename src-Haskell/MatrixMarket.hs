@@ -74,7 +74,7 @@ arrayToMatrixList lineList filePath
      | any null valueReads               = error $ filePath ++ " has invalid values"
      | otherwise                         = (nrows, ncols, ijxs)
      where (firstLine, valueLines) = (head lineList, tail lineList)
-           size = fmap reads firstLine :: [[(Int,String)]]
+           size = fmap reads firstLine :: [[(Int, String)]]
            [nrows, ncols] = fmap (fst . head) size
            valueList = concat valueLines
            valueReads = fmap reads valueList :: [[(Double,String)]]
@@ -93,13 +93,13 @@ coordinateToMatrixList lineList filePath
                     | any null valueReads              = error $ filePath ++ " has invalid values"
                     | otherwise                        = (nrows, ncols, if nonzeros == 0 then [] else ijxs)
                     where (firstLine, entryLines) = (head lineList, tail lineList)
-                          firstLineNums = fmap reads firstLine :: [[(Int,String)]]
+                          firstLineNums = fmap reads firstLine :: [[(Int, String)]]
                           firstLineVals = fmap (fst . head) firstLineNums
                           [nrows, ncols] = take 2 firstLineVals
                           nonzeros = firstLineVals !! 2
                           splitEntries = fmap (splitAt 2) entryLines
                           indexLines = fmap fst splitEntries
-                          indexReads = fmap (fmap reads) indexLines :: [[[(Int,String)]]]
+                          indexReads = fmap (fmap reads) indexLines :: [[[(Int, String)]]]
                           indices = fmap (fmap $ fst . head) indexReads
                           [maxRow, maxCol] = if nonzeros == 0 then [1,1] else
                                              fmap maximum [fmap (!! 0) indices, fmap (!! 1) indices]
