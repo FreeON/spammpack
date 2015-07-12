@@ -1,5 +1,5 @@
 module MatrixMarket
-( IndexedList
+( MatrixList
 , readFromMatrixMarket
 , writeToMatrixMarket
 ) where
@@ -12,27 +12,27 @@ import qualified Data.Map as Map (fromList, lookup, Map)
 import Data.Maybe (fromJust, isNothing)
 import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
 
-type IndexedList = ( Int, Int, [ (Int, Int, Double) ] )
+type MatrixList = ( Int, Int, [ (Int, Int, Double) ] )
 
 -- matrix height, width, and list of entries (row, column, value) ;
 -- including zero-value entries is optional
 
-readFromMatrixMarket :: FilePath -> IO IndexedList
+readFromMatrixMarket :: FilePath -> IO MatrixList
 readFromMatrixMarket filePath = readFile filePath >>=
-                                (return . matrixMarketToIndexedList filePath)
+                                (return . matrixMarketToMatrixList filePath)
 
-writeToMatrixMarket :: IndexedList -> String -> FilePath -> IO ()
-writeToMatrixMarket indexedList format filePath = do
-            let list = case format of "array"      -> indexedListToArray indexedList
-                                      "coordinate" -> indexedListToCoordinate indexedList
+writeToMatrixMarket :: MatrixList -> String -> FilePath -> IO ()
+writeToMatrixMarket matrixList format filePath = do
+            let list = case format of "array"      -> matrixListToArray matrixList
+                                      "coordinate" -> matrixListToCoordinate matrixList
                                       _            -> error $ "Unrecognized format " ++ format
             handle <- openFile filePath WriteMode
             hPutStrLn handle $ "%%MatrixMarket matrix " ++ format ++ " real general"
             mapM_ (hPutStrLn handle) list
             hClose handle
 
-matrixMarketToIndexedList :: FilePath -> String -> IndexedList
-matrixMarketToIndexedList filePath contents
+matrixMarketToMatrixList :: FilePath -> String -> MatrixList
+matrixMarketToMatrixList filePath contents
       | null (words contents) = error $ filePath ++ " is empty"
       | length first < 4      = error $ filePath ++ " header is invalid"
       | null rest             = error $ filePath ++ " has no contents"
@@ -41,12 +41,12 @@ matrixMarketToIndexedList filePath contents
             first = words . head $ fileLines
             rest = filter ((/='%') . head . head) . filter (not . null) . fmap words $ tail fileLines
             command = case fmap toLower (first !! 2) of
-                      "array"      -> arrayToIndexedList
-                      "coordinate" -> coordinateToIndexedList
+                      "array"      -> arrayToMatrixList
+                      "coordinate" -> coordinateToMatrixList
                       _            -> error $ filePath ++ " has unrecognized format " ++ (first !! 2)
 
-indexedListToArray :: IndexedList -> [String]
-indexedListToArray (m, n, ijxs) = (combineStrings [show m, show n]):showVals
+matrixListToArray :: MatrixList -> [String]
+matrixListToArray (m, n, ijxs) = (combineStrings [show m, show n]):showVals
                    where pairList = fmap (\(i, j, x) -> ((i,j), x)) ijxs
                          hashTable = Map.fromList pairList
                          indices = [(i, j) | j <- [1..n], i <- [1..m]]
@@ -55,8 +55,8 @@ indexedListToArray (m, n, ijxs) = (combineStrings [show m, show n]):showVals
                                     | otherwise       = fromJust check
                                     where check = Map.lookup pair hashTable
 
-indexedListToCoordinate :: IndexedList -> [String]
-indexedListToCoordinate (m, n, ijxs) = (combineStrings [show m, show n, show $ length ijxs]):
+matrixListToCoordinate :: MatrixList -> [String]
+matrixListToCoordinate (m, n, ijxs) = (combineStrings [show m, show n, show $ length ijxs]):
                                          (fmap pairToString ijxs)
 
 combineStrings :: [String] -> String
@@ -65,8 +65,8 @@ combineStrings = concat . (intersperse " ")
 pairToString :: (Show a, Show b, Show c) => (a,b,c) -> String
 pairToString = combineStrings . (\(i,j,x) -> [show i, show j, show x])
 
-arrayToIndexedList :: [[String]] -> FilePath -> IndexedList
-arrayToIndexedList lineList filePath
+arrayToMatrixList :: [[String]] -> FilePath -> MatrixList
+arrayToMatrixList lineList filePath
      | length firstLine /= 2             = error $ filePath ++ " matrix size invalid"
      | any ((/= 1) . length) valueLines  = error $ filePath ++ " has invalid value lines"
      | any null size                     = error $ filePath ++ " matrix size invalid"
@@ -82,8 +82,8 @@ arrayToIndexedList lineList filePath
            indices = [(i, j) | j <- [1..ncols], i <- [1..nrows]]
            ijxs = fmap (\((i, j), x) -> (i, j, x)) . filter ((/= 0) . snd) . zip indices $ values
 
-coordinateToIndexedList :: [[String]] -> FilePath -> IndexedList
-coordinateToIndexedList lineList filePath
+coordinateToMatrixList :: [[String]] -> FilePath -> MatrixList
+coordinateToMatrixList lineList filePath
                     | any ((/= 3) . length) lineList   = error $ filePath ++ " has wrong-length line"
                     | any null firstLineNums           = error $ filePath ++ " has invalid size line"
                     | length entryLines /= nonzeros    = error $ filePath ++ " has wrong no. of nonzeros"
