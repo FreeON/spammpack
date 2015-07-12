@@ -1,86 +1,90 @@
 module SpAMM
-( MatrixPair
-, pairAdd
-, pairMult
-, pairMultTol
-, pairTranspose
+( MatrixTree
+, mTAdd
+, mTMult
+, mTTrans
 , treeAdd
 , treeMult
+, treeMultTol
 , treeTranspose
 ) where
 
--- matrix algebra on MatrixPairs, including matrix multiplication that recurs on subtrees
+-- matrix algebra on MatrixTrees, including matrix multiplication that recurs on subtrees
 -- and returns Zeros when products of norms fall below tolerance (SpAMM)
 
-import MatrixPair (addSubtreeNorms, height, ifZeroReplace, MatrixPair, MatrixTree(..),
-                   norm, valueNorm, width)
-
-pairTranspose :: MatrixPair -> MatrixPair
-pairTranspose (i, j, tree) = (j, i, treeTranspose tree)
+import MatrixTree (addSubtreeNorms, ifZeroReplace, MatrixTree, MTree(..), nextPowOf2,
+                   norm, size, valueNorm)
 
 treeTranspose :: MatrixTree -> MatrixTree
-treeTranspose (Zero h w)               = Zero w h
-treeTranspose tree@(Value _ _)         = tree
-treeTranspose (Rect h w x tl tr bl br) = Rect w h x
-                                              (treeTranspose tl) (treeTranspose bl)
-                                              (treeTranspose tr) (treeTranspose br)
+treeTranspose (h, w, mTree) = (w, h, mTTrans mTree)
 
-pairAdd :: MatrixPair -> MatrixPair -> MatrixPair
-pairAdd (h1, w1, tree1) (h2, w2, tree2) = if h1 == h2 && w1 == w2
-                                          then (h1, w1, treeAdd tree1 tree2)
-                                          else error "matrices don't match for addition"
+mTTrans :: MTree -> MTree
+mTTrans (Square s x tl tr bl br) = Square s x (mTTrans tl) (mTTrans bl)
+                                              (mTTrans tr) (mTTrans br)
+mTTrans tree = tree
 
 treeAdd :: MatrixTree -> MatrixTree -> MatrixTree
+treeAdd (h1, w1, mTree1) (h2, w2, mTree2) = if h1 == h2 && w1 == w2
+                                            then (h1, w1, mTAdd mTree1 mTree2)
+                                            else error "matrices don't match for addition"
 
-treeAdd (Zero _ _) tree = tree
+mTAdd :: MTree -> MTree -> MTree
 
-treeAdd tree (Zero _ _) = tree
+mTAdd (Zero _) mTree = mTree
 
-treeAdd (Value _ x) (Value _ y) = if x + y == 0 then Zero 1 1
-                                  else Value (valueNorm $ x + y) (x + y)
+mTAdd mTree (Zero _) = mTree
 
-treeAdd (Rect h w _ tl1 tr1 bl1 br1) (Rect _ _ _ tl2 tr2 bl2 br2) =
-         ifZeroReplace $ Rect h w x tlsum trsum blsum brsum
-         where tlsum = tl1 `treeAdd` tl2 ; trsum = tr1 `treeAdd` tr2
-               blsum = bl1 `treeAdd` bl2 ; brsum = br1 `treeAdd` br2
-               x = addSubtreeNorms . fmap norm $ [tlsum, trsum, blsum, brsum]
+mTAdd (Value _ x) (Value _ y) = if x + y == 0 then Zero 1
+                                else Value (valueNorm $ x + y) (x + y)
 
-treeAdd _ _ = error "matrices don't match for addition"
+mTAdd (Square s _ tl1 tr1 bl1 br1) (Square _ _ tl2 tr2 bl2 br2) =
+      ifZeroReplace $ Square s x tlsum trsum blsum brsum
+      where tlsum = tl1 `mTAdd` tl2 ; trsum = tr1 `mTAdd` tr2
+            blsum = bl1 `mTAdd` bl2 ; brsum = br1 `mTAdd` br2
+            x = addSubtreeNorms . fmap norm $ [tlsum, trsum, blsum, brsum]
 
-pairMult :: MatrixPair -> MatrixPair -> MatrixPair
-pair1 `pairMult` pair2 = pairMultTol pair1 pair2 0
+mTAdd _ _ = error "matrices don't match for addition"
 
-pairMultTol :: MatrixPair -> MatrixPair -> Double -> MatrixPair
-pairMultTol (h1, w1, tree1) (h2, w2, tree2) tol =
-            if w1 == h2 then (h1, w2, treeMult tol tree1 tree2)
+treeMult :: MatrixTree -> MatrixTree -> MatrixTree
+tree1 `treeMult` tree2 = treeMultTol tree1 tree2 0
+
+treeMultTol :: MatrixTree -> MatrixTree -> Double -> MatrixTree
+treeMultTol (h1, w1, mTree1) (h2, w2, mTree2) tol =
+            if w1 == h2 then cutToSize (h1, w2, mTMult tol expMTree1 expMTree2)
             else error "matrices don't match for multiplication"
+            where expMTree1 = expandMTree mTree1 (size mTree2)
+                  expMTree2 = expandMTree mTree2 (size mTree1)
 
-treeMult :: Double -> MatrixTree -> MatrixTree -> MatrixTree
+mTMult :: Double -> MTree -> MTree -> MTree
 
-treeMult _ (Zero h _) tree = Zero h (width tree)
+mTMult _ zero@(Zero _) _ = zero
 
-treeMult _ tree (Zero _ w) = Zero (height tree) w
+mTMult _ _ zero@(Zero _) = zero
 
-treeMult tol tree1@(Rect _ _ _ _ _ _ _) tree2@(Value _ _) =
-             treeTranspose $ treeMult tol (treeTranspose tree2) (treeTranspose tree1)
+mTMult tol (Value m x) (Value n y) = if m * n <= tol then Zero 1
+                                     else Value (valueNorm $ x * y) (x * y)
 
-treeMult tol (Value m x) (Value n y) = if m * n <= tol then Zero 1 1
-                                       else Value (valueNorm $ x * y) (x * y)
-
-treeMult tol val@(Value m _) (Rect _ w n tl tr bl br) =
-         if m * n <= tol then Zero 1 w
-         else ifZeroReplace $ Rect 1 w x tlmult trmult blmult brmult
-         where tlmult = val `treeTimes` tl ; trmult = val `treeTimes` tr
-               blmult = val `treeTimes` bl ; brmult = val `treeTimes` br
-               treeTimes = treeMult tol
+mTMult tol (Square s m tl1 tr1 bl1 br1) (Square _ n tl2 tr2 bl2 br2) =
+         if m * n <= tol then Zero s
+         else ifZeroReplace $ Square s x tlmult trmult blmult brmult
+         where tlmult = (tl1 `mTTimes` tl2) `mTAdd` (tr1 `mTTimes` bl2)
+               trmult = (tl1 `mTTimes` tr2) `mTAdd` (tr1 `mTTimes` br2)
+               blmult = (bl1 `mTTimes` tl2) `mTAdd` (br1 `mTTimes` bl2)
+               brmult = (bl1 `mTTimes` tr2) `mTAdd` (br1 `mTTimes` br2)
+               mTTimes = mTMult tol
                x = addSubtreeNorms . fmap norm $ [tlmult, trmult, blmult, brmult]
 
-treeMult tol (Rect h1 _ m tl1 tr1 bl1 br1) (Rect _ w2 n tl2 tr2 bl2 br2) =
-         if m * n <= tol then Zero h1 w2
-         else ifZeroReplace $ Rect h1 w2 x tlmult trmult blmult brmult
-         where tlmult = (tl1 `treeTimes` tl2) `treeAdd` (tr1 `treeTimes` bl2)
-               trmult = (tl1 `treeTimes` tr2) `treeAdd` (tr1 `treeTimes` br2)
-               blmult = (bl1 `treeTimes` tl2) `treeAdd` (br1 `treeTimes` bl2)
-               brmult = (bl1 `treeTimes` tr2) `treeAdd` (br1 `treeTimes` br2)
-               treeTimes = treeMult tol
-               x = addSubtreeNorms . fmap norm $ [tlmult, trmult, blmult, brmult]
+mTMult _ _ _ = error "matrices don't match for multiplication"
+
+expandMTree :: MTree -> Int -> MTree
+expandMTree mTree n = if size mTree >= n then mTree
+                      else expandMTree (Square dbl m mTree zro zro zro) n
+                      where dbl = 2 * size mTree
+                            m = norm mTree
+                            zro = Zero (size mTree)
+
+cutToSize :: MatrixTree -> MatrixTree
+cutToSize tree@(h, w, mTree) = if size mTree == nextPowOf2 (max h w) then tree
+                               else cutToSize (h, w, cut mTree)
+                               where cut (Zero s) = Zero (s `div` 2)
+                                     cut (Square _ _ tl _ _ _) = tl
