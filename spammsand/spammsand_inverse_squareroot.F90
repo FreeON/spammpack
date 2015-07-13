@@ -1,4 +1,4 @@
-!#define DENSE_DIAGNOSTICS
+#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
 module SpAMMsand_inverse_squareroot
@@ -9,11 +9,15 @@ module SpAMMsand_inverse_squareroot
   ! Convergence parameters
   REAL(SpAMM_KIND), PARAMETER ::  Approx3  = 2.85d00
   REAL(SPAMM_KIND), PARAMETER ::  ShiftSw  = 5.d-1
-
+  ! integer values determining tau and tau_xtra parameters
+  INTEGER :: Tau_0, Tau_Y
+  !
 #ifdef DENSE_DIAGNOSTICS
 
-  character(len=132) :: file_dual, file_stab
+  LOGICAL :: RightTight
+  CHARACTER(LEN=1) :: RT
 
+  character(len=132) :: file_dual, file_stab, corename
 
   real(spamm_kind), dimension(:,:), ALLOCATABLE ::   i_d, s_d, y_k, y_k1, z_k, z_k1, x_k, x_k1, m_x_k1,          &   
        z_tld_k_stab, z_tld_k1_stab, x_tld_k_stab, x_tld_k1_stab,  m_x_tld_k1_stab,  y_tld_k_stab, y_tld_k1_stab, &
@@ -40,6 +44,14 @@ module SpAMMsand_inverse_squareroot
 
 contains
 
+  FUNCTION DblToChar(D)
+    CHARACTER(LEN=*),PARAMETER  :: INTERNAL_DBL_FMT='(D10.4)'
+    REAL*8,INTENT(IN)         :: D
+    CHARACTER(LEN=22) :: DblToChar
+    WRITE(UNIT=DblToChar,FMT=INTERNAL_DBL_FMT)D
+    DblToChar=ADJUSTL(DblToChar)
+  END FUNCTION DblToChar
+
   FUNCTION IntToChar(I)
     CHARACTER(LEN=*), PARAMETER :: INTERNAL_INT_FMT='(I22)'
     INTEGER  :: I
@@ -47,6 +59,16 @@ contains
     WRITE(UNIT=IntToChar,FMT=INTERNAL_INT_FMT)I
     IntToChar=ADJUSTL(IntToChar)
   END FUNCTION IntToChar
+
+  FUNCTION CharToInt(C)
+    CHARACTER(LEN=*), PARAMETER :: INTERNAL_INT_FMT='(I22)'
+    CHARACTER(LEN=*),INTENT(IN) :: C
+    INTEGER                     :: CharToInt
+    READ(UNIT=C,FMT=INTERNAL_INT_FMT,ERR=666) CharToInt
+    RETURN
+666 WRITE(*,*)"[CharToInt] Fatal error, can not convert "//TRIM(C)
+  END FUNCTION CharToInt
+
 
   SUBROUTINE spammsand_scaled_newton_shulz_inverse_squareroot(s, x, z, tau, DoDuals, second, kount)
 
@@ -62,7 +84,7 @@ contains
 
     INTEGER, INTENT(INOUT)                            :: kount
 
-    INTEGER                                           :: i,  j, k, stat
+    INTEGER                                           :: i,  j, k,  stat
 
     REAL(SpAMM_KIND)                                  :: sc, TrX, tau_xtra
     REAL(SpAMM_KIND)                                  :: xo_analytic, delta, FillN, FillN_prev
@@ -98,28 +120,26 @@ contains
 !    DoDuals=.TRUE.
 
 !!$    ! wtrbx, noscale, stab, b=8
-!    tau_xtra=1d-4
-!    tau=1d-2
-!    DoDuals=.FALSE.
-
 
 #ifdef DENSE_DIAGNOSTICS
 
+    tau     =10d0**(-tau_0)
+    tau_xtra=10d0**(-tau_y)
+
+    IF(RightTight)THEN
+       RT='R'
+    ELSE
+       RT='L'
+    ENDIF
 
 !    file_dual='tubes_3_6_64_dual.dat'
 !    file_stab='tubes_3_6_64_stab.dat'
 
-!    b=16 convergese for duals, 100 waters in a bx:
+    file_dual=TRIM(corename)//'_t'//TRIM(IntToChar(tau_0))//'_ty'//TRIM(IntToChar(tau_y)) &
+               //'_b'//TRIM(IntToChar(SpAMM_BLOCK_SIZE))//'_dual.dat'
 
-    tau_xtra=1d-3
-    tau=1d-3
-    file_dual='wtrbxs_2_3_16_dual.dat'
-    file_stab='wtrbxs_2_3_16_stab.dat'
-    
-!    b=16 convergese for stab, 100 waters in a bx:
-!    tau_xtra=1d-5
-!    tau=1d-3
-
+    file_stab=TRIM(corename)//'_t'//TRIM(IntToChar(tau_0))//'_ty'//TRIM(IntToChar(tau_y)) &
+               //'_b'//TRIM(IntToChar(SpAMM_BLOCK_SIZE))//'_m'//TRIM(RT)//'_stab.dat'
 
     open(unit=98, iostat=stat, file=file_stab,status='old')
     if(stat.eq.0) close(98, status='delete')
@@ -130,10 +150,18 @@ contains
     if(stat.eq.0) close(99, status='delete')
     open(unit=99, iostat=stat, file=file_dual,status='new')
     close(99)
+    
+    WRITE(*,*)' tau = ',tau,tau_xtra, righttight
+
 #else
+    ! right S.Z multiply first (not Z^t.S)
+    LOGICAL, PARAMETER :: RightTight=.TRUE.
+    CHARACTER(LEN=1) :: RT='R'  
+
     !
     IF(DoDuals)tHeN
 #endif
+
        ! y_0 => s
        y_dual => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
        y_dual => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_o = y_dual, threshold_O = SpAMM_normclean ) 
@@ -170,6 +198,7 @@ contains
 
     y_tmp  => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
     z_tmp  => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
+
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -212,7 +241,7 @@ contains
 #endif
     kount=1
     FillN=1d10
-    DO i = 0, 18
+    DO i = 0, 22
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -294,7 +323,9 @@ contains
           ENDIF
 #endif
        ELSE
+
           sc=1d0
+
         ENDIF
 
        WRITE(*,*)' sc = ',sc
@@ -344,6 +375,17 @@ contains
           x_dual => SpAMM_tree_2d_symm_times_tree_2d_symm( y_dual, z_dual, tau   , nt_O=.TRUE. , in_O = x_dual )
           x_dual_work=x_dual%frill%flops/dble(x_dual%frill%ndimn(1))**3
           x_dual_fill=x_dual%frill%non0s
+!!$
+!!$
+!!$          ! | y_n> = <zt_n|s>
+!!$          y_dual => SpAMM_tree_2d_symm_times_tree_2d_symm( z_dual, s,  tau_XTRA  , NT_O=.FALSE. , in_O = y_dual )
+!!$          y_dual_work=y_dual%frill%flops/dble(y_dual%frill%ndimn(1))**3
+!!$          y_dual_fill=y_dual%frill%non0s
+!!$
+!!$          ! |x_n> = <y_n|z_n>
+!!$          x_dual => SpAMM_tree_2d_symm_times_tree_2d_symm( y_dual, z_dual,  tau, NT_O=.TRUE. , in_O = x_dual , stream_file_O='x_dual_'//inttoCHAR(I) )
+!!$          x_dual_work=x_dual%frill%flops/dble(x_dual%frill%ndimn(1))**3
+!!$          x_dual_fill=x_dual%frill%non0s
 
 #ifdef DENSE_DIAGNOSTICS
           CALL SpAMM_convert_tree_2d_symm_to_dense( y_dual, y_tld_k_dual )
@@ -351,16 +393,25 @@ contains
 #else
        ELSE
 #endif
-          ! | y_n> = <zt_n|s>
-          y_tmp => SpAMM_tree_2d_symm_times_tree_2d_symm( z_stab, s,  tau_XTRA  , NT_O=.FALSE. , in_O = y_tmp )
-          y_stab=> SpAMM_tree_2d_symm_copy_tree_2d_symm( y_tmp, in_O = y_stab, threshold_O = tau_xtra )
-          y_stab_work=y_tmp%frill%flops/dble(y_tmp%frill%ndimn(1))**3
-          y_stab_fill=y_tmp%frill%non0s
-
-          ! |x_n> = <y_n|z_n>
-          x_stab => SpAMM_tree_2d_symm_times_tree_2d_symm( y_stab, z_stab,  tau, NT_O=.TRUE. , in_O = x_stab , stream_file_O='x_stab_'//inttoCHAR(I) )
-          x_stab_work=x_stab%frill%flops/dble(x_stab%frill%ndimn(1))**3
-          x_stab_fill=x_stab%frill%non0s
+          IF(RightTight)THEN
+             ! | y_n> = <zt_n|s>
+             y_stab => SpAMM_tree_2d_symm_times_tree_2d_symm( s, z_stab, tau_XTRA  , NT_O=.TRUE. , in_O = y_stab )
+             y_stab_work=y_stab%frill%flops/dble(y_stab%frill%ndimn(1))**3
+             y_stab_fill=y_stab%frill%non0s
+             ! |x_n> = <y_n|z_n>
+             x_stab => SpAMM_tree_2d_symm_times_tree_2d_symm( z_stab, y_stab, tau, NT_O=.FALSE. , in_O = x_stab , stream_file_O='x_stab_'//inttoCHAR(I) )
+             x_stab_work=x_stab%frill%flops/dble(x_stab%frill%ndimn(1))**3
+             x_stab_fill=x_stab%frill%non0s
+          ELSE
+             ! | y_n> = <zt_n|s>
+             y_stab => SpAMM_tree_2d_symm_times_tree_2d_symm( z_stab, s,  tau_XTRA  , NT_O=.FALSE. , in_O = y_stab )
+             y_stab_work=y_stab%frill%flops/dble(y_stab%frill%ndimn(1))**3
+             y_stab_fill=y_stab%frill%non0s
+             ! |x_n> = <y_n|z_n>
+             x_stab => SpAMM_tree_2d_symm_times_tree_2d_symm( y_stab, z_stab,  tau, NT_O=.TRUE. , in_O = x_stab , stream_file_O='x_stab_'//inttoCHAR(I) )
+             x_stab_work=x_stab%frill%flops/dble(x_stab%frill%ndimn(1))**3
+             x_stab_fill=x_stab%frill%non0s
+          ENDIF
 
 #ifdef DENSE_DIAGNOSTICS
           CALL SpAMM_convert_tree_2d_symm_to_dense( y_stab, y_tld_k_stab )
@@ -427,40 +478,13 @@ contains
     dy_stab_sclr=SQRT(SUM(dy_stab**2))
     dz_stab_sclr=SQRT(SUM(dz_stab**2))
     dx_stab_sclr=SQRT(SUM(dx_stab**2))
-    !    WRITE(*,*)'stab  dy,dz,dx = ',dy_stab_sclr, dz_stab_sclr, dx_stab_sclr
     ! ------
     dy_dual     = y_tld_k1_dual - y_k1;   dy_hat_dual = dy_dual/SQRT(SUM(dy_dual**2))
     dz_dual     = z_tld_k1_dual - z_k1;   dz_hat_dual = dz_dual/SQRT(SUM(dz_dual**2))
     dx_dual     = x_tld_k1_dual - x_k1;   dx_hat_dual = dx_dual/SQRT(SUM(dx_dual**2))
-
     dy_dual_sclr=SQRT(SUM(dy_dual**2))
     dz_dual_sclr=SQRT(SUM(dz_dual**2))
     dx_dual_sclr=SQRT(SUM(dx_dual**2))
-    !    WRITE(*,*)'dual  dy,dz,dx = ',dy_dual_sclr, dz_dual_sclr, dx_dual_sclr
-    !---------------------------------------------
-!!$    !  here are the Gateux differences 
-!!$    !
-!!$    !  dx/dz_stab 
-!!$    m_x_k1=MATMUL(y_k1,z_tld_k1_stab)
-!!$    m_x_k1=m_x_k1*scal_mapp
-!!$    m_x_k1=m_x_k1+shft_mapp*i_d
-!!$    m_x_k1=m_x_k1*scal_shift
-!!$    m_x_k1=m_x_k1+shft_shift*i_d
-!!$    ! ------
-!!$    y_k = MATMUL(m_x_k1,y_k1)
-!!$    z_k = MATMUL(z_tld_k1_stab,m_x_k1)
-!!$    x_k_of_z = MATMUL(y_k,    z_k)
-!!$    !---------------------------------------------
-!!$    !  dx / dy
-!!$    m_x_k1=MATMUL(y_tld_k1_stab,z_k1)
-!!$    m_x_k1=m_x_k1*scal_mapp
-!!$    m_x_k1=m_x_k1+shft_mapp*i_d
-!!$    m_x_k1=m_x_k1*scal_shift
-!!$    m_x_k1=m_x_k1+shft_shift*i_d
-!!$    ! ------
-!!$    y_k = MATMUL(m_x_k1,y_tld_k1_stab)
-!!$    z_k = MATMUL(z_k1, m_x_k1)
-!!$    x_k_of_y = MATMUL(y_k,    z_k)
     !---------------------------------------------
     ! unperturbed ...
     m_x_k1=x_k1
@@ -477,15 +501,6 @@ contains
     x_k = MATMUL(y_k,    z_k)
     !   x_k = MATMUL(MATMUL(TRANSPOSE(z_k),s_d),z_k)
     !---------------------------------------------
-!!$    !
-!!$    !  ... and here are the Gateux differentials
-!!$    x_k_of_z=(x_k_of_z-x_k)/dz_stab_sclr
-!!$    x_k_of_y=(x_k_of_y-x_k)/dy_stab_sclr
-
-    !    WRITE(*,*)' dx/dz = ',SQRT(SUM(x_k_of_z**2 )),x_k_of_z(1:2,1:2)
-    !    WRITE(*,*)' dx/dy = ',SQRT(SUM(x_k_of_y**2 )),x_k_of_y(1:2,1:2)
-
-    ! ------
     mp_dy_stab  = scal_mapp * scal_shift * MATMUL(dy_hat_stab,z_k1)
     mp_dz_stab  = scal_mapp * scal_shift * MATMUL(y_k1,dz_hat_stab)
     mp_dx_stab  = scal_mapp * scal_shift * dx_hat_stab
@@ -494,35 +509,17 @@ contains
     mp_dz_dual  = scal_mapp * scal_shift * MATMUL(y_k1,dz_hat_dual)
     mp_dx_dual  = scal_mapp * scal_shift * dx_hat_stab
 
-    mp_dz_stab  = scal_mapp * scal_shift * MATMUL(y_k1,dz_hat_stab)
-    mp_dx_stab  = scal_mapp * scal_shift * dx_hat_stab
     ! ------
-    dz_dy_stab   = MATMUL(z_k1,mp_dy_stab)
-    dy_dy_stab   = MATMUL(m_x_k1,dy_hat_stab) + MATMUL(mp_dy_stab,y_k1)
-    dx_dy_stab   = MATMUL(dy_dy_stab,z_k) + MATMUL(y_k,dz_dy_stab)
+    mp_dx_stab  = scal_mapp * scal_shift * dx_hat_stab
 
-!!$    x_k_of_y=MATMUL(y_k,MATMUL(z_k1,mp_dy_stab))
-!!$    WRITE(*,*)' '
-!!$    WRITE(*,*)' ( Y_k          | z_k1 . h_dy  )  = ',x_k_of_y(1:2,1:2)
-!!$    x_k_of_y=MATMUL(MATMUL(mp_dy_stab,y_k1),Z_K)
-!!$    WRITE(*,*)' ( h_dy . y_k1  | Z_k          )  = ',x_k_of_y(1:2,1:2)
-!!$    x_k_of_y=MATMUL(MATMUL(m_x_k1,dy_hat_stab),z_k)
-!!$    WRITE(*,*)' ( h[x_k1] . dy | Z_k          )  = ',x_k_of_y(1:2,1:2)
-!!$    WRITE(*,*)
-    ! ------ 
-    dy_dz_stab   = MATMUL(mp_dz_stab,y_k1)
-    dz_dz_stab   = MATMUL(dz_hat_stab,m_x_k1)+MATMUL(z_k1,mp_dz_stab)
-    dx_dz_stab   = MATMUL(dy_dz_stab,z_k) + MATMUL(y_k,dz_dz_stab)
+    mp_dz_stab  = scal_mapp * scal_shift * ( MATMUL(TRANSPOSE(dz_hat_stab),MATMUL(S_d,Z_k)) &
+                                            +MATMUL(TRANSPOSE(z_k),MATMUL(S_d,dZ_hat_stab)) )
 
-!!$    x_k_of_y=MATMUL(MATMUL(mp_dz_stab,y_k1),Z_k)
-!!$    WRITE(*,*)' ( h_dy . y_k1  | Z_k          )  = ',x_k_of_y(1:2,1:2)
-!!$    x_k_of_y=MATMUL(Y_k, MATMUL(dz_hat_stab,m_x_k1) )
-!!$    WRITE(*,*)' ( Y_k          | dz . h[x_k1] )  = ',x_k_of_y(1:2,1:2)
-!!$    x_k_of_y=MATMUL(Y_k,MATMUL(z_k1,mp_dz_stab))
-!!$    WRITE(*,*)' ( Y_k          | z_k1 . h_dy  )  = ',x_k_of_y(1:2,1:2)
+    dz_dz_stab   = MATMUL( dz_hat_stab , m_x_k1 ) + MATMUL( z_k1 , mp_dz_stab )
 
-    !    WRITE(*,*)' dx/dz = ',SQRT(SUM( dx_dz_stab**2 )),dx_dz_stab(1:2,1:2)
-    !    WRITE(*,*)' dx/dy = ',SQRT(SUM( dx_dy_stab**2 )) ,dx_dy_stab(1:2,1:2)
+    dx_dz_stab   = MATMUL(TRANSPOSE(dz_dz_stab),MATMUL(s_d,z_k))+&
+                   MATMUL(TRANSPOSE(z_k),MATMUL(s_d,dz_dz_stab))
+
     ! ------
     dy_dy_dual   = MATMUL(m_x_k1,dy_hat_dual)+MATMUL(mp_dy_dual,y_k1)
     dz_dy_dual   = MATMUL(z_k1,mp_dy_dual)
@@ -547,7 +544,6 @@ contains
 
     WRITE(*,*)'  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - '
     WRITE(*,*)'   stab: '
-    WRITE(*,22)SQRT(SUM(dx_dy_stab**2)), SQRT(SUM(dy_stab**2)),SQRT(SUM(dx_dy_stab**2))*SQRT(SUM(dy_stab**2))
     WRITE(*,23)SQRT(SUM(dx_dz_stab**2)), SQRT(SUM(dz_stab**2)),SQRT(SUM(dx_dz_stab**2))*SQRT(SUM(dz_stab**2))
     WRITE(*,21)SQRT(SUM(dx_dx_stab**2)), SQRT(SUM(dx_stab**2)),SQRT(SUM(dx_dx_stab**2))*SQRT(SUM(dx_stab**2))
     WRITE(*,24)FillN_stab
@@ -565,7 +561,8 @@ contains
 
     open(unit=98, file=file_stab, position='append')
     WRITE(98,44)kount, tau, tau_xtra, sc, delta, FillN_stab, &
-    SQRT(SUM(dx_dy_stab**2)), SQRT(SUM(dy_stab**2)), SQRT(SUM(dx_dz_stab**2)), SQRT(SUM(dz_stab**2)),  &
+         0.d0, 0d0, &
+         SQRT(SUM(dx_dz_stab**2)), SQRT(SUM(dz_stab**2)),  &
          SQRT(SUM(dx_dx_stab**2)), SQRT(SUM(dx_stab**2))
     close(98)
 
@@ -708,10 +705,23 @@ program SpAMM_sandwich_inverse_squareroot
   real(SpAMM_KIND), dimension(1:slices)          :: tau
 
   integer :: i,j,k, kount
-
+  character(len=2) :: c_tau_0, c_tau_y, rightt
   !  real :: start_time, end_time
 
   call get_command_argument(1, matrix_filename)
+
+  call get_command_argument(2, corename)
+  call get_command_argument(3, c_tau_0)
+  call get_command_argument(4, c_tau_y)
+  call get_command_argument(5, rightt)
+
+  tau_0=CharToInt(c_tau_0)
+  tau_y=CharToInt(c_tau_y)
+  if(rightt=='R')then
+     RightTight=.TRUE.
+  else
+     RightTight=.FALSE.
+  endif
 
   call read_MM(matrix_filename, S_dense)
   S_dense=SpAMM_half*(S_dense+TRANSPOSE(S_dense))

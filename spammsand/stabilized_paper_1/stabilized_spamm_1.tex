@@ -179,12 +179,11 @@ For example, $\tt SpAMM$ has been extended to the {\em triple} metric querry for
 the exact Fock exchange \cite{}.  
 
 $\tt SpAMM$ is broadly related to {\em generalized n-body} methods, poularized by Grey \cite{},  
-that are simply algorithms based on fast spatial and metric querry \cite{Sammet} and local approximation \cite{}.  
+that are simply algorithms based on fast (hierarchical) spatial and metric querry \cite{Sammet} together with local approximation \cite{}.  
 Recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
 for pairwise $n$-body methods \cite{Warren Salmon, Yellik}.  Also Demmel and showed  for the related fast matrix multiplicaiton.
-It may be possible to show similar results 
-for $\tt SpAMM$, by exploiting the additional locality of reference developed in this work, 
-{\em e.g.} based on strong Euclidian locality and with iteration towards the identity.  
+It may be possible to show similar results, based on the locality of reference developed in this work, encompassing both 
+strong Euclidian locality and with algebraic (diagonal) locality towards identity.  
 
 As noted by Aluru \cite{}, the top-down $n$-body model and breadth-first map-reduction are equivalent \cite{}, offering
 the potential for alignment with emergent enterprise frameworks \cite{} and functional programming 
@@ -313,7 +312,6 @@ In this contribution, we are interested in nominally bounded instances, includin
 cannonical (dual) square root iteration, Eq.~\ref{cannonical}, as well as the ``stabilized'' version 
 with $\mat{y}^{\rm stab}_k = \mat{z}^\dagger_k \cdot \mat{s}$.  
 
-\pagebreak
 
 \section{Preliminaries}
 
@@ -346,63 +344,23 @@ double exponential (Fig.)
 %\subsubsection{ordering}
 \subsubsection{Matrix Market}
 
-\pagebreak 
 \section{Results}
 
 \subsection{Stability (Proof)}
 
 
-\subsection{Lensing}
-A feature of square root iteration with the $\ot$ kernel is localization of the culled octree towards identity iteration, 
-$\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
-the product $\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$ involves the product of large and small eigenvalues, and large and small norms, 
-which are recursively brought towards unity along the $i=k$ diagonal.  Likewise, application of the NS map, Eq.~(\ref{cannonical}),  tend towards 
-reflection about the $ijk$ cube-diagonal.   Because the $\tt SpAMM$ error obeys the multiplicative Cauchy-Schwarz bound, Eq.~(),  the 
-cooresponding culled-octree can likewise follow the $i=j$ plane about the $ijk$ cube-diagonal, resolving the {\em relative} error in identity to within $\tau$.    This effect is shown in Figure \ref{x_lensing}.   
-We call this identity related,  plane-wise concentration of the culled octree  about the cube-diagonal {\em lensing}.  
+\subsection{Error Flows in Square Root Iteration}
 
-Lensing is an algebraic localization offering compression beyond  , 
+In this section, we try to seperate the orientational effects that occur towards the identity, 
+as NS iteration idealy sends the directional derivatives to zero, whilst displacements
+correspond to $\tt SpAMM$ error sources and derivative filtered a error accumulations. 
+We are interested in stability for the strongly non-ideal case, where non-associative effects may be 
+large and implementation dependent.
 
-complexity reduction relative to the naive (full) volume of the cube,
-and also relative to sparsification strategies that preserve only absolute errors, as in Eq.~\ref{sparseapprox}.  
-The lensed task space offers an enhanced locality of reference, and may also afford fast methods 
-with costs approaching an in-place scalar multiply and copy, {\em e.g.} as $h_\alpha \rightarrow \mat{I}$ in Eq.~\ref{cannonical}.
-Our thesis is that many problems in physical and information sciences can be brought to this lensed state, {\em e.g.} through preconditioning
-as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
-and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
+\subsubsection{cannonical (dual) instance}
 
 
-
- \begin{figure}[h] \label{markofzorro}
- \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
- \fbox{ \includegraphics[width=2.in,trim={2cm 0cm 10cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene2.png}} 
- \caption{Views of the $\tau =0.03$ sign occlusion surface, for the 
- 128x~u.c.~nanotube, at $\sim {14k \times 14k}$ and $\kappa(\mat{s})=10^6$. 
- This surface envelopes the $ijk$ volume of the $\ot$ kernel,  
- cooresponding to the unscaled dual iteration step $\mmat{x}_{19} \leftarrow \mmat{y}_{19} \ot \mmat{z}_{19} $ at $b=64$, $\tau=0.03$ and
- $\tau_y=10^{-3} \, \tau $.  The first pannel looks straight down the cube-diagonal $i=j=k$, from the upper bound towards (1,1,1).
- Remarkably, this surface forms an elongated $\times$, closely following intersection of the $i=j$  and $i=k$ planes 
- along the cube-diagonal. The second pannel looks along the cube-diagonal, with the upper bound at upper left, and (1,1,1) at lower right.}
- \end{figure}
-
-In this section, we present  numerical experiments that highlight the effects of 
-ill-conditioning, dimensionality, and the stability of different first order NS approaches to iteration with $\tt SpAMM$. 
-We turn first to complexity reduction for $\ot$ in the basin of stability,  where we find a novel, compressive 
-effect in the product octree.  This effect is shown in Fig.~\ref{markofzorro},  
-for unscaled, inverse square root duals iteration, Eqs.~(\ref{dualsiteration}), on the 3,3 carbon 
-nanotube metric at $\kappa=10^6$.  
-
-In this example, the $\tt SpAMM$ octree culled from the $ijk$-cube is outlined by its occlusion surface, enclosing 
-a volume that closely follows the $i=j$ and $i=k$ planes, forming an $\times$.  The banded distribution
-of large norms along  matrix diagonals leads to cube-diagonal dominance, with plane-following 
-a consequence of moderate ill-conditioning,  large norms along the plane-diagonals and their overlap in $ijk$
-via the multiplicative bound, Eq.~(\ref{bound}). The tightness of this bound, and the compression gained relative
-to  methods that control only the absolute error, {\em e.g.} as given by Eq.~(\ref{sparseapprox}), will hopefully
-be quantified in future work. 
-
-\pagebreak
-
-\subsection{Error Flows in Accelerated Square Root Iteration}
+idealized 
 
 In the square root iteration, our primary concern is the growth 
 $\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}$, 
@@ -420,7 +378,7 @@ In this model, we focus on the first order differential in the approach to ident
 with the directional approach to idempotence largely determined by the reference state $\mat{x}_{k-1}$, and stability determined by
 the $\tau$ dependent magnitudes $\delta y_{k-1}$  and $\delta z_{k-1}$. 
  
-\subsubsection{First order in the previous errors}
+\subsubsection{First order in the previous errors (dual)}
 
 To start, consider just the first order error $\delta \mat{x}_k$ that develops from the previous errors $\delta \mat{y}_{k-1}$
 and $\delta \mat{z}_{k-1}$ through the Fr\'{e}chet derivatives \cite{}
@@ -546,7 +504,6 @@ h'_\alpha \delta \mat{x}^\dagger_{k-2} \cdot \mat{y}_{k-2}
 \lVert  {\mat{y}}_{k-2} \rVert \right)
 \end{multline}
 
-\pagebreak 
 
 \subsubsection{Stability Experiments}
 
@@ -561,13 +518,13 @@ are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
 
-\begin{figure}[h]
-\includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_stab.eps}
-\caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) 
-nanotube with $\kappa =10^{10}$. 
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
-$\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
-\end{figure}
+% \begin{figure}[h]
+% \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_stab.eps}
+% \caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) 
+% nanotube with $\kappa =10^{10}$. 
+% Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
+% $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
+% \end{figure}
 
 
 \begin{figure}[h]
@@ -590,13 +547,13 @@ are the dashed lines.  The trace expectation is shown as a full black line. }
 \subsubsection{water boxes}
 
 
-\begin{figure}[h]
-\includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_stab.eps}
-\caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) 
-nanotube with $\kappa =10^{10}$. 
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
-$\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
-\end{figure}
+% \begin{figure}[h]
+% \includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_stab.eps}
+% \caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) 
+% nanotube with $\kappa =10^{10}$. 
+% Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
+% $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
+% \end{figure}
 
 
 \begin{figure}[h]
@@ -605,6 +562,57 @@ $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectati
 Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$  
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
+
+
+\subsection{Lensing}
+A feature of square root iteration with the $\ot$ kernel is localization of the culled octree towards identity iteration, 
+$\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
+the product $\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$ involves the product of large and small eigenvalues, and large and small norms, 
+which are recursively brought towards unity along the $i=k$ diagonal.  Likewise, application of the NS map, Eq.~(\ref{cannonical}),  tend towards 
+reflection about the $ijk$ cube-diagonal.   Because the $\tt SpAMM$ error obeys the multiplicative Cauchy-Schwarz bound, Eq.~(),  the 
+cooresponding culled-octree can likewise follow the $i=j$ plane about the $ijk$ cube-diagonal, resolving the {\em relative} error in identity to within $\tau$.    This effect is shown in Figure \ref{x_lensing}.   
+We call this identity related,  plane-wise concentration of the culled octree  about the cube-diagonal {\em lensing}.  
+
+Lensing is an algebraic localization offering compression beyond  , 
+
+complexity reduction relative to the naive (full) volume of the cube,
+and also relative to sparsification strategies that preserve only absolute errors, as in Eq.~\ref{sparseapprox}.  
+The lensed task space offers an enhanced locality of reference, and may also afford fast methods 
+with costs approaching an in-place scalar multiply and copy, {\em e.g.} as $h_\alpha \rightarrow \mat{I}$ in Eq.~\ref{cannonical}.
+Our thesis is that many problems in physical and information sciences can be brought to this lensed state, {\em e.g.} through preconditioning
+as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
+and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
+
+
+
+ \begin{figure}[h] \label{markofzorro}
+ \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
+ \fbox{ \includegraphics[width=2.in,trim={2cm 0cm 10cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene2.png}} 
+ \caption{Views of the $\tau =0.03$ sign occlusion surface, for the 
+ 128x~u.c.~nanotube, at $\sim {14k \times 14k}$ and $\kappa(\mat{s})=10^6$. 
+ This surface envelopes the $ijk$ volume of the $\ot$ kernel,  
+ cooresponding to the unscaled dual iteration step $\mmat{x}_{19} \leftarrow \mmat{y}_{19} \ot \mmat{z}_{19} $ at $b=64$, $\tau=0.03$ and
+ $\tau_y=10^{-3} \, \tau $.  The first pannel looks straight down the cube-diagonal $i=j=k$, from the upper bound towards (1,1,1).
+ Remarkably, this surface forms an elongated $\times$, closely following intersection of the $i=j$  and $i=k$ planes 
+ along the cube-diagonal. The second pannel looks along the cube-diagonal, with the upper bound at upper left, and (1,1,1) at lower right.}
+ \end{figure}
+
+In this section, we present  numerical experiments that highlight the effects of 
+ill-conditioning, dimensionality, and the stability of different first order NS approaches to iteration with $\tt SpAMM$. 
+We turn first to complexity reduction for $\ot$ in the basin of stability,  where we find a novel, compressive 
+effect in the product octree.  This effect is shown in Fig.~\ref{markofzorro},  
+for unscaled, inverse square root duals iteration, Eqs.~(\ref{dualsiteration}), on the 3,3 carbon 
+nanotube metric at $\kappa=10^6$.  
+
+In this example, the $\tt SpAMM$ octree culled from the $ijk$-cube is outlined by its occlusion surface, enclosing 
+a volume that closely follows the $i=j$ and $i=k$ planes, forming an $\times$.  The banded distribution
+of large norms along  matrix diagonals leads to cube-diagonal dominance, with plane-following 
+a consequence of moderate ill-conditioning,  large norms along the plane-diagonals and their overlap in $ijk$
+via the multiplicative bound, Eq.~(\ref{bound}). The tightness of this bound, and the compression gained relative
+to  methods that control only the absolute error, {\em e.g.} as given by Eq.~(\ref{sparseapprox}), will hopefully
+be quantified in future work. 
+
+
 
 \subsection{Metric Locality} 
 Metric locality is locality with respect to a Euclidean or generalized distance, {\em e.g.} of the basis.  

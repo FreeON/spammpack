@@ -9,13 +9,6 @@ set output "33_tube_k10_scale_stab.eps"
 
 set logscale y
 
-set style line 1 lt 1 lc rgb "red"     lw 3
-set style line 2 lt 1 lc rgb "green"   lw 3
-set style line 3 lt 1 lc rgb "blue"    lw 3
-set style line 4 lt 1 lc rgb "black"   lw 3
-set style line 5 lt 5 lc rgb "red"     lw 3
-set style line 6 lt 5 lc rgb "green"   lw 3
-set style line 7 lt 5 lc rgb "blue"    lw 3
 
 set size ratio .75
 #set ylabel '' offset 3,0
@@ -25,26 +18,44 @@ set label 4 "(n-tr{~x{.4-}})/n"           tc rgb "black" at 12.2, 0.005
 #set label 46 "{ {/Symbol t}_y=1d-5}"      tc rgb "black"   at 15, 0.0005
 #set label 47 "{ {/Symbol t}_y=1d-6}"      tc rgb "black"   at 15, 0.000005
 
-set label 1  "x_{{/Symbol d}y_{k-1}}"     tc rgb "red"   at 18.3, 0.0001
-set label 15 "{ /Symbol d}y_{k-1}"        tc rgb "red"   at 16.3, 1
-set label 16 "{ {/Symbol t}_y=1d-6}"      tc rgb "red"   at 18, 0.005
-set label 17 "{ {/Symbol t}_y=1d-6}"      tc rgb "red"   at 18, 1
+#set label 1  "x_{{/Symbol d}y_{k-1}}"     tc rgb "red"   at 18.3, 0.0001
+#set label 15 "{ /Symbol d}y_{k-1}"        tc rgb "red"   at 16.3, 1
+#set label 16 "{ {/Symbol t}_y=1d-6}"      tc rgb "red"   at 18, 0.005
+#set label 17 "{ {/Symbol t}_y=1d-6}"      tc rgb "red"   at 18, 1
 
-set label 2 "x_{{/Symbol d}z_{k-1}}"  tc rgb "green" at 14, 0.00001
-set label 22 "{ /Symbol d}z_{k-1}"    tc rgb "green" at 11, 100. 
-set label 25 "{ {/Symbol t}_y=1d-3}"  tc rgb "green" at 10, 50000. 
-set label 26 "{ {/Symbol t}_y=1d-4}"  tc rgb "green" at 15, 9000. 
-set label 27 "{ {/Symbol t}_y=1d-6}"  tc rgb "green" at 15, 350. 
+set label 2 "x^R_{{/Symbol d}z_{k-1}}"  tc rgb "green" at 14, 0.00001
+set label 3 "x^L_{{/Symbol d}z_{k-1}}"  tc rgb "red" at 9, 0.05
+
+set label 22 "{ /Symbol d}z^{R}_{k-1}"    tc rgb "green" at 18, 10000. 
+set label 32 "{ /Symbol d}z^{L}_{k-1}"    tc rgb "red" at 9, 10000. 
+
+
+set label 25 "{ {/Symbol t}_y=1d-4}"  tc rgb "green" at 12, 50000. 
+set label 26 "{ {/Symbol t}_y=1d-5}"  tc rgb "green" at 16, 70000. 
+
 
 set yrange [0.00000001:1000000.0]
 
-plot [2:22] "tubes_3_10_16_scaled_stab.dat"      using 1:7  w lines ls 1 notitle,\
-            "tubes_3_10_16_scaled_stab.dat"      using 1:9  w lines ls 2 notitle,\
-            "tubes_3_10_16_scaled_stab.dat"      using 1:6  w lines ls 4 notitle,\
-            "tubes_3_10_16_scaled_stab.dat"      using 1:8  w lines ls 5 notitle,\
-            "tubes_3_10_16_scaled_stab.dat"      using 1:10 w lines ls 6 notitle,\
-            "tubes_3_7_16_scaled_stab.dat"    using 1:8  w lines ls 5 notitle,\
-            "tubes_3_7_16_scaled_stab.dat"    using 1:10 w lines ls 6 notitle,\
-            "tubes_3_6_16_scaled_stab.dat"    using 1:8  w lines ls 5 notitle,\
-            "tubes_3_6_16_scaled_stab.dat"    using 1:10 w lines ls 6 notitle
+set style line 1 lt 1 lc rgb "red"     lw 3
+set style line 2 lt 1 lc rgb "green"   lw 3
+set style line 3 lt 1 lc rgb "blue"    lw 3
+set style line 4 lt 1 lc rgb "black"   lw 3
+set style line 5 lt 5 lc rgb "red"     lw 3
+set style line 6 lt 5 lc rgb "green"   lw 3
+set style line 7 lt 5 lc rgb "blue"    lw 3
+
+##%"tube8x_scaled_t2_ty5_b16_mL_stab.dat"  using 1:7  w lines ls 1 notitle,\
+
+
+plot [2:22] "tube8x_scaled_t2_ty5_b16_mL_stab.dat"  using 1:9  w lines ls 1 notitle,\
+            "tube8x_scaled_t2_ty5_b16_mL_stab.dat"  using 1:6  w lines ls 4 notitle,\
+            "tube8x_scaled_t2_ty5_b16_mL_stab.dat"  using 1:8  w lines ls 5 notitle,\
+            "tube8x_scaled_t2_ty5_b16_mL_stab.dat"  using 1:10 w lines ls 5 notitle,\
+            "tube8x_scaled_t2_ty5_b16_mR_stab.dat"  using 1:6  w lines ls 4 notitle,\
+            "tube8x_scaled_t2_ty5_b16_mR_stab.dat"  using 1:9  w lines ls 2 notitle,\
+            "tube8x_scaled_t2_ty5_b16_mR_stab.dat"  using 1:8  w lines ls 1 notitle,\
+            "tube8x_scaled_t2_ty5_b16_mR_stab.dat"  using 1:10 w lines ls 6 notitle,\
+            "tube8x_scaled_t2_ty4_b16_mR_stab.dat"  using 1:8  w lines ls 1 notitle,\
+            "tube8x_scaled_t2_ty4_b16_mR_stab.dat"  using 1:10 w lines ls 6 notitle
+
 
