@@ -351,21 +351,43 @@ double exponential (Fig.)
 
 \subsection{Error Flows in Square Root Iteration}
 
+
 In this section, we try to seperate the orientational effects that occur towards the identity, 
 as NS iteration idealy sends the directional derivatives to zero, whilst displacements
 correspond to $\tt SpAMM$ error sources and derivative filtered a error accumulations. 
 We are interested in stability for the strongly non-ideal case, where non-associative effects may be 
-large and implementation dependent.
+large and implementation dependent, and where we may encounter large values 
+$\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}$ for ill-condintioned
+systems, together with associated error amplification and propigation 
+
+
+, 
+and its amplification of errors, propigated through the complicated logistics of $h_\alpha[\cdot]$,  
+$\ot$ and other transformations, such as stabilization schemes. 
+
+
+
+Agressive scaling can reduce stability of the iteration due to the larger derivative $h'_\alpha$.  Also, the previous error, 
+$\delta \mat{x}_{k-1}$, may be to large, {\em e.g.} due to a too large value of $\tau$,  leading to 
+the unbounded (exponential) accumulation of errors $\delta \mat{x}_k > 1 $.  
+
+To first order, stability of the 
+iteration is controled by the Frechet derivatives contributing to $\delta \mat{x}_k$.    In some instances, 
+for example those realized through invocation of commutativity \cite{}, may lead to first Fr\'{e}chet derivatives that are 
+unbounded \cite{}.   Also, for ill-conditioned problems and the $\ot$ kernel, even instances with bounded first derivatives may experience higher order 
+effects that lead to 
+these derivatives can behave differently amongst nominally equivalent implementations, for example 
+formulations based on the assumption of a commuting algebra.  
+In this contribution, we are interested in nominally bounded instances, including the
+cannonical (dual) square root iteration, Eq.~\ref{cannonical}, as well as the ``stabilized'' version 
+with $\mat{y}^{\rm stab}_k = \mat{z}^\dagger_k \cdot \mat{s}$.  
+
+
 
 \subsubsection{cannonical (dual) instance}
 
 
-idealized 
-
-In the square root iteration, our primary concern is the growth 
-$\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}$, 
-and its amplification of errors, propigated through the complicated logistics of $h_\alpha[\cdot]$,  
-$\ot$ and other transformations, such as stabilization schemes.   Our model of error flow
+  Our model of error flow
 includes the previous displacements (errors) $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$,
 the first order error injected by $\tt SpAMM$ acceleration $\mat{\Delta}_\tau$,  and the first order
 Fr\'{e}chet derivatives \cite{} ${\mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}$ and ${\mat{x}}_{\delta \widehat{ \mat{z}}_{k-1}}$ 
