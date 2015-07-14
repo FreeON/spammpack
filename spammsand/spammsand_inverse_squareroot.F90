@@ -95,32 +95,6 @@ contains
     REAL(SpAMM_KIND)                                  :: y_stab_fill,z_stab_fill,x_stab_fill, y_dual_fill,z_dual_fill,x_dual_fill
 
 
-!!$    ! tubes, scaled, dual, b=16
-!!$    tau_xtra=1d-9
-!!$    tau=1d-3    
-!!$    DoDuals=.TRUE.
-
-!!$    ! tubes, scaled, stab, b=16
-!!$    tau_xtra=1d-5
-!!$    tau=1d-3    
-!!$    DoDuals=.FALSE.
-
-!!$    ! wtrbx, scaled, dual, b=8
-!    tau_xtra=1d-4
-!    tau=1d-3
-!    DoDuals=.TRUE.
-!!$    ! wtrbx, scaled, stab, b=8
-!    tau_xtra=1d-4
-!    tau=1d-3
-!    DoDuals=.FALSE.
-
-!!$    ! wtrbx, noscale, dual, b=8
-!    tau_xtra=1d-3
-!    tau=1d-2
-!    DoDuals=.TRUE.
-
-!!$    ! wtrbx, noscale, stab, b=8
-
 #ifdef DENSE_DIAGNOSTICS
 
     tau     =10d0**(-tau_0)
@@ -155,8 +129,14 @@ contains
 
 #else
     ! right S.Z multiply first (not Z^t.S)
+
     LOGICAL, PARAMETER :: RightTight=.TRUE.
+
     CHARACTER(LEN=1) :: RT='R'  
+
+    tau_xtra=1d-5
+    tau=1d-2
+    DoDuals=.FALSE.
 
     !
     IF(DoDuals)tHeN
@@ -710,6 +690,8 @@ program SpAMM_sandwich_inverse_squareroot
 
   call get_command_argument(1, matrix_filename)
 
+
+#ifdef DENSE_DIAGNOSTICS
   call get_command_argument(2, corename)
   call get_command_argument(3, c_tau_0)
   call get_command_argument(4, c_tau_y)
@@ -717,11 +699,13 @@ program SpAMM_sandwich_inverse_squareroot
 
   tau_0=CharToInt(c_tau_0)
   tau_y=CharToInt(c_tau_y)
+
   if(rightt=='R')then
      RightTight=.TRUE.
   else
      RightTight=.FALSE.
   endif
+#endif
 
   call read_MM(matrix_filename, S_dense)
   S_dense=SpAMM_half*(S_dense+TRANSPOSE(S_dense))

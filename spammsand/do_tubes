@@ -1,5 +1,6 @@
-rm tube8x_scaled*.dat
-./spammsand_invsqrt 33_x8_11_S.mm  tube8x_scaled 2 5 R
-./spammsand_invsqrt 33_x8_11_S.mm  tube8x_scaled 2 4 R
-./spammsand_invsqrt 33_x8_11_S.mm  tube8x_scaled 2 5 L
-mv tube8x_scaled*.dat stabilized_paper_1/fig_33_tube_cond_10_scaled/
+rm tube36x_scaled*.dat
+./spammsand_invsqrt 33_x36_10_S.mm tube36x_scaled 2 5 R
+./spammsand_invsqrt 33_x36_10_S.mm tube36x_scaled 2 4 R
+./spammsand_invsqrt 33_x36_10_S.mm tube36x_scaled 2 5 L
+./spammsand_invsqrt 33_x36_10_S.mm tube36x_scaled 2 6 L
+mv tube36x_scaled*.dat stabilized_paper_1/fig_33_tube_cond_10_scaled/
