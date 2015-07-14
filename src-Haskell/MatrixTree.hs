@@ -59,11 +59,11 @@ addSubtreeNorms = sqrt . sum . fmap (^2)
 -- reading from/writing to MatrixMarket files
 
 mmReadTree :: FilePath -> IO MatrixTree
-mmReadTree filePath = mmRead filePath >>= (return . matrixListToTree)
+mmReadTree filePath = mmReadFile filePath >>= (return . matrixListToTree)
 
 mmWriteTree :: MatrixTree -> String -> FilePath -> IO ()
 mmWriteTree tree format filePath =
-            mmWrite (treeToMatrixList tree) format filePath
+            mmWriteFile (treeToMatrixList tree) format filePath
 
 matrixListToTree :: MatrixList -> MatrixTree
 matrixListToTree (m, n, ijxs) = (m, n, foldr addVal (Zero p) ijxs)

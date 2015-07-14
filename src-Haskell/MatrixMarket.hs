@@ -1,7 +1,7 @@
 module MatrixMarket
 ( MatrixList
-, mmRead
-, mmWrite
+, mmReadFile
+, mmWriteFile
 ) where
 
 -- reads/writes MatrixMarket files to a generic matrix data type
@@ -13,25 +13,29 @@ import Data.Maybe (fromJust, isNothing)
 import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
 
 data MMFormat = Array | Coordinate
+data MMType = MMInt | MMReal | MMComplex
+
+--type MMReadable functions are mmread, mmreads
+--type MMShowable function is mmshow
 
 type MatrixList = ( Int, Int, [ (Int, Int, Double) ] )
 
 -- matrix height, width, and list of entries (row, column, value) ;
 -- including zero-value entries is optional
 
-mmRead :: FilePath -> IO MatrixList
-mmRead filePath = readFile filePath >>=
-                  (return . mmToMatrixList filePath)
+mmReadFile :: FilePath -> IO MatrixList
+mmReadFile filePath = readFile filePath >>=
+                      (return . mmToMatrixList filePath)
 
-mmWrite :: MatrixList -> String -> FilePath -> IO ()
-mmWrite matrixList format filePath = do
-        let action = Map.lookup format mmWriteCmds
-        let list = maybe (error $ "Unrecognized format " ++ format)
-                         ($ matrixList) action
-        handle <- openFile filePath WriteMode
-        hPutStrLn handle $ "%%MatrixMarket matrix " ++ format ++ " real general"
-        mapM_ (hPutStrLn handle) list
-        hClose handle
+mmWriteFile :: MatrixList -> String -> FilePath -> IO ()
+mmWriteFile matrixList format filePath = do
+            let action = Map.lookup format mmWriteCmds
+            let list = maybe (error $ "Unrecognized format " ++ format)
+                             ($ matrixList) action
+            handle <- openFile filePath WriteMode
+            hPutStrLn handle $ "%%MatrixMarket matrix " ++ format ++ " real general"
+            mapM_ (hPutStrLn handle) list
+            hClose handle
 
 mmToMatrixList :: FilePath -> String -> MatrixList
 mmToMatrixList filePath contents
