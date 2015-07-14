@@ -1,8 +1,5 @@
 module SpAMM
 ( MatrixTree
-, mTAdd
-, mTMult
-, mTTrans
 , treeAdd
 , treeMult
 , treeMultTol

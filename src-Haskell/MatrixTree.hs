@@ -1,27 +1,26 @@
 module MatrixTree
 ( addSubtreeNorms
---, combineZeros
 , ifZeroReplace
 , isZero
 , matrixListToTree
 , MatrixTree
+, mmReadTree
+, mmWriteTree
 , MTree(..)
 , nextPowOf2
 , norm
 , Norm
-, readTreeFromMatrixMarket
 , setNorm
 , size
 , Size
 , treeToMatrixList
 , Value
 , valueNorm
-, writeTreeToMatrixMarket
 ) where
 
 -- a recursive matrix data type that efficiently encodes sparsity
 
-import MatrixMarket (MatrixList, readFromMatrixMarket, writeToMatrixMarket)
+import MatrixMarket (MatrixList, mmRead, mmWrite)
 
 type Size = Int ; type Value = Double ; type Norm = Double
 
@@ -59,13 +58,12 @@ addSubtreeNorms = sqrt . sum . fmap (^2)
 
 -- reading from/writing to MatrixMarket files
 
-readTreeFromMatrixMarket :: FilePath -> IO MatrixTree
-readTreeFromMatrixMarket filePath = readFromMatrixMarket filePath >>=
-                                    (return . matrixListToTree)
+mmReadTree :: FilePath -> IO MatrixTree
+mmReadTree filePath = mmRead filePath >>= (return . matrixListToTree)
 
-writeTreeToMatrixMarket :: MatrixTree -> String -> FilePath -> IO ()
-writeTreeToMatrixMarket tree format filePath =
-                        writeToMatrixMarket (treeToMatrixList tree) format filePath
+mmWriteTree :: MatrixTree -> String -> FilePath -> IO ()
+mmWriteTree tree format filePath =
+            mmWrite (treeToMatrixList tree) format filePath
 
 matrixListToTree :: MatrixList -> MatrixTree
 matrixListToTree (m, n, ijxs) = (m, n, foldr addVal (Zero p) ijxs)

@@ -1,7 +1,7 @@
 module MatrixMarket
 ( MatrixList
-, readFromMatrixMarket
-, writeToMatrixMarket
+, mmRead
+, mmWrite
 ) where
 
 -- reads/writes MatrixMarket files to a generic matrix data type
@@ -17,22 +17,22 @@ type MatrixList = ( Int, Int, [ (Int, Int, Double) ] )
 -- matrix height, width, and list of entries (row, column, value) ;
 -- including zero-value entries is optional
 
-readFromMatrixMarket :: FilePath -> IO MatrixList
-readFromMatrixMarket filePath = readFile filePath >>=
-                                (return . matrixMarketToMatrixList filePath)
+mmRead :: FilePath -> IO MatrixList
+mmRead filePath = readFile filePath >>=
+                  (return . mmToMatrixList filePath)
 
-writeToMatrixMarket :: MatrixList -> String -> FilePath -> IO ()
-writeToMatrixMarket matrixList format filePath = do
-            let list = case format of "array"      -> matrixListToArray matrixList
-                                      "coordinate" -> matrixListToCoordinate matrixList
-                                      _            -> error $ "Unrecognized format " ++ format
-            handle <- openFile filePath WriteMode
-            hPutStrLn handle $ "%%MatrixMarket matrix " ++ format ++ " real general"
-            mapM_ (hPutStrLn handle) list
-            hClose handle
+mmWrite :: MatrixList -> String -> FilePath -> IO ()
+mmWrite matrixList format filePath = do
+        let list = case format of "array"      -> matrixListToArray matrixList
+                                  "coordinate" -> matrixListToCoordinate matrixList
+                                  _            -> error $ "Unrecognized format " ++ format
+        handle <- openFile filePath WriteMode
+        hPutStrLn handle $ "%%MatrixMarket matrix " ++ format ++ " real general"
+        mapM_ (hPutStrLn handle) list
+        hClose handle
 
-matrixMarketToMatrixList :: FilePath -> String -> MatrixList
-matrixMarketToMatrixList filePath contents
+mmToMatrixList :: FilePath -> String -> MatrixList
+mmToMatrixList filePath contents
       | null (words contents) = error $ filePath ++ " is empty"
       | length first < 4      = error $ filePath ++ " header is invalid"
       | null rest             = error $ filePath ++ " has no contents"
