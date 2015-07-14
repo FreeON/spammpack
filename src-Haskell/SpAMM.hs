@@ -26,20 +26,15 @@ treeAdd (h1, w1, mTree1) (h2, w2, mTree2) =
         else error "matrices don't match for addition"
 
 mTAdd :: MTree -> MTree -> MTree
-
 mTAdd (Zero _) mTree = mTree
-
 mTAdd mTree (Zero _) = mTree
-
 mTAdd (Leaf _ x) (Leaf _ y) = if x + y == 0 then Zero 1
                               else Leaf (valueNorm $ x + y) (x + y)
-
 mTAdd (Square s _ tl1 tr1 bl1 br1) (Square _ _ tl2 tr2 bl2 br2) =
       ifZeroReplace $ Square s x tlsum trsum blsum brsum
       where tlsum = tl1 `mTAdd` tl2 ; trsum = tr1 `mTAdd` tr2
             blsum = bl1 `mTAdd` bl2 ; brsum = br1 `mTAdd` br2
             x = addSubtreeNorms . fmap norm $ [tlsum, trsum, blsum, brsum]
-
 mTAdd _ _ = error "matrices don't match for addition"
 
 treeMult :: MatrixTree -> MatrixTree -> MatrixTree
@@ -53,14 +48,10 @@ treeMultTol tol (h1, w1, mTree1) (h2, w2, mTree2) =
                   expMTree2 = expandMTree mTree2 (size mTree1)
 
 mTMult :: Double -> MTree -> MTree -> MTree
-
 mTMult _ zero@(Zero _) _ = zero
-
 mTMult _ _ zero@(Zero _) = zero
-
 mTMult tol (Leaf m x) (Leaf n y) = if m * n <= tol then Zero 1
                                    else Leaf (valueNorm $ x * y) (x * y)
-
 mTMult tol (Square s m tl1 tr1 bl1 br1) (Square _ n tl2 tr2 bl2 br2) =
          if m * n <= tol then Zero s
          else ifZeroReplace $ Square s x tlmult trmult blmult brmult
@@ -70,7 +61,6 @@ mTMult tol (Square s m tl1 tr1 bl1 br1) (Square _ n tl2 tr2 bl2 br2) =
                brmult = (bl1 `mTTimes` tr2) `mTAdd` (br1 `mTTimes` br2)
                mTTimes = mTMult tol
                x = addSubtreeNorms . fmap norm $ [tlmult, trmult, blmult, brmult]
-
 mTMult _ _ _ = error "matrices don't match for multiplication"
 
 expandMTree :: MTree -> Size -> MTree

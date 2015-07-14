@@ -70,9 +70,7 @@ matrixListToTree (m, n, ijxs) = (m, n, foldr addVal (Zero p) ijxs)
                                 where p = nextPowOf2 $ max m n
 
 addVal :: (Int, Int, Value) -> MTree -> MTree
-
 addVal (_, _, x) (Leaf _ _) = if x == 0 then Zero 1 else Leaf (valueNorm x) x
-
 addVal (i, j, x) tree@(Zero s)
        | x == 0         = tree
        | s == 1         = Leaf (valueNorm x) x
@@ -84,7 +82,6 @@ addVal (i, j, x) tree@(Zero s)
              within = all (<= halfs)
              ib = i - halfs ; jr = j - halfs
              zro = Zero halfs
-
 addVal (i, j, x) (Square s _ tl tr bl br) = if x == 0 then ifZeroReplace newTree else newTree
        where newTree = Square s y newtl newtr newbl newbr
              [newtl, newtr, newbl, newbr]
