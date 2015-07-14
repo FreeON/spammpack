@@ -12,6 +12,8 @@ import qualified Data.Map as Map (fromList, lookup, Map)
 import Data.Maybe (fromJust, isNothing)
 import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
 
+data MMFormat = Array | Coordinate
+
 type MatrixList = ( Int, Int, [ (Int, Int, Double) ] )
 
 -- matrix height, width, and list of entries (row, column, value) ;
@@ -23,9 +25,9 @@ mmRead filePath = readFile filePath >>=
 
 mmWrite :: MatrixList -> String -> FilePath -> IO ()
 mmWrite matrixList format filePath = do
-        let list = case format of "array"      -> matrixListToArray matrixList
-                                  "coordinate" -> matrixListToCoordinate matrixList
-                                  _            -> error $ "Unrecognized format " ++ format
+        let action = Map.lookup format mmWriteCmds
+        let list = maybe (error $ "Unrecognized format " ++ format)
+                         ($ matrixList) action
         handle <- openFile filePath WriteMode
         hPutStrLn handle $ "%%MatrixMarket matrix " ++ format ++ " real general"
         mapM_ (hPutStrLn handle) list
@@ -36,34 +38,18 @@ mmToMatrixList filePath contents
       | null (words contents) = error $ filePath ++ " is empty"
       | length first < 4      = error $ filePath ++ " header is invalid"
       | null rest             = error $ filePath ++ " has no contents"
-      | otherwise             = command rest filePath
+      | otherwise             = maybe errormsg (($ filePath) . ($ rest)) action
       where fileLines = lines contents
             first = words . head $ fileLines
             rest = filter ((/='%') . head . head) . filter (not . null) . fmap words $ tail fileLines
-            command = case fmap toLower (first !! 2) of
-                      "array"      -> arrayToMatrixList
-                      "coordinate" -> coordinateToMatrixList
-                      _            -> error $ filePath ++ " has unrecognized format " ++ (first !! 2)
+            action = Map.lookup (fmap toLower (first !! 2)) mmReadCmds
+            errormsg = error $ filePath ++ " has unrecognized format " ++ (first !! 2)
 
-matrixListToArray :: MatrixList -> [String]
-matrixListToArray (m, n, ijxs) = (combineStrings [show m, show n]):showVals
-                   where pairList = fmap (\(i, j, x) -> ((i,j), x)) ijxs
-                         hashTable = Map.fromList pairList
-                         indices = [(i, j) | j <- [1..n], i <- [1..m]]
-                         showVals = fmap (show . value) indices
-                         value pair | isNothing check = 0
-                                    | otherwise       = fromJust check
-                                    where check = Map.lookup pair hashTable
-
-matrixListToCoordinate :: MatrixList -> [String]
-matrixListToCoordinate (m, n, ijxs) = (combineStrings [show m, show n, show $ length ijxs]):
-                                         (fmap pairToString ijxs)
-
-combineStrings :: [String] -> String
-combineStrings = concat . (intersperse " ")
-
-pairToString :: (Show a, Show b, Show c) => (a,b,c) -> String
-pairToString = combineStrings . (\(i,j,x) -> [show i, show j, show x])
+mmReadCmds :: Map.Map String ([[String]] -> FilePath -> MatrixList)
+mmReadCmds = Map.fromList [
+               ("array", arrayToMatrixList)
+             , ("coordinate", coordinateToMatrixList)
+             ]
 
 arrayToMatrixList :: [[String]] -> FilePath -> MatrixList
 arrayToMatrixList lineList filePath
@@ -107,3 +93,29 @@ coordinateToMatrixList lineList filePath
                           valueReads = fmap reads valueLines :: [[(Double,String)]]
                           values = fmap (fst . head) valueReads
                           ijxs = zipWith (\[i,j] x -> (i,j,x)) indices values
+
+mmWriteCmds :: Map.Map String (MatrixList -> [String])
+mmWriteCmds = Map.fromList [
+                ("array", matrixListToArray)
+              , ("coordinate", matrixListToCoordinate)
+              ]
+
+matrixListToArray :: MatrixList -> [String]
+matrixListToArray (m, n, ijxs) = (joinStrings [show m, show n]):showVals
+                   where pairList = fmap (\(i, j, x) -> ((i,j), x)) ijxs
+                         hashTable = Map.fromList pairList
+                         indices = [(i, j) | j <- [1..n], i <- [1..m]]
+                         showVals = fmap (show . value) indices
+                         value pair | isNothing check = 0
+                                    | otherwise       = fromJust check
+                                    where check = Map.lookup pair hashTable
+
+matrixListToCoordinate :: MatrixList -> [String]
+matrixListToCoordinate (m, n, ijxs) = (joinStrings [show m, show n, show $ length ijxs]):
+                                         (fmap pairToString ijxs)
+
+joinStrings :: [String] -> String
+joinStrings = concat . intersperse " "
+
+pairToString :: (Show a, Show b, Show c) => (a,b,c) -> String
+pairToString = joinStrings . (\(i,j,x) -> [show i, show j, show x])
