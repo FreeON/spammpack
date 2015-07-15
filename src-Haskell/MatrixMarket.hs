@@ -7,24 +7,87 @@ module MatrixMarket
 -- reads/writes MatrixMarket files to a generic matrix data type
 
 import Data.Char (toLower)
+import Data.Complex
 import Data.List (intersperse, nub)
 import qualified Data.Map as Map (fromList, lookup, Map)
 import Data.Maybe (fromJust, isNothing)
 import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
 
-data MMFormat = Array | Coordinate
-data MMType = MMInt | MMReal | MMComplex
-
---type MMReadable
---  mmread = read
---  mmreads = reads then parse the results and repeat mmread if reads worked
---type MMShowable
---  mmshow = show
-
+--type MatrixList a = ( Int, Int, [ (Int, Int, a) ] )
 type MatrixList = ( Int, Int, [ (Int, Int, Double) ] )
 
 -- matrix height, width, and list of entries (row, column, value) ;
 -- including zero-value entries is optional
+
+data MMFormat = Array | Coordinate
+data MMType = MMInt | MMReal | MMComplex
+
+class MMReadable a where
+      mmRead :: String -> a
+      mmReads :: String -> [(a, String)]
+
+instance MMReadable Int where
+         mmRead = read
+         mmReads = reads
+
+instance MMReadable Float where
+         mmRead = read
+         mmReads = reads
+
+instance MMReadable Double where
+         mmRead = read
+         mmReads = reads
+
+instance (MMReadable a, RealFloat a) => MMReadable (Complex a) where
+         mmRead strz = a :+ b where [a, b] = fmap mmRead (words strz)
+
+         mmReads str | len == 2  = if null xread || null yread then []
+                                   else [(x :+ y, "")]
+                     | otherwise = []
+                     where len = length (words str)
+                           [xread, yread] = fmap mmReads (words str)
+                           [x, y] = fmap (fst . head) [xread, yread]
+
+instance MMReadable MMFormat where
+         mmReads name =
+                 case map toLower name of "array"      -> [(Array, "")]
+                                          "coordinate" -> [(Coordinate, "")]
+                                          _            -> []
+
+         mmRead = fst . head . mmReads
+
+instance MMReadable MMType where
+         mmReads name =
+                 case map toLower name of "integer" -> [(MMInt, "")]
+                                          "real"    -> [(MMReal, "")]
+                                          "complex" -> [(MMComplex, "")]
+                                          _         -> []
+
+         mmRead = fst . head . mmReads
+
+class MMShowable a where
+      mmShow :: a -> String
+
+instance MMShowable Int where
+         mmShow = show
+
+instance MMShowable Float where
+         mmShow = show
+
+instance MMShowable Double where
+         mmShow = show
+
+instance (MMShowable a, RealFloat a) => MMShowable (Complex a) where
+         mmShow z = concat . intersperse " " . fmap mmShow $ [realPart z, imagPart z]
+
+instance MMShowable MMFormat where
+         mmShow Array = "array"
+         mmShow Coordinate = "coordinate"
+
+instance MMShowable MMType where
+         mmShow MMInt = "integer"
+         mmShow MMReal = "real"
+         mmShow MMComplex = "complex"
 
 mmReadFile :: FilePath -> IO MatrixList
 mmReadFile filePath = readFile filePath >>=
