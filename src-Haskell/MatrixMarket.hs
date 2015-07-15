@@ -15,8 +15,11 @@ import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
 data MMFormat = Array | Coordinate
 data MMType = MMInt | MMReal | MMComplex
 
---type MMReadable functions are mmread, mmreads
---type MMShowable function is mmshow
+--type MMReadable
+--  mmread = read
+--  mmreads = reads then parse the results and repeat mmread if reads worked
+--type MMShowable
+--  mmshow = show
 
 type MatrixList = ( Int, Int, [ (Int, Int, Double) ] )
 

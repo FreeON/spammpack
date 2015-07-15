@@ -20,11 +20,13 @@ module MatrixTree
 
 -- a recursive matrix data type that efficiently encodes sparsity
 
-import MatrixMarket (MatrixList, mmRead, mmWrite)
+import MatrixMarket (MatrixList, mmReadFile, mmWriteFile)
 
 type Size = Int ; type Value = Double ; type Norm = Double
 
-data MTree = Zero Size | Leaf Norm Value | Square Size Norm MTree MTree MTree MTree
+data MTree = Zero Size |
+             Leaf Norm Value |
+             Square Size Norm MTree MTree MTree MTree
              deriving (Eq, Show)
 
 type MatrixTree = (Int, Int, MTree)
@@ -72,17 +74,18 @@ matrixListToTree (m, n, ijxs) = (m, n, foldr addVal (Zero p) ijxs)
 addVal :: (Int, Int, Value) -> MTree -> MTree
 addVal (_, _, x) (Leaf _ _) = if x == 0 then Zero 1 else Leaf (valueNorm x) x
 addVal (i, j, x) tree@(Zero s)
-       | x == 0         = tree
-       | s == 1         = Leaf (valueNorm x) x
-       | within [i,j]   = Square s (valueNorm x) (addVal (i,  j,  x) zro) zro zro zro
-       | within [i,jr]  = Square s (valueNorm x) zro (addVal (i,  jr, x) zro) zro zro
-       | within [ib,j]  = Square s (valueNorm x) zro zro (addVal (ib,  j, x) zro) zro
-       | within [ib,jr] = Square s (valueNorm x) zro zro zro (addVal (ib, jr, x) zro)
-       where halfs = s `div` 2
-             within = all (<= halfs)
-             ib = i - halfs ; jr = j - halfs
-             zro = Zero halfs
-addVal (i, j, x) (Square s _ tl tr bl br) = if x == 0 then ifZeroReplace newTree else newTree
+ | x == 0         = tree
+ | s == 1         = Leaf (valueNorm x) x
+ | within [i,j]   = Square s (valueNorm x) (addVal (i,  j,  x) zro) zro zro zro
+ | within [i,jr]  = Square s (valueNorm x) zro (addVal (i,  jr, x) zro) zro zro
+ | within [ib,j]  = Square s (valueNorm x) zro zro (addVal (ib,  j, x) zro) zro
+ | within [ib,jr] = Square s (valueNorm x) zro zro zro (addVal (ib, jr, x) zro)
+ where halfs = s `div` 2
+       within = all (<= halfs)
+       ib = i - halfs ; jr = j - halfs
+       zro = Zero halfs
+addVal (i, j, x) (Square s _ tl tr bl br) = if x == 0 then
+                                            ifZeroReplace newTree else newTree
        where newTree = Square s y newtl newtr newbl newbr
              [newtl, newtr, newbl, newbr]
                      | within [i,j]   = [addVal (i,  j,  x) tl, tr, bl, br]
@@ -118,7 +121,8 @@ ifZeroReplace :: MTree -> MTree
 ifZeroReplace tree@(Zero _)   = tree
 ifZeroReplace tree@(Leaf _ x) = if x == 0 then Zero 1 else tree
 ifZeroReplace tree@(Square s _ _ _ _ _)
-                              = if all isZero (subTrees tree) then Zero s else tree
+                              = if all isZero (subTrees tree)
+                                then Zero s else tree
 
 nextPowOf2 :: Integral a => a -> a
 nextPowOf2 n = head . dropWhile (< n) $ map (2^) [0..]

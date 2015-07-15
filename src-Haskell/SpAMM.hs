@@ -9,8 +9,8 @@ module SpAMM
 -- matrix algebra on MatrixTrees, including recursive multiplication that
 -- returns Zeros when products of norms fall below tolerance (SpAMM)
 
-import MatrixTree (addSubtreeNorms, ifZeroReplace, MatrixTree, MTree(..), nextPowOf2,
-                   norm, size, Size, valueNorm)
+import MatrixTree (addSubtreeNorms, ifZeroReplace, MatrixTree, MTree(..),
+                   nextPowOf2, norm, size, Size, valueNorm)
 
 treeTranspose :: MatrixTree -> MatrixTree
 treeTranspose (h, w, mTree) = (w, h, mTTrans mTree)
@@ -28,13 +28,13 @@ treeAdd (h1, w1, mTree1) (h2, w2, mTree2) =
 mTAdd :: MTree -> MTree -> MTree
 mTAdd (Zero _) mTree = mTree
 mTAdd mTree (Zero _) = mTree
-mTAdd (Leaf _ x) (Leaf _ y) = if x + y == 0 then Zero 1
-                              else Leaf (valueNorm $ x + y) (x + y)
+mTAdd (Leaf _ x) (Leaf _ y) =
+      ifZeroReplace $ Leaf (valueNorm $ x + y) (x + y)
 mTAdd (Square s _ tl1 tr1 bl1 br1) (Square _ _ tl2 tr2 bl2 br2) =
-      ifZeroReplace $ Square s x tlsum trsum blsum brsum
-      where tlsum = tl1 `mTAdd` tl2 ; trsum = tr1 `mTAdd` tr2
-            blsum = bl1 `mTAdd` bl2 ; brsum = br1 `mTAdd` br2
-            x = addSubtreeNorms . fmap norm $ [tlsum, trsum, blsum, brsum]
+      ifZeroReplace $ Square s x tl tr bl br
+      where tl = tl1 `mTAdd` tl2 ; tr = tr1 `mTAdd` tr2
+            bl = bl1 `mTAdd` bl2 ; br = br1 `mTAdd` br2
+            x = addSubtreeNorms . fmap norm $ [tl, tr, bl, br]
 mTAdd _ _ = error "matrices don't match for addition"
 
 treeMult :: MatrixTree -> MatrixTree -> MatrixTree
@@ -54,13 +54,13 @@ mTMult tol (Leaf m x) (Leaf n y) = if m * n <= tol then Zero 1
                                    else Leaf (valueNorm $ x * y) (x * y)
 mTMult tol (Square s m tl1 tr1 bl1 br1) (Square _ n tl2 tr2 bl2 br2) =
          if m * n <= tol then Zero s
-         else ifZeroReplace $ Square s x tlmult trmult blmult brmult
-         where tlmult = (tl1 `mTTimes` tl2) `mTAdd` (tr1 `mTTimes` bl2)
-               trmult = (tl1 `mTTimes` tr2) `mTAdd` (tr1 `mTTimes` br2)
-               blmult = (bl1 `mTTimes` tl2) `mTAdd` (br1 `mTTimes` bl2)
-               brmult = (bl1 `mTTimes` tr2) `mTAdd` (br1 `mTTimes` br2)
+         else ifZeroReplace $ Square s x tl tr bl br
+         where tl = (tl1 `mTTimes` tl2) `mTAdd` (tr1 `mTTimes` bl2)
+               tr = (tl1 `mTTimes` tr2) `mTAdd` (tr1 `mTTimes` br2)
+               bl = (bl1 `mTTimes` tl2) `mTAdd` (br1 `mTTimes` bl2)
+               br = (bl1 `mTTimes` tr2) `mTAdd` (br1 `mTTimes` br2)
                mTTimes = mTMult tol
-               x = addSubtreeNorms . fmap norm $ [tlmult, trmult, blmult, brmult]
+               x = addSubtreeNorms . fmap norm $ [tl, tr, bl, br]
 mTMult _ _ _ = error "matrices don't match for multiplication"
 
 expandMTree :: MTree -> Size -> MTree
