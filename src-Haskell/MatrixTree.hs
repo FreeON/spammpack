@@ -48,10 +48,9 @@ subTrees _ = []
 -- setting norms
 
 setNorm :: MTree -> MTree
-setNorm tree@(Zero _)   = tree
-setNorm tree@(Leaf _ x) = Leaf (valueNorm x) x
-setNorm tree@(Square s _ _ _ _ _)
-                        = Square s n ntl ntr nbl nbr
+setNorm tree@(Zero _)             = tree
+setNorm tree@(Leaf _ x)           = Leaf (valueNorm x) x
+setNorm tree@(Square s _ _ _ _ _) = Square s n ntl ntr nbl nbr
         where [ntl, ntr, nbl, nbr] = fmap setNorm $ subTrees tree
               n = addSubtreeNorms [ntl, ntr, nbl, nbr]
 
@@ -59,7 +58,7 @@ valueNorm :: Value -> Norm
 valueNorm = abs
 
 addSubtreeNorms :: [MTree] -> Norm
-addSubtreeNorms = sqrt . sum . fmap (^2) . fmap norm
+addSubtreeNorms = sqrt . sum . fmap ((^2) . norm)
 
 -- reading from/writing to MatrixMarket files
 
@@ -103,12 +102,12 @@ treeToMatrixList :: MatrixTree -> MatrixList
 treeToMatrixList (h, w, mTree) = (h, w, mTreeToList mTree)
 
 mTreeToList :: MTree -> [(Int, Int, Value)]
-mTreeToList (Zero _)                 = []
-mTreeToList (Leaf _ x)               = [(1, 1, x)]
-mTreeToList (Square s _ tl tr bl br) = concat [tlijxs, fmap wshift trijxs,
-                                               fmap hshift blijxs,
-                                               fmap (hshift . wshift) brijxs]
-      where [tlijxs, trijxs, blijxs, brijxs] = fmap mTreeToList [tl, tr, bl, br]
+mTreeToList (Zero _)                  = []
+mTreeToList (Leaf _ x)                = [(1, 1, x)]
+mTreeToList tree@(Square s _ _ _ _ _) = concat [tlijxs, fmap wshift trijxs,
+                                                fmap hshift blijxs,
+                                                fmap (hshift . wshift) brijxs]
+      where [tlijxs, trijxs, blijxs, brijxs] = fmap mTreeToList $ subTrees tree
             hshift (i, j, x) = (i + halfs, j, x)
             wshift (i, j, x) = (i, j + halfs, x)
             halfs = s `div` 2
