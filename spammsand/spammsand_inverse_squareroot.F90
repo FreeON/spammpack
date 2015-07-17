@@ -95,11 +95,8 @@ contains
     REAL(SpAMM_KIND)                                  :: y_stab_fill,z_stab_fill,x_stab_fill, y_dual_fill,z_dual_fill,x_dual_fill
 
 
-<<<<<<< HEAD
 !!$    ! wtrbx, noscale, stab, b=8
 
-=======
->>>>>>> 4ab5183ba6c901f460616fa3ddc9f96f655a1721
 #ifdef DENSE_DIAGNOSTICS
 
     tau     =10d0**(-tau_0)
@@ -131,7 +128,6 @@ contains
     ! right S.Z multiply first (not Z^t.S)
 
     LOGICAL, PARAMETER :: RightTight=.TRUE.
-<<<<<<< HEAD
 !    LOGICAL, PARAMETER :: RightTight=.FALSE.
     CHARACTER(LEN=1) :: RT='R'  
 
@@ -141,15 +137,6 @@ contains
 !    DoDuals=.FALSE.
 
     WRITE(*,*)' tau = ',tau,tau_xtra, righttight
-=======
-
-    CHARACTER(LEN=1) :: RT='R'  
-
-    tau_xtra=1d-5
-    tau=1d-2
-    DoDuals=.FALSE.
-
->>>>>>> 4ab5183ba6c901f460616fa3ddc9f96f655a1721
     !
     IF(DoDuals)tHeN
 #endif
@@ -700,15 +687,12 @@ program SpAMM_sandwich_inverse_squareroot
   call get_command_argument(1, matrix_filename)
 
 
-<<<<<<< HEAD
   call read_MM(matrix_filename, S_dense)
   S_dense=SpAMM_half*(S_dense+TRANSPOSE(S_dense))
 
   ! matrix to inverse factor
   s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, in_O = s )
 
-=======
->>>>>>> 4ab5183ba6c901f460616fa3ddc9f96f655a1721
 #ifdef DENSE_DIAGNOSTICS
   call get_command_argument(2, corename)
   call get_command_argument(3, c_tau_0)
@@ -717,13 +701,11 @@ program SpAMM_sandwich_inverse_squareroot
 
   tau_0=CharToInt(c_tau_0)
   tau_y=CharToInt(c_tau_y)
-
   if(rightt=='R')then
      RightTight=.TRUE.
   else
      RightTight=.FALSE.
   endif
-#endif
 
 
   N = s%frill%ndimn(1)
