@@ -71,8 +71,8 @@ mmWriteTree tree format filePath =
             mmWriteFile (treeToMatrixList tree) format filePath
 
 matrixListToTree :: MatrixList -> MatrixTree
-matrixListToTree (m, n, ijxs) = (m, n, setNorm $ foldr addVal (Zero p) ijxs)
-                                where p = nextPowOf2 $ max m n
+matrixListToTree (h, w, ijxs) = (h, w, setNorm $ foldr addVal (Zero p) ijxs)
+                                where p = nextPowOf2 $ max h w
 
 addVal :: (Int, Int, Value) -> MTree -> MTree
 addVal (_, _, x) (Leaf _ _) = if x == 0 then Zero 1 else Leaf 0 x
