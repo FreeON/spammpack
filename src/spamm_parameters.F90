@@ -11,7 +11,7 @@ module spamm_parameters
 !  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=8
 
 !  tubes, tau=1d-2/1d-3 and tau_y=1d-4/1d-5
-  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=16
+  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=8
 
 !  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE = 512
 
