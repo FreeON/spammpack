@@ -1,4 +1,4 @@
-#define DENSE_DIAGNOSTICS
+!#define DENSE_DIAGNOSTICS
 ! cmake -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_Fortran_FLAGS="-O0 -g -fbounds-check -Wall -fbacktrace -finit-real=nan  -Wextra -std=f2008 "
 
 module SpAMMsand_inverse_squareroot
@@ -95,30 +95,6 @@ contains
     REAL(SpAMM_KIND)                                  :: y_stab_fill,z_stab_fill,x_stab_fill, y_dual_fill,z_dual_fill,x_dual_fill
 
 
-!!$    ! tubes, scaled, dual, b=16
-!!$    tau_xtra=1d-9
-!!$    tau=1d-3    
-!!$    DoDuals=.TRUE.
-
-!!$    ! tubes, scaled, stab, b=16
-!!$    tau_xtra=1d-5
-!!$    tau=1d-3    
-!!$    DoDuals=.FALSE.
-
-!!$    ! wtrbx, scaled, dual, b=8
-!    tau_xtra=1d-4
-!    tau=1d-3
-!    DoDuals=.TRUE.
-!!$    ! wtrbx, scaled, stab, b=8
-!    tau_xtra=1d-4
-!    tau=1d-3
-!    DoDuals=.FALSE.
-
-!!$    ! wtrbx, noscale, dual, b=8
-!    tau_xtra=1d-3
-!    tau=1d-2
-!    DoDuals=.TRUE.
-
 !!$    ! wtrbx, noscale, stab, b=8
 
 #ifdef DENSE_DIAGNOSTICS
@@ -131,9 +107,6 @@ contains
     ELSE
        RT='L'
     ENDIF
-
-!    file_dual='tubes_3_6_64_dual.dat'
-!    file_stab='tubes_3_6_64_stab.dat'
 
     file_dual=TRIM(corename)//'_t'//TRIM(IntToChar(tau_0))//'_ty'//TRIM(IntToChar(tau_y)) &
                //'_b'//TRIM(IntToChar(SpAMM_BLOCK_SIZE))//'_dual.dat'
@@ -151,13 +124,19 @@ contains
     open(unit=99, iostat=stat, file=file_dual,status='new')
     close(99)
     
-    WRITE(*,*)' tau = ',tau,tau_xtra, righttight
-
 #else
     ! right S.Z multiply first (not Z^t.S)
+
     LOGICAL, PARAMETER :: RightTight=.TRUE.
+!    LOGICAL, PARAMETER :: RightTight=.FALSE.
     CHARACTER(LEN=1) :: RT='R'  
 
+    tau_xtra=1d-4
+    tau=1d-2
+    DoDuals=.TRUE.
+!    DoDuals=.FALSE.
+
+    WRITE(*,*)' tau = ',tau,tau_xtra, righttight
     !
     IF(DoDuals)tHeN
 #endif
@@ -198,7 +177,6 @@ contains
 
     y_tmp  => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
     z_tmp  => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
-
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -298,36 +276,35 @@ contains
        scal_mapp =1d0
        shft_mapp =0d0
 #endif
+
+       delta=0.0d-3 
+       sc=1d0
        IF(FillN>0.1d0)THEN
           IF(FillN>0.4d0)THEN             
-             delta=8.d-2 
-             sc=spammsand_scaling_invsqrt(SpAMM_zero)             
+             delta=1.1d-1 
+!             sc=spammsand_scaling_invsqrt(SpAMM_zero)             
           ELSEIF(FillN>0.1d0)THEN
-             delta=1.0d-2 ! maybe this should be a variable too, passed in?
-             sc=spammsand_scaling_invsqrt(SpAMM_half)
-          ENDIF
-
+             delta=5.0d-2 ! maybe this should be a variable too, passed in?
+!             sc=spammsand_scaling_invsqrt(SpAMM_half)
+          ENDIF          
+       ELSE          
+       ENDIF
+      
 #ifdef DENSE_DIAGNOSTICS
 #else
-          IF(DoDuals)THEN
+       IF(DoDuals)THEN
 #endif
-             x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+          x_dual => spammsand_shift_tree_2d( x_dual, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
 #ifdef DENSE_DIAGNOSTICS
 #else
-          ELSE
-#endif                
-             x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
-
-#ifdef DENSE_DIAGNOSTICS
-#else
-          ENDIF
-#endif
        ELSE
-
-          sc=1d0
-
-        ENDIF
-
+#endif                
+          x_stab => spammsand_shift_tree_2d( x_stab, low_prev=0d0, high_prev=1d0, low_new=delta, high_new=1d0-delta )
+#ifdef DENSE_DIAGNOSTICS
+#else
+       ENDIF
+#endif
+       
        WRITE(*,*)' sc = ',sc
 
 #ifdef DENSE_DIAGNOSTICS       
@@ -375,8 +352,7 @@ contains
           x_dual => SpAMM_tree_2d_symm_times_tree_2d_symm( y_dual, z_dual, tau   , nt_O=.TRUE. , in_O = x_dual )
           x_dual_work=x_dual%frill%flops/dble(x_dual%frill%ndimn(1))**3
           x_dual_fill=x_dual%frill%non0s
-!!$
-!!$
+
 !!$          ! | y_n> = <zt_n|s>
 !!$          y_dual => SpAMM_tree_2d_symm_times_tree_2d_symm( z_dual, s,  tau_XTRA  , NT_O=.FALSE. , in_O = y_dual )
 !!$          y_dual_work=y_dual%frill%flops/dble(y_dual%frill%ndimn(1))**3
@@ -710,6 +686,14 @@ program SpAMM_sandwich_inverse_squareroot
 
   call get_command_argument(1, matrix_filename)
 
+
+  call read_MM(matrix_filename, S_dense)
+  S_dense=SpAMM_half*(S_dense+TRANSPOSE(S_dense))
+
+  ! matrix to inverse factor
+  s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, in_O = s )
+
+#ifdef DENSE_DIAGNOSTICS
   call get_command_argument(2, corename)
   call get_command_argument(3, c_tau_0)
   call get_command_argument(4, c_tau_y)
@@ -723,13 +707,7 @@ program SpAMM_sandwich_inverse_squareroot
      RightTight=.FALSE.
   endif
 
-  call read_MM(matrix_filename, S_dense)
-  S_dense=SpAMM_half*(S_dense+TRANSPOSE(S_dense))
 
-  ! matrix to inverse factor
-  s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, in_O = s )
-
-#ifdef DENSE_DIAGNOSTICS
   N = s%frill%ndimn(1)
   LWORK = 1+6*N+2*N**2
   LIWORK = 3+5*N    
