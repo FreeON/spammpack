@@ -47,16 +47,19 @@ subTrees _ = []
 
 -- setting norms
 
-setNorm :: MTree -> Norm
-setNorm (Zero _)   = 0
-setNorm (Leaf _ x) = valueNorm x
-setNorm tree       = addSubtreeNorms . fmap setNorm $ subTrees tree
+setNorm :: MTree -> MTree
+setNorm tree@(Zero _)   = tree
+setNorm tree@(Leaf _ x) = Leaf (valueNorm x) x
+setNorm tree@(Square s _ _ _ _ _)
+                        = Square s n ntl ntr nbl nbr
+        where [ntl, ntr, nbl, nbr] = fmap setNorm $ subTrees tree
+              n = addSubtreeNorms [ntl, ntr, nbl, nbr]
 
 valueNorm :: Value -> Norm
 valueNorm = abs
 
-addSubtreeNorms :: [Norm] -> Norm
-addSubtreeNorms = sqrt . sum . fmap (^2)
+addSubtreeNorms :: [MTree] -> Norm
+addSubtreeNorms = sqrt . sum . fmap (^2) . fmap norm
 
 -- reading from/writing to MatrixMarket files
 
@@ -68,31 +71,30 @@ mmWriteTree tree format filePath =
             mmWriteFile (treeToMatrixList tree) format filePath
 
 matrixListToTree :: MatrixList -> MatrixTree
-matrixListToTree (m, n, ijxs) = (m, n, foldr addVal (Zero p) ijxs)
+matrixListToTree (m, n, ijxs) = (m, n, setNorm $ foldr addVal (Zero p) ijxs)
                                 where p = nextPowOf2 $ max m n
 
 addVal :: (Int, Int, Value) -> MTree -> MTree
-addVal (_, _, x) (Leaf _ _) = if x == 0 then Zero 1 else Leaf (valueNorm x) x
+addVal (_, _, x) (Leaf _ _) = if x == 0 then Zero 1 else Leaf 0 x
 addVal (i, j, x) tree@(Zero s)
  | x == 0         = tree
- | s == 1         = Leaf (valueNorm x) x
- | within [i,j]   = Square s (valueNorm x) (addVal (i,  j,  x) zro) zro zro zro
- | within [i,jr]  = Square s (valueNorm x) zro (addVal (i,  jr, x) zro) zro zro
- | within [ib,j]  = Square s (valueNorm x) zro zro (addVal (ib,  j, x) zro) zro
- | within [ib,jr] = Square s (valueNorm x) zro zro zro (addVal (ib, jr, x) zro)
+ | s == 1         = Leaf 0 x
+ | within [i,j]   = Square s 0 (addVal (i,  j,  x) zro) zro zro zro
+ | within [i,jr]  = Square s 0 zro (addVal (i,  jr, x) zro) zro zro
+ | within [ib,j]  = Square s 0 zro zro (addVal (ib,  j, x) zro) zro
+ | within [ib,jr] = Square s 0 zro zro zro (addVal (ib, jr, x) zro)
  where halfs = s `div` 2
        within = all (<= halfs)
        ib = i - halfs ; jr = j - halfs
        zro = Zero halfs
 addVal (i, j, x) (Square s _ tl tr bl br) = if x == 0 then
                                             ifZeroReplace newTree else newTree
-       where newTree = Square s y newtl newtr newbl newbr
+       where newTree = Square s 0 newtl newtr newbl newbr
              [newtl, newtr, newbl, newbr]
                      | within [i,j]   = [addVal (i,  j,  x) tl, tr, bl, br]
                      | within [i,jr]  = [tl, addVal (i,  jr, x) tr, bl, br]
                      | within [ib,j]  = [tl, tr, addVal (ib,  j, x) bl, br]
                      | within [ib,jr] = [tl, tr, bl, addVal (ib, jr, x) br]
-             y = addSubtreeNorms . fmap norm $ [newtl, newtr, newbl, newbr]
              within = all (<= halfs)
              ib = i - halfs ; jr = j - halfs
              halfs = s `div` 2
