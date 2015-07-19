@@ -200,6 +200,33 @@ class Quadtree:
         print("N = %d, N_b = %d, N_pad = %d, tier = %d, depth = %d" % (
             self.N, self.N_b, self.N_padded, self.tier, self.depth))
 
+    def get_nodes(self, depth, tier=0):
+        """Get a list of nodes on tier == depth.
+
+        The function returns a tuple of ([i], [j], width, norm).  The
+        ([i], [j]) part is a list of the centers of the nodes, the width
+        is the index width on this tier, and the norm is the norm of
+        that submatrix..
+        """
+
+        half = (self.i_upper-self.i_lower)/2
+        if tier < depth:
+            x = []
+            y = []
+            norm = []
+            width = 2*half
+
+            for (i, j) in itertools.product(range(2), range(2)):
+                if self.children[Quadtree.index(i, j)] is not None:
+                    (x_temp, y_temp, norm_temp, width) = self.children[Quadtree.index(i, j)].get_nodes(
+                        depth, tier=tier+1)
+                    x = x+x_temp
+                    y = y+y_temp
+                    norm = norm+norm_temp
+            return (x, y, norm, width)
+        else:
+            return ([self.i_lower+half], [self.j_lower+half], [math.sqrt(self.norm2)], 2*half)
+
     def get_element(self, i, j, i_lower=0, i_upper=0, j_lower=0, j_upper=0):
         """Get a matrix element Aij <- A(i,j).
         """
@@ -280,22 +307,24 @@ class Quadtree:
                 print("A(%d,%d) = %e" % (i, j, self.get_element(i, j)))
 
 @mlab.show
-def plot_octree(C):
+def plot_octree(A, B, C, C_multiplication):
     """Set-up the 3D multiplication space.
 
     This forms the product space octree between two matrices A and B.
     """
 
-    for tier in range(C.depth+1):
-        (x, y, z, width) = C.get_nodes(tier)
-        if C.depth > 0:
-            op = 0.1+0.8*tier/float(C.depth)
-        else:
-            op = 1
-        mlab.points3d(x, y, z, mode='cube', scale_factor=width, opacity=op)
+    (x, y, norm, width) = A.get_nodes(A.depth)
+    print(x, y, norm, width)
+    mlab.points3d(x, y, numpy.zeros((len(x))), mode='2dsquare', scale_factor=width)
+
+    (x, y, z, width) = C_multiplication.get_nodes(C_multiplication.depth)
+    op = 0.6
+    mlab.points3d(x, y, z, mode='cube', scale_factor=width, opacity=op)
+
+    mlab.axes(xlabel='i', ylabel='j', zlabel='k')
 
 if __name__ == "__main__":
-    N = 256
+    N = 32
     N_b = 16
     debug = True
     print_matrices = False
@@ -324,4 +353,4 @@ if __name__ == "__main__":
             print(C.get_dense())
         print("max diff. = %e" % (numpy.amax(numpy.absolute(C_ref-C_dense))))
 
-    plot_octree(C_multiplication)
+    plot_octree(A, A, C, C_multiplication)
