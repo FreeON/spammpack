@@ -459,7 +459,7 @@ approximate algebra like $\tt SpAMM$, the potential for eigenvalues to
 fluctuate out of the domain of convergence must be considered.  This
 is addressed in Section \ref{}.
 
- \subsection{Instance, Stability and Ill-conditioning}
+\subsection{Ill-conditioning, Stability and Implementation}
 
 There are a number of nominally equivalent instances of the square root iteration, related by commutations and transpositions. 
 However, these instances may have very different stability properties,  controled to first order by the Frechet derivatives
@@ -476,7 +476,7 @@ and
 along the unit directions of the previous errors $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$, corresponding 
 to the associated displacement magnitudes $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$.
 Then, the differential 
-\begin{equation} \label{firstorder}
+\begin{equation} \label{firstorderdual}
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1}
                  \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2) 
 \end{equation}
@@ -503,14 +503,14 @@ we will develop the  ``stabilized'' instance,
 \mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k-1} \; ,
 \end{eqnarray}
 with the corresponding differential;
-\begin{equation} \label{firstorder}
+\begin{equation} \label{firstorderstab}
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2)  \, .
 \end{equation}
 
 
 Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm stab}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$ 
 is also equivalent to $\mat{y}^{\rm naive}_k \equiv \mat{z}_{k} \cdot \mat{s}$.
-However, with ill-conditioning and in only double precision, these two instances may diverge due to rapidly compounding non-associative errors. 
+However, with ill-conditioning and in only double precision, these two instances may diverge due to non-associative errors that rapidly compound.
 In the case of the duals iteration under $\tt SpAMM$ approximation, the $\widetilde{\mat{y}}^{\rm dual}_k$ channel does not retain contact 
 with the eigenvectors, span $\mat{s}$, whilst the stab instance does.  
 In the duals iteration, the $\widetilde{\mat{y}}_k$  $\tt SpAMM$ update 
@@ -530,30 +530,23 @@ is  different from the left first product
 \widetilde{\mat{x}}^L_k \leftarrow \left(  \widetilde{\mat{z}}^\dagger_{k} \, \ots \, \mat{s} \right) \,  \ot  \, \widetilde{\mat{z}}_{k-1} \; .
 \end{equation}
 
-% Agressive scaling can reduce stability of the iteration due to the larger derivative $h'_\alpha$.  Also, the previous error,
-% $\delta \mat{x}_{k-1}$, may be to large, {\em e.g.} due to a too large value of $\tau$,  leading to
-% the unbounded (exponential) accumulation of errors $\delta \mat{x}_k > 1 $.  To first order, stability of the
-% iteration is controled by the Frechet derivatives contributing to $\delta \mat{x}_k$.    In some instances,
-% for example those realized through invocation of commutativity \cite{}, may lead to first Fr\'{e}chet derivatives that are
-% unbounded \cite{}.   Also, for ill-conditioned problems and the $\ot$ kernel, even instances with bounded first derivatives may experience higher order
-% effects that lead to
-% these derivatives can behave differently amongst nominally equivalent implementations, for example
-% formulations based on the assumption of a commuting algebra.
-% In this contribution, we are interested in nominally bounded instances, including the
-% cannonical (dual) square root iteration, Eq.~\ref{cannonical}, as well as the ``stabilized'' version
-% with $\mat{y}^{\rm stab}_k = \mat{z}^\dagger_k \cdot \mat{s}$.
-
-
 \section{Implementation}
-FP, F08, OpenMP 4.0
 
+\subsection{programming}
+
+FP, F08, OpenMP 4.0
 In the current implementation, all persistence data
 (norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
  that may be achieved by minimal locally essential trees \cite{}.
 
-\subsection{stabilization}
 
-\subsection{switching \& convergence}
+\subsection{scaling and stabilization}
+
+\subsection{regularization}
+damping the inversion and the small value to be added c is called Marquardt-Levenberg coefficient
+
+\subsection{convergence}
+
 Map switching and etc based on TrX
 
 \section{Data}
@@ -577,43 +570,50 @@ double exponential (Fig.)
 
 \subsubsection{The cannonical (dual) instance}
  
-To start, consider just the first order error $\delta \mat{x}_k$ that develops from the previous errors $\delta \mat{y}_{k-1}$
-and $\delta \mat{z}_{k-1}$ through the Fr\'{e}chet derivatives \cite{}
-\begin{equation}
-  \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}
-=   \mat{y}_{\delta \widehat{ \mat{y}}_{k-1}} \cdot \mat{z}_{k}  + \mat{y}_{k}  \cdot \mat{z}_{\delta \widehat{ \mat{y}}_{k-1}}
- \end{equation}
-and
- \begin{equation}
- \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} =
-\mat{y}_{\delta \widehat{ \mat{z}}_{k-1}} \cdot \mat{z}_{k}  + \mat{y}_{k}  \cdot \mat{z}_{\delta \widehat{ \mat{z}}_{k-1}} \, .
- \end{equation}
-For $\mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}$ we have
+Refering back to Eq.~( \ref{firstorderdual} ), we develop the Fr\'{e}chet analyses \cite{} with the goal of understanding
+the contractive approach to identity in competition with error accumulations and $\tt SpAMM$ sources.
+Of interest are the derivatives 
+
+% \begin{equation}
+%   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}
+% =   \mat{y}_{\delta \widehat{ \mat{y}}_{k-1}} \cdot \mat{z}_{k}  + \mat{y}_{k}  \cdot \mat{z}_{\delta \widehat{ \mat{y}}_{k-1}}
+%  \end{equation}
+% and
+%  \begin{equation}
+%  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} =
+% \mat{y}_{\delta \widehat{ \mat{z}}_{k-1}} \cdot \mat{z}_{k}  + \mat{y}_{k}  \cdot \mat{z}_{\delta \widehat{ \mat{z}}_{k-1}} \, .
+%  \end{equation}
+
+
+% For $\mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}$ we have
+% \begin{multline}
+%  \mat{y}_{\delta \widehat{ \mat{y}}_{k-1}} = h_\alpha \left[ \mat{x}_{k-1} \right] \cdot \delta \widehat{\mat{y}}_{k-1} \\
+%                                      + h'_\alpha \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \cdot \mat{y}_{k-1}
+% \end{multline}
+% and
+% \begin{equation}
+%  \mat{z}_{\delta \widehat{ \mat{y}}_{k-1}} =  \mat{z}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}
+% \end{equation}
+% yeilding
+% Also, for $\mat{x}_{\delta \widehat{ \mat{z}}_{k-1}}$ we have
+% \begin{equation}
+%  \mat{y}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1}
+% \end{equation}
+% and
+% \begin{multline}
+%  \mat{z}_{\delta \widehat{ \mat{z}}_{k-1}} = \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\
+%                                      + \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1}  \; ,
+% \end{multline}
+% yeilding
+
+
 \begin{multline}
- \mat{y}_{\delta \widehat{ \mat{y}}_{k-1}} = h_\alpha \left[ \mat{x}_{k-1} \right] \cdot \delta \widehat{\mat{y}}_{k-1} \\
-                                     + h'_\alpha \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \cdot \mat{y}_{k-1}
-\end{multline}
-and
-\begin{equation}
- \mat{z}_{\delta \widehat{ \mat{y}}_{k-1}} =  \mat{z}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}
-\end{equation}
-yeilding
-\begin{multline}
- \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} = h_\alpha \left[ \mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k} \\
-+  h'_\alpha  \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \cdot  \mat{y}_{k-1} \cdot  \mat{z}_{k} \\
-+ \mat{y}_{k} \cdot \mat{z}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}  \, .
+  \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} = h_\alpha \left[ \mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k} \\
+ +  h'_\alpha  \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \cdot  \mat{y}_{k-1} \cdot  \mat{z}_{k} \\
+ + \mat{y}_{k} \cdot \mat{z}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}  \, .
 \end{multline}
 
-Also, for $\mat{x}_{\delta \widehat{ \mat{z}}_{k-1}}$ we have
-\begin{equation}
- \mat{y}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1}
-\end{equation}
-and
-\begin{multline}
- \mat{z}_{\delta \widehat{ \mat{z}}_{k-1}} = \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\
-                                     + \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1}  \; ,
-\end{multline}
-yeilding
+
 \begin{multline}
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1}  \cdot \mat{z}_{k} \\
 \qquad + \mat{y}_k \cdot  \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\
@@ -630,75 +630,103 @@ and
 \begin{equation} \label{zorbit}
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} \rightarrow \left( \mat{y}_k-\mat{y}_{k-1} \right) \cdot \delta \widehat{\mat{z}}_{k-1} .
 \end{equation}
-Equations \ref{yorbit} and  \ref{zorbit} illustrate the contractive nature of the NS identity iteration, with directional
-contributions from $\delta \mat{y}_{k-1}$ and $\delta \mat{z}_{k-1}$ tightly shut down in the region of superlinear convergence.
+Thus, contributions along $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$ are tightly shut down in the 
+region of superlinear convergence.  Achieving a contractive fixed point orbit, however requires that the three terms in Eq.~(\ref{}),  
+with potentially different error accumulations and $\tt SpAMM$ sources, must cancel faster than $\delta y_{k-1}$ 
+and $\delta z_{k-1}$ accumulate.
 
-In addition to the amplification of previous errors by the Frechet derivatives, errors are compounded to first order in $\tau$
-by the {\tt SpAMM} error.  Our model develops the $\tau$  dependent displacement $\delta \mat{z}_{k-1}$ starting with partially unwinding
-the approxinate  $\widetilde{\mat{z}}_{k-1}$;
+In this analysis, we've seperated the directional component of the error from its distance, because in addition to the
+previous compounding error, each displacement contains also a first order $\tt SpAMM$ source error.  Its simpler to 
+consider these effects serpately, at least in this first contribution. 
+
+To understand $\delta \mat{z}_{k-1}$, we partially unwind the approxinate  $\widetilde{\mat{z}}_{k-1}$;
 %\begin{equation}
-\begin{eqnarray}
+\begin{eqnarray} \label{widetildez}
  \widetilde{\mat{z}}_{k-1} &=&  \widetilde{\mat{z}}_{k-2}  \, \ot \, h_\alpha[\widetilde{\mat{x}}_{k-2}]\\
 &=& \Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau
 + \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right]
 %\end{equation}
 \end{eqnarray}
-Then,
+Then, using
 \begin{equation}
   h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
-=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \,  ,
+=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
 \end{equation}
-leading to
+and taking $\mat{z}_{k-1}$ from both sides, we find  
+%Eq.~(\ref{widetildez}) yeilds 
 \begin{multline}
  \delta {\mat{z}}_{k-1} =\Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau
 \\ +\delta \mat{z}_{k-2} \cdot h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]
-+ h'_\alpha \delta \mat{x}_{k-2}
++ \mat{z}_{k-2} \cdot h'_\alpha \delta \mat{x}_{k-2}  \, ,
 \end{multline}
-and  
-\begin{eqnarray}
-\widetilde{\mat{y}}_{k-1}&=&
-h_\alpha [ \widetilde{\mat{x}}_{k-2}] \, \ot \, \widetilde{\mat{y}}_{k-2}  \\
-&=&  \mat{\Delta}^{  h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} }  \, + \,
-     h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2}
-\end{eqnarray}
-with
+bounded by 
+% \begin{multline}
+%  \delta {z}_{k-1} <
+% \lVert \mat{z}_{k-2} \rVert \left( \;  \tau \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
+% + h'_\alpha \delta {x}_{k-2} \right)  \\ +
+% \delta {z}_{k-2}  \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2}  \right] \rVert 
+% \end{multline}
+ \begin{multline}
+  \delta {z}_{k-1} <
+ \lVert \mat{z}_{k-2} \rVert \left( \tau \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
+ + h'_\alpha  \delta y_{k-2} \lVert z_{k-2} \rVert \right)  \\ 
+ + \delta {z}_{k-2} \left( \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2}  \right] \rVert  + \lVert y_{k-2} \rVert \right) .
+ \end{multline}
+
+
+primary error channels contibuting to $\delta z_{k-1}$ are through the first order $\tt SpAMM$ error
+$ \tau \lVert \mat{z}_{k-2} \rVert \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]\rVert$
+and the volatile term $h'_\alpha  \delta y_{k-2} { \lVert \mat{z}_{k-2} \rVert }^2$.
+
+%  \begin{eqnarray}
+% \widetilde{\mat{y}}_{k-1}&=&
+% h_\alpha [ \widetilde{\mat{x}}_{k-2}] \, \ots \, \widetilde{\mat{y}}_{k-2}  \\
+% &=&  \mat{\Delta}^{  h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} }_{\tau_s}  \, + \,
+%      h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2}
+% \end{eqnarray}
+% \begin{multline}
+% \delta \mat{y}_{k-1}= \mat{\Delta}^{h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \mat{y}_{k-2} }_\tau  \\ +
+% h'_\alpha \delta \mat{x}_{k-2} \cdot \mat{y}_{k-2}
+% + h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{y}_{k-2} \, ,
+% \end{multline}
+
+corresponding to  basis corruption and controlled by $\ots$, with $\tau_s \ll \tau$. 
+As above, we can unwind this sensitive term, to find 
 \begin{multline}
-\delta \mat{y}_{k-1}= \mat{\Delta}^{
-h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \mat{y}_{k-2} }_\tau  \\ +
-h'_\alpha \delta \mat{x}_{k-2} \cdot \mat{y}_{k-2}
-+ h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{y}_{k-2} \, ,
+\delta y_{k-2} <   \lVert \mat{y}_{k-3} \rVert  \left( \tau_s \lVert h_\alpha [ \widetilde{\mat{x}}_{k-3}] \rVert + h'_\alpha \delta z_{k-3} \right )\\
++  \delta y_{k-3}  \left( \lVert \widetilde{\mat{z}}_{k-3}]  \rVert + \lVert h_\alpha [ \widetilde{\mat{x}}_{k-3}]  \rVert
+  \right)
+\, .
 \end{multline}
 
-\begin{multline}
-\lVert \delta {\mat{z}}_{k-1} \rVert \lesssim
-\lVert \mat{z}_{k-2} \rVert \left( \;  \tau \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
-+ h'_\alpha \lVert \delta {\mat{y}}_{k-2} \rVert  \right)  \\ +
-\lVert \delta {\mat{z}}_{k-2} \rVert  \left( \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert +
-\lVert  {\mat{y}}_{k-2} \rVert \right)
-\end{multline}
+
+
 
 \subsubsection{The stabilized  (stab) instance}
 
-in the ``stabilized'' instance,
+Here, we carry on from Eq.~(\ref{firstorderstab}) in the ``stabilized'' instance, with the single channel differential 
+\begin{equation}
+ \mat{x}_{\widehat{\mat{z}}_{k-1}} =   \mat{z}^\dagger_{\widehat{\mat{z}}_{k-1}} \cdot \mat{s} \cdot \mat{z}_{k} + 
+                                  \mat{z}^\dagger_k \cdot \mat{s} \cdot \mat{z}_{\widehat{\mat{z}}_{k-1}} 
+\end{equation}
+
+
+
+\begin{multline}
+\mat{z}_{\widehat{\mat{z}}_{k-1} } = \delta \widehat{\mat{z}}_{k-1} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-1} ] + \mat{z}_{k-1} \cdot \left( \right. \\
+ \left.  h'_\alpha \delta \widehat{\mat{z}}^\dagger_{k-1} \cdot \mat{s} \cdot \mat{z}_{k-1} +  \mat{z}^\dagger_{k-1} \cdot \mat{s} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1}
+ \right) 
+\end{multline}
+
 \begin{eqnarray}
 \widetilde{\mat{y}}^{\rm stab}_{k-1} &=& \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s} \\
                                   &=& \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}} \, + \,
 \left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
 \end{eqnarray}
-the displacement is
-\begin{multline}
-%\begin{equation}
-\delta \mat{y}^{\rm stab}_{k-1}= \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}}_\tau  \\ +
-h'_\alpha \delta \mat{x}^\dagger_{k-2} \cdot \mat{y}_{k-2}
-+ h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{y}_{k-2}  \,.
-%%\cdot \delta \mat{z}_{k-2} \cdot \mat{s}
-%\end{equation}
-\end{multline}
+
+
 
 \subsubsection{Stability Experiments}
-
-\subsubsection{(3,3) nanotubes at $\kappa=10^{10}$}
-
 
 \begin{figure}[h]
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual.eps}
@@ -733,34 +761,6 @@ Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
-\subsubsection{water boxes}
-
-
-<<<<<<< HEAD
-% \begin{figure}[h]
-% \includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_stab.eps}
-% \caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) 
-% nanotube with $\kappa =10^{10}$. 
-% Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
-% $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
-% \end{figure}
-=======
-\begin{figure}[h]
-%\includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_stab.eps}
-\caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3)
-nanotube with $\kappa =10^{10}$.
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and
-$\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
-\end{figure}
->>>>>>> d4c0ab84d18629f0a3f1847549c555b7d8eece61
-
-
-\begin{figure}[h]
-%\includegraphics[width=3.5in]{fig_wtrbx_100_noscaling/wtrbx_100_noscale_dual.eps}
-\caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$.
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$
-are the dashed lines.  The trace expectation is shown as a full black line. }
-\end{figure}
 
 <<<<<<< HEAD
 
