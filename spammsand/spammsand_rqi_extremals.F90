@@ -81,11 +81,11 @@ CONTAINS
           beta=SpAMM_Zero
        ENDIF
 
-       IF(MinMax==1)THEN
-          WRITE(*,33)omega,dot_g,CG
-       ELSE
-          WRITE(*,44)omega,dot_g,CG
-       ENDIF
+!!$       IF(MinMax==1)THEN
+!!$          WRITE(*,33)omega,dot_g,CG
+!!$       ELSE
+!!$          WRITE(*,44)omega,dot_g,CG
+!!$       ENDIF
 
        ! convergence criteria
        IF( SQRT(dot_g)/ABS(Omega) < SQRT(Tau) .AND.CG>16 &
