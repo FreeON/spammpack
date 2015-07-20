@@ -26,7 +26,7 @@ module SpAMMsand_inverse_squareroot
 #endif
   character(len=300)                             :: corefile
 
-  real(spamm_kind), dimension(:,:), ALLOCATABLE ::   z_d, x_d
+  real(spamm_kind), dimension(:,:), ALLOCATABLE ::   z_d, x_d,y_d, zz, z_1,z_2,z_3
 
   integer :: LWORK
   integer :: LIWORK
@@ -226,7 +226,7 @@ contains
 
     kount=1
     FillN=1d10
-    NS_STEPS: DO i = 0, 28
+    NS_STEPS: DO i = 0, 22
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -254,7 +254,7 @@ contains
           TrX=SpAMM_trace_tree_2d_symm_recur(x_stab)
        ENDIF
 
-       FillN = MIN(FillN, abs( dble(s%frill%ndimn(1)) - TrX )/dble(s%frill%ndimn(1)))       
+       FillN = abs( dble(s%frill%ndimn(1)) - TrX )/dble(s%frill%ndimn(1))       
 
        IF(I>0)THEN
           IF(DoDuals)THEN
@@ -274,9 +274,10 @@ contains
        ! convergence ...   convergence ...   convergence ...   convergence ...   convergence ...   convergence ...   
        converged=.FALSE.
        ! elevation of the trace (in the region of convergence)
-       IF(i>2 .and. FillN<0.1d0 .AND. FillN>FillN_prev )converged=.TRUE. 
-       ! anihilation of the expected error 
-       IF( FillN <  Tau_s )converged=.TRUE. 
+!       IF(i>2 .and. FillN<1d-2 .AND. FillN>FillN_prev )converged=.TRUE. 
+       ! anihilation of expected error 
+!       IF( FillN <  Tau_0**2 )converged=.TRUE. 
+       IF(i==21)converged=.TRUE.
        IF(converged)GOTO 999 
 
 
@@ -286,7 +287,6 @@ contains
        ELSE
           delta=SpAMM_Zero
        ENDIF
-
        
        ! scaling ...    scaling ...    scaling ...    scaling ...    scaling ...    scaling ...    scaling ...    
        IF(DoScale)THEN
@@ -671,7 +671,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   character(len = 1000)                          :: matrix_filename
   ! Input parameters controling action, read from character args ... 
-  real(SpAMM_KIND)                               :: tau_0, tau_S, delta, rglrz
+  real(SpAMM_KIND)                               :: tau_0, tau_S, delta, mu_Riley
   logical                                        :: DoDuals, DoScale, First, RightTight
   ! Here are the character args ...
   character(len=10)                              :: c_tau_0, c_tau_S,  c_scale, c_delta, &
@@ -705,7 +705,7 @@ program SpAMM_sandwich_inverse_squareroot
   tau_0=CharToDbl(c_tau_0)
   tau_S=CharToDbl(c_tau_S)
   delta=CharToDbl(c_delta)
-  rglrz=CharToDbl(c_shift)
+  mu_Riley=CharToDbl(c_shift)
 
   kount=1
   First=.TRUE.
@@ -715,7 +715,7 @@ program SpAMM_sandwich_inverse_squareroot
   IF(corename=='')corename=TRIM(matrix_filename)
 
   corefile=TRIM(corename)//'_Tau0='//TRIM(DblToChar(tau_0))//'_TauS='//TRIM(DblToChar(tau_s)) &
-                         //'_Stab='//TRIM(DblToChar(delta))//'_Shft='//TRIM(DblToChar(rglrz)) &
+                         //'_Stab='//TRIM(DblToChar(delta))//'_Shft='//TRIM(DblToChar(mu_Riley)) &
                          //'_Blks='//TRIM(IntToChar(SpAMM_BLOCK_SIZE))                        &
                          //'_Dual='//TRIM(LogicalToChar(DoDuals))                             &
                          //'_Rght='//TRIM(LogicalToChar(righttight))                          &
@@ -730,6 +730,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   ! input ... input ... input ... input ... input ... input ... input ... input ... input ... 
   ! read the dense matrix to factor.  hopefully it has decay ...
+  write(77,*)' reading matrix in mm format from '//TRIM(matrix_filename)
   call read_MM(matrix_filename, S_dense)
 
   ! convert ... convert ... convert ... convert ... convert ... 
@@ -737,24 +738,6 @@ program SpAMM_sandwich_inverse_squareroot
   S_dense=SpAMM_half*(S_dense+TRANSPOSE(S_dense))
   ! convert it to a quadtree 
   s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, in_O = s )
-
-  WRITE(77,*)' starting to build a spamm sandwich ... '
-  WRITE(77,*)' problem dimension, n = ', s%frill%ndimn 
-  WRITE(77,*)' tau_0 = '//TRIM(dbltochar(tau_0))//', tau_s = '//TRIM(dbltochar(tau_s)) &
-         //', d = '//TRIM(dbltochar(delta))//', shift = '//TRIM(dbltochar(rglrz))
-
-  ! preprocess ... preprocess ... preprocess ... preprocess ... 
-  ! here is the level shift (regularization) ...  
-  IF(rglrz.NE.SpAMM_Zero)THEN
-     s => SpAMM_scalar_plus_tree_2d_symm(rglrz, s)
-     WRITE(77,*)' level shifting by ... '//TRIM(dbltochar(rglrz))
-  ENDIF
-  ! the max eigenvalue to rescale by
-  x_hi = SpAMMSand_rqi_extremal(s,1d-10,high_O=.TRUE.)
-  WRITE(77,*)' hi extremal ......... '//trim(dbltochar(x_hi))
-  ! normalize the max ev of s to 1.  
-  s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
-  s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
 
   ! sandwich setup ... sandwich setup ... sandwich setup ... sandwich setup ... sandwich setup ... 
   logtau_strt=LOG10(tau_0)                             ! starting accuracy
@@ -783,14 +766,34 @@ program SpAMM_sandwich_inverse_squareroot
   x => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
   t => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
 
+  WRITE(77,*)' starting to build a spamm sandwich ... '
+  WRITE(77,*)' problem dimension, n = ', s%frill%ndimn 
+  WRITE(77,*)' tau_0 = '//TRIM(dbltochar(tau_0))//', tau_s = '//TRIM(dbltochar(tau_s)) &
+         //', d = '//TRIM(dbltochar(delta))//', shift = '//TRIM(dbltochar(mu_Riley))
+
+  ! preprocess ... preprocess ... preprocess ... preprocess ... 
+
+  ! the max eigenvalue to rescale by
+  x_hi = SpAMMSand_rqi_extremal(s,tau_s,high_O=.TRUE.)
+  WRITE(77,*)' hi extremal ......... '//trim(dbltochar(x_hi))
+
+  ! normalize the max ev of s to 1.  
+  s       => SpAMM_scalar_times_tree_2d_symm( SpAMM_one/x_hi , s )
+  s_orgnl => SpAMM_tree_2d_symm_copy_tree_2d_symm( s, in_O = s_orgnl, threshold_O = SpAMM_normclean )
+
+  IF(mu_Riley.NE.SpAMM_Zero)THEN
+     WRITE(77,*)' level shifting the rescaled matrix, s/s0 by ... '//TRIM(dbltochar(mu_Riley))
+     s => SpAMM_scalar_plus_tree_2d_symm(mu_Riley, s)
+  ENDIF
+
   ! spamm sandwich ... spamm sandwich ... spamm sandwich ... spamm sandwich ... spamm sandwich ... 
   z=>z_head
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
 
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, z%tau_0, z%tau_S, delta,  &
                                                             DoDuals, RightTight, DoScale, First, kount)
-
-     WRITE(*,*)' done with sparse work, processing dense test of accuracy ... '
+!!$
+!!$     WRITE(*,*)' done with sparse work, processing dense test of accuracy ... '
 
      N = s%frill%ndimn(1)
      LWORK = 1+6*N+2*N**2
@@ -800,24 +803,72 @@ program SpAMM_sandwich_inverse_squareroot
      allocate(iwork(LIWORK))
      allocate(z_d(N,N))
      allocate(x_d(N,N))
+     allocate(y_d(N,N))
+
+     allocate(z_1(N,N))
+     allocate(z_2(N,N))
+     allocate(z_3(N,N))
+
      CALL SpAMM_convert_tree_2d_symm_to_dense( z%mtx, z_d )
 
+     x_d=MATMUL(TRANSPOSE(z_d),z_d)     
+
+     z_1=z_d+SpAMM_Half*mu_Riley*MATMUL(z_d,x_d)
+
+     z_2 = z_d + SpAMM_Half*mu_Riley*MATMUL(z_d,x_d)  &
+            +(3.0d0/8.0d0)*(mu_Riley**2)*MATMUL( z_d, MATMUL(x_d,x_d) )
+
+     z_3=z_d+SpAMM_Half*mu_Riley*MATMUL(z_d,x_d) &
+        +(3.0d0/8.0d0 )*(mu_Riley**2)*MATMUL( z_d, MATMUL(       x_d,x_d) ) &
+       + (5.0d0/16.0d0)*(mu_Riley**3)*MATMUL( z_d , MATMUL(MATMUL(x_d,x_d),x_d) )
+
      z_d=z_d*(SpAMM_one/SQRT(x_hi))
-     x_d=MATMUL(TRANSPOSE(z_d),MATMUL(s_dense,z_d))     
+     z_1=z_1*(SpAMM_one/SQRT(x_hi))
+     z_2=z_2*(SpAMM_one/SQRT(x_hi))
+     z_3=z_3*(SpAMM_one/SQRT(x_hi))
 
-     call dsyevd("V", "U", N, x_d, N, eval, work, LWORK, iwork, LIWORK, info)
 
-     WRITE(*,*)' eval = ',eval(1),eval(N)
+     y_d=MATMUL(TRANSPOSE(z_d),MATMUL(s_dense,z_d))     
+     call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+     WRITE(*,*)' uncorrected eval ............. ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
+
+     y_d = MATMUL(TRANSPOSE(z_1),MATMUL(s_dense,z_1))
+     call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+     WRITE(*,*)' firt order corrected eval .... ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
+
+     y_d = MATMUL(TRANSPOSE(z_2),MATMUL(s_dense,z_2))
+     call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+     WRITE(*,*)' second order corrected eval .. ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
+
+     y_d = MATMUL(TRANSPOSE(z_3),MATMUL(s_dense,z_3)) 
+     call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+     WRITE(*,*)' third order corrected eval ... ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
+
 
      WRITE(*,*)' e.v. errors ... ('//TRIM(DblToMedChar(eval(1)-SpAMM_one))//','      &
                                    //TRIM(DblToMedChar(eval(n)-SpAMM_one))//'), ' // &
-               ' avg error = '//DblToMedChar( SQRT(SUM( (eval(:)-SpAMM_one)**2)/dble(N)))
+               ' avg error = '//DblToMedChar( SUM(SpAMM_One-eval(:))/dble(N))
 
      WRITE(77,*)' e.v. errors ... ( '//TRIM(DblToMedChar(eval(1)-SpAMM_one))//', '      &
                                    //TRIM(DblToMedChar(eval(n)-SpAMM_one))//' ), ' // &
                ' avg error = '//DblToMedChar( SQRT(SUM( (eval(:)-SpAMM_one)**2)/dble(N)))
+
      
+     ! Riles correction to first order in mu_Riley ...
+!     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx, z%mtx, z%tau_0, NT_O=.FALSE., in_O = t )
+
+
+!!$     z_total => SpAMM_tree_2d_symm_copy_tree_2d_symm( t, in_O = z_total, threshold_O = z%nxt%tau )      
+!!$
+!!$     ! Nested sandwich, to recompute the error every time. 
+!!$     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, s_orgnl, z%nxt%tau_s, NT_O=.FALSE., in_O = t )
+!!$     s => SpAMM_tree_2d_symm_times_tree_2d_symm(       t, z_total, z%nxt%tau_0, NT_O=.TRUE. , in_O = s )
+
+
+
+
      ! For now, just hardening the first step in the sandwich
+
 
      STOP 
 
