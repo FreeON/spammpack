@@ -11,13 +11,8 @@ import Data.Complex
 import Data.List (intersperse, nub)
 import qualified Data.Map as Map (fromList, lookup, Map)
 import Data.Maybe (fromJust, isNothing)
+import MatrixList (MatrixList)
 import System.IO (hClose, hPutStrLn, openFile, IOMode(WriteMode))
-
---type MatrixList a = ( Int, Int, [ (Int, Int, a) ] )
-type MatrixList = ( Int, Int, [ (Int, Int, Double) ] )
-
--- matrix height, width, and list of entries (row, column, value) ;
--- including zero-value entries is optional
 
 data MMFormat = Array | Coordinate
 data MMType = MMInt | MMReal | MMComplex
@@ -174,7 +169,7 @@ mmWriteCmds = Map.fromList [
               ]
 
 matrixListToArray :: MatrixList -> [String]
-matrixListToArray (m, n, ijxs) = (joinStrings [show m, show n]):showVals
+matrixListToArray (m, n, ijxs) = (joinStr [show m, show n]):showVals
                    where pairList = fmap (\(i, j, x) -> ((i,j), x)) ijxs
                          hashTable = Map.fromList pairList
                          indices = [(i, j) | j <- [1..n], i <- [1..m]]
@@ -185,10 +180,10 @@ matrixListToArray (m, n, ijxs) = (joinStrings [show m, show n]):showVals
 
 matrixListToCoordinate :: MatrixList -> [String]
 matrixListToCoordinate (m, n, ijxs) =
-          (joinStrings [show m, show n, show $ length ijxs]):(fmap pairToString ijxs)
+          (joinStr [show m, show n, show $ length ijxs]):(fmap pairToStr ijxs)
 
-joinStrings :: [String] -> String
-joinStrings = concat . intersperse " "
+joinStr :: [String] -> String
+joinStr = concat . intersperse " "
 
-pairToString :: (Show a, Show b, Show c) => (a,b,c) -> String
-pairToString = joinStrings . (\(i,j,x) -> [show i, show j, show x])
+pairToStr :: (Show a, Show b, Show c) => (a,b,c) -> String
+pairToStr = joinStr . (\(i,j,x) -> [show i, show j, show x])
