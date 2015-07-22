@@ -724,9 +724,7 @@ Here, we carry on from Eq.~(\ref{firstorderstab}) in the ``stabilized'' instance
 \left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
 \end{eqnarray}
 
-
-
-\subsubsection{Stability Experiments}
+\subsubsection{Bifurcations}
 
 \begin{figure}[h]
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual.eps}
@@ -761,10 +759,24 @@ Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
+\subsection{Regularization}
 
-<<<<<<< HEAD
 
-\subsection{Lensing}
+\subsection{Algebraic and Strong Metric Locality} 
+
+A premier feature of the $n$-body algorithm is the ability to exploit data locality efficiently.  In the $ijk$ space, 
+there are multiple locality principles that can be exploited by $\tt SpAMM$.  Fir
+persistence
+copy in place, tightness of the bound
+
+Metric locality is locality with respect to a Euclidean or generalized distance, {\em e.g.} of the basis.  
+
+increasing the Euclidean locality, ``wrings the zeros'' out of the product space for systems with decay.
+On moving from locality provided by the Hilbert order (space filling curve) to annealed sollutions to the
+end-to-end TSP.    
+
+\subsubsection{Algebraic  Locality}
+
 A feature of square root iteration with the $\ot$ kernel is localization of the culled octree towards identity iteration, 
 $\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
 the product $\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$ involves the product of large and small eigenvalues, and large and small norms, 
@@ -782,8 +794,6 @@ with costs approaching an in-place scalar multiply and copy, {\em e.g.} as $h_\a
 Our thesis is that many problems in physical and information sciences can be brought to this lensed state, {\em e.g.} through preconditioning
 as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
 and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
-
-
 
  \begin{figure}[h] \label{markofzorro}
  \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
@@ -812,25 +822,18 @@ via the multiplicative bound, Eq.~(\ref{bound}). The tightness of this bound, an
 to  methods that control only the absolute error, {\em e.g.} as given by Eq.~(\ref{sparseapprox}), will hopefully
 be quantified in future work. 
 
+\subsubsection{Strong Metric Locality}
 
+unscaled, with hilbert order
 
-\subsection{Metric Locality} 
-Metric locality is locality with respect to a Euclidean or generalized distance, {\em e.g.} of the basis.  
-=======
-\subsection{Metric Locality}
-Metric locality is locality with respect to a Euclidean or generalized distance, {\em e.g.} of the basis.
->>>>>>> d4c0ab84d18629f0a3f1847549c555b7d8eece61
+unscaled, with salesman's order
 
-\subsubsection{unscaled, with hilbert order}
-
-\subsubsection{unscaled, with salesman's order}
-
-\subsection{Algebraic  Locality}
+\section{Conclusions and Outlook}
 
 Reflecting about the cube diagonal is copy in place.  Cooresponds to lensing.
 
-
-\section{Conversation}
+These  synnergistic effects can be combined, in place, with additional tecniques for 
+accelerated computaion.
 
 %%eg vs row-col picture.  Example of exact exchange w/DBSR
 

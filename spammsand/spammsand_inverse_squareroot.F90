@@ -26,7 +26,7 @@ module SpAMMsand_inverse_squareroot
 #endif
   character(len=300)                             :: corefile
 
-  real(spamm_kind), dimension(:,:), ALLOCATABLE ::   z_d, x_d,y_d, zz, z_1,z_2,z_3
+  real(spamm_kind), dimension(:,:), ALLOCATABLE ::   z_d, x_d,y_d, zz, z_1,z_2,z_3,z_4
 
   integer :: LWORK
   integer :: LIWORK
@@ -226,7 +226,7 @@ contains
 
     kount=1
     FillN=1d10
-    NS_STEPS: DO i = 0, 22
+    NS_STEPS: DO i = 0, 45
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -270,14 +270,13 @@ contains
 34     format('  stab Tr<t0=',e8.3,',d=',e8.3,',s=',e8.3,',r=',L1,',n=',i2,' > = ', F18.10,' dN=',e10.3, &
               ', y_wrk: ',f10.5,'%, z_wrk:',f10.5,'%, x_wrk:',f10.5,'%')
 
-
        ! convergence ...   convergence ...   convergence ...   convergence ...   convergence ...   convergence ...   
        converged=.FALSE.
        ! elevation of the trace (in the region of convergence)
-!       IF(i>2 .and. FillN<1d-2 .AND. FillN>FillN_prev )converged=.TRUE. 
+       IF(i>2 .and. FillN<1d-2 .AND. FillN>FillN_prev )converged=.TRUE. 
        ! anihilation of expected error 
-!       IF( FillN <  Tau_0**2 )converged=.TRUE. 
-       IF(i==21)converged=.TRUE.
+       IF( FillN <  Tau_s )converged=.TRUE. 
+!       IF(i==22)converged=.TRUE.
        IF(converged)GOTO 999 
 
 
@@ -792,6 +791,9 @@ program SpAMM_sandwich_inverse_squareroot
 
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, z%tau_0, z%tau_S, delta,  &
                                                             DoDuals, RightTight, DoScale, First, kount)
+
+stop
+
 !!$
 !!$     WRITE(*,*)' done with sparse work, processing dense test of accuracy ... '
 
@@ -801,59 +803,92 @@ program SpAMM_sandwich_inverse_squareroot
      allocate(eval(N))
      allocate(work(LWORK))
      allocate(iwork(LIWORK))
-     allocate(z_d(N,N))
-     allocate(x_d(N,N))
-     allocate(y_d(N,N))
 
-     allocate(z_1(N,N))
-     allocate(z_2(N,N))
-     allocate(z_3(N,N))
-
+     allocate(z_d(N,N)); allocate(x_d(N,N));  allocate(y_d(N,N))        
      CALL SpAMM_convert_tree_2d_symm_to_dense( z%mtx, z_d )
 
-     x_d=MATMUL(TRANSPOSE(z_d),z_d)     
+     IF(mu_Riley.NE.SpAMM_Zero)THEN
 
-     z_1=z_d+SpAMM_Half*mu_Riley*MATMUL(z_d,x_d)
+        allocate(z_1(N,N)); allocate(z_2(N,N));  allocate(z_3(N,N))
+        allocate(z_4(N,N))
+        
+        x_d=MATMUL(TRANSPOSE(z_d),z_d)     
+        
+        z_1=z_d+SpAMM_Half*mu_Riley*MATMUL(z_d,x_d)
+        
+        z_2 = z_d + SpAMM_Half*mu_Riley*MATMUL(z_d,x_d)  &
+             +(3.0d0/8.0d0)*(mu_Riley**2)*MATMUL( z_d, MATMUL(x_d,x_d) )
+        
+        z_3=z_d+SpAMM_Half*mu_Riley*MATMUL(z_d,x_d) &
+             +(3.0d0/8.0d0 )*(mu_Riley**2)*MATMUL( z_d, MATMUL(       x_d,x_d) ) &
+             +(5.0d0/16.0d0)*(mu_Riley**3)*MATMUL( z_d , MATMUL(MATMUL(x_d,x_d),x_d) )
+        
+        z_4=z_d+SpAMM_Half*mu_Riley*MATMUL(z_d,x_d) &
+             +(3.0d0/8.0d0 )*(mu_Riley**2)*MATMUL( z_d, MATMUL(       x_d,x_d) ) &
+             +(5.0d0/16.0d0)*(mu_Riley**3)*MATMUL( z_d , MATMUL(MATMUL(x_d,x_d),x_d) ) & 
+             +(35.d0/128.d0)*(mu_Riley**4)*MATMUL( z_d , MATMUL(MATMUL(x_d,x_d),MATMUL(x_d,x_d)) )
 
-     z_2 = z_d + SpAMM_Half*mu_Riley*MATMUL(z_d,x_d)  &
-            +(3.0d0/8.0d0)*(mu_Riley**2)*MATMUL( z_d, MATMUL(x_d,x_d) )
-
-     z_3=z_d+SpAMM_Half*mu_Riley*MATMUL(z_d,x_d) &
-        +(3.0d0/8.0d0 )*(mu_Riley**2)*MATMUL( z_d, MATMUL(       x_d,x_d) ) &
-       + (5.0d0/16.0d0)*(mu_Riley**3)*MATMUL( z_d , MATMUL(MATMUL(x_d,x_d),x_d) )
-
-     z_d=z_d*(SpAMM_one/SQRT(x_hi))
-     z_1=z_1*(SpAMM_one/SQRT(x_hi))
-     z_2=z_2*(SpAMM_one/SQRT(x_hi))
-     z_3=z_3*(SpAMM_one/SQRT(x_hi))
-
-
-     y_d=MATMUL(TRANSPOSE(z_d),MATMUL(s_dense,z_d))     
-     call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
-     WRITE(*,*)' uncorrected eval ............. ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
-
-     y_d = MATMUL(TRANSPOSE(z_1),MATMUL(s_dense,z_1))
-     call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
-     WRITE(*,*)' firt order corrected eval .... ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
-
-     y_d = MATMUL(TRANSPOSE(z_2),MATMUL(s_dense,z_2))
-     call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
-     WRITE(*,*)' second order corrected eval .. ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
-
-     y_d = MATMUL(TRANSPOSE(z_3),MATMUL(s_dense,z_3)) 
-     call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
-     WRITE(*,*)' third order corrected eval ... ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
-
-
-     WRITE(*,*)' e.v. errors ... ('//TRIM(DblToMedChar(eval(1)-SpAMM_one))//','      &
-                                   //TRIM(DblToMedChar(eval(n)-SpAMM_one))//'), ' // &
-               ' avg error = '//DblToMedChar( SUM(SpAMM_One-eval(:))/dble(N))
-
-     WRITE(77,*)' e.v. errors ... ( '//TRIM(DblToMedChar(eval(1)-SpAMM_one))//', '      &
-                                   //TRIM(DblToMedChar(eval(n)-SpAMM_one))//' ), ' // &
-               ' avg error = '//DblToMedChar( SQRT(SUM( (eval(:)-SpAMM_one)**2)/dble(N)))
-
+        z_d=z_d*(SpAMM_one/SQRT(x_hi))
+        z_1=z_1*(SpAMM_one/SQRT(x_hi))
+        z_2=z_2*(SpAMM_one/SQRT(x_hi))
+        z_3=z_3*(SpAMM_one/SQRT(x_hi))
+        z_4=z_4*(SpAMM_one/SQRT(x_hi))
+                
+        y_d=MATMUL(TRANSPOSE(z_d),MATMUL(s_dense,z_d))     
+        call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+        WRITE(*,*)' uncorrected eval ............. ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
+        
+        y_d = MATMUL(TRANSPOSE(z_1),MATMUL(s_dense,z_1))
+        call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+        WRITE(*,*)' firt order corrected eval .... ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
+        
+        y_d = MATMUL(TRANSPOSE(z_2),MATMUL(s_dense,z_2))
+        call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+        WRITE(*,*)' second order corrected eval .. ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
      
+        y_d = MATMUL(TRANSPOSE(z_3),MATMUL(s_dense,z_3)) 
+        call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+        WRITE(*,*)' third order corrected eval ... ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
+        
+        y_d = MATMUL(TRANSPOSE(z_4),MATMUL(s_dense,z_4)) 
+        call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+        WRITE(*,*)' fourth order corrected eval ... ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
+
+
+        WRITE(*,*)' e.v. errors ... ('//TRIM(DblToMedChar(eval(1)-SpAMM_one))//','      &
+             //TRIM(DblToMedChar(eval(n)-SpAMM_one))//'), ' // &
+             ' avg error = '//DblToMedChar( SUM(SpAMM_One-eval(:))/dble(N))
+        
+        WRITE(77,*)' e.v. errors ... ( '//TRIM(DblToMedChar(eval(1)-SpAMM_one))//', '      &
+             //TRIM(DblToMedChar(eval(n)-SpAMM_one))//' ), ' // &
+             ' avg error = '//DblToMedChar( SQRT(SUM( (eval(:)-SpAMM_one)**2)/dble(N)))
+        
+     ELSE
+
+        z_d=z_d*(SpAMM_one/SQRT(x_hi))
+        y_d=MATMUL(TRANSPOSE(z_d),MATMUL(s_dense,z_d))     
+        call dsyevd("V", "U", N, y_d, N, eval, work, LWORK, iwork, LIWORK, info)
+        WRITE(*,*)' uncorrected eval ............. ',eval(1),eval(N),' mean = ',SUM(SpAMM_One-eval(:))/dble(N)
+
+     ENDIF
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
      ! Riles correction to first order in mu_Riley ...
 !     t => SpAMM_tree_2d_symm_times_tree_2d_symm( z%mtx, z%mtx, z%tau_0, NT_O=.FALSE., in_O = t )
 
