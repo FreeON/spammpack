@@ -1,6 +1,0 @@
-/home/m/spammsand/CMakeFiles/ctags.dir
-/home/m/spammsand/CMakeFiles/etags.dir
-/home/m/spammsand/src/CMakeFiles/spammpack-serial-shared.dir
-/home/m/spammsand/src/CMakeFiles/spammpack-serial-static.dir
-/home/m/spammsand/spammsand/CMakeFiles/spammsand_invsqrt.dir
-/home/m/spammsand/spammsand/CMakeFiles/utilities.dir

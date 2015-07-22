@@ -48,11 +48,19 @@ class SpAMM:
                                                                          tolerance=tolerance,
                                                                          symbolic_only=symbolic_only,
                                                                          tier=tier+1)
+            C.norm2 = 0
+            C.nnonzero = 0
+            for k in range(4):
+                if C.children[k] is not None:
+                    C.norm2 += C.children[k].norm2
+                    C.nnonzero += C.children[k].nnonzero
         else:
             if not symbolic_only:
                 if C.submatrix is None:
                     C.submatrix = numpy.matrix(numpy.zeros((C.N_b, C.N_b)))
                 C.submatrix = C.submatrix+numpy.dot(A.submatrix, B.submatrix)
+                C.norm2 = numpy.linalg.norm(C.submatrix, 'fro')**2
+                C.nnonzero = numpy.count_nonzero(C.submatrix)
 
     def get_nodes(self, depth, tier=0,
                   i_lower=0, i_upper=0,
@@ -314,8 +322,32 @@ def plot_octree(A, B, C, C_multiplication):
     """
 
     (x, y, norm, width) = A.get_nodes(A.depth)
-    print(x, y, norm, width)
-    mlab.points3d(x, y, numpy.zeros((len(x))), mode='2dsquare', scale_factor=width)
+    for i in range(len(x)):
+        mlab.points3d([x[i]], [0], [y[i]],
+                  mode='2dsquare',
+                  scale_factor=width,
+                  opacity=1,
+                  colormap="gist_heat",
+                  color=(norm[i]/numpy.amax(norm), 0, 0))
+
+    (x, y, norm, width) = B.get_nodes(A.depth)
+    for i in range(len(x)):
+        mlab.points3d([0], [y[i]], [x[i]],
+                  mode='2dsquare',
+                  scale_factor=width,
+                  opacity=1,
+                  colormap="gist_heat",
+                  color=(norm[i]/numpy.amax(norm), 0, 0))
+
+    (x, y, norm, width) = C.get_nodes(A.depth)
+    for i in range(len(x)):
+        mlab.points3d([x[i]], [y[i]], [0],
+                  mode='2dsquare',
+                  scale_factor=width,
+                  opacity=1,
+                  transparent=False,
+                  colormap="gist_heat",
+                  color=(norm[i]/numpy.amax(norm), 0, 0))
 
     (x, y, z, width) = C_multiplication.get_nodes(C_multiplication.depth)
     op = 0.6
@@ -324,7 +356,7 @@ def plot_octree(A, B, C, C_multiplication):
     mlab.axes(xlabel='i', ylabel='j', zlabel='k')
 
 if __name__ == "__main__":
-    N = 32
+    N = 128
     N_b = 16
     debug = True
     print_matrices = False
