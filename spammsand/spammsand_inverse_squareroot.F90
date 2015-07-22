@@ -340,7 +340,7 @@ contains
           y_dual => SpAMM_tree_2d_symm_copy_tree_2d_symm( y_tmp, in_O = y_dual, threshold_O = tau_S )
           ! x_n = <y_n|z_n>
           x_dual => SpAMM_tree_2d_symm_times_tree_2d_symm( y_dual, z_dual, tau_0 , nt_O=.TRUE. , &
-                    in_O = x_dual )
+                    in_O = x_dual , stream_file_O='x_dual_'//inttoCHAR(I) )
           ! stats ...   ! double chck that stats for ytmp==ydual
           y_dual_work=y_tmp%frill%flops/dble(y_tmp%frill%ndimn(1))**3   ; y_dual_fill=y_tmp%frill%non0s
           x_dual_work=x_dual%frill%flops/dble(x_dual%frill%ndimn(1))**3 ; x_dual_fill=x_dual%frill%non0s
@@ -354,10 +354,10 @@ contains
              RT='R' ! R flag
              ! | w_n > = < s | z_n >
              y_stab => SpAMM_tree_2d_symm_times_tree_2d_symm( s     , z_stab, tau_S , NT_O=.TRUE.  ,   &
-                       in_O = y_stab )
+                       in_O = y_stab , stream_file_O='y_stab_r'//inttoCHAR(I) )
              ! | x_n > = < zt_n | w_n >
              x_stab => SpAMM_tree_2d_symm_times_tree_2d_symm( z_stab, y_stab, tau_0 , NT_O=.FALSE. ,   &
-                       in_O = x_stab , stream_file_O='x_stab_'//inttoCHAR(I) )
+                       in_O = x_stab , stream_file_O='x_stab_r'//inttoCHAR(I) )
              ! stats ...
              y_stab_work=y_stab%frill%flops/dble(y_stab%frill%ndimn(1))**3;  y_stab_fill=y_stab%frill%non0s
              x_stab_work=x_stab%frill%flops/dble(x_stab%frill%ndimn(1))**3;  x_stab_fill=x_stab%frill%non0s
@@ -365,10 +365,10 @@ contains
              RT='L' ! L flag
              ! | y_n > = < zt_n | s >
              y_stab => SpAMM_tree_2d_symm_times_tree_2d_symm( z_stab, s     , tau_S , NT_O=.FALSE. ,   &
-                       in_O = y_stab )
+                       in_O = y_stab , stream_file_O='y_stab_l'//inttoCHAR(I) )
              ! | x_n > = < y_n | z_n >
              x_stab => SpAMM_tree_2d_symm_times_tree_2d_symm( y_stab, z_stab, tau_0 , NT_O=.TRUE.  ,   &
-                       in_O = x_stab , stream_file_O='x_stab_'//inttoCHAR(I) )
+                       in_O = x_stab , stream_file_O='x_stab_l'//inttoCHAR(I) )
              ! stats ...
              y_stab_work=y_stab%frill%flops/dble(y_stab%frill%ndimn(1))**3; y_stab_fill=y_stab%frill%non0s
              x_stab_work=x_stab%frill%flops/dble(x_stab%frill%ndimn(1))**3; x_stab_fill=x_stab%frill%non0s

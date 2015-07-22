@@ -1,0 +1,33 @@
+./spammsand_invsqrt water_100_to_6-311gss.mm  1.d-2 1.d-4 1.1d-1  D  U  R   b=8
+
+./spammsand_invsqrt water_100_to_6-311gss.mm  1.d-2 1.d-4  1.1d-1  S  U  R 
+  stab Tr<t0=.100E-01,d=.192E-10,s=.100E+01,r=T,n=14 > =    3100.0055356380 dN= 0.179E-05, y_wrk:   16.42260%, z_wrk:   4.81634%, x_wrk:   5.09247%
+./spammsand_invsqrt water_100_to_6-311gss.mm  1.d-2 1.d-4  1.d-2  S  U  R 
+  stab Tr<t0=.100E-01,d=.171E-11,s=.100E+01,r=T,n=14 > =    3098.7068673423 dN= 0.160E-03, y_wrk:   16.62829%, z_wrk:   4.99236%, x_wrk:   5.34037%
+
+./spammsand_invsqrt water_100_to_6-311gss.mm  1.d-2 1.d-4  1.1d-1  D  U  R  
+  dual Tr<t0=.100E-01,d=.170E-10,s=.100E+01,    n=14 > =    3099.9499566555 dN= 0.161E-04, y_wrk:    5.05980%, z_wrk:   3.84125%, x_wrk:   2.80250%
+ ./spammsand_invsqrt water_100_to_6-311gss.mm  1.d-2 1.d-4  1.d-2  D  U  R  
+  dual Tr<t0=.100E-01,d=.170E-11,s=.100E+01,    n=14 > =    3100.0052090972 dN= 0.168E-05, y_wrk:    5.39333%, z_wrk:   4.08158%, x_wrk:   2.86836%
+
+SCALED TUBE:
+./spammsand_invsqrt 33_x8_8.mm 1.d-2  1.d-7  1.1d-1  D  S  R  
+  dual Tr<t0=.100E-01,d=.186E-10,s=.100E+01,    n=23 > =     876.0012281430 dN= 0.113E-06, y_wrk:  107.59694%, z_wrk:  85.41034%, x_wrk: 107.23763%
+
+
+
+./spammsand_invsqrt 33_x36_8.mm  1.d-3  1.d-6  1.2d-1  S  S  R   <<<<<< Variations on Y
+  stab Tr<t0=.100E-02,d=.203E-10,s=.100E+01,r=T,n=18 > =    3900.0242742634 dN= 0.153E-05, y_wrk:   25.26692%, z_wrk:  82.18380%, x_wrk: 103.91579%
+./spammsand_invsqrt 33_x36_8.mm  5.d-3  1.d-6  1.2d-1  S  S  R   <<<<<< to far on z/x
+ stab Tr<t0=.500E-02,d=.211E-10,s=.100E+01,r=T,n=18 > =    3898.6133712841 dN= 0.356E-03, y_wrk:   26.28912%, z_wrk: 105.92053%, x_wrk: 106.55046%
+
+./spammsand_invsqrt 33_x36_8.mm  1.d-3  1.d-7  1.2d-1  D  S  R   <<<<<<<<<<<<<< var on y
+  dual Tr<t0=.100E-02,d=.203E-10,s=.100E+01,    n=18 > =    3899.9965557084 dN= 0.883E-06, y_wrk:   82.09577%, z_wrk:  77.09955%, x_wrk:  95.97334%
+
+
+
+
+
+ ./spammsand_invsqrt h2o_030_6311gss.S.mm  1.d-9  1.d-12  1.0d-1  5.d-3  S  U  R
+
+ ./spammsand_invsqrt water_100_to_6-311gss.mm 1.d-2  1.d-4  1.d-1  1.d-3  D  U  R  <<<<<<<<<<<<<<<<<<< this is contactive.

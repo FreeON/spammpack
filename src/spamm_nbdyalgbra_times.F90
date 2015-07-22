@@ -528,8 +528,6 @@ CONTAINS
        ENDIF
 
 #ifdef SpAMM_PRINT_STREAM
-
-
        IF(NT)THEN
           Stream%Lw(1)=a%frill%bndbx(0,2)
           Stream%Lw(2)=a%frill%bndbx(0,1)
@@ -548,9 +546,7 @@ CONTAINS
 
        Stream%Levl=Depth
        Stream%Size=SQRT(a%frill%norm2*b%frill%norm2)
-
        number_stream_elements = number_stream_elements+1
-
        ALLOCATE(Stream%Next)
        Stream=>Stream%Next
        NULLIFY(Stream%Next)
@@ -567,9 +563,6 @@ CONTAINS
        ELSE
           a01=>a%child_10; a10=>a%child_01
        ENDIF
-
-
-
 
        ! first  pass, [m;0].[0;n]
        IF( SpAMM_occlude( a00, b00, Tau2 ) ) &
