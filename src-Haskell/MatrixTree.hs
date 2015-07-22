@@ -69,7 +69,7 @@ mmWriteTree :: MatrixTree -> String -> FilePath -> IO ()
 mmWriteTree tree format filePath =
             mmWriteFile (treeToMatrixList tree) format filePath
 
-matrixListToTree :: MatrixList -> MatrixTree
+matrixListToTree :: MatrixList Double -> MatrixTree
 matrixListToTree (h, w, ijxs) = (h, w, setNorm $ foldr addVal (Zero p) ijxs)
                                 where p = nextPowOf2 $ max h w
 
@@ -98,7 +98,7 @@ addVal (i, j, x) (Square s _ tl tr bl br) = if x == 0 then
              ib = i - halfs ; jr = j - halfs
              halfs = s `div` 2
 
-treeToMatrixList :: MatrixTree -> MatrixList
+treeToMatrixList :: MatrixTree -> MatrixList Double
 treeToMatrixList (h, w, mTree) = (h, w, mTreeToList mTree)
 
 mTreeToList :: MTree -> [(Int, Int, Value)]
