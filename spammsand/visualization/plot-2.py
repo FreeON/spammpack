@@ -274,18 +274,19 @@ def mycolor(x):
     return (lut[i][0]/255., lut[i][1]/255., lut[i][2]/255.)
 
 @mlab.show
-def plot(filename, number_bins=6):
+def plot(filename, number_bins=100):
     """Plot the cubes from a file.
 
     The cubes are stratify them into number_bins norm bins. The transparency
     of the cubes is set depending on which norm bin the cube is in.
     """
 
-    parser = re.compile("^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+)\s+([0-9.eEdD+-]+)$")
+    parser = re.compile("^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+)\s+([0-9]+)\s+([0-9.eEdD+-]+)$")
 
     x = []
     y = []
     z = []
+    width = []
     norm = []
 
     fd = open(filename)
@@ -294,7 +295,8 @@ def plot(filename, number_bins=6):
         x.append(int(result.group(1)))
         y.append(int(result.group(2)))
         z.append(int(result.group(3)))
-        norm.append(float(result.group(4)))
+        width.append(int(result.group(4)))
+        norm.append(float(result.group(5)))
     fd.close()
 
     print("loaded {:d} cubes".format(len(x)))
@@ -361,7 +363,7 @@ def plot(filename, number_bins=6):
                                    mode='cube',
                                    colormap='gist_heat',
                                    color=mycolor((i+1)/float(number_bins)),
-                                   scale_factor=1.0,
+                                   scale_factor=width[0],
                                    opacity=(i+1)/float(number_bins))
             # lut = points.module_manager.scalar_lut_manager.lut.table.to_array()
             # for j in range(lut.shape[0]):
@@ -372,26 +374,22 @@ def plot(filename, number_bins=6):
     axes = Axes()
     engine.add_module(axes, obj=None)
 
+    xmax = max(numpy.amax(x), numpy.amax(y), numpy.amax(z))+width[0]/2-2
+    print("xmax = {:d}".format(xmax))
+
     axes.axes.x_label = 'i'
     axes.axes.y_label = 'j'
     axes.axes.z_label = 'k'
     axes.axes.label_format = '%-3.0f'
     axes.property.display_location = 'background'
-    axes.axes.ranges = [numpy.amin(x), numpy.amax(x),
-                        numpy.amin(y), numpy.amax(y),
-                        numpy.amin(z), numpy.amax(z)]
-
-    mlab.axes(xlabel='i',
-              ylabel='j',
-              zlabel='k',
-              extent=[numpy.amin(x), numpy.amax(x),
-                      numpy.amin(y), numpy.amax(y),
-                      numpy.amin(z), numpy.amax(z)])
+    axes.axes.ranges = [1, xmax,
+                        1, xmax,
+                        1, xmax]
 
     # Box around the whole thing.
-    mlab.outline(extent=[numpy.amin(x), numpy.amax(x),
-                         numpy.amin(y), numpy.amax(y),
-                         numpy.amin(z), numpy.amax(z)])
+    mlab.outline(extent=[1, xmax,
+                         1, xmax,
+                         1, xmax])
 
     # Turn rendering back on.
     figure.scene.disable_render = False
