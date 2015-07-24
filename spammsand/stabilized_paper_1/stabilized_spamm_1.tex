@@ -209,7 +209,6 @@ properties of the Lie bracket
 + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
 \end{equation}
 
-%%<<<<<<< HEAD
 \subsection{Related Research} 
 
 Here, we note overlaping themes and research related to the results presented here.
@@ -223,7 +222,8 @@ For example, $\tt SpAMM$ has been extended to the {\em triple} metric querry for
 the exact Fock exchange \cite{}.  
 
 $\tt SpAMM$ is broadly related to {\em generalized n-body} methods, poularized by Grey \cite{},  
-that are simply algorithms based on fast (hierarchical) spatial and metric querry \cite{Sammet} together with local approximation \cite{}.  
+that are simply a reflection of {\em genericity}.
+algorithms based on fast (hierarchical) spatial and metric querry \cite{Sammet} together with local approximation \cite{}.  
 Recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
 for pairwise $n$-body methods \cite{Warren Salmon, Yellik}.  Also Demmel and showed  for the related fast matrix multiplicaiton.
 It may be possible to show similar results, based on the locality of reference developed in this work, encompassing both 
@@ -561,14 +561,13 @@ double exponential (Fig.)
 \subsubsection{Matrix Market}
 
 
-\section{Results}
 
-\subsection{Stability (Proof)}
+\section{Stability (Proof)}
 
 
-\subsection{Error Flows in Square Root Iteration}
+\section{Error Flows in Square Root Iteration}
 
-\subsubsection{The cannonical (dual) instance}
+\subsection{The cannonical (dual) instance}
  
 Refering back to Eq.~( \ref{firstorderdual} ), we develop the Fr\'{e}chet analyses \cite{} with the goal of understanding
 the contractive approach to identity in competition with error accumulations and $\tt SpAMM$ sources.
@@ -702,7 +701,7 @@ As above, we can unwind this sensitive term, to find
 
 
 
-\subsubsection{The stabilized  (stab) instance}
+\subsection{The stabilized  (stab) instance}
 
 Here, we carry on from Eq.~(\ref{firstorderstab}) in the ``stabilized'' instance, with the single channel differential 
 \begin{equation}
@@ -724,7 +723,7 @@ Here, we carry on from Eq.~(\ref{firstorderstab}) in the ``stabilized'' instance
 \left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
 \end{eqnarray}
 
-\subsubsection{Bifurcations}
+\subsection{Bifurcations}
 
 \begin{figure}[h]
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual.eps}
@@ -759,10 +758,92 @@ Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
-\subsection{Regularization}
+Differences in occlusion between stab and dual magnified as bounds for s.z not as tight as bounds for h.y.
+
+ *lot* of overlap too (reproducing hilberts & etc).
+
+\section{Iterated Regularization}
+
+Limits of by the constraints on stability, imposed by {\em e.g.} ill-conditioning.  These limits can 
+be circumscribed through Tikhonov regularization \cite{}, involving a level shift of the 
+original matrix,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, leading to an effective condition number
+for $\mat{s}_\mu$ by the ammount ... \cite{}.   However, $\mat{s}^{-1/2}_\mu$ may still be too far from 
+$\mat{s}^{-1/2}$ to be of much use. One approach is to use Riley's method \cite{} 
+\begin{equation}
+\mat{s}^{-1/2} = \mat{s}^{-1/2}_{\mu} \cdot \left( \mat{I}+\frac{\mu}{2} \mat{s}^{-1}_{\mu}
+                                                   +\frac{3 \mu^2}{8} \mat{s}^{-2}_{\mu} + \dots
+   \right) \,.
+\end{equation}
+
+Alternatively, we consider Tikhonov regularization and its implementatation with the $\tt SpAMM$ algebra.  
+In this approach, a most permisive (but still effective) preconditioner is found; $\mat{s}^{-1/2}_{\tau_0, \mu_0}$. 
+By permisive, we mean $\tau_0$ is large but enables stable NS iterations.  By effective we mean $\mu_0<\, .1$ ({\em ie} 
+taking $\mat{s} \leftarrow \mat{s}/s_0$, conditioning is improved by at least one order). 
+
+In this exploritory contribution, we examine the NS square root iteration with a generic thin slice, cooresponding to 
+$\tau_0 \sim .1$ and $\mu_0 \sim .1$, and with unregularized (thick) $\tt SpAMM$ iteration at the edge of stability. 
+First up, we show volumes of the stable instance from Fig~(\ref{}) as a percentage of the total (conventional) $N^3$ volume.
+Next up in Fig.~\ref{} is the same problem in the dual instance.   
+\begin{figure}
+\begin{caption}
+${\rm vol}_{\widetilde{\mat{z}}_{k-1} \ot  h[\widetilde{\mat{x}}_{k-1}]}$, 
+${\rm vol}_{\widetilde{\mat{z}}_{k} \ots \mat{s}_{\mu}$, 
+${\rm vol}_{\widetilde{\mat{y}}_k \ot  \widetilde{\mat{z}}_k}$ 
+\end{caption}
+\end{figure} 
+\begin{figure}
+\begin{caption}
+${\rm vol}_{h[\widetilde{\mat{x}}_{k-1}] \ot \widetilde{\mat{y}}_{k-1}$, 
+${\rm vol}_{\widetilde{\mat{z}}_{k-1} \ot  h[\widetilde{\mat{x}}_{k-1}]}$ and 
+${\rm vol}_{\widetilde{\mat{y}}_k \ot  \widetilde{\mat{z}}_k}$ 
+\end{caption}
+\end{figure} 
+
+These stable and dual instances behave very differently in this case.  In the first instance, the $\mat y$ channel is unimproved and
+retains sensitivity of the un-regularized problem.  This is because
+$\widetilde{\mat{y}}^{\rm stab}_k \rightarrow \mat{s}^{1/2}_{\tau_0 \mu_0}\equiv \mat{s}^{-1/2}_{\tau_0 \mu_0} \ot{__0} \mat{s}_{\mu_0}$ is 
+a product not helped by regularization.  In the dual case the situation is quite different with
+$\widetilde{\mat{y}}^{\rm dual}_k \rightarrow  \mat{I}_{\tau_0 \mu_0} \ot{__0} \mat{s}^{1/2}_{\tau_0 \mu_0}$, which is reflective about the cube
+diagonal,  and with a complexity approaching the cost of quadtree copy in place.   
+
+In the dual case then,  $\tau_0$ can be brought to extreme permisve values, $\tau_0\sim .1$, for {\em e.g.} $\mu_0\sim .1$.
+Then, from a first generic slice $\mat{s}^{-1/2}_{\tau_0, \mu_0}$, dual NS maybe employed again to find a next effective preconditioner, 
+$\mat{s}^{-1/2}_{\tau_0, \mu_1}$, based on the residual $\left(\mat{s}^{-1/2}_{\tau_0} \right)^\dagger \, \ot{__0} \, \left(\mat{s}+\mu_1 \mat{I} \right) \, 
+\ot{__0} \, \mat{s}^{-1/2}_{\tau_0} $, again with an effective increment $\mu_1 < .1 \mu_0$.  Generally then, it may be possible to find the full factor 
+%corresponding to an extreme permisive $\tau_0 \sim .1$ 
+as the nested product of generic slices ($\tt SpAMM$ sandwitch):
+\begin{eqnarray}
+\mat{s}^{-1/2}_{\tau_0} &=& \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \ot{__0} \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \ot{__0} \, \dots 
+\,  \mat{s}^{-1/2}_{\tau_0 \mu_0}\\
+&=&\bigotimes^{\mu_n}_{\mu=\mu_0} \mat{s}_{\tau_0 \mu} \, .
+\end{equnarray}In this way, 
+iterated regularization can be used to find a product representation of the inverse square root at a $\tt SpAMM$ resolution 
+that is potentially far more permisive than otherwise possible.
+
+Likewise, a nested product representation 
+based on increasing $\tt SpAMM$ resolution may build the complete factor digit by digit:
+\begin{eqnarray}
+\mat{s}^{-1/2} &=& \mat{s}^{-1/2}_{\tau_m} \, \ot\!{__m} \,  \mat{s}^{-1/2}_{\tau_{m-1}} \, \ot \, \!{__{m-1}} \dots \, \mat{s}^{-1/2}_{\tau_0}\\ 
+&=&\bigotimes^{\tau_m}_{\tau=\tau_0} \mat{s}_{\tau} \, ,
+\end{equnarray}
+with $1 > \tau_0 > \tau_1 > \dots > \tau_n $. 
+
+This scheme requires $m+n$ total NS solves, and potentially as many multiplies to incrementally apply the full factor $\mat{s}^{-1/2}$.
+However, a thin ($\sim 0.1)$ product representation may have a number of advantages: ({\bf 1}) Each NS solve can be reduced 
+to a generic, constant and reduced number of well behaved steps; 
+({\bf 2}) each NS solve 
+can be brought into the regime of strongly contractive identity iteration; 
+({\bf 3}) Equation~(\ref{bound}) tightly bounds products about the cube-diagonal at each resolution $\mat{I}_{\tau, \mu} \left( \mat{s} \right) $,
+and normalizing gaps between $\tau$ and $\tau_s$;    
+({\bf 4)} Resolution of the identity cooresponds to a sharply culled $ijk$-volume, 
+${\rm vol}_{\,\ot}$, that is compressive and tending towards copy in place complexities for $\mat{y}$ and $\mat{z}$ updates;
+({\bf 5}) Each generic solve may provide computational and mathematical acceleration for the next generic solve through 
+persistence, accumulated through backward recursion as described in Section \ref{}, 
+together with strong locality of reference in ${\rm vol}_{\,\ot}$ along the cube diagonal 
+and near to the $i=j$, $j=k$ and $i=k$ planes.
 
 
-\subsection{Algebraic and Strong Metric Locality} 
+\subsection{Locality} 
 
 A premier feature of the $n$-body algorithm is the ability to exploit data locality efficiently.  In the $ijk$ space, 
 there are multiple locality principles that can be exploited by $\tt SpAMM$.  Fir
@@ -775,7 +856,7 @@ increasing the Euclidean locality, ``wrings the zeros'' out of the product space
 On moving from locality provided by the Hilbert order (space filling curve) to annealed sollutions to the
 end-to-end TSP.    
 
-\subsubsection{Algebraic  Locality}
+\subsubsection{Lensing}
 
 A feature of square root iteration with the $\ot$ kernel is localization of the culled octree towards identity iteration, 
 $\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
