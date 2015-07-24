@@ -26,7 +26,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set( spammpack-sources
+set(spammpack-sources
   spamm_realkind.F90
   spamm_parameters.F90
   spamm_structures.F90
@@ -38,10 +38,9 @@ set( spammpack-sources
   spamm_nbdyalgbra_times.F90
   spamm_nbdyalgbra_plus.F90
   spamm_nbdyalgbra_trace.F90
-  spammpack.F90
-  )
+  spammpack.F90)
 
-set( MODULE_FILES
+set(MODULE_FILES
   spamm_realkind.mod
   spamm_parameters.mod
   spamm_structures.mod
@@ -53,28 +52,21 @@ set( MODULE_FILES
   spamm_nbdyalgbra_times.mod
   spamm_nbdyalgbra_plus.mod
   spamm_nbdyalgbra_trace.mod
-  spammpack.mod
-  )
+  spammpack.mod)
 
-#set( HEADER_FILES
-#  spamm_utility_macros.h
-#  )
+set(LIBRARY_BASENAME "spammpack")
 
-set( LIBRARY_BASENAME "spammpack" )
+include(${CMAKE_SOURCE_DIR}/cmake-scripts/FindFortranKind.cmake)
 
-include( ${CMAKE_SOURCE_DIR}/cmake-scripts/FindFortranKind.cmake )
+set(KIND_EXPRESSION "kind(0d0)")
+find_fortran_kind(${KIND_EXPRESSION})
 
-set( KIND_EXPRESSION "kind(0d0)" )
-find_fortran_kind( ${KIND_EXPRESSION} )
-
-#configure_file( spamm_real_precision.F90.in spamm_real_precision.F90 )
+#configure_file(spamm_real_precision.F90.in spamm_real_precision.F90)
 
 set_directory_properties(
   PROPERTIES
-  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
-  )
+  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}")
 
-include( ${CMAKE_SOURCE_DIR}/cmake-scripts/BuildLibrary.cmake )
+include(${CMAKE_SOURCE_DIR}/cmake-scripts/BuildLibrary.cmake)
 
-build_library( FALSE "" )
-
+build_library(FALSE "")

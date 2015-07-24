@@ -406,8 +406,6 @@ CONTAINS
     write(44, "(A)") "DATASET POLYDATA"
     write(44, "(A,I30,A)") "POINTS ", number_stream_elements, " int"
 
-    write(45, "(A,I30)") "numer of norms is", number_stream_elements
-
     MaxNorm=-1D100
     MaxI=-100
     MaxJ=-100
@@ -425,7 +423,7 @@ CONTAINS
        !> MaxNorm=MAX(MaxNorm,stream%size)
        !> MinNorm=MIN(MinNorm,stream%size)
        Stream=>Stream%Next
-       write(45, "(ES20.10)") stream%size
+       write(45, "(3I30,ES20.10)") i, j, k, stream%size
     ENDDO
 
     close(44)
