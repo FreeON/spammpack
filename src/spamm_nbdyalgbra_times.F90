@@ -398,12 +398,15 @@ CONTAINS
     WRITE(*,*)' max_depth = ', max_depth,SPAMM_BLOCK_SIZE* 2**max_depth
 
     open(unit=44, file=trim(adjustl(stream_file_o))//'.vtk', status='NEW')
+    open(unit=45, file=trim(adjustl(stream_file_o))//'.norms', status='NEW')
 
     write(44, "(A)") "# vtk DataFile Version 2.0"
     write(44, "(A)") "The product space"
     write(44, "(A)") "ASCII"
     write(44, "(A)") "DATASET POLYDATA"
     write(44, "(A,I30,A)") "POINTS ", number_stream_elements, " int"
+
+    write(45, "(A,I30)") "numer of norms is", number_stream_elements
 
     MaxNorm=-1D100
     MaxI=-100
@@ -422,9 +425,11 @@ CONTAINS
        !> MaxNorm=MAX(MaxNorm,stream%size)
        !> MinNorm=MIN(MinNorm,stream%size)
        Stream=>Stream%Next
+       write(45, "(ES20.10)") stream%size
     ENDDO
 
     close(44)
+    close(45)
 
     !> WRITE(*,*)' MaxNorm = ',MinNorm, MaxNorm
     !> WRITE(*,*)' MaxIJK  = ',MaxI,MaxJ,MaxK
