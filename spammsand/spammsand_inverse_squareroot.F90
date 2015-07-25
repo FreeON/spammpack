@@ -188,7 +188,6 @@ contains
        !  x_0 => s
        x_stab => SpAMM_new_top_tree_2d_symm( s%frill%ndimn )
        x_stab => SpAMM_tree_2d_symm_copy_tree_2d_symm( s , in_O = x_stab, threshold_O = SpAMM_normclean ) 
-
 #ifdef DENSE_DIAGNOSTICS
 #else
     endIF
@@ -226,7 +225,7 @@ contains
 
     kount=1
     FillN=1d10
-    NS_STEPS: DO i = 0, 45
+    NS_STEPS: DO i = 0, 20
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -257,18 +256,26 @@ contains
        FillN = abs( dble(s%frill%ndimn(1)) - TrX )/dble(s%frill%ndimn(1))       
 
        IF(I>0)THEN
+
           IF(DoDuals)THEN
-             WRITE(*,33)tau_0, delta, scale, kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2 
+             WRITE(* ,33) tau_0, tau_s, delta, scale,                   kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2 
+             WRITE(77,33) tau_0, tau_s, delta, scale,                   kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2 
+             WRITE(88,333)tau_0, tau_s, delta, scale,             dble(kount), TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2 
           elsE
-             WRITE(*,34)tau_0, delta, scale, RightTight, kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2 
+             WRITE(* ,34) tau_0, tau_s, delta, scale, RightTight,       kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2 
+             WRITE(77,34) tau_0, tau_s, delta, scale, RightTight,       kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2 
+             WRITE(88,344)tau_0, tau_s, delta, scale,             dble(kount), TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2 
           ENDIF
        ENDIF
 
 #endif
-33     format('  dual Tr<t0=',e8.3,',d=',e8.3,',s=',e8.3,',    n=',i2,' > = ', F18.10,' dN=',e10.3, & 
-              ', y_wrk: ',f10.5,'%, z_wrk:',f10.5,'%, x_wrk:',f10.5,'%')
-34     format('  stab Tr<t0=',e8.3,',d=',e8.3,',s=',e8.3,',r=',L1,',n=',i2,' > = ', F18.10,' dN=',e10.3, &
-              ', y_wrk: ',f10.5,'%, z_wrk:',f10.5,'%, x_wrk:',f10.5,'%')
+
+33     format('  dual, t0=',e8.3,', ts=',e8.3,', d=',e8.3,', s=',e8.3,',     n=',i2,' tr= ', F18.10,' dN=',e10.3, & 
+              ', vol_y: ',f10.5,'%, vol_z:',f10.5,'%, vol_x:',f10.5,'%')
+333    format('  dual ',30(e12.6,' '))
+344    format('  stab ',30(e12.6,' '))
+34     format('  stab, t0=',e8.3,', ts=',e8.3,', d=',e8.3,', s=',e8.3,', r=',L1,',n=',i2,' tr= ', F18.10,' dN=',e10.3, &
+              ', vol_y: ',f10.5,'%, vol_z:',f10.5,'%, vol_x:',f10.5,'%')
 
        ! convergence ...   convergence ...   convergence ...   convergence ...   convergence ...   convergence ...   
        converged=.FALSE.
@@ -277,7 +284,7 @@ contains
        ! anihilation of expected error 
        IF( FillN <  Tau_s )converged=.TRUE. 
 !       IF(i==22)converged=.TRUE.
-       IF(converged)GOTO 999 
+!       IF(converged)GOTO 999 
 
 
        ! stabilization ... stabilization ... stabilization ... stabilization ... stabilization ... stabilization ... 
@@ -700,7 +707,21 @@ program SpAMM_sandwich_inverse_squareroot
   call get_command_argument(7, c_scale)
   call get_command_argument(8, c_righttight)
   call get_command_argument(9, corename)
-
+  
+  IF(c_tau_0==''.OR.c_tau_S==''.OR.c_delta==''.OR. & 
+       c_dual==''.OR.c_scale==''.OR.c_righttight=='')THEN
+     WRITE(*,44)
+     STOP
+  ENDIF
+44 FORMAT(' bad input to spammsand ... ' &
+        //' please try again with: tau_0 (primary SpAMM threshold,      suggested: 1.d-2) \\' &
+        //'                        tau_S (secondary SpAMM threshold,    suggested: 1.d-4) \\' &
+        //'                        delta (map stabilization threshold), suggested: 1.d-1) \\' &
+        //'                        shift (mu_0, the level shift),       suggested: 1.d-2) \\' &
+        //'                        dual  ("D" if dual, "S" if stab)     suggested: D)     \\' &
+        //'                        scale ("S" if scaled, "U" if not)    suggested: U)     \\' &
+        //'                        Right (use right stab if "R")        suggested: R)    '    )
+  
   tau_0=CharToDbl(c_tau_0)
   tau_S=CharToDbl(c_tau_S)
   delta=CharToDbl(c_delta)
@@ -724,8 +745,10 @@ program SpAMM_sandwich_inverse_squareroot
   WRITE(*,*)' this jobs pid is .... '
 
   open(unit=77, iostat=stat, file=TRIM(corefile)//'.spamm',status='old')
+  open(unit=88, iostat=stat, file=TRIM(corefile)//'.dat'  ,status='old')
   if(stat.eq.0) close(98, status='delete')
   open(unit=77, iostat=stat, file=TRIM(corefile)//'.spamm',status='new')
+  open(unit=88, iostat=stat, file=TRIM(corefile)//'.dat'  ,status='new')
 
   ! input ... input ... input ... input ... input ... input ... input ... input ... input ... 
   ! read the dense matrix to factor.  hopefully it has decay ...
@@ -785,6 +808,8 @@ program SpAMM_sandwich_inverse_squareroot
      s => SpAMM_scalar_plus_tree_2d_symm(mu_Riley, s)
   ENDIF
 
+  CLOSE(77)
+  
   ! spamm sandwich ... spamm sandwich ... spamm sandwich ... spamm sandwich ... spamm sandwich ... 
   z=>z_head
   do while(associated(z)) ! build the nested inverse factors |z> = |z_1>.|z_2> ... |z_s>
@@ -792,7 +817,7 @@ program SpAMM_sandwich_inverse_squareroot
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, x, z%mtx, z%tau_0, z%tau_S, delta,  &
                                                             DoDuals, RightTight, DoScale, First, kount)
 
-stop
+
 
 !!$
 !!$     WRITE(*,*)' done with sparse work, processing dense test of accuracy ... '
