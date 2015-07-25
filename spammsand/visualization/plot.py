@@ -3,7 +3,7 @@ from mayavi import tools
 
 @mlab.show
 def main(vtk_file):
-    plot=tools.pipeline.open(vtk_file)
+    plot = tools.pipeline.open(vtk_file)
     tools.pipeline.glyph(plot, scale_factor=0.95, mode='cube')
     mlab.show()
 
