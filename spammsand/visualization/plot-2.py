@@ -310,10 +310,6 @@ def plot(filename, number_bins=100):
 
     print("norms in interval [{:1.2f}, {:1.2f}]".format(min_norm, max_norm))
 
-    for i in range(number_bins):
-        print("bin {:d} in [{:1.2f}, {:1.2f})".format(
-            i, bound(i), bound(i+1)))
-
     x_stratified = [ [] for i in range(number_bins)]
     y_stratified = [ [] for i in range(number_bins)]
     z_stratified = [ [] for i in range(number_bins)]
@@ -335,7 +331,6 @@ def plot(filename, number_bins=100):
             y_stratified[number_bins-1].append(y[i])
             z_stratified[number_bins-1].append(z[i])
             norm_stratified[j].append(norm[i])
-            print("norm {:1.2f} outside".format(norm[i]))
 
     # Get the current figure.
     figure = mlab.gcf()
@@ -347,14 +342,14 @@ def plot(filename, number_bins=100):
     mlab.clf()
 
     # Turn off rendering (for performance).
-    figure.scene.disable_render = True
+    #figure.scene.disable_render = True
 
     # Tune background color.
     #mlab.figure(bgcolor=(1, 1, 1))
 
     # Add cubes.
     for i in range(number_bins):
-        print("{:d} cubes with norm [{:e},{:e})".format(
+        print("{:d} cubes with norm [{:1.2f},{:1.2f})".format(
             len(x_stratified[i]), bound(i), bound(i+1)))
         if len(x_stratified[i]) > 0:
             points = mlab.points3d(x_stratified[i],
@@ -369,27 +364,28 @@ def plot(filename, number_bins=100):
             # for j in range(lut.shape[0]):
             #     print(lut[j,:])
 
+    xmax = max(numpy.amax(x), numpy.amax(y), numpy.amax(z))+width[0]/2
+    print("xmax = {:d}".format(xmax))
+
+    # Insert fake invisible data-set for axes.
+    mlab.points3d([1, xmax], [1, xmax], [1, xmax], mode='cube', scale_factor=0)
+
+    #mlab.axes(xlabel="i", ylabel="j", zlabel="k", extent=[1, xmax, 1, xmax, 1, xmax])
+
+    # Box around the whole thing.
+    mlab.outline(extent=[1, xmax, 1, xmax, 1, xmax])
+
     # Add axes.
     from mayavi.modules.axes import Axes
     axes = Axes()
     engine.add_module(axes, obj=None)
-
-    xmax = max(numpy.amax(x), numpy.amax(y), numpy.amax(z))+width[0]/2-2
-    print("xmax = {:d}".format(xmax))
 
     axes.axes.x_label = 'i'
     axes.axes.y_label = 'j'
     axes.axes.z_label = 'k'
     axes.axes.label_format = '%-3.0f'
     axes.property.display_location = 'background'
-    axes.axes.ranges = [1, xmax,
-                        1, xmax,
-                        1, xmax]
-
-    # Box around the whole thing.
-    mlab.outline(extent=[1, xmax,
-                         1, xmax,
-                         1, xmax])
+    axes.axes.ranges = [1, xmax, 1, xmax, 1, xmax]
 
     # Turn rendering back on.
     figure.scene.disable_render = False
