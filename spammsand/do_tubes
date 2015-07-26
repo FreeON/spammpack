@@ -26,8 +26,8 @@ rm  *.dat *.spamm
 #./spammsand_invsqrt 33_x8_11_S.mm 1.d-1 1.d-3  1.d-1 1.d-1 D U R
 #./spammsand_invsqrt 33_x48_10_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R
 #./spammsand_invsqrt 33_x64_10_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R
-./spammsand_invsqrt 33_x48_10_S.mm 1.d-1 1.d-2 1.d-1 1.d-1 D U R
-#./spammsand_invsqrt 33_x64_10_S.mm 1.d-1 1.d-2 1.d-1 1.d-1 D U R
+./spammsand_invsqrt 33_x96_10_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R
+
 
 
 ##>>>./spammsand_invsqrt 33_x36_10_S.mm 1.d-1 1.d-3  1.d-1 1.d-1 D U R
