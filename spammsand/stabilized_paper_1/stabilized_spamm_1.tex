@@ -762,26 +762,27 @@ Differences in occlusion between stab and dual magnified as bounds for s.z not a
 
 \section{Iterated Regularization}
 
-Limits of by the constraints on stability, imposed by {\em e.g.} ill-conditioning.  These limits can 
-be circumscribed through Tikhonov regularization \cite{}, involving a level shift of the 
-original matrix,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, leading to an effective condition number
-for $\mat{s}_\mu$ by the ammount ... \cite{}.   However, $\mat{s}^{-1/2}_\mu$ may still be too far from 
-$\mat{s}^{-1/2}$ to be of much use. One approach is to use Riley's method \cite{} 
+Shown in the preceeding section, stabiliyty limits application of the NS square root iteration under 
+agressive $\tt SpAMM$ approximation.  These limits can be circumvented through Tikhonov regularization \cite{}, 
+involving a small level shift of eigenvalues,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, leading to a more 
+well conditioned matrix with $\kappa( \mat{s}_\mu) = \frac{\sqrt{s^2_{N-1} + \mu^2}}{\sqrt{s^2_0+\mu^2}}$ \cite{}.  
+However, achieving substantial acceleration with severe ill-conditioning  may require a large level shift, 
+producing inverse factors of little practical use.  One approach to recover a more accurate inverse
+factor is Riley's method \cite{}; 
 \begin{equation}
 \mat{s}^{-1/2} = \mat{s}^{-1/2}_{\mu} \cdot \left( \mat{I}+\frac{\mu}{2} \mat{s}^{-1}_{\mu}
                                                    +\frac{3 \mu^2}{8} \mat{s}^{-2}_{\mu} + \dots
-   \right) \,.
+   \right) \; ,
 \end{equation}
+but this is ineffective when $\mu$ is large, and invovles powers of the full inverse. 
 
-Alternatively, we consider Tikhonov regularization and its implementatation with the $\tt SpAMM$ algebra.  
-In this approach, a most permisive (but still effective) preconditioner is found; $\mat{s}^{-1/2}_{\tau_0, \mu_0}$. 
-By permisive, we mean $\tau_0$ is large but enables stable NS iterations.  By effective we mean $\mu_0<\, .1$ ({\em ie} 
-taking $\mat{s} \leftarrow \mat{s}/s_0$, conditioning is improved by at least one order). 
-
-In this exploritory contribution, we examine the NS square root iteration with a generic thin slice, cooresponding to 
-$\tau_0 \sim .1$ and $\mu_0 \sim .1$, and with unregularized (thick) $\tt SpAMM$ iteration at the edge of stability. 
-First up, we show volumes of the stable instance from Fig~(\ref{}) as a percentage of the total (conventional) $N^3$ volume.
-Next up in Fig.~\ref{} is the same problem in the dual instance.   
+Here, we outline a nested product represenation of the full inverse factor, and present preliminary 
+results regarding stability and compression. This represenation begins with a most permisive (but still effective) 
+preconditioner; $\mat{s}^{-1/2}_{\tau_0 \mu_0}$. 
+By effective we mean $\mu_0<\, .1$ ({\em ie} taking $\mat{s} \leftarrow \mat{s}/s_{N-1}$, conditioning is improved by at least one order). 
+By permisive, we mean $\tau_0$ is large but enables stable NS iterations for the shifted problem. 
+Then, starting with $\tau_0 \sim .1$ and $\mu_0 \sim .1$, it may be possible to build up a nested product represenation 
+of the full factor with accelerative ``thin slice''  increments;  $\Delta \tau \sim .1$ and $\Delta \mu \sim .1$. 
 
 \begin{figure}[h]\label{regularized_stab}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
@@ -803,7 +804,14 @@ ${\rm v}_{\widetilde{\mat{z}}_k}= \left( {\rm vol}_{\widetilde{\mat{z}}_{k-1} \o
 Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$.}
 \end{figure} 
 
-These stable and dual instances behave very differently in this case.  In the first instance, the $\mat y$ channel is unimproved and
+Acceleration is marked by rapidly decreasing culled volumes with respect to problem size, {\em e.g.}  ${\rm vol}_{\mat{a} \ot \mat{b}/N^3$, 
+Starting with the ill-conditioned nanotube matrices looked at in the previous section, Figs.~\ref{}-\ref{}, 
+we show thin slice volumes for the formation of $\mat{y}_k$ and $\mat{z}_k$ in Fig.~\ref{regularized_stab} for the stable instance, 
+and in Fig.~\ref{regularized_dual} for the dual instance.  These instances behave very differently; in the case of the stable
+iteration, 
+
+
+ in this case.  In the first instance, the $\mat y$ channel is unimproved and
 retains sensitivity of the un-regularized problem.  This is because
 $\widetilde{\mat{y}}^{\rm stab}_k \rightarrow \mat{s}^{1/2{}_{\tau_0 \mu_0}}\equiv \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{s}_{\mu_0}$ is 
 a product not helped by regularization.  In the dual case the situation is quite different with
