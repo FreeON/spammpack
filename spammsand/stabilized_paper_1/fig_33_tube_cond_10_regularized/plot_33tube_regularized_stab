@@ -37,27 +37,27 @@ set style line 36 lt 1 lc rgb "blue"    lw 3.5
 set style line 27 lt 1 lc rgb "red"     lw 4.
 set style line 37 lt 1 lc rgb "blue"    lw 4.
 
-plot [2:20] "33_x36_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
-            "33_x36_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 21 notitle,\
-            "33_x36_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 31 notitle,\
-            "33_x48_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
-            "33_x48_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 22 notitle,\
-            "33_x48_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 32 notitle,\
-            "33_x64_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
-            "33_x64_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 23 notitle,\
-            "33_x64_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 33 notitle,\
-            "33_x80_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
-            "33_x80_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 24 notitle,\
-            "33_x80_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 34 notitle,\
-            "33_x96_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
-            "33_x96_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 25 notitle,\
-            "33_x96_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 35 notitle,\
-            "33_x112_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
-            "33_x112_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 26 notitle,\
-            "33_x112_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 36 notitle,\
-            "33_x128_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
-            "33_x128_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 27 notitle,\
-            "33_x128_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=16_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 37 notitle
+plot [2:20] "33_x36_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x36_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 21 notitle,\
+            "33_x36_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 31 notitle,\
+            "33_x48_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x48_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 22 notitle,\
+            "33_x48_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 32 notitle,\
+            "33_x64_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x64_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 23 notitle,\
+            "33_x64_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 33 notitle,\
+            "33_x80_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x80_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 24 notitle,\
+            "33_x80_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 34 notitle,\
+            "33_x96_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x96_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 25 notitle,\
+            "33_x96_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 35 notitle,\
+            "33_x112_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x112_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 26 notitle,\
+            "33_x112_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 36 notitle,\
+            "33_x128_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:8   w lines ls 1 notitle,\
+            "33_x128_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:9   w lines ls 27 notitle,\
+            "33_x128_10_S.mm_Tau0=.10D-01_TauS=.10D-03_Stab=.12D+00_Shft=.10D+00_Blks=8_Dual=Fls_Rght=Tru_Scal=Fls.dat" using 6:10  w lines ls 37 notitle
 
 
 
