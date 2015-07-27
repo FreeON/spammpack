@@ -147,7 +147,6 @@ data structure \cite{wise, samet}
 \begin{equation}
 \mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
 \end{equation}
-{\bf (I know we argued about this before, but I still like the normal 1-based notation better :) )}
 and orderings that are locality preserving \cite{}.  Orderings that
 preserve data locality are well developed in the database theory
 \cite{}, providing fast spatial and metric queries.  Locality
@@ -160,12 +159,14 @@ matrix structures with well segregated neighborhoods, inhabited by
 matrix elements of like size, and efficiently resolved by the quadtree
 data structure \cite{}.
 
-\subsection{Stable $\tt SpAMM$}
 
-With blocked-by-magnitude ordering of matrices $\mat{a}$ and
-$\mat{b}$, the Sparse Approximate Matrix Multiplication ($\tt SpAMM$)
-kernel, $\ot$, carries out fast occlusion culling of insignificant
-volumes in the product octree:
+\subsection{A Bounded Occlusion and Cull }
+
+$\tt SpAMM$ has evolved from a row-coloumn oriented skipout \cite{} to recursive occlusion and culling \cite{}
+based on sub-multiplicative norms $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ and the 
+Cauchy-Schwarz inequality,  $\lVert \mat{a}\cdot \mat{b} \rVert < \lVert \mat{a} \rVert \lVert \mat{b} \rVert$ \cite{kahan}.
+Occlusion involves avoiding work, whilst culling is the collecting of tasks. 
+Here, we ammend the previous (n\"{a}ive) occlusion and cull with the following recursion:
 \begin{widetext}
 \begin{equation}
 \mat{a}^{i} \ot \mat{b}^{i} =
@@ -182,51 +183,50 @@ volumes in the product octree:
               \right.  \, ,
 \end{equation}
 \end{widetext}
-with errors linear in $\tau$ bounded by the sub-multiplicative norms
-$\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ and the
-Cauchy-Schwarz inequality \cite{kahan,}.
-
-The approximate $\tt SpAMM$ product is
-\begin{equation}
-\widetilde{\mat{a}\cdot \mat{b}} \,  \equiv \, \mat{a} \ot \mat{b} \,
-  = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau}
-%+ {\cal{O}} \left(  \tau^2 \right) \; ,
-\end{equation}
-with the culled contractions $\mat{\Delta}^{a \cdot b}_{\tau}$ obeying
-the $\tt SpAMM$ bound
+which bounds the relative occlusion error,  
 \begin{equation}\label{bound}
-\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
+\frac{\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert}{N^2 }  \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
-at each level of recursion.  This makes $\ot$ {\em stable}, as defined
-by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).  However,
-instead of the roundoff error, we are concerned with a deterministic
-$\tt SpAMM$ error%
-\footnote{A non-deterministic ${\tt SpAMM}$ occlusion error is also
-  possible, {\em e.g.} associated with probabilistic stabilization
-  \cite{} or sampling \cite{} methods.},
-which leads to a non-associative algebra and error flows with
-properties of the Lie bracket
-\begin{equation} \label{braket}
-\widetilde{\left[ \mat{a} , \mat{b} \right]} \equiv \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}
-=  \left[ \mat{a} , \mat{b} \right]
-+ \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
+occuring in the approximate product:
+\begin{equation}\begin{equation}
+\widetilde{\mat{a}\cdot \mat{b}} \,  \equiv \, \mat{a} \ot \mat{b} \,
+  = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} \,.
+\end{equation}
+
+\subsection{Proof}
+
+
+\begin{equation}\label{bound}
+\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, N^2 \,  \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
 
 \subsection{Related Research} 
 
-Here, we note overlaping themes and research related to the results presented here.
-First,  its worth noting that the $\tt SpAMM$ concept has evolved, 
-from a row-coloum based occlusion \cite{}, to recursive octree occlusion \cite{}, and in this work, to the
-bounded (stable) occlusion satisfying Eq.~\ref{bound}.    This evolution cooresponds to an  ongoing economization and radical simplification
+$\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast matrix multiplication \cite{}.  
+In the Strassen-like approach, disjoint volumes in (abstract) tensor intermediates are omitted recursively \cite{}.  
+In the $\tt SpAMM$ approach to fast multixplication, a volume of significant contributions is culled from the 
+$ijk$-cube of tensor intermediates, with error bounded by Eq.~(\ref{bound}).  
+As explained by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}), this makes $\ot$ {\em stable}.
+ 
+
+$\tt SpAMM$ is broadly related to {\em generalized n-body} methods, poularized by Grey \cite{}.  
+In our development, generalized methods are simply a reflection of {\em genericity} \cite{} in 
+
+
+range querry 
+metric querry
+
+algorithms based on fast (hierarchical) spatial and metric querry \cite{Sammet} together with local approximation \cite{}.  
+
+
+This evolution cooresponds to an  ongoing economization and radical simplification
 of strongly interacting,  high performance solvers in the $\tt freeon$ ecosystem \cite{}.  These economizations 
 include $n$-body algorithms for the five common electronic structure solvers \cite{}, 
 and the (ongoing) development of generic strategies supporting rapid, hierarhcical access of spatial and metric data \cite{sammet, wise}.  
 For example, $\tt SpAMM$ has been extended to the {\em triple} metric querry for hextree occlusion of 
 the exact Fock exchange \cite{}.  
 
-$\tt SpAMM$ is broadly related to {\em generalized n-body} methods, poularized by Grey \cite{},  
-that are simply a reflection of {\em genericity}.
-algorithms based on fast (hierarchical) spatial and metric querry \cite{Sammet} together with local approximation \cite{}.  
+
 Recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
 for pairwise $n$-body methods \cite{Warren Salmon, Yellik}.  Also Demmel and showed  for the related fast matrix multiplicaiton.
 It may be possible to show similar results, based on the locality of reference developed in this work, encompassing both 
@@ -239,11 +239,6 @@ with very simple (skeletonized) frameworks, lowering barriers to entry, enhancin
 and following a sustainable commodity trend \cite{softwaresustainanbilty} that offers 
 increasingly cheap compute cycles over the next few decades \cite{}. 
 
-$\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast matrix multiplication \cite{},  
-which has been on fire with recent new developments \cite{}.  In the Strassen-like approach, disjoint volumes in (abstract) tensor 
-intermediates are omitted recursively \cite{}.  In the $\tt SpAMM$ approach to fast multixplication, a volume of
-significant contributions is culled from the naive $ijk$-cube of the intermediate contraction, 
-with error bounded by Eq.~\ref{bound}.  These approaches would seem to be compatible and synergystic.
 
 $\tt SpAMM$ is also related to technologies for the non-deterministic,  compresive sampling of the product.  These 
 technologies have also seen exciting developments, including  sketching \cite{Kutzkov2012, Pagh2013}, joining, sensing and probing \cite{}.
@@ -259,6 +254,15 @@ However, these approaches are not incompatible, with the quadtree data structure
 of most approaches to matrix compression \cite{} and sparsification \cite{wise}, as well as most 
 fast solvers they might interact with.  With little deflation in the cost of fast memory, solver ecosystems 
 that can bring multiple levels of approximation to in place data may enjoy significant cumulitive advantages. 
+
+
+which leads to a non-associative algebra and error flows with
+properties of the Lie bracket
+\begin{equation} \label{braket}
+\widetilde{\left[ \mat{a} , \mat{b} \right]} \equiv \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}
+=  \left[ \mat{a} , \mat{b} \right]
++ \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
+\end{equation}
 
 Finally, the mathematical developments in Higham, Mackey, Mackey and T (HMMT; Ref.~\cite{}) demonstrate 
 the convergence of NS iteration under all groups, addressing potential failure due to the development of 
@@ -810,7 +814,6 @@ $\rm v_{\widetilde{\mat{z}_k}} = \left( {\rm vol}_{ \widetilde{\mat{z}}_{k-1}\ot
 ${\rm v}_{\widetilde{\mat{y}}_k} = \left( {\rm vol}_{\mat{s}  \ots  \widetilde{\mat{z}}_{k}} \right) \times 100\% /N^3$.    
 Line width increases with increasing system size. 
 Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$. }
-}
 \end{figure} 
 \begin{figure}[h]\label{regularized_dual}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_dual.eps}
