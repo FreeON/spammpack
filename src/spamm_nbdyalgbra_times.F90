@@ -1,4 +1,4 @@
-#define SpAMM_PRINT_STREAM
+!#define SpAMM_PRINT_STREAM
 module spamm_nbdyalgbra_times
 
   use spamm_structures

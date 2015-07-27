@@ -1,7 +1,0 @@
-  reading matrix in mm format from 33_x8_11_S.mm
-  building a sandwich ..... |z>=|.1E-01>|.3E-03>|.6E-05>|.2E-06>|.4E-08>|.1E-09>|
-  starting to build a spamm sandwich ... 
-  problem dimension, n =          876         876
-  tau_0 = .10D-01, tau_s = .10D-02, d = .10D+00, shift = .10D+00
-  hi extremal ......... .22D+02
-  level shifting the rescaled matrix, s/s0 by ... .10D+00
