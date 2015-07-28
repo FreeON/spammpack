@@ -6,7 +6,7 @@ module spamm_elementals
 
   implicit none
 
-  ! This code contains protocols for solo/unit opperations on structures, copy, scalar multiply etc. 
+  ! This code contains protocols for solo/unit opperations on structures, copy, scalar multiply etc.
 CONTAINS
 
 
@@ -30,16 +30,16 @@ CONTAINS
        ! instantiate a tree if no passed allocation
        d => SpAMM_new_top_tree_2d_symm(MN)
     endif
- 
-    ! set passed data for initialization   
+
+    ! set passed data for initialization
     CALL SpAMM_flip(d)
 
     depth=0
     CALL SpAMM_set_identity_2d_symm_recur (d, depth)
 
-    ! prune unused nodes ... 
+    ! prune unused nodes ...
     CALL SpAMM_prune(d)
- 
+
   END FUNCTION SpAMM_set_identity_2d_symm
 
 
@@ -55,8 +55,8 @@ CONTAINS
     else
 
        if(a%frill%leaf)then
-          
-          a%frill%init=.FALSE. 
+
+          a%frill%init=.FALSE.
           a%chunk=SpAMM_zero
           DO I=1,a%frill%bndbx(1,1)-a%frill%bndbx(0,1)+1
              a%chunk(I,I)=SpAMM_one
@@ -84,7 +84,7 @@ CONTAINS
     tr=SpAMM_Zero
     IF(.NOT.ASSOCIATED(a))RETURN
 
-    IF(a%frill%leaf)THEN ! Leaf condition ? 
+    IF(a%frill%leaf)THEN ! Leaf condition ?
 
        do i = 1, a%frill%bndbx(1,1) - a%frill%bndbx(0,1)+1
          tr = tr + a%chunk(i,i)
@@ -92,14 +92,14 @@ CONTAINS
 
     ELSE
 
-       tr00=SpAMM_trace_tree_2d_symm_recur(a%child_00) 
+       tr00=SpAMM_trace_tree_2d_symm_recur(a%child_00)
        tr11=SpAMM_trace_tree_2d_symm_recur(a%child_11)
        tr=tr00+tr11
 
     ENDIF
   END FUNCTION SpAMM_trace_tree_2d_symm_recur
 
-  recursive subroutine SpAMM_print_tree_2d_symm_recur (A) 
+  recursive subroutine SpAMM_print_tree_2d_symm_recur (A)
 
     type(SpAMM_tree_2d_symm), pointer, intent(in)   :: A
     integer :: i,k
@@ -117,10 +117,10 @@ CONTAINS
 
     else
 
-       CALL SpAMM_print_tree_2d_symm_recur (a%child_00) 
-       CALL SpAMM_print_tree_2d_symm_recur (a%child_01) 
-       CALL SpAMM_print_tree_2d_symm_recur (a%child_10) 
-       CALL SpAMM_print_tree_2d_symm_recur (a%child_11) 
+       CALL SpAMM_print_tree_2d_symm_recur (a%child_00)
+       CALL SpAMM_print_tree_2d_symm_recur (a%child_01)
+       CALL SpAMM_print_tree_2d_symm_recur (a%child_10)
+       CALL SpAMM_print_tree_2d_symm_recur (a%child_11)
 
     endif
 
@@ -128,12 +128,12 @@ CONTAINS
 
 
 
-  recursive subroutine SpAMM_print_tree_1d_recur (A) 
+  recursive subroutine SpAMM_print_tree_1d_recur (A)
 
     type(SpAMM_tree_1d), pointer, intent(in)   :: A
 
     if(.not.associated(A))return
-    
+
     if(a%frill%leaf)then
        if(sum(a%chunk**2)<1d-6)return
        WRITE(*,33)a%frill%bndbx(0:1), a%chunk
@@ -141,8 +141,8 @@ CONTAINS
 
     else
 
-       CALL SpAMM_print_tree_1d_recur (a%child_0) 
-       CALL SpAMM_print_tree_1d_recur (a%child_1) 
+       CALL SpAMM_print_tree_1d_recur (a%child_0)
+       CALL SpAMM_print_tree_1d_recur (a%child_1)
 
     endif
 
@@ -159,7 +159,7 @@ CONTAINS
        return
     else
 
-       bb => A%frill%bndbx 
+       bb => A%frill%bndbx
        if(bb(1,1)-bb(0,1)==SBS)then
 
           absmax = maxval(abs(a%chunk))
@@ -189,18 +189,18 @@ CONTAINS
     if(.not. associated(at))return
 
     if(a%frill%leaf)then
-       
+
        twist=SUM( (a%chunk(1:SBS,1:SBS)-TRANSPOSE(at%chunk(1:SBS,1:SBS)))**2 )
-                 
+
     ELSE
 
        twist_01=SpAMM_twist_tree_2d_symm_double_recur ( a%child_01, a%child_10 )
        twist_10=SpAMM_twist_tree_2d_symm_double_recur ( a%child_10, a%child_01 )
 
-!       twist_00=SpAMM_twist_2d_symm_single_recur( a%child_00 ) 
+!       twist_00=SpAMM_twist_2d_symm_single_recur( a%child_00 )
 !       twist_11=SpAMM_twist_2d_symm_single_recur( a%child_11 )
 
-       twist = twist_01 + twist_10 !twist_00 + twist_11 + 
+       twist = twist_01 + twist_10 !twist_00 + twist_11 +
 
     ENDIF
 
@@ -218,7 +218,7 @@ CONTAINS
        twist_01=SpAMM_twist_tree_2d_symm_double_recur ( a%child_01, a%child_10 )
        twist_10=SpAMM_twist_tree_2d_symm_double_recur ( a%child_10, a%child_01 )
 
-!       twist_00=SpAMM_twist_2d_symm_single_recur( a%child_00 ) 
+!       twist_00=SpAMM_twist_2d_symm_single_recur( a%child_00 )
 !       twist_11=SpAMM_twist_2d_symm_single_recur( a%child_11 )
 
        twist=twist_01+twist_10
@@ -227,5 +227,45 @@ CONTAINS
 
      end function SpAMM_twist_tree_2d_symm
 
+  recursive subroutine spamm_tree_print_leaves_2d_symm_recur(A, file_unit)
+
+    type(spamm_tree_2d_symm), pointer, intent(in)   :: A
+    integer, intent(in) :: file_unit
+
+    integer :: i,k
+
+    if(.not.associated(A)) return
+
+    if(A%frill%leaf) then
+       write(file_unit, "(3I8,ES20.10)") &
+            A%frill%bndbx(0,1)+SPAMM_BLOCK_SIZE/2, &
+            A%frill%bndbx(1,1)+SPAMM_BLOCK_SIZE/2, &
+            SPAMM_BLOCK_SIZE, &
+            A%frill%norm2
+    else
+       call spamm_tree_print_leaves_2d_symm_recur(A%child_00, file_unit)
+       call spamm_tree_print_leaves_2d_symm_recur(A%child_01, file_unit)
+       call spamm_tree_print_leaves_2d_symm_recur(A%child_10, file_unit)
+       call spamm_tree_print_leaves_2d_symm_recur(A%child_11, file_unit)
+    endif
+
+  end subroutine spamm_tree_print_leaves_2d_symm_recur
+
+  !> Print bounding boxes and norms of the leave nodes. Use for
+  !> visualization.
+  !!
+  !! \param A The matrix.
+  !! \param file_unit The optional unit of the output file.
+  subroutine spamm_tree_print_leaves_2d_symm(A, file_unit)
+
+    type(spamm_tree_2d_symm), pointer, intent(in) :: A
+    integer, intent(in) :: file_unit
+
+    call spamm_tree_print_leaves_2d_symm_recur(A%child_00, file_unit)
+    call spamm_tree_print_leaves_2d_symm_recur(A%child_01, file_unit)
+    call spamm_tree_print_leaves_2d_symm_recur(A%child_10, file_unit)
+    call spamm_tree_print_leaves_2d_symm_recur(A%child_11, file_unit)
+
+  end subroutine spamm_tree_print_leaves_2d_symm
 
 END module spamm_elementals

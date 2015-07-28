@@ -1,4 +1,3 @@
-
 add_library( utilities
   test_utilities.F90
   mmio.f
@@ -18,12 +17,12 @@ set_directory_properties(
 #  ${LAPACK_LIBRARIES}
 #  )
 
-add_executable( spammsand_invsqrt 
-                spammsand_inverse_squareroot.F90 
+add_executable( spammsand_invsqrt
+                spammsand_inverse_squareroot.F90
 		spammsand_rqi_extremals.F90
-                spammsand_structures.F90 
-                spammsand.F90 
-                test_utilities.F90 
+                spammsand_structures.F90
+                spammsand.F90
+                test_utilities.F90
 		mmio.f )
 
 add_dependencies( spammsand_invsqrt spammpack-serial-shared )
@@ -67,10 +66,10 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR}/../src/include-serial )
 #  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
 #  )
 
-#add_executable( spammsand_invsqrt 
-#                spammsand_inverse_squareroot.F90 
-#                spammsand_structures.F90 
-#                spammsand.F90 
+#add_executable( spammsand_invsqrt
+#                spammsand_inverse_squareroot.F90
+#                spammsand_structures.F90
+#                spammsand.F90
 #                test_utilities.F90  )
 
 #add_dependencies( spammsand_invsqrt spammpack-serial-shared )
@@ -82,4 +81,3 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR}/../src/include-serial )
 #  )
 
 #include_directories( ../src/include-serial ../src/ ../utilities )
-
