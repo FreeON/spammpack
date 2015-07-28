@@ -202,189 +202,66 @@ occuring in the approximate product:
 
 \subsection{Related Research} 
 
-$\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast matrix multiplication \cite{}.  
+$\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast matrix multiplication 
+\cite{springerlink:10.1007/BF02165411,Ballard2014}.
 In the Strassen-like approach, disjoint volumes in (abstract) tensor intermediates are omitted recursively \cite{}.  
-In the $\tt SpAMM$ approach to fast multixplication, a volume of significant contributions is culled from the 
-$ijk$-cube of tensor intermediates, with error bounded by Eq.~(\ref{bound}).  
-As explained by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}), this makes $\ot$ {\em stable}.
- 
+In the $\tt SpAMM$ approach to fast multixplication, the numerically most significant volumes in 
+ n\"{a}ive ($ijk$) tensor intermediates are culled, with error bounded by Eq.~(\ref{bound}).  
+This bound makes $\ot$ a {\em stable} form of fast multiplication,  as explained by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).
 
-$\tt SpAMM$ is broadly related to {\em generalized n-body} methods, poularized by Grey \cite{}.  
-In our development, generalized methods are simply a reflection of {\em genericity} \cite{} in 
+$\tt SpAMM$ is a $n$-body method for fast matrix multiplication, related to the 
+generalized methods popularized by Grey \cite{Gray2001,Gray2003}. In our development,
+generalization reflects the {\em genericity} \cite{} of recursive data access \cite{}, 
+enabling range querries, metric querries, higher dimensional querries and so on, with common frameworks, 
+structures and runtimes.  Recently for example, we generalized the double (left-right) metric querry in 
+Eq.~(\ref{}) to hextree metric querries of the exact Fock exchange \cite{}.  
 
+Also, $n$-body methods offer well established protocols for turning spatial and metric locality into 
+data and temporal locality \cite{}; recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
+for pairwise $n$-body methods \cite{Yellik}.   Bridging the gap between 
+$n$-body solver and fast matrix multiplication, we recently demonstrated strong scaling for fast matrix multiplication ($\tt SpAMM$) \cite{}.  
+The introduction of algebraic and strong Euclidean locality in this work may further enhance high performance implementaitons. 
 
-range querry 
-metric querry
+%As noted by Aluru \cite{}, the top-down $n$-body model and breadth-first map-reduction are equivalent \cite{}, offering
+%the potential febraic and strong Euclidean locality developed in this work may further enhance high performance implementaiton. 
+%or alignment with emergent enterprise frameworks \cite{} and functional programming 
+%languages that support generacity \cite{}. Language suppo
+%with very simple (skeletonized) frameworks, lowering barriers to entry, enhancing performance towards decentralized memory landscapes, 
+%and following a sustainable commodity trend \cite{softwaresustainanbilty} that offers 
+%increasingly cheap compute cycles over the next few decades \cite{}. 
 
-algorithms based on fast (hierarchical) spatial and metric querry \cite{Sammet} together with local approximation \cite{}.  
-
-
-This evolution cooresponds to an  ongoing economization and radical simplification
-of strongly interacting,  high performance solvers in the $\tt freeon$ ecosystem \cite{}.  These economizations 
-include $n$-body algorithms for the five common electronic structure solvers \cite{}, 
-and the (ongoing) development of generic strategies supporting rapid, hierarhcical access of spatial and metric data \cite{sammet, wise}.  
-For example, $\tt SpAMM$ has been extended to the {\em triple} metric querry for hextree occlusion of 
-the exact Fock exchange \cite{}.  
-
-
-Recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
-for pairwise $n$-body methods \cite{Warren Salmon, Yellik}.  Also Demmel and showed  for the related fast matrix multiplicaiton.
-It may be possible to show similar results, based on the locality of reference developed in this work, encompassing both 
-strong Euclidian locality and with algebraic (diagonal) locality towards identity.  
-
-As noted by Aluru \cite{}, the top-down $n$-body model and breadth-first map-reduction are equivalent \cite{}, offering
-the potential for alignment with emergent enterprise frameworks \cite{} and functional programming 
-languages that support generacity \cite{}. Language support for generic recursion may allow very complex solver ecosystems 
-with very simple (skeletonized) frameworks, lowering barriers to entry, enhancing performance towards decentralized memory landscapes, 
-and following a sustainable commodity trend \cite{softwaresustainanbilty} that offers 
-increasingly cheap compute cycles over the next few decades \cite{}. 
-
-
-$\tt SpAMM$ is also related to technologies for the non-deterministic,  compresive sampling of the product.  These 
-technologies have also seen exciting developments, including  sketching \cite{Kutzkov2012, Pagh2013}, joining, sensing and probing \cite{}.
-These methods involve a wheighted (probablistic) and on the fly sampling with the potential for complexity reduction under
-certain assumptions (random distributions) [{\bf is this true for all? what about MAD?}].  
-$\tt SpAMM$ also employs an on the fly wheighted sampling, based on the product of matrix norms, 
-but opperating under the contrary assumption of compresion through locality in the naive $ijk$ space, brought about 
-via correlations in the algebra (towards identity) and in the underlying data (blocked-by-magnitude).
+This work offers a data local alternative to fast non-deterministic methods for sampling the product, 
+which include sketching \cite{Sarlos2006,Drineas2006,Mahoney2012,Pagh2013,Sivertsen2014,Woodruff2015},
+joining \cite{Mishra92,Hoel94,Jacox03,Chen07,Amossen09,Lieberman08,Kim09}, 
+sensing \cite{} and probing \cite{}.  These  methods involve a wheighted (probablistic) 
+and on the fly sampling, with the potential for complexity reduction in the case of random distributions. 
+$\tt SpAMM$ also employs on the fly wheighted sampling,  but with 
+compresion through locality, brought about by algebraic correlations (towards identity) and also in the
+metric structure, through strong Euclidean locality.
 
 Methods that achieve compression in the product stream are different from reduced rank algorithms that achieve 
-matrix compression \cite{} and/or sparsificiation \cite{} of the matrix in a step preceeding multiplication.  
-However, these approaches are not incompatible, with the quadtree data structure supportive 
-of most approaches to matrix compression \cite{} and sparsification \cite{wise}, as well as most 
-fast solvers they might interact with.  With little deflation in the cost of fast memory, solver ecosystems 
-that can bring multiple levels of approximation to in place data may enjoy significant cumulitive advantages. 
+matrix compression \cite{} in a step that preceeds multiplication.   However, fast methods for matrix compression are 
+generally compatible with the matrix quadtree, as are additional fast (generalized) solvers.  Thus, generality 
+and interoperability may enable powerful solver ecosystems through deeply layered approximations to in place data. 
+Language support for generic recursion may also support complex solver ecosystems with simple (skeletonized) 
+frameworks, lowering barriers to entry, enhancing concurence in the Erlang sense, and following a sustainable 
+commodity trend \cite{softwaresustainanbilty}.
 
+% which leads to a non-associative algebra and error flows with
+% properties of the Lie bracket
+% \begin{equation} \label{braket}
+% \widetilde{\left[ \mat{a} , \mat{b} \right]} \equiv \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}
+% =  \left[ \mat{a} , \mat{b} \right]
+% + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
+% \end{equation}
 
-which leads to a non-associative algebra and error flows with
-properties of the Lie bracket
-\begin{equation} \label{braket}
-\widetilde{\left[ \mat{a} , \mat{b} \right]} \equiv \mat{a} \ot \mat{b}-\mat{b} \ot \mat{a}
-=  \left[ \mat{a} , \mat{b} \right]
-+ \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
-\end{equation}
+% Finally, the mathematical developments in Higham, Mackey, Mackey and T (HMMT; Ref.~\cite{}) demonstrate 
+% the convergence of NS iteration under all groups, addressing potential failure due to the development of 
+% pathalogical symmetries related to {\em e.g.} Eq.~\ref{braket}.    Also in this key paper, HMMT develop
+% the fixed point stability analyses (about 2/3 of the way in), which this work draws heavily upon.  This 
+% work also draws on the scaling in Chen and Chow's \cite{} approach to a scaled NS iteration for ill-conditioned 
+% problems. 
 
-Finally, the mathematical developments in Higham, Mackey, Mackey and T (HMMT; Ref.~\cite{}) demonstrate 
-the convergence of NS iteration under all groups, addressing potential failure due to the development of 
-pathalogical symmetries related to {\em e.g.} Eq.~\ref{braket}.    Also in this key paper, HMMT develop
-the fixed point stability analyses (about 2/3 of the way in), which this work draws heavily upon.  This 
-work also draws on the scaling in Chen and Chow's \cite{} approach to a scaled NS iteration for ill-conditioned 
-problems. 
-
-% like the Hiearchical Semi-Seperable method, 
-% but are similar in structure, complimentary and synergistic. 
-
-% In this work, we are focused on achieving preconditioned (lensed) states for $\ot$ at the edge of stability,  
-% with future work examining sandwich techniques for achieving additional (full) precision \cite{}.  
-% =======
-% \subsection{Related Research}
-
-% Here, we note overlaping themes and research related to the results
-% presented here.  First, its worth noting that the $\tt SpAMM$ concept
-% has evolved, from a row-column based occlusion \cite{}, to recursive
-% octree occlusion \cite{}, and in this work, to the bounded (stable)
-% occlusion satisfying Eq.~\ref{bound}.  This evolution corresponds to
-% an ongoing economization and radical simplification of strongly
-% interacting, high performance solvers in the $\tt FreeON$ ecosystem
-% \cite{}.  These economizations include $N$-body algorithms for the
-% five common electronic structure solvers \cite{}, and the (ongoing)
-% development of generic strategies supporting rapid, hierarchical
-% access of spatial and metric data \cite{sammet, wise}.  For example,
-% $\tt SpAMM$ has been extended to the {\em triple} metric query for
-% hextree occlusion of the exact Fock exchange \cite{}.
-
-% $\tt SpAMM$ is broadly related to {\em generalized N-body} methods,
-% popularized by Grey \cite{Gray2001,Gray2003}, that are simply algorithms based on fast
-% spatial and metric query \cite{Sammet} together with local approximation
-% \cite{}.  Recently, x, y and Yellik derived perfect strong scaling
-% communication optimal bounds for pairwise $N$-body methods
-% \cite{10.1109/IPDPSW.2012.303}.  Also, Demmel \emph{et al.}~derived such
-% bounds for the related fast matrix multiplication.  
-% \cite{Solomonik2011}
-
-% It may be possible
-% to show similar results for $\tt SpAMM$, by exploiting the additional
-% locality of reference developed in this work, {\em e.g.}~based on
-% strong Euclidean locality and with iteration towards the identity.
-
-% As noted by Aluru \cite{}, the top-down $N$-body model and
-% breadth-first map-reduction are equivalent \cite{}, offering the
-% potential for alignment with emergent enterprise frameworks \cite{}
-% and functional programming languages that support generacity
-% \cite{}. Language support for generic recursion may allow very complex
-% solver ecosystems with very simple (skeletonized) frameworks, lowering
-% barriers to entry, enhancing performance towards decentralized memory
-% landscapes, and following a sustainable commodity trend
-% \cite{softwaresustainanbilty} that offers increasingly cheap compute
-% cycles over the next few decades \cite{}.
-
-% $\tt SpAMM$ is perhaps most closely related to the Strassen-like
-% branch of fast matrix multiplication
-% \cite{springerlink:10.1007/BF02165411}, which has been on fire with
-% recent new developments \cite{Ballard2014}.  In the Strassen-like
-% approach, disjoint volumes in (abstract) tensor intermediates are
-% omitted recursively \cite{}.  In the $\tt SpAMM$ approach to fast
-% multixplication, a volume of significant contributions is culled from
-% the naive $ijk$-cube of the intermediate contraction, with error
-% bounded by Eq.~\ref{bound}.  These approaches would seem to be
-% compatible and synergistic.
-
-% $\tt SpAMM$ is also related to database problems involving the 
-% join \cite{Mishra92,Hoel94,Jacox03,Chen07,Amossen09,Lieberman08,Kim09}, and also 
-% the matrix sketch  \cite{Sarlos2006,Drineas2006,Mahoney2012,Pagh2013,Sivertsen2014,Woodruff2015}.
-% These methods deliver a relative, probabilistic error 
-% and on the fly sampling with the potential for complexity reduction under {\em randomization}.
-% $\tt SpAMM$ delivers a rigorous relative error bound and on the fly weighted sampling, 
-% but operates under the contrary assumption of compression through {\em correlations}
-% in the naive $ijk$ space, brought about via lensing (algebraic localization cooresponding to identity iteration),
-% and for matrices with decay, by strong metric (block-by-magnitude) locality in the underlying data. 
-
-% Methods that achieve compression in the product stream are different
-% from reduced rank algorithms that achieve compression \cite{}
-% and/or sparsificiation \cite{} of the matrix in a step preceding
-% multiplication.  However, these approaches are not incompatible, with
-% the quadtree data structure supportive of most approaches to matrix
-% compression \cite{} and sparsification \cite{wise}, as well as most
-% fast solvers they might interact with.  With little deflation in the
-% cost of fast memory, solver ecosystems that can bring multiple levels
-% of approximation to in-place data may enjoy significant cumulative
-% advantages.
-
-% Finally, the mathematical developments in Higham, Mackey, Mackey and
-% Tisseur (HMMT; Ref.~\cite{Higham2005}) demonstrate the convergence of
-% Newton-Schulz (NS) iteration under all groups, addressing potential
-% failure due to the development of pathalogical symmetries related to
-% {\em e.g.}~Eq.~\ref{braket}.  Also in this key paper, HMMT develop the
-% fixed point stability analysis (about 2/3 of the way in), which this
-% work draws heavily upon.  This work also draws on the scaling in Chen
-% and Chow's \cite{} approach to a scaled NS iteration for
-% ill-conditioned problems.
-
-% % like the Hiearchical Semi-Seperable method,
-% % but are similar in structure, complimentary and synergistic.
-
-% % In this work, we are focused on achieving preconditioned (lensed) states for $\ot$ at the edge of stability,
-% % with future work examining sandwich techniques for achieving additional (full) precision \cite{}.
-
-
-
-% >>>>>>> d4c0ab84d18629f0a3f1847549c555b7d8eece61
-
-% Targeted at the preconditioned state: diff factorization and solution of the inverse via SPAI. This
-% approach has the lower dependence on the $\kappa(\mat{s})^{-1/2}$ instead of $\kappa(\mat{s})^{-1}$
-% cost of factorization  Because computing residual corrected .
-
-% $\tt SpAMM$ is {\em not} an on the fly matrix truncation/sparsification algorithm \cite{}, and shouldn't be associated
-
-
-% with algorithms based on the blocked-CSR (BCSR) and distributed-blocked-CSR (DBCSR) structures,
-% introduced previously by one of us \cite{}.
-
-
-%In the case of $\tt SpAMM$,  querries are performed on the norm (matrix distance),
-%rather than a Euclidean distance, as in the case of {\em e.g.}~an astrophisical tree code \cite{}.
-%Also, our recursive approximation is occlusion via the Cauchy-Schwarz
-%inequality and the sub-multiplicative property, rather than local Taylor expansion.
 
 \section{First Order Newton-Shulz Iteration}
 
@@ -566,8 +443,6 @@ double exponential (Fig.)
 %\subsubsection{water boxes}
 %\subsubsection{ordering}
 \subsubsection{Matrix Market}
-
-\section{Stability (Proof)}
 
 \section{Error Flows in Square Root Iteration}
 
@@ -862,7 +737,7 @@ based on the backwards accumulation of persistence data (Section \ref{}).
 %scalar optimation of the NS map, the minimization of opperations in mixed $\tt SpAMM$/regularization/convergence protocols, 
 %non-deterministic convergence acceleration, and the expoiting temporal locality. 
 
-\subsection{Locality} 
+\section{Locality} 
 
 A premier feature of the $n$-body algorithm is the ability to exploit data locality efficiently.  In the $ijk$ space, 
 there are multiple locality principles that can be exploited by $\tt SpAMM$.  Fir
