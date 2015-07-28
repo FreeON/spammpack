@@ -17,7 +17,8 @@ set label 1 "e_k"       tc rgb "black" at 7.5, 0.0000001
 set label 2 "v_{y_k}"   tc rgb "red"   at 12, 0.075
 set label 3 "v_{z_k}"   tc rgb "blue"  at 12, 0.0002
 
-set yrange [0.0000000001:1.1]
+#set yrange [0.0000000001:1.1]
+set yrange [0.0001:11.0]
 
 set style line 1 lt 1 lc rgb "black"    lw 3
 

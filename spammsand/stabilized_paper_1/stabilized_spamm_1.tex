@@ -402,6 +402,10 @@ and the cooresponding canonical (dual) square root iteration \cite{};
 with eigenvalues in the proper domain aggregated towards 0 or 1 by the
 NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha
 \mat{x} \right)$ \cite{}.  Then, starting with $\mat{z}_0=\mat{I}$ and
+
+
+ $\mat{s} \leftarrow \mat{s}/s_{N-1}$, 
+
 $\mat{x}_0=\mat{y}_0=\mat{s}$, ${\mat{y}}_k \rightarrow
 \mat{s}^{1/2}$, ${\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and
 ${\mat{x}}_k \rightarrow {\mat{I}}$.  As in the case of sign
@@ -753,34 +757,32 @@ factor is Riley's method \cite{};
 \end{equation}
 but this is ineffective when $\mu$ is large, and invovles powers of the full inverse. 
 
-Here, we outline a nested product represenation of the full inverse factor and present preliminary 
-results for  approximate solutions. 
-This product represenation rests on a most permisive (but still effective) 
-preconditioner, $\mat{s}^{-1/2}_{\tau_0 \mu_0}$. 
-By effective we mean $\mu_0<\, .1$ ({\em ie} taking $\mat{s} \leftarrow \mat{s}/s_{N-1}$, conditioning is improved by at least one order). 
-By permisive, we mean $\tau_0$ is large but enables stable NS iterations for the shifted problem. 
-In this way, the matrix and product norms may be brought into a tighter distribution 
-about the resolvent $\mat{I}_{\tau_0\mu_0}\equiv \widetilde{\mat{I}}\left(\mat{s}_{\tau_0\mu_0}\right)$,
-vastly strengthening the bound  Eq.~(\ref{bound}) and yeilding strongly contractive locality properties about
-the fixed point.  Thus, it may be possible to iteratively build the full factor with likewise ``thin'', generic 
-increments ($\Delta \tau \sim .1$ and $\Delta \mu \sim .1$). 
+Here, we outline an alternative,  nested product represenation of the inverse factor and show preliminary 
+results for a first, most approximate solution.  This most approximate (but effective) solution is (ideally) representative 
+of one order in the precision, $\tau_0\sim .1$, and corrective by one order in the condition, $\mu_0\sim .1$,
+yeilding a thin, $0^{\rm th}$ preconditioner, $\mat{s}^{-1/2}_{\tau_0 \mu_0}$.  ``Thin NS'' iteration might then bring 
+spectral resolution into a more concentrated alignment with norm magnitudes about the resolvent 
+$\mat{I}_{\tau_0\mu_0}\equiv \widetilde{\mat{I}}\left(\mat{s}_{\tau_0\mu_0}\right)$.  
 
-\pagebreak
-
-
-\pagebreak
-
+Culled $\tt SpAMM$ volumes for this most approximate solution are shown with increasing system size in 
+Fig.~\ref{regularized_stab} for the stable instance, and in Fig.~\ref{regularized_dual} for the dual instance, 
+cooresponding to ``thin NS'' iteration for the (3,3) $\kappa(\mat{s})=10^{10}$ nanotube series.  
+The behavior of these instances is very different; in the ``stable'' 
+instance, a stable iteration could not be found at precision $\tau_0=.1$, even with $\mu_0=.1$ regularization.  Also, this stable iteration
+sees a weakly convergent trace with inflating cull-volumes. On the other hand, volume of the dual iteration 
+is strongly contracted with resolution of the identity.  
+ 
 \begin{figure}[h]\label{regularized_stab}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
 \caption{
 Culled volumes in the thin slice, stable instance approximation of $\mat{s}^{-1/2}_{\tau_0 \mu_0}$
 for the (3,3) nanotube, $\kappa(\mat{s})=10^{10}$ matrix series 
 described in Section \ref{data}.  In the ``stable'' instance, it was not possible to achieve stability with $\tau_0=.1$
-In this ``stable'' case, a thin slice cooresponds to $\mu_0=.1, \tau_0=10^{-2} \;  \&  \; \tau_s=10^{-4}$.  Labeled volumes are
+In this ``stable'' case, a thin slice cooresponds to $\mu_0=.1, \tau_0=10^{-2} \;  \&  \; \tau_s=10^{-4}$, and volumes are
 $\rm v_{\widetilde{\mat{z}_k}} = \left( {\rm vol}_{ \widetilde{\mat{z}}_{k-1}\ot h[\widetilde{\mat{x}}_{k-1}] } \right) \times 100\% /N^3$ and
 ${\rm v}_{\widetilde{\mat{y}}_k} = \left( {\rm vol}_{\mat{s}  \ots  \widetilde{\mat{z}}_{k}} \right) \times 100\% /N^3$.    
 Line width increases with increasing system size. 
-Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$. }
+Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$.}
 \end{figure} 
 \begin{figure}[h]\label{regularized_dual}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_dual.eps}
@@ -788,39 +790,36 @@ Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \righ
 Culled volumes in the thin slice, dual instance approximation of $\mat{s}^{-1/2}_{\tau_0 \mu_0}$
 for the (3,3) nanotube, $\kappa(\mat{s})=10^{10}$ matrix series 
 described in Section \ref{data}. The thin slice cooresponds to $\mu_0=.1, \tau_0=.1 \;  \&  \; \tau_s=.001$ 
-with labeled volumes 
+with volumes 
 ${\rm v}_{\widetilde{\mat{y}}_k}= \left( {\rm vol}_{  h[\widetilde{\mat{x}}_{k-1}] \ots \widetilde{\mat{y}}_k }  \right) \times 100\% /N^3$ and  
 ${\rm v}_{\widetilde{\mat{z}}_k}= \left( {\rm vol}_{\widetilde{\mat{z}}_{k-1} \ot  h[\widetilde{\mat{x}}_{k-1}]} \right) \times 100\% /N^3$.
 Line width increases with increasing system size. 
-Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$. }
+Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$, which rapidly approaches $10^{-11}$ (not shown). }
 \end{figure} 
 
-\pagebreak
-\pagebreak
+These results reflect very different cull-spaces.  In the stable instance, the spectral resolution of powers is not compresive, and  
+$\widetilde{\mat{y}}^{\rm stab}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{s}_{\mu_0}$ is  poorly bound by Eq.~(\ref{bound}).
+In the dual case however, $\widetilde{\mat{y}}^{\rm dual}_k \rightarrow  \mat{I}_{\tau_0 \mu_0} \oto \mat{s}^{1/2}_{\tau_0 \mu_0}$
+and $\widetilde{\mat{z}}^{\rm dual}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{I}_{\tau_0 \mu_0}$, 
+with Eq.~(\ref{bound}) tightening to
+\begin{equation}\label{boundY}
+\Delta^{\mat{I}_{\tau_0 \mu_0} \cdot \mat{s}^{1/2}_{\tau_0 \mu_0}} <  \tau n \lVert \mat{s}^{1/2}_{\tau_0 \mu_0} \rVert
+\end{equation}
+and 
+\begin{equation}\label{boundZ}
+\Delta^{ \mat{s}^{-1/2}_{\tau_0 \mu_0}\cdot \mat{I}_{\tau_0 \mu_0}}  <  \tau n \lVert \mat{s}^{-1/2}_{\tau_0 \mu_0} \rVert \, ,
+\end{equation}
+as relative and absolute errors converge.  This tightening is compressive, leading to complexities that are quadtree copy in place.   
 
-
-Culled $\tt SpAMM$ volumes are shown with increasing system size in Fig.~\ref{regularized_stab} for the stable instance, 
-and  in Fig.~\ref{regularized_dual} for the dual instance, cooresponding to a first ``thin''  slice preconditer for the 
-(3,3) $\kappa(\mat{s})=10^{10}$ nanotube series.  The behavior of these instances is very different; in the stable 
-case, a ``stable'' iteration could not be found for the $\mu_0=.1$ regularization.  Also, this stable iteration
-sees a weakly convergent trace with increasing $\tt SpAMM$ volumes.   On the other hand, volume of the dual iteration 
-is strongly contracted with resolution of the identity.   
-
-
-These results reflect very different culled subspaces, with 
-cancelation of eigen-powers in 
-$\widetilde{\mat{y}}^{\rm stab}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{s}_{\mu_0}$ weakening Eq.~(\ref{bound}), whilst 
-$\widetilde{\mat{y}}^{\rm dual}_k \rightarrow  \mat{I}_{\tau_0 \mu_0} \oto \mat{s}^{1/2}_{\tau_0 \mu_0}$ should approach  quadtree copy in place.   
-
-
-With the dual instance, the $\tt SpAMM$ approximation can be brought all the way to  $\tau_0 = .1$ in the case of $\mu_0 = .1$.
+In the dual instance, the $\tt SpAMM$ approximation can be brought all the way to  $\tau_0 = .1$ in the case of $\mu_0 = .1$.
 From this first slice  $\mat{s}^{-1/2}_{\tau_0, \mu_0}$ then, a next level shifted preconditioner can be found, 
 $\mat{s}^{-1/2}_{\tau_0 \mu_1}$, based on the residual 
 $\left(\mat{s}^{-1/2}_{\tau_0\mu_0} \right)^\dagger \, \oto \, \left(\mat{s}+\mu_1 \mat{I} \right)  \, \oto \,\mat{s}^{-1/2}_{\tau_0 \mu_0} $, with {\em e.g.} 
 $\mu_1= .01$. It may then be possible to find the full ($\tt SpAMM$ most approximate) 
 factor as the nested product of preconditioned thin slices;
 \begin{equation}
-\mat{s}^{-1/2}_{\tau_0} = \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots 
+\mat{s}^{-1/2}_{\tau_0} = \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots  which rapidly approaches $10^{-11}$ (not shown). }
+\end{figure} 
 \,  \mat{s}^{-1/2}_{\tau_0 \mu_0}
 \end{equation}
 In this way, 
@@ -831,19 +830,19 @@ Likewise, it may be possible to obtain the full factor with increasing $\tt SpAM
 \mat{s}^{-1/2} = \mat{s}^{-1/2}_{\tau_m} \, \otm \,  \mat{s}^{-1/2}_{\tau_{m-1}} \, \otmm \dots \, \mat{s}^{-1/2}_{\tau_0}
 \end{equation}taken over the sequence $1 > \tau_0 > \tau_1 > \dots > \tau_n $.  More generally we write 
 \begin{equation}
-\mat{s}^{-1/2} \equiv \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0}} {\left|\, \tau\, \mu \, ; \, \scriptstyle{\mat{s}^{-1/2}}  \right>}  \, ,
+\mat{s}^{-1/2} \equiv \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0   } } {\left|\, \tau\, \mu \, ; \, \scriptstyle{\mat{s}^{-1/2}}  \right>}  \, ,
 \end{equation}
-acknowledging the potential for a flexible combination of regularization and $\tt SpAMM$ approximation. The braket notation marks 
-the potential for assymetries in the intermediate represenation.  This thin product representation may have advantages: 
-\begin{itemize}
-\item{Each solve involves a few generic and well behaved steps that may be optimized.}
-\item{Each solve can be brought rapidly into compressive identity iteration.} 
-\item{The {\tt SpAMM} bound is vastly strengthend,  via Eq.~(\ref{}).} 
-\item{Exploits a new, strong form of locality.}
-\item{The inverse factor can be applied incrementally.} 
-\item{Slice update and application can be partitioned temporally.}
-\end{itemize}
+acknowledging the potential for a flexible path between precision and regularization. The braket notation marks 
+the potential for assymetries in the intermediate represenation.  
 
+This thin product representation may have advantages: 
+({\bf{1}}) Each thin solve involves a few generic and well behaved steps that may be narrowly optimized;
+({\bf{2}}) Each thin solve can be brought rapidly into compressive identity iteration; 
+({\bf{3}}) The {\tt SpAMM} bound is vastly strengthend, via Eqs.~(\ref{boundY}-\ref{boundZ}); 
+({\bf{4}}) A new algebraic $n$-body form of locality is exploited; 
+({\bf{5}}) The inverse factor can be applied incrementally;
+({\bf{6}}) Slice update and application is ammenable to continous temporal partitioning based on {\em e.g.} persistence data.
+\end{itemize}
 
 %\begin{equation}
 %\mat(I}\left(\mat{s}\right) = \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0}}  \bigotimes_{\substack{\tau'=\tau_0 \\ \mu'=\mu_0}} 
