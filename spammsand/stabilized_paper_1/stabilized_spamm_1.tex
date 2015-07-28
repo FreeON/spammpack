@@ -498,6 +498,20 @@ is mild, with errors in the relative product remaining well conditioned.
 In the stab instance, conection with $\mat{s}$ is retained at each step, but at the price of the 
 $\mat{y}^{\rm stab}_k$ update involving magnitudes that vary widely in the $\tt SpAMM$ product.     
 
+
+\section{Implementation}
+
+\subsection{programming}
+
+FP, F08, OpenMP 4.0
+In the current implementation, all persistence data
+(norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
+ that may be achieved by minimal locally essential trees \cite{}.
+
+\subsection{scaling}
+
+\subsection{stabilization}
+
 For these reasons, maintaining connection to the eigenvectors of $\mat{s}$ through 
 a tighter first product is nessesary.  In the stab instance, and with a 
 tighter ``{\em s}'' product, $\tau_s \ll \tau$, we find very interesting left/right differences; 
@@ -509,18 +523,6 @@ is  different from the left first product
 \begin{equation} 
 \widetilde{\mat{x}}^L_k \leftarrow \left(  \widetilde{\mat{z}}^\dagger_{k} \, \ots \, \mat{s} \right) \,  \ot  \, \widetilde{\mat{z}}_{k-1} \; .
 \end{equation}
-
-\section{Implementation}
-
-\subsection{programming}
-
-FP, F08, OpenMP 4.0
-In the current implementation, all persistence data
-(norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
- that may be achieved by minimal locally essential trees \cite{}.
-
-
-\subsection{scaling and stabilization}
 
 \subsection{regularization}
 damping the inversion and the small value to be added c is called Marquardt-Levenberg coefficient
@@ -763,16 +765,10 @@ vastly strengthening the bound  Eq.~(\ref{bound}) and yeilding strongly contract
 the fixed point.  Thus, it may be possible to iteratively build the full factor with likewise ``thin'', generic 
 increments ($\Delta \tau \sim .1$ and $\Delta \mu \sim .1$). 
 
-Culled $\tt SpAMM$ volumes are shown with increasing system size in Fig.~\ref{regularized_stab} for the stable instance, 
-and  in Fig.~\ref{regularized_dual} for the dual instance, cooresponding to a first ``thin''  slice preconditer for the 
-(3,3) $\kappa(\mat{s})=10^{10}$ nanotube series.  The behavior of these instances is very different; in the stable 
-case, a ``stable'' iteration could not be found for the $\mu_0=.1$ regularization.  Also, this stable iteration
-sees a weakly convergent trace with increasing $\tt SpAMM$ volumes.   On the other hand, volume of the dual iteration 
-is strongly contracted with resolution of the identity.   
-These results reflect very different culled subspaces, with 
-cancelation of eigen-powers in 
-$\widetilde{\mat{y}}^{\rm stab}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{s}_{\mu_0}$ weakening Eq.~(\ref{bound}), whilst 
-$\widetilde{\mat{y}}^{\rm dual}_k \rightarrow  \mat{I}_{\tau_0 \mu_0} \oto \mat{s}^{1/2}_{\tau_0 \mu_0}$ should approach  quadtree copy in place.   
+\pagebreak
+
+
+\pagebreak
 
 \begin{figure}[h]\label{regularized_stab}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
@@ -799,39 +795,61 @@ Line width increases with increasing system size.
 Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$. }
 \end{figure} 
 
+\pagebreak
+\pagebreak
+
+
+Culled $\tt SpAMM$ volumes are shown with increasing system size in Fig.~\ref{regularized_stab} for the stable instance, 
+and  in Fig.~\ref{regularized_dual} for the dual instance, cooresponding to a first ``thin''  slice preconditer for the 
+(3,3) $\kappa(\mat{s})=10^{10}$ nanotube series.  The behavior of these instances is very different; in the stable 
+case, a ``stable'' iteration could not be found for the $\mu_0=.1$ regularization.  Also, this stable iteration
+sees a weakly convergent trace with increasing $\tt SpAMM$ volumes.   On the other hand, volume of the dual iteration 
+is strongly contracted with resolution of the identity.   
+
+
+These results reflect very different culled subspaces, with 
+cancelation of eigen-powers in 
+$\widetilde{\mat{y}}^{\rm stab}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{s}_{\mu_0}$ weakening Eq.~(\ref{bound}), whilst 
+$\widetilde{\mat{y}}^{\rm dual}_k \rightarrow  \mat{I}_{\tau_0 \mu_0} \oto \mat{s}^{1/2}_{\tau_0 \mu_0}$ should approach  quadtree copy in place.   
+
+
 With the dual instance, the $\tt SpAMM$ approximation can be brought all the way to  $\tau_0 = .1$ in the case of $\mu_0 = .1$.
 From this first slice  $\mat{s}^{-1/2}_{\tau_0, \mu_0}$ then, a next level shifted preconditioner can be found, 
 $\mat{s}^{-1/2}_{\tau_0 \mu_1}$, based on the residual 
 $\left(\mat{s}^{-1/2}_{\tau_0\mu_0} \right)^\dagger \, \oto \, \left(\mat{s}+\mu_1 \mat{I} \right)  \, \oto \,\mat{s}^{-1/2}_{\tau_0 \mu_0} $, with {\em e.g.} 
 $\mu_1= .01$. It may then be possible to find the full ($\tt SpAMM$ most approximate) 
 factor as the nested product of preconditioned thin slices;
-\begin{eqnarray}
-\mat{s}^{-1/2}_{\tau_0} &=& \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots 
-\,  \mat{s}^{-1/2}_{\tau_0 \mu_0}\\
-&=&\bigotimes^{\mu_n}_{\mu=\mu_0} \mat{s}^{-1/2}_{\tau_0 \mu} \, .
-\end{eqnarray}In this way, 
+\begin{equation}
+\mat{s}^{-1/2}_{\tau_0} = \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots 
+\,  \mat{s}^{-1/2}_{\tau_0 \mu_0}
+\end{equation}
+In this way, 
 iterative regularization can be used to find a product representation of the inverse square root at a $\tt SpAMM$ resolution 
 potentially far more permisive than otherwise possible. 
 Likewise, it may be possible to obtain the full factor with increasing $\tt SpAMM$ resolution in the product representation:
-\begin{eqnarray}
-\mat{s}^{-1/2} &=& \mat{s}^{-1/2}_{\tau_m} \, \otm \,  \mat{s}^{-1/2}_{\tau_{m-1}} \, \otmm \dots \, \mat{s}^{-1/2}_{\tau_0}\\ 
-&=&\bigotimes^{\tau_m}_{\tau=\tau_0} \mat{s}^{-1/2}_{\tau} \, ,
-\end{eqnarray}taken over the sequence $1 > \tau_0 > \tau_1 > \dots > \tau_n $.
+\begin{equation}
+\mat{s}^{-1/2} = \mat{s}^{-1/2}_{\tau_m} \, \otm \,  \mat{s}^{-1/2}_{\tau_{m-1}} \, \otmm \dots \, \mat{s}^{-1/2}_{\tau_0}
+\end{equation}taken over the sequence $1 > \tau_0 > \tau_1 > \dots > \tau_n $.  More generally we write 
+\begin{equation}
+\mat{s}^{-1/2} \equiv \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0}} {\left|\, \tau\, \mu \, ; \, \scriptstyle{\mat{s}^{-1/2}}  \right>}  \, ,
+\end{equation}
+acknowledging the potential for a flexible combination of regularization and $\tt SpAMM$ approximation. The braket notation marks 
+the potential for assymetries in the intermediate represenation.  This thin product representation may have advantages: 
+\begin{itemize}
+\item{Each solve involves a few generic and well behaved steps that may be optimized.}
+\item{Each solve can be brought rapidly into compressive identity iteration.} 
+\item{The {\tt SpAMM} bound is vastly strengthend,  via Eq.~(\ref{}).} 
+\item{Exploits a new, strong form of locality.}
+\item{The inverse factor can be applied incrementally.} 
+\item{Slice update and application can be partitioned temporally.}
+\end{itemize}
 
-The naive scheme requires $m+n$ total NS solves, and potentially as many multiplies to incrementally apply the full factor $\mat{s}^{-1/2}$.
-However, a thin product representation may have advantages: ({\bf 1}) Each NS solve can be reduced 
-to a generic, constant and reduced number of well behaved steps; 
-({\bf 2}) Each NS solve can be brought into the regime of strongly contractive (compressive) identity iteration; 
-({\bf 3}) Equation~(\ref{bound}) tightly bounds products about the cube-diagonal for each resolvent $\mat{I}_{\tau, \mu} \left( \mat{s} \right) $;
-%%({\bf 4)} Each resolvent cooresponds to contractive volume culls; 
-({\bf 4}) Each solve may achieve additional computational and mathematical acceleration  
-through generic optimisation;
-({\bf 5}) Advanced methods for exploiting locality may be developed,
-based on the backwards accumulation of persistence data (Section \ref{}).
 
-%, including \em e.g.} 
-%scalar optimation of the NS map, the minimization of opperations in mixed $\tt SpAMM$/regularization/convergence protocols, 
-%non-deterministic convergence acceleration, and the expoiting temporal locality. 
+%\begin{equation}
+%\mat(I}\left(\mat{s}\right) = \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0}}  \bigotimes_{\substack{\tau'=\tau_0 \\ \mu'=\mu_0}} 
+%{_{\mat{s}^{1/2}} }{\left<\tau \mu \right|}
+%{\left|\tau \mu \right>}_{\mat{s}^{-1/2}} 
+%\end{equation}
 
 \section{Locality} 
 
