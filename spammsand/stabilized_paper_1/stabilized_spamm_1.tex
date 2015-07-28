@@ -239,13 +239,21 @@ $\tt SpAMM$ also employs on the fly wheighted sampling,  but with
 compresion through locality, brought about by algebraic correlations (towards identity) and also in the
 metric structure, through strong Euclidean locality.
 
-Methods that achieve compression in the product stream are different from reduced rank algorithms that achieve 
-matrix compression \cite{} in a step that preceeds multiplication.   However, fast methods for matrix compression are 
-generally compatible with the matrix quadtree, as are additional fast (generalized) solvers.  Thus, generality 
-and interoperability may enable powerful solver ecosystems through deeply layered approximations to in place data. 
-Language support for generic recursion may also support complex solver ecosystems with simple (skeletonized) 
-frameworks, lowering barriers to entry, enhancing concurence in the Erlang sense, and following a sustainable 
-commodity trend \cite{softwaresustainanbilty}.
+Methods that achieve compression in the stream of product intermediates are different from reduced rank algorithms that achieve 
+matrix compression in a step that preceeds multiplication (seperability)  \cite{}.   However, matrix compressions are 
+generally compatible with the quadtree, as are additional fast (generalized) solvers that add complex functionality ({\em e.g.} 
+in electronic structure theory \cite{}).  Thus, generality 
+and interoperability may enable deeply layered, thin and generic solvers easy access to in place data. 
+Further, language support may provide simple (skeletonized) frameworks for generic recursion, 
+offering opportunities to greatly simplify codebase at the systems level, 
+lowering barriers to entry and enhancing concurence (in the Erlang sense). 
+
+
+Finally, previous work on the scaled NS iteration has heavily influenced this work.  Formost is 
+Higham, Mackey, Mackey and T (HMMT; Ref.~\cite{}) masterwork on convergence of NS iteration under all groups,
+wherein HMMT also develop Fr\"{e}chet analyses for stable square root iteration at the fixed point.
+Also, important inspiration comes from Chen and Chow's \cite{} approach to scaled NS iteration for ill-conditioned problems \cite{}, 
+and from the Helgaker groups work on NS iteration, whose notation we follow in part \cite{}.  
 
 % which leads to a non-associative algebra and error flows with
 % properties of the Lie bracket
@@ -255,13 +263,7 @@ commodity trend \cite{softwaresustainanbilty}.
 % + \mat{\Delta}^{a\cdot b}_{\tau} -\mat{\Delta}^{b\cdot a}_{\tau} \,.
 % \end{equation}
 
-% Finally, the mathematical developments in Higham, Mackey, Mackey and T (HMMT; Ref.~\cite{}) demonstrate 
-% the convergence of NS iteration under all groups, addressing potential failure due to the development of 
-% pathalogical symmetries related to {\em e.g.} Eq.~\ref{braket}.    Also in this key paper, HMMT develop
-% the fixed point stability analyses (about 2/3 of the way in), which this work draws heavily upon.  This 
-% work also draws on the scaling in Chen and Chow's \cite{} approach to a scaled NS iteration for ill-conditioned 
-% problems. 
-
+% Finally, the
 
 \section{First Order Newton-Shulz Iteration}
 
@@ -390,7 +392,6 @@ with the corresponding differential;
 \begin{equation} \label{firstorderstab}
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2)  \, .
 \end{equation}
-
 
 Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm stab}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$ 
 is also equivalent to $\mat{y}^{\rm naive}_k \equiv \mat{z}_{k} \cdot \mat{s}$.
