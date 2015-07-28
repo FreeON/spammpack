@@ -2,6 +2,8 @@
 
 \usepackage{graphicx}
 \usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amsthm}
 
 %\documentclass[aps,prb,letterpaper,twocolumn,nofootinbib,showkeys]{revtex4-1}
 %\documentclass[aps,amssymb,prl,letterpaper,twocolumn,nofootinbib,showkeys]{revtex4-1}
@@ -26,6 +28,22 @@
 \newcommand{\oto}{ {\scriptstyle \otimes}_{ \! \tau_0 } }
 \newcommand{\otm}{ {\scriptstyle \otimes}_{ \! \tau_m } }
 \newcommand{\otmm}{ {\scriptstyle \otimes}_{ \! \tau_{m-1}}}
+
+
+\newtheorem{thm}{\protect\theoremname}
+  \theoremstyle{plain}
+  \newtheorem{lem}[thm]{\protect\lemmaname}
+  \theoremstyle{remark}
+  \newtheorem{rem}[thm]{\protect\remarkname}
+  \theoremstyle{plain}
+  \newtheorem{prop}[thm]{\protect\propositionname}
+
+
+  \providecommand{\lemmaname}{Lemma}
+  \providecommand{\propositionname}{Proposition}
+  \providecommand{\remarkname}{Remark}
+\providecommand{\theoremname}{Theorem}
+
 
 %\hypersetup{pdftitle={FreeON Project Report 1}}
 %\hypersetup{pdfauthor={Matt Challacombe and Nicolas Bock}}
@@ -188,17 +206,94 @@ which bounds the relative occlusion error,
 \frac{\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert}{N^2 }  \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
 occuring in the approximate product:
-\begin{equation}\begin{equation}
+\begin{equation}
 \widetilde{\mat{a}\cdot \mat{b}} \,  \equiv \, \mat{a} \ot \mat{b} \,
   = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} \,.
 \end{equation}
 
 \subsection{Proof}
 
+We now prove (\ref{bound}).
 
-\begin{equation}\label{bound}
-\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert \, \leq \, \tau \, N^2 \,  \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
+\begin{prop}
+\label{lem:SpAMM mult, prop}
+Let $\tau_{A,B} = \tau \| A \| \| B \| $. Then for each $i,j$,
+
+\[
+\left|\left(A\otimes_{\tau}B\right)_{ij}-\left(A\cdot B\right)_{ij}\right|\leq n\tau_{A,B},
+\]
+and
+\[
+\left\Vert A\otimes_{\tau}B-A\cdot B\right\Vert _{F}\leq n^{2}\tau_{A,B}.
+\]
+\end{prop}
+
+
+
+\begin{proof}
+
+
+We first show the following technical result: it is possible to choose $\alpha_{lij}\in\left\{ 0,1\right\} $ such that 
+
+\begin{equation}
+\left(A\otimes_{\tau}B\right)_{ij}=\sum_{l=1}^{n}A_{il}B_{lj}\alpha_{lij},\label{eq:spamm form, lemma}
 \end{equation}
+In addition, if $\alpha_{lij}=0$, then \textup{$\left|A_{il}\right|\left|B_{lj}\right|<\tau_{A,B}$. }. To show this, we use 
+induction on the number $k_{\max}$ of levels. 
+
+First, if $k_{\max}=0$,
+\[
+A\otimes_{\tau}B=\begin{cases}
+0 & \,\,\text{if}\,\,\left\Vert A\right\Vert _{F}\left\Vert B\right\Vert _{F}<\tau_{A,B},\\
+A\cdot B & \,\,\text{else}.
+\end{cases}
+\]
+Therefore, $A\otimes_{\tau}B$ is of the form (\ref{eq:spamm form, lemma})
+with either all $\alpha_{lij}=0$ or all $\alpha_{lij}=1$. Moreover,
+if $\alpha_{lij}=0$, then $\left|A_{il}\right|\left|B_{lj}\right|\leq\left\Vert A\right\Vert _{F}\left\Vert B\right\Vert _{F}<\tau_{A,B}$. 
+
+Now assume that the claim holds for $k_{\max}-1$. We show that it
+holds for $k_{\max}$. Indeed, if $\left\Vert A\right\Vert _{F}\left\Vert B\right\Vert _{F}<\tau_{A,B}$,
+we have that $A\otimes_{\tau}B=0$, which is of the form (\ref{eq:spamm form, lemma})
+with all $\alpha_{lij}=0$. Also, if $\alpha_{lij}=0$, then $\left|A_{il}\right|\left|B_{lj}\right|<\left\Vert A\right\Vert _{F}\left\Vert B\right\Vert _{F}<\tau_{A,B}$.
+
+Now assume that $\left\Vert A\right\Vert _{F}\left\Vert B\right\Vert _{F}\geq\tau_{A,B}$.
+Then
+\[
+A\otimes_{\tau}B=\left(\begin{array}{cc}
+A_{11}\otimes_{\tau}B_{11}+A_{12}\otimes_{\tau}B_{21} & A_{11}\otimes_{\tau}B_{12}+A_{12}\otimes_{\tau}B_{22}\\
+A_{21}\otimes_{\tau}B_{11}+A_{22}\otimes_{\tau}B_{21} & A_{21}\otimes_{\tau}B_{21}+A_{22}\otimes_{\tau}B_{22}
+\end{array}\right).
+\]
+We need to consider four cases: $i\leq n/2$ and $j\leq n/2$, $i>n/2$
+and $j>n/2$, $i>n/2$ and $j\leq n/2$, and, finally, $i>n/2$ and
+$j>n/2$. Since the analysis is similar for all four cases, we only
+consider $i\leq n/2$ and $j\leq n/2$. We have that 
+\begin{eqnarray*}
+\left(A\otimes_{\tau}B\right)_{ij} & = & \left(A_{11}\otimes_{\tau}B_{11}+A_{12}\otimes_{\tau}B_{21}\right)_{ij}\\
+ & = & \sum_{l=1}^{n/2}\left(A_{11}\right)_{il}\left(B_{11}\right)_{lj}\alpha_{lij}^{(1)} + \\
+ & & \,\,\,\,\,\,\,\, \sum_{l=1}^{n/2}\left(A_{12}\right)_{il}\left(B_{21}\right)_{lj}\alpha_{lij}^{(2)}\\
+ & = & \sum_{l=1}^{n}A_{il}B_{lj}\alpha_{lij},
+\end{eqnarray*}
+where we used the induction hypothesis in the second equality.
+
+Now suppose that $\alpha_{lij}=0$ for some $l$. Then $\tilde{\alpha}_{lij}^{(1)}=0$
+if $l\leq n/2$ or $\tilde{\alpha}_{l-n/2,ij}^{(2)}=0$ $l>n/2$.
+If, e.g., $\tilde{\alpha}_{l-n/2,ij}^{(2)}=0$, then $\left|A_{il}\right|\left|B_{lj}\right|=\left|\left(A_{12}\right)_{i,l-n/2}\right|\left|\left(B_{21}\right)_{l-n/2,j}\right|<\tau_{A,B}$,
+where we used the induction hypothesis in the final inequality. The
+analysis for $l\leq n/2$ is similar, and the claim
+follows.
+
+We can now finish the proof of Proposition~\ref{lem:SpAMM mult, prop}. Indeed, by (\ref{eq:spamm form, lemma}),
+\begin{eqnarray*}
+\left|\left(A\otimes_{\tau}B\right)_{ij}-\left(A\cdot B\right)_{ij}\right| & \leq & \sum_{l=1}^{n}\left|A_{il}B_{lj}\right|\left|\alpha_{lij}-1\right|\\
+ & = & \sum_{\alpha_{lij}=0}\left|A_{il}B_{lj}\right|.
+\end{eqnarray*}
+In addition, if $\alpha_{lij}=0$, then $\left|A_{il}B_{lj}\right|<\tau_{A,B}$
+and the lemma follows.
+
+
+\end{proof}
 
 \subsection{Related Research} 
 
@@ -811,6 +906,10 @@ unscaled, with hilbert order
 unscaled, with salesman's order
 
 \subsubsection{Misc}
+
+
+
+
 
 \section{Conclusions and Outlook}
 

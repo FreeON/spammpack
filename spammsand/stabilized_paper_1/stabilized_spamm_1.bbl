@@ -1,0 +1,253 @@
+\begin{thebibliography}{37}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname bibnamefont\endcsname\relax
+  \def\bibnamefont#1{#1}\fi
+\expandafter\ifx\csname bibfnamefont\endcsname\relax
+  \def\bibfnamefont#1{#1}\fi
+\expandafter\ifx\csname citenamefont\endcsname\relax
+  \def\citenamefont#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\providecommand{\bibinfo}[2]{#2}
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{\citenamefont{Penrose and Lebowitz}(1974)}]{penrose1974}
+\bibinfo{author}{\bibfnamefont{O.}~\bibnamefont{Penrose}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Lebowitz}},
+  \bibinfo{journal}{Commun. Math. Phys.} \textbf{\bibinfo{volume}{184}}
+  (\bibinfo{year}{1974}).
+
+\bibitem[{\citenamefont{Voit}(2006)}]{voit00}
+\bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Voit}},
+  \emph{\bibinfo{title}{The Statistical Mechanics of Financial Markets}},
+  Theoretical and Mathematical Physics (\bibinfo{publisher}{Springer Berlin
+  Heidelberg}, \bibinfo{year}{2006}), ISBN \bibinfo{isbn}{9783540262893},
+  \urlprefix\url{https://books.google.com/books?id=6zUlh\_TkWSwC}.
+
+\bibitem[{\citenamefont{Anselin}(2003)}]{Anselin2003}
+\bibinfo{author}{\bibfnamefont{L.}~\bibnamefont{Anselin}},
+  \bibinfo{journal}{Int. Reg. Sci. Rev.} \textbf{\bibinfo{volume}{26}},
+  \bibinfo{pages}{153} (\bibinfo{year}{2003}), ISSN \bibinfo{issn}{01600176},
+  \urlprefix\url{http://irx.sagepub.com/cgi/doi/10.1177/0160017602250972}.
+
+\bibitem[{\citenamefont{Hardin et~al.}(2013)\citenamefont{Hardin, Garcia, and
+  Golan}}]{Hardin2013}
+\bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Hardin}},
+  \bibinfo{author}{\bibfnamefont{S.~R.} \bibnamefont{Garcia}},
+  \bibnamefont{and} \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Golan}},
+  \bibinfo{journal}{Ann. Appl. Stat.} \textbf{\bibinfo{volume}{7}},
+  \bibinfo{pages}{1733} (\bibinfo{year}{2013}), ISSN \bibinfo{issn}{1932-6157},
+  \eprint{arXiv:1106.5834v4}.
+
+\bibitem[{\citenamefont{Krishtal et~al.}(2013)\citenamefont{Krishtal, Strohmer,
+  and Wertz}}]{Krishtal2014}
+\bibinfo{author}{\bibfnamefont{I.}~\bibnamefont{Krishtal}},
+  \bibinfo{author}{\bibfnamefont{T.}~\bibnamefont{Strohmer}}, \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{T.}~\bibnamefont{Wertz}},
+  \bibinfo{journal}{Found. Comput. \ldots}  (\bibinfo{year}{2013}), ISSN
+  \bibinfo{issn}{1615-3375}.
+
+\bibitem[{\citenamefont{Lowdin}(1956)}]{Lowdin56}
+\bibinfo{author}{\bibfnamefont{P.~O.} \bibnamefont{Lowdin}},
+  \bibinfo{journal}{Advances in Physics} \textbf{\bibinfo{volume}{5}},
+  \bibinfo{pages}{1} (\bibinfo{year}{1956}).
+
+\bibitem[{\citenamefont{Naidu}(2011)}]{naidu11}
+\bibinfo{author}{\bibfnamefont{A.~R.} \bibnamefont{Naidu}},
+  p.~\bibinfo{pages}{1} (\bibinfo{year}{2011}), \eprint{1105.3571}.
+
+\bibitem[{\citenamefont{Higham}(2008)}]{Higham08}
+\bibinfo{author}{\bibfnamefont{N.~J.} \bibnamefont{Higham}},
+  \emph{\bibinfo{title}{Functions of Matrices}} (\bibinfo{publisher}{Society
+  for Industrial \& Applied Mathematics,}, \bibinfo{year}{2008}).
+
+\bibitem[{\citenamefont{Gustavson}(1978)}]{Gustavson78}
+\bibinfo{author}{\bibfnamefont{F.~G.} \bibnamefont{Gustavson}},
+  \bibinfo{journal}{ACM Transactions on Mathematical Software (TOMS)}
+  \textbf{\bibinfo{volume}{4}}, \bibinfo{pages}{250} (\bibinfo{year}{1978}).
+
+\bibitem[{\citenamefont{Toledo}(1997)}]{Toledo97}
+\bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Toledo}}, \bibinfo{journal}{IBM
+  J. Res. Dev.} \textbf{\bibinfo{volume}{41}}, \bibinfo{pages}{711}
+  (\bibinfo{year}{1997}).
+
+\bibitem[{\citenamefont{Challacombe}(2000)}]{challacombe00}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Challacombe}},
+  \bibinfo{journal}{Comput. Phys. Commun.} \textbf{\bibinfo{volume}{128}},
+  \bibinfo{pages}{93} (\bibinfo{year}{2000}).
+
+\bibitem[{\citenamefont{Bowler and andM. J.~Gillan}(2000)}]{bowler00}
+\bibinfo{author}{\bibfnamefont{D.~R.} \bibnamefont{Bowler}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{T.~M.} \bibnamefont{andM. J.~Gillan}},
+  \bibinfo{journal}{Comp. Phys. Comm.} \textbf{\bibinfo{volume}{137}},
+  \bibinfo{pages}{255} (\bibinfo{year}{2000}).
+
+\bibitem[{\citenamefont{Benzi and Tuma}(1999)}]{Benzi99}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Benzi}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Tuma}},
+  \bibinfo{journal}{Appl. Numer. Math.} \textbf{\bibinfo{volume}{30}},
+  \bibinfo{pages}{305} (\bibinfo{year}{1999}).
+
+\bibitem[{\citenamefont{Benzi}(2002)}]{Benzi02}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Benzi}}, \bibinfo{journal}{J.
+  Comput. Phys.} \textbf{\bibinfo{volume}{182}}, \bibinfo{pages}{418}
+  (\bibinfo{year}{2002}).
+
+\bibitem[{\citenamefont{Bowler and Miyazaki}(2012)}]{Bowler12}
+\bibinfo{author}{\bibfnamefont{D.~R.} \bibnamefont{Bowler}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{T.}~\bibnamefont{Miyazaki}},
+  \bibinfo{journal}{Reports Prog. Phys.} \textbf{\bibinfo{volume}{75}},
+  \bibinfo{pages}{36503} (\bibinfo{year}{2012}).
+
+\bibitem[{\citenamefont{Benzi et~al.}(2013)\citenamefont{Benzi, Boito, and
+  Razouk}}]{Benzi13}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Benzi}},
+  \bibinfo{author}{\bibfnamefont{P.}~\bibnamefont{Boito}}, \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{N.}~\bibnamefont{Razouk}},
+  \bibinfo{journal}{SIAM Rev.} \textbf{\bibinfo{volume}{55}},
+  \bibinfo{pages}{3} (\bibinfo{year}{2013}).
+
+\bibitem[{\citenamefont{Strassen}(1969)}]{springerlink:10.1007/BF02165411}
+\bibinfo{author}{\bibfnamefont{V.}~\bibnamefont{Strassen}},
+  \bibinfo{journal}{Numer.~Math.} \textbf{\bibinfo{volume}{13}},
+  \bibinfo{pages}{354} (\bibinfo{year}{1969}).
+
+\bibitem[{\citenamefont{Ballard et~al.}(2014)\citenamefont{Ballard, Demmel,
+  Holtz, and Schwartz}}]{Ballard2014}
+\bibinfo{author}{\bibfnamefont{G.}~\bibnamefont{Ballard}},
+  \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Demmel}},
+  \bibinfo{author}{\bibfnamefont{O.}~\bibnamefont{Holtz}}, \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{O.}~\bibnamefont{Schwartz}},
+  \bibinfo{journal}{Communications of the ACM} \textbf{\bibinfo{volume}{57}},
+  \bibinfo{pages}{107} (\bibinfo{year}{2014}).
+
+\bibitem[{\citenamefont{Gray and Moore}(2001)}]{Gray2001}
+\bibinfo{author}{\bibfnamefont{A.~G.} \bibnamefont{Gray}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{A.~W.} \bibnamefont{Moore}}, in
+  \emph{\bibinfo{booktitle}{Advances in Neural Information Processing Systems}}
+  (\bibinfo{publisher}{MIT Press}, \bibinfo{year}{2001}),
+  vol.~\bibinfo{volume}{4}, pp. \bibinfo{pages}{521--527},
+  \urlprefix\url{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.28.7138}.
+
+\bibitem[{\citenamefont{Gray}(2003)}]{Gray2003}
+\bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Gray}} (\bibinfo{year}{2003}),
+  \urlprefix\url{http://reports-archive.adm.cs.cmu.edu/anon/anon/2003/abstracts/03-222.html}.
+
+\bibitem[{\citenamefont{Sarlos}(2006)}]{Sarlos2006}
+\bibinfo{author}{\bibfnamefont{T.}~\bibnamefont{Sarlos}}, \bibinfo{journal}{In
+  Proceedings of the 47th Annual IEEE Symposium on Foundations of Computer
+  Science (FOCS)}  (\bibinfo{year}{2006}).
+
+\bibitem[{\citenamefont{Drineas et~al.}(2006)\citenamefont{Drineas, Kannan, and
+  Mahoney}}]{Drineas2006}
+\bibinfo{author}{\bibfnamefont{P.}~\bibnamefont{Drineas}},
+  \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Kannan}}, \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{M.~W.} \bibnamefont{Mahoney}},
+  \bibinfo{journal}{SIAM Journal on Computing} \textbf{\bibinfo{volume}{36}},
+  \bibinfo{pages}{132} (\bibinfo{year}{2006}).
+
+\bibitem[{\citenamefont{Mahoney}(2012)}]{Mahoney2012}
+\bibinfo{author}{\bibfnamefont{M.~W.} \bibnamefont{Mahoney}}, pp.
+  \bibinfo{pages}{1--53} (\bibinfo{year}{2012}), \eprint{arXiv:1502.03032v1}.
+
+\bibitem[{\citenamefont{Pagh}(2013)}]{Pagh2013}
+\bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Pagh}}, \bibinfo{journal}{ACM
+  Trans. Comput. Theory} \textbf{\bibinfo{volume}{5}}, \bibinfo{pages}{1}
+  (\bibinfo{year}{2013}).
+
+\bibitem[{\citenamefont{Sivertsen}(2014)}]{Sivertsen2014}
+\bibinfo{author}{\bibfnamefont{J.~V.~T.} \bibnamefont{Sivertsen}}
+  (\bibinfo{year}{2014}).
+
+\bibitem[{\citenamefont{Woodruff}(2015)}]{Woodruff2015}
+\bibinfo{author}{\bibfnamefont{D.~P.} \bibnamefont{Woodruff}},
+  \textbf{\bibinfo{volume}{10}}, \bibinfo{pages}{1} (\bibinfo{year}{2015}),
+  \eprint{arXiv:1411.4357v3}.
+
+\bibitem[{\citenamefont{Mishra and Eich}(1992)}]{Mishra92}
+\bibinfo{author}{\bibfnamefont{P.}~\bibnamefont{Mishra}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{M.~H.} \bibnamefont{Eich}},
+  \bibinfo{journal}{ACM Comput. Surv.} \textbf{\bibinfo{volume}{24}},
+  \bibinfo{pages}{63} (\bibinfo{year}{1992}).
+
+\bibitem[{\citenamefont{Hoel and Samet}(1994)}]{Hoel94}
+\bibinfo{author}{\bibfnamefont{E.~G.} \bibnamefont{Hoel}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Samet}}, in
+  \emph{\bibinfo{booktitle}{Parallel Processing, 1994. ICPP 1994. International
+  Conference on}} (\bibinfo{year}{1994}), vol.~\bibinfo{volume}{3}, pp.
+  \bibinfo{pages}{227 --234}.
+
+\bibitem[{\citenamefont{Jacox and Samet}(2003)}]{Jacox03}
+\bibinfo{author}{\bibfnamefont{E.~H.} \bibnamefont{Jacox}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Samet}},
+  \bibinfo{journal}{ACM Trans.~Database Syst.} \textbf{\bibinfo{volume}{28}},
+  \bibinfo{pages}{230} (\bibinfo{year}{2003}).
+
+\bibitem[{\citenamefont{Chen et~al.}(2007)\citenamefont{Chen, Ailamaki,
+  Gibbons, and Mowry}}]{Chen07}
+\bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Chen}},
+  \bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Ailamaki}},
+  \bibinfo{author}{\bibfnamefont{P.~B.} \bibnamefont{Gibbons}},
+  \bibnamefont{and} \bibinfo{author}{\bibfnamefont{T.~C.} \bibnamefont{Mowry}},
+  \bibinfo{journal}{ACM Trans.~Database Syst.} \textbf{\bibinfo{volume}{32}}
+  (\bibinfo{year}{2007}).
+
+\bibitem[{\citenamefont{Amossen and Pagh}(2009)}]{Amossen09}
+\bibinfo{author}{\bibfnamefont{R.~R.} \bibnamefont{Amossen}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Pagh}}, in
+  \emph{\bibinfo{booktitle}{Proceedings of the 12th International Conference on
+  Database Theory}} (\bibinfo{publisher}{ACM}, \bibinfo{year}{2009}), pp.
+  \bibinfo{pages}{121--126}.
+
+\bibitem[{\citenamefont{Lieberman et~al.}(2008)\citenamefont{Lieberman,
+  Sankaranarayanan, and Samet}}]{Lieberman08}
+\bibinfo{author}{\bibfnamefont{M.~D.} \bibnamefont{Lieberman}},
+  \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Sankaranarayanan}},
+  \bibnamefont{and} \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Samet}}, in
+  \emph{\bibinfo{booktitle}{Proceedings of the 2008 IEEE 24th International
+  Conference on Data Engineering}} (\bibinfo{publisher}{IEEE Computer Society},
+  \bibinfo{address}{Washington, DC, USA}, \bibinfo{year}{2008}), pp.
+  \bibinfo{pages}{1111--1120}, ISBN \bibinfo{isbn}{978-1-4244-1836-7}.
+
+\bibitem[{\citenamefont{Kim et~al.}(2009)\citenamefont{Kim, Kaldewey, Lee,
+  Sedlar, Nguyen, Satish, Chhugani, Di~Blas, and Dubey}}]{Kim09}
+\bibinfo{author}{\bibfnamefont{C.}~\bibnamefont{Kim}},
+  \bibinfo{author}{\bibfnamefont{T.}~\bibnamefont{Kaldewey}},
+  \bibinfo{author}{\bibfnamefont{V.~W.} \bibnamefont{Lee}},
+  \bibinfo{author}{\bibfnamefont{E.}~\bibnamefont{Sedlar}},
+  \bibinfo{author}{\bibfnamefont{A.~D.} \bibnamefont{Nguyen}},
+  \bibinfo{author}{\bibfnamefont{N.}~\bibnamefont{Satish}},
+  \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Chhugani}},
+  \bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Di~Blas}}, \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{P.}~\bibnamefont{Dubey}},
+  \bibinfo{journal}{Proc.~VLDB Endow.} \textbf{\bibinfo{volume}{2}},
+  \bibinfo{pages}{1378} (\bibinfo{year}{2009}).
+
+\bibitem[{\citenamefont{Bai and Demmel}(1998)}]{Bai98usingthe}
+\bibinfo{author}{\bibfnamefont{Z.}~\bibnamefont{Bai}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Demmel}},
+  \bibinfo{journal}{SIAM J. Matrix Anal. Appl} \textbf{\bibinfo{volume}{19}},
+  \bibinfo{pages}{205} (\bibinfo{year}{1998}).
+
+\bibitem[{\citenamefont{Higham et~al.}(2005)\citenamefont{Higham, D~.
+  Steven~Mackey, and coise Tisseur}}]{Higham2005}
+\bibinfo{author}{\bibfnamefont{N.~J.~.} \bibnamefont{Higham}},
+  \bibinfo{author}{\bibfnamefont{N.~M.} \bibnamefont{D~. Steven~Mackey}},
+  \bibnamefont{and} \bibinfo{author}{\bibfnamefont{F.~Â.} \bibnamefont{coise
+  Tisseur}}, \bibinfo{journal}{SIAM J. Matrix Anal. Appl.}
+  \textbf{\bibinfo{volume}{26}}, \bibinfo{pages}{849} (\bibinfo{year}{2005}).
+
+\bibitem[{\citenamefont{Chen and Chow}(2014)}]{Chen2014}
+\bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Chen}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{E.}~\bibnamefont{Chow}},
+  \bibinfo{type}{Preprint} \bibinfo{number}{ANL/MCS-P5059-0114},
+  \bibinfo{institution}{Mathematics and Computer Science Division, Argonne
+  National Laboratory, Argonne, IL 60439} (\bibinfo{year}{2014}).
+
+\bibitem[{\citenamefont{Pan and Schreiber}(1991)}]{Pan1991}
+\bibinfo{author}{\bibfnamefont{V.}~\bibnamefont{Pan}} \bibnamefont{and}
+  \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Schreiber}},
+  \bibinfo{journal}{SIAM J. Sci. Stat. Comput.}  (\bibinfo{year}{1991}).
+
+\end{thebibliography}
