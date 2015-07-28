@@ -4,7 +4,7 @@ import MatrixTree
 import SpAMM
 import System.Random (getStdGen, newStdGen, randomRs, StdGen)
 
-instance NFData MatrixTree
+instance NFData MTree
 
 main = do let sizes = fmap (2^) [5..10]
           gen <- getStdGen
@@ -16,7 +16,7 @@ main = do let sizes = fmap (2^) [5..10]
                        bgroup "mult" $ fmap (makeBench treeMult) sizeTreeGroups]
 
 makeRandomTree :: Int -> StdGen -> MatrixTree
-makeRandomTree size gen = indexedListToTree (size, size, ijxs)
+makeRandomTree size gen = matrixListToTree (size, size, ijxs)
                where ijxs = zipWith (\(i, j) x -> (i, j, x)) indices randomNums
                      indices = [(i, j) | j <- [1..size], i <- [1..size]]
                      randomNums = take (size^2) $ randomRs (0.0, 1.0) gen

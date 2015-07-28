@@ -1,6 +1,6 @@
 import Data.List (intersperse)
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
-import MatrixTree (indexedListToTree, MatrixTree, Norm, norm)
+import MatrixTree (matrixListToTree, MatrixTree, MTree, Norm, norm)
 import SpAMM (treeAdd, treeMult)
 import System.Directory (removeFile)
 import System.IO (Handle, hClose, hPutStr, openTempFile)
@@ -18,15 +18,17 @@ doTiming :: Handle -> (MatrixTree -> MatrixTree -> MatrixTree) -> Int -> IO ()
 doTiming handle op size =
          do gen <- getStdGen ; let fstTree = makeRandomTree size gen
             gen <- newStdGen ; let sndTree = makeRandomTree size gen
-            hPutStr handle $ show (norm fstTree) ; hPutStr handle $ show (norm sndTree)
+            let (h1, w1, mTree1) = fstTree ; (h2, w2, mTree2) = sndTree
+            hPutStr handle $ show (norm mTree1) ; hPutStr handle $ show (norm mTree2)
             t1 <- getCurrentTime
             let tree = op fstTree sndTree
-            hPutStr handle (show $ norm tree)
+            let (h, w, mTree) = tree
+            hPutStr handle (show $ norm mTree)
             t2 <- getCurrentTime
             printList [show size, show $ diffUTCTime t2 t1]
 
 makeRandomTree :: Int -> StdGen -> MatrixTree
-makeRandomTree size gen = indexedListToTree (size, size, ijxs)
+makeRandomTree size gen = matrixListToTree (size, size, ijxs)
                where ijxs = zipWith (\(i, j) x -> (i, j, x)) indices randomNums
                      indices = [(i, j) | j <- [1..size], i <- [1..size]]
                      randomNums = take (size^2) $ randomRs (0.0, 1.0) gen
