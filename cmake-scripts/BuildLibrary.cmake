@@ -78,11 +78,6 @@ function( build_library use_OpenMP COMPILE_FLAGS )
     COMMAND cp ${MODULE_FILES} "include-${extension}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-  add_custom_command( TARGET spammpack-${extension}-static
-    POST_BUILD
-    COMMAND cp ${HEADER_FILES} "${CMAKE_CURRENT_BINARY_DIR}/include-${extension}"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
 
   unset( ${extension}-modfiles )
   foreach( mod ${MODULE_FILES} )

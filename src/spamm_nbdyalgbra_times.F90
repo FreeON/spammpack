@@ -1,4 +1,4 @@
-!#define SpAMM_PRINT_STREAM
+#define SpAMM_PRINT_STREAM
 module spamm_nbdyalgbra_times
 
   use spamm_structures
@@ -380,6 +380,8 @@ CONTAINS
     ALLOCATE(SpAMM_stream)
     Stream=>SpAMM_stream
     number_stream_elements = 0
+
+    open(unit=45, file=trim(adjustl(stream_file_o))//'.norms', status='NEW')
 #endif
 
     Depth=0
@@ -389,8 +391,18 @@ CONTAINS
     CALL SpAMM_prune(d)
 
 #ifdef SpAMM_PRINT_STREAM
-    IF(.NOT.PRESENT(STREAM_FILE_O))RETURN
+    if(.not.present(STREAM_FILE_O)) return
 
+    write(45, "(A)") "Matrix A"
+    call spamm_tree_print_leaves_2d_symm(A, file_unit=45)
+
+    write(45, "(A)") "Matrix B"
+    call spamm_tree_print_leaves_2d_symm(B, file_unit=45)
+
+    write(45, "(A)") "Matrix C"
+    call spamm_tree_print_leaves_2d_symm(D, file_unit=45)
+
+    write(45, "(A)") "Product Space"
     do depth=0,64
        max_depth=depth
        if(SPAMM_BLOCK_SIZE*2**depth>=a%frill%NDimn(1))exit
@@ -398,7 +410,6 @@ CONTAINS
     WRITE(*,*)' max_depth = ', max_depth,SPAMM_BLOCK_SIZE* 2**max_depth
 
     !open(unit=44, file=trim(adjustl(stream_file_o))//'.vtk', status='NEW')
-    open(unit=45, file=trim(adjustl(stream_file_o))//'.norms', status='NEW')
 
     !> write(44, "(A)") "# vtk DataFile Version 2.0"
     !> write(44, "(A)") "The product space"
@@ -423,8 +434,7 @@ CONTAINS
        !> MaxNorm=MAX(MaxNorm,stream%size)
        !> MinNorm=MIN(MinNorm,stream%size)
        Stream=>Stream%Next
-       write(45, "(4I8,ES20.10)") i, j, k, &
-            SPAMM_BLOCK_SIZE, stream%size
+       write(45, "(4I8,ES20.10)") i, j, k, SPAMM_BLOCK_SIZE, stream%size
     ENDDO
 
     !close(44)
