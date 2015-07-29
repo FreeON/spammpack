@@ -469,7 +469,7 @@ def plot(filename, number_bins=40):
     figure.scene.disable_render = True
 
     # Tune background color.
-    #mlab.figure(bgcolor=(1, 1, 1))
+    figure.scene.background = (1, 1, 1)
 
     # Stratify matrix squares.
     (norms_stratified,
@@ -487,7 +487,7 @@ def plot(filename, number_bins=40):
                                    mode='cube',
                                    color=mycolor((i+1)/float(number_bins)),
                                    scale_factor=1,
-                                   opacity=0.3)
+                                   opacity=(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
             points.glyph.glyph_source.glyph_source.y_length = 0
             points.glyph.glyph_source.glyph_source.z_length = block_size
@@ -507,7 +507,7 @@ def plot(filename, number_bins=40):
                                    mode='cube',
                                    color=mycolor((i+1)/float(number_bins)),
                                    scale_factor=1,
-                                   opacity=0.3)
+                                   opacity=(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = 0
             points.glyph.glyph_source.glyph_source.y_length = block_size
             points.glyph.glyph_source.glyph_source.z_length = block_size
@@ -527,7 +527,7 @@ def plot(filename, number_bins=40):
                                    mode='cube',
                                    color=mycolor((i+1)/float(number_bins)),
                                    scale_factor=1,
-                                   opacity=0.3)
+                                   opacity=(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
             points.glyph.glyph_source.glyph_source.y_length = block_size
             points.glyph.glyph_source.glyph_source.z_length = 0
@@ -569,21 +569,32 @@ def plot(filename, number_bins=40):
     # Box around the whole thing.
     mlab.outline(extent=[1, i_max, 1, i_max, 1, i_max])
 
+    outline = engine.scenes[0].children[-1].children[0].children[1]
+    outline.actor.property.color = (0, 0, 0)
+    outline.actor.property.line_width = 2
+
     # Add axes.
     from mayavi.modules.axes import Axes
     axes = Axes()
     engine.add_module(axes, obj=None)
 
+    axes.axes.label_format = '%-3.0f'
+    axes.axes.width = 2
     axes.axes.x_label = 'i'
     axes.axes.y_label = 'j'
     axes.axes.z_label = 'k'
-    axes.axes.label_format = '%-3.0f'
+    axes.label_text_property.color = (0, 0, 0)
+    axes.label_text_property.opacity = 0.0
+    axes.label_text_property.shadow = True
+    axes.label_text_property.shadow_offset = numpy.array([ 1, -1])
+    axes.property.color = (0, 0, 0)
     axes.property.display_location = 'background'
-    #axes.axes.ranges = [1, i_max, 1, i_max, 1, i_max]
+    axes.title_text_property.color = (0, 0, 0)
+    axes.title_text_property.shadow_offset = numpy.array([ 1, -1])
 
     # Fix camera position.
-    #print(figure.scene.scene.camera)
-    figure.scene.camera.position = [7000, 9000, 9500]
+    #print(figure.scene.camera)
+    figure.scene.camera.position = [7000, 9000, 8500]
     figure.scene.camera.focal_point = [1500, 1500, 1500]
     figure.scene.camera.view_angle = 30.0
     figure.scene.camera.view_up = [0, 0, 1]
@@ -591,3 +602,9 @@ def plot(filename, number_bins=40):
 
     # Turn rendering back on.
     figure.scene.disable_render = False
+
+    # Save the figure to file.
+    import os.path
+    png_filename = os.path.splitext(filename)[0] + ".png"
+    print("Saving image to " + png_filename)
+    figure.scene.save(png_filename)
