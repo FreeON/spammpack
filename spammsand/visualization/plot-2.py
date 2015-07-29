@@ -583,7 +583,7 @@ def plot(filename, number_bins=40):
 
     # Fix camera position.
     #print(figure.scene.scene.camera)
-    figure.scene.camera.position = [7000, 9000, 9000]
+    figure.scene.camera.position = [7000, 9000, 9500]
     figure.scene.camera.focal_point = [1500, 1500, 1500]
     figure.scene.camera.view_angle = 30.0
     figure.scene.camera.view_up = [0, 0, 1]
