@@ -237,10 +237,11 @@ CONTAINS
     if(.not.associated(A)) return
 
     if(A%frill%leaf) then
-       write(file_unit, "(3I8,ES20.10)") &
-            A%frill%bndbx(0,1)+SPAMM_BLOCK_SIZE/2, &
-            A%frill%bndbx(1,1)+SPAMM_BLOCK_SIZE/2, &
-            SPAMM_BLOCK_SIZE, &
+       write(file_unit, "(2ES20.10,2I8,ES20.10)") &
+            A%frill%bndbx(0,1)+real(A%frill%bndbx(1,1)-A%frill%bndbx(0,1)+1)/2., &
+            A%frill%bndbx(0,2)+real(A%frill%bndbx(1,2)-A%frill%bndbx(0,2)+1)/2., &
+            A%frill%bndbx(1,1)-A%frill%bndbx(0,1)+1, &
+            A%frill%bndbx(1,2)-A%frill%bndbx(0,2)+1, &
             A%frill%norm2
     else
        call spamm_tree_print_leaves_2d_symm_recur(A%child_00, file_unit)
@@ -260,6 +261,8 @@ CONTAINS
 
     type(spamm_tree_2d_symm), pointer, intent(in) :: A
     integer, intent(in) :: file_unit
+
+    write(file_unit, "(I8)") SPAMM_BLOCK_SIZE
 
     call spamm_tree_print_leaves_2d_symm_recur(A%child_00, file_unit)
     call spamm_tree_print_leaves_2d_symm_recur(A%child_01, file_unit)

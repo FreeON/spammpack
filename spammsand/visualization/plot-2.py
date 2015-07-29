@@ -273,15 +273,20 @@ def mycolor(x):
     i = int(x*255)
     return (lut[i][0]/255., lut[i][1]/255., lut[i][2]/255.)
 
-def stratify(number_bins, norms, *centers):
+def stratify(number_bins, norms, *args):
     """Stratify the lists by norms into number_bins strata.
 
-    The function returns a tuple (norms, centers) of the stratified result.
+    The args contain the centers and the widths, i.e. args <- center_i,
+    center_j, width_i, width_j.  The function returns a tuple (norms,
+    centers) of the stratified result.
     """
 
     length = len(norms)
-    for i in range(len(centers)):
-        if len(centers[i]) != length:
+    for i in range(len(args)):
+        if len(args[i]) != length:
+            print(norms)
+            print(i)
+            print(args[i])
             raise Exception("All lengths have to match")
 
     min_norm = numpy.amin(norms)
@@ -290,7 +295,7 @@ def stratify(number_bins, norms, *centers):
     def bound(i):
         return min_norm+i*(max_norm-min_norm)/float(number_bins)
 
-    centers_stratified = [ [ [] for j in range(number_bins) ] for i in range(len(centers)) ]
+    args_stratified = [ [ [] for j in range(number_bins) ] for i in range(len(args)) ]
     norms_stratified = [ [] for i in range(number_bins) ]
 
     print("stratifying into {:d} bins".format(number_bins))
@@ -298,28 +303,136 @@ def stratify(number_bins, norms, *centers):
         found_bin = False
         for j in range(number_bins):
             if norms[i] >= bound(j) and norms[i] < bound(j+1):
-                for k in range(len(centers)):
-                    centers_stratified[k][j].append(centers[k][i])
+                for k in range(len(args)):
+                    args_stratified[k][j].append(args[k][i])
                 norms_stratified[j].append(norms[i])
                 found_bin = True
                 break
         if not found_bin:
-            for k in range(len(centers)):
-                centers_stratified[k][number_bins-1].append(centers[k][i])
+            for k in range(len(args)):
+                args_stratified[k][number_bins-1].append(args[k][i])
             norms_stratified[j].append(norms[i])
 
-    for i in range(number_bins):
-        print("{:d} norm [{:1.2f},{:1.2f})".format(
-            len(centers_stratified[0][i]), bound(i), bound(i+1)))
+    # for i in range(number_bins):
+    #     print("{:d} norm [{:1.2f},{:1.2f})".format(
+    #         len(args_stratified[0][i]), bound(i), bound(i+1)))
 
     result = [ norms_stratified ]
-    for center in centers_stratified:
-        result.append(center)
+    for arg in args_stratified:
+        result.append(arg)
 
     return result
 
+def read_squares(fd, start, end=None):
+    """Reads a norms file from a call to spamm_tree_print_leaves_2d_symm().
+    """
+
+    # Use readline() with a length argument so we can tell whether the
+    # file as reached EOF.
+    LINE_LENGTH = 1000
+
+    i = []
+    j = []
+    width_i = []
+    width_j = []
+    norm = []
+
+    re_matrix_square = re.compile("^\s*([0-9.eEdD+-]+)"
+                                  + "\s+([0-9.eEdD+-]+)"
+                                  + "\s+([0-9]+)"
+                                  + "\s+([0-9]+)"
+                                  + "\s+([0-9.eEdD+-]+)$")
+
+    while True:
+        line = fd.readline(LINE_LENGTH)
+        if len(line) == 0:
+            return None
+        if start.search(line):
+            matrix_name = line.rstrip()
+            break
+
+    line = fd.readline()
+    block_size = int(line)
+
+    while True:
+        old_position = fd.tell()
+        line = fd.readline(LINE_LENGTH)
+        if len(line) == 0:
+            break
+        if end != None:
+            if end.search(line):
+                fd.seek(old_position)
+                break
+        result = re_matrix_square.search(line)
+        i.append(float(result.group(1)))
+        j.append(float(result.group(2)))
+        width_i.append(int(result.group(3)))
+        width_j.append(int(result.group(4)))
+        norm.append(float(result.group(5)))
+
+    print("loaded {:d} matrix squares from {:s}".format(len(i), matrix_name))
+    result = (block_size, i, j, width_i, width_j, norm)
+    #print(result)
+    return result
+
+def read_cubes(fd, start, end=None):
+    """Reads a norms file from a call to spamm_tree_print_leaves_2d_symm().
+    """
+
+    # Use readline() with a length argument so we can tell whether the
+    # file as reached EOF.
+    LINE_LENGTH = 1000
+
+    i = []
+    j = []
+    k = []
+    width_i = []
+    width_j = []
+    width_k = []
+    norm = []
+
+    re_product_cube = re.compile("^\s*([0-9.eEdD+-]+)"
+                                  + "\s+([0-9.eEdD+-]+)"
+                                  + "\s+([0-9.eEdD+-]+)"
+                                  + "\s+([0-9]+)"
+                                  + "\s+([0-9]+)"
+                                  + "\s+([0-9]+)"
+                                  + "\s+([0-9.eEdD+-]+)$")
+
+    while True:
+        line = fd.readline(LINE_LENGTH)
+        if len(line) == 0:
+            return None
+        if start.search(line):
+            matrix_name = line.rstrip()
+            break
+
+    line = fd.readline()
+    block_size = int(line)
+
+    while True:
+        old_position = fd.tell()
+        line = fd.readline(LINE_LENGTH)
+        if len(line) == 0:
+            break
+        if end != None:
+            if end.search(line):
+                fd.seek(old_position)
+                break
+        result = re_product_cube.search(line)
+        i.append(float(result.group(1)))
+        j.append(float(result.group(2)))
+        k.append(float(result.group(3)))
+        width_i.append(int(result.group(4)))
+        width_j.append(int(result.group(5)))
+        width_k.append(int(result.group(6)))
+        norm.append(float(result.group(7)))
+
+    print("loaded {:d} product cubes from {:s}".format(len(i), matrix_name))
+    return (i, j, k, width_i, width_j, width_k, norm)
+
 @mlab.show
-def plot(filename, number_bins=100):
+def plot(filename, number_bins=40):
     """Plot the cubes from a file.
 
     The cubes are stratified into number_bins norm bins. The
@@ -332,81 +445,16 @@ def plot(filename, number_bins=100):
     re_matrix_C = re.compile("^\s*Matrix C$")
     re_product_space = re.compile("^\s*Product Space$")
 
-    re_matrix_square = re.compile("^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+)\s+([0-9.eEdD+-]+)$")
-    re_product_cube = re.compile("^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+)\s+([0-9]+)\s+([0-9.eEdD+-]+)$")
-
     fd = open(filename)
+    (block_size, A_i, A_j,
+     A_width_i, A_width_j, A_norm) = read_squares(fd, re_matrix_A, end=re_matrix_B)
+    (block_size, B_i, B_j,
+     B_width_i, B_width_j, B_norm) = read_squares(fd, re_matrix_B, end=re_matrix_C)
+    (block_size, C_i, C_j,
+     C_width_i, C_width_j, C_norm) = read_squares(fd, re_matrix_C, end=re_product_space)
 
-    A_i = []
-    A_j = []
-    A_width = []
-    A_norm = []
-
-    for line in fd:
-        if re_matrix_A.search(line):
-            break
-
-    for line in fd:
-        if re_matrix_B.search(line):
-            break
-        result = re_matrix_square.search(line)
-        A_i.append(int(result.group(1)))
-        A_j.append(int(result.group(2)))
-        A_width.append(int(result.group(3)))
-        A_norm.append(float(result.group(4)))
-
-    print(A_i[1:10], A_j[1:10], A_width[1:10], A_norm[1:10])
-
-    print("loaded {:d} A squares".format(len(A_i)))
-
-    B_i = []
-    B_j = []
-    B_width = []
-    B_norm = []
-
-    for line in fd:
-        if re_matrix_C.search(line):
-            break
-        result = re_matrix_square.search(line)
-        B_i.append(int(result.group(1)))
-        B_j.append(int(result.group(2)))
-        B_width.append(int(result.group(3)))
-        B_norm.append(float(result.group(4)))
-
-    print("loaded {:d} B squares".format(len(B_i)))
-
-    C_i = []
-    C_j = []
-    C_width = []
-    C_norm = []
-
-    for line in fd:
-        if re_product_space.search(line):
-            break
-        result = re_matrix_square.search(line)
-        C_i.append(int(result.group(1)))
-        C_j.append(int(result.group(2)))
-        C_width.append(int(result.group(3)))
-        C_norm.append(float(result.group(4)))
-
-    print("loaded {:d} C squares".format(len(C_i)))
-
-    prod_i = []
-    prod_j = []
-    prod_k = []
-    prod_width = []
-    prod_norm = []
-
-    for line in fd:
-        result = re_product_cube.search(line)
-        prod_i.append(int(result.group(1)))
-        prod_j.append(int(result.group(2)))
-        prod_k.append(int(result.group(3)))
-        prod_width.append(int(result.group(4)))
-        prod_norm.append(float(result.group(5)))
-    fd.close()
-
-    print("loaded {:d} product cubes".format(len(prod_i)))
+    (prod_i, prod_j, prod_k,
+     prod_width_i, prod_width_j, prod_width_k, prod_norm) = read_cubes(fd, re_product_space)
 
     # Get the current figure.
     figure = mlab.gcf()
@@ -418,16 +466,19 @@ def plot(filename, number_bins=100):
     mlab.clf()
 
     # Turn off rendering (for performance).
-    #figure.scene.disable_render = True
+    figure.scene.disable_render = True
 
     # Tune background color.
     #mlab.figure(bgcolor=(1, 1, 1))
 
     # Stratify matrix squares.
-    (norms_stratified, A_i_stratified, A_j_stratified) = stratify(
-        number_bins, A_norm, A_i, A_j)
+    (norms_stratified,
+     A_i_stratified, A_j_stratified,
+     A_width_i_stratified, A_width_j_stratified) = stratify(number_bins, A_norm,
+                                                            A_i, A_j, A_width_i, A_width_j)
 
     # Add matrices.
+    print("Plotting matrix A")
     for i in range(number_bins):
         if len(A_i_stratified[i]) > 0:
             points = mlab.points3d(A_i_stratified[i],
@@ -435,16 +486,19 @@ def plot(filename, number_bins=100):
                                    A_j_stratified[i],
                                    mode='cube',
                                    color=mycolor((i+1)/float(number_bins)),
-                                   scale_factor=A_width[0],
-                                   opacity=1)
-            #points.glyph.glyph_source.glyph_source.x_length = 1
-            #points.glyph.glyph_source.glyph_source.y_length = 0
-            #points.glyph.glyph_source.glyph_source.z_length = 1
+                                   scale_factor=1,
+                                   opacity=0.3)
+            points.glyph.glyph_source.glyph_source.x_length = block_size
+            points.glyph.glyph_source.glyph_source.y_length = 0
+            points.glyph.glyph_source.glyph_source.z_length = block_size
 
-    (norms_stratified, B_i_stratified, B_j_stratified) = stratify(
-        number_bins, B_norm, B_i, B_j)
+    (norms_stratified,
+     B_i_stratified, B_j_stratified,
+     B_width_i_stratified, B_width_j_stratified) = stratify(number_bins, B_norm,
+                                                            B_i, B_j, B_width_i, B_width_j)
 
     # Add matrices.
+    print("Plotting matrix B")
     for i in range(number_bins):
         if len(B_i_stratified[i]) > 0:
             points = mlab.points3d([1 for j in range(len(B_i_stratified[i]))],
@@ -452,16 +506,19 @@ def plot(filename, number_bins=100):
                                    B_i_stratified[i],
                                    mode='cube',
                                    color=mycolor((i+1)/float(number_bins)),
-                                   scale_factor=B_width[0],
-                                   opacity=1)
-            #points.glyph.glyph_source.glyph_source.x_length = 1
-            #points.glyph.glyph_source.glyph_source.y_length = 0
-            #points.glyph.glyph_source.glyph_source.z_length = 1
+                                   scale_factor=1,
+                                   opacity=0.3)
+            points.glyph.glyph_source.glyph_source.x_length = 0
+            points.glyph.glyph_source.glyph_source.y_length = block_size
+            points.glyph.glyph_source.glyph_source.z_length = block_size
 
-    (norms_stratified, C_i_stratified, C_j_stratified) = stratify(
-        number_bins, C_norm, C_i, C_j)
+    (norms_stratified,
+     C_i_stratified, C_j_stratified,
+     C_width_i_stratified, C_width_j_stratified) = stratify(number_bins, C_norm,
+                                                            C_i, C_j, C_width_i, C_width_j)
 
     # Add matrices.
+    print("Plotting matrix C")
     for i in range(number_bins):
         if len(C_i_stratified[i]) > 0:
             points = mlab.points3d(C_i_stratified[i],
@@ -469,21 +526,18 @@ def plot(filename, number_bins=100):
                                    [1 for j in range(len(C_i_stratified[i]))],
                                    mode='cube',
                                    color=mycolor((i+1)/float(number_bins)),
-                                   scale_factor=C_width[0],
-                                   opacity=1)
-            #points.glyph.glyph_source.glyph_source.x_length = 1
-            #points.glyph.glyph_source.glyph_source.y_length = 0
-            #points.glyph.glyph_source.glyph_source.z_length = 1
-
-    mlab.axes()
-
-    return
+                                   scale_factor=1,
+                                   opacity=0.3)
+            points.glyph.glyph_source.glyph_source.x_length = block_size
+            points.glyph.glyph_source.glyph_source.y_length = block_size
+            points.glyph.glyph_source.glyph_source.z_length = 0
 
     # Stratify cubes by norm.
     (norms_stratified, prod_i_stratified, prod_j_stratified, prod_k_stratified) = stratify(
         number_bins, prod_norm, prod_i, prod_j, prod_k)
 
     # Add cubes.
+    print("Plotting product cubes")
     for i in range(number_bins):
         if len(prod_i_stratified[i]) > 0:
             points = mlab.points3d(prod_i_stratified[i],
@@ -492,16 +546,20 @@ def plot(filename, number_bins=100):
                                    mode='cube',
                                    colormap='gist_heat',
                                    color=mycolor((i+1)/float(number_bins)),
-                                   scale_factor=prod_width[0],
+                                   scale_factor=1,
                                    opacity=(i+1)/float(number_bins))
+            points.glyph.glyph_source.glyph_source.x_length = block_size
+            points.glyph.glyph_source.glyph_source.y_length = block_size
+            points.glyph.glyph_source.glyph_source.z_length = block_size
+
             # This is how to the colormap values:
             #
             # lut = points.module_manager.scalar_lut_manager.lut.table.to_array()
             # for j in range(lut.shape[0]):
             #     print(lut[j,:])
 
-    i_max = max(numpy.amax(prod_i), numpy.amax(prod_j), numpy.amax(prod_k))+prod_width[0]/2
-    print("i_max = {:d}".format(i_max))
+    i_max = max(numpy.amax(prod_i), numpy.amax(prod_j), numpy.amax(prod_k))+block_size/2
+    print("i_max = {:e}".format(i_max))
 
     # Insert fake invisible data-set for axes.
     mlab.points3d([1, i_max], [1, i_max], [1, i_max], mode='cube', scale_factor=0)

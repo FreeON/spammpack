@@ -11,11 +11,11 @@ MODULE spamm_structures
 
   ! garnishments of the tree_1d ...
   type :: SpAMM_decoration_1d
-     ! initialization status 
+     ! initialization status
      logical                               :: Init
      ! leaf node flag
      logical                               :: Leaf
-     !> tree sub-vector width: M_pad/2**depth 
+     !> tree sub-vector width: M_pad/2**depth
      integer                               :: Width
      !> Integer dimension of the native (non-padded) vector
      integer                               :: NDimn
@@ -23,7 +23,7 @@ MODULE spamm_structures
      integer,  dimension(0:1)              :: BndBx
      !> Square of the F-norm.
      real(SPAMM_KIND)                      :: Norm2 = -1
-     !> Float Ops needed accumulated to this level 
+     !> Float Ops needed accumulated to this level
      real(kind(0d0))                       :: FlOps = -1
      !> The number of non-zero elements to this level
      real(kind(0d0))                       :: Non0s = -1
@@ -31,21 +31,21 @@ MODULE spamm_structures
 
   ! garnishments of tree_2d ...
   type :: SpAMM_decoration_2d
-     ! initialization status 
+     ! initialization status
      logical                               :: Init
      ! leaf node flag
      logical                               :: Leaf
-     !> tree sub-matrix width: MN_pad/2**depth 
+     !> tree sub-matrix width: MN_pad/2**depth
      integer,           dimension(1:2)     :: Width
-     !> Integer dimension of the native (non-padded) matrix 
+     !> Integer dimension of the native (non-padded) matrix
      integer,           dimension(1:2)     :: NDimn
      !> Axis-aligned bounding box for the [i]-[j] index space
      integer,  dimension(0:1,1:2)          :: BndBx
           !> Square of the F-norm.
      real(SPAMM_KIND)                      :: Norm2 = -1
-     !> Float Ops needed accumulated to this level 
+     !> Float Ops needed accumulated to this level
      real(kind(0d0))                       :: FlOps = -1
-     !> The number of non-zero elements to this level 
+     !> The number of non-zero elements to this level
      real(kind(0d0))                       :: Non0s = -1
   end type SpAMM_decoration_2d
 
@@ -70,7 +70,7 @@ MODULE spamm_structures
      real(SPAMM_KIND),     allocatable     :: chunk(:, :)
   end type SpAMM_tree_2d_symm
 
-  ! full ... 
+  ! full ...
   type :: SpAMM_tree_2d_full
      type(SpAMM_decoration_2d)             :: frill
      type(SpAMM_tree_2d_full), pointer     :: child_00 => null()
