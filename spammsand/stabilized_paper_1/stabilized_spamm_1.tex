@@ -818,9 +818,9 @@ $\left(\mat{s}^{-1/2}_{\tau_0\mu_0} \right)^\dagger \, \oto \, \left(\mat{s}+\mu
 $\mu_1= .01$. It may then be possible to find the full ($\tt SpAMM$ most approximate) 
 factor as the nested product of preconditioned thin slices;
 \begin{equation}
-\mat{s}^{-1/2}_{\tau_0} = \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots  which rapidly approaches $10^{-11}$ (not shown). }
+\mat{s}^{-1/2}_{\tau_0} = \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots  \,  \mat{s}^{-1/2}_{\tau_0 \mu_0}
 \end{figure} 
-\,  \mat{s}^{-1/2}_{\tau_0 \mu_0}
+
 \end{equation}
 In this way, 
 iterative regularization can be used to find a product representation of the inverse square root at a $\tt SpAMM$ resolution 
@@ -852,22 +852,35 @@ This thin product representation may have advantages:
 
 \section{Locality} 
 
-A premier feature of the $n$-body algorithm is the ability to exploit data locality efficiently.  In the $ijk$ space, 
-there are multiple locality principles that can be exploited by $\tt SpAMM$.  Fir
-persistence
-copy in place, tightness of the bound
+A main component of the classical $n$-body algorithm involves spatial database methods that 
+optimize the fast range querry over Cartesian data.  Often, these technologies are
+based on locality preserving properties of a space filling curve \cite{}, which maps points that are
+close in space to an index where they are also close.  The block-by-magnitude structuring that empowers 
+the $\tt SpAMM$ approximation is greatly enhanced by an increasing Euclidean locality of this kind. 
 
-curse of dimensionality
+In addition to spatial locality, Warren and Salmon eploited temporal locality of the $n$-body (octree) 
+task space, using previously accumulated histories to hierarchically rebalance and repartition  
+distributed tree work in a communication optimal way.  In a similar way, we showed how related 
+persistence data can be used to achieve strong scaling in the $\tt SpAMM$ $n$-body approach to 
+matrix algebra \cite{}.  There are many additional opportunities for exploiting persistence data 
+and temporal locality, but we won't persue the topic further any furhter here.  
+ 
+
+
+In this contribution, we new algebraic $n$-body locality we call lensing, 
+
 Each generic slice may be associated with different {\em temporal locality}
 
+persistence, may enable optimization of the generic slice, through layered and incremental modification, 
+%{\em e.g.} locally dense, locally Strassen-like, localiy sampled in a non-determanisticaly way,  
 
 Metric locality is locality with respect to a Euclidean or generalized distance, {\em e.g.} of the basis.  
-
 increasing the Euclidean locality, ``wrings the zeros'' out of the product space for systems with decay.
-On moving from locality provided by the Hilbert order (space filling curve) to annealed sollutions to the
-end-to-end TSP.    
+
 
 \subsubsection{Lensing}
+
+thin vs thick
 
 A feature of square root iteration with the $\ot$ kernel is localization of the culled octree towards identity iteration, 
 $\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
@@ -903,7 +916,7 @@ In this section, we present  numerical experiments that highlight the effects of
 ill-conditioning, dimensionality, and the stability of different first order NS approaches to iteration with $\tt SpAMM$. 
 We turn first to complexity reduction for $\ot$ in the basin of stability,  where we find a novel, compressive 
 effect in the product octree.  This effect is shown in Fig.~\ref{markofzorro},  
-for unscaled, inverse square root duals iteration, Eqs.~(\ref{dualsiteration}), on the 3,3 carbon 
+for unscaled, inverse square root duals iteration, Eqs.~(\ref{dualsiteration}), on the (3,3) carbon 
 nanotube metric at $\kappa=10^6$.  
 
 In this example, the $\tt SpAMM$ octree culled from the $ijk$-cube is outlined by its occlusion surface, enclosing 
