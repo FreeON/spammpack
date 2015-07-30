@@ -242,7 +242,7 @@ CONTAINS
             A%frill%bndbx(0,2)+real(A%frill%bndbx(1,2)-A%frill%bndbx(0,2)+1)/2., &
             A%frill%bndbx(1,1)-A%frill%bndbx(0,1)+1, &
             A%frill%bndbx(1,2)-A%frill%bndbx(0,2)+1, &
-            A%frill%norm2
+            LOG10(SQRT(A%frill%norm2))
     else
        call spamm_tree_print_leaves_2d_symm_recur(A%child_00, file_unit)
        call spamm_tree_print_leaves_2d_symm_recur(A%child_01, file_unit)

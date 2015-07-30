@@ -8,6 +8,9 @@ module spamm_nbdyalgbra_times
 
   implicit none
 
+
+#ifdef SpAMM_PRINT_STREAM
+  ! Globals on only in this non-production instance ...
   TYPE SpAMM_cubes
      TYPE(SpAMM_cubes), POINTER  :: Next
      INTEGER                     :: Levl
@@ -17,6 +20,9 @@ module spamm_nbdyalgbra_times
 
   TYPE(SpAMM_cubes), POINTER     :: Stream
   integer :: number_stream_elements
+  LOGICAL :: Build_Stream
+
+#endif
 
 CONTAINS
 
@@ -377,11 +383,15 @@ CONTAINS
     CALL SpAMM_flip(d)
 
 #ifdef SpAMM_PRINT_STREAM
-    ALLOCATE(SpAMM_stream)
-    Stream=>SpAMM_stream
-    number_stream_elements = 0
-
-    open(unit=45, file=trim(adjustl(stream_file_o))//'.norms', status='NEW')
+    IF(PRESENT(STREAM_FILE_O))THEN
+       Build_Stream=.TRUE.
+       ALLOCATE(SpAMM_stream)
+       Stream=>SpAMM_stream
+       number_stream_elements = 0       
+       open(unit=45, file=trim(adjustl(stream_file_o))//'.norms', status='NEW')
+    ELSE
+       Build_Stream=.FALSE.
+    ENDIF
 #endif
 
     Depth=0
@@ -441,7 +451,7 @@ CONTAINS
             stream%hi(1)-stream%lw(1)+1, &
             stream%hi(2)-stream%lw(2)+1, &
             stream%hi(3)-stream%lw(3)+1, &
-            stream%size
+            LOG10(stream%size)
        Stream=>Stream%Next
     ENDDO
 
@@ -550,33 +560,33 @@ CONTAINS
        ENDIF
 
 #ifdef SpAMM_PRINT_STREAM
-       IF(NT)THEN
-          Stream%Lw(1)=a%frill%bndbx(0,2)
-          Stream%Lw(2)=a%frill%bndbx(0,1)
-          Stream%Lw(3)=b%frill%bndbx(0,2)
-          Stream%Hi(1)=a%frill%bndbx(1,2)
-          Stream%Hi(2)=a%frill%bndbx(1,1)
-          Stream%Hi(3)=b%frill%bndbx(1,2)
-       ELSE
-          Stream%Lw(1)=a%frill%bndbx(0,1)
-          Stream%Lw(2)=a%frill%bndbx(0,2)
-          Stream%Lw(3)=b%frill%bndbx(0,2)
-          Stream%Hi(1)=a%frill%bndbx(1,1)
-          Stream%Hi(2)=a%frill%bndbx(1,2)
-          Stream%Hi(3)=b%frill%bndbx(1,2)
+       IF(Build_Stream)THEN
+          IF(NT)THEN
+             Stream%Lw(1)=a%frill%bndbx(0,2)
+             Stream%Lw(2)=a%frill%bndbx(0,1)
+             Stream%Lw(3)=b%frill%bndbx(0,2)
+             Stream%Hi(1)=a%frill%bndbx(1,2)
+             Stream%Hi(2)=a%frill%bndbx(1,1)
+             Stream%Hi(3)=b%frill%bndbx(1,2)
+          ELSE
+             Stream%Lw(1)=a%frill%bndbx(0,1)
+             Stream%Lw(2)=a%frill%bndbx(0,2)
+             Stream%Lw(3)=b%frill%bndbx(0,2)
+             Stream%Hi(1)=a%frill%bndbx(1,1)
+             Stream%Hi(2)=a%frill%bndbx(1,2)
+             Stream%Hi(3)=b%frill%bndbx(1,2)
+          ENDIF
+          Stream%Levl=Depth
+          Stream%Size=SQRT(a%frill%norm2*b%frill%norm2)
+          number_stream_elements = number_stream_elements+1
+          ALLOCATE(Stream%Next)
+          Stream=>Stream%Next
+          NULLIFY(Stream%Next)
        ENDIF
-
-       Stream%Levl=Depth
-       Stream%Size=SQRT(a%frill%norm2*b%frill%norm2)
-       number_stream_elements = number_stream_elements+1
-       ALLOCATE(Stream%Next)
-       Stream=>Stream%Next
-       NULLIFY(Stream%Next)
 #endif
 
 
    ELSE
-
 
        b00=>b%child_00; b11=>b%child_11; b01=>b%child_01; b10=>b%child_10
        a00=>a%child_00; a11=>a%child_11
