@@ -1,8 +1,8 @@
 module MatrixList
-( entryCol
-, entryRow
-, entryVal
-, MatrixList
+( MatrixList
+, mEntryCol
+, mEntryRow
+, mEntryVal
 , MListEntry
 , mListEntries
 , mListHeight
@@ -24,11 +24,11 @@ mListWidth (_, w, _) = w
 mListEntries :: MatrixList a -> [MListEntry a]
 mListEntries (_, _, ijxs) = ijxs
 
-entryRow :: MListEntry a -> Int
-entryRow (i, _, _) = i
+mEntryRow :: MListEntry a -> Int
+mEntryRow (i, _, _) = i
 
-entryCol :: MListEntry a -> Int
-entryCol (_, j, _) = j
+mEntryCol :: MListEntry a -> Int
+mEntryCol (_, j, _) = j
 
-entryVal :: MListEntry a -> a
-entryVal (_, _, x) = x
+mEntryVal :: MListEntry a -> a
+mEntryVal (_, _, x) = x

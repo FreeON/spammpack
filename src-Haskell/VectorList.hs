@@ -1,7 +1,7 @@
 module VectorList
-( entryIndex
-, entryVal
-, VectorList
+( VectorList
+, vEntryIndex
+, vEntryVal
 , VListEntry
 , vListEntries
 , vListLength
@@ -19,8 +19,8 @@ vListLength (l, _) = l
 vListEntries :: VectorList a -> [VListEntry a]
 vListEntries (_, ixs) = ixs
 
-entryIndex :: VListEntry a -> Int
-entryIndex (i, _) = i
+vEntryIndex :: VListEntry a -> Int
+vEntryIndex (i, _) = i
 
-entryVal :: VListEntry a -> a
-entryVal (_, x) = x
+vEntryVal :: VListEntry a -> a
+vEntryVal (_, x) = x
