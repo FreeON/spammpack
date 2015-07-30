@@ -1,3 +1,8 @@
+#    $ ipython --gui=wx
+#    In [1]: %run visualization/plot-2.py
+#    In [2]: plot("z_dual_1.norms")
+
+
 from mayavi import mlab
 import numpy
 import re
@@ -432,7 +437,7 @@ def read_cubes(fd, start, end=None):
     return (i, j, k, width_i, width_j, width_k, norm)
 
 @mlab.show
-def plot(filename, number_bins=40):
+def plot(filename, number_bins=6):
     """Plot the cubes from a file.
 
     The cubes are stratified into number_bins norm bins. The
@@ -485,7 +490,7 @@ def plot(filename, number_bins=40):
                                    [1 for j in range(len(A_i_stratified[i]))],
                                    A_j_stratified[i],
                                    mode='cube',
-                                   color=mycolor((i+1)/float(number_bins)),
+                                   color=(0.0, 0.5019607843137255, 0.5019607843137255),
                                    scale_factor=1,
                                    opacity=(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
@@ -505,7 +510,7 @@ def plot(filename, number_bins=40):
                                    B_j_stratified[i],
                                    B_i_stratified[i],
                                    mode='cube',
-                                   color=mycolor((i+1)/float(number_bins)),
+                                   color=(0.5019607843137255, 0.0, 0.0),
                                    scale_factor=1,
                                    opacity=(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = 0
@@ -525,7 +530,7 @@ def plot(filename, number_bins=40):
                                    C_j_stratified[i],
                                    [1 for j in range(len(C_i_stratified[i]))],
                                    mode='cube',
-                                   color=mycolor((i+1)/float(number_bins)),
+                                   color=(0.5019607843137255, 0.0, 0.5019607843137255),
                                    scale_factor=1,
                                    opacity=(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
@@ -544,13 +549,16 @@ def plot(filename, number_bins=40):
                                    prod_j_stratified[i],
                                    prod_k_stratified[i],
                                    mode='cube',
-                                   colormap='gist_heat',
-                                   color=mycolor((i+1)/float(number_bins)),
+                                   color=(0.0,0.0,0.0), 
                                    scale_factor=1,
-                                   opacity=(i+1)/float(number_bins))
+                                   opacity=0.25*(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
             points.glyph.glyph_source.glyph_source.y_length = block_size
             points.glyph.glyph_source.glyph_source.z_length = block_size
+
+#
+#                                   colormap='gist_heat',
+#                                   color=mycolor((i+1)/float(number_bins)),
 
             # This is how to the colormap values:
             #
@@ -598,13 +606,36 @@ def plot(filename, number_bins=40):
     figure.scene.camera.focal_point = [1500, 1500, 1500]
     figure.scene.camera.view_angle = 30.0
     figure.scene.camera.view_up = [0, 0, 1]
-    figure.scene.render()
 
-    # Turn rendering back on.
+    figure.scene.camera.position = [1975, 1975., 2400.]
+    figure.scene.camera.focal_point = [440.0, 440.0, 440.0]
+    figure.scene.camera.view_angle = 30.0
+    figure.scene.camera.view_up = [-0.476, -0.476, 0.740]
+    figure.scene.camera.clipping_range = [1406.7446099663789, 4872.2717825401005]
+
+    figure.scene.camera.compute_view_plane_normal()
     figure.scene.disable_render = False
 
     # Save the figure to file.
+
     import os.path
-    png_filename = os.path.splitext(filename)[0] + ".png"
+
+    png_filename = os.path.splitext(filename)[0] + "_cant.png"
     print("Saving image to " + png_filename)
     figure.scene.save(png_filename)
+
+    figure.scene.isometric_view()
+
+    png_filename = os.path.splitext(filename)[0] + "_isov.png"
+    print("Saving image to " + png_filename)
+    figure.scene.save(png_filename)
+
+
+    # Turn rendering back on.
+    #    figure.scene.disable_render = False
+
+    # Save the figure to file.
+    #    import os.path
+    #    png_filename = os.path.splitext(filename)[0] + ".png"
+    #    print("Saving image to " + png_filename)
+    #    figure.scene.save(png_filename)

@@ -865,7 +865,8 @@ persistence data can be used to achieve strong scaling in the $\tt SpAMM$ $n$-bo
 matrix algebra \cite{}.  There are many additional opportunities for exploiting persistence data 
 and temporal locality, but we won't persue the topic further any furhter here.  
  
-
+delocalization is implicit in the product, rather than explicit in ``pilars''.  An alternative
+view might consider emerging pillar structures to 
 
 In this contribution, we new algebraic $n$-body locality we call lensing, 
 
@@ -899,6 +900,22 @@ with costs approaching an in-place scalar multiply and copy, {\em e.g.} as $h_\a
 Our thesis is that many problems in physical and information sciences can be brought to this lensed state, {\em e.g.} through preconditioning
 as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
 and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
+
+ \begin{figure}[h] \label{figxxx}
+ \fbox{ \includegraphics[width=2.4cm,trim={19.3cm 1cm 19.3cm 3cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_11_isov.png}} 
+ \fbox{ \includegraphics[width=2.4cm,trim={19.3cm 1cm 19.3cm 3cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_11_isov.png}} 
+ \fbox{ \includegraphics[width=2.4cm,trim={19.3cm 1cm 19.3cm 3cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_11_isov.png}} 
+ \caption{}
+ \end{figure}
+
+
+ \begin{figure}[h] \label{figzzz}
+ \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
+ \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
+ \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
+ \caption{}
+ \end{figure}
+
 
  \begin{figure}[h] \label{markofzorro}
  \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
