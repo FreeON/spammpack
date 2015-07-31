@@ -741,7 +741,7 @@ Differences in occlusion between stab and dual magnified as bounds for s.z not a
 
  *lot* of overlap too (reproducing hilberts etc).
 
-\section{Iterated Regularization}
+\section{Iterated Regularization}\label{regularization}
 
 Shown in the preceeding section, stabiliyty limits application of the NS square root iteration under 
 agressive $\tt SpAMM$ approximation.  These limits can be circumvented through Tikhonov regularization \cite{}, 
@@ -819,8 +819,6 @@ $\mu_1= .01$. It may then be possible to find the full ($\tt SpAMM$ most approxi
 factor as the nested product of preconditioned thin slices;
 \begin{equation}
 \mat{s}^{-1/2}_{\tau_0} = \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots  \,  \mat{s}^{-1/2}_{\tau_0 \mu_0}
-\end{figure} 
-
 \end{equation}
 In this way, 
 iterative regularization can be used to find a product representation of the inverse square root at a $\tt SpAMM$ resolution 
@@ -842,7 +840,6 @@ This thin product representation may have advantages:
 ({\bf{4}}) A new algebraic $n$-body form of locality is exploited; 
 ({\bf{5}}) The inverse factor can be applied incrementally;
 ({\bf{6}}) Slice update and application is ammenable to continous temporal partitioning based on {\em e.g.} persistence data.
-\end{itemize}
 
 %\begin{equation}
 %\mat(I}\left(\mat{s}\right) = \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0}}  \bigotimes_{\substack{\tau'=\tau_0 \\ \mu'=\mu_0}} 
@@ -856,17 +853,108 @@ A main component of the classical $n$-body algorithm involves spatial database m
 optimize the fast range querry over Cartesian data.  Often, these technologies are
 based on locality preserving properties of a space filling curve \cite{}, which maps points that are
 close in space to an index where they are also close.  The block-by-magnitude structuring that empowers 
-the $\tt SpAMM$ approximation is greatly enhanced by an increasing Euclidean locality of this kind. 
+the $\tt SpAMM$ approximation is the metric (generalized) counterpart of this Euclidean locality.
 
-In addition to spatial locality, Warren and Salmon eploited temporal locality of the $n$-body (octree) 
-task space, using previously accumulated histories to hierarchically rebalance and repartition  
-distributed tree work in a communication optimal way.  In a similar way, we showed how related 
-persistence data can be used to achieve strong scaling in the $\tt SpAMM$ $n$-body approach to 
-matrix algebra \cite{}.  There are many additional opportunities for exploiting persistence data 
-and temporal locality, but we won't persue the topic further any furhter here.  
+Also for the $n$-body method,  Warren and Salmon showed how to use previously accumulated histories 
+(persistence, temporal locality) to hierarchically rebalance and repartition  the distributed task space of the octree. 
+In a similar way, we showed how persistence data can be used to achieve strong parallel scaling for $\tt SpAMM$ \cite{}.  
+
+In Figures , we show a new form of algebraic locality unique to the $\tt SpAMM$ approximation, 
+for the idealized case of a most approximate, regularized and low precision preconditioner, $\left|\tau_0=.1\,\mu_0=.1\, ; \scriptstyle{\mat{s}^{-1/2}} \right>$.
+This locality develops compressively towards convergence in the square root iteration, as the contractive identity iteration develops.  
+We call this compression {\em lensing},  involving localization of tasks towards the $i=j$ and $i=k$ planes,
+with near reflection about the cube-diagonal (almost copy in place, top two pannels on the right).  
  
+\begin{figure}[h] \label{Lensing1}
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_1_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_15_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_1_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_15_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_1_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_15_cant.png}} 
+%\fbox{ \includegraphics[width=2.4cm,trim={1.3cm .1cm 1.3cm .1cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_14_cant.png}} 
+\caption{
+The $ijk$ task and data space for square root iteration of a first, most approximate preconditioner 
+$\left|\tau_0=.1\,\mu_0=.1\, ; \scriptstyle{\mat{s}^{-1/2}} \right>$ for the short, 8$\times$ U.C., (3,3) $\kappa(s)=10^{11}$ nanotube.
+$\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher precision, $\tau_s=.001$.  Left to right, pannels 
+coorespond to $k=0$ and $k=15$, whilst top to bottom its $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$,
+$\mat{z}_k=  \mat{z}_{k-1}  \ot h_\alpha[ \mat{x}_{k-1} ]$ and 
+$\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$.  Green is $\mat{a}$, maroon is $\mat{b}$, purple is $c$ and black is the volume ${\rm vol}_{a \ot b}$.
+Note extreme localization upon convergence. Axes may be labeled incorrectly. }
+\end{figure}
+
+
+\begin{figure}[h] \label{Lensing2}
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/y_stab_r_1_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/y_stab_r_15_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_1_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_15_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/x_stab_r_1_cant.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/x_stab_r_15_cant.png}} 
+%\fbox{ \includegraphics[width=2.4cm,trim={1.3cm .1cm 1.3cm .1cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_14_cant.png}} 
+\caption{green is the $\mat{a}$, maroon is $\mat{b}$ and purple is $c$. Axes may be labeled incorrectly. }
+\end{figure}
+
+ 
+
+\begin{figure}[h] \label{Lensing2}
+%\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{y_dual_38_cant1.png}} 
+\fbox{ \includegraphics[width=3.8cm,trim={4.cm  .6cm 4.cm 1.8cm},clip]{fig_bcsstk14/y_dual_38_cant2.png}}
+\fbox{ \includegraphics[width=3.8cm,trim={22.cm .6cm 22.cm .8cm},clip]{fig_bcsstk14/x_dual_38_gossamer.png}  }
+\caption{green is the $\mat{a}$, maroon is $\mat{b}$ and purple is $c$. Axes may be labeled incorrectly. }
+\end{figure}
+
+
+
+
+described in Section \ref{regularization}.  Lensing 
+
+
+
+%I(s) is a gossamer pass function, providing converage to the range x=s^1/2.b
+
+gossamer, reticulate volumes reflecting the graph-theoretical 
+
 delocalization is implicit in the product, rather than explicit in ``pilars''.  An alternative
 view might consider emerging pillar structures to 
+
+goal is to delay delocalization away from plane defers delocalizaiton remains implicit in the $\tt SpAMM$ sandwich, 
+
+
+Towards convergence,  
+the product $\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$ involves the product of large and small eigenvalues, and large and small norms, 
+which are recursively brought towards unity along the $i=k$ diagonal.  Likewise, application of the NS map, Eq.~(\ref{cannonical}),  tend towards 
+reflection about the $ijk$ cube-diagonal.   Because the $\tt SpAMM$ error obeys the multiplicative Cauchy-Schwarz bound, Eq.~(),  the 
+cooresponding culled-octree can likewise follow the $i=j$ plane about the $ijk$ cube-diagonal, resolving the {\em relative} error in identity to within $\tau$.    This effect is shown in Figure \ref{x_lensing}.   
+We call this identity related,  plane-wise concentration of the culled octree  about the cube-diagonal {\em lensing}.  
+
+Lensing is an algebraic localization offering compression beyond  , 
+
+complexity reduction relative to the naive (full) volume of the cube,
+and also relative to sparsification strategies that preserve only absolute errors, as in Eq.~\ref{sparseapprox}.  
+The lensed task space offers an enhanced locality of reference, and may also afford fast methods 
+with costs approaching an in-place scalar multiply and copy, {\em e.g.} as $h_\alpha \rightarrow \mat{I}$ in Eq.~\ref{cannonical}.
+Our thesis is that many problems in physical and information sciences can be brought to this lensed state, {\em e.g.} through preconditioning
+as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
+and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
+
+
+
+
+
+
+ \begin{figure}[h] \label{figzzz}
+ \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
+ \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
+ \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
+ \caption{}
+ \end{figure}
+
+
+
+
+
+ 
 
 In this contribution, we new algebraic $n$-body locality we call lensing, 
 
@@ -884,37 +972,8 @@ increasing the Euclidean locality, ``wrings the zeros'' out of the product space
 thin vs thick
 
 A feature of square root iteration with the $\ot$ kernel is localization of the culled octree towards identity iteration, 
-$\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  Towards convergence,  
-the product $\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$ involves the product of large and small eigenvalues, and large and small norms, 
-which are recursively brought towards unity along the $i=k$ diagonal.  Likewise, application of the NS map, Eq.~(\ref{cannonical}),  tend towards 
-reflection about the $ijk$ cube-diagonal.   Because the $\tt SpAMM$ error obeys the multiplicative Cauchy-Schwarz bound, Eq.~(),  the 
-cooresponding culled-octree can likewise follow the $i=j$ plane about the $ijk$ cube-diagonal, resolving the {\em relative} error in identity to within $\tau$.    This effect is shown in Figure \ref{x_lensing}.   
-We call this identity related,  plane-wise concentration of the culled octree  about the cube-diagonal {\em lensing}.  
+$\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  
 
-Lensing is an algebraic localization offering compression beyond  , 
-
-complexity reduction relative to the naive (full) volume of the cube,
-and also relative to sparsification strategies that preserve only absolute errors, as in Eq.~\ref{sparseapprox}.  
-The lensed task space offers an enhanced locality of reference, and may also afford fast methods 
-with costs approaching an in-place scalar multiply and copy, {\em e.g.} as $h_\alpha \rightarrow \mat{I}$ in Eq.~\ref{cannonical}.
-Our thesis is that many problems in physical and information sciences can be brought to this lensed state, {\em e.g.} through preconditioning
-as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
-and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
-
- \begin{figure}[h] \label{figxxx}
- \fbox{ \includegraphics[width=2.4cm,trim={19.3cm 1cm 19.3cm 3cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_11_isov.png}} 
- \fbox{ \includegraphics[width=2.4cm,trim={19.3cm 1cm 19.3cm 3cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_11_isov.png}} 
- \fbox{ \includegraphics[width=2.4cm,trim={19.3cm 1cm 19.3cm 3cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_11_isov.png}} 
- \caption{}
- \end{figure}
-
-
- \begin{figure}[h] \label{figzzz}
- \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
- \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
- \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
- \caption{}
- \end{figure}
 
 
  \begin{figure}[h] \label{markofzorro}

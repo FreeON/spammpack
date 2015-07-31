@@ -225,7 +225,7 @@ contains
 
     kount=1
     FillN=1d10
-    NS_STEPS: DO i = 0, 20
+    NS_STEPS: DO i = 0, 40
 
 #ifdef DENSE_DIAGNOSTICS
 
@@ -283,7 +283,7 @@ contains
 !       IF(i>2 .and. FillN<1d-2 .AND. FillN>FillN_prev )converged=.TRUE.
        ! anihilation of expected error
 !       IF( FillN <  Tau_s )converged=.TRUE.
-       IF(i==16)converged=.TRUE.
+!       IF(i==16)converged=.TRUE.
        IF(converged)GOTO 999
 
        ! stabilization ... stabilization ... stabilization ... stabilization ... stabilization ... stabilization ...

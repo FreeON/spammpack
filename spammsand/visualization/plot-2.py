@@ -490,7 +490,7 @@ def plot(filename, number_bins=6):
                                    [1 for j in range(len(A_i_stratified[i]))],
                                    A_j_stratified[i],
                                    mode='cube',
-                                   color=(0.0, 0.5019607843137255, 0.5019607843137255),
+                                   color=(0.0, 0.65019607843137255, 0.65019607843137255),
                                    scale_factor=1,
                                    opacity=(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
@@ -510,7 +510,7 @@ def plot(filename, number_bins=6):
                                    B_j_stratified[i],
                                    B_i_stratified[i],
                                    mode='cube',
-                                   color=(0.5019607843137255, 0.0, 0.0),
+                                   color=(0.65019607843137255, 0.0, 0.0),
                                    scale_factor=1,
                                    opacity=(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = 0
@@ -530,7 +530,7 @@ def plot(filename, number_bins=6):
                                    C_j_stratified[i],
                                    [1 for j in range(len(C_i_stratified[i]))],
                                    mode='cube',
-                                   color=(0.5019607843137255, 0.0, 0.5019607843137255),
+                                   color=(0.65019607843137255, 0.0, 0.65019607843137255),
                                    scale_factor=1,
                                    opacity=(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
@@ -549,14 +549,15 @@ def plot(filename, number_bins=6):
                                    prod_j_stratified[i],
                                    prod_k_stratified[i],
                                    mode='cube',
-                                   color=(0.0,0.0,0.0), 
+                                   color=(0.1,.1,.1),
                                    scale_factor=1,
-                                   opacity=0.25*(i+1)/float(number_bins))
+                                   opacity=1.0*(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
             points.glyph.glyph_source.glyph_source.y_length = block_size
             points.glyph.glyph_source.glyph_source.z_length = block_size
 
-#
+#                                   color=(0.0,0.0,0.0), 
+
 #                                   colormap='gist_heat',
 #                                   color=mycolor((i+1)/float(number_bins)),
 
@@ -602,10 +603,15 @@ def plot(filename, number_bins=6):
 
     # Fix camera position.
     #print(figure.scene.camera)
-    figure.scene.camera.position = [7000, 9000, 8500]
-    figure.scene.camera.focal_point = [1500, 1500, 1500]
-    figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [0, 0, 1]
+#    figure.scene.camera.position = [7000, 9000, 8500]
+#    figure.scene.camera.focal_point = [1500, 1500, 1500]
+#    figure.scene.camera.view_angle = 30.0
+#    figure.scene.camera.view_up = [0, 0, 1]
+
+    figure.scene.disable_render = False
+    figure.scene.camera.compute_view_plane_normal()
+
+    import os.path
 
     figure.scene.camera.position = [1975, 1975., 2400.]
     figure.scene.camera.focal_point = [440.0, 440.0, 440.0]
@@ -613,16 +619,35 @@ def plot(filename, number_bins=6):
     figure.scene.camera.view_up = [-0.476, -0.476, 0.740]
     figure.scene.camera.clipping_range = [1406.7446099663789, 4872.2717825401005]
 
-    figure.scene.camera.compute_view_plane_normal()
-    figure.scene.disable_render = False
-
-    # Save the figure to file.
-
-    import os.path
-
-    png_filename = os.path.splitext(filename)[0] + "_cant.png"
+    png_filename = os.path.splitext(filename)[0] + "_cant1.png"
     print("Saving image to " + png_filename)
     figure.scene.save(png_filename)
+
+    # For Y:
+    figure.scene.camera.position = [5129.1505201525497, 5131.9537642061341, 1820.5721348046022]
+    figure.scene.camera.focal_point = [904.5, 904.5, 904.5]
+    figure.scene.camera.view_angle = 30.0
+    figure.scene.camera.view_up = [-0.09843709182225574, -0.11580656469801841, 0.98838200030475099]
+    figure.scene.camera.clipping_range = [3200.116174855104, 9643.7331705505276]
+    figure.scene.camera.compute_view_plane_normal()
+    figure.scene.render()
+
+    png_filename = os.path.splitext(filename)[0] + "_cant2.png"
+    print("Saving image to " + png_filename)
+    figure.scene.save(png_filename)
+
+    # For Z:
+    figure.scene.camera.position = [1293.1590935788875, 6926.5705261862986, 1281.1114558910938]
+    figure.scene.camera.focal_point = [904.49999999999943, 904.49999999999545, 904.49999999999204]
+    figure.scene.camera.view_angle = 30.0
+    figure.scene.camera.view_up = [0.014097608625497741, -0.06331666835383154, 0.99789391066366029]
+    figure.scene.camera.clipping_range = [3967.5642076415793, 8677.6742147063178]
+    figure.scene.camera.compute_view_plane_normal()
+    
+    png_filename = os.path.splitext(filename)[0] + "_cant3.png"
+    print("Saving image to " + png_filename)
+    figure.scene.save(png_filename)
+
 
     figure.scene.isometric_view()
 
