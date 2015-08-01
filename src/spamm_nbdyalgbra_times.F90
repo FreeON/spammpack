@@ -403,14 +403,17 @@ CONTAINS
 #ifdef SpAMM_PRINT_STREAM
     if(.not.present(STREAM_FILE_O)) return
 
+    ! Edit, this is mixed up in the plot file.  The easy fix is A->D, D->A.
+    ! Then things make sense with visualization/plot-2.py
+
     write(45, "(A)") "Matrix A"
-    call spamm_tree_print_leaves_2d_symm(A, file_unit=45)
+    call spamm_tree_print_leaves_2d_symm(D, file_unit=45)
 
     write(45, "(A)") "Matrix B"
     call spamm_tree_print_leaves_2d_symm(B, file_unit=45)
 
     write(45, "(A)") "Matrix C"
-    call spamm_tree_print_leaves_2d_symm(D, file_unit=45)
+    call spamm_tree_print_leaves_2d_symm(A, file_unit=45)
 
     write(45, "(A)") "Product Space"
     write(45, "(I8)") SPAMM_BLOCK_SIZE

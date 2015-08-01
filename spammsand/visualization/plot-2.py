@@ -437,7 +437,7 @@ def read_cubes(fd, start, end=None):
     return (i, j, k, width_i, width_j, width_k, norm)
 
 @mlab.show
-def plot(filename, number_bins=6):
+def plot(filename, number_bins=2):
     """Plot the cubes from a file.
 
     The cubes are stratified into number_bins norm bins. The
@@ -489,10 +489,11 @@ def plot(filename, number_bins=6):
             points = mlab.points3d(A_i_stratified[i],
                                    [1 for j in range(len(A_i_stratified[i]))],
                                    A_j_stratified[i],
-                                   mode='cube',
-                                   color=(0.0, 0.65019607843137255, 0.65019607843137255),
-                                   scale_factor=1,
-                                   opacity=(i+1)/float(number_bins))
+                                  mode='cube',
+                                 color=(0.0, 0.5019607843137255, 0.5019607843137255),
+                                scale_factor=1,
+                                   opacity=0.5*(i+1)/float(number_bins))
+
             points.glyph.glyph_source.glyph_source.x_length = block_size
             points.glyph.glyph_source.glyph_source.y_length = 0
             points.glyph.glyph_source.glyph_source.z_length = block_size
@@ -510,9 +511,9 @@ def plot(filename, number_bins=6):
                                    B_j_stratified[i],
                                    B_i_stratified[i],
                                    mode='cube',
-                                   color=(0.65019607843137255, 0.0, 0.0),
+                                   color=(0.5019607843137255, 0.0, 0.0),
                                    scale_factor=1,
-                                   opacity=(i+1)/float(number_bins))
+                                   opacity=0.5*(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = 0
             points.glyph.glyph_source.glyph_source.y_length = block_size
             points.glyph.glyph_source.glyph_source.z_length = block_size
@@ -530,9 +531,9 @@ def plot(filename, number_bins=6):
                                    C_j_stratified[i],
                                    [1 for j in range(len(C_i_stratified[i]))],
                                    mode='cube',
-                                   color=(0.65019607843137255, 0.0, 0.65019607843137255),
+                                   color=(0.5019607843137255, 0.0, 0.5019607843137255),
                                    scale_factor=1,
-                                   opacity=(i+1)/float(number_bins))
+                                   opacity=0.5*(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
             points.glyph.glyph_source.glyph_source.y_length = block_size
             points.glyph.glyph_source.glyph_source.z_length = 0
@@ -549,9 +550,9 @@ def plot(filename, number_bins=6):
                                    prod_j_stratified[i],
                                    prod_k_stratified[i],
                                    mode='cube',
-                                   color=(0.1,.1,.1),
+                                   color=(0.3,.3,.3),
                                    scale_factor=1,
-                                   opacity=1.0*(i+1)/float(number_bins))
+                                   opacity=0.5*(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
             points.glyph.glyph_source.glyph_source.y_length = block_size
             points.glyph.glyph_source.glyph_source.z_length = block_size
@@ -623,30 +624,32 @@ def plot(filename, number_bins=6):
     print("Saving image to " + png_filename)
     figure.scene.save(png_filename)
 
-    # For Y:
-    figure.scene.camera.position = [5129.1505201525497, 5131.9537642061341, 1820.5721348046022]
+    # For Y: CLOSE UP  ALONG I=K & CUBE DIAGONAL
+    figure.scene.camera.position = [1878.3518173107655, 2210.072124516224, 1963.6777932457967]
     figure.scene.camera.focal_point = [904.5, 904.5, 904.5]
     figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [-0.09843709182225574, -0.11580656469801841, 0.98838200030475099]
-    figure.scene.camera.clipping_range = [3200.116174855104, 9643.7331705505276]
+    figure.scene.camera.view_up = [-0.40500836669875068, -0.37455739560584284, 0.83407132806551876]
+    figure.scene.camera.clipping_range = [5.8611765479361146, 5861.1765479361147]
+    figure.scene.camera.compute_view_plane_normal()
+
+    png_filename = os.path.splitext(filename)[0] + "_zoom_cube_diag_ylense.png"
+    print("Saving image to " + png_filename)
+    figure.scene.save(png_filename)
+
+    # For X: 
+    figure.scene.camera.position = [4725.8633422234443, 1998.1802839889251, 4736.2307754209651]
+    figure.scene.camera.focal_point = [904.5, 904.5, 904.5]
+    figure.scene.camera.view_angle = 30.0
+    figure.scene.camera.view_up = [-0.13532282092230383, 0.980162372840087, -0.14480834577509852]
+    figure.scene.camera.clipping_range = [2617.2771154002421, 9189.439101845117]
     figure.scene.camera.compute_view_plane_normal()
     figure.scene.render()
 
-    png_filename = os.path.splitext(filename)[0] + "_cant2.png"
+    png_filename = os.path.splitext(filename)[0] + "_xresolve.png"
     print("Saving image to " + png_filename)
     figure.scene.save(png_filename)
 
-    # For Z:
-    figure.scene.camera.position = [1293.1590935788875, 6926.5705261862986, 1281.1114558910938]
-    figure.scene.camera.focal_point = [904.49999999999943, 904.49999999999545, 904.49999999999204]
-    figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [0.014097608625497741, -0.06331666835383154, 0.99789391066366029]
-    figure.scene.camera.clipping_range = [3967.5642076415793, 8677.6742147063178]
-    figure.scene.camera.compute_view_plane_normal()
-    
-    png_filename = os.path.splitext(filename)[0] + "_cant3.png"
-    print("Saving image to " + png_filename)
-    figure.scene.save(png_filename)
+
 
 
     figure.scene.isometric_view()
