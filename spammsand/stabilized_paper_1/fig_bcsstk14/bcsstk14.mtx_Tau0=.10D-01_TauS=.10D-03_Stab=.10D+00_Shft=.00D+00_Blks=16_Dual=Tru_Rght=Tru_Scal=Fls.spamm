@@ -1,6 +1,6 @@
   reading matrix in mm format from bcsstk14.mtx
-  building a sandwich ..... |z>=|.1E-02>|.1E-02>|.1E-02>|.1E-02>|.1E-02>|.1E-02>|
+  building a sandwich ..... |z>=|.1E-01>|.1E-01>|.1E-01>|.1E-01>|.1E-01>|.1E-01>|
   starting to build a spamm sandwich ... 
   problem dimension, n =         1806        1806
-  tau_0 = .10D-02, tau_s = .10D-04, d = .10D+00, shift = .00D+00
+  tau_0 = .10D-01, tau_s = .10D-03, d = .10D+00, shift = .00D+00
   hi extremal ......... .10D+11

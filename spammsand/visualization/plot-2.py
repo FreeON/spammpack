@@ -437,7 +437,7 @@ def read_cubes(fd, start, end=None):
     return (i, j, k, width_i, width_j, width_k, norm)
 
 @mlab.show
-def plot(filename, number_bins=2):
+def plot(filename, number_bins=6):
     """Plot the cubes from a file.
 
     The cubes are stratified into number_bins norm bins. The
@@ -474,7 +474,7 @@ def plot(filename, number_bins=2):
     figure.scene.disable_render = True
 
     # Tune background color.
-    figure.scene.background = (1, 1, 1)
+    figure.scene.background = (1., 1., 1.)
 
     # Stratify matrix squares.
     (norms_stratified,
@@ -550,9 +550,9 @@ def plot(filename, number_bins=2):
                                    prod_j_stratified[i],
                                    prod_k_stratified[i],
                                    mode='cube',
-                                   color=(0.3,.3,.3),
+                                   color=(0.2,.2,.2),
                                    scale_factor=1,
-                                   opacity=0.5*(i+1)/float(number_bins))
+                                   opacity=0.75*(i+1)/float(number_bins))
             points.glyph.glyph_source.glyph_source.x_length = block_size
             points.glyph.glyph_source.glyph_source.y_length = block_size
             points.glyph.glyph_source.glyph_source.z_length = block_size
@@ -602,65 +602,45 @@ def plot(filename, number_bins=2):
     axes.title_text_property.color = (0, 0, 0)
     axes.title_text_property.shadow_offset = numpy.array([ 1, -1])
 
-    # Fix camera position.
-    #print(figure.scene.camera)
-#    figure.scene.camera.position = [7000, 9000, 8500]
-#    figure.scene.camera.focal_point = [1500, 1500, 1500]
-#    figure.scene.camera.view_angle = 30.0
-#    figure.scene.camera.view_up = [0, 0, 1]
-
     figure.scene.disable_render = False
     figure.scene.camera.compute_view_plane_normal()
 
     import os.path
 
-    figure.scene.camera.position = [1975, 1975., 2400.]
-    figure.scene.camera.focal_point = [440.0, 440.0, 440.0]
-    figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [-0.476, -0.476, 0.740]
-    figure.scene.camera.clipping_range = [1406.7446099663789, 4872.2717825401005]
+#./spammsand_invsqrt bcsstk14.mtx 1.d-1 1.d-6 1.d-1 0.d0 D U R b=8 
+#./spammsand_invsqrt 33_x8_11_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R b=16
 
-    png_filename = os.path.splitext(filename)[0] + "_cant1.png"
-    print("Saving image to " + png_filename)
-    figure.scene.save(png_filename)
+#-------------------------------------------------------------------------------------------------------
+#./spammsand_invsqrt bcsstk14.mtx 1.d-2 1.d-4 1.d-1 0.d0 D U R
 
-    # For Y: CLOSE UP  ALONG I=K & CUBE DIAGONAL
-    figure.scene.camera.position = [1878.3518173107655, 2210.072124516224, 1963.6777932457967]
-    figure.scene.camera.focal_point = [904.5, 904.5, 904.5]
+    figure.scene.camera.position = [1045.203726965188, 1039.2064081296085, 6702.5003353789853]
+    figure.scene.camera.focal_point = [874.472594413058, 898.76786979832445, 939.79123074155348]
     figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [-0.40500836669875068, -0.37455739560584284, 0.83407132806551876]
-    figure.scene.camera.clipping_range = [5.8611765479361146, 5861.1765479361147]
+    figure.scene.camera.view_up = [-0.70042965936561086, -0.71270269865532587, 0.038120278204521671]
+    figure.scene.camera.clipping_range = [3849.5157839671483, 8271.9264727908048]
     figure.scene.camera.compute_view_plane_normal()
 
-    png_filename = os.path.splitext(filename)[0] + "_zoom_cube_diag_ylense.png"
+    png_filename = os.path.splitext(filename)[0] + "_x_zoomview.png"
     print("Saving image to " + png_filename)
     figure.scene.save(png_filename)
 
-    # For X: 
-    figure.scene.camera.position = [4725.8633422234443, 1998.1802839889251, 4736.2307754209651]
+
+    figure.scene.camera.position = [2030.6693081026092, 2031.6946128119116, 2101.6583772785889]
     figure.scene.camera.focal_point = [904.5, 904.5, 904.5]
     figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [-0.13532282092230383, 0.980162372840087, -0.14480834577509852]
-    figure.scene.camera.clipping_range = [2617.2771154002421, 9189.439101845117]
+    figure.scene.camera.view_up = [-0.4254783969169838, -0.42401748949585194, 0.79948564862578286]
+    figure.scene.camera.clipping_range = [5.9413455805998874, 5941.3455805998874]
     figure.scene.camera.compute_view_plane_normal()
     figure.scene.render()
 
-    png_filename = os.path.splitext(filename)[0] + "_xresolve.png"
+    png_filename = os.path.splitext(filename)[0] + "_y_zoomview.png"
     print("Saving image to " + png_filename)
     figure.scene.save(png_filename)
-
-
-
-
-    figure.scene.isometric_view()
-
-    png_filename = os.path.splitext(filename)[0] + "_isov.png"
-    print("Saving image to " + png_filename)
-    figure.scene.save(png_filename)
+#-------------------------------------------------------------------------------------------------------
 
 
     # Turn rendering back on.
-    #    figure.scene.disable_render = False
+
 
     # Save the figure to file.
     #    import os.path
