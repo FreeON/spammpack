@@ -602,40 +602,55 @@ def plot(filename, number_bins=6):
     axes.title_text_property.color = (0, 0, 0)
     axes.title_text_property.shadow_offset = numpy.array([ 1, -1])
 
+
+
     figure.scene.disable_render = False
     figure.scene.camera.compute_view_plane_normal()
 
     import os.path
 
-#./spammsand_invsqrt bcsstk14.mtx 1.d-1 1.d-6 1.d-1 0.d0 D U R b=8 
+#-------------------------------------------------------------------------------------------------------
 #./spammsand_invsqrt 33_x8_11_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R b=16
 
-#-------------------------------------------------------------------------------------------------------
-#./spammsand_invsqrt bcsstk14.mtx 1.d-2 1.d-4 1.d-1 0.d0 D U R
-
-    figure.scene.camera.position = [1045.203726965188, 1039.2064081296085, 6702.5003353789853]
-    figure.scene.camera.focal_point = [874.472594413058, 898.76786979832445, 939.79123074155348]
-    figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [-0.70042965936561086, -0.71270269865532587, 0.038120278204521671]
-    figure.scene.camera.clipping_range = [3849.5157839671483, 8271.9264727908048]
-    figure.scene.camera.compute_view_plane_normal()
-
-    png_filename = os.path.splitext(filename)[0] + "_x_zoomview.png"
+    figure.scene.isometric_view()
+    png_filename = os.path.splitext(filename)[0] + "_isov.png"
     print("Saving image to " + png_filename)
-    figure.scene.save(png_filename)
+    figure.scene.save(png_filename,size=(1024,1024))
 
-
-    figure.scene.camera.position = [2030.6693081026092, 2031.6946128119116, 2101.6583772785889]
-    figure.scene.camera.focal_point = [904.5, 904.5, 904.5]
+    figure.scene.camera.position = [2381.7518163797836, 2526.3678093421449, 2530.13269951962]
+    figure.scene.camera.focal_point = [440.00000000000028, 440.0000000000029, 439.99999999999733]
     figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [-0.4254783969169838, -0.42401748949585194, 0.79948564862578286]
-    figure.scene.camera.clipping_range = [5.9413455805998874, 5941.3455805998874]
+    figure.scene.camera.view_up = [-0.4189314063923294, -0.41776697205346547, 0.80620545383879905]
+    figure.scene.camera.clipping_range = [1986.7866107311997, 5491.0522577990569]
     figure.scene.camera.compute_view_plane_normal()
     figure.scene.render()
 
-    png_filename = os.path.splitext(filename)[0] + "_y_zoomview.png"
+    png_filename = os.path.splitext(filename)[0] + "_cant_x.png"
     print("Saving image to " + png_filename)
-    figure.scene.save(png_filename)
+    figure.scene.save(png_filename,size=(1024,1024))
+
+
+#-------------------------------------------------------------------------------------------------------
+#  ./spammsand_invsqrt bcsstk14.mtx 1.d-2 1.d-4 1.d-1 0.d0 D U R
+#    figure.scene.camera.position = [1045.203726965188, 1039.2064081296085, 6702.5003353789853]
+#    figure.scene.camera.focal_point = [874.472594413058, 898.76786979832445, 939.79123074155348]
+#    figure.scene.camera.view_angle = 30.0
+#    figure.scene.camera.view_up = [-0.70042965936561086, -0.71270269865532587, 0.038120278204521671]
+#    figure.scene.camera.clipping_range = [3849.5157839671483, 8271.9264727908048]
+#    figure.scene.camera.compute_view_plane_normal()
+#    png_filename = os.path.splitext(filename)[0] + "_x_zoomview.png"
+#    print("Saving image to " + png_filename)
+#    figure.scene.save(png_filename)
+#    figure.scene.camera.position = [2030.6693081026092, 2031.6946128119116, 2101.6583772785889]
+#    figure.scene.camera.focal_point = [904.5, 904.5, 904.5]
+#    figure.scene.camera.view_angle = 30.0
+#    figure.scene.camera.view_up = [-0.4254783969169838, -0.42401748949585194, 0.79948564862578286]
+#    figure.scene.camera.clipping_range = [5.9413455805998874, 5941.3455805998874]
+#    figure.scene.camera.compute_view_plane_normal()
+#    figure.scene.render()
+#    png_filename = os.path.splitext(filename)[0] + "_y_zoomview.png"
+#    print("Saving image to " + png_filename)
+#    figure.scene.save(png_filename)
 #-------------------------------------------------------------------------------------------------------
 
 

@@ -847,6 +847,37 @@ This thin product representation may have advantages:
 %{\left|\tau \mu \right>}_{\mat{s}^{-1/2}} 
 %\end{equation}
 
+
+\begin{figure*}[h] \label{Lensing1}
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for square root iteration of a first, most approximate preconditioner 
+$\left|\tau_0=.1\,\mu_0=.1\, ; \scriptstyle{\mat{s}^{-1/2}} \right>$ for the short, 8$\times$ U.C., (3,3) $\kappa(s)=10^{11}$ nanotube.
+$\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher precision, $\tau_s=.001$,
+and because the first multiply involves $\mat{s}^2$.  Left to right, pannels 
+coorespond to $k=0$ and $k=15$, whilst top to bottom its $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$,
+$\mat{z}_k=  \mat{z}_{k-1}  \ot h_\alpha[ \mat{x}_{k-1} ]$ and 
+$\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$.  Green is $\mat{a}$, maroon is $\mat{b}$, purple is $c$ and black is the volume ${\rm vol}_{a \ot b}$.
+Note extreme localization upon convergence. Axes may be labeled incorrectly. }
+\end{figure*}
+
 \section{Locality} 
 
 A main component of the classical $n$-body algorithm involves spatial database methods that 
@@ -864,24 +895,6 @@ for the idealized case of a most approximate, regularized and low precision prec
 This locality develops compressively towards convergence in the square root iteration, as the contractive identity iteration develops.  
 We call this compression {\em lensing},  involving localization of tasks towards the $i=j$ and $i=k$ planes,
 with near reflection about the cube-diagonal (almost copy in place, top two pannels on the right).  
- 
-\begin{figure}[h] \label{Lensing1}
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_1_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_15_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_1_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_15_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_1_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_15_cant.png}} 
-%\fbox{ \includegraphics[width=2.4cm,trim={1.3cm .1cm 1.3cm .1cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_14_cant.png}} 
-\caption{
-The $ijk$ task and data space for square root iteration of a first, most approximate preconditioner 
-$\left|\tau_0=.1\,\mu_0=.1\, ; \scriptstyle{\mat{s}^{-1/2}} \right>$ for the short, 8$\times$ U.C., (3,3) $\kappa(s)=10^{11}$ nanotube.
-$\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher precision, $\tau_s=.001$.  Left to right, pannels 
-coorespond to $k=0$ and $k=15$, whilst top to bottom its $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$,
-$\mat{z}_k=  \mat{z}_{k-1}  \ot h_\alpha[ \mat{x}_{k-1} ]$ and 
-$\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$.  Green is $\mat{a}$, maroon is $\mat{b}$, purple is $c$ and black is the volume ${\rm vol}_{a \ot b}$.
-Note extreme localization upon convergence. Axes may be labeled incorrectly. }
-\end{figure}
 
 
 \begin{figure}[h] \label{Lensing2}
