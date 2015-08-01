@@ -878,6 +878,38 @@ $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$.  Green is $\mat{a}$, maroon is $\mat
 Note extreme localization upon convergence. Axes may be labeled incorrectly. }
 \end{figure*}
 
+\begin{figure*}[h] \label{Lensing1}
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/y_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/y_dual_15_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/x_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/x_dual_15_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for square root iteration of a first, most approximate preconditioner 
+$\left|\tau_0=.1\,\mu_0=.1\, ; \scriptstyle{\mat{s}^{-1/2}} \right>$ for the short, 8$\times$ U.C., (3,3) $\kappa(s)=10^{11}$ nanotube.
+$\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher precision, $\tau_s=.001$,
+and because the first multiply involves $\mat{s}^2$.  Left to right, pannels 
+coorespond to $k=0$ and $k=15$, whilst top to bottom its $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$,
+$\mat{z}_k=  \mat{z}_{k-1}  \ot h_\alpha[ \mat{x}_{k-1} ]$ and 
+$\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$.  Green is $\mat{a}$, maroon is $\mat{b}$, purple is $c$ and black is the volume ${\rm vol}_{a \ot b}$.
+Note extreme localization upon convergence. Axes may be labeled incorrectly. }
+\end{figure*}
+
+
+
 \section{Locality} 
 
 A main component of the classical $n$-body algorithm involves spatial database methods that 
