@@ -878,46 +878,37 @@ $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$.  Green is $\mat{a}$, maroon is $\mat
 Note extreme localization upon convergence. Axes may be labeled incorrectly. }
 \end{figure*}
 
+
 \section{Locality} 
 
 A main component of the classical $n$-body algorithm involves spatial database methods that 
 optimize the fast range querry over Cartesian data.  Often, these technologies are
 based on locality preserving properties of a space filling curve \cite{}, which maps points that are
 close in space to an index where they are also close.  The block-by-magnitude structuring that empowers 
-the $\tt SpAMM$ approximation is the metric (generalized) counterpart of this Euclidean locality.
+the $\tt SpAMM$ approximation is the metric  counterpart of this locality, which can certainly be generalized
+beyond Euclidean measures of distance. 
 
 Also for the $n$-body method,  Warren and Salmon showed how to use previously accumulated histories 
-(persistence, temporal locality) to hierarchically rebalance and repartition  the distributed task space of the octree. 
-In a similar way, we showed how persistence data can be used to achieve strong parallel scaling for $\tt SpAMM$ \cite{}.  
+(persistence, temporal locality) to rebalance and repartition the distributed task space of the octree, mapped along 
+a space filling curve.  In a similar way, we showed how persistence data can be used to achieve strong parallel scaling for $\tt SpAMM$ \cite{}.  
+Persistence data may also be useful in other ways that enhane mathematical approximation. 
 
-In Figures , we show a new form of algebraic locality unique to the $\tt SpAMM$ approximation, 
+In Figures , we show algebraic locality of the $n$-body square root iteration.
+This locality develops compressively towards convergence as the contractive identity iteration develops.  
+We call this compression {\em lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
+This is particularly important for the product yeilding $\mat{y}_k$, because it requires a tighter threshold, $\tau_s$, 
+and because iteration in the channel begins with the thicker product $\mat{s} \ots \mat{s}$.  Also, because 
+spectral cancelation in the calculation of $\mat{y}^{\rm stab}_k$ is not tightly bound by Eq.~(\ref{bound}),  
+significant lensing is not observed in that instance. 
+
+Figures ,
 for the idealized case of a most approximate, regularized and low precision preconditioner, $\left|\tau_0=.1\,\mu_0=.1\, ; \scriptstyle{\mat{s}^{-1/2}} \right>$.
-This locality develops compressively towards convergence in the square root iteration, as the contractive identity iteration develops.  
-We call this compression {\em lensing},  involving localization of tasks towards the $i=j$ and $i=k$ planes,
-with near reflection about the cube-diagonal (almost copy in place, top two pannels on the right).  
 
 
-\begin{figure}[h] \label{Lensing2}
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/y_stab_r_1_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/y_stab_r_15_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_1_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_15_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/x_stab_r_1_cant.png}} 
-\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/x_stab_r_15_cant.png}} 
-%\fbox{ \includegraphics[width=2.4cm,trim={1.3cm .1cm 1.3cm .1cm},clip]{fig_33_8x_tube_cond_10_dual_thin_slices/z_dual_14_cant.png}} 
-\caption{green is the $\mat{a}$, maroon is $\mat{b}$ and purple is $c$. Axes may be labeled incorrectly. }
-\end{figure}
+dimensionality: non-regularized
+
 
  
-
-\begin{figure}[h] \label{Lensing2}
-%\fbox{ \includegraphics[width=3.8cm,trim={2.cm .6cm 2.cm .8cm},clip]{y_dual_38_cant1.png}} 
-\fbox{ \includegraphics[width=3.6cm,trim={20.6cm  .0cm 20.6cm .0cm},clip]{fig_bcsstk14/y_dual_38_y_zoomview.png}}
-\fbox{ \includegraphics[width=3.6cm,trim={23.cm 0.6cm 23.cm 5.6cm},clip]{fig_bcsstk14/x_dual_38_x_zoomview.png} }
-\caption{green is the $\mat{a}$, maroon is $\mat{b}$ and purple is $c$. Axes may be labeled incorrectly. }
-\end{figure}
-
-
 
 
 described in Section \ref{regularization}.  Lensing 
@@ -955,20 +946,6 @@ and also with respect to an outer simulation loop, {\em e.g.} cooresponding to t
 
 
 
-
- \begin{figure}[h] \label{figzzz}
- \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
- \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
- \fbox{ \includegraphics[width=2.3cm,trim={2.5cm 0.2cm 2.3cm 0.8cm},clip]{fig_33_8x_tube_cond_10_stab_thin_slices/z_stab_11_isov.png}} 
- \caption{}
- \end{figure}
-
-
-
-
-
- 
-
 In this contribution, we new algebraic $n$-body locality we call lensing, 
 
 Each generic slice may be associated with different {\em temporal locality}
@@ -990,8 +967,6 @@ $\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \righ
 
 
  \begin{figure}[h] \label{markofzorro}
- \fbox{ \includegraphics[width=1.in,trim={11.3cm 0cm 11.3cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene1.png}} 
- \fbox{ \includegraphics[width=2.in,trim={2cm 0cm 10cm 0cm},clip]{tube_dual_c6_x128_b64/x_19_scene2.png}} 
  \caption{Views of the $\tau =0.03$ sign occlusion surface, for the 
  128x~u.c.~nanotube, at $\sim {14k \times 14k}$ and $\kappa(\mat{s})=10^6$. 
  This surface envelopes the $ijk$ volume of the $\ot$ kernel,  
