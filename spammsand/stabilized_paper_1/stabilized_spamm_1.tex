@@ -741,6 +741,82 @@ Differences in occlusion between stab and dual magnified as bounds for s.z not a
 
  *lot* of overlap too (reproducing hilberts etc).
 
+
+\section{TEMPERARY:NOTES FOR REGULARIZATION SECTION} 
+
+
+
+The idea of preconditioning is that we can use a low tolerance $\tau_{0}$
+(e.g. $\tau_{0}=10^{-2}$) to cheaply obtain an approximation $R_{0}\approx S^{-1/2}$.
+Then since $S_{1}\equiv R_{0}SR_{0}$ is close to the identity matrix
+$I$, 
+\[
+\left\Vert R_{0}SR_{0}-I\right\Vert _{F}\lesssim\tau_{0},
+\]
+we can use Newton Schulz on $S_{1}$ with a higher tolerance $\tau_{1}$
+to get an accurate approximation $R_{1}=S_{1}^{-1/2}$ and using only
+a few iterations:
+\[
+\left\Vert R_{1}S_{1}R_{1}-I\right\Vert _{F}\lesssim\tau_{1}.
+\]
+In particular, the matrix $S_{1}$, being close to the identity, is
+better conditioned than $S$ and computing $S_{1}^{-1/2}$ requires
+much fewer Newton Schulz iterations. Moreover, since 
+\[
+\left\Vert \left(R_{1}R_{0}\right)S\left(R_{0}R_{1}\right)-I\right\Vert _{F}\lesssim\tau_{1},
+\]
+we see that $R_{1}R_{0}$ is a $\tau_{1}$ approximation to $S^{-1/2}$.
+Notice that, from the stability bound for SpAMM, we can replace all
+of the exact matrix multiplications with SpAMM multiplications. 
+
+To formalize this, let $S_{0}=S$, and suppose that $R_{j}$ is the
+approximation to $S_{j}^{-1/2}$ obtained via the Newton Schulz iteration
+with SpAMM tolerance $\tau_{j}$, so that
+\[
+\left\Vert R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}-I\right\Vert _{F}\lesssim\tau_{j}.
+\]
+Then define $S_{j+1}=R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}$
+and let $R_{j+1}$ the approximation to $S_{j+1}^{-1/2}$ obtained
+via the Newton Schulz iteration with SpAMM tolerance $\tau_{j+1}$,
+so that 
+\[
+\left\Vert R_{j+1}\otimes_{\tau_{j+1}}S_{j+1}\otimes_{\tau_{j+1}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
+\]
+Then since $S_{j+1}=R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}$,
+\[
+\left\Vert R_{j+1}\otimes_{\tau_{j+1}}\left(R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}\right)\otimes_{\tau_{j+1}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
+\]
+In general, a defining 
+\[
+R_{\text{left}}\equiv R_{j+1}\otimes_{\tau_{j+1}}R_{j}\otimes_{\tau_{j}}R_{j-1}\dots\otimes_{\tau_{1}}R_{0},
+\]
+and 
+\[
+R_{\text{right}}\equiv R_{0}\otimes_{\tau_{1}}R_{1}\dots\otimes_{\tau_{j}}R_{j}\dots\otimes_{\tau_{j+1}}R_{j+1},
+\]
+it follows by induction that 
+\[
+\left\Vert R_{\text{left}}SR_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{j+1}.
+\]
+Since (NOTE: NEED TO CHECK BUT THINK THIS IS TRIVIAL), 
+\[
+\left\Vert R_{\text{left}}R_{\text{right}}^{-1}-I\right\Vert _{F}\lesssim\tau_{j+1},
+\]
+we see that $R_{\text{left}}$ is a $\tau_{j+1}$ approximation to
+$S^{-1/2}$. 
+
+We can therefore write the following symbolic representation 
+\[
+S^{-1/2}=S_{\tau_{j+1}}^{-1/2}\otimes_{\tau_{j+1}}S_{\tau_{j}}^{-1/2}\otimes_{\tau_{j}}S_{\tau_{j-1}}^{-1/2}\dots\otimes_{\tau_{1}}S_{\tau_{0}}^{-1/2}+\mathcal{O}\left(\tau_{j+1}\right),
+\]
+where $S_{\tau_{k}}^{-1/2}$ is a $\tau_{k}$ approximation to the
+inverse square root of $S_{k}=S_{\tau_{k-1}}^{-1/2}\otimes_{\tau_{k-1}}S_{k-1}\otimes_{\tau_{j}}S_{\tau_{k-1}}^{-1/2}$. 
+
+
+
+
+
+
 \section{Iterated Regularization}\label{regularization}
 
 Shown in the preceeding section, stabiliyty limits application of the NS square root iteration under 
