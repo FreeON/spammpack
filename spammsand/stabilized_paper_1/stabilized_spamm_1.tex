@@ -53,7 +53,7 @@
 
 \begin{document}
 
-\title{On Stability of the First Order Newton Schulz Iteration in an Approximate Algebra}
+\title{Stability and Algebraic Locality In Square Root Iteration}
 
 \author{Matt Challacombe}
 \email{matt.challacombe@freeon.org}
@@ -77,10 +77,10 @@
 In many areas of application, finite correlations lead to matrices
 with decay properties.  By decay, we mean an approximate (perhaps
 bounded \cite{}) inverse relationship between matrix elements and an
-associated distance; this may be a simple inverse exponential
-relationship between elements and the Cartesian distance between
-support functions, or it may involve a generalized distance, {\em
-  e.g.}~a statistical measure between strings.  In electronic
+associated distance; this may be a simple inverse 
+relationship between matrix elements and the Cartesian distance between
+corresponding support functions, or it may involve a generalized distance, {\em
+  e.g.}~a generalized measure between character strings.  In electronic
 structure, correlations manifest in decay properties of the gap
 shifted matrix sign function, as projector of the effective
 Hamiltonian (Fig.~\ref{figure1}).  More broadly, matrix decay
@@ -760,9 +760,10 @@ but this is ineffective when $\mu$ is large, and invovles powers of the full inv
 Here, we outline an alternative,  nested product represenation of the inverse factor and show preliminary 
 results for a first, most approximate solution.  This most approximate (but effective) solution is (ideally) representative 
 of one order in the precision, $\tau_0\sim .1$, and corrective by one order in the condition, $\mu_0\sim .1$,
-yeilding a thin, $0^{\rm th}$ preconditioner, $\mat{s}^{-1/2}_{\tau_0 \mu_0}$.  ``Thin NS'' iteration might then bring 
-spectral resolution into a more concentrated alignment with norm magnitudes about the resolvent 
-$\mat{I}_{\tau_0\mu_0}\equiv \widetilde{\mat{I}}\left(\mat{s}_{\tau_0\mu_0}\right)$.  
+yeilding a thin, $0^{\rm th}$ preconditioner, $\mat{s}^{-1/2}_{\tau_0 \mu_0}$.  
+This ``thin'' iteration may bring spectral resolution into alignment with norm magnitudes 
+towards the resolvent $\mat{I}_{\tau_0\mu_0}\equiv \widetilde{\mat{I}}\left(\mat{s}_{\tau_0\mu_0}\right)$,
+strengthening Eq.~(\ref{bound}).
 
 Culled $\tt SpAMM$ volumes for this most approximate solution are shown with increasing system size in 
 Fig.~\ref{regularized_stab} for the stable instance, and in Fig.~\ref{regularized_dual} for the dual instance, 
@@ -772,6 +773,8 @@ instance, a stable iteration could not be found at precision $\tau_0=.1$, even w
 sees a weakly convergent trace with inflating cull-volumes. On the other hand, volume of the dual iteration 
 is strongly contracted with resolution of the identity.  
  
+most-approximate-yet-effective-by-one-order (MAYEBOO) 
+
 \begin{figure}[h]\label{regularized_stab}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
 \caption{
@@ -827,7 +830,7 @@ Likewise, it may be possible to obtain the full factor with increasing $\tt SpAM
 \begin{equation}
 \mat{s}^{-1/2} = \mat{s}^{-1/2}_{\tau_m} \, \otm \,  \mat{s}^{-1/2}_{\tau_{m-1}} \, \otmm \dots \, \mat{s}^{-1/2}_{\tau_0}
 \end{equation}taken over the sequence $1 > \tau_0 > \tau_1 > \dots > \tau_n $.  More generally we write 
-\begin{equation}
+\begin{equation} \label{spammsandwich}
 \mat{s}^{-1/2} \equiv \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0   } } {\left|\, \tau\, \mu \, ; \, \scriptstyle{\mat{s}^{-1/2}}  \right>}  \, ,
 \end{equation}
 acknowledging the potential for a flexible path between precision and regularization. The braket notation marks 
@@ -868,14 +871,43 @@ This thin product representation may have advantages:
                         trim={3.cm 3.cm 5.cm 5.cm},clip]
                         {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png}} 
 \caption{
-The $ijk$ task and data space for square root iteration of a first, most approximate preconditioner 
-$\left|\tau_0=.1\,\mu_0=.1\, ; \scriptstyle{\mat{s}^{-1/2}} \right>$ for the short, 8$\times$ U.C., (3,3) $\kappa(s)=10^{11}$ nanotube.
+The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
+$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
+dual instance of square root iteration  and for an 8$\times$ U.C. (3,3) $\kappa(s)=10^{11}$ nanotube.
 $\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher precision, $\tau_s=.001$,
-and because the first multiply involves $\mat{s}^2$.  Left to right, pannels 
-coorespond to $k=0$ and $k=15$, whilst top to bottom its $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$,
-$\mat{z}_k=  \mat{z}_{k-1}  \ot h_\alpha[ \mat{x}_{k-1} ]$ and 
-$\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$.  Green is $\mat{a}$, maroon is $\mat{b}$, purple is $c$ and black is the volume ${\rm vol}_{a \ot b}$.
-Note extreme localization upon convergence. Axes may be labeled incorrectly. }
+and because the first multiply involves $\mat{s}^2$.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 16$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,2, \& 16$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}
+\end{figure*}
+
+\begin{figure*}[h] \label{Lensing2}
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/y_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/y_dual_15_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/x_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noscaling/x_dual_15_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
+$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
+dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
+at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}
 \end{figure*}
 
 
@@ -885,134 +917,61 @@ A main component of the classical $n$-body algorithm involves spatial database m
 optimize the fast range querry over Cartesian data.  Often, these technologies are
 based on locality preserving properties of a space filling curve \cite{}, which maps points that are
 close in space to an index where they are also close.  The block-by-magnitude structuring that empowers 
-the $\tt SpAMM$ approximation is the metric  counterpart of this locality, which can certainly be generalized
-beyond Euclidean measures of distance. 
+the $\tt SpAMM$ approximation is a {\em metric locality} cooresponding to the underlying support. \\[.5in]
+
+Show figures for TO vs SFC\\[.5in]
 
 Also for the $n$-body method,  Warren and Salmon showed how to use previously accumulated histories 
-(persistence, temporal locality) to rebalance and repartition the distributed task space of the octree, mapped along 
-a space filling curve.  In a similar way, we showed how persistence data can be used to achieve strong parallel scaling for $\tt SpAMM$ \cite{}.  
-Persistence data may also be useful in other ways that enhane mathematical approximation. 
+(persistence, temporal locality) to rebalance and repartition a distributed octree task space, 
+incrementally re-mapped along the space filling curve.  In a similar way, we showed how persistence data can be used to achieve 
+strong parallel scaling for $\tt SpAMM$, using commonly available runtimes \cite{}.  
+Persistence data may also be useful in other ways that enhance mathematical approximation.  
 
-In Figures , we show algebraic locality of the $n$-body square root iteration.
-This locality develops compressively towards convergence as the contractive identity iteration develops.  
-We call this compression {\em lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
+In Figures \ref{Lensing1} and \ref{Lensing2},  
+we demonstrate a new kind of locality that can be exploited by $n$-body approximation of the square root iteration.
+This algebraic locality develops compressively towards convergence as the contractive identity iteration develops.  
+We call this compression {\bf \em lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
 This is particularly important for the product yeilding $\mat{y}_k$, because it requires a tighter threshold, $\tau_s$, 
 and because iteration in the channel begins with the thicker product $\mat{s} \ots \mat{s}$.  Also, because 
 spectral cancelation in the calculation of $\mat{y}^{\rm stab}_k$ is not tightly bound by Eq.~(\ref{bound}),  
 significant lensing is not observed in that instance. 
 
-Figures ,
-for the idealized case of a most approximate, regularized and low precision preconditioner, $\left|\tau_0=.1\,\mu_0=.1\, ; \scriptstyle{\mat{s}^{-1/2}} \right>$.
+It is also possible to achieve similar (sparse) results without regularization at greater 
+effective length scales, as shown in Figure \ref{}.  In addition to algebraic and Euclidean locality, other 
+measures are of interest, including information theoretical measures, generalized space filling curve 
+heuristics, as well as graph theoretical approaches that localize matrix elements about the diagonal \cite{}.  
+In figure \ref{}, we show the unregularized for the $\kappa(\mat{s})=10^{10}$ structural matrix ${\tt bb}$. 
+gossamer, reticulate volumes
 
+\section{Conclusions}
 
-dimensionality: non-regularized
+\pagebreak
 
+\begin{itemize}
+\item{new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome}
+\item{stability analyses and bifurcations of ill-conditioned spamm away from basin of stability }
+\item{show how to go past these bifurcations using regularization.
+    showed how to find a first, most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner, 
+which brings the norm-bounded and spectral resolutions into close alignment, 
+strengthening Eq.~(\ref{bound}).}
 
- 
+\item{shows two new kinds of locality: strong Euclidean locality based on 
+Gan and Challacombe's travel order, and algebraic locality associated with lensing,
+ and contracting the culled task volume abount 
+the plane-diagonal of the resolvent (lensing)}
+}
 
-
-described in Section \ref{regularization}.  Lensing 
-
-
-
-%I(s) is a gossamer pass function, providing converage to the range x=s^1/2.b
-
-gossamer, reticulate volumes reflecting the graph-theoretical 
-
-delocalization is implicit in the product, rather than explicit in ``pilars''.  An alternative
-view might consider emerging pillar structures to 
-
-goal is to delay delocalization away from plane defers delocalizaiton remains implicit in the $\tt SpAMM$ sandwich, 
-
-
-Towards convergence,  
-the product $\widetilde{\mat{y}}_k \ot \widetilde{\mat{z}}_k$ involves the product of large and small eigenvalues, and large and small norms, 
-which are recursively brought towards unity along the $i=k$ diagonal.  Likewise, application of the NS map, Eq.~(\ref{cannonical}),  tend towards 
-reflection about the $ijk$ cube-diagonal.   Because the $\tt SpAMM$ error obeys the multiplicative Cauchy-Schwarz bound, Eq.~(),  the 
-cooresponding culled-octree can likewise follow the $i=j$ plane about the $ijk$ cube-diagonal, resolving the {\em relative} error in identity to within $\tau$.    This effect is shown in Figure \ref{x_lensing}.   
-We call this identity related,  plane-wise concentration of the culled octree  about the cube-diagonal {\em lensing}.  
-
-Lensing is an algebraic localization offering compression beyond  , 
-
-complexity reduction relative to the naive (full) volume of the cube,
-and also relative to sparsification strategies that preserve only absolute errors, as in Eq.~\ref{sparseapprox}.  
-The lensed task space offers an enhanced locality of reference, and may also afford fast methods 
-with costs approaching an in-place scalar multiply and copy, {\em e.g.} as $h_\alpha \rightarrow \mat{I}$ in Eq.~\ref{cannonical}.
-Our thesis is that many problems in physical and information sciences can be brought to this lensed state, {\em e.g.} through preconditioning
-as described here, and maintained as the NS residual is brought to a higher level of precision with a more complete $\ot$, 
-and also with respect to an outer simulation loop, {\em e.g.} cooresponding to time iteration.
-
-
-
-
-
-In this contribution, we new algebraic $n$-body locality we call lensing, 
-
-Each generic slice may be associated with different {\em temporal locality}
-
-persistence, may enable optimization of the generic slice, through layered and incremental modification, 
-%{\em e.g.} locally dense, locally Strassen-like, localiy sampled in a non-determanisticaly way,  
-
-Metric locality is locality with respect to a Euclidean or generalized distance, {\em e.g.} of the basis.  
-increasing the Euclidean locality, ``wrings the zeros'' out of the product space for systems with decay.
-
-
-\subsubsection{Lensing}
-
-thin vs thick
-
-A feature of square root iteration with the $\ot$ kernel is localization of the culled octree towards identity iteration, 
-$\widetilde{\mat{x}}_k \rightarrow \mat{I}\left( \widetilde{\mat{x}}_{k-1} \right)$.  
-
-
-
- \begin{figure}[h] \label{markofzorro}
- \caption{Views of the $\tau =0.03$ sign occlusion surface, for the 
- 128x~u.c.~nanotube, at $\sim {14k \times 14k}$ and $\kappa(\mat{s})=10^6$. 
- This surface envelopes the $ijk$ volume of the $\ot$ kernel,  
- cooresponding to the unscaled dual iteration step $\mmat{x}_{19} \leftarrow \mmat{y}_{19} \ot \mmat{z}_{19} $ at $b=64$, $\tau=0.03$ and
- $\tau_y=10^{-3} \, \tau $.  The first pannel looks straight down the cube-diagonal $i=j=k$, from the upper bound towards (1,1,1).
- Remarkably, this surface forms an elongated $\times$, closely following intersection of the $i=j$  and $i=k$ planes 
- along the cube-diagonal. The second pannel looks along the cube-diagonal, with the upper bound at upper left, and (1,1,1) at lower right.}
- \end{figure}
-
-In this section, we present  numerical experiments that highlight the effects of 
-ill-conditioning, dimensionality, and the stability of different first order NS approaches to iteration with $\tt SpAMM$. 
-We turn first to complexity reduction for $\ot$ in the basin of stability,  where we find a novel, compressive 
-effect in the product octree.  This effect is shown in Fig.~\ref{markofzorro},  
-for unscaled, inverse square root duals iteration, Eqs.~(\ref{dualsiteration}), on the (3,3) carbon 
-nanotube metric at $\kappa=10^6$.  
-
-In this example, the $\tt SpAMM$ octree culled from the $ijk$-cube is outlined by its occlusion surface, enclosing 
-a volume that closely follows the $i=j$ and $i=k$ planes, forming an $\times$.  The banded distribution
-of large norms along  matrix diagonals leads to cube-diagonal dominance, with plane-following 
-a consequence of moderate ill-conditioning,  large norms along the plane-diagonals and their overlap in $ijk$
-via the multiplicative bound, Eq.~(\ref{bound}). The tightness of this bound, and the compression gained relative
-to  methods that control only the absolute error, {\em e.g.} as given by Eq.~(\ref{sparseapprox}), will hopefully
-be quantified in future work. 
-
-\subsubsection{Dimensionality}
-
-\subsubsection{Strong Metric Locality}
-
-unscaled, with hilbert order
-
-unscaled, with salesman's order
-
-\subsubsection{Misc}
-
-
-
-
-
-\section{Conclusions and Outlook}
-
-Reflecting about the cube diagonal is copy in place.  Cooresponds to lensing.
-
-These  synnergistic effects can be combined, in place, with additional tecniques for 
-accelerated computaion.
-
-%%eg vs row-col picture.  Example of exact exchange w/DBSR
+\item{product representation of generic MAYEBOO slices with 
+      extreme locality of reference, potential for additional acceleration and stabilization of in place data}  
+\item{Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
+by incremental application to a target vector or matrix}
+\item{Potential for incremental preconditionin on multiple time scales (most approximate cooresponding to longest time scale)}
+\item{solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
+algebraic structures cannot be approached by conventional row-coloum orientation
+3-dimensional systems that would not be in the conventional (sparse BCSR) regime for $n$-scaling.  
+}
+\item{problems in electronic structure,generalized polar decomposition} and  ill-conditioning in radial basis function problems}
+\end{itemize}
 
 \bibliography{MatrixFunctions}
 

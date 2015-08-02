@@ -611,24 +611,38 @@ def plot(filename, number_bins=6):
 
 #-------------------------------------------------------------------------------------------------------
 #./spammsand_invsqrt 33_x8_11_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R b=16
+#    figure.scene.isometric_view()
+#    png_filename = os.path.splitext(filename)[0] + "_isov.png"
+#    print("Saving image to " + png_filename)
+#    figure.scene.save(png_filename,size=(1024,1024))
+#    figure.scene.camera.position = [2381.7518163797836, 2526.3678093421449, 2530.13269951962]
+#    figure.scene.camera.focal_point = [440.00000000000028, 440.0000000000029, 439.99999999999733]
+#    figure.scene.camera.view_angle = 30.0
+#    figure.scene.camera.view_up = [-0.4189314063923294, -0.41776697205346547, 0.80620545383879905]
+#    figure.scene.camera.clipping_range = [1986.7866107311997, 5491.0522577990569]
+#    figure.scene.camera.compute_view_plane_normal()
+#    figure.scene.render()
+#    png_filename = os.path.splitext(filename)[0] + "_cant_x.png"
+#    print("Saving image to " + png_filename)
+#    figure.scene.save(png_filename,size=(1024,1024))
 
+#./spammsand_invsqrt water_100_to_6-311gss.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R
     figure.scene.isometric_view()
     png_filename = os.path.splitext(filename)[0] + "_isov.png"
     print("Saving image to " + png_filename)
     figure.scene.save(png_filename,size=(1024,1024))
 
-    figure.scene.camera.position = [2381.7518163797836, 2526.3678093421449, 2530.13269951962]
-    figure.scene.camera.focal_point = [440.00000000000028, 440.0000000000029, 439.99999999999733]
+    figure.scene.camera.position = [7131.7121897731495, 7525.4214914466402, 8101.2951483680154]
+    figure.scene.camera.focal_point = [1702.818579072205, 1686.6399910935772, 1285.485703136407]
     figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [-0.4189314063923294, -0.41776697205346547, 0.80620545383879905]
-    figure.scene.camera.clipping_range = [1986.7866107311997, 5491.0522577990569]
+    figure.scene.camera.view_up = [-0.45361775222697859, -0.46541550041025964, 0.76001272807921505]
+    figure.scene.camera.clipping_range = [5042.9256084193876, 17324.211816361931]
     figure.scene.camera.compute_view_plane_normal()
     figure.scene.render()
 
     png_filename = os.path.splitext(filename)[0] + "_cant_x.png"
     print("Saving image to " + png_filename)
     figure.scene.save(png_filename,size=(1024,1024))
-
 
 #-------------------------------------------------------------------------------------------------------
 #  ./spammsand_invsqrt bcsstk14.mtx 1.d-2 1.d-4 1.d-1 0.d0 D U R
