@@ -959,26 +959,95 @@ in the product $\mat{c}=\mat{a} \ot \mat{b}$.}
 
 \begin{figure*}[h] \label{Lensing2}
 \fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noscaling/y_dual_0_cant_x.png}} 
+                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                       {fig_wtrbx_100_regularized/y_dual_0_cant_x.png}} 
 \fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
                         trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noscaling/y_dual_4_cant_x.png}} 
+                        {fig_wtrbx_100_regularized/y_dual_4_cant_x.png}} 
 \fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
                         trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noscaling/y_dual_15_cant_x.png}} 
+                        {fig_wtrbx_100_regularized/y_dual_15_cant_x.png}} 
 \fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
                         trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noscaling/x_dual_0_cant_x.png}} 
+                        {fig_wtrbx_100_regularized/x_dual_0_cant_x.png}} 
 \fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
                         trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noscaling/x_dual_4_cant_x.png}} 
+                        {fig_wtrbx_100_regularized/x_dual_4_cant_x.png}} 
 \fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
                         trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noscaling/x_dual_15_cant_x.png}} 
+                        {fig_wtrbx_100_regularized/x_dual_15_cant_x.png}} 
 \caption{
 The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
 $\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
+dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
+at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}
+\end{figure*}
+
+
+
+\begin{figure*}[h] \label{Lensing3}
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                       {fig_wtrbx_100_noregular/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/y_dual_5_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/y_dual_17_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/x_dual_5_cant_x.png}} 
+\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/x_dual_17_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for construction of the unregularized preconditioner 
+$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
+dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
+at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}
+\end{figure*}
+
+
+ create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_0_cant_x2.png
+ create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_14_cant_x.png
+ create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_14_cant_x2.png
+ create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_1_cant_x.png
+ create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_1_cant_x2.png
+ create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_37_cant_x.png
+ create mode 100644 spammsand/stabilized_paper_1/
+ create mode 100644 spammsand/stabilized_paper_1/
+ create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/y_dual_14_cant_x2.png
+ create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/y_dual_37_cant_x.png
+ create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/y_dual_37_cant_x2.png
+
+
+
+\begin{figure*}[h] \label{Lensing4}
+\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/y_dual_14_cant_x.png}} 
+\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/y_dual_37_cant_x.png}} 
+\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/x_dual_0_cant_x2.png}} 
+\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/x_dual_37_cant_x2.png}} 
+\caption{
+The $ijk$ task and data space for construction of the unregularized preconditioner 
+$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
 dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
 at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
 for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
@@ -1015,7 +1084,8 @@ also the $i=k$ plane and thin  pillae normal to $ik$ in the $\mat{y}^{\rm dual}_
 These additional featues are delocalizations cooresponging to weakness in the bound by Eq.~(\ref{bound}),  
 and to the tighter thresholds required to maintain a stable iteration.  In the more extreme case of 
 computing $\mat{y}^{\rm stab}_k$, these delocalizations are more extreme because the spread in the corresponding 
-spectral resolution is greater, weakening Eq.~(\ref{bound}).
+spectral resolution is greater, weakening Eq.~(\ref{bound}).  It may be more advantageous in some circumstances
+to avoid these delocalizations through the product expansion ...uummm... not quite. 
 
 The development of pillae is associated with dimensionallity and reduced Cartesian seperations. 
 In addition to algebraic and Euclidean locality, other measures are of interest, including information 
