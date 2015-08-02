@@ -919,8 +919,6 @@ based on locality preserving properties of a space filling curve \cite{}, which 
 close in space to an index where they are also close.  The block-by-magnitude structuring that empowers 
 the $\tt SpAMM$ approximation is a {\em metric locality} cooresponding to the underlying support. \\[.5in]
 
-Show figures for TO vs SFC\\[.5in]
-
 Also for the $n$-body method,  Warren and Salmon showed how to use previously accumulated histories 
 (persistence, temporal locality) to rebalance and repartition a distributed octree task space, 
 incrementally re-mapped along the space filling curve.  In a similar way, we showed how persistence data can be used to achieve 
@@ -932,15 +930,28 @@ we demonstrate a new kind of locality that can be exploited by $n$-body approxim
 This algebraic locality develops compressively towards convergence as the contractive identity iteration develops.  
 We call this compression {\bf \em lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
 This is particularly important for the product yeilding $\mat{y}_k$, because it requires a tighter threshold, $\tau_s$, 
-and because iteration in the channel begins with the thicker product $\mat{s} \ots \mat{s}$.  Also, because 
-spectral cancelation in the calculation of $\mat{y}^{\rm stab}_k$ is not tightly bound by Eq.~(\ref{bound}),  
-significant lensing is not observed in that instance. 
+and because iteration in the channel begins with the thicker product $\mat{s} \ots \mat{s}$. 
 
-It is also possible to achieve similar (sparse) results without regularization at greater 
-effective length scales, as shown in Figure \ref{}.  In addition to algebraic and Euclidean locality, other 
-measures are of interest, including information theoretical measures, generalized space filling curve 
-heuristics, as well as graph theoretical approaches that localize matrix elements about the diagonal \cite{}.  
-In figure \ref{}, we show the unregularized for the $\kappa(\mat{s})=10^{10}$ structural matrix ${\tt bb}$. 
+It is also possible to achieve lensing without regularization, as shown in Figure \ref{}.  In Figure \ref{}, 
+the lensing is not as strong as in the regularized instance, showing in addition to the $i=j$ plane, 
+also the $i=k$ plane and thin  pillae normal to $ik$ in the $\mat{y}^{\rm dual}_k$ product.  
+
+These additional featues are delocalizations cooresponging to weakness in the bound by Eq.~(\ref{bound}),  
+and to the tighter thresholds required to maintain a stable iteration.  In the more extreme case of 
+computing $\mat{y}^{\rm stab}_k$, these delocalizations are more extreme because the spread in the corresponding 
+spectral resolution is greater, weakening Eq.~(\ref{bound}).
+
+The development of pillae is associated with dimensionallity and reduced Cartesian seperations. 
+In addition to algebraic and Euclidean locality, other measures are of interest, including information 
+measures, generalizations of the  space filling curve heuristic, as well as graph reorderings 
+that localize matrix elements about the diagonal \cite{}.  This latter technique is very common in 
+structural mechanics.  We show also unregularized results for the structural matrix ${\tt bb}$. 
+
+In figure \ref{}, 
+we show the unregularized  for the $\kappa(\mat{s})=10^{10}$ 
+
+
+
 gossamer, reticulate volumes
 
 \section{Conclusions}
@@ -961,16 +972,17 @@ Gan and Challacombe's travel order, and algebraic locality associated with lensi
 the plane-diagonal of the resolvent (lensing)}
 }
 
+
 \item{product representation of generic MAYEBOO slices with 
-      extreme locality of reference, potential for additional acceleration and stabilization of in place data}  
-\item{Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
-by incremental application to a target vector or matrix}
-\item{Potential for incremental preconditionin on multiple time scales (most approximate cooresponding to longest time scale)}
-\item{solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
+      extreme locality of reference, potential for additional acceleration and stabilization of in place data.
+solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
 algebraic structures cannot be approached by conventional row-coloum orientation
 3-dimensional systems that would not be in the conventional (sparse BCSR) regime for $n$-scaling.  
 }
-\item{problems in electronic structure,generalized polar decomposition} and  ill-conditioning in radial basis function problems}
+
+
+\item{Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
+by incremental application to a target vector or matrix. Potential for incremental preconditionin on multiple time scales (most approximate cooresponding to longest time scale. problems in electronic structure,generalized polar decomposition} and  ill-conditioning in radial basis function problems}
 \end{itemize}
 
 \bibliography{MatrixFunctions}
