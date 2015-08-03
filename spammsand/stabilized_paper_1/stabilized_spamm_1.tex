@@ -502,50 +502,6 @@ is mild, with errors in the relative product remaining well conditioned.
 In the stab instance, conection with $\mat{s}$ is retained at each step, but at the price of the 
 $\mat{y}^{\rm stab}_k$ update involving magnitudes that vary widely in the $\tt SpAMM$ product.     
 
-
-\section{Implementation}
-
-\subsection{programming}
-
-FP, F08, OpenMP 4.0
-In the current implementation, all persistence data
-(norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
- that may be achieved by minimal locally essential trees \cite{}.
-
-\subsection{scaling}
-
-\subsection{stabilization}
-
-For these reasons, maintaining connection to the eigenvectors of $\mat{s}$ through 
-a tighter first product is nessesary.  In the stab instance, and with a 
-tighter ``{\em s}'' product, $\tau_s \ll \tau$, we find very interesting left/right differences; 
-namely, the right first product 
-\begin{equation} 
-\widetilde{\mat{x}}^R_k \leftarrow \widetilde{\mat{z}}^\dagger_{k} \, \ot  \, \left( \mat{s} \,  \ots \, \widetilde{\mat{z}}_{k-1}  \right) \; ,
-\end{equation}
-is  different from the left first product 
-\begin{equation} 
-\widetilde{\mat{x}}^L_k \leftarrow \left(  \widetilde{\mat{z}}^\dagger_{k} \, \ots \, \mat{s} \right) \,  \ot  \, \widetilde{\mat{z}}_{k-1} \; .
-\end{equation}
-
-\subsection{regularization}
-damping the inversion and the small value to be added c is called Marquardt-Levenberg coefficient
-
-\subsection{convergence}
-
-Map switching and etc based on TrX
-
-\section{Data} \label{data}
-
-\subsubsection{double exponential ill-conditioning}
-3,3 carbon nanotube with diffuse $sp$-function
-double exponential (Fig.)
-
-\subsubsection{three-dimensional, periodic}
-%\subsubsection{water boxes}
-%\subsubsection{ordering}
-\subsubsection{Matrix Market}
-
 \section{Error Flows in Square Root Iteration}
 
 \subsection{The cannonical (dual) instance}
@@ -813,10 +769,6 @@ where $S_{\tau_{k}}^{-1/2}$ is a $\tau_{k}$ approximation to the
 inverse square root of $S_{k}=S_{\tau_{k-1}}^{-1/2}\otimes_{\tau_{k-1}}S_{k-1}\otimes_{\tau_{j}}S_{\tau_{k-1}}^{-1/2}$. 
 
 
-
-
-
-
 \section{Iterated Regularization}\label{regularization}
 
 Shown in the preceeding section, stabiliyty limits application of the NS square root iteration under 
@@ -926,8 +878,85 @@ This thin product representation may have advantages:
 %{\left|\tau \mu \right>}_{\mat{s}^{-1/2}} 
 %\end{equation}
 
+\pagebreak
 
-\begin{figure*}[h] \label{Lensing1}
+\section{Locality} 
+
+Astrophysical $n$-body algorithms employ range querries over spatial databases to hierarchically discover 
+and compute approximations that commit only small errors.  Often, these spatial databases are ordered with a 
+space filling curve (SFC) \cite{}, which maps points that are close in space to an index where they are also close. 
+The block-by-magnitude structures empowering the $\tt SpAMM$ approximation are {\em metric localities}; 
+in quantum chemical examples they coorespond to an underlying SFC ordering of Carteisan coordinates. 
+
+Warren and Salmon showed how to parlay spatial locality into temporal locality, 
+remapping and repartitioning the space filling curve to rebalance distributed $n$-body tasks,
+based on accumulated histories (persistence data).
+In a similar way, we showed how persistence can be used to achieve 
+strong parallel scaling for $\tt SpAMM$ with commonly available runtimes \cite{}.  
+Persistence data, providing temporal locality, may also be useful in mathematical approximation.  
+
+In Figures \ref{Lensing1} and \ref{Lensing2},  we demonstrate a new kind of locality that is uniquely 
+exploited by $n$-body approximation of the square root iteration.
+This algebraic locality develops compressively towards convergence as the contractive identity iteration develops.  
+We call this compression {\bf \em lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
+This is important for the product yeilding $\mat{y}_k$, because iteration in the channel begins with the 
+thicker product $\mat{s} \ots \mat{s}$ and involves the tighter threshold $\tau_s \sim 0.01 \times \tau$. 
+
+It is also possible to achieve lensing without regularization as shown in Figure \ref{Lensing3}.  In Figure \ref{Lensing3} however, 
+lensing of the $\mat{y}_k$ channel is not as strongly contractive as in the regularized case 
+(Figure \ref{Lensing2}), showing additionally the $i=k$ plane and pillae normal to $ik$.
+These additional featues and delocalizations coorespond to weakness in Eq.~(\ref{bound}),  
+and to the tighter thresholds required to maintain a stable iteration.  This effect is even more pronounced in the 
+stable instance (not shown), where delocalizations are exagerated due to broader spectral resolutions.  
+
+The density of pillae observed in Figure \ref{Lensing3} is associated with increasing dimensionallity and 
+diminishing Cartesian seperations (nano-tube vs periodic water). For increasingly large systems, 
+the decay of this density is dependent on the underlying Euclidean locality.  In Figure \ref{HilbertVsTravelOrder},
+we show cull-volumes for periodic water systems ordered by the Hilbert Space Filling Curve (HSFC) \cite{} ,
+and also by the Travel Order solution of the end-to-end traveling saleseman problem (TO) \cite{}  (discussed in 
+Section \ref{data}).  In  Figure \ref{HilbertVsTravelOrder}, we see ....
+
+
+In addition, non-Euclidian measures are relevent for achieving metric locality in 
+the $\tt SpAMM$ algebra, including information measures, space filling curve generalizations, as well 
+as graph reorderings that envelope matrix elements about the diagonal \cite{}, a common approach in 
+structural mechanics.   In Figure \ref{Lensing4} we show development of a first, unregularized preconditioner 
+for such an example; the structural matrix $\mat{s}={\tt bcsstk14}$ is a $\kappa(\mat{s})=10^{10}$ matrix 
+cooresponding to the roof of the Omni Coliseum in Atlanta \cite{}.  These results show remarkable 
+gossamer sheeting and flattening along plane diagonals, at top for developmentent of $\mat{y}_k$, 
+and hollow accumulation of ${\rm vol}_{\mat{y}_k \ot \mat{z}_k}$ looking down at $\mat{y}_k$ (along bottom).
+
+\section{Conclusions}
+
+new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome
+
+stability analyses and bifurcations of ill-conditioned spamm away from basin of stability 
+
+show how to go past these bifurcations using regularization.
+    showed how to find a first, most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner, 
+which brings the norm-bounded and spectral resolutions into close alignment, 
+strengthening Eq.~(\ref{bound}).
+
+shows two new kinds of locality: strong Euclidean locality based on 
+Gan and Challacombe's travel order, and algebraic locality associated with lensing,
+ and contracting the culled task volume abount 
+the plane-diagonal of the resolvent (lensing)}
+
+
+product representation of generic MAYEBOO slices with 
+      extreme locality of reference, potential for additional acceleration and stabilization of in place data.
+solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
+algebraic structures cannot be approached by conventional row-coloum orientation
+3-dimensional systems that would not be in the conventional (sparse BCSR) regime for $n$-scaling.  
+
+
+Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
+by incremental application to a target vector or matrix. Potential for incremental preconditionin on multiple time scales most approximate cooresponding to longest time scale. problems in electronic structure,generalized polar decomposition and  ill-conditioning in radial basis function problems
+
+
+\pagebreak
+
+\begin{figure*}[h] 
 \fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
                         trim={3.cm 3.cm 5.cm 5.cm},clip]
                         {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png}} 
@@ -954,10 +983,12 @@ $\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher pr
 and because the first multiply involves $\mat{s}^2$.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
 for $k=0,4,\& 16$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,2, \& 16$.
 Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing1}
 \end{figure*}
 
-\begin{figure*}[h] \label{Lensing2}
+\pagebreak
+
+\begin{figure*}[h] 
 \fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
                        {fig_wtrbx_100_regularized/y_dual_0_cant_x.png}} 
@@ -983,12 +1014,12 @@ dual instance of square root iteration  and for 6-311G** metric of 100 periodic 
 at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
 for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
 Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing2}
 \end{figure*}
 
+\pagebreak
 
-
-\begin{figure*}[h] \label{Lensing3}
+\begin{figure*}[h] 
 \fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
                        {fig_wtrbx_100_noregular/y_dual_0_cant_x.png}} 
@@ -1014,25 +1045,12 @@ dual instance of square root iteration  and for 6-311G** metric of 100 periodic 
 at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
 for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
 Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing3}
 \end{figure*}
 
+\pagebreak
 
- create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_0_cant_x2.png
- create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_14_cant_x.png
- create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_14_cant_x2.png
- create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_1_cant_x.png
- create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_1_cant_x2.png
- create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/x_dual_37_cant_x.png
- create mode 100644 spammsand/stabilized_paper_1/
- create mode 100644 spammsand/stabilized_paper_1/
- create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/y_dual_14_cant_x2.png
- create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/y_dual_37_cant_x.png
- create mode 100644 spammsand/stabilized_paper_1/fig_bcsstk14/y_dual_37_cant_x2.png
-
-
-
-\begin{figure*}[h] \label{Lensing4}
+\begin{figure*}[h] 
 \fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
                         trim={0.cm 2.3cm 2.cm 1.cm},clip]
                         {fig_bcsstk14/y_dual_14_cant_x.png}} 
@@ -1052,84 +1070,59 @@ dual instance of square root iteration  and for 6-311G** metric of 100 periodic 
 at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
 for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
 Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
 \end{figure*}
 
-
-\section{Locality} 
-
-A main component of the classical $n$-body algorithm involves spatial database methods that 
-optimize the fast range querry over Cartesian data.  Often, these technologies are
-based on locality preserving properties of a space filling curve \cite{}, which maps points that are
-close in space to an index where they are also close.  The block-by-magnitude structuring that empowers 
-the $\tt SpAMM$ approximation is a {\em metric locality} cooresponding to the underlying support. \\[.5in]
-
-Also for the $n$-body method,  Warren and Salmon showed how to use previously accumulated histories 
-(persistence, temporal locality) to rebalance and repartition a distributed octree task space, 
-incrementally re-mapped along the space filling curve.  In a similar way, we showed how persistence data can be used to achieve 
-strong parallel scaling for $\tt SpAMM$, using commonly available runtimes \cite{}.  
-Persistence data may also be useful in other ways that enhance mathematical approximation.  
-
-In Figures \ref{Lensing1} and \ref{Lensing2},  
-we demonstrate a new kind of locality that can be exploited by $n$-body approximation of the square root iteration.
-This algebraic locality develops compressively towards convergence as the contractive identity iteration develops.  
-We call this compression {\bf \em lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
-This is particularly important for the product yeilding $\mat{y}_k$, because it requires a tighter threshold, $\tau_s$, 
-and because iteration in the channel begins with the thicker product $\mat{s} \ots \mat{s}$. 
-
-It is also possible to achieve lensing without regularization, as shown in Figure \ref{}.  In Figure \ref{}, 
-the lensing is not as strong as in the regularized instance, showing in addition to the $i=j$ plane, 
-also the $i=k$ plane and thin  pillae normal to $ik$ in the $\mat{y}^{\rm dual}_k$ product.  
-
-These additional featues are delocalizations cooresponging to weakness in the bound by Eq.~(\ref{bound}),  
-and to the tighter thresholds required to maintain a stable iteration.  In the more extreme case of 
-computing $\mat{y}^{\rm stab}_k$, these delocalizations are more extreme because the spread in the corresponding 
-spectral resolution is greater, weakening Eq.~(\ref{bound}).  It may be more advantageous in some circumstances
-to avoid these delocalizations through the product expansion ...uummm... not quite. 
-
-The development of pillae is associated with dimensionallity and reduced Cartesian seperations. 
-In addition to algebraic and Euclidean locality, other measures are of interest, including information 
-measures, generalizations of the  space filling curve heuristic, as well as graph reorderings 
-that localize matrix elements about the diagonal \cite{}.  This latter technique is very common in 
-structural mechanics.  We show also unregularized results for the structural matrix ${\tt bb}$. 
-
-In figure \ref{}, 
-we show the unregularized  for the $\kappa(\mat{s})=10^{10}$ 
+\begin{figure}[h] 
+\caption{ Show percent work for H and TO orderings.}\label{HilbertVsTravelOrder}
+\end{figure}
 
 
+\appendix 
 
-gossamer, reticulate volumes
+\section{Implementation}
 
-\section{Conclusions}
+\subsection{programming}
 
-\pagebreak
+FP, F08, OpenMP 4.0
+In the current implementation, all persistence data
+(norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
+ that may be achieved by minimal locally essential trees \cite{}.
 
-\begin{itemize}
-\item{new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome}
-\item{stability analyses and bifurcations of ill-conditioned spamm away from basin of stability }
-\item{show how to go past these bifurcations using regularization.
-    showed how to find a first, most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner, 
-which brings the norm-bounded and spectral resolutions into close alignment, 
-strengthening Eq.~(\ref{bound}).}
+\subsection{scaling}
 
-\item{shows two new kinds of locality: strong Euclidean locality based on 
-Gan and Challacombe's travel order, and algebraic locality associated with lensing,
- and contracting the culled task volume abount 
-the plane-diagonal of the resolvent (lensing)}
-}
+\subsection{stabilization}
 
+For these reasons, maintaining connection to the eigenvectors of $\mat{s}$ through 
+a tighter first product is nessesary.  In the stab instance, and with a 
+tighter ``{\em s}'' product, $\tau_s \ll \tau$, we find very interesting left/right differences; 
+namely, the right first product 
+\begin{equation} 
+\widetilde{\mat{x}}^R_k \leftarrow \widetilde{\mat{z}}^\dagger_{k} \, \ot  \, \left( \mat{s} \,  \ots \, \widetilde{\mat{z}}_{k-1}  \right) \; ,
+\end{equation}
+is  different from the left first product 
+\begin{equation} 
+\widetilde{\mat{x}}^L_k \leftarrow \left(  \widetilde{\mat{z}}^\dagger_{k} \, \ots \, \mat{s} \right) \,  \ot  \, \widetilde{\mat{z}}_{k-1} \; .
+\end{equation}
 
-\item{product representation of generic MAYEBOO slices with 
-      extreme locality of reference, potential for additional acceleration and stabilization of in place data.
-solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
-algebraic structures cannot be approached by conventional row-coloum orientation
-3-dimensional systems that would not be in the conventional (sparse BCSR) regime for $n$-scaling.  
-}
+\subsection{regularization}
+damping the inversion and the small value to be added c is called Marquardt-Levenberg coefficient
 
+\subsection{convergence}
 
-\item{Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
-by incremental application to a target vector or matrix. Potential for incremental preconditionin on multiple time scales (most approximate cooresponding to longest time scale. problems in electronic structure,generalized polar decomposition} and  ill-conditioning in radial basis function problems}
-\end{itemize}
+Map switching and etc based on TrX
+
+\section{Data} \label{data}
+
+\subsubsection{double exponential ill-conditioning}
+3,3 carbon nanotube with diffuse $sp$-function
+double exponential (Fig.)
+
+\subsubsection{three-dimensional, periodic}
+%\subsubsection{water boxes}
+%\subsubsection{ordering}
+\subsubsection{Matrix Market}
+
 
 \bibliography{MatrixFunctions}
 
