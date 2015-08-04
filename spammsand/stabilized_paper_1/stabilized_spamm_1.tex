@@ -700,8 +700,6 @@ Differences in occlusion between stab and dual magnified as bounds for s.z not a
 
 \section{TEMPERARY:NOTES FOR REGULARIZATION SECTION} 
 
-
-
 The idea of preconditioning is that we can use a low tolerance $\tau_{0}$
 (e.g. $\tau_{0}=10^{-2}$) to cheaply obtain an approximation $R_{0}\approx S^{-1/2}$.
 Then since $S_{1}\equiv R_{0}SR_{0}$ is close to the identity matrix
@@ -731,35 +729,49 @@ with SpAMM tolerance $\tau_{j}$, so that
 \[
 \left\Vert R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}-I\right\Vert _{F}\lesssim\tau_{j}.
 \]
-Then define $S_{j+1}=R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}$
+Then define $S_{j+1}=R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}$
 and let $R_{j+1}$ the approximation to $S_{j+1}^{-1/2}$ obtained
 via the Newton Schulz iteration with SpAMM tolerance $\tau_{j+1}$,
 so that 
 \[
-\left\Vert R_{j+1}\otimes_{\tau_{j+1}}S_{j+1}\otimes_{\tau_{j+1}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
+\left\Vert R_{j+1}\otimes_{\tau_{K}}S_{j+1}\otimes_{\tau_{K}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
 \]
-Then since $S_{j+1}=R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}$,
+Then since $S_{j+1}=R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}$,
 \[
-\left\Vert R_{j+1}\otimes_{\tau_{j+1}}\left(R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}\right)\otimes_{\tau_{j+1}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
+\left\Vert R_{j+1}\otimes_{\tau_{K}}\left(R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}\right)\otimes_{\tau_{K}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
 \]
-In general, a defining 
+In general, defining 
 \[
-R_{\text{left}}\equiv R_{j+1}\otimes_{\tau_{j+1}}R_{j}\otimes_{\tau_{j}}R_{j-1}\dots\otimes_{\tau_{1}}R_{0},
+R_{\text{left}}\equiv R_{j+1}\otimes_{\tau_{K}}R_{j}\otimes_{\tau_{K}}R_{j-1}\dots\otimes_{\tau_{K}}R_{0},
 \]
 and 
 \[
-R_{\text{right}}\equiv R_{0}\otimes_{\tau_{1}}R_{1}\dots\otimes_{\tau_{j}}R_{j}\dots\otimes_{\tau_{j+1}}R_{j+1},
+R_{\text{right}}\equiv R_{0}\otimes_{\tau_{K}}R_{1}\dots\otimes_{\tau_{K}}R_{j}\dots\otimes_{\tau_{K}}R_{j+1},
 \]
 it follows by induction that 
 \[
-\left\Vert R_{\text{left}}SR_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{j+1}.
+\left\Vert R_{\text{left}}\otimes_{\tau_{K}}S\otimes_{\tau_{K}}R_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{K}.
 \]
-Since (NOTE: NEED TO CHECK BUT THINK THIS IS TRIVIAL), 
+
+
+Now, by stability of SpAMM,
 \[
-\left\Vert R_{\text{left}}R_{\text{right}}^{-1}-I\right\Vert _{F}\lesssim\tau_{j+1},
+\left\Vert R_{\text{left}}SR_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{K}.
 \]
-we see that $R_{\text{left}}$ is a $\tau_{j+1}$ approximation to
-$S^{-1/2}$. 
+Also,
+\[
+R_{j+1}\otimes_{\tau_{K}}R_{j}\otimes_{\tau_{K}}R_{j-1}\dots\otimes_{\tau_{K}}R_{0} 
+\]
+can be written as
+\[ 
+ \left(R_{0}\otimes_{\tau_{K}}R_{1}\dots\otimes_{\tau_{K}}R_{j}\dots\otimes_{\tau_{K}}R_{j+1}\right)^{\text{T}}+\mathcal{O}\left(\tau_{K}\right).
+\]
+Therefore, $R_{\text{left}}=R_{\text{right}}^{\text{T}}+\mathcal{O}\left(\tau_{K}\right)$,
+and so 
+\begin{equation}
+\left\Vert R_{\text{left}}SR_{\text{left}}^{\text{T}}-I\right\Vert _{F}\lesssim\tau_{K}.\label{eq:product decomposition error bound}
+\end{equation}
+
 
 We can therefore write the following symbolic representation 
 \[
@@ -926,6 +938,8 @@ In a similar way, we showed how persistence can be used to achieve
 strong parallel scaling for $\tt SpAMM$ with commonly available runtimes \cite{}.  
 Persistence data, providing temporal locality, may also be useful in mathematical approximation.  
 
+
+SOMETHING ABOUT METRIC QUERRIES HERE...
 The locality of $\tt SpAMM$ volumes depends on ill-conditioning and an effective metric seperation, diminished by 
 increasing dimensionality.   In Figure  we show $\ot$ volumes for square root iteration, cooresponding to the metric of a small, periodic water box 
 with the large, 6-311G** basis.  For the 3-d periodic case, diminishing Cartesian seperations lead to long-skinny delocalizations (pillae)
@@ -959,7 +973,6 @@ for such an example; the structural matrix $\mat{s}={\tt bcsstk14}$ is a $\kappa
 cooresponding to the roof of the Omni Coliseum in Atlanta \cite{}.  These results show remarkable 
 gossamer sheeting and flattening along plane diagonals, at top for developmentent of $\mat{y}_k$, 
 and hollow accumulation of ${\rm vol}_{\mat{y}_k \ot \mat{z}_k}$ looking down at $\mat{y}_k$ (along bottom).
-
 
 \begin{figure}[tb] 
 \fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
@@ -1058,7 +1071,6 @@ in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
 
 \section{Conclusions}
 
-all about shuting the door on directional derivatives.
 
 new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome
 
@@ -1072,7 +1084,7 @@ strengthening Eq.~(\ref{bound}).
 shows two new kinds of locality: strong Euclidean locality based on 
 Gan and Challacombe's travel order, and algebraic locality associated with lensing,
  and contracting the culled task volume abount 
-the plane-diagonal of the resolvent (lensing)}
+the plane-diagonal of the resolvent (lensing)
 
 
 product representation of generic MAYEBOO slices with 
@@ -1087,11 +1099,32 @@ by incremental application to a target vector or matrix. Potential for increment
 
 
 
-\pagebreak
+all about shuting the door on directional derivatives.
+
+new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome
+
+stability analyses and bifurcations of ill-conditioned spamm away from basin of stability 
+
+show how to go past these bifurcations using regularization.
+    showed how to find a first, most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner, 
+which brings the norm-bounded and spectral resolutions into close alignment, 
+strengthening Eq.~(\ref{bound}).
+
+shows two new kinds of locality: strong Euclidean locality based on 
+Gan and Challacombe's travel order, and algebraic locality associated with lensing,
+ and contracting the culled task volume abount 
+the plane-diagonal of the resolvent (lensing)
 
 
-\pagebreak
+product representation of generic MAYEBOO slices with 
+      extreme locality of reference, potential for additional acceleration and stabilization of in place data.
+solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
+algebraic structures cannot be approached by conventional row-coloum orientation
+3-dimensional systems that would not be in the conventional (sparse BCSR) regime for $n$-scaling.  
 
+
+Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
+by incremental application to a target vector or matrix. Potential for incremental preconditionin on multiple time scales most approximate cooresponding to longest time scale. problems in electronic structure,generalized polar decomposition and  ill-conditioning in radial basis function problems
 
 
 \appendix 
