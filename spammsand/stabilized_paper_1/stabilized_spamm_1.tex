@@ -53,7 +53,7 @@
 
 \begin{document}
 
-\title{Stability and Algebraic Locality In Square Root Iteration}
+\title{An $N$-Body Solver for Square Root Iteration}
 
 \author{Matt Challacombe}
 \email{matt.challacombe@freeon.org}
@@ -1070,6 +1070,23 @@ in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
 
 
 \section{Conclusions}
+
+In this contribution, we developed an $n$-body solver for square root iteration that expoits  
+metric locality, cooresponding to decay with Cartesian or non-Euclidian seperation, 
+and also algebraic locality, developing with identity iteration.  The generic $n$-body
+approach carries out a two-sided metric querry of with the modified $\tt SpAMM$ criteria, ,
+with cull-volumes that are 
+
+directional derivatives of the square root iteration, Eqs~\ref{}-\ref{}, 
+
+strongly compressed along $ijk$ face and cube diagonals in  
+
+
+based on a compresive,
+lensing approach to fast matrix multiplication.  copy in place, pivot on diagonal, row col cannot resolve.
+note potential to employ reductions in adjoint volume, non-deterministic, and locally random approaches 
+that can be layered in parallel onto in place data. 
+
 
 
 new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome
