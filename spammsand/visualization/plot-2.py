@@ -557,23 +557,11 @@ def plot(filename, number_bins=6):
             points.glyph.glyph_source.glyph_source.y_length = block_size
             points.glyph.glyph_source.glyph_source.z_length = block_size
 
-#                                   color=(0.0,0.0,0.0), 
-
-#                                   colormap='gist_heat',
-#                                   color=mycolor((i+1)/float(number_bins)),
-
-            # This is how to the colormap values:
-            #
-            # lut = points.module_manager.scalar_lut_manager.lut.table.to_array()
-            # for j in range(lut.shape[0]):
-            #     print(lut[j,:])
-
     i_max = max(numpy.amax(prod_i), numpy.amax(prod_j), numpy.amax(prod_k))+block_size/2
     print("i_max = {:e}".format(i_max))
 
     # Insert fake invisible data-set for axes.
     mlab.points3d([1, i_max], [1, i_max], [1, i_max], mode='cube', scale_factor=0)
-
     #mlab.axes(xlabel="i", ylabel="j", zlabel="k", extent=[1, xmax, 1, xmax, 1, xmax])
 
     # Box around the whole thing.
@@ -602,13 +590,10 @@ def plot(filename, number_bins=6):
     axes.title_text_property.color = (0, 0, 0)
     axes.title_text_property.shadow_offset = numpy.array([ 1, -1])
 
-
-
     figure.scene.disable_render = False
     figure.scene.camera.compute_view_plane_normal()
 
     import os.path
-
 #-------------------------------------------------------------------------------------------------------
 #./spammsand_invsqrt 33_x8_11_S.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R b=16
 #    figure.scene.isometric_view()
@@ -626,23 +611,37 @@ def plot(filename, number_bins=6):
 #    print("Saving image to " + png_filename)
 #    figure.scene.save(png_filename,size=(1024,1024))
 
-#./spammsand_invsqrt water_100_to_6-311gss.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R
-    figure.scene.isometric_view()
-    png_filename = os.path.splitext(filename)[0] + "_isov.png"
-    print("Saving image to " + png_filename)
-    figure.scene.save(png_filename,size=(1024,1024))
+#./spammsand_invsqrt water_500_to_6-311gss.mm 1.d-2 1.d-4 1.d-1 0.d0 D U R
 
-    figure.scene.camera.position = [7131.7121897731495, 7525.4214914466402, 8101.2951483680154]
-    figure.scene.camera.focal_point = [1702.818579072205, 1686.6399910935772, 1285.485703136407]
+    figure.scene.camera.position = [35816.735234550884, 38331.094829602851, 41443.525860211055]
+    figure.scene.camera.focal_point = [2614.1156973829502, 2621.6382407405645, -241.34477379674968]
     figure.scene.camera.view_angle = 30.0
-    figure.scene.camera.view_up = [-0.45361775222697859, -0.46541550041025964, 0.76001272807921505]
-    figure.scene.camera.clipping_range = [5042.9256084193876, 17324.211816361931]
+    figure.scene.camera.view_up = [-0.45361775222697864, -0.4654155004102597, 0.76001272807921516]
+    figure.scene.camera.clipping_range = [26313.825398895184, 87716.669164634935]
     figure.scene.camera.compute_view_plane_normal()
     figure.scene.render()
 
     png_filename = os.path.splitext(filename)[0] + "_cant_x.png"
     print("Saving image to " + png_filename)
-    figure.scene.save(png_filename,size=(1024,1024))
+    figure.scene.save(png_filename,size=(768,768))
+
+#./spammsand_invsqrt water_100_to_6-311gss.mm 1.d-1 1.d-3 1.d-1 1.d-1 D U R
+#    figure.scene.isometric_view()
+#    png_filename = os.path.splitext(filename)[0] + "_isov.png"
+#    print("Saving image to " + png_filename)
+#    figure.scene.save(png_filename,size=(1024,1024))
+
+#    figure.scene.camera.position = [7131.7121897731495, 7525.4214914466402, 8101.2951483680154]
+#    figure.scene.camera.focal_point = [1702.818579072205, 1686.6399910935772, 1285.485703136407]
+#    figure.scene.camera.view_angle = 30.0
+#    figure.scene.camera.view_up = [-0.45361775222697859, -0.46541550041025964, 0.76001272807921505]
+#    figure.scene.camera.clipping_range = [5042.9256084193876, 17324.211816361931]
+#    figure.scene.camera.compute_view_plane_normal()
+#    figure.scene.render()
+
+#    png_filename = os.path.splitext(filename)[0] + "_cant_x.png"
+#    print("Saving image to " + png_filename)
+#    figure.scene.save(png_filename,size=(1024,1024))
 
 #-------------------------------------------------------------------------------------------------------
 #  ./spammsand_invsqrt bcsstk14.mtx 1.d-2 1.d-4 1.d-1 0.d0 D U R
