@@ -801,7 +801,8 @@ instance, a stable iteration could not be found at precision $\tau_0=.1$, even w
 sees a weakly convergent trace with inflating cull-volumes. On the other hand, volume of the dual iteration 
 is strongly contracted with resolution of the identity.  
  
-most-approximate-yet-effective-by-one-order (MAYEBOO) 
+most-approximate-yet-effective-by-one-order (MAYEBOO) vs
+most-approximate-yet-still-stable (MAYSS) 
 
 \begin{figure}[h]\label{regularized_stab}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
@@ -878,9 +879,39 @@ This thin product representation may have advantages:
 %{\left|\tau \mu \right>}_{\mat{s}^{-1/2}} 
 %\end{equation}
 
-\pagebreak
+%\pagebreak
 
 \section{Locality} 
+
+
+\begin{figure}[h] 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                       {fig_wtrbx_100_noregular/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/y_dual_5_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/y_dual_17_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/x_dual_5_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/x_dual_17_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for construction of the unregularized preconditioner 
+$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with
+dual instance square root iteration, and for the 6-311G** metric of 100 periodic water molecules
+at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing3}
+\end{figure}
 
 Astrophysical $n$-body algorithms employ range querries over spatial databases to hierarchically discover 
 and compute approximations that commit only small errors.  Often, these spatial databases are ordered with a 
@@ -895,26 +926,29 @@ In a similar way, we showed how persistence can be used to achieve
 strong parallel scaling for $\tt SpAMM$ with commonly available runtimes \cite{}.  
 Persistence data, providing temporal locality, may also be useful in mathematical approximation.  
 
-In Figures \ref{Lensing1} and \ref{Lensing2},  we demonstrate a new kind of locality that is uniquely 
-exploited by $n$-body approximation of the square root iteration.
-This algebraic locality develops compressively towards convergence as the contractive identity iteration develops.  
-We call this compression {\bf \em lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
+The locality of $\tt SpAMM$ volumes depends on ill-conditioning and an effective metric seperation, diminished by 
+increasing dimensionality.   In Figure  we show $\ot$ volumes for square root iteration, cooresponding to the metric of a small, periodic water box 
+with the large, 6-311G** basis.  For the 3-d periodic case, diminishing Cartesian seperations lead to long-skinny delocalizations (pillae)
+and much denser matrices, relative to {\em e.g.} a one-dimensional nano-tube.  These delocalizations coorespond to weakness in Eq.~(\ref{bound}),  
+and to the tighter thresholds required to maintain a stable iteration in the MAYSS approximation.  This effect is even more pronounced in the 
+stable instance (not shown), where delocalizations are exagerated due to spectral resolutions that are broader.  
+
+Eventually, the effects of Euclidean locality will thin the density of these delocalizations, leading to complexity reduction with increasing
+system size $n$.  
+Also, it may be possible to sample pillae effectively with non-determistic methods, involving {\em e.g.}~probabilities accumulated through persistence.
+
+In Figures \ref{Lensing1} and \ref{Lensing2},  we show a new kind of locality that is uniquely exploited by $n$-body approximation of the square root iteration.
+This {algebraic locality} develops compressively towards convergence as the contractive identity iteration develops.  
+We call this compression {\bf lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
+
+%CASE OF WELL CONDITIONED PROBLEMS, MAYEBOO
+%SAY SOMETHING ABOUT FULL COMPRESSION TO THE PLANE DIAGONAL 
+
+%THIS IS THE ADDITIONAL ACCELERATION POSSIBLE BY MORE APPROXIMATE SPAMM AND SLAMMING THE DOOR SHUT ON DERIVATIVES;
+%TIGHT CONVERGENCE OF THE DIRECTIONAL DERIVATIVES, Eqs ~\ref{} and \ref{}. 
+
 This is important for the product yeilding $\mat{y}_k$, because iteration in the channel begins with the 
 thicker product $\mat{s} \ots \mat{s}$ and involves the tighter threshold $\tau_s \sim 0.01 \times \tau$. 
-
-It is also possible to achieve lensing without regularization as shown in Figure \ref{Lensing3}.  In Figure \ref{Lensing3} however, 
-lensing of the $\mat{y}_k$ channel is not as strongly contractive as in the regularized case 
-(Figure \ref{Lensing2}), showing additionally the $i=k$ plane and pillae normal to $ik$.
-These additional featues and delocalizations coorespond to weakness in Eq.~(\ref{bound}),  
-and to the tighter thresholds required to maintain a stable iteration.  This effect is even more pronounced in the 
-stable instance (not shown), where delocalizations are exagerated due to broader spectral resolutions.  
-
-The density of pillae observed in Figure \ref{Lensing3} is associated with increasing dimensionallity and 
-diminishing Cartesian seperations (nano-tube vs periodic water). For increasingly large systems, 
-the decay of this density is dependent on the underlying Euclidean locality.  In Figure \ref{HilbertVsTravelOrder},
-we show cull-volumes for periodic water systems ordered by the Hilbert Space Filling Curve (HSFC) \cite{} ,
-and also by the Travel Order solution of the end-to-end traveling saleseman problem (TO) \cite{}  (discussed in 
-Section \ref{data}).  In  Figure \ref{HilbertVsTravelOrder}, we see ....
 
 
 In addition, non-Euclidian measures are relevent for achieving metric locality in 
@@ -926,7 +960,105 @@ cooresponding to the roof of the Omni Coliseum in Atlanta \cite{}.  These result
 gossamer sheeting and flattening along plane diagonals, at top for developmentent of $\mat{y}_k$, 
 and hollow accumulation of ${\rm vol}_{\mat{y}_k \ot \mat{z}_k}$ looking down at $\mat{y}_k$ (along bottom).
 
+
+\begin{figure}[tb] 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
+$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with 
+dual instance square root iteration,  and for an 8$\times$ U.C. (3,3) $\kappa(s)=10^{11}$ nanotube.
+$\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher precision, $\tau_s=.001$,
+and because the first multiply involves $\mat{s}^2$.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 16$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,2, \& 16$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing1}
+\end{figure}
+
+
+\begin{figure}[tb] 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                       {fig_wtrbx_100_regularized/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/y_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/y_dual_15_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/x_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/x_dual_15_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
+$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with 
+dual instance square root iteration  and for 6-311G** metric of 100 periodic water molecules
+at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing2}
+\end{figure}
+
+
+\begin{figure}[tb] 
+\includegraphics[width=7.8cm,keepaspectratio=true,trim={0.cm 0.cm 0.cm 0.cm},clip]
+                 {fig_wtrboxes_regular_and_unleaded/pcnt_volume_water_boxes.eps} 
+\caption{ 
+Complexity reduction in metric square root iteration for periodic 6-311G** water. 
+Shown is the ratio of lensed product volumes for the regularized most-approximate-yet-effective-by-one-order (MAYEBOO) 
+approximation and the unregularized most-approximate-yet-still-stable (MAYSS) approximation.}\label{HilbertVsTravelOrder}
+\end{figure}
+
+
+\begin{figure}[tb] 
+\fbox{ \includegraphics[width=3.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/y_dual_14_cant_x.png}} 
+\fbox{ \includegraphics[width=3.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/y_dual_37_cant_x.png}} 
+\fbox{ \includegraphics[width=3.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/x_dual_0_cant_x2.png}} 
+\fbox{ \includegraphics[width=3.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/x_dual_37_cant_x2.png}} 
+\caption{
+The $ijk$ task and data space for construction of the unregularized preconditioner 
+$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
+dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
+at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
+\end{figure}
+
+
 \section{Conclusions}
+
+all about shuting the door on directional derivatives.
 
 new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome
 
@@ -954,128 +1086,12 @@ Sandwich approach potential for defered, implicit delocalization of the inverse 
 by incremental application to a target vector or matrix. Potential for incremental preconditionin on multiple time scales most approximate cooresponding to longest time scale. problems in electronic structure,generalized polar decomposition and  ill-conditioning in radial basis function problems
 
 
-\pagebreak
-
-\begin{figure*}[h] 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png}} 
-\caption{
-The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
-$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
-dual instance of square root iteration  and for an 8$\times$ U.C. (3,3) $\kappa(s)=10^{11}$ nanotube.
-$\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher precision, $\tau_s=.001$,
-and because the first multiply involves $\mat{s}^2$.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
-for $k=0,4,\& 16$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,2, \& 16$.
-Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing1}
-\end{figure*}
 
 \pagebreak
 
-\begin{figure*}[h] 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                       {fig_wtrbx_100_regularized/y_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/y_dual_4_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/y_dual_15_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/x_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/x_dual_4_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/x_dual_15_cant_x.png}} 
-\caption{
-The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
-$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
-dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
-at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
-for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
-Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing2}
-\end{figure*}
 
 \pagebreak
 
-\begin{figure*}[h] 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                       {fig_wtrbx_100_noregular/y_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/y_dual_5_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/y_dual_17_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/x_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/x_dual_5_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/x_dual_17_cant_x.png}} 
-\caption{
-The $ijk$ task and data space for construction of the unregularized preconditioner 
-$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
-dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
-at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
-for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
-Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing3}
-\end{figure*}
-
-\pagebreak
-
-\begin{figure*}[h] 
-\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_bcsstk14/y_dual_14_cant_x.png}} 
-\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_bcsstk14/y_dual_37_cant_x.png}} 
-\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_bcsstk14/x_dual_0_cant_x2.png}} 
-\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_bcsstk14/x_dual_37_cant_x2.png}} 
-\caption{
-The $ijk$ task and data space for construction of the unregularized preconditioner 
-$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
-dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
-at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
-for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
-Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
-\end{figure*}
-
-\begin{figure}[h] 
-\caption{ Show percent work for H and TO orderings.}\label{HilbertVsTravelOrder}
-\end{figure}
 
 
 \appendix 
