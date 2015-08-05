@@ -813,8 +813,8 @@ instance, a stable iteration could not be found at precision $\tau_0=.1$, even w
 sees a weakly convergent trace with inflating cull-volumes. On the other hand, volume of the dual iteration 
 is strongly contracted with resolution of the identity.  
  
-most-approximate-yet-effective-by-one-order (MAYEBOO) vs
-most-approximate-yet-still-stable (MAYSS) 
+%most-approximate-yet-effective-by-one-order (MAYEBOO) vs
+%most-approximate-yet-still-stable (MAYSS) 
 
 \begin{figure}[h]\label{regularized_stab}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
@@ -870,7 +870,7 @@ potentially far more permisive than otherwise possible.
 Likewise, it may be possible to obtain the full factor with increasing $\tt SpAMM$ resolution in the product representation:
 \begin{equation}
 \mat{s}^{-1/2} = \mat{s}^{-1/2}_{\tau_m} \, \otm \,  \mat{s}^{-1/2}_{\tau_{m-1}} \, \otmm \dots \, \mat{s}^{-1/2}_{\tau_0}
-\end{equation}taken over the sequence $1 > \tau_0 > \tau_1 > \dots > \tau_n $.  More generally we write 
+\end{equation}taken over the sequence $1 > \tau_0 > \tau_1 > \dots > \tau_n $.  More generally,
 \begin{equation} \label{spammsandwich}
 \mat{s}^{-1/2} \equiv \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0   } } {\left|\, \tau\, \mu \, ; \, \scriptstyle{\mat{s}^{-1/2}}  \right>}  \, ,
 \end{equation}
@@ -946,24 +946,21 @@ with the large, 6-311G** basis.  For the 3-d periodic case, diminishing Cartesia
 and much denser matrices, relative to {\em e.g.} a one-dimensional nano-tube.  These delocalizations coorespond to weakness in Eq.~(\ref{bound}),  
 and to the tighter thresholds required to maintain a stable iteration in the MAYSS approximation.  This effect is even more pronounced in the 
 stable instance (not shown), where delocalizations are exagerated due to spectral resolutions that are broader.  
-
 Eventually, the effects of Euclidean locality will thin the density of these delocalizations, leading to complexity reduction with increasing
 system size $n$.  
-Also, it may be possible to sample pillae effectively with non-determistic methods, involving {\em e.g.}~probabilities accumulated through persistence.
+%Also, it may be possible to sample pillae effectively with non-determistic methods, involving {\em e.g.}~probabilities accumulated through persistence.
 
-In Figures \ref{Lensing1} and \ref{Lensing2},  we show a new kind of locality that is uniquely exploited by $n$-body approximation of the square root iteration.
-This {algebraic locality} develops compressively towards convergence as the contractive identity iteration develops.  
+In Figures \ref{Lensing1} and \ref{Lensing2},  we show a new kind of locality that is uniquely exploited by $n$-body approximation of the square root iteration. This {algebraic locality} develops compressively towards convergence as the contractive identity iteration develops.  
 We call this compression {\bf lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
+Lensing cooresponds to strengthening of Eq.(\ref{}) to yeild Eqs.~(\ref{boundY}) and (\ref{boundZ}), and strong convergence of the
+directional derivatives Eq.(\ref{}-\ref{}) to $\mat{0}$.
+This is an important, mitigating computational effect for the $\mat{y}_k$ channel that involves the 
+tighter threshold, $\tau_s \sim 0.01 \times \tau$. 
 
 %CASE OF WELL CONDITIONED PROBLEMS, MAYEBOO
 %SAY SOMETHING ABOUT FULL COMPRESSION TO THE PLANE DIAGONAL 
-
 %THIS IS THE ADDITIONAL ACCELERATION POSSIBLE BY MORE APPROXIMATE SPAMM AND SLAMMING THE DOOR SHUT ON DERIVATIVES;
 %TIGHT CONVERGENCE OF THE DIRECTIONAL DERIVATIVES, Eqs ~\ref{} and \ref{}. 
-
-This is important for the product yeilding $\mat{y}_k$, because iteration in the channel begins with the 
-thicker product $\mat{s} \ots \mat{s}$ and involves the tighter threshold $\tau_s \sim 0.01 \times \tau$. 
-
 
 In addition, non-Euclidian measures are relevent for achieving metric locality in 
 the $\tt SpAMM$ algebra, including information measures, space filling curve generalizations, as well 
@@ -1071,45 +1068,49 @@ in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
 
 \section{Conclusions}
 
-In this contribution, we developed an $n$-body solver for square root iteration that expoits  
-metric locality, cooresponding to decay with Cartesian or non-Euclidian seperation, 
-and also algebraic locality, developing with identity iteration.  The generic $n$-body
-approach carries out a two-sided metric querry of with the modified $\tt SpAMM$ criteria, ,
-with cull-volumes that are 
+In this contribution, we developed the $n$-body solver $\tt SpAMM$ for square root iteration.   
+The $n$-body solver carries out metric querries with occlusion-culling based on a modified Cauchy-Schwarz criterion, 
+Eq.~\ref{}, with a bounded relative error in the product, given by Eq.~\ref{}. 
+$\tt SpAMM$ expoits metric locality, cooresponding to decay with Cartesian or non-Euclidian seperation, 
+and also algebraic locality, developing with identity iteration.  
 
-directional derivatives of the square root iteration, Eqs~\ref{}-\ref{}, 
+The $\tt SpAMM$ querry hierarchically resolves complex algebraic structures in the $ijk$ product cubes of square root iteration,  
+culling out the $i=k$ and $i=k$ planes and along the $ijk$ cube-diagonal.  In the case of the dual $\mat{y}_k$ and $\mat{z}_k$ channels,  
+these algebraic structures contract further as multiplication by near-identity is reached, with
+{\em lensing} about the plane diagonal and computational complexities tending towards quadtree-copy-in-place.
+ 
+In Section \ref{}, we looked at stability leading to the basin of convergence and sensitivity of the three
+product channels $\mat{y}_k$, $\mat{z}_k$ and $\mat{x}_k$, for the $\tt SpAMM$ approximation in the 
+cannonical ``dual'' instance, Eq.~(\ref{}), and for the ``stable'' instance, Eq.~(\ref{}).
+Consistent with HMMT's results \cite{}, we find terms in the $\mat{z}_k$ channel with sensitivity to the full inverse,
+$\mat{s}^{-1}$, and proscribe a tighter threshold for that case, $\tau_s \ll  \, \times \, \tau$.  Later, we find that 
+constraint is strongly mitigated by lensing.  In this Section, we also looked at bifurcations of scaled and unscaled iterations
+for ill-conditioned systems, towards a most-approximate-yet-still-stable (MAYSS) preconditioner. 
 
-strongly compressed along $ijk$ face and cube diagonals in  
+In Section \ref{}, we proved that at convergence Eq.~(\ref{bound}) tightens significantly, cooresponding to a lensing orbit. 
+Then, we introduced iterated regularization for ill-conditioning, and showed how the full inverse factor can 
+be achieved by products of generic, regularized, well conditioned and increasingly more accurate solutions;
+$\mat{s}^{1/2} = \bigotimes_{\substack{\tau \\ \mu } }  \left| \mu , \tau \, ;  \, \scriptstyle{\mat{s}^{-1/2}} \right>$
+cooresponding to a first most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner
+$ \left| \mu={\tt .1} , \tau = {\tt .1} \, ;  \, \scriptstyle{\mat{s}^{-1/2}} \right>$.   
+We looked at the MAYEBOO approximation for both the stable and dual instances, and found that even with the most
+permisive regularization, spectral resolution in the stable instance is too broad to achieve strong lensing.  
+% $\mat{I}(\mat{s}) =  
+%\bigotimes_{\substack{\tau' \\ \mu' } }\bigotimes_{\substack{\tau \\ \mu } }  
+%\left< \mu , \tau \, ; \, \scriptstyle{\mat{s}^{1/2}} \right|
+%\left. \mu' , \tau' \, ;  \, \scriptstyle{\mat{s}^{-1/2}} \right>$
+
+Finally, 
 
 
-based on a compresive,
-lensing approach to fast matrix multiplication.  copy in place, pivot on diagonal, row col cannot resolve.
 note potential to employ reductions in adjoint volume, non-deterministic, and locally random approaches 
 that can be layered in parallel onto in place data. 
-
-
-
-new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome
-
-stability analyses and bifurcations of ill-conditioned spamm away from basin of stability 
-
-show how to go past these bifurcations using regularization.
-    showed how to find a first, most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner, 
-which brings the norm-bounded and spectral resolutions into close alignment, 
-strengthening Eq.~(\ref{bound}).
-
-shows two new kinds of locality: strong Euclidean locality based on 
-Gan and Challacombe's travel order, and algebraic locality associated with lensing,
- and contracting the culled task volume abount 
-the plane-diagonal of the resolvent (lensing)
-
 
 product representation of generic MAYEBOO slices with 
       extreme locality of reference, potential for additional acceleration and stabilization of in place data.
 solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
 algebraic structures cannot be approached by conventional row-coloum orientation
 3-dimensional systems that would not be in the conventional (sparse BCSR) regime for $n$-scaling.  
-
 
 Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
 by incremental application to a target vector or matrix. Potential for incremental preconditionin on multiple time scales most approximate cooresponding to longest time scale. problems in electronic structure,generalized polar decomposition and  ill-conditioning in radial basis function problems
@@ -1118,22 +1119,6 @@ by incremental application to a target vector or matrix. Potential for increment
 
 all about shuting the door on directional derivatives.
 
-new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome
-
-stability analyses and bifurcations of ill-conditioned spamm away from basin of stability 
-
-show how to go past these bifurcations using regularization.
-    showed how to find a first, most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner, 
-which brings the norm-bounded and spectral resolutions into close alignment, 
-strengthening Eq.~(\ref{bound}).
-
-shows two new kinds of locality: strong Euclidean locality based on 
-Gan and Challacombe's travel order, and algebraic locality associated with lensing,
- and contracting the culled task volume abount 
-the plane-diagonal of the resolvent (lensing)
-
-
-product representation of generic MAYEBOO slices with 
       extreme locality of reference, potential for additional acceleration and stabilization of in place data.
 solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
 algebraic structures cannot be approached by conventional row-coloum orientation
