@@ -29,7 +29,6 @@
 \newcommand{\otm}{ {\scriptstyle \otimes}_{ \! \tau_m } }
 \newcommand{\otmm}{ {\scriptstyle \otimes}_{ \! \tau_{m-1}}}
 
-
 \newtheorem{thm}{\protect\theoremname}
   \theoremstyle{plain}
   \newtheorem{lem}[thm]{\protect\lemmaname}
@@ -38,16 +37,16 @@
   \theoremstyle{plain}
   \newtheorem{prop}[thm]{\protect\propositionname}
 
-
   \providecommand{\lemmaname}{Lemma}
   \providecommand{\propositionname}{Proposition}
   \providecommand{\remarkname}{Remark}
+
 \providecommand{\theoremname}{Theorem}
 
 
 %\hypersetup{pdftitle={FreeON Project Report 1}}
 %\hypersetup{pdfauthor={Matt Challacombe and Nicolas Bock}}
-%\hypersetup{pdfsubject={A SpAMM Stabilized Newton Schulz Preconditioner: Fighting Error with Error}}
+%\hypersetup{pdfsubject={A SpAMM Single Newton Schulz Preconditioner: Fighting Error with Error}}
 
 %\bibstyle{aipnum4-1}
 
@@ -117,8 +116,7 @@ pattern chosen {\em a priori}.
 Then, conventional computational kernels may be employed, such as the
 sparse general matrix-matrix multiply ($\tt{SpGEMM}$)
 \cite{Gustavson78, Toledo97, challacombe00, bowler00}, yielding fast
-solutions for multiplication rich iterations and a modulated {\bf
-  (what do you mean with modulated?)} fill-in.
+solutions for multiplication rich iterations with fill-in modulated by truncation.
 These and related incomplete/inexact approaches to the computation of
 sparse approximate matrix functions often lead to ${\cal O}(n)$
 algorithms, finding wide use in technologically important
@@ -144,7 +142,7 @@ additive errors in the product,
 \overline{ \mat{a} \cdot \mat{b} }\; = \; \mat{a}\cdot\mat{b} \; +\; \mat{\epsilon}^{\mat{a}}_\tau \cdot \mat{b} \;+\;
  \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2)
 \end{equation}
-achieving sparse, stable and rapidly convergent iteration for
+achieving sparse, single and rapidly convergent iteration for
 ill-conditioned problems can be challenging \cite{}.  
 
 In cases of
@@ -303,7 +301,7 @@ $\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast 
 In the Strassen-like approach, disjoint volumes in (abstract) tensor intermediates are omitted recursively \cite{}.  
 In the $\tt SpAMM$ approach to fast multixplication, the numerically most significant volumes in 
  n\"{a}ive ($ijk$) tensor intermediates are culled, with error bounded by Eq.~(\ref{bound}).  
-This bound makes $\ot$ a {\em stable} form of fast multiplication,  as explained by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).
+This bound makes $\ot$ a {\em single} form of fast multiplication,  as explained by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).
 
 $\tt SpAMM$ is a $n$-body method for fast matrix multiplication, related to the 
 generalized methods popularized by Grey \cite{Gray2001,Gray2003}. In our development,
@@ -314,7 +312,7 @@ involving Fock exchange \cite{}, semi-local exchange-correlation functionals \ci
 the Hartree (Coulomb) interaction \cite{}, matrix sign function \cite{} and the matrix inverse square root (this work).
 This contribution is cornerstone for the simplification and evolution of these solvers.  
 
-Also, $n$-body methods offer well established protocols for turning spatial and metric locality into 
+Also, $n$-body methods offer well esinglelished protocols for turning spatial and metric locality into 
 data and temporal locality \cite{}; recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
 for pairwise $n$-body methods \cite{Yellik}.   Bridging the gap between 
 $n$-body solver and fast matrix multiplication, we recently demonstrated strong scaling for fast matrix multiplication ($\tt SpAMM$) \cite{}.  
@@ -347,7 +345,7 @@ lowering barriers to entry and enhancing concurence (in the Erlang sense).
 
 Finally, previous work on the scaled NS iteration has heavily influenced this work.  Formost is 
 Higham, Mackey, Mackey and T (HMMT; Ref.~\cite{}) masterwork on convergence of NS iteration under all groups,
-wherein HMMT also develop Fr\"{e}chet analyses for stable square root iteration at the fixed point.
+wherein HMMT also develop Fr\"{e}chet analyses for single square root iteration at the fixed point.
 Also, important inspiration comes from Chen and Chow's \cite{} approach to scaled NS iteration for ill-conditioned problems \cite{}, 
 and from the Helgaker groups work on NS iteration, whose notation we follow in part \cite{}.  
 
@@ -382,7 +380,7 @@ in the difference $\delta \mat{X}_k = \widetilde{\mat{X}}_k -\mat{X}_k
   sign} \left(\mat{X}_{k-1} \right)$, where $\delta \mat{X}_{k-1}$ is
 some previous error.  The change in behavior is associated with the
 onset of idempotence and the bounded eigenvalues of ${\rm sign}'\left(
-\cdot \right)$, leading to stable iteration when ${\rm sign}'\left(
+\cdot \right)$, leading to single iteration when ${\rm sign}'\left(
 \mat{X}_{k-1} \right) \delta \mat{X}_{k-1} < 1 $.  Global perturbative
 bounds on this iteration have been derived by Bai and Demmel
 \cite{Bai98usingthe}, while Byers, He and Mehrmann \cite{} developed
@@ -470,7 +468,7 @@ determines the total first order stability.
 
 This formulation allows to consider orientational effects involving eigenvector fidelity and convergence of 
 derivatives towards zero seperately from displacement effects involving accumulation and $\tt SpAMM$ source errors.
-In some cases, instabilities may be associated with derivatives that do not vanish towards identity, yeilding an unbounded iteration \cite{}.
+In some cases, insingleilities may be associated with derivatives that do not vanish towards identity, yeilding an unbounded iteration \cite{}.
 In other instances, an instability may be associated with rapidly increasing displacements, due to a too large $\tau$.  Instability 
 may also arize due to the numerical corruption of the eigenvectors, also resulting in derivatives that vanish too slowly (or blow up altogether).    
 
@@ -483,25 +481,25 @@ In following sections, we'll examine how these effects differ from the ideal (do
 for ill-conditioned systems and in the strongly non-associative, sketchy $\ot$ regime corresponding to permisive values of $\tau$.
 At this early stage, we are interested in hazzards and opportunities associated with
 different formulations and implementational details.   In addition to deviations from the full precision dual instance,
-we will develop the  ``stabilized'' instance,
-\begin{eqnarray}\label{stabilized}
+we will develop the  ``single'' instance,
+\begin{eqnarray}\label{single}
 \mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right] \; , \nonumber \\
 \mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k-1} \; ,
 \end{eqnarray}
 with the corresponding differential;
-\begin{equation} \label{firstorderstab}
+\begin{equation} \label{firstordersingle}
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2)  \, .
 \end{equation}
 
-Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm stab}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$ 
+Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm single}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$ 
 is also equivalent to $\mat{y}^{\rm naive}_k \equiv \mat{z}_{k} \cdot \mat{s}$.
 However, with ill-conditioning and in only double precision, these two instances may diverge due to non-associative errors that rapidly compound.
 In the case of the duals iteration under $\tt SpAMM$ approximation, the $\widetilde{\mat{y}}^{\rm dual}_k$ channel does not retain contact 
-with the eigenvectors, span $\mat{s}$, whilst the stab instance does.  
+with the eigenvectors, span $\mat{s}$, whilst the single instance does.  
 In the duals iteration, the $\widetilde{\mat{y}}_k$  $\tt SpAMM$ update 
 is mild, with errors in the relative product remaining well conditioned.  
-In the stab instance, conection with $\mat{s}$ is retained at each step, but at the price of the 
-$\mat{y}^{\rm stab}_k$ update involving magnitudes that vary widely in the $\tt SpAMM$ product.     
+In the single instance, conection with $\mat{s}$ is retained at each step, but at the price of the 
+$\mat{y}^{\rm single}_k$ update involving magnitudes that vary widely in the $\tt SpAMM$ product.     
 
 \section{Error Flows in Square Root Iteration}
 
@@ -639,7 +637,7 @@ As above, we can unwind this sensitive term, to find
 
 \subsection{Single Channel Instance}
 
-Here, we carry on from Eq.~(\ref{firstorderstab}) in the ``stabilized'' instance, with the single channel differential 
+Here, we carry on from Eq.~(\ref{firstordersingle}) in the ``single'' instance, with the single channel differential 
 \begin{equation}
  \mat{x}_{\widehat{\mat{z}}_{k-1}} =   \mat{z}^\dagger_{\widehat{\mat{z}}_{k-1}} \cdot \mat{s} \cdot \mat{z}_{k} + 
                                   \mat{z}^\dagger_k \cdot \mat{s} \cdot \mat{z}_{\widehat{\mat{z}}_{k-1}} 
@@ -654,7 +652,7 @@ Here, we carry on from Eq.~(\ref{firstorderstab}) in the ``stabilized'' instance
 \end{multline}
 
 \begin{eqnarray}
-\widetilde{\mat{y}}^{\rm stab}_{k-1} &=& \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s} \\
+\widetilde{\mat{y}}^{\rm single}_{k-1} &=& \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s} \\
                                   &=& \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}} \, + \,
 \left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
 \end{eqnarray}
@@ -671,7 +669,7 @@ are the dashed lines.  The trace expectation is shown as a full black line. }
 
 % \begin{figure}[h]
 % \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_stab.eps}
-% \caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) 
+% \caption{Derivatives, displacements and the approximate trace of the unscaled, singlelized NS iteration for a (3,3) 
 % nanotube with $\kappa =10^{10}$. 
 % Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
 % $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
@@ -680,7 +678,7 @@ are the dashed lines.  The trace expectation is shown as a full black line. }
 
 \begin{figure}[h] \label{flow_scaled_dual}
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual.eps}
-\caption{Derivatives, displacements and the approximate trace of the scaled, stablized NS iteration for a
+\caption{Derivatives, displacements and the approximate trace of the scaled, singlelized NS iteration for a
 (3,3) nanotube with $\kappa =10^{10}$.
 Derivatives are full lines, whilst the displacements cooresponding to $b=64$,
 $\tau=10^{-3}$ and $\tau_y=\{10^{-3},10^{-4},10^{-6}\}$
@@ -694,7 +692,7 @@ Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\
 are the dashed lines.  The trace expectation is shown as a full black line. }
 \end{figure}
 
-Differences in occlusion between stab and dual magnified as bounds for s.z not as tight as bounds for h.y.
+Differences in occlusion between single and dual magnified as bounds for s.z not as tight as bounds for h.y.
 
  *lot* of overlap too (reproducing hilberts etc).
 
@@ -784,7 +782,7 @@ inverse square root of $S_{k}=S_{\tau_{k-1}}^{-1/2}\otimes_{\tau_{k-1}}S_{k-1}\o
 
 \section{Iterated Regularization}\label{regularization}
 
-Shown in the preceeding section, stabiliyty limits application of the NS square root iteration under 
+Shown in the preceeding section, singleiliyty limits application of the NS square root iteration under 
 agressive $\tt SpAMM$ approximation.  These limits can be circumvented through Tikhonov regularization \cite{}, 
 involving a small level shift of eigenvalues,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, leading to a more 
 well conditioned matrix with $\kappa( \mat{s}_\mu) = \frac{\sqrt{s^2_{N-1} + \mu^2}}{\sqrt{s^2_0+\mu^2}}$ \cite{}.  
@@ -807,10 +805,10 @@ towards the resolvent $\mat{I}_{\tau_0\mu_0}\equiv \widetilde{\mat{I}}\left(\mat
 strengthening Eq.~(\ref{bound}).
 
 Culled $\tt SpAMM$ volumes for this most approximate solution are shown with increasing system size in 
-Fig.~\ref{regularized_stab} for the stable instance, and in Fig.~\ref{regularized_dual} for the dual instance, 
+Fig.~\ref{regularized_stab} for the single instance, and in Fig.~\ref{regularized_dual} for the dual instance, 
 cooresponding to ``thin NS'' iteration for the (3,3) $\kappa(\mat{s})=10^{10}$ nanotube series.  
-The behavior of these instances is very different; in the ``stable'' 
-instance, a stable iteration could not be found at precision $\tau_0=.1$, even with $\mu_0=.1$ regularization.  Also, this stable iteration
+The behavior of these instances is very different; in the ``single'' 
+instance, a single iteration could not be found at precision $\tau_0=.1$, even with $\mu_0=.1$ regularization.  Also, this single iteration
 sees a weakly convergent trace with inflating cull-volumes. On the other hand, volume of the dual iteration 
 is strongly contracted with resolution of the identity.  
  
@@ -820,10 +818,10 @@ is strongly contracted with resolution of the identity.
 \begin{figure}[h]\label{regularized_stab}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
 \caption{
-Culled volumes in the thin slice, stable instance approximation of $\mat{s}^{-1/2}_{\tau_0 \mu_0}$
+Culled volumes in the thin slice, single instance approximation of $\mat{s}^{-1/2}_{\tau_0 \mu_0}$
 for the (3,3) nanotube, $\kappa(\mat{s})=10^{10}$ matrix series 
-described in Section \ref{data}.  In the ``stable'' instance, it was not possible to achieve stability with $\tau_0=.1$
-In this ``stable'' case, a thin slice cooresponds to $\mu_0=.1, \tau_0=10^{-2} \;  \&  \; \tau_s=10^{-4}$, and volumes are
+described in Section \ref{data}.  In the ``single'' instance, it was not possible to achieve stability with $\tau_0=.1$
+In this ``single'' case, a thin slice cooresponds to $\mu_0=.1, \tau_0=10^{-2} \;  \&  \; \tau_s=10^{-4}$, and volumes are
 $\rm v_{\widetilde{\mat{z}_k}} = \left( {\rm vol}_{ \widetilde{\mat{z}}_{k-1}\ot h[\widetilde{\mat{x}}_{k-1}] } \right) \times 100\% /N^3$ and
 ${\rm v}_{\widetilde{\mat{y}}_k} = \left( {\rm vol}_{\mat{s}  \ots  \widetilde{\mat{z}}_{k}} \right) \times 100\% /N^3$.    
 Line width increases with increasing system size. 
@@ -842,8 +840,8 @@ Line width increases with increasing system size.
 Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$, which rapidly approaches $10^{-11}$ (not shown). }
 \end{figure} 
 
-These results reflect very different cull-spaces.  In the stable instance, the spectral resolution of powers is not compresive, and  
-$\widetilde{\mat{y}}^{\rm stab}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{s}_{\mu_0}$ is  poorly bound by Eq.~(\ref{bound}).
+These results reflect very different cull-spaces.  In the single instance, the spectral resolution of powers is not compresive, and  
+$\widetilde{\mat{y}}^{\rm single}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{s}_{\mu_0}$ is  poorly bound by Eq.~(\ref{bound}).
 In the dual case however, $\widetilde{\mat{y}}^{\rm dual}_k \rightarrow  \mat{I}_{\tau_0 \mu_0} \oto \mat{s}^{1/2}_{\tau_0 \mu_0}$
 and $\widetilde{\mat{z}}^{\rm dual}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{I}_{\tau_0 \mu_0}$, 
 with Eq.~(\ref{bound}) tightening to
@@ -943,8 +941,8 @@ The locality of $\tt SpAMM$ volumes depends on ill-conditioning and an effective
 increasing dimensionality.   In Figure  we show $\ot$ volumes for square root iteration, cooresponding to the metric of a small, periodic water box 
 with the large, 6-311G** basis.  For the 3-d periodic case, diminishing Cartesian seperations lead to long-skinny delocalizations (pillae)
 and much denser matrices, relative to {\em e.g.} a one-dimensional nano-tube.  These delocalizations coorespond to weakness in Eq.~(\ref{bound}),  
-and to the tighter thresholds required to maintain a stable iteration in the MAYSS approximation.  This effect is even more pronounced in the 
-stable instance (not shown), where delocalizations are exagerated due to spectral resolutions that are broader.  
+and to the tighter thresholds required to maintain a single iteration in the MAYSS approximation.  This effect is even more pronounced in the 
+single instance (not shown), where delocalizations are exagerated due to spectral resolutions that are broader.  
 Eventually, the effects of Euclidean locality will thin the density of these delocalizations, leading to complexity reduction with increasing
 system size $n$.  
 %Also, it may be possible to sample pillae effectively with non-determistic methods, involving {\em e.g.}~probabilities accumulated through persistence.
@@ -1079,7 +1077,7 @@ these structures contract further as multiplication by near-identity is reached,
  
 In Section \ref{}, we looked at stability leading to the basin of convergence and sensitivity of the three
 product channels $\mat{y}_k$, $\mat{z}_k$ and $\mat{x}_k$, for the $\tt SpAMM$ approximation in the 
-cannonical ``dual'' instance, Eq.~(\ref{}), and for the ``stable'' instance, Eq.~(\ref{}).
+cannonical ``dual'' instance, Eq.~(\ref{}), and for the ``single'' instance, Eq.~(\ref{}).
 Consistent with HMMT \cite{}, the $\mat{z}_k$ channel is sensitized by the full inverse,
 $\mat{s}^{-1}$, requiring a tighter threshold for that case, $\tau_s \ll \tau$.  Later, we find that 
 extra cost is strongly mitigated by lensing.  Also in Section \ref{}, we looked at bifurcations 
@@ -1093,8 +1091,8 @@ be achieved by products of generic, regularized, well conditioned and increasing
 $\mat{s}^{1/2} = \bigotimes_{\substack{\tau \\ \mu } }  \left| \mu , \tau \, ;  \, \scriptstyle{\mat{s}^{-1/2}} \right>$
 cooresponding to a first most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner
 $ \left| \mu={\tt .1} , \tau = {\tt .1} \, ;  \, \scriptstyle{\mat{s}^{-1/2}} \right>$.   
-We looked at the MAYEBOO approximation for both the stable and dual instances, and found that even with the most
-permisive regularization, spectral resolution in the stable instance is too broad to achieve strong lensing.  
+We looked at the MAYEBOO approximation for both the single and dual instances, and found that even with the most
+permisive regularization, spectral resolution in the single instance is too broad to achieve strong lensing.  
 % $\mat{I}(\mat{s}) =  
 %\bigotimes_{\substack{\tau' \\ \mu' } }\bigotimes_{\substack{\tau \\ \mu } }  
 %\left< \mu , \tau \, ; \, \scrithe ptstyle{\mat{s}^{1/2}} \right|
@@ -1159,10 +1157,10 @@ In the current implementation, all persistence data
 
 %\subsection{scaling}
 
-%\subsection{stabilization}
+%\subsection{singleilization}
 
 For these reasons, maintaining connection to the eigenvectors of $\mat{s}$ through 
-a tighter first product is nessesary.  In the stab instance, and with a 
+a tighter first product is nessesary.  In the single instance, and with a 
 tighter ``{\em s}'' product, $\tau_s \ll \tau$, we find very interesting left/right differences; 
 namely, the right first product 
 \begin{equation} 
