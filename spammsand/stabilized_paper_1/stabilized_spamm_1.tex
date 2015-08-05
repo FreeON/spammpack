@@ -145,9 +145,14 @@ additive errors in the product,
  \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2)
 \end{equation}
 achieving sparse, stable and rapidly convergent iteration for
-ill-conditioned problems can be challenging \cite{}.  In cases of
+ill-conditioned problems can be challenging \cite{}.  
+
+In cases of
 extreme degeneracy, hierarchical semi-seperable (reduced rank)
-algorithms can offer effective complexity reduction \cite{}.  However,
+algorithms can offer effective complexity reduction \cite{}. 
+
+However, opportunities maybe found also in the product streem 
+
 many practical cases are somewhere in-between sparse and meaningfully
 degenerate regimes; effectively dense but without an exploitable
 reduction in rank.  This is the case in electronic structure for
@@ -155,13 +160,12 @@ strong but non-metallic correlation, {\em e.g.}~towards the Mott
 transition \cite{}, and also in the case of local atomic support
 towards completeness \cite{Others, Hutter, Gigi}.
 
-\pagebreak
+\tableofcontents
 
-\section{Sparse Approximate Matrix Multiplication}
+\section{Sparse Approximate Matrix Multiplication ($\tt SpAMM$)}
 
 In this contribution, we consider an $N$-body approach to the
-approximation of matrix functions with decay, based on the quadtree
-data structure \cite{wise, samet}
+approximation of matrix functions with decay, based on the quadtree data structure \cite{wise, samet}
 \begin{equation}
 \mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
 \end{equation}
@@ -177,8 +181,7 @@ matrix structures with well segregated neighborhoods, inhabited by
 matrix elements of like size, and efficiently resolved by the quadtree
 data structure \cite{}.
 
-
-\subsection{A Bounded Occlusion and Cull }
+\subsection{Occlusion-Cull }
 
 $\tt SpAMM$ has evolved from a row-coloumn oriented skipout \cite{} to recursive occlusion and culling \cite{}
 based on sub-multiplicative norms $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ and the 
@@ -211,7 +214,7 @@ occuring in the approximate product:
   = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} \,.
 \end{equation}
 
-\subsection{Proof}
+\subsection{Bound}
 
 We now prove (\ref{bound}).
 
@@ -227,8 +230,6 @@ and
 \left\Vert A\otimes_{\tau}B-A\cdot B\right\Vert _{F}\leq n^{2}\tau_{A,B}.
 \]
 \end{prop}
-
-
 
 \begin{proof}
 
@@ -308,22 +309,22 @@ $\tt SpAMM$ is a $n$-body method for fast matrix multiplication, related to the
 generalized methods popularized by Grey \cite{Gray2001,Gray2003}. In our development,
 generalization reflects the {\em genericity} \cite{} of recursive data access \cite{}, 
 enabling range querries, metric querries, higher dimensional querries and so on, with common frameworks, 
-structures and runtimes.  Recently for example, we generalized the double (left-right) metric querry in 
-Eq.~(\ref{}) to hextree metric querries of the exact Fock exchange \cite{}.  
+structures and runtimes.  So far, we have prototyped $n$-body solvers for the five mainstay solvers in modern electronic structure theory, 
+involving Fock exchange \cite{}, semi-local exchange-correlation functionals \cite{}, 
+the Hartree (Coulomb) interaction \cite{}, matrix sign function \cite{} and the matrix inverse square root (this work).
+This contribution is cornerstone for the simplification and evolution of these solvers.  
 
 Also, $n$-body methods offer well established protocols for turning spatial and metric locality into 
 data and temporal locality \cite{}; recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
 for pairwise $n$-body methods \cite{Yellik}.   Bridging the gap between 
 $n$-body solver and fast matrix multiplication, we recently demonstrated strong scaling for fast matrix multiplication ($\tt SpAMM$) \cite{}.  
-The introduction of algebraic and strong Euclidean locality in this work may further enhance high performance implementaitons. 
+In this work, we demonstrate additional {\bf algebraic locality} principles that may further enhance locality of reference and 
+high performance implementaitons. 
 
-%As noted by Aluru \cite{}, the top-down $n$-body model and breadth-first map-reduction are equivalent \cite{}, offering
-%the potential febraic and strong Euclidean locality developed in this work may further enhance high performance implementaiton. 
-%or alignment with emergent enterprise frameworks \cite{} and functional programming 
-%languages that support generacity \cite{}. Language suppo
-%with very simple (skeletonized) frameworks, lowering barriers to entry, enhancing performance towards decentralized memory landscapes, 
-%and following a sustainable commodity trend \cite{softwaresustainanbilty} that offers 
-%increasingly cheap compute cycles over the next few decades \cite{}. 
+Noted by Aluru \cite{}, top-down $n$-body recursion and breadth-first map-reduction may be viewed as two sides of 
+the same database problem \cite{}.  Alignment with emergent enterprise frameworks and database trends \cite{} and 
+functional programming languages that support genericity \cite{} may enable
+decentralized commodity concurence \cite{} as well as software sustainability \cite{softwaresustainanbilty}.
 
 This work offers a data local alternative to fast non-deterministic methods for sampling the product, 
 which include sketching \cite{Sarlos2006,Drineas2006,Mahoney2012,Pagh2013,Sivertsen2014,Woodruff2015},
@@ -373,7 +374,7 @@ for future refinement
 at a reduced cost and with a higher precision ($\tau \rightarrow 0$)
 \cite{MChallacombe16}.
 
-\subsection{Sign iteration}
+\subsection{Sign Iteration}
 
 For the NS sign iteration, this basin is marked by a behavioral change
 in the difference $\delta \mat{X}_k = \widetilde{\mat{X}}_k -\mat{X}_k
@@ -388,7 +389,7 @@ bounds on this iteration have been derived by Bai and Demmel
 asymptotic bounds.  The automatic stability of sign iteration is a
 well developed theme in Ref.\cite{Higham08}.
 
-\subsection{Square root iteration}
+\subsection{Square Root Iteration}
 
 In this work, we are concerned with resolution of the identity \cite{}
 \begin{equation}
@@ -428,7 +429,7 @@ iteration
 \end{equation}
 made difficult by ill-conditioning and a sketchy $\ot$.
 
-\subsection{the NS map}
+\subsection{Logistic Map}
 
 Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the
 rate of progress towards idempotence.  As recently shown by Jie and
@@ -444,7 +445,7 @@ approximate algebra like $\tt SpAMM$, the potential for eigenvalues to
 fluctuate out of the domain of convergence must be considered.  This
 is addressed in Section \ref{}.
 
-\subsection{Ill-conditioning, Stability and Implementation}
+\subsection{Instance and Stability}
 
 There are a number of nominally equivalent instances of the square root iteration, related by commutations and transpositions. 
 However, these instances may have very different stability properties,  controled to first order by the Frechet derivatives
@@ -504,7 +505,7 @@ $\mat{y}^{\rm stab}_k$ update involving magnitudes that vary widely in the $\tt 
 
 \section{Error Flows in Square Root Iteration}
 
-\subsection{The cannonical (dual) instance}
+\subsection{Cannonical, Dual Channel Instance}
  
 Refering back to Eq.~( \ref{firstorderdual} ), we develop the Fr\'{e}chet analyses \cite{} with the goal of understanding
 the contractive approach to identity in competition with error accumulations and $\tt SpAMM$ sources.
@@ -636,7 +637,7 @@ As above, we can unwind this sensitive term, to find
 \end{multline}
 
 
-\subsection{The stabilized  (stab) instance}
+\subsection{Single Channel Instance}
 
 Here, we carry on from Eq.~(\ref{firstorderstab}) in the ``stabilized'' instance, with the single channel differential 
 \begin{equation}
@@ -938,8 +939,6 @@ In a similar way, we showed how persistence can be used to achieve
 strong parallel scaling for $\tt SpAMM$ with commonly available runtimes \cite{}.  
 Persistence data, providing temporal locality, may also be useful in mathematical approximation.  
 
-
-SOMETHING ABOUT METRIC QUERRIES HERE...
 The locality of $\tt SpAMM$ volumes depends on ill-conditioning and an effective metric seperation, diminished by 
 increasing dimensionality.   In Figure  we show $\ot$ volumes for square root iteration, cooresponding to the metric of a small, periodic water box 
 with the large, 6-311G** basis.  For the 3-d periodic case, diminishing Cartesian seperations lead to long-skinny delocalizations (pillae)
@@ -956,11 +955,6 @@ Lensing cooresponds to strengthening of Eq.(\ref{}) to yeild Eqs.~(\ref{boundY})
 directional derivatives Eq.(\ref{}-\ref{}) to $\mat{0}$.
 This is an important, mitigating computational effect for the $\mat{y}_k$ channel that involves the 
 tighter threshold, $\tau_s \sim 0.01 \times \tau$. 
-
-%CASE OF WELL CONDITIONED PROBLEMS, MAYEBOO
-%SAY SOMETHING ABOUT FULL COMPRESSION TO THE PLANE DIAGONAL 
-%THIS IS THE ADDITIONAL ACCELERATION POSSIBLE BY MORE APPROXIMATE SPAMM AND SLAMMING THE DOOR SHUT ON DERIVATIVES;
-%TIGHT CONVERGENCE OF THE DIRECTIONAL DERIVATIVES, Eqs ~\ref{} and \ref{}. 
 
 In addition, non-Euclidian measures are relevent for achieving metric locality in 
 the $\tt SpAMM$ algebra, including information measures, space filling curve generalizations, as well 
@@ -1031,7 +1025,6 @@ Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the 
 in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing2}
 \end{figure}
 
-
 \begin{figure}[tb] 
 \includegraphics[width=7.8cm,keepaspectratio=true,trim={0.cm 0.cm 0.cm 0.cm},clip]
                  {fig_wtrboxes_regular_and_unleaded/pcnt_volume_water_boxes.eps} 
@@ -1066,7 +1059,12 @@ in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
 \end{figure}
 
 
-\section{Conclusions}
+
+\pagebreak
+
+--
+\pagebreak
+\section{Summary}
 
 In this contribution, we developed the $n$-body solver $\tt SpAMM$ for square root iteration.   
 The $n$-body solver carries out metric querries with occlusion-culling based on a modified Cauchy-Schwarz criterion, 
@@ -1074,18 +1072,20 @@ Eq.~\ref{}, with a bounded relative error in the product, given by Eq.~\ref{}.
 $\tt SpAMM$ expoits metric locality, cooresponding to decay with Cartesian or non-Euclidian seperation, 
 and also algebraic locality, developing with identity iteration.  
 
-The $\tt SpAMM$ querry hierarchically resolves complex algebraic structures in the $ijk$ product cubes of square root iteration,  
+The $\tt SpAMM$ querry hierarchically resolves complex algebraic structures in the product space of square root iteration,  
 culling out the $i=k$ and $i=k$ planes and along the $ijk$ cube-diagonal.  In the case of the dual $\mat{y}_k$ and $\mat{z}_k$ channels,  
-these algebraic structures contract further as multiplication by near-identity is reached, with
+these structures contract further as multiplication by near-identity is reached, with
 {\em lensing} about the plane diagonal and computational complexities tending towards quadtree-copy-in-place.
  
 In Section \ref{}, we looked at stability leading to the basin of convergence and sensitivity of the three
 product channels $\mat{y}_k$, $\mat{z}_k$ and $\mat{x}_k$, for the $\tt SpAMM$ approximation in the 
 cannonical ``dual'' instance, Eq.~(\ref{}), and for the ``stable'' instance, Eq.~(\ref{}).
-Consistent with HMMT's results \cite{}, we find terms in the $\mat{z}_k$ channel with sensitivity to the full inverse,
-$\mat{s}^{-1}$, and proscribe a tighter threshold for that case, $\tau_s \ll  \, \times \, \tau$.  Later, we find that 
-constraint is strongly mitigated by lensing.  In this Section, we also looked at bifurcations of scaled and unscaled iterations
-for ill-conditioned systems, towards a most-approximate-yet-still-stable (MAYSS) preconditioner. 
+Consistent with HMMT \cite{}, the $\mat{z}_k$ channel is sensitized by the full inverse,
+$\mat{s}^{-1}$, requiring a tighter threshold for that case, $\tau_s \ll \tau$.  Later, we find that 
+extra cost is strongly mitigated by lensing.  Also in Section \ref{}, we looked at bifurcations 
+of scaled and unscaled iterations for ill-conditioned systems, towards a most-approximate-yet-still-stable (MAYSS) 
+preconditioner, and disected competing effects at the edge of stability,  between compounding displacement magnitudes and 
+strongly convergent directional derivatives.  
 
 In Section \ref{}, we proved that at convergence Eq.~(\ref{bound}) tightens significantly, cooresponding to a lensing orbit. 
 Then, we introduced iterated regularization for ill-conditioning, and showed how the full inverse factor can 
@@ -1097,52 +1097,69 @@ We looked at the MAYEBOO approximation for both the stable and dual instances, a
 permisive regularization, spectral resolution in the stable instance is too broad to achieve strong lensing.  
 % $\mat{I}(\mat{s}) =  
 %\bigotimes_{\substack{\tau' \\ \mu' } }\bigotimes_{\substack{\tau \\ \mu } }  
-%\left< \mu , \tau \, ; \, \scriptstyle{\mat{s}^{1/2}} \right|
+%\left< \mu , \tau \, ; \, \scrithe ptstyle{\mat{s}^{1/2}} \right|
 %\left. \mu' , \tau' \, ;  \, \scriptstyle{\mat{s}^{-1/2}} \right>$
 
-Finally, 
+Finally, we looked at the MAYSS and MAYBOO approximations for periodic water systems, for ill-conditioned nanotubes, 
+and for the ill-conditioned structural matrix ${\tt bcsstk14}$ for the Omni Coliseum in Atlanta \cite{}.  For the
+problem of large basis periodic water systems, we find a MAYBOO/MAYSS volume compression of two to three orders. 
+For the problem of an ill-conditioned nano-tube, we find a MAYBOO/MAYSS volume compression  of ...    
+Remarkably, the ill-conditioned ${\tt bcsstk14}$ was able to achieved a strongly lensed state 
+in the  MAYSS approximation, with remarkable gossamer sheeting and flattening along plane diagonals, 
+and hollow, reticulate volumes of the resolvent.
 
 
-note potential to employ reductions in adjoint volume, non-deterministic, and locally random approaches 
-that can be layered in parallel onto in place data. 
+\section{Conclusions}
 
-product representation of generic MAYEBOO slices with 
-      extreme locality of reference, potential for additional acceleration and stabilization of in place data.
-solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
-algebraic structures cannot be approached by conventional row-coloum orientation
-3-dimensional systems that would not be in the conventional (sparse BCSR) regime for $n$-scaling.  
+This work is gauged against other methods for fast matrix multiplication discussed in Section \ref{}. 
+Against $\tt SpMM$, the $n$-body approach offers a bounded control over relative errors in 
+the product and the ability to resolve complex algebraic structures, about plane-diagonals of the $ijk$-cube, 
+along tall-skiny pillae and for volumetric contractions to lower dimensional objects via lensing. 
+The $n$-body method uniquely and synnergistically exploits two distinct forms of locality, metric locality cooresponding to 
+a Cartesian or non-Euclidean decay principle, and algebraic locality cooresponding to contractive identity iteration. 
+Also, strong parallel scaling for the ${\cal{O}}(n)$ electronic structure problem has been demonstrated with the $\tt SpAMM$ kernel, 
+a feature that remains elusive for methods based on $\tt SpMM$ \cite{Bowler}.
 
-Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
-by incremental application to a target vector or matrix. Potential for incremental preconditionin on multiple time scales most approximate cooresponding to longest time scale. problems in electronic structure,generalized polar decomposition and  ill-conditioning in radial basis function problems
+Against methods for matrix compression \cite{}, as well as against Fast Matrix Multiplication of the Strassen type \cite{}, 
+the quadtree data structure and the octree task space employed by $\tt SpAMM$ are entirely complimentary.  
+In the case of sketch products \cite{}, persistence data can be used to identify and characterize pillae resulting 
+from broad spectral resolutions; then, it may be possible to deploy streaming approaches for these tall-skinny delocalizations \cite{}.
+Thus, the concurent application of fast methods for matrix multiplication may be enabled by the database framework supporting 
+$n$-body approximations.  
 
+Beyond the fast matrix multiply, $n$-body frameworks may enable additional, layered functionalities and economizations 
+in complex solver ecosystems, with facile interopperability and mathematical agility, 
+through generic recursion and skelitinization, and with common runtimes able to exploit temporal and data localities.
+For example, we recently generalized $\tt SpAMM$ recursion to the problem of Fock-exchange, with a recursive triple (hextree) 
+metric querry on the Almlof-Alhrichs direct SCF criteria \cite{}.  
+Also, mathematical equivalence with the matrix sign function, Eq.~(\ref{}), and close structural relationships with the 
+polar decomposition may enable to extend functionality of the $n$-body iterations developed here. 
 
-
-all about shuting the door on directional derivatives.
-
-      extreme locality of reference, potential for additional acceleration and stabilization of in place data.
-solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
-algebraic structures cannot be approached by conventional row-coloum orientation
-3-dimensional systems that would not be in the conventional (sparse BCSR) regime for $n$-scaling.  
-
-
-Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
-by incremental application to a target vector or matrix. Potential for incremental preconditionin on multiple time scales most approximate cooresponding to longest time scale. problems in electronic structure,generalized polar decomposition and  ill-conditioning in radial basis function problems
-
+Despite these compeling features and related xxx, $n$-body square-root iteration must be gauged by its ability to compute 
+a high quality inverse factor.   Here, we have only looked at complexity and stability of the most 
+approximate preconditioners; the most-approximate-yet-still-stable (MAYSS) approximation and the regularized 
+most-approximate-yet-effective-by-one-order (MAYEBOO) approximations.    However, these results are encouraging, showing 
+the potential for several to many orders of magnitude reduction in complexity for the regularized approximation 
+relative to the unregularized approximation, made possible by   
+construction of a much lower precision preconditioner than would otherwize be possible, via Eq.~(\ref{}), 
+and also by opperations in the strongly contractive regime, under Eqs.~(\ref{boundY}-\ref{boundZ}).
+These and related preliminary results \cite{} suggest that a $\tt SpAMM$ sandwich of thin,
+generic iterations may enable a competitive  approach to {\em implicit} computation of the full inverse factor.
 
 \appendix 
 
 \section{Implementation}
 
-\subsection{programming}
+%\subsection{programming}
 
 FP, F08, OpenMP 4.0
 In the current implementation, all persistence data
 (norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
  that may be achieved by minimal locally essential trees \cite{}.
 
-\subsection{scaling}
+%\subsection{scaling}
 
-\subsection{stabilization}
+%\subsection{stabilization}
 
 For these reasons, maintaining connection to the eigenvectors of $\mat{s}$ through 
 a tighter first product is nessesary.  In the stab instance, and with a 
@@ -1156,23 +1173,23 @@ is  different from the left first product
 \widetilde{\mat{x}}^L_k \leftarrow \left(  \widetilde{\mat{z}}^\dagger_{k} \, \ots \, \mat{s} \right) \,  \ot  \, \widetilde{\mat{z}}_{k-1} \; .
 \end{equation}
 
-\subsection{regularization}
+%\subsection{regularization}
 damping the inversion and the small value to be added c is called Marquardt-Levenberg coefficient
 
-\subsection{convergence}
+%\subsection{convergence}
 
 Map switching and etc based on TrX
 
 \section{Data} \label{data}
 
-\subsubsection{double exponential ill-conditioning}
+%\subsubsection{double exponential ill-conditioning}
 3,3 carbon nanotube with diffuse $sp$-function
 double exponential (Fig.)
 
-\subsubsection{three-dimensional, periodic}
+%\subsubsection{three-dimensional, periodic}
 %\subsubsection{water boxes}
 %\subsubsection{ordering}
-\subsubsection{Matrix Market}
+%\subsubsection{Matrix Market}
 
 
 \bibliography{MatrixFunctions}
