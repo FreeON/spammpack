@@ -68,65 +68,53 @@
 \affiliation{Theoretical Division, Los Alamos National Laboratory}
 
 \begin{abstract}
+We develop the Sparse Approximate Matrix Multiply $n$-body solver for first order Newton Schulz iteration of the 
+matrix square root and inverse square root.
+The solver performs an $n$-body occlusion-cull, yeilding a bounded relative error in the matrix-matrix product
+and reduced complexity for problems with structured metric decay.  This complexity reduction cooresponds to 
+the hierarchical resolution of algebraic structures within recursive volume of the product, a consequence of 
+metric locality.  For square root iteration, strongly localized sub-volumes are  culled about 
+plane-diagonals and along the cube-diagonal,  cooresponding to resolution of the identity.  
+
+The main contributions of this paper are bounds on the $\tt SpAMM$ product and 
+demonstration of a new algebraic locality that develops in these sub-volumes with strongly 
+contractive identity iteration. This contraction cooresponds to the deflation of sub-volumes 
+onto plane diagonals of the resolvent, and to a stronger bound on the $\tt SpAMM$ product.  
+
+Also, we carry out a first order Fr\"{e}chet analyses for single and 
+dual channel instances of the square root iteration, and look at bifurcations due to ill-conditioning and a 
+too-agresive $\tt SpAMM$ approximation.  Then, we show that extreme $\tt SpAMM$ approximations and strongly contractive 
+identity iteration can be achieved through iterated regularization, and demonstrate the potential for orders of magnitude 
+acceleration with product representation of the inverse factor.   
+
 \end{abstract}
 
 \maketitle
 \section{Introduction}
+In many areas of application, long range, high value correlations lead to matrix equations with decay properties.
+By decay, we mean an approximate inverse relationship between matrix elements and an associated distance; 
+this may be a simple inverse relationship between matrix elements and the Cartesian distance between
+corresponding support functions, or it may involve a non-Euclidean distance, 
+ {\em  e.g.}~a generalized measure between character strings in a training library \cite{}. 
 
-In many areas of application, finite correlations lead to matrices
-with decay properties.  By decay, we mean an approximate (perhaps
-bounded \cite{}) inverse relationship between matrix elements and an
-associated distance; this may be a simple inverse 
-relationship between matrix elements and the Cartesian distance between
-corresponding support functions, or it may involve a generalized distance, {\em
-  e.g.}~a generalized measure between character strings.  In electronic
-structure, correlations manifest in decay properties of the gap
-shifted matrix sign function, as projector of the effective
-Hamiltonian (Fig.~\ref{figure1}).  More broadly, matrix decay
-properties may correspond to statistical matrices \cite{penrose1974,
-  voit00, Anselin2003, Hardin2013, Krishtal2014}, including learned
-correlations in a generalized, non-orthogonal metric \cite{}.  More
-broadly still, problems with local, non-orthogonal support are often
-solved with congruence transformations of the matrix inverse square
-root \cite{Lowdin56, naidu11} or a related factorization
-\cite{Krishtal2014}; these transformations correlate local support
-with a representation independent form, {\em eg.}~of the eigenproblem.
-Interestingly, the matrix sign function and the matrix inverse square
-root function are related by Higham's identity:
+Matrix equations with decay have history and recent development in the statistics and statistical physics litterature
+\cite{penrose1974,voit00, Anselin2003, Hardin2013, Krishtal2014}.   Also recently, methods for meshfree interpolation 
+are demonstrating remarkable predictive power through delocalized correlations and cooresponding 
+ill-conditioned matrix equations with extreme slow decay \cite{}, a problem equivalent to the LCAO Gaussian basis problem 
+in quantum chemistry \cite{}.  Generally, local support functions are correlated 
+through Lowdin's symmetric orthogonalization based on the matrix inverse square root \cite{Lowdin56, naidu11}, 
+yeilding representation independent matrix equations. 
+In electronic structure, important long-range correlations manifest in slow decay properties 
+of the gap shifted matrix sign function, as projector of the effective Hamiltonian (Fig.~\ref{figure1}).  
+Both of these matrix problem with decay, the matrix sign function and the matrix inverse square root, 
+are related by Higham's identity:
 \begin{equation}
 \rm{sign} \left( \begin{bmatrix} 0 & \mat{s}      \\ \mat{I}       & 0\end{bmatrix} \right)  =
                  \begin{bmatrix} 0 & \mat{s}^{1/2} \\ \mat{s}^{-1/2} & 0\end{bmatrix}  .
 \end{equation}
-A complete overivew of matrix function theory and computation is given
-in Higham's enjoyable reference \cite{Higham08}.
+The theory and computation of these matrix functions is given in Higham's reference \cite{Higham08}.
 
-A well conditioned matrix $\mat{s}$ may often correspond to matrix
-sign and inverse square root functions with rapid exponential decay,
-and be amenable to the sparse matrix approximation
-$\bar{\mat{s}} = \mat{s}+ \mat{\epsilon}^{\mat{s}}_\tau$,
-where $\mat{\epsilon}^{\mat{s}}_\tau$ is the error introduced
-according to some criterion $\tau$.  Supporting this approximation are
-useful bounds to matrix function elements \cite{Benzi99b, }.
-The criterion $\tau$ might be a drop-tolerence,
-$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, |s_{ij}|<\tau \}$,
-a radial cutoff,
-$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, \lVert \mat{r}_i - \mat{r}_j \rVert > \tau \}$,
-or some other approach to truncation, perhaps involving a sparsity
-pattern chosen {\em a priori}.
-Then, conventional computational kernels may be employed, such as the
-sparse general matrix-matrix multiply ($\tt{SpGEMM}$)
-\cite{Gustavson78, Toledo97, challacombe00, bowler00}, yielding fast
-solutions for multiplication rich iterations with fill-in modulated by truncation.
-These and related incomplete/inexact approaches to the computation of
-sparse approximate matrix functions often lead to ${\cal O}(n)$
-algorithms, finding wide use in technologically important
-preconditioning schemes, the information sciences, electronic
-structure and many other disciplines. Comprehensive surveys of these
-methods in the numerical linear algebra are given by Benzi
-\cite{Benzi99,Benzi02}, and by Bowler \cite{Bowler12} and Benzi \cite{Benzi13}
-for electronic structure.
-
-\begin{figure}[t]\label{figure1}
+\begin{figure}[h]\label{figure1}
  \includegraphics[width=3.5in]{decay_picture.png}
   \caption{Examples from electronic structure of decay for the
     spectral projector (gap shifted sign function) with respect to
@@ -136,27 +124,47 @@ for electronic structure.
     ranged, from exponential (insulating) to algebraic (metallic). }
 \end{figure}
 
-Because the truncated multiplication is controlled only by absolute,
-additive errors in the product,
+
+A well conditioned matrix $\mat{s}$ may often correspond to matrix
+sign and inverse square root functions with rapid exponential decay,
+and be amenable to {\em ad hoc} matrix truncation or ``sparsification'', 
+$\bar{\mat{s}} = \mat{s}+ \mat{\epsilon}^{\mat{s}}_\tau$,
+where $\mat{\epsilon}^{\mat{s}}_\tau$ is the error introduced
+according to some criterion $\tau$.  
+%Supporting this approximation are useful bounds to matrix function elements \cite{Benzi99b, }.
+The criterion $\tau$ might be a drop-tolerence,
+$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, |s_{ij}|<\tau \}$,
+a radial cutoff,
+$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, \lVert \mat{r}_i - \mat{r}_j \rVert > \tau \}$,
+or some other approach to truncation, perhaps involving a sparsity
+pattern chosen {\em a priori} for computational expedience.
+Then, the sparse general matrix-matrix multiply ($\tt{SpGEMM}$)
+\cite{Gustavson78, Toledo97, challacombe00, bowler00} may be employed, yielding fast
+solutions for multiplication rich iterations with fill-in modulated by truncation.
+%These and related incomplete/inexact approaches to the computation of
+%sparse approximate matrix functions often lead to ${\cal O}(n)$
+%algorithms, finding wide use in technologically important
+%preconditioning schemes, the information sciences, electronic
+%structure and many other disciplines. 
+Comprehensive surveys of these
+methods in the numerical linear algebra are given by Benzi
+\cite{Benzi99,Benzi02}, and by Bowler \cite{Bowler12} and Benzi \cite{Benzi13}
+for electronic structure.
+
+Often however, matrix truncation is ineffective for ill-conditioned problems, 
+because of slow decay, and because of increased numerical sensitivities to poorly 
+controled (absolute) truncation errors, {\em e.g.}~in the matrix-product:
 \begin{equation} \label{sparseapprox}
 \overline{ \mat{a} \cdot \mat{b} }\; = \; \mat{a}\cdot\mat{b} \; +\; \mat{\epsilon}^{\mat{a}}_\tau \cdot \mat{b} \;+\;
- \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2)
+ \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2) \, .
 \end{equation}
-achieving sparse, single and rapidly convergent iteration for
-ill-conditioned problems can be challenging \cite{}.  
-
-In cases of
-extreme degeneracy, hierarchical semi-seperable (reduced rank)
-algorithms can offer effective complexity reduction \cite{}. 
-
-However, opportunities maybe found also in the product streem 
-
-many practical cases are somewhere in-between sparse and meaningfully
-degenerate regimes; effectively dense but without an exploitable
-reduction in rank.  This is the case in electronic structure for
-strong but non-metallic correlation, {\em e.g.}~towards the Mott
-transition \cite{}, and also in the case of local atomic support
-towards completeness \cite{Others, Hutter, Gigi}.
+An alterative approach is to find a reduced rank approximation closed under the opperations of interest \cite{HSS}. 
+However, compression to a reduced rank may be expensive if the rank is not much much smaller than the dimension.
+Both of these methods, truncation and rank reduction, are focused on matrix data as the target for compresion.
+In this contribution, our target for compression is instead the matrix product itself.  For problems with
+decay, we show that an underlying metric locality, together with a new form of algebraic locality, 
+can lead to complexity reduction under contractive iteration and the $n$-body occlusion-cull. The organization of 
+this paper follows.
 
 \tableofcontents
 
@@ -168,11 +176,11 @@ approximation of matrix functions with decay, based on the quadtree data structu
 \mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
 \end{equation}
 and orderings that are locality preserving \cite{}.  Orderings that
-preserve data locality are well developed in the database theory
+preserve data locality are well developed and {\bf \em generic} in the database theory
 \cite{}, providing fast spatial and metric queries.  Locality
-enabled, fast data access is central to the $N$-Body approximation
+enabled, fast data access is central to  $b$-body approximations
 \cite{}, and an important problem for enterprise \cite{} and runtime
-systems \cite{}, with memory hierarchies becoming increasingly
+systems \cite{}, moreso with memory hierarchies becoming increasingly
 asynchronous and decentralized \cite{cache}.  For matrices with
 decay, orderings that preserve locality lead to blocked-by-magnitude
 matrix structures with well segregated neighborhoods, inhabited by
@@ -181,11 +189,13 @@ data structure \cite{}.
 
 \subsection{Occlusion-Cull }
 
-$\tt SpAMM$ has evolved from a row-coloumn oriented skipout \cite{} to recursive occlusion and culling \cite{}
-based on sub-multiplicative norms $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ and the 
-Cauchy-Schwarz inequality,  $\lVert \mat{a}\cdot \mat{b} \rVert < \lVert \mat{a} \rVert \lVert \mat{b} \rVert$ \cite{kahan}.
-Occlusion involves avoiding work, whilst culling is the collecting of tasks. 
-Here, we ammend the previous (n\"{a}ive) occlusion and cull with the following recursion:
+The Sparse Approximate Matrix Multiply ($\tt SpAMM$) carries out occlusion-culling to find only the
+most important sub-volumes in an approximate matrix product. 
+$\tt SpAMM$ has evolved from a row-coloumn oriented skipout mechanism within the
+BCSR and DBCSR structures \cite{}, to hierachical approaches based on the quadtree and related to 
+the occlusion-culling found in advanced mechanics and graphics methodologies \cite{}, 
+with occlusion the avoidence of unessesary tree-work and culling the collection of significant tasks. 
+Here, we ammend the $\tt SpAMM$ occlusion-cull with the recursion:
 \begin{widetext}
 \begin{equation}
 \mat{a}^{i} \ot \mat{b}^{i} =
@@ -202,15 +212,16 @@ Here, we ammend the previous (n\"{a}ive) occlusion and cull with the following r
               \right.  \, ,
 \end{equation}
 \end{widetext}
-which bounds the relative occlusion error,  
+which bounds the relative occlusion error
 \begin{equation}\label{bound}
-\frac{\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert}{N^2 }  \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
+\frac{\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert}{n^2 }  \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
-occuring in the approximate product:
+that occurs in the approximate product
 \begin{equation}
 \widetilde{\mat{a}\cdot \mat{b}} \,  \equiv \, \mat{a} \ot \mat{b} \,
-  = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} \,.
+  = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} \, ,
 \end{equation}
+where $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ is a sub-multiplicative norm \cite{}.
 
 \subsection{Bound}
 
@@ -312,7 +323,7 @@ involving Fock exchange \cite{}, semi-local exchange-correlation functionals \ci
 the Hartree (Coulomb) interaction \cite{}, matrix sign function \cite{} and the matrix inverse square root (this work).
 This contribution is cornerstone for the simplification and evolution of these solvers.  
 
-Also, $n$-body methods offer well esinglelished protocols for turning spatial and metric locality into 
+Also, $n$-body methods offer well established protocols for turning spatial and metric locality into 
 data and temporal locality \cite{}; recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
 for pairwise $n$-body methods \cite{Yellik}.   Bridging the gap between 
 $n$-body solver and fast matrix multiplication, we recently demonstrated strong scaling for fast matrix multiplication ($\tt SpAMM$) \cite{}.  
@@ -1142,7 +1153,8 @@ relative to the unregularized approximation, made possible by
 construction of a much lower precision preconditioner than would otherwize be possible, via Eq.~(\ref{}), 
 and also by opperations in the strongly contractive regime, under Eqs.~(\ref{boundY}-\ref{boundZ}).
 These and related preliminary results \cite{} suggest that a $\tt SpAMM$ sandwich of thin,
-generic iterations may enable a competitive  approach to {\em implicit} computation of the full inverse factor.
+generic iterations may enable a competitive computational approach that avoids explicit computation of the 
+ill-conditioned factor. 
 
 \appendix 
 
