@@ -973,11 +973,20 @@ tighter threshold, $\tau_s \sim 0.01 \times \tau$.
 In addition, non-Euclidian measures are relevent for achieving metric locality in 
 the $\tt SpAMM$ algebra, including information measures, space filling curve generalizations, as well 
 as graph reorderings that envelope matrix elements about the diagonal \cite{}, a common approach in 
-structural mechanics.   In Figure \ref{Lensing4} we show development of a first, unregularized preconditioner 
-for such an example; the structural matrix $\mat{s}={\tt bcsstk14}$ is a $\kappa(\mat{s})=10^{10}$ matrix 
+structural mechanics.   In Figure \ref{Lensing4} we show development of a first, unregularized (MAYSS) 
+preconditioner for such an example; the structural matrix $\mat{s}={\tt bcsstk14}$ is a $\kappa(\mat{s})=10^{10}$ matrix 
 cooresponding to the roof of the Omni Coliseum in Atlanta \cite{}.  These results show remarkable 
 gossamer sheeting and flattening along plane diagonals, at top for developmentent of $\mat{y}_k$, 
 and hollow accumulation of ${\rm vol}_{\mat{y}_k \ot \mat{z}_k}$ looking down at $\mat{y}_k$ (along bottom).
+Surprisingly, this example shows lensing for a relatively tight MAYSS approximation, while the 
+equally ill-conditioned \& lower dimensional  $\kappa (\mat{s})=10^{10}$ nanotube MAYSS approximation remains full (dense) 
+through U.C. $\times 128$.
+  
+Finally, we show complexity reduction at convergence of the MAYEBOO approximation relative to the MAYSS approximation, 
+in Fig.~\ref{Complex1} for periodic water boxes, and in Fig.~\ref{Complex2} for the ill-conditioned nano-tube. 
+The two-orders difference between $\mat{y}_k$ and $\mat{z}_k$ volumes cooresponds precicely to $\tau_s \sim \tau \times {\tt .01}$, 
+with $\mat{x}_k$ in between. Except for the slower trend in Fig.~(\ref{Complex1})'s $\mat{x}_k$ volume, we see the 
+potential for continued strong acceleration with increasing system size.  Understanding these subtlties is the subject of future work. 
 
 \begin{figure}[tb] 
 \fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
@@ -1045,7 +1054,7 @@ in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing2}
 \caption{ 
 Complexity reduction in metric square root iteration for periodic 6-311G** water. 
 Shown is the ratio of lensed product volumes for the regularized most-approximate-yet-effective-by-one-order (MAYEBOO) 
-approximation and the unregularized most-approximate-yet-still-stable (MAYSS) approximation.}\label{HilbertVsTravelOrder}
+approximation and the unregularized most-approximate-yet-still-stable (MAYSS) approximation.}\label{Complex1}
 \end{figure}
 
 
@@ -1055,7 +1064,7 @@ approximation and the unregularized most-approximate-yet-still-stable (MAYSS) ap
 \caption{ 
 Complexity reduction in metric square root iteration for periodic 6-311G** water. 
 Shown is the ratio of lensed product volumes for the regularized most-approximate-yet-effective-by-one-order (MAYEBOO) 
-approximation and the unregularized most-approximate-yet-still-stable (MAYSS) approximation.}\label{HilbertVsTravelOrder}
+approximation and the unregularized most-approximate-yet-still-stable (MAYSS) approximation.}\label{Complex2}
 \end{figure}
 
 
@@ -1082,18 +1091,20 @@ Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the 
 in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
 \end{figure}
 
+%The $n$-body solver carries out metric querries with occlusion-culling based on 
+%with a bounded relative error in the product, given by Eq.~\ref{}. 
+%$\tt SpAMM$ expoits metric locality, cooresponding to decay with Cartesian or non-Euclidian seperation, 
+%and also algebraic locality, developing with identity iteration.  
+%The $\tt SpAMM$ querry hierarchically resolves complex algebraic structures in the product space of square root iteration,  
+%culling out the $i=k$ and $i=k$ planes and along the $ijk$ cube-diagonal.  In the case of the dual $\mat{y}_k$ and $\mat{z}_k$ channels,  
+%these structures contract further as multiplication by near-identity is reached, with
+%{\em lensing} about the plane diagonal and computational complexities tending towards quadtree-copy-in-place.
+
 \section{Summary}
-
-In this contribution, we developed the $n$-body solver $\tt SpAMM$ for square root iteration.   
-The $n$-body solver carries out metric querries with occlusion-culling based on a modified Cauchy-Schwarz criterion, 
-Eq.~\ref{}, with a bounded relative error in the product, given by Eq.~\ref{}. 
-$\tt SpAMM$ expoits metric locality, cooresponding to decay with Cartesian or non-Euclidian seperation, 
-and also algebraic locality, developing with identity iteration.  
-
-The $\tt SpAMM$ querry hierarchically resolves complex algebraic structures in the product space of square root iteration,  
-culling out the $i=k$ and $i=k$ planes and along the $ijk$ cube-diagonal.  In the case of the dual $\mat{y}_k$ and $\mat{z}_k$ channels,  
-these structures contract further as multiplication by near-identity is reached, with
-{\em lensing} about the plane diagonal and computational complexities tending towards quadtree-copy-in-place.
+In this work, we developed the $n$-body solver $\tt SpAMM$ for square root iteration.   
+Main contributions include a modified Cauchy-Schwarz criterion, Eq.~\ref{}, and proof that the 
+cooresponding relative product error is bound by Eq.~(\ref{bound}).  Also, we demonstrated a new kind of 
+algebraic locality, {lensing}, that develops with strongly contractive identity iteration.
  
 In Section \ref{}, we looked at stability leading to the basin of convergence and sensitivity of the three
 product channels $\mat{y}_k$, $\mat{z}_k$ and $\mat{x}_k$, for the $\tt SpAMM$ approximation in the 
