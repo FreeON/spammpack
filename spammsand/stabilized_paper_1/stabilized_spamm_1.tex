@@ -312,7 +312,7 @@ $\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast 
 In the Strassen-like approach, disjoint volumes in (abstract) tensor intermediates are omitted recursively \cite{}.  
 In the $\tt SpAMM$ approach to fast multixplication, the numerically most significant volumes in 
  n\"{a}ive ($ijk$) tensor intermediates are culled, with error bounded by Eq.~(\ref{bound}).  
-This bound makes $\ot$ a {\em single} form of fast multiplication,  as explained by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).
+This bound makes $\ot$ a {\em stable} form of fast multiplication,  as explained by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).
 
 $\tt SpAMM$ is a $n$-body method for fast matrix multiplication, related to the 
 generalized methods popularized by Grey \cite{Gray2001,Gray2003}. In our development,
@@ -323,17 +323,15 @@ involving Fock exchange \cite{}, semi-local exchange-correlation functionals \ci
 the Hartree (Coulomb) interaction \cite{}, matrix sign function \cite{} and the matrix inverse square root (this work).
 This contribution is cornerstone for the simplification and evolution of these solvers.  
 
-Also, $n$-body methods offer well established protocols for turning spatial and metric locality into 
-data and temporal locality \cite{}; recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
-for pairwise $n$-body methods \cite{Yellik}.   Bridging the gap between 
+Top-down $n$-body recursion and breadth-first map-reduction may be viewed as two sides of 
+the same problem \cite{Aluru}.  Emergent data frameworks and 
+functional programming languages that support generic recursion and map skelitinizations may enable 
+early exploitation of commodity (decentralized) concurence by scientific $n$-body solvers, 
+as well as software sustainability \cite{softwaresustainanbilty}.
+For centralized, distributed architectures, $n$-body methods offer well established protocols for turning spatial and metric locality into 
+data and temporal locality \cite{}.  Recently, Driscoll {\em et. al} showed perfect strong scaling and communication optimality 
+for pairwise $n$-body methods \cite{Driscoll13}.   Bridging the gap between 
 $n$-body solver and fast matrix multiplication, we recently demonstrated strong scaling for fast matrix multiplication ($\tt SpAMM$) \cite{}.  
-In this work, we demonstrate additional {\bf algebraic locality} principles that may further enhance locality of reference and 
-high performance implementaitons. 
-
-Noted by Aluru \cite{}, top-down $n$-body recursion and breadth-first map-reduction may be viewed as two sides of 
-the same database problem \cite{}.  Alignment with emergent enterprise frameworks and database trends \cite{} and 
-functional programming languages that support genericity \cite{} may enable
-decentralized commodity concurence \cite{} as well as software sustainability \cite{softwaresustainanbilty}.
 
 This work offers a data local alternative to fast non-deterministic methods for sampling the product, 
 which include sketching \cite{Sarlos2006,Drineas2006,Mahoney2012,Pagh2013,Sivertsen2014,Woodruff2015},
@@ -376,12 +374,7 @@ There are two common, first order NS iterations; the sign iteration
 and the square root iteration, related by the square, $\mat{I}\left(
 \cdot \right)= {\rm sign}^2\left( \cdot \right) $.  These equivalent
 iterations converge linearly at first, then enter a basin of stability
-marked by super-linear convergence.  Our interest is to access this
-basin with the most permissive $\tau$ possible, building a foundation
-for future refinement
-%, {\em e.g.}
-at a reduced cost and with a higher precision ($\tau \rightarrow 0$)
-\cite{MChallacombe16}.
+marked by super-linear convergence.  
 
 \subsection{Sign Iteration}
 
@@ -391,7 +384,7 @@ in the difference $\delta \mat{X}_k = \widetilde{\mat{X}}_k -\mat{X}_k
   sign} \left(\mat{X}_{k-1} \right)$, where $\delta \mat{X}_{k-1}$ is
 some previous error.  The change in behavior is associated with the
 onset of idempotence and the bounded eigenvalues of ${\rm sign}'\left(
-\cdot \right)$, leading to single iteration when ${\rm sign}'\left(
+\cdot \right)$, leading to stable iteration when ${\rm sign}'\left(
 \mat{X}_{k-1} \right) \delta \mat{X}_{k-1} < 1 $.  Global perturbative
 bounds on this iteration have been derived by Bai and Demmel
 \cite{Bai98usingthe}, while Byers, He and Mehrmann \cite{} developed
@@ -404,30 +397,36 @@ In this work, we are concerned with resolution of the identity \cite{}
 \begin{equation}
 \mat{I} \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s}^{-1/2} \, ,
 \end{equation}
-and the cooresponding canonical (dual) square root iteration \cite{};
+and its low-complexity computation with fast methods.  
+
+Starting with eigenvalues rescaled to the domain $(0,1]$ with the easily obtained 
+largest eigenvalue,   $\mat{s} \leftarrow \mat{s}/s_{N-1}$, and with $\mat{z}_0=\mat{I}$ and 
+$\mat{x}_0=\mat{y}_0=\mat{s}$, the cooresponding canonical,  ``dual'' channel square root iteration is:
 \begin{eqnarray}\label{cannonical}
 \mat{y}_k &\leftarrow& h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot \mat{y}_{k-1}  \nonumber \\
 \mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \; ,
 \end{eqnarray}
-with eigenvalues in the proper domain aggregated towards 0 or 1 by the
-NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha
-\mat{x} \right)$ \cite{}.  Then, starting with $\mat{z}_0=\mat{I}$ and
-
-
- $\mat{s} \leftarrow \mat{s}/s_{N-1}$, 
-
-$\mat{x}_0=\mat{y}_0=\mat{s}$, ${\mat{y}}_k \rightarrow
-\mat{s}^{1/2}$, ${\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and
-${\mat{x}}_k \rightarrow {\mat{I}}$.  As in the case of sign
-iteration, this dual iteration was shown by Higham, Mackey, Mackey and
-Tisseur \cite{Higham2005} to remain bounded in the superlinear regime,
-by idempotent Frechet derivatives about the fixed point
+converging as ${\mat{y}}_k \rightarrow \mat{s}^{1/2}$, ${\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and
+${\mat{x}}_k \rightarrow {\mat{I}}$, with eigenvalues aggregated towards 0 or 1 by 
+the NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$ \cite{}.  
+As in the case of sign iteration, this cannonical iteration was shown by Higham, Mackey, Mackey and
+Tisseur \cite{Higham2005} to remain strongly bounded in the superlinear regime, by idempotent Frechet derivatives about the fixed point
 $\left(\mat{s}^{1/2},\mat{s}^{-1/2}\right)$, in the direction $\left(
 \delta \mat{y}_{k-1} , \delta \mat{z}_{k-1} \right)$:
 \begin{eqnarray}
 \delta \mat{y}_k &=& \frac{1}{2} \delta \mat{y}_{k-1} - \frac{1}{2} \mat{s}^{1/2} \cdot \delta \mat{z}_{k-1} \cdot \mat{s}^{1/2} \\
 \delta \mat{z}_k &=& \frac{1}{2} \delta \mat{z}_{k-1} - \frac{1}{2} \mat{s}^{-1/2} \cdot \delta \mat{y}_{k-1} \cdot \mat{s}^{-1/2} \;.
 \end{eqnarray}
+In addition to the dual channel instance, we also consider the ``single'' channel version of square root iteration,
+\begin{eqnarray}\label{single}
+\mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right] \; , \nonumber \\
+\mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k-1} \; .
+\end{eqnarray}
+
+\subsection{Mapping}
+
+$\ot$ is also a map.  atm, stocastic unrpredictable, but really deterministic.  excersize Control
+
 In this contribution, we consider another aspect of convergence,
 namely the (hopefully) linear approach towards stability of the
 iteration
@@ -438,7 +437,6 @@ iteration
 \end{equation}
 made difficult by ill-conditioning and a sketchy $\ot$.
 
-\subsection{Logistic Map}
 
 Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the
 rate of progress towards idempotence.  As recently shown by Jie and
@@ -475,32 +473,15 @@ Then, the differential
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1}
                  \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2) 
 \end{equation}
-determines the total first order stability. 
-
-This formulation allows to consider orientational effects involving eigenvector fidelity and convergence of 
-derivatives towards zero seperately from displacement effects involving accumulation and $\tt SpAMM$ source errors.
-In some cases, insingleilities may be associated with derivatives that do not vanish towards identity, yeilding an unbounded iteration \cite{}.
-In other instances, an instability may be associated with rapidly increasing displacements, due to a too large $\tau$.  Instability 
-may also arize due to the numerical corruption of the eigenvectors, also resulting in derivatives that vanish too slowly (or blow up altogether).    
-
-The potential for
-instability is increased with ill-conditioning through the terms $\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}$.
-Also for ill-conditioned systems, scaling is nessesary to accelerate convergence.  However with scaling, increasing the map 
-derivative $h'_\alpha$ can also further enhance the rate of error accumulation. 
-
-In following sections, we'll examine how these effects differ from the ideal (double precision) cannonical (dual) square root iteration
-for ill-conditioned systems and in the strongly non-associative, sketchy $\ot$ regime corresponding to permisive values of $\tau$.
-At this early stage, we are interested in hazzards and opportunities associated with
-different formulations and implementational details.   In addition to deviations from the full precision dual instance,
-we will develop the  ``single'' instance,
-\begin{eqnarray}\label{single}
-\mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right] \; , \nonumber \\
-\mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k-1} \; ,
-\end{eqnarray}
-with the corresponding differential;
+determines the total first order stability in the dual instance, wilst the differential of the single instance is:
 \begin{equation} \label{firstordersingle}
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2)  \, .
 \end{equation}
+
+This formulation considers changes about the resolvent, seperating orientational effects 
+of the directional derivatives, set by the underlying exact linear algebra, from 
+changes to error displacements, which involve both the action of derivatives on previous errors, $k-1$, as well as 
+the $\tt SpAMM$ occlusion errors local to NS step $k$.
 
 Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm single}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$ 
 is also equivalent to $\mat{y}^{\rm naive}_k \equiv \mat{z}_{k} \cdot \mat{s}$.
@@ -648,6 +629,7 @@ As above, we can unwind this sensitive term, to find
 
 \subsection{Single Channel Instance}
 
+
 Here, we carry on from Eq.~(\ref{firstordersingle}) in the ``single'' instance, with the single channel differential 
 \begin{equation}
  \mat{x}_{\widehat{\mat{z}}_{k-1}} =   \mat{z}^\dagger_{\widehat{\mat{z}}_{k-1}} \cdot \mat{s} \cdot \mat{z}_{k} + 
@@ -707,91 +689,9 @@ Differences in occlusion between single and dual magnified as bounds for s.z not
 
  *lot* of overlap too (reproducing hilberts etc).
 
-
-\section{TEMPERARY:NOTES FOR REGULARIZATION SECTION} 
-
-The idea of preconditioning is that we can use a low tolerance $\tau_{0}$
-(e.g. $\tau_{0}=10^{-2}$) to cheaply obtain an approximation $R_{0}\approx S^{-1/2}$.
-Then since $S_{1}\equiv R_{0}SR_{0}$ is close to the identity matrix
-$I$, 
-\[
-\left\Vert R_{0}SR_{0}-I\right\Vert _{F}\lesssim\tau_{0},
-\]
-we can use Newton Schulz on $S_{1}$ with a higher tolerance $\tau_{1}$
-to get an accurate approximation $R_{1}=S_{1}^{-1/2}$ and using only
-a few iterations:
-\[
-\left\Vert R_{1}S_{1}R_{1}-I\right\Vert _{F}\lesssim\tau_{1}.
-\]
-In particular, the matrix $S_{1}$, being close to the identity, is
-better conditioned than $S$ and computing $S_{1}^{-1/2}$ requires
-much fewer Newton Schulz iterations. Moreover, since 
-\[
-\left\Vert \left(R_{1}R_{0}\right)S\left(R_{0}R_{1}\right)-I\right\Vert _{F}\lesssim\tau_{1},
-\]
-we see that $R_{1}R_{0}$ is a $\tau_{1}$ approximation to $S^{-1/2}$.
-Notice that, from the stability bound for SpAMM, we can replace all
-of the exact matrix multiplications with SpAMM multiplications. 
-
-To formalize this, let $S_{0}=S$, and suppose that $R_{j}$ is the
-approximation to $S_{j}^{-1/2}$ obtained via the Newton Schulz iteration
-with SpAMM tolerance $\tau_{j}$, so that
-\[
-\left\Vert R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}-I\right\Vert _{F}\lesssim\tau_{j}.
-\]
-Then define $S_{j+1}=R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}$
-and let $R_{j+1}$ the approximation to $S_{j+1}^{-1/2}$ obtained
-via the Newton Schulz iteration with SpAMM tolerance $\tau_{j+1}$,
-so that 
-\[
-\left\Vert R_{j+1}\otimes_{\tau_{K}}S_{j+1}\otimes_{\tau_{K}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
-\]
-Then since $S_{j+1}=R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}$,
-\[
-\left\Vert R_{j+1}\otimes_{\tau_{K}}\left(R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}\right)\otimes_{\tau_{K}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
-\]
-In general, defining 
-\[
-R_{\text{left}}\equiv R_{j+1}\otimes_{\tau_{K}}R_{j}\otimes_{\tau_{K}}R_{j-1}\dots\otimes_{\tau_{K}}R_{0},
-\]
-and 
-\[
-R_{\text{right}}\equiv R_{0}\otimes_{\tau_{K}}R_{1}\dots\otimes_{\tau_{K}}R_{j}\dots\otimes_{\tau_{K}}R_{j+1},
-\]
-it follows by induction that 
-\[
-\left\Vert R_{\text{left}}\otimes_{\tau_{K}}S\otimes_{\tau_{K}}R_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{K}.
-\]
-
-
-Now, by stability of SpAMM,
-\[
-\left\Vert R_{\text{left}}SR_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{K}.
-\]
-Also,
-\[
-R_{j+1}\otimes_{\tau_{K}}R_{j}\otimes_{\tau_{K}}R_{j-1}\dots\otimes_{\tau_{K}}R_{0} 
-\]
-can be written as
-\[ 
- \left(R_{0}\otimes_{\tau_{K}}R_{1}\dots\otimes_{\tau_{K}}R_{j}\dots\otimes_{\tau_{K}}R_{j+1}\right)^{\text{T}}+\mathcal{O}\left(\tau_{K}\right).
-\]
-Therefore, $R_{\text{left}}=R_{\text{right}}^{\text{T}}+\mathcal{O}\left(\tau_{K}\right)$,
-and so 
-\begin{equation}
-\left\Vert R_{\text{left}}SR_{\text{left}}^{\text{T}}-I\right\Vert _{F}\lesssim\tau_{K}.\label{eq:product decomposition error bound}
-\end{equation}
-
-
-We can therefore write the following symbolic representation 
-\[
-S^{-1/2}=S_{\tau_{j+1}}^{-1/2}\otimes_{\tau_{j+1}}S_{\tau_{j}}^{-1/2}\otimes_{\tau_{j}}S_{\tau_{j-1}}^{-1/2}\dots\otimes_{\tau_{1}}S_{\tau_{0}}^{-1/2}+\mathcal{O}\left(\tau_{j+1}\right),
-\]
-where $S_{\tau_{k}}^{-1/2}$ is a $\tau_{k}$ approximation to the
-inverse square root of $S_{k}=S_{\tau_{k-1}}^{-1/2}\otimes_{\tau_{k-1}}S_{k-1}\otimes_{\tau_{j}}S_{\tau_{k-1}}^{-1/2}$. 
-
-
 \section{Iterated Regularization}\label{regularization}
+
+\subsection{Rilely's Correction}
 
 Shown in the preceeding section, singleiliyty limits application of the NS square root iteration under 
 agressive $\tt SpAMM$ approximation.  These limits can be circumvented through Tikhonov regularization \cite{}, 
@@ -806,6 +706,11 @@ factor is Riley's method \cite{};
    \right) \; ,
 \end{equation}
 but this is ineffective when $\mu$ is large, and invovles powers of the full inverse. 
+
+\subsection{Product Representation}
+
+spamm: scoping on precision
+regularization: scoping on condition number.
 
 Here, we outline an alternative,  nested product represenation of the inverse factor and show preliminary 
 results for a first, most approximate solution.  This most approximate (but effective) solution is (ideally) representative 
@@ -826,6 +731,10 @@ is strongly contracted with resolution of the identity.
  
 %most-approximate-yet-effective-by-one-order (MAYEBOO) vs
 %most-approximate-yet-still-stable (MAYSS) 
+
+\subsection{A Most Approximate Preconditioner}
+
+Bottom run preconditioning 
 
 \begin{figure}[h]\label{regularized_stab}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
@@ -936,6 +845,8 @@ Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the 
 in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing3}
 \end{figure}
 
+\subsection{Metric, Spatial and Temporal Locality}
+
 Astrophysical $n$-body algorithms employ range querries over spatial databases to hierarchically discover 
 and compute approximations that commit only small errors.  Often, these spatial databases are ordered with a 
 space filling curve (SFC) \cite{}, which maps points that are close in space to an index where they are also close. 
@@ -961,6 +872,8 @@ single instance (not shown), where delocalizations are exagerated due to spectra
 Eventually, Cartesian seperation will thin and trim the density of these delocalizations,  
 leading to complexity reduction based on the effects of metric locality alone, as demonstrated in \ref{}.
 
+\subsection{Algebraic Locality (Lensing)}
+
 In Figures \ref{Lensing1} and \ref{Lensing2},  we show a new kind of locality that is uniquely exploited by $n$-body approximation 
 of the square root iteration.  This {algebraic locality} develops compressively towards convergence 
 as the contractive identity iteration develops.  
@@ -981,6 +894,8 @@ and hollow accumulation of ${\rm vol}_{\mat{y}_k \ot \mat{z}_k}$ looking down at
 Surprisingly, this example shows lensing for a relatively tight MAYSS approximation, while the 
 equally ill-conditioned \& lower dimensional  $\kappa (\mat{s})=10^{10}$ nanotube MAYSS approximation remains full (dense) 
 through U.C. $\times 128$.
+
+\subsection{Potential for Complexity Reduction}
   
 Finally, we show complexity reduction at convergence of the MAYEBOO approximation relative to the MAYSS approximation, 
 in Fig.~\ref{Complex1} for periodic water boxes, and in Fig.~\ref{Complex2} for the ill-conditioned nano-tube. 
@@ -1229,6 +1144,90 @@ double exponential (Fig.)
 %\subsubsection{water boxes}
 %\subsubsection{ordering}
 %\subsubsection{Matrix Market}
+
+\section{TEMPERARY:NOTES FOR REGULARIZATION SECTION} 
+
+The idea of preconditioning is that we can use a low tolerance $\tau_{0}$
+(e.g. $\tau_{0}=10^{-2}$) to cheaply obtain an approximation $R_{0}\approx S^{-1/2}$.
+Then since $S_{1}\equiv R_{0}SR_{0}$ is close to the identity matrix
+$I$, 
+\[
+\left\Vert R_{0}SR_{0}-I\right\Vert _{F}\lesssim\tau_{0},
+\]
+we can use Newton Schulz on $S_{1}$ with a higher tolerance $\tau_{1}$
+to get an accurate approximation $R_{1}=S_{1}^{-1/2}$ and using only
+a few iterations:
+\[
+\left\Vert R_{1}S_{1}R_{1}-I\right\Vert _{F}\lesssim\tau_{1}.
+\]
+In particular, the matrix $S_{1}$, being close to the identity, is
+better conditioned than $S$ and computing $S_{1}^{-1/2}$ requires
+much fewer Newton Schulz iterations. Moreover, since 
+\[
+\left\Vert \left(R_{1}R_{0}\right)S\left(R_{0}R_{1}\right)-I\right\Vert _{F}\lesssim\tau_{1},
+\]
+we see that $R_{1}R_{0}$ is a $\tau_{1}$ approximation to $S^{-1/2}$.
+Notice that, from the stability bound for SpAMM, we can replace all
+of the exact matrix multiplications with SpAMM multiplications. 
+
+To formalize this, let $S_{0}=S$, and suppose that $R_{j}$ is the
+approximation to $S_{j}^{-1/2}$ obtained via the Newton Schulz iteration
+with SpAMM tolerance $\tau_{j}$, so that
+\[
+\left\Vert R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}-I\right\Vert _{F}\lesssim\tau_{j}.
+\]
+Then define $S_{j+1}=R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}$
+and let $R_{j+1}$ the approximation to $S_{j+1}^{-1/2}$ obtained
+via the Newton Schulz iteration with SpAMM tolerance $\tau_{j+1}$,
+so that 
+\[
+\left\Vert R_{j+1}\otimes_{\tau_{K}}S_{j+1}\otimes_{\tau_{K}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
+\]
+Then since $S_{j+1}=R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}$,
+\[
+\left\Vert R_{j+1}\otimes_{\tau_{K}}\left(R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}\right)\otimes_{\tau_{K}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
+\]
+In general, defining 
+\[
+R_{\text{left}}\equiv R_{j+1}\otimes_{\tau_{K}}R_{j}\otimes_{\tau_{K}}R_{j-1}\dots\otimes_{\tau_{K}}R_{0},
+\]
+and 
+\[
+R_{\text{right}}\equiv R_{0}\otimes_{\tau_{K}}R_{1}\dots\otimes_{\tau_{K}}R_{j}\dots\otimes_{\tau_{K}}R_{j+1},
+\]
+it follows by induction that 
+\[
+\left\Vert R_{\text{left}}\otimes_{\tau_{K}}S\otimes_{\tau_{K}}R_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{K}.
+\]
+
+
+Now, by stability of SpAMM,
+\[
+\left\Vert R_{\text{left}}SR_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{K}.
+\]
+Also,
+\[
+R_{j+1}\otimes_{\tau_{K}}R_{j}\otimes_{\tau_{K}}R_{j-1}\dots\otimes_{\tau_{K}}R_{0} 
+\]
+can be written as
+\[ 
+ \left(R_{0}\otimes_{\tau_{K}}R_{1}\dots\otimes_{\tau_{K}}R_{j}\dots\otimes_{\tau_{K}}R_{j+1}\right)^{\text{T}}+\mathcal{O}\left(\tau_{K}\right).
+\]
+Therefore, $R_{\text{left}}=R_{\text{right}}^{\text{T}}+\mathcal{O}\left(\tau_{K}\right)$,
+and so 
+\begin{equation}
+\left\Vert R_{\text{left}}SR_{\text{left}}^{\text{T}}-I\right\Vert _{F}\lesssim\tau_{K}.\label{eq:product decomposition error bound}
+\end{equation}
+
+
+We can therefore write the following symbolic representation 
+\[
+S^{-1/2}=S_{\tau_{j+1}}^{-1/2}\otimes_{\tau_{j+1}}S_{\tau_{j}}^{-1/2}\otimes_{\tau_{j}}S_{\tau_{j-1}}^{-1/2}\dots\otimes_{\tau_{1}}S_{\tau_{0}}^{-1/2}+\mathcal{O}\left(\tau_{j+1}\right),
+\]
+where $S_{\tau_{k}}^{-1/2}$ is a $\tau_{k}$ approximation to the
+inverse square root of $S_{k}=S_{\tau_{k-1}}^{-1/2}\otimes_{\tau_{k-1}}S_{k-1}\otimes_{\tau_{j}}S_{\tau_{k-1}}^{-1/2}$. 
+
+
 
 
 \bibliography{MatrixFunctions}
