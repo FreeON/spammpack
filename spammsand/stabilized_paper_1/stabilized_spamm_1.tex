@@ -819,7 +819,8 @@ Culled $\tt SpAMM$ volumes for this most approximate solution are shown with inc
 Fig.~\ref{regularized_stab} for the single instance, and in Fig.~\ref{regularized_dual} for the dual instance, 
 cooresponding to ``thin NS'' iteration for the (3,3) $\kappa(\mat{s})=10^{10}$ nanotube series.  
 The behavior of these instances is very different; in the ``single'' 
-instance, a single iteration could not be found at precision $\tau_0=.1$, even with $\mu_0=.1$ regularization.  Also, this single iteration
+instance, a single iteration could not be found at precision $\tau_0=.1$, even with $\mu_0=.1$ regularization.  
+Also, this single iteration
 sees a weakly convergent trace with inflating cull-volumes. On the other hand, volume of the dual iteration 
 is strongly contracted with resolution of the identity.  
  
@@ -948,18 +949,22 @@ In a similar way, we showed how persistence can be used to achieve
 strong parallel scaling for $\tt SpAMM$ with commonly available runtimes \cite{}.  
 Persistence data, providing temporal locality, may also be useful in mathematical approximation.  
 
-The locality of $\tt SpAMM$ volumes depends on ill-conditioning and an effective metric seperation, diminished by 
-increasing dimensionality.   In Figure  we show $\ot$ volumes for square root iteration, cooresponding to the metric of a small, periodic water box 
+%The locality of $\tt SpAMM$ volumes depends on opposing effects; ill-conditioning leads to delocalizations 
+%and a broad spectral resolution, while strong metric seperation cooresponds to an increasing locality.  
+%Unfortunately, seperation is diminished with increasing dimensionality.  
+
+In Figure \ref{Lensing3}, we show $\ot$ volumes for square root iteration, cooresponding to the metric of a small, periodic water box 
 with the large, 6-311G** basis.  For the 3-d periodic case, diminishing Cartesian seperations lead to long-skinny delocalizations (pillae)
 and much denser matrices, relative to {\em e.g.} a one-dimensional nano-tube.  These delocalizations coorespond to weakness in Eq.~(\ref{bound}),  
 and to the tighter thresholds required to maintain a single iteration in the MAYSS approximation.  This effect is even more pronounced in the 
 single instance (not shown), where delocalizations are exagerated due to spectral resolutions that are broader.  
-Eventually, the effects of Euclidean locality will thin the density of these delocalizations, leading to complexity reduction with increasing
-system size $n$.  
-%Also, it may be possible to sample pillae effectively with non-determistic methods, involving {\em e.g.}~probabilities accumulated through persistence.
+Eventually, Cartesian seperation will thin and trim the density of these delocalizations,  
+leading to complexity reduction based on the effects of metric locality alone, as demonstrated in \ref{}.
 
-In Figures \ref{Lensing1} and \ref{Lensing2},  we show a new kind of locality that is uniquely exploited by $n$-body approximation of the square root iteration. This {algebraic locality} develops compressively towards convergence as the contractive identity iteration develops.  
-We call this compression {\bf lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
+In Figures \ref{Lensing1} and \ref{Lensing2},  we show a new kind of locality that is uniquely exploited by $n$-body approximation 
+of the square root iteration.  This {algebraic locality} develops compressively towards convergence 
+as the contractive identity iteration develops.  
+We call this compression {\bf  \em lensing},  involving collapse  of the culled volume about plane diagonals of the resolvent.
 Lensing cooresponds to strengthening of Eq.(\ref{}) to yeild Eqs.~(\ref{boundY}) and (\ref{boundZ}), and strong convergence of the
 directional derivatives Eq.(\ref{}-\ref{}) to $\mat{0}$.
 This is an important, mitigating computational effect for the $\mat{y}_k$ channel that involves the 
@@ -1036,7 +1041,17 @@ in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing2}
 
 \begin{figure}[tb] 
 \includegraphics[width=7.8cm,keepaspectratio=true,trim={0.cm 0.cm 0.cm 0.cm},clip]
-                 {fig_wtrboxes_regular_and_unleaded/pcnt_volume_water_boxes.eps} 
+                 {fig_regular_and_unleaded/pcnt_volume_water_boxes.eps} 
+\caption{ 
+Complexity reduction in metric square root iteration for periodic 6-311G** water. 
+Shown is the ratio of lensed product volumes for the regularized most-approximate-yet-effective-by-one-order (MAYEBOO) 
+approximation and the unregularized most-approximate-yet-still-stable (MAYSS) approximation.}\label{HilbertVsTravelOrder}
+\end{figure}
+
+
+\begin{figure}[tb] 
+\includegraphics[width=7.8cm,keepaspectratio=true,trim={0.cm 0.cm 0.cm 0.cm},clip]
+                 {fig_33_tube_cond_10_regularized/volume_vs_n3_tubes.eps} 
 \caption{ 
 Complexity reduction in metric square root iteration for periodic 6-311G** water. 
 Shown is the ratio of lensed product volumes for the regularized most-approximate-yet-effective-by-one-order (MAYEBOO) 
@@ -1067,12 +1082,6 @@ Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the 
 in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
 \end{figure}
 
-
-
-\pagebreak
-
---
-\pagebreak
 \section{Summary}
 
 In this contribution, we developed the $n$-body solver $\tt SpAMM$ for square root iteration.   

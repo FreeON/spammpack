@@ -7,6 +7,7 @@ set terminal postscript eps enhanced color font 'Courier-Bold,16'
 
 set output "pcnt_volume_water_boxes.eps" 
 
+set logscale x
 set logscale y
 
 set size ratio .75
