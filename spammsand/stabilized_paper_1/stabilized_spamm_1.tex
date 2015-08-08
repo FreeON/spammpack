@@ -438,6 +438,13 @@ iteration
 made difficult by ill-conditioning and a sketchy $\ot$.
 
 
+Then, using
+\begin{equation}
+  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
+=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
+\end{equation}
+
+
 Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the
 rate of progress towards idempotence.  As recently shown by Jie and
 Chen \cite{Chen2014}, for very ill-conditioned problems, a factor of
@@ -452,10 +459,24 @@ approximate algebra like $\tt SpAMM$, the potential for eigenvalues to
 fluctuate out of the domain of convergence must be considered.  This
 is addressed in Section \ref{}.
 
-\subsection{Instance and Stability}
 
-There are a number of nominally equivalent instances of the square root iteration, related by commutations and transpositions. 
-However, these instances may have very different stability properties,  controled to first order by the Frechet derivatives
+\section{Error Flows in Square Root Iteration}
+
+\subsection{Stability}
+
+There are a number of equivalent instances of the square root iteration, related by commutations and transpositions. 
+Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm single}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$.  
+However, with ill-conditioning and in only double precision, these two instances may diverge rapidly due to compounding  errors.
+In the case of the dual iteration, the $\widetilde{\mat{y}}^{\rm dual}_k$ channel does not retain contact with the eigenvectors of $\mat{s}$, 
+and can diverge easily from this basis. In the single instance, conection with $\mat{s}$ is retained at each step, but at the price 
+the update involving a broad spectral resolution, {\em e.g.} involving $\mat{s}^{-1/2} \cdot \mat{s}$  at convergence. 
+
+Stability in the square root iteration is determined to first order by the differential 
+\begin{equation} \label{firstorderdual}
+\delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1}
+                 \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2) 
+\end{equation}
+which must remain bounded below 1 to avoid divergence.   The cooresponding Fr\"{e}chet derivatives are
 \begin{equation}
   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}
 = \lim_{\tau \rightarrow 0} \slantfrac{ \mat{x} \left( \mat{y}_{k-1} + \tau \delta \widehat{\mat{y}}_{k-1} ,  {\mat{z}}_{k-1}  \right)
@@ -466,40 +487,23 @@ and
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} = \lim_{\tau \rightarrow 0}
 \slantfrac{ \mat{x} \left( {\mat{y}}_{k-1} , \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1} \right) - \mat{x}_k   }{\tau}  \, , 
  \end{equation}
-along the unit directions of the previous errors $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$, corresponding 
-to the associated displacement magnitudes $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$.
-Then, the differential 
-\begin{equation} \label{firstorderdual}
-\delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1}
-                 \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2) 
-\end{equation}
-determines the total first order stability in the dual instance, wilst the differential of the single instance is:
+along unit directions of the previous errors $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$, by an ammount
+determined by the displacements $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$.
+In the single instance, we have simply:
 \begin{equation} \label{firstordersingle}
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2)  \, .
 \end{equation}
 
-This formulation considers changes about the resolvent, seperating orientational effects 
-of the directional derivatives, set by the underlying exact linear algebra, from 
+This formulation makes plain changes about the resolvent, seperating orientational effects 
+of the directional derivatives, set mostly by the underlying exact linear algebra, from 
 changes to error displacements, which involve both the action of derivatives on previous errors, $k-1$, as well as 
 the $\tt SpAMM$ occlusion errors local to NS step $k$.
 
-Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm single}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$ 
-is also equivalent to $\mat{y}^{\rm naive}_k \equiv \mat{z}_{k} \cdot \mat{s}$.
-However, with ill-conditioning and in only double precision, these two instances may diverge due to non-associative errors that rapidly compound.
-In the case of the duals iteration under $\tt SpAMM$ approximation, the $\widetilde{\mat{y}}^{\rm dual}_k$ channel does not retain contact 
-with the eigenvectors, span $\mat{s}$, whilst the single instance does.  
-In the duals iteration, the $\widetilde{\mat{y}}_k$  $\tt SpAMM$ update 
-is mild, with errors in the relative product remaining well conditioned.  
-In the single instance, conection with $\mat{s}$ is retained at each step, but at the price of the 
-$\mat{y}^{\rm single}_k$ update involving magnitudes that vary widely in the $\tt SpAMM$ product.     
 
-\section{Error Flows in Square Root Iteration}
-
-\subsection{Cannonical, Dual Channel Instance}
+\subsection{Fr\"{e}chet Derivatives}
+%\subsubsection{Dual}
  
-Refering back to Eq.~( \ref{firstorderdual} ), we develop the Fr\'{e}chet analyses \cite{} with the goal of understanding
-the contractive approach to identity in competition with error accumulations and $\tt SpAMM$ sources.
-Of interest are the derivatives 
+In the dual instance, Fr\"{e}chet derivatives occuring in Eq.~(\ref{firstorderdual}) are:
 
 % \begin{equation}
 %   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}
@@ -533,19 +537,20 @@ Of interest are the derivatives
 % \end{multline}
 % yeilding
 
+\begin{multline}\label{dxdy}
+ \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1}  \cdot \mat{z}_{k} \\
+\qquad + \mat{y}_k \cdot  \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\
+\qquad \qquad +  \mat{y}_{k} \cdot  \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1} \, .
+\end{multline}
 
-\begin{multline}
+and 
+
+\begin{multline}\label{dxdz}
   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} = h_\alpha \left[ \mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k} \\
 +  h'_\alpha  \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \cdot  \mat{y}_{k-1} \cdot  \mat{z}_{k} \\
  + \mat{y}_{k} \cdot \mat{z}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}  \, .
 \end{multline}
 
-
-\begin{multline}
- \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1}  \cdot \mat{z}_{k} \\
-\qquad + \mat{y}_k \cdot  \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\
-\qquad \qquad +  \mat{y}_{k} \cdot  \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1} \, .
-\end{multline}
 
 Closer to a fixed point orbit,  $\mat{y}_k \cdot \mat{z}_{k-1} \rightarrow \mat{I}$, $\mat{y}_{k-1} \cdot \mat{z}_{k} \rightarrow \mat{I}$,
 $h_\alpha \left[ \mat{x}_{k} \right] \rightarrow \mat{I}$ and $h'_\alpha \rightarrow - \frac{1}{2}$ \cite{higham2005}.  Then,
@@ -557,10 +562,16 @@ and
 \begin{equation} \label{zorbit}
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} \rightarrow \left( \mat{y}_k-\mat{y}_{k-1} \right) \cdot \delta \widehat{\mat{z}}_{k-1} .
 \end{equation}
-Thus, contributions along $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$ are tightly shut down in the 
-region of superlinear convergence.  Achieving a contractive fixed point orbit, however requires that the three terms in Eq.~(\ref{}),  
-with potentially different error accumulations and $\tt SpAMM$ sources, must cancel faster than $\delta y_{k-1}$ 
-and $\delta z_{k-1}$ accumulate.
+Likewise, in the single channel instance:
+\begin{multline}
+ \mat{x}_{\widehat{\mat{z}}_{k-1}} \rightarrow  \left(  \mat{z}^\dagger_{k} - \mat{z}^\dagger_{k-1} \right) \cdot \mat{s} \cdot \delta \widehat{\mat{z}}_{k-1} \\
++  \delta \widehat{\mat{z}}^\dagger_{k-1} \cdot  \mat{s}  \cdot \left(  \mat{z}_{k} - \mat{z}_{k-1} \right)  \, .
+\end{multline}
+
+About the fixed point then, directional contributions along $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$ are 
+shut tightly as  $\mat{x}_{\delta \widehat{\mat{x}}_{k-1}} \rightarrow  \mat{I}$.
+
+\subsection{Displacements}
 
 In this analysis, we've seperated the directional component of the error from its distance, because in addition to the
 previous compounding error, each displacement contains also a first order $\tt SpAMM$ source error.  Its simpler to 
@@ -605,6 +616,17 @@ primary error channels contibuting to $\delta z_{k-1}$ are through the first ord
 $ \tau \lVert \mat{z}_{k-2} \rVert \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]\rVert$
 and the volatile term $h'_\alpha  \delta y_{k-2} { \lVert \mat{z}_{k-2} \rVert }^2$.
 
+
+ 
+\begin{eqnarray}
+\widetilde{\mat{y}}^{\rm single}_{k-1} &=& \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s} \\
+                                  &=& \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}} \, + \,
+\left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
+\end{eqnarray}
+
+
+
+
 %  \begin{eqnarray}
 % \widetilde{\mat{y}}_{k-1}&=&
 % h_\alpha [ \widetilde{\mat{x}}_{k-2}] \, \ots \, \widetilde{\mat{y}}_{k-2}  \\
@@ -629,26 +651,6 @@ As above, we can unwind this sensitive term, to find
 
 \subsection{Single Channel Instance}
 
-
-Here, we carry on from Eq.~(\ref{firstordersingle}) in the ``single'' instance, with the single channel differential 
-\begin{equation}
- \mat{x}_{\widehat{\mat{z}}_{k-1}} =   \mat{z}^\dagger_{\widehat{\mat{z}}_{k-1}} \cdot \mat{s} \cdot \mat{z}_{k} + 
-                                  \mat{z}^\dagger_k \cdot \mat{s} \cdot \mat{z}_{\widehat{\mat{z}}_{k-1}} 
-\end{equation}
-
-
-
-\begin{multline}
-\mat{z}_{\widehat{\mat{z}}_{k-1} } = \delta \widehat{\mat{z}}_{k-1} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-1} ] + \mat{z}_{k-1} \cdot \left( \right. \\
- \left.  h'_\alpha \delta \widehat{\mat{z}}^\dagger_{k-1} \cdot \mat{s} \cdot \mat{z}_{k-1} +  \mat{z}^\dagger_{k-1} \cdot \mat{s} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1}
- \right) 
-\end{multline}
-
-\begin{eqnarray}
-\widetilde{\mat{y}}^{\rm single}_{k-1} &=& \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s} \\
-                                  &=& \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}} \, + \,
-\left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
-\end{eqnarray}
 
 \subsection{Bifurcations}
 
