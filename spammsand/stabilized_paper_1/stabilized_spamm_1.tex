@@ -636,8 +636,8 @@ Derivatives are full lines, whilst the displacements cooresponding to $\tau_s=\{
 are the dashed lines.  The trace error is shown as a full black line. }\label{flow_scaled_dual}
 \end{figure}
 
-These experiments were carried out on the ill-conditioned $(\kappa(\mat{s})=10^{10})$ nanotube metric-matrices described in Appendix~\ref{data}.
-We picked  $\tau ={\tt .001}$ and block size $b = 8$.  Then, we looked at stability with respect to the tighter $\tau_s$ threshold, 
+Experiments were carried out on the ill-conditioned $(\kappa(\mat{s})=10^{10})$ nanotube metric-matrices described in Appendix~\ref{data}.
+We picked  $\tau ={\tt .001}$ and block size $b = 64$.  Then, we looked at stability with respect to the tighter $\tau_s$ threshold, 
 the directional derivatives and the trace error.   
 
 In Fig.~\ref{flow_noscale_dual}, unscaled results for the dual instance are shown.  In Fig.~\ref{flow_scaled_dual}, scaled results for the
@@ -659,62 +659,65 @@ are tuned away from such senstivities, and their local variation has a neglibibl
 Also not shown, the intermediate volumes (before fill in) behave very differently with scaling; in all cases, the product volumes,
 proportional to the computatonal cost, are significantly increased by scaling.  In the remainder of this work, we won't look at scaling again.
 
-\section{Iterated Regularization}\label{regularization}
+\section{Regularization}\label{regularization}
 
-Even for the most approximate but stable (MAYSS) approximations, our nanotube calculations are dense, even for very large, $128 x$ U.C. systems. 
-For ill-conditioned square root iterations, the corresponding broad spectral resolutions, involving products of large and small numbers, 
-coorespond to delocalized products that are not tightly bound by the $\tt SpAMM$ approximation.   
+Even for the most approximate but stable (MAYSS) approximations, our nanotube calculations become dense in both the data and task domains, 
+even for very large $128 \times$ U.C. systems.  For these ill-conditioned iterations, broad spectral resolutions that involving products of 
+large and small numbers coorespond to delocalized products that are not tightly bound by the $\tt SpAMM$ approximation.   However, as 
+we show later in Fig.~\ref{Lensing4}, similarly ill-conditioned problems may achieve substantial compression with just the MAYSS 
+approximation. 
 
-One way to reduced ill-conditioning, tightening Eq.~(\ref{bound}), is through Tikhonov regularization \cite{}.
+A systematic way to reduce ill-conditioning is through Tikhonov regularization \cite{}.
 Regularization involes a small level shift of the eigenvalues,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, altering the 
-condition number of the shifted matrix to  $\kappa( \mat{s}_\mu) = \frac{\sqrt{s^2_{N-1} + \mu^2}}{\sqrt{s^2_0+\mu^2}}$ \cite{}.  
+condition number of the shifted matrix to  $\kappa( \mat{s}_\mu) = \frac{\sqrt{s^2_{N-1} + \mu^2}}{\sqrt{s^2_0+\mu^2}}$ \cite{}.
+%Regularization has an history in quantum chemistry \cite{}, image processing \cite{} and linear algebra \cite{}.   
 
-
-
-
-\subsection{Rilely's Correction}
-
-These limits can be circumvented through Tikhonov regularization \cite{}, 
-involving a small level shift of eigenvalues,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, leading to a more 
-well conditioned matrix with $\kappa( \mat{s}_\mu) = \frac{\sqrt{s^2_{N-1} + \mu^2}}{\sqrt{s^2_0+\mu^2}}$ \cite{}.  
-However, achieving substantial acceleration with severe ill-conditioning  may require a large level shift, 
+Achieving substantial acceleration with severe ill-conditioning  may require a large level shift however, 
 producing inverse factors of little practical use.  One approach to recover a more accurate inverse
-factor is Riley's method \cite{}; 
+factor is Riley's method based on Taylor's series \cite{}; 
 \begin{equation}
 \mat{s}^{-1/2} = \mat{s}^{-1/2}_{\mu} \cdot \left( \mat{I}+\frac{\mu}{2} \mat{s}^{-1}_{\mu}
                                                    +\frac{3 \mu^2}{8} \mat{s}^{-2}_{\mu} + \dots
-   \right) \; ,
+   \right) \; .
 \end{equation}
-but this is ineffective when $\mu$ is large, and invovles powers of the full inverse. 
 
-\subsection{Product Representation}
+For severely ill-conditioned problems and large level shifts, this expansion may converge very slowly. 
+Also, adding powers of the full inverse may not be computationally effective. 
 
-spamm: scoping on precision
-regularization: scoping on condition number.
+\subsection{A Product Representation}
 
-Here, we outline an alternative,  nested product represenation of the inverse factor and show preliminary 
-results for a first, most approximate solution.  This most approximate (but effective) solution is (ideally) representative 
-of one order in the precision, $\tau_0\sim .1$, and corrective by one order in the condition, $\mu_0\sim .1$,
-yeilding a thin, $0^{\rm th}$ preconditioner, $\mat{s}^{-1/2}_{\tau_0 \mu_0}$.  
-This ``thin'' iteration may bring spectral resolution into alignment with norm magnitudes 
-towards the resolvent $\mat{I}_{\tau_0\mu_0}\equiv \widetilde{\mat{I}}\left(\mat{s}_{\tau_0\mu_0}\right)$,
-strengthening Eq.~(\ref{bound}).
+We introduce an alternative representation of the regularized inverse factor;
+\begin{equation} \label{spammsandwich}
+\mat{s}^{-1/2} \equiv \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0   } } {\left|\, \tau\, \mu \, ; \, \scriptstyle{\mat{s}^{-1/2}}  \right>}  \, ,
+\end{equation}
+which is a telescoping product of preconditioned ``slices'' 
+starting with a most-approximate-yet-still-effective-by-one-order (MAYEBOO) preconditioner, 
+$\mat{s}^{-1/2}_{\tau_0 \mu_0} \equiv {\left|\, \tau_0\, \mu_0 \, ; \, \scriptstyle{\mat{s}^{-1/2}}\right>}$\footnote{Braket notation marks 
+the potential for assymetries in the intermediate represenation.}.  
+This sandwich of generic, thinly sliced {\tt SpAMM} products allows to construct a nested scoping on precision, via $\tau$, and in the 
+condition number, controled by $\mu$.
 
-Culled $\tt SpAMM$ volumes for this most approximate solution are shown with increasing system size in 
-Fig.~\ref{regularized_stab} for the single instance, and in Fig.~\ref{regularized_dual} for the dual instance, 
-cooresponding to ``thin NS'' iteration for the (3,3) $\kappa(\mat{s})=10^{10}$ nanotube series.  
-The behavior of these instances is very different; in the ``single'' 
-instance, a single iteration could not be found at precision $\tau_0=.1$, even with $\mu_0=.1$ regularization.  
-Also, this single iteration
-sees a weakly convergent trace with inflating cull-volumes. On the other hand, volume of the dual iteration 
+This scheme rests on three factors: ({\bf 1}) the ability to find a most agressive but still effective first slice,   
+corrective by one order in the condition, $\mu_0 = {\tt .1}$, and by one order in the precision, $\tau_0 ={\tt .1}$ (MAYEBOO), 
+({\bf 2}) an optimal $\tau \, \mu$ scoping in Eq.~(\ref{spammsandwich})  and ({\bf 3}) optimized 
+maps for generic thin slices.  In the following, we demonstrate a first MAYEBOO preconditioner for the ill-conditioned 
+nano-tube problem, and then we sketch a naive approach to building the full inverse factor. 
+
+\subsection{Effective by one order}
+
+We look again at the $\kappa(\mat{s})=10^{10}$ nanotube series described in Appendix \ref{data},
+this time with extreme regularization, $\mu_0={\tt .1}$, and at a finer granularity, $b=8$.
+Culled $\mat{y}_k$ and $\mat{z}_k$ volumes (as percentage of the total work) for $36 - 128 \, \times$ the (3,3) unit cell
+are shown for the MAYEBOO approximation in Fig.~\ref{regularized_stab} for the single instance, 
+and in Fig.~\ref{regularized_dual} for the dual instance. 
+
+The behavior of these implementations  is very different; in the single 
+instance, a stable  iteration could not be found at precision $\tau_0=.1$.  
+Also, disturbingly, the single iteration with inflating cull-volumes. 
+
+
+On the other hand, volume of the dual iteration 
 is strongly contracted with resolution of the identity.  
- 
-%most-approximate-yet-effective-by-one-order (MAYEBOO) vs
-%most-approximate-yet-still-stable (MAYSS) 
-
-\subsection{Most Approximate by One Order}
-
-Bottom run preconditioning 
 
 \begin{figure}[h]\label{regularized_stab}
  \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
@@ -777,6 +780,18 @@ Likewise, it may be possible to obtain the full factor with increasing $\tt SpAM
 acknowledging the potential for a flexible path between precision and regularization. The braket notation marks 
 the potential for assymetries in the intermediate represenation.  
 
+
+
+
+This most approximate (but effective) solution is (ideally) representative 
+of one order in the precision, $\tau_0\sim .1$, and corrective by one order in the condition, $\mu_0\sim .1$,
+yeilding a thin, $0^{\rm th}$ preconditioner, $\mat{s}^{-1/2}_{\tau_0 \mu_0}$.  
+This ``thin'' iteration may bring spectral resolution into alignment with norm magnitudes 
+towards the resolvent $\mat{I}_{\tau_0\mu_0}\equiv \widetilde{\mat{I}}\left(\mat{s}_{\tau_0\mu_0}\right)$,
+strengthening Eq.~(\ref{bound}).
+
+
+
 This thin product representation may have advantages: 
 ({\bf{1}}) Each thin solve involves a few generic and well behaved steps that may be narrowly optimized;
 ({\bf{2}}) Each thin solve can be brought rapidly into compressive identity iteration; 
@@ -825,7 +840,7 @@ Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the 
 in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing3}
 \end{figure}
 
-\subsection{Metric, Spatial and Temporal Locality}
+\subsection{Spatial, metric  and temporal locality}
 
 Astrophysical $n$-body algorithms employ range querries over spatial databases to hierarchically discover 
 and compute approximations that commit only small errors.  Often, these spatial databases are ordered with a 
@@ -852,7 +867,7 @@ single instance (not shown), where delocalizations are exagerated due to spectra
 Eventually, Cartesian seperation will thin and trim the density of these delocalizations,  
 leading to complexity reduction based on the effects of metric locality alone, as demonstrated in \ref{}.
 
-\subsection{Algebraic Locality (Lensing)}
+\subsection{Algebraic locality}
 
 In Figures \ref{Lensing1} and \ref{Lensing2},  we show a new kind of locality that is uniquely exploited by $n$-body approximation 
 of the square root iteration.  This {algebraic locality} develops compressively towards convergence 
@@ -875,7 +890,7 @@ Surprisingly, this example shows lensing for a relatively tight MAYSS approximat
 equally ill-conditioned \& lower dimensional  $\kappa (\mat{s})=10^{10}$ nanotube MAYSS approximation remains full (dense) 
 through U.C. $\times 128$.
 
-\subsection{Potential for Complexity Reduction}
+\subsection{Complexity reduction}
   
 Finally, we show complexity reduction at convergence of the MAYEBOO approximation relative to the MAYSS approximation, 
 in Fig.~\ref{Complex1} for periodic water boxes, and in Fig.~\ref{Complex2} for the ill-conditioned nano-tube. 
