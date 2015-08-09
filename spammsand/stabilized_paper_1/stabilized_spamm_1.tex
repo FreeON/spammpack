@@ -613,7 +613,7 @@ and the dual instance $\widetilde{\mat{y}}_{k-1} =  h_\alpha [\widetilde{\mat{x}
 This is because the spectral product is broader (resolving larger and smaller numbers) 
 in the single instance and narrower in the dual instance.
 
-\subsection{Experiments}
+\subsection{Most Approximate but Still Stable}
 
 \begin{figure}[h]
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual.eps}
@@ -661,9 +661,16 @@ proportional to the computatonal cost, are significantly increased by scaling.  
 
 \section{Iterated Regularization}\label{regularization}
 
-Need a way to access metric locality for even full problems. 
-Shown in the preceeding section, singleiliyty limits application of the NS square root iteration under 
-agressive $\tt SpAMM$ approximation.  
+Even for the most approximate but stable (MAYSS) approximations, our nanotube calculations are dense, even for very large, $128 x$ U.C. systems. 
+For ill-conditioned square root iterations, the corresponding broad spectral resolutions, involving products of large and small numbers, 
+coorespond to delocalized products that are not tightly bound by the $\tt SpAMM$ approximation.   
+
+One way to reduced ill-conditioning, tightening Eq.~(\ref{bound}), is through Tikhonov regularization \cite{}.
+Regularization involes a small level shift of the eigenvalues,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, altering the 
+condition number of the shifted matrix to  $\kappa( \mat{s}_\mu) = \frac{\sqrt{s^2_{N-1} + \mu^2}}{\sqrt{s^2_0+\mu^2}}$ \cite{}.  
+
+
+
 
 \subsection{Rilely's Correction}
 
@@ -705,7 +712,7 @@ is strongly contracted with resolution of the identity.
 %most-approximate-yet-effective-by-one-order (MAYEBOO) vs
 %most-approximate-yet-still-stable (MAYSS) 
 
-\subsection{A Most Approximate Preconditioner}
+\subsection{Most Approximate by One Order}
 
 Bottom run preconditioning 
 
