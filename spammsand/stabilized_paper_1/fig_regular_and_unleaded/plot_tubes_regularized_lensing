@@ -1,0 +1,54 @@
+#set term pngcairo dashed enhanced font 'Courier Bold,16'
+#set term pngcairo dashed transparent enhanced font 
+#set terminal postscript enhanced eps
+set terminal postscript eps enhanced color font 'Courier-Bold,16' 
+
+#set size 3.5,2.5 
+
+set output "pcnt_volume_water_boxes.eps" 
+
+set logscale y
+
+set size ratio .75
+set ylabel 'v[{/Symbol t}_0=.1,{/Symbol m}_0=.1]/ v[{/Symbol t}_0=.001,{/Symbol m}_0=0]' offset 3,0
+set xlabel 'n' offset 0,0.5 
+
+set label 1 "y_k"       tc rgb "red"    at 380, 0.005
+set label 2 "z_k"       tc rgb "blue"   at 380, 0.0006
+set label 3 "x_k"       tc rgb "black"  at 380, 0.00225
+
+#set yrange [0.0000000001:1.1]
+set yrange [0.0000001:20.0]
+
+set style line 11 lt 1 lc rgb "black"   lw 1
+set style line 21 lt 1 lc rgb "red"     lw 1
+set style line 31 lt 1 lc rgb "blue"    lw 1
+set style line 12 lt 1 lc rgb "black"   lw 1
+set style line 22 lt 1 lc rgb "red"     lw 1.5
+set style line 32 lt 1 lc rgb "blue"    lw 1.5
+set style line 13 lt 1 lc rgb "black"   lw 1.5
+set style line 23 lt 1 lc rgb "red"     lw 2.
+set style line 33 lt 1 lc rgb "blue"    lw 2.
+set style line 14 lt 1 lc rgb "black"   lw 2.
+set style line 24 lt 1 lc rgb "red"     lw 2.5
+set style line 34 lt 1 lc rgb "blue"    lw 2.5
+set style line 15 lt 1 lc rgb "black"   lw 2.5
+set style line 25 lt 1 lc rgb "red"     lw 3.
+set style line 35 lt 1 lc rgb "blue"    lw 3.
+set style line 16 lt 1 lc rgb "black"   lw 3.
+set style line 26 lt 1 lc rgb "red"     lw 3.5
+set style line 36 lt 1 lc rgb "blue"    lw 3.5
+set style line 17 lt 1 lc rgb "black"   lw 3.5
+set style line 27 lt 1 lc rgb "red"     lw 4.
+set style line 37 lt 1 lc rgb "blue"    lw 4.
+set style line 18 lt 1 lc rgb "black"   lw 4
+
+set xtick 100
+set xrange [90:410]
+set yrange [1.e-4:.1]
+unset arrow
+
+plot 'pcnt_volume_wtrboxes.dat' using 1:($2/$5) w lines ls 27 notitle,\
+     'pcnt_volume_wtrboxes.dat' using 1:($3/$6) w lines ls 37 notitle,\
+     'pcnt_volume_wtrboxes.dat' using 1:($4/$7) w lines ls 18 notitle
+

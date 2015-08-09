@@ -1,0 +1,11 @@
+#nohup ./spammsand_invsqrt water_100_h_6311gss.mm   1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_100_h_6311gss.stdout  & 
+#nohup ./spammsand_invsqrt water_200_h_6311gss.mm   1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_200_h_6311gss.stdout  &
+#nohup ./spammsand_invsqrt water_300_h_6311gss.mm   1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_300_h_6311gss.stdout  &
+#nohup ./spammsand_invsqrt water_400_h_6311gss.mm   1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_400_h_6311gss.stdout  &
+nohup ./spammsand_invsqrt water_500_h_6311gss.mm   1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_500_h_6311gss.stdout  &
+#nohup ./spammsand_invsqrt water_600_h_6311gss.mm   1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_600_h_6311gss.stdout  &
+#nohup ./spammsand_invsqrt water_700_h_6311gss.mm   1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_700_h_6311gss.stdout  &
+#nohup ./spammsand_invsqrt water_800_h_6311gss.mm   1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_800_h_6311gss.stdout  &
+#nohup ./spammsand_invsqrt water_900_h_6311gss.mm   1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_900_h_6311gss.stdout  &
+#nohup ./spammsand_invsqrt water_1000_h_6311gss.mm  1.d-3 1.d-5 1.d-1 0.d0 D U R   > water_1000_h_6311gss.stdout &
+

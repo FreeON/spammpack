@@ -1,0 +1,36 @@
+#set term pngcairo dashed enhanced font 'Courier Bold,16'
+#set term pngcairo dashed transparent enhanced font 
+#set terminal postscript enhanced eps
+set terminal postscript eps enhanced color font 'Courier-Bold,16' 
+
+#set size 3.5,2.5 
+
+set output "volume_vs_n3_tubes.eps" 
+
+set logscale x
+set logscale y
+
+set size ratio .75
+set ylabel 'v[{/Symbol t}_0=.1,{/Symbol m}_0=.1]/n^3 ' offset 1.5,0
+set xlabel 'n' offset 0,0.5 
+
+set label 1 "y_k"       tc rgb "red"    at 100, 0.00006
+set label 2 "z_k"       tc rgb "blue"   at 100, 0.0000085
+set label 3 "x_k"       tc rgb "black"  at 100, 0.000018
+
+#set yrange [0.0000000001:1.1]
+set yrange [0.0001:0.001]
+
+set style line 3 lt 1 lc rgb "black"   lw 4
+set style line 1 lt 1 lc rgb "red"     lw 4
+set style line 2 lt 1 lc rgb "blue"    lw 4
+
+set xtick 100
+set xrange [34:130]
+set yrange [1.e-6:.001]
+unset arrow
+
+plot 'volume_vs_n3_tubes.dat' using 1:($2/100.0) w lines ls 1 notitle,\
+     'volume_vs_n3_tubes.dat' using 1:($3/100.0) w lines ls 2 notitle,\
+     'volume_vs_n3_tubes.dat' using 1:($4/100.0) w lines ls 3 notitle
+

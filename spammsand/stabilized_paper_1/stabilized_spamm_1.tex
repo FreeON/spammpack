@@ -29,7 +29,6 @@
 \newcommand{\otm}{ {\scriptstyle \otimes}_{ \! \tau_m } }
 \newcommand{\otmm}{ {\scriptstyle \otimes}_{ \! \tau_{m-1}}}
 
-
 \newtheorem{thm}{\protect\theoremname}
   \theoremstyle{plain}
   \newtheorem{lem}[thm]{\protect\lemmaname}
@@ -38,22 +37,22 @@
   \theoremstyle{plain}
   \newtheorem{prop}[thm]{\protect\propositionname}
 
-
   \providecommand{\lemmaname}{Lemma}
   \providecommand{\propositionname}{Proposition}
   \providecommand{\remarkname}{Remark}
+
 \providecommand{\theoremname}{Theorem}
 
 
 %\hypersetup{pdftitle={FreeON Project Report 1}}
 %\hypersetup{pdfauthor={Matt Challacombe and Nicolas Bock}}
-%\hypersetup{pdfsubject={A SpAMM Stabilized Newton Schulz Preconditioner: Fighting Error with Error}}
+%\hypersetup{pdfsubject={A SpAMM Single Newton Schulz Preconditioner: Fighting Error with Error}}
 
 %\bibstyle{aipnum4-1}
 
 \begin{document}
 
-\title{Stability and Algebraic Locality In Square Root Iteration}
+\title{An $N$-Body Solver for Square Root Iteration}
 
 \author{Matt Challacombe}
 \email{matt.challacombe@freeon.org}
@@ -69,66 +68,53 @@
 \affiliation{Theoretical Division, Los Alamos National Laboratory}
 
 \begin{abstract}
+We develop the Sparse Approximate Matrix Multiply $n$-body solver for first order Newton Schulz iteration of the 
+matrix square root and inverse square root.
+The solver performs an $n$-body occlusion-cull, yeilding a bounded relative error in the matrix-matrix product
+and reduced complexity for problems with structured metric decay.  This complexity reduction cooresponds to 
+the hierarchical resolution of algebraic structures within recursive volume of the product, a consequence of 
+metric locality.  For square root iteration, strongly localized sub-volumes are  culled about 
+plane-diagonals and along the cube-diagonal,  cooresponding to resolution of the identity.  
+
+The main contributions of this paper are bounds on the $\tt SpAMM$ product and 
+demonstration of a new algebraic locality that develops in these sub-volumes with strongly 
+contractive identity iteration. This contraction cooresponds to the deflation of sub-volumes 
+onto plane diagonals of the resolvent, and to a stronger bound on the $\tt SpAMM$ product.  
+
+Also, we carry out a first order Fr\"{e}chet analyses for single and 
+dual channel instances of the square root iteration, and look at bifurcations due to ill-conditioning and a 
+too-agresive $\tt SpAMM$ approximation.  Then, we show that extreme $\tt SpAMM$ approximations and strongly contractive 
+identity iteration can be achieved through iterated regularization, and demonstrate the potential for orders of magnitude 
+acceleration with product representation of the inverse factor.   
+
 \end{abstract}
 
 \maketitle
 \section{Introduction}
+In many areas of application, long range, high value correlations lead to matrix equations with decay properties.
+By decay, we mean an approximate inverse relationship between matrix elements and an associated distance; 
+this may be a simple inverse relationship between matrix elements and the Cartesian distance between
+corresponding support functions, or it may involve a non-Euclidean distance, 
+ {\em  e.g.}~a generalized measure between character strings in a training library \cite{}. 
 
-In many areas of application, finite correlations lead to matrices
-with decay properties.  By decay, we mean an approximate (perhaps
-bounded \cite{}) inverse relationship between matrix elements and an
-associated distance; this may be a simple inverse 
-relationship between matrix elements and the Cartesian distance between
-corresponding support functions, or it may involve a generalized distance, {\em
-  e.g.}~a generalized measure between character strings.  In electronic
-structure, correlations manifest in decay properties of the gap
-shifted matrix sign function, as projector of the effective
-Hamiltonian (Fig.~\ref{figure1}).  More broadly, matrix decay
-properties may correspond to statistical matrices \cite{penrose1974,
-  voit00, Anselin2003, Hardin2013, Krishtal2014}, including learned
-correlations in a generalized, non-orthogonal metric \cite{}.  More
-broadly still, problems with local, non-orthogonal support are often
-solved with congruence transformations of the matrix inverse square
-root \cite{Lowdin56, naidu11} or a related factorization
-\cite{Krishtal2014}; these transformations correlate local support
-with a representation independent form, {\em eg.}~of the eigenproblem.
-Interestingly, the matrix sign function and the matrix inverse square
-root function are related by Higham's identity:
+Matrix equations with decay have history and recent development in the statistics and statistical physics litterature
+\cite{penrose1974,voit00, Anselin2003, Hardin2013, Krishtal2014}.   Also recently, methods for meshfree interpolation 
+are demonstrating remarkable predictive power through delocalized correlations and cooresponding 
+ill-conditioned matrix equations with extreme slow decay \cite{}, a problem equivalent to the LCAO Gaussian basis problem 
+in quantum chemistry \cite{}.  Generally, local support functions are correlated 
+through Lowdin's symmetric orthogonalization based on the matrix inverse square root \cite{Lowdin56, naidu11}, 
+yeilding representation independent matrix equations. 
+In electronic structure, important long-range correlations manifest in slow decay properties 
+of the gap shifted matrix sign function, as projector of the effective Hamiltonian (Fig.~\ref{figure1}).  
+Both of these matrix problem with decay, the matrix sign function and the matrix inverse square root, 
+are related by Higham's identity:
 \begin{equation}
 \rm{sign} \left( \begin{bmatrix} 0 & \mat{s}      \\ \mat{I}       & 0\end{bmatrix} \right)  =
                  \begin{bmatrix} 0 & \mat{s}^{1/2} \\ \mat{s}^{-1/2} & 0\end{bmatrix}  .
 \end{equation}
-A complete overivew of matrix function theory and computation is given
-in Higham's enjoyable reference \cite{Higham08}.
+The theory and computation of these matrix functions is given in Higham's reference \cite{Higham08}.
 
-A well conditioned matrix $\mat{s}$ may often correspond to matrix
-sign and inverse square root functions with rapid exponential decay,
-and be amenable to the sparse matrix approximation
-$\bar{\mat{s}} = \mat{s}+ \mat{\epsilon}^{\mat{s}}_\tau$,
-where $\mat{\epsilon}^{\mat{s}}_\tau$ is the error introduced
-according to some criterion $\tau$.  Supporting this approximation are
-useful bounds to matrix function elements \cite{Benzi99b, }.
-The criterion $\tau$ might be a drop-tolerence,
-$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, |s_{ij}|<\tau \}$,
-a radial cutoff,
-$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, \lVert \mat{r}_i - \mat{r}_j \rVert > \tau \}$,
-or some other approach to truncation, perhaps involving a sparsity
-pattern chosen {\em a priori}.
-Then, conventional computational kernels may be employed, such as the
-sparse general matrix-matrix multiply ($\tt{SpGEMM}$)
-\cite{Gustavson78, Toledo97, challacombe00, bowler00}, yielding fast
-solutions for multiplication rich iterations and a modulated {\bf
-  (what do you mean with modulated?)} fill-in.
-These and related incomplete/inexact approaches to the computation of
-sparse approximate matrix functions often lead to ${\cal O}(n)$
-algorithms, finding wide use in technologically important
-preconditioning schemes, the information sciences, electronic
-structure and many other disciplines. Comprehensive surveys of these
-methods in the numerical linear algebra are given by Benzi
-\cite{Benzi99,Benzi02}, and by Bowler \cite{Bowler12} and Benzi \cite{Benzi13}
-for electronic structure.
-
-\begin{figure}[t]\label{figure1}
+\begin{figure}[h]\label{figure1}
  \includegraphics[width=3.5in]{decay_picture.png}
   \caption{Examples from electronic structure of decay for the
     spectral projector (gap shifted sign function) with respect to
@@ -138,53 +124,78 @@ for electronic structure.
     ranged, from exponential (insulating) to algebraic (metallic). }
 \end{figure}
 
-Because the truncated multiplication is controlled only by absolute,
-additive errors in the product,
+
+A well conditioned matrix $\mat{s}$ may often correspond to matrix
+sign and inverse square root functions with rapid exponential decay,
+and be amenable to {\em ad hoc} matrix truncation or ``sparsification'', 
+$\bar{\mat{s}} = \mat{s}+ \mat{\epsilon}^{\mat{s}}_\tau$,
+where $\mat{\epsilon}^{\mat{s}}_\tau$ is the error introduced
+according to some criterion $\tau$.  
+%Supporting this approximation are useful bounds to matrix function elements \cite{Benzi99b, }.
+The criterion $\tau$ might be a drop-tolerence,
+$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, |s_{ij}|<\tau \}$,
+a radial cutoff,
+$\epsilon^{\mat{s}}_{\tau} = \{-s_{ij}*\hat{\mat{e}}_i \, | \, \lVert \mat{r}_i - \mat{r}_j \rVert > \tau \}$,
+or some other approach to truncation, perhaps involving a sparsity
+pattern chosen {\em a priori} for computational expedience.
+Then, the sparse general matrix-matrix multiply ($\tt{SpGEMM}$)
+\cite{Gustavson78, Toledo97, challacombe00, bowler00} may be employed, yielding fast
+solutions for multiplication rich iterations with fill-in modulated by truncation.
+%These and related incomplete/inexact approaches to the computation of
+%sparse approximate matrix functions often lead to ${\cal O}(n)$
+%algorithms, finding wide use in technologically important
+%preconditioning schemes, the information sciences, electronic
+%structure and many other disciplines. 
+Comprehensive surveys of these
+methods in the numerical linear algebra are given by Benzi
+\cite{Benzi99,Benzi02}, and by Bowler \cite{Bowler12} and Benzi \cite{Benzi13}
+for electronic structure.
+
+Often however, matrix truncation is ineffective for ill-conditioned problems, 
+because of slow decay, and because of increased numerical sensitivities to poorly 
+controled (absolute) truncation errors, {\em e.g.}~in the matrix-product:
 \begin{equation} \label{sparseapprox}
 \overline{ \mat{a} \cdot \mat{b} }\; = \; \mat{a}\cdot\mat{b} \; +\; \mat{\epsilon}^{\mat{a}}_\tau \cdot \mat{b} \;+\;
- \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2)
+ \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2) \, .
 \end{equation}
-achieving sparse, stable and rapidly convergent iteration for
-ill-conditioned problems can be challenging \cite{}.  In cases of
-extreme degeneracy, hierarchical semi-seperable (reduced rank)
-algorithms can offer effective complexity reduction \cite{}.  However,
-many practical cases are somewhere in-between sparse and meaningfully
-degenerate regimes; effectively dense but without an exploitable
-reduction in rank.  This is the case in electronic structure for
-strong but non-metallic correlation, {\em e.g.}~towards the Mott
-transition \cite{}, and also in the case of local atomic support
-towards completeness \cite{Others, Hutter, Gigi}.
+An alterative approach is to find a reduced rank approximation closed under the opperations of interest \cite{HSS}. 
+However, compression to a reduced rank may be expensive if the rank is not much much smaller than the dimension.
+Both of these methods, truncation and rank reduction, are focused on matrix data as the target for compresion.
+In this contribution, our target for compression is instead the matrix product itself.  For problems with
+decay, we show that an underlying metric locality, together with a new form of algebraic locality, 
+can lead to complexity reduction under contractive iteration and the $n$-body occlusion-cull. The organization of 
+this paper follows.
 
-\pagebreak
+\tableofcontents
 
-\section{Sparse Approximate Matrix Multiplication}
+\section{Sparse Approximate Matrix Multiplication ($\tt SpAMM$)}
 
 In this contribution, we consider an $N$-body approach to the
-approximation of matrix functions with decay, based on the quadtree
-data structure \cite{wise, samet}
+approximation of matrix functions with decay, based on the quadtree data structure \cite{wise, samet}
 \begin{equation}
 \mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
 \end{equation}
 and orderings that are locality preserving \cite{}.  Orderings that
-preserve data locality are well developed in the database theory
+preserve data locality are well developed and {\bf \em generic} in the database theory
 \cite{}, providing fast spatial and metric queries.  Locality
-enabled, fast data access is central to the $N$-Body approximation
+enabled, fast data access is central to  $b$-body approximations
 \cite{}, and an important problem for enterprise \cite{} and runtime
-systems \cite{}, with memory hierarchies becoming increasingly
+systems \cite{}, moreso with memory hierarchies becoming increasingly
 asynchronous and decentralized \cite{cache}.  For matrices with
 decay, orderings that preserve locality lead to blocked-by-magnitude
 matrix structures with well segregated neighborhoods, inhabited by
 matrix elements of like size, and efficiently resolved by the quadtree
 data structure \cite{}.
 
+\subsection{Occlusion-Cull }
 
-\subsection{A Bounded Occlusion and Cull }
-
-$\tt SpAMM$ has evolved from a row-coloumn oriented skipout \cite{} to recursive occlusion and culling \cite{}
-based on sub-multiplicative norms $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ and the 
-Cauchy-Schwarz inequality,  $\lVert \mat{a}\cdot \mat{b} \rVert < \lVert \mat{a} \rVert \lVert \mat{b} \rVert$ \cite{kahan}.
-Occlusion involves avoiding work, whilst culling is the collecting of tasks. 
-Here, we ammend the previous (n\"{a}ive) occlusion and cull with the following recursion:
+The Sparse Approximate Matrix Multiply ($\tt SpAMM$) carries out occlusion-culling to find only the
+most important sub-volumes in an approximate matrix product. 
+$\tt SpAMM$ has evolved from a row-coloumn oriented skipout mechanism within the
+BCSR and DBCSR structures \cite{}, to hierachical approaches based on the quadtree and related to 
+the occlusion-culling found in advanced mechanics and graphics methodologies \cite{}, 
+with occlusion the avoidence of unessesary tree-work and culling the collection of significant tasks. 
+Here, we ammend the $\tt SpAMM$ occlusion-cull with the recursion:
 \begin{widetext}
 \begin{equation}
 \mat{a}^{i} \ot \mat{b}^{i} =
@@ -201,17 +212,18 @@ Here, we ammend the previous (n\"{a}ive) occlusion and cull with the following r
               \right.  \, ,
 \end{equation}
 \end{widetext}
-which bounds the relative occlusion error,  
+which bounds the relative occlusion error
 \begin{equation}\label{bound}
-\frac{\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert}{N^2 }  \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
+\frac{\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert}{n^2 }  \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
-occuring in the approximate product:
+that occurs in the approximate product
 \begin{equation}
 \widetilde{\mat{a}\cdot \mat{b}} \,  \equiv \, \mat{a} \ot \mat{b} \,
-  = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} \,.
+  = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} \, ,
 \end{equation}
+where $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ is a sub-multiplicative norm \cite{}.
 
-\subsection{Proof}
+\subsection{Bound}
 
 We now prove (\ref{bound}).
 
@@ -227,8 +239,6 @@ and
 \left\Vert A\otimes_{\tau}B-A\cdot B\right\Vert _{F}\leq n^{2}\tau_{A,B}.
 \]
 \end{prop}
-
-
 
 \begin{proof}
 
@@ -308,22 +318,21 @@ $\tt SpAMM$ is a $n$-body method for fast matrix multiplication, related to the
 generalized methods popularized by Grey \cite{Gray2001,Gray2003}. In our development,
 generalization reflects the {\em genericity} \cite{} of recursive data access \cite{}, 
 enabling range querries, metric querries, higher dimensional querries and so on, with common frameworks, 
-structures and runtimes.  Recently for example, we generalized the double (left-right) metric querry in 
-Eq.~(\ref{}) to hextree metric querries of the exact Fock exchange \cite{}.  
+structures and runtimes.  So far, we have prototyped $n$-body solvers for mainstay problems in modern electronic structure theory 
+\cite{ostlundszabo, wyang}, 
+involving Fock exchange \cite{}, semi-local exchange-correlation functionals \cite{}, 
+the Hartree (Coulomb) interaction \cite{}, matrix sign function \cite{} and the matrix inverse square root (this work).
+This contribution is cornerstone for the simplification and evolution of these solvers.  
 
-Also, $n$-body methods offer well established protocols for turning spatial and metric locality into 
-data and temporal locality \cite{}; recently, x, y  and Yellik showed perfect strong scaling and communication optimality 
-for pairwise $n$-body methods \cite{Yellik}.   Bridging the gap between 
+Top-down $n$-body recursion and breadth-first map-reduction may be viewed as two sides of 
+the same problem \cite{Aluru}.  Emergent data frameworks and 
+functional programming languages that support generic recursion and map skelitinizations may enable 
+early exploitation of commodity (decentralized) concurence by scientific $n$-body solvers, 
+as well as software sustainability \cite{softwaresustainanbilty}.
+For centralized, distributed architectures, $n$-body methods offer well established protocols for turning spatial and metric locality into 
+data and temporal locality \cite{}.  Recently, Driscoll {\em et. al} showed perfect strong scaling and communication optimality 
+for pairwise $n$-body methods \cite{Driscoll13}.   Bridging the gap between 
 $n$-body solver and fast matrix multiplication, we recently demonstrated strong scaling for fast matrix multiplication ($\tt SpAMM$) \cite{}.  
-The introduction of algebraic and strong Euclidean locality in this work may further enhance high performance implementaitons. 
-
-%As noted by Aluru \cite{}, the top-down $n$-body model and breadth-first map-reduction are equivalent \cite{}, offering
-%the potential febraic and strong Euclidean locality developed in this work may further enhance high performance implementaiton. 
-%or alignment with emergent enterprise frameworks \cite{} and functional programming 
-%languages that support generacity \cite{}. Language suppo
-%with very simple (skeletonized) frameworks, lowering barriers to entry, enhancing performance towards decentralized memory landscapes, 
-%and following a sustainable commodity trend \cite{softwaresustainanbilty} that offers 
-%increasingly cheap compute cycles over the next few decades \cite{}. 
 
 This work offers a data local alternative to fast non-deterministic methods for sampling the product, 
 which include sketching \cite{Sarlos2006,Drineas2006,Mahoney2012,Pagh2013,Sivertsen2014,Woodruff2015},
@@ -334,19 +343,19 @@ $\tt SpAMM$ also employs on the fly wheighted sampling,  but with
 compresion through locality, brought about by algebraic correlations (towards identity) and also in the
 metric structure, through strong Euclidean locality.
 
-Methods that achieve compression in the stream of product intermediates are different from reduced rank algorithms that achieve 
-matrix compression in a step that preceeds multiplication (seperability)  \cite{}.   However, matrix compressions are 
-generally compatible with the quadtree, as are additional fast (generalized) solvers that add complex functionality ({\em e.g.} 
-in electronic structure theory \cite{}).  Thus, generality 
-and interoperability may enable deeply layered, thin and generic solvers easy access to in place data. 
-Further, language support may provide simple (skeletonized) frameworks for generic recursion, 
-offering opportunities to greatly simplify codebase at the systems level, 
-lowering barriers to entry and enhancing concurence (in the Erlang sense). 
+% Methods that achieve compression in the stream of product intermediates are different from reduced rank algorithms that achieve 
+% matrix compression in a step that preceeds multiplication (seperability)  \cite{}.   However, matrix compressions are 
+% generally compatible with the quadtree, as are additional fast (generalized) solvers that add complex functionality ({\em e.g.} 
+% in electronic structure theory \cite{}).  Thus, generality 
+% and interoperability may enable deeply layered, thin and generic solvers easy access to in place data. 
+% Further, language support may provide simple (skeletonized) frameworks for generic recursion, 
+% offering opportunities to greatly simplify codebase at the systems level, 
+% lowering barriers to entry and enhancing concurence (in the Erlang sense). 
 
 
 Finally, previous work on the scaled NS iteration has heavily influenced this work.  Formost is 
 Higham, Mackey, Mackey and T (HMMT; Ref.~\cite{}) masterwork on convergence of NS iteration under all groups,
-wherein HMMT also develop Fr\"{e}chet analyses for stable square root iteration at the fixed point.
+wherein HMMT also develop Fr\"{e}chet analyses for single square root iteration at the fixed point.
 Also, important inspiration comes from Chen and Chow's \cite{} approach to scaled NS iteration for ill-conditioned problems \cite{}, 
 and from the Helgaker groups work on NS iteration, whose notation we follow in part \cite{}.  
 
@@ -366,14 +375,9 @@ There are two common, first order NS iterations; the sign iteration
 and the square root iteration, related by the square, $\mat{I}\left(
 \cdot \right)= {\rm sign}^2\left( \cdot \right) $.  These equivalent
 iterations converge linearly at first, then enter a basin of stability
-marked by super-linear convergence.  Our interest is to access this
-basin with the most permissive $\tau$ possible, building a foundation
-for future refinement
-%, {\em e.g.}
-at a reduced cost and with a higher precision ($\tau \rightarrow 0$)
-\cite{MChallacombe16}.
+marked by super-linear convergence.  
 
-\subsection{Sign iteration}
+\subsection{Sign Iteration}
 
 For the NS sign iteration, this basin is marked by a behavioral change
 in the difference $\delta \mat{X}_k = \widetilde{\mat{X}}_k -\mat{X}_k
@@ -388,36 +392,42 @@ bounds on this iteration have been derived by Bai and Demmel
 asymptotic bounds.  The automatic stability of sign iteration is a
 well developed theme in Ref.\cite{Higham08}.
 
-\subsection{Square root iteration}
+\subsection{Square Root Iteration}
 
 In this work, we are concerned with resolution of the identity \cite{}
 \begin{equation}
 \mat{I} \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s}^{-1/2} \, ,
 \end{equation}
-and the cooresponding canonical (dual) square root iteration \cite{};
+and its low-complexity computation with fast methods.  
+
+Starting with eigenvalues rescaled to the domain $(0,1]$ with the easily obtained 
+largest eigenvalue,   $\mat{s} \leftarrow \mat{s}/s_{N-1}$, and with $\mat{z}_0=\mat{I}$ and 
+$\mat{x}_0=\mat{y}_0=\mat{s}$, the cooresponding canonical,  ``dual'' channel square root iteration is:
 \begin{eqnarray}\label{cannonical}
 \mat{y}_k &\leftarrow& h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot \mat{y}_{k-1}  \nonumber \\
 \mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \; ,
 \end{eqnarray}
-with eigenvalues in the proper domain aggregated towards 0 or 1 by the
-NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha
-\mat{x} \right)$ \cite{}.  Then, starting with $\mat{z}_0=\mat{I}$ and
-
-
- $\mat{s} \leftarrow \mat{s}/s_{N-1}$, 
-
-$\mat{x}_0=\mat{y}_0=\mat{s}$, ${\mat{y}}_k \rightarrow
-\mat{s}^{1/2}$, ${\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and
-${\mat{x}}_k \rightarrow {\mat{I}}$.  As in the case of sign
-iteration, this dual iteration was shown by Higham, Mackey, Mackey and
-Tisseur \cite{Higham2005} to remain bounded in the superlinear regime,
-by idempotent Frechet derivatives about the fixed point
+converging as ${\mat{y}}_k \rightarrow \mat{s}^{1/2}$, ${\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and
+${\mat{x}}_k \rightarrow {\mat{I}}$, with eigenvalues aggregated towards 0 or 1 by 
+the NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$ \cite{}.  
+As in the case of sign iteration, this cannonical iteration was shown by Higham, Mackey, Mackey and
+Tisseur \cite{Higham2005} to remain strongly bounded in the superlinear regime, by idempotent Frechet derivatives about the fixed point
 $\left(\mat{s}^{1/2},\mat{s}^{-1/2}\right)$, in the direction $\left(
 \delta \mat{y}_{k-1} , \delta \mat{z}_{k-1} \right)$:
 \begin{eqnarray}
 \delta \mat{y}_k &=& \frac{1}{2} \delta \mat{y}_{k-1} - \frac{1}{2} \mat{s}^{1/2} \cdot \delta \mat{z}_{k-1} \cdot \mat{s}^{1/2} \\
 \delta \mat{z}_k &=& \frac{1}{2} \delta \mat{z}_{k-1} - \frac{1}{2} \mat{s}^{-1/2} \cdot \delta \mat{y}_{k-1} \cdot \mat{s}^{-1/2} \;.
 \end{eqnarray}
+In addition to the dual channel instance, we also consider the ``single'' channel version of square root iteration,
+\begin{eqnarray}\label{single}
+\mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right] \; , \nonumber \\
+\mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k} \; .
+\end{eqnarray}
+
+\subsection{Mapping}\label{map}
+
+$\ot$ is also a map.  atm, stocastic unrpredictable, but really deterministic.  excersize Control
+
 In this contribution, we consider another aspect of convergence,
 namely the (hopefully) linear approach towards stability of the
 iteration
@@ -428,7 +438,13 @@ iteration
 \end{equation}
 made difficult by ill-conditioning and a sketchy $\ot$.
 
-\subsection{the NS map}
+
+Then, using
+\begin{equation}
+  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
+=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
+\end{equation}
+
 
 Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the
 rate of progress towards idempotence.  As recently shown by Jie and
@@ -444,10 +460,24 @@ approximate algebra like $\tt SpAMM$, the potential for eigenvalues to
 fluctuate out of the domain of convergence must be considered.  This
 is addressed in Section \ref{}.
 
-\subsection{Ill-conditioning, Stability and Implementation}
 
-There are a number of nominally equivalent instances of the square root iteration, related by commutations and transpositions. 
-However, these instances may have very different stability properties,  controled to first order by the Frechet derivatives
+\section{Error Flows in Square Root Iteration}
+
+\subsection{Stability}
+
+% There are a number of equivalent instances of the square root iteration, related by commutations and transpositions. 
+% Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm single}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$.  
+% However, with ill-conditioning and in only double precision, these two instances may diverge rapidly due to compounding  errors.
+% In the case of the dual iteration, the $\widetilde{\mat{y}}^{\rm dual}_k$ channel does not retain contact with the eigenvectors of $\mat{s}$, 
+% and can diverge easily from this basis. In the single instance, conection with $\mat{s}$ is retained at each step, but at the price 
+% the update involving a broad spectral resolution, {\em e.g.} involving $\mat{s}^{-1/2} \cdot \mat{s}$  at convergence. 
+
+Stability in the square root iteration is determined  by the differential 
+\begin{equation} \label{firstorderdual}
+\delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1}
+                 \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2) 
+\end{equation}
+which must remain bounded below one to avoid divergence.   The cooresponding Fr\"{e}chet derivatives are
 \begin{equation}
   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}
 = \lim_{\tau \rightarrow 0} \slantfrac{ \mat{x} \left( \mat{y}_{k-1} + \tau \delta \widehat{\mat{y}}_{k-1} ,  {\mat{z}}_{k-1}  \right)
@@ -458,57 +488,23 @@ and
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} = \lim_{\tau \rightarrow 0}
 \slantfrac{ \mat{x} \left( {\mat{y}}_{k-1} , \mat{z}_{k-1} +\tau  \delta \widehat{\mat{z}}_{k-1} \right) - \mat{x}_k   }{\tau}  \, , 
  \end{equation}
-along the unit directions of the previous errors $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$, corresponding 
-to the associated displacement magnitudes $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$.
-Then, the differential 
-\begin{equation} \label{firstorderdual}
-\delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1}
-                 \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2) 
-\end{equation}
-determines the total first order stability. 
-
-This formulation allows to consider orientational effects involving eigenvector fidelity and convergence of 
-derivatives towards zero seperately from displacement effects involving accumulation and $\tt SpAMM$ source errors.
-In some cases, instabilities may be associated with derivatives that do not vanish towards identity, yeilding an unbounded iteration \cite{}.
-In other instances, an instability may be associated with rapidly increasing displacements, due to a too large $\tau$.  Instability 
-may also arize due to the numerical corruption of the eigenvectors, also resulting in derivatives that vanish too slowly (or blow up altogether).    
-
-The potential for
-instability is increased with ill-conditioning through the terms $\lVert \mat{z}_{k} \rVert  \rightarrow \sqrt{\kappa\left(\mat{s} \right)}$.
-Also for ill-conditioned systems, scaling is nessesary to accelerate convergence.  However with scaling, increasing the map 
-derivative $h'_\alpha$ can also further enhance the rate of error accumulation. 
-
-In following sections, we'll examine how these effects differ from the ideal (double precision) cannonical (dual) square root iteration
-for ill-conditioned systems and in the strongly non-associative, sketchy $\ot$ regime corresponding to permisive values of $\tau$.
-At this early stage, we are interested in hazzards and opportunities associated with
-different formulations and implementational details.   In addition to deviations from the full precision dual instance,
-we will develop the  ``stabilized'' instance,
-\begin{eqnarray}\label{stabilized}
-\mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right] \; , \nonumber \\
-\mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k-1} \; ,
-\end{eqnarray}
-with the corresponding differential;
-\begin{equation} \label{firstorderstab}
+along unit directions of the previous errors $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$, by an ammount
+determined by the displacements $\delta y_{k-1} = \lVert \delta \mat{y}_{k-1} \rVert$  and  $\delta z_{k-1}=\lVert \delta \mat{z}_{k-1} \rVert$.
+In the single instance, we have simply:
+\begin{equation} \label{firstordersingle}
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2)  \, .
 \end{equation}
 
-Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm stab}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$ 
-is also equivalent to $\mat{y}^{\rm naive}_k \equiv \mat{z}_{k} \cdot \mat{s}$.
-However, with ill-conditioning and in only double precision, these two instances may diverge due to non-associative errors that rapidly compound.
-In the case of the duals iteration under $\tt SpAMM$ approximation, the $\widetilde{\mat{y}}^{\rm dual}_k$ channel does not retain contact 
-with the eigenvectors, span $\mat{s}$, whilst the stab instance does.  
-In the duals iteration, the $\widetilde{\mat{y}}_k$  $\tt SpAMM$ update 
-is mild, with errors in the relative product remaining well conditioned.  
-In the stab instance, conection with $\mat{s}$ is retained at each step, but at the price of the 
-$\mat{y}^{\rm stab}_k$ update involving magnitudes that vary widely in the $\tt SpAMM$ product.     
+This formulation makes plain changes about the resolvent, seperating orientational effects 
+of the directional derivatives, set mostly by the underlying exact linear algebra, from 
+changes to error displacements, which involve both the action of derivatives on previous errors,  as well as 
+the $\tt SpAMM$ occlusion errors local to the product.
 
-\section{Error Flows in Square Root Iteration}
 
-\subsection{The cannonical (dual) instance}
+\subsection{Fr\"{e}chet Derivatives}
+%\subsubsection{Dual}
  
-Refering back to Eq.~( \ref{firstorderdual} ), we develop the Fr\'{e}chet analyses \cite{} with the goal of understanding
-the contractive approach to identity in competition with error accumulations and $\tt SpAMM$ sources.
-Of interest are the derivatives 
+In the dual instance, Fr\"{e}chet derivatives occuring in Eq.~(\ref{firstorderdual}) are:
 
 % \begin{equation}
 %   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}
@@ -542,21 +538,20 @@ Of interest are the derivatives
 % \end{multline}
 % yeilding
 
-
-\begin{multline}
+\begin{multline}\label{dxdy}
+ \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1}  \cdot \mat{z}_{k} \\
+\qquad + \mat{y}_k \cdot  \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\
+\qquad \qquad +  \mat{y}_{k} \cdot  \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1} \, ,
+\end{multline}
+and 
+\begin{multline}\label{dxdz}
   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} = h_\alpha \left[ \mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k} \\
 +  h'_\alpha  \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \cdot  \mat{y}_{k-1} \cdot  \mat{z}_{k} \\
  + \mat{y}_{k} \cdot \mat{z}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1}  \, .
 \end{multline}
 
 
-\begin{multline}
- \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1}  \cdot \mat{z}_{k} \\
-\qquad + \mat{y}_k \cdot  \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\
-\qquad \qquad +  \mat{y}_{k} \cdot  \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1} \, .
-\end{multline}
-
-Closer to a fixed point orbit,  $\mat{y}_k \cdot \mat{z}_{k-1} \rightarrow \mat{I}$, $\mat{y}_{k-1} \cdot \mat{z}_{k} \rightarrow \mat{I}$,
+Closer to the fixed point orbit,  $\mat{y}_k \cdot \mat{z}_{k-1} \rightarrow \mat{I}$, $\mat{y}_{k-1} \cdot \mat{z}_{k} \rightarrow \mat{I}$,
 $h_\alpha \left[ \mat{x}_{k} \right] \rightarrow \mat{I}$ and $h'_\alpha \rightarrow - \frac{1}{2}$ \cite{higham2005}.  Then,
 
 \begin{equation} \label{yorbit}
@@ -566,137 +561,584 @@ and
 \begin{equation} \label{zorbit}
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} \rightarrow \left( \mat{y}_k-\mat{y}_{k-1} \right) \cdot \delta \widehat{\mat{z}}_{k-1} .
 \end{equation}
-Thus, contributions along $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$ are tightly shut down in the 
-region of superlinear convergence.  Achieving a contractive fixed point orbit, however requires that the three terms in Eq.~(\ref{}),  
-with potentially different error accumulations and $\tt SpAMM$ sources, must cancel faster than $\delta y_{k-1}$ 
-and $\delta z_{k-1}$ accumulate.
+Likewise, in the single channel instance:
+\begin{multline}
+ \mat{x}_{\widehat{\mat{z}}_{k-1}} \rightarrow  \left(  \mat{z}_{k} - \mat{z}_{k-1} \right)^\dagger \cdot \mat{s} \cdot \delta \widehat{\mat{z}}_{k-1} \\
++  \, \delta \widehat{\mat{z}}^\dagger_{k-1} \cdot  \mat{s}  \cdot \left(  \mat{z}_{k} - \mat{z}_{k-1} \right)  \, .
+\end{multline}
 
-In this analysis, we've seperated the directional component of the error from its distance, because in addition to the
-previous compounding error, each displacement contains also a first order $\tt SpAMM$ source error.  Its simpler to 
-consider these effects serpately, at least in this first contribution. 
+About the fixed point then, error flow in the $\mat{y}_k$ and the $\mat{z}_k$ channels is tightly quenched,
+cooresponding to $\mat{x}_{\delta \widehat{\mat{x}}_{k-1}} \rightarrow  \mat{I}$  and identity iteration \cite{higham2005}.
 
-To understand $\delta \mat{z}_{k-1}$, we partially unwind the approxinate  $\widetilde{\mat{z}}_{k-1}$;
-%\begin{equation}
+\subsection{Displacements}
+Countering oritentational convergence,  determined almost entirely by the underlying exact itations, is the 
+the compounding displacement error, determined by $\tt SpAMM$ occlusion in each of three products, at each step, and also
+involving previous errors.  Here, we look at just the displacement $\delta \mat{z}_{k-1}$,
+which has the largest potential for divergence as we argue here and show numerically in the following section. 
+
+Including the $\tt SpAMM$ error in the $\widetilde{\mat{z}}_{k-1}$ update we have:
 \begin{eqnarray} \label{widetildez}
- \widetilde{\mat{z}}_{k-1} &=&  \widetilde{\mat{z}}_{k-2}  \, \ot \, h_\alpha[\widetilde{\mat{x}}_{k-2}]\\
+ \widetilde{\mat{z}}_{k-1} &=&  \widetilde{\mat{z}}_{k-2}  \, \ot \, h_\alpha[\widetilde{\mat{x}}_{k-2}]\\ \nonumber
 &=& \Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau
-+ \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right]
++ \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right] \, .
 %\end{equation}
 \end{eqnarray}
-Then, using
-\begin{equation}
-  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
-=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
-\end{equation}
-and taking $\mat{z}_{k-1}$ from both sides, we find  
+Then, with $ h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
+=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2}$, and taking $\mat{z}_{k-1}$ from both sides, we find  
 %Eq.~(\ref{widetildez}) yeilds 
 \begin{multline}
  \delta {\mat{z}}_{k-1} =\Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau
 \\ +\delta \mat{z}_{k-2} \cdot h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]
 + \mat{z}_{k-2} \cdot h'_\alpha \delta \mat{x}_{k-2}  \, ,
 \end{multline}
-bounded by 
+which is bounded by 
 % \begin{multline}
 %  \delta {z}_{k-1} <
 % \lVert \mat{z}_{k-2} \rVert \left( \;  \tau \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
 % + h'_\alpha \delta {x}_{k-2} \right)  \\ +
 % \delta {z}_{k-2}  \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2}  \right] \rVert 
 % \end{multline}
- \begin{multline}
+ \begin{multline}\label{zdispalcementbound}
   \delta {z}_{k-1} <
- \lVert \mat{z}_{k-2} \rVert \left( \tau \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
+ \lVert \mat{z}_{k-2} \rVert \left( \tau  \, \sigma_n  \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
  + h'_\alpha  \delta y_{k-2} \lVert z_{k-2} \rVert \right)  \\ 
  + \delta {z}_{k-2} \left( \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2}  \right] \rVert  + \lVert y_{k-2} \rVert \right) .
  \end{multline}
 
+In Eq.~(\ref{zdispalcementbound}),  the term $h'_\alpha  \delta y_{k-2} { \lVert \mat{z}_{k-2} \rVert }^2$ is volitile, tending towards
+$\delta y_{k-2} \, \kappa(\mat{s})/2$.  Because of this sensitivity, and because the $\mat{y}_k$ product channel maintains fidelity 
+of the starting eigen-basis, we single out this ``sensitive'' product for a higher level of precision; $\tau_s \ll \tau$.
+Still, we expect different behavior from the single instance $\widetilde{\mat{y}}_{k-1} = \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ots \, \mat{s}$,
+and the dual instance $\widetilde{\mat{y}}_{k-1} =  h_\alpha [\widetilde{\mat{x}}_{k-1}]  \ots \widetilde{\mat{y}}_{k-1} $.
+This is because the spectral product is broader (resolving larger and smaller numbers) 
+in the single instance and narrower in the dual instance.
 
-primary error channels contibuting to $\delta z_{k-1}$ are through the first order $\tt SpAMM$ error
-$ \tau \lVert \mat{z}_{k-2} \rVert \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]\rVert$
-and the volatile term $h'_\alpha  \delta y_{k-2} { \lVert \mat{z}_{k-2} \rVert }^2$.
+\subsection{Most Approximate but Still Stable}
 
-%  \begin{eqnarray}
-% \widetilde{\mat{y}}_{k-1}&=&
-% h_\alpha [ \widetilde{\mat{x}}_{k-2}] \, \ots \, \widetilde{\mat{y}}_{k-2}  \\
-% &=&  \mat{\Delta}^{  h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} }_{\tau_s}  \, + \,
-%      h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2}
-% \end{eqnarray}
-% \begin{multline}
-% \delta \mat{y}_{k-1}= \mat{\Delta}^{h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \mat{y}_{k-2} }_\tau  \\ +
-% h'_\alpha \delta \mat{x}_{k-2} \cdot \mat{y}_{k-2}
-% + h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{y}_{k-2} \, ,
-% \end{multline}
+\begin{figure}[h]
+\includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual.eps}
+\caption{Derivatives, displacements and trace error of the unscaled dual iteration.
+Derivatives are full lines, whilst the displacements cooresponding to $\tau_s=\{10^{-8}, 10^{-9}, 10^{-10}\}$
+are the dashed lines.  The trace error is shown as a full black line. } \label{flow_noscale_dual}
+\end{figure}
 
-corresponding to  basis corruption and controlled by $\ots$, with $\tau_s \ll \tau$. 
-As above, we can unwind this sensitive term, to find 
-\begin{multline}
-\delta y_{k-2} <   \lVert \mat{y}_{k-3} \rVert  \left( \tau_s \lVert h_\alpha [ \widetilde{\mat{x}}_{k-3}] \rVert + h'_\alpha \delta z_{k-3} \right )\\
-+  \delta y_{k-3}  \left( \lVert \widetilde{\mat{z}}_{k-3}]  \rVert + \lVert h_\alpha [ \widetilde{\mat{x}}_{k-3}]  \rVert
-  \right)
-\, .
-\end{multline}
+\begin{figure}[h] 
+\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual.eps}
+\caption{Derivatives, displacements and the approximate trace of the scaled dual iteration.
+Derivatives are full lines, whilst the displacements cooresponding to $\tau_s=\{10^{-8}, 10^{-9}, 10^{-10}\}$
+are the dashed lines.  The trace error is shown as a full black line. }\label{flow_unscaled_dual}
+\end{figure}
 
+\begin{figure}[h]
+\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab.eps}
+\caption{Derivatives, displacements and the approximate trace of the scaled single iteration.
+Derivatives are full lines, whilst the displacements cooresponding to $\tau_s=\{10^{-3}, 10^{-4}, 10^{-5}\}$
+are the dashed lines.  The trace error is shown as a full black line. }\label{flow_scaled_dual}
+\end{figure}
 
-\subsection{The stabilized  (stab) instance}
+Experiments were carried out on the ill-conditioned $(\kappa(\mat{s})=10^{10})$ nanotube metric-matrices described in Appendix~\ref{data}.
+We picked  $\tau ={\tt .001}$ and block size $b = 64$.  Then, we looked at stability with respect to the tighter $\tau_s$ threshold, 
+the directional derivatives and the trace error.   
 
-Here, we carry on from Eq.~(\ref{firstorderstab}) in the ``stabilized'' instance, with the single channel differential 
+In Fig.~\ref{flow_noscale_dual}, unscaled results for the dual instance are shown.  In Fig.~\ref{flow_scaled_dual}, scaled results for the
+dual instance are given, recaiming approximatly $2/3$ of the available $2 \times$ acceleration, with a $1/3$ penalty due to the
+stabilization map described in Section \ref{map}. Then, in Fig.~\ref{flow_scaled_stab} we show results for the scaled single instance. 
+
+Not shown is complete fillin at convergence for even the most-approximate-yet-still-stable (MAYSS) value of $\tau_s$.  
+Also, with a less forgiving stability map, we find interesting 
+left/right differences;  namely, the right first product 
+\begin{equation} 
+\widetilde{\mat{x}}^R_k \leftarrow \widetilde{\mat{z}}^\dagger_{k} \, \ot  \, \left( \mat{s} \,  \ots \, \widetilde{\mat{z}}_{k-1}  \right) \; ,
+\end{equation}
+is  different from the left first product 
+\begin{equation} 
+\widetilde{\mat{x}}^L_k \leftarrow \left(  \widetilde{\mat{z}}^\dagger_{k} \, \ots \, \mat{s} \right) \,  \ot  \, \widetilde{\mat{z}}_{k-1} \; ,
+\end{equation}
+which is unsuprising. The stability map parameters discussed Section \ref{map} 
+are tuned away from such senstivities, and their local variation has a neglibible impact on stability.  
+Also not shown, the intermediate volumes (before fill in) behave very differently with scaling; in all cases, the product volumes,
+proportional to the computatonal cost, are significantly increased by scaling.  In the remainder of this work, we won't look at scaling again.
+
+\section{Regularization}\label{regularization}
+
+Even for the most approximate but stable (MAYSS) approximations, our nanotube calculations become dense in both the data and task domains, 
+even for very large $128 \times$ U.C. systems.  For these ill-conditioned iterations, broad spectral resolutions that involving products of 
+large and small numbers coorespond to delocalized products that are not tightly bound by the $\tt SpAMM$ approximation.   However, as 
+we show later in Fig.~\ref{Lensing4}, similarly ill-conditioned problems may achieve substantial compression with just the MAYSS 
+approximation. 
+
+A systematic way to reduce ill-conditioning is through Tikhonov regularization \cite{}.
+Regularization involes a small level shift of the eigenvalues,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, altering the 
+condition number of the shifted matrix to  $\kappa( \mat{s}_\mu) = \frac{\sqrt{s^2_{N-1} + \mu^2}}{\sqrt{s^2_0+\mu^2}}$ \cite{}.
+%Regularization has an history in quantum chemistry \cite{}, image processing \cite{} and linear algebra \cite{}.   
+
+Achieving substantial acceleration with severe ill-conditioning  may require a large level shift however, 
+producing inverse factors of little practical use.  One approach to recover a more accurate inverse
+factor is Riley's method based on Taylor's series \cite{}; 
 \begin{equation}
- \mat{x}_{\widehat{\mat{z}}_{k-1}} =   \mat{z}^\dagger_{\widehat{\mat{z}}_{k-1}} \cdot \mat{s} \cdot \mat{z}_{k} + 
-                                  \mat{z}^\dagger_k \cdot \mat{s} \cdot \mat{z}_{\widehat{\mat{z}}_{k-1}} 
+\mat{s}^{-1/2} = \mat{s}^{-1/2}_{\mu} \cdot \left( \mat{I}+\frac{\mu}{2} \mat{s}^{-1}_{\mu}
+                                                   +\frac{3 \mu^2}{8} \mat{s}^{-2}_{\mu} + \dots
+   \right) \; .
 \end{equation}
 
+For severely ill-conditioned problems and large level shifts, this expansion may converge very slowly. 
+Also, adding powers of the full inverse may not be computationally effective. 
+
+\subsection{A Product Representation}
+
+We introduce an alternative representation of the regularized inverse factor;
+\begin{equation} \label{spammsandwich}
+\mat{s}^{-1/2} \equiv \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0   } } {\left|\, \tau\, \mu \, ; \, \scriptstyle{\mat{s}^{-1/2}}  \right>}  \, ,
+\end{equation}
+which is a telescoping product of preconditioned ``slices'' 
+starting with a most-approximate-yet-still-effective-by-one-order (MAYEBOO) preconditioner, 
+$\mat{s}^{-1/2}_{\tau_0 \mu_0} \equiv {\left|\, \tau_0\, \mu_0 \, ; \, \scriptstyle{\mat{s}^{-1/2}}\right>}$\footnote{Braket notation marks 
+the potential for assymetries in the intermediate represenation.}.  
+This sandwich of generic, thinly sliced {\tt SpAMM} products allows to construct a nested scoping on precision, via $\tau$, and in the 
+condition number, controled by $\mu$.
+
+This scheme rests on three factors: ({\bf 1}) the ability to find a most agressive but still effective first slice,   
+corrective by one order in the condition, $\mu_0 = {\tt .1}$, and by one order in the precision, $\tau_0 ={\tt .1}$ (MAYEBOO), 
+({\bf 2}) an optimal $\tau \, \mu$ scoping in Eq.~(\ref{spammsandwich})  and ({\bf 3}) optimized 
+maps for generic thin slices.  In the following, we demonstrate a first MAYEBOO preconditioner for the ill-conditioned 
+nano-tube problem, and then we sketch a naive approach to building the full inverse factor. 
+
+\subsection{Effective by one order}
+
+We look again at the $\kappa(\mat{s})=10^{10}$ nanotube series described in Appendix \ref{data},
+this time with extreme regularization, $\mu_0={\tt .1}$, and at a finer granularity, $b=8$.
+Culled $\mat{y}_k$ and $\mat{z}_k$ volumes (as percentage of the total work) for $36 - 128 \, \times$ the (3,3) unit cell
+are shown for the MAYEBOO approximation in Fig.~\ref{regularized_stab} for the single instance, 
+and in Fig.~\ref{regularized_dual} for the dual instance. 
+
+The behavior of these implementations  is very different; in the single 
+instance, a stable  iteration could not be found at precision $\tau_0=.1$.  
+Also, disturbingly, the single iteration with inflating cull-volumes. 
 
 
-\begin{multline}
-\mat{z}_{\widehat{\mat{z}}_{k-1} } = \delta \widehat{\mat{z}}_{k-1} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-1} ] + \mat{z}_{k-1} \cdot \left( \right. \\
- \left.  h'_\alpha \delta \widehat{\mat{z}}^\dagger_{k-1} \cdot \mat{s} \cdot \mat{z}_{k-1} +  \mat{z}^\dagger_{k-1} \cdot \mat{s} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1}
- \right) 
-\end{multline}
+On the other hand, volume of the dual iteration 
+is strongly contracted with resolution of the identity.  
 
-\begin{eqnarray}
-\widetilde{\mat{y}}^{\rm stab}_{k-1} &=& \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s} \\
-                                  &=& \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}} \, + \,
-\left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
-\end{eqnarray}
+\begin{figure}[h]\label{regularized_stab}
+ \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
+\caption{
+Culled volumes in the thin slice, single instance approximation of $\mat{s}^{-1/2}_{\tau_0 \mu_0}$
+for the (3,3) nanotube, $\kappa(\mat{s})=10^{10}$ matrix series 
+described in Section \ref{data}.  In the ``single'' instance, it was not possible to achieve stability with $\tau_0=.1$
+In this ``single'' case, a thin slice cooresponds to $\mu_0=.1, \tau_0=10^{-2} \;  \&  \; \tau_s=10^{-4}$, and volumes are
+$\rm v_{\widetilde{\mat{z}_k}} = \left( {\rm vol}_{ \widetilde{\mat{z}}_{k-1}\ot h[\widetilde{\mat{x}}_{k-1}] } \right) \times 100\% /N^3$ and
+${\rm v}_{\widetilde{\mat{y}}_k} = \left( {\rm vol}_{\mat{s}  \ots  \widetilde{\mat{z}}_{k}} \right) \times 100\% /N^3$.    
+Line width increases with increasing system size. 
+Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$.}
+\end{figure} 
+\begin{figure}[h]\label{regularized_dual}
+ \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_dual.eps}
+\caption{
+Culled volumes in the thin slice, dual instance approximation of $\mat{s}^{-1/2}_{\tau_0 \mu_0}$
+for the (3,3) nanotube, $\kappa(\mat{s})=10^{10}$ matrix series 
+described in Section \ref{data}. The thin slice cooresponds to $\mu_0=.1, \tau_0=.1 \;  \&  \; \tau_s=.001$ 
+with volumes 
+${\rm v}_{\widetilde{\mat{y}}_k}= \left( {\rm vol}_{  h[\widetilde{\mat{x}}_{k-1}] \ots \widetilde{\mat{y}}_k }  \right) \times 100\% /N^3$ and  
+${\rm v}_{\widetilde{\mat{z}}_k}= \left( {\rm vol}_{\widetilde{\mat{z}}_{k-1} \ot  h[\widetilde{\mat{x}}_{k-1}]} \right) \times 100\% /N^3$.
+Line width increases with increasing system size. 
+Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$, which rapidly approaches $10^{-11}$ (not shown). }
+\end{figure} 
 
-\subsection{Bifurcations}
+These results reflect very different cull-spaces.  In the single instance, the spectral resolution of powers is not compresive, and  
+$\widetilde{\mat{y}}^{\rm single}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{s}_{\mu_0}$ is  poorly bound by Eq.~(\ref{bound}).
+In the dual case however, $\widetilde{\mat{y}}^{\rm dual}_k \rightarrow  \mat{I}_{\tau_0 \mu_0} \oto \mat{s}^{1/2}_{\tau_0 \mu_0}$
+and $\widetilde{\mat{z}}^{\rm dual}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{I}_{\tau_0 \mu_0}$, 
+with Eq.~(\ref{bound}) tightening to
+\begin{equation}\label{boundY}
+\Delta^{\mat{I}_{\tau_0 \mu_0} \cdot \mat{s}^{1/2}_{\tau_0 \mu_0}} <  \tau n \lVert \mat{s}^{1/2}_{\tau_0 \mu_0} \rVert
+\end{equation}
+and 
+\begin{equation}\label{boundZ}
+\Delta^{ \mat{s}^{-1/2}_{\tau_0 \mu_0}\cdot \mat{I}_{\tau_0 \mu_0}}  <  \tau n \lVert \mat{s}^{-1/2}_{\tau_0 \mu_0} \rVert \, ,
+\end{equation}
+as relative and absolute errors converge.  This tightening is compressive, leading to complexities that are quadtree copy in place.   
 
-\begin{figure}[h] \label{flow_noscale_dual}
-\includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual.eps}
-\caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$.
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$
-are the dashed lines.  The trace expectation is shown as a full black line. }
+In the dual instance, the $\tt SpAMM$ approximation can be brought all the way to  $\tau_0 = .1$ in the case of $\mu_0 = .1$.
+From this first slice  $\mat{s}^{-1/2}_{\tau_0, \mu_0}$ then, a next level shifted preconditioner can be found, 
+$\mat{s}^{-1/2}_{\tau_0 \mu_1}$, based on the residual 
+$\left(\mat{s}^{-1/2}_{\tau_0\mu_0} \right)^\dagger \, \oto \, \left(\mat{s}+\mu_1 \mat{I} \right)  \, \oto \,\mat{s}^{-1/2}_{\tau_0 \mu_0} $, with {\em e.g.} 
+$\mu_1= .01$. It may then be possible to find the full ($\tt SpAMM$ most approximate) 
+factor as the nested product of preconditioned thin slices;
+\begin{equation}
+\mat{s}^{-1/2}_{\tau_0} = \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots  \,  \mat{s}^{-1/2}_{\tau_0 \mu_0}
+\end{equation}
+In this way, 
+iterative regularization can be used to find a product representation of the inverse square root at a $\tt SpAMM$ resolution 
+potentially far more permisive than otherwise possible. 
+Likewise, it may be possible to obtain the full factor with increasing $\tt SpAMM$ resolution in the product representation:
+\begin{equation}
+\mat{s}^{-1/2} = \mat{s}^{-1/2}_{\tau_m} \, \otm \,  \mat{s}^{-1/2}_{\tau_{m-1}} \, \otmm \dots \, \mat{s}^{-1/2}_{\tau_0}
+\end{equation}taken over the sequence $1 > \tau_0 > \tau_1 > \dots > \tau_n $.  More generally,
+\begin{equation} \label{spammsandwich}
+\mat{s}^{-1/2} \equiv \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0   } } {\left|\, \tau\, \mu \, ; \, \scriptstyle{\mat{s}^{-1/2}}  \right>}  \, ,
+\end{equation}
+acknowledging the potential for a flexible path between precision and regularization. The braket notation marks 
+the potential for assymetries in the intermediate represenation.  
+
+
+
+
+This most approximate (but effective) solution is (ideally) representative 
+of one order in the precision, $\tau_0\sim .1$, and corrective by one order in the condition, $\mu_0\sim .1$,
+yeilding a thin, $0^{\rm th}$ preconditioner, $\mat{s}^{-1/2}_{\tau_0 \mu_0}$.  
+This ``thin'' iteration may bring spectral resolution into alignment with norm magnitudes 
+towards the resolvent $\mat{I}_{\tau_0\mu_0}\equiv \widetilde{\mat{I}}\left(\mat{s}_{\tau_0\mu_0}\right)$,
+strengthening Eq.~(\ref{bound}).
+
+
+
+This thin product representation may have advantages: 
+({\bf{1}}) Each thin solve involves a few generic and well behaved steps that may be narrowly optimized;
+({\bf{2}}) Each thin solve can be brought rapidly into compressive identity iteration; 
+({\bf{3}}) The {\tt SpAMM} bound is vastly strengthend, via Eqs.~(\ref{boundY}-\ref{boundZ}); 
+({\bf{4}}) A new algebraic $n$-body form of locality is exploited; 
+({\bf{5}}) The inverse factor can be applied incrementally;
+({\bf{6}}) Slice update and application is ammenable to continous temporal partitioning based on {\em e.g.} persistence data.
+
+%\begin{equation}
+%\mat(I}\left(\mat{s}\right) = \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0}}  \bigotimes_{\substack{\tau'=\tau_0 \\ \mu'=\mu_0}} 
+%{_{\mat{s}^{1/2}} }{\left<\tau \mu \right|}
+%{\left|\tau \mu \right>}_{\mat{s}^{-1/2}} 
+%\end{equation}
+
+%\pagebreak
+
+\section{Locality} 
+
+
+\begin{figure}[h] 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                       {fig_wtrbx_100_noregular/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/y_dual_5_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/y_dual_17_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/x_dual_5_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_noregular/x_dual_17_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for construction of the unregularized preconditioner 
+$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with
+dual instance square root iteration, and for the 6-311G** metric of 100 periodic water molecules
+at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing3}
+\end{figure}
+
+\subsection{Spatial, metric  and temporal locality}
+
+Astrophysical $n$-body algorithms employ range querries over spatial databases to hierarchically discover 
+and compute approximations that commit only small errors.  Often, these spatial databases are ordered with a 
+space filling curve (SFC) \cite{}, which maps points that are close in space to an index where they are also close. 
+The block-by-magnitude structures empowering the $\tt SpAMM$ approximation are {\em metric localities}; 
+in quantum chemical examples they coorespond to an underlying SFC ordering of Carteisan coordinates. 
+
+Warren and Salmon showed how to parlay spatial locality into temporal locality, 
+remapping and repartitioning the space filling curve to rebalance distributed $n$-body tasks,
+based on accumulated histories (persistence data).
+In a similar way, we showed how persistence can be used to achieve 
+strong parallel scaling for $\tt SpAMM$ with commonly available runtimes \cite{}.  
+Persistence data, providing temporal locality, may also be useful in mathematical approximation.  
+
+%The locality of $\tt SpAMM$ volumes depends on opposing effects; ill-conditioning leads to delocalizations 
+%and a broad spectral resolution, while strong metric seperation cooresponds to an increasing locality.  
+%Unfortunately, seperation is diminished with increasing dimensionality.  
+
+In Figure \ref{Lensing3}, we show $\ot$ volumes for square root iteration, cooresponding to the metric of a small, periodic water box 
+with the large, 6-311G** basis.  For the 3-d periodic case, diminishing Cartesian seperations lead to long-skinny delocalizations (pillae)
+and much denser matrices, relative to {\em e.g.} a one-dimensional nano-tube.  These delocalizations coorespond to weakness in Eq.~(\ref{bound}),  
+and to the tighter thresholds required to maintain a single iteration in the MAYSS approximation.  This effect is even more pronounced in the 
+single instance (not shown), where delocalizations are exagerated due to spectral resolutions that are broader.  
+Eventually, Cartesian seperation will thin and trim the density of these delocalizations,  
+leading to complexity reduction based on the effects of metric locality alone, as demonstrated in \ref{}.
+
+\subsection{Algebraic locality}
+
+In Figures \ref{Lensing1} and \ref{Lensing2},  we show a new kind of locality that is uniquely exploited by $n$-body approximation 
+of the square root iteration.  This {algebraic locality} develops compressively towards convergence 
+as the contractive identity iteration develops.  
+We call this compression {\bf  \em lensing},  involving collapse  of the culled volume about plane diagonals of the resolvent.
+Lensing cooresponds to strengthening of Eq.(\ref{}) to yeild Eqs.~(\ref{boundY}) and (\ref{boundZ}), and strong convergence of the
+directional derivatives Eq.(\ref{}-\ref{}) to $\mat{0}$.
+This is an important, mitigating computational effect for the $\mat{y}_k$ channel that involves the 
+tighter threshold, $\tau_s \sim 0.01 \times \tau$. 
+
+In addition, non-Euclidian measures are relevent for achieving metric locality in 
+the $\tt SpAMM$ algebra, including information measures, space filling curve generalizations, as well 
+as graph reorderings that envelope matrix elements about the diagonal \cite{}, a common approach in 
+structural mechanics.   In Figure \ref{Lensing4} we show development of a first, unregularized (MAYSS) 
+preconditioner for such an example; the structural matrix $\mat{s}={\tt bcsstk14}$ is a $\kappa(\mat{s})=10^{10}$ matrix 
+cooresponding to the roof of the Omni Coliseum in Atlanta \cite{}.  These results show remarkable 
+gossamer sheeting and flattening along plane diagonals, at top for developmentent of $\mat{y}_k$, 
+and hollow accumulation of ${\rm vol}_{\mat{y}_k \ot \mat{z}_k}$ looking down at $\mat{y}_k$ (along bottom).
+Surprisingly, this example shows lensing for a relatively tight MAYSS approximation, while the 
+equally ill-conditioned \& lower dimensional  $\kappa (\mat{s})=10^{10}$ nanotube MAYSS approximation remains full (dense) 
+through U.C. $\times 128$.
+
+\subsection{Complexity reduction}
+  
+Finally, we show complexity reduction at convergence of the MAYEBOO approximation relative to the MAYSS approximation, 
+in Fig.~\ref{Complex1} for periodic water boxes, and in Fig.~\ref{Complex2} for the ill-conditioned nano-tube. 
+The two-orders difference between $\mat{y}_k$ and $\mat{z}_k$ volumes cooresponds precicely to $\tau_s \sim \tau \times {\tt .01}$, 
+with $\mat{x}_k$ in between. Except for the slower trend in Fig.~(\ref{Complex1})'s $\mat{x}_k$ volume, we see the 
+potential for continued strong acceleration with increasing system size.  Understanding these subtlties is the subject of future work. 
+
+\begin{figure}[tb] 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={3.cm 3.cm 5.cm 5.cm},clip]
+                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
+$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with 
+dual instance square root iteration,  and for an 8$\times$ U.C. (3,3) $\kappa(s)=10^{11}$ nanotube.
+$\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher precision, $\tau_s=.001$,
+and because the first multiply involves $\mat{s}^2$.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 16$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,2, \& 16$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing1}
 \end{figure}
 
 
-% \begin{figure}[h]
-% \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_stab.eps}
-% \caption{Derivatives, displacements and the approximate trace of the unscaled, stablized NS iteration for a (3,3) 
-% nanotube with $\kappa =10^{10}$. 
-% Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
-% $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
-% \end{figure}
-
-
-\begin{figure}[h] \label{flow_scaled_dual}
-\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual.eps}
-\caption{Derivatives, displacements and the approximate trace of the scaled, stablized NS iteration for a
-(3,3) nanotube with $\kappa =10^{10}$.
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$,
-$\tau=10^{-3}$ and $\tau_y=\{10^{-3},10^{-4},10^{-6}\}$
-are the dashed lines.  The trace expectation is shown as a full black line. }
+\begin{figure}[tb] 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                       {fig_wtrbx_100_regularized/y_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/y_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/y_dual_15_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/x_dual_0_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/x_dual_4_cant_x.png}} 
+\fbox{ \includegraphics[width=2.45cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_wtrbx_100_regularized/x_dual_15_cant_x.png}} 
+\caption{
+The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
+$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with 
+dual instance square root iteration  and for 6-311G** metric of 100 periodic water molecules
+at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing2}
 \end{figure}
 
-\begin{figure}[h]\label{flow_scaled_stab}
-\includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab.eps}
-\caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$.
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$
-are the dashed lines.  The trace expectation is shown as a full black line. }
+\begin{figure}[tb] 
+\includegraphics[width=7.8cm,keepaspectratio=true,trim={0.cm 0.cm 0.cm 0.cm},clip]
+                 {fig_regular_and_unleaded/pcnt_volume_water_boxes.eps} 
+\caption{ 
+Complexity reduction in metric square root iteration for periodic 6-311G** water. 
+Shown is the ratio of lensed product volumes for the regularized most-approximate-yet-effective-by-one-order (MAYEBOO) 
+approximation and the unregularized most-approximate-yet-still-stable (MAYSS) approximation.}\label{Complex1}
 \end{figure}
 
-Differences in occlusion between stab and dual magnified as bounds for s.z not as tight as bounds for h.y.
 
- *lot* of overlap too (reproducing hilberts etc).
+\begin{figure}[tb] 
+\includegraphics[width=7.8cm,keepaspectratio=true,trim={0.cm 0.cm 0.cm 0.cm},clip]
+                 {fig_33_tube_cond_10_regularized/volume_vs_n3_tubes.eps} 
+\caption{ 
+Complexity reduction in metric square root iteration for periodic 6-311G** water. 
+Shown is the ratio of lensed product volumes for the regularized most-approximate-yet-effective-by-one-order (MAYEBOO) 
+approximation and the unregularized most-approximate-yet-still-stable (MAYSS) approximation.}\label{Complex2}
+\end{figure}
 
+
+\begin{figure}[tb] 
+\fbox{ \includegraphics[width=3.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/y_dual_14_cant_x.png}} 
+\fbox{ \includegraphics[width=3.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/y_dual_37_cant_x.png}} 
+\fbox{ \includegraphics[width=3.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/x_dual_0_cant_x2.png}} 
+\fbox{ \includegraphics[width=3.8cm,keepaspectratio=true,
+                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
+                        {fig_bcsstk14/x_dual_37_cant_x2.png}} 
+\caption{
+The $ijk$ task and data space for construction of the unregularized preconditioner 
+$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
+dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
+at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
+for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
+Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
+in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
+\end{figure}
+
+%The $n$-body solver carries out metric querries with occlusion-culling based on 
+%with a bounded relative error in the product, given by Eq.~\ref{}. 
+%$\tt SpAMM$ expoits metric locality, cooresponding to decay with Cartesian or non-Euclidian seperation, 
+%and also algebraic locality, developing with identity iteration.  
+%The $\tt SpAMM$ querry hierarchically resolves complex algebraic structures in the product space of square root iteration,  
+%culling out the $i=k$ and $i=k$ planes and along the $ijk$ cube-diagonal.  In the case of the dual $\mat{y}_k$ and $\mat{z}_k$ channels,  
+%these structures contract further as multiplication by near-identity is reached, with
+%{\em lensing} about the plane diagonal and computational complexities tending towards quadtree-copy-in-place.
+
+\section{Summary}
+In this work, we developed the $n$-body solver $\tt SpAMM$ for square root iteration.   
+Main contributions include a modified Cauchy-Schwarz criterion, Eq.~\ref{}, and proof that the 
+cooresponding relative product error is bound by Eq.~(\ref{bound}).  Also, we demonstrated a new kind of 
+algebraic locality, {lensing}, that develops with strongly contractive identity iteration.
+ 
+In Section \ref{}, we looked at stability leading to the basin of convergence and sensitivity of the three
+product channels $\mat{y}_k$, $\mat{z}_k$ and $\mat{x}_k$, for the $\tt SpAMM$ approximation in the 
+cannonical ``dual'' instance, Eq.~(\ref{}), and for the ``single'' instance, Eq.~(\ref{}).
+Consistent with HMMT \cite{}, the $\mat{z}_k$ channel is sensitized by the full inverse,
+$\mat{s}^{-1}$, requiring a tighter threshold for that case, $\tau_s \ll \tau$.  Later, we find that 
+extra cost is strongly mitigated by lensing.  Also in Section \ref{}, we looked at bifurcations 
+of scaled and unscaled iterations for ill-conditioned systems, towards a most-approximate-yet-still-stable (MAYSS) 
+preconditioner, and disected competing effects at the edge of stability,  between compounding displacement magnitudes and 
+strongly convergent directional derivatives.  
+
+{\bf OK, WELL ITS HARD TO WRITE THIS WITH THAT PART BEING A BIT OF A MESS ...}
+In Section \ref{},  we introduced iterated regularization for ill-conditioning, and developed 
+a product representation of thin 
+ the potential for
+ and found large differences between
+single and dual channel instances.   For the regularized dual channel instance, we demonstrated iterations with 
+volumes strongly contractive towards convergence, and we showed that this contraction cooresponds to   
+Eq.~(\ref{bound}) tightenging significantly.   
+strong contractive iterations 
+how the full inverse factor can 
+e proved that at convergence, 
+be achieved by products of generic, regularized, well conditioned and increasingly more accurate solutions;
+$\mat{s}^{1/2} = \bigotimes_{\substack{\tau \\ \mu } }  \left| \mu , \tau \, ;  \, \scriptstyle{\mat{s}^{-1/2}} \right>$
+cooresponding to a first most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner
+$ \left| \mu={\tt .1} , \tau = {\tt .1} \, ;  \, \scriptstyle{\mat{s}^{-1/2}} \right>$.   
+We looked at the MAYEBOO approximation for both the single and dual instances, and found that even with the most
+permisive regularization, spectral resolution in the single instance is too broad to achieve strong lensing.  
+% $\mat{I}(\mat{s}) =  
+%\bigotimes_{\substack{\tau' \\ \mu' } }\bigotimes_{\substack{\tau \\ \mu } }  
+%\left< \mu , \tau \, ; \, \scrithe ptstyle{\mat{s}^{1/2}} \right|
+%\left. \mu' , \tau' \, ;  \, \scriptstyle{\mat{s}^{-1/2}} \right>$
+
+Finally, we looked at the MAYSS and MAYBOO approximations for periodic water systems, for ill-conditioned nanotubes, 
+and for the ill-conditioned structural matrix ${\tt bcsstk14}$ for the Omni Coliseum in Atlanta \cite{}.  For the
+problem of large basis periodic water systems, we find a MAYBOO/MAYSS volume compression of two to three orders. 
+For the problem of an ill-conditioned nano-tube, we find a MAYBOO/MAYSS volume compression  of ...    
+Remarkably, the ill-conditioned ${\tt bcsstk14}$ was able to achieved a strongly lensed state 
+in the  MAYSS approximation, with remarkable gossamer sheeting and flattening along plane diagonals, 
+and hollow, reticulate volumes of the resolvent.
+
+
+\section{Conclusions}
+
+This work is gauged against other methods for fast matrix multiplication discussed in Section \ref{}. 
+Against $\tt SpMM$, the $n$-body approach offers a bounded control over relative errors in 
+the product and the ability to resolve complex algebraic structures, about plane-diagonals of the $ijk$-cube, 
+along tall-skiny pillae and for volumetric contractions to lower dimensional objects via lensing. 
+The $n$-body method uniquely and synnergistically exploits two distinct forms of locality, metric locality cooresponding to 
+a Cartesian or non-Euclidean decay principle, and algebraic locality cooresponding to contractive identity iteration. 
+Also, strong parallel scaling for the ${\cal{O}}(n)$ electronic structure problem has been demonstrated with the $\tt SpAMM$ kernel, 
+a feature that remains elusive for methods based on $\tt SpMM$ \cite{Bowler}.
+
+Against methods for matrix compression \cite{}, as well as against Fast Matrix Multiplication of the Strassen type \cite{}, 
+the quadtree data structure and the octree task space employed by $\tt SpAMM$ are entirely complimentary.  
+In the case of sketch products \cite{}, persistence data can be used to identify and characterize pillae resulting 
+from broad spectral resolutions; then, it may be possible to deploy streaming approaches for these tall-skinny delocalizations \cite{}.
+Thus, the concurent application of fast methods for matrix multiplication may be enabled by the database framework supporting 
+$n$-body approximations.  
+
+Beyond the fast matrix multiply, $n$-body frameworks may enable additional, layered functionalities and economizations 
+in complex solver ecosystems, with facile interopperability and mathematical agility, 
+through generic recursion and skelitinization, and with common runtimes able to exploit temporal and data localities.
+For example, we recently generalized $\tt SpAMM$ recursion to the problem of Fock-exchange, with a recursive triple (hextree) 
+metric querry on the Almlof-Alhrichs direct SCF criteria \cite{}.  
+Also, mathematical equivalence with the matrix sign function, Eq.~(\ref{}), and close structural relationships with the 
+polar decomposition may enable to extend functionality of the $n$-body iterations developed here. 
+
+Despite these compeling features and related xxx, $n$-body square-root iteration must be gauged by its ability to compute 
+a high quality inverse factor.   Here, we have only looked at complexity and stability of the most 
+approximate preconditioners; the most-approximate-yet-still-stable (MAYSS) approximation and the regularized 
+most-approximate-yet-effective-by-one-order (MAYEBOO) approximations.    However, these results are encouraging, showing 
+the potential for several to many orders of magnitude reduction in complexity for the regularized approximation 
+relative to the unregularized approximation, made possible by   
+construction of a much lower precision preconditioner than would otherwize be possible, via Eq.~(\ref{}), 
+and also by opperations in the strongly contractive regime, under Eqs.~(\ref{boundY}-\ref{boundZ}).
+These and related preliminary results \cite{} suggest that a $\tt SpAMM$ sandwich of thin,
+generic iterations may enable a competitive computational approach that avoids explicit computation of the 
+ill-conditioned factor. 
+
+\appendix 
+
+\section{Implementation}
+
+%\subsection{programming}
+
+FP, F08, OpenMP 4.0
+In the current implementation, all persistence data
+(norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
+ that may be achieved by minimal locally essential trees \cite{}.
+
+%\subsection{scaling}
+
+%\subsection{singleilization}
+
+For these reasons, maintaining connection to the eigenvectors of $\mat{s}$ through 
+a tighter first product is nessesary.  In the single instance, and with a 
+tighter ``{\em s}'' product, $\tau_s \ll \tau$, we find very interesting left/right differences; 
+namely, the right first product 
+\begin{equation} 
+\widetilde{\mat{x}}^R_k \leftarrow \widetilde{\mat{z}}^\dagger_{k} \, \ot  \, \left( \mat{s} \,  \ots \, \widetilde{\mat{z}}_{k-1}  \right) \; ,
+\end{equation}
+is  different from the left first product 
+\begin{equation} 
+\widetilde{\mat{x}}^L_k \leftarrow \left(  \widetilde{\mat{z}}^\dagger_{k} \, \ots \, \mat{s} \right) \,  \ot  \, \widetilde{\mat{z}}_{k-1} \; .
+\end{equation}
+
+%\subsection{regularization}
+damping the inversion and the small value to be added c is called Marquardt-Levenberg coefficient
+
+%\subsection{convergence}
+
+Map switching and etc based on TrX
+
+\section{Data} \label{data}
+
+%\subsubsection{double exponential ill-conditioning}
+3,3 carbon nanotube with diffuse $sp$-function
+double exponential (Fig.)
+
+%\subsubsection{three-dimensional, periodic}
+%\subsubsection{water boxes}
+%\subsubsection{ordering}
+%\subsubsection{Matrix Market}
 
 \section{TEMPERARY:NOTES FOR REGULARIZATION SECTION} 
 
@@ -781,359 +1223,6 @@ where $S_{\tau_{k}}^{-1/2}$ is a $\tau_{k}$ approximation to the
 inverse square root of $S_{k}=S_{\tau_{k-1}}^{-1/2}\otimes_{\tau_{k-1}}S_{k-1}\otimes_{\tau_{j}}S_{\tau_{k-1}}^{-1/2}$. 
 
 
-\section{Iterated Regularization}\label{regularization}
-
-Shown in the preceeding section, stabiliyty limits application of the NS square root iteration under 
-agressive $\tt SpAMM$ approximation.  These limits can be circumvented through Tikhonov regularization \cite{}, 
-involving a small level shift of eigenvalues,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, leading to a more 
-well conditioned matrix with $\kappa( \mat{s}_\mu) = \frac{\sqrt{s^2_{N-1} + \mu^2}}{\sqrt{s^2_0+\mu^2}}$ \cite{}.  
-However, achieving substantial acceleration with severe ill-conditioning  may require a large level shift, 
-producing inverse factors of little practical use.  One approach to recover a more accurate inverse
-factor is Riley's method \cite{}; 
-\begin{equation}
-\mat{s}^{-1/2} = \mat{s}^{-1/2}_{\mu} \cdot \left( \mat{I}+\frac{\mu}{2} \mat{s}^{-1}_{\mu}
-                                                   +\frac{3 \mu^2}{8} \mat{s}^{-2}_{\mu} + \dots
-   \right) \; ,
-\end{equation}
-but this is ineffective when $\mu$ is large, and invovles powers of the full inverse. 
-
-Here, we outline an alternative,  nested product represenation of the inverse factor and show preliminary 
-results for a first, most approximate solution.  This most approximate (but effective) solution is (ideally) representative 
-of one order in the precision, $\tau_0\sim .1$, and corrective by one order in the condition, $\mu_0\sim .1$,
-yeilding a thin, $0^{\rm th}$ preconditioner, $\mat{s}^{-1/2}_{\tau_0 \mu_0}$.  
-This ``thin'' iteration may bring spectral resolution into alignment with norm magnitudes 
-towards the resolvent $\mat{I}_{\tau_0\mu_0}\equiv \widetilde{\mat{I}}\left(\mat{s}_{\tau_0\mu_0}\right)$,
-strengthening Eq.~(\ref{bound}).
-
-Culled $\tt SpAMM$ volumes for this most approximate solution are shown with increasing system size in 
-Fig.~\ref{regularized_stab} for the stable instance, and in Fig.~\ref{regularized_dual} for the dual instance, 
-cooresponding to ``thin NS'' iteration for the (3,3) $\kappa(\mat{s})=10^{10}$ nanotube series.  
-The behavior of these instances is very different; in the ``stable'' 
-instance, a stable iteration could not be found at precision $\tau_0=.1$, even with $\mu_0=.1$ regularization.  Also, this stable iteration
-sees a weakly convergent trace with inflating cull-volumes. On the other hand, volume of the dual iteration 
-is strongly contracted with resolution of the identity.  
- 
-most-approximate-yet-effective-by-one-order (MAYEBOO) 
-
-\begin{figure}[h]\label{regularized_stab}
- \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab.eps}
-\caption{
-Culled volumes in the thin slice, stable instance approximation of $\mat{s}^{-1/2}_{\tau_0 \mu_0}$
-for the (3,3) nanotube, $\kappa(\mat{s})=10^{10}$ matrix series 
-described in Section \ref{data}.  In the ``stable'' instance, it was not possible to achieve stability with $\tau_0=.1$
-In this ``stable'' case, a thin slice cooresponds to $\mu_0=.1, \tau_0=10^{-2} \;  \&  \; \tau_s=10^{-4}$, and volumes are
-$\rm v_{\widetilde{\mat{z}_k}} = \left( {\rm vol}_{ \widetilde{\mat{z}}_{k-1}\ot h[\widetilde{\mat{x}}_{k-1}] } \right) \times 100\% /N^3$ and
-${\rm v}_{\widetilde{\mat{y}}_k} = \left( {\rm vol}_{\mat{s}  \ots  \widetilde{\mat{z}}_{k}} \right) \times 100\% /N^3$.    
-Line width increases with increasing system size. 
-Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$.}
-\end{figure} 
-\begin{figure}[h]\label{regularized_dual}
- \includegraphics[width=3.5in]{fig_33_tube_cond_10_regularized/33_tube_k10_regularized_dual.eps}
-\caption{
-Culled volumes in the thin slice, dual instance approximation of $\mat{s}^{-1/2}_{\tau_0 \mu_0}$
-for the (3,3) nanotube, $\kappa(\mat{s})=10^{10}$ matrix series 
-described in Section \ref{data}. The thin slice cooresponds to $\mu_0=.1, \tau_0=.1 \;  \&  \; \tau_s=.001$ 
-with volumes 
-${\rm v}_{\widetilde{\mat{y}}_k}= \left( {\rm vol}_{  h[\widetilde{\mat{x}}_{k-1}] \ots \widetilde{\mat{y}}_k }  \right) \times 100\% /N^3$ and  
-${\rm v}_{\widetilde{\mat{z}}_k}= \left( {\rm vol}_{\widetilde{\mat{z}}_{k-1} \ot  h[\widetilde{\mat{x}}_{k-1}]} \right) \times 100\% /N^3$.
-Line width increases with increasing system size. 
-Also shown is the trace error, ${\rm e}_{k} = \left( N-{\rm tr}\,\mat{x}_k \right)/N$, which rapidly approaches $10^{-11}$ (not shown). }
-\end{figure} 
-
-These results reflect very different cull-spaces.  In the stable instance, the spectral resolution of powers is not compresive, and  
-$\widetilde{\mat{y}}^{\rm stab}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{s}_{\mu_0}$ is  poorly bound by Eq.~(\ref{bound}).
-In the dual case however, $\widetilde{\mat{y}}^{\rm dual}_k \rightarrow  \mat{I}_{\tau_0 \mu_0} \oto \mat{s}^{1/2}_{\tau_0 \mu_0}$
-and $\widetilde{\mat{z}}^{\rm dual}_k \rightarrow  \mat{s}^{-1/2}_{\tau_0 \mu_0} \oto \mat{I}_{\tau_0 \mu_0}$, 
-with Eq.~(\ref{bound}) tightening to
-\begin{equation}\label{boundY}
-\Delta^{\mat{I}_{\tau_0 \mu_0} \cdot \mat{s}^{1/2}_{\tau_0 \mu_0}} <  \tau n \lVert \mat{s}^{1/2}_{\tau_0 \mu_0} \rVert
-\end{equation}
-and 
-\begin{equation}\label{boundZ}
-\Delta^{ \mat{s}^{-1/2}_{\tau_0 \mu_0}\cdot \mat{I}_{\tau_0 \mu_0}}  <  \tau n \lVert \mat{s}^{-1/2}_{\tau_0 \mu_0} \rVert \, ,
-\end{equation}
-as relative and absolute errors converge.  This tightening is compressive, leading to complexities that are quadtree copy in place.   
-
-In the dual instance, the $\tt SpAMM$ approximation can be brought all the way to  $\tau_0 = .1$ in the case of $\mu_0 = .1$.
-From this first slice  $\mat{s}^{-1/2}_{\tau_0, \mu_0}$ then, a next level shifted preconditioner can be found, 
-$\mat{s}^{-1/2}_{\tau_0 \mu_1}$, based on the residual 
-$\left(\mat{s}^{-1/2}_{\tau_0\mu_0} \right)^\dagger \, \oto \, \left(\mat{s}+\mu_1 \mat{I} \right)  \, \oto \,\mat{s}^{-1/2}_{\tau_0 \mu_0} $, with {\em e.g.} 
-$\mu_1= .01$. It may then be possible to find the full ($\tt SpAMM$ most approximate) 
-factor as the nested product of preconditioned thin slices;
-\begin{equation}
-\mat{s}^{-1/2}_{\tau_0} = \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots  \,  \mat{s}^{-1/2}_{\tau_0 \mu_0}
-\end{equation}
-In this way, 
-iterative regularization can be used to find a product representation of the inverse square root at a $\tt SpAMM$ resolution 
-potentially far more permisive than otherwise possible. 
-Likewise, it may be possible to obtain the full factor with increasing $\tt SpAMM$ resolution in the product representation:
-\begin{equation}
-\mat{s}^{-1/2} = \mat{s}^{-1/2}_{\tau_m} \, \otm \,  \mat{s}^{-1/2}_{\tau_{m-1}} \, \otmm \dots \, \mat{s}^{-1/2}_{\tau_0}
-\end{equation}taken over the sequence $1 > \tau_0 > \tau_1 > \dots > \tau_n $.  More generally we write 
-\begin{equation} \label{spammsandwich}
-\mat{s}^{-1/2} \equiv \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0   } } {\left|\, \tau\, \mu \, ; \, \scriptstyle{\mat{s}^{-1/2}}  \right>}  \, ,
-\end{equation}
-acknowledging the potential for a flexible path between precision and regularization. The braket notation marks 
-the potential for assymetries in the intermediate represenation.  
-
-This thin product representation may have advantages: 
-({\bf{1}}) Each thin solve involves a few generic and well behaved steps that may be narrowly optimized;
-({\bf{2}}) Each thin solve can be brought rapidly into compressive identity iteration; 
-({\bf{3}}) The {\tt SpAMM} bound is vastly strengthend, via Eqs.~(\ref{boundY}-\ref{boundZ}); 
-({\bf{4}}) A new algebraic $n$-body form of locality is exploited; 
-({\bf{5}}) The inverse factor can be applied incrementally;
-({\bf{6}}) Slice update and application is ammenable to continous temporal partitioning based on {\em e.g.} persistence data.
-
-%\begin{equation}
-%\mat(I}\left(\mat{s}\right) = \bigotimes_{\substack{\tau=\tau_0 \\ \mu=\mu_0}}  \bigotimes_{\substack{\tau'=\tau_0 \\ \mu'=\mu_0}} 
-%{_{\mat{s}^{1/2}} }{\left<\tau \mu \right|}
-%{\left|\tau \mu \right>}_{\mat{s}^{-1/2}} 
-%\end{equation}
-
-\pagebreak
-
-\section{Locality} 
-
-Astrophysical $n$-body algorithms employ range querries over spatial databases to hierarchically discover 
-and compute approximations that commit only small errors.  Often, these spatial databases are ordered with a 
-space filling curve (SFC) \cite{}, which maps points that are close in space to an index where they are also close. 
-The block-by-magnitude structures empowering the $\tt SpAMM$ approximation are {\em metric localities}; 
-in quantum chemical examples they coorespond to an underlying SFC ordering of Carteisan coordinates. 
-
-Warren and Salmon showed how to parlay spatial locality into temporal locality, 
-remapping and repartitioning the space filling curve to rebalance distributed $n$-body tasks,
-based on accumulated histories (persistence data).
-In a similar way, we showed how persistence can be used to achieve 
-strong parallel scaling for $\tt SpAMM$ with commonly available runtimes \cite{}.  
-Persistence data, providing temporal locality, may also be useful in mathematical approximation.  
-
-In Figures \ref{Lensing1} and \ref{Lensing2},  we demonstrate a new kind of locality that is uniquely 
-exploited by $n$-body approximation of the square root iteration.
-This algebraic locality develops compressively towards convergence as the contractive identity iteration develops.  
-We call this compression {\bf \em lensing},  involving deflation of the culled volume about the resolvent's plane diagonal.
-This is important for the product yeilding $\mat{y}_k$, because iteration in the channel begins with the 
-thicker product $\mat{s} \ots \mat{s}$ and involves the tighter threshold $\tau_s \sim 0.01 \times \tau$. 
-
-It is also possible to achieve lensing without regularization as shown in Figure \ref{Lensing3}.  In Figure \ref{Lensing3} however, 
-lensing of the $\mat{y}_k$ channel is not as strongly contractive as in the regularized case 
-(Figure \ref{Lensing2}), showing additionally the $i=k$ plane and pillae normal to $ik$.
-These additional featues and delocalizations coorespond to weakness in Eq.~(\ref{bound}),  
-and to the tighter thresholds required to maintain a stable iteration.  This effect is even more pronounced in the 
-stable instance (not shown), where delocalizations are exagerated due to broader spectral resolutions.  
-
-The density of pillae observed in Figure \ref{Lensing3} is associated with increasing dimensionallity and 
-diminishing Cartesian seperations (nano-tube vs periodic water). For increasingly large systems, 
-the decay of this density is dependent on the underlying Euclidean locality.  In Figure \ref{HilbertVsTravelOrder},
-we show cull-volumes for periodic water systems ordered by the Hilbert Space Filling Curve (HSFC) \cite{} ,
-and also by the Travel Order solution of the end-to-end traveling saleseman problem (TO) \cite{}  (discussed in 
-Section \ref{data}).  In  Figure \ref{HilbertVsTravelOrder}, we see ....
-
-
-In addition, non-Euclidian measures are relevent for achieving metric locality in 
-the $\tt SpAMM$ algebra, including information measures, space filling curve generalizations, as well 
-as graph reorderings that envelope matrix elements about the diagonal \cite{}, a common approach in 
-structural mechanics.   In Figure \ref{Lensing4} we show development of a first, unregularized preconditioner 
-for such an example; the structural matrix $\mat{s}={\tt bcsstk14}$ is a $\kappa(\mat{s})=10^{10}$ matrix 
-cooresponding to the roof of the Omni Coliseum in Atlanta \cite{}.  These results show remarkable 
-gossamer sheeting and flattening along plane diagonals, at top for developmentent of $\mat{y}_k$, 
-and hollow accumulation of ${\rm vol}_{\mat{y}_k \ot \mat{z}_k}$ looking down at $\mat{y}_k$ (along bottom).
-
-\section{Conclusions}
-
-new bound for N-Body approach to fast matrix multiplication: methods that truncate the data do not bound the outcome
-
-stability analyses and bifurcations of ill-conditioned spamm away from basin of stability 
-
-show how to go past these bifurcations using regularization.
-    showed how to find a first, most-approximate-yet-effective-by-one-order (MAYEBOO) preconditioner, 
-which brings the norm-bounded and spectral resolutions into close alignment, 
-strengthening Eq.~(\ref{bound}).
-
-shows two new kinds of locality: strong Euclidean locality based on 
-Gan and Challacombe's travel order, and algebraic locality associated with lensing,
- and contracting the culled task volume abount 
-the plane-diagonal of the resolvent (lensing)
-
-
-product representation of generic MAYEBOO slices with 
-      extreme locality of reference, potential for additional acceleration and stabilization of in place data.
-solution to problem developed from on genericity and concurence of the Erlang kind. Ecosystems impact.
-algebraic structures cannot be approached by conventional row-coloum orientation
-3-dimensional systems that would not be in the conventional (sparse BCSR) regime for $n$-scaling.  
-
-
-Sandwich approach potential for defered, implicit delocalization of the inverse factor, that can be avoided
-by incremental application to a target vector or matrix. Potential for incremental preconditionin on multiple time scales most approximate cooresponding to longest time scale. problems in electronic structure,generalized polar decomposition and  ill-conditioning in radial basis function problems
-
-
-\pagebreak
-
-\begin{figure*}[h] 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={3.cm 3.cm 5.cm 5.cm},clip]
-                        {fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png}} 
-\caption{
-The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
-$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
-dual instance of square root iteration  and for an 8$\times$ U.C. (3,3) $\kappa(s)=10^{11}$ nanotube.
-$\mat{y}_k$ appears wider than $\mat{z}_k$ because it is computed at a higher precision, $\tau_s=.001$,
-and because the first multiply involves $\mat{s}^2$.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
-for $k=0,4,\& 16$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,2, \& 16$.
-Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing1}
-\end{figure*}
-
-\pagebreak
-
-\begin{figure*}[h] 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                       {fig_wtrbx_100_regularized/y_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/y_dual_4_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/y_dual_15_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/x_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/x_dual_4_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_regularized/x_dual_15_cant_x.png}} 
-\caption{
-The $ijk$ task and data space for construction of the MAYEBOO preconditioner 
-$\left|\tau_0=.1,\mu_0=.1\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
-dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
-at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
-for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
-Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing2}
-\end{figure*}
-
-\pagebreak
-
-\begin{figure*}[h] 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                       trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                       {fig_wtrbx_100_noregular/y_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/y_dual_5_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/y_dual_17_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/x_dual_0_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/x_dual_5_cant_x.png}} 
-\fbox{ \includegraphics[width=5.2cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_wtrbx_100_noregular/x_dual_17_cant_x.png}} 
-\caption{
-The $ijk$ task and data space for construction of the unregularized preconditioner 
-$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
-dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
-at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
-for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
-Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing3}
-\end{figure*}
-
-\pagebreak
-
-\begin{figure*}[h] 
-\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_bcsstk14/y_dual_14_cant_x.png}} 
-\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_bcsstk14/y_dual_37_cant_x.png}} 
-\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_bcsstk14/x_dual_0_cant_x2.png}} 
-\fbox{ \includegraphics[width=7.8cm,keepaspectratio=true,
-                        trim={0.cm 2.3cm 2.cm 1.cm},clip]
-                        {fig_bcsstk14/x_dual_37_cant_x2.png}} 
-\caption{
-The $ijk$ task and data space for construction of the unregularized preconditioner 
-$\left|\tau_0=.001,\mu_0=.0\, ; \,\scriptstyle{\mat{s}^{-1/2}} \right>$, with the 
-dual instance of square root iteration  and for 6-311G** metric of 100 periodic water molecules
-at STP.  At top its  $\mat{y}_k=h_\alpha[ \mat{x}_{k-1} ] \ots \mat{y}_{k-1}$
-for $k=0,4,\& 15$, while on the bottom we have $\mat{x}_k=  \mat{y}_{k}  \ot \mat{z}_{k}$ for $k=0,4, \& 15$.
-Maroon is $\mat{a}$, purple is $\mat{b}$, green is $\mat{c}$,  and black is the volume ${\rm vol}_{a \ot b}$
-in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing4}
-\end{figure*}
-
-\begin{figure}[h] 
-\caption{ Show percent work for H and TO orderings.}\label{HilbertVsTravelOrder}
-\end{figure}
-
-
-\appendix 
-
-\section{Implementation}
-
-\subsection{programming}
-
-FP, F08, OpenMP 4.0
-In the current implementation, all persistence data
-(norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
- that may be achieved by minimal locally essential trees \cite{}.
-
-\subsection{scaling}
-
-\subsection{stabilization}
-
-For these reasons, maintaining connection to the eigenvectors of $\mat{s}$ through 
-a tighter first product is nessesary.  In the stab instance, and with a 
-tighter ``{\em s}'' product, $\tau_s \ll \tau$, we find very interesting left/right differences; 
-namely, the right first product 
-\begin{equation} 
-\widetilde{\mat{x}}^R_k \leftarrow \widetilde{\mat{z}}^\dagger_{k} \, \ot  \, \left( \mat{s} \,  \ots \, \widetilde{\mat{z}}_{k-1}  \right) \; ,
-\end{equation}
-is  different from the left first product 
-\begin{equation} 
-\widetilde{\mat{x}}^L_k \leftarrow \left(  \widetilde{\mat{z}}^\dagger_{k} \, \ots \, \mat{s} \right) \,  \ot  \, \widetilde{\mat{z}}_{k-1} \; .
-\end{equation}
-
-\subsection{regularization}
-damping the inversion and the small value to be added c is called Marquardt-Levenberg coefficient
-
-\subsection{convergence}
-
-Map switching and etc based on TrX
-
-\section{Data} \label{data}
-
-\subsubsection{double exponential ill-conditioning}
-3,3 carbon nanotube with diffuse $sp$-function
-double exponential (Fig.)
-
-\subsubsection{three-dimensional, periodic}
-%\subsubsection{water boxes}
-%\subsubsection{ordering}
-\subsubsection{Matrix Market}
 
 
 \bibliography{MatrixFunctions}
