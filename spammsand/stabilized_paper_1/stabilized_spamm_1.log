@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  9 AUG 2015 10:16
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  9 AUG 2015 11:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -245,26 +245,29 @@ Package: amsthm 2004/08/06 v2.20
 LaTeX Warning: Unused global option(s):
     [amsfont,english,jcp,groupaddress].
 
-(./stabilized_spamm_1.aux)
+(./stabilized_spamm_1.aux
+
+LaTeX Warning: Label `spammsandwich' multiply defined.
+
+)
 \openout1 = `stabilized_spamm_1.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 54.
-LaTeX Font Info:    ... okay on input line 54.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 54.
-LaTeX Font Info:    ... okay on input line 54.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 54.
-LaTeX Font Info:    ... okay on input line 54.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 54.
-LaTeX Font Info:    ... okay on input line 54.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 54.
-LaTeX Font Info:    ... okay on input line 54.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 54.
-LaTeX Font Info:    ... okay on input line 54.
-Class revtex4 Info: Patching LaTeX tabular. on input line 54.
-Class revtex4 Info: cite was not loaded (OK!) on input line 54.
-Class revtex4 Info: multicol was not loaded (OK!) on input line 54.
-
-(/usr/local/texlive/2013/texmf-dist/tex/context/base/supp-pdf.mkii
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+Class revtex4 Info: Patching LaTeX tabular. on input line 53.
+Class revtex4 Info: cite was not loaded (OK!) on input line 53.
+Class revtex4 Info: multicol was not loaded (OK!) on input line 53.
+ (/usr/local/texlive/2013/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count107
 \scratchdimen=\dimen113
@@ -278,140 +281,148 @@ Class revtex4 Info: multicol was not loaded (OK!) on input line 54.
 \makeMPintoPDFobject=\count112
 \everyMPtoPDFconversion=\toks30
 )
-LaTeX Font Info:    Try loading font information for U+msa on input line 74.
+LaTeX Font Info:    Try loading font information for U+msa on input line 71.
  (/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 74.
+LaTeX Font Info:    Try loading font information for U+msb on input line 71.
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-
-Package natbib Warning: Citation `Benzi99b' on page 1 undefined on input line 1
-10.
-
-
-Package natbib Warning: Citation `' on page 1 undefined on input line 110.
-
 <decay_picture.png, id=1, 688.07062pt x 492.33937pt>
 File: decay_picture.png Graphic file (type png)
  <use decay_picture.png>
-Package pdftex.def Info: decay_picture.png used on input line 132.
+Package pdftex.def Info: decay_picture.png used on input line 118.
 (pdftex.def)             Requested size: 252.94499pt x 180.99075pt.
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 132--133
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 118--119
  [][] 
  []
-
-
-Package natbib Warning: Citation `Others' on page 1 undefined on input line 156
-.
-
-
-Package natbib Warning: Citation `Hutter' on page 1 undefined on input line 156
-.
-
-
-Package natbib Warning: Citation `Gigi' on page 1 undefined on input line 156.
 
 [1{/usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./dec
 ay_picture.png>]
 
-Package natbib Warning: Citation `wise' on page 2 undefined on input line 164.
+Package natbib Warning: Citation `HSS' on page 2 undefined on input line 161.
 
-
-Package natbib Warning: Citation `samet' on page 2 undefined on input line 164.
-
-
-
-Package natbib Warning: Citation `cache' on page 2 undefined on input line 174.
-
-
-
-Package natbib Warning: Citation `kahan' on page 2 undefined on input line 185.
-
-
-
-Underfull \hbox (badness 1867) in paragraph at lines 183--188
-[]$\OT1/cmtt/m/n/10 SpAMM$ \OT1/cmr/m/n/10 has evolved from a row-coloumn ori-e
-nted
+(./stabilized_spamm_1.toc
+Overfull \hbox (5.00003pt too wide) detected at line 25
+ \OT1/cmr/m/n/10 10
  []
 
 
-Overfull \hbox (48.30035pt too wide) detected at line 267
+Overfull \hbox (5.00003pt too wide) detected at line 26
+ \OT1/cmr/m/n/10 11
+ []
+
+
+Overfull \hbox (5.00003pt too wide) detected at line 28
+ \OT1/cmr/m/n/10 12
+ []
+
+
+Overfull \hbox (5.00003pt too wide) detected at line 29
+ \OT1/cmr/m/n/10 12
+ []
+
+
+Overfull \hbox (5.00003pt too wide) detected at line 30
+ \OT1/cmr/m/n/10 12
+ []
+
+)
+\tf@toc=\write3
+\openout3 = `stabilized_spamm_1.toc'.
+
+
+
+Package natbib Warning: Citation `wise' on page 2 undefined on input line 174.
+
+
+Package natbib Warning: Citation `samet' on page 2 undefined on input line 174.
+
+
+
+Package natbib Warning: Citation `cache' on page 2 undefined on input line 184.
+
+
+[2]
+Overfull \hbox (48.30035pt too wide) detected at line 277
 \OML/cmm/m/it/10 A \OMS/cmsy/m/n/10 
 [] \OML/cmm/m/it/10 B \OT1/cmr/m/n/10 = [] \OML/cmm/m/it/10 :
  []
 
-[2]
 
 Package natbib Warning: Citation `Demmel07' on page 3 undefined on input line 3
-05.
-
-
-LaTeX Warning: Reference `' on page 3 undefined on input line 312.
-
-
-Package natbib Warning: Citation `Yellik' on page 3 undefined on input line 316
-.
-
-
-Package natbib Warning: Citation `MChallacombe16' on page 3 undefined on input 
-line 374.
+15.
 
 [3]
 
-Package natbib Warning: Citation `Pan and Scriber' on page 4 undefined on input
- line 442.
+Package natbib Warning: Citation `ostlundszabo' on page 4 undefined on input li
+ne 322.
 
 
-LaTeX Warning: Reference `' on page 4 undefined on input line 445.
+Package natbib Warning: Citation `wyang' on page 4 undefined on input line 322.
+
+
+
+Package natbib Warning: Citation `Aluru' on page 4 undefined on input line 328.
+
+
+
+Package natbib Warning: Citation `softwaresustainanbilty' on page 4 undefined o
+n input line 331.
+
+
+Package natbib Warning: Citation `Driscoll13' on page 4 undefined on input line
+ 334.
 
 [4]
 
+Package natbib Warning: Citation `Pan and Scriber' on page 5 undefined on input
+ line 458.
+
+
+LaTeX Warning: Reference `' on page 5 undefined on input line 461.
+
+
 Package natbib Warning: Citation `higham2005' on page 5 undefined on input line
- 560.
+ 555.
 
 
-LaTeX Warning: Reference `' on page 5 undefined on input line 570.
+Package natbib Warning: Citation `higham2005' on page 5 undefined on input line
+ 571.
 
-
-Underfull \hbox (badness 1838) in paragraph at lines 613--616
-[]\OT1/cmr/m/n/10 primary er-ror chan-nels con-tibut-ing to $\OML/cmm/m/it/10 ^
-^Nz[]$ \OT1/cmr/m/n/10 are
- []
-
+[5]
 Package epstopdf Info: Source file: <fig_33_tube_cond_10_noscaling/33_nanotube_
 cond10_noscale_dual.eps>
-(epstopdf)                    date: 2015-08-03 21:18:13
+(epstopdf)                    date: 2015-08-09 11:18:03
 (epstopdf)                    size: 25119 bytes
 (epstopdf)             Output file: <fig_33_tube_cond_10_noscaling/33_nanotube_
 cond10_noscale_dual-eps-converted-to.pdf>
-(epstopdf)                    date: 2015-08-03 21:18:13
-(epstopdf)                    size: 9404 bytes
+(epstopdf)                    date: 2015-08-09 11:30:09
+(epstopdf)                    size: 9130 bytes
 (epstopdf)             Command: <repstopdf --outfile=fig_33_tube_cond_10_noscal
 ing/33_nanotube_cond10_noscale_dual-eps-converted-to.pdf fig_33_tube_cond_10_no
 scaling/33_nanotube_cond10_noscale_dual.eps>
-(epstopdf)             \includegraphics on input line 664.
+(epstopdf)             \includegraphics on input line 619.
 Package epstopdf Info: Output file is already uptodate.
 
 <fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual-eps-converted-to
-.pdf, id=41, 361.35pt x 252.945pt>
+.pdf, id=48, 361.35pt x 252.945pt>
 File: fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual-eps-convert
 ed-to.pdf Graphic file (type pdf)
 
 <use fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual-eps-converte
 d-to.pdf>
 Package pdftex.def Info: fig_33_tube_cond_10_noscaling/33_nanotube_cond10_nosca
-le_dual-eps-converted-to.pdf used on input line 664.
+le_dual-eps-converted-to.pdf used on input line 619.
 (pdftex.def)             Requested size: 252.94499pt x 177.06029pt.
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 664--665
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 619--620
  [][] 
  []
 
-[5]
 Package epstopdf Info: Source file: <fig_33_tube_cond_10_scaled/33_tube_k10_sca
 le_dual.eps>
 (epstopdf)                    date: 2015-08-03 21:18:13
@@ -423,22 +434,25 @@ le_dual-eps-converted-to.pdf>
 (epstopdf)             Command: <repstopdf --outfile=fig_33_tube_cond_10_scaled
 /33_tube_k10_scale_dual-eps-converted-to.pdf fig_33_tube_cond_10_scaled/33_tube
 _k10_scale_dual.eps>
-(epstopdf)             \includegraphics on input line 681.
+(epstopdf)             \includegraphics on input line 626.
 Package epstopdf Info: Output file is already uptodate.
 
-<fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual-eps-converted-to.pdf, id=45,
+<fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual-eps-converted-to.pdf, id=49,
  361.35pt x 252.945pt>
 File: fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual-eps-converted-to.pdf Gr
 aphic file (type pdf)
 
 <use fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual-eps-converted-to.pdf>
 Package pdftex.def Info: fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual-eps-
-converted-to.pdf used on input line 681.
+converted-to.pdf used on input line 626.
 (pdftex.def)             Requested size: 252.94499pt x 177.06029pt.
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 681--682
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 626--627
  [][] 
  []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
 
 Package epstopdf Info: Source file: <fig_33_tube_cond_10_scaled/33_tube_k10_sca
 le_stab.eps>
@@ -451,41 +465,47 @@ le_stab-eps-converted-to.pdf>
 (epstopdf)             Command: <repstopdf --outfile=fig_33_tube_cond_10_scaled
 /33_tube_k10_scale_stab-eps-converted-to.pdf fig_33_tube_cond_10_scaled/33_tube
 _k10_scale_stab.eps>
-(epstopdf)             \includegraphics on input line 690.
+(epstopdf)             \includegraphics on input line 633.
 Package epstopdf Info: Output file is already uptodate.
 
-<fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab-eps-converted-to.pdf, id=46,
+<fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab-eps-converted-to.pdf, id=50,
  361.35pt x 252.945pt>
 File: fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab-eps-converted-to.pdf Gr
 aphic file (type pdf)
 
 <use fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab-eps-converted-to.pdf>
 Package pdftex.def Info: fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab-eps-
-converted-to.pdf used on input line 690.
+converted-to.pdf used on input line 633.
 (pdftex.def)             Requested size: 252.94499pt x 177.06029pt.
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 690--691
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 633--634
  [][] 
  []
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
+
+LaTeX Warning: Reference `flow_scaled_stab' on page 6 undefined on input line 6
+45.
+
 [6 <./fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual-eps-convert
 ed-to.pdf> <./fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual-eps-converted-t
 o.pdf> <./fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab-eps-converted-to.pd
 f>]
-Overfull \hbox (12.7346pt too wide) detected at line 779
-\OML/cmm/m/it/10 S[] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 S[] \OMS/cmsy/m/n/10 
-[] \OML/cmm/m/it/10 S[] \OMS/cmsy/m/n/10 
-[] \OML/cmm/m/it/10 S[] [] \OMS/cmsy/m/n/10 
-[] \OML/cmm/m/it/10 S[] \OT1/cmr/m/n/10 + \OMS/cmsy/m/n/10 O [] \OML/cmm/m/it/1
-0 ;
+Underfull \hbox (badness 1308) in paragraph at lines 675--678
+[]\OT1/cmr/m/n/10 Achieving sub-stan-tial ac-cel-er-a-tion with se-vere ill-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 816--817
-[]\OT1/cmr/m/n/10 most-approximate-yet-effective-by-one-order
+Underfull \hbox (badness 6876) in paragraph at lines 692--699
+\OT1/cmr/m/n/10 start-ing with a most-approximate-yet-still-effective-
+ []
+
+
+Underfull \hbox (badness 1472) in paragraph at lines 692--699
+\OT1/cmr/m/n/10 by-one-order (MAYEBOO) pre-con-di-tioner, $[][] \OMS/cmsy/m/n/1
+0 ^^Q
  []
 
 Package epstopdf Info: Source file: <fig_33_tube_cond_10_regularized/33_tube_k1
@@ -499,50 +519,50 @@ Package epstopdf Info: Source file: <fig_33_tube_cond_10_regularized/33_tube_k1
 (epstopdf)             Command: <repstopdf --outfile=fig_33_tube_cond_10_regula
 rized/33_tube_k10_regularized_stab-eps-converted-to.pdf fig_33_tube_cond_10_reg
 ularized/33_tube_k10_regularized_stab.eps>
-(epstopdf)             \includegraphics on input line 819.
+(epstopdf)             \includegraphics on input line 725.
 Package epstopdf Info: Output file is already uptodate.
 
 <fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab-eps-converted-to.
-pdf, id=82, 361.35pt x 252.945pt>
+pdf, id=84, 361.35pt x 252.945pt>
 File: fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab-eps-converte
 d-to.pdf Graphic file (type pdf)
 
 <use fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab-eps-converted
 -to.pdf>
 Package pdftex.def Info: fig_33_tube_cond_10_regularized/33_tube_k10_regularize
-d_stab-eps-converted-to.pdf used on input line 819.
+d_stab-eps-converted-to.pdf used on input line 725.
 (pdftex.def)             Requested size: 252.94499pt x 177.06029pt.
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 819--820
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 725--726
  [][] 
  []
 
 Package epstopdf Info: Source file: <fig_33_tube_cond_10_regularized/33_tube_k1
 0_regularized_dual.eps>
-(epstopdf)                    date: 2015-08-03 21:18:13
+(epstopdf)                    date: 2015-08-09 11:18:03
 (epstopdf)                    size: 25224 bytes
 (epstopdf)             Output file: <fig_33_tube_cond_10_regularized/33_tube_k1
 0_regularized_dual-eps-converted-to.pdf>
-(epstopdf)                    date: 2015-08-03 21:18:13
-(epstopdf)                    size: 6165 bytes
+(epstopdf)                    date: 2015-08-09 11:30:11
+(epstopdf)                    size: 6170 bytes
 (epstopdf)             Command: <repstopdf --outfile=fig_33_tube_cond_10_regula
 rized/33_tube_k10_regularized_dual-eps-converted-to.pdf fig_33_tube_cond_10_reg
 ularized/33_tube_k10_regularized_dual.eps>
-(epstopdf)             \includegraphics on input line 831.
+(epstopdf)             \includegraphics on input line 737.
 Package epstopdf Info: Output file is already uptodate.
 
 <fig_33_tube_cond_10_regularized/33_tube_k10_regularized_dual-eps-converted-to.
-pdf, id=83, 361.35pt x 252.945pt>
+pdf, id=85, 361.35pt x 252.945pt>
 File: fig_33_tube_cond_10_regularized/33_tube_k10_regularized_dual-eps-converte
 d-to.pdf Graphic file (type pdf)
 
 <use fig_33_tube_cond_10_regularized/33_tube_k10_regularized_dual-eps-converted
 -to.pdf>
 Package pdftex.def Info: fig_33_tube_cond_10_regularized/33_tube_k10_regularize
-d_dual-eps-converted-to.pdf used on input line 831.
+d_dual-eps-converted-to.pdf used on input line 737.
 (pdftex.def)             Requested size: 252.94499pt x 177.06029pt.
 
-Overfull \hbox (6.94499pt too wide) in paragraph at lines 831--832
+Overfull \hbox (6.94499pt too wide) in paragraph at lines 737--738
  [][] 
  []
 
@@ -552,240 +572,350 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [7 <./fig_33_tube_cond_10_regularized/33_tube_k10_regularized_stab-eps-converte
 d-to.pdf>]
 
-LaTeX Warning: A float is stuck (cannot be placed) on input line 854.
+LaTeX Warning: A float is stuck (cannot be placed) on input line 756.
 
 
-LaTeX Warning: A float is stuck (cannot be placed) on input line 854.
+LaTeX Warning: A float is stuck (cannot be placed) on input line 756.
 
 
 Class revtex4 Warning: Deferred float stuck during \clearpage processing.
 
-[8 <./fig_33_tube_cond_10_regularized/33_tube_k10_regularized_dual-eps-converte
-d-to.pdf>]
-Underfull \hbox (badness 1377) in paragraph at lines 958--963
-\OT1/cmr/m/n/10 tional row-coloum ori-en-ta-tion 3-dimensional sys-tems
- []
+<fig_wtrbx_100_noregular/y_dual_0_cant_x.png, id=98, 770.88pt x 770.88pt>
+File: fig_wtrbx_100_noregular/y_dual_0_cant_x.png Graphic file (type png)
 
-[9]
-<fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png, id=108, 1027.84pt
+<use fig_wtrbx_100_noregular/y_dual_0_cant_x.png>
+Package pdftex.def Info: fig_wtrbx_100_noregular/y_dual_0_cant_x.png used on in
+put line 845.
+(pdftex.def)             Requested size: 69.70915pt x 66.09106pt.
+
+<fig_wtrbx_100_noregular/y_dual_5_cant_x.png, id=100, 770.88pt x 770.88pt>
+File: fig_wtrbx_100_noregular/y_dual_5_cant_x.png Graphic file (type png)
+
+<use fig_wtrbx_100_noregular/y_dual_5_cant_x.png>
+Package pdftex.def Info: fig_wtrbx_100_noregular/y_dual_5_cant_x.png used on in
+put line 848.
+(pdftex.def)             Requested size: 69.70915pt x 66.09106pt.
+
+<fig_wtrbx_100_noregular/y_dual_17_cant_x.png, id=102, 770.88pt x 770.88pt>
+File: fig_wtrbx_100_noregular/y_dual_17_cant_x.png Graphic file (type png)
+
+<use fig_wtrbx_100_noregular/y_dual_17_cant_x.png>
+Package pdftex.def Info: fig_wtrbx_100_noregular/y_dual_17_cant_x.png used on i
+nput line 851.
+(pdftex.def)             Requested size: 69.70915pt x 66.09106pt.
+
+<fig_wtrbx_100_noregular/x_dual_0_cant_x.png, id=104, 770.88pt x 770.88pt>
+File: fig_wtrbx_100_noregular/x_dual_0_cant_x.png Graphic file (type png)
+
+<use fig_wtrbx_100_noregular/x_dual_0_cant_x.png>
+Package pdftex.def Info: fig_wtrbx_100_noregular/x_dual_0_cant_x.png used on in
+put line 854.
+(pdftex.def)             Requested size: 69.70915pt x 66.09106pt.
+
+<fig_wtrbx_100_noregular/x_dual_5_cant_x.png, id=106, 770.88pt x 770.88pt>
+File: fig_wtrbx_100_noregular/x_dual_5_cant_x.png Graphic file (type png)
+
+<use fig_wtrbx_100_noregular/x_dual_5_cant_x.png>
+Package pdftex.def Info: fig_wtrbx_100_noregular/x_dual_5_cant_x.png used on in
+put line 857.
+(pdftex.def)             Requested size: 69.70915pt x 66.09106pt.
+
+<fig_wtrbx_100_noregular/x_dual_17_cant_x.png, id=108, 770.88pt x 770.88pt>
+File: fig_wtrbx_100_noregular/x_dual_17_cant_x.png Graphic file (type png)
+
+<use fig_wtrbx_100_noregular/x_dual_17_cant_x.png>
+Package pdftex.def Info: fig_wtrbx_100_noregular/x_dual_17_cant_x.png used on i
+nput line 860.
+(pdftex.def)             Requested size: 69.70915pt x 66.09106pt.
+ [8 <./fig_33_tube_cond_10_regularized/33_tube_k10_regularized_dual-eps-convert
+ed-to.pdf>]
+
+LaTeX Warning: Reference `' on page 9 undefined on input line 896.
+
+
+LaTeX Warning: Reference `' on page 9 undefined on input line 904.
+
+
+LaTeX Warning: Reference `' on page 9 undefined on input line 905.
+
+
+LaTeX Warning: Reference `' on page 9 undefined on input line 905.
+
+
+<fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png, id=119, 1027.84pt
  x 1027.84pt>
 File: fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png Graphic file 
 (type png)
 
 <use fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png>
 Package pdftex.def Info: fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_
-x.png used on input line 974.
-(pdftex.def)             Requested size: 147.95424pt x 147.95253pt.
+x.png used on input line 932.
+(pdftex.def)             Requested size: 69.70915pt x 69.70876pt.
 
-<fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png, id=110, 1027.84pt
+<fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png, id=121, 1027.84pt
  x 1027.84pt>
 File: fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png Graphic file 
 (type png)
 
 <use fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png>
 Package pdftex.def Info: fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_
-x.png used on input line 977.
-(pdftex.def)             Requested size: 147.95424pt x 147.95253pt.
+x.png used on input line 935.
+(pdftex.def)             Requested size: 69.70915pt x 69.70876pt.
 
-<fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png, id=112, 1027.84p
+<fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png, id=123, 1027.84p
 t x 1027.84pt>
 File: fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png Graphic file
  (type png)
 
 <use fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png>
 Package pdftex.def Info: fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant
-_x.png used on input line 980.
-(pdftex.def)             Requested size: 147.95424pt x 147.95253pt.
+_x.png used on input line 938.
+(pdftex.def)             Requested size: 69.70915pt x 69.70876pt.
 
-<fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png, id=114, 1027.84pt
+<fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png, id=125, 1027.84pt
  x 1027.84pt>
 File: fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png Graphic file 
 (type png)
 
 <use fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png>
 Package pdftex.def Info: fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_
-x.png used on input line 983.
-(pdftex.def)             Requested size: 147.95424pt x 147.95253pt.
+x.png used on input line 941.
+(pdftex.def)             Requested size: 69.70915pt x 69.70876pt.
 
-<fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png, id=116, 1027.84pt
+<fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png, id=127, 1027.84pt
  x 1027.84pt>
 File: fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png Graphic file 
 (type png)
 
 <use fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png>
 Package pdftex.def Info: fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_2_cant_
-x.png used on input line 986.
-(pdftex.def)             Requested size: 147.95424pt x 147.95253pt.
+x.png used on input line 944.
+(pdftex.def)             Requested size: 69.70915pt x 69.70876pt.
 
-<fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png, id=118, 1027.84p
+<fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png, id=129, 1027.84p
 t x 1027.84pt>
 File: fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png Graphic file
  (type png)
 
 <use fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant_x.png>
 Package pdftex.def Info: fig_33_8x_tube_cond_10_dual_thin_slices/x_dual_16_cant
-_x.png used on input line 989.
-(pdftex.def)             Requested size: 147.95424pt x 147.95253pt.
+_x.png used on input line 947.
+(pdftex.def)             Requested size: 69.70915pt x 69.70876pt.
 
-
-Class revtex4 Warning: Float cannot be placed.
-
-
-<fig_wtrbx_100_regularized/y_dual_0_cant_x.png, id=120, 1027.84pt x 1027.84pt>
+<fig_wtrbx_100_regularized/y_dual_0_cant_x.png, id=131, 1027.84pt x 1027.84pt>
 File: fig_wtrbx_100_regularized/y_dual_0_cant_x.png Graphic file (type png)
 
 <use fig_wtrbx_100_regularized/y_dual_0_cant_x.png>
 Package pdftex.def Info: fig_wtrbx_100_regularized/y_dual_0_cant_x.png used on 
-input line 1006.
-(pdftex.def)             Requested size: 147.95424pt x 142.30896pt.
+input line 963.
+(pdftex.def)             Requested size: 69.70915pt x 67.05023pt.
 
-<fig_wtrbx_100_regularized/y_dual_4_cant_x.png, id=122, 1027.84pt x 1027.84pt>
+<fig_wtrbx_100_regularized/y_dual_4_cant_x.png, id=133, 1027.84pt x 1027.84pt>
 File: fig_wtrbx_100_regularized/y_dual_4_cant_x.png Graphic file (type png)
 
 <use fig_wtrbx_100_regularized/y_dual_4_cant_x.png>
 Package pdftex.def Info: fig_wtrbx_100_regularized/y_dual_4_cant_x.png used on 
-input line 1009.
-(pdftex.def)             Requested size: 147.95424pt x 142.30896pt.
+input line 966.
+(pdftex.def)             Requested size: 69.70915pt x 67.05023pt.
 
-<fig_wtrbx_100_regularized/y_dual_15_cant_x.png, id=124, 1027.84pt x 1027.84pt>
+<fig_wtrbx_100_regularized/y_dual_15_cant_x.png, id=135, 1027.84pt x 1027.84pt>
 File: fig_wtrbx_100_regularized/y_dual_15_cant_x.png Graphic file (type png)
 <use fig_wtrbx_100_regularized/y_dual_15_cant_x.png>
 Package pdftex.def Info: fig_wtrbx_100_regularized/y_dual_15_cant_x.png used on
- input line 1012.
-(pdftex.def)             Requested size: 147.95424pt x 142.30896pt.
+ input line 969.
+(pdftex.def)             Requested size: 69.70915pt x 67.05023pt.
 
-<fig_wtrbx_100_regularized/x_dual_0_cant_x.png, id=126, 1027.84pt x 1027.84pt>
+<fig_wtrbx_100_regularized/x_dual_0_cant_x.png, id=137, 1027.84pt x 1027.84pt>
 File: fig_wtrbx_100_regularized/x_dual_0_cant_x.png Graphic file (type png)
 
 <use fig_wtrbx_100_regularized/x_dual_0_cant_x.png>
 Package pdftex.def Info: fig_wtrbx_100_regularized/x_dual_0_cant_x.png used on 
-input line 1015.
-(pdftex.def)             Requested size: 147.95424pt x 142.30896pt.
+input line 972.
+(pdftex.def)             Requested size: 69.70915pt x 67.05023pt.
 
-<fig_wtrbx_100_regularized/x_dual_4_cant_x.png, id=128, 1027.84pt x 1027.84pt>
+<fig_wtrbx_100_regularized/x_dual_4_cant_x.png, id=139, 1027.84pt x 1027.84pt>
 File: fig_wtrbx_100_regularized/x_dual_4_cant_x.png Graphic file (type png)
 
 <use fig_wtrbx_100_regularized/x_dual_4_cant_x.png>
 Package pdftex.def Info: fig_wtrbx_100_regularized/x_dual_4_cant_x.png used on 
-input line 1018.
-(pdftex.def)             Requested size: 147.95424pt x 142.30896pt.
+input line 975.
+(pdftex.def)             Requested size: 69.70915pt x 67.05023pt.
 
-<fig_wtrbx_100_regularized/x_dual_15_cant_x.png, id=130, 1027.84pt x 1027.84pt>
+<fig_wtrbx_100_regularized/x_dual_15_cant_x.png, id=141, 1027.84pt x 1027.84pt>
 File: fig_wtrbx_100_regularized/x_dual_15_cant_x.png Graphic file (type png)
 <use fig_wtrbx_100_regularized/x_dual_15_cant_x.png>
 Package pdftex.def Info: fig_wtrbx_100_regularized/x_dual_15_cant_x.png used on
- input line 1021.
-(pdftex.def)             Requested size: 147.95424pt x 142.30896pt.
+ input line 978.
+(pdftex.def)             Requested size: 69.70915pt x 67.05023pt.
+Package epstopdf Info: Source file: <fig_regular_and_unleaded/pcnt_volume_water
+_boxes.eps>
+(epstopdf)                    date: 2015-08-09 11:18:03
+(epstopdf)                    size: 20788 bytes
+(epstopdf)             Output file: <fig_regular_and_unleaded/pcnt_volume_water
+_boxes-eps-converted-to.pdf>
+(epstopdf)                    date: 2015-08-09 11:18:03
+(epstopdf)                    size: 7541 bytes
+(epstopdf)             Command: <repstopdf --outfile=fig_regular_and_unleaded/p
+cnt_volume_water_boxes-eps-converted-to.pdf fig_regular_and_unleaded/pcnt_volum
+e_water_boxes.eps>
+(epstopdf)             \includegraphics on input line 991.
+Package epstopdf Info: Output file is already uptodate.
 
+<fig_regular_and_unleaded/pcnt_volume_water_boxes-eps-converted-to.pdf, id=143,
+ 361.35pt x 252.945pt>
+File: fig_regular_and_unleaded/pcnt_volume_water_boxes-eps-converted-to.pdf Gra
+phic file (type pdf)
 
-Class revtex4 Warning: Float cannot be placed.
+<use fig_regular_and_unleaded/pcnt_volume_water_boxes-eps-converted-to.pdf>
+Package pdftex.def Info: fig_regular_and_unleaded/pcnt_volume_water_boxes-eps-c
+onverted-to.pdf used on input line 991.
+(pdftex.def)             Requested size: 221.93158pt x 155.35376pt.
+Package epstopdf Info: Source file: <fig_33_tube_cond_10_regularized/volume_vs_
+n3_tubes.eps>
+(epstopdf)                    date: 2015-08-09 11:18:03
+(epstopdf)                    size: 20779 bytes
+(epstopdf)             Output file: <fig_33_tube_cond_10_regularized/volume_vs_
+n3_tubes-eps-converted-to.pdf>
+(epstopdf)                    date: 2015-08-09 11:30:12
+(epstopdf)                    size: 7310 bytes
+(epstopdf)             Command: <repstopdf --outfile=fig_33_tube_cond_10_regula
+rized/volume_vs_n3_tubes-eps-converted-to.pdf fig_33_tube_cond_10_regularized/v
+olume_vs_n3_tubes.eps>
+(epstopdf)             \includegraphics on input line 1001.
+Package epstopdf Info: Output file is already uptodate.
 
-<fig_wtrbx_100_noregular/y_dual_0_cant_x.png, id=132, 770.88pt x 770.88pt>
-File: fig_wtrbx_100_noregular/y_dual_0_cant_x.png Graphic file (type png)
+<fig_33_tube_cond_10_regularized/volume_vs_n3_tubes-eps-converted-to.pdf, id=14
+5, 361.35pt x 252.945pt>
+File: fig_33_tube_cond_10_regularized/volume_vs_n3_tubes-eps-converted-to.pdf G
+raphic file (type pdf)
 
-<use fig_wtrbx_100_noregular/y_dual_0_cant_x.png>
-Package pdftex.def Info: fig_wtrbx_100_noregular/y_dual_0_cant_x.png used on in
-put line 1037.
-(pdftex.def)             Requested size: 147.95424pt x 140.28084pt.
+<use fig_33_tube_cond_10_regularized/volume_vs_n3_tubes-eps-converted-to.pdf>
+Package pdftex.def Info: fig_33_tube_cond_10_regularized/volume_vs_n3_tubes-eps
+-converted-to.pdf used on input line 1001.
+(pdftex.def)             Requested size: 221.93158pt x 155.35376pt.
 
-<fig_wtrbx_100_noregular/y_dual_5_cant_x.png, id=134, 770.88pt x 770.88pt>
-File: fig_wtrbx_100_noregular/y_dual_5_cant_x.png Graphic file (type png)
-
-<use fig_wtrbx_100_noregular/y_dual_5_cant_x.png>
-Package pdftex.def Info: fig_wtrbx_100_noregular/y_dual_5_cant_x.png used on in
-put line 1040.
-(pdftex.def)             Requested size: 147.95424pt x 140.28084pt.
-
-<fig_wtrbx_100_noregular/y_dual_17_cant_x.png, id=136, 770.88pt x 770.88pt>
-File: fig_wtrbx_100_noregular/y_dual_17_cant_x.png Graphic file (type png)
-
-<use fig_wtrbx_100_noregular/y_dual_17_cant_x.png>
-Package pdftex.def Info: fig_wtrbx_100_noregular/y_dual_17_cant_x.png used on i
-nput line 1043.
-(pdftex.def)             Requested size: 147.95424pt x 140.28084pt.
-
-<fig_wtrbx_100_noregular/x_dual_0_cant_x.png, id=138, 770.88pt x 770.88pt>
-File: fig_wtrbx_100_noregular/x_dual_0_cant_x.png Graphic file (type png)
-
-<use fig_wtrbx_100_noregular/x_dual_0_cant_x.png>
-Package pdftex.def Info: fig_wtrbx_100_noregular/x_dual_0_cant_x.png used on in
-put line 1046.
-(pdftex.def)             Requested size: 147.95424pt x 140.28084pt.
-
-<fig_wtrbx_100_noregular/x_dual_5_cant_x.png, id=140, 770.88pt x 770.88pt>
-File: fig_wtrbx_100_noregular/x_dual_5_cant_x.png Graphic file (type png)
-
-<use fig_wtrbx_100_noregular/x_dual_5_cant_x.png>
-Package pdftex.def Info: fig_wtrbx_100_noregular/x_dual_5_cant_x.png used on in
-put line 1049.
-(pdftex.def)             Requested size: 147.95424pt x 140.28084pt.
-
-<fig_wtrbx_100_noregular/x_dual_17_cant_x.png, id=142, 770.88pt x 770.88pt>
-File: fig_wtrbx_100_noregular/x_dual_17_cant_x.png Graphic file (type png)
-
-<use fig_wtrbx_100_noregular/x_dual_17_cant_x.png>
-Package pdftex.def Info: fig_wtrbx_100_noregular/x_dual_17_cant_x.png used on i
-nput line 1052.
-(pdftex.def)             Requested size: 147.95424pt x 140.28084pt.
-
-
-Class revtex4 Warning: Float cannot be placed.
-
-<fig_bcsstk14/y_dual_14_cant_x.png, id=144, 770.88pt x 770.88pt>
+<fig_bcsstk14/y_dual_14_cant_x.png, id=147, 770.88pt x 770.88pt>
 File: fig_bcsstk14/y_dual_14_cant_x.png Graphic file (type png)
 
 <use fig_bcsstk14/y_dual_14_cant_x.png>
 Package pdftex.def Info: fig_bcsstk14/y_dual_14_cant_x.png used on input line 1
-068.
-(pdftex.def)             Requested size: 221.93158pt x 210.4316pt.
+012.
+(pdftex.def)             Requested size: 108.12054pt x 102.51451pt.
 
-<fig_bcsstk14/y_dual_37_cant_x.png, id=146, 770.88pt x 770.88pt>
+<fig_bcsstk14/y_dual_37_cant_x.png, id=149, 770.88pt x 770.88pt>
 File: fig_bcsstk14/y_dual_37_cant_x.png Graphic file (type png)
 
 <use fig_bcsstk14/y_dual_37_cant_x.png>
 Package pdftex.def Info: fig_bcsstk14/y_dual_37_cant_x.png used on input line 1
-071.
-(pdftex.def)             Requested size: 221.93158pt x 210.4316pt.
+015.
+(pdftex.def)             Requested size: 108.12054pt x 102.51451pt.
 
-<fig_bcsstk14/x_dual_0_cant_x2.png, id=148, 770.88pt x 770.88pt>
+<fig_bcsstk14/x_dual_0_cant_x2.png, id=151, 770.88pt x 770.88pt>
 File: fig_bcsstk14/x_dual_0_cant_x2.png Graphic file (type png)
 
 <use fig_bcsstk14/x_dual_0_cant_x2.png>
 Package pdftex.def Info: fig_bcsstk14/x_dual_0_cant_x2.png used on input line 1
-074.
-(pdftex.def)             Requested size: 221.93158pt x 210.4316pt.
+018.
+(pdftex.def)             Requested size: 108.12054pt x 102.51451pt.
 
-<fig_bcsstk14/x_dual_37_cant_x2.png, id=150, 770.88pt x 770.88pt>
+<fig_bcsstk14/x_dual_37_cant_x2.png, id=153, 770.88pt x 770.88pt>
 File: fig_bcsstk14/x_dual_37_cant_x2.png Graphic file (type png)
 
 <use fig_bcsstk14/x_dual_37_cant_x2.png>
 Package pdftex.def Info: fig_bcsstk14/x_dual_37_cant_x2.png used on input line 
-1077.
-(pdftex.def)             Requested size: 221.93158pt x 210.4316pt.
+1021.
+(pdftex.def)             Requested size: 108.12054pt x 102.51451pt.
 
 
-Class revtex4 Warning: Float cannot be placed.
+LaTeX Warning: Reference `' on page 9 undefined on input line 1043.
+
+[9 <./fig_wtrbx_100_noregular/y_dual_0_cant_x.png (PNG copy)> <./fig_wtrbx_100_
+noregular/y_dual_5_cant_x.png (PNG copy)> <./fig_wtrbx_100_noregular/y_dual_17_
+cant_x.png (PNG copy)> <./fig_wtrbx_100_noregular/x_dual_0_cant_x.png (PNG copy
+)> <./fig_wtrbx_100_noregular/x_dual_5_cant_x.png (PNG copy)> <./fig_wtrbx_100_
+noregular/x_dual_17_cant_x.png (PNG copy)>]
+
+LaTeX Warning: A float is stuck (cannot be placed) on input line 1046.
 
 
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-(./stabilized_spamm_1.bbl [10]
-
-LaTeX Warning: A float is stuck (cannot be placed) on input line 204.
-
-[11 <./fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png (PNG copy)> 
-<./fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png (PNG copy)> <./f
-ig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png (PNG copy)> <./fig_
-33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png (PNG copy)> <./fig_33_8
-x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png (PNG copy)> <./fig_33_8x_tu
-be_cond_10_dual_thin_slices/x_dual_16_cant_x.png (PNG copy)>]
-
-LaTeX Warning: A float is stuck (cannot be placed) on input line 204.
+LaTeX Warning: A float is stuck (cannot be placed) on input line 1046.
 
 
 Class revtex4 Warning: Deferred float stuck during \clearpage processing.
 
 
+LaTeX Warning: Reference `' on page 10 undefined on input line 1047.
+
+
+LaTeX Warning: Reference `' on page 10 undefined on input line 1049.
+
+
+LaTeX Warning: Reference `' on page 10 undefined on input line 1049.
+
+
+LaTeX Warning: Reference `' on page 10 undefined on input line 1052.
+
+
+LaTeX Warning: Reference `' on page 10 undefined on input line 1058.
+
+
+Underfull \hbox (badness 1436) in paragraph at lines 1057--1078
+\OT1/cmr/m/n/10 to a first most-approximate-yet-effective-by-one-order
+ []
+
+[10 <./fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_0_cant_x.png (PNG copy)> 
+<./fig_33_8x_tube_cond_10_dual_thin_slices/y_dual_4_cant_x.png (PNG copy)> <./f
+ig_33_8x_tube_cond_10_dual_thin_slices/y_dual_16_cant_x.png (PNG copy)> <./fig_
+33_8x_tube_cond_10_dual_thin_slices/x_dual_0_cant_x.png (PNG copy)> <./fig_33_8
+x_tube_cond_10_dual_thin_slices/x_dual_2_cant_x.png (PNG copy)> <./fig_33_8x_tu
+be_cond_10_dual_thin_slices/x_dual_16_cant_x.png (PNG copy)> <./fig_wtrbx_100_r
+egularized/y_dual_0_cant_x.png (PNG copy)> <./fig_wtrbx_100_regularized/y_dual_
+4_cant_x.png (PNG copy)> <./fig_wtrbx_100_regularized/y_dual_15_cant_x.png (PNG
+ copy)> <./fig_wtrbx_100_regularized/x_dual_0_cant_x.png (PNG copy)> <./fig_wtr
+bx_100_regularized/x_dual_4_cant_x.png (PNG copy)> <./fig_wtrbx_100_regularized
+/x_dual_15_cant_x.png (PNG copy)> <./fig_regular_and_unleaded/pcnt_volume_water
+_boxes-eps-converted-to.pdf> <./fig_33_tube_cond_10_regularized/volume_vs_n3_tu
+bes-eps-converted-to.pdf>]
+
+LaTeX Warning: A float is stuck (cannot be placed) on input line 1078.
+
+
+LaTeX Warning: A float is stuck (cannot be placed) on input line 1078.
+
+
+Class revtex4 Warning: Deferred float stuck during \clearpage processing.
+
+
+Underfull \hbox (badness 1796) in paragraph at lines 1079--1086
+\OT1/cmr/m/n/10 ap-prox-i-ma-tions for pe-ri-odic wa-ter sys-tems, for ill-
+ []
+
+
+LaTeX Warning: Reference `' on page 11 undefined on input line 1090.
+
+
+Package natbib Warning: Citation `Bowler' on page 11 undefined on input line 10
+97.
+
+
+LaTeX Warning: Reference `' on page 11 undefined on input line 1111.
+
+
+LaTeX Warning: Reference `' on page 11 undefined on input line 1120.
+
+
+Underfull \hbox (badness 3108) in paragraph at lines 1114--1125
+\OT1/cmr/m/n/10 abil-ity to com-pute a high qual-ity in-verse fac-tor.
+ []
+
+
+Underfull \hbox (badness 1014) in paragraph at lines 1114--1125
+\OT1/cmr/m/n/10 Here, we have only looked at com-plex-ity and sta-
+ []
+
+[11 <./fig_bcsstk14/y_dual_14_cant_x.png (PNG copy)> <./fig_bcsstk14/y_dual_37_
+cant_x.png (PNG copy)> <./fig_bcsstk14/x_dual_0_cant_x2.png (PNG copy)> <./fig_
+bcsstk14/x_dual_37_cant_x2.png (PNG copy)>] (./stabilized_spamm_1.bbl
 Underfull \hbox (badness 1038) in paragraph at lines 215--226
  \OT1/cmr/m/n/9 Nguyen, N. Satish, J. Chhugani, A. Di Blas, and
  []
@@ -799,31 +929,22 @@ Use \frac instead.
 
 Package natbib Warning: There were undefined citations.
 
-[12] [13 <./fig_wtrbx_100_regularized/y_dual_0_cant_x.png (PNG copy)> <./fig_wt
-rbx_100_regularized/y_dual_4_cant_x.png (PNG copy)> <./fig_wtrbx_100_regularize
-d/y_dual_15_cant_x.png (PNG copy)> <./fig_wtrbx_100_regularized/x_dual_0_cant_x
-.png (PNG copy)> <./fig_wtrbx_100_regularized/x_dual_4_cant_x.png (PNG copy)> <
-./fig_wtrbx_100_regularized/x_dual_15_cant_x.png (PNG copy)>] [14 <./fig_wtrbx_
-100_noregular/y_dual_0_cant_x.png (PNG copy)> <./fig_wtrbx_100_noregular/y_dual
-_5_cant_x.png (PNG copy)> <./fig_wtrbx_100_noregular/y_dual_17_cant_x.png (PNG 
-copy)> <./fig_wtrbx_100_noregular/x_dual_0_cant_x.png (PNG copy)> <./fig_wtrbx_
-100_noregular/x_dual_5_cant_x.png (PNG copy)> <./fig_wtrbx_100_noregular/x_dual
-_17_cant_x.png (PNG copy)>] [15 <./fig_bcsstk14/y_dual_14_cant_x.png (PNG copy)
-> <./fig_bcsstk14/y_dual_37_cant_x.png (PNG copy)> <./fig_bcsstk14/x_dual_0_can
-t_x2.png (PNG copy)> <./fig_bcsstk14/x_dual_37_cant_x2.png (PNG copy)>]
-(./stabilized_spamm_1.aux)
+[12] (./stabilized_spamm_1.aux)
 
 LaTeX Warning: There were undefined references.
 
+
+LaTeX Warning: There were multiply-defined labels.
+
  ) 
 Here is how much of TeX's memory you used:
- 4414 strings out of 493315
- 62554 string characters out of 6137904
- 147637 words of memory out of 5000000
- 7757 multiletter control sequences out of 15000+600000
- 17249 words of font info for 66 fonts, out of 8000000 for 9000
+ 4452 strings out of 493315
+ 63583 string characters out of 6137904
+ 158308 words of memory out of 5000000
+ 7787 multiletter control sequences out of 15000+600000
+ 18665 words of font info for 72 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
- 42i,17n,28p,1789b,341s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 42i,17n,28p,1789b,335s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></
@@ -832,35 +953,36 @@ usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb><
 usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex7.pfb
 ></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.
 pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.p
-fb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb
-></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><
-/usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></u
-sr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr
-/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr
-/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib6.pfb><
-/usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.p
-fb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmi
-b9.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10
-.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pf
-b></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><
-/usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></us
-r/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/l
-ocal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/loca
-l/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local
-/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/local/t
-exlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/tex
-live/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texli
-ve/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive
-/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/
-2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/local/texlive/20
-13/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/201
-3/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb></usr/local/texlive/2013/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2013/te
-xmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on stabilized_spamm_1.pdf (15 pages, 8172205 bytes).
+fb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pf
+b></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb>
+</usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></
+usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></us
+r/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/
+local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/
+local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib6.pfb></
+usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pf
+b></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib
+9.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.
+pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb
+></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></
+usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr
+/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/lo
+cal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local
+/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/
+texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/local/te
+xlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texl
+ive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texliv
+e/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/
+2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2
+013/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/local/texlive/201
+3/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/2013
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb></usr/local/texlive/2013/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2013/tex
+mf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
+Output written on stabilized_spamm_1.pdf (12 pages, 8198420 bytes).
 PDF statistics:
- 297 PDF objects out of 1000 (max. 8388607)
- 186 compressed objects within 2 object streams
+ 315 PDF objects out of 1000 (max. 8388607)
+ 198 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 273 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 295 words of extra memory for PDF output out of 10000 (max. 10000000)
 

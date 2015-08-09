@@ -697,11 +697,13 @@ the potential for assymetries in the intermediate represenation.}.
 This sandwich of generic, thinly sliced {\tt SpAMM} products allows to construct a nested scoping on precision, via $\tau$, and in the 
 condition number, controled by $\mu$.
 
+
 This scheme rests on three factors: ({\bf 1}) the ability to find a most agressive but still effective first slice,   
 corrective by one order in the condition, $\mu_0 = {\tt .1}$, and by one order in the precision, $\tau_0 ={\tt .1}$ (MAYEBOO), 
 ({\bf 2}) an optimal $\tau \, \mu$ scoping in Eq.~(\ref{spammsandwich})  and ({\bf 3}) optimized 
 maps for generic thin slices.  In the following, we demonstrate a first MAYEBOO preconditioner for the ill-conditioned 
 nano-tube problem, and then we sketch a naive approach to building the full inverse factor. 
+
 
 \subsection{Effective by one order}
 
@@ -764,14 +766,14 @@ $\mat{s}^{-1/2}_{\tau_0 \mu_1}$, based on the residual
 $\left(\mat{s}^{-1/2}_{\tau_0\mu_0} \right)^\dagger \, \oto \, \left(\mat{s}+\mu_1 \mat{I} \right)  \, \oto \,\mat{s}^{-1/2}_{\tau_0 \mu_0} $, with {\em e.g.} 
 $\mu_1= .01$. It may then be possible to find the full ($\tt SpAMM$ most approximate) 
 factor as the nested product of preconditioned thin slices;
-\begin{equation}
+\begin{equation} \label{product_rep}
 \mat{s}^{-1/2}_{\tau_0} = \mat{s}^{-1/2}_{\tau_0 \mu_n} \, \oto \, \mat{s}^{-1/2}_{\tau_0 \mu_{n-1}} \, \oto \, \dots  \,  \mat{s}^{-1/2}_{\tau_0 \mu_0}
 \end{equation}
 In this way, 
 iterative regularization can be used to find a product representation of the inverse square root at a $\tt SpAMM$ resolution 
 potentially far more permisive than otherwise possible. 
 Likewise, it may be possible to obtain the full factor with increasing $\tt SpAMM$ resolution in the product representation:
-\begin{equation}
+\begin{equation} \label{product_rep_tau}
 \mat{s}^{-1/2} = \mat{s}^{-1/2}_{\tau_m} \, \otm \,  \mat{s}^{-1/2}_{\tau_{m-1}} \, \otmm \dots \, \mat{s}^{-1/2}_{\tau_0}
 \end{equation}taken over the sequence $1 > \tau_0 > \tau_1 > \dots > \tau_n $.  More generally,
 \begin{equation} \label{spammsandwich}
@@ -780,6 +782,32 @@ Likewise, it may be possible to obtain the full factor with increasing $\tt SpAM
 acknowledging the potential for a flexible path between precision and regularization. The braket notation marks 
 the potential for assymetries in the intermediate represenation.  
 
+
+As an example, we formalize the product representation (\ref{product_rep}) (a similar argument applies to (\ref{product_rep_tau}) and (\ref{spammsandwich})). let $\mu_{0}>\mu_{1}>\dots>\mu_{j}>0$, and suppose
+that, for $j\geq1$, $R_{j-1}$ is the $\tau_{0}$ approximation to
+$\left(S+\mu_{j-1}I\right)^{-1/2}$, so that 
+\[
+\left\Vert R_{j-1}^{\dagger}\otimes_{\tau_{0}}\left(S+\mu_{j-1}I\right)\otimes_{\tau_{0}}R_{j-1}-I\right\Vert _{F}\lesssim\tau_{0}.
+\]
+Now let $S_{\tau_{0},\mu_{j}}^{-1/2}$ denote a $\tau_{0}$ approximation
+to $R_{j-1}^{\dagger}\otimes_{\tau_{0}}\left(S+\mu_{j}I\right)\otimes_{\tau_{0}}R_{j-1}$.
+It follows that $R_{j}=R_{j-1}\otimes_{\tau_{0}}S_{\tau_{0},\mu_{j}}^{-1/2}$
+is a $\tau_{0}$ approximation to $\left(S+\mu_{j}I\right)^{-1/2}$. 
+Indeed, by the stability of SpAMM (\ref{bound}),
+\begin{eqnarray*}
+\left(R_{j-1}\otimes_{\tau_{0}}S_{\tau_{0},\mu_{j}}^{-1/2}\right)^{\dagger} & = & \left(R_{j-1}S_{\tau_{0},\mu_{j}}^{-1/2}\right)^{\dagger}+\mathcal{O}\left(\tau_{0}\right)\\
+ & = & \left(S_{\tau_{0},\mu_{j}}^{-1/2}\right)^{\dagger}\left(R_{j-1}\right)^{\dagger}+\mathcal{O}\left(\tau_{0}\right)\\
+ & = & \left(S_{\tau_{0},\mu_{j}}^{-1/2}\right)^{\dagger}\otimes_{\tau_{0}}\left(R_{j-1}\right)^{\dagger}+\mathcal{O}\left(\tau_{0}\right).
+\end{eqnarray*}
+Therefore,  \[
+\left\Vert R_{j}^{\dagger}\otimes_{\tau_{0}}\left(S+\mu_{j}I\right)\otimes_{\tau_{0}}R_{j}-I\right\Vert _{F}\lesssim\tau_{0},
+\]
+where $R_{j}$ is given by  the product representation
+\begin{eqnarray*}
+R_{j} & = & R_{j-1}\otimes_{\tau_{0}}S_{\tau_{0},\mu_{j}}^{-1/2}\\
+ & = & R_{j-2}\otimes_{\tau_{0}}S_{\tau_{0},\mu_{j-1}}^{-1/2}\otimes_{\tau_{0}}S_{\tau_{0},\mu_{j}}^{-1/2}\\
+ & = & S_{\tau_{0},\mu_{0}}^{-1/2}\otimes_{\tau_{0}}\dots\otimes_{\tau_{0}}S_{\tau_{0},\mu_{j-1}}^{-1/2}\otimes_{\tau_{0}}S_{\tau_{0},\mu_{j}}^{-1/2}.
+\end{eqnarray*}
 
 
 
@@ -1140,87 +1168,6 @@ double exponential (Fig.)
 %\subsubsection{ordering}
 %\subsubsection{Matrix Market}
 
-\section{TEMPERARY:NOTES FOR REGULARIZATION SECTION} 
-
-The idea of preconditioning is that we can use a low tolerance $\tau_{0}$
-(e.g. $\tau_{0}=10^{-2}$) to cheaply obtain an approximation $R_{0}\approx S^{-1/2}$.
-Then since $S_{1}\equiv R_{0}SR_{0}$ is close to the identity matrix
-$I$, 
-\[
-\left\Vert R_{0}SR_{0}-I\right\Vert _{F}\lesssim\tau_{0},
-\]
-we can use Newton Schulz on $S_{1}$ with a higher tolerance $\tau_{1}$
-to get an accurate approximation $R_{1}=S_{1}^{-1/2}$ and using only
-a few iterations:
-\[
-\left\Vert R_{1}S_{1}R_{1}-I\right\Vert _{F}\lesssim\tau_{1}.
-\]
-In particular, the matrix $S_{1}$, being close to the identity, is
-better conditioned than $S$ and computing $S_{1}^{-1/2}$ requires
-much fewer Newton Schulz iterations. Moreover, since 
-\[
-\left\Vert \left(R_{1}R_{0}\right)S\left(R_{0}R_{1}\right)-I\right\Vert _{F}\lesssim\tau_{1},
-\]
-we see that $R_{1}R_{0}$ is a $\tau_{1}$ approximation to $S^{-1/2}$.
-Notice that, from the stability bound for SpAMM, we can replace all
-of the exact matrix multiplications with SpAMM multiplications. 
-
-To formalize this, let $S_{0}=S$, and suppose that $R_{j}$ is the
-approximation to $S_{j}^{-1/2}$ obtained via the Newton Schulz iteration
-with SpAMM tolerance $\tau_{j}$, so that
-\[
-\left\Vert R_{j}\otimes_{\tau_{j}}S_{j}\otimes_{\tau_{j}}R_{j}-I\right\Vert _{F}\lesssim\tau_{j}.
-\]
-Then define $S_{j+1}=R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}$
-and let $R_{j+1}$ the approximation to $S_{j+1}^{-1/2}$ obtained
-via the Newton Schulz iteration with SpAMM tolerance $\tau_{j+1}$,
-so that 
-\[
-\left\Vert R_{j+1}\otimes_{\tau_{K}}S_{j+1}\otimes_{\tau_{K}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
-\]
-Then since $S_{j+1}=R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}$,
-\[
-\left\Vert R_{j+1}\otimes_{\tau_{K}}\left(R_{j}\otimes_{\tau_{K}}S_{j}\otimes_{\tau_{K}}R_{j}\right)\otimes_{\tau_{K}}R_{j+1}-I\right\Vert _{F}\lesssim\tau_{j+1}.
-\]
-In general, defining 
-\[
-R_{\text{left}}\equiv R_{j+1}\otimes_{\tau_{K}}R_{j}\otimes_{\tau_{K}}R_{j-1}\dots\otimes_{\tau_{K}}R_{0},
-\]
-and 
-\[
-R_{\text{right}}\equiv R_{0}\otimes_{\tau_{K}}R_{1}\dots\otimes_{\tau_{K}}R_{j}\dots\otimes_{\tau_{K}}R_{j+1},
-\]
-it follows by induction that 
-\[
-\left\Vert R_{\text{left}}\otimes_{\tau_{K}}S\otimes_{\tau_{K}}R_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{K}.
-\]
-
-
-Now, by stability of SpAMM,
-\[
-\left\Vert R_{\text{left}}SR_{\text{right}}-I\right\Vert _{F}\lesssim\tau_{K}.
-\]
-Also,
-\[
-R_{j+1}\otimes_{\tau_{K}}R_{j}\otimes_{\tau_{K}}R_{j-1}\dots\otimes_{\tau_{K}}R_{0} 
-\]
-can be written as
-\[ 
- \left(R_{0}\otimes_{\tau_{K}}R_{1}\dots\otimes_{\tau_{K}}R_{j}\dots\otimes_{\tau_{K}}R_{j+1}\right)^{\text{T}}+\mathcal{O}\left(\tau_{K}\right).
-\]
-Therefore, $R_{\text{left}}=R_{\text{right}}^{\text{T}}+\mathcal{O}\left(\tau_{K}\right)$,
-and so 
-\begin{equation}
-\left\Vert R_{\text{left}}SR_{\text{left}}^{\text{T}}-I\right\Vert _{F}\lesssim\tau_{K}.\label{eq:product decomposition error bound}
-\end{equation}
-
-
-We can therefore write the following symbolic representation 
-\[
-S^{-1/2}=S_{\tau_{j+1}}^{-1/2}\otimes_{\tau_{j+1}}S_{\tau_{j}}^{-1/2}\otimes_{\tau_{j}}S_{\tau_{j-1}}^{-1/2}\dots\otimes_{\tau_{1}}S_{\tau_{0}}^{-1/2}+\mathcal{O}\left(\tau_{j+1}\right),
-\]
-where $S_{\tau_{k}}^{-1/2}$ is a $\tau_{k}$ approximation to the
-inverse square root of $S_{k}=S_{\tau_{k-1}}^{-1/2}\otimes_{\tau_{k-1}}S_{k-1}\otimes_{\tau_{j}}S_{\tau_{k-1}}^{-1/2}$. 
 
 
 
