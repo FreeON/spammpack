@@ -318,7 +318,8 @@ $\tt SpAMM$ is a $n$-body method for fast matrix multiplication, related to the
 generalized methods popularized by Grey \cite{Gray2001,Gray2003}. In our development,
 generalization reflects the {\em genericity} \cite{} of recursive data access \cite{}, 
 enabling range querries, metric querries, higher dimensional querries and so on, with common frameworks, 
-structures and runtimes.  So far, we have prototyped $n$-body solvers for the five mainstay solvers in modern electronic structure theory, 
+structures and runtimes.  So far, we have prototyped $n$-body solvers for mainstay problems in modern electronic structure theory 
+\cite{ostlundszabo, wyang}, 
 involving Fock exchange \cite{}, semi-local exchange-correlation functionals \cite{}, 
 the Hartree (Coulomb) interaction \cite{}, matrix sign function \cite{} and the matrix inverse square root (this work).
 This contribution is cornerstone for the simplification and evolution of these solvers.  
@@ -342,14 +343,14 @@ $\tt SpAMM$ also employs on the fly wheighted sampling,  but with
 compresion through locality, brought about by algebraic correlations (towards identity) and also in the
 metric structure, through strong Euclidean locality.
 
-Methods that achieve compression in the stream of product intermediates are different from reduced rank algorithms that achieve 
-matrix compression in a step that preceeds multiplication (seperability)  \cite{}.   However, matrix compressions are 
-generally compatible with the quadtree, as are additional fast (generalized) solvers that add complex functionality ({\em e.g.} 
-in electronic structure theory \cite{}).  Thus, generality 
-and interoperability may enable deeply layered, thin and generic solvers easy access to in place data. 
-Further, language support may provide simple (skeletonized) frameworks for generic recursion, 
-offering opportunities to greatly simplify codebase at the systems level, 
-lowering barriers to entry and enhancing concurence (in the Erlang sense). 
+% Methods that achieve compression in the stream of product intermediates are different from reduced rank algorithms that achieve 
+% matrix compression in a step that preceeds multiplication (seperability)  \cite{}.   However, matrix compressions are 
+% generally compatible with the quadtree, as are additional fast (generalized) solvers that add complex functionality ({\em e.g.} 
+% in electronic structure theory \cite{}).  Thus, generality 
+% and interoperability may enable deeply layered, thin and generic solvers easy access to in place data. 
+% Further, language support may provide simple (skeletonized) frameworks for generic recursion, 
+% offering opportunities to greatly simplify codebase at the systems level, 
+% lowering barriers to entry and enhancing concurence (in the Erlang sense). 
 
 
 Finally, previous work on the scaled NS iteration has heavily influenced this work.  Formost is 
@@ -420,10 +421,10 @@ $\left(\mat{s}^{1/2},\mat{s}^{-1/2}\right)$, in the direction $\left(
 In addition to the dual channel instance, we also consider the ``single'' channel version of square root iteration,
 \begin{eqnarray}\label{single}
 \mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right] \; , \nonumber \\
-\mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k-1} \; .
+\mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k} \; .
 \end{eqnarray}
 
-\subsection{Mapping}
+\subsection{Mapping}\label{map}
 
 $\ot$ is also a map.  atm, stocastic unrpredictable, but really deterministic.  excersize Control
 
@@ -464,19 +465,19 @@ is addressed in Section \ref{}.
 
 \subsection{Stability}
 
-There are a number of equivalent instances of the square root iteration, related by commutations and transpositions. 
-Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm single}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$.  
-However, with ill-conditioning and in only double precision, these two instances may diverge rapidly due to compounding  errors.
-In the case of the dual iteration, the $\widetilde{\mat{y}}^{\rm dual}_k$ channel does not retain contact with the eigenvectors of $\mat{s}$, 
-and can diverge easily from this basis. In the single instance, conection with $\mat{s}$ is retained at each step, but at the price 
-the update involving a broad spectral resolution, {\em e.g.} involving $\mat{s}^{-1/2} \cdot \mat{s}$  at convergence. 
+% There are a number of equivalent instances of the square root iteration, related by commutations and transpositions. 
+% Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm single}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$.  
+% However, with ill-conditioning and in only double precision, these two instances may diverge rapidly due to compounding  errors.
+% In the case of the dual iteration, the $\widetilde{\mat{y}}^{\rm dual}_k$ channel does not retain contact with the eigenvectors of $\mat{s}$, 
+% and can diverge easily from this basis. In the single instance, conection with $\mat{s}$ is retained at each step, but at the price 
+% the update involving a broad spectral resolution, {\em e.g.} involving $\mat{s}^{-1/2} \cdot \mat{s}$  at convergence. 
 
-Stability in the square root iteration is determined to first order by the differential 
+Stability in the square root iteration is determined  by the differential 
 \begin{equation} \label{firstorderdual}
 \delta \mat{x}_k = \,  { \mat{x}}_{\delta \widehat{\mat{y}}_{k-1}}  \, {\scriptstyle \times} \, \delta y_{k-1}
                  \, + \,  { \mat{x}}_{\delta \widehat{\mat{z}}_{k-1}}  \, {\scriptstyle \times} \, \delta z_{k-1}  \, + {\cal O}(\tau^2) 
 \end{equation}
-which must remain bounded below 1 to avoid divergence.   The cooresponding Fr\"{e}chet derivatives are
+which must remain bounded below one to avoid divergence.   The cooresponding Fr\"{e}chet derivatives are
 \begin{equation}
   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}}
 = \lim_{\tau \rightarrow 0} \slantfrac{ \mat{x} \left( \mat{y}_{k-1} + \tau \delta \widehat{\mat{y}}_{k-1} ,  {\mat{z}}_{k-1}  \right)
@@ -496,8 +497,8 @@ In the single instance, we have simply:
 
 This formulation makes plain changes about the resolvent, seperating orientational effects 
 of the directional derivatives, set mostly by the underlying exact linear algebra, from 
-changes to error displacements, which involve both the action of derivatives on previous errors, $k-1$, as well as 
-the $\tt SpAMM$ occlusion errors local to NS step $k$.
+changes to error displacements, which involve both the action of derivatives on previous errors,  as well as 
+the $\tt SpAMM$ occlusion errors local to the product.
 
 
 \subsection{Fr\"{e}chet Derivatives}
@@ -540,11 +541,9 @@ In the dual instance, Fr\"{e}chet derivatives occuring in Eq.~(\ref{firstorderdu
 \begin{multline}\label{dxdy}
  \mat{x}_{\delta \widehat{ \mat{z}}_{k-1}} =  {\mat{y}}_{k-1} \cdot  h'_\alpha \delta \widehat{ \mat{z}}_{k-1} \cdot  \mat{y}_{k-1}  \cdot \mat{z}_{k} \\
 \qquad + \mat{y}_k \cdot  \delta \widehat{\mat{z}}_{k-1} \cdot   h_\alpha \left[ \mat{x}_{k-1} \right] \\
-\qquad \qquad +  \mat{y}_{k} \cdot  \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1} \, .
+\qquad \qquad +  \mat{y}_{k} \cdot  \mat{z}_{k-1} \cdot {\mat{y}}_{k-1} \cdot h'_\alpha \delta \widehat{\mat{z}}_{k-1} \, ,
 \end{multline}
-
 and 
-
 \begin{multline}\label{dxdz}
   \mat{x}_{\delta \widehat{ \mat{y}}_{k-1}} = h_\alpha \left[ \mat{x}_{k-1} \right]  \cdot \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k} \\
 +  h'_\alpha  \delta \widehat{\mat{y}}_{k-1} \cdot \mat{z}_{k-1} \cdot  \mat{y}_{k-1} \cdot  \mat{z}_{k} \\
@@ -552,7 +551,7 @@ and
 \end{multline}
 
 
-Closer to a fixed point orbit,  $\mat{y}_k \cdot \mat{z}_{k-1} \rightarrow \mat{I}$, $\mat{y}_{k-1} \cdot \mat{z}_{k} \rightarrow \mat{I}$,
+Closer to the fixed point orbit,  $\mat{y}_k \cdot \mat{z}_{k-1} \rightarrow \mat{I}$, $\mat{y}_{k-1} \cdot \mat{z}_{k} \rightarrow \mat{I}$,
 $h_\alpha \left[ \mat{x}_{k} \right] \rightarrow \mat{I}$ and $h'_\alpha \rightarrow - \frac{1}{2}$ \cite{higham2005}.  Then,
 
 \begin{equation} \label{yorbit}
@@ -564,139 +563,111 @@ and
 \end{equation}
 Likewise, in the single channel instance:
 \begin{multline}
- \mat{x}_{\widehat{\mat{z}}_{k-1}} \rightarrow  \left(  \mat{z}^\dagger_{k} - \mat{z}^\dagger_{k-1} \right) \cdot \mat{s} \cdot \delta \widehat{\mat{z}}_{k-1} \\
-+  \delta \widehat{\mat{z}}^\dagger_{k-1} \cdot  \mat{s}  \cdot \left(  \mat{z}_{k} - \mat{z}_{k-1} \right)  \, .
+ \mat{x}_{\widehat{\mat{z}}_{k-1}} \rightarrow  \left(  \mat{z}_{k} - \mat{z}_{k-1} \right)^\dagger \cdot \mat{s} \cdot \delta \widehat{\mat{z}}_{k-1} \\
++  \, \delta \widehat{\mat{z}}^\dagger_{k-1} \cdot  \mat{s}  \cdot \left(  \mat{z}_{k} - \mat{z}_{k-1} \right)  \, .
 \end{multline}
 
-About the fixed point then, directional contributions along $\delta \widehat{\mat{y}}_{k-1}$ and $\delta \widehat{\mat{z}}_{k-1}$ are 
-shut tightly as  $\mat{x}_{\delta \widehat{\mat{x}}_{k-1}} \rightarrow  \mat{I}$.
+About the fixed point then, error flow in the $\mat{y}_k$ and the $\mat{z}_k$ channels is tightly quenched,
+cooresponding to $\mat{x}_{\delta \widehat{\mat{x}}_{k-1}} \rightarrow  \mat{I}$  and identity iteration \cite{higham2005}.
 
 \subsection{Displacements}
+Countering oritentational convergence,  determined almost entirely by the underlying exact itations, is the 
+the compounding displacement error, determined by $\tt SpAMM$ occlusion in each of three products, at each step, and also
+involving previous errors.  Here, we look at just the displacement $\delta \mat{z}_{k-1}$,
+which has the largest potential for divergence as we argue here and show numerically in the following section. 
 
-In this analysis, we've seperated the directional component of the error from its distance, because in addition to the
-previous compounding error, each displacement contains also a first order $\tt SpAMM$ source error.  Its simpler to 
-consider these effects serpately, at least in this first contribution. 
-
-To understand $\delta \mat{z}_{k-1}$, we partially unwind the approxinate  $\widetilde{\mat{z}}_{k-1}$;
-%\begin{equation}
+Including the $\tt SpAMM$ error in the $\widetilde{\mat{z}}_{k-1}$ update we have:
 \begin{eqnarray} \label{widetildez}
- \widetilde{\mat{z}}_{k-1} &=&  \widetilde{\mat{z}}_{k-2}  \, \ot \, h_\alpha[\widetilde{\mat{x}}_{k-2}]\\
+ \widetilde{\mat{z}}_{k-1} &=&  \widetilde{\mat{z}}_{k-2}  \, \ot \, h_\alpha[\widetilde{\mat{x}}_{k-2}]\\ \nonumber
 &=& \Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau
-+ \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right]
++ \widetilde{\mat{z}}_{k-2} \cdot h_\alpha\left[ \widetilde{\mat{x}}_{k-2}\right] \, .
 %\end{equation}
 \end{eqnarray}
-Then, using
-\begin{equation}
-  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
-=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
-\end{equation}
-and taking $\mat{z}_{k-1}$ from both sides, we find  
+Then, with $ h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
+=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2}$, and taking $\mat{z}_{k-1}$ from both sides, we find  
 %Eq.~(\ref{widetildez}) yeilds 
 \begin{multline}
  \delta {\mat{z}}_{k-1} =\Delta^{\widetilde{\mat{z}}_{k-2} \cdot h_\alpha \left[ \widetilde{\mat{x}}_{k-2}\right]}_\tau
 \\ +\delta \mat{z}_{k-2} \cdot h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]
 + \mat{z}_{k-2} \cdot h'_\alpha \delta \mat{x}_{k-2}  \, ,
 \end{multline}
-bounded by 
+which is bounded by 
 % \begin{multline}
 %  \delta {z}_{k-1} <
 % \lVert \mat{z}_{k-2} \rVert \left( \;  \tau \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
 % + h'_\alpha \delta {x}_{k-2} \right)  \\ +
 % \delta {z}_{k-2}  \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2}  \right] \rVert 
 % \end{multline}
- \begin{multline}
+ \begin{multline}\label{zdispalcementbound}
   \delta {z}_{k-1} <
- \lVert \mat{z}_{k-2} \rVert \left( \tau \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
+ \lVert \mat{z}_{k-2} \rVert \left( \tau  \, \sigma_n  \, \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]  \rVert
  + h'_\alpha  \delta y_{k-2} \lVert z_{k-2} \rVert \right)  \\ 
  + \delta {z}_{k-2} \left( \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2}  \right] \rVert  + \lVert y_{k-2} \rVert \right) .
  \end{multline}
 
+In Eq.~(\ref{zdispalcementbound}),  the term $h'_\alpha  \delta y_{k-2} { \lVert \mat{z}_{k-2} \rVert }^2$ is volitile, tending towards
+$\delta y_{k-2} \, \kappa(\mat{s})/2$.  Because of this sensitivity, and because the $\mat{y}_k$ product channel maintains fidelity 
+of the starting eigen-basis, we single out this ``sensitive'' product for a higher level of precision; $\tau_s \ll \tau$.
+Still, we expect different behavior from the single instance $\widetilde{\mat{y}}_{k-1} = \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ots \, \mat{s}$,
+and the dual instance $\widetilde{\mat{y}}_{k-1} =  h_\alpha [\widetilde{\mat{x}}_{k-1}]  \ots \widetilde{\mat{y}}_{k-1} $.
+This is because the spectral product is broader (resolving larger and smaller numbers) 
+in the single instance and narrower in the dual instance.
 
-primary error channels contibuting to $\delta z_{k-1}$ are through the first order $\tt SpAMM$ error
-$ \tau \lVert \mat{z}_{k-2} \rVert \lVert h_\alpha \left[\widetilde{\mat{x}}_{k-2} \right]\rVert$
-and the volatile term $h'_\alpha  \delta y_{k-2} { \lVert \mat{z}_{k-2} \rVert }^2$.
+\subsection{Experiments}
 
-
- 
-\begin{eqnarray}
-\widetilde{\mat{y}}^{\rm single}_{k-1} &=& \widetilde{\mat{z}}^{\dagger}_{k-1} \, \ot \, \mat{s} \\
-                                  &=& \mat{\Delta}^{\widetilde{\mat{z}}^\dagger_{k-1} \cdot \, \mat{s}} \, + \,
-\left( \widetilde{\mat{z}}_{k-2} \cdot h_\alpha[ \widetilde{\mat{x}}_{k-2}] \right)^\dagger \, \cdot \, \mat{s}
-\end{eqnarray}
-
-
-
-
-%  \begin{eqnarray}
-% \widetilde{\mat{y}}_{k-1}&=&
-% h_\alpha [ \widetilde{\mat{x}}_{k-2}] \, \ots \, \widetilde{\mat{y}}_{k-2}  \\
-% &=&  \mat{\Delta}^{  h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2} }_{\tau_s}  \, + \,
-%      h_\alpha[ \widetilde{\mat{x}}_{k-2}] \cdot \widetilde{\mat{y}}_{k-2}
-% \end{eqnarray}
-% \begin{multline}
-% \delta \mat{y}_{k-1}= \mat{\Delta}^{h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \mat{y}_{k-2} }_\tau  \\ +
-% h'_\alpha \delta \mat{x}_{k-2} \cdot \mat{y}_{k-2}
-% + h_\alpha [ \widetilde{\mat{x}}_{k-2}] \cdot \delta \mat{y}_{k-2} \, ,
-% \end{multline}
-
-corresponding to  basis corruption and controlled by $\ots$, with $\tau_s \ll \tau$. 
-As above, we can unwind this sensitive term, to find 
-\begin{multline}
-\delta y_{k-2} <   \lVert \mat{y}_{k-3} \rVert  \left( \tau_s \lVert h_\alpha [ \widetilde{\mat{x}}_{k-3}] \rVert + h'_\alpha \delta z_{k-3} \right )\\
-+  \delta y_{k-3}  \left( \lVert \widetilde{\mat{z}}_{k-3}]  \rVert + \lVert h_\alpha [ \widetilde{\mat{x}}_{k-3}]  \rVert
-  \right)
-\, .
-\end{multline}
-
-
-\subsection{Single Channel Instance}
-
-
-\subsection{Bifurcations}
-
-\begin{figure}[h] \label{flow_noscale_dual}
+\begin{figure}[h]
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual.eps}
-\caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$.
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$
-are the dashed lines.  The trace expectation is shown as a full black line. }
+\caption{Derivatives, displacements and trace error of the unscaled dual iteration.
+Derivatives are full lines, whilst the displacements cooresponding to $\tau_s=\{10^{-8}, 10^{-9}, 10^{-10}\}$
+are the dashed lines.  The trace error is shown as a full black line. } \label{flow_noscale_dual}
 \end{figure}
 
-
-% \begin{figure}[h]
-% \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_stab.eps}
-% \caption{Derivatives, displacements and the approximate trace of the unscaled, singlelized NS iteration for a (3,3) 
-% nanotube with $\kappa =10^{10}$. 
-% Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and 
-% $\tau_y=\{10^{-4}, 10^{-5}, 10^{-6}$  are the dashed lines.  The trace expectation is shown as a full black line. }
-% \end{figure}
-
-
-\begin{figure}[h] \label{flow_scaled_dual}
+\begin{figure}[h] 
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_dual.eps}
-\caption{Derivatives, displacements and the approximate trace of the scaled, singlelized NS iteration for a
-(3,3) nanotube with $\kappa =10^{10}$.
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$,
-$\tau=10^{-3}$ and $\tau_y=\{10^{-3},10^{-4},10^{-6}\}$
-are the dashed lines.  The trace expectation is shown as a full black line. }
+\caption{Derivatives, displacements and the approximate trace of the scaled dual iteration.
+Derivatives are full lines, whilst the displacements cooresponding to $\tau_s=\{10^{-8}, 10^{-9}, 10^{-10}\}$
+are the dashed lines.  The trace error is shown as a full black line. }\label{flow_unscaled_dual}
 \end{figure}
 
-\begin{figure}[h]\label{flow_scaled_stab}
+\begin{figure}[h]
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_scaled/33_tube_k10_scale_stab.eps}
-\caption{Derivatives, displacements and the approximate trace of the unscaled, dual NS iteration for a (3,3) nanotube with $\kappa =10^{10}$.
-Derivatives are full lines, whilst the displacements cooresponding to $b=64$, $\tau=10^{-3}$ and $\tau_y=\{10^{-8}, 10^{-9}, 10^{-10}\}$
-are the dashed lines.  The trace expectation is shown as a full black line. }
+\caption{Derivatives, displacements and the approximate trace of the scaled single iteration.
+Derivatives are full lines, whilst the displacements cooresponding to $\tau_s=\{10^{-3}, 10^{-4}, 10^{-5}\}$
+are the dashed lines.  The trace error is shown as a full black line. }\label{flow_scaled_dual}
 \end{figure}
 
-Differences in occlusion between single and dual magnified as bounds for s.z not as tight as bounds for h.y.
+These experiments were carried out on the ill-conditioned $(\kappa(\mat{s})=10^{10})$ nanotube metric-matrices described in Appendix~\ref{data}.
+We picked  $\tau ={\tt .001}$ and block size $b = 8$.  Then, we looked at stability with respect to the tighter $\tau_s$ threshold, 
+the directional derivatives and the trace error.   
 
- *lot* of overlap too (reproducing hilberts etc).
+In Fig.~\ref{flow_noscale_dual}, unscaled results for the dual instance are shown.  In Fig.~\ref{flow_scaled_dual}, scaled results for the
+dual instance are given, recaiming approximatly $2/3$ of the available $2 \times$ acceleration, with a $1/3$ penalty due to the
+stabilization map described in Section \ref{map}. Then, in Fig.~\ref{flow_scaled_stab} we show results for the scaled single instance. 
+
+Not shown is complete fillin at convergence for even the most-approximate-yet-still-stable (MAYSS) value of $\tau_s$.  
+Also, with a less forgiving stability map, we find interesting 
+left/right differences;  namely, the right first product 
+\begin{equation} 
+\widetilde{\mat{x}}^R_k \leftarrow \widetilde{\mat{z}}^\dagger_{k} \, \ot  \, \left( \mat{s} \,  \ots \, \widetilde{\mat{z}}_{k-1}  \right) \; ,
+\end{equation}
+is  different from the left first product 
+\begin{equation} 
+\widetilde{\mat{x}}^L_k \leftarrow \left(  \widetilde{\mat{z}}^\dagger_{k} \, \ots \, \mat{s} \right) \,  \ot  \, \widetilde{\mat{z}}_{k-1} \; ,
+\end{equation}
+which is unsuprising. The stability map parameters discussed Section \ref{map} 
+are tuned away from such senstivities, and their local variation has a neglibible impact on stability.  
+Also not shown, the intermediate volumes (before fill in) behave very differently with scaling; in all cases, the product volumes,
+proportional to the computatonal cost, are significantly increased by scaling.  In the remainder of this work, we won't look at scaling again.
 
 \section{Iterated Regularization}\label{regularization}
 
+Need a way to access metric locality for even full problems. 
+Shown in the preceeding section, singleiliyty limits application of the NS square root iteration under 
+agressive $\tt SpAMM$ approximation.  
+
 \subsection{Rilely's Correction}
 
-Shown in the preceeding section, singleiliyty limits application of the NS square root iteration under 
-agressive $\tt SpAMM$ approximation.  These limits can be circumvented through Tikhonov regularization \cite{}, 
+These limits can be circumvented through Tikhonov regularization \cite{}, 
 involving a small level shift of eigenvalues,  $\mat{s}_\mu \leftarrow \mat{s}+\mu \mat{I}$, leading to a more 
 well conditioned matrix with $\kappa( \mat{s}_\mu) = \frac{\sqrt{s^2_{N-1} + \mu^2}}{\sqrt{s^2_0+\mu^2}}$ \cite{}.  
 However, achieving substantial acceleration with severe ill-conditioning  may require a large level shift, 
