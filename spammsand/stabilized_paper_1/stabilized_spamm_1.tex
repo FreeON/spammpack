@@ -408,7 +408,12 @@ and its low-complexity computation with fast methods.
 Starting with eigenvalues rescaled to the domain $(0,1]$ with the easily obtained 
 largest eigenvalue,   $\mat{s} \leftarrow \mat{s}/s_{N-1}$, and with $\mat{z}_0=\mat{I}$ and 
 $\mat{x}_0=\mat{y}_0=\mat{s}$, the cooresponding canonical,  ``dual'' channel square root iteration is:
-\begin{eqnarray}\label{cannonical}
+\begin{eqnarray}\label{cannonical}Then, using
+\begin{equation}
+  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
+=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
+\end{equation}
+
 \mat{y}_k &\leftarrow& h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot \mat{y}_{k-1}  \nonumber \\
 \mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \; ,
 \end{eqnarray}
@@ -423,7 +428,12 @@ $\left(\mat{s}^{1/2},\mat{s}^{-1/2}\right)$, in the direction $\left(
 \delta \mat{y}_k &=& \frac{1}{2} \delta \mat{y}_{k-1} - \frac{1}{2} \mat{s}^{1/2} \cdot \delta \mat{z}_{k-1} \cdot \mat{s}^{1/2} \\
 \delta \mat{z}_k &=& \frac{1}{2} \delta \mat{z}_{k-1} - \frac{1}{2} \mat{s}^{-1/2} \cdot \delta \mat{y}_{k-1} \cdot \mat{s}^{-1/2} \;.
 \end{eqnarray}
-In addition to the dual channel instance, we also consider the ``single'' channel version of square root iteration,
+In addition to the dual channel instance, we also consider the ``single''Then, using
+\begin{equation}
+  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
+=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
+\end{equation}
+ channel version of square root iteration,
 \begin{eqnarray}\label{single}
 \mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right] \; , \nonumber \\
 \mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k} \; .
@@ -431,40 +441,30 @@ In addition to the dual channel instance, we also consider the ``single'' channe
 
 \subsection{Mapping}\label{map}
 
-$\ot$ is also a map.  atm, stocastic unrpredictable, but really deterministic.  excersize Control
 
-In this contribution, we consider another aspect of convergence,
-namely the (hopefully) linear approach towards stability of the
-iteration
+The NS logistic map for the square root iteration is $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
+with the inital rate of convergence controled by $h'_\alpha$ and the smallest eigenvalue, $x_0$. 
+arious schemes for controling the values $\alpha$ towards convergence, 
+notably  by Pan and Schreiber \cite{Pan1991}, and more recently, Jie and Chen \cite{Chen2014}, who demonstrated  $\tt 2 \times$
+acceleration for very ill-conditioned problems with their new scaling approach. 
+
+In addition to scaling of the NS logistic, we introduce a stabilizing map that accounts for eigenvalues 
+tossed out of bounds by $\ot$. This stabilization is the transformation $[0,1] \rightarrow [0+\varepsilon, 1-\varepsilon]$
+(shift and scale), carried out prior to application of the logistic.   
+
+The most important aspect of these scaling and stabilization maps is to turn them off towards convergence.  Conventional methods 
+often compute a lowest eigenvalue to monitor convergence \cite{Pan1991,Chen2014}, but this may be too expensive for ill-conditioned problems. 
+Alternatively, we monitor convergence simply with the relative trace error, 
+$t_k = \left( n - {\rm tr} \, \widetilde{\mat{x}}_k \right) n^{-1}$.  
+Then, emperically developed sigmoidal functions are used to damp the scaling parameter to unity, 
 \begin{equation}
-\widetilde{\mat{x}}_k \leftarrow
- \widetilde{\mat{y}}_k \left( \widetilde{\mat{x}}_{k-1} \right)
-\, \ot \, \widetilde{\mat{z}}_k \left( \widetilde{\mat{x}}_{k-1} \right) \, ,
-\end{equation}
-made difficult by ill-conditioning and a sketchy $\ot$.
-
-
-Then, using
+\alpha(t) = {\tt 1.} + {\tt 1.85}  \times \left( 1+e^{-{\tt 50.}(t-{\tt .35})}  \right)^{-1} 
+\end{euqation}
+and the stability parameter to zero, 
 \begin{equation}
-  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
-=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
+\varepsilon(t) = {\tt .1} \times \left( 1+e^{-{\tt 75.}(t-{\tt .30})}  \right)^{-1} \, .
 \end{equation}
-
-
-Initially, $h'_\alpha$ at the smallest eigenvalue $x_0$ controls the
-rate of progress towards idempotence.  As recently shown by Jie and
-Chen \cite{Chen2014}, for very ill-conditioned problems, a factor of
-two reduction in the number of NS steps can be achieved by choosing
-$\alpha \sim 2.85$, which is at the edge of stability.  As argued by
-Pan and Schreiber \cite{Pan1991}, Jie and Chen \cite{Chen2014},
-switching or damping the scaling factor towards $\alpha=1$ at
-convergence is important, shifting emphasis away from the behavior of
-$x_0$ towards {\em e.g.}~$x_i \in [0.01,1]$, emphasizing overall
-convergence of the broad distribution \cite{Pan and Scriber}.  In an
-approximate algebra like $\tt SpAMM$, the potential for eigenvalues to
-fluctuate out of the domain of convergence must be considered.  This
-is addressed in Section \ref{}.
-
+These functions are used throughtout. 
 
 \section{Error Flows in Square Root Iteration}
 
