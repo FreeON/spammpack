@@ -69,6 +69,8 @@
 
 \affiliation{Theoretical Division, Los Alamos National Laboratory}
 
+\preprint{\tt LA-UR-15-26304}
+
 \begin{abstract}
 We develop the Sparse Approximate Matrix Multiply $n$-body solver for first order Newton Schulz iteration of the 
 matrix square root and inverse square root.
@@ -170,7 +172,8 @@ this paper follows.
 
 \tableofcontents
 
-\section{Sparse Approximate Matrix Multiplication ($\tt SpAMM$)}
+\section{$\tt SpAMM$}
+%\section{Sparse Approximate Matrix Multiplication ($\tt SpAMM$)}
 
 In this contribution, we consider an $N$-body approach to the
 approximation of matrix functions with decay, based on the quadtree data structure \cite{wise, samet}
@@ -189,7 +192,7 @@ matrix structures with well segregated neighborhoods, inhabited by
 matrix elements of like size, and efficiently resolved by the quadtree
 data structure \cite{}.
 
-\subsection{Occlusion-Cull }
+\subsection{Occlusion-cull }
 
 The Sparse Approximate Matrix Multiply ($\tt SpAMM$) carries out occlusion-culling to find only the
 most important sub-volumes in an approximate matrix product. 
@@ -307,7 +310,7 @@ and the lemma follows.
 
 \end{proof}
 
-\subsection{Related Research} 
+\subsection{Related research} 
 
 $\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast matrix multiplication 
 \cite{springerlink:10.1007/BF02165411,Ballard2014}.
@@ -379,7 +382,7 @@ and the square root iteration, related by the square, $\mat{I}\left(
 iterations converge linearly at first, then enter a basin of stability
 marked by super-linear convergence.  
 
-\subsection{Sign Iteration}
+\subsection{Sign iteration}
 
 For the NS sign iteration, this basin is marked by a behavioral change
 in the difference $\delta \mat{X}_k = \widetilde{\mat{X}}_k -\mat{X}_k
@@ -394,7 +397,7 @@ bounds on this iteration have been derived by Bai and Demmel
 asymptotic bounds.  The automatic stability of sign iteration is a
 well developed theme in Ref.\cite{Higham08}.
 
-\subsection{Square Root Iteration}
+\subsection{Square root iteration}
 
 In this work, we are concerned with resolution of the identity \cite{}
 \begin{equation}
@@ -503,7 +506,7 @@ changes to error displacements, which involve both the action of derivatives on 
 the $\tt SpAMM$ occlusion errors local to the product.
 
 
-\subsection{Fr\"{e}chet Derivatives}
+\subsection{Fr\"{e}chet derivatives}
 %\subsubsection{Dual}
  
 In the dual instance, Fr\"{e}chet derivatives occuring in Eq.~(\ref{firstorderdual}) are:
@@ -615,7 +618,7 @@ and the dual instance $\widetilde{\mat{y}}_{k-1} =  h_\alpha [\widetilde{\mat{x}
 This is because the spectral product is broader (resolving larger and smaller numbers) 
 in the single instance and narrower in the dual instance.
 
-\subsection{Most Approximate but Still Stable}
+\subsection{Most approximate but still stable}
 
 \begin{figure}[h]
 \includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling/33_nanotube_cond10_noscale_dual.eps}
@@ -685,7 +688,7 @@ factor is Riley's method based on Taylor's series \cite{};
 For severely ill-conditioned problems and large level shifts, this expansion may converge very slowly. 
 Also, adding powers of the full inverse may not be computationally effective. 
 
-\subsection{Product Representation}
+\subsection{Product representation}
 
 We introduce an alternative representation of the regularized inverse factor;
 \begin{equation} \label{spammsandwich}
@@ -1094,7 +1097,7 @@ cooresponding relative product error is bound by Eq.~(\ref{bound}).  Also, we de
 algebraic locality, {lensing}, that develops with strongly contractive identity iteration.
 
 This work is gauged against other methods for fast matrix multiplication discussed in Section \ref{}. 
-Against $\tt SpMM$, the $n$-body approach offers a bounded control over relative errors in 
+Against $\tt SpGEMM$, the $n$-body approach offers a bounded control over relative errors in 
 the product and the ability to resolve complex algebraic structures, about plane-diagonals of the $ijk$-cube, 
 along tall-skiny pillae and for volumetric contractions to lower dimensional objects via lensing. 
 The $n$-body method uniquely and synnergistically exploits two distinct forms of locality, metric locality cooresponding to 
