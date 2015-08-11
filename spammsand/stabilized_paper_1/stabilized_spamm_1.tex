@@ -99,14 +99,15 @@ In many areas of application, long range, high value correlations lead to matrix
 By decay, we mean an approximate inverse relationship between matrix elements and an associated distance; 
 this may be a simple inverse relationship between matrix elements and the Cartesian distance between
 corresponding support functions, or it may involve a non-Euclidean distance, 
- {\em  e.g.}~a generalized measure between character strings in a training library \cite{}. 
+{\em  e.g.}~a generalized measure between character strings. 
 
 Matrix equations with decay have history and recent development in the statistics and statistical physics litterature
 \cite{penrose1974,voit00, Anselin2003, Hardin2013, Krishtal2014}.   Also recently, methods for meshfree interpolation 
 are demonstrating remarkable predictive power through delocalized correlations and cooresponding 
-ill-conditioned matrix equations with extreme slow decay \cite{}, a problem equivalent to the LCAO Gaussian basis problem 
-in quantum chemistry \cite{}.  Generally, local support functions are correlated 
-through Lowdin's symmetric orthogonalization based on the matrix inverse square root \cite{Lowdin56, naidu11}, 
+ill-conditioned matrix equations with extreme slow decay \cite{Schaback1995,schaback2006kernel,Fornberg2014}, 
+a problem equivalent to linear dependence in LCAO Gaussian basis problem 
+in quantum chemistry \cite{Rothlisberger2002,Jansik2007,helgaker2008molecular}.  Generally, local support functions are correlated 
+through Lowdin's symmetric orthogonalization based on the matrix inverse square root \cite{Lowdin56}, 
 yeilding representation independent matrix equations. 
 In electronic structure, important long-range correlations manifest in slow decay properties 
 of the gap shifted matrix sign function, as projector of the effective Hamiltonian (Fig.~\ref{figure1}).  
@@ -127,7 +128,6 @@ The theory and computation of these matrix functions is given in Higham's refere
     (semi-conducting 4,3 nanotube), and long (metalic 3,3 nanotube)
     ranged, from exponential (insulating) to algebraic (metallic). }
 \end{figure}
-
 
 A well conditioned matrix $\mat{s}$ may often correspond to matrix
 sign and inverse square root functions with rapid exponential decay,
@@ -171,34 +171,44 @@ can lead to complexity reduction under contractive iteration and the $n$-body oc
 this paper follows.
 
 \tableofcontents
-
-\section{$\tt SpAMM$}
-%\section{Sparse Approximate Matrix Multiplication ($\tt SpAMM$)}
-
-In this contribution, we consider an $N$-body approach to the
-approximation of matrix functions with decay, based on the quadtree data structure \cite{wise, samet}
-\begin{equation}
-\mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, ,
-\end{equation}
-and orderings that are locality preserving \cite{}.  Orderings that
-preserve data locality are well developed and {\bf \em generic} in the database theory
-\cite{}, providing fast spatial and metric queries.  Locality
-enabled, fast data access is central to  $b$-body approximations
-\cite{}, and an important problem for enterprise \cite{} and runtime
-systems \cite{}, moreso with memory hierarchies becoming increasingly
-asynchronous and decentralized \cite{cache}.  For matrices with
-decay, orderings that preserve locality lead to blocked-by-magnitude
+For matrices with decay, orderings that preserve locality lead to blocked-by-magnitude
 matrix structures with well segregated neighborhoods, inhabited by
 matrix elements of like size, and efficiently resolved by the quadtree
 data structure \cite{}.
+\section{$\tt SpAMM$}
+%\section{Sparse Approximate Matrix Multiplication ($\tt SpAMM$)}
+
+In this contribution, we further develop the $\tt SpAMM$ $n$-body solver for the
+approximation of matrix functions with decay, based on the quadtree data structure 
+\cite{Samet:1990:DAS:77589,Samet:2006:DBDS,springerlink:10.1007/3-540-51084-2_9,Adams:2006:SOS},
+\begin{equation}
+\mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  
+\\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, .
+\end{equation}
+For matrices with decay, orderings that preserve locality lead to blocked-by-magnitude
+matrix structures with well segregated neighborhoods, inhabited by
+matrix elements of like size, and efficiently resolved by the quadtree
+data structure.  One common approach involves reordering an underlying Cartesian support  
+with space filling curves \cite{Aluru:1997:SFC,Bader:2006:SFC,Campbell:2003:SFC,Devine:2005:SFC,Lashuk:2009:SFC}
+
+
+
+These methods do not however depend on Cartesian locality of the support, as shown later. 
+
+and orderings of underlying Cartesian data that are locality preserving 
+
+
+
+
 
 \subsection{Occlusion-cull }
 
 The Sparse Approximate Matrix Multiply ($\tt SpAMM$) carries out occlusion-culling to find only the
 most important sub-volumes in an approximate matrix product. 
 $\tt SpAMM$ has evolved from a row-coloumn oriented skipout mechanism within the
-BCSR and DBCSR structures \cite{}, to hierachical approaches based on the quadtree and related to 
-the occlusion-culling found in advanced mechanics and graphics methodologies \cite{}, 
+BCSR and DBCSR structures \cite{challacombe1999simplified,Challacombe:2000:SpMM}, 
+to hierachical approaches based on the quadtree and related to 
+the occlusion-culling found in advanced mechanics and graphics methodologies \cite{Challacombe2010}, 
 with occlusion the avoidence of unessesary tree-work and culling the collection of significant tasks. 
 Here, we ammend the $\tt SpAMM$ occlusion-cull with the recursion:
 \begin{widetext}
@@ -307,7 +317,6 @@ We can now finish the proof of Proposition~\ref{lem:SpAMM mult, prop}. Indeed, b
 In addition, if $\alpha_{lij}=0$, then $\left|A_{il}B_{lj}\right|<\tau_{A,B}$
 and the lemma follows.
 
-
 \end{proof}
 
 \subsection{Related research} 
@@ -320,8 +329,8 @@ In the $\tt SpAMM$ approach to fast multixplication, the numerically most signif
 This bound makes $\ot$ a {\em stable} form of fast multiplication,  as explained by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).
 
 $\tt SpAMM$ is a $n$-body method for fast matrix multiplication, related to the 
-generalized methods popularized by Grey \cite{Gray2001,Gray2003}. In our development,
-generalization reflects the {\em genericity} \cite{} of recursive data access \cite{}, 
+generalized methods popularized by Grey \cite{Gray01,Gray2003}. In our development,
+generalization reflects the {\em genericity} of recursive data access \cite{genericityindata,Geerts2002,Samet:2006:DBDS} ,
 enabling range querries, metric querries, higher dimensional querries and so on, with common frameworks, 
 structures and runtimes.  So far, we have prototyped $n$-body solvers for mainstay problems in modern electronic structure theory 
 \cite{ostlundszabo, wyang}, 
@@ -331,7 +340,7 @@ This contribution is cornerstone for the simplification and evolution of these s
 
 Top-down $n$-body recursion and breadth-first map-reduction may be viewed as two sides of 
 the same problem \cite{Aluru}.  Emergent data frameworks and 
-functional programming languages that support generic recursion and map skelitinizations may enable 
+functional programming languages that support generic recursion and skelitinizations \cite{March} may enable 
 early exploitation of commodity (decentralized) concurence by scientific $n$-body solvers, 
 as well as software sustainability \cite{softwaresustainanbilty}.
 For centralized, distributed architectures, $n$-body methods offer well established protocols for turning spatial and metric locality into 
@@ -398,7 +407,6 @@ asymptotic bounds.  The automatic stability of sign iteration is a
 well developed theme in Ref.\cite{Higham08}.
 
 \subsection{Square root iteration}
-
 In this work, we are concerned with resolution of the identity \cite{}
 \begin{equation}
 \mat{I} \left( \mat{s} \right) =\mat{s}^{1/2} \cdot \mat{s}^{-1/2} \, ,
@@ -408,17 +416,12 @@ and its low-complexity computation with fast methods.
 Starting with eigenvalues rescaled to the domain $(0,1]$ with the easily obtained 
 largest eigenvalue,   $\mat{s} \leftarrow \mat{s}/s_{N-1}$, and with $\mat{z}_0=\mat{I}$ and 
 $\mat{x}_0=\mat{y}_0=\mat{s}$, the cooresponding canonical,  ``dual'' channel square root iteration is:
-\begin{eqnarray}\label{cannonical}Then, using
-\begin{equation}
-  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
-=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
-\end{equation}
-
+\begin{eqnarray}\label{cannonical}
 \mat{y}_k &\leftarrow& h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \cdot \mat{y}_{k-1}  \nonumber \\
 \mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{y}_{k-1} \cdot \mat{z}_{k-1} \right] \; ,
 \end{eqnarray}
 converging as ${\mat{y}}_k \rightarrow \mat{s}^{1/2}$, ${\mat{z}}_k \rightarrow \mat{s}^{-1/2}$ and
-${\mat{x}}_k \rightarrow {\mat{I}}$, with eigenvalues aggregated towards 0 or 1 by 
+${\mat{x}}_k \rightarrow {\mat{I}}$, with eigenvalues aggregated towards 1 by 
 the NS map $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$ \cite{}.  
 As in the case of sign iteration, this cannonical iteration was shown by Higham, Mackey, Mackey and
 Tisseur \cite{Higham2005} to remain strongly bounded in the superlinear regime, by idempotent Frechet derivatives about the fixed point
@@ -428,20 +431,13 @@ $\left(\mat{s}^{1/2},\mat{s}^{-1/2}\right)$, in the direction $\left(
 \delta \mat{y}_k &=& \frac{1}{2} \delta \mat{y}_{k-1} - \frac{1}{2} \mat{s}^{1/2} \cdot \delta \mat{z}_{k-1} \cdot \mat{s}^{1/2} \\
 \delta \mat{z}_k &=& \frac{1}{2} \delta \mat{z}_{k-1} - \frac{1}{2} \mat{s}^{-1/2} \cdot \delta \mat{y}_{k-1} \cdot \mat{s}^{-1/2} \;.
 \end{eqnarray}
-In addition to the dual channel instance, we also consider the ``single''Then, using
-\begin{equation}
-  h_\alpha \left[ \widetilde{\mat{x}}_{k-2} \right]
-=  h_\alpha \left[ \mat{x}_{k-2} \right] +  h'_\alpha  \delta \mat{x}_{k-2} \, 
-\end{equation}
- channel version of square root iteration,
+In addition to the dual channel instance, we also consider the ``single'' channel version of square root iteration,
 \begin{eqnarray}\label{single}
 \mat{z}_k &\leftarrow& \mat{z}_{k-1} \cdot h_\alpha \left[ \mat{x}_{k-1} \right] \; , \nonumber \\
 \mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k} \; .
 \end{eqnarray}
 
 \subsection{Mapping}\label{map}
-
-
 The NS logistic map for the square root iteration is $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
 with the inital rate of convergence controled by $h'_\alpha$ and the smallest eigenvalue, $x_0$. 
 arious schemes for controling the values $\alpha$ towards convergence, 
@@ -459,7 +455,7 @@ $t_k = \left( n - {\rm tr} \, \widetilde{\mat{x}}_k \right) n^{-1}$.
 Then, emperically developed sigmoidal functions are used to damp the scaling parameter to unity, 
 \begin{equation}
 \alpha(t) = {\tt 1.} + {\tt 1.85}  \times \left( 1+e^{-{\tt 50.}(t-{\tt .35})}  \right)^{-1} 
-\end{euqation}
+\end{equation}
 and the stability parameter to zero, 
 \begin{equation}
 \varepsilon(t) = {\tt .1} \times \left( 1+e^{-{\tt 75.}(t-{\tt .30})}  \right)^{-1} \, .
