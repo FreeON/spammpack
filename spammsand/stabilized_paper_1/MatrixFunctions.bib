@@ -140,6 +140,55 @@ year = {2014}
   publisher = {John Wiley \& Sons, Inc.}
 }
 
+@inproceedings{Sarje2010a,
+abstract = {The emergence of cloud computing and Google's MapReduce paradigm is renewing interest in the development of broadly applicable high level abstractions as a means to deliver easy programmability and cyber resources to the user, while hiding complexities of system architecture, parallelism and algorithms, heterogeneity, and fault-tolerance. In this paper, we present a high-level framework for computations on tree structures. Despite the diversity and types of tree structures, and the algorithmic ways in which they are utilized, our abstraction provides sufficient generality to be broadly applicable. We show how certain frequently used operations on tree structures can be cast in terms of our framework. We further demonstrate the applicability of our framework by solving two applications -- k-nearest neighbors and fast multipole method (FMM) based simulations -- by merely using our framework in multiple ways. We developed a generic programming based implementation of the framework using C++ and MPI, and demonstrate its performance on the aforementioned applications using homogeneous multi-core clusters.},
+author = {Sarje, Abhinav and Aluru, Srinivas},
+booktitle = {Proc. Int. Conf. Parallel Process.},
+file = {:home/m/Desktop/Mendeley/Sarje, Aluru/Sarje, Aluru - 2009.pdf:pdf},
+pages = {343--352},
+title = {{A MapReduce style framework for computations on trees}},
+year = {2010}
+}
+
+@article{Gonzalez-Velez:2010:SAS:1890754.1890757,
+ author = {Gonz\'{a}lez-V{\'e}lez, Horacio and Leyton, Mario},
+ title = {A Survey of Algorithmic Skeleton Frameworks: High-level Structured Parallel Programming Enablers},
+ journal = {Softw. Pract. Exper.},
+ issue_date = {November 2010},
+ volume = {40},
+ number = {12},
+ month = nov,
+ year = {2010},
+  pages = {1135--1160},
+ numpages = {26},
+  publisher = {John Wiley \&amp; Sons, Inc.},
+ address = {New York, NY, USA},
+ keywords = {algorithmic skeletons, concurrent programming structures, parallel computing, parallel constructs, software patterns, structured parallelism},
+}
+
+﻿@article {CPE:CPE3087,
+author = {Totoo, Prabhat and Loidl, Hans-Wolfgang},
+title = {Parallel Haskell implementations of the N-body problem},
+journal = {Concurrency and Computation: Practice and Experience},
+volume = {26},
+number = {4},
+pages = {987--1019},
+keywords = {high-level parallel programming models, functional programming, n-body problem},
+year = {2014},
+}
+
+
+@inproceedings{rodrigues2014triolet,
+  title={Triolet: A programming system that unifies algorithmic skeleton interfaces for high-performance cluster computing},
+  author={Rodrigues, Christopher and Jablin, Thomas and Dakkak, Abdul and Hwu, Wen-Mei},
+  booktitle={ACM SIGPLAN Notices},
+  volume={49},
+  number={8},
+  pages={247--258},
+  year={2014},
+  organization={ACM}
+}
+
 @INPROCEEDINGS{Aluru:1997:SFC,
   author = {Aluru, Srinivas and Sevilgen, Fatih E.},
   title = {{Parallel Domain Decomposition and Load Balancing Using Space-Filling Curves}},
@@ -870,6 +919,15 @@ year = {2014}
   doi = {10.1088/1742-6596/180/1/012028}
 }
 
+
+@misc{Kahan2013,
+author = {Kahan},
+title = {{A Tutorial Overview of Vector and Matrix Norms}},
+url="www.cs.berkeley.edu/~wkahan/MathH110/NormOvrv.pdf",
+year = {2013}
+}
+
+
 @TECHREPORT{Campbell:2003:SFC,
   author = {Campbell, P.~M. and Devine, K.~D. and Flaherty, J.~E. and Gervasio,
 	L.~G. and Teresco, J.~D.},
@@ -970,6 +1028,21 @@ year = {2014}
   timestamp = {2010.07.03}
 }
 
+
+@article{DDH07,
+year={2007},
+journal={Numerische Mathematik},
+volume={108},
+number={1},
+title={Fast linear algebra is stable},
+publisher={Springer-Verlag},
+keywords={65F05; 65F15; 65F25; 65F30; 65F35; 65F40; 65G30; 65G50; 65Y20; 68Q25; 68W20; 68W40; 15A52},
+author={Demmel, James and Dumitriu, Ioana and Holtz, Olga},
+pages={59-91},
+language={English}
+}
+
+
 @ARTICLE{Challacombe:2000:SpMM,
   author = {Matt Challacombe},
   title = {{A} general parallel sparse-blocked matrix multiply for linear scaling{SCF}
@@ -1005,6 +1078,16 @@ year = {2014}
   title = {{An $N$-Body Solution to the Problem of Fock Exchange}},
   journal = {arXiv preprint arXiv:1401.6961},
   year = {2014}
+}
+
+@article{BockCK14,
+  author    = {Nicolas Bock and
+               Matt Challacombe and
+               Laxmikant V. Kal{\'{e}}},
+  title     = {Solvers for {\textdollar}{\textbackslash}mathcal\{O\} (N){\textdollar}
+               Electronic Structure in the Strong Scaling Limit},
+  year      = {2014},
+  url       = {http://arxiv.org/abs/1403.7458},
 }
 
 @ARTICLE{Challacombe2010,
@@ -3757,6 +3840,67 @@ language={English}
   publisher = {SIAM}
 }
 
+@inproceedings{Ambainis15,
+ author = {Andris Ambainis, Yuval Filmus and François Le Gall},
+ title = {Fast Matrix Multiplication: Limitations of the Coppersmith-Winograd Method},
+ booktitle = {Proceedings of the Forty-Seventh Annual ACM on Symposium on Theory of Computing},
+ series = {STOC '15},
+ year = {2015},
+ location = {Portland, Oregon, USA},
+ pages = {585--593},
+ numpages = {10},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {dynamic graph algorithms, streaming algorithms},
+}
+
+@inproceedings{cohn2005group,
+  title={Group-theoretic algorithms for matrix multiplication},
+  author={Cohn, Henry and Kleinberg, Robert and Szegedy, Balazs and Umans, Christopher},
+  booktitle={Foundations of Computer Science, 2005. FOCS 2005. 46th Annual IEEE Symposium on},
+  pages={379--388},
+  year={2005},
+  organization={IEEE}
+}
+
+@inproceedings{LeGall:2014:PTF:2608628.2608664,
+ author = {Le Gall, Fran\c{c}ois},
+ title = {Powers of Tensors and Fast Matrix Multiplication},
+ booktitle = {Proceedings of the 39th International Symposium on Symbolic and Algebraic Computation},
+ series = {ISSAC '14},
+ year = {2014},
+  location = {Kobe, Japan},
+ pages = {296--303},
+ numpages = {8},
+  publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {algebraic complexity theory, matrix multiplication},
+}
+
+
+@inproceedings{cohn2003group,
+  title={A group-theoretic approach to fast matrix multiplication},
+  author={Cohn, Henry and Umans, Christopher},
+  booktitle={Foundations of Computer Science, 2003. Proceedings. 44th Annual IEEE Symposium on},
+  pages={438--449},
+  year={2003},
+  organization={IEEE}
+}
+
+@inproceedings{Umans:2006:GAM:1145768.1145772,
+ author = {Umans, Christopher},
+ title = {Group-theoretic Algorithms for Matrix Multiplication},
+ booktitle = {Proceedings of the 2006 International Symposium on Symbolic and Algebraic Computation},
+ series = {ISSAC '06},
+ year = {2006},
+ isbn = {1-59593-276-3},
+ location = {Genoa, Italy},
+ pages = {5--5},
+ numpages = {1},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {finite groups, matrix multiplication, representation theory},
+}
 @ARTICLE{springerlink:10.1007/BF02165411,
   author = {Strassen, Volker},
   title = {Gaussian elimination is not optimal},
@@ -4188,6 +4332,54 @@ language={English}
   isbn = {978-3-540-67956-1},
   keyword = {Computer Science}
 }
+
+
+@article{Camata2010,
+author = {Camata, Jose J. and Coutinho, Alvaro L. G. a.},
+journal = {2010 22nd Int. Symp. Comput. Archit. High Perform. Comput.},
+month = oct,
+pages = {151--158},
+publisher = {Ieee},
+title = {{Parallel Linear Octree Meshing with Immersed Surfaces}},
+year = {2010}
+}
+
+
+@book{bader13,
+year={2013},
+volume={9},
+series={Texts in Computational Science and Engineering},
+booktitle={Space-Filling Curves: An Introduction with Applications in Scientific Computing},
+title={Space-Filling Curves: An Introduction with Applications in Scientific Computing},
+publisher={Springer Berlin Heidelberg},
+author={Bader, Michael},
+language={English}
+}
+
+@ARTICLE{1298805,
+author={Bartholdi, J.J., III and Goldsman, P.},
+journal={Visualization and Computer Graphics, IEEE Transactions on},
+title={Multiresolution indexing of triangulated irregular networks},
+year={2004},
+month={July},
+volume={10},
+number={4},
+pages={484-495},
+keywords={computational geometry;curve fitting;mesh generation;hierarchical triangulation;multiresolution indexing;space-filling curve;spatial index;triangle mesh;triangulated irregular networks;Computer graphics;Filling;Geographic Information Systems;Indexing;Information retrieval;Rendering (computer graphics);Spatial indexes;Spatial resolution;Strips;Tin;TIN;Triangulated irregular network;hierarchical triangulation;multiresolution triangulation;space-filling curve;spatial index.;triangle mesh;Algorithms;Computer Graphics;Image Enhancement;Image Interpretation, Computer-Assisted;Imaging, Three-Dimensional;Signal Processing, Computer-Assisted},
+}
+
+
+@article{Gunther2006,
+author = {Günther, Frank and Mehl, Miriam and Pögl, Markus and Zenger, Christoph},
+journal = {SIAM J. Sci. Comput.},
+keywords = {040604078,1,10,1137,25k99,35j05,35r99,65y20,68p05,68v20,ams subject classifications,cache-awareness,doi,introduction,most of the computing,partial differential equations,solution of par-,space-filling curves,space-tree,time in the numerical},
+number = {5},
+pages = {1634},
+title = {{A Cache-Aware Algorithm for PDEs on Hierarchical Data Structures Based on Space-Filling Curves}},
+volume = {28},
+year = {2006}
+}
+
 
 @ARTICLE{Wise:1984:RMQ:1089389.1089398,
   author = {Wise, David S.},

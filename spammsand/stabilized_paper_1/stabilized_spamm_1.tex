@@ -72,7 +72,7 @@
 \preprint{\tt LA-UR-15-26304}
 
 \begin{abstract}
-We develop the Sparse Approximate Matrix Multiply $n$-body solver for first order Newton Schulz iteration of the 
+We develop the Sparse Approximate Matrix Multiply ($\tt SpAMM$) $n$-body solver for first order Newton Schulz iteration of the 
 matrix square root and inverse square root.
 The solver performs an $n$-body occlusion-cull, yeilding a bounded relative error in the matrix-matrix product
 and reduced complexity for problems with structured metric decay.  This complexity reduction cooresponds to 
@@ -162,7 +162,7 @@ controled (absolute) truncation errors, {\em e.g.}~in the matrix-product:
 \overline{ \mat{a} \cdot \mat{b} }\; = \; \mat{a}\cdot\mat{b} \; +\; \mat{\epsilon}^{\mat{a}}_\tau \cdot \mat{b} \;+\;
  \mat{a} \cdot \mat{\epsilon}^{\mat{b}}_\tau  \; + \;   {\mathcal O}(\tau^2) \, .
 \end{equation}
-An alterative approach is to find a reduced rank approximation closed under the opperations of interest \cite{HSS}. 
+An alterative approach is to find a reduced rank approximation closed under the opperations of interest. 
 However, compression to a reduced rank may be expensive if the rank is not much much smaller than the dimension.
 Both of these methods, truncation and rank reduction, are focused on matrix data as the target for compresion.
 In this contribution, our target for compression is instead the matrix product itself.  For problems with
@@ -171,35 +171,34 @@ can lead to complexity reduction under contractive iteration and the $n$-body oc
 this paper follows.
 
 \tableofcontents
-For matrices with decay, orderings that preserve locality lead to blocked-by-magnitude
-matrix structures with well segregated neighborhoods, inhabited by
-matrix elements of like size, and efficiently resolved by the quadtree
-data structure \cite{}.
+
 \section{$\tt SpAMM$}
 %\section{Sparse Approximate Matrix Multiplication ($\tt SpAMM$)}
 
 In this contribution, we further develop the $\tt SpAMM$ $n$-body solver for the
 approximation of matrix functions with decay, based on the quadtree data structure 
-\cite{Samet:1990:DAS:77589,Samet:2006:DBDS,springerlink:10.1007/3-540-51084-2_9,Adams:2006:SOS},
+\cite{Wise:1984:RMQ:1089389.1089398,springerlink:10.1007/3-540-51084-2_9,
+      Samet:1990:DAS:77589,Wise1990,Wise:Ahnentafel,
+      Lorton:2006:ABL:1166133.1166134,Samet:2006:DBDS,Adams:2006:SOS,bader13},
 \begin{equation}
 \mat{a}^i = \begin{bmatrix} \,  \mat{a}^{i+1}_{00} \, & \,  \mat{a}^{i+1}_{01} \,  
 \\[0.2cm]  \, \mat{a}^{i+1}_{10} \,  & \,\mat{a}^{i+1}_{11} \, \end{bmatrix} \, .
 \end{equation}
-For matrices with decay, orderings that preserve locality lead to blocked-by-magnitude
-matrix structures with well segregated neighborhoods, inhabited by
-matrix elements of like size, and efficiently resolved by the quadtree
-data structure.  One common approach involves reordering an underlying Cartesian support  
-with space filling curves \cite{Aluru:1997:SFC,Bader:2006:SFC,Campbell:2003:SFC,Devine:2005:SFC,Lashuk:2009:SFC}
 
+For matrices with decay, orderings that preserve data-locality often 
+lead to blocked-by-magnitude or other structures that concentrate data in 
+well segregated neighborhoods; blocks, diagonals, bands \& {\em etc}.   
+Then, matrix elements of like size may be efficiently resolved by the quadtree data structure 
+\cite{Wise:1984:RMQ:1089389.1089398,springerlink:10.1007/3-540-51084-2_9,
+      Samet:1990:DAS:77589,Wise1990,Wise:Ahnentafel,
+      Lorton:2006:ABL:1166133.1166134,Samet:2006:DBDS,Adams:2006:SOS,Bock2013,bader13}.
 
-
-These methods do not however depend on Cartesian locality of the support, as shown later. 
-
-and orderings of underlying Cartesian data that are locality preserving 
-
-
-
-
+Increasing data concentration allows to avoid white space in querries and 
+computation, which is compressive for algorithms that can exploit these properties.
+One common example of such data locality cooresponds to an underlying order
+of particles, elements, support functions \& {\em etc.} with a space filling curve 
+\cite{Aluru:1997:SFC,Bader:2006:SFC,Campbell:2003:SFC,Devine:2005:SFC,Lashuk:2009:SFC, 
+Gunther2006,Camata2010,1298805,Bock2013,bader13}
 
 \subsection{Occlusion-cull }
 
@@ -210,7 +209,7 @@ BCSR and DBCSR structures \cite{challacombe1999simplified,Challacombe:2000:SpMM}
 to hierachical approaches based on the quadtree and related to 
 the occlusion-culling found in advanced mechanics and graphics methodologies \cite{Challacombe2010}, 
 with occlusion the avoidence of unessesary tree-work and culling the collection of significant tasks. 
-Here, we ammend the $\tt SpAMM$ occlusion-cull with the recursion:
+We again ammend the $\tt SpAMM$ occlusion-cull,  with the recursion
 \begin{widetext}
 \begin{equation}
 \mat{a}^{i} \ot \mat{b}^{i} =
@@ -236,7 +235,7 @@ that occurs in the approximate product
 \widetilde{\mat{a}\cdot \mat{b}} \,  \equiv \, \mat{a} \ot \mat{b} \,
   = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} \, ,
 \end{equation}
-where $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ is a sub-multiplicative norm \cite{}.
+where $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ is sub-multiplicative \cite{Kahan2013}.
 
 \subsection{Bound}
 
@@ -322,31 +321,39 @@ and the lemma follows.
 \subsection{Related research} 
 
 $\tt SpAMM$ is perhaps most closely related to the Strassen-like branch of fast matrix multiplication 
-\cite{springerlink:10.1007/BF02165411,Ballard2014}.
-In the Strassen-like approach, disjoint volumes in (abstract) tensor intermediates are omitted recursively \cite{}.  
-In the $\tt SpAMM$ approach to fast multixplication, the numerically most significant volumes in 
- n\"{a}ive ($ijk$) tensor intermediates are culled, with error bounded by Eq.~(\ref{bound}).  
-This bound makes $\ot$ a {\em stable} form of fast multiplication,  as explained by Demmel, Dumitriu and Holz (DDH; Ref.~\cite{Demmel07}).
+\cite{springerlink:10.1007/BF02165411,DDH07,Ballard2014,LeGall:2014:PTF:2608628.2608664,Ambainis15},
+and also methods for group theoretical embedding allowing fast polynomial multiplication 
+\cite{cohn2003group,cohn2005group,Umans:2006:GAM:1145768.1145772}.
+In the Strassen-like approach, disjoint tensor volumes are omitted recursively, 
+while in the $\tt SpAMM$ approach to fast multixplication, the numerically least significant 
+tensor intermediates in the n\"{a}ive product space are ommited recursively, with error bounded by Eq.~(\ref{bound}).  
+These methods for fast matrix multiplication are {\bf \em stable} \cite{DDH07}.
 
 $\tt SpAMM$ is a $n$-body method for fast matrix multiplication, related to the 
 generalized methods popularized by Grey \cite{Gray01,Gray2003}. In our development,
-generalization reflects the {\em genericity} of recursive data access \cite{genericityindata,Geerts2002,Samet:2006:DBDS} ,
-enabling range querries, metric querries, higher dimensional querries and so on, with common frameworks, 
-structures and runtimes.  So far, we have prototyped $n$-body solvers for mainstay problems in modern electronic structure theory 
-\cite{ostlundszabo, wyang}, 
-involving Fock exchange \cite{}, semi-local exchange-correlation functionals \cite{}, 
-the Hartree (Coulomb) interaction \cite{}, matrix sign function \cite{} and the matrix inverse square root (this work).
-This contribution is cornerstone for the simplification and evolution of these solvers.  
+generalization reflects the {\em genericity} of recursive data access 
+\cite{genericityindata,Geerts2002,Samet:2006:DBDS,Gottschling2009},
+enabling new math supported by range querries, metric querries, higher dimensional querries and so on, but with common frameworks, 
+structures and runtimes.  So far, we have prototyped $n$-body solvers for the  mainstay problems in modern electronic structure theory, 
+including the Fock exchange \cite{challacombe2014n}, 
+semi-local exchange-correlation functionals \cite{Challacombe:2000:HiCu,10.1063/1.1568734}, 
+the Hartree (Coulomb) interaction \cite{Challacombe:Review,Challacombe:1996:QCTCb,Challacombe:1997:QCTC,Challacombe:1997:PFMM}, 
+matrix sign function \cite{Challacombe2010,BockCK14} 
+and the matrix inverse square root (this work).
+%This contribution is cornerstone for the simplification and evolution of these solvers.  
 
-Top-down $n$-body recursion and breadth-first map-reduction may be viewed as two sides of 
-the same problem \cite{Aluru}.  Emergent data frameworks and 
-functional programming languages that support generic recursion and skelitinizations \cite{March} may enable 
-early exploitation of commodity (decentralized) concurence by scientific $n$-body solvers, 
-as well as software sustainability \cite{softwaresustainanbilty}.
+%Top-down $n$-body recursion and breadth-first map-reduction may be viewed as two sides of 
+%the same problem \cite{Aluru}.  
+Emergent data frameworks, functional programming languages and other technologies that support generic recursion and 
+skelitinizations \cite{Sarje2010a,Gonzalez-Velez:2010:SAS:1890754.1890757,CPE:CPE3087,rodrigues2014triolet,March} 
+may enable expoitation of increasingly cheap (decentralized) concurence by scientific $n$-body solvers, 
+and also lower bariers to entry, enhance reliability, sustainability \& {\em etc.}
 For centralized, distributed architectures, $n$-body methods offer well established protocols for turning spatial and metric locality into 
-data and temporal locality \cite{}.  Recently, Driscoll {\em et. al} showed perfect strong scaling and communication optimality 
-for pairwise $n$-body methods \cite{Driscoll13}.   Bridging the gap between 
-$n$-body solver and fast matrix multiplication, we recently demonstrated strong scaling for fast matrix multiplication ($\tt SpAMM$) \cite{}.  
+data and temporal locality \cite{Warren:1993:PHO:169627.169640,Warren:1995:HOT,Warren1995266,WarrenGordonBell1997,Warren2013}.  
+Recently for example, Driscoll {\em et. al} showed perfect strong scaling and communication optimality 
+for pairwise $n$-body methods \cite{Driscoll2013}.   Bridging the gap between 
+$n$-body solver and fast matrix multiplication, we recently demonstrated strong scaling for fast matrix multiplication 
+($\tt SpAMM$) \cite{BockCK14}.  
 
 This work offers a data local alternative to fast non-deterministic methods for sampling the product, 
 which include sketching \cite{Sarlos2006,Drineas2006,Mahoney2012,Pagh2013,Sivertsen2014,Woodruff2015},
@@ -869,7 +876,11 @@ in the product $\mat{c}=\mat{a} \ot \mat{b}$.}\label{Lensing3}
 
 Astrophysical $n$-body algorithms employ range querries over spatial databases to hierarchically discover 
 and compute approximations that commit only small errors.  Often, these spatial databases are ordered with a 
-space filling curve (SFC) \cite{}, which maps points that are close in space to an index where they are also close. 
+space filling curve (SFC) 
+\cite{Wise:1984:RMQ:1089389.1089398,springerlink:10.1007/3-540-51084-2_9,
+      Samet:1990:DAS:77589,Wise1990,Wise:Ahnentafel,
+      Lorton:2006:ABL:1166133.1166134,Samet:2006:DBDS,Adams:2006:SOS,Bock2013,bader13}, 
+which maps points that are close in space to an index where they are also close. 
 The block-by-magnitude structures empowering the $\tt SpAMM$ approximation are metric localities cooresponding
 to metric decay, in quantum chemical examples cooresponding to an underlying SFC ordering of Carteisan coordinates. 
 
@@ -877,7 +888,7 @@ Warren and Salmon showed how to parlay spatial locality into temporal locality,
 remapping and repartitioning the space filling curve to rebalance distributed $n$-body tasks,
 based on accumulated histories (persistence data).
 In a similar way, we showed how persistence can be used to achieve 
-strong parallel scaling for $\tt SpAMM$ with commonly available runtimes \cite{}.  
+strong parallel scaling for $\tt SpAMM$ with commonly available runtimes \cite{Bock13}.  
 Persistence data, providing temporal locality, may also be useful in mathematical approximation.  
 
 %The locality of $\tt SpAMM$ volumes depends on opposing effects; ill-conditioning leads to delocalizations 
