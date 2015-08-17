@@ -1,1 +1,0 @@
-project( spammpack C CXX )

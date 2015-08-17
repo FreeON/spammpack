@@ -1,9 +1,0 @@
-module node
-{
-  array [2D] Node
-  {
-    entry Node (int depth, int childsize, int tier);
-    entry void norm (const CkCallback &cb);
-    entry [reductiontarget] void normDone (double norm);
-  };
-};

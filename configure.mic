@@ -1,3 +1,0 @@
-#./configure CC=icc FC=ifort FCFLAGS="-vec-report2 -O3 -no-prec-div -extend-source -align array64byte -g -assume byterecl -mmic" CFLAGS="-O3 -g -mmic" --disable-shared --host=mic-unknown-linux-gnu
-#./configure CC=icc FC=ifort FCFLAGS="-O3 -no-prec-div -extend-source -align array64byte -g -assume byterecl -mmic -opt-matmul -mkl=sequential -fopenmp" CFLAGS="-O3 -g -traceback -mmic" --disable-shared --host=mic-unknown-linux-gnu
-./configure CC=icc FC=ifort FCFLAGS="-vec-report3 -O3 -no-prec-div -extend-source -align array64byte -g -assume byterecl -mmic -opt-matmul -mkl=sequential -fopenmp" CFLAGS="-O3 -g -traceback -mmic" --disable-shared --host=mic-unknown-linux-gnu

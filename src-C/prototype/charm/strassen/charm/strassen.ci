@@ -1,9 +1,0 @@
-mainmodule strassen
-{
-  extern module Matrix;
-  mainchare Main
-  {
-    entry Main (CkArgMsg *msg);
-    entry [threaded] void run (int N, int blocksize, bool debug, bool verify);
-  };
-};

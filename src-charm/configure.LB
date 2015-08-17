@@ -1,3 +1,0 @@
-#!/bin/bash
-
-./configure --enable-load-balance --enable-default-LB "$@"

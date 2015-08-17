@@ -1,7 +1,0 @@
-Source: spammpack
-Package: spammpack
-Maintainer: www.freeon.org
-Section: devel
-Priority: optional
-Homepage: http://www.freeon.org/spammpack
-Description: An implementation of the Sparse Approximate Matrix Multiply (SpAMM) Algorithm
