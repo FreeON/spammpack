@@ -296,8 +296,8 @@ $j>n/2$. Since the analysis is similar for all four cases, we only
 consider $i\leq n/2$ and $j\leq n/2$. We have that 
 \begin{eqnarray*}
 \left( \mat{a} \ot \mat{b}\right)_{ij} & = & \left( \mat{a}_{00} \ot \mat{b}_{00}+\mat{a}_{01}\ot \mat{b}_{10}\right)_{ij}\\
- & = & \sum_{l=1}^{n/2}\left(\mat{a}_{00}\right)_{il}\left(\mat{b}_{00}\right)_{lj}\alpha_{lij}^{0} + \\
- &   &  \sum_{l=1}^{n/2}\left(\mat{a}_{01}\right)_{il}\left(\mat{b}_{10}\right)_{lj}\alpha_{lij}^{1}\\
+ & = & \sum_{l=1}^{n/2}\left(\mat{a}_{00}\right)_{il}\left(\mat{b}_{00}\right)_{lj}\alpha_{lij}^{0}  \\
+ &   & \qquad + \sum_{l=1}^{n/2}\left(\mat{a}_{01}\right)_{il}\left(\mat{b}_{10}\right)_{lj}\alpha_{lij}^{1}\\
  & = & \sum_{l=1}^{n}a_{il}b_{lj}\alpha_{lij},
 \end{eqnarray*}
 where we used the induction hypothesis in the second equality.
@@ -392,7 +392,7 @@ the Helgaker group's work on NS iteration, whose notation we follow in part \cit
 
 % Finally, the
 
-\section{First Order Newton-Shulz Iteration}
+\section{Newton-Shulz Iterations}
 
 There are two common, first order NS iterations; the sign iteration
 and the square root iteration, related by the square, $\mat{I}\left(
@@ -446,6 +446,25 @@ In addition to the dual channel instance, we also consider the ``single'' channe
 \mat{x}_k &\leftarrow&  \mat{z}^\dagger_{k} \cdot \mat{s} \cdot \mat{z}_{k} \; .
 \end{eqnarray}
 
+\pagebreak
+--
+\pagebreak
+
+\section{Implementation}
+
+\subsection{Programming}
+
+$\tt SpAMM$ remains experimental with several feature driven implementations, including a Haskell version \cite{}, 
+a fine grained ($\tt 4\times 4$) {\tt s.p.}~assembly coded version \cite{} and  
+a strong scaling task parallel version in {\tt C++}, {\tt OpenMP 3.0} and {\tt Charm++} \cite{}.  
+In the current contribution, informal functional progamming in {\tt Fortran08} \cite{} was used in the implementation, 
+with the goal of generic simplicity and mathematical development, and longer term, performance under {\tt OpenMP 4.0} 
+\cite{}. Localized functions instantiate or reuse sub-matrices in forward recursion, and accumulate 
+node decorations (flops, bounding boxes, non-zeros, norms, initialization flags {\em etc}) in 
+backward (tail) recursion. 
+Optional features include the first order Fr\"{e}chet analyses, outlined in Section \ref{stability}, 
+as well as sparse $\tt VTK$ output for visualization of the 
+
 \subsection{Mapping}\label{map}
 The NS logistic map for the square root iteration is $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
 with the initial rate of convergence controlled by $h'_\alpha$ and the smallest eigenvalue, $x_0$. 
@@ -471,9 +490,18 @@ and the stability parameter to zero,
 \end{equation}
 These functions are used throughout. 
 
-\section{Error Flows in Square Root Iteration}
 
-\subsection{Stability}
+
+% FP, F08, OpenMP 4.0
+% In the current implementation, all persistence data
+% (norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
+%  that may be achieved by minimal locally essential trees \cite{}.
+
+\subsection{Data} \label{data}
+
+\section{Error Flow}% in Square Root Iteration}
+
+\subsection{Stability}\label{stability}
 
 % There are a number of equivalent instances of the square root iteration, related by commutations and transpositions. 
 % Nominally, $\mat{y}^{\rm dual}$ is equivalent to $\mat{y}^{\rm single}_k \equiv \mat{z}^\dagger_{k} \cdot \mat{s}$.  
@@ -623,8 +651,6 @@ This is because the spectral product is broader (resolving larger and smaller nu
 in the single instance and narrower in the dual instance.
 
 \subsection{Most approximate but still stable}
-
-
 
 \begin{figure}[h]
 %\includegraphics[width=3.5in]{fig_33_tube_cond_10_noscaling_33_nanotube_cond10_noscale_dual-eps-converted-to.pdf}
@@ -1178,19 +1204,7 @@ a high quality inverse factor.   Here, we have only looked at complexity and sta
 approximate preconditioners for a few systems and for a few numerical experiments.  However, the results are 
 new and encouraging, showing the potential for  many orders of magnitude reduction in complexity.
 
-\appendix 
 
-\section{Implementation}
-
-%\subsection{programming}
-
-% FP, F08, OpenMP 4.0
-% In the current implementation, all persistence data
-% (norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
-%  that may be achieved by minimal locally essential trees \cite{}.
-
-
-\section{Data} \label{data}
 
 %\subsubsection{double exponential ill-conditioning}
 %3,3 carbon nanotube with diffuse $sp$-function
