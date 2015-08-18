@@ -26,21 +26,21 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-add_executable( spamm-multiply spamm-multiply.F90 )
-add_dependencies( spamm-multiply spammpack-serial-shared )
-target_link_libraries( spamm-multiply utilities spammpack-serial-shared )
+# add_executable(spamm-multiply spamm-multiply.F90)
+# add_dependencies(spamm-multiply spamm)
+# target_link_libraries(spamm-multiply
+#   utilities
+#   spamm)
 
-add_executable( spamm-lowdin spamm-lowdin.F90 )
-add_dependencies( spamm-lowdin spammpack-serial-shared )
-target_link_libraries( spamm-lowdin
-  utilities
-  spammpack-serial-shared
-  ${LAPACK_LIBRARIES}
-  )
+# add_executable(spamm-lowdin spamm-lowdin.F90)
+# add_dependencies(spamm-lowdin spamm)
+# target_link_libraries(spamm-lowdin
+#   utilities
+#   spamm
+#   ${LAPACK_LIBRARIES})
 
-add_executable( map map.F90 )
+# add_executable(map map.F90)
 
-include_directories(
-  ${CMAKE_BINARY_DIR}/src/include-serial
-  ${CMAKE_BINARY_DIR}/utilities
-  )
+# include_directories(
+#   ${CMAKE_BINARY_DIR}/src
+#   ${CMAKE_BINARY_DIR}/utilities)

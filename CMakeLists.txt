@@ -270,10 +270,10 @@ if(ETAGS)
 endif()
 
 #add_subdirectory(src-solvers)
-#add_subdirectory(tools)
-
 add_subdirectory(src)
 add_subdirectory(spammsand)
+add_subdirectory(utilities)
+add_subdirectory(tools)
 
 set(SPAMM_TESTING FALSE
   CACHE BOOL "Compile test suite.")
@@ -281,8 +281,6 @@ if(SPAMM_TESTING)
   enable_testing()
   add_subdirectory(tests)
 endif()
-
-#add_subdirectory(utilities)
 
 set(CPACK_PACKAGE_NAME "spammpack")
 set(CPACK_PACKAGE_VERSION_MAJOR 1)
