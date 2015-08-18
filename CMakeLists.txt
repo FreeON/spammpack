@@ -239,12 +239,12 @@ math(EXPR SPAMM_CHUNK_BLOCKS "${SPAMM_CHUNK_SIZE}/${SPAMM_CHUNK_BLOCK_SIZE}")
 math(EXPR SPAMM_CHUNK_NODES "(4*${SPAMM_CHUNK_BLOCKS}*${SPAMM_CHUNK_BLOCKS}-1)/3.")
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/src/spamm_globals.F90.in
-  ${CMAKE_BINARY_DIR}/src/spamm_globals.F90)
+  ${CMAKE_SOURCE_DIR}/src-old/spamm_globals.F90.in
+  ${CMAKE_BINARY_DIR}/src-old/spamm_globals.F90)
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/src-chunk/spamm_chunk_config.F90.in
-  ${CMAKE_BINARY_DIR}/src-chunk/spamm_chunk_config.F90)
+  ${CMAKE_SOURCE_DIR}/src/spamm_chunk_config.F90.in
+  ${CMAKE_BINARY_DIR}/src/spamm_chunk_config.F90)
 
 find_program(CTAGS ctags)
 
