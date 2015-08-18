@@ -1,8 +1,8 @@
 language: C
 
 branches:
-  except:
-    - webpage
+  only:
+    - master
 
 compiler:
   - gcc
