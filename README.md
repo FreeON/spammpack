@@ -1,6 +1,6 @@
 SpAMM, the Sparse Approximate Matrix Multiply.
 
-# Build Instructions
+# Build Instructions #
 
 This library uses CMake. Simply run
 
@@ -29,7 +29,7 @@ CMAKE_C_COMPILER
 CMAKE_Fortran_COMPILER
 ~~~
 
-# Building with full debugging
+# Building with full debugging #
 
 Configurating the library using
 
@@ -40,7 +40,7 @@ cmake -DCMAKE_BUILD_TYPE=Debug -DSPAMM_DEBUG_LEVEL=2 .
 will set compiler flag defaults that include bounds checking (we
 currently support GNU and Intel compilers).
 
-# Building with a specific compiler
+# Building with a specific compiler #
 
 When `cmake` is run, it searches for a suitable Fortran compiler. If
 the one it finds is not the one you would like to use, you have to
@@ -53,7 +53,7 @@ cmake -DCMAKE_Fortran_COMPILER=FCompiler
 where the `FCompiler` can be the name of the compiler executable with
 or without an absolute path.
 
-# Emacs suggested settings
+# Emacs suggested settings #
 
 For emacs users we have a suggested set of settings we use. Have a
 look at
@@ -61,7 +61,7 @@ look at
 file can simply be copy and pasted into an existing `~/.emacs`
 configuration file.
 
-# Some other useful things to know
+# Some other useful things to know #
 
 The `ctags` and `etags` targets generate tags files for `vim` and
 `emacs`, respectively. The tags file is written to the repository root
@@ -71,7 +71,7 @@ directory.
 make etags
 ~~~
 
-# Further Information
+# Further Information #
 
 For more information, see the doxygen documentation for details, or
 visit http://freeon.org/spammpack.
