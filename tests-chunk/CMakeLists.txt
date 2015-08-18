@@ -26,16 +26,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-include_directories( ${CMAKE_BINARY_DIR}/src-chunk )
+include_directories(${CMAKE_BINARY_DIR}/src-chunk)
 
-set( TEST_SOURCES
+set(TEST_SOURCES
   add_chunk_2d
   new_chunk_2d
-  random_chunk_2d
-  )
+  random_chunk_2d)
 
-foreach( TEST ${TEST_SOURCES} )
-  add_executable( ${TEST} ${TEST}.F90 )
-  target_link_libraries( ${TEST} spammchunk )
-  add_test( chunk:${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST} )
+foreach(TEST ${TEST_SOURCES})
+  add_executable(${TEST} ${TEST}.F90)
+  target_link_libraries(${TEST} spammchunk)
+  add_test(chunk:${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST})
 endforeach()
