@@ -281,7 +281,7 @@ contains
     integer :: i, j
     double precision :: norms(SPAMM_CHUNK_BLOCKS, SPAMM_CHUNK_BLOCKS)
 
-    is_verified = .false.
+    is_verified = .true.
 
     if(.not. associated(A)) return
     if(A%lower%bounds(0) <= A%upper%bounds(0)) return
