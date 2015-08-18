@@ -453,20 +453,19 @@ In addition to the dual channel instance, we also consider the ``single'' channe
 
 \subsection{Programming}
 
-The focus of our research is experimental,  so far involving issue driven implementations of $\tt SpAMM$, 
-including a Haskell version (formal functional programming) \cite{}, 
-a fine grained ($\tt 4\times 4$) {\tt s.p.}~assembly coded version (scalar performance) \cite{} and  
-a task parallel version in {\tt C++}, {\tt OpenMP 3.0} and {\tt Charm++} (strong scaling) \cite{}.  
-In the current contribution, informal functional progamming in {\tt Fortran08} \cite{} was used, 
-with the goal of demonstrating generic simplicity and mathematical development.
+In our experimental research, issue driven implementations of $\tt SpAMM$ have been developed, 
+including a Haskell version (formal functional programming) \cite{spammh}, 
+a fine grained ($\tt 4\times 4$) {\tt s.p.}~assembly coded version (scalar performance) \cite{Bock2013} and  
+a task parallel version in {\tt C++}, {\tt OpenMP 3.0} and {\tt Charm++} (strong scaling) \cite{BockCK14}.  
+In the current  contribution, informal functional progamming in {\tt Fortran08} was used, 
+with the goal of generic simplicity and mathematical discovery \cite{spammsand}.
 
 Localized functions instantiate or reuse sub-matrices in forward recursion, and accumulate 
 node decorations (flops, bounding boxes, non-zeros, norms, initialization flags {\em etc}) in 
 the backward (tail) recursion.  Optional, $\tt ifdef$'d features include the first order Fr\"{e}chet 
 analyses, outlined in Section \ref{stability} and using $\tt MATMUL$, 
 as well as sparse $\tt VTK$ output for visualization of the $ijk$ product volumes, shown in Section \ref{locality}.
-
-{\tt gfortran 4.8.1}
+All calculations were carried out in double precision using the {\tt gfortran 4.8.1} compiler. 
 
 \subsection{Mapping}\label{map}
 The NS logistic map for the square root iteration is $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
@@ -484,28 +483,33 @@ often compute a lowest eigenvalue to monitor convergence \cite{Pan1991,chen2014}
 ill-conditioned problems. 
 Alternatively, we monitor convergence simply with the relative trace error, 
 $t_k = \left( n - {\rm tr} \, \widetilde{\mat{x}}_k \right) n^{-1}$.  
-Then, empirically developed sigmoidal functions are used to damp the scaling parameter to unity, 
+Then, sigmoidal functions damp scaling to unity,
 \begin{equation}
-\alpha(t) = {\tt 1.} + {\tt 1.85}  \times \left( 1+e^{-{\tt 50.}(t-{\tt .35})}  \right)^{-1} 
+\alpha(t) = {\tt 1.} + {\tt 1.85}  \times \left( 1+e^{-{\tt 50.}(t-{\tt .35})}  \right)^{-1}  \, ,
 \end{equation}
-and the stability parameter to zero,-box 
+and the stability parameter to zero,
 \begin{equation}
 \varepsilon(t) = {\tt .1} \times \left( 1+e^{-{\tt 75.}(t-{\tt .30})}  \right)^{-1} \, .
 \end{equation}
-These functions are used throughout. 
+These empirical damping functions are used throughout. 
 
 \subsection{Data} \label{data}
 
-{\tt TubeGen} \cite{tubegen}
-STO-2G \cite{Schuchardt2007}
-
-with diffuse $sp$-shell, with $\zeta_{10^{10}}={\tt .06918}$, $\zeta_{10^{11}}={\tt .05934}$
-double exponential .  We are not advocating such ill-conditioned functions as an efficient basis; but are using artificially difficult problems to illustrate assymptotically bad .. 
-
-the triple $\zeta$ 6-311G** basis set \cite{Schuchardt2007} 
-
-the {\tt gromacs} utility {\tt gmx solvate -box} \cite{gmx30}
-to generate cubic water box coordinates increasing by 100, and cooresponding to standard temperature and preasure. 
+Data used for numerical experiments include problems from electronic structure, as well as from structural engineering. 
+Electronic structure matrices obtain from the strongly non-orthongonal ``overlap'' (metric of the generalized eigenproblem) 
+matrix of Gaussian-Type Atomic-Orbitals (GTAOs) \cite{}, for one-dimensional nanotubes and for 3-dimensional periodic water
+cubes of increasing size. 
+ 
+Ill-conditioned problems for a sequence of nanotubes, $36 \times$ to $128 \times$ the (3,3) unit cell 
+were generated with {\tt TubeGen} \cite{tubegen} and a modified STO-2G \cite{Schuchardt2007} basis,
+with an added diffuse (flat) Gaussian $sp$-shell and exponents $\zeta_{10^{10}}={\tt .06918}$ and $\zeta_{10^{11}}={\tt .05934}$, 
+cooresponding to $\kappa(\mat{s})=10^{10}$ and $\kappa(\mat{s})=10^{11}$ 
+respectively\footnote{In this case, $\kappa$ is double exponential with decreasing $\zeta$.}.  Less severely ill-conditioned
+problems were constructed with the triple-$\zeta$ 6-311G** GTAO basis \cite{Schuchardt2007} and coordinates obtained with the 
+{\tt gromacs} utility {\tt gmx solvate -box} \cite{gmx30}, generating a sequence of cubes in increments of $100$ water molecules.  
+While less ill-conditioned than the nano-tube sequence, 
+$\kappa(\mat{s})\sim 10^5$, the water cube matrices manifest a different metric locality due to dimensionality.   
+Also, we experiment with the {\tt bcsstk14} structural engineering matrix for the Roof of the Omni Coliseum \cite{BCSSTK14}.
 
 \section{Error Flow}% in Square Root Iteration}
 
@@ -1182,6 +1186,9 @@ In this work, we developed the $n$-body solver $\tt SpAMM$ for square root itera
 Main contributions include a modified Cauchy-Schwarz criterion, Eq.~\ref{newspamm}, and proof that the 
 cooresponding product relative error is bound by Eq.~(\ref{bound}).  Also, we demonstrated a new kind of 
 algebraic locality that develops with strongly contractive identity iteration.
+
+Inverse factors: difficulty parallelization due to well known problems in elimination trees see Lin Lin
+
 
 This work is gauged against other methods for fast matrix multiplication discussed in Section \ref{relatedr}. 
 Against $\tt SpGEMM$, the $n$-body approach offers a bounded control over relative errors in 
