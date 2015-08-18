@@ -26,7 +26,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set( SOURCES
+set(SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/spamm_chunk_config.F90
   spamm_chunk.F90
   spamm_chunk_add_2d.F90
@@ -35,19 +35,28 @@ set( SOURCES
   spamm_chunk_multiply_2d.F90
   spamm_chunk_strings.F90
   spamm_chunk_type_2d.F90
-  )
+  spamm_conversion.F90
+  spamm_decoration.F90
+  spamm_elementals.F90
+  spamm_nbdyalgbra.F90
+  spamm_nbdyalgbra_plus.F90
+  spamm_nbdyalgbra_times.F90
+  spamm_nbdyalgbra_trace.F90
+  spamm_parameters.F90
+  spamm_realkind.F90
+  spamm_structures.F90
+  spamm_xstructors.F90
+  spammpack.F90)
 
-add_library( spammchunk ${SOURCES} )
+add_library(spamm ${SOURCES})
 
-install( TARGETS spammchunk
+install(TARGETS spamm
   ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  )
+  LIBRARY DESTINATION lib)
 
-foreach( HEADER ${SOURCES} )
-  get_filename_component( HEADER_FILE ${HEADER} NAME_WE )
-  install( FILES
+foreach(HEADER ${SOURCES})
+  get_filename_component(HEADER_FILE ${HEADER} NAME_WE)
+  install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${HEADER_FILE}.mod
-    DESTINATION include
-    )
+    DESTINATION include)
 endforeach()

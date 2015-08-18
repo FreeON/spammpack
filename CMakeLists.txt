@@ -273,6 +273,7 @@ endif()
 #add_subdirectory(tools)
 
 add_subdirectory(src)
+add_subdirectory(spammsand)
 
 set(SPAMM_TESTING FALSE
   CACHE BOOL "Compile test suite.")
