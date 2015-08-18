@@ -1,27 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>http://www.freeon.org/spammpack/building.html</loc>
-    <lastmod>2015-03-13T11:13:10-06:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <loc>http://www.freeon.org/spammpack/spammpack/building.html</loc>
   </url>
   <url>
-    <loc>http://www.freeon.org/spammpack/developer.html</loc>
-    <lastmod>2015-03-13T11:13:10-06:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <loc>http://www.freeon.org/spammpack/spammpack/developer.html</loc>
   </url>
   <url>
-    <loc>http://www.freeon.org/spammpack/</loc>
-    <lastmod>2015-03-13T11:13:10-06:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <loc>http://www.freeon.org/spammpack/spammpack/</loc>
   </url>
   <url>
-    <loc>http://www.freeon.org/spammpack/references.html</loc>
-    <lastmod>2015-03-13T11:13:10-06:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <loc>http://www.freeon.org/spammpack/spammpack/references.html</loc>
   </url>
 </urlset>
