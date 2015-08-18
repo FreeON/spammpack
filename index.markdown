@@ -47,9 +47,9 @@ The [API](/spammpack/html/) is documented using
 
 The principal authors of spammpack, in alphabetical order, are:
 
-    - Eric Chisolm @echisolm
-    - Matt Challacombe @mattchallacombe
-    - Nicolas Bock @nicolasbock
+  - Eric Chisolm @echisolm
+  - Matt Challacombe @mattchallacombe
+  - Nicolas Bock @nicolasbock
 
 # Bibliography
 
