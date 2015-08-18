@@ -26,15 +26,29 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-include_directories(${CMAKE_BINARY_DIR}/src-chunk)
+set_directory_properties(
+  PROPERTIES
+  COMPILE_DEFINITIONS "${SPAMM_EXTRA_DEFINES}"
+  )
 
-set(TEST_SOURCES
-  add_chunk_2d
-  new_chunk_2d
-  random_chunk_2d)
+# More unit-like tests.
+set( UNIT_TESTS
+  allocate_tree_2d_symmetric.F90
+  identity_2d_symmetric.F90
+  )
 
-foreach(TEST ${TEST_SOURCES})
-  add_executable(${TEST} ${TEST}.F90)
-  target_link_libraries(${TEST} spammchunk)
-  add_test(chunk:${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST})
-endforeach()
+execute_process( COMMAND ${PYTHON_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/generate_unit_tests.py
+  --spammpack-lib spammpack-serial-shared
+  --output ${CMAKE_CURRENT_BINARY_DIR}/unit-tests.cmake
+  --lapack-libraries ${LAPACK_LIBRARIES}
+  --
+  ${UNIT_TESTS}
+  )
+
+include( ${CMAKE_CURRENT_BINARY_DIR}/unit-tests.cmake )
+
+include_directories(
+  ${CMAKE_BINARY_DIR}/src/include-serial
+  ${CMAKE_BINARY_DIR}/utilities
+  )
