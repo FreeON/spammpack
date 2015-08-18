@@ -33,8 +33,6 @@ if(NOT CMAKE_Fortran_COMPILER)
   message(FATAL_ERROR "Can not find Fortran compiler")
 endif()
 
-enable_testing()
-
 # Default build type, override by explicitly running cmake with
 # -DCMAKE_BUILD_TYPE={Debug,Release}.
 set(CMAKE_BUILD_TYPE Debug)
@@ -275,7 +273,13 @@ endif()
 #add_subdirectory(tools)
 
 add_subdirectory(src-chunk)
-add_subdirectory(tests-chunk)
+
+set(SPAMM_TESTING FALSE
+  CACHE BOOL "Compile test suite.")
+if(SPAMM_TESTING)
+  enable_testing()
+  add_subdirectory(tests-chunk)
+endif()
 
 #add_subdirectory(src)
 #add_subdirectory(tests)
