@@ -222,23 +222,22 @@ We again amend the $\tt SpAMM$ occlusion-cull,  with the recursion
                 \mat{a}^{i+1}_{00} \ot \mat{b}^{i+1}_{01} +\mat{a}^{i+1}_{01} \ot \mat{b}^{i+1}_{11}
 \end{bmatrix}  \quad \tt{else}
                 \end{array}
-              \right.  \, ,
+              \right.  \, .
 \end{equation}
 \end{widetext}
-which bounds the relative occlusion error
+This new formulation of the $\tt SpAMM$ algorithm bounds the relative occlusion error,
 \begin{equation}\label{bound}
 \frac{\lVert \mat{\Delta}^{a \cdot b}_{\tau} \rVert}{n^2 }  \, \leq \, \tau \, \lVert \mat{a} \rVert  \,  \lVert \mat{b} \rVert \, ,
 \end{equation}
-that occurs in the approximate product
+occuring in the approximate product
 \begin{equation}
 \widetilde{\mat{a}\cdot \mat{b}} \,  \equiv \, \mat{a} \ot \mat{b} \,
   = \, \mat{a} \cdot \mat{b} + \mat{\Delta}^{a \cdot b}_{\tau} \, ,
 \end{equation}
-where $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ is the sub-multiplicative Frobenius norm \cite{Kahan2013}.
+with $\lVert \cdot \rVert \equiv \lVert \cdot \rVert_F$ the sub-multiplicative Frobenius norm \cite{Kahan2013}.
 
 \subsection{Bound}
-
-We now prove (\ref{bound}).
+We now prove Eq.~(\ref{bound}):
 
 \begin{prop}
 \label{lem:SpAMM mult, prop}
@@ -313,7 +312,7 @@ follows.
 We can now finish the proof of Proposition~\ref{lem:SpAMM mult, prop}. Indeed, by (\ref{eq:spamm form, lemma}),
 \begin{eqnarray*}
 \left|\left( \mat{a} \ot \mat{b}\right)_{ij}-\left( \mat{a} \cdot \mat{b} \right)_{ij}\right| 
-& \leq & \sum_{l=1}^{n}\left| {a_{il}b_{lj}\right|\left|\alpha_{lij}-1\right|\\
+& \leq & \sum_{l=1}^{n} \left| a_{il}b_{lj} \right|   \left| \alpha_{lij}-1 \right|   \\
 & = & \sum_{\alpha_{lij}=0}\left|a_{il}b_{lj}\right|.
 \end{eqnarray*}
 In addition, if $\alpha_{lij}=0$, then $\left|a_{il}b_{lj}\right|<\tau_{ab}$
@@ -334,10 +333,9 @@ Also, these methods for fast matrix multiplication are {\bf \em stable} \cite{DD
 
 $\tt SpAMM$ is a $n$-body method for fast matrix multiplication, related to the 
 generalized methods popularized by Grey \cite{Gray01,Gray2003}. In our development,
-generalization reflects the {\bf \em genericity} of recursive data access 
+we focus simply on the genericity of recursive data access 
 \cite{genericityindata,Geerts2002,Samet:2006:DBDS,Gottschling2009},
-enabling new math supported by range queries, metric queries, higher dimensional queries and so on, but with common frameworks, 
-structures, skeletons, run-times \& {\em etc.}  
+enabling new maths supported by range queries, metric queries, higher dimensional queries and so on.
 So far, we have prototyped $n$-body solvers for the  mainstay problems in modern electronic structure theory, 
 including the Fock exchange \cite{challacombe2014n}, 
 semi-local exchange-correlation functionals \cite{Challacombe:2000:HiCu,10.1063/1.1568734}, 
@@ -347,12 +345,13 @@ and the matrix inverse square root (this work).
 %This contribution is cornerstone for the simplification and evolution of these solvers.  
 
 %Top-down $n$-body recursion and breadth-first map-reduction may be viewed as two sides of 
-%the same problem \cite{Aluru}.  
-Emergent data frameworks, functional programming languages and other technologies that support generic recursion and 
-skeletonizations \cite{Sarje2010a,Gonzalez-Velez:2010:SAS:1890754.1890757,CPE:CPE3087,rodrigues2014triolet,March} 
-may enable exploitation of increasingly cheap (decentralized) concurrence by scientific $n$-body solvers, 
-and also lower barriers to entry, enhance reliability, sustainability \& {\em etc.}
-For centralized, distributed architectures, $n$-body methods offer well established protocols for turning spatial and metric locality into 
+%the same problem \cite{Aluru}.
+Generic $n$-body methods are aligned with data frameworks \cite{},  
+skeletonization technologies \cite{Sarje2010a,Gonzalez-Velez:2010:SAS:1890754.1890757,CPE:CPE3087,rodrigues2014triolet,March}, 
+functional programming languages \cite{} and run-times \cite{} that support data-agnostic recursion and decentralized concurence, 
+potentially enabling exploitation of increasingly cheap compute cycles by scientific $n$-body solvers. 
+For centralized, distributed architectures, $n$-body methods offer well established protocols 
+for turning spatial and metric locality into 
 data and temporal locality \cite{Warren:1993:PHO:169627.169640,Warren:1995:HOT,Warren1995266,WarrenGordonBell1997,Warren2013}.  
 Recently for example, Driscoll {\em et. al} showed perfect strong scaling and communication optimally 
 for pairwise $n$-body methods \cite{Driscoll2013}.   Bridging the gap between 
@@ -454,16 +453,20 @@ In addition to the dual channel instance, we also consider the ``single'' channe
 
 \subsection{Programming}
 
-$\tt SpAMM$ remains experimental with several feature driven implementations, including a Haskell version \cite{}, 
-a fine grained ($\tt 4\times 4$) {\tt s.p.}~assembly coded version \cite{} and  
-a strong scaling task parallel version in {\tt C++}, {\tt OpenMP 3.0} and {\tt Charm++} \cite{}.  
-In the current contribution, informal functional progamming in {\tt Fortran08} \cite{} was used in the implementation, 
-with the goal of generic simplicity and mathematical development, and longer term, performance under {\tt OpenMP 4.0} 
-\cite{}. Localized functions instantiate or reuse sub-matrices in forward recursion, and accumulate 
+The focus of our research is experimental,  so far involving issue driven implementations of $\tt SpAMM$, 
+including a Haskell version (formal functional programming) \cite{}, 
+a fine grained ($\tt 4\times 4$) {\tt s.p.}~assembly coded version (scalar performance) \cite{} and  
+a task parallel version in {\tt C++}, {\tt OpenMP 3.0} and {\tt Charm++} (strong scaling) \cite{}.  
+In the current contribution, informal functional progamming in {\tt Fortran08} \cite{} was used, 
+with the goal of demonstrating generic simplicity and mathematical development.
+
+Localized functions instantiate or reuse sub-matrices in forward recursion, and accumulate 
 node decorations (flops, bounding boxes, non-zeros, norms, initialization flags {\em etc}) in 
-backward (tail) recursion. 
-Optional features include the first order Fr\"{e}chet analyses, outlined in Section \ref{stability}, 
-as well as sparse $\tt VTK$ output for visualization of the 
+the backward (tail) recursion.  Optional, $\tt ifdef$'d features include the first order Fr\"{e}chet 
+analyses, outlined in Section \ref{stability} and using $\tt MATMUL$, 
+as well as sparse $\tt VTK$ output for visualization of the $ijk$ product volumes, shown in Section \ref{locality}.
+
+{\tt gfortran 4.8.1}
 
 \subsection{Mapping}\label{map}
 The NS logistic map for the square root iteration is $h_\alpha[\mat{x}]=\frac{\sqrt{\alpha}}{2} \left(3-\alpha \mat{x} \right)$, 
@@ -477,27 +480,32 @@ tossed out of bounds by $\ot$. This stabilization is the transformation $[0,1] \
 (shift and scale), carried out prior to application of the logistic.   
 
 The most important aspect of these scaling and stabilization maps is to turn them off towards convergence.  Conventional methods 
-often compute a lowest eigenvalue to monitor convergence \cite{Pan1991,chen2014}, but this may be too expensive for ill-conditioned problems. 
+often compute a lowest eigenvalue to monitor convergence \cite{Pan1991,chen2014}, but this may be too expensive for 
+ill-conditioned problems. 
 Alternatively, we monitor convergence simply with the relative trace error, 
 $t_k = \left( n - {\rm tr} \, \widetilde{\mat{x}}_k \right) n^{-1}$.  
 Then, empirically developed sigmoidal functions are used to damp the scaling parameter to unity, 
 \begin{equation}
 \alpha(t) = {\tt 1.} + {\tt 1.85}  \times \left( 1+e^{-{\tt 50.}(t-{\tt .35})}  \right)^{-1} 
 \end{equation}
-and the stability parameter to zero, 
+and the stability parameter to zero,-box 
 \begin{equation}
 \varepsilon(t) = {\tt .1} \times \left( 1+e^{-{\tt 75.}(t-{\tt .30})}  \right)^{-1} \, .
 \end{equation}
 These functions are used throughout. 
 
-
-
-% FP, F08, OpenMP 4.0
-% In the current implementation, all persistence data
-% (norms, flops, branches \& {\em etc.}) are accumulated compactly in the backward recurrence.  This persistence data
-%  that may be achieved by minimal locally essential trees \cite{}.
-
 \subsection{Data} \label{data}
+
+{\tt TubeGen} \cite{tubegen}
+STO-2G \cite{Schuchardt2007}
+
+with diffuse $sp$-shell, with $\zeta_{10^{10}}={\tt .06918}$, $\zeta_{10^{11}}={\tt .05934}$
+double exponential .  We are not advocating such ill-conditioned functions as an efficient basis; but are using artificially difficult problems to illustrate assymptotically bad .. 
+
+the triple $\zeta$ 6-311G** basis set \cite{Schuchardt2007} 
+
+the {\tt gromacs} utility {\tt gmx solvate -box} \cite{gmx30}
+to generate cubic water box coordinates increasing by 100, and cooresponding to standard temperature and preasure. 
 
 \section{Error Flow}% in Square Root Iteration}
 
@@ -885,7 +893,7 @@ may be far more efficient.
 
 %\pagebreak
 
-\section{Locality} 
+\section{Locality} \label{locality}
 
 %%fig_33_tube_cond_10_noscaling_33_nanotube_cond10_noscale_dual
 
