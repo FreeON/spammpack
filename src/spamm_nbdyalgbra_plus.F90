@@ -20,10 +20,10 @@ CONTAINS
 
     TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)    :: B
     TYPE(SpAMM_tree_1d), POINTER, INTENT(INOUT) :: C
-    REAL(SpAMM_KIND),             INTENT(IN)    :: Beta
-    real(spamm_kind),    OPTIONAL,intent(in)    :: inplace
+    REAL(SPAMM_KIND),             INTENT(IN)    :: Beta
+    real(SPAMM_KIND),    OPTIONAL,intent(in)    :: inplace
     TYPE(SpAMM_tree_1d), POINTER                :: d
-    REAL(SpAMM_KIND)                            :: Alpha
+    REAL(SPAMM_KIND)                            :: Alpha
     !
     D=>C
     !
@@ -45,7 +45,7 @@ CONTAINS
 
     TYPE(SpAMM_tree_1d), POINTER                :: A
     TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)    :: B
-    REAL(SpAMM_KIND),             INTENT(IN)    :: alpha, beta
+    REAL(SPAMM_KIND),             INTENT(IN)    :: alpha, beta
     logical                                     :: TA, TB
 
     TA=ASSOCIATED(A)
@@ -94,7 +94,7 @@ CONTAINS
 
     TYPE(SpAMM_tree_2d_symm), POINTER  :: a 
     TYPE(SpAMM_tree_2d_symm), POINTER  :: d 
-    REAL(SpAMM_KIND),  INTENT(IN) :: alpha
+    REAL(SPAMM_KIND),  INTENT(IN) :: alpha
 
     if(.not.associated(a))then
        d=>null()
@@ -109,7 +109,7 @@ CONTAINS
   recursive subroutine SpAMM_scalar_plus_tree_2d_symm_recur(alpha, a)
 
    TYPE(SpAMM_tree_2d_symm), POINTER  :: a 
-   REAL(SpAMM_KIND),  INTENT(IN) :: alpha
+   REAL(SPAMM_KIND),  INTENT(IN) :: alpha
    INTEGER, dimension(1:2)       :: lo,hi
    INTEGER                       :: i
 
@@ -141,11 +141,11 @@ CONTAINS
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT)           :: A, B
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT), OPTIONAL :: C
-    real(spamm_kind), intent(in), optional                     :: alpha, beta
+    real(SPAMM_KIND), intent(in), optional                     :: alpha, beta
 
     TYPE(SpAMM_tree_2d_symm), POINTER                          :: d
 
-    REAL(SpAMM_KIND)                                           :: Local_Alpha,Local_Beta
+    REAL(SPAMM_KIND)                                           :: Local_Alpha,Local_Beta
     !
     D=>NULL()
     !
@@ -195,7 +195,7 @@ CONTAINS
 
     TYPE(SpAMM_tree_2d_symm), POINTER                :: A
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: B
-    REAL(SpAMM_KIND),                  INTENT(IN)    :: alpha, beta
+    REAL(SPAMM_KIND),                  INTENT(IN)    :: alpha, beta
     logical                                          :: TA, TB
 
     TA=ASSOCIATED(A)
@@ -248,7 +248,7 @@ CONTAINS
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A,B
     TYPE(SpAMM_tree_2d_symm), POINTER                :: C
-    REAL(SpAMM_KIND)                                 :: alpha, beta
+    REAL(SPAMM_KIND)                                 :: alpha, beta
     logical                                          :: TA, TB
 
     TA=ASSOCIATED(A)

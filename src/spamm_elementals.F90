@@ -78,7 +78,7 @@ CONTAINS
 
   RECURSIVE FUNCTION SpAMM_trace_tree_2d_symm_recur(a) RESULT(tr)
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: a
-    REAL(SpAMM_KIND)                              :: tr, tr00,tr11
+    REAL(SPAMM_KIND)                              :: tr, tr00,tr11
     integer                                       :: i
 
     tr=SpAMM_Zero
@@ -151,7 +151,7 @@ CONTAINS
   recursive function SpAMM_absmax_tree_2d_symm_recur (A) result(absmax)
 
     type(SpAMM_tree_2d_symm), pointer, intent(in)   :: A
-    real(SpAMM_KIND)                                :: absmax
+    real(SPAMM_KIND)                                :: absmax
     integer, dimension(:,:),  pointer               :: bb
 
     absmax = 0
@@ -181,7 +181,7 @@ CONTAINS
   recursive function SpAMM_twist_tree_2d_symm_double_recur (A, AT) result(twist)
 
     type(SpAMM_tree_2d_symm), pointer  :: A,AT
-    real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
+    real(SPAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
 
     twist  = SpAMM_zero
 
@@ -209,7 +209,7 @@ CONTAINS
   function SpAMM_twist_tree_2d_symm(A) result(twist)
 
     type(SpAMM_tree_2d_symm), pointer  :: A
-    real(SpAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
+    real(SPAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
 
     twist  = SpAMM_zero
 

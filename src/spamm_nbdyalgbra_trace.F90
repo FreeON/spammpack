@@ -12,7 +12,7 @@ CONTAINS
   FUNCTION SpAMM_tree_2d_symm_trace (a) RESULT(tr)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: A
-    REAL(SpAMM_KIND)                              :: tr
+    REAL(SPAMM_KIND)                              :: tr
 
     tr = SpAMM_tree_2d_symm_trace_recur(a)
 
@@ -22,7 +22,7 @@ CONTAINS
   RECURSIVE FUNCTION SpAMM_tree_2d_symm_trace_recur(a) RESULT(tr)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: a
-    REAL(SpAMM_KIND)                              :: tr
+    REAL(SPAMM_KIND)                              :: tr
     INTEGER, DIMENSION(:,:),  pointer             :: bb
     integer                                       :: i
 
@@ -67,11 +67,11 @@ CONTAINS
 !!$  FUNCTION SpAMM_Trace_QuTree_Product(qA, qB, threshold) RESULT(a)
 !!$
 !!$    TYPE(QuTree), POINTER      :: qA,qB
-!!$    REAL(SpAMM_KIND), OPTIONAL :: threshold
-!!$    REAL(SpAMM_KIND)           :: a
+!!$    REAL(SPAMM_KIND), OPTIONAL :: threshold
+!!$    REAL(SPAMM_KIND)           :: a
 !!$
 !!$    INTEGER            :: Depth
-!!$    REAL(SpAMM_KIND)   :: multiplyThreshold
+!!$    REAL(SPAMM_KIND)   :: multiplyThreshold
 !!$    REAL(Kind(0d0)) :: TInitial, TTotal
 !!$
 !!$    Depth=0
@@ -103,10 +103,10 @@ CONTAINS
 !!$  function spamm_trace_2nd_order_product (A, B, tolerance) result (trace_ab)
 !!$
 !!$    type(spamm_matrix_order_2), pointer, intent(in) :: A, B
-!!$    real(spamm_kind), intent(in), optional :: tolerance
-!!$    real(spamm_kind) :: trace_ab
+!!$    real(SPAMM_KIND), intent(in), optional :: tolerance
+!!$    real(SPAMM_KIND) :: trace_ab
 !!$
-!!$    real(spamm_kind) :: local_tolerance
+!!$    real(SPAMM_KIND) :: local_tolerance
 !!$
 !!$    trace_ab = 0
 !!$

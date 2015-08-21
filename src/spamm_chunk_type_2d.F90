@@ -62,7 +62,7 @@ module spamm_chunk_type_2d
      sequence
 
      !> The matrix.
-     double precision :: data(SPAMM_CHUNK_BLOCK_SIZE, SPAMM_CHUNK_BLOCK_SIZE) = 0
+     double precision :: data(SPAMM_BLOCK_SIZE, SPAMM_BLOCK_SIZE) = 0
 
   end type chunk_data_2d_t
 
@@ -152,7 +152,7 @@ contains
          ", "//trim(to_string(A%upper%bounds(0)))//"]"
     write(string, "(A)") trim(string)//", ["//trim(to_string(A%lower%bounds(1)))// &
          ", "//trim(to_string(A%upper%bounds(1)))//"]]"
-    write(string, "(A)") trim(string)//"; N_b: "//trim(to_string(SPAMM_CHUNK_BLOCK_SIZE))
+    write(string, "(A)") trim(string)//"; N_b: "//trim(to_string(SPAMM_BLOCK_SIZE))
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%node)))//" nodes"
     write(string, "(A)") trim(string)//"; "//trim(to_string(size(A%data, 1)**2))//" leaves"
     write(string, "(A)") trim(string)//"; total: "//trim(to_string(storage_size(A)/8))//" B"
@@ -212,9 +212,9 @@ contains
 
     do i = 1, SPAMM_CHUNK_BLOCKS
        do j = 1, SPAMM_CHUNK_BLOCKS
-          k = (i-1)*SPAMM_CHUNK_BLOCK_SIZE+1
-          l = (j-1)*SPAMM_CHUNK_BLOCK_SIZE+1
-          B(k:k+SPAMM_CHUNK_BLOCK_SIZE-1, l:l+SPAMM_CHUNK_BLOCK_SIZE-1) = A%data(i, j)%data
+          k = (i-1)*SPAMM_BLOCK_SIZE+1
+          l = (j-1)*SPAMM_BLOCK_SIZE+1
+          B(k:k+SPAMM_BLOCK_SIZE-1, l:l+SPAMM_BLOCK_SIZE-1) = A%data(i, j)%data
        enddo
     enddo
 
@@ -240,11 +240,11 @@ contains
     if(i < A%lower%bounds(0) .or. i > A%upper%bounds(0) .or. &
          j < A%lower%bounds(1) .or. j > A%upper%bounds(1)) return
 
-    i_leaf(0) = (i-A%lower%bounds(0))/SPAMM_CHUNK_BLOCK_SIZE+1
-    i_leaf(1) = (j-A%lower%bounds(1))/SPAMM_CHUNK_BLOCK_SIZE+1
+    i_leaf(0) = (i-A%lower%bounds(0))/SPAMM_BLOCK_SIZE+1
+    i_leaf(1) = (j-A%lower%bounds(1))/SPAMM_BLOCK_SIZE+1
 
-    i_block(0) = mod(i-A%lower%bounds(0), SPAMM_CHUNK_BLOCK_SIZE)+1
-    i_block(1) = mod(j-A%lower%bounds(1), SPAMM_CHUNK_BLOCK_SIZE)+1
+    i_block(0) = mod(i-A%lower%bounds(0), SPAMM_BLOCK_SIZE)+1
+    i_block(1) = mod(j-A%lower%bounds(1), SPAMM_BLOCK_SIZE)+1
 
     Aij = A%data(i_leaf(0), i_leaf(1))%data(i_block(0), i_block(1))
 

@@ -5,6 +5,9 @@ add_executable(spammsand_invsqrt
   spammsand.F90
   test_utilities.F90
   mmio.f)
+set_target_properties(spammsand_invsqrt
+  PROPERTIES
+  COMPILE_DEFINITIONS "${COMPILE_DEFINITIONS}")
 
 include_directories(${CMAKE_BINARY_DIR}/src)
 target_link_libraries(spammsand_invsqrt spamm)

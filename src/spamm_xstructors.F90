@@ -38,7 +38,7 @@ contains
   LOGICAL FUNCTION SpAMM_occlude_tree_1d( a, Tau2 )
 
     TYPE(SpAMM_tree_1d), POINTER :: a
-    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
+    REAL(SPAMM_KIND),      INTENT(IN) :: Tau2
 
     SpAMM_occlude_tree_1d = .FALSE.
 
@@ -55,7 +55,7 @@ contains
   LOGICAL FUNCTION SpAMM_occlude_tree_2d_symm( a, Tau2 )
 
     TYPE(SpAMM_tree_2d_symm), POINTER :: a
-    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
+    REAL(SPAMM_KIND),      INTENT(IN) :: Tau2
 
     SpAMM_occlude_tree_2d_symm = .FALSE.
 
@@ -73,7 +73,7 @@ contains
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: a
     TYPE(SpAMM_tree_1d)     , POINTER, INTENT(IN) :: b
-    REAL(SpAMM_KIND),                  INTENT(IN) :: Tau2
+    REAL(SPAMM_KIND),                  INTENT(IN) :: Tau2
 
     SpAMM_occlude_tree_2d_symm_dot_tree_1d = .FALSE.
 
@@ -91,7 +91,7 @@ contains
   LOGICAL FUNCTION SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm( a, b, Tau2 )
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: a,b
-    REAL(SpAMM_KIND),      INTENT(IN) :: Tau2
+    REAL(SPAMM_KIND),      INTENT(IN) :: Tau2
 
     SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm = .FALSE.
 
@@ -681,11 +681,11 @@ contains
   function SpAMM_tree_2d_symm_copy_tree_2d_symm (a, in_O, threshold_O, symmetrize_O ) result(d)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)              :: a
-    REAL(SpAMM_KIND),                  INTENT(IN),    OPTIONAL :: threshold_o
+    REAL(SPAMM_KIND),                  INTENT(IN),    OPTIONAL :: threshold_o
     LOGICAL,                           INTENT(IN),    OPTIONAL :: symmetrize_O
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT), OPTIONAL :: in_O
     TYPE(SpAMM_tree_2d_symm), POINTER                          :: d
-    REAL(SpAMM_KIND)                                           :: threshold2
+    REAL(SPAMM_KIND)                                           :: threshold2
 
     d => null()
     IF(PRESENT(in_O))THEN
@@ -722,7 +722,7 @@ contains
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_copy_tree_2d_symm_recur (d, a, Tau2)
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: a
-    REAL(SpAMM_KIND),                  INTENT(IN)    :: Tau2
+    REAL(SPAMM_KIND),                  INTENT(IN)    :: Tau2
     TYPE(SpAMM_tree_2d_symm), POINTER                :: a00,a11,a01,a10
     TYPE(SpAMM_tree_2d_symm), POINTER                :: d
     TYPE(SpAMM_tree_2d_symm), POINTER                :: d00,d11,d01,d10
@@ -763,7 +763,7 @@ contains
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)           :: a
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN), OPTIONAL :: at
-    REAL(SpAMM_KIND),                  INTENT(IN)    :: threshold2
+    REAL(SPAMM_KIND),                  INTENT(IN)    :: threshold2
     TYPE(SpAMM_tree_2d_symm), POINTER                :: d
 
     if(.not.associated(a).and..not.associated(d))then

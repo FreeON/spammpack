@@ -43,16 +43,17 @@ set(SOURCES
   spamm_nbdyalgbra_times.F90
   spamm_nbdyalgbra_trace.F90
   spamm_parameters.F90
-  spamm_realkind.F90
   spamm_structures.F90
   spamm_xstructors.F90
   spammpack.F90)
 
 add_library(spamm ${SOURCES})
+
 set_target_properties(spamm
   PROPERTIES
   SOVERSION ${PROJECT_VERSION_MAJOR}
-  VERSION ${PROJECT_VERSION})
+  VERSION ${PROJECT_VERSION}
+  COMPILE_DEFINITIONS "${COMPILE_DEFINITIONS}")
 
 install(TARGETS spamm
   ARCHIVE DESTINATION lib

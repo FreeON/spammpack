@@ -9,7 +9,7 @@ CONTAINS
   FUNCTION SpAMMSand_rqi_extremal(a,tau,high_O) RESULT(Omega)
 
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN)    :: a
-    REAL(SpAMM_KIND),      INTENT(IN)                 :: Tau
+    REAL(SPAMM_KIND),      INTENT(IN)                 :: Tau
     LOGICAL, OPTIONAL                                 :: high_O
 
     TYPE(SpAMM_tree_1d), POINTER :: x=>NULL(),g=>NULL(),h=>NULL()
@@ -17,10 +17,10 @@ CONTAINS
     INTEGER              :: CG, MinMax
     INTEGER, PARAMETER   :: NCG=500
 
-    REAL(SpAMM_KIND)     :: omega,omega_old
-    REAL(SpAMM_KIND)     :: xx, hh, xh, hx, xAx, xAh, hAx, hAh
-    REAL(SpAMM_KIND)     :: sclr_Ax, sclr__x, beta, dot_g, dot_gold
-    REAL(SpAMM_KIND)     :: LambdaPlus, LambdaMins, RQIPlus, RQIMins
+    REAL(SPAMM_KIND)     :: omega,omega_old
+    REAL(SPAMM_KIND)     :: xx, hh, xh, hx, xAx, xAh, hAx, hAh
+    REAL(SPAMM_KIND)     :: sclr_Ax, sclr__x, beta, dot_g, dot_gold
+    REAL(SPAMM_KIND)     :: LambdaPlus, LambdaMins, RQIPlus, RQIMins
 
     MINMAX=2 ! default is high (max) extremal
     IF(PRESENT(high_O))THEN

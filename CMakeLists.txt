@@ -88,6 +88,8 @@ else()
   message(STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}")
 endif()
 
+unset(COMPILE_DEFINITIONS)
+
 try_compile(COMPILE_RESULT_1
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/cmake-tests/error_stop.F90
@@ -170,9 +172,8 @@ else()
 endif()
 
 include(FindLAPACK)
-
 if(LAPACK_FOUND)
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DLAPACK_FOUND")
+  list(APPEND COMPILE_DEFINITIONS "LAPACK_FOUND")
 endif()
 
 include(FindPythonInterp)
@@ -240,21 +241,24 @@ endif()
 set(SPAMM_PRECISION double
   CACHE STRING "The real precision of the library, single or double")
 
-set(SPAMM_PRECISION string(TOLOWER ${SPAMM_PRECISION}))
+string(TOLOWER ${SPAMM_PRECISION} SPAMM_PRECISION)
 
 if(SPAMM_PRECISION STREQUAL "double")
   set(SPAMM_KIND "kind(0d0)")
 else()
   set(SPAMM_KIND "kind(0e0)")
 endif()
+message(STATUS "Building ${SPAMM_PRECISION} precision version")
+list(APPEND COMPILE_DEFINITIONS "SPAMM_KIND=${SPAMM_KIND}")
 
-set(SPAMM_CHUNK_BLOCK_SIZE 4
+set(SPAMM_BLOCK_SIZE 4
   CACHE STRING "The matrix size of basic submatrix blocks at the leaves")
+list(APPEND COMPILE_DEFINITIONS "SPAMM_BLOCK_SIZE=${SPAMM_BLOCK_SIZE}")
 
 set(SPAMM_CHUNK_SIZE 32
   CACHE STRING "The matrix size of a chunk")
 
-math(EXPR SPAMM_CHUNK_BLOCKS "${SPAMM_CHUNK_SIZE}/${SPAMM_CHUNK_BLOCK_SIZE}")
+math(EXPR SPAMM_CHUNK_BLOCKS "${SPAMM_CHUNK_SIZE}/${SPAMM_BLOCK_SIZE}")
 math(EXPR SPAMM_CHUNK_NODES "(4*${SPAMM_CHUNK_BLOCKS}*${SPAMM_CHUNK_BLOCKS}-1)/3.")
 
 configure_file(

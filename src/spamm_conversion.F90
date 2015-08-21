@@ -11,7 +11,7 @@ contains
 
   FUNCTION SpAMM_convert_dense_to_tree_2d_symm( A, in_O) RESULT(A_2d)
 
-    real(SpAMM_KIND), dimension(:,:), intent(IN)    :: A
+    real(SPAMM_KIND), dimension(:,:), intent(IN)    :: A
     type(SpAMM_tree_2d_symm) ,pointer,  optional    :: in_O
     type(SpAMM_tree_2d_symm) ,pointer               :: A_2d
     
@@ -30,7 +30,7 @@ contains
   !> Recursively convert a dense matrix to a quadtree.
   RECURSIVE SUBROUTINE SpAMM_convert_dense_to_tree_2d_symm_recur (A,A_2d)
 
-    real(SpAMM_KIND), dimension(:,:),intent(in) :: A
+    real(SPAMM_KIND), dimension(:,:),intent(in) :: A
     type(SpAMM_tree_2d_symm), pointer           :: A_2d
     integer, dimension(1:2)                     :: lo,hi
 
@@ -62,7 +62,7 @@ contains
   SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense(A_2d, A)
 
     type(SpAMM_tree_2d_symm),         pointer           :: A_2d
-    real(SpAMM_KIND), dimension(:,:)                    :: A
+    real(SPAMM_KIND), dimension(:,:)                    :: A
     
 !    IF(.not.allocated(A))THEN
 !       STOP' need pre allocation here ...'
@@ -78,8 +78,8 @@ contains
   !> Recursively convert a dense matrix to a quadtree.
   RECURSIVE SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense_recur (A_2d,A)
 
-    real(SpAMM_KIND), dimension(:,:)     :: A
-!    real(SpAMM_KIND), dimension(:,:)     :: A
+    real(SPAMM_KIND), dimension(:,:)     :: A
+!    real(SPAMM_KIND), dimension(:,:)     :: A
     type(SpAMM_tree_2d_symm),        pointer :: A_2d
     integer, dimension(1:2)                  :: lo,hi
 

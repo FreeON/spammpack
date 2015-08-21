@@ -14,7 +14,7 @@ module spamm_nbdyalgbra_times
   TYPE SpAMM_cubes
      TYPE(SpAMM_cubes), POINTER  :: Next
      INTEGER                     :: Levl
-     REAL(SpAMM_Kind)            :: Size
+     REAL(SPAMM_KIND)            :: Size
      INTEGER,     DIMENSION(3)   :: Lw, Hi
   END TYPE SpAMM_cubes
 
@@ -35,7 +35,7 @@ CONTAINS
 
     TYPE(SpAMM_tree_1d), POINTER :: a,b
 
-    REAL(SpAMM_KIND)             :: dot, dot0, dot1
+    REAL(SPAMM_KIND)             :: dot, dot0, dot1
 
     Dot=SpAMM_Zero
 
@@ -63,7 +63,7 @@ CONTAINS
     integer,         intent(in)  :: M
     integer                      :: depth
     type(SpAMM_tree_1d), pointer :: randm
-    real(SpAMM_KIND)             :: renorm
+    real(SPAMM_KIND)             :: renorm
 
     randm => SpAMM_new_top_tree_1d(M)
 
@@ -137,7 +137,7 @@ CONTAINS
 
     type(SpAMM_tree_1d), pointer, intent(inout) :: a
     type(SpAMM_tree_1d), pointer                :: d
-    real(SpAMM_KIND)                            :: alpha
+    real(SPAMM_KIND)                            :: alpha
     integer :: depth
 
     depth=0
@@ -153,7 +153,7 @@ CONTAINS
   recursive subroutine SpAMM_scalar_times_tree_1d_recur(alpha, a)
 
     type(SpAMM_tree_1d), pointer :: a
-    real(SpAMM_KIND)             :: alpha
+    real(SPAMM_KIND)             :: alpha
 
 !    integer :: depth
 
@@ -184,11 +184,11 @@ CONTAINS
 
     TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A
     TYPE(SpAMM_tree_1d),      POINTER,           INTENT(IN)    :: B
-    REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
+    REAL(SPAMM_KIND),                            INTENT(IN)    :: Tau
     TYPE(SpAMM_tree_1d),      POINTER, OPTIONAL                :: in_o
     TYPE(SpAMM_tree_1d),      POINTER                          :: D
     INTEGER                                                    :: Depth
-    REAL(SpAMM_KIND)                                           :: Tau2
+    REAL(SPAMM_KIND)                                           :: Tau2
 
     ! figure the starting conditions ...
     if(present(in_o))then
@@ -225,7 +225,7 @@ CONTAINS
     TYPE(SpAMM_tree_2d_symm), POINTER :: A !, INTENT(IN) :: A
     TYPE(SpAMM_tree_1d),      POINTER :: B !, INTENT(IN) :: B
     TYPE(SpAMM_tree_1d),      POINTER             :: C
-    REAL(SpAMM_KIND),  INTENT(IN)                 :: Tau2
+    REAL(SPAMM_KIND),  INTENT(IN)                 :: Tau2
     INTEGER                                       :: Depth
     TYPE(SpAMM_tree_1d),      POINTER             :: b0,b1
     TYPE(SpAMM_tree_2d_symm), POINTER             :: a00,a11,a01,a10
@@ -277,7 +277,7 @@ CONTAINS
 
     type(SpAMM_tree_2d_symm), pointer, intent(inout) :: a
     type(SpAMM_tree_2d_symm), pointer                :: d
-    real(SpAMM_KIND)                                 :: alpha
+    real(SPAMM_KIND)                                 :: alpha
     integer :: depth
 
     d=>a
@@ -293,7 +293,7 @@ CONTAINS
   recursive subroutine SpAMM_scalar_times_tree_2d_symm_recur(alpha, a, depth)
 
     type(SpAMM_tree_2d_symm), pointer :: a
-    real(SpAMM_KIND)                  :: alpha
+    real(SPAMM_KIND)                  :: alpha
     integer :: depth
 
     if(.not.associated(a))return
@@ -328,13 +328,13 @@ CONTAINS
   FUNCTION SpAMM_tree_2d_symm_times_tree_2d_symm(a, b, Tau, NT_O, In_O , stream_file_O) RESULT(d)
 
     TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A, B
-    REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
+    REAL(SPAMM_KIND),                            INTENT(IN)    :: Tau
     LOGICAL, OPTIONAL,                           INTENT(IN)    :: NT_O
     TYPE(SpAMM_tree_2d_symm), POINTER, OPTIONAL, INTENT(INOUT) :: In_O
     TYPE(SpAMM_tree_2d_symm), POINTER                          :: d
     INTEGER                                                    :: Depth
     LOGICAL                                                    :: NT
-    REAL(SpAMM_KIND)                                           :: Tau2
+    REAL(SPAMM_KIND)                                           :: Tau2
     CHARACTER(LEN=*), OPTIONAL     :: stream_file_O
 
 #ifdef SpAMM_PRINT_STREAM
@@ -342,11 +342,11 @@ CONTAINS
     integer :: maxi, maxj, maxk, i, j, k, Max_Depth
 
     TYPE(SpAMM_cubes), POINTER     :: SpAMM_Stream, Current
-    REAL(SpAMM_kind)               :: Opacity,  a_scale, b_scale, c_scale, abc_scale
-    REAL(SpAMM_kind)               :: MaxNorm,MinNorm,Emm,Bee
+    REAL(SPAMM_KIND)               :: Opacity,  a_scale, b_scale, c_scale, abc_scale
+    REAL(SPAMM_KIND)               :: MaxNorm,MinNorm,Emm,Bee
 
 
-    REAL(SpAMM_Kind), DIMENSION(:,:,:), ALLOCATABLE :: Field
+    REAL(SPAMM_KIND), DIMENSION(:,:,:), ALLOCATABLE :: Field
 
 #endif
 
@@ -494,7 +494,7 @@ CONTAINS
 
     integer, parameter          :: s=selected_real_kind(6)
     integer :: ni,nj,nk
-    real(kind=SpAMM_Kind), intent(in), dimension(:,:,:) :: field
+    real(kind=SPAMM_KIND), intent(in), dimension(:,:,:) :: field
     character(len=*), optional                 :: STREAM_FILE_O
     character(len=1), parameter :: newline=achar(10)
 
@@ -527,7 +527,7 @@ CONTAINS
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_times_tree_2d_symm_recur( C, A, B, Tau2, NT, Depth )
 
     TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN) :: A, B
-    REAL(SpAMM_KIND),                  INTENT(IN) :: Tau2
+    REAL(SPAMM_KIND),                  INTENT(IN) :: Tau2
     LOGICAL,                           INTENT(IN) :: NT
     INTEGER,                           INTENT(IN) :: Depth
     TYPE(SpAMM_tree_2d_symm), POINTER             :: C
@@ -639,13 +639,13 @@ CONTAINS
 !!$  FUNCTIOn SpAMM_tree_2d_symm_T_times_tree_2d_symm(a, b, Tau, alpha_O, beta_O, in_O) RESULT(d)
 !!$
 !!$    TYPE(SpAMM_tree_2d_symm), POINTER,           INTENT(IN)    :: A, B
-!!$    REAL(SpAMM_KIND),                            INTENT(IN)    :: Tau
-!!$    REAL(SpAMM_KIND),                  OPTIONAL, INTENT(IN)    :: alpha_O, beta_O
+!!$    REAL(SPAMM_KIND),                            INTENT(IN)    :: Tau
+!!$    REAL(SPAMM_KIND),                  OPTIONAL, INTENT(IN)    :: alpha_O, beta_O
 !!$    TYPE(SpAMM_tree_2d_symm), POINTER, OPTIONAL, INTENT(INOUT) :: In_O
 !!$    TYPE(SpAMM_tree_2d_symm), POINTER                          :: D
-!!$    REAL(SpAMM_KIND)                                           :: alpha, beta
+!!$    REAL(SPAMM_KIND)                                           :: alpha, beta
 !!$    INTEGER                                                    :: Depth
-!!$    REAL(SpAMM_KIND)                                           :: Tau2
+!!$    REAL(SPAMM_KIND)                                           :: Tau2
 !!$    ! figure the starting conditions ...
 !!$    if(present(in_O))then
 !!$       d => in_O
@@ -681,8 +681,8 @@ CONTAINS
 !!$
 !!$    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A, B
 !!$    TYPE(SpAMM_tree_2d_symm), POINTER                :: C
-!!$    REAL(SpAMM_KIND),                  INTENT(IN)    :: beta
-!!$    REAL(SpAMM_KIND)                                 :: Tau2
+!!$    REAL(SPAMM_KIND),                  INTENT(IN)    :: beta
+!!$    REAL(SPAMM_KIND)                                 :: Tau2
 !!$    INTEGER                                          :: Depth
 !!$    TYPE(SpAMM_tree_2d_symm), POINTER                :: c00,c01,c10,c11
 !!$

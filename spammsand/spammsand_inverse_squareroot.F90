@@ -8,7 +8,7 @@ module SpAMMsand_inverse_squareroot
   implicit none
 
   ! Convergence parameters
-  REAL(SpAMM_KIND), PARAMETER ::  Approx3  = 2.85d00
+  REAL(SPAMM_KIND), PARAMETER ::  Approx3  = 2.85d00
   REAL(SPAMM_KIND), PARAMETER ::  ShiftSw  = 5.d-1
   !
 #ifdef DENSE_DIAGNOSTICS
@@ -16,17 +16,17 @@ module SpAMMsand_inverse_squareroot
 
   character(len=132) :: file_dual, file_stab
 
-  real(spamm_kind), dimension(:,:), ALLOCATABLE ::   i_d, s_d, y_k, y_k1, z_k, z_k1, x_k, x_k1, m_x_k1,          &
+  real(SPAMM_KIND), dimension(:,:), ALLOCATABLE ::   i_d, s_d, y_k, y_k1, z_k, z_k1, x_k, x_k1, m_x_k1,          &
        z_tld_k_stab, z_tld_k1_stab, x_tld_k_stab, x_tld_k1_stab,  m_x_tld_k1_stab,  y_tld_k_stab, y_tld_k1_stab, &
        z_tld_k_dual, z_tld_k1_dual, x_tld_k_dual, x_tld_k1_dual,  m_x_tld_k1_dual,  y_tld_k_dual, y_tld_k1_dual
 
-  REAL(spamm_kind) :: scal_shift,shft_shift, scal_mapp, shft_mapp
+  REAL(SPAMM_KIND) :: scal_shift,shft_shift, scal_mapp, shft_mapp
 
 
 #endif
   character(len=300)                             :: corefile
 
-  real(spamm_kind), dimension(:,:), ALLOCATABLE ::   z_d, x_d,y_d, zz, z_1,z_2,z_3,z_4
+  real(SPAMM_KIND), dimension(:,:), ALLOCATABLE ::   z_d, x_d,y_d, zz, z_1,z_2,z_3,z_4
 
   integer :: LWORK
   integer :: LIWORK
@@ -121,7 +121,7 @@ contains
 
 
   FUNCTION Sigmoid(Scale, Inflect, x)
-    REAL(SpAMM_KIND) :: Scale, Inflect, Sigmoid, x
+    REAL(SPAMM_KIND) :: Scale, Inflect, Sigmoid, x
     Sigmoid=SpAMM_One/(SpAMM_One+EXP(- Scale * (x-Inflect) ) )
 
   END FUNCTION Sigmoid
@@ -132,13 +132,13 @@ contains
     TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: s
     TYPE(SpAMM_tree_2d_symm) , POINTER             :: z ! OUT
     TYPE(SpAMM_tree_2d_symm) , POINTER             :: x_stab, z_stab, y_stab, x_dual, z_dual, y_dual, y_tmp, z_tmp
-    REAL(SpAMM_KIND)                               :: Tau_0, Tau_S, delta_0
+    REAL(SPAMM_KIND)                               :: Tau_0, Tau_S, delta_0
     LOGICAL                                        :: DoDuals, DoScale, First, RightTight
     LOGICAL                                        :: converged
     INTEGER                                        :: i,  j, k, kount
-    REAL(SpAMM_KIND)                               :: scale, delta, TrX, FillN, FillN_prev
-    REAL(SpAMM_KIND)                               :: y_stab_work,z_stab_work,x_stab_work, y_dual_work,z_dual_work,x_dual_work
-    REAL(SpAMM_KIND)                               :: y_stab_fill,z_stab_fill,x_stab_fill, y_dual_fill,z_dual_fill,x_dual_fill
+    REAL(SPAMM_KIND)                               :: scale, delta, TrX, FillN, FillN_prev
+    REAL(SPAMM_KIND)                               :: y_stab_work,z_stab_work,x_stab_work, y_dual_work,z_dual_work,x_dual_work
+    REAL(SPAMM_KIND)                               :: y_stab_fill,z_stab_fill,x_stab_fill, y_dual_fill,z_dual_fill,x_dual_fill
     CHARACTER                                      :: RT
 
 
@@ -419,14 +419,14 @@ contains
 
   SUBROUTINE SpAMMsand_Error_Analysis(kount, tau, tau_xtra, sc, delta)
 
-     real(spamm_kind) :: Tau, Tau_xtra, sc, delta, FillN_stab, FillN_dual, &
+     real(SPAMM_KIND) :: Tau, Tau_xtra, sc, delta, FillN_stab, FillN_dual, &
          dy_stab_sclr,dz_stab_sclr, &
          dx_stab_sclr,dy_dual_sclr, &
          dz_dual_sclr,dx_dual_sclr
 
     integer :: i,kount,j,k
 
-    real(spamm_kind), dimension(:,:), ALLOCATABLE ::                        &
+    real(SPAMM_KIND), dimension(:,:), ALLOCATABLE ::                        &
          dy_stab,dy_hat_stab,dz_stab,dz_hat_stab,dx_stab,dx_hat_stab,       &
          dy_dual,dy_hat_dual,dz_dual,dz_hat_dual,dx_dual,dx_hat_dual,       &
          mp_dy_stab,mp_dz_stab,mp_dy_dual,mp_dz_dual,mp_dx_stab,mp_dx_dual, &
@@ -591,8 +591,8 @@ contains
 #endif
 
   FUNCTION SpAMMsand_Basis_Compare(a,b) RESULT(compare)
-    REAL(SpAMM_kind)                   :: compare, MAX_DOT
-    REAL(spamm_kind), dimension(:,:)   :: a,b
+    REAL(SPAMM_KIND)                   :: compare, MAX_DOT
+    REAL(SPAMM_KIND), dimension(:,:)   :: a,b
     compare=SQRT( SUM( ( MATMUL(a,b) - MATMUL(b,a) )**2 ) ) &
          /SQRT( SUM(a**2)) /SQRT( SUM(b**2) )
   END FUNCTION SpAMMsand_Basis_Compare
@@ -604,8 +604,8 @@ contains
 
     TYPE(spamm_tree_2d_symm) ,   POINTER     :: d
     TYPE(spamm_tree_2d_symm) ,   POINTER     :: x
-    REAL(SpAMM_KIND), OPTIONAL,INTENT(IN)    :: low_prev, high_prev, low_new, high_new
-    REAL(SpAMM_KIND)                         :: SHFT,SCAL
+    REAL(SPAMM_KIND), OPTIONAL,INTENT(IN)    :: low_prev, high_prev, low_new, high_new
+    REAL(SPAMM_KIND)                         :: SHFT,SCAL
 
     integer :: i
 
@@ -628,8 +628,8 @@ contains
 
     TYPE(spamm_tree_2d_symm), POINTER  :: d
     TYPE(spamm_tree_2d_symm), POINTER  :: x
-    REAL(SpAMM_KIND),      INTENT(IN)  :: sc
-    REAL(SpAMM_KIND)                   :: SHFT,SCAL
+    REAL(SPAMM_KIND),      INTENT(IN)  :: sc
+    REAL(SPAMM_KIND)                   :: SHFT,SCAL
 
     SHFT=SpAMM_half*SQRT(sc)*SpAMM_three
     SCAL=SpAMM_half*(-sc)*SQRT(sc)
@@ -647,7 +647,7 @@ contains
 
   FUNCTION spammsand_scaling_invsqrt(xo) RESULT(sc)
 
-    REAL(SpAMM_KIND) :: xo, sc
+    REAL(SPAMM_KIND) :: xo, sc
     sc=MIN( Approx3, SpAMM_three/( SpAMM_one + SQRT(xo) + xo) )
 
   END FUNCTION spammsand_scaling_invsqrt
@@ -664,7 +664,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   implicit none
 
-  real(spamm_kind), dimension(:,:), ALLOCATABLE :: s_dense
+  real(SPAMM_KIND), dimension(:,:), ALLOCATABLE :: s_dense
 
   TYPE(spammsand_tree_2d_slices), pointer        :: z, z_head
   !, y, y_head
@@ -677,7 +677,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   character(len = 1000)                          :: matrix_filename
   ! Input parameters controling action, read from character args ...
-  real(SpAMM_KIND)                               :: tau_0, tau_S, delta, mu, mu_0
+  real(SPAMM_KIND)                               :: tau_0, tau_S, delta, mu, mu_0
   logical                                        :: DoDuals, DoScale, First, RightTight
   ! Here are the character args ...
   character(len=10)                              :: c_tau_0, c_tau_S,  c_scale, c_delta, &
@@ -687,10 +687,10 @@ program SpAMM_sandwich_inverse_squareroot
 
   integer, parameter                             :: slices=6
 
-  real(SpAMM_KIND), dimension(1:slices)          :: tau
+  real(SPAMM_KIND), dimension(1:slices)          :: tau
   ! Misc intermediate scalars ...
   integer                                        :: i,j,k, kount, stat
-  real(SpAMM_KIND)                               :: x_hi, x_new, logtau_strt, logtau_stop, logtau_dlta, &
+  real(SPAMM_KIND)                               :: x_hi, x_new, logtau_strt, logtau_stop, logtau_dlta, &
        tau_dlta, tau_xtra, error, tmp1,tmp2, final_tau, s_work, zs_work
 
   character(len = 200)                           :: corename
@@ -1031,9 +1031,9 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: z, x
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER             :: d
-!!$    REAL(spamm_kind) :: tau
+!!$    REAL(SPAMM_KIND) :: tau
 !!$
-!!$    real(spamm_kind), dimension(1:z%frill%ndimn(1),1:z%frill%ndimn(2)) :: x_d, z_d, d_d
+!!$    real(SPAMM_KIND), dimension(1:z%frill%ndimn(1),1:z%frill%ndimn(2)) :: x_d, z_d, d_d
 !!$
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( x, x_d )
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
@@ -1056,9 +1056,9 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: z, s, x
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER             :: d
 !!$
-!!$    real(spamm_kind)                               :: compare
+!!$    real(SPAMM_KIND)                               :: compare
 !!$
-!!$    real(spamm_kind), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_naiv, x_d
+!!$    real(SPAMM_KIND), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_naiv, x_d
 !!$
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
@@ -1076,9 +1076,9 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER, INTENT(IN) :: z, s,x
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER             :: d
 !!$
-!!$    real(spamm_kind)                               :: compare
+!!$    real(SPAMM_KIND)                               :: compare
 !!$
-!!$    real(spamm_kind), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_naiv, x_d
+!!$    real(SPAMM_KIND), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_naiv, x_d
 !!$
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
@@ -1156,7 +1156,7 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER, OPTIONAL   :: in_o
 !!$    TYPE(SpAMM_tree_2d_symm) , POINTER             :: d
 !!$
-!!$    real(spamm_kind), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_stab
+!!$    real(SPAMM_KIND), dimension(1:s%frill%ndimn(1),1:s%frill%ndimn(2)) :: s_d, z_d, x_stab
 !!$
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( s, s_d )
 !!$    CALL SpAMM_convert_tree_2d_symm_to_dense( z, z_d )
@@ -1171,11 +1171,11 @@ end program SpAMM_sandwich_inverse_squareroot
 !!$
 !!$  SUBROUTINE SpAMMsand_Error_Analysis2(kount, tau)
 !!$
-!!$    real(spamm_kind) :: Tau, FillN_stab, FillN_dual
+!!$    real(SPAMM_KIND) :: Tau, FillN_stab, FillN_dual
 !!$
 !!$    integer :: i,kount,j,k
 !!$
-!!$    real(spamm_kind), dimension(:,:), ALLOCATABLE :: &
+!!$    real(SPAMM_KIND), dimension(:,:), ALLOCATABLE :: &
 !!$    dz_stab, dz_hat_stab, dx_stab, dx_hat_stab,       &
 !!$    dy_dual, dy_hat_dual,dz_dual, dz_hat_dual,       &
 !!$    dx_dual, dx_hat_dual,mp_stab, mp_dual,           &

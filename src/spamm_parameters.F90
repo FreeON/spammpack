@@ -1,11 +1,9 @@
 module spamm_parameters
 
-  use spamm_realkind
-
   implicit none
 
-  ! h2o_350_6-311G**, blk = 8, tau= 0.05 
-  ! h2o_350_6-311G**, blk = 64, tau= 0.1 
+  ! h2o_350_6-311G**, blk = 8, tau= 0.05
+  ! h2o_350_6-311G**, blk = 64, tau= 0.1
 
 !  water, tau=1d-2/1d-3 and tau_y=1d-4/1d-5
 !  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=2
@@ -19,8 +17,8 @@ module spamm_parameters
   INTEGER,          PARAMETER :: SBS2             = SpAMM_BLOCK_SIZE**2
   INTEGER,          PARAMETER :: SBS3             = SpAMM_BLOCK_SIZE**3
   !
-  REAL(SpAMM_KIND), parameter :: SpAMM_normclean  = 1d-12
-  REAL(SpAMM_KIND), parameter :: SpAMM_init  = 123456789d10
+  REAL(SPAMM_KIND), parameter :: SpAMM_normclean  = 1d-12
+  REAL(SPAMM_KIND), parameter :: SpAMM_init  = 123456789d10
 
   real(SPAMM_KIND), parameter :: SpAMM_Zero  = 0D0
   real(SPAMM_KIND), parameter :: SpAMM_Half  = 5D-1
