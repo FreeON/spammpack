@@ -147,10 +147,10 @@ contains
     !
     !
     file_dual=TRIM(corename)//'_t0'//TRIM(DblToChar(tau_0))//'_ts'//TRIM(DblToChar(tau_s)) &
-            //'_d'//TRIM(DblToChar(delta_0))//'_b'//TRIM(IntToChar(SpAMM_BLOCK_SIZE))//'_dual.dat'
+            //'_d'//TRIM(DblToChar(delta_0))//'_b'//TRIM(IntToChar(SPAMM_BLOCK_SIZE))//'_dual.dat'
 
     file_stab=TRIM(corename)//'_t0'//TRIM(DblToChar(tau_0))//'_ts'//TRIM(DblToChar(tau_s)) &
-            //'_d'//TRIM(DblToChar(delta_0))//'_b'//TRIM(IntToChar(SpAMM_BLOCK_SIZE))//'_'//TRIM(RT)//'_stab.dat'
+            //'_d'//TRIM(DblToChar(delta_0))//'_b'//TRIM(IntToChar(SPAMM_BLOCK_SIZE))//'_'//TRIM(RT)//'_stab.dat'
     !
     open(unit=98, iostat=stat, file=file_stab,status='old')
     if(stat.eq.0) close(98, status='delete')
@@ -736,7 +736,7 @@ program SpAMM_sandwich_inverse_squareroot
 
   corefile=TRIM(corename)//'_Tau0='//TRIM(DblToChar(tau_0))//'_TauS='//TRIM(DblToChar(tau_s)) &
                          //'_Stab='//TRIM(DblToChar(delta))//'_Shft='//TRIM(DblToChar(mu_0))  &
-                         //'_Blks='//TRIM(IntToChar(SpAMM_BLOCK_SIZE))                        &
+                         //'_Blks='//TRIM(IntToChar(SPAMM_BLOCK_SIZE))                        &
                          //'_Dual='//TRIM(LogicalToChar(DoDuals))                             &
                          //'_Rght='//TRIM(LogicalToChar(righttight))                          &
                          //'_Scal='//TRIM(LogicalToChar(DoScale))

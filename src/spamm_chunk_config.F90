@@ -40,7 +40,7 @@ module spamm_chunk_config
   implicit none
 
   !> The size of the basic submatrix.
-  integer, parameter :: SPAMM_CHUNK_BLOCK_SIZE = 4
+  integer, parameter :: SPAMM_BLOCK_SIZE = 4
 
   !> The size of the chunk submatrix.
   integer, parameter :: SPAMM_CHUNK_SIZE = 32

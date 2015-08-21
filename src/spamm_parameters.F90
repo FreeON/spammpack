@@ -2,23 +2,12 @@ module spamm_parameters
 
   implicit none
 
-  ! h2o_350_6-311G**, blk = 8, tau= 0.05
-  ! h2o_350_6-311G**, blk = 64, tau= 0.1
+  integer, parameter :: SBS = SPAMM_BLOCK_SIZE
+  integer, parameter :: SBS2 = SPAMM_BLOCK_SIZE**2
+  integer, parameter :: SBS3 = SPAMM_BLOCK_SIZE**3
 
-!  water, tau=1d-2/1d-3 and tau_y=1d-4/1d-5
-!  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=2
-
-!  tubes, tau=1d-2/1d-3 and tau_y=1d-4/1d-5
-  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE=16
-
-!  INTEGER,          PARAMETER :: SpAMM_BLOCK_SIZE = 512
-
-  INTEGER,          PARAMETER :: SBS              = SpAMM_BLOCK_SIZE
-  INTEGER,          PARAMETER :: SBS2             = SpAMM_BLOCK_SIZE**2
-  INTEGER,          PARAMETER :: SBS3             = SpAMM_BLOCK_SIZE**3
-  !
-  REAL(SPAMM_KIND), parameter :: SpAMM_normclean  = 1d-12
-  REAL(SPAMM_KIND), parameter :: SpAMM_init  = 123456789d10
+  real(SPAMM_KIND), parameter :: SpAMM_normclean  = 1d-12
+  real(SPAMM_KIND), parameter :: SpAMM_init  = 123456789d10
 
   real(SPAMM_KIND), parameter :: SpAMM_Zero  = 0D0
   real(SPAMM_KIND), parameter :: SpAMM_Half  = 5D-1
@@ -34,7 +23,3 @@ module spamm_parameters
 contains
 
 end module spamm_parameters
-
-!to 0.13522%,    1.83456%,    0.35217%
-! z 0.17314%,    2.80286%,    0.47922%
-! h 0.16605%,    2.59818%,    0.47009%
