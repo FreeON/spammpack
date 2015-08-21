@@ -204,6 +204,7 @@ if(SPAMM_COUNTERS)
   list(APPEND SPAMM_EXTRA_DEFINES SPAMM_COUNTERS)
 endif()
 
+mark_as_advanced(SPAMM_STORE_TRANSPOSE)
 set(SPAMM_STORE_TRANSPOSE FALSE
   CACHE BOOL "Store the transpose sub-matrix to aid vectorization")
 
@@ -239,7 +240,7 @@ if(VALGRIND_TESTS)
 endif()
 
 set(SPAMM_PRECISION double
-  CACHE STRING "The real precision of the library, single or double")
+  CACHE STRING "The real precision of the library, single or double.")
 
 string(TOLOWER ${SPAMM_PRECISION} SPAMM_PRECISION)
 
@@ -252,17 +253,23 @@ message(STATUS "Building ${SPAMM_PRECISION} precision version")
 list(APPEND COMPILE_DEFINITIONS "SPAMM_KIND=${SPAMM_KIND}")
 
 set(SPAMM_BLOCK_SIZE 4
-  CACHE STRING "The matrix size of basic submatrix blocks at the leaves")
+  CACHE STRING "The matrix size of basic submatrix blocks at the leaves.")
 list(APPEND COMPILE_DEFINITIONS "SPAMM_BLOCK_SIZE=${SPAMM_BLOCK_SIZE}")
 
 set(SPAMM_CHUNK_SIZE 32
-  CACHE STRING "The matrix size of a chunk")
+  CACHE STRING "The matrix size of a chunk.")
 list(APPEND COMPILE_DEFINITIONS "SPAMM_CHUNK_SIZE=${SPAMM_CHUNK_SIZE}")
 
+mark_as_advanced(SPAMM_CHUNK_BLOCKS)
 math(EXPR SPAMM_CHUNK_BLOCKS "${SPAMM_CHUNK_SIZE}/${SPAMM_BLOCK_SIZE}")
+set(SPAMM_CHUNK_BLOCKS ${SPAMM_CHUNK_BLOCKS}
+  CACHE STRING "The number of submatrix blocks in a chunk.")
 list(APPEND COMPILE_DEFINITIONS "SPAMM_CHUNK_BLOCKS=${SPAMM_CHUNK_BLOCKS}")
 
+mark_as_advanced(SPAMM_CHUNK_NODES)
 math(EXPR SPAMM_CHUNK_NODES "(4*${SPAMM_CHUNK_BLOCKS}*${SPAMM_CHUNK_BLOCKS}-1)/3.")
+set(SPAMM_CHUNK_NODES ${SPAMM_CHUNK_NODES}
+  CACHE STRING "The number of tree nodes inside a chunk.")
 list(APPEND COMPILE_DEFINITIONS "SPAMM_CHUNK_NODES=${SPAMM_CHUNK_NODES}")
 
 find_program(CTAGS ctags)
