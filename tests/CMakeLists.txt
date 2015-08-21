@@ -35,6 +35,9 @@ set(TEST_SOURCES
 
 foreach(TEST ${TEST_SOURCES})
   add_executable(${TEST} ${TEST}.F90)
+  set_target_properties(${TEST}
+    PROPERTIES
+    COMPILE_DEFINITIONS "${COMPILE_DEFINITIONS}")
   target_link_libraries(${TEST} spamm)
   add_test(chunk:${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST})
 endforeach()

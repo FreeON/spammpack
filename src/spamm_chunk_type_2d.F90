@@ -39,8 +39,6 @@
 !!        - Check/Update bounds.
 module spamm_chunk_type_2d
 
-  use spamm_chunk_config
-
   implicit none
 
   !> The tree-node type.
