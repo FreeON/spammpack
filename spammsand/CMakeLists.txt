@@ -8,3 +8,6 @@ add_executable(spammsand_invsqrt
 
 include_directories(${CMAKE_BINARY_DIR}/src)
 target_link_libraries(spammsand_invsqrt spamm)
+
+install(TARGETS spammsand_invsqrt
+  RUNTIME DESTINATION bin)

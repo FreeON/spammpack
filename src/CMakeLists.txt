@@ -49,6 +49,10 @@ set(SOURCES
   spammpack.F90)
 
 add_library(spamm ${SOURCES})
+set_target_properties(spamm
+  PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION})
 
 install(TARGETS spamm
   ARCHIVE DESTINATION lib

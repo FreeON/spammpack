@@ -29,13 +29,32 @@
 cmake_minimum_required(VERSION 2.8)
 project(spammpack Fortran)
 
+set(PROJECT_VERSION_MAJOR 1)
+set(PROJECT_VERSION_MINOR 1)
+set(PROJECT_VERSION_PATCH 0)
+set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+
 if(NOT CMAKE_Fortran_COMPILER)
   message(FATAL_ERROR "Can not find Fortran compiler")
 endif()
 
 # Default build type, override by explicitly running cmake with
 # -DCMAKE_BUILD_TYPE={Debug,Release}.
-set(CMAKE_BUILD_TYPE Debug)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug)
+endif()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+set(BUILD_SHARED_LIBS FALSE
+  CACHE BOOL "Whether to build a shared library.")
+
+# Make sure we get the right RPATH. We want the RPATH to be the build
+# path and after installing, the actual installed library path.
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
 
 # Set some default compiler flags.
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
@@ -283,9 +302,9 @@ if(SPAMM_TESTING)
 endif()
 
 set(CPACK_PACKAGE_NAME "spammpack")
-set(CPACK_PACKAGE_VERSION_MAJOR 1)
-set(CPACK_PACKAGE_VERSION_MINOR 1)
-set(CPACK_PACKAGE_VERSION_PATCH 0)
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
   "An implementation of the Sparse Approximate Matrix Multiply (SpAMM) Algorithm")
 set(CPACK_PACKAGE_CONTACT "www.freeon.org")
