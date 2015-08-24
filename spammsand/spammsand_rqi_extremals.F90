@@ -2,6 +2,8 @@ MODULE SpAMMSand_rqi_extremals
 
   USE spammpack
 
+  implicit none
+
 CONTAINS
   !> SpAMM routines for spectral estimation (extremal eigenvalues)
   !!
@@ -21,6 +23,9 @@ CONTAINS
     REAL(SPAMM_KIND)     :: xx, hh, xh, hx, xAx, xAh, hAx, hAh
     REAL(SPAMM_KIND)     :: sclr_Ax, sclr__x, beta, dot_g, dot_gold
     REAL(SPAMM_KIND)     :: LambdaPlus, LambdaMins, RQIPlus, RQIMins
+
+    integer :: gsign
+    integer :: m
 
     MINMAX=2 ! default is high (max) extremal
     IF(PRESENT(high_O))THEN
@@ -73,12 +78,12 @@ CONTAINS
        IF(CG>1.AND.MOD(CG,15).NE.0)THEN
           IF(dot_gold/abs(omega).LE.1D-10)THEN
              ! if we are really close, steepest descents should be enuf ...
-             beta=SpAMM_Zero
+             beta=0
           ELSE
-             beta=MAX(SpAMM_Zero,dot_g/dot_gold)
+             beta=MAX(0.0_SPAMM_KIND, dot_g/dot_gold)
           ENDIF
        ELSE
-          beta=SpAMM_Zero
+          beta=0
        ENDIF
 
 !!$       IF(MinMax==1)THEN
