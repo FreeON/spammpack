@@ -31,9 +31,9 @@ contains
        ! application has to fill in the %flops at this level
        return
     else ! init this level
-       a%frill%Norm2=SpAMM_Zero
-       a%frill%Non0s=SpAMM_Zero
-       a%frill%FlOps=SpAMM_Zero
+       a%frill%Norm2=0
+       a%frill%Non0s=0
+       a%frill%FlOps=0
     end if
 
     ! walk back up one level with each decoration ...
@@ -75,9 +75,9 @@ contains
        ! application has to fill in the %flops at this level
        return
     else ! init this level
-       a%frill%Norm2=SpAMM_Zero
-       a%frill%Non0s=SpAMM_Zero
-       a%frill%FlOpS=SpAMM_Zero
+       a%frill%Norm2=0
+       a%frill%Non0s=0
+       a%frill%FlOpS=0
     end if
 
     call SpAMM_merge_decoration_2d(a,a%child_00)

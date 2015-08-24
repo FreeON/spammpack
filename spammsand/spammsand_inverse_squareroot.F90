@@ -290,7 +290,7 @@ contains
        IF(First)THEN  ! first call only (for now)
           delta=delta_0*Sigmoid(75d0, 3.d-1, FillN)
        ELSE
-          delta=SpAMM_Zero
+          delta=0
        ENDIF
 
        ! scaling ...    scaling ...    scaling ...    scaling ...    scaling ...    scaling ...    scaling ...
@@ -826,7 +826,7 @@ program SpAMM_sandwich_inverse_squareroot
 
      t => SpAMM_tree_2d_symm_times_tree_2d_symm( z_total, s      , z%tau_s, NT_O=.FALSE., in_O = t )
      s => SpAMM_tree_2d_symm_times_tree_2d_symm(       t, z_total, z%tau_S, NT_O=.TRUE. , in_O = s )
-    
+
      call spammsand_scaled_newton_shulz_inverse_squareroot( s, z%mtx, z%tau_0, z%tau_S, delta,  &
                                                             DoDuals, RightTight, DoScale, First, kount)
 

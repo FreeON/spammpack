@@ -37,7 +37,7 @@ CONTAINS
 
     REAL(SPAMM_KIND)             :: dot, dot0, dot1
 
-    Dot=SpAMM_Zero
+    Dot=0
 
     if(.not.associated(a))return
     if(.not.associated(b))return

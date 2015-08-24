@@ -246,7 +246,7 @@ contains
     if(wi==2*SBS)then                             ! leaf criterion ...
        tree%child_0%frill%Leaf=.TRUE.
        allocate(tree%child_0%chunk(1:SBS))        ! grab a chunk for each leaf node, always
-       tree%child_0%chunk=SpAMM_Zero
+       tree%child_0%chunk=0
        tree%child_0%frill%flops=SpAMM_init
        tree%child_0%frill%norm2=SpAMM_init
     endif
@@ -295,7 +295,7 @@ contains
     if(wi==2*SBS)then
        tree%child_1%frill%Leaf=.TRUE.
        allocate(tree%child_1%chunk(1:SBS))       ! grab a chunk for the leaf node, always
-       tree%child_1%chunk=SpAMM_Zero
+       tree%child_1%chunk=0
     endif
 !    write(*,33) tree%child_1%frill%bndbx(:), wi,tree%child_1%frill%leaf
 33  format(' 1: [ ',I3,", ",I3," ], wid = ",I4,4L3 )
@@ -477,7 +477,7 @@ contains
     if(wi(1)==2*SBS)then                           ! at resolution?
        tree%child_00%frill%Leaf=.TRUE.             ! we have a leaf
        allocate(tree%child_00%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
-       tree%child_00%chunk=SpAMM_Zero              ! init
+       tree%child_00%chunk=0              ! init
     endif
 
 !   write(*,33) tree%child_00%frill%bndbx(:,1) ,tree%child_00%frill%bndbx(:,2),wi/2,tree%child_00%frill%leaf
@@ -529,7 +529,7 @@ contains
     if(wi(1)==2*SBS)then                           ! at resolution?
        tree%child_01%frill%Leaf=.TRUE.             ! we have a leaf
        allocate(tree%child_01%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
-       tree%child_01%chunk=SpAMM_Zero              ! init
+       tree%child_01%chunk=0              ! init
     endif
 
 !    write(*,33) tree%child_01%frill%bndbx(:,1),tree%child_01%frill%bndbx(:,2), &
@@ -575,7 +575,7 @@ contains
     if(wi(1)==2*SBS)then                           ! at resolution?
        tree%child_10%frill%Leaf=.TRUE.             ! we have a leaf
        allocate(tree%child_10%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
-       tree%child_10%chunk=SpAMM_Zero              ! init
+       tree%child_10%chunk=0              ! init
     endif
 
 !    write(*,33) tree%child_10%frill%bndbx(:,1),tree%child_10%frill%bndbx(:,2), &
@@ -624,7 +624,7 @@ contains
     if(wi(1)==2*SBS)then                           ! at resolution?
        tree%child_11%frill%Leaf=.TRUE.             ! we have a leaf
        allocate(tree%child_11%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
-       tree%child_11%chunk=SpAMM_Zero              ! init
+       tree%child_11%chunk=0              ! init
     endif
 
 !    write(*,33) tree%child_11%frill%bndbx(:,1) ,tree%child_11%frill%bndbx(:,2),wi/2,tree%child_11%frill%leaf
@@ -697,7 +697,7 @@ contains
     IF(.not.associated(d)) d => SpAMM_new_top_tree_2d_symm (a%frill%NDimn )
 
     ! d |cpy>|threshold?> a
-    threshold2=SpAMM_zero
+    threshold2=0
     IF(PRESENT(threshold_o))threshold2=threshold_O**2
 
     CALL SpAMM_flip(d)
@@ -731,7 +731,7 @@ contains
 
        d%frill%init=.FALSE.
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
-       d%frill%flops=SpAMM_zero
+       d%frill%flops=0
 
     else
 

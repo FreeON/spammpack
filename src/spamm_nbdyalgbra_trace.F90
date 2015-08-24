@@ -26,7 +26,7 @@ CONTAINS
     INTEGER, DIMENSION(:,:),  pointer             :: bb
     integer                                       :: i
 
-    tr=SpAMM_Zero
+    tr=0
     IF(.NOT.ASSOCIATED(a))RETURN
 
     bb => a%frill%bndbx 

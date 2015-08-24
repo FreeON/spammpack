@@ -1,15 +1,15 @@
 !----------------------------------------------------------------------------------
 ! The SpAMM data structures, STDEC and SALDS
 !
-MODULE spamm_structures
+module spamm_structures
 
-  USE  spamm_parameters
+  use spamm_parameters
 
   implicit none
 
   ! SpAMM tree decorations  ________________ STDECs _________________
 
-  ! garnishments of the tree_1d ...
+  !> garnishments of the tree_1d ...
   type :: SpAMM_decoration_1d
      ! initialization status
      logical                               :: Init
@@ -41,7 +41,7 @@ MODULE spamm_structures
      integer,           dimension(1:2)     :: NDimn
      !> Axis-aligned bounding box for the [i]-[j] index space
      integer,  dimension(0:1,1:2)          :: BndBx
-          !> Square of the F-norm.
+     !> Square of the F-norm.
      real(SPAMM_KIND)                      :: Norm2 = -1
      !> Float Ops needed accumulated to this level
      real(kind(0d0))                       :: FlOps = -1

@@ -57,7 +57,7 @@ CONTAINS
        if(a%frill%leaf)then
 
           a%frill%init=.FALSE.
-          a%chunk=SpAMM_zero
+          a%chunk=0
           DO I=1,a%frill%bndbx(1,1)-a%frill%bndbx(0,1)+1
              a%chunk(I,I)=SpAMM_one
           ENDDO
@@ -81,7 +81,7 @@ CONTAINS
     REAL(SPAMM_KIND)                              :: tr, tr00,tr11
     integer                                       :: i
 
-    tr=SpAMM_Zero
+    tr=0
     IF(.NOT.ASSOCIATED(a))RETURN
 
     IF(a%frill%leaf)THEN ! Leaf condition ?
@@ -183,7 +183,7 @@ CONTAINS
     type(SpAMM_tree_2d_symm), pointer  :: A,AT
     real(SPAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
 
-    twist  = SpAMM_zero
+    twist  = 0
 
     if(.not. associated(a))return
     if(.not. associated(at))return
@@ -211,7 +211,7 @@ CONTAINS
     type(SpAMM_tree_2d_symm), pointer  :: A
     real(SPAMM_KIND)                                :: twist, twist_00, twist_11, twist_01, twist_10
 
-    twist  = SpAMM_zero
+    twist  = 0
 
     if(.not. associated(a))return
 

@@ -148,7 +148,7 @@ else()
 endif()
 
 set(SPAMM_DOCS TRUE
-  CACHE LOGICAL "Build the spammpack API documentation")
+  CACHE LOGICAL "Build the spammpack API documentation.")
 
 if(SPAMM_DOCS)
   include(FindDoxygen)
@@ -158,7 +158,7 @@ if(SPAMM_DOCS)
     endif()
     configure_file(Doxyfile.in Doxyfile)
     add_custom_target(doc ALL ${DOXYGEN_EXECUTABLE}
-      COMMENT "Generating API documentation")
+      COMMENT "Generating API documentation.")
   else()
     message(STATUS "Can not build documentation")
   endif()
@@ -197,7 +197,7 @@ set(SPAMM_DEBUG_LEVEL ${SPAMM_DEBUG_LEVEL}
 list(APPEND SPAMM_EXTRA_DEFINES "SPAMM_DEBUG_LEVEL=${SPAMM_DEBUG_LEVEL}")
 
 set(SPAMM_COUNTERS FALSE
-  CACHE BOOL "Add non-zero and number_operations counters")
+  CACHE BOOL "Add non-zero and number_operations counters.")
 
 if(SPAMM_COUNTERS)
   message(STATUS "Compiling with SpAMM counters")
@@ -206,7 +206,7 @@ endif()
 
 mark_as_advanced(SPAMM_STORE_TRANSPOSE)
 set(SPAMM_STORE_TRANSPOSE FALSE
-  CACHE BOOL "Store the transpose sub-matrix to aid vectorization")
+  CACHE BOOL "Store the transpose sub-matrix to aid vectorization.")
 
 if(SPAMM_STORE_TRANSPOSE)
   message(STATUS "Matrix will store the transpose")
@@ -230,7 +230,7 @@ if(HAVE_FINALIZE)
 endif()
 
 set(VALGRIND_TESTS FALSE
-  CACHE BOOL "Build the valgrind tests")
+  CACHE BOOL "Build the valgrind tests.")
 
 if(VALGRIND_TESTS)
   find_program(VALGRIND valgrind)
@@ -245,12 +245,12 @@ set(SPAMM_PRECISION double
 string(TOLOWER ${SPAMM_PRECISION} SPAMM_PRECISION)
 
 if(SPAMM_PRECISION STREQUAL "double")
-  set(SPAMM_KIND "kind(0d0)")
+  set(SPAMM_KIND_EXPRESSION "0d0")
 else()
-  set(SPAMM_KIND "kind(0e0)")
+  set(SPAMM_KIND_EXPRESSION "0e0")
 endif()
 message(STATUS "Building ${SPAMM_PRECISION} precision version")
-list(APPEND COMPILE_DEFINITIONS "SPAMM_KIND=${SPAMM_KIND}")
+list(APPEND COMPILE_DEFINITIONS "SPAMM_KIND_EXPRESSION=kind(${SPAMM_KIND_EXPRESSION})")
 
 set(SPAMM_BLOCK_SIZE 4
   CACHE STRING "The matrix size of basic submatrix blocks at the leaves.")

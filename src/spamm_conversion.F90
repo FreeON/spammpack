@@ -70,7 +70,7 @@ contains
 !            1:A_2d%frill%bndbx(1,2) ))
 !    ENDIF
 
-    A=SpAMM_zero
+    A=0
     CALL SpAMM_convert_tree_2d_symm_to_dense_recur (A_2d,A)
 
   END SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense
