@@ -51,9 +51,9 @@ contains
     if(.not.associated(b)) return
 
     ! this is unused, passed in data, don't accumulate
-    if(b%frill%init ) return
+    if(b%frill%is_initialized) return
 
-    a%frill%Init =a%frill%Init .and. b%frill%Init
+    a%frill%is_initialized=a%frill%is_initialized .and. b%frill%is_initialized
     a%frill%Norm2=a%frill%Norm2+b%frill%Norm2
     a%frill%Non0s=a%frill%Non0s+b%frill%Non0s
     a%frill%FlOps=a%frill%FlOps+b%frill%FlOps
@@ -108,11 +108,11 @@ contains
     if(.not.associated(b)) return
 
     ! this is unused, passed in data, don't accumulate
-    if(b%frill%init ) return
+    if(b%frill%is_initialized) return
 
     !    write(*,*)' flops = ',a%frill%FlOps,b%frill%FlOps
 
-    a%frill%Init =a%frill%Init .and. b%frill%Init
+    a%frill%is_initialized=a%frill%is_initialized .and. b%frill%is_initialized
     a%frill%Norm2=a%frill%Norm2+b%frill%Norm2
     a%frill%Non0s=a%frill%Non0s+b%frill%Non0s
     a%frill%FlOps=a%frill%FlOps+b%frill%FlOps

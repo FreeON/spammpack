@@ -56,7 +56,7 @@ CONTAINS
 
        if(a%frill%leaf)then
 
-          a%frill%init=.FALSE.
+          a%frill%is_initialized=.FALSE.
           a%chunk=0
           DO I=1,a%frill%bndbx(1,1)-a%frill%bndbx(0,1)+1
              a%chunk(I,I)=SpAMM_one
@@ -262,7 +262,7 @@ CONTAINS
     type(spamm_tree_2d_symm), pointer, intent(in) :: A
     integer, intent(in) :: file_unit
 
-    write(file_unit, "(I8)") SPAMM_BLOCK_SIZE
+    write(file_unit, "(I8)") SPAMM_CHUNK_SIZE
 
     call spamm_tree_print_leaves_2d_symm_recur(A%child_00, file_unit)
     call spamm_tree_print_leaves_2d_symm_recur(A%child_01, file_unit)

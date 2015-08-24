@@ -1,6 +1,4 @@
-!----------------------------------------------------------------------------------
-! The SpAMM data structures, STDEC and SALDS
-!
+!> The SpAMM data structures, STDEC and SALDS
 module spamm_structures
 
   use spamm_parameters
@@ -11,47 +9,47 @@ module spamm_structures
 
   !> garnishments of the tree_1d ...
   type :: SpAMM_decoration_1d
-     ! initialization status
-     logical                               :: Init
-     ! leaf node flag
-     logical                               :: Leaf
+     !> initialization status
+     logical :: is_initialized = .false.
+     !> leaf node flag
+     logical :: leaf = .false.
      !> tree sub-vector width: M_pad/2**depth
-     integer                               :: Width
+     integer :: width = -1
      !> Integer dimension of the native (non-padded) vector
-     integer                               :: NDimn
+     integer :: ndimn = -1
      !> Axis-aligned bounding box for the [i] index space
-     integer,  dimension(0:1)              :: BndBx
+     integer,  dimension(0:1) :: BndBx
      !> Square of the F-norm.
-     real(SPAMM_KIND)                      :: Norm2 = -1
+     real(SPAMM_KIND) :: Norm2 = -1
      !> Float Ops needed accumulated to this level
-     real(kind(0d0))                       :: FlOps = -1
+     real(kind(0d0)) :: FlOps = -1
      !> The number of non-zero elements to this level
-     real(kind(0d0))                       :: Non0s = -1
+     real(kind(0d0)) :: Non0s = -1
   end type SpAMM_decoration_1d
 
-  ! garnishments of tree_2d ...
+  !> Garnishments of tree_2d ...
   type :: SpAMM_decoration_2d
-     ! initialization status
-     logical                               :: Init
-     ! leaf node flag
-     logical                               :: Leaf
+     !> initialization status
+     logical :: is_initialized = .false.
+     !> leaf node flag
+     logical :: leaf = .false.
      !> tree sub-matrix width: MN_pad/2**depth
-     integer,           dimension(1:2)     :: Width
+     integer, dimension(1:2) :: width = -1
      !> Integer dimension of the native (non-padded) matrix
-     integer,           dimension(1:2)     :: NDimn
+     integer, dimension(1:2) :: ndimn = -1
      !> Axis-aligned bounding box for the [i]-[j] index space
-     integer,  dimension(0:1,1:2)          :: BndBx
+     integer, dimension(0:1, 1:2) :: bndbx
      !> Square of the F-norm.
-     real(SPAMM_KIND)                      :: Norm2 = -1
+     real(SPAMM_KIND) :: norm2 = -1
      !> Float Ops needed accumulated to this level
-     real(kind(0d0))                       :: FlOps = -1
+     real(kind(0d0)) :: flops = -1
      !> The number of non-zero elements to this level
-     real(kind(0d0))                       :: Non0s = -1
+     real(kind(0d0)) :: non0s = -1
   end type SpAMM_decoration_2d
 
   ! SpAMM algebraic data structures _______________ SALGDSs ____________________
 
-  ! The tree_1d (vector) type:
+  !> The tree_1d (vector) type:
   type :: SpAMM_tree_1d
      type(SpAMM_decoration_1d)             :: frill
      type(SpAMM_tree_1d),      pointer     :: child_0 => null()
@@ -59,8 +57,8 @@ module spamm_structures
      real(SPAMM_KIND),     allocatable     :: chunk(:)
   end type SpAMM_tree_1d
 
-  ! The tree_2d matrix structures:
-  ! symmetric (SPD/Hermetian) ...
+  !> The tree_2d matrix structures:
+  !! symmetric (SPD/Hermetian) ...
   type :: SpAMM_tree_2d_symm
      type(SpAMM_decoration_2d)             :: frill
      type(SpAMM_tree_2d_symm), pointer     :: child_00 => null()
@@ -70,7 +68,7 @@ module spamm_structures
      real(SPAMM_KIND),     allocatable     :: chunk(:, :)
   end type SpAMM_tree_2d_symm
 
-  ! full ...
+  !> full ...
   type :: SpAMM_tree_2d_full
      type(SpAMM_decoration_2d)             :: frill
      type(SpAMM_tree_2d_full), pointer     :: child_00 => null()
@@ -80,8 +78,4 @@ module spamm_structures
      real(SPAMM_KIND),     allocatable     :: chunk(:, :)
   end type SpAMM_tree_2d_full
 
-  ! --
-contains
-
-  ! --
-end module spamm_structures ! ... and we're out ...
+end module spamm_structures

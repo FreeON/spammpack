@@ -4,9 +4,9 @@ module spamm_parameters
 
   integer, parameter :: SPAMM_KIND = SPAMM_KIND_EXPRESSION
 
-  integer, parameter :: SBS = SPAMM_BLOCK_SIZE
-  integer, parameter :: SBS2 = SPAMM_BLOCK_SIZE**2
-  integer, parameter :: SBS3 = SPAMM_BLOCK_SIZE**3
+  integer, parameter :: SBS = SPAMM_CHUNK_SIZE
+  integer, parameter :: SBS2 = SPAMM_CHUNK_SIZE**2
+  integer, parameter :: SBS3 = SPAMM_CHUNK_SIZE**3
 
   real(SPAMM_KIND), parameter :: SpAMM_normclean  = 1e-12_SPAMM_KIND
   real(SPAMM_KIND), parameter :: SpAMM_init  = 123456789e10_SPAMM_KIND

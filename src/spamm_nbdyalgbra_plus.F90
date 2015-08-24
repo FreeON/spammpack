@@ -5,6 +5,7 @@ module spamm_nbdyalgbra_plus
   use spamm_decoration
   use spamm_elementals
   use spamm_nbdyalgbra_times
+
   implicit none
 
 CONTAINS
@@ -65,7 +66,7 @@ CONTAINS
        IF(b%frill%leaf)then
           ! A = alpha*A + beta*B
 
-          a%frill%init=.FALSE.
+          a%frill%is_initialized=.false.
           a%chunk(1:SBS) = alpha*a%chunk(1:SBS) + beta*b%chunk(1:SBS)
           a%frill%flops = a%frill%flops + 3*SBS
 
@@ -117,7 +118,7 @@ CONTAINS
 
    IF(a%frill%leaf)THEN
 
-      a%frill%init=.FALSE.
+      a%frill%is_initialized=.false.
       lo=a%frill%bndbx(0,:)
       hi=a%frill%bndbx(1,:)
 
@@ -219,7 +220,7 @@ CONTAINS
        IF(b%frill%leaf)then
 
           ! A = alpha*A + beta*B
-          a%frill%init=.false.
+          a%frill%is_initialized=.false.
           a%chunk(1:SBS,1:SBS) = alpha*a%chunk(1:SBS,1:SBS) + beta*b%chunk(1:SBS,1:SBS)
           a%frill%flops = a%frill%flops + 3*SBS2
 
@@ -270,7 +271,7 @@ CONTAINS
        IF(c%frill%leaf)THEN
 
           ! c = c + alpha*a + beta*b
-          c%frill%init=.FALSE.
+          c%frill%is_initialized=.false.
           c%chunk(1:sbs,1:sbs)=c%chunk(1:sbs,1:sbs)+alpha*a%chunk(1:sbs,1:sbs)+beta*b%chunk(1:sbs,1:sbs)
           c%frill%flops=c%frill%flops+3*sbs2
 

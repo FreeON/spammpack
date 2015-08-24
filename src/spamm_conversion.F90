@@ -14,7 +14,7 @@ contains
     real(SPAMM_KIND), dimension(:,:), intent(IN)    :: A
     type(SpAMM_tree_2d_symm) ,pointer,  optional    :: in_O
     type(SpAMM_tree_2d_symm) ,pointer               :: A_2d
-    
+
     IF(PRESENT(in_o)) &
          a_2d => in_o ! data pass in, keep it in place
 
@@ -36,14 +36,14 @@ contains
 
     if(.not.associated(a_2d))return
 
-    if(a_2d%frill%leaf)then! Leaf condition ? 
+    if(a_2d%frill%leaf)then! Leaf condition ?
 
-       a_2d%frill%init=.FALSE.
-       lo=a_2d%frill%bndbx(0,:) 
-       hi=a_2d%frill%bndbx(1,:) 
- 
-       ! move data on the page ...    
-       a_2d%chunk( 1:(hi(1)-lo(1)+1) , 1:(hi(2)-lo(2)+1) ) = A( lo(1):hi(1) , lo(2):hi(2) ) 
+       a_2d%frill%is_initialized=.false.
+       lo=a_2d%frill%bndbx(0,:)
+       hi=a_2d%frill%bndbx(1,:)
+
+       ! move data on the page ...
+       a_2d%chunk( 1:(hi(1)-lo(1)+1) , 1:(hi(2)-lo(2)+1) ) = A( lo(1):hi(1) , lo(2):hi(2) )
 
     ELSE ! recur generically here, poping with construct as needed ...
 
@@ -54,7 +54,7 @@ contains
 
     ENDIF
 
-    ! update the garnish 
+    ! update the garnish
     CALL SpAMM_redecorate_tree_2d_symm(A_2d)
 
   END SUBROUTINE SpAMM_convert_dense_to_tree_2d_symm_recur
@@ -63,7 +63,7 @@ contains
 
     type(SpAMM_tree_2d_symm),         pointer           :: A_2d
     real(SPAMM_KIND), dimension(:,:)                    :: A
-    
+
 !    IF(.not.allocated(A))THEN
 !       STOP' need pre allocation here ...'
        !       ALLOCATE(A( 1:A_2d%frill%bndbx(1,1),  &
@@ -85,12 +85,12 @@ contains
 
     if(.not.associated(a_2d))return
 
-    if(a_2d%frill%leaf)then! Leaf condition ? 
+    if(a_2d%frill%leaf)then! Leaf condition ?
 
-       lo=a_2d%frill%bndbx(0,:) 
-       hi=a_2d%frill%bndbx(1,:)  
+       lo=a_2d%frill%bndbx(0,:)
+       hi=a_2d%frill%bndbx(1,:)
 
-       ! move data on the page ...    
+       ! move data on the page ...
        A(lo(1):hi(1),lo(2):hi(2))=a_2d%chunk( 1:(hi(1)-lo(1)+1), 1:(hi(2)-lo(2)+1))
 
     ELSE ! recur generically here ...
@@ -102,6 +102,3 @@ contains
   END SUBROUTINE SpAMM_convert_tree_2d_symm_to_dense_recur
 
 end module spamm_conversion
-
-
-

@@ -37,11 +37,12 @@ module spamm_c_bindings
   implicit none
 
   !> Define interface to the C function spamm_get_time().
-  INTERFACE spamm_get_time_wrapper
-    SUBROUTINE spamm_get_time_wrapper (timer) bind(C, name = "spamm_get_time")
-      use, intrinsic :: iso_C_binding
-      real(c_double), intent(inout) :: timer
-    END SUBROUTINE spamm_get_time_wrapper
-  END INTERFACE spamm_get_time_wrapper
+  interface spamm_get_time_wrapper
+     !> Wrapper.
+     subroutine spamm_get_time_wrapper(timer) bind(C, name = "spamm_get_time")
+       use, intrinsic :: iso_C_binding
+       real(c_double), intent(inout) :: timer
+     end subroutine spamm_get_time_wrapper
+  end interface spamm_get_time_wrapper
 
 end module spamm_c_bindings
