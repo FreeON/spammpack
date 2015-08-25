@@ -374,28 +374,28 @@ contains
 
     integer :: M_pad, N_pad, depth
 
-    ! instantiate the root node.  this is the tree top ...
+    ! instantiate the root node. This is the tree top ...
     allocate(tree)
 
     ! here are padded dimensions ...
-    do depth=0,64
-       M_pad=SPAMM_CHUNK_SIZE*2**depth
-       if(M_pad>=NDimn(1))exit
+    do depth = 0, 64
+       M_pad = SPAMM_CHUNK_SIZE*2**depth
+       if(M_pad >= NDimn(1)) exit
     end do
 
-    do depth=0,64
-       N_pad=SPAMM_CHUNK_SIZE*2**depth
-       if(N_pad>=NDimn(2))exit
+    do depth = 0, 64
+       N_pad = SPAMM_CHUNK_SIZE*2**depth
+       if(N_pad >= NDimn(2)) exit
     end do
 
     ! the [i]-[j] native dimensions ...
-    tree%frill%ndimn=ndimn
+    tree%frill%ndimn = ndimn
 
     ! the [i]-[j] padded width
-    tree%frill%width=(/M_pad,N_pad/)
+    tree%frill%width = [M_pad, N_pad]
 
     ! this is the top (root) of the tree
-    tree%frill%Leaf=.false.
+    tree%frill%leaf = .false.
 
     ! the 2-ary tiles
     tree%frill%bndbx(0,:) = (/ 1, 1 /)  ! [lo,lo]

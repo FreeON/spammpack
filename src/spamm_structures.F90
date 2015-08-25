@@ -5,8 +5,6 @@ module spamm_structures
 
   implicit none
 
-  ! SpAMM tree decorations  ________________ STDECs _________________
-
   !> garnishments of the tree_1d ...
   type :: SpAMM_decoration_1d
      !> initialization status
@@ -18,13 +16,13 @@ module spamm_structures
      !> Integer dimension of the native (non-padded) vector
      integer :: ndimn = -1
      !> Axis-aligned bounding box for the [i] index space
-     integer,  dimension(0:1) :: BndBx
+     integer,  dimension(0:1) :: bndbx
      !> Square of the F-norm.
-     real(SPAMM_KIND) :: Norm2 = -1
+     real(SPAMM_KIND) :: norm2 = -1
      !> Float Ops needed accumulated to this level
-     real(kind(0d0)) :: FlOps = -1
+     double precision :: flops = -1
      !> The number of non-zero elements to this level
-     real(kind(0d0)) :: Non0s = -1
+     double precision :: non0s = -1
   end type SpAMM_decoration_1d
 
   !> Garnishments of tree_2d ...
@@ -47,35 +45,52 @@ module spamm_structures
      real(kind(0d0)) :: non0s = -1
   end type SpAMM_decoration_2d
 
-  ! SpAMM algebraic data structures _______________ SALGDSs ____________________
-
-  !> The tree_1d (vector) type:
+  !> The tree_1d (vector) type.
+  !! @ingroup types_group
   type :: SpAMM_tree_1d
-     type(SpAMM_decoration_1d)             :: frill
-     type(SpAMM_tree_1d),      pointer     :: child_0 => null()
-     type(SpAMM_tree_1d),      pointer     :: child_1 => null()
-     real(SPAMM_KIND),     allocatable     :: chunk(:)
+     !> Tree decoration.
+     type(SpAMM_decoration_1d) :: frill
+     !> Pointer to quadrant.
+     type(SpAMM_tree_1d), pointer :: child_0 => null()
+     !> Pointer to quadrant.
+     type(SpAMM_tree_1d), pointer :: child_1 => null()
+     !> Matrix data at leaf nodes.
+     real(SPAMM_KIND), allocatable :: chunk(:)
   end type SpAMM_tree_1d
 
-  !> The tree_2d matrix structures:
-  !! symmetric (SPD/Hermetian) ...
+  !> The tree_2d matrix structures.
+  !! symmetric (SPD/Hermetian)
+  !! @ingroup types_group
   type :: SpAMM_tree_2d_symm
-     type(SpAMM_decoration_2d)             :: frill
-     type(SpAMM_tree_2d_symm), pointer     :: child_00 => null()
-     type(SpAMM_tree_2d_symm), pointer     :: child_01 => null()
-     type(SpAMM_tree_2d_symm), pointer     :: child_10 => null()
-     type(SpAMM_tree_2d_symm), pointer     :: child_11 => null()
-     real(SPAMM_KIND),     allocatable     :: chunk(:, :)
+     !> Tree decoration.
+     type(SpAMM_decoration_2d) :: frill
+     !> Pointer to quadrant.
+     type(SpAMM_tree_2d_symm), pointer :: child_00 => null()
+     !> Pointer to quadrant.
+     type(SpAMM_tree_2d_symm), pointer :: child_01 => null()
+     !> Pointer to quadrant.
+     type(SpAMM_tree_2d_symm), pointer :: child_10 => null()
+     !> Pointer to quadrant.
+     type(SpAMM_tree_2d_symm), pointer :: child_11 => null()
+     !> Matrix data at leaf nodes.
+     real(SPAMM_KIND), allocatable :: chunk(:, :)
   end type SpAMM_tree_2d_symm
 
   !> full ...
+  !! @ingroup types_group
   type :: SpAMM_tree_2d_full
-     type(SpAMM_decoration_2d)             :: frill
-     type(SpAMM_tree_2d_full), pointer     :: child_00 => null()
-     type(SpAMM_tree_2d_full), pointer     :: child_01 => null()
-     type(SpAMM_tree_2d_full), pointer     :: child_10 => null()
-     type(SpAMM_tree_2d_full), pointer     :: child_11 => null()
-     real(SPAMM_KIND),     allocatable     :: chunk(:, :)
+     !> Tree decoration.
+     type(SpAMM_decoration_2d) :: frill
+     !> Pointer to quadrant.
+     type(SpAMM_tree_2d_full), pointer :: child_00 => null()
+     !> Pointer to quadrant.
+     type(SpAMM_tree_2d_full), pointer :: child_01 => null()
+     !> Pointer to quadrant.
+     type(SpAMM_tree_2d_full), pointer :: child_10 => null()
+     !> Pointer to quadrant.
+     type(SpAMM_tree_2d_full), pointer :: child_11 => null()
+     !> Matrix data at leaf nodes.
+     real(SPAMM_KIND), allocatable :: chunk(:, :)
   end type SpAMM_tree_2d_full
 
 end module spamm_structures
