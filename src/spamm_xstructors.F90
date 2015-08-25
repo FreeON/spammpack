@@ -11,24 +11,24 @@ module spamm_xstructors
   implicit none
 
   !> Occlusion operations.
-  interface SpAMM_occlude
-     module procedure SpAMM_occlude_tree_1d
-     module procedure SpAMM_occlude_tree_2d_symm
-     module procedure SpAMM_occlude_tree_2d_symm_dot_tree_1d
-     module procedure SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm
-  end interface SpAMM_occlude
+  interface spamm_occlude
+     module procedure spamm_occlude_tree_1d
+     module procedure spamm_occlude_tree_2d_symm
+     module procedure spamm_occlude_tree_2d_symm_dot_tree_1d
+     module procedure spamm_occlude_tree_2d_symm_dot_tree_2d_symm
+  end interface spamm_occlude
 
   !> Flip a tree.
-  interface SpAMM_flip
-     module procedure SpAMM_Flip_Init_tree_1d_recur
-     module procedure SpAMM_Flip_Init_tree_2d_symm_recur
-  end interface SpAMM_flip
+  interface spamm_flip
+     module procedure spamm_flip_init_tree_1d_recur
+     module procedure spamm_flip_init_tree_2d_symm_recur
+  end interface spamm_flip
 
   !> Prune operations.
-  interface SpAMM_prune
-     module procedure SpAMM_Prune_Initted_tree_1d_recur
-     module procedure SpAMM_Prune_Initted_tree_2d_symm_recur
-  end interface SpAMM_prune
+  interface spamm_prune
+     module procedure spamm_prune_initted_tree_1d_recur
+     module procedure spamm_prune_initted_tree_2d_symm_recur
+  end interface spamm_prune
 
 contains
 
@@ -102,33 +102,35 @@ contains
 
   end function SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm
 
-  recursive subroutine SpAMM_Flip_Init_tree_1d_recur(a)
+  !> Flip on the initialization status of a tree.
+  !!
+  !! @param a The tree to flip.
+  recursive subroutine spamm_flip_init_tree_1d_recur(a)
 
-    type(SpAMM_tree_1d), pointer  :: a
+    type(spamm_tree_1d), pointer :: a
 
-    if(.not.associated(A))return
+    if(.not.associated(A)) return
+    a%frill%needs_initialization = .true.
+    call spamm_flip_init_tree_1d_recur(a%child_0)
+    call spamm_flip_init_tree_1d_recur(a%child_1)
 
-    a%frill%is_initialized=.true.
-    call SpAMM_Flip_Init_tree_1d_recur(a%child_0)
-    call SpAMM_Flip_Init_tree_1d_recur(a%child_1)
+  end subroutine spamm_flip_init_tree_1d_recur
 
-  end subroutine SpAMM_Flip_Init_tree_1d_recur
+  !> Flip on the initialization status of a tree.
+  !!
+  !! @param a The tree to flip.
+  recursive subroutine spamm_flip_init_tree_2d_symm_recur(a)
 
+    type(spamm_tree_2d_symm), pointer :: a
 
-  recursive subroutine SpAMM_Flip_Init_tree_2d_symm_recur(a)
+    if(.not.associated(a)) return
+    a%frill%needs_initialization = .true.
+    call spamm_flip_init_tree_2d_symm_recur(a%child_00)
+    call spamm_flip_init_tree_2d_symm_recur(a%child_11)
+    call spamm_flip_init_tree_2d_symm_recur(a%child_01)
+    call spamm_flip_init_tree_2d_symm_recur(a%child_10)
 
-    type(SpAMM_tree_2d_symm), pointer  :: a
-
-    if(.not.associated(A))return
-
-    a%frill%is_initialized=.true.
-
-    call SpAMM_Flip_Init_tree_2d_symm_recur(a%child_00)
-    call SpAMM_Flip_Init_tree_2d_symm_recur(a%child_11)
-    call SpAMM_Flip_Init_tree_2d_symm_recur(a%child_01)
-    call SpAMM_Flip_Init_tree_2d_symm_recur(a%child_10)
-
-  end subroutine SpAMM_Flip_Init_tree_2d_symm_recur
+  end subroutine spamm_flip_init_tree_2d_symm_recur
 
   recursive subroutine SpAMM_Prune_Initted_tree_1d_recur(a)
 
@@ -136,7 +138,7 @@ contains
 
     if(.not.associated(a))return
 
-    if(a%frill%is_initialized)then
+    if(a%frill%needs_initialization)then
        call SpAMM_destruct_tree_1d_recur (a)
     else
        call SpAMM_Prune_Initted_tree_1d_recur(a%child_0)
@@ -151,7 +153,7 @@ contains
 
     if(.not.associated(a))return
 
-    if(a%frill%is_initialized)then
+    if(a%frill%needs_initialization)then
        call SpAMM_destruct_tree_2d_symm_recur(a)
     else
        call SpAMM_Prune_Initted_tree_2d_symm_recur(a%child_00)
@@ -162,43 +164,36 @@ contains
 
   end subroutine SpAMM_Prune_Initted_tree_2d_symm_recur
 
-  function SpAMM_new_top_tree_1d(NDimn) result(tree)
+  !> Allocate a new tree.
+  !!
+  !! @param n The number of elements.
+  !! @return The new tree.
+  function spamm_new_top_tree_1d(n) result(tree)
 
-    integer, intent(in) :: NDimn
-    integer :: M_pad, depth
-    type(SpAMM_tree_1d), pointer :: tree
+    integer, intent(in) :: n
+    type(spamm_tree_1d), pointer :: tree
 
-    ! instantiate the root node.  this is the tree top ...
+    integer :: n_pad, depth
+
+    ! Instantiate the root node.  This is the tree top ...
     allocate(tree)
 
-    ! here are padded dimensions ...
+    ! Here are padded dimensions ...
     do depth = 0, 64
-       M_pad = SPAMM_CHUNK_SIZE*2**depth
-       if(M_pad >= NDimn) exit
+       n_pad = SPAMM_CHUNK_SIZE*2**depth
+       if(n_pad >= n) exit
     end do
 
-    ! the [i] native dimension ...
-    tree%frill%ndimn = ndimn
+    ! The [i] native dimension ...
+    tree%frill%ndimn = n
 
-    ! the [i] padded width
-    tree%frill%width = M_pad
+    ! The [i] padded width
+    tree%frill%width = n_pad
 
-    ! not a leaf node, this is the top (root) of the tree, k?
-    tree%frill%Leaf = .false.
+    ! The native tile
+    tree%frill%bndbx(0:1) = [1, n]  ! [i-lo,i-hi]
 
-    ! the native tile
-    tree%frill%bndbx(0:1) = (/ 1, NDimn /)  ! [i-lo,i-hi]
-
-    ! inited measures
-    tree%frill%non0s=SpAMM_init
-    tree%frill%norm2=SpAMM_init
-    tree%frill%flops=SpAMM_init
-
-    ! no kids yet
-    tree%child_0=>NULL()
-    tree%child_1=>NULL()
-
-  end function SpAMM_new_top_tree_1d
+  end function spamm_new_top_tree_1d
 
   !++XSTRUCTORS:     SpAMM_construct_tree_1d_0
   !++XSTRUCTORS:       a_1%0 => init (channel [0] constructor)
@@ -448,7 +443,7 @@ contains
        mi(i)=min(hi(i),mi(i))
     end do
 
-    tree%child_00%frill%is_initialized = .true.              ! a new node, so set init status true ...
+    tree%child_00%frill%needs_initialization = .true.              ! a new node, so set init status true ...
     tree%child_00%frill%width = wi/2               ! next level width
     tree%child_00%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
     tree%child_00%frill%bndbx(:,1)=(/lo(1),mi(1)/) ! [lo:mid][i]
@@ -472,7 +467,7 @@ contains
 
   !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_01
   !++XSTRUCTORS:       a_2%01 => init (constructor of the lo-hi [01] channel)
-  function SpAMM_construct_tree_2d_symm_01(tree) result(ch01)
+  function spamm_construct_tree_2d_symm_01(tree) result(ch01)
 
     type(SpAMM_tree_2d_symm), pointer :: tree
     type(SpAMM_tree_2d_symm), pointer :: ch01
@@ -500,7 +495,7 @@ contains
     end if
     allocate(tree%child_01)                       ! ... otherwise, instantiate
 
-    tree%child_01%frill%is_initialized = .true.              ! a new node, so set init status true ...
+    tree%child_01%frill%needs_initialization = .true.              ! a new node, so set init status true ...
     tree%child_01%frill%width = wi/2               ! next level width
     tree%child_01%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
     tree%child_01%frill%bndbx(:,1)=(/lo(1)  ,mi(1)/) ! [lo   ,mid][i]
@@ -546,7 +541,7 @@ contains
     end if
     allocate(tree%child_10)                       ! ... otherwise, instantiate
 
-    tree%child_10%frill%is_initialized = .true.              ! a new node, so set init status true ...
+    tree%child_10%frill%needs_initialization = .true.              ! a new node, so set init status true ...
     tree%child_10%frill%width = wi/2               ! next level width
     tree%child_10%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
     tree%child_10%frill%bndbx(:,1)=(/mi(1)+1,hi(1)/) ! [mid+1, hi][i]
@@ -595,7 +590,7 @@ contains
     end if
     allocate(tree%child_11)                       ! ... otherwise, instantiate
 
-    tree%child_11%frill%is_initialized = .true.              ! a new node, so set init status true ...
+    tree%child_11%frill%needs_initialization = .true.              ! a new node, so set init status true ...
     tree%child_11%frill%width = wi/2               ! next level width
     tree%child_11%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
     tree%child_11%frill%bndbx(0,:)=mi(:)+1                ! [mid+1, hi]
@@ -709,7 +704,7 @@ contains
     type(SpAMM_tree_2d_symm), pointer                :: d00,d11,d01,d10
 
     if(a%frill%leaf)then
-       d%frill%is_initialized=.false.
+       d%frill%needs_initialization=.false.
        d%chunk(1:SBS,1:SBS)=a%chunk(1:SBS,1:SBS) ! d%chunk |cpy> a%chunk
        d%frill%flops=0
     else

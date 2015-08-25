@@ -66,7 +66,7 @@ CONTAINS
        IF(b%frill%leaf)then
           ! A = alpha*A + beta*B
 
-          a%frill%is_initialized=.false.
+          a%frill%needs_initialization=.false.
           a%chunk(1:SBS) = alpha*a%chunk(1:SBS) + beta*b%chunk(1:SBS)
           a%frill%flops = a%frill%flops + 3*SBS
 
@@ -118,7 +118,7 @@ CONTAINS
 
    IF(a%frill%leaf)THEN
 
-      a%frill%is_initialized=.false.
+      a%frill%needs_initialization=.false.
       lo=a%frill%bndbx(0,:)
       hi=a%frill%bndbx(1,:)
 
@@ -220,7 +220,7 @@ CONTAINS
        IF(b%frill%leaf)then
 
           ! A = alpha*A + beta*B
-          a%frill%is_initialized=.false.
+          a%frill%needs_initialization=.false.
           a%chunk(1:SBS,1:SBS) = alpha*a%chunk(1:SBS,1:SBS) + beta*b%chunk(1:SBS,1:SBS)
           a%frill%flops = a%frill%flops + 3*SBS2
 
@@ -271,7 +271,7 @@ CONTAINS
        IF(c%frill%leaf)THEN
 
           ! c = c + alpha*a + beta*b
-          c%frill%is_initialized=.false.
+          c%frill%needs_initialization=.false.
           c%chunk(1:sbs,1:sbs)=c%chunk(1:sbs,1:sbs)+alpha*a%chunk(1:sbs,1:sbs)+beta*b%chunk(1:sbs,1:sbs)
           c%frill%flops=c%frill%flops+3*sbs2
 

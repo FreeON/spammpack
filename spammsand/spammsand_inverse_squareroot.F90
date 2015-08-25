@@ -759,7 +759,7 @@ program SpAMM_sandwich_inverse_squareroot
   ! symmetrize it first ...
   S_dense=SpAMM_half*(S_dense+TRANSPOSE(S_dense))
   ! convert it to a quadtree
-  s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, in_O = s )
+  s => SpAMM_convert_dense_to_tree_2d_symm( S_DENSE, s )
 
   ! sandwich setup ... sandwich setup ... sandwich setup ... sandwich setup ... sandwich setup ...
   logtau_strt=LOG10(tau_0)                             ! starting accuracy

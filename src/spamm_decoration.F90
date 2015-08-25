@@ -1,13 +1,10 @@
 ! The "long weekend hack".  Going for a functional implementation
 ! that fits tightly in the edit window (mc,2/2015).
-!
 module spamm_decoration
 
-  use  spamm_structures
-
+  use spamm_structures
   !  use  spamm_xstructors
 
-  !
   implicit none
 
 contains
@@ -51,9 +48,9 @@ contains
     if(.not.associated(b)) return
 
     ! this is unused, passed in data, don't accumulate
-    if(b%frill%is_initialized) return
+    if(b%frill%needs_initialization) return
 
-    a%frill%is_initialized=a%frill%is_initialized .and. b%frill%is_initialized
+    a%frill%needs_initialization=a%frill%needs_initialization .and. b%frill%needs_initialization
     a%frill%Norm2=a%frill%Norm2+b%frill%Norm2
     a%frill%Non0s=a%frill%Non0s+b%frill%Non0s
     a%frill%FlOps=a%frill%FlOps+b%frill%FlOps
@@ -108,11 +105,11 @@ contains
     if(.not.associated(b)) return
 
     ! this is unused, passed in data, don't accumulate
-    if(b%frill%is_initialized) return
+    if(b%frill%needs_initialization) return
 
     !    write(*,*)' flops = ',a%frill%FlOps,b%frill%FlOps
 
-    a%frill%is_initialized=a%frill%is_initialized .and. b%frill%is_initialized
+    a%frill%needs_initialization=a%frill%needs_initialization .and. b%frill%needs_initialization
     a%frill%Norm2=a%frill%Norm2+b%frill%Norm2
     a%frill%Non0s=a%frill%Non0s+b%frill%Non0s
     a%frill%FlOps=a%frill%FlOps+b%frill%FlOps

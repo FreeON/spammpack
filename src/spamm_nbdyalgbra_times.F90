@@ -111,7 +111,7 @@ contains
 
     if(randm%frill%leaf)then
 
-       randm%frill%is_initialized = .false.
+       randm%frill%needs_initialization = .false.
 
        lo=randm%frill%bndbx(0)
        hi=randm%frill%bndbx(1)
@@ -163,7 +163,7 @@ contains
 
     if(a%frill%leaf)then
 
-       a%frill%is_initialized = .false.
+       a%frill%needs_initialization = .false.
        a%chunk=alpha*a%chunk
        a%frill%flops=a%frill%flops+SBS
 
@@ -235,8 +235,8 @@ contains
     logical :: tf
 
     if(c%frill%leaf )then ! Leaf condition ?
-       if(c%frill%is_initialized)then
-          c%frill%is_initialized = .false.
+       if(c%frill%needs_initialization)then
+          c%frill%needs_initialization = .false.
           c%chunk(1:SBS) = matmul( a%chunk(1:SBS,1:SBS), b%chunk(1:SBS) )
           c%frill%flops  = c%frill%flops + SBS2
        else
@@ -295,7 +295,7 @@ contains
 
     if(a%frill%leaf)then
 
-       a%frill%is_initialized=.false.
+       a%frill%needs_initialization=.false.
        a%chunk(1:SBS,1:SBS)=alpha*a%chunk(1:SBS,1:SBS)
        a%frill%flops=a%frill%flops+SBS
 
@@ -532,9 +532,9 @@ contains
 
     if(c%frill%leaf) then ! Leaf condition ...
 
-       if(c%frill%is_initialized) then
+       if(c%frill%needs_initialization) then
 
-          c%frill%is_initialized = .false.
+          c%frill%needs_initialization = .false.
 
           if(NT)then
              c%chunk(1:SBS,1:SBS)=matmul(a%chunk(1:SBS,1:SBS),b%chunk(1:SBS,1:SBS))

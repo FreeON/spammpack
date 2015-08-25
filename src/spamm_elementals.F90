@@ -56,7 +56,7 @@ CONTAINS
 
        if(a%frill%leaf)then
 
-          a%frill%is_initialized=.FALSE.
+          a%frill%needs_initialization=.FALSE.
           a%chunk=0
           DO I=1,a%frill%bndbx(1,1)-a%frill%bndbx(0,1)+1
              a%chunk(I,I)=SpAMM_one
