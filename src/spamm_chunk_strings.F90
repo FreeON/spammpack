@@ -151,6 +151,8 @@ contains
 
   !> Convert a c_ptr to a string.
   !!
+  !! @bug This is not portable apparently. It breaks under the Intel compiler.
+  !!
   !! @param ptr The pointer.
   !! @return The string representation.
   function c_ptr_to_string (ptr) result (string)
@@ -160,8 +162,8 @@ contains
     type(c_ptr), intent(in) :: ptr
     character(len=100) :: string
 
-    write(string, "(Z32)") ptr
-    write(string, "(A)") "0x"//trim(adjustl(string))
+    !write(string, "(Z32)") ptr
+    !write(string, "(A)") "0x"//trim(adjustl(string))
 
   end function c_ptr_to_string
 

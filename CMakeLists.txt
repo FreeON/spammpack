@@ -61,7 +61,6 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
   set(TEMP_FLAGS
     "-O0 -g -gdwarf-3"
     "-fvar-tracking-assignments -fcheck=all"
-    "-ffree-line-length-none"
     "-Wall -Wimplicit-interface -Wuninitialized -Wimplicit-procedure")
   try_compile(HAVE_ADDRESS_SANITIZER
     ${CMAKE_BINARY_DIR}/CMakeTmp
@@ -75,11 +74,10 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     message(STATUS "Address sanitizer not supported")
   endif()
   string(REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${TEMP_FLAGS}")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g -ffree-line-length-none")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g")
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
   set(CMAKE_Fortran_FLAGS_DEBUG
     "-stand f08 -O0 -g"
-    "-extend-source"
     "-debug all -check all"
     "-warn unused -traceback")
   string(REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}")

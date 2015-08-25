@@ -29,6 +29,7 @@
 include_directories(${CMAKE_BINARY_DIR}/src)
 
 set(TEST_SOURCES
+  add_2d
   add_chunk_2d
   new_chunk_2d
   random_chunk_2d)

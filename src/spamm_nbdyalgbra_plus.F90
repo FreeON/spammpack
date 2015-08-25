@@ -135,24 +135,23 @@ CONTAINS
 
     CALL SpAMM_redecorate_tree_2d_symm(a)
 
-  end subroutine SpAMM_scalar_plus_tree_2d_symm_recur
+  end subroutine spamm_scalar_plus_tree_2d_symm_recur
 
+  function spamm_tree_2d_symm_plus_tree_2d_symm(a, b, alpha, beta, c) result(d)
 
-  FUNCTION SpAMM_tree_2d_symm_plus_tree_2d_symm (A, B, alpha, beta, C) RESULT(D)
+    type(spamm_tree_2d_symm), pointer, intent(inout)           :: a, b
+    type(spamm_tree_2d_symm), pointer, intent(inout), optional :: c
+    real(spamm_kind), intent(in), optional                     :: alpha, beta
 
-    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT)           :: A, B
-    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(INOUT), OPTIONAL :: C
-    real(SPAMM_KIND), intent(in), optional                     :: alpha, beta
+    type(spamm_tree_2d_symm), pointer                          :: d
 
-    TYPE(SpAMM_tree_2d_symm), POINTER                          :: d
+    real(spamm_kind)                                           :: local_alpha,local_beta
 
-    REAL(SPAMM_KIND)                                           :: Local_Alpha,Local_Beta
-    !
     D=>NULL()
-    !
-    if(.not. associated(A))RETURN
-    if(.not. associated(B))RETURN
-    !
+
+    if(.not. associated(A))return
+    if(.not. associated(B))return
+
     IF(PRESENT(Alpha))THEN; Local_Alpha=Alpha; ELSE; Local_Alpha=SpAMM_One; ENDIF
     IF(PRESENT(Beta ))THEN; Local_Beta =Beta;  ELSE; Local_Beta=SpAMM_One;  ENDIF
 
@@ -189,7 +188,7 @@ CONTAINS
 
      CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(D, A, B, alpha, beta)
 
-  END FUNCTION SpAMM_tree_2d_symm_plus_tree_2d_symm
+  end function spamm_tree_2d_symm_plus_tree_2d_symm
 
   ! for tree_2d_symm, A = A + alpha*A + beta*B
   RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(a, b, alpha, beta)

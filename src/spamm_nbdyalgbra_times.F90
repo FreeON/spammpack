@@ -16,7 +16,9 @@ module spamm_nbdyalgbra_times
      type(SpAMM_cubes), pointer  :: Next
      !> The depth in the tree.
      integer                     :: Levl
+     !> The size.
      real(SPAMM_KIND)            :: Size
+     !> The cube extents.
      integer,     dimension(3)   :: Lw, Hi
   end type SpAMM_cubes
 

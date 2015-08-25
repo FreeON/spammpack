@@ -89,13 +89,13 @@ contains
 
     !    write(*,*)associated(a),associated(b)
 
-    if(.not. associated(a) )return
-    if(.not. associated(b) )return
+    if(.not. associated(a)) return
+    if(.not. associated(b)) return
 
     !    write(*,*)a%frill%norm2,b%frill%norm2
 
     ! cull
-    if(a%frill%Norm2 * b%frill%Norm2 <= Tau2 )return
+    if(a%frill%Norm2*b%frill%Norm2 <= Tau2) return
 
     ! passed all the checks ...
     SpAMM_occlude_tree_2d_symm_dot_tree_2d_symm = .true.
@@ -362,25 +362,25 @@ contains
   end subroutine SpAMM_tree_1d_copy_tree_1d_recur
 
   !> Construct new 2D tree.
-  function SpAMM_new_top_tree_2d_symm(NDimn) result(tree)
+  function spamm_new_top_tree_2d_symm(ndimn) result(tree)
 
-    integer, dimension(1:2), intent(in) :: NDimn
-    type(SpAMM_tree_2d_symm), pointer :: tree
+    integer, intent(in) :: ndimn(2)
+    type(spamm_tree_2d_symm), pointer :: tree
 
-    integer :: M_pad, N_pad, depth
+    integer :: m_pad, n_pad, depth
 
     ! instantiate the root node. This is the tree top ...
     allocate(tree)
 
     ! here are padded dimensions ...
     do depth = 0, 64
-       M_pad = SPAMM_CHUNK_SIZE*2**depth
-       if(M_pad >= NDimn(1)) exit
+       m_pad = SPAMM_CHUNK_SIZE*2**depth
+       if(m_pad >= ndimn(1)) exit
     end do
 
     do depth = 0, 64
-       N_pad = SPAMM_CHUNK_SIZE*2**depth
-       if(N_pad >= NDimn(2)) exit
+       n_pad = SPAMM_CHUNK_SIZE*2**depth
+       if(n_pad >= ndimn(2)) exit
     end do
 
     ! the [i]-[j] native dimensions ...
@@ -389,12 +389,9 @@ contains
     ! the [i]-[j] padded width
     tree%frill%width = [M_pad, N_pad]
 
-    ! this is the top (root) of the tree
-    tree%frill%leaf = .false.
-
     ! the 2-ary tiles
-    tree%frill%bndbx(0,:) = (/ 1, 1 /)  ! [lo,lo]
-    tree%frill%bndbx(1,:) = NDimn       ! [hi,hi]
+    tree%frill%bndbx(0,:) = [1, 1]  ! [lo,lo]
+    tree%frill%bndbx(1,:) = NDimn   ! [hi,hi]
 
     ! inited measures
     tree%frill%non0s=SpAMM_init
@@ -613,12 +610,12 @@ contains
 
   !++XSTRUCTORS:     SpAMM_destruct_tree_2d_symm_recur
   !++XSTRUCTORS:       a_2 => null() (recursive destructor of the symmetric matrix)
-  recursive subroutine SpAMM_destruct_tree_2d_symm_recur(self)
-    !
-    type(SpAMM_tree_2d_symm), pointer,  intent(inout) :: self
+  recursive subroutine spamm_destruct_tree_2d_symm_recur(self)
+
+    type(spamm_tree_2d_symm), pointer, intent(inout) :: self
 
     ! check for self-non-association (eg. at leaf pntr) ...
-    if(.not.associated(self))return
+    if(.not. associated(self)) return
 
     call SpAMM_destruct_tree_2d_symm_recur (self%child_00) ! take the [00] channel
     call SpAMM_destruct_tree_2d_symm_node  (self%child_00) ! kill backwards up the tree
