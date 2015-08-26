@@ -197,91 +197,66 @@ contains
 
   !++XSTRUCTORS:     SpAMM_construct_tree_1d_0
   !++XSTRUCTORS:       a_1%0 => init (channel [0] constructor)
-  function SpAMM_construct_tree_1d_0(tree) result(ch0)
+  function spamm_construct_child_1d(tree, child_index) result(child)
 
-    type(SpAMM_tree_1d),    pointer :: tree
-    type(SpAMM_tree_1d),    pointer :: ch0
-    integer                         :: lo,hi,mi,wi
+    type(spamm_tree_1d), pointer :: tree
+    integer, intent(in) :: child_index
+    type(spamm_tree_1d), pointer :: child
 
-    if(associated(tree%child_0))then
-       ch0=>tree%child_0
-       return ! pre-existing?  ok, so later ...
-    end if
+    integer :: mi
 
-    allocate(tree%child_0)                        ! ... otherwise, instantiate
+    select case(child_index)
+    case(0)
+       if(associated(tree%child_0)) then
+          child => tree%child_0
+          return ! pre-existing?  ok, so later ...
+       end if
+    case(1)
+       if(associated(tree%child_1)) then
+          child => tree%child_1
+          return ! pre-existing?  ok, so later ...
+       end if
+    end select
 
-    lo=tree%frill%bndbx(0)
-    hi=tree%frill%bndbx(1)
-    wi=tree%frill%width
-    mi=lo+wi/2-1
+    associate(lo => tree%frill%bndbx(0), &
+         hi => tree%frill%bndbx(1), &
+         wi => tree%frill%width)
 
-    tree%child_0%frill%width = wi/2
-    tree%child_0%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
+      mi = min(lo+wi/2-1, hi)
+      if(mi+1 > hi) then
+         child => null()
+         return                                    ! margin over-run
+      end if
 
-    tree%child_0%frill%bndbx(:)=(/lo,mi/)         ! [lo,mid]
+      allocate(child)
 
-    tree%child_0%frill%Leaf=.false.               ! default ...
-    if(wi==2*SBS)then                             ! leaf criterion ...
-       tree%child_0%frill%Leaf=.true.
-       allocate(tree%child_0%chunk(1:SBS))        ! grab a chunk for each leaf node, always
-       tree%child_0%chunk=0
-       tree%child_0%frill%flops=SpAMM_init
-       tree%child_0%frill%norm2=SpAMM_init
-    end if
+      child%frill%width = wi/2
+      child%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
+      select case(child_index)
+      case(0)
+         child%frill%bndbx = [lo, mi]
+      case(1)
+         child%frill%bndbx = [mi+1, hi]
+      end select
 
-    !    write(*,33) tree%child_0%frill%bndbx(:), wi,tree%child_0%frill%leaf
-33  format(' 0: [ ',I3,", ",I3," ], wid = ",I4,4L3 )
+      child%frill%leaf = .false.
+      child%frill%flops = SPAMM_INIT
+      child%frill%norm2 = SPAMM_INIT
+      if(wi == 2*SBS) then                          ! leaf criterion ...
+         child%frill%leaf = .true.
+         allocate(child%chunk(SBS))          ! grab a chunk for each leaf node, always
+         child%chunk = 0
+      end if
 
-    ch0=>tree%child_0
+      select case(child_index)
+      case(0)
+         tree%child_0 => child
+      case(1)
+         tree%child_1 => child
+      end select
+    end associate
 
-  end function SpAMM_construct_tree_1d_0
-
-  !++XSTRUCTORS:     SpAMM_construct_tree_1d_1
-  !++XSTRUCTORS:       a_2%1 => init (constructor of the hi [1] channel)
-  function SpAMM_construct_tree_1d_1(tree) result(ch1)
-
-    type(SpAMM_tree_1d), pointer :: tree
-    type(SpAMM_tree_1d), pointer :: ch1
-
-    integer :: lo, hi, mi, wi, M
-
-    if(associated(tree%child_1))then
-       ch1=>tree%child_1
-       return           ! pre-existing?  ok, so later ...
-    end if
-
-    lo = tree%frill%bndbx(0)
-    hi = tree%frill%bndbx(1)
-    wi = tree%frill%width
-
-    mi = lo+wi/2-1
-    mi = min(hi,mi)
-
-    if(mi+1>hi)then
-       ch1=>NULL()
-       return                                    ! margin over-run
-    end if
-
-    allocate(tree%child_1)                       ! ... otherwise, instantiate
-
-    tree%child_1%frill%width = wi/2
-    tree%child_1%frill%ndimn = tree%frill%ndimn  ! pass down unpadded dimensions
-    tree%child_1%frill%bndbx(:)=(/mi+1, hi /)   ! [mid+1, hi]
-    tree%child_1%frill%Leaf=.false.              ! default, not a leaf ...
-    tree%child_1%frill%flops=SpAMM_init
-    tree%child_1%frill%norm2=SpAMM_init
-    ! leaf criterion ...
-    if(wi==2*SBS)then
-       tree%child_1%frill%Leaf=.true.
-       allocate(tree%child_1%chunk(1:SBS))       ! grab a chunk for the leaf node, always
-       tree%child_1%chunk=0
-    end if
-    !    write(*,33) tree%child_1%frill%bndbx(:), wi,tree%child_1%frill%leaf
-33  format(' 1: [ ',I3,", ",I3," ], wid = ",I4,4L3 )
-
-    ch1=>tree%child_1
-
-  end function SpAMM_construct_tree_1d_1
+  end function spamm_construct_child_1d
 
   recursive subroutine SpAMM_destruct_tree_1d_recur(self)   !++
     !++XSTRUCTORS:       a_1 => null() (recursive vector destruction )
@@ -351,9 +326,9 @@ contains
     else
 
        !       IF(ASSOCIATED(a%child_0))&
-       call SpAMM_tree_1d_copy_tree_1d_recur (SpAMM_construct_tree_1d_0(d), a%child_0)
+       call spamm_tree_1d_copy_tree_1d_recur(spamm_construct_child_1d(d, 0), a%child_0)
        !       IF(ASSOCIATED(a%child_1))&
-       call SpAMM_tree_1d_copy_tree_1d_recur (SpAMM_construct_tree_1d_1(d), a%child_1)
+       call spamm_tree_1d_copy_tree_1d_recur(spamm_construct_child_1d(d, 1), a%child_1)
 
     end if
 
@@ -495,8 +470,8 @@ contains
     tree%child_01%frill%norm2=SpAMM_init
     if(wi(1)==2*SBS)then                           ! at resolution?
        tree%child_01%frill%Leaf=.true.             ! we have a leaf
-       allocate(tree%child_01%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
-       tree%child_01%chunk=0              ! init
+       allocate(tree%child_01%chunk(SBS,SBS))      ! leaf == allocated(chunk)
+       tree%child_01%chunk=0                       ! init
     end if
 
     !    write(*,33) tree%child_01%frill%bndbx(:,1),tree%child_01%frill%bndbx(:,2), &

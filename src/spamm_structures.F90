@@ -15,7 +15,8 @@ module spamm_structures
      integer :: width = -1
      !> Integer dimension of the native (non-padded) vector
      integer :: ndimn = -1
-     !> Axis-aligned bounding box for the [i] index space
+     !> Axis-aligned bounding box for the [i] index space in the
+     !> unpadded dimensions.
      integer,  dimension(0:1) :: bndbx
      !> Square of the F-norm.
      real(SPAMM_KIND) :: norm2 = -1

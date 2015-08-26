@@ -72,10 +72,10 @@ contains
 
        else ! recursively descend ...
 
-          call SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_0(a), & !0>
+          call SpAMM_tree_1d_plus_tree_1d_inplace_recur(spamm_construct_child_1d(a, 0), & !0>
                b%child_0, alpha, beta)
 
-          call SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_1(a), & !1>
+          call SpAMM_tree_1d_plus_tree_1d_inplace_recur(spamm_construct_child_1d(a, 0), & !1>
                b%child_1, alpha, beta)
        end if
 

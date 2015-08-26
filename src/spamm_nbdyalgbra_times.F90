@@ -124,9 +124,9 @@ contains
     else
 
        ! child along [0]: [lo,mid] ...
-       call SpAMM_random_unormalized_tree_1d_recur(SpAMM_construct_tree_1d_0(randm), depth+1 )
+       call SpAMM_random_unormalized_tree_1d_recur(spamm_construct_child_1d(randm, 0), depth+1 )
        ! child along [1]: [mid+1,hi] ...
-       call SpAMM_random_unormalized_tree_1d_recur(SpAMM_construct_tree_1d_1(randm), depth+1 )
+       call SpAMM_random_unormalized_tree_1d_recur(SpAMM_construct_child_1d(randm, 1), depth+1 )
 
     end if
 
@@ -251,14 +251,14 @@ contains
        a01=>a%child_01; a10=>a%child_10
 
        if(SpAMM_occlude( a00, b0, Tau2 ) ) &
-            call SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_0(c), a00, b0, Tau2, Depth+1)
+            call SpAMM_tree_2d_symm_times_tree_1d_recur(spamm_construct_child_1d(c, 0), a00, b0, Tau2, Depth+1)
        if(SpAMM_occlude( a11, b1, Tau2 ) ) &
-            call SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_1(c), a11, b1, Tau2, Depth+1)
+            call SpAMM_tree_2d_symm_times_tree_1d_recur(spamm_construct_child_1d(c, 1), a11, b1, Tau2, Depth+1)
 
        if(SpAMM_occlude( a01, b1, Tau2 ) ) &
-            call SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_0(c), a01, b1, Tau2, Depth+1)
+            call SpAMM_tree_2d_symm_times_tree_1d_recur(spamm_construct_child_1d(c, 0), a01, b1, Tau2, Depth+1)
        if(SpAMM_occlude( a10, b0, Tau2 ) ) &
-            call SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_tree_1d_1(c), a10, b0, Tau2, Depth+1)
+            call SpAMM_tree_2d_symm_times_tree_1d_recur(SpAMM_construct_child_1d(c, 1), a10, b0, Tau2, Depth+1)
 
     end if
 
