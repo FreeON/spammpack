@@ -1,11 +1,6 @@
-#language: C
-
 branches:
   only:
     - master
-
-#compiler:
-#- gcc
 
 env:
   matrix:
