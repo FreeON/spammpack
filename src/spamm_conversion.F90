@@ -49,12 +49,8 @@ contains
 
     if(a_2d%frill%leaf) then! Leaf condition ?
        a_2d%frill%needs_initialization = .false.
-       lo = a_2d%frill%bndbx(0,:)
-       hi = a_2d%frill%bndbx(1,:)
-       ! move data on the page ...
-       if(.not. allocated(a_2d%chunk)) then
-          allocate(a_2d%chunk(SPAMM_CHUNK_SIZE, SPAMM_CHUNK_SIZE))
-       end if
+       lo = a_2d%frill%bndbx(0, :)
+       hi = a_2d%frill%bndbx(1, :)
        a_2d%chunk(1:(hi(1)-lo(1)+1), 1:(hi(2)-lo(2)+1)) = A(lo(1):hi(1), lo(2):hi(2))
     else ! recur generically here, coping with construct as needed ...
        call spamm_convert_dense_to_tree_2d_symm_recur(a, spamm_construct_tree_2d_symm_00(a_2d))
@@ -71,43 +67,34 @@ contains
   subroutine spamm_convert_tree_2d_symm_to_dense(a_2d, a)
 
     type(spamm_tree_2d_symm), pointer :: a_2d
-    real(SPAMM_KIND), dimension(:,:) :: a
+    real(SPAMM_KIND), dimension(:, :) :: a
 
-    !    IF(.not.allocated(A))THEN
-    !       STOP' need pre allocation here ...'
-    !       ALLOCATE(A( 1:A_2d%frill%bndbx(1,1),  &
-    !            1:A_2d%frill%bndbx(1,2) ))
-    !   END IF
-
-    a=0
+    a = 0
     call spamm_convert_tree_2d_symm_to_dense_recur(a_2d, a)
 
   end subroutine spamm_convert_tree_2d_symm_to_dense
 
   !> Recursively convert a dense matrix to a quadtree.
-  recursive subroutine SpAMM_convert_tree_2d_symm_to_dense_recur (A_2d,A)
+  recursive subroutine spamm_convert_tree_2d_symm_to_dense_recur (a_2d, a)
 
-    real(SPAMM_KIND), dimension(:,:)     :: A
-    !    real(SPAMM_KIND), dimension(:,:)     :: A
-    type(SpAMM_tree_2d_symm),        pointer :: A_2d
-    integer, dimension(1:2)                  :: lo,hi
+    type(spamm_tree_2d_symm), pointer :: a_2d
+    real(SPAMM_KIND), dimension(:,:) :: a
 
-    if(.not.associated(a_2d))return
+    integer, dimension(2) :: lo, hi
 
-    if(a_2d%frill%leaf)then! Leaf condition ?
-
-       lo=a_2d%frill%bndbx(0,:)
-       hi=a_2d%frill%bndbx(1,:)
-
+    if(.not. associated(a_2d)) return
+    if(a_2d%frill%leaf) then! Leaf condition ?
+       lo = a_2d%frill%bndbx(0, :)
+       hi = a_2d%frill%bndbx(1, :)
        ! move data on the page ...
-       A(lo(1):hi(1),lo(2):hi(2))=a_2d%chunk( 1:(hi(1)-lo(1)+1), 1:(hi(2)-lo(2)+1))
-
+       a(lo(1):hi(1), lo(2):hi(2)) = a_2d%chunk(1:(hi(1)-lo(1)+1), 1:(hi(2)-lo(2)+1))
     else ! recur generically here ...
-       call SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_00, A )
-       call SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_01, A )
-       call SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_10, A )
-       call SpAMM_convert_tree_2d_symm_to_dense_recur( A_2d%child_11, A )
+       call spamm_convert_tree_2d_symm_to_dense_recur(a_2d%child_00, a)
+       call spamm_convert_tree_2d_symm_to_dense_recur(a_2d%child_01, a)
+       call spamm_convert_tree_2d_symm_to_dense_recur(a_2d%child_10, a)
+       call spamm_convert_tree_2d_symm_to_dense_recur(a_2d%child_11, a)
     end if
-  end subroutine SpAMM_convert_tree_2d_symm_to_dense_recur
+
+  end subroutine spamm_convert_tree_2d_symm_to_dense_recur
 
 end module spamm_conversion

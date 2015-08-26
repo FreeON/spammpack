@@ -40,5 +40,5 @@ foreach(TEST ${TEST_SOURCES})
     PROPERTIES
     COMPILE_DEFINITIONS "${COMPILE_DEFINITIONS}")
   target_link_libraries(${TEST} spamm)
-  add_test(chunk:${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST})
+  add_test(${TEST} ${CMAKE_CURRENT_BINARY_DIR}/${TEST})
 endforeach()

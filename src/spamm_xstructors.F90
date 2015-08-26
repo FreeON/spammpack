@@ -362,6 +362,9 @@ contains
   end subroutine SpAMM_tree_1d_copy_tree_1d_recur
 
   !> Construct new 2D tree.
+  !!
+  !! @param ndimn The matrix size.
+  !! @return The new matrix.
   function spamm_new_top_tree_2d_symm(ndimn) result(tree)
 
     integer, intent(in) :: ndimn(2)
@@ -390,77 +393,67 @@ contains
     tree%frill%width = [M_pad, N_pad]
 
     ! the 2-ary tiles
-    tree%frill%bndbx(0,:) = [1, 1]  ! [lo,lo]
-    tree%frill%bndbx(1,:) = NDimn   ! [hi,hi]
+    tree%frill%bndbx(0, :) = [1, 1]  ! [lo,lo]
+    tree%frill%bndbx(1, :) = NDimn   ! [hi,hi]
 
     ! inited measures
-    tree%frill%non0s=SpAMM_init
-    tree%frill%norm2=SpAMM_init
-    tree%frill%flops=SpAMM_init
+    tree%frill%non0s = SpAMM_init
+    tree%frill%norm2 = SpAMM_init
+    tree%frill%flops = SpAMM_init
 
     ! check that we might the top may be the leaf
-    if(SBS>=NDimn(1))tree%frill%leaf=.true.
+    if(SBS >= NDimn(1)) then
+       tree%frill%leaf = .true.
+       allocate(tree%chunk(1:SBS, 1:SBS))  ! leaf == allocated(chunk)
+       tree%chunk = 0              ! init
+    end if
 
     ! no kids
-    tree%child_00=>NULL()
-    tree%child_01=>NULL()
-    tree%child_10=>NULL()
-    tree%child_11=>NULL()
+    tree%child_00 => null()
+    tree%child_01 => null()
+    tree%child_10 => null()
+    tree%child_11 => null()
 
-  end function SpAMM_new_top_tree_2d_symm
+  end function spamm_new_top_tree_2d_symm
 
-  !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_00
-  !++XSTRUCTORS:       a_2%00 => init (constructor of the lo-lo [00] channel)
-  function SpAMM_construct_tree_2d_symm_00(tree) result(ch00)
+  !> SpAMM_construct_tree_2d_symm_00
+  !! a_2%00 => init (constructor of the lo-lo [00] channel)
+  function spamm_construct_tree_2d_symm_00(tree) result(ch00)
 
-    type(SpAMM_tree_2d_symm), pointer  :: tree
-    type(SpAMM_tree_2d_symm), pointer  :: ch00
-    integer, dimension(1:2)            :: lo,hi,mi,wi
-    integer                            :: i
+    type(spamm_tree_2d_symm), pointer :: tree
+    type(spamm_tree_2d_symm), pointer :: ch00
 
-    if(associated(tree%child_00))then
-       ch00=>tree%child_00
+    integer, dimension(1:2) :: lo, hi, mi, wi
+    integer :: i
+
+    if(associated(tree%child_00)) then
+       ch00 => tree%child_00
        return                                      ! pre-existing?  ok, so later ...
     end if
-
     allocate(tree%child_00)                        ! ... otherwise, instantiate
-
-    lo = tree%frill%bndbx(0,:)
-    hi = tree%frill%bndbx(1,:)
-
-    !    if(hi(1)>876.or.hi(2)>876)then
-    !       write(*,*)' tree bb above = ',tree%frill%bndbx(1,:)
-    !       stop '00'
-    !   end if
-
+    lo = tree%frill%bndbx(0, :)
+    hi = tree%frill%bndbx(1, :)
     wi = tree%frill%width
     mi = lo+wi/2-1
-
-    do i=1,2
-       mi(i)=min(hi(i),mi(i))
+    do i = 1, 2
+       mi(i) = min(hi(i), mi(i))
     end do
-
-    tree%child_00%frill%needs_initialization = .true.              ! a new node, so set init status true ...
+    tree%child_00%frill%needs_initialization = .true. ! a new node, so set init status true ...
     tree%child_00%frill%width = wi/2               ! next level width
     tree%child_00%frill%ndimn = tree%frill%ndimn   ! pass down unpadded dimensions
-    tree%child_00%frill%bndbx(:,1)=(/lo(1),mi(1)/) ! [lo:mid][i]
-    tree%child_00%frill%bndbx(:,2)=(/lo(2),mi(2)/) ! [lo:mid][j]
-    tree%child_00%frill%Leaf=.false.               ! default, not a leaf
-    tree%child_00%frill%flops=SpAMM_init
-    tree%child_00%frill%norm2=SpAMM_init
-    if(wi(1)==2*SBS)then                           ! at resolution?
-       tree%child_00%frill%Leaf=.true.             ! we have a leaf
-       allocate(tree%child_00%chunk(1:SBS,1:SBS))  ! leaf == allocated(chunk)
-       tree%child_00%chunk=0              ! init
+    tree%child_00%frill%bndbx(:, 1) = (/lo(1), mi(1)/) ! [lo:mid][i]
+    tree%child_00%frill%bndbx(:, 2) = (/lo(2), mi(2)/) ! [lo:mid][j]
+    tree%child_00%frill%leaf = .false.               ! default, not a leaf
+    tree%child_00%frill%flops = SPAMM_INIT
+    tree%child_00%frill%norm2 = SPAMM_INIT
+    if(wi(1) == 2*SBS) then                           ! at resolution?
+       tree%child_00%frill%leaf = .true.             ! we have a leaf
+       allocate(tree%child_00%chunk(1:SBS, 1:SBS))  ! leaf == allocated(chunk)
+       tree%child_00%chunk = 0              ! init
     end if
+    ch00 => tree%child_00
 
-    !   write(*,33) tree%child_00%frill%bndbx(:,1) ,tree%child_00%frill%bndbx(:,2),wi/2,tree%child_00%frill%leaf
-    !33  format(' 00: [ ',I3,", ",I3," ]x[ ",I3,", ",I3," ], wid = ",2I4,4L3 )
-
-    ch00=>tree%child_00
-
-  end function SpAMM_construct_tree_2d_symm_00
-
+  end function spamm_construct_tree_2d_symm_00
 
   !++XSTRUCTORS:     SpAMM_construct_tree_2d_symm_01
   !++XSTRUCTORS:       a_2%01 => init (constructor of the lo-hi [01] channel)

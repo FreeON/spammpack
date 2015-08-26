@@ -1,89 +1,89 @@
+!> Functions for additions.
+!!
+!! SpAMM generalized n-body algebras for the add
+!! generalized addition (+)
+!! ... [TREE-ONE-D + TREE-ONE-D] ... [TREE-ONE-D + TREE-ONE-D] ...
+!!   SpAMM_tree_1d_plus_tree_1d
 module spamm_nbdyalgbra_plus
 
-  use spamm_structures
-  use spamm_xstructors
   use spamm_decoration
   use spamm_elementals
   use spamm_nbdyalgbra_times
+  use spamm_structures
+  use spamm_xstructors
 
   implicit none
 
-CONTAINS
-
-  !++NBODYADDTN: SpAMM generalized n-body algebras for the add ____ NBODYADDTN _________________
-  !++NBODYADDTN: generalized addition (+)
-  !++NBODYADDTN:   ... [TREE-ONE-D + TREE-ONE-D] ... [TREE-ONE-D + TREE-ONE-D] ...
-  !++NBODYADDTN:   SpAMM_tree_1d_plus_tree_1d
-
+contains
 
   !++NBODYADDTN:     c => inplace*c + beta*b
-  FUNCTION SpAMM_tree_1d_plus_tree_1d (C, beta, B, inplace) RESULT(D)
+  function SpAMM_tree_1d_plus_tree_1d (C, beta, B, inplace) result(D)
 
-    TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)    :: B
-    TYPE(SpAMM_tree_1d), POINTER, INTENT(INOUT) :: C
-    REAL(SPAMM_KIND),             INTENT(IN)    :: Beta
-    real(SPAMM_KIND),    OPTIONAL,intent(in)    :: inplace
-    TYPE(SpAMM_tree_1d), POINTER                :: d
-    REAL(SPAMM_KIND)                            :: Alpha
+    type(SpAMM_tree_1d), pointer, intent(IN)    :: B
+    type(SpAMM_tree_1d), pointer, intent(INOUT) :: C
+    real(SPAMM_KIND),             intent(IN)    :: Beta
+    real(SPAMM_KIND),    optional,intent(in)    :: inplace
+    type(SpAMM_tree_1d), pointer                :: d
+    real(SPAMM_KIND)                            :: Alpha
     !
     D=>C
     !
-    if(.not. associated(B))RETURN
-    if(beta==0)   RETURN
+    if(.not. associated(B))return
+    if(beta==0)   return
     !
-    IF(PRESENT(inplace))THEN
+    if(present(inplace))then
        alpha=inplace
-    ELSE
+    else
        alpha=SpAMM_one
-    ENDIF
+    end if
 
-    CALL SpAMM_tree_1d_plus_tree_1d_inplace_recur(d, B, alpha, beta )
+    call SpAMM_tree_1d_plus_tree_1d_inplace_recur(d, B, alpha, beta )
 
-  END FUNCTION SpAMM_tree_1d_plus_tree_1d
+  end function SpAMM_tree_1d_plus_tree_1d
 
   ! for tree_1d, A = alpha*A + beta*B
-  RECURSIVE SUBROUTINE SpAMM_tree_1d_plus_tree_1d_inplace_recur(a, b, alpha, beta)
+  recursive subroutine SpAMM_tree_1d_plus_tree_1d_inplace_recur(a, b, alpha, beta)
 
-    TYPE(SpAMM_tree_1d), POINTER                :: A
-    TYPE(SpAMM_tree_1d), POINTER, INTENT(IN)    :: B
-    REAL(SPAMM_KIND),             INTENT(IN)    :: alpha, beta
+    type(SpAMM_tree_1d), pointer                :: A
+    type(SpAMM_tree_1d), pointer, intent(IN)    :: B
+    real(SPAMM_KIND),             intent(IN)    :: alpha, beta
     logical                                     :: TA, TB
 
-    TA=ASSOCIATED(A)
-    TB=ASSOCIATED(B)
+    TA=associated(A)
+    TB=associated(B)
 
-    IF(.NOT.TA.AND..NOT.TB)THEN
+    if(.not.TA.and..not.TB)then
 
-       RETURN
+       return
 
-    ELSEIF(TA .AND. .NOT.TB) THEN
+    elseif(TA .and. .not.TB) then
 
        ! a=alpha*a
-       CALL SpAMM_scalar_times_tree_1d_recur(alpha, a)
+       call SpAMM_scalar_times_tree_1d_recur(alpha, a)
 
-    ELSEIF(TA.AND.TB)THEN
+    elseif(TA.and.TB)then
 
-       IF(b%frill%leaf)then
+       if(b%frill%leaf)then
           ! A = alpha*A + beta*B
 
           a%frill%needs_initialization=.false.
           a%chunk(1:SBS) = alpha*a%chunk(1:SBS) + beta*b%chunk(1:SBS)
           a%frill%flops = a%frill%flops + 3*SBS
 
-       ELSE ! recursively descend ...
+       else ! recursively descend ...
 
-          CALL SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_0(a), & !0>
-                                                        b%child_0, alpha, beta)
+          call SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_0(a), & !0>
+               b%child_0, alpha, beta)
 
-          CALL SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_1(a), & !1>
-                                                        b%child_1, alpha, beta)
-       ENDIF
+          call SpAMM_tree_1d_plus_tree_1d_inplace_recur(SpAMM_construct_tree_1d_1(a), & !1>
+               b%child_1, alpha, beta)
+       end if
 
-    ENDIF
+    end if
 
-    CALL SpAMM_redecorate_tree_1d(a)
+    call SpAMM_redecorate_tree_1d(a)
 
-  END SUBROUTINE SpAMM_tree_1d_plus_tree_1d_inplace_recur
+  end subroutine SpAMM_tree_1d_plus_tree_1d_inplace_recur
 
 
   !!
@@ -91,49 +91,52 @@ CONTAINS
   !!
 
 
-  FUNCTION SpAMM_scalar_plus_tree_2d_symm(alpha, a) RESULT(d)
+  !> Add a scaled identity matrix (in place).
+  !!
+  !! @f$ d \leftarrow a + \alpha \,\, \mathrm{Id} @f$.
+  !!
+  !! @param alpha The scaling factor.
+  !! @param a The matrix.
+  !! @return The matrix sum.
+  function spamm_scalar_plus_tree_2d_symm(alpha, a) result(d)
 
-    TYPE(SpAMM_tree_2d_symm), POINTER  :: a
-    TYPE(SpAMM_tree_2d_symm), POINTER  :: d
-    REAL(SPAMM_KIND),  INTENT(IN) :: alpha
+    real(SPAMM_KIND), intent(in) :: alpha
+    type(spamm_tree_2d_symm), pointer :: a
+    type(spamm_tree_2d_symm), pointer :: d
 
-    if(.not.associated(a))then
-       d=>null()
+    if(.not. associated(a)) then
+       d => null()
        return
     else
-       d=>a
-       call SpAMM_scalar_plus_tree_2d_symm_recur(alpha, d)
-    endif
+       d => a
+       call spamm_scalar_plus_tree_2d_symm_recur(alpha, d)
+    end if
 
-  END FUNCTION SpAMM_scalar_plus_tree_2d_symm
+  end function spamm_scalar_plus_tree_2d_symm
 
-  recursive subroutine SpAMM_scalar_plus_tree_2d_symm_recur(alpha, a)
+  recursive subroutine spamm_scalar_plus_tree_2d_symm_recur(alpha, a)
 
-   TYPE(SpAMM_tree_2d_symm), POINTER  :: a
-   REAL(SPAMM_KIND),  INTENT(IN) :: alpha
-   INTEGER, dimension(1:2)       :: lo,hi
-   INTEGER                       :: i
+    real(SPAMM_KIND), intent(in) :: alpha
+    type(spamm_tree_2d_symm), pointer :: a
 
-   if(.not.associated(a))return
+    integer, dimension(2) :: lo,hi
+    integer :: i
 
-   IF(a%frill%leaf)THEN
-
-      a%frill%needs_initialization=.false.
-      lo=a%frill%bndbx(0,:)
-      hi=a%frill%bndbx(1,:)
-
-      do i=1,hi(1)-lo(1)+1
-         a%chunk(i,i)=a%chunk(i,i)+alpha
-      enddo
-
-    ELSE
+    if(.not. associated(a)) return
+    if(a%frill%leaf) then
+       a%frill%needs_initialization = .false.
+       lo = a%frill%bndbx(0, :)
+       hi = a%frill%bndbx(1, :)
+       do i = 1, hi(1)-lo(1)+1
+          a%chunk(i, i) = a%chunk(i, i)+alpha
+       end do
+    else
        ! child along [00]:
-       CALL SpAMM_scalar_plus_tree_2d_symm_recur(alpha, SpAMM_construct_tree_2d_symm_00(a))
+       call spamm_scalar_plus_tree_2d_symm_recur(alpha, spamm_construct_tree_2d_symm_00(a))
        ! child along [11]:
-       CALL SpAMM_scalar_plus_tree_2d_symm_recur(alpha, SpAMM_construct_tree_2d_symm_11(a))
-    ENDIF
-
-    CALL SpAMM_redecorate_tree_2d_symm(a)
+       call spamm_scalar_plus_tree_2d_symm_recur(alpha, spamm_construct_tree_2d_symm_11(a))
+    end if
+    call spamm_redecorate_tree_2d_symm(a)
 
   end subroutine spamm_scalar_plus_tree_2d_symm_recur
 
@@ -152,144 +155,144 @@ CONTAINS
     if(.not. associated(A))return
     if(.not. associated(B))return
 
-    IF(PRESENT(Alpha))THEN; Local_Alpha=Alpha; ELSE; Local_Alpha=SpAMM_One; ENDIF
-    IF(PRESENT(Beta ))THEN; Local_Beta =Beta;  ELSE; Local_Beta=SpAMM_One;  ENDIF
+    if(present(Alpha))then; Local_Alpha=Alpha; else; Local_Alpha=SpAMM_One;end if
+       if(present(Beta ))then; Local_Beta =Beta;  else; Local_Beta=SpAMM_One; end if
 
-    IF(PRESENT(C))THEN ! we are going for an in place plus with an existing C:
+          if(present(C))then ! we are going for an in place plus with an existing C:
 
-       IF(ASSOCIATED(B,C))THEN  ! if passed in C is B, then in place accumulation on B ...
+             if(associated(B,C))then  ! if passed in C is B, then in place accumulation on B ...
 
-          ! B => alpha*A + beta*B
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(B, A, Local_beta, Local_alpha)
-          D=>B
+                ! B => alpha*A + beta*B
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(B, A, Local_beta, Local_alpha)
+                D=>B
 
-       ELSEIF(ASSOCIATED(A,C))THEN ! if passed in C is A, then in place accumulation on A ...
+             elseif(associated(A,C))then ! if passed in C is A, then in place accumulation on A ...
 
-          ! A => alpha*A + beta*B ...
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(A, B, Local_alpha, Local_beta)
-          D=>A
+                ! A => alpha*A + beta*B ...
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(A, B, Local_alpha, Local_beta)
+                D=>A
 
-       ELSE  ! C is passed in as a seperate channel for accumulation ...
+             else  ! C is passed in as a seperate channel for accumulation ...
 
-          ! C => C + alpha*A + beta*B
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(C, A, B, Local_alpha, Local_beta)
-          D=>C
+                ! C => C + alpha*A + beta*B
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(C, A, B, Local_alpha, Local_beta)
+                D=>C
 
-       ENDIF
+             end if
 
-    ELSE  ! We need a clean tree_2d_symm at this point ...
+          else  ! We need a clean tree_2d_symm at this point ...
 
-       D => SpAMM_new_top_tree_2d_symm(A%frill%NDimn)
-       ! D => D + alpha*A + beta*B
-       CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(C, A, B, Local_alpha, Local_beta)
-       D=>C
+             D => SpAMM_new_top_tree_2d_symm(A%frill%NDimn)
+             ! D => D + alpha*A + beta*B
+             call SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(C, A, B, Local_alpha, Local_beta)
+             D=>C
 
-    ENDIF
+          end if
 
-     CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(D, A, B, alpha, beta)
+          call SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(D, A, B, alpha, beta)
 
-  end function spamm_tree_2d_symm_plus_tree_2d_symm
+        end function spamm_tree_2d_symm_plus_tree_2d_symm
 
-  ! for tree_2d_symm, A = A + alpha*A + beta*B
-  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(a, b, alpha, beta)
+        ! for tree_2d_symm, A = A + alpha*A + beta*B
+        recursive subroutine SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(a, b, alpha, beta)
 
-    TYPE(SpAMM_tree_2d_symm), POINTER                :: A
-    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: B
-    REAL(SPAMM_KIND),                  INTENT(IN)    :: alpha, beta
-    logical                                          :: TA, TB
+          type(SpAMM_tree_2d_symm), pointer                :: A
+          type(SpAMM_tree_2d_symm), pointer, intent(IN)    :: B
+          real(SPAMM_KIND),                  intent(IN)    :: alpha, beta
+          logical                                          :: TA, TB
 
-    TA=ASSOCIATED(A)
-    TB=ASSOCIATED(B)
+          TA=associated(A)
+          TB=associated(B)
 
-    IF(.NOT.TA.AND.TB)THEN
+          if(.not.TA.and.TB)then
 
-       ! a = b (zero thresholding)
-       CALL SpAMM_tree_2d_symm_copy_tree_2d_symm_recur(a, b, 0.0_SPAMM_KIND)
+             ! a = b (zero thresholding)
+             call SpAMM_tree_2d_symm_copy_tree_2d_symm_recur(a, b, 0.0_SPAMM_KIND)
 
-       ! a = beta*b = beta*a
-!       CALL SpAMM_scalar_times_tree_2d_symm_recur(beta, a)
+             ! a = beta*b = beta*a
+             !       CALL SpAMM_scalar_times_tree_2d_symm_recur(beta, a)
 
-    ELSEIF(TA .AND. .NOT.TB) THEN
+          elseif(TA .and. .not.TB) then
 
-       ! a=alpha*a
-!       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a)
+             ! a=alpha*a
+             !       CALL SpAMM_scalar_times_tree_2d_symm_recur(alpha, a)
 
-    ELSEIF(TA.AND.TB)THEN
+          elseif(TA.and.TB)then
 
-       IF(b%frill%leaf)then
+             if(b%frill%leaf)then
 
-          ! A = alpha*A + beta*B
-          a%frill%needs_initialization=.false.
-          a%chunk(1:SBS,1:SBS) = alpha*a%chunk(1:SBS,1:SBS) + beta*b%chunk(1:SBS,1:SBS)
-          a%frill%flops = a%frill%flops + 3*SBS2
+                ! A = alpha*A + beta*B
+                a%frill%needs_initialization=.false.
+                a%chunk(1:SBS,1:SBS) = alpha*a%chunk(1:SBS,1:SBS) + beta*b%chunk(1:SBS,1:SBS)
+                a%frill%flops = a%frill%flops + 3*SBS2
 
-       ELSE
+             else
 
-          ! recursively decend, possibly building out A if nessesary ...
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_00(a), & !00>
-                                                                  b%child_00, alpha, beta)
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_01(a), & !01>
-                                                                  b%child_01, alpha, beta)
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_10(a), & !10>
-                                                                  b%child_10, alpha, beta)
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_11(a), & !11>
-                                                                  b%child_11, alpha, beta)
-       ENDIF
+                ! recursively decend, possibly building out A if nessesary ...
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_00(a), & !00>
+                     b%child_00, alpha, beta)
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_01(a), & !01>
+                     b%child_01, alpha, beta)
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_10(a), & !10>
+                     b%child_10, alpha, beta)
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(SpAMM_construct_tree_2d_symm_11(a), & !11>
+                     b%child_11, alpha, beta)
+             end if
 
-       ! enrich the resultnt
-       CALL SpAMM_redecorate_tree_2d_symm(a)
+             ! enrich the resultnt
+             call SpAMM_redecorate_tree_2d_symm(a)
 
-    ENDIF
+          end if
 
-  END SUBROUTINE SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur
+        end subroutine SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur
 
-  ! for tree_2d_symm: C = C + alpha*A+beta*B
-  RECURSIVE SUBROUTINE SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(C, A, B, alpha, beta)
+        ! for tree_2d_symm: C = C + alpha*A+beta*B
+        recursive subroutine SpAMM_tree_2d_symm_plus_tree_2d_symm_recur(C, A, B, alpha, beta)
 
-    TYPE(SpAMM_tree_2d_symm), POINTER, INTENT(IN)    :: A,B
-    TYPE(SpAMM_tree_2d_symm), POINTER                :: C
-    REAL(SPAMM_KIND)                                 :: alpha, beta
-    logical                                          :: TA, TB
+          type(SpAMM_tree_2d_symm), pointer, intent(IN)    :: A,B
+          type(SpAMM_tree_2d_symm), pointer                :: C
+          real(SPAMM_KIND)                                 :: alpha, beta
+          logical                                          :: TA, TB
 
-    TA=ASSOCIATED(A)
-    TB=ASSOCIATED(B)
+          TA=associated(A)
+          TB=associated(B)
 
-    IF(TA .AND. .NOT.TB) THEN
+          if(TA .and. .not.TB) then
 
-       ! C = C + alpha*A
-       CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(c, a, alpha, SpAMM_One)
+             ! C = C + alpha*A
+             call SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(c, a, alpha, SpAMM_One)
 
-    ELSEIF(.NOT.TA.AND.TB)THEN
+          elseif(.not.TA.and.TB)then
 
-       ! C = C + beta*B
-       CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(c, b, SpAMM_One, beta)
+             ! C = C + beta*B
+             call SpAMM_tree_2d_symm_plus_tree_2d_symm_inplace_recur(c, b, SpAMM_One, beta)
 
-    ELSEIF(TA.AND.TB)THEN
+          elseif(TA.and.TB)then
 
-       ! leaf situation ...
-       IF(c%frill%leaf)THEN
+             ! leaf situation ...
+             if(c%frill%leaf)then
 
-          ! c = c + alpha*a + beta*b
-          c%frill%needs_initialization=.false.
-          c%chunk(1:sbs,1:sbs)=c%chunk(1:sbs,1:sbs)+alpha*a%chunk(1:sbs,1:sbs)+beta*b%chunk(1:sbs,1:sbs)
-          c%frill%flops=c%frill%flops+3*sbs2
+                ! c = c + alpha*a + beta*b
+                c%frill%needs_initialization=.false.
+                c%chunk(1:sbs,1:sbs)=c%chunk(1:sbs,1:sbs)+alpha*a%chunk(1:sbs,1:sbs)+beta*b%chunk(1:sbs,1:sbs)
+                c%frill%flops=c%frill%flops+3*sbs2
 
-       ELSE
-          ! recursively decend, popping new children as needed ...
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_00(c), & !00>
-                                                           a%child_00, b%child_00, alpha, beta)
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_01(c), & !01>
-                                                           a%child_01, b%child_01, alpha, beta)
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_10(c), & !10>
-                                                           a%child_10, b%child_10, alpha, beta)
-          CALL SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_11(c), & !11>
-                                                           a%child_11, b%child_11, alpha, beta)
-       ENDIF
+             else
+                ! recursively decend, popping new children as needed ...
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_00(c), & !00>
+                     a%child_00, b%child_00, alpha, beta)
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_01(c), & !01>
+                     a%child_01, b%child_01, alpha, beta)
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_10(c), & !10>
+                     a%child_10, b%child_10, alpha, beta)
+                call SpAMM_tree_2d_symm_plus_tree_2d_symm_recur( SpAMM_construct_tree_2d_symm_11(c), & !11>
+                     a%child_11, b%child_11, alpha, beta)
+             end if
 
-       CALL SpAMM_redecorate_tree_2d_symm(c)
+             call SpAMM_redecorate_tree_2d_symm(c)
 
-    ENDIF
+          end if
 
-  END SUBROUTINE SpAMM_tree_2d_symm_plus_tree_2d_symm_recur
+        end subroutine SpAMM_tree_2d_symm_plus_tree_2d_symm_recur
 
-END module spamm_nbdyalgbra_plus
+      end module spamm_nbdyalgbra_plus

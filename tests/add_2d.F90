@@ -3,9 +3,9 @@ program test
   use spammpack
   implicit none
 
-  integer, parameter :: N = 100
-  double precision, parameter :: alpha = 1.2
-  double precision, parameter :: beta = 0.8
+  integer, parameter :: N = 20
+  double precision, parameter :: ALPHA = 1.2
+  double precision, parameter :: BETA = 0.8
 
   type(spamm_tree_2d_symm), pointer :: a
   type(spamm_tree_2d_symm), pointer :: b
@@ -19,7 +19,7 @@ program test
   b => spamm_convert_from_dense(b_dense)
 
   a_dense = alpha*a_dense+beta*b_dense
-  a => spamm_tree_2d_symm_plus_tree_2d_symm(a, b, alpha, beta, a)
+  a => spamm_tree_2d_symm_plus_tree_2d_symm(a, b, ALPHA, BETA, a)
 
   call spamm_convert_tree_2d_symm_to_dense(a, b_dense)
   if(maxval(a_dense-b_dense) > 1d-10) then
@@ -29,6 +29,6 @@ program test
   write(*, *) "matrices match"
 
   call spamm_destruct_tree_2d_symm_recur(a)
-  call SpAMM_destruct_tree_2d_symm_recur(b)
+  call spamm_destruct_tree_2d_symm_recur(b)
 
 end program test
