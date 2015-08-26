@@ -9,14 +9,14 @@ compiler:
 
 env:
   matrix:
-    - "CMAKE_BUILD_TYPE=Debug   GCC_VERSION=4.6 CC=gcc-${GCC_VERSION} FC=gfortran-${GCC_VERSION}"
-    - "CMAKE_BUILD_TYPE=Release GCC_VERSION=4.6 CC=gcc-${GCC_VERSION} FC=gfortran-${GCC_VERSION}"
-    - "CMAKE_BUILD_TYPE=Debug   GCC_VERSION=4.7 CC=gcc-${GCC_VERSION} FC=gfortran-${GCC_VERSION}"
-    - "CMAKE_BUILD_TYPE=Release GCC_VERSION=4.7 CC=gcc-${GCC_VERSION} FC=gfortran-${GCC_VERSION}"
-    - "CMAKE_BUILD_TYPE=Debug   GCC_VERSION=4.8 CC=gcc-${GCC_VERSION} FC=gfortran-${GCC_VERSION}"
-    - "CMAKE_BUILD_TYPE=Release GCC_VERSION=4.8 CC=gcc-${GCC_VERSION} FC=gfortran-${GCC_VERSION}"
-    - "CMAKE_BUILD_TYPE=Debug   GCC_VERSION=4.9 CC=gcc-${GCC_VERSION} FC=gfortran-${GCC_VERSION}"
-    - "CMAKE_BUILD_TYPE=Release GCC_VERSION=4.9 CC=gcc-${GCC_VERSION} FC=gfortran-${GCC_VERSION}"
+    - CMAKE_BUILD_TYPE=Debug   GCC_VERSION=4.6 CC="gcc-${GCC_VERSION}" FC="gfortran-${GCC_VERSION}"
+    - CMAKE_BUILD_TYPE=Release GCC_VERSION=4.6 CC="gcc-${GCC_VERSION}" FC="gfortran-${GCC_VERSION}"
+    - CMAKE_BUILD_TYPE=Debug   GCC_VERSION=4.7 CC="gcc-${GCC_VERSION}" FC="gfortran-${GCC_VERSION}"
+    - CMAKE_BUILD_TYPE=Release GCC_VERSION=4.7 CC="gcc-${GCC_VERSION}" FC="gfortran-${GCC_VERSION}"
+    - CMAKE_BUILD_TYPE=Debug   GCC_VERSION=4.8 CC="gcc-${GCC_VERSION}" FC="gfortran-${GCC_VERSION}"
+    - CMAKE_BUILD_TYPE=Release GCC_VERSION=4.8 CC="gcc-${GCC_VERSION}" FC="gfortran-${GCC_VERSION}"
+    - CMAKE_BUILD_TYPE=Debug   GCC_VERSION=4.9 CC="gcc-${GCC_VERSION}" FC="gfortran-${GCC_VERSION}"
+    - CMAKE_BUILD_TYPE=Release GCC_VERSION=4.9 CC="gcc-${GCC_VERSION}" FC="gfortran-${GCC_VERSION}"
 
 before_install: ./travis/before_install.sh
 
