@@ -159,7 +159,7 @@ if(SPAMM_DOCS)
       set(HAVE_DOT "YES")
     endif()
     configure_file(Doxyfile.in Doxyfile)
-    add_custom_target(doc ALL ${DOXYGEN_EXECUTABLE}
+    add_custom_target(doc ${DOXYGEN_EXECUTABLE}
       COMMENT "Generating API documentation.")
   else()
     message(STATUS "Can not build documentation")
