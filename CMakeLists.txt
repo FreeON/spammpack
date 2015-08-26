@@ -60,34 +60,36 @@ if("${isSystemDir}" STREQUAL "-1")
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
-# Set some default compiler flags.
-if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-  set(TEMP_FLAGS
-    "-O0 -g -gdwarf-3"
-    "-fvar-tracking-assignments -fcheck=all"
-    "-Wall -Wimplicit-interface -Wuninitialized -Wimplicit-procedure")
-  try_compile(HAVE_ADDRESS_SANITIZER
-    ${CMAKE_BINARY_DIR}/CMakeTmp
-    ${CMAKE_SOURCE_DIR}/cmake-tests/address-sanitizer
-    address-sanitizer
-    OUTPUT_VARIABLE ADDRESS_SANITIZER_OUTPUT)
-  if(HAVE_ADDRESS_SANITIZER)
-    message(STATUS "Adding address sanitizer compiler flag")
-    list(APPEND TEMP_FLAGS "-fsanitize=address")
+if(NOT CMAKE_Fortran_FLAGS)
+  # Set some default compiler flags.
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    set(TEMP_FLAGS
+      "-O0 -g -gdwarf-3"
+      "-fvar-tracking-assignments -fcheck=all"
+      "-Wall -Wimplicit-interface -Wuninitialized -Wimplicit-procedure")
+    try_compile(HAVE_ADDRESS_SANITIZER
+      ${CMAKE_BINARY_DIR}/CMakeTmp
+      ${CMAKE_SOURCE_DIR}/cmake-tests/address-sanitizer
+      address-sanitizer
+      OUTPUT_VARIABLE ADDRESS_SANITIZER_OUTPUT)
+    if(HAVE_ADDRESS_SANITIZER)
+      message(STATUS "Adding address sanitizer compiler flag")
+      list(APPEND TEMP_FLAGS "-fsanitize=address")
+    else()
+      message(STATUS "Address sanitizer not supported")
+    endif()
+    string(REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${TEMP_FLAGS}")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g")
+  elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
+    set(CMAKE_Fortran_FLAGS_DEBUG
+      "-stand f08 -O0 -g"
+      "-debug all -check all"
+      "-warn unused -traceback")
+    string(REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -no-prec-div -fp-model fast=2 -vec-report -g")
   else()
-    message(STATUS "Address sanitizer not supported")
+    message(STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}")
   endif()
-  string(REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${TEMP_FLAGS}")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-Ofast -g")
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
-  set(CMAKE_Fortran_FLAGS_DEBUG
-    "-stand f08 -O0 -g"
-    "-debug all -check all"
-    "-warn unused -traceback")
-  string(REGEX REPLACE ";" " " CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -no-prec-div -fp-model fast=2 -vec-report -g")
-else()
-  message(STATUS "Unknown Fortran compiler ${CMAKE_Fortran_COMPILER_ID}")
 endif()
 
 unset(COMPILE_DEFINITIONS)
@@ -160,7 +162,7 @@ if(SPAMM_DOCS)
     endif()
     configure_file(Doxyfile.in Doxyfile)
     add_custom_target(doc ${DOXYGEN_EXECUTABLE}
-      COMMENT "Generating API documentation.")
+      COMMENT "Generating API documentation")
   else()
     message(STATUS "Can not build documentation")
   endif()
