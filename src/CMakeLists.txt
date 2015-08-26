@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set(SOURCES
+  pointer_to_string.c
   spamm_chunk.F90
   spamm_chunk_add_2d.F90
   spamm_chunk_copy_2d.F90

@@ -27,12 +27,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 cmake_minimum_required(VERSION 2.8)
-project(spammpack Fortran)
+project(spammpack C Fortran)
 
 set(PROJECT_VERSION_MAJOR 1)
 set(PROJECT_VERSION_MINOR 1)
 set(PROJECT_VERSION_PATCH 0)
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+
+if(NOT CMAKE_C_COMPILER)
+  message(FATAL_ERROR "Can not find a C compiler")
+endif()
 
 if(NOT CMAKE_Fortran_COMPILER)
   message(FATAL_ERROR "Can not find Fortran compiler")

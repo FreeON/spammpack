@@ -46,6 +46,15 @@ module spamm_chunk_strings
     module procedure single_to_string
   end interface to_string
 
+  interface
+     subroutine pointer_to_string(ptr, length, string) bind(C)
+       use, intrinsic :: iso_C_binding
+       type(c_ptr), intent(in) :: ptr
+       integer(c_int), intent(in) :: length
+       character(c_char), intent(inout) :: string(*)
+     end subroutine pointer_to_string
+  end interface
+
 contains
 
   !> Convert an integer to a string.
@@ -162,9 +171,11 @@ contains
     type(c_ptr), intent(in) :: ptr
     character(len=100) :: string
 
+    call pointer_to_string(ptr, len(string), string)
+
     !write(string, "(Z32)") ptr
     !write(string, "(A)") "0x"//trim(adjustl(string))
-    write(string, "(A)") "0x00"
+    !write(string, "(A)") "0x00"
 
   end function c_ptr_to_string
 
