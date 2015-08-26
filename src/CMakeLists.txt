@@ -27,7 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set(SOURCES
-  pointer_to_string.c
   spamm_chunk.F90
   spamm_chunk_add_2d.F90
   spamm_chunk_copy_2d.F90
@@ -47,7 +46,7 @@ set(SOURCES
   spamm_xstructors.F90
   spammpack.F90)
 
-add_library(spamm ${SOURCES})
+add_library(spamm ${SOURCES} pointer_to_string.c)
 
 set_target_properties(spamm
   PROPERTIES
