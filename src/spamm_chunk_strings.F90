@@ -164,6 +164,7 @@ contains
 
     !write(string, "(Z32)") ptr
     !write(string, "(A)") "0x"//trim(adjustl(string))
+    write(string, "(A)") "0x00"
 
   end function c_ptr_to_string
 

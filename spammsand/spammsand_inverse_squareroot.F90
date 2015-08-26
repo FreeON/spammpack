@@ -258,13 +258,19 @@ contains
        IF(I>0)THEN
 
           IF(DoDuals)THEN
-             WRITE(* ,33) tau_0, tau_s, delta, scale,                   kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
-             WRITE(77,33) tau_0, tau_s, delta, scale,                   kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
-             WRITE(88,333)tau_0, tau_s, delta, scale,             dble(kount), TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
+             write(* ,33) tau_0, tau_s, delta, scale, &
+                  kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
+             write(77,33) tau_0, tau_s, delta, scale, &
+                  kount, TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
+             write(88,333)tau_0, tau_s, delta, scale, &
+                  dble(kount), TrX, FillN, y_dual_work*1d2 , z_dual_work*1d2 , x_dual_work*1d2
           elsE
-             WRITE(* ,34) tau_0, tau_s, delta, scale, RightTight,       kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
-             WRITE(77,34) tau_0, tau_s, delta, scale, RightTight,       kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
-             WRITE(88,344)tau_0, tau_s, delta, scale,             dble(kount), TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
+             write(* ,34) tau_0, tau_s, delta, scale, RightTight, &
+                  kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
+             write(77,34) tau_0, tau_s, delta, scale, RightTight, &
+                  kount, TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
+             write(88,344)tau_0, tau_s, delta, scale, &
+                  dble(kount), TrX, FillN, y_stab_work*1d2 , z_stab_work*1d2 , x_stab_work*1d2
           ENDIF
        ENDIF
 

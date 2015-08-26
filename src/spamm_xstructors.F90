@@ -746,10 +746,14 @@ contains
        d%chunk(1:SBS,1:SBS)=(a%chunk(1:SBS,1:SBS)+transpose(  a%chunk(1:SBS,1:SBS) ))*SpAMM_half
        ! flops
     else
-       call SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_00(d), a%child_00, threshold2 )
-       call SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_10(d), a%child_10, threshold2, at=a%child_01 )
-       call SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_01(d), a%child_01, threshold2, at=a%child_10 )
-       call SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_11(d), a%child_11, threshold2 )
+       call SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_00(d), &
+            a%child_00, threshold2 )
+       call SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_10(d), &
+            a%child_10, threshold2, at=a%child_01 )
+       call SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_01(d), &
+            a%child_01, threshold2, at=a%child_10 )
+       call SpAMM_tree_2d_symm_copy_tree_2d_symm_recur_symmetrize (SpAMM_construct_tree_2d_symm_11(d), &
+            a%child_11, threshold2 )
     end if
 
     call SpAMM_redecorate_tree_2d_symm(d)
